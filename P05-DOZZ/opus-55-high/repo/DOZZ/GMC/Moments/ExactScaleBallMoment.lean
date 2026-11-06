@@ -19,14 +19,14 @@ namespace DOZZ.Proofs
 This remains true for negative exponents, unlike the corresponding statement at zero. -/
 private theorem ennreal_ofReal_rpow_of_pos {x p : ℝ} (hx : 0 < x) :
     ENNReal.rpow (ENNReal.ofReal x) p = ENNReal.ofReal (x ^ p) := by
-  have hx0 : ENNReal.ofReal x ≠ 0 := ne_of_gt (ENNReal.ofReal_pos.mpr hx)
+  have hx0 : ENNReal.ofReal x ≠ 0 := by positivity
   have hleft : ENNReal.rpow (ENNReal.ofReal x) p ≠ ⊤ :=
     ENNReal.rpow_ne_top_of_ne_zero hx0 ENNReal.ofReal_ne_top
   have hright : ENNReal.ofReal (x ^ p) ≠ ⊤ := ENNReal.ofReal_ne_top
   apply (ENNReal.toReal_eq_toReal_iff' hleft hright).1
   calc
     (ENNReal.rpow (ENNReal.ofReal x) p).toReal =
-        (ENNReal.ofReal x).toReal ^ p := (ENNReal.toReal_rpow _ _).symm
+        (ENNReal.ofReal x).toReal ^ p := (ENNReal.toReal_rpow ..).symm
     _ = x ^ p := by rw [ENNReal.toReal_ofReal hx.le]
     _ = (ENNReal.ofReal (x ^ p)).toReal := by
         rw [ENNReal.toReal_ofReal (Real.rpow_nonneg hx.le p)]
@@ -39,11 +39,11 @@ theorem gaussianScaleFactor_rpow_integral
       ∂gaussianReal 0 ⟨-Real.log c,
         neg_nonneg.mpr (Real.log_nonpos hc.le hc1)⟩ =
       ENNReal.ofReal (c ^ (2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2)) := by
-  let σ : ℝ := -Real.log c
+  let σ := -Real.log c
   let v : ℝ≥0 := ⟨σ, neg_nonneg.mpr (Real.log_nonpos hc.le hc1)⟩
-  let G : Measure ℝ := gaussianReal 0 v
-  let d : ℝ := c ^ (2 * p) * Real.exp (-γ ^ 2 / 2 * p * σ)
-  let t : ℝ := γ * p
+  let G := gaussianReal 0 v
+  let d := c ^ (2 * p) * Real.exp (-γ ^ 2 / 2 * p * σ)
+  let t := γ * p
   let scale : ℝ → ℝ := fun w => c ^ 2 * Real.exp (γ * w - γ ^ 2 / 2 * σ)
   have hc2 : 0 < c ^ 2 := by positivity
   have hscale (w : ℝ) : 0 < scale w := by positivity
@@ -54,60 +54,59 @@ theorem gaussianScaleFactor_rpow_integral
       dsimp [scale, d, t, σ]
       rw [Real.mul_rpow (by positivity) (Real.exp_nonneg _),
         ← Real.rpow_natCast_mul hc.le 2 p,
-        ← Real.exp_mul (γ * w - γ ^ 2 / 2 * (-Real.log c)) p,
+        ← Real.exp_mul _ p,
         show (γ * w - γ ^ 2 / 2 * (-Real.log c)) * p =
           (-γ ^ 2 / 2 * p * (-Real.log c)) + (γ * p) * w by ring,
         Real.exp_add]
       ring_nf
-    rw [hpow]
+    simp_all
   have hExpInt : Integrable (fun w : ℝ => Real.exp (t * w)) G := by
     simpa [G, v, t] using ProbabilityTheory.integrable_exp_mul_gaussianReal
       (μ := 0) (v := v) t
   have hScaleInt : Integrable (fun w : ℝ => d * Real.exp (t * w)) G := by
     simpa [smul_eq_mul] using hExpInt.const_mul d
-  have hExp : ∫ w, Real.exp (t * w) ∂G = Real.exp ((v : ℝ) * t ^ 2 / 2) := by
+  have hExp : ∫ w, Real.exp (t * w) ∂G = Real.exp (v * t ^ 2 / 2) := by
     have hmgf := congrFun
       (ProbabilityTheory.mgf_fun_id_gaussianReal (μ := 0) (v := v)) t
     simpa [ProbabilityTheory.mgf, G, mul_comm] using hmgf
-  have hconst : d * Real.exp ((v : ℝ) * t ^ 2 / 2) =
+  have hconst : d * Real.exp (v * t ^ 2 / 2) =
       c ^ (2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2) := by
     rw [Real.rpow_def_of_pos hc]
     rw [show (v : ℝ) = -Real.log c by rfl]
     dsimp [d, t, v, σ]
-    rw [Real.rpow_def_of_pos hc (2 * p), ← Real.exp_add, ← Real.exp_add]
+    rw [Real.rpow_def_of_pos hc _, ← Real.exp_add, ← Real.exp_add]
     congr 1
     ring_nf
   have hNN : 0 ≤ᵐ[G] fun w : ℝ => d * Real.exp (t * w) :=
     ae_of_all G fun w => mul_nonneg (by positivity) (Real.exp_nonneg _)
   calc
-    _ = ∫⁻ w, ENNReal.ofReal (d * Real.exp (t * w)) ∂G := by
+    _ = ∫⁻ w, ENNReal.ofReal _ ∂G := by
       apply lintegral_congr_ae
       exact ae_of_all G hpoint
-    _ = ENNReal.ofReal (∫ w, d * Real.exp (t * w) ∂G) := by
+    _ = ENNReal.ofReal _ := by
       symm
       exact ofReal_integral_eq_lintegral_ofReal hScaleInt hNN
-    _ = ENNReal.ofReal (d * ∫ w, Real.exp (t * w) ∂G) := by
+    _ = ENNReal.ofReal _ := by
       rw [integral_const_mul]
-    _ = ENNReal.ofReal (c ^ (2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2)) := by
+    _ = ENNReal.ofReal _ := by
       rw [hExp, hconst]
     _ = _ := by rfl
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+section
+variable (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) {a : ℂ} {c R : ℝ} (hc : 0 < c) (hc1 : c ≤ 1) (hR : 0 < R) (hRsmall : R < 1) (hTsmall : ‖a‖ + c * R < 1) (p : ℝ)
+include hX hγ hγ2 hM hc hc1 hR hRsmall hTsmall
 
 /-- Exact scaling of an open-ball moment for every `IsGMCOf` version and every real order. At zero
 mass the extended-power convention is retained, in particular zero to a negative power is
 infinite. -/
 theorem gmc_affine_openBall_moment_scale
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
-    (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    {a : ℂ} {c R : ℝ} (hc : 0 < c) (hc1 : c ≤ 1)
-    (hR : 0 < R) (hRsmall : R < 1) (hTsmall : ‖a‖ + c * R < 1)
-    (p : ℝ) :
+    :
     gmcMassMoment P M (Metric.ball a (c * R)) p =
     ENNReal.ofReal (c ^ (2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2)) *
       gmcMassMoment P M (Metric.ball 0 R) p := by
   classical
-  let G : Measure ℝ := gaussianReal 0 ⟨-Real.log c,
+  let G := gaussianReal 0 ⟨-Real.log c,
     neg_nonneg.mpr (Real.log_nonpos hc.le hc1)⟩
   let : IsProbabilityMeasure P := hX.1
   have hG : IsProbabilityMeasure G := by
@@ -124,15 +123,13 @@ theorem gmc_affine_openBall_moment_scale
     (a := a) (c := c) (R := R) hc hc1 hR hRsmall hTsmall
   change Measure.map t P = Measure.map s (P.prod G) at hLaw
   have htCoord : AEMeasurable
-      (fun ω => (M ω (Metric.ball a (c * R))).toReal) P := by
-    exact ENNReal.measurable_toReal.comp_aemeasurable
+      (fun ω => (M ω (Metric.ball a (c * R))).toReal) P := ENNReal.measurable_toReal.comp_aemeasurable
       (gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM
         (Metric.ball a (c * R)) Metric.isOpen_ball.measurableSet)
   have hsCoord : AEMeasurable
       (fun q : Ω × ℝ => scaleFactor q.2 * (M q.1 (Metric.ball 0 R)).toReal)
       (P.prod G) := by
-    have hbase : AEMeasurable (fun ω => (M ω (Metric.ball 0 R)).toReal) P := by
-      exact ENNReal.measurable_toReal.comp_aemeasurable
+    have hbase : AEMeasurable (fun ω => (M ω (Metric.ball 0 R)).toReal) P := ENNReal.measurable_toReal.comp_aemeasurable
         (gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM
           (Metric.ball 0 R) Metric.isOpen_ball.measurableSet)
     have hfst : Measure.map (fun q : Ω × ℝ => q.1) (P.prod G) = P :=
@@ -141,10 +138,9 @@ theorem gmc_affine_openBall_moment_scale
         (fun q : Ω × ℝ => (M q.1 (Metric.ball 0 R)).toReal) (P.prod G) := by
       have h' : AEMeasurable (fun ω => (M ω (Metric.ball 0 R)).toReal)
           (Measure.map (fun q : Ω × ℝ => q.1) (P.prod G)) := by
-        rw [hfst]
-        exact hbase
+        simp_all
       change AEMeasurable
-        ((fun ω => (M ω (Metric.ball 0 R)).toReal) ∘ (fun q : Ω × ℝ => q.1))
+        ((fun ω => (M ω _).toReal) ∘ (fun q : Ω × ℝ => q.1))
         (P.prod G)
       exact h'.comp_aemeasurable measurable_fst.aemeasurable
     have hfactor : AEMeasurable (fun q : Ω × ℝ => scaleFactor q.2) (P.prod G) := by
@@ -153,7 +149,7 @@ theorem gmc_affine_openBall_moment_scale
         fun_prop
       exact hm.comp_aemeasurable measurable_snd.aemeasurable
     change AEMeasurable
-      (fun q : Ω × ℝ => scaleFactor q.2 * (M q.1 (Metric.ball 0 R)).toReal)
+      (fun q : Ω × ℝ => scaleFactor q.2 * (M q.1 _).toReal)
       (P.prod G)
     exact hfactor.mul hbase'
   let ψ : (Fin 1 → ℝ) → ℝ≥0∞ := fun v => ENNReal.rpow (ENNReal.ofReal (v 0)) p
@@ -162,22 +158,22 @@ theorem gmc_affine_openBall_moment_scale
     fun_prop
   have hmapIntegral :
       (∫⁻ v, ψ v ∂Measure.map t P) =
-        ∫⁻ v, ψ v ∂Measure.map s (P.prod G) := by rw [hLaw]
+        ∫⁻ v, ψ v ∂Measure.map s (P.prod G) := by simp_all
   have hleft : gmcMassMoment P M (Metric.ball a (c * R)) p =
       ∫⁻ v, ψ v ∂Measure.map t P := by
     rw [gmcMassMoment, lintegral_map' hψ.aemeasurable (aemeasurable_pi_iff.2
-      (fun j => by simpa [t] using htCoord))]
+      (fun j => by assumption))]
     apply lintegral_congr_ae
     filter_upwards with ω
     let : IsFiniteMeasure (M ω) := hM.1 ω
-    simp [ψ, t, ENNReal.ofReal_toReal (measure_ne_top (M ω) _)]
+    simp [ψ, t, ENNReal.ofReal_toReal _]
   have hright :
       (∫⁻ v, ψ v ∂Measure.map s (P.prod G)) =
         ∫⁻ q, ENNReal.rpow
           (ENNReal.ofReal (scaleFactor q.2 * (M q.1 (Metric.ball 0 R)).toReal)) p
           ∂P.prod G := by
     rw [lintegral_map' hψ.aemeasurable (aemeasurable_pi_iff.2
-      (fun j => by simpa [s] using hsCoord))]
+      (fun j => by assumption))]
   have hfactorMom : AEMeasurable
       (fun w => ENNReal.rpow (ENNReal.ofReal (scaleFactor w)) p) G := by
     have hm : Measurable scaleFactor := by
@@ -199,12 +195,12 @@ theorem gmc_affine_openBall_moment_scale
           ∫⁻ w, ENNReal.rpow (ENNReal.ofReal (scaleFactor w)) p ∂G := by
     rw [show (fun q : Ω × ℝ =>
         ENNReal.rpow
-          (ENNReal.ofReal (scaleFactor q.2 * (M q.1 (Metric.ball 0 R)).toReal)) p) =
+          (ENNReal.ofReal _) p) =
         (fun q => ENNReal.rpow (M q.1 (Metric.ball 0 R)) p *
           ENNReal.rpow (ENNReal.ofReal (scaleFactor q.2)) p) by
       funext q
       let : IsFiniteMeasure (M q.1) := hM.1 q.1
-      have hmassTop : M q.1 (Metric.ball 0 R) ≠ ∞ := measure_ne_top (M q.1) _
+      have hmassTop : M q.1 (Metric.ball 0 R) ≠ ∞ := by simp
       rw [ENNReal.ofReal_mul' ENNReal.toReal_nonneg,
         ENNReal.ofReal_toReal hmassTop]
       simpa [mul_comm] using
@@ -212,14 +208,14 @@ theorem gmc_affine_openBall_moment_scale
           (y := M q.1 (Metric.ball 0 R)) ENNReal.ofReal_ne_top hmassTop p)]
     rw [lintegral_prod_mul hbaseMom hfactorMom, gmcMassMoment]
   calc
-    gmcMassMoment P M (Metric.ball a (c * R)) p =
+    gmcMassMoment P M _ p =
         ∫⁻ v, ψ v ∂Measure.map t P := hleft
     _ = ∫⁻ v, ψ v ∂Measure.map s (P.prod G) := hmapIntegral
     _ = ∫⁻ q, ENNReal.rpow
-        (ENNReal.ofReal (scaleFactor q.2 * (M q.1 (Metric.ball 0 R)).toReal)) p
+        (ENNReal.ofReal _) p
         ∂P.prod G := hright
-    _ = gmcMassMoment P M (Metric.ball 0 R) p *
-        ∫⁻ w, ENNReal.rpow (ENNReal.ofReal (scaleFactor w)) p ∂G := hprod
+    _ = gmcMassMoment P M _ p *
+        ∫⁻ w, ENNReal.rpow _ p ∂G := hprod
     _ = _ := by
       rw [gaussianScaleFactor_rpow_integral γ c p hc hc1]
       ac_rfl
@@ -227,29 +223,26 @@ theorem gmc_affine_openBall_moment_scale
 /-- The exact scaling identity transports finiteness of every open-ball moment between an affine
 subdisk and its reference disk, for positive, zero, or negative orders. -/
 theorem gmc_affine_openBall_moment_finite_iff
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
-    (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    {a : ℂ} {c R : ℝ} (hc : 0 < c) (hc1 : c ≤ 1)
-    (hR : 0 < R) (hRsmall : R < 1) (hTsmall : ‖a‖ + c * R < 1)
-    (p : ℝ) :
+    :
     gmcMassMoment P M (Metric.ball a (c * R)) p < ⊤ ↔
       gmcMassMoment P M (Metric.ball 0 R) p < ⊤ := by
   have hscale := gmc_affine_openBall_moment_scale P X hX γ hγ hγ2 M hM
-    (a := a) (c := c) (R := R) hc hc1 hR hRsmall hTsmall p
+    hc hc1 hR hRsmall hTsmall p
   let ξ : ℝ := 2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2
   have hfactorPos : 0 < ENNReal.ofReal (c ^ ξ) :=
-    ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos hc ξ)
+    by positivity
   have hfactorTop : ENNReal.ofReal (c ^ ξ) < ⊤ := ENNReal.ofReal_lt_top
-  rw [hscale]
-  rw [show 2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2 = ξ by rfl]
+  rw [hscale, show 2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2 = ξ by rfl]
   constructor
   · intro h
     exact ENNReal.lt_top_of_mul_ne_top_right (ne_of_lt h) (ne_of_gt hfactorPos)
   · intro h
-    have hne : ENNReal.ofReal (c ^ ξ) * gmcMassMoment P M (Metric.ball 0 R) p ≠ ⊤ :=
+    have hne :=
       ENNReal.mul_ne_top (ne_of_lt hfactorTop) (ne_of_lt h)
-    exact lt_top_iff_ne_top.mpr hne
+    grind
+
+end
+
+end
 
 end DOZZ.Proofs

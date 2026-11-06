@@ -33,7 +33,7 @@ theorem dual_source_restart_outer_williams_law
     let D := fun ω => brownianShiftPath T (radialPositiveHalf (originRadialPath Xc ω))
     let Y := fun ω => (dual_radial_scale γ ν h Xc z ω,
       (dualOuterMass γ α₁ α₂ α₃ (M ω) z ξ).toReal)
-    (P.prod P).map (fun ω : Ω × Ω => (Y ω.1, ∫⁻ t,
+    (P.prod P).map (fun ω => (Y ω.1, ∫⁻ t,
       (if 0 < t then ENNReal.ofReal (Real.exp
         (γ * (D ω.1 (Real.toNNReal t) - ν * t))) else 0)
           ∂(Z ω.2).map (fun s => s - (T : ℝ)))) =
@@ -47,22 +47,19 @@ theorem dual_source_restart_outer_williams_law
   have hs : Measurable (fun a => brownianShiftPath T (radialPositiveHalf a)) :=
     continuous_brownianShiftPath.measurable.comp
       (measurable_const.prodMk continuous_radialPositiveHalf.measurable)
-  have hD : AEMeasurable D P := hs.comp_aemeasurable hA
   have hDb : IsBrownianReal (fun t p => p t) (P.map D) := by
     rw [reflected_restarted_radial_path_law P A hA hB T]
     exact radialPositiveHalf_map_isBrownian P A hA hB
-  have hDZ := hiZ.comp₀ hA hZ.2.2.2.1 hs.aemeasurable measurable_id.aemeasurable
   have hcoord := (hc.2.1 0 (-Real.log ‖z‖+h)).aemeasurable
-  have hβ : AEMeasurable (dual_radial_scale γ (Q γ-α₁) h Xc z) P := by
-    exact ((hcoord.const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
+  have hβ : AEMeasurable (dual_radial_scale γ (Q γ-α₁) h Xc z) P := ((hcoord.const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
   have hYm := hβ.prodMk (((dual_outerMass_measure_measurable γ α₁ α₂ α₃ ξ z).comp_aemeasurable
     (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ₂ M hM)).ennreal_toReal)
   have hYD := (dual_source_future_indep_outer_restart P X Xc hX hc hm hcont γ hγ hγ₂ M hM
     (Q γ-α₁) h α₁ α₂ α₃ ξ z hz0 hz T hT hr).symm
   let Qν := P.map (fun ω => (B ω).1)
-  have hQν : IsNegativeConditionedBrownianLaw (Q γ-α₁) Qν := hData.1.1.2
-  have hl := reflected_copied_translated_williams_joint_law P D hD hDb γ Z hZ hDZ
-    _ hYm hYD (Q γ-α₁) (sub_pos.mpr hα₁) Qν hQν T
+  have hQν := hData.1.1.2
+  have hl := reflected_copied_translated_williams_joint_law P D (hs.comp_aemeasurable hA) hDb γ Z hZ (hiZ.comp₀ hA hZ.2.2.2.1 hs.aemeasurable measurable_id.aemeasurable)
+    _ hYm hYD _ (sub_pos.mpr hα₁) Qν hQν T
   rw [isLateralGMCOf_map_eq P P γ Z Z₀ hZ hData.2.1,
     williams_source_input_law P γ α₁ hα₁ B Z₀ hData Qν hQν] at hl
   exact hl

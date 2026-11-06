@@ -32,14 +32,11 @@ private noncomputable def intOneDimWeight (n : ℤ) : ℝ := 1 / (1 + |(n : ℝ)
 
 private theorem summable_intOneDimWeight : Summable intOneDimWeight := by
   have hshift : Summable (fun n : ℤ => 1 / |(n : ℝ) + 1 / 2| ^ (2 : ℝ)) :=
-    (Real.summable_one_div_int_add_rpow (1 / 2) 2).mpr (by norm_num)
+    (Real.summable_one_div_int_add_rpow _ 2).mpr (by norm_num)
   apply Summable.of_nonneg_of_le (fun n => by unfold intOneDimWeight; positivity)
     (fun n => ?_) hshift
   have hbound : |(n : ℝ) + 1 / 2| ≤ 1 + |(n : ℝ)| := by
-    calc
-      |(n : ℝ) + 1 / 2| ≤ |(n : ℝ)| + |(1 / 2 : ℝ)| := abs_add_le _ _
-      _ = |(n : ℝ)| + 1 / 2 := by norm_num
-      _ ≤ 1 + |(n : ℝ)| := by linarith
+    grind
   have hpos : 0 < |(n : ℝ) + 1 / 2| := by
     apply abs_pos.mpr
     intro hn
@@ -48,8 +45,7 @@ private theorem summable_intOneDimWeight : Summable intOneDimWeight := by
   have hpow : |(n : ℝ) + 1 / 2| ^ (2 : ℝ) ≤ (1 + |(n : ℝ)|) ^ (2 : ℝ) := by
     gcongr
   have hbig : 0 < (1 + |(n : ℝ)|) ^ (2 : ℝ) := by positivity
-  have hinv := (inv_le_inv₀ hbig (Real.rpow_pos_of_pos hpos _)).2 hpow
-  simpa [intOneDimWeight, one_div] using hinv
+  simpa [intOneDimWeight, one_div] using ((inv_le_inv₀ hbig (Real.rpow_pos_of_pos hpos _)).2 hpow)
 
 private theorem pair_weight_le_product (m n : ℤ) :
     (1 + (m : ℝ) ^ 2 + (n : ℝ) ^ 2)⁻¹ ≤
@@ -68,20 +64,16 @@ private theorem pair_weight_le_product (m n : ℤ) :
   have hdenHalf : 0 < prodDen / 2 := by positivity
   have hhalf : prodDen / 2 ≤
       1 + (m : ℝ) ^ 2 + (n : ℝ) ^ 2 := by
-    exact (div_le_iff₀ (by norm_num : (0 : ℝ) < 2)).2 (by nlinarith [hcore])
+    linarith
   have hinv : (1 + (m : ℝ) ^ 2 + (n : ℝ) ^ 2)⁻¹ ≤
       (2 / prodDen) := by
     have h := (inv_le_inv₀ hden hdenHalf).2 hhalf
-    calc
-      (1 + (m : ℝ) ^ 2 + (n : ℝ) ^ 2)⁻¹ ≤
-          (prodDen / 2)⁻¹ := h
-      _ = 2 / prodDen := by field_simp [ne_of_gt hden']
+    simp_all
   calc
     (1 + (m : ℝ) ^ 2 + (n : ℝ) ^ 2)⁻¹ ≤
         2 / prodDen := hinv
     _ = 2 * (1 + |(m : ℝ)|)⁻¹ * (1 + |(n : ℝ)|)⁻¹ := by
-      field_simp [prodDen, ne_of_gt hden']
-      ring
+      grind
 
 private theorem summable_pair_weight_inv_sq :
     Summable (fun p : ℤ × ℤ => (1 + (p.1 : ℝ) ^ 2 + (p.2 : ℝ) ^ 2)⁻¹ ^ 2) := by
@@ -108,9 +100,7 @@ private theorem summable_pair_weight_inv_sq :
           (2 * (1 + |(p.1 : ℝ)|)⁻¹ * (1 + |(p.2 : ℝ)|)⁻¹) ^ 2 := hsquare
       _ = 4 * (intOneDimWeight p.1 * intOneDimWeight p.2) := by
         simp only [intOneDimWeight]
-        field_simp [ne_of_gt (show 0 < 1 + |(p.1 : ℝ)| by positivity),
-          ne_of_gt (show 0 < 1 + |(p.2 : ℝ)| by positivity)]
-        ring
+        grind
   · exact hprod.mul_left 4
 
 private def finTwoIntEquiv : (Fin 2 → ℤ) ≃ ℤ × ℤ where
@@ -126,11 +116,7 @@ private def finTwoIntEquiv : (Fin 2 → ℤ) ≃ ℤ × ℤ where
 /-- The reciprocal square weights of the two dimensional Fourier modes are summable. -/
 theorem summable_torusSobolevWeight_inv_sq :
     Summable (fun k : Fin 2 → ℤ => (torusSobolevWeight k)⁻¹ ^ 2) := by
-  have hpair := summable_pair_weight_inv_sq
-  have hpi := finTwoIntEquiv.summable_iff.mpr hpair
-  refine hpi.congr ?_
-  intro k
-  simp [Function.comp_apply, torusSobolevWeight, finTwoIntEquiv]
+  exact finTwoIntEquiv.summable_iff.mpr summable_pair_weight_inv_sq
 
 end DOZZ
 

@@ -6,19 +6,20 @@ module
 public import DOZZ.Brownian.Lateral.ConcentricInversion
 public import DOZZ.Brownian.Lateral.LawUniqueness
 public import DOZZ.GMC.Moments.InversionAnnularTestLaw
+import DOZZ.Brownian.Reflection.MassBlocks
 @[expose] public section
 open Filter MeasureTheory ProbabilityTheory Set
 open scoped Topology Distributions ENNReal NNReal
 namespace DOZZ.Proofs
+section
+variable {Ω : Type*} [MeasurableSpace Ω] {k l : ℕ} (P : Measure Ω)
+section
+variable (X : Ω → Distr) (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hc : IsCircleAverage P X Xc) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+include hX hc hγ hγ2 hM
 
 /-- Annular inversion of the actual GMC retains its joint law with the reversed
 concentric source coordinates. -/
 theorem gmc_inversion_annular_joint_test_vector_law
-    {Ω : Type*} [MeasurableSpace Ω] {k l : ℕ}
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hc : IsCircleAverage P X Xc)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (U : Set ℂ) (hUopen : IsOpen U) {m R : ℝ} (hm : 0 < m) (hR : 0 ≤ R)
     (hU : ∀ x ∈ U, 2 * m ≤ ‖x‖ ∧ ‖x‖ ≤ R)
     (s : Fin l → ℝ) (f : Fin k → BoundedContinuousFunction ℂ ℝ)
@@ -44,7 +45,7 @@ theorem gmc_inversion_annular_joint_test_vector_law
   let V := fun ω i => Xc ω 0 (-s i)
   let V' := fun ω i => Xc ω 0 (s i)
   have hV : Measurable V := measurable_pi_iff.mpr fun i =>
-    (hc.1 (-s i)).comp (measurable_id.prodMk measurable_const)
+    (hc.1 _).comp (measurable_id.prodMk measurable_const)
   have hV' : Measurable V' := measurable_pi_iff.mpr fun i =>
     (hc.1 (s i)).comp (measurable_id.prodMk measurable_const)
   have hfdd ε (_hε : 0 < ε) (_hεb : ε ≤ min (min (m / 2) 1) 1) n (xs : Fin n → ℂ) :
@@ -53,9 +54,9 @@ theorem gmc_inversion_annular_joint_test_vector_law
     inversionCircle_radial_joint_fdd_law P X Xc hX hc Z g hg hgap hmem hlim
       s (fun i => (xs i, Real.log (1 / ε)))
   have hlaw := admissibleLogChaos_limit_joint_vector_law_of_fdd P P U
-    (fun x => normPlus x ^ (-4 : ℝ)) (min (m / 2) 1) 1
-    (fun ω ε x => Z ω x (Real.log (1 / ε)))
-    (fun ω ε x => Xc ω x (Real.log (1 / ε))) hZ hY γ N A hN hA V V' hV hV' hfdd f hfc hfU
+    (fun x => normPlus x ^ (-4 : ℝ)) _ 1
+    (fun ω ε x => Z ω x _)
+    (fun ω ε x => Xc ω x _) hZ hY γ N A hN hA V V' hV hV' hfdd f hfc hfU
   have heq (μ : Measure ℂ) (j : Fin k) : ∫ x, f j x ∂μ.restrict U = ∫ x, f j x ∂μ :=
     integral_restrict_eq_integral_of_zero_on_compl μ U hUopen.measurableSet (f j)
       (boundedContinuousFunction_eq_zero_off_tsupport_subset (f j) U (hfU j))
@@ -64,66 +65,56 @@ theorem gmc_inversion_annular_joint_test_vector_law
     filter_upwards [hNae] with ω hω
     apply Prod.ext
     · rfl
-    · funext j
-      change (∫ x, f j x ∂N ω) = ∫ x, f j x ∂(M ω).map (fun z : ℂ => z⁻¹)
-      rw [hω, heq]
+    · grind
   have hright : (fun ω => (V' ω, fun j => ∫ x, f j x ∂A ω)) =ᵐ[P]
       fun ω => (V' ω, fun j => ∫ x, f j x ∂M ω) := by
     filter_upwards [hAae] with ω hω
     apply Prod.ext
     · rfl
-    · funext j
-      change (∫ x, f j x ∂A ω) = ∫ x, f j x ∂M ω
-      rw [← hω, heq]
+    · grind
   exact (Measure.map_congr hleft).symm.trans (hlaw.trans (Measure.map_congr hright))
 
 /-- Full bounded test-vector inversion law jointly with the reversed radial coordinates.
 Compact annular cutoffs exhaust the plane outside its zero atom. -/
 theorem gmc_inversion_joint_test_vector_law
-    {Ω : Type*} [MeasurableSpace Ω] {k l : ℕ}
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hc : IsCircleAverage P X Xc)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (s : Fin l → ℝ) (f : Fin k → BoundedContinuousFunction ℂ ℝ) :
     P.map (fun ω => (fun i => Xc ω 0 (-s i), fun j => ∫ x, f j x ∂(M ω).map
       (fun z : ℂ => z⁻¹))) =
       P.map (fun ω => (fun i => Xc ω 0 (s i), fun j => ∫ x, f j x ∂M ω)) := by
   let : IsProbabilityMeasure P := hX.1
-  let N := fun ω => (M ω).map (fun z : ℂ => z⁻¹)
+  let N := fun ω => (M ω).map (fun z => z⁻¹)
   have hMm := equatorGFF_GMC_aemeasurable P X hX γ hγ hγ2 M hM
-  have hNm : AEMeasurable N P := (Measure.measurable_map _ measurable_inv).comp_aemeasurable hMm
+  have hNm := (Measure.measurable_map _ measurable_inv).comp_aemeasurable hMm
   have hNfin : ∀ ω, IsFiniteMeasure (N ω) := fun ω => by let := hM.1 ω; infer_instance
   let q := fun n j => f j * gmcInversionCutoff n
   have hqm n j := finiteMeasure_bcf_integral_aemeasurable P M hMm hM.1 (q n j)
   have hqn n j := finiteMeasure_bcf_integral_aemeasurable P N hNm hNfin (q n j)
-  have hzero := gmc_atomless_at_zero_of_isGMCOf P X hX γ hγ hγ2 M hM
+  have hzero := DOZZ.Proofs.equatorGFF_GMC_origin_null_ae P X hX γ hγ hγ2 M hM
   have hNzero : ∀ᵐ ω ∂P, N ω {0} = 0 := by
     filter_upwards [hzero] with ω hω
-    change (M ω).map (fun z : ℂ => z⁻¹) {0} = 0
     rw [Measure.map_apply measurable_inv (measurableSet_singleton 0)]
-    simpa only [preimage, mem_singleton_iff, inv_eq_zero, ofPred_eq_eq_singleton] using hω
+    simpa using hω
   have hV : AEMeasurable (fun ω i => Xc ω 0 (-s i)) P :=
-    AEMeasurable.of_eval fun _ => (hc.2.1 _ _).aemeasurable
+    AEMeasurable.of_eval fun _ => (hc.2.1 ..).aemeasurable
   have hV' : AEMeasurable (fun ω i => Xc ω 0 (s i)) P :=
-    AEMeasurable.of_eval fun _ => (hc.2.1 _ _).aemeasurable
+    AEMeasurable.of_eval fun _ => (hc.2.1 ..).aemeasurable
   apply gmc_limit_joint_test_vector_law _ _ hV hV'
     (fun n ω j => ∫ x, q n j x ∂N ω) (fun n ω j => ∫ x, q n j x ∂M ω)
     (fun ω j => ∫ x, f j x ∂N ω) (fun ω j => ∫ x, f j x ∂M ω)
-  · exact fun n => AEMeasurable.of_eval (hqn n)
-  · exact fun n => AEMeasurable.of_eval (hqm n)
+  · fun_prop
+  · fun_prop
   · exact AEMeasurable.of_eval fun j => finiteMeasure_bcf_integral_aemeasurable P N hNm hNfin (f j)
   · exact AEMeasurable.of_eval fun j => finiteMeasure_bcf_integral_aemeasurable P M hMm hM.1 (f j)
   · intro n
-    let U := {x : ℂ | 1 / (2 * ((n : ℝ) + 2)) < ‖x‖ ∧ ‖x‖ < (n : ℝ) + 3}
+    let U := {x : ℂ | 1 / (2 * (n + 2)) < ‖x‖ ∧ ‖x‖ < n + 3}
     apply gmc_inversion_annular_joint_test_vector_law P X hX Xc hc γ hγ hγ2 M hM U
       (isOpen_lt continuous_const continuous_norm |>.inter
         (isOpen_lt continuous_norm continuous_const))
-      (m := 1 / (4 * ((n : ℝ) + 2))) (R := (n : ℝ) + 3)
+      (m := 1 / (4 * (n + 2))) (R := n + 3)
       (by positivity) (by positivity)
     · intro x hx
       constructor
-      · have he : 2 * (1 / (4 * ((n : ℝ) + 2))) = 1 / (2 * ((n : ℝ) + 2)) := by
+      · have he : 2 * (1 / (4 * (n + 2))) = 1 / (2 * ((n : ℝ) + 2)) := by
           field_simp; norm_num
         rw [he]; exact hx.1.le
       · exact hx.2.le
@@ -139,6 +130,10 @@ theorem gmc_inversion_joint_test_vector_law
     filter_upwards [hzero] with ω hω
     let := hM.1 ω
     exact inversion_cutoff_integral_tendsto (M ω) hω (f j)
+
+end
+
+end
 
 private abbrev RadialReflectionOpen := {U : Set ℂ // IsOpen U}
 private abbrev RadialReflectionOutput := TwoSidedPath × FiniteMeasure ℂ
@@ -206,7 +201,7 @@ theorem finite_random_radial_measure_law_of_open_fdd
     refine ⟨S' ∩ T', hrectpi S' hS' T' hT' ?_, ?_⟩
     · rcases hST with ⟨q, hq⟩
       exact ⟨radialReflectionOutputCode q, hq⟩
-    · rw [← Set.preimage_inter]
+    · rfl
   have hcode : Measurable radialReflectionOutputCode := Measurable.of_comap_le le_rfl
   have hOpenGen : (inferInstance : MeasurableSpace ℂ) =
       MeasurableSpace.generateFrom {S : Set ℂ | IsOpen S} := by
@@ -263,8 +258,7 @@ theorem finite_random_radial_measure_law_of_open_fdd
           (cylinder_mem_measurableCylinders (α := fun _ : RadialReflectionOpen => ℝ≥0∞) sm Bm hBm)
       rw [Measure.map_apply_of_aemeasurable hom hs, Measure.map_apply_of_aemeasurable hon hs]
       exact hp
-    · simp only [Measure.map_apply_of_aemeasurable hom MeasurableSet.univ,
-        Measure.map_apply_of_aemeasurable hon MeasurableSet.univ, preimage_univ]
+    · simp
   have h := congrArg (fun μ => @Measure.map RadialReflectionOutput RadialReflectionOutput
     mOutput mStd id μ) hLaw
   have hfm := @Measurable.aemeasurable RadialReflectionOutput RadialReflectionOutput
@@ -276,7 +270,7 @@ theorem finite_random_radial_measure_law_of_open_fdd
   have heN := @AEMeasurable.map_map_of_aemeasurable Ω RadialReflectionOutput
     RadialReflectionOutput _ mOutput mStd P id outN hfn hon
   rw [heM, heN] at h
-  simpa only [Function.comp_def, id, outM, outN] using h
+  simpa using h
 
 /-- Inversion preserves finite vectors of open masses jointly with reversed radial
 coordinates, on the original probability space. -/
@@ -292,17 +286,17 @@ theorem gmc_inversion_joint_open_mass_fintype_law
       P.map (fun ω => (fun i => Xc ω 0 (s i), fun j => M ω (U j))) := by
   classical
   let : IsProbabilityMeasure P := hX.1
-  let eι : Fin (Fintype.card ι) ≃ ι := (Fintype.equivFin ι).symm
-  let eκ : Fin (Fintype.card κ) ≃ κ := (Fintype.equivFin κ).symm
-  let N := fun ω => (M ω).map (fun z : ℂ => z⁻¹)
+  let eι := (Fintype.equivFin ι).symm
+  let eκ := (Fintype.equivFin κ).symm
+  let N := fun ω => (M ω).map (fun z => z⁻¹)
   have hMm := equatorGFF_GMC_aemeasurable P X hX γ hγ hγ2 M hM
-  have hNm : AEMeasurable N P := (Measure.measurable_map _ measurable_inv).comp_aemeasurable hMm
+  have hNm := (Measure.measurable_map _ measurable_inv).comp_aemeasurable hMm
   have hNfin : ∀ ω, IsFiniteMeasure (N ω) := fun ω => by let := hM.1 ω; infer_instance
   let V := fun ω i => Xc ω 0 (-s (eι i))
   let V' := fun ω i => Xc ω 0 (s (eι i))
-  have hV : AEMeasurable V P := AEMeasurable.of_eval fun _ => (hc.2.1 _ _).aemeasurable
-  have hV' : AEMeasurable V' P := AEMeasurable.of_eval fun _ => (hc.2.1 _ _).aemeasurable
-  let q := fun n j => gmcOpenApprox (U (eκ j)) (hU (eκ j)) n
+  have hV : AEMeasurable V P := AEMeasurable.of_eval fun _ => (hc.2.1 ..).aemeasurable
+  have hV' : AEMeasurable V' P := AEMeasurable.of_eval fun _ => (hc.2.1 ..).aemeasurable
+  let q := fun n j => gmcOpenApprox _ (hU (eκ j)) n
   let A := fun ω (j : Fin (Fintype.card κ)) => (N ω (U (eκ j))).toReal
   let B := fun ω (j : Fin (Fintype.card κ)) => (M ω (U (eκ j))).toReal
   have hA : AEMeasurable A P := AEMeasurable.of_eval fun j =>
@@ -314,22 +308,22 @@ theorem gmc_inversion_joint_open_mass_fintype_law
   have hlaw : P.map (fun ω => (V ω, A ω)) = P.map (fun ω => (V' ω, B ω)) := by
     apply gmc_limit_joint_test_vector_law V V' hV hV'
       (fun n ω j => ∫ x, q n j x ∂N ω) (fun n ω j => ∫ x, q n j x ∂M ω) A B
-    · exact fun n => AEMeasurable.of_eval (hqn n)
-    · exact fun n => AEMeasurable.of_eval (hqm n)
+    · fun_prop
+    · fun_prop
     · exact hA
     · exact hB
     · intro n
-      exact gmc_inversion_joint_test_vector_law P X hX Xc hc γ hγ hγ2 M hM (s ∘ eι) (q n)
+      exact gmc_inversion_joint_test_vector_law P X hX Xc hc γ hγ hγ2 M hM _ (q n)
     · intro j
       apply tendstoInMeasure_of_tendsto_ae (fun n => (hqn n j).aestronglyMeasurable)
       exact ae_of_all _ fun ω => by
         let := hNfin ω
-        exact gmcOpenApprox_integral_tendsto (N ω) (U (eκ j)) (hU (eκ j))
+        exact gmcOpenApprox_integral_tendsto (N ω) _ (hU (eκ j))
     · intro j
       apply tendstoInMeasure_of_tendsto_ae (fun n => (hqm n j).aestronglyMeasurable)
       exact ae_of_all _ fun ω => by
         let := hM.1 ω
-        exact gmcOpenApprox_integral_tendsto (M ω) (U (eκ j)) (hU (eκ j))
+        exact gmcOpenApprox_integral_tendsto (M ω) _ (hU (eκ j))
   let post := fun v : (Fin (Fintype.card ι) → ℝ) × (Fin (Fintype.card κ) → ℝ) =>
     (fun i : ι => v.1 (eι.symm i), fun j : κ => ENNReal.ofReal (v.2 (eκ.symm j)))
   have hp : Measurable post := by fun_prop
@@ -337,7 +331,7 @@ theorem gmc_inversion_joint_open_mass_fintype_law
       fun ω => (fun i => Xc ω 0 (-s i), fun j => N ω (U j)) := by
     funext ω
     apply Prod.ext
-    · funext i; simp only [post, V, Function.comp_apply, Equiv.apply_symm_apply]
+    · grind
     · funext j
       simp only [post, A, Function.comp_apply, Equiv.apply_symm_apply]
       let := hNfin ω
@@ -354,19 +348,19 @@ theorem gmc_inversion_joint_open_mass_fintype_law
   calc
     _ = (P.map (fun ω => (V ω, A ω))).map post := by
       rw [AEMeasurable.map_map_of_aemeasurable hp.aemeasurable (hV.prodMk hA), heA]
-    _ = (P.map (fun ω => (V' ω, B ω))).map post := congrArg (Measure.map post) hlaw
+    _ = (P.map (fun ω => (V' ω, B ω))).map post := by simp_all
     _ = _ := by
       rw [AEMeasurable.map_map_of_aemeasurable hp.aemeasurable (hV'.prodMk hB), heB]
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+section
+variable (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2)) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+include hX hc hcont hγ hγ2 hM
 
 /-- The entire radial path and the actual finite GMC have the simultaneous
 radial-reversal/complex-inversion joint law. -/
 theorem originRadialGMC_inversion_joint_law
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
+    :
     P.map (β := TwoSidedPath × FiniteMeasure ℂ) (fun ω => (originReversedRadialPath (originRadialPath Xc ω),
       FiniteMeasure.map (⟨M ω, hM.1 ω⟩ : FiniteMeasure ℂ) (fun x : ℂ => x⁻¹))) =
     P.map (β := TwoSidedPath × FiniteMeasure ℂ) (fun ω => (originRadialPath Xc ω, (⟨M ω, hM.1 ω⟩ : FiniteMeasure ℂ))) := by
@@ -374,84 +368,74 @@ theorem originRadialGMC_inversion_joint_law
   let A := originRadialPath Xc
   let N := fun ω => (M ω).map (fun x : ℂ => x⁻¹)
   have hMm := equatorGFF_GMC_aemeasurable P X hX γ hγ hγ2 M hM
-  have hNm : AEMeasurable N P := (Measure.measurable_map _ measurable_inv).comp_aemeasurable hMm
+  have hNm := (Measure.measurable_map _ measurable_inv).comp_aemeasurable hMm
   have hNf : ∀ ω, IsFiniteMeasure (N ω) := fun ω =>
-    (FiniteMeasure.map (⟨M ω, hM.1 ω⟩ : FiniteMeasure ℂ) (fun x : ℂ => x⁻¹)).2
+    (FiniteMeasure.map (⟨M ω, hM.1 ω⟩) (fun x : ℂ => x⁻¹)).2
   have hA := originRadialPath_aemeasurable P X Xc hc hcont
   have hAr := originReversedRadialPath_aemeasurable P A hA
   apply finite_random_radial_measure_law_of_open_fdd P
     (fun ω => originReversedRadialPath (A ω)) A hAr hA N M hNm hMm hNf hM.1
   intro ι κ _ _ s U hU
   have hlaw := gmc_inversion_joint_open_mass_fintype_law P X hX Xc hc γ hγ hγ2 M hM
-    (fun i => (s i : ℝ)) U hU
+    (fun i => (s i)) U hU
   calc
-    _ = P.map (fun ω => (fun i => Xc ω 0 (-(s i : ℝ)), fun j => N ω (U j))) := by
+    _ = P.map (fun ω => (fun i => Xc ω 0 _, fun j => N ω (U j))) := by
       apply Measure.map_congr
       filter_upwards [originRadialPath_eval_ae hcont] with ω hω
       apply Prod.ext
-      · funext i
-        exact hω (-(s i : ℝ))
+      · bound
       · rfl
-    _ = P.map (fun ω => (fun i => Xc ω 0 (s i : ℝ), fun j => M ω (U j))) := hlaw
+    _ = P.map (fun ω => (fun i => Xc ω 0 (s i), fun j => M ω (U j))) := hlaw
     _ = _ := by
       apply Measure.map_congr
       filter_upwards [originRadialPath_eval_ae hcont] with ω hω
       apply Prod.ext
-      · funext i
-        exact (hω (s i : ℝ)).symm
+      · aesop
       · rfl
 
 /-- Reflection preserves the law of the ENTIRE actual polar projection
 `DOZZ.lateralProjectedGMC`. Its proof uses simultaneous radial/GMC inversion,
 retaining their source coupling. -/
 theorem lateralProjectedGMC_reflection_law
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
+    :
     P.map (fun ω => (lateralProjectedGMC γ (originRadialPath Xc ω) (M ω)).map
       (fun s : ℝ => -s)) =
     P.map (fun ω => lateralProjectedGMC γ (originRadialPath Xc ω) (M ω)) := by
   let T : TwoSidedPath × FiniteMeasure ℂ → Measure ℝ := fun q =>
     lateralProjectedGMC γ q.1 (q.2 : Measure ℂ)
   have harg : Measurable (fun q : TwoSidedPath × FiniteMeasure ℂ => ((γ, q.1), q.2)) :=
-    (measurable_const.prodMk measurable_fst).prodMk measurable_snd
+    by fun_prop
   have hT : Measurable T := by
     change Measurable ((fun p : (ℝ × TwoSidedPath) × FiniteMeasure ℂ =>
-      lateralProjectedGMC p.1.1 p.1.2 (p.2 : Measure ℂ)) ∘
+      lateralProjectedGMC p.1.1 p.1.2 p.2) ∘
       fun q : TwoSidedPath × FiniteMeasure ℂ => ((γ, q.1), q.2))
     exact measurable_lateralProjectedGMC_finite.comp harg
   have hMm := equatorGFF_GMC_aemeasurable P X hX γ hγ hγ2 M hM
   have hA := originRadialPath_aemeasurable P X Xc hc hcont
-  have hMF : AEMeasurable (fun ω => (⟨M ω, hM.1 ω⟩ : FiniteMeasure ℂ)) P :=
+  have hMF :=
     @AEMeasurable.subtype_mk Ω (Measure ℂ) _ _ M P hMm _ hM.1
   have hNf : ∀ ω, IsFiniteMeasure ((M ω).map (fun x : ℂ => x⁻¹)) := fun ω =>
-    (FiniteMeasure.map (⟨M ω, hM.1 ω⟩ : FiniteMeasure ℂ) (fun x : ℂ => x⁻¹)).2
-  have hNm : AEMeasurable (fun ω => (M ω).map (fun x : ℂ => x⁻¹)) P :=
+    (FiniteMeasure.map (⟨M ω, hM.1 ω⟩) (fun x : ℂ => x⁻¹)).2
+  have hNm :=
     (Measure.measurable_map _ measurable_inv).comp_aemeasurable hMm
-  have hNF : AEMeasurable (fun ω => FiniteMeasure.map (⟨M ω, hM.1 ω⟩ : FiniteMeasure ℂ)
-      (fun x : ℂ => x⁻¹)) P :=
+  have hNF :=
     @AEMeasurable.subtype_mk Ω (Measure ℂ) _ _ _ P hNm _ hNf
-  have hL : AEMeasurable (fun ω => (originReversedRadialPath (originRadialPath Xc ω),
-      FiniteMeasure.map (⟨M ω, hM.1 ω⟩ : FiniteMeasure ℂ) (fun x : ℂ => x⁻¹))) P :=
+  have hL :=
     (originReversedRadialPath_aemeasurable P _ hA).prodMk hNF
-  have hR : AEMeasurable (fun ω => (originRadialPath Xc ω,
-      (⟨M ω, hM.1 ω⟩ : FiniteMeasure ℂ))) P := hA.prodMk hMF
   have hj := originRadialGMC_inversion_joint_law P X Xc hX hc hcont γ hγ hγ2 M hM
   have h := (AEMeasurable.map_map_of_aemeasurable hT.aemeasurable hL).symm.trans
     ((congrArg (fun μ => μ.map T) hj).trans
-      (AEMeasurable.map_map_of_aemeasurable hT.aemeasurable hR))
-  change P.map (fun ω => lateralProjectedGMC γ (originReversedRadialPath (originRadialPath Xc ω))
+      (AEMeasurable.map_map_of_aemeasurable hT.aemeasurable (hA.prodMk hMF)))
+  change P.map (fun ω => lateralProjectedGMC γ _
     ((M ω).map (fun x : ℂ => x⁻¹))) =
-    P.map (fun ω => lateralProjectedGMC γ (originRadialPath Xc ω) (M ω)) at h
+    P.map (fun ω => lateralProjectedGMC γ _ (M ω)) at h
   simpa only [lateralProjectedGMC_reversed_inversion] using h
+
+end
 
 /-- The actual equator GMC has its complete two-sided radial/lateral
 decomposition, including whole-measure stationarity and reflection. -/
 theorem equatorGFF_lateral_GMC_decomposition
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (M : Ω → Measure ℂ) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) :
     ∃ A : Ω → TwoSidedPath,
@@ -473,9 +457,8 @@ theorem equatorGFF_lateral_GMC_decomposition
   have hB := originRadialPath_isBrownian P X Xc hX hc hcont
   have hZ := lateralProjectedGMC_aemeasurable P γ A hA M
     (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ2 M hM) hM.1
-  have hi := lateralProjectedGMC_indep P X Xc hX hc hm hcont γ hγ hγ2 M hM
   refine ⟨A, ⟨Xc, hc, ?_⟩, hA, originRadialPath_zero_ae P X Xc hc hcont,
-    hB.1, hB.2, originRadialPath_halves_indep P X Xc hX hc hcont, hZ, hi, ?_⟩
+    hB.1, hB.2, originRadialPath_halves_indep P X Xc hX hc hcont, hZ, (lateralProjectedGMC_indep P X Xc hX hc hm hcont γ hγ hγ2 M hM), ?_⟩
   · intro s
     exact (originRadialPath_eval_ae hcont).mono (fun ω hω => hω s)
   · refine ⟨hγ, hγ2, hX.1, hZ, hfin, ?_, ?_, ?_, ⟨X, M, hSource⟩⟩
@@ -484,5 +467,7 @@ theorem equatorGFF_lateral_GMC_decomposition
     · exact lateralProjectedGMC_reflection_law P X Xc hX hc hcont γ hγ hγ2 M hM
     · exact fun a b _hab => lateralProjectedGMC_interval_intensity P X Xc hX hc hm hcont
         γ hγ hγ2 M hM a b
+
+end
 
 end DOZZ.Proofs

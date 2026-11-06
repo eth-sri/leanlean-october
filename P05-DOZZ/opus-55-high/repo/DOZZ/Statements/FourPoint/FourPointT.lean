@@ -17,8 +17,7 @@ namespace DOZZ
 
 /-- The reduced four-point correlation `T`, literally as in [KRV, (Tdefi0)]. -/
 noncomputable def fourPointT {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (M : Ω → Measure ℂ) (γ μ : ℝ)
-    (α₀ α₁ α₂ α₃ : ℝ) (z : ℂ) : ℝ :=
+    (P : Measure Ω) (M : Ω → Measure ℂ) (γ μ α₀ α₁ α₂ α₃ : ℝ) (z : ℂ) : ℝ :=
   2 * μ ^ (-fourPointSExp γ α₀ α₁ α₂ α₃) / γ *
     Real.Gamma (fourPointSExp γ α₀ α₁ α₂ α₃) *
       (∫⁻ ω, ENNReal.rpow

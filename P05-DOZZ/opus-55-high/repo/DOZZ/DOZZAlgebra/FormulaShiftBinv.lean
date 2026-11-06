@@ -70,7 +70,7 @@ theorem dozzFormula_shift_binv {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 : γ < 2)
     dsimp [T]
     exact mul_pos (dozzBase_pos hγ hγ2 hμ) (Real.rpow_pos_of_pos hsR _)
   have hTc : Tc ≠ 0 := Complex.ofReal_ne_zero.mpr hTpos.ne'
-  have hrpos : 0 < rR := by dsimp [rR]; positivity
+  have hrpos : 0 < rR := by positivity
   have hrCast : r = ((4 / γ ^ 2 : ℝ) : ℂ) := rfl
   have hrne : ∀ n : ℕ, rR ≠ (n : ℝ) := by
     intro n
@@ -100,8 +100,7 @@ theorem dozzFormula_shift_binv {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 : γ < 2)
   have hLr : lFun r ≠ 0 := by
     unfold lFun
     exact div_ne_zero hΓr hΓ1r
-  have hrne0 : r ≠ 0 := by exact Complex.ofReal_ne_zero.mpr hrpos.ne'
-  have hLprod := lFun_mul_neg hrne0 hΓr hΓnegr
+  have hrne0 : r ≠ 0 := by simp_all
   have hsum : rR * (2 - γ ^ 2 / 2) + 4 = 4 * Q γ / γ := by
     dsimp [rR]
     unfold Q
@@ -136,8 +135,8 @@ theorem dozzFormula_shift_binv {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 : γ < 2)
     have hprod : -(r ^ 2 * lFun (-r) * lFun r) = 1 := by
       calc
         -(r ^ 2 * lFun (-r) * lFun r) = r ^ 2 * (-(lFun r * lFun (-r))) := by ring
-        _ = r ^ 2 * (1 / r ^ 2) := by rw [hLprod]; ring
-        _ = 1 := by field_simp [hrne0]
+        _ = r ^ 2 * (1 / r ^ 2) := by rw [(lFun_mul_neg hrne0 hΓr hΓnegr)]; ring
+        _ = 1 := by simp_all
     have hcoef : ((dozzBase γ μ : ℝ) : ℂ) ^ r *
         (-(lFun (-r)) / (Real.pi * dualMu γ μ)) = 1 / r ^ 2 := by
       rw [hdual]
@@ -145,14 +144,14 @@ theorem dozzFormula_shift_binv {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 : γ < 2)
       rw [hprod]
     have hgamma4Real : (γ / 2) ^ (4 : ℝ) = 1 / rR ^ 2 := by
       calc
-        (γ / 2) ^ (4 : ℝ) = (γ / 2) ^ (4 : ℕ) := Real.rpow_natCast _ _
+        (γ / 2) ^ (4 : ℝ) = (γ / 2) ^ (4 : ℕ) := Real.rpow_natCast ..
         _ = 1 / rR ^ 2 := hgamma4
     have hscalarReal : (γ / 2) ^ (rR * (2 - γ ^ 2 / 2)) *
         (1 / rR ^ 2) = (γ / 2) ^ (4 * Q γ / γ) := by
       calc
-        _ = (γ / 2) ^ (rR * (2 - γ ^ 2 / 2)) * (γ / 2) ^ (4 : ℝ) := by rw [← hgamma4Real]
-        _ = (γ / 2) ^ (rR * (2 - γ ^ 2 / 2) + 4) := (Real.rpow_add hsR _ _).symm
-        _ = (γ / 2) ^ (4 * Q γ / γ) := by rw [hsum]
+        _ = (γ / 2) ^ (rR * (2 - γ ^ 2 / 2)) * (γ / 2) ^ (4 : ℝ) := by simp_all
+        _ = (γ / 2) ^ (rR * (2 - γ ^ 2 / 2) + 4) := (Real.rpow_add hsR ..).symm
+        _ = (γ / 2) ^ (4 * Q γ / γ) := by simp_all
     rw [hTpow]
     have hDpowCast : ((dozzBase γ μ) ^ rR : ℝ) =
         ((dozzBase γ μ : ℝ) : ℂ) ^ r := by
@@ -174,7 +173,7 @@ theorem dozzFormula_shift_binv {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 : γ < 2)
       _ = (((γ / 2) ^ (rR * (2 - γ ^ 2 / 2)) : ℝ) : ℂ) * (1 / r ^ 2) := by
         rw [hcoef]
       _ = (((γ / 2) ^ (rR * (2 - γ ^ 2 / 2)) : ℝ) : ℂ) *
-          ((1 / rR ^ 2 : ℝ) : ℂ) := by rw [hcoefCast]
+          ((1 / rR ^ 2 : ℝ) : ℂ) := by simp_all
       _ = (((γ / 2) ^ (rR * (2 - γ ^ 2 / 2)) * (1 / rR ^ 2) : ℝ) : ℂ) := by
         rw [Complex.ofReal_mul]
       _ = (((γ / 2) ^ (4 * Q γ / γ) : ℝ) : ℂ) := by
@@ -240,7 +239,7 @@ theorem dozzFormula_shift_binv {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 : γ < 2)
     nonzeroV₀, nonzeroV₀p, nonzeroV₁, nonzeroV₁p, nonzeroV₂, nonzeroV₂p,
     nonzeroV₃, nonzeroV₃p, lnonzeroV₀, lnonzeroV₂, lnonzeroV₃]
     with α hpa hpam hp₀ hp₁ hp₂ hp₃ hu₀ hu₀p hu₁ hu₁p hu₂ hu₂p hu₃ hu₃p hl₀ hl₂ hl₃
-  have hnotA : ∀ n : ℕ, c * α ≠ -(n : ℂ) := by simpa using hpa
+  have hnotA : ∀ n : ℕ, c * α ≠ -(n : ℂ) := by grind
   have hnotAShift : ∀ n : ℕ, (2 / (γ : ℂ)) * α ≠ -(n : ℂ) := by
     simpa [hcComplex] using hnotA
   have hnotAm : ∀ n : ℕ, c * (α - c) ≠ -(n : ℂ) := by
@@ -282,20 +281,18 @@ theorem dozzFormula_shift_binv {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 : γ < 2)
     ring
   have hnotV₃Shift : ∀ n : ℕ, (2 / (γ : ℂ)) * v₃ α ≠ -(n : ℂ) := by
     simpa [hcComplex] using hnotV₃
-  have hsA := IsUpsilon.shift_binv hγ hγ2 hU α hnotAShift
-  have hsAm := IsUpsilon.shift_binv hγ hγ2 hU (α - c) hnotAmShift
   have hs₀ := IsUpsilon.shift_binv hγ hγ2 hU (v₀ α) hnotV₀Shift
   have hs₁ := IsUpsilon.shift_binv hγ hγ2 hU (v₁ α) hnotV₁Shift
   have hs₂ := IsUpsilon.shift_binv hγ hγ2 hU (v₂ α) hnotV₂Shift
   have hs₃ := IsUpsilon.shift_binv hγ hγ2 hU (v₃ α) hnotV₃Shift
   have hnum : U (α + c) = k α * k (α - c) * U (α - c) := by
-    have hsA' : U (α + c) = k α * U α := by simpa [k, hcComplex, hsCast] using hsA
+    have hsA' : U (α + c) = k α * U α := by simpa [k, hcComplex, hsCast] using (IsUpsilon.shift_binv hγ hγ2 hU α hnotAShift)
     have hargAm : α - c + ((2 / γ : ℝ) : ℂ) = α := by
       rw [hcCast]
       ring
     have hsAm' : U α = k (α - c) * U (α - c) := by
       rw [← hargAm]
-      simpa [k, hcComplex, hsCast] using hsAm
+      simpa [k, hcComplex, hsCast] using (IsUpsilon.shift_binv hγ hγ2 hU (α - c) hnotAmShift)
     rw [hsAm'] at hsA'
     simpa [mul_assoc] using hsA'
   have hu₀' : U (v₀ α + c) = k (v₀ α) * U (v₀ α) := by
@@ -306,19 +303,13 @@ theorem dozzFormula_shift_binv {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 : γ < 2)
     simpa [k, hcComplex, hsCast] using hs₂
   have hu₃' : U (v₃ α + c) = k (v₃ α) * U (v₃ α) := by
     simpa [k, hcComplex, hsCast] using hs₃
-  have hv₀p : v₀p α = v₀ α + c := by dsimp [v₀p, v₀]; ring
-  have hv₁p : v₁p α = v₁ α + c := by dsimp [v₁p, v₁]; ring
-  have hv₂p : v₂p α = v₂ α + c := by dsimp [v₂p, v₂]; ring
-  have hv₃p : v₃p α = v₃ α + c := by dsimp [v₃p, v₃]; ring
+  have hv₀p : v₀p α = v₀ α + c := by ring
+  have hv₁p : v₁p α = v₁ α + c := by ring
+  have hv₂p : v₂p α = v₂ α + c := by ring
+  have hv₃p : v₃p α = v₃ α + c := by ring
   have hdenPlus : U (v₀ α + c) * U (v₁ α) * U (v₂ α + c) * U (v₃ α + c) ≠ 0 := by
     apply mul_ne_zero
-    · apply mul_ne_zero
-      · apply mul_ne_zero
-        · have h₀ : U (v₀ α + c) ≠ 0 := by rw [← hv₀p]; exact hu₀p
-          exact h₀
-        · exact hu₁
-      · have h₂ : U (v₂ α + c) ≠ 0 := by rw [← hv₂p]; exact hu₂p
-        exact h₂
+    · grind
     · have h₃ : U (v₃ α + c) ≠ 0 := by rw [← hv₃p]; exact hu₃p
       exact h₃
   have hdenMinus : U (v₀ α) * U (v₁ α + c) * U (v₂ α) * U (v₃ α) ≠ 0 := by
@@ -330,9 +321,9 @@ theorem dozzFormula_shift_binv {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 : γ < 2)
           exact h₁
       · exact hu₂
     · exact hu₃
-  have hUv₀p : U (v₀ α + c) ≠ 0 := by rw [← hv₀p]; exact hu₀p
-  have hUv₁p : U (v₁ α + c) ≠ 0 := by rw [← hv₁p]; exact hu₁p
-  have hUv₂p : U (v₂ α + c) ≠ 0 := by rw [← hv₂p]; exact hu₂p
+  have hUv₀p : U (v₀ α + c) ≠ 0 := by grind
+  have hUv₁p : U (v₁ α + c) ≠ 0 := by grind
+  have hUv₂p : U (v₂ α + c) ≠ 0 := by grind
   have hUv₃p : U (v₃ α + c) ≠ 0 := by rw [← hv₃p]; exact hu₃p
   have hargL₀ : c * v₀ α = c / 2 * α + c * d₀ := by dsimp [v₀]; ring
   have hargL₂ : c * v₂ α = c / 2 * α + c * d₂ := by dsimp [v₂]; ring
@@ -466,14 +457,13 @@ theorem dozzFormula_shift_binv {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 : γ < 2)
           s ^ ((γ : ℂ)⁻¹ * (Q γ : ℂ) * 4) := by
         rw [← hScpow]
         exact hbaseId
-      have hh' := congrArg (fun z : ℂ => z * (Real.pi : ℂ)) hh
       apply (div_eq_iff hTcPow).2
       calc
         s ^ ((γ : ℂ)⁻¹ * (Q γ : ℂ) * 4) * (Real.pi : ℂ) =
-            Tc ^ r * (-(lFun (-r)) / (Real.pi * dualMu γ μ)) * (Real.pi : ℂ) := hh'.symm
+            Tc ^ r * (-(lFun (-r)) / (Real.pi * dualMu γ μ)) * (Real.pi : ℂ) := (congrArg (fun z : ℂ => z * (Real.pi : ℂ)) hh).symm
         _ = (-lFun (-r) / dualMu γ μ) * Tc ^ r := by
           field_simp [hden]
-    let A : ℂ := Tc ^ pminus α * lFun (c * α) * lFun (c * α - c ^ 2) *
+    let A := Tc ^ pminus α * lFun (c * α) * lFun (c * α - c ^ 2) *
       lFun (c * v₁ α) * s ^ (v₀ α * (γ : ℂ)⁻¹ * 4 -
         (γ : ℂ) * (γ : ℂ)⁻¹ * 3 + v₂ α * (γ : ℂ)⁻¹ * 4 +
         v₃ α * (γ : ℂ)⁻¹ * 4)
@@ -529,7 +519,7 @@ theorem dozzFormula_shift_binv {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 : γ < 2)
   rw [show α + 2 / γ = α + c by rw [hcComplex], hαm α,
     hnum, hu₀', hu₁', hu₂', hu₃']
   linear_combination
-    (deriv U 0 * U (α - c) * U α₂ * U α₃ *
+    (deriv U 0 * U _ * U α₂ * U α₃ *
       U (v₀ α) * U (v₁ α) * U (v₂ α) * U (v₃ α)) * hscalar
 
 end DOZZ.Proofs

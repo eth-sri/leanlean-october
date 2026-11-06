@@ -6,6 +6,7 @@ module
 
 public import DOZZ.FourPoint.Dual.Domain
 import Mathlib.Tactic
+import DOZZ.Hypergeom.PhysicalRange
 
 /-! # Nonresonant parameters for the full dual seed domain
 
@@ -17,9 +18,14 @@ using the physical Gauss parameter theorem `gauss_physical_parameter_range`.
 public section
 
 namespace DOZZ.Proofs
+section
+variable (γ α ε α' : ℝ)
+section
+variable (hγ : γ ≠ 0)
+include hγ
 
 /-- The second-channel parameter satisfies C₁ = 1 − (C₀ − A − B). -/
-theorem dual_seed_channel_parameter (γ α ε α' : ℝ) (hγ : γ ≠ 0) :
+theorem dual_seed_channel_parameter :
     gaussParameterC γ (2 / γ) ε =
       1 - (gaussParameterC γ (2 / γ) α -
         gaussParameterA γ (2 / γ) α ε α' - gaussParameterB γ (2 / γ) α ε α') := by
@@ -27,17 +33,11 @@ theorem dual_seed_channel_parameter (γ α ε α' : ℝ) (hγ : γ ≠ 0) :
   field_simp
   ring
 
-/-- The first Gauss parameter is one half minus the total deficit divided by γ. -/
-theorem dual_seed_parameterA_deficits (γ α ε α' : ℝ) (hγ : γ ≠ 0) :
-    gaussParameterA γ (2 / γ) α ε α' =
-      1 / 2 - ((Q γ - α) + (Q γ - ε) + (Q γ - α')) / γ := by
-  unfold gaussParameterA Q
-  field_simp
-  ring
+
+end
 
 /-- All arguments in the two crossing multipliers lie in their strict Gamma intervals. -/
-theorem dual_seed_parameter_intervals (γ α ε α' : ℝ)
-    (hγ : 0 < γ) (hγ₂ : γ < 2)
+theorem dual_seed_parameter_intervals (hγ : 0 < γ) (hγ₂ : γ < 2)
     (hα : α < Q γ) (hε : ε < Q γ) (hα' : α' < Q γ)
     (hs : 2 * Q γ + 2 / γ < α + ε + α') :
     let A := gaussParameterA γ (2 / γ) α ε α'
@@ -51,20 +51,15 @@ theorem dual_seed_parameter_intervals (γ α ε α' : ℝ)
       1 < C₁ - A - B + 1 ∧ C₁ - A - B + 1 < 2 ∧
       0 < C₁ - A ∧ C₁ - A < 1 ∧ 0 < C₁ - B ∧ C₁ - B < 1 ∧
       0 < gaussK₂ A B C₀ := by
-  dsimp only
   obtain ⟨hA, hAB, hBC, hC, hδ, hδ₁, _, hK₂⟩ :=
-    DOZZ.gauss_physical_parameter_range γ (2 / γ) α ε α'
+    DOZZ.Proofs.gauss_physical_parameter_range γ (2 / γ) α ε α'
       hγ hγ₂ (Or.inr rfl) hs hα hε hα'
   have hC₁ := dual_seed_channel_parameter γ α ε α' hγ.ne'
   have hAhalf : gaussParameterA γ (2 / γ) α ε α' < 1 / 2 := by
-    rw [dual_seed_parameterA_deficits γ α ε α' hγ.ne']
-    have ht : 0 < ((Q γ - α) + (Q γ - ε) + (Q γ - α')) / γ :=
-      div_pos (add_pos (add_pos (sub_pos.mpr hα) (sub_pos.mpr hε))
-        (sub_pos.mpr hα')) hγ
-    linarith only [ht]
-  refine ⟨hA, hAhalf, ?_, ?_, ?_, hC, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
-    ?_, ?_, ?_, ?_, hK₂⟩ <;>
-    linarith only [hA, hAB, hBC, hC, hδ, hδ₁, hC₁]
+    linarith
+  grind
+
+end
 
 
 end DOZZ.Proofs

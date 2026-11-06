@@ -9,6 +9,8 @@ public import DOZZ.FourPoint.ReflectedOuter.InversePerturbation
 public import DOZZ.FourPoint.Reflected.ChargeShift
 public import DOZZ.Statements.FourPoint.GammaHalfOuterMoment
 import Mathlib.Tactic
+import DOZZ.Brownian.Lateral.RadialProjection
+import DOZZ.ShiftEquations.Mobius.InversionMoment
 
 /-! # The moving inverse-moment error at the relative cutoff scale -/
 
@@ -34,17 +36,17 @@ theorem reflected_outer_moving_moment_bound {Ω : Type*} [MeasurableSpace Ω]
     P X hX γ hγ hγ₂ M hM α₁ α₂ α₃ p hp.le
   obtain ⟨Ct, _, htb⟩ := reflected_outerMass_inverse_moment_uniform
     P X hX γ hγ hγ₂ M hM α₁ α₂ α₃ p hp.le
-  let A : ℝ := p * (1 / 4 : ℝ) ^ (-(p + 1))
-  have hA : 0 < A := by dsimp only [A]; positivity
+  let A := p * (1 / 4 : ℝ) ^ (-(p + 1))
+  have hA : 0 < A := by positivity
   refine ⟨A * 4 * Cs, by positivity, ?_⟩
   intro z ξ hr hr₁ hz₁ hz
-  let r : ℝ := ‖z‖ ^ (1 - ξ)
+  let r := ‖z‖ ^ (1 - ξ)
   let d : ℝ := 4 * (‖z‖ / r)
   let S : Ω → ℝ≥0∞ := fun ω => reflectedRetainedZeroMass γ α₁ α₂ α₃ r (M ω)
   let T : Ω → ℝ≥0∞ := fun ω => gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ
   let R : Ω → ℝ≥0∞ := fun ω => ENNReal.ofReal (A * d) * S ω ^ (-p)
-  have hd : 0 ≤ d := by dsimp only [d]; positivity
-  have hm := gmc_measure_aemeasurable_of_isGMCOf P X hX γ hγ hγ₂ M hM
+  have hd : 0 ≤ d := by positivity
+  have hm := DOZZ.Proofs.equatorGFF_GMC_aemeasurable P X hX γ hγ hγ₂ M hM
   have hSm : AEMeasurable S P :=
     (reflected_retainedZero_measure_measurable γ α₁ α₂ α₃ r).comp_aemeasurable hm
   have hTm : AEMeasurable T P :=
@@ -52,18 +54,17 @@ theorem reflected_outer_moving_moment_bound {Ω : Type*} [MeasurableSpace Ω]
   have hSt : (∫⁻ ω, S ω ^ (-p) ∂P) ≠ ⊤ := ne_top_of_le_ne_top ENNReal.ofReal_ne_top (hsb r hr₁)
   have hTt : (∫⁻ ω, T ω ^ (-p) ∂P) ≠ ⊤ := ne_top_of_le_ne_top ENNReal.ofReal_ne_top (htb z ξ hz₁ hr₁)
   have hRb : (∫⁻ ω, R ω ∂P) ≤ ENNReal.ofReal ((A * 4 * Cs) * (‖z‖ / r)) := by
-    dsimp only [R]
     rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
     calc
-      _ ≤ ENNReal.ofReal (A * d) * ENNReal.ofReal Cs := mul_le_mul' le_rfl (hsb r hr₁)
+      _ ≤ ENNReal.ofReal _ * ENNReal.ofReal Cs := mul_le_mul' le_rfl (hsb r hr₁)
       _ = _ := by rw [← ENNReal.ofReal_mul (mul_nonneg hA.le hd)]; congr 1; dsimp only [d]; ring
   have hRt := ne_top_of_le_ne_top ENNReal.ofReal_ne_top hRb
   have hcomp : ∀ᵐ ω ∂P,
       T ω ^ (-p) ≤ S ω ^ (-p) + R ω ∧ S ω ^ (-p) ≤ T ω ^ (-p) + R ω := by
     filter_upwards [reflected_retainedZero_ae_positive_finite P X hX γ hγ hγ₂ M hM
       α₁ α₂ α₃ r hr₁ hα₁ hα₂ hα₃,
-      gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ₂ M hM 0,
-      gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ₂ M hM 1] with ω hpf h0 h1
+      DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ₂ M hM 0,
+      DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ₂ M hM 1] with ω hpf h0 h1
     have hsfin : S ω ≠ ⊤ := ne_top_of_le_ne_top hpf.2.ne
       (reflected_retainedZero_le_full γ α₁ α₂ α₃ r (M ω))
     obtain ⟨hl, hu, hv⟩ := reflected_outerMass_relative_comparison
@@ -76,7 +77,6 @@ theorem reflected_outer_moving_moment_bound {Ω : Type*} [MeasurableSpace Ω]
   calc
     _ ≤ (∫⁻ ω, R ω ∂P).toReal := hh
     _ ≤ (A * 4 * Cs) * (‖z‖ / r) := by
-      have ht := ENNReal.toReal_mono ENNReal.ofReal_ne_top hRb
-      simpa only [ENNReal.toReal_ofReal (by positivity : 0 ≤ (A * 4 * Cs) * (‖z‖ / r))] using ht
+      simpa only [ENNReal.toReal_ofReal (by positivity : 0 ≤ (A * 4 * Cs) * (‖z‖ / r))] using (ENNReal.toReal_mono ENNReal.ofReal_ne_top hRb)
 
 end DOZZ.Proofs

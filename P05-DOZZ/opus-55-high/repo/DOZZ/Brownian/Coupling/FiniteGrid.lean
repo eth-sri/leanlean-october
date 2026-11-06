@@ -26,21 +26,6 @@ namespace DOZZ.Proofs
 
 abbrev CoupledEntranceGridPath (J : Type*) (n : ℕ) := J → ConditionedEntranceGridPath n
 
-/-- The shared scalar driving input is uniform on the open unit interval. -/
-theorem coupling_unitInput_isProbabilityMeasure :
-    IsProbabilityMeasure (volume : Measure ConditionedUnitInput) := by
-  have hcoe : (volume : Measure ConditionedUnitInput).map Subtype.val = uniformOpenUnit := by
-    rw [MeasurableSet.map_coe_volume measurableSet_Ioo, uniformOpenUnit]
-  constructor
-  calc
-    (volume : Measure ConditionedUnitInput) univ =
-        ((volume : Measure ConditionedUnitInput).map Subtype.val) univ := by
-      rw [Measure.map_apply measurable_subtype_coe MeasurableSet.univ]
-      simp
-    _ = uniformOpenUnit univ := by rw [hcoe]
-    _ = 1 := by simp [uniformOpenUnit, Real.volume_Ioo]
-
-/-- The first states at all drifts, sampled with one common uniform variable. -/
 noncomputable def coupledEntranceGridInitial {J : Type*}
     (v : J → ℝ≥0) (t₀ : ℝ) (ht₀ : 0 < t₀) (u : ConditionedUnitInput) :
     CoupledEntranceGridPath J 0 :=
@@ -54,7 +39,7 @@ theorem measurable_coupledEntranceGridInitial {J : Type*}
   apply measurable_pi_iff.mpr
   intro i
   have hinput : Measurable (fun u : ConditionedUnitInput => fun _ : ℕ => u) :=
-    measurable_pi_iff.mpr fun _ => measurable_id
+    by fun_prop
   exact (measurable_conditionedPositiveEntranceQuantileWalkOn
     (v j) t₀ (fun _ => 1) (NNReal.coe_nonneg (v j)) ht₀ (fun _ => by norm_num) 0).comp hinput
 
@@ -69,10 +54,8 @@ noncomputable def coupledEntranceGridAppend {J : Type*}
 theorem coupling_measurable_scalarAppend (ν : ℝ) (hν : 0 ≤ ν)
     (dt : ℕ → ℝ) (hdt : ∀ n, 0 < dt n) (n : ℕ) :
     Measurable (conditionedPositiveEntranceGridAppend ν dt hν hdt n) := by
-  have hreal := measurable_conditionedTransitionQuantileOn ν (dt n) hν (hdt n)
   have hsampler : Measurable (conditionedPositiveTransitionQuantilePairOnSubtype
-      ν (dt n) hν (hdt n)) := by
-    exact hreal.subtype_mk (h := fun z =>
+      ν (dt n) hν (hdt n)) := (measurable_conditionedTransitionQuantileOn ν (dt n) hν (hdt n)).subtype_mk (h := fun z =>
       conditionedPositiveTransitionQuantile_pos hν (hdt n) z.1.2 z.2.2.1 z.2.2.2)
   have hstep : Measurable (fun z : ConditionedEntranceGridPath n × ConditionedUnitInput =>
       conditionedPositiveEntranceGridStep ν dt hν hdt n z.1 z.2) :=
@@ -82,15 +65,14 @@ theorem coupling_measurable_scalarAppend (ν : ℝ) (hν : 0 ≤ ν)
   intro i
   induction i using Fin.lastCases with
   | last =>
-      have heq : (fun z : ConditionedEntranceGridPath n × ConditionedUnitInput =>
+      have heq : (fun z =>
           conditionedPositiveEntranceGridAppend ν dt hν hdt n z (Fin.last (n + 1))) =
           (fun z => conditionedPositiveEntranceGridStep ν dt hν hdt n z.1 z.2) := by
         funext z
         exact conditionedPositiveEntranceGridAppend_last ν dt hν hdt n z
-      rw [heq]
-      exact hstep
+      rwa [heq]
   | cast i =>
-      have heq : (fun z : ConditionedEntranceGridPath n × ConditionedUnitInput =>
+      have heq : (fun z =>
           conditionedPositiveEntranceGridAppend ν dt hν hdt n z i.castSucc) =
           (fun z => z.1 i) := by
         funext z
@@ -104,8 +86,8 @@ theorem measurable_coupledEntranceGridAppend {J : Type*}
   apply measurable_pi_iff.mpr
   intro j
   have hproj : Measurable (fun z : CoupledEntranceGridPath J n × ConditionedUnitInput =>
-      (z.1 j, z.2)) := ((measurable_pi_apply j).comp measurable_fst).prodMk measurable_snd
-  exact (coupling_measurable_scalarAppend (v j) (NNReal.coe_nonneg (v j)) dt hdt n).comp hproj
+      (z.1 j, z.2)) := by fun_prop
+  exact (coupling_measurable_scalarAppend (v j) _ dt hdt n).comp hproj
 
 /-- The actual joint finite-grid law, built by ordinary finite product extensions. -/
 noncomputable def coupledEntranceGridMeasure {J : Type*}
@@ -114,12 +96,12 @@ noncomputable def coupledEntranceGridMeasure {J : Type*}
   | 0 => (volume : Measure ConditionedUnitInput).map (coupledEntranceGridInitial v t₀ ht₀)
   | n + 1 => ((coupledEntranceGridMeasure v t₀ dt ht₀ hdt n).prod
       (volume : Measure ConditionedUnitInput)).map (coupledEntranceGridAppend v dt hdt n)
+section
+variable {J : Type*} (v : J → ℝ≥0) (t₀ : ℝ) (dt : ℕ → ℝ) (ht₀ : 0 < t₀) (hdt : ∀ n, 0 < dt n)
 
 /-- Every joint grid stage is a probability law, with no path-law existence premise. -/
-theorem coupledEntranceGridMeasure_isProbabilityMeasure {J : Type*}
-    (v : J → ℝ≥0) (t₀ : ℝ) (dt : ℕ → ℝ) (ht₀ : 0 < t₀) (hdt : ∀ n, 0 < dt n)
-    (n : ℕ) : IsProbabilityMeasure (coupledEntranceGridMeasure v t₀ dt ht₀ hdt n) := by
-  let _ := coupling_unitInput_isProbabilityMeasure
+theorem coupledEntranceGridMeasure_isProbabilityMeasure (n : ℕ) : IsProbabilityMeasure (coupledEntranceGridMeasure v t₀ dt ht₀ hdt n) := by
+  let _ := DOZZ.Proofs.isProbabilityMeasure_unitInput
   induction n with
   | zero =>
       exact (Measure.isProbabilityMeasure_map_iff
@@ -130,12 +112,10 @@ theorem coupledEntranceGridMeasure_isProbabilityMeasure {J : Type*}
         (measurable_coupledEntranceGridAppend v dt hdt n).aemeasurable).mpr inferInstance
 
 /-- A coordinate marginal is exactly the previously constructed entrance/transition chain. -/
-theorem coupledEntranceGridMeasure_coordinate_map {J : Type*}
-    (v : J → ℝ≥0) (t₀ : ℝ) (dt : ℕ → ℝ) (ht₀ : 0 < t₀) (hdt : ∀ n, 0 < dt n)
-    (j : J) (n : ℕ) :
+theorem coupledEntranceGridMeasure_coordinate_map (j : J) (n : ℕ) :
     (coupledEntranceGridMeasure v t₀ dt ht₀ hdt n).map (fun x => x j) =
       conditionedPositiveEntranceGridMeasure (v j) t₀ dt (NNReal.coe_nonneg (v j)) ht₀ hdt n := by
-  let _ := coupling_unitInput_isProbabilityMeasure
+  let _ := DOZZ.Proofs.isProbabilityMeasure_unitInput
   induction n with
   | zero =>
       rw [coupledEntranceGridMeasure,
@@ -144,17 +124,16 @@ theorem coupledEntranceGridMeasure_coordinate_map {J : Type*}
   | succ n ih =>
       let μ := coupledEntranceGridMeasure v t₀ dt ht₀ hdt n
       let U : Measure ConditionedUnitInput := volume
-      let _ : IsProbabilityMeasure μ :=
+      let _ :=
         coupledEntranceGridMeasure_isProbabilityMeasure v t₀ dt ht₀ hdt n
       have hm : Measurable (fun z : CoupledEntranceGridPath J n × ConditionedUnitInput =>
-          (z.1 j, z.2)) := ((measurable_pi_apply j).comp measurable_fst).prodMk measurable_snd
+          (z.1 j, z.2)) := by fun_prop
       have happend : Measurable
           (conditionedPositiveEntranceGridAppend (v j) dt (NNReal.coe_nonneg (v j)) hdt n) := by
-        have h := measurable_coupledEntranceGridAppend (fun _ : Unit => v j) dt hdt n
         have hin : Measurable (fun z : ConditionedEntranceGridPath n × ConditionedUnitInput =>
             ((fun _ : Unit => z.1), z.2)) :=
-          (measurable_pi_iff.mpr fun _ => measurable_fst).prodMk measurable_snd
-        exact (measurable_pi_apply ()).comp (h.comp hin)
+          by fun_prop
+        exact (measurable_pi_apply ()).comp ((measurable_coupledEntranceGridAppend (fun _ : Unit => v j) dt hdt n).comp hin)
       have hprod : (μ.prod U).map (fun z => (z.1 j, z.2)) =
           (μ.map (fun x => x j)).prod U := by
         change (μ.prod U).map (Prod.map (fun x => x j) id) = _
@@ -162,13 +141,15 @@ theorem coupledEntranceGridMeasure_coordinate_map {J : Type*}
       rw [coupledEntranceGridMeasure,
         Measure.map_map (measurable_pi_apply j) (measurable_coupledEntranceGridAppend v dt hdt n)]
       change (μ.prod U).map
-        (conditionedPositiveEntranceGridAppend (v j) dt (NNReal.coe_nonneg (v j)) hdt n ∘
+        (conditionedPositiveEntranceGridAppend (v j) dt _ hdt n ∘
           (fun z => (z.1 j, z.2))) = _
       rw [← Measure.map_map happend hm, hprod]
       change ((coupledEntranceGridMeasure v t₀ dt ht₀ hdt n).map (fun x => x j) |>.prod U).map
-        (conditionedPositiveEntranceGridAppend (v j) dt (NNReal.coe_nonneg (v j)) hdt n) = _
+        (conditionedPositiveEntranceGridAppend (v j) dt _ hdt n) = _
       rw [ih]
       rfl
+
+end
 
 /-- Elapsed time at a grid coordinate, including the first entrance sampling time. -/
 def coupledEntranceGridTime (t₀ : ℝ) (dt : ℕ → ℝ) (n : ℕ) : ℝ :=
@@ -185,10 +166,13 @@ def coupledEntranceGridOrderSet {J : Type*} (v : J → ℝ≥0) (t₀ : ℝ) (dt
   {x | ∀ j k, v j ≤ v k → ∀ i : Fin (n + 1),
     (x j i).1 ≤ (x k i).1 ∧ (x k i).1 ≤
       (x j i).1 + ((v k : ℝ) - (v j : ℝ)) * coupledEntranceGridTime t₀ dt i.1}
+section
+variable {J : Type*}
+section
+variable (v : J → ℝ≥0) (t₀ : ℝ) (dt : ℕ → ℝ)
 
 /-- The finite-grid constraints are closed in the countable product of finite path carriers. -/
-theorem isClosed_coupledEntranceGridOrderSet {J : Type*}
-    (v : J → ℝ≥0) (t₀ : ℝ) (dt : ℕ → ℝ) (n : ℕ) :
+theorem isClosed_coupledEntranceGridOrderSet (n : ℕ) :
     IsClosed (coupledEntranceGridOrderSet v t₀ dt n) := by
   simp only [coupledEntranceGridOrderSet, ofPred_forall]
   apply isClosed_iInter
@@ -200,33 +184,30 @@ theorem isClosed_coupledEntranceGridOrderSet {J : Type*}
   apply isClosed_iInter
   intro i
   have hj : Continuous (fun x : CoupledEntranceGridPath J n => (x j i).1) :=
-    continuous_subtype_val.comp ((continuous_apply i).comp (continuous_apply j))
+    by fun_prop
   have hk : Continuous (fun x : CoupledEntranceGridPath J n => (x k i).1) :=
-    continuous_subtype_val.comp ((continuous_apply i).comp (continuous_apply k))
+    by fun_prop
   exact (isClosed_le hj hk).inter (isClosed_le hk (hj.add continuous_const))
 
 /-- A shared entrance quantile satisfies both parameter inequalities at the first time. -/
-theorem coupledEntranceGridInitial_mem_orderSet {J : Type*}
-    (v : J → ℝ≥0) (t₀ : ℝ) (dt : ℕ → ℝ) (ht₀ : 0 < t₀) (u : ConditionedUnitInput) :
+theorem coupledEntranceGridInitial_mem_orderSet (ht₀ : 0 < t₀) (u : ConditionedUnitInput) :
     coupledEntranceGridInitial v t₀ ht₀ u ∈ coupledEntranceGridOrderSet v t₀ dt 0 := by
   intro j k hjk i
-  have hij : (v j : ℝ) ≤ (v k : ℝ) := hjk
+  have hij := hjk
   have hle := conditionedPositiveEntranceQuantile_drift_le (NNReal.coe_nonneg (v j)) hij ht₀ u.2.1 u.2.2
   have hadd := conditionedPositiveEntranceQuantile_drift_add (NNReal.coe_nonneg (v j)) hij ht₀ u.2.1 u.2.2
-  change cdfGeneralizedQuantile (cdf (conditionedPositiveEntranceMeasure (v j) t₀)) u.1 ≤
-      cdfGeneralizedQuantile (cdf (conditionedPositiveEntranceMeasure (v k) t₀)) u.1 ∧
-    cdfGeneralizedQuantile (cdf (conditionedPositiveEntranceMeasure (v k) t₀)) u.1 ≤
-      cdfGeneralizedQuantile (cdf (conditionedPositiveEntranceMeasure (v j) t₀)) u.1 +
-        ((v k : ℝ) - (v j : ℝ)) * coupledEntranceGridTime t₀ dt i.1
+  change cdfGeneralizedQuantile _ u.1 ≤
+      cdfGeneralizedQuantile _ u.1 ∧
+    cdfGeneralizedQuantile _ u.1 ≤
+      cdfGeneralizedQuantile _ u.1 +
+        ((v k) - (v j)) * coupledEntranceGridTime t₀ dt i.1
   have htime : coupledEntranceGridTime t₀ dt i.1 = t₀ := by
     rw [Fin.eq_zero i]
     simp [coupledEntranceGridTime]
-  rw [htime]
-  exact ⟨hle, hadd⟩
+  simp_all
 
 /-- A shared transition preserves the drift order and adds only drift gap times elapsed time. -/
-theorem coupledEntranceGridAppend_mem_orderSet {J : Type*}
-    (v : J → ℝ≥0) (t₀ : ℝ) (dt : ℕ → ℝ) (hdt : ∀ n, 0 < dt n) (n : ℕ)
+theorem coupledEntranceGridAppend_mem_orderSet (hdt : ∀ n, 0 < dt n) (n : ℕ)
     (x : CoupledEntranceGridPath J n) (u : ConditionedUnitInput)
     (hx : x ∈ coupledEntranceGridOrderSet v t₀ dt n) :
     coupledEntranceGridAppend v dt hdt n (x, u) ∈ coupledEntranceGridOrderSet v t₀ dt (n + 1) := by
@@ -234,7 +215,7 @@ theorem coupledEntranceGridAppend_mem_orderSet {J : Type*}
   induction i using Fin.lastCases with
   | cast i =>
       dsimp only [coupledEntranceGridAppend]
-      change (conditionedPositiveEntranceGridAppend (v j) dt (NNReal.coe_nonneg (v j)) hdt n (x j, u)
+      change (conditionedPositiveEntranceGridAppend (v j) dt _ hdt n _
           i.castSucc).1 ≤ _ ∧ _
       rw [conditionedPositiveEntranceGridAppend_castSucc,
         conditionedPositiveEntranceGridAppend_castSucc]
@@ -251,8 +232,8 @@ theorem coupledEntranceGridAppend_mem_orderSet {J : Type*}
       have hhiDrift := conditionedTransitionQuantile_drift_add (NNReal.coe_nonneg (v j)) hij (hdt n)
         (x j (Fin.last n)).2 u.2.1 u.2.2
       dsimp only [coupledEntranceGridAppend]
-      change (conditionedPositiveEntranceGridAppend (v j) dt (NNReal.coe_nonneg (v j)) hdt n (x j, u)
-          (Fin.last (n + 1))).1 ≤ _ ∧ _
+      change (conditionedPositiveEntranceGridAppend (v j) dt _ hdt n _
+          (Fin.last _)).1 ≤ _ ∧ _
       rw [conditionedPositiveEntranceGridAppend_last, conditionedPositiveEntranceGridAppend_last]
       change conditionedTransitionQuantile (v j) (dt n) (x j (Fin.last n)).1 u.1 ≤
           conditionedTransitionQuantile (v k) (dt n) (x k (Fin.last n)).1 u.1 ∧
@@ -261,16 +242,18 @@ theorem coupledEntranceGridAppend_mem_orderSet {J : Type*}
             ((v k : ℝ) - (v j : ℝ)) * coupledEntranceGridTime t₀ dt (n + 1)
       rw [coupledEntranceGridTime_succ]
       refine ⟨hloDrift.trans hloStart, ?_⟩
-      simp only [Fin.val_last] at hprev
-      nlinarith [hprev.2]
+      simp at hprev
+      nlinarith
+
+end
 
 /-- One common full-probability event carries every drift pair and every finite grid coordinate. -/
-theorem coupledEntranceGridMeasure_order_ae {J : Type*} [Countable J]
+theorem coupledEntranceGridMeasure_order_ae [Countable J]
     (v : J → ℝ≥0) (t₀ : ℝ) (dt : ℕ → ℝ) (ht₀ : 0 < t₀) (hdt : ∀ n, 0 < dt n)
     (n : ℕ) :
     ∀ᵐ x ∂coupledEntranceGridMeasure v t₀ dt ht₀ hdt n,
       x ∈ coupledEntranceGridOrderSet v t₀ dt n := by
-  let _ := coupling_unitInput_isProbabilityMeasure
+  let _ := DOZZ.Proofs.isProbabilityMeasure_unitInput
   induction n with
   | zero =>
       apply (ae_map_iff (measurable_coupledEntranceGridInitial v t₀ ht₀).aemeasurable
@@ -278,10 +261,12 @@ theorem coupledEntranceGridMeasure_order_ae {J : Type*} [Countable J]
       exact ae_of_all _ (coupledEntranceGridInitial_mem_orderSet v t₀ dt ht₀)
   | succ n ih =>
       apply (ae_map_iff (measurable_coupledEntranceGridAppend v dt hdt n).aemeasurable
-        (isClosed_coupledEntranceGridOrderSet v t₀ dt (n + 1)).measurableSet).mpr
+        (isClosed_coupledEntranceGridOrderSet v t₀ dt _).measurableSet).mpr
       have hfirst := (measurePreserving_fst
         (μ := coupledEntranceGridMeasure v t₀ dt ht₀ hdt n)
         (ν := (volume : Measure ConditionedUnitInput))).quasiMeasurePreserving.ae ih
       exact hfirst.mono fun z hz => coupledEntranceGridAppend_mem_orderSet v t₀ dt hdt n z.1 z.2 hz
+
+end
 
 end DOZZ.Proofs

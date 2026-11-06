@@ -28,7 +28,7 @@ theorem twoRooted_intermediate_optimized_bound
         gammaHalfTwoRootedMajorantOn P M γ α₁ α₂ α₃ p z
           (Metric.ball 0 ρ \ Metric.ball z d) ≤
             ENNReal.ofReal (C * (d⁻¹) ^ 2 * ρ ^ ((γ / 2 + Q γ - α₁) ^ 2 / (2 * q))) := by
-  let s : ℝ := (γ / 2 + Q γ - α₁) / (γ * q)
+  let s := (γ / 2 + Q γ - α₁) / (γ * q)
   obtain ⟨hs, hs2, hrange, hopt⟩ := twoRooted_optimized_order γ α₁ q hγ hγ2 hγsq hα₁ hα₁2 hq
   have hαQ : α₁ < Q γ := by unfold Q; linarith only [hα₁2, hγ]
   obtain ⟨C, hC, hbound⟩ := twoRooted_intermediate_physical_bound P X hX γ hγ hγ2 M hM
@@ -37,7 +37,7 @@ theorem twoRooted_intermediate_optimized_bound
       (γ / 2 + Q γ - α₁) ^ 2 / (2 * q) := by
     calc
       _ = γ * (Q γ - α₁ + γ / 2) * s - γ ^ 2 * q * s ^ 2 / 2 := by
-        have hq0 : q ≠ 0 := (zero_lt_one.trans hq).ne'
+        have hq0 := (zero_lt_one.trans hq).ne'
         field_simp
         ring
       _ = _ := hopt

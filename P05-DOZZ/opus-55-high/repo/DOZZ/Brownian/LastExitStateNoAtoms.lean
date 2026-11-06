@@ -33,60 +33,50 @@ theorem ae_conditionedPositiveStateAt_ne
   let X : BrownianPath → Fin 1 → ℝ := fun p _ => -(p t)
   let f : (Fin 1 → ℝ) → ℝ≥0∞ := fun z => ENNReal.ofReal
     (max 0 (conditionedPositiveFDDDensity ν [t] [z 0]))
-  have htimes : ∀ i, 0 < (times i : ℝ) := fun _ => ht
+  have htimes : ∀ i, 0 < (times i) := fun _ => ht
   have hmono : StrictMono times := by
     intro i j hij
-    fin_cases i
-    fin_cases j
-    exact False.elim (by simp at hij)
+    omega
   have hfdd := negativeConditionedLaw_positiveFDD hP 1 (by norm_num)
     times htimes hmono
   have hfd : P.map X =
-      (volume : Measure (Fin 1 → ℝ)).withDensity f := by
-    simpa [X, times, f] using hfdd
+      volume.withDensity f := by
+    assumption
   have hcoord : Measurable (fun z : Fin 1 → ℝ => z 0) := measurable_pi_apply 0
   have hX : Measurable X := by
-    apply measurable_pi_iff.mpr
-    intro i
-    exact (ContinuousMap.measurable_eval t).neg
+    fun_prop
   have hstate : P.map (conditionedPositiveStateAt t) =
-      ((volume : Measure (Fin 1 → ℝ)).withDensity f).map
+      (volume.withDensity f).map
         (fun z : Fin 1 → ℝ => z 0) := by
     calc
       P.map (conditionedPositiveStateAt t) = (P.map X).map
           (fun z : Fin 1 → ℝ => z 0) := by
         rw [Measure.map_map hcoord hX]
         congr 1
-      _ = _ := congrArg (fun μ : Measure (Fin 1 → ℝ) => μ.map
-        (fun z : Fin 1 → ℝ => z 0)) hfd
+      _ = _ := by simp_all
   have hcoordSet :
-      (fun z : Fin 1 → ℝ => z 0) ⁻¹' ({a} : Set ℝ) =
+      (fun z : Fin 1 → ℝ => z 0) ⁻¹' ({a}) =
         {z : Fin 1 → ℝ | z 0 = a} := by
-    ext z
-    simp
-  have hnull : (volume : Measure (Fin 1 → ℝ))
+    rfl
+  have hnull : volume
       {z : Fin 1 → ℝ | z 0 = a} = 0 := by
-    have hpi : ({z : Fin 1 → ℝ | z 0 = a} : Set (Fin 1 → ℝ)) =
-        Set.pi Set.univ (fun _ : Fin 1 => ({a} : Set ℝ)) := by
-      ext z
-      simp
+    have hpi : ({z : Fin 1 → ℝ | z 0 = a}) =
+        Set.pi Set.univ (fun _ : Fin 1 => ({a})) := by
+      aesop
     rw [hpi, volume_pi_pi]
     simp
   have hset : MeasurableSet ({z : Fin 1 → ℝ | z 0 = a}) :=
-    (measurableSet_singleton a).preimage (measurable_pi_apply 0)
-  have hdensityNull : ((volume : Measure (Fin 1 → ℝ)).withDensity f)
+    by measurability
+  have hdensityNull : (volume.withDensity f)
       {z : Fin 1 → ℝ | z 0 = a} = 0 := by
     rw [withDensity_apply f hset]
-    have hrestrict : (volume : Measure (Fin 1 → ℝ)).restrict
-        {z : Fin 1 → ℝ | z 0 = a} = 0 := Measure.restrict_eq_zero.mpr hnull
-    change (∫⁻ z, f z ∂((volume : Measure (Fin 1 → ℝ)).restrict
+    change (∫⁻ z, f z ∂(volume.restrict
       {z : Fin 1 → ℝ | z 0 = a})) = 0
-    rw [hrestrict]
+    rw [(Measure.restrict_eq_zero.mpr hnull)]
     simp
   have hstateNull : (P.map (conditionedPositiveStateAt t)) {a} = 0 := by
-    rw [hstate, Measure.map_apply hcoord (measurableSet_singleton a), hcoordSet]
-    exact hdensityNull
-  have hpre : (conditionedPositiveStateAt t) ⁻¹' ({a} : Set ℝ) =
+    rwa [hstate, Measure.map_apply hcoord (measurableSet_singleton a), hcoordSet]
+  have hpre : (conditionedPositiveStateAt t) ⁻¹' ({a}) =
       {p : BrownianPath | conditionedPositiveStateAt t p = a} := by
     ext p
     simp

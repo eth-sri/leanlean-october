@@ -50,7 +50,7 @@ theorem exists_path_subdivision {γ : ℝ → ℂ}
         ((i + 1 : ℕ) : ℝ) / (N : ℝ) - (i : ℝ) / (N : ℝ) = 1 / (N : ℝ) := by
       rw [Nat.cast_add, Nat.cast_one]
       ring
-    rw [show (i : ℝ) / (N : ℝ) - ((i + 1 : ℕ) : ℝ) / (N : ℝ) = -(1 / (N : ℝ)) by linarith [hdiff], abs_neg,
+    rw [show (i : ℝ) / (N : ℝ) - ((i + 1 : ℕ) : ℝ) / (N : ℝ) = -(1 / (N : ℝ)) by linarith, abs_neg,
       abs_of_pos (one_div_pos.mpr hN)]
     exact hgap
   refine ⟨?_, ?_⟩
@@ -84,31 +84,24 @@ theorem exists_equal_subdivision_interval (N : ℕ) (hN : 0 < N)
       t ≤ ((i + 1 : ℕ) : ℝ) / (N : ℝ) ∧
       (t < ((i + 1 : ℕ) : ℝ) / (N : ℝ) ∨ t = 1) := by
   have hNreal : 0 < (N : ℝ) := by exact_mod_cast hN
-  let x : ℝ := (N : ℝ) * t
+  let x := (N : ℝ) * t
   have hxnonneg : 0 ≤ x := by
-    dsimp [x]
     exact mul_nonneg (by positivity) ht.1
   have hxupper : x ≤ (N : ℝ) := by
-    dsimp [x]
     nlinarith [ht.2]
-  let q : ℕ := Nat.floor x
+  let q := Nat.floor x
   have hqle : (q : ℝ) ≤ x := by
-    dsimp [q]
     exact Nat.floor_le hxnonneg
   have hqN : q ≤ N := by
     exact_mod_cast hqle.trans hxupper
-  let i : ℕ := min q (N - 1)
+  let i := min q (N - 1)
   have hiN : i < N := by
-    dsimp [i]
     omega
   have hix : (i : ℝ) ≤ x := by
-    dsimp [i]
     exact (Nat.cast_le.mpr (Nat.min_le_left q (N - 1))).trans hqle
   have hxupper' : x ≤ (i + 1 : ℕ) := by
     by_cases hqLt : q < N
     · have hiq : i = q := by
-        dsimp [i]
-        rw [Nat.min_eq_left]
         omega
       rw [hiq]
       have hstrict : x < (q + 1 : ℕ) := by
@@ -116,8 +109,6 @@ theorem exists_equal_subdivision_interval (N : ℕ) (hN : 0 < N)
       exact hstrict.le
     · have hqEq : q = N := by omega
       have hiEq : i = N - 1 := by
-        dsimp [i]
-        rw [Nat.min_eq_right]
         omega
       rw [hiEq]
       have hsucc : N - 1 + 1 = N := by omega
@@ -132,8 +123,6 @@ theorem exists_equal_subdivision_interval (N : ℕ) (hN : 0 < N)
   refine ⟨i, hiN, hleft, hright, ?_⟩
   by_cases hqLt : q < N
   · have hiq : i = q := by
-      dsimp [i]
-      rw [Nat.min_eq_left]
       omega
     have hstrict : x < (q + 1 : ℕ) := by
       simpa [q] using Nat.lt_floor_add_one x
@@ -146,8 +135,7 @@ theorem exists_equal_subdivision_interval (N : ℕ) (hN : 0 < N)
     have hxEq : x = (N : ℝ) := le_antisymm hxupper (by
       simpa [q, hqEq] using hqle)
     have htEq : t = 1 := by
-      dsimp [x] at hxEq
-      nlinarith [hNreal]
+      nlinarith
     exact Or.inr htEq
 
 end DOZZ.Proofs

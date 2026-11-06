@@ -13,10 +13,12 @@ public import DOZZ.Statements.Correlations.LocalSingularMass
 open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal Classical
 namespace DOZZ.Proofs
+section
+variable (γ a b c : ℝ)
 
 /-- The actual Coulomb density is the local singular density of `DOZZ.localSingularMass` on the
 unit ball. Only the atomless roots themselves are excluded. -/
-theorem residue_local_coulomb_integrand (γ a b c : ℝ) (z w x : ℂ)
+theorem residue_local_coulomb_integrand (z w x : ℂ)
     (hz : 2 ≤ ‖z‖) (hz8 : ‖z‖ ≤ 8) (hzw : 3 ≤ ‖z - w‖)
     (hx : x ∈ Metric.ball z 1) (hxz : x ≠ z) (hxw : x ≠ w) :
     ENNReal.ofReal (residueLocalWeight γ (a + b + c) b w x) *
@@ -25,8 +27,8 @@ theorem residue_local_coulomb_integrand (γ a b c : ℝ) (z w x : ℂ)
   have hd : ‖x - z‖ < 1 := by simpa only [Metric.mem_ball, dist_eq_norm] using hx
   have hzbound : ‖z‖ ≤ ‖x - z‖ + ‖x‖ := by
     simpa only [norm_sub_rev, sub_add_cancel] using norm_add_le (z - x) x
-  have hn1 : 1 ≤ ‖x‖ := by linarith only [hz, hd, hzbound]
-  have hn : 0 < ‖x‖ := lt_of_lt_of_le zero_lt_one hn1
+  have hn1 : 1 ≤ ‖x‖ := by linarith
+  have hn := lt_of_lt_of_le zero_lt_one hn1
   have hnp : normPlus x = ‖x‖ := max_eq_right hn1
   have hzpos : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
   have hwpos : 0 < ‖x - w‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxw)
@@ -51,7 +53,7 @@ theorem residue_local_coulomb_integrand (γ a b c : ℝ) (z w x : ℂ)
 /-- Exact decomposition, including the entire noncritical root and infinity region in the
 complement. Root atomlessness makes the integrand convention of `DOZZ.coulombMass` at the roots
 irrelevant. -/
-theorem residue_mass_decomposition (γ a b c : ℝ) (z w : ℂ)
+theorem residue_mass_decomposition (z w : ℂ)
     (hz : 2 ≤ ‖z‖) (hz8 : ‖z‖ ≤ 8) (hzw : 3 ≤ ‖z - w‖)
     (μ : Measure ℂ) (hμz : μ {z} = 0) (hμw : μ {w} = 0) :
     coulombMass γ μ ![a, b] ![z, w] c =
@@ -62,8 +64,8 @@ theorem residue_mass_decomposition (γ a b c : ℝ) (z w : ℂ)
   have hF : Measurable (residueLocalWeight γ (a + b + c) b w) := by
     unfold residueLocalWeight
     fun_prop
-  have hloc : Measurable (fun x : ℂ => if x ∈ Metric.ball z 1 then
-      ENNReal.ofReal (residueLocalWeight γ (a + b + c) b w x) *
+  have hloc : Measurable (fun x => if x ∈ Metric.ball z 1 then
+      ENNReal.ofReal _ *
         ENNReal.rpow (ENNReal.ofReal ‖x - z‖) (-γ * a) else 0) :=
     Measurable.ite Metric.isOpen_ball.measurableSet
       ((ENNReal.measurable_ofReal.comp hF).mul
@@ -77,5 +79,7 @@ theorem residue_mass_decomposition (γ a b c : ℝ) (z w : ℂ)
   · simp only [hx, ite_true, not_true_eq_false, ite_false, add_zero]
     exact (residue_local_coulomb_integrand γ a b c z w x hz hz8 hzw hx hxz hxw).symm
   · simp only [hx, ite_false, not_false_eq_true, ite_true, zero_add]
+
+end
 
 end DOZZ.Proofs

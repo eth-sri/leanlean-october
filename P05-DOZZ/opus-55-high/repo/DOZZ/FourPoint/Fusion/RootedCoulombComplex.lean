@@ -34,8 +34,8 @@ theorem fusion_rooted_coulomb_complex_integral {Ω : Type*} [MeasurableSpace Ω]
       ∫ u, f u *
         ((∫⁻ ω, coulombMass γ (gmcRootedMeasure γ u (M ω)) α z αinf ^ s ∂P).toReal : ℂ)
         ∂gmcReferenceMeasure := by
-  let G := fun μ : Measure ℂ => coulombMass γ μ α z αinf ^ s
-  have hG : Measurable G := (fusion_measurable_coulombMass γ α z αinf).pow_const s
+  let G := fun μ => coulombMass γ μ α z αinf ^ s
+  have hG := (fusion_measurable_coulombMass γ α z αinf).pow_const s
   obtain ⟨C, hC, hbound⟩ := fusion_rootedMass_inverse_moment_uniform P X hX γ hγ hγ2 M hM
     α αinf s hs.le
   have hb : (∫⁻ u, ENNReal.ofReal ‖f u‖ *
@@ -50,8 +50,8 @@ theorem fusion_rooted_coulomb_complex_integral {Ω : Type*} [MeasurableSpace Ω]
     filter_upwards [hmfin] with ω hω
     intro he
     rcases ENNReal.rpow_eq_zero_iff.mp he with ⟨_, hp⟩ | ⟨ht, _⟩
-    · exact (not_lt_of_ge hs.le) hp
-    · exact hω.ne ht
+    · linarith
+    · simp_all
   have hfM := fusion_rooted_spatial_integrable P X hX γ hγ hγ2 M hM f hf G hG hG0 hb
   exact ⟨hfM, fusion_rooted_complex_integral P X hX γ hγ hγ2 M hM f hf hfM G hG hb⟩
 

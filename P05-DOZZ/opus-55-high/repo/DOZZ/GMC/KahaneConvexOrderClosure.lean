@@ -19,31 +19,31 @@ namespace DOZZ.Proofs
 /-- The maximum of the first `n+1` supporting affine functions. -/
 noncomputable def initialAffineMax (a b : ℕ → ℝ) (n : ℕ) (x : ℝ) : ℝ :=
   affineMax (fun i : Fin (n + 1) => a i.val) (fun i : Fin (n + 1) => b i.val) x
+section
+variable (a b : ℕ → ℝ)
 
-theorem initialAffineMax_mono (a b : ℕ → ℝ) (x : ℝ) :
+theorem initialAffineMax_mono (x : ℝ) :
     Monotone (fun n => initialAffineMax a b n x) := by
-  classical
   intro n m hnm
-  unfold initialAffineMax affineMax
   refine Finset.sup'_le Finset.univ_nonempty _ ?_
   intro i hi
   let j : Fin (m + 1) := ⟨i.val, by omega⟩
-  exact affineMax_le (fun i : Fin (m + 1) => a i.val)
-    (fun i : Fin (m + 1) => b i.val) x j
+  exact affineMax_le (fun i => a i.val)
+    (fun i => b i.val) x j
 
-theorem initialAffineMax_zero_le (a b : ℕ → ℝ) (n : ℕ) (x : ℝ) :
+theorem initialAffineMax_zero_le (n : ℕ) (x : ℝ) :
     a 0 * x + b 0 ≤ initialAffineMax a b n x :=
   affineMax_le (fun i : Fin (n + 1) => a i.val)
     (fun i : Fin (n + 1) => b i.val) x 0
 
 theorem initialAffineMax_tendsto
-    (a b : ℕ → ℝ) (x z : ℝ) (hle : ∀ n, a n * x + b n ≤ z)
+    (x z : ℝ) (hle : ∀ n, a n * x + b n ≤ z)
     (hsup : (⨆ n, a n * x + b n) = z) :
     Tendsto (fun n => initialAffineMax a b n x) atTop (𝓝 z) := by
   classical
   have hHle (n : ℕ) : initialAffineMax a b n x ≤ z := by
     unfold initialAffineMax affineMax
-    exact Finset.sup'_le Finset.univ_nonempty _ (fun i _ => hle i.val)
+    simp_all
   have hbdd : BddAbove (range (fun n => initialAffineMax a b n x)) :=
     ⟨z, fun y ⟨n, hn⟩ => hn ▸ hHle n⟩
   have hHeq : (⨆ n, initialAffineMax a b n x) = z := by
@@ -51,11 +51,13 @@ theorem initialAffineMax_tendsto
     rw [← hsup]
     apply ciSup_le
     intro n
-    have hn : a n * x + b n ≤ initialAffineMax a b n x :=
+    have hn :=
       affineMax_le (fun i : Fin (n + 1) => a i.val)
         (fun i : Fin (n + 1) => b i.val) x ⟨n, by omega⟩
     exact hn.trans (le_ciSup hbdd n)
   simpa only [hHeq] using tendsto_atTop_ciSup (initialAffineMax_mono a b x) hbdd
+
+end
 
 /-- On positive integrable masses of equal mean, affine-maximum order implies comparison and
 integrability for every convex test whose expectation on the larger side is integrable. -/
@@ -75,8 +77,8 @@ theorem convex_comparison_of_affine_max_order
   obtain ⟨a, b, hle, hsup⟩ := convex_positive_countable_affine_minorants F hconvex
   let LX : ΩX → ℝ := fun ω => a 0 * MX ω + b 0
   let LY : ΩY → ℝ := fun ω => a 0 * MY ω + b 0
-  have hLX : Integrable LX PX := (hMX.const_mul _).add (integrable_const _)
-  have hLY : Integrable LY PY := (hMY.const_mul _).add (integrable_const _)
+  have hLX : Integrable LX PX := by fun_prop
+  have hLY : Integrable LY PY := by fun_prop
   have hLeq : (∫ ω, LX ω ∂PX) = ∫ ω, LY ω ∂PY := by
     dsimp [LX, LY]
     rw [integral_add (hMX.const_mul _) (integrable_const _),
@@ -92,10 +94,10 @@ theorem convex_comparison_of_affine_max_order
       (fun i : Fin (n + 1) => b i.val)).sub hLX
   have hGYint (n : ℕ) : Integrable (GY n) PY :=
     (affineMax_comp_integrable PY MY hMY (fun i : Fin (n + 1) => a i.val)
-      (fun i : Fin (n + 1) => b i.val)).sub hLY
-  have hGXnonneg (n : ℕ) (ω : ΩX) : 0 ≤ GX n ω :=
+      (fun i => b i.val)).sub hLY
+  have hGXnonneg (n : ℕ) ω : 0 ≤ GX n ω :=
     sub_nonneg.mpr (initialAffineMax_zero_le a b n (MX ω))
-  have hGYnonneg (n : ℕ) (ω : ΩY) : 0 ≤ GY n ω :=
+  have hGYnonneg (n : ℕ) ω : 0 ≤ GY n ω :=
     sub_nonneg.mpr (initialAffineMax_zero_le a b n (MY ω))
   have hGXlimnonneg : 0 ≤ᵐ[PX] GXlim := by
     filter_upwards [hMXpos] with ω hω
@@ -109,30 +111,29 @@ theorem convex_comparison_of_affine_max_order
     change (∫ ω, initialAffineMax a b n (MX ω) ∂PX) ≤
       ∫ ω, initialAffineMax a b n (MY ω) ∂PY at h
     rw [integral_sub, integral_sub]
-    · linarith only [h, hLeq]
-    · exact affineMax_comp_integrable PY MY hMY _ _
+    · linarith
+    · exact affineMax_comp_integrable PY MY hMY ..
     · exact hLY
-    · exact affineMax_comp_integrable PX MX hMX _ _
+    · exact affineMax_comp_integrable PX MX hMX ..
     · exact hLX
   have hGXlinorder (n : ℕ) : (∫⁻ ω, ENNReal.ofReal (GX n ω) ∂PX) ≤
       ∫⁻ ω, ENNReal.ofReal (GYlim ω) ∂PY := by
     calc
-      _ = ENNReal.ofReal (∫ ω, GX n ω ∂PX) :=
+      _ = ENNReal.ofReal _ :=
         (ofReal_integral_eq_lintegral_ofReal (hGXint n) (ae_of_all _ (hGXnonneg n))).symm
-      _ ≤ ENNReal.ofReal (∫ ω, GY n ω ∂PY) := ENNReal.ofReal_le_ofReal (hGXorder n)
-      _ = ∫⁻ ω, ENNReal.ofReal (GY n ω) ∂PY :=
+      _ ≤ ENNReal.ofReal _ := ENNReal.ofReal_le_ofReal (hGXorder n)
+      _ = ∫⁻ ω, ENNReal.ofReal _ ∂PY :=
         ofReal_integral_eq_lintegral_ofReal (hGYint n) (ae_of_all _ (hGYnonneg n))
       _ ≤ _ := by
         apply lintegral_mono_ae
         filter_upwards [hMYpos] with ω hω
         apply ENNReal.ofReal_le_ofReal
         apply sub_le_sub_right
-        unfold initialAffineMax affineMax
         exact Finset.sup'_le Finset.univ_nonempty _ (fun i _ => hle i.val (MY ω) hω)
   have hGXtend : ∀ᵐ ω ∂PX,
       Tendsto (fun n => ENNReal.ofReal (GX n ω)) atTop (𝓝 (ENNReal.ofReal (GXlim ω))) := by
     filter_upwards [hMXpos] with ω hω
-    exact ENNReal.tendsto_ofReal ((initialAffineMax_tendsto a b (MX ω) (F (MX ω))
+    exact ENNReal.tendsto_ofReal ((initialAffineMax_tendsto a b (MX ω) _
       (fun n => hle n (MX ω) hω) (hsup (MX ω) hω)).sub_const (LX ω))
   have hGXmono : ∀ᵐ ω ∂PX, Monotone (fun n => ENNReal.ofReal (GX n ω)) := by
     filter_upwards [] with ω n m hnm
@@ -149,7 +150,7 @@ theorem convex_comparison_of_affine_max_order
   have hIX : Integrable (fun ω => F (MX ω)) PX := by
     apply (hGXlimint.add hLX).congr
     filter_upwards [] with ω
-    exact sub_add_cancel _ _
+    exact sub_add_cancel ..
   refine ⟨hIX, ?_⟩
   rw [← ofReal_integral_eq_lintegral_ofReal hGXlimint hGXlimnonneg,
     ← ofReal_integral_eq_lintegral_ofReal hGYlimint hGYlimnonneg] at hL

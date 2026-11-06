@@ -32,54 +32,53 @@ namespace DOZZ.Proofs
 of its strip of meromorphy. -/
 theorem exists_analyticAt_near {R : ℂ → ℂ} {z₀ : ℝ} (hR : MeromorphicAt R (z₀ : ℂ)) {a b : ℝ}
     (ha : a < z₀) (hb : z₀ < b) : ∃ z : ℝ, z ∈ Ioo a b ∧ AnalyticAt ℂ R (z : ℂ) := by
-  have hev := eventually_analyticAt_affine hR (a := 1) one_ne_zero
+  have hev := eventually_analyticAt_affine hR one_ne_zero
   have hI : Ioo (a - z₀) (b - z₀) ∈ 𝓝 (0 : ℝ) := Ioo_mem_nhds (by linarith) (by linarith)
   obtain ⟨u, hu1, hu2⟩ := (hev.and (nhdsWithin_le_nhds hI)).exists
-  refine ⟨z₀ + u, ⟨by linarith [hu2.1], by linarith [hu2.2]⟩, ?_⟩
-  simpa using hu1
+  refine ⟨z₀ + u, ⟨by linarith, by linarith⟩, ?_⟩
+  simp_all
 
 
 section Arith
 
 variable {γ : ℝ}
+section
+variable {σ es as : ℝ}
+section
+variable (hγ : 0 < γ) (hγ2 : γ < 2) (hσ₁ : σ ≤ γ / 12) (hσ₂ : σ ≤ (4 / γ - γ) / 16) (hes₁ : γ / 2 + σ / 2 < es) (hes₂ : es < γ / 2 + σ) (has₁ : γ / 2 + 3 * σ < as) (has₂ : as < γ / 2 + 4 * σ)
+include hγ hγ2 hσ₁ hσ₂ hes₁ hes₂ has₁ has₂
 
 /-- Extended Seiberg bounds at the start point `(γ/2 + σ₁, γ/2 + σ₃, 2/γ + σ)`. -/
-theorem tkea_start_seiberg {σ es as : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
-    (hσ₁ : σ ≤ γ / 12) (hσ₂ : σ ≤ (4 / γ - γ) / 16) (hes₁ : γ / 2 + σ / 2 < es)
-    (hes₂ : es < γ / 2 + σ) (has₁ : γ / 2 + 3 * σ < as) (has₂ : as < γ / 2 + 4 * σ) :
+theorem tkea_start_seiberg :
     ExtendedSeiberg3 γ (2 * Q γ - es - 2 / γ) as (2 / γ + σ) ∧
       ExtendedSeiberg3 γ es (2 * Q γ - as - 2 / γ) (2 / γ + σ) ∧
       ExtendedSeiberg3 γ (2 * Q γ - es - 2 / γ - γ) as (2 / γ + σ) := by
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
   have hγh : γ / 2 < 2 / γ := by
-    rw [div_lt_div_iff₀ (by norm_num) hγ]
-    exact mul_self_lt_mul_self hγ.le hγ2
+    grind
   have h42 : 4 / γ = 2 * (2 / γ) := by ring
   -- division-free forms of the hypotheses, with `2 / γ` abstracted, so that `linarith` has no
   -- denominators to cancel
   set k := 2 / γ with hk
-  have hQ' : 2 * Q γ = 2 * k + γ := by rw [hQ]; ring
-  have hγh' : γ < 2 * k := by linarith only [hγh]
-  have hσ₁' : 12 * σ ≤ γ := by linarith only [hσ₁]
-  have hσ₂' : 16 * σ ≤ 2 * k - γ := by rw [h42] at hσ₂; linarith only [hσ₂]
-  have hes₁' : γ + σ < 2 * es := by linarith only [hes₁]
-  have hes₂' : 2 * es < γ + 2 * σ := by linarith only [hes₂]
-  have has₁' : γ + 6 * σ < 2 * as := by linarith only [has₁]
-  have has₂' : 2 * as < γ + 8 * σ := by linarith only [has₂]
+  have hQ' : 2 * Q γ = 2 * k + γ := by linarith
+  have hγh' : γ < 2 * k := by linarith
+  have hσ₁' : 12 * σ ≤ γ := by linarith
+  have hσ₂' : 16 * σ ≤ 2 * k - γ := by linarith
+  have hes₁' : γ + σ < 2 * es := by linarith
+  have hes₂' : 2 * es < γ + 2 * σ := by linarith
+  have has₁' : γ + 6 * σ < 2 * as := by linarith
+  have has₂' : 2 * as < γ + 8 * σ := by linarith
   clear_value k
-  clear hQ hγh hσ₁ hσ₂ hes₁ hes₂ has₁ has₂ hk
   refine ⟨?_, ?_, ?_⟩
   · exact extendedSeiberg3_of_lt hγ (by linarith) (by linarith) (by linarith)
-      (by rw [h42]; linarith) (by linarith) (by linarith) (by linarith)
+      (by linarith) (by linarith) (by linarith) (by linarith)
   · exact extendedSeiberg3_of_lt hγ (by linarith) (by linarith) (by linarith)
-      (by rw [h42]; linarith) (by linarith) (by linarith) (by linarith)
+      (by linarith) (by linarith) (by linarith) (by linarith)
   · exact extendedSeiberg3_of_lt hγ (by linarith) (by linarith) (by linarith)
-      (by rw [h42]; linarith) (by linarith) (by linarith) (by linarith)
+      (by linarith) (by linarith) (by linarith) (by linarith)
 
 /-- `Γ`- and shift-coefficient conditions at the start point. -/
-theorem tkea_start_gamma {σ es as : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
-    (hσ₁ : σ ≤ γ / 12) (hσ₂ : σ ≤ (4 / γ - γ) / 16) (hes₁ : γ / 2 + σ / 2 < es)
-    (hes₂ : es < γ / 2 + σ) (has₁ : γ / 2 + 3 * σ < as) (has₂ : as < γ / 2 + 4 * σ) :
+theorem tkea_start_gamma :
     AnalyticAt ℂ Complex.Gamma (sExp γ (2 * Q γ - es - 2 / γ) as (2 / γ + σ) : ℂ) ∧
       AnalyticAt ℂ Complex.Gamma (sExp γ es (2 * Q γ - as - 2 / γ) (2 / γ + σ) : ℂ) ∧
       AnalyticAt ℂ Complex.Gamma (sExp γ (2 * Q γ - es - 2 / γ - γ) as (2 / γ + σ) : ℂ) ∧
@@ -89,31 +88,26 @@ theorem tkea_start_gamma {σ es as : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
       ShiftCoeffGood γ (((2 * Q γ - es - 2 / γ : ℝ) : ℂ) - γ / 2) as ((2 / γ + σ : ℝ) : ℂ) := by
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
   have hγh : γ / 2 < 2 / γ := by
-    rw [div_lt_div_iff₀ (by norm_num) hγ]
-    exact mul_self_lt_mul_self hγ.le hγ2
+    grind
   have h42 : 4 / γ = 2 * (2 / γ) := by ring
   have e₃ : -2 / γ ^ 2 - (es - as - (2 / γ + σ)) / γ = (as + σ - es) / γ := by
-    field_simp
     ring
   have e₄ : 1 + 2 / γ ^ 2 - (es - as + (2 / γ + σ)) / γ = 1 + (as - es - σ) / γ := by
-    field_simp
     ring
   -- division-free forms of the hypotheses, with `2 / γ` abstracted, so that `linarith` has no
   -- denominators to cancel
   set k := 2 / γ with hk
-  have hQ' : 2 * Q γ = 2 * k + γ := by rw [hQ]; ring
-  have hγh' : γ < 2 * k := by linarith only [hγh]
-  have hσ₁' : 12 * σ ≤ γ := by linarith only [hσ₁]
-  have hσ₂' : 16 * σ ≤ 2 * k - γ := by rw [h42] at hσ₂; linarith only [hσ₂]
-  have hes₁' : γ + σ < 2 * es := by linarith only [hes₁]
-  have hes₂' : 2 * es < γ + 2 * σ := by linarith only [hes₂]
-  have has₁' : γ + 6 * σ < 2 * as := by linarith only [has₁]
-  have has₂' : 2 * as < γ + 8 * σ := by linarith only [has₂]
+  have hQ' : 2 * Q γ = 2 * k + γ := by linarith
+  have hγh' : γ < 2 * k := by linarith
+  have hσ₁' : 12 * σ ≤ γ := by linarith
+  have hσ₂' : 16 * σ ≤ 2 * k - γ := by linarith
+  have hes₁' : γ + σ < 2 * es := by linarith
+  have hes₂' : 2 * es < γ + 2 * σ := by linarith
+  have has₁' : γ + 6 * σ < 2 * as := by linarith
+  have has₂' : 2 * as < γ + 8 * σ := by linarith
   clear_value k
-  clear hQ hγh hσ₁ hσ₂ hes₁ hes₂ has₁ has₂ hk
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · refine analyticAt_Gamma_ofReal_pos ?_
-    unfold sExp
     exact div_pos (by linarith) hγ
   · refine analyticAt_Gamma_ofReal_neg_one_lt ?_ ?_
     · unfold sExp
@@ -133,7 +127,7 @@ theorem tkea_start_gamma {σ es as : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
       field_simp
       ring
     rw [e]
-    have : 0 < 2 * (γ - as) / γ := div_pos (by linarith) hγ
+    have : 0 < 2 * (γ - as) / γ := by bound
     positivity
   · rw [one_sub_dualArg₃_ofReal]
     refine analyticAt_Gamma_ofReal_pos ?_
@@ -141,44 +135,48 @@ theorem tkea_start_gamma {σ es as : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
     exact div_pos (by linarith) hγ
   · rw [one_sub_dualArg₄_ofReal]
     refine analyticAt_Gamma_ofReal_pos ?_
-    rw [e₄]
-    have : 0 < (as - es - σ) / γ := div_pos (by linarith) hγ
+    have : 0 < (as - es - σ) / γ := by bound
     linarith
   · exact shiftCoeffGood_of_lt hγ (by linarith) (by linarith) (by linarith) (by linarith)
       (by linarith)
 
+end
+
+end
+section
+variable {θ η : ℝ}
+section
+variable (hγ : 0 < γ) (hγ2 : γ < 2) (hθ₁ : 0 < θ) (hθ₂ : θ < γ / 4) (hη₁ : 0 < η) (hη₂ : η < γ / 2) (hη₃ : η < 4 / γ - γ)
+include hγ hγ2 hθ₁ hθ₂ hη₁ hη₂ hη₃
+
 /-- Extended Seiberg bounds at the end point `(γ/2 - θ, γ/2 + η, 2/γ + θ)`. -/
-theorem tkea_end_seiberg {θ η : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hθ₁ : 0 < θ) (hθ₂ : θ < γ / 4)
-    (hη₁ : 0 < η) (hη₂ : η < γ / 2) (hη₃ : η < 4 / γ - γ) :
+theorem tkea_end_seiberg :
     ExtendedSeiberg3 γ (2 * Q γ - (γ / 2 - θ) - 2 / γ - γ) (γ / 2 + η) (2 / γ + θ) ∧
       ExtendedSeiberg3 γ (γ / 2 - θ) (2 * Q γ - (γ / 2 + η) - 2 / γ) (2 / γ + θ) ∧
       ExtendedSeiberg3 γ (2 * Q γ - (2 * Q γ - (γ / 2 - θ) - 2 / γ)) (γ / 2 + η) (2 / γ + θ) := by
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
   have hγh : γ / 2 < 2 / γ := by
-    rw [div_lt_div_iff₀ (by norm_num) hγ]
-    exact mul_self_lt_mul_self hγ.le hγ2
+    grind
   have h42 : 4 / γ = 2 * (2 / γ) := by ring
   -- division-free forms of the hypotheses, with `2 / γ` abstracted, so that `linarith` has no
   -- denominators to cancel
   set k := 2 / γ with hk
-  have hQ' : 2 * Q γ = 2 * k + γ := by rw [hQ]; ring
-  have hγh' : γ < 2 * k := by linarith only [hγh]
-  have hθ₂' : 4 * θ < γ := by linarith only [hθ₂]
-  have hη₂' : 2 * η < γ := by linarith only [hη₂]
-  have hη₃' : η < 2 * k - γ := by rw [h42] at hη₃; exact hη₃
+  have hQ' : 2 * Q γ = 2 * k + γ := by linarith
+  have hγh' : γ < 2 * k := by linarith
+  have hθ₂' : 4 * θ < γ := by linarith
+  have hη₂' : 2 * η < γ := by linarith
+  have hη₃' : η < 2 * k - γ := by linarith
   clear_value k
-  clear hQ hγh hθ₂ hη₂ hη₃ hk
   refine ⟨?_, ?_, ?_⟩
   · exact extendedSeiberg3_of_lt hγ (by linarith) (by linarith) (by linarith)
-      (by rw [h42]; linarith) (by linarith) (by linarith) (by linarith)
+      (by linarith) (by linarith) (by linarith) (by linarith)
   · exact extendedSeiberg3_of_lt hγ (by linarith) (by linarith) (by linarith)
-      (by rw [h42]; linarith) (by linarith) (by linarith) (by linarith)
+      (by linarith) (by linarith) (by linarith) (by linarith)
   · exact extendedSeiberg3_of_lt hγ (by linarith) (by linarith) (by linarith)
-      (by rw [h42]; linarith) (by linarith) (by linarith) (by linarith)
+      (by linarith) (by linarith) (by linarith) (by linarith)
 
 /-- `Γ`- and shift-coefficient conditions at the end point. -/
-theorem tkea_end_gamma {θ η : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hθ₁ : 0 < θ) (hθ₂ : θ < γ / 4)
-    (hη₁ : 0 < η) (hη₂ : η < γ / 2) (hη₃ : η < 4 / γ - γ) :
+theorem tkea_end_gamma :
     AnalyticAt ℂ Complex.Gamma
         (sExp γ (2 * Q γ - (γ / 2 - θ) - 2 / γ - γ) (γ / 2 + η) (2 / γ + θ) : ℂ) ∧
       AnalyticAt ℂ Complex.Gamma
@@ -194,25 +192,21 @@ theorem tkea_end_gamma {θ η : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hθ₁ : 0 
         ((γ / 2 + η : ℝ) : ℂ) ((2 / γ + θ : ℝ) : ℂ) := by
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
   have hγh : γ / 2 < 2 / γ := by
-    rw [div_lt_div_iff₀ (by norm_num) hγ]
-    exact mul_self_lt_mul_self hγ.le hγ2
+    grind
   have h42 : 4 / γ = 2 * (2 / γ) := by ring
   have e₃ : -2 / γ ^ 2 - (γ / 2 - θ - (γ / 2 + η) - (2 / γ + θ)) / γ = (2 * θ + η) / γ := by
-    field_simp
     ring
   have e₄ : 1 + 2 / γ ^ 2 - (γ / 2 - θ - (γ / 2 + η) + (2 / γ + θ)) / γ = 1 + η / γ := by
-    field_simp
     ring
   -- division-free forms of the hypotheses, with `2 / γ` abstracted, so that `linarith` has no
   -- denominators to cancel
   set k := 2 / γ with hk
-  have hQ' : 2 * Q γ = 2 * k + γ := by rw [hQ]; ring
-  have hγh' : γ < 2 * k := by linarith only [hγh]
-  have hθ₂' : 4 * θ < γ := by linarith only [hθ₂]
-  have hη₂' : 2 * η < γ := by linarith only [hη₂]
-  have hη₃' : η < 2 * k - γ := by rw [h42] at hη₃; exact hη₃
+  have hQ' : 2 * Q γ = 2 * k + γ := by linarith
+  have hγh' : γ < 2 * k := by linarith
+  have hθ₂' : 4 * θ < γ := by linarith
+  have hη₂' : 2 * η < γ := by linarith
+  have hη₃' : η < 2 * k - γ := by linarith
   clear_value k
-  clear hQ hγh hθ₂ hη₂ hη₃ hk
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · refine analyticAt_Gamma_ofReal_neg_one_lt ?_ ?_
     · unfold sExp
@@ -227,7 +221,6 @@ theorem tkea_end_gamma {θ η : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hθ₁ : 0 
     · unfold sExp
       exact div_neg_of_neg_of_pos (by linarith) hγ
   · refine analyticAt_Gamma_ofReal_pos ?_
-    unfold sExp
     exact div_pos (by linarith) hγ
   · rw [dualArg₂_ofReal]
     refine analyticAt_Gamma_ofReal_pos ?_
@@ -235,7 +228,7 @@ theorem tkea_end_gamma {θ η : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hθ₁ : 0 
       field_simp
       ring
     rw [e]
-    have : 0 < 2 * (γ / 2 - η) / γ := div_pos (by linarith) hγ
+    have : 0 < 2 * (γ / 2 - η) / γ := by positivity
     positivity
   · rw [one_sub_dualArg₃_ofReal]
     refine analyticAt_Gamma_ofReal_pos ?_
@@ -243,11 +236,14 @@ theorem tkea_end_gamma {θ η : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hθ₁ : 0 
     exact div_pos (by linarith) hγ
   · rw [one_sub_dualArg₄_ofReal]
     refine analyticAt_Gamma_ofReal_pos ?_
-    rw [e₄]
     have : 0 < η / γ := div_pos hη₁ hγ
     linarith
   · exact shiftCoeffGood_of_lt hγ (by linarith) (by linarith) (by linarith) (by linarith)
       (by linarith)
+
+end
+
+end
 
 end Arith
 
@@ -260,22 +256,22 @@ theorem exists_tkea_start {γ σ : ℝ} (hγ : 0 < γ) (hσ₀ : 0 < σ) {hR : �
       AnalyticAt ℂ R (as : ℂ) ∧ AnalyticAt ℂ Complex.Gamma (dualArg₁ γ (es : ℂ)) := by
   obtain ⟨e₁, he₁, hRe₁, hge₁⟩ : ∃ e₁ : ℝ, e₁ ∈ Ioo (γ / 2 + σ / 2) (γ / 2 + σ) ∧
       AnalyticAt ℂ R (e₁ : ℂ) ∧ AnalyticAt ℂ Complex.Gamma (dualArg₁ γ (e₁ : ℂ)) := by
-    set z₀ : ℝ := γ / 2 + 3 * σ / 4 with hz₀
+    set z₀ := γ / 2 + 3 * σ / 4 with hz₀
     have hm1 : MeromorphicAt R (z₀ : ℂ) := hRm _ (ofReal_mem_horizontalStrip hhR z₀)
     have hm2 : MeromorphicAt Complex.Gamma (dualArg₁ γ (z₀ : ℂ)) := Meromorphic.Gamma _
     have ev1 := eventually_analyticAt_affine hm1 (a := 1) one_ne_zero
-    have ev2 := eventually_analyticAt_affine hm2 (a := 2 / (γ : ℂ))
+    have ev2 := eventually_analyticAt_affine hm2 (a := 2 / γ)
       (div_ne_zero two_ne_zero (Complex.ofReal_ne_zero.mpr hγ.ne'))
     have hI : Ioo (-(σ / 4)) (σ / 4) ∈ 𝓝 (0 : ℝ) := Ioo_mem_nhds (by linarith) (by linarith)
     obtain ⟨u, ⟨hu1, hu2⟩, hu3⟩ := ((ev1.and ev2).and (nhdsWithin_le_nhds hI)).exists
-    refine ⟨z₀ + u, ⟨by rw [hz₀]; linarith [hu3.1], by rw [hz₀]; linarith [hu3.2]⟩, ?_, ?_⟩
-    · simpa using hu1
+    refine ⟨z₀ + u, ⟨by linarith, by linarith⟩, ?_, ?_⟩
+    · simp_all
     · convert hu2 using 1
       unfold dualArg₁
       push_cast
       ring
   obtain ⟨a₁, ha₁, hRa₁⟩ : ∃ a₁ : ℝ, a₁ ∈ Ioo (γ / 2 + 3 * σ) (γ / 2 + 4 * σ) ∧
-      AnalyticAt ℂ R (a₁ : ℂ) :=
+      AnalyticAt ℂ R a₁ :=
     exists_analyticAt_near (z₀ := γ / 2 + 7 * σ / 2)
       (hRm _ (ofReal_mem_horizontalStrip hhR _)) (by linarith) (by linarith)
   exact ⟨e₁, a₁, he₁, ha₁, hRe₁, hRa₁, hge₁⟩
@@ -327,15 +323,14 @@ theorem tkea {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Dist
         R ((γ / 2 + η : ℝ) : ℂ) *
           (structureConstant P M γ μ (γ / 2 - θ) (Q γ - η) (2 / γ + θ) : ℂ) := by
   have hγh : γ / 2 < 2 / γ := by
-    rw [div_lt_div_iff₀ (by norm_num) hγ]
-    exact mul_self_lt_mul_self hγ.le hγ2
-  set σ : ℝ := min (γ / 12) ((4 / γ - γ) / 16) with hσ
-  have hσ₀ : 0 < σ := lt_min (by linarith) (by linarith)
+    grind
+  set σ := min (γ / 12) ((4 / γ - γ) / 16) with hσ
+  have hσ₀ : 0 < σ := by bound
   obtain ⟨es, as, hes, has, hRes, hRas, hgS1⟩ := exists_tkea_start hγ hσ₀ hhR hRm
-  obtain ⟨hS1, hS2, hS3⟩ := tkea_start_seiberg hγ hγ2 (min_le_left _ _) (min_le_right _ _)
+  obtain ⟨hS1, hS2, hS3⟩ := tkea_start_seiberg hγ hγ2 (min_le_left ..) (min_le_right ..)
     hes.1 hes.2 has.1 has.2
   obtain ⟨hsS1, hsS2, hsS3, hgS2, hgS3, hgS4, hAS⟩ := tkea_start_gamma hγ hγ2
-    (min_le_left _ _) (min_le_right _ _) hes.1 hes.2 has.1 has.2
+    (min_le_left ..) (min_le_right ..) hes.1 hes.2 has.1 has.2
   obtain ⟨hP1, hP2, hP3⟩ := tkea_end_seiberg hγ hγ2 hθ₁ hθ₂ hη₁ hη₂ hη₃
   obtain ⟨hsP1, hsP2, hsP3, hgP2, hgP3, hgP4, hAP⟩ :=
     tkea_end_gamma hγ hγ2 hθ₁ hθ₂ hη₁ hη₂ hη₃
@@ -346,11 +341,11 @@ theorem tkea {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Dist
     hRas hsS1 hsS2 hsS3 hgS1 hgS2 (by exact_mod_cast hgS3) (by exact_mod_cast hgS4)
     (by exact_mod_cast hAS) hP1 hP2 hRe hRa hsP1 hsP2 hg₁ hgP2 hgP3 hgP4 hAP
   have hrefl := reflectedShift_full P X M hγ hγ2 hμ hX hM hShiftGluing hhR hRm hBR hRv
-    (x := 2 * Q γ - (γ / 2 - θ) - 2 / γ) hP3 hP1 (by rw [hxf]; exact hRx) hsP3 hsP1 hAP
+    (x := 2 * Q γ - (γ / 2 - θ) - 2 / γ) hP3 hP1 (by grind) hsP3 hsP1 hAP
   rw [← hrefl] at key
   rw [show 2 * Q γ - (2 * Q γ - (γ / 2 - θ) - 2 / γ) = Q γ - θ by
       rw [show Q γ = 2 / γ + γ / 2 from rfl]; ring,
-    show 2 * Q γ - (γ / 2 + η) - 2 / γ = Q γ - η by rw [show Q γ = 2 / γ + γ / 2 from rfl]; ring,
+    show 2 * Q γ - (γ / 2 + η) - 2 / γ = Q γ - η by linarith,
     hxf] at key
   rw [← key]
   ring

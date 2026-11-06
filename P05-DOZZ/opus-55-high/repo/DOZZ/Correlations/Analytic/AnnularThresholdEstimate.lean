@@ -31,15 +31,14 @@ theorem annular_threshold_estimate
   have hS : MeasurableSet S := hY measurableSet_Ici
   let I : Ω → ℝ≥0∞ := S.indicator (fun _ => 1)
   have hI : Measurable I := measurable_const.indicator hS
-  have hp : 0 < q / (q - 1) := div_pos (by linarith) (by linarith)
+  have hp : 0 < q / (q - 1) := by positivity
   have hIp : (∫⁻ ω, I ω ^ (q / (q - 1)) ∂P) = P S := by
     have he : (fun ω => I ω ^ (q / (q - 1))) = I := by
       funext ω
       by_cases hω : ω ∈ S
-      · simp only [I, Set.indicator_of_mem hω, ENNReal.one_rpow]
-      · simp only [I, Set.indicator_of_notMem hω, ENNReal.zero_rpow_of_pos hp]
-    rw [he, lintegral_indicator_const hS]
-    exact one_mul _
+      · aesop
+      aesop
+    aesop
   have hmark : P S ≤ (∫⁻ ω, Y ω ^ m ∂P) / u ^ m := by
     have hs : S ⊆ {ω | u ^ m ≤ Y ω ^ m} :=
       fun ω hω => ENNReal.rpow_le_rpow hω hm.le
@@ -51,8 +50,7 @@ theorem annular_threshold_estimate
     by_cases hω : ω ∈ S
     · simpa only [I, Set.indicator_of_mem hω, mul_one] using
         hl.trans le_add_self
-    · have hy : Y ω < u := lt_of_not_ge hω
-      exact (hs hy).trans le_self_add
+    · aesop
   calc
     (∫⁻ ω, F ω ∂P) ≤ ∫⁻ ω, u * D ω + B ω * I ω ∂P := lintegral_mono_ae hbound
     _ = u * (∫⁻ ω, D ω ∂P) + ∫⁻ ω, B ω * I ω ∂P := by
@@ -61,8 +59,7 @@ theorem annular_threshold_estimate
       rw [lintegral_add_right' (fun ω => u * D ω) hbi,
         lintegral_const_mul' _ _ hu']
     _ ≤ u * (∫⁻ ω, D ω ∂P) +
-        (∫⁻ ω, B ω ^ q ∂P) ^ (1 / q) * (P S) ^ (1 / (q / (q - 1))) := by
-      exact add_le_add_right (by
+        (∫⁻ ω, B ω ^ q ∂P) ^ (1 / q) * (P S) ^ (1 / (q / (q - 1))) := add_le_add_right (by
         simpa only [hIp] using lintegral_mul_le_holder hB hI.aemeasurable hq) _
     _ ≤ _ := add_le_add_right
       (mul_le_mul_right (ENNReal.rpow_le_rpow hmark

@@ -32,11 +32,10 @@ theorem tendsto_euclideanNorm_rpow_neg_sub_one_div_nhdsGT_zero {d : Nat}
       (fun α : ℝ => ((euclideanNorm (x - y)) ^ (-α) - 1) / α)
       (𝓝[>] (0 : ℝ)) (𝓝 (abkLogCovarianceKernel x y)) := by
   have hdiff : x - y ≠ 0 := by
-    intro hzero
-    exact hxy (sub_eq_zero.mp hzero)
+    positivity
   simpa [abkLogCovarianceKernel] using
     tendsto_rpow_neg_sub_one_div_nhdsGT_zero
-      (ρ := euclideanNorm (x - y)) (abkEuclideanNorm_pos_of_ne_zero hdiff)
+      (abkEuclideanNorm_pos_of_ne_zero hdiff)
 
 end GaussianFields
 

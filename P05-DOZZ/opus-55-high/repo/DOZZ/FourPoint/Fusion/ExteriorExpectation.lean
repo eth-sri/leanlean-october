@@ -8,6 +8,7 @@ public import DOZZ.FourPoint.Fusion.ExteriorIntegral
 public import DOZZ.FourPoint.Fusion.MeasurableIntegralFamily
 public import DOZZ.FourPoint.Fusion.MassPositiveFinite
 public import DOZZ.FourPoint.TaylorFixedDisk
+import DOZZ.ShiftEquations.Mobius.InversionMoment
 
 /-! # Uniform bounds on the signed exterior expectation -/
 
@@ -34,7 +35,7 @@ theorem fusion_exteriorR1_expectation_bound {Ω : Type*} [MeasurableSpace Ω]
   refine ⟨16 * C, by positivity, ?_⟩
   intro z hz hz4
   let I := fun ω => coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃
-  have hIm : AEMeasurable I P := gmc_coulombMass_aemeasurable P X hX γ hγ hγ2 M hM _ _ _
+  have hIm : AEMeasurable I P := gmc_coulombMass_aemeasurable P X hX γ hγ hγ2 M hM ..
   have hzunit : ∀ j : Fin 3, ‖(![z, 0, 1] : Fin 3 → ℂ) j‖ ≤ 1 := by
     intro j
     fin_cases j
@@ -61,13 +62,13 @@ theorem fusion_exteriorR1_expectation_bound {Ω : Type*} [MeasurableSpace Ω]
       rw [hω, integral_indicator (show MeasurableSet B from Metric.isOpen_ball.measurableSet.compl)]
     exact hm.aemeasurable.congr he'
   have hF : AEStronglyMeasurable (fun ω => ((I ω ^ (-p - 1)).toReal : ℂ) * (∫ x in B, f x ∂M ω)) P :=
-    ((Complex.measurable_ofReal.comp_aemeasurable (hIm.pow_const _).ennreal_toReal).mul hsample).aestronglyMeasurable
+    by fun_prop
   have hdom : ∀ᵐ ω ∂P, ‖((I ω ^ (-p - 1)).toReal : ℂ) * (∫ x in B, f x ∂M ω)‖ ≤
       16 * (I ω ^ (-p)).toReal := by
     filter_upwards [fusion_gammaHalfMass_pos_finite_ae P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα₁ hα₂ hα₃ z hz hz4,
-      gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM z,
-      gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 0,
-      gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 1] with ω hω hωz hω0 hω1
+      DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM z,
+      DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM 0,
+      DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM 1] with ω hω hωz hω0 hω1
     simpa only [show -p - 1 + 1 = -p by ring] using
       fusion_exterior_inverse_integral_bound γ α₁ α₂ α₃ (-p - 1) z hz4 (M ω) hω.1 hω.2.lt_top hωz hω0 hω1
   refine ⟨hmaj.mono' hF hdom, ?_⟩

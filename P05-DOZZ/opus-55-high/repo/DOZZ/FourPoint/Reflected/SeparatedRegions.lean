@@ -30,8 +30,8 @@ theorem reflected_separated_region_geometry (s r : ℝ) (_hs : 0 < s) (hr : 0 < 
     Metric.closedBall (3 : ℂ) (1/8) ⊆ reflected_outerRegion r := by
   have hsr : s ≤ r/2 := by
     have h := (div_le_iff₀ hr).mp hsep
-    linarith only [h]
-  have hs1 : s < 1 := by linarith only [hsr, hr1]
+    linarith
+  have hs1 : s < 1 := by linarith
   refine ⟨?_, ?_, ?_, inter_subset_right, ?_, ?_, ?_, ?_, ?_⟩
   · exact (isOpen_lt continuous_const continuous_norm).inter
       (isOpen_lt continuous_norm continuous_const)
@@ -43,12 +43,12 @@ theorem reflected_separated_region_geometry (s r : ℝ) (_hs : 0 < s) (hr : 0 < 
       intro hh
       have h := hx.2
       simp only [hh, norm_one] at h
-      exact (not_lt_of_ge hs1.le) h
-    simp [hx0, hx1]
+      linarith
+    simp_all
   · intro x hx
-    simpa only [Metric.mem_ball, dist_zero_right] using hx.2.trans_le (by linarith only [hsr, hr])
+    simpa using hx.2.trans_le (by linarith)
   · intro x hx hh
-    have hn : ‖x‖ < r := by simpa only [Metric.mem_ball, dist_zero_right] using hh
+    have hn : ‖x‖ < r := by simp_all
     exact (not_lt_of_ge hx.1.le) hn
   · intro x hx
     rw [div_mul_cancel₀ s hr.ne']
@@ -60,10 +60,9 @@ theorem reflected_separated_region_geometry (s r : ℝ) (_hs : 0 < s) (hr : 0 < 
     rw [norm_sub_rev] at hn
     have h3 : ‖(3 : ℂ)‖ = 3 := by norm_num
     rw [h3] at hn
-    have hxnorm : 1 < ‖x‖ := by linarith only [hn, hd]
+    have hxnorm : 1 < ‖x‖ := by linarith
     refine ⟨hr1.trans_lt hxnorm, ?_⟩
     have hx0 : x ≠ 0 := norm_pos_iff.mp (zero_lt_one.trans hxnorm)
-    have hx1 : x ≠ 1 := by intro hh; simp [hh] at hxnorm
-    simp [hx0, hx1]
+    aesop
 
 end DOZZ.Proofs

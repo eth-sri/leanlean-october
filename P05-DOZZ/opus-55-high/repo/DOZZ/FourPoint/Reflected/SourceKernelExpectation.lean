@@ -38,7 +38,7 @@ theorem reflected_source_copied_kernel_inverse_squeeze
     let E := (reflected_copied_separatedMoment P Xc N γ α₁ α₂ α₃ z η (‖z‖^(1-ξ)) p).toReal-
       (∫⁻ ω, gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ^(-p) ∂P).toReal
     max 1 cHi*D ≤ E ∧ E ≤ min 1 cLo*D := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   let η := Real.exp (-(T : ℝ))
   let U := reflected_innerRegion η
   let A := fun ω => gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ
@@ -52,7 +52,7 @@ theorem reflected_source_copied_kernel_inverse_squeeze
   let cHi := (1+R)^(γ^2/2)*(1-η)⁻¹^|γ*α₂|
   have hcLo : 0 < cLo := mul_pos (Real.rpow_pos_of_pos (sub_pos.mpr hR1) _)
     (Real.rpow_pos_of_pos (inv_pos.mpr (sub_pos.mpr hT)) _)
-  have hcHi : 0 < cHi := mul_pos (Real.rpow_pos_of_pos (by linarith only [hR] : 0 < 1+R) _)
+  have hcHi : 0 < cHi := mul_pos (Real.rpow_pos_of_pos (by positivity : 0 < 1+R) _)
     (Real.rpow_pos_of_pos (inv_pos.mpr (sub_pos.mpr hT)) _)
   have hA : AEMeasurable A P :=
     (reflected_outerMass_measure_measurable γ α₁ α₂ α₃ ξ z).comp_aemeasurable
@@ -61,14 +61,14 @@ theorem reflected_source_copied_kernel_inverse_squeeze
     (measurableSet_lt measurable_norm measurable_const)
   have hU0 : U ⊆ ({0} : Set ℂ)ᶜ := by
     intro x hx
-    simpa only [mem_compl_iff,mem_singleton_iff] using norm_pos_iff.mp hx.1
+    simpa using norm_pos_iff.mp hx.1
   have hAr := originRadialPath_aemeasurable P X Xc hc hcont
   have hI : AEMeasurable I (P.prod P) := reflected_copied_region_mass_aemeasurable
     P (originRadialPath Xc) N hAr hN hfin γ U hU hU0 _
       (reflected_gammaHalfKernel_measurable γ α₁ α₂ α₃ z).ennreal_ofReal
   have hKr : Measurable (fun x : ℂ => ENNReal.ofReal (‖x‖^(-(γ*α₁)))) := by fun_prop
   have hJ : AEMeasurable J (P.prod P) :=
-    (measurable_const : Measurable (fun _ : Ω × Ω => ENNReal.ofReal (‖z‖^(γ^2/2)))).aemeasurable.mul
+    (measurable_const : Measurable (fun _ => ENNReal.ofReal _)).aemeasurable.mul
       (reflected_copied_region_mass_aemeasurable P (originRadialPath Xc) N hAr hN hfin γ U hU hU0 _ hKr)
   have hbase : (∫⁻ ω : Ω × Ω, A ω.1^(-p) ∂P.prod P) = ∫⁻ ω, A ω^(-p) ∂P := by
     have hf : AEMeasurable (fun ω => A ω^(-p)) ((P.prod P).map Prod.fst) := by
@@ -86,18 +86,18 @@ theorem reflected_source_copied_kernel_inverse_squeeze
     (reflected_source_outerMass_positive_finite_ae P X hX γ hγ hγ₂ M hM
       α₁ α₂ α₃ ξ hα₁ hα₂ hα₃ z hz0 hz1 hzn hr1).mono fun _ hω => ⟨hω.1,hω.2.ne⟩
   have hAf : ∀ᵐ ω : Ω × Ω ∂P.prod P, 0 < A ω.1 ∧ A ω.1 ≠ ⊤ :=
-    (measurePreserving_fst (μ := P) (ν := P)).quasiMeasurePreserving.ae hAfs
+    (measurePreserving_fst).quasiMeasurePreserving.ae hAfs
   have hsand : ∀ᵐ ω : Ω × Ω ∂P.prod P,
       ENNReal.ofReal cLo*J ω ≤ I ω ∧ I ω ≤ ENNReal.ofReal cHi*J ω :=
     Filter.Eventually.of_forall fun ω => reflected_reinserted_inner_kernel_mass_squeeze
-      γ α₁ α₂ α₃ R z (originRadialPath Xc ω.1) (N ω.2) T hR hR1 (norm_pos_iff.mpr hz0) hT hsep
-  have hs := reflected_kernel_inverse_expectation_squeeze (P.prod P) (fun ω : Ω × Ω => A ω.1) J I
+      γ α₁ α₂ α₃ R z _ (N ω.2) T hR hR1 (norm_pos_iff.mpr hz0) hT hsep
+  have hs := reflected_kernel_inverse_expectation_squeeze (P.prod P) (fun ω => A ω.1) J I
     (hA.comp_quasiMeasurePreserving measurePreserving_fst.quasiMeasurePreserving) hJ hI
     p cLo cHi hp hcLo hcHi hAf hsand hInv
   rw [hbase] at hs
   have he := reflected_copied_separatedMoment_source P X hX Xc hc hcont γ hγ hγ₂ M hM
     N hN hi heq hfin α₁ α₂ α₃ ξ η p z hr hz
-  change reflected_copied_separatedMoment P Xc N γ α₁ α₂ α₃ z η (‖z‖^(1-ξ)) p =
+  change reflected_copied_separatedMoment P Xc N γ α₁ α₂ α₃ z η _ p =
     ∫⁻ ω : Ω × Ω, (I ω+A ω.1)^(-p) ∂P.prod P at he
   simp_rw [add_comm] at he
   dsimp only

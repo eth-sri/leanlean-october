@@ -20,32 +20,30 @@ open MeasureTheory
 open scoped ENNReal Topology
 
 namespace GaussianFields
+section
+variable {d : Nat}
+section
+variable (ζ : ABKCutoff d)
 
 /-- After the cutoff self-convolution scaling, the ABK power-decomposition
 integrand has exponent `-(1+α)`. -/
-theorem abk_powerDecomposition_integrand_eq {d : Nat} (ζ : ABKCutoff d)
-    {α r : ℝ} (hr : 0 < r) (x : Vec d) :
+theorem abk_powerDecomposition_integrand_eq {α r : ℝ} (hr : 0 < r) (x : Vec d) :
     r ^ (-(1 + (d : ℝ) + α)) * abkScaledCutoffSelfConvolution ζ r x =
       r ^ (-(1 + α)) * abkCutoffSelfConvolution ζ (r⁻¹ • x) := by
   rw [abkScaledCutoffSelfConvolution_eq_pow_mul ζ hr x]
   have hpow :
-      r ^ (-(1 + (d : ℝ) + α)) * r ^ d = r ^ (-(1 + α)) := by
+      r ^ (-(1 + d + α)) * r ^ d = r ^ (-(1 + α)) := by
     have hr_nat : r ^ d = r ^ (d : ℝ) := by
-      rw [Real.rpow_natCast]
+      simp
     rw [hr_nat, ← Real.rpow_add hr]
-    congr 1
     ring
-  calc
-    r ^ (-(1 + (d : ℝ) + α)) *
-        (r ^ d * abkCutoffSelfConvolution ζ (r⁻¹ • x))
-        = (r ^ (-(1 + (d : ℝ) + α)) * r ^ d) *
-            abkCutoffSelfConvolution ζ (r⁻¹ • x) := by ring
-    _ = r ^ (-(1 + α)) * abkCutoffSelfConvolution ζ (r⁻¹ • x) := by rw [hpow]
+  grind
+section
+variable (α : ℝ)
 
 /-- Reciprocal-change-of-variables form of `M_α^{-1}`:
 `∫ r^{-1-α} (ζ*ζ)(1/r) dr = ∫ t^{α-1} (ζ*ζ)(t) dt`. -/
-theorem abkMAlphaInv_eq_integral_rpow_selfConvolution {d : Nat}
-    (ζ : ABKCutoff d) (α : ℝ) :
+theorem abkMAlphaInv_eq_integral_rpow_selfConvolution :
     abkMAlphaInv ζ α =
       ∫ t in Set.Ioi (0 : ℝ),
         t ^ (α - 1) * abkCutoffSelfConvolution ζ (abkRadialPoint d t)
@@ -62,7 +60,6 @@ theorem abkMAlphaInv_eq_integral_rpow_selfConvolution {d : Nat}
       r ^ (-(1 + α)) = r ^ (-2 : ℝ) * (r⁻¹) ^ (α - 1) := by
     calc
       r ^ (-(1 + α)) = r ^ ((-2 : ℝ) + -(α - 1)) := by
-        congr 1
         ring
       _ = r ^ (-2 : ℝ) * r ^ (-(α - 1)) := by
         rw [Real.rpow_add hr_pos]
@@ -70,17 +67,15 @@ theorem abkMAlphaInv_eq_integral_rpow_selfConvolution {d : Nat}
         rw [Real.inv_rpow hr_pos.le, ← Real.rpow_neg hr_pos.le]
   change
     r ^ (-(1 + α)) *
-        abkCutoffSelfConvolution ζ (abkRadialPoint d r⁻¹) =
+        abkCutoffSelfConvolution ζ _ =
       ((|(-1 : ℝ)| * r ^ ((-1 : ℝ) - 1)) *
         ((r ^ (-1 : ℝ)) ^ (α - 1) *
           abkCutoffSelfConvolution ζ (abkRadialPoint d (r ^ (-1 : ℝ)))))
   rw [hpow, Real.rpow_neg_one]
-  norm_num
   ring
 
 /-- One-dimensional scale substitution in the ABK radial power-decomposition integral. -/
-theorem abkMAlphaInv_radial_scale {d : Nat} (ζ : ABKCutoff d) (α : ℝ)
-    {ρ : ℝ} (hρ : 0 < ρ) :
+theorem abkMAlphaInv_radial_scale {ρ : ℝ} (hρ : 0 < ρ) :
     (∫ r in Set.Ioi (0 : ℝ),
         r ^ (-(1 + α)) *
           abkCutoffSelfConvolution ζ (abkRadialPoint d (ρ * r⁻¹))
@@ -90,20 +85,19 @@ theorem abkMAlphaInv_radial_scale {d : Nat} (ζ : ABKCutoff d) (α : ℝ)
     s ^ (-(1 + α)) * abkCutoffSelfConvolution ζ (abkRadialPoint d s⁻¹)
   let H : ℝ → ℝ := fun r =>
     r ^ (-(1 + α)) * abkCutoffSelfConvolution ζ (abkRadialPoint d (ρ * r⁻¹))
-  have hb : 0 < ρ⁻¹ := inv_pos.mpr hρ
-  have hcv := integral_comp_mul_left_Ioi G 0 hb
+  have hb := inv_pos.mpr hρ
   have hcv' :
-      (∫ r in Set.Ioi (0 : ℝ), G (ρ⁻¹ * r) ∂(volume : Measure ℝ)) =
+      (∫ r in Set.Ioi 0, G (ρ⁻¹ * r) ∂volume) =
         ρ * abkMAlphaInv ζ α := by
-    simpa [G, abkMAlphaInv, smul_eq_mul, hρ.ne'] using hcv
+    simpa [G, abkMAlphaInv, smul_eq_mul, hρ.ne'] using (integral_comp_mul_left_Ioi G 0 hb)
   have hpoint :
       ∀ᵐ r ∂(volume.restrict (Set.Ioi (0 : ℝ))),
         G (ρ⁻¹ * r) = ρ ^ (1 + α) * H r := by
     filter_upwards [self_mem_ae_restrict measurableSet_Ioi] with r hr
-    have hr : 0 < r := hr
-    have hmul_pos : 0 < ρ⁻¹ * r := mul_pos hb hr
+    have hr := hr
+    have hmul_pos := mul_pos hb hr
     have hinv : (ρ⁻¹ * r)⁻¹ = ρ * r⁻¹ := by
-      field_simp [hρ.ne', hr.ne']
+      field_simp
     have hpow :
         (ρ⁻¹ * r) ^ (-(1 + α)) =
           ρ ^ (1 + α) * r ^ (-(1 + α)) := by
@@ -117,19 +111,19 @@ theorem abkMAlphaInv_radial_scale {d : Nat} (ζ : ABKCutoff d) (α : ℝ)
               rw [hρpow]
     change
       (ρ⁻¹ * r) ^ (-(1 + α)) *
-          abkCutoffSelfConvolution ζ (abkRadialPoint d ((ρ⁻¹ * r)⁻¹)) =
+          abkCutoffSelfConvolution ζ _ =
         ρ ^ (1 + α) *
           (r ^ (-(1 + α)) *
             abkCutoffSelfConvolution ζ (abkRadialPoint d (ρ * r⁻¹)))
     rw [hpow, hinv]
     ring
   have hInt :
-      (∫ r in Set.Ioi (0 : ℝ), G (ρ⁻¹ * r) ∂(volume : Measure ℝ)) =
+      (∫ r in Set.Ioi 0, G (ρ⁻¹ * r) ∂volume) =
         ρ ^ (1 + α) *
-          (∫ r in Set.Ioi (0 : ℝ), H r ∂(volume : Measure ℝ)) := by
+          (∫ r in Set.Ioi 0, H r ∂volume) := by
     rw [← integral_const_mul]
     exact integral_congr_ae hpoint
-  have hscale_ne : ρ ^ (1 + α) ≠ 0 :=
+  have hscale_ne :=
     (Real.rpow_pos_of_pos hρ (1 + α)).ne'
   have hpow_coef : (ρ ^ (1 + α))⁻¹ * ρ = ρ ^ (-α) := by
     rw [Real.rpow_add hρ 1 α, Real.rpow_one]
@@ -139,9 +133,9 @@ theorem abkMAlphaInv_radial_scale {d : Nat} (ζ : ABKCutoff d) (α : ℝ)
       _ = ρ ^ (-α) := by
         rw [Real.rpow_neg hρ.le]
   calc
-    (∫ r in Set.Ioi (0 : ℝ), H r ∂(volume : Measure ℝ))
+    (∫ r in Set.Ioi 0, H r ∂volume)
         = (ρ ^ (1 + α))⁻¹ *
-            (∫ r in Set.Ioi (0 : ℝ), G (ρ⁻¹ * r) ∂(volume : Measure ℝ)) := by
+            (∫ r in Set.Ioi 0, G (ρ⁻¹ * r) ∂volume) := by
           rw [hInt]
           field_simp [hscale_ne]
     _ = (ρ ^ (1 + α))⁻¹ * (ρ * abkMAlphaInv ζ α) := by
@@ -149,8 +143,12 @@ theorem abkMAlphaInv_radial_scale {d : Nat} (ζ : ABKCutoff d) (α : ℝ)
     _ = ρ ^ (-α) * abkMAlphaInv ζ α := by
           rw [← mul_assoc, hpow_coef]
 
+end
+
+end
+
 /-- Full vector form of the ABK power-decomposition integral. -/
-theorem abk_powerDecomposition_integral_eq {d : Nat} (hd : 0 < d)
+theorem abk_powerDecomposition_integral_eq (hd : 0 < d)
     (ζ : ABKCutoff d) (α : ℝ) {x : Vec d} (hx : 0 < euclideanNorm x) :
     (∫ r in Set.Ioi (0 : ℝ),
         r ^ (-(1 + (d : ℝ) + α)) *
@@ -160,9 +158,9 @@ theorem abk_powerDecomposition_integral_eq {d : Nat} (hd : 0 < d)
   rw [← abkMAlphaInv_radial_scale ζ α hx]
   refine integral_congr_ae ?_
   filter_upwards [self_mem_ae_restrict measurableSet_Ioi] with r hr
-  have hr_pos : 0 < r := hr
-  have hinv_nonneg : 0 ≤ r⁻¹ := inv_nonneg.mpr hr_pos.le
-  have hrep_nonneg : 0 ≤ euclideanNorm x * r⁻¹ :=
+  have hr_pos := hr
+  have hinv_nonneg := inv_nonneg.mpr hr_pos.le
+  have hrep_nonneg :=
     mul_nonneg (euclideanNorm_nonneg x) hinv_nonneg
   have hnorm :
       euclideanNorm (r⁻¹ • x) =
@@ -170,8 +168,9 @@ theorem abk_powerDecomposition_integral_eq {d : Nat} (hd : 0 < d)
     rw [euclideanNorm_inv_smul, abs_of_nonneg hinv_nonneg,
       euclideanNorm_abkRadialPoint_of_nonneg hd hrep_nonneg]
     ring
-  rw [abk_powerDecomposition_integrand_eq ζ hr_pos x]
-  rw [abkCutoffSelfConvolution_radial ζ hnorm]
+  rw [abk_powerDecomposition_integrand_eq ζ hr_pos x, abkCutoffSelfConvolution_radial ζ hnorm]
+
+end
 
 end GaussianFields
 

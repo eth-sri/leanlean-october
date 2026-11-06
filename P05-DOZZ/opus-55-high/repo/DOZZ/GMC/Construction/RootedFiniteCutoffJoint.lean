@@ -37,7 +37,7 @@ theorem regularizedGMC_joint_circle_tilt
           (Real.exp (γ * gaussianCovariance P (fun ω' => Xc ω' x r)
             (fun ω' => γ * Xc ω' u r))))) ∂P := by
   classical
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   let L : Ω → ℝ := fun ω => γ * Xc ω u r
   let V : ℂ → ℝ := fun x => ∫ ω', Xc ω' x r ^ 2 ∂P
   let wick : Ω → ℝ≥0∞ := fun ω => ENNReal.ofReal
@@ -50,17 +50,15 @@ theorem regularizedGMC_joint_circle_tilt
     simpa [L] using
       (circleAverage_sum_isGaussianL2Limit P X hX Xc hXc
         (fun _ : Fin 1 => γ) (fun _ => u) r)
-  have hcovCont : Continuous covCircle := by
-    exact continuous_gaussianCovariance_circle_of_IsGaussianL2Limit
+  have hcovCont : Continuous covCircle := continuous_gaussianCovariance_circle_of_IsGaussianL2Limit
       P X hX Xc hXc L hL r
   have hVariance : gaussianVariance P L = γ ^ 2 * V u := by
     rw [gaussianVariance, gaussianCovariance]
     calc
       (∫ ω, (γ * Xc ω u r) * (γ * Xc ω u r) ∂P) =
           ∫ ω, γ ^ 2 * Xc ω u r ^ 2 ∂P := by
-            apply integral_congr_ae
-            exact ae_of_all _ fun ω => by ring
-      _ = γ ^ 2 * ∫ ω, Xc ω u r ^ 2 ∂P := integral_const_mul _ _
+            ring
+      _ = γ ^ 2 * ∫ ω, Xc ω u r ^ 2 ∂P := integral_const_mul ..
       _ = γ ^ 2 * V u := rfl
   have hfieldCov (f : TestFn) :
       gaussianCovariance P (fun ω' => X ω' f) L = γ * circleCross u r f := by
@@ -71,14 +69,13 @@ theorem regularizedGMC_joint_circle_tilt
             calc
               (∫ ω, X ω f * (γ * Xc ω u r) ∂P) =
                   ∫ ω, γ * (X ω f * Xc ω u r) ∂P := by
-                    apply integral_congr_ae
-                    exact ae_of_all _ fun ω => by ring
-              _ = γ * ∫ ω, X ω f * Xc ω u r ∂P := integral_const_mul _ _
+                    grind
+              _ = γ * ∫ ω, X ω f * Xc ω u r ∂P := integral_const_mul ..
       _ = γ * circleCross u r f := by
             rw [isCircleAverage_cross_covariance P X hX Xc hXc]
   obtain ⟨Z, hZcoord, hZae, hZmeas⟩ :=
     exists_measurable_continuousCircleProfile P X hX Xc hXc r
-  let Hroot : (TestFn → ℝ) → Measure ℂ → ℝ≥0∞ := H
+  let Hroot := H
   have hHroot : Measurable (fun q : (TestFn → ℝ) × Measure ℂ => Hroot q.1 q.2) := hH
   have hTransport := equatorGFF_tilted_test_continuousCircle_cutoff_lintegral
     P X hX Xc hXc r 1 γ L hL Z hZmeas hZae hcovCont Hroot hHroot
@@ -136,26 +133,26 @@ theorem regularizedGMC_joint_circle_tilt
     simpa [V] using hTransport
   have hwickMeas : Measurable wick := by
     dsimp [wick]
-    have hxcu : Measurable (fun ω : Ω => Xc ω u r) :=
+    have hxcu : Measurable (fun ω => Xc ω u r) :=
       (hXc.1 r).comp (Measurable.prodMk measurable_id measurable_const)
     fun_prop
   have hfieldMeas : Measurable field := by
     rw [measurable_pi_iff]
     exact fun f => (hX.2 f).1
-  have hregMeas : Measurable (fun ω => regularizedGMC P Xc γ r ω) :=
+  have hregMeas :=
     regularizedGMC_measurable P X hX Xc hXc γ r
   have hHrawMeas : Measurable (fun ω => H (field ω) (regularizedGMC P Xc γ r ω)) :=
-    hH.comp (Measurable.prodMk hfieldMeas hregMeas)
+    by fun_prop
   calc
-    _ = ∫⁻ ω, H (fun f => X ω f) (regularizedGMC P Xc γ r ω) ∂P.withDensity wick := by
+    _ = ∫⁻ ω, H (X ω) _ ∂P.withDensity wick := by
           symm
           rw [lintegral_withDensity_eq_lintegral_mul P hwickMeas hHrawMeas]
           apply lintegral_congr_ae
           exact ae_of_all _ fun ω => by
             simp [wick, field, V]
-    _ = ∫⁻ ω, H (fun f => X ω f)
+    _ = ∫⁻ ω, H (X ω)
           (continuousCircleCutoffMeasure V γ (Z ω)) ∂P.withDensity wick := hleftProfile.symm
-    _ = ∫⁻ ω, H (fun f => X ω f)
+    _ = ∫⁻ ω, H (X ω)
           (continuousCircleCutoffMeasure V γ (Z ω)) ∂P.withDensity
             (fun ω => ENNReal.ofReal (Real.exp
               (1 * L ω - 1 ^ 2 / 2 * gaussianVariance P L))) := by
@@ -166,4 +163,4 @@ theorem regularizedGMC_joint_circle_tilt
             (continuousCircleProfileShift Z covCircle hcovCont 1 ω)) ∂P := htrans
     _ = ∫⁻ ω, H (fieldShift ω)
           ((regularizedGMC P Xc γ r ω).withDensity (fun x => ENNReal.ofReal
-            (Real.exp (γ * covCircle x)))) ∂P := hrightProfile
+            (Real.exp _))) ∂P := hrightProfile

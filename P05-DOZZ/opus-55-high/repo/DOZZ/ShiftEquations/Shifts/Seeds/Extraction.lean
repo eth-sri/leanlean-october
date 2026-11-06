@@ -23,6 +23,8 @@ import DOZZ.Hypergeom.ODE.SlitPlaneGluing
 import DOZZ.Hypergeom.PhysicalRange
 import DOZZ.FourPoint.Diagonal.Assembly
 import DOZZ.FourPoint.Dual.Parameters
+import DOZZ.ShiftEquations.Gluing.Coefficient
+import DOZZ.ShiftEquations.Residual.Calibration
 
 /-!
 # The two dual channels and the second dual crossing seed
@@ -81,12 +83,12 @@ theorem seeds_structureConstant_swap12 {Ω : Type*} [MeasurableSpace Ω] (P : Me
     (X : Ω → Distr) (M : Ω → Measure ℂ) (γ μ a b c : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) (h : ExtendedSeiberg3 γ a b c) :
     structureConstant P M γ μ a b c = structureConstant P M γ μ b a c := by
-  rw [residue_structureConstant_eq_unitVolume, residue_structureConstant_eq_unitVolume,
-    (unitVolumeStructureConstant_symmetric_extended P X M γ a b c hγ hγ2 hX hM h).1]
+  rw [DOZZ.Proofs.structureConstant_eq_mul_unitVolume, DOZZ.Proofs.structureConstant_eq_mul_unitVolume,
+    (DOZZ.Proofs.unitVolumeStructureConstant_symmetric_extended P X M γ a b c hγ hγ2 hX hM h).1]
   have hs : sExp γ b a c = sExp γ a b c := by
     unfold sExp
     ring
-  rw [hs]
+  simp_all
 
 /-- **The channel basis.** At the exchanged charges, the Gauss basis at zero evaluated at `1 - z`
 is the basis at one of the original charges: `c' = 1 + a + b - c`. -/
@@ -106,21 +108,14 @@ theorem dual_channel_basis (H : ℂ → ℂ → ℂ → ℂ → ℂ) {γ : ℝ} 
   have hB : gaussParameterB γ (2 / γ) ε α α' = gaussParameterB γ (2 / γ) α ε α' := by
     unfold gaussParameterB
     ring
-  have hC := dual_seed_channel_parameter γ α ε α' hγ
-  have hCC : (gaussParameterC γ (2 / γ) ε : ℂ) =
-      1 + (gaussParameterA γ (2 / γ) α ε α' : ℂ) +
-        (gaussParameterB γ (2 / γ) α ε α' : ℂ) - (gaussParameterC γ (2 / γ) α : ℂ) := by
-    rw [hC]
+  have hCC : (gaussParameterC γ (2 / γ) ε) =
+      1 + (gaussParameterA γ (2 / γ) α ε α') +
+        (gaussParameterB γ (2 / γ) α ε α') - (gaussParameterC γ (2 / γ) α : ℂ) := by
+    rw [(dual_seed_channel_parameter γ α ε α' hγ)]
     push_cast
     ring
   unfold gaussFMinus gaussFPlus gaussGMinus gaussGPlus
-  rw [hA, hB, hCC]
-  have hpow (A B C : ℂ) : 1 - (1 + A + B - C) = C - A - B := by ring
-  have hplusA (A B C : ℂ) : A - (1 + A + B - C) + 1 = C - B := by ring
-  have hplusB (A B C : ℂ) : B - (1 + A + B - C) + 1 = C - A := by ring
-  have hplusC (A B C : ℂ) : 2 - (1 + A + B - C) = 1 + C - A - B := by ring
-  rw [hpow, hplusA, hplusB, hplusC]
-  exact ⟨rfl, rfl⟩
+  grind
 
 /-! ### The two-channel extraction -/
 
@@ -147,20 +142,19 @@ theorem dual_two_channel_extraction {Ω : Type*} [MeasurableSpace Ω]
       e₀ = d₀ * dualConnU a b c ^ 2 + d₁ * dualConnW a b c ^ 2 ∧
       e₁ = d₀ * dualConnV a b c ^ 2 + d₁ * dualConnX a b c ^ 2 := by
   intro a b c d₀ d₁ e₀ e₁
-  obtain ⟨H, hH⟩ := gauss_hypergeometric_exists
+  obtain ⟨H, hH⟩ := DOZZ.Proofs.gauss_hypergeometric_exists
   obtain ⟨ha, hab, hbc, hc1, hδ, hδ1, -, hK₂⟩ :=
-    gauss_physical_parameter_range γ (2 / γ) α ε α' hγ hγ2 (Or.inr rfl) hs hα hε hα'
-  have hcn : ∀ n : ℤ, c ≠ (n : ℝ) := fun n hn => by
-    have h := seeds_ne_int_of_mem_Ioo (lt_trans (lt_trans ha hab) hbc) hc1 n
-    exact h (by exact_mod_cast hn)
-  have hδn : ∀ n : ℤ, c - a - b ≠ (n : ℝ) := fun n hn => by
-    have h := seeds_ne_int_of_mem_Ioo hδ hδ1 n
-    exact h (by exact_mod_cast hn)
+    DOZZ.Proofs.gauss_physical_parameter_range γ (2 / γ) α ε α' hγ hγ2 (Or.inr rfl) hs hα hε hα'
+  have hcn : ∀ n : ℤ, c ≠ n := fun n hn => by
+    have h := DOZZ.Proofs.complex_ne_int_of_mem_unit (lt_trans (lt_trans ha hab) hbc) hc1 n
+    tauto
+  have hδn : ∀ n : ℤ, c - a - b ≠ n := fun n hn => by
+    have h := DOZZ.Proofs.complex_ne_int_of_mem_unit hδ hδ1 n
+    tauto
   -- the single-valuedness constraint and the vanishing mixed term
   have hratio := gaussCoefficientRatio_mul_K₂_add_K₁_eq_zero a b c hK₂.ne'
   have hconstraint : gaussK₁ a b c * d₀ + gaussK₂ a b c * d₁ = 0 := by
-    simp only [d₁]
-    linear_combination d₀ * hratio
+    grind
   have hcross : d₀ * dualConnU a b c * dualConnV a b c +
       d₁ * dualConnW a b c * dualConnX a b c = 0 := by
     calc
@@ -168,12 +162,11 @@ theorem dual_two_channel_extraction {Ω : Type*} [MeasurableSpace Ω]
           (gaussK₁ a b c * d₀ + gaussK₂ a b c * d₁) := by
         simp only [dualConnU, dualConnV, dualConnW, dualConnX, gaussK₁, gaussK₂]
         ring
-      _ = 0 := by rw [hconstraint, mul_zero]
-  have htransfer := gauss_diagonal_one_basis_of_constraint hH a b c d₀ d₁ hcn hδn hconstraint
+      _ = 0 := by simp_all
   -- the classification in the two channel orders
-  have hclass₀ := degenerateFourPoint_diagonal_classification hH P X M γ μ (2 / γ) α ε α'
+  have hclass₀ := degenerateFourPoint_diagonal_classification hH P X M γ μ _ α ε α'
     hγ hγ2 hμ (Or.inr rfl) hα hε hα' hs hX hM
-  have hclass₁ := degenerateFourPoint_diagonal_classification hH P X M γ μ (2 / γ) ε α α'
+  have hclass₁ := degenerateFourPoint_diagonal_classification hH P X M γ μ _ ε α α'
     hγ hγ2 hμ (Or.inr rfl) hε hα hα' (by linarith) hX hM
   -- the second channel in the basis at one of the first
   have hone : ∀ z ∈ gaussCutPlane, fourPointT P M γ μ (-(2 / γ)) α ε α' z =
@@ -181,8 +174,7 @@ theorem dual_two_channel_extraction {Ω : Type*} [MeasurableSpace Ω]
     intro z hz
     obtain ⟨hm, hp⟩ := dual_channel_basis H hγ.ne' α ε α' z
     rw [dual_fourPoint_reflection P X M γ μ α ε α' hγ hγ2 hX hM z,
-      hclass₁ (1 - z) (one_sub_gaussCutPlane_subset_gaussCutPlane hz), hm, hp]
-    simp only [e₀, e₁]
+      hclass₁ _ (one_sub_gaussCutPlane_subset_gaussCutPlane hz), hm, hp]
     ring
   have he : ∀ z ∈ gaussCutPlane,
       (d₀ * dualConnU a b c ^ 2 + d₁ * dualConnW a b c ^ 2) * ‖gaussGMinus H a b c z‖ ^ 2 +
@@ -191,10 +183,9 @@ theorem dual_two_channel_extraction {Ω : Type*} [MeasurableSpace Ω]
     intro z hz
     calc
       _ = d₀ * ‖gaussFMinus H a b c z‖ ^ 2 + d₁ * ‖gaussFPlus H a b c z‖ ^ 2 :=
-        (htransfer z hz).symm
-      _ = fourPointT P M γ μ (-(2 / γ)) α ε α' z := by
+        ((gauss_diagonal_one_basis_of_constraint hH a b c d₀ d₁ hcn hδn hconstraint) z hz).symm
+      _ = fourPointT P M γ μ _ α ε α' z := by
         rw [hclass₀ z hz]
-        simp only [d₁, d₀]
         ring
       _ = _ := hone z hz
   have huniq := crossing_one_channel_coefficients_unique hH a b c _ _ e₀ e₁ hδn he
@@ -273,14 +264,14 @@ theorem dual_seed_two_multiplier (γ α ε α' : ℝ) (hγ : 0 < γ) (hγ2 : γ 
         dualConnU a b c = dualCrossingL γ ε α α' := by
   intro a b c
   obtain ⟨ha, hab, hbc, hc1, hδ, hδ1, -⟩ :=
-    gauss_physical_parameter_range γ (2 / γ) α ε α' hγ hγ2 (Or.inr rfl) hs hα hε hα'
+    DOZZ.Proofs.gauss_physical_parameter_range γ _ α ε α' hγ hγ2 (Or.inr rfl) hs hα hε hα'
   have hc : 0 < c := lt_trans (lt_trans ha hab) hbc
   have hcn : ∀ n : ℤ, c ≠ (n : ℝ) := fun n hn => by
-    have h := seeds_ne_int_of_mem_Ioo hc hc1 n
-    exact h (by exact_mod_cast hn)
+    have h := DOZZ.Proofs.complex_ne_int_of_mem_unit hc hc1 n
+    simp_all
   have hδn : ∀ n : ℤ, c - a - b ≠ (n : ℝ) := fun n hn => by
-    have h := seeds_ne_int_of_mem_Ioo hδ hδ1 n
-    exact h (by exact_mod_cast hn)
+    have h := DOZZ.Proofs.complex_ne_int_of_mem_unit hδ hδ1 n
+    tauto
   have hdet : dualConnU a b c * dualConnX a b c - dualConnV a b c * dualConnW a b c =
       (c - 1) / (c - a - b) := crossing_connection_det_real a b c hcn hδn
   -- the Gamma values in `u` and `x`
@@ -302,12 +293,11 @@ theorem dual_seed_two_multiplier (γ α ε α' : ℝ) (hγ : 0 < γ) (hγ2 : γ 
     rw [show 1 - (c - a) = a - c + 1 by ring, show 1 - (c - b) = b - c + 1 by ring,
       show -(c - a - b) = a + b - c by ring]
     field_simp
-  rw [hdet, hxu, dual_connection_second_multiplier a b c (c - a - b) hc hc1 hδ hδ1]
+  rw [hdet, hxu, dual_connection_second_multiplier a b c _ hc hc1 hδ hδ1]
   -- `dualCrossingL`, with `C₁ = 1 + a + b - c`
-  have hC := dual_seed_channel_parameter γ α ε α' hγ.ne'
   unfold dualCrossingL
   simp only [lFun_ofReal_re_eq_lR]
-  rw [hC]
+  rw [(dual_seed_channel_parameter γ α ε α' hγ.ne')]
   have e1 : 1 - (c - a - b) - 1 = -(c - a - b) := by ring
   have e2 : 1 - (c - a - b) - a - b + 1 = 2 - c := by ring
   have e3 : 1 - (c - a - b) - a = 1 - c + b := by ring
@@ -338,35 +328,21 @@ theorem dual_seed_two_identity {Ω : Type*} [MeasurableSpace Ω]
           structureConstant P M γ μ ε (2 * Q γ - α - 2 / γ) α' := by
   obtain ⟨hcross, -, hE⟩ := dual_two_channel_extraction P X M γ μ α ε α' hγ hγ2 hμ hα hε hα'
     hs hX hM
-  have hL : dualConnX (gaussParameterA γ (2 / γ) α ε α') (gaussParameterB γ (2 / γ) α ε α')
-        (gaussParameterC γ (2 / γ) α) *
-      (dualConnU (gaussParameterA γ (2 / γ) α ε α') (gaussParameterB γ (2 / γ) α ε α')
-          (gaussParameterC γ (2 / γ) α) *
-        dualConnX (gaussParameterA γ (2 / γ) α ε α') (gaussParameterB γ (2 / γ) α ε α')
-          (gaussParameterC γ (2 / γ) α) -
-        dualConnV (gaussParameterA γ (2 / γ) α ε α') (gaussParameterB γ (2 / γ) α ε α')
-          (gaussParameterC γ (2 / γ) α) *
-        dualConnW (gaussParameterA γ (2 / γ) α ε α') (gaussParameterB γ (2 / γ) α ε α')
-          (gaussParameterC γ (2 / γ) α)) /
-      dualConnU (gaussParameterA γ (2 / γ) α ε α') (gaussParameterB γ (2 / γ) α ε α')
-        (gaussParameterC γ (2 / γ) α) = dualCrossingL γ ε α α' :=
+  have hL :=
     dual_seed_two_multiplier γ α ε α' hγ hγ2 hα hε hα' hs
   obtain ⟨ha, hab, hbc, hc1, hδ, -⟩ :=
-    gauss_physical_parameter_range γ (2 / γ) α ε α' hγ hγ2 (Or.inr rfl) hs hα hε hα'
+    DOZZ.Proofs.gauss_physical_parameter_range γ (2 / γ) α ε α' hγ hγ2 (Or.inr rfl) hs hα hε hα'
   have hu : dualConnU (gaussParameterA γ (2 / γ) α ε α') (gaussParameterB γ (2 / γ) α ε α')
       (gaussParameterC γ (2 / γ) α) ≠ 0 := by
-    unfold dualConnU
-    have hc : 0 < gaussParameterC γ (2 / γ) α := lt_trans (lt_trans ha hab) hbc
-    exact mul_ne_zero (mul_ne_zero (mul_ne_zero (Real.Gamma_pos_of_pos hc).ne'
+    exact mul_ne_zero (mul_ne_zero (mul_ne_zero (Real.Gamma_pos_of_pos (lt_trans (lt_trans ha hab) hbc)).ne'
       (Real.Gamma_pos_of_pos hδ).ne') (inv_ne_zero (Real.Gamma_pos_of_pos (by linarith)).ne'))
       (inv_ne_zero (Real.Gamma_pos_of_pos (by linarith)).ne')
   have h2 := dual_connection_diagonal_second_from_second _ _ _ _ _ _ hcross hu
   -- the reflected triple is symmetric in its first two charges
-  have hswap := seeds_structureConstant_swap12 P X M γ μ (2 * Q γ - α - 2 / γ) ε α' hγ hγ2 hX hM
+  have hswap := seeds_structureConstant_swap12 P X M γ μ _ ε α' hγ hγ2 hX hM
     (seeds_reflected_triple hγ hγ2 hε hα' hα hs).2
   -- `e₁ = d₁ x det / u = L d₁`
-  rw [← hRIε, hE.trans h2, ← hswap, mul_assoc (dualCrossingL γ ε α α'), ← hRIα, ← hL]
-  ring
+  grind
 
 end DOZZ.Proofs
 

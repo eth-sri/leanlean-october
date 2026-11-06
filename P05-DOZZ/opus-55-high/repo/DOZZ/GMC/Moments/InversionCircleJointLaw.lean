@@ -40,24 +40,24 @@ theorem inversionCircle_source_jointly_gaussian
     intro i
     dsimp [V]
     split
-    · exact hXc.2.1 _ _
-    · exact hmem i
+    · exact hXc.2.1 ..
+    simp_all
   have hl i : Tendsto (fun n => eLpNorm (fun ω => X ω (F i n) - V i ω) 2 P)
       atTop (𝓝 0) := by
     dsimp [F, V]
     split
     · exact hXc.2.2 _ _ (g i) (hgap i)
-    · exact hlim i
+    · simp_all
   have hp : IsGaussianProcess V P := by
-    apply isGaussianProcess_of_eLpNorm_sub (fun n i ω => X ω (F i n)) V
+    apply isGaussianProcess_of_eLpNorm_sub (fun n i ω => X ω _) V
     · intro n
       exact equatorGFF_test_family_isGaussianProcess X hX (fun i => F i n)
     · exact hv
     · exact hl
   exact centeredJointlyGaussian_of_isGaussianProcess P V hp (fun i =>
     integral_eq_zero_of_eLpNorm_sub
-      (fun n => equatorGFF_test_memLp X hX (F i n)) (hv i)
-      (fun n => equatorGFF_test_integral X hX (F i n)) (hl i))
+      (fun n => equatorGFF_test_memLp X hX _) (hv i)
+      (fun n => equatorGFF_test_integral X hX _) (hl i))
 
 /-- The measurable transformed circles have the ordinary circle law on every finite family,
 with no equality assertion for the two source cutoff profiles at a fixed scale. -/
@@ -86,7 +86,7 @@ theorem inversionCircle_fdd_law
   · intro n
     exact (measurable_pi_iff.mpr fun i => (hX'.2 _).1).aemeasurable
   · exact AEMeasurable.of_eval (fun i => (hmem i).aemeasurable)
-  · exact AEMeasurable.of_eval (fun i => (hXc'.2.1 _ _).aemeasurable)
+  · exact AEMeasurable.of_eval (fun i => (hXc'.2.1 ..).aemeasurable)
   · intro n
     exact equatorGFF_inversion_local_test_fdd_law P X hX P' X' hX'
       (fun i => f i n) (fun i => hf i n)

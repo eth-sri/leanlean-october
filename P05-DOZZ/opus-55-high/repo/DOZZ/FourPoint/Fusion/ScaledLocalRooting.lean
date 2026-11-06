@@ -47,7 +47,7 @@ theorem fusion_localR1_reference_scaled {Ω : Type*} [MeasurableSpace Ω]
         apply lintegral_congr_ae
         filter_upwards [fusionMovingMass_eq_rooted_ae P X hX γ hγ hγ2 M hM α₁ α₂ α₃ y z]
           with ω hω
-        rw [hω]
+        simp_all
       rw [he]
       simp only [fusionScaledFactor, ite_eq_left hyz, Complex.ofReal_mul]
       ring
@@ -57,13 +57,12 @@ theorem fusion_localR1_reference_scaled {Ω : Type*} [MeasurableSpace Ω]
   have hscale := fusion_integral_mul_complex F z hz
   have heq : (fun y => F (y * z)) = fun y =>
       (‖z‖ ^ (γ ^ 2 / 2 - γ * α₁) : ℝ) / z ^ 2 *
-        (planarWirtingerKernel (γ ^ 2 / 2) (γ * α₁) 1 y *
+        (planarWirtingerKernel _ _ 1 y *
           (fusionScaledFactor P M γ α₁ α₂ α₃ s y z : ℂ)) := funext hpoint
   rw [heq, integral_const_mul] at hscale
-  have hr : 0 < ‖z‖ := norm_pos_iff.mpr hz
   have hp : ‖z‖ ^ (2 : ℕ) * ‖z‖ ^ (γ ^ 2 / 2 - γ * α₁) =
       ‖z‖ ^ (2 + γ ^ 2 / 2 - γ * α₁) := by
-    rw [← Real.rpow_natCast, ← Real.rpow_add hr]
+    rw [← Real.rpow_natCast, ← Real.rpow_add (norm_pos_iff.mpr hz)]
     congr 1
     ring
   calc
@@ -71,7 +70,7 @@ theorem fusion_localR1_reference_scaled {Ω : Type*} [MeasurableSpace Ω]
     _ = _ := hscale
     _ = _ := by
       rw [← mul_assoc]
-      have hc : ((‖z‖ ^ (2 : ℕ) : ℝ) : ℂ) *
+      have hc : ((‖z‖ ^ 2 : ℝ) : ℂ) *
           ((‖z‖ ^ (γ ^ 2 / 2 - γ * α₁) : ℝ) / z ^ 2) =
           (‖z‖ ^ (2 + γ ^ 2 / 2 - γ * α₁) : ℝ) / z ^ 2 := by
         rw [← mul_div_assoc, ← Complex.ofReal_mul, hp]

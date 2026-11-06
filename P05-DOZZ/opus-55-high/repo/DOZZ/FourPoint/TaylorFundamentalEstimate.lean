@@ -30,8 +30,8 @@ theorem twoRooted_fundamental_estimate
       ∀ z : ℂ, z ≠ 0 → ‖z‖ ≤ r₀ →
         gammaHalfTwoRootedMajorant P M γ α₁ α₂ α₃ p z ≤
           ENNReal.ofReal (C * ‖z‖ ^ (γ * (Q γ - α₁) - 2 + η)) := by
-  let κ : ℝ := γ * (Q γ - α₁)
-  let W : ℝ := (γ / 2 + Q γ - α₁) ^ 2
+  let κ := γ * (Q γ - α₁)
+  let W := (γ / 2 + Q γ - α₁) ^ 2
   obtain ⟨q, δ, ε, η₀, hq, hδ, hδ1, hε, hη₀, hηκ₀, hηd₀, _, hmid₀⟩ :=
     twoRooted_region_parameters γ α₁ hγ hγsq hα₁ hα₁2
   obtain ⟨η, hη, hηκ, hηd, hηnear, hmid⟩ := taylor_common_gain
@@ -43,17 +43,17 @@ theorem twoRooted_fundamental_estimate
     α₁ α₂ α₃ p q hα₁ hα₁2 hp hq
   obtain ⟨Cn, hCn, hn⟩ := twoRooted_near_bound P X hX γ hγ hγ2 M hM α₁ α₂ α₃ p hp
   let C : ℝ := 16 * (Ce + Ca + Cs + Cn)
-  refine ⟨η, C, r₀, hη, by dsimp only [C]; positivity, hr₀, ?_⟩
+  refine ⟨η, C, r₀, hη, by positivity, hr₀, ?_⟩
   intro z hz hzr
-  have hr : 0 < ‖z‖ := norm_pos_iff.mpr hz
-  have hr4 : ‖z‖ ≤ 1 / 4 := hzr.trans hr₀4
-  have hr1 : ‖z‖ ≤ 1 := hr4.trans (by norm_num)
-  let ρ : ℝ := ‖z‖ ^ (1 - δ)
-  let d : ℝ := ‖z‖ ^ (1 + ε)
+  have hr := norm_pos_iff.mpr hz
+  have hr4 := hzr.trans hr₀4
+  have hr1 : ‖z‖ ≤ 1 := by linarith
+  let ρ := ‖z‖ ^ (1 - δ)
+  let d := ‖z‖ ^ (1 + ε)
   obtain ⟨hρ, hρ4, hzrhalf, hd, hdrhalf⟩ := hscale ‖z‖ hr hzr
-  have hρhalf : ρ ≤ 1 / 2 := hρ4.trans (by norm_num)
-  have hzrρ : ‖z‖ ≤ ρ := by linarith only [hzrhalf, hρ]
-  let B : Fin 4 → Set ℂ := ![(Metric.ball 0 (1 / 2))ᶜ,
+  have hρhalf : ρ ≤ 1 / 2 := by linarith
+  have hzrρ : ‖z‖ ≤ ρ := by linarith
+  let B := ![(Metric.ball 0 (1 / 2))ᶜ,
     Metric.ball 0 (1 / 2) \ Metric.ball 0 ρ,
     Metric.ball 0 ρ \ Metric.ball z d, Metric.ball z d]
   have hB : ∀ i, MeasurableSet (B i) := by
@@ -74,12 +74,12 @@ theorem twoRooted_fundamental_estimate
     by_cases hxhalf : x ∈ Metric.ball 0 (1 / 2)
     · exact ⟨1, hxhalf, hxρ⟩
     · exact ⟨0, hxhalf⟩
-  let E : ℝ := κ - 2 + η
+  let E := κ - 2 + η
   have hpow : 1 ≤ ‖z‖ ^ E := by
-    have hE : E ≤ 0 := by dsimp only [E]; linarith only [hηκ]
-    simpa only [Real.rpow_zero] using Real.rpow_le_rpow_of_exponent_ge hr hr1 hE
+    have hE : E ≤ 0 := by linarith
+    simpa using Real.rpow_le_rpow_of_exponent_ge hr hr1 hE
   obtain ⟨hpa, hps, hpn⟩ := taylor_regional_powers γ α₁ δ ε η W q ‖z‖ hγ hr hr1 hηd hηnear hmid
-  let Creg : Fin 4 → ℝ := ![Ce, Ca, Cs, Cn]
+  let Creg := ![Ce, Ca, Cs, Cn]
   have hregions (i : Fin 4) :
       gammaHalfTwoRootedMajorantOn P M γ α₁ α₂ α₃ p z (B i) ≤
         ENNReal.ofReal (Creg i * ‖z‖ ^ E) := by
@@ -111,8 +111,8 @@ theorem twoRooted_fundamental_estimate
       rw [← ENNReal.ofReal_add (by positivity) (by positivity),
         ← ENNReal.ofReal_add (by positivity) (by positivity),
         ← ENNReal.ofReal_add (by positivity) (by positivity)]
-      have h16 : (16 : ℝ≥0∞) = ENNReal.ofReal (16 : ℝ) := by norm_num
-      rw [h16, ← ENNReal.ofReal_mul (by norm_num : (0 : ℝ) ≤ 16)]
+      have h16 : 16 = ENNReal.ofReal 16 := by norm_num
+      rw [h16, ← ENNReal.ofReal_mul (by norm_num)]
       congr 1
       dsimp only [C, E, κ]
       ring

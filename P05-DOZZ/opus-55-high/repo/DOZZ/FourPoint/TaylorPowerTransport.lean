@@ -25,26 +25,21 @@ theorem taylor_regional_powers (γ α δ ε η W q r : ℝ)
       r ^ (γ * (Q γ - α) - 2 + η) := by
   have hκ : γ * (Q γ - α) - 2 = γ ^ 2 / 2 - γ * α := by
     unfold Q
-    field_simp [hγ.ne']
-    ring
-  have hmono (a b : ℝ) (hab : a ≤ b) : r ^ b ≤ r ^ a :=
+    grind
+  have hmono (a b : ℝ) hab : r ^ b ≤ r ^ a :=
     Real.rpow_le_rpow_of_exponent_ge hr hr1 hab
   refine ⟨?_, ?_, ?_⟩
   · rw [← Real.rpow_mul hr.le]
     apply hmono
     rw [hκ]
-    nlinarith only [hηd]
+    linarith
   · have heq : ((r ^ (1 + ε))⁻¹) ^ 2 * (r ^ (1 - δ)) ^ (W / (2 * q)) =
         r ^ (-2 - 2 * ε + (1 - δ) * W / (2 * q)) := by
       rw [inv_pow, ← Real.rpow_natCast, ← Real.rpow_neg (Real.rpow_nonneg hr.le _),
         ← Real.rpow_mul hr.le, ← Real.rpow_mul hr.le, ← Real.rpow_add hr]
-      congr 1
       ring
-    rw [heq]
-    exact hmono _ _ hmid
+    simp_all
   · rw [← Real.rpow_mul hr.le, ← Real.rpow_add hr]
-    apply hmono
-    rw [hκ]
-    nlinarith only [hηnear]
+    grind
 
 end DOZZ.Proofs

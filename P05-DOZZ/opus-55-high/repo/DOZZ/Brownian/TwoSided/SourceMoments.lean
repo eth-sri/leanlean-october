@@ -17,21 +17,22 @@ open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal NNReal Distributions
 
 namespace DOZZ.Proofs
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
 
 /-- On the reference chart, convex moments increase with the charge even when the two
 circle-average fields are different versions of the equator field. -/
 theorem twosided_reference_cutoff_convex_comparison
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X Y : Ω → Distr) (hX : IsEquatorGFF P X) (hY : IsEquatorGFF P Y)
     (Xc Yc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (hYc : IsCircleAverage P Y Yc) (γ g r p : ℝ)
     (hγ : 0 < γ) (hγg : γ ≤ g) (hr : 1 ≤ r) (hp : p ≤ 0 ∨ 1 ≤ p) :
     gmcMassMoment P (regularizedGMC P Xc γ r) (Metric.ball 0 (1 / 8)) p ≤
       gmcMassMoment P (regularizedGMC P Yc g r) (Metric.ball 0 (1 / 8)) p := by
-  have hg : 0 < g := lt_of_lt_of_le hγ hγg
-  let c : ℝ := γ / g
-  have hc0 : 0 ≤ c := div_nonneg hγ.le hg.le
-  have hc1 : c ≤ 1 := (div_le_one hg).mpr hγg
+  have hg := lt_of_lt_of_le hγ hγg
+  let c := γ / g
+  have hc0 := div_nonneg hγ.le hg.le
+  have hc1 : c ≤ 1 := by bound
   have hc2 : c ^ 2 ≤ 1 := by nlinarith
   let A : Set ℂ := Metric.ball 0 (1 / 8)
   let ν : Measure ℂ := gmcReferenceMeasure.restrict A
@@ -50,7 +51,7 @@ theorem twosided_reference_cutoff_convex_comparison
     rw [hprod]
     filter_upwards [ae_restrict_mem (hA.prod hA)] with xy hxy
     have he : (fun ω => c * Xc ω xy.1 r * (c * Xc ω xy.2 r)) =
-        fun ω => c ^ 2 * (Xc ω xy.1 r * Xc ω xy.2 r) := by funext ω; ring
+        fun ω => c ^ 2 * (Xc ω xy.1 r * Xc ω xy.2 r) := by ring
     rw [he, integral_const_mul]
     have h0 := circleField_covariance_nonneg_reference P X hX Xc hXc r hr
       xy.1 hxy.1 xy.2 hxy.2
@@ -83,7 +84,6 @@ theorem twosided_reference_cutoff_convex_comparison
 
 /-- Fatou only needs the cutoff estimate after time one; no coarse-cutoff premise is added. -/
 theorem twosided_reference_moment_le_of_fine_cutoffs
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
@@ -94,10 +94,10 @@ theorem twosided_reference_moment_le_of_fine_cutoffs
   let A : Set ℂ := Metric.ball 0 (1 / 8)
   let f : ℕ → Ω → ℝ := fun n ω => (regularizedGMC P Xc γ (n + 1 : ℕ) ω A).toReal
   let g : Ω → ℝ := fun ω => (M ω A).toReal
-  have hseq : Tendsto (fun n : ℕ => n + 1) atTop atTop := tendsto_add_atTop_nat 1
+  have hseq : Tendsto (fun n => n + 1) atTop atTop := tendsto_add_atTop_nat 1
   have hconv : TendstoInMeasure P f atTop g :=
     (regularizedGMC_mass_toReal_tendstoInMeasure P X hX γ hγ hγ2 M hM Xc hXc A
-      Metric.isOpen_ball.measurableSet (1 / 8) Metric.ball_subset_closedBall).comp hseq
+      Metric.isOpen_ball.measurableSet _ Metric.ball_subset_closedBall).comp hseq
   have hfmeas (n : ℕ) : Measurable (f n) :=
     measurable_regularizedGMC_apply_toReal P X hX Xc hXc γ _ A Metric.isOpen_ball.measurableSet
   have hpow (n : ℕ) : AEMeasurable
@@ -105,26 +105,21 @@ theorem twosided_reference_moment_le_of_fine_cutoffs
     (ENNReal.continuous_rpow_const.measurable.comp
       (ENNReal.measurable_ofReal.comp ((hfmeas n).max measurable_const))).aemeasurable
   have hfbound (n : ℕ) : (∫⁻ ω, ENNReal.rpow (ENNReal.ofReal (max (f n ω) 0)) p ∂P) ≤ C := by
-    refine le_trans (le_of_eq ?_) (hbound (n + 1 : ℕ) (by exact_mod_cast Nat.le_add_left 1 n))
-    unfold gmcMassMoment
+    refine le_trans (le_of_eq ?_) (hbound (n + 1 : ℕ) (by simp))
     apply lintegral_congr_ae
     filter_upwards [regularizedGMC_finite_ae P X hX Xc hXc γ (n + 1 : ℕ)] with ω hω
-    let _ := hω
-    dsimp only [f]
-    rw [max_eq_left ENNReal.toReal_nonneg, ENNReal.ofReal_toReal (measure_ne_top _ _)]
+    aesop
   have hfatou := lintegral_ennreal_rpow_le_of_tendstoInMeasure P f g p C hconv hpow
     (Eventually.of_forall fun _ => ENNReal.toReal_nonneg) hfbound
   refine le_trans (le_of_eq ?_) hfatou
-  unfold gmcMassMoment
   apply lintegral_congr
   intro ω
   let _ := hM.1 ω
-  exact congrArg (fun x : ℝ≥0∞ => x ^ p) (ENNReal.ofReal_toReal (measure_ne_top (M ω) A)).symm
+  exact congrArg (fun x => x ^ p) (ENNReal.ofReal_toReal (measure_ne_top (M ω) A)).symm
 
 /-- One fixed equator witness at the maximal charge bounds every source witness and every
 smaller charge, at any single convex subcritical order. -/
 theorem twosided_reference_convex_moments_uniform
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (Y : Ω → Distr) (hY : IsEquatorGFF P Y)
     (Yc : Ω → ℂ → ℝ → ℝ) (hYc : IsCircleAverage P Y Yc)
     (g : ℝ) (hg : 0 < g) (hg2 : g < 2) (p : ℝ)
@@ -139,9 +134,7 @@ theorem twosided_reference_convex_moments_uniform
     · obtain ⟨K, hK⟩ := regularizedGMC_reference_inverse_moment_uniform P Y hY Yc hYc
         g hg hg2 (-p) (neg_pos.mpr hp)
       refine ⟨ENNReal.ofReal K, ENNReal.ofReal_lt_top, ?_⟩
-      intro r hr
-      change (∫⁻ ω, (regularizedGMC P Yc g r ω (Metric.ball 0 (1 / 8))) ^ p ∂P) ≤ _
-      simpa only [neg_neg] using hK r hr
+      aesop
     · exact regularizedGMC_reference_moment_uniform_nonnegative P Y hY Yc hYc g p hg
         (le_trans zero_le_one hp) hcrit (by norm_num) le_rfl
   obtain ⟨C, hC, hbound⟩ := hfixed
@@ -153,5 +146,7 @@ theorem twosided_reference_convex_moments_uniform
   intro r hr
   exact (twosided_reference_cutoff_convex_comparison P X Y hX hY Xc Yc hXc hYc γ g r p
     hγ hγg hr (hp.imp le_of_lt id)).trans (hbound r (le_trans zero_le_one hr))
+
+end
 
 end DOZZ.Proofs

@@ -22,15 +22,15 @@ theorem localization_bump (ρ : ℝ) (hρ : 0 < ρ) :
   let b : ContDiffBump (0 : ℂ) :=
     { rIn := ρ/4, rOut := ρ/2,
       rIn_pos := by positivity,
-      rIn_lt_rOut := by linarith only [hρ] }
+      rIn_lt_rOut := by linarith }
   let χ := BoundedContinuousFunction.ofNormedAddCommGroup (b : ℂ → ℝ)
     b.continuous 1 (fun x => by
       rw [Real.norm_eq_abs,abs_of_nonneg b.nonneg]
       exact b.le_one)
   refine ⟨χ,b.hasCompactSupport,fun x => ⟨b.nonneg,b.le_one⟩,?_,?_⟩
-  · change tsupport (b : ℂ → ℝ) ⊆ ball 0 ρ
+  · change tsupport b ⊆ ball 0 ρ
     rw [b.tsupport_eq]
-    exact closedBall_subset_ball (by dsimp [b]; linarith only [hρ])
+    exact closedBall_subset_ball (by aesop)
   · intro x hx
     exact b.one_of_mem_closedBall hx
 

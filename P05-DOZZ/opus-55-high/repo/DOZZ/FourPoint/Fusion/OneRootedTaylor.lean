@@ -37,9 +37,7 @@ theorem gammaHalf_oneRooted_Taylor_asymptotic {Ω : Type*} [MeasurableSpace Ω]
   let F := gammaHalfOneRootedTerm P M γ α₁ α₂ α₃ p
   let C : ℂ := -(p * gammaHalfRootedCoefficient P M γ α₁ α₂ α₃ p)
   refine ⟨fun z => F z - C * (‖z‖ ^ κ : ℝ), ?_, ?_⟩
-  · intro z
-    change F z = C * (‖z‖ ^ κ : ℝ) + (F z - C * (‖z‖ ^ κ : ℝ))
-    ring
+  · aesop
   · apply fusion_littleO_of_normalized_tendsto κ F C
     simpa only [F, C, κ, neg_mul, Complex.ofReal_neg, Complex.ofReal_mul] using
       fusionFullOneRooted_normalized_tendsto P X hX γ hγ hγ2 M hM α₁ α₂ α₃

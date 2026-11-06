@@ -40,17 +40,17 @@ theorem gmc_correlated_exponential_test_limit
   let Lcoef : ℝ → ℝ := fun t => ‖f‖ * ‖c‖ * Real.exp (‖c‖ * (|t|+1))
   let E : Ω → ℝ≥0∞ := fun ω => ENNReal.ofReal (Lcoef (θ ω))
   have hE : Measurable E :=
-    (((continuous_abs.measurable.comp hθ).add_const 1).const_mul ‖c‖).exp.const_mul (‖f‖ * ‖c‖) |>.ennreal_ofReal
+    by fun_prop
   have hEp : (∫⁻ ω, E ω ^ p ∂P) < ⊤ := by
-    let B : ℝ := ‖f‖ * ‖c‖ * Real.exp ‖c‖
-    have hB : 0 ≤ B := by dsimp [B]; positivity
+    let B := ‖f‖ * ‖c‖ * Real.exp ‖c‖
+    have hB : 0 ≤ B := by positivity
     have heq (ω : Ω) : E ω ^ p = ENNReal.ofReal B ^ p *
         ENNReal.ofReal (Real.exp ((p*‖c‖)*|θ ω|)) := by
       have hfactor : Lcoef (θ ω) = B * Real.exp (‖c‖ * |θ ω|) := by
         dsimp [Lcoef, B]
         rw [mul_add, mul_one, Real.exp_add]
         ring
-      change ENNReal.ofReal (Lcoef (θ ω)) ^ p = _
+      change ENNReal.ofReal _ ^ p = _
       rw [hfactor, ENNReal.ofReal_mul hB,
         ENNReal.mul_rpow_of_ne_top ENNReal.ofReal_ne_top ENNReal.ofReal_ne_top,
         ENNReal.ofReal_rpow_of_pos (Real.exp_pos _), ← Real.exp_mul]
@@ -59,16 +59,16 @@ theorem gmc_correlated_exponential_test_limit
     simp_rw [heq]
     rw [lintegral_const_mul' _ _ (ENNReal.rpow_lt_top_of_nonneg hp.le ENNReal.ofReal_ne_top).ne]
     exact ENNReal.mul_lt_top (ENNReal.rpow_lt_top_of_nonneg hp.le ENNReal.ofReal_ne_top)
-      (hθexp (p*‖c‖))
+      (hθexp _)
   obtain ⟨R, hRs⟩ : ∃ R : ℝ, tsupport (f : ℂ → ℝ) ⊆ Metric.closedBall (0 : ℂ) R :=
     hfc.isBounded.subset_closedBall 0
   let R' := max R 0
-  have hR' : 0 ≤ R' := le_max_right _ _
+  have hR' : 0 ≤ R' := le_max_right ..
   let K := Metric.closedBall (0 : ℂ) R'
-  have hK : IsCompact K := isCompact_closedBall _ _
+  have hK : IsCompact K := isCompact_closedBall ..
   have hFK (t : ℝ) : tsupport (exponentialParameterTest f c t : ℂ → ℝ) ⊆ K :=
     (exponential_parameter_test_support f c t).trans
-      (hRs.trans (Metric.closedBall_subset_closedBall (le_max_left _ _)))
+      (hRs.trans (Metric.closedBall_subset_closedBall (le_max_left ..)))
   obtain ⟨C, hC, hcut, hlim⟩ := regularized_mass_envelope_uniform
     P X hX Xc hc γ R' hγ hγ2 hR' M hM E hE.aemeasurable p q hpq hqc hEp
   obtain ⟨M', hM'm, hM'f, hM'e⟩ := equatorGFF_GMC_measurable_version P X hX γ hγ hγ2 M hM
@@ -78,10 +78,10 @@ theorem gmc_correlated_exponential_test_limit
   choose N hNm hNf hNe using hversions
   have hNmK (n : ℕ) (ω : Ω) : N n ω K < ⊤ := by
     let : IsFiniteMeasure (N n ω) := hNf n ω
-    exact measure_lt_top _ _
+    exact measure_lt_top ..
   have hM'mK (ω : Ω) : M' ω K < ⊤ := by
     let : IsFiniteMeasure (M' ω) := hM'f ω
-    exact measure_lt_top _ _
+    exact measure_lt_top ..
   have hconv (t : ℝ) : TendstoInMeasure P
       (fun n ω => ∫ x, exponentialParameterTest f c t x ∂N n ω)
       atTop (fun ω => ∫ x, exponentialParameterTest f c t x ∂M' ω) := by
@@ -113,7 +113,7 @@ theorem gmc_correlated_exponential_test_limit
     exact hlim
   have h := tendstoInMeasure_parameter_integral P N M' hNm hM'm K hK hNmK hM'mK
     (exponentialParameterTest f c) (exponential_parameter_test_measurable f c)
-      hFK θ hθ hconv Lcoef (fun t => by dsimp [Lcoef]; positivity)
+      hFK θ hθ hconv Lcoef (fun t => by positivity)
         (fun t u htu x _ => exponential_parameter_test_lipschitz f c t u htu x)
           C hC.ne hcut' hlim'
   have hleft (n : ℕ) : (fun ω => ∫ x, exponentialParameterTest f c (θ ω) x ∂N n ω) =ᵐ[P]

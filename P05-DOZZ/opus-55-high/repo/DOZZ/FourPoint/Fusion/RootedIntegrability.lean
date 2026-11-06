@@ -5,6 +5,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import DOZZ.FourPoint.Fusion.ComplexRooting
+import DOZZ.Brownian.Lateral.RadialProjection
+import DOZZ.GMC.Construction.RootedIdentity
 
 /-! # Recovering samplewise spatial integrability from the absolute rooted bound -/
 
@@ -25,10 +27,9 @@ theorem fusion_rooted_spatial_integrable {Ω : Type*} [MeasurableSpace Ω]
       (∫⁻ ω, G (gmcRootedMeasure γ u (M ω)) ∂P) ∂gmcReferenceMeasure) < ⊤) :
     ∀ᵐ ω ∂P, Integrable f (M ω) := by
   let L := fun ω => (∫⁻ u, ENNReal.ofReal ‖f u‖ ∂M ω) * G (M ω)
-  have hM' := gmc_measure_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM
+  have hM' := DOZZ.Proofs.equatorGFF_GMC_aemeasurable P X hX γ hγ hγ2 M hM
   have hL : AEMeasurable L P :=
-    ((Measure.measurable_lintegral (ENNReal.measurable_ofReal.comp hf.norm)).comp_aemeasurable hM').mul
-      (hG.comp_aemeasurable hM')
+    by fun_prop
   have hid : (∫⁻ ω, L ω ∂P) = ∫⁻ u, ENNReal.ofReal ‖f u‖ *
       (∫⁻ ω, G (gmcRootedMeasure γ u (M ω)) ∂P) ∂gmcReferenceMeasure := by
     calc
@@ -36,9 +37,9 @@ theorem fusion_rooted_spatial_integrable {Ω : Type*} [MeasurableSpace Ω]
         apply lintegral_congr
         intro ω
         exact (lintegral_mul_const _ (ENNReal.measurable_ofReal.comp hf.norm)).symm
-      _ = ∫⁻ u, ∫⁻ ω, ENNReal.ofReal ‖f u‖ * G (gmcRootedMeasure γ u (M ω)) ∂P
+      _ = ∫⁻ u, ∫⁻ ω, ENNReal.ofReal ‖f u‖ * G _ ∂P
           ∂gmcReferenceMeasure :=
-        DOZZ.equatorGFF_rooted_GMC_identity P X hX γ hγ hγ2 M hM
+        DOZZ.Proofs.equatorGFF_rooted_GMC_identity P X hX γ hγ hγ2 M hM
           (fun u _ μ => ENNReal.ofReal ‖f u‖ * G μ)
           ((ENNReal.measurable_ofReal.comp (hf.norm.comp measurable_fst)).mul
             (hG.comp (measurable_snd.comp measurable_snd)))
@@ -51,9 +52,6 @@ theorem fusion_rooted_spatial_integrable {Ω : Type*} [MeasurableSpace Ω]
   refine ⟨hf.aestronglyMeasurable, ?_⟩
   rw [hasFiniteIntegral_iff_norm]
   by_contra ht
-  have ht' : (∫⁻ u, ENNReal.ofReal ‖f u‖ ∂M ω) = ⊤ := not_lt_top_iff.mp ht
-  dsimp only [L] at hω
-  rw [ht', ENNReal.top_mul h0] at hω
-  exact lt_irrefl _ hω
+  aesop
 
 end DOZZ.Proofs

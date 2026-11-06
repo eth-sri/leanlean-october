@@ -18,10 +18,13 @@ open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped Distributions ENNReal NNReal BoundedContinuousFunction
 
 namespace DOZZ.Proofs
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+section
+variable (hX : IsEquatorGFF P X) (γ : ℝ)
+include hX
 
-private theorem gmc_test_integral_aemeasurable_of_support
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
+theorem gmc_test_integral_aemeasurable_of_support
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (K : Set ℂ) (hK : MeasurableSet K)
     (hKunit : ∀ x ∈ K, ‖x‖ ≤ 1)
@@ -34,14 +37,12 @@ private theorem gmc_test_integral_aemeasurable_of_support
     regularizedGMC_test_integral_aemeasurable P X hX Xc hXc γ n K hK hKunit f
       f.continuous.measurable hfzero
   have hconv := (hMlim f).comp
-    (tendsto_natCast_atTop_atTop : Tendsto (fun n : ℕ => (n : ℝ)) atTop atTop)
+    tendsto_natCast_atTop_atTop
   exact hconv.aemeasurable hcut
 
 /-- For a disk compactly contained in the logarithmic chart, the affine scaling law holds for its
 mass, including the independent scalar Gaussian. The result applies to every `IsGMCOf` version. -/
 theorem gmc_affine_openBall_mass_law
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
     (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     {a : ℂ} {c R : ℝ} (hc : 0 < c) (hc1 : c ≤ 1)
@@ -55,8 +56,8 @@ theorem gmc_affine_openBall_mass_law
         neg_nonneg.mpr (Real.log_nonpos hc.le hc1)⟩)) := by
   classical
   let : IsProbabilityMeasure P := hX.1
-  let σ : ℝ := -Real.log c
-  let G : Measure ℝ := gaussianReal 0 ⟨σ,
+  let σ := -Real.log c
+  let G := gaussianReal 0 ⟨σ,
     neg_nonneg.mpr (Real.log_nonpos hc.le hc1)⟩
   have hG : IsProbabilityMeasure G := by
     simpa [G, σ] using (ProbabilityTheory.instIsProbabilityMeasureGaussianReal 0
@@ -81,10 +82,10 @@ theorem gmc_affine_openBall_mass_law
       change dist x a ≤ c * R at hx
       simpa [dist_eq_norm] using hx
     calc
-      ‖x‖ = ‖(x - a) + a‖ := by congr 1; abel
-      _ ≤ ‖x - a‖ + ‖a‖ := norm_add_le _ _
+      ‖x‖ = ‖(x - a) + a‖ := by simp
+      _ ≤ ‖x - a‖ + ‖a‖ := norm_add_le ..
       _ ≤ c * R + ‖a‖ := by nlinarith
-      _ ≤ 1 := by linarith [hTsmall]
+      _ ≤ 1 := by linarith
   have hsourceUnit : ∀ x ∈ Metric.closedBall (0 : ℂ) R, ‖x‖ ≤ 1 := by
     intro x hx
     have hx' : ‖x‖ ≤ R := by
@@ -156,12 +157,12 @@ theorem gmc_affine_openBall_mass_law
     have hbase : AEMeasurable
         (fun p : Ω × ℝ => (M p.1 (Metric.ball 0 R)).toReal) (P.prod G) := by
       change AEMeasurable
-        ((fun ω => (M ω (Metric.ball 0 R)).toReal) ∘ (fun p : Ω × ℝ => p.1)) (P.prod G)
+        ((fun ω => (M ω _).toReal) ∘ (fun p : Ω × ℝ => p.1)) (P.prod G)
       exact hbase'.comp_aemeasurable measurable_fst.aemeasurable
     have hfactor : AEMeasurable (fun p : Ω × ℝ => scaleFactor p.2) (P.prod G) :=
       hscaleFactor.comp_aemeasurable measurable_snd.aemeasurable
     change AEMeasurable
-      (fun p : Ω × ℝ => scaleFactor p.2 * (M p.1 (Metric.ball 0 R)).toReal)
+      (fun p : Ω × ℝ => scaleFactor p.2 * (M p.1 _).toReal)
       (P.prod G)
     exact hfactor.mul hbase
   have htargetCoordConv (j : Fin 1) :
@@ -191,7 +192,7 @@ theorem gmc_affine_openBall_mass_law
       (fun p => sourceLimit p j) := by
     exact tendstoInMeasure_mul_snd_of_tendstoInMeasure
       (fun n ω => ∫ x, g n x ∂M ω)
-      (fun ω => (M ω (Metric.ball 0 R)).toReal) scaleFactor hscaleFactor hsourceConv
+      (fun ω => (M ω _).toReal) scaleFactor hscaleFactor hsourceConv
   have hsourceProductConv : TendstoInMeasure (P.prod G) sourceCutoff atTop sourceLimit :=
     tendstoInMeasure_pi_finite (P.prod G) sourceCutoff sourceLimit hsourceProductCoordConv
   have hcutoffLaw (n : ℕ) : Measure.map (targetCutoff n) P =
@@ -206,8 +207,8 @@ theorem gmc_affine_openBall_mass_law
       funext p j
       have htest (x : ℂ) : f n (a + c • x) = g n x := by
         exact openBallAffineApprox_comp_affine a c R hc.ne' n x
-      change c ^ 2 * Real.exp (γ * p.2 - γ ^ 2 / 2 * σ) *
-        ∫ x, f n (a + c • x) ∂M p.1 =
+      change c ^ 2 * Real.exp _ *
+        ∫ x, f n _ ∂M p.1 =
           scaleFactor p.2 * ∫ x, g n x ∂M p.1
       have hInt : (∫ x, f n (a + c • x) ∂M p.1) =
           ∫ x, g n x ∂M p.1 := by
@@ -217,8 +218,12 @@ theorem gmc_affine_openBall_mass_law
     rw [hvalues] at h
     simpa [targetCutoff, fvec, sourceCutoff, G, σ] using h
   exact gmc_limit_test_vector_law targetCutoff sourceCutoff targetLimit sourceLimit
-    (fun n => htargetCutoffMeas n) (fun n => hsourceCutoffMeas n)
+    (fun n => htargetCutoffMeas n) hsourceCutoffMeas
     htargetLimitMeas hsourceLimitMeas hcutoffLaw
-    (fun j => htargetCoordConv j) (fun j => hsourceProductCoordConv j)
+    htargetCoordConv hsourceProductCoordConv
+
+end
+
+end
 
 end DOZZ.Proofs

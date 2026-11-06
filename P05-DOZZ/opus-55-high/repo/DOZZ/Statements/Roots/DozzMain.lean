@@ -23,6 +23,6 @@ theorem dozz_main (γ μ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
     (U : ℂ → ℂ) (hU : IsUpsilon γ U)
     {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (M : Ω → Measure ℂ) (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) :
-    (structureConstant P M γ μ α₁ α₂ α₃ : ℂ) = dozzFormula γ μ U α₁ α₂ α₃ := by exact DOZZ.Proofs.dozz_main γ μ hγ hγ2 hμ α₁ α₂ α₃ hα hs U hU P X M hX hM
+    (structureConstant P M γ μ α₁ α₂ α₃ : ℂ) = dozzFormula γ μ U α₁ α₂ α₃ := DOZZ.Proofs.dozz_main γ μ hγ hγ2 hμ α₁ α₂ α₃ hα hs U hU P X M hX hM
 
 end DOZZ

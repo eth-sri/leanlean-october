@@ -44,14 +44,13 @@ theorem canonical_leading_tail_uniform
   let S : Ω → ℝ≥0∞ := fun ω =>
     ENNReal.ofReal (f*‖z‖^(-4 : ℝ)*Real.exp (γ*Xc ω z 0-γ^2*Real.log ‖z‖))
   have hS : Measurable S := by
-    have hpin := (hc.1 0).comp (measurable_id.prodMk (measurable_const : Measurable (fun _ : Ω => z)))
-    exact ((((hpin.const_mul γ).sub_const _).exp).const_mul _).ennreal_ofReal
+    exact ((((((hc.1 0).comp (measurable_id.prodMk (measurable_const : Measurable (fun _ => z)))).const_mul γ).sub_const _).exp).const_mul _).ennreal_ofReal
   let μ := brownianMaximumReferenceLaw (Q γ-α)
   let : IsProbabilityMeasure μ := isProbabilityMeasure_brownianMaximumReferenceLaw
     (sub_pos.mpr (hα α hαk).2)
   have hLaw := prefactored_canonical_source_williams_law P X Xc hX hc hm hcont
     z γ α hγ hγ2 (hα α hαk).2 N hN (B α) Z (hData α hαk) S hS.aemeasurable
-  have hMass := localSingularMass_aemeasurable P (translatedField X Xc z)
+  have hMass := localSingularMass_aemeasurable P _
     (translated_field_isEquatorGFF P X Xc hX hc z) γ hγ hγ2 N hN
     (fun _ => 1) measurable_const 0 α
   have hLead := (hS.comp measurable_snd).aemeasurable.mul
@@ -66,9 +65,9 @@ theorem canonical_leading_tail_uniform
   change (P.prod P) {q | ENNReal.ofReal x < S q.2*localSingularMass N (fun _ => 1) 0 γ α q.1} =
     (μ.prod (P.prod P)) {q | ENNReal.ofReal x <
       (S q.2.2*twoSidedReflectionCutMass γ q.1 (B α) Z q.2.1)*
-        ENNReal.ofReal (Real.exp (γ*q.1))} at hTail
+        ENNReal.ofReal _} at hTail
   change |((P.prod P) {q | ENNReal.ofReal x < S q.2*localSingularMass N (fun _ => 1) 0 γ α q.1}).toReal -
-    oneInsertionTailCoefficient γ α z f (reflectionBarR P γ α (B α) Z)*
+    oneInsertionTailCoefficient γ α z f _*
       x^(-reflectionExponent γ α)| ≤ C*x^(-reflectionExponent γ α-η)
   rw [hTail]
   exact hbound z hzk α hαk f hf hfb x hx

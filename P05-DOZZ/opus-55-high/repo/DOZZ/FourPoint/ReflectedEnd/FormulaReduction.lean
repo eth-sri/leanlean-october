@@ -7,6 +7,7 @@ module
 public import DOZZ.FourPoint.ReflectedEnd.FusionReduction
 public import DOZZ.FourPoint.Dual.DiagonalReduction
 import Mathlib.Tactic
+import DOZZ.Hypergeom.PhysicalRange
 
 /-! # Reflected formula from the fusion and classification conclusions
 
@@ -77,8 +78,7 @@ theorem gammaHalf_reflected_formula_of_fusion_and_classification {Ω : Type*} [M
   let C₀ : ℝ := structureConstant P M γ μ (α₁ - γ / 2) α₂ α₃
   change (∀ z, fourPointT P M γ μ (-γ / 2) α₁ α₂ α₃ z = C₀ + D * ‖z‖ ^ κ + r z) at hr
   change Tendsto (fun z => r z / ‖z‖ ^ κ)
-    (nhdsWithin (0 : ℂ) {z : ℂ | z ≠ 0}) (nhds 0) at hlim
-  have hκ : κ < 1 := hslack.trans hξ₂
+    (nhdsWithin 0 {z : ℂ | z ≠ 0}) (nhds 0) at hlim
   have hcast : Tendsto (fun t : ℝ => (t : ℂ))
       (nhdsWithin 0 (Ioi 0)) (nhdsWithin 0 {z : ℂ | z ≠ 0}) := by
     apply tendsto_nhdsWithin_iff.mpr
@@ -86,13 +86,13 @@ theorem gammaHalf_reflected_formula_of_fusion_and_classification {Ω : Type*} [M
       (tendsto_id.mono_left nhdsWithin_le_nhds), ?_⟩
     filter_upwards [self_mem_nhdsWithin] with t ht
     simpa only [Complex.ofReal_ne_zero] using ne_of_gt ht
-  have hrl : Tendsto (fun t : ℝ => r (t : ℂ) / t ^ κ)
+  have hrl : Tendsto (fun t : ℝ => r t / t ^ κ)
       (nhdsWithin 0 (Ioi 0)) (nhds 0) := by
     apply (hlim.comp hcast).congr'
     filter_upwards [self_mem_nhdsWithin] with t ht
     simp only [Function.comp_def, Complex.norm_real, Real.norm_eq_abs, abs_of_pos ht]
   have hray : Tendsto (fun t : ℝ =>
-      (fourPointT P M γ μ (-γ / 2) α₁ α₂ α₃ (t : ℂ) - C₀) / t ^ κ)
+      (fourPointT P M γ μ (-γ / 2) α₁ α₂ α₃ t - C₀) / t ^ κ)
       (nhdsWithin 0 (Ioi 0)) (nhds D) := by
     have ht := hrl.const_add D
     simp only [add_zero] at ht
@@ -104,21 +104,20 @@ theorem gammaHalf_reflected_formula_of_fusion_and_classification {Ω : Type*} [M
     field_simp
     ring
   dsimp only at hclassification ⊢
-  obtain ⟨hA, hAB, hBC, hC, _, _, _, _⟩ := DOZZ.gauss_physical_parameter_range
-    γ (γ / 2) α₁ α₂ α₃ hγ hγ₂ (Or.inl rfl) hs hα₁ hα₂ hα₃
-  have hc : 0 < gaussParameterC γ (γ / 2) α₁ := hA.trans (hAB.trans hBC)
+  obtain ⟨hA, hAB, hBC, hC, _, _, _, _⟩ := DOZZ.Proofs.gauss_physical_parameter_range
+    γ _ α₁ α₂ α₃ hγ hγ₂ (Or.inl rfl) hs hα₁ hα₂ hα₃
   have he : 2 * (1 - gaussParameterC γ (γ / 2) α₁) = κ := by
     unfold gaussParameterC
     dsimp only [κ]
     ring
   have hid := dual_diagonal_coefficient_identification hH
-    (gaussParameterA γ (γ / 2) α₁ α₂ α₃)
-    (gaussParameterB γ (γ / 2) α₁ α₂ α₃)
-    (gaussParameterC γ (γ / 2) α₁) C₀
-    (gaussCoefficientRatio (gaussParameterA γ (γ / 2) α₁ α₂ α₃)
-      (gaussParameterB γ (γ / 2) α₁ α₂ α₃) (gaussParameterC γ (γ / 2) α₁)) D
-    hc hC (he ▸ hκ) (fourPointT P M γ μ (-γ / 2) α₁ α₂ α₃)
-    (by simpa only [neg_div] using hclassification) (by simpa only [he] using hray)
+    (gaussParameterA γ _ α₁ α₂ α₃)
+    (gaussParameterB γ _ α₁ α₂ α₃)
+    (gaussParameterC γ _ α₁) C₀
+    (gaussCoefficientRatio _
+      (gaussParameterB γ _ α₁ α₂ α₃) _) D
+    (hA.trans (hAB.trans hBC)) hC (he ▸ (hslack.trans hξ₂)) (fourPointT P M γ μ (-γ / 2) α₁ α₂ α₃)
+    (by simpa only [neg_div] using hclassification) (by simp_all)
   refine ⟨B, Z, hZ, hB, ?_⟩
   intro z hz
   rw [show fourPointT P M γ μ (-γ / 2) α₁ α₂ α₃ z = _ from

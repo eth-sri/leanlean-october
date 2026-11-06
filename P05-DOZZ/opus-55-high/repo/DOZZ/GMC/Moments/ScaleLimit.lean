@@ -31,11 +31,10 @@ theorem tendstoInMeasure_mul_snd_of_tendstoInMeasure
   intro δ hδ
   let T : ℕ → Set Ω' := fun n => {w | (n : ℝ) < |W w|}
   have hTmeas (n : ℕ) : MeasurableSet (T n) := by
-    dsimp [T]
     measurability
   have hTanti : Antitone T := by
     intro n m hnm w hw
-    change (m : ℝ) < |W w| at hw
+    change m < |W w| at hw
     exact lt_of_le_of_lt (by exact_mod_cast hnm) hw
   have hTinter : (⋂ n, T n) = ∅ := by
     ext w
@@ -43,27 +42,24 @@ theorem tendstoInMeasure_mul_snd_of_tendstoInMeasure
     intro hw
     obtain ⟨n, hn⟩ := exists_nat_gt (|W w|)
     have hwn := hw n
-    change (n : ℝ) < |W w| at hwn
-    exact (not_lt_of_ge (le_of_lt hn)) hwn
+    grind
   have hTlimit : Tendsto (fun n => Q (T n)) atTop (𝓝 0) := by
     have h := tendsto_measure_iInter_atTop (μ := Q) (s := T)
       (fun n => (hTmeas n).nullMeasurableSet) hTanti ⟨0, measure_ne_top Q _⟩
-    change Tendsto (fun n => Q (T n)) atTop (𝓝 (Q (⋂ n, T n))) at h
-    rw [hTinter, measure_empty] at h
-    exact h
+    aesop
   obtain ⟨N₁, hN₁⟩ := (ENNReal.tendsto_atTop_zero.mp hTlimit) (δ / 2)
     (ENNReal.div_pos_iff.mpr ⟨hδ.ne', by simp⟩)
-  let K : ℝ := (N₁ : ℝ) + 1
-  have hK : 0 < K := by dsimp [K]; positivity
+  let K : ℝ := N₁ + 1
+  have hK : 0 < K := by positivity
   have hKtail : Q {w | K < |W w|} ≤ δ / 2 := by
     have h := hN₁ (N₁ + 1) (by omega)
     simpa [T, K, Nat.cast_add, Nat.cast_one] using h
-  have hbase : Tendsto (fun n => P {ω | ε / K ≤ ‖f n ω - g ω‖}) atTop (𝓝 0) :=
+  have hbase :=
     (tendstoInMeasure_iff_norm.mp hfg) (ε / K) (div_pos hε hK)
   obtain ⟨N₂, hN₂⟩ := (ENNReal.tendsto_atTop_zero.mp hbase) (δ / 2)
     (ENNReal.div_pos_iff.mpr ⟨hδ.ne', by simp⟩)
   refine ⟨N₂, fun n hn => ?_⟩
-  let B : Set Ω := {ω | ε / K ≤ ‖f n ω - g ω‖}
+  let B := {ω | ε / K ≤ ‖f n ω - g ω‖}
   let bad : Set (Ω × Ω') := {p | ε ≤ ‖W p.2 * f n p.1 - W p.2 * g p.1‖}
   have hsubset : bad ⊆ (Set.univ ×ˢ {w | K < |W w|}) ∪ (B ×ˢ Set.univ) := by
     intro p hp
@@ -74,27 +70,25 @@ theorem tendstoInMeasure_mul_snd_of_tendstoInMeasure
     have hnotB : ¬ ε / K ≤ ‖f n p.1 - g p.1‖ := by
       intro h
       exact hnot (Or.inr ⟨h, Set.mem_univ _⟩)
-    have hW : |W p.2| ≤ K := le_of_not_gt hnotT
-    have hdiff : ‖f n p.1 - g p.1‖ < ε / K := lt_of_not_ge hnotB
     have hmul : |W p.2| * ‖f n p.1 - g p.1‖ < ε := by
       calc
         |W p.2| * ‖f n p.1 - g p.1‖ ≤ K * ‖f n p.1 - g p.1‖ :=
-          mul_le_mul_of_nonneg_right hW (norm_nonneg _)
-        _ < K * (ε / K) := mul_lt_mul_of_pos_left hdiff hK
+          mul_le_mul_of_nonneg_right (le_of_not_gt hnotT) (norm_nonneg _)
+        _ < K * (ε / K) := mul_lt_mul_of_pos_left (lt_of_not_ge hnotB) hK
         _ = ε := by field_simp
     change ε ≤ ‖W p.2 * f n p.1 - W p.2 * g p.1‖ at hp
     have hfactor : W p.2 * f n p.1 - W p.2 * g p.1 =
         W p.2 * (f n p.1 - g p.1) := by ring
     rw [hfactor, Real.norm_eq_abs, abs_mul] at hp
     have hmul' : |W p.2| * |f n p.1 - g p.1| < ε := by
-      simpa only [Real.norm_eq_abs] using hmul
+      simpa using hmul
     exact (not_le_of_gt hmul') hp
   calc
     (P.prod Q) bad ≤ (P.prod Q)
         ((Set.univ ×ˢ {w | K < |W w|}) ∪ (B ×ˢ Set.univ)) := measure_mono hsubset
-    _ ≤ (P.prod Q) (Set.univ ×ˢ {w | K < |W w|}) +
-        (P.prod Q) (B ×ˢ Set.univ) := measure_union_le _ _
-    _ = Q {w | K < |W w|} + P B := by simp [Measure.prod_prod]
+    _ ≤ (P.prod Q) _ +
+        (P.prod Q) _ := measure_union_le ..
+    _ = Q {w | K < |W w|} + P B := by simp
     _ ≤ δ / 2 + δ / 2 := add_le_add hKtail (hN₂ n hn)
     _ = δ := ENNReal.add_halves δ
 

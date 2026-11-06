@@ -32,14 +32,14 @@ theorem reflected_copied_global_guard_inverse_finite
       ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x)*
         ENNReal.ofReal (reflected_global_reinsertionWeight γ a x) ∂N ω)^(-q)
       ∂P ∂P.map (originRadialPath Xc)) < ⊤ := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   let D := Metric.closedBall (3 : ℂ) (1/8)
   let k : ℂ → ℝ≥0∞ := fun x => ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x)
   have hk : Measurable k := (reflected_gammaHalfKernel_measurable γ α₁ α₂ α₃ z).ennreal_ofReal
   have hD : MeasurableSet D := measurableSet_closedBall
   have hD0 : D ⊆ ({0} : Set ℂ)ᶜ := by
     intro x hx
-    simp only [mem_compl_iff, mem_singleton_iff]
+    simp
     intro hx0
     subst x
     norm_num [D, Metric.mem_closedBall, dist_eq_norm] at hx

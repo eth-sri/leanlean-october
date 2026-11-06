@@ -6,6 +6,7 @@ module
 public import DOZZ.GMC.Construction.RootedCircleMassLimit
 public import DOZZ.GMC.Construction.GMCFiniteCoordinateTilt
 public import DOZZ.GMC.Construction.GMCRootedMeasureFinite
+import DOZZ.ShiftEquations.Mobius.InversionMoment
 
 /-! Almost-sure convergence of the field and chaos coordinates under a circle root shift. -/
 
@@ -31,25 +32,25 @@ theorem ae_circleRootedCoordinatePath_tendsto
       atTop (𝓝 (gmcTiltCoordinatePath
         (fun f => X ω f + γ * gffRootCovariance u f)
         (gmcRootedMeasure γ u (M ω)))) := by
-  filter_upwards [hRoot, gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ2 M hM u]
+  filter_upwards [hRoot, DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM u]
     with ω hfinite hAtom
   let _ := hfinite
   apply tendsto_pi_nhds.mpr
   intro i
   cases i with
   | inl f =>
-    change Tendsto (fun n : ℕ => X ω f + γ * circleCross u (n : ℝ) f) atTop
-      (𝓝 (X ω f + γ * gffRootCovariance u f))
+    change Tendsto (fun n : ℕ => X ω f + γ * circleCross u n f) atTop
+      (𝓝 _)
     exact tendsto_const_nhds.add
       (((circleCross_tendsto_gffRootCovariance u f).comp
-        (tendsto_natCast_atTop_atTop : Tendsto (fun n : ℕ => (n : ℝ)) atTop atTop)).const_mul γ)
+        tendsto_natCast_atTop_atTop).const_mul γ)
   | inr j =>
     have hA : MeasurableSet (gmcTiltCoordinateSet j) := by
       cases j with
       | none => exact MeasurableSet.univ
       | some j => exact gmcLowerBox_measurableSet j
     exact (ENNReal.continuousAt_toReal
-      (measure_ne_top (gmcRootedMeasure γ u (M ω)) (gmcTiltCoordinateSet j))).tendsto.comp
+      (measure_ne_top _ (gmcTiltCoordinateSet j))).tendsto.comp
         (circleRootedMeasure_mass_tendsto γ u (M ω) hAtom hfinite _ hA)
 
 

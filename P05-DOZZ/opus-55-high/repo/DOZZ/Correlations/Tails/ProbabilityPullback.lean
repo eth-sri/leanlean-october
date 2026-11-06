@@ -21,11 +21,12 @@ theorem tendstoInMeasure_measurePreserving
     TendstoInMeasure P' (fun i ω => f i (T ω)) l (fun ω => g (T ω)) := by
   intro ε hε
   exact tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds (h ε hε)
-    (fun _ => zero_le) (fun i => hT.measure_preimage_le {ω | ε ≤ edist (f i ω) (g ω)})
+    (fun _ => zero_le) (fun i => hT.measure_preimage_le {ω | ε ≤ edist _ (g ω)})
+section
+variable {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω'] (P : Measure Ω) (P' : Measure Ω')
 
 theorem isEquatorGFF_measurePreserving
-    {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
-    (P : Measure Ω) (P' : Measure Ω') [IsProbabilityMeasure P']
+    [IsProbabilityMeasure P']
     (T : Ω' → Ω) (hT : MeasurePreserving T P' P) (X : Ω → Distr)
     (hX : IsEquatorGFF P X) : IsEquatorGFF P' (X ∘ T) := by
   refine ⟨inferInstance, fun f => ?_⟩
@@ -33,11 +34,15 @@ theorem isEquatorGFF_measurePreserving
   refine ⟨hm.comp hT.measurable, v, hv, ?_⟩
   change P'.map ((fun ω => X ω f) ∘ T) = _
   rw [← Measure.map_map hm hT.measurable, hT.map_eq, hl]
+section
+variable (T : Ω' → Ω)
+section
+variable (hT : MeasurePreserving T P' P) (X : Ω → Distr)
+include hT
+section
+variable (Xc : Ω → ℂ → ℝ → ℝ)
 
 theorem isCircleAverage_measurePreserving
-    {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
-    (P : Measure Ω) (P' : Measure Ω') (T : Ω' → Ω) (hT : MeasurePreserving T P' P)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) :
     IsCircleAverage P' (X ∘ T) (Xc ∘ T) := by
   refine ⟨fun r => (hc.1 r).comp ((hT.measurable.comp measurable_fst).prodMk measurable_snd),
@@ -50,9 +55,7 @@ theorem isCircleAverage_measurePreserving
   simpa only [Function.comp_def, heq] using hc.2.2 x r f hf
 
 theorem regularizedGMC_measurePreserving
-    {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
-    (P : Measure Ω) (P' : Measure Ω') (T : Ω' → Ω) (hT : MeasurePreserving T P' P)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ) (hc : IsCircleAverage P X Xc)
+    (hc : IsCircleAverage P X Xc)
     (γ r : ℝ) (ω : Ω') :
     regularizedGMC P' (Xc ∘ T) γ r ω = regularizedGMC P Xc γ r (T ω) := by
   have hv (x : ℂ) : (∫ ω', Xc (T ω') x r ^ 2 ∂P') = ∫ ω', Xc ω' x r ^ 2 ∂P :=
@@ -61,21 +64,26 @@ theorem regularizedGMC_measurePreserving
       exact (integral_map hT.aemeasurable
         (((hc.1 r).comp (measurable_id.prodMk measurable_const)).pow_const 2).aestronglyMeasurable).symm
   unfold regularizedGMC
-  simp only [Function.comp_def, hv]
+  simp_all
+
+end
 
 theorem isGMCOf_measurePreserving
-    {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
-    (P : Measure Ω) (P' : Measure Ω') (T : Ω' → Ω) (hT : MeasurePreserving T P' P)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
+    (hX : IsEquatorGFF P X) (γ : ℝ)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
     IsGMCOf P' (X ∘ T) γ (M ∘ T) := by
   obtain ⟨hf, Xc, hc, hconv⟩ := hM
   refine ⟨fun ω => hf (T ω), Xc ∘ T,
     isCircleAverage_measurePreserving P P' T hT X Xc hX hc, fun f => ?_⟩
-  have h := tendstoInMeasure_measurePreserving P P' T hT _ _ atTop (hconv f)
-  change TendstoInMeasure P' (fun r ω => ∫ x, f x ∂regularizedGMC P' (Xc ∘ T) γ r ω)
+  change TendstoInMeasure P' (fun r ω => ∫ x, f x ∂regularizedGMC P' _ γ r ω)
     atTop (fun ω => ∫ x, f x ∂M (T ω))
-  simpa only [regularizedGMC_measurePreserving P P' T hT X Xc hc] using h
+  simpa only [regularizedGMC_measurePreserving P P' T hT X Xc hc] using (tendstoInMeasure_measurePreserving P P' T hT _ _ atTop (hconv f))
+
+end
+
+end
+
+end
 
 
 end DOZZ.Proofs

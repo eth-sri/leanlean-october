@@ -23,7 +23,7 @@ back through inversion gives center `u/(1-e^{-2r}‖u‖²)` and radius
 `e^{-r}‖u‖²/(1-e^{-2r}‖u‖²)`. -/
 noncomputable def regularizedCoulombMass {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ) (γ : ℝ) (partition : GMCChartPartition)
-    {N : ℕ} (α : Fin N → ℝ) (z : Fin N → ℂ) (αinf : ℝ) (r : ℝ) (ω : Ω) : ℝ≥0∞ :=
+    {N : ℕ} (α : Fin N → ℝ) (z : Fin N → ℂ) (αinf r : ℝ) (ω : Ω) : ℝ≥0∞ :=
   (∫⁻ x, (partition.finiteWeight x : ℝ≥0∞) *
       (∏ k, ENNReal.rpow
         (ENNReal.ofReal (normPlus x / (‖x - z k‖ + Real.exp (-r)))) (γ * α k)) *

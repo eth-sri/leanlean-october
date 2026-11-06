@@ -10,25 +10,30 @@ open Filter MeasureTheory ProbabilityTheory Set
 open scoped Topology Distributions ENNReal NNReal
 open DOZZ.Assembly
 namespace DOZZ.Proofs
+section
+variable (s : ℝ)
+section
+variable (x : ℂ)
 
 /-- Inversion reverses the radial covariance coordinate. -/
-theorem originRadialCovariance_inversion (s : ℝ) (x : ℂ) :
+theorem originRadialCovariance_inversion :
     originRadialCovariance (-s) x⁻¹ = originRadialCovariance s x := by
   simp only [originRadialCovariance, norm_inv, Real.log_inv, neg_neg]
-  simp only [min_def, max_def]
-  split_ifs <;> linarith
+  grind
 
 /-- The concentric potential of the reversed circle, evaluated at the inverse point,
 is the original circle potential away from zero. -/
-theorem innerPot_origin_inversion (s : ℝ) (x : ℂ) (hx : x ≠ 0) :
+theorem innerPot_origin_inversion (hx : x ≠ 0) :
     CirclePotential.innerPot 0 (-s) x⁻¹ = CirclePotential.innerPot 0 s x := by
   rw [← CirclePotential.integral_gffKernel_circleMeasure,
     ← CirclePotential.integral_gffKernel_circleMeasure,
     origin_circleKernelPotential_eq _ _ (inv_ne_zero hx),
     origin_circleKernelPotential_eq _ _ hx, originRadialCovariance_inversion]
 
+end
+
 /-- Inverted tests have exactly the reversed concentric source pairing. -/
-theorem circleCross_origin_inversionTest (s : ℝ) (f : TestFn)
+theorem circleCross_origin_inversionTest (f : TestFn)
     (hf : tsupport (f : ℂ → ℝ) ⊆ inversionChart) :
     circleCross 0 (-s) (inversionTest f hf) = circleCross 0 s f := by
   rw [circleCross_inversionTest]
@@ -37,6 +42,8 @@ theorem circleCross_origin_inversionTest (s : ℝ) (f : TestFn)
   apply integral_congr_ae
   filter_upwards [(volume : Measure ℂ).ae_ne 0] with x hx
   rw [innerPot_origin_inversion s x hx]
+
+end
 
 /-- The actual coupled inverted concentric circle is the source circle with its
 logarithmic radius reversed. This supplies the joint radial input, not just its marginal law. -/
@@ -53,12 +60,12 @@ theorem inversionCircle_origin_ae_eq
   let : IsProbabilityMeasure P := hX.1
   let U := fun ω => Xc ω 0 (-s)
   let V := fun ω => Xc ω 0 s
-  have hU : MemLp U 2 P := hc.2.1 _ _
-  have hV : MemLp V 2 P := hc.2.1 _ _
+  have hU : MemLp U 2 P := hc.2.1 ..
+  have hV : MemLp V 2 P := hc.2.1 ..
   have hzeroU : Tendsto (fun _ : ℕ => eLpNorm (fun ω => U ω - U ω) 2 P)
-      atTop (𝓝 0) := by simp only [sub_self, ← Pi.zero_def, eLpNorm_zero]; exact tendsto_const_nhds
+      atTop (𝓝 0) := by simp
   have hzeroV : Tendsto (fun _ : ℕ => eLpNorm (fun ω => V ω - V ω) 2 P)
-      atTop (𝓝 0) := by simp only [sub_self, ← Pi.zero_def, eLpNorm_zero]; exact tendsto_const_nhds
+      atTop (𝓝 0) := by simp
   have hinv := tendsto_covariance_of_eLpNorm_sub
     (fun _ => hU) (fun n => equatorGFF_test_memLp X hX (inversionTest (f n) (hf n)))
     hU hZ hzeroU hlim
@@ -106,8 +113,7 @@ theorem inversionCircle_origin_ae_eq
   have hi : Integrable (fun ω => (Z ω - U ω) ^ 2) P := by
     have ht : Integrable (fun ω => (Z ω - U ω) * (Z ω - U ω)) P := hD.integrable_mul hD
     simpa only [pow_two] using ht
-  have hae := (integral_eq_zero_iff_of_nonneg_ae (ae_of_all _ fun _ => sq_nonneg _) hi).mp hDsquare
-  filter_upwards [hae] with ω hω
+  filter_upwards [((integral_eq_zero_iff_of_nonneg_ae (ae_of_all _ fun _ => sq_nonneg _) hi).mp hDsquare)] with ω hω
   exact sub_eq_zero.mp (sq_eq_zero_iff.mp hω)
 
 /-- Finite-reference spatial law transfer retains arbitrary auxiliary finite coordinates.
@@ -128,13 +134,12 @@ theorem spatialIntegral_joint_vector_law_of_fdd_finite
       P'.map (fun ω => (V' ω, fun i => Y ω (xs i)))) :
     P.map (fun ω => (V ω, fun j => ∫ x, z j x (X ω x) ∂(ν : Measure S))) =
       P'.map (fun ω => (V' ω, fun j => ∫ x, z j x (Y ω x) ∂(ν : Measure S))) := by
-  classical
   let z' : Fin m → S → ℝ → ℝ := fun j x t => (ν.mass : ℝ) * z j x t
   have hmeasure : (ν : Measure S) = (ν.mass : ℝ≥0) • (ν.normalize : Measure S) :=
     congrArg (fun μ : FiniteMeasure S => (μ : Measure S)) ν.self_eq_mass_smul_normalize
   have hiX j : ∀ᵐ ω ∂P, Integrable (fun x => z' j x (X ω x)) (ν.normalize : Measure S) := by
     by_cases hm : ν.mass = 0
-    · exact ae_of_all _ fun ω => by simp only [z', hm, NNReal.coe_zero, zero_mul]; exact integrable_zero _ _ _
+    · aesop
     · filter_upwards [hintX j] with ω hω
       rw [hmeasure] at hω
       have ht : Integrable (fun x => z j x (X ω x)) (ν.normalize : Measure S) :=
@@ -142,7 +147,7 @@ theorem spatialIntegral_joint_vector_law_of_fdd_finite
       exact ht.const_mul _
   have hiY j : ∀ᵐ ω ∂P', Integrable (fun x => z' j x (Y ω x)) (ν.normalize : Measure S) := by
     by_cases hm : ν.mass = 0
-    · exact ae_of_all _ fun ω => by simp only [z', hm, NNReal.coe_zero, zero_mul]; exact integrable_zero _ _ _
+    · aesop
     · filter_upwards [hintY j] with ω hω
       rw [hmeasure] at hω
       have ht : Integrable (fun x => z j x (Y ω x)) (ν.normalize : Measure S) :=
@@ -186,18 +191,17 @@ theorem admissibleLogChaos_cutoff_joint_vector_law_of_fdd
     have hMZ : Measurable (fun ω => (V' ω, fun (_ : Fin 1) => Z ω ε x)) :=
       hV'.prodMk (measurable_pi_iff.mpr (fun _ => (hZ.measurableAtScale ε).comp
         (measurable_id.prodMk measurable_const)))
-    have ht := congrArg (fun μ : Measure ((Fin k → ℝ) × (Fin 1 → ℝ)) => ∫ v, (v.2 0) ^ 2 ∂μ)
+    have ht := congrArg (fun μ => ∫ v, (v.2 0) ^ 2 ∂μ)
       (hfdd 1 (fun _ => x))
     have hφ : Measurable (fun v : (Fin k → ℝ) × (Fin 1 → ℝ) => (v.2 0) ^ 2) := by fun_prop
-    change (∫ v, (v.2 0) ^ 2 ∂P.map (fun ω => (V ω, fun (_ : Fin 1) => Y ω ε x))) =
-      ∫ v, (v.2 0) ^ 2 ∂P'.map (fun ω => (V' ω, fun (_ : Fin 1) => Z ω ε x)) at ht
+    change (∫ v, (v.2 0) ^ 2 ∂P.map (fun ω => (V ω, fun _ => Y ω ε x))) =
+      ∫ v, (v.2 0) ^ 2 ∂P'.map (fun ω => (V' ω, fun _ => Z ω ε x)) at ht
     rw [integral_map hMY.aemeasurable hφ.aestronglyMeasurable,
       integral_map hMZ.aemeasurable hφ.aestronglyMeasurable] at ht
     exact ht
   let variance : ℂ → ℝ := fun x => ∫ ω, Y ω ε x ^ 2 ∂P
   have hvariance : Measurable variance := by
-    have ht := admissibleLogRegularization_variance_measurable P U dens ε₀ Y hY ε
-    simpa only [variance, gaussianVariance, gaussianCovariance, pow_two] using ht
+    simpa only [variance, gaussianVariance, gaussianCovariance, pow_two] using (admissibleLogRegularization_variance_measurable P U dens ε₀ Y hY ε)
   let ν : FiniteMeasure ℂ := ⟨logRegularizationReference U dens, inferInstance⟩
   let z : Fin m → ℂ → ℝ → ℝ := fun j x t => f j x *
     Real.exp (γ * t - γ ^ 2 / 2 * variance x)
@@ -210,13 +214,13 @@ theorem admissibleLogChaos_cutoff_joint_vector_law_of_fdd
     exact admissibleCutoff_integrand_integrable_ae P U dens ε₀ Y hY
       (tsupport (f j : ℂ → ℝ)) (hfc j) (hfU j) γ r hrY ‖f j‖ (f j)
       (f j).continuous.measurable
-      (fun x => by simpa only [← Real.norm_eq_abs] using (f j).norm_coe_le_norm x)
+      (fun x => by simpa using (f j).norm_coe_le_norm x)
       (fun x hx => image_eq_zero_of_notMem_tsupport hx)
   have hiZ j : ∀ᵐ ω ∂P', Integrable (fun x => z j x (Z ω ε x)) (ν : Measure ℂ) := by
     have ht := admissibleCutoff_integrand_integrable_ae P' U dens ε₁ Z hZ
       (tsupport (f j : ℂ → ℝ)) (hfc j) (hfU j) γ r hrZ ‖f j‖ (f j)
       (f j).continuous.measurable
-      (fun x => by simpa only [← Real.norm_eq_abs] using (f j).norm_coe_le_norm x)
+      (fun x => by simpa using (f j).norm_coe_le_norm x)
       (fun x hx => image_eq_zero_of_notMem_tsupport hx)
     simpa only [z, variance, hv, ε, ν, FiniteMeasure.toMeasure_mk] using ht
   have ht := spatialIntegral_joint_vector_law_of_fdd_finite ν
@@ -231,13 +235,13 @@ theorem tendstoInMeasure_pair_with_fixed
     (h : TendstoInMeasure P f atTop g) :
     TendstoInMeasure P (fun n ω => (V ω, f n ω)) atTop (fun ω => (V ω, g ω)) := by
   rw [tendstoInMeasure_iff_norm] at h ⊢
-  simpa only [Prod.norm_def, Prod.fst_sub, Prod.snd_sub, sub_self, norm_zero,
-    max_eq_right (norm_nonneg _)] using h
+  simp_all
+section
+variable {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
 
 /-- Passing finite chaos test laws to the limit preserves their coupling to fixed
 auxiliary coordinates on each probability space. -/
 theorem gmc_limit_joint_test_vector_law
-    {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
     {P : Measure Ω} {P' : Measure Ω'} [IsFiniteMeasure P] [IsFiniteMeasure P']
     {k m : ℕ} (V : Ω → Fin k → ℝ) (V' : Ω' → Fin k → ℝ)
     (hV : AEMeasurable V P) (hV' : AEMeasurable V' P')
@@ -254,10 +258,10 @@ theorem gmc_limit_joint_test_vector_law
   apply map_eq_of_seq_map_eq_of_tendstoInMeasure
     (fun n ω => (V ω, cutoffX n ω)) (fun n ω => (V' ω, cutoffY n ω))
     (fun ω => (V ω, limitX ω)) (fun ω => (V' ω, limitY ω))
-  · exact fun n => hV.prodMk (hcutoffX n)
-  · exact fun n => hV'.prodMk (hcutoffY n)
-  · exact hV.prodMk hlimitX
-  · exact hV'.prodMk hlimitY
+  · fun_prop
+  · fun_prop
+  · fun_prop
+  · fun_prop
   · exact hlaw
   · exact tendstoInMeasure_pair_with_fixed P V cutoffX limitX
       (tendstoInMeasure_pi_finite P cutoffX limitX hconvX)
@@ -266,7 +270,6 @@ theorem gmc_limit_joint_test_vector_law
 
 /-- Compatible cutoff laws pass to limiting chaos jointly with their auxiliary coordinates. -/
 theorem admissibleLogChaos_limit_joint_vector_law_of_fdd
-    {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
     (P : Measure Ω) (P' : Measure Ω') [IsProbabilityMeasure P] [IsProbabilityMeasure P']
     (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ ε₁ : ℝ)
     (Y : Ω → ℝ → ℂ → ℝ) (Z : Ω' → ℝ → ℂ → ℝ)
@@ -303,10 +306,8 @@ theorem admissibleLogChaos_limit_joint_vector_law_of_fdd
     (fun n ω j => regularizedLogChaosTestMass P U dens Y γ (t n) ω (f j))
     (fun n ω j => regularizedLogChaosTestMass P' U dens Z γ (t n) ω (f j))
     (fun ω j => ∫ x, f j x ∂M ω) (fun ω j => ∫ x, f j x ∂N ω)
-  · intro n
-    exact (measurable_pi_iff.mpr (fun j => hmY (t n) j)).aemeasurable
-  · intro n
-    exact (measurable_pi_iff.mpr (fun j => hmZ (t n) j)).aemeasurable
+  · fun_prop
+  · fun_prop
   · apply AEMeasurable.of_eval
     intro j
     exact ((hM.2.2.2 (f j) (hfc j) (hfU j)).aestronglyMeasurable
@@ -317,13 +318,15 @@ theorem admissibleLogChaos_limit_joint_vector_law_of_fdd
       (fun r => (hmZ r j).aestronglyMeasurable)).aemeasurable
   · intro n
     exact admissibleLogChaos_cutoff_joint_vector_law_of_fdd P P' U dens ε₀ ε₁ Y Z hY hZ
-      f hfc hfU V V' hV hV' γ (t n) ((hb n).trans (min_le_left _ _))
-      ((hb n).trans (min_le_right _ _))
+      f hfc hfU V V' hV hV' γ (t n) ((hb n).trans (min_le_left ..))
+      ((hb n).trans (min_le_right ..))
       (hfdd _ (Real.exp_pos _) (hb n))
   · intro j
     exact (hM.2.2.2 (f j) (hfc j) (hfU j)).comp ht
   · intro j
     exact (hN.2.2.2 (f j) (hfc j) (hfU j)).comp ht
+
+end
 
 /-- Inverted cutoffs retain the reversed source radial coordinates in their full joint
 finite-dimensional law. All circles come from one coupled inverted-test construction. -/
@@ -340,24 +343,24 @@ theorem inversionCircle_radial_joint_fdd_law
     {k m : ℕ} (s : Fin k → ℝ) (q : Fin m → ℂ × ℝ) :
     P.map (fun ω => (fun i => Xc ω 0 (-s i), fun j => Z ω (q j).1 (q j).2)) =
       P.map (fun ω => (fun i => Xc ω 0 (s i), fun j => Xc ω (q j).1 (q j).2)) := by
-  let Q : Fin (k + m) → ℂ × ℝ := Fin.append (fun i => (0, s i)) q
+  let Q := Fin.append (fun i => (0, s i)) q
   have hv := inversionCircle_fdd_law P X hX P X hX Xc hc Q
-    (fun i ω => Z ω (Q i).1 (Q i).2) (fun i => hmem _ _)
+    (fun i ω => Z ω (Q i).1 (Q i).2) (fun i => hmem ..)
     (fun i => f (Q i)) (fun i => hf (Q i)) (fun i => hgap (Q i)) (fun i => hlim (Q i))
   let L : (Fin (k + m) → ℝ) → (Fin k → ℝ) × (Fin m → ℝ) := fun v =>
     (fun i => v (Fin.castAdd m i), fun j => v (Fin.natAdd k j))
   have hL : Measurable L := by fun_prop
   have hZm : AEMeasurable (fun ω i => Z ω (Q i).1 (Q i).2) P :=
-    AEMeasurable.of_eval fun i => (hmem _ _).aemeasurable
+    AEMeasurable.of_eval fun i => (hmem ..).aemeasurable
   have hXm : AEMeasurable (fun ω i => Xc ω (Q i).1 (Q i).2) P :=
-    AEMeasurable.of_eval fun i => (hc.2.1 _ _).aemeasurable
+    AEMeasurable.of_eval fun i => (hc.2.1 ..).aemeasurable
   have hp := congrArg (fun μ => μ.map L) hv
   rw [AEMeasurable.map_map_of_aemeasurable hL.aemeasurable hZm,
     AEMeasurable.map_map_of_aemeasurable hL.aemeasurable hXm] at hp
   simp only [Function.comp_def, L, Q, Fin.append_left, Fin.append_right] at hp
   have he : ∀ᵐ ω ∂P, ∀ i, Z ω 0 (s i) = Xc ω 0 (-s i) :=
     ae_all_iff.mpr fun i => inversionCircle_origin_ae_eq P X Xc hX hc (s i)
-      (fun ω => Z ω 0 (s i)) (hmem _ _) (f (0, s i)) (hf _) (hgap _) (hlim _)
+      (fun ω => Z ω 0 (s i)) (hmem ..) (f (0, s i)) (hf _) (hgap _) (hlim _)
   calc
     _ = P.map (fun ω => (fun i => Z ω 0 (s i), fun j => Z ω (q j).1 (q j).2)) := by
       apply Measure.map_congr
@@ -377,19 +380,23 @@ theorem originReversedRadialPath_aemeasurable
   apply aemeasurable_twoSidedPath_of_eval
   intro s
   exact (ContinuousMap.measurable_eval (-s)).comp_aemeasurable hA
+section
+variable (γ : ℝ) (A : TwoSidedPath)
 
 /-- The radial removal weight reverses exactly under complex inversion,
 including at its stipulated zero value at the origin. -/
-theorem lateralRadialWeight_inversion (γ : ℝ) (A : TwoSidedPath) (x : ℂ) :
+theorem lateralRadialWeight_inversion (x : ℂ) :
     lateralRadialWeight γ (originReversedRadialPath A) x⁻¹ = lateralRadialWeight γ A x := by
   simp only [lateralRadialWeight, norm_inv, inv_eq_zero, Real.log_inv,
     originReversedRadialPath, ContinuousMap.comp_apply, ContinuousMap.coe_mk,
     neg_neg, abs_neg]
+section
+variable (M : Measure ℂ)
 
 /-- Inversion of the measure and reversal of its coupled radial path commute with
 radial removal. This identity retains their coupling sample by sample. -/
 theorem originRadialRemovedGMC_inversion_commutes
-    (γ : ℝ) (A : TwoSidedPath) (M : Measure ℂ) :
+    :
     (M.map (fun x : ℂ => x⁻¹)).withDensity (lateralRadialWeight γ (originReversedRadialPath A)) =
       (M.withDensity (lateralRadialWeight γ A)).map (fun x : ℂ => x⁻¹) := by
   have harg : Measurable (fun x : ℂ => ((γ, originReversedRadialPath A), x)) :=
@@ -408,12 +415,16 @@ theorem originRadialRemovedGMC_inversion_commutes
 source inversion and radial reversal into reflection of the whole cylinder
 measure. -/
 theorem lateralProjectedGMC_reversed_inversion
-    (γ : ℝ) (A : TwoSidedPath) (M : Measure ℂ) :
+    :
     lateralProjectedGMC γ (originReversedRadialPath A) (M.map (fun x : ℂ => x⁻¹)) =
       (lateralProjectedGMC γ A M).map (fun s : ℝ => -s) := by
-  change ((M.map (fun x : ℂ => x⁻¹)).withDensity
+  change ((M.map (fun x => x⁻¹)).withDensity
     (lateralRadialWeight γ (originReversedRadialPath A))).map (fun x => -Real.log ‖x‖) = _
   rw [originRadialRemovedGMC_inversion_commutes, logRadiusProjection_inversion]
   rfl
+
+end
+
+end
 
 end DOZZ.Proofs

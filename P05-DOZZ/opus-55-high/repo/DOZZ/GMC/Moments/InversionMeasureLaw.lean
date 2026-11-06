@@ -26,7 +26,7 @@ theorem finite_random_measure_law_of_open_fdd
     ∫⁻ ω, H (M ω) ∂P = ∫⁻ ω, H (N ω) ∂P := by
   classical
   let C := measurableCylinders (fun _ : InversionOpen => ℝ≥0∞)
-  let mOutput : MeasurableSpace InversionFiniteMeasure :=
+  let mOutput :=
     MeasurableSpace.pi.comap inversionMeasureCode
   let : MeasurableSpace InversionFiniteMeasure := mOutput
   let outM : Ω → InversionFiniteMeasure := fun ω => ⟨M ω, hMf ω⟩
@@ -42,7 +42,7 @@ theorem finite_random_measure_law_of_open_fdd
     refine ⟨A' ∩ B', isPiSystem_measurableCylinders A' hA' B' hB' ?_, ?_⟩
     · rcases hAB with ⟨q, hq⟩
       exact ⟨inversionMeasureCode q, ⟨hq.1, hq.2⟩⟩
-    · rw [← Set.preimage_inter]
+    rfl
   have hcode : Measurable inversionMeasureCode := Measurable.of_comap_le le_rfl
   have hcm : Measurable (inversionMeasureCode ∘ outM) :=
     measurable_pi_iff.mpr fun U => (Measure.measurable_coe U.2.measurableSet).comp hM
@@ -100,6 +100,6 @@ theorem finite_random_measure_law_of_open_fdd
   have hh := hH.comp hforget
   calc
     ∫⁻ ω, H (M ω) ∂P = ∫⁻ q, H q.1 ∂P.map outM := (lintegral_map hh hom).symm
-    _ = ∫⁻ q, H q.1 ∂P.map outN := by rw [hLaw]
+    _ = ∫⁻ q, H q.1 ∂P.map outN := by simp_all
     _ = ∫⁻ ω, H (N ω) ∂P := lintegral_map hh hon
 end DOZZ.Proofs

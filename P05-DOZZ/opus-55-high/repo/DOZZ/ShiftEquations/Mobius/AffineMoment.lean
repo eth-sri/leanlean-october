@@ -11,6 +11,7 @@ public import DOZZ.GMC.SharpMoments.SeibergWeight
 import DOZZ.GMC.EquatorGFFChaosTransportLaw
 import DOZZ.GMC.Construction.GMCGeneralTiltLimit
 import DOZZ.ShiftEquations.Mobius.InversionMoment
+import DOZZ.GMC.CircleAverage
 
 /-!
 # Coulomb moments under affine maps
@@ -35,13 +36,13 @@ namespace DOZZ.Proofs
 /-- The background ratio through the affine map is the exponential of the defect. -/
 theorem repinWeight_affine (a b : ℂ) (ha : a ≠ 0) (y : ℂ) :
     repinWeight a b (a * y + b) = Real.exp (4 * affineDefect a b y) := by
-  have hy := normPlus_pos' y
-  have hψ := normPlus_pos' (a * y + b)
-  have hapos : 0 < ‖a‖ := norm_pos_iff.mpr ha
+  have hy := DOZZ.Proofs.normPlus_pos y
+  have hψ := DOZZ.Proofs.normPlus_pos (a * y + b)
+  have hapos := norm_pos_iff.mpr ha
   unfold repinWeight affineDefect
   rw [affineInv_affine a b ha y,
     show 4 * (Real.log (normPlus (a * y + b)) - Real.log (normPlus y) - Real.log ‖a‖ / 2) =
-      Real.log (normPlus (a * y + b) ^ (4 : ℕ) / (normPlus y ^ (4 : ℕ) * ‖a‖ ^ (2 : ℕ))) by
+      Real.log (normPlus (a * y + b) ^ 4 / (normPlus y ^ 4 * ‖a‖ ^ 2)) by
       rw [Real.log_div (by positivity) (by positivity), Real.log_mul (by positivity)
         (by positivity), Real.log_pow, Real.log_pow, Real.log_pow]
       push_cast
@@ -56,14 +57,14 @@ theorem coulombWeight_affine {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (z : Fin 
     coulombWeight γ α (fun k => a * z k + b) 0 (a * y + b) =
       ENNReal.ofReal (Real.exp (γ * (∑ k, α k) * (affineDefect a b y - Real.log ‖a‖ / 2))) *
         coulombWeight γ α z 0 y := by
-  have hy := normPlus_pos' y
-  have hψ := normPlus_pos' (a * y + b)
-  have hapos : 0 < ‖a‖ := norm_pos_iff.mpr ha
-  set t : ℝ := normPlus (a * y + b) / (‖a‖ * normPlus y) with htdef
+  have hy := DOZZ.Proofs.normPlus_pos y
+  have hψ := DOZZ.Proofs.normPlus_pos (a * y + b)
+  have hapos := norm_pos_iff.mpr ha
+  set t := normPlus (a * y + b) / (‖a‖ * normPlus y) with htdef
   have ht : 0 < t := by positivity
   have hfac : ∀ k, normPlus (a * y + b) / ‖a * y + b - (a * z k + b)‖ =
       t * (normPlus y / ‖y - z k‖) := fun k => by
-    have hk : 0 < ‖y - z k‖ := norm_pos_iff.mpr (sub_ne_zero.mpr (hyz k))
+    have hk := norm_pos_iff.mpr (sub_ne_zero.mpr (hyz k))
     rw [show a * y + b - (a * z k + b) = a * (y - z k) by ring, norm_mul, htdef]
     field_simp
   have hlogt : Real.log t = affineDefect a b y - Real.log ‖a‖ / 2 := by
@@ -74,7 +75,7 @@ theorem coulombWeight_affine {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (z : Fin 
   simp only [ENNReal.rpow_eq_pow, mul_zero, ENNReal.rpow_zero, mul_one]
   simp_rw [hfac, ENNReal.ofReal_mul ht.le]
   rw [Finset.prod_congr rfl fun k _ => ENNReal.mul_rpow_of_ne_top ENNReal.ofReal_ne_top
-    ENNReal.ofReal_ne_top (γ * α k), Finset.prod_mul_distrib]
+    ENNReal.ofReal_ne_top _, Finset.prod_mul_distrib]
   congr 1
   rw [Finset.prod_congr rfl fun k _ => ENNReal.ofReal_rpow_of_pos ht,
     ← ENNReal.ofReal_prod_of_nonneg fun k _ => (Real.rpow_pos_of_pos ht _).le,

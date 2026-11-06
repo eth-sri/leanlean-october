@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import DOZZ.GMC.SharpMoments.SeibergMoment
+import DOZZ.ShiftEquations.Mobius.InversionMoment
 
 /-! # Explicit moment bounds for the Coulomb mass
 
@@ -26,23 +27,23 @@ theorem ennreal_add_rpow_le_two_rpow_mul (a b : ℝ≥0∞) {t : ℝ} (ht : 0 �
     (a + b) ^ t ≤ 2 ^ t * (a ^ t + b ^ t) := by
   have hmax : a + b ≤ 2 * max a b := by
     rw [two_mul]
-    exact add_le_add (le_max_left a b) (le_max_right a b)
+    bound
   calc (a + b) ^ t ≤ (2 * max a b) ^ t := ENNReal.rpow_le_rpow hmax ht
     _ = 2 ^ t * max a b ^ t := ENNReal.mul_rpow_of_nonneg _ _ ht
     _ ≤ 2 ^ t * (a ^ t + b ^ t) := by
         gcongr
         rcases le_total a b with hab | hab
-        · rw [max_eq_right hab]
-          exact le_add_left le_rfl
-        · rw [max_eq_left hab]
-          exact le_add_right le_rfl
+        · simp_all
+        simp_all
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+section
+variable (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+include hX hγ hγ2 hM
 
 /-- Positive moments of the Coulomb mass are bounded by explicit multiples of the moments of its
 pieces. -/
 theorem coulombMass_moment_le_pieces
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     {N : ℕ} (z : Fin N → ℂ) (α : Fin N → ℝ) (αinf : ℝ) {δ : ℝ} (hδ : 0 < δ) (hδ1 : δ ≤ 1)
     (hsep : ∀ j k, j ≠ k → 2 * δ ≤ ‖z j - z k‖) {Rr : ℝ} (hRr1 : 1 ≤ Rr)
     (hzRr : ∀ j, 2 * ‖z j‖ ≤ Rr) (t : ℝ) (ht : 0 < t) :
@@ -54,24 +55,24 @@ theorem coulombMass_moment_le_pieces
           gmcMassMoment P M (Metric.closedBall 0 Rr) t) +
         ENNReal.ofReal ((2 : ℝ) ^ (∑ j, |γ * α j|)) ^ t *
           weightedGmcBallMoment P M γ αinf 0 (1 / Rr) t) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   have hRr0 : 0 < Rr := by linarith
-  set cR : ℝ≥0∞ := ENNReal.ofReal (((2 + 2 * ∑ j, ‖z j‖) / δ) ^
+  set cR := ENNReal.ofReal (((2 + 2 * ∑ j, ‖z j‖) / δ) ^
     (∑ j, |γ * α j| + |γ * αinf|)) with hcR
-  set cB : ℝ≥0∞ := ENNReal.ofReal (((1 + Rr + ∑ j, ‖z j‖) / δ) ^
+  set cB := ENNReal.ofReal (((1 + Rr + ∑ j, ‖z j‖) / δ) ^
     (∑ j, |γ * α j| + |γ * αinf|)) with hcB
-  set cE : ℝ≥0∞ := ENNReal.ofReal ((2 : ℝ) ^ (∑ j, |γ * α j|)) with hcE
+  set cE := ENNReal.ofReal ((2 : ℝ) ^ (∑ j, |γ * α j|)) with hcE
   set W : Fin N → Ω → ℝ≥0∞ := fun k ω => weightedGmcBallMass γ (M ω) (α k) (z k) δ with hW
   set MB : Ω → ℝ≥0∞ := fun ω => M ω (Metric.closedBall 0 Rr) with hMB
   set V : Ω → ℝ≥0∞ := fun ω => ∫⁻ x in {x : ℂ | Rr < ‖x‖},
-    ENNReal.rpow (ENNReal.ofReal ‖x‖) (γ * αinf) ∂M ω with hV
+    ENNReal.rpow _ (γ * αinf) ∂M ω with hV
   have hWm : ∀ k, AEMeasurable (W k) P := fun k =>
     gmc_weighted_mass_aemeasurable P X hX γ hγ hγ2 M hM (α k) (z k) δ
   have hMBm : AEMeasurable MB P :=
     gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM _
       Metric.isClosed_closedBall.measurableSet
   have hg : Measurable fun x : ℂ => ENNReal.rpow (ENNReal.ofReal ‖x‖) (γ * αinf) :=
-    (ENNReal.continuous_rpow_const (y := γ * αinf)).measurable.comp
+    (ENNReal.continuous_rpow_const).measurable.comp
       (ENNReal.measurable_ofReal.comp measurable_norm)
   have hVm : AEMeasurable V P :=
     gmc_setLIntegral_aemeasurable P X hX γ hγ hγ2 M hM _ hg _
@@ -80,14 +81,13 @@ theorem coulombMass_moment_le_pieces
     rw [Finset.card_univ, Fintype.card_fin]
   -- the pointwise bound
   have hatoms : ∀ᵐ ω ∂P, ∀ k, M ω {z k} = 0 :=
-    ae_all_iff.mpr fun k => gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM (z k)
+    ae_all_iff.mpr fun k => DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM (z k)
   have hpt : ∀ᵐ ω ∂P, ENNReal.rpow (coulombMass γ (M ω) α z αinf) t ≤
       2 ^ t * (2 ^ t * ((N : ℝ≥0∞) ^ t * ∑ k, cR ^ t * W k ω ^ t + cB ^ t * MB ω ^ t) +
         cE ^ t * V ω ^ t) := by
     filter_upwards [hatoms] with ω hω
-    have hdec := coulombMass_le_pieces (M ω) γ α z αinf hδ hδ1 hsep hω hRr1 hzRr
-    calc ENNReal.rpow (coulombMass γ (M ω) α z αinf) t
-        ≤ ((∑ k, cR * W k ω + cB * MB ω) + cE * V ω) ^ t := ENNReal.rpow_le_rpow hdec ht.le
+    calc ENNReal.rpow _ t
+        ≤ ((∑ k, cR * W k ω + cB * MB ω) + cE * V ω) ^ t := ENNReal.rpow_le_rpow (coulombMass_le_pieces (M ω) γ α z αinf hδ hδ1 hsep hω hRr1 hzRr) ht.le
       _ ≤ 2 ^ t * ((∑ k, cR * W k ω + cB * MB ω) ^ t + (cE * V ω) ^ t) :=
           ennreal_add_rpow_le_two_rpow_mul _ _ ht.le
       _ ≤ 2 ^ t * (2 ^ t * ((∑ k, cR * W k ω) ^ t + (cB * MB ω) ^ t) + (cE * V ω) ^ t) := by
@@ -128,27 +128,22 @@ theorem coulombMass_moment_le_pieces
 /-- Nonpositive moments of the Coulomb mass, uniformly over exterior radii, charges and orders in
 compact ranges. -/
 theorem coulombMass_moment_uniform_nonpos
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (N : ℕ) (Rr : ℝ) (hRr1 : 1 ≤ Rr) (A tmin : ℝ) (htmin : tmin ≤ 0) :
     ∃ K : ℝ≥0∞, K < ⊤ ∧ ∀ (z : Fin N → ℂ) (α : Fin N → ℝ) (αinf t : ℝ),
       (∀ j, 2 * ‖z j‖ ≤ Rr) → (∀ j, |α j| ≤ A) → |αinf| ≤ A → tmin ≤ t → t ≤ 0 →
       ∫⁻ ω, ENNReal.rpow (coulombMass γ (M ω) α z αinf) t ∂P ≤ K := by
-  let _ : IsProbabilityMeasure P := hX.1
-  set cmin : ℝ≥0∞ := ENNReal.ofReal ((2 : ℝ) ^ (-(N * (γ * A)))) *
+  let _ := hX.1
+  set cmin := ENNReal.ofReal ((2 : ℝ) ^ (-(N * (γ * A)))) *
     ENNReal.ofReal ((Rr + 2) ^ (-(γ * A))) with hcmin
-  set B : Set ℂ := Metric.ball (((Rr + 1 : ℝ)) : ℂ) (1 / 8) with hB
+  set B := Metric.ball (((Rr + 1 : ℝ)) : ℂ) (1 / 8) with hB
   have hBm : AEMeasurable (fun ω => M ω B) P :=
     gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM B Metric.isOpen_ball.measurableSet
-  have hc0 : cmin ≠ 0 := mul_ne_zero
-    (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos (by norm_num) _)).ne'
-    (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos (by linarith) _)).ne'
+  have hc0 : cmin ≠ 0 := by positivity
   have hctop : cmin ≠ ⊤ := ENNReal.mul_ne_top ENNReal.ofReal_ne_top ENNReal.ofReal_ne_top
   refine ⟨cmin ^ tmin * (1 + gmcMassMoment P M B tmin),
     ENNReal.mul_lt_top (ENNReal.rpow_ne_top_of_ne_zero hc0 hctop).lt_top
       (ENNReal.add_lt_top.mpr ⟨ENNReal.one_lt_top,
-        gmc_ball_moment_lt_top_any_center P X hX γ hγ hγ2 M hM _ (1 / 8) (by norm_num) le_rfl
+        gmc_ball_moment_lt_top_any_center P X hX γ hγ hγ2 M hM _ _ (by norm_num) le_rfl
           tmin (lt_of_le_of_lt htmin (by positivity))⟩), ?_⟩
   intro z α αinf t hzRr hαA hαinfA htt ht0
   -- the uniform lower constant
@@ -163,10 +158,9 @@ theorem coulombMass_moment_uniform_nonpos
       exact mul_le_mul_of_nonneg_left hαinfA hγ.le
     have hcle : cmin ≤ ENNReal.ofReal ((2 : ℝ) ^ (-∑ j, |γ * α j|)) *
         ENNReal.ofReal ((Rr + 2) ^ (-|γ * αinf|)) := by
-      rw [hcmin]
       refine mul_le_mul' (ENNReal.ofReal_le_ofReal ?_) (ENNReal.ofReal_le_ofReal ?_)
-      · exact Real.rpow_le_rpow_of_exponent_le (by norm_num) (by linarith)
-      · exact Real.rpow_le_rpow_of_exponent_le (by linarith) (by linarith)
+      · simp_all
+      · bound
     have hc1 : cmin ≤ 1 := by
       rw [hcmin, ← ENNReal.ofReal_mul (Real.rpow_nonneg (by norm_num) _)]
       refine ENNReal.ofReal_le_one.mpr ?_
@@ -181,7 +175,7 @@ theorem coulombMass_moment_uniform_nonpos
         _ = 1 := one_mul 1
     have hlow : ∀ ω, cmin * M ω B ≤ coulombMass γ (M ω) α z αinf := fun ω =>
       (mul_le_mul' hcle le_rfl).trans (coulombMass_ge_exterior_ball (M ω) γ α z αinf hRr1 hzRr)
-    calc ∫⁻ ω, ENNReal.rpow (coulombMass γ (M ω) α z αinf) t ∂P
+    calc ∫⁻ ω, ENNReal.rpow _ t ∂P
         ≤ ∫⁻ ω, cmin ^ tmin * (1 + M ω B ^ tmin) ∂P := by
           apply lintegral_mono
           intro ω
@@ -197,11 +191,15 @@ theorem coulombMass_moment_uniform_nonpos
       _ = cmin ^ tmin * (1 + gmcMassMoment P M B tmin) := by
           have h1m : AEMeasurable (fun ω => 1 + M ω B ^ tmin) P :=
             aemeasurable_const.add (hBm.pow_const tmin)
-          have hone : AEMeasurable (fun _ : Ω => (1 : ℝ≥0∞)) P := aemeasurable_const
+          have hone : AEMeasurable (fun _ => (1 : ℝ≥0∞)) P := aemeasurable_const
           rw [lintegral_const_mul'' _ h1m, lintegral_add_left' hone, lintegral_const,
             measure_univ, mul_one]
           rfl
   · -- a negative charge bound admits no parameters
     exact absurd ((abs_nonneg _).trans hαinfA) hNA
+
+end
+
+end
 
 end DOZZ.Proofs

@@ -33,11 +33,10 @@ theorem bounded_pin_coefficient_eq (z x : ℂ) (hz : 2 ≤ ‖z‖) (hx : ‖x�
   have hv := offCenter_pin_variance_pos z hz
   have hnorm : 1 ≤ ‖z+x‖ := by
     have h := norm_sub_norm_le z (z+x)
-    simp only [sub_add_cancel_left, norm_neg] at h
+    simp at h
     linarith
-  have hc := local_pin_coefficient_bound z x hz hx
-  have hcb : |localPinCoefficient z x| ≤ 1 / (2 * Real.log ‖z‖) :=
-    hc.trans (div_le_div_of_nonneg_right hx hv.le)
+  have hcb :=
+    (local_pin_coefficient_bound z x hz hx).trans (div_le_div_of_nonneg_right hx hv.le)
   have hleft := (abs_le.mp hcb).1
   have hright := (abs_le.mp hcb).2
   change max (-(1 / |2 * Real.log ‖z‖|))
@@ -47,7 +46,7 @@ theorem bounded_pin_coefficient_eq (z x : ℂ) (hz : 2 ≤ ‖z‖) (hx : ‖x�
     unfold normPlus; exact max_eq_right hnorm]
   change max (-(1 / (2 * Real.log ‖z‖)))
     (min (1 / (2 * Real.log ‖z‖)) (localPinCoefficient z x)) = _
-  rw [min_eq_right hright, max_eq_right hleft]
+  simp_all
 
 
 end DOZZ.Proofs

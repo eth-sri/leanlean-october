@@ -57,9 +57,7 @@ theorem realGaussSolution_canonical_diagonal_constraint
   have hc₁ : ∀ n : ℤ, c₁ ≠ (n : ℝ) := by
     intro n hn
     apply hδ (1 - n)
-    dsimp [c₁] at hn
-    push_cast at hn ⊢
-    linarith
+    grind
   let T₁ : ℂ → ℝ := fun z => T (1 - z)
   have hT₁ : IsRealGaussSolution a b c₁ T₁ := by
     simpa [T₁, c₁] using realGaussSolution_reflection a b c T hT
@@ -82,13 +80,13 @@ theorem realGaussSolution_canonical_diagonal_constraint
   have hnegδcast : ((a + b - c : ℝ) : ℂ) = (a : ℂ) + (b : ℂ) - (c : ℂ) := by
     push_cast
     ring
-  have hcaCast : ((c - a : ℝ) : ℂ) = (c : ℂ) - (a : ℂ) := by push_cast; ring
-  have hcbCast : ((c - b : ℝ) : ℂ) = (c : ℂ) - (b : ℂ) := by push_cast; ring
-  have h2cCast : ((2 - c : ℝ) : ℂ) = (2 : ℂ) - (c : ℂ) := by push_cast; ring
-  have h1aCast : ((1 - a : ℝ) : ℂ) = (1 : ℂ) - (a : ℂ) := by push_cast; ring
-  have h1bCast : ((1 - b : ℝ) : ℂ) = (1 : ℂ) - (b : ℂ) := by push_cast; ring
-  have hac1Cast : ((a - c + 1 : ℝ) : ℂ) = (a : ℂ) - (c : ℂ) + 1 := by push_cast; ring
-  have hbc1Cast : ((b - c + 1 : ℝ) : ℂ) = (b : ℂ) - (c : ℂ) + 1 := by push_cast; ring
+  have hcaCast : ((c - a : ℝ) : ℂ) = (c : ℂ) - (a : ℂ) := by simp
+  have hcbCast : ((c - b : ℝ) : ℂ) = (c : ℂ) - (b : ℂ) := by simp
+  have h2cCast : ((2 - c : ℝ) : ℂ) = (2 : ℂ) - (c : ℂ) := by simp
+  have h1aCast : ((1 - a : ℝ) : ℂ) = (1 : ℂ) - (a : ℂ) := by simp
+  have h1bCast : ((1 - b : ℝ) : ℂ) = (1 : ℂ) - (b : ℂ) := by simp
+  have hac1Cast : ((a - c + 1 : ℝ) : ℂ) = (a : ℂ) - (c : ℂ) + 1 := by simp
+  have hbc1Cast : ((b - c + 1 : ℝ) : ℂ) = (b : ℂ) - (c : ℂ) + 1 := by simp
   have hU : Complex.Gamma (c : ℂ) * Complex.Gamma ((c : ℂ) - (a : ℂ) - (b : ℂ)) *
       (Complex.Gamma ((c : ℂ) - (a : ℂ)))⁻¹ *
         (Complex.Gamma ((c : ℂ) - (b : ℂ)))⁻¹ = (u : ℂ) := by
@@ -122,8 +120,6 @@ theorem realGaussSolution_canonical_diagonal_constraint
         ((c - a - b : ℝ) : ℂ) = (c : ℂ) - (a : ℂ) - (b : ℂ) := hδcast
         _ = (n : ℂ) := hn
     exact_mod_cast hn'
-  have hminusConn := gauss_connection_minus hH (a : ℂ) (b : ℂ) (c : ℂ) hcC hδC
-  have hplusConn := gauss_connection_plus hH (a : ℂ) (b : ℂ) (c : ℂ) hcC hδC
   have hlocal := gauss_local_basis_one hH (a : ℂ) (b : ℂ) (c : ℂ) hδC
   have hGminus : AnalyticOnNhd ℂ (gaussGMinus H (a : ℂ) (b : ℂ) (c : ℂ)) gaussCutPlane :=
     hlocal.1.analyticOnNhd gaussCutPlane_isOpen
@@ -135,7 +131,7 @@ theorem realGaussSolution_canonical_diagonal_constraint
   have hδ0 : (c : ℂ) - (a : ℂ) - (b : ℂ) ≠ 0 := by
     intro hz
     apply hδ 0
-    have hz' : ((c - a - b : ℝ) : ℂ) = 0 := by rw [hδcast]; exact hz
+    have hz' : ((c - a - b : ℝ) : ℂ) = 0 := by grind
     exact_mod_cast hz'
   have hmid0 : (1 / 2 : ℂ) ≠ 0 := by norm_num
   have hmid1 : 1 - (1 / 2 : ℂ) ≠ 0 := by norm_num
@@ -157,8 +153,8 @@ theorem realGaussSolution_canonical_diagonal_constraint
       hermitianQuadraticTensor (gaussGMinus H (a : ℂ) (b : ℂ) (c : ℂ))
         (gaussGPlus H (a : ℂ) (b : ℂ) (c : ℂ)) (α₁ : ℂ) 0 0 (δ₁ : ℂ) z := by
     intro z hz
-    have hminus := hminusConn z hz
-    have hplus := hplusConn z hz
+    have hminus := (gauss_connection_minus hH (a : ℂ) (b : ℂ) (c : ℂ) hcC hδC) z hz
+    have hplus := (gauss_connection_plus hH (a : ℂ) (b : ℂ) (c : ℂ) hcC hδC) z hz
     have hminus' : gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ) z =
         (u : ℂ) * gaussGMinus H (a : ℂ) (b : ℂ) (c : ℂ) z +
           (v : ℂ) * gaussGPlus H (a : ℂ) (b : ℂ) (c : ℂ) z := by
@@ -175,19 +171,18 @@ theorem realGaussSolution_canonical_diagonal_constraint
         (gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ))
         (gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ)) (α : ℂ) 0 0 (δ : ℂ) z := by
       simpa [hermitianQuadraticTensor, star_mul, mul_comm, mul_left_comm, mul_assoc] using hOrig
-    have hz' := one_sub_gaussCutPlane_subset_gaussCutPlane hz
-    have hRef := hrep₁ (1 - z) hz'
+    have hRef := hrep₁ _ (one_sub_gaussCutPlane_subset_gaussCutPlane hz)
     rw [hβ₁] at hRef
     have hRefTensor : (T z : ℂ) = hermitianQuadraticTensor
         (gaussGMinus H (a : ℂ) (b : ℂ) (c : ℂ))
         (gaussGPlus H (a : ℂ) (b : ℂ) (c : ℂ)) (α₁ : ℂ) 0 0 (δ₁ : ℂ) z := by
       calc
-        (T z : ℂ) = (T (1 - (1 - z)) : ℂ) := by congr 1; ring_nf
-        _ = (T₁ (1 - z) : ℂ) := rfl
+        (T z : ℂ) = (T (1 - (1 - z)) : ℂ) := by simp
+        _ = (T₁ _ : ℂ) := rfl
         _ = hermitianQuadraticTensor
             (gaussFMinus H (a : ℂ) (b : ℂ) (c₁ : ℂ))
             (gaussFPlus H (a : ℂ) (b : ℂ) (c₁ : ℂ))
-            (α₁ : ℂ) 0 0 (δ₁ : ℂ) (1 - z) := by
+            (α₁ : ℂ) 0 0 (δ₁ : ℂ) _ := by
           simpa [hermitianQuadraticTensor, star_mul, mul_comm, mul_left_comm, mul_assoc] using hRef
         _ = hermitianQuadraticTensor
             (gaussGMinus H (a : ℂ) (b : ℂ) (c : ℂ))
@@ -252,14 +247,13 @@ theorem realGaussSolution_canonical_diagonal_constraint
     rw [← hfactorization, hB]
   refine ⟨α, δ, ?_, hconstraint⟩
   intro z hz
-  have hOrig := hrep z hz
   apply Complex.ofReal_injective
   calc
     (T z : ℂ) = gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ) z *
         star ((α : ℂ) * gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ) z) +
       gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ) z *
         star ((δ : ℂ) * gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ) z) := by
-      simpa [hβ] using hOrig
+      simpa [hβ] using (hrep z hz)
     _ = (α : ℂ) * (gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ) z *
           star (gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ) z)) +
         (δ : ℂ) * (gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ) z *
@@ -273,6 +267,6 @@ theorem realGaussSolution_canonical_diagonal_constraint
         (δ : ℂ) * (‖gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ) z‖ ^ 2 : ℝ) := by
       simp only [Complex.normSq_eq_norm_sq]
     _ = ((α * ‖gaussFMinus H a b c z‖ ^ 2 +
-        δ * ‖gaussFPlus H a b c z‖ ^ 2 : ℝ) : ℂ) := by push_cast; ring
+        δ * ‖gaussFPlus H a b c z‖ ^ 2 : ℝ) : ℂ) := by simp
 
 end DOZZ.Proofs

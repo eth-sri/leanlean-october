@@ -20,12 +20,12 @@ open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
+section
+variable {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω'] (P : Measure Ω) (P' : Measure Ω')
 
 /-- Two independent conditioned path pairs with the same drift parameter have the same pair law.
 The one-path marginals agree by FDD uniqueness; independence then determines the pair law. -/
 theorem twoSidedConditionedPathPair_law_eq
-    {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
-    (P : Measure Ω) (P' : Measure Ω')
     (B : Ω → BrownianPath × BrownianPath)
     (B' : Ω' → BrownianPath × BrownianPath) (ν : ℝ)
     (hB : IsTwoSidedConditionedBrownianProcess P B ν)
@@ -41,33 +41,25 @@ theorem twoSidedConditionedPathPair_law_eq
     (Measure.isProbabilityMeasure_map_iff hB₁m).1 hB₁law.2.1
   let : IsProbabilityMeasure P' :=
     (Measure.isProbabilityMeasure_map_iff hB₁'m).1 hB₁'law.2.1
-  have hMarg₁ : P.map (fun ω => (B ω).1) = P'.map (fun ω => (B' ω).1) :=
+  have hMarg₁ :=
     isNegativeConditionedBrownianLaw_eq ν hB₁law hB₁'law
-  have hMarg₂ : P.map (fun ω => (B ω).2) = P'.map (fun ω => (B' ω).2) :=
+  have hMarg₂ :=
     isNegativeConditionedBrownianLaw_eq ν hB₂law hB₂'law
   have hPair : P.map B =
       (P.map (fun ω => (B ω).1)).prod (P.map (fun ω => (B ω).2)) := by
-    have h := (indepFun_iff_map_prod_eq_prod_map_map hB₁m hB₂m).1 hBInd
-    simpa only [Prod.eta] using h
+    exact (indepFun_iff_map_prod_eq_prod_map_map hB₁m hB₂m).1 hBInd
   have hPair' : P'.map B' =
       (P'.map (fun ω => (B' ω).1)).prod (P'.map (fun ω => (B' ω).2)) := by
-    have h := (indepFun_iff_map_prod_eq_prod_map_map hB₁'m hB₂'m).1 hB'Ind
-    simpa only [Prod.eta] using h
-  calc
-    P.map B = (P.map (fun ω => (B ω).1)).prod (P.map (fun ω => (B ω).2)) := hPair
-    _ = (P'.map (fun ω => (B' ω).1)).prod (P'.map (fun ω => (B' ω).2)) := by rw [hMarg₁, hMarg₂]
-    _ = P'.map B' := hPair'.symm
+    exact (indepFun_iff_map_prod_eq_prod_map_map hB₁'m hB₂'m).1 hB'Ind
+  simp_all
+section
+variable (γ α : ℝ) (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ) (B' : Ω' → BrownianPath × BrownianPath) (Z' : Ω' → Measure ℝ) (hData : IsReflectionData P γ α B Z) (hData' : IsReflectionData P' γ α B' Z') (hZlaw : P.map Z = P'.map Z')
+include hData hData' hZlaw
 
 /-- For reflection data, equality of the lateral-measure marginals implies equality of the full
 joint input laws. The conditioned path-pair marginal is fixed by the explicit entrance FDDs. -/
 theorem reflection_jointInputLaw_eq_of_lateralLaw_eq
-    {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
-    (P : Measure Ω) (P' : Measure Ω') (γ α : ℝ)
-    (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
-    (B' : Ω' → BrownianPath × BrownianPath) (Z' : Ω' → Measure ℝ)
-    (hData : IsReflectionData P γ α B Z)
-    (hData' : IsReflectionData P' γ α B' Z')
-    (hZlaw : P.map Z = P'.map Z') :
+    :
     P.map (fun ω => (B ω, Z ω)) = P'.map (fun ω => (B' ω, Z' ω)) := by
   rcases hData with ⟨hB, hZ, hBInd⟩
   rcases hData' with ⟨hB', hZ', hB'Ind⟩
@@ -82,36 +74,29 @@ theorem reflection_jointInputLaw_eq_of_lateralLaw_eq
   rcases hB₁' with ⟨hB₁'m, _⟩
   rcases hB₂' with ⟨hB₂'m, _⟩
   have hBm : AEMeasurable B P := by
-    have hm := hB₁m.prodMk hB₂m
-    simpa only [Prod.eta] using hm
+    exact hB₁m.prodMk hB₂m
   have hB'm : AEMeasurable B' P' := by
-    have hm := hB₁'m.prodMk hB₂'m
-    simpa only [Prod.eta] using hm
-  have hZm : AEMeasurable Z P := hZ.2.2.2.1
-  have hZ'm : AEMeasurable Z' P' := hZ'.2.2.2.1
-  have hJoint : P.map (fun ω => (B ω, Z ω)) = (P.map B).prod (P.map Z) :=
-    (indepFun_iff_map_prod_eq_prod_map_map hBm hZm).1 hBInd
-  have hJoint' : P'.map (fun ω => (B' ω, Z' ω)) = (P'.map B').prod (P'.map Z') :=
-    (indepFun_iff_map_prod_eq_prod_map_map hB'm hZ'm).1 hB'Ind
+    exact hB₁'m.prodMk hB₂'m
+  have hJoint :=
+    (indepFun_iff_map_prod_eq_prod_map_map hBm hZ.2.2.2.1).1 hBInd
+  have hJoint' :=
+    (indepFun_iff_map_prod_eq_prod_map_map hB'm hZ'.2.2.2.1).1 hB'Ind
   calc
     P.map (fun ω => (B ω, Z ω)) = (P.map B).prod (P.map Z) := hJoint
-    _ = (P'.map B').prod (P'.map Z') := by rw [hBlaw, hZlaw]
+    _ = (P'.map B').prod (P'.map Z') := by simp_all
     _ = P'.map (fun ω => (B' ω, Z' ω)) := hJoint'.symm
 
 /-- Reflection moments agree as soon as the lateral marginal law is unique across the two
 reflection-data realizations. -/
 theorem reflectionBarR_eq_of_lateralLaw_eq
-    {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
-    (P : Measure Ω) (P' : Measure Ω') (γ α : ℝ)
-    (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
-    (B' : Ω' → BrownianPath × BrownianPath) (Z' : Ω' → Measure ℝ)
-    (hData : IsReflectionData P γ α B Z)
-    (hData' : IsReflectionData P' γ α B' Z')
-    (hZlaw : P.map Z = P'.map Z') :
-    reflectionBarR P γ α B Z = reflectionBarR P' γ α B' Z' := by
-  exact reflectionBarR_eq_of_joint_input_law_of_reflectionData P P' γ α B Z B' Z'
+    :
+    reflectionBarR P γ α B Z = reflectionBarR P' γ α B' Z' := reflectionBarR_eq_of_joint_input_law_of_reflectionData P P' γ α B Z B' Z'
     hData hData' (reflection_jointInputLaw_eq_of_lateralLaw_eq
       P P' γ α B Z B' Z' hData hData' hZlaw)
+
+end
+
+end
 
 end DOZZ.Proofs
 

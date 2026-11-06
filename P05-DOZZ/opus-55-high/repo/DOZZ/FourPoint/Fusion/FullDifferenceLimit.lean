@@ -23,16 +23,14 @@ theorem fusion_massDifference_normalized_tendsto {Ω : Type*} [MeasurableSpace �
           ‖z‖ ^ (γ * (Q γ - α₁))) (nhdsWithin 0 {0}ᶜ)
       (nhds (-p * gammaHalfRootedCoefficient P M γ α₁ α₂ α₃ p)) := by
   obtain ⟨_, _, _, _, hκ⟩ := fusion_difference_parameters γ α₁ hγ hlo hα₁
-  have hl := fusion_localDifference_normalized_tendsto P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hlo hα₁ hα₂ hα₃ p hp
-  have hr := fusion_exteriorDifference_normalized_tendsto P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα₁ hα₂ hα₃ p hp _ hκ
-  have h := (tendsto_const_nhds (x := -p)).mul (hl.add hr)
+  have h := (tendsto_const_nhds (x := -p)).mul ((fusion_localDifference_normalized_tendsto P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hlo hα₁ hα₂ hα₃ p hp).add (fusion_exteriorDifference_normalized_tendsto P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα₁ hα₂ hα₃ p hp _ hκ))
   simp only [add_zero] at h
   apply h.congr'
   have hz4 : ∀ᶠ z : ℂ in nhdsWithin 0 {0}ᶜ, ‖z‖ ≤ 1 / 4 :=
-    (((continuous_norm.tendsto (0 : ℂ)).eventually_lt_const (by simp : ‖(0 : ℂ)‖ < (1 / 4 : ℝ))).filter_mono
+    (((continuous_norm.tendsto (0 : ℂ)).eventually_lt_const (by simp)).filter_mono
       nhdsWithin_le_nhds).mono fun _ h => h.le
   filter_upwards [hz4, self_mem_nhdsWithin] with z hz4 hz
-  have hz0 : z ≠ 0 := by simpa only [mem_compl_iff, mem_singleton_iff] using hz
+  have hz0 : z ≠ 0 := by assumption
   rw [fusion_mass_expectation_interpolation P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα₁ hα₂ hα₃ p hp z hz0 hz4,
     fusion_difference_time_split P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hlo hα₁ hα₂ hα₃ p hp z hz0 hz4]
   ring

@@ -48,7 +48,7 @@ theorem gammaHalf_crossing_of_BPZ_and_unreflected {Ω : Type*} [MeasurableSpace 
       gammaHalfUnitCrossingMultiplier γ μ α' ε α *
         unitVolumeStructureConstant P M γ α' (ε + γ / 2) α := by
   have hεQ : ε < Q γ := by unfold Q; linarith only [hεhi, hγ]
-  have hsum : 2 * Q γ + γ / 2 < α' + ε + α := by linarith only [hs]
+  have hsum : 2 * Q γ + γ / 2 < α' + ε + α := by linarith
   have hdiag := gammaHalf_zero_channel_of_gauss_solution hH P X M γ μ α' ε α
     hγ hγ2 hμ hα' hεQ hα hsum hX hM hBPZ
   exact gammaHalf_crossing_of_diagonal_and_unreflected hH P X M γ μ α' ε α

@@ -19,9 +19,8 @@ theorem dual_coulombWeight_charge_shift (γ a α₁ α₂ α₃ : ℝ) (z x : �
     ENNReal.ofReal ((normPlus x / ‖x‖) ^ (γ * a)) *
       coulombWeight γ ![-2 / γ, α₁, α₂] ![z, 0, 1] α₃ x =
         coulombWeight γ ![-2 / γ, α₁ + a, α₂] ![z, 0, 1] α₃ x := by
-  have hn : 0 < ‖x‖ := norm_pos_iff.mpr hx
-  have hp : 0 < normPlus x := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
-  have hd : 0 < normPlus x / ‖x‖ := div_pos hp hn
+  have hp : 0 < normPlus x := lt_of_lt_of_le zero_lt_one (le_max_left ..)
+  have hd := div_pos hp (norm_pos_iff.mpr hx)
   simp only [coulombWeight, Fin.prod_univ_succ, Matrix.cons_val_zero,
     Matrix.cons_val_succ, Fin.prod_univ_zero, mul_one, sub_zero]
   rw [coulombWeight_rpow_ofReal hd, coulombWeight_rpow_ofReal hd]
@@ -40,8 +39,8 @@ theorem dual_outerMass_circle_density_shift (γ a m α₁ α₂ α₃ ξ : ℝ)
           Real.log (max (Real.exp (-m)) ‖x‖)))))) z ξ =
       dualOuterMass γ (α₁ + a) α₂ α₃ μ z ξ := by
   let D : Set ℂ := {x | ‖z‖ ^ (1 - ξ) ≤ ‖x‖}
-  have hD : MeasurableSet D := (isClosed_le continuous_const continuous_norm).measurableSet
-  have hd : Measurable (fun x : ℂ => ENNReal.ofReal
+  have hD : MeasurableSet D := by measurability
+  have hd : Measurable (fun x => ENNReal.ofReal
       (Real.exp (γ * a * (Real.log (normPlus x) -
         Real.log (max (Real.exp (-m)) ‖x‖))))) := by
     unfold normPlus
@@ -49,22 +48,23 @@ theorem dual_outerMass_circle_density_shift (γ a m α₁ α₂ α₃ ξ : ℝ)
   unfold dualOuterMass
   rw [restrict_withDensity hD,
     coulombMass_eq_lintegral_coulombWeight,
-    lintegral_withDensity_eq_lintegral_mul _ hd (measurable_coulombWeight _ _ _ _),
+    lintegral_withDensity_eq_lintegral_mul _ hd (measurable_coulombWeight ..),
     coulombMass_eq_lintegral_coulombWeight]
   apply lintegral_congr_ae
   filter_upwards [ae_restrict_mem hD] with x hx
-  have hn : 0 < ‖x‖ := hr.trans_le hx
-  dsimp only [Pi.mul_apply]
+  have hn := hr.trans_le hx
+  dsimp
   rw [reflected_circle_density_outside γ a m x hn (hm.trans hx)]
   exact dual_coulombWeight_charge_shift γ a α₁ α₂ α₃ z x
     (norm_pos_iff.mp hn)
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+section
+variable (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+include hX hγ hγ₂ hM hXc
 
 /-- Exact Cameron-Martin identification of the inverse outer moment at arbitrary real circle time. -/
-theorem dual_outerMass_circle_tilt {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (a m α₁ α₂ α₃ ξ q : ℝ) (hm : 0 ≤ m) (z : ℂ)
+theorem dual_outerMass_circle_tilt (a m α₁ α₂ α₃ ξ q : ℝ) (hm : 0 ≤ m) (z : ℂ)
     (hr : 0 < ‖z‖ ^ (1 - ξ)) (houtside : Real.exp (-m) ≤ ‖z‖ ^ (1 - ξ)) :
     (∫⁻ ω, ENNReal.ofReal (Real.exp (a * Xc ω 0 m - m * a ^ 2 / 2)) *
       dualOuterMass γ α₁ α₂ α₃ (M ω) z ξ ^ (-q) ∂P) =
@@ -80,10 +80,6 @@ theorem dual_outerMass_circle_tilt {Ω : Type*} [MeasurableSpace Ω]
 /-- The tilted retained moment converges to the rho with shifted charge, in the full complex
 punctured limit. Choosing `a = 2*(Q-alpha1)` gives the reflected leading coefficient. -/
 theorem dual_tilted_outer_inverse_moment_tendsto
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (a α₁ α₂ α₃ ξ q h : ℝ) (hh : 0 ≤ h) (hξ : 0 < ξ) (hξ₁ : ξ < 1) (hq : 0 ≤ q)
     (hα₁ : α₁ + a - 2 / γ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) :
     Tendsto (fun z : ℂ => ∫⁻ ω,
@@ -94,23 +90,27 @@ theorem dual_tilted_outer_inverse_moment_tendsto
       (nhds (∫⁻ ω, rho γ (M ω) (α₁ + a - 2 / γ) α₂ α₃ ^ (-q) ∂P)) := by
   have ht := dual_outerMass_inverse_moment_tendsto P X hX γ hγ hγ₂ M hM
     (α₁ + a) α₂ α₃ ξ q hξ hξ₁ hq hα₁ hα₂ hα₃
-  have hn : Tendsto (fun z : ℂ => ‖z‖)
+  have hn : Tendsto (fun z => ‖z‖)
       (nhdsWithin (0 : ℂ) {z : ℂ | z ≠ 0}) (nhds 0) := by
-    simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
+    simpa using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
   apply ht.congr'
   filter_upwards [hn.eventually (gt_mem_nhds zero_lt_one), self_mem_nhdsWithin] with z hz hz0
   have hp : 0 < ‖z‖ := norm_pos_iff.mpr hz0
   have hm : 0 ≤ -Real.log ‖z‖ + h := by
     have hl := Real.log_nonpos hp.le hz.le
-    linarith only [hl, hh]
+    linarith
   have hr : ‖z‖ ≤ ‖z‖ ^ (1 - ξ) := by
-    simpa only [Real.rpow_one] using Real.rpow_le_rpow_of_exponent_ge hp hz.le
-      (by linarith only [hξ] : 1 - ξ ≤ 1)
+    simpa using Real.rpow_le_rpow_of_exponent_ge hp hz.le
+      (by linarith : 1 - ξ ≤ 1)
   have he : Real.exp (-(-Real.log ‖z‖ + h)) ≤ ‖z‖ := by
-    have hb : -(-Real.log ‖z‖ + h) ≤ Real.log ‖z‖ := by linarith only [hh]
+    have hb : -(-Real.log ‖z‖ + h) ≤ Real.log ‖z‖ := by linarith
     simpa only [Real.exp_log hp] using Real.exp_le_exp.mpr hb
   exact (dual_outerMass_circle_tilt P X hX γ hγ hγ₂ M hM Xc hXc
-    a (-Real.log ‖z‖ + h) α₁ α₂ α₃ ξ q hm z
+    a _ α₁ α₂ α₃ ξ q hm z
     (Real.rpow_pos_of_pos hp _) (he.trans hr)).symm
+
+end
+
+end
 
 end DOZZ.Proofs

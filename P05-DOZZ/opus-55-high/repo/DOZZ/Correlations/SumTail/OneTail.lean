@@ -65,7 +65,7 @@ theorem sumtail_uniform_one_tail_for_common_witness
     have hr := reflectionBarR_eq_of_isReflectionData P P γ α (B' α) Z' (B α) Z
       (hB' α hαL) (hB α (hLK hαL))
     rw [hr] at hb
-    simpa only [err,Real.rpow_eq_pow] using hb
+    simpa using hb
   obtain ⟨C,hC,hCb⟩ := sumtail_uniform_variable_rate Kα hKα (oneInsertionErrorCeiling γ)
     (reflectionExponent γ) (sumtail_one_error_continuousOn γ Kα hγ hα)
     (fun α ha => residue_oneInsertionErrorCeiling_pos γ α hγ (hα α ha).1 (hα α ha).2)

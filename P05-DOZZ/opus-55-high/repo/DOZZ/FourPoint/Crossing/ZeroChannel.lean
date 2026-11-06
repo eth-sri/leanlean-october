@@ -37,22 +37,16 @@ theorem gammaHalf_zero_channel_of_gauss_solution {Ω : Type*} [MeasurableSpace �
     ∀ z ∈ gaussCutPlane, fourPointT P M γ μ (-γ / 2) a b c z =
       structureConstant P M γ μ (a - γ / 2) b c *
         (‖gaussFMinus H A B C z‖ ^ 2 + gaussCoefficientRatio A B C * ‖gaussFPlus H A B C z‖ ^ 2) := by
-  have hs0 : 2 * Q γ < a + b + c - γ / 2 := by linarith only [hs]
-  have haF : a - γ / 2 < Q γ := by linarith only [ha, hγ]
-  have hzero := fourPointT_zero_eq_structureConstant P X M γ μ (γ / 2) a b c
+  have hs0 : 2 * Q γ < a + b + c - γ / 2 := by linarith
+  have haF : a - γ / 2 < Q γ := by linarith
+  have hzero := fourPointT_zero_eq_structureConstant P X M γ μ _ a b c
     hγ hγ2 hμ haF hb hc hs0 hX hM
   have hlim := gammaHalf_fourPoint_collision_limit P X M γ μ a b c
     hγ hγ2 hμ ha hb hc hs0 hX hM
-  have hcont : ContinuousAt (fun z => fourPointT P M γ μ (-γ / 2) a b c z) 0 := by
-    exact continuousAt_of_tendsto_nhds hlim
-  have hnorm := real_gauss_solution_physical_normalization hH γ (γ / 2) a b c
+  have hcont : ContinuousAt (fun z => fourPointT P M γ μ (-γ / 2) a b c z) 0 := continuousAt_of_tendsto_nhds hlim
+  have hnorm := real_gauss_solution_physical_normalization hH γ _ a b c
     hγ hγ2 (Or.inl rfl) hs ha hb hc
     (fun z => fourPointT P M γ μ (-γ / 2) a b c z) hT hcont
-  dsimp only
-  intro z hz
-  have hzrep := hnorm z hz
-  simp only [neg_div] at hzrep ⊢
-  rw [hzero] at hzrep
-  exact hzrep
+  grind
 
 end DOZZ.Proofs

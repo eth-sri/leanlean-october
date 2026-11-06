@@ -40,7 +40,7 @@ theorem eq_of_real_interval_of_frequently {D : Set ℂ} (hD : IsOpen D) {g₁ g�
     (hJD : ∀ t : ℝ, a < t → t < b → (t : ℂ) ∈ D) (hx₀a : a < x₀) (hx₀b : x₀ < b)
     (hfreq : ∃ᶠ z in 𝓝[≠] (x₀ : ℂ), g₁ z = g₂ z) {t : ℝ} (ht₁ : a < t) (ht₂ : t < b) :
     g₁ t = g₂ t := by
-  have hx₀D : (x₀ : ℂ) ∈ D := hJD x₀ hx₀a hx₀b
+  have hx₀D : (x₀ : ℂ) ∈ D := by simp_all
   set U := connectedComponentIn D (x₀ : ℂ) with hU
   have hUo : IsOpen U := hD.connectedComponentIn
   have hUD : U ⊆ D := connectedComponentIn_subset D _
@@ -51,17 +51,22 @@ theorem eq_of_real_interval_of_frequently {D : Set ℂ} (hD : IsOpen D) {g₁ g�
   have hJU : (fun s : ℝ => (s : ℂ)) '' Ioo a b ⊆ U :=
     (isPreconnected_Ioo.image _ Complex.continuous_ofReal.continuousOn).subset_connectedComponentIn
       ⟨x₀, ⟨hx₀a, hx₀b⟩, rfl⟩ (image_subset_iff.mpr fun s hs => hJD s hs.1 hs.2)
-  exact hEq (hJU ⟨t, ⟨ht₁, ht₂⟩, rfl⟩)
+  aesop
 
 /-- Real points approach a real point from the punctured complex neighborhood. -/
 theorem tendsto_ofReal_nhdsNE_slice (x₀ : ℝ) :
     Tendsto (fun s : ℝ => (s : ℂ)) (𝓝[≠] x₀) (𝓝[≠] (x₀ : ℂ)) :=
   tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within _
     (Complex.continuous_ofReal.continuousAt.tendsto.mono_left nhdsWithin_le_nhds)
-    (eventually_nhdsWithin_of_forall fun s hs => by simpa [Complex.ofReal_inj] using hs)
+    (eventually_nhdsWithin_of_forall fun s hs => by simp_all)
+section
+variable {γ η : ℝ}
+section
+variable (hγ : 0 < γ)
+include hγ
 
 /-- On the slice, the Gauss parameter `B` is `(γ/4)(z - 2η)`. -/
-theorem crossB3_slice {γ η : ℝ} (hγ : 0 < γ) (z : ℂ) :
+theorem crossB3_slice (z : ℂ) :
     crossB3 γ ((Q γ - η : ℝ) : ℂ) z ((2 / γ + η : ℝ) : ℂ) = (γ / 4 : ℂ) * (z - 2 * η) := by
   unfold crossB3
   have hγ0 : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ.ne'
@@ -70,15 +75,19 @@ theorem crossB3_slice {γ η : ℝ} (hγ : 0 < γ) (z : ℂ) :
   ring
 
 /-- On the slice, off `z = 2η`, the regularized multiplier is `(z - 2η) T`. -/
-theorem crossingMultiplier3Reg_slice {γ η : ℝ} (hγ : 0 < γ) {z : ℂ} (hz : z ≠ 2 * η) :
+theorem crossingMultiplier3Reg_slice {z : ℂ} (hz : z ≠ 2 * η) :
     crossingMultiplier3Reg γ ((Q γ - η : ℝ) : ℂ) z ((2 / γ + η : ℝ) : ℂ) =
       (z - 2 * η) * crossingMultiplier3 γ ((Q γ - η : ℝ) : ℂ) z ((2 / γ + η : ℝ) : ℂ) := by
   have hγ0 : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ.ne'
   have hB : crossB3 γ ((Q γ - η : ℝ) : ℂ) z ((2 / γ + η : ℝ) : ℂ) ≠ 0 := by
     rw [crossB3_slice hγ]
-    exact mul_ne_zero (div_ne_zero hγ0 (by norm_num)) (sub_ne_zero.mpr hz)
+    grind
   rw [crossingMultiplier3Reg_eq_mul hB, crossB3_slice hγ]
   field_simp
+
+end
+
+end
 
 /-- **The regularized multiplier on the slice is holomorphic on `-2η - δ < Re z < 2/γ`.** -/
 theorem differentiableAt_crossingMultiplier3Reg_slice {γ η δ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
@@ -87,33 +96,28 @@ theorem differentiableAt_crossingMultiplier3Reg_slice {γ η δ : ℝ} (hγ : 0 
     DifferentiableAt ℂ (fun w => crossingMultiplier3Reg γ ((Q γ - η : ℝ) : ℂ) w
       ((2 / γ + η : ℝ) : ℂ)) z := by
   obtain ⟨hQ, hQ2, hγh, h42, h2⟩ := slice_facts hγ hγ2
-  refine differentiableAt_crossingMultiplier3Reg (φ₁ := fun _ => ((Q γ - η : ℝ) : ℂ))
+  refine differentiableAt_crossingMultiplier3Reg
     (φ₂ := id) (φ₃ := fun _ => ((2 / γ + η : ℝ) : ℂ)) (differentiableAt_const _)
     differentiableAt_id (differentiableAt_const _) ?_ ?_ ?_ ?_
   · rw [crossA3_add_one_re, Complex.ofReal_re, Complex.ofReal_re]
     have h1 := quarter_mul_lt (u := -(2 / γ)) (v := Q γ - η + (id z).re + (2 / γ + η) - Q γ - γ)
-      hγ (by simp only [id]; linarith)
-    have h2' : γ / 4 * -(2 / γ) = -(1 / 2) := by field_simp; ring
-    linarith
+      hγ (by grind)
+    grind
   · have hB := crossB3_slice (η := η) hγ (id z)
     have hre : (crossB3 γ ((Q γ - η : ℝ) : ℂ) (id z) ((2 / γ + η : ℝ) : ℂ) + 1).re =
         γ / 4 * (z.re - 2 * η) + 1 := by
-      rw [hB]
-      simp [Complex.mul_re]
-    rw [hre]
-    have h1 := quarter_mul_lt (u := -(4 / γ)) (v := z.re - 2 * η) hγ (by linarith)
-    have h2' : γ / 4 * -(4 / γ) = -1 := by field_simp
-    linarith
+      simp_all
+    nlinarith
   · rw [one_sub_crossC3_re, Complex.ofReal_re]
-    exact mul_pos (by positivity) (by linarith)
+    simp_all
   · rw [one_sub_mul_half_re]
     have : γ * (id z).re < γ * (2 / γ) := mul_lt_mul_of_pos_left hz2 hγ
-    rw [mul_div_cancel₀ _ hγ.ne'] at this
-    linarith
+    grind
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
 
 /-- **Agreement of the two regularized sides on `(-2η, 1/γ)`.** -/
-theorem slice_regularized_agreement {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (M : Ω → Measure ℂ) {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
+theorem slice_regularized_agreement (M : Ω → Measure ℂ) {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
     (hCross : ∀ μ α' ε α : ℝ, 0 < μ → γ / 2 < ε → ε < 2 / γ → α < Q γ → α' < Q γ →
       2 * Q γ < α + α' + ε - γ / 2 →
       unitVolumeStructureConstant P M γ (α' - γ / 2) ε α =
@@ -139,13 +143,13 @@ theorem slice_regularized_agreement {Ω : Type*} [MeasurableSpace Ω] (P : Measu
       crossingMultiplier3Reg γ ((Q γ - η : ℝ) : ℂ) x ((2 / γ + η : ℝ) : ℂ) *
         f₃ (tripleSecond ((Q γ - η : ℝ) : ℂ) ((γ / 2 : ℝ) : ℂ) ((2 / γ + η : ℝ) : ℂ) x) := by
   obtain ⟨hQ, hQ2, hγh, h42, h2⟩ := slice_facts hγ hγ2
-  have h1γ : 1 / γ < 2 / γ := by gcongr; norm_num
+  have h1γ : 1 / γ < 2 / γ := by grind
   have h12 : 2 * η < 1 / γ := by
     have : 1 / γ = 2 * (1 / (2 * γ)) := by field_simp
     linarith
-  set u₂ : ℂ := ((Q γ - η : ℝ) : ℂ) with hu₂
-  set w : ℂ := ((2 / γ + η : ℝ) : ℂ) with hw
-  set D : Set ℂ := (V ∩ {z | z + 2 * η ≠ 0}) ∩
+  set u₂ := ((Q γ - η : ℝ) : ℂ) with hu₂
+  set w := ((2 / γ + η : ℝ) : ℂ) with hw
+  set D := (V ∩ {z | z + 2 * η ≠ 0}) ∩
     ({z | -(2 * η) - δ < z.re ∧ z.re < 2 / γ} ∩ tripleSecond u₂ ((γ / 2 : ℝ) : ℂ) w ⁻¹' V₃)
     with hD
   have hDo : IsOpen D :=
@@ -156,7 +160,7 @@ theorem slice_regularized_agreement {Ω : Type*} [MeasurableSpace Ω] (P : Measu
   have hJD : ∀ t : ℝ, -(2 * η) < t → t < 1 / γ → (t : ℂ) ∈ D := fun t h1 h2' => by
     refine ⟨⟨hVx t ⟨by linarith, h2'⟩, ?_⟩, ⟨⟨?_, ?_⟩, ?_⟩⟩
     · change (t : ℂ) + 2 * η ≠ 0
-      exact_mod_cast (show t + 2 * η ≠ 0 by intro h; linarith)
+      exact_mod_cast (show t + 2 * η ≠ 0 by linarith)
     · rw [Complex.ofReal_re]
       linarith
     · rw [Complex.ofReal_re]
@@ -171,8 +175,8 @@ theorem slice_regularized_agreement {Ω : Type*} [MeasurableSpace Ω] (P : Measu
     apply DifferentiableAt.differentiableWithinAt
     have hrz : DifferentiableAt ℂ r z := hr.differentiableAt (hV.mem_nhds hz.1.1)
     have hz0 : z + 2 * η ≠ 0 := hz.1.2
-    have h1 : DifferentiableAt ℂ (fun z : ℂ => z - 2 * (η : ℂ)) z := by fun_prop
-    have h2 : DifferentiableAt ℂ (fun z : ℂ => z + 2 * (η : ℂ)) z := by fun_prop
+    have h1 : DifferentiableAt ℂ (fun z => z - 2 * (η : ℂ)) z := by fun_prop
+    have h2 : DifferentiableAt ℂ (fun z => z + 2 * (η : ℂ)) z := by fun_prop
     exact ((differentiableAt_const R₁).add ((h1.mul_const R₂).div h2 hz0)).add (h1.mul hrz)
   have hg₂ : DifferentiableOn ℂ (fun z => crossingMultiplier3Reg γ u₂ z w *
       f₃ (tripleSecond u₂ ((γ / 2 : ℝ) : ℂ) w z)) D := by
@@ -183,9 +187,9 @@ theorem slice_regularized_agreement {Ω : Type*} [MeasurableSpace Ω] (P : Measu
       ((hf₃.differentiableAt (hV₃.mem_nhds hz3)).comp z
         ((differentiable_tripleSecond _ _ _) z))
   -- frequent agreement near a point of `(2η, 1/γ)`
-  set x₀ : ℝ := (2 * η + 1 / γ) / 2 with hx₀
-  have hx₀1 : 2 * η < x₀ := by rw [hx₀]; linarith
-  have hx₀2 : x₀ < 1 / γ := by rw [hx₀]; linarith
+  set x₀ := (2 * η + 1 / γ) / 2 with hx₀
+  have hx₀1 : 2 * η < x₀ := by linarith
+  have hx₀2 : x₀ < 1 / γ := by linarith
   have hE : ∀ᶠ t : ℝ in 𝓝[≠] x₀, ((t : ℂ) ∈ V → F t = R₁ / ((t : ℂ) - 2 * η) +
       R₂ / ((t : ℂ) + 2 * η) + r t) :=
     (tendsto_ofReal_nhdsNE_slice x₀).eventually
@@ -197,26 +201,26 @@ theorem slice_regularized_agreement {Ω : Type*} [MeasurableSpace Ω] (P : Measu
       ((t : ℂ) - 2 * η) * r t = crossingMultiplier3Reg γ u₂ t w *
         f₃ (tripleSecond u₂ ((γ / 2 : ℝ) : ℂ) w t) := by
     filter_upwards [hE, hI] with t hEt hIt
-    have ht2 : t < 2 / γ := by linarith [hIt.2]
-    have htV : (t : ℂ) ∈ V := hVx t ⟨by linarith [hIt.1], hIt.2⟩
+    have ht2 : t < 2 / γ := by linarith
+    have htV : (t : ℂ) ∈ V := by grind
     have hne : (t : ℂ) - 2 * η ≠ 0 := by
-      exact_mod_cast (show t - 2 * η ≠ 0 by intro h; linarith [hIt.1])
+      exact_mod_cast (show t - 2 * η ≠ 0 by linarith)
     have hne' : (t : ℂ) + 2 * η ≠ 0 := by
-      exact_mod_cast (show t + 2 * η ≠ 0 by intro h; linarith [hIt.1])
-    have hne'' : (t : ℂ) ≠ 2 * η := fun h => hne (by rw [h]; ring)
+      exact_mod_cast (show t + 2 * η ≠ 0 by linarith)
+    have hne'' : (t : ℂ) ≠ 2 * η := by grind
     have hcr := unitVolume_crossing_slice P M hγ hγ2 hCross hV₃ hV₃mem hf₃ hf₃eq hη hη4 hηγ
       hIt.1 ht2
     have hR : f₃ (tripleSecond u₂ ((γ / 2 : ℝ) : ℂ) w t) =
         (unitVolumeStructureConstant P M γ (Q γ - η) (t + γ / 2) (2 / γ + η) : ℂ) := by
       rw [hu₂, hw, tripleSecond_ofReal]
       exact hf₃eq ![Q γ - η, t + γ / 2, 2 / γ + η]
-        (extendedSeiberg3_sliceB_right hγ hγ2 hη hη4 (by linarith [hIt.1]) ht2)
+        (extendedSeiberg3_sliceB_right hγ hγ2 hη hη4 (by linarith) ht2)
     calc R₁ + ((t : ℂ) - 2 * η) * R₂ / ((t : ℂ) + 2 * η) + ((t : ℂ) - 2 * η) * r t
         = ((t : ℂ) - 2 * η) * (R₁ / ((t : ℂ) - 2 * η) + R₂ / ((t : ℂ) + 2 * η) + r t) := by
           field_simp
-      _ = ((t : ℂ) - 2 * η) * F t := by rw [hEt htV]
+      _ = ((t : ℂ) - 2 * η) * F t := by tauto
       _ = ((t : ℂ) - 2 * η) * (crossingMultiplier3 γ u₂ t w *
-            (unitVolumeStructureConstant P M γ (Q γ - η) (t + γ / 2) (2 / γ + η) : ℂ)) := by
+            (unitVolumeStructureConstant P M γ _ (t + γ / 2) (2 / γ + η) : ℂ)) := by
           rw [hFx t hIt, hcr, Complex.ofReal_mul, hu₂, hw, crossingMultiplier3_ofReal hγ]
       _ = _ := by
           rw [hR, crossingMultiplier3Reg_slice hγ hne'']
@@ -226,8 +230,7 @@ theorem slice_regularized_agreement {Ω : Type*} [MeasurableSpace Ω] (P : Measu
 
 /-- **The second residue of the two-pole expansion from the residue bridge**:
 `R₂ = (4η/γ) T(Q - η, -2η, 2/γ + η) R̄(Q - η)`. -/
-theorem secondResidue_eq_of_bridge {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (M : Ω → Measure ℂ) {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
+theorem secondResidue_eq_of_bridge (X : Ω → Distr) (M : Ω → Measure ℂ) {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
     (hCross : ∀ μ α' ε α : ℝ, 0 < μ → γ / 2 < ε → ε < 2 / γ → α < Q γ → α' < Q γ →
       2 * Q γ < α + α' + ε - γ / 2 →
@@ -261,7 +264,7 @@ theorem secondResidue_eq_of_bridge {Ω : Type*} [MeasurableSpace Ω] (P : Measur
     R₂ = ((4 * η / γ * crossingMultiplier3Real γ (Q γ - η) (-(2 * η)) (2 / γ + η) *
       reflectionBarR P γ (Q γ - η) B₂ Z₂ : ℝ) : ℂ) := by
   obtain ⟨hQ, hQ2, hγh, h42, h2⟩ := slice_facts hγ hγ2
-  have h1γ : 1 / γ < 2 / γ := by gcongr; norm_num
+  have h1γ : 1 / γ < 2 / γ := by grind
   have h12 : 2 * η < 1 / γ := by
     have : 1 / γ = 2 * (1 / (2 * γ)) := by field_simp
     linarith
@@ -269,9 +272,9 @@ theorem secondResidue_eq_of_bridge {Ω : Type*} [MeasurableSpace Ω] (P : Measur
   set w : ℂ := ((2 / γ + η : ℝ) : ℂ) with hw
   -- the residue bridge at `(2/γ + η, Q - η)`
   obtain ⟨B', Z', -, hRD', hLim⟩ := hBridge (2 / γ + η) (Q γ - η)
-    ⟨by positivity, by rw [hQ]; linarith, by rw [hQ]; linarith, by linarith⟩
+    ⟨by positivity, by linarith, by linarith, by linarith⟩
   have hmult : bridgeMultiplicity (2 / γ + η) (Q γ - η) = 2 := by
-    have hne : 2 / γ + η ≠ Q γ - η := by rw [hQ]; intro h; linarith
+    have hne : 2 / γ + η ≠ Q γ - η := by linarith
     simp only [bridgeMultiplicity, hne, ↓reduceIte]
   have hp : reflectionExponent γ (Q γ - η) = 2 * η / γ := by
     unfold reflectionExponent
@@ -294,14 +297,14 @@ theorem secondResidue_eq_of_bridge {Ω : Type*} [MeasurableSpace Ω] (P : Measur
     rw [hmult, hp, hval] at h
     refine h.congr fun x => ?_
     simp only [Function.comp_apply]
-    rw [show Q γ - η - (2 / γ + η) + (x + 2 * η) = x + γ / 2 by rw [hQ]; ring,
+    rw [show Q γ - η - (2 / γ + η) + (x + 2 * η) = x + γ / 2 by linarith,
       unitVolumeStructureConstant_swap13 P X M γ (Q γ - η) (x + γ / 2) (2 / γ + η) hγ hγ2 hX hM,
       unitVolumeStructureConstant_swap12 P X M γ (2 / γ + η) (x + γ / 2) (Q γ - η) hγ hγ2 hX hM]
   -- the multiplier side
   have hRegc : ContinuousAt (fun z => crossingMultiplier3Reg γ u₂ z w)
       ((-(2 * η) : ℝ) : ℂ) :=
     (differentiableAt_crossingMultiplier3Reg_slice hγ hγ2 hη hδ1 hδ2
-      (by rw [Complex.ofReal_re]; linarith) (by rw [Complex.ofReal_re]; linarith)).continuousAt
+      (by simpa) (by rw [Complex.ofReal_re]; linarith)).continuousAt
   have hRside : Tendsto (fun x : ℝ => ((x : ℂ) + 2 * η) * (crossingMultiplier3Reg γ u₂ x w *
       f₃ (tripleSecond u₂ ((γ / 2 : ℝ) : ℂ) w x))) (𝓝[>] (-(2 * η)))
       (𝓝 (crossingMultiplier3Reg γ u₂ ((-(2 * η) : ℝ) : ℂ) w * ((4 * η / γ * Rb : ℝ) : ℂ))) := by
@@ -344,7 +347,7 @@ theorem secondResidue_eq_of_bridge {Ω : Type*} [MeasurableSpace Ω] (P : Measur
     filter_upwards [self_mem_nhdsWithin] with x hx
     have hx' : -(2 * η) < x := hx
     have hne : (x : ℂ) + 2 * η ≠ 0 := by
-      exact_mod_cast (show x + 2 * η ≠ 0 by intro h; linarith)
+      exact_mod_cast (show x + 2 * η ≠ 0 by linarith)
     field_simp
   -- the two sides agree near `-2η`
   have hagree : ∀ᶠ x : ℝ in 𝓝[>] (-(2 * η)),
@@ -360,7 +363,7 @@ theorem secondResidue_eq_of_bridge {Ω : Type*} [MeasurableSpace Ω] (P : Measur
   have hz : ((-(2 * η) : ℝ) : ℂ) ≠ 2 * η := by
     push_cast
     intro h
-    have : (4 * η : ℂ) = 0 := by linear_combination -h
+    have : (4 * η : ℂ) = 0 := by grind
     exact (show (4 * η : ℝ) ≠ 0 by positivity) (by exact_mod_cast this)
   rw [crossingMultiplier3Reg_slice hγ hz, crossingMultiplier3_ofReal hγ] at huniq
   have h4η : (-(4 * η) : ℂ) ≠ 0 := by
@@ -372,10 +375,12 @@ theorem secondResidue_eq_of_bridge {Ω : Type*} [MeasurableSpace Ω] (P : Measur
     rw [huniq]
     push_cast
     ring
-  rw [hR2, reflectionBarR_eq_of_isReflectionData P P γ (Q γ - η) B₂ Z₂ (B' (Q γ - η)) Z' h₂ hRD',
+  rw [hR2, reflectionBarR_eq_of_isReflectionData P P γ _ B₂ Z₂ _ Z' h₂ hRD',
     ← hRb]
   push_cast
   ring
+
+end
 
 end DOZZ.Proofs
 

@@ -28,12 +28,12 @@ theorem dual_retainedZero_deleted_weight_bound {Ω : Type*} [MeasurableSpace Ω]
   obtain ⟨C₂, hC₂, hs⟩ := dual_deleted_disk_spatial_bound γ α₁ α₂ α₃ hβ
   refine ⟨C₁ * C₂, mul_pos hC₁ hC₂, ?_⟩
   intro r hr hr₁
-  let f : ℂ → ℝ≥0∞ := (Metric.ball (0 : ℂ) r).indicator
+  let f := (Metric.ball (0 : ℂ) r).indicator
     (fun x => ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ 0 x))
   have hf : Measurable f := (ENNReal.measurable_ofReal.comp
     (dual_kernel_measurable γ α₁ α₂ α₃ 0)).indicator measurableSet_ball
   have he (ν : Measure ℂ) : (∫⁻ x, f x ∂ν) =
-      ∫⁻ x in Metric.ball (0 : ℂ) r, ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ 0 x) ∂ν :=
+      ∫⁻ x in Metric.ball (0 : ℂ) r, ENNReal.ofReal _ ∂ν :=
     lintegral_indicator measurableSet_ball _
   have hroot := dual_retainedZero_rooted_identity P X hX γ hγ hγ₂ M hM α₁ α₂ α₃ r q f hf
   simp_rw [lintegral_mul_const _ hf, he] at hroot
@@ -44,9 +44,9 @@ theorem dual_retainedZero_deleted_weight_bound {Ω : Type*} [MeasurableSpace Ω]
       intro u
       dsimp only
       rw [lintegral_const_mul' _ _ (by by_cases hu : u ∈ Metric.ball (0 : ℂ) r <;> simp [f, hu])]
-      exact mul_le_mul' le_rfl (hb u r (by linarith only [hr₁]))
+      exact mul_le_mul' le_rfl (hb u r (by linarith))
     _ = (∫⁻ u, f u ∂gmcReferenceMeasure) * ENNReal.ofReal C₁ := lintegral_mul_const _ hf
-    _ ≤ ENNReal.ofReal (C₂ * r ^ (4 - γ * α₁)) * ENNReal.ofReal C₁ :=
+    _ ≤ ENNReal.ofReal _ * ENNReal.ofReal C₁ :=
       mul_le_mul' (by rw [he]; exact hs r hr hr₁) le_rfl
     _ = _ := by rw [← ENNReal.ofReal_mul (by positivity)]; congr 1; ring
 

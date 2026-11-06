@@ -20,7 +20,7 @@ theorem exp_sub_one_bound (t : ℝ) :
     have h := mul_le_mul_of_nonneg_right (Real.add_one_le_exp (-t)) (Real.exp_nonneg t)
     rw [Real.exp_neg, inv_mul_cancel₀ (Real.exp_ne_zero t)] at h
     nlinarith
-  · have ht' : t < 0 := lt_of_not_ge ht
+  · have ht' := lt_of_not_ge ht
     rw [abs_of_neg ht', abs_of_nonpos (sub_nonpos.mpr (Real.exp_le_one_iff.mpr ht'.le))]
     have h := Real.add_one_le_exp t
     have he : 1 ≤ Real.exp (-t) := Real.one_le_exp (by linarith)
@@ -36,19 +36,16 @@ theorem pin_correction_exponent_bound (z x : ℂ) (γ N Nbar : ℝ)
     |γ * localPinCoefficient z x * (Nbar - N) -
       γ ^ 2 * (Real.log ‖z + x‖ - Real.log ‖z‖)| ≤
       pinCorrectionEnvelope z γ N Nbar * ‖x‖ := by
-  have hc := local_pin_coefficient_bound z x hz hx
-  have hp := offCenter_pin_potential_bound z x hz hx
   calc
     _ ≤ |γ * localPinCoefficient z x * (Nbar - N)| +
-        |γ ^ 2 * (Real.log ‖z + x‖ - Real.log ‖z‖)| := abs_sub _ _
+        |γ ^ 2 * (Real.log ‖z + x‖ - Real.log ‖z‖)| := abs_sub ..
     _ = |γ| * |localPinCoefficient z x| * |Nbar - N| +
         γ ^ 2 * |Real.log ‖z + x‖ - Real.log ‖z‖| := by
-      rw [abs_mul, abs_mul, abs_mul, abs_of_nonneg (sq_nonneg γ)]
-    _ ≤ |γ| * (‖x‖ / (2 * Real.log ‖z‖)) * |Nbar - N| + γ ^ 2 * ‖x‖ := by
-      exact add_le_add
-        (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hc (abs_nonneg γ))
+      simp
+    _ ≤ |γ| * (‖x‖ / (2 * Real.log ‖z‖)) * |Nbar - N| + γ ^ 2 * ‖x‖ := add_le_add
+        (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left (local_pin_coefficient_bound z x hz hx) (abs_nonneg γ))
           (abs_nonneg _))
-        (mul_le_mul_of_nonneg_left hp (sq_nonneg γ))
+        (mul_le_mul_of_nonneg_left (offCenter_pin_potential_bound z x hz hx) (sq_nonneg γ))
     _ = _ := by unfold pinCorrectionEnvelope; ring
 
 end DOZZ.Proofs

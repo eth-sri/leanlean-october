@@ -21,12 +21,15 @@ open MeasureTheory ProbabilityTheory Filter Topology Metric
 open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+section
+variable (hX : IsEquatorGFF P X)
+include hX
 
 /-- Cutoff integrals of a bounded Borel function with bounded support converge in probability
 along the integer cutoffs. -/
 theorem regularizedGMC_lintegral_tendstoInMeasure
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (f : ℂ → ℝ≥0) (hf : Measurable f) (b : ℝ≥0) (hfb : ∀ x, f x ≤ b) (R : ℝ)
@@ -39,27 +42,24 @@ theorem regularizedGMC_lintegral_tendstoInMeasure
     intro μ
     have h := integral_toReal (μ := μ) hfm.aemeasurable
       (Eventually.of_forall fun x => ENNReal.coe_lt_top)
-    rw [← h]
-    simp only [ENNReal.coe_toReal]
-  have hL1 := regularizedGMC_integral_l1_tendsto P X hX γ hγ hγ2 M hM Xc hXc (fun x => (f x : ℝ))
-    hfr b (fun x => by rw [NNReal.abs_eq]; exact_mod_cast hfb x) R
-    (fun x hx => by simp [hfR x hx])
-  have hF : ∀ n : ℕ, AEStronglyMeasurable (fun ω => (∫⁻ x, (f x : ℝ≥0∞)
+    simp_all
+  have hL1 := regularizedGMC_integral_l1_tendsto P X hX γ hγ hγ2 M hM Xc hXc (fun x => (f x))
+    hfr b (fun x => by simp_all) R
+    (fun x hx => by simp_all)
+  have hF : ∀ n : ℕ, AEStronglyMeasurable (fun ω => (∫⁻ x, (f x)
       ∂regularizedGMC P Xc γ n ω).toReal) P := fun n =>
     (ENNReal.measurable_toReal.comp ((Measure.measurable_lintegral hfm).comp
       (regularizedGMC_measurable P X hX Xc hXc γ n))).aestronglyMeasurable
-  have hG : AEStronglyMeasurable (fun ω => (∫⁻ x, (f x : ℝ≥0∞) ∂M ω).toReal) P :=
+  have hG :=
     (ENNReal.measurable_toReal.comp_aemeasurable
       (gmc_lintegral_aemeasurable P X hX γ hγ hγ2 M hM _ hfm)).aestronglyMeasurable
   refine DOZZ.Assembly.tendstoInMeasure_of_tendsto_lintegral_ofReal_abs P _ _ hF hG ?_
   refine (hL1.comp tendsto_natCast_atTop_atTop).congr fun n => ?_
-  simp only [Function.comp_apply, hid]
+  simp_all
 
 /-- The base annulus of the exterior dyadic bound can be moved out to any radius by exact
 exterior scaling. -/
 theorem exteriorAnnulus_moment_le_far
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ : ℝ) {R0 R : ℝ} (hR0 : 2 ≤ R0)
     (hR : R0 ≤ R) {t : ℝ} {K0 : ℝ≥0∞}
     (hK0 : ∀ r' : ℝ, 0 ≤ r' →
@@ -68,14 +68,13 @@ theorem exteriorAnnulus_moment_le_far
     ∫⁻ ω, regularizedGMC P Xc γ r ω (exteriorAnnulus R 0) ^ t ∂P ≤
       ENNReal.ofReal ((R / R0) ^ (-(2 * t + γ ^ 2 * t / 2 - γ ^ 2 * t ^ 2 / 2))) * K0 := by
   have hR0pos : 0 < R0 := by linarith
-  set c : ℝ := R / R0 with hcdef
-  have hc : 1 ≤ c := (one_le_div hR0pos).mpr hR
+  set c := R / R0 with hcdef
+  have hc := (one_le_div hR0pos).mpr hR
   have hc0 : 0 < c := by linarith
   have hA2 : ∀ x ∈ exteriorAnnulus R0 0, 2 ≤ ‖x‖ := fun x hx => by
     have := hx.1
-    simp only [pow_zero, one_mul] at this
     linarith
-  have hscale := cutoff_exterior_scale_moment_eq P X hX Xc hXc γ hr hc (exteriorAnnulus R0 0)
+  have hscale := cutoff_exterior_scale_moment_eq P X hX Xc hXc γ hr hc _
     (measurableSet_exteriorAnnulus R0 0) hA2 (fun _ => 1) measurable_const ⟨1, fun _ => le_rfl⟩ t
   have hone : ∀ (μ : Measure ℂ) (S : Set ℂ),
       (∫⁻ y in S, ((fun _ : ℂ => (1 : ℝ≥0)) y : ℝ≥0∞) ∂μ) = μ S := fun μ S => by simp
@@ -87,8 +86,8 @@ theorem exteriorAnnulus_moment_le_far
     change (2 ^ 0 * R0 ≤ ‖(c : ℂ)⁻¹ * y‖ ∧ ‖(c : ℂ)⁻¹ * y‖ < 2 ^ (0 + 1) * R0) ↔
       (2 ^ 0 * R ≤ ‖y‖ ∧ ‖y‖ < 2 ^ (0 + 1) * R)
     rw [hnorm, pow_zero, one_mul, one_mul, zero_add, pow_one, le_div_iff₀ hc0, div_lt_iff₀ hc0]
-    have h1 : R0 * c = R := by rw [hcdef]; field_simp
-    have h2 : 2 * R0 * c = 2 * R := by rw [mul_assoc, h1]
+    have h1 : R0 * c = R := by grind
+    have h2 : 2 * R0 * c = 2 * R := by linarith
     rw [h1, h2]
   rw [hset] at hscale
   rw [hscale]
@@ -100,6 +99,10 @@ theorem exteriorAnnulus_moment_le_far
     ring
   rw [hcoef]
   gcongr
-  exact hK0 _ (by have := Real.log_nonneg hc; linarith)
+  exact hK0 _ (by bound)
+
+end
+
+end
 
 end DOZZ.Proofs

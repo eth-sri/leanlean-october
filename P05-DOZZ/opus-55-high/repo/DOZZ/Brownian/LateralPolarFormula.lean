@@ -35,14 +35,13 @@ theorem lateralProjectedGMC_lintegral_eq
   let ρ : ℂ → ℝ := fun x => -Real.log ‖x‖
   let w : ℂ → ℝ≥0∞ := fun x => ENNReal.ofReal (if ‖x‖ = 0 then 0 else
     Real.exp (-γ * A (ρ x) + γ * Q γ * |Real.log ‖x‖|))
-  have hρ : Measurable ρ := measurable_neg.comp (Real.measurable_log.comp measurable_norm)
+  have hρ : Measurable ρ := by fun_prop
   have hw : Measurable w := by
-    dsimp [w, ρ]
     apply ENNReal.measurable_ofReal.comp
     refine Measurable.ite ?_ measurable_const ?_
     · simp
     · fun_prop
-  have hpull : Measurable (fun x : ℂ => f (ρ x)) := hf.comp hρ
+  have hpull : Measurable (fun x => f (ρ x)) := hf.comp hρ
   change ∫⁻ s, f s ∂((M.withDensity w).map ρ) =
     ∫⁻ x, (w x * f (ρ x)) ∂M
   rw [lintegral_map hf hρ]

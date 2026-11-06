@@ -14,14 +14,12 @@ theorem roots_small_cube (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) :
     ∃ η : ℝ, 0 < η ∧ η ≤ γ / 4 ∧ Q γ - 2 * η > γ ∧ 3 * η < Q γ := by
   have hQ : γ < Q γ := by
     have hq : γ / 2 < 2 / γ := by
-      apply (lt_div_iff₀ hγ).mpr
-      nlinarith only [hγ, hγ2]
+      gcongr
     unfold Q
-    linarith only [hq]
+    linarith
   let η := min ((Q γ - γ) / 8) (γ / 4)
-  have hη : 0 < η := lt_min (by linarith only [hQ]) (by positivity)
-  have hη1 : η ≤ (Q γ - γ) / 8 := min_le_left _ _
-  exact ⟨η, hη, min_le_right _ _, by linarith only [hQ, hη1], by linarith only [hQ, hγ, hη1]⟩
+  have hη : 0 < η := by positivity
+  grind
 /-- The exact residual-factor conclusion, followed by charge continuation, proves the irrational root. -/
 theorem roots_main_of_calibrated_residual {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ μ : ℝ)
@@ -44,8 +42,7 @@ theorem roots_main_of_calibrated_residual {Ω : Type*} [MeasurableSpace Ω]
   have hcube' : ∀ a b c : ℝ, Q γ - η < a → a < Q γ → Q γ - η < b → b < Q γ →
       Q γ - η < c → c < Q γ → (unitVolumeStructureConstant P M γ a b c : ℂ) =
         ((μ : ℂ) ^ (sExp γ a b c : ℂ) / Complex.Gamma (sExp γ a b c)) * dozzFormula γ μ U a b c := by
-    intro a b c ha haQ hb hbQ hc hcQ
-    simpa only [hcγ, one_mul] using hcube a b c ha haQ hb hbQ hc hcQ
+    grind
   exact roots_structureConstant_of_unitVolume_value P M γ μ a b c hμ hs _
     (roots_unitVolume_of_cube P X M γ μ η hγ hγ2 hμ hη hηQ U hU hX hM hcube' a b c hα hs)
 end DOZZ.Proofs

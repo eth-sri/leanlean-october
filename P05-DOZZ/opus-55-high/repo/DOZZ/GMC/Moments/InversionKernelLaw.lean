@@ -38,7 +38,7 @@ theorem complexInvMeasurableEquiv_measurePreserving :
 theorem gmcReferenceMeasure_ae_ne (a : ℂ) :
     ∀ᵐ x ∂gmcReferenceMeasure, x ≠ a := by
   change ∀ᵐ x ∂volume.withDensity
-    (fun x : ℂ => ENNReal.ofReal (normPlus x ^ (-4 : ℝ))), x ≠ a
+    (fun x : ℂ => ENNReal.ofReal _), x ≠ a
   rw [ae_iff]
   simp
 
@@ -76,7 +76,7 @@ theorem integral_integral_gffKernel_inversion (f g : ℂ → ℝ) :
       filter_upwards [gffKernel_inv_ae] with x hx
       apply integral_congr_ae
       filter_upwards [hx] with y hy
-      rw [hy]
+      simp_all
 
 
 end DOZZ.Proofs

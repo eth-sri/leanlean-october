@@ -19,26 +19,25 @@ theorem sumtail_one_error_continuousOn (γ : ℝ) (K : Set ℝ) (hγ : 0 < γ)
   have hp : Continuous (reflectionExponent γ) := by unfold reflectionExponent; fun_prop
   have hm : Continuous (oneInsertionMomentCeiling γ) := by
     unfold oneInsertionMomentCeiling
-    exact (hp.add continuous_const).min continuous_const
+    fun_prop
   unfold oneInsertionErrorCeiling
   apply (hm.sub hp).continuousOn.div (continuous_const.add hm).continuousOn
   intro α hα
   obtain ⟨hpa,hpb⟩ := residue_critical_order_bounds γ α hγ (hK α hα).1 (hK α hα).2
   have hmp : 0 < oneInsertionMomentCeiling γ α := by
     unfold oneInsertionMomentCeiling
-    exact lt_min (by positivity) (by positivity)
+    positivity
   change 1+oneInsertionMomentCeiling γ α ≠ 0
-  exact (by linarith only [hmp] : 0 < 1+oneInsertionMomentCeiling γ α).ne'
+  positivity
 
 theorem sumtail_one_error_lt_one (γ α : ℝ) (hγ : 0 < γ)
     (hα : γ/2 < α) (hαQ : α < Q γ) : oneInsertionErrorCeiling γ α < 1 := by
   obtain ⟨hp,hpb⟩ := residue_critical_order_bounds γ α hγ hα hαQ
   have hm : 0 < oneInsertionMomentCeiling γ α := by
     unfold oneInsertionMomentCeiling
-    exact lt_min (by positivity) (by positivity)
+    positivity
   unfold oneInsertionErrorCeiling
-  apply (div_lt_one (by linarith only [hm])).mpr
-  linarith only [hp]
+  bound
 
 /-- The ceiling is bounded by each one-point error, both shift errors and both joint errors. -/
 theorem sumtail_ceiling_bounds (γ α2 α3 : ℝ) :
@@ -60,13 +59,7 @@ theorem sumtail_ceiling_bounds (γ α2 α3 : ℝ) :
       twoInsertionPointLoss γ α αo ≤ 1/2 ∧
       twoInsertionPointLoss γ α αo ≤ reflectionExponent γ αo/2 := by
     unfold twoInsertionPointLoss
-    exact ⟨min_le_left _ _, (min_le_right _ _).trans (min_le_right _ _),
-      (min_le_right _ _).trans (by rw [← he]; exact min_le_left _ _)⟩
-  refine ⟨hl.trans (add_le_add le_rfl (loss α2 α3).1),
-    hr.trans (add_le_add le_rfl (loss α3 α2).1),
-    hl.trans (add_le_add le_rfl (loss α2 α3).2.1),
-    hr.trans (add_le_add le_rfl (loss α3 α2).2.1),
-    hl.trans (add_le_add le_rfl (loss α2 α3).2.2),
-    hr.trans (add_le_add le_rfl (loss α3 α2).2.2)⟩
+    simp_all
+  grind
 
 end DOZZ.Proofs

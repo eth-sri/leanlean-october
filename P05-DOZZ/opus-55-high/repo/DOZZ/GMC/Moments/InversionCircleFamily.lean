@@ -15,11 +15,13 @@ open Filter MeasureTheory ProbabilityTheory
 open scoped Topology Distributions
 
 namespace DOZZ.Proofs
+section
+variable {Ω : Type*}
 
 /-- Inverted test limits form a measurable centered Gaussian family with the ordinary circle
 covariance, on the original field probability space. -/
 theorem exists_equatorGFF_inversion_circle_family
-    {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
+    [MeasurableSpace Ω] {P : Measure Ω}
     (X : Ω → Distr) (hX : IsEquatorGFF P X) :
     ∃ f : (ℂ × ℝ) → ℕ → TestFn,
     ∃ hf : ∀ p n, tsupport (f p n : ℂ → ℝ) ⊆ inversionChart,
@@ -38,7 +40,7 @@ theorem exists_equatorGFF_inversion_circle_family
     exists_equatorGFF_inversion_circle_test_L2_limit_all X hX p.1 p.2
   choose f hf W hgap hW using hex
   have hrep p := exists_measurable_equatorGFF_circle_L2_limit X hX
-    (fun n => inversionTest (f p n) (hf p n)) (W p) (hW p)
+    (fun n => inversionTest _ (hf p n)) (W p) (hW p)
   choose Y hYraw hYm hYmem hYae hYlim using hrep
   have hproc : IsGaussianProcess Y P := by
     apply isGaussianProcess_of_eLpNorm_sub
@@ -50,7 +52,7 @@ theorem exists_equatorGFF_inversion_circle_family
     · exact hYlim
   have hmean p : (∫ ω, Y p ω ∂P) = 0 :=
     integral_eq_zero_of_eLpNorm_sub
-      (fun n => equatorGFF_test_memLp X hX (inversionTest (f p n) (hf p n)))
+      (fun n => equatorGFF_test_memLp X hX _)
       (hYmem p) (fun n => equatorGFF_test_integral X hX _) (hYlim p)
   refine ⟨f, hf, Y, hgap, fun p => ⟨hYraw p, hYm p, hYmem p, hYlim p⟩,
     hproc, hmean, ?_⟩
@@ -61,30 +63,29 @@ theorem exists_equatorGFF_inversion_circle_family
     have ht := equatorGFF_testL2_tendsto_to_circle_limit X hX p.1 p.2
       (f0 p) (hgap0 p) (W0 p) (hW0 p) (f p) (hgap p)
     exact tendsto_eLpNorm_sub_of_L2_versions P _ (W0 p)
-      (fun n ω => X ω (f p n)) (Y0 p)
-      (fun n => (equatorGFF_test_memLp X hX (f p n)).coeFn_toLp.symm)
+      (fun n ω => X ω _) (Y0 p)
+      (fun n => (equatorGFF_test_memLp X hX _).coeFn_toLp.symm)
       (hY0 p).2.2.2.1 ht
   intro p q
   have hi := tendsto_covariance_of_eLpNorm_sub
-    (fun n => equatorGFF_test_memLp X hX (inversionTest (f p n) (hf p n)))
-    (fun n => equatorGFF_test_memLp X hX (inversionTest (f q n) (hf q n)))
+    (fun n => equatorGFF_test_memLp X hX _)
+    (fun n => equatorGFF_test_memLp X hX _)
     (hYmem p) (hYmem q) (hYlim p) (hYlim q)
   have ho := tendsto_covariance_of_eLpNorm_sub
-    (fun n => equatorGFF_test_memLp X hX (f p n))
-    (fun n => equatorGFF_test_memLp X hX (f q n))
+    (fun n => equatorGFF_test_memLp X hX _)
+    (fun n => equatorGFF_test_memLp X hX _)
     (hY0 p).2.2.1 (hY0 q).2.2.1 (hlim0 p) (hlim0 q)
   have he n : covariance (fun ω => X ω (inversionTest (f p n) (hf p n)))
       (fun ω => X ω (inversionTest (f q n) (hf q n))) P =
       covariance (fun ω => X ω (f p n)) (fun ω => X ω (f q n)) P := by
     rw [equatorGFF_test_covariance X hX, equatorGFF_test_covariance X hX,
       gffCov_inversionTest]
-  have hi' := hi.congr' (Eventually.of_forall he)
-  exact (tendsto_nhds_unique hi' ho).trans (hcov0 p q)
+  exact (tendsto_nhds_unique (hi.congr' (Eventually.of_forall he)) ho).trans (hcov0 p q)
 
 /-- The transformed circle family admits joint measurability in the sample and center at every
 radius, while retaining its coupled inverted-test L² approximation. -/
 theorem exists_equatorGFF_inversion_circle_joint_version
-    {Ω : Type*} [mΩ : MeasurableSpace Ω] {P : Measure Ω}
+    [mΩ : MeasurableSpace Ω] {P : Measure Ω}
     (X : Ω → Distr) (hX : IsEquatorGFF P X) :
     ∃ f : (ℂ × ℝ) → ℕ → TestFn,
     ∃ hf : ∀ p n, tsupport (f p n : ℂ → ℝ) ⊆ inversionChart,
@@ -108,21 +109,20 @@ theorem exists_equatorGFF_inversion_circle_joint_version
   have hjoint r := exists_raw_joint_continuous_modification P
     (equatorGFFRawDistributionSigma X)
     (fun ω x => V r x ω) (ae_of_all P (hVc r))
-    (fun x => ⟨Y (x, r), (hY (x, r)).1, (hVeq r x).symm⟩)
+    (fun x => ⟨Y _, (hY _).1, (hVeq r x).symm⟩)
   choose G hGj hGae using hjoint
   let Z : Ω → ℂ → ℝ → ℝ := fun ω x r => G r ω x
-  have hmap : Measurable[mΩ] (fun ω => fun g : TestFn => X ω g) :=
+  have hmap :=
     measurable_pi_iff.mpr (fun g => (hX.2 g).1)
-  have hm0 : equatorGFFRawDistributionSigma X ≤ mΩ := hmap.comap_le
   have hprod : (equatorGFFRawDistributionSigma X).prod (borel ℂ) ≤
       mΩ.prod (borel ℂ) := by
     rw [MeasurableSpace.prod, MeasurableSpace.prod]
-    exact sup_le_sup (MeasurableSpace.comap_mono hm0) le_rfl
+    exact sup_le_sup (MeasurableSpace.comap_mono hmap.comap_le) le_rfl
   have hZae (p : ℂ × ℝ) : (fun ω => Z ω p.1 p.2) =ᵐ[P] Y p := by
     filter_upwards [hGae p.2, hVeq p.2 p.1] with ω hG hV
     exact (hG p.1).trans hV
   refine ⟨f, hf, Z, hgap, fun r => (hGj r).mono hprod le_rfl,
-    fun x r => MemLp.ae_eq (hZae (x, r)).symm (hY (x, r)).2.2.1, ?_, ?_, ?_, ?_⟩
+    fun x r => MemLp.ae_eq (hZae (x, r)).symm (hY _).2.2.1, ?_, ?_, ?_, ?_⟩
   · intro p
     have he n : eLpNorm (fun ω => X ω (inversionTest (f p n) (hf p n)) -
         Z ω p.1 p.2) 2 P =
@@ -130,11 +130,13 @@ theorem exists_equatorGFF_inversion_circle_joint_version
       apply eLpNorm_congr_ae
       filter_upwards [hZae p] with ω hω
       rw [hω]
-    simpa only [he] using (hY p).2.2.2
+    simp_all
   · exact hproc.congr (fun p => (hZae p).symm)
   · intro p
     exact (integral_congr_ae (hZae p)).trans (hmean p)
   · intro p q
     exact (covariance_congr_ae (hZae p) (hZae q)).trans (hcov p q)
+
+end
 
 end DOZZ.Proofs

@@ -31,21 +31,18 @@ theorem nonneg_rpow_neg_lintegral_eq_weighted_laplace
   classical
   let ε : ℕ → ℝ := fun n => (1 / 2 : ℝ) ^ n
   have hεpos (n : ℕ) : 0 < ε n := by
-    dsimp [ε]
     positivity
   have hεmono : Antitone ε := by
     intro i j hij
-    dsimp [ε]
-    exact pow_le_pow_of_le_one (by norm_num : (0 : ℝ) ≤ 1 / 2)
-      (by norm_num : (1 / 2 : ℝ) ≤ 1) hij
+    bound
   have hεtend : Tendsto ε atTop (𝓝 0) := by
     dsimp [ε]
-    exact tendsto_pow_atTop_nhds_zero_of_lt_one (by norm_num) (by norm_num)
+    norm_num
   let mε : ℕ → Ω → ℝ := fun n ω => m ω + ε n
   have hmεpos (n : ℕ) (ω : Ω) : 0 < mε n ω :=
-    lt_of_lt_of_le (hεpos n) (by dsimp [mε]; linarith [hm ω])
+    by grind
   have hmεA (n : ℕ) : AEMeasurable (mε n) P := by
-    exact hmA.add_const (ε n)
+    fun_prop
   let ψ : ℝ → ℝ≥0∞ := fun x => ENNReal.rpow (ENNReal.ofReal x) (-q)
   have hψcont : Continuous ψ := by
     exact ENNReal.continuous_rpow_const.comp ENNReal.continuous_ofReal
@@ -74,8 +71,8 @@ theorem nonneg_rpow_neg_lintegral_eq_weighted_laplace
   have hLInt := lintegral_tendsto_of_tendsto_of_monotone hLmeas
     (ae_of_all P fun ω => hLmono ω) (ae_of_all P hLlim)
 
-  let ν : Measure ℝ := volume.restrict (Ioi (0 : ℝ))
-  let c : ℝ≥0∞ := ENNReal.ofReal (1 / Real.Gamma q)
+  let ν := volume.restrict (Ioi (0 : ℝ))
+  let c := ENNReal.ofReal (1 / Real.Gamma q)
   let w : ℝ → ℝ≥0∞ := fun t => ENNReal.ofReal (t ^ (q - 1))
   let F : ℕ → Ω × ℝ → ℝ≥0∞ := fun n z =>
     ENNReal.ofReal (z.2 ^ (q - 1) * Real.exp (-(mε n z.1 * z.2)))
@@ -84,11 +81,11 @@ theorem nonneg_rpow_neg_lintegral_eq_weighted_laplace
   have hFmeas : ∀ n, AEMeasurable (F n) (P.prod ν) := by
     intro n
     have hmprod : AEMeasurable (fun z : Ω × ℝ => mε n z.1) (P.prod ν) :=
-      (hmεA n).comp_fst
+      by fun_prop
     have htprod : AEMeasurable (fun z : Ω × ℝ => z.2) (P.prod ν) :=
       measurable_snd.aemeasurable
     have harg : AEMeasurable (fun z : Ω × ℝ => -(mε n z.1 * z.2)) (P.prod ν) :=
-      (hmprod.mul htprod).neg
+      by fun_prop
     have hexp : AEMeasurable (fun z : Ω × ℝ => Real.exp (-(mε n z.1 * z.2)))
         (P.prod ν) := Real.measurable_exp.comp_aemeasurable harg
     have hpow : Measurable (fun z : Ω × ℝ => z.2 ^ (q - 1)) := by fun_prop
@@ -101,7 +98,7 @@ theorem nonneg_rpow_neg_lintegral_eq_weighted_laplace
     have htprod : AEMeasurable (fun z : Ω × ℝ => z.2) (P.prod ν) :=
       measurable_snd.aemeasurable
     have harg : AEMeasurable (fun z : Ω × ℝ => -(m z.1 * z.2)) (P.prod ν) :=
-      (hmprod.mul htprod).neg
+      by fun_prop
     have hexp : AEMeasurable (fun z : Ω × ℝ => Real.exp (-(m z.1 * z.2)))
         (P.prod ν) := Real.measurable_exp.comp_aemeasurable harg
     have hpow : Measurable (fun z : Ω × ℝ => z.2 ^ (q - 1)) := by fun_prop
@@ -118,8 +115,7 @@ theorem nonneg_rpow_neg_lintegral_eq_weighted_laplace
       filter_upwards [] with x
       filter_upwards [ae_restrict_mem measurableSet_Ioi] with y hy
       exact hy
-    have hleft := (Measure.ae_prod_mem_iff_ae_ae_mem hs).2 hright
-    simpa [s, Set.mem_Ioi] using hleft
+    simpa [s, Set.mem_Ioi] using ((Measure.ae_prod_mem_iff_ae_ae_mem hs).2 hright)
   have hFmono : ∀ᵐ z ∂(P.prod ν), Monotone (fun n => F n z) := by
     filter_upwards [hprod_t] with z ht
     intro i j hij
@@ -131,8 +127,8 @@ theorem nonneg_rpow_neg_lintegral_eq_weighted_laplace
       mul_le_mul_of_nonneg_right hmass ht.le
     have hexp : Real.exp (-(mε i z.1 * z.2)) ≤
         Real.exp (-(mε j z.1 * z.2)) :=
-      Real.exp_le_exp.mpr (neg_le_neg hprod)
-    have hw : 0 ≤ z.2 ^ (q - 1) := Real.rpow_nonneg (le_of_lt ht) _
+      by simp_all
+    have hw : 0 ≤ z.2 ^ (q - 1) := by positivity
     change ENNReal.ofReal (z.2 ^ (q - 1) * Real.exp (-(mε i z.1 * z.2))) ≤
       ENNReal.ofReal (z.2 ^ (q - 1) * Real.exp (-(mε j z.1 * z.2)))
     exact ENNReal.ofReal_le_ofReal (mul_le_mul_of_nonneg_left hexp hw)
@@ -142,15 +138,14 @@ theorem nonneg_rpow_neg_lintegral_eq_weighted_laplace
       ENNReal.ofReal (z.2 ^ (q - 1) * Real.exp (-(x * z.2)))
     have hg : Continuous g := by
       have harg : Continuous (fun x : ℝ => -(x * z.2)) :=
-        (continuous_id.mul continuous_const).neg
+        by fun_prop
       change Continuous (fun x : ℝ => ENNReal.ofReal
         (z.2 ^ (q - 1) * Real.exp (-(x * z.2))))
       exact ENNReal.continuous_ofReal.comp
         (continuous_const.mul (Real.continuous_exp.comp harg))
     have hmεtend : Tendsto (fun n => mε n z.1) atTop (𝓝 (m z.1)) := by
       simpa [mε] using (tendsto_const_nhds.add hεtend)
-    have h := hg.continuousAt.tendsto.comp hmεtend
-    convert h using 1
+    convert (hg.continuousAt.tendsto.comp hmεtend) using 1
     funext n
     simp [F, g, mε]
   have hFInt := lintegral_tendsto_of_tendsto_of_monotone hFmeas
@@ -159,7 +154,7 @@ theorem nonneg_rpow_neg_lintegral_eq_weighted_laplace
   let R : ℕ → ℝ≥0∞ := fun n =>
     ∫⁻ t in Ioi (0 : ℝ), w t *
       (∫⁻ ω, ENNReal.ofReal (Real.exp (-(mε n ω * t))) ∂P) ∂volume
-  let Rlim : ℝ≥0∞ :=
+  let Rlim :=
     ∫⁻ t in Ioi (0 : ℝ), w t *
       (∫⁻ ω, ENNReal.ofReal (Real.exp (-(m ω * t))) ∂P) ∂volume
   have hprodR (n : ℕ) : ∫⁻ z, F n z ∂(P.prod ν) = R n := by
@@ -211,11 +206,11 @@ theorem nonneg_rpow_neg_lintegral_eq_weighted_laplace
         rw [← ENNReal.ofReal_mul (Real.rpow_nonneg ht0.le _)] ]
       exact lintegral_const_mul' _ _ hct
     calc
-      ∫⁻ z, Flim z ∂(P.prod ν) = ∫⁻ ω, ∫⁻ t, Flim (ω, t) ∂ν ∂P :=
+      ∫⁻ z, Flim z ∂(P.prod ν) = ∫⁻ ω, ∫⁻ t, Flim _ ∂ν ∂P :=
         lintegral_prod _ hf
-      _ = ∫⁻ t, ∫⁻ ω, Flim (ω, t) ∂P ∂ν := by
+      _ = ∫⁻ t, ∫⁻ ω, Flim _ ∂P ∂ν := by
         exact MeasureTheory.lintegral_lintegral_swap
-          (f := fun ω t => Flim (ω, t)) hf
+          (f := fun ω t => Flim _) hf
       _ = Rlim := by
         simpa [Rlim, ν] using (lintegral_congr_ae hfactor)
   have hformula (n : ℕ) :

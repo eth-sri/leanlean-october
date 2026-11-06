@@ -35,18 +35,16 @@ theorem twoSidedReflectionMass_moment_range
     ∃ C : ℝ≥0∞, C < ⊤ ∧
       ∀ γ ∈ Kγ, ∀ ν ∈ Kν, ∀ q ∈ Kq,
         (∫⁻ ω, ENNReal.rpow (twoSidedReflectionMass γ (B ν) (Z γ) ω) q ∂P) ≤ C := by
-  classical
   by_cases hγne : Kγ.Nonempty
   · by_cases hνne : Kν.Nonempty
     · obtain ⟨νstar, hνstar⟩ := hνne
       have hZ : ∀ γ ∈ Kγ, IsLateralGMCOf P γ (Z γ) :=
         fun γ hγ => (hData γ hγ νstar hνstar).2.1
       obtain ⟨γ₀, hγ₀mem, hmin⟩ := hKγ.exists_isMinOn hγne continuous_id.continuousOn
-      have hγ₀ : 0 < γ₀ := (hZ γ₀ hγ₀mem).1
-      let g : ℝ := sSup Kγ
-      have hgm : g ∈ Kγ := hKγ.sSup_mem hγne
-      have hg : 0 < g := (hZ g hgm).1
-      have hg2 : g < 2 := (hZ g hgm).2.1
+      let g := sSup Kγ
+      have hgm := hKγ.sSup_mem hγne
+      have hg := (hZ g hgm).1
+      have hg2 := (hZ g hgm).2.1
       have hγbound : ∀ γ ∈ Kγ, γ₀ ≤ γ ∧ γ ≤ g :=
         fun γ hγ => ⟨hmin hγ, le_csSup hKγ.bddAbove hγ⟩
       obtain ⟨ν₀, N, hν₀, hνbound⟩ :=
@@ -56,10 +54,9 @@ theorem twoSidedReflectionMass_moment_range
       obtain ⟨Y, Mg, hS⟩ := (hZ g hgm).2.2.2.2.2.2.2.2
       obtain ⟨Yc, hYc, -⟩ := hS.2.1.2
       have hlcrit : l < 4 / g ^ 2 :=
-        hl.trans (div_pos (by norm_num) (sq_pos_of_pos hg))
+        by grind
       have hucrit : u < 4 / g ^ 2 := by
-        have hm := hmargin g hgm
-        linarith
+        grind
       obtain ⟨Cl, hCl, hRefl⟩ := twosided_reference_convex_moments_uniform
         P Y hS.1 Yc hYc g hg hg2 l (Or.inl hl) hlcrit
       obtain ⟨Cu, hCu, hRefu⟩ := twosided_reference_convex_moments_uniform
@@ -73,7 +70,7 @@ theorem twoSidedReflectionMass_moment_range
       obtain ⟨Rl, hRl, hLower⟩ := twosided_inverse_moment_uniform_from_lateral
         P Kγ Kν B Z hData l N hl (fun ν hν => (hνbound ν hν).2) Ll hLl hUnitl
       obtain ⟨Ru, hRu, hUpper⟩ := twosided_positive_moment_uniform_from_lateral
-        P Kγ Kν B Z hData u γ₀ g ν₀ N (lt_trans zero_lt_one hu) hγ₀ hν₀
+        P Kγ Kν B Z hData u γ₀ g ν₀ N (lt_trans zero_lt_one hu) ((hZ γ₀ hγ₀mem).1) hν₀
         hγbound hνbound Lu hLu hUnitu
       exact twoSidedReflectionMass_uniform_moments_of_endpoints P Kγ Kν Kq B Z hData
         l u (fun q hq => (hend q hq).1.le) (fun q hq => (hend q hq).2.le)

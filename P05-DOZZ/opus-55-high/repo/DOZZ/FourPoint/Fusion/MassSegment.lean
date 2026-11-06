@@ -9,6 +9,7 @@ public import DOZZ.GMC.Moments.RhoCoulomb
 public import DOZZ.FourPoint.Fusion.MassPositiveFinite
 public import DOZZ.FourPoint.FourPointTZeroEqStructureConstant
 public import DOZZ.FourPoint.TaylorFixedDisk
+import DOZZ.ShiftEquations.Mobius.InversionMoment
 /-! # The unrooted positive KRV mass segment -/
 @[expose] public section
 open MeasureTheory Set Filter
@@ -22,36 +23,32 @@ theorem fusionUnrootedSegment_measurable (γ α₁ α₂ α₃ t s : ℝ) (z : �
     Measurable (fun μ : Measure ℂ => fusionUnrootedSegment γ α₁ α₂ α₃ t z μ ^ s) :=
   (((fusion_measurable_coulombMass γ ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃).const_mul _).add
     ((fusion_measurable_coulombMass γ ![-γ / 2, α₁, α₂] ![0, 0, 1] α₃).const_mul _)).pow_const s
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+section
+variable (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+include hX hγ hγ2 hM
 /-- The coincident zero-insertion mass is positive and finite almost surely. -/
-theorem fusion_zeroMass_pos_finite_ae {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ : ℝ) (hα₁ : α₁ < 2 / γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) :
+theorem fusion_zeroMass_pos_finite_ae (α₁ α₂ α₃ : ℝ) (hα₁ : α₁ < 2 / γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) :
     ∀ᵐ ω ∂P, coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![0, 0, 1] α₃ ≠ 0 ∧
       coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![0, 0, 1] α₃ ≠ ⊤ := by
   have hi : Function.Injective (![0, 1] : Fin 2 → ℂ) := by
-    intro i j hij
-    fin_cases i <;> fin_cases j <;> simp_all
+    simp
   have ha : ∀ j : Fin 2, (![α₁ - γ / 2, α₂] : Fin 2 → ℝ) j < Q γ := by
     intro j
     fin_cases j
     · change α₁ - γ / 2 < Q γ
       unfold Q
       linarith
-    · exact hα₂
+    assumption
   filter_upwards [coulomb_mass_pos_finite_ae P X hX γ hγ hγ2 M hM ![0, 1] hi ![α₁ - γ / 2, α₂] α₃ ha hα₃,
     gmc_rho_eq_coulombMass_ae P X hX γ hγ hγ2 M hM (α₁ - γ / 2) α₂ α₃,
-    gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 0,
-    gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 1] with ω hω he h0 h1
+    DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM 0,
+    DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM 1] with ω hω he h0 h1
   have hmass := coulombMass_at_zero_eq_rho γ (γ / 2) α₁ α₂ α₃ (M ω) h0 h1
-  simp only [← neg_div] at hmass
-  rw [hmass, he]
-  exact hω
+  grind
 /-- All nonpositive segment moments are uniformly bounded over the time interval and unit roots. -/
-theorem fusionUnrootedSegment_inverse_uniform {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ p : ℝ) (hp : 0 ≤ p) :
+theorem fusionUnrootedSegment_inverse_uniform (α₁ α₂ α₃ p : ℝ) (hp : 0 ≤ p) :
     ∃ C : ℝ, 0 < C ∧ ∀ t ∈ Icc (0 : ℝ) 1, ∀ z : ℂ, ‖z‖ ≤ 1 →
       (∫⁻ ω, fusionUnrootedSegment γ α₁ α₂ α₃ t z (M ω) ^ (-p) ∂P) ≤ ENNReal.ofReal C := by
   obtain ⟨C, hC, hb⟩ := coulomb_inverse_moment_uniform_roots P X hX γ hγ hγ2 M hM
@@ -68,7 +65,11 @@ theorem fusionUnrootedSegment_inverse_uniform {Ω : Type*} [MeasurableSpace Ω]
     _ ≤ ∫⁻ ω, coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ ^ (-p) +
         coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![0, 0, 1] α₃ ^ (-p) ∂P :=
       lintegral_mono fun ω => fusion_convexMass_inverse_bound _ _ t (-p) ht (by linarith)
-    _ = _ := lintegral_add_left' ((gmc_coulombMass_aemeasurable P X hX γ hγ hγ2 M hM _ _ _).pow_const _) _
+    _ = _ := lintegral_add_left' ((gmc_coulombMass_aemeasurable P X hX γ hγ hγ2 M hM ..).pow_const _) _
     _ ≤ ENNReal.ofReal C + ENNReal.ofReal C := add_le_add (hb _ hzv) (hb _ h0v)
     _ = _ := (ENNReal.ofReal_add hC.le hC.le).symm
+
+end
+
+end
 end DOZZ.Proofs

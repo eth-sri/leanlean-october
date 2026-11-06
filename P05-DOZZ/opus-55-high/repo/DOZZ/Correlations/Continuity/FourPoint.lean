@@ -20,16 +20,15 @@ theorem fourPointMoment_jointly_continuous_parameters
       (∫⁻ ω, ENNReal.rpow
         (coulombMass q.1 (M q.1 ω) ![q.2 0, q.2 1, q.2 2] ![z, 0, 1] (q.2 3))
         (-nPointSExp q.1 q.2) ∂P).toReal) K := by
-  classical
   obtain ⟨Mfam, hMf, hMeq⟩ := extendGMCFamily_on_compact P X hX M K hM
   obtain ⟨Xc, hXc⟩ := exists_equatorGFF_circle_average_witness X hX
   let J : (ℝ × (Fin 4 → ℝ)) → ContinuityCoulombParameter 3 :=
     fun q => (q.1, (![z, 0, 1], ![q.2 0, q.2 1, q.2 2], q.2 3))
-  have hJ : Continuous J := by unfold J; fun_prop
+  have hJ : Continuous J := by fun_prop
   have hp (q : ℝ × (Fin 4 → ℝ)) : continuityCoulombPower (J q) = -nPointSExp q.1 q.2 := by
     simp [continuityCoulombPower, J, nPointSExp, Fin.sum_univ_three, Fin.sum_univ_four]
     ring
-  have hz' : Function.Injective (![z, 0, 1] : Fin 3 → ℂ) := by
+  have hz' : Function.Injective (![z, 0, 1]) := by
     intro i j hij
     fin_cases i <;> fin_cases j <;> simp_all
   have hadm : ∀ c ∈ J '' K, 0 < c.1 ∧ c.1 < 2 ∧ Function.Injective c.2.1 ∧
@@ -42,10 +41,10 @@ theorem fourPointMoment_jointly_continuous_parameters
     refine ⟨hγ, hγ2, hz', ?_, hα 3, ?_, ?_, ?_⟩
     · intro k
       fin_cases k
-      · exact hα 0
-      · exact hα 1
-      · exact hα 2
-    · simpa only [hp, J] using hbulk
+      · tauto
+      · tauto
+      tauto
+    · aesop
     · intro k
       rw [hp]
       fin_cases k

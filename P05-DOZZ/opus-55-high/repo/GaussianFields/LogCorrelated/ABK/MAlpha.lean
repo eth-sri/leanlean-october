@@ -24,7 +24,7 @@ namespace GaussianFields
 theorem integral_interval_rpow_sub_one {α a b : ℝ} (hα : 0 < α) :
     (∫ t in a..b, t ^ (α - 1) ∂(volume : Measure ℝ)) =
       (b ^ α - a ^ α) / α := by
-  rw [integral_rpow (Or.inl (by linarith : -1 < α - 1))]
+  rw [integral_rpow (Or.inl (by linarith))]
   ring_nf
 
 /-- Uniform bound for an Abel-density interval integral. -/
@@ -37,42 +37,42 @@ theorem abs_alpha_mul_integral_interval_rpow_mul_le {α a b C : ℝ}
       ∀ᵐ t : ℝ, t ∈ Set.Ioc a b →
         ‖t ^ (α - 1) * F t‖ ≤ C * t ^ (α - 1) := by
     filter_upwards with t ht
-    have ht_pos : 0 < t := lt_of_le_of_lt ha ht.1
-    have ht_nonneg : 0 ≤ t := ht_pos.le
-    have hpow_nonneg : 0 ≤ t ^ (α - 1) := Real.rpow_nonneg ht_nonneg (α - 1)
+    have hpow_nonneg : 0 ≤ t ^ (α - 1) := Real.rpow_nonneg ((lt_of_le_of_lt ha ht.1).le) _
     calc
       ‖t ^ (α - 1) * F t‖ = t ^ (α - 1) * |F t| := by
-        rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg hpow_nonneg]
-      _ ≤ t ^ (α - 1) * C := mul_le_mul_of_nonneg_left (hbound t ht) hpow_nonneg
+        simp_all
+      _ ≤ t ^ (α - 1) * C := by bound
       _ = C * t ^ (α - 1) := by ring
   have hg_int :
-      IntervalIntegrable (fun t : ℝ => C * t ^ (α - 1))
+      IntervalIntegrable (fun t => C * t ^ (α - 1))
         (volume : Measure ℝ) a b :=
-    (intervalIntegral.intervalIntegrable_rpow' (by linarith : -1 < α - 1)).const_mul C
+    (intervalIntegral.intervalIntegrable_rpow' (by linarith)).const_mul C
   have hnorm :=
-    intervalIntegral.norm_integral_le_of_norm_le (μ := volume) hab hbound_ae hg_int
+    intervalIntegral.norm_integral_le_of_norm_le hab hbound_ae hg_int
   have hnonneg_mass : 0 ≤ b ^ α - a ^ α := by
-    have hmono := Real.rpow_le_rpow ha hab hα.le
-    exact sub_nonneg.mpr hmono
+    bound
   have hmass :
-      ∫ t in a..b, C * t ^ (α - 1) ∂(volume : Measure ℝ) =
+      ∫ t in a..b, C * t ^ (α - 1) ∂volume =
         C * ((b ^ α - a ^ α) / α) := by
     rw [intervalIntegral.integral_const_mul, integral_interval_rpow_sub_one hα]
   calc
-    |α * ∫ t in a..b, t ^ (α - 1) * F t ∂(volume : Measure ℝ)|
-        = α * ‖∫ t in a..b, t ^ (α - 1) * F t ∂(volume : Measure ℝ)‖ := by
+    |α * ∫ t in a..b, t ^ (α - 1) * F t ∂volume|
+        = α * ‖∫ t in a..b, t ^ (α - 1) * F t ∂volume‖ := by
           rw [Real.norm_eq_abs, abs_mul, abs_of_pos hα]
-    _ ≤ α * ∫ t in a..b, C * t ^ (α - 1) ∂(volume : Measure ℝ) :=
+    _ ≤ α * ∫ t in a..b, C * t ^ (α - 1) ∂volume :=
           mul_le_mul_of_nonneg_left hnorm hα.le
-    _ = α * (C * ((b ^ α - a ^ α) / α)) := by rw [hmass]
+    _ = α * (C * ((b ^ α - a ^ α) / α)) := by simp_all
     _ = C * (b ^ α - a ^ α) := by
           field_simp [hα.ne']
+section
+variable {A B : ℝ} {F : ℝ → ℝ}
+section
+variable (hA : 0 < A)
+include hA
 
 /-- Abel-error estimate: if `F` is uniformly small near zero and bounded on `(0,A]`, then
 `α ∫₀ᴬ t^(α-1) F(t) dt → 0` as `α → 0+`. -/
-theorem tendsto_alpha_mul_integral_interval_rpow_mul_zero {A B : ℝ}
-    {F : ℝ → ℝ} (hA : 0 < A)
-    (hsmall : ∀ ε > 0, ∃ δ, 0 < δ ∧ δ ≤ A ∧ ∀ t ∈ Set.Ioc (0 : ℝ) δ, |F t| ≤ ε)
+theorem tendsto_alpha_mul_integral_interval_rpow_mul_zero (hsmall : ∀ ε > 0, ∃ δ, 0 < δ ∧ δ ≤ A ∧ ∀ t ∈ Set.Ioc (0 : ℝ) δ, |F t| ≤ ε)
     (hbound : ∀ t ∈ Set.Ioc (0 : ℝ) A, |F t| ≤ B)
     (hint : ∀ α : ℝ, 0 < α →
       IntervalIntegrable (fun t : ℝ => t ^ (α - 1) * F t)
@@ -83,88 +83,79 @@ theorem tendsto_alpha_mul_integral_interval_rpow_mul_zero {A B : ℝ}
       (𝓝[>] (0 : ℝ)) (𝓝 0) := by
   rw [Metric.tendsto_nhds]
   intro ε hε
-  let η : ℝ := ε / 4
-  have hη_pos : 0 < η := by dsimp [η]; positivity
+  let η := ε / 4
+  have hη_pos : 0 < η := by positivity
   rcases hsmall η hη_pos with ⟨δ, hδ_pos, hδ_le, hδ_small⟩
-  have hδ_nonneg : 0 ≤ δ := hδ_pos.le
-  have hδ_ne : δ ≠ 0 := hδ_pos.ne'
-  have hA_ne : A ≠ 0 := hA.ne'
+  have hA_ne := hA.ne'
   have hA_tendsto :
-      Tendsto (fun α : ℝ => A ^ α) (𝓝[>] (0 : ℝ)) (𝓝 1) := by
-    have h : ContinuousAt (fun α : ℝ => A ^ α) 0 :=
+      Tendsto (fun α : ℝ => A ^ α) (𝓝[>] 0) (𝓝 1) := by
+    have h :=
       Real.continuousAt_const_rpow (a := A) (b := 0) hA_ne
     simpa using h.mono_left nhdsWithin_le_nhds
   have hδ_tendsto :
-      Tendsto (fun α : ℝ => δ ^ α) (𝓝[>] (0 : ℝ)) (𝓝 1) := by
-    have h : ContinuousAt (fun α : ℝ => δ ^ α) 0 :=
-      Real.continuousAt_const_rpow (a := δ) (b := 0) hδ_ne
+      Tendsto (fun α : ℝ => δ ^ α) (𝓝[>] 0) (𝓝 1) := by
+    have h :=
+      Real.continuousAt_const_rpow (a := δ) (b := 0) hδ_pos.ne'
     simpa using h.mono_left nhdsWithin_le_nhds
   have htail_tendsto :
       Tendsto (fun α : ℝ => B * (A ^ α - δ ^ α))
-        (𝓝[>] (0 : ℝ)) (𝓝 0) := by
+        (𝓝[>] 0) (𝓝 0) := by
     simpa using (hA_tendsto.sub hδ_tendsto).const_mul B
   have hnear_tendsto :
-      Tendsto (fun α : ℝ => η * δ ^ α) (𝓝[>] (0 : ℝ)) (𝓝 η) := by
+      Tendsto (fun α : ℝ => η * δ ^ α) (𝓝[>] 0) (𝓝 η) := by
     simpa using hδ_tendsto.const_mul η
-  have htail_eventually :
-      ∀ᶠ α : ℝ in 𝓝[>] (0 : ℝ),
-        dist (B * (A ^ α - δ ^ α)) 0 < ε / 2 :=
+  have htail_eventually :=
     (Metric.tendsto_nhds.mp htail_tendsto (ε / 2) (by positivity))
   have hnear_eventually :
       ∀ᶠ α : ℝ in 𝓝[>] (0 : ℝ), η * δ ^ α < ε / 2 :=
-    hnear_tendsto.eventually (Iio_mem_nhds (by dsimp [η]; linarith))
+    hnear_tendsto.eventually (Iio_mem_nhds (by grind))
   filter_upwards [self_mem_nhdsWithin, htail_eventually, hnear_eventually] with
     α hα_pos htail hnear
-  have hα : 0 < α := hα_pos
+  have hα := hα_pos
   have hInt0A := hint α hα
   have hInt0δ :
       IntervalIntegrable (fun t : ℝ => t ^ (α - 1) * F t)
-        (volume : Measure ℝ) 0 δ := by
-    exact hInt0A.mono_set
+        volume 0 δ := hInt0A.mono_set
       (Set.uIcc_subset_uIcc
-        (by rw [Set.mem_uIcc]; exact Or.inl ⟨le_rfl, hA.le⟩)
+        (by simp)
         (by rw [Set.mem_uIcc]; exact Or.inl ⟨hδ_pos.le, hδ_le⟩))
   have hIntδA :
       IntervalIntegrable (fun t : ℝ => t ^ (α - 1) * F t)
-        (volume : Measure ℝ) δ A := by
-    exact hInt0A.mono_set
+        volume δ A := hInt0A.mono_set
       (Set.uIcc_subset_uIcc
         (by rw [Set.mem_uIcc]; exact Or.inl ⟨hδ_pos.le, hδ_le⟩)
-        (by rw [Set.mem_uIcc]; exact Or.inl ⟨hA.le, le_rfl⟩))
+        (by simp))
   have hsplit :
-      (∫ t in (0 : ℝ)..A, t ^ (α - 1) * F t ∂(volume : Measure ℝ)) =
-        (∫ t in (0 : ℝ)..δ, t ^ (α - 1) * F t ∂(volume : Measure ℝ)) +
-          ∫ t in δ..A, t ^ (α - 1) * F t ∂(volume : Measure ℝ) := by
+      (∫ t in 0..A, t ^ (α - 1) * F t ∂volume) =
+        (∫ t in 0..δ, t ^ (α - 1) * F t ∂volume) +
+          ∫ t in δ..A, t ^ (α - 1) * F t ∂volume := by
     rw [← intervalIntegral.integral_add_adjacent_intervals hInt0δ hIntδA]
   have hnear_bound :
-      |α * ∫ t in (0 : ℝ)..δ, t ^ (α - 1) * F t ∂(volume : Measure ℝ)| ≤
+      |α * ∫ t in 0..δ, t ^ (α - 1) * F t ∂volume| ≤
         η * δ ^ α := by
     have h :=
       abs_alpha_mul_integral_interval_rpow_mul_le
         (α := α) (a := 0) (b := δ) (C := η) (F := F)
         hα (by norm_num) hδ_pos.le hδ_small
-    have hzero : (0 : ℝ) ^ α = 0 := Real.zero_rpow hα.ne'
-    simpa [hzero] using h
+    simpa [(Real.zero_rpow hα.ne')] using h
   have htail_bound :
-      |α * ∫ t in δ..A, t ^ (α - 1) * F t ∂(volume : Measure ℝ)| ≤
-        B * (A ^ α - δ ^ α) := by
-    exact
-      abs_alpha_mul_integral_interval_rpow_mul_le
+      |α * ∫ t in δ..A, t ^ (α - 1) * F t ∂volume| ≤
+        B * (A ^ α - δ ^ α) := abs_alpha_mul_integral_interval_rpow_mul_le
         (α := α) (a := δ) (b := A) (C := B) (F := F)
-        hα hδ_nonneg hδ_le (fun t ht => hbound t ⟨hδ_pos.trans ht.1, ht.2⟩)
+        hα hδ_pos.le hδ_le (fun t ht => hbound t ⟨hδ_pos.trans ht.1, ht.2⟩)
   have htail_abs : |B * (A ^ α - δ ^ α)| < ε / 2 := by
     simpa [Real.dist_eq, Real.norm_eq_abs] using htail
   have hmain :
-      |α * ∫ t in (0 : ℝ)..A, t ^ (α - 1) * F t ∂(volume : Measure ℝ)| < ε := by
+      |α * ∫ t in 0..A, t ^ (α - 1) * F t ∂volume| < ε := by
     calc
-      |α * ∫ t in (0 : ℝ)..A, t ^ (α - 1) * F t ∂(volume : Measure ℝ)|
-          = |α * ∫ t in (0 : ℝ)..δ, t ^ (α - 1) * F t ∂(volume : Measure ℝ) +
-              α * ∫ t in δ..A, t ^ (α - 1) * F t ∂(volume : Measure ℝ)| := by
+      |α * ∫ t in 0..A, t ^ (α - 1) * F t ∂volume|
+          = |α * ∫ t in 0..δ, t ^ (α - 1) * F t ∂volume +
+              α * ∫ t in δ..A, t ^ (α - 1) * F t ∂volume| := by
             rw [hsplit]
             ring_nf
-      _ ≤ |α * ∫ t in (0 : ℝ)..δ, t ^ (α - 1) * F t ∂(volume : Measure ℝ)| +
-            |α * ∫ t in δ..A, t ^ (α - 1) * F t ∂(volume : Measure ℝ)| :=
-            abs_add_le _ _
+      _ ≤ |α * ∫ t in 0..δ, t ^ (α - 1) * F t ∂volume| +
+            |α * ∫ t in δ..A, t ^ (α - 1) * F t ∂volume| :=
+            abs_add_le ..
       _ ≤ η * δ ^ α + B * (A ^ α - δ ^ α) :=
             add_le_add hnear_bound htail_bound
       _ ≤ η * δ ^ α + |B * (A ^ α - δ ^ α)| :=
@@ -177,9 +168,7 @@ theorem tendsto_alpha_mul_integral_interval_rpow_mul_zero {A B : ℝ}
 
 /-- Abel limit on a finite interval for a function continuous at the lower endpoint, stated in
 terms of the small-neighborhood and bounded-error estimates used by the ABK self-convolution. -/
-theorem tendsto_alpha_mul_integral_interval_rpow {A B : ℝ} {F : ℝ → ℝ}
-    (hA : 0 < A)
-    (hsmall :
+theorem tendsto_alpha_mul_integral_interval_rpow (hsmall :
       ∀ ε > 0, ∃ δ, 0 < δ ∧ δ ≤ A ∧
         ∀ t ∈ Set.Ioc (0 : ℝ) δ, |F t - F 0| ≤ ε)
     (hbound : ∀ t ∈ Set.Ioc (0 : ℝ) A, |F t - F 0| ≤ B)
@@ -191,65 +180,62 @@ theorem tendsto_alpha_mul_integral_interval_rpow {A B : ℝ} {F : ℝ → ℝ}
         α * ∫ t in (0 : ℝ)..A, t ^ (α - 1) * F t ∂(volume : Measure ℝ))
       (𝓝[>] (0 : ℝ)) (𝓝 (F 0)) := by
   let G : ℝ → ℝ := fun t => F t - F 0
-  have herror :
-      Tendsto
-        (fun α : ℝ =>
-          α * ∫ t in (0 : ℝ)..A, t ^ (α - 1) * G t ∂(volume : Measure ℝ))
-        (𝓝[>] (0 : ℝ)) (𝓝 0) :=
+  have herror :=
     tendsto_alpha_mul_integral_interval_rpow_mul_zero
       (A := A) (B := B) (F := G) hA hsmall hbound hint
-  have hA_ne : A ≠ 0 := hA.ne'
   have hA_tendsto :
-      Tendsto (fun α : ℝ => A ^ α) (𝓝[>] (0 : ℝ)) (𝓝 1) := by
-    have h : ContinuousAt (fun α : ℝ => A ^ α) 0 :=
-      Real.continuousAt_const_rpow (a := A) (b := 0) hA_ne
+      Tendsto (fun α : ℝ => A ^ α) (𝓝[>] 0) (𝓝 1) := by
+    have h :=
+      Real.continuousAt_const_rpow (a := A) (b := 0) hA.ne'
     simpa using h.mono_left nhdsWithin_le_nhds
   have hconst :
-      Tendsto (fun α : ℝ => F 0 * A ^ α) (𝓝[>] (0 : ℝ)) (𝓝 (F 0)) := by
+      Tendsto (fun α : ℝ => F 0 * A ^ α) (𝓝[>] 0) (𝓝 (F 0)) := by
     simpa using hA_tendsto.const_mul (F 0)
   have hsum := herror.add hconst
   have hsum' :
       Tendsto
         (fun α : ℝ =>
-          α * ∫ t in (0 : ℝ)..A, t ^ (α - 1) * G t ∂(volume : Measure ℝ) +
+          α * ∫ t in 0..A, t ^ (α - 1) * G t ∂volume +
             F 0 * A ^ α)
-        (𝓝[>] (0 : ℝ)) (𝓝 (F 0)) := by
-    simpa using hsum
+        (𝓝[>] 0) (𝓝 (F 0)) := by
+    simp_all
   refine hsum'.congr' ?_
   filter_upwards [self_mem_nhdsWithin] with α hα_mem
   have hα : 0 < α := hα_mem
-  have hG_int := hint α hα
   have hrpow_int :
       IntervalIntegrable (fun t : ℝ => t ^ (α - 1))
         (volume : Measure ℝ) 0 A :=
-    intervalIntegral.intervalIntegrable_rpow' (by linarith : -1 < α - 1)
-  have hconst_int :
-      IntervalIntegrable (fun t : ℝ => F 0 * t ^ (α - 1))
-        (volume : Measure ℝ) 0 A :=
+    intervalIntegral.intervalIntegrable_rpow' (by linarith)
+  have hconst_int :=
     hrpow_int.const_mul (F 0)
-  have hzero : (0 : ℝ) ^ α = 0 := Real.zero_rpow hα.ne'
   symm
   calc
-    α * ∫ t in (0 : ℝ)..A, t ^ (α - 1) * F t ∂(volume : Measure ℝ)
-        = α * ∫ t in (0 : ℝ)..A,
-            (t ^ (α - 1) * G t + F 0 * t ^ (α - 1)) ∂(volume : Measure ℝ) := by
+    α * ∫ t in 0..A, t ^ (α - 1) * F t ∂volume
+        = α * ∫ t in 0..A,
+            (t ^ (α - 1) * G t + F 0 * t ^ (α - 1)) ∂volume := by
           congr 1
           refine intervalIntegral.integral_congr ?_
           intro t _ht
           dsimp [G]
           ring_nf
     _ = α *
-        ((∫ t in (0 : ℝ)..A, t ^ (α - 1) * G t ∂(volume : Measure ℝ)) +
-          ∫ t in (0 : ℝ)..A, F 0 * t ^ (α - 1) ∂(volume : Measure ℝ)) := by
-          rw [intervalIntegral.integral_add hG_int hconst_int]
-    _ = α * (∫ t in (0 : ℝ)..A, t ^ (α - 1) * G t ∂(volume : Measure ℝ)) +
+        ((∫ t in 0..A, t ^ (α - 1) * G t ∂volume) +
+          ∫ t in 0..A, F 0 * t ^ (α - 1) ∂volume) := by
+          rw [intervalIntegral.integral_add (hint α hα) hconst_int]
+    _ = α * (∫ t in 0..A, t ^ (α - 1) * G t ∂volume) +
         F 0 * A ^ α := by
-          rw [intervalIntegral.integral_const_mul, integral_interval_rpow_sub_one hα, hzero]
+          rw [intervalIntegral.integral_const_mul, integral_interval_rpow_sub_one hα, (Real.zero_rpow hα.ne')]
           field_simp [hα.ne']
           ring
 
+end
+
+end
+section
+variable {d : Nat}
+
 /-- After the reciprocal substitution, the `M_α^{-1}` integral is supported on `(0,2]`. -/
-theorem abkMAlphaInv_eq_integral_Ioc_two {d : Nat} (hd : 0 < d)
+theorem abkMAlphaInv_eq_integral_Ioc_two (hd : 0 < d)
     (ζ : ABKCutoff d) (α : ℝ) :
     abkMAlphaInv ζ α =
       ∫ t in Set.Ioc (0 : ℝ) 2,
@@ -259,16 +245,15 @@ theorem abkMAlphaInv_eq_integral_Ioc_two {d : Nat} (hd : 0 < d)
   refine setIntegral_eq_of_subset_of_forall_sdiff_eq_zero measurableSet_Ioi ?_ ?_
   · exact Set.Ioc_subset_Ioi_self
   · intro t ht
-    have ht_pos : 0 < t := ht.1
+    have ht_pos := ht.1
     have ht_not_le : ¬ t ≤ 2 := by
-      intro ht_le
-      exact ht.2 ⟨ht_pos, ht_le⟩
-    have ht_two : 2 < t := lt_of_not_ge ht_not_le
-    rw [abkCutoffSelfConvolution_radial_eq_zero_of_two_lt hd ζ ht_two, mul_zero]
+      simp_all
+    rw [abkCutoffSelfConvolution_radial_eq_zero_of_two_lt hd ζ (lt_of_not_ge ht_not_le), mul_zero]
+section
+variable (ζ : ABKCutoff d)
 
 /-- The radial self-convolution profile is continuous. -/
-theorem continuous_abkCutoffSelfConvolution_radialProfile {d : Nat}
-    (ζ : ABKCutoff d) :
+theorem continuous_abkCutoffSelfConvolution_radialProfile :
     Continuous (fun t : ℝ => abkCutoffSelfConvolution ζ (abkRadialPoint d t)) := by
   exact (continuous_abkCutoffSelfConvolution ζ).comp (by
     refine continuous_pi ?_
@@ -279,17 +264,15 @@ theorem continuous_abkCutoffSelfConvolution_radialProfile {d : Nat}
     · simpa [abkRadialPoint, hi] using continuous_const)
 
 /-- At radial parameter zero, the self-convolution profile is `M_0`. -/
-theorem abkCutoffSelfConvolution_radialProfile_zero {d : Nat}
-    (ζ : ABKCutoff d) :
+theorem abkCutoffSelfConvolution_radialProfile_zero :
     abkCutoffSelfConvolution ζ (abkRadialPoint d 0) = abkM0 ζ := by
-  have hpoint : abkRadialPoint d 0 = (0 : Vec d) := by
+  have hpoint : abkRadialPoint d 0 = 0 := by
     ext i
     simp [abkRadialPoint]
   rw [hpoint, abkCutoffSelfConvolution_zero]
 
 /-- The Abel limit for the ABK radial self-convolution profile on `(0,2]`. -/
-theorem tendsto_alpha_mul_integral_Ioc_two_abkSelfConvolution {d : Nat}
-    (ζ : ABKCutoff d) :
+theorem tendsto_alpha_mul_integral_Ioc_two_abkSelfConvolution :
     Tendsto
       (fun α : ℝ =>
         α * ∫ t in Set.Ioc (0 : ℝ) 2,
@@ -300,7 +283,7 @@ theorem tendsto_alpha_mul_integral_Ioc_two_abkSelfConvolution {d : Nat}
   have hF_cont : Continuous F := continuous_abkCutoffSelfConvolution_radialProfile ζ
   have hF0 : F 0 = abkM0 ζ := abkCutoffSelfConvolution_radialProfile_zero ζ
   let H : ℝ → ℝ := fun t => |F t - F 0|
-  have hH_cont : Continuous H := (hF_cont.sub continuous_const).abs
+  have hH_cont : Continuous H := by fun_prop
   have hBdd : BddAbove (H '' Set.Icc (0 : ℝ) 2) :=
     isCompact_Icc.bddAbove_image hH_cont.continuousOn
   rcases hBdd with ⟨B, hB⟩
@@ -312,19 +295,18 @@ theorem tendsto_alpha_mul_integral_Ioc_two_abkSelfConvolution {d : Nat}
       hF_cont.continuousAt.tendsto.mono_left nhdsWithin_le_nhds
     rcases (Metric.tendsto_nhdsWithin_nhds.mp hF_tendsto) ε hε with
       ⟨δ₀, hδ₀_pos, hδ₀⟩
-    refine ⟨min (δ₀ / 2) 2, ?_, min_le_right _ _, ?_⟩
-    · exact lt_min (half_pos hδ₀_pos) (by norm_num)
+    refine ⟨min (δ₀ / 2) 2, ?_, min_le_right .., ?_⟩
+    · positivity
     · intro t ht
       have ht_pos : t ∈ Set.Ioi (0 : ℝ) := ht.1
       have hdist : dist t 0 < δ₀ := by
         calc
           dist t 0 = t := by
             rw [Real.dist_eq, sub_zero, abs_of_nonneg ht.1.le]
-          _ ≤ min (δ₀ / 2) 2 := ht.2
-          _ ≤ δ₀ / 2 := min_le_left _ _
+          _ ≤ min _ 2 := ht.2
+          _ ≤ δ₀ / 2 := min_le_left ..
           _ < δ₀ := by linarith
-      have hf := hδ₀ ht_pos hdist
-      exact le_of_lt (by simpa [Real.dist_eq, Real.norm_eq_abs, abs_sub_comm] using hf)
+      exact le_of_lt (by tauto)
   have hbound : ∀ t ∈ Set.Ioc (0 : ℝ) 2, |F t - F 0| ≤ B := by
     intro t ht
     exact hB ⟨t, ⟨ht.1.le, ht.2⟩, rfl⟩
@@ -354,15 +336,18 @@ theorem tendsto_alpha_mul_integral_Ioc_two_abkSelfConvolution {d : Nat}
   filter_upwards with α
   rw [intervalIntegral.integral_of_le (by norm_num : (0 : ℝ) ≤ 2)]
 
+end
+
 /-- The Appendix A limit `α M_α^{-1} → M_0`. -/
-theorem tendsto_alpha_mul_abkMAlphaInv {d : Nat} (hd : 0 < d)
+theorem tendsto_alpha_mul_abkMAlphaInv (hd : 0 < d)
     (ζ : ABKCutoff d) :
     Tendsto (fun α : ℝ => α * abkMAlphaInv ζ α)
       (𝓝[>] (0 : ℝ)) (𝓝 (abkM0 ζ)) := by
-  have hlim := tendsto_alpha_mul_integral_Ioc_two_abkSelfConvolution ζ
-  refine hlim.congr' ?_
+  refine (tendsto_alpha_mul_integral_Ioc_two_abkSelfConvolution ζ).congr' ?_
   filter_upwards with α
   rw [abkMAlphaInv_eq_integral_Ioc_two hd ζ α]
+
+end
 
 /-- Scalar logarithmic limit used in the covariance computation:
 `(ρ^{-α} - 1) / α → -log ρ` as `α → 0+`. -/
@@ -373,18 +358,13 @@ theorem tendsto_rpow_neg_sub_one_div_nhdsGT_zero {ρ : ℝ} (hρ : 0 < ρ) :
     hasDerivAt_neg' (0 : ℝ)
   have hderiv : HasDerivAt (fun α : ℝ => ρ ^ (-α)) (-Real.log ρ) 0 := by
     have h := hneg.const_rpow hρ
-    simpa [Real.rpow_zero] using h
-  have hslope := hderiv.tendsto_slope_zero
-  have hmono : 𝓝[>] (0 : ℝ) ≤ nhdsWithin (0 : ℝ) ({0}ᶜ : Set ℝ) := by
+    simp_all
+  have hmono : 𝓝[>] 0 ≤ nhdsWithin 0 ({0}ᶜ : Set ℝ) := by
     refine nhdsWithin_mono _ ?_
-    intro x hx
-    have hx_pos : 0 < x := hx
-    simp [hx_pos.ne']
-  refine (hslope.mono_left hmono).congr' ?_
+    simp
+  refine (hderiv.tendsto_slope_zero.mono_left hmono).congr' ?_
   filter_upwards [self_mem_nhdsWithin] with α hα
   rw [zero_add, neg_zero, Real.rpow_zero]
-  change α⁻¹ * (ρ ^ (-α) - 1) = (ρ ^ (-α) - 1) / α
-  rw [div_eq_mul_inv]
   ring
 
 end GaussianFields

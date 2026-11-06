@@ -24,7 +24,7 @@ theorem power_tail_le_moment
     exact Real.rpow_le_rpow hb.le hω.le hr.le
   have hm := mul_meas_ge_le_integral_of_nonneg
     (ae_of_all P fun ω => Real.rpow_nonneg (hA0 ω) r) hAi (b^r)
-  have hbpow : 0 < b^r := Real.rpow_pos_of_pos hb r
+  have hbpow := Real.rpow_pos_of_pos hb r
   have hle : (P {ω | b < A ω}).toReal ≤ (∫ ω, A ω^r ∂P)/(b^r) := by
     apply (le_div_iff₀ hbpow).mpr
     rw [mul_comm]
@@ -32,7 +32,7 @@ theorem power_tail_le_moment
   have heq : (∫ ω, A ω^r ∂P)/(b^r) = b^(-r) * ∫ ω, A ω^r ∂P := by
     rw [Real.rpow_neg hb.le]
     ring
-  exact hle.trans_eq heq
+  linarith
 
 
 end DOZZ.Proofs

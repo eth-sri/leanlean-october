@@ -27,20 +27,18 @@ theorem localized_copied_mass_aemeasurable
   let : IsProbabilityMeasure P := hX.1
   have hfst := measurePreserving_fst (μ := P) (ν := P)
   have hY := translated_field_isEquatorGFF P X Xc hX hc z
-  have hY' := isEquatorGFF_measurePreserving P (P.prod P) Prod.fst hfst _ hY
-  have hN' := isGMCOf_measurePreserving P (P.prod P) Prod.fst hfst _ hY γ _ hN
-  have hpin := (hc.1 0).comp (measurable_id.prodMk (measurable_const : Measurable (fun _ : Ω => z)))
+  have hpin := (hc.1 0).comp (measurable_id.prodMk (measurable_const : Measurable (fun _ => z)))
   let θ : Ω × Ω → ℝ × ℝ := fun q => (Xc q.1 z 0,Xc q.2 z 0)
-  have hθ : Measurable θ := (hpin.comp measurable_fst).prodMk (hpin.comp measurable_snd)
+  have hθ := (hpin.comp measurable_fst).prodMk (hpin.comp measurable_snd)
   let k := fun p : (ℝ × ℝ) × ℂ => ENNReal.ofReal
     (χ p.2*copiedMultiplier z γ p.1.1 p.1.2 F p.2)*
       (ENNReal.ofReal ‖p.2‖)^(-γ*α)
   have hk : Measurable k := by
     unfold k copiedMultiplier localPinCoefficient
     fun_prop
-  have hm := gmc_parameter_lintegral_aemeasurable (P.prod P) _ hY' γ hγ hγ2
-    (N ∘ Prod.fst) hN' θ hθ.aemeasurable k hk
-  exact ((((hpin.comp measurable_snd).const_mul γ).sub_const _).exp.ennreal_ofReal).aemeasurable.mul hm
+  have hm := gmc_parameter_lintegral_aemeasurable (P.prod P) _ (isEquatorGFF_measurePreserving P (P.prod P) Prod.fst hfst _ hY) γ hγ hγ2
+    (N ∘ Prod.fst) (isGMCOf_measurePreserving P (P.prod P) Prod.fst hfst _ hY γ _ hN) θ hθ.aemeasurable k hk
+  fun_prop
 
 
 end DOZZ.Proofs

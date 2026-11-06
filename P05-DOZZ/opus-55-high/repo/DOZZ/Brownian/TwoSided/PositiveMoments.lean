@@ -26,17 +26,16 @@ theorem twosided_conditioned_block_envelope_uniform
             ENNReal.ofReal (K * Real.exp (-c * (n : ℝ))) ^ (1 / (5 / 4 : ℝ)) *
               C ^ (((5 / 4 : ℝ) - 1) / (5 / 4 : ℝ)) := by
   let r : ℝ := 5 / 4
-  have hr : 1 < r := by norm_num [r]
-  have hr0 : 0 < r := by norm_num [r]
+  have hr : 1 < r := by norm_num
+  have hr0 : 0 < r := by positivity
   obtain ⟨K, c, hK, hc, hEval⟩ := isNegativeConditionedBrownianLaw_exp_eval_le_exp
-    (ν₂ := N) hν₀ (mul_pos hr0 hθ₀)
+    hν₀ (mul_pos hr0 hθ₀)
   obtain ⟨C, hC, hOsc⟩ := isNegativeConditionedBrownianLaw_unitIncrement_exp_le
     (r / (r - 1) * max Θ 0) N (by positivity)
   refine ⟨K, c, hK, hc, C, hC, ?_⟩
   intro θ hθ₀θ hθΘ ν hν₀ν hνN Q hQ n
-  have hθ : 0 < θ := lt_of_lt_of_le hθ₀ hθ₀θ
-  have hE : (∫⁻ p, ENNReal.ofReal (Real.exp (r * θ * p (n : ℝ≥0))) ∂Q) ≤
-      ENNReal.ofReal (K * Real.exp (-c * (n : ℝ))) := by
+  have hE : (∫⁻ p, ENNReal.ofReal (Real.exp (r * θ * p n)) ∂Q) ≤
+      ENNReal.ofReal (K * Real.exp (-c * n)) := by
     apply le_trans _ (hEval ν hν₀ν hνN Q hQ n)
     apply lintegral_mono_ae
     filter_upwards [isNegativeConditionedBrownianLaw_ae_nonpos hQ] with p hp
@@ -51,9 +50,9 @@ theorem twosided_conditioned_block_envelope_uniform
     apply ENNReal.ofReal_le_ofReal
     apply Real.exp_le_exp.mpr
     apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
-    exact mul_le_mul_of_nonneg_left (hθΘ.trans (le_max_left _ _))
+    exact mul_le_mul_of_nonneg_left (hθΘ.trans (le_max_left ..))
       (div_nonneg hr0.le (sub_pos.mpr hr).le)
-  exact (positiveBlockEnvelope_lintegral_le Q θ r hθ.le hr n).trans
+  exact (positiveBlockEnvelope_lintegral_le Q θ r (lt_of_lt_of_le hθ₀ hθ₀θ).le hr n).trans
     (mul_le_mul' (ENNReal.rpow_le_rpow hE (one_div_nonneg.mpr hr0.le))
       (ENNReal.rpow_le_rpow hO (div_nonneg (sub_pos.mpr hr).le hr0.le)))
 
@@ -73,16 +72,16 @@ theorem twosided_positive_moment_uniform_from_lateral
     ∃ C : ℝ≥0∞, C < ⊤ ∧ ∀ γ ∈ Kγ, ∀ ν ∈ Kν,
       (∫⁻ ω, ENNReal.rpow (twoSidedReflectionMass γ (B ν) (Z γ) ω) q ∂P) ≤ C := by
   let r : ℝ := 5 / 4
-  have hr0 : 0 < r := by norm_num [r]
-  have he : 0 ≤ (r - 1) / r := by norm_num [r]
+  have hr0 : 0 < r := by positivity
+  have he : 0 ≤ (r - 1) / r := by positivity
   obtain ⟨K, c, hK, hc, C, hC, hEnvelope⟩ := twosided_conditioned_block_envelope_uniform
-    (q * γ₀) (q * G) ν₀ N (mul_pos hq hγ₀) hν₀
+    (q * γ₀) _ ν₀ N (mul_pos hq hγ₀) hν₀
   let g : ℕ → ℝ≥0∞ := fun n =>
-    ENNReal.ofReal (K * Real.exp (-c * (n : ℝ))) ^ (1 / r) * C ^ ((r - 1) / r)
+    ENNReal.ofReal (K * Real.exp (-c * n)) ^ (1 / r) * C ^ ((r - 1) / r)
   have hSum : halfLineBlockBound q L g < ⊤ := by
     refine halfLineBlockBound_lt_top hq hL (fun _ => ?_) (fun _ => ?_)
     · exact ennreal_tsum_exp_envelope_lt_top K c hK hc C hC hr0 he
-    · simp_rw [g, exp_envelope_rpow_eq K c r ((r - 1) / r) q C hr0 hq]
+    · simp_rw [g, exp_envelope_rpow_eq K c r _ q C hr0 hq]
       exact ennreal_tsum_exp_envelope_lt_top K c hK hc C hC (mul_pos hr0 hq)
         (div_nonneg he hq.le)
   refine ⟨3 ^ q * (halfLineBlockBound q L g + halfLineBlockBound q L g),
@@ -90,19 +89,18 @@ theorem twosided_positive_moment_uniform_from_lateral
       (ENNReal.add_lt_top.mpr ⟨hSum, hSum⟩), ?_⟩
   intro γ hγ ν hν
   obtain ⟨hB, hZ, hi⟩ := hData γ hγ ν hν
-  have hγp : 0 < γ := lt_of_lt_of_le hγ₀ (hγbound γ hγ).1
-  apply twoSidedReflectionMass_rpow_lintegral_le_blockBound P γ q hγp.le hq (B ν) (Z γ)
+  apply twoSidedReflectionMass_rpow_lintegral_le_blockBound P γ q (lt_of_lt_of_le hγ₀ (hγbound γ hγ).1).le hq (B ν) (Z γ)
     (aemeasurable_of_twoSidedConditioned hB) hZ.2.2.2.1 hZ.2.2.2.2.1
     (lateralGMC_singleton_ae P γ (Z γ) hZ 0) hi L
     (fun a => (lateralGMC_Icc_unit_moment_le P γ q (Z γ) hZ a).trans (hUnit γ hγ)) g
   · intro n
     rw [lintegral_positiveBlockEnvelope_comp P _ _ _ hB.1.1]
-    exact hEnvelope (q * γ) (mul_le_mul_of_nonneg_left (hγbound γ hγ).1 hq.le)
+    exact hEnvelope _ (mul_le_mul_of_nonneg_left (hγbound γ hγ).1 hq.le)
       (mul_le_mul_of_nonneg_left (hγbound γ hγ).2 hq.le) ν
       (hνbound ν hν).1 (hνbound ν hν).2 _ hB.1.2 n
   · intro n
     rw [lintegral_positiveBlockEnvelope_comp P _ _ _ hB.2.1.1]
-    exact hEnvelope (q * γ) (mul_le_mul_of_nonneg_left (hγbound γ hγ).1 hq.le)
+    exact hEnvelope _ (mul_le_mul_of_nonneg_left (hγbound γ hγ).1 hq.le)
       (mul_le_mul_of_nonneg_left (hγbound γ hγ).2 hq.le) ν
       (hνbound ν hν).1 (hνbound ν hν).2 _ hB.2.1.2 n
 

@@ -25,19 +25,17 @@ theorem fusionLocalOneRooted_normalized_tendsto {Ω : Type*} [MeasurableSpace Ω
         star (fusionLocalR1 P M γ α₁ α₂ α₃ p z)) / (‖z‖ ^ (γ * (Q γ - α₁)) : ℝ))
       (nhdsWithin 0 {0}ᶜ) (nhds ((-p * gammaHalfRootedCoefficient P M γ α₁ α₂ α₃ p : ℝ) : ℂ)) := by
   have h1 := fusionLocalR1_coefficient_tendsto P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hlo hsq hα₁ hα₂ hα₃ p hp
-  have h2 := fusionLocalR2_coefficient_tendsto P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hlo hsq hα₁ hα₂ hα₃ p hp
-  have h := (h1.add h2).add h1.star
+  have h := (h1.add (fusionLocalR2_coefficient_tendsto P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hlo hsq hα₁ hα₂ hα₃ p hp)).add h1.star
   have hreal (r : ℝ) : star (r : ℂ) = (r : ℂ) := by simp
   simp only [star_div₀, hreal, ← add_div] at h
   have he : -1 < γ ^ 2 / 2 - γ * α₁ := by
     have hd := fusion_taylor_parameters γ α₁ hγ hlo hsq hα₁
-    linarith only [hd.2.2.2.1]
+    linarith
   have halg (p e A : ℝ) (he : -1 < e) :
       (-p / 4 * e / (e + 1) * A) + (-p / 2 * (e + 2) / (e + 1) * A) +
         (-p / 4 * e / (e + 1) * A) = -p * A := by
-    field_simp [show e + 1 ≠ 0 by linarith]
-    ring
-  have hc := congrArg Complex.ofReal (halg p (γ ^ 2 / 2 - γ * α₁)
+    grind
+  have hc := congrArg Complex.ofReal (halg p _
     (gammaHalfRootedCoefficient P M γ α₁ α₂ α₃ p) he)
   simp only [Complex.ofReal_add] at hc
   rw [hc] at h

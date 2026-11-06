@@ -7,6 +7,7 @@ module
 public import DOZZ.Statements.FourPoint.GammaHalfUnitCrossingMultiplier
 public import DOZZ.Correlations.Residue.FullFromUnit
 import Mathlib.Tactic
+import DOZZ.ShiftEquations.Residual.Calibration
 
 /-! # The unit-volume normalization of half-charge crossing
 
@@ -31,34 +32,24 @@ theorem gammaHalf_crossing_unit_of_full {Ω : Type*} [MeasurableSpace Ω]
       gammaHalfUnitCrossingMultiplier γ μ α' ε α *
         unitVolumeStructureConstant P M γ α' (ε + γ / 2) α := by
   let s := sExp γ (α' - γ / 2) ε α
-  have hspos : 0 < s := div_pos (by linarith only [hs]) hγ
+  have hspos : 0 < s := div_pos (by linarith) hγ
   have hr : sExp γ α' (ε + γ / 2) α = s + 1 := by
     dsimp [s, sExp]
     field_simp
     ring
   have hleft : (α + α' + ε - γ / 2 - 2 * Q γ) / γ = s := by
     dsimp [s, sExp]
-    congr 1
     ring
   have hright : (α + α' + ε + γ / 2 - 2 * Q γ) / γ = s + 1 := by
-    rw [← hr]
-    unfold sExp
-    congr 1
-    ring
-  have hG : Real.Gamma s ≠ 0 := (Real.Gamma_pos_of_pos hspos).ne'
-  have hp : μ ^ (-s) ≠ 0 := (Real.rpow_pos_of_pos hμ (-s)).ne'
+    grind
+  have hG := (Real.Gamma_pos_of_pos hspos).ne'
+  have hp := (Real.rpow_pos_of_pos hμ (-s)).ne'
   have hpow : μ ^ (-(s + 1)) = μ ^ (-s) * μ⁻¹ := by
     rw [show -(s + 1) = -s + -1 by ring, Real.rpow_add hμ, Real.rpow_neg_one]
-  rw [residue_structureConstant_eq_unitVolume,
-    residue_structureConstant_eq_unitVolume, hr, hpow] at hfull
+  rw [DOZZ.Proofs.structureConstant_eq_mul_unitVolume,
+    DOZZ.Proofs.structureConstant_eq_mul_unitVolume, hr, hpow] at hfull
   change μ ^ (-s) * Real.Gamma s * _ = _ at hfull
   unfold gammaHalfUnitCrossingMultiplier
-  rw [hleft, hright]
-  apply (mul_left_cancel₀ (mul_ne_zero hp hG))
-  calc
-    _ = gammaHalfCrossingMultiplier γ μ α' ε α *
-        (μ ^ (-s) * μ⁻¹ * Real.Gamma (s + 1) *
-          unitVolumeStructureConstant P M γ α' (ε + γ / 2) α) := hfull
-    _ = _ := by field_simp [hG]
+  grind
 
 end DOZZ.Proofs

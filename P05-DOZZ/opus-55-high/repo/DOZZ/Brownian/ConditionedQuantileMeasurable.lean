@@ -22,49 +22,51 @@ open Topology
 open scoped Topology
 
 namespace DOZZ.Proofs
+section
+variable {μ : Measure ℝ} [IsProbabilityMeasure μ] {u : ℝ}
 
-private theorem cdf_superlevel_nonempty {μ : Measure ℝ} [IsProbabilityMeasure μ]
-    {u : ℝ} (hu : u < 1) :
+private theorem cdf_superlevel_nonempty (hu : u < 1) :
     {x : ℝ | u ≤ ProbabilityTheory.cdf μ x}.Nonempty := by
-  have hev : ∀ᶠ x : ℝ in atTop, u < ProbabilityTheory.cdf μ x :=
+  have hev :=
     (ProbabilityTheory.tendsto_cdf_atTop μ).eventually
       (isOpen_Ioi.mem_nhds hu)
   obtain ⟨x, hx⟩ := Filter.eventually_atTop.1 hev
   exact ⟨x, (hx x le_rfl).le⟩
 
-private theorem cdf_superlevel_bddBelow {μ : Measure ℝ} [IsProbabilityMeasure μ]
-    {u : ℝ} (hu : 0 < u) :
+private theorem cdf_superlevel_bddBelow (hu : 0 < u) :
     BddBelow {x : ℝ | u ≤ ProbabilityTheory.cdf μ x} := by
-  have hev : ∀ᶠ x : ℝ in atBot, ProbabilityTheory.cdf μ x < u :=
+  have hev :=
     (ProbabilityTheory.tendsto_cdf_atBot μ).eventually
       (isOpen_Iio.mem_nhds hu)
   obtain ⟨a, ha⟩ := Filter.eventually_atBot.1 hev
   refine ⟨a, ?_⟩
   intro x hx
-  by_contra hnot
-  have hxa : x ≤ a := (lt_of_not_ge hnot).le
-  exact (not_lt_of_ge hx) (ha x hxa)
+  grind
+
+end
+section
+variable (μ : Measure ℝ) [IsProbabilityMeasure μ]
 
 /-- The generalized quantile is monotone as a function of the uniform level on `(0,1)`. -/
 theorem cdfGeneralizedQuantile_monoOn_Ioo
-    (μ : Measure ℝ) [IsProbabilityMeasure μ] :
+    :
     MonotoneOn (fun u => cdfGeneralizedQuantile (ProbabilityTheory.cdf μ) u)
       (Set.Ioo 0 1) := by
   intro u hu v hv huv
   apply csInf_le_csInf
     (cdf_superlevel_bddBelow hu.1)
     (cdf_superlevel_nonempty hv.2)
-  intro x hx
-  exact huv.trans hx
+  grind
 
 /-- The generalized CDF inverse is almost everywhere measurable under Lebesgue measure restricted
 to `(0,1)`, hence under the standard uniform distribution. -/
 theorem aemeasurable_cdfGeneralizedQuantile_Ioo
-    (μ : Measure ℝ) [IsProbabilityMeasure μ] :
+    :
     AEMeasurable (fun u => cdfGeneralizedQuantile (ProbabilityTheory.cdf μ) u)
-      ((volume : Measure ℝ).restrict (Set.Ioo 0 1)) := by
-  exact aemeasurable_restrict_of_monotoneOn measurableSet_Ioo
+      ((volume : Measure ℝ).restrict (Set.Ioo 0 1)) := aemeasurable_restrict_of_monotoneOn measurableSet_Ioo
     (cdfGeneralizedQuantile_monoOn_Ioo μ)
+
+end
 
 end DOZZ.Proofs
 

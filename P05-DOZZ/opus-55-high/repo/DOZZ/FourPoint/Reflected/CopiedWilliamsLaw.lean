@@ -16,25 +16,26 @@ noncomputable def reflectedInwardPolarMassCode (γ ν : ℝ)
   ∑' n : ℕ, ∫⁻ t, (if 0 < t then ENNReal.ofReal
     (Real.exp (γ * (p.1 (Real.toNNReal t) - ν * t))) else 0)
       ∂(finiteRestrictionOnSet (translationShell n) p.2 : Measure ℝ)
+section
+variable (γ ν : ℝ)
 
 /-- The measurable code agrees with the literal polar integral on every locally finite input. -/
-theorem reflected_inwardPolarMassCode_eq (γ ν : ℝ) (D : BrownianPath) (Z : Measure ℝ)
+theorem reflected_inwardPolarMassCode_eq (D : BrownianPath) (Z : Measure ℝ)
     (hfin : ∀ a b : ℝ, Z (Icc a b) < ⊤) :
     reflectedInwardPolarMassCode γ ν (D,Z) =
       ∫⁻ t, (if 0 < t then ENNReal.ofReal
         (Real.exp (γ * (D (Real.toNNReal t) - ν * t))) else 0) ∂Z := by
   have hshell (n : ℕ) : Z (translationShell n) < ⊤ :=
-    lt_of_le_of_lt (measure_mono (translationShell_subset_window n)) (hfin _ _)
+    lt_of_le_of_lt (measure_mono (translationShell_subset_window n)) (hfin ..)
   exact (lintegral_eq_tsum_finiteRestrictionOnSet_translationShell _ Z hshell).symm
 
 /-- The polar mass is jointly measurable in the continuous Brownian path and lateral measure. -/
-theorem reflected_measurable_inwardPolarMassCode (γ ν : ℝ) :
+theorem reflected_measurable_inwardPolarMassCode :
     Measurable (reflectedInwardPolarMassCode γ ν) := by
   have ht : Measurable (fun p : BrownianPath × ℝ => p.1 (Real.toNNReal p.2)) :=
-    continuous_eval.measurable.comp (measurable_fst.prodMk
-      (continuous_real_toNNReal.measurable.comp measurable_snd))
+    by fun_prop
   have hi : Measurable (fun p : BrownianPath × ℝ => if 0 < p.2 then
-      ENNReal.ofReal (Real.exp (γ * (p.1 (Real.toNNReal p.2) - ν * p.2))) else 0) :=
+      ENNReal.ofReal _ else 0) :=
     Measurable.ite (measurableSet_lt measurable_const measurable_snd)
       (((ht.sub (measurable_snd.const_mul ν)).const_mul γ).exp.ennreal_ofReal) measurable_const
   apply Measurable.tsum
@@ -42,6 +43,8 @@ theorem reflected_measurable_inwardPolarMassCode (γ ν : ℝ) :
   exact (measurable_lintegral_finiteMeasure_parameter hi).comp
     (measurable_fst.prodMk
       ((measurable_finiteRestrictionOnSet _ (measurableSet_translationShell n)).comp measurable_snd))
+
+end
 
 /-- The independent inner lateral copy has Williams' exact law jointly with any actual outer
 past independent of the restarted Brownian path. No independence of the source lateral
@@ -61,11 +64,11 @@ theorem reflected_copied_williams_joint_law
         ((((((brownianMaximumReferenceLaw ν).prod Qν).map
           (fun v => (v.1, negativeConditionedLastExitSegment v.1 v.2))).prod Qν).prod
             (P.map Z)).map (williamsMassFunctional γ)) := by
-  let _ : IsProbabilityMeasure P := hZ.2.2.1
-  have hZm : AEMeasurable Z P := hZ.2.2.2.1
+  let _ := hZ.2.2.1
+  have hZm := hZ.2.2.2.1
   let F := reflectedInwardPolarMassCode γ ν
-  have hF : Measurable F := reflected_measurable_inwardPolarMassCode γ ν
-  have hpair : AEMeasurable (fun ω : Ω × Ω => (Y ω.1,(D ω.1,Z ω.2))) (P.prod P) :=
+  have hF := reflected_measurable_inwardPolarMassCode γ ν
+  have hpair :=
     (hY.comp_quasiMeasurePreserving measurePreserving_fst.quasiMeasurePreserving).prodMk
       ((hD.comp_quasiMeasurePreserving measurePreserving_fst.quasiMeasurePreserving).prodMk
         (hZm.comp_quasiMeasurePreserving measurePreserving_snd.quasiMeasurePreserving))
@@ -82,15 +85,13 @@ theorem reflected_copied_williams_joint_law
   change ((P.prod P).map (fun ω : Ω × Ω => (Y ω.1,(D ω.1,Z ω.2)))).map
     (Prod.map id F) = (P.prod P).map (fun ω : Ω × Ω => (Y ω.1,F (D ω.1,Z ω.2))) at hm
   rw [← hm, reflected_copied_triple_law P Y D Z hY hD hZm hYD,
-    ← Measure.map_prod_map (P.map Y) ((P.map D).prod (P.map Z)) measurable_id hF,
+    ← Measure.map_prod_map (P.map Y) _ measurable_id hF,
     Measure.map_id]
   have hj := (indepFun_iff_map_prod_eq_prod_map_map hD hZm).mp hDZ
   rw [← hj, AEMeasurable.map_map_of_aemeasurable hF.aemeasurable (hD.prodMk hZm)]
-  have he' : (fun ω => F (D ω,Z ω)) =ᵐ[P] fun ω => ∫⁻ t,
-      (if 0 < t then ENNReal.ofReal (Real.exp (γ * (D ω (Real.toNNReal t)-ν*t))) else 0) ∂Z ω :=
+  have he' :=
     hZ.2.2.2.2.1.mono fun ω hω => reflected_inwardPolarMassCode_eq γ ν (D ω) (Z ω) hω
   simp only [Function.comp_def]
-  rw [Measure.map_congr he']
-  rw [williams_polar_mass_law P D hD hB γ Z hZ hDZ ν hν Qν hQν]
+  rw [Measure.map_congr he', williams_polar_mass_law P D hD hB γ Z hZ hDZ ν hν Qν hQν]
 
 end DOZZ.Proofs

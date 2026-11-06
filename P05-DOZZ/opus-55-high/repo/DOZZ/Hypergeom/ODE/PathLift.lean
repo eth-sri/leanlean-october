@@ -44,20 +44,16 @@ theorem exists_continuous_lift_from_disk_chain
         ∀ i < N, ∀ t ∈ Icc ((i : ℝ) / (N : ℝ))
           (((i + 1 : ℕ) : ℝ) / (N : ℝ)),
           F t = (D i).solution (γ t) := by
-  classical
   let τ : ℕ → ℝ := fun i => (i : ℝ) / (N : ℝ)
-  let P : ℕ → ℝ → E := finiteChainPathLift H r γ D N y
+  let P := finiteChainPathLift H r γ D N y
   have hNreal : 0 < (N : ℝ) := by exact_mod_cast hN
   have hτmono (i j : ℕ) (hij : i ≤ j) : τ i ≤ τ j := by
     apply (div_le_div_iff_of_pos_right hNreal).2
     exact_mod_cast hij
   have hτ01 (i : ℕ) (hi : i ≤ N) : τ i ∈ Icc (0 : ℝ) 1 := by
     constructor
-    · dsimp [τ]
-      positivity
-    · dsimp [τ]
-      apply (div_le_one hNreal).2
-      exact_mod_cast hi
+    · positivity
+    · grind
   have hjoin : ∀ m ≤ N,
       (∀ i < m, ∀ t ∈ Icc (τ i) (τ (i + 1)),
         P m t = (D i).solution (γ t)) →
@@ -65,23 +61,23 @@ theorem exists_continuous_lift_from_disk_chain
     intro m hm hformula
     cases m with
     | zero =>
-        have hτ0 : τ 0 = 0 := by simp [τ]
+        have hτ0 : τ 0 = 0 := by ring
         calc
-          P 0 (τ 0) = y := by simp [P, finiteChainPathLift]
+          P 0 (τ 0) = y := by rfl
           _ = (D 0).initial := hstartValue.symm
-          _ = (D 0).solution ((D 0).center) := (D 0).solution_center.symm
-          _ = (D 0).solution (γ (τ 0)) := by rw [hstartCenter, hτ0]
+          _ = (D 0).solution _ := (D 0).solution_center.symm
+          _ = (D 0).solution _ := by tauto
     | succ n =>
         have hnN : n < N := by omega
-        have hprev := hformula n (by omega) (τ (n + 1))
-          ⟨hτmono n (n + 1) (by omega), le_rfl⟩
+        have hprev := hformula n (by omega) _
+          ⟨hτmono n _ (by omega), le_rfl⟩
         have hcenterNext : (D (n + 1)).center = γ (τ (n + 1)) := by
           simpa [τ] using hcenters (n + 1) (by omega)
         have hsame := hoverlap n hnN (γ (τ (n + 1)))
           (by rw [← hcenterNext]; exact Metric.mem_ball_self (by linarith))
         calc
-          P (n + 1) (τ (n + 1)) = (D n).solution (γ (τ (n + 1))) := hprev
-          _ = (D (n + 1)).solution (γ (τ (n + 1))) := hsame
+          P _ _ = (D n).solution _ := hprev
+          _ = (D _).solution _ := hsame
   have hstage : ∀ m ≤ N,
       ContinuousOn (P m) (Icc (0 : ℝ) (τ m)) ∧
         ∀ i < m, ∀ t ∈ Icc (τ i) (τ (i + 1)),
@@ -89,17 +85,16 @@ theorem exists_continuous_lift_from_disk_chain
     intro m hm
     induction m with
     | zero =>
-        have hτ0 : τ 0 = 0 := by simp [τ]
+        have hτ0 : τ 0 = 0 := by ring
         constructor
         · simp [P, finiteChainPathLift, hτ0]
-        · intro i hi
-          omega
+        · simp
     | succ m ih =>
         have hmN : m < N := by omega
         have ⟨hprevCont, hprevFormula⟩ := ih (by omega)
-        have htNext : τ m ≤ τ (m + 1) := hτmono m (m + 1) (by omega)
+        have htNext : τ m ≤ τ (m + 1) := hτmono m _ (by omega)
         have hτm_nonneg : 0 ≤ τ m := (hτ01 m (by omega)).1
-        have hτnext_le : τ (m + 1) ≤ 1 := (hτ01 (m + 1) (by omega)).2
+        have hτnext_le : τ (m + 1) ≤ 1 := (hτ01 _ (by omega)).2
         have hjoinm := hjoin m (by omega) hprevFormula
         let g : ℝ → E := fun t => (D m).solution (γ t)
         have hDcont : ContinuousOn (D m).solution
@@ -134,12 +129,12 @@ theorem exists_continuous_lift_from_disk_chain
           have htLower : τ m ≤ t := by simpa [closure_Ioi] using ht.2
           exact ⟨htLower, ht.1.2⟩
         have hnewCont : ContinuousOn g
-            (Icc (0 : ℝ) (τ (m + 1)) ∩ closure (Iic (τ m))ᶜ) :=
+            (Icc (0 : ℝ) _ ∩ closure _ᶜ) :=
           hGcont.mono hnewDomain
         have hcont : ContinuousOn (P (m + 1))
             (Icc (0 : ℝ) (τ (m + 1))) := by
           have hpiece : ContinuousOn ((Iic (τ m)).piecewise (P m) g)
-              (Icc (0 : ℝ) (τ (m + 1))) :=
+              (Icc (0 : ℝ) _) :=
             (hprevCont.mono hprevDomain).piecewise hboundary hnewCont
           simpa [P, finiteChainPathLift, g, τ] using hpiece
         constructor
@@ -147,8 +142,7 @@ theorem exists_continuous_lift_from_disk_chain
         · intro i hi t ht
           by_cases him : i < m
           · have htOld : t ≤ τ m := by
-              exact le_trans ht.2 (hτmono (i + 1) m (by omega))
-            have hprev := hprevFormula i him t ht
+              exact le_trans ht.2 (hτmono _ m (by omega))
             have htmem : t ∈ Iic (τ m) := htOld
             have hpiece : P (m + 1) t = P m t := by
               change (Iic (τ m)).piecewise (P m)
@@ -156,10 +150,9 @@ theorem exists_continuous_lift_from_disk_chain
               exact Set.piecewise_eq_of_mem (s := Iic (τ m)) (f := P m)
                 (g := fun t => (D m).solution (γ t)) htmem
             rw [hpiece]
-            exact hprev
+            exact (hprevFormula i him t ht)
           · have hiEq : i = m := by omega
             subst i
-            have htLower := ht.1
             by_cases heq : t = τ m
             · subst t
               have hpiece : P (m + 1) (τ m) = P m (τ m) := by
@@ -172,7 +165,7 @@ theorem exists_continuous_lift_from_disk_chain
               exact hjoinm
             · have htNot : t ∉ Iic (τ m) := by
                 simp only [mem_Iic]
-                exact not_le.mpr (lt_of_le_of_ne htLower (Ne.symm heq))
+                exact not_le.mpr (lt_of_le_of_ne ht.1 (Ne.symm heq))
               have hpiece : P (m + 1) t = g t := by
                 change (Iic (τ m)).piecewise (P m)
                   (fun t => (D m).solution (γ t)) t = (D m).solution (γ t)
@@ -181,16 +174,15 @@ theorem exists_continuous_lift_from_disk_chain
               rw [hpiece]
   have ⟨hcont, hformula⟩ := hstage N le_rfl
   have hτN : τ N = 1 := by
-    dsimp [τ]
     exact div_self (by exact_mod_cast hN.ne')
-  have hτ0 : τ 0 = 0 := by simp [τ]
+  have hτ0 : τ 0 = 0 := by ring
   have hstart : P N 0 = y := by
     have hmem : (0 : ℝ) ∈ Icc (τ 0) (τ 1) := by
-      exact ⟨by simp [τ], by dsimp [τ]; positivity⟩
+      exact ⟨by linarith, by positivity⟩
     have hval := hformula 0 (by omega) 0 hmem
     calc
       P N 0 = (D 0).solution (γ 0) := hval
-      _ = (D 0).solution (D 0).center := by rw [hstartCenter]
+      _ = (D 0).solution (D 0).center := by tauto
       _ = (D 0).initial := (D 0).solution_center
       _ = y := hstartValue
   have hend : P N 1 = (D N).solution (γ 1) := by

@@ -22,9 +22,9 @@ theorem reflected_reflection_cut_real_moment
     (∫ ω, (twoSidedReflectionCutMass γ H B Z ω).toReal ^q ∂P) =
       (∫⁻ ω, twoSidedReflectionCutMass γ H B Z ω ^q ∂P).toReal := by
   have hm := twoSidedReflectionCutMass_aemeasurable P γ H B Z
-    (conditionedPair_aemeasurable P B (Q γ-α) hData.1)
+    (conditionedPair_aemeasurable P B _ hData.1)
     hData.2.1.2.2.2.1 hData.2.1.2.2.2.2.1
-  have hf : (∫⁻ ω, twoSidedReflectionCutMass γ H B Z ω ^q ∂P) < ⊤ :=
+  have hf :=
     lt_of_le_of_lt (lintegral_mono fun ω => ENNReal.rpow_le_rpow
       (twoSidedReflectionCutMass_le_mass γ H B Z ω) hq0)
       (reflected_reflection_mass_moment_lt_top P γ α q B Z hα hData hq)

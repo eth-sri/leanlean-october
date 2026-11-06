@@ -90,18 +90,18 @@ theorem starG_segment {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω
   have hnear := starG_eventually P X M hγ hγ2 hμ hX hM hSeed hShiftGluing hhR hRm hBR hRv
     (f₁ := fun t => es + t * (ef - es)) (f₂ := fun t => as + t * (af - as))
     (f₃ := fun t => a's + t * (a'f - a's)) (by fun_prop) (by fun_prop) (by fun_prop) (t₀ := 0)
-    (by simp only [zero_mul, add_zero]; exact hS1) (by simp only [zero_mul, add_zero]; exact hS2)
-    (by simp only [zero_mul, add_zero]; exact hS3)
-    (by simp only [zero_mul, add_zero]; exact hRes) (by simp only [zero_mul, add_zero]; exact hRas)
-    (by simp only [zero_mul, add_zero]; exact hsS1) (by simp only [zero_mul, add_zero]; exact hsS2)
-    (by simp only [zero_mul, add_zero]; exact hsS3) (by simp only [zero_mul, add_zero]; exact hgS1)
-    (by simp only [zero_mul, add_zero]; exact hgS2) (by simp only [zero_mul, add_zero]; exact hgS3)
-    (by simp only [zero_mul, add_zero]; exact hgS4) (by simp only [zero_mul, add_zero]; exact hAS)
-  set U : Set ℂ := (segC es ef ⁻¹' horizontalStrip hR ∩ segC as af ⁻¹' horizontalStrip hR) ∩
+    (by grind) (by grind)
+    (by grind)
+    (by grind) (by grind)
+    (by grind) (by grind)
+    (by grind) (by grind)
+    (by grind) (by grind)
+    (by grind) (by grind)
+  set U := (segC es ef ⁻¹' horizontalStrip hR ∩ segC as af ⁻¹' horizontalStrip hR) ∩
     (segT (2 * Q γ - es - 2 / γ - γ) (2 * Q γ - ef - 2 / γ - γ) as af a's a'f ⁻¹' V₃ ∩
       segT es ef (2 * Q γ - as - 2 / γ) (2 * Q γ - af - 2 / γ) a's a'f ⁻¹' V₃) with hU
   set F : ℂ → ℂ := fun t => R (segC es ef t) * (-(1 / (Real.pi * μ)) *
-    shiftCoeffA γ ((γ : ℂ) / 2) (segC (2 * Q γ - es - 2 / γ) (2 * Q γ - ef - 2 / γ) t - γ / 2)
+    shiftCoeffA γ (γ / 2) (segC (2 * Q γ - es - 2 / γ) (2 * Q γ - ef - 2 / γ) t - γ / 2)
       (segC as af t) (segC a's a'f t) *
       structureConstantH f₃ γ μ
         (segT (2 * Q γ - es - 2 / γ - γ) (2 * Q γ - ef - 2 / γ - γ) as af a's a'f t)) with hF
@@ -115,7 +115,7 @@ theorem starG_segment {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω
   have hFm : MeromorphicOn F U := fun t ht =>
     (segR_meromorphicOn hRm es ef t ht.1.1).fun_mul
       ((MeromorphicAt.const _ t |>.fun_mul (meromorphicAt_shiftCoeffA_comp
-        (f₁ := fun t => segC (2 * Q γ - es - 2 / γ) (2 * Q γ - ef - 2 / γ) t - γ / 2)
+       
         ((analyticAt_segC _ _ t).sub analyticAt_const)
         (analyticAt_segC as af t) (analyticAt_segC a's a'f t))).fun_mul
         (segH_meromorphicOn hV₃ hf₃ hμ _ _ as af a's a'f t ht.2.1))
@@ -124,12 +124,10 @@ theorem starG_segment {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω
       (analyticAt_segC a's a'f t)).fun_mul (segR_meromorphicOn hRm as af t ht.1.2)).fun_mul
       (segH_meromorphicOn hV₃ hf₃ hμ es ef _ _ a's a'f t ht.2.2)
   have hstart : ∀ᶠ t : ℝ in 𝓝[>] 0, F t = G t := by
-    filter_upwards [nhdsWithin_le_nhds hnear, Ioo_mem_nhdsGT (show (0 : ℝ) < 1 by norm_num)]
+    filter_upwards [nhdsWithin_le_nhds hnear, Ioo_mem_nhdsGT (show 0 < 1 by norm_num)]
       with t ht hI
-    have hE₁ := extendedSeiberg3_segment hγ hS3 hP1 hI.1.le hI.2.le
-    have hE₂ := extendedSeiberg3_segment hγ hS2 hP2 hI.1.le hI.2.le
     simp only [hF, hG]
-    rw [segH_ofReal P M hμ hf₃eq hE₁, segH_ofReal P M hμ hf₃eq hE₂, segC_ofReal, segC_ofReal,
+    rw [segH_ofReal P M hμ hf₃eq (extendedSeiberg3_segment hγ hS3 hP1 hI.1.le hI.2.le), segH_ofReal P M hμ hf₃eq (extendedSeiberg3_segment hγ hS2 hP2 hI.1.le hI.2.le), segC_ofReal, segC_ofReal,
       segC_ofReal, segC_ofReal,
       show 2 * Q γ - es - 2 / γ + t * (2 * Q γ - ef - 2 / γ - (2 * Q γ - es - 2 / γ)) =
         2 * Q γ - (es + t * (ef - es)) - 2 / γ by ring,
@@ -144,8 +142,7 @@ theorem starG_segment {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω
       ((analyticAt_segC _ _ 1).sub analyticAt_const) (analyticAt_segC as af 1)
       (analyticAt_segC a's a'f 1) ?_)).mul
       (segH_analyticAt_one hV₃ hf₃ hμ (hV₃mem ![2 * Q γ - ef - 2 / γ - γ, af, a'f] hP1) hsP1))
-    rw [segC_one, segC_one, segC_one]
-    exact hAP
+    rwa [segC_one, segC_one, segC_one]
   have hG1 : AnalyticAt ℂ G 1 := by
     refine ((analyticAt_dualLC_comp (analyticAt_segC es ef 1) (analyticAt_segC as af 1)
       (analyticAt_segC a's a'f 1) ?_ ?_ ?_ ?_).mul (segR_analyticAt_one hRaf)).mul

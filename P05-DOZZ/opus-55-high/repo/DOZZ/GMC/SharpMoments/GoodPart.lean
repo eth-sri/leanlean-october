@@ -22,10 +22,13 @@ open MeasureTheory Filter Topology
 open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
+section
+variable (μ : Measure ℂ) [IsFiniteMeasure μ] (Good : Set ℂ)
+section
+variable (hGood : MeasurableSet Good) (H : ℂ → ℝ≥0∞) (hH : Measurable H) (L : ℝ) (hbound : ∀ x ∈ Good, x ≠ 0 → H x ≤ ENNReal.ofReal L) (h0 : μ {0} = 0)
+include hGood hH hbound h0
 
-theorem goodPart_lintegral_toReal_eq (μ : Measure ℂ) [IsFiniteMeasure μ] (Good : Set ℂ)
-    (hGood : MeasurableSet Good) (H : ℂ → ℝ≥0∞) (hH : Measurable H) (L : ℝ)
-    (hbound : ∀ x ∈ Good, x ≠ 0 → H x ≤ ENNReal.ofReal L) (h0 : μ {0} = 0) :
+theorem goodPart_lintegral_toReal_eq :
     (∫⁻ x in Good, H x ∂μ).toReal = ∫ x in Good, (H x).toReal ∂μ := by
   have hne : ∀ᵐ x ∂μ.restrict Good, x ≠ 0 :=
     ae_restrict_of_ae (measure_eq_zero_iff_ae_notMem.mp h0)
@@ -34,9 +37,7 @@ theorem goodPart_lintegral_toReal_eq (μ : Measure ℂ) [IsFiniteMeasure μ] (Go
     exact lt_of_le_of_lt (hbound x hx hx0) ENNReal.ofReal_lt_top
   exact (integral_toReal hH.aemeasurable hlt).symm
 
-theorem goodPart_integrableOn (μ : Measure ℂ) [IsFiniteMeasure μ] (Good : Set ℂ)
-    (hGood : MeasurableSet Good) (H : ℂ → ℝ≥0∞) (hH : Measurable H) (L : ℝ)
-    (hbound : ∀ x ∈ Good, x ≠ 0 → H x ≤ ENNReal.ofReal L) (h0 : μ {0} = 0) :
+theorem goodPart_integrableOn :
     IntegrableOn (fun x => (H x).toReal) Good μ := by
   have hne : ∀ᵐ x ∂μ.restrict Good, x ≠ 0 :=
     ae_restrict_of_ae (measure_eq_zero_iff_ae_notMem.mp h0)
@@ -47,6 +48,10 @@ theorem goodPart_integrableOn (μ : Measure ℂ) [IsFiniteMeasure μ] (Good : Se
   calc (H x).toReal ≤ (ENNReal.ofReal L).toReal :=
         ENNReal.toReal_mono ENNReal.ofReal_ne_top (hbound x hx hx0)
     _ = max L 0 := ENNReal.toReal_ofReal'
+
+end
+
+end
 
 /-- The difference of two weighted masses on a region where the weights are uniformly close. -/
 theorem goodPart_ofReal_abs_le (μr μ : Measure ℂ) [IsFiniteMeasure μr] [IsFiniteMeasure μ]
@@ -65,7 +70,6 @@ theorem goodPart_ofReal_abs_le (μr μ : Measure ℂ) [IsFiniteMeasure μr] [IsF
     (hbound x hx hx0).2.1) h0r
   have hF0 := goodPart_lintegral_toReal_eq μ Good hGood F hF L (fun x hx hx0 =>
     (hbound x hx hx0).2.1) h0
-  have hGi := goodPart_integrableOn μr Good hGood G hG L (fun x hx hx0 => (hbound x hx hx0).1) h0r
   have hFi := goodPart_integrableOn μr Good hGood F hF L (fun x hx hx0 => (hbound x hx hx0).2.1)
     h0r
   have hind : ∀ ν : Measure ℂ, ∫ x, Good.indicator (fun x => (F x).toReal) x ∂ν =
@@ -75,7 +79,7 @@ theorem goodPart_ofReal_abs_le (μr μ : Measure ℂ) [IsFiniteMeasure μr] [IsF
     ae_restrict_of_ae (measure_eq_zero_iff_ae_notMem.mp h0r)
   have hdiff : |∫ x in Good, (G x).toReal ∂μr - ∫ x in Good, (F x).toReal ∂μr| ≤
       e * (μr Good).toReal := by
-    rw [← integral_sub hGi hFi, ← Real.norm_eq_abs]
+    rw [← integral_sub (goodPart_integrableOn μr Good hGood G hG L (fun x hx hx0 => (hbound x hx hx0).1) h0r) hFi, ← Real.norm_eq_abs]
     refine norm_setIntegral_le_of_norm_le_const_ae (measure_lt_top _ _) ?_
     filter_upwards [hne, ae_restrict_mem hGood] with x hx0 hx
     rw [Real.norm_eq_abs]

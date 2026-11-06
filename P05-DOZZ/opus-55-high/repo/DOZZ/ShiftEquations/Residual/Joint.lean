@@ -14,6 +14,7 @@ import DOZZ.ShiftEquations.Shift.ShiftGluing
 import DOZZ.ShiftEquations.Shift.Reflection
 import DOZZ.ShiftEquations.Gluing.Meromorphy
 import DOZZ.Complex.Basic
+import DOZZ.Brownian.Reflection.RtheorAnalytic
 
 /-!
 # One representative with both shifts
@@ -35,17 +36,19 @@ namespace DOZZ.Proofs
 /-- The cut-off of `F` outside the strip `S_k`. -/
 noncomputable def cutoffStrip (k : ℝ) (F : ℂ → ℂ) (z : ℂ) : ℂ :=
   if |z.im| < k then F z else 0
+section
+variable {k : ℝ} {F : ℂ → ℂ} {z : ℂ}
 
-theorem cutoffStrip_of_lt {k : ℝ} {F : ℂ → ℂ} {z : ℂ} (hz : |z.im| < k) :
+theorem cutoffStrip_of_lt (hz : |z.im| < k) :
     cutoffStrip k F z = F z := by
   simp [cutoffStrip, hz]
 
-theorem cutoffStrip_of_not_lt {k : ℝ} {F : ℂ → ℂ} {z : ℂ} (hz : ¬ |z.im| < k) :
+theorem cutoffStrip_of_not_lt (hz : ¬ |z.im| < k) :
     cutoffStrip k F z = 0 := by
   simp [cutoffStrip, hz]
 
-theorem abs_im_add_ofReal (z : ℂ) (t : ℝ) : |(z + (t : ℂ)).im| = |z.im| := by
-  simp
+end
+
 
 /-- **Cut-off representatives.** A relation `F (z + t₁) = m z * F (z + t₂)` with real `t₁, t₂`,
 holding near every point of `S_h`, holds along the codiscrete filter of `ℂ` for the cut-off of
@@ -56,33 +59,31 @@ theorem cutoff_relation_codiscrete {F m : ℂ → ℂ} {h : ℝ} (hh : 0 < h) (t
       cutoffStrip (h / 2) F (z + t₁) = m z * cutoffStrip (h / 2) F (z + t₂) := by
   have hzero : ∀ z : ℂ, ¬ |z.im| < h / 2 →
       cutoffStrip (h / 2) F (z + t₁) = m z * cutoffStrip (h / 2) F (z + t₂) := fun z hz => by
-    rw [cutoffStrip_of_not_lt (by rwa [abs_im_add_ofReal]),
-      cutoffStrip_of_not_lt (by rwa [abs_im_add_ofReal]), mul_zero]
+    rw [cutoffStrip_of_not_lt (by simp_all),
+      cutoffStrip_of_not_lt (by simp_all), mul_zero]
   rw [eventually_codiscrete_iff_forall_eventually_nhdsNE]
   intro x
   by_cases hx : |x.im| < h
   · filter_upwards [hrel x hx] with z hz
     by_cases hzk : |z.im| < h / 2
-    · rw [cutoffStrip_of_lt (by rwa [abs_im_add_ofReal]),
-        cutoffStrip_of_lt (by rwa [abs_im_add_ofReal])]
+    · rw [cutoffStrip_of_lt (by simp_all),
+        cutoffStrip_of_lt (by simp_all)]
       exact hz
-    · exact hzero z hzk
+    simp_all
   · have hopen : IsOpen {w : ℂ | h / 2 < |w.im|} :=
       isOpen_lt continuous_const Complex.continuous_im.abs
     have hxo : h / 2 < |x.im| := by
-      have := not_lt.mp hx
       linarith
     filter_upwards [nhdsWithin_le_nhds (hopen.mem_nhds hxo)] with z hz
-    exact hzero z (not_lt.mpr (le_of_lt hz))
+    grind
 
 /-- The cut-off is meromorphic on the thinner strip. -/
 theorem meromorphicOn_cutoffStrip {F : ℂ → ℂ} {h : ℝ} (hF : MeromorphicOn F (horizontalStrip h))
     {k : ℝ} (hk : k ≤ h) : MeromorphicOn (cutoffStrip k F) (horizontalStrip k) := by
   intro z hz
-  have hz' : |z.im| < k := hz
+  have hz' := hz
   refine (hF z (lt_of_lt_of_le hz' hk)).congr ?_
-  have hopen : IsOpen {w : ℂ | |w.im| < k} := isOpen_horizontalStrip k
-  filter_upwards [nhdsWithin_le_nhds (hopen.mem_nhds hz')] with w hw
+  filter_upwards [nhdsWithin_le_nhds ((isOpen_horizontalStrip k).mem_nhds hz')] with w hw
   exact (cutoffStrip_of_lt hw).symm
 
 /-- **The joint representative**: from a γ/2-shift function and a 2/γ-shift function, both equal to
@@ -111,13 +112,13 @@ theorem exists_joint_representative {Ω : Type*} [MeasurableSpace Ω] (P : Measu
   set h := min h₁ h₂ with hhdef
   have hh : 0 < h := lt_min hh₁ hh₂
   have hC₁m' : MeromorphicOn C₁ (horizontalStrip h) := fun z hz =>
-    hC₁m z (show |z.im| < h₁ from lt_of_lt_of_le (show |z.im| < h from hz) (min_le_left _ _))
+    hC₁m z (show |z.im| < h₁ from lt_of_lt_of_le (show |z.im| < h from hz) (min_le_left ..))
   have hC₂m' : MeromorphicOn C₂ (horizontalStrip h) := fun z hz =>
-    hC₂m z (show |z.im| < h₂ from lt_of_lt_of_le (show |z.im| < h from hz) (min_le_right _ _))
+    hC₂m z (show |z.im| < h₂ from lt_of_lt_of_le (show |z.im| < h from hz) (min_le_right ..))
   -- the two functions have the same germs on the strip
-  set x₀ : ℝ := (2 * η + Q γ) / 2 with hx₀
-  have hx₀1 : 2 * η < x₀ := by rw [hx₀]; linarith
-  have hx₀2 : x₀ < Q γ := by rw [hx₀]; linarith
+  set x₀ := (2 * η + Q γ) / 2 with hx₀
+  have hx₀1 : 2 * η < x₀ := by linarith
+  have hx₀2 : x₀ < Q γ := by linarith
   have hx₀S : (x₀ : ℂ) ∈ horizontalStrip h := by
     change |((x₀ : ℝ) : ℂ).im| < h
     simpa using hh
@@ -134,7 +135,7 @@ theorem exists_joint_representative {Ω : Type*} [MeasurableSpace Ω] (P : Measu
         shiftCoeffA γ (γ / 2) z (α₂ : ℂ) (α₃ : ℂ)) * C₁ (z + ((-(γ / 2) : ℝ) : ℂ)) :=
     fun w _ => ((eventually_codiscrete_iff_forall_eventually_nhdsNE.mp hC₁s) w).mono
       fun z hz => by
-        rw [show z + ((γ / 2 : ℝ) : ℂ) = z + γ / 2 by push_cast; ring,
+        rw [show z + ((γ / 2 : ℝ) : ℂ) = z + γ / 2 by simp,
           show z + ((-(γ / 2) : ℝ) : ℂ) = z - γ / 2 by push_cast; ring]
         exact hz
   -- the dual shift near every point, transported from the second function
@@ -142,25 +143,25 @@ theorem exists_joint_representative {Ω : Type*} [MeasurableSpace Ω] (P : Measu
       C₁ (z + ((2 / γ : ℝ) : ℂ)) = (-(1 / (Real.pi * dualMu γ μ)) *
         shiftCoeffA γ (2 / γ) z (α₂ : ℂ) (α₃ : ℂ)) * C₁ (z + ((-(2 / γ)) : ℝ)) := by
     intro w hw
-    have hp := ShiftGluing.eventually_comp_add (z := w) ((2 / γ : ℝ) : ℂ)
-      (hgerm _ (add_ofReal_mem_horizontalStrip_glue hw (2 / γ)))
-    have hm := ShiftGluing.eventually_comp_add (z := w) ((-(2 / γ) : ℝ) : ℂ)
-      (hgerm _ (add_ofReal_mem_horizontalStrip_glue hw (-(2 / γ))))
+    have hp := ShiftGluing.eventually_comp_add ((2 / γ : ℝ) : ℂ)
+      (hgerm _ (DOZZ.Proofs.add_ofReal_mem_horizontalStrip hw (2 / γ)))
+    have hm := ShiftGluing.eventually_comp_add ((-(2 / γ) : ℝ) : ℂ)
+      (hgerm _ (DOZZ.Proofs.add_ofReal_mem_horizontalStrip hw (-(2 / γ))))
     filter_upwards [hp, hm, (eventually_codiscrete_iff_forall_eventually_nhdsNE.mp hC₂s) w]
       with z h1 h2 h3
-    rw [h1, h2, show z + ((2 / γ : ℝ) : ℂ) = z + 2 / γ by push_cast; ring,
+    rw [h1, h2, show z + ((2 / γ : ℝ) : ℂ) = z + 2 / γ by simp,
       show z + ((-(2 / γ)) : ℝ) = z - 2 / γ by push_cast; ring]
     exact h3
   refine ⟨h / 2, half_pos hh, cutoffStrip (h / 2) C₁,
     meromorphicOn_cutoffStrip hC₁m' (half_le_self hh.le), fun α h1 h2 => ?_, ?_, ?_⟩
-  · rw [cutoffStrip_of_lt (by simpa using half_pos hh)]
-    exact hC₁v α h1 h2
-  · refine (cutoff_relation_codiscrete hh (γ / 2) (-(γ / 2)) hfirst).mono fun z hz => ?_
-    rw [show z + γ / 2 = z + ((γ / 2 : ℝ) : ℂ) by push_cast; ring,
+  · rw [cutoffStrip_of_lt (by simp_all)]
+    simp_all
+  · refine (cutoff_relation_codiscrete hh _ _ hfirst).mono fun z hz => ?_
+    rw [show z + γ / 2 = z + ((γ / 2 : ℝ) : ℂ) by simp,
       show z - γ / 2 = z + ((-(γ / 2) : ℝ) : ℂ) by push_cast; ring]
     exact hz
-  · refine (cutoff_relation_codiscrete hh (2 / γ) (-(2 / γ)) hdual).mono fun z hz => ?_
-    rw [show z + 2 / γ = z + ((2 / γ : ℝ) : ℂ) by push_cast; ring,
+  · refine (cutoff_relation_codiscrete hh _ _ hdual).mono fun z hz => ?_
+    rw [show z + 2 / γ = z + ((2 / γ : ℝ) : ℂ) by simp,
       show z - 2 / γ = z + ((-(2 / γ)) : ℝ) by push_cast; ring]
     exact hz
 

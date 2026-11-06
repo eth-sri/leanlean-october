@@ -27,17 +27,17 @@ theorem two_mass_tail_half_threshold
   have hi : {ω | x < A ω+B ω} ⊆ (E₁ ∪ E₂) ∪ (J₁ ∪ J₂) := by
     intro ω hω
     by_cases ha : x-h < A ω
-    · exact Or.inl (Or.inl ha)
+    · tauto
     by_cases hb : x-h < B ω
-    · exact Or.inl (Or.inr hb)
+    · aesop
     by_cases hx : x/2 < A ω
-    · exact Or.inr (Or.inl ⟨hx,by dsimp at *; linarith⟩)
-    · exact Or.inr (Or.inr ⟨by dsimp at *; linarith,by dsimp at *; linarith⟩)
+    · grind
+    · exact Or.inr (Or.inr ⟨by grind,by grind⟩)
   have hm := measureReal_mono hi (μ := P)
   have h1 := measureReal_union_le (μ := P) (E₁ ∪ E₂) (J₁ ∪ J₂)
   have h2 := measureReal_union_le (μ := P) E₁ E₂
   have h3 := measureReal_union_le (μ := P) J₁ J₂
-  linarith only [hm,h1,h2,h3]
+  linarith
 
 
 end DOZZ.Proofs

@@ -43,9 +43,9 @@ theorem reflected_source_copied_radial_signed_expectation
             (fun ω => lateralProjectedGMC γ (originRadialPath Xc ω) (M ω)) v.2.2).toReal)^(-p)-
         (gammaHalfOuterMass γ α₁ α₂ α₃ (M v.1) z ξ).toReal^(-p)
       ∂P.prod ((brownianMaximumReferenceLaw (Q γ-α₁)).prod P) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   let ν := Q γ-α₁
-  let _ : IsProbabilityMeasure (brownianMaximumReferenceLaw ν) :=
+  let _ :=
     isProbabilityMeasure_brownianMaximumReferenceLaw (sub_pos.mpr hα₁)
   let μ := (brownianMaximumReferenceLaw ν).prod P
   let A := fun ω => gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ
@@ -55,12 +55,11 @@ theorem reflected_source_copied_radial_signed_expectation
   have hA : AEMeasurable A P :=
     (reflected_outerMass_measure_measurable γ α₁ α₂ α₃ ξ z).comp_aemeasurable
       (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ₂ M hM)
-  have ht := (hc.2.1 0 (-Real.log ‖z‖+h)).aemeasurable
   have hb : AEMeasurable b P :=
-    ((ht.const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
+    ((((hc.2.1 0 _).aemeasurable).const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
   have hcut := reflected_williams_variable_cut_aemeasurable P (brownianMaximumReferenceLaw ν)
     γ B Z (conditionedPair_aemeasurable P B ν hData.1) hL.2.2.2.1 hL.2.2.2.2.1
-  have hJ : AEMeasurable J μ :=
+  have hJ :=
     (((measurable_fst.const_mul γ).exp.ennreal_ofReal).aemeasurable).mul hcut
   have hAf : ∀ᵐ ω ∂P, A ω ≠ ⊤ :=
     (reflected_source_outerMass_positive_finite_ae P X hX γ hγ hγ₂ M hM
@@ -73,12 +72,11 @@ theorem reflected_source_copied_radial_signed_expectation
       (ne_top_of_le_ne_top hv.2.ne (twoSidedReflectionCutMass_le_mass γ v.1 B Z v.2))
   obtain ⟨C,_,hC⟩ := reflected_outerMass_inverse_moment_uniform P X hX γ hγ hγ₂ M hM
     α₁ α₂ α₃ p hp
-  have hInvFin : (∫⁻ ω, A ω^(-p) ∂P) < ⊤ :=
+  have hInvFin :=
     lt_of_le_of_lt (hC z ξ hzn hr1) ENNReal.ofReal_lt_top
-  have he := (reflected_product_inverse_increment_expectation P μ A b J hA hb hJ hAf hbf hJf p hp hInvFin).2.2
   rw [reflected_source_copied_radial_inverse_moment P X hX Xc hc hm hcont γ hγ hγ₂ M hM
     N hN hi heq hfin α₁ α₂ α₃ ξ h hα₁ B hL hData Qν hQν z hz0 T hcoord hr hz hT p]
   simpa only [A,b,J,Z,ν,μ,ENNReal.toReal_mul,ENNReal.toReal_ofReal (Real.exp_pos _).le,
-    mul_assoc] using he
+    mul_assoc] using ((reflected_product_inverse_increment_expectation P μ A b J hA hb hJ hAf hbf hJf p hp hInvFin).2.2)
 
 end DOZZ.Proofs

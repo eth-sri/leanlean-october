@@ -28,9 +28,9 @@ theorem singular_compact_weighted_lintegral_tendsto
     (ae_of_all _ fun x => ?_) (ae_of_all _ fun x => ?_)
   · intro n m hnm
     exact mul_le_mul' (ENNReal.ofReal_le_ofReal
-      (singular_compact_test_mono f hfc hf β hβ (x-z) hnm)) le_rfl
+      (singular_compact_test_mono f hfc hf β hβ _ hnm)) le_rfl
   · exact ENNReal.Tendsto.mul_const
-      (singular_compact_test_tendsto f hfc hf β (x-z)) (Or.inr (hwf x))
+      (singular_compact_test_tendsto f hfc hf β _) (Or.inr (hwf x))
 
 
 end DOZZ.Proofs

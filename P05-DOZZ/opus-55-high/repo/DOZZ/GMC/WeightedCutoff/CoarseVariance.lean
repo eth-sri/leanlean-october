@@ -20,20 +20,19 @@ theorem gmcCircle_variance_le_bounded_radius
     (hrU : Real.exp (-r) ≤ U) (x : ℂ) (hx : ‖x‖ ≤ B) :
     gaussianVariance P (fun ω => Xc ω x r) ≤ T + 2 * Real.log (1 + B + U) := by
   let _ := circleMeasure_isProbability x r
-  have hpin := integrable_log_normPlus_circleMeasure x r
   have hpoint : ∀ᵐ z ∂circleMeasure x r, Real.log (normPlus z) ≤ Real.log (1 + B + U) := by
     filter_upwards [ae_norm_sub_center_circleMeasure x r] with z hz
     have hn : ‖z‖ ≤ U + B := by
       calc
-        ‖z‖ = ‖(z - x) + x‖ := by congr 1; abel
-        _ ≤ ‖z - x‖ + ‖x‖ := norm_add_le _ _
-        _ ≤ U + B := by rw [hz]; exact add_le_add hrU hx
+        ‖z‖ = ‖(z - x) + x‖ := by simp
+        _ ≤ ‖z - x‖ + ‖x‖ := norm_add_le ..
+        _ ≤ U + B := by linarith
     apply Real.log_le_log (by dsimp [normPlus]; positivity)
     dsimp [normPlus]
-    exact max_le (by linarith) (by linarith)
+    grind
   have hpinUpper : (∫ z, Real.log (normPlus z) ∂circleMeasure x r) ≤ Real.log (1 + B + U) := by
-    have h := integral_mono_ae hpin (integrable_const (Real.log (1 + B + U))) hpoint
-    simpa using h
+    have h := integral_mono_ae (integrable_log_normPlus_circleMeasure x r) (integrable_const (Real.log (1 + B + U))) hpoint
+    simp_all
   rw [gaussianVariance, isCircleAverage_covariance P X hX Xc hXc x x r r]
   change circleSelfEnergy x r ≤ _
   rw [circleSelfEnergy_eq]

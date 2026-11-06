@@ -23,6 +23,6 @@ theorem isCircleAverage_covariance
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ)
     (hXc : IsCircleAverage P X Xc) (x y : ℂ) (r s : ℝ) :
     gaussianCovariance P (fun ω => Xc ω x r) (fun ω => Xc ω y s) =
-      ∫ u, ∫ v, gffKernel u v ∂circleMeasure y s ∂circleMeasure x r := by exact DOZZ.Proofs.isCircleAverage_covariance P X hX Xc hXc x y r s
+      ∫ u, ∫ v, gffKernel u v ∂circleMeasure y s ∂circleMeasure x r := DOZZ.Proofs.isCircleAverage_covariance P X hX Xc hXc x y r s
 
 end DOZZ

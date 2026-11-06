@@ -16,17 +16,18 @@ open MeasureTheory ProbabilityTheory
 open scoped NNReal ENNReal
 
 namespace DOZZ.Proofs
+section
+variable {Ω : Type*} [MeasurableSpace Ω]
 
 /-- The variance of a circle average is a measurable function of its center. -/
 theorem circleAverage_variance_measurable
-    {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} [IsProbabilityMeasure P]
+    {P : Measure Ω} [IsProbabilityMeasure P]
     (Xc : Ω → ℂ → ℝ → ℝ) (hmeas : ∀ r, Measurable (fun p : Ω × ℂ => Xc p.1 p.2 r))
     (r : ℝ) :
     Measurable (fun x => gaussianVariance P (fun ω => Xc ω x r)) := by
-  have hfield : Measurable (fun p : Ω × ℂ => Xc p.1 p.2 r) := hmeas r
-  have hswap : Measurable (fun p : ℂ × Ω => Xc p.2 p.1 r) :=
-    hfield.comp measurable_swap
-  have hsquare : Measurable (fun p : ℂ × Ω => Xc p.2 p.1 r ^ 2) :=
+  have hswap :=
+    (hmeas r).comp measurable_swap
+  have hsquare :=
     hswap.pow_const 2
   have hvar : Measurable (fun x : ℂ => ∫ ω, Xc ω x r ^ 2 ∂P) :=
     hsquare.stronglyMeasurable.integral_prod_right.measurable
@@ -34,14 +35,12 @@ theorem circleAverage_variance_measurable
       fun x => ∫ ω, Xc ω x r ^ 2 ∂P := by
     funext x
     simp [gaussianVariance, gaussianCovariance, pow_two]
-  rw [heq]
-  exact hvar
+  simp_all
 
 /-- A circle average has its centered Gaussian law with the variance computed by the second-moment
 definition `DOZZ.gaussianVariance`. The accompanying nonnegativity is useful when converting that
 variance to an `NNReal` normalization. -/
 theorem circleAverage_gaussian_law_and_variance_nonneg
-    {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (x : ℂ) (r : ℝ) :
@@ -51,22 +50,17 @@ theorem circleAverage_gaussian_law_and_variance_nonneg
   let Z : Ω → Fin 1 → ℝ := fun ω _ => Xc ω x r
   have hZ : IsCenteredJointlyGaussian P Z := by
     simpa [Z] using circleAverage_finite_family_jointly_gaussian P X hX Xc hXc
-      (fun _ : Fin 1 => (x, r))
+      (fun _ => (x, r))
   obtain ⟨v, hmap, _, hvar⟩ := coordinate_mean_variance P Z hZ 0
   have hv : 0 ≤ gaussianVariance P (fun ω => Xc ω x r) := by
-    have hvar' : gaussianVariance P (fun ω => Xc ω x r) = (v : ℝ) := by
-      simpa [Z] using hvar
-    rw [hvar']
-    positivity
+    aesop
   have hvEq : v = (gaussianVariance P (fun ω => Xc ω x r)).toNNReal := by
-    apply NNReal.coe_injective
-    rw [Real.coe_toNNReal _ hv]
-    simpa [Z] using hvar.symm
-  have hmeas : AEMeasurable (fun ω => Xc ω x r) P := by
-    exact (hXc.1 r).comp (measurable_id.prodMk measurable_const) |>.aemeasurable
+    aesop
+  have hmeas : AEMeasurable (fun ω => Xc ω x r) P := (hXc.1 r).comp (measurable_id.prodMk measurable_const) |>.aemeasurable
   refine ⟨⟨hmeas, ?_⟩, hv⟩
-  change Measure.map (fun ω => Z ω 0) P = _
-  rw [hmap, hvEq]
+  aesop
+
+end
 
 /-- Finite-cutoff affine scaling for several weighted chaos integrals. The covariance identity for
 circle averages supplies the common Gaussian scalar, and `ChaosLawFDD` transfers its finite
@@ -89,7 +83,7 @@ theorem circleAverage_affine_scaled_wick_integral_law
     let varianceTotal : S → ℝ≥0 := fun x =>
       (gaussianVariance P (fun ω => Xc ω (a + c * z x) (r - Real.log c))).toNNReal
     let W : Ω × ℝ → ℝ := Prod.snd
-    Measure.map (fun ω => fun j => ∫ x, weight j x * Real.exp
+    Measure.map (fun ω j => ∫ x, weight j x * Real.exp
         (γ * Xc ω (a + c * z x) (r - Real.log c) - γ ^ 2 / 2 *
           (varianceTotal x : ℝ)) ∂ν) P =
       Measure.map (fun p : Ω × ℝ => fun j =>
@@ -99,15 +93,15 @@ theorem circleAverage_affine_scaled_wick_integral_law
         (P.prod (gaussianReal 0 ⟨-Real.log c,
           neg_nonneg.mpr (Real.log_nonpos (le_of_lt hc) hc₁)⟩)) := by
   classical
-  let σ : ℝ := -Real.log c
+  let σ := -Real.log c
   let varianceBase : S → ℝ≥0 := fun x =>
     (gaussianVariance P (fun ω => Xc ω (z x) r)).toNNReal
   let varianceTotal : S → ℝ≥0 := fun x =>
     (gaussianVariance P (fun ω => Xc ω (a + c * z x) (r - Real.log c))).toNNReal
   let W : Ω × ℝ → ℝ := Prod.snd
-  let G : Measure ℝ := gaussianReal 0 ⟨-Real.log c,
+  let G := gaussianReal 0 ⟨-Real.log c,
     neg_nonneg.mpr (Real.log_nonpos (le_of_lt hc) hc₁)⟩
-  let P' : Measure (Ω × ℝ) := P.prod G
+  let P' := P.prod G
   let X' : Ω → S → ℝ := fun ω x => Xc ω (a + c * z x) (r - Real.log c)
   let Y : Ω × ℝ → S → ℝ := fun p x => Xc p.1 (z x) r
   have hP : IsProbabilityMeasure P := hX.1
@@ -115,7 +109,7 @@ theorem circleAverage_affine_scaled_wick_integral_law
   have hG : IsProbabilityMeasure (gaussianReal 0 ⟨-Real.log c,
       neg_nonneg.mpr (Real.log_nonpos (le_of_lt hc) hc₁)⟩) :=
     ProbabilityTheory.instIsProbabilityMeasureGaussianReal 0 _
-  let : IsProbabilityMeasure G := by simpa [G] using hG
+  let : IsProbabilityMeasure G := by assumption
   let : IsProbabilityMeasure P' := by infer_instance
   have hvarianceBase : Measurable varianceBase := by
     exact (measurable_real_toNNReal.comp
@@ -123,11 +117,11 @@ theorem circleAverage_affine_scaled_wick_integral_law
         hz
   have hvarianceTotal : Measurable varianceTotal := by
     exact (measurable_real_toNNReal.comp
-      (circleAverage_variance_measurable (P := P) Xc hXc.1 (r - Real.log c))).comp
+      (circleAverage_variance_measurable (P := P) Xc hXc.1 _)).comp
         (by fun_prop : Measurable (fun x : S => a + c * z x))
   have hX' : Measurable (fun p : Ω × S => X' p.1 p.2) := by
     dsimp [X']
-    exact (hXc.1 (r - Real.log c)).comp (by fun_prop :
+    exact (hXc.1 _).comp (by fun_prop :
       Measurable (fun p : Ω × S => (p.1, a + c * z p.2)))
   have hY : Measurable (fun p : (Ω × ℝ) × S => Y p.1 p.2) := by
     dsimp [Y]
@@ -138,7 +132,7 @@ theorem circleAverage_affine_scaled_wick_integral_law
       (gaussianReal 0 (varianceTotal x)) P := by
     simpa [X', varianceTotal] using
       (circleAverage_gaussian_law_and_variance_nonneg P X hX Xc hXc
-        (a + c * z x) (r - Real.log c)).1
+        (a + c * z x) _).1
   have hYbaseLaw (x : S) : HasLaw (fun ω => Xc ω (z x) r)
       (gaussianReal 0 (varianceBase x)) P := by
     simpa [varianceBase] using
@@ -159,7 +153,7 @@ theorem circleAverage_affine_scaled_wick_integral_law
   have hbaseVariance (x : S) : 0 ≤ gaussianVariance P (fun ω => Xc ω (z x) r) :=
     (circleAverage_gaussian_law_and_variance_nonneg P X hX Xc hXc (z x) r).2
   have htotalVariance (x : S) : 0 ≤ gaussianVariance P
-      (fun ω => Xc ω (a + c * z x) (r - Real.log c)) :=
+      (fun ω => Xc ω _ (r - Real.log c)) :=
     (circleAverage_gaussian_law_and_variance_nonneg P X hX Xc hXc
       (a + c * z x) (r - Real.log c)).2
   have hVariance (x : S) : (varianceBase x : ℝ) + σ = (varianceTotal x : ℝ) := by
@@ -180,7 +174,7 @@ theorem circleAverage_affine_scaled_wick_integral_law
         ProbabilityTheory.covariance (fun ω => Xc ω (a + c * z x) (r - Real.log c))
           (fun ω => Xc ω (a + c * z x) (r - Real.log c)) P := by
       simp [gaussianVariance, gaussianCovariance, ProbabilityTheory.covariance,
-        hmean (a + c * z x) (r - Real.log c)]
+        hmean ..]
     have hcov := circleAverage_covariance_affine_scale P X Xc hX hXc hc
       (z x) (z x) r r (hbase x) (hbase x) (hscaled x) (hscaled x)
     rw [hbaseVar, htotalVar, hbaseCov, htotalCov, hcov]
@@ -199,7 +193,7 @@ theorem circleAverage_affine_scaled_wick_integral_law
     have hvecMeas : Measurable (fun ω : Ω => fun _ : Fin 1 => X' ω x) := by
       apply measurable_pi_iff.2
       intro i
-      exact (hXc.1 (r - Real.log c)).comp
+      exact (hXc.1 _).comp
         (measurable_id.prodMk measurable_const)
     have hvecMeas' : Measurable (fun p : Ω × ℝ => fun _ : Fin 1 => Y p x + W p) := by
       apply measurable_pi_iff.2
@@ -221,17 +215,17 @@ theorem circleAverage_affine_scaled_wick_integral_law
         (fun p : Ω × ℝ => fun _ : Fin 1 => Y p x + W p)) P' = _
       rw [← Measure.map_map hproj hvecMeas']
     have hmap : Measure.map (fun ω => X' ω x) P =
-        Measure.map (fun p : Ω × ℝ => Y p x + W p) P' := by
+        Measure.map (fun p => Y p x + W p) P' := by
       calc
-        _ = (Measure.map (fun ω => fun _ : Fin 1 => X' ω x) P).map
+        _ = (Measure.map (fun ω _ => X' ω x) P).map
             (fun v : Fin 1 → ℝ => v 0) := hleft
         _ = (Measure.map (fun p : Ω × ℝ => fun _ : Fin 1 => Y p x + W p) P').map
             (fun v : Fin 1 → ℝ => v 0) := congrArg
-              (fun μ => μ.map (fun v : Fin 1 → ℝ => v 0)) (hFDD 1 (fun _ => x))
+              (fun μ => μ.map (fun v => v 0)) (hFDD 1 (fun _ => x))
         _ = _ := hright.symm
     exact ⟨((hY.comp (measurable_id.prodMk measurable_const)).add hW).aemeasurable,
       by calc
-        Measure.map (fun p : Ω × ℝ => Y p x + W p) P' =
+        Measure.map (fun p => Y p x + W p) P' =
             Measure.map (fun ω => X' ω x) P := hmap.symm
         _ = gaussianReal 0 (varianceTotal x) := (hXlaw x).map_eq⟩
   simpa [σ, varianceBase, varianceTotal, W, P', G, X', Y] using

@@ -38,7 +38,6 @@ theorem circleCutoff_testMass_eq_regularizedGMC
         (hXc.1 r).comp measurable_swap
       have hEq : (fun p : ℂ × Ω => Xc p.2 p.1 r ^ 2) =
           fun p => Xc p.2 p.1 r * Xc p.2 p.1 r := by
-        funext p
         ring
       change Measurable (fun p : ℂ × Ω => Xc p.2 p.1 r ^ 2)
       rw [hEq]
@@ -57,7 +56,6 @@ theorem circleCutoff_testMass_eq_regularizedGMC
   have hd₁ : Measurable d₁ := by
     have hfield : Measurable (fun x : ℂ => Xc ω x r) :=
       (hXc.1 r).comp (measurable_const.prodMk measurable_id)
-    dsimp [d₁]
     fun_prop
   have he₀ : Measurable e₀ := ENNReal.measurable_ofReal.comp hd₀
   have he₁ : Measurable e₁ := ENNReal.measurable_ofReal.comp hd₁
@@ -92,7 +90,7 @@ theorem circleCutoff_testMass_eq_regularizedGMC
     rw [integral_withDensity_eq_integral_toReal_smul he₁ he₁top]
     apply integral_congr_ae
     filter_upwards [] with x
-    simp only [e₁, d₁, ENNReal.toReal_ofReal (hd₁nonneg x), smul_eq_mul]
+    simp
   calc
     _ = ∫ x, (e₀ x).toReal * (f x * Real.exp
           (γ * Xc ω x r - γ ^ 2 / 2 * V x)) ∂volume := hleft
@@ -100,8 +98,8 @@ theorem circleCutoff_testMass_eq_regularizedGMC
       apply integral_congr_ae
       filter_upwards [] with x
       change (ENNReal.ofReal (normPlus x ^ (-4 : ℝ))).toReal *
-          (f x * Real.exp (γ * Xc ω x r - γ ^ 2 / 2 * V x)) =
-        (ENNReal.ofReal (Real.exp (γ * Xc ω x r - γ ^ 2 / 2 * V x) *
+          (f x * Real.exp _) =
+        (ENNReal.ofReal (Real.exp _ *
           normPlus x ^ (-4 : ℝ))).toReal * f x
       rw [ENNReal.toReal_ofReal (hd₀nonneg x),
         ENNReal.toReal_ofReal (hd₁nonneg x)]

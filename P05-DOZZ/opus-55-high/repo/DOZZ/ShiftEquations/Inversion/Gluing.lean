@@ -28,7 +28,7 @@ theorem order_ne_top_of_real_nonzero
   have hI : ∀ᶠ y : ℝ in 𝓝[≠] x, y ∈ Ioo lo hi :=
     nhdsWithin_le_nhds (Ioo_mem_nhds hx.1 hx.2)
   obtain ⟨y, hyI, hyz⟩ := (hI.and hz).exists
-  exact hreal y hyI.1 hyI.2 hyz
+  simp_all
 
 /-- Applying the gluing equation of `DOZZ.structureConstant_reflected_shift_and_gluing` twice
 cancels the three-point germ away from its discrete zeros. The resulting inversion identity is on
@@ -42,16 +42,13 @@ theorem inversion_of_gluing
   obtain ⟨x, hxlo, hxhi⟩ := exists_between hlohi
   have hxS : (x : ℂ) ∈ horizontalStrip H := by
     simpa only [horizontalStrip, mem_ofPred_eq, Complex.ofReal_im, abs_zero] using hH
-  have horder := order_ne_top_of_real_nonzero C lo hi x ⟨hxlo, hxhi⟩ hreal
   have hne := MeromorphicAt.MeromorphicOn.codiscreteWithin_setOfPred_ne_zero hC
     (fun z hz => hC.meromorphicOrderAt_ne_top_of_isPreconnected
-      (isPreconnected_horizontalStrip H) hxS hz horder)
+      (isPreconnected_horizontalStrip H) hxS hz (order_ne_top_of_real_nonzero C lo hi x ⟨hxlo, hxhi⟩ hreal))
   have hle := (codiscreteWithin_le_codiscrete_inf_principal (horizontalStrip H)).trans
     inf_le_left
   filter_upwards [hglue.filter_mono hle,
     (codiscrete_reflect hglue q).filter_mono hle, hne] with z hz hzr hzn
-  rw [sub_sub_cancel] at hzr
-  apply mul_right_cancel₀ hzn
-  rw [one_mul, mul_assoc, ← hzr, ← hz]
+  grind
 
 end DOZZ.Proofs

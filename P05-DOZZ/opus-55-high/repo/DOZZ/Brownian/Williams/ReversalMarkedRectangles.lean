@@ -31,21 +31,19 @@ theorem real_withDensity_prod_rectangle {α β : Type*}
   let M := (μ.prod η).withDensity (fun z => ENNReal.ofReal (f z))
   have hmass : (∫⁻ z, ENNReal.ofReal (f z) ∂μ.prod η) ≠ ⊤ := by
     have he : M univ = ∫⁻ z, ENNReal.ofReal (f z) ∂μ.prod η := by
-      dsimp only [M]
-      rw [withDensity_apply _ MeasurableSet.univ, Measure.restrict_univ]
+      aesop
     rw [← he]
-    exact measure_ne_top _ _
-  have hi : Integrable f (μ.prod η) :=
+    simp
+  have hi :=
     (lintegral_ofReal_ne_top_iff_integrable hf.aestronglyMeasurable
       (ae_of_all _ hn)).mp hmass
   calc
-    _ = ∫ z in A ×ˢ B, (1 : ℝ) ∂M := by simp [integral_const, M]
+    _ = ∫ z in A ×ˢ B, 1 ∂M := by aesop
     _ = ∫ z in A ×ˢ B, f z ∂μ.prod η := by
-      dsimp only [M]
       rw [setIntegral_withDensity_eq_setIntegral_toReal_smul₀
         hf.ennreal_ofReal.aemeasurable.restrict
         (ae_of_all _ fun _ => ENNReal.ofReal_lt_top) _ (hA.prod hB)]
-      simp only [ENNReal.toReal_ofReal (hn _), smul_eq_mul, mul_one]
+      simp_all
     _ = _ := by
       rw [← Measure.prod_restrict]
       exact integral_prod _ (by rw [Measure.prod_restrict]; exact hi.integrableOn)
@@ -67,8 +65,8 @@ theorem brownianPath_firstHit_reversedIncreasing_rectangle
         ∂(volume : Measure (Fin (n+1) → ℝ)).withDensity
           (conditionedPositiveFDDVectorDensity ν (fun i => (ss i : ℝ))) := by
   let : IsProbabilityMeasure P := (hB.hasLaw_eval 0).isProbabilityMeasure
-  let μ : Measure (Fin (n+1) → ℝ) := volume.withDensity
-    (conditionedPositiveFDDVectorDensity ν (fun i => (ss i : ℝ)))
+  let μ := volume.withDensity
+    (conditionedPositiveFDDVectorDensity ν (fun i => (ss i)))
   have hlaw := brownianPath_firstHit_reversedIncreasing_density_map_unrestricted
     P hB ν c hν hc n ss hss hs0
   have : IsFiniteMeasure ((μ.prod volume).withDensity
@@ -78,7 +76,7 @@ theorem brownianPath_firstHit_reversedIncreasing_rectangle
   rw [hlaw]
   exact real_withDensity_prod_rectangle μ volume (brownianReversalBoundaryDensity ν c n ss)
     (measurable_brownianReversalBoundaryDensity ν c n ss)
-    (brownianReversalBoundaryDensity_nonneg ν c hν hc n ss) A (Ioc u v) hA measurableSet_Ioc
+    (brownianReversalBoundaryDensity_nonneg ν c hν hc n ss) A _ hA measurableSet_Ioc
 
 end DOZZ.Proofs
 end

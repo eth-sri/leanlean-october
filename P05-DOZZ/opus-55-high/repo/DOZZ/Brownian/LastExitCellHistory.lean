@@ -40,7 +40,7 @@ theorem measurableSet_conditionedPositiveHistoryHitsOnInterval
       (isCompact_Icc (a := (a : ℝ)) (b := (b : ℝ)))
   let : MeasurableSpace BrownianPath := conditionedPositiveNaturalFiltration b
   have hτ : Continuous τ :=
-    Continuous.subtype_mk continuous_subtype_val (fun u => le_trans a.property u.2.1)
+    by fun_prop
   let segment : BrownianPath → C(K, ℝ) := fun p =>
     ⟨fun u => conditionedPositiveStateAt (τ u) p,
       (p.continuous.neg).comp hτ⟩
@@ -60,8 +60,7 @@ theorem measurableSet_conditionedPositiveHistoryHitsOnInterval
       (conditionedPositiveStateAt (τ u))
     apply Measurable.of_comap_le
     have hub : τ u ≤ b := by
-      apply NNReal.coe_le_coe.mp
-      exact u.2.2
+      bound
     exact le_iSup_of_le (τ u) (le_iSup_of_le hub le_rfl)
   have hpre : conditionedPositiveHistoryHitsOnInterval a b c = segment ⁻¹' H := by
     ext p
@@ -71,21 +70,12 @@ theorem measurableSet_conditionedPositiveHistoryHitsOnInterval
         constructor
         · exact_mod_cast hau
         · exact_mod_cast hub⟩
-      have hτu : τ u' = u := by
-        apply Subtype.ext
-        rfl
-      refine ⟨u', ?_⟩
-      change conditionedPositiveStateAt (τ u') p = c
-      rw [hτu]
-      exact hval
+      tauto
     · rintro ⟨u, hval⟩
       refine ⟨τ u, ?_, ?_, ?_⟩
-      · apply NNReal.coe_le_coe.mp
-        exact u.2.1
-      · apply NNReal.coe_le_coe.mp
-        exact u.2.2
-      · change conditionedPositiveStateAt (τ u) p = c at hval
-        exact hval
+      · bound
+      · bound
+      assumption
   rw [hpre]
   exact hHclosed.measurableSet.preimage hsegment
 
@@ -107,9 +97,8 @@ theorem conditionedPositiveHistory_intervalHit_avoidance_shift_setIntegral
       (∫ p in conditionedPositiveHistoryHitsOnInterval a b c,
         lastExitAvoidanceFactor ν (c : ℝ) (conditionedPositiveStateAt b p) *
           (brownianUpperConditionedReferenceFutureKernel B ν hν
-            (conditionedPositiveStateAt b p - c)).real C ∂P) := by
-  exact conditionedPositiveHistory_avoidance_shift_setIntegral
-    hP B hB b hb hν c hc C hC (conditionedPositiveHistoryHitsOnInterval a b c)
+            (conditionedPositiveStateAt b p - c)).real C ∂P) := conditionedPositiveHistory_avoidance_shift_setIntegral
+    hP B hB b hb hν c hc C hC _
     (measurableSet_conditionedPositiveHistoryHitsOnInterval a b c)
 
 end DOZZ.Proofs

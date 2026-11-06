@@ -7,6 +7,7 @@ module
 public import DOZZ.Correlations.Tails.TranslatedPolar
 public import DOZZ.Correlations.Tails.TranslatedField
 public import DOZZ.Statements.Brownian.LateralProjectedGMC
+import DOZZ.ShiftEquations.Mobius.InversionMoment
 
 /-! The exact positive-time polar integral for the canonical translated equator chaos. -/
 
@@ -19,7 +20,7 @@ namespace DOZZ.Proofs
 theorem origin_polar_measure_eq (γ : ℝ) (A : TwoSidedPath) (M : Measure ℂ) :
     translatedPolarMeasure γ 0 A M (fun _ => 1) 0 = lateralProjectedGMC γ A M := by
   unfold translatedPolarMeasure lateralProjectedGMC
-  have hd : (fun x : ℂ => ENNReal.ofReal (1 : ℝ) *
+  have hd : (fun x : ℂ => ENNReal.ofReal 1 *
       (if x = 0 then 0 else ENNReal.ofReal
         (Real.exp (-γ * (0 + A (translatedLogRadius 0 x)) +
           γ * Q γ * |translatedLogRadius 0 x|)))) =
@@ -27,8 +28,7 @@ theorem origin_polar_measure_eq (γ : ℝ) (A : TwoSidedPath) (M : Measure ℂ) 
         Real.exp (-γ * A (-Real.log ‖x‖) + γ * Q γ * |Real.log ‖x‖|))) := by
     funext x
     by_cases hx : x = 0
-    · subst x
-      simp only [norm_zero, ite_true, mul_zero, ENNReal.ofReal_zero]
+    · simp_all
     · simp only [translatedLogRadius, sub_zero, zero_add, abs_neg,
         ENNReal.ofReal_one, one_mul, ite_eq_right hx,
         ite_eq_right (norm_ne_zero_iff.mpr hx)]
@@ -47,7 +47,7 @@ theorem origin_singular_mass_polar
           ∂lateralProjectedGMC γ A M := by
   rw [localSingularMass_translatedPolar γ α 0 A M (fun _ => 1)
     measurable_const 0 hM0, origin_polar_measure_eq]
-  simp only [mul_zero, Real.exp_zero, ENNReal.ofReal_one, one_mul]
+  simp
 
 /-- The positive-time polar identity applies almost surely to the actual translated source
 GMC, since its deterministic insertion center has zero mass. -/
@@ -61,7 +61,7 @@ theorem translated_canonical_singular_mass_polar
       ∫⁻ t, (if 0 < t then ENNReal.ofReal
         (Real.exp (γ * (A ω t - (Q γ - α) * t))) else 0)
           ∂lateralProjectedGMC γ (A ω) (N ω) := by
-  filter_upwards [gmc_atomless_at_root_of_isGMCOf P (translatedField X Xc z)
+  filter_upwards [DOZZ.Proofs.gmc_atomless_of_isGMCOf P _
     (translated_field_isEquatorGFF P X Xc hX hc z) γ hγ hγ2 N hN 0] with ω hω
   exact origin_singular_mass_polar γ α (A ω) (N ω) hω
 

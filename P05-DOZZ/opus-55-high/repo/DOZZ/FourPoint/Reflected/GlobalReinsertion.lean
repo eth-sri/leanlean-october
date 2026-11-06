@@ -17,9 +17,9 @@ noncomputable def reflected_global_reinsertionWeight (γ : ℝ) (A : TwoSidedPat
 theorem reflected_global_reinsertionWeight_measurable (γ : ℝ) :
     Measurable (fun p : TwoSidedPath × ℂ => reflected_global_reinsertionWeight γ p.1 p.2) := by
   have hl : Measurable (fun p : TwoSidedPath × ℂ => Real.log ‖p.2‖) :=
-    Real.measurable_log.comp (measurable_norm.comp measurable_snd)
+    by fun_prop
   have he : Measurable (fun p : TwoSidedPath × ℂ => p.1 (-Real.log ‖p.2‖)) :=
-    continuous_eval.measurable.comp (measurable_fst.prodMk hl.neg)
+    by fun_prop
   exact Measurable.ite (measurableSet_eq_fun (measurable_norm.comp measurable_snd) measurable_const)
     measurable_const (Real.measurable_exp.comp ((measurable_const.mul he).sub
       (measurable_const.mul (continuous_abs.measurable.comp hl))))
@@ -53,12 +53,10 @@ theorem reflected_global_reinsertion_measure (γ : ℝ) (A : TwoSidedPath) (μ :
     · have hn : ‖x‖ ≠ 0 := norm_ne_zero_iff.mpr hx
       rw [lateralRadialWeight, reflected_global_reinsertionWeight, ite_eq_right hn,
         ite_eq_right hn, ← ENNReal.ofReal_mul (Real.exp_pos _).le, ← Real.exp_add]
-      have ha : -γ*A (-Real.log ‖x‖)+γ*Q γ*|Real.log ‖x‖| +
-          (γ*A (-Real.log ‖x‖)-γ*Q γ*|Real.log ‖x‖|) = 0 := by ring
-      rw [ha, Real.exp_zero, ENNReal.ofReal_one, indicator_of_mem (by simpa using hx)]
+      simp_all
   change μ.withDensity (fun x => lateralRadialWeight γ A x *
-    ENNReal.ofReal (reflected_global_reinsertionWeight γ A x)) = _
+    ENNReal.ofReal _) = _
   rw [he]
-  exact withDensity_indicator_one (measurableSet_singleton (0 : ℂ)).compl
+  exact withDensity_indicator_one (measurableSet_singleton 0).compl
 
 end DOZZ.Proofs

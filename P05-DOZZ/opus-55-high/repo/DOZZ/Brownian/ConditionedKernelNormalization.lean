@@ -19,44 +19,49 @@ the two terms with opposite shifts gives its total mass by the half-line Gaussia
 open MeasureTheory Set
 
 namespace DOZZ.Proofs
+section
+variable {t ν z : ℝ}
+section
+variable (ht : 0 < t)
+include ht
 
 /-- Completing the square shifts a heat density by the Gaussian exponential tilt. -/
-theorem brownianHeatDensity_tilt {t ν z : ℝ} (ht : 0 < t) :
+theorem brownianHeatDensity_tilt :
     Real.exp (ν * z - ν ^ 2 * t / 2) * brownianHeatDensity t z =
       brownianHeatDensity t (z - ν * t) := by
   have he : ν * z - ν ^ 2 * t / 2 - z ^ 2 / (2 * t) =
       -(z - ν * t) ^ 2 / (2 * t) := by
-    field_simp [ht.ne']
-    ring
+    grind
   have hden : Real.sqrt (2 * Real.pi * t) ≠ 0 := by positivity
   simp only [brownianHeatDensity, ht, ite_true]
   field_simp [hden]
   rw [← Real.exp_add, Real.exp_injective.eq_iff]
-  field_simp [ht.ne']
-  ring_nf
+  grind
 
-private theorem brownianHeatDensity_shift_exp {t ν z : ℝ} (ht : 0 < t) :
+private theorem brownianHeatDensity_shift_exp :
     Real.exp (-2 * ν * z) * brownianHeatDensity t (z - ν * t) =
       brownianHeatDensity t (z + ν * t) := by
   have he : -2 * ν * z - (z - ν * t) ^ 2 / (2 * t) =
       -(z + ν * t) ^ 2 / (2 * t) := by
-    field_simp [ht.ne']
-    ring
+    grind
   have hden : Real.sqrt (2 * Real.pi * t) ≠ 0 := by positivity
   simp only [brownianHeatDensity, ht, ite_true]
   field_simp [hden]
   rw [← Real.exp_add, Real.exp_injective.eq_iff]
-  field_simp [ht.ne']
-  ring_nf
+  grind
 
-private theorem integrable_brownianHeatDensity_translate {t a : ℝ} (ht : 0 < t) :
+end
+
+end
+
+theorem integrable_brownianHeatDensity_translate {t a : ℝ} (ht : 0 < t) :
     Integrable (fun y : ℝ => brownianHeatDensity t (y + a)) (volume : Measure ℝ) := by
-  have he : MeasurableEmbedding (fun y : ℝ => y + a) :=
+  have he :=
     (Homeomorph.addRight a).isClosedEmbedding.measurableEmbedding
-  have hmap : (volume : Measure ℝ).map (fun y : ℝ => y + a) = volume :=
+  have hmap : (volume : Measure ℝ).map (fun y => y + a) = volume :=
     Measure.IsAddRightInvariant.map_add_right_eq_self a
   have hmapInt : Integrable (brownianHeatDensity t)
-      ((volume : Measure ℝ).map (fun y : ℝ => y + a)) := by
+      (volume.map (fun y => y + a)) := by
     rw [hmap]
     exact integrable_brownianHeatDensity ht
   exact he.integrable_map_iff.mp hmapInt
@@ -76,7 +81,6 @@ theorem conditionedPositiveTransitionDensity_integral_eq_one_pos
           brownianHeatDensity t (y + (x + ν * t))) /
           conditionedH ν x := by
     intro y hy
-    have htilt₁ := brownianHeatDensity_tilt (t := t) (ν := ν) (z := y - x) ht
     have htilt₂ := brownianHeatDensity_tilt (t := t) (ν := ν) (z := y + x) ht
     have hshift₁ := brownianHeatDensity_shift_exp (t := t) (ν := ν) (z := y - x) ht
     have hshift₂ := brownianHeatDensity_shift_exp (t := t) (ν := ν) (z := y + x) ht
@@ -86,73 +90,73 @@ theorem conditionedPositiveTransitionDensity_integral_eq_one_pos
       rw [show ν * (y - x) - ν ^ 2 * t / 2 =
           (-2 * ν * x) + (ν * (y + x) - ν ^ 2 * t / 2) by ring,
         Real.exp_add]
-      rw [mul_assoc, htilt₂]
+      grind
     have hcross₁ : Real.exp (-2 * ν * y) *
         brownianHeatDensity t (y - x - ν * t) =
           Real.exp (-2 * ν * x) * brownianHeatDensity t (y - x + ν * t) := by
       rw [show -2 * ν * y = (-2 * ν * x) + (-2 * ν * (y - x)) by ring,
         Real.exp_add]
-      rw [mul_assoc, hshift₁]
+      grind
     have hcross₂ : Real.exp (-2 * ν * (x + y)) *
         brownianHeatDensity t (y + x - ν * t) =
           brownianHeatDensity t (y + x + ν * t) := by
-      simpa only [add_comm x y] using hshift₂
+      grind
     have htilt₁' : Real.exp (ν * y - ν * x - ν ^ 2 * t / 2) *
         brownianHeatDensity t (y - x) =
           brownianHeatDensity t (y - (x + ν * t)) := by
       calc
-        _ = Real.exp (ν * (y - x) - ν ^ 2 * t / 2) *
-            brownianHeatDensity t (y - x) := by
+        _ = Real.exp _ *
+            brownianHeatDensity t _ := by
               rw [show ν * y - ν * x - ν ^ 2 * t / 2 =
                 ν * (y - x) - ν ^ 2 * t / 2 by ring]
-        _ = brownianHeatDensity t (y - x - ν * t) := htilt₁
-        _ = _ := by rw [show y - x - ν * t = y - (x + ν * t) by ring]
+        _ = brownianHeatDensity t _ := (brownianHeatDensity_tilt (t := t) (ν := ν) (z := y - x) ht)
+        _ = _ := by ring
     have hfactor₂' : Real.exp (ν * y - ν * x - ν ^ 2 * t / 2) *
         brownianHeatDensity t (y + x) =
           Real.exp (-2 * ν * x) * brownianHeatDensity t (y + (x - ν * t)) := by
       calc
-        _ = Real.exp (ν * (y - x) - ν ^ 2 * t / 2) *
-            brownianHeatDensity t (y + x) := by
+        _ = Real.exp _ *
+            brownianHeatDensity t _ := by
               rw [show ν * y - ν * x - ν ^ 2 * t / 2 =
                 ν * (y - x) - ν ^ 2 * t / 2 by ring]
-        _ = Real.exp (-2 * ν * x) * brownianHeatDensity t (y + x - ν * t) := hfactor₂
-        _ = _ := by rw [show y + x - ν * t = y + (x - ν * t) by ring]
+        _ = Real.exp _ * brownianHeatDensity t _ := hfactor₂
+        _ = _ := by ring
     have hcross₁' : brownianHeatDensity t (y - x - ν * t) * Real.exp (-2 * ν * y) =
         Real.exp (-2 * ν * x) * brownianHeatDensity t (y - (x - ν * t)) := by
       calc
-        _ = Real.exp (-2 * ν * y) * brownianHeatDensity t (y - x - ν * t) := mul_comm _ _
-        _ = Real.exp (-2 * ν * x) * brownianHeatDensity t (y - x + ν * t) := hcross₁
-        _ = _ := by rw [show y - x + ν * t = y - (x - ν * t) by ring]
+        _ = Real.exp _ * brownianHeatDensity t _ := mul_comm ..
+        _ = Real.exp _ * brownianHeatDensity t _ := hcross₁
+        _ = _ := by ring
     have hcross₂' : Real.exp (-2 * ν * x) *
         brownianHeatDensity t (y + x - ν * t) * Real.exp (-2 * ν * y) =
         brownianHeatDensity t (y + x + ν * t) := by
       calc
-        _ = (Real.exp (-2 * ν * x) * Real.exp (-2 * ν * y)) *
+        _ = (Real.exp _ * Real.exp (-2 * ν * y)) *
             brownianHeatDensity t (y + x - ν * t) := by ring
-        _ = Real.exp (-2 * ν * x + -2 * ν * y) *
-            brownianHeatDensity t (y + x - ν * t) := by rw [← Real.exp_add]
+        _ = Real.exp _ *
+            brownianHeatDensity t _ := by rw [← Real.exp_add]
         _ = Real.exp (-2 * ν * (x + y)) * brownianHeatDensity t (y + x - ν * t) := by
           rw [show -2 * ν * x + -2 * ν * y = -2 * ν * (x + y) by ring]
         _ = _ := hcross₂
     have hcrossA : brownianHeatDensity t (y - (x + ν * t)) * Real.exp (-2 * ν * y) =
         Real.exp (-2 * ν * x) * brownianHeatDensity t (y - (x - ν * t)) := by
       calc
-        _ = brownianHeatDensity t (y - x - ν * t) * Real.exp (-2 * ν * y) := by
+        _ = brownianHeatDensity t _ * Real.exp _ := by
           congr 1
           rw [show y - (x + ν * t) = y - x - ν * t by ring]
-        _ = Real.exp (-2 * ν * x) * brownianHeatDensity t (y - (x - ν * t)) := hcross₁'
+        _ = Real.exp _ * brownianHeatDensity t _ := hcross₁'
     have hcrossD : Real.exp (-2 * ν * x) *
         brownianHeatDensity t (y + (x - ν * t)) * Real.exp (-2 * ν * y) =
           brownianHeatDensity t (y + (x + ν * t)) := by
       calc
-        _ = Real.exp (-2 * ν * x) * brownianHeatDensity t (y + x - ν * t) *
-            Real.exp (-2 * ν * y) := by
+        _ = Real.exp _ * brownianHeatDensity t _ *
+            Real.exp _ := by
           congr 2
           rw [show y + (x - ν * t) = y + x - ν * t by ring]
-        _ = brownianHeatDensity t (y + x + ν * t) := hcross₂'
-        _ = _ := by rw [show y + x + ν * t = y + (x + ν * t) by ring]
+        _ = brownianHeatDensity t _ := hcross₂'
+        _ = _ := by ring
     rw [conditionedPositiveTransitionDensity]
-    rw [ite_eq_left (show 0 ≤ ν ∧ 0 < t ∧ 0 < x ∧ 0 < y by exact ⟨hν.le, ht, hx, hy⟩)]
+    rw [ite_eq_left (show 0 ≤ ν ∧ 0 < t ∧ 0 < x ∧ 0 < y by grind)]
     have hH_y : conditionedH ν y = 1 - Real.exp (-2 * ν * y) := by
       simp [conditionedH, hν.ne']
     rw [hH, hH_y]
@@ -191,18 +195,18 @@ theorem conditionedPositiveTransitionDensity_integral_eq_one_pos
   have hD : IntegrableOn (fun y : ℝ => brownianHeatDensity t (y + (x + ν * t)))
       (Set.Ioi 0) (volume : Measure ℝ) := hDint.integrableOn
   have hsum :
-      (∫ y in Set.Ioi 0, brownianHeatDensity t (y - (x + ν * t)) ∂(volume : Measure ℝ)) +
-        ∫ y in Set.Ioi 0, brownianHeatDensity t (y + (x + ν * t)) ∂(volume : Measure ℝ) = 1 :=
+      (∫ y in Set.Ioi 0, brownianHeatDensity t _ ∂(volume : Measure ℝ)) +
+        ∫ y in Set.Ioi 0, brownianHeatDensity t _ ∂(volume : Measure ℝ) = 1 :=
     integral_brownianHeatDensity_halfline_pair ht (a := x + ν * t)
   have hsum' :
-      (∫ y in Set.Ioi 0, brownianHeatDensity t (y - (x - ν * t)) ∂(volume : Measure ℝ)) +
-        ∫ y in Set.Ioi 0, brownianHeatDensity t (y + (x - ν * t)) ∂(volume : Measure ℝ) = 1 :=
+      (∫ y in Set.Ioi 0, brownianHeatDensity t _ ∂(volume : Measure ℝ)) +
+        ∫ y in Set.Ioi 0, brownianHeatDensity t _ ∂(volume : Measure ℝ) = 1 :=
     integral_brownianHeatDensity_halfline_pair ht (a := x - ν * t)
   have hB' : IntegrableOn (fun y : ℝ => Real.exp (-2 * ν * x) *
-      brownianHeatDensity t (y + (x - ν * t))) (Set.Ioi 0) (volume : Measure ℝ) :=
+      brownianHeatDensity t _) (Set.Ioi 0) (volume : Measure ℝ) :=
     hB.const_mul _
   have hC' : IntegrableOn (fun y : ℝ => Real.exp (-2 * ν * x) *
-      brownianHeatDensity t (y - (x - ν * t))) (Set.Ioi 0) (volume : Measure ℝ) :=
+      brownianHeatDensity t _) (Set.Ioi 0) (volume : Measure ℝ) :=
     hC.const_mul _
   have hsum'' :
       (∫ y in Set.Ioi 0, brownianHeatDensity t (y + (x - ν * t)) ∂(volume : Measure ℝ)) +
@@ -217,7 +221,7 @@ theorem conditionedPositiveTransitionDensity_integral_eq_one_pos
         1 - Real.exp (-2 * ν * x) := by
     calc
       _ = ∫ y in Set.Ioi 0,
-          (brownianHeatDensity t (y - (x + ν * t)) +
+          (brownianHeatDensity t _ +
             brownianHeatDensity t (y + (x + ν * t)) -
             Real.exp (-2 * ν * x) *
               (brownianHeatDensity t (y + (x - ν * t)) +
@@ -226,20 +230,20 @@ theorem conditionedPositiveTransitionDensity_integral_eq_one_pos
           intro y hy
           ring
       _ = (∫ y in Set.Ioi 0,
-          brownianHeatDensity t (y - (x + ν * t)) +
+          brownianHeatDensity t _ +
             brownianHeatDensity t (y + (x + ν * t)) ∂(volume : Measure ℝ)) -
           ∫ y in Set.Ioi 0,
             Real.exp (-2 * ν * x) *
               (brownianHeatDensity t (y + (x - ν * t)) +
                 brownianHeatDensity t (y - (x - ν * t))) ∂(volume : Measure ℝ) := by
           exact integral_sub (hA.add hD) ((hB.add hC).const_mul _)
-      _ = ((∫ y in Set.Ioi 0, brownianHeatDensity t (y - (x + ν * t)) ∂(volume : Measure ℝ)) +
+      _ = ((∫ y in Set.Ioi 0, brownianHeatDensity t _ ∂(volume : Measure ℝ)) +
           ∫ y in Set.Ioi 0, brownianHeatDensity t (y + (x + ν * t)) ∂(volume : Measure ℝ)) -
           Real.exp (-2 * ν * x) *
             ((∫ y in Set.Ioi 0, brownianHeatDensity t (y + (x - ν * t)) ∂(volume : Measure ℝ)) +
               ∫ y in Set.Ioi 0, brownianHeatDensity t (y - (x - ν * t)) ∂(volume : Measure ℝ)) := by
           rw [integral_add hA hD, integral_const_mul, integral_add hB hC]
-      _ = 1 - Real.exp (-2 * ν * x) := by rw [hsum, hsum'']; ring
+      _ = 1 - Real.exp (-2 * ν * x) := by simp_all
   have hint :
       (∫ y in Set.Ioi 0, conditionedPositiveTransitionDensity ν t x y
         ∂(volume : Measure ℝ)) =

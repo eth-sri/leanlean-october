@@ -34,23 +34,19 @@ theorem regularizedGMC_integral_l1_tendsto
       |∫ x, f x ∂regularizedGMC P Xc γ r ω - ∫ x, f x ∂M ω| ∂P) atTop (𝓝 0) := by
   classical
   let I : Set ℝ := {γ}
-  let K : Set ℂ := Metric.closedBall (0 : ℂ) R
+  let K := Metric.closedBall (0 : ℂ) R
   have hExists : ∀ η ∈ Set.Ioo (0 : ℝ) 2, ∃ N : Ω → Measure ℂ, IsGMCOf P X η N := by
     intro η hη
     obtain ⟨_, N, _, hN⟩ := equatorGFF_circle_average_GMC_exists P X hX η hη.1 hη.2
-    exact ⟨N, hN⟩
+    tauto
   let Mfam : ℝ → Ω → Measure ℂ := fun η =>
     if hη : η ∈ Set.Ioo (0 : ℝ) 2 then Classical.choose (hExists η hη) else 0
-  have hI : IsCompact I := by simp [I]
+  have hI : IsCompact I := by aesop
   have hI2 : I ⊆ Set.Ioo (0 : ℝ) 2 := by
-    intro η hη
-    have hη' : η = γ := by simpa [I] using hη
-    simpa [hη'] using ⟨hγ, hγ2⟩
-  have hK : IsCompact K := isCompact_closedBall _ _
+    aesop
+  have hK : IsCompact K := isCompact_closedBall ..
   have hMfam : ∀ η ∈ Set.Ioo (0 : ℝ) 2, IsGMCOf P X η (Mfam η) := by
-    intro η hη
-    simp only [Mfam, dite_eq_left hη]
-    exact Classical.choose_spec (hExists η hη)
+    grind
   have hUnique : ∀ᵐ ω ∂P, M ω = Mfam γ ω :=
     equatorGFF_GMC_unique_ae P X hX γ M (Mfam γ) hM (hMfam γ ⟨hγ, hγ2⟩)
   let S : ℝ → ℝ≥0∞ := fun r => ⨆ η ∈ I, ⨆ (g : ℂ → ℝ) (_ : Measurable g)
@@ -87,7 +83,7 @@ theorem weightedSetLIntegral_toReal_eq_integral (μ : Measure ℂ) (z : ℂ) (ρ
       ∫ x, (Metric.ball z ρ).indicator (fun x => (w (x - z) : ℝ)) x ∂μ := by
   have hB : MeasurableSet (Metric.ball z ρ) := Metric.isOpen_ball.measurableSet
   have hmeas : Measurable fun x => (Metric.ball z ρ).indicator (fun x => (w (x - z) : ℝ)) x :=
-    (measurable_coe_nnreal_real.comp (hw.comp (measurable_id.sub_const z))).indicator hB
+    by fun_prop
   rw [integral_eq_lintegral_of_nonneg_ae (Eventually.of_forall fun x => by
       by_cases hx : x ∈ Metric.ball z ρ <;> simp [hx]) hmeas.aestronglyMeasurable,
     ← lintegral_indicator hB]
@@ -110,55 +106,55 @@ theorem regularizedGMC_weighted_mass_tendstoInMeasure
   have hB : MeasurableSet (Metric.ball z ρ) := Metric.isOpen_ball.measurableSet
   set f : ℂ → ℝ := fun x => (Metric.ball z ρ).indicator (fun x => (w (x - z) : ℝ)) x with hfdef
   have hwm : Measurable fun x : ℂ => (w (x - z) : ℝ≥0∞) :=
-    measurable_coe_nnreal_ennreal.comp (hw.comp (measurable_id.sub_const z))
+    by fun_prop
   have hfm : Measurable f :=
-    (measurable_coe_nnreal_real.comp (hw.comp (measurable_id.sub_const z))).indicator hB
+    by fun_prop
   have hfb : ∀ x, |f x| ≤ c := by
     intro x
     by_cases hx : x ∈ Metric.ball z ρ
-    · simp only [hfdef, Set.indicator_of_mem hx, NNReal.abs_eq]
-      exact_mod_cast hwc _
-    · simp [hfdef, hx]
+    · simp_all
+    simp_all
   have hfR : ∀ x ∉ Metric.closedBall (0 : ℂ) (‖z‖ + ρ), f x = 0 := by
     intro x hx
     have hxB : x ∉ Metric.ball z ρ := fun h => hx (ball_subset_closedBall_norm_add z ρ h)
-    simp [hfdef, hxB]
+    simp_all
   have hL1 := regularizedGMC_integral_l1_tendsto P X hX γ hγ hγ2 M hM Xc hXc f hfm c hfb
     (‖z‖ + ρ) hfR
   have hF : ∀ n : ℕ, AEStronglyMeasurable (fun ω => (∫⁻ x in Metric.ball z ρ,
       (w (x - z) : ℝ≥0∞) ∂regularizedGMC P Xc γ n ω).toReal) P := by
     intro n
     have hm : Measurable fun ω => ∫⁻ x, (Metric.ball z ρ).indicator
-        (fun x => (w (x - z) : ℝ≥0∞)) x ∂regularizedGMC P Xc γ n ω :=
+        (fun x => (w _ : ℝ≥0∞)) x ∂regularizedGMC P Xc γ n ω :=
       (Measure.measurable_lintegral (hwm.indicator hB)).comp
         (regularizedGMC_measurable P X hX Xc hXc γ n)
     refine (ENNReal.measurable_toReal.comp hm).aestronglyMeasurable.congr
       (Eventually.of_forall fun ω => ?_)
     simp only [Function.comp_apply, lintegral_indicator hB]
   have hG : AEStronglyMeasurable (fun ω => (∫⁻ x in Metric.ball z ρ,
-      (w (x - z) : ℝ≥0∞) ∂M ω).toReal) P :=
+      (w _ : ℝ≥0∞) ∂M ω).toReal) P :=
     (ENNReal.measurable_toReal.comp_aemeasurable
       (gmc_setLIntegral_aemeasurable P X hX γ hγ hγ2 M hM _ hwm _ hB)).aestronglyMeasurable
   refine DOZZ.Assembly.tendstoInMeasure_of_tendsto_lintegral_ofReal_abs P _ _ hF hG ?_
-  have hnat := hL1.comp tendsto_natCast_atTop_atTop
-  refine hnat.congr fun n => ?_
+  refine (hL1.comp tendsto_natCast_atTop_atTop).congr fun n => ?_
   simp only [Function.comp_apply, weightedSetLIntegral_toReal_eq_integral _ z ρ w hw, hfdef]
 
 /-- Boundedly weighted masses are dominated by the bound times the mass of the disk. -/
 theorem weightedSetLIntegral_le_const_mul (μ : Measure ℂ) (z : ℂ) (ρ : ℝ) (w : ℂ → ℝ≥0)
     (c : ℝ≥0) (hwc : ∀ y, w y ≤ c) :
     ∫⁻ x in Metric.ball z ρ, (w (x - z) : ℝ≥0∞) ∂μ ≤ (c : ℝ≥0∞) * μ (Metric.ball z ρ) := by
-  calc ∫⁻ x in Metric.ball z ρ, (w (x - z) : ℝ≥0∞) ∂μ
-      ≤ ∫⁻ _x in Metric.ball z ρ, (c : ℝ≥0∞) ∂μ :=
+  calc ∫⁻ x in Metric.ball z ρ, (w _) ∂μ
+      ≤ ∫⁻ _x in Metric.ball z ρ, c ∂μ :=
         lintegral_mono fun x => ENNReal.coe_le_coe.mpr (hwc _)
-    _ = (c : ℝ≥0∞) * μ (Metric.ball z ρ) := setLIntegral_const _ _
+    _ = c * μ _ := setLIntegral_const ..
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+section
+variable (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+include hX hγ hγ2 hM
 
 /-- Moments of every positive subcritical order of a boundedly weighted small-disk mass converge
 along the integer cutoffs. -/
 theorem gmc_weighted_ball_moment_tendsto
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (z : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (hρ8 : ρ ≤ 1 / 8) (w : ℂ → ℝ≥0) (hw : Measurable w)
     (c : ℝ≥0) (hwc : ∀ y, w y ≤ c) (p : ℝ) (hp : 0 < p) (hp4 : p < 4 / γ ^ 2) :
@@ -167,28 +163,28 @@ theorem gmc_weighted_ball_moment_tendsto
       (𝓝 (∫⁻ ω, (∫⁻ x in Metric.ball z ρ, (w (x - z) : ℝ≥0∞) ∂M ω) ^ p ∂P)) := by
   let _ : IsProbabilityMeasure P := hX.1
   have hB : MeasurableSet (Metric.ball z ρ) := Metric.isOpen_ball.measurableSet
-  have hwm : Measurable fun x : ℂ => (w (x - z) : ℝ≥0∞) :=
-    measurable_coe_nnreal_ennreal.comp (hw.comp (measurable_id.sub_const z))
+  have hwm : Measurable fun x => (w (x - z) : ℝ≥0∞) :=
+    by fun_prop
   set p' : ℝ := (p + 4 / γ ^ 2) / 2 with hp'
-  have hpp' : p < p' := by rw [hp']; linarith
+  have hpp' : p < p' := by linarith
   have hp'0 : 0 < p' := hp.trans hpp'
   obtain ⟨K, hK, hKb⟩ := regularizedGMC_ball_moment_uniform_any_center P X hX Xc hXc γ hγ hγ2
-    z ρ hρ hρ8 p' (by rw [hp']; linarith)
+    z ρ hρ hρ8 p' (by linarith)
   have hcK : (c : ℝ≥0∞) ^ p' * K ≠ ⊤ :=
     ENNReal.mul_ne_top (ENNReal.rpow_ne_top_of_nonneg hp'0.le ENNReal.coe_ne_top) hK.ne
   refine lintegral_rpow_tendsto_of_uniform_moment P
-    (fun (n : ℕ) ω => ∫⁻ x in Metric.ball z ρ, (w (x - z) : ℝ≥0∞) ∂regularizedGMC P Xc γ n ω)
-    (fun ω => ∫⁻ x in Metric.ball z ρ, (w (x - z) : ℝ≥0∞) ∂M ω)
+    (fun (n : ℕ) ω => ∫⁻ x in Metric.ball z ρ, (w _ : ℝ≥0∞) ∂regularizedGMC P Xc γ n ω)
+    (fun ω => ∫⁻ x in Metric.ball z ρ, (w _ : ℝ≥0∞) ∂M ω)
     (fun n => ?_) (gmc_setLIntegral_aemeasurable P X hX γ hγ hγ2 M hM _ hwm _ hB)
     (fun n => ?_) ?_
     (regularizedGMC_weighted_mass_tendstoInMeasure P X hX γ hγ hγ2 M hM Xc hXc z ρ w hw c hwc)
     p p' (Or.inl ⟨hp, hpp'⟩) ((c : ℝ≥0∞) ^ p' * K) hcK (fun n => ?_)
   · have hm : Measurable fun ω => ∫⁻ x, (Metric.ball z ρ).indicator
-        (fun x => (w (x - z) : ℝ≥0∞)) x ∂regularizedGMC P Xc γ n ω :=
+        (fun x => (w _ : ℝ≥0∞)) x ∂regularizedGMC P Xc γ n ω :=
       (Measure.measurable_lintegral (hwm.indicator hB)).comp
         (regularizedGMC_measurable P X hX Xc hXc γ n)
     refine hm.aemeasurable.congr (Eventually.of_forall fun ω => ?_)
-    simp only [lintegral_indicator hB]
+    simp_all
   · filter_upwards [regularizedGMC_finite_ae P X hX Xc hXc γ n] with ω hω
     exact ne_top_of_le_ne_top (ENNReal.mul_ne_top ENNReal.coe_ne_top (measure_ne_top _ _))
       (weightedSetLIntegral_le_const_mul _ z ρ w c hwc)
@@ -199,12 +195,12 @@ theorem gmc_weighted_ball_moment_tendsto
   · have hmass : AEMeasurable (fun ω => regularizedGMC P Xc γ n ω (Metric.ball z ρ) ^ p') P :=
       (((Measure.measurable_coe hB).comp
         (regularizedGMC_measurable P X hX Xc hXc γ n)).pow_const p').aemeasurable
-    calc ∫⁻ ω, (∫⁻ x in Metric.ball z ρ, (w (x - z) : ℝ≥0∞) ∂regularizedGMC P Xc γ n ω) ^ p' ∂P
-        ≤ ∫⁻ ω, ((c : ℝ≥0∞) * regularizedGMC P Xc γ n ω (Metric.ball z ρ)) ^ p' ∂P :=
+    calc ∫⁻ ω, (∫⁻ x in Metric.ball z ρ, (w _ : ℝ≥0∞) ∂regularizedGMC P Xc γ n ω) ^ p' ∂P
+        ≤ ∫⁻ ω, ((c : ℝ≥0∞) * regularizedGMC P Xc γ n ω _) ^ p' ∂P :=
           lintegral_mono fun ω => ENNReal.rpow_le_rpow
             (weightedSetLIntegral_le_const_mul _ z ρ w c hwc) hp'0.le
       _ = (c : ℝ≥0∞) ^ p' *
-            gmcMassMoment P (regularizedGMC P Xc γ n) (Metric.ball z ρ) p' := by
+            gmcMassMoment P _ _ p' := by
           rw [lintegral_congr fun ω => ENNReal.mul_rpow_of_nonneg _ _ hp'0.le,
             lintegral_const_mul'' _ hmass]
           rfl
@@ -213,9 +209,6 @@ theorem gmc_weighted_ball_moment_tendsto
 /-- The location transfer of positive subcritical moments of boundedly weighted small-disk
 masses, for `IsGMCOf` limits. -/
 theorem gmc_weighted_ball_moment_transfer
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (z z₀ : ℂ) (ρ R : ℝ) (hρ : 0 < ρ) (hρ8 : ρ ≤ 1 / 8) (hR : 0 ≤ R) (hzR : ‖z‖ + ρ ≤ R)
     (hz₀R : ‖z₀‖ + ρ ≤ R) (w : ℂ → ℝ≥0) (hw : Measurable w) (c : ℝ≥0) (hwc : ∀ y, w y ≤ c)
     (p : ℝ) (hp : 0 < p) (hp4 : p < 4 / γ ^ 2) :
@@ -224,13 +217,13 @@ theorem gmc_weighted_ball_moment_transfer
           |p ^ 2 - p|)) * ENNReal.ofReal ((1 + R) ^ 4) ^ |p| *
         ∫⁻ ω, (∫⁻ x in Metric.ball z₀ ρ, (w (x - z₀) : ℝ≥0∞) ∂M ω) ^ p ∂P := by
   obtain ⟨Xc, hXc, -⟩ := hM.2
-  set T : ℝ≥0∞ := ENNReal.ofReal (Real.exp (γ ^ 2 * (2 * (Real.log 3 + 2 * Real.log (1 + R))) /
-      2 * |p ^ 2 - p|)) * ENNReal.ofReal ((1 + R) ^ 4) ^ |p| with hT
+  set T := ENNReal.ofReal (Real.exp (γ ^ 2 * (2 * (Real.log 3 + 2 * Real.log _)) /
+      2 * |p ^ 2 - p|)) * ENNReal.ofReal _ ^ |p| with hT
   have hTtop : T ≠ ⊤ := ENNReal.mul_ne_top ENNReal.ofReal_ne_top
     (ENNReal.rpow_ne_top_of_nonneg (abs_nonneg p) ENNReal.ofReal_ne_top)
   have hcut : ∀ n : ℕ,
-      ∫⁻ ω, (∫⁻ x in Metric.ball z ρ, (w (x - z) : ℝ≥0∞) ∂regularizedGMC P Xc γ n ω) ^ p ∂P ≤
-        T * ∫⁻ ω, (∫⁻ x in Metric.ball z₀ ρ, (w (x - z₀) : ℝ≥0∞)
+      ∫⁻ ω, (∫⁻ x in Metric.ball z ρ, (w _) ∂regularizedGMC P Xc γ n ω) ^ p ∂P ≤
+        T * ∫⁻ ω, (∫⁻ x in Metric.ball z₀ ρ, (w _)
           ∂regularizedGMC P Xc γ n ω) ^ p ∂P := fun n =>
     cutoff_translate_moment_le P X hX Xc hXc γ n (Nat.cast_nonneg n) z z₀ ρ R hR hzR hz₀R w hw c
       hwc p
@@ -239,5 +232,9 @@ theorem gmc_weighted_ball_moment_transfer
   have h2 := ENNReal.Tendsto.const_mul (gmc_weighted_ball_moment_tendsto P X hX γ hγ hγ2 M hM Xc
     hXc z₀ ρ hρ hρ8 w hw c hwc p hp hp4) (Or.inr hTtop)
   exact le_of_tendsto_of_tendsto' h1 h2 hcut
+
+end
+
+end
 
 end DOZZ.Proofs

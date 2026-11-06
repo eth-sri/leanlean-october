@@ -21,11 +21,14 @@ open MeasureTheory ProbabilityTheory Filter Topology
 open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
+section
+variable (B : Measure BrownianPath) [SFinite B]
+section
+variable (hB : IsBrownianReal (fun t p => p t) B)
+include hB
 
 /-- Every finite projection of the reference future kernel is the explicit finite Doob law. -/
 theorem brownianUpperConditionedReferenceFutureKernel_finite_projection_doob
-    (B : Measure BrownianPath) [SFinite B]
-    (hB : IsBrownianReal (fun t p => p t) B)
     (ν t x : ℝ) (hν : 0 < ν) (ht : 0 < t) (hx : 0 < x)
     (n : ℕ) (offsets : Fin n → ℚ)
     (hoff : ∀ i, 0 < (offsets i : ℝ)) (hmono : StrictMono offsets) :
@@ -35,16 +38,12 @@ theorem brownianUpperConditionedReferenceFutureKernel_finite_projection_doob
         (brownianFirstHitElapsed n (fun i => Real.toNNReal (offsets i))) x) := by
   classical
   let ts : Fin n → ℝ≥0 := fun i => Real.toNNReal (offsets i)
-  let ds : Fin n → ℝ≥0 := brownianFirstHitElapsed n ts
+  let ds := brownianFirstHitElapsed n ts
   have hts0 : ∀ i, 0 < ts i := by
-    intro i
-    exact Real.toNNReal_pos.mpr (hoff i)
+    aesop
   have htsmono : StrictMono ts := by
     intro i j hij
-    rw [← NNReal.coe_lt_coe,
-      Real.coe_toNNReal _ (hoff i).le,
-      Real.coe_toNNReal _ (hoff j).le]
-    exact_mod_cast hmono hij
+    aesop
   have hds : ∀ i, 0 < ds i := by
     intro i
     exact brownianFirstHitElapsed_pos n ts hts0 htsmono i
@@ -99,7 +98,7 @@ theorem brownianUpperConditionedReferenceFutureKernel_finite_projection_doob
   have hinput : Measurable (fun z : ℝ × (Fin n → ℝ) =>
       ((fun _ : Fin 1 => z.1), z.2)) := by
     apply Measurable.prodMk
-    · exact measurable_pi_iff.mpr (fun _ => measurable_fst)
+    · fun_prop
     · exact measurable_snd
   have hD : Measurable (fun z : ℝ × (Fin n → ℝ) =>
       conditionedPositiveFutureVectorDensity ν
@@ -121,23 +120,21 @@ theorem brownianUpperConditionedReferenceFutureKernel_finite_projection_doob
   calc
     ((brownianUpperConditionedReferenceFutureKernel B ν hν x).map
         (fun y i => y (offsets i))) A =
-      ((Kernel.const ℝ (volume : Measure (Fin n → ℝ))).withDensity
+      ((Kernel.const ℝ (volume : Measure _)).withDensity
         (fun z y => conditionedPositiveFutureVectorDensity ν
-          (fun _ : Fin 1 => t) (fun i => t + (offsets i : ℝ))
+          (fun _ => t) (fun i => t + (offsets i : ℝ))
           (fun _ => z) y)) x A := hproj
     _ = (volume.withDensity (fun y => conditionedPositiveFutureVectorDensity ν
-          (fun _ : Fin 1 => t) (fun i => t + (offsets i : ℝ))
+          (fun _ => t) (fun i => t + (offsets i : ℝ))
           (fun _ => x) y)) A := by
       rw [Kernel.withDensity_apply _ hD x, Kernel.const_apply]
-    _ = (volume.withDensity (brownianDoobFinitePDF ν n ds x)) A := by
+    _ = (volume.withDensity _) A := by
       rw [hmeasure]
 
 /-- Finite rational projections of the Brownian reference future kernel converge on every
 measurable event to the conditioned entrance finite-dimensional law as the start decreases to
 zero. -/
 theorem brownianUpperConditionedReferenceFutureKernel_finite_projection_tendsto_entrance
-    (B : Measure BrownianPath) [SFinite B]
-    (hB : IsBrownianReal (fun t p => p t) B)
     (Q : Measure BrownianPath) (ν t : ℝ) (hν : 0 < ν)
     (hQ : IsNegativeConditionedBrownianLaw ν Q) (ht : 0 < t)
     (n : ℕ) (offsets : Fin n → ℚ)
@@ -151,16 +148,12 @@ theorem brownianUpperConditionedReferenceFutureKernel_finite_projection_tendsto_
       (𝓝 ((volume.withDensity (brownianEntranceFinitePDF ν n
         (brownianFirstHitElapsed n (fun i => Real.toNNReal (offsets i))))) A)) := by
   let ts : Fin n → ℝ≥0 := fun i => Real.toNNReal (offsets i)
-  let ds : Fin n → ℝ≥0 := brownianFirstHitElapsed n ts
+  let ds := brownianFirstHitElapsed n ts
   have hts0 : ∀ i, 0 < ts i := by
-    intro i
-    exact Real.toNNReal_pos.mpr (hoff i)
+    aesop
   have htsmono : StrictMono ts := by
     intro i j hij
-    rw [← NNReal.coe_lt_coe,
-      Real.coe_toNNReal _ (hoff i).le,
-      Real.coe_toNNReal _ (hoff j).le]
-    exact_mod_cast hmono hij
+    aesop
   have hds : ∀ i, 0 < ds i := by
     intro i
     exact brownianFirstHitElapsed_pos n ts hts0 htsmono i
@@ -169,20 +162,13 @@ theorem brownianUpperConditionedReferenceFutureKernel_finite_projection_tendsto_
   have heq (k : ℕ) :
       (brownianUpperConditionedReferenceFutureKernel B ν hν (xs k)).map
           (fun y i => y (offsets i)) =
-        volume.withDensity (brownianDoobFinitePDF ν n ds (xs k)) := by
-    exact brownianUpperConditionedReferenceFutureKernel_finite_projection_doob
+        volume.withDensity _ := brownianUpperConditionedReferenceFutureKernel_finite_projection_doob
       B hB ν t (xs k) hν ht (hxs k) n offsets hoff hmono
-  have hfun : (fun k =>
-      (brownianUpperConditionedReferenceFutureKernel B ν hν (xs k)).map
-        (fun y i => y (offsets i)) A) =
-      fun k => (volume.withDensity (brownianDoobFinitePDF ν n ds (xs k))) A := by
-    funext k
-    rw [heq k]
-  have hdsEq : ds = brownianFirstHitElapsed n
-      (fun i => Real.toNNReal (offsets i)) := by
-    rfl
-  rw [hfun, hdsEq]
-  exact hlimit
+  aesop
+
+end
+
+end
 
 end DOZZ.Proofs
 

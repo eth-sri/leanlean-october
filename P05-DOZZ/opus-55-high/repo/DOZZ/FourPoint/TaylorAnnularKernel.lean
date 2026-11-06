@@ -22,23 +22,23 @@ theorem gammaHalf_annular_kernel_bound
     ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x / ‖x - z‖ ^ 2) ≤
       ENNReal.ofReal ((2 : ℝ) ^ (|γ * α₂| + |γ ^ 2 / 2 - 2|)) *
         ENNReal.ofReal (‖x‖ ^ (γ * (Q γ - α₁) - 4)) := by
-  have hn : normPlus x = 1 := max_eq_left (by linarith only [hx])
+  have hn : normPlus x = 1 := max_eq_left (by linarith)
   have hlow : ‖x‖ / 2 ≤ ‖x - z‖ := by
     have hh := norm_sub_norm_le x z
-    linarith only [hh, hz]
+    linarith
   have hhigh : ‖x - z‖ ≤ 2 * ‖x‖ := by
     have hh := norm_sub_le x z
-    linarith only [hh, hz, hxpos]
-  have hxz : 0 < ‖x - z‖ := (by positivity : 0 < ‖x‖ / 2).trans_le hlow
+    linarith
+  have hxz : 0 < ‖x - z‖ := by linarith
   have hlow1 : 1 / 2 ≤ ‖x - 1‖ := by
     have hh := norm_sub_norm_le (1 : ℂ) x
     rw [norm_one, norm_sub_rev] at hh
-    linarith only [hh, hx]
+    linarith
   have hhigh1 : ‖x - 1‖ ≤ 2 := by
     have hh := norm_sub_le x (1 : ℂ)
     rw [norm_one] at hh
-    linarith only [hh, hx]
-  have hx1 : 0 < ‖x - 1‖ := lt_of_lt_of_le (by norm_num) hlow1
+    linarith
+  have hx1 : 0 < ‖x - 1‖ := by positivity
   have heq : gammaHalfKernel γ α₁ α₂ α₃ z x / ‖x - z‖ ^ 2 =
       ‖x - z‖ ^ (γ ^ 2 / 2 - 2) * ‖x‖ ^ (-γ * α₁) * ‖x - 1‖ ^ (-γ * α₂) := by
     unfold gammaHalfKernel
@@ -49,8 +49,8 @@ theorem gammaHalf_annular_kernel_bound
     (γ ^ 2 / 2 - 2) |γ ^ 2 / 2 - 2| hxpos (by norm_num) hlow hhigh
     (neg_abs_le _) (le_abs_self _)
   have htail : ‖x - 1‖ ^ (-γ * α₂) ≤ (2 : ℝ) ^ |γ * α₂| := by
-    simpa only [neg_mul, abs_neg] using coulombWeight_rpow_le (L := 2) (y := ‖x - 1‖)
-      (by norm_num) (by norm_num; exact hlow1) hhigh1 (-γ * α₂)
+    simpa using coulombWeight_rpow_le (L := 2) (y := ‖x - 1‖)
+      (by norm_num) (by linarith) hhigh1 (-γ * α₂)
   have hprod := mul_le_mul
     (mul_le_mul_of_nonneg_right hdist (Real.rpow_nonneg (norm_nonneg x) (-γ * α₁))) htail
     (Real.rpow_nonneg (norm_nonneg _) _) (by positivity)

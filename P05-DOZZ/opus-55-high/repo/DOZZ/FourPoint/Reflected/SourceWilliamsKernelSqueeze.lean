@@ -29,14 +29,14 @@ theorem reflected_source_williams_kernel_squeeze
     (Qν : Measure BrownianPath) (hQν : IsNegativeConditionedBrownianLaw (Q γ-α₁) Qν)
     (p : ℝ) (hp : 0 < p) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
     (hξ : 0 < ξ) (hξ1 : ξ < 1) (hh : 0 < h) :
-    let W := fun z : ℂ => ∫ v : Ω × (ℝ × Ω),
+    let W := fun z => ∫ v : Ω × (ℝ × Ω),
       ((gammaHalfOuterMass γ α₁ α₂ α₃ (M v.1) z ξ).toReal+
         reflected_radial_scale γ (Q γ-α₁) h Xc z v.1*Real.exp (γ*v.2.1)*
           (twoSidedReflectionCutMass γ v.2.1 B
             (fun ω => lateralProjectedGMC γ (originRadialPath Xc ω) (M ω)) v.2.2).toReal)^(-p)-
         (gammaHalfOuterMass γ α₁ α₂ α₃ (M v.1) z ξ).toReal^(-p)
       ∂P.prod ((brownianMaximumReferenceLaw (Q γ-α₁)).prod P)
-    let E := fun z : ℂ => gammaHalfMoment P M γ α₁ α₂ α₃ p z-
+    let E := fun z => gammaHalfMoment P M γ α₁ α₂ α₃ p z-
       (reflected_copied_separatedMoment P Xc N γ α₁ α₂ α₃ z
         (Real.exp (-h)*‖z‖) (‖z‖^(1-ξ)) p).toReal
     ∀ᶠ z : ℂ in 𝓝[≠] 0,
@@ -46,23 +46,23 @@ theorem reflected_source_williams_kernel_squeeze
         min 1 ((1-Real.exp (-h))^(γ^2/2)*(1-Real.exp (-h)*‖z‖)⁻¹^(-|γ*α₂|))*W z+E z := by
   let R := Real.exp (-h)
   have hR : 0 < R := Real.exp_pos _
-  have hR1 : R < 1 := Real.exp_lt_one_iff.mpr (neg_neg_of_pos hh)
+  have hR1 := Real.exp_lt_one_iff.mpr (neg_neg_of_pos hh)
   filter_upwards [reflected_outer_cutoff_geometry ξ 1 hξ hξ1 zero_lt_one,self_mem_nhdsWithin]
     with z hz hz0
-  have hn : 0 < ‖z‖ := norm_pos_iff.mpr hz0
-  have hr1 : ‖z‖^(1-ξ) ≤ 1 := hz.2.2.2.2.le
-  have hzr : ‖z‖ < ‖z‖^(1-ξ) := by linarith only [hz.1,hz.2.2.2.1]
-  have hzn : ‖z‖ < 1 := hzr.trans_le hr1
+  have hn := norm_pos_iff.mpr hz0
+  have hr1 := hz.2.2.2.2.le
+  have hzr : ‖z‖ < ‖z‖^(1-ξ) := by linarith
+  have hzn := hzr.trans_le hr1
   have hz1 : z ≠ 1 := by intro he; simp [he] at hzn
   let T := Real.toNNReal (-Real.log ‖z‖+h)
-  have hcoord : (T : ℝ) = -Real.log ‖z‖+h := Real.coe_toNNReal _
+  have hcoord := Real.coe_toNNReal _
     (add_nonneg (neg_nonneg.mpr (Real.log_nonpos hn.le hzn.le)) hh.le)
-  have hη : Real.exp (-(T : ℝ)) = R*‖z‖ := by
+  have hη : Real.exp (-T) = R*‖z‖ := by
     rw [hcoord,neg_add,neg_neg,Real.exp_add,Real.exp_log hn,mul_comm]
-  have hη1 : Real.exp (-(T : ℝ)) < 1 := by
+  have hη1 : Real.exp (-T) < 1 := by
     rw [hη]
     exact (mul_le_of_le_one_left hn.le hR1.le).trans_lt hzn
-  have hTr : Real.exp (-(T : ℝ)) ≤ ‖z‖^(1-ξ) := by
+  have hTr : Real.exp (-T) ≤ ‖z‖^(1-ξ) := by
     rw [hη]
     exact (mul_le_of_le_one_left hn.le hR1.le).trans hzr.le
   have hk := reflected_source_copied_kernel_inverse_squeeze P X hX Xc hc hcont γ hγ hγ₂ M hM
@@ -73,9 +73,9 @@ theorem reflected_source_williams_kernel_squeeze
     hα₂ hα₃ hz1 hzn.le hr1
   dsimp only at hk
   change (∫⁻ ω : Ω × Ω, (gammaHalfOuterMass γ α₁ α₂ α₃ (M ω.1) z ξ+
-    ENNReal.ofReal (‖z‖^(γ^2/2))*(∫⁻ x in reflected_innerRegion (Real.exp (-(T : ℝ))),
-      ENNReal.ofReal (‖x‖^(-(γ*α₁)))*
-        ENNReal.ofReal (reflected_global_reinsertionWeight γ (originRadialPath Xc ω.1) x) ∂N ω.2))^(-p) ∂P.prod P).toReal-
+    ENNReal.ofReal _*(∫⁻ x in reflected_innerRegion _,
+      ENNReal.ofReal _*
+        ENNReal.ofReal _ ∂N ω.2))^(-p) ∂P.prod P).toReal-
       (∫⁻ ω, gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ^(-p) ∂P).toReal = _ at hw
   rw [hw,hη] at hk
   dsimp only [R] at hk
@@ -83,10 +83,10 @@ theorem reflected_source_williams_kernel_squeeze
     (Real.exp (-h)*‖z‖) (‖z‖^(1-ξ)) p).toReal
   let O := (∫⁻ ω, gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ^(-p) ∂P).toReal
   let F := gammaHalfMoment P M γ α₁ α₂ α₃ p z
-  change max 1 ((1+Real.exp (-h))^(γ^2/2)*(1-Real.exp (-h)*‖z‖)⁻¹^|γ*α₂|)*_+(F-C) ≤ F-O ∧
-    F-O ≤ min 1 ((1-Real.exp (-h))^(γ^2/2)*(1-Real.exp (-h)*‖z‖)⁻¹^(-|γ*α₂|))*_+(F-C)
-  change max 1 ((1+Real.exp (-h))^(γ^2/2)*(1-Real.exp (-h)*‖z‖)⁻¹^|γ*α₂|)*_ ≤ C-O ∧
-    C-O ≤ min 1 ((1-Real.exp (-h))^(γ^2/2)*(1-Real.exp (-h)*‖z‖)⁻¹^(-|γ*α₂|))*_ at hk
+  change max 1 _*_+(F-C) ≤ F-O ∧
+    F-O ≤ min 1 _*_+(F-C)
+  change max 1 _*_ ≤ C-O ∧
+    C-O ≤ min 1 _*_ at hk
   constructor <;> linarith only [hk.1,hk.2]
 
 end DOZZ.Proofs

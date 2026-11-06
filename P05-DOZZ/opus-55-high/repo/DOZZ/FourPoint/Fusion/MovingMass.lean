@@ -8,6 +8,7 @@ public import DOZZ.FourPoint.Fusion.Kernel
 public import DOZZ.FourPoint.Fusion.RootedMass
 import DOZZ.GMC.Construction.RootedMeasureKernel
 import DOZZ.GMC.SharpMoments.SeibergMoment
+import DOZZ.ShiftEquations.Mobius.InversionMoment
 
 /-! # The moving mass after rooting at `y*z` -/
 
@@ -33,27 +34,28 @@ noncomputable def fusionMovingBadMass (γ α₁ α₂ α₃ : ℝ) (y z : ℂ) (
 noncomputable def fusionMovingGoodMass (γ α₁ α₂ α₃ : ℝ) (y z : ℂ) (δ : ℝ)
     (μ : Measure ℂ) : ℝ≥0∞ :=
   ∫⁻ x in {x : ℂ | δ ≤ ‖x‖}, fusionMovingKernel γ α₁ α₂ α₃ y z x ∂μ
+section
+variable (γ α₁ α₂ α₃ : ℝ) (y z : ℂ)
 
-theorem fusionMovingKernel_measurable (γ α₁ α₂ α₃ : ℝ) (y z : ℂ) :
+theorem fusionMovingKernel_measurable :
     Measurable (fusionMovingKernel γ α₁ α₂ α₃ y z) := by
   apply ENNReal.measurable_ofReal.comp
   apply Measurable.mul
-  · exact (fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃).comp (f := fun x : ℂ => (z, x))
+  · exact (fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃).comp
       (measurable_const.prodMk measurable_id)
   · exact (measurable_const.mul (measurable_pointRootPotential.comp
       (measurable_const.prodMk measurable_id))).exp
 
-theorem fusionMovingMass_split (γ α₁ α₂ α₃ : ℝ) (y z : ℂ) (δ : ℝ) (μ : Measure ℂ) :
+theorem fusionMovingMass_split (δ : ℝ) (μ : Measure ℂ) :
     fusionMovingMass γ α₁ α₂ α₃ y z μ =
       fusionMovingBadMass γ α₁ α₂ α₃ y z δ μ + fusionMovingGoodMass γ α₁ α₂ α₃ y z δ μ := by
-  have hc : (Metric.ball (0 : ℂ) δ)ᶜ = {x : ℂ | δ ≤ ‖x‖} := by
-    ext x
-    simp only [Set.mem_compl_iff, Metric.mem_ball, dist_zero_right, Set.mem_ofPred_eq, not_lt]
+  have hc : (Metric.ball 0 δ)ᶜ = {x : ℂ | δ ≤ ‖x‖} := by
+    aesop
   exact (lintegral_add_compl _ Metric.isOpen_ball.measurableSet).symm.trans
-    (by rw [hc]; rfl)
+    (by tauto)
 
 /-- The real kernel mass is the Coulomb mass under the rooted measure. -/
-theorem fusionMovingMass_eq_rooted (γ α₁ α₂ α₃ : ℝ) (y z : ℂ) (μ : Measure ℂ)
+theorem fusionMovingMass_eq_rooted (μ : Measure ℂ)
     (hz : μ {z} = 0) (h0 : μ {0} = 0) (h1 : μ {1} = 0) :
     fusionMovingMass γ α₁ α₂ α₃ y z μ =
       coulombMass γ (gmcRootedMeasure γ (y * z) μ) ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ := by
@@ -73,22 +75,27 @@ theorem fusionMovingMass_eq_rooted (γ α₁ α₂ α₃ : ℝ) (y z : ℂ) (μ 
   dsimp [fusionMovingKernel]
   rw [mul_comm, ENNReal.ofReal_mul (Real.exp_nonneg _)]
 
-theorem fusionMovingMass_eq_rooted_ae {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ : ℝ) (y z : ℂ) :
+end
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+section
+variable (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (α₁ α₂ α₃ : ℝ) (y z : ℂ)
+include hX hγ hγ2 hM
+
+theorem fusionMovingMass_eq_rooted_ae :
     ∀ᵐ ω ∂P, fusionMovingMass γ α₁ α₂ α₃ y z (M ω) =
       coulombMass γ (gmcRootedMeasure γ (y * z) (M ω)) ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ := by
-  filter_upwards [gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM z,
-    gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 0,
-    gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 1] with ω hz h0 h1
+  filter_upwards [DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM z,
+    DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM 0,
+    DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM 1] with ω hz h0 h1
   exact fusionMovingMass_eq_rooted γ α₁ α₂ α₃ y z (M ω) hz h0 h1
 
-theorem fusionMovingMass_aemeasurable {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ : ℝ) (y z : ℂ) :
+theorem fusionMovingMass_aemeasurable :
     AEMeasurable (fun ω => fusionMovingMass γ α₁ α₂ α₃ y z (M ω)) P :=
-  gmc_lintegral_aemeasurable P X hX γ hγ hγ2 M hM _ (fusionMovingKernel_measurable _ _ _ _ _ _)
+  gmc_lintegral_aemeasurable P X hX γ hγ hγ2 M hM _ (fusionMovingKernel_measurable ..)
+
+end
+
+end
 
 end DOZZ.Proofs

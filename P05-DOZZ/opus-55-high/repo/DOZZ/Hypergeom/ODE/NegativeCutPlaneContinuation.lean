@@ -42,9 +42,11 @@ noncomputable def gaussNegativeCutPlaneCanonicalPath (z : gaussNegativeCutPlane)
     simp [f, g, gaussNegativeCutPlaneBasepoint]
   · apply Subtype.ext
     simp [f, g]
+section
+variable (z : gaussNegativeCutPlane)
 
 /-- The canonical negative-cut path is continuous on its real parameter interval. -/
-theorem gaussNegativeCutPlaneCanonicalPath_continuousOn (z : gaussNegativeCutPlane) :
+theorem gaussNegativeCutPlaneCanonicalPath_continuousOn :
     ContinuousOn (subtypePathFunction (gaussNegativeCutPlaneCanonicalPath z))
       (Icc (0 : ℝ) 1) := by
   change ContinuousOn
@@ -54,10 +56,12 @@ theorem gaussNegativeCutPlaneCanonicalPath_continuousOn (z : gaussNegativeCutPla
     ((gaussNegativeCutPlaneCanonicalPath z).continuous.comp continuous_projIcc)).continuousOn
 
 /-- The canonical path remains in the negative cut plane under endpoint projection. -/
-theorem gaussNegativeCutPlaneCanonicalPath_mem (z : gaussNegativeCutPlane) (t : ℝ) :
+theorem gaussNegativeCutPlaneCanonicalPath_mem (t : ℝ) :
     subtypePathFunction (gaussNegativeCutPlaneCanonicalPath z) t ∈ gaussNegativeCutPlane :=
   (gaussNegativeCutPlaneCanonicalPath z
     (Set.projIcc 0 1 zero_le_one t)).property
+
+end
 
 /-- A finite-chain continuation exists along the canonical path to every negative-cut point. -/
 theorem exists_gauss_negative_cut_plane_canonical_continuation
@@ -68,7 +72,7 @@ theorem exists_gauss_negative_cut_plane_canonical_continuation
       (ordinaryHypergeometricState a b c (-1 / 2 : ℂ))) := by
   apply exists_path_continuation_lift
     (gaussNegativeCutPlaneCanonicalPath_continuousOn z) gaussRegularPlane
-    gaussRegularPlane_isOpen (gaussSystemOperator a b c)
+    gaussRegularPlane_isOpen _
     (gaussSystemOperator_differentiableOn a b c)
   · intro t ht
     exact gaussNegativeCutPlane_subset_regularPlane
@@ -97,11 +101,10 @@ theorem gauss_negative_cut_plane_continuation_path_endpoint_eq
     (L : PathContinuationLift (subtypePathFunction p)
       (gaussSystemOperator a b c)
       (ordinaryHypergeometricState a b c (-1 / 2 : ℂ))) :
-    L.value 1 = gaussNegativeCutPlaneContinuationState a b c z := by
-  exact subtype_path_lifts_endpoint_eq_of_simplyConnected
+    L.value 1 = gaussNegativeCutPlaneContinuationState a b c z := subtype_path_lifts_endpoint_eq_of_simplyConnected
     gaussNegativeCutPlane_subset_regularPlane a b c p
     (gaussNegativeCutPlaneCanonicalPath z)
-    (ordinaryHypergeometricState a b c (-1 / 2 : ℂ)) L
+    (ordinaryHypergeometricState a b c _) L
     (gaussNegativeCutPlaneCanonicalContinuationLift a b c z)
 
 end DOZZ.Proofs

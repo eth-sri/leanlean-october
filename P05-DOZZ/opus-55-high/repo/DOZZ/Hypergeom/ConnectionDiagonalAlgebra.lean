@@ -23,33 +23,32 @@ theorem real_diagonal_normSq_connection_change
       (α * u ^ 2 + δ * w ^ 2) * Complex.normSq f +
         (α * v ^ 2 + δ * x ^ 2) * Complex.normSq g := by
   have hcrossUV :
-      ((u : ℂ) * f * star ((v : ℂ) * g)).re =
+      (u * f * star (v * g)).re =
         (u * v) * (f * (starRingEnd ℂ) g).re := by
-    have hv : star ((v : ℂ) * g) = (v : ℂ) * star g := by
+    have hv : star (v * g) = v * star g := by
       simp [mul_comm]
     calc
-      ((u : ℂ) * f * star ((v : ℂ) * g)).re =
+      (u * f * star _).re =
           (((u * v : ℝ) : ℂ) * (f * star g)).re := by
             rw [hv]
             apply congrArg Complex.re
             push_cast
             ring
-      _ = (u * v) * (f * star g).re := Complex.re_ofReal_mul _ _
+      _ = (u * v) * (f * star g).re := Complex.re_ofReal_mul ..
   have hcrossWX :
-      ((w : ℂ) * f * star ((x : ℂ) * g)).re =
+      (w * f * star (x * g)).re =
         (w * x) * (f * (starRingEnd ℂ) g).re := by
-    have hx : star ((x : ℂ) * g) = (x : ℂ) * star g := by
+    have hx : star (x * g) = x * star g := by
       simp [mul_comm]
     calc
-      ((w : ℂ) * f * star ((x : ℂ) * g)).re =
+      (w * f * star _).re =
           (((w * x : ℝ) : ℂ) * (f * star g)).re := by
             rw [hx]
             apply congrArg Complex.re
             push_cast
             ring
-      _ = (w * x) * (f * star g).re := Complex.re_ofReal_mul _ _
-  rw [Complex.normSq_add, Complex.normSq_add]
-  rw [Complex.normSq_mul, Complex.normSq_mul, Complex.normSq_mul, Complex.normSq_mul]
+      _ = (w * x) * (f * star g).re := Complex.re_ofReal_mul ..
+  rw [Complex.normSq_add, Complex.normSq_add, Complex.normSq_mul, Complex.normSq_mul, Complex.normSq_mul, Complex.normSq_mul]
   rw [Complex.normSq_ofReal, Complex.normSq_ofReal,
     Complex.normSq_ofReal, Complex.normSq_ofReal]
   simp only [Complex.star_def] at hcrossUV hcrossWX

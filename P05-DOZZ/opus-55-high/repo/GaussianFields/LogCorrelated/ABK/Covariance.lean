@@ -63,11 +63,11 @@ theorem covariance_abkLogCorrelatedFieldL2Canonical_eq_scale_selfConvolution_int
         (fun p : ℝ × Vec d =>
           abkLogKernelProd (abkNormalization ζ) ζ ψ p *
             abkLogKernelProd (abkNormalization ζ) ζ φ p)
-        (volume : Measure (ℝ × Vec d)) := by
+        (volume : Measure _) := by
     change Integrable
       (abkLogKernelProd (abkNormalization ζ) ζ ψ *
         abkLogKernelProd (abkNormalization ζ) ζ φ)
-      (volume : Measure (ℝ × Vec d))
+      (volume : Measure _)
     exact hψ.integrable_mul hφ
   rw [Measure.volume_eq_prod] at hprod_int ⊢
   rw [integral_prod _ hprod_int]
@@ -84,11 +84,11 @@ theorem covariance_abkLogCorrelatedFieldL2Canonical_eq_scale_selfConvolution_int
               abkSpatialConvolution ζ ψ r y *
                 abkSpatialConvolution ζ φ r y
               ∂(volume : Measure (Vec d))) := by
-      let c : ℝ := (abkNormalization ζ) ^ (2 : Nat) * r ^ (-((d : ℝ) + 1))
+      let c := (abkNormalization ζ) ^ (2 : Nat) * r ^ (-((d : ℝ) + 1))
       calc
         (∫ y : Vec d,
-            abkLogKernelProd (abkNormalization ζ) ζ ψ (r, y) *
-              abkLogKernelProd (abkNormalization ζ) ζ φ (r, y)
+            abkLogKernelProd (abkNormalization ζ) ζ ψ _ *
+              abkLogKernelProd (abkNormalization ζ) ζ φ _
             ∂(volume : Measure (Vec d)))
             = ∫ y : Vec d,
                 c *
@@ -102,7 +102,7 @@ theorem covariance_abkLogCorrelatedFieldL2Canonical_eq_scale_selfConvolution_int
               (∫ y : Vec d,
                 abkSpatialConvolution ζ ψ r y *
                   abkSpatialConvolution ζ φ r y
-                ∂(volume : Measure (Vec d))) := by
+                ∂volume) := by
               rw [integral_const_mul]
     rw [hinner]
     rw [integral_abkSpatialConvolution_mul_abkSpatialConvolution_eq_selfConvolution_integral
@@ -112,12 +112,12 @@ theorem covariance_abkLogCorrelatedFieldL2Canonical_eq_scale_selfConvolution_int
         (∫ y : Vec d,
             abkLogKernelProd (abkNormalization ζ) ζ ψ (r, y) *
               abkLogKernelProd (abkNormalization ζ) ζ φ (r, y)
-            ∂(volume : Measure (Vec d))) = 0 := by
+            ∂volume) = 0 := by
       refine integral_eq_zero_of_ae ?_
       filter_upwards with y
       rw [abkLogKernelProd_mul, ite_eq_right hr]
       simp
-    rw [hinner_zero, ite_eq_right hr]
+    simp_all
 
 end GaussianFields
 

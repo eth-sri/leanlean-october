@@ -33,18 +33,18 @@ theorem fusion_rooted_complex_integral {Ω : Type*} [MeasurableSpace Ω]
       (∫⁻ ω, G (gmcRootedMeasure γ u (M ω)) ∂P) ∂gmcReferenceMeasure) < ⊤ := by
     apply lt_of_le_of_lt (lintegral_mono ?_) hb
     intro u
-    exact mul_le_mul' (ENNReal.ofReal_le_ofReal (Complex.abs_re_le_norm _)) le_rfl
+    bound
   have hbi : (∫⁻ u, ENNReal.ofReal |(f u).im| *
       (∫⁻ ω, G (gmcRootedMeasure γ u (M ω)) ∂P) ∂gmcReferenceMeasure) < ⊤ := by
     apply lt_of_le_of_lt (lintegral_mono ?_) hb
     intro u
-    exact mul_le_mul' (ENNReal.ofReal_le_ofReal (Complex.abs_im_le_norm _)) le_rfl
+    bound
   obtain ⟨hLr, hRr, her⟩ := fusion_rooted_real_integral P X hX γ hγ hγ2 M hM
     (fun u => (f u).re) (Complex.measurable_re.comp hf) (hfi.mono fun _ h => h.re) G hG hbr
   obtain ⟨hLi, hRi, hei⟩ := fusion_rooted_real_integral P X hX γ hγ hγ2 M hM
     (fun u => (f u).im) (Complex.measurable_im.comp hf) (hfi.mono fun _ h => h.im) G hG hbi
-  let L := fun ω => ((G (M ω)).toReal : ℂ) * (∫ u, f u ∂M ω)
-  let R := fun u => f u * ((∫⁻ ω, G (gmcRootedMeasure γ u (M ω)) ∂P).toReal : ℂ)
+  let L := fun ω => ((G (M ω)).toReal) * (∫ u, f u ∂M ω)
+  let R := fun u => f u * ((∫⁻ ω, G (gmcRootedMeasure γ u (M ω)) ∂P).toReal)
   have heLr : (fun ω => (G (M ω)).toReal * (∫ u, (f u).re ∂M ω)) =ᵐ[P]
       (fun ω => (L ω).re) := by
     filter_upwards [hfi] with ω hω
@@ -65,7 +65,7 @@ theorem fusion_rooted_complex_integral {Ω : Type*} [MeasurableSpace Ω]
       using hRi
   have hRint : Integrable R gmcReferenceMeasure := Integrable.re_im_iff.mp ⟨hRre, hRim⟩
   refine ⟨hLint, hRint, ?_⟩
-  change (∫ ω, L ω ∂P) = ∫ u, R u ∂gmcReferenceMeasure
+  change _ = ∫ u, R u ∂gmcReferenceMeasure
   apply Complex.ext
   · calc
       _ = ∫ ω, (L ω).re ∂P := (integral_re hLint).symm

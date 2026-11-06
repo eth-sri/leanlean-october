@@ -20,12 +20,12 @@ theorem reflected_ordered_two_sided_squeeze {ι : Type*} (l : Filter ι)
   constructor
   · intro a ha
     obtain ⟨H,hHa,hH⟩ := ((hLlo.eventually (lt_mem_nhds ha)).and
-      (eventually_gt_atTop (0 : ℝ))).exists
+      (eventually_gt_atTop 0)).exists
     filter_upwards [(hg H hH).eventually (lt_mem_nhds hHa),hbound H hH] with i hi hb
     exact hi.trans_le hb.1
   · intro b hb
     obtain ⟨H,hHb,hH⟩ := ((hLhi.eventually (gt_mem_nhds hb)).and
-      (eventually_gt_atTop (0 : ℝ))).exists
+      (eventually_gt_atTop 0)).exists
     filter_upwards [(hk H hH).eventually (gt_mem_nhds hHb),hbound H hH] with i hi hu
     exact hu.2.trans_lt hi
 

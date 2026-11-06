@@ -25,18 +25,21 @@ variable {γ χ α₁ α₂ α₃ : ℝ}
 /-- The base factor restricted to the disk of radius `r` around `z₀`. -/
 noncomputable def bpzNearWeight (γ χ α₁ α₂ α₃ : ℝ) (z₀ : ℂ) (r : ℝ) (x : ℂ) : ℝ :=
   if ‖x - z₀‖ < r then bpzBaseWeight γ χ α₁ α₂ α₃ x else 0
+section
+variable (z₀ : ℂ) (r : ℝ)
 
-theorem bpzNearWeight_nonneg (z₀ : ℂ) (r : ℝ) (x : ℂ) :
+theorem bpzNearWeight_nonneg (x : ℂ) :
     0 ≤ bpzNearWeight γ χ α₁ α₂ α₃ z₀ r x := by
   unfold bpzNearWeight; split_ifs
   · exact bpzBaseWeight_nonneg x
-  · exact le_rfl
+  rfl
 
-theorem measurable_bpzNearWeight (z₀ : ℂ) (r : ℝ) :
+theorem measurable_bpzNearWeight :
     Measurable (bpzNearWeight γ χ α₁ α₂ α₃ z₀ r) := by
-  unfold bpzNearWeight
   exact Measurable.ite (measurableSet_lt (measurable_id.sub measurable_const).norm
     measurable_const) measurable_bpzBaseWeight measurable_const
+
+end
 
 /-- **Near-root expectation bound**, uniform in the root and the softening. -/
 theorem bpz_near_expect_bound {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
@@ -55,7 +58,7 @@ theorem bpz_near_expect_bound {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
   have hzR : ‖z‖ ≤ ‖z₀‖ + r₁ := by
     have := norm_le_norm_add_norm_sub' z z₀
     linarith
-  set f : ℂ → ℝ≥0∞ := fun x => ENNReal.ofReal (bpzNearWeight γ χ α₁ α₂ α₃ z₀ r x * ‖x - z‖ ^ β)
+  set f : ℂ → ℝ≥0∞ := fun x => ENNReal.ofReal _
     with hf
   have hfm : Measurable f := ENNReal.measurable_ofReal.comp
     ((measurable_bpzNearWeight z₀ r).mul ((measurable_id.sub measurable_const).norm.pow_const _))
@@ -76,16 +79,16 @@ theorem bpz_near_expect_bound {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
       rw [ite_eq_left hx]
       have hxB : x ∈ Metric.closedBall z₀ r₁ := by
         rw [Metric.mem_closedBall, dist_eq_norm]; linarith
-      exact mul_le_mul_of_nonneg_right (hCB x hxB) (Real.rpow_nonneg (norm_nonneg _) _)
+      bound
     · have h0 : f x = 0 := by
         simp only [hf, bpzNearWeight, hx, ↓reduceIte, zero_mul, ENNReal.ofReal_zero]
       rw [h0]; exact zero_le
   calc ENNReal.ofReal Cn * ∫⁻ x, f x ∂volume
-      ≤ ENNReal.ofReal Cn * ∫⁻ x, (Metric.ball z (2 * r)).indicator
-          (fun x => ENNReal.ofReal (CB * ‖x - z‖ ^ β)) x ∂volume :=
+      ≤ ENNReal.ofReal Cn * ∫⁻ x, (Metric.ball z _).indicator
+          (fun x => ENNReal.ofReal _) x ∂volume :=
         mul_le_mul_right (lintegral_mono hpt) _
     _ = ENNReal.ofReal Cn * (ENNReal.ofReal CB *
-          ∫⁻ x in Metric.ball z (2 * r), ENNReal.ofReal (‖x - z‖ ^ β)) := by
+          ∫⁻ x in Metric.ball z _, ENNReal.ofReal (‖x - z‖ ^ β)) := by
         rw [lintegral_indicator measurableSet_ball]
         congr 1
         rw [← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]

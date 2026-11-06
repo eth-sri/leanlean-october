@@ -20,7 +20,6 @@ namespace DOZZ.Proofs
 /-- The pin variance is strictly positive throughout the compact-center geometry of the
 one-insertion tail estimate. -/
 theorem offCenter_pin_variance_pos (z : ℂ) (hz : 2 ≤ ‖z‖) :
-    0 < 2 * Real.log ‖z‖ := by
-  exact mul_pos (by norm_num) (Real.log_pos (by linarith))
+    0 < 2 * Real.log ‖z‖ := by bound
 
 end DOZZ.Proofs

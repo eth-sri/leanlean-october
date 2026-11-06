@@ -28,14 +28,14 @@ theorem dual_copied_radial_weighted_mass_joint_law
     P.map (fun ω => (A ω, ∫⁻ x in ({0} : Set ℂ)ᶜ, f x ∂M ω)) =
       (P.prod P).map (fun ω : Ω × Ω => (A ω.1, ∫⁻ x in ({0} : Set ℂ)ᶜ,
         f x*ENNReal.ofReal (reflected_global_reinsertionWeight γ (A ω.1) x) ∂N ω.2)) := by
-  let F := fun p : TwoSidedPath × Ω => ∫⁻ x in ({0} : Set ℂ)ᶜ,
+  let F := fun p : TwoSidedPath × Ω => ∫⁻ x in ({0})ᶜ,
     f x*ENNReal.ofReal (reflected_global_reinsertionWeight γ p.1 x) ∂N p.2
-  have hFm : Measurable F := reflected_chart_parameter_mass_measurable
-    ({0} : Set ℂ)ᶜ isClosed_singleton.isOpen_compl N hN hfin _
+  have hFm := reflected_chart_parameter_mass_measurable
+    ({0})ᶜ isClosed_singleton.isOpen_compl N hN hfin _
       ((hf.comp measurable_snd).mul (reflected_global_reinsertionWeight_measurable γ).ennreal_ofReal)
-  have hAc : AEMeasurable (fun ω : Ω × Ω => A ω.1) (P.prod P) := hA.comp_fst
-  have hpack : AEMeasurable (fun ω : Ω × Ω => (A ω.1, F (A ω.1,ω.2))) (P.prod P) :=
-    hAc.prodMk (hFm.comp_aemeasurable (hAc.prodMk measurable_snd.aemeasurable))
+  have hAc : AEMeasurable (fun ω => A ω.1) (P.prod P) := hA.comp_fst
+  have hpack : AEMeasurable (fun ω => (A ω.1, F (A ω.1,ω.2))) (P.prod P) :=
+    by fun_prop
   apply Measure.ext
   intro S hS
   let G : TwoSidedPath × ℝ≥0∞ → ℝ≥0∞ := S.indicator (fun _ => 1)

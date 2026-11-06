@@ -83,10 +83,10 @@ theorem unitVolume_residual_factor_eq_one_of_shifts
                         dozzFormula γ μ U (α₁ : ℂ) (α₂ : ℂ) (α₃ : ℂ)) := by
   obtain ⟨hη0, hηγ, hη3⟩ := hη
   -- the small cube
-  set η₀ : ℝ := min η (γ / 4) with hη₀
-  have hη₀le : η₀ ≤ η := min_le_left _ _
-  have hη₀4 : η₀ ≤ γ / 4 := min_le_right _ _
-  have hη₀0 : 0 < η₀ := lt_min hη0 (by positivity)
+  set η₀ := min η (γ / 4) with hη₀
+  have hη₀le : η₀ ≤ η := min_le_left ..
+  have hη₀4 : η₀ ≤ γ / 4 := min_le_right ..
+  have hη₀0 : 0 < η₀ := by positivity
   have hη₀γ : Q γ - 2 * η₀ > γ := by linarith
   have hη₀3 : 3 * η₀ < Q γ := by linarith
   have hsmall : ∀ a b c : ℝ, Q γ - η₀ < a → a < Q γ → Q γ - η₀ < b → b < Q γ →
@@ -94,7 +94,7 @@ theorem unitVolume_residual_factor_eq_one_of_shifts
         ((μ : ℂ) ^ (sExp γ a b c : ℂ) / Complex.Gamma (sExp γ a b c)) *
           dozzFormula γ μ U a b c := by
     intro a b c ha1 ha2 hb1 hb2 hc1 hc2
-    have hjoint := exists_joint_representative P M (η := η₀) (α₂ := b) (α₃ := c)
+    have hjoint := exists_joint_representative P M
       (by linarith) (hFirstStrip η₀ ⟨hη₀0, hη₀γ⟩ b c ⟨hb1, hb2⟩ ⟨hc1, hc2⟩)
       (hDualStripFirstCase η₀ ⟨hη₀0, hη₀γ⟩ hη₀4 b c ⟨hb1, hb2⟩ ⟨hc1, hc2⟩)
     obtain ⟨c₀, hc₀⟩ := slice_constant_of_joint P M hγ hγ2 hγirr hμ ⟨hη₀0, hη₀γ⟩
@@ -111,7 +111,6 @@ theorem unitVolume_residual_factor_eq_one_of_shifts
   refine ⟨B, fun ω => lateralProjectedGMC γ (A ω) (M ω), hSLP, fun α _ hα => hB α hα, 1, rfl,
     fun α₁ α₂ α₃ h1 h2 h3 h4 h5 h6 => ?_⟩
   have hs : 0 < sExp γ α₁ α₂ α₃ := by
-    unfold sExp
     exact div_pos (by linarith) hγ
   rw [one_mul]
   exact roots_unitVolume_of_cube P X M γ μ η₀ hγ hγ2 hμ hη₀0 hη₀3 U hU hX hM hsmall α₁ α₂ α₃

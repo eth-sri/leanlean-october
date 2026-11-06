@@ -40,9 +40,9 @@ theorem dual_full_fusion_and_asymptotic {Ω : Type*} [MeasurableSpace Ω]
             structureConstant P M γ μ (α₁ - 2 / γ) α₂ α₃ +
               reflectionR P γ μ α₁ (B α₁) Z *
                 structureConstant P M γ μ (2 * Q γ - α₁ - 2 / γ) α₂ α₃ *
-                  (‖z‖ ^ κ : ℝ) + r z) ∧
+                  (‖z‖ ^ κ) + r z) ∧
             Tendsto (fun z => r z / ‖z‖ ^ κ)
-              (nhdsWithin (0 : ℂ) {z : ℂ | z ≠ 0}) (nhds 0)) ∧
+              (nhdsWithin 0 {z : ℂ | z ≠ 0}) (nhds 0)) ∧
           (∀ z ∈ gaussCutPlane,
             fourPointT P M γ μ (-2 / γ) α₁ α₂ α₃ z =
               structureConstant P M γ μ (α₁ - 2 / γ) α₂ α₃ *

@@ -29,10 +29,11 @@ analytic: the second half of the gluing lemma ([KRV, Lemma 10.5]).
 open MeasureTheory Filter Topology Set
 
 namespace DOZZ.Proofs
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
 
 /-- **Continuation of the reflected shift from a box.** -/
-theorem reflectedShift_of_box {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (M : Ω → Measure ℂ) {γ μ : ℝ} (hγ : 0 < γ) (hμ : 0 < μ)
+theorem reflectedShift_of_box (M : Ω → Measure ℂ) {γ μ : ℝ} (hγ : 0 < γ) (hμ : 0 < μ)
     {V₃ : Set (Fin 3 → ℂ)} (hV₃ : IsOpen V₃)
     (hV₃mem : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) → complexifyNCharges α ∈ V₃)
     {f₃ : (Fin 3 → ℂ) → ℂ} (hf₃ : DifferentiableOn ℂ f₃ V₃)
@@ -54,7 +55,7 @@ theorem reflectedShift_of_box {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (hA : ShiftCoeffGood γ ((x : ℂ) - γ / 2) b c) :
     R x * (structureConstant P M γ μ (2 * Q γ - x) b c : ℂ) = -(1 / (Real.pi * μ)) *
       shiftCoeffA γ (γ / 2) ((x : ℂ) - γ / 2) b c * (structureConstant P M γ μ (x - γ) b c : ℂ) := by
-  set U : Set ℂ := segC x₀ x ⁻¹' horizontalStrip h ∩
+  set U := segC x₀ x ⁻¹' horizontalStrip h ∩
     (segT (2 * Q γ - x₀) (2 * Q γ - x) b₀ b c₀ c ⁻¹' V₃ ∩
       segT (x₀ - γ) (x - γ) b₀ b c₀ c ⁻¹' V₃) with hU
   set F : ℂ → ℂ := fun t => R (segC x₀ x t) *
@@ -70,22 +71,20 @@ theorem reflectedShift_of_box {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
       (segH_meromorphicOn hV₃ hf₃ hμ (2 * Q γ - x₀) (2 * Q γ - x) b₀ b c₀ c t ht.2.1)
   have hGm : MeromorphicOn G U := fun t ht =>
     (MeromorphicAt.const _ t |>.fun_mul (meromorphicAt_shiftCoeffA_comp
-      (f₁ := fun t => segC x₀ x t - γ / 2) ((analyticAt_segC x₀ x t).sub analyticAt_const)
+      ((analyticAt_segC x₀ x t).sub analyticAt_const)
       (analyticAt_segC b₀ b t) (analyticAt_segC c₀ c t))).fun_mul
       (segH_meromorphicOn hV₃ hf₃ hμ (x₀ - γ) (x - γ) b₀ b c₀ c t ht.2.2)
   have hRev : ∀ᶠ t : ℝ in 𝓝[>] 0, AnalyticAt ℂ R ((x₀ + t * (x - x₀) : ℝ) : ℂ) := by
-    have hc : ContinuousAt (fun t : ℝ => ((x₀ + t * (x - x₀) : ℝ) : ℂ)) 0 := by fun_prop
+    have hc : ContinuousAt (fun t => ((x₀ + t * (x - x₀) : ℝ) : ℂ)) 0 := by fun_prop
     have h0 : ((x₀ + 0 * (x - x₀) : ℝ) : ℂ) = (x₀ : ℂ) := by simp
     have hev := hc.preimage_mem_nhds (by rw [h0]; exact hR₀.eventually_analyticAt)
     exact nhdsWithin_le_nhds hev
   have hstart : ∀ᶠ t : ℝ in 𝓝[>] 0, F t = G t := by
-    filter_upwards [eventually_segC_mem (b := x) isOpen_Ioo hx₀,
-      eventually_segC_mem (b := b) isOpen_Ioo hb₀, eventually_segC_mem (b := c) isOpen_Ioo hc₀,
+    filter_upwards [eventually_segC_mem isOpen_Ioo hx₀,
+      eventually_segC_mem isOpen_Ioo hb₀, eventually_segC_mem isOpen_Ioo hc₀,
       Ioo_mem_nhdsGT (show (0 : ℝ) < 1 by norm_num), hRev] with t hxt hbt hct ht hRt
-    have hE₁ := extendedSeiberg3_segment hγ hq₀₁ h₁ ht.1.le ht.2.le
-    have hE₂ := extendedSeiberg3_segment hγ hq₀₂ h₂ ht.1.le ht.2.le
     simp only [hF, hG]
-    rw [segH_ofReal P M hμ hf₃eq hE₁, segH_ofReal P M hμ hf₃eq hE₂, segC_ofReal, segC_ofReal,
+    rw [segH_ofReal P M hμ hf₃eq (extendedSeiberg3_segment hγ hq₀₁ h₁ ht.1.le ht.2.le), segH_ofReal P M hμ hf₃eq (extendedSeiberg3_segment hγ hq₀₂ h₂ ht.1.le ht.2.le), segC_ofReal, segC_ofReal,
       segC_ofReal, show x₀ - γ + t * (x - γ - (x₀ - γ)) = x₀ + t * (x - x₀) - γ by ring,
       show 2 * Q γ - x₀ + t * (2 * Q γ - x - (2 * Q γ - x₀)) = 2 * Q γ - (x₀ + t * (x - x₀)) by
         ring]
@@ -105,13 +104,16 @@ theorem reflectedShift_of_box {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
   simp only [hF, hG] at key
   rw [segH_one P M hμ hf₃eq h₁, segH_one P M hμ hf₃eq h₂, segC_one, segC_one, segC_one] at key
   exact key
+section
+variable (X : Ω → Distr) (M : Ω → Measure ℂ) {γ μ : ℝ}
+section
+variable (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ) (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
+include hγ hγ2 hμ hX hM
 
 /-- **The reflected shift near `Q` from `DOZZ.structureConstant_reflected_shift_and_gluing`**, for a
 strip-meromorphic `R` with the physical reflection values, at every real point of the near-`Q` box
 where `R` is analytic. -/
-theorem reflectedShift_nearQ_of_reflected_shift_and_gluing {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (M : Ω → Measure ℂ) {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
-    (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) {η : ℝ} (hη : 0 < η ∧ Q γ - 2 * η > γ)
+theorem reflectedShift_nearQ_of_reflected_shift_and_gluing {η : ℝ} (hη : 0 < η ∧ Q γ - 2 * η > γ)
     (hShiftGluing : ∀ α₂ α₃ : ℝ, (Q γ - η < α₂ ∧ α₂ < Q γ) → (Q γ - η < α₃ ∧ α₃ < Q γ) →
       ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
         IsSourceLateralProjection P X γ M Z ∧
@@ -140,29 +142,27 @@ theorem reflectedShift_nearQ_of_reflected_shift_and_gluing {Ω : Type*} [Measura
     unitVolumeStructureConstant_holomorphic_near_extended_domain P X M γ hγ hγ2 hX hM
   obtain ⟨B, Z, -, hBd, h, hh, C, Rs, hCm, hRsm, hCv, hRsv, -, hrefl⟩ :=
     hShiftGluing b c ⟨hb₁, hb₂⟩ ⟨hc₁, hc₂⟩
-  set h' : ℝ := min h hR with hh'
-  have hh'pos : 0 < h' := lt_min hh hhR
+  set h' := min h hR with hh'
   have hsub₁ : horizontalStrip h' ⊆ {z : ℂ | |z.im| < h} := fun z hz =>
-    lt_of_lt_of_le (show |z.im| < h' from hz) (min_le_left _ _)
+    lt_of_lt_of_le (show |z.im| < h' from hz) (min_le_left ..)
   have hsub₂ : horizontalStrip h' ⊆ horizontalStrip hR := fun z hz =>
-    lt_of_lt_of_le (show |z.im| < h' from hz) (min_le_right _ _)
-  have hRsR : ∀ α : ℝ, γ / 2 < α → α < Q γ → Rs (α : ℂ) = R (α : ℂ) := fun α h1 h2 => by
+    lt_of_lt_of_le (show |z.im| < h' from hz) (min_le_right ..)
+  have hRsR : ∀ α : ℝ, γ / 2 < α → α < Q γ → Rs α = R (α : ℂ) := fun α h1 h2 => by
     rw [hRsv α h1 h2, hRv α h1 h2,
       reflectionR_eq_of_isReflectionData P P γ μ α (B α) Z (BR α) ZR (hBd α h1 h2) (hBR α h1 h2)]
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
   have hγh : γ / 2 < 2 / γ := by
-    rw [div_lt_div_iff₀ (by norm_num) hγ]
     nlinarith
   have h2γ : 0 < 2 / γ := by positivity
   have h42 : 4 / γ = 2 * (2 / γ) := by ring
   have hgood : ShiftCoeffGood γ ((y : ℂ) - γ / 2) b c :=
-    shiftCoeffGood_of_lt hγ (by linarith) (by linarith [hη.1, hη.2])
-      (by linarith [hη.1, hη.2]) (by linarith [hη.1, hη.2]) (by linarith [hη.1, hη.2])
-  have hAy : AnalyticAt ℂ (fun z => shiftCoeffA γ (γ / 2) z (b : ℂ) (c : ℂ)) ((y : ℂ) - γ / 2) :=
-    analyticAt_shiftCoeffA_comp (f₁ := id) (f₂ := fun _ => (b : ℂ)) (f₃ := fun _ => (c : ℂ))
+    shiftCoeffGood_of_lt hγ (by linarith) (by linarith)
+      (by linarith) (by linarith) (by linarith)
+  have hAy :=
+    analyticAt_shiftCoeffA_comp
       analyticAt_id analyticAt_const analyticAt_const hgood
   exact reflectedShift_exact_of_strip P M hγ hγ2 hμ hη ⟨hb₁, hb₂⟩ ⟨hc₁, hc₂⟩ hV₃ hV₃mem hf₃
-    hf₃eq hh'pos (hCm.mono_set hsub₁) (hRsm.mono_set hsub₁) (hRm.mono_set hsub₂) hCv hRsR hrefl
+    hf₃eq (lt_min hh hhR) (hCm.mono_set hsub₁) (hRsm.mono_set hsub₁) (hRm.mono_set hsub₂) hCv hRsR hrefl
     hy₁ hy₂ hRy hAy
 
 /-- **The reflected shift on the two-triple extended domain**, from
@@ -170,10 +170,7 @@ theorem reflectedShift_nearQ_of_reflected_shift_and_gluing {Ω : Type*} [Measura
 reflection values, at every real `(x, b, c)` with `(2Q - x, b, c)` and `(x - γ, b, c)` in the
 extended Seiberg domain, `R` analytic at `x`, `Γ` analytic at both `s`-parameters and the shift
 coefficient analytic. -/
-theorem reflectedShift_full {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
-    (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
-    (hShiftGluing : ∀ η : ℝ, (0 < η ∧ Q γ - 2 * η > γ) → ∀ α₂ α₃ : ℝ,
+theorem reflectedShift_full (hShiftGluing : ∀ η : ℝ, (0 < η ∧ Q γ - 2 * η > γ) → ∀ α₂ α₃ : ℝ,
       (Q γ - η < α₂ ∧ α₂ < Q γ) → (Q γ - η < α₃ ∧ α₃ < Q γ) →
       ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
         IsSourceLateralProjection P X γ M Z ∧
@@ -205,28 +202,27 @@ theorem reflectedShift_full {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (
     unitVolumeStructureConstant_holomorphic_near_extended_domain P X M γ hγ hγ2 hX hM
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
   have hγh : γ / 2 < 2 / γ := by
-    rw [div_lt_div_iff₀ (by norm_num) hγ]
-    nlinarith
+    gcongr
   have h2γ : 0 < 2 / γ := by positivity
   have h42 : 4 / γ = 2 * (2 / γ) := by ring
-  set η₀ : ℝ := (Q γ - γ) / 4 with hη₀
-  have hη : 0 < η₀ ∧ Q γ - 2 * η₀ > γ := ⟨by rw [hη₀]; linarith, by rw [hη₀]; linarith⟩
+  set η₀ := (Q γ - γ) / 4 with hη₀
+  have hη : 0 < η₀ ∧ Q γ - 2 * η₀ > γ := by grind
   have hbox := reflectedShift_nearQ_of_reflected_shift_and_gluing P X M hγ hγ2 hμ hX hM hη (hShiftGluing η₀ hη) hhR hRm hBR hRv
   -- a start point where `R` is analytic
-  set x₁ : ℝ := Q γ + γ / 2 with hx₁
+  set x₁ := Q γ + γ / 2 with hx₁
   obtain ⟨u, hu, hRu⟩ : ∃ u : ℝ, u ∈ Ioo (-(γ / 4)) (γ / 4) ∧
       AnalyticAt ℂ R ((x₁ + u : ℝ) : ℂ) := by
     have hmer : MeromorphicAt R (x₁ : ℂ) := hRm _ (ofReal_mem_horizontalStrip hhR x₁)
-    have hev := eventually_analyticAt_affine hmer (a := 1) one_ne_zero
+    have hev := eventually_analyticAt_affine hmer one_ne_zero
     have hI : Ioo (-(γ / 4)) (γ / 4) ∈ 𝓝 (0 : ℝ) := Ioo_mem_nhds (by linarith) (by linarith)
     obtain ⟨u, hu1, hu2⟩ := (hev.and (nhdsWithin_le_nhds hI)).exists
     exact ⟨u, hu2, by simpa using hu1⟩
-  set x₀ : ℝ := x₁ + u with hx₀
-  set b₀ : ℝ := Q γ - η₀ / 2 with hb₀
-  have hx₀1 : Q γ < x₀ := by rw [hx₀, hx₁]; linarith [hu.1]
-  have hx₀2 : x₀ < Q γ + γ := by rw [hx₀, hx₁]; linarith [hu.2]
-  have hb₀1 : Q γ - η₀ < b₀ := by rw [hb₀]; linarith
-  have hb₀2 : b₀ < Q γ := by rw [hb₀]; linarith
+  set x₀ := x₁ + u with hx₀
+  set b₀ := Q γ - η₀ / 2 with hb₀
+  have hx₀1 : Q γ < x₀ := by grind
+  have hx₀2 : x₀ < Q γ + γ := by grind
+  have hb₀1 : Q γ - η₀ < b₀ := by linarith
+  have hb₀2 : b₀ < Q γ := by linarith
   have hq₀₁ : ExtendedSeiberg3 γ (2 * Q γ - x₀) b₀ b₀ :=
     extendedSeiberg3_of_lt hγ (by linarith) hb₀2 hb₀2 (by linarith) (by linarith) (by linarith)
       (by linarith)
@@ -236,6 +232,12 @@ theorem reflectedShift_full {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (
   exact reflectedShift_of_box P M hγ hμ hV₃ hV₃mem hf₃ hf₃eq hhR hRm
     (fun y b' c' hy₁ hy₂ hb₁ hb₂ hc₁ hc₂ hRy => hbox y b' c' hy₁ hy₂ hb₁ hb₂ hc₁ hc₂ hRy)
     ⟨hx₀1, hx₀2⟩ ⟨hb₀1, hb₀2⟩ ⟨hb₀1, hb₀2⟩ hRu hq₀₁ hq₀₂ h₁ h₂ hRx hs₁ hs₂ hA
+
+end
+
+end
+
+end
 
 end DOZZ.Proofs
 

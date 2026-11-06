@@ -34,44 +34,42 @@ noncomputable def bpzMixTest (φ ρ k k₂ L : ℂ → ℝ) (m : Measure ℂ) (x
 theorem measurable_bpzSymKer {φ ρ k L : ℂ → ℝ} (hφ : Measurable φ) (hρ : Measurable ρ)
     (hk : Measurable k) (hL : Measurable L) : Measurable (Function.uncurry (bpzSymKer φ ρ k L)) := by
   unfold bpzSymKer
-  have hd : Measurable (fun p : ℂ × ℂ => p.1 - p.2) := measurable_fst.sub measurable_snd
-  exact (((((hφ.comp measurable_fst).mul (hρ.comp measurable_snd)).sub
-    ((hφ.comp measurable_snd).mul (hρ.comp measurable_fst))).mul
-      ((hk.comp measurable_fst).mul (hk.comp measurable_snd))).mul (hL.comp hd)).div_const _
+  fun_prop
+section
+variable {m : Measure ℂ}
 
 /-- Antisymmetrization of a double integral. -/
-theorem bpz_integral_integral_symm {m : Measure ℂ} [SFinite m] {F : ℂ → ℂ → ℝ}
+theorem bpz_integral_integral_symm [SFinite m] {F : ℂ → ℂ → ℝ}
     (hF : Integrable (Function.uncurry F) (m.prod m)) :
     ∫ x, ∫ y, F x y ∂m ∂m = ∫ x, ∫ y, (F x y + F y x) / 2 ∂m ∂m := by
-  have hF' : Integrable (fun p : ℂ × ℂ => F p.1 p.2) (m.prod m) := hF
-  have hFs : Integrable (fun p : ℂ × ℂ => F p.2 p.1) (m.prod m) := hF.swap
-  have hsum : Integrable (fun p : ℂ × ℂ => (F p.1 p.2 + F p.2 p.1) / 2) (m.prod m) :=
+  have hF' : Integrable (fun p => F p.1 p.2) (m.prod m) := hF
+  have hFs : Integrable (fun p => F p.2 p.1) (m.prod m) := hF.swap
+  have hsum : Integrable (fun p => (F p.1 p.2 + F p.2 p.1) / 2) (m.prod m) :=
     (hF'.add hFs).div_const 2
-  rw [← integral_prod (fun p : ℂ × ℂ => F p.1 p.2) hF',
-    ← integral_prod (fun p : ℂ × ℂ => (F p.1 p.2 + F p.2 p.1) / 2) hsum,
+  rw [← integral_prod (fun p => F p.1 p.2) hF',
+    ← integral_prod (fun p => (F p.1 p.2 + F p.2 p.1) / 2) hsum,
     integral_div, integral_add hF' hFs]
   have hswap : ∫ p : ℂ × ℂ, F p.2 p.1 ∂(m.prod m) = ∫ p : ℂ × ℂ, F p.1 p.2 ∂(m.prod m) :=
-    integral_prod_swap (fun p : ℂ × ℂ => F p.1 p.2)
-  rw [hswap]
-  ring
+    integral_prod_swap (fun p => F p.1 p.2)
+  linarith
+section
+variable [IsFiniteMeasure m]
 
-theorem bpz_integrable_prod_of_bdd {m : Measure ℂ} [IsFiniteMeasure m] {F : ℂ → ℂ → ℝ}
+theorem bpz_integrable_prod_of_bdd {F : ℂ → ℂ → ℝ}
     (hF : Measurable (Function.uncurry F)) {C : ℝ} (hC : ∀ x y, |F x y| ≤ C) :
     Integrable (Function.uncurry F) (m.prod m) :=
   Integrable.of_bound hF.aestronglyMeasurable C (Eventually.of_forall fun p => by
-    rw [Real.norm_eq_abs]; exact hC p.1 p.2)
+    tauto)
 
 /-- The cutoff-region double integral equals the antisymmetrized one. -/
-theorem bpz_integral_symKer {m : Measure ℂ} [IsFiniteMeasure m] {φ ρ k L : ℂ → ℝ}
+theorem bpz_integral_symKer {φ ρ k L : ℂ → ℝ}
     (hφ : Measurable φ) (hρ : Measurable ρ) (hk : Measurable k) (hL : Measurable L)
     (hodd : ∀ w, L (-w) = -L w) {C : ℝ}
     (hC : ∀ x y, |φ x * k x * (ρ y * k y) * L (x - y)| ≤ C) :
     ∫ x, ∫ y, φ x * k x * (ρ y * k y) * L (x - y) ∂m ∂m =
       ∫ x, ∫ y, bpzSymKer φ ρ k L x y ∂m ∂m := by
   have hFm : Measurable (Function.uncurry fun x y => φ x * k x * (ρ y * k y) * L (x - y)) :=
-    (((hφ.comp measurable_fst).mul (hk.comp measurable_fst)).mul
-      ((hρ.comp measurable_snd).mul (hk.comp measurable_snd))).mul
-      (hL.comp (measurable_fst.sub measurable_snd))
+    by fun_prop
   rw [bpz_integral_integral_symm (bpz_integrable_prod_of_bdd hFm hC)]
   congr 1
   funext x
@@ -80,6 +78,10 @@ theorem bpz_integral_symKer {m : Measure ℂ} [IsFiniteMeasure m] {φ ρ k L : �
   unfold bpzSymKer
   rw [show y - x = -(x - y) by ring, hodd]
   ring
+
+end
+
+end
 
 /-- **Pathwise symmetrization of the right side of the cutoff Ward identity.** -/
 theorem bpz_cutoff_sym_identity {γ r : ℝ} {φ ρ k₁ k₂ : ℂ → ℝ} {m₁ m₂ : Measure ℂ}
@@ -96,24 +98,20 @@ theorem bpz_cutoff_sym_identity {γ r : ℝ} {φ ρ k₁ k₂ : ℂ → ℝ} {m�
   have hTm : Measurable T :=
     (ContinuousLinearMap.apply ℝ ℝ v).continuous.measurable.comp (measurable_bpzTruncLogDeriv r)
   have hLb : ∀ w, |L w| ≤ Real.exp r * ‖v‖ := fun w => by
-    rw [← Real.norm_eq_abs]
     exact ((bpzLamDeriv r w).le_opNorm v).trans
       (mul_le_mul_of_nonneg_right (norm_bpzLamDeriv_le_exp r w) (norm_nonneg v))
   have hTb : ∀ w, |T w| ≤ Real.exp r * ‖v‖ := fun w => by
-    rw [← Real.norm_eq_abs]
     exact ((bpzTruncLogDeriv r w).le_opNorm v).trans
       (mul_le_mul_of_nonneg_right (norm_bpzTruncLogDeriv_le r w).1 (norm_nonneg v))
   have hC₁ : 0 ≤ C₁ := (abs_nonneg _).trans (hφk 0)
   have hC₂ : 0 ≤ C₂ := (abs_nonneg _).trans (hρk 0)
-  set Cb : ℝ := C₁ * C₂ * (Real.exp r * ‖v‖)
+  set Cb := C₁ * C₂ * (Real.exp r * ‖v‖)
   have hFb : ∀ x y, |φ x * k₁ x * (ρ y * k₁ y) * L (x - y)| ≤ Cb := fun x y => by
     rw [abs_mul, abs_mul]
     exact mul_le_mul (mul_le_mul (hφk x) (hρk y) (abs_nonneg _) hC₁) (hLb _) (abs_nonneg _)
       (by positivity)
   have hFm : Measurable (Function.uncurry fun x y => φ x * k₁ x * (ρ y * k₁ y) * L (x - y)) :=
-    (((hφ.comp measurable_fst).mul (hk₁.comp measurable_fst)).mul
-      ((hρ.comp measurable_snd).mul (hk₁.comp measurable_snd))).mul
-      (hLm.comp (measurable_fst.sub measurable_snd))
+    by fun_prop
   -- pointwise decomposition
   have hpt : ∀ x, φ x * k₁ x * bpzMixedDerivReal γ r ρ k₁ k₂ x v m₁ m₂ =
       γ ^ 2 * ((∫ y, φ x * k₁ x * (ρ y * k₁ y) * L (x - y) ∂m₁) +
@@ -122,17 +120,13 @@ theorem bpz_cutoff_sym_identity {γ r : ℝ} {φ ρ k₁ k₂ : ℂ → ℝ} {m�
     unfold bpzMixedDerivReal bpzMixTest
     rw [mul_add, mul_add, ← integral_const_mul, ← integral_const_mul, ← integral_const_mul,
       ← integral_const_mul]
-    congr 1
-    · congr 1; funext y; simp only [hLdef]; ring
-    · congr 1; funext y; simp only [hTdef]; ring
+    congr 1 <;> grind
   simp_rw [hpt]
   have hI1 : Integrable (fun x => ∫ y, φ x * k₁ x * (ρ y * k₁ y) * L (x - y) ∂m₁) m₁ :=
     bpz_integrable_inner hFm hFb
   have hMm : Measurable (fun x => bpzMixTest φ ρ k₁ k₂ T m₂ x) := by
     have hj : Measurable (fun p : ℂ × ℂ => (1 - ρ p.2) * k₂ p.2 * (φ p.1 * k₁ p.1 * T (p.1 - p.2))) :=
-      (((measurable_const.sub (hρ.comp measurable_snd)).mul (hk₂.comp measurable_snd)).mul
-        (((hφ.comp measurable_fst).mul (hk₁.comp measurable_fst)).mul
-          (hTm.comp (measurable_fst.sub measurable_snd))))
+      by fun_prop
     unfold bpzMixTest
     exact (hj.stronglyMeasurable.integral_prod_right' (ν := m₂)).measurable
   have hI2 : Integrable (fun x => bpzMixTest φ ρ k₁ k₂ T m₂ x) m₁ := by
@@ -145,11 +139,10 @@ theorem bpz_cutoff_sym_identity {γ r : ℝ} {φ ρ k₁ k₂ : ℂ → ℝ} {m�
     refine integral_mono_of_nonneg (Eventually.of_forall fun y => norm_nonneg _)
       (h₂.abs.const_mul _) (Eventually.of_forall fun y => ?_)
     dsimp only
-    have := mul_le_mul (hφk x) (hTb (x - y)) (abs_nonneg _) hC₁
-    rw [Real.norm_eq_abs, abs_mul ((1 - ρ y) * k₂ y), abs_mul (φ x * k₁ x)]
+    rw [Real.norm_eq_abs, abs_mul _, abs_mul (φ x * k₁ x)]
     calc |(1 - ρ y) * k₂ y| * (|φ x * k₁ x| * |T (x - y)|)
         ≤ |(1 - ρ y) * k₂ y| * (C₁ * (Real.exp r * ‖v‖)) :=
-          mul_le_mul_of_nonneg_left this (abs_nonneg _)
+          mul_le_mul_of_nonneg_left (mul_le_mul (hφk x) (hTb (x - y)) (abs_nonneg _) hC₁) (abs_nonneg _)
       _ = C₁ * (Real.exp r * ‖v‖) * |(1 - ρ y) * k₂ y| := by ring
   rw [integral_const_mul, integral_add hI1 hI2,
     bpz_integral_symKer hφ hρ hk₁ hLm (fun w => by simp only [hLdef]; rw [bpzLamDeriv_neg]; rfl)

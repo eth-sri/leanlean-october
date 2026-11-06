@@ -42,13 +42,11 @@ theorem actual_copied_multiplier_error_uniform
         ∂P.prod P) ≤ C := by
   let : IsProbabilityMeasure P := hX.1
   have hfst := measurePreserving_fst (μ := P) (ν := P)
-  have hX' := isEquatorGFF_measurePreserving P (P.prod P) Prod.fst hfst X hX
-  have hM' := isGMCOf_measurePreserving P (P.prod P) Prod.fst hfst X hX γ M hM
   obtain ⟨L,hL,hEnv⟩ := complete_envelope_moment_uniform_compact (P.prod P)
     K hK hz γ derivBound supBound R hFamily.2.2.1 hFamily.2.1 hR
   obtain ⟨D,hD,hMass⟩ := uniform_correlated_improved_charge_moment (P.prod P)
-    (X ∘ Prod.fst) hX' γ hγ hγ2 (M ∘ Prod.fst) hM' ρ hρ
-    (hρR.trans (min_le_right _ _)) Amax g hg p q hpq L hL
+    (X ∘ Prod.fst) (isEquatorGFF_measurePreserving P (P.prod P) Prod.fst hfst X hX) γ hγ hγ2 _ (isGMCOf_measurePreserving P (P.prod P) Prod.fst hfst X hX γ M hM) ρ hρ
+    (hρR.trans (min_le_right ..)) Amax g hg p q hpq L hL
   refine ⟨D,hD,?_⟩
   intro z hzk F hF N hN α r hα hr hbulk hins hrR
   have hzn := hz z hzk
@@ -63,50 +61,43 @@ theorem actual_copied_multiplier_error_uniform
   have hs : 0 ≤ supBound := hFamily.2.1
   have hC (q : Ω × Ω) : 0 ≤ C q := by
     have hD : 0 ≤ pinCorrectionEnvelope z γ (A q) (B q) := by
-      unfold pinCorrectionEnvelope
       exact add_nonneg (mul_nonneg
         (div_nonneg (abs_nonneg _) (offCenter_pin_variance_pos z hzn).le)
         (abs_nonneg _)) (sq_nonneg _)
-    dsimp [C]
     positivity
   have hpin : Measurable (fun ω => Xc ω z 0) :=
     (hc.1 0).comp (measurable_id.prodMk measurable_const)
   have hA : Measurable A := hpin.comp measurable_fst
   have hB : Measurable B := hpin.comp measurable_snd
   have hD : Measurable (fun q => pinCorrectionEnvelope z γ (A q) (B q)) := by
-    unfold pinCorrectionEnvelope
     exact ((continuous_abs.measurable.comp (hB.sub hA)).const_mul _).add_const _
-  have hCm : Measurable C := (((hD.add_const 4).const_mul supBound).const_add derivBound).mul
-    (hD.add_const 4).exp
-  have hSm : Measurable S := ((hB.const_mul γ).sub_const _).exp
-  have hE : Measurable E := (hSm.mul hCm).ennreal_ofReal
+  have hCm : Measurable C := by fun_prop
+  have hSm : Measurable S := by fun_prop
   have hpinL := offCenter_pin_law P X Xc hX hc z hzn
   have hAL := hpinL.comp hfst.hasLaw
-  have hBL := hpinL.comp (measurePreserving_snd (μ := P) (ν := P)).hasLaw
+  have hBL := hpinL.comp (measurePreserving_snd (μ := P)).hasLaw
   have hAm : (∫ u, A u ∂P.prod P) = 0 := by
-    simpa only [A, Function.comp_def, integral_id_gaussianReal] using hAL.integral_eq
+    simpa using hAL.integral_eq
   have hBm : (∫ u, B u ∂P.prod P) = 0 := by
-    simpa only [B, Function.comp_def, integral_id_gaussianReal] using hBL.integral_eq
+    simpa using hBL.integral_eq
   have hAv : variance A (P.prod P) = 2*Real.log ‖z‖ := by
     simpa only [A, Function.comp_def, variance_id_gaussianReal,
       Real.coe_toNNReal _ (offCenter_pin_variance_pos z hzn).le] using hAL.variance_eq
   have hBv : variance B (P.prod P) = 2*Real.log ‖z‖ := by
     simpa only [B, Function.comp_def, variance_id_gaussianReal,
       Real.coe_toNNReal _ (offCenter_pin_variance_pos z hzn).le] using hBL.variance_eq
-  have hEm : (∫⁻ u, E u^(r*p) ∂P.prod P) ≤ L :=
+  have hEm :=
     hEnv z hzk A B hAL.hasGaussianLaw hBL.hasGaussianLaw hAm hBm hAv hBv
       (r*p) (mul_pos hr hpq.pos) hrR
   have hY := translated_field_isEquatorGFF P X Xc hX hc z
-  have hY' := isEquatorGFF_measurePreserving P (P.prod P) Prod.fst hfst _ hY
   have hN' := isGMCOf_measurePreserving P (P.prod P) Prod.fst hfst _ hY γ _ hN
-  have hm := hMass _ (N ∘ Prod.fst) hY' hN' α r hα hr hbulk hins E hE.aemeasurable hEm
+  have hm := hMass _ _ (isEquatorGFF_measurePreserving P (P.prod P) Prod.fst hfst _ hY) hN' α r hα hr hbulk hins E ((hSm.mul hCm).ennreal_ofReal).aemeasurable hEm
   apply le_trans (lintegral_mono fun u => ?_) hm
   apply ENNReal.rpow_le_rpow _ hr.le
   have he := copied_multiplier_error_mass_le K Family radius supBound derivBound
     lowerBound hFamily z hzk hzn F hF γ α (A u) (B u) ρ hγ.ne' hρR (N u.1)
-  have h := mul_le_mul' (le_refl (ENNReal.ofReal (S u))) he
   simpa only [E, ENNReal.ofReal_mul (Real.exp_nonneg _), mul_assoc, S, C, A, B,
-    Function.comp_def] using h
+    Function.comp_def] using (mul_le_mul' (le_refl (ENNReal.ofReal (S u))) he)
 
 
 end DOZZ.Proofs

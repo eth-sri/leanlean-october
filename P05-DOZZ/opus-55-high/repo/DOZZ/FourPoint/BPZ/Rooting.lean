@@ -32,32 +32,33 @@ theorem gffKernel_ge_neg_log_two (u x : ℂ) : -Real.log 2 ≤ gffKernel u x := 
   have hx0 : 0 < normPlus x := bpz_normPlus_pos x
   rcases eq_or_ne u x with h | h
   · subst h
-    simp only [sub_self, norm_zero, Real.log_zero, neg_zero, zero_add]
+    simp
     have h1 := Real.log_nonneg hu
     have h2 := Real.log_pos (by norm_num : (1 : ℝ) < 2)
     linarith
   · have hpos : 0 < ‖u - x‖ := norm_pos_iff.mpr (sub_ne_zero.mpr h)
     have hle : ‖u - x‖ ≤ 2 * (normPlus u * normPlus x) := by
-      have h1 : ‖u‖ ≤ normPlus u := le_max_right _ _
-      have h2 : ‖x‖ ≤ normPlus x := le_max_right _ _
+      have h1 : ‖u‖ ≤ normPlus u := le_max_right ..
+      have h2 : ‖x‖ ≤ normPlus x := le_max_right ..
       have h3 := norm_sub_le u x
       nlinarith
     have hlog := Real.log_le_log hpos hle
     rw [Real.log_mul (by norm_num) (by positivity), Real.log_mul hu0.ne' hx0.ne'] at hlog
     linarith
+section
+variable (u : ℂ)
 
 /-- The density of the rooted measure is measurable. -/
-theorem measurable_gmcRootedDensity (u : ℂ) :
+theorem measurable_gmcRootedDensity :
     Measurable fun x : ℂ => ENNReal.ofReal (Real.exp (γ ^ 2 * gffKernel u x)) := by
   refine ENNReal.measurable_ofReal.comp (Real.measurable_exp.comp ?_)
   refine Measurable.const_mul ?_ _
-  unfold gffKernel
   exact (((measurable_const.sub measurable_id).norm.log.neg).add
-    (measurable_const : Measurable fun _ : ℂ => Real.log (normPlus u))).add
+    measurable_const).add
     (Real.measurable_log.comp bpz_measurable_normPlus)
 
 /-- The rooted measure dominates `2^{-γ²}` times the measure. -/
-theorem lintegral_le_lintegral_gmcRootedMeasure (u : ℂ) (m : Measure ℂ) (g : ℂ → ℝ≥0∞)
+theorem lintegral_le_lintegral_gmcRootedMeasure (m : Measure ℂ) (g : ℂ → ℝ≥0∞)
     (hg : Measurable g) :
     ENNReal.ofReal ((2 : ℝ) ^ (-γ ^ 2)) * ∫⁻ x, g x ∂m ≤
       ∫⁻ x, g x ∂gmcRootedMeasure γ u m := by
@@ -65,13 +66,14 @@ theorem lintegral_le_lintegral_gmcRootedMeasure (u : ℂ) (m : Measure ℂ) (g :
     (measurable_gmcRootedDensity u) hg, ← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
   apply lintegral_mono
   intro x
-  simp only [Pi.mul_apply]
+  simp
   gcongr
   rw [Real.rpow_def_of_pos (by norm_num : (0 : ℝ) < 2)]
   apply Real.exp_le_exp.mpr
   have := gffKernel_ge_neg_log_two u x
-  have hγ2 : 0 ≤ γ ^ 2 := sq_nonneg γ
-  nlinarith [Real.log_pos (by norm_num : (1 : ℝ) < 2)]
+  nlinarith
+
+end
 
 /-- A lower bound by a positive multiple transfers to nonpositive powers, including the case of
 an infinite lower bound. -/
@@ -80,13 +82,8 @@ theorem bpz_rpow_neg_le_of_le' {a b : ℝ≥0∞} {c : ℝ} (hc : 0 < c)
     a ^ (-q) ≤ ENNReal.ofReal (c ^ (-q)) * b ^ (-q) := by
   rcases eq_or_ne b ⊤ with hb | hb
   · rcases hq.eq_or_lt with hq0 | hq0
-    · subst hq0
-      simp
-    · have ha : a = ⊤ := by
-        rw [hb, ENNReal.mul_top (ENNReal.ofReal_pos.mpr hc).ne'] at hab
-        exact top_le_iff.mp hab
-      rw [ha, ENNReal.top_rpow_of_neg (by linarith)]
-      exact zero_le
+    · aesop
+    simp_all
   · exact bpz_rpow_neg_le_of_le hc hb hab q hq
 
 /-- The rooted mass dominates `2^{-γ²}` times the mass. -/
@@ -110,7 +107,7 @@ theorem bpz_rooted_bound
   have hFm : Measurable F :=
     (ENNReal.continuous_rpow_const.measurable).comp (measurable_bpzMass_measure ε z)
   have hH : Measurable (fun p : ℂ × ((TestFn → ℝ) × Measure ℂ) => f p.1 * F p.2.2) :=
-    (hf.comp measurable_fst).mul (hFm.comp (measurable_snd.comp measurable_snd))
+    by fun_prop
   have hid := equatorGFF_rooted_GMC_identity P X hX γ hγ hγ2 M hM
     (fun u _ m => f u * F m) hH
   have hmeasI : AEMeasurable (fun ω => F (M ω)) P := by
@@ -123,7 +120,7 @@ theorem bpz_rooted_bound
     apply lintegral_congr
     intro ω
     rw [lintegral_mul_const _ hf, mul_comm]
-  have hc : (0 : ℝ) < (2 : ℝ) ^ (-γ ^ 2) := by positivity
+  have hc : 0 < (2 : ℝ) ^ (-γ ^ 2) := by positivity
   have hpt : ∀ u ω, F (gmcRootedMeasure γ u (M ω)) ≤
       ENNReal.ofReal ((2 : ℝ) ^ (γ ^ 2 * q)) * F (M ω) := by
     intro u ω
@@ -137,14 +134,14 @@ theorem bpz_rooted_bound
   change ∫⁻ ω, F (M ω) * ∫⁻ x, f x ∂M ω ∂P ≤ _
   rw [hlhs, hid]
   calc ∫⁻ u, ∫⁻ ω, f u * F (gmcRootedMeasure γ u (M ω)) ∂P ∂gmcReferenceMeasure
-      ≤ ∫⁻ u, ∫⁻ ω, f u * (ENNReal.ofReal ((2 : ℝ) ^ (γ ^ 2 * q)) * F (M ω)) ∂P
+      ≤ ∫⁻ u, ∫⁻ ω, f u * (ENNReal.ofReal (2 ^ (γ ^ 2 * q)) * F (M ω)) ∂P
           ∂gmcReferenceMeasure := by
         apply lintegral_mono
         intro u
         apply lintegral_mono
         intro ω
         exact mul_le_mul_right (hpt u ω) _
-    _ = ∫⁻ u, f u * (ENNReal.ofReal ((2 : ℝ) ^ (γ ^ 2 * q)) * ∫⁻ ω, F (M ω) ∂P)
+    _ = ∫⁻ u, f u * (ENNReal.ofReal _ * ∫⁻ ω, F (M ω) ∂P)
           ∂gmcReferenceMeasure := by
         apply lintegral_congr
         intro u

@@ -53,20 +53,17 @@ noncomputable def brownianFirstHitDensity (a β t : ℝ) : ℝ :=
 theorem hasDerivAt_brownianFirstHitSurvival (β t : ℝ) (ht : 0 < t) :
     HasDerivAt (brownianFirstHitSurvival β) (-brownianFirstHitDensity 0 β t) t := by
   have hf : Continuous (fun x : ℝ => Real.exp (-x^2/2)) := by fun_prop
-  have hs := Real.hasDerivAt_sqrt ht.ne'
   have hs0 : Real.sqrt t ≠ 0 := by positivity
-  have hh := (hasDerivAt_const t β).div hs hs0
-  have hi := ((hf.integral_hasStrictDerivAt (0 : ℝ) (β/Real.sqrt t)).hasDerivAt.comp t hh).const_mul
+  have hi := ((hf.integral_hasStrictDerivAt (0 : ℝ) (β/Real.sqrt t)).hasDerivAt.comp t ((hasDerivAt_const t β).div (Real.hasDerivAt_sqrt ht.ne') hs0)).const_mul
     (Real.sqrt (2/Real.pi))
   simp only [Function.comp_def,Pi.div_def] at hi
-  change HasDerivAt (fun u => Real.sqrt (2/Real.pi)*∫ x in (0 : ℝ)..(β/Real.sqrt u), Real.exp (-x^2/2)) _ t
+  change HasDerivAt (fun u => Real.sqrt _*∫ x in (0 : ℝ)..(β/Real.sqrt u), Real.exp _) _ t
   convert hi using 1
   simp only [brownianFirstHitDensity,ite_eq_left ht,zero_mul,zero_pow (by norm_num : 2 ≠ 0),zero_div,add_zero,sub_zero]
   have hsq : (β/Real.sqrt t)^2 = β^2/t := by
-    rw [div_pow,Real.sq_sqrt ht.le]
+    grind
   have he : -(β/Real.sqrt t)^2/2 = -β^2/(2*t) := by
-    rw [hsq]
-    field_simp
+    grind
   rw [he,Real.sqrt_mul (by positivity : 0 ≤ 2*Real.pi),← brownian_gaussian_normalization]
   field_simp [hs0,ht.ne']
   rw [Real.sq_sqrt ht.le]
@@ -74,23 +71,21 @@ theorem hasDerivAt_brownianFirstHitSurvival (β t : ℝ) (ht : 0 < t) :
 
 /-- The first-hit density is measurable on the whole real time axis. -/
 theorem measurable_brownianFirstHitDensity (a β : ℝ) : Measurable (brownianFirstHitDensity a β) := by
-  classical
-  unfold brownianFirstHitDensity
   apply Measurable.ite (measurableSet_lt measurable_const measurable_id) _ measurable_const
   fun_prop
+section
+variable (a β t : ℝ)
 
 /-- The first-hit density is nonnegative at every time for a nonnegative level. -/
-theorem brownianFirstHitDensity_nonneg (a β t : ℝ) (hβ : 0 ≤ β) : 0 ≤ brownianFirstHitDensity a β t := by
-  classical
+theorem brownianFirstHitDensity_nonneg (hβ : 0 ≤ β) : 0 ≤ brownianFirstHitDensity a β t := by
   by_cases ht : 0 < t
   · simp only [brownianFirstHitDensity,ite_eq_left ht]
     positivity
   · simp only [brownianFirstHitDensity,ite_eq_right ht,le_refl]
 
 /-- The source's Gaussian stopped likelihood multiplies the zero-drift density into the drifted density. -/
-theorem brownianFirstHitDensity_tilt (a β t : ℝ) :
+theorem brownianFirstHitDensity_tilt :
     brownianFirstHitDensity a β t = brownianFirstHitDensity 0 β t*Real.exp (a*β-a^2*t/2) := by
-  classical
   by_cases ht : 0 < t
   · have he : -β^2/(2*t)+a*β-a^2*t/2 = -β^2/(2*t)+(a*β-a^2*t/2) := by ring_nf
     simp only [brownianFirstHitDensity,ite_eq_left ht,zero_mul,zero_pow (by norm_num : 2 ≠ 0),zero_div,add_zero,sub_zero,
@@ -98,7 +93,7 @@ theorem brownianFirstHitDensity_tilt (a β t : ℝ) :
   · simp only [brownianFirstHitDensity,ite_eq_right ht,zero_mul]
 
 /-- The first-hit density is continuous at every positive horizon. -/
-theorem continuousAt_brownianFirstHitDensity (a β t : ℝ) (ht : 0 < t) :
+theorem continuousAt_brownianFirstHitDensity (ht : 0 < t) :
     ContinuousAt (brownianFirstHitDensity a β) t := by
   have hb : ContinuousAt (fun u : ℝ => β/u*(Real.sqrt (2*Real.pi*u))⁻¹*
       Real.exp (-β^2/(2*u)+a*β-a^2*u/2)) t := by fun_prop (disch := positivity)
@@ -108,6 +103,8 @@ theorem continuousAt_brownianFirstHitDensity (a β t : ℝ) (ht : 0 < t) :
     change 0 < u at hu
     simp only [brownianFirstHitDensity,ite_eq_left hu]
   exact hb.congr_of_eventuallyEq he
+
+end
 
 /-- The zero-drift density integrates to the survival-function drop on every positive compact time interval. -/
 theorem integral_brownianFirstHitDensity_zero (β s t : ℝ) (hs : 0 < s) (hst : s ≤ t) :
@@ -120,42 +117,44 @@ theorem integral_brownianFirstHitDensity_zero (β s t : ℝ) (hs : 0 < s) (hst :
   have hd : ∀ u ∈ uIcc s t,
       HasDerivAt (fun v => -brownianFirstHitSurvival β v) (brownianFirstHitDensity 0 β u) u := by
     intro u hu
-    have hu' : u ∈ Icc s t := by simpa only [uIcc_of_le hst] using hu
+    have hu' : u ∈ Icc s t := by simp_all
     simpa only [Pi.neg_def,Pi.neg_apply,neg_neg] using (hasDerivAt_brownianFirstHitSurvival β u (hs.trans_le hu'.1)).neg
   have he := intervalIntegral.integral_eq_sub_of_hasDerivAt hd hi
   rw [intervalIntegral.integral_of_le hst] at he
-  exact he.trans (by ring_nf)
+  linarith
+section
+variable (P : Measure BrownianPath)
+section
+variable (hB : IsBrownianReal (fun t p => p t) P) (β : ℝ) (hβ : 0 < β)
+include hB hβ
 /-- The actual zero-drift lifetime measure has the scalar survival function as its positive real tail. -/
-theorem brownianPath_zeroDrift_firstHit_real_tail (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (β : ℝ) (hβ : 0 < β) (t : ℝ) (ht : 0 < t) :
+theorem brownianPath_zeroDrift_firstHit_real_tail (t : ℝ) (ht : 0 < t) :
     (P.map (fun p => (firstPassageTime p β : ℝ))).real (Ioi t) = brownianFirstHitSurvival β t := by
-  let T : ℝ≥0 := NNReal.mk t ht.le
+  let T := NNReal.mk t ht.le
   have hT : T ≠ 0 := by
     intro he
     have ht0 : t = 0 := congrArg (fun u : ℝ≥0 => (u : ℝ)) he
-    exact ht.ne' ht0
+    linarith
   have hm : Measurable (fun p : BrownianPath => (firstPassageTime p β : ℝ)) :=
     NNReal.continuous_coe.measurable.comp (measurable_firstPassageTime β)
   rw [Measure.real,Measure.map_apply hm measurableSet_Ioi]
   have he : (fun p : BrownianPath => (firstPassageTime p β : ℝ)) ⁻¹' Ioi t =
-      {p : BrownianPath | T < firstPassageTime p β} := by ext p; rfl
+      {p : BrownianPath | T < firstPassageTime p β} := by rfl
   rw [he,brownianPath_zeroDrift_firstHit_tail_integral P hB β hβ T hT]
   have hn : 0 ≤ Real.sqrt (2/Real.pi)*∫ x in Icc (0 : ℝ) (β/Real.sqrt t), Real.exp (-x^2/2) :=
     mul_nonneg (Real.sqrt_nonneg _) (integral_nonneg (fun x => (Real.exp_pos _).le))
-  change (ENNReal.ofReal (Real.sqrt (2/Real.pi)*∫ x in Icc (0 : ℝ) (β/Real.sqrt t), Real.exp (-x^2/2))).toReal = _
+  change (ENNReal.ofReal (Real.sqrt (2/Real.pi)*∫ x in Icc 0 (β/Real.sqrt t), Real.exp (-x^2/2))).toReal = _
   rw [ENNReal.toReal_ofReal hn]
   unfold brownianFirstHitSurvival
-  rw [intervalIntegral.integral_of_le (by positivity : 0 ≤ β/Real.sqrt t),integral_Icc_eq_integral_Ioc]
+  rw [intervalIntegral.integral_of_le (by positivity),integral_Icc_eq_integral_Ioc]
 
 /-- On every positive compact time interval, the actual zero-drift lifetime law equals its explicit first-hit density. -/
-theorem brownianPath_zeroDrift_firstHit_density_Ioc (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (β : ℝ) (hβ : 0 < β)
-    (s t : ℝ) (hs : 0 < s) (hst : s < t) :
+theorem brownianPath_zeroDrift_firstHit_density_Ioc (s t : ℝ) (hs : 0 < s) (hst : s < t) :
     P.map (fun p => (firstPassageTime p β : ℝ)) (Ioc s t) =
       volume.withDensity (fun u => ENNReal.ofReal (brownianFirstHitDensity 0 β u)) (Ioc s t) := by
   let _ := (hB.hasLaw_eval 0).isProbabilityMeasure
   let μ := P.map (fun p => (firstPassageTime p β : ℝ))
-  have hm : Measurable (fun p : BrownianPath => (firstPassageTime p β : ℝ)) :=
+  have hm : Measurable (fun p => (firstPassageTime p β : ℝ)) :=
     NNReal.continuous_coe.measurable.comp (measurable_firstPassageTime β)
   have hr : μ.real (Ioc s t) = brownianFirstHitSurvival β s-brownianFirstHitSurvival β t := by
     rw [← Ioi_sdiff_Ioi,measureReal_sdiff (Ioi_subset_Ioi hst.le) measurableSet_Ioi (measure_ne_top _ _),
@@ -173,44 +172,34 @@ theorem brownianPath_zeroDrift_firstHit_density_Ioc (P : Measure BrownianPath)
     _ = _ := by
       rw [withDensity_apply _ measurableSet_Ioc,ofReal_integral_eq_lintegral_ofReal hi
         (ae_of_all _ (fun u => brownianFirstHitDensity_nonneg 0 β u hβ.le))]
+
+end
+
+end
 /-- Measures supported on positive times are identified by their masses on positive compact intervals. -/
 theorem brownian_measure_eq_of_positive_Ioc (μ ν : Measure ℝ) [IsFiniteMeasure μ]
     (hμ0 : μ (Iic 0) = 0) (hν0 : ν (Iic 0) = 0)
     (hI : ∀ s t : ℝ, 0 < s → s < t → μ (Ioc s t) = ν (Ioc s t)) : μ = ν := by
   have hδ (δ : ℝ) (hδ : 0 < δ) : μ.restrict (Ioi δ) = ν.restrict (Ioi δ) := by
     apply Measure.ext_of_Ioc'
-      (μ.restrict (Ioi δ)) (ν.restrict (Ioi δ)) (fun _ _ _ => measure_ne_top _ _)
+      (μ.restrict (Ioi δ)) _ (fun _ _ _ => measure_ne_top _ _)
     intro a b hab
-    rw [Measure.restrict_apply measurableSet_Ioc,Measure.restrict_apply measurableSet_Ioc]
     by_cases hb : δ < b
-    · have he : Ioc a b ∩ Ioi δ = Ioc (max a δ) b := by
-        ext t
-        simp only [mem_inter_iff,mem_Ioc,mem_Ioi,max_lt_iff]
-        tauto
-      rw [he]
-      exact hI (max a δ) b (hδ.trans_le (le_max_right _ _)) (max_lt hab hb)
-    · have he : Ioc a b ∩ Ioi δ = ∅ := by
-        apply Set.eq_empty_iff_forall_notMem.mpr
-        rintro t ⟨ht,hδt⟩
-        exact (lt_of_lt_of_le hδt ht.2).not_ge (le_of_not_gt hb)
-      rw [he,measure_empty,measure_empty]
+    · simp_all
+    simp_all
   have hm : μ.restrict (Ioi 0) = μ := Measure.restrict_eq_self_of_ae_mem (by
     rw [ae_iff]
-    have he : {a : ℝ | a ∉ Ioi 0} = Iic 0 := by ext a; simp only [mem_ofPred_eq,mem_Ioi,mem_Iic,not_lt]
-    rw [he]
-    exact hμ0)
+    aesop)
   have hn : ν.restrict (Ioi 0) = ν := Measure.restrict_eq_self_of_ae_mem (by
     rw [ae_iff]
-    have he : {a : ℝ | a ∉ Ioi 0} = Iic 0 := by ext a; simp only [mem_ofPred_eq,mem_Ioi,mem_Iic,not_lt]
-    rw [he]
-    exact hν0)
+    aesop)
   rw [← hm,← hn]
   apply Measure.ext
   intro S hS
   rw [Measure.restrict_apply hS,Measure.restrict_apply hS]
   have hmono : Monotone (fun n : ℕ => S ∩ Ioi (1/((n : ℝ)+1))) := by
     intro n m hnm
-    have hnmp : (n : ℝ)+1 ≤ (m : ℝ)+1 := by exact_mod_cast Nat.add_le_add_right hnm 1
+    have hnmp : (n : ℝ)+1 ≤ (m : ℝ)+1 := by simp_all
     exact inter_subset_inter_right S (Ioi_subset_Ioi (one_div_le_one_div_of_le (by positivity) hnmp))
   have hu : (⋃ n : ℕ, S ∩ Ioi (1/((n : ℝ)+1))) = S ∩ Ioi 0 := by
     ext t
@@ -222,16 +211,17 @@ theorem brownian_measure_eq_of_positive_Ioc (μ ν : Measure ℝ) [IsFiniteMeasu
       have hevent : ∀ᶠ n : ℕ in atTop, 1/((n : ℝ)+1) < t :=
         tendsto_one_div_add_atTop_nhds_zero_nat.eventually (Iio_mem_nhds hpos)
       obtain ⟨n,hn⟩ := hevent.exists
-      exact ⟨n,ht,hn⟩
+      tauto
   rw [← hu,hmono.measure_iUnion,hmono.measure_iUnion]
   congr 1
   funext n
-  have he := congrArg (fun π : Measure ℝ => π S) (hδ (1/((n : ℝ)+1)) (by positivity))
-  simpa only [Measure.restrict_apply hS] using he
+  have he := congrArg (fun π => π S) (hδ (1/((n : ℝ)+1)) (by positivity))
+  simpa using he
+section
+variable (P : Measure BrownianPath)
 
 /-- The whole actual zero-drift first-hit lifetime law has its explicit Gaussian hitting density. -/
-theorem brownianPath_zeroDrift_firstHit_density_map (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (β : ℝ) (hβ : 0 < β) :
+theorem brownianPath_zeroDrift_firstHit_density_map (hB : IsBrownianReal (fun t p => p t) P) (β : ℝ) (hβ : 0 < β) :
     P.map (fun p => (firstPassageTime p β : ℝ)) =
       volume.withDensity (fun t => ENNReal.ofReal (brownianFirstHitDensity 0 β t)) := by
   let _ := (hB.hasLaw_eval 0).isProbabilityMeasure
@@ -241,17 +231,18 @@ theorem brownianPath_zeroDrift_firstHit_density_map (P : Measure BrownianPath)
   · rw [Measure.map_apply hm measurableSet_Iic]
     apply measure_eq_zero_iff_ae_notMem.mpr
     filter_upwards [brownianPath_zeroDrift_firstHit_ae P hB β hβ] with p hp
-    change ¬(firstPassageTime p β : ℝ) ≤ 0
-    exact not_le.mpr (NNReal.coe_pos.mpr hp.1)
+    simp_all
   · rw [withDensity_apply _ measurableSet_Iic]
     apply (lintegral_eq_zero_iff (measurable_brownianFirstHitDensity 0 β).ennreal_ofReal).mpr
     filter_upwards [ae_restrict_mem measurableSet_Iic] with t ht
     simp only [brownianFirstHitDensity,ite_eq_right (not_lt.mpr ht),ENNReal.ofReal_zero,Pi.zero_apply]
   · intro s t hs hst
     exact brownianPath_zeroDrift_firstHit_density_Ioc P hB β hβ s t hs hst
+section
+variable (hB : IsBrownianReal (fun t p => p t) P) (a β : ℝ) (ha : 0 < a) (hβ : 0 < β)
+include hB ha hβ
 /-- The actual positive-drift first-hit lifetime, including its full real time law, has the source's explicit hitting density. -/
-theorem brownianPath_positiveDrift_firstHit_density_map (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (a β : ℝ) (ha : 0 < a) (hβ : 0 < β) :
+theorem brownianPath_positiveDrift_firstHit_density_map :
     P.map (fun p => (firstPassageTime (driftedBrownianPath a p) β : ℝ)) =
       volume.withDensity (fun t => ENNReal.ofReal (brownianFirstHitDensity a β t)) := by
   let σ := fun p : BrownianPath => firstPassageTime (driftedBrownianPath a p) β
@@ -261,16 +252,15 @@ theorem brownianPath_positiveDrift_firstHit_density_map (P : Measure BrownianPat
     (continuous_driftedBrownianPath.measurable.comp (measurable_const.prodMk measurable_id))
   have hmτ : Measurable τ := measurable_firstPassageTime β
   have hc : Measurable (fun t : ℝ≥0 => (t : ℝ)) := NNReal.continuous_coe.measurable
-  have hw : Measurable w := by dsimp [w]; fun_prop
+  have hw : Measurable w := by fun_prop
   have hs : (P.map σ).map (fun t : ℝ≥0 => (t : ℝ)) = P.map (fun p => (σ p : ℝ)) := by
     rw [Measure.map_map hc hmσ]
-    simp only [Function.comp_def]
+    rfl
   have ht : (P.map τ).map (fun t : ℝ≥0 => (t : ℝ)) = P.map (fun p => (τ p : ℝ)) := by
     rw [Measure.map_map hc hmτ]
-    simp only [Function.comp_def]
+    rfl
   rw [← hs,brownianPath_firstHit_lifetime_map_tilt P hB a β ha hβ]
   have hwN : (fun t : ℝ≥0 => brownianGaussianLikelihood a t β) = fun t : ℝ≥0 => w (t : ℝ) := by
-    funext t
     rfl
   rw [hwN,brownian_map_withDensity_comp (P.map τ) _ hc w hw,ht,
     brownianPath_zeroDrift_firstHit_density_map P hB β hβ,
@@ -281,20 +271,22 @@ theorem brownianPath_positiveDrift_firstHit_density_map (P : Measure BrownianPat
   rw [← ENNReal.ofReal_mul (brownianFirstHitDensity_nonneg 0 β t hβ.le),← brownianFirstHitDensity_tilt]
 
 /-- Every nonnegative positive-drift first-hit lifetime test integrates against the literal hitting density. -/
-theorem brownianPath_positiveDrift_firstHit_density_lintegral (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (a β : ℝ) (ha : 0 < a) (hβ : 0 < β)
-    (F : ℝ → ℝ≥0∞) (hF : Measurable F) :
+theorem brownianPath_positiveDrift_firstHit_density_lintegral (F : ℝ → ℝ≥0∞) (hF : Measurable F) :
     (∫⁻ p, F (firstPassageTime (driftedBrownianPath a p) β : ℝ) ∂P) =
       ∫⁻ t, ENNReal.ofReal (brownianFirstHitDensity a β t)*F t := by
-  have hm : Measurable (fun p : BrownianPath => (firstPassageTime (driftedBrownianPath a p) β : ℝ)) :=
+  have hm : Measurable (fun p => (firstPassageTime (driftedBrownianPath a p) β : ℝ)) :=
     NNReal.continuous_coe.measurable.comp ((measurable_firstPassageTime β).comp
       (continuous_driftedBrownianPath.measurable.comp (measurable_const.prodMk measurable_id)))
   calc
-    _ = ∫⁻ t, F t ∂P.map (fun p => (firstPassageTime (driftedBrownianPath a p) β : ℝ)) :=
+    _ = ∫⁻ t, F t ∂P.map (fun p => (firstPassageTime _ β : ℝ)) :=
       (lintegral_map hF hm).symm
-    _ = ∫⁻ t, F t ∂volume.withDensity (fun t => ENNReal.ofReal (brownianFirstHitDensity a β t)) := by
+    _ = ∫⁻ t, F t ∂volume.withDensity (fun t => ENNReal.ofReal _) := by
       rw [brownianPath_positiveDrift_firstHit_density_map P hB a β ha hβ]
     _ = _ := lintegral_withDensity_eq_lintegral_mul volume (measurable_brownianFirstHitDensity a β).ennreal_ofReal hF
+
+end
+
+end
 /-- The hitting density has the literal heat-kernel form. -/
 theorem brownianFirstHitDensity_heat (a β t : ℝ) (ht : 0 < t) :
     brownianFirstHitDensity a β t = β/t*brownianHeatDensity t β*Real.exp (a*β-a^2*t/2) := by
@@ -310,8 +302,8 @@ theorem brownianFirstHitDensity_normalization (t : ℝ) (ht : 0 < t) :
   have hs : Real.sqrt t ≠ 0 := by positivity
   have hpow : t^(3/2 : ℝ) = t*Real.sqrt t := by
     rw [show (3/2 : ℝ) = 1+1/2 by norm_num,Real.rpow_add ht,Real.rpow_one,← Real.sqrt_eq_rpow]
-  rw [Real.rpow_neg ht.le,hpow,Real.sqrt_mul (by positivity : 0 ≤ 2*Real.pi),← brownian_gaussian_normalization]
-  field_simp [hp,hs,ht.ne']
+  rw [Real.rpow_neg ht.le,hpow,Real.sqrt_mul (by positivity),← brownian_gaussian_normalization]
+  ring
 
 /-- Normalize the full first-hit density to the horizon-power form used by the entrance law. -/
 theorem brownianFirstHitDensity_normalized (a β t : ℝ) (ht : 0 < t) :
@@ -328,10 +320,8 @@ theorem conditionedH_mul_exp_firstHit (a β : ℝ) (ha : 0 < a) :
   rw [conditionedH,ite_eq_right ha.ne',Real.sinh_eq,sub_mul,one_mul]
   have he : Real.exp (-2*a*β)*Real.exp (a*β) = Real.exp (-(a*β)) := by
     rw [← Real.exp_add]
-    congr 1
-    ring_nf
-  rw [he]
-  ring_nf
+    ring
+  linarith
 
 /-- The entrance density equals the hitting density times its Doob harmonic factor. -/
 theorem conditionedPositiveEntranceDensity_eq_firstHit (a t β : ℝ)
@@ -349,8 +339,6 @@ theorem conditionedPositiveEntranceDensity_eq_firstHit (a t β : ℝ)
 /-- The hitting density is jointly measurable in drift, level and time. -/
 theorem measurable_brownianFirstHitDensity_joint :
     Measurable (fun z : ℝ × ℝ × ℝ => brownianFirstHitDensity z.1 z.2.1 z.2.2) := by
-  classical
-  unfold brownianFirstHitDensity
   apply Measurable.ite (measurableSet_lt measurable_const (measurable_snd.comp measurable_snd)) _ measurable_const
   fun_prop
 

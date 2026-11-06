@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import DOZZ.FourPoint.BPZ.FourPointSingular
+import DOZZ.ShiftEquations.Mobius.InversionMoment
 
 /-! # Extension of the four-point Ward identity to limits of test functions
 
@@ -25,12 +26,15 @@ open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
 variable {γ χ α₁ α₂ α₃ : ℝ}
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+section
+variable (X : Ω → Distr) (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+include hX hγ hγ2 hM
 
 /-- Almost surely the singular weight `(1 + |x − z|^{-2}) k` is integrable and the four-point mass
 is positive and finite. -/
-theorem bpz_singular_integrable_ae {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (hχ : 0 < χ) (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
+theorem bpz_singular_integrable_ae (hχ : 0 < χ) (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
     {q : ℝ} (hq1 : 1 ≤ q) {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) :
     ∀ᵐ ω ∂P, Integrable (fun x => (1 + ‖x - z‖ ^ (-2 : ℝ)) *
         bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x) (M ω) ∧
@@ -39,41 +43,37 @@ theorem bpz_singular_integrable_ae {Ω : Type*} [MeasurableSpace Ω] (P : Measur
     hχ hq1 hz0 hz1
   have hkm := measurable_bpzSoftWeight (γ := γ) (χ := χ) (α₁ := α₁) (α₂ := α₂) (α₃ := α₃) 0 z
   have hgm : Measurable fun x => (1 + ‖x - z‖ ^ (-2 : ℝ)) * bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x :=
-    (measurable_const.add ((measurable_id.sub measurable_const).norm.pow_const _)).mul hkm
+    by fun_prop
   have hmeas : AEMeasurable (fun ω => bpzMass γ χ α₁ α₂ α₃ 0 (M ω) z ^ (-q) *
       ∫⁻ x, ENNReal.ofReal ((1 + ‖x - z‖ ^ (-2 : ℝ)) * bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x)
         ∂M ω) P :=
     ((gmc_lintegral_aemeasurable P X hX γ hγ hγ2 M hM _
       (ENNReal.measurable_ofReal.comp hkm)).pow_const _).mul
       (gmc_lintegral_aemeasurable P X hX γ hγ hγ2 M hM _ (ENNReal.measurable_ofReal.comp hgm))
-  have hae := ae_lt_top' hmeas hfin.ne
-  filter_upwards [hae, bpzMass_pos_ae P X hX hγ hγ2 M hM 0 le_rfl zero_le_one z,
+  filter_upwards [(ae_lt_top' hmeas hfin.ne), bpzMass_pos_ae P X hX hγ hγ2 M hM 0 le_rfl zero_le_one z,
     bpzMass_lt_top_ae P X hX hγ hγ2 M hM hχ hα₁ hα₂ hα₃ 0 z hz0 hz1] with ω h1 h2 h3
   refine ⟨⟨hgm.aestronglyMeasurable, ?_⟩, h2, h3⟩
   rw [hasFiniteIntegral_iff_ofReal (Eventually.of_forall fun x => mul_nonneg (by positivity)
     (bpzSoftWeight_nonneg 0 z x))]
   have hpos : bpzMass γ χ α₁ α₂ α₃ 0 (M ω) z ^ (-q) ≠ 0 :=
-    (ENNReal.rpow_pos h2 h3.ne).ne'
+    by positivity
   by_contra hinf
   rw [not_lt, top_le_iff] at hinf
   rw [hinf, ENNReal.mul_top hpos] at h1
   exact lt_irrefl _ h1
 
 /-- The dominating function `I^{-q} ∫ (1 + |x − z|^{-2}) k dM` is integrable. -/
-theorem bpz_singular_dom_integrable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (hMm : Measurable M) (hχ : 0 < χ) (hα₁ : α₁ < Q γ)
+theorem bpz_singular_dom_integrable (hMm : Measurable M) (hχ : 0 < χ) (hα₁ : α₁ < Q γ)
     (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) {q : ℝ} (hq1 : 1 ≤ q) {z : ℂ} (hz0 : z ≠ 0)
     (hz1 : z ≠ 1) :
     Integrable (fun ω => (∫ x, bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x ∂M ω) ^ (-q) *
       ∫ x, (1 + ‖x - z‖ ^ (-2 : ℝ)) * bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x ∂M ω) P := by
   have hkm := measurable_bpzSoftWeight (γ := γ) (χ := χ) (α₁ := α₁) (α₂ := α₂) (α₃ := α₃) 0 z
   have hgm : Measurable fun x => (1 + ‖x - z‖ ^ (-2 : ℝ)) * bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x :=
-    (measurable_const.add ((measurable_id.sub measurable_const).norm.pow_const _)).mul hkm
-  have hIm : Measurable fun ω => ∫ x, bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x ∂M ω :=
+    by fun_prop
+  have hIm :=
     (measurable_integral_measure hkm).comp hMm
-  have hGm : Measurable fun ω => ∫ x, (1 + ‖x - z‖ ^ (-2 : ℝ)) *
-      bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x ∂M ω :=
+  have hGm :=
     (measurable_integral_measure hgm).comp hMm
   refine ⟨((hIm.pow_const _).mul hGm).aestronglyMeasurable, ?_⟩
   have hfin := bpz_singular_moment_lt_top (α₁ := α₁) (α₂ := α₂) (α₃ := α₃) P X hX hγ hγ2 M hM
@@ -90,34 +90,32 @@ theorem bpz_singular_dom_integrable {Ω : Type*} [MeasurableSpace Ω] (P : Measu
         rw [Real.norm_eq_abs, abs_of_nonneg (bpzSoftWeight_nonneg 0 z x)]
         have hW := bpzSoftWeight_nonneg (γ := γ) (χ := χ) (α₁ := α₁) (α₂ := α₂) (α₃ := α₃) 0 z x
         have : 0 ≤ ‖x - z‖ ^ (-2 : ℝ) := by positivity
-        linarith only [mul_nonneg this hW])
+        nlinarith)
     have hI : ∫ x, bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x ∂M ω =
         (bpzMass γ χ α₁ α₂ α₃ 0 (M ω) z).toReal := by
       rw [integral_eq_lintegral_of_nonneg_ae (Eventually.of_forall fun x =>
         bpzSoftWeight_nonneg 0 z x) hkm.aestronglyMeasurable]
       rfl
-    have hIpos : 0 < (bpzMass γ χ α₁ α₂ α₃ 0 (M ω) z).toReal := ENNReal.toReal_pos hpos.ne' hfin'.ne
+    have hIpos := ENNReal.toReal_pos hpos.ne' hfin'.ne
     rw [hI, ENNReal.ofReal_mul (Real.rpow_nonneg hIpos.le _), ← ENNReal.ofReal_rpow_of_pos hIpos,
       ENNReal.ofReal_toReal hfin'.ne, ofReal_integral_eq_lintegral_ofReal hg
         (Eventually.of_forall fun x => mul_nonneg (by positivity) (bpzSoftWeight_nonneg 0 z x))]
 
-theorem bpz_ae_regular {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (z : ℂ) :
+theorem bpz_ae_regular (z : ℂ) :
     ∀ᵐ ω ∂P, ∀ᵐ x ∂M ω, x ∈ bpzRegular z := by
-  filter_upwards [gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 0,
-    gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 1,
-    gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM z] with ω h0 h1 hz
+  filter_upwards [DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM 0,
+    DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM 1,
+    DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM z] with ω h0 h1 hz
   have h : ∀ c : ℂ, M ω {c} = 0 → ∀ᵐ x ∂M ω, x ≠ c := fun c hc => by
     rw [ae_iff]; simpa using hc
   filter_upwards [h 0 h0, h 1 h1, h z hz] with x a b c
-  exact ⟨a, b, c⟩
+  tauto
+section
+variable (hMm : Measurable M) (hχ : 0 < χ) (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ)
+include hMm hχ hα₁ hα₂ hα₃
 
 /-- The right side of the Ward identity converges along the test functions. -/
-theorem bpz_ward_rhs_tendsto {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (hMm : Measurable M) (hχ : 0 < χ) (hα₁ : α₁ < Q γ)
-    (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) {q : ℝ} (hq1 : 1 ≤ q)
+theorem bpz_ward_rhs_tendsto {q : ℝ} (hq1 : 1 ≤ q)
     {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) {φ : ℂ → ℝ} {φn : ℕ → ℂ → ℝ}
     (hφnm : ∀ n, Measurable (φn n)) (hφm : Measurable φ)
     (hval : ∀ x ∈ bpzRegular z, ∀ᶠ n in atTop, φn n x = φ x) (v : ℂ) {A : ℝ} (hA0 : 0 ≤ A)
@@ -131,7 +129,7 @@ theorem bpz_ward_rhs_tendsto {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
         (γ ^ 2 * ∫ x, ∫ y, (φ x - φ y) * (bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x *
           bpzSoftWeight γ χ α₁ α₂ α₃ 0 z y) * bpzKern v (x - y) / 2 ∂M ω ∂M ω)) ∂P)) := by
   have : IsProbabilityMeasure P := hX.1
-  set k : ℂ → ℝ := bpzSoftWeight γ χ α₁ α₂ α₃ 0 z with hkdef
+  set k := bpzSoftWeight γ χ α₁ α₂ α₃ 0 z with hkdef
   set g : ℂ → ℝ := fun x => (1 + ‖x - z‖ ^ (-2 : ℝ)) * k x with hgdef
   have hkm : Measurable k := measurable_bpzSoftWeight 0 z
   have hk0 : ∀ x, 0 ≤ k x := bpzSoftWeight_nonneg 0 z
@@ -142,18 +140,17 @@ theorem bpz_ward_rhs_tendsto {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     ((((hf.comp measurable_fst).sub (hf.comp measurable_snd)).mul
       ((hkm.comp measurable_fst).mul (hkm.comp measurable_snd))).mul
         ((measurable_bpzKern v).comp (measurable_fst.sub measurable_snd))).div_const _
-  have hgood := bpz_singular_integrable_ae (α₁ := α₁) (α₂ := α₂) (α₃ := α₃) P X hX hγ hγ2 M hM
+  have hgood := bpz_singular_integrable_ae P X hX hγ hγ2 M hM
     hχ hα₁ hα₂ hα₃ hq1 hz0 hz1
   have hreg := bpz_ae_regular P X hX hγ hγ2 M hM z
-  have hdom := bpz_singular_dom_integrable (α₁ := α₁) (α₂ := α₂) (α₃ := α₃) P X hX hγ hγ2 M
+  have hdom := bpz_singular_dom_integrable P X hX hγ hγ2 M
     hM hMm hχ hα₁ hα₂ hα₃ hq1 hz0 hz1
   -- the pointwise bound on the regular region
   have hHb : ∀ n x y, x ∈ bpzRegular z → y ∈ bpzRegular z →
       |H (φn n) x y| ≤ A / 2 * (g x * k y + k x * g y) := by
     intro n x y hx hy
     have hb := hb3 n x hx y hy
-    have hkk : 0 ≤ k x * k y := mul_nonneg (hk0 x) (hk0 y)
-    simp only [hHdef, hgdef]
+    have hkk : 0 ≤ k x * k y := by bound
     rw [abs_div, abs_two, show (φn n x - φn n y) * (k x * k y) * bpzKern v (x - y) =
       ((φn n x - φn n y) * bpzKern v (x - y)) * (k x * k y) by ring, abs_mul, abs_of_nonneg hkk]
     have h1 : 0 ≤ ‖x - z‖ ^ (-2 : ℝ) := by positivity
@@ -161,7 +158,7 @@ theorem bpz_ward_rhs_tendsto {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     calc |(φn n x - φn n y) * bpzKern v (x - y)| * (k x * k y) / 2
         ≤ A * (1 + ‖x - z‖ ^ (-2 : ℝ) + ‖y - z‖ ^ (-2 : ℝ)) * (k x * k y) / 2 := by gcongr
       _ ≤ A / 2 * ((1 + ‖x - z‖ ^ (-2 : ℝ)) * k x * k y + k x * ((1 + ‖y - z‖ ^ (-2 : ℝ)) * k y))
-          := by linarith only [mul_nonneg hA0 hkk]
+          := by nlinarith
   -- the inner limit, for good samples
   have hinner : ∀ᵐ ω ∂P, Tendsto (fun n => ∫ x, ∫ y, H (φn n) x y ∂M ω ∂M ω) atTop
       (𝓝 (∫ x, ∫ y, H φ x y ∂M ω ∂M ω)) := by
@@ -173,16 +170,14 @@ theorem bpz_ward_rhs_tendsto {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
         rw [Real.norm_eq_abs, abs_of_nonneg (hk0 x)]
         have : 0 ≤ ‖x - z‖ ^ (-2 : ℝ) := by positivity
         linarith only [mul_nonneg this (hk0 x)])
-    have hbi : Integrable (fun p : ℂ × ℂ => A / 2 * (g p.1 * k p.2 + k p.1 * g p.2))
-        ((M ω).prod (M ω)) := ((hgi.mul_prod hki).add (hki.mul_prod hgi)).const_mul _
+    have hbi : Integrable (fun p => A / 2 * (g p.1 * k p.2 + k p.1 * g p.2))
+        ((M ω).prod (M ω)) := by fun_prop
     have hreg2 : ∀ᵐ p ∂((M ω).prod (M ω)), p.1 ∈ bpzRegular z ∧ p.2 ∈ bpzRegular z := by
-      have h1 := (Measure.quasiMeasurePreserving_fst (μ := M ω) (ν := M ω)).ae hω
-      have h2 := (Measure.quasiMeasurePreserving_snd (μ := M ω) (ν := M ω)).ae hω
-      filter_upwards [h1, h2] with p hp1 hp2
+      filter_upwards [((Measure.quasiMeasurePreserving_fst).ae hω), ((Measure.quasiMeasurePreserving_snd (μ := M ω)).ae hω)] with p hp1 hp2
       exact ⟨hp1, hp2⟩
     have hint : ∀ f : ℂ → ℝ, Measurable f → (∀ x y, x ∈ bpzRegular z → y ∈ bpzRegular z →
         |H f x y| ≤ A / 2 * (g x * k y + k x * g y)) →
-        Integrable (fun p : ℂ × ℂ => H f p.1 p.2) ((M ω).prod (M ω)) := fun f hf hfb =>
+        Integrable (fun p => H f p.1 p.2) ((M ω).prod (M ω)) := fun f hf hfb =>
       hbi.mono' (hHm f hf).aestronglyMeasurable (by
         filter_upwards [hreg2] with p hp
         rw [Real.norm_eq_abs]; exact hfb p.1 p.2 hp.1 hp.2)
@@ -201,12 +196,11 @@ theorem bpz_ward_rhs_tendsto {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     refine tendsto_integral_of_dominated_convergence _
       (fun n => (hHm (φn n) (hφnm n)).aestronglyMeasurable) hbi (fun n => ?_) ?_
     · filter_upwards [hreg2] with p hp
-      rw [Real.norm_eq_abs]; exact hHb n p.1 p.2 hp.1 hp.2
+      tauto
     · filter_upwards [hreg2] with p hp
       refine tendsto_const_nhds.congr' ?_
       filter_upwards [hval p.1 hp.1, hval p.2 hp.2] with n h1 h2
-      simp only [hHdef]
-      rw [h1, h2]
+      grind
   -- the outer limit
   refine tendsto_integral_of_dominated_convergence
     (fun ω => q * γ ^ 2 * A * ((∫ x, k x ∂M ω) ^ (-q) * ∫ x, g x ∂M ω)) (fun n => ?_)
@@ -222,8 +216,8 @@ theorem bpz_ward_rhs_tendsto {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
         rw [Real.norm_eq_abs, abs_of_nonneg (hk0 x)]
         have : 0 ≤ ‖x - z‖ ^ (-2 : ℝ) := by positivity
         linarith only [mul_nonneg this (hk0 x)])
-    set I : ℝ := ∫ x, k x ∂M ω with hI
-    set G : ℝ := ∫ x, g x ∂M ω with hG
+    set I := ∫ x, k x ∂M ω with hI
+    set G := ∫ x, g x ∂M ω with hG
     have hIpos : 0 < I := by
       rw [hI, integral_eq_lintegral_of_nonneg_ae (Eventually.of_forall hk0)
         hkm.aestronglyMeasurable]
@@ -231,13 +225,13 @@ theorem bpz_ward_rhs_tendsto {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     have hG0 : 0 ≤ G := integral_nonneg fun x => mul_nonneg (by positivity) (hk0 x)
     have hreg2 : ∀ᵐ p ∂((M ω).prod (M ω)), p.1 ∈ bpzRegular z ∧ p.2 ∈ bpzRegular z := by
       have h1 := (Measure.quasiMeasurePreserving_fst (μ := M ω) (ν := M ω)).ae hω
-      have h2 := (Measure.quasiMeasurePreserving_snd (μ := M ω) (ν := M ω)).ae hω
+      have h2 := (Measure.quasiMeasurePreserving_snd (μ := M ω)).ae hω
       filter_upwards [h1, h2] with p hp1 hp2
       exact ⟨hp1, hp2⟩
-    have hbi : Integrable (fun p : ℂ × ℂ => A / 2 * (g p.1 * k p.2 + k p.1 * g p.2))
-        ((M ω).prod (M ω)) := ((hgi.mul_prod hki).add (hki.mul_prod hgi)).const_mul _
+    have hbi : Integrable (fun p => A / 2 * (g p.1 * k p.2 + k p.1 * g p.2))
+        ((M ω).prod (M ω)) := by fun_prop
     have hdbl : |∫ x, ∫ y, H (φn n) x y ∂M ω ∂M ω| ≤ A * (G * I) := by
-      have hHi : Integrable (fun p : ℂ × ℂ => H (φn n) p.1 p.2) ((M ω).prod (M ω)) :=
+      have hHi : Integrable (fun p => H (φn n) p.1 p.2) ((M ω).prod (M ω)) :=
         hbi.mono' (hHm (φn n) (hφnm n)).aestronglyMeasurable (by
           filter_upwards [hreg2] with p hp
           rw [Real.norm_eq_abs]; exact hHb n p.1 p.2 hp.1 hp.2)
@@ -260,10 +254,7 @@ theorem bpz_ward_rhs_tendsto {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     exact ((hω.const_mul (γ ^ 2)).const_mul _).const_mul q
 
 /-- **Extension of the four-point Ward identity to limits of test functions.** -/
-theorem bpz_fourPoint_ward_extend {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (hMm : Measurable M) (hχ : 0 < χ) (hα₁ : α₁ < Q γ)
-    (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) (hs : 0 ≤ fourPointSExp γ (-χ) α₁ α₂ α₃)
+theorem bpz_fourPoint_ward_extend (hs : 0 ≤ fourPointSExp γ (-χ) α₁ α₂ α₃)
     {z : ℂ} (hz0 : z ≠ 0) (hz1 : z ≠ 1) {φ : ℂ → ℝ} {φn : ℕ → ℂ → ℝ}
     (hφn : ∀ n, ContDiff ℝ 1 (φn n)) (hφnc : ∀ n, HasCompactSupport (φn n))
     (hφnU : ∀ n, tsupport (φn n) ⊆ bpzRegular z)
@@ -283,17 +274,17 @@ theorem bpz_fourPoint_ward_extend {Ω : Type*} [MeasurableSpace Ω] (P : Measure
         (γ ^ 2 * ∫ x, ∫ y, (φ x - φ y) * (bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x *
           bpzSoftWeight γ χ α₁ α₂ α₃ 0 z y) * bpzKern v (x - y) / 2 ∂M ω ∂M ω)) ∂P := by
   have : IsProbabilityMeasure P := hX.1
-  set q : ℝ := fourPointSExp γ (-χ) α₁ α₂ α₃ + 1 with hqdef
+  set q := fourPointSExp γ (-χ) α₁ α₂ α₃ + 1 with hqdef
   have hq1 : 1 ≤ q := by linarith
-  set k : ℂ → ℝ := bpzSoftWeight γ χ α₁ α₂ α₃ 0 z with hkdef
-  set kt : ℂ → ℝ := bpzTildeWeight γ χ α₁ α₂ z with hktdef
+  set k := bpzSoftWeight γ χ α₁ α₂ α₃ 0 z with hkdef
+  set kt := bpzTildeWeight γ χ α₁ α₂ z with hktdef
   set ex : ℂ → ℝ := fun x => normPlus x ^ (γ * (α₁ + α₂ + α₃ - χ)) with hexdef
   set g : ℂ → ℝ := fun x => (1 + ‖x - z‖ ^ (-2 : ℝ)) * k x with hgdef
   have hkm : Measurable k := measurable_bpzSoftWeight 0 z
   have hk0 : ∀ x, 0 ≤ k x := bpzSoftWeight_nonneg 0 z
   have hkkt : ∀ x, k x = kt x * ex x := fun x => bpzSoftWeight_zero_eq z x
   have hgm : Measurable g :=
-    (measurable_const.add ((measurable_id.sub measurable_const).norm.pow_const _)).mul hkm
+    by fun_prop
   have hg0 : ∀ x, 0 ≤ g x := fun x => mul_nonneg (by positivity) (hk0 x)
   have hA0 : 0 ≤ A := by
     have := hb3 0 (‖z‖ + 2 : ℝ) ?_ (‖z‖ + 2 : ℝ) ?_
@@ -302,14 +293,14 @@ theorem bpz_fourPoint_ward_extend {Ω : Type*} [MeasurableSpace Ω] (P : Measure
       push Not at hneg
       have hpos : 0 < 1 + ‖((‖z‖ + 2 : ℝ) : ℂ) - z‖ ^ (-2 : ℝ) +
           ‖((‖z‖ + 2 : ℝ) : ℂ) - z‖ ^ (-2 : ℝ) := by positivity
-      linarith only [this, mul_neg_of_neg_of_pos hneg hpos]
+      nlinarith
     all_goals
       have hn : ‖((‖z‖ + 2 : ℝ) : ℂ)‖ = ‖z‖ + 2 := by
         rw [Complex.norm_real, Real.norm_eq_abs, abs_of_pos (by positivity)]
       refine ⟨fun h => ?_, fun h => ?_, fun h => ?_⟩
       · have := congrArg norm h; rw [hn, norm_zero] at this; linarith [norm_nonneg z]
       · have := congrArg norm h; rw [hn, norm_one] at this; linarith [norm_nonneg z]
-      · have := congrArg norm h; rw [hn] at this; linarith
+      · grind
   -- the identity at each stage
   have hW := fun n => bpz_fourPoint_ward (α₃ := α₃) P X hX hγ hγ2 M hM hMm hχ hα₁ hα₂ hα₃ hs
     hz0 hz1 (hφn n) (hφnc n) (hφnU n) v
@@ -352,7 +343,7 @@ theorem bpz_fourPoint_ward_extend {Ω : Type*} [MeasurableSpace Ω] (P : Measure
       calc |fderiv ℝ (fun x => φn n x * kt x) x v| * ex x
           ≤ A * (1 + ‖x - z‖ ^ (-2 : ℝ)) * kt x * ex x :=
             mul_le_mul_of_nonneg_right (hb1 n x hx) (Real.rpow_nonneg (bpz_normPlus_pos x).le _)
-        _ = A * g x := by simp only [hgdef, hkkt x]; ring
+        _ = A * g x := by grind
     · filter_upwards [hgood, hreg] with ω hgω hω
       obtain ⟨hgi, -, -⟩ := hgω
       refine Tendsto.const_mul _ (tendsto_integral_of_dominated_convergence (fun x => A * g x)
@@ -365,13 +356,19 @@ theorem bpz_fourPoint_ward_extend {Ω : Type*} [MeasurableSpace Ω] (P : Measure
             ≤ A * (1 + ‖x - z‖ ^ (-2 : ℝ)) * kt x * ex x :=
               mul_le_mul_of_nonneg_right (hb1 n x hx)
                 (Real.rpow_nonneg (bpz_normPlus_pos x).le _)
-          _ = A * g x := by simp only [hgdef, hkkt x]; ring
+          _ = A * g x := by grind
       · filter_upwards [hω] with x hx
         refine tendsto_const_nhds.congr' ?_
         filter_upwards [hfd x hx] with n hn
         rw [hn]
-  have hR := bpz_ward_rhs_tendsto (α₁ := α₁) (α₂ := α₂) (α₃ := α₃) P X hX hγ hγ2 M hM hMm hχ
+  have hR := bpz_ward_rhs_tendsto (α₁ := α₁) P X hX hγ hγ2 M hM hMm hχ
     hα₁ hα₂ hα₃ hq1 hz0 hz1 (fun n => (hφn n).continuous.measurable) hφm hval v hA0 hb3
   exact tendsto_nhds_unique (hL.congr fun n => hW n) hR
+
+end
+
+end
+
+end
 
 end DOZZ.Proofs

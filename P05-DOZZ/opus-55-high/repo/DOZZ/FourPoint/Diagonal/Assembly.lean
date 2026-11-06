@@ -31,8 +31,7 @@ theorem degenerateFourPoint_diagonal_classification {Ω : Type*} [MeasurableSpac
         structureConstant P M γ μ (α₁ - χ) α₂ α₃ *
           (‖gaussFMinus H a b c z‖ ^ 2 +
             gaussCoefficientRatio a b c *
-              ‖gaussFPlus H a b c z‖ ^ 2) := by
-  exact degenerateFourPoint_diagonal_classification_of_BPZ hH P X M γ μ χ α₁ α₂ α₃
+              ‖gaussFPlus H a b c z‖ ^ 2) := degenerateFourPoint_diagonal_classification_of_BPZ hH P X M γ μ χ α₁ α₂ α₃
     hγ hγ₂ hμ hχ hα₁ hα₂ hα₃ hs hX hM
     (degenerateFourPoint_BPZ P X M γ μ χ α₁ α₂ α₃
       hγ hγ₂ hμ hχ hα₁ hα₂ hα₃ hs hX hM)

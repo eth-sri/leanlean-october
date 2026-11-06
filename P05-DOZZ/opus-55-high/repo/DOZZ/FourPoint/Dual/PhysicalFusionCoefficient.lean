@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 public import DOZZ.FourPoint.Dual.DiagonalReduction
 public import DOZZ.Statements.FourPoint.DegenerateFourPointDiagonalClassification
+import DOZZ.FourPoint.Diagonal.Assembly
 /-! The physical classification `DOZZ.degenerateFourPoint_diagonal_classification` identifies the
 remaining stochastic fusion coefficient. -/
 public section
@@ -31,10 +32,9 @@ theorem dual_physical_fusion_coefficient {Ω : Type*} [MeasurableSpace Ω]
     D = structureConstant P M γ μ (α₁ - 2 / γ) α₂ α₃ * gaussCoefficientRatio a b c ∧
     ∀ z ∈ gaussCutPlane, fourPointT P M γ μ (-(2 / γ)) α₁ α₂ α₃ z =
       structureConstant P M γ μ (α₁ - 2 / γ) α₂ α₃ * ‖gaussFMinus H a b c z‖ ^ 2 +
-        D * ‖gaussFPlus H a b c z‖ ^ 2 := by
-  exact dual_physical_classification_reduction hH P M γ μ α₁ α₂ α₃ D hγ hγ₂
+        D * ‖gaussFPlus H a b c z‖ ^ 2 := dual_physical_classification_reduction hH P M γ μ α₁ α₂ α₃ D hγ hγ₂
     hα₁ hα₂ hα₃ hs hκ
-    (DOZZ.degenerateFourPoint_diagonal_classification hH P X M γ μ (2/γ) α₁ α₂ α₃
+    (DOZZ.Proofs.degenerateFourPoint_diagonal_classification hH P X M γ μ _ α₁ α₂ α₃
       hγ hγ₂ hμ (Or.inr rfl) hα₁ hα₂ hα₃ hs hX hM) hfusion
 
 end DOZZ.Proofs

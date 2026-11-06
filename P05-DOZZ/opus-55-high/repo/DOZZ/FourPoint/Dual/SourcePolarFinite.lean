@@ -32,7 +32,7 @@ theorem dual_source_restarted_polar_finite_ae
         (brownianShiftPath T (radialPositiveHalf (originRadialPath Xc ω.1))
           (Real.toNNReal t)-(Q γ-α₁)*t))) else 0)
         ∂(Z ω.2).map (fun s => s-(T : ℝ))) ≠ ⊤ := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   let ν := Q γ-α₁
   let A := originRadialPath Xc
   have hA := originRadialPath_aemeasurable P X Xc hc hcont
@@ -46,9 +46,8 @@ theorem dual_source_restarted_polar_finite_ae
   have hDZ : IndepFun D Z P := hiZ.comp₀ hA hZ.2.2.2.1 hs.aemeasurable measurable_id.aemeasurable
   let Y := fun ω => (dual_radial_scale γ ν h Xc z ω,
     (dualOuterMass γ α₁ α₂ α₃ (M ω) z ξ).toReal)
-  have hcoord := (hc.2.1 0 (-Real.log ‖z‖+h)).aemeasurable
   have hβ : AEMeasurable (dual_radial_scale γ ν h Xc z) P :=
-    ((hcoord.const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
+    ((((hc.2.1 0 _).aemeasurable).const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
   have hYm : AEMeasurable Y P := hβ.prodMk
     (((dual_outerMass_measure_measurable γ α₁ α₂ α₃ ξ z).comp_aemeasurable
       (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ₂ M hM)).ennreal_toReal)

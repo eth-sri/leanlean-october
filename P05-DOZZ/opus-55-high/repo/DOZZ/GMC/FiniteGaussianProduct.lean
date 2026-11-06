@@ -46,7 +46,7 @@ theorem independent_product_concat_isCenteredJointlyGaussian
           have hm' : AEMeasurable (fun x : ΩX => X x j) ((PX.prod PY).map Prod.fst) := by
             rw [hfst.map_eq]
             exact hX.2.1 j
-          exact hm'.comp_measurable measurable_fst
+          fun_prop
         exact hm
     | inr j =>
         change AEMeasurable (fun ω : ΩX × ΩY => Y ω.2 j) (PX.prod PY)
@@ -54,7 +54,7 @@ theorem independent_product_concat_isCenteredJointlyGaussian
           have hm' : AEMeasurable (fun y : ΩY => Y y j) ((PX.prod PY).map Prod.snd) := by
             rw [hsnd.map_eq]
             exact hY.2.1 j
-          exact hm'.comp_measurable measurable_snd
+          fun_prop
         exact hm
   · intro a
     let cX : ι → ℝ := fun i => a (Sum.inl i)
@@ -65,12 +65,11 @@ theorem independent_product_concat_isCenteredJointlyGaussian
     obtain ⟨hYmem, ⟨vY, hYmap⟩⟩ := hY.2.2 cY
     have hXlaw : HasLaw fX (gaussianReal 0 vX) PX := ⟨hXmem.aemeasurable, hXmap⟩
     have hYlaw : HasLaw fY (gaussianReal 0 vY) PY := ⟨hYmem.aemeasurable, hYmap⟩
-    have hXprod : HasLaw (fun ω : ΩX × ΩY => fX ω.1) (gaussianReal 0 vX) (PX.prod PY) :=
+    have hXprod :=
       hXlaw.comp hfst.hasLaw
-    have hYprod : HasLaw (fun ω : ΩX × ΩY => fY ω.2) (gaussianReal 0 vY) (PX.prod PY) :=
+    have hYprod :=
       hYlaw.comp hsnd.hasLaw
-    have hIndep : (fun ω : ΩX × ΩY => fX ω.1) ⟂ᵢ[PX.prod PY]
-        (fun ω => fY ω.2) :=
+    have hIndep :=
       indepFun_prod₀ hXmem.aemeasurable hYmem.aemeasurable
     have hSumLaw : HasLaw (fun ω : ΩX × ΩY => fX ω.1 + fY ω.2)
         (gaussianReal 0 (vX + vY)) (PX.prod PY) := by
@@ -83,7 +82,7 @@ theorem independent_product_concat_isCenteredJointlyGaussian
       simp [Z, cX, cY, fX, fY, Fintype.sum_sum_type]
     refine ⟨?_, ⟨vX + vY, ?_⟩⟩
     · rw [hsum]
-      exact hSumLaw.memLp (ProbabilityTheory.memLp_id_gaussianReal (2 : ℝ≥0))
+      exact hSumLaw.memLp (ProbabilityTheory.memLp_id_gaussianReal 2)
     · rw [hsum]
       exact hSumLaw.map_eq
 

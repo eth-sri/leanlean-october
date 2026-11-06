@@ -31,7 +31,6 @@ theorem spatialIntegral_vector_law_of_fdd_finite
       P'.map (fun ω i => Y ω (xs i))) :
     P.map (fun ω j => ∫ x, z j x (X ω x) ∂(ν : Measure S)) =
       P'.map (fun ω j => ∫ x, z j x (Y ω x) ∂(ν : Measure S)) := by
-  classical
   let V : Ω → Fin 0 → ℝ := fun _ i => Fin.elim0 i
   let V' : Ω' → Fin 0 → ℝ := fun _ i => Fin.elim0 i
   let z' : Fin m → S → ℝ → ℝ := fun j x t => (ν.mass : ℝ) * z j x t
@@ -39,7 +38,7 @@ theorem spatialIntegral_vector_law_of_fdd_finite
     congrArg (fun μ : FiniteMeasure S => (μ : Measure S)) ν.self_eq_mass_smul_normalize
   have hiX j : ∀ᵐ ω ∂P, Integrable (fun x => z' j x (X ω x)) (ν.normalize : Measure S) := by
     by_cases hm : ν.mass = 0
-    · exact ae_of_all _ fun ω => by simp only [z', hm, NNReal.coe_zero, zero_mul]; exact integrable_zero _ _ _
+    · aesop
     · filter_upwards [hintX j] with ω hω
       rw [hmeasure] at hω
       have ht : Integrable (fun x => z j x (X ω x)) (ν.normalize : Measure S) :=
@@ -47,7 +46,7 @@ theorem spatialIntegral_vector_law_of_fdd_finite
       exact ht.const_mul _
   have hiY j : ∀ᵐ ω ∂P', Integrable (fun x => z' j x (Y ω x)) (ν.normalize : Measure S) := by
     by_cases hm : ν.mass = 0
-    · exact ae_of_all _ fun ω => by simp only [z', hm, NNReal.coe_zero, zero_mul]; exact integrable_zero _ _ _
+    · aesop
     · filter_upwards [hintY j] with ω hω
       rw [hmeasure] at hω
       have ht : Integrable (fun x => z j x (Y ω x)) (ν.normalize : Measure S) :=
@@ -60,15 +59,14 @@ theorem spatialIntegral_vector_law_of_fdd_finite
     let L : (Fin n → ℝ) → (Fin 0 → ℝ) × (Fin n → ℝ) := fun a => (fun i => Fin.elim0 i, a)
     have hL : Measurable L := measurable_const.prodMk measurable_id
     have hmX : Measurable (fun ω i => X ω (xs i)) :=
-      measurable_pi_iff.mpr (fun i => hX.comp (measurable_id.prodMk measurable_const))
+      by fun_prop
     have hmY : Measurable (fun ω i => Y ω (xs i)) :=
-      measurable_pi_iff.mpr (fun i => hY.comp (measurable_id.prodMk measurable_const))
-    have he := congrArg (fun μ => μ.map L) (hFDD n xs)
-    simpa only [Measure.map_map hL hmX, Measure.map_map hL hmY, L, V, V', Function.comp_def] using he
+      by fun_prop
+    simpa only [Measure.map_map hL hmX, Measure.map_map hL hmY, L, V, V', Function.comp_def] using (congrArg (fun μ => μ.map L) (hFDD n xs))
   have he := (chaosLawFDD_of_integrable (ν.normalize : Measure S) X Y V V' z'
     measurable_const measurable_const hX hY
     (fun j => measurable_const.mul (hz j)) hiX hiY hfdd
-    (0 : BoundedContinuousFunction ((Fin 0 → ℝ) × (Fin m → ℝ)) ℝ)).1
+    (0 : BoundedContinuousFunction _ ℝ)).1
   have hmass (a : S → ℝ) : (∫ x, (ν.mass : ℝ) * a x ∂(ν.normalize : Measure S)) =
       ∫ x, a x ∂(ν : Measure S) := by
     rw [hmeasure, integral_smul_nnreal_measure, integral_const_mul]
@@ -84,8 +82,7 @@ theorem spatialIntegral_vector_law_of_fdd_finite
     apply measurable_pi_iff.mpr
     intro j
     exact ((hz j).comp (measurable_snd.prodMk hY)).stronglyMeasurable.integral_prod_right'.measurable
-  have hsnd := congrArg (fun μ => μ.map Prod.snd) he
   simpa only [Measure.map_map measurable_snd hmX, Measure.map_map measurable_snd hmY,
-    Function.comp_def] using hsnd
+    Function.comp_def] using (congrArg (fun μ => μ.map Prod.snd) he)
 
 end DOZZ.Proofs

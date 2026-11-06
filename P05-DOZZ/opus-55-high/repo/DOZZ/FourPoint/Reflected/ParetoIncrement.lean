@@ -12,9 +12,11 @@ import Mathlib.Tactic
 public section
 open MeasureTheory ProbabilityTheory Set
 namespace DOZZ.Proofs
+section
+variable (p a A b : ℝ)
 
 /-- The Pareto-law expectation is the exact lower-cutoff integral used by Williams' squeeze. -/
-theorem reflected_pareto_increment_integral (p a A b : ℝ) (ha : 0 < a)
+theorem reflected_pareto_increment_integral (ha : 0 < a)
     (hA : 0 < A) (hb : 0 < b) :
     (∫ v, ((A + b * v) ^ (-p) - A ^ (-p)) ∂paretoMeasure 1 a) =
       a * A ^ (-p) * (b / A) ^ a *
@@ -35,8 +37,6 @@ theorem reflected_pareto_increment_integral (p a A b : ℝ) (ha : 0 < a)
     funext v
     by_cases hv : 1 ≤ v
     · rw [indicator_of_mem (show v ∈ Ici (1 : ℝ) from hv), paretoPDFReal, ite_eq_left hv, Real.one_rpow, mul_one]
-      congr 2
-      congr 1
       ring
     · rw [indicator_of_notMem (show v ∉ Ici (1 : ℝ) from hv), paretoPDFReal, ite_eq_right hv, zero_mul]
   rw [hid, integral_indicator measurableSet_Ici, integral_Ici_eq_integral_Ioi]
@@ -45,17 +45,15 @@ theorem reflected_pareto_increment_integral (p a A b : ℝ) (ha : 0 < a)
         (a * A ^ (-p) * x ^ (a + 1)) * g (x * v) := by
     have hvp : 0 < v := zero_lt_one.trans hv
     have hsum : A + b * v = A * (1 + x * v) := by
-      dsimp only [x]
-      field_simp
+      grind
     have hpw : x ^ (a + 1) * (x * v) ^ (-a - 1) = v ^ (-a - 1) := by
       rw [Real.mul_rpow hx.le hvp.le, ← mul_assoc, ← Real.rpow_add hx]
-      have he : (a + 1) + (-a - 1) = 0 := by ring
-      rw [he, Real.rpow_zero, one_mul]
+      simp
     dsimp only [g]
     rw [hsum, Real.mul_rpow hA.le (by positivity : 0 ≤ 1 + x * v)]
     calc
       _ = (a * A ^ (-p)) * v ^ (-a - 1) * ((1 + x * v) ^ (-p) - 1) := by ring
-      _ = _ := by rw [← hpw]; ring
+      _ = _ := by grind
   rw [setIntegral_congr_fun measurableSet_Ioi hpoint, integral_const_mul,
     integral_comp_mul_left_Ioi g 1 hx, mul_one, smul_eq_mul]
   have hc : a * A ^ (-p) * x ^ (a + 1) * x⁻¹ = a * A ^ (-p) * x ^ a := by
@@ -63,16 +61,18 @@ theorem reflected_pareto_increment_integral (p a A b : ℝ) (ha : 0 < a)
     field_simp
   calc
     _ = (a * A ^ (-p) * x ^ (a + 1) * x⁻¹) * ∫ w in Ioi x, g w := by ring
-    _ = _ := by rw [hc]
+    _ = _ := by tauto
 
 /-- The actual Pareto increment differs from its Gamma coefficient by an explicit first-order term. -/
-theorem reflected_pareto_increment_error (p a A b : ℝ) (hp : 0 < p) (ha : 0 < a)
+theorem reflected_pareto_increment_error (hp : 0 < p) (ha : 0 < a)
     (ha₁ : a < 1) (hA : 0 < A) (hb : 0 < b) :
     |(∫ v, ((A + b * v) ^ (-p) - A ^ (-p)) ∂paretoMeasure 1 a) -
       (a * Real.Gamma (-a) * Real.Gamma (p + a) / Real.Gamma p) *
         A ^ (-p) * (b / A) ^ a| ≤
       (a * p / (1 - a)) * A ^ (-p) * (b / A) := by
   rw [reflected_pareto_increment_integral p a A b ha hA hb]
-  exact reflected_pareto_scaled_error p a A (b / A) hp ha ha₁ hA (div_pos hb hA)
+  exact reflected_pareto_scaled_error p a A _ hp ha ha₁ hA (div_pos hb hA)
+
+end
 
 end DOZZ.Proofs

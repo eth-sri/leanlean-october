@@ -8,6 +8,7 @@ public import DOZZ.Statements.GFFStructure.ExistsExteriorPinnedMarkovUniform
 public import DOZZ.Correlations.SeparatedTail.DirichletCutoff
 public import DOZZ.Correlations.SeparatedTail.EnvelopePower
 public import Mathlib.Probability.Moments.Covariance
+import DOZZ.GFFStructure.MarkovAssembly
 
 /-! Extract just the finite-circle clauses used by the separated joint-tail estimate from the
 exterior-pinned Markov theorem `DOZZ.exists_exteriorPinned_markov_uniform`. -/
@@ -58,11 +59,11 @@ theorem separatedTail_exists_markov_data (R : ℝ) (hR : 1 < R) :
         (Xc : Ω → ℂ → ℝ → ℝ), IsEquatorGFF P X → IsCircleAverage P X Xc →
         ∀ c : Fin 2 → ℂ, (∀ i, ‖c i‖+5/4+1/4 ≤ R) →
           (∀ i j, i ≠ j → 3 ≤ ‖c i-c j‖) → Nonempty (SeparatedTailMarkovData P Xc c R hR C) := by
-  obtain ⟨C,hC,h⟩ := DOZZ.exists_exteriorPinned_markov_uniform 2 R (5/4) 1 (1/4) hR
+  obtain ⟨C,hC,h⟩ := DOZZ.Proofs.exists_exteriorPinned_markov_uniform 2 R (5/4) 1 (1/4) hR
     (by norm_num) (by norm_num) (by norm_num)
   refine ⟨C,hC,fun Ω _ P X Xc hX hc c hpin hsep => ?_⟩
-  let _ : IsProbabilityMeasure P := hX.1
-  have hsep' : ∀ i j, i ≠ j → 2*(5/4 : ℝ)+1/4 ≤ dist (c i) (c j) := by
+  let _ := hX.1
+  have hsep' : ∀ i j, i ≠ j → 2*(5/4)+1/4 ≤ dist (c i) (c j) := by
     intro i j hij
     rw [dist_eq_norm]
     linarith [hsep i j hij]
@@ -85,7 +86,7 @@ theorem separatedTail_exists_markov_data (R : ℝ) (hR : 1 < R) :
   · intro i
     filter_upwards [hdecomp] with ω hω
     exact (hω.2.2.1 i).2.continuousOn.mono (closedBall_subset_ball (by norm_num))
-  · exact hind.indepFun (show (some (0 : Fin 2) : Option (Fin 2)) ≠ some 1 by decide)
+  · exact hind.indepFun (show (some 0) ≠ some 1 by decide)
   · intro i x y r s hx hy
     have hv := hDcc i x y r s hx hy
     rw [covariance_eq_sub (hDcs i x r hx).1 (hDcs i y s hy).1,

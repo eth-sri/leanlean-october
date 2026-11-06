@@ -50,7 +50,7 @@ theorem admissibleCircleVersion_expected_test_le
       F r ω = ∫ x, f x ∂regularizedGMC P Xc γ r ω := by
     intro r
     filter_upwards [regularizedGMC_finite_ae P X hX Xc hXc γ r] with ω hfinite
-    let μ : Measure ℂ := regularizedGMC P Xc γ r ω
+    let μ := regularizedGMC P Xc γ r ω
     let _ := hfinite
     have hbound : ∀ᵐ x ∂μ, ‖f x‖ ≤ ‖f‖ := ae_of_all _ f.norm_coe_le_norm
     have hmem : MemLp (fun x => f x) (1 : ℝ≥0∞) μ :=
@@ -83,18 +83,18 @@ theorem admissibleCircleVersion_expected_test_le
         ∫⁻ x, φ x ∂regularizedGMC P Xc γ r ω := by
     intro r
     filter_upwards [regularizedGMC_finite_ae P X hX Xc hXc γ r] with ω hfinite
-    let μ : Measure ℂ := regularizedGMC P Xc γ r ω
+    let μ := regularizedGMC P Xc γ r ω
     let _ := hfinite
     have hbound : ∀ᵐ x ∂μ, ‖f x‖ ≤ ‖f‖ := ae_of_all _ f.norm_coe_le_norm
     have hmem : MemLp (fun x => f x) (1 : ℝ≥0∞) μ :=
       MemLp.of_bound f.continuous.measurable.aestronglyMeasurable ‖f‖ hbound
-    have hint : Integrable (fun x => f x) μ :=
+    have hint : Integrable f μ :=
       hmem.integrable (by norm_num : (1 : ℝ≥0∞) ≤ 1)
     exact ofReal_integral_eq_lintegral_ofReal hint (ae_of_all _ hf)
   have hbound (r : ℝ) : ∫⁻ ω, ENNReal.ofReal (F r ω) ∂P ≤
       ∫⁻ x, φ x ∂gmcReferenceMeasure := by
     calc
-      ∫⁻ ω, ENNReal.ofReal (F r ω) ∂P =
+      ∫⁻ ω, ENNReal.ofReal _ ∂P =
           ∫⁻ ω, ∫⁻ x, φ x ∂regularizedGMC P Xc γ r ω ∂P := by
             apply lintegral_congr_ae
             filter_upwards [hIntegral r, hOfRealIntegral r] with ω hω hlin
@@ -104,6 +104,6 @@ theorem admissibleCircleVersion_expected_test_le
         exact le_of_eq
           (regularizedGMC_lintegral_test_eq_reference P X hX Xc hXc γ r φ hφ)
   simpa [G, φ] using lintegral_ofReal_limit_le_of_tendstoInMeasure
-    P F G (∫⁻ x, φ x ∂gmcReferenceMeasure) hFmeas hT hbound
+    P F G _ hFmeas hT hbound
 
 end DOZZ.Proofs

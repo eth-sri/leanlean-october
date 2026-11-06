@@ -38,12 +38,11 @@ theorem dual_source_copied_inner_kernel_squeeze
       ‖z‖^(2 : ℝ)*Real.exp (γ*(a T-(Q γ-α₁)*T)) := by
     have he := dual_radial_scale_eq_restart γ (Q γ-α₁) h
       (fun (_ : Unit) (_ : ℂ) t => a t) z hz ()
-    change dualPathRadialScale γ (Q γ-α₁) h z a =
-      ‖z‖^(2 : ℝ)*Real.exp (γ*(a (-Real.log ‖z‖+h)-(Q γ-α₁)*(-Real.log ‖z‖+h))) at he
-    simpa only [← hT] using he
+    change dualPathRadialScale γ _ h z a =
+      ‖z‖^(2 : ℝ)*Real.exp _ at he
+    simp_all
   have hb := dual_copied_inner_mass_squeeze γ α₁ α₂ α₃ R hγ z a (N ω) hNω.1 T
     hR hR₁ (norm_pos_iff.mpr hz) hη hsep
-  dsimp only at hb ⊢
   rw [hNω.2, ← hZω] at hb
   rw [heβ]
   exact hb

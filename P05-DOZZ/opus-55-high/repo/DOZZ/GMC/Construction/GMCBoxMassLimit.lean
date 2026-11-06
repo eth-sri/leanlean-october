@@ -22,57 +22,51 @@ theorem gmcLowerBoxApprox_referenceGap_tendsto (i : ℚ × ℚ) :
   have hmeas : ∀ n, Measurable (gmcLowerBoxApproxGapIntegrand i n) := by
     intro n
     apply ENNReal.measurable_ofReal.comp
-    have hs : MeasurableSet (gmcLowerBox i) := gmcLowerBox_measurableSet i
-    have hI : Measurable ((gmcLowerBox i).indicator (fun _ : ℂ => (1 : ℝ))) :=
-      measurable_const.indicator hs
-    exact continuous_abs.measurable.comp
-      (hI.sub (gmcLowerBoxApprox i n).continuous.measurable)
+    have hs := gmcLowerBox_measurableSet i
+    fun_prop
   have hbound : ∀ n, ∀ᵐ z ∂gmcReferenceMeasure,
       gmcLowerBoxApproxGapIntegrand i n z ≤ 1 := by
     intro n
     filter_upwards [] with z
     have h := gmcLowerBoxApprox_bounds i n z
     have hpos : 0 ≤ (gmcLowerBoxApprox i n) z := by
-      simpa [gmcLowerBoxApprox] using h.1
+      tauto
     have hle : (gmcLowerBoxApprox i n) z ≤ 1 := by
-      simpa [gmcLowerBoxApprox] using h.2
+      tauto
     change ENNReal.ofReal
-      |(gmcLowerBox i).indicator (fun _ => (1 : ℝ)) z - (gmcLowerBoxApprox i n) z| ≤ 1
-    rw [ENNReal.ofReal_le_one, abs_le]
+      |(gmcLowerBox i).indicator (fun _ => 1) z - (gmcLowerBoxApprox i n) z| ≤ 1
     by_cases hz : z ∈ gmcLowerBox i
     · simp [Set.indicator, hz]
-      exact ⟨by linarith [hle], by linarith [hpos]⟩
+      grind
     · simp [Set.indicator, hz]
-      exact ⟨by linarith [hpos], by linarith [hle]⟩
-  have hfinite : ∫⁻ z : ℂ, (1 : ℝ≥0∞) ∂gmcReferenceMeasure ≠ ∞ := by
+      grind
+  have hfinite : ∫⁻ z : ℂ, 1 ∂gmcReferenceMeasure ≠ ∞ := by
     simpa using gmcReferenceMeasure_univ_ne_top
   have hlim : ∀ᵐ z ∂gmcReferenceMeasure,
       Tendsto (fun n => gmcLowerBoxApproxGapIntegrand i n z) atTop (𝓝 0) := by
     apply ae_of_all
     intro z
     change Tendsto (fun n => ENNReal.ofReal
-      |(gmcLowerBox i).indicator (fun _ => (1 : ℝ)) z -
+      |(gmcLowerBox i).indicator (fun _ => 1) z -
         gmcLowerBoxApprox i n z|) atTop (𝓝 0)
-    have hfn := gmcLowerBoxApprox_tendsto i z
-    let c : ℝ := (gmcLowerBox i).indicator (fun _ => (1 : ℝ)) z
+    let c : ℝ := (gmcLowerBox i).indicator (fun _ => 1) z
     have hdiff : Tendsto (fun n => c - (gmcLowerBoxApprox i n) z) atTop (𝓝 0) := by
       have hc : Tendsto (fun _ : ℕ => c) atTop (𝓝 c) := tendsto_const_nhds
-      have h := hc.sub hfn
-      simpa [c] using h
+      have h := hc.sub (gmcLowerBoxApprox_tendsto i z)
+      aesop
     have habs : Tendsto (fun n => |c - (gmcLowerBoxApprox i n) z|) atTop (𝓝 0) := by
       simpa using hdiff.abs
     have h := (ENNReal.continuous_ofReal.tendsto 0).comp habs
-    convert h using 1
-    · funext n
-      rfl
-    · simp
+    aesop
   simpa using tendsto_lintegral_of_dominated_convergence
-    (fun _ : ℂ => (1 : ℝ≥0∞)) hmeas hbound hfinite hlim
+    (fun _ => 1) hmeas hbound hfinite hlim
+section
+variable {Ω : Type*}
 
 /-- Markov's inequality bounds the cutoff discrepancy from a lower-box ramp by its exact
 reference expectation. -/
 theorem regularizedGMC_lowerBoxApprox_error_le_reference
-    {Ω : Type*} [MeasurableSpace Ω]
+    [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ r : ℝ)
     (i : ℚ × ℚ) (n : ℕ) (ε : ℝ) (hε : 0 < ε) :
@@ -81,8 +75,8 @@ theorem regularizedGMC_lowerBoxApprox_error_le_reference
       (∫⁻ z, gmcLowerBoxApproxGapIntegrand i n z ∂gmcReferenceMeasure) /
         ENNReal.ofReal ε := by
   let B := gmcLowerBox i
-  let f : ℂ → ℝ := gmcLowerBoxApprox i n
-  let ib : ℂ → ℝ := B.indicator (fun _ => (1 : ℝ))
+  let f := gmcLowerBoxApprox i n
+  let ib : ℂ → ℝ := B.indicator (fun _ => 1)
   let φ : ℂ → ℝ≥0∞ := fun z => ENNReal.ofReal |ib z - f z|
   let gap : Ω → ℝ≥0∞ := fun ω => ∫⁻ z, φ z ∂regularizedGMC P Xc γ r ω
   let _ := hX.1
@@ -90,13 +84,10 @@ theorem regularizedGMC_lowerBoxApprox_error_le_reference
     simpa [B] using gmcLowerBox_measurableSet i
   have hib : Measurable ib := measurable_const.indicator hB
   have hφ : Measurable φ := by
-    dsimp [φ, ib, f]
-    exact ENNReal.measurable_ofReal.comp
-      (continuous_abs.measurable.comp
-        (hib.sub (gmcLowerBoxApprox i n).continuous.measurable))
-  have hμ : Measurable (fun ω => regularizedGMC P Xc γ r ω) :=
+    fun_prop
+  have hμ :=
     regularizedGMC_measurable P X hX Xc hXc γ r
-  have hgapMeas : Measurable gap :=
+  have hgapMeas :=
     (Measure.measurable_lintegral hφ).comp hμ
   have hgapExp : ∫⁻ ω, gap ω ∂P = ∫⁻ z, φ z ∂gmcReferenceMeasure := by
     simpa [gap, φ] using
@@ -104,16 +95,16 @@ theorem regularizedGMC_lowerBoxApprox_error_le_reference
   have hphiBound : ∀ z, φ z ≤ 1 := by
     intro z
     have h := gmcLowerBoxApprox_bounds i n z
-    have hpos : 0 ≤ f z := by simpa [f, gmcLowerBoxApprox] using h.1
-    have hle : f z ≤ 1 := by simpa [f, gmcLowerBoxApprox] using h.2
+    have hpos : 0 ≤ f z := by tauto
+    have hle : f z ≤ 1 := by tauto
     change ENNReal.ofReal |ib z - f z| ≤ 1
     rw [ENNReal.ofReal_le_one, abs_le]
     by_cases hz : z ∈ B
     · simp [ib, hz]
-      constructor <;> linarith
+      grind
     · simp [ib, hz]
-      constructor <;> linarith
-  have hfinite : ∀ᵐ ω ∂P, IsFiniteMeasure (regularizedGMC P Xc γ r ω) :=
+      grind
+  have hfinite :=
     regularizedGMC_finite_ae P X hX Xc hXc γ r
   have hEventSub : ∀ᵐ ω ∂P,
       ε ≤ |(regularizedGMC P Xc γ r ω B).toReal -
@@ -133,7 +124,7 @@ theorem regularizedGMC_lowerBoxApprox_error_le_reference
         constructor
         · have h0 : 0 ≤ f z := by simpa [f, gmcLowerBoxApprox] using h.1
           linarith
-        · exact (by simpa [f, gmcLowerBoxApprox] using h.2)
+        · tauto
       exact @MemLp.of_bound ℂ ℝ _ 1 μ _ hfin f
         (gmcLowerBoxApprox i n).continuous.aestronglyMeasurable 1 hbd
     have hIbInt : ∫ z, ib z ∂μ = (μ B).toReal := by
@@ -146,75 +137,73 @@ theorem regularizedGMC_lowerBoxApprox_error_le_reference
     have hdist : dist ((μ B).toReal) (∫ z, f z ∂μ) ≤ (gap ω).toReal := by
       rw [← hIbInt, ← hGapEq]
       exact dist_integral_le_lintegral_edist
-        (hIbMem.integrable (by norm_num : (1 : ℝ≥0∞) ≤ 1))
-        (hFMem.integrable (by norm_num : (1 : ℝ≥0∞) ≤ 1))
+        (hIbMem.integrable (by norm_num))
+        (hFMem.integrable (by norm_num))
     have hdist' : |(μ B).toReal - ∫ z, f z ∂μ| ≤ (gap ω).toReal := by
       simpa [Real.dist_eq] using hdist
     have hgapTop : gap ω ≠ ∞ := by
       apply ne_of_lt
       calc
-        gap ω ≤ ∫⁻ z, (1 : ℝ≥0∞) ∂μ := by
+        gap ω ≤ ∫⁻ z, 1 ∂μ := by
           apply lintegral_mono
           exact hphiBound
         _ = μ Set.univ := by simp
-        _ < ∞ := lt_top_iff_ne_top.mpr (@measure_ne_top ℂ _ μ hfin Set.univ)
-    have hεgap : ε ≤ (gap ω).toReal := hω.trans hdist'
-    exact (ENNReal.ofReal_le_iff_le_toReal hgapTop).2 hεgap
+        _ < ∞ := by simp
+    exact (ENNReal.ofReal_le_iff_le_toReal hgapTop).2 (hω.trans hdist')
   have hMarkov : P {ω | ENNReal.ofReal ε ≤ gap ω} ≤
       (∫⁻ ω, gap ω ∂P) / ENNReal.ofReal ε := by
     apply meas_ge_le_lintegral_div hgapMeas.aemeasurable
-    · exact (ENNReal.ofReal_pos.mpr hε).ne'
+    · positivity
     · exact ENNReal.ofReal_ne_top
   calc
     P {ω | ε ≤ |(regularizedGMC P Xc γ r ω B).toReal -
         ∫ z, f z ∂regularizedGMC P Xc γ r ω|} ≤
         P {ω | ENNReal.ofReal ε ≤ gap ω} := measure_mono_ae hEventSub
     _ ≤ (∫⁻ ω, gap ω ∂P) / ENNReal.ofReal ε := hMarkov
-    _ = (∫⁻ z, φ z ∂gmcReferenceMeasure) / ENNReal.ofReal ε := by rw [hgapExp]
-    _ = _ := by simp [φ, ib, f, B, gmcLowerBoxApproxGapIntegrand]
+    _ = (∫⁻ z, φ z ∂gmcReferenceMeasure) / ENNReal.ofReal ε := by simp_all
+    _ = _ := by rfl
+section
+variable [mΩ : MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+section
+variable (hX : IsEquatorGFF P X)
+include hX
 
 /-- Bounded-continuous lower-box ramp integrals of an IsGMCOf limit converge in measure to the
 real box mass. -/
 theorem testIntegral_boxApprox_tendstoInMeasure
-    {Ω : Type*} [mΩ : MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (γ : ℝ) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (i : ℚ × ℚ) :
     TendstoInMeasure P (fun n ω => ∫ z, gmcLowerBoxApprox i n z ∂M ω) atTop
       (fun ω => (M ω (gmcLowerBox i)).toReal) := by
   let _ := hX.1
-  have heval : Measurable (fun ω => fun g : TestFn => X ω g) :=
+  have heval :=
     measurable_pi_iff.mpr (fun g => (hX.2 g).1)
   have hm0 : equatorGFFRawDistributionSigma X ≤ mΩ := by
-    dsimp [equatorGFFRawDistributionSigma]
     exact heval.comap_le
   have hFmeas (n : ℕ) : AEMeasurable
       (fun ω => ∫ z, gmcLowerBoxApprox i n z ∂M ω) P := by
     obtain ⟨g, hg, hEq⟩ :=
       equatorGFF_GMC_testIntegral_raw_measurable_version_of_IsGMCOf
-        P X hX γ M hM (gmcLowerBoxApprox i n)
-    have hg' : Measurable g := hg.mono hm0 le_rfl
-    exact hg'.aemeasurable.congr hEq.symm
+        P X hX γ M hM _
+    have hg' := hg.mono hm0 le_rfl
+    tauto
   have hGmeas : AEMeasurable (fun ω => (M ω (gmcLowerBox i)).toReal) P := by
     obtain ⟨g, hg, hEq⟩ :=
       equatorGFF_GMC_lowerBox_realMass_raw_version P X hX γ M hM i
-    have hg' : Measurable g := hg.mono hm0 le_rfl
-    exact hg'.aemeasurable.congr hEq.symm
+    have hg' := hg.mono hm0 le_rfl
+    tauto
   have hpoint : ∀ᵐ ω ∂P, Tendsto
       (fun n => ∫ z, gmcLowerBoxApprox i n z ∂M ω) atTop
       (𝓝 ((M ω (gmcLowerBox i)).toReal)) := by
     apply ae_of_all
     intro ω
-    have hfin : IsFiniteMeasure (M ω) := hM.1 ω
-    simpa [Measure.real] using @gmcLowerBoxApprox_integral_tendsto i (M ω) hfin
+    simpa [Measure.real] using @gmcLowerBoxApprox_integral_tendsto i (M ω) (hM.1 ω)
   exact tendstoInMeasure_of_tendsto_ae
     (fun n => (hFmeas n).aestronglyMeasurable) hpoint
 
 /-- For any circle-average witness, cutoff mass on a rational lower box converges in measure
 to the corresponding mass of an IsGMCOf limit. -/
 theorem regularizedGMC_box_mass_tendstoInMeasure
-    {Ω : Type*} [mΩ : MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ : ℝ)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (i : ℚ × ℚ) :
     TendstoInMeasure P
@@ -231,60 +220,47 @@ theorem regularizedGMC_box_mass_tendstoInMeasure
           fun ω => ∫ z, f z ∂regularizedGMC P Yc γ r ω := by
       filter_upwards [regularizedGMC_ae_eq_of_circleAverage
         P X hX Xc Yc hXc hYc γ r] with ω hω
-      rw [hω]
+      simp_all
     exact TendstoInMeasure.congr (fun r => (hcut r).symm)
       (Filter.Eventually.of_forall fun _ => rfl) (hYlim f)
-  have hBase := testIntegral_boxApprox_tendstoInMeasure P X hX γ M hM i
   have hεevent (ε : ℝ) (hε : 0 < ε) :
       Tendsto (fun r => P {ω | ε ≤ |(regularizedGMC P Xc γ r ω
           (gmcLowerBox i)).toReal - (M ω (gmcLowerBox i)).toReal|})
         atTop (𝓝 0) := by
-    let ε₃ : ℝ := ε / 3
-    have hε₃ : 0 < ε₃ := by dsimp [ε₃]; positivity
-    let den : ℝ≥0∞ := ENNReal.ofReal ε₃
-    have hden0 : den ≠ 0 := (ENNReal.ofReal_pos.mpr hε₃).ne'
+    let ε₃ := ε / 3
+    have hε₃ : 0 < ε₃ := by positivity
+    let den := ENNReal.ofReal ε₃
+    have hden0 : den ≠ 0 := by positivity
     have hdenTop : den ≠ ∞ := ENNReal.ofReal_ne_top
     rw [ENNReal.tendsto_nhds_zero]
     intro δ hδ
-    let η : ℝ≥0∞ := min δ (1 : ℝ≥0∞)
-    have hηpos : 0 < η := by dsimp [η]; exact lt_min hδ one_pos
-    let large : ℝ≥0∞ := η / 2
-    let small : ℝ≥0∞ := large / 2
+    let η := min δ 1
+    have hηpos : 0 < η := by positivity
+    let large := η / 2
+    let small := large / 2
     have hlargepos : 0 < large := by
-      dsimp [large]
       exact ENNReal.div_pos hηpos.ne' (by norm_num)
     have hsmallpos : 0 < small := by
-      dsimp [small, large]
       exact ENNReal.div_pos hlargepos.ne' (by norm_num)
     have hhalf (a : ℝ≥0∞) : a / 2 + a / 2 = a := by
       rw [ENNReal.div_add_div_same, ← two_mul, mul_comm]
       exact ENNReal.mul_div_cancel_right (by norm_num) (by norm_num)
     have hsmallAdd : small + small = large := by
-      dsimp [small, large]
       exact hhalf (η / 2)
     have hlargeAdd : large + large = η := by
-      dsimp [large]
       exact hhalf η
     have hRefEventual : ∀ᶠ n : ℕ in atTop,
         (∫⁻ z, gmcLowerBoxApproxGapIntegrand i n z ∂gmcReferenceMeasure) ≤
-          small * den := by
-      exact ENNReal.tendsto_nhds_zero.mp
+          small * den := ENNReal.tendsto_nhds_zero.mp
         (gmcLowerBoxApprox_referenceGap_tendsto i) (small * den) (by positivity)
-    have hBaseEventTendsto : Tendsto
-        (fun n => P {ω | ε₃ ≤ ‖(∫ z, gmcLowerBoxApprox i n z ∂M ω) -
-          (M ω (gmcLowerBox i)).toReal‖}) atTop (𝓝 0) :=
-      (tendstoInMeasure_iff_norm.mp hBase) ε₃ hε₃
-    have hBaseEventual : ∀ᶠ n : ℕ in atTop,
-        P {ω | ε₃ ≤ ‖(∫ z, gmcLowerBoxApprox i n z ∂M ω) -
-          (M ω (gmcLowerBox i)).toReal‖} ≤ small :=
+    have hBaseEventTendsto :=
+      (tendstoInMeasure_iff_norm.mp (testIntegral_boxApprox_tendstoInMeasure P X hX γ M hM i)) ε₃ hε₃
+    have hBaseEventual :=
       ENNReal.tendsto_nhds_zero.mp hBaseEventTendsto small hsmallpos
     obtain ⟨N, hN⟩ := Filter.eventually_atTop.mp (hRefEventual.and hBaseEventual)
     let n := N
-    have hnRef := (hN N le_rfl).1
-    have hnBase := (hN N le_rfl).2
-    have hratio :
-        (∫⁻ z, gmcLowerBoxApproxGapIntegrand i n z ∂gmcReferenceMeasure) / den ≤ small :=
-      (ENNReal.div_le_iff hden0 hdenTop).2 hnRef
+    have hratio :=
+      (ENNReal.div_le_iff hden0 hdenTop).2 ((hN N le_rfl).1)
     have hcutError : ∀ r : ℝ,
         P {ω | ε₃ ≤ ‖(regularizedGMC P Xc γ r ω (gmcLowerBox i)).toReal -
           ∫ z, gmcLowerBoxApprox i n z ∂regularizedGMC P Xc γ r ω‖} ≤ small := by
@@ -292,19 +268,10 @@ theorem regularizedGMC_box_mass_tendstoInMeasure
       have hbound := regularizedGMC_lowerBoxApprox_error_le_reference
         P X hX Xc hXc γ r i n ε₃ hε₃
       simpa [den, Real.norm_eq_abs] using hbound.trans hratio
-    have hBaseEvent :
-        P {ω | ε₃ ≤ ‖(∫ z, gmcLowerBoxApprox i n z ∂M ω) -
-          (M ω (gmcLowerBox i)).toReal‖} ≤ small := hnBase
-    have hmidEventTendsto : Tendsto
-        (fun r => P {ω | ε₃ ≤ ‖(∫ z, gmcLowerBoxApprox i n z
-          ∂regularizedGMC P Xc γ r ω) -
-          (∫ z, gmcLowerBoxApprox i n z ∂M ω)‖}) atTop (𝓝 0) :=
+    have hmidEventTendsto :=
       (tendstoInMeasure_iff_norm.mp
         (hConvTest (gmcLowerBoxApprox i n))) ε₃ hε₃
-    have hmidEventual : ∀ᶠ r : ℝ in atTop,
-        P {ω | ε₃ ≤ ‖(∫ z, gmcLowerBoxApprox i n z
-          ∂regularizedGMC P Xc γ r ω) -
-          (∫ z, gmcLowerBoxApprox i n z ∂M ω)‖} ≤ large :=
+    have hmidEventual :=
       ENNReal.tendsto_nhds_zero.mp hmidEventTendsto large hlargepos
     have htri (r : ℝ) :
         {ω | ε ≤ ‖(regularizedGMC P Xc γ r ω (gmcLowerBox i)).toReal -
@@ -348,15 +315,10 @@ theorem regularizedGMC_box_mass_tendstoInMeasure
           ‖(∫ z, gmcLowerBoxApprox i n z ∂M ω) -
             (M ω (gmcLowerBox i)).toReal‖) := by
         simpa [Real.norm_eq_abs] using htri₁.trans (add_le_add_right htri₂ _)
-      have hsmall₁ : ‖(regularizedGMC P Xc γ r ω (gmcLowerBox i)).toReal -
-          ∫ z, gmcLowerBoxApprox i n z ∂regularizedGMC P Xc γ r ω‖ < ε₃ :=
+      have hsmall₁ :=
         lt_of_not_ge h₁
-      have hsmall₂ : ‖(∫ z, gmcLowerBoxApprox i n z
-          ∂regularizedGMC P Xc γ r ω) -
-          (∫ z, gmcLowerBoxApprox i n z ∂M ω)‖ < ε₃ := lt_of_not_ge h₂
-      have hsmall₃ : ‖(∫ z, gmcLowerBoxApprox i n z ∂M ω) -
-          (M ω (gmcLowerBox i)).toReal‖ < ε₃ := lt_of_not_ge h₃
-      dsimp [ε₃] at hsmall₁ hsmall₂ hsmall₃
+      have hsmall₂ := lt_of_not_ge h₂
+      have hsmall₃ := lt_of_not_ge h₃
       have hsum :
           ‖(regularizedGMC P Xc γ r ω (gmcLowerBox i)).toReal -
               ∫ z, gmcLowerBoxApprox i n z ∂regularizedGMC P Xc γ r ω‖ +
@@ -364,10 +326,8 @@ theorem regularizedGMC_box_mass_tendstoInMeasure
                 (∫ z, gmcLowerBoxApprox i n z ∂M ω)‖ +
               ‖(∫ z, gmcLowerBoxApprox i n z ∂M ω) -
                 (M ω (gmcLowerBox i)).toReal‖) <
-            ε₃ + (ε₃ + ε₃) := by
-        exact add_lt_add hsmall₁ (add_lt_add hsmall₂ hsmall₃)
+            ε₃ + (ε₃ + ε₃) := add_lt_add hsmall₁ (add_lt_add hsmall₂ hsmall₃)
       have hsplit : ε₃ + (ε₃ + ε₃) = ε := by
-        dsimp [ε₃]
         ring
       have hfinal :
           ‖(regularizedGMC P Xc γ r ω (gmcLowerBox i)).toReal -
@@ -396,10 +356,10 @@ theorem regularizedGMC_box_mass_tendstoInMeasure
               (∫ z, gmcLowerBoxApprox i n z ∂M ω)‖} +
              P {ω | ε₃ ≤ ‖(∫ z, gmcLowerBoxApprox i n z ∂M ω) -
               (M ω (gmcLowerBox i)).toReal‖}) :=
-              (measure_union_le _ _).trans
-                (add_le_add_right (measure_union_le _ _) _)
+              (measure_union_le ..).trans
+                (add_le_add_right (measure_union_le ..) _)
         _ ≤ small + (large + small) :=
-              add_le_add (hcutError r) (add_le_add hr hBaseEvent)
+              add_le_add (hcutError r) (add_le_add hr ((hN N le_rfl).2))
     calc
       P {ω | ε ≤ ‖(regularizedGMC P Xc γ r ω (gmcLowerBox i)).toReal -
           (M ω (gmcLowerBox i)).toReal‖}
@@ -407,12 +367,18 @@ theorem regularizedGMC_box_mass_tendstoInMeasure
       _ = η := by
         calc
           small + (large + small) = (small + small) + large := by ac_rfl
-          _ = large + large := by rw [hsmallAdd]
+          _ = large + large := by simp_all
           _ = η := hlargeAdd
-      _ ≤ δ := by dsimp [η]; exact min_le_left δ 1
+      _ ≤ δ := by grind
   rw [tendstoInMeasure_iff_norm]
   intro ε hε
   simpa [Real.norm_eq_abs] using hεevent ε hε
+
+end
+
+end
+
+end
 
 end
 end DOZZ.Proofs

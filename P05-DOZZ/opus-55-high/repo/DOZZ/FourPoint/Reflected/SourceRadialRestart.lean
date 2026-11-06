@@ -27,18 +27,16 @@ theorem reflected_source_copied_radial_restart
           (γ*(brownianShiftPath T (radialPositiveHalf (originRadialPath Xc ω.1)) (Real.toNNReal u)-
             (Q γ-α)*u))) else 0)
           ∂(lateralProjectedGMC γ (originRadialPath Xc ω.2) (M ω.2)).map (fun s => s-(T : ℝ)) := by
-  have hn : 0 < ‖z‖ := norm_pos_iff.mpr hz
+  have hn := norm_pos_iff.mpr hz
   filter_upwards [measurePreserving_fst.quasiMeasurePreserving.ae (originRadialPath_eval_ae hcont),
     measurePreserving_snd.quasiMeasurePreserving.ae
       (reflected_copied_inner_source_restart P γ α (originRadialPath Xc) M N heq)] with ω hev hi
   rw [hi (originRadialPath Xc ω.1) T,← mul_assoc,← ENNReal.ofReal_mul (Real.rpow_nonneg hn.le _)]
-  have hs : ‖z‖^(γ^2/2)*Real.exp (γ*(originRadialPath Xc ω.1 T-(Q γ-α)*(T : ℝ))) =
+  have hs : ‖z‖^(γ^2/2)*Real.exp (γ*(originRadialPath Xc ω.1 T-(Q γ-α)*T)) =
       reflected_radial_scale γ (Q γ-α) h Xc z ω.1 := by
-    rw [hev (T : ℝ),Real.rpow_def_of_pos hn,← Real.exp_add]
+    rw [hev T,Real.rpow_def_of_pos hn,← Real.exp_add]
     unfold reflected_radial_scale
-    rw [hcoord]
-    congr 1
-    ring
-  rw [hs]
+    grind
+  simp_all
 
 end DOZZ.Proofs

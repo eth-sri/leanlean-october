@@ -41,10 +41,10 @@ theorem gaussian_pin_copy_law
   have hNc : Measurable (fun q : Ω × Ω => Z none q.2) := hN.comp measurable_snd
   have hcopy := (indepFun_prod (μ := P) (ν := P) hR hN).symm.map_prod_eq_prod_map_map
     hNc.aemeasurable hRc.aemeasurable
-  have hNmap : (P.prod P).map (fun q : Ω × Ω => Z none q.2) = P.map (Z none) := by
+  have hNmap : (P.prod P).map (fun q => Z none q.2) = P.map (Z none) := by
     rw [← Function.comp_def, ← Measure.map_map hN measurable_snd,
       measurePreserving_snd.map_eq]
-  have hRmap : (P.prod P).map (fun q : Ω × Ω => R q.1) = P.map R := by
+  have hRmap : (P.prod P).map (fun q => R q.1) = P.map R := by
     rw [← Function.comp_def, ← Measure.map_map hR measurable_fst,
       measurePreserving_fst.map_eq]
   rw [hNmap, hRmap, ← hNR] at hcopy

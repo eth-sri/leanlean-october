@@ -37,8 +37,8 @@ theorem exists_wienerPathMeasure :
   obtain ⟨Y, hY, _, hYcont, _⟩ :=
     exists_continuous_circleAverage P equatorGFFDistribution Xc hX hc
   have hB := (circleAverage_origin_brownian P equatorGFFDistribution Y hX hY hYcont).1
-  let B := fun (t : ℝ≥0) ω => Y ω 0 (t : ℝ)
-  have hBm : AEMeasurable (brownianContinuousPath B) P :=
+  let B := fun (t : ℝ≥0) ω => Y ω 0 t
+  have hBm :=
     aemeasurable_brownianContinuousPath hB
   refine ⟨P.map (brownianContinuousPath B),
     (Measure.isProbabilityMeasure_map_iff hBm).mpr inferInstance, ?_⟩
@@ -102,20 +102,24 @@ instance isProbabilityMeasure_negativeRogersPitmanWienerMeasure (μ : ℝ) :
     IsProbabilityMeasure (negativeRogersPitmanWienerMeasure μ) :=
   inferInstanceAs
     (IsProbabilityMeasure (negativeRogersPitmanEntranceMeasure μ wienerPathMeasure))
+section
+variable (μ : ℝ)
 
 /-- The actual radial path candidate starts at zero. -/
-theorem rogersPitmanWienerMeasure_zero_ae (μ : ℝ) :
+theorem rogersPitmanWienerMeasure_zero_ae :
     ∀ᵐ p ∂rogersPitmanWienerMeasure μ, p 0 = 0 := by
   apply (ae_map_iff (measurable_rogersPitmanPath μ).aemeasurable
-    ((measurableSet_singleton (0 : ℝ)).preimage (ContinuousMap.measurable_eval 0))).mpr
+    ((measurableSet_singleton 0).preimage (ContinuousMap.measurable_eval 0))).mpr
   exact wienerTriple_zero_ae.mono fun V hV => rogersPitmanPath_zero μ V hV
 
 /-- The reflected radial candidate starts at the same singular entrance point. -/
-theorem negativeRogersPitmanWienerMeasure_zero_ae (μ : ℝ) :
+theorem negativeRogersPitmanWienerMeasure_zero_ae :
     ∀ᵐ p ∂negativeRogersPitmanWienerMeasure μ, p 0 = 0 := by
   apply (ae_map_iff (measurable_negativeRogersPitmanPath μ).aemeasurable
-    ((measurableSet_singleton (0 : ℝ)).preimage (ContinuousMap.measurable_eval 0))).mpr
+    ((measurableSet_singleton 0).preimage (ContinuousMap.measurable_eval 0))).mpr
   exact wienerTriple_zero_ae.mono fun V hV => negativeRogersPitmanPath_zero μ V hV
+
+end
 
 /-- Fixed-time coordinate evaluations have the product of three centered Gaussian laws. -/
 theorem wienerTriple_eval_hasLaw (t : ℝ≥0) :
@@ -124,26 +128,28 @@ theorem wienerTriple_eval_hasLaw (t : ℝ≥0) :
   have hindep := wienerTriple_coordinatePaths_independent.comp
     (fun _ p => p t) (fun _ => ContinuousMap.measurable_eval t)
   exact hindep.hasLaw_pi (fun i => (wienerTriple_coordinate_isBrownian i).hasLaw_eval t)
+section
+variable (a : ℝ) (t : ℝ≥0)
 
 /-- The drifted Gaussian coordinates at a fixed time remain mutually independent. -/
-theorem wienerTriple_drifted_eval_hasLaw (a : ℝ) (t : ℝ≥0) :
+theorem wienerTriple_drifted_eval_hasLaw :
     HasLaw (fun V : BrownianTriple => fun i : Fin 3 =>
       V i t + (if i = 0 then a * (t : ℝ) else 0))
       (Measure.pi (fun i : Fin 3 => gaussianReal (if i = 0 then a * (t : ℝ) else 0) t))
       wienerTripleMeasure := by
   have hindep := wienerTriple_coordinatePaths_independent.comp
-    (fun i p => p t + (if i = 0 then a * (t : ℝ) else 0))
+    (fun i p => p t + (if i = 0 then a * t else 0))
     (fun _ => (ContinuousMap.measurable_eval t).add_const _)
   apply hindep.hasLaw_pi
   intro i
   simpa only [zero_add, Function.comp_def] using gaussianReal_add_const
     ((wienerTriple_coordinate_isBrownian i).hasLaw_eval t)
-    (if i = 0 then a * (t : ℝ) else 0)
+    (if i = 0 then a * t else 0)
 
 
 /-- The unconditional radial evaluation has an explicit Gaussian-norm pushforward law.
 Identifying this pushforward with the entrance density is the analytic spherical-integration step. -/
-theorem rogersPitmanWienerMeasure_eval_map (a : ℝ) (t : ℝ≥0) :
+theorem rogersPitmanWienerMeasure_eval_map :
     (rogersPitmanWienerMeasure a).map (fun p => p t) =
       (Measure.pi (fun i : Fin 3 => gaussianReal
         (if i = 0 then a * (t : ℝ) else 0) t)).map
@@ -151,19 +157,20 @@ theorem rogersPitmanWienerMeasure_eval_map (a : ℝ) (t : ℝ≥0) :
   rw [rogersPitmanWienerMeasure, rogersPitmanEntranceMeasure,
     Measure.map_map (ContinuousMap.measurable_eval t) (measurable_rogersPitmanPath a)]
   have hnorm : Measurable (fun z : Fin 3 → ℝ => ‖WithLp.toLp 2 z‖) :=
-    (PiLp.continuous_toLp 2 _).norm.measurable
-  have hmap := (wienerTriple_drifted_eval_hasLaw a t).map_eq
+    by fun_prop
   have hinput : Measurable (fun V : BrownianTriple => fun i : Fin 3 =>
       V i t + (if i = 0 then a * (t : ℝ) else 0)) :=
     measurable_pi_iff.mpr fun i =>
       ((ContinuousMap.measurable_eval t).comp (measurable_pi_apply i)).add_const _
   calc
-    _ = (wienerTripleMeasure.map (fun V => fun i =>
-        V i t + (if i = 0 then a * (t : ℝ) else 0))).map
+    _ = (wienerTripleMeasure.map (fun V i =>
+        V i t + (if i = 0 then a * t else 0))).map
           (fun z => ‖WithLp.toLp 2 z‖) := by
       symm
       exact Measure.map_map hnorm
         hinput
-    _ = _ := by rw [hmap]
+    _ = _ := by rw [((wienerTriple_drifted_eval_hasLaw a t).map_eq)]
+
+end
 
 end DOZZ.Proofs

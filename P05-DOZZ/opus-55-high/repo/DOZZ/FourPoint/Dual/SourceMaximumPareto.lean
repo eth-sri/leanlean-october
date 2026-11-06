@@ -39,37 +39,35 @@ theorem dual_source_fixed_maximum_increment_eq_pareto
         dual_radial_scale γ (Q γ-α₁) h Xc z v.1*S v.2*w)^(-p)-
         (dualOuterMass γ α₁ α₂ α₃ (M v.1) z ξ).toReal^(-p)
         ∂paretoMeasure 1 (2*(Q γ-α₁)/γ)) ∂P.prod P := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   let _ := isProbabilityMeasure_brownianMaximumReferenceLaw (sub_pos.mpr hα₁)
   let A := fun ω => (dualOuterMass γ α₁ α₂ α₃ (M ω) z ξ).toReal
   let b := dual_radial_scale γ (Q γ-α₁) h Xc z
   let V := fun v : ℝ × Ω => Real.exp (γ*v.1)*S v.2
   have hr : ‖z‖^(1-ξ) ≤ 1 := by
-    simpa only [Real.one_rpow] using Real.rpow_le_rpow (norm_nonneg z) hz
+    simpa using Real.rpow_le_rpow (norm_nonneg z) hz
       (sub_nonneg.mpr hξ1.le)
-  have hA : ∀ᵐ ω ∂P, 0 < A ω :=
+  have hA :=
     (dual_source_outerMass_positive_finite_ae P X hX γ hγ hγ₂ M hM
       α₁ α₂ α₃ ξ hα₁ hα₂ hα₃ z hz0 hz1 hz hr).mono
         (fun ω hω => ENNReal.toReal_pos hω.1.ne' hω.2.ne)
-  have hAm : AEMeasurable A P :=
+  have hAm :=
     ((dual_outerMass_measure_measurable γ α₁ α₂ α₃ ξ z).comp_aemeasurable
       (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ₂ M hM)).ennreal_toReal
-  have hcoord := (hc.2.1 0 (-Real.log ‖z‖+h)).aemeasurable
   have hbm : AEMeasurable b P := by
-    dsimp only [b, dual_radial_scale]
-    exact ((hcoord.const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
+    exact ((((hc.2.1 0 _).aemeasurable).const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
   have hVm : AEMeasurable V ((brownianMaximumReferenceLaw (Q γ-α₁)).prod P) := by
     convert (measurable_fst.aemeasurable.const_mul γ).exp.mul hSm.comp_snd using 1
   have hInv : Integrable (fun ω => (A ω)^(-p)) P := by
     have hi := (dual_radial_scale_real_expectation P X hX γ hγ hγ₂ M hM Xc hc
       (Q γ-α₁) h 0 α₁ α₂ α₃ ξ p hh hξ hξ1 hp.le z hz0 hz).1
-    simpa only [Real.rpow_zero, one_mul] using hi
+    simpa using hi
   have hV : ∀ᵐ v : ℝ × Ω ∂(brownianMaximumReferenceLaw (Q γ-α₁)).prod P, 0 ≤ V v :=
     (measurePreserving_snd.quasiMeasurePreserving.ae hS).mono
       (fun v hv => mul_nonneg (Real.exp_pos _).le hv)
   have hInt := dual_negative_increment_integrable P _ p hp.le A b V hA
     (ae_of_all _ (fun _ => (Real.exp_pos _).le)) hV hAm hbm hVm hInv
-  exact dual_maximum_product_increment_eq_pareto P P W hW γ (Q γ-α₁)
+  exact dual_maximum_product_increment_eq_pareto P P W hW γ _
     hγ (sub_pos.mpr hα₁) p A b S hInt hPareto
 
 end DOZZ.Proofs

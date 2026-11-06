@@ -17,20 +17,16 @@ namespace DOZZ.Proofs
 theorem fusionMovingKernel_joint_measurable (γ α₁ α₂ α₃ : ℝ) :
     Measurable (fun q : (ℂ × ℂ) × ℂ => fusionMovingKernel γ α₁ α₂ α₃ q.1.1 q.1.2 q.2) := by
   have hp : Measurable (fun q : (ℂ × ℂ) × ℂ => (q.1.2, q.2)) :=
-    (measurable_snd.comp measurable_fst).prodMk measurable_snd
+    by fun_prop
   have hK : Measurable (fun q : (ℂ × ℂ) × ℂ => gammaHalfKernel γ α₁ α₂ α₃ q.1.2 q.2) :=
     by simpa only [Function.comp_def] using (fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃).comp hp
   have hr : Measurable (fun q : (ℂ × ℂ) × ℂ => (q.1.1 * q.1.2, q.2)) :=
-    ((measurable_fst.comp measurable_fst).mul (measurable_snd.comp measurable_fst)).prodMk
-      measurable_snd
+    by fun_prop
   have hD : Measurable (fun q : (ℂ × ℂ) × ℂ => Real.exp (γ ^ 2 * gffKernel (q.1.1 * q.1.2) q.2)) :=
-    by simpa only [Function.comp_def] using ((measurable_pointRootPotential.comp hr).const_mul (γ ^ 2)).exp
+    by simpa using ((measurable_pointRootPotential.comp hr).const_mul _).exp
   change Measurable (fun q : (ℂ × ℂ) × ℂ => ENNReal.ofReal
-    (gammaHalfKernel γ α₁ α₂ α₃ q.1.2 q.2 * Real.exp (γ ^ 2 * gffKernel (q.1.1 * q.1.2) q.2)))
-  have hprod : Measurable (fun q : (ℂ × ℂ) × ℂ =>
-    gammaHalfKernel γ α₁ α₂ α₃ q.1.2 q.2 * Real.exp (γ ^ 2 * gffKernel (q.1.1 * q.1.2) q.2)) :=
-    hK.mul hD
-  simpa only [Function.comp_def] using ENNReal.measurable_ofReal.comp hprod
+    (gammaHalfKernel γ α₁ α₂ α₃ q.1.2 q.2 * Real.exp _))
+  fun_prop
 
 /-- Measurability holds jointly in both the rescaled root and the moving insertion point. -/
 theorem fusionMovingMass_expectation_measurable {Ω : Type*} [MeasurableSpace Ω]
@@ -39,7 +35,7 @@ theorem fusionMovingMass_expectation_measurable {Ω : Type*} [MeasurableSpace Ω
     (α₁ α₂ α₃ s : ℝ) :
     Measurable (fun q : ℂ × ℂ => ∫⁻ ω,
       fusionMovingMass γ α₁ α₂ α₃ q.1 q.2 (M ω) ^ s ∂P) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   obtain ⟨N, hN, hf, he⟩ := equatorGFF_GMC_measurable_version P X hX γ hγ hγ2 M hM
   have hm : Measurable (fun q : (ℂ × ℂ) × Ω =>
       fusionMovingMass γ α₁ α₂ α₃ q.1.1 q.1.2 (N q.2)) := by
@@ -48,19 +44,18 @@ theorem fusionMovingMass_expectation_measurable {Ω : Type*} [MeasurableSpace Ω
       (fun q : ((ℂ × ℂ) × Ω) × ℂ =>
         fusionMovingKernel γ α₁ α₂ α₃ q.1.1.1 q.1.1.2 q.2)
     have hp : Measurable (fun q : ((ℂ × ℂ) × Ω) × ℂ => (q.1.1, q.2)) :=
-      (measurable_fst.comp measurable_fst).prodMk measurable_snd
+      by fun_prop
     have ht := (fusionMovingKernel_joint_measurable γ α₁ α₂ α₃).comp hp
-    simpa only [Function.comp_def] using ht
+    assumption
   have hmeas : Measurable (fun q : ℂ × ℂ => ∫⁻ ω,
       fusionMovingMass γ α₁ α₂ α₃ q.1 q.2 (N ω) ^ s ∂P) :=
-    (hm.pow_const s).lintegral_prod_right'
+    by fun_prop
   have heq : (fun q : ℂ × ℂ => ∫⁻ ω,
       fusionMovingMass γ α₁ α₂ α₃ q.1 q.2 (M ω) ^ s ∂P) =
       (fun q : ℂ × ℂ => ∫⁻ ω,
       fusionMovingMass γ α₁ α₂ α₃ q.1 q.2 (N ω) ^ s ∂P) := by
     funext q
-    exact lintegral_congr_ae (he.mono fun ω h => by dsimp only; rw [h])
-  rw [heq]
-  exact hmeas
+    exact lintegral_congr_ae (he.mono fun ω h => by simp_all)
+  simp_all
 
 end DOZZ.Proofs

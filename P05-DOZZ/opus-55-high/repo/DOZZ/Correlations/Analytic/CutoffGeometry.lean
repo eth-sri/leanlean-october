@@ -22,7 +22,7 @@ theorem retained_cutoff_geometry_eventually {N : ℕ} (z : Fin N → ℂ)
   have he : Tendsto (fun n : ℕ => Real.exp (n : ℝ)) atTop atTop :=
     Real.tendsto_exp_atTop.comp tendsto_natCast_atTop_atTop
   have hneg : Tendsto (fun n : ℕ => 2 * Real.exp (-(n : ℝ))) atTop (𝓝 0) := by
-    simpa only [mul_zero, Function.comp_def] using
+    simpa using
       (Real.tendsto_exp_neg_atTop_nhds_zero.comp tendsto_natCast_atTop_atTop).const_mul 2
   have hsmall : ∀ᶠ n : ℕ in atTop, 2 * Real.exp (-(n : ℝ)) ≤ δ :=
     (hneg.eventually_lt_const hδ).mono (fun _ h => h.le)

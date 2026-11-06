@@ -20,22 +20,17 @@ open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped Distributions ENNReal NNReal BoundedContinuousFunction
 
 namespace DOZZ.Proofs
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+section
+variable (X : Ω → Distr) (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ : ℝ) {a : ℂ} {c R r : ℝ} (hc : 0 < c) (hc1 : c ≤ 1) (hR : 0 < R) (hsourceCut : ∀ x : {z : ℂ // z ∈ Metric.closedBall (0 : ℂ) R}, ‖x.1‖ + Real.exp (-r) ≤ 1) (htargetCut : ∀ x : {z : ℂ // z ∈ Metric.closedBall (0 : ℂ) R}, ‖a + c • x.1‖ + Real.exp (-(r - Real.log c)) ≤ 1) (hsourceUnit : ∀ x ∈ Metric.closedBall (0 : ℂ) R, ‖x‖ ≤ 1) (htargetUnit : ∀ x ∈ Metric.closedBall a (c * R), ‖x‖ ≤ 1)
+include hX hXc hc hc1 hR hsourceCut htargetCut hsourceUnit htargetUnit
 
 /-- The finite-cutoff affine test-vector law passes to open-ball masses. The cutoff radius is
 scaled together with the disk, and the common Gaussian shift contributes the same scalar as in
 the test-vector identity. -/
 theorem regularizedGMC_affine_openBall_mass_law
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (γ : ℝ) {a : ℂ} {c R r : ℝ}
-    (hc : 0 < c) (hc1 : c ≤ 1) (hR : 0 < R)
-    (hsourceCut : ∀ x : {z : ℂ // z ∈ Metric.closedBall (0 : ℂ) R},
-      ‖x.1‖ + Real.exp (-r) ≤ 1)
-    (htargetCut : ∀ x : {z : ℂ // z ∈ Metric.closedBall (0 : ℂ) R},
-      ‖a + c • x.1‖ + Real.exp (-(r - Real.log c)) ≤ 1)
-    (hsourceUnit : ∀ x ∈ Metric.closedBall (0 : ℂ) R, ‖x‖ ≤ 1)
-    (htargetUnit : ∀ x ∈ Metric.closedBall a (c * R), ‖x‖ ≤ 1) :
+    :
     Measure.map (fun ω : Ω =>
       (regularizedGMC P Xc γ (r - Real.log c) ω (Metric.ball a (c * R))).toReal) P =
     Measure.map (fun q : Ω × ℝ =>
@@ -45,7 +40,7 @@ theorem regularizedGMC_affine_openBall_mass_law
         neg_nonneg.mpr (Real.log_nonpos hc.le hc1)⟩)) := by
   classical
   have hP : IsProbabilityMeasure P := hX.1
-  let G : Measure ℝ := gaussianReal 0 ⟨-Real.log c,
+  let G := gaussianReal 0 ⟨-Real.log c,
     neg_nonneg.mpr (Real.log_nonpos hc.le hc1)⟩
   have hG : IsProbabilityMeasure G := by
     simpa [G] using (ProbabilityTheory.instIsProbabilityMeasureGaussianReal 0
@@ -84,7 +79,7 @@ theorem regularizedGMC_affine_openBall_mass_law
     c ^ 2 * Real.exp (γ * q.2 - γ ^ 2 / 2 * (-Real.log c)) *
       ∫ x, g n x ∂regularizedGMC P Xc γ r q.1
   have htargetCutoffMeas (n : ℕ) : AEMeasurable (targetCutoff n) P := by
-    exact aemeasurable_pi_iff.2 (fun _ => by simpa [targetCutoff] using htargetMeas n)
+    exact aemeasurable_pi_iff.2 (fun _ => by tauto)
   have hsourceCutoffMeas (n : ℕ) : AEMeasurable (sourceCutoff n) (P.prod G) := by
     apply aemeasurable_pi_iff.2
     intro j
@@ -188,7 +183,7 @@ theorem regularizedGMC_affine_openBall_mass_law
       (by fun_prop) hsourceConvCoord
   have hsourceConv : TendstoInMeasure (P.prod G) sourceCutoff atTop sourceLimit :=
     tendstoInMeasure_pi_finite (P.prod G) sourceCutoff sourceLimit
-      (fun j => by simpa [sourceCutoff, sourceLimit] using hsourceConvCoordProd j)
+      (fun j => by bound)
   have hcutoffLaw (n : ℕ) : Measure.map (targetCutoff n) P =
       Measure.map (sourceCutoff n) (P.prod G) := by
     let fvec : Fin 1 → BoundedContinuousFunction ℂ ℝ := fun _ => f n
@@ -213,8 +208,8 @@ theorem regularizedGMC_affine_openBall_mass_law
   have hvecLaw := gmc_limit_test_vector_law targetCutoff sourceCutoff targetLimit sourceLimit
     (fun n => htargetCutoffMeas n) (fun n => hsourceCutoffMeas n)
     htargetLimitMeas hsourceLimitMeas hcutoffLaw
-    (fun j => by simpa [targetCutoff, targetLimit] using htargetConvCoord j)
-    (fun j => by simpa [sourceCutoff, sourceLimit] using hsourceConvCoordProd j)
+    (fun j => by tauto)
+    (fun j => by bound)
   let eval : (Fin 1 → ℝ) → ℝ := fun v => v 0
   have heval : Measurable eval := by fun_prop
   have hleft : Measure.map eval (Measure.map targetLimit P) =
@@ -240,31 +235,19 @@ theorem regularizedGMC_affine_openBall_mass_law
 
 /-- Every real moment of a finite-cutoff open-ball mass obeys the exact affine scaling law. -/
 theorem regularizedGMC_affine_openBall_moment_scale
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (γ : ℝ) {a : ℂ} {c R r : ℝ}
-    (hc : 0 < c) (hc1 : c ≤ 1) (hR : 0 < R)
-    (hsourceCut : ∀ x : {z : ℂ // z ∈ Metric.closedBall (0 : ℂ) R},
-      ‖x.1‖ + Real.exp (-r) ≤ 1)
-    (htargetCut : ∀ x : {z : ℂ // z ∈ Metric.closedBall (0 : ℂ) R},
-      ‖a + c • x.1‖ + Real.exp (-(r - Real.log c)) ≤ 1)
-    (hsourceUnit : ∀ x ∈ Metric.closedBall (0 : ℂ) R, ‖x‖ ≤ 1)
-    (htargetUnit : ∀ x ∈ Metric.closedBall a (c * R), ‖x‖ ≤ 1)
     (p : ℝ) :
     ∫⁻ ω, ENNReal.rpow
       (regularizedGMC P Xc γ (r - Real.log c) ω (Metric.ball a (c * R))) p ∂P =
       ENNReal.ofReal (c ^ (2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2)) *
         ∫⁻ ω, ENNReal.rpow (regularizedGMC P Xc γ r ω (Metric.ball 0 R)) p ∂P := by
-  classical
-  let G : Measure ℝ := gaussianReal 0 ⟨-Real.log c,
+  let G := gaussianReal 0 ⟨-Real.log c,
     neg_nonneg.mpr (Real.log_nonpos hc.le hc1)⟩
   have hG : IsProbabilityMeasure G := by
     simpa [G] using (ProbabilityTheory.instIsProbabilityMeasureGaussianReal 0
       ⟨-Real.log c, neg_nonneg.mpr (Real.log_nonpos hc.le hc1)⟩)
   have hPG : IsProbabilityMeasure (P.prod G) := by
-    let hP : IsProbabilityMeasure P := hX.1
-    let hG' : IsProbabilityMeasure G := hG
+    let hP := hX.1
+    let hG' := hG
     infer_instance
   let targetMass : Ω → ℝ≥0∞ := fun ω =>
     regularizedGMC P Xc γ (r - Real.log c) ω (Metric.ball a (c * R))
@@ -276,7 +259,7 @@ theorem regularizedGMC_affine_openBall_moment_scale
       (sourceMass q.1).toReal
   let scaleFactor : ℝ → ℝ := fun w =>
     c ^ 2 * Real.exp (γ * w - γ ^ 2 / 2 * (-Real.log c))
-  have htargetMassMeas : AEMeasurable targetMass P :=
+  have htargetMassMeas :=
     regularizedGMC_mass_aemeasurable P X hX Xc hXc γ (r - Real.log c)
       (Metric.ball a (c * R)) Metric.isOpen_ball.measurableSet
   have hsourceMassMeas : AEMeasurable sourceMass P :=
@@ -285,32 +268,30 @@ theorem regularizedGMC_affine_openBall_moment_scale
   have htargetCoordMeas : AEMeasurable targetCoord P :=
     ENNReal.measurable_toReal.comp_aemeasurable htargetMassMeas
   have hsourceCoordMeas : AEMeasurable sourceCoord (P.prod G) := by
-    have hbase : AEMeasurable (fun q : Ω × ℝ => (sourceMass q.1).toReal) (P.prod G) := by
+    have hbase : AEMeasurable (fun q => (sourceMass q.1).toReal) (P.prod G) := by
       have hbase' : AEMeasurable (fun ω => (sourceMass ω).toReal)
           (Measure.map Prod.fst (P.prod G)) := by
         rw [measurePreserving_fst.map_eq]
         exact ENNReal.measurable_toReal.comp_aemeasurable hsourceMassMeas
       change AEMeasurable ((fun ω => (sourceMass ω).toReal) ∘ Prod.fst) (P.prod G)
       exact hbase'.comp_aemeasurable measurable_fst.aemeasurable
-    have hscale : AEMeasurable (fun q : Ω × ℝ => scaleFactor q.2) (P.prod G) := by
-      exact (show Measurable scaleFactor by dsimp [scaleFactor]; fun_prop).comp_aemeasurable
+    have hscale : AEMeasurable (fun q => scaleFactor q.2) (P.prod G) := by
+      exact (show Measurable scaleFactor by fun_prop).comp_aemeasurable
         measurable_snd.aemeasurable
-    change AEMeasurable (fun q => scaleFactor q.2 * (sourceMass q.1).toReal) (P.prod G)
     exact hscale.mul hbase
   have hmassLaw := regularizedGMC_affine_openBall_mass_law P X hX Xc hXc γ
-    (a := a) (c := c) (R := R) (r := r) hc hc1 hR hsourceCut htargetCut
+    (r := r) hc hc1 hR hsourceCut htargetCut
     hsourceUnit htargetUnit
   change Measure.map targetCoord P = Measure.map sourceCoord (P.prod G) at hmassLaw
   let ψ : ℝ → ℝ≥0∞ := fun x => ENNReal.rpow (ENNReal.ofReal x) p
   have hψ : Measurable ψ := by dsimp [ψ]; fun_prop
-  have htargetFinite := regularizedGMC_finite_ae P X hX Xc hXc γ (r - Real.log c)
   have hsourceFinite := regularizedGMC_finite_ae P X hX Xc hXc γ r
   have hleft : ∫⁻ ω, ENNReal.rpow (targetMass ω) p ∂P =
       ∫⁻ y, ψ y ∂Measure.map targetCoord P := by
     calc
       _ = ∫⁻ ω, ψ (targetCoord ω) ∂P := by
         apply lintegral_congr_ae
-        filter_upwards [htargetFinite] with ω hω
+        filter_upwards [(regularizedGMC_finite_ae P X hX Xc hXc γ (r - Real.log c))] with ω hω
         have hnotTop : targetMass ω ≠ ∞ := by
           let _ := hω
           exact measure_ne_top _ _
@@ -326,7 +307,7 @@ theorem regularizedGMC_affine_openBall_moment_scale
     ENNReal.continuous_rpow_const.measurable.comp_aemeasurable hsourceMassMeas
   have hfactorMomentMeas : AEMeasurable
       (fun w => ENNReal.rpow (ENNReal.ofReal (scaleFactor w)) p) G := by
-    have hscale : Measurable scaleFactor := by dsimp [scaleFactor]; fun_prop
+    have hscale : Measurable scaleFactor := by fun_prop
     exact (ENNReal.continuous_rpow_const.measurable.comp
       (ENNReal.measurable_ofReal.comp hscale)).aemeasurable
   have hprod : ∫⁻ q, ψ (sourceCoord q) ∂P.prod G =
@@ -336,26 +317,25 @@ theorem regularizedGMC_affine_openBall_moment_scale
       _ = ∫⁻ q, ENNReal.rpow (sourceMass q.1) p *
             ENNReal.rpow (ENNReal.ofReal (scaleFactor q.2)) p ∂P.prod G := by
         apply lintegral_congr_ae
-        have hfiniteProd : ∀ᵐ q ∂P.prod G,
-            IsFiniteMeasure (regularizedGMC P Xc γ r q.1) :=
+        have hfiniteProd :=
           (Measure.quasiMeasurePreserving_fst (μ := P) (ν := G)).ae
             (regularizedGMC_finite_ae P X hX Xc hXc γ r)
         filter_upwards [hfiniteProd] with q hq
         have hnotTop : sourceMass q.1 ≠ ∞ := by
           let _ := hq
           exact measure_ne_top _ _
-        have hscalePos : 0 < scaleFactor q.2 := by dsimp [scaleFactor]; positivity
+        have hscalePos : 0 < scaleFactor q.2 := by positivity
         change ENNReal.rpow
           (ENNReal.ofReal (scaleFactor q.2 * (sourceMass q.1).toReal)) p = _
         rw [ENNReal.ofReal_mul' ENNReal.toReal_nonneg,
           ENNReal.ofReal_toReal hnotTop]
         simpa [mul_comm] using
-          (ENNReal.mul_rpow_of_ne_top (x := ENNReal.ofReal (scaleFactor q.2))
-            (y := sourceMass q.1) ENNReal.ofReal_ne_top hnotTop p)
+          (ENNReal.mul_rpow_of_ne_top
+            ENNReal.ofReal_ne_top hnotTop p)
       _ = _ := by rw [lintegral_prod_mul hbaseMomentMeas hfactorMomentMeas]
   calc
     _ = ∫⁻ y, ψ y ∂Measure.map targetCoord P := hleft
-    _ = ∫⁻ y, ψ y ∂Measure.map sourceCoord (P.prod G) := by rw [hmassLaw]
+    _ = ∫⁻ y, ψ y ∂Measure.map sourceCoord (P.prod G) := by tauto
     _ = ∫⁻ q, ψ (sourceCoord q) ∂P.prod G := hright
     _ = (∫⁻ ω, ENNReal.rpow (sourceMass ω) p ∂P) *
           (∫⁻ w, ENNReal.rpow (ENNReal.ofReal (scaleFactor w)) p ∂G) := hprod
@@ -363,11 +343,12 @@ theorem regularizedGMC_affine_openBall_moment_scale
       rw [gaussianScaleFactor_rpow_integral γ c p hc hc1]
       ac_rfl
 
+end
+
 /-- A finite-cutoff ball mass at scales no finer than its cutoff has the exact subunit scaling
 bound obtained from the reference half-disk intensity. -/
 theorem regularizedGMC_openBall_subunit_scale_bound
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+    (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (γ : ℝ) (z : ℂ) (s δ p : ℝ)
     (hs : 0 < s) (hs1 : s ≤ 1 / 2) (hδ : 0 < δ) (hδs : δ ≤ s)
@@ -378,78 +359,74 @@ theorem regularizedGMC_openBall_subunit_scale_bound
         (2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2)) *
         (1 + gmcReferenceMeasure (Metric.ball 0 (1 / 2))) := by
   let c : ℝ := 2 * s
-  let r : ℝ := Real.log (1 / δ) + Real.log c
-  have hc : 0 < c := by dsimp [c]; positivity
-  have hc1 : c ≤ 1 := by dsimp [c]; linarith
+  let r := Real.log (1 / δ) + Real.log c
+  have hc : 0 < c := by positivity
+  have hc1 : c ≤ 1 := by linarith
   have hδc : Real.exp (-r) = δ / c := by
     have hδrec : Real.exp (-Real.log (1 / δ)) = δ := by
       rw [Real.exp_neg, Real.exp_log (by positivity)]
       field_simp
     have hcrec : Real.exp (-Real.log c) = c⁻¹ := by
       rw [Real.exp_neg, Real.exp_log hc]
-    rw [show -r = -Real.log (1 / δ) + -Real.log c by dsimp [r]; ring,
+    rw [show -r = -Real.log (1 / δ) + -Real.log c by linarith,
       Real.exp_add, hδrec, hcrec]
-    dsimp [c]
-    field_simp
+    rfl
   have htargetCutoff : Real.exp (-(r - Real.log c)) = δ := by
     have hr : r - Real.log c = Real.log (1 / δ) := by
-      dsimp [r]
-      ring
+      linarith
     rw [hr]
     have hδrec : Real.exp (-Real.log (1 / δ)) = δ := by
       rw [Real.exp_neg, Real.exp_log (by positivity)]
       field_simp
     exact hδrec
-  have hsourceCut : ∀ x : {w : ℂ // w ∈ Metric.closedBall (0 : ℂ) (1 / 2 : ℝ)},
+  have hsourceCut : ∀ x : {w : ℂ // w ∈ Metric.closedBall 0 (1 / 2)},
       ‖x.1‖ + Real.exp (-r) ≤ 1 := by
     intro x
-    have hx : ‖x.1‖ ≤ (1 / 2 : ℝ) := by
+    have hx : ‖x.1‖ ≤ (1 / 2) := by
       simpa [Metric.mem_closedBall, dist_zero_right] using x.2
-    have hδcHalf : δ / c ≤ (1 / 2 : ℝ) := by
+    have hδcHalf : δ / c ≤ (1 / 2) := by
       dsimp [c]
-      exact (div_le_iff₀ (by positivity)).2 (by nlinarith [hδs])
+      exact (div_le_iff₀ (by positivity)).2 (by nlinarith)
     rw [hδc]
     linarith
-  have htargetCut : ∀ x : {w : ℂ // w ∈ Metric.closedBall (0 : ℂ) (1 / 2 : ℝ)},
+  have htargetCut : ∀ x : {w : ℂ // w ∈ Metric.closedBall 0 (1 / 2)},
       ‖z + c • x.1‖ + Real.exp (-(r - Real.log c)) ≤ 1 := by
     intro x
-    have hx : ‖x.1‖ ≤ (1 / 2 : ℝ) := by
+    have hx : ‖x.1‖ ≤ (1 / 2) := by
       simpa [Metric.mem_closedBall, dist_zero_right] using x.2
     have hnorm : ‖z + c • x.1‖ ≤ ‖z‖ + s := by
       calc
-        ‖z + c • x.1‖ ≤ ‖z‖ + ‖c • x.1‖ := norm_add_le _ _
+        ‖z + c • x.1‖ ≤ ‖z‖ + ‖c • x.1‖ := norm_add_le ..
         _ = ‖z‖ + c * ‖x.1‖ := by simp [abs_of_pos hc]
-        _ ≤ ‖z‖ + c * (1 / 2 : ℝ) := by
-          nlinarith [mul_le_mul_of_nonneg_left hx hc.le]
-        _ = ‖z‖ + s := by dsimp [c]; ring
-    rw [htargetCutoff]
-    have hδbound : δ ≤ s := hδs
-    nlinarith [hchart]
+        _ ≤ ‖z‖ + c * (1 / 2) := by
+          nlinarith
+        _ = ‖z‖ + s := by linarith
+    have hδbound := hδs
+    nlinarith
   have hsourceUnit : ∀ x ∈ Metric.closedBall (0 : ℂ) (1 / 2 : ℝ), ‖x‖ ≤ 1 := by
     intro x hx
     have hx' : ‖x‖ ≤ (1 / 2 : ℝ) := by
       simpa [Metric.mem_closedBall, dist_zero_right] using hx
     linarith
-  have hrad : c * (1 / 2 : ℝ) = s := by dsimp [c]; ring
-  have htargetUnit : ∀ x ∈ Metric.closedBall z (c * (1 / 2 : ℝ)), ‖x‖ ≤ 1 := by
+  have hrad : c * (1 / 2) = s := by linarith
+  have htargetUnit : ∀ x ∈ Metric.closedBall z (c * (1 / 2)), ‖x‖ ≤ 1 := by
     intro x hx
     have hx'' : ‖x - z‖ ≤ s := by
-      have hx' : ‖x - z‖ ≤ c * (1 / 2 : ℝ) := by
+      have hx' : ‖x - z‖ ≤ c * (1 / 2) := by
         simpa [Metric.mem_closedBall, dist_eq_norm] using hx
       rw [hrad] at hx'
       exact hx'
     have hnorm : ‖x‖ ≤ ‖z‖ + s := by
       calc
-        ‖x‖ = ‖(x - z) + z‖ := by congr 1; ring
-        _ ≤ ‖x - z‖ + ‖z‖ := norm_add_le _ _
+        ‖x‖ = ‖(x - z) + z‖ := by simp
+        _ ≤ ‖x - z‖ + ‖z‖ := norm_add_le ..
         _ ≤ s + ‖z‖ := add_le_add hx'' le_rfl
         _ = ‖z‖ + s := by ring
-    exact le_trans hnorm (by nlinarith [hchart])
+    exact le_trans hnorm (by nlinarith)
   have hscale := regularizedGMC_affine_openBall_moment_scale P X hX Xc hXc γ
-    (a := z) (c := c) (R := (1 / 2 : ℝ)) (r := r) hc hc1
+    hc hc1
     (by norm_num) hsourceCut htargetCut hsourceUnit htargetUnit p
   have htargetParam : r - Real.log c = Real.log (1 / δ) := by
-    dsimp [r]
     ring
   rw [htargetParam, hrad] at hscale
   have hbase := regularizedGMC_subunit_moment_le P X hX Xc hXc γ r
@@ -464,5 +441,7 @@ theorem regularizedGMC_openBall_subunit_scale_bound
         (1 + gmcReferenceMeasure (Metric.ball 0 (1 / 2))) :=
       by gcongr
     _ = _ := by rfl
+
+end
 
 end DOZZ.Proofs

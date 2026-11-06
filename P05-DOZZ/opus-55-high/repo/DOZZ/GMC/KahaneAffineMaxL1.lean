@@ -19,9 +19,8 @@ theorem affineMax_abs_sub_le
     {κ : Type*} [Fintype κ] [Nonempty κ] (a b : κ → ℝ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ x y,
       |affineMax a b x - affineMax a b y| ≤ C * |x - y| := by
-  classical
   let C := ∑ i : κ, |a i|
-  have hC : 0 ≤ C := Finset.sum_nonneg fun _ _ => abs_nonneg _
+  have hC : 0 ≤ C := by positivity
   have ha (i : κ) : |a i| ≤ C :=
     Finset.single_le_sum (f := fun j => |a j|) (fun _ _ => abs_nonneg _) (Finset.mem_univ i)
   have hbound (x y : ℝ) : affineMax a b x ≤ affineMax a b y + C * |x - y| := by
@@ -30,13 +29,11 @@ theorem affineMax_abs_sub_le
     have hline := affineMax_le a b y i
     have hdiff : a i * (x - y) ≤ C * |x - y| :=
       (le_abs_self _).trans (by rw [abs_mul]; exact mul_le_mul_of_nonneg_right (ha i) (abs_nonneg _))
-    linarith only [hline, hdiff]
+    linarith
   refine ⟨C, hC, fun x y => ?_⟩
-  rw [abs_le]
   have hxy := hbound x y
   have hyx := hbound y x
-  rw [abs_sub_comm y x] at hyx
-  constructor <;> linarith only [hxy, hyx]
+  grind
 
 /-- Convergence in mean of real masses implies convergence of affine-max expectations. -/
 theorem affineMax_integral_tendsto_of_L1
@@ -55,11 +52,11 @@ theorem affineMax_integral_tendsto_of_L1
     (by simpa using hL1.const_mul C)
   rw [← integral_sub (hI n) hJ]
   calc
-    _ ≤ ∫ ω, ‖affineMax a b (f n ω) - affineMax a b (g ω)‖ ∂P :=
+    _ ≤ ∫ ω, ‖affineMax a b _ - affineMax a b (g ω)‖ ∂P :=
       norm_integral_le_integral_norm _
     _ ≤ ∫ ω, C * |f n ω - g ω| ∂P :=
       integral_mono ((hI n).sub hJ).norm (((hf n).sub hg).abs.const_mul C)
-        (fun ω => by simpa only [Real.norm_eq_abs] using hbound (f n ω) (g ω))
-    _ = C * ∫ ω, |f n ω - g ω| ∂P := integral_const_mul _ _
+        (fun ω => by simpa using hbound _ (g ω))
+    _ = C * ∫ ω, |f n ω - g ω| ∂P := integral_const_mul ..
 
 end DOZZ.Proofs

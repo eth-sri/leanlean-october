@@ -32,8 +32,7 @@ theorem translated_lateral_isLateralGMCOf
   have hcU := translated_field_circleAverage P X Xc hX hc z
   have hmU := translated_circle_jointMeasurable Xc hm z
   have hcontU := translated_circle_continuous P Xc hcont z
-  have hA := originRadialPath_aemeasurable P _ Uc hcU hcontU
-  have hZm := lateralProjectedGMC_aemeasurable P γ A hA N
+  have hZm := lateralProjectedGMC_aemeasurable P γ A (originRadialPath_aemeasurable P _ Uc hcU hcontU) N
     (equatorGFF_GMC_aemeasurable P _ hU γ hγ hγ2 N hN) hN.1
   have hsource := (translated_radial_sourceProjection P X Xc hX hc hm hcont
     z γ hγ hγ2 N hN).1

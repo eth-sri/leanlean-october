@@ -17,10 +17,4 @@ open scoped Topology
 
 namespace DOZZ
 
-/-- Existence of the principal continuation of the Gauss hypergeometric function [KRV, (Fpmdef)]. No
-arbitrary choice-defined Gauss function is exported; the witnesses are used only through their
-characterization. -/
-theorem gauss_hypergeometric_exists :
-    ∃ H : ℂ → ℂ → ℂ → ℂ → ℂ, IsGaussHypergeometricFamily H := by exact DOZZ.Proofs.gauss_hypergeometric_exists
-
 end DOZZ

@@ -22,7 +22,7 @@ theorem symmetryRepinnedChaos_finite {Ω : Type*} (γ : ℝ) (M : Ω → Measure
     (L : Ω → ℝ) (hM : ∀ ω, IsFiniteMeasure (M ω)) (ω : Ω) :
     IsFiniteMeasure (symmetryRepinnedChaos γ M L ω) := by
   let := hM ω
-  let := symmetry_bcf_withDensity_finite ((M ω).map (fun x : ℂ => 1 - x))
+  let := symmetry_bcf_withDensity_finite ((M ω).map (fun x => 1 - x))
     (symmetryReflectionLimitWeight γ)
   exact Measure.smul_finite _ ENNReal.ofReal_ne_top
 
@@ -42,8 +42,10 @@ theorem symmetry_reflection_weighted_integral (μ : Measure ℂ)
   rw [he]
   exact integral_map (measurable_const.sub measurable_id).aemeasurable
     (f.continuous.mul w.continuous).aestronglyMeasurable
+section
+variable {Ω : Type*}
 
-theorem symmetryRepinnedChaos_integral {Ω : Type*} (γ : ℝ) (M : Ω → Measure ℂ)
+theorem symmetryRepinnedChaos_integral (γ : ℝ) (M : Ω → Measure ℂ)
     (L : Ω → ℝ) (ω : Ω) (f : BoundedContinuousFunction ℂ ℝ) :
     (∫ x, f x ∂symmetryRepinnedChaos γ M L ω) = Real.exp (-γ * L ω) *
       ∫ x, f (1 - x) * symmetryReflectionLimitWeight γ (1 - x) ∂M ω := by
@@ -53,7 +55,7 @@ theorem symmetryRepinnedChaos_integral {Ω : Type*} (γ : ℝ) (M : Ω → Measu
       (fun x => by rw [symmetryReflectionLimitWeight_apply]; exact (Real.exp_pos _).le)]
 
 theorem regularizedGMC_symmetryRepinned_integral
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+    [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (γ r : ℝ) (ω : Ω) (f : BoundedContinuousFunction ℂ ℝ) :
     (∫ x, f x ∂regularizedGMC P (fun ω x r => Xc ω (1 - x) r - Xc ω 1 0) γ r ω) =
@@ -69,12 +71,13 @@ theorem regularizedGMC_symmetryRepinned_integral
     simp only [Pi.smul_apply]
     rw [symmetryReflectionCutoffWeight_apply, smul_eq_mul,
       ← ENNReal.ofReal_mul (Real.exp_pos _).le, ← Real.exp_add]
-    congr 2
     ring
   have hW : Measurable (fun x => ENNReal.ofReal (symmetryReflectionCutoffWeight γ r x)) :=
-    ENNReal.measurable_ofReal.comp (symmetryReflectionCutoffWeight γ r).continuous.measurable
+    by fun_prop
   rw [he, withDensity_smul _ hW, integral_smul_measure,
     ENNReal.toReal_ofReal (Real.exp_pos _).le, smul_eq_mul,
     symmetry_reflection_weighted_integral _ _ f
       (fun x => by rw [symmetryReflectionCutoffWeight_apply]; exact (Real.exp_pos _).le)]
+
+end
 end DOZZ.Proofs

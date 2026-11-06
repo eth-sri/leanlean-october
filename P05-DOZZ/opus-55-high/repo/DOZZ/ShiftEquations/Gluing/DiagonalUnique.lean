@@ -48,60 +48,65 @@ private theorem diagUnique_tensor_eq_ofReal (f g : ℂ → ℂ) (A D : ℝ) (z :
       ((A * ‖f z‖ ^ 2 + D * ‖g z‖ ^ 2 : ℝ) : ℂ) := by
   simp only [hermitianQuadraticTensor, zero_mul, add_zero]
   calc
-    (A : ℂ) * f z * star (f z) + (D : ℂ) * g z * star (g z)
-        = (A : ℂ) * (f z * star (f z)) + (D : ℂ) * (g z * star (g z)) := by ring
+    A * f z * star (f z) + D * g z * star (g z)
+        = A * (f z * star (f z)) + D * (g z * star (g z)) := by ring
     _ = _ := by
       rw [diagUnique_mul_star_eq_norm_sq, diagUnique_mul_star_eq_norm_sq]
       push_cast
       ring
+section
+variable {H : ℂ → ℂ → ℂ → ℂ → ℂ}
+section
+variable (hH : IsGaussHypergeometricFamily H)
+include hH
 
 /-- The Wronskian of the zero basis does not vanish at the midpoint `1/2` of the cut plane when the
 denominator parameter avoids the integers. -/
-theorem diagUnique_wronskian_ne_zero {H : ℂ → ℂ → ℂ → ℂ → ℂ}
-    (hH : IsGaussHypergeometricFamily H) (a b c : ℂ) (hc : ∀ n : ℤ, c ≠ (n : ℂ)) :
+theorem diagUnique_wronskian_ne_zero (a b c : ℂ) (hc : ∀ n : ℤ, c ≠ (n : ℂ)) :
     gaussFMinus H a b c (1 / 2 : ℂ) * deriv (gaussFPlus H a b c) (1 / 2 : ℂ) -
       deriv (gaussFMinus H a b c) (1 / 2 : ℂ) * gaussFPlus H a b c (1 / 2 : ℂ) ≠ 0 := by
-  have hmid : (1 / 2 : ℂ) ∈ gaussCutPlane := by norm_num [gaussCutPlane]
-  rw [gaussFPlus_wronskian_identity hH a b c hc (1 / 2 : ℂ) hmid]
-  have h1c : (1 : ℂ) - c ≠ 0 := by
+  have hmid : (1 / 2) ∈ gaussCutPlane := by norm_num [gaussCutPlane]
+  rw [gaussFPlus_wronskian_identity hH a b c hc _ hmid]
+  have h1c : 1 - c ≠ 0 := by
     intro he
     apply hc 1
-    rw [Int.cast_one]
-    exact (sub_eq_zero.mp he).symm
+    grind
   have hmid0 : (1 / 2 : ℂ) ≠ 0 := by norm_num
   have hmid1 : (1 : ℂ) - 1 / 2 ≠ 0 := by norm_num
-  exact mul_ne_zero (mul_ne_zero h1c (Complex.cpow_ne_zero_iff.mpr (Or.inl hmid0)))
-    (Complex.cpow_ne_zero_iff.mpr (Or.inl hmid1))
+  simp_all
 
 /-- **Uniqueness of diagonal Gauss representations.** If a real function on the cut plane has two
 representations `A |F₋|² + D |F₊|²` in the Gauss basis at zero with `c ∉ ℤ`, the coefficients
 agree. -/
-theorem diagonal_gauss_coefficients_unique {H : ℂ → ℂ → ℂ → ℂ → ℂ}
-    (hH : IsGaussHypergeometricFamily H) {a b c : ℝ} (hc : ∀ n : ℤ, (c : ℂ) ≠ (n : ℂ))
+theorem diagonal_gauss_coefficients_unique {a b c : ℝ} (hc : ∀ n : ℤ, (c : ℂ) ≠ (n : ℂ))
     {T : ℂ → ℝ} {A₁ D₁ A₂ D₂ : ℝ}
     (h₁ : ∀ z ∈ gaussCutPlane, T z =
       A₁ * ‖gaussFMinus H a b c z‖ ^ 2 + D₁ * ‖gaussFPlus H a b c z‖ ^ 2)
     (h₂ : ∀ z ∈ gaussCutPlane, T z =
       A₂ * ‖gaussFMinus H a b c z‖ ^ 2 + D₂ * ‖gaussFPlus H a b c z‖ ^ 2) :
     A₁ = A₂ ∧ D₁ = D₂ := by
-  have hF : AnalyticOnNhd ℂ (gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ)) gaussCutPlane :=
-    (gaussFMinus_differentiableOn_cutPlane hH (a : ℂ) (b : ℂ) (c : ℂ) hc).analyticOnNhd
+  have hF :=
+    (gaussFMinus_differentiableOn_cutPlane hH a b c hc).analyticOnNhd
       gaussCutPlane_isOpen
-  have hG : AnalyticOnNhd ℂ (gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ)) gaussCutPlane :=
-    (gaussFPlus_differentiableOn_cutPlane hH (a : ℂ) (b : ℂ) (c : ℂ) hc).analyticOnNhd
+  have hG :=
+    (gaussFPlus_differentiableOn_cutPlane hH a b c hc).analyticOnNhd
       gaussCutPlane_isOpen
-  have hmid : (1 / 2 : ℂ) ∈ gaussCutPlane := by norm_num [gaussCutPlane]
+  have hmid : (1 / 2) ∈ gaussCutPlane := by norm_num [gaussCutPlane]
   have hEq : ∀ z ∈ gaussCutPlane,
-      hermitianQuadraticTensor (gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ))
-        (gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ)) (A₁ : ℂ) 0 0 (D₁ : ℂ) z =
-      hermitianQuadraticTensor (gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ))
-        (gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ)) (A₂ : ℂ) 0 0 (D₂ : ℂ) z := by
+      hermitianQuadraticTensor (gaussFMinus H a b c)
+        (gaussFPlus H a b c) A₁ 0 0 D₁ z =
+      hermitianQuadraticTensor (gaussFMinus H a b c)
+        (gaussFPlus H a b c) A₂ 0 0 D₂ z := by
     intro z hz
     rw [diagUnique_tensor_eq_ofReal, diagUnique_tensor_eq_ofReal, ← h₁ z hz, ← h₂ z hz]
   have hcoeff := hermitianTensor_coefficients_eq_of_eqOn gaussCutPlane_isOpen hF hG
-    (A₁ : ℂ) 0 0 (D₁ : ℂ) (A₂ : ℂ) 0 0 (D₂ : ℂ) hmid
-    (diagUnique_wronskian_ne_zero hH (a : ℂ) (b : ℂ) (c : ℂ) hc) hEq
-  exact ⟨Complex.ofReal_injective hcoeff.1, Complex.ofReal_injective hcoeff.2.2.2⟩
+    A₁ 0 0 D₁ A₂ 0 0 D₂ hmid
+    (diagUnique_wronskian_ne_zero hH a b c hc) hEq
+  simp_all
+
+end
+
+end
 
 end DOZZ.Proofs
 

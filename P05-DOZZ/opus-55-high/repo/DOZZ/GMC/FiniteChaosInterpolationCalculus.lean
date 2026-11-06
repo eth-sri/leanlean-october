@@ -25,13 +25,12 @@ noncomputable def kahaneInterpolatedMass
   ∑ i, a i * Real.exp
     (γ * (Real.sqrt t * X ω.1 i + Real.sqrt (1 - t) * Y ω.2 i) -
       γ ^ 2 / 2 * (t * vX i + (1 - t) * vY i))
+section
+variable {ΩX ΩY ι : Type*} [Fintype ι] (X : ΩX → ι → ℝ) (Y : ΩY → ι → ℝ) (vX vY a : ι → ℝ) (γ t : ℝ) (ω : ΩX × ΩY)
 
 /-- At an interior interpolation time, the derivative of the finite chaos mass is the sum of the
 coordinate derivatives, including the derivative of the Wick variance normalization. -/
 theorem kahaneInterpolatedMass_hasDerivAt
-    {ΩX ΩY ι : Type*} [Fintype ι]
-    (X : ΩX → ι → ℝ) (Y : ΩY → ι → ℝ)
-    (vX vY a : ι → ℝ) (γ t : ℝ) (ω : ΩX × ΩY)
     (ht : 0 < t) (ht1 : t < 1) :
     HasDerivAt (fun s => kahaneInterpolatedMass X Y vX vY a γ s ω)
       (∑ i, a i * Real.exp
@@ -41,20 +40,15 @@ theorem kahaneInterpolatedMass_hasDerivAt
             Y ω.2 i / (2 * Real.sqrt (1 - t))) -
           γ ^ 2 / 2 * (vX i - vY i))) t := by
   classical
-  have hA : HasDerivAt (fun s : ℝ => Real.sqrt s)
-      (1 / (2 * Real.sqrt t)) t := Real.hasDerivAt_sqrt (ne_of_gt ht)
-  have hB : HasDerivAt (fun s : ℝ => Real.sqrt (1 - s))
+  have hB : HasDerivAt (fun s => Real.sqrt (1 - s))
       (-1 / (2 * Real.sqrt (1 - t))) t := by
     have ht1pos : 0 < 1 - t := by linarith
-    have hinner : HasDerivAt (fun s : ℝ => 1 - s) (-1) t := by
-      convert (hasDerivAt_const t (1 : ℝ)).sub (hasDerivAt_id t) using 1
-      · ext s
-        simp [id_eq]
+    have hinner : HasDerivAt (fun s => 1 - s) (-1) t := by
+      convert (hasDerivAt_const t 1).sub (hasDerivAt_id t) using 1
+      · rfl
       · ring
-    have hs := (Real.hasDerivAt_sqrt (ne_of_gt ht1pos)).comp t hinner
-    convert hs using 1
-    · ext s
-      rfl
+    convert ((Real.hasDerivAt_sqrt (ne_of_gt ht1pos)).comp t hinner) using 1
+    · rfl
     · ring
   have hsum := HasDerivAt.fun_sum (u := Finset.univ) (fun i hi => by
     let E : ℝ → ℝ := fun s =>
@@ -64,17 +58,16 @@ theorem kahaneInterpolatedMass_hasDerivAt
         (fun s => Real.sqrt s * X ω.1 i + Real.sqrt (1 - s) * Y ω.2 i)
         (X ω.1 i / (2 * Real.sqrt t) -
           Y ω.2 i / (2 * Real.sqrt (1 - t))) t := by
-      convert (hA.const_mul (X ω.1 i)).add (hB.const_mul (Y ω.2 i)) using 1
+      convert ((Real.hasDerivAt_sqrt (ne_of_gt ht)).const_mul (X ω.1 i)).add (hB.const_mul (Y ω.2 i)) using 1
       · ext s
         change Real.sqrt s * X ω.1 i + Real.sqrt (1 - s) * Y ω.2 i =
           X ω.1 i * Real.sqrt s + Y ω.2 i * Real.sqrt (1 - s)
-        rw [mul_comm (Real.sqrt s) (X ω.1 i),
-          mul_comm (Real.sqrt (1 - s)) (Y ω.2 i)]
+        linarith
       · ring
     have hvar : HasDerivAt (fun s => s * vX i + (1 - s) * vY i)
         (vX i - vY i) t := by
       convert (hasDerivAt_id t).const_mul (vX i) |>.add
-        ((hasDerivAt_const t (1 : ℝ)).sub (hasDerivAt_id t) |>.const_mul (vY i))
+        ((hasDerivAt_const t 1).sub (hasDerivAt_id t) |>.const_mul (vY i))
         using 1
       · ext s
         change s * vX i + (1 - s) * vY i =
@@ -85,22 +78,14 @@ theorem kahaneInterpolatedMass_hasDerivAt
         (γ * (X ω.1 i / (2 * Real.sqrt t) -
           Y ω.2 i / (2 * Real.sqrt (1 - t))) -
           γ ^ 2 / 2 * (vX i - vY i)) t := by
-      dsimp [E]
       convert (hfield.const_mul γ).sub (hvar.const_mul (γ ^ 2 / 2)) using 1
-    have hterm := (Real.hasDerivAt_exp (E t)).comp t hE
-    have hscaled := hterm.const_mul (a i)
-    exact hscaled)
+    exact (((Real.hasDerivAt_exp (E t)).comp t hE).const_mul (a i)))
   convert hsum using 1
   · rfl
-  · apply Finset.sum_congr rfl
-    intro i hi
-    ring
+  · grind
 
 /-- Applying a differentiable scalar test to the interpolated finite chaos mass. -/
 theorem kahaneInterpolatedTest_hasDerivAt
-    {ΩX ΩY ι : Type*} [Fintype ι]
-    (X : ΩX → ι → ℝ) (Y : ΩY → ι → ℝ)
-    (vX vY a : ι → ℝ) (γ t : ℝ) (ω : ΩX × ΩY)
     (F F' : ℝ → ℝ) (hF : ∀ x, HasDerivAt F (F' x) x)
     (ht : 0 < t) (ht1 : t < 1) :
     HasDerivAt (fun s => F (kahaneInterpolatedMass X Y vX vY a γ s ω))
@@ -111,8 +96,9 @@ theorem kahaneInterpolatedTest_hasDerivAt
           (γ * (X ω.1 i / (2 * Real.sqrt t) -
               Y ω.2 i / (2 * Real.sqrt (1 - t))) -
             γ ^ 2 / 2 * (vX i - vY i))) t := by
-  have hmass := kahaneInterpolatedMass_hasDerivAt X Y vX vY a γ t ω ht ht1
-  exact (hF (kahaneInterpolatedMass X Y vX vY a γ t ω)).comp t hmass
+  exact (hF _).comp t (kahaneInterpolatedMass_hasDerivAt X Y vX vY a γ t ω ht ht1)
+
+end
 
 /-- One Wick weight and the full finite chaos sum as deterministic functions of a field vector. -/
 noncomputable def finiteChaosVectorWeight {ι : Type*}
@@ -160,30 +146,24 @@ theorem finiteChaosVectorTestWeight_directional_hasDerivAt
     have hexp := (Real.hasDerivAt_exp
       (γ * z t j - γ ^ 2 / 2 * v j)).comp t hlin
     convert hexp.const_mul (a j) using 1
-    · simp [finiteChaosVectorWeight]
+    · rfl
     · simp [finiteChaosVectorWeight]
       ring
   have hmass : HasDerivAt (fun s => finiteChaosVectorMass a v γ (z s))
       (∑ j, γ * d j * finiteChaosVectorWeight a v γ (z t) j) t := by
-    have hsum := HasDerivAt.fun_sum (u := Finset.univ) (fun j hj => by
-      exact hweight j)
-    simpa [finiteChaosVectorMass, z] using hsum
+    exact HasDerivAt.fun_sum (u := Finset.univ) (fun j hj => hweight j)
   have hFcomp : HasDerivAt (fun s => F' (finiteChaosVectorMass a v γ (z s)))
       (F'' (finiteChaosVectorMass a v γ (z t)) *
         (∑ j, γ * d j * finiteChaosVectorWeight a v γ (z t) j)) t :=
     (hF' (finiteChaosVectorMass a v γ (z t))).comp t hmass
-  have hprod := (hweight i).mul hFcomp
-  convert hprod using 1
+  convert ((hweight i).mul hFcomp) using 1
   let w : ι → ℝ := finiteChaosVectorWeight a v γ (z t)
   let m : ℝ := finiteChaosVectorMass a v γ (z t)
   have hdiag : (∑ j, d j * (γ * (if i = j then w i * F' m else 0))) =
       γ * d i * w i * F' m := by
     rw [Finset.sum_eq_single i]
-    · simp [w, m]
-      ring
-    · intro j hj hne
-      have hij : i ≠ j := fun h => hne h.symm
-      simp [hij]
+    · grind
+    · aesop
     · simp
   have hmix : (∑ j, d j * (γ * w i * w j * F'' m)) =
       (γ * w i * F'' m) * ∑ j, d j * w j := by
@@ -214,15 +194,15 @@ theorem finiteChaosVectorTestWeight_directional_hasDerivAt
           simp_rw [mul_add]
           rw [Finset.sum_add_distrib]
     _ = γ * d i * w i * F' m +
-          (γ * w i * F'' m) * ∑ j, d j * w j := by rw [hdiag, hmix]
+          (γ * w i * F'' m) * ∑ j, d j * w j := by linarith
     _ = γ * d i * w i * F' m +
           w i * (F'' m * ∑ j, γ * d j * w j) := by
           rw [hsum]
           ring
     _ = γ * d i * finiteChaosVectorWeight a v γ (z t) i *
-          F' (finiteChaosVectorMass a v γ (z t)) +
+          F' _ +
         finiteChaosVectorWeight a v γ (z t) i *
-          (F'' (finiteChaosVectorMass a v γ (z t)) *
+          (F'' _ *
             ∑ j, γ * d j * finiteChaosVectorWeight a v γ (z t) j) := by
           rfl
 

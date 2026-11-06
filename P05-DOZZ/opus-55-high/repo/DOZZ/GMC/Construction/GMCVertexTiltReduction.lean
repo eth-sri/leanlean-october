@@ -48,20 +48,19 @@ theorem equatorGFF_GMC_vertex_tilt_of_general_tilt
   classical
   let L : Ω → ℝ := fun ω => ∑ k, α k * Xc ω (z k) r
   have hL : IsGaussianL2Limit P X L := by
-    simpa only [L] using
+    simpa using
       circleAverage_sum_isGaussianL2Limit P X hX Xc hXc α z r
   obtain ⟨c, hpotential, hcov⟩ :=
     circleAverage_sum_covariance_uniform P X hX Xc hXc α z r
   have hshift (f : TestFn) :
       gaussianCovariance P (fun ω => X ω f) L =
         ∑ k, α k * circleCross (z k) r f := by
-    simpa only [L] using
+    simpa using
       circleAverage_sum_test_covariance P X hX Xc hXc α z r f
   have hfield (ω : Ω) :
       (fun f => X ω f + gaussianCovariance P (fun ω => X ω f) L) =
         (fun f => X ω f + ∑ k, α k * circleCross (z k) r f) := by
-    funext f
-    exact congrArg (fun q : ℝ => X ω f + q) (hshift f)
+    simp_all
   have hdensity :
       (fun x => ENNReal.ofReal (Real.exp (γ * c x))) =
         (fun x => ENNReal.ofReal (Real.exp
@@ -69,17 +68,17 @@ theorem equatorGFF_GMC_vertex_tilt_of_general_tilt
     funext x
     rw [hpotential x]
   have hmeasure (ω : Ω) :
-      (M ω).withDensity (fun x => ENNReal.ofReal (Real.exp (γ * c x))) =
+      (M ω).withDensity (fun x => ENNReal.ofReal _) =
         (M ω).withDensity (fun x => ENNReal.ofReal (Real.exp
           (γ * ∑ k, α k * ∫ v, gffKernel x v ∂circleMeasure (z k) r))) :=
     congrArg (fun d : ℂ → ℝ≥0∞ => (M ω).withDensity d) hdensity
   calc
-    _ = ∫⁻ ω, ENNReal.ofReal (Real.exp (L ω - gaussianVariance P L / 2)) *
-        H (fun f => X ω f) (M ω) ∂P := by
+    _ = ∫⁻ ω, ENNReal.ofReal _ *
+        H (X ω) (M ω) ∂P := by
       apply lintegral_congr_ae
-      exact ae_of_all _ (fun ω => by simp only [L])
+      exact ae_of_all _ (fun ω => by rfl)
     _ = ∫⁻ ω, H (fun f => X ω f + gaussianCovariance P (fun ω => X ω f) L)
-          ((M ω).withDensity (fun x => ENNReal.ofReal (Real.exp (γ * c x)))) ∂P :=
+          ((M ω).withDensity (fun x => ENNReal.ofReal _)) ∂P :=
       hTilt hγ hγ2 hM hH L hL c hcov
     _ = ∫⁻ ω, H (fun f => X ω f + ∑ k, α k * circleCross (z k) r f)
           ((M ω).withDensity (fun x => ENNReal.ofReal (Real.exp
@@ -87,7 +86,7 @@ theorem equatorGFF_GMC_vertex_tilt_of_general_tilt
       apply lintegral_congr_ae
       exact ae_of_all _ (fun ω => by
         change H (fun f => X ω f + gaussianCovariance P (fun ω => X ω f) L)
-            ((M ω).withDensity (fun x => ENNReal.ofReal (Real.exp (γ * c x)))) =
+            ((M ω).withDensity (fun x => ENNReal.ofReal _)) =
           H (fun f => X ω f + ∑ k, α k * circleCross (z k) r f)
             ((M ω).withDensity (fun x => ENNReal.ofReal (Real.exp
               (γ * ∑ k, α k * ∫ v, gffKernel x v ∂circleMeasure (z k) r))))

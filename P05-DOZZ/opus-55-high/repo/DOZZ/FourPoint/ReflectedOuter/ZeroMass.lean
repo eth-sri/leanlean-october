@@ -19,21 +19,20 @@ namespace DOZZ.Proofs
 /-- The literal half-charge mass at zero, retaining points outside a supplied radius. -/
 noncomputable def reflectedRetainedZeroMass (γ α₁ α₂ α₃ r : ℝ) (μ : Measure ℂ) : ℝ≥0∞ :=
   coulombMass γ (μ.restrict {x : ℂ | r ≤ ‖x‖}) ![-γ / 2, α₁, α₂] ![0, 0, 1] α₃
+section
+variable (γ α₁ α₂ α₃ r : ℝ)
 
 /-- The retained zero mass is a measurable functional of the supplied measure. -/
-theorem reflected_retainedZero_measure_measurable (γ α₁ α₂ α₃ r : ℝ) :
+theorem reflected_retainedZero_measure_measurable :
     Measurable (reflectedRetainedZeroMass γ α₁ α₂ α₃ r) := by
   have hD : MeasurableSet {x : ℂ | r ≤ ‖x‖} :=
-    (isClosed_le continuous_const continuous_norm).measurableSet
-  have hf := (measurable_coulombWeight γ ![-γ / 2, α₁, α₂] ![0, 0, 1] α₃).indicator hD
-  convert Measure.measurable_lintegral hf using 1
-  funext μ
-  rw [lintegral_indicator hD]
-  rfl
+    by measurability
+  convert Measure.measurable_lintegral ((measurable_coulombWeight γ ![-γ / 2, α₁, α₂] ![0, 0, 1] α₃).indicator hD) using 1
+  aesop
 
 
 /-- A fixed disk is retained at every radius at most one. -/
-theorem reflected_retainedZero_fixed_disk_lower (γ α₁ α₂ α₃ r : ℝ) (μ : Measure ℂ)
+theorem reflected_retainedZero_fixed_disk_lower (μ : Measure ℂ)
     (hr : r ≤ 1) :
     ENNReal.ofReal ((2 : ℝ) ^ (-∑ i : Fin 3, |γ * (![-γ / 2, α₁, α₂] : Fin 3 → ℝ) i|) *
       (4 : ℝ) ^ (-|γ * α₃|)) * μ (Metric.ball (3 : ℂ) (1 / 8)) ≤
@@ -45,7 +44,7 @@ theorem reflected_retainedZero_fixed_disk_lower (γ α₁ α₂ α₃ r : ℝ) (
       simpa only [Metric.mem_ball, dist_eq_norm] using hx
     have hh := norm_sub_norm_le (3 : ℂ) x
     rw [show ‖(3 : ℂ)‖ = 3 by norm_num, norm_sub_rev] at hh
-    exact hr.trans (by linarith only [hh, hdist])
+    grind
   have hy : ∀ i : Fin 3, ‖(![0, 0, 1] : Fin 3 → ℂ) i‖ ≤ 1 := by
     intro i
     fin_cases i <;> simp
@@ -53,6 +52,8 @@ theorem reflected_retainedZero_fixed_disk_lower (γ α₁ α₂ α₃ r : ℝ) (
     (![-γ / 2, α₁, α₂] : Fin 3 → ℝ) ![0, 0, 1] α₃ hy
   rw [Measure.restrict_apply measurableSet_ball, inter_eq_left.mpr hsub] at h
   exact h
+
+end
 
 /-- Uniform inverse moments of the literal retained mass, at every nonnegative inverse order. -/
 theorem reflected_retainedZero_inverse_moment_uniform
@@ -63,25 +64,24 @@ theorem reflected_retainedZero_inverse_moment_uniform
     ∃ C : ℝ, 0 < C ∧ ∀ r : ℝ, r ≤ 1 →
       (∫⁻ ω, reflectedRetainedZeroMass γ α₁ α₂ α₃ r (M ω) ^ (-q) ∂P) ≤
         ENNReal.ofReal C := by
-  let w : ℝ := (2 : ℝ) ^ (-∑ i : Fin 3, |γ * (![-γ / 2, α₁, α₂] : Fin 3 → ℝ) i|) *
-    (4 : ℝ) ^ (-|γ * α₃|)
-  have hw : 0 < w := by dsimp only [w]; positivity
+  let w := (2 : ℝ) ^ (-∑ i : Fin 3, |γ * (![-γ / 2, α₁, α₂] : Fin 3 → ℝ) i|) *
+    4 ^ (-|γ * α₃|)
+  have hw : 0 < w := by positivity
   have hp : -q < 4 / γ ^ 2 := lt_of_le_of_lt (neg_nonpos.mpr hq) (by positivity)
   obtain ⟨Cb, hCb, hball⟩ := equatorGFF_GMC_ball_moment_bound P X hX γ hγ hγ₂ M hM
-    (-q) hp {(3 : ℂ)} isCompact_singleton
-  let e : ℝ := γ * Q γ * (-q) - γ ^ 2 * (-q) ^ 2 / 2
-  let C : ℝ := w ^ (-q) * (Cb * (1 / 8 : ℝ) ^ e)
-  have hC : 0 < C := by dsimp only [C]; positivity
+    (-q) hp {3} isCompact_singleton
+  let e := γ * Q γ * (-q) - γ ^ 2 * (-q) ^ 2 / 2
+  let C := w ^ (-q) * (Cb * (1 / 8) ^ e)
+  have hC : 0 < C := by positivity
   refine ⟨C, hC, ?_⟩
   intro r hr
   have hb (ω : Ω) : reflectedRetainedZeroMass γ α₁ α₂ α₃ r (M ω) ^ (-q) ≤
-      ENNReal.ofReal (w ^ (-q)) * M ω (Metric.ball (3 : ℂ) (1 / 8)) ^ (-q) := by
-    have hlow := reflected_retainedZero_fixed_disk_lower γ α₁ α₂ α₃ r (M ω) hr
+      ENNReal.ofReal (w ^ (-q)) * M ω (Metric.ball 3 (1 / 8)) ^ (-q) := by
     have hanti : reflectedRetainedZeroMass γ α₁ α₂ α₃ r (M ω) ^ (-q) ≤
-        (ENNReal.ofReal w * M ω (Metric.ball (3 : ℂ) (1 / 8))) ^ (-q) := by
+        (ENNReal.ofReal w * M ω (Metric.ball 3 (1 / 8))) ^ (-q) := by
       rw [ENNReal.rpow_neg, ENNReal.rpow_neg]
-      exact ENNReal.inv_le_inv.mpr (ENNReal.rpow_le_rpow hlow hq)
-    have hfinite : M ω (Metric.ball (3 : ℂ) (1 / 8)) ≠ ⊤ := by
+      exact ENNReal.inv_le_inv.mpr (ENNReal.rpow_le_rpow (reflected_retainedZero_fixed_disk_lower γ α₁ α₂ α₃ r (M ω) hr) hq)
+    have hfinite : M ω (Metric.ball 3 (1 / 8)) ≠ ⊤ := by
       let _ := hM.1 ω
       exact measure_ne_top _ _
     rwa [ENNReal.mul_rpow_of_ne_top ENNReal.ofReal_ne_top hfinite,
@@ -89,11 +89,11 @@ theorem reflected_retainedZero_inverse_moment_uniform
   have hbound := (hball 3 (Set.mem_singleton _) (1 / 8) (by norm_num) (by norm_num)).2
   calc
     (∫⁻ ω, reflectedRetainedZeroMass γ α₁ α₂ α₃ r (M ω) ^ (-q) ∂P) ≤
-        ∫⁻ ω, ENNReal.ofReal (w ^ (-q)) * M ω (Metric.ball (3 : ℂ) (1 / 8)) ^ (-q) ∂P :=
+        ∫⁻ ω, ENNReal.ofReal _ * M ω _ ^ (-q) ∂P :=
       lintegral_mono hb
-    _ = ENNReal.ofReal (w ^ (-q)) * gmcMassMoment P M (Metric.ball (3 : ℂ) (1 / 8)) (-q) :=
+    _ = ENNReal.ofReal _ * gmcMassMoment P M _ (-q) :=
       lintegral_const_mul' _ _ ENNReal.ofReal_ne_top
-    _ ≤ ENNReal.ofReal (w ^ (-q)) * ENNReal.ofReal (Cb * (1 / 8 : ℝ) ^ e) :=
+    _ ≤ ENNReal.ofReal _ * ENNReal.ofReal _ :=
       mul_le_mul' le_rfl hbound
     _ = ENNReal.ofReal C := (ENNReal.ofReal_mul (Real.rpow_pos_of_pos hw _).le).symm
 

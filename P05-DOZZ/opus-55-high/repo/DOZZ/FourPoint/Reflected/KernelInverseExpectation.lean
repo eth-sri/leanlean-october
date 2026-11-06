@@ -32,9 +32,9 @@ theorem reflected_kernel_inverse_expectation_squeeze
     filter_upwards [hAf,hsand] with ω hω hs
     exact reflected_ennreal_kernel_increment_squeeze p cLo cHi (A ω) (J ω) (I ω)
       hp hcLo hcHi hω.1 hω.2 hs.1 hs.2
-  have hlo := integral_mono_ae (hj.2.1.const_mul (max 1 cHi)) hi.2.1
+  have hlo := integral_mono_ae (hj.2.1.const_mul _) hi.2.1
     (hpoint.mono fun _ hω => hω.1)
-  have hhi := integral_mono_ae hi.2.1 (hj.2.1.const_mul (min 1 cLo))
+  have hhi := integral_mono_ae hi.2.1 (hj.2.1.const_mul _)
     (hpoint.mono fun _ hω => hω.2)
   rw [integral_const_mul,← hj.2.2,← hi.2.2] at hlo
   rw [integral_const_mul,← hj.2.2,← hi.2.2] at hhi

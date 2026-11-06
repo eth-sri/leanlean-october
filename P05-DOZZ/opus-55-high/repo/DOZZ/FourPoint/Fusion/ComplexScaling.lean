@@ -23,34 +23,24 @@ theorem fusion_integral_mul_complex (F : ℂ → ℂ) (z : ℂ) (hz : z ≠ 0) :
   let ξ := z / (r : ℂ)
   have hr : 0 < r := norm_pos_iff.mpr hz
   have hξ : ‖ξ‖ = 1 := by
-    dsimp only [ξ, r]
-    rw [norm_div, Complex.norm_real, Real.norm_of_nonneg (norm_nonneg _), div_self hr.ne']
+    aesop
   have hξr : ξ * (r : ℂ) = z := by
-    dsimp only [ξ]
-    exact div_mul_cancel₀ _ (Complex.ofReal_ne_zero.mpr hr.ne')
+    aesop
   let c : Circle := ⟨ξ, by
     change dist ξ 0 = 1
-    simpa only [dist_zero_right] using hξ⟩
-  let g := fun u : ℂ => F (ξ * u)
+    simp_all⟩
+  let g := fun u => F (ξ * u)
   have hrot : (∫ u : ℂ, g u) = ∫ x : ℂ, F x := by
-    simpa only [g, rotation_apply] using
+    simpa using
       (LinearIsometryEquiv.measurePreserving (rotation c)).integral_comp
         (rotation c).toContinuousLinearEquiv.toHomeomorph.measurableEmbedding F
   have hs : (∫ y : ℂ, g (r • y)) = (((r ^ 2)⁻¹ : ℝ) : ℂ) * (∫ u : ℂ, g u) := by
-    simpa only [Complex.finrank_real_complex, Complex.real_smul] using
+    simpa using
       Measure.integral_comp_smul_of_nonneg volume g r (hR := hr.le)
-  have hpoint : (fun y : ℂ => g (r • y)) = fun y => F (y * z) := by
+  have hpoint : (fun y => g (r • y)) = fun y => F (y * z) := by
     funext y
-    dsimp only [g]
     rw [Complex.real_smul]
-    congr 1
-    rw [← hξr]
-    ring
-  rw [hpoint, hrot] at hs
-  have hmul := congrArg (fun a : ℂ => (r ^ 2 : ℝ) * a) hs
-  have hc : ((r ^ 2 : ℝ) : ℂ) * (((r ^ 2)⁻¹ : ℝ) : ℂ) = 1 := by
-    rw [← Complex.ofReal_mul, mul_inv_cancel₀ (pow_ne_zero 2 hr.ne'), Complex.ofReal_one]
-  rw [← mul_assoc, hc, one_mul] at hmul
-  exact hmul.symm
+    grind
+  aesop
 
 end DOZZ.Proofs

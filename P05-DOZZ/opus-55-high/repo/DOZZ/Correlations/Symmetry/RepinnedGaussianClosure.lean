@@ -23,36 +23,35 @@ theorem reflection_normalization_in_repinned_closure
   obtain ⟨f, hgap, hint⟩ := exists_testFn_circleEnergyGap_and_integral_tendsto 0 0
   have hmass : Tendsto (fun n => testMass (f n)) atTop (𝓝 1) := by
     have h := hint (fun _ => (1 : ℝ)) continuous_const
-    let := circleMeasure_isProbability (0 : ℂ) 0
-    simpa [testMass] using h
+    aesop
   have hsource : Tendsto (fun n => eLpNorm (fun ω => X ω (f n)) 2 P) atTop (𝓝 0) := by
     have h := hXc.2.2 0 0 f hgap
     have he n : eLpNorm (fun ω => X ω (f n) - Xc ω 0 0) 2 P =
         eLpNorm (fun ω => X ω (f n)) 2 P := by
       apply eLpNorm_congr_ae
       filter_upwards [circleAverage_equator_ae_eq_zero X Xc hXc] with ω hω
-      simp only [hω, Pi.zero_apply, sub_zero]
-    simpa only [he] using h
+      simp_all
+    simp_all
   have hc : Tendsto (fun n => ‖1 - testMass (f n)‖ₑ) atTop (𝓝 (0 : ℝ≥0∞)) := by
     have hm : Tendsto (fun n => 1 - testMass (f n)) atTop (𝓝 (0 : ℝ)) := by
-      simpa only [sub_self] using (tendsto_const_nhds : Tendsto (fun _ : ℕ => (1 : ℝ)) atTop (𝓝 1)).sub hmass
+      simpa using (tendsto_const_nhds : Tendsto (fun _ : ℕ => (1 : ℝ)) atTop (𝓝 1)).sub hmass
     simpa only [enorm_zero, Function.comp_def] using (continuous_enorm.tendsto (0 : ℝ)).comp hm
   have hscalar : Tendsto (fun n => eLpNorm (fun ω =>
       (1 - testMass (f n)) * L ω) 2 P) atTop (𝓝 0) := by
     have h := ENNReal.Tendsto.mul_const hc (Or.inr hL.eLpNorm_ne_top)
-    simp only [zero_mul] at h
+    simp at h
     have he n : eLpNorm (fun ω => (1 - testMass (f n)) * L ω) 2 P =
         ‖1 - testMass (f n)‖ₑ * eLpNorm L 2 P := by
       simpa only [Pi.smul_def, smul_eq_mul] using
         eLpNorm_const_smul (1 - testMass (f n)) L 2 P
-    simpa only [he] using h
+    simp_all
   let g := fun n => -(symmetryReflectionTest (f n))
   refine ⟨hL, g, ?_⟩
   have he n : (fun ω => L ω - symmetryRepinnedField X L ω (g n)) =
       fun ω => X ω (f n) + (1 - testMass (f n)) * L ω := by
     have hg : symmetryReflectionTest (g n) = -(f n) := by
       ext x
-      change -(f n (1 - (1 - x))) = -(f n x)
+      change -(f n _) = -(f n x)
       rw [show (1 : ℂ) - (1 - x) = x by ring]
     have hm : (∫ x, g n x) = -testMass (f n) := by
       change (∫ x, -(symmetryReflectionTest (f n) x)) = _
@@ -65,7 +64,7 @@ theorem reflection_normalization_in_repinned_closure
     atTop (𝓝 0)
   apply tendsto_of_tendsto_of_tendsto_of_le_of_le
     (tendsto_const_nhds : Tendsto (fun _ : ℕ => (0 : ℝ≥0∞)) atTop (𝓝 0))
-    (by simpa only [zero_add] using hsource.add hscalar)
+    (by simpa using hsource.add hscalar)
     (fun _ => bot_le)
   intro n
   change eLpNorm (fun ω => L ω - symmetryRepinnedField X L ω (g n)) 2 P ≤ _

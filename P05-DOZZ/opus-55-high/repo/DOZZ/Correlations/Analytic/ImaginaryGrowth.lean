@@ -26,21 +26,19 @@ theorem normalized_imaginary_growth
         (γ * ∑ i, (β i.castSucc).re * equatorCircleMean (z i) r) *
           (complexMomentPower γ β).re ≤
         C * (r + 1) * ∑ i, (β i).im ^ 2 := by
-  classical
   obtain ⟨C, hC, hv⟩ := mixed_vertex_variance_growth P X Xc hX hc z
   let B : ℝ := 1 + ∑ i, (Real.log (normPlus (z i)) + 1)
   have hB : 0 < B := by
-    dsimp only [B]
     have := Finset.sum_nonneg (s := Finset.univ)
-      (f := fun i : Fin N => Real.log (normPlus (z i)) + 1)
+      (f := fun i : Fin N => Real.log _ + 1)
       (fun i _ => by linarith [CirclePotential.log_normPlus_nonneg (z i)])
     linarith
   have hpin (i : Fin N) (r : ℝ) (hr : 0 ≤ r) :
       |equatorCircleMean (z i) r| ≤ B := by
     have he := equator_circle_mean_abs_le (z i) r
-    have he1 : Real.exp (-r) ≤ 1 := Real.exp_le_one_iff.mpr (neg_nonpos.mpr hr)
+    have he1 : Real.exp (-r) ≤ 1 := by simp_all
     have hi := Finset.single_le_sum
-      (f := fun j : Fin N => Real.log (normPlus (z j)) + 1)
+      (f := fun j : Fin N => Real.log _ + 1)
       (fun j _ => by linarith [CirclePotential.log_normPlus_nonneg (z j)]) (Finset.mem_univ i)
     have ha := abs_add_le (equatorCircleMean (z i) r - Real.log (normPlus (z i)))
       (Real.log (normPlus (z i)))

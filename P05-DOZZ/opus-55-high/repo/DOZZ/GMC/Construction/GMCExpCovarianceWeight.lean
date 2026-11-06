@@ -63,25 +63,24 @@ theorem equatorGFF_circleCovariance_exp_weight_family
   have hnear : ∀ᶠ r : ℝ in atTop, ∀ x : ℂ, dist (c x) (cov r x) < 1 := by
     exact (Metric.tendstoUniformly_iff.mp hc) 1 zero_lt_one
   obtain ⟨R, hR⟩ := Filter.eventually_atTop.mp hnear
-  let K : ℝ := ‖c‖ + 1
-  have hK : 0 ≤ K := by dsimp [K]; positivity
+  let K := ‖c‖ + 1
+  have hK : 0 ≤ K := by positivity
   have hcBound (x : ℂ) : |c x| ≤ K := by
     calc
       |c x| = ‖c x‖ := (Real.norm_eq_abs _).symm
       _ ≤ ‖c‖ := c.norm_coe_le_norm x
-      _ ≤ K := by dsimp [K]; linarith [norm_nonneg c]
+      _ ≤ K := by linarith
   have hcovBound (r : ℝ) (hr : R ≤ r) (x : ℂ) : |cov r x| ≤ K := by
-    have hclose := hR r hr x
     have hdiff : |cov r x - c x| < 1 := by
-      simpa [Real.dist_eq, abs_sub_comm] using hclose
+      simpa [Real.dist_eq, abs_sub_comm] using (hR r hr x)
     calc
-      |cov r x| = |(cov r x - c x) + c x| := by congr 1; ring
-      _ ≤ |cov r x - c x| + |c x| := abs_add_le _ _
+      |cov r x| = |(cov r x - c x) + c x| := by simp
+      _ ≤ |cov r x - c x| + |c x| := abs_add_le ..
       _ ≤ 1 + ‖c‖ := add_le_add (le_of_lt hdiff) (by
         calc
           |c x| = ‖c x‖ := (Real.norm_eq_abs _).symm
           _ ≤ ‖c‖ := c.norm_coe_le_norm x)
-      _ = K := by dsimp [K]; ring
+      _ = K := by linarith
   let covBCF (r : ℝ) : BoundedContinuousFunction ℂ ℝ :=
     if hr : R ≤ r then
       BoundedContinuousFunction.mk (covCont r)
@@ -89,29 +88,27 @@ theorem equatorGFF_circleCovariance_exp_weight_family
           intro x y
           rw [Real.dist_eq]
           calc
-            |cov r x - cov r y| ≤ |cov r x| + |cov r y| := abs_sub _ _
+            |cov r x - cov r y| ≤ |cov r x| + |cov r y| := abs_sub ..
             _ ≤ K + K := add_le_add (hcovBound r hr x) (hcovBound r hr y)
             _ = 2 * K := by ring⟩
     else c
   have hcovBCF_bound (r : ℝ) (x : ℂ) : |covBCF r x| ≤ K := by
     dsimp only [covBCF]
     by_cases hr : R ≤ r
-    · rw [dite_eq_left hr]
-      exact hcovBound r hr x
-    · rw [dite_eq_right hr]
-      exact hcBound x
+    · aesop
+    · grind
   have hcovBCF_eq (r : ℝ) (hr : R ≤ r) (x : ℂ) : covBCF r x = cov r x := by
     change (if h : R ≤ r then (BoundedContinuousFunction.mk (covCont r)
       ⟨2 * K, by
         intro x y
         rw [Real.dist_eq]
         calc
-          |cov r x - cov r y| ≤ |cov r x| + |cov r y| := abs_sub _ _
+          |cov r x - cov r y| ≤ |cov r x| + |cov r y| := abs_sub ..
           _ ≤ K + K := add_le_add (hcovBound r h x) (hcovBound r h y)
           _ = 2 * K := by ring⟩ : BoundedContinuousFunction ℂ ℝ) else c) x = cov r x
     rw [dite_eq_left hr]
     rfl
-  let w : BoundedContinuousFunction ℂ ℝ := gmcExpBCF γ c K hcBound
+  let w := gmcExpBCF γ c K hcBound
   let u : ℝ → BoundedContinuousFunction ℂ ℝ := fun r => gmcExpBCF γ (covBCF r) K
     (hcovBCF_bound r)
   have hu (r : ℝ) (x : ℂ) : 0 ≤ u r x := Real.exp_nonneg _
@@ -119,13 +116,13 @@ theorem equatorGFF_circleCovariance_exp_weight_family
   have heventR : ∀ᶠ r : ℝ in atTop, R ≤ r :=
     Filter.eventually_atTop.2 ⟨R, fun r hr => hr⟩
   have huEq (r : ℝ) (hr : R ≤ r) (x : ℂ) : u r x = Real.exp (γ * cov r x) := by
-    change Real.exp (γ * covBCF r x) = Real.exp (γ * cov r x)
+    change Real.exp _ = Real.exp _
     rw [hcovBCF_eq r hr x]
   have hwEq (x : ℂ) : w x = Real.exp (γ * c x) := by
     rfl
   have hgcont : Continuous (fun t : ℝ => Real.exp (γ * t)) :=
     Real.continuous_exp.comp (continuous_const.mul continuous_id)
-  have huc : UniformContinuousOn (fun t : ℝ => Real.exp (γ * t)) (Set.Icc (-K) K) :=
+  have huc : UniformContinuousOn (fun t => Real.exp (γ * t)) (Set.Icc (-K) K) :=
     isCompact_Icc.uniformContinuousOn_of_continuous hgcont.continuousOn
   have huniform : TendstoUniformly (fun r x => u r x) w atTop := by
     rw [Metric.tendstoUniformly_iff]
@@ -135,10 +132,10 @@ theorem equatorGFF_circleCovariance_exp_weight_family
       (Metric.tendstoUniformly_iff.mp hc) δ hδ
     filter_upwards [hclose, heventR] with r hclose hr x
     rw [hwEq, huEq r hr x]
-    apply hcontrol (c x) ?_ (cov r x) ?_ (hclose x)
+    apply hcontrol (c x) ?_ _ ?_ (hclose x)
     · exact abs_le.mp (hcBound x)
     · have hbound := hcovBound r hr x
-      exact abs_le.mp hbound
+      grind
   refine ⟨u, w, hu, hw, huniform, ?_⟩
   filter_upwards [heventR] with r hr x
   exact huEq r hr x

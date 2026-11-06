@@ -14,23 +14,23 @@ namespace DOZZ.Proofs
 
 open Filter
 open scoped Topology
+section
+variable {U : Set ℂ} (hU : IsOpen U) {f : ℂ → ℂ} (hf : AnalyticOnNhd ℂ (fun w => star (f w)) U) {z : ℂ} (hz : z ∈ U)
+include hU hf hz
 
 /-- If the conjugate of `f` is analytic on an open set, the conjugate Wirtinger derivative of `f`
 is real-differentiable there. -/
 theorem differentiableAt_wirtingerBar_of_analytic_conjugate
-    {U : Set ℂ} (hU : IsOpen U) {f : ℂ → ℂ}
-    (hf : AnalyticOnNhd ℂ (fun w => star (f w)) U)
-    {z : ℂ} (hz : z ∈ U) :
+    :
     DifferentiableAt ℝ (fun w => wirtingerBar f w) z := by
   let h : ℂ → ℂ := fun w => star (f w)
   have hderiv : AnalyticOnNhd ℂ (deriv h) U := by
     simpa [h] using hf.deriv
-  have hderivAt : DifferentiableAt ℂ (deriv h) z := (hderiv z hz).differentiableAt
-  have hclm : DifferentiableAt ℝ (starRingEnd ℂ) (deriv h z) :=
+  have hclm :=
     Complex.differentiable_conj.differentiableAt (x := deriv h z)
-  have hstarAt : DifferentiableAt ℝ (fun w => star (deriv h w)) z :=
-    hclm.comp z (hderivAt.restrictScalars ℝ)
-  have hEq : (fun w => wirtingerBar f w) =ᶠ[𝓝 z]
+  have hstarAt :=
+    hclm.comp z (((hderiv z hz).differentiableAt).restrictScalars ℝ)
+  have hEq : (wirtingerBar f) =ᶠ[𝓝 z]
       (fun w => star (deriv h w)) := by
     filter_upwards [hU.mem_nhds hz] with w hw
     exact wirtingerBar_eq_star_deriv_of_star_differentiableAt
@@ -40,76 +40,64 @@ theorem differentiableAt_wirtingerBar_of_analytic_conjugate
 /-- Two conjugate Wirtinger derivatives are the conjugate of the second ordinary derivative
 whenever the conjugate of the original function is analytic near the evaluation point. -/
 theorem wirtingerBar_wirtingerBar_eq_star_deriv_deriv_of_analytic_conjugate
-    {U : Set ℂ} (hU : IsOpen U) {f : ℂ → ℂ}
-    (hf : AnalyticOnNhd ℂ (fun w => star (f w)) U)
-    {z : ℂ} (hz : z ∈ U) :
+    :
     wirtingerBar (fun w => wirtingerBar f w) z =
       star (deriv (deriv (fun w => star (f w))) z) := by
   let h : ℂ → ℂ := fun w => star (f w)
   have hderiv : AnalyticOnNhd ℂ (deriv h) U := by
     simpa [h] using hf.deriv
-  have hderivAt : DifferentiableAt ℂ (deriv h) z := (hderiv z hz).differentiableAt
-  have hbarAt : DifferentiableAt ℝ (fun w => wirtingerBar f w) z :=
+  have hderivAt := (hderiv z hz).differentiableAt
+  have hbarAt :=
     differentiableAt_wirtingerBar_of_analytic_conjugate hU hf hz
   have hstarBarAt : DifferentiableAt ℝ
       (fun w => star (wirtingerBar f w)) z := by
-    have hclm : DifferentiableAt ℝ (starRingEnd ℂ) (wirtingerBar f z) :=
+    have hclm :=
       Complex.differentiable_conj.differentiableAt (x := wirtingerBar f z)
     exact hclm.comp z hbarAt
-  have hderivRealAt : DifferentiableAt ℝ (deriv h) z := hderivAt.restrictScalars ℝ
   have heq : (fun w => star (wirtingerBar f w)) =ᶠ[𝓝 z] deriv h := by
     filter_upwards [hU.mem_nhds hz] with w hw
     have hwEq := wirtingerBar_eq_star_deriv_of_star_differentiableAt
       (hf w hw).differentiableAt (by rfl)
-    calc
-      star (wirtingerBar f w) = star (star (deriv h w)) := by rw [hwEq]
-      _ = deriv h w := star_star _
-  have hWZeq := wirtingerZ_congr_of_eventuallyEq hstarBarAt hderivRealAt heq
-  change star (wirtingerZ (fun w => star (wirtingerBar f w)) z) = _
-  rw [hWZeq, wirtingerZ_eq_deriv_of_differentiableAt hderivAt]
+    aesop
+  change star (wirtingerZ (fun w => star _) z) = _
+  rw [(wirtingerZ_congr_of_eventuallyEq hstarBarAt (hderivAt.restrictScalars ℝ) heq), wirtingerZ_eq_deriv_of_differentiableAt hderivAt]
 
 /-- The conjugate Wirtinger derivative of an antiholomorphic function is itself antiholomorphic. -/
 theorem wirtingerZ_wirtingerBar_eq_zero_of_analytic_conjugate
-    {U : Set ℂ} (hU : IsOpen U) {f : ℂ → ℂ}
-    (hf : AnalyticOnNhd ℂ (fun w => star (f w)) U)
-    {z : ℂ} (hz : z ∈ U) :
+    :
     wirtingerZ (fun w => wirtingerBar f w) z = 0 := by
   let h : ℂ → ℂ := fun w => star (f w)
   have hderiv : AnalyticOnNhd ℂ (deriv h) U := by
     simpa [h] using hf.deriv
-  have hderivAt : DifferentiableAt ℂ (deriv h) z := (hderiv z hz).differentiableAt
-  have hderivRealAt : DifferentiableAt ℝ (deriv h) z := hderivAt.restrictScalars ℝ
+  have hderivAt := (hderiv z hz).differentiableAt
   have hstarAt : DifferentiableAt ℝ (fun w => star (deriv h w)) z := by
-    have hclm := Complex.differentiable_conj.differentiableAt (x := deriv h z)
-    exact hclm.comp z hderivRealAt
-  have hbarAt : DifferentiableAt ℝ (fun w => wirtingerBar f w) z :=
+    exact (Complex.differentiable_conj.differentiableAt (x := deriv h z)).comp z (hderivAt.restrictScalars ℝ)
+  have hbarAt :=
     differentiableAt_wirtingerBar_of_analytic_conjugate hU hf hz
-  have heq : (fun w => wirtingerBar f w) =ᶠ[𝓝 z]
+  have heq : (wirtingerBar f) =ᶠ[𝓝 z]
       (fun w => star (deriv h w)) := by
     filter_upwards [hU.mem_nhds hz] with w hw
     exact wirtingerBar_eq_star_deriv_of_star_differentiableAt
       (hf w hw).differentiableAt (by rfl)
   calc
-    wirtingerZ (fun w => wirtingerBar f w) z =
-        wirtingerZ (fun w => star (deriv h w)) z :=
+    wirtingerZ (wirtingerBar f) z =
+        wirtingerZ (fun w => star _) z :=
       wirtingerZ_congr_of_eventuallyEq hbarAt hstarAt heq
     _ = 0 := wirtingerZ_star_eq_zero_of_differentiableAt hderivAt
 
 /-- Two conjugate Wirtinger derivatives are real-differentiable when the original function's
 conjugate is analytic nearby. -/
 theorem differentiableAt_wirtingerBar_wirtingerBar_of_analytic_conjugate
-    {U : Set ℂ} (hU : IsOpen U) {f : ℂ → ℂ}
-    (hf : AnalyticOnNhd ℂ (fun w => star (f w)) U)
-    {z : ℂ} (hz : z ∈ U) :
+    :
     DifferentiableAt ℝ (fun w => wirtingerBar (fun u => wirtingerBar f u) w) z := by
   let h : ℂ → ℂ := fun w => star (f w)
   have hderiv2 : AnalyticOnNhd ℂ (deriv (deriv h)) U := by
     have hderiv : AnalyticOnNhd ℂ (deriv h) U := by
       simpa [h] using hf.deriv
     exact hderiv.deriv
-  have hderiv2At : DifferentiableAt ℂ (deriv (deriv h)) z :=
+  have hderiv2At :=
     (hderiv2 z hz).differentiableAt
-  have hderiv2RealAt : DifferentiableAt ℝ (deriv (deriv h)) z :=
+  have hderiv2RealAt :=
     hderiv2At.restrictScalars ℝ
   have hstarAt : DifferentiableAt ℝ
       (fun w => star (deriv (deriv h) w)) z := by
@@ -126,20 +114,18 @@ theorem differentiableAt_wirtingerBar_wirtingerBar_of_analytic_conjugate
 /-- The second conjugate Wirtinger derivative is antiholomorphic whenever the original function's
 conjugate is analytic. -/
 theorem wirtingerZ_wirtingerBar_wirtingerBar_eq_zero_of_analytic_conjugate
-    {U : Set ℂ} (hU : IsOpen U) {f : ℂ → ℂ}
-    (hf : AnalyticOnNhd ℂ (fun w => star (f w)) U)
-    {z : ℂ} (hz : z ∈ U) :
+    :
     wirtingerZ (fun w => wirtingerBar (fun u => wirtingerBar f u) w) z = 0 := by
   let h : ℂ → ℂ := fun w => star (f w)
   have hderiv2 : AnalyticOnNhd ℂ (deriv (deriv h)) U := by
     have hderiv : AnalyticOnNhd ℂ (deriv h) U := by
       simpa [h] using hf.deriv
     exact hderiv.deriv
-  have hderiv2At : DifferentiableAt ℂ (deriv (deriv h)) z :=
+  have hderiv2At :=
     (hderiv2 z hz).differentiableAt
   have hstarAt : DifferentiableAt ℝ
       (fun w => star (deriv (deriv h) w)) z := by
-    have hderiv2RealAt : DifferentiableAt ℝ (deriv (deriv h)) z :=
+    have hderiv2RealAt :=
       hderiv2At.restrictScalars ℝ
     have hclm := Complex.differentiable_conj.differentiableAt
       (x := deriv (deriv h) z)
@@ -150,12 +136,13 @@ theorem wirtingerZ_wirtingerBar_wirtingerBar_eq_zero_of_analytic_conjugate
     exact wirtingerBar_wirtingerBar_eq_star_deriv_deriv_of_analytic_conjugate
       hU hf hw
   have hbarbarAt : DifferentiableAt ℝ
-      (fun w => wirtingerBar (fun u => wirtingerBar f u) w) z := by
-    exact differentiableAt_wirtingerBar_wirtingerBar_of_analytic_conjugate hU hf hz
+      (fun w => wirtingerBar (wirtingerBar f) w) z := differentiableAt_wirtingerBar_wirtingerBar_of_analytic_conjugate hU hf hz
   calc
-    wirtingerZ (fun w => wirtingerBar (fun u => wirtingerBar f u) w) z =
-        wirtingerZ (fun w => star (deriv (deriv h) w)) z :=
+    wirtingerZ (fun w => wirtingerBar (wirtingerBar f) w) z =
+        wirtingerZ (fun w => star _) z :=
       wirtingerZ_congr_of_eventuallyEq hbarbarAt hstarAt hEq
     _ = 0 := wirtingerZ_star_eq_zero_of_differentiableAt hderiv2At
+
+end
 
 end DOZZ.Proofs

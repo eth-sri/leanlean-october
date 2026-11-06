@@ -11,6 +11,7 @@ public import DOZZ.Statements.Hypergeom.GaussCutPlane
 public import DOZZ.Statements.Hypergeom.GaussParameterA
 public import DOZZ.Statements.Hypergeom.GaussParameterB
 public import DOZZ.Statements.Hypergeom.GaussParameterC
+import DOZZ.ShiftEquations.FirstStrip.Seed
 
 /-! # The unreflected `γ/2` formula: reduction to the shift relation
 
@@ -37,30 +38,9 @@ theorem bpz_gaussParameterC_half (γ α₁ : ℝ) :
   unfold gaussParameterC
   ring
 
-/-- `0 < c < 1` at `χ = γ/2` on the unreflected interval. -/
-theorem bpz_gaussParameterC_half_mem {γ α₁ : ℝ} (hγ : 0 < γ) (hαlo : γ / 2 < α₁)
-    (hαhi : α₁ < 2 / γ) :
-    0 < gaussParameterC γ (γ / 2) α₁ ∧ gaussParameterC γ (γ / 2) α₁ < 1 := by
-  have hQ : Q γ = 2 / γ + γ / 2 := rfl
-  unfold gaussParameterC
-  rw [hQ]
-  have h1 : γ / 2 * (2 / γ + γ / 2 - α₁) = 1 + γ / 2 * (γ / 2 - α₁) := by
-    field_simp
-    ring
-  have h2 : γ / 2 * (2 / γ + γ / 2 - α₁) = γ / 2 * (2 / γ - α₁) + γ ^ 2 / 4 := by ring
-  constructor
-  · have : γ / 2 * (γ / 2 - α₁) < 0 :=
-      mul_neg_of_pos_of_neg (by positivity) (by linarith)
-    linarith
-  · have h3 : 0 < γ / 2 * (2 / γ - α₁) := mul_pos (by positivity) (by linarith)
-    have h4 : 0 < γ ^ 2 / 4 := by positivity
-    linarith
-
-/-- A real number `> 0` is not a nonpositive integer, as a complex number. -/
 theorem bpz_ne_neg_nat_of_pos {c : ℝ} (hc : 0 < c) : ∀ n : ℕ, (c : ℂ) ≠ -(n : ℂ) := by
   intro n h
-  have h' : c = -(n : ℝ) := by exact_mod_cast h
-  have : (0 : ℝ) ≤ n := Nat.cast_nonneg n
+  have h' : c = -n := by exact_mod_cast h
   linarith
 
 /-- **Reduction.** The diagonal formula at `χ = γ/2` and the shift relation give the unreflected
@@ -89,18 +69,13 @@ theorem bpz_unreflected_of_shift {Ω : Type*} [MeasurableSpace Ω] {H : ℂ → 
             structureConstant P M γ μ (α₁ + γ / 2) α₂ α₃ *
               ‖gaussFPlus H (gaussParameterA γ (γ / 2) α₁ α₂ α₃)
                 (gaussParameterB γ (γ / 2) α₁ α₂ α₃) (gaussParameterC γ (γ / 2) α₁) z‖ ^ 2 := by
-  intro z hz
-  rw [neg_div, hdiag z hz]
-  linear_combination
-    ‖gaussFPlus H (gaussParameterA γ (γ / 2) α₁ α₂ α₃) (gaussParameterB γ (γ / 2) α₁ α₂ α₃)
-      (gaussParameterC γ (γ / 2) α₁) z‖ ^ 2 * hshift
+  grind
 
 /-- `(φ(t) - φ(0))/t^κ → 0` as `t ↓ 0` for `φ` differentiable at `0` and `κ < 1`. -/
 theorem bpz_tendsto_sub_div_rpow {φ : ℝ → ℝ} {κ : ℝ} (hκ : κ < 1) (hφ : DifferentiableAt ℝ φ 0) :
     Tendsto (fun t => (φ t - φ 0) / t ^ κ) (𝓝[>] 0) (𝓝 0) := by
   have hslope : Tendsto (fun t => (φ t - φ 0) / t) (𝓝[>] 0) (𝓝 (deriv φ 0)) := by
-    have h := hφ.hasDerivAt.tendsto_slope_zero_right
-    simpa [zero_add, smul_eq_mul, div_eq_inv_mul] using h
+    simpa [zero_add, smul_eq_mul, div_eq_inv_mul] using hφ.hasDerivAt.tendsto_slope_zero_right
   have hpow : Tendsto (fun t : ℝ => t ^ (1 - κ)) (𝓝[>] 0) (𝓝 0) := by
     have h0 : Tendsto (fun t : ℝ => t) (𝓝[>] (0 : ℝ)) (𝓝 0) := nhdsWithin_le_nhds
     exact h0.rpow_const_nhds_zero (by linarith)
@@ -110,9 +85,7 @@ theorem bpz_tendsto_sub_div_rpow {φ : ℝ → ℝ} {κ : ℝ} (hκ : κ < 1) (h
   filter_upwards [self_mem_nhdsWithin] with t (ht : 0 < t)
   have hk : t ^ (1 - κ) * t ^ κ = t := by
     rw [← Real.rpow_add ht, sub_add_cancel, Real.rpow_one]
-  have htk : 0 < t ^ κ := Real.rpow_pos_of_pos ht κ
-  field_simp
-  rw [mul_assoc, hk]
+  grind
 
 /-- **The shift relation on the KRV interval.** -/
 theorem bpz_shift_restricted {Ω : Type*} [MeasurableSpace Ω] {H : ℂ → ℂ → ℂ → ℂ → ℂ}
@@ -133,24 +106,24 @@ theorem bpz_shift_restricted {Ω : Type*} [MeasurableSpace Ω] {H : ℂ → ℂ 
           structureConstant P M γ μ (α₁ - γ / 2) α₂ α₃ =
         -μ * (planarGaussConstant (γ ^ 2 / 2) (γ * α₁)).re *
           structureConstant P M γ μ (α₁ + γ / 2) α₂ α₃ := by
-  set a := gaussParameterA γ (γ / 2) α₁ α₂ α₃ with ha
-  set b := gaussParameterB γ (γ / 2) α₁ α₂ α₃ with hb
-  set c := gaussParameterC γ (γ / 2) α₁ with hc
+  set a := gaussParameterA γ _ α₁ α₂ α₃ with ha
+  set b := gaussParameterB γ _ α₁ α₂ α₃ with hb
+  set c := gaussParameterC γ _ α₁ with hc
   set ρ := gaussCoefficientRatio a b c with hρ
-  set Cm := structureConstant P M γ μ (α₁ - γ / 2) α₂ α₃ with hCm
-  set B := -μ * (planarGaussConstant (γ ^ 2 / 2) (γ * α₁)).re *
-    structureConstant P M γ μ (α₁ + γ / 2) α₂ α₃ with hB
+  set Cm := structureConstant P M γ μ _ α₂ α₃ with hCm
+  set B := -μ * (planarGaussConstant ..).re *
+    structureConstant P M γ μ _ α₂ α₃ with hB
   set κ := γ * (Q γ - α₁) with hκ
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
   have hκ1 : κ < 1 := by
     have h : γ * α₁ > γ * (γ / 2 + 1 / γ) := mul_lt_mul_of_pos_left hαlo hγ
     have e : γ * (γ / 2 + 1 / γ) = γ ^ 2 / 2 + 1 := by field_simp
-    have e2 : κ = 2 + γ ^ 2 / 2 - γ * α₁ := by rw [hκ, hQ]; field_simp
+    have e2 : κ = 2 + γ ^ 2 / 2 - γ * α₁ := by grind
     linarith
   have hlo : γ / 2 < α₁ := by
     have : 0 < 1 / γ := by positivity
     linarith
-  obtain ⟨hc0, hc1⟩ := bpz_gaussParameterC_half_mem hγ hlo hαhi
+  obtain ⟨hc0, hc1⟩ := DOZZ.Proofs.gaussParameterC_half_mem_window hγ hlo hαhi
   have h2c : 2 * (1 - c) = κ := bpz_gaussParameterC_half γ α₁
   -- the functions near zero
   set φ : ℝ → ℝ := fun t => Complex.normSq (H (a : ℂ) (b : ℂ) (c : ℂ) (t : ℂ)) with hφ
@@ -182,10 +155,9 @@ theorem bpz_shift_restricted {Ω : Type*} [MeasurableSpace Ω] {H : ℂ → ℂ 
       right
       simp only [Complex.ofReal_re]
       exact ⟨ht0, ht1⟩
-    have h1 := hdiag (t : ℂ) hz
     have h2 := hr (t : ℂ)
     rw [neg_div] at h2
-    rw [h1] at h2
+    rw [(hdiag (t : ℂ) hz)] at h2
     rw [bpzHG_norm_sq_eq_normSq, bpzHG_norm_sq_eq_normSq, bpzHG_normSq_gaussFMinus,
       bpzHG_normSq_gaussFPlus H a b c ht0, h2c, Complex.norm_real, Real.norm_of_nonneg ht0.le]
       at h2
@@ -199,7 +171,7 @@ theorem bpz_shift_restricted {Ω : Type*} [MeasurableSpace Ω] {H : ℂ → ℂ 
     have : Tendsto ψ (𝓝[>] 0) (𝓝 1) := by
       rw [← hψ0]
       exact hψcont.tendsto.mono_left nhdsWithin_le_nhds
-    simpa using this.const_mul (ρ * Cm)
+    simpa using this.const_mul _
   have hr0 : Tendsto (fun t : ℝ => r t / t ^ κ) (𝓝[>] 0) (𝓝 0) := by
     have hof : Tendsto (fun t : ℝ => (t : ℂ)) (𝓝[>] 0) (nhdsWithin (0 : ℂ) {z : ℂ | z ≠ 0}) := by
       refine tendsto_nhdsWithin_iff.mpr ⟨?_, ?_⟩

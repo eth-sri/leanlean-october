@@ -22,15 +22,15 @@ theorem uniform_power_tail_shift
     (hTail : |T (x*y)-c*(x*y)^(-p)| ≤ E*(x*y)^(-p-η)) :
     |T (x*y)-c*x^(-p)| ≤
       (E*2^(P+η)+cmax*P*2^(P+1))*x^(-p-η) := by
-  have hx0 : 0 < x := zero_lt_one.trans_le hx
+  have hx0 := zero_lt_one.trans_le hx
   have hy0 : 0 < y := by linarith only [hy.1]
-  have hP : 0 ≤ P := hp.trans hpP
+  have hP := hp.trans hpP
   have hpow (q : ℝ) : (x*y)^q = x^q*y^q := Real.mul_rpow hx0.le hy0.le
   have hsmall : x^(-p)*x^(-a) ≤ x^(-p-η) := by
     rw [← Real.rpow_add hx0]
     exact Real.rpow_le_rpow_of_exponent_le hx (by linarith only [ha])
   have hybound : y^(-p-η) ≤ 2^(P+η) := by
-    calc y^(-p-η) ≤ (1/2 : ℝ)^(-p-η) := Real.rpow_le_rpow_of_nonpos
+    calc y^(-p-η) ≤ (1/2)^(-p-η) := Real.rpow_le_rpow_of_nonpos
           (by norm_num) hy.1 (by linarith only [hp,hη])
       _ = (2 : ℝ)^(p+η) := by
           rw [one_div,Real.inv_rpow zero_le_two,← Real.rpow_neg zero_le_two]
@@ -39,18 +39,16 @@ theorem uniform_power_tail_shift
       _ ≤ 2^(P+η) := Real.rpow_le_rpow_of_exponent_le (by norm_num) (add_le_add hpP le_rfl)
   have hLeading : E*(x*y)^(-p-η) ≤ (E*2^(P+η))*x^(-p-η) := by
     rw [hpow]
-    have h := mul_le_mul_of_nonneg_left hybound (mul_nonneg hE (Real.rpow_nonneg hx0.le (-p-η)))
-    simpa only [mul_assoc,mul_comm,mul_left_comm] using h
+    simpa only [mul_assoc,mul_comm,mul_left_comm] using (mul_le_mul_of_nonneg_left hybound (mul_nonneg hE (Real.rpow_nonneg hx0.le (-p-η))))
   have hDifference : |c*(x*y)^(-p)-c*x^(-p)| ≤
       (cmax*P*2^(P+1))*x^(-p-η) := by
-    have hv := shifted_negative_power_bound p P y hp hpP hy
     have h0 : 0 ≤ c*x^(-p) := mul_nonneg hc (Real.rpow_nonneg hx0.le _)
     have heq : c*(x*y)^(-p)-c*x^(-p) = (c*x^(-p))*(y^(-p)-1) := by
       rw [hpow]
       ring
     rw [heq,abs_mul,abs_of_nonneg h0]
     calc (c*x^(-p))*|y^(-p)-1| ≤ (c*x^(-p))*(P*2^(P+1)*|y-1|) :=
-          mul_le_mul_of_nonneg_left hv h0
+          mul_le_mul_of_nonneg_left (shifted_negative_power_bound p P y hp hpP hy) h0
       _ ≤ (cmax*P*2^(P+1))*(x^(-p)*x^(-a)) := by
           calc _ ≤ (c*x^(-p))*(P*2^(P+1)*x^(-a)) :=
                 mul_le_mul_of_nonneg_left
@@ -62,8 +60,8 @@ theorem uniform_power_tail_shift
             _ = _ := by ring
       _ ≤ (cmax*P*2^(P+1))*x^(-p-η) := mul_le_mul_of_nonneg_left hsmall
           (mul_nonneg (mul_nonneg (hc.trans hcc) hP) (Real.rpow_nonneg zero_le_two _))
-  calc |T (x*y)-c*x^(-p)| ≤ |T (x*y)-c*(x*y)^(-p)|+|c*(x*y)^(-p)-c*x^(-p)| :=
-        abs_sub_le _ _ _
+  calc |T _-c*x^(-p)| ≤ |T _-c*(x*y)^(-p)|+|c*(x*y)^(-p)-c*x^(-p)| :=
+        abs_sub_le ..
     _ ≤ (E*2^(P+η))*x^(-p-η)+(cmax*P*2^(P+1))*x^(-p-η) :=
         add_le_add (hTail.trans hLeading) hDifference
     _ = _ := by ring

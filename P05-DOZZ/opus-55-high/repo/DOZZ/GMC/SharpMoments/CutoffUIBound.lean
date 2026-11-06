@@ -32,31 +32,29 @@ theorem partition_support_bounds (partition : GMCChartPartition) :
       ∀ u, partition.infinityWeight u ≠ 0 → ‖u‖ ≤ Ri := by
   obtain ⟨R1, hR1⟩ := partition.finite_hasCompactSupport.isCompact.isBounded.subset_closedBall 0
   obtain ⟨R2, hR2⟩ := partition.infinity_hasCompactSupport.isCompact.isBounded.subset_closedBall 0
-  refine ⟨max (R1 + 1) 1, max R2 1, le_max_right _ _, le_max_right _ _, fun x hx => ?_,
+  refine ⟨max (R1 + 1) 1, max R2 1, le_max_right .., le_max_right .., fun x hx => ?_,
     fun u hu => ?_⟩
   · have hmem := hR1 (subset_tsupport _ (Function.mem_support.mpr hx))
     rw [mem_closedBall, dist_zero_right] at hmem
-    exact lt_of_lt_of_le (by linarith) (le_max_left _ _)
+    grind
   · have hmem := hR2 (subset_tsupport _ (Function.mem_support.mpr hu))
-    rw [mem_closedBall, dist_zero_right] at hmem
-    exact hmem.trans (le_max_left _ _)
+    simp_all
 
 /-- The geometric factor of the exterior bound is monotone in the decay rate and in the order. -/
 theorem geometric_factor_le {ζ ζ0 t tm : ℝ} (hζ0 : 0 < ζ0) (hζ : ζ0 ≤ ζ) (htm : t ≤ tm) :
     ((1 - ENNReal.ofReal ((1 / 2 : ℝ) ^ ζ) ^ (1 / max 1 t)) ^ (max 1 t))⁻¹ ≤
       ((1 - ENNReal.ofReal ((1 / 2 : ℝ) ^ ζ0) ^ (1 / max 1 tm)) ^ (max 1 tm))⁻¹ := by
-  set q : ℝ≥0∞ := ENNReal.ofReal ((1 / 2 : ℝ) ^ ζ) with hq
-  set q0 : ℝ≥0∞ := ENNReal.ofReal ((1 / 2 : ℝ) ^ ζ0) with hq0
-  set m : ℝ := max 1 t with hm
-  set mm : ℝ := max 1 tm with hmm
-  have hm1 : 1 ≤ m := le_max_left _ _
-  have hmm1 : 1 ≤ mm := le_max_left _ _
+  set q := ENNReal.ofReal ((1 / 2 : ℝ) ^ ζ) with hq
+  set q0 := ENNReal.ofReal ((1 / 2 : ℝ) ^ ζ0) with hq0
+  set m := max 1 t with hm
+  set mm := max 1 tm with hmm
+  have hm1 : 1 ≤ m := le_max_left ..
+  have hmm1 : 1 ≤ mm := le_max_left ..
   have hmmm : m ≤ mm := max_le_max le_rfl htm
-  have hqq0 : q ≤ q0 := ENNReal.ofReal_le_ofReal
-    (Real.rpow_le_rpow_of_exponent_ge (by norm_num) (by norm_num) hζ)
+  have hqq0 : q ≤ q0 := by bound
   have hq01 : q0 ≤ 1 := ENNReal.ofReal_le_one.mpr (Real.rpow_le_one (by norm_num) (by norm_num)
     hζ0.le)
-  have hexp : 1 / mm ≤ 1 / m := one_div_le_one_div_of_le (by linarith) hmmm
+  have hexp : 1 / mm ≤ 1 / m := by bound
   have hroot : q ^ (1 / m) ≤ q0 ^ (1 / mm) :=
     (ENNReal.rpow_le_rpow hqq0 (by positivity)).trans
       (ENNReal.rpow_le_rpow_of_exponent_ge hq01 hexp)
@@ -69,33 +67,35 @@ theorem geometric_factor_le {ζ ζ0 t tm : ℝ} (hζ0 : 0 < ζ0) (hζ : ζ0 ≤ 
 
 theorem geometric_factor_lt_top {ζ0 tm : ℝ} (hζ0 : 0 < ζ0) :
     ((1 - ENNReal.ofReal ((1 / 2 : ℝ) ^ ζ0) ^ (1 / max 1 tm)) ^ (max 1 tm))⁻¹ < ⊤ := by
-  have hmm : 0 < max 1 tm := lt_of_lt_of_le one_pos (le_max_left _ _)
+  have hmm : 0 < max 1 tm := by simp
   have hq0 : ENNReal.ofReal ((1 / 2 : ℝ) ^ ζ0) < 1 :=
     ENNReal.ofReal_lt_one.mpr (Real.rpow_lt_one (by norm_num) (by norm_num) hζ0)
   have hroot : ENNReal.ofReal ((1 / 2 : ℝ) ^ ζ0) ^ (1 / max 1 tm) < 1 :=
     ENNReal.rpow_lt_one hq0 (by positivity)
   refine ENNReal.inv_lt_top.mpr (ENNReal.rpow_pos (tsub_pos_of_lt hroot) ?_)
-  exact ne_top_of_le_ne_top ENNReal.one_ne_top tsub_le_self
+  simp
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
 
 /-- A cutoff weighted mass with zero charge is a cutoff disk mass. -/
-theorem cutoffWeightedGmcBallMass_zero_charge {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (Xc : Ω → ℂ → ℝ → ℝ) (γ : ℝ) (z : ℂ) (R r : ℝ) (ω : Ω) :
+theorem cutoffWeightedGmcBallMass_zero_charge (Xc : Ω → ℂ → ℝ → ℝ) (γ : ℝ) (z : ℂ) (R r : ℝ) (ω : Ω) :
     cutoffWeightedGmcBallMass P Xc γ 0 z R (Real.exp (-r)) ω =
       regularizedGMC P Xc γ r ω (Metric.ball z R) := by
   have hlog : Real.log (1 / Real.exp (-r)) = r := by
-    rw [one_div, ← Real.exp_neg, neg_neg, Real.log_exp]
+    simp
   rw [cutoffWeightedGmcBallMass, hlog]
   simp
+section
+variable (X : Ω → Distr) (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+include hX hXc
 
 /-- Cutoff weighted masses are measurable in the sample. -/
 theorem measurable_cutoffWeightedGmcBallMass
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ α : ℝ) (z : ℂ) (R δ : ℝ) :
+    (γ α : ℝ) (z : ℂ) (R δ : ℝ) :
     Measurable fun ω => cutoffWeightedGmcBallMass P Xc γ α z R δ ω := by
   have hB : MeasurableSet (Metric.ball z R) := Metric.isOpen_ball.measurableSet
   have hf : Measurable fun x : ℂ => ENNReal.ofReal ((‖x - z‖ + δ) ^ (-γ * α)) :=
-    ENNReal.measurable_ofReal.comp (((measurable_id.sub_const z).norm.add_const δ).pow_const _)
+    by fun_prop
   have h := (Measure.measurable_lintegral (hf.indicator hB)).comp
     (regularizedGMC_measurable P X hX Xc hXc γ (Real.log (1 / δ)))
   convert h using 1
@@ -104,9 +104,7 @@ theorem measurable_cutoffWeightedGmcBallMass
 
 /-- Uniform positive moments of regularized Coulomb masses over a compact parameter set. -/
 theorem regularizedCoulombMass_moment_uniform_pos
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (partition : GMCChartPartition)
+    (partition : GMCChartPartition)
     (N : ℕ) (S : Set (ℝ × ((Fin N → ℂ) × (Fin N → ℝ) × ℝ))) (hS : IsCompact S)
     (τ : ℝ × ((Fin N → ℂ) × (Fin N → ℝ) × ℝ) → ℝ) (hτ : ContinuousOn τ S)
     (hroot : ∀ c ∈ S, ∀ k, 0 < weightedCutoffSlack (c.1, c.2.2.1 k, τ c))
@@ -123,7 +121,7 @@ theorem regularizedCoulombMass_moment_uniform_pos
       τ c < 2 / c.1 * (Q c.1 - max c.2.2.2 0) := by
     intro c hc
     have h := (weightedCutoffSlack_pos_iff _).mp (hinf c hc)
-    exact ⟨h.1, h.2.1, h.2.2.2.1, (lt_min_iff.mp h.2.2.2.2).1, (lt_min_iff.mp h.2.2.2.2).2⟩
+    grind
   -- uniform sizes
   obtain ⟨Zs0, hZs0⟩ := hS.exists_bound_of_continuousOn
     (f := fun c : ℝ × ((Fin N → ℂ) × (Fin N → ℝ) × ℝ) => ∑ j, ‖c.2.1 j‖) (by fun_prop)
@@ -134,18 +132,18 @@ theorem regularizedCoulombMass_moment_uniform_pos
   set Zs : ℝ := max Zs0 0 with hZsdef
   set E : ℝ := max E0 0 with hEdef
   set tm : ℝ := max tm0 0 with htmdef
-  have hZs : 0 ≤ Zs := le_max_right _ _
-  have hE : 0 ≤ E := le_max_right _ _
-  have htm : 0 ≤ tm := le_max_right _ _
+  have hZs : 0 ≤ Zs := le_max_right ..
+  have hE : 0 ≤ E := le_max_right ..
+  have htm : 0 ≤ tm := le_max_right ..
   have hZc : ∀ c ∈ S, ∑ j, ‖c.2.1 j‖ ≤ Zs := fun c hc => by
     have h := hZs0 c hc
     rw [Real.norm_eq_abs, abs_of_nonneg (Finset.sum_nonneg fun j _ => norm_nonneg _)] at h
-    exact h.trans (le_max_left _ _)
+    exact h.trans (le_max_left ..)
   have hEsum : ∀ c ∈ S, ∑ j, |c.1 * c.2.2.1 j| + |c.1 * c.2.2.2| ≤ E := fun c hc => by
     have h := hE0 c hc
     rw [Real.norm_eq_abs, abs_of_nonneg (add_nonneg (Finset.sum_nonneg fun j _ =>
       abs_nonneg _) (abs_nonneg _))] at h
-    exact h.trans (le_max_left _ _)
+    exact h.trans (le_max_left ..)
   have hEα : ∀ c ∈ S, ∀ j, |c.1 * c.2.2.1 j| ≤ E := fun c hc j => by
     have := Finset.single_le_sum (f := fun j => |c.1 * c.2.2.1 j|) (fun j _ => abs_nonneg _)
       (Finset.mem_univ j)
@@ -154,7 +152,7 @@ theorem regularizedCoulombMass_moment_uniform_pos
     have := Finset.sum_nonneg (fun j (_ : j ∈ Finset.univ) => abs_nonneg (c.1 * c.2.2.1 j))
     linarith [hEsum c hc]
   have hτle : ∀ c ∈ S, τ c ≤ tm := fun c hc =>
-    ((le_abs_self _).trans (by simpa [Real.norm_eq_abs] using htm0 c hc)).trans (le_max_left _ _)
+    ((le_abs_self _).trans (by tauto)).trans (le_max_left ..)
   -- the exterior decay rate is bounded below
   set ζf : ℝ × ((Fin N → ℂ) × (Fin N → ℝ) × ℝ) → ℝ := fun c =>
     2 * τ c + c.1 ^ 2 * τ c / 2 - c.1 ^ 2 * τ c ^ 2 / 2 - max (c.1 * c.2.2.2) 0 * τ c with hζf
@@ -175,7 +173,7 @@ theorem regularizedCoulombMass_moment_uniform_pos
     have hexp : ζf c = c.1 * τ c * ((Q c.1 - max c.2.2.2 0) - c.1 * τ c / 2) := by
       simp only [hζf]
       rw [hmax]
-      have h2 : 2 * τ c + c.1 ^ 2 * τ c / 2 = c.1 * Q c.1 * τ c := by rw [hQ]; ring
+      have h2 : 2 * τ c + c.1 ^ 2 * τ c / 2 = c.1 * Q c.1 * τ c := by grind
       linear_combination h2
     rw [hexp]
     exact mul_pos (mul_pos hγ0 ht0) (by linarith)
@@ -191,10 +189,10 @@ theorem regularizedCoulombMass_moment_uniform_pos
   -- partition supports and the exterior radius
   obtain ⟨Rf, Ri, hRf, hRi, hsuppf, hsuppi⟩ := partition_support_bounds partition
   set R0 : ℝ := max (2 * Zs + 2) Rf with hR0def
-  have hR0Z : 2 * Zs + 2 ≤ R0 := le_max_left _ _
-  have hR02 : 2 ≤ R0 := le_trans (by linarith) hR0Z
+  have hR0Z : 2 * Zs + 2 ≤ R0 := le_max_left ..
+  have hR02 : 2 ≤ R0 := by linarith
   have hsuppf' : ∀ x, partition.finiteWeight x ≠ 0 → ‖x‖ < R0 := fun x hx =>
-    lt_of_lt_of_le (hsuppf x hx) (le_max_right _ _)
+    lt_of_lt_of_le (hsuppf x hx) (le_max_right ..)
   -- pointwise bounds for the weight
   obtain ⟨CR, hCR0, hCR⟩ := coulombCutoffWeight_le_root partition N hZs hE hρs hρs1 hRi hsuppi
   obtain ⟨CB, hCB0, hCB⟩ := coulombCutoffWeight_le_bulk partition N hZs hE hρs hρs1
@@ -207,28 +205,26 @@ theorem regularizedCoulombMass_moment_uniform_pos
     intro k
     have hcont : ContinuousOn (fun c : ℝ × ((Fin N → ℂ) × (Fin N → ℝ) × ℝ) =>
         (c.1, c.2.2.1 k, τ c)) S :=
-      (continuous_fst.continuousOn).prodMk ((continuous_apply k |>.comp
-        (continuous_fst.comp (continuous_snd.comp continuous_snd))).continuousOn.prodMk hτ)
+      by fun_prop
     obtain ⟨C, hC, hCb⟩ := weightedCutoff_bound_uniform_compact P X hX Xc hXc _
       (hS.image_of_continuousOn hcont) (by
         rintro _ ⟨c, hc, rfl⟩
-        exact hroot c hc k) (closedBall 0 Zs) (isCompact_closedBall _ _) 1 one_pos
+        exact hroot c hc k) _ (isCompact_closedBall ..) 1 one_pos
     refine ⟨C, hC, fun c hc δ hδ hδ1 => ?_⟩
     have hzk : c.2.1 k ∈ closedBall (0 : ℂ) Zs := by
       rw [mem_closedBall, dist_zero_right]
       exact (Finset.single_le_sum (f := fun j => ‖c.2.1 j‖) (fun j _ => norm_nonneg _)
         (Finset.mem_univ k)).trans (hZc c hc)
-    have h := hCb _ ⟨c, hc, rfl⟩ _ hzk δ 1 hδ hδ1 le_rfl
-    simpa [Real.one_rpow] using h
+    simpa [Real.one_rpow] using (hCb _ ⟨c, hc, rfl⟩ _ hzk δ 1 hδ hδ1 le_rfl)
   choose Ck hCkpos hCkb using hCk
   have hcont0 : ContinuousOn (fun c : ℝ × ((Fin N → ℂ) × (Fin N → ℝ) × ℝ) =>
       (c.1, (0 : ℝ), τ c)) S :=
-    (continuous_fst.continuousOn).prodMk (continuousOn_const.prodMk hτ)
+    by fun_prop
   have hadm0 : ∀ c ∈ S, 0 < weightedCutoffSlack (c.1, (0 : ℝ), τ c) := by
     intro c hc
     obtain ⟨hγ0, hγ2, ht0, ht4, -⟩ := hadmInf c hc
     have hQ0 : 0 < Q c.1 := by rw [Q]; positivity
-    refine (weightedCutoffSlack_pos_iff _).mpr ⟨hγ0, hγ2, by simpa using hQ0, ht0, ?_⟩
+    refine (weightedCutoffSlack_pos_iff _).mpr ⟨hγ0, hγ2, by assumption, ht0, ?_⟩
     refine lt_min ht4 ?_
     have : 4 / c.1 ^ 2 < 2 / c.1 * (Q c.1 - 0) := by
       rw [sub_zero, Q]
@@ -238,7 +234,7 @@ theorem regularizedCoulombMass_moment_uniform_pos
   obtain ⟨C0, hC0, hC0b⟩ := weightedCutoff_bound_uniform_compact P X hX Xc hXc _
     (hS.image_of_continuousOn hcont0) (by
       rintro _ ⟨c, hc, rfl⟩
-      exact hadm0 c hc) (closedBall 0 0) (isCompact_closedBall _ _) (2 * R0 + 1) (by linarith)
+      exact hadm0 c hc) _ (isCompact_closedBall ..) (2 * R0 + 1) (by linarith)
   -- the zero-charge bound on disks about the origin
   have hdisk : ∀ c ∈ S, ∀ R : ℝ, 1 ≤ R → R ≤ 2 * R0 + 1 → ∀ r : ℝ, 0 ≤ r →
       ∫⁻ ω, regularizedGMC P Xc c.1 r ω (Metric.ball 0 R) ^ τ c ∂P ≤
@@ -252,7 +248,7 @@ theorem regularizedCoulombMass_moment_uniform_pos
     refine h.trans (ENNReal.ofReal_le_ofReal (mul_le_mul_of_nonneg_left ?_ hC0.le))
     have hexp : c.1 * (Q c.1 - 0) * τ c - c.1 ^ 2 * τ c ^ 2 / 2 ≤ 4 * tm := by
       have hQ : c.1 * Q c.1 = 2 + c.1 ^ 2 / 2 := by rw [Q]; field_simp
-      have hγsq : c.1 ^ 2 < 2 ^ 2 := pow_lt_pow_left₀ hγ2 hγ0.le two_ne_zero
+      have hγsq : c.1 ^ 2 < 2 ^ 2 := by gcongr
       have htt : τ c ≤ tm := hτle c hc
       have hQt : c.1 * (Q c.1 - 0) * τ c = (2 + c.1 ^ 2 / 2) * τ c := by rw [sub_zero, hQ]
       have h1 : c.1 ^ 2 * τ c < 2 ^ 2 * τ c := mul_lt_mul_of_pos_right hγsq ht0
@@ -289,7 +285,7 @@ theorem regularizedCoulombMass_moment_uniform_pos
   have htle := hτle c hc
   -- the pieces, pointwise in the sample
   set cw : Fin N → Ω → ℝ≥0∞ := fun k ω =>
-    cutoffWeightedGmcBallMass P Xc c.1 (c.2.2.1 k) (c.2.1 k) 1 (Real.exp (-r)) ω with hcw
+    cutoffWeightedGmcBallMass P Xc c.1 (c.2.2.1 k) (c.2.1 k) 1 _ ω with hcw
   set MB : Ω → ℝ≥0∞ := fun ω => regularizedGMC P Xc c.1 r ω (closedBall 0 R0) with hMB
   set V : Ω → ℝ≥0∞ := fun ω => ∫⁻ x in {x : ℂ | R0 ≤ ‖x‖},
     ENNReal.ofReal (‖x‖ ^ max (c.1 * c.2.2.2) 0) ∂regularizedGMC P Xc c.1 r ω with hV
@@ -305,7 +301,7 @@ theorem regularizedCoulombMass_moment_uniform_pos
         (hEinf c hc) hx hxk hx0)
       (fun x hx => hCE c.1 c.2.2.1 c.2.1 c.2.2.2 r x hr (hZc c hc) (hEα c hc) (hEinf c hc) hx)
   have hcwm : ∀ k, AEMeasurable (cw k) P := fun k =>
-    (measurable_cutoffWeightedGmcBallMass P X hX Xc hXc _ _ _ _ _).aemeasurable
+    (measurable_cutoffWeightedGmcBallMass P X hX Xc hXc ..).aemeasurable
   have hMBm : AEMeasurable MB P :=
     ((Measure.measurable_coe Metric.isClosed_closedBall.measurableSet).comp
       (regularizedGMC_measurable P X hX Xc hXc c.1 r)).aemeasurable
@@ -339,13 +335,13 @@ theorem regularizedCoulombMass_moment_uniform_pos
         ∫⁻ ω, regularizedGMC P Xc c.1 r' ω (exteriorAnnulus R0 0) ^ τ c ∂P ≤ K0 := by
       intro r' hr'
       refine le_trans (lintegral_mono fun ω => ENNReal.rpow_le_rpow (measure_mono ?_) ht0.le)
-        (hdisk c hc (2 * R0 + 1) (by linarith) le_rfl r' hr')
+        (hdisk c hc _ (by linarith) le_rfl r' hr')
       intro x hx
       rw [Metric.mem_ball, dist_zero_right]
       have := hx.2
       simp only [zero_add, pow_one] at this
       linarith
-    refine (cutoff_exterior_power_moment_le P X hX Xc hXc c.1 hR02 (le_max_right _ _) ht0 hK0b
+    refine (cutoff_exterior_power_moment_le P X hX Xc hXc c.1 hR02 (le_max_right ..) ht0 hK0b
       hr).trans ?_
     have hβ : max (c.1 * c.2.2.2) 0 * τ c ≤ E * tm := by
       have h1 : max (c.1 * c.2.2.2) 0 ≤ E :=
@@ -363,5 +359,9 @@ theorem regularizedCoulombMass_moment_uniform_pos
   exact mul_le_mul' h2 (add_le_add (mul_le_mul' h2 (add_le_add (mul_le_mul' hN
     (Finset.sum_le_sum fun k _ => mul_le_mul' hR' (hcwb k))) (mul_le_mul' hB' hMBb)))
     (mul_le_mul' hE' hVb))
+
+end
+
+end
 
 end DOZZ.Proofs

@@ -19,8 +19,8 @@ theorem fusion_exteriorMixedKernel_integrable (γ α₁ α₂ α₃ : ℝ) (z : 
     (hkernel : (∫⁻ x, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂μ) < ⊤) :
     IntegrableOn (fun x : ℂ => (gammaHalfKernel γ α₁ α₂ α₃ z x : ℂ) / (‖x - z‖ ^ 2 : ℝ))
       (Metric.ball (0 : ℂ) (1 / 2))ᶜ μ := by
-  have h : IntegrableOn (fun x : ℂ => (‖(gammaHalfKernel γ α₁ α₂ α₃ z x : ℂ) / (x - z) ^ 2‖ : ℂ))
-      (Metric.ball (0 : ℂ) (1 / 2))ᶜ μ :=
+  have h : IntegrableOn (fun x => (‖(gammaHalfKernel γ α₁ α₂ α₃ z x : ℂ) / (x - z) ^ 2‖ : ℂ))
+      (Metric.ball (0 : ℂ) _)ᶜ μ :=
     (fusion_exteriorSecondKernel_integrable γ α₁ α₂ α₃ z hz μ hkernel).norm.ofReal
   simpa only [fusion_secondKernel_norm, Complex.ofReal_div] using h
 

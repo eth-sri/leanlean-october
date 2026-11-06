@@ -51,10 +51,10 @@ theorem tendsto_measureReal_dyadicLastExitEndpointExcess_ge
     exact (hstateJoint.comp
       (((measurable_dyadicLastExitCeilingTime n).comp
         (measurable_negativeLastExitTime_joint.comp
-          ((measurable_const (a := (c : ℝ))).prodMk measurable_id))).prodMk
+          ((measurable_const).prodMk measurable_id))).prodMk
             measurable_id)).sub measurable_const
   have hE (n : ℕ) : MeasurableSet (E n) :=
-    measurableSet_le measurable_const (hY n)
+    by measurability
   have hYlim : ∀ᵐ p ∂P, Tendsto
       (fun n => dyadicLastExitEndpointExcess n c p) atTop (𝓝 0) := by
     simpa [dyadicLastExitEndpointExcess] using
@@ -65,15 +65,14 @@ theorem tendsto_measureReal_dyadicLastExitEndpointExcess_ge
     filter_upwards [hYlim] with p hp
     have hlt : ∀ᶠ n : ℕ in atTop, dyadicLastExitEndpointExcess n c p < δ :=
       hp.eventually (Iio_mem_nhds hδ)
-    have heq : (fun n : ℕ => (E n).indicator (fun _ => (1 : ℝ)) p) =ᶠ[atTop]
+    have heq : (fun n => (E n).indicator (fun _ => (1 : ℝ)) p) =ᶠ[atTop]
         fun _ => (0 : ℝ) := by
       filter_upwards [hlt] with n hn
-      simp [E, not_le_of_gt hn]
+      aesop
     exact tendsto_const_nhds.congr' heq.symm
   have hmeas : ∀ n, AEStronglyMeasurable
-      (fun p : BrownianPath => (E n).indicator (fun _ => (1 : ℝ)) p) P := by
-    intro n
-    exact (measurable_const.indicator (hE n)).aestronglyMeasurable
+      (fun p => (E n).indicator (fun _ => (1 : ℝ)) p) P := by
+    measurability
   have hbound : ∀ n, ∀ᵐ p ∂P,
       ‖(E n).indicator (fun _ => (1 : ℝ)) p‖ ≤ 1 := by
     intro n
@@ -84,8 +83,8 @@ theorem tendsto_measureReal_dyadicLastExitEndpointExcess_ge
       atTop (𝓝 0) :=
     by
       simpa using (tendsto_integral_filter_of_norm_le_const
-        (l := atTop) (Filter.Eventually.of_forall hmeas)
-        ⟨1, Filter.Eventually.of_forall (fun n => hbound n)⟩ hflim)
+        (Filter.Eventually.of_forall hmeas)
+        ⟨1, Filter.Eventually.of_forall hbound⟩ hflim)
   have hmass (n : ℕ) :
       (∫ p, (E n).indicator (fun _ => (1 : ℝ)) p ∂P) = P.real (E n) :=
     integral_indicator_one (hE n)
@@ -106,10 +105,7 @@ theorem dyadicPositiveLastExitRationalEvent_zero_eval_eq_endpoint_excess
   have hEval : dyadicPositiveLastExitRationalEvals n (c : ℝ) p 0 =
       -(dyadicLastExitPathApproximation n (c : ℝ) p 0) := by
     simp only [dyadicPositiveLastExitRationalEvals, brownianPathRationalEvals]
-    apply congrArg Neg.neg
-    apply congrArg (dyadicLastExitPathApproximation n (c : ℝ) p)
-    apply Subtype.ext
-    norm_num
+    aesop
   have hpath : dyadicLastExitPathApproximation n (c : ℝ) p 0 = p T + (c : ℝ) := by
     simp [dyadicLastExitPathApproximation, shiftPathAddConstant, T]
   rw [hEval, hpath]
@@ -127,7 +123,7 @@ theorem tendsto_measureReal_dyadicPositiveLastExitRationalEvent_zero_eval_ge
       (fun n => P.real (dyadicPositiveLastExitRationalEvent n (c : ℝ)
         {y | δ ≤ y 0})) atTop (𝓝 0) := by
   have hC : MeasurableSet {y : ℚ → ℝ | δ ≤ y 0} :=
-    measurableSet_le measurable_const (measurable_pi_apply 0)
+    by measurability
   have hset (n : ℕ) :
       dyadicPositiveLastExitRationalEvent n (c : ℝ) {y | δ ≤ y 0} =
         {p | δ ≤ dyadicLastExitEndpointExcess n c p} := by

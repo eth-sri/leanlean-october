@@ -25,6 +25,6 @@ theorem circleAverage_isGaussianProcess {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) :
     IsGaussianProcess (fun p : ℂ × ℝ => fun ω => Xc ω p.1 p.2) P ∧
-      ∀ x r, (∫ ω, Xc ω x r ∂P) = 0 := by exact DOZZ.Proofs.circleAverage_isGaussianProcess P X Xc hX hc
+      ∀ x r, (∫ ω, Xc ω x r ∂P) = 0 := DOZZ.Proofs.circleAverage_isGaussianProcess P X Xc hX hc
 
 end DOZZ

@@ -24,34 +24,31 @@ theorem admissible_logRegularization_reference_measure_ne_top
     (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
     (K : Set ℂ) (hK : IsCompact K) (hKU : K ⊆ U) :
     logRegularizationReference U dens K ≠ ∞ := by
-  have hcont : ContinuousOn dens K := hY.densityContinuous.mono hKU
+  have hcont := hY.densityContinuous.mono hKU
   obtain ⟨B, hB⟩ := hK.bddAbove_image hcont
-  let B₀ : ℝ := max B 0
-  have hB₀ : 0 ≤ B₀ := le_max_right _ _
+  let B₀ := max B 0
+  have hB₀ : 0 ≤ B₀ := le_max_right ..
   have hpoint : ∀ x ∈ K, ENNReal.ofReal (dens x) ≤ ENNReal.ofReal B₀ := by
     intro x hx
     have hle : dens x ≤ B₀ := by
-      dsimp [B₀]
-      exact le_trans (hB (Set.mem_image_of_mem dens hx)) (le_max_left _ _)
-    exact ENNReal.ofReal_le_ofReal hle
-  have hKmeas : MeasurableSet K := hK.isClosed.measurableSet
+      aesop
+    simp_all
+  have hKmeas := hK.isClosed.measurableSet
   rw [logRegularizationReference, withDensity_apply _ hKmeas]
   apply ne_of_lt
   calc
     (∫⁻ x in K, ENNReal.ofReal (dens x) ∂volume.restrict U) ≤
-        ∫⁻ x in K, ENNReal.ofReal B₀ ∂volume.restrict U := by
-          exact setLIntegral_mono' (s := K)
-            (f := fun x => ENNReal.ofReal (dens x))
-            (g := fun _ : ℂ => ENNReal.ofReal B₀)
+        ∫⁻ x in K, ENNReal.ofReal B₀ ∂volume.restrict U := setLIntegral_mono'
+           
+           
             hKmeas
             (fun x hx => hpoint x hx)
     _ = ENNReal.ofReal B₀ * (volume.restrict U) K := by
-          rw [setLIntegral_const]
+          simp
     _ ≤ ENNReal.ofReal B₀ * volume K := by
           gcongr
           exact Measure.restrict_le_self
-    _ < ∞ := by
-          exact ENNReal.mul_lt_top ENNReal.ofReal_lt_top hK.measure_lt_top
+    _ < ∞ := ENNReal.mul_lt_top ENNReal.ofReal_lt_top hK.measure_lt_top
 
 
 end DOZZ.Proofs

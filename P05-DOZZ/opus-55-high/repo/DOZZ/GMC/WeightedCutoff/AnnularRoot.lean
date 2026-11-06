@@ -37,28 +37,27 @@ theorem cutoffWeightedGmcBallMoment_positive_scale_of_root_bound_ge_one
           (R ^ weightedCutoffMomentScaleExponent γ α p) := by
   classical
   have hp0 : 0 < p := lt_of_lt_of_le zero_lt_one hp
-  have hpcrit : p < 4 / γ ^ 2 := lt_of_lt_of_le hpRange (min_le_left _ _)
+  have hpcrit : p < 4 / γ ^ 2 := by grind
   have heta : 0 < weightedCutoffMomentScaleExponent γ α p :=
     weightedGmcMomentExponent_pos_of_sharp_range hγ hp0 hpRange
   let xi : ℝ := 2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2
-  let beta : ℝ := weightedCutoffMomentScaleExponent γ α p / p
+  let beta := weightedCutoffMomentScaleExponent γ α p / p
   have hbeta : 0 < beta := div_pos heta hp0
-  have hεbeta' : ε ≤ beta := by simpa [beta] using hεbeta
+  have hεbeta' : ε ≤ beta := by assumption
   have hxi : 0 < xi := by
     dsimp [xi]
     have hcrit' : γ ^ 2 * p < 4 := by
-      have h := (lt_div_iff₀ (sq_pos_of_pos hγ)).mp hpcrit
-      linarith only [h]
+      linarith only [((lt_div_iff₀ (sq_pos_of_pos hγ)).mp hpcrit)]
     have hfactor : 0 < 2 + γ ^ 2 / 2 - γ ^ 2 * p / 2 := by
       linarith only [hcrit', sq_pos_of_pos hγ]
     linarith only [mul_pos hp0 hfactor]
   have hxiBeta : 0 < xi / p := div_pos hxi hp0
-  let halfRatioReal : ℝ := (1 / 2 : ℝ) ^ beta
-  let halfRatio : ℝ≥0∞ := ENNReal.ofReal halfRatioReal
-  let halfRatio0Real : ℝ := (1 / 2 : ℝ) ^ ε
-  let halfRatio0 : ℝ≥0∞ := ENNReal.ofReal halfRatio0Real
-  let coreCoefReal : ℝ := ((1 / 8 : ℝ)⁻¹) ^ (xi / p)
-  let shellCoefReal : ℝ := (2 / (1 / 8 : ℝ)) ^ (xi / p)
+  let halfRatioReal := (1 / 2 : ℝ) ^ beta
+  let halfRatio := ENNReal.ofReal halfRatioReal
+  let halfRatio0Real := (1 / 2 : ℝ) ^ ε
+  let halfRatio0 := ENNReal.ofReal halfRatio0Real
+  let coreCoefReal := ((1 / 8 : ℝ)⁻¹) ^ (xi / p)
+  let shellCoefReal := (2 / (1 / 8 : ℝ)) ^ (xi / p)
   have hhalfRatioPos : 0 < halfRatioReal := by
     dsimp [halfRatioReal]
     exact Real.rpow_pos_of_pos (by norm_num) beta
@@ -66,12 +65,12 @@ theorem cutoffWeightedGmcBallMoment_positive_scale_of_root_bound_ge_one
     dsimp [halfRatioReal]
     exact Real.rpow_lt_one (by norm_num) (by norm_num) hbeta
   have hhalfRatio : halfRatio < 1 :=
-    ENNReal.ofReal_lt_one.mpr (by simpa [halfRatio] using hhalfRatioLt)
+    ENNReal.ofReal_lt_one.mpr (by assumption)
   have hhalfRatio0Lt : halfRatio0Real < 1 := by
     dsimp [halfRatio0Real]
     exact Real.rpow_lt_one (by norm_num) (by norm_num) hε
   have hhalfRatio0 : halfRatio0 < 1 :=
-    ENNReal.ofReal_lt_one.mpr (by simpa [halfRatio0] using hhalfRatio0Lt)
+    ENNReal.ofReal_lt_one.mpr (by assumption)
   have hratioReal : halfRatioReal ≤ halfRatio0Real := by
     dsimp [halfRatioReal, halfRatio0Real]
     exact Real.rpow_le_rpow_of_exponent_ge (by norm_num) (by norm_num) hεbeta'
@@ -80,7 +79,7 @@ theorem cutoffWeightedGmcBallMoment_positive_scale_of_root_bound_ge_one
     intro h
     exact (not_le_of_gt hhalfRatio0) (tsub_eq_zero_iff_le.mp h)
   have hgeomTop : (1 - halfRatio0)⁻¹ < ⊤ :=
-    lt_top_iff_ne_top.mpr (ENNReal.inv_ne_top.mpr hden)
+    by simpa
   have hhalfRatio0Top : halfRatio0 < ⊤ := ENNReal.ofReal_lt_top
   have hcoreCoefPos : 0 < coreCoefReal := by
     dsimp [coreCoefReal]
@@ -90,9 +89,9 @@ theorem cutoffWeightedGmcBallMoment_positive_scale_of_root_bound_ge_one
     dsimp [shellCoefReal]
     exact Real.rpow_pos_of_pos (by norm_num) _
   have hshellCoefTop : ENNReal.ofReal shellCoefReal < ⊤ := ENNReal.ofReal_lt_top
-  let D : ℝ≥0∞ := ENNReal.ofReal coreCoefReal +
+  let D := ENNReal.ofReal coreCoefReal +
     ENNReal.ofReal shellCoefReal * halfRatio0 * (1 - halfRatio0)⁻¹
-  let K : ℝ≥0∞ := A * D
+  let K := A * D
   have hD : D < ⊤ := by
     dsimp [D]
     exact ENNReal.add_lt_top.mpr ⟨hcoreCoefTop,
@@ -120,17 +119,17 @@ theorem cutoffWeightedGmcBallMoment_positive_scale_of_root_bound_ge_one
       · have hδlt : δ < R := lt_of_le_of_ne hδR hδeq
         obtain ⟨N, hlow, hhigh⟩ := exists_dyadic_shell_index hδ hδlt
         exact ⟨N, hlow, hhigh.le⟩
-    have hδchart : ‖z‖ + 2 * δ ≤ 1 := by linarith only [hchart, hδR]
+    have hδchart : ‖z‖ + 2 * δ ≤ 1 := by linarith
     have hcoreBase := hballRoot z δ δ hδ (le_trans hδR hRsmall) hδ le_rfl hδchart
     let coreMass : Ω → ℝ≥0∞ := fun ω =>
       regularizedGMC P Xc γ (Real.log (1 / δ)) ω (Metric.ball z δ)
-    let coreCoeff : ℝ≥0∞ := ENNReal.ofReal (δ ^ (-γ * α))
+    let coreCoeff := ENNReal.ofReal (δ ^ (-γ * α))
     have hcoreId : δ ^ (-γ * α) * (δ / (1 / 8 : ℝ)) ^ (xi / p) =
         coreCoefReal * δ ^ beta := by
       simpa [xi, beta, coreCoefReal] using
         (weighted_cutoff_core_rpow_identity γ α p δ hγ hp0 hδ)
     have hcoreMassMeas : AEMeasurable coreMass P := by
-      exact regularizedGMC_mass_aemeasurable P X hX Xc hXc γ (Real.log (1 / δ))
+      exact regularizedGMC_mass_aemeasurable P X hX Xc hXc γ _
         (Metric.ball z δ) Metric.isOpen_ball.measurableSet
     have hcoreRoot :
         (∫⁻ ω, (coreCoeff * coreMass ω) ^ p ∂P) ^ (1 / p) ≤
@@ -159,9 +158,9 @@ theorem cutoffWeightedGmcBallMoment_positive_scale_of_root_bound_ge_one
           mul_le_mul_of_nonneg_left hcoreBase.1 (by positivity)
         _ = A * (coreCoeff * ENNReal.ofReal
             ((δ / (1 / 8 : ℝ)) ^ (xi / p))) := by ac_rfl
-        _ ≤ A * ENNReal.ofReal (coreCoefReal * R ^ beta) :=
+        _ ≤ A * ENNReal.ofReal _ :=
           mul_le_mul_of_nonneg_left hcoeffBound (by positivity)
-        _ = A * ENNReal.ofReal coreCoefReal * ENNReal.ofReal (R ^ beta) := by
+        _ = A * ENNReal.ofReal coreCoefReal * ENNReal.ofReal _ := by
           rw [ENNReal.ofReal_mul (le_of_lt hcoreCoefPos)]
           ac_rfl
     let shellMass (n : ℕ) (ω : Ω) : ℝ≥0∞ :=
@@ -191,10 +190,10 @@ theorem cutoffWeightedGmcBallMoment_positive_scale_of_root_bound_ge_one
       have hρpos : 0 < cutoffDyadicBallRadius R n := by
         dsimp [cutoffDyadicBallRadius]
         positivity
-      have hmassBase := hballRoot z (cutoffDyadicBallRadius R n) δ
+      have hmassBase := hballRoot z _ δ
         hρpos (hRn.trans hRsmall) hδ hδn hchartn
       have hmassMeas : AEMeasurable (shellMass n) P := by
-        exact regularizedGMC_mass_aemeasurable P X hX Xc hXc γ (Real.log (1 / δ))
+        exact regularizedGMC_mass_aemeasurable P X hX Xc hXc γ _
           (Metric.ball z (cutoffDyadicBallRadius R n)) Metric.isOpen_ball.measurableSet
       have hρnext : 0 < cutoffDyadicBallRadius R (n + 1) := by
         dsimp [cutoffDyadicBallRadius]
@@ -208,7 +207,6 @@ theorem cutoffWeightedGmcBallMoment_positive_scale_of_root_bound_ge_one
       have hrootEq := ennreal_lintegral_rpow_const_mul_root_eq p hp0
         (ENNReal.ofReal (cutoffDyadicBallRadius R (n + 1) ^ (-γ * α)))
         ENNReal.ofReal_lt_top (shellMass n) hmassMeas hmassBase.2
-      have hrealEq := weighted_cutoff_shell_rpow_identity γ α p R hγ hp0 hR n
       have hrealSplit :
           ENNReal.ofReal
             ((2 / (1 / 8 : ℝ)) ^ (xi / p) * R ^ beta *
@@ -225,22 +223,22 @@ theorem cutoffWeightedGmcBallMoment_positive_scale_of_root_bound_ge_one
             ENNReal.ofReal ((cutoffDyadicBallRadius R n / (1 / 8 : ℝ)) ^ (xi / p)) =
           ENNReal.ofReal shellCoefReal * ENNReal.ofReal (R ^ beta) *
             halfRatio ^ (n + 1) := by
-        rw [← ENNReal.ofReal_mul hrealNonneg, hrealEq]
+        rw [← ENNReal.ofReal_mul hrealNonneg, (weighted_cutoff_shell_rpow_identity γ α p R hγ hp0 hR n)]
         exact hrealSplit
       calc
         _ = ENNReal.ofReal
-            (cutoffDyadicBallRadius R (n + 1) ^ (-γ * α)) *
-              (∫⁻ ω, ENNReal.rpow (shellMass n ω) p ∂P) ^ (1 / p) := hrootEq
+            (cutoffDyadicBallRadius R _ ^ (-γ * α)) *
+              (∫⁻ ω, ENNReal.rpow _ p ∂P) ^ (1 / p) := hrootEq
         _ ≤ ENNReal.ofReal
-            (cutoffDyadicBallRadius R (n + 1) ^ (-γ * α)) *
+            (cutoffDyadicBallRadius R _ ^ (-γ * α)) *
               (A * ENNReal.ofReal
                 ((cutoffDyadicBallRadius R n / (1 / 8 : ℝ)) ^ (xi / p))) :=
           mul_le_mul_of_nonneg_left hmassBase.1 (by positivity)
         _ = A * (ENNReal.ofReal
-              (cutoffDyadicBallRadius R (n + 1) ^ (-γ * α)) *
+              (cutoffDyadicBallRadius R _ ^ (-γ * α)) *
                 ENNReal.ofReal
                   ((cutoffDyadicBallRadius R n / (1 / 8 : ℝ)) ^ (xi / p))) := by ac_rfl
-        _ = A * (ENNReal.ofReal shellCoefReal * ENNReal.ofReal (R ^ beta) *
+        _ = A * (ENNReal.ofReal shellCoefReal * ENNReal.ofReal _ *
               halfRatio ^ (n + 1)) := by rw [hrealForm]
         _ = _ := by ac_rfl
     have hseries : (∑' n : ℕ, halfRatio ^ (n + 1)) =
@@ -252,33 +250,33 @@ theorem cutoffWeightedGmcBallMoment_positive_scale_of_root_bound_ge_one
           rw [pow_succ]
           ac_rfl
         _ = halfRatio * ∑' n : ℕ, halfRatio ^ n := ENNReal.tsum_mul_left
-        _ = _ := by rw [ENNReal.tsum_geometric]
+        _ = _ := by simp
     have hshellSumActual :
         (∑ n ∈ Finset.range (N + 1),
           (∫⁻ ω, (shellCoeff n * shellMass n ω) ^ p ∂P) ^ (1 / p)) ≤
           A * ENNReal.ofReal shellCoefReal * ENNReal.ofReal (R ^ beta) *
             (halfRatio * (1 - halfRatio)⁻¹) := by
       calc
-        _ ≤ ∑ n ∈ Finset.range (N + 1),
-            A * ENNReal.ofReal shellCoefReal * ENNReal.ofReal (R ^ beta) *
+        _ ≤ ∑ n ∈ Finset.range _,
+            A * ENNReal.ofReal shellCoefReal * ENNReal.ofReal _ *
               halfRatio ^ (n + 1) := by
           apply Finset.sum_le_sum
           intro n hn
           exact hshellRoot n hn
         _ ≤ ∑' n : ℕ,
-            A * ENNReal.ofReal shellCoefReal * ENNReal.ofReal (R ^ beta) *
+            A * ENNReal.ofReal shellCoefReal * ENNReal.ofReal _ *
               halfRatio ^ (n + 1) := ENNReal.sum_le_tsum _
-        _ = A * ENNReal.ofReal shellCoefReal * ENNReal.ofReal (R ^ beta) *
+        _ = A * ENNReal.ofReal shellCoefReal * ENNReal.ofReal _ *
             (halfRatio * (1 - halfRatio)⁻¹) := by
           calc
             _ = ∑' n : ℕ,
-                (A * ENNReal.ofReal shellCoefReal * ENNReal.ofReal (R ^ beta) * halfRatio) *
+                (A * ENNReal.ofReal shellCoefReal * ENNReal.ofReal _ * halfRatio) *
                   halfRatio ^ n := by
               apply tsum_congr
               intro n
               rw [pow_succ]
               ac_rfl
-            _ = (A * ENNReal.ofReal shellCoefReal * ENNReal.ofReal (R ^ beta) * halfRatio) *
+            _ = (A * ENNReal.ofReal shellCoefReal * ENNReal.ofReal _ * halfRatio) *
                 ∑' n : ℕ, halfRatio ^ n := ENNReal.tsum_mul_left
             _ = _ := by rw [ENNReal.tsum_geometric]; ac_rfl
     have hgeomCompare : halfRatio * (1 - halfRatio)⁻¹ ≤
@@ -307,10 +305,10 @@ theorem cutoffWeightedGmcBallMoment_positive_scale_of_root_bound_ge_one
           K * ENNReal.ofReal (R ^ beta) := by
       calc
         _ ≤ (∫⁻ ω, (coreCoeff * coreMass ω) ^ p ∂P) ^ (1 / p) +
-            ∑ n ∈ Finset.range (N + 1),
+            ∑ n ∈ Finset.range _,
               (∫⁻ ω, (shellCoeff n * shellMass n ω) ^ p ∂P) ^ (1 / p) := hdecomp
-        _ ≤ A * ENNReal.ofReal coreCoefReal * ENNReal.ofReal (R ^ beta) +
-            A * ENNReal.ofReal shellCoefReal * ENNReal.ofReal (R ^ beta) *
+        _ ≤ A * ENNReal.ofReal coreCoefReal * ENNReal.ofReal _ +
+            A * ENNReal.ofReal shellCoefReal * ENNReal.ofReal _ *
               (halfRatio0 * (1 - halfRatio0)⁻¹) :=
           add_le_add hcoreRoot hshellSum
         _ = K * ENNReal.ofReal (R ^ beta) := by
@@ -322,15 +320,15 @@ theorem cutoffWeightedGmcBallMoment_positive_scale_of_root_bound_ge_one
             ∫⁻ ω, ENNReal.rpow
               (cutoffWeightedGmcBallMass P Xc γ α z R δ ω) p ∂P := by
       rw [← ENNReal.rpow_mul]
-      rw [show 1 / p * p = 1 by field_simp [ne_of_gt hp0], ENNReal.rpow_one]
+      rw [show 1 / p * p = 1 by field_simp, ENNReal.rpow_one]
     have hrightPow : (K * ENNReal.ofReal (R ^ beta)) ^ p =
         K ^ p * ENNReal.ofReal (R ^ weightedCutoffMomentScaleExponent γ α p) := by
       rw [ENNReal.mul_rpow_of_ne_top hK.ne ENNReal.ofReal_ne_top]
       have hscalePow := ENNReal.ofReal_rpow_of_pos
         (p := p) (Real.rpow_pos_of_pos hR beta)
-      change ENNReal.rpow (ENNReal.ofReal (R ^ beta)) p = ENNReal.ofReal ((R ^ beta) ^ p) at hscalePow
-      change K ^ p * ENNReal.rpow (ENNReal.ofReal (R ^ beta)) p =
-        K ^ p * ENNReal.ofReal (R ^ weightedCutoffMomentScaleExponent γ α p)
+      change ENNReal.rpow _ p = ENNReal.ofReal _ at hscalePow
+      change K ^ p * ENNReal.rpow _ p =
+        K ^ p * ENNReal.ofReal _
       rw [hscalePow]
       have hReal : (R ^ beta) ^ p =
           R ^ weightedCutoffMomentScaleExponent γ α p := by
@@ -342,12 +340,12 @@ theorem cutoffWeightedGmcBallMoment_positive_scale_of_root_bound_ge_one
       _ = ((∫⁻ ω, ENNReal.rpow
           (cutoffWeightedGmcBallMass P Xc γ α z R δ ω) p ∂P) ^ (1 / p)) ^ p :=
         hleftPow.symm
-      _ ≤ (K * ENNReal.ofReal (R ^ beta)) ^ p :=
+      _ ≤ (K * ENNReal.ofReal _) ^ p :=
       ENNReal.rpow_le_rpow hrootBound hp0.le
       _ = K ^ p * ENNReal.ofReal
           (R ^ weightedCutoffMomentScaleExponent γ α p) := hrightPow
       _ = cutoffWeightedPositiveScaleRootBoundConstant A γ p ε ^ p *
-          ENNReal.ofReal (R ^ weightedCutoffMomentScaleExponent γ α p) := by rw [hKeq]
+          ENNReal.ofReal _ := by rfl
 
 
 end DOZZ.Proofs

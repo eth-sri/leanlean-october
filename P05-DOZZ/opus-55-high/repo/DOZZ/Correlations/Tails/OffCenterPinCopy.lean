@@ -17,41 +17,44 @@ open MeasureTheory ProbabilityTheory
 open scoped NNReal ENNReal
 
 namespace DOZZ.Proofs
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+section
+variable (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (z : ℂ) (hz : 2 ≤ ‖z‖) (p : localCircle)
+include hX hc hz
 
 /-- The local circle/pin covariance consists of the pin variance and its smooth correction. -/
 theorem offCenter_circle_pin_covariance
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (z : ℂ) (hz : 2 ≤ ‖z‖) (p : localCircle) :
+    :
     covariance (fun ω => Xc ω (z + p.val.1) p.val.2) (fun ω => Xc ω z 0) P =
       Real.log ‖z + p.val.1‖ + Real.log ‖z‖ := by
-  have hp := circle_pin_exterior (z + p.val.1) p.val.2
+  have hp := circle_pin_exterior _ p.val.2
     (localCircle_exterior z hz p)
   have hzpin := circle_pin_exterior z 0
     (by simpa only [neg_zero, Real.exp_zero, one_add_one_eq_two] using hz)
   have hp0 : circleLogPotential ‖p.val.1‖₊
       ⟨Real.exp (-p.val.2), Real.exp_pos _⟩ ⟨1, by norm_num⟩ = 0 := by
-    simpa only [Real.log_one] using circleLogPotential_of_add_le (d := ‖p.val.1‖₊)
+    simpa using circleLogPotential_of_add_le (d := ‖p.val.1‖₊)
       ⟨Real.exp (-p.val.2), Real.exp_pos _⟩ ⟨1, by norm_num⟩ p.property
   rw [circleAverage_covariance P X Xc hX hc]
-  simp only [add_sub_cancel_left, neg_zero, Real.exp_zero] at hzpin ⊢
-  rw [hp0, hp, hzpin]
-  ring
+  simp_all
 
 /-- The unshifted local circle variance retains the exact exterior normalization. -/
 theorem offCenter_circle_self_covariance
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (z : ℂ) (hz : 2 ≤ ‖z‖) (p : localCircle) :
+    :
     covariance (fun ω => Xc ω (z + p.val.1) p.val.2)
       (fun ω => Xc ω (z + p.val.1) p.val.2) P =
         p.val.2 + 2 * Real.log ‖z + p.val.1‖ := by
   rw [circleAverage_covariance P X Xc hX hc]
-  have hp := circle_pin_exterior (z + p.val.1) p.val.2
+  have hp := circle_pin_exterior _ p.val.2
     (localCircle_exterior z hz p)
   simp only [sub_self, nnnorm_zero, circleLogPotential_zero, max_self, Real.log_exp,
     neg_neg, hp]
   ring
+
+end
+
+end
 
 /-- Pointwise regression coefficient of the residual local field on the equator pin. -/
 noncomputable def localPinCoefficient (z x : ℂ) : ℝ :=
@@ -83,9 +86,7 @@ theorem offCenter_circle_pin_copy_law
   let Z : Option localCircle → Ω → ℝ := fun j ω => Xc ω (k j).1 (k j).2
   have hZ : IsGaussianProcess Z P := (circleAverage_isGaussianProcess P X Xc hX hc).1.comp_right k
   have hZm : Measurable (fun ω j => Z j ω) := by
-    apply measurable_pi_iff.mpr
-    intro j
-    exact hm.comp (measurable_id.prodMk measurable_const)
+    fun_prop
   have hvar : covariance (Z none) (Z none) P = 2 * Real.log ‖z‖ :=
     offCenter_origin_variance X Xc hX hc z hz
   have he := gaussian_pin_copy_law P Z hZ hZm (2 * Real.log ‖z‖)
@@ -105,7 +106,7 @@ theorem offCenter_circle_pin_copy_law
       covariance (fun ω => Xc ω (z + p.val.1) p.val.2) (fun ω => Xc ω z 0) P /
         (2 * Real.log ‖z‖) * (Xc q.2 z 0 - Xc q.1 z 0) = _
     rw [offCenter_circle_pin_covariance P X Xc hX hc z hz p]
-    simp only [Option.elim_some]
+    simp
     unfold localPinCoefficient
     field_simp [(offCenter_pin_variance_pos z hz).ne',
       (Real.log_pos (by linarith : 1 < ‖z‖)).ne']

@@ -11,12 +11,13 @@ import Mathlib.Tactic
 open MeasureTheory ProbabilityTheory Set Filter
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
+section
+variable {Ω ζ : Type*} [MeasurableSpace Ω] [MeasurableSpace ζ] (P : Measure Ω)
 
 /-- A change of lateral version with identical measure law leaves the copied polar observable
 and its entire outer-past mark unchanged. -/
 theorem reflected_copied_polar_law_congr
-    {Ω ζ : Type*} [MeasurableSpace Ω] [MeasurableSpace ζ]
-    (P : Measure Ω) [IsProbabilityMeasure P] (γ ν : ℝ)
+    [IsProbabilityMeasure P] (γ ν : ℝ)
     (Y : Ω → ζ) (D : Ω → BrownianPath) (Z Z' : Ω → Measure ℝ)
     (hY : AEMeasurable Y P) (hD : AEMeasurable D P)
     (hZ : AEMeasurable Z P) (hZ' : AEMeasurable Z' P)
@@ -32,8 +33,7 @@ theorem reflected_copied_polar_law_congr
   let F := reflectedInwardPolarMassCode γ ν
   let H : (ζ × BrownianPath) × Measure ℝ → ζ × ℝ≥0∞ := fun p => (p.1.1, F (p.1.2,p.2))
   have hF : Measurable F := reflected_measurable_inwardPolarMassCode γ ν
-  have hH : Measurable H := (measurable_fst.comp measurable_fst).prodMk
-    (hF.comp ((measurable_snd.comp measurable_fst).prodMk measurable_snd))
+  have hH : Measurable H := by fun_prop
   have hp (W : Ω → Measure ℝ) (hW : AEMeasurable W P)
       (hf : ∀ᵐ ω ∂P, ∀ a b : ℝ, W ω (Icc a b) < ⊤) :
       (P.prod P).map (fun ω : Ω × Ω => (Y ω.1, ∫⁻ t,
@@ -41,8 +41,7 @@ theorem reflected_copied_polar_law_congr
           (γ*(D ω.1 (Real.toNNReal t)-ν*t))) else 0) ∂W ω.2)) =
       ((P.map (fun ω => (Y ω,D ω))).prod (P.map W)).map H := by
     have hpack : AEMeasurable (fun ω : Ω × Ω => ((Y ω.1,D ω.1),W ω.2)) (P.prod P) :=
-      ((hY.prodMk hD).comp_quasiMeasurePreserving measurePreserving_fst.quasiMeasurePreserving).prodMk
-        (hW.comp_quasiMeasurePreserving measurePreserving_snd.quasiMeasurePreserving)
+      by fun_prop
     have he : (fun ω : Ω × Ω => (Y ω.1, ∫⁻ t,
         (if 0 < t then ENNReal.ofReal (Real.exp
           (γ*(D ω.1 (Real.toNNReal t)-ν*t))) else 0) ∂W ω.2)) =ᵐ[P.prod P]
@@ -58,8 +57,7 @@ theorem reflected_copied_polar_law_congr
 /-- Deterministic translation of the independent inner lateral copy leaves the Williams law
 and its correlated outer-past mark unchanged. -/
 theorem reflected_copied_translated_williams_joint_law
-    {Ω ζ : Type*} [MeasurableSpace Ω] [MeasurableSpace ζ]
-    (P : Measure Ω) (D : Ω → BrownianPath) (hD : AEMeasurable D P)
+    (D : Ω → BrownianPath) (hD : AEMeasurable D P)
     (hB : IsBrownianReal (fun t p => p t) (P.map D))
     (γ : ℝ) (Z : Ω → Measure ℝ) (hZ : IsLateralGMCOf P γ Z)
     (hDZ : IndepFun D Z P) (Y : Ω → ζ) (hY : AEMeasurable Y P)
@@ -72,22 +70,23 @@ theorem reflected_copied_translated_williams_joint_law
         ((((((brownianMaximumReferenceLaw ν).prod Qν).map
           (fun v => (v.1, negativeConditionedLastExitSegment v.1 v.2))).prod Qν).prod
             (P.map Z)).map (williamsMassFunctional γ)) := by
-  let _ : IsProbabilityMeasure P := hZ.2.2.1
+  let _ := hZ.2.2.1
   let ZT := fun ω => (Z ω).map (fun s => s - (T : ℝ))
   have ht := lateralGMC_random_translation P γ Z hZ D hD hDZ
     (fun _ => -(T : ℝ)) measurable_const
-  have hZT : AEMeasurable ZT P := by simpa only [sub_eq_add_neg, ZT] using ht.1
-  have hlaw : P.map ZT = P.map Z := by simpa only [sub_eq_add_neg, ZT] using ht.2.1
+  have hZT : AEMeasurable ZT P := by tauto
+  have hlaw : P.map ZT = P.map Z := by tauto
   have hfin : ∀ᵐ ω ∂P, ∀ a b : ℝ, ZT ω (Icc a b) < ⊤ := by
     filter_upwards [hZ.2.2.2.2.1] with ω hω a b
     have he : (fun s : ℝ => s - (T : ℝ)) ⁻¹' Icc a b = Icc (a+T) (b+T) := by
-      ext s
-      simp only [mem_preimage, mem_Icc, le_sub_iff_add_le, sub_le_iff_le_add]
-    change (Z ω).map (fun s => s - (T : ℝ)) (Icc a b) < ⊤
+      simp
+    change (Z ω).map (fun s => s - (T : ℝ)) _ < ⊤
     rw [Measure.map_apply (show Measurable (fun s : ℝ => s - (T : ℝ)) from measurable_id.sub_const _) measurableSet_Icc, he]
-    exact hω _ _
+    simp_all
   exact (reflected_copied_polar_law_congr P γ ν Y D Z ZT hY hD hZ.2.2.2.1 hZT
     hZ.2.2.2.2.1 hfin hlaw).trans
       (reflected_copied_williams_joint_law P D hD hB γ Z hZ hDZ Y hY hYD ν hν Qν hQν)
+
+end
 
 end DOZZ.Proofs

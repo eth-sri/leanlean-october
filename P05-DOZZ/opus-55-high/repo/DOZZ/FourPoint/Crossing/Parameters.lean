@@ -6,6 +6,7 @@ module
 
 public import DOZZ.Statements.Hypergeom.GaussPhysicalParameterRange
 import Mathlib.Tactic
+import DOZZ.Hypergeom.PhysicalRange
 
 /-! # Nonresonance and the `K₂ ≠ 0` guard for ordinary half-charge crossing
 
@@ -33,23 +34,21 @@ theorem crossing_gammaHalf_parameter_guards (γ a ε c : ℝ)
     let A := gaussParameterA γ (γ / 2) a ε c
     let B := gaussParameterB γ (γ / 2) a ε c
     let C := gaussParameterC γ (γ / 2) a
-    (∀ n : ℤ, C ≠ (n : ℝ)) ∧
-      (∀ n : ℤ, C - A - B ≠ (n : ℝ)) ∧ gaussK₂ A B C ≠ 0 := by
+    (∀ n : ℤ, C ≠ n) ∧
+      (∀ n : ℤ, C - A - B ≠ n) ∧ gaussK₂ A B C ≠ 0 := by
   have hεQ : ε < Q γ := by unfold Q; linarith only [hε, hγ]
-  have hsum : 2 * Q γ + γ / 2 < a + ε + c := by linarith only [hs]
+  have hsum : 2 * Q γ + γ / 2 < a + ε + c := by linarith
   obtain ⟨hA, hAB, hBC, hC, hδ, hδ1, _, hK₂⟩ :=
-    DOZZ.gauss_physical_parameter_range γ (γ / 2) a ε c hγ hγ2 (Or.inl rfl)
+    DOZZ.Proofs.gauss_physical_parameter_range γ _ a ε c hγ hγ2 (Or.inl rfl)
       hsum ha hεQ hc
-  dsimp only
   refine ⟨?_, ?_, hK₂.ne'⟩
   · intro n hn
-    have hpos : 0 < gaussParameterC γ (γ / 2) a := lt_trans (lt_trans hA hAB) hBC
-    have hn0 : (0 : ℤ) < n := by exact_mod_cast (hn ▸ hpos)
-    have hn1 : n < (1 : ℤ) := by exact_mod_cast (hn ▸ hC)
+    have hn0 : 0 < n := by exact_mod_cast (hn ▸ (lt_trans (lt_trans hA hAB) hBC))
+    have hn1 : n < 1 := by exact_mod_cast (hn ▸ hC)
     omega
   · intro n hn
-    have hn0 : (0 : ℤ) < n := by exact_mod_cast (hn ▸ hδ)
-    have hn1 : n < (1 : ℤ) := by exact_mod_cast (hn ▸ hδ1)
+    have hn0 : 0 < n := by simp_all
+    have hn1 : n < 1 := by exact_mod_cast (hn ▸ hδ1)
     omega
 
 end DOZZ.Proofs

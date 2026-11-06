@@ -17,8 +17,7 @@ insertion-slack factor. -/
 theorem weightedGmcMomentExponent_factorization (γ α p : ℝ) :
     γ * (Q γ - α) * p - γ ^ 2 * p ^ 2 / 2 =
       (γ * p / 2) * (2 * (Q γ - α) - γ * p) := by
-  unfold Q
-  field_simp
+  linarith
 
 /-- For a positive moment order, the weighted annular exponent is positive exactly below the
 insertion threshold `2 (Q - α) / γ`. -/
@@ -28,8 +27,7 @@ theorem weightedGmcMomentExponent_pos_iff
       p < 2 * (Q γ - α) / γ := by
   rw [weightedGmcMomentExponent_factorization]
   have hscale : 0 < γ * p / 2 := by positivity
-  rw [mul_pos_iff_of_pos_left hscale]
-  rw [lt_div_iff₀ hγ]
-  constructor <;> intro h <;> nlinarith
+  rw [mul_pos_iff_of_pos_left hscale, lt_div_iff₀ hγ]
+  grind
 
 end DOZZ.Proofs

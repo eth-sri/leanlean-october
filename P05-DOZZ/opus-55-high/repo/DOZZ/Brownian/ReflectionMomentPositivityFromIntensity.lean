@@ -24,9 +24,10 @@ open MeasureTheory Set
 open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
+section
+variable {Ω : Type*} [MeasurableSpace Ω]
 
 private theorem twoSidedReflectionMass_pos_of_Ioc_mass_pos
-    {Ω : Type*} [MeasurableSpace Ω]
     (γ : ℝ) (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
     (ω : Ω) (hZ : 0 < Z ω (Set.Ioc 0 1)) :
     0 < twoSidedReflectionMass γ B Z ω := by
@@ -39,7 +40,7 @@ private theorem twoSidedReflectionMass_pos_of_Ioc_mass_pos
   obtain ⟨s₀, hs₀, hmin⟩ := isCompact_Icc.exists_isMinOn
     (nonempty_Icc.mpr (by norm_num : (0 : ℝ≥0) ≤ 1)) hg.continuousOn
   let c₀ : ℝ≥0∞ := ENNReal.ofReal (Real.exp (g s₀))
-  have hc₀ : 0 < c₀ := ENNReal.ofReal_pos.mpr (Real.exp_pos _)
+  have hc₀ : 0 < c₀ := by positivity
   have hlower : ∀ s ∈ I, c₀ ≤ f s := by
     intro s hs
     have hs0 : 0 < s := hs.1
@@ -50,14 +51,14 @@ private theorem twoSidedReflectionMass_pos_of_Ioc_mass_pos
     have hvalue : twoSidedConditionedValue B ω s = (B ω).1 t := by
       simp [twoSidedConditionedValue, t, hs0.le]
     have hExp : Real.exp (g s₀) ≤ Real.exp (g t) :=
-      Real.exp_le_exp.mpr (hmin htK)
-    change ENNReal.ofReal (Real.exp (g s₀)) ≤
-      ENNReal.ofReal (Real.exp (γ * twoSidedConditionedValue B ω s))
+      by aesop
+    change ENNReal.ofReal _ ≤
+      ENNReal.ofReal _
     rw [hvalue]
-    exact ENNReal.ofReal_le_ofReal hExp
+    bound
   have hset : c₀ * Z ω I ≤ ∫⁻ s in I, f s ∂Z ω := by
     calc
-      c₀ * Z ω I = ∫⁻ s in I, c₀ ∂Z ω := by rw [setLIntegral_const]
+      c₀ * Z ω I = ∫⁻ s in I, c₀ ∂Z ω := by simp
       _ ≤ ∫⁻ s in I, f s ∂Z ω := by
         apply setLIntegral_mono' measurableSet_Ioc
         intro s hs
@@ -69,16 +70,14 @@ private theorem twoSidedReflectionMass_pos_of_Ioc_mass_pos
     rw [← lintegral_indicator measurableSet_Ioc]
     apply lintegral_mono
     intro s
-    by_cases hs : s ∈ I
-    · simp [I, hs]
-    · simp [I, hs]
-  rw [hfull]
+    by_cases hs : s ∈ I <;> aesop
   exact lt_of_lt_of_le hIpos hle
+section
+variable (P : Measure Ω)
 
 /-- Positive interval intensity implies a positive reflection moment of every positive order. -/
 theorem twoSidedReflectionMoment_pos_of_lateralIntensity
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (γ p : ℝ)
+    (γ p : ℝ)
     (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
     (hZmeas : AEMeasurable Z P)
     (hMassMeas : AEMeasurable (fun ω => twoSidedReflectionMass γ B Z ω) P)
@@ -88,17 +87,17 @@ theorem twoSidedReflectionMoment_pos_of_lateralIntensity
   let V : Ω → ℝ≥0∞ := fun ω => Z ω (Set.Ioc 0 1)
   have hV : AEMeasurable V P :=
     (Measure.measurable_coe measurableSet_Ioc).comp_aemeasurable hZmeas
-  let Vm : Ω → ℝ≥0∞ := hV.mk V
+  let Vm := hV.mk V
   have hVm : Measurable Vm := hV.measurable_mk
   have hVtoVm : V =ᵐ[P] Vm := hV.ae_eq_mk
-  let S : Set Ω := {ω | 0 < Vm ω}
+  let S := {ω | 0 < Vm ω}
   have hSmeas : MeasurableSet S := measurableSet_lt measurable_const hVm
   have hVint : 0 < ∫⁻ ω, Vm ω ∂P := by
     rw [← lintegral_congr_ae hVtoVm]
     exact hIntensity
   have hsuppV : Function.support Vm = S := by
     ext ω
-    simp [Function.mem_support, S, pos_iff_ne_zero]
+    aesop
   have hSpos : 0 < P S := by
     rw [← hsuppV]
     exact (lintegral_pos_iff_support hVm).mp hVint
@@ -106,15 +105,15 @@ theorem twoSidedReflectionMoment_pos_of_lateralIntensity
     ENNReal.rpow (twoSidedReflectionMass γ B Z ω) p
   have hF : AEMeasurable F P := by
     exact ENNReal.continuous_rpow_const.measurable.comp_aemeasurable hMassMeas
-  let Fm : Ω → ℝ≥0∞ := hF.mk F
+  let Fm := hF.mk F
   have hFm : Measurable Fm := hF.measurable_mk
   have hFtoFm : F =ᵐ[P] Fm := hF.ae_eq_mk
   have hSsupport : ∀ᵐ ω ∂P, ω ∈ S → ω ∈ Function.support Fm := by
     filter_upwards [hVtoVm, hFtoFm] with ω hVω hFω
     intro hSω
-    have hVpositive : 0 < V ω := by rw [hVω]; exact hSω
+    have hVpositive : 0 < V ω := by aesop
     have hMasspositive : 0 < twoSidedReflectionMass γ B Z ω :=
-      twoSidedReflectionMass_pos_of_Ioc_mass_pos γ B Z ω (by simpa [V] using hVpositive)
+      twoSidedReflectionMass_pos_of_Ioc_mass_pos γ B Z ω (by assumption)
     have hFpositive : 0 < F ω :=
       ENNReal.rpow_pos_of_nonneg hMasspositive (le_of_lt hp)
     change Fm ω ≠ 0
@@ -132,7 +131,7 @@ theorem twoSidedReflectionMoment_pos_of_lateralIntensity
 strict positivity of the reflection coefficient whenever its defining moment is finite. The only
 remaining hypothesis is the subcritical moment bound; it is not hidden in the source predicate. -/
 theorem reflectionBarR_pos_of_reflectionData_of_moment_finite
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ α : ℝ)
+    (γ α : ℝ)
     (hγ : 0 < γ) (_hγ2 : γ < 2) (hα : γ / 2 < α ∧ α < Q γ)
     (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
     (hData : IsReflectionData P γ α B Z)
@@ -145,35 +144,29 @@ theorem reflectionBarR_pos_of_reflectionData_of_moment_finite
   rcases hBrownian with ⟨⟨hB₁, _hLaw₁⟩, ⟨hB₂, _hLaw₂⟩, _hIndependentSides⟩
   rcases hLateral with ⟨_hγpos, _hγlt, _hP, hZ, hZlocal, _hTranslation,
     _hReflection, hIntensity, _hSource⟩
-  have hB : AEMeasurable B P := hB₁.prodMk hB₂
-  have hPair : AEMeasurable (fun ω => (B ω, Z ω)) P := hB.prodMk hZ
+  have hPair := (hB₁.prodMk hB₂).prodMk hZ
   have hLocal : ∀ᵐ ω ∂P, LocallyFiniteOnTranslationWindows (Z ω) := by
     filter_upwards [hZlocal] with ω hω
-    intro n
-    simpa [LocallyFiniteOnTranslationWindows, translationWindow] using
-      hω (-(n : ℝ)) (n : ℝ)
-  have hMassInput : AEMeasurable (twoSidedReflectionMassInput γ)
-      (P.map fun ω => (B ω, Z ω)) :=
+    tauto
+  have hMassInput :=
     aemeasurable_reflectionMassInput_map_of_locallyFinite P γ
       (fun ω => (B ω, Z ω)) hPair hLocal
-  have hMass : AEMeasurable (fun ω => twoSidedReflectionMass γ B Z ω) P := by
-    change AEMeasurable (fun ω => twoSidedReflectionMassInput γ (B ω, Z ω)) P
+  have hMass : AEMeasurable (twoSidedReflectionMass γ B Z) P := by
     exact hMassInput.comp_aemeasurable hPair
-  have hνhp := reflectionExponent_in_subcritical_range γ α hγ hα
   have hIntensityPos : 0 < ∫⁻ ω, Z ω (Set.Ioc 0 1) ∂P := by
     rw [hIntensity 0 1 (by norm_num)]
     exact ENNReal.ofReal_pos.mpr (by positivity)
   have hMomentPos := twoSidedReflectionMoment_pos_of_lateralIntensity
-    P γ (reflectionExponent γ α) B Z hZ hMass hIntensityPos hνhp.2.1
-  have hMomentNe :
-      (∫⁻ ω, ENNReal.rpow (twoSidedReflectionMass γ B Z ω)
-        (reflectionExponent γ α) ∂P) ≠ 0 := ne_of_gt hMomentPos
-  have htoRealPos : 0 < (∫⁻ ω, ENNReal.rpow (twoSidedReflectionMass γ B Z ω)
-      (reflectionExponent γ α) ∂P).toReal :=
-    ENNReal.toReal_pos hMomentNe hMoment.ne
+    P γ _ B Z hZ hMass hIntensityPos (reflectionExponent_in_subcritical_range γ α hγ hα).2.1
+  have htoRealPos :=
+    ENNReal.toReal_pos (ne_of_gt hMomentPos) hMoment.ne
   have hbar : 0 < reflectionBarR P γ α B Z := by
     simpa [reflectionBarR] using htoRealPos
   exact ⟨hbar, hMoment⟩
+
+end
+
+end
 
 end DOZZ.Proofs
 

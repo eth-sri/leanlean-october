@@ -32,17 +32,16 @@ theorem reflected_admissible_field_test_limit
         ((logRegularizationReference U dens).restrict K)
         (fun x => (f x).toNNReal) γ ω).toReal) atTop
       (fun ω => ∫ x, f x ∂N ω) := by
-  have hσ := admissible_logRegularization_reference_measure_ne_top P U dens ε₀ Y hY K hK hKU
   have hfin : IsFiniteMeasure ((logRegularizationReference U dens).restrict K) :=
-    ⟨by simpa only [Measure.restrict_apply_univ] using lt_top_iff_ne_top.mpr hσ⟩
+    ⟨by simpa using lt_top_iff_ne_top.mpr (admissible_logRegularization_reference_measure_ne_top P U dens ε₀ Y hY K hK hKU)⟩
   refine ⟨hfin, ?_⟩
   have hf0 : ∀ x ∉ K, f x = 0 := fun x hx =>
     image_eq_zero_of_notMem_tsupport (fun h => hx (hfK h))
   have hr (r : ℝ) : Real.exp (-max r R₀) ≤ ε₀ :=
-    (Real.exp_le_exp.mpr (neg_le_neg (le_max_right _ _))).trans hR₀
+    (Real.exp_le_exp.mpr (neg_le_neg (le_max_right ..))).trans hR₀
   have hi (r : ℝ) := admissibleCutoff_integrand_integrable_ae P U dens ε₀ Y hY K hK hKU
-    γ (max r R₀) (hr r) ‖f‖ f f.continuous.measurable
-    (fun x => by simpa only [Real.norm_eq_abs] using f.norm_coe_le_norm x) hf0
+    γ _ (hr r) ‖f‖ f f.continuous.measurable
+    (by simpa using f.norm_coe_le_norm) hf0
   have he (r : ℝ) : (fun ω => regularizedLogChaosTestMass P U dens Y γ (max r R₀) ω f) =ᵐ[P]
       (fun ω => (fieldChaosMass P (fun ω x => Y ω (Real.exp (-max r R₀)) x)
         ((logRegularizationReference U dens).restrict K)
@@ -63,10 +62,10 @@ theorem reflected_admissible_field_test_limit
       exact (ENNReal.ofReal_mul (hf x)).symm
     rw [hid, ← hm, ENNReal.toReal_ofReal (integral_nonneg_of_ae hnon)]
     exact (integral_restrict_eq_integral_of_zero_on_compl _ K hK.measurableSet _
-      (fun x hx => by rw [hf0 x hx, zero_mul])).symm
-  have ht : Tendsto (fun r : ℝ => max r R₀) atTop atTop :=
+      (fun x hx => by simp_all)).symm
+  have ht :=
     tendsto_atTop_mono (fun r => le_max_left r R₀) tendsto_id
-  exact TendstoInMeasure.congr he (Filter.EventuallyEq.refl _ _)
+  exact TendstoInMeasure.congr he (Filter.EventuallyEq.refl ..)
     ((hN.2.2.2 f (hK.of_isClosed_subset (isClosed_tsupport _) hfK) (hfK.trans hKU)).comp ht)
 
 end DOZZ.Proofs

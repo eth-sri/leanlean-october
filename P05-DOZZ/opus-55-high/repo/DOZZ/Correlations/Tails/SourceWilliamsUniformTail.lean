@@ -11,6 +11,7 @@ public import DOZZ.Correlations.Tails.PrefactorMomentGap
 public import DOZZ.Correlations.Tails.ActualPrefactorCriticalMoment
 public import DOZZ.Correlations.Tails.SourceCutOrdering
 public import DOZZ.Brownian.Reflection.MomentAssembly
+import DOZZ.FourPoint.Reflected.LastCutSqueeze
 
 /-! Uniform leading Williams tails on the original source reflection family. -/
 
@@ -43,14 +44,12 @@ theorem source_williams_tail_uniform
             x^(-reflectionExponent γ α)| ≤ C*x^(-reflectionExponent γ α-η) := by
   let : IsProbabilityMeasure P := hX.1
   rcases Kα.eq_empty_or_nonempty with he | hn
-  · refine ⟨0,le_rfl,?_⟩
-    intro z hzk α hαk
-    simp only [he,mem_empty_iff_false] at hαk
+  · aesop
   obtain ⟨αlo,hαlo,hlo⟩ := hKα.exists_isMinOn hn continuous_id.continuousOn
   obtain ⟨αhi,hαhi,hhi⟩ := hKα.exists_isMaxOn hn continuous_id.continuousOn
   let ν₁ := Q γ-αhi
   let ν₂ := Q γ-αlo
-  have hν₁ : 0 < ν₁ := sub_pos.mpr (hα αhi hαhi).2
+  have hν₁ : 0 < ν₁ := by aesop
   have hνrange (α : ℝ) (hαk : α ∈ Kα) : ν₁ ≤ Q γ-α ∧ Q γ-α ≤ ν₂ := by
     have h1 := hlo hαk
     have h2 := hhi hαk
@@ -78,23 +77,21 @@ theorem source_williams_tail_uniform
   obtain ⟨T,hT,hMass⟩ := prefactored_reflection_moment_uniform P X Xc hX hc
     Kz hKz hz γ b R ν₁ ν₂ hγ hb hR hRbulk hν₁ Z hZ
   let C := L.toReal*D+3*T.toReal
-  refine ⟨C,by dsimp [C]; positivity,?_⟩
+  refine ⟨C,by positivity,?_⟩
   intro z hzk α hαk f hf hfb x hx
   let p := reflectionExponent γ α
   let ν := Q γ-α
-  have hν : 0 < ν := sub_pos.mpr (hα α hαk).2
+  have hν : 0 < ν := by grind
   have hp : 0 < p := (hpK p ⟨α,hαk,rfl⟩).1
   have hrα := (hr α hαk).1
   have hpR : p ≤ R := by
-    have ha0 := hη.trans ha
-    have hprα := hpr α hαk
     have hrR := (hr α hαk).2
-    nlinarith only [hprα,ha0,hη,hrα,hrR]
+    nlinarith only [(hpr α hαk),(hη.trans ha),hη,hrα,hrR]
   let S := fun ω => ENNReal.ofReal (f*‖z‖^(-4 : ℝ)*
     Real.exp (γ*Xc ω z 0-γ^2*Real.log ‖z‖))
   have hpin : Measurable (fun ω => Xc ω z 0) :=
     (hc.1 0).comp (measurable_id.prodMk measurable_const)
-  have hS : Measurable S := (((hpin.const_mul γ).sub_const _).exp.const_mul _).ennreal_ofReal
+  have hS : Measurable S := by fun_prop
   let J₀ := fun ω => twoSidedReflectionMass γ (B α) Z ω
   let Jc₀ := fun c ω => twoSidedReflectionCutMass γ c (B α) Z ω
   let J := fun q : Ω × Ω => S q.2*J₀ q.1
@@ -105,11 +102,9 @@ theorem source_williams_tail_uniform
   have hJc₀ (c : ℝ) : AEMeasurable (Jc₀ c) P :=
     twoSidedReflectionCutMass_aemeasurable P γ c (B α) Z hB hZ.2.2.2.1 hZ.2.2.2.2.1
   have hJ : AEMeasurable J (P.prod P) :=
-    (hS.aemeasurable.comp_quasiMeasurePreserving measurePreserving_snd.quasiMeasurePreserving).mul
-      (hJ₀.comp_quasiMeasurePreserving measurePreserving_fst.quasiMeasurePreserving)
+    by fun_prop
   have hJc (c : ℝ) : AEMeasurable (Jc c) (P.prod P) :=
-    (hS.aemeasurable.comp_quasiMeasurePreserving measurePreserving_snd.quasiMeasurePreserving).mul
-      ((hJc₀ c).comp_quasiMeasurePreserving measurePreserving_fst.quasiMeasurePreserving)
+    by fun_prop
   have hJcle (c : ℝ) (q : Ω × Ω) : Jc c q ≤ J q :=
     mul_le_mul' le_rfl (twoSidedReflectionCutMass_le_mass γ c (B α) Z q.1)
   have hMom (s : ℝ) (hs : 0 < s) (hsR : s ≤ R) : (∫⁻ q, J q^s ∂P.prod P) ≤ T :=
@@ -132,16 +127,15 @@ theorem source_williams_tail_uniform
       ∀ᵐ q ∂(brownianMaximumReferenceLaw ν).prod (P.prod P), c ≤ q.1 → Jc c q.2 ≤ A q := by
     filter_upwards [source_last_exit_mono_prod_ae (P.prod P) ν c hν _ hD'] with q hq
     intro hcq
-    exact mul_le_mul' le_rfl (reflection_cut_mass_le_of_last_exit_le γ c q.1
+    exact mul_le_mul' le_rfl (DOZZ.Proofs.reflected_cutMass_mono_of_lastExit γ c q.1
       (B α) Z q.2.1 (hq hcq))
   have hGap (c : ℝ) (hc0 : 0 ≤ c) :
       (∫⁻ q, J q^p ∂P.prod P).toReal-(∫⁻ q, Jc c q^p ∂P.prod P).toReal ≤
         (L.toReal*D)*Real.exp (-γ*c) := by
-    have hSbound := ENNReal.toReal_mono hL.ne (hPin z hzk f hf.le hfb p hp hpR)
     have hG := (hgap ν ⟨α,hαk,rfl⟩ p ⟨α,hαk,rfl⟩ c hc0).2
     simp only [Bs,ν,sub_sub_cancel] at hG
     exact independent_prefactor_moment_gap P P J₀ (Jc₀ c) S hJ₀ (hJc₀ c)
-      hS.aemeasurable p L.toReal D γ c hp.le hD hSbound hG
+      hS.aemeasurable p L.toReal D γ c hp.le hD (ENNReal.toReal_mono hL.ne (hPin z hzk f hf.le hfb p hp hpR)) hG
   have hmodel := williams_ennreal_model_tail_bound (P.prod P) A J Jc hJ hJc hJcle
     ν γ η a (r α) (L.toReal*D) T.toReal hν hγ hη ha hrα (hpr α hαk)
     (mul_nonneg ENNReal.toReal_nonneg hD) ENNReal.toReal_nonneg hJp hJr
@@ -156,14 +150,14 @@ theorem source_williams_tail_uniform
       (hz z hzk) γ α f hγ.ne' hf]
     change (reflectionBarR P γ α (B α) Z)*(‖z‖^(-4*α*(Q γ-α))*f^p) = _
     unfold oneInsertionTailCoefficient
-    simp only [Real.rpow_eq_pow]
+    simp
     dsimp only [p]
     ring
   change |(((brownianMaximumReferenceLaw ν).prod (P.prod P))
-    {q | ENNReal.ofReal x < A q*ENNReal.ofReal (Real.exp (γ*q.1))}).toReal-
+    {q | ENNReal.ofReal x < A q*ENNReal.ofReal _}).toReal-
     x^(-p)*(∫⁻ q, J q^p ∂P.prod P).toReal| ≤ (L.toReal*D+3*T.toReal)*x^(-p-η) at hmodel
   rw [hCoefficient] at hmodel
-  rw [mul_comm (x^(-p))] at hmodel
+  rw [mul_comm _] at hmodel
   simpa only [A,Jc,Jc₀,S,p,ν,C] using hmodel
 
 

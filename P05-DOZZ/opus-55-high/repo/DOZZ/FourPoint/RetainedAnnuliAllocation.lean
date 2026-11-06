@@ -23,18 +23,18 @@ theorem negative_order_allocation (I A B : ℝ≥0∞) (a b : ℝ)
   have hanti (J : ℝ≥0∞) (c : ℝ) (hc : 0 ≤ c) (hJ : J ≤ I) :
       I ^ (-c) ≤ J ^ (-c) := by
     rw [ENNReal.rpow_neg, ENNReal.rpow_neg]
-    exact ENNReal.inv_le_inv.mpr (ENNReal.rpow_le_rpow hJ hc)
+    gcongr
   have he : I ^ (-(a + b)) = I ^ (-a) * I ^ (-b) := by
     rw [ENNReal.rpow_neg, ENNReal.rpow_add_of_nonneg a b ha hb,
       ENNReal.mul_inv, ← ENNReal.rpow_neg, ← ENNReal.rpow_neg]
     · by_cases hI : I = 0
-      · exact Or.inr (hI ▸ ENNReal.rpow_ne_top_of_nonneg hb ENNReal.zero_ne_top)
-      · exact Or.inl (ENNReal.rpow_pos_of_nonneg (pos_iff_ne_zero.mpr hI) ha).ne'
+      · simp_all
+      simp_all
     · by_cases hI : I = 0
-      · exact Or.inl (hI ▸ ENNReal.rpow_ne_top_of_nonneg ha ENNReal.zero_ne_top)
-      · exact Or.inr (ENNReal.rpow_pos_of_nonneg (pos_iff_ne_zero.mpr hI) hb).ne'
+      · simp_all
+      simp_all
   rw [he]
-  exact mul_le_mul' (hanti A a ha hA) (hanti B b hb hB)
+  bound
 
 /-- Pulling deterministic lower kernel bounds through a joint inverse-moment estimate. -/
 theorem retained_moment_allocation
@@ -48,7 +48,7 @@ theorem retained_moment_allocation
   have hpoint (ω : Ω) : I ω ^ (-(a + b)) ≤
       ENNReal.ofReal (wA ^ (-a) * wB ^ (-b)) * (A ω ^ (-a) * B ω ^ (-b)) := by
     have hh := negative_order_allocation (I ω)
-      (ENNReal.ofReal wA * A ω) (ENNReal.ofReal wB * B ω) a b ha hb (hA ω) (hB ω)
+      (ENNReal.ofReal wA * A ω) _ a b ha hb (hA ω) (hB ω)
     rw [ENNReal.mul_rpow_of_ne_top ENNReal.ofReal_ne_top (hAfinite ω),
       ENNReal.mul_rpow_of_ne_top ENNReal.ofReal_ne_top (hBfinite ω),
       ENNReal.ofReal_rpow_of_pos hwA, ENNReal.ofReal_rpow_of_pos hwB] at hh
@@ -66,13 +66,11 @@ theorem freezing_retained_lower_bound (γ α ε R w : ℝ) (M : Measure ℂ)
     (hw : ∀ x ∈ Metric.ball u ρ, w ≤ ‖x - z‖ ^ (-(γ * α))) :
     ENNReal.ofReal w * M (Metric.ball u ρ) ≤ freezingAnnulusMassLocal γ α M z ε R := by
   calc
-    ENNReal.ofReal w * M (Metric.ball u ρ) =
+    ENNReal.ofReal w * M _ =
         ∫⁻ x in Metric.ball u ρ, ENNReal.ofReal w ∂M := by simp
-    _ ≤ ∫⁻ x in Metric.ball u ρ, ENNReal.ofReal (‖x - z‖ ^ (-(γ * α))) ∂M := by
+    _ ≤ ∫⁻ x in Metric.ball u ρ, ENNReal.ofReal _ ∂M := by
       apply setLIntegral_mono' Metric.isOpen_ball.measurableSet
-      intro x hx
-      exact ENNReal.ofReal_le_ofReal (hw x hx)
-    _ ≤ freezingAnnulusMassLocal γ α M z ε R := by
-      exact lintegral_mono_set hsub
+      bound
+    _ ≤ freezingAnnulusMassLocal γ α M z ε R := lintegral_mono_set hsub
 
 end DOZZ.Proofs

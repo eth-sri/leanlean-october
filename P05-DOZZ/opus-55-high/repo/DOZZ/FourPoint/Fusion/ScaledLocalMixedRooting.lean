@@ -47,7 +47,7 @@ theorem fusion_localR2_reference_scaled {Ω : Type*} [MeasurableSpace Ω]
         apply lintegral_congr_ae
         filter_upwards [fusionMovingMass_eq_rooted_ae P X hX γ hγ hγ2 M hM α₁ α₂ α₃ y z]
           with ω hω
-        rw [hω]
+        simp_all
       rw [he]
       simp only [fusionScaledFactor, ite_eq_left hyz, Complex.ofReal_mul]
       ring

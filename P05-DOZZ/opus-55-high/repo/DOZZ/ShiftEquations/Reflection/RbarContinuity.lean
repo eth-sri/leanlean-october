@@ -13,6 +13,7 @@ public import DOZZ.Statements.Brownian.IsReflectionData
 import DOZZ.Brownian.Reflection.WitnessIndependence
 import Mathlib.Analysis.SpecialFunctions.Gamma.Deriv
 import Mathlib.Analysis.SpecialFunctions.Gamma.Beta
+import DOZZ.ShiftEquations.Rbar.Representation
 
 /-!
 # Continuity in `γ` of the reflection coefficients from the `R̄` representation
@@ -34,18 +35,27 @@ namespace DOZZ.Proofs
 
 /-- The physical reflection domain. -/
 def reflectionDomain : Set (ℝ × ℝ) := {q | 0 < q.1 ∧ q.1 < 2 ∧ q.1 / 2 < q.2 ∧ q.2 < Q q.1}
+section
+variable {x : ℂ}
+section
+variable (h1 : ∀ m : ℕ, x ≠ -m) (h2 : ∀ m : ℕ, 1 - x ≠ -m)
+include h1 h2
 
 /-- `l` is continuous and nonzero at points `x` with `x` and `1 - x` off the Gamma poles. -/
-theorem continuousAt_lFun {x : ℂ} (h1 : ∀ m : ℕ, x ≠ -m) (h2 : ∀ m : ℕ, 1 - x ≠ -m) :
+theorem continuousAt_lFun :
     ContinuousAt lFun x := by
-  have hc : ContinuousAt (fun y : ℂ => Complex.Gamma (1 - y)) x :=
-    (Complex.differentiableAt_Gamma (1 - x) h2).continuousAt.comp
+  have hc :=
+    (Complex.differentiableAt_Gamma _ h2).continuousAt.comp
       (continuous_const.sub continuous_id).continuousAt
   exact (Complex.differentiableAt_Gamma x h1).continuousAt.div hc (Complex.Gamma_ne_zero h2)
 
-theorem lFun_ne_zero {x : ℂ} (h1 : ∀ m : ℕ, x ≠ -m) (h2 : ∀ m : ℕ, 1 - x ≠ -m) :
+theorem lFun_ne_zero :
     lFun x ≠ 0 :=
   div_ne_zero (Complex.Gamma_ne_zero h1) (Complex.Gamma_ne_zero h2)
+
+end
+
+end
 
 /-- A real point strictly between two consecutive integers is off every pole. -/
 theorem ofReal_ne_neg_nat_of_mem {r : ℝ} (h : (-1 < r ∧ r < 0) ∨ (0 < r ∧ r < 1) ∨
@@ -54,16 +64,9 @@ theorem ofReal_ne_neg_nat_of_mem {r : ℝ} (h : (-1 < r ∧ r < 0) ∨ (0 < r �
   have hr : r = -m := by exact_mod_cast hm
   have hm0 : (0 : ℝ) ≤ m := Nat.cast_nonneg m
   rcases h with ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩
-  · rw [hr] at h1 h2
-    rcases Nat.lt_or_ge m 1 with hm1 | hm1
-    · interval_cases m
-      norm_num at h2
-    · have : (1 : ℝ) ≤ m := by exact_mod_cast hm1
-      linarith
-  · rw [hr] at h1
-    linarith
-  · rw [hr] at h1
-    linarith
+  · simp_all
+  · linarith
+  linarith
 
 /-- The `l`-arguments of the coefficient at real points of the domain. -/
 theorem lFun_arguments_mem {γ α : ℝ} (hq : (γ, α) ∈ reflectionDomain) :
@@ -76,14 +79,11 @@ theorem lFun_arguments_mem {γ α : ℝ} (hq : (γ, α) ∈ reflectionDomain) :
     field_simp
     ring
   have hγsq : γ ^ 2 < 4 := by
-    have := pow_lt_pow_left₀ hγ2 hγ.le two_ne_zero
-    linarith only [this]
-  have h1 : γ / 2 * (γ / 2) < γ / 2 * α := mul_lt_mul_of_pos_left hα1 (by positivity)
-  have h2 : γ / 2 * α < γ / 2 * Q γ := mul_lt_mul_of_pos_left hα2 (by positivity)
-  have hγsq0 : 0 < γ ^ 2 := pow_pos hγ 2
-  refine ⟨⟨by linarith only [h1], by linarith only [h2, hQ]⟩,
-    ⟨by linarith only [h1, hQ], by linarith only [h2]⟩,
-    ⟨by linarith only [hγsq], by linarith only [hγsq0]⟩, ⟨by positivity, by linarith only [hγsq]⟩⟩
+    nlinarith
+  have h1 := mul_lt_mul_of_pos_left hα1 (by positivity)
+  have h2 := mul_lt_mul_of_pos_left hα2 (by positivity)
+  have hγsq0 := pow_pos hγ 2
+  grind
 
 /-- Composition of `l` with a continuous map through an admissible real value. -/
 theorem continuousAt_lFun_comp {f : ℝ × ℝ → ℂ} {q : ℝ × ℝ} (hf : ContinuousAt f q) {r : ℝ}
@@ -93,11 +93,9 @@ theorem continuousAt_lFun_comp {f : ℝ × ℝ → ℂ} {q : ℝ × ℝ} (hf : C
     rw [hr]
     exact ofReal_ne_neg_nat_of_mem (by tauto)
   have h2 : ∀ m : ℕ, 1 - f q ≠ -m := by
-    rw [hr, show (1 : ℂ) - r = ((1 - r : ℝ) : ℂ) by push_cast; ring]
+    rw [hr, show (1 : ℂ) - r = ((1 - r : ℝ) : ℂ) by simp]
     refine ofReal_ne_neg_nat_of_mem ?_
-    rcases hr1 with ⟨a, b⟩ | ⟨a, b⟩
-    · exact Or.inr (Or.inr ⟨by linarith, by linarith⟩)
-    · exact Or.inr (Or.inl ⟨by linarith, by linarith⟩)
+    grind
   exact ⟨(continuousAt_lFun h1 h2).comp hf, lFun_ne_zero h1 h2⟩
 
 /-- **The `formulaforbarR` coefficient is continuous on the physical domain.** -/
@@ -113,61 +111,35 @@ theorem continuousOn_rbarCoefficient :
       (p.1 : ℂ) / 2 * (p.2 : ℂ) - (p.1 : ℂ) ^ 2 / 4 - 1)
     (show Continuous (fun p : ℝ × ℝ => (p.1 : ℂ) / 2 * (p.2 : ℂ) - (p.1 : ℂ) ^ 2 / 4 - 1) from
       (((hc1.div_const 2).mul hc2).sub ((hc1.pow 2).div_const 4)).sub continuous_const).continuousAt
-    (r := q.1 / 2 * q.2 - q.1 ^ 2 / 4 - 1) (by push_cast; ring) (Or.inl ha)
+    (r := q.1 / 2 * q.2 - q.1 ^ 2 / 4 - 1) (by norm_cast) (Or.inl ha)
   have cB := continuousAt_lFun_comp (f := fun p : ℝ × ℝ =>
       1 + (p.1 : ℂ) / 2 * ((p.2 : ℂ) - (Q p.1 : ℂ))) (by
         have : ContinuousAt (fun p : ℝ × ℝ => Q p.1) q := by
           unfold Q
-          exact (continuousAt_const.div continuous_fst.continuousAt hγ0).add
-            (continuous_fst.continuousAt.div_const _)
+          fun_prop
         exact continuousAt_const.add ((Complex.continuous_ofReal.comp continuous_fst).continuousAt
           |>.div_const _ |>.mul ((Complex.continuous_ofReal.comp continuous_snd).continuousAt.sub
           (Complex.continuous_ofReal.continuousAt.comp this))))
-    (r := 1 + q.1 / 2 * (q.2 - Q q.1)) (by push_cast; ring) (Or.inr hb)
+    (r := 1 + q.1 / 2 * (q.2 - Q q.1)) (by simp) (Or.inr hb)
   have cC := continuousAt_lFun_comp (f := fun p : ℝ × ℝ => -((p.1 : ℂ) ^ 2) / 4)
     (show Continuous (fun p : ℝ × ℝ => -((p.1 : ℂ) ^ 2) / 4) from
       (hc1.pow 2).neg.div_const 4).continuousAt
-    (r := -(q.1 ^ 2) / 4) (by push_cast; ring) (Or.inl hc)
+    (r := -(q.1 ^ 2) / 4) (by norm_cast) (Or.inl hc)
   have cD := continuousAt_lFun_comp (f := fun p : ℝ × ℝ => (p.1 : ℂ) ^ 2 / 4)
     (show Continuous (fun p : ℝ × ℝ => (p.1 : ℂ) ^ 2 / 4) from (hc1.pow 2).div_const 4).continuousAt
-    (r := q.1 ^ 2 / 4) (by push_cast; ring) (Or.inr hd)
+    (r := q.1 ^ 2 / 4) (by norm_cast) (Or.inr hd)
   have cpre : ContinuousAt (fun p : ℝ × ℝ => 2 * (Real.pi : ℂ) / (p.1 : ℂ)) q :=
     continuousAt_const.div (Complex.continuous_ofReal.comp continuous_fst).continuousAt
       (Complex.ofReal_ne_zero.mpr hγ0)
   unfold rbarCoefficient
   exact (cpre.mul cA.1).div ((cB.1.mul cC.1).mul cD.1) (mul_ne_zero (mul_ne_zero cB.2 cC.2) cD.2)
 
-/-- The charges `(α, γ, α)` of the `R̄` representation lie in the extended domain. -/
-theorem extendedSeiberg3_reflection {γ α : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hα1 : γ / 2 < α)
-    (hα2 : α < Q γ) : ExtendedSeiberg3 γ α γ α := by
-  have hQ : Q γ = 2 / γ + γ / 2 := rfl
-  have hγQ : γ < Q γ := by
-    rw [hQ]
-    have : γ / 2 < 2 / γ := by
-      rw [div_lt_div_iff₀ (by norm_num) hγ]
-      exact mul_self_lt_mul_self hγ.le hγ2
-    linarith
-  have hs : -sExp γ α γ α = (2 * Q γ - 2 * α - γ) / γ := by
-    unfold sExp
-    ring
-  refine ⟨hα2, hγQ, hα2, ?_⟩
-  rw [hs]
-  refine lt_min ?_ (lt_min ?_ (lt_min ?_ ?_))
-  · rw [div_lt_div_iff₀ hγ (by positivity), hQ]
-    field_simp
-    linarith only [mul_pos hγ (by linarith only [hα1, hγ] : (0 : ℝ) < α)]
-  · rw [div_lt_iff₀ hγ, show 2 / γ * (Q γ - α) * γ = 2 * (Q γ - α) by field_simp]
-    linarith
-  · rw [div_lt_iff₀ hγ, show 2 / γ * (Q γ - γ) * γ = 2 * (Q γ - γ) by field_simp]
-    linarith
-  · rw [div_lt_iff₀ hγ, show 2 / γ * (Q γ - α) * γ = 2 * (Q γ - α) by field_simp]
-    linarith
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (M : ℝ → Ω → Measure ℂ)
 
 /-- **The `R̄` representation gives `R̄ = Re(coefficient) · C̄(α, γ, α)`** for any reflection
 data. -/
-theorem reflectionBarR_eq_coefficient_mul {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (M : ℝ → Ω → Measure ℂ)
-    (hM : ∀ γ, 0 < γ → γ < 2 → IsGMCOf P X γ (M γ))
+theorem reflectionBarR_eq_coefficient_mul (hM : ∀ γ, 0 < γ → γ < 2 → IsGMCOf P X γ (M γ))
     (hBarRRepresentation : ∀ (γ : ℝ) (Mγ : Ω → Measure ℂ) (_ : 0 < γ) (_ : γ < 2) (_ : IsGMCOf P X γ Mγ)
       (I : Set ℝ) (_ : IsCompact I) (_ : ∀ α ∈ I, γ / 2 < α ∧ α < Q γ),
       ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
@@ -185,9 +157,7 @@ theorem reflectionBarR_eq_coefficient_mul {Ω : Type*} [MeasurableSpace Ω] (P :
   obtain ⟨hγ, hγ2, hα1, hα2⟩ := hq
   obtain ⟨B', Z', -, hRD', V, -, -, f, -, hf, -, hcoef⟩ := hBarRRepresentation γ (M γ) hγ hγ2 (hM γ hγ hγ2)
     {α} isCompact_singleton (by
-      intro a ha
-      rw [ha]
-      exact ⟨hα1, hα2⟩)
+      simp_all)
   have hc := hcoef α rfl
   rw [hf α rfl] at hc
   rw [hc, Complex.ofReal_re]
@@ -195,8 +165,7 @@ theorem reflectionBarR_eq_coefficient_mul {Ω : Type*} [MeasurableSpace Ω] (P :
 
 /-- **Joint continuity of `R̄`, and of `R` off its Gamma poles** (third conjunct of
 `DOZZ.reflection_endpoint_and_gamma_continuity`), from the `R̄` representation. -/
-theorem continuousOn_reflection_of_representation {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (M : ℝ → Ω → Measure ℂ) (hX : IsEquatorGFF P X)
+theorem continuousOn_reflection_of_representation (hX : IsEquatorGFF P X)
     (hM : ∀ γ, 0 < γ → γ < 2 → IsGMCOf P X γ (M γ))
     (hBarRRepresentation : ∀ (γ : ℝ) (Mγ : Ω → Measure ℂ) (_ : 0 < γ) (_ : γ < 2) (_ : IsGMCOf P X γ Mγ)
       (I : Set ℝ) (_ : IsCompact I) (_ : ∀ α ∈ I, γ / 2 < α ∧ α < Q γ),
@@ -217,28 +186,23 @@ theorem continuousOn_reflection_of_representation {Ω : Type*} [MeasurableSpace 
     ContinuousOn (fun q => reflectionBarR P q.1 q.2 (B q.1 q.2) (Z q.1)) K ∧
       ((∀ q ∈ K, ReflectionPoleFree q.1 q.2) →
         ContinuousOn (fun q => reflectionR P q.1 μ q.2 (B q.1 q.2) (Z q.1)) K) := by
-  have hKD : K ⊆ reflectionDomain := fun q hq => hKdom q hq
+  have hKD : K ⊆ reflectionDomain := by assumption
   -- continuity of `C̄(α, γ, α)`
   set ι : ℝ × ℝ → ℝ × (Fin 3 → ℝ) := fun q => (q.1, ![q.2, q.1, q.2]) with hι
   have hιc : Continuous ι := by
-    refine continuous_fst.prodMk (continuous_pi fun i => ?_)
-    fin_cases i
-    · exact continuous_snd
-    · exact continuous_fst
-    · exact continuous_snd
+    fun_prop
   have hCbar : ContinuousOn (fun q : ℝ × ℝ => unitVolumeStructureConstant P (M q.1) q.1 q.2 q.1
       q.2) K := by
-    have h := continuousOn_unitVolumeStructureConstant P X M hX hM (ι '' K) (hK.image hιc)
+    have h := continuousOn_unitVolumeStructureConstant P X M hX hM _ (hK.image hιc)
       (by
         rintro _ ⟨q, hq, rfl⟩
         obtain ⟨hγ, hγ2, hα1, hα2⟩ := hKdom q hq
         refine ⟨hγ, hγ2, ?_⟩
         simp only [hι, Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two]
-        exact extendedSeiberg3_reflection hγ hγ2 hα1 hα2)
+        exact DOZZ.Proofs.extendedSeiberg3_diag_gamma hγ hγ2 hα1 hα2)
     exact h.comp hιc.continuousOn (mapsTo_image ι K)
   have hR : ContinuousOn (fun q => reflectionBarR P q.1 q.2 (B q.1 q.2) (Z q.1)) K := by
-    have hcont : ContinuousOn (fun q : ℝ × ℝ => (rbarCoefficient q.1 (q.2 : ℂ) *
-        (unitVolumeStructureConstant P (M q.1) q.1 q.2 q.1 q.2 : ℂ)).re) K :=
+    have hcont :=
       Complex.continuous_re.comp_continuousOn ((continuousOn_rbarCoefficient.mono hKD).mul
         (Complex.continuous_ofReal.comp_continuousOn hCbar))
     refine hcont.congr fun q hq => ?_
@@ -262,15 +226,16 @@ theorem continuousOn_reflection_of_representation {Ω : Type*} [MeasurableSpace 
       exact div_pos (by linarith) hγ
     have hm' : reflectionExponent q.1 q.2 = m := by linarith
     rcases m with _ | n
-    · simp only [Nat.cast_zero] at hm'
-      linarith
-    · exact hpole q hq n (by rw [hm'])
-  have hΓ : ContinuousOn (fun q : ℝ × ℝ => Real.Gamma (-reflectionExponent q.1 q.2)) K :=
+    · simp_all
+    · tauto
+  have hΓ :=
     hΓc.comp hp.neg fun q hq => hnp q hq
-  have hμp : ContinuousOn (fun q : ℝ × ℝ => μ ^ reflectionExponent q.1 q.2) K :=
+  have hμp :=
     continuousOn_const.rpow hp fun _ _ => Or.inl hμ.ne'
   unfold reflectionR
   exact ((hμp.mul hΓ).mul hp).mul hR
+
+end
 
 end DOZZ.Proofs
 

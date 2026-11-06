@@ -13,6 +13,9 @@ public import DOZZ.Statements.Correlations.UnitVolumeStructureConstantSymmetricE
 public import DOZZ.Hypergeom.ClassificationDiagonalConnection
 public import DOZZ.Hypergeom.ConnectionDiagonalCoefficients
 import Mathlib.Tactic
+import DOZZ.Correlations.Symmetry.SymmetricExtended
+import DOZZ.Hypergeom.PhysicalRange
+import DOZZ.ShiftEquations.Residual.Calibration
 
 /-! # Crossing coefficient assembly with both analytic inputs visible
 
@@ -74,15 +77,13 @@ theorem gammaHalf_crossing_of_diagonal_and_unreflected {Ω : Type*} [MeasurableS
   let Bε := -μ * (planarGaussConstant (γ ^ 2 / 2) (γ * ε)).re
   let e₁ := Bε * structureConstant P M γ μ (ε + γ / 2) α' α
   have hεQ : ε < Q γ := by unfold Q; linarith only [hεhi, hγ]
-  have hsum : 2 * Q γ + γ / 2 < α' + ε + α := by linarith only [hs]
+  have hsum : 2 * Q γ + γ / 2 < α' + ε + α := by linarith
   obtain ⟨ha, hab, hbc, hc1, hδ, hδ1, _, hK₂⟩ :=
-    DOZZ.gauss_physical_parameter_range γ (γ / 2) α' ε α hγ hγ2 (Or.inl rfl)
+    DOZZ.Proofs.gauss_physical_parameter_range γ _ α' ε α hγ hγ2 (Or.inl rfl)
       hsum hα' hεQ hα
   obtain ⟨hcn, hδn, _⟩ := crossing_gammaHalf_parameter_guards γ α' ε α hγ hγ2 hεhi hα' hα hs
-  have hb : 0 < b := lt_trans ha hab
-  have hc : 0 < c := lt_trans hb hbc
-  have ha1 : a < 1 := lt_trans (lt_trans hab hbc) hc1
-  have hb1 : b < 1 := lt_trans hbc hc1
+  have hb := lt_trans ha hab
+  have hb1 := lt_trans hbc hc1
   have hratio := gaussCoefficientRatio_mul_K₂_add_K₁_eq_zero a b c hK₂.ne'
   have hconstraint : gaussK₁ a b c * d₀ + gaussK₂ a b c * d₁ = 0 := by
     dsimp [d₁]
@@ -93,7 +94,7 @@ theorem gammaHalf_crossing_of_diagonal_and_unreflected {Ω : Type*} [MeasurableS
           (gaussK₁ a b c * d₀ + gaussK₂ a b c * d₁) := by
         dsimp [u, v, w, x, gaussK₁, gaussK₂]
         ring
-      _ = 0 := by rw [hconstraint, mul_zero]
+      _ = 0 := by simp_all
   have htransfer := gauss_diagonal_one_basis_of_constraint hH a b c d₀ d₁ hcn hδn hconstraint
   have hone := gammaHalf_one_channel_of_full_unreflected H P X M γ μ α' ε α hγ hγ2 hX hM hformula
   have he : ∀ z ∈ gaussCutPlane,
@@ -104,18 +105,18 @@ theorem gammaHalf_crossing_of_diagonal_and_unreflected {Ω : Type*} [MeasurableS
     calc
       _ = d₀ * ‖gaussFMinus H a b c z‖ ^ 2 + d₁ * ‖gaussFPlus H a b c z‖ ^ 2 :=
         (htransfer z hz).symm
-      _ = fourPointT P M γ μ (-γ / 2) α' ε α z := by
+      _ = fourPointT P M γ μ _ α' ε α z := by
         rw [hdiagonal z hz]
         dsimp [d₁, d₀, a, b, c]
         ring
       _ = _ := hone z hz
   have hE := (crossing_one_channel_coefficients_unique hH a b c
-    (d₀ * u ^ 2 + d₁ * w ^ 2) (d₀ * v ^ 2 + d₁ * x ^ 2) e₀ e₁ hδn he).2.symm
+    (d₀ * u ^ 2 + d₁ * w ^ 2) _ e₀ e₁ hδn he).2.symm
   have hex := crossing_diagonal_coefficient_extraction a b c d₀ d₁ e₁
-    ha ha1 hb hb1 hc hc1 hδ hδ1 hcn hδn hcross hE
+    ha (lt_trans (lt_trans hab hbc) hc1) hb hb1 (lt_trans hb hbc) hc1 hδ hδ1 hcn hδn hcross hE
   have hswap : structureConstant P M γ μ (ε + γ / 2) α' α =
       structureConstant P M γ μ α' (ε + γ / 2) α := by
-    rw [residue_structureConstant_eq_unitVolume, residue_structureConstant_eq_unitVolume]
+    rw [DOZZ.Proofs.structureConstant_eq_mul_unitVolume, DOZZ.Proofs.structureConstant_eq_mul_unitVolume]
     have heS : sExp γ (ε + γ / 2) α' α = sExp γ α' (ε + γ / 2) α := by
       unfold sExp
       congr 1
@@ -128,22 +129,15 @@ theorem gammaHalf_crossing_of_diagonal_and_unreflected {Ω : Type*} [MeasurableS
     have hdom : ExtendedSeiberg3 γ (ε + γ / 2) α' α := by
       refine ⟨hpQ, hα', hα, ?_⟩
       apply lt_trans (neg_neg_of_pos hpS)
-      apply lt_min
-      · positivity
-      · apply lt_min
-        · exact mul_pos (div_pos (by norm_num) hγ) (sub_pos.mpr hpQ)
-        · apply lt_min
-          · exact mul_pos (div_pos (by norm_num) hγ) (sub_pos.mpr hα')
-          · exact mul_pos (div_pos (by norm_num) hγ) (sub_pos.mpr hα)
-    have hsym := DOZZ.unitVolumeStructureConstant_symmetric_extended
-      P X M γ (ε + γ / 2) α' α hγ hγ2 hX hM hdom
+      apply lt_min <;> positivity
+    have hsym := DOZZ.Proofs.unitVolumeStructureConstant_symmetric_extended
+      P X M γ _ α' α hγ hγ2 hX hM hdom
     rw [heS, hsym.1]
   have hfull : structureConstant P M γ μ (α' - γ / 2) ε α =
       gammaHalfCrossingMultiplier γ μ α' ε α *
         structureConstant P M γ μ α' (ε + γ / 2) α := by
     dsimp [e₁, Bε] at hex
-    rw [hswap, ← mul_assoc, crossing_connection_times_fusion γ μ α' ε α] at hex
-    exact hex
+    rwa [hswap, ← mul_assoc, crossing_connection_times_fusion γ μ α' ε α] at hex
   exact ⟨hfull, gammaHalf_crossing_unit_of_full P M γ μ α' ε α hγ hμ hs hfull⟩
 
 end DOZZ.Proofs

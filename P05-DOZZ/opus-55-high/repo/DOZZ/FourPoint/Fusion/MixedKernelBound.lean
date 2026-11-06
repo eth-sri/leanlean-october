@@ -26,10 +26,10 @@ theorem fusion_mixed_power_bound (a b c L k β : ℝ) (ha : 0 < a) (hb : 0 < b)
   rcases le_total a b with hab | hba
   · have hc' : c ^ k ≤ L ^ k * b ^ k := by
       rw [← Real.mul_rpow hL.le hb.le]
-      exact Real.rpow_le_rpow hc (by simpa [max_eq_right hab] using hcb) hk
+      exact Real.rpow_le_rpow hc (by simp_all) hk
     have hb2 : b ^ (2 * k) = b ^ k * b ^ k := by
       rw [show 2 * k = k + k by ring, Real.rpow_add hb]
-    have hbk' : a ^ k ≤ b ^ k := Real.rpow_le_rpow ha.le hab hk
+    have hbk' : a ^ k ≤ b ^ k := by bound
     have hs : b ^ k / (a ^ β * b ^ (2 * k)) ≤ a ^ (-(β + k)) := by
       rw [hb2, Real.rpow_neg ha.le, Real.rpow_add ha]
       apply (div_le_iff₀ (mul_pos haβ (mul_pos hbk hbk))).mpr
@@ -45,7 +45,7 @@ theorem fusion_mixed_power_bound (a b c L k β : ℝ) (ha : 0 < a) (hb : 0 < b)
       _ ≤ _ := mul_le_mul_of_nonneg_left (le_add_of_nonneg_right (Real.rpow_nonneg hb.le _)) hLk
   · have hc' : c ^ k ≤ L ^ k * a ^ k := by
       rw [← Real.mul_rpow hL.le ha.le]
-      exact Real.rpow_le_rpow hc (by simpa [max_eq_left hba] using hcb) hk
+      exact Real.rpow_le_rpow hc (by simp_all) hk
     have haβ' : a ^ β = a ^ k * a ^ (β - k) := by
       rw [← Real.rpow_add ha]
       congr 1
@@ -74,19 +74,18 @@ theorem fusion_mixed_power_bound (a b c L k β : ℝ) (ha : 0 < a) (hb : 0 < b)
 /-- When the root moves as `y*z`, the numerator is bounded by the larger root distance. -/
 theorem fusion_movingRoot_distance_bound (y z x : ℂ) (hy : y ≠ 0) :
     ‖x - z‖ ≤ (1 + 2 / ‖y‖) * max ‖x‖ ‖x - y * z‖ := by
-  have hypos : 0 < ‖y‖ := norm_pos_iff.mpr hy
-  have ha : ‖x‖ ≤ max ‖x‖ ‖x - y * z‖ := le_max_left _ _
-  have hb : ‖x - y * z‖ ≤ max ‖x‖ ‖x - y * z‖ := le_max_right _ _
+  have ha : ‖x‖ ≤ max ‖x‖ ‖x - y * z‖ := le_max_left ..
+  have hb : ‖x - y * z‖ ≤ max ‖x‖ ‖x - y * z‖ := le_max_right ..
   have hu : ‖y * z‖ ≤ ‖x‖ + ‖x - y * z‖ := by
     have h := norm_sub_le x (x - y * z)
-    simpa only [sub_sub_cancel] using h
+    simp_all
   rw [norm_mul] at hu
   have hz : ‖z‖ ≤ 2 / ‖y‖ * max ‖x‖ ‖x - y * z‖ := by
     rw [div_mul_eq_mul_div]
-    apply (le_div_iff₀ hypos).mpr
-    nlinarith only [hu, ha, hb]
+    apply (le_div_iff₀ (norm_pos_iff.mpr hy)).mpr
+    linarith
   have h := norm_sub_le x z
-  nlinarith only [ha, hz, h]
+  linarith
 
 /-- The colliding singularities have the fused exponent at either root. -/
 theorem fusion_movingRoot_power_bound (γ α₁ : ℝ) (hγ : 0 < γ)
@@ -96,14 +95,11 @@ theorem fusion_movingRoot_power_bound (γ α₁ : ℝ) (hγ : 0 < γ)
       (1 + 2 / ‖y‖) ^ (γ ^ 2 / 2) *
         (‖x‖ ^ (-γ * (α₁ + γ / 2)) + ‖x - y * z‖ ^ (-γ * (α₁ + γ / 2))) := by
   have hβ : γ ^ 2 / 2 ≤ γ * α₁ := by
-    have h := mul_le_mul_of_nonneg_left hα hγ.le
-    nlinarith only [h]
+    nlinarith
   have h := fusion_mixed_power_bound ‖x‖ ‖x - y * z‖ ‖x - z‖
-    (1 + 2 / ‖y‖) (γ ^ 2 / 2) (γ * α₁)
+    (1 + 2 / ‖y‖) _ _
     (norm_pos_iff.mpr hx) (norm_pos_iff.mpr (sub_ne_zero.mpr hxu)) (norm_nonneg _)
     (by positivity) (by positivity) hβ (fusion_movingRoot_distance_bound y z x hy)
-  have he : 2 * (γ ^ 2 / 2) = γ ^ 2 := by ring
-  have he' : -(γ * α₁ + γ ^ 2 / 2) = -γ * (α₁ + γ / 2) := by ring
-  simpa only [he, he'] using h
+  grind
 
 end DOZZ.Proofs

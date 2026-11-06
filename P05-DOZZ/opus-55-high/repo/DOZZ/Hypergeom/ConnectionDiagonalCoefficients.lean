@@ -19,7 +19,7 @@ both the corresponding `K₁` factor and the totalized quotient vanish. -/
 theorem gaussCoefficientRatio_mul_K₂_add_K₁_eq_zero
     (a b c : ℝ) (hK₂ : gaussK₂ a b c ≠ 0) :
     gaussCoefficientRatio a b c * gaussK₂ a b c + gaussK₁ a b c = 0 := by
-  let d : ℝ := Real.Gamma (c - a) * Real.Gamma (c - b) *
+  let d := Real.Gamma (c - a) * Real.Gamma (c - b) *
     Real.Gamma a * Real.Gamma b
   have hGamma₂c : Real.Gamma (2 - c) ≠ 0 := by
     intro h
@@ -62,24 +62,19 @@ theorem gaussCoefficientRatio_mul_K₂_add_K₁_eq_zero
         Real.Gamma a = 0 ∨ Real.Gamma b = 0 := by
       dsimp [d] at hd
       rcases mul_eq_zero.mp hd with h | h
-      · rcases mul_eq_zero.mp h with h | h
-        · rcases mul_eq_zero.mp h with h | h
-          · exact Or.inl h
-          · exact Or.inr (Or.inl h)
-        · exact Or.inr (Or.inr (Or.inl h))
-      · exact Or.inr (Or.inr (Or.inr h))
+      · aesop
+      · simp_all
     have hK₁ : gaussK₁ a b c = 0 := by
       rcases hFactor with h | h | h | h <;>
         simp [gaussK₁, h]
     have hden : Real.Gamma (2 - c) ^ 2 * Real.Gamma (c - a) * Real.Gamma (c - b) *
         Real.Gamma a * Real.Gamma b = 0 := by
       calc
-        _ = Real.Gamma (2 - c) ^ 2 * d := by dsimp [d]; ring
-        _ = 0 := by rw [hd]; ring
+        _ = Real.Gamma _ ^ 2 * d := by linarith
+        _ = 0 := by simp_all
     have hratio : gaussCoefficientRatio a b c = 0 := by
       simp [gaussCoefficientRatio, hden]
-    rw [hratio, hK₁]
-    simp
+    simp_all
   · have hGammaCa : Real.Gamma (c - a) ≠ 0 := by
       intro h
       apply hd
@@ -97,8 +92,6 @@ theorem gaussCoefficientRatio_mul_K₂_add_K₁_eq_zero
       apply hd
       simp [d, h]
     dsimp [gaussCoefficientRatio, gaussK₁, gaussK₂]
-    field_simp [hGamma₂c, hGammaCa, hGammaCb, hGammaA, hGammaB,
-      hGamma₁a, hGamma₁b, hGammaAc, hGammaBc]
-    ring
+    grind
 
 end DOZZ.Proofs

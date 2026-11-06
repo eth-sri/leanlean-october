@@ -38,7 +38,7 @@ theorem copied_compact_ennreal_law
   refine ⟨G, hGc, hG, ?_⟩
   have hG0 (y : ℂ) : 0 ≤ G y := by
     rw [hG]
-    exact mul_nonneg (hg0 _) (Real.exp_nonneg _)
+    bound
   have hGi (ω : Ω) : Integrable (fun y => G y) (M ω) := by
     let : IsFiniteMeasure (M ω) := hM.1 ω
     exact G.integrable (μ := M ω)
@@ -47,48 +47,43 @@ theorem copied_compact_ennreal_law
     (G.continuous.measurable.comp measurable_snd) (fun _ y => hG0 y) hGi
   let θ : Ω × Ω → ℝ := fun q => Xc q.2 z 0-Xc q.1 z 0
   have hθ : Measurable θ :=
-    ((hc.1 0).comp (measurable_snd.prodMk measurable_const)).sub
-      ((hc.1 0).comp (measurable_fst.prodMk measurable_const))
+    by fun_prop
   let F : ℝ × ℂ → ℝ := fun p =>
     g p.2 * Real.exp (γ*localPinCoefficient z p.2*p.1)
   have hcoef : Measurable (localPinCoefficient z) := by
     unfold localPinCoefficient
     fun_prop
-  have hF : Measurable F := (g.continuous.measurable.comp measurable_snd).mul
+  have hF := (g.continuous.measurable.comp measurable_snd).mul
     ((((hcoef.comp measurable_snd).const_mul γ).mul measurable_fst).exp)
-  have hF0 (t : ℝ) (x : ℂ) : 0 ≤ F (t,x) := mul_nonneg (hg0 x) (Real.exp_nonneg _)
-  have hFeq (t : ℝ) (x : ℂ) : F (t,x) =
+  have hF0 (t : ℝ) x : 0 ≤ F (t,x) := by bound
+  have hFeq (t : ℝ) x : F (t,x) =
       exponentialParameterTest g (γ • boundedPinCoefficient z) t x := by
     by_cases hx : g x = 0
     · change g x * _ = g x * _
-      simp only [hx, zero_mul]
-    · have hs := hgs (subset_tsupport (g : ℂ → ℝ) (Function.mem_support.mpr hx))
+      simp_all
+    · have hs := hgs (subset_tsupport g (Function.mem_support.mpr hx))
       have hb := bounded_pin_coefficient_eq z x hz (by
-        exact (show ‖x‖ < 1 from by simpa only [Metric.mem_ball, dist_zero_right] using hs).le)
+        exact (show ‖x‖ < 1 from by simp_all).le)
       change g x * _ = g x * Real.exp ((γ * boundedPinCoefficient z x)*t)
-      rw [hb]
+      simp_all
   have hFi (q : Ω × Ω) : Integrable (fun x => F (θ q,x)) (N q.1) := by
     let : IsFiniteMeasure (N q.1) := hN.1 q.1
     simpa only [hFeq] using
       (exponentialParameterTest g (γ • boundedPinCoefficient z) (θ q)).integrable (μ := N q.1)
   have hY := translated_field_isEquatorGFF P X Xc hX hc z
   have hfst := measurePreserving_fst (μ := P) (ν := P)
-  have hY' := isEquatorGFF_measurePreserving P (P.prod P) Prod.fst hfst _ hY
-  have hN' := isGMCOf_measurePreserving P (P.prod P) Prod.fst hfst _ hY γ _ hN
-  have hBm := gmc_parameter_integral_aemeasurable (P.prod P) _ hY'
-    γ hγ hγ2 (N ∘ Prod.fst) hN' θ hθ.aemeasurable F hF hF0 hFi
+  have hBm := gmc_parameter_integral_aemeasurable (P.prod P) _ (isEquatorGFF_measurePreserving P (P.prod P) Prod.fst hfst _ hY)
+    γ hγ hγ2 (N ∘ Prod.fst) (isGMCOf_measurePreserving P (P.prod P) Prod.fst hfst _ hY γ _ hN) θ hθ.aemeasurable F hF hF0 hFi
   have hS : Measurable (fun q : Ω × Ω =>
       Real.exp (γ*Xc q.2 z 0-γ^2*Real.log ‖z‖)) :=
-    (((hc.1 0).comp (measurable_snd.prodMk measurable_const)).const_mul γ).sub_const _ |>.exp
-  have hA := hAm.const_mul (Real.exp (-γ^2*Real.log ‖z‖))
+    by fun_prop
   have hB := hS.aemeasurable.mul hBm
-  simp only [Function.comp_def, F, θ] at hB
-  change AEMeasurable (fun q : Ω × Ω =>
+  change AEMeasurable (fun q =>
     Real.exp (γ*Xc q.2 z 0-γ^2*Real.log ‖z‖) *
       ∫ x, g x * Real.exp (γ*localPinCoefficient z x*(Xc q.2 z 0-Xc q.1 z 0)) ∂N q.1)
     (P.prod P) at hB
-  have hl := congrArg (fun μ : Measure ℝ => μ.map ENNReal.ofReal) hlaw
-  rw [AEMeasurable.map_map_of_aemeasurable ENNReal.measurable_ofReal.aemeasurable hA,
+  have hl := congrArg (fun μ => μ.map ENNReal.ofReal) hlaw
+  rw [AEMeasurable.map_map_of_aemeasurable ENNReal.measurable_ofReal.aemeasurable (hAm.const_mul (Real.exp (-γ^2*Real.log ‖z‖))),
     AEMeasurable.map_map_of_aemeasurable ENNReal.measurable_ofReal.aemeasurable hB] at hl
   convert hl using 1
   · congr 1

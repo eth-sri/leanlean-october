@@ -7,6 +7,7 @@ module
 public import DOZZ.ShiftEquations.PoleSubtracted.MomentBounds
 public import DOZZ.ShiftEquations.PoleSubtracted.Window
 import Mathlib.Analysis.MeanInequalitiesPow
+import DOZZ.GMC.SharpMoments.LocationTransfer
 
 /-!
 # The cutoff moment estimates
@@ -31,30 +32,27 @@ open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
+section
+variable {x : ℝ≥0∞} {s c : ℝ}
 
 /-! ### Power comparisons in `ℝ≥0∞` -/
 
-theorem ennrpow_le_one_add_rpow {x : ℝ≥0∞} {s c : ℝ} (hs : 0 ≤ s) (hsc : s ≤ c) :
+theorem ennrpow_le_one_add_rpow (hs : 0 ≤ s) (hsc : s ≤ c) :
     x ^ s ≤ 1 + x ^ c := by
   rcases le_or_gt x 1 with hx | hx
   · exact (ENNReal.rpow_le_one hx hs).trans le_self_add
   · exact (ENNReal.rpow_le_rpow_of_exponent_le hx.le hsc).trans le_add_self
 
-theorem ennrpow_le_one_add_rpow_neg {x : ℝ≥0∞} {s c : ℝ} (hs : s ≤ 0) (hcs : -c ≤ s) :
+theorem ennrpow_le_one_add_rpow_neg (hs : s ≤ 0) (hcs : -c ≤ s) :
     x ^ s ≤ 1 + x ^ (-c) := by
   rcases le_or_gt 1 x with hx | hx
-  · calc x ^ s ≤ x ^ (0 : ℝ) := ENNReal.rpow_le_rpow_of_exponent_le hx hs
+  · calc x ^ s ≤ x ^ 0 := ENNReal.rpow_le_rpow_of_exponent_le hx hs
       _ = 1 := ENNReal.rpow_zero
       _ ≤ 1 + x ^ (-c) := le_self_add
   · exact (ENNReal.rpow_le_rpow_of_exponent_ge hx.le hcs).trans le_add_self
 
-theorem ennrpow_le_of_le_of_nonpos {x y : ℝ≥0∞} (hxy : x ≤ y) {s : ℝ} (hs : s ≤ 0) :
-    y ^ s ≤ x ^ s := by
-  have h := ENNReal.rpow_le_rpow hxy (neg_nonneg.2 hs)
-  rw [← neg_neg s, ENNReal.rpow_neg y, ENNReal.rpow_neg x]
-  exact ENNReal.inv_le_inv.2 h
+end
 
-/-- `(1 + x)^q ≤ 2^q (1 + x^q)` for `q ≥ 1`. -/
 theorem one_add_rpow_le {x : ℝ≥0∞} {q : ℝ} (hq : 1 ≤ q) :
     (1 + x) ^ q ≤ 2 ^ q * (1 + x ^ q) := by
   calc (1 + x) ^ q ≤ 2 ^ (q - 1) * (1 ^ q + x ^ q) :=
@@ -62,48 +60,49 @@ theorem one_add_rpow_le {x : ℝ≥0∞} {q : ℝ} (hq : 1 ≤ q) :
     _ ≤ 2 ^ q * (1 + x ^ q) := by
         rw [ENNReal.one_rpow]
         exact mul_le_mul_left (ENNReal.rpow_le_rpow_of_exponent_le one_le_two (by linarith)) _
+section
+variable {Ω : Type*} [MeasurableSpace Ω]
 
 /-! ### A Hölder step with decay -/
 
 /-- Hölder with a decaying `r`-th moment and a fixed finite conjugate moment. -/
-theorem holder_decay {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {U : ℕ → Ω → ℝ≥0∞}
+theorem holder_decay {P : Measure Ω} {U : ℕ → Ω → ℝ≥0∞}
     {V : Ω → ℝ≥0∞} (hU : ∀ n, AEMeasurable (U n) P) (hV : AEMeasurable V P) {r : ℝ}
     (hr : 1 < r) {C ζ : ℝ}
     (hUr : ∀ n : ℕ, ∫⁻ ω, U n ω ^ r ∂P ≤ ENNReal.ofReal (C * Real.exp (-(n : ℝ) * ζ)))
     (hVr : ∫⁻ ω, V ω ^ (r / (r - 1)) ∂P < ⊤) :
     ∃ K : ℝ, 0 ≤ K ∧ ∀ n : ℕ,
       ∫⁻ ω, U n ω * V ω ∂P ≤ ENNReal.ofReal (K * Real.exp (-(ζ / r) * n)) := by
-  set q : ℝ := r / (r - 1) with hqdef
+  set q := r / (r - 1) with hqdef
   have hr0 : 0 < r := by linarith
   have hq0 : 0 < q := div_pos hr0 (by linarith)
-  set I : ℝ := (∫⁻ ω, V ω ^ q ∂P).toReal with hI
+  set I := (∫⁻ ω, V ω ^ q ∂P).toReal with hI
   refine ⟨max C 0 ^ (1 / r) * I ^ (1 / q), by positivity, fun n => ?_⟩
-  have hH := lintegral_mul_le_holder (hU n) hV hr
-  refine hH.trans ?_
+  refine (lintegral_mul_le_holder (hU n) hV hr).trans ?_
   have h1 : (∫⁻ ω, U n ω ^ r ∂P) ^ (1 / r) ≤
-      ENNReal.ofReal ((max C 0 * Real.exp (-(n : ℝ) * ζ)) ^ (1 / r)) := by
+      ENNReal.ofReal ((max C 0 * Real.exp (-n * ζ)) ^ (1 / r)) := by
     rw [← ENNReal.ofReal_rpow_of_nonneg (by positivity) (by positivity)]
     refine ENNReal.rpow_le_rpow ((hUr n).trans (ENNReal.ofReal_le_ofReal ?_)) (by positivity)
-    exact mul_le_mul_of_nonneg_right (le_max_left _ _) (Real.exp_pos _).le
+    exact mul_le_mul_of_nonneg_right (le_max_left ..) (Real.exp_pos _).le
   have h2 : (∫⁻ ω, V ω ^ q ∂P) ^ (1 / q) = ENNReal.ofReal (I ^ (1 / q)) := by
     rw [← ENNReal.ofReal_rpow_of_nonneg ENNReal.toReal_nonneg (by positivity),
       ENNReal.ofReal_toReal hVr.ne]
   rw [h2]
-  calc (∫⁻ ω, U n ω ^ r ∂P) ^ (1 / r) * ENNReal.ofReal (I ^ (1 / q))
-      ≤ ENNReal.ofReal ((max C 0 * Real.exp (-(n : ℝ) * ζ)) ^ (1 / r)) *
-          ENNReal.ofReal (I ^ (1 / q)) := mul_le_mul_left h1 _
-    _ = ENNReal.ofReal (max C 0 ^ (1 / r) * I ^ (1 / q) * Real.exp (-(ζ / r) * n)) := by
+  calc (∫⁻ ω, U n ω ^ r ∂P) ^ (1 / r) * ENNReal.ofReal _
+      ≤ ENNReal.ofReal _ *
+          ENNReal.ofReal _ := mul_le_mul_left h1 _
+    _ = ENNReal.ofReal _ := by
         rw [← ENNReal.ofReal_mul (by positivity)]
         congr 1
-        rw [Real.mul_rpow (le_max_right _ _) (Real.exp_pos _).le, ← Real.exp_mul]
-        have : -(n : ℝ) * ζ * (1 / r) = -(ζ / r) * n := by ring
+        rw [Real.mul_rpow (le_max_right ..) (Real.exp_pos _).le, ← Real.exp_mul]
+        have : -n * ζ * (1 / r) = -(ζ / r) * n := by ring
         rw [this]
         ring
 
 /-! ### Fixed-cutoff domination -/
 
 /-- **Domination of the cutoff integrand** after the tilt (`interpol2`). -/
-theorem lintegral_cutoffDomination_lt_top {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+theorem lintegral_cutoffDomination_lt_top (P : Measure Ω)
     (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) {η δ : ℝ} (hW : TwoPoleWindow γ η δ)
     {a : ℝ} (ha : -2 * η - δ < a) (n : ℕ) :
@@ -115,11 +114,10 @@ theorem lintegral_cutoffDomination_lt_top {Ω : Type*} [MeasurableSpace Ω] (P :
   have hη := (window_eta_pos hW).le
   have hηγ := window_eta_le_two_div hγ hγ2 hW
   have hp := window_threshold_pos hγ hW
-  have hroom := window_holder_room hγ hγ2 hW
   have hκ : 1 < 4 / γ ^ 2 := by
     rw [lt_div_iff₀ (by positivity)]
     nlinarith
-  have hUmeas : AEMeasurable (fun ω => M ω univ) P :=
+  have hUmeas :=
     aemeasurable_measure_functional P X hX γ hγ hγ2 M hM (Measure.measurable_coe MeasurableSet.univ)
   have hreg : ∀ ω, cutoffTiltedMass γ η a n (M ω) -
       poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω) ≤
@@ -129,12 +127,12 @@ theorem lintegral_cutoffDomination_lt_top {Ω : Type*} [MeasurableSpace Ω] (P :
     exact add_le_add le_rfl (regularMass_le a hγ hη hηγ n (M ω))
   rcases le_or_gt a 0 with ha0 | ha0
   · -- a nonpositive charge: positive powers of the total mass at zero charge
-    set s : ℝ := -a / γ with hs
-    have hs0 : 0 ≤ s := div_nonneg (by linarith) hγ.le
+    set s := -a / γ with hs
+    have hs0 : 0 ≤ s := by bound
     have hsp : s < (1 - 2 * η / γ) * (1 - 1 / (4 / γ ^ 2)) := by
       have : 1 / (4 / γ ^ 2) = γ ^ 2 / 4 := by field_simp
       rw [this]
-      refine lt_of_le_of_lt ?_ hroom
+      refine lt_of_le_of_lt ?_ (window_holder_room hγ hγ2 hW)
       rw [hs, div_le_div_iff_of_pos_right hγ]
       linarith
     obtain ⟨r, hr1, hr4, hrs⟩ := exists_holder_exponent hs0 hκ hsp
@@ -153,17 +151,16 @@ theorem lintegral_cutoffDomination_lt_top {Ω : Type*} [MeasurableSpace Ω] (P :
         ENNReal.rpow_le_rpow (localMass_le_totalMass γ η (M ω)) hs0
       have h3 := hreg ω
       rw [hmax, mul_zero, zero_mul, Real.exp_zero, ENNReal.ofReal_one, mul_one] at h3
-      calc _ ≤ (81 * M ω univ) * (poleTotalMass γ 0 (2 / γ + η) (2 / γ - η) (M ω) ^ s +
-            poleTotalMass γ 0 (2 / γ + η) (2 / γ - η) (M ω) ^ s) :=
+      calc _ ≤ (81 * M ω univ) * (poleTotalMass γ 0 _ _ (M ω) ^ s +
+            poleTotalMass γ 0 _ _ (M ω) ^ s) :=
             mul_le_mul' h3 (add_le_add h1 h2)
-        _ = 162 * (M ω univ * poleTotalMass γ 0 (2 / γ + η) (2 / γ - η) (M ω) ^ s) := by
-            rw [← two_mul]
+        _ = 162 * (M ω univ * poleTotalMass γ 0 _ _ (M ω) ^ s) := by
             ring
     refine (lintegral_mono hpt).trans_lt ?_
     rw [lintegral_const_mul' _ _ (by simp)]
     refine ENNReal.mul_lt_top (by simp) ?_
     have hVmeas : AEMeasurable (fun ω =>
-        poleTotalMass γ 0 (2 / γ + η) (2 / γ - η) (M ω) ^ s) P :=
+        poleTotalMass γ 0 _ _ (M ω) ^ s) P :=
       (aemeasurable_measure_functional P X hX γ hγ hγ2 M hM
         (measurable_poleTotalMass γ η 0)).pow_const _
     refine lintegral_mul_lt_top_of_holder hUmeas hVmeas hr1
@@ -175,11 +172,11 @@ theorem lintegral_cutoffDomination_lt_top {Ω : Type*} [MeasurableSpace Ω] (P :
     · exact lintegral_totalMass_rpow_lt_top P X hX γ hγ hγ2 M hM hη
         (mul_pos hs00 (div_pos (by linarith) (by linarith))) hrs
   · -- a positive charge: negative powers of the local mass
-    set s : ℝ := -a / γ with hs
+    set s := -a / γ with hs
     have hs0 : s < 0 := div_neg_of_neg_of_pos (by linarith) hγ
-    set r : ℝ := (1 + 4 / γ ^ 2) / 2 with hrdef
-    have hr1 : 1 < r := by rw [hrdef]; linarith
-    have hr4 : r < 4 / γ ^ 2 := by rw [hrdef]; linarith
+    set r := (1 + 4 / γ ^ 2) / 2 with hrdef
+    have hr1 : 1 < r := by linarith
+    have hr4 : r < 4 / γ ^ 2 := by linarith
     have hpt : ∀ ω, (cutoffTiltedMass γ η a n (M ω) -
           poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω)) *
         (cutoffTiltedMass γ η a n (M ω) ^ s +
@@ -189,19 +186,18 @@ theorem lintegral_cutoffDomination_lt_top {Ω : Type*} [MeasurableSpace Ω] (P :
       intro ω
       have h1 : cutoffTiltedMass γ η a n (M ω) ^ s ≤
           poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω) ^ s :=
-        ennrpow_le_of_le_of_nonpos (localMass_le_cutoffTiltedMass γ η a n (M ω)) hs0.le
-      calc _ ≤ (81 * ENNReal.ofReal (Real.exp (γ * max a 0 * n)) * M ω univ) *
-            (poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω) ^ s +
-              poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω) ^ s) :=
+        DOZZ.Proofs.ennreal_rpow_antitone_of_nonpos (localMass_le_cutoffTiltedMass γ η a n (M ω)) hs0.le
+      calc _ ≤ (81 * ENNReal.ofReal _ * M ω univ) *
+            (poleLocalMass γ _ _ (M ω) ^ s +
+              poleLocalMass γ _ _ (M ω) ^ s) :=
             mul_le_mul' (hreg ω) (add_le_add h1 le_rfl)
         _ = _ := by
-            rw [← two_mul]
             ring
     refine (lintegral_mono hpt).trans_lt ?_
     rw [lintegral_const_mul' _ _ (ENNReal.mul_ne_top (by simp) ENNReal.ofReal_ne_top)]
     refine ENNReal.mul_lt_top (ENNReal.mul_lt_top (by simp) ENNReal.ofReal_lt_top) ?_
     have hVmeas : AEMeasurable (fun ω =>
-        poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω) ^ s) P :=
+        poleLocalMass γ _ _ (M ω) ^ s) P :=
       (aemeasurable_measure_functional P X hX γ hγ hγ2 M hM
         (measurable_poleLocalMass γ η)).pow_const _
     refine lintegral_mul_lt_top_of_holder hUmeas hVmeas hr1
@@ -212,6 +208,8 @@ theorem lintegral_cutoffDomination_lt_top {Ω : Type*} [MeasurableSpace Ω] (P :
       nlinarith
     have h := lintegral_localMass_rpow_neg_lt_top P X hX γ hγ hγ2 M hM hη hηγ hq
     rwa [neg_neg] at h
+
+end
 
 end DOZZ.Proofs
 

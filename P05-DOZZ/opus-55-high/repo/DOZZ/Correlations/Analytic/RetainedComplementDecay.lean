@@ -40,20 +40,20 @@ theorem retained_complement_moment_decay
   refine ⟨(∑ i, C i) + D, ENNReal.add_lt_top.mpr
     ⟨ENNReal.sum_lt_top.mpr (fun i _ => hC i), hD⟩, ?_⟩
   intro α αinf hα hinf hαup hinfup r hsmall hlarge hz
-  have hrho : 0 < 2 * Real.exp (-r) := mul_pos (by norm_num) (Real.exp_pos _)
+  have hrho : 0 < 2 * Real.exp (-r) := by positivity
   have hrecip : 1 / (Real.exp r / 2) = 2 * Real.exp (-r) := by
     rw [Real.exp_neg]
     field_simp
-  have hi := hext α αinf hα hinfup (Real.exp r / 2) hlarge hz
+  have hi := hext α αinf hα hinfup _ hlarge hz
   rw [hrecip] at hi
   calc
-    _ ≤ (∑ i, ∫⁻ ω, (∫⁻ x in Metric.ball (z i) (2 * Real.exp (-r)),
+    _ ≤ (∑ i, ∫⁻ ω, (∫⁻ x in Metric.ball (z i) _,
         coulombWeight γ α z αinf x ∂M ω) ^ m ∂P) +
         ∫⁻ ω, (∫⁻ x in {x : ℂ | Real.exp r / 2 < ‖x‖},
           coulombWeight γ α z αinf x ∂M ω) ^ m ∂P :=
       retained_complement_moment_le P X hX γ hγ hγ2 M hM α z αinf r m hm hm1
-    _ ≤ (∑ i, ENNReal.ofReal ((2 * Real.exp (-r)) ^ (γ * gap * m)) * C i) +
-        ENNReal.ofReal ((2 * Real.exp (-r)) ^ (γ * gap * m)) * D :=
+    _ ≤ (∑ i, ENNReal.ofReal _ * C i) +
+        ENNReal.ofReal _ * D :=
       add_le_add (Finset.sum_le_sum (fun i _ =>
         hroot i α αinf hα hinf (hαup i) _ hrho hsmall)) hi
     _ = _ := by rw [← Finset.mul_sum, mul_add]

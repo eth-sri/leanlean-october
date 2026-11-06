@@ -42,7 +42,7 @@ theorem volume_closedEBall_center {E : Type*} [NormedAddCommGroup E] [InnerProdu
   obtain rfl | hr := eq_top_or_lt_top r
   · simp
   · lift r to ℝ≥0 using hr.ne
-    simpa only [Metric.closedEBall_coe] using Measure.addHaar_closedBall_center volume x (r : ℝ)
+    simpa using Measure.addHaar_closedBall_center volume x r
 
 section
 
@@ -58,7 +58,7 @@ lemma Metric.IsSeparated.disjoint_closedBall {E : Type*} [PseudoEMetricSpace E] 
   calc
   edist x y ≤ edist x z + edist y z := edist_triangle_right x y z
   _ ≤ ε / 2 + ε / 2 := by grw [Metric.mem_closedEBall'.1 hz1, Metric.mem_closedEBall'.1 hz2]
-  _ < edist x y := by rwa [ENNReal.add_halves]
+  _ < edist x y := by simp_all
 
 @[simp]
 lemma Metric.nonempty_closedEBall {E : Type*} [PseudoEMetricSpace E] {x : E} {r : ℝ≥0∞} :
@@ -69,8 +69,8 @@ lemma Metric.closedEBall_add_closedEBall {E : Type*} [SeminormedAddCommGroup E] 
     [ProperSpace E] (x y : E) (r s : ℝ≥0∞) :
     closedEBall x r + closedEBall y s = closedEBall (x + y) (r + s) := by
   by_cases h : r = ⊤ ∨ s = ⊤
-  · obtain rfl | rfl := h <;> simp [nonempty_closedEBall]
-  simp only [not_or] at h
+  · aesop
+  simp at h
   lift r to ℝ≥0 using h.1
   lift s to ℝ≥0 using h.2
   norm_cast
@@ -86,18 +86,19 @@ lemma zero_mem_parallelepiped {ι E : Type*} [Fintype ι] [AddCommGroup E] [Modu
 @[simp]
 lemma nonempty_parallelepiped {ι E : Type*} [Fintype ι] [AddCommGroup E] [Module ℝ E] {v : ι → E} :
     (parallelepiped v).Nonempty := ⟨0, zero_mem_parallelepiped⟩
+section
+variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [FiniteDimensional ℝ E] [MeasurableSpace E]
 
 @[simp, nontriviality]
-lemma volume_of_nonempty_of_subsingleton {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
-    [FiniteDimensional ℝ E] [MeasurableSpace E] [Subsingleton E] {s : Set E} (hs : s.Nonempty) :
+lemma volume_of_nonempty_of_subsingleton [Subsingleton E] {s : Set E} (hs : s.Nonempty) :
     volume s = 1 := by
   rw [Subsingleton.eq_univ_of_nonempty hs,
     ← Subsingleton.eq_univ_of_nonempty (nonempty_parallelepiped (v := stdOrthonormalBasis ℝ E))]
   exact (stdOrthonormalBasis ℝ E).toBasis.addHaar_self
+section
+variable [BorelSpace E] (x y : E)
 
-lemma InnerProductSpace.volume_closedBall_div {E : Type*} [NormedAddCommGroup E]
-    [InnerProductSpace ℝ E] [FiniteDimensional ℝ E] [MeasurableSpace E] [BorelSpace E]
-    (x y : E) {r s : ℝ} (hr : 0 < r) (hs : 0 < s) :
+lemma InnerProductSpace.volume_closedBall_div {r s : ℝ} (hr : 0 < r) (hs : 0 < s) :
     volume (closedBall x r) / volume (closedBall y s) =
       ENNReal.ofReal (r / s) ^ (Module.finrank ℝ E) := by
   obtain _ | _ := subsingleton_or_nontrivial E
@@ -107,21 +108,19 @@ lemma InnerProductSpace.volume_closedBall_div {E : Type*} [NormedAddCommGroup E]
   simp_rw [← ENNReal.rpow_natCast]
   rw [← ENNReal.div_rpow_of_nonneg _ _ (by simp), ENNReal.ofReal_div_of_pos hs]
 
-lemma InnerProductSpace.volume_closedBall_div' {E : Type*} [NormedAddCommGroup E]
-    [InnerProductSpace ℝ E] [FiniteDimensional ℝ E] [MeasurableSpace E] [BorelSpace E]
-    (x y : E) (r s : ℝ≥0∞) :
+lemma InnerProductSpace.volume_closedBall_div' (r s : ℝ≥0∞) :
     volume (Metric.closedEBall x r) / volume (Metric.closedEBall y s) =
       (r / s) ^ (Module.finrank ℝ E) := by
   nontriviality E
-  have hdim : Module.finrank ℝ E ≠ 0 := (Module.finrank_pos (R := ℝ) (M := E)).ne'
+  have hdim := (Module.finrank_pos (R := ℝ) (M := E)).ne'
   obtain rfl | hr := eq_top_or_lt_top r <;> obtain rfl | hs := eq_top_or_lt_top s
-  · simp [hdim]
+  · simp_all
   · lift s to ℝ≥0 using hs.ne
-    simp [hdim, ENNReal.top_div, closedEBall_coe, (isCompact_closedBall _ _).measure_ne_top]
-  · simp [hdim]
+    simp [hdim, ENNReal.top_div, closedEBall_coe, (isCompact_closedBall ..).measure_ne_top]
+  · simp_all
   · obtain rfl | hr' := eq_zero_or_pos r <;> obtain rfl | hs' := eq_zero_or_pos s
-    · simp [hdim]
-    · simp [hdim]
+    · simp_all
+    · simp_all
     · simp [hdim, ENNReal.div_zero, hr'.ne', Metric.measure_closedEBall_pos volume x hr'.ne' |>.ne']
     lift r to ℝ≥0 using hr.ne
     lift s to ℝ≥0 using hs.ne
@@ -129,6 +128,10 @@ lemma InnerProductSpace.volume_closedBall_div' {E : Type*} [NormedAddCommGroup E
     rw [volume_closedBall_div, ENNReal.ofReal_div_of_pos]
     · simp
     all_goals simp_all
+
+end
+
+end
 
 end
 section
@@ -142,7 +145,7 @@ variable {E : Type*} [PseudoEMetricSpace E] {r ε ε' : ℝ≥0} {A B C : Set E}
 lemma TotallyBounded.coveringNumber_ne_top (hA : TotallyBounded A) {r : ℝ≥0} (hr : r ≠ 0) :
     coveringNumber r A ≠ ⊤:= by
   obtain ⟨C, hC_subset, hC_finite, hC_cov⟩ := exists_finite_isCover_of_totallyBounded hr hA
-  refine ne_top_of_le_ne_top (b := C.encard) ?_ (IsCover.coveringNumber_le_encard hC_subset hC_cov)
+  refine ne_top_of_le_ne_top ?_ (IsCover.coveringNumber_le_encard hC_subset hC_cov)
   simpa
 
 end PseudoEMetricSpace
@@ -158,7 +161,7 @@ end PseudoEMetricSpace
 
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
   [MeasurableSpace E] [BorelSpace E]
-  {ε : ℝ≥0} {A : Set E} {C : Set E}
+  {ε : ℝ≥0} {A C : Set E}
 
 open scoped Pointwise in
 lemma le_volume_of_isSeparated_of_countable (hC_count : C.Countable)
@@ -166,7 +169,7 @@ lemma le_volume_of_isSeparated_of_countable (hC_count : C.Countable)
     C.encard * volume (Metric.closedEBall (0 : E) (ε / 2))
       ≤ volume (A + Metric.closedEBall (0 : E) (ε / 2)) := by
   calc
-  C.encard * volume (Metric.closedEBall (0 : E) (ε / 2)) =
+  C.encard * volume (Metric.closedEBall (0 : E) _) =
       ∑' x : C, volume (Metric.closedEBall (x : E) (ε / 2)) := by
     simp_rw [fun x ↦ volume_closedEBall_center x,
       ENNReal.tsum_const]
@@ -176,7 +179,7 @@ lemma le_volume_of_isSeparated_of_countable (hC_count : C.Countable)
     · exact hC_count
     · exact DOZZ.Proofs.Metric.IsSeparated.disjoint_closedBall hC
     · exact fun _ _ ↦ Metric.isClosed_closedEBall.measurableSet
-  _ ≤ volume (A + Metric.closedEBall (0 : E) (ε / 2)) := by
+  _ ≤ volume (A + Metric.closedEBall 0 (ε / 2)) := by
     refine measure_mono fun x hx ↦ ?_
     rw [Set.mem_iUnion₂] at hx
     obtain ⟨y, hy, hx⟩ := hx
@@ -188,13 +191,11 @@ lemma le_volume_of_isSeparated (hC : IsSeparated ε C) (h_subset : C ⊆ A) :
     C.encard * volume (Metric.closedEBall (0 : E) (ε / 2))
       ≤ volume (A + Metric.closedEBall (0 : E) (ε / 2)) := by
   obtain rfl | hε := eq_zero_or_pos ε
-  · simp only [ENNReal.coe_zero, ENNReal.zero_div, Metric.closedEBall_zero,
-      Measure.addHaar_singleton, add_singleton, add_zero, image_id']
+  · simp
     obtain _ | _ := subsingleton_or_nontrivial E
-    · simp only [singleton_nonempty, volume_of_nonempty_of_subsingleton, mul_one]
+    · simp
       obtain rfl | hA := Set.eq_empty_or_nonempty A
-      · simp only [subset_empty_iff] at h_subset
-        simp [h_subset]
+      · simp_all
       simp only [hA.eq_zero, Measure.addHaar_singleton, singleton_nonempty,
         volume_of_nonempty_of_subsingleton]
       norm_cast
@@ -205,28 +206,25 @@ lemma le_volume_of_isSeparated (hC : IsSeparated ε C) (h_subset : C ⊆ A) :
   swap
   · have hC_count : C.Countable := by
       refine Set.Finite.countable ?_
-      simpa using hC_encard
+      simp_all
     exact le_volume_of_isSeparated_of_countable hC_count hC h_subset
-  suffices volume (A + Metric.closedEBall 0 (↑ε / 2)) = ∞ by simp [this]
+  suffices volume (A + Metric.closedEBall 0 (↑ε / 2)) = ∞ by simp_all
   obtain ⟨C', hC'_subset, hC'_sep, hC'_count, hC'_encard⟩ :
       ∃ C' ⊆ C, IsSeparated ε C' ∧ C'.Countable ∧ C'.encard = ⊤ := by
     suffices ∃ C' ⊆ C, C'.Countable ∧ C'.encard = ⊤ by
       obtain ⟨C', hC'_subset, hC'_count, hC'_encard⟩ := this
       exact ⟨C', hC'_subset, hC.mono hC'_subset, hC'_count, hC'_encard⟩
-    simp only [encard_eq_top_iff] at hC_encard ⊢
+    simp at hC_encard ⊢
     refine ⟨Set.range (fun n : ℕ ↦ hC_encard.natEmbedding C n), fun x ↦ ?_, ?_, ?_⟩
-    · simp only [mem_range, forall_exists_index]
-      rintro _ ⟨n, rfl⟩
-      simp
+    · aesop
     · exact countable_range _
     · refine infinite_range_of_injective fun n m hnm ↦ ?_
-      apply (hC_encard.natEmbedding C).injective
-      exact SetCoe.ext hnm
+      grind
   have h_le := le_volume_of_isSeparated_of_countable hC'_count hC'_sep (hC'_subset.trans h_subset)
   rw [hC'_encard, ENat.toENNReal_top, ENNReal.top_mul] at h_le
-  · simpa using h_le
+  · simp_all
   · refine (Metric.measure_closedEBall_pos volume _ ?_).ne'
-    simp [hε.ne']
+    aesop
 
 open scoped Pointwise in
 lemma volume_eq_top_of_packingNumber (A : Set E) (hε : 0 < ε)
@@ -277,12 +275,12 @@ lemma coveringNumber_closedBall_le (ε : ℝ≥0) (x : E) (r : ℝ≥0) :
   · simp only [Module.finrank_zero_of_subsingleton, pow_zero]
     norm_cast
     grw [coveringNumber_le_encard_self, Set.encard_le_one_iff]
-    exact fun a b _ _ ↦ Subsingleton.allEq a b
+    simp
   obtain rfl | hr := eq_zero_or_pos r
   · simp
   obtain rfl | hε' := eq_zero_or_pos ε
-  · simp [ENNReal.div_zero, hr.ne', (Module.finrank_pos (R := ℝ) (M := E)).ne']
-  grw [coveringNumber_le_volume_div (Metric.closedEBall x r),
+  · simp [ENNReal.div_zero, hr.ne', (Module.finrank_pos).ne']
+  grw [coveringNumber_le_volume_div _,
     Metric.closedEBall_add_closedEBall, InnerProductSpace.volume_closedBall_div',
     ← ENNReal.div_mul, ENNReal.add_div, ← mul_one_div (ε / 2 : ℝ≥0∞), ← ENNReal.mul_div_mul_comm,
     mul_comm (ε : ℝ≥0∞) 1, ENNReal.mul_div_mul_right, add_mul, ENNReal.div_mul_cancel,
@@ -299,23 +297,22 @@ lemma HasBoundedCoveringNumber.ediam_le
     (h : HasBoundedCoveringNumber A c d) (hd : 0 < d) :
     Metric.ediam A ≤ c ^ d⁻¹ := by
   rcases eq_or_ne (Metric.ediam A) 0 with h0 | h0
-  · simp [h0]
+  · simp_all
   have hA : A.Nonempty := by
     rw [Set.nonempty_iff_ne_empty]
-    rintro rfl
-    simp at h0
-  have hε : ((Metric.ediam A).toNNReal : ℝ≥0∞) = Metric.ediam A :=
+    aesop
+  have hε :=
     ENNReal.coe_toNNReal h.ediam_lt_top.ne
   have h1 : 1 ≤ c * (Metric.ediam A)⁻¹ ^ d := by
     refine le_trans ?_ (hε ▸ h.coveringNumber_le (Metric.ediam A).toNNReal hε.le)
     exact_mod_cast Order.one_le_iff_pos.mpr (coveringNumber_pos_iff.mpr hA)
   have h2 : Metric.ediam A ^ d ≤ c := by
     have := mul_le_mul' h1 (le_refl (Metric.ediam A ^ d))
-    rwa [one_mul, mul_assoc, ← ENNReal.mul_rpow_of_ne_top (by simp [h0]) h.ediam_lt_top.ne,
+    rwa [one_mul, mul_assoc, ← ENNReal.mul_rpow_of_ne_top (by simp_all) h.ediam_lt_top.ne,
       ENNReal.inv_mul_cancel h0 h.ediam_lt_top.ne, ENNReal.one_rpow, mul_one] at this
   calc Metric.ediam A = (Metric.ediam A ^ d) ^ d⁻¹ := by
         rw [← ENNReal.rpow_mul, mul_inv_cancel₀ hd.ne', ENNReal.rpow_one]
-    _ ≤ c ^ d⁻¹ := ENNReal.rpow_le_rpow h2 (by positivity)
+    _ ≤ c ^ d⁻¹ := by gcongr
 
 end
 structure IsCoverWithBoundedCoveringNumber {T : Type*} [PseudoEMetricSpace T]
@@ -336,18 +333,17 @@ theorem hasCoveringExponent_closedBall {E : Type*} [NormedAddCommGroup E]
     [MeasurableSpace E] [BorelSpace E] (x : E) (r : ℝ≥0) (hr : 0 < r) :
     Metric.HasCoveringExponent (Metric.closedEBall x r)
       ((4*r : ℝ≥0∞) ^ (Module.finrank ℝ E)) (Module.finrank ℝ E) := by
-  have hdim : Module.finrank ℝ E ≠ 0 := (Module.finrank_pos (R := ℝ) (M := E)).ne'
   constructor
   · exact lt_of_le_of_lt Metric.ediam_closedEBall_le (by finiteness)
   · intro ε hε
     obtain rfl | hεpos := eq_zero_or_pos ε
-    · simp [hdim, hr.ne']
+    · simp [((Module.finrank_pos).ne'), hr.ne']
     have hdiam : Metric.ediam (Metric.closedEBall x r) ≤ 2*r := Metric.ediam_closedEBall_le
     have hεle : (ε : ℝ≥0∞) ≤ 2*r := hε.trans hdiam
     have hrat : (1 : ℝ≥0∞) ≤ 2*r/ε := by
       rw [ENNReal.le_div_iff_mul_le]
-      · simpa using hεle
-      · simp [hεpos.ne']
+      · simp_all
+      · aesop
       · simp
     calc
       _ ≤ (2*r/(ε : ℝ≥0∞)+1) ^ (Module.finrank ℝ E) := coveringNumber_closedBall_le ε x r
@@ -368,12 +364,10 @@ theorem isCoverWithBoundedCoveringNumber_balls (E : Type*) [NormedAddCommGroup E
       Set.univ (fun n => (2 : ℝ≥0∞)^(Module.finrank ℝ E) *
         (4*((n : ℝ≥0∞)+1))^(Module.finrank ℝ E)) (fun _ => (Module.finrank ℝ E : ℝ)) := by
   constructor
-  · intro n
-    finiteness
+  · tauto
   · intro n
     exact_mod_cast Module.finrank_pos (R := ℝ) (M := E)
-  · intro n
-    exact Metric.isOpen_ball
+  · simp
   · intro n
     exact (isCompact_closedBall (0 : E) ((n : ℝ)+1)).totallyBounded.subset
       Metric.ball_subset_closedBall
@@ -382,13 +376,9 @@ theorem isCoverWithBoundedCoveringNumber_balls (E : Type*) [NormedAddCommGroup E
     simp only [Metric.closedEBall_coe, NNReal.coe_add, NNReal.coe_natCast, NNReal.coe_one] at hcl
     have hs := Metric.HasCoveringExponent.subset hcl (Metric.ball_subset_closedBall
       (x := (0 : E)) (ε := ((n : ℝ)+1))) (Nat.cast_nonneg (Module.finrank ℝ E))
-    simpa only [Metric.closedEBall_coe, NNReal.coe_add, NNReal.coe_natCast, NNReal.coe_one,
-      ENNReal.rpow_natCast, ENNReal.coe_add, ENNReal.coe_natCast, ENNReal.coe_one] using hs
+    simp_all
   · intro n m hnm
-    exact Metric.ball_subset_ball (add_le_add_left (Nat.cast_le.mpr hnm) 1)
-  · intro x _
-    obtain ⟨n, hn⟩ := exists_nat_gt ‖x‖
-    refine Set.mem_iUnion.mpr ⟨n, ?_⟩
-    simpa only [Metric.mem_ball, dist_zero_right] using hn.trans (lt_add_one _)
+    gcongr
+  simp
 
 end DOZZ.Proofs

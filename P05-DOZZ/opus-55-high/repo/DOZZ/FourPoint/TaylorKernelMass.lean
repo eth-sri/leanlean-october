@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import DOZZ.FourPoint.RootedPairMoments
+import DOZZ.ShiftEquations.Mobius.InversionMoment
 
 /-! Identifying the literal positive Taylor mass with the Coulomb mass. -/
 
@@ -19,22 +20,24 @@ theorem four_weight_eq (n a b c e₀ e₁ e₂ e₃ : ℝ)
     (n / a) ^ e₀ * (n / b) ^ e₁ * (n / c) ^ e₂ * n ^ e₃ =
       n ^ (e₀ + e₁ + e₂ + e₃) / (a ^ e₀ * b ^ e₁ * c ^ e₂) := by
   rw [Real.div_rpow hn.le ha.le, Real.div_rpow hn.le hb.le, Real.div_rpow hn.le hc.le,
-    Real.rpow_add hn (e₀ + e₁ + e₂) e₃, Real.rpow_add hn (e₀ + e₁) e₂,
+    Real.rpow_add hn _ e₃, Real.rpow_add hn _ e₂,
     Real.rpow_add hn e₀ e₁]
   field_simp
+section
+variable (γ α₁ α₂ α₃ : ℝ)
 
 /-- The Coulomb weight is exactly K away from its finite roots, for every charge sign. -/
-theorem gammaHalfKernel_coulombWeight (γ α₁ α₂ α₃ : ℝ) (z x : ℂ)
+theorem gammaHalfKernel_coulombWeight (z x : ℂ)
     (hxz : x ≠ z) (hx0 : x ≠ 0) (hx1 : x ≠ 1) :
     coulombWeight γ ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ x =
       ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) := by
   have hn : 0 < normPlus x := by unfold normPlus; positivity
-  have ha : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
-  have hb : 0 < ‖x‖ := norm_pos_iff.mpr hx0
-  have hc : 0 < ‖x - 1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
-  have hbase₀ : 0 < normPlus x / ‖x - z‖ := div_pos hn ha
-  have hbase₁ : 0 < normPlus x / ‖x‖ := div_pos hn hb
-  have hbase₂ : 0 < normPlus x / ‖x - 1‖ := div_pos hn hc
+  have ha := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
+  have hb := norm_pos_iff.mpr hx0
+  have hc := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
+  have hbase₀ := div_pos hn ha
+  have hbase₁ := div_pos hn hb
+  have hbase₂ := div_pos hn hc
   unfold coulombWeight
   simp only [Fin.prod_univ_succ, Matrix.cons_val_zero, Matrix.cons_val_succ,
     Fin.prod_univ_zero, mul_one, sub_zero]
@@ -59,7 +62,7 @@ theorem gammaHalfKernel_coulombWeight (γ α₁ α₂ α₃ : ℝ) (z x : ℂ)
   field_simp
 
 /-- The prescribed root values are harmless exactly when the measure has no atom there. -/
-theorem gammaHalfMass_eq_coulombMass (γ α₁ α₂ α₃ : ℝ) (z : ℂ) (μ : Measure ℂ)
+theorem gammaHalfMass_eq_coulombMass (z : ℂ) (μ : Measure ℂ)
     (hz : μ {z} = 0) (h0 : μ {0} = 0) (h1 : μ {1} = 0) :
     (∫⁻ x, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂μ) =
       coulombMass γ μ ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ := by
@@ -70,6 +73,8 @@ theorem gammaHalfMass_eq_coulombMass (γ α₁ α₂ α₃ : ℝ) (z : ℂ) (μ 
   filter_upwards [hnz, hn0, hn1] with x hxz hx0 hx1
   exact (gammaHalfKernel_coulombWeight γ α₁ α₂ α₃ z x hxz hx0 hx1).symm
 
+end
+
 /-- The identity holds for every supplied GMC, at every deterministic Taylor parameter. -/
 theorem gammaHalfMass_eq_coulombMass_ae
     {Ω : Type*} [MeasurableSpace Ω]
@@ -78,9 +83,9 @@ theorem gammaHalfMass_eq_coulombMass_ae
     (α₁ α₂ α₃ : ℝ) (z : ℂ) :
     ∀ᵐ ω ∂P, (∫⁻ x, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂M ω) =
       coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ := by
-  filter_upwards [gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ2 M hM z,
-    gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ2 M hM 0,
-    gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ2 M hM 1] with ω hz h0 h1
+  filter_upwards [DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM z,
+    DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM 0,
+    DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM 1] with ω hz h0 h1
   exact gammaHalfMass_eq_coulombMass γ α₁ α₂ α₃ z (M ω) hz h0 h1
 
 end DOZZ.Proofs

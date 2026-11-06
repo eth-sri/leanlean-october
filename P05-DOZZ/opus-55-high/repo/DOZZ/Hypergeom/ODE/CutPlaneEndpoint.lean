@@ -31,9 +31,8 @@ theorem gauss_cut_plane_continuation_path_endpoint_eq
     {p : Path gaussCutPlaneMidpoint z}
     (L : PathContinuationLift (gaussCutPlanePathFunction p)
       (gaussSystemOperator a b c) (ordinaryHypergeometricState a b c (1 / 2 : ℂ))) :
-    L.value 1 = gaussCutPlaneContinuationState a b c z := by
-  exact gauss_cut_plane_path_lifts_endpoint_eq a b c p
-    (gaussCutPlaneCanonicalPath z) (ordinaryHypergeometricState a b c (1 / 2 : ℂ))
-    L (gaussCutPlaneCanonicalContinuationLift a b c z)
+    L.value 1 = gaussCutPlaneContinuationState a b c z := gauss_cut_plane_path_lifts_endpoint_eq a b c p
+    (gaussCutPlaneCanonicalPath z) _
+    L _
 
 end DOZZ.Proofs

@@ -71,8 +71,7 @@ theorem normalized_vertex_moment_holomorphic
       {β | (complexMomentPower γ β).re < 4 / γ ^ 2} := by
   let := hX.1
   let A : Ω → ℝ := fun ω => (M ω O).toReal
-  have hm := gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM O ho.measurableSet
-  have hA : AEMeasurable A P := ENNReal.measurable_toReal.comp_aemeasurable hm
+  have hA : AEMeasurable A P := ENNReal.measurable_toReal.comp_aemeasurable (gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM O ho.measurableSet)
   have hpos : ∀ᵐ ω ∂P, 0 < A ω := by
     filter_upwards [open_mass_pos_finite_ae P X hX γ hγ hγ2 M hM O ho hb hn] with ω hω
     exact ENNReal.toReal_pos hω.1 hω.2
@@ -86,12 +85,12 @@ theorem normalized_vertex_moment_holomorphic
     unfold normalizedVertexPolynomial jointVertexPolynomial complexMomentPower
     fun_prop
   have hd := differentiableOn_gaussian_charge_moment P univ isOpen_univ
-    (fun ω i => Xc ω (mixedVertexCenters z i) (mixedVertexTimes N r i))
+    (fun ω i => Xc ω _ (mixedVertexTimes N r i))
     (circle_vertex_hasGaussianLaw P X hX Xc hXc
       (mixedVertexCenters z) (mixedVertexTimes N r)) A hA hpos
     (4 / γ ^ 2) (by positivity) hinv hmoment
     (normalizedVertexPolynomial P Xc γ z r) hc
-    ((-2 * Q γ / γ : ℝ) : ℂ) ((γ : ℂ)⁻¹ • chargeSumCLM (N + 1))
+    ((-2 * Q γ / γ : ℝ) : ℂ) ((γ : ℂ)⁻¹ • chargeSumCLM _)
   constructor
   · intro β hβ
     have hb' : -(↑(-2 * Q γ / γ) + ((γ : ℂ)⁻¹ • chargeSumCLM (N + 1)) β).re <

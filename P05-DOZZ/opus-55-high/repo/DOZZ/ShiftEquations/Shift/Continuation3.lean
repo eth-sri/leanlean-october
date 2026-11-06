@@ -33,35 +33,35 @@ theorem eq_of_real_interval {D : Set ℂ} (hD : IsOpen D) {g₁ g₂ : ℂ → �
     (hJD : ∀ t : ℝ, a < t → t < b → (t : ℂ) ∈ D) (hac : a ≤ c) (hcd : c < d) (hdb : d ≤ b)
     (heq : ∀ t : ℝ, c < t → t < d → g₁ t = g₂ t) {t : ℝ} (ht₁ : a < t) (ht₂ : t < b) :
     g₁ t = g₂ t := by
-  set x₀ : ℝ := (c + d) / 2 with hx₀
-  have hx₀D : (x₀ : ℂ) ∈ D := hJD x₀ (by rw [hx₀]; linarith) (by rw [hx₀]; linarith)
+  set x₀ := (c + d) / 2 with hx₀
+  have hx₀D : (x₀ : ℂ) ∈ D := by grind
   set U := connectedComponentIn D (x₀ : ℂ) with hU
   have hUo : IsOpen U := hD.connectedComponentIn
   have hUD : U ⊆ D := connectedComponentIn_subset D _
   have hev : ∀ᶠ s : ℝ in 𝓝[≠] x₀, g₁ (s : ℂ) = g₂ (s : ℂ) :=
     eventually_nhdsWithin_of_eventually_nhds
-      (eventually_of_mem (Ioo_mem_nhds (show c < x₀ by rw [hx₀]; linarith)
-        (show x₀ < d by rw [hx₀]; linarith)) fun s hs => heq s hs.1 hs.2)
+      (eventually_of_mem (Ioo_mem_nhds (show c < x₀ by linarith)
+        (show x₀ < d by linarith)) fun s hs => heq s hs.1 hs.2)
   have htend : Tendsto (fun s : ℝ => (s : ℂ)) (𝓝[≠] x₀) (𝓝[≠] (x₀ : ℂ)) :=
     tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within _
       (Complex.continuous_ofReal.continuousAt.tendsto.mono_left nhdsWithin_le_nhds)
       (eventually_nhdsWithin_of_forall fun s hs => by
-        simpa [Complex.ofReal_inj] using hs)
-  have hEq : EqOn g₁ g₂ U :=
+        simpa)
+  have hEq :=
     ((hg₁.mono hUD).analyticOnNhd hUo).eqOn_of_preconnected_of_frequently_eq
       ((hg₂.mono hUD).analyticOnNhd hUo) isPreconnected_connectedComponentIn
       (mem_connectedComponentIn hx₀D) (htend.frequently hev.frequently)
-  have hJU : (fun s : ℝ => (s : ℂ)) '' Ioo a b ⊆ U :=
+  have hJU :=
     (isPreconnected_Ioo.image _ Complex.continuous_ofReal.continuousOn).subset_connectedComponentIn
-      ⟨x₀, ⟨by rw [hx₀]; linarith, by rw [hx₀]; linarith⟩, rfl⟩
+      ⟨x₀, ⟨by linarith, by linarith⟩, rfl⟩
       (image_subset_iff.mpr fun s hs => hJD s hs.1 hs.2)
-  exact hEq (hJU ⟨t, ⟨ht₁, ht₂⟩, rfl⟩)
+  grind
 
 /-- The charge line `z ↦ (u, v, z)`. -/
-noncomputable def tripleThird (u v : ℂ) (z : ℂ) : Fin 3 → ℂ := ![u, v, z]
+noncomputable def tripleThird (u v z : ℂ) : Fin 3 → ℂ := ![u, v, z]
 
 /-- The charge line `z ↦ (u, z + s, w)`. -/
-noncomputable def tripleSecond (u s w : ℂ) (z : ℂ) : Fin 3 → ℂ := ![u, z + s, w]
+noncomputable def tripleSecond (u s w z : ℂ) : Fin 3 → ℂ := ![u, z + s, w]
 
 theorem differentiable_tripleThird (u v : ℂ) : Differentiable ℂ (tripleThird u v) := by
   rw [differentiable_pi]
@@ -88,93 +88,105 @@ theorem tripleSecond_ofReal (u s w t : ℝ) :
     tripleSecond u s w (t : ℂ) = complexifyNCharges ![u, t + s, w] := by
   funext i
   fin_cases i <;> simp [tripleSecond, complexifyNCharges]
+section
+variable (γ : ℝ)
+section
+variable (a' e a : ℂ)
 
-theorem crossA3_add_one_re (γ : ℝ) (a' e a : ℂ) :
+theorem crossA3_add_one_re :
     (crossA3 γ a' e a + 1).re = γ / 4 * (a'.re + e.re + a.re - Q γ - γ) + 1 / 2 := by
   unfold crossA3
   simp [Complex.mul_re]
   ring
 
-theorem crossB3_re (γ : ℝ) (a' e a : ℂ) :
+theorem crossB3_re :
     (crossB3 γ a' e a).re = γ / 4 * (a'.re + e.re - a.re - Q γ) + 1 / 2 := by
   unfold crossB3
-  simp [Complex.mul_re]
+  simp
 
-theorem one_sub_crossC3_re (γ : ℝ) (a' : ℂ) :
+end
+
+theorem one_sub_crossC3_re (a' : ℂ) :
     (1 - crossC3 γ a').re = γ / 2 * (Q γ - a'.re) := by
   unfold crossC3
-  simp [Complex.mul_re]
+  simp
 
-theorem one_sub_mul_half_re (γ : ℝ) (e : ℂ) : (1 - (γ : ℂ) * e / 2).re = 1 - γ * e.re / 2 := by
-  simp [Complex.mul_re]
+theorem one_sub_mul_half_re (e : ℂ) : (1 - (γ : ℂ) * e / 2).re = 1 - γ * e.re / 2 := by
+  simp
+
+end
 
 /-- The basic window facts for the slice `(Q - η, ·, 2/γ + η)`. -/
 theorem slice_facts {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) :
     Q γ = 2 / γ + γ / 2 ∧ 2 * Q γ = 4 / γ + γ ∧ γ / 2 < 2 / γ ∧ 4 / γ = 2 * (2 / γ) ∧
       0 < 2 / γ := by
   have hγh : γ / 2 < 2 / γ := by
-    rw [div_lt_div_iff₀ (by norm_num) hγ]
-    nlinarith
+    gcongr
   refine ⟨rfl, by rw [Q]; ring, hγh, by ring, by positivity⟩
+section
+variable {γ η ε t : ℝ}
+section
+variable (hγ : 0 < γ) (hγ2 : γ < 2) (hη : 0 < η) (hε₁ : γ / 2 + η < ε) (hε₂ : ε < 2 / γ) (ht₁ : 2 / γ < t) (ht₂ : t < Q γ)
+include hγ hγ2 hη hε₁ hε₂ ht₁ ht₂
 
-theorem extendedSeiberg3_sliceA_left {γ η ε t : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hη : 0 < η)
-    (hε₁ : γ / 2 + η < ε) (hε₂ : ε < 2 / γ) (ht₁ : 2 / γ < t) (ht₂ : t < Q γ) :
+theorem extendedSeiberg3_sliceA_left :
     ExtendedSeiberg3 γ (Q γ - η - γ / 2) ε t := by
   obtain ⟨hQ, hQ2, hγh, h42, h2⟩ := slice_facts hγ hγ2
-  refine extendedSeiberg3_of_lt hγ (by linarith) (by rw [hQ]; linarith) ht₂ ?_ ?_ ?_ ?_ <;>
+  refine extendedSeiberg3_of_lt hγ (by linarith) (by linarith) ht₂ ?_ ?_ ?_ ?_ <;>
     linarith
 
-theorem extendedSeiberg3_sliceA_right {γ η ε t : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hη : 0 < η)
-    (hε₁ : γ / 2 + η < ε) (hε₂ : ε < 2 / γ) (ht₁ : 2 / γ < t) (ht₂ : t < Q γ) :
+theorem extendedSeiberg3_sliceA_right :
     ExtendedSeiberg3 γ (Q γ - η) (ε + γ / 2) t := by
   obtain ⟨hQ, hQ2, hγh, h42, h2⟩ := slice_facts hγ hγ2
-  refine extendedSeiberg3_of_lt hγ (by linarith) (by rw [hQ]; linarith) ht₂ ?_ ?_ ?_ ?_ <;>
+  refine extendedSeiberg3_of_lt hγ (by linarith) (by linarith) ht₂ ?_ ?_ ?_ ?_ <;>
     linarith
 
-theorem extendedSeiberg3_sliceB_left {γ η x : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hη : 0 < η)
-    (hη2 : η < γ / 2) (hx₁ : 2 * η < x) (hx₂ : x < 2 / γ) :
+end
+
+end
+section
+variable {γ η x : ℝ}
+section
+variable (hγ : 0 < γ) (hγ2 : γ < 2) (hη : 0 < η)
+include hγ hγ2 hη
+
+theorem extendedSeiberg3_sliceB_left (hη2 : η < γ / 2) (hx₁ : 2 * η < x) (hx₂ : x < 2 / γ) :
     ExtendedSeiberg3 γ (Q γ - η - γ / 2) x (2 / γ + η) := by
   obtain ⟨hQ, hQ2, hγh, h42, h2⟩ := slice_facts hγ hγ2
-  refine extendedSeiberg3_of_lt hγ (by linarith) (by rw [hQ]; linarith) (by rw [hQ]; linarith)
+  refine extendedSeiberg3_of_lt hγ (by linarith) (by linarith) (by linarith)
     ?_ ?_ ?_ ?_ <;> rw [hQ] at * <;> linarith
 
-theorem extendedSeiberg3_sliceB_right {γ η x : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hη : 0 < η)
-    (hη4 : η < γ / 4) (hx₁ : -(2 * η) < x) (hx₂ : x < 2 / γ) :
+theorem extendedSeiberg3_sliceB_right (hη4 : η < γ / 4) (hx₁ : -(2 * η) < x) (hx₂ : x < 2 / γ) :
     ExtendedSeiberg3 γ (Q γ - η) (x + γ / 2) (2 / γ + η) := by
   obtain ⟨hQ, hQ2, hγh, h42, h2⟩ := slice_facts hγ hγ2
-  refine extendedSeiberg3_of_lt hγ (by linarith) (by rw [hQ]; linarith) (by rw [hQ]; linarith)
+  refine extendedSeiberg3_of_lt hγ (by linarith) (by linarith) (by linarith)
     ?_ ?_ ?_ ?_ <;> rw [hQ] at * <;> linarith
+
+end
+
+end
 
 /-- `γ/4 · (2/γ) = 1/2`-type bound used for the multiplier conditions. -/
 theorem quarter_mul_lt {γ u v : ℝ} (hγ : 0 < γ) (h : u < v) : γ / 4 * u < γ / 4 * v :=
-  mul_lt_mul_of_pos_left h (by positivity)
+  by simp_all
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : MeasureTheory.Measure Ω) (M : Ω → MeasureTheory.Measure ℂ) {γ : ℝ}
+section
+variable (hγ : 0 < γ) (hγ2 : γ < 2) (hCross : ∀ μ α' ε α : ℝ, 0 < μ → γ / 2 < ε → ε < 2 / γ → α < Q γ → α' < Q γ → 2 * Q γ < α + α' + ε - γ / 2 → unitVolumeStructureConstant P M γ (α' - γ / 2) ε α = gammaHalfUnitCrossingMultiplier γ μ α' ε α * unitVolumeStructureConstant P M γ α' (ε + γ / 2) α) {V₃ : Set (Fin 3 → ℂ)} (hV₃ : IsOpen V₃) (hV₃mem : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) → complexifyNCharges α ∈ V₃) {f₃ : (Fin 3 → ℂ) → ℂ} (hf₃ : DifferentiableOn ℂ f₃ V₃) (hf₃eq : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) → f₃ (complexifyNCharges α) = (unitVolumeStructureConstant P M γ (α 0) (α 1) (α 2) : ℂ))
+include hγ hγ2 hCross hV₃ hV₃mem hf₃ hf₃eq
 
 /-- **Step A**: the crossing at `(Q - η, ε, t)` for `γ/2 + η < ε < 2/γ` and `2/γ < t < Q`,
 continued from the crossing region in the third charge. -/
-theorem unitVolume_crossing_sliceA {Ω : Type*} [MeasurableSpace Ω]
-    (P : MeasureTheory.Measure Ω) (M : Ω → MeasureTheory.Measure ℂ) {γ : ℝ} (hγ : 0 < γ)
-    (hγ2 : γ < 2)
-    (hCross : ∀ μ α' ε α : ℝ, 0 < μ → γ / 2 < ε → ε < 2 / γ → α < Q γ → α' < Q γ →
-      2 * Q γ < α + α' + ε - γ / 2 →
-      unitVolumeStructureConstant P M γ (α' - γ / 2) ε α =
-        gammaHalfUnitCrossingMultiplier γ μ α' ε α *
-          unitVolumeStructureConstant P M γ α' (ε + γ / 2) α)
-    {V₃ : Set (Fin 3 → ℂ)} (hV₃ : IsOpen V₃)
-    (hV₃mem : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) →
-      complexifyNCharges α ∈ V₃)
-    {f₃ : (Fin 3 → ℂ) → ℂ} (hf₃ : DifferentiableOn ℂ f₃ V₃)
-    (hf₃eq : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) →
-      f₃ (complexifyNCharges α) = (unitVolumeStructureConstant P M γ (α 0) (α 1) (α 2) : ℂ))
-    {η ε : ℝ} (hη : 0 < η) (hε₁ : γ / 2 + η < ε) (hε₂ : ε < 2 / γ)
+theorem unitVolume_crossing_sliceA {η ε : ℝ} (hη : 0 < η) (hε₁ : γ / 2 + η < ε) (hε₂ : ε < 2 / γ)
     {t : ℝ} (ht₁ : 2 / γ < t) (ht₂ : t < Q γ) :
     unitVolumeStructureConstant P M γ (Q γ - η - γ / 2) ε t =
       crossingMultiplier3Real γ (Q γ - η) ε t *
         unitVolumeStructureConstant P M γ (Q γ - η) (ε + γ / 2) t := by
   obtain ⟨hQ, hQ2, hγh, h42, h2⟩ := slice_facts hγ hγ2
-  set u₁ : ℂ := ((Q γ - η - γ / 2 : ℝ) : ℂ) with hu₁
-  set u₂ : ℂ := ((Q γ - η : ℝ) : ℂ) with hu₂
-  set v₂ : ℂ := ((ε + γ / 2 : ℝ) : ℂ) with hv₂
-  set D : Set ℂ := {z | 2 / γ < z.re ∧ z.re < Q γ} ∩ tripleThird u₁ ε ⁻¹' V₃ ∩
+  set u₁ := ((Q γ - η - γ / 2 : ℝ) : ℂ) with hu₁
+  set u₂ := ((Q γ - η : ℝ) : ℂ) with hu₂
+  set v₂ := ((ε + γ / 2 : ℝ) : ℂ) with hv₂
+  set D := {z | 2 / γ < z.re ∧ z.re < Q γ} ∩ tripleThird u₁ ε ⁻¹' V₃ ∩
     tripleThird u₂ v₂ ⁻¹' V₃ with hD
   have hDo : IsOpen D :=
     (((isOpen_lt continuous_const Complex.continuous_re).inter
@@ -192,7 +204,7 @@ theorem unitVolume_crossing_sliceA {Ω : Type*} [MeasurableSpace Ω]
     exact hf₃eq ![Q γ - η, ε + γ / 2, s]
       (extendedSeiberg3_sliceA_right hγ hγ2 hη hε₁ hε₂ h1 h2)
   have hJD : ∀ s : ℝ, 2 / γ < s → s < Q γ → (s : ℂ) ∈ D := fun s h1 h2 => by
-    refine ⟨⟨⟨by rw [Complex.ofReal_re]; exact h1, by rw [Complex.ofReal_re]; exact h2⟩, ?_⟩, ?_⟩
+    refine ⟨⟨⟨by assumption, by assumption⟩, ?_⟩, ?_⟩
     · change tripleThird u₁ ε (s : ℂ) ∈ V₃
       rw [hu₁, tripleThird_ofReal]
       exact hV₃mem ![Q γ - η - γ / 2, ε, s]
@@ -202,20 +214,20 @@ theorem unitVolume_crossing_sliceA {Ω : Type*} [MeasurableSpace Ω]
       exact hV₃mem ![Q γ - η, ε + γ / 2, s]
         (extendedSeiberg3_sliceA_right hγ hγ2 hη hε₁ hε₂ h1 h2)
   -- the multiplier is holomorphic on the domain
-  have hT : DifferentiableOn ℂ (fun z => crossingMultiplier3 γ u₂ ε z) D := by
+  have hT : DifferentiableOn ℂ (crossingMultiplier3 γ u₂ ε) D := by
     intro z hz
     apply DifferentiableAt.differentiableWithinAt
     obtain ⟨⟨⟨hz1, hz2⟩, -⟩, -⟩ := hz
-    refine differentiableAt_crossingMultiplier3 (φ₁ := fun _ => u₂) (φ₂ := fun _ => (ε : ℂ))
+    refine differentiableAt_crossingMultiplier3
       (φ₃ := id) (differentiableAt_const _) (differentiableAt_const _) differentiableAt_id
       ?_ ?_ ?_ ?_
     · rw [crossA3_add_one_re, hu₂, Complex.ofReal_re, Complex.ofReal_re]
       have : 0 < γ / 4 * (Q γ - η + ε + (id z).re - Q γ - γ) :=
-        mul_pos (by positivity) (by simp only [id]; linarith)
+        mul_pos (by positivity) (by grind)
       linarith
     · rw [crossB3_re, hu₂, Complex.ofReal_re, Complex.ofReal_re]
       have h1 := quarter_mul_lt (u := -(2 / γ)) (v := Q γ - η + ε - (id z).re - Q γ) hγ
-        (by simp only [id]; linarith)
+        (by grind)
       have h2' : γ / 4 * -(2 / γ) = -(1 / 2) := by field_simp; ring
       linarith
     · rw [one_sub_crossC3_re, hu₂, Complex.ofReal_re]
@@ -230,49 +242,35 @@ theorem unitVolume_crossing_sliceA {Ω : Type*} [MeasurableSpace Ω]
       f₃ (tripleThird u₂ v₂ z)) D :=
     hT.mul (hf₃.comp (differentiable_tripleThird _ _).differentiableOn fun _ hz => hz.2)
   -- agreement on the crossing region
-  set c₀ : ℝ := max (2 / γ) (Q γ + η + γ / 2 - ε) with hc₀
-  have hc₀Q : c₀ < Q γ := max_lt (by rw [hQ]; linarith) (by linarith)
+  set c₀ := max (2 / γ) (Q γ + η + γ / 2 - ε) with hc₀
+  have hc₀Q : c₀ < Q γ := by bound
   have heq : ∀ s : ℝ, c₀ < s → s < Q γ → f₃ (tripleThird u₁ ε (s : ℂ)) =
       crossingMultiplier3 γ u₂ ε s * f₃ (tripleThird u₂ v₂ (s : ℂ)) := by
     intro s hs1 hs2
-    have hs3 : 2 / γ < s := lt_of_le_of_lt (le_max_left _ _) hs1
-    have hs4 : Q γ + η + γ / 2 - ε < s := lt_of_le_of_lt (le_max_right _ _) hs1
+    have hs3 : 2 / γ < s := lt_of_le_of_lt (le_max_left ..) hs1
+    have hs4 : Q γ + η + γ / 2 - ε < s := lt_of_le_of_lt (le_max_right ..) hs1
     have hx : 0 < (s + (Q γ - η) + ε - γ / 2 - 2 * Q γ) / γ := div_pos (by linarith) hγ
     rw [hL s hs3 hs2, hR s hs3 hs2, hu₂,
       ← gammaHalfUnitCrossingMultiplier_eq_three hγ one_pos (by linarith) hε₂ hx,
       ← Complex.ofReal_mul,
       hCross 1 (Q γ - η) ε s one_pos (by linarith) hε₂ hs2 (by linarith) (by linarith)]
-  have h := eq_of_real_interval hDo hg₁ hg₂ hJD (le_max_left _ _) hc₀Q le_rfl heq ht₁ ht₂
+  have h := eq_of_real_interval hDo hg₁ hg₂ hJD (le_max_left ..) hc₀Q le_rfl heq ht₁ ht₂
   rw [hL t ht₁ ht₂, hR t ht₁ ht₂, hu₂, crossingMultiplier3_ofReal hγ] at h
   exact_mod_cast h
 
 /-- **Step B**: the crossing on the two-pole slice, `C̄(Q - η - γ/2, x, 2/γ + η) =
 T(Q - η, x, 2/γ + η) C̄(Q - η, x + γ/2, 2/γ + η)` for `2η < x < 2/γ`. -/
-theorem unitVolume_crossing_slice {Ω : Type*} [MeasurableSpace Ω]
-    (P : MeasureTheory.Measure Ω) (M : Ω → MeasureTheory.Measure ℂ) {γ : ℝ} (hγ : 0 < γ)
-    (hγ2 : γ < 2)
-    (hCross : ∀ μ α' ε α : ℝ, 0 < μ → γ / 2 < ε → ε < 2 / γ → α < Q γ → α' < Q γ →
-      2 * Q γ < α + α' + ε - γ / 2 →
-      unitVolumeStructureConstant P M γ (α' - γ / 2) ε α =
-        gammaHalfUnitCrossingMultiplier γ μ α' ε α *
-          unitVolumeStructureConstant P M γ α' (ε + γ / 2) α)
-    {V₃ : Set (Fin 3 → ℂ)} (hV₃ : IsOpen V₃)
-    (hV₃mem : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) →
-      complexifyNCharges α ∈ V₃)
-    {f₃ : (Fin 3 → ℂ) → ℂ} (hf₃ : DifferentiableOn ℂ f₃ V₃)
-    (hf₃eq : ∀ α : Fin 3 → ℝ, ExtendedSeiberg3 γ (α 0) (α 1) (α 2) →
-      f₃ (complexifyNCharges α) = (unitVolumeStructureConstant P M γ (α 0) (α 1) (α 2) : ℂ))
-    {η : ℝ} (hη : 0 < η) (hη4 : η < γ / 4) (hηγ : η < 2 / γ - γ / 2)
+theorem unitVolume_crossing_slice {η : ℝ} (hη : 0 < η) (hη4 : η < γ / 4) (hηγ : η < 2 / γ - γ / 2)
     {x : ℝ} (hx₁ : 2 * η < x) (hx₂ : x < 2 / γ) :
     unitVolumeStructureConstant P M γ (Q γ - η - γ / 2) x (2 / γ + η) =
       crossingMultiplier3Real γ (Q γ - η) x (2 / γ + η) *
         unitVolumeStructureConstant P M γ (Q γ - η) (x + γ / 2) (2 / γ + η) := by
   obtain ⟨hQ, hQ2, hγh, h42, h2⟩ := slice_facts hγ hγ2
   have hη2 : η < γ / 2 := by linarith
-  set u₁ : ℂ := ((Q γ - η - γ / 2 : ℝ) : ℂ) with hu₁
-  set u₂ : ℂ := ((Q γ - η : ℝ) : ℂ) with hu₂
-  set w : ℂ := ((2 / γ + η : ℝ) : ℂ) with hw
-  set D : Set ℂ := {z | 2 * η < z.re ∧ z.re < 2 / γ} ∩ tripleSecond u₁ 0 w ⁻¹' V₃ ∩
+  set u₁ := ((Q γ - η - γ / 2 : ℝ) : ℂ) with hu₁
+  set u₂ := ((Q γ - η : ℝ) : ℂ) with hu₂
+  set w := ((2 / γ + η : ℝ) : ℂ) with hw
+  set D := {z | 2 * η < z.re ∧ z.re < 2 / γ} ∩ tripleSecond u₁ 0 w ⁻¹' V₃ ∩
     tripleSecond u₂ ((γ / 2 : ℝ) : ℂ) w ⁻¹' V₃ with hD
   have hDo : IsOpen D :=
     (((isOpen_lt continuous_const Complex.continuous_re).inter
@@ -292,7 +290,7 @@ theorem unitVolume_crossing_slice {Ω : Type*} [MeasurableSpace Ω]
       exact hf₃eq ![Q γ - η, s + γ / 2, 2 / γ + η]
         (extendedSeiberg3_sliceB_right hγ hγ2 hη hη4 (by linarith) h2)
   have hJD : ∀ s : ℝ, 2 * η < s → s < 2 / γ → (s : ℂ) ∈ D := fun s h1 h2 => by
-    refine ⟨⟨⟨by rw [Complex.ofReal_re]; exact h1, by rw [Complex.ofReal_re]; exact h2⟩, ?_⟩, ?_⟩
+    refine ⟨⟨⟨by assumption, by assumption⟩, ?_⟩, ?_⟩
     · change tripleSecond u₁ 0 w (s : ℂ) ∈ V₃
       rw [hu₁, hw, ← Complex.ofReal_zero, tripleSecond_ofReal, add_zero]
       exact hV₃mem ![Q γ - η - γ / 2, s, 2 / γ + η]
@@ -305,19 +303,19 @@ theorem unitVolume_crossing_slice {Ω : Type*} [MeasurableSpace Ω]
     intro z hz
     apply DifferentiableAt.differentiableWithinAt
     obtain ⟨⟨⟨hz1, hz2⟩, -⟩, -⟩ := hz
-    refine differentiableAt_crossingMultiplier3 (φ₁ := fun _ => u₂) (φ₂ := id)
+    refine differentiableAt_crossingMultiplier3 (φ₂ := id)
       (φ₃ := fun _ => w) (differentiableAt_const _) differentiableAt_id (differentiableAt_const _)
       ?_ ?_ ?_ ?_
     · rw [crossA3_add_one_re, hu₂, hw, Complex.ofReal_re, Complex.ofReal_re]
       have : 0 < γ / 4 * (Q γ - η + (id z).re + (2 / γ + η) - Q γ - γ) + 1 / 2 := by
         have h1 := quarter_mul_lt (u := -(2 / γ)) (v := Q γ - η + (id z).re + (2 / γ + η) - Q γ - γ)
-          hγ (by simp only [id]; linarith)
+          hγ (by grind)
         have h2' : γ / 4 * -(2 / γ) = -(1 / 2) := by field_simp; ring
         linarith
       exact this
     · rw [crossB3_re, hu₂, hw, Complex.ofReal_re, Complex.ofReal_re]
       have : 0 < γ / 4 * (Q γ - η + (id z).re - (2 / γ + η) - Q γ + 2 / γ) := mul_pos
-        (by positivity) (by simp only [id]; linarith)
+        (by positivity) (by grind)
       have h2' : γ / 4 * (Q γ - η + (id z).re - (2 / γ + η) - Q γ) + 1 / 2 =
           γ / 4 * (Q γ - η + (id z).re - (2 / γ + η) - Q γ + 2 / γ) := by field_simp; ring
       rw [h2']
@@ -340,11 +338,15 @@ theorem unitVolume_crossing_slice {Ω : Type*} [MeasurableSpace Ω]
     have hs3 : 2 * η < s := by linarith
     rw [hL s hs3 hs2, hR s hs3 hs2, hu₂, hw, crossingMultiplier3_ofReal hγ, ← Complex.ofReal_mul,
       unitVolume_crossing_sliceA P M hγ hγ2 hCross hV₃ hV₃mem hf₃ hf₃eq hη hs1 hs2
-        (t := 2 / γ + η) (by linarith) (by rw [hQ]; linarith)]
+        (by linarith) (by linarith)]
   have h := eq_of_real_interval hDo hg₁ hg₂ hJD (by linarith) (show γ / 2 + η < 2 / γ by linarith)
     le_rfl heq hx₁ hx₂
   rw [hL x hx₁ hx₂, hR x hx₁ hx₂, hu₂, hw, crossingMultiplier3_ofReal hγ] at h
   exact_mod_cast h
+
+end
+
+end
 
 end DOZZ.Proofs
 

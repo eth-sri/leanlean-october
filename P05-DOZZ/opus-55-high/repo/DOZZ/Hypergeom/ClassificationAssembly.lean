@@ -20,8 +20,8 @@ private theorem hermitianQuadraticTensor_realDiagonal_eq
       ((α * Complex.normSq (f z) + δ * Complex.normSq (g z) : ℝ) : ℂ) := by
   simp only [hermitianQuadraticTensor, zero_mul, add_zero]
   calc
-    _ = (α : ℂ) * (f z * star (f z)) +
-        (δ : ℂ) * (g z * star (g z)) := by ring
+    _ = α * (f z * star (f z)) +
+        δ * (g z * star (g z)) := by ring
     _ = _ := by
       rw [complex_mul_star_eq_normSq, complex_mul_star_eq_normSq]
       push_cast
@@ -44,16 +44,13 @@ theorem real_gauss_solution_classification
   refine ⟨(α, δ), ⟨hconstraint, hrep⟩, ?_⟩
   intro v hv
   have hcC : ∀ n : ℤ, (c : ℂ) ≠ (n : ℂ) := by
-    intro n hn
-    apply hc n
-    exact_mod_cast hn
+    norm_cast
   have hzero := gauss_local_basis_zero hH (a : ℂ) (b : ℂ) (c : ℂ) hcC
   have hF : AnalyticOnNhd ℂ (gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ)) gaussCutPlane :=
     hzero.1.analyticOnNhd gaussCutPlane_isOpen
   have hG : AnalyticOnNhd ℂ (gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ)) gaussCutPlane :=
     hzero.2.1.analyticOnNhd gaussCutPlane_isOpen
   have hmid : (1 / 2 : ℂ) ∈ gaussCutPlane := by norm_num [gaussCutPlane]
-  have hWr := (hzero.2.2.1 (1 / 2 : ℂ) hmid).2.2
   have h1c : (1 : ℂ) - (c : ℂ) ≠ 0 := by
     intro he
     apply hc 1
@@ -62,16 +59,16 @@ theorem real_gauss_solution_classification
   have hmid0 : (1 / 2 : ℂ) ≠ 0 := by norm_num
   have hmid1 : 1 - (1 / 2 : ℂ) ≠ 0 := by norm_num
   have hpow0 : (1 / 2 : ℂ) ^ (-(c : ℂ)) ≠ 0 :=
-    Complex.cpow_ne_zero_iff.mpr (Or.inl hmid0)
+    by simp
   have hpow1 : (1 - (1 / 2 : ℂ)) ^
       ((c : ℂ) - (a : ℂ) - (b : ℂ) - 1) ≠ 0 :=
-    Complex.cpow_ne_zero_iff.mpr (Or.inl hmid1)
+    by norm_num
   have hWmid :
       gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ) (1 / 2 : ℂ) *
           deriv (gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ)) (1 / 2 : ℂ) -
         deriv (gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ)) (1 / 2 : ℂ) *
           gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ) (1 / 2 : ℂ) ≠ 0 := by
-    rw [hWr]
+    rw [((hzero.2.2.1 (1 / 2 : ℂ) hmid).2.2)]
     exact mul_ne_zero (mul_ne_zero h1c hpow0) hpow1
   have hEq : ∀ z ∈ gaussCutPlane,
       hermitianQuadraticTensor (gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ))
@@ -89,7 +86,7 @@ theorem real_gauss_solution_classification
     calc
       _ = ((α * Complex.normSq (gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ) z) +
           δ * Complex.normSq (gaussFPlus H (a : ℂ) (b : ℂ) (c : ℂ) z) : ℝ) : ℂ) :=
-        hermitianQuadraticTensor_realDiagonal_eq _ _ _
+        hermitianQuadraticTensor_realDiagonal_eq ..
       _ = ((α * ‖gaussFMinus H a b c z‖ ^ 2 +
           δ * ‖gaussFPlus H a b c z‖ ^ 2 : ℝ) : ℂ) := by
         rw [Complex.normSq_eq_norm_sq, Complex.normSq_eq_norm_sq]
@@ -101,8 +98,6 @@ theorem real_gauss_solution_classification
       _ = _ := (hermitianQuadraticTensor_realDiagonal_eq v.1 v.2 z).symm
   have hcoeff := hermitianTensor_coefficients_eq_of_eqOn gaussCutPlane_isOpen
     hF hG α 0 0 δ v.1 0 0 v.2 hmid hWmid hEq
-  apply Prod.ext
-  · exact Complex.ofReal_injective hcoeff.1.symm
-  · exact Complex.ofReal_injective hcoeff.2.2.2.symm
+  apply Prod.ext <;> simp_all
 
 end DOZZ.Proofs

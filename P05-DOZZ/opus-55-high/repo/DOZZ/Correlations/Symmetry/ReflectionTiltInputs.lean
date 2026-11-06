@@ -9,10 +9,12 @@ public import DOZZ.Statements.GMC.EquatorGFFGMCTilt
 open MeasureTheory Filter
 open scoped Distributions Topology ENNReal
 namespace DOZZ.Proofs
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
 
 /-- Scalar multiplication preserves the Gaussian closure on the same field. -/
 theorem IsGaussianL2Limit_const_mul_symmetry
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+    (X : Ω → Distr)
     (L : Ω → ℝ) (hL : IsGaussianL2Limit P X L) (t : ℝ) :
     IsGaussianL2Limit P X (fun ω => t * L ω) := by
   obtain ⟨hmem, f, hf⟩ := hL
@@ -21,7 +23,7 @@ theorem IsGaussianL2Limit_const_mul_symmetry
       t • (fun ω => L ω - X ω (f n)) := by
     funext ω
     rw [map_smul]
-    simp only [Pi.smul_apply, smul_eq_mul]
+    simp
     ring
   have hnorm n : eLpNorm (fun ω => t * L ω - X ω (t • f n)) 2 P =
       ‖t‖ₑ * eLpNorm (fun ω => L ω - X ω (f n)) 2 P := by
@@ -30,20 +32,22 @@ theorem IsGaussianL2Limit_const_mul_symmetry
   simpa only [mul_zero] using ENNReal.Tendsto.const_mul hf (Or.inr enorm_ne_top)
 
 theorem symmetry_gaussianCovariance_mul_right
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (A L : Ω → ℝ) (t : ℝ) :
+    (A L : Ω → ℝ) (t : ℝ) :
     gaussianCovariance P A (fun ω => t * L ω) = t * gaussianCovariance P A L := by
   unfold gaussianCovariance
   have he : (fun ω => A ω * (t * L ω)) = fun ω => t * (A ω * L ω) := by
-    funext ω; ring
+    grind
   rw [he, integral_const_mul]
 
 theorem symmetry_gaussianVariance_mul
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (L : Ω → ℝ) (t : ℝ) :
+    (L : Ω → ℝ) (t : ℝ) :
     gaussianVariance P (fun ω => t * L ω) = t ^ 2 * gaussianVariance P L := by
   unfold gaussianVariance gaussianCovariance
   have he : (fun ω => (t * L ω) * (t * L ω)) = fun ω => t ^ 2 * (L ω * L ω) := by
-    funext ω; ring
+    ring
   rw [he, integral_const_mul]
+
+end
 
 /-- The bounded correlation potential for the scaled normalization. -/
 noncomputable def symmetryTiltPotential (t : ℝ) : BoundedContinuousFunction ℂ ℝ :=
@@ -62,7 +66,7 @@ theorem symmetryTiltPotential_uniform
   rw [Metric.tendstoUniformly_iff]
   intro ε hε
   have he : Tendsto (fun r : ℝ => |t| * (2 * Real.exp (-r))) atTop (𝓝 0) := by
-    simpa only [mul_zero, Function.comp_def] using
+    simpa using
       (Real.tendsto_exp_atBot.comp tendsto_neg_atTop_atBot).const_mul 2 |>.const_mul |t|
   filter_upwards [he.eventually (gt_mem_nhds hε)] with r hr x
   rw [symmetry_gaussianCovariance_mul_right, repinned_circle_normalization_covariance P X hX Xc hXc,

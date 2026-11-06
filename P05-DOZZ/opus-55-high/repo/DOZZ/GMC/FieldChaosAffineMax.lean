@@ -50,7 +50,7 @@ theorem kahane_field_normalized_affine_max
     fun n p => (n : ℝ)⁻¹ * ∑ i : Fin n, fY p.1 (p.2 i.val)
   have hfX := (fieldWickDensity_integrable_mean PX Φ hΦ ν h hh hhb γ).1
   have hfY := (fieldWickDensity_integrable_mean PY Ψ hΨ ν h hh hhb γ).1
-  have hmX : Integrable mX PX := hfX.integral_prod_left
+  have hmX := hfX.integral_prod_left
   have hmY : Integrable mY PY := hfY.integral_prod_left
   have havgX (n : ℕ) : Integrable (avgX n) (PX.prod Q) :=
     spatial_empirical_average_integrable PX ρ fX hfX n
@@ -58,18 +58,17 @@ theorem kahane_field_normalized_affine_max
     spatial_empirical_average_integrable PY ρ fY hfY n
   have hIX (n : ℕ) := affineMax_comp_integrable (PX.prod Q) (avgX n) (havgX n) a b
   have hIY (n : ℕ) := affineMax_comp_integrable (PY.prod Q) (avgY n) (havgY n) a b
-  have hsample := centeredGaussianField_covariance_order_samples PX PY Φ Ψ hΦ hΨ ν hν hcov hdiag
-  have hformulaX (n : ℕ) (ω : ΩX) (u : ℕ → S) :
+  have hformulaX (n : ℕ) ω u :
       DOZZ.finiteChaosMass PX (fun ω (i : Fin n) => Φ ω (u i.val))
-        (fun i => (n : ℝ)⁻¹ * (h (u i.val) : ℝ)) γ ω = avgX n (ω, u) := by
+        (fun i => (n : ℝ)⁻¹ * (h (u i.val))) γ ω = avgX n (ω, u) := by
     dsimp [DOZZ.finiteChaosMass, avgX, fX, fieldWickDensity]
     rw [Finset.mul_sum]
     apply Finset.sum_congr rfl
     intro i _
     ring
-  have hformulaY (n : ℕ) (ω : ΩY) (u : ℕ → S) :
+  have hformulaY (n : ℕ) ω u :
       DOZZ.finiteChaosMass PY (fun ω (i : Fin n) => Ψ ω (u i.val))
-        (fun i => (n : ℝ)⁻¹ * (h (u i.val) : ℝ)) γ ω = avgY n (ω, u) := by
+        (fun i => (n : ℝ)⁻¹ * (h (u i.val))) γ ω = avgY n (ω, u) := by
     dsimp [DOZZ.finiteChaosMass, avgY, fY, fieldWickDensity]
     rw [Finset.mul_sum]
     apply Finset.sum_congr rfl
@@ -79,7 +78,7 @@ theorem kahane_field_normalized_affine_max
       ∫ p, affineMax a b (avgY n p) ∂(PY.prod Q) := by
     rw [integral_prod_symm _ (hIX n), integral_prod_symm _ (hIY n)]
     apply integral_mono_ae (hIX n).integral_prod_right (hIY n).integral_prod_right
-    filter_upwards [hsample n] with u hu
+    filter_upwards [(centeredGaussianField_covariance_order_samples PX PY Φ Ψ hΦ hΨ ν hν hcov hdiag) n] with u hu
     have hc := kahane_finite_affine_max PX PY
       (fun ω (i : Fin n) => Φ ω (u i.val)) (fun ω (i : Fin n) => Ψ ω (u i.val))
       (hΦ.2 n (fun i => u i.val)) (hΨ.2 n (fun i => u i.val))
@@ -100,11 +99,11 @@ theorem kahane_field_normalized_affine_max
   have hprodX : (∫ p : ΩX × (ℕ → S), affineMax a b (mX p.1) ∂(PX.prod Q)) =
       ∫ ω, affineMax a b (mX ω) ∂PX := by
     rw [integral_prod _ ((affineMax_comp_integrable PX mX hmX a b).comp_fst Q)]
-    simp only [integral_const, probReal_univ, one_smul]
+    simp
   have hprodY : (∫ p : ΩY × (ℕ → S), affineMax a b (mY p.1) ∂(PY.prod Q)) =
       ∫ ω, affineMax a b (mY ω) ∂PY := by
     rw [integral_prod _ ((affineMax_comp_integrable PY mY hmY a b).comp_fst Q)]
-    simp only [integral_const, probReal_univ, one_smul]
+    simp
   rwa [hprodX, hprodY] at hlimit
 
 end DOZZ.Proofs

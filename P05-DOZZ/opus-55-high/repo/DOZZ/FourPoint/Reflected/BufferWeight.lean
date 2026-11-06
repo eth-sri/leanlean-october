@@ -7,6 +7,7 @@ public import DOZZ.FourPoint.Reflected.BufferKernel
 public import DOZZ.FourPoint.ReflectedOuter.DeletedDisk
 public import DOZZ.FourPoint.ReflectedOuter.MassPerturbation
 import Mathlib.Tactic
+import DOZZ.ShiftEquations.Mobius.InversionMoment
 /-! Actual spatial buffer expectations at the reflected freezing rate. -/
 @[expose] public section
 open MeasureTheory Set
@@ -29,46 +30,43 @@ theorem reflected_buffer_weight_bound {Ω : Type*} [MeasurableSpace Ω]
           (-((α₁+α₂+α₃-γ/2-2*Q γ)/γ+1)) ∂P) ≤
       ENNReal.ofReal (C*(‖z‖^(1-ξ))^
         (γ*(Q γ-α₁)+(α₁+γ/2-Q γ)^2/2)) := by
-  let q : ℝ := (α₁+α₂+α₃-γ/2-2*Q γ)/γ+1
-  let e : ℝ := γ*(Q γ-α₁)+(α₁+γ/2-Q γ)^2/2
-  let c : ℝ := (1+R)^(γ^2/2)*(1/4 : ℝ)^(-q)
-  have hq : 0 < q := (reflected_freezing_margins γ α₁ α₂ α₃ hγ hα₁ hreflect hs).2.1
-  have hc : 0 < c := by dsimp only [c]; positivity
+  let q := (α₁+α₂+α₃-γ/2-2*Q γ)/γ+1
+  let e := γ*(Q γ-α₁)+(α₁+γ/2-Q γ)^2/2
+  let c := (1+R)^(γ^2/2)*(1/4)^(-q)
+  have hc : 0 < c := by positivity
   obtain ⟨C, ε₀, hC, hε₀, hb⟩ := reflected_deleted_disk_weight_bound
     P X M γ α₁ α₂ α₃ hγ hγ₂ hα₁ hreflect hs hX hM
   refine ⟨c*C, ε₀, mul_pos hc hC, hε₀, ?_⟩
   intro z ξ U hU hball hsep hr hr₀ hz
-  let r : ℝ := ‖z‖^(1-ξ)
+  let r := ‖z‖^(1-ξ)
   have hpoint : ∀ᵐ ω ∂P,
       (∫⁻ x in U, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂M ω)*
         gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ ^(-q) ≤
-      ENNReal.ofReal c*((∫⁻ x in Metric.ball (0 : ℂ) r,
+      ENNReal.ofReal c*((∫⁻ x in Metric.ball 0 r,
           ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ 0 x) ∂M ω)*
         reflectedRetainedZeroMass γ α₁ α₂ α₃ r (M ω)^(-q)) := by
-    filter_upwards [gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ₂ M hM 0,
-      gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ₂ M hM 1] with ω h0 h1
-    have hi := reflected_buffer_mass_upper γ α₁ α₂ α₃ R r hR z (M ω) U hU hball hsep
+    filter_upwards [DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ₂ M hM 0,
+      DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ₂ M hM 1] with ω h0 h1
     have ht := ennreal_rpow_antitone_of_nonpos
       (reflected_outerMass_relative_comparison γ α₁ α₂ α₃ ξ hγ hγ₂ z (M ω) hr hz h0 h1).1
-        (neg_nonpos.mpr hq.le)
-    rw [ennreal_mul_rpow_of_ne_zero_ne_top _ _ (by norm_num : ENNReal.ofReal (1/4 : ℝ) ≠ 0)
-      ENNReal.ofReal_ne_top, ENNReal.ofReal_rpow_of_pos (by norm_num : (0 : ℝ) < 1/4)] at ht
-    have hh := mul_le_mul' hi ht
+        (neg_nonpos.mpr ((reflected_freezing_margins γ α₁ α₂ α₃ hγ hα₁ hreflect hs).2.1).le)
+    rw [ennreal_mul_rpow_of_ne_zero_ne_top _ _ (by norm_num)
+      ENNReal.ofReal_ne_top, ENNReal.ofReal_rpow_of_pos (by norm_num)] at ht
     calc
-      _ ≤ _ := hh
+      _ ≤ _ := (mul_le_mul' (reflected_buffer_mass_upper γ α₁ α₂ α₃ R r hR z (M ω) U hU hball hsep) ht)
       _ = _ := by
         dsimp only [c]
-        rw [ENNReal.ofReal_mul (Real.rpow_nonneg (by linarith only [hR]) _)]
+        rw [ENNReal.ofReal_mul (Real.rpow_nonneg (by positivity) _)]
         ring
   calc
-    _ ≤ ∫⁻ ω, ENNReal.ofReal c*((∫⁻ x in Metric.ball (0 : ℂ) r,
-        ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ 0 x) ∂M ω)*
+    _ ≤ ∫⁻ ω, ENNReal.ofReal c*((∫⁻ x in Metric.ball 0 r,
+        ENNReal.ofReal _ ∂M ω)*
         reflectedRetainedZeroMass γ α₁ α₂ α₃ r (M ω)^(-q)) ∂P := lintegral_mono_ae hpoint
-    _ = ENNReal.ofReal c*(∫⁻ ω, (∫⁻ x in Metric.ball (0 : ℂ) r,
-        ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ 0 x) ∂M ω)*
+    _ = ENNReal.ofReal c*(∫⁻ ω, (∫⁻ x in Metric.ball 0 r,
+        ENNReal.ofReal _ ∂M ω)*
         reflectedRetainedZeroMass γ α₁ α₂ α₃ r (M ω)^(-q) ∂P) :=
       lintegral_const_mul' _ _ ENNReal.ofReal_ne_top
-    _ ≤ ENNReal.ofReal c*ENNReal.ofReal (C*r^e) := mul_le_mul' le_rfl (hb r hr hr₀)
+    _ ≤ ENNReal.ofReal c*ENNReal.ofReal _ := mul_le_mul' le_rfl (hb r hr hr₀)
     _ = _ := by rw [← ENNReal.ofReal_mul hc.le]; congr 1; ring
 
 end DOZZ.Proofs

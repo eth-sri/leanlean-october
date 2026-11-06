@@ -12,16 +12,17 @@ public import Mathlib.Analysis.Calculus.Deriv.MeanValue
 @[expose] public section
 
 namespace DOZZ.Proofs
+section
+variable {ι : Type*} [Fintype ι] [DecidableEq ι] (γ t : ℝ) (covX covY : ι → ι → ℝ) (A B : ι → ℝ) (H K : ι → ι → ℝ) (D : ι → ℝ)
+section
+variable (ht : 0 < t) (ht1 : t < 1)
+include ht ht1
 
 /-- Once the two coordinatewise Gaussian integration-by-parts identities are applied to the
 interpolation derivative, the diagonal Hessian term cancels the derivative of the Wick variance.
 `hXibp` and `hYibp` are the multivariate IBP outputs; `hHessian` is the chain-rule Hessian of a
 scalar test of the Wick chaos mass. -/
 theorem kahaneInterpolation_diagonal_cancellation
-    {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (γ t : ℝ) (covX covY : ι → ι → ℝ)
-    (A B : ι → ℝ) (H K : ι → ι → ℝ) (D : ι → ℝ)
-    (ht : 0 < t) (ht1 : t < 1)
     (hXibp : ∀ i, A i = Real.sqrt t * ∑ j, covX i j * H i j)
     (hYibp : ∀ i, B i = Real.sqrt (1 - t) * ∑ j, covY i j * H i j)
     (hHessian : ∀ i j, H i j = γ ^ 2 * K i j +
@@ -31,7 +32,7 @@ theorem kahaneInterpolation_diagonal_cancellation
         γ ^ 2 / 2 * ∑ i, (covX i i - covY i i) * D i =
       γ ^ 2 / 2 * ∑ i, ∑ j, (covX i j - covY i j) * K i j := by
   classical
-  have hsqrtT : Real.sqrt t ≠ 0 := ne_of_gt (Real.sqrt_pos.2 ht)
+  have hsqrtT := ne_of_gt (Real.sqrt_pos.2 ht)
   have hsqrtOne : Real.sqrt (1 - t) ≠ 0 :=
     ne_of_gt (Real.sqrt_pos.2 (by linarith))
   have hX : (∑ i, A i) / (2 * Real.sqrt t) =
@@ -50,7 +51,7 @@ theorem kahaneInterpolation_diagonal_cancellation
       intro i hi
       rw [hYibp i]]
     rw [show (∑ i, Real.sqrt (1 - t) * ∑ j, covY i j * H i j) =
-      Real.sqrt (1 - t) * ∑ i, ∑ j, covY i j * H i j by rw [Finset.mul_sum]]
+      Real.sqrt _ * ∑ i, ∑ j, covY i j * H i j by rw [Finset.mul_sum]]
     field_simp
   have hdiag : ∑ i, ∑ j, (covX i j - covY i j) *
       (if i = j then D i else 0) =
@@ -65,7 +66,7 @@ theorem kahaneInterpolation_diagonal_cancellation
       exact (hnot (Finset.mem_univ i)).elim
   calc
     (∑ i, A i) / (2 * Real.sqrt t) -
-        (∑ i, B i) / (2 * Real.sqrt (1 - t)) -
+        (∑ i, B i) / (2 * Real.sqrt _) -
         γ ^ 2 / 2 * ∑ i, (covX i i - covY i i) * D i
       = γ ^ 2 / 2 * ∑ i, ∑ j,
           (covX i j - covY i j) * K i j := by
@@ -102,9 +103,9 @@ theorem kahaneInterpolation_diagonal_cancellation
                 _ = _ := by
                       simp only [Finset.sum_add_distrib]
                       simp_rw [← Finset.mul_sum]
-            rw [show (1 / 2 : ℝ) * (∑ i, ∑ j, covX i j * H i j) -
-                (1 / 2 : ℝ) * (∑ i, ∑ j, covY i j * H i j) =
-                (1 / 2 : ℝ) * ((∑ i, ∑ j, covX i j * H i j) -
+            rw [show (1 / 2) * (∑ i, ∑ j, covX i j * H i j) -
+                (1 / 2) * (∑ i, ∑ j, covY i j * H i j) =
+                (1 / 2) * ((∑ i, ∑ j, covX i j * H i j) -
                   (∑ i, ∑ j, covY i j * H i j)) by ring,
               hsplit, hHsum, hdiag]
             ring
@@ -112,10 +113,6 @@ theorem kahaneInterpolation_diagonal_cancellation
 /-- Entrywise covariance order and nonnegative chaos Hessian make the interpolation derivative
 nonpositive when the path runs from `Y` at zero to `X` at one. -/
 theorem kahaneInterpolation_derivative_nonpos_of_covariance_order
-    {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (γ t : ℝ) (covX covY : ι → ι → ℝ)
-    (A B : ι → ℝ) (H K : ι → ι → ℝ) (D : ι → ℝ)
-    (ht : 0 < t) (ht1 : t < 1)
     (hcov : ∀ i j, covX i j ≤ covY i j)
     (hK : ∀ i j, 0 ≤ K i j)
     (hXibp : ∀ i, A i = Real.sqrt t * ∑ j, covX i j * H i j)
@@ -133,7 +130,11 @@ theorem kahaneInterpolation_derivative_nonpos_of_covariance_order
     apply Finset.sum_nonpos
     intro j hj
     exact mul_nonpos_of_nonpos_of_nonneg (sub_nonpos.mpr (hcov i j)) (hK i j)
-  exact mul_nonpos_of_nonneg_of_nonpos (by positivity : 0 ≤ γ ^ 2 / 2) hsum
+  exact mul_nonpos_of_nonneg_of_nonpos (by positivity) hsum
+
+end
+
+end
 
 /-- A differentiable interpolation with nonpositive derivative on the interior has the Kahane
 endpoint order. This isolates the one-dimensional real-analysis step from the Gaussian IBP proof. -/
@@ -143,7 +144,7 @@ theorem kahaneInterpolation_endpoint_le_of_derivative
     (hderiv : ∀ t ∈ Set.Ioo (0 : ℝ) 1, HasDerivAt φ (d t) t)
     (hsign : ∀ t ∈ Set.Ioo (0 : ℝ) 1, d t ≤ 0) :
     φ 1 ≤ φ 0 := by
-  have hanti : AntitoneOn φ (Set.Icc 0 1) :=
+  have hanti :=
     antitoneOn_of_deriv_nonpos (convex_Icc 0 1) hcont
       (fun t ht => (hderiv t (by simpa using ht)).differentiableAt.differentiableWithinAt)
       (fun t ht => by

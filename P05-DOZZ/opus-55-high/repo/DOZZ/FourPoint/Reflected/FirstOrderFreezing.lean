@@ -26,11 +26,10 @@ theorem reflected_shifted_outer_freezing_bound
         (-((α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ + 1)) ∂P) ≤
       ENNReal.ofReal (C * (‖z‖ ^ (1 - ξ)) ^ ((α₁ + γ / 2 - Q γ) ^ 2 / 2)) := by
   let q := (α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ + 1
-  have hq : 0 < q := (reflected_freezing_margins γ α₁ α₂ α₃ hγ hα₁ hreflect hs).2.1
   obtain ⟨C₀, ε₀, hC₀, hε₀, hb⟩ := reflected_freezing_local_input P X M γ α₁ α₂ α₃
     hγ hγ₂ hα₁ hreflect hs hX hM
-  let c : ℝ := (1 / 2 : ℝ) ^ (γ ^ 2 / 2) * (2 : ℝ) ^ (-|γ * α₂|)
-  have hc : 0 < c := by dsimp only [c]; positivity
+  let c : ℝ := (1 / 2) ^ (γ ^ 2 / 2) * 2 ^ (-|γ * α₂|)
+  have hc : 0 < c := by positivity
   let C := c ^ (-q) * C₀
   refine ⟨C, ε₀, mul_pos (Real.rpow_pos_of_pos hc _) hC₀, hε₀, ?_⟩
   intro z ξ he he₀ hz
@@ -45,26 +44,24 @@ theorem reflected_shifted_outer_freezing_bound
         (ENNReal.ofReal c *
           freezingAnnulusMassLocal γ (α₁ + γ / 2) (M ω) 0 (‖z‖ ^ (1 - ξ)) (1 / 2)) ^ (-q) := by
       rw [ENNReal.rpow_neg, ENNReal.rpow_neg]
-      exact ENNReal.inv_le_inv.mpr (ENNReal.rpow_le_rpow hl hq.le)
+      exact ENNReal.inv_le_inv.mpr (ENNReal.rpow_le_rpow hl ((reflected_freezing_margins γ α₁ α₂ α₃ hγ hα₁ hreflect hs).2.1).le)
     rw [ENNReal.mul_rpow_eq_ite] at hh
-    have hn : ENNReal.ofReal c ≠ 0 := ENNReal.ofReal_ne_zero_iff.mpr hc
-    simp only [hn, ENNReal.ofReal_ne_top, false_and, false_or, ite_false,
+    simp only [(ENNReal.ofReal_ne_zero_iff.mpr hc), ENNReal.ofReal_ne_top, false_and, false_or, ite_false,
       ENNReal.ofReal_rpow_of_pos hc] at hh
     exact hh
   calc
-    _ ≤ ∫⁻ ω, ENNReal.ofReal (c ^ (-q)) *
-        freezingAnnulusMassLocal γ (α₁ + γ / 2) (M ω) 0 (‖z‖ ^ (1 - ξ)) (1 / 2) ^ (-q) ∂P :=
+    _ ≤ ∫⁻ ω, ENNReal.ofReal _ *
+        freezingAnnulusMassLocal γ _ (M ω) 0 _ _ ^ (-q) ∂P :=
       lintegral_mono hinv
-    _ = ENNReal.ofReal (c ^ (-q)) * (∫⁻ ω,
-        freezingAnnulusMassLocal γ (α₁ + γ / 2) (M ω) 0 (‖z‖ ^ (1 - ξ)) (1 / 2) ^ (-q) ∂P) :=
+    _ = ENNReal.ofReal _ * (∫⁻ ω,
+        freezingAnnulusMassLocal γ _ (M ω) 0 _ _ ^ (-q) ∂P) :=
       lintegral_const_mul' _ _ ENNReal.ofReal_ne_top
-    _ ≤ ENNReal.ofReal (c ^ (-q)) *
-        ENNReal.ofReal (C₀ * (‖z‖ ^ (1 - ξ)) ^ ((α₁ + γ / 2 - Q γ) ^ 2 / 2)) :=
+    _ ≤ ENNReal.ofReal _ *
+        ENNReal.ofReal _ :=
       mul_le_mul' le_rfl (hb _ he he₀)
     _ = _ := by
       rw [← ENNReal.ofReal_mul (Real.rpow_pos_of_pos hc _).le]
       congr 1
-      dsimp only [C]
       ring
 
 end DOZZ.Proofs

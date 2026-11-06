@@ -32,8 +32,8 @@ theorem circle_pin_exterior (w : ℂ) (r : ℝ)
 theorem localCircle_exterior (z : ℂ) (hz : 2 ≤ ‖z‖) (p : localCircle) :
     Real.exp (-p.val.2) + 1 ≤ ‖z + p.val.1‖ := by
   have h := norm_sub_norm_le z (z + p.val.1)
-  simp only [sub_add_cancel_left, norm_neg] at h
-  linarith [p.property]
+  simp at h
+  grind
 
 /-- Removing the same Gaussian origin from all translated circles cancels both pin terms. -/
 theorem offCenter_unpinned_circle_covariance
@@ -46,9 +46,9 @@ theorem offCenter_unpinned_circle_covariance
           ⟨Real.exp (-p.val.2), Real.exp_pos _⟩
           ⟨Real.exp (-q.val.2), Real.exp_pos _⟩ := by
   let : IsProbabilityMeasure P := hX.1
-  have hp := circle_pin_exterior (z + p.val.1) p.val.2
+  have hp := circle_pin_exterior _ p.val.2
     (localCircle_exterior z hz p)
-  have hq := circle_pin_exterior (z + q.val.1) q.val.2
+  have hq := circle_pin_exterior _ q.val.2
     (localCircle_exterior z hz q)
   have hzpin := circle_pin_exterior z 0 (by simpa only [neg_zero, Real.exp_zero, one_add_one_eq_two] using hz)
   have hp0 : circleLogPotential ‖p.val.1‖₊
@@ -59,13 +59,13 @@ theorem offCenter_unpinned_circle_covariance
       ⟨Real.exp (-q.val.2), Real.exp_pos _⟩ ⟨1, by norm_num⟩ = 0 := by
     simpa only [Real.log_one] using circleLogPotential_of_add_le (d := ‖q.val.1‖₊)
       ⟨Real.exp (-q.val.2), Real.exp_pos _⟩ ⟨1, by norm_num⟩ q.property
-  rw [covariance_fun_sub_fun_sub (hc.2.1 _ _) (hc.2.1 _ _) (hc.2.1 _ _) (hc.2.1 _ _)]
+  rw [covariance_fun_sub_fun_sub (hc.2.1 ..) (hc.2.1 ..) (hc.2.1 ..) (hc.2.1 ..)]
   rw [covariance_comm (fun ω => Xc ω z 0)
-    (fun ω => Xc ω (z + q.val.1) q.val.2)]
+    (fun ω => Xc ω _ q.val.2)]
   simp only [neg_zero, Real.exp_zero] at hzpin
   rw [circleAverage_covariance P X Xc hX hc,
-    circleAverage_covariance P X Xc hX hc (z + p.val.1) z,
-    circleAverage_covariance P X Xc hX hc (z + q.val.1) z,
+    circleAverage_covariance P X Xc hX hc _ z,
+    circleAverage_covariance P X Xc hX hc _ z,
     offCenter_origin_variance X Xc hX hc z hz]
   simp only [add_sub_add_left_eq_sub, add_sub_cancel_left,
     neg_zero, Real.exp_zero, hp, hq, hzpin, hp0, hq0]

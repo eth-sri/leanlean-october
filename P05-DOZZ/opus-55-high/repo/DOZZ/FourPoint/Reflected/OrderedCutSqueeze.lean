@@ -26,9 +26,9 @@ theorem reflected_ordered_cut_squeeze {ι : Type*} (l : Filter ι)
     filter_upwards [hg.eventually (lt_mem_nhds ha),hlow] with i hi hl
     exact hi.trans_le hl
   · intro b hb
-    obtain ⟨H,hHb,hH⟩ := ((hL.eventually (gt_mem_nhds hb)).and (eventually_gt_atTop (0 : ℝ))).exists
+    obtain ⟨H,hHb,hH⟩ := ((hL.eventually (gt_mem_nhds hb)).and (eventually_gt_atTop 0)).exists
     have ht : Tendsto (fun i => k H i+error H i) l (𝓝 (Lcut H)) := by
-      simpa only [add_zero] using (hk H hH).add (he H hH)
+      simpa using (hk H hH).add (he H hH)
     filter_upwards [ht.eventually (gt_mem_nhds hHb),hupp H hH] with i hi hu
     exact hu.trans_lt hi
 

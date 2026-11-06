@@ -29,6 +29,6 @@ theorem structureConstant_lastone_limit
       (𝓝[>] 0) (𝓝 (-4)) := by
   apply lastone_structureConstant_limit_of_moment P M γ μ ε hγ hμ
   exact lastone_rho_smallPower_limit P X M γ ε hγ hγ2
-    ⟨hε.1, hε.2.trans_le (min_le_left _ _)⟩ hX hM
+    ⟨hε.1, hε.2.trans_le (min_le_left ..)⟩ hX hM
 
 end DOZZ.Proofs

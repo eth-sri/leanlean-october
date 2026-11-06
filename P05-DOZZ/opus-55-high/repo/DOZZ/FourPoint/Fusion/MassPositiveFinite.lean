@@ -23,11 +23,11 @@ theorem fusion_gammaHalfMass_pos_finite_ae {Ω : Type*} [MeasurableSpace Ω]
   have hz1 : z ≠ 1 := by
     intro he
     rw [he, norm_one] at hz4
-    norm_num at hz4
-  have hzinj : Function.Injective (![z, 0, 1] : Fin 3 → ℂ) := by
+    linarith
+  have hzinj : Function.Injective (![z, 0, 1]) := by
     intro i j hij
     fin_cases i <;> fin_cases j <;> simp_all
-  have ha : ∀ j : Fin 3, (![-γ / 2, α₁, α₂] : Fin 3 → ℝ) j < Q γ := by
+  have ha : ∀ j : Fin 3, (![-γ / 2, α₁, α₂]) j < Q γ := by
     intro j
     fin_cases j
     · change -γ / 2 < Q γ
@@ -37,7 +37,7 @@ theorem fusion_gammaHalfMass_pos_finite_ae {Ω : Type*} [MeasurableSpace Ω]
     · change α₁ < Q γ
       unfold Q
       linarith
-    · exact hα₂
+    assumption
   exact coulomb_mass_pos_finite_ae P X hX γ hγ hγ2 M hM ![z, 0, 1] hzinj
     ![-γ / 2, α₁, α₂] α₃ ha hα₃
 

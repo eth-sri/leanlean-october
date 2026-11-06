@@ -17,8 +17,7 @@ namespace DOZZ
 
 /-- The negative p moment of the literal gamma/2 kernel mass. -/
 noncomputable def gammaHalfMoment {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (M : Ω → Measure ℂ) (γ α₁ α₂ α₃ : ℝ)
-    (p : ℝ) (z : ℂ) : ℝ :=
+    (P : Measure Ω) (M : Ω → Measure ℂ) (γ α₁ α₂ α₃ p : ℝ) (z : ℂ) : ℝ :=
   (∫⁻ ω, ENNReal.rpow
     (coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃) (-p) ∂P).toReal
 

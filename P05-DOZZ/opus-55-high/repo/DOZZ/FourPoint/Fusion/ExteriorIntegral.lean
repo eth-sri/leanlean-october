@@ -20,30 +20,30 @@ theorem fusion_exteriorSecondKernel_integral_bound (γ α₁ α₂ α₃ : ℝ) 
     ‖∫ x in (Metric.ball (0 : ℂ) (1 / 2))ᶜ,
       (gammaHalfKernel γ α₁ α₂ α₃ z x : ℂ) / (x - z) ^ 2 ∂μ‖ ≤
       16 * (coulombMass γ μ ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃).toReal := by
-  let f := fun x : ℂ => (gammaHalfKernel γ α₁ α₂ α₃ z x : ℂ) / (x - z) ^ 2
+  let f := fun x => (gammaHalfKernel γ α₁ α₂ α₃ z x : ℂ) / (x - z) ^ 2
   have hbound : (∫⁻ x in (Metric.ball (0 : ℂ) (1 / 2))ᶜ, ENNReal.ofReal ‖f x‖ ∂μ) ≤
       ENNReal.ofReal 16 * coulombMass γ μ ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ := by
     calc
-      _ ≤ ∫⁻ x in (Metric.ball (0 : ℂ) (1 / 2))ᶜ,
+      _ ≤ ∫⁻ x in (Metric.ball (0 : ℂ) _)ᶜ,
           ENNReal.ofReal (16 * gammaHalfKernel γ α₁ α₂ α₃ z x) ∂μ := by
         apply lintegral_mono_ae
         filter_upwards [ae_restrict_mem Metric.isOpen_ball.measurableSet.compl] with x hx
         have hx' : 1 / 2 ≤ ‖x‖ := by
-          simpa only [Set.mem_compl_iff, Metric.mem_ball, dist_zero_right, not_lt] using hx
+          simp_all
         exact ENNReal.ofReal_le_ofReal (fusion_exteriorSecondKernel_bound γ α₁ α₂ α₃ z x hz hx')
-      _ = ENNReal.ofReal 16 * ∫⁻ x in (Metric.ball (0 : ℂ) (1 / 2))ᶜ,
+      _ = ENNReal.ofReal 16 * ∫⁻ x in (Metric.ball (0 : ℂ) _)ᶜ,
           ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂μ := by
         simp only [ENNReal.ofReal_mul (by norm_num : (0 : ℝ) ≤ 16)]
         exact lintegral_const_mul' _ _ ENNReal.ofReal_ne_top
-      _ ≤ ENNReal.ofReal 16 * ∫⁻ x, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂μ :=
-        mul_le_mul' le_rfl (setLIntegral_le_lintegral _ _)
+      _ ≤ ENNReal.ofReal 16 * ∫⁻ x, ENNReal.ofReal _ ∂μ :=
+        mul_le_mul' le_rfl (setLIntegral_le_lintegral ..)
       _ = _ := by rw [← fusion_gammaHalfMass_kernel γ α₁ α₂ α₃ z μ hzμ h0μ h1μ]
   calc
-    _ ≤ (∫⁻ x in (Metric.ball (0 : ℂ) (1 / 2))ᶜ, ENNReal.ofReal ‖f x‖ ∂μ).toReal :=
+    _ ≤ (∫⁻ x in (Metric.ball (0 : ℂ) _)ᶜ, ENNReal.ofReal ‖f x‖ ∂μ).toReal :=
       norm_integral_le_lintegral_norm _
     _ ≤ (ENNReal.ofReal 16 * coulombMass γ μ ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃).toReal :=
       ENNReal.toReal_mono (ENNReal.mul_ne_top ENNReal.ofReal_ne_top hm.ne) hbound
-    _ = _ := by rw [ENNReal.toReal_mul, ENNReal.toReal_ofReal (by norm_num : (0 : ℝ) ≤ 16)]
+    _ = _ := by simp
 
 /-- Multiplying by an inverse power improves the exterior bound to the preceding inverse order. -/
 theorem fusion_exterior_inverse_integral_bound (γ α₁ α₂ α₃ s : ℝ) (z : ℂ)

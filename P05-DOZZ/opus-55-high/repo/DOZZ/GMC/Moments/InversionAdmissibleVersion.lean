@@ -43,8 +43,7 @@ theorem isGMCOf_restrict_admissible_version
     apply Measure.measurable_of_measurable_coe
     intro s hs
     have hEq : (fun ω => Nc ω s) = fun ω => N ω (s ∩ U) := by
-      funext ω
-      exact Measure.restrict_apply hs
+      aesop
     rw [hEq]
     exact (Measure.measurable_coe (hs.inter hU.measurableSet)).comp hNmeas
   have hNcsupport : ∀ ω, Nc ω Uᶜ = 0 := by
@@ -84,9 +83,9 @@ theorem isGMCOf_restrict_admissible_version
       exact integral_restrict_eq_integral_of_zero_on_compl
         (logRegularizationReference Set.univ (fun x => normPlus x ^ (-4 : ℝ)))
         U hU.measurableSet
-        (fun x => f x * Real.exp (γ * Y ω (Real.exp (-r)) x - γ ^ 2 / 2 *
-          ∫ ω', Y ω' (Real.exp (-r)) x ^ 2 ∂P))
-        (fun x hx => by rw [hfzero x hx, zero_mul])
+        (fun x => f x * Real.exp (γ * Y ω _ x - γ ^ 2 / 2 *
+          ∫ ω', Y ω' _ x ^ 2 ∂P))
+        (fun x hx => by simp_all)
     have hFull := circleCutoff_testMass_eq_regularizedGMC P X hX Xc hXc γ r
       (f := f)
     filter_upwards [] with ω
@@ -110,20 +109,17 @@ theorem isGMCOf_restrict_admissible_version
       exact TendstoInMeasure.congr (fun r => (hseq r).symm)
         (Filter.Eventually.of_forall fun _ => rfl) (hMconv f)
     have hseq (r : ℝ) := (hcutoffs f hfcompact hfU r).symm
-    have hfzero := boundedContinuousFunction_eq_zero_off_tsupport_subset f U hfU
     have htarget : (fun ω => ∫ x, f x ∂M ω) =ᵐ[P]
         fun ω => ∫ x, f x ∂Nc ω := by
       filter_upwards [hMN] with ω hω
       rw [show Nc ω = (N ω).restrict U by rfl]
       rw [hω]
       exact (integral_restrict_eq_integral_of_zero_on_compl (N ω) U hU.measurableSet
-        (fun x => f x) hfzero).symm
+        f (boundedContinuousFunction_eq_zero_off_tsupport_subset f U hfU)).symm
     exact TendstoInMeasure.congr hseq htarget hMconv'
   refine ⟨Nc, ?_, hNcfinite, ?_⟩
-  · refine ⟨hNcmeas, hNcsupport, hNccompact, ?_⟩
-    intro f hfcompact hfU
-    exact hconv f hfcompact hfU
+  · trivial
   · filter_upwards [hMN] with ω hω
-    rw [show Nc ω = (N ω).restrict U by rfl, hω]
+    aesop
 
 end DOZZ.Proofs

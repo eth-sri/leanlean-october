@@ -55,23 +55,22 @@ theorem dual_source_pareto_cut_increment_tendsto
     (((dualOuterMass γ α₁ α₂ α₃ (M v.1) z ξ).toReal+
       dual_radial_scale γ ν h Xc z v.1*(twoSidedReflectionCutMass γ c₀ B Z v.2).toReal*w)^(-p)-
       (dualOuterMass γ α₁ α₂ α₃ (M v.1) z ξ).toReal ^(-p)) ∂paretoMeasure 1 a) ∂P.prod P
-  have hν : 0 < ν := sub_pos.mpr hα₁
-  have ha : 0 < a := div_pos (mul_pos (by norm_num) hν) hγ
+  have ha : 0 < a := div_pos (mul_pos (by norm_num) (sub_pos.mpr hα₁)) hγ
   have ha1 : a < 1 := by
     dsimp only [a]
     rw [div_lt_one hγ]
     linarith only [hreflect]
-  have hp : 0 < p := div_pos (by linarith only [hs]) hγ
-  have hshift : α₁+2*ν-2/γ < Q γ := by dsimp only [ν]; linarith only [hshifted]
-  have hcharge : α₁+2*ν-2/γ = 2*Q γ-α₁-2/γ := by dsimp only [ν]; ring
+  have hp : 0 < p := div_pos (by linarith) hγ
+  have hshift : α₁+2*ν-2/γ < Q γ := by linarith
+  have hcharge : α₁+2*ν-2/γ = 2*Q γ-α₁-2/γ := by linarith
   let Λ := (∫⁻ ω, rho γ (M ω) (2*Q γ-α₁-2/γ) α₂ α₃ ^(-(p+a)) ∂P).toReal
-  have hL : Tendsto (fun z : ℂ => L z/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 Λ) := by
+  have hL : Tendsto (fun z : ℂ => L z/‖z‖^κ) (𝓝[≠] 0) (𝓝 Λ) := by
     simpa only [L,κ,a,hcharge,Λ] using dual_leading_radial_moment_toReal_tendsto
       P X hX γ hγ hγ₂ M hM Xc hc ν α₁ α₂ α₃ ξ (p+a) h hh hξ hξ1
         (add_pos hp ha).le hshift hα₂ hα₃
-  have hF : Tendsto (fun z : ℂ => F z/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 0) := by
+  have hF : Tendsto (fun z : ℂ => F z/‖z‖^κ) (𝓝[≠] 0) (𝓝 0) := by
     have ht := dual_radial_first_order_littleO P X hX γ hγ hγ₂ M hM Xc hc
-      α₁ α₂ α₃ ξ (p+1) h κ hh hξ hξ1 (by linarith only [hp]) hslack
+      α₁ α₂ α₃ ξ (p+1) h κ hh hξ hξ1 (by positivity) hslack
     apply ht.congr'
     filter_upwards [self_mem_nhdsWithin] with z hz
     simp only [F, dual_radial_scale_eq_restart γ ν h Xc z hz]
@@ -87,19 +86,17 @@ theorem dual_source_pareto_cut_increment_tendsto
     filter_upwards [hsmall] with z hz
     exact (dual_source_pareto_cut_increment_error P X hX γ hγ hγ₂ M hM Xc hc
       α₁ α₂ α₃ ξ h p c₀ hα₁ hreflect hα₂ hα₃ hh hp hξ hξ1 B Z hData z hz.1 hz.2.1 hz.2.2).2
-  have herr : Tendsto (fun z : ℂ => (D z-c*L z*S)/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 0) := by
+  have herr : Tendsto (fun z : ℂ => (D z-c*L z*S)/‖z‖^κ) (𝓝[≠] 0) (𝓝 0) := by
     rw [tendsto_zero_iff_norm_tendsto_zero]
-    have hmajor : Tendsto (fun z : ℂ => (C*J)*(F z/‖z‖^κ)) (𝓝[≠] (0 : ℂ)) (𝓝 0) := by
-      simpa only [mul_zero] using hF.const_mul (C*J)
+    have hmajor : Tendsto (fun z : ℂ => (C*J)*(F z/‖z‖^κ)) (𝓝[≠] 0) (𝓝 0) := by
+      simpa using hF.const_mul (C*J)
     apply squeeze_zero' (Filter.Eventually.of_forall fun z => norm_nonneg _) ?_ hmajor
     filter_upwards [hbound] with z hz
     rw [Real.norm_eq_abs, abs_div, abs_of_nonneg (Real.rpow_nonneg (norm_nonneg z) _)]
-    have hh := div_le_div_of_nonneg_right hz (Real.rpow_nonneg (norm_nonneg z) κ)
-    convert hh using 1; ring
-  have ht := herr.add ((hL.const_mul c).mul_const S)
-  change Tendsto (fun z : ℂ => D z / ‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 (c*Λ*S))
-  have he : (fun z : ℂ => (D z-c*L z*S)/‖z‖^κ+c*(L z/‖z‖^κ)*S) =
-      (fun z : ℂ => D z/‖z‖^κ) := by funext z; ring
-  simpa only [Pi.add_apply, zero_add, he] using ht
+    convert (div_le_div_of_nonneg_right hz (Real.rpow_nonneg (norm_nonneg z) κ)) using 1; ring
+  change Tendsto (fun z : ℂ => D z / ‖z‖^κ) _ _
+  have he : (fun z => (D z-c*L z*S)/‖z‖^κ+c*(L z/‖z‖^κ)*S) =
+      (fun z => D z/‖z‖^κ) := by ring
+  simpa only [Pi.add_apply, zero_add, he] using (herr.add ((hL.const_mul c).mul_const S))
 
 end DOZZ.Proofs

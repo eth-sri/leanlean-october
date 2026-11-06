@@ -19,11 +19,7 @@ theorem dual_restart_radius_ratio (z : ℂ) (hz : z ≠ 0) (h ξ : ℝ) :
   have hr := Real.rpow_pos_of_pos hn (1-ξ)
   have he : ‖z‖ = ‖z‖^(1-ξ)*‖z‖^ξ := by
     rw [← Real.rpow_add hn, sub_add_cancel, Real.rpow_one]
-  have hratio : ‖z‖/‖z‖^(1-ξ) = ‖z‖^ξ := by
-    calc
-      _ = (‖z‖^(1-ξ)*‖z‖^ξ)/‖z‖^(1-ξ) := congrArg (fun y => y/‖z‖^(1-ξ)) he
-      _ = _ := mul_div_cancel_left₀ _ hr.ne'
-  rw [mul_div_assoc, hratio]
+  grind
 
 /-- The supplied chaos admits independent lateral copies whose actual signed separated-mass
 error is little-o at every exponent below `ξ`. Their radial removal and independence are
@@ -47,13 +43,12 @@ theorem dual_source_decoupling_littleO
          (dualCopiedSeparatedInverseMoment P Xc (N z) γ α₁ α₂ α₃ q z
           (Real.exp (-h)*‖z‖) (‖z‖^(1-ξ))).toReal)/‖z‖^κ)
         (𝓝[≠] (0 : ℂ)) (𝓝 0) := by
-  classical
   obtain ⟨C, hC, hbound⟩ := dual_source_decoupling_bound P X Xc hX hc hm hcont
     γ hγ hγ₂ M hM α₁ α₂ α₃ q hq
   let s := fun z : ℂ => Real.exp (-h)*‖z‖
   let r := fun z : ℂ => ‖z‖^(1-ξ)
   let d := 3*γ^2/2*(q^2+q)
-  let valid := fun z : ℂ => ‖z‖ ≤ 1 ∧ 0 < s z ∧ 0 < r z ∧ r z ≤ 1 ∧
+  let valid := fun z => ‖z‖ ≤ 1 ∧ 0 < s z ∧ 0 < r z ∧ r z ≤ 1 ∧
     s z/r z ≤ 1/2 ∧ d*(s z/r z) ≤ 1
   let PropN := fun z (N : Ω → Measure ℂ) => Measurable N ∧
     IndepFun (originRadialPath Xc) N P ∧
@@ -66,25 +61,25 @@ theorem dual_source_decoupling_littleO
     by_cases hv : valid z
     · obtain ⟨N, hN⟩ := hbound z hv.1 (s z) (r z)
         hv.2.1 hv.2.2.1 hv.2.2.2.1 hv.2.2.2.2.1 hv.2.2.2.2.2
-      exact ⟨N, fun _ => hN⟩
+      grind
     · exact ⟨fun _ => 0, fun hh => (hv hh).elim⟩
   choose N hN using hex
-  have hn : Tendsto (fun z : ℂ => ‖z‖) (𝓝[≠] (0 : ℂ)) (𝓝 0) := by
-    simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
-  have hpow (v : ℝ) (hv : 0 < v) : Tendsto (fun z : ℂ => ‖z‖^v) (𝓝[≠] (0 : ℂ)) (𝓝 0) := by
+  have hn : Tendsto (fun z => ‖z‖) (𝓝[≠] (0 : ℂ)) (𝓝 0) := by
+    simpa using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
+  have hpow (v : ℝ) (hv : 0 < v) : Tendsto (fun z => ‖z‖^v) (𝓝[≠] (0 : ℂ)) (𝓝 0) := by
     simpa only [Function.comp_def, Real.zero_rpow hv.ne'] using
       ((Real.continuous_rpow_const hv.le).tendsto (0 : ℝ)).comp hn
-  have hratio : Tendsto (fun z : ℂ => s z/r z) (𝓝[≠] (0 : ℂ)) (𝓝 0) := by
+  have hratio : Tendsto (fun z => s z/r z) (𝓝[≠] (0 : ℂ)) (𝓝 0) := by
     have ht := (hpow ξ hξ).const_mul (Real.exp (-h))
-    simp only [mul_zero] at ht
+    simp at ht
     apply ht.congr'
     filter_upwards [self_mem_nhdsWithin] with z hz
     exact (dual_restart_radius_ratio z hz h ξ).symm
   have hdlim := hratio.const_mul d
-  simp only [mul_zero] at hdlim
+  simp at hdlim
   have hv : ∀ᶠ z : ℂ in 𝓝[≠] (0 : ℂ), valid z := by
     filter_upwards [self_mem_nhdsWithin, hn.eventually (gt_mem_nhds zero_lt_one),
-      (hpow (1-ξ) (sub_pos.mpr hξ1)).eventually (gt_mem_nhds zero_lt_one),
+      (hpow _ (sub_pos.mpr hξ1)).eventually (gt_mem_nhds zero_lt_one),
       hratio.eventually (gt_mem_nhds (by norm_num : (0 : ℝ) < 1/2)),
       hdlim.eventually (gt_mem_nhds zero_lt_one)] with z hz hz1 hr1 hsep ht1
     exact ⟨hz1.le, mul_pos (Real.exp_pos _) (norm_pos_iff.mpr hz),
@@ -92,8 +87,8 @@ theorem dual_source_decoupling_littleO
   refine ⟨N, ?_, ?_⟩
   · filter_upwards [hv] with z hz
     have hh := hN z hz
-    exact ⟨hh.1, hh.2.1, hh.2.2.1, hh.2.2.2.1⟩
-  let f := fun z : ℂ => (dualSeparatedInverseMoment P M γ α₁ α₂ α₃ q z (s z) (r z)).toReal-
+    tauto
+  let f := fun z => (dualSeparatedInverseMoment P M γ α₁ α₂ α₃ q z (s z) (r z)).toReal-
     (dualCopiedSeparatedInverseMoment P Xc (N z) γ α₁ α₂ α₃ q z (s z) (r z)).toReal
   have hb : ∀ᶠ z : ℂ in 𝓝[≠] (0 : ℂ), ‖(f z : ℂ)‖ ≤
       (C*Real.exp (-h))*‖z‖^ξ := by

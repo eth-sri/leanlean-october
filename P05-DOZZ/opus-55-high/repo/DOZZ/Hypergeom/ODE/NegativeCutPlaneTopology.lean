@@ -33,21 +33,11 @@ theorem gaussNegativeCutPlane_subset_regularPlane :
   change z ≠ 0 ∧ z ≠ 1
   change z.im ≠ 0 ∨ z.re < 0 at hz
   rcases hz with him | hnegative
+  · aesop
   · constructor
+    · aesop
     · intro h
-      apply him
-      rw [h]
-      simp
-    · intro h
-      apply him
-      rw [h]
-      simp
-  · constructor
-    · intro h
-      have hre : z.re = 0 := by rw [h]; simp
-      linarith
-    · intro h
-      have hre : z.re = 1 := by rw [h]; simp
+      have hre : z.re = 1 := by simp_all
       linarith
 
 /-- The negative cut plane is star-convex about `-1/2`. -/
@@ -55,39 +45,23 @@ theorem gaussNegativeCutPlane_starConvex :
     StarConvex ℝ (-1 / 2 : ℂ) gaussNegativeCutPlane := by
   intro z hz s t hs ht hst
   change z.im ≠ 0 ∨ z.re < 0 at hz
-  change (s • (-1 / 2 : ℂ) + t • z).im ≠ 0 ∨
-    (s • (-1 / 2 : ℂ) + t • z).re < 0
+  change (s • (-1 / 2) + t • z).im ≠ 0 ∨
+    (s • (-1 / 2) + t • z).re < 0
   rcases hz with him | hreal
   · by_cases ht0 : t = 0
     · right
       have hs1 : s = 1 := by linarith
-      rw [ht0, hs1]
-      norm_num
-    · left
-      have himag : (s • (-1 / 2 : ℂ) + t • z).im = t * z.im := by
-        simp [Complex.add_im]
-      rw [himag]
-      have htpos : 0 < t := by
-        by_contra hnot
-        have htneg : t ≤ 0 := le_of_not_gt hnot
-        exact ht0 (le_antisymm htneg ht)
-      exact mul_ne_zero htpos.ne' him
+      bound
+    simp_all
   · right
-    have hrealpart : (s • (-1 / 2 : ℂ) + t • z).re = -(s / 2) + t * z.re := by
+    have hrealpart : (s • (-1 / 2) + t • z).re = -(s / 2) + t * z.re := by
       simp [Complex.add_re]
       ring
-    rw [hrealpart]
     by_cases ht0 : t = 0
-    · have hs1 : s = 1 := by linarith
-      rw [ht0, hs1]
-      norm_num
+    · simp_all
     · have htpos : 0 < t := by
-        by_contra hnot
-        have htneg : t ≤ 0 := le_of_not_gt hnot
-        exact ht0 (le_antisymm htneg ht)
-      have hsecond : t * z.re < 0 := mul_neg_of_pos_of_neg htpos hreal
-      have hfirst : -(s / 2) ≤ 0 := neg_nonpos.mpr (div_nonneg hs (by norm_num))
-      linarith
+        positivity
+      nlinarith
 
 /-- Contractibility of the negative cut plane. -/
 instance gaussNegativeCutPlane_contractible : ContractibleSpace gaussNegativeCutPlane := by

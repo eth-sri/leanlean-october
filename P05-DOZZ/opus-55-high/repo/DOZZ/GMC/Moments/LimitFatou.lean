@@ -28,8 +28,7 @@ theorem lintegral_ennreal_rpow_le_of_tendstoInMeasure
     ∫⁻ ω, ENNReal.rpow (ENNReal.ofReal (g ω)) p ∂P ≤ C := by
   obtain ⟨ns, hns, hsub⟩ := hfg.exists_seq_tendsto_ae
   let ψ : ℝ → ℝ≥0∞ := fun x => ENNReal.rpow (ENNReal.ofReal (max x 0)) p
-  have hψ : Continuous ψ := by
-    exact ENNReal.continuous_rpow_const.comp
+  have hψ : Continuous ψ := ENNReal.continuous_rpow_const.comp
       (ENNReal.continuous_ofReal.comp
         (continuous_max.comp (continuous_id.prodMk continuous_const)))
   have hlim : ∀ᵐ ω ∂P,
@@ -37,19 +36,17 @@ theorem lintegral_ennreal_rpow_le_of_tendstoInMeasure
     filter_upwards [hsub] with ω hω
     exact Filter.Tendsto.liminf_eq (hψ.continuousAt.tendsto.comp hω)
   have htarget : ∀ᵐ ω ∂P, ψ (g ω) = ENNReal.rpow (ENNReal.ofReal (g ω)) p := by
-    filter_upwards [hgbound] with ω hω
-    simp [ψ]
+    aesop
   have hEq : (fun ω => ENNReal.rpow (ENNReal.ofReal (g ω)) p) =ᵐ[P]
       (fun ω => Filter.liminf (fun i => ψ (f (ns i) ω)) atTop) := by
     filter_upwards [hlim, htarget] with ω hlimω htargetω
-    exact (hlimω.trans htargetω).symm
+    simp_all
   calc
-    ∫⁻ ω, ENNReal.rpow (ENNReal.ofReal (g ω)) p ∂P
-        = ∫⁻ ω, Filter.liminf (fun i => ψ (f (ns i) ω)) atTop ∂P := by
-            exact lintegral_congr_ae hEq
-    _ ≤ Filter.liminf (fun i => ∫⁻ ω, ψ (f (ns i) ω) ∂P) atTop :=
+    ∫⁻ ω, ENNReal.rpow _ p ∂P
+        = ∫⁻ ω, Filter.liminf (fun i => ψ _) atTop ∂P := lintegral_congr_ae hEq
+    _ ≤ Filter.liminf (fun i => ∫⁻ ω, ψ _ ∂P) atTop :=
       lintegral_liminf_le' (fun i => hfmeas (ns i))
-    _ ≤ Filter.limsup (fun i => ∫⁻ ω, ψ (f (ns i) ω) ∂P) atTop :=
+    _ ≤ Filter.limsup (fun i => ∫⁻ ω, ψ _ ∂P) atTop :=
       Filter.liminf_le_limsup
     _ ≤ C := Filter.limsup_le_of_le (by isBoundedDefault)
       (Filter.Eventually.of_forall fun i => hbound (ns i))

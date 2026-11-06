@@ -21,11 +21,12 @@ open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal Distributions InnerProductSpace RealInnerProductSpace
 
 namespace DOZZ.Proofs
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
 
 /-- The actual finite circle Wick density is the product of the local lateral Wick
 density and its exact finite radial reinsertion factor, at every valid chart point. -/
 theorem originCircle_cutoff_wick_reinsertion_ae
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
@@ -41,18 +42,17 @@ theorem originCircle_cutoff_wick_reinsertion_ae
           γ ^ 2 / 2 * gaussianVariance P
             (fun ω' => originLateralCircleRegularization Xc ρ ω' (Real.exp (-r)) x)) := by
   have hxU : 2 * ρ < ‖x‖ := hx
-  have hxρ : ρ ≤ ‖x‖ := by linarith only [hxU, hρ]
-  have hbound : ρ ≤ ‖x‖ - Real.exp (-r) := by linarith only [hxU, hr]
+  have hxρ : ρ ≤ ‖x‖ := by linarith
+  have hbound : ρ ≤ ‖x‖ - Real.exp (-r) := by linarith
   have hx0 : x ≠ 0 := norm_pos_iff.mp (hρ.trans_le hxρ)
   have hCY := circleAverageL2_ae_eq hc (x, r)
   have hLY := clampedCircleLateralSample_ae_eq P X Xc hX hc hm ρ hρ x r
-  have hRY := originCircleRadialL2_ae_eq P X Xc hX hc hm ρ hρ x r
   have hCV : gaussianVariance P (circleAverageL2 hc (x, r)) =
       gaussianVariance P (fun ω => Xc ω x r) := by
     unfold gaussianVariance gaussianCovariance
     apply integral_congr_ae
     filter_upwards [hCY] with ω hω
-    rw [hω]
+    simp_all
   have hLV : gaussianVariance P (originCircleLateralL2 hc ρ x r) =
       gaussianVariance P (fun ω => originLateralCircleRegularization Xc ρ ω (Real.exp (-r)) x) := by
     unfold gaussianVariance gaussianCovariance
@@ -63,7 +63,7 @@ theorem originCircle_cutoff_wick_reinsertion_ae
       simp only [originLateralCircleRegularization, one_div, Real.log_inv, Real.log_exp, neg_neg]
     rw [hl, hω]
   filter_upwards [originCircleLateralL2_wick_factorization P X Xc hX hc ρ hρ x r γ hbound,
-    hCY, hLY, hRY, hA, originRadialPath_eval_ae hcont] with ω hw hC hL hR hAω hpath
+    hCY, hLY, (originCircleRadialL2_ae_eq P X Xc hX hc hm ρ hρ x r), hA, originRadialPath_eval_ae hcont] with ω hw hC hL hR hAω hpath
   have hl : originLateralCircleRegularization Xc ρ ω (Real.exp (-r)) x =
       clampedCircleLateralSample Xc ρ ω x r := by
     simp only [originLateralCircleRegularization, one_div, Real.log_inv, Real.log_exp, neg_neg]
@@ -78,16 +78,15 @@ theorem originCircle_cutoff_wick_reinsertion_ae
   rw [hrad] at hd
   calc _ = (normPlus x ^ (-4 : ℝ) *
         Real.exp (γ * originCircleRadialL2 hc ρ x r ω -
-          γ ^ 2 / 2 * gaussianVariance P (originCircleRadialL2 hc ρ x r))) *
-        Real.exp (γ * originLateralCircleRegularization Xc ρ ω (Real.exp (-r)) x -
+          γ ^ 2 / 2 * gaussianVariance P _)) *
+        Real.exp (γ * originLateralCircleRegularization Xc ρ ω _ x -
           γ ^ 2 / 2 * gaussianVariance P
-            (fun ω' => originLateralCircleRegularization Xc ρ ω' (Real.exp (-r)) x)) := by ring
-    _ = _ := by rw [hd]
+            (fun ω' => originLateralCircleRegularization Xc ρ ω' _ x)) := by ring
+    _ = _ := by simp_all
 
 /-- Write the admissible cutoff integral against planar volume with its reference
 density. This identity is valid even when a particular signed section is not integrable. -/
 theorem regularizedLogChaosTestMass_eq_density_integral
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (U : Set ℂ) (dens : ℂ → ℝ) (hm : Measurable dens) (hpos : ∀ x, 0 ≤ dens x)
     (Y : Ω → ℝ → ℂ → ℝ) (γ r : ℝ) (ω : Ω) (f : BoundedContinuousFunction ℂ ℝ) :
     regularizedLogChaosTestMass P U dens Y γ r ω f =
@@ -97,23 +96,24 @@ theorem regularizedLogChaosTestMass_eq_density_integral
   have hd : Measurable (fun x => ENNReal.ofReal (dens x)) := ENNReal.measurable_ofReal.comp hm
   rw [integral_withDensity_eq_integral_toReal_smul hd
     (ae_of_all _ (fun x => ENNReal.ofReal_lt_top))]
-  simp only [smul_eq_mul]
+  simp
   apply integral_congr_ae
   filter_upwards [] with x
   rw [ENNReal.toReal_ofReal (hpos x)]
   unfold gaussianVariance gaussianCovariance
-  simp only [pow_two, mul_assoc]
+  ring
+section
+variable (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
+section
+variable (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2)) (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+include hX hc hm hcont
+section
+variable (A : Ω → TwoSidedPath) (hAm : Measurable A) (hA : A =ᵐ[P] originRadialPath Xc) (ρ γ r : ℝ) (hρ : 0 < ρ) (hr : Real.exp (-r) ≤ ρ)
+include hAm hA hρ hr
 
 /-- The exact finite Wick density identity integrates to equality of the original
 circle test mass and the lateral mass with the actual finite radial-weighted test. -/
 theorem originCircle_cutoff_wick_reinsertion_density_integral_ae
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
-    (A : Ω → TwoSidedPath) (hAm : Measurable A) (hA : A =ᵐ[P] originRadialPath Xc)
-    (ρ γ r : ℝ) (hρ : 0 < ρ) (hr : Real.exp (-r) ≤ ρ)
     (f : ℂ → ℝ) :
     ∀ᵐ ω ∂P,
       (∫ x in originLateralChart ρ, f x * (normPlus x ^ (-4 : ℝ) *
@@ -141,21 +141,20 @@ theorem originCircle_cutoff_wick_reinsertion_density_integral_ae
       |>.stronglyMeasurable.integral_prod_right.measurable
   have hY := originLateralCircleRegularization_admissible P X Xc hX hc hm ρ hρ
   have hvL := admissibleLogRegularization_variance_measurable P U
-    originLateralPlaneDensity (min ρ 1) (originLateralCircleRegularization Xc ρ) hY (Real.exp (-r))
+    originLateralPlaneDensity _ _ hY (Real.exp (-r))
   have harg : Measurable (fun p : Ω × ℂ => (A p.1, (p.2, r))) :=
-    (hAm.comp measurable_fst).prodMk (measurable_snd.prodMk (measurable_const :
-      Measurable (fun _ : Ω × ℂ => r)))
+    by fun_prop
   have hW : Measurable (fun p : Ω × ℂ => originRadialCutoffReinsertionWeight hc ρ γ r (A p.1) p.2) := by
     change Measurable ((fun p : TwoSidedPath × (ℂ × ℝ) =>
       originRadialCutoffReinsertionWeight hc ρ γ p.2.2 p.1 p.2.1) ∘ fun p : Ω × ℂ => (A p.1, (p.2, r)))
     exact (continuous_originRadialCutoffReinsertionWeight_joint P X Xc hX hc ρ γ hρ).measurable.comp harg
   have hmC : Measurable (fun p : Ω × ℂ => C p.1 p.2) :=
     (hdC.comp measurable_snd).mul (((hc.1 r).const_mul γ).sub
-      ((hvC.comp measurable_snd).const_mul (γ ^ 2 / 2))).exp
+      ((hvC.comp measurable_snd).const_mul _)).exp
   have hmL : Measurable (fun p : Ω × ℂ => L p.1 p.2) :=
     ((hdL.comp measurable_snd).mul hW).mul
       (((hY.measurableAtScale _).const_mul γ).sub
-        ((hvL.comp measurable_snd).const_mul (γ ^ 2 / 2))).exp
+        ((hvL.comp measurable_snd).const_mul _)).exp
   have heq : ∀ᵐ ω ∂P, ∀ᵐ x ∂volume.restrict U, C ω x = L ω x := by
     have hset : MeasurableSet {p : Ω × ℂ | C p.1 p.2 = L p.1 p.2} :=
       measurableSet_eq_fun hmC hmL
@@ -171,13 +170,6 @@ theorem originCircle_cutoff_wick_reinsertion_density_integral_ae
 /-- The exact finite Wick density identity integrates to equality of the original
 circle test mass and the lateral mass with the actual finite radial-weighted test. -/
 theorem originCircle_cutoff_wick_reinsertion_test_ae
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
-    (A : Ω → TwoSidedPath) (hAm : Measurable A) (hA : A =ᵐ[P] originRadialPath Xc)
-    (ρ γ r : ℝ) (hρ : 0 < ρ) (hr : Real.exp (-r) ≤ ρ)
     (f : BoundedContinuousFunction ℂ ℝ) (hfc : HasCompactSupport (f : ℂ → ℝ)) :
     (fun ω => regularizedLogChaosTestMass P (originLateralChart ρ)
       (fun x => normPlus x ^ (-4 : ℝ)) (fun ω ε x => Xc ω x (Real.log (1 / ε))) γ r ω f) =ᵐ[P]
@@ -190,26 +182,26 @@ theorem originCircle_cutoff_wick_reinsertion_test_ae
   have hdL : Measurable originLateralPlaneDensity := by
     fun_prop [originLateralPlaneDensity]
   have hpC (x : ℂ) : 0 ≤ normPlus x ^ (-4 : ℝ) := Real.rpow_nonneg
-    (le_of_lt (lt_of_lt_of_le zero_lt_one (le_max_left _ _))) _
+    (le_of_lt (lt_of_lt_of_le zero_lt_one (le_max_left ..))) _
   have hpL (x : ℂ) : 0 ≤ originLateralPlaneDensity x := Real.rpow_nonneg (norm_nonneg _) _
   filter_upwards [originCircle_cutoff_wick_reinsertion_density_integral_ae
     P X Xc hX hc hm hcont A hAm hA ρ γ r hρ hr f] with ω hω
   have hcut : Real.log (1 / Real.exp (-r)) = r := by
-    simp only [one_div, Real.log_inv, Real.log_exp, neg_neg]
+    simp
   calc regularizedLogChaosTestMass P U (fun x => normPlus x ^ (-4 : ℝ))
-        (fun ω ε x => Xc ω x (Real.log (1 / ε))) γ r ω f =
+        (fun ω ε x => Xc ω x _) γ r ω f =
       ∫ x in U, f x * (normPlus x ^ (-4 : ℝ) *
         Real.exp (γ * Xc ω x r - γ ^ 2 / 2 * gaussianVariance P (fun ω' => Xc ω' x r))) := by
           rw [regularizedLogChaosTestMass_eq_density_integral P U _ hdC hpC]
-          simp only [hcut]
+          simp
           apply integral_congr_ae
           filter_upwards [] with x
           ring
     _ = ∫ x in U, f x * (originLateralPlaneDensity x *
         originRadialCutoffReinsertionWeight hc ρ γ r (A ω) x *
-        Real.exp (γ * originLateralCircleRegularization Xc ρ ω (Real.exp (-r)) x -
+        Real.exp (γ * originLateralCircleRegularization Xc ρ ω _ x -
           γ ^ 2 / 2 * gaussianVariance P
-            (fun ω' => originLateralCircleRegularization Xc ρ ω' (Real.exp (-r)) x))) := hω
+            (fun ω' => originLateralCircleRegularization Xc ρ ω' _ x))) := hω
     _ = regularizedLogChaosTestMass P U originLateralPlaneDensity
         (originLateralCircleRegularization Xc ρ) γ r ω
           (originRadialCutoffWeightedTest P X Xc hX hc ρ γ r hρ (A ω) f hfc) := by
@@ -220,14 +212,11 @@ theorem originCircle_cutoff_wick_reinsertion_test_ae
             (f x * originRadialCutoffReinsertionWeight hc ρ γ r (A ω) x) * _
           ring
 
+end
+
 /-- The independent local chaos reconstructs every compact test integral of the actual
 GMC when multiplied by the radial reinsertion weight. -/
 theorem exists_originLateralChartGMC_reinsertion_test_identity
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
     (ρ γ : ℝ) (hρ : 0 < ρ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
     ∃ N : Ω → Measure ℂ,
@@ -256,30 +245,37 @@ theorem exists_originLateralChartGMC_reinsertion_test_identity
   have hFG : ∀ᶠ r : ℝ in atTop, G r =ᵐ[P] F r := by
     filter_upwards [eventually_ge_atTop (-Real.log ρ)] with r hr
     have hcut : Real.exp (-r) ≤ ρ := by
-      calc Real.exp (-r) ≤ Real.exp (Real.log ρ) := Real.exp_le_exp.mpr (by linarith only [hr])
+      calc Real.exp (-r) ≤ Real.exp (Real.log ρ) := Real.exp_le_exp.mpr (by linarith)
         _ = ρ := Real.exp_log hρ
     have heq := originCircle_cutoff_wick_reinsertion_test_ae P X Xc hX hc hm hcont A hAm hAe
       ρ γ r hρ hcut f hfc
     filter_upwards [heq, hAe] with ω hω hAω
     change regularizedLogChaosTestMass P (originLateralChart ρ) originLateralPlaneDensity
       (originLateralCircleRegularization Xc ρ) γ r ω
-        (originRadialCutoffWeightedTest P X Xc hX hc ρ γ r hρ (originRadialPath Xc ω) f hfc) = F r ω
+        (originRadialCutoffWeightedTest P X Xc hX hc ρ γ r hρ _ f hfc) = F r ω
     rw [← hAω, ← hω]
   have htN : TendstoInMeasure P F atTop (fun ω =>
       ∫ x, originRadialWeightedTest ρ γ hρ (originRadialPath Xc ω) f hfc x ∂N ω) :=
     TendstoInMeasure.congr' hFG EventuallyEq.rfl (hw f hfc hfU)
   have htM : TendstoInMeasure P F atTop (fun ω => ∫ x, f x ∂Mc ω) := hMc.2.2.2 f hfc hfU
-  have htest := tendstoInMeasure_ae_unique htM htN
-  filter_upwards [htest, hMcEq] with ω hω hMω
+  filter_upwards [(tendstoInMeasure_ae_unique htM htN), hMcEq] with ω hω hMω
   rw [← hMω] at hω
   rw [← integral_restrict_eq_integral_of_zero_on_compl (M ω) (originLateralChart ρ)
     (isOpen_originLateralChart ρ).measurableSet f
     (boundedContinuousFunction_eq_zero_off_tsupport_subset f (originLateralChart ρ) hfU)]
   exact hω
 
+end
+
+end
+
+end
+section
+variable (ρ γ : ℝ)
+
 /-- Reinserting a continuous radial weight preserves compact finiteness. -/
 theorem originLateralReinsertedMeasure_compact_lt_top
-    (ρ γ : ℝ) (hρ : 0 < ρ) (A : TwoSidedPath) (N : Measure ℂ)
+    (hρ : 0 < ρ) (A : TwoSidedPath) (N : Measure ℂ)
     (K : Set ℂ) (hK : IsCompact K) (hN : N K < ⊤) :
     (N.withDensity (fun x => ENNReal.ofReal (originRadialReinsertionWeight ρ γ A x))) K < ⊤ := by
   have hw : Continuous (originRadialReinsertionWeight ρ γ A) :=
@@ -292,19 +288,19 @@ theorem originLateralReinsertedMeasure_compact_lt_top
            apply lintegral_mono_ae
            filter_upwards [ae_restrict_mem hK.measurableSet] with x hx
            exact ENNReal.ofReal_le_ofReal (hC (mem_image_of_mem _ hx))
-      _ = _ := by rw [lintegral_const, Measure.restrict_apply_univ]
+      _ = _ := by simp
   exact hb.trans_lt (ENNReal.mul_lt_top ENNReal.ofReal_lt_top hN)
 
 /-- Reinsertion keeps a chart-supported measure supported in the same chart. -/
 theorem originLateralReinsertedMeasure_compl
-    (ρ γ : ℝ) (A : TwoSidedPath) (N : Measure ℂ) (U : Set ℂ) (hN : N Uᶜ = 0) :
+    (A : TwoSidedPath) (N : Measure ℂ) (U : Set ℂ) (hN : N Uᶜ = 0) :
     (N.withDensity (fun x => ENNReal.ofReal (originRadialReinsertionWeight ρ γ A x))) Uᶜ = 0 :=
   withDensity_absolutelyContinuous N _ hN
 
 /-- Integration against the reinserted measure equals integration of the literal
 radial-weighted compact test against the original lateral measure. -/
 theorem originLateralReinsertedMeasure_test_integral
-    (ρ γ : ℝ) (hρ : 0 < ρ) (A : TwoSidedPath) (N : Measure ℂ)
+    (hρ : 0 < ρ) (A : TwoSidedPath) (N : Measure ℂ)
     (f : BoundedContinuousFunction ℂ ℝ) (hfc : HasCompactSupport (f : ℂ → ℝ)) :
     (∫ x, f x ∂N.withDensity (fun x => ENNReal.ofReal (originRadialReinsertionWeight ρ γ A x))) =
       ∫ x, originRadialWeightedTest ρ γ hρ A f hfc x ∂N := by
@@ -317,7 +313,9 @@ theorem originLateralReinsertedMeasure_test_integral
   filter_upwards [] with x
   rw [ENNReal.toReal_ofReal (originRadialReinsertionWeight_pos ρ γ A x).le, smul_eq_mul,
     originRadialWeightedTest_apply]
-  exact mul_comm _ _
+  linarith
+
+end
 
 /-- The independent local lateral chaos reinserts to the actual GMC as measures, on one
 common probability-one event, by countable compact measure determination. -/
@@ -357,7 +355,7 @@ theorem exists_originLateralChartGMC_reinserted_measure_identity
   have hMfin := hM.1 ω
   have hMcompl : Mr ω (originLateralChart ρ)ᶜ = 0 := by
     rw [Measure.restrict_apply (isOpen_originLateralChart ρ).measurableSet.compl]
-    simp only [Set.compl_inter_self, measure_empty]
+    simp
   exact admissible_countable_tests_determine_chart_measures (originLateralChart ρ)
     (isOpen_originLateralChart ρ) (Nr ω) (Mr ω)
     (originLateralReinsertedMeasure_compl ρ γ _ _ _ (hN.2.1 ω)) hMcompl
@@ -365,9 +363,9 @@ theorem exists_originLateralChartGMC_reinserted_measure_identity
       (hN.2.2.1 ω L hL hLU))
     (fun L hL _ => by
       change (M ω).restrict (originLateralChart ρ) L < ⊤
-      exact measure_lt_top _ _)
+      exact measure_lt_top ..)
     K hKc hKU hKcofinal f (fun n m => ⟨(hf n m).1, (hf n m).2.1⟩)
-    (fun n g hg hgs δ hδ => hdense n g hg hgs δ hδ) (fun n m => hω (n, m))
+    (fun n g hg hgs δ hδ => hdense n g hg hgs δ hδ) (fun n m => hω _)
 
 /-- On a chart-supported measure, reinsertion followed by the exact radial
 removal density recovers the original measure. -/
@@ -387,13 +385,12 @@ theorem originLateralReinsertedMeasure_removal
     exact measurable_lateralRadialWeight.comp harg
   rw [← withDensity_mul N hf hg]
   have hchart : ∀ᵐ x ∂N, x ∈ originLateralChart ρ := by
-    rw [ae_iff]
-    exact hN
+    assumption
   have heq : (fun x => ENNReal.ofReal (originRadialReinsertionWeight ρ γ A x) *
-      lateralRadialWeight γ A x) =ᵐ[N] (1 : ℂ → ℝ≥0∞) := by
+      lateralRadialWeight γ A x) =ᵐ[N] 1 := by
     filter_upwards [hchart] with x hx
     exact originRadialReinsertionWeight_removal_mul ρ γ hρ A x hx
-  change N.withDensity (fun x => ENNReal.ofReal (originRadialReinsertionWeight ρ γ A x) *
+  change N.withDensity (fun x => ENNReal.ofReal _ *
     lateralRadialWeight γ A x) = N
   rw [withDensity_congr_ae heq, withDensity_one]
 

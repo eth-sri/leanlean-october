@@ -68,19 +68,18 @@ theorem seed_full {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω →
     unitVolumeStructureConstant_holomorphic_near_extended_domain P X M γ hγ hγ2 hX hM
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
   have hγh : γ / 2 < 2 / γ := by
-    rw [div_lt_div_iff₀ (by norm_num) hγ]
-    nlinarith
+    gcongr
   have h2γ : 0 < 2 / γ := by positivity
   have h42 : 4 / γ = 2 * (2 / γ) := by ring
   -- the seed point
-  set e₀ : ℝ := Q γ - γ / 12 with he₀
+  set e₀ := Q γ - γ / 12 with he₀
   have hq₀₁ : ExtendedSeiberg3 γ (2 * Q γ - e₀ - 2 / γ) e₀ e₀ :=
     extendedSeiberg3_of_lt hγ (by linarith) (by linarith) (by linarith) (by linarith)
       (by linarith) (by linarith) (by linarith)
   have hq₀₂ : ExtendedSeiberg3 γ e₀ (2 * Q γ - e₀ - 2 / γ) e₀ :=
     extendedSeiberg3_of_lt hγ (by linarith) (by linarith) (by linarith) (by linarith)
       (by linarith) (by linarith) (by linarith)
-  set U : Set ℂ := (segC e₀ ε ⁻¹' horizontalStrip hR ∩ segC e₀ α ⁻¹' horizontalStrip hR) ∩
+  set U := (segC e₀ ε ⁻¹' horizontalStrip hR ∩ segC e₀ α ⁻¹' horizontalStrip hR) ∩
     (segT (2 * Q γ - e₀ - 2 / γ) (2 * Q γ - ε - 2 / γ) e₀ α e₀ α' ⁻¹' V₃ ∩
       segT e₀ ε (2 * Q γ - e₀ - 2 / γ) (2 * Q γ - α - 2 / γ) e₀ α' ⁻¹' V₃) with hU
   set F : ℂ → ℂ := fun t => R (segC e₀ ε t) *
@@ -102,35 +101,33 @@ theorem seed_full {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω →
       (segH_meromorphicOn hV₃ hf₃ hμ e₀ ε _ _ e₀ α' t ht.2.2)
   have hstart : ∀ᶠ t : ℝ in 𝓝[>] 0, F t = G t := by
     have hsum := eventually_segC_mem (a := e₀ + e₀ + e₀) (b := ε + α + α')
-      (N := Ioi (2 * Q γ + 2 / γ)) isOpen_Ioi (show 2 * Q γ + 2 / γ < e₀ + e₀ + e₀ by linarith)
-    filter_upwards [eventually_segC_mem (b := ε) (N := Iio (Q γ)) isOpen_Iio
+      isOpen_Ioi (show 2 * Q γ + 2 / γ < e₀ + e₀ + e₀ by linarith)
+    filter_upwards [eventually_segC_mem isOpen_Iio
         (show e₀ < Q γ by linarith),
       eventually_segC_mem (b := α) (N := Iio (Q γ)) isOpen_Iio (show e₀ < Q γ by linarith),
       eventually_segC_mem (b := α') (N := Iio (Q γ)) isOpen_Iio (show e₀ < Q γ by linarith),
       hsum, Ioo_mem_nhdsGT (show (0 : ℝ) < 1 by norm_num)] with t hεt hαt hα't hst ht
-    simp only [mem_Iio, mem_Ioi] at hεt hαt hα't hst
-    set εt : ℝ := e₀ + t * (ε - e₀) with hεt'
-    set αt : ℝ := e₀ + t * (α - e₀) with hαt'
-    set α't : ℝ := e₀ + t * (α' - e₀) with hα't'
+    simp at hεt hαt hα't hst
+    set εt := e₀ + t * (ε - e₀) with hεt'
+    set αt := e₀ + t * (α - e₀) with hαt'
+    set α't := e₀ + t * (α' - e₀) with hα't'
     have hsum' : 2 * Q γ + 2 / γ < αt + εt + α't := by
       have e : e₀ + e₀ + e₀ + t * (ε + α + α' - (e₀ + e₀ + e₀)) = αt + εt + α't := by
         rw [hεt', hαt', hα't']
         ring
       linarith
-    have hE₁ := extendedSeiberg3_segment hγ hq₀₁ h₁ ht.1.le ht.2.le
-    have hE₂ := extendedSeiberg3_segment hγ hq₀₂ h₂ ht.1.le ht.2.le
     obtain ⟨Bε, Bα, Z, -, hBε, hBα, hseed⟩ := hSeed αt εt α't hαt hεt hα't hsum'
     have hεγ : γ / 2 < εt := by linarith
     have hαγ : γ / 2 < αt := by linarith
     simp only [hF, hG]
-    rw [segH_ofReal P M hμ hf₃eq hE₁, segH_ofReal P M hμ hf₃eq hE₂, segC_ofReal, segC_ofReal,
+    rw [segH_ofReal P M hμ hf₃eq (extendedSeiberg3_segment hγ hq₀₁ h₁ ht.1.le ht.2.le), segH_ofReal P M hμ hf₃eq (extendedSeiberg3_segment hγ hq₀₂ h₂ ht.1.le ht.2.le), segC_ofReal, segC_ofReal,
       segC_ofReal, dualLC_ofReal hγ.ne', hRv _ hεγ hεt, hRv _ hαγ hαt,
       reflectionR_eq_of_isReflectionData P P γ μ _ (BR _) ZR Bε Z (hBR _ hεγ hεt) hBε,
       reflectionR_eq_of_isReflectionData P P γ μ _ (BR _) ZR Bα Z (hBR _ hαγ hαt) hBα,
       show 2 * Q γ - e₀ - 2 / γ + t * (2 * Q γ - ε - 2 / γ - (2 * Q γ - e₀ - 2 / γ)) =
-        2 * Q γ - εt - 2 / γ by rw [hεt']; ring,
+        2 * Q γ - εt - 2 / γ by linarith,
       show 2 * Q γ - e₀ - 2 / γ + t * (2 * Q γ - α - 2 / γ - (2 * Q γ - e₀ - 2 / γ)) =
-        2 * Q γ - αt - 2 / γ by rw [hαt']; ring]
+        2 * Q γ - αt - 2 / γ by linarith]
     exact_mod_cast hseed
   have hF1 : AnalyticAt ℂ F 1 :=
     (segR_analyticAt_one hRε).mul
@@ -145,8 +142,7 @@ theorem seed_full {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω →
     · rw [segC_one, segC_one, segC_one]; exact g₄
   have key := eq_at_one_of_segment hseg hFm hGm hstart hF1 hG1
   simp only [hF, hG] at key
-  rw [segH_one P M hμ hf₃eq h₁, segH_one P M hμ hf₃eq h₂, segC_one, segC_one, segC_one] at key
-  exact key
+  rwa [segH_one P M hμ hf₃eq h₁, segH_one P M hμ hf₃eq h₂, segC_one, segC_one, segC_one] at key
 
 end DOZZ.Proofs
 

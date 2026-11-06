@@ -32,14 +32,11 @@ theorem fusionRootOnlyMass_inverse_moment_uniform {Ω : Type*} [MeasurableSpace 
     apply lintegral_congr_ae
     filter_upwards [fusionRootOnlyMass_eq_rooted_ae P X hX γ hγ hγ2 M hM α₁ α₂ α₃ y z]
       with ω hω
-    rw [hω]
+    simp_all
   rw [he]
   apply hbound
   intro j
-  fin_cases j
-  · norm_num
-  · norm_num
-  · norm_num
+  fin_cases j <;> norm_num
 
 
 end DOZZ.Proofs

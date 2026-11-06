@@ -17,47 +17,37 @@ open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal BoundedContinuousFunction
 
 namespace DOZZ.Proofs
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
+section
+variable (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ ε₁ : ℝ) (Y Z : Ω → ℝ → ℂ → ℝ) (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (hZ : IsAdmissibleLogRegularization P U dens ε₁ Z)
+include hY hZ
+section
+variable (b : Bool)
 
 /-- A selected admissible Wick weight has extended expectation one at every allowed cutoff. -/
 theorem compatibleAdmissibleSelectedWickWeight_lintegral_eq_one
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ ε₁ : ℝ)
-    (Y Z : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
-    (hZ : IsAdmissibleLogRegularization P U dens ε₁ Z)
-    (b : Bool) (ε : ℝ) (hε : 0 < ε)
+    (ε : ℝ) (hε : 0 < ε)
     (hεcut : ε ≤ min ε₀ ε₁) (x : ℂ) (γ : ℝ) :
     ∫⁻ ω, admissibleLogWickWeight P (if b then Y else Z) γ ε x ω ∂P = 1 := by
   let q : Fin 1 → ℝ × ℂ := fun _ => (ε, x)
   let V : Ω → Fin 1 → ℝ := fun ω _ => (if b then Y else Z) ω ε x
   have hq : ∀ i, 0 < (q i).1 ∧ (q i).1 ≤ min ε₀ ε₁ := by
-    intro i
-    simp only [q]
-    exact ⟨hε, hεcut⟩
+    tauto
   have hqY : ∀ i, 0 < (q i).1 ∧ (q i).1 ≤ ε₀ := by
-    intro i
-    exact ⟨(hq i).1, le_trans (hq i).2 (min_le_left _ _)⟩
+    simp_all
   have hqZ : ∀ i, 0 < (q i).1 ∧ (q i).1 ≤ ε₁ := by
-    intro i
-    exact ⟨(hq i).1, le_trans (hq i).2 (min_le_right _ _)⟩
+    simp_all
   have hV : IsCenteredJointlyGaussian P V := by
     cases b with
     | false => simpa [V] using hZ.gaussian 1 q hqZ
     | true => simpa [V] using hY.gaussian 1 q hqY
-  have hwick := wick_exponential_lintegral_expectation P V hV 0 γ
-  simpa [admissibleLogWickWeight, V, q] using hwick
+  exact wick_exponential_lintegral_expectation P V hV 0 γ
 
 /-- A selected Wick weight is jointly measurable in the sample and spatial point at every
 admissible cutoff. -/
 theorem compatibleAdmissibleSelectedWickWeight_measurable
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ ε₁ : ℝ)
-    (Y Z : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
-    (hZ : IsAdmissibleLogRegularization P U dens ε₁ Z)
-    (b : Bool) (γ ε : ℝ) :
+    (γ ε : ℝ) :
     Measurable (fun q : Ω × ℂ =>
       admissibleLogWickWeight P (if b then Y else Z) γ ε q.2 q.1) := by
   cases b with
@@ -80,18 +70,14 @@ theorem compatibleAdmissibleSelectedWickWeight_measurable
         P U dens ε₀ Y hY ε
       have hvar : Measurable (fun q : Ω × ℂ => gaussianVariance P
           (fun ω => Y ω ε q.2)) := hv0.comp measurable_snd
-      have hfield : Measurable (fun q : Ω × ℂ => Y q.1 ε q.2) :=
+      have hfield :=
         hY.measurableAtScale ε
       fun_prop
 
+end
+
 /-- The mixed growing-barrier pair kernel is measurable in its two spatial roots. -/
 theorem compatibleAdmissibleSelectedMixedGrowingBarrierPairKernel_measurable
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P]
-    (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ ε₁ : ℝ)
-    (Y Z : Ω → ℝ → ℂ → ℝ)
-    (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
-    (hZ : IsAdmissibleLogRegularization P U dens ε₁ Z)
     (γ a : ℝ) (k₀ : ℕ) (r s : ℝ) (b₁ b₂ : Bool) :
     Measurable (fun p : ℂ × ℂ =>
       compatibleAdmissibleSelectedMixedGrowingBarrierPairKernel
@@ -101,9 +87,9 @@ theorem compatibleAdmissibleSelectedMixedGrowingBarrierPairKernel_measurable
     admissibleLogWickWeight P (if b₁ then Y else Z) γ (Real.exp (-r)) q.2.1 q.1 *
       admissibleLogWickWeight P (if b₂ then Y else Z) γ (Real.exp (-s)) q.2.2 q.1 *
       Set.indicator (admissibleGrowingBarrierSet Y a k₀ r)
-        (fun _ => (1 : ℝ≥0∞)) (q.1, q.2.1) *
+        (fun _ => 1) (q.1, q.2.1) *
       Set.indicator (admissibleGrowingBarrierSet Y a k₀ s)
-        (fun _ => (1 : ℝ≥0∞)) (q.1, q.2.2)
+        (fun _ => 1) (q.1, q.2.2)
   have hbar₁ : Measurable (fun q : Ω × (ℂ × ℂ) =>
       Set.indicator (admissibleGrowingBarrierSet Y a k₀ r)
         (fun _ => (1 : ℝ≥0∞)) (q.1, q.2.1)) := by
@@ -121,26 +107,28 @@ theorem compatibleAdmissibleSelectedMixedGrowingBarrierPairKernel_measurable
         (Real.exp (-r)) q.2.1 q.1) := by
     have h := compatibleAdmissibleSelectedWickWeight_measurable
       P U dens ε₀ ε₁ Y Z hY hZ b₁ γ (Real.exp (-r))
-    exact h.comp (f := fun q : Ω × (ℂ × ℂ) => (q.1, q.2.1))
+    exact h.comp
       (measurable_fst.prodMk (measurable_fst.comp measurable_snd))
   have hwick₂ : Measurable (fun q : Ω × (ℂ × ℂ) =>
       admissibleLogWickWeight P (if b₂ then Y else Z) γ
         (Real.exp (-s)) q.2.2 q.1) := by
     have h := compatibleAdmissibleSelectedWickWeight_measurable
       P U dens ε₀ ε₁ Y Z hY hZ b₂ γ (Real.exp (-s))
-    exact h.comp (f := fun q : Ω × (ℂ × ℂ) => (q.1, q.2.2))
+    exact h.comp
       (measurable_fst.prodMk (measurable_snd.comp measurable_snd))
   have hF : Measurable F := by
-    dsimp [F]
-    exact ((hwick₁.mul hwick₂).mul hbar₁).mul hbar₂
-  let μ : Measure ℂ := logRegularizationReference U dens
-  have hEq : (fun p : ℂ × ℂ =>
+    fun_prop
+  let μ := logRegularizationReference U dens
+  have hEq : (fun p =>
       compatibleAdmissibleSelectedMixedGrowingBarrierPairKernel
         P Y Z γ a k₀ r s p.1 p.2 b₁ b₂) =
       fun p => ∫⁻ ω, F (ω, p) ∂P := by
-    funext p
     rfl
   rw [hEq]
-  exact (hF.comp measurable_swap).lintegral_prod_right'
+  fun_prop
+
+end
+
+end
 
 end DOZZ.Proofs

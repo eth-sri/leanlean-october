@@ -18,29 +18,28 @@ theorem reflected_chart_parameter_mass_measurable
     (hfin : ∀ ω K, IsCompact K → K ⊆ U → N ω K < ⊤)
     (F : A × ℂ → ℝ≥0∞) (hF : Measurable F) :
     Measurable (fun p : A × Ω => ∫⁻ x in U, F (p.1, x) ∂N p.2) := by
-  let _ : LocallyCompactSpace U := hU.locallyCompactSpace
+  let _ := hU.locallyCompactSpace
   let E := CompactExhaustion.choice U
   let K : ℕ → Set ℂ := fun n => Subtype.val '' E n
   have hK (n : ℕ) : IsCompact (K n) := (E.isCompact n).image continuous_subtype_val
   have hKU (n : ℕ) : K n ⊆ U := by
-    rintro x ⟨y, _, rfl⟩
-    exact y.property
+    aesop
   have hKm : Monotone K := fun _ _ hnm => image_mono (E.subset hnm)
   have hKe : (⋃ n, K n) = U := by
     ext x
     constructor
     · rintro ⟨_, ⟨n, rfl⟩, hx⟩
-      exact hKU n hx
+      tauto
     · intro hx
       obtain ⟨n, hn⟩ := E.exists_mem ⟨x, hx⟩
       exact mem_iUnion.mpr ⟨n, ⟨⟨x, hx⟩, hn, rfl⟩⟩
   let NF : Ω → ℕ → FiniteMeasure ℂ := fun ω n =>
-    ⟨(N ω).restrict (K n), ⟨by simpa only [Measure.restrict_apply_univ] using
+    ⟨(N ω).restrict (K n), ⟨by simpa using
       (hfin ω (K n) (hK n) (hKU n))⟩⟩
   have hNF (n : ℕ) : Measurable (fun ω => NF ω n) := Measurable.subtype_mk
     ((measurable_measure_restrict (K n) (hK n).measurableSet).comp hN)
   have hi (p : A × Ω) : (∫⁻ x in U, F (p.1, x) ∂N p.2) =
-      ⨆ n, ∫⁻ x, F (p.1, x) ∂(NF p.2 n : Measure ℂ) := by
+      ⨆ n, ∫⁻ x, F (p.1, x) ∂(NF p.2 n) := by
     rw [← hKe]
     exact setLIntegral_iUnion_of_directed _ hKm.directed_le
   simp_rw [hi]

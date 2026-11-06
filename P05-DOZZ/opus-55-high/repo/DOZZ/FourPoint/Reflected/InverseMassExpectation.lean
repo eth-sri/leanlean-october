@@ -19,11 +19,11 @@ theorem reflected_ennreal_inverse_increment_expectation
     Integrable (fun ω => ((A ω+T ω)^(-p)).toReal-(A ω^(-p)).toReal) P ∧
     (∫⁻ ω, (A ω+T ω)^(-p) ∂P).toReal-(∫⁻ ω, A ω^(-p) ∂P).toReal =
       ∫ ω, ((A ω+T ω)^(-p)).toReal-(A ω^(-p)).toReal ∂P := by
-  have hsum : (∫⁻ ω, (A ω+T ω)^(-p) ∂P) < ⊤ := lt_of_le_of_lt
+  have hsum := lt_of_le_of_lt
     (lintegral_mono (fun ω => ennreal_rpow_antitone_of_nonpos
       (le_add_of_nonneg_right (show 0 ≤ T ω from bot_le)) (neg_nonpos.mpr hp))) hfin
   have hmA := hA.pow_const (-p)
-  have hmS : AEMeasurable (fun ω => (A ω+T ω)^(-p)) P := (hA.add hT).pow_const (-p)
+  have hmS : AEMeasurable (fun ω => (A ω+T ω)^(-p)) P := by fun_prop
   have hiA := integrable_toReal_of_lintegral_ne_top hmA hfin.ne
   have hiS := integrable_toReal_of_lintegral_ne_top hmS hsum.ne
   refine ⟨hsum,hiS.sub hiA,?_⟩

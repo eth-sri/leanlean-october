@@ -34,7 +34,6 @@ theorem periods_irrational {γ : ℝ} (hγ : 0 < γ) (hγirr : Irrational (γ ^ 
   apply hγirr
   refine ⟨4 * q, ?_⟩
   have h : γ / (4 / γ) = γ ^ 2 / 4 := by field_simp
-  rw [h] at hq
   push_cast
   linarith
 
@@ -55,18 +54,16 @@ theorem slice_constant_of_joint {Ω : Type*} [MeasurableSpace Ω] (P : Measure �
   obtain ⟨h, hh, C, hCm, hCv, hfirst, hdual⟩ := hjoint
   obtain ⟨Ψ, hΨd, hΨD, hΨper⟩ := structureConstant_DOZZ_quotient_removable_periodic γ μ η U
     α₂ α₃ h hh hγ hγ2 hγirr hμ hη hα₂ hα₃ hU C hCm hfirst hdual
-  have hSo : IsOpen (horizontalStrip h) := isOpen_horizontalStrip h
+  have hSo := isOpen_horizontalStrip h
   have hΨm : MeromorphicOn Ψ (horizontalStrip h) := fun z hz =>
     (hΨd.analyticAt (hSo.mem_nhds hz)).meromorphicAt
-  have hp₁ : ∀ z ∈ horizontalStrip h, (fun w => Ψ (w + ((γ : ℝ) : ℂ))) =ᶠ[𝓝[≠] z] Ψ :=
+  have hp₁ : ∀ z ∈ horizontalStrip h, (fun w => Ψ (w + (γ))) =ᶠ[𝓝[≠] z] Ψ :=
     fun z hz => eventually_nhdsWithin_of_eventually_nhds
       (eventually_of_mem (hSo.mem_nhds hz) fun w hw => (hΨper w hw).1)
   have hp₂ : ∀ z ∈ horizontalStrip h, (fun w => Ψ (w + ((4 / γ : ℝ) : ℂ))) =ᶠ[𝓝[≠] z] Ψ :=
     fun z hz => eventually_nhdsWithin_of_eventually_nhds
       (eventually_of_mem (hSo.mem_nhds hz) fun w hw => by
-        have := (hΨper w hw).2
-        push_cast
-        exact this)
+        simp_all)
   obtain ⟨c, hc, -⟩ := meromorphicOn_strip_constant_of_dense_periods h hh Ψ hΨm γ (4 / γ) hγ
     (by positivity) (periods_irrational hγ hγirr) hp₁ hp₂
   have hΨc : ∀ z ∈ horizontalStrip h, Ψ z = c := fun z hz =>
@@ -78,14 +75,12 @@ theorem slice_constant_of_joint {Ω : Type*} [MeasurableSpace Ω] (P : Measure �
   have hxS : (x : ℂ) ∈ horizontalStrip h := by
     change |((x : ℝ) : ℂ).im| < h
     simpa using hh
-  have hloc := (eventually_codiscrete_iff_forall_eventually_nhdsNE.mp hΨD) (x : ℂ)
   have hS : ∀ᶠ z in 𝓝[≠] (x : ℂ), z ∈ horizontalStrip h :=
     nhdsWithin_le_nhds (hSo.mem_nhds hxS)
-  have hreal := (tendsto_ofReal_nhdsNE_slice x).eventually (hloc.and hS)
   have hI : ∀ᶠ t : ℝ in 𝓝[≠] x, 2 * η < t ∧ t < Q γ :=
     eventually_nhdsWithin_of_eventually_nhds (eventually_of_mem (Ioo_mem_nhds hx1 hx2)
       fun t ht => ht)
-  filter_upwards [hreal, hI] with t ht hIt
+  filter_upwards [((tendsto_ofReal_nhdsNE_slice x).eventually (((eventually_codiscrete_iff_forall_eventually_nhdsNE.mp hΨD) (x : ℂ)).and hS)), hI] with t ht hIt
   rw [← hCv t hIt.1 hIt.2, ← ht.1, hΨc _ ht.2]
 
 end DOZZ.Proofs

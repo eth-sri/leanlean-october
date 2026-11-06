@@ -33,20 +33,16 @@ theorem uniform_correlated_improved_charge_moment
   obtain ⟨D,hD,hmodels⟩ := weighted_moment_uniform_models
     P X hX γ hγ hγ2 M hM ρ hρ hρ1 A g hg
   let C := L^(1/p)*D^(1/q)
-  have hC : C < ⊤ := ENNReal.mul_lt_top
+  have hC := ENNReal.mul_lt_top
     (ENNReal.rpow_lt_top_of_nonneg (div_nonneg zero_le_one hpq.pos.le) hL.ne)
     (ENNReal.rpow_lt_top_of_nonneg (div_nonneg zero_le_one hpq.symm.pos.le) hD.ne)
   refine ⟨C,hC,?_⟩
   intro Y N hY hN α r hα hr hbulk hins E hE hEm
-  have hW := gmc_weighted_mass_aemeasurable P Y hY γ hγ hγ2 N hN (α-1/γ) 0 ρ
-  have hWbound := hmodels P Y N hY hN (α-1/γ) (r*q) hα (mul_pos hr hpq.symm.pos) hbulk hins
-  have hh := ENNReal.lintegral_mul_le_Lp_mul_Lq P hpq (hE.pow_const r) (hW.pow_const r)
+  have hh := ENNReal.lintegral_mul_le_Lp_mul_Lq P hpq (hE.pow_const r) ((gmc_weighted_mass_aemeasurable P Y hY γ hγ hγ2 N hN (α-1/γ) 0 ρ).pow_const r)
   change (∫⁻ ω, E ω^r*weightedGmcBallMass γ (N ω) (α-1/γ) 0 ρ ^ r ∂P) ≤ _ at hh
   simp only [← ENNReal.rpow_mul] at hh
-  have he := ENNReal.rpow_le_rpow hEm (div_nonneg zero_le_one hpq.pos.le)
-  have hw := ENNReal.rpow_le_rpow hWbound (div_nonneg zero_le_one hpq.symm.pos.le)
-  have hb := hh.trans (mul_le_mul' he hw)
-  simpa only [ENNReal.mul_rpow_of_nonneg _ _ hr.le] using hb
+  have hw := ENNReal.rpow_le_rpow (hmodels P Y N hY hN _ _ hα (mul_pos hr hpq.symm.pos) hbulk hins) (div_nonneg zero_le_one hpq.symm.pos.le)
+  simpa only [ENNReal.mul_rpow_of_nonneg _ _ hr.le] using (hh.trans (mul_le_mul' (ENNReal.rpow_le_rpow hEm (div_nonneg zero_le_one hpq.pos.le)) hw))
 
 
 end DOZZ.Proofs

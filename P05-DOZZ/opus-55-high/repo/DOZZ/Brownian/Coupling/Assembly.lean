@@ -38,10 +38,10 @@ theorem negativeEntranceFamilyOrder_abs_sub_le {F : ℝ → BrownianPath}
   rcases le_total a b with hab | hba
   · have h := hF a b ha hab t
     rw [abs_of_nonneg (sub_nonneg.mpr h.1), abs_of_nonpos (sub_nonpos.mpr hab)]
-    nlinarith [h.2]
+    nlinarith
   · have h := hF b a hb hba t
     rw [abs_of_nonpos (sub_nonpos.mpr h.1), abs_of_nonneg (sub_nonneg.mpr hba)]
-    nlinarith [h.2]
+    nlinarith
 
 /-- Every compact time set admits one finite time bound. -/
 theorem compact_nonnegative_times_bounded (K : Set ℝ≥0) (hK : IsCompact K) :
@@ -50,7 +50,7 @@ theorem compact_nonnegative_times_bounded (K : Set ℝ≥0) (hK : IsCompact K) :
   refine ⟨max M 0 + 1, by positivity, ?_⟩
   intro t ht
   exact (hM (mem_image_of_mem (fun t : ℝ≥0 => (t : ℝ)) ht)).trans
-    (by linarith [le_max_left M 0])
+    (by grind)
 
 /-- The drift estimate is uniform on every compact time set. -/
 theorem negativeEntranceFamilyOrder_compact_bound {F : ℝ → BrownianPath}
@@ -58,20 +58,21 @@ theorem negativeEntranceFamilyOrder_compact_bound {F : ℝ → BrownianPath}
     {K : Set ℝ≥0} {T : ℝ} (hT : ∀ t ∈ K, (t : ℝ) ≤ T) :
     ∀ t ∈ K, dist (F a t) (F b t) ≤ |a - b| * T := by
   intro t ht
-  rw [Real.dist_eq]
   exact (negativeEntranceFamilyOrder_abs_sub_le hF ha hb t).trans
     (mul_le_mul_of_nonneg_left (hT t ht) (abs_nonneg _))
+section
+variable {ι : Type*} {l : Filter ι} {F : ℝ → BrownianPath}
+section
+variable (hF : NegativeEntranceFamilyOrder F) {v : ι → ℝ} {a : ℝ} (ha : 0 ≤ a) (hv : ∀ᶠ i in l, 0 ≤ v i) (hva : Tendsto v l (𝓝 a))
+include hF ha hv hva
 
 /-- A convergent sequence or net of nonnegative drifts converges uniformly on each compact time
 set. This implication uses only the simultaneous drift inequality. -/
 theorem negativeEntranceFamilyOrder_tendstoUniformlyOn
-    {ι : Type*} {l : Filter ι} {F : ℝ → BrownianPath}
-    (hF : NegativeEntranceFamilyOrder F) {v : ι → ℝ} {a : ℝ}
-    (ha : 0 ≤ a) (hv : ∀ᶠ i in l, 0 ≤ v i) (hva : Tendsto v l (𝓝 a))
     (K : Set ℝ≥0) (hK : IsCompact K) :
     TendstoUniformlyOn (fun i t => F (v i) t) (F a) l K := by
   obtain ⟨T, hTpos, hT⟩ := compact_nonnegative_times_bounded K hK
-  have hlim : Tendsto (fun i => |a - v i| * T) l (𝓝 (0 : ℝ)) := by
+  have hlim : Tendsto (fun i => |a - v i| * T) l (𝓝 0) := by
     simpa using (((tendsto_const_nhds (x := a)).sub hva).abs.mul_const T)
   apply Metric.tendstoUniformlyOn_iff.mpr
   intro ε hε
@@ -81,13 +82,15 @@ theorem negativeEntranceFamilyOrder_tendstoUniformlyOn
 
 /-- Compact-time convergence is convergence in the continuous-path carrier `BrownianPath`. -/
 theorem negativeEntranceFamilyOrder_tendsto
-    {ι : Type*} {l : Filter ι} {F : ℝ → BrownianPath}
-    (hF : NegativeEntranceFamilyOrder F) {v : ι → ℝ} {a : ℝ}
-    (ha : 0 ≤ a) (hv : ∀ᶠ i in l, 0 ≤ v i) (hva : Tendsto v l (𝓝 a)) :
+    :
     Tendsto (fun i => F (v i)) l (𝓝 (F a)) := by
   apply ContinuousMap.tendsto_iff_forall_isCompact_tendstoUniformlyOn.mpr
   intro K hK
   exact negativeEntranceFamilyOrder_tendstoUniformlyOn hF ha hv hva K hK
+
+end
+
+end
 
 /-- The right limit at zero follows directly from the order estimate. -/
 theorem negativeEntranceFamilyOrder_tendsto_zero {F : ℝ → BrownianPath}
@@ -119,29 +122,31 @@ theorem negativeConditionedBrownianProcess_comp_measurePreserving
       (by simpa only [hG.map_eq] using hF.1) hG.measurable.aemeasurable).symm
   rw [hcomp]
   exact hF.2
+section
+variable {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} [IsProbabilityMeasure P] {F : ℝ → Ω → BrownianPath} {a : ℝ}
+section
+variable (hF : IsNegativeConditionedBrownianProcess P (F a) a)
+include hF
 
 /-- The first copy has exactly the prescribed entrance process law. -/
 theorem independentEntranceCopies_first_law
-    {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} [IsProbabilityMeasure P]
-    {F : ℝ → Ω → BrownianPath} {a : ℝ}
-    (hF : IsNegativeConditionedBrownianProcess P (F a) a) :
+    :
     IsNegativeConditionedBrownianProcess (P.prod P)
       (fun ω => (independentEntranceCopies F a ω).1) a :=
   negativeConditionedBrownianProcess_comp_measurePreserving measurePreserving_fst hF
 
 /-- The second copy has the same exact entrance process law. -/
 theorem independentEntranceCopies_second_law
-    {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} [IsProbabilityMeasure P]
-    {F : ℝ → Ω → BrownianPath} {a : ℝ}
-    (hF : IsNegativeConditionedBrownianProcess P (F a) a) :
+    :
     IsNegativeConditionedBrownianProcess (P.prod P)
       (fun ω => (independentEntranceCopies F a ω).2) a :=
   negativeConditionedBrownianProcess_comp_measurePreserving measurePreserving_snd hF
 
+end
+
 /-- The two whole paths are independent, rather than merely their fixed-time evaluations. -/
 theorem independentEntranceCopies_indep
-    {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} [IsProbabilityMeasure P]
-    {F : ℝ → Ω → BrownianPath} {a : ℝ} (hF : AEMeasurable (F a) P) :
+    (hF : AEMeasurable (F a) P) :
     IndepFun (fun ω => (independentEntranceCopies F a ω).1)
       (fun ω => (independentEntranceCopies F a ω).2) (P.prod P) :=
   indepFun_prod₀ hF hF
@@ -149,12 +154,12 @@ theorem independentEntranceCopies_indep
 /-- The two-sided process characterization `DOZZ.IsTwoSidedConditionedBrownianProcess` from the
 actual product construction. -/
 theorem independentEntranceCopies_twoSided
-    {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} [IsProbabilityMeasure P]
-    {F : ℝ → Ω → BrownianPath} {a : ℝ}
     (hF : IsNegativeConditionedBrownianProcess P (F a) a) :
     IsTwoSidedConditionedBrownianProcess (P.prod P) (independentEntranceCopies F a) a :=
   ⟨independentEntranceCopies_first_law hF,
     independentEntranceCopies_second_law hF, independentEntranceCopies_indep hF.1⟩
+
+end
 
 /-- The closed constraint set on a countable family of path coordinates. The drift carrier
 may be rational; every time is retained in the closed constraints. -/
@@ -166,7 +171,6 @@ def negativeEntranceOrderSet {J : Type*} (v : J → ℝ) : Set (J → BrownianPa
 closed in the product of compact-open path spaces. -/
 theorem isClosed_negativeEntranceOrderSet {J : Type*} (v : J → ℝ) :
     IsClosed (negativeEntranceOrderSet v) := by
-  classical
   simp only [negativeEntranceOrderSet, ofPred_forall]
   apply isClosed_iInter
   intro i
@@ -179,9 +183,9 @@ theorem isClosed_negativeEntranceOrderSet {J : Type*} (v : J → ℝ) :
   apply isClosed_iInter
   intro t
   have hi : Continuous (fun F : J → BrownianPath => F i t) :=
-    (continuous_eval_const t).comp (continuous_apply i)
+    by fun_prop
   have hj : Continuous (fun F : J → BrownianPath => F j t) :=
-    (continuous_eval_const t).comp (continuous_apply j)
+    by fun_prop
   exact (isClosed_le hj hi).inter (isClosed_le hi (hj.add continuous_const))
 
 end DOZZ.Proofs

@@ -35,75 +35,73 @@ theorem tendsto_lintegral_probabilityDensity_test
     Tendsto (fun n => ∫⁻ x, f n x * F x ∂μ) atTop
       (𝓝 (∫⁻ x, g x * F x ∂μ)) := by
   let A : ℕ → E → ℝ≥0∞ := fun n x => min (f n x) (g x)
-  have hA (n : ℕ) : Measurable (A n) := (hf n).min hg
+  have hA (n : ℕ) : Measurable (A n) := by fun_prop
   have hAm (n : ℕ) : (∫⁻ x, A n x ∂μ) ≠ ∞ := ne_top_of_le_ne_top
-    (hgm ▸ ENNReal.one_ne_top) (lintegral_mono (fun x => min_le_right _ _))
+    (hgm ▸ ENNReal.one_ne_top) (lintegral_mono (fun x => min_le_right ..))
   have hAlim (x : E) : Tendsto (fun n => A n x) atTop (𝓝 (g x)) := by
-    simpa only [min_self] using (hfg x).min (tendsto_const_nhds (x := g x))
+    simpa using (hfg x).min (tendsto_const_nhds (x := g x))
   have hJ : Tendsto (fun n => ∫⁻ x, A n x ∂μ) atTop (𝓝 1) := by
     rw [← hgm]
     exact tendsto_lintegral_of_dominated_convergence g hA
-      (fun n => ae_of_all _ (fun x => min_le_right _ _))
+      (fun n => ae_of_all _ (fun x => min_le_right ..))
       (hgm ▸ ENNReal.one_ne_top) (ae_of_all _ hAlim)
   have hKg : Measurable (fun x => K * g x) := measurable_const.mul hg
   have hKgfin : (∫⁻ x, K * g x ∂μ) ≠ ∞ := by
-    rw [lintegral_const_mul K hg, hgm, mul_one]
-    exact hK
-  have hAP (n : ℕ) : Measurable (fun x => A n x * F x) := (hA n).mul hF
+    simp_all
+  have hAP (n : ℕ) : Measurable (fun x => A n x * F x) := by fun_prop
   have hT : Tendsto (fun n => ∫⁻ x, A n x * F x ∂μ) atTop
       (𝓝 (∫⁻ x, g x * F x ∂μ)) := by
     refine tendsto_lintegral_of_dominated_convergence (fun x => K * g x) hAP ?_
       hKgfin ?_
     · intro n
       exact ae_of_all _ (fun x =>
-        (mul_le_mul' (min_le_right _ _) (hbound x)).trans_eq (mul_comm _ _))
+        (mul_le_mul' (min_le_right ..) (hbound x)).trans_eq (mul_comm ..))
     · filter_upwards [ae_lt_top hg (hgm ▸ ENNReal.one_ne_top)] with x hx
       exact ENNReal.Tendsto.mul (hAlim x)
         (Or.inr (ne_top_of_le_ne_top hK (hbound x)))
-        (tendsto_const_nhds : Tendsto (fun _ : ℕ => F x) atTop (𝓝 (F x)))
+        tendsto_const_nhds
         (Or.inr hx.ne)
   have hres : Tendsto (fun n => K * (1 - ∫⁻ x, A n x ∂μ)) atTop (𝓝 0) := by
     have hh := ENNReal.Tendsto.const_mul
-      (ENNReal.Tendsto.sub (tendsto_const_nhds (x := (1 : ℝ≥0∞))) hJ
+      (ENNReal.Tendsto.sub (tendsto_const_nhds (x := 1)) hJ
         (Or.inl ENNReal.one_ne_top)) (Or.inr hK)
-    simpa only [tsub_self, mul_zero] using hh
+    simpa using hh
   have hupper (n : ℕ) : (∫⁻ x, f n x * F x ∂μ) ≤
       (∫⁻ x, A n x * F x ∂μ) + K * (1 - ∫⁻ x, A n x ∂μ) := by
     have hdecomp : (fun x => f n x * F x) =
         (fun x => A n x * F x + (f n x - A n x) * F x) := by
       funext x
-      rw [← add_mul, add_tsub_cancel_of_le (min_le_left _ _)]
+      rw [← add_mul, add_tsub_cancel_of_le (min_le_left ..)]
     rw [hdecomp, lintegral_add_left (hAP n)]
     apply add_le_add le_rfl
     calc
       _ ≤ ∫⁻ x, K * (f n x - A n x) ∂μ :=
         lintegral_mono (fun x =>
-          (mul_le_mul' le_rfl (hbound x)).trans_eq (mul_comm _ _))
+          (mul_le_mul' le_rfl (hbound x)).trans_eq (mul_comm ..))
       _ = K * (1 - ∫⁻ x, A n x ∂μ) := by
-        have hm : Measurable (fun x => f n x - A n x) := (hf n).sub (hA n)
+        have hm : Measurable (fun x => f n x - A n x) := by fun_prop
         rw [lintegral_const_mul K hm,
           lintegral_sub (hA n) (hAm n)
-            (ae_of_all _ (fun x => min_le_left _ _)), hfm n]
+            (ae_of_all _ (fun x => min_le_left ..)), hfm n]
   have hI : (∫⁻ x, g x * F x ∂μ) ≤ K := by
     calc
       _ ≤ ∫⁻ x, K * g x ∂μ := lintegral_mono (fun x =>
-        (mul_le_mul' le_rfl (hbound x)).trans_eq (mul_comm _ _))
-      _ = K := by rw [lintegral_const_mul K hg, hgm, mul_one]
+        (mul_le_mul' le_rfl (hbound x)).trans_eq (mul_comm ..))
+      _ = K := by simp_all
   have htop : Tendsto
       (fun n => (∫⁻ x, A n x * F x ∂μ) + K * (1 - ∫⁻ x, A n x ∂μ))
       atTop (𝓝 (∫⁻ x, g x * F x ∂μ)) := by
-    simpa only [add_zero] using hT.add hres
+    simpa using hT.add hres
   exact tendsto_of_tendsto_of_tendsto_of_le_of_le hT htop
     (fun n => lintegral_mono (fun x =>
-      mul_le_mul' (min_le_left _ _) le_rfl)) hupper
+      mul_le_mul' (min_le_left ..) le_rfl)) hupper
+section
+variable (P Q : Measure BrownianPath) (hB : IsBrownianReal (fun t p => p t) P) (ν : ℝ) (hν : 0 < ν) (hQ : IsNegativeConditionedBrownianLaw ν Q) (n : ℕ) (ds : Fin n → ℝ≥0) (hds : ∀ i, 0 < ds i) (xs : ℕ → ℝ) (hxs : ∀ k, 0 < xs k) (hxlim : Tendsto xs atTop (𝓝 0))
+include hB hν hQ hds hxs hxlim
 
 /-- The finite Doob density converges to the entrance density against any bounded measurable
 test along positive starting states tending to zero. -/
 theorem brownianDoobFinitePDF_lintegral_tendsto_entrance_test
-    (P Q : Measure BrownianPath) (hB : IsBrownianReal (fun t p => p t) P)
-    (ν : ℝ) (hν : 0 < ν) (hQ : IsNegativeConditionedBrownianLaw ν Q)
-    (n : ℕ) (ds : Fin n → ℝ≥0) (hds : ∀ i, 0 < ds i)
-    (xs : ℕ → ℝ) (hxs : ∀ k, 0 < xs k) (hxlim : Tendsto xs atTop (𝓝 0))
     (F : (Fin n → ℝ) → ℝ≥0∞) (hF : Measurable F)
     (K : ℝ≥0∞) (hK : K ≠ ∞) (hbound : ∀ ys, F ys ≤ K) :
     Tendsto
@@ -112,10 +110,10 @@ theorem brownianDoobFinitePDF_lintegral_tendsto_entrance_test
       atTop
       (𝓝 (∫⁻ ys, brownianEntranceFinitePDF ν n ds ys * F ys
         ∂(volume : Measure (Fin n → ℝ)))) := by
-  have hwithin : Tendsto xs atTop (𝓝[>] 0) := tendsto_nhdsWithin_iff.mpr
+  have hwithin := tendsto_nhdsWithin_iff.mpr
     ⟨hxlim, Filter.Eventually.of_forall hxs⟩
   exact tendsto_lintegral_probabilityDensity_test
-    (volume : Measure (Fin n → ℝ))
+    volume
     (fun k ys => brownianDoobFinitePDF ν n ds (xs k) ys)
     (brownianEntranceFinitePDF ν n ds)
     (fun k => measurable_brownianDoobFinitePDF ν hν n ds hds (xs k) (hxs k))
@@ -129,10 +127,6 @@ theorem brownianDoobFinitePDF_lintegral_tendsto_entrance_test
 /-- The finite Doob probability measures converge on every measurable set to the entrance
 finite-dimensional law. -/
 theorem brownianDoobFinitePDF_measure_tendsto_entrance_event
-    (P Q : Measure BrownianPath) (hB : IsBrownianReal (fun t p => p t) P)
-    (ν : ℝ) (hν : 0 < ν) (hQ : IsNegativeConditionedBrownianLaw ν Q)
-    (n : ℕ) (ds : Fin n → ℝ≥0) (hds : ∀ i, 0 < ds i)
-    (xs : ℕ → ℝ) (hxs : ∀ k, 0 < xs k) (hxlim : Tendsto xs atTop (𝓝 0))
     (A : Set (Fin n → ℝ)) (hA : MeasurableSet A) :
     Tendsto
       (fun k => (volume.withDensity (brownianDoobFinitePDF ν n ds (xs k))) A)
@@ -140,14 +134,14 @@ theorem brownianDoobFinitePDF_measure_tendsto_entrance_event
       (𝓝 ((volume.withDensity (brownianEntranceFinitePDF ν n ds)) A)) := by
   have htest := brownianDoobFinitePDF_lintegral_tendsto_entrance_test
     P Q hB ν hν hQ n ds hds xs hxs hxlim
-    (A.indicator (fun _ : Fin n → ℝ => (1 : ℝ≥0∞)))
+    (A.indicator (fun _ => 1))
     (measurable_const.indicator hA) 1 ENNReal.one_ne_top
     (fun ys => by
       by_cases hy : ys ∈ A <;> simp [hy])
   have hleft (k : ℕ) :
       (volume.withDensity (brownianDoobFinitePDF ν n ds (xs k))) A =
         ∫⁻ ys, brownianDoobFinitePDF ν n ds (xs k) ys *
-          A.indicator (fun _ : Fin n → ℝ => (1 : ℝ≥0∞)) ys ∂volume := by
+          A.indicator (fun _ => 1) ys ∂volume := by
     rw [withDensity_apply _ hA, ← lintegral_indicator hA]
     apply lintegral_congr
     intro ys
@@ -155,12 +149,14 @@ theorem brownianDoobFinitePDF_measure_tendsto_entrance_event
   have hright :
       (volume.withDensity (brownianEntranceFinitePDF ν n ds)) A =
         ∫⁻ ys, brownianEntranceFinitePDF ν n ds ys *
-          A.indicator (fun _ : Fin n → ℝ => (1 : ℝ≥0∞)) ys ∂volume := by
+          A.indicator (fun _ => 1) ys ∂volume := by
     rw [withDensity_apply _ hA, ← lintegral_indicator hA]
     apply lintegral_congr
     intro ys
     by_cases hy : ys ∈ A <;> simp [hy]
-  simpa only [hleft, hright] using htest
+  simp_all
+
+end
 
 end DOZZ.Proofs
 

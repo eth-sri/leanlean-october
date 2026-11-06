@@ -28,7 +28,7 @@ theorem neg_log_max_exp_eq_min {a t : ℝ} (ha : 0 < a) :
   rcases le_total (Real.exp (-t)) a with h | h
   · have ht := Real.log_le_log (Real.exp_pos (-t)) h
     rw [Real.log_exp] at ht
-    rw [max_eq_right h, min_eq_right (by linarith)]
+    grind
   · have ht := Real.log_le_log ha h
     rw [Real.log_exp] at ht
     rw [max_eq_left h, Real.log_exp, neg_neg, min_eq_left (by linarith)]
@@ -38,8 +38,8 @@ omit [IsProbabilityMeasure P] in
 theorem offCenter_origin_variance (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (z : ℂ) (hz : 2 ≤ ‖z‖) :
     covariance (fun ω => Xc ω z 0) (fun ω => Xc ω z 0) P = 2 * Real.log ‖z‖ := by
-  simpa only [min_self, zero_add] using
-    circleAverage_covariance_exterior P X Xc hX hc z hz (r := 0) (s := 0) le_rfl le_rfl
+  simpa using
+    circleAverage_covariance_exterior P X Xc hX hc z hz le_rfl le_rfl
 
 omit [IsProbabilityMeasure P] in
 /-- Concentric Brownian times correspond to the logarithm of the larger geometric radius. -/
@@ -47,8 +47,8 @@ theorem min_neg_log_eq_neg_log_max {a b : ℝ} (ha : 0 < a) (hb : 0 < b) :
     min (-Real.log a) (-Real.log b) = -Real.log (max a b) := by
   rcases le_total a b with h | h
   · have hl := Real.log_le_log ha h
-    rw [max_eq_right h, min_eq_right (neg_le_neg hl)]
+    simp_all
   · have hl := Real.log_le_log hb h
-    rw [max_eq_left h, min_eq_left (neg_le_neg hl)]
+    simp_all
 
 end DOZZ.Proofs

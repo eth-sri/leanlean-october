@@ -27,22 +27,18 @@ theorem dual_source_future_indep_outer_restart
       (fun ω => (dual_radial_scale γ ν h Xc z ω,
         (dualOuterMass γ α₁ α₂ α₃ (M ω) z ξ).toReal)) P := by
   let A := originRadialPath Xc
-  have hA := originRadialPath_aemeasurable P X Xc hc hcont
   obtain ⟨N, hNm, hi, hfin, heq, _, _⟩ := reflected_copied_radial_plane_observable
     P X Xc hX hc hm hcont γ hγ hγ₂ M hM
   let NL : Ω → DualLocalPlaneMeasure := fun ω => ⟨N ω, hfin ω⟩
   have hNL : Measurable NL := hNm.subtype_mk
   have hiL : IndepFun A NL P := dual_indepFun_subtype_lift P A N _ hfin hi
-  have hB := (originRadialPath_isBrownian P X Xc hX hc hcont).1
   have hhalves := originRadialPath_halves_indep P X Xc hX hc hcont
-  have hip := dual_radial_future_indep_restart_exterior P A hA hB hhalves NL hNL.aemeasurable
+  have hip := dual_radial_future_indep_restart_exterior P A (originRadialPath_aemeasurable P X Xc hc hcont) ((originRadialPath_isBrownian P X Xc hX hc hcont).1) hhalves NL hNL.aemeasurable
     hiL T γ ν α₁ α₂ α₃ z (‖z‖^(1-ξ))
   have hconv : Measurable (fun p : ℝ × ℝ≥0∞ => (p.1,p.2.toReal)) :=
     measurable_fst.prodMk measurable_snd.ennreal_toReal
-  have hir := hip.comp measurable_id hconv
   have hpast := dual_source_past_exterior_mass_eq P X hX γ hγ hγ₂ M N hM A hfin heq
     α₁ α₂ α₃ ξ z hz T hr
-  have hβ := dual_source_radial_scale_eq_path_ae P Xc hcont γ ν h z
   have he : (fun ω =>
       (dualPastRestartWeight γ ν T z (stopBrownianPath (radialPositiveHalf (A ω)) T,
         radialNegativeHalf (A ω)),
@@ -50,10 +46,10 @@ theorem dual_source_future_indep_outer_restart
           ((stopBrownianPath (radialPositiveHalf (A ω)) T, radialNegativeHalf (A ω)),NL ω)).toReal)) =ᵐ[P]
       (fun ω => (dual_radial_scale γ ν h Xc z ω,
         (dualOuterMass γ α₁ α₂ α₃ (M ω) z ξ).toReal)) := by
-    filter_upwards [hpast,hβ] with ω hω hβω
+    filter_upwards [hpast,(dual_source_radial_scale_eq_path_ae P Xc hcont γ ν h z)] with ω hω hβω
     refine Prod.ext ?_ (congrArg ENNReal.toReal hω)
     rw [← dual_path_radial_scale_eq_past γ ν h z hz0 (A ω) T hT]
     exact hβω.symm
-  exact hir.congr (ae_of_all _ (fun _ => rfl)) he
+  exact (hip.comp measurable_id hconv).congr (ae_of_all _ (fun _ => rfl)) he
 
 end DOZZ.Proofs

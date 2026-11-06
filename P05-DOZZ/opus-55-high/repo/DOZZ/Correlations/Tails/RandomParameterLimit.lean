@@ -23,15 +23,13 @@ noncomputable def parameterGrid (k : ℕ) (t : ℝ) : ℝ :=
 theorem parameter_grid_error (k : ℕ) (t : ℝ) :
     |t - parameterGrid k t| ≤ 1 / ((k : ℝ) + 1) := by
   have hd : 0 < (k : ℝ) + 1 := by positivity
-  have hlo := Int.floor_le (((k : ℝ) + 1) * t)
   have hhi := Int.lt_floor_add_one (((k : ℝ) + 1) * t)
   have hle : parameterGrid k t ≤ t := by
-    dsimp [parameterGrid]
-    exact (div_le_iff₀ hd).mpr (by simpa only [mul_comm] using hlo)
+    exact (div_le_iff₀ hd).mpr (by simpa only [mul_comm] using (Int.floor_le (((k : ℝ) + 1) * t)))
   rw [abs_of_nonneg (sub_nonneg.mpr hle)]
   dsimp [parameterGrid]
-  have heq : t - (Int.floor (((k : ℝ) + 1) * t) : ℝ) / ((k : ℝ) + 1) =
-      (t * ((k : ℝ) + 1) - (Int.floor (((k : ℝ) + 1) * t) : ℝ)) / ((k : ℝ) + 1) := by
+  have heq : t - (Int.floor ((k + 1) * t)) / (k + 1) =
+      (t * (k + 1) - (Int.floor (((k : ℝ) + 1) * t) : ℝ)) / ((k : ℝ) + 1) := by
     field_simp
   rw [heq, div_le_div_iff_of_pos_right hd]
   nlinarith
@@ -62,15 +60,14 @@ theorem tendstoInMeasure_random_parameter
   let b : ℕ → Ω → ℝ := fun k ω => g ω (parameterGrid k (θ ω))
   have hab (k : ℕ) : TendstoInMeasure P (a k) atTop (b k) := by
     let choice : Ω → ℕ := fun ω => Encodable.encode
-      (Int.floor (((k : ℝ) + 1) * θ ω))
+      (Int.floor ((k + 1) * θ ω))
     let param : ℕ → ℝ := fun i =>
-      (((Encodable.decode (α := ℤ) i).getD 0 : ℤ) : ℝ) / ((k : ℝ) + 1)
+      (((Encodable.decode (α := ℤ) i).getD 0)) / ((k : ℝ) + 1)
     have hc : Measurable choice :=
-      (measurable_of_countable (Encodable.encode : ℤ → ℕ)).comp
-        (Int.measurable_floor.comp (hθ.const_mul _))
+      by fun_prop
     have hp (ω : Ω) : param (choice ω) = parameterGrid k (θ ω) := by
       change (((Encodable.decode (α := ℤ) (Encodable.encode
-        (Int.floor (((k : ℝ) + 1) * θ ω)))).getD 0 : ℤ) : ℝ) / ((k : ℝ) + 1) = _
+        (Int.floor ((k + 1) * θ ω)))).getD 0 : ℤ) : ℝ) / (k + 1) = _
       rw [Encodable.encodek]
       rfl
     have h := tendstoInMeasure_countable_selection P
@@ -83,7 +80,7 @@ theorem tendstoInMeasure_random_parameter
     simpa only [one_div, Function.comp_def] using tendsto_inv_atTop_zero.comp ht
   have he : Tendsto (fun k : ℕ => ENNReal.ofReal (1 / ((k : ℝ) + 1)) * C)
       atTop (𝓝 0) := by
-    simpa only [ENNReal.ofReal_zero, zero_mul, Function.comp_def] using
+    simpa using
       ENNReal.Tendsto.mul_const (ENNReal.continuous_ofReal.tendsto 0 |>.comp hi) (Or.inr hC)
   apply tendstoInMeasure_L1_approximation P _ _ a b hab _ he hmeas hmeaslim
   · intro k n

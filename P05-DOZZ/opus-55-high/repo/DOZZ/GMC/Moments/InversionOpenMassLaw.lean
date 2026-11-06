@@ -21,14 +21,14 @@ theorem gmc_inversion_open_mass_fintype_law
       P.map (fun ω j => M ω (U j)) := by
   classical
   let : IsProbabilityMeasure P := hX.1
-  let e : Fin (Fintype.card ι) ≃ ι := (Fintype.equivFin ι).symm
-  let N := fun ω => (M ω).map (fun z : ℂ => z⁻¹)
-  have hNmeas : Measurable N := (Measure.measurable_map _ measurable_inv).comp hmeas
+  let e := (Fintype.equivFin ι).symm
+  let N := fun ω => (M ω).map (fun z => z⁻¹)
+  have hNmeas := (Measure.measurable_map _ measurable_inv).comp hmeas
   have hNfin : ∀ ω, IsFiniteMeasure (N ω) := by
     intro ω
     let := hM.1 ω
     infer_instance
-  let q := fun n j => gmcOpenApprox (U (e j)) (hU (e j)) n
+  let q := fun n j => gmcOpenApprox _ (hU (e j)) n
   let A := fun ω (j : Fin (Fintype.card ι)) => (N ω (U (e j))).toReal
   let B := fun ω (j : Fin (Fintype.card ι)) => (M ω (U (e j))).toReal
   have hA : Measurable A := measurable_pi_iff.mpr fun j =>
@@ -50,12 +50,12 @@ theorem gmc_inversion_open_mass_fintype_law
       apply tendstoInMeasure_of_tendsto_ae (fun n => (hqn n j).aestronglyMeasurable)
       exact Filter.Eventually.of_forall fun ω => by
         let := hNfin ω
-        exact gmcOpenApprox_integral_tendsto (N ω) (U (e j)) (hU (e j))
+        exact gmcOpenApprox_integral_tendsto (N ω) _ (hU (e j))
     · intro j
       apply tendstoInMeasure_of_tendsto_ae (fun n => (hqm n j).aestronglyMeasurable)
       exact Filter.Eventually.of_forall fun ω => by
         let := hM.1 ω
-        exact gmcOpenApprox_integral_tendsto (M ω) (U (e j)) (hU (e j))
+        exact gmcOpenApprox_integral_tendsto (M ω) _ (hU (e j))
   let post := fun v : Fin (Fintype.card ι) → ℝ =>
     fun j : ι => ENNReal.ofReal (v (e.symm j))
   have hp : Measurable post := by fun_prop
@@ -72,6 +72,6 @@ theorem gmc_inversion_open_mass_fintype_law
   calc
     P.map (fun ω j => N ω (U j)) = (P.map A).map post := by
       rw [← heA, Measure.map_map hp hA]
-    _ = (P.map B).map post := congrArg (Measure.map post) hlaw
+    _ = (P.map B).map post := by simp_all
     _ = P.map (fun ω j => M ω (U j)) := by rw [Measure.map_map hp hB, heB]
 end DOZZ.Proofs

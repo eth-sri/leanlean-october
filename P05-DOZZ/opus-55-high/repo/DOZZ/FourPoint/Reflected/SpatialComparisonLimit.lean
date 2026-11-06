@@ -54,17 +54,17 @@ theorem reflected_two_region_inverse_limit
   have hfin₀ : (∫⁻ p, G p^(-q) ∂Q.prod P) ≠ ⊤ := by
     rwa [lintegral_prod _ (hG.pow_const (-q)).aemeasurable]
   have hproj₀ : Measurable (fun p : A × (Ω × Ω) => (p.1, p.2.1)) :=
-    measurable_fst.prodMk (measurable_fst.comp measurable_snd)
+    by fun_prop
   have hproj₁ : Measurable (fun p : A × (Ω × Ω) => (p.1, p.2.2)) :=
-    measurable_fst.prodMk (measurable_snd.comp measurable_snd)
+    by fun_prop
   have hfin₁ : (∫⁻ p : A × (Ω × Ω), G (p.1, p.2.2)^(-q) ∂Q.prod (P.prod P)) ≠ ⊤ := by
     rw [lintegral_prod (fun p : A × (Ω × Ω) => G (p.1, p.2.2)^(-q))
       ((hG.comp hproj₁).pow_const (-q)).aemeasurable]
     have he (a : A) : (∫⁻ p : Ω × Ω, G (a, p.2)^(-q) ∂P.prod P) =
         ∫⁻ ω, G (a, ω)^(-q) ∂P := by
-      rw [lintegral_prod (fun p : Ω × Ω => G (a, p.2)^(-q))
+      rw [lintegral_prod (fun p : Ω × Ω => G _^(-q))
         ((hG.comp (measurable_const.prodMk measurable_snd)).pow_const (-q)).aemeasurable]
-      simp only [lintegral_const, measure_univ, mul_one]
+      simp
     simp_rw [he]
     exact hfinite
   have ht₀ := reflected_guarded_inverse_expectation_limit (Q.prod P)

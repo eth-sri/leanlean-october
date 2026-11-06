@@ -30,7 +30,6 @@ theorem reflected_pareto_product_increment_error_nonneg
       (a*Real.Gamma (-a)*Real.Gamma (p+a)/Real.Gamma p)*
         (∫ ω, (A ω)^(-p)*(b ω/A ω)^a ∂P)*(∫ v, (S v)^a ∂R)| ≤
       (a*p/(1-a))*(∫ ω, (A ω)^(-p)*(b ω/A ω) ∂P)*(∫ v, S v ∂R) := by
-  have hE := reflected_pareto_increment_aestronglyMeasurable P R p a ha A b S hAm hbm hSm
   let E := fun v : Ω × Λ => ∫ w,
     ((A v.1+b v.1*S v.2*w)^(-p)-(A v.1)^(-p)) ∂paretoMeasure 1 a
   let F0 := fun ω => (A ω)^(-p)*(b ω/A ω)^a
@@ -39,8 +38,8 @@ theorem reflected_pareto_product_increment_error_nonneg
   let C := a*p/(1-a)
   let L := fun v : Ω × Λ => c*(F0 v.1*(S v.2)^a)
   have hL : Integrable L (P.prod R) := (hF0.mul_prod hSa).const_mul c
-  have hdom : Integrable (fun v : Ω × Λ => C*(F1 v.1*S v.2)) (P.prod R) :=
-    (hF1.mul_prod hS1).const_mul C
+  have hdom : Integrable (fun v => C*(F1 v.1*S v.2)) (P.prod R) :=
+    by fun_prop
   have hbound : ∀ᵐ v : Ω × Λ ∂P.prod R, ‖E v-L v‖ ≤ C*(F1 v.1*S v.2) := by
     filter_upwards [measurePreserving_fst.quasiMeasurePreserving.ae hA,
       measurePreserving_fst.quasiMeasurePreserving.ae hb,
@@ -48,7 +47,7 @@ theorem reflected_pareto_product_increment_error_nonneg
     by_cases hzero : S v.2 = 0
     · simp only [E,L,hzero,mul_zero,add_zero,sub_self,integral_zero,
         Real.zero_rpow ha.ne',zero_mul,norm_zero,le_refl]
-    have hSpos : 0 < S v.2 := lt_of_le_of_ne hSv (Ne.symm hzero)
+    have hSpos : 0 < S v.2 := by positivity
     have hi := reflected_pareto_increment_error p a (A v.1) (b v.1*S v.2)
       hp ha ha1 hAv (mul_pos hbv hSpos)
     have hr : (b v.1*S v.2)/A v.1 = (b v.1/A v.1)*S v.2 := by ring
@@ -57,19 +56,17 @@ theorem reflected_pareto_product_increment_error_nonneg
     change |E v-c*(A v.1)^(-p)*((b v.1/A v.1)^a*(S v.2)^a)| ≤
       C*(A v.1)^(-p)*((b v.1/A v.1)*S v.2) at hi
     have heL : c*(A v.1)^(-p)*((b v.1/A v.1)^a*(S v.2)^a) = L v := by
-      dsimp only [L,F0]
       ring
     have heD : C*(A v.1)^(-p)*((b v.1/A v.1)*S v.2) = C*(F1 v.1*S v.2) := by
-      dsimp only [F1]
       ring
     rw [heL,heD] at hi
     exact hi
   have hD : Integrable (fun v => E v-L v) (P.prod R) :=
-    hdom.mono' (hE.sub hL.aestronglyMeasurable) hbound
+    hdom.mono' ((reflected_pareto_increment_aestronglyMeasurable P R p a ha A b S hAm hbm hSm).sub hL.aestronglyMeasurable) hbound
   have hEi : Integrable E (P.prod R) := by
     have hh := hD.add hL
     change Integrable (fun v => (E v-L v)+L v) (P.prod R) at hh
-    simpa only [sub_add_cancel] using hh
+    simpa using hh
   refine ⟨hEi, ?_⟩
   have hi := norm_integral_le_of_norm_le hdom hbound
   rw [integral_sub hEi hL] at hi

@@ -22,15 +22,14 @@ theorem separated_geometry {N : ℕ} (z : Fin N → ℂ) (hz : Function.Injectiv
     apply eventually_all.mpr
     intro k
     by_cases h : j = k
-    · exact Filter.Eventually.of_forall (fun _ hne => (hne h).elim)
-    · have hn : 0 < ‖z j - z k‖ := norm_pos_iff.mpr
+    · simp_all
+    · have hn := norm_pos_iff.mpr
         (sub_ne_zero.mpr (fun he => h (hz he)))
       filter_upwards [Ioo_mem_nhdsGT (half_pos hn)] with δ hδ
-      intro _
-      linarith [hδ.2]
+      grind
   have eδ : ∀ᶠ δ in 𝓝[>] (0 : ℝ), δ ∈ Ioo 0 (1 / 8) :=
     Ioo_mem_nhdsGT (by norm_num)
   obtain ⟨δ, hδ, hs⟩ := (eδ.and esep).exists
-  exact ⟨δ, hδ.1, hδ.2.le, hs⟩
+  grind
 
 end DOZZ.Proofs

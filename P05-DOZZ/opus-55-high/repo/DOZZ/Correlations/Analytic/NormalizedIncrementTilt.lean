@@ -64,14 +64,13 @@ theorem normalized_vertex_increment_tilt_norm
         ∑ i, β i * (Xc ω (mixedVertexCenters z i)
           (mixedVertexTimes N r i) : ℂ)).re =
         D + (L ω - gaussianVariance P L / 2) := by
-      dsimp only [D, L, a]
-      simp only [Complex.add_re, Complex.re_sum, Complex.mul_re, Complex.ofReal_re,
-        Complex.ofReal_im, mul_zero, sub_zero]
+      dsimp
+      simp
       ring
     rw [norm_mul, Complex.norm_exp, hexp, Real.exp_add,
       ENNReal.ofReal_mul (mul_nonneg (Real.exp_nonneg _) (Real.exp_nonneg _)),
       ENNReal.ofReal_mul (Real.exp_nonneg _)]
-    exact mul_assoc _ _ _
+    exact mul_assoc ..
   conv_lhs =>
     arg 2
     ext ω

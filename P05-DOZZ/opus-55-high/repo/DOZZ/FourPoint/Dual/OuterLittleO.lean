@@ -31,9 +31,9 @@ theorem dual_outer_inverse_moment_littleO {Ω : Type*} [MeasurableSpace Ω]
   obtain ⟨C₂, _, hdel⟩ := dual_retainedZero_deleted_moment_bound
     P X M γ α₁ α₂ α₃ p hγ hγ₂ hp hα₁ hα₂ hα₃ hβ hX hM
   let l := nhdsWithin (0 : ℂ) {z : ℂ | z ≠ 0}
-  have hn : Tendsto (fun z : ℂ => ‖z‖) l (nhds 0) := by
-    simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
-  have hpow (s : ℝ) (hs : 0 < s) : Tendsto (fun z : ℂ => ‖z‖ ^ s) l (nhds 0) := by
+  have hn : Tendsto (fun z => ‖z‖) l (nhds 0) := by
+    simpa using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
+  have hpow (s : ℝ) (hs : 0 < s) : Tendsto (fun z => ‖z‖ ^ s) l (nhds 0) := by
     simpa only [Function.comp_def, Real.zero_rpow hs.ne'] using
       ((Real.continuous_rpow_const hs.le).tendsto (0 : ℝ)).comp hn
   have hbound : ∀ᶠ z : ℂ in l,
@@ -41,7 +41,7 @@ theorem dual_outer_inverse_moment_littleO {Ω : Type*} [MeasurableSpace Ω]
         (∫⁻ ω, coulombMass γ (M ω) ![-2 / γ, α₁, α₂] ![0, 0, 1] α₃ ^ (-p) ∂P).toReal| ≤
           C₁ * ‖z‖ ^ ξ + C₂ * ‖z‖ ^ ((1 - ξ) * (4 - γ * α₁)) := by
     filter_upwards [hn.eventually (gt_mem_nhds zero_lt_one),
-      (hpow (1 - ξ) (sub_pos.mpr hξ₁)).eventually (gt_mem_nhds (by norm_num : (0 : ℝ) < 1 / 2)),
+      (hpow _ (sub_pos.mpr hξ₁)).eventually (gt_mem_nhds (by norm_num : (0 : ℝ) < 1 / 2)),
       (hpow ξ hξ).eventually (gt_mem_nhds (by norm_num : (0 : ℝ) < 1 / 2)),
       self_mem_nhdsWithin] with z hz hcut hsmall hz0
     have hpz : 0 < ‖z‖ := norm_pos_iff.mpr hz0
@@ -53,8 +53,8 @@ theorem dual_outer_inverse_moment_littleO {Ω : Type*} [MeasurableSpace Ω]
         _ = _ := he
         _ ≤ ‖z‖ ^ (1 - ξ) * (1 / 2) := mul_le_mul_of_nonneg_left hsmall.le hr.le
         _ = _ := by ring
-    have h₁ := hmove z ξ hr (by linarith only [hcut]) hz.le hsep
-    have h₂ := hdel (‖z‖ ^ (1 - ξ)) hr hcut.le
+    have h₁ := hmove z ξ hr (by linarith) hz.le hsep
+    have h₂ := hdel _ hr hcut.le
     have hratio : ‖z‖ / ‖z‖ ^ (1 - ξ) = ‖z‖ ^ ξ := by
       calc
         _ = (‖z‖ ^ (1 - ξ) * ‖z‖ ^ ξ) / ‖z‖ ^ (1 - ξ) :=
@@ -62,14 +62,14 @@ theorem dual_outer_inverse_moment_littleO {Ω : Type*} [MeasurableSpace Ω]
         _ = _ := mul_div_cancel_left₀ _ hr.ne'
     rw [hratio] at h₁
     rw [← Real.rpow_mul hpz.le] at h₂
-    exact (abs_sub_le _ _ _).trans (add_le_add h₁ h₂)
+    exact (abs_sub_le ..).trans (add_le_add h₁ h₂)
   rw [tendsto_zero_iff_norm_tendsto_zero]
   have hu := ((reflected_radius_power_ratio_tendsto κ ξ hκξ).const_mul C₁).add
-    ((reflected_radius_power_ratio_tendsto κ ((1 - ξ) * (4 - γ * α₁)) hslack).const_mul C₂)
+    ((reflected_radius_power_ratio_tendsto κ _ hslack).const_mul C₂)
   apply squeeze_zero' (Eventually.of_forall fun z => norm_nonneg _) ?_
-    (show Tendsto (fun z : ℂ => C₁ * (‖z‖ ^ ξ / ‖z‖ ^ κ) +
+    (show Tendsto (fun z => C₁ * (‖z‖ ^ ξ / ‖z‖ ^ κ) +
       C₂ * (‖z‖ ^ ((1 - ξ) * (4 - γ * α₁)) / ‖z‖ ^ κ)) l (nhds 0) by
-      simpa only [mul_zero, add_zero] using hu)
+      simpa using hu)
   filter_upwards [hbound] with z hz
   rw [Real.norm_eq_abs, abs_div, abs_of_nonneg (Real.rpow_nonneg (norm_nonneg z) _)]
   exact (div_le_div_of_nonneg_right hz (Real.rpow_nonneg (norm_nonneg z) _)).trans_eq (by ring)

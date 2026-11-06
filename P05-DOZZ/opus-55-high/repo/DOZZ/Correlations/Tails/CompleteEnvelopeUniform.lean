@@ -30,7 +30,7 @@ theorem complete_envelope_moment_uniform_compact
             Real.exp (pinCorrectionEnvelope z γ (N ω) (Nbar ω)+4))) ^ r ∂P) ≤ C := by
   obtain ⟨v,a,hv,ha,hpar⟩ := compact_pin_parameters K hK hz γ
   let L := (d+5*s)*Real.exp (2*γ^2+4)
-  have hL : 0 ≤ L := by dsimp [L]; positivity
+  have hL : 0 ≤ L := by positivity
   let k := |γ|+2*a
   let G := ENNReal.ofReal (2*(Real.exp (v*(2*(R*k))^2/2)+Real.exp (v*(2*(R*k))^2/2)))
   let C := 1+(ENNReal.ofReal L)^R*G
@@ -49,31 +49,30 @@ theorem complete_envelope_moment_uniform_compact
         (hz z hzk) hd hs (hpar z hzk).2)) hR.le
     rw [ENNReal.ofReal_mul hL, ENNReal.mul_rpow_of_nonneg _ _ hR.le,
       ENNReal.ofReal_rpow_of_pos (Real.exp_pos _), ← Real.exp_mul] at h
-    have he : ((|γ|+2*a)*(|Nb ω|+|N ω|))*R = (R*k)*|Nb ω|+(R*k)*|N ω| := by dsimp [k]; ring
+    have he : ((|γ|+2*a)*(|Nb ω|+|N ω|))*R = (R*k)*|Nb ω|+(R*k)*|N ω| := by linarith
     rw [he] at h
     have he' : ENNReal.ofReal (Real.exp ((R*k)*|Nb ω|+(R*k)*|N ω|)) =
         ENNReal.ofReal (Real.exp ((R*k)*|Nb ω|))*ENNReal.ofReal (Real.exp ((R*k)*|N ω|)) := by
       rw [Real.exp_add, ENNReal.ofReal_mul (Real.exp_nonneg _)]
-    rw [he'] at h
-    exact h
+    rwa [he'] at h
   have hGauss := gaussian_product_lintegral_exp_abs_le P Nb N hNb hN hmNb hmN v v
-    (by rw [hvNb]; exact (hpar z hzk).1) (by rw [hvN]; exact (hpar z hzk).1) (R*k)
+    (by simp_all) (by simp_all) (R*k)
   calc
     _ ≤ ∫⁻ ω, 1+E ω^R ∂P := lintegral_mono fun ω =>
       weightedGrid_ennreal_rpow_le_one_add_rpow (E ω) hr hrR
     _ = 1+∫⁻ ω, E ω^R ∂P := by
       rw [lintegral_add_left measurable_const]
-      simp only [lintegral_const, measure_univ, mul_one]
+      simp
     _ ≤ 1+(ENNReal.ofReal L)^R*∫⁻ ω,
-        ENNReal.ofReal (Real.exp ((R*k)*|Nb ω|))*ENNReal.ofReal (Real.exp ((R*k)*|N ω|)) ∂P := by
+        ENNReal.ofReal _*ENNReal.ofReal _ ∂P := by
       apply add_le_add le_rfl
       calc
         _ ≤ ∫⁻ ω, (ENNReal.ofReal L)^R*
-            (ENNReal.ofReal (Real.exp ((R*k)*|Nb ω|))*ENNReal.ofReal (Real.exp ((R*k)*|N ω|))) ∂P :=
+            (ENNReal.ofReal _*ENNReal.ofReal _) ∂P :=
           lintegral_mono hpoint
         _ = _ := lintegral_const_mul' _ _
           (ENNReal.rpow_lt_top_of_nonneg hR.le ENNReal.ofReal_ne_top).ne
-    _ ≤ C := add_le_add le_rfl (mul_le_mul' le_rfl hGauss)
+    _ ≤ C := by bound
 
 
 end DOZZ.Proofs

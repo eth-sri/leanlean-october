@@ -25,10 +25,8 @@ theorem localSingularMass_aemeasurable
   have hf : Measurable (fun x : ℂ => if x ∈ Metric.ball z 1 then
       ENNReal.ofReal (F x) * (ENNReal.ofReal ‖x-z‖).rpow (-γ*α) else 0) := by
     apply Measurable.ite Metric.isOpen_ball.measurableSet
-    · exact (ENNReal.measurable_ofReal.comp hF).mul
-        (ENNReal.continuous_rpow_const.measurable.comp
-          (ENNReal.measurable_ofReal.comp (by fun_prop : Measurable (fun x : ℂ => ‖x-z‖))))
-    · exact measurable_const
+    · measurability
+    simp
   exact (Measure.measurable_lintegral hf).comp_aemeasurable
     (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ2 M hM)
 

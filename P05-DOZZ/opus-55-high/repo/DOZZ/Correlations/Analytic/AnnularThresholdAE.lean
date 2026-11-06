@@ -27,11 +27,11 @@ theorem annular_threshold_estimate_ae
         ((∫⁻ ω, Y ω ^ m ∂P) / u ^ m) ^ (1 / (q / (q - 1))) := by
   have hs : ∀ᵐ ω ∂P, hY.mk Y ω < u → F ω ≤ u * D ω := by
     filter_upwards [hsmall, hY.ae_eq_mk] with ω hω he
-    simpa only [← he] using hω
+    simp_all
   have he : (∫⁻ ω, hY.mk Y ω ^ m ∂P) = ∫⁻ ω, Y ω ^ m ∂P := by
     apply lintegral_congr_ae
     filter_upwards [hY.ae_eq_mk] with ω hω
-    rw [hω]
+    simp_all
   simpa only [he] using annular_threshold_estimate P (hY.mk Y) D B F
     hY.measurable_mk hB u hu hu' m q hm hq hs hlarge
 

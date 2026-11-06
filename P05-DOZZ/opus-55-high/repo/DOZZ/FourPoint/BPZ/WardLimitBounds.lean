@@ -30,58 +30,63 @@ theorem bpz_unifCont_of_compact {f : ℂ → ℝ} (hf : Continuous f) (hc : HasC
     ε hε
   refine ⟨δ / 2, by positivity, fun x x' hxx' => ?_⟩
   have := h (show dist x x' < δ by rw [dist_eq_norm]; linarith)
-  rw [Real.dist_eq] at this
-  exact this.le
+  bound
 
 namespace BPZLimitData
 
 variable {γ q δ : ℝ} {ρ kt k₂ φ : ℂ → ℝ} {D : Set ℂ}
+section
+variable (hd : BPZLimitData γ q δ ρ kt k₂ φ D)
+include hd
 
-theorem phi_cont (hd : BPZLimitData γ q δ ρ kt k₂ φ D) : Continuous φ := by
+theorem phi_cont : Continuous φ := by
   obtain ⟨L, hL⟩ := hd.φ_lip
   exact hL.continuous
 
-theorem phi_bdd (hd : BPZLimitData γ q δ ρ kt k₂ φ D) : ∃ B : ℝ, 0 ≤ B ∧ ∀ x, |φ x| ≤ B := by
+theorem phi_bdd : ∃ B : ℝ, 0 ≤ B ∧ ∀ x, |φ x| ≤ B := by
   obtain ⟨B, hB⟩ := hd.phi_cont.bounded_above_of_compact_support hd.φ_compact
-  exact ⟨max B 0, le_max_right _ _, fun x => by
-    rw [← Real.norm_eq_abs]; exact (hB x).trans (le_max_left _ _)⟩
+  exact ⟨max B 0, le_max_right .., fun x => by
+    simp_all⟩
 
-theorem abs_phi_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) {B : ℝ} (hB : ∀ x, |φ x| ≤ B)
-    (x : ℂ) : |φ x| ≤ B * ρ x := by
+end
+section
+variable (hd : BPZLimitData γ q δ ρ kt k₂ φ D) {B : ℝ} (hB : ∀ x, |φ x| ≤ B)
+include hd hB
+
+theorem abs_phi_le (x : ℂ) : |φ x| ≤ B * ρ x := by
   by_cases hx : φ x = 0
   · rw [hx, abs_zero]
     exact mul_nonneg ((abs_nonneg _).trans (hB x)) (hd.ρ_nonneg x)
   · rw [hd.rho_eq_one (subset_tsupport φ hx), mul_one]
-    exact hB x
+    simp_all
 
 /-- The antisymmetrized kernel is bounded by `ρ|k| ⊗ ρ|k|`, uniformly in the kernel `L`. -/
-theorem abs_symKer_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) {B : ℝ} (hB : ∀ x, |φ x| ≤ B)
-    {Lφ : ℝ≥0} (hLφ : LipschitzWith Lφ φ) {c : ℝ} (hc : 0 ≤ c) (v : ℂ) {k L : ℂ → ℝ}
+theorem abs_symKer_le {Lφ : ℝ≥0} (hLφ : LipschitzWith Lφ φ) {c : ℝ} (hc : 0 ≤ c) (v : ℂ) {k L : ℂ → ℝ}
     (hL : ∀ w, |L w| ≤ c * ‖v‖ / ‖w‖) (x y : ℂ) :
     |bpzSymKer φ ρ k L x y| ≤
       c * ‖v‖ * ((Lφ : ℝ) + B / δ) * ((ρ x * |k x|) * (ρ y * |k y|)) := by
   have hδ := hd.δ_pos
-  have hB0 : 0 ≤ B := (abs_nonneg _).trans (hB 0)
+  have hB0 := (abs_nonneg _).trans (hB 0)
   have hρx := hd.ρ_nonneg x
   have hρy := hd.ρ_nonneg y
   have hP : 0 ≤ (ρ x * |k x|) * (ρ y * |k y|) := by positivity
-  have hC : 0 ≤ c * ‖v‖ * ((Lφ : ℝ) + B / δ) := by positivity
+  have hC : 0 ≤ c * ‖v‖ * (Lφ + B / δ) := by positivity
   unfold bpzSymKer
   rcases eq_or_ne x y with rfl | hxy
-  · simp only [sub_self, zero_mul, zero_div, abs_zero]
-    exact mul_nonneg hC hP
-  have hxy' : 0 < ‖x - y‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxy)
+  · simp
+    positivity
+  have hxy' := norm_pos_iff.mpr (sub_ne_zero.mpr hxy)
   rw [abs_div, abs_two, abs_mul, abs_mul, abs_mul]
   by_cases hnear : ‖x - y‖ < 2 * δ
   · rw [hd.near_diag hnear]
     by_cases hφe : φ x = φ y
     · rw [hφe, sub_self, abs_zero, zero_mul, zero_mul, zero_div]
-      exact mul_nonneg hC hP
+      positivity
     have hρ1 : ρ x = 1 ∧ ρ y = 1 := by
       have hor : φ x ≠ 0 ∨ φ y ≠ 0 := by
         by_contra h
         push Not at h
-        exact hφe (by rw [h.1, h.2])
+        exact hφe (by linarith)
       rcases hor with h | h
       · have hxt := subset_tsupport φ h
         refine ⟨hd.rho_eq_one hxt, ?_⟩
@@ -98,73 +103,70 @@ theorem abs_symKer_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) {B : ℝ} (hB 
     have hlip : |φ x - φ y| ≤ Lφ * ‖x - y‖ := by
       rw [← Real.dist_eq, ← dist_eq_norm]; exact hLφ.dist_le_mul x y
     have hLb := hL (x - y)
-    calc |φ x - φ y| * (|k x| * |k y|) * |L (x - y)| / 2
+    calc |φ x - φ y| * (|k x| * |k y|) * |L _| / 2
         ≤ (Lφ * ‖x - y‖) * (|k x| * |k y|) * (c * ‖v‖ / ‖x - y‖) / 2 := by gcongr
-      _ = c * ‖v‖ * (Lφ : ℝ) / 2 * (|k x| * |k y|) := by field_simp
-      _ ≤ c * ‖v‖ * ((Lφ : ℝ) + B / δ) * ((1 * |k x|) * (1 * |k y|)) := by
+      _ = c * ‖v‖ * Lφ / 2 * (|k x| * |k y|) := by field_simp
+      _ ≤ c * ‖v‖ * (Lφ + B / δ) * ((1 * |k x|) * (1 * |k y|)) := by
           rw [one_mul, one_mul]
           apply mul_le_mul_of_nonneg_right _ (by positivity)
-          have : (Lφ : ℝ) / 2 ≤ (Lφ : ℝ) + B / δ := by
+          have : Lφ / 2 ≤ Lφ + B / δ := by
             have := Lφ.coe_nonneg; have : 0 ≤ B / δ := by positivity
             linarith
-          calc c * ‖v‖ * (Lφ : ℝ) / 2 = c * ‖v‖ * ((Lφ : ℝ) / 2) := by ring
-            _ ≤ c * ‖v‖ * ((Lφ : ℝ) + B / δ) := mul_le_mul_of_nonneg_left this (by positivity)
+          calc c * ‖v‖ * Lφ / 2 = c * ‖v‖ * (Lφ / 2) := by ring
+            _ ≤ c * ‖v‖ * (Lφ + B / δ) := by bound
   · push Not at hnear
     have h1 : |φ x * ρ y - φ y * ρ x| ≤ 2 * B * (ρ x * ρ y) := by
       have ha := hd.abs_phi_le hB x
       have hb := hd.abs_phi_le hB y
       calc |φ x * ρ y - φ y * ρ x| ≤ |φ x| * ρ y + |φ y| * ρ x := by
-            refine (abs_sub _ _).trans ?_
+            refine (abs_sub ..).trans ?_
             rw [abs_mul, abs_mul, abs_of_nonneg hρy, abs_of_nonneg hρx]
         _ ≤ B * ρ x * ρ y + B * ρ y * ρ x := by
             gcongr
         _ = 2 * B * (ρ x * ρ y) := by ring
-    have hLb : |L (x - y)| ≤ c * ‖v‖ / (2 * δ) :=
-      (hL (x - y)).trans (div_le_div_of_nonneg_left (by positivity) (by positivity) hnear)
-    calc |φ x * ρ y - φ y * ρ x| * (|k x| * |k y|) * |L (x - y)| / 2
+    have hLb :=
+      (hL _).trans (div_le_div_of_nonneg_left (by positivity) (by positivity) hnear)
+    calc |φ x * ρ y - φ y * ρ x| * (|k x| * |k y|) * |L _| / 2
         ≤ 2 * B * (ρ x * ρ y) * (|k x| * |k y|) * (c * ‖v‖ / (2 * δ)) / 2 := by gcongr
       _ = c * ‖v‖ * (B / δ) / 2 * ((ρ x * |k x|) * (ρ y * |k y|)) := by field_simp
-      _ ≤ c * ‖v‖ * ((Lφ : ℝ) + B / δ) * ((ρ x * |k x|) * (ρ y * |k y|)) := by
+      _ ≤ c * ‖v‖ * (Lφ + B / δ) * ((ρ x * |k x|) * (ρ y * |k y|)) := by
           apply mul_le_mul_of_nonneg_right _ hP
-          have : B / δ / 2 ≤ (Lφ : ℝ) + B / δ := by
+          have : B / δ / 2 ≤ Lφ + B / δ := by
             have := Lφ.coe_nonneg; have : 0 ≤ B / δ := by positivity
             linarith
           calc c * ‖v‖ * (B / δ) / 2 = c * ‖v‖ * (B / δ / 2) := by ring
-            _ ≤ c * ‖v‖ * ((Lφ : ℝ) + B / δ) := mul_le_mul_of_nonneg_left this (by positivity)
+            _ ≤ c * ‖v‖ * (Lφ + B / δ) := by bound
 
 /-- The far-region test function is bounded by `ρ|k|` times the far mass. -/
-theorem abs_mixTest_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) {B : ℝ} (hB : ∀ x, |φ x| ≤ B)
-    {c : ℝ} (hc : 0 ≤ c) (v : ℂ) {k L : ℂ → ℝ} (hL : ∀ w, |L w| ≤ c * ‖v‖ / ‖w‖)
+theorem abs_mixTest_le {c : ℝ} (hc : 0 ≤ c) (v : ℂ) {k L : ℂ → ℝ} (hL : ∀ w, |L w| ≤ c * ‖v‖ / ‖w‖)
     {m : Measure ℂ} (hint : Integrable (fun y => (1 - ρ y) * k₂ y) m) (x : ℂ) :
     |bpzMixTest φ ρ k k₂ L m x| ≤
       c * ‖v‖ / (2 * δ) * B * (ρ x * |k x|) * ∫ y, (1 - ρ y) * k₂ y ∂m := by
   have hδ := hd.δ_pos
-  have hB0 : 0 ≤ B := (abs_nonneg _).trans (hB 0)
-  unfold bpzMixTest
+  have hB0 := (abs_nonneg _).trans (hB 0)
   rw [← Real.norm_eq_abs, ← integral_const_mul]
   refine norm_integral_le_of_norm_le (hint.const_mul _) (Eventually.of_forall fun y => ?_)
   have hw : 0 ≤ (1 - ρ y) * k₂ y := mul_nonneg (by linarith [hd.ρ_le_one y]) (hd.k₂_nonneg y)
-  rw [Real.norm_eq_abs, abs_mul ((1 - ρ y) * k₂ y), abs_of_nonneg hw]
+  rw [Real.norm_eq_abs, abs_mul _, abs_of_nonneg hw]
   have hR0 : 0 ≤ c * ‖v‖ / (2 * δ) * B * (ρ x * |k x|) * ((1 - ρ y) * k₂ y) := by
     have := hd.ρ_nonneg x
     positivity
   by_cases hφx : φ x = 0
-  · rw [hφx]
-    simp only [zero_mul, abs_zero, mul_zero]
-    exact hR0
+  · simp_all
   by_cases hρy : ρ y = 1
-  · rw [hρy]
-    simp
+  · simp_all
   have hxt := subset_tsupport φ hφx
   have hsep := hd.sep x hxt y (lt_of_le_of_ne (hd.ρ_le_one y) hρy)
-  have hLb : |L (x - y)| ≤ c * ‖v‖ / (2 * δ) :=
-    (hL (x - y)).trans (div_le_div_of_nonneg_left (by positivity) (by positivity) hsep)
+  have hLb :=
+    (hL _).trans (div_le_div_of_nonneg_left (by positivity) (by positivity) hsep)
   have hφ' : |φ x| ≤ B * ρ x := hd.abs_phi_le hB x
   have hBρ : 0 ≤ B * ρ x * |k x| := mul_nonneg (mul_nonneg hB0 (hd.ρ_nonneg x)) (abs_nonneg _)
   rw [abs_mul, abs_mul]
-  calc (1 - ρ y) * k₂ y * (|φ x| * |k x| * |L (x - y)|)
+  calc (1 - ρ y) * k₂ y * (|φ x| * |k x| * |L _|)
       ≤ (1 - ρ y) * k₂ y * (B * ρ x * |k x| * (c * ‖v‖ / (2 * δ))) := by gcongr
     _ = c * ‖v‖ / (2 * δ) * B * (ρ x * |k x|) * ((1 - ρ y) * k₂ y) := by ring
+
+end
 
 end BPZLimitData
 

@@ -25,19 +25,18 @@ theorem holomorphic_limit_of_eventual_geometric {N : ℕ}
   obtain ⟨n₀, hn₀⟩ := eventually_atTop.mp hF
   let G (n : ℕ) := F (n + n₀)
   let r := Real.exp (-κ)
-  have hr : r < 1 := Real.exp_lt_one_iff.mpr (neg_lt_zero.mpr hκ)
-  have hr0 : 0 ≤ r := (Real.exp_pos _).le
+  have hr : r < 1 := by aesop
+  have hr0 : 0 ≤ r := by positivity
   have hG : ∀ n, DifferentiableOn ℂ (G n) U :=
-    fun n => (hn₀ (n + n₀) (Nat.le_add_left n₀ n)).1
+    fun n => (hn₀ _ (Nat.le_add_left n₀ n)).1
   have hstep : ∀ x ∈ U, ∀ n : ℕ, dist (G n x) (G (n + 1) x) ≤ K * r ^ n := by
     intro x hx n
-    have hn := (hn₀ (n + n₀) (Nat.le_add_left n₀ n)).2 x hx
-    have he : ((n + n₀ : ℕ) : ℝ) ≥ (n : ℝ) := by exact_mod_cast Nat.le_add_right n n₀
+    have he : ((n + n₀ : ℕ) : ℝ) ≥ (n : ℝ) := by simp
     calc
-      _ = ‖F ((n + n₀) + 1) x - F (n + n₀) x‖ := by
+      _ = ‖F _ x - F _ x‖ := by
         rw [dist_comm, dist_eq_norm]
         simp only [G, Nat.add_right_comm n 1 n₀]
-      _ ≤ K * Real.exp (-κ * (n + n₀ : ℕ)) := hn
+      _ ≤ K * Real.exp (-κ * (n + n₀ : ℕ)) := ((hn₀ _ (Nat.le_add_left n₀ n)).2 x hx)
       _ ≤ K * Real.exp (-κ * n) := mul_le_mul_of_nonneg_left
         (Real.exp_le_exp.mpr (by nlinarith)) hK
       _ = K * r ^ n := by
@@ -55,8 +54,8 @@ theorem holomorphic_limit_of_eventual_geometric {N : ℕ}
   have hdist : ∀ x ∈ U, ∀ n, dist (G n x) (f x) ≤ K * r ^ n / (1 - r) :=
     fun x hx n => dist_le_of_le_geometric_of_tendsto _ _ hr (hstep x hx) (hlimG x hx) n
   have hbound : Tendsto (fun n : ℕ => K * r ^ n / (1 - r)) atTop (𝓝 0) := by
-    simpa only [mul_zero, zero_div] using
-      ((tendsto_pow_atTop_nhds_zero_of_lt_one hr0 hr).const_mul K).div_const (1 - r)
+    simpa using
+      ((tendsto_pow_atTop_nhds_zero_of_lt_one hr0 hr).const_mul K).div_const _
   have hUG : TendstoUniformlyOn G f atTop U := by
     rw [Metric.tendstoUniformlyOn_iff]
     intro ε hε
@@ -67,11 +66,10 @@ theorem holomorphic_limit_of_eventual_geometric {N : ℕ}
     rw [Metric.tendstoUniformlyOn_iff]
     intro ε hε
     obtain ⟨k, hk⟩ := eventually_atTop.mp (Metric.tendstoUniformlyOn_iff.mp hUG ε hε)
-    filter_upwards [eventually_ge_atTop (k + n₀)] with n hn x hx
+    filter_upwards [eventually_ge_atTop _] with n hn x hx
     have hn₀ : n₀ ≤ n := (Nat.le_add_left n₀ k).trans hn
     have hnk : k ≤ n - n₀ := (Nat.le_sub_iff_add_le hn₀).mpr hn
-    have he := hk (n - n₀) hnk x hx
-    simpa only [G, Nat.sub_add_cancel hn₀] using he
+    simpa only [G, Nat.sub_add_cancel hn₀] using (hk _ hnk x hx)
   exact ⟨(differentiableOn_of_tendstoLocallyUniformlyOn_fin U hU G f hG
     hUG.tendstoLocallyUniformlyOn).1, hUF⟩
 

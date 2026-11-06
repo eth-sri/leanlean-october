@@ -28,7 +28,7 @@ theorem lateralGMC_interval_first_moment
     (a b : ℝ) (hab : a < b) :
     ∫⁻ ω, Z ω (Set.Ioc a b) ∂P = ENNReal.ofReal (2 * Real.pi * (b - a)) := by
   rcases hZ with ⟨_, _, _, _, _, _, _, hinterval, _⟩
-  exact hinterval a b hab
+  simp_all
 
 
 end DOZZ.Proofs

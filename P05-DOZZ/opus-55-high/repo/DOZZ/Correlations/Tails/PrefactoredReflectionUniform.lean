@@ -44,7 +44,7 @@ theorem prefactored_reflection_moment_uniform
   have hJm := twoSidedReflectionMass_aemeasurable_of_lateral P γ B Z
     (aemeasurable_of_twoSidedConditioned hB) hZ
   have hJbound := hRef ν hνlo hνhi r hr.le hrR B hB hInd
-  change (∫⁻ ω, twoSidedReflectionMass γ B Z ω ^ r ∂P) ≤ D at hJbound
+  change _ ≤ D at hJbound
   calc
     _ = ∫⁻ q : Ω × Ω, twoSidedReflectionMass γ B Z q.1 ^ r * S q.2 ^ r ∂P.prod P := by
       apply lintegral_congr
@@ -52,7 +52,7 @@ theorem prefactored_reflection_moment_uniform
       rw [ENNReal.mul_rpow_of_nonneg _ _ hr.le,mul_comm]
     _ = (∫⁻ ω, twoSidedReflectionMass γ B Z ω ^ r ∂P) * ∫⁻ ω, S ω ^ r ∂P :=
       lintegral_prod_mul (hJm.pow_const r) (hSm.aemeasurable.pow_const r)
-    _ ≤ D*L := mul_le_mul' hJbound (hPin z hzk f hf hfb r hr hrR)
+    _ ≤ D*L := by bound
 
 
 end DOZZ.Proofs

@@ -15,11 +15,14 @@ open MeasureTheory ProbabilityTheory Filter Topology
 open scoped Distributions ENNReal NNReal BoundedContinuousFunction
 
 namespace DOZZ.Proofs
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+section
+variable (hX : IsEquatorGFF P X) (γ : ℝ) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+include hX hM
 
-private theorem exists_measurable_unweighted_fullPath_proxy
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
+theorem exists_measurable_unweighted_fullPath_proxy
+    :
     ∃ G : Ω → gmcTiltCoordinateIndex → ℝ,
       Measurable G ∧
       (fun ω => gmcTiltCoordinatePath (fun f => X ω f) (M ω)) =ᵐ[P] G := by
@@ -46,32 +49,25 @@ private theorem exists_measurable_unweighted_fullPath_proxy
     cases i with
     | inl f => rfl
     | inr j =>
-      change (M ω (gmcTiltCoordinateSet j)).toReal = (E (eval ω) j).toReal
-      have hcoord := congrFun hω j
-      change M ω (gmcTiltCoordinateSet j) = E (eval ω) j at hcoord
-      exact congrArg ENNReal.toReal hcoord
-  exact ⟨G, hG, hEq⟩
+      exact congrArg ENNReal.toReal (congrFun hω j)
+  tauto
 
-private theorem exists_measurable_weighted_fullPath_proxy
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+theorem exists_measurable_weighted_fullPath_proxy
     (shift : TestFn → ℝ) (w : BoundedContinuousFunction ℂ ℝ) :
     ∃ G : Ω → gmcTiltCoordinateIndex → ℝ,
       Measurable G ∧
       (fun ω => gmcTiltCoordinatePath (fun f => X ω f + shift f)
         ((M ω).withDensity (fun z => ENNReal.ofReal (w z)))) =ᵐ[P] G := by
-  classical
   have heval : Measurable (fun ω f => X ω f) := by
     rw [measurable_pi_iff]
     exact fun f => (hX.2 f).1
-  have hW : Measurable (fun z : ℂ => ENNReal.ofReal (w z)) :=
+  have hW :=
     ENNReal.measurable_ofReal.comp w.continuous.measurable
   have hcoord : ∀ j : Option (ℚ × ℚ),
       ∃ g : (TestFn → ℝ) → ℝ, Measurable g ∧
         (fun ω => ((M ω).withDensity (fun z => ENNReal.ofReal (w z))
           (gmcTiltCoordinateSet j)).toReal) =ᵐ[P]
-          fun ω => g (fun f => X ω f) := by
+          fun ω => g (X ω) := by
     intro j
     let B := gmcTiltCoordinateSet j
     have hB : MeasurableSet B := by
@@ -84,21 +80,17 @@ private theorem exists_measurable_weighted_fullPath_proxy
       have hEval : (fun μ : Measure ℂ =>
           (μ.withDensity (fun z => ENNReal.ofReal (w z))) B) =
           fun μ => ∫⁻ z, B.indicator (fun z => ENNReal.ofReal (w z)) z ∂μ := by
-        funext μ
-        rw [withDensity_apply _ hB, ← lintegral_indicator hB]
+        simp_all
       rw [show (fun p : (TestFn → ℝ) × Measure ℂ => H p.1 p.2) =
           fun p => ∫⁻ z, B.indicator (fun z => ENNReal.ofReal (w z)) z ∂p.2 by
-            funext p
-            exact congrFun hEval p.2]
-      exact (Measure.measurable_lintegral (hW.indicator hB)).comp measurable_snd
+            aesop]
+      fun_prop
     obtain ⟨gE, hgE, hEq⟩ :=
       equatorGFF_GMC_function_field_proxy P X hX γ M hM H hH
     let g : (TestFn → ℝ) → ℝ := fun q => (gE q).toReal
-    have hg : Measurable g := ENNReal.measurable_toReal.comp hgE
-    refine ⟨g, hg, ?_⟩
+    refine ⟨g, (ENNReal.measurable_toReal.comp hgE), ?_⟩
     filter_upwards [hEq] with ω hω
-    change ((M ω).withDensity (fun z => ENNReal.ofReal (w z)) B).toReal = _
-    exact congrArg ENNReal.toReal hω
+    tauto
   choose g hg hEq using hcoord
   let eval : Ω → TestFn → ℝ := fun ω f => X ω f
   let G : Ω → gmcTiltCoordinateIndex → ℝ := fun ω i =>
@@ -114,9 +106,7 @@ private theorem exists_measurable_weighted_fullPath_proxy
   have hEqAll : (fun ω => gmcTiltCoordinatePath
       (fun f => X ω f + shift f)
       ((M ω).withDensity (fun z => ENNReal.ofReal (w z)))) =ᵐ[P] G := by
-    have hpoint : ∀ᵐ ω ∂P, ∀ j : Option (ℚ × ℚ),
-        ((M ω).withDensity (fun z => ENNReal.ofReal (w z))
-          (gmcTiltCoordinateSet j)).toReal = g j (eval ω) :=
+    have hpoint :=
       ae_all_iff.mpr hEq
     filter_upwards [hpoint] with ω hω
     funext i
@@ -128,9 +118,6 @@ private theorem exists_measurable_weighted_fullPath_proxy
 /-- The complete product path of field evaluations and determining GMC masses has the tilted
 law asserted by Cameron--Martin. -/
 theorem equatorGFF_GMC_fullCoordinate_limit_law
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (L : Ω → ℝ) (hL : IsGaussianL2Limit P X L)
     (c : BoundedContinuousFunction ℂ ℝ)
@@ -145,7 +132,7 @@ theorem equatorGFF_GMC_fullCoordinate_limit_law
   classical
   let density : Ω → ℝ≥0∞ := fun ω => ENNReal.ofReal
     (Real.exp (L ω - gaussianVariance P L / 2))
-  let Q : Measure Ω := P.withDensity density
+  let Q := P.withDensity density
   let leftPath : Ω → gmcTiltCoordinateIndex → ℝ := fun ω =>
     gmcTiltCoordinatePath (fun f => X ω f) (M ω)
   let shift : TestFn → ℝ := fun f => gaussianCovariance P (fun ω => X ω f) L
@@ -157,25 +144,17 @@ theorem equatorGFF_GMC_fullCoordinate_limit_law
       @equatorGFF_gaussianL2_tilt_density_integral_eq_one Ω _ P hX.1 X hX Xc hXc L hL
   have hQprob : IsProbabilityMeasure Q := by
     refine ⟨?_⟩
-    have hQmass : Q Set.univ = ∫⁻ ω, density ω ∂P := by
-      dsimp [Q]
-      rw [withDensity_apply density MeasurableSet.univ]
-      simp
-    rw [hQmass]
-    exact hmass
+    aesop
   obtain ⟨leftProxy, hleftProxyMeas, hleftProxyAE⟩ :=
     exists_measurable_unweighted_fullPath_proxy P X hX γ M hM
   have hdenAEMeas : AEMeasurable density P := by
     have hLmeas : AEMeasurable L P := hL.1.aestronglyMeasurable.aemeasurable
-    have hExpArg : AEMeasurable (fun ω => L ω - gaussianVariance P L / 2) P :=
-      hLmeas.sub_const _
-    exact ENNReal.measurable_ofReal.comp_aemeasurable
-      (Real.measurable_exp.comp_aemeasurable hExpArg)
+    fun_prop
   have hdenNe : ∀ᵐ ω ∂P, density ω ≠ 0 := by
     filter_upwards [] with ω
-    exact (ENNReal.ofReal_pos.mpr (Real.exp_pos _)).ne'
+    positivity
   have hleftProxyQ : leftPath =ᵐ[Q] leftProxy := by
-    exact (withDensity_ae_eq hdenAEMeas hdenNe).2 (by simpa [leftPath] using hleftProxyAE)
+    exact (withDensity_ae_eq hdenAEMeas hdenNe).2 (by assumption)
   have hleftAEMeas : AEMeasurable leftPath Q :=
     hleftProxyMeas.aemeasurable.congr hleftProxyQ.symm
   obtain ⟨u, w, -, hw, hconv, heventual, -⟩ :=
@@ -201,9 +180,9 @@ theorem equatorGFF_GMC_fullCoordinate_limit_law
     exact hEq.symm ▸ hrightProxyAE
   have hrightAEMeas : AEMeasurable rightPath P :=
     hrightProxyMeas.aemeasurable.congr hrightProxyEq.symm
-  let leftMeasure : Measure (gmcTiltCoordinateIndex → ℝ) := Measure.map leftPath Q
-  let rightMeasure : Measure (gmcTiltCoordinateIndex → ℝ) := Measure.map rightPath P
-  let C : Set (Set (gmcTiltCoordinateIndex → ℝ)) :=
+  let leftMeasure := Measure.map leftPath Q
+  let rightMeasure := Measure.map rightPath P
+  let C :=
     MeasureTheory.measurableCylinders (fun _ : gmcTiltCoordinateIndex => ℝ)
   have hCylinder : ∀ A ∈ C, leftMeasure A = rightMeasure A := by
     intro A hA
@@ -243,20 +222,20 @@ theorem equatorGFF_GMC_fullCoordinate_limit_law
       Measure.map_apply_of_aemeasurable hrightFiniteAEMeas hS] at hmap
     have hpreLeft : leftPath ⁻¹' MeasureTheory.cylinder s S = leftFinite ⁻¹' S := by
       ext ω
-      simp only [Set.mem_preimage, MeasureTheory.mem_cylinder]
+      simp
       rfl
     have hpreRight : rightPath ⁻¹' MeasureTheory.cylinder s S = rightFinite ⁻¹' S := by
       ext ω
-      simp only [Set.mem_preimage, MeasureTheory.mem_cylinder]
+      simp
       rfl
     calc
-      leftMeasure (MeasureTheory.cylinder s S) = Q (leftPath ⁻¹' MeasureTheory.cylinder s S) := by
+      leftMeasure _ = Q _ := by
         dsimp [leftMeasure]
         rw [Measure.map_apply_of_aemeasurable hleftAEMeas hS.cylinder]
-      _ = Q (leftFinite ⁻¹' S) := by rw [hpreLeft]
-      _ = P (rightFinite ⁻¹' S) := hmap
-      _ = P (rightPath ⁻¹' MeasureTheory.cylinder s S) := by rw [hpreRight]
-      _ = rightMeasure (MeasureTheory.cylinder s S) := by
+      _ = Q _ := by rfl
+      _ = P _ := hmap
+      _ = P (rightPath ⁻¹' MeasureTheory.cylinder s S) := by rfl
+      _ = rightMeasure _ := by
         dsimp [rightMeasure]
         rw [Measure.map_apply_of_aemeasurable hrightAEMeas hS.cylinder]
   have hUnivC : Set.univ ∈ C :=
@@ -266,16 +245,19 @@ theorem equatorGFF_GMC_fullCoordinate_limit_law
     rw [Measure.map_apply_of_aemeasurable hleftAEMeas MeasurableSet.univ]
     simp [hQprob.measure_univ]
   have hRightUniv : rightMeasure Set.univ = 1 := by
-    dsimp [rightMeasure]
     rw [Measure.map_apply_of_aemeasurable hrightAEMeas MeasurableSet.univ]
     exact hX.1.measure_univ
-  have hFiniteLeft : IsFiniteMeasure leftMeasure := ⟨by rw [hLeftUniv]; simp⟩
+  have hFiniteLeft : IsFiniteMeasure leftMeasure := ⟨by simp⟩
   have hUnivEq : leftMeasure Set.univ = rightMeasure Set.univ := by
     rw [hLeftUniv, hRightUniv]
-  exact @ext_of_generate_finite (gmcTiltCoordinateIndex → ℝ) _ leftMeasure rightMeasure C
+  exact @ext_of_generate_finite _ _ leftMeasure rightMeasure C
     (by simpa [C] using
       (MeasureTheory.generateFrom_measurableCylinders
-        (α := fun _ : gmcTiltCoordinateIndex => ℝ)).symm)
+       ).symm)
     MeasureTheory.isPiSystem_measurableCylinders hFiniteLeft hCylinder hUnivEq
+
+end
+
+end
 
 end DOZZ.Proofs

@@ -42,9 +42,9 @@ theorem reflected_admissible_copied_test_limit
   let Φ := fun r ω x => Y ω (Real.exp (-max r R₀)) x
   have h0 (x : ℂ) (hx : x ∉ A) : f₀ x = 0 :=
     image_eq_zero_of_notMem_tsupport (fun h => hx (hf₀A h))
-  have h1 (x : ℂ) (hx : x ∈ A) : f₁ x = 0 :=
+  have h1 (x : ℂ) hx : f₁ x = 0 :=
     image_eq_zero_of_notMem_tsupport (fun h => hf₁A h hx)
-  have he (r : ℝ) (ω : Ω × Ω) :
+  have he (r : ℝ) ω :
       fieldChaosMass (P.prod P) (reflected_decoupled_field (Φ r) A) ν
         (fun x => (f₀ x + f₁ x).toNNReal) γ ω =
       fieldChaosMass P (Φ r) ν (fun x => (f₀ x).toNNReal) γ ω.1 +
@@ -57,8 +57,8 @@ theorem reflected_admissible_copied_test_limit
       intro x
       dsimp only
       by_cases hx : x ∈ A
-      · rw [indicator_of_mem hx, h1 x hx, add_zero]
-      · rw [indicator_of_notMem hx, h0 x hx, Real.toNNReal_zero, ENNReal.coe_zero, zero_mul]
+      · simp_all
+      simp_all
     · unfold fieldChaosMass
       rw [← lintegral_indicator hA.compl]
       apply lintegral_congr
@@ -73,17 +73,17 @@ theorem reflected_admissible_copied_test_limit
   have hm₁ := tendstoInMeasure_measurePreserving P (P.prod P) Prod.snd
     measurePreserving_snd _ _ atTop hc₁
   have hneg := tendstoInMeasure_mul_same_space _ _
-    (fun _ : Ω × Ω => (-1 : ℝ)) measurable_const hm₁
+    (fun _ : Ω × Ω => (-1)) measurable_const hm₁
   have ht := tendstoInMeasure_sub (P.prod P) _ _ _ _ hm₀ hneg
-  simp only [neg_one_mul, sub_neg_eq_add] at ht
-  apply TendstoInMeasure.congr _ (Filter.EventuallyEq.refl _ _) ht
+  simp at ht
+  apply TendstoInMeasure.congr _ (Filter.EventuallyEq.refl ..) ht
   intro r
   have hfinite (f : BoundedContinuousFunction ℂ ℝ) :
       ∀ᵐ ω ∂P, fieldChaosMass P (Φ r) ν (fun x => (f x).toNNReal) γ ω ≠ ⊤ :=
     centeredGaussianField_fieldChaosMass_ne_top_ae P (Φ r) (hΦ r) ⟨ν, inferInstance⟩
       (fun x => (f x).toNNReal) f.continuous.measurable.real_toNNReal
       ⟨‖f‖.toNNReal, fun x => Real.toNNReal_mono (by
-        simpa only [Real.norm_eq_abs] using (le_abs_self (f x)).trans (f.norm_coe_le_norm x))⟩ γ
+        simpa using (le_abs_self (f x)).trans (f.norm_coe_le_norm x))⟩ γ
   have hfin₀ : ∀ᵐ ω : Ω × Ω ∂P.prod P,
       fieldChaosMass P (Φ r) ν (fun x => (f₀ x).toNNReal) γ ω.1 ≠ ⊤ :=
     measurePreserving_fst.quasiMeasurePreserving.ae (hfinite f₀)

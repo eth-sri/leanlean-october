@@ -19,7 +19,7 @@ theorem offCenter_pin_law
     (z : ℂ) (hz : 2 ≤ ‖z‖) :
     HasLaw (fun ω => Xc ω z 0) (gaussianReal 0 (2*Real.log ‖z‖).toNNReal) P := by
   obtain ⟨hG,hm⟩ := circleAverage_isGaussianProcess P X Xc hX hc
-  have hg := hG.hasGaussianLaw_eval (z,(0 : ℝ))
+  have hg := hG.hasGaussianLaw_eval (z,0)
   refine ⟨hg.aemeasurable,?_⟩
   rw [hg.map_eq_gaussianReal, hm, ← covariance_self hg.aemeasurable,
     offCenter_origin_variance X Xc hX hc z hz]

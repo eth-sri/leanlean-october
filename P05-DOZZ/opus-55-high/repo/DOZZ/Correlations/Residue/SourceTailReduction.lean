@@ -73,16 +73,10 @@ theorem residue_unitVolume_bridge_of_insertion_tails
         Tendsto (fun ε : ℝ => ε * unitVolumeStructureConstant P M γ
           (α3 - α2 + ε) α2 α3) (𝓝[>] 0)
           (𝓝 (bridgeMultiplicity α2 α3 * reflectionExponent γ α3 * reflectionBarR P γ α3 (B α3) Z)) := by
-  have hα3pos : 0 < α3 := lt_trans (by positivity) hα.2.2.1
+  have hα3pos : 0 < α3 := by linarith
   have hcharge : ∀ α ∈ ({α3} : Set ℝ), γ / 2 < α ∧ α < Q γ := by
-    intro α hαs
-    have hh : α = α3 := hαs
-    rw [hh]
-    exact ⟨hα.2.2.1, hα.2.2.2⟩
+    grind
   have hpos3 : ∀ z ∈ ({3} : Set ℂ), 2 ≤ ‖z‖ := by
-    intro z hz
-    have hh : z = 3 := hz
-    rw [hh]
     norm_num
   have hpos7 : ∀ z ∈ ({7} : Set ℂ), 2 ≤ ‖z‖ := by
     intro z hz
@@ -98,7 +92,7 @@ theorem residue_unitVolume_bridge_of_insertion_tails
     obtain ⟨s7, d7, l7, hF7⟩ := residue_localWeight_uniform_family γ (2 * α3) α3 1 hγ.le
       (by positivity) hα3pos.le 7 3 (by norm_num) (by norm_num) (by norm_num)
     obtain ⟨s, d, l, hF3', hF7'⟩ := residue_uniformFamilies_common_bounds
-      {3} {7} F3s F7s (1 / 2) s3 d3 l3 s7 d7 l7 hF3 hF7
+      {3} {7} F3s F7s _ s3 d3 l3 s7 d7 l7 hF3 hF7
     have hsep : ∀ z2 ∈ ({3} : Set ℂ), ∀ z3 ∈ ({7} : Set ℂ), 3 ≤ ‖z2 - z3‖ := by
       intro z2 hz2 z3 hz3
       have hh2 : z2 = 3 := hz2
@@ -107,8 +101,8 @@ theorem residue_unitVolume_bridge_of_insertion_tails
       norm_num
     obtain ⟨B, Z, hZ, hB, htail⟩ := htwo {3} {7} isCompact_singleton isCompact_singleton
       hpos3 hpos7 hsep {α3} {α3} isCompact_singleton isCompact_singleton hcharge hcharge
-      F3s F7s (1 / 2) s d l hF3' hF7'
-    have hlim := residue_unit_equal_of_twoInsertion_estimate P X M γ α3 (reflectionBarR P γ α3 (B α3) Z) 1
+      F3s F7s _ s d l hF3' hF7'
+    have hlim := residue_unit_equal_of_twoInsertion_estimate P X M γ α3 _ 1
       hγ hγ2 hα.2.2.1 hα.2.2.2 hX hM zero_lt_one (by
         intro θ hθ
         obtain ⟨C, hC, hCb⟩ := htail θ hθ
@@ -123,10 +117,10 @@ theorem residue_unitVolume_bridge_of_insertion_tails
     obtain ⟨s, d, l, hF⟩ := residue_localWeight_uniform_family γ (2 * α3) α2 1 hγ.le
       (by positivity) hα.1.le 3 7 (by norm_num) (by norm_num) (by norm_num)
     obtain ⟨B, Z, hZ, hB, htail⟩ := hone {3} isCompact_singleton hpos3 {α3}
-      isCompact_singleton hcharge Fs (1 / 2) s d l hF
+      isCompact_singleton hcharge Fs _ s d l hF
     let η := oneInsertionErrorCeiling γ α3 / 2
     have he : 0 < oneInsertionErrorCeiling γ α3 := residue_oneInsertionErrorCeiling_pos γ α3 hγ hα.2.2.1 hα.2.2.2
-    have hη : 0 < η := by dsimp only [η]; positivity
+    have hη : 0 < η := by positivity
     have hηbound : ∀ α ∈ ({α3} : Set ℝ), η < oneInsertionErrorCeiling γ α := by
       intro α hαs
       have hh : α = α3 := hαs

@@ -44,21 +44,19 @@ theorem regularizedGMC_lintegral_eq_reference
       change Measurable (fun p : ℂ × Ω => Xc p.2 p.1 r ^ 2)
       have hEq : (fun p : ℂ × Ω => Xc p.2 p.1 r ^ 2) =
           fun p => Xc p.2 p.1 r * Xc p.2 p.1 r := by
-        funext p
         ring
       rw [hEq]
       exact hbase.mul hbase
     change Measurable (fun x => ∫ ω, q x ω ∂P)
     exact hq.stronglyMeasurable.integral_prod_right.measurable
   have hfield : Measurable (fun p : Ω × ℂ => Xc p.1 p.2 r) := hXc.1 r
-  have hnormPlus : Measurable (fun x : ℂ => normPlus x) := by
+  have hnormPlus : Measurable normPlus := by
     unfold normPlus
-    exact measurable_const.max measurable_norm
+    fun_prop
   have hnormProduct : Measurable (fun p : Ω × ℂ => normPlus p.2) :=
     hnormPlus.comp measurable_snd
   have hVproduct : Measurable (fun p : Ω × ℂ => V p.2) := hVmeas.comp measurable_snd
   have hdensity : Measurable density := by
-    dsimp [density]
     fun_prop
   have hG : Measurable G := by
     exact Measurable.ite (hA.preimage measurable_snd) hdensity measurable_const
@@ -71,8 +69,7 @@ theorem regularizedGMC_lintegral_eq_reference
     let Z : Ω → Fin 1 → ℝ := fun ω i => Xc ω (p i).1 (p i).2
     have hZ : IsCenteredJointlyGaussian P Z := by
       simpa [Z, p] using circleAverage_finite_family_jointly_gaussian P X hX Xc hXc p
-    have hbase := wick_exponential_lintegral_expectation P Z hZ 0 γ
-    simpa [Z, p, hV x] using hbase
+    simpa [Z, p, hV x] using (wick_exponential_lintegral_expectation P Z hZ 0 γ)
   have hsection (ω : Ω) :
       ∫⁻ x in A, density (ω, x) ∂volume = ∫⁻ x, G (ω, x) ∂volume := by
     rw [← lintegral_indicator hA]
@@ -82,10 +79,10 @@ theorem regularizedGMC_lintegral_eq_reference
   have hdensityIntegral (x : ℂ) :
       ∫⁻ ω, density (ω, x) ∂P = ENNReal.ofReal (normPlus x ^ (-4 : ℝ)) := by
     change ∫⁻ ω, ENNReal.ofReal
-      (Real.exp (γ * Xc ω x r - γ ^ 2 / 2 * V x) * normPlus x ^ (-4 : ℝ)) ∂P = _
+      (Real.exp _ * normPlus x ^ (-4 : ℝ)) ∂P = _
     calc
       ∫⁻ ω, ENNReal.ofReal
-          (Real.exp (γ * Xc ω x r - γ ^ 2 / 2 * V x) * normPlus x ^ (-4 : ℝ)) ∂P
+          (Real.exp _ * normPlus x ^ (-4 : ℝ)) ∂P
         = ∫⁻ ω, ENNReal.ofReal (Real.exp
             (γ * Xc ω x r - γ ^ 2 / 2 * V x)) *
             ENNReal.ofReal (normPlus x ^ (-4 : ℝ)) ∂P := by
@@ -96,15 +93,15 @@ theorem regularizedGMC_lintegral_eq_reference
             (γ * Xc ω x r - γ ^ 2 / 2 * V x)) ∂P) *
             ENNReal.ofReal (normPlus x ^ (-4 : ℝ)) := by
               exact lintegral_mul_const'' _ (by fun_prop)
-      _ = ENNReal.ofReal (normPlus x ^ (-4 : ℝ)) := by rw [hwick x, one_mul]
+      _ = ENNReal.ofReal (normPlus x ^ (-4 : ℝ)) := by simp_all
   calc
     ∫⁻ ω, regularizedGMC P Xc γ r ω A ∂P =
-        ∫⁻ ω, ∫⁻ x, G (ω, x) ∂volume ∂P := by
+        ∫⁻ ω, ∫⁻ x, G _ ∂volume ∂P := by
           apply lintegral_congr
           intro ω
           rw [regularizedGMC, withDensity_apply _ hA]
           exact hsection ω
-    _ = ∫⁻ x, ∫⁻ ω, G (ω, x) ∂P ∂volume := by
+    _ = ∫⁻ x, ∫⁻ ω, G _ ∂P ∂volume := by
           rw [← lintegral_prod G hG.aemeasurable,
             lintegral_prod_symm G hG.aemeasurable]
     _ = ∫⁻ x in A, ENNReal.ofReal (normPlus x ^ (-4 : ℝ)) ∂volume := by

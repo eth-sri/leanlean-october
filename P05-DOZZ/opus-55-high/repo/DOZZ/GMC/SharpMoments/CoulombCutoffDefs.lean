@@ -41,30 +41,31 @@ noncomputable def coulombCutoffWeight (partition : GMCChartPartition) {N : ℕ} 
     (α : Fin N → ℝ) (z : Fin N → ℂ) (αinf r : ℝ) (x : ℂ) : ℝ≥0∞ :=
   (partition.finiteWeight x : ℝ≥0∞) * coulombCutoffFiniteWeight γ α z αinf r x +
     (partition.infinityWeight x⁻¹ : ℝ≥0∞) * coulombCutoffInfinityWeight γ α z αinf r x⁻¹
+section
+variable {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (z : Fin N → ℂ) (αinf r : ℝ)
 
-theorem measurable_coulombCutoffFiniteWeight {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (z : Fin N → ℂ)
-    (αinf r : ℝ) : Measurable (coulombCutoffFiniteWeight γ α z αinf r) := by
+theorem measurable_coulombCutoffFiniteWeight : Measurable (coulombCutoffFiniteWeight γ α z αinf r) := by
   unfold coulombCutoffFiniteWeight
-  simp only [ENNReal.rpow_eq_pow]
+  simp
   refine Measurable.mul (Finset.measurable_prod _ fun k _ => ?_) ?_
   · exact (ENNReal.measurable_ofReal.comp (measurable_normPlus.div
       ((measurable_id.sub_const (z k)).norm.add_const _))).pow_const _
   · exact (ENNReal.measurable_ofReal.comp measurable_normPlus).pow_const _
 
-theorem measurable_coulombCutoffInfinityWeight {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (z : Fin N → ℂ)
-    (αinf r : ℝ) : Measurable (coulombCutoffInfinityWeight γ α z αinf r) := by
+theorem measurable_coulombCutoffInfinityWeight : Measurable (coulombCutoffInfinityWeight γ α z αinf r) := by
   unfold coulombCutoffInfinityWeight
-  simp only [ENNReal.rpow_eq_pow]
+  simp
   refine Measurable.mul (Finset.measurable_prod _ fun k _ => ?_) ?_
   · exact (ENNReal.measurable_ofReal.comp (measurable_normPlus.div
       ((measurable_const.sub (measurable_const.mul measurable_id)).norm.add_const _))).pow_const _
   · exact (ENNReal.measurable_ofReal.comp (measurable_normPlus.div
       (measurable_norm.add_const _))).pow_const _
 
+end
+
 theorem measurable_coulombCutoffWeight (partition : GMCChartPartition) {N : ℕ} (γ : ℝ)
     (α : Fin N → ℝ) (z : Fin N → ℂ) (αinf r : ℝ) :
     Measurable (coulombCutoffWeight partition γ α z αinf r) := by
-  unfold coulombCutoffWeight
   refine Measurable.add ?_ ?_
   · exact (partition.finiteWeight.continuous.measurable.coe_nnreal_ennreal).mul
       (measurable_coulombCutoffFiniteWeight γ α z αinf r)
@@ -90,8 +91,7 @@ theorem regularizedCoulombMass_eq_lintegral
     (hXc.1 r).comp (measurable_const.prodMk measurable_id)
   have hwick : Measurable (fun x : ℂ => ENNReal.ofReal
       (Real.exp (γ * Xc ω x r - γ ^ 2 / 2 * ∫ ω', Xc ω' x r ^ 2 ∂P))) :=
-    ENNReal.measurable_ofReal.comp (Real.measurable_exp.comp
-      ((hX1.const_mul γ).sub (hV.const_mul _)))
+    by fun_prop
   have hfin : Measurable fun x : ℂ => (partition.finiteWeight x : ℝ≥0∞) *
       coulombCutoffFiniteWeight γ α z αinf r x :=
     (partition.finiteWeight.continuous.measurable.coe_nnreal_ennreal).mul

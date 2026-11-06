@@ -15,15 +15,4 @@ open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
 
-/-- The full moment formula is exactly Gamma times the unit-volume moment, including the
-normalization. This algebra does not divide by Gamma at a totalized pole. -/
-theorem residue_structureConstant_eq_unitVolume
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (M : Ω → Measure ℂ)
-    (γ μ a b c : ℝ) :
-    structureConstant P M γ μ a b c =
-      μ ^ (-sExp γ a b c) * Real.Gamma (sExp γ a b c) *
-        unitVolumeStructureConstant P M γ a b c := by
-  unfold structureConstant unitVolumeStructureConstant
-  ring
-
 end DOZZ.Proofs

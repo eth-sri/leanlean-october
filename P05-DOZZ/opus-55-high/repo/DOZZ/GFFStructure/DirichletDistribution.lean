@@ -40,37 +40,40 @@ theorem diskDistributionCutoff_eq_one (c : ℂ) (ρ : ℝ) (z : ℂ) (hz : z ∈
     diskDistributionCutoff c ρ z = 1 := by
   apply DOZZ.localTorusCutoff_eq_one
   rw [mem_closedBall_iff_norm,sub_zero]
-  have hbound : ‖z‖ ≤ ‖z-c‖+‖c‖ := by simpa only [sub_add_cancel] using norm_add_le (z-c) c
+  have hbound : ‖z‖ ≤ ‖z-c‖+‖c‖ := by simpa using norm_add_le (z-c) c
   have hz' := mem_ball_iff_norm.mp hz
-  linarith [le_abs_self ρ]
+  grind
 
 /-- Multiplication by the fixed disk cutoff is continuous in the test-function topology. -/
 noncomputable def diskDistributionCutoffCLM (c : ℂ) (ρ : ℝ) : TestFn →L[ℝ] TestFn :=
   TestFunction.bilinLeftCLM (ContinuousLinearMap.lsmul ℝ ℝ) (diskDistributionCutoff c ρ).contDiff
+section
+variable (c : ℂ) (ρ : ℝ) (f : TestFn)
 
 /-- The cutoff test has its literal product value. -/
-theorem diskDistributionCutoffCLM_apply (c : ℂ) (ρ : ℝ) (f : TestFn) (z : ℂ) :
+theorem diskDistributionCutoffCLM_apply (z : ℂ) :
     diskDistributionCutoffCLM c ρ f z = f z*diskDistributionCutoff c ρ z := rfl
 
 /-- Each cutoff test lies strictly within the Fourier chart's approximation region. -/
-theorem diskDistributionCutoffCLM_support_subset (c : ℂ) (ρ : ℝ) (f : TestFn) :
+theorem diskDistributionCutoffCLM_support_subset :
     Function.support (diskDistributionCutoffCLM c ρ f) ⊆
       ball (0 : ℂ) (diskDistributionChartRadius c ρ-1) := by
   have hs : tsupport (diskDistributionCutoffCLM c ρ f) ⊆ tsupport (diskDistributionCutoff c ρ) := by
-    change tsupport (fun z => f z*diskDistributionCutoff c ρ z) ⊆ _
     exact tsupport_mul_subset_right
-  rw [show tsupport (diskDistributionCutoff c ρ) = closedBall (0 : ℂ) (‖c‖+|ρ|+1+2) from
-    DOZZ.localTorusCutoff_tsupport _ _] at hs
+  rw [show tsupport (diskDistributionCutoff c ρ) = closedBall 0 (‖c‖+|ρ|+1+2) from
+    DOZZ.localTorusCutoff_tsupport ..] at hs
   exact subset_tsupport _ |>.trans (hs.trans (closedBall_subset_ball (by
     unfold diskDistributionChartRadius; linarith)))
 
 /-- The fixed cutoff does not change any target disk L² restriction. -/
-theorem diskTestRestrictionL2_cutoff (c : ℂ) (ρ : ℝ) (f : TestFn) :
+theorem diskTestRestrictionL2_cutoff :
     diskTestRestrictionL2 c ρ (diskDistributionCutoffCLM c ρ f) = diskTestRestrictionL2 c ρ f := by
   apply Lp.ext
-  filter_upwards [diskTestRestrictionL2_ae_eq c ρ (diskDistributionCutoffCLM c ρ f),
+  filter_upwards [diskTestRestrictionL2_ae_eq c ρ _,
     diskTestRestrictionL2_ae_eq c ρ f,ae_restrict_mem measurableSet_ball] with z hcut hf hz
   rw [hcut,hf,diskDistributionCutoffCLM_apply,diskDistributionCutoff_eq_one c ρ z hz,mul_one]
+
+end
 
 section Distribution
 variable {Ω : Type*} [MeasurableSpace Ω]
@@ -85,16 +88,18 @@ noncomputable def completedDiskDistributionCLM (ω : Ω) : TestFn →L[ℝ] ℝ 
 
 /-- The supported random distribution constructed on the original sample space. -/
 noncomputable def completedDiskDistribution : Ω → Distr := completedDiskDistributionCLM P c ρ T
+section
+variable (f : TestFn)
 
 /-- Every global test evaluation of the distribution version is measurable. -/
-theorem measurable_completedDiskDistribution_apply (f : TestFn) :
+theorem measurable_completedDiskDistribution_apply :
     Measurable (fun ω => completedDiskDistribution P c ρ T ω f) :=
-  measurable_diskFourierDistribution_apply P c ρ (diskDistributionChartRadius c ρ)
-    (diskDistributionChartSide c ρ) (diskDistributionChartRadius_pos c ρ) T
+  measurable_diskFourierDistribution_apply P c ρ _
+    (diskDistributionChartSide c ρ) _ T
       (diskDistributionCutoffCLM c ρ f)
 
 /-- The global distribution version represents the actual completed variable on each test. -/
-theorem completedDiskDistribution_apply_ae_eq (f : TestFn) :
+theorem completedDiskDistribution_apply_ae_eq :
     (fun ω => completedDiskDistribution P c ρ T ω f) =ᵐ[P] ⇑(T (diskTestRestrictionL2 c ρ f)) := by
   have hL : 0 < diskDistributionChartSide c ρ := by
     unfold diskDistributionChartSide; linarith [diskDistributionChartRadius_pos c ρ]
@@ -103,20 +108,21 @@ theorem completedDiskDistribution_apply_ae_eq (f : TestFn) :
   have h := diskFourierDistribution_apply_ae_eq P c ρ (diskDistributionChartRadius c ρ)
     (diskDistributionChartSide c ρ) (diskDistributionChartRadius_pos c ρ) hL hbox T
     (diskDistributionCutoffCLM c ρ f) (diskDistributionCutoffCLM_support_subset c ρ f)
-  rw [diskTestRestrictionL2_cutoff] at h
-  exact h
+  rwa [diskTestRestrictionL2_cutoff] at h
 
 /-- Every global evaluation of the actual distribution version belongs to random L². -/
-theorem completedDiskDistribution_apply_memLp (f : TestFn) :
+theorem completedDiskDistribution_apply_memLp :
     MemLp (fun ω => completedDiskDistribution P c ρ T ω f) 2 P :=
-  (Lp.memLp (T (diskTestRestrictionL2 c ρ f))).ae_eq (completedDiskDistribution_apply_ae_eq P c ρ T f).symm
+  (Lp.memLp _).ae_eq (completedDiskDistribution_apply_ae_eq P c ρ T f).symm
+
+end
 
 /-- A centered completed map gives centered distribution evaluations. -/
 theorem completedDiskDistribution_apply_integral_zero
     (hT : ∀ f : TestFn, (∫ ω, T (diskTestRestrictionL2 c ρ f) ω ∂P) = 0) (f : TestFn) :
     (∫ ω, completedDiskDistribution P c ρ T ω f ∂P) = 0 := by
   rw [integral_congr_ae (completedDiskDistribution_apply_ae_eq P c ρ T f)]
-  exact hT f
+  simp_all
 
 /-- The globally indexed distribution version retains joint Gaussianity. -/
 theorem completedDiskDistribution_isGaussianProcess
@@ -136,11 +142,9 @@ end Distribution
 /-- Countably indexed complex ℓ² is separable. -/
 theorem separableSpace_complex_l2 {ι : Type*} [Countable ι] :
     SeparableSpace (lp (fun _ : ι => ℂ) (2 : ℝ≥0∞)) := by
-  classical
-  let b : HilbertBasis ι ℂ (lp (fun _ : ι => ℂ) (2 : ℝ≥0∞)) :=
+  let b : HilbertBasis ι ℂ (lp (fun _ => ℂ) 2) :=
     HilbertBasis.ofRepr (LinearIsometryEquiv.refl ℂ _)
-  have hs := (Set.countable_range b).isSeparable.span (R := ℂ)
-  have hc := hs.closure
+  have hc := ((Set.countable_range b).isSeparable.span (R := ℂ)).closure
   rw [← Submodule.topologicalClosure_coe,b.dense_span] at hc
   exact (isSeparable_univ_iff).mp hc
 
@@ -154,9 +158,8 @@ theorem ae_forall_continuous_eq_zero {Ω E : Type*} [MeasurableSpace Ω]
   have hz : ∀ᵐ ω ∂P, ∀ x : s, F ω x.1 = 0 := ae_all_iff.mpr (fun x => hzero x.1)
   filter_upwards [hz] with ω hω
   have he : EqOn (F ω) 0 s := fun x hx => hω ⟨x,hx⟩
-  have hc : EqOn (F ω) 0 (closure s) := he.closure (hF ω) continuous_const
-  intro x
-  exact hc (hd x)
+  have hc := he.closure (hF ω) continuous_const
+  tauto
 
 /-- The coefficient map through which the global disk distribution factors. -/
 noncomputable def completedDiskFourierCoeffCLM (c : ℂ) (ρ : ℝ) :
@@ -173,15 +176,15 @@ noncomputable def completedDiskFourierPairingCLM {Ω : Type*} [MeasurableSpace �
     (diskDistributionChartSide c ρ) (diskDistributionChartRadius_pos c ρ) T ω then
       diskFourierPairingCLM P c ρ (diskDistributionChartRadius c ρ)
         (diskDistributionChartSide c ρ) (diskDistributionChartRadius_pos c ρ) T ω hω else 0
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (c : ℂ) (ρ : ℝ) (T : Lp ℝ 2 (volume.restrict (ball c ρ)) →L[ℝ] Lp ℝ 2 P)
 
 /-- The global disk distribution factors through a fixed separable Fourier coefficient space. -/
-theorem completedDiskDistribution_eq_fourierPairing {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (c : ℂ) (ρ : ℝ)
-    (T : Lp ℝ 2 (volume.restrict (ball c ρ)) →L[ℝ] Lp ℝ 2 P) (ω : Ω) (f : TestFn) :
+theorem completedDiskDistribution_eq_fourierPairing (ω : Ω) (f : TestFn) :
     completedDiskDistribution P c ρ T ω f = completedDiskFourierPairingCLM P c ρ T ω
       (completedDiskFourierCoeffCLM c ρ f) := by
-  change diskFourierDistribution P c ρ (diskDistributionChartRadius c ρ)
-    (diskDistributionChartSide c ρ) (diskDistributionChartRadius_pos c ρ) T ω (diskDistributionCutoffCLM c ρ f) = _
+  change diskFourierDistribution P c ρ _
+    (diskDistributionChartSide c ρ) _ T ω _ = _
   by_cases hω : diskFourierGood P c ρ (diskDistributionChartRadius c ρ)
     (diskDistributionChartSide c ρ) (diskDistributionChartRadius_pos c ρ) T ω
   · rw [diskFourierDistribution,dite_eq_left hω,completedDiskFourierPairingCLM,dite_eq_left hω]
@@ -190,21 +193,18 @@ theorem completedDiskDistribution_eq_fourierPairing {Ω : Type*} [MeasurableSpac
     rfl
 
 /-- The distribution version vanishes on all exterior tests on one full-measure event. -/
-theorem ae_completedDiskDistribution_exterior_tests_zero {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (c : ℂ) (ρ : ℝ)
-    (T : Lp ℝ 2 (volume.restrict (ball c ρ)) →L[ℝ] Lp ℝ 2 P) :
+theorem ae_completedDiskDistribution_exterior_tests_zero :
     ∀ᵐ ω ∂P, ∀ f : TestFn, tsupport f ⊆ (closedBall c ρ)ᶜ → completedDiskDistribution P c ρ T ω f = 0 := by
-  let E := lp (fun _ : Fin 2 → ℤ => ℂ) (2 : ℝ≥0∞)
+  let E := lp (fun _ : Fin 2 → ℤ => ℂ) 2
   let _ : SeparableSpace E := separableSpace_complex_l2
-  let S : Set E := (completedDiskFourierCoeffCLM c ρ) '' {f : TestFn | tsupport f ⊆ (closedBall c ρ)ᶜ}
+  let S := (completedDiskFourierCoeffCLM c ρ) '' {f : TestFn | tsupport f ⊆ (closedBall c ρ)ᶜ}
   let F : Ω → S → ℝ := fun ω u => completedDiskFourierPairingCLM P c ρ T ω u.1
   have hzero : ∀ u : S, (fun ω => F ω u) =ᵐ[P] 0 := by
     intro u
     obtain ⟨f,hf,he⟩ := u.2
-    have hres := diskTestRestrictionL2_eq_zero_of_exterior c ρ f hf
     filter_upwards [completedDiskDistribution_apply_ae_eq P c ρ T f,Lp.coeFn_zero ℝ 2 P] with ω hω hz
     change completedDiskFourierPairingCLM P c ρ T ω u.1 = 0
-    rw [← he,← completedDiskDistribution_eq_fourierPairing P c ρ T ω f,hω,hres,map_zero,hz]
+    rw [← he,← completedDiskDistribution_eq_fourierPairing P c ρ T ω f,hω,(diskTestRestrictionL2_eq_zero_of_exterior c ρ f hf),map_zero,hz]
     rfl
   have h := ae_forall_continuous_eq_zero P F
     (fun ω => (completedDiskFourierPairingCLM P c ρ T ω).continuous.comp continuous_subtype_val) hzero
@@ -212,6 +212,8 @@ theorem ae_completedDiskDistribution_exterior_tests_zero {Ω : Type*} [Measurabl
   intro f hf
   rw [completedDiskDistribution_eq_fourierPairing]
   exact hω ⟨completedDiskFourierCoeffCLM c ρ f,⟨f,hf,rfl⟩⟩
+
+end
 
 /-- The actual supported Dirichlet distribution obtained from the completed residual map. -/
 noncomputable def dirichletDistribution {Ω : Type*} [MeasurableSpace Ω]
@@ -221,102 +223,58 @@ noncomputable def dirichletDistribution {Ω : Type*} [MeasurableSpace Ω]
     (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ)) : Ω → Distr :=
   completedDiskDistribution P c ρ (dirichletCompletedL2Map P X Xc hX hc c R ρ hR V hV hU)
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (c : ℂ)
 
 /-- Every global Dirichlet distribution evaluation retains the actual completed residual. -/
-theorem dirichletDistribution_apply_ae_eq {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ : ℝ) (hR : 0 < R) (V : Ω → ℂ → ℝ)
+theorem dirichletDistribution_apply_ae_eq (R ρ : ℝ) (hR : 0 < R) (V : Ω → ℂ → ℝ)
     (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
     (f : TestFn) : (fun ω => dirichletDistribution P X Xc hX hc c R ρ hR V hV hU ω f) =ᵐ[P] ⇑(dirichletCompletedL2Map P X Xc hX hc c R ρ hR V hV hU (diskTestRestrictionL2 c ρ f)) :=
-  completedDiskDistribution_apply_ae_eq P c ρ (dirichletCompletedL2Map P X Xc hX hc c R ρ hR V hV hU) f
+  completedDiskDistribution_apply_ae_eq P c ρ _ f
+section
+variable (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R) (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P) (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0) (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ)) (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ → covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ- Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖) (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm (fun ω => exteriorPinnedEvaluation X Xc R (zero_lt_one.trans hR) ω (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
+include hR hpin hmean hcov hlim
 
 /-- Every global Dirichlet distribution evaluation is centered. -/
-theorem dirichletDistribution_apply_integral_zero {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
-    (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
-    (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
-      (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
-        (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
-    (f : TestFn) : (∫ ω, dirichletDistribution P X Xc hX hc c R ρ (by linarith) V hV hU ω f ∂P) = 0 :=
+theorem dirichletDistribution_apply_integral_zero (f : TestFn) : (∫ ω, dirichletDistribution P X Xc hX hc c R ρ (by linarith) V hV hU ω f ∂P) = 0 :=
   completedDiskDistribution_apply_integral_zero P c ρ (dirichletCompletedL2Map P X Xc hX hc c R ρ (by linarith) V hV hU)
     (fun f => dirichletCompletedL2Map_integral_zero P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hcov hlim _) f
 
 /-- The actual supported Dirichlet distribution has exactly the Green covariance
 `DOZZ.diskGreenCovariance`. -/
-theorem dirichletDistribution_covariance {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
-    (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
-    (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
-      (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
-        (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
-    (f g : TestFn) : covariance (fun ω => dirichletDistribution P X Xc hX hc c R ρ (by linarith) V hV hU ω f) (fun ω => dirichletDistribution P X Xc hX hc c R ρ (by linarith) V hV hU ω g) P =
+theorem dirichletDistribution_covariance (f g : TestFn) : covariance (fun ω => dirichletDistribution P X Xc hX hc c R ρ (by linarith) V hV hU ω f) (fun ω => dirichletDistribution P X Xc hX hc c R ρ (by linarith) V hV hU ω g) P =
       diskGreenCovariance c ρ hρ f g := by
   rw [dirichletDistribution,completedDiskDistribution_covariance_eq P c ρ (dirichletCompletedL2Map P X Xc hX hc c R ρ (by linarith) V hV hU)]
   exact dirichletCompletedL2Map_covariance P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hcov hlim f g
 
 /-- The supported Dirichlet distribution has jointly Gaussian global test evaluations. -/
-theorem dirichletDistribution_isGaussianProcess {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
-    (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
-    (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
-      (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
-        (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
-    : IsGaussianProcess (fun f : TestFn => fun ω => dirichletDistribution P X Xc hX hc c R ρ (by linarith) V hV hU ω f) P := by
-  have hG := dirichletCompletedL2Map_isGaussianProcess P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hcov hlim
+theorem dirichletDistribution_isGaussianProcess : IsGaussianProcess (fun f : TestFn => fun ω => dirichletDistribution P X Xc hX hc c R ρ (by linarith) V hV hU ω f) P := by
   exact completedDiskDistribution_isGaussianProcess P c ρ (dirichletCompletedL2Map P X Xc hX hc c R ρ (by linarith) V hV hU)
-    (hG.comp_right (diskTestRestrictionL2 c ρ))
+    ((dirichletCompletedL2Map_isGaussianProcess P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hcov hlim).comp_right _)
+
+end
+section
+variable (R ρ : ℝ) (hR : 0 < R) (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P) (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
 
 /-- One event makes the actual supported Dirichlet distribution vanish on every exterior test. -/
-theorem ae_dirichletDistribution_exterior_tests_zero {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ : ℝ) (hR : 0 < R) (V : Ω → ℂ → ℝ)
-    (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    : ∀ᵐ ω ∂P, ∀ f : TestFn, tsupport f ⊆ (closedBall c ρ)ᶜ → dirichletDistribution P X Xc hX hc c R ρ hR V hV hU ω f = 0 :=
-  ae_completedDiskDistribution_exterior_tests_zero P c ρ (dirichletCompletedL2Map P X Xc hX hc c R ρ hR V hV hU)
+theorem ae_dirichletDistribution_exterior_tests_zero : ∀ᵐ ω ∂P, ∀ f : TestFn, tsupport f ⊆ (closedBall c ρ)ᶜ → dirichletDistribution P X Xc hX hc c R ρ hR V hV hU ω f = 0 :=
+  ae_completedDiskDistribution_exterior_tests_zero P c ρ _
+section
+variable (f : TestFn)
 
 /-- Every actual supported Dirichlet test evaluation is measurable. -/
-theorem measurable_dirichletDistribution_apply {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ : ℝ) (hR : 0 < R) (V : Ω → ℂ → ℝ)
-    (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (f : TestFn) : Measurable (fun ω => dirichletDistribution P X Xc hX hc c R ρ hR V hV hU ω f) :=
-  measurable_completedDiskDistribution_apply P c ρ (dirichletCompletedL2Map P X Xc hX hc c R ρ hR V hV hU) f
+theorem measurable_dirichletDistribution_apply : Measurable (fun ω => dirichletDistribution P X Xc hX hc c R ρ hR V hV hU ω f) :=
+  measurable_completedDiskDistribution_apply P c ρ _ f
 
 /-- Every actual supported Dirichlet test evaluation belongs to random L². -/
-theorem dirichletDistribution_apply_memLp {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ : ℝ) (hR : 0 < R) (V : Ω → ℂ → ℝ)
-    (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (f : TestFn) : MemLp (fun ω => dirichletDistribution P X Xc hX hc c R ρ hR V hV hU ω f) 2 P :=
-  completedDiskDistribution_apply_memLp P c ρ (dirichletCompletedL2Map P X Xc hX hc c R ρ hR V hV hU) f
+theorem dirichletDistribution_apply_memLp : MemLp (fun ω => dirichletDistribution P X Xc hX hc c R ρ hR V hV hU ω f) 2 P :=
+  completedDiskDistribution_apply_memLp P c ρ _ f
+
+end
+
+end
+
+end
 
 end DOZZ.Proofs

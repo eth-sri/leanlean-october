@@ -21,11 +21,10 @@ theorem residue_chart_tail_coefficient (γ α β ε Rbar : ℝ) (hγ : γ ≠ 0)
       (residueLocalWeight γ (2 * α + ε) β w z) Rbar =
       ‖z‖ ^ (γ * ε * reflectionExponent γ α) *
         ‖z - w‖ ^ (-(γ * β * reflectionExponent γ α)) * Rbar := by
-  have hn : 0 < ‖z‖ := lt_of_lt_of_le (by norm_num : (0:ℝ) < 2) hz
-  have hd : 0 < ‖z - w‖ := lt_of_lt_of_le (by norm_num : (0:ℝ) < 3) hzw
+  have hn : 0 < ‖z‖ := by positivity
+  have hd : 0 < ‖z - w‖ := by positivity
   rw [residue_localWeight_eq γ (2 * α + ε) β z w z hz hz8 hzw
     (Metric.mem_ball_self (by norm_num))]
-  unfold oneInsertionTailCoefficient
   change ‖z‖ ^ (-4 * α * (Q γ - α)) *
     (‖z‖ ^ (γ * (2 * α + ε)) / ‖z - w‖ ^ (γ * β)) ^ (reflectionExponent γ α) * Rbar = _
   rw [Real.div_rpow (Real.rpow_nonneg hn.le _) (Real.rpow_nonneg hd.le _),
@@ -34,8 +33,7 @@ theorem residue_chart_tail_coefficient (γ α β ε Rbar : ℝ) (hγ : γ ≠ 0)
   have he : -4 * α * (Q γ - α) + γ * (2 * α + ε) * reflectionExponent γ α =
       γ * ε * reflectionExponent γ α := by
     unfold reflectionExponent
-    field_simp [hγ]
-    ring
+    grind
   calc _ = (‖z‖ ^ (-4 * α * (Q γ - α)) *
         ‖z‖ ^ (γ * (2 * α + ε) * reflectionExponent γ α)) *
         ‖z - w‖ ^ (-(γ * β * reflectionExponent γ α)) * Rbar := by ring
@@ -48,10 +46,10 @@ theorem residue_chart_tail_coefficient_limit (γ α β Rbar : ℝ) (hγ : γ ≠
       (residueLocalWeight γ (2 * α + ε) β w z) Rbar) (𝓝[>] 0)
       (𝓝 (‖z - w‖ ^ (-(γ * β * reflectionExponent γ α)) * Rbar)) := by
   have he : Tendsto (fun ε : ℝ => ε) (𝓝[>] 0) (𝓝 0) := tendsto_id.mono_left nhdsWithin_le_nhds
-  have hpow := (Real.continuous_const_rpow (by linarith only [hz] : ‖z‖ ≠ 0)).continuousAt.tendsto.comp
+  have hpow := (Real.continuous_const_rpow (by linarith only [hz])).continuousAt.tendsto.comp
     ((he.const_mul γ).mul_const (reflectionExponent γ α))
   simpa only [residue_chart_tail_coefficient γ α β _ Rbar hγ z w hz hz8 hzw,
     mul_zero, zero_mul, Real.rpow_zero, one_mul, Function.comp_def] using
-    (hpow.mul_const (‖z - w‖ ^ (-(γ * β * reflectionExponent γ α)))).mul_const Rbar
+    (hpow.mul_const _).mul_const Rbar
 
 end DOZZ.Proofs

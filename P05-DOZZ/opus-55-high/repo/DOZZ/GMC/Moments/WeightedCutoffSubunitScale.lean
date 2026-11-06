@@ -15,22 +15,6 @@ open scoped Distributions ENNReal NNReal
 
 namespace DOZZ.Proofs
 
-private theorem ennreal_ofReal_rpow_of_pos_scale {x p : ℝ} (hx : 0 < x) :
-    ENNReal.rpow (ENNReal.ofReal x) p = ENNReal.ofReal (x ^ p) := by
-  have hx0 : ENNReal.ofReal x ≠ 0 := ne_of_gt (ENNReal.ofReal_pos.mpr hx)
-  have hleft : ENNReal.rpow (ENNReal.ofReal x) p ≠ ⊤ :=
-    ENNReal.rpow_ne_top_of_ne_zero hx0 ENNReal.ofReal_ne_top
-  have hright : ENNReal.ofReal (x ^ p) ≠ ⊤ := ENNReal.ofReal_ne_top
-  apply (ENNReal.toReal_eq_toReal_iff' hleft hright).1
-  calc
-    (ENNReal.rpow (ENNReal.ofReal x) p).toReal =
-        (ENNReal.ofReal x).toReal ^ p := (ENNReal.toReal_rpow _ _).symm
-    _ = x ^ p := by rw [ENNReal.toReal_ofReal hx.le]
-    _ = (ENNReal.ofReal (x ^ p)).toReal := by
-      rw [ENNReal.toReal_ofReal (Real.rpow_nonneg hx.le p)]
-
-
-/-- Explicit scale constant in the nonsingular sector, for use in compact parameter families. -/
 theorem cutoffWeightedGmcBallMoment_nonpos_subunit_scale_formula
     {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
@@ -45,24 +29,23 @@ theorem cutoffWeightedGmcBallMoment_nonpos_subunit_scale_formula
           (1 + gmcReferenceMeasure (Metric.ball 0 (1 / 2))) *
           ENNReal.ofReal (R ^ weightedCutoffMomentScaleExponent γ α p) := by
   let ξ : ℝ := 2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2
-  let η : ℝ := weightedCutoffMomentScaleExponent γ α p
+  let η := weightedCutoffMomentScaleExponent γ α p
   let base : ℝ≥0∞ := 1 + gmcReferenceMeasure (Metric.ball 0 (1 / 2))
   let s : ℝ := 2 * R
-  have hs : 0 < s := by dsimp [s]; positivity
+  have hs : 0 < s := by positivity
   have hη : -γ * α * p + ξ = η := by
     dsimp [η, ξ, weightedCutoffMomentScaleExponent, Q]
-    field_simp [ne_of_gt hγ]
-    ring
+    grind
   have hsub := cutoffWeightedGmcBallMoment_le_nonpos_subunit_chart
     P X hX γ hγ hγ2 Xc hXc α hα z R δ p hR hR1 hδ hδR hchart hp hp1
   have hcoef : ENNReal.rpow (ENNReal.ofReal (s ^ (-γ * α))) p =
       ENNReal.ofReal (s ^ (-γ * α * p)) := by
     calc
       _ = ENNReal.rpow (ENNReal.rpow (ENNReal.ofReal s) (-γ * α)) p := by
-        rw [← ennreal_ofReal_rpow_of_pos_scale hs]
-      _ = ENNReal.rpow (ENNReal.ofReal s) ((-γ * α) * p) :=
-        (ENNReal.rpow_mul _ _ _).symm
-      _ = _ := ennreal_ofReal_rpow_of_pos_scale hs
+        rw [← DOZZ.Proofs.ennreal_ofReal_rpow_of_pos_cutoff hs]
+      _ = ENNReal.rpow (ENNReal.ofReal s) _ :=
+        (ENNReal.rpow_mul ..).symm
+      _ = _ := DOZZ.Proofs.ennreal_ofReal_rpow_of_pos_cutoff hs
   have hpowProd : s ^ (-γ * α * p) * s ^ ξ = s ^ η := by
     rw [← Real.rpow_add hs]
     congr 1
@@ -77,16 +60,16 @@ theorem cutoffWeightedGmcBallMoment_nonpos_subunit_scale_formula
           ac_rfl
         _ = ENNReal.ofReal (s ^ (-γ * α * p) * s ^ ξ) * base := by
           rw [← ENNReal.ofReal_mul (Real.rpow_nonneg (le_of_lt hs) (-γ * α * p))]
-        _ = _ := by rw [hpowProd]
+        _ = _ := by simp_all
     _ = ENNReal.ofReal (2 ^ η) * base * ENNReal.ofReal (R ^ η) := by
-      have h2R : s ^ η = (2 : ℝ) ^ η * R ^ η := by
+      have h2R : s ^ η = 2 ^ η * R ^ η := by
         dsimp [s]
-        rw [Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 2) hR.le]
+        rw [Real.mul_rpow (by norm_num) hR.le]
       rw [h2R]
       calc
-        _ = (ENNReal.ofReal ((2 : ℝ) ^ η) * ENNReal.ofReal (R ^ η)) * base := by
+        _ = (ENNReal.ofReal (2 ^ η) * ENNReal.ofReal (R ^ η)) * base := by
           rw [← ENNReal.ofReal_mul
-            (Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2) η)]
+            (Real.rpow_nonneg (by norm_num) η)]
         _ = _ := by ac_rfl
     _ = _ := by rfl
 

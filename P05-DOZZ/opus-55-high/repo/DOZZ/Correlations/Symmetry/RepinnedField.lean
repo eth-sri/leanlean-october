@@ -21,8 +21,8 @@ theorem symmetryTestIntegralCLM_apply (f : TestFn) :
     symmetryTestIntegralCLM f = ∫ x, f x := by
   rw [symmetryTestIntegralCLM,
     TestFunction.integralAgainstBilinCLM_eq_integral
-      ((locallyIntegrable_const (1 : ℝ)).locallyIntegrableOn univ)]
-  simp only [ContinuousLinearMap.mul_apply', mul_one]
+      ((locallyIntegrable_const 1).locallyIntegrableOn univ)]
+  simp
 
 /-- Actual correlated affine re-pinning on the original probability space. -/
 noncomputable def symmetryRepinnedField
@@ -39,10 +39,12 @@ noncomputable def symmetryRepinnedField
       ring
     cont := ((X ω).continuous.comp symmetryReflectionTestCLM.continuous).sub
       (continuous_const.mul symmetryTestIntegralCLM.continuous) }
+section
+variable {Ω : Type*}
 
 /-- Every re-pinned evaluation retains the correlated scalar subtraction. -/
 theorem symmetryRepinnedField_apply
-    {Ω : Type*} (X : Ω → Distr) (L : Ω → ℝ) (ω : Ω) (f : TestFn) :
+    (X : Ω → Distr) (L : Ω → ℝ) (ω : Ω) (f : TestFn) :
     symmetryRepinnedField X L ω f = X ω (symmetryReflectionTest f) - L ω * ∫ x, f x := by
   change X ω (symmetryReflectionTestCLM f) - L ω * symmetryTestIntegralCLM f = _
   rw [symmetryTestIntegralCLM_apply]
@@ -50,9 +52,10 @@ theorem symmetryRepinnedField_apply
 
 /-- Re-pinned test evaluations are measurable whenever the source field and scalar are. -/
 theorem symmetryRepinnedField_eval_measurable
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+    [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (hX : IsEquatorGFF P X) (L : Ω → ℝ) (hL : Measurable L) (f : TestFn) :
     Measurable (fun ω => symmetryRepinnedField X L ω f) := by
-  simp only [symmetryRepinnedField_apply]
   exact ((hX.2 (symmetryReflectionTest f)).1).sub (hL.mul_const _)
+
+end
 end DOZZ.Proofs

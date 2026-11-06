@@ -6,6 +6,7 @@ module
 
 public import DOZZ.Brownian.Williams.Disintegration
 public import DOZZ.Brownian.BrownianFirstHitReversalLaw
+import DOZZ.Correlations.Tails.WilliamsCutProduct
 
 /-! The Williams prefix, reversed at its lifetime, is a last-exit stopped conditioned path.
 The level is retained throughout the measure identity. -/
@@ -21,8 +22,7 @@ noncomputable def reverseMarkedSegment (z : ℝ × StoppedBrownianPath) :
     ℝ × StoppedBrownianPath :=
   (z.1, z.2.1, ⟨fun t => z.2.2 (z.2.1 - min t z.2.1) - z.1, by fun_prop⟩)
 
-theorem measurable_reverseMarkedSegment : Measurable reverseMarkedSegment := by
-  exact measurable_fst.prodMk (measurable_snd.fst.prodMk
+theorem measurable_reverseMarkedSegment : Measurable reverseMarkedSegment := measurable_fst.prodMk (measurable_snd.fst.prodMk
     (continuous_brownianPath_reverse_recenter.measurable.comp
       ((measurable_snd.fst.prodMk measurable_fst).prodMk measurable_snd.snd)))
 
@@ -33,38 +33,27 @@ theorem reverse_firstHitSegment (ν m : ℝ) (p : BrownianPath) :
   apply ContinuousMap.ext
   intro t
   change (driftedBrownianPath ν p)
-      (min (firstPassageTime (driftedBrownianPath ν p) m -
-        min t (firstPassageTime (driftedBrownianPath ν p) m))
-        (firstPassageTime (driftedBrownianPath ν p) m)) - m = _
-  rw [min_eq_left (tsub_le_self)]
-  rfl
+      (min (firstPassageTime _ m -
+        min t _)
+        (firstPassageTime _ m)) - m = _
+  aesop
 
 theorem measurable_lastExitSegment_joint :
-    Measurable (fun z : ℝ × BrownianPath => negativeConditionedLastExitSegment z.1 z.2) := by
-  exact measurable_negativeLastExitTime_joint.prodMk
+    Measurable (fun z : ℝ × BrownianPath => negativeConditionedLastExitSegment z.1 z.2) := measurable_negativeLastExitTime_joint.prodMk
     (continuous_stopBrownianPath.measurable.comp
       (measurable_negativeLastExitTime_joint.prodMk measurable_snd))
 
-theorem maximumReference_positive_ae (ν : ℝ) :
-    ∀ᵐ m ∂brownianMaximumReferenceLaw ν, 0 < m := by
-  unfold brownianMaximumReferenceLaw
-  have hd : Measurable (fun m : ℝ =>
-      ENNReal.ofReal (if 0 < m then 2 * ν * Real.exp (-2 * ν * m) else 0)) :=
-    Measurable.ennreal_ofReal ((by fun_prop : Measurable
-      (fun m : ℝ => 2 * ν * Real.exp (-2 * ν * m))).ite
-        (measurableSet_lt measurable_const measurable_id) measurable_const)
-  rw [ae_withDensity_iff hd]
-  filter_upwards [] with m hm
-  by_contra hn
-  exact hm (by rw [ite_eq_right_iff.mpr (fun h => (hn h).elim), ENNReal.ofReal_zero])
+section
+variable (P : Measure BrownianPath)
+section
+variable (hB : IsBrownianReal (fun t p => p t) P) (ν : ℝ) (hν : 0 < ν) (Q : Measure BrownianPath) (hQ : IsNegativeConditionedBrownianLaw ν Q)
+include hB hν hQ
 
 /-- Integrating the first-hit reversal law `DOZZ.brownian_firstHit_reversal_law` over the
 independent exponential maximum identifies the entire marked Williams prefix with a last-exit
 stopped conditioned copy. -/
 theorem reversed_williams_prefix_law
-    (P : Measure BrownianPath) (hB : IsBrownianReal (fun t p => p t) P)
-    (ν : ℝ) (hν : 0 < ν) (Q : Measure BrownianPath)
-    (hQ : IsNegativeConditionedBrownianLaw ν Q) :
+    :
     (brownianWilliamsPrefixLaw P ν).map reverseMarkedSegment =
       ((brownianMaximumReferenceLaw ν).prod Q).map
         (fun z => (z.1, negativeConditionedLastExitSegment z.1 z.2)) := by
@@ -84,20 +73,17 @@ theorem reversed_williams_prefix_law
     hF.comp (measurable_fst.prodMk measurable_lastExitSegment_joint)
   rw [lintegral_prod _ hlast.aemeasurable]
   apply lintegral_congr_ae
-  filter_upwards [maximumReference_positive_ae ν] with m hm
+  filter_upwards [DOZZ.Proofs.williams_maximum_pos_ae ν] with m hm
   simp_rw [reverse_firstHitSegment]
-  have hlaw := (brownian_firstHit_reversal_law ν m hν hm P hB Q hQ).2.2
   have ht : Measurable (fun u : StoppedBrownianPath => F (m,u)) :=
-    hF.comp (measurable_const.prodMk measurable_id)
+    by fun_prop
   rw [← lintegral_map ht (measurable_reversedPositiveFirstHitSegment ν m),
-    hlaw, lintegral_map ht (measurable_negativeConditionedLastExitSegment m)]
+    ((brownian_firstHit_reversal_law ν m hν hm P hB Q hQ).2.2), lintegral_map ht (measurable_negativeConditionedLastExitSegment m)]
 
 /-- The maximum split has an independent conditioned future and a conditioned past cut at
 the last exit from the independently sampled maximum level. -/
 theorem williams_reversed_joint_law
-    (P : Measure BrownianPath) (hB : IsBrownianReal (fun t p => p t) P)
-    (ν : ℝ) (hν : 0 < ν) (Q : Measure BrownianPath)
-    (hQ : IsNegativeConditionedBrownianLaw ν Q) :
+    :
     P.map (fun p =>
       (reverseMarkedSegment
         (driftedBrownianMaximum ν p, brownianPreMaximumSegment ν p),
@@ -108,9 +94,7 @@ theorem williams_reversed_joint_law
   let : IsProbabilityMeasure Q := hQ.2.1
   let : IsProbabilityMeasure (brownianWilliamsPrefixLaw P ν) :=
     isProbabilityMeasure_brownianWilliamsPrefixLaw P hB ν hν
-  have hm : AEMeasurable (fun p =>
-      ((driftedBrownianMaximum ν p, brownianPreMaximumSegment ν p),
-        brownianPostMaximumPath ν p)) P :=
+  have hm :=
     ((aemeasurable_driftedBrownianMaximum P hB ν hν).prodMk
       (aemeasurable_brownianPreMaximumSegment P hB ν hν)).prodMk
         (aemeasurable_brownianPostMaximumPath P hB ν hν)
@@ -129,6 +113,10 @@ theorem williams_reversed_joint_law
       rw [← Measure.map_prod_map _ _ measurable_reverseMarkedSegment measurable_id,
         Measure.map_id]
     _ = _ := by rw [reversed_williams_prefix_law P hB ν hν Q hQ]
+
+end
+
+end
 
 
 end DOZZ.Proofs

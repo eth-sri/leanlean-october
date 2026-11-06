@@ -41,9 +41,8 @@ theorem dual_source_separated_regions_comparison
     reflected_separated_region_geometry s r hs hr hr1 hsep
   have hb := dual_source_full_lateral_comparison P X Xc hX hc hm hcont γ hγ hγ₂ M hM
     α₁ α₂ α₃ z hz (reflected_innerRegion s) (reflected_outerRegion r)
-    hU₀ hU₁ hroot₀ hroot₁ (Metric.ball 0 r) Metric.isOpen_ball.measurableSet hpart₀ hpart₁
+    hU₀ hU₁ hroot₀ hroot₁ _ Metric.isOpen_ball.measurableSet hpart₀ hpart₁
     (s/r) r (s/r) (div_pos hs hr).le hsep hr (div_pos hs hr) hn₀ hn₁ hD q hq
-  have he : 2*(s/r)+s/r = 3*(s/r) := by ring
-  simpa only [he] using hb
+  grind
 
 end DOZZ.Proofs

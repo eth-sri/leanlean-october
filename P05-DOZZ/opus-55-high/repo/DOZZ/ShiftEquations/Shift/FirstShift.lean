@@ -29,28 +29,28 @@ namespace DOZZ.Proofs
 /-- `l` is nonzero on `(1, 2)`. -/
 theorem lR_ne_zero_of_mem_one_two {v : ℝ} (h1 : 1 < v) (h2 : v < 2) : lR v ≠ 0 :=
   div_ne_zero (Real.Gamma_pos_of_pos (by linarith)).ne'
-    (Real.Gamma_ne_zero (real_ne_neg_nat_of_frac (k := -1) (by push_cast; linarith)
-      (by push_cast; linarith)))
+    (Real.Gamma_ne_zero (real_ne_neg_nat_of_frac (k := -1) (by grind)
+      (by simp_all)))
 
 /-- The shift multiplier is analytic and nonzero at a real point of `(γ, Q)`. -/
 theorem rbarShiftMultiplier_analyticAt_ne_zero {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) :
     ∃ z₀ : ℂ, AnalyticAt ℂ (rbarShiftMultiplier γ) z₀ ∧ rbarShiftMultiplier γ z₀ ≠ 0 := by
   obtain ⟨hQ, hQ2, hγh, h42, h2⟩ := slice_facts hγ hγ2
-  set a₁ : ℝ := (γ + Q γ) / 2 with ha₁
-  have hγQ : γ < Q γ := by rw [hQ]; linarith
-  have ha₁1 : γ < a₁ := by rw [ha₁]; linarith
-  have ha₁2 : a₁ < Q γ := by rw [ha₁]; linarith
+  set a₁ := (γ + Q γ) / 2 with ha₁
+  have hγQ : γ < Q γ := by linarith
+  have ha₁1 : γ < a₁ := by linarith
+  have ha₁2 : a₁ < Q γ := by linarith
   have hopen : IsOpen {z : ℂ | γ < z.re ∧ z.re < Q γ} :=
     (isOpen_lt continuous_const Complex.continuous_re).inter
       (isOpen_lt Complex.continuous_re continuous_const)
   refine ⟨a₁, (differentiableOn_rbarShiftMultiplier hγ hγ2).analyticAt
-    (hopen.mem_nhds ⟨by rw [Complex.ofReal_re]; exact ha₁1, by rw [Complex.ofReal_re]; exact ha₁2⟩),
+    (hopen.mem_nhds ⟨by assumption, by assumption⟩),
     ?_⟩
   rw [rbarShiftMultiplier_ofReal, Complex.ofReal_ne_zero]
   unfold rbarShiftMultiplierReal
-  have hγQ' : γ * Q γ = 2 + γ ^ 2 / 2 := by rw [hQ]; field_simp
-  have hu1 : γ * γ < γ * a₁ := mul_lt_mul_of_pos_left ha₁1 hγ
-  have hu2 : γ * a₁ < γ * Q γ := mul_lt_mul_of_pos_left ha₁2 hγ
+  have hγQ' : γ * Q γ = 2 + γ ^ 2 / 2 := by grind
+  have hu1 := mul_lt_mul_of_pos_left ha₁1 hγ
+  have hu2 := mul_lt_mul_of_pos_left ha₁2 hγ
   have hγsq : γ ^ 2 < 4 := by nlinarith
   refine div_ne_zero (mul_ne_zero (div_ne_zero (mul_ne_zero two_ne_zero (by linarith))
     hγ.ne') Real.pi_ne_zero) (mul_ne_zero (mul_ne_zero ?_ ?_) ?_)
@@ -136,13 +136,13 @@ theorem reflectionR_first_shift_meromorphic_of_deps
   -- the holomorphic `R̄`-representation on the whole reflection interval
   obtain ⟨B, Z, hSLP, hRD, V, hV, hVI, f, -, -, hcf, hcoef⟩ :=
     reflectionBarR_holomorphic_representation_of_deps P X M γ hγ hγ2 hX hM hCross hBridge hHolo
-      (Ioo (γ / 2) (Q γ)) (fun α hα => hα)
+      (Ioo _ (Q γ)) (fun α hα => hα)
   set g : ℂ → ℂ := fun z => rbarCoefficient γ z * f z with hg
   -- the unit-volume shift near `Q`
   obtain ⟨η₀, hη₀, hwin⟩ := exists_twoPoleWindow hγ hγ2
   set η₁ := min η₀ (2 / γ - γ / 2) with hη₁
-  have hη₁pos : 0 < η₁ := lt_min hη₀ (by linarith)
-  have hη₁le : η₁ ≤ 2 / γ - γ / 2 := min_le_right _ _
+  have hη₁pos : 0 < η₁ := by positivity
+  have hη₁le : η₁ ≤ 2 / γ - γ / 2 := min_le_right ..
   have hrel : ∀ x : ℝ, Q γ - η₁ < x → x < Q γ →
       g ((x : ℂ) - ((γ / 2 : ℝ) : ℂ)) = rbarShiftMultiplier γ x * g x := by
     intro x hx1 hx2
@@ -150,26 +150,26 @@ theorem reflectionR_first_shift_meromorphic_of_deps
       (by have := min_le_left η₀ (2 / γ - γ / 2); linarith)
     have hx3 : γ < x := by linarith
     have hshift := reflectionBarR_shift_of_window P X M hγ hγ2 hX hM hCross hBridge hTail hV₃
-      hV₃mem hf₃ hf₃eq hW (B (x - γ / 2)) Z
+      hV₃mem hf₃ hf₃eq hW _ Z
       (by rw [sub_sub_cancel]; exact hRD _ ⟨by linarith, by linarith⟩) (B x) Z
       (by rw [sub_sub_cancel]; exact hRD _ ⟨by linarith, hx2⟩)
     rw [sub_sub_cancel] at hshift
     simp only [hg]
-    rw [← Complex.ofReal_sub, hcoef (x - γ / 2) ⟨by linarith, by linarith⟩,
+    rw [← Complex.ofReal_sub, hcoef _ ⟨by linarith, by linarith⟩,
       hcoef x ⟨by linarith, hx2⟩, rbarShiftMultiplier_ofReal, hshift]
     push_cast
     ring
   -- continuation by the shift equation
   obtain ⟨h, hh, G, hGm, hGg, hGrel⟩ := exists_meromorphicOn_strip_of_shift (c := γ / 2)
     (a := γ / 2) (b := Q γ) (d₁ := Q γ - η₁) (d₂ := Q γ) (by positivity)
-    (by rw [hQ]; linarith) (by linarith) (by linarith) le_rfl hV
+    (by linarith) (by linarith) (by linarith) le_rfl hV
     (fun x h1 h2 => hVI x ⟨h1, h2⟩) hcf (meromorphicOn_rbarShiftMultiplier γ)
     (rbarShiftMultiplier_analyticAt_ne_zero hγ hγ2) hrel
   -- the full coefficient, cut off outside a thinner strip
-  set R : ℂ → ℂ := reflectionRFromBar γ μ G with hR
+  set R := reflectionRFromBar γ μ G with hR
   set Rf : ℂ → ℂ := fun z => if |z.im| < h / 2 then R z else 0 with hRf
-  have hRfin : ∀ z : ℂ, |z.im| < h / 2 → Rf z = R z := fun z hz => by simp [hRf, hz]
-  have hRfout : ∀ z : ℂ, ¬ |z.im| < h / 2 → Rf z = 0 := fun z hz => by simp [hRf, hz]
+  have hRfin : ∀ z : ℂ, |z.im| < h / 2 → Rf z = R z := fun z hz => by grind
+  have hRfout : ∀ z : ℂ, ¬ |z.im| < h / 2 → Rf z = 0 := fun z hz => by grind
   refine ⟨B, Z, hSLP, fun α h1 h2 => hRD α ⟨h1, h2⟩, h / 2, half_pos hh, Rf, ?_, ?_, ?_⟩
   · -- meromorphy on the thinner strip
     intro z hz
@@ -183,7 +183,7 @@ theorem reflectionR_first_shift_meromorphic_of_deps
     exact (hRfin w hw).symm
   · -- values on the reflection interval
     intro α h1 h2
-    rw [hRfin α (by rw [Complex.ofReal_im, abs_zero]; positivity)]
+    rw [hRfin α (by simpa)]
     exact reflectionRFromBar_ofReal P hμ α (B α) Z
       ((hGg α h1 h2).trans (hcoef α ⟨h1, h2⟩))
   · -- the first shift along the codiscrete filter

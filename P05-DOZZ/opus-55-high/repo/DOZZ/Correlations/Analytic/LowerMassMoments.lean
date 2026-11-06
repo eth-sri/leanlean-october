@@ -25,7 +25,7 @@ theorem scaled_disk_negative_moment
   have hm := gmc_set_mass_aemeasurable_of_isGMCOf P X hX γ hγ hγ2 M hM
     (Metric.ball z r) Metric.isOpen_ball.measurableSet
   have hi := gmc_ball_moment_lt_top_any_center P X hX γ hγ hγ2 M hM z r hr hrsmall t
-    (lt_of_le_of_lt ht (by positivity : (0 : ℝ) < 4 / γ ^ 2))
+    (lt_of_le_of_lt ht (by positivity))
   simp_rw [ennreal_mul_rpow_of_ne_zero_ne_top _ _ hc hc' t]
   rw [lintegral_const_mul'' _ (hm.pow_const t)]
   exact ENNReal.mul_lt_top (ENNReal.rpow_ne_top_of_ne_zero hc hc').lt_top hi

@@ -42,7 +42,7 @@ theorem logRegularizationReference_inversionChart_map :
       (fun x => normPlus x ^ (-4 : ℝ)) =
         gmcReferenceMeasure.restrict inversionChart := by
     rw [logRegularizationReference_restrict_of_subset Set.univ inversionChart
-      (fun x => normPlus x ^ (-4 : ℝ)) isOpen_compl_singleton.measurableSet
+      (fun x => normPlus x ^ (-4)) isOpen_compl_singleton.measurableSet
       (Set.subset_univ _)]
     simp [logRegularizationReference, gmcReferenceMeasure]
   rw [hRef]
@@ -78,18 +78,13 @@ theorem regularizedLogChaosTestMass_inversion_coordinate_change
         (fun x => normPlus x ^ (-4 : ℝ)) 1 Y hY
   obtain ⟨g, hgCompact, hgSupport, hgOn, hgOff, hmass⟩ :=
     regularizedLogChaosTestMass_coordinate_change P inversionChart inversionChart
-      (fun x => normPlus x ^ (-4 : ℝ)) (fun x => normPlus x ^ (-4 : ℝ)) 1 1
+      (fun x => normPlus x ^ (-4)) (fun x => normPlus x ^ (-4 : ℝ)) 1 1
       Y Yinv hY hYinv complexInvOpenPartialHomeomorph rfl rfl
       logRegularizationReference_inversionChart_map
       (by
-        intro ω ε y hy
-        rfl)
+        tauto)
       γ f hfCompact hfSupport
-  refine ⟨g, hgCompact, hgSupport, ?_, hgOff, ?_⟩
-  · intro x hx
-    simpa [complexInvOpenPartialHomeomorph] using hgOn x hx
-  · intro r ω
-    simpa [Yinv, complexInvOpenPartialHomeomorph] using (hmass r ω).symm
+  grind
 
 
 end DOZZ.Proofs

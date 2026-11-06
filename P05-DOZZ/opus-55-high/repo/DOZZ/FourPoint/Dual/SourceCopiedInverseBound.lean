@@ -83,8 +83,8 @@ theorem dual_source_copied_kernel_inverse_bound
       Measurable (fun v : TwoSidedPath × Ω => J U v.1 v.2) :=
     reflected_chart_parameter_mass_measurable U hU N hNm
       (fun ω K hK hKU => hfin ω K hK (hKU.trans hU0))
-      (fun v : TwoSidedPath × ℂ => ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ z v.2)*
-        ENNReal.ofReal (reflected_global_reinsertionWeight γ v.1 v.2))
+      (fun v : TwoSidedPath × ℂ => ENNReal.ofReal _*
+        ENNReal.ofReal _)
       (((dual_kernel_measurable γ α₁ α₂ α₃ z).comp measurable_snd).ennreal_ofReal.mul
         (reflected_global_reinsertionWeight_measurable γ).ennreal_ofReal)
   have hi : Measurable (fun v : TwoSidedPath × Ω => J (reflected_innerRegion η) v.1 v.2) := by
@@ -99,13 +99,13 @@ theorem dual_source_copied_kernel_inverse_bound
       (Set.toFinite ({0,1} : Set ℂ)).isClosed.isOpen_compl)
     intro x hx hx0
     have he : x = 0 := mem_singleton_iff.mp hx0
-    exact hx.2 (by simp [he])
+    exact hx.2 (by simp_all)
   have hOm : AEMeasurable O (P.prod P) :=
     ho.comp_aemeasurable (hA.comp_fst.prodMk measurable_snd.aemeasurable)
   have hIm : AEMeasurable I QP := hi.comp_aemeasurable
     (hA.comp_fst.comp_fst.prodMk measurable_snd.aemeasurable)
   have hβm : AEMeasurable β QP :=
-    (dual_path_radial_scale_measurable γ (Q γ-α₁) h z).comp_aemeasurable hA.comp_fst.comp_fst
+    (dual_path_radial_scale_measurable γ _ h z).comp_aemeasurable hA.comp_fst.comp_fst
   have hβpos : ∀ᵐ v ∂QP, 0 ≤ β v := ae_of_all _ (fun v => (Real.exp_pos _).le)
   have hO₀m : AEMeasurable O₀ P := (dual_outerMass_measure_measurable γ α₁ α₂ α₃ ξ z).comp_aemeasurable
     (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ₂ M hM)
@@ -132,7 +132,7 @@ theorem dual_source_copied_kernel_inverse_bound
     O₀ O hA hA.comp_fst hO₀m hOm hlaw p
   have hInv : (∫⁻ v : (Ω × Ω) × Ω, O v.1^(-p) ∂QP) ≠ ⊤ := by
     rw [lintegral_prod _ (hOm.comp_fst.pow_const (-p))]
-    simp only [lintegral_const, measure_univ, mul_one]
+    simp
     rw [← hInvEq]
     exact hInv₀
   let ZT := fun ω => (Z ω).map (fun s : ℝ => s-(T : ℝ))
@@ -141,25 +141,25 @@ theorem dual_source_copied_kernel_inverse_bound
     filter_upwards [hZ.2.2.2.2.1] with ω hω a b
     have he : (fun s : ℝ => s-(T : ℝ)) ⁻¹' Icc a b = Icc (a+T) (b+T) := by
       ext s
-      simp only [mem_preimage, mem_Icc, le_sub_iff_add_le, sub_le_iff_le_add]
-    change (Z ω).map (fun s : ℝ => s-(T : ℝ)) (Icc a b) < ⊤
+      simp
+    change (Z ω).map (fun s : ℝ => s-(T : ℝ)) _ < ⊤
     rw [Measure.map_apply (show Measurable (fun s : ℝ => s-(T : ℝ)) from measurable_id.sub_const _)
       measurableSet_Icc, he]
-    exact hω _ _
+    exact hω ..
   have hDm : Measurable (fun a : TwoSidedPath => brownianShiftPath T (radialPositiveHalf a)) :=
     continuous_brownianShiftPath.measurable.comp
       (measurable_const.prodMk continuous_radialPositiveHalf.measurable)
   have hVm : AEMeasurable V QP := by
     have hDp : AEMeasurable (fun v : (Ω × Ω) × Ω =>
-        brownianShiftPath T (radialPositiveHalf (A v.1.1))) QP :=
+        brownianShiftPath T _) QP :=
       hDm.comp_aemeasurable hA.comp_fst.comp_fst
     have hZTp : AEMeasurable (fun v : (Ω × Ω) × Ω => ZT v.2) QP := hZT.comp_snd
     have ht := (reflected_measurable_inwardPolarMassCode γ (Q γ-α₁)).comp_aemeasurable
       (hDp.prodMk hZTp)
     apply ht.congr
     filter_upwards [measurePreserving_snd.quasiMeasurePreserving.ae hZTfin] with v hv
-    exact reflected_inwardPolarMassCode_eq γ (Q γ-α₁)
-      (brownianShiftPath T (radialPositiveHalf (A v.1.1))) (ZT v.2) hv
+    exact reflected_inwardPolarMassCode_eq γ _
+      (brownianShiftPath T _) (ZT v.2) hv
   have hVfin : ∀ᵐ v ∂QP, V v ≠ ⊤ := dual_source_copied_polar_finite_ae
     P X Xc hX hc hm hcont γ hγ hγ₂ M hM N hNm hfin Z hZ α₁ α₂ α₃ ξ h hα₁
     z hz0 hz T hT hr hiZ B Z₀ hData hlaw
@@ -172,7 +172,7 @@ theorem dual_source_copied_kernel_inverse_bound
     rw [he, Real.exp_add, Real.exp_log (norm_pos_iff.mpr hz0)]
   have hθlo : 0 ≤ θlo := mul_nonneg (Real.rpow_nonneg (sub_nonneg.mpr hR1.le) _)
     (Real.rpow_nonneg (inv_nonneg.mpr (sub_nonneg.mpr hη.le)) _)
-  have hθhi : 0 ≤ θhi := mul_nonneg (Real.rpow_nonneg (by linarith only [hR0]) _)
+  have hθhi : 0 ≤ θhi := mul_nonneg (Real.rpow_nonneg (by positivity) _)
     (Real.rpow_nonneg (inv_nonneg.mpr (sub_nonneg.mpr hη.le)) _)
   have hs : ∀ᵐ v ∂QP, ENNReal.ofReal (θlo*β v)*V v ≤ I v ∧ I v ≤ ENNReal.ofReal (θhi*β v)*V v := by
     have ht := dual_source_copied_inner_kernel_squeeze P γ α₁ α₂ α₃ h R hγ.ne'
@@ -181,16 +181,15 @@ theorem dual_source_copied_kernel_inverse_bound
     exact hv (A v.1.1)
   have hb := dual_ennreal_kernel_inverse_expectation_error QP (fun v => O v.1) I V β p θlo θhi
     hp hθlo hθhi hOm.comp_fst hIm hVm hβm hβpos hOpos hVfin hInv hs
-  have hCopy := dual_copied_inverse_moment_triple P Xc hA N hNm hfin γ α₁ α₂ α₃ p η (‖z‖^(1-ξ)) z
   have hCopy' : dualCopiedSeparatedInverseMoment P Xc N γ α₁ α₂ α₃ p z η (‖z‖^(1-ξ)) =
       ∫⁻ v : (Ω × Ω) × Ω, (O v.1+I v)^(-p) ∂QP := by
-    rw [hCopy]
+    rw [(dual_copied_inverse_moment_triple P Xc hA N hNm hfin γ α₁ α₂ α₃ p η _ z)]
     apply lintegral_congr
     intro v
-    exact congrArg (fun a : ℝ≥0∞ => a^(-p)) (add_comm _ _)
+    exact congrArg (fun a => a^(-p)) (add_comm ..)
   have hInvEq' : (∫⁻ v : (Ω × Ω) × Ω, O v.1^(-p) ∂QP) = ∫⁻ ω, O₀ ω^(-p) ∂P := by
     rw [lintegral_prod _ (hOm.comp_fst.pow_const (-p))]
-    simp only [lintegral_const, measure_univ, mul_one]
+    simp
     exact hInvEq.symm
   rw [← hCopy', hInvEq'] at hb
   have hLoss : (∫ v : (Ω × Ω) × Ω, (O v.1).toReal^(-p)-

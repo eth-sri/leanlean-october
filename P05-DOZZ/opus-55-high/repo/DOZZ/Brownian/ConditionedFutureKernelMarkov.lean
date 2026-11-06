@@ -35,27 +35,24 @@ theorem strictMono_finAppend_of_cross
   | left i =>
     cases j using Fin.addCases with
     | left j =>
-      simp only [Fin.append_left]
+      simp
       apply ha
       apply Fin.lt_def.mpr
-      have hv := Fin.lt_def.mp hij
-      simpa using hv
+      simpa using (Fin.lt_def.mp hij)
     | right j =>
-      simp only [Fin.append_left, Fin.append_right]
+      simp
       exact hcross i j
   | right i =>
     cases j using Fin.addCases with
     | left j =>
       have hv := Fin.lt_def.mp hij
-      simp only [Fin.val_natAdd, Fin.val_castAdd] at hv
+      simp at hv
       omega
     | right j =>
-      simp only [Fin.append_right]
+      simp
       apply hb
       apply Fin.lt_def.mpr
-      have hv := Fin.lt_def.mp hij
-      simp only [Fin.val_natAdd] at hv
-      simpa using hv
+      simpa using (Fin.lt_def.mp hij)
 
 /-- Mapping the unique-coordinate past in a composition product to its real value preserves the
 product disintegration when the future kernel only depends on that value. -/
@@ -71,7 +68,7 @@ theorem map_finOne_compProd
     Set.image2 (· ×ˢ ·) {s | MeasurableSet s} {u | MeasurableSet u}
   have hgen : (inferInstance : MeasurableSpace (ℝ × β)) =
       MeasurableSpace.generateFrom C := by
-    simpa [C] using (generateFrom_prod (α := ℝ) (β := β)).symm
+    simpa [C] using (generateFrom_prod).symm
   have hpi : IsPiSystem C := by
     intro a ha b hb hab
     rcases ha with ⟨s, hs, u, hu, rfl⟩
@@ -81,15 +78,14 @@ theorem map_finOne_compProd
     change MeasurableSet u at hu
     change MeasurableSet u' at hu'
     refine ⟨s ∩ s', MeasurableSet.inter hs hs', u ∩ u', MeasurableSet.inter hu hu', ?_⟩
-    ext z
-    simp [and_assoc, and_left_comm]
-  have hrect : ∀ (A : Set ℝ), MeasurableSet A → ∀ (B : Set β), MeasurableSet B →
+    grind
+  have hrect : ∀ A, MeasurableSet A → ∀ (B : Set β), MeasurableSet B →
       (μ ⊗ₘ κ).map (fun z => (z.1 0, z.2)) (A ×ˢ B) =
         ((μ.map fun x => x 0) ⊗ₘ κ') (A ×ˢ B) := by
     intro A hA B hB
     have hEval : Measurable (fun x : Fin 1 → ℝ => x 0) := measurable_pi_apply 0
     have hPair : Measurable (fun z : (Fin 1 → ℝ) × β => (z.1 0, z.2)) :=
-      hEval.comp measurable_fst |>.prodMk measurable_snd
+      by fun_prop
     rw [Measure.map_apply hPair (MeasurableSet.prod hA hB)]
     rw [show (fun z : (Fin 1 → ℝ) × β => (z.1 0, z.2)) ⁻¹' (A ×ˢ B) =
         ((fun x : Fin 1 → ℝ => x 0) ⁻¹' A) ×ˢ B by
@@ -135,29 +131,23 @@ theorem conditionedPositiveFutureKernel_finite_projection_eq_density
   let X : BrownianPath → ℝ := fun p => -(p t)
   let Y : BrownianPath → Fin n → ℝ := fun p i =>
     conditionedPositiveFutureRationalEvals t p (offsets i)
-  let pastDensity : (Fin 1 → ℝ) → ℝ≥0∞ :=
-    conditionedPositiveFDDVectorDensity ν (fun i => (pastTimes i : ℝ))
-  let futureDensity : (Fin 1 → ℝ) → (Fin n → ℝ) → ℝ≥0∞ :=
-    conditionedPositiveFutureVectorDensity ν (fun i => (pastTimes i : ℝ))
-      (fun i => (futureTimes i : ℝ))
-  let pastMeasure : Measure (Fin 1 → ℝ) :=
-    (volume : Measure (Fin 1 → ℝ)).withDensity pastDensity
-  let pastKernel : Kernel (Fin 1 → ℝ) (Fin n → ℝ) :=
-    (Kernel.const (Fin 1 → ℝ) (volume : Measure (Fin n → ℝ))).withDensity futureDensity
-  let stateKernel : Kernel ℝ (Fin n → ℝ) :=
-    (Kernel.const ℝ (volume : Measure (Fin n → ℝ))).withDensity
+  let pastDensity :=
+    conditionedPositiveFDDVectorDensity ν (fun i => (pastTimes i))
+  let futureDensity :=
+    conditionedPositiveFutureVectorDensity ν (fun i => (pastTimes i))
+      (fun i => (futureTimes i))
+  let pastMeasure :=
+    volume.withDensity pastDensity
+  let pastKernel :=
+    (Kernel.const (Fin 1 → ℝ) volume).withDensity futureDensity
+  let stateKernel :=
+    (Kernel.const ℝ volume).withDensity
       (fun x y => futureDensity (fun _ => x) y)
   let project : (ℚ → ℝ) → Fin n → ℝ := fun y i => y (offsets i)
-  have hFuturePos : ∀ i, (t : ℝ) < (futureTimes i : ℝ) := by
-    intro i
-    have hq : 0 < (offsetTime i : ℝ) := by
-      rw [Real.coe_toNNReal _ (hOffsetsPos i).le]
-      exact hOffsetsPos i
-    exact lt_add_of_pos_right _ hq
+  have hFuturePos : ∀ i, t < (futureTimes i) := by
+    aesop
   have htimePos : ∀ i, 0 < ((pastTimes i : ℝ)) := by
-    intro i
-    fin_cases i
-    exact ht
+    tauto
   have hmonoPast : StrictMono pastTimes := by
     intro i j hij
     fin_cases i
@@ -166,7 +156,7 @@ theorem conditionedPositiveFutureKernel_finite_projection_eq_density
   have hsplit := negativeConditionedLaw_finitePastFuture_compProd hP
     pastTimes futureTimes htimePos (fun i =>
       lt_of_le_of_lt t.property (hFuturePos i)) hMono
-  have hstateMeas : Measurable X := (ContinuousMap.measurable_eval t).neg
+  have hstateMeas : Measurable X := by fun_prop
   have hpastVecMeas : Measurable pastVec := by
     apply measurable_pi_iff.mpr
     intro i
@@ -186,32 +176,31 @@ theorem conditionedPositiveFutureKernel_finite_projection_eq_density
     exact measurable_pi_apply (offsets i)
   have hPastFDD : P.map pastVec = pastMeasure := by
     have hfd := negativeConditionedLaw_positiveFDD hP 1 (by norm_num)
-      (fun _ : Fin 1 => t) (by intro i; fin_cases i; exact ht)
-      (by intro i j hij; fin_cases i; fin_cases j; norm_num at hij)
-    have hfd' : P.map pastVec = (volume : Measure (Fin 1 → ℝ)).withDensity
+      (fun _ : Fin 1 => t) (by assumption)
+      (by assumption)
+    have hfd' : P.map pastVec = volume.withDensity
         (fun x => ENNReal.ofReal (max 0
-          (conditionedPositiveFDDDensity ν [((t : ℝ))] [x 0]))) := by
+          (conditionedPositiveFDDDensity ν [(t)] [x 0]))) := by
       simpa [pastVec] using hfd
     have hden : (fun x : Fin 1 → ℝ => ENNReal.ofReal (max 0
-        (conditionedPositiveFDDDensity ν [((t : ℝ))] [x 0]))) = pastDensity := by
+        (conditionedPositiveFDDDensity ν [(t)] [x 0]))) = pastDensity := by
       funext x
       simp [pastDensity, pastTimes, conditionedPositiveFDDVectorDensity]
-    change P.map pastVec = (volume : Measure (Fin 1 → ℝ)).withDensity pastDensity
-    rw [← hden]
-    exact hfd'
+    change P.map pastVec = volume.withDensity pastDensity
+    rwa [← hden]
   have hstateMarginal : P.map X = pastMeasure.map (fun z => z 0) := by
     calc
       P.map X = (P.map pastVec).map (fun z => z 0) := by
         rw [Measure.map_map (measurable_pi_apply 0) hpastVecMeas]
         rfl
-      _ = pastMeasure.map (fun z => z 0) := by rw [hPastFDD]
+      _ = pastMeasure.map (fun z => z 0) := by simp_all
   have hpastKernelEq : ∀ z, pastKernel z = stateKernel (z 0) := by
     intro z
     have hz : z = fun _ : Fin 1 => z 0 := by
       funext i
       fin_cases i
       rfl
-    have hdensity : futureDensity z = futureDensity (fun _ => z 0) := by rw [hz]
+    have hdensity : futureDensity z = futureDensity (fun _ => z 0) := by rfl
     have hstateDensityMeas : Measurable (Function.uncurry
         (fun x y => futureDensity (fun _ => x) y)) := by
       change Measurable (fun w : ℝ × (Fin n → ℝ) =>
@@ -219,24 +208,22 @@ theorem conditionedPositiveFutureKernel_finite_projection_eq_density
       have hinput : Measurable (fun w : ℝ × (Fin n → ℝ) =>
           ((fun _ : Fin 1 => w.1), w.2)) := by
         apply Measurable.prodMk
-        · apply measurable_pi_iff.mpr
-          intro i
-          exact measurable_fst
+        · fun_prop
         · exact measurable_snd
       exact (measurable_conditionedPositiveFutureVectorDensity ν
-        (fun i => (pastTimes i : ℝ)) (fun i => (futureTimes i : ℝ))).comp hinput
-    change ((Kernel.const (Fin 1 → ℝ) (volume : Measure (Fin n → ℝ))).withDensity
+        (fun i => (pastTimes i)) (fun i => (futureTimes i))).comp hinput
+    change ((Kernel.const (Fin 1 → ℝ) volume).withDensity
         futureDensity) z =
-      ((Kernel.const ℝ (volume : Measure (Fin n → ℝ))).withDensity
+      ((Kernel.const ℝ volume).withDensity
         (fun x y => futureDensity (fun _ => x) y)) (z 0)
     rw [Kernel.withDensity_apply (Kernel.const (Fin 1 → ℝ)
-        (volume : Measure (Fin n → ℝ)))
+        volume)
         (measurable_conditionedPositiveFutureVectorDensity ν
-          (fun i => (pastTimes i : ℝ)) (fun i => (futureTimes i : ℝ))) z,
-      Kernel.withDensity_apply (Kernel.const ℝ (volume : Measure (Fin n → ℝ)))
+          (fun i => (pastTimes i)) (fun i => (futureTimes i))) z,
+      Kernel.withDensity_apply (Kernel.const ℝ volume)
         hstateDensityMeas (z 0)]
     simpa [Kernel.const_apply] using congrArg
-      (fun f => (volume : Measure (Fin n → ℝ)).withDensity f) hdensity
+      (fun f => volume.withDensity f) hdensity
   have : IsSFiniteKernel pastKernel := by
     apply Kernel.IsSFiniteKernel.withDensity
     intro z y
@@ -251,9 +238,7 @@ theorem conditionedPositiveFutureKernel_finite_projection_eq_density
     rw [Measure.map_map (by fun_prop) (by fun_prop)]
     apply congrArg (fun f => P.map f)
     funext p
-    apply Prod.ext
-    · rfl
-    · rfl
+    apply Prod.ext <;> rfl
   have hfinite : ((pastMeasure ⊗ₘ pastKernel).map
       (fun z => (z.1 0, z.2))) Set.univ < ∞ := by
     rw [← hsplit, hpairMap]
@@ -267,13 +252,13 @@ theorem conditionedPositiveFutureKernel_finite_projection_eq_density
         rw [hsplit]
       _ = (pastMeasure.map (fun z => z 0)) ⊗ₘ stateKernel :=
         map_finOne_compProd pastMeasure pastKernel stateKernel hpastKernelEq hfinite
-      _ = P.map X ⊗ₘ stateKernel := by rw [hstateMarginal]
+      _ = P.map X ⊗ₘ stateKernel := by tauto
   have hYeq : Y = fun p i => futureVec p i := by
     funext p i
     change conditionedPositiveFuturePath t p
-      (⟨max (offsets i : ℝ) 0, le_max_right _ _⟩ : NNReal) =
+      (⟨max (offsets i) 0, le_max_right ..⟩) =
         -(p (futureTimes i))
-    have htime : (⟨max (offsets i : ℝ) 0, le_max_right _ _⟩ : NNReal) =
+    have htime : (⟨max (offsets i) 0, le_max_right ..⟩ : NNReal) =
         offsetTime i := by
       apply Subtype.ext
       simp [offsetTime, max_eq_left (le_of_lt (hOffsetsPos i)),
@@ -284,12 +269,9 @@ theorem conditionedPositiveFutureKernel_finite_projection_eq_density
   have hpairFun : (fun p => (X p, Y p)) =
       (fun p => (X p, futureVec p)) := by
     funext p
-    apply Prod.ext
-    · rfl
-    · exact congrFun hYeq p
+    apply Prod.ext <;> rfl
   have hpairY : P.map (fun p => (X p, Y p)) = P.map X ⊗ₘ stateKernel := by
-    rw [hpairFun]
-    exact hpair
+    rwa [hpairFun]
   have : IsSFiniteKernel stateKernel := by
     apply Kernel.IsSFiniteKernel.withDensity
     intro x y
@@ -299,36 +281,33 @@ theorem conditionedPositiveFutureKernel_finite_projection_eq_density
       exact Measure.fst_map_prodMk hstateMeas hYMeas
     have hpairCond : P.map (fun p => (X p, Y p)) =
         (P.map (fun p => (X p, Y p))).fst ⊗ₘ stateKernel := by
-      rw [hfst]
-      exact hpairY
+      rwa [hfst]
     have huniq := eq_condKernel_of_measure_eq_compProd' stateKernel hpairCond hB
     rw [hfst] at huniq
     filter_upwards [huniq] with x hx
     simpa [condDistrib] using hx.symm
-  have hprojCond := conditionedPositiveFutureKernel_finite_projection t P offsets
   have hproj : condDistrib Y X P =ᵐ[P.map X]
       (conditionedPositiveFutureKernel t P).map project := by
     change condDistrib
         (fun p i => conditionedPositiveFutureRationalEvals t p (offsets i))
         (conditionedPositiveStateAt t) P =ᵐ[P.map (conditionedPositiveStateAt t)]
           (conditionedPositiveFutureKernel t P).map (fun y i => y (offsets i))
-    exact hprojCond
+    exact (conditionedPositiveFutureKernel_finite_projection t P offsets)
   have hfutureTimesReal : (fun i => (futureTimes i : ℝ)) =
       (fun i => (t : ℝ) + (offsets i : ℝ)) := by
     funext i
     simp [futureTimes, offsetTime, Real.coe_toNNReal _ (hOffsetsPos i).le]
   have hstateKernelEq : stateKernel =
-      (Kernel.const ℝ (volume : Measure (Fin n → ℝ))).withDensity
+      (Kernel.const ℝ volume).withDensity
         (fun x y => conditionedPositiveFutureVectorDensity ν
-          (fun _ : Fin 1 => (t : ℝ)) (fun i => (t : ℝ) + (offsets i : ℝ))
+          (fun _ : Fin 1 => t) (fun i => (t : ℝ) + (offsets i : ℝ))
           (fun _ => x) y) := by
     unfold stateKernel
     congr 1
     funext x y
     simp [futureDensity, pastTimes, hfutureTimesReal]
   filter_upwards [hcond, hproj] with x hxcond hxproj
-  rw [hxproj] at hxcond
-  rw [hstateKernelEq] at hxcond
+  rw [hxproj, hstateKernelEq] at hxcond
   simpa [project] using hxcond
 
 /-- Finite measures on a product are equal once their values agree on measurable rectangles. -/
@@ -343,26 +322,17 @@ theorem measure_eq_of_prod_rectangles
     Set.image2 (· ×ˢ ·) {A | MeasurableSet A} {B | MeasurableSet B}
   have hgen : (inferInstance : MeasurableSpace (α × β)) =
       MeasurableSpace.generateFrom C := by
-    simpa [C] using (generateFrom_prod (α := α) (β := β)).symm
+    simpa [C] using (generateFrom_prod).symm
   have hpi : IsPiSystem C := by
     intro s hs t ht hst
     rcases hs with ⟨A, hA, B, hB, rfl⟩
     rcases ht with ⟨A', hA', B', hB', rfl⟩
-    change MeasurableSet A at hA
-    change MeasurableSet A' at hA'
-    change MeasurableSet B at hB
-    change MeasurableSet B' at hB'
     refine ⟨A ∩ A', MeasurableSet.inter hA hA', B ∩ B',
       MeasurableSet.inter hB hB', ?_⟩
-    ext z
-    simp [and_assoc, and_left_comm]
+    grind
   let : IsFiniteMeasure μ := ⟨hfinite⟩
   apply MeasureTheory.ext_of_generate_finite C hgen hpi ?_ huniv
-  intro s hs
-  rcases hs with ⟨A, hA, B, hB, rfl⟩
-  change MeasurableSet A at hA
-  change MeasurableSet B at hB
-  exact hrect A hA B hB
+  aesop
 
 /-- After projecting the stopped history and rational future to any finite ordered schedule, the
 joint law factors through the endpoint state. This is the product-rectangle finite-cylinder
@@ -398,16 +368,16 @@ theorem conditionedPositiveFutureHistory_finite_projection_compProd
   let pairProject : ((Set.Iic t → ℝ) × (ℚ → ℝ)) →
       ((Fin (k + 1) → ℝ) × (Fin n → ℝ)) :=
     fun z => (historyProject z.1, futureProject z.2)
-  let f : (Fin (k + 1) → ℝ) → ℝ≥0∞ :=
+  let f :=
     conditionedPositiveFDDVectorDensity ν (fun i => (pastTimes i : ℝ))
-  let g : (Fin (k + 1) → ℝ) → (Fin n → ℝ) → ℝ≥0∞ :=
+  let g :=
     conditionedPositiveFutureVectorDensity ν (fun i => (pastTimes i : ℝ))
       (fun i => (futureTimes i : ℝ))
-  let pastMeasure : Measure (Fin (k + 1) → ℝ) :=
+  let pastMeasure :=
     (volume : Measure (Fin (k + 1) → ℝ)).withDensity f
-  let pastKernel : Kernel (Fin (k + 1) → ℝ) (Fin n → ℝ) :=
+  let pastKernel :=
     (Kernel.const (Fin (k + 1) → ℝ) (volume : Measure (Fin n → ℝ))).withDensity g
-  let stateKernel : Kernel ℝ (Fin n → ℝ) :=
+  let stateKernel :=
     (Kernel.const ℝ (volume : Measure (Fin n → ℝ))).withDensity
       (fun x y => conditionedPositiveFutureVectorDensity ν
         (fun _ : Fin 1 => (t : ℝ)) (fun i => (t : ℝ) + (offsets i : ℝ))
@@ -429,14 +399,13 @@ theorem conditionedPositiveFutureHistory_finite_projection_compProd
     intro i
     exact measurable_pi_apply (offsets i)
   have hpairProjectMeas : Measurable pairProject :=
-    hhistoryProjectMeas.comp measurable_fst |>.prodMk
-      (hfutureProjectMeas.comp measurable_snd)
+    by fun_prop
   have hfuturePosition : ∀ i, (t : ℝ) < (futureTimes i : ℝ) := by
     intro i
     have hq : 0 < ((offsets i : ℝ).toNNReal : ℝ) := by
       rw [Real.coe_toNNReal _ (hOffsetsPos i).le]
       exact hOffsetsPos i
-    simp only [futureTimes, NNReal.coe_add]
+    simp
     exact lt_add_of_pos_right _ hq
   have hfuturePos : ∀ i, 0 < (futureTimes i : ℝ) := by
     intro i
@@ -471,9 +440,7 @@ theorem conditionedPositiveFutureHistory_finite_projection_compProd
       have hinput : Measurable (fun w : ℝ × (Fin n → ℝ) =>
           ((fun _ : Fin 1 => w.1), w.2)) := by
         apply Measurable.prodMk
-        · apply measurable_pi_iff.mpr
-          intro i
-          exact measurable_fst
+        · fun_prop
         · exact measurable_snd
       exact (measurable_conditionedPositiveFutureVectorDensity ν
         (fun _ : Fin 1 => (t : ℝ)) (fun i => (t : ℝ) + (offsets i : ℝ))).comp hinput
@@ -505,7 +472,7 @@ theorem conditionedPositiveFutureHistory_finite_projection_compProd
   have hfutureProjPath : (futureProject ∘ conditionedPositiveFutureRationalEvals t) =
       futureVector := by
     funext p i
-    have hoffset : (⟨max (offsets i : ℝ) 0, le_max_right _ _⟩ : NNReal) =
+    have hoffset : (⟨max (offsets i : ℝ) 0, le_max_right ..⟩ : NNReal) =
         (offsets i : ℝ).toNNReal := by
       apply Subtype.ext
       simp [max_eq_left (le_of_lt (hOffsetsPos i)),
@@ -540,11 +507,10 @@ theorem conditionedPositiveFutureHistory_finite_projection_compProd
         conditionedPositiveEndpointFutureKernel t P
           (conditionedPositiveHistory t p) (futureProject ⁻¹' B) =
           stateKernel (-(p t)) B := by
-      have hA := hprojCondB B hB
       have hmapAE : ∀ᵐ p ∂P,
           ((conditionedPositiveFutureKernel t P).map futureProject) (-(p t)) B =
             stateKernel (-(p t)) B :=
-        Filter.Eventually.filter_mono (P.tendsto_ae_map hX.aemeasurable) hA
+        Filter.Eventually.filter_mono (P.tendsto_ae_map hX.aemeasurable) (hprojCondB B hB)
       filter_upwards [hmapAE] with p hp
       have hmapEval :
           ((conditionedPositiveFutureKernel t P).map futureProject) (-(p t)) B =
@@ -571,7 +537,7 @@ theorem conditionedPositiveFutureHistory_finite_projection_compProd
     have hpathSet :
         conditionedPositiveHistory t ⁻¹' historyProject ⁻¹' D = pastVector ⁻¹' D := by
       ext p
-      change historyProject (conditionedPositiveHistory t p) ∈ D ↔ pastVector p ∈ D
+      change historyProject _ ∈ D ↔ pastVector p ∈ D
       have heval : historyProject (conditionedPositiveHistory t p) = pastVector p := by
         change (historyProject ∘ conditionedPositiveHistory t) p = pastVector p
         exact congrFun hpastProjPath p
@@ -587,9 +553,9 @@ theorem conditionedPositiveFutureHistory_finite_projection_compProd
     calc
       ∫⁻ p in conditionedPositiveHistory t ⁻¹' historyProject ⁻¹' D,
           conditionedPositiveEndpointFutureKernel t P
-            (conditionedPositiveHistory t p) (futureProject ⁻¹' B) ∂P =
+            (conditionedPositiveHistory t p) _ ∂P =
         ∫⁻ p in pastVector ⁻¹' D,
-          stateKernel (pastVector p (Fin.last k)) B ∂P := by
+          stateKernel _ B ∂P := by
         rw [hpathSet]
         exact MeasureTheory.setLIntegral_congr_fun_ae
           (hD.preimage hpastVectorMeas) (hstateEnd.mono fun _ hp _ => hp)
@@ -598,7 +564,7 @@ theorem conditionedPositiveFutureHistory_finite_projection_compProd
         intro p hp
         exact (congrArg (fun μ : Measure (Fin n → ℝ) => μ B)
           (hPastKernelLast (pastVector p))).symm
-      _ = (P.map (fun p => (pastVector p, futureVector p))) (D ×ˢ B) := by
+      _ = (P.map (fun p => (pastVector p, futureVector p))) _ := by
         have hjoint : P.map (fun p => (pastVector p, futureVector p)) =
             pastMeasure ⊗ₘ pastKernel := by
           simpa [pastVector, futureVector, futureTimes, pastMeasure, f, pastKernel, g] using hsplit

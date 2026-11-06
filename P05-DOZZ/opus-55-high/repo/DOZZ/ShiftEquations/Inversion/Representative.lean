@@ -19,10 +19,10 @@ theorem codiscrete_reflect {p : ℂ → Prop}
     (hp : ∀ᶠ z in codiscrete ℂ, p z) (q : ℝ) :
     ∀ᶠ z in codiscrete ℂ, p ((q : ℂ) - z) := by
   let e : ℂ ≃ₜ ℂ :=
-    { toFun := fun z => (q : ℂ) - z
-      invFun := fun z => (q : ℂ) - z
-      left_inv := fun z => sub_sub_cancel _ _
-      right_inv := fun z => sub_sub_cancel _ _
+    { toFun := fun z => q - z
+      invFun := fun z => q - z
+      left_inv := fun z => sub_sub_cancel ..
+      right_inv := fun z => sub_sub_cancel ..
       continuous_toFun := continuous_const.sub continuous_id
       continuous_invFun := continuous_const.sub continuous_id }
   apply eventually_codiscrete_iff_forall_eventually_nhdsNE.mpr
@@ -62,10 +62,7 @@ theorem exists_physical_inversion_representative
     (isOpen_horizontalStrip H) hclosure hphysical
   have heq : R₀ =ᶠ[codiscrete ℂ] R := by
     filter_upwards [hp] with z hz
-    by_cases hi' : z.im = 0 ∧ lo < z.re ∧ z.re < hi
-    · simp only [R, ite_eq_left hi', R₀, ite_eq_left (hreal z hi'.1)]
-      exact hz (hreal z hi'.1) hi'.1 hi'.2.1 hi'.2.2
-    · simp only [R, ite_eq_right hi']
+    aesop
   have hm : MeromorphicOn R₀ (horizontalStrip h) := by
     apply (show MeromorphicOn F (horizontalStrip h) from
       fun z hz => hF z (hz.trans hhH)).congr _ (isOpen_horizontalStrip h)
@@ -74,19 +71,14 @@ theorem exists_physical_inversion_representative
   refine ⟨R, hm.congr_codiscreteWithin
     (heq.filter_mono ((codiscreteWithin_le_codiscrete_inf_principal _).trans inf_le_left))
     (isOpen_horizontalStrip h), ?_, ?_⟩
-  · intro α hlo hhi
-    simp only [R, Complex.ofReal_im, Complex.ofReal_re, hlo, hhi,
-      and_self, ite_true]
+  · aesop
   · have hg := codiscreteWithin_restrict_closure
       (isOpen_horizontalStrip H) hclosure hinv
     filter_upwards [hg, heq, codiscrete_reflect heq q] with z hz he he'
     rw [← he, ← he']
-    have href : (q : ℂ) - z ∈ horizontalStrip h ↔ z ∈ horizontalStrip h := by
+    have href : q - z ∈ horizontalStrip h ↔ z ∈ horizontalStrip h := by
       simp only [horizontalStrip, mem_ofPred_eq, Complex.sub_im, Complex.ofReal_im,
         zero_sub, abs_neg]
-    by_cases hzin : z ∈ horizontalStrip h
-    · simp only [R₀, ite_eq_left hzin, ite_eq_left (href.mpr hzin)]
-      exact hz hzin
-    · simp only [R₀, ite_eq_right hzin, ite_eq_right (href.not.mpr hzin), mul_one]
+    grind
 
 end DOZZ.Proofs

@@ -24,15 +24,14 @@ noncomputable def fusionLocalR1 {Ω : Type*} [MeasurableSpace Ω]
           (gammaHalfKernel γ α₁ α₂ α₃ (t * z) x : ℂ) / (x - t * z) ^ 2 ∂M ω) ∂P))
 
 /-- Time scaling cancels the complex phase and leaves the real weight `t^(κ-2)`. -/
-theorem fusion_time_scaling_factor (κ : ℝ) (t : ℝ) (ht : 0 < t) (z : ℂ) (hz : z ≠ 0) :
+theorem fusion_time_scaling_factor (κ t : ℝ) (ht : 0 < t) (z : ℂ) (hz : z ≠ 0) :
     z ^ 2 * (‖(t : ℂ) * z‖ ^ κ : ℝ) / ((t : ℂ) * z) ^ 2 =
       (‖z‖ ^ κ : ℝ) * (t ^ (κ - 2) : ℝ) := by
-  have hn : ‖(t : ℂ) * z‖ = t * ‖z‖ := by
+  have hn : ‖t * z‖ = t * ‖z‖ := by
     rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg ht.le]
-  have hp : t ^ κ = t ^ (κ - 2) * t ^ (2 : ℕ) := by
+  have hp : t ^ κ = t ^ (κ - 2) * t ^ 2 := by
     rw [← Real.rpow_natCast, ← Real.rpow_add ht]
-    congr 1
-    ring
+    simp
   rw [hn, Real.mul_rpow ht.le (norm_nonneg _), hp]
   push_cast
   field_simp [hz, Complex.ofReal_ne_zero.mpr ht.ne']
@@ -62,26 +61,26 @@ theorem fusionLocalR1_scaled {Ω : Type*} [MeasurableSpace Ω]
           (fusionScaledFactor P M γ α₁ α₂ α₃ (-p - 1) y ((t : ℂ) * z) : ℂ))) := by
     filter_upwards [ae_restrict_mem measurableSet_Icc,
       ae_restrict_of_ae (Measure.ae_ne volume (0 : ℝ))] with t ht ht0
-    have htpos : 0 < t := lt_of_le_of_ne ht.1 (Ne.symm ht0)
-    have htz : (t : ℂ) * z ≠ 0 := mul_ne_zero (Complex.ofReal_ne_zero.mpr ht0) hz
+    have htpos : 0 < t := by grind
+    have htz : (t : ℂ) * z ≠ 0 := by simp_all
     have htz4 : ‖(t : ℂ) * z‖ ≤ 1 / 4 := by
       rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg ht.1]
       calc
         t * ‖z‖ ≤ 1 * ‖z‖ := mul_le_mul_of_nonneg_right ht.2 (norm_nonneg _)
-        _ ≤ 1 / 4 := by simpa only [one_mul] using hz4
+        _ ≤ 1 / 4 := by linarith
     rw [fusion_localR1_rooting P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hβ hα₁ hα₂ hα₃
       (-p - 1) (by linarith) ((t : ℂ) * z) htz htz4,
-      fusion_localR1_reference_scaled P X hX γ hγ hγ2 M hM α₁ α₂ α₃ (-p - 1) ((t : ℂ) * z) htz,
+      fusion_localR1_reference_scaled P X hX γ hγ hγ2 M hM α₁ α₂ α₃ _ ((t : ℂ) * z) htz,
       ← hκ]
     have hfac := fusion_time_scaling_factor κ t htpos z hz
-    have he : κ - 2 = γ ^ 2 / 2 - γ * α₁ := by dsimp only [κ]; linarith only [hκ]
+    have he : κ - 2 = γ ^ 2 / 2 - γ * α₁ := by linarith
     rw [he] at hfac
     push_cast
     calc
       _ = (z ^ 2 * (‖(t : ℂ) * z‖ ^ κ : ℝ) / ((t : ℂ) * z) ^ 2) *
-          ((1 - (t : ℂ)) * (∫ y : ℂ, planarWirtingerKernel (γ ^ 2 / 2) (γ * α₁) 1 y *
-            (fusionScaledFactor P M γ α₁ α₂ α₃ (-p - 1) y ((t : ℂ) * z) : ℂ))) := by ring
-      _ = _ := by rw [hfac]; ring
+          ((1 - (t : ℂ)) * (∫ y : ℂ, planarWirtingerKernel _ _ 1 y *
+            (fusionScaledFactor P M γ α₁ α₂ α₃ _ y ((t : ℂ) * z) : ℂ))) := by ring
+      _ = _ := by grind
   unfold fusionLocalR1
   rw [mul_assoc, ← integral_const_mul, integral_congr_ae hpoint, integral_const_mul, ← mul_assoc]
 

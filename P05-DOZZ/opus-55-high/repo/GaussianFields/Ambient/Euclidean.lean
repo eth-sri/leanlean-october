@@ -42,129 +42,131 @@ noncomputable def euclideanNormSq {d : Nat} (x : Vec d) : ℝ :=
 @[expose]
 noncomputable def euclideanNorm {d : Nat} (x : Vec d) : ℝ :=
   Real.sqrt (euclideanNormSq x)
+section
+variable {d : Nat}
 
-/-- The Euclidean distance on `Vec d`. -/
-@[expose]
-noncomputable def euclideanDist {d : Nat} (x y : Vec d) : ℝ :=
-  euclideanNorm (x - y)
 
-@[simp]
-theorem euclideanDot_apply {d : Nat} (x y : Vec d) :
-    euclideanDot x y = ∑ i, x i * y i :=
-  rfl
+section
+variable (x : Vec d)
 
-theorem euclideanNormSq_eq_sum {d : Nat} (x : Vec d) :
+theorem euclideanNormSq_eq_sum :
     euclideanNormSq x = ∑ i, x i * x i :=
   rfl
 
-theorem euclideanNorm_nonneg {d : Nat} (x : Vec d) :
+theorem euclideanNorm_nonneg :
     0 ≤ euclideanNorm x :=
   Real.sqrt_nonneg _
 
+end
+
 /-- The squared Euclidean norm is continuous. -/
-theorem continuous_euclideanNormSq {d : Nat} :
+theorem continuous_euclideanNormSq :
     Continuous (fun x : Vec d => euclideanNormSq x) := by
   unfold euclideanNormSq euclideanDot
   fun_prop
 
 /-- The local Euclidean norm is continuous. -/
-theorem continuous_euclideanNorm {d : Nat} :
+theorem continuous_euclideanNorm :
     Continuous (fun x : Vec d => euclideanNorm x) := by
-  unfold euclideanNorm
   exact Real.continuous_sqrt.comp continuous_euclideanNormSq
 
+end
+section
+variable {d : Nat} (x : Vec d)
+
 /-- The local Euclidean norm is bounded by the coordinate `L^1` norm. -/
-theorem euclideanNorm_le_sum_abs {d : Nat} (x : Vec d) :
+theorem euclideanNorm_le_sum_abs :
     euclideanNorm x ≤ ∑ i : Fin d, |x i| := by
   unfold euclideanNorm euclideanNormSq euclideanDot
   rw [Real.sqrt_le_iff]
   constructor
-  · exact Finset.sum_nonneg fun i _hi => abs_nonneg (x i)
+  · positivity
   · calc
       ∑ i : Fin d, x i * x i
-          = ∑ i : Fin d, |x i| ^ (2 : Nat) := by
-            refine Finset.sum_congr rfl ?_
-            intro i _hi
-            rw [sq_abs]
-            ring_nf
-      _ ≤ (∑ i : Fin d, |x i|) ^ (2 : Nat) := by
-            exact Finset.sum_sq_le_sq_sum_of_nonneg
-              (s := Finset.univ) (f := fun i : Fin d => |x i|)
+          = ∑ i : Fin d, |x i| ^ 2 := by
+            grind
+      _ ≤ (∑ i : Fin d, |x i|) ^ 2 := Finset.sum_sq_le_sq_sum_of_nonneg
+             
               (fun i _hi => abs_nonneg (x i))
 
 /-- Each coordinate is bounded by the local Euclidean norm. -/
-theorem abs_apply_le_euclideanNorm {d : Nat} (x : Vec d) (i : Fin d) :
+theorem abs_apply_le_euclideanNorm (i : Fin d) :
     |x i| ≤ euclideanNorm x := by
   unfold euclideanNorm euclideanNormSq euclideanDot
   refine Real.abs_le_sqrt ?_
   calc
-    x i ^ (2 : Nat) = x i * x i := by ring_nf
-    _ ≤ ∑ j : Fin d, x j * x j := by
-          exact Finset.single_le_sum
-            (s := Finset.univ) (f := fun j : Fin d => x j * x j)
-            (fun j _hj => by nlinarith [sq_nonneg (x j)])
+    x i ^ 2 = x i * x i := by ring_nf
+    _ ≤ ∑ j : Fin d, x j * x j := Finset.single_le_sum
+            (f := fun j : Fin d => x j * x j)
+            (fun j _hj => by nlinarith)
             (Finset.mem_univ i)
 
 /-- Mathlib's finite-product sup norm is bounded by the local Euclidean norm. -/
-theorem norm_le_euclideanNorm {d : Nat} (x : Vec d) :
+theorem norm_le_euclideanNorm :
     ‖x‖ ≤ euclideanNorm x := by
   rw [pi_norm_le_iff_of_nonneg (euclideanNorm_nonneg x)]
   intro i
-  simpa only [Real.norm_eq_abs] using abs_apply_le_euclideanNorm x i
+  simpa using abs_apply_le_euclideanNorm x i
 
 /-- The local Euclidean norm is bounded by `d` times Mathlib's finite-product sup norm. -/
-theorem euclideanNorm_le_card_mul_norm {d : Nat} (x : Vec d) :
+theorem euclideanNorm_le_card_mul_norm :
     euclideanNorm x ≤ (d : ℝ) * ‖x‖ := by
   calc
     euclideanNorm x ≤ ∑ i : Fin d, |x i| := euclideanNorm_le_sum_abs x
     _ = ∑ i : Fin d, ‖x i‖ := by
-          refine Finset.sum_congr rfl ?_
-          intro i _hi
-          rw [Real.norm_eq_abs]
-    _ ≤ Fintype.card (Fin d) • ‖x‖ := by
-          exact Pi.sum_norm_apply_le_norm (f := x)
-    _ = (d : ℝ) * ‖x‖ := by
-          rw [Fintype.card_fin]
-          simp only [nsmul_eq_mul]
+          rfl
+    _ ≤ Fintype.card (Fin d) • ‖x‖ := Pi.sum_norm_apply_le_norm (f := x)
+    _ = d * ‖x‖ := by
+          simp
 
-theorem euclideanNormSq_smul {d : Nat} (c : ℝ) (x : Vec d) :
+end
+section
+variable {d : Nat} (c : ℝ) (x : Vec d)
+
+theorem euclideanNormSq_smul :
     euclideanNormSq (c • x) = c ^ 2 * euclideanNormSq x := by
   rw [euclideanNormSq_eq_sum, euclideanNormSq_eq_sum]
   calc
     (∑ i, (c • x) i * (c • x) i) = ∑ i, c ^ 2 * (x i * x i) := by
       refine Finset.sum_congr rfl ?_
       intro i _hi
-      simp only [Pi.smul_apply, smul_eq_mul]
+      simp
       ring
     _ = c ^ 2 * ∑ i, x i * x i := by
       rw [Finset.mul_sum]
 
-theorem euclideanNorm_smul {d : Nat} (c : ℝ) (x : Vec d) :
+theorem euclideanNorm_smul :
     euclideanNorm (c • x) = |c| * euclideanNorm x := by
-  rw [euclideanNorm, euclideanNorm, euclideanNormSq_smul]
-  rw [Real.sqrt_mul (sq_nonneg c)]
-  rw [Real.sqrt_sq_eq_abs]
+  rw [euclideanNorm, euclideanNorm, euclideanNormSq_smul, Real.sqrt_mul (sq_nonneg c), Real.sqrt_sq_eq_abs]
 
-theorem euclideanNormSq_neg {d : Nat} (x : Vec d) :
+end
+section
+variable {d : Nat} (x : Vec d)
+
+theorem euclideanNormSq_neg :
     euclideanNormSq (-x) = euclideanNormSq x := by
   rw [← neg_one_smul ℝ x, euclideanNormSq_smul]
   norm_num
 
-theorem euclideanNorm_neg {d : Nat} (x : Vec d) :
+theorem euclideanNorm_neg :
     euclideanNorm (-x) = euclideanNorm x := by
   rw [euclideanNorm, euclideanNorm, euclideanNormSq_neg]
 
-theorem euclideanNormSq_sub_comm {d : Nat} (x y : Vec d) :
+end
+section
+variable {d : Nat} (x y : Vec d)
+
+theorem euclideanNormSq_sub_comm :
     euclideanNormSq (x - y) = euclideanNormSq (y - x) := by
   have hxy : x - y = -(y - x) := by
-    ext i
-    simp only [Pi.sub_apply, Pi.neg_apply]
-    ring
+    simp
   rw [hxy, euclideanNormSq_neg]
 
-theorem euclideanNorm_sub_comm {d : Nat} (x y : Vec d) :
+theorem euclideanNorm_sub_comm :
     euclideanNorm (x - y) = euclideanNorm (y - x) := by
   rw [euclideanNorm, euclideanNorm, euclideanNormSq_sub_comm]
+
+end
 
 theorem euclideanNorm_inv_smul {d : Nat} (x : Vec d) (r : ℝ) :
     euclideanNorm (r⁻¹ • x) = |r⁻¹| * euclideanNorm x :=

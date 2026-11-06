@@ -128,11 +128,14 @@ instance {d : Nat} : Module ℝ (MeanZeroTestFunction d) where
     simp
 
 end MeanZeroTestFunction
+section
+variable {d : Nat}
+section
+variable (ζ : ABKCutoff d)
 
 /-! ## Linearity of the ABK spatial convolution -/
 
-theorem abkSpatialConvolution_add {d : Nat} (ζ : ABKCutoff d)
-    (ψ φ : MeanZeroTestFunction d) (r : ℝ) (y : Vec d) :
+theorem abkSpatialConvolution_add (ψ φ : MeanZeroTestFunction d) (r : ℝ) (y : Vec d) :
     abkSpatialConvolution ζ (ψ + φ) r y =
       abkSpatialConvolution ζ ψ r y + abkSpatialConvolution ζ φ r y := by
   unfold abkSpatialConvolution
@@ -142,20 +145,23 @@ theorem abkSpatialConvolution_add {d : Nat} (ζ : ABKCutoff d)
   filter_upwards with x
   simp [mul_add]
 
-theorem abkSpatialConvolution_smul {d : Nat} (ζ : ABKCutoff d) (c : ℝ)
+theorem abkSpatialConvolution_smul (c : ℝ)
     (ψ : MeanZeroTestFunction d) (r : ℝ) (y : Vec d) :
     abkSpatialConvolution ζ (c • ψ) r y = c * abkSpatialConvolution ζ ψ r y := by
   unfold abkSpatialConvolution
   rw [← integral_const_mul]
   refine integral_congr_ae ?_
   filter_upwards with x
-  simp only [MeanZeroTestFunction.smul_apply, smul_eq_mul]
+  simp
   ring
+
+end
+section
+variable (normalization : ℝ) (ζ : ABKCutoff d)
 
 /-! ## Linearity of the deterministic ABK kernels -/
 
-theorem abkLogKernelProd_add {d : Nat} (normalization : ℝ) (ζ : ABKCutoff d)
-    (ψ φ : MeanZeroTestFunction d) :
+theorem abkLogKernelProd_add (ψ φ : MeanZeroTestFunction d) :
     abkLogKernelProd normalization ζ (ψ + φ) =
       abkLogKernelProd normalization ζ ψ + abkLogKernelProd normalization ζ φ := by
   funext p
@@ -163,8 +169,7 @@ theorem abkLogKernelProd_add {d : Nat} (normalization : ℝ) (ζ : ABKCutoff d)
   · simp [abkLogKernelProd, hp, abkSpatialConvolution_add, mul_add]
   · simp [abkLogKernelProd, hp]
 
-theorem abkLogKernelProd_smul {d : Nat} (normalization : ℝ) (ζ : ABKCutoff d)
-    (c : ℝ) (ψ : MeanZeroTestFunction d) :
+theorem abkLogKernelProd_smul (c : ℝ) (ψ : MeanZeroTestFunction d) :
     abkLogKernelProd normalization ζ (c • ψ) =
       c • abkLogKernelProd normalization ζ ψ := by
   funext p
@@ -174,15 +179,13 @@ theorem abkLogKernelProd_smul {d : Nat} (normalization : ℝ) (ζ : ABKCutoff d)
     ring
   · simp [abkLogKernelProd, hp]
 
-theorem abkLogKernel_add {d : Nat} (normalization : ℝ) (ζ : ABKCutoff d)
-    (ψ φ : MeanZeroTestFunction d) :
+theorem abkLogKernel_add (ψ φ : MeanZeroTestFunction d) :
     abkLogKernel normalization ζ (ψ + φ) =
       abkLogKernel normalization ζ ψ + abkLogKernel normalization ζ φ := by
   funext z
   simp [abkLogKernel, abkLogKernelProd_add]
 
-theorem abkLogKernel_smul {d : Nat} (normalization : ℝ) (ζ : ABKCutoff d)
-    (c : ℝ) (ψ : MeanZeroTestFunction d) :
+theorem abkLogKernel_smul (c : ℝ) (ψ : MeanZeroTestFunction d) :
     abkLogKernel normalization ζ (c • ψ) =
       c • abkLogKernel normalization ζ ψ := by
   funext z
@@ -190,8 +193,7 @@ theorem abkLogKernel_smul {d : Nat} (normalization : ℝ) (ζ : ABKCutoff d)
 
 /-! ## Linearity of the `L²` kernel vectors -/
 
-theorem abkLogKernelLp_add {d : Nat} (normalization : ℝ) (ζ : ABKCutoff d)
-    (ψ φ : MeanZeroTestFunction d)
+theorem abkLogKernelLp_add (ψ φ : MeanZeroTestFunction d)
     (hψ :
       MemLp (abkLogKernelProd normalization ζ ψ) 2
         (volume : Measure (ℝ × Vec d)))
@@ -209,8 +211,7 @@ theorem abkLogKernelLp_add {d : Nat} (normalization : ℝ) (ζ : ABKCutoff d)
   exact MemLp.toLp_congr _ _
     (Filter.EventuallyEq.of_eq (abkLogKernel_add normalization ζ ψ φ))
 
-theorem abkLogKernelLp_smul {d : Nat} (normalization : ℝ) (ζ : ABKCutoff d)
-    (c : ℝ) (ψ : MeanZeroTestFunction d)
+theorem abkLogKernelLp_smul (c : ℝ) (ψ : MeanZeroTestFunction d)
     (hψ :
       MemLp (abkLogKernelProd normalization ζ ψ) 2
         (volume : Measure (ℝ × Vec d)))
@@ -226,76 +227,21 @@ theorem abkLogKernelLp_smul {d : Nat} (normalization : ℝ) (ζ : ABKCutoff d)
 
 /-! ## Linearity of the ABK field, general normalization -/
 
-theorem abkLogCorrelatedFieldL2_add {d : Nat} (normalization : ℝ)
-    (ζ : ABKCutoff d) (ψ φ : MeanZeroTestFunction d)
-    (hψ :
-      MemLp (abkLogKernelProd normalization ζ ψ) 2
-        (volume : Measure (ℝ × Vec d)))
-    (hφ :
-      MemLp (abkLogKernelProd normalization ζ φ) 2
-        (volume : Measure (ℝ × Vec d)))
-    (hsum :
-      MemLp (abkLogKernelProd normalization ζ (ψ + φ)) 2
-        (volume : Measure (ℝ × Vec d))) :
-    abkLogCorrelatedFieldL2 normalization ζ (ψ + φ) hsum =
-      abkLogCorrelatedFieldL2 normalization ζ ψ hψ +
-        abkLogCorrelatedFieldL2 normalization ζ φ hφ := by
-  unfold abkLogCorrelatedFieldL2
-  rw [abkLogKernelLp_add normalization ζ ψ φ hψ hφ hsum,
-    (scaleSpaceWhiteNoiseL2 d).map_add]
 
-theorem abkLogCorrelatedFieldL2_smul {d : Nat} (normalization : ℝ)
-    (ζ : ABKCutoff d) (c : ℝ) (ψ : MeanZeroTestFunction d)
-    (hψ :
-      MemLp (abkLogKernelProd normalization ζ ψ) 2
-        (volume : Measure (ℝ × Vec d)))
-    (hsmul :
-      MemLp (abkLogKernelProd normalization ζ (c • ψ)) 2
-        (volume : Measure (ℝ × Vec d))) :
-    abkLogCorrelatedFieldL2 normalization ζ (c • ψ) hsmul =
-      c • abkLogCorrelatedFieldL2 normalization ζ ψ hψ := by
-  unfold abkLogCorrelatedFieldL2
-  rw [abkLogKernelLp_smul normalization ζ c ψ hψ hsmul,
-    (scaleSpaceWhiteNoiseL2 d).map_smul]
+
+end
+section
+variable (hd : 0 < d) (ζ : ABKCutoff d)
 
 /-! ## Linearity of the canonically normalized ABK field -/
 
-theorem abkLogCorrelatedFieldL2Canonical_add {d : Nat} (hd : 0 < d)
-    (ζ : ABKCutoff d) (ψ φ : MeanZeroTestFunction d) :
-    abkLogCorrelatedFieldL2Canonical hd ζ (ψ + φ) =
-      abkLogCorrelatedFieldL2Canonical hd ζ ψ +
-        abkLogCorrelatedFieldL2Canonical hd ζ φ := by
-  unfold abkLogCorrelatedFieldL2Canonical
-  exact abkLogCorrelatedFieldL2_add (abkNormalization ζ) ζ ψ φ
-    (memLp_abkLogKernelProd_canonical hd ζ ψ)
-    (memLp_abkLogKernelProd_canonical hd ζ φ)
-    (memLp_abkLogKernelProd_canonical hd ζ (ψ + φ))
 
-theorem abkLogCorrelatedFieldL2Canonical_smul {d : Nat} (hd : 0 < d)
-    (ζ : ABKCutoff d) (c : ℝ) (ψ : MeanZeroTestFunction d) :
-    abkLogCorrelatedFieldL2Canonical hd ζ (c • ψ) =
-      c • abkLogCorrelatedFieldL2Canonical hd ζ ψ := by
-  unfold abkLogCorrelatedFieldL2Canonical
-  exact abkLogCorrelatedFieldL2_smul (abkNormalization ζ) ζ c ψ
-    (memLp_abkLogKernelProd_canonical hd ζ ψ)
-    (memLp_abkLogKernelProd_canonical hd ζ (c • ψ))
 
-/-- The canonical ABK field evaluation, packaged as a genuine `ℝ`-linear map on the
-test-function vector space. -/
-@[expose]
-noncomputable def abkLogCorrelatedFieldL2CanonicalLinearMap {d : Nat} (hd : 0 < d)
-    (ζ : ABKCutoff d) :
-    MeanZeroTestFunction d →ₗ[ℝ] Lp ℝ 2 (scaleSpaceWhiteNoiseMeasure d) where
-  toFun ψ := abkLogCorrelatedFieldL2Canonical hd ζ ψ
-  map_add' ψ φ := abkLogCorrelatedFieldL2Canonical_add hd ζ ψ φ
-  map_smul' c ψ := abkLogCorrelatedFieldL2Canonical_smul hd ζ c ψ
+end
 
-@[simp]
-theorem abkLogCorrelatedFieldL2CanonicalLinearMap_apply {d : Nat} (hd : 0 < d)
-    (ζ : ABKCutoff d) (ψ : MeanZeroTestFunction d) :
-    abkLogCorrelatedFieldL2CanonicalLinearMap hd ζ ψ =
-      abkLogCorrelatedFieldL2Canonical hd ζ ψ :=
-  rfl
+end
+
+
 
 /-! ## Finite linear combinations are single white-noise evaluations -/
 

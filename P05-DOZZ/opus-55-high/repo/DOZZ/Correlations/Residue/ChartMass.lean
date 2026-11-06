@@ -6,6 +6,8 @@ module
 
 public import DOZZ.Correlations.Residue.AffineMoment
 public import DOZZ.Correlations.Symmetry.InversionSwap
+import DOZZ.ShiftEquations.Mobius.InversionMoment
+import DOZZ.GMC.CircleAverage
 
 /-! The literal canonical rho is the two-finite-root Coulomb mass in the residue chart. -/
 
@@ -13,18 +15,19 @@ public import DOZZ.Correlations.Symmetry.InversionSwap
 open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
+section
+variable (γ a b c : ℝ)
 
 /-- The two conventions for values at the roots agree away from those roots. -/
-theorem residue_rho_coulombWeight (γ a b c : ℝ) (x : ℂ) (hx0 : x ≠ 0) (hx1 : x ≠ 1) :
+theorem residue_rho_coulombWeight (x : ℂ) (hx0 : x ≠ 0) (hx1 : x ≠ 1) :
     ENNReal.ofReal (normPlus x ^ (γ * (a + b + c)) /
       (‖x‖ ^ (γ * a) * ‖x - 1‖ ^ (γ * b))) =
       coulombWeight γ ![a, b] ![0, 1] c x := by
-  have hn := normPlus_pos' x
-  have h0 : 0 < ‖x‖ := norm_pos_iff.mpr hx0
-  have h1 : 0 < ‖x - 1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
+  have hn := DOZZ.Proofs.normPlus_pos x
+  have h0 := norm_pos_iff.mpr hx0
+  have h1 := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
   unfold coulombWeight
-  simp only [Fin.prod_univ_two, Matrix.cons_val_zero, Matrix.cons_val_one,
-    sub_zero, ENNReal.rpow_eq_pow]
+  simp
   rw [ENNReal.ofReal_rpow_of_pos (div_pos hn h0),
     ENNReal.ofReal_rpow_of_pos (div_pos hn h1), ENNReal.ofReal_rpow_of_pos hn,
     ← ENNReal.ofReal_mul (Real.rpow_nonneg (div_pos hn h0).le _),
@@ -38,21 +41,21 @@ theorem residue_rho_coulombWeight (γ a b c : ℝ) (x : ℂ) (hx0 : x ≠ 0) (hx
 
 /-- Atomlessness removes the difference between the conventions of `DOZZ.rho` and
 `DOZZ.coulombMass` at 0, 1. -/
-theorem residue_rho_eq_coulombMass (γ a b c : ℝ) (μ : Measure ℂ)
+theorem residue_rho_eq_coulombMass (μ : Measure ℂ)
     (h0 : μ {0} = 0) (h1 : μ {1} = 0) :
     rho γ μ a b c = coulombMass γ μ ![a, b] ![0, 1] c := by
-  unfold rho
-  rw [coulombMass_eq_lintegral_coulombWeight]
   apply lintegral_congr_ae
   filter_upwards [measure_eq_zero_iff_ae_notMem.mp h0, measure_eq_zero_iff_ae_notMem.mp h1]
     with x hx0 hx1
   exact residue_rho_coulombWeight γ a b c x hx0 hx1
 
 /-- The canonical three-point exponent includes the infinity charge. -/
-theorem residueTotalSExp_two (γ a b c : ℝ) :
+theorem residueTotalSExp_two :
     residueTotalSExp γ ![a, b] c = sExp γ a b c := by
   unfold residueTotalSExp sExp
-  simp only [Fin.sum_univ_two, Matrix.cons_val_zero, Matrix.cons_val_one]
+  simp
+
+end
 
 /-- Move the two finite insertions from 0,1 to 3,7. Both are outside the equator and their
 separation is four, so the exact local-tail domains hold. -/
@@ -72,23 +75,22 @@ theorem residue_unitVolume_finite_chart
   rw [hroots, residueTotalSExp_two] at hchart
   simp only [Fin.sum_univ_two, Matrix.cons_val_zero, Matrix.cons_val_one] at hchart
   norm_num only [Complex.norm_ofNat] at hchart
-  have hatoms : ∀ᵐ ω ∂P, M ω {0} = 0 ∧ M ω {1} = 0 :=
-    (gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ2 M hM 0).and
-      (gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ2 M hM 1)
+  have hatoms :=
+    (DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM 0).and
+      (DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM 1)
   have hrho : (∫⁻ ω, ENNReal.rpow (rho γ (M ω) a b c) (-sExp γ a b c) ∂P) =
       ∫⁻ ω, ENNReal.rpow (coulombMass γ (M ω) ![a, b] ![0, 1] c) (-sExp γ a b c) ∂P := by
     apply lintegral_congr_ae
     filter_upwards [hatoms] with ω hω
     rw [residue_rho_eq_coulombMass γ a b c (M ω) hω.1 hω.2]
   have hr := congrArg ENNReal.toReal hchart
-  rw [ENNReal.toReal_mul, ENNReal.toReal_ofReal (Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 4) _),
+  rw [ENNReal.toReal_mul, ENNReal.toReal_ofReal (Real.rpow_nonneg (by norm_num) _),
     ← hrho] at hr
   unfold unitVolumeStructureConstant
-  rw [hr]
-  rw [Real.rpow_neg (by norm_num : (0 : ℝ) ≤ 4)]
+  rw [hr, Real.rpow_neg (by norm_num : (0 : ℝ) ≤ 4)]
   have hfac : (4 : ℝ) ^ (γ * (a + b - c) * sExp γ a b c / 2) ≠ 0 :=
-    (Real.rpow_pos_of_pos (by norm_num) _).ne'
+    by positivity
   field_simp [hfac]
-  simp only [ENNReal.rpow_eq_pow]
+  simp
 
 end DOZZ.Proofs

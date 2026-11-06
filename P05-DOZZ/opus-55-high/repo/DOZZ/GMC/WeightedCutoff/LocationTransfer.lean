@@ -30,19 +30,17 @@ theorem cutoffWeightedGmcBallMoment_translate_le
     apply continuous_real_toNNReal.comp_continuousOn
     apply ContinuousOn.rpow_const
     · fun_prop
-    · intro s hs
-      exact Or.inl (ne_of_gt (by linarith [hs.1]))
+    grind
   obtain ⟨s, hs, hmax⟩ := isCompact_Icc.exists_isMaxOn
     (Set.nonempty_Icc.mpr hρ.le) hf
   let w : ℂ → ℝ≥0 := fun y => f (min ‖y‖ ρ)
   have hw : Measurable w := by
-    dsimp [w, f]
     fun_prop
   have hwb : ∀ y, w y ≤ f s := by
     intro y
-    exact hmax ⟨le_min (norm_nonneg _) hρ.le, min_le_right _ _⟩
-  have heq (a : ℂ) (ω : Ω) :
-      (∫⁻ x in Metric.ball a ρ, (w (x - a) : ℝ≥0∞)
+    exact hmax ⟨le_min (norm_nonneg _) hρ.le, min_le_right ..⟩
+  have heq (a : ℂ) ω :
+      (∫⁻ x in Metric.ball a ρ, (w (x - a))
         ∂regularizedGMC P Xc γ (Real.log (1 / δ)) ω) =
       cutoffWeightedGmcBallMass P Xc γ α a ρ δ ω := by
     apply setLIntegral_congr_fun Metric.isOpen_ball.measurableSet
@@ -50,8 +48,8 @@ theorem cutoffWeightedGmcBallMoment_translate_le
     have hx' : ‖x - a‖ < ρ := by simpa [Metric.mem_ball, dist_eq_norm] using hx
     simp [w, f, min_eq_left hx'.le, ENNReal.ofReal]
   have hr : 0 ≤ Real.log (1 / δ) :=
-    Real.log_nonneg (by rw [one_div]; exact one_le_inv₀ hδ |>.mpr hδ₁)
+    by bound
   simpa only [heq] using cutoff_translate_moment_le P X hX Xc hXc γ
-    (Real.log (1 / δ)) hr z z₀ ρ R hR hz hz₀ w hw (f s) hwb p
+    (Real.log _) hr z z₀ ρ R hR hz hz₀ w hw (f s) hwb p
 
 end DOZZ.Proofs

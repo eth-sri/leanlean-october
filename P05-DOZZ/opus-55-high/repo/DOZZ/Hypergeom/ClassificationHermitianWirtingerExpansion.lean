@@ -15,57 +15,52 @@ namespace DOZZ.Proofs
 
 open Filter
 open scoped Topology
+section
+variable (a b c : ℝ) (T : ℂ → ℝ)
 
 /-- Conjugating the real Gauss PDE gives its conjugate-Wirtinger form. -/
 theorem realGaussSolution_conjugate_pde
-    (a b c : ℝ) (T : ℂ → ℝ) (hT : IsRealGaussSolution a b c T)
+    (hT : IsRealGaussSolution a b c T)
     {z : ℂ} (hz : z ∈ gaussRegularPlane) :
     wirtingerBar (fun w => wirtingerBar (fun u => (T u : ℂ)) w) z +
         star (((c : ℂ) - z * ((a : ℂ) + b + 1)) / (z * (1 - z))) *
           wirtingerBar (fun w => (T w : ℂ)) z -
         star ((a : ℂ) * b / (z * (1 - z))) * (T z : ℂ) = 0 := by
-  let t : ℂ → ℂ := fun w => (T w : ℂ)
+  let t : ℂ → ℂ := fun w => (T w)
   have hself : (fun w => star (t w)) = t := by
-    funext w
-    simp [t]
+    aesop
   have hconj :
       star (wirtingerZ (fun w => wirtingerZ t w) z) +
-        star (((c : ℂ) - z * ((a : ℂ) + b + 1)) / (z * (1 - z))) *
+        star ((c - z * (a + b + 1)) / (z * (1 - z))) *
           star (wirtingerZ t z) -
-        star ((a : ℂ) * b / (z * (1 - z))) * t z = 0 := by
+        star (a * b / (z * (1 - z))) * t z = 0 := by
     have h := congrArg star (hT.2 z hz)
-    simpa [t, hself] using h
+    aesop
   rw [wirtingerBar_wirtingerBar_eq_star_wirtingerZ_wirtingerZ hself]
   have hbar : wirtingerBar t z = star (wirtingerZ t z) := by
     unfold wirtingerBar
-    rw [hself]
-  rw [hbar]
-  exact hconj
+    simp_all
+  aesop
+section
+variable (hT : IsRealGaussSolution a b c T) {f g : ℂ → ℂ} (hf : AnalyticOnNhd ℂ f gaussCutPlane) (hg : AnalyticOnNhd ℂ g gaussCutPlane) (hODEf : ∀ z ∈ gaussCutPlane, gaussHolomorphicOperator (a : ℂ) (b : ℂ) (c : ℂ) f z = 0) (hODEg : ∀ z ∈ gaussCutPlane, gaussHolomorphicOperator (a : ℂ) (b : ℂ) (c : ℂ) g z = 0) (hW : ∀ z ∈ gaussCutPlane, gaussCramerWronskian f g z ≠ 0)
+include hT hf hg hODEf hODEg hW
 
 /-- The first conjugate Wirtinger derivative of a real Gauss solution is the corresponding
 combination of conjugate derivatives of its Cramer coefficients. -/
 theorem realGaussCramer_wirtingerBar_expansion
-    (a b c : ℝ) (T : ℂ → ℝ) (hT : IsRealGaussSolution a b c T)
-    {f g : ℂ → ℂ}
-    (hf : AnalyticOnNhd ℂ f gaussCutPlane)
-    (hg : AnalyticOnNhd ℂ g gaussCutPlane)
-    (hODEf : ∀ z ∈ gaussCutPlane,
-      gaussHolomorphicOperator (a : ℂ) (b : ℂ) (c : ℂ) f z = 0)
-    (hODEg : ∀ z ∈ gaussCutPlane,
-      gaussHolomorphicOperator (a : ℂ) (b : ℂ) (c : ℂ) g z = 0)
-    (hW : ∀ z ∈ gaussCutPlane, gaussCramerWronskian f g z ≠ 0) :
+    :
     ∀ z ∈ gaussCutPlane,
       wirtingerBar (fun w => (T w : ℂ)) z =
         f z * wirtingerBar (gaussCramerCoefficient₁ T f g) z +
           g z * wirtingerBar (gaussCramerCoefficient₂ T f g) z := by
   intro z hz
-  have hzReg : z ∈ gaussRegularPlane := gaussCutPlane_subset_regularPlane hz
-  have hTAtReal : ContDiffAt ℝ 2 T z :=
+  have hzReg := gaussCutPlane_subset_regularPlane hz
+  have hTAtReal :=
     (hT.1 z hzReg).contDiffAt (gaussRegularPlane_isOpen.mem_nhds hzReg)
   have hTAt : ContDiffAt ℝ 2 (fun w => (T w : ℂ)) z := by
     change ContDiffAt ℝ 2 (fun w => Complex.ofRealCLM (T w)) z
-    exact Complex.ofRealCLM.contDiff.contDiffAt.comp z hTAtReal
-  have ht0 : DifferentiableAt ℝ (fun w => (T w : ℂ)) z :=
+    fun_prop
+  have ht0 :=
     hTAt.differentiableAt (by norm_num)
   have hcoeff := realGaussCramerCoefficients_wirtingerZ_eq_zero
     a b c T hT hf hg hODEf hODEg hW
@@ -74,9 +69,7 @@ theorem realGaussCramer_wirtingerBar_expansion
   have hgAt := (hg z hz).differentiableAt
   have hsumAt : DifferentiableAt ℝ
       (fun w => gaussCramerCoefficient₁ T f g w * f w +
-        gaussCramerCoefficient₂ T f g w * g w) z := by
-    exact (hαAt.mul (hfAt.restrictScalars ℝ)).add
-      (hβAt.mul (hgAt.restrictScalars ℝ))
+        gaussCramerCoefficient₂ T f g w * g w) z := by fun_prop
   have hEq : (fun w => (T w : ℂ)) =ᶠ[𝓝 z]
       (fun w => gaussCramerCoefficient₁ T f g w * f w +
         gaussCramerCoefficient₂ T f g w * g w) := by
@@ -87,8 +80,8 @@ theorem realGaussCramer_wirtingerBar_expansion
         wirtingerBar (fun w => gaussCramerCoefficient₁ T f g w * f w +
           gaussCramerCoefficient₂ T f g w * g w) z :=
       wirtingerBar_congr_of_eventuallyEq ht0 hsumAt hEq
-    _ = f z * wirtingerBar (gaussCramerCoefficient₁ T f g) z +
-          g z * wirtingerBar (gaussCramerCoefficient₂ T f g) z := by
+    _ = f z * wirtingerBar _ z +
+          g z * wirtingerBar _ z := by
       have h₁At : DifferentiableAt ℝ
           (fun w => gaussCramerCoefficient₁ T f g w * f w) z :=
         hαAt.mul (hfAt.restrictScalars ℝ)
@@ -105,15 +98,7 @@ theorem realGaussCramer_wirtingerBar_expansion
 /-- The second conjugate Wirtinger derivative is likewise the basis-weighted sum of the second
 conjugate derivatives of the coefficients. -/
 theorem realGaussCramer_wirtingerBar_second_expansion
-    (a b c : ℝ) (T : ℂ → ℝ) (hT : IsRealGaussSolution a b c T)
-    {f g : ℂ → ℂ}
-    (hf : AnalyticOnNhd ℂ f gaussCutPlane)
-    (hg : AnalyticOnNhd ℂ g gaussCutPlane)
-    (hODEf : ∀ z ∈ gaussCutPlane,
-      gaussHolomorphicOperator (a : ℂ) (b : ℂ) (c : ℂ) f z = 0)
-    (hODEg : ∀ z ∈ gaussCutPlane,
-      gaussHolomorphicOperator (a : ℂ) (b : ℂ) (c : ℂ) g z = 0)
-    (hW : ∀ z ∈ gaussCutPlane, gaussCramerWronskian f g z ≠ 0) :
+    :
     ∀ z ∈ gaussCutPlane,
       wirtingerBar (fun w => wirtingerBar (fun u => (T u : ℂ)) w) z =
         f z * wirtingerBar (fun w => wirtingerBar
@@ -121,24 +106,23 @@ theorem realGaussCramer_wirtingerBar_second_expansion
         g z * wirtingerBar (fun w => wirtingerBar
           (gaussCramerCoefficient₂ T f g) w) z := by
   intro z hz
-  have hzReg : z ∈ gaussRegularPlane := gaussCutPlane_subset_regularPlane hz
-  have hTAtReal : ContDiffAt ℝ 2 T z :=
+  have hzReg := gaussCutPlane_subset_regularPlane hz
+  have hTAtReal :=
     (hT.1 z hzReg).contDiffAt (gaussRegularPlane_isOpen.mem_nhds hzReg)
   have hTAt : ContDiffAt ℝ 2 (fun w => (T w : ℂ)) z := by
     change ContDiffAt ℝ 2 (fun w => Complex.ofRealCLM (T w)) z
-    exact Complex.ofRealCLM.contDiff.contDiffAt.comp z hTAtReal
-  let t0 : ℂ → ℂ := fun w => (T w : ℂ)
+    fun_prop
+  let t0 : ℂ → ℂ := fun w => (T w)
   have ht1At : DifferentiableAt ℝ (fun w => wirtingerZ t0 w) z :=
     differentiableAt_wirtingerZ_of_contDiffAt_two hTAt
   have hself : (fun w => star (t0 w)) = t0 := by
-    funext w
-    simp [t0]
+    aesop
   have hbarTfun : (fun w => wirtingerBar t0 w) =
       (fun w => star (wirtingerZ t0 w)) := by
     funext w
     unfold wirtingerBar
-    rw [hself]
-  have hclmT : DifferentiableAt ℝ (starRingEnd ℂ) (wirtingerZ t0 z) :=
+    simp_all
+  have hclmT :=
     Complex.differentiable_conj.differentiableAt (x := wirtingerZ t0 z)
   have hbarTAt : DifferentiableAt ℝ (fun w => wirtingerBar t0 w) z := by
     rw [hbarTfun]
@@ -157,16 +141,13 @@ theorem realGaussCramer_wirtingerBar_second_expansion
   let S : ℂ → ℂ := fun w =>
     f w * wirtingerBar (gaussCramerCoefficient₁ T f g) w +
       g w * wirtingerBar (gaussCramerCoefficient₂ T f g) w
-  have hS₁At : DifferentiableAt ℝ
-      (fun w => f w * wirtingerBar (gaussCramerCoefficient₁ T f g) w) z :=
+  have hS₁At :=
     (hfAt.restrictScalars ℝ).mul hαBarAt
-  have hS₂At : DifferentiableAt ℝ
-      (fun w => g w * wirtingerBar (gaussCramerCoefficient₂ T f g) w) z :=
+  have hS₂At :=
     (hgAt.restrictScalars ℝ).mul hβBarAt
   have hSAt : DifferentiableAt ℝ S z := by
-    dsimp [S]
     exact hS₁At.add hS₂At
-  have hfirst : (fun w => wirtingerBar t0 w) =ᶠ[𝓝 z] S := by
+  have hfirst : (wirtingerBar t0) =ᶠ[𝓝 z] S := by
     filter_upwards [gaussCutPlane_isOpen.mem_nhds hz] with w hw
     exact realGaussCramer_wirtingerBar_expansion
       a b c T hT hf hg hODEf hODEg hW w hw
@@ -175,17 +156,12 @@ theorem realGaussCramer_wirtingerBar_second_expansion
           (gaussCramerCoefficient₁ T f g) w) z +
         g z * wirtingerBar (fun w => wirtingerBar
           (gaussCramerCoefficient₂ T f g) w) z := by
-    have hprod₁ : DifferentiableAt ℝ
-        (fun w => f w * wirtingerBar (gaussCramerCoefficient₁ T f g) w) z := hS₁At
-    have hprod₂ : DifferentiableAt ℝ
-        (fun w => g w * wirtingerBar (gaussCramerCoefficient₂ T f g) w) z := hS₂At
     calc
       wirtingerBar S z =
           wirtingerBar (fun w => f w * wirtingerBar
             (gaussCramerCoefficient₁ T f g) w) z +
           wirtingerBar (fun w => g w * wirtingerBar
-            (gaussCramerCoefficient₂ T f g) w) z := by
-        exact wirtingerBar_add hprod₁ hprod₂
+            (gaussCramerCoefficient₂ T f g) w) z := wirtingerBar_add hS₁At hS₂At
       _ = _ := by
         rw [wirtingerBar_mul (hfAt.restrictScalars ℝ) hαBarAt,
           wirtingerBar_mul (hgAt.restrictScalars ℝ) hβBarAt,
@@ -193,22 +169,14 @@ theorem realGaussCramer_wirtingerBar_second_expansion
           wirtingerBar_eq_zero_of_differentiableAt hgAt]
         ring
   calc
-    wirtingerBar (fun w => wirtingerBar t0 w) z = wirtingerBar S z :=
+    wirtingerBar (wirtingerBar t0) z = wirtingerBar S z :=
       wirtingerBar_congr_of_eventuallyEq hbarTAt hSAt hfirst
     _ = _ := hSbar
 
 /-- After expanding the conjugated real PDE in a holomorphic fundamental pair, the two Cramer
 coefficients' conjugate Gauss residuals have zero basis-weighted sum. -/
 theorem realGaussCramer_conjugate_pde_expansion
-    (a b c : ℝ) (T : ℂ → ℝ) (hT : IsRealGaussSolution a b c T)
-    {f g : ℂ → ℂ}
-    (hf : AnalyticOnNhd ℂ f gaussCutPlane)
-    (hg : AnalyticOnNhd ℂ g gaussCutPlane)
-    (hODEf : ∀ z ∈ gaussCutPlane,
-      gaussHolomorphicOperator (a : ℂ) (b : ℂ) (c : ℂ) f z = 0)
-    (hODEg : ∀ z ∈ gaussCutPlane,
-      gaussHolomorphicOperator (a : ℂ) (b : ℂ) (c : ℂ) g z = 0)
-    (hW : ∀ z ∈ gaussCutPlane, gaussCramerWronskian f g z ≠ 0) :
+    :
     ∀ z ∈ gaussCutPlane,
       f z * (wirtingerBar (fun w => wirtingerBar
           (gaussCramerCoefficient₁ T f g) w) z +
@@ -223,14 +191,16 @@ theorem realGaussCramer_conjugate_pde_expansion
           star ((a : ℂ) * b / (z * (1 - z))) *
             gaussCramerCoefficient₂ T f g z) = 0 := by
   intro z hz
-  have hzReg := gaussCutPlane_subset_regularPlane hz
-  have hPDE := realGaussSolution_conjugate_pde a b c T hT hzReg
+  have hPDE := realGaussSolution_conjugate_pde a b c T hT (gaussCutPlane_subset_regularPlane hz)
   have hbar := realGaussCramer_wirtingerBar_expansion
     a b c T hT hf hg hODEf hODEg hW z hz
   have hbarbar := realGaussCramer_wirtingerBar_second_expansion
     a b c T hT hf hg hODEf hODEg hW z hz
   have hrec := (realGaussCramer_reconstruct T (hW z hz)).1
-  rw [hbarbar, hbar, hrec] at hPDE
-  linear_combination hPDE
+  grind
+
+end
+
+end
 
 end DOZZ.Proofs

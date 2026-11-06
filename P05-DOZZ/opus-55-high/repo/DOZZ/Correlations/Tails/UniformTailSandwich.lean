@@ -48,10 +48,9 @@ theorem uniform_tail_sandwich_bound
       have hy := polynomial_shift_relative x a s hx (hη.le.trans ha) hs
       have hxy : x*y = x+s*h := by dsimp [y]; field_simp
       have hxy1 : 1 ≤ x*y := by
-        have hb := mul_le_mul_of_nonneg_left hy.1.1 hx0.le
-        nlinarith only [hb,hx2]
+        nlinarith only [(mul_le_mul_of_nonneg_left hy.1.1 hx0.le),hx2]
       have hb := uniform_power_tail_shift L x y p P η a c cmax E hx hy.1
-        hp hpP hη ha hc hcc hE hy.2 (hL (x*y) hxy1)
+        hp hpP hη ha hc hcc hE hy.2 (hL _ hxy1)
       rw [hxy] at hb
       exact hb
     have hupper := (abs_le.mp (hshift (-2) (by norm_num))).2

@@ -29,8 +29,8 @@ theorem tendstoInMeasure_uniform_approximation
     TendstoInMeasure P f atTop g := by
   rw [tendstoInMeasure_iff_norm]
   intro ε hε
-  let t : ℝ := ε / 3
-  have ht : 0 < t := by dsimp [t]; positivity
+  let t := ε / 3
+  have ht : 0 < t := by positivity
   obtain ⟨e, he, hleft, hright⟩ := happrox t ht
   rw [ENNReal.tendsto_atTop_zero]
   intro δ hδ
@@ -38,11 +38,11 @@ theorem tendstoInMeasure_uniform_approximation
   obtain ⟨K, hK⟩ := (ENNReal.tendsto_atTop_zero.mp he) (δ / 3) hd
   have hk : e K ≤ δ / 3 := hK K le_rfl
   obtain ⟨N, hN⟩ := (ENNReal.tendsto_atTop_zero.mp
-    ((tendstoInMeasure_iff_norm.mp (hconv K)) t ht)) (δ / 3) hd
+    ((tendstoInMeasure_iff_norm.mp (hconv K)) t ht)) _ hd
   refine ⟨N, fun n hn => ?_⟩
-  let L : Set Ω := {ω | t ≤ ‖f n ω - a K n ω‖}
-  let C : Set Ω := {ω | t ≤ ‖a K n ω - b K ω‖}
-  let R : Set Ω := {ω | t ≤ ‖b K ω - g ω‖}
+  let L := {ω | t ≤ ‖f n ω - a K n ω‖}
+  let C := {ω | t ≤ ‖a K n ω - b K ω‖}
+  let R := {ω | t ≤ ‖b K ω - g ω‖}
   have hsubset : {ω | ε ≤ ‖f n ω - g ω‖} ⊆ L ∪ C ∪ R := by
     intro ω hω
     by_contra hnot
@@ -60,13 +60,13 @@ theorem tendstoInMeasure_uniform_approximation
       linarith
     have hsum : ‖f n ω - g ω‖ < ε := by
       dsimp [t] at hL hC hR
-      simp only [Real.norm_eq_abs] at htriangle ⊢
+      simp at htriangle ⊢
       linarith
     exact (not_le_of_gt hsum) hω
   calc
-    P {ω | ε ≤ ‖f n ω - g ω‖} ≤ P (L ∪ C ∪ R) := measure_mono hsubset
-    _ ≤ P L + P C + P R := (measure_union_le _ _).trans
-      (add_le_add (measure_union_le _ _) le_rfl)
+    P {ω | ε ≤ ‖f n ω - g ω‖} ≤ P _ := measure_mono hsubset
+    _ ≤ P L + P C + P R := (measure_union_le ..).trans
+      (add_le_add (measure_union_le ..) le_rfl)
     _ ≤ δ / 3 + δ / 3 + δ / 3 :=
       add_le_add (add_le_add ((hleft K n).trans hk) (hN n hn)) ((hright K).trans hk)
     _ = δ := by rw [← two_mul, ← add_one_mul, show (2 : ℝ≥0∞) + 1 = 3 by norm_num,

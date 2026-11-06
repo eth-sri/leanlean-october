@@ -29,12 +29,11 @@ theorem reflected_retainedZero_rooted_inverse_freezing
           (gmcRootedMeasure γ u (M ω))) ^
             (-((α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ + 1)) ∂P) ≤
           ENNReal.ofReal (C * r ^ ((α₁ + γ / 2 - Q γ) ^ 2 / 2)) := by
-  let q : ℝ := (α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ + 1
-  let δ : ℝ := (α₁ + γ / 2 - Q γ) ^ 2 / 2
-  let c : ℝ := Real.exp (-γ ^ 2 * Real.log 2) *
-    ((1 / 2 : ℝ) ^ (γ ^ 2 / 2) * (2 : ℝ) ^ (-|γ * α₂|))
-  have hc : 0 < c := by dsimp only [c]; positivity
-  have hq : 0 < q := (reflected_freezing_margins γ α₁ α₂ α₃ hγ hα₁ hreflect hs).2.1
+  let q := (α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ + 1
+  let δ := (α₁ + γ / 2 - Q γ) ^ 2 / 2
+  let c := Real.exp (-γ ^ 2 * Real.log 2) *
+    ((1 / 2) ^ (γ ^ 2 / 2) * 2 ^ (-|γ * α₂|))
+  have hc : 0 < c := by positivity
   obtain ⟨C, ε₀, hC, hε₀, hb⟩ := reflected_freezing_local_input
     P X M γ α₁ α₂ α₃ hγ hγ₂ hα₁ hreflect hs hX hM
   refine ⟨c ^ (-q) * C, ε₀, mul_pos (Real.rpow_pos_of_pos hc _) hC, hε₀, ?_⟩
@@ -43,18 +42,18 @@ theorem reflected_retainedZero_rooted_inverse_freezing
   have hpoint (ω : Ω) :
       (reflectedRetainedZeroMass γ α₁ α₂ α₃ r (gmcRootedMeasure γ u (M ω))) ^ (-q) ≤
         ENNReal.ofReal (c ^ (-q)) * (freezingAnnulusMassLocal γ (α₁ + γ / 2) (M ω) 0 r (1 / 2)) ^ (-q) := by
-    have h := ennreal_rpow_antitone_of_nonpos (hlow ω) (neg_nonpos.mpr hq.le)
+    have h := ennreal_rpow_antitone_of_nonpos (hlow ω) (neg_nonpos.mpr ((reflected_freezing_margins γ α₁ α₂ α₃ hγ hα₁ hreflect hs).2.1).le)
     rw [ennreal_mul_rpow_of_ne_zero_ne_top _ _ (ENNReal.ofReal_pos.mpr hc).ne'
       ENNReal.ofReal_ne_top, ENNReal.ofReal_rpow_of_pos hc] at h
     exact h
   calc
-    _ ≤ ∫⁻ ω, ENNReal.ofReal (c ^ (-q)) *
-        (freezingAnnulusMassLocal γ (α₁ + γ / 2) (M ω) 0 r (1 / 2)) ^ (-q) ∂P :=
+    _ ≤ ∫⁻ ω, ENNReal.ofReal _ *
+        (freezingAnnulusMassLocal γ _ (M ω) 0 r _) ^ (-q) ∂P :=
       lintegral_mono hpoint
-    _ = ENNReal.ofReal (c ^ (-q)) *
-        (∫⁻ ω, (freezingAnnulusMassLocal γ (α₁ + γ / 2) (M ω) 0 r (1 / 2)) ^ (-q) ∂P) :=
+    _ = ENNReal.ofReal _ *
+        (∫⁻ ω, (freezingAnnulusMassLocal γ _ (M ω) 0 r _) ^ (-q) ∂P) :=
       lintegral_const_mul' _ _ ENNReal.ofReal_ne_top
-    _ ≤ ENNReal.ofReal (c ^ (-q)) * ENNReal.ofReal (C * r ^ δ) :=
+    _ ≤ ENNReal.ofReal _ * ENNReal.ofReal _ :=
       mul_le_mul' le_rfl (hb r hr hr₀)
     _ = _ := by
       rw [← ENNReal.ofReal_mul (Real.rpow_pos_of_pos hc _).le]

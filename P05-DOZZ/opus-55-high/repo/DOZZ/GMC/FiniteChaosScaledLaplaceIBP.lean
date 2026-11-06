@@ -72,7 +72,7 @@ theorem finiteChaos_laplace_score_scaled_shifted_standardGaussian_ibp
     B c a v γ s ha hs i
   have hfield (x : Fin (n + 1) → ℝ) (j : Fin (n + 1)) :
       (∑ k, B j k * x k) + c j = V x j := by
-    change (∑ k, (scale * A j k) * x k) + c j =
+    change _ + c j =
       scale * (∑ k, A j k * x k) + c j
     congr 1
     calc
@@ -131,7 +131,7 @@ theorem finiteChaos_laplace_score_scaled_shifted_standardGaussian_ibp
           ∂(Measure.pi fun _ : Fin (n + 1) => gaussianReal 0 1)) := by
     have hlinear (x : Fin (n + 1) → ℝ) :
         (∑ k, B i k * x k) = scale * (∑ k, A i k * x k) := by
-      change (∑ k, (scale * A i k) * x k) =
+      change _ =
         scale * (∑ k, A i k * x k)
       calc
         (∑ k, (scale * A i k) * x k) =
@@ -148,7 +148,7 @@ theorem finiteChaos_laplace_score_scaled_shifted_standardGaussian_ibp
             filter_upwards [] with x
             rw [hlinear x]
             ring
-      _ = _ := integral_const_mul _ _
+      _ = _ := integral_const_mul ..
   have hright :
       (∑ j, (∑ k, B i k * B j k) *
           ∫ x, D x i j ∂(Measure.pi fun _ : Fin (n + 1) => gaussianReal 0 1)) =
@@ -168,16 +168,16 @@ theorem finiteChaos_laplace_score_scaled_shifted_standardGaussian_ibp
             rw [Finset.mul_sum]
   have hscaled := hleft.symm.trans (hbase'.trans hright)
   change (∫ x, (∑ k, A i k * x k) * W x
-      ∂(Measure.pi fun _ : Fin (n + 1) => gaussianReal 0 1)) =
+      ∂(Measure.pi fun _ => gaussianReal 0 1)) =
     scale * ∑ j, (∑ k, A i k * A j k) *
-      ∫ x, D x i j ∂(Measure.pi fun _ : Fin (n + 1) => gaussianReal 0 1)
+      ∫ x, D x i j ∂(Measure.pi fun _ => gaussianReal 0 1)
   apply (mul_left_cancel₀ (ne_of_gt hscale))
   calc
     scale * (∫ x, (∑ k, A i k * x k) * W x
-        ∂(Measure.pi fun _ : Fin (n + 1) => gaussianReal 0 1)) =
+        ∂(Measure.pi fun _ => gaussianReal 0 1)) =
       scale ^ 2 * (∑ j, (∑ k, A i k * A j k) *
-        ∫ x, D x i j ∂(Measure.pi fun _ : Fin (n + 1) => gaussianReal 0 1)) := hscaled
+        ∫ x, D x i j ∂(Measure.pi fun _ => gaussianReal 0 1)) := hscaled
     _ = scale * (scale * ∑ j, (∑ k, A i k * A j k) *
-        ∫ x, D x i j ∂(Measure.pi fun _ : Fin (n + 1) => gaussianReal 0 1)) := by ring
+        ∫ x, D x i j ∂(Measure.pi fun _ => gaussianReal 0 1)) := by ring
 
 end DOZZ.Proofs

@@ -38,9 +38,9 @@ theorem copied_compact_chaos_law
   refine ⟨G, hGc, hG, ?_⟩
   obtain ⟨ρ, hρ, hgρ⟩ := compact_test_unit_margin g hgc hgs
   let ρ' := max ρ 0
-  have hρ' : ρ' < 1 := max_lt hρ (by norm_num)
-  have hρ'0 : 0 ≤ ρ' := le_max_right _ _
-  have hgρ' (x : ℂ) (hx : g x ≠ 0) : ‖x‖ ≤ ρ' := (hgρ x hx).trans (le_max_left _ _)
+  have hρ' : ρ' < 1 := by aesop
+  have hρ'0 : 0 ≤ ρ' := le_max_right ..
+  have hgρ' (x : ℂ) (hx : g x ≠ 0) : ‖x‖ ≤ ρ' := by aesop
   have heps : Tendsto (fun n : ℕ => Real.exp (-(n : ℝ))) atTop (𝓝 0) :=
     Real.tendsto_exp_neg_atTop_nhds_zero.comp tendsto_natCast_atTop_atTop
   obtain ⟨L, hL⟩ := eventually_atTop.mp (heps.eventually
@@ -62,18 +62,17 @@ theorem copied_compact_chaos_law
   let Blim := fun q : Ω × Ω => S q *
     ∫ x, g x * Real.exp (γ*localPinCoefficient z x*(Xc q.2 z 0-Xc q.1 z 0)) ∂N q.1
   have hS : Measurable S :=
-    (((hc.1 0).comp (measurable_snd.prodMk measurable_const)).const_mul γ).sub_const _ |>.exp
+    by fun_prop
   have hA (n : ℕ) : Measurable (A n) :=
     (DOZZ.Assembly.regularizedGMC_integral_measurable P X hX Xc hc γ (t n) G G.continuous.measurable).const_mul _
-  have hY := translated_field_isEquatorGFF P X Xc hX hc z
   have hYc := translated_field_circleAverage P X Xc hX hc z
   have hB (n : ℕ) : Measurable (B n) := by
     have hV : Measurable (fun x : ℂ => ∫ ω, Uc ω x (t n) ^ 2 ∂P) :=
       (((hYc.1 (t n)).comp measurable_swap).pow_const 2).stronglyMeasurable.integral_prod_right.measurable
     have hpin (i : Ω × Ω → Ω) (hi : Measurable i) : Measurable (fun q => Xc (i q) z 0) :=
-      (hc.1 0).comp (hi.prodMk measurable_const)
+      by fun_prop
     have hlocal : Measurable (fun q : (Ω × Ω) × ℂ => Uc q.1.1 q.2 (t n)) :=
-      (hYc.1 (t n)).comp (measurable_fst.fst.prodMk measurable_snd)
+      by fun_prop
     have hcoef : Measurable (localPinCoefficient z) := by
       unfold localPinCoefficient
       fun_prop
@@ -82,9 +81,9 @@ theorem copied_compact_chaos_law
         Real.exp (γ*Uc q.1.1 q.2 (t n)-γ^2/2*(∫ ω, Uc ω q.2 (t n)^2 ∂P)) *
           normPlus q.2 ^ (-4 : ℝ)) := by
       have h1 : Measurable (fun q : (Ω × Ω) × ℂ => Xc q.1.1 z 0) :=
-        (hpin Prod.fst measurable_fst).comp measurable_fst
+        by fun_prop
       have h2 : Measurable (fun q : (Ω × Ω) × ℂ => Xc q.1.2 z 0) :=
-        (hpin Prod.snd measurable_snd).comp measurable_fst
+        by fun_prop
       have hn : Measurable (fun q : (Ω × Ω) × ℂ => normPlus q.2 ^ (-4 : ℝ)) := by
         unfold normPlus
         fun_prop
@@ -96,7 +95,7 @@ theorem copied_compact_chaos_law
           Real.exp (γ*Uc q.1 x (t n)-γ^2/2*(∫ ω, Uc ω x (t n)^2 ∂P)) *
             normPlus x ^ (-4 : ℝ) ∂volume := by
       dsimp [B]
-      rw [regularized_integral_volume P _ Uc hY hYc]
+      rw [regularized_integral_volume P _ Uc (translated_field_isEquatorGFF P X Xc hX hc z) hYc]
     change Measurable (fun q => B n q)
     simp_rw [heq]
     exact hS.mul hker.stronglyMeasurable.integral_prod_right.measurable

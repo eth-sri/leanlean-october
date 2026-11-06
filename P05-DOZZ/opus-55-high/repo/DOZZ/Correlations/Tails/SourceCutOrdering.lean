@@ -24,9 +24,8 @@ theorem source_last_exit_mono_prod_ae
   let μ := brownianMaximumReferenceLaw ν
   let : IsProbabilityMeasure μ := isProbabilityMeasure_brownianMaximumReferenceLaw hν
   have hDL : HasLaw D (P.map D) P := ⟨hD.1,rfl⟩
-  have h₁ : HasLaw (fun q : ℝ × Ω => q.1) μ (μ.prod P) := measurePreserving_fst.hasLaw
-  have h₂ := hDL.comp (measurePreserving_snd (μ := μ) (ν := P)).hasLaw
-  have hl := (indepFun_iff_hasLaw_prodMk_prod h₁ h₂).mp
+  have h₁ : HasLaw (fun q => q.1) μ (μ.prod P) := measurePreserving_fst.hasLaw
+  have hl := (indepFun_iff_hasLaw_prodMk_prod h₁ (hDL.comp (measurePreserving_snd).hasLaw)).mp
     (indepFun_prod₀ measurable_id.aemeasurable hD.1)
   have hp := williams_last_exit_mono_prod_ae ν c hν (P.map D) hD.2
   rw [← hl.map_eq] at hp

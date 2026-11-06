@@ -37,8 +37,8 @@ theorem bpz_tendsto_integral_of_approx {Ω E : Type*} [MeasurableSpace Ω] [Norm
   obtain ⟨N₁, hN₁⟩ := (Metric.tendsto_atTop.mp hG) (δ / 4) (by positivity)
   obtain ⟨N₂, hN₂⟩ := hev.exists_forall_of_atTop
   refine ⟨max N₁ N₂, fun n hn => ?_⟩
-  obtain ⟨hFn, hGn, hn₂⟩ := hN₂ n (le_trans (le_max_right _ _) hn)
-  have h1 := hN₁ n (le_trans (le_max_left _ _) hn)
+  obtain ⟨hFn, hGn, hn₂⟩ := hN₂ n (le_trans (le_max_right ..) hn)
+  have h1 := hN₁ n (le_trans (le_max_left ..) hn)
   rw [dist_eq_norm] at h1 ⊢
   have e1 : ‖∫ ω, F n ω ∂P - ∫ ω, G n ω ∂P‖ ≤ δ / 4 := by
     rw [← integral_sub hFn hGn]
@@ -49,7 +49,7 @@ theorem bpz_tendsto_integral_of_approx {Ω E : Type*} [MeasurableSpace Ω] [Norm
     congr 1; funext ω; rw [neg_sub]
   calc ‖∫ ω, F n ω ∂P - ∫ ω, F₀ ω ∂P‖
       = ‖(∫ ω, F n ω ∂P - ∫ ω, G n ω ∂P) + (∫ ω, G n ω ∂P - ∫ ω, G₀ ω ∂P) +
-          (∫ ω, G₀ ω ∂P - ∫ ω, F₀ ω ∂P)‖ := by congr 1; abel
+          (∫ ω, G₀ ω ∂P - ∫ ω, F₀ ω ∂P)‖ := by simp
     _ ≤ ‖∫ ω, F n ω ∂P - ∫ ω, G n ω ∂P‖ + ‖∫ ω, G n ω ∂P - ∫ ω, G₀ ω ∂P‖ +
           ‖∫ ω, G₀ ω ∂P - ∫ ω, F₀ ω ∂P‖ := norm_add₃_le
     _ < δ / 4 + δ / 4 + δ / 4 + δ / 4 := by linarith

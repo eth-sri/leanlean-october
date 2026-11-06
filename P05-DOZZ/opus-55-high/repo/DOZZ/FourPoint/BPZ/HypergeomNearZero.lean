@@ -10,6 +10,7 @@ public import DOZZ.Statements.Hypergeom.GaussFPlus
 public import Mathlib.Analysis.Calculus.ContDiff.Basic
 public import Mathlib.Analysis.Complex.CauchyIntegral
 public import Mathlib.Analysis.InnerProductSpace.Calculus
+import DOZZ.Hypergeom.ODE.ConnectionMidpointDerivatives
 
 /-! # Hypergeometric basis functions near the origin
 
@@ -34,32 +35,27 @@ namespace DOZZ.Proofs
 theorem bpzHG_eq_one_at_zero {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H)
     {a b c : ℂ} (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) : H a b c 0 = 1 := by
   rw [(hH a b c hc).2 0 (by simp)]
-  exact ordinaryHypergeometric_zero a b c
+  simp
 
-/-- The slit plane `ℂ \ [1, ∞)` is open. -/
-theorem bpzHG_isOpen_gaussSlitPlane : IsOpen gaussSlitPlane := by
-  change IsOpen ({z : ℂ | z.im ≠ 0} ∪ {z : ℂ | z.re < 1})
-  exact (isOpen_compl_singleton.preimage Complex.continuous_im).union
-    (isOpen_Iio.preimage Complex.continuous_re)
-
-/-- The real interval `(-1, 1)` lies in the slit plane. -/
 theorem bpzHG_mapsTo_ofReal_gaussSlitPlane :
     Set.MapsTo (fun u : ℝ => (u : ℂ)) (Set.Ioo (-1) 1) gaussSlitPlane := fun u hu =>
-  Or.inr (by simpa using hu.2)
+  Or.inr (by simp_all)
 
 /-- On the real interval `(-1, 1)`, `u ↦ ‖H a b c u‖²` is smooth. -/
 theorem bpzHG_contDiffOn_normSq {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H)
     {a b c : ℂ} (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) :
     ContDiffOn ℝ 2 (fun u : ℝ => Complex.normSq (H a b c (u : ℂ))) (Set.Ioo (-1) 1) := by
   have hC : ContDiffOn ℂ 2 (H a b c) gaussSlitPlane :=
-    (hH a b c hc).1.contDiffOn bpzHG_isOpen_gaussSlitPlane
+    (hH a b c hc).1.contDiffOn DOZZ.Proofs.gaussSlitPlane_isOpen_for_connection
   have hR : ContDiffOn ℝ 2 (fun u : ℝ => H a b c (u : ℂ)) (Set.Ioo (-1) 1) :=
     (hC.restrict_scalars ℝ).comp Complex.ofRealCLM.contDiff.contDiffOn
       bpzHG_mapsTo_ofReal_gaussSlitPlane
   simpa only [Complex.normSq_eq_norm_sq] using hR.norm_sq ℂ
+section
+variable (H : ℂ → ℂ → ℂ → ℂ → ℂ) (a b c : ℝ)
 
 /-- The norm square of `F₊` at a positive real point. -/
-theorem bpzHG_normSq_gaussFPlus (H : ℂ → ℂ → ℂ → ℂ → ℂ) (a b c : ℝ) {u : ℝ} (hu : 0 < u) :
+theorem bpzHG_normSq_gaussFPlus {u : ℝ} (hu : 0 < u) :
     Complex.normSq (gaussFPlus H a b c (u : ℂ)) =
       u ^ (2 * (1 - c)) *
         Complex.normSq (H ((a : ℂ) - c + 1) ((b : ℂ) - c + 1) (2 - (c : ℂ)) (u : ℂ)) := by
@@ -67,15 +63,17 @@ theorem bpzHG_normSq_gaussFPlus (H : ℂ → ℂ → ℂ → ℂ → ℂ) (a b c
   rw [map_mul]
   congr 1
   have h1 : (u : ℂ) ^ ((1 : ℂ) - (c : ℂ)) = ((u ^ (1 - c) : ℝ) : ℂ) := by
-    rw [show (1 : ℂ) - (c : ℂ) = ((1 - c : ℝ) : ℂ) by push_cast; ring]
-    exact (Complex.ofReal_cpow hu.le (1 - c)).symm
+    rw [show (1 : ℂ) - (c : ℂ) = ((1 - c : ℝ) : ℂ) by simp]
+    exact (Complex.ofReal_cpow hu.le _).symm
   rw [h1, Complex.normSq_ofReal, ← Real.rpow_add hu]
   ring_nf
 
 /-- The norm square of `F₋` is `‖H a b c u‖²`. -/
-theorem bpzHG_normSq_gaussFMinus (H : ℂ → ℂ → ℂ → ℂ → ℂ) (a b c : ℝ) (u : ℝ) :
+theorem bpzHG_normSq_gaussFMinus (u : ℝ) :
     Complex.normSq (gaussFMinus H a b c (u : ℂ)) = Complex.normSq (H a b c (u : ℂ)) :=
   rfl
+
+end
 
 /-- `‖x‖ ^ 2 = Complex.normSq x`, restated for the `‖·‖ ^ 2` form used in the statements. -/
 theorem bpzHG_norm_sq_eq_normSq (w : ℂ) : ‖w‖ ^ 2 = Complex.normSq w :=

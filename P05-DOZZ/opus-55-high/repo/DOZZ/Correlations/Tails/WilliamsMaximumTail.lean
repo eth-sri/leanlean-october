@@ -25,10 +25,10 @@ theorem williams_maximum_tail (ν : ℝ) (hν : 0 < ν) (u : ℝ) :
   rw [brownianMaximumReferenceLaw_eq_expMeasure]
   split_ifs with hu
   · rw [ite_eq_left hu] at hc
-    change ((expMeasure (2*ν)) (Iic u)).toReal + ((expMeasure (2*ν)) (Ioi u)).toReal = 1 at hsum
+    change ((expMeasure (2*ν)) (Iic u)).toReal + ((expMeasure _) (Ioi u)).toReal = 1 at hsum
     linarith
   · rw [ite_eq_right hu] at hc
-    change ((expMeasure (2*ν)) (Iic u)).toReal + ((expMeasure (2*ν)) (Ioi u)).toReal = 1 at hsum
+    change ((expMeasure (2*ν)) (Iic u)).toReal + ((expMeasure _) (Ioi u)).toReal = 1 at hsum
     linarith
 
 end DOZZ.Proofs

@@ -32,7 +32,7 @@ theorem reflected_source_pareto_cut_increment_error
     let A := fun ω => (gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ).toReal
     let b := reflected_radial_scale γ ν h Xc z
     let S := fun ω => (twoSidedReflectionCutMass γ H B Z ω).toReal
-    let E := fun v : Ω × Ω => ∫ w,
+    let E := fun v => ∫ w,
       ((A v.1+b v.1*S v.2*w)^(-p)-(A v.1)^(-p)) ∂paretoMeasure 1 a
     let L := (∫⁻ ω, ENNReal.ofReal ((b ω)^a)*
       gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ ^(-(p+a)) ∂P).toReal
@@ -42,7 +42,7 @@ theorem reflected_source_pareto_cut_increment_error
       |(∫ v, E v ∂P.prod P)-(a*Real.Gamma (-a)*Real.Gamma (p+a)/Real.Gamma p)*
         L*(∫⁻ ω, twoSidedReflectionCutMass γ H B Z ω ^a ∂P).toReal| ≤
       (a*p/(1-a))*F*(∫⁻ ω, twoSidedReflectionCutMass γ H B Z ω ∂P).toReal := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   let ν := Q γ-α₁
   let a := 2*ν/γ
   let A := fun ω => (gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ).toReal
@@ -51,7 +51,6 @@ theorem reflected_source_pareto_cut_increment_error
   have hν : 0 < ν := sub_pos.mpr hα₁
   have ha : 0 < a := div_pos (mul_pos (by norm_num) hν) hγ
   have ha1 : a < 1 := by
-    dsimp only [a]
     rw [div_lt_one hγ]
     linarith only [hreflect]
   have h4 : 1 < 4/γ^2 := by
@@ -60,27 +59,25 @@ theorem reflected_source_pareto_cut_increment_error
   have hS1 := reflected_reflection_cut_real_moment P γ α₁ H 1 B Z hα₁ hData zero_le_one h4
   have hSa := reflected_reflection_cut_real_moment P γ α₁ H a B Z hα₁ hData ha.le (ha1.trans h4)
   have hSp : ∀ᵐ ω ∂P, 0 ≤ S ω := ae_of_all P fun _ => ENNReal.toReal_nonneg
-  have hSm : AEMeasurable S P :=
+  have hSm :=
     (twoSidedReflectionCutMass_aemeasurable P γ H B Z
       (conditionedPair_aemeasurable P B ν hData.1)
       hData.2.1.2.2.2.1 hData.2.1.2.2.2.2.1).ennreal_toReal
-  have hAm : AEMeasurable A P :=
+  have hAm :=
     ((reflected_outerMass_measure_measurable γ α₁ α₂ α₃ ξ z).comp_aemeasurable
       (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ₂ M hM)).ennreal_toReal
-  have hcoord : AEMeasurable (fun ω => Xc ω 0 (-Real.log ‖z‖+h)) P :=
+  have hcoord :=
     (hc.2.1 0 (-Real.log ‖z‖+h)).aemeasurable
   have hbm : AEMeasurable b P := by
-    dsimp only [b,reflected_radial_scale]
     exact ((hcoord.const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
   have hbp (ω : Ω) : 0 < b ω := by
-    dsimp only [b,reflected_radial_scale]
     exact Real.exp_pos _
   obtain ⟨hAp,hF0,hF1⟩ := reflected_source_pareto_weights_integrable P X hX γ hγ hγ₂ M hM
     Xc hc ν h p α₁ α₂ α₃ ξ hν hh hp hξ hξ1 hα₁ hα₂ hα₃ z hz0 hz1 hz
   have hsource0 := reflected_radial_scale_real_expectation P X hX γ hγ hγ₂ M hM Xc hc
-    ν h a α₁ α₂ α₃ ξ (p+a) hh hξ hξ1 (add_pos hp ha).le z hz0 hz
+    ν h a α₁ α₂ α₃ ξ _ hh hξ hξ1 (add_pos hp ha).le z hz0 hz
   have hsource1 := reflected_radial_scale_real_expectation P X hX γ hγ hγ₂ M hM Xc hc
-    ν h 1 α₁ α₂ α₃ ξ (p+1) hh hξ hξ1 (by linarith only [hp]) z hz0 hz
+    ν h 1 α₁ α₂ α₃ ξ (p+1) hh hξ hξ1 (by positivity) z hz0 hz
   have he0 : (∫ ω, (A ω)^(-p)*(b ω/A ω)^a ∂P) =
       (∫⁻ ω, ENNReal.ofReal ((b ω)^a)*
         gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ ^(-(p+a)) ∂P).toReal := by
@@ -94,12 +91,11 @@ theorem reflected_source_pareto_cut_increment_error
       (reflected_pareto_parameter_weights p a (A ω) (b ω) hω (hbp ω).le).2)]
     simpa only [Real.rpow_one,show -(p+1) = -p-1 by ring] using hsource1.2
   have hhpareto := reflected_pareto_product_increment_error_nonneg P P p a hp ha ha1 A b S
-    hAp (ae_of_all P hbp) hSp hF0 hF1 hSa.1 (by simpa only [Real.rpow_one] using hS1.1)
+    hAp (ae_of_all P hbp) hSp hF0 hF1 hSa.1 (by simpa using hS1.1)
     hAm hbm hSm
   rw [he0,he1,hSa.2] at hhpareto
   have hS1eq : (∫ ω, S ω ∂P) = (∫⁻ ω, twoSidedReflectionCutMass γ H B Z ω ∂P).toReal := by
-    simpa only [Real.rpow_one,ENNReal.rpow_one] using hS1.2
-  rw [hS1eq] at hhpareto
-  exact hhpareto
+    simpa using hS1.2
+  rwa [hS1eq] at hhpareto
 
 end DOZZ.Proofs

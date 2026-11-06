@@ -45,42 +45,44 @@ noncomputable def homotopyGridRowChain
     (G : HomotopyPicardGrid Γ U H y) (j : ℕ) (hj : j ≤ G.N)
     (i : ℕ) : HolomorphicDiskSolution H G.r :=
   homotopyGridRowDisk G j hj (min i G.N) (Nat.min_le_right _ _)
+section
+variable {Γ : ℝ × ℝ → ℂ} {U : Set ℂ} {H : ℂ → E →L[ℂ] E} {y : E} (G : HomotopyPicardGrid Γ U H y)
+section
+variable (j : ℕ) (hj : j ≤ G.N) (i : ℕ)
+section
+variable (hi : i ≤ G.N)
+include hi
 
 theorem homotopyGridRowChain_center
-    {Γ : ℝ × ℝ → ℂ} {U : Set ℂ} {H : ℂ → E →L[ℂ] E} {y : E}
-    (G : HomotopyPicardGrid Γ U H y) (j : ℕ) (hj : j ≤ G.N)
-    (i : ℕ) (hi : i ≤ G.N) :
+    :
     (homotopyGridRowChain G j hj i).center =
       Γ ((i : ℝ) / (G.N : ℝ), (j : ℝ) / (G.N : ℝ)) := by
   simp [homotopyGridRowChain, homotopyGridRowDisk, Nat.min_eq_left hi,
     holomorphicDiskSolutionOfBound, G.node_eq i hi j hj]
 
 theorem homotopyGridRowChain_initial
-    {Γ : ℝ × ℝ → ℂ} {U : Set ℂ} {H : ℂ → E →L[ℂ] E} {y : E}
-    (G : HomotopyPicardGrid Γ U H y) (j : ℕ) (hj : j ≤ G.N)
-    (i : ℕ) (hi : i ≤ G.N) :
+    :
     (homotopyGridRowChain G j hj i).initial =
       finiteGridHorizontal (homotopyGridRight G) 0 j i y := by
   simp [homotopyGridRowChain, homotopyGridRowDisk, Nat.min_eq_left hi,
     holomorphicDiskSolutionOfBound]
 
+end
+
 theorem homotopyGridRowChain_next_initial
-    {Γ : ℝ × ℝ → ℂ} {U : Set ℂ} {H : ℂ → E →L[ℂ] E} {y : E}
-    (G : HomotopyPicardGrid Γ U H y) (j : ℕ) (hj : j ≤ G.N)
-    (i : ℕ) (hi : i < G.N) :
+    (hi : i < G.N) :
     (homotopyGridRowChain G j hj (i + 1)).initial =
       (homotopyGridRowChain G j hj i).solution (G.node (i + 1) j) := by
-  have hi' : i ≤ G.N := Nat.le_of_lt hi
-  have hi1 : i + 1 ≤ G.N := Nat.succ_le_iff.mpr hi
-  simp [homotopyGridRowChain, homotopyGridRowDisk, Nat.min_eq_left hi',
+  have hi1 := Nat.succ_le_iff.mpr hi
+  simp [homotopyGridRowChain, homotopyGridRowDisk, Nat.min_eq_left (Nat.le_of_lt hi),
     holomorphicDiskSolutionOfBound,
     finiteGridHorizontal, homotopyGridRight, localPicardTransfer, hi, hj]
+
+end
 
 /-- A finite homotopy grid yields continuous local-solution lifts of both boundary paths, and
 their terminal values agree. The local formulas are retained for later lift-uniqueness arguments. -/
 theorem homotopy_grid_boundary_lifts_endpoint_eq_with_formulas
-    {Γ : ℝ × ℝ → ℂ} {U : Set ℂ} {H : ℂ → E →L[ℂ] E} {y : E}
-    (G : HomotopyPicardGrid Γ U H y)
     (hΓ : ContinuousOn Γ (Icc (0 : ℝ) 1 ×ˢ Icc (0 : ℝ) 1)) :
     ∃ bottom top : ℝ → E,
       ContinuousOn bottom (Icc (0 : ℝ) 1) ∧
@@ -130,8 +132,8 @@ theorem homotopy_grid_boundary_lifts_endpoint_eq_with_formulas
     apply hΓ.comp (by fun_prop)
     intro t ht
     exact ⟨ht, by norm_num⟩
-  let Db : ℕ → HolomorphicDiskSolution H G.r := homotopyGridRowChain G 0 (by omega)
-  let Dt : ℕ → HolomorphicDiskSolution H G.r := homotopyGridRowChain G N le_rfl
+  let Db := homotopyGridRowChain G 0 (by omega)
+  let Dt := homotopyGridRowChain G N le_rfl
   have hbc (i : ℕ) (hi : i ≤ N) : (Db i).center = bottomPath ((i : ℝ) / (N : ℝ)) := by
     simpa [Db, bottomPath] using homotopyGridRowChain_center G 0 (by omega) i hi
   have htc (i : ℕ) (hi : i ≤ N) : (Dt i).center = topPath ((i : ℝ) / (N : ℝ)) := by
@@ -140,12 +142,12 @@ theorem homotopy_grid_boundary_lifts_endpoint_eq_with_formulas
     calc
       (Db 0).initial = finiteGridHorizontal (homotopyGridRight G) 0 0 0 y := by
         simpa [Db] using homotopyGridRowChain_initial G 0 (by omega) 0 (by omega)
-      _ = y := by simp [finiteGridHorizontal]
+      _ = y := by rfl
   have hti : (Dt 0).initial = y := by
     calc
       (Dt 0).initial = finiteGridHorizontal (homotopyGridRight G) 0 N 0 y := by
         simpa [Dt] using homotopyGridRowChain_initial G N le_rfl 0 (by omega)
-      _ = y := by simp [finiteGridHorizontal]
+      _ = y := by rfl
   have hbcover : ∀ i < N, ∀ t ∈ Icc ((i : ℝ) / (N : ℝ))
       (((i + 1 : ℕ) : ℝ) / (N : ℝ)),
       bottomPath t ∈ Metric.ball (Db i).center (G.r / 2) := by
@@ -157,11 +159,11 @@ theorem homotopy_grid_boundary_lifts_endpoint_eq_with_formulas
       · positivity
     have hj : 0 < G.N := G.N_pos
     have hi' : i ≤ G.N := Nat.le_of_lt hi
-    have hnear := G.cell_image i hi 0 hj t (by simpa [N] using ht) 0 hz
+    have hnear := G.cell_image i hi 0 hj t (by assumption) 0 hz
     have hnear' : dist (bottomPath t) (bottomPath ((i : ℝ) / (N : ℝ))) < G.r / 4 := by
       simpa [bottomPath, N] using hnear
     rw [Metric.mem_ball, hbc i hi']
-    exact lt_of_lt_of_le (by simpa [dist_comm] using hnear') (by linarith only [G.r_pos])
+    exact lt_of_lt_of_le (by assumption) (by linarith only [G.r_pos])
   have htcover : ∀ i < N, ∀ t ∈ Icc ((i : ℝ) / (N : ℝ))
       (((i + 1 : ℕ) : ℝ) / (N : ℝ)),
       topPath t ∈ Metric.ball (Dt i).center (G.r / 2) := by
@@ -174,24 +176,22 @@ theorem homotopy_grid_boundary_lifts_endpoint_eq_with_formulas
         (((G.N - 1 + 1 : ℕ) : ℝ) / (G.N : ℝ)) := by
       rw [hlastReal]
       constructor
-      · apply (div_le_one hNreal).2
-        exact_mod_cast (Nat.sub_le G.N 1)
+      · grind
       · exact le_rfl
-    have hnear := G.cell_image i hi (G.N - 1) hlast t (by simpa [N] using ht) 1 hlastMem
-    have hvert := (G.cells i hi (G.N - 1) hlast).2.1
+    have hnear := G.cell_image i hi (G.N - 1) hlast t (by assumption) 1 hlastMem
     have htopNode : dist
         (Γ ((i : ℝ) / (N : ℝ), 1))
         (Γ ((i : ℝ) / (N : ℝ), ((G.N - 1 : ℕ) : ℝ) / (N : ℝ))) < G.r / 4 := by
       simpa [N, G.node_eq i (Nat.le_of_lt hi) G.N le_rfl,
         G.node_eq i (Nat.le_of_lt hi) (G.N - 1) (by omega), hGNN,
-        hlastSucc] using hvert
+        hlastSucc] using ((G.cells i hi _ hlast).2.1)
     have hnear' : dist (Γ (t, 1))
         (Γ ((i : ℝ) / (N : ℝ), ((G.N - 1 : ℕ) : ℝ) / (N : ℝ))) < G.r / 4 := by
       simpa [N] using hnear
     have htri : dist (Γ (t, 1)) (Γ ((i : ℝ) / (N : ℝ), 1)) ≤
-        dist (Γ (t, 1)) (Γ ((i : ℝ) / (N : ℝ), ((G.N - 1 : ℕ) : ℝ) / (N : ℝ))) +
+        dist _ (Γ ((i : ℝ) / (N : ℝ), ((G.N - 1 : ℕ) : ℝ) / (N : ℝ))) +
             dist (Γ ((i : ℝ) / (N : ℝ), ((G.N - 1 : ℕ) : ℝ) / (N : ℝ)))
-              (Γ ((i : ℝ) / (N : ℝ), 1)) := dist_triangle _ _ _
+              (Γ ((i : ℝ) / (N : ℝ), 1)) := dist_triangle ..
     have htopNode' : dist
         (Γ ((i : ℝ) / (N : ℝ), ((G.N - 1 : ℕ) : ℝ) / (N : ℝ)))
         (Γ ((i : ℝ) / (N : ℝ), 1)) < G.r / 4 := by
@@ -212,15 +212,13 @@ theorem homotopy_grid_boundary_lifts_endpoint_eq_with_formulas
     intro i hi
     have hlast : G.N - 1 < G.N := by omega
     have hsucc : G.N - 1 + 1 = G.N := by omega
-    have hdiag := (G.cells i hi (G.N - 1) hlast).2.2
-    have hvert := (G.cells i hi (G.N - 1) hlast).2.1
     have htri : dist (G.node (i + 1) N) (G.node i N) ≤
-        dist (G.node (i + 1) N) (G.node i (N - 1)) +
-          dist (G.node i (N - 1)) (G.node i N) := dist_triangle _ _ _
+        dist _ (G.node i (N - 1)) +
+          dist (G.node i (N - 1)) (G.node i N) := dist_triangle ..
     have hdiag' : dist (G.node (i + 1) N) (G.node i (N - 1)) < G.r / 4 := by
-      simpa [N, hsucc] using hdiag
+      simpa [N, hsucc] using ((G.cells i hi _ hlast).2.2)
     have hvert' : dist (G.node i (N - 1)) (G.node i N) < G.r / 4 := by
-      simpa [N, hsucc, dist_comm] using hvert
+      simpa [N, hsucc, dist_comm] using ((G.cells i hi _ hlast).2.1)
     calc
       _ ≤ _ := htri
       _ < G.r / 4 + G.r / 4 := add_lt_add hdiag' hvert'
@@ -229,28 +227,27 @@ theorem homotopy_grid_boundary_lifts_endpoint_eq_with_formulas
       (Db i).solution z = (Db (i + 1)).solution z := by
     intro i hi z hz
     have hi1 : i + 1 ≤ N := Nat.succ_le_iff.mpr hi
-    have hcent := hbc (i + 1) hi1
     have hinit := homotopyGridRowChain_next_initial G 0 (by omega) i hi
     have hcast : ((i + 1 : ℕ) : ℝ) = (i : ℝ) + 1 := by
       norm_num [Nat.cast_add]
     have hnode : G.node (i + 1) 0 = bottomPath (((i : ℝ) + 1) / (N : ℝ)) := by
-      simpa [bottomPath, N, hcast] using G.node_eq (i + 1) hi1 0 (by omega)
+      simpa [bottomPath, N, hcast] using G.node_eq _ hi1 0 (by omega)
     have hcent' : (Db (i + 1)).center = bottomPath (((i : ℝ) + 1) / (N : ℝ)) := by
-      simpa [hcast] using hcent
+      simpa [hcast] using (hbc _ hi1)
     rw [hnode] at hinit
     have hinit' : (Db (i + 1)).initial = (Db i).solution
         (bottomPath (((i : ℝ) + 1) / (N : ℝ))) := by
-      simpa only [Db] using hinit
+      simpa using hinit
     have hstart : (Db i).solution ((Db (i + 1)).center) =
         (Db (i + 1)).solution ((Db (i + 1)).center) := by
       calc
-        (Db i).solution ((Db (i + 1)).center) =
-            (Db i).solution (bottomPath (((i : ℝ) + 1) / (N : ℝ))) := by rw [hcent']
+        (Db i).solution _ =
+            (Db i).solution (bottomPath (((i : ℝ) + 1) / (N : ℝ))) := by tauto
         _ =
-            (Db (i + 1)).initial := by
+            (Db _).initial := by
               exact hinit'.symm
-        _ = (Db (i + 1)).solution ((Db (i + 1)).center) :=
-            (Db (i + 1)).solution_center.symm
+        _ = (Db _).solution _ :=
+            (Db _).solution_center.symm
     have hprevBall : Metric.ball (Db (i + 1)).center (G.r / 2) ⊆
         Metric.ball (Db i).center G.r := by
       intro w hw
@@ -267,18 +264,18 @@ theorem homotopy_grid_boundary_lifts_endpoint_eq_with_formulas
         dist w (bottomPath ((i : ℝ) / (N : ℝ))) ≤
             dist w (bottomPath (((i : ℝ) + 1) / (N : ℝ))) +
               dist (bottomPath (((i : ℝ) + 1) / (N : ℝ)))
-                (bottomPath ((i : ℝ) / (N : ℝ))) := dist_triangle _ _ _
+                (bottomPath ((i : ℝ) / (N : ℝ))) := dist_triangle ..
         _ < G.r / 2 + G.r / 2 := add_lt_add hw hstep
         _ = G.r := by ring
     have hnextCenter : (Db (i + 1)).center = G.node (i + 1) 0 := by
-      change G.node (min (i + 1) G.N) 0 = G.node (i + 1) 0
+      change G.node _ 0 = G.node _ 0
       rw [Nat.min_eq_left (by omega)]
     have hbound : ∀ w ∈ Metric.ball (Db (i + 1)).center (G.r / 2),
         ‖H w‖ ≤ G.M := by
       intro w hw
       have hw' : w ∈ Metric.ball (G.node (i + 1) 0) (G.r / 2) := by
         simpa only [hnextCenter] using hw
-      exact (G.data (i + 1) hi1 0 (by omega)).bounded w
+      exact (G.data _ hi1 0 (by omega)).bounded w
         (Metric.ball_subset_ball (by linarith only [G.r_pos]) hw')
     have hF : ∀ w ∈ Metric.ball (Db (i + 1)).center (G.r / 2),
         HasDerivAt (Db i).solution (H w ((Db i).solution w)) w := by
@@ -287,37 +284,36 @@ theorem homotopy_grid_boundary_lifts_endpoint_eq_with_formulas
     have hG : ∀ w ∈ Metric.ball (Db (i + 1)).center (G.r / 2),
         HasDerivAt (Db (i + 1)).solution (H w ((Db (i + 1)).solution w)) w := by
       intro w hw
-      exact (Db (i + 1)).derivative w (Metric.ball_subset_ball
+      exact (Db _).derivative w (Metric.ball_subset_ball
         (by linarith only [G.r_pos]) hw)
     exact holomorphic_linear_system_solution_unique_of_eq_at
-      (Db (i + 1)).center (G.r / 2) G.M H G.M_nonneg hbound hF hG
+      (Db _).center _ G.M H G.M_nonneg hbound hF hG
       (Metric.mem_ball_self (div_pos G.r_pos (by norm_num))) hz hstart
   have htoverlap : ∀ i < N, ∀ z ∈ Metric.ball (Dt (i + 1)).center (G.r / 2),
       (Dt i).solution z = (Dt (i + 1)).solution z := by
     intro i hi z hz
     have hi1 : i + 1 ≤ N := Nat.succ_le_iff.mpr hi
-    have hcent := htc (i + 1) hi1
     have hinit := homotopyGridRowChain_next_initial G N le_rfl i hi
     have hcast : ((i + 1 : ℕ) : ℝ) = (i : ℝ) + 1 := by
       norm_num [Nat.cast_add]
     have hnode : G.node (i + 1) G.N = topPath (((i : ℝ) + 1) / (N : ℝ)) := by
-      simpa [topPath, N, hGNN, hcast] using G.node_eq (i + 1) hi1 G.N le_rfl
+      simpa [topPath, N, hGNN, hcast] using G.node_eq _ hi1 G.N le_rfl
     have hcent' : (Dt (i + 1)).center = topPath (((i : ℝ) + 1) / (N : ℝ)) := by
-      simpa [hcast] using hcent
+      simpa [hcast] using (htc _ hi1)
     rw [hnode] at hinit
     have hinit' : (Dt (i + 1)).initial = (Dt i).solution
         (topPath (((i : ℝ) + 1) / (N : ℝ))) := by
-      simpa only [Dt] using hinit
+      simpa using hinit
     have hstart : (Dt i).solution ((Dt (i + 1)).center) =
         (Dt (i + 1)).solution ((Dt (i + 1)).center) := by
       calc
-        (Dt i).solution ((Dt (i + 1)).center) =
-            (Dt i).solution (topPath (((i : ℝ) + 1) / (N : ℝ))) := by rw [hcent']
+        (Dt i).solution _ =
+            (Dt i).solution (topPath (((i : ℝ) + 1) / (N : ℝ))) := by tauto
         _ =
-            (Dt (i + 1)).initial := by
+            (Dt _).initial := by
               exact hinit'.symm
-        _ = (Dt (i + 1)).solution ((Dt (i + 1)).center) :=
-            (Dt (i + 1)).solution_center.symm
+        _ = (Dt _).solution _ :=
+            (Dt _).solution_center.symm
     have hprevBall : Metric.ball (Dt (i + 1)).center (G.r / 2) ⊆
         Metric.ball (Dt i).center G.r := by
       intro w hw
@@ -333,18 +329,18 @@ theorem homotopy_grid_boundary_lifts_endpoint_eq_with_formulas
         dist w (topPath ((i : ℝ) / (N : ℝ))) ≤
             dist w (topPath (((i : ℝ) + 1) / (N : ℝ))) +
               dist (topPath (((i : ℝ) + 1) / (N : ℝ)))
-                (topPath ((i : ℝ) / (N : ℝ))) := dist_triangle _ _ _
+                (topPath ((i : ℝ) / (N : ℝ))) := dist_triangle ..
         _ < G.r / 2 + G.r / 2 := add_lt_add hw hstep
         _ = G.r := by ring
     have hnextCenter : (Dt (i + 1)).center = G.node (i + 1) G.N := by
-      change G.node (min (i + 1) G.N) G.N = G.node (i + 1) G.N
+      change G.node _ G.N = G.node _ G.N
       rw [Nat.min_eq_left (by omega)]
     have hbound : ∀ w ∈ Metric.ball (Dt (i + 1)).center (G.r / 2),
         ‖H w‖ ≤ G.M := by
       intro w hw
       have hw' : w ∈ Metric.ball (G.node (i + 1) G.N) (G.r / 2) := by
         simpa only [hnextCenter] using hw
-      exact (G.data (i + 1) hi1 G.N le_rfl).bounded w
+      exact (G.data _ hi1 G.N le_rfl).bounded w
         (Metric.ball_subset_ball (by linarith only [G.r_pos]) hw')
     have hF : ∀ w ∈ Metric.ball (Dt (i + 1)).center (G.r / 2),
         HasDerivAt (Dt i).solution (H w ((Dt i).solution w)) w := by
@@ -353,10 +349,10 @@ theorem homotopy_grid_boundary_lifts_endpoint_eq_with_formulas
     have hG : ∀ w ∈ Metric.ball (Dt (i + 1)).center (G.r / 2),
         HasDerivAt (Dt (i + 1)).solution (H w ((Dt (i + 1)).solution w)) w := by
       intro w hw
-      exact (Dt (i + 1)).derivative w (Metric.ball_subset_ball
+      exact (Dt _).derivative w (Metric.ball_subset_ball
         (by linarith only [G.r_pos]) hw)
     exact holomorphic_linear_system_solution_unique_of_eq_at
-      (Dt (i + 1)).center (G.r / 2) G.M H G.M_nonneg hbound hF hG
+      (Dt _).center _ G.M H G.M_nonneg hbound hF hG
       (Metric.mem_ball_self (div_pos G.r_pos (by norm_num))) hz hstart
   obtain ⟨bottom, hbottomCont, hbottomStart, hbottomEnd, hbottomFormula⟩ :=
     exists_continuous_lift_from_disk_chain H hbottomCont N hN G.r G.r_pos Db y
@@ -419,7 +415,6 @@ theorem homotopy_grid_boundary_lifts_endpoint_eq_with_formulas
       calc
         (Db i).center = bottomPath ((i : ℝ) / (N : ℝ)) := hbc i hi
         _ = G.node i 0 := by
-          change Γ ((i : ℝ) / (G.N : ℝ), 0) = G.node i 0
           simpa using (G.node_eq i hi 0 (by omega)).symm
     have hz' : z ∈ Metric.ball (G.node i 0) G.r := by simpa [hnode] using hz
     exact (G.data i hi 0 (by omega)).bounded z hz'
@@ -429,13 +424,14 @@ theorem homotopy_grid_boundary_lifts_endpoint_eq_with_formulas
       calc
         (Dt i).center = topPath ((i : ℝ) / (N : ℝ)) := htc i hi
         _ = G.node i G.N := by
-          change Γ ((i : ℝ) / (G.N : ℝ), 1) = G.node i G.N
           simpa [hGNN] using (G.node_eq i hi G.N le_rfl).symm
     have hz' : z ∈ Metric.ball (G.node i G.N) G.r := by simpa [hnode] using hz
     exact (G.data i hi G.N le_rfl).bounded z hz'
   exact ⟨bottom, top, hbottomCont, htopCont, hbottomStart, htopStart, hendEq,
     hbottomFormula', htopFormula', hbc, hbBound, hbcover, hboverlap,
     htc, htBound, htcover, htoverlap⟩
+
+end
 
 
 end DOZZ.Proofs

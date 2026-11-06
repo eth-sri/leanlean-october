@@ -12,13 +12,15 @@ public section
 open MeasureTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+section
+variable (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+include hX hγ hγ₂ hM
 
 /-- Rooting and spatial integration give the deleted-disk power for the actual
 retained inverse mass, uniformly in the insertion and retained radius. -/
-theorem dual_deleted_disk_rooted_bound {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ q : ℝ) (hq : 0 ≤ q) (hβ : γ * α₁ < 4) :
+theorem dual_deleted_disk_rooted_bound (α₁ α₂ α₃ q : ℝ) (hq : 0 ≤ q) (hβ : γ * α₁ < 4) :
     ∃ C : ℝ, 0 < C ∧ ∀ (z : ℂ) (ξ r : ℝ), ‖z‖ ≤ 1 → ‖z‖ ^ (1 - ξ) ≤ 1 →
       0 < r → r ≤ 1 / 2 →
       (∫⁻ ω, (∫⁻ x in Metric.ball (0 : ℂ) r,
@@ -39,7 +41,7 @@ theorem dual_deleted_disk_rooted_bound {Ω : Type*} [MeasurableSpace Ω]
     by_cases hx : x ∈ D <;> simp [f, hx]
   have ht := hb z ξ hz hcut f hf
   simp_rw [show ∀ x, ENNReal.ofReal (f x) = D.indicator
-    (fun x => ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ 0 x)) x from fun x => congrFun he x] at ht
+    (fun x => ENNReal.ofReal _) x from fun x => congrFun he x] at ht
   rw [lintegral_indicator measurableSet_ball] at ht
   have heω (ω : Ω) : (∫⁻ u, D.indicator
       (fun x => ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ 0 x)) u *
@@ -57,10 +59,7 @@ theorem dual_deleted_disk_rooted_bound {Ω : Type*} [MeasurableSpace Ω]
     ring))
 
 /-- The actual rooted deleted-disk term is negligible at the dual fusion power. -/
-theorem dual_deleted_disk_rooted_littleO {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ q ξ κ : ℝ) (hq : 0 ≤ q) (hβ : γ * α₁ < 4) (hξ₁ : ξ < 1)
+theorem dual_deleted_disk_rooted_littleO (α₁ α₂ α₃ q ξ κ : ℝ) (hq : 0 ≤ q) (hβ : γ * α₁ < 4) (hξ₁ : ξ < 1)
     (hslack : κ < (1 - ξ) * (4 - γ * α₁)) :
     Tendsto (fun z : ℂ =>
       (∫⁻ ω, (∫⁻ x in Metric.ball (0 : ℂ) (‖z‖ ^ (1 - ξ)),
@@ -73,10 +72,10 @@ theorem dual_deleted_disk_rooted_littleO {Ω : Type*} [MeasurableSpace Ω]
         dualOuterMass γ α₁ α₂ α₃ (M ω) z ξ ^ (-q) ∂P).toReal
   obtain ⟨C, hC, hb⟩ := dual_deleted_disk_rooted_bound P X hX γ hγ hγ₂ M hM
     α₁ α₂ α₃ q hq hβ
-  have hn : Tendsto (fun z : ℂ => ‖z‖)
+  have hn : Tendsto (fun z => ‖z‖)
       (nhdsWithin 0 {z : ℂ | z ≠ 0}) (nhds 0) := by
-    simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
-  have hc : Tendsto (fun z : ℂ => ‖z‖ ^ (1 - ξ))
+    simpa using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
+  have hc : Tendsto (fun z => ‖z‖ ^ (1 - ξ))
       (nhdsWithin 0 {z : ℂ | z ≠ 0}) (nhds 0) := by
     have he := sub_pos.mpr hξ₁
     simpa only [Function.comp_def, Real.zero_rpow he.ne'] using
@@ -86,7 +85,7 @@ theorem dual_deleted_disk_rooted_littleO {Ω : Type*} [MeasurableSpace Ω]
     filter_upwards [hn.eventually (gt_mem_nhds zero_lt_one),
       hc.eventually (gt_mem_nhds (by norm_num : (0 : ℝ) < 1 / 2)),
       self_mem_nhdsWithin] with z hz hzcut hz0
-    have hbz := hb z ξ (‖z‖ ^ (1 - ξ)) hz.le (by linarith only [hzcut])
+    have hbz := hb z ξ _ hz.le (by linarith)
       (Real.rpow_pos_of_pos (norm_pos_iff.mpr hz0) _) hzcut.le
     rw [← Real.rpow_mul (norm_nonneg z)] at hbz
     rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg ENNReal.toReal_nonneg]
@@ -94,5 +93,9 @@ theorem dual_deleted_disk_rooted_littleO {Ω : Type*} [MeasurableSpace Ω]
       (ENNReal.toReal_ofReal (mul_nonneg hC.le (Real.rpow_nonneg (norm_nonneg z) _)))
   exact (isComplexLittleOAtZero_ofReal_iff κ F).mp
     (isComplexLittleOAtZero_of_norm_le_power hslack hh)
+
+end
+
+end
 
 end DOZZ.Proofs

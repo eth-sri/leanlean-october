@@ -25,18 +25,15 @@ theorem gaussianL2Limit_add {Ω : Type*} [MeasurableSpace Ω]
       (fun ω => L ω - X ω (f n)) + (fun ω => K ω - X ω (g n)) := by
     funext ω
     rw [map_add]
-    simp only [Pi.add_apply]
+    simp
     ring
-  have hb n := eLpNorm_add_le (μ := P) (p := (2 : ℝ≥0∞))
+  have hb n := eLpNorm_add_le (μ := P) (p := 2)
     (f := fun ω => L ω - X ω (f n)) (g := fun ω => K ω - X ω (g n)) (by norm_num)
   have ht := hf.add hg
-  simp only [zero_add] at ht
+  simp at ht
   apply tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds ht
     (fun _ => zero_le)
-  intro n
-  change eLpNorm (fun ω => L ω + K ω - X ω (f n + g n)) 2 P ≤ _
-  rw [he]
-  exact hb n
+  aesop
 
 /-- Any finite sum of Gaussian closure variables remains in that closure. -/
 theorem isGaussianL2Limit_finset_sum {Ω I : Type*} [MeasurableSpace Ω]
@@ -47,14 +44,13 @@ theorem isGaussianL2Limit_finset_sum {Ω I : Type*} [MeasurableSpace Ω]
   induction S using Finset.induction_on with
   | empty =>
     refine ⟨by simp, (fun _ => 0), ?_⟩
-    have he : (fun ω => (∑ i ∈ (∅ : Finset I), L i ω) - X ω (0 : TestFn)) =
-        (0 : Ω → ℝ) := by
-      funext ω
-      simp
+    have he : (fun ω => (∑ i ∈ (∅), L i ω) - X ω 0) =
+        0 := by
+      aesop
     simp only [he, eLpNorm_zero]
     exact tendsto_const_nhds
   | @insert i S hi ih =>
-    have hiL := hL i (Finset.mem_insert_self _ _)
+    have hiL := hL i (Finset.mem_insert_self ..)
     have hSL := ih (fun j hj => hL j (Finset.mem_insert_of_mem hj))
     simpa only [Finset.sum_insert hi] using
       gaussianL2Limit_add P X (L i) (fun ω => ∑ j ∈ S, L j ω) hiL hSL

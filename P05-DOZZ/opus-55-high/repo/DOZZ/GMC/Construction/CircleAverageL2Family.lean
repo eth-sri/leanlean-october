@@ -45,15 +45,12 @@ theorem exists_equatorGFF_circle_L2_family
     exists_measurable_equatorGFF_circle_L2_limit X hX (f p) (W p) (hW p)
   choose Y hYraw hYm hYmem hYae hYlim using hrep
   refine ⟨f, W, Y, hgap, hcross, hW, ?_, ?_⟩
-  · intro p
-    exact ⟨hYraw p, hYm p, hYmem p, hYae p, hYlim p⟩
+  · simp_all
   · apply isGaussianProcess_of_eLpNorm_sub
-      (fun n p ω => X ω (f p n)) Y
+      (fun n p ω => X ω _) Y
     · intro n
       exact equatorGFF_test_family_isGaussianProcess X hX (fun p => f p n)
-    · intro p
-      exact hYmem p
-    · intro p
-      exact hYlim p
+    · assumption
+    assumption
 
 end DOZZ.Proofs

@@ -9,6 +9,7 @@ public import DOZZ.Correlations.Tails.OriginPolarMass
 public import DOZZ.Correlations.Tails.SingularMassMeasurability
 public import DOZZ.ShiftEquations.Reflection.Witness
 public import DOZZ.Statements.Brownian.EquatorGFFLateralGMCDecomposition
+import DOZZ.Brownian.Lateral.ReflectionJointLaw
 
 /-! The critical small-power limit for the genuine equator singular mass at the origin. -/
 
@@ -17,11 +18,12 @@ open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
 
 /-- The origin singular mass has the Williams-model law on the original conditioned-copy
 carrier, with only an independent exponential maximum added. -/
 theorem lastone_origin_williams_law
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (γ ν : ℝ) (hν : 0 < ν) (M : Ω → Measure ℂ) (A : Ω → TwoSidedPath)
     (hA : AEMeasurable A P) (hBp : IsBrownianReal (fun t ω => A ω (t : ℝ)) P)
     (Z : Ω → Measure ℝ) (hZ : IsLateralGMCOf P γ Z) (hAZ : IndepFun A Z P)
@@ -37,45 +39,39 @@ theorem lastone_origin_williams_law
   let : IsProbabilityMeasure (brownianMaximumReferenceLaw ν) :=
     isProbabilityMeasure_brownianMaximumReferenceLaw hν
   let D : Ω → BrownianPath := fun ω => radialPositiveHalf (A ω)
-  have hD : AEMeasurable D P := continuous_radialPositiveHalf.measurable.comp_aemeasurable hA
-  have hDB := radialPositiveHalf_map_isBrownian P A hA hBp
-  have hDZ : IndepFun D Z P := hAZ.comp continuous_radialPositiveHalf.measurable measurable_id
+  have hDZ := hAZ.comp continuous_radialPositiveHalf.measurable measurable_id
   have hmass : (localSingularMass M (fun _ => 1) 0 γ (Q γ - ν)) =ᵐ[P]
       (fun ω => ∫⁻ t, (if 0 < t then ENNReal.ofReal
         (Real.exp (γ * (D ω (Real.toNNReal t) - ν * t))) else 0) ∂Z ω) := by
     filter_upwards [hZeq, hM0] with ω hZω hMω
-    change localSingularMass (fun _ : Unit => M ω) (fun _ => 1) 0 γ (Q γ - ν) () = _
-    rw [origin_singular_mass_polar γ (Q γ - ν) (A ω) (M ω) hMω, ← hZω]
+    change localSingularMass (fun _ : Unit => M ω) (fun _ => 1) 0 γ _ () = _
+    rw [origin_singular_mass_polar γ _ (A ω) (M ω) hMω, ← hZω]
     apply lintegral_congr
     intro t
     by_cases ht : 0 < t
     · rw [ite_eq_left ht, ite_eq_left ht]
       have heval : D ω (Real.toNNReal t) = A ω t := by
-        change A ω ((Real.toNNReal t : ℝ≥0) : ℝ) = A ω t
+        change A ω ((Real.toNNReal t)) = A ω t
         rw [Real.coe_toNNReal t ht.le]
-      rw [heval]
-      congr 3
-      ring
-    · rw [ite_eq_right ht, ite_eq_right ht]
+      simp_all
+    · grind
   let Qν := P.map (fun ω => (B ω).1)
-  have hQν : IsNegativeConditionedBrownianLaw ν Qν := hB.1.2
-  have hW := williams_polar_mass_law P D hD hDB γ Z hZ hDZ ν hν Qν hQν
+  have hQν := hB.1.2
+  have hW := williams_polar_mass_law P D (continuous_radialPositiveHalf.measurable.comp_aemeasurable hA) (radialPositiveHalf_map_isBrownian P A hA hBp) γ Z hZ hDZ ν hν Qν hQν
   have hInput := lastone_williamsInput_law_on_given_space P
     (brownianMaximumReferenceLaw ν) ν Qν hQν B Z hB hZ.2.2.2.1 hInd
   have hsnd := (measurePreserving_snd (μ := brownianMaximumReferenceLaw ν) (ν := P)).quasiMeasurePreserving
   have hBm := (aemeasurable_of_twoSidedConditioned hB).comp_quasiMeasurePreserving hsnd
-  have hZm := hZ.2.2.2.1.comp_quasiMeasurePreserving hsnd
   have hstop := measurable_lastExitSegment_joint.comp_aemeasurable
     (measurable_fst.aemeasurable.prodMk hBm.snd)
-  have hTm := ((measurable_fst.aemeasurable.prodMk hstop).prodMk hBm.fst).prodMk hZm
   rw [Measure.map_congr hmass, hW, ← hInput]
   exact AEMeasurable.map_map_of_aemeasurable
-    (measurable_williamsMassFunctional γ).aemeasurable hTm
+    (measurable_williamsMassFunctional γ).aemeasurable (((measurable_fst.aemeasurable.prodMk hstop).prodMk hBm.fst).prodMk (hZ.2.2.2.1.comp_quasiMeasurePreserving hsnd))
 
 /-- The genuine local equator GMC singular mass has critical small-power expectation `2`.
 The source lateral projection and conditioned family are realized on the supplied space. -/
 theorem lastone_origin_smallPower_limit
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+    (X : Ω → Distr)
     (M : Ω → Measure ℂ) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) :
     Tendsto (fun ν : ℝ =>
@@ -83,18 +79,17 @@ theorem lastone_origin_smallPower_limit
       (𝓝[>] 0) (𝓝 2) := by
   let : IsProbabilityMeasure P := hX.1
   obtain ⟨A, hc, hA, hA0, hBp, hBn, hhalves, hZm, hAZ, hZ⟩ :=
-    DOZZ.equatorGFF_lateral_GMC_decomposition P X M γ hγ hγ2 hX hM
+    DOZZ.Proofs.equatorGFF_lateral_GMC_decomposition P X M γ hγ hγ2 hX hM
   let Z : Ω → Measure ℝ := fun ω => lateralProjectedGMC γ (A ω) (M ω)
   have hsource : IsSourceLateralProjection P X γ M Z :=
     ⟨hX, hM, A, hc, hA, hA0, hBp, hBn, hhalves, hZm, hAZ, ae_of_all P (fun _ => rfl)⟩
   obtain ⟨Bc, hBc⟩ := exists_reflectionData_family P X γ M Z hsource hZ
   let B : ℝ → Ω → BrownianPath × BrownianPath := fun ν => Bc (Q γ - ν)
   have hB (ν : ℝ) (hν : 0 < ν) : IsTwoSidedConditionedBrownianProcess P (B ν) ν := by
-    simpa only [B, sub_sub_cancel] using (hBc (Q γ - ν) (by linarith)).1
+    simpa using (hBc (Q γ - ν) (by linarith)).1
   have hInd (ν : ℝ) (hν : 0 < ν) : IndepFun (B ν) Z P :=
     (hBc (Q γ - ν) (by linarith)).2.2
-  have hlim := lastone_williamsModel_smallPower_limit P γ hγ hγ2 Z B hB hZ hInd
-  apply hlim.congr'
+  apply (lastone_williamsModel_smallPower_limit P γ hγ hγ2 Z B hB hZ hInd).congr'
   filter_upwards [self_mem_nhdsWithin] with ν hν
   have hνpos : 0 < ν := hν
   have hm := localSingularMass_aemeasurable P X hX γ hγ hγ2 M hM
@@ -117,5 +112,7 @@ theorem lastone_origin_smallPower_limit
     ENNReal.continuous_rpow_const.measurable
   congr 1
   rw [← lintegral_map' hp.aemeasurable hWm, ← hlaw, lintegral_map' hp.aemeasurable hm]
+
+end
 
 end DOZZ.Proofs

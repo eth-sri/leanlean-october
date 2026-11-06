@@ -17,15 +17,12 @@ theorem continuity_infinity_bound {γ p : ℝ} (hγ : 0 < γ)
     unfold Q
     field_simp
     ring
-  rw [he]
   linarith
 
 /-- The finite-position prefactor is continuous in all charges at distinct roots. -/
 theorem continuity_finite_prefactor {N : ℕ} (z : Fin N → ℂ)
     (hz : ∀ i j, i ≠ j → z i ≠ z j) :
     Continuous (fun α : Fin N → ℝ => nPointCoulombPrefactor α z) := by
-  classical
-  unfold nPointCoulombPrefactor
   apply continuous_finsetProd
   intro i _
   apply continuous_finsetProd
@@ -55,14 +52,13 @@ theorem unitVolumeNPoint_jointly_continuous_parameters
   obtain ⟨Xc, hXc⟩ := exists_equatorGFF_circle_average_witness X hX
   let J : (ℝ × (Fin (3 + n) → ℝ)) → ContinuityCoulombParameter (3 + n) :=
     fun q => (q.1, (z, q.2, 0))
-  have hJ : Continuous J := by unfold J; fun_prop
+  have hJ : Continuous J := by fun_prop
   have hp (q : ℝ × (Fin (3 + n) → ℝ)) : continuityCoulombPower (J q) = -nPointSExp q.1 q.2 := by
     simp only [continuityCoulombPower, J, nPointSExp, add_zero]
     ring
   have hz' : Function.Injective z := by
     intro i j hij
-    by_contra hne
-    exact hz i j hne hij
+    grind
   have hadm : ∀ c ∈ J '' K, 0 < c.1 ∧ c.1 < 2 ∧ Function.Injective c.2.1 ∧
       (∀ k, c.2.2.1 k < Q c.1) ∧ c.2.2.2 < Q c.1 ∧
       continuityCoulombPower c < 4 / c.1 ^ 2 ∧
@@ -74,8 +70,8 @@ theorem unitVolumeNPoint_jointly_continuous_parameters
     · change 0 < Q q.1
       unfold Q
       positivity
-    · simpa only [hp, J] using hbulk
-    · simpa only [hp, J] using hroot
+    · aesop
+    · aesop
     · simpa only [hp, J] using continuity_infinity_bound hγ hbulk
   have hm := (continuity_coulomb_moment_on_compact P X hX Xc hXc Mfam hMf
     (J '' K) (hK.image hJ) hadm).comp hJ.continuousOn (mapsTo_image J K)

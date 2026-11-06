@@ -6,6 +6,7 @@ module
 
 public import DOZZ.Statements.FourPoint.FourPointT
 public import DOZZ.GMC.Construction.RootedCircleMassLimit
+import DOZZ.ShiftEquations.Mobius.InversionMoment
 
 /-! Combining coincident insertions at zero, with atoms of the GMC at both roots ruled out. -/
 
@@ -21,7 +22,7 @@ theorem three_weight_eq (n a b c d e : ℝ)
     (hn : 0 < n) (ha : 0 < a) (hb : 0 < b) :
     (n / a) ^ c * (n / b) ^ d * n ^ e = n ^ (c + d + e) / (a ^ c * b ^ d) := by
   rw [Real.div_rpow hn.le ha.le, Real.div_rpow hn.le hb.le,
-    Real.rpow_add hn (c + d) e, Real.rpow_add hn c d]
+    Real.rpow_add hn _ e, Real.rpow_add hn c d]
   field_simp
 
 /-- The literal Coulomb mass at coincident zero insertions equals rho for an atomless measure. -/
@@ -33,11 +34,11 @@ theorem coulombMass_at_zero_eq_rho (γ χ α₁ α₂ α₃ : ℝ) (M : Measure 
   unfold coulombMass rho
   apply lintegral_congr_ae
   filter_upwards [hn0, hn1] with x hx0 hx1
-  have hn : 0 < normPlus x := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
-  have ha : 0 < ‖x‖ := norm_pos_iff.mpr hx0
-  have hb : 0 < ‖x - 1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
-  have hbase : 0 < normPlus x / ‖x‖ := div_pos hn ha
-  have hbase1 : 0 < normPlus x / ‖x - 1‖ := div_pos hn hb
+  have hn : 0 < normPlus x := lt_of_lt_of_le zero_lt_one (le_max_left ..)
+  have ha := norm_pos_iff.mpr hx0
+  have hb := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
+  have hbase := div_pos hn ha
+  have hbase1 := div_pos hn hb
   simp only [Fin.prod_univ_succ, Matrix.cons_val_zero, Matrix.cons_val_succ,
     Fin.prod_univ_zero, mul_one, sub_zero]
   change ((ENNReal.ofReal (normPlus x / ‖x‖)) ^ (γ * -χ) *
@@ -70,22 +71,21 @@ theorem fourPointT_zero_eq_structureConstant {Ω : Type*} [MeasurableSpace Ω]
     fourPointT P M γ μ (-χ) α₁ α₂ α₃ 0 =
       structureConstant P M γ μ (α₁ - χ) α₂ α₃ := by
   have _hDomain : 0 < μ ∧ α₁ - χ < Q γ ∧ α₂ < Q γ ∧ α₃ < Q γ ∧
-      2 * Q γ < α₁ + α₂ + α₃ - χ := ⟨hμ, hα₁, hα₂, hα₃, hs⟩
+      2 * Q γ < α₁ + α₂ + α₃ - χ := by simp_all
   have hsExp : fourPointSExp γ (-χ) α₁ α₂ α₃ = sExp γ (α₁ - χ) α₂ α₃ := by
     unfold fourPointSExp sExp
-    congr 1
     ring
   have hmass : ∀ᵐ ω ∂P,
       coulombMass γ (M ω) ![-χ, α₁, α₂] ![0, 0, 1] α₃ =
         rho γ (M ω) (α₁ - χ) α₂ α₃ := by
-    filter_upwards [gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ₂ M hM 0,
-      gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ₂ M hM 1] with ω h0 h1
+    filter_upwards [DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ₂ M hM 0,
+      DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ₂ M hM 1] with ω h0 h1
     exact coulombMass_at_zero_eq_rho γ χ α₁ α₂ α₃ (M ω) h0 h1
   unfold fourPointT structureConstant
   rw [hsExp]
   congr 2
   apply lintegral_congr_ae
   filter_upwards [hmass] with ω hω
-  exact congrArg (fun m : ℝ≥0∞ => ENNReal.rpow m (-sExp γ (α₁ - χ) α₂ α₃)) hω
+  simp_all
 
 end DOZZ.Proofs

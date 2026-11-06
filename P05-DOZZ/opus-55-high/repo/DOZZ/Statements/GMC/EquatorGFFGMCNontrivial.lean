@@ -23,6 +23,6 @@ theorem equatorGFF_GMC_nontrivial
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
     (hM : IsGMCOf P X γ M) :
-    ¬ ∀ᵐ ω ∂P, M ω = 0 := by exact DOZZ.Proofs.equatorGFF_GMC_nontrivial P X hX γ hγ hγ2 M hM
+    ¬ ∀ᵐ ω ∂P, M ω = 0 := DOZZ.Proofs.equatorGFF_GMC_nontrivial P X hX γ hγ hγ2 M hM
 
 end DOZZ

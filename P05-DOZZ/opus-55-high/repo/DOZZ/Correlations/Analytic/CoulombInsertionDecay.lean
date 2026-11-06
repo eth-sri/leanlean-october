@@ -6,6 +6,7 @@ module
 
 public import DOZZ.Correlations.Analytic.InsertionTailDecay
 public import DOZZ.GMC.SharpMoments.SeibergUniform
+import DOZZ.ShiftEquations.Mobius.InversionMoment
 
 /-! Uniform small moments of the actual Coulomb mass near a finite insertion. -/
 
@@ -24,8 +25,8 @@ theorem coulomb_shrinking_root_piece_le
       ENNReal.ofReal (((2 + 2 * ∑ j, ‖z j‖) / δ) ^ (∑ j, |γ * α j| + |γ * αinf|)) *
         weightedGmcBallMass γ μ (α k) (z k) ρ := by
   have hB : MeasurableSet (Metric.ball (z k) ρ) := Metric.isOpen_ball.measurableSet
-  have hw : Measurable (fun x : ℂ => ENNReal.ofReal ‖x - z k‖ ^ (-γ * α k)) :=
-    (ENNReal.measurable_ofReal.comp (measurable_id.sub_const _).norm).pow_const _
+  have hw : Measurable (fun x => ENNReal.ofReal ‖x - z k‖ ^ (-γ * α k)) :=
+    by fun_prop
   have hne : ∀ᵐ x ∂μ.restrict (Metric.ball (z k) ρ), x ≠ z k :=
     ae_restrict_of_ae (measure_eq_zero_iff_ae_notMem.mp hatom)
   unfold weightedGmcBallMass
@@ -57,11 +58,11 @@ theorem coulomb_insertion_moment_decay
     apply (le_div_iff₀ hδ).mpr
     have hs : 0 ≤ ∑ j, ‖z j‖ := Finset.sum_nonneg (fun j _ => norm_nonneg _)
     linarith
-  let B := ENNReal.ofReal (L ^ ((N + 1 : ℝ) * (γ * A)))
+  let B := ENNReal.ofReal (L ^ ((N + 1) * (γ * A)))
   refine ⟨B ^ m * C, ENNReal.mul_lt_top
     (ENNReal.rpow_lt_top_of_nonneg hm.le ENNReal.ofReal_ne_top) hC, ?_⟩
   intro α αinf hα hi hk ρ hρ hρδ
-  have he : ∑ j, |γ * α j| + |γ * αinf| ≤ (N + 1 : ℝ) * (γ * A) := by
+  have he : ∑ j, |γ * α j| + |γ * αinf| ≤ (N + 1) * (γ * A) := by
     have hs : ∑ j, |γ * α j| ≤ N * (γ * A) := by
       calc
         _ ≤ ∑ j : Fin N, γ * A := Finset.sum_le_sum (fun j _ => by
@@ -72,22 +73,20 @@ theorem coulomb_insertion_moment_decay
       rw [abs_mul, abs_of_pos hγ]
       exact mul_le_mul_of_nonneg_left hi hγ.le
     linarith
-  have hb : ENNReal.ofReal (L ^ (∑ j, |γ * α j| + |γ * αinf|)) ≤ B :=
+  have hb :=
     ENNReal.ofReal_le_ofReal (Real.rpow_le_rpow_of_exponent_le hL he)
-  have hatom := gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM (z k)
-  have hw := gmc_weighted_mass_aemeasurable P X hX γ hγ hγ2 M hM (α k) (z k) ρ
   calc
     _ ≤ ∫⁻ ω, (B * weightedGmcBallMass γ (M ω) (α k) (z k) ρ) ^ m ∂P := by
       apply lintegral_mono_ae
-      filter_upwards [hatom] with ω hω
+      filter_upwards [(DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM (z k))] with ω hω
       apply ENNReal.rpow_le_rpow _ hm.le
       exact (coulomb_shrinking_root_piece_le (M ω) γ α z αinf k hδ hδ1 hρδ hsep hω).trans
         (mul_le_mul_left hb _)
     _ = B ^ m * weightedGmcBallMoment P M γ (α k) (z k) ρ m := by
       simp_rw [ENNReal.mul_rpow_of_nonneg _ _ hm.le]
-      exact lintegral_const_mul'' _ (hw.pow_const m)
-    _ ≤ B ^ m * (ENNReal.ofReal (ρ ^ (γ * gap * m)) * C) :=
-      mul_le_mul_right (hdec (α k) hk ρ hρ (le_min hρδ (hρδ.trans hδ1))) _
+      exact lintegral_const_mul'' _ ((gmc_weighted_mass_aemeasurable P X hX γ hγ hγ2 M hM (α k) (z k) ρ).pow_const m)
+    _ ≤ B ^ m * (ENNReal.ofReal _ * C) :=
+      by bound
     _ = _ := by ring
 
 end DOZZ.Proofs

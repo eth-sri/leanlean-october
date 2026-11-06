@@ -41,17 +41,19 @@ theorem bpz_rpow_neg_sub_one_mul_le {I A B q : ℝ} (hI : 0 < I) (hAI : A ≤ I)
     _ = I ^ (1 - q) := by ring_nf
 
 namespace BPZLimitData
+section
+variable (hd : BPZLimitData γ q δ ρ kt k₂ φ D)
+include hd
 
-theorem cutWeight_nonneg (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (r : ℝ) (y : ℂ) :
+theorem cutWeight_nonneg (r : ℝ) (y : ℂ) :
     0 ≤ bpzWardCutWeight γ q r kt y := by
   unfold bpzWardCutWeight
   have := hd.kt_nonneg y
-  have := Real.rpow_nonneg (bpz_normPlus_pos y).le (4 : ℝ)
+  have := Real.rpow_nonneg (bpz_normPlus_pos y).le 4
   positivity
 
 /-- The far mass dominates a multiple of the far-set chaos mass. -/
-theorem far_mass_lower (hd : BPZLimitData γ q δ ρ kt k₂ φ D)
-    (hp : BPZWardProb P X γ M Xc ρ k₂ D) :
+theorem far_mass_lower (hp : BPZWardProb P X γ M Xc ρ k₂ D) :
     ∃ c : ℝ, 0 < c ∧ ∀ᵐ ω ∂P, c * (M ω D).toReal ≤ ∫ y, (1 - ρ y) * k₂ y ∂M ω := by
   obtain ⟨c, hc, hck⟩ := hd.D_low
   refine ⟨c, hc, ?_⟩
@@ -59,9 +61,11 @@ theorem far_mass_lower (hd : BPZLimitData γ q δ ρ kt k₂ φ D)
   exact bpz_integral_lower_on_set hd.D_meas hint
     (fun y => mul_nonneg (by linarith [hd.ρ_le_one y]) (hd.k₂_nonneg y))
     (fun y hy => by rw [hd.D_rho y hy, sub_zero, one_mul]; exact hck y hy)
+section
+variable (v : ℂ)
 
 /-- The left integral is bounded by the cutoff part of the mixed mass. -/
-theorem abs_leftInt_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) :
+theorem abs_leftInt_le :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (n : ℕ) (m : Measure ℂ) [IsFiniteMeasure m],
       |∫ x, bpzWardLeftWeight γ q n kt φ v x ∂m| ≤
         C * ∫ x, ρ x * bpzWardCutWeight γ q n kt x ∂m := by
@@ -71,15 +75,15 @@ theorem abs_leftInt_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) :
   obtain ⟨Rφ, hRφ⟩ := hd.φ_compact.isCompact.isBounded.exists_norm_le
   have hf's : ∀ x, max Rφ 0 < ‖x‖ → fderiv ℝ (fun x => φ x * kt x) x v = 0 := fun x hx =>
     bpz_fderiv_mul_zero_of_notMem v (fun h => by
-      have := (hRφ x h).trans (le_max_left Rφ 0); linarith)
+      grind)
   obtain ⟨B₁, hB₁⟩ := hf'c.bounded_above_of_compact_support (bpz_hasCompactSupport_of_ball hf's)
-  set C : ℝ := max B₁ 0 / c with hCdef
+  set C := max B₁ 0 / c with hCdef
   refine ⟨C, by positivity, fun n m _ => ?_⟩
   have hpt : ∀ x, |bpzWardLeftWeight γ q n kt φ v x| ≤
       C * (ρ x * bpzWardCutWeight γ q n kt x) := by
     intro x
     by_cases hx : x ∈ tsupport φ
-    · have hkt : 0 < kt x := lt_of_lt_of_le hc (hck x hx)
+    · have hkt := lt_of_lt_of_le hc (hck x hx)
       have hrel : bpzWardLeftWeight γ q n kt φ v x = fderiv ℝ (fun x => φ x * kt x) x v / kt x *
           bpzWardCutWeight γ q n kt x := by
         unfold bpzWardLeftWeight bpzWardCutWeight
@@ -87,14 +91,10 @@ theorem abs_leftInt_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) :
       rw [hrel, hd.rho_eq_one hx, one_mul, abs_mul, abs_of_nonneg (hd.cutWeight_nonneg n x)]
       apply mul_le_mul_of_nonneg_right _ (hd.cutWeight_nonneg n x)
       rw [abs_div, abs_of_pos hkt, div_le_div_iff₀ hkt hc]
-      have h1 : |fderiv ℝ (fun x => φ x * kt x) x v| ≤ max B₁ 0 := by
-        rw [← Real.norm_eq_abs]; exact (hB₁ x).trans (le_max_left _ _)
-      calc |fderiv ℝ (fun x => φ x * kt x) x v| * c ≤ max B₁ 0 * c :=
-            mul_le_mul_of_nonneg_right h1 hc.le
-        _ ≤ max B₁ 0 * kt x := mul_le_mul_of_nonneg_left (hck x hx) (le_max_right _ _)
+      bound
     · unfold bpzWardLeftWeight
       rw [bpz_fderiv_mul_zero_of_notMem v hx]
-      simp only [zero_mul, abs_zero]
+      simp
       exact mul_nonneg (by positivity) (mul_nonneg (hd.ρ_nonneg x) (hd.cutWeight_nonneg n x))
   have hwm : Measurable (bpzWardLeftWeight γ q n kt φ v) := by
     unfold bpzWardLeftWeight
@@ -110,7 +110,7 @@ theorem abs_leftInt_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) :
     rw [Real.norm_eq_abs]; exact hpt x)
 
 /-- The symmetric double integral is bounded by the square of the cutoff part. -/
-theorem abs_symInt_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) :
+theorem abs_symInt_le :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (n : ℕ) (m : Measure ℂ) [IsFiniteMeasure m],
       |∫ x, ∫ y, bpzSymKer φ ρ (bpzWardCutWeight γ q n kt) (fun w => bpzLamDeriv n w v) x y ∂m ∂m|
         ≤ C * ((∫ x, ρ x * bpzWardCutWeight γ q n kt x ∂m) *
@@ -119,7 +119,7 @@ theorem abs_symInt_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) :
   obtain ⟨B, hB0, hB⟩ := hd.phi_bdd
   obtain ⟨Lφ, hLφ⟩ := hd.φ_lip
   have hδ := hd.δ_pos
-  set C : ℝ := 2 * ‖v‖ * ((Lφ : ℝ) + B / δ) with hCdef
+  set C : ℝ := 2 * ‖v‖ * (Lφ + B / δ) with hCdef
   refine ⟨C, by positivity, fun n m _ => ?_⟩
   set w : ℂ → ℝ := fun x => ρ x * bpzWardCutWeight γ q n kt x with hw
   have hw0 : ∀ x, 0 ≤ w x := fun x => mul_nonneg (hd.ρ_nonneg x) (hd.cutWeight_nonneg n x)
@@ -127,15 +127,14 @@ theorem abs_symInt_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) :
     rw [abs_of_nonneg (hw0 x)]
     have := (hd.rho_abs_cutWeight_le hK hK0 n x).1
     rwa [abs_of_nonneg (hd.cutWeight_nonneg n x)] at this
-  have hwm : Measurable w := hd.ρ_meas.mul (hd.measurable_cutWeight n)
-  have hLm : Measurable fun w' => bpzLamDeriv n w' v :=
+  have hLm :=
     (ContinuousLinearMap.apply ℝ ℝ v).continuous.measurable.comp (measurable_bpzLamDeriv n)
   have hHm := measurable_bpzSymKer hd.phi_cont.measurable hd.ρ_meas (hd.measurable_cutWeight n)
     hLm
   have hpt : ∀ x y, |bpzSymKer φ ρ (bpzWardCutWeight γ q n kt) (fun w' => bpzLamDeriv n w' v) x y|
       ≤ C * (w x * w y) := by
     intro x y
-    have := hd.abs_symKer_le (k := bpzWardCutWeight γ q n kt) (L := fun w' => bpzLamDeriv n w' v)
+    have := hd.abs_symKer_le (k := bpzWardCutWeight γ q n kt)
       hB hLφ zero_le_two v (abs_bpzLamDeriv_apply_le n · v) x y
     simp only [abs_of_nonneg (hd.cutWeight_nonneg n x), abs_of_nonneg (hd.cutWeight_nonneg n y)]
       at this
@@ -144,10 +143,10 @@ theorem abs_symInt_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) :
       ≤ C * (K * K) := fun x y =>
     (hpt x y).trans (mul_le_mul_of_nonneg_left (mul_le_mul ((le_abs_self _).trans (hwb x))
       ((le_abs_self _).trans (hwb y)) (hw0 y) hK0) (by positivity))
-  have hIw : Integrable w m := integrable_of_bdd_finite hwm hwb
+  have hIw : Integrable w m := integrable_of_bdd_finite (hd.ρ_meas.mul (hd.measurable_cutWeight n)) hwb
   rw [← Real.norm_eq_abs]
   refine (norm_integral_le_integral_norm _).trans ?_
-  calc ∫ x, ‖∫ y, bpzSymKer φ ρ (bpzWardCutWeight γ q n kt) (fun w' => bpzLamDeriv n w' v) x y ∂m‖
+  calc ∫ x, ‖∫ y, bpzSymKer φ ρ _ (fun w' => bpzLamDeriv n w' v) x y ∂m‖
         ∂m ≤ ∫ x, C * w x * ∫ y, w y ∂m ∂m := by
         refine integral_mono (bpz_integrable_inner hHm hbd).norm
           ((hIw.const_mul C).mul_const _) fun x => ?_
@@ -155,14 +154,14 @@ theorem abs_symInt_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) :
         refine (norm_integral_le_integral_norm _).trans (integral_mono
           (bpz_integrable_slice hHm hbd x).norm (hIw.const_mul _) fun y => ?_)
         rw [Real.norm_eq_abs]
-        calc |bpzSymKer φ ρ (bpzWardCutWeight γ q n kt) (fun w' => bpzLamDeriv n w' v) x y|
+        calc |bpzSymKer φ ρ _ (fun w' => bpzLamDeriv n w' v) x y|
             ≤ C * (w x * w y) := hpt x y
           _ = C * w x * w y := by ring
     _ = C * ((∫ x, w x ∂m) * ∫ x, w x ∂m) := by
         rw [integral_mul_const, integral_const_mul]; ring
 
 /-- The far-region term is bounded by the product of the cutoff part and the far mass. -/
-theorem abs_mixInt_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) :
+theorem abs_mixInt_le :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (n : ℕ) (m₁ m₂ : Measure ℂ) [IsFiniteMeasure m₁],
       Integrable (fun y => (1 - ρ y) * k₂ y) m₂ →
       |∫ x, bpzMixTest φ ρ (bpzWardCutWeight γ q n kt) k₂ (fun w => bpzTruncLogDeriv n w v) m₂ x
@@ -173,7 +172,7 @@ theorem abs_mixInt_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) :
   have hδ := hd.δ_pos
   set C : ℝ := 1 * ‖v‖ / (2 * δ) * B with hCdef
   refine ⟨C, by positivity, fun n m₁ m₂ _ hint => ?_⟩
-  set I₂ : ℝ := ∫ y, (1 - ρ y) * k₂ y ∂m₂
+  set I₂ := ∫ y, (1 - ρ y) * k₂ y ∂m₂
   have hI₂0 : 0 ≤ I₂ := integral_nonneg fun y =>
     mul_nonneg (by linarith [hd.ρ_le_one y]) (hd.k₂_nonneg y)
   have hT : ∀ w, |bpzTruncLogDeriv n w v| ≤ 1 * ‖v‖ / ‖w‖ := fun w => by
@@ -182,20 +181,24 @@ theorem abs_mixInt_le (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (v : ℂ) :
       (fun w => bpzTruncLogDeriv n w v) m₂ x| ≤ C * I₂ * (ρ x * bpzWardCutWeight γ q n kt x) := by
     intro x
     have := hd.abs_mixTest_le (k := bpzWardCutWeight γ q n kt)
-      (L := fun w => bpzTruncLogDeriv n w v) hB zero_le_one v hT hint x
+      hB zero_le_one v hT hint x
     rw [abs_of_nonneg (hd.cutWeight_nonneg n x)] at this
     calc _ ≤ 1 * ‖v‖ / (2 * δ) * B * (ρ x * bpzWardCutWeight γ q n kt x) * I₂ := this
-      _ = C * I₂ * (ρ x * bpzWardCutWeight γ q n kt x) := by rw [hCdef]; ring
+      _ = C * I₂ * (ρ x * bpzWardCutWeight γ q n kt x) := by linarith
   have hwb : ∀ x, |ρ x * bpzWardCutWeight γ q n kt x| ≤ K := fun x => by
     rw [abs_mul, abs_of_nonneg (hd.ρ_nonneg x)]
     exact (hd.rho_abs_cutWeight_le hK hK0 n x).1
   have hIw : Integrable (fun x => ρ x * bpzWardCutWeight γ q n kt x) m₁ :=
     integrable_of_bdd_finite (hd.ρ_meas.mul (hd.measurable_cutWeight n)) hwb
   rw [← Real.norm_eq_abs]
-  refine (norm_integral_le_of_norm_le (hIw.const_mul (C * I₂))
-    (Eventually.of_forall fun x => by rw [Real.norm_eq_abs]; exact hpt x)).trans (le_of_eq ?_)
+  refine (norm_integral_le_of_norm_le (hIw.const_mul _)
+    (Eventually.of_forall fun x => by tauto)).trans (le_of_eq ?_)
   rw [integral_const_mul]
   ring
+
+end
+
+end
 
 end BPZLimitData
 

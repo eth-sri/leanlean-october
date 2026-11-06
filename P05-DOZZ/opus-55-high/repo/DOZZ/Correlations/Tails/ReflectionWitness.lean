@@ -6,6 +6,7 @@ module
 
 public import DOZZ.Statements.Brownian.EquatorGFFLateralGMCDecomposition
 public import DOZZ.ShiftEquations.Reflection.Witness
+import DOZZ.Brownian.Lateral.ReflectionJointLaw
 
 /-! One source lateral measure and one reflection family for all charges below the Seiberg bound. -/
 
@@ -25,13 +26,13 @@ theorem exists_source_reflection_witness
       IsSourceLateralProjection P X γ M Z ∧
         ∀ α : ℝ, α < Q γ → IsReflectionData P γ α (B α) Z := by
   obtain ⟨A, hc, hA, hA0, hBp, hBn, hhalves, hZmeas, hAZ, hZ⟩ :=
-    equatorGFF_lateral_GMC_decomposition P X M γ hγ hγ2 hX hM
+    DOZZ.Proofs.equatorGFF_lateral_GMC_decomposition P X M γ hγ hγ2 hX hM
   let Z := fun ω => lateralProjectedGMC γ (A ω) (M ω)
   have hsource : IsSourceLateralProjection P X γ M Z :=
     ⟨hX, hM, A, hc, hA, hA0, hBp, hBn, hhalves, hZmeas, hAZ,
       ae_of_all P (fun _ => rfl)⟩
   obtain ⟨B, hB⟩ := exists_reflectionData_family P X γ M Z hsource hZ
-  exact ⟨B, Z, hsource, hB⟩
+  tauto
 
 
 end DOZZ.Proofs

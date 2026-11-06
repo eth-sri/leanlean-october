@@ -48,9 +48,8 @@ theorem gammaHalf_reflected_inner_limit {Ω : Type*} [MeasurableSpace Ω]
   obtain ⟨N,hN,hi,hfin,heq,hNa,hwhole⟩ := reflected_copied_radial_plane_observable
     P X Xc hX hc hm hcont γ hγ hγ₂ M hM
   let B₀ := P.map (fun ω => radialPositiveHalf (originRadialPath Xc ω))
-  have hA := originRadialPath_aemeasurable P X Xc hc hcont
   have hB₀ : IsBrownianReal (fun t p => p t) B₀ := radialPositiveHalf_map_isBrownian
-    P (originRadialPath Xc) hA (originRadialPath_isBrownian P X Xc hX hc hcont).1
+    P (originRadialPath Xc) (originRadialPath_aemeasurable P X Xc hc hcont) (originRadialPath_isBrownian P X Xc hX hc hcont).1
   let p := (α₁+α₂+α₃-γ/2-2*Q γ)/γ
   let κ := γ*(Q γ-α₁)
   let a := 2*(Q γ-α₁)/γ
@@ -75,10 +74,9 @@ theorem gammaHalf_reflected_inner_limit {Ω : Type*} [MeasurableSpace Ω]
   let rReal := fun z : ℂ => gammaHalfMoment P M γ α₁ α₂ α₃ p z-
     gammaHalfOuterMoment P M γ α₁ α₂ α₃ p z ξ-C*‖z‖^κ
   have hrem : Tendsto (fun z : ℂ => rReal z/‖z‖^κ) (𝓝[≠] 0) (𝓝 0) := by
-    have hs := hLimit.sub (tendsto_const_nhds (x := C))
     have hs0 : Tendsto (fun z : ℂ =>
         (gammaHalfMoment P M γ α₁ α₂ α₃ p z-gammaHalfOuterMoment P M γ α₁ α₂ α₃ p z ξ)/‖z‖^κ-C)
-        (𝓝[≠] 0) (𝓝 0) := by simpa only [sub_self] using hs
+        (𝓝[≠] 0) (𝓝 0) := by simpa only [sub_self] using (hLimit.sub (tendsto_const_nhds (x := C)))
     apply hs0.congr'
     filter_upwards [self_mem_nhdsWithin] with z hz
     have hn : ‖z‖^κ ≠ 0 := (Real.rpow_pos_of_pos (norm_pos_iff.mpr hz) κ).ne'

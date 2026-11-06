@@ -11,14 +11,15 @@ public section
 open MeasureTheory Filter Topology Set
 open scoped ENNReal
 namespace DOZZ.Proofs
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+section
+variable (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+include hX hγ hγ₂ hM hXc
 
 /-- The actual first-order restart-weighted inverse moment has deterministic power
 2+γ(Q−α₁)−γ²/2. The estimate uses the supplied GMC under its exact circle tilt. -/
-theorem dual_radial_first_order_bound {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (α₁ α₂ α₃ ξ q h : ℝ) (hh : 0 ≤ h) (hξ : 0 < ξ) (hξ₁ : ξ < 1) (hq : 0 ≤ q) :
+theorem dual_radial_first_order_bound (α₁ α₂ α₃ ξ q h : ℝ) (hh : 0 ≤ h) (hξ : 0 < ξ) (hξ₁ : ξ < 1) (hq : 0 ≤ q) :
     ∃ C : ℝ, 0 < C ∧ ∀ᶠ z : ℂ in nhdsWithin 0 {z : ℂ | z ≠ 0},
       (∫⁻ ω, ENNReal.ofReal (‖z‖ ^ (2 : ℝ) * Real.exp
         (γ * (Xc ω 0 (-Real.log ‖z‖ + h) -
@@ -26,23 +27,22 @@ theorem dual_radial_first_order_bound {Ω : Type*} [MeasurableSpace Ω]
           dualOuterMass γ α₁ α₂ α₃ (M ω) z ξ ^ (-q) ∂P) ≤
             ENNReal.ofReal (C * ‖z‖ ^ (2 + γ * (Q γ - α₁) - γ ^ 2 / 2)) := by
   obtain ⟨C₀, hC₀, hb⟩ := dual_outerMass_inverse_moment_uniform
-    P X hX γ hγ hγ₂ M hM (α₁ + γ) α₂ α₃ q hq
+    P X hX γ hγ hγ₂ M hM _ α₂ α₃ q hq
   let D := Real.exp ((γ ^ 2 / 2 - γ * (Q γ - α₁)) * h)
   refine ⟨D * C₀, mul_pos (Real.exp_pos _) hC₀, ?_⟩
   have hn : Tendsto (fun z : ℂ => ‖z‖)
       (nhdsWithin 0 {z : ℂ | z ≠ 0}) (nhds 0) := by
-    simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
+    simpa using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
   filter_upwards [hn.eventually (gt_mem_nhds zero_lt_one), self_mem_nhdsWithin] with z hz hz0
   have hp : 0 < ‖z‖ := norm_pos_iff.mpr hz0
   have hm : 0 ≤ -Real.log ‖z‖ + h := by
-    have hl := Real.log_nonpos hp.le hz.le
-    linarith only [hl, hh]
+    linarith only [(Real.log_nonpos hp.le hz.le), hh]
   have hr : ‖z‖ ≤ ‖z‖ ^ (1 - ξ) := by
-    simpa only [Real.rpow_one] using Real.rpow_le_rpow_of_exponent_ge hp hz.le
-      (by linarith only [hξ] : 1 - ξ ≤ 1)
+    simpa using Real.rpow_le_rpow_of_exponent_ge hp hz.le
+      (by linarith : 1 - ξ ≤ 1)
   have hout : Real.exp (-(-Real.log ‖z‖ + h)) ≤ ‖z‖ ^ (1 - ξ) := by
     apply le_trans _ hr
-    have he : -(-Real.log ‖z‖ + h) ≤ Real.log ‖z‖ := by linarith only [hh]
+    have he : -(-Real.log ‖z‖ + h) ≤ Real.log ‖z‖ := by linarith
     simpa only [Real.exp_log hp] using Real.exp_le_exp.mpr he
   have he (ω : Ω) : ‖z‖ ^ (2 : ℝ) * Real.exp
       (γ * (Xc ω 0 (-Real.log ‖z‖ + h) - (Q γ - α₁) * (-Real.log ‖z‖ + h))) =
@@ -59,12 +59,12 @@ theorem dual_radial_first_order_bound {Ω : Type*} [MeasurableSpace Ω]
   simp_rw [he, ENNReal.ofReal_mul hs, mul_assoc]
   rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
   have ht := dual_outerMass_circle_tilt P X hX γ hγ hγ₂ M hM Xc hXc
-    γ (-Real.log ‖z‖ + h) α₁ α₂ α₃ ξ q hm z (Real.rpow_pos_of_pos hp _) hout
+    γ _ α₁ α₂ α₃ ξ q hm z (Real.rpow_pos_of_pos hp _) hout
   rw [ht]
   calc
-    _ ≤ ENNReal.ofReal (D * ‖z‖ ^ (2 + γ * (Q γ - α₁) - γ ^ 2 / 2)) * ENNReal.ofReal C₀ :=
+    _ ≤ ENNReal.ofReal _ * ENNReal.ofReal C₀ :=
       mul_le_mul' le_rfl (hb z ξ hz.le
-        (by simpa only [Real.one_rpow] using Real.rpow_le_rpow (norm_nonneg z) hz.le (sub_nonneg.mpr hξ₁.le)))
+        (by simpa using Real.rpow_le_rpow (norm_nonneg z) hz.le (sub_nonneg.mpr hξ₁.le)))
     _ = _ := by
       rw [← ENNReal.ofReal_mul hs]
       congr 1
@@ -72,11 +72,7 @@ theorem dual_radial_first_order_bound {Ω : Type*} [MeasurableSpace Ω]
 
 /-- The actual first-order radial error vanishes after division by the dual power,
 whenever its explicit radial exponent has the strict source margin. -/
-theorem dual_radial_first_order_littleO {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (α₁ α₂ α₃ ξ q h κ : ℝ) (hh : 0 ≤ h) (hξ : 0 < ξ) (hξ₁ : ξ < 1) (hq : 0 ≤ q)
+theorem dual_radial_first_order_littleO (α₁ α₂ α₃ ξ q h κ : ℝ) (hh : 0 ≤ h) (hξ : 0 < ξ) (hξ₁ : ξ < 1) (hq : 0 ≤ q)
     (hslack : κ < 2 + γ * (Q γ - α₁) - γ ^ 2 / 2) :
     Tendsto (fun z : ℂ =>
       (∫⁻ ω, ENNReal.ofReal (‖z‖ ^ (2 : ℝ) * Real.exp
@@ -99,5 +95,9 @@ theorem dual_radial_first_order_littleO {Ω : Type*} [MeasurableSpace Ω]
       (ENNReal.toReal_ofReal (mul_nonneg hC.le (Real.rpow_nonneg (norm_nonneg z) _)))
   exact (isComplexLittleOAtZero_ofReal_iff κ F).mp
     (isComplexLittleOAtZero_of_norm_le_power hslack hn)
+
+end
+
+end
 
 end DOZZ.Proofs

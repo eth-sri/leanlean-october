@@ -46,21 +46,20 @@ theorem isGMCOf_inversion_annular_version
   obtain ⟨A, hA, hAeq⟩ := isGMCOf_inversion_chart_transport P X hX γ hγ hγ2 M hM Xc hXc
   have hUsub : U ⊆ inversionChart := by
     intro x hx
-    change x ≠ 0
-    exact norm_pos_iff.mp (by linarith only [hm, (hU x hx).1])
+    exact norm_pos_iff.mp (by grind)
   have hAU := admissibleGMCVersion_restrict_of_subset P inversionChart U
-    (fun x => normPlus x ^ (-4 : ℝ))
-    (fun ω ε x => Xc ω x⁻¹ (Real.log (1 / ε))) γ A hA hUopen.measurableSet hUsub
+    (fun x => normPlus x ^ (-4))
+    (fun ω ε x => Xc ω x⁻¹ _) γ A hA hUopen.measurableSet hUsub
   obtain ⟨N, hN⟩ := admissibleLogRegularization_GMC_exists P U
-    (fun x => normPlus x ^ (-4 : ℝ)) (min (m / 2) 1)
-    (fun ω ε x => Z ω x (Real.log (1 / ε))) hZ γ hγ hγ2
+    (fun x => normPlus x ^ (-4)) _
+    (fun ω ε x => Z ω x _) hZ γ hγ hγ2
   have heq := admissibleLogRegularization_GMC_unique_ae P U
-    (fun x => normPlus x ^ (-4 : ℝ)) 1 (min (m / 2) 1)
-    (fun ω ε x => Xc ω x⁻¹ (Real.log (1 / ε)))
-    (fun ω ε x => Z ω x (Real.log (1 / ε))) hY hZ hcompat γ hγ hγ2
+    (fun x => normPlus x ^ (-4)) 1 _
+    (fun ω ε x => Xc ω x⁻¹ _)
+    (fun ω ε x => Z ω x _) hY hZ hcompat γ hγ hγ2
     (fun ω => (A ω).restrict U) N hAU hN
   refine ⟨f, hf, Z, N, hgap, hmem, hlim, hZ, hN, ?_⟩
   filter_upwards [heq, hAeq] with ω hω hωA
-  exact hω.symm.trans (congrArg (fun μ : Measure ℂ => μ.restrict U) hωA.symm)
+  exact hω.symm.trans (congrArg (fun μ => μ.restrict U) hωA.symm)
 
 end DOZZ.Proofs

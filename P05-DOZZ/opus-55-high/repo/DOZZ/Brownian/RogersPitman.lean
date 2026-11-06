@@ -49,8 +49,10 @@ noncomputable def rogersPitmanPath (μ : ℝ) (V : BrownianTriple) : BrownianPat
     apply continuous_pi
     intro i
     split_ifs <;> fun_prop⟩
+section
+variable (μ : ℝ)
 
-theorem measurable_rogersPitmanPath (μ : ℝ) :
+theorem measurable_rogersPitmanPath :
     Measurable (fun V : BrownianTriple => rogersPitmanPath μ V) := by
   apply ContinuousMap.measurable_iff_eval.mpr
   intro t
@@ -62,19 +64,24 @@ theorem measurable_rogersPitmanPath (μ : ℝ) :
   have h_eval : Measurable (fun V : BrownianTriple => (V i) t) :=
     (ContinuousMap.measurable_eval t).comp (measurable_pi_apply i)
   split_ifs <;> exact h_eval.add_const _
+section
+variable (V : BrownianTriple)
 
-theorem rogersPitmanPath_nonneg (μ : ℝ) (V : BrownianTriple) (t : ℝ≥0) :
+theorem rogersPitmanPath_nonneg (t : ℝ≥0) :
     0 ≤ rogersPitmanPath μ V t := by
   change 0 ≤ ‖rogersPitmanVectorAt μ V t‖
-  exact norm_nonneg _
+  simp
 
-theorem rogersPitmanPath_zero (μ : ℝ) (V : BrownianTriple)
-    (hV : ∀ i, V i 0 = 0) :
+theorem rogersPitmanPath_zero (hV : ∀ i, V i 0 = 0) :
     rogersPitmanPath μ V 0 = 0 := by
   change ‖rogersPitmanVectorAt μ V 0‖ = 0
   apply norm_eq_zero.mpr
   ext i
   simp [rogersPitmanVectorAt, hV]
+
+end
+
+end
 
 
 /-- The probability candidate for the positive conditioned entrance path, obtained by mapping the
@@ -94,8 +101,7 @@ noncomputable def negativeRogersPitmanPath (μ : ℝ) (V : BrownianTriple) : Bro
   -(rogersPitmanPath μ V)
 
 theorem measurable_negativeRogersPitmanPath (μ : ℝ) :
-    Measurable (fun V : BrownianTriple => negativeRogersPitmanPath μ V) := by
-  exact (measurable_rogersPitmanPath μ).neg
+    Measurable (fun V : BrownianTriple => negativeRogersPitmanPath μ V) := (measurable_rogersPitmanPath μ).neg
 
 /-- The negative entrance candidate is the pushforward under `-R`. -/
 noncomputable def negativeRogersPitmanEntranceMeasure (μ : ℝ) (W : Measure BrownianPath) :

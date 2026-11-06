@@ -31,6 +31,6 @@ theorem equatorGFF_extendedSeiberg_rho_moment
         (-sExp γ α₁ α₂ α₃) ∂P) ∧
       (∫⁻ ω,
         ENNReal.rpow (rho γ (M ω) α₁ α₂ α₃)
-          (-sExp γ α₁ α₂ α₃) ∂P) < ⊤ := by exact DOZZ.Proofs.equatorGFF_extendedSeiberg_rho_moment P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα
+          (-sExp γ α₁ α₂ α₃) ∂P) < ⊤ := DOZZ.Proofs.equatorGFF_extendedSeiberg_rho_moment P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα
 
 end DOZZ

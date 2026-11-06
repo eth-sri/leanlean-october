@@ -93,7 +93,7 @@ theorem equatorGFF_tilted_finiteGmcCoordinate_law_at_cutoff
     rw [measurable_pi_iff]
     intro f
     exact ((hX.2 f).1).add measurable_const
-  have hregMeas : Measurable (fun ω => regularizedGMC P Xc γ r ω) :=
+  have hregMeas :=
     regularizedGMC_measurable P X hX Xc hXc γ r
   have hcovCont : Continuous (fun z : ℂ =>
       gaussianCovariance P (fun ω' => Xc ω' z r) L) :=
@@ -102,8 +102,7 @@ theorem equatorGFF_tilted_finiteGmcCoordinate_law_at_cutoff
       (Real.exp (γ * gaussianCovariance P (fun ω' => Xc ω' z r) L))) :=
     ENNReal.measurable_ofReal.comp
       (Real.measurable_exp.comp (measurable_const.mul hcovCont.measurable))
-  have hleft : Measurable leftPath := by
-    exact (measurable_gmcTiltFiniteCoordinatePath s).comp
+  have hleft : Measurable leftPath := (measurable_gmcTiltFiniteCoordinatePath s).comp
       (Measurable.prodMk hfield hregMeas)
   have hregWeighted : Measurable (fun ω =>
       (regularizedGMC P Xc γ r ω).withDensity (fun z => ENNReal.ofReal
@@ -122,11 +121,8 @@ theorem equatorGFF_tilted_finiteGmcCoordinate_law_at_cutoff
       rw [withDensity_apply _ hA, ← lintegral_indicator hA]
     rw [hEval]
     exact (Measure.measurable_lintegral (hweight.indicator hA)).comp hregMeas
-  have hright : Measurable rightPath := by
-    exact (measurable_gmcTiltFiniteCoordinatePath s).comp
+  have hright : Measurable rightPath := (measurable_gmcTiltFiniteCoordinatePath s).comp
       (Measurable.prodMk hfieldShift hregWeighted)
-  have hObs : Measurable (fun p : (TestFn → ℝ) × Measure ℂ =>
-      gmcTiltFiniteCoordinatePath s p.1 p.2) := measurable_gmcTiltFiniteCoordinatePath s
   apply Measure.ext
   intro A hA
   let obs : (TestFn → ℝ) × Measure ℂ → (∀ i : {i // i ∈ s}, ℝ) := fun p =>
@@ -135,11 +131,10 @@ theorem equatorGFF_tilted_finiteGmcCoordinate_law_at_cutoff
     if gmcTiltFiniteCoordinatePath s q μ ∈ A then 1 else 0
   have hF : Measurable (fun p : (TestFn → ℝ) × Measure ℂ => F p.1 p.2) := by
     dsimp [F]
-    exact Measurable.ite (hA.preimage hObs) measurable_const measurable_const
+    exact Measurable.ite (hA.preimage (measurable_gmcTiltFiniteCoordinatePath s)) measurable_const measurable_const
   have hEqInt := equatorGFF_tilted_test_regularizedGMC_cutoff_lintegral
     P X hX Xc hXc γ r L hL F hF
-  have hPreLeft : MeasurableSet (leftPath ⁻¹' A) := hA.preimage hleft
-  have hPreRight : MeasurableSet (rightPath ⁻¹' A) := hA.preimage hright
+  have hPreLeft := hA.preimage hleft
   have hleftInt : (∫⁻ ω in leftPath ⁻¹' A, density ω ∂P) =
       ∫⁻ ω, density ω * F (field ω) (regularizedGMC P Xc γ r ω) ∂P := by
     rw [← lintegral_indicator hPreLeft]
@@ -151,10 +146,10 @@ theorem equatorGFF_tilted_finiteGmcCoordinate_law_at_cutoff
         ((regularizedGMC P Xc γ r ω).withDensity (fun z => ENNReal.ofReal
           (Real.exp (γ * gaussianCovariance P (fun ω' => Xc ω' z r) L)))) ∂P := by
     calc
-      P (rightPath ⁻¹' A) =
-          ∫⁻ ω, (rightPath ⁻¹' A).indicator (fun _ => (1 : ℝ≥0∞)) ω ∂P := by
+      P _ =
+          ∫⁻ ω, (rightPath ⁻¹' A).indicator (fun _ => 1) ω ∂P := by
             symm
-            rw [lintegral_indicator_const hPreRight 1]
+            rw [lintegral_indicator_const (hA.preimage hright) 1]
             simp
       _ = ∫⁻ ω, F (fieldShift ω)
           ((regularizedGMC P Xc γ r ω).withDensity (fun z => ENNReal.ofReal
@@ -166,12 +161,12 @@ theorem equatorGFF_tilted_finiteGmcCoordinate_law_at_cutoff
   calc
     _ = ∫⁻ ω in leftPath ⁻¹' A, density ω ∂P := by
       rw [Measure.map_apply hleft hA, withDensity_apply density hPreLeft]
-    _ = ∫⁻ ω, density ω * F (field ω) (regularizedGMC P Xc γ r ω) ∂P := hleftInt
+    _ = ∫⁻ ω, density ω * F (field ω) _ ∂P := hleftInt
     _ = ∫⁻ ω, F (fieldShift ω)
         ((regularizedGMC P Xc γ r ω).withDensity (fun z => ENNReal.ofReal
           (Real.exp (γ * gaussianCovariance P (fun ω' => Xc ω' z r) L)))) ∂P := hEqInt
-    _ = P (rightPath ⁻¹' A) := hrightInt.symm
-    _ = _ := by rw [Measure.map_apply hright hA]
+    _ = P _ := hrightInt.symm
+    _ = _ := by aesop
 
 
 end DOZZ.Proofs

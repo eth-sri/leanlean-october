@@ -21,30 +21,32 @@ open MeasureTheory ProbabilityTheory Filter Topology Metric
 open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+section
+variable (X : Ω → Distr) (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (partition : GMCChartPartition)
+include hX hXc
 
 /-- Nonpositive moments of regularized Coulomb masses, uniformly over couplings in a compact
 subset of `(0, 2)`, bounded roots and charges, cutoffs, and orders in `[tmin, 0]`. -/
 theorem regularizedCoulombMass_moment_uniform_nonpos
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (partition : GMCChartPartition)
     (N : ℕ) (Γ : Set ℝ) (hΓ : IsCompact Γ) (hΓ2 : Γ ⊆ Set.Ioo (0 : ℝ) 2) {Zs E tmin : ℝ}
     (hZs : 0 ≤ Zs) (htmin : tmin ≤ 0) :
     ∃ K : ℝ≥0∞, K < ⊤ ∧ ∀ γ ∈ Γ, ∀ (α : Fin N → ℝ) (z : Fin N → ℂ) (αinf t r : ℝ),
       ∑ j, ‖z j‖ ≤ Zs → (∀ j, |γ * α j| ≤ E) → |γ * αinf| ≤ E → tmin ≤ t → t ≤ 0 → 0 ≤ r →
       ∫⁻ ω, ENNReal.rpow (regularizedCoulombMass P Xc γ partition α z αinf r ω) t ∂P ≤ K := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   set R0 : ℝ := 2 * Zs + 2 with hR0
   obtain ⟨c, hc, hcb⟩ := coulombCutoffWeight_ge_ball partition N (E := E) hZs (le_refl R0)
-  set B : Set ℂ := Metric.ball (((R0 + 1 : ℝ)) : ℂ) (1 / 8) with hB
-  set q : ℝ := -tmin + 1 with hq
+  set B := Metric.ball (((R0 + 1 : ℝ)) : ℂ) _ with hB
+  set q := -tmin + 1 with hq
   have hq0 : 0 < q := by linarith
   obtain ⟨Ci, hCi, hCib⟩ := equatorGFF_regularizedGMC_inverse_moment_uniform P X hX Xc hXc Γ hΓ
     hΓ2 B Metric.isOpen_ball ⟨_, Metric.mem_ball_self (by norm_num)⟩ q hq0
-  set cm : ℝ≥0∞ := ENNReal.ofReal (min c 1) with hcm
-  have hcm0 : cm ≠ 0 := (ENNReal.ofReal_pos.mpr (lt_min hc one_pos)).ne'
+  set cm := ENNReal.ofReal (min c 1) with hcm
+  have hcm0 : cm ≠ 0 := by positivity
   have hcmt : cm ≠ ⊤ := ENNReal.ofReal_ne_top
-  have hcm1 : cm ≤ 1 := ENNReal.ofReal_le_one.mpr (min_le_right _ _)
+  have hcm1 : cm ≤ 1 := ENNReal.ofReal_le_one.mpr (min_le_right ..)
   refine ⟨cm ^ (-q) * (1 + ENNReal.ofReal Ci), ENNReal.mul_lt_top
     (ENNReal.rpow_ne_top_of_ne_zero hcm0 hcmt).lt_top
     (ENNReal.add_lt_top.mpr ⟨ENNReal.one_lt_top, ENNReal.ofReal_lt_top⟩), ?_⟩
@@ -55,20 +57,20 @@ theorem regularizedCoulombMass_moment_uniform_nonpos
     intro ω
     rw [regularizedCoulombMass_eq_lintegral P X hX Xc hXc]
     calc cm * regularizedGMC P Xc γ r ω B = ∫⁻ _x in B, cm ∂regularizedGMC P Xc γ r ω :=
-          (setLIntegral_const _ _).symm
+          (setLIntegral_const ..).symm
       _ ≤ ∫⁻ x in B, coulombCutoffWeight partition γ α z αinf r x ∂regularizedGMC P Xc γ r ω := by
           refine setLIntegral_mono' hBm fun x hx => ?_
-          exact (ENNReal.ofReal_le_ofReal (min_le_left _ _)).trans
+          exact (ENNReal.ofReal_le_ofReal (min_le_left ..)).trans
             (hcb γ α z αinf r x hr hZ hEα hEinf hx)
-      _ ≤ _ := setLIntegral_le_lintegral _ _
+      _ ≤ _ := setLIntegral_le_lintegral ..
   have hMm : AEMeasurable (fun ω => regularizedGMC P Xc γ r ω B ^ (-q)) P :=
     ((Measure.measurable_coe hBm).comp
       (regularizedGMC_measurable P X hX Xc hXc γ r)).aemeasurable.pow_const _
-  calc ∫⁻ ω, ENNReal.rpow (regularizedCoulombMass P Xc γ partition α z αinf r ω) t ∂P
+  calc ∫⁻ ω, ENNReal.rpow _ t ∂P
       ≤ ∫⁻ ω, cm ^ (-q) * (1 + regularizedGMC P Xc γ r ω B ^ (-q)) ∂P := by
         apply lintegral_mono
         intro ω
-        calc ENNReal.rpow (regularizedCoulombMass P Xc γ partition α z αinf r ω) t
+        calc ENNReal.rpow _ t
             ≤ (cm * regularizedGMC P Xc γ r ω B) ^ t :=
               ennreal_rpow_antitone_of_nonpos (hlow ω) ht0
           _ = cm ^ t * regularizedGMC P Xc γ r ω B ^ t :=
@@ -92,9 +94,6 @@ theorem regularizedCoulombMass_moment_uniform_nonpos
 /-- Uniform higher moments of regularized Coulomb masses on compact admissible parameter sets: the
 moment half of the extended-Seiberg cutoff uniform integrability. -/
 theorem regularizedCoulombMass_higher_moment_uniform
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (partition : GMCChartPartition)
     {N : ℕ} (S : Set (ℝ × ((Fin N → ℂ) × (Fin N → ℝ) × ℝ))) (hS : IsCompact S)
     (hadm : ∀ c ∈ S,
       0 < c.1 ∧ c.1 < 2 ∧ Function.Injective c.2.1 ∧
@@ -108,8 +107,7 @@ theorem regularizedCoulombMass_higher_moment_uniform
       ∫⁻ ω, ENNReal.rpow
         (regularizedCoulombMass P Xc c.1 partition c.2.2.1 c.2.1 c.2.2.2 r ω)
         ((1 + η) * ((2 * Q c.1 - (∑ k, c.2.2.1 k + c.2.2.2)) / c.1)) ∂P ≤ B := by
-  classical
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   set sf : ℝ × ((Fin N → ℂ) × (Fin N → ℝ) × ℝ) → ℝ := fun c =>
     (2 * Q c.1 - (∑ k, c.2.2.1 k + c.2.2.2)) / c.1 with hsf
   have hne : ∀ c ∈ S, c.1 ≠ 0 := fun c hc => (hadm c hc).1.ne'
@@ -125,25 +123,25 @@ theorem regularizedCoulombMass_higher_moment_uniform
   obtain ⟨Zs0, hZs0⟩ := hS.exists_bound_of_continuousOn
     (f := fun c : ℝ × ((Fin N → ℂ) × (Fin N → ℝ) × ℝ) => ∑ j, ‖c.2.1 j‖) (by fun_prop)
   obtain ⟨E0, hE0⟩ := hS.exists_bound_of_continuousOn
-    (f := fun c : ℝ × ((Fin N → ℂ) × (Fin N → ℝ) × ℝ) =>
+    (f := fun c =>
       ∑ j, |c.1 * c.2.2.1 j| + |c.1 * c.2.2.2|) (by fun_prop)
-  set σ : ℝ := max σ0 0 with hσdef
-  set Zs : ℝ := max Zs0 0 with hZsdef
-  set E : ℝ := max E0 0 with hEdef
-  have hσ : 0 ≤ σ := le_max_right _ _
-  have hZs : 0 ≤ Zs := le_max_right _ _
-  have hE : 0 ≤ E := le_max_right _ _
+  set σ := max σ0 0 with hσdef
+  set Zs := max Zs0 0 with hZsdef
+  set E := max E0 0 with hEdef
+  have hσ : 0 ≤ σ := le_max_right ..
+  have hZs : 0 ≤ Zs := le_max_right ..
+  have hE : 0 ≤ E := le_max_right ..
   have hsσ : ∀ c ∈ S, |sf c| ≤ σ := fun c hc =>
-    (by simpa [Real.norm_eq_abs] using hσ0 c hc : |sf c| ≤ σ0).trans (le_max_left _ _)
+    (by tauto : |sf c| ≤ σ0).trans (le_max_left ..)
   have hZc : ∀ c ∈ S, ∑ j, ‖c.2.1 j‖ ≤ Zs := fun c hc => by
     have h := hZs0 c hc
     rw [Real.norm_eq_abs, abs_of_nonneg (Finset.sum_nonneg fun j _ => norm_nonneg _)] at h
-    exact h.trans (le_max_left _ _)
+    exact h.trans (le_max_left ..)
   have hEsum : ∀ c ∈ S, ∑ j, |c.1 * c.2.2.1 j| + |c.1 * c.2.2.2| ≤ E := fun c hc => by
     have h := hE0 c hc
     rw [Real.norm_eq_abs, abs_of_nonneg (add_nonneg (Finset.sum_nonneg fun j _ =>
       abs_nonneg _) (abs_nonneg _))] at h
-    exact h.trans (le_max_left _ _)
+    exact h.trans (le_max_left ..)
   have hEα : ∀ c ∈ S, ∀ j, |c.1 * c.2.2.1 j| ≤ E := fun c hc j => by
     have := Finset.single_le_sum (f := fun j => |c.1 * c.2.2.1 j|) (fun j _ => abs_nonneg _)
       (Finset.mem_univ j)
@@ -189,9 +187,9 @@ theorem regularizedCoulombMass_higher_moment_uniform
       j ≠ k → ∀ c ∈ S, 2 * ε ≤ ‖c.2.1 j - c.2.1 k‖ := by
     intro j k
     by_cases hjk : j = k
-    · exact Eventually.of_forall fun _ h => absurd hjk h
+    · bound
     · filter_upwards [eventually_le_of_isCompact_of_pos hS
-        (f := fun c : ℝ × ((Fin N → ℂ) × (Fin N → ℝ) × ℝ) => ‖c.2.1 j - c.2.1 k‖ / 2)
+       
         (by fun_prop)
         fun c hc => half_pos (norm_pos_iff.mpr (sub_ne_zero.mpr
           ((hadm c hc).2.2.1.ne hjk)))] with ε hε _ c hc
@@ -201,26 +199,23 @@ theorem regularizedCoulombMass_higher_moment_uniform
       eventually_all.mpr (e7 j)).and (Ioo_mem_nhdsGT (show (0 : ℝ) < 1 / 8 by
         norm_num))))))))).exists
   -- the common exponent and the raised order
-  set η : ℝ := min 1 (ε / (2 * (σ + 1))) with hη
-  have hη0 : 0 < η := lt_min one_pos (div_pos hε0 (by positivity))
-  have hη1 : η ≤ 1 := min_le_left _ _
+  set η := min 1 (ε / (2 * (σ + 1))) with hη
+  have hη0 : 0 < η := by positivity
+  have hη1 : η ≤ 1 := min_le_left ..
   have hηg : η * σ ≤ ε / 2 := by
     have h := mul_le_mul_of_nonneg_right (min_le_right 1 (ε / (2 * (σ + 1))))
       (by positivity : (0 : ℝ) ≤ σ + 1)
-    rw [← hη] at h
     have h' : ε / (2 * (σ + 1)) * (σ + 1) = ε / 2 := by field_simp
     linarith only [h, h', hη0]
-  set tstar : ℝ := ε / 4 with htstar
+  set tstar := ε / 4 with htstar
   set τ : ℝ × ((Fin N → ℂ) × (Fin N → ℝ) × ℝ) → ℝ := fun c => max ((1 + η) * sf c) tstar
     with hτ
-  have hτc : ContinuousOn τ S := ContinuousOn.sup (continuousOn_const.mul hsfc) continuousOn_const
+  have hτc : ContinuousOn τ S := by fun_prop
   -- the raised order is admissible
   have hτth : ∀ c ∈ S, ∀ th : ℝ, ε ≤ th → ε ≤ th - sf c → τ c < th := by
     intro c hc th hth hths
     rcases le_total ((1 + η) * sf c) tstar with h | h
-    · rw [hτ]
-      simp only [max_eq_right h]
-      linarith
+    · bound
     · rw [hτ]
       simp only [max_eq_left h]
       have hs0 : 0 < sf c := by
@@ -232,7 +227,7 @@ theorem regularizedCoulombMass_higher_moment_uniform
         ((le_abs_self _).trans (hsσ c hc)) hη0.le) hηg
       linarith only [hths, hηs, hε0]
   have hτpos : ∀ c ∈ S, 0 < τ c := fun c hc =>
-    lt_of_lt_of_le (by positivity) (le_max_right _ _)
+    lt_of_lt_of_le (by positivity) (le_max_right ..)
   have hroot : ∀ c ∈ S, ∀ k, 0 < weightedCutoffSlack (c.1, c.2.2.1 k, τ c) := by
     intro c hc k
     obtain ⟨hγ0, hγ2, -, hαQ, -⟩ := hadm c hc
@@ -257,27 +252,26 @@ theorem regularizedCoulombMass_higher_moment_uniform
   obtain ⟨Kp, hKp, hKpb⟩ := regularizedCoulombMass_moment_uniform_pos P X hX Xc hXc partition
     N S hS τ hτc hroot hinf hε0 (hε8.le.trans (by norm_num))
     (fun c hc j k hjk => h7 j k hjk c hc)
-  have hΓ : IsCompact ((fun c : ℝ × ((Fin N → ℂ) × (Fin N → ℝ) × ℝ) => c.1) '' S) :=
+  have hΓ : IsCompact ((fun c => c.1) '' S) :=
     hS.image continuous_fst
-  have hΓ2 : (fun c : ℝ × ((Fin N → ℂ) × (Fin N → ℝ) × ℝ) => c.1) '' S ⊆ Set.Ioo 0 2 := by
+  have hΓ2 : (fun c => c.1) '' S ⊆ Set.Ioo 0 2 := by
     rintro _ ⟨c, hc, rfl⟩
     exact ⟨(hadm c hc).1, (hadm c hc).2.1⟩
   obtain ⟨Kn, hKn, hKnb⟩ := regularizedCoulombMass_moment_uniform_nonpos P X hX Xc hXc partition
-    N _ hΓ hΓ2 (E := E) hZs (by linarith : -2 * σ ≤ 0)
+    N _ hΓ hΓ2 hZs (by linarith : -2 * σ ≤ 0)
   refine ⟨η, hη0, 1 + Kp + Kn, ENNReal.add_lt_top.mpr ⟨ENNReal.add_lt_top.mpr
     ⟨ENNReal.one_lt_top, hKp⟩, hKn⟩, fun c hc r hr => ?_⟩
   rcases le_or_gt (sf c) 0 with hs | hs
   · -- nonpositive Seiberg exponent
-    have ht0 : (1 + η) * sf c ≤ 0 := mul_nonpos_of_nonneg_of_nonpos (by linarith) hs
+    have ht0 : (1 + η) * sf c ≤ 0 := by nlinarith
     have htmin : -2 * σ ≤ (1 + η) * sf c := by
-      have := (abs_le.mp (hsσ c hc)).1
-      linarith only [this, mul_nonneg (sub_nonneg.2 hη1) (neg_nonneg.2 hs)]
+      linarith only [((abs_le.mp (hsσ c hc)).1), mul_nonneg (sub_nonneg.2 hη1) (neg_nonneg.2 hs)]
     exact (hKnb c.1 ⟨c, hc, rfl⟩ c.2.2.1 c.2.1 c.2.2.2 _ r (hZc c hc) (hEα c hc) (hEinf c hc)
       htmin ht0 hr).trans le_add_self
   · -- positive Seiberg exponent: raise the order
-    have ht : 0 < (1 + η) * sf c := mul_pos (by linarith) hs
-    have hle : (1 + η) * sf c ≤ τ c := le_max_left _ _
-    calc ∫⁻ ω, ENNReal.rpow (regularizedCoulombMass P Xc c.1 partition c.2.2.1 c.2.1 c.2.2.2 r ω)
+    have ht : 0 < (1 + η) * sf c := by positivity
+    have hle : (1 + η) * sf c ≤ τ c := le_max_left ..
+    calc ∫⁻ ω, ENNReal.rpow _
           ((1 + η) * sf c) ∂P
         ≤ ∫⁻ ω, (1 + ENNReal.rpow (regularizedCoulombMass P Xc c.1 partition c.2.2.1 c.2.1 c.2.2.2
             r ω) (τ c)) ∂P :=
@@ -287,5 +281,9 @@ theorem regularizedCoulombMass_higher_moment_uniform
           rw [lintegral_add_left' aemeasurable_const, lintegral_const, measure_univ, mul_one]
       _ ≤ 1 + Kp := by gcongr; exact hKpb c hc r hr
       _ ≤ 1 + Kp + Kn := le_self_add
+
+end
+
+end
 
 end DOZZ.Proofs

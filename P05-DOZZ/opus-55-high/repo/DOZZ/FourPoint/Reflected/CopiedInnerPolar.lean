@@ -31,17 +31,14 @@ theorem reflected_reinserted_lateral_projection (γ : ℝ) (A : TwoSidedPath)
       (N.withDensity (lateralRadialWeight γ A)).withDensity
         (fun x => ENNReal.ofReal (reflected_global_reinsertionWeight γ A x)) := by
     rw [← withDensity_mul N hW hL, ← withDensity_mul N hL hW]
-    congr 1
-    funext x
-    exact mul_comm (ENNReal.ofReal (reflected_global_reinsertionWeight γ A x))
-      (lateralRadialWeight γ A x)
+    ring
   change ((N.withDensity (fun x => ENNReal.ofReal
     (reflected_global_reinsertionWeight γ A x))).withDensity
       (lateralRadialWeight γ A)).map _ = _
   rw [he, reflected_global_reinsertion_measure]
   have hrest : N.restrict ({0} : Set ℂ)ᶜ = N :=
     Measure.restrict_eq_self_of_ae_mem (measure_eq_zero_iff_ae_notMem.mp h0)
-  rw [hrest]
+  simp_all
 
 /-- The actual independently reinserted inner radial mass equals its lateral polar integral. -/
 theorem reflected_copied_inner_radial_polar (γ α : ℝ) (A : TwoSidedPath)
@@ -59,15 +56,16 @@ theorem reflected_copied_inner_radial_polar (γ α : ℝ) (A : TwoSidedPath)
   rw [reflected_reinserted_lateral_projection γ A N h0] at hi
   have hf : Measurable (fun x : ℂ => ENNReal.ofReal (‖x‖ ^ (-(γ * α)))) := by fun_prop
   have hU : MeasurableSet {x : ℂ | 0 < ‖x‖ ∧ ‖x‖ < Real.exp (-(T : ℝ))} :=
-    (measurableSet_lt measurable_const measurable_norm).inter
-      (measurableSet_lt measurable_norm measurable_const)
+    by measurability
   rw [setLIntegral_withDensity_eq_setLIntegral_mul N hW hf hU] at hi
   simpa only [Pi.mul_apply, mul_comm] using hi
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
 
 /-- The actual removed plane carrier projects to the source lateral GMC on one common
 full-measure event; its plane origin has zero mass on that event. -/
 theorem reflected_removed_carrier_projection
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ : ℝ)
+    (γ : ℝ)
     (A : Ω → TwoSidedPath) (M N : Ω → Measure ℂ)
     (heq : N =ᵐ[P] (fun ω => (M ω).withDensity (lateralRadialWeight γ (A ω)))) :
     ∀ᵐ ω ∂P, N ω {0} = 0 ∧
@@ -75,10 +73,10 @@ theorem reflected_removed_carrier_projection
   filter_upwards [heq] with ω hω
   rw [hω]
   constructor
-  · rw [withDensity_apply _ (measurableSet_singleton (0 : ℂ))]
+  · rw [withDensity_apply _ (measurableSet_singleton 0)]
     calc
-      (∫⁻ x in ({0} : Set ℂ), lateralRadialWeight γ (A ω) x ∂M ω) =
-          ∫⁻ x in ({0} : Set ℂ), (0 : ℝ≥0∞) ∂M ω := by
+      (∫⁻ x in ({0}), lateralRadialWeight γ (A ω) x ∂M ω) =
+          ∫⁻ x in ({0}), 0 ∂M ω := by
         apply setLIntegral_congr_fun (measurableSet_singleton (0 : ℂ))
         intro x hx
         rw [mem_singleton_iff.mp hx, lateralRadialWeight_zero]
@@ -88,7 +86,7 @@ theorem reflected_removed_carrier_projection
 /-- Independently reinserted inner masses restart against the translated actual source lateral
 measure, uniformly over the copied radial path and deterministic restart time. -/
 theorem reflected_copied_inner_source_restart
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ α : ℝ)
+    (γ α : ℝ)
     (A : Ω → TwoSidedPath) (M N : Ω → Measure ℂ)
     (heq : N =ᵐ[P] (fun ω => (M ω).withDensity (lateralRadialWeight γ (A ω)))) :
     ∀ᵐ ω ∂P, ∀ a : TwoSidedPath, ∀ T : ℝ≥0,
@@ -102,6 +100,8 @@ theorem reflected_copied_inner_source_restart
             ∂(lateralProjectedGMC γ (A ω) (M ω)).map (fun s => s - (T : ℝ)) := by
   filter_upwards [reflected_removed_carrier_projection P γ A M N heq] with ω hω a T
   rw [reflected_copied_inner_radial_polar γ α a (N ω) hω.1 T, hω.2]
-  exact reflected_inner_polar_restart γ (Q γ - α) a _ T
+  exact reflected_inner_polar_restart γ _ a _ T
+
+end
 
 end DOZZ.Proofs

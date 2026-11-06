@@ -28,7 +28,7 @@ theorem lastone_williamsInput_model_map
         (z.1, negativeConditionedLastExitSegment z.1 z.2))).prod Q).prod L) := by
   let T : ℝ × BrownianPath → ℝ × StoppedBrownianPath := fun z =>
     (z.1, negativeConditionedLastExitSegment z.1 z.2)
-  have hT : Measurable T := measurable_fst.prodMk measurable_lastExitSegment_joint
+  have hT := measurable_fst.prodMk measurable_lastExitSegment_joint
   have hswap := (MeasurePreserving.id μ).prod
     ((Measure.measurePreserving_swap (μ := Q) (ν := Q)).prod (MeasurePreserving.id L))
   have houter := MeasurePreserving.symm MeasurableEquiv.prodAssoc
@@ -38,22 +38,19 @@ theorem lastone_williamsInput_model_map
   let R : ℝ × ((BrownianPath × BrownianPath) × Measure ℝ) →
       ((ℝ × BrownianPath) × BrownianPath) × Measure ℝ := fun z =>
     (((z.1, z.2.1.2), z.2.1.1), z.2.2)
-  have hR : MeasurePreserving R (μ.prod ((Q.prod Q).prod L)) (((μ.prod Q).prod Q).prod L) := by
-    exact hinner.comp (houter.comp hswap)
+  have hR : MeasurePreserving R (μ.prod ((Q.prod Q).prod L)) (((μ.prod Q).prod Q).prod L) := hinner.comp (houter.comp hswap)
   let F : ((ℝ × BrownianPath) × BrownianPath) × Measure ℝ →
       ((ℝ × StoppedBrownianPath) × BrownianPath) × Measure ℝ :=
     Prod.map (Prod.map T id) id
-  have hF : Measurable F := (hT.prodMap measurable_id).prodMap measurable_id
+  have hF : Measurable F := by fun_prop
   have hn : (((μ.prod Q).prod Q).prod L).map F =
       (((μ.prod Q).map T).prod Q).prod L := by
     have h1 := Measure.map_prod_map (μ.prod Q) Q hT measurable_id
     have h2 := Measure.map_prod_map ((μ.prod Q).prod Q) L
       (hT.prodMap measurable_id) measurable_id
-    simp only [Measure.map_id] at h1 h2
-    exact h2.symm.trans (congrArg (fun N => N.prod L) h1.symm)
+    aesop
   change (μ.prod ((Q.prod Q).prod L)).map (F ∘ R) = _
-  rw [← Measure.map_map hF hR.measurable, hR.map_eq]
-  exact hn
+  rwa [← Measure.map_map hF hR.measurable, hR.map_eq]
 
 /-- A conditioned pair independent of the supplied lateral measure realizes exactly the
 Williams model input law, on the product with the independent maximum carrier. -/
@@ -72,19 +69,18 @@ theorem lastone_williamsInput_law_on_given_space
   let : IsProbabilityMeasure (P.map Z) := (Measure.isProbabilityMeasure_map_iff hZm).2 inferInstance
   have hBm := aemeasurable_of_twoSidedConditioned hB
   let pair : Ω → (BrownianPath × BrownianPath) × Measure ℝ := fun ω => (B ω, Z ω)
-  have hp : AEMeasurable pair P := hBm.prodMk hZm
+  have hp := hBm.prodMk hZm
   have hBlaw : P.map B = Q.prod Q := by
     have h := (indepFun_iff_map_prod_eq_prod_map_map hB.1.1 hB.2.1.1).mp hB.2.2
     have h1 := isNegativeConditionedBrownianLaw_eq ν hB.1.2 hQ
     have h2 := isNegativeConditionedBrownianLaw_eq ν hB.2.1.2 hQ
-    simpa only [Prod.eta, h1, h2] using h
+    simp_all
   have hplaw : P.map pair = (Q.prod Q).prod (P.map Z) := by
     have h := (indepFun_iff_map_prod_eq_prod_map_map hBm hZm).mp hInd
-    simpa only [pair, hBlaw] using h
+    aesop
   let g : ℝ × Ω → ℝ × ((BrownianPath × BrownianPath) × Measure ℝ) :=
     fun z => (z.1, pair z.2)
-  have hg : AEMeasurable g (μ.prod P) := measurable_fst.aemeasurable.prodMk
-    (hp.comp_quasiMeasurePreserving (Measure.quasiMeasurePreserving_snd (μ := μ) (ν := P)))
+  have hg : AEMeasurable g (μ.prod P) := by fun_prop
   have hglaw : (μ.prod P).map g = μ.prod (P.map pair) := by
     have heq : g =ᵐ[μ.prod P] Prod.map id (hp.mk pair) := by
       filter_upwards [(Measure.quasiMeasurePreserving_snd (μ := μ) (ν := P)).ae hp.ae_eq_mk]
@@ -92,7 +88,7 @@ theorem lastone_williamsInput_law_on_given_space
       exact congrArg (fun x => (z.1, x)) hz
     rw [Measure.map_congr heq]
     have hmap := Measure.map_prod_map μ P measurable_id hp.measurable_mk
-    simp only [Measure.map_id] at hmap
+    simp at hmap
     rw [← hmap, ← Measure.map_congr hp.ae_eq_mk]
   let T : ℝ × ((BrownianPath × BrownianPath) × Measure ℝ) →
       ((ℝ × StoppedBrownianPath) × BrownianPath) × Measure ℝ := fun z =>

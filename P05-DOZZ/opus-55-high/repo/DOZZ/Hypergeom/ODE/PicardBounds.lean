@@ -48,13 +48,13 @@ theorem holomorphicPicardIterates_norm_le (c : ℂ) (r M : ℝ)
             (z - c) • integrand (AffineMap.lineMap c z t) := by
         have hprimitive := normalizedDiskPrimitive_sub_center_eq_segmentIntegral
           (y := (0 : E)) hintegrand hz
-        simpa [holomorphicPicardIterates, integrand] using hprimitive
-      let d : ℝ := ‖z - c‖
-      let C : ℝ := ‖y‖ * (M * d) ^ (n + 1) / (n.factorial : ℝ)
+        aesop
+      let d := ‖z - c‖
+      let C := ‖y‖ * (M * d) ^ (n + 1) / (n.factorial : ℝ)
       have hpoint : ∀ t ∈ Icc (0 : ℝ) 1,
           ‖(z - c) • integrand (AffineMap.lineMap c z t)‖ ≤ C * t ^ n := by
         intro t ht
-        let w : ℂ := AffineMap.lineMap c z t
+        let w := AffineMap.lineMap c z t
         have hw : w ∈ Metric.ball c r := hseg ht
         have hdelta : w - c = t • (z - c) := by
           dsimp [w]
@@ -62,21 +62,19 @@ theorem holomorphicPicardIterates_norm_le (c : ℂ) (r M : ℝ)
           abel
         have hnormDelta : ‖w - c‖ = t * d := by
           rw [hdelta, norm_smul, Real.norm_eq_abs, abs_of_nonneg ht.1]
-        have hprev := ih w hw
         have hprev' : ‖(holomorphicPicardIterates c r H hH y n).1 w‖ ≤
             ‖y‖ * (M * (t * d)) ^ n / (n.factorial : ℝ) := by
-          simpa [hnormDelta] using hprev
-        have hOp := (H w).le_opNorm ((holomorphicPicardIterates c r H hH y n).1 w)
+          simpa [hnormDelta] using (ih w hw)
         have hHnorm : ‖H w‖ ≤ M := hHbound w hw
         have hpow : (M * (t * d)) ^ n = t ^ n * (M * d) ^ n := by
           rw [show M * (t * d) = t * (M * d) by ring, mul_pow]
         dsimp [integrand, C, d]
         rw [norm_smul]
         calc
-          ‖z - c‖ * ‖H w ((holomorphicPicardIterates c r H hH y n).1 w)‖ ≤
+          ‖z - c‖ * ‖H w _‖ ≤
               ‖z - c‖ * (M * ‖(holomorphicPicardIterates c r H hH y n).1 w‖) :=
             mul_le_mul_of_nonneg_left
-              (hOp.trans (mul_le_mul_of_nonneg_right hHnorm (norm_nonneg _))) (norm_nonneg _)
+              (((H w).le_opNorm _).trans (mul_le_mul_of_nonneg_right hHnorm (norm_nonneg _))) (norm_nonneg _)
           _ ≤ ‖z - c‖ * (M *
               (‖y‖ * (M * (t * ‖z - c‖)) ^ n / (n.factorial : ℝ))) := by
             gcongr
@@ -103,7 +101,7 @@ theorem holomorphicPicardIterates_norm_le (c : ℂ) (r M : ℝ)
             C / (n + 1) := by
         calc
           _ ≤ ∫ t in (0 : ℝ)..1,
-                ‖(z - c) • integrand (AffineMap.lineMap c z t)‖ := hnorm
+                ‖(z - c) • integrand _‖ := hnorm
           _ ≤ ∫ t in (0 : ℝ)..1, C * t ^ n := hmono
           _ = C / (n + 1) := by
                 rw [intervalIntegral.integral_const_mul, integral_pow]
@@ -111,9 +109,9 @@ theorem holomorphicPicardIterates_norm_le (c : ℂ) (r M : ℝ)
                 rfl
       rw [hterm]
       dsimp [C, d] at hintegral ⊢
-      have hn : (n.factorial : ℝ) ≠ 0 := by exact_mod_cast Nat.factorial_ne_zero n
+      have hn : (n.factorial : ℝ) ≠ 0 := by positivity
       calc
-        ‖∫ t in (0 : ℝ)..1, (z - c) • integrand (AffineMap.lineMap c z t)‖ ≤
+        ‖∫ t in (0 : ℝ)..1, (z - c) • integrand _‖ ≤
             ‖y‖ * (M * ‖z - c‖) ^ (n + 1) / (n.factorial : ℝ) / (n + 1) := hintegral
         _ = ‖y‖ * (M * ‖z - c‖) ^ (n + 1) / ((n + 1).factorial : ℝ) := by
           rw [Nat.factorial_succ, Nat.cast_mul]

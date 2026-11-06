@@ -25,20 +25,26 @@ namespace DOZZ.Proofs
 `1/ρ`. -/
 def coulombBadRegion {N : ℕ} (z : Fin N → ℂ) (ρ : ℝ) : Set ℂ :=
   (⋃ k, Metric.ball (z k) ρ) ∪ {x : ℂ | 1 / ρ < ‖x‖}
+section
+variable {N : ℕ}
+section
+variable (z : Fin N → ℂ) (ρ : ℝ)
 
-theorem measurableSet_coulombBadRegion {N : ℕ} (z : Fin N → ℂ) (ρ : ℝ) :
+theorem measurableSet_coulombBadRegion :
     MeasurableSet (coulombBadRegion z ρ) :=
   (MeasurableSet.iUnion fun _ => Metric.isOpen_ball.measurableSet).union
     (measurableSet_lt measurable_const measurable_norm)
 
-theorem mem_coulombBadRegion_compl {N : ℕ} (z : Fin N → ℂ) (ρ : ℝ) (x : ℂ) :
+theorem mem_coulombBadRegion_compl (x : ℂ) :
     x ∈ (coulombBadRegion z ρ)ᶜ ↔ ‖x‖ ≤ 1 / ρ ∧ ∀ k, ρ ≤ ‖x - z k‖ := by
   simp only [coulombBadRegion, Set.mem_compl_iff, Set.mem_union, Set.mem_iUnion,
     Metric.mem_ball, dist_eq_norm, not_or, not_exists, not_lt, Set.mem_ofPred_eq]
   tauto
 
+end
+
 /-- The bad part of a weighted mass is at most the sum of its root and exterior pieces. -/
-theorem lintegral_coulombBadRegion_le {N : ℕ} (μ : Measure ℂ) (G : ℂ → ℝ≥0∞)
+theorem lintegral_coulombBadRegion_le (μ : Measure ℂ) (G : ℂ → ℝ≥0∞)
     (hG : Measurable G) (z : Fin N → ℂ) (ρ : ℝ) :
     ∫⁻ x in coulombBadRegion z ρ, G x ∂μ ≤
       ∑ k, ∫⁻ x in Metric.ball (z k) ρ, G x ∂μ + ∫⁻ x in {x : ℂ | 1 / ρ < ‖x‖}, G x ∂μ := by
@@ -63,14 +69,14 @@ theorem lintegral_coulombBadRegion_le {N : ℕ} (μ : Measure ℂ) (G : ℂ → 
               _ ≤ ∑ j, (Metric.ball (z j) ρ).indicator G x :=
                 Finset.single_le_sum (f := fun j => (Metric.ball (z j) ρ).indicator G x)
                   (fun _ _ => zero_le) (Finset.mem_univ k)
-          · rw [Set.indicator_of_mem hx]
-            exact le_add_left le_rfl
-        · rw [Set.indicator_of_notMem hx]
-          exact zero_le
+          simp_all
+        simp_all
     _ = _ := by
         rw [lintegral_add_left hS, lintegral_finsetSum _ fun k _ => hG.indicator (hBm k),
           lintegral_indicator hEm]
-        simp only [lintegral_indicator (hBm _)]
+        simp_all
+
+end
 
 /-- The far exterior coefficient: `(2/ρ)^{βt} (ρ R₀)^{ξ} ≤ 2^{Et} R₀^{4t} ρ^κ`. -/
 theorem farExterior_coeff_le {ρ R0 β E t ξ κ : ℝ} (hρ : 0 < ρ) (hρ1 : ρ ≤ 1) (hR0 : 1 ≤ R0)
@@ -90,13 +96,8 @@ theorem farExterior_coeff_le {ρ R0 β E t ξ κ : ℝ} (hρ : 0 < ρ) (hρ1 : �
     ring
   rw [h3]
   have hb : (2 : ℝ) ^ (β * t) ≤ 2 ^ (E * t) :=
-    Real.rpow_le_rpow_of_exponent_le (by norm_num) (mul_le_mul_of_nonneg_right hβE ht.le)
-  have hr : R0 ^ ξ ≤ R0 ^ (4 * t) := Real.rpow_le_rpow_of_exponent_le hR0 hξ
-  have hp : ρ ^ (ξ - β * t) ≤ ρ ^ κ := Real.rpow_le_rpow_of_exponent_ge hρ hρ1 hκ
-  have h0 : 0 ≤ ρ ^ (ξ - β * t) := Real.rpow_nonneg hρ.le _
-  calc 2 ^ (β * t) * R0 ^ ξ * ρ ^ (ξ - β * t) ≤ 2 ^ (E * t) * R0 ^ (4 * t) * ρ ^ (ξ - β * t) := by
-        gcongr
-    _ ≤ 2 ^ (E * t) * R0 ^ (4 * t) * ρ ^ κ := by gcongr
+    by simp_all
+  bound
 
 /-- Cutoff moments of the bad part are uniformly small once the cutoff scale is below the disk
 radius. -/
@@ -121,7 +122,7 @@ theorem cutoffUI_bad_cutoff_moment_le
       tst < 2 / c.1 * (Q c.1 - max c.2.2.2 0) := by
     intro c hc
     have h := (weightedCutoffSlack_pos_iff _).mp (hinf c hc)
-    exact ⟨h.1, h.2.1, h.2.2.2.1, (lt_min_iff.mp h.2.2.2.2).1, (lt_min_iff.mp h.2.2.2.2).2⟩
+    grind
   -- uniform sizes
   obtain ⟨Zs0, hZs0⟩ := hS.exists_bound_of_continuousOn
     (f := fun c : ℝ × ((Fin N → ℂ) × (Fin N → ℝ) × ℝ) => ∑ j, ‖c.2.1 j‖) (by fun_prop)
@@ -130,17 +131,17 @@ theorem cutoffUI_bad_cutoff_moment_le
       ∑ j, |c.1 * c.2.2.1 j| + |c.1 * c.2.2.2|) (by fun_prop)
   set Zs : ℝ := max Zs0 0 with hZsdef
   set E : ℝ := max E0 0 with hEdef
-  have hZs : 0 ≤ Zs := le_max_right _ _
-  have hE : 0 ≤ E := le_max_right _ _
+  have hZs : 0 ≤ Zs := le_max_right ..
+  have hE : 0 ≤ E := le_max_right ..
   have hZc : ∀ c ∈ S, ∑ j, ‖c.2.1 j‖ ≤ Zs := fun c hc => by
     have h := hZs0 c hc
     rw [Real.norm_eq_abs, abs_of_nonneg (Finset.sum_nonneg fun j _ => norm_nonneg _)] at h
-    exact h.trans (le_max_left _ _)
+    exact h.trans (le_max_left ..)
   have hEsum : ∀ c ∈ S, ∑ j, |c.1 * c.2.2.1 j| + |c.1 * c.2.2.2| ≤ E := fun c hc => by
     have h := hE0 c hc
     rw [Real.norm_eq_abs, abs_of_nonneg (add_nonneg (Finset.sum_nonneg fun j _ =>
       abs_nonneg _) (abs_nonneg _))] at h
-    exact h.trans (le_max_left _ _)
+    exact h.trans (le_max_left ..)
   have hEα : ∀ c ∈ S, ∀ j, |c.1 * c.2.2.1 j| ≤ E := fun c hc j => by
     have := Finset.single_le_sum (f := fun j => |c.1 * c.2.2.1 j|) (fun j _ => abs_nonneg _)
       (Finset.mem_univ j)
@@ -159,12 +160,11 @@ theorem cutoffUI_bad_cutoff_moment_le
     refine eventually_le_of_isCompact_of_pos hS (hconton _ fun c hc => ?_) fun c hc => ?_
     · have h := hne c hc
       simp only [Q]
-      fun_prop (disch := first | exact h | exact pow_ne_zero _ h)
+      fun_prop
     · have h := (weightedCutoffSlack_pos_iff _).mp (hroot c hc k)
       obtain ⟨hγ0, -, -, -, ht⟩ := h
-      have ht2 := (lt_min_iff.mp ht).2
       have h1 : c.1 * tst / 2 < Q c.1 - c.2.2.1 k := by
-        have h := mul_lt_mul_of_pos_left ht2 (by positivity : (0 : ℝ) < c.1 / 2)
+        have h := mul_lt_mul_of_pos_left ((lt_min_iff.mp ht).2) (by positivity : (0 : ℝ) < c.1 / 2)
         have hl : c.1 / 2 * (2 / c.1 * (Q c.1 - c.2.2.1 k)) = Q c.1 - c.2.2.1 k := by
           field_simp
         linarith
@@ -189,7 +189,7 @@ theorem cutoffUI_bad_cutoff_moment_le
     have hexp : 2 * tst + c.1 ^ 2 * tst / 2 - c.1 ^ 2 * tst ^ 2 / 2 -
         max (c.1 * c.2.2.2) 0 * tst = c.1 * tst * ((Q c.1 - max c.2.2.2 0) - c.1 * tst / 2) := by
       rw [hmax]
-      have h2 : 2 * tst + c.1 ^ 2 * tst / 2 = c.1 * Q c.1 * tst := by rw [hQ]; ring
+      have h2 : 2 * tst + c.1 ^ 2 * tst / 2 = c.1 * Q c.1 * tst := by grind
       linear_combination h2
     rw [hexp]
     exact mul_pos (mul_pos hγ0 htst) (by linarith)
@@ -199,10 +199,10 @@ theorem cutoffUI_bad_cutoff_moment_le
   -- partition supports and the exterior radius
   obtain ⟨Rf, Ri, hRf, hRi, hsuppf, hsuppi⟩ := partition_support_bounds partition
   set R0 : ℝ := max (2 * Zs + 2) Rf with hR0def
-  have hR0Z : 2 * Zs + 2 ≤ R0 := le_max_left _ _
-  have hR02 : 2 ≤ R0 := le_trans (by linarith) hR0Z
+  have hR0Z : 2 * Zs + 2 ≤ R0 := le_max_left ..
+  have hR02 : 2 ≤ R0 := by linarith
   have hsuppf' : ∀ x, partition.finiteWeight x ≠ 0 → ‖x‖ < R0 := fun x hx =>
-    lt_of_lt_of_le (hsuppf x hx) (le_max_right _ _)
+    lt_of_lt_of_le (hsuppf x hx) (le_max_right ..)
   -- pointwise bounds for the weight
   obtain ⟨CR, hCR0, hCR⟩ := coulombCutoffWeight_le_root partition N hZs hE hρs hρs1 hRi hsuppi
   obtain ⟨CE, hCE0, hCE⟩ := coulombCutoffWeight_le_exterior partition N hZs hE hR0Z hsuppf'
@@ -214,13 +214,11 @@ theorem cutoffUI_bad_cutoff_moment_le
     intro k
     have hcont : ContinuousOn (fun c : ℝ × ((Fin N → ℂ) × (Fin N → ℝ) × ℝ) =>
         (c.1, c.2.2.1 k, tst)) S :=
-      (continuous_fst.continuousOn).prodMk ((continuous_apply k |>.comp
-        (continuous_fst.comp (continuous_snd.comp continuous_snd))).continuousOn.prodMk
-          continuousOn_const)
+      by fun_prop
     obtain ⟨C, hC, hCb⟩ := weightedCutoff_bound_uniform_compact P X hX Xc hXc _
       (hS.image_of_continuousOn hcont) (by
         rintro _ ⟨c, hc, rfl⟩
-        exact hroot c hc k) (closedBall 0 Zs) (isCompact_closedBall _ _) 1 one_pos
+        exact hroot c hc k) _ (isCompact_closedBall ..) 1 one_pos
     refine ⟨C, hC, fun c hc δ R hδ hδR hR1 => ?_⟩
     have hzk : c.2.1 k ∈ closedBall (0 : ℂ) Zs := by
       rw [mem_closedBall, dist_zero_right]
@@ -231,12 +229,12 @@ theorem cutoffUI_bad_cutoff_moment_le
   -- the zero-charge disk bound
   have hcont0 : ContinuousOn (fun c : ℝ × ((Fin N → ℂ) × (Fin N → ℝ) × ℝ) =>
       (c.1, (0 : ℝ), tst)) S :=
-    (continuous_fst.continuousOn).prodMk (continuousOn_const.prodMk continuousOn_const)
+    by fun_prop
   have hadm0 : ∀ c ∈ S, 0 < weightedCutoffSlack (c.1, (0 : ℝ), tst) := by
     intro c hc
     obtain ⟨hγ0, hγ2, ht0, ht4, -⟩ := hadmInf c hc
     have hQ0 : 0 < Q c.1 := by rw [Q]; positivity
-    refine (weightedCutoffSlack_pos_iff _).mpr ⟨hγ0, hγ2, by simpa using hQ0, ht0, ?_⟩
+    refine (weightedCutoffSlack_pos_iff _).mpr ⟨hγ0, hγ2, by assumption, ht0, ?_⟩
     refine lt_min ht4 ?_
     have : 4 / c.1 ^ 2 < 2 / c.1 * (Q c.1 - 0) := by
       rw [sub_zero, Q]
@@ -246,7 +244,7 @@ theorem cutoffUI_bad_cutoff_moment_le
   obtain ⟨C0, hC0, hC0b⟩ := weightedCutoff_bound_uniform_compact P X hX Xc hXc _
     (hS.image_of_continuousOn hcont0) (by
       rintro _ ⟨c, hc, rfl⟩
-      exact hadm0 c hc) (closedBall 0 0) (isCompact_closedBall _ _) (2 * R0 + 1) (by linarith)
+      exact hadm0 c hc) _ (isCompact_closedBall ..) (2 * R0 + 1) (by linarith)
   set K0 : ℝ≥0∞ := ENNReal.ofReal (C0 * (2 * R0 + 1) ^ (4 * tst)) with hK0
   have hdisk : ∀ c ∈ S, ∀ r : ℝ, 0 ≤ r →
       ∫⁻ ω, regularizedGMC P Xc c.1 r ω (Metric.ball 0 (2 * R0 + 1)) ^ tst ∂P ≤ K0 := by
@@ -260,7 +258,7 @@ theorem cutoffUI_bad_cutoff_moment_le
     refine h.trans (ENNReal.ofReal_le_ofReal (mul_le_mul_of_nonneg_left ?_ hC0.le))
     have hexp : c.1 * (Q c.1 - 0) * tst - c.1 ^ 2 * tst ^ 2 / 2 ≤ 4 * tst := by
       have hQ : c.1 * Q c.1 = 2 + c.1 ^ 2 / 2 := by rw [Q]; field_simp
-      have hγsq : c.1 ^ 2 < 2 ^ 2 := pow_lt_pow_left₀ hγ2 hγ0.le two_ne_zero
+      have hγsq : c.1 ^ 2 < 2 ^ 2 := by bound
       have hQt : c.1 * (Q c.1 - 0) * tst = (2 + c.1 ^ 2 / 2) * tst := by rw [sub_zero, hQ]
       have h1 : c.1 ^ 2 * tst < 2 ^ 2 * tst := mul_lt_mul_of_pos_right hγsq htst
       have h2 : 0 ≤ c.1 ^ 2 * tst ^ 2 := by positivity
@@ -285,14 +283,14 @@ theorem cutoffUI_bad_cutoff_moment_le
         (ENNReal.mul_lt_top ENNReal.ofReal_lt_top ENNReal.ofReal_lt_top) hGmt)
   intro c hc ρ hρ hρ1 r hr
   obtain ⟨hγ0, hγ2, -, -, -⟩ := hadmInf c hc
-  have hρs' : ρ ≤ ρs := hρ1.trans (min_le_left _ _)
-  have hρR0 : ρ ≤ 1 / R0 := hρ1.trans (min_le_right _ _)
+  have hρs' : ρ ≤ ρs := hρ1.trans (min_le_left ..)
+  have hρR0 : ρ ≤ 1 / R0 := hρ1.trans (min_le_right ..)
   have hρ1' : ρ ≤ 1 := hρs'.trans hρs1
   have hinvρ : R0 ≤ 1 / ρ := by
     rw [le_div_iff₀ hρ]
     rw [le_div_iff₀ (by linarith)] at hρR0
     linarith
-  have hr0 : 0 ≤ r := le_trans (Real.log_nonneg (by rw [le_div_iff₀ hρ]; linarith)) hr
+  have hr0 : 0 ≤ r := le_trans (Real.log_nonneg (by linarith)) hr
   have hδρ : Real.exp (-r) ≤ ρ := by
     have := Real.exp_le_exp.mpr (neg_le_neg hr)
     rwa [Real.log_div one_ne_zero hρ.ne', Real.log_one, zero_sub, neg_neg, Real.exp_log hρ]
@@ -301,7 +299,7 @@ theorem cutoffUI_bad_cutoff_moment_le
     rw [one_div, ← Real.exp_neg, neg_neg, Real.log_exp]
   -- the pieces, pointwise in the sample
   set cw : Fin N → Ω → ℝ≥0∞ := fun k ω =>
-    cutoffWeightedGmcBallMass P Xc c.1 (c.2.2.1 k) (c.2.1 k) ρ (Real.exp (-r)) ω with hcw
+    cutoffWeightedGmcBallMass P Xc c.1 (c.2.2.1 k) (c.2.1 k) ρ _ ω with hcw
   set V : Ω → ℝ≥0∞ := fun ω => ∫⁻ x in {x : ℂ | 1 / ρ ≤ ‖x‖},
     ENNReal.ofReal (‖x‖ ^ max (c.1 * c.2.2.2) 0) ∂regularizedGMC P Xc c.1 r ω with hV
   have hGm : Measurable (coulombCutoffWeight partition c.1 c.2.2.1 c.2.1 c.2.2.2 r) :=
@@ -342,11 +340,11 @@ theorem cutoffUI_bad_cutoff_moment_le
             exact hCE c.1 c.2.2.1 c.2.1 c.2.2.2 r x hr0 (hZc c hc) (hEα c hc) (hEinf c hc)
               (hinvρ.trans hx.le)
         _ ≤ ∫⁻ x in {x : ℂ | 1 / ρ ≤ ‖x‖}, ENNReal.ofReal CE *
-              ENNReal.ofReal (‖x‖ ^ max (c.1 * c.2.2.2) 0) ∂μ :=
+              ENNReal.ofReal _ ∂μ :=
             lintegral_mono_set fun x hx =>
               (le_of_lt (show 1 / ρ < ‖x‖ from hx) : 1 / ρ ≤ ‖x‖)
   have hcwm : ∀ k, AEMeasurable (cw k) P := fun k =>
-    (measurable_cutoffWeightedGmcBallMass P X hX Xc hXc _ _ _ _ _).aemeasurable
+    (measurable_cutoffWeightedGmcBallMass P X hX Xc hXc ..).aemeasurable
   have hEm : MeasurableSet {x : ℂ | 1 / ρ ≤ ‖x‖} :=
     measurableSet_le measurable_const measurable_norm
   have hVm : AEMeasurable V P := by
@@ -364,7 +362,7 @@ theorem cutoffUI_bad_cutoff_moment_le
   -- bound the moments of the pieces
   have hcwb : ∀ k, ∫⁻ ω, cw k ω ^ tst ∂P ≤ ENNReal.ofReal (Ck k) * ENNReal.ofReal (ρ ^ κ) := by
     intro k
-    refine (hCkb k c hc (Real.exp (-r)) ρ (Real.exp_pos _) hδρ hρ1').trans ?_
+    refine (hCkb k c hc _ ρ (Real.exp_pos _) hδρ hρ1').trans ?_
     rw [← ENNReal.ofReal_mul (hCkpos k).le]
     refine ENNReal.ofReal_le_ofReal (mul_le_mul_of_nonneg_left ?_ (hCkpos k).le)
     exact Real.rpow_le_rpow_of_exponent_ge hρ hρ1' (hκr k c hc)
@@ -381,7 +379,7 @@ theorem cutoffUI_bad_cutoff_moment_le
       simp only [zero_add, pow_one] at this
       linarith
     have hfar : ∀ r' : ℝ, 0 ≤ r' →
-        ∫⁻ ω, regularizedGMC P Xc c.1 r' ω (exteriorAnnulus (1 / ρ) 0) ^ tst ∂P ≤
+        ∫⁻ ω, regularizedGMC P Xc c.1 r' ω _ ^ tst ∂P ≤
           ENNReal.ofReal ((1 / ρ / R0) ^ (-(2 * tst + c.1 ^ 2 * tst / 2 -
             c.1 ^ 2 * tst ^ 2 / 2))) * K0 := fun r' hr' =>
       exteriorAnnulus_moment_le_far P X hX Xc hXc c.1 hR02 hinvρ hK0b hr'
@@ -395,7 +393,7 @@ theorem cutoffUI_bad_cutoff_moment_le
       have h2 : 0 ≤ c.1 ^ 2 * tst ^ 2 := by positivity
       linarith only [h1, h2]
     have hcoeff := farExterior_coeff_le (κ := κ) hρ hρ1' (by linarith : (1 : ℝ) ≤ R0)
-      hβE htst hξ (by linarith [hκi c hc])
+      hβE htst hξ (by tauto)
     have hG := geometric_factor_le hκpos (hκi c hc) (le_refl tst)
     calc ENNReal.ofReal ((2 * (1 / ρ)) ^ (max (c.1 * c.2.2.2) 0 * tst)) *
           (ENNReal.ofReal ((1 / ρ / R0) ^ (-(2 * tst + c.1 ^ 2 * tst / 2 -
@@ -422,14 +420,14 @@ theorem cutoffUI_bad_cutoff_moment_le
         ∑ k, ENNReal.ofReal CR ^ tst * ∫⁻ ω, cw k ω ^ tst ∂P) +
         ENNReal.ofReal CE ^ tst * ∫⁻ ω, V ω ^ tst ∂P)
       ≤ 2 ^ tst * (2 ^ tst * ((N : ℝ≥0∞) ^ tst *
-        ∑ k, ENNReal.ofReal CR ^ tst * (ENNReal.ofReal (Ck k) * ENNReal.ofReal (ρ ^ κ))) +
-        ENNReal.ofReal CE ^ tst * (ENNReal.ofReal (2 ^ (E * tst) * R0 ^ (4 * tst)) * K0 * Gm *
-          ENNReal.ofReal (ρ ^ κ))) := by
+        ∑ k, ENNReal.ofReal CR ^ tst * (ENNReal.ofReal (Ck k) * ENNReal.ofReal _)) +
+        ENNReal.ofReal CE ^ tst * (ENNReal.ofReal _ * K0 * Gm *
+          ENNReal.ofReal _)) := by
         gcongr with k hk
         exact hcwb k
     _ = _ := by
         rw [show ∑ k, ENNReal.ofReal CR ^ tst * (ENNReal.ofReal (Ck k) * ENNReal.ofReal (ρ ^ κ)) =
-            (∑ k, ENNReal.ofReal CR ^ tst * ENNReal.ofReal (Ck k)) * ENNReal.ofReal (ρ ^ κ) by
+            (∑ k, ENNReal.ofReal CR ^ tst * ENNReal.ofReal (Ck k)) * ENNReal.ofReal _ by
           rw [Finset.sum_mul]
           exact Finset.sum_congr rfl fun k _ => by ring]
         ring

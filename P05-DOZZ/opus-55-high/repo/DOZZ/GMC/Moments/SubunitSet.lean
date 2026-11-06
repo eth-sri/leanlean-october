@@ -24,9 +24,8 @@ theorem gmc_mass_subunit_moment_bound
     (hM : IsGMCOf P X γ M) (O : Set ℂ)
     {p : ℝ} (hp0 : 0 ≤ p) (hp1 : p ≤ 1) :
     gmcMassMoment P M O p ≤ 1 + gmcReferenceMeasure Set.univ := by
-  unfold gmcMassMoment
   calc
-    ∫⁻ ω, ENNReal.rpow (M ω O) p ∂P ≤
+    ∫⁻ ω, ENNReal.rpow _ p ∂P ≤
         ∫⁻ ω, ENNReal.rpow (M ω Set.univ) p ∂P := by
           apply lintegral_mono
           intro ω

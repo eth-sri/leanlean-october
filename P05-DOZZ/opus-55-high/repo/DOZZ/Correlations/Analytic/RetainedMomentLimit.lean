@@ -27,18 +27,16 @@ theorem retained_mass_moment_limit
     (hneg : p < 0 → (∫⁻ ω, f 0 ω ^ p ∂P) < ⊤) :
     Tendsto (fun n => ∫⁻ ω, f n ω ^ p ∂P) atTop (𝓝 (∫⁻ ω, g ω ^ p ∂P)) := by
   let bound : Ω → ℝ≥0∞ := fun ω => if 0 ≤ p then g ω ^ p else f 0 ω ^ p
-  apply tendsto_lintegral_of_dominated_convergence' (F := fun n ω => f n ω ^ p)
-    (μ := P) bound
-  · exact fun n => (hf n).pow_const p
+  apply tendsto_lintegral_of_dominated_convergence'
+    bound
+  · fun_prop
   · intro n
     filter_upwards [horder] with ω hω
     dsimp [bound]
     split_ifs with hp
     · exact ENNReal.rpow_le_rpow (hω n).2 hp
     · exact ennreal_rpow_antitone_of_nonpos (hω n).1 (lt_of_not_ge hp).le
-  · by_cases hp : 0 ≤ p
-    · simpa only [bound, ite_eq_left hp] using (hpos hp).ne
-    · simpa only [bound, ite_eq_right hp] using (hneg (lt_of_not_ge hp)).ne
+  · aesop
   · filter_upwards [hlim] with ω hω
     exact ENNReal.continuous_rpow_const.continuousAt.tendsto.comp hω
 

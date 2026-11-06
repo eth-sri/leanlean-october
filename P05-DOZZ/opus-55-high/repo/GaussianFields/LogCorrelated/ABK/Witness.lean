@@ -28,31 +28,38 @@ on `[1/2, 1]`, `0` on `[1, ∞)`. -/
 @[expose]
 noncomputable def abkStandardProfile (r : ℝ) : ℝ :=
   min (max (2 * (1 - r)) 0) 1
+section
+variable {r : ℝ}
 
-theorem abkStandardProfile_of_le_half {r : ℝ} (hr : r ≤ 1 / 2) :
+theorem abkStandardProfile_of_le_half (hr : r ≤ 1 / 2) :
     abkStandardProfile r = 1 := by
   have h1 : (1 : ℝ) ≤ 2 * (1 - r) := by linarith
-  have h2 : (1 : ℝ) ≤ max (2 * (1 - r)) 0 := h1.trans (le_max_left _ _)
+  have h2 : (1 : ℝ) ≤ max (2 * (1 - r)) 0 := by simp_all
   simpa [abkStandardProfile] using min_eq_right h2
 
-theorem abkStandardProfile_of_one_le {r : ℝ} (hr : 1 ≤ r) :
+theorem abkStandardProfile_of_one_le (hr : 1 ≤ r) :
     abkStandardProfile r = 0 := by
   have h1 : 2 * (1 - r) ≤ 0 := by linarith
   simp [abkStandardProfile, max_eq_right h1]
 
-theorem abkStandardProfile_nonneg (r : ℝ) : 0 ≤ abkStandardProfile r :=
-  le_min (le_max_right _ _) zero_le_one
+end
+section
+variable (r : ℝ)
 
-theorem abkStandardProfile_le_one (r : ℝ) : abkStandardProfile r ≤ 1 :=
-  min_le_right _ _
+theorem abkStandardProfile_nonneg : 0 ≤ abkStandardProfile r :=
+  le_min (le_max_right ..) zero_le_one
+
+theorem abkStandardProfile_le_one : abkStandardProfile r ≤ 1 :=
+  min_le_right ..
+
+end
 
 theorem lipschitzWith_abkStandardProfile : LipschitzWith 2 abkStandardProfile := by
   have hbase : LipschitzWith 2 (fun r : ℝ => 2 * (1 - r)) := by
     refine LipschitzWith.of_dist_le_mul fun r s => ?_
     rw [Real.dist_eq, Real.dist_eq]
     have : 2 * (1 - r) - 2 * (1 - s) = -(2 * (r - s)) := by ring
-    rw [this, abs_neg, abs_mul]
-    simp
+    simp_all
   exact (hbase.max_const 0).min_const 1
 
 /-! ## Euclidean-norm helpers -/
@@ -61,23 +68,17 @@ theorem lipschitzWith_abkStandardProfile : LipschitzWith 2 abkStandardProfile :=
 theorem abs_euclideanNorm_sub_euclideanNorm_le {d : Nat} (x y : Vec d) :
     |euclideanNorm x - euclideanNorm y| ≤ euclideanNorm (x - y) := by
   have hxy : y + (x - y) = x := by
-    ext i
-    simp only [Pi.add_apply, Pi.sub_apply]
-    ring
+    simp
   have hyx : x + (y - x) = y := by
-    ext i
-    simp only [Pi.add_apply, Pi.sub_apply]
-    ring
+    simp
   have h1 : euclideanNorm x - euclideanNorm y ≤ euclideanNorm (x - y) := by
     have := euclideanNorm_add_le y (x - y)
-    rw [hxy] at this
-    linarith
+    grind
   have h2 : euclideanNorm y - euclideanNorm x ≤ euclideanNorm (x - y) := by
     have := euclideanNorm_add_le x (y - x)
-    rw [hyx] at this
-    rw [euclideanNorm_sub_comm] at this
+    rw [hyx, euclideanNorm_sub_comm] at this
     linarith
-  exact abs_le.mpr ⟨by linarith, h1⟩
+  grind
 
 /-! ## The standard cutoff -/
 
@@ -85,23 +86,27 @@ theorem abs_euclideanNorm_sub_euclideanNorm_le {d : Nat} (x y : Vec d) :
 @[expose]
 noncomputable def abkStandardCutoffFun (d : Nat) : Vec d → ℝ :=
   fun x => abkStandardProfile (euclideanNorm x)
+section
+variable (d : Nat)
 
-theorem continuous_abkStandardCutoffFun (d : Nat) :
+theorem continuous_abkStandardCutoffFun :
     Continuous (abkStandardCutoffFun d) :=
   lipschitzWith_abkStandardProfile.continuous.comp continuous_euclideanNorm
 
-theorem abkStandardCutoffFun_support_subset (d : Nat) :
+theorem abkStandardCutoffFun_support_subset :
     Function.support (abkStandardCutoffFun d) ⊆ {x | euclideanNorm x ≤ 1} := by
   intro x hx
   by_contra h
-  have h1 : 1 ≤ euclideanNorm x := le_of_lt (by simpa using h)
+  have h1 := le_of_lt (by aesop)
   exact hx (abkStandardProfile_of_one_le h1)
 
-theorem hasCompactSupport_abkStandardCutoffFun (d : Nat) :
+theorem hasCompactSupport_abkStandardCutoffFun :
     HasCompactSupport (abkStandardCutoffFun d) :=
   HasCompactSupport.of_support_subset_isCompact
-    (isCompact_euclideanClosedBall (d := d) 1)
+    (isCompact_euclideanClosedBall 1)
     (abkStandardCutoffFun_support_subset d)
+
+end
 
 /-- The standard witness for `ABKCutoff d`: the structure is inhabited. -/
 @[expose]
@@ -142,23 +147,24 @@ def abkWitnessShift (d : Nat) : Vec d := fun _ => 3
 @[expose]
 noncomputable def abkStandardMeanZeroFun (d : Nat) : Vec d → ℝ :=
   fun x => abkStandardCutoffFun d x - abkStandardCutoffFun d (x - abkWitnessShift d)
+section
+variable (d : Nat)
 
-theorem continuous_abkStandardMeanZeroFun (d : Nat) :
+theorem continuous_abkStandardMeanZeroFun :
     Continuous (abkStandardMeanZeroFun d) :=
   (continuous_abkStandardCutoffFun d).sub
     ((continuous_abkStandardCutoffFun d).comp
       (continuous_id.sub continuous_const))
 
-theorem hasCompactSupport_abkStandardMeanZeroFun (d : Nat) :
+theorem hasCompactSupport_abkStandardMeanZeroFun :
     HasCompactSupport (abkStandardMeanZeroFun d) := by
   have htrans : HasCompactSupport
-      (fun x : Vec d => abkStandardCutoffFun d (x - abkWitnessShift d)) := by
-    have hcomp := (hasCompactSupport_abkStandardCutoffFun d).comp_homeomorph
+      (fun x => abkStandardCutoffFun d (x - abkWitnessShift d)) := by
+    exact (hasCompactSupport_abkStandardCutoffFun d).comp_homeomorph
       (Homeomorph.subRight (abkWitnessShift d))
-    change HasCompactSupport
-      (fun x => abkStandardCutoffFun d (Homeomorph.subRight (abkWitnessShift d) x)) at hcomp
-    simpa only [Homeomorph.subRight_apply] using hcomp
   exact (hasCompactSupport_abkStandardCutoffFun d).sub htrans
+
+end
 
 /-- The standard witness for `MeanZeroTestFunction d`: the structure is
 inhabited. -/

@@ -29,8 +29,8 @@ theorem realEulerBetaWeight_integrable (p q : ℝ) (hp : 0 < p) (hq : 0 < q) :
       (fun t : ℝ => (t : ℂ) ^ ((p : ℂ) - 1) * (1 - (t : ℂ)) ^ ((q : ℂ) - 1))
       volume 0 1 := by
     apply Complex.betaIntegral_convergent
-    · simp [Complex.ofReal_re]; linarith
-    · simp [Complex.ofReal_re]; linarith
+    · assumption
+    assumption
   have hcomplex' : IntegrableOn
       (fun t : ℝ => (t : ℂ) ^ ((p : ℂ) - 1) * (1 - (t : ℂ)) ^ ((q : ℂ) - 1))
       (Ioc 0 1) :=
@@ -42,18 +42,18 @@ theorem realEulerBetaWeight_integrable (p q : ℝ) (hp : 0 < p) (hq : 0 < q) :
     apply hcomplex'.congr_fun
     · intro t ht
       have ht0 : 0 ≤ t := le_of_lt ht.1
-      have ht1 : 0 ≤ 1 - t := by linarith [ht.2]
+      have ht1 : 0 ≤ 1 - t := by simp_all
       change (t : ℂ) ^ ((p : ℂ) - 1) * (1 - (t : ℂ)) ^ ((q : ℂ) - 1) =
         ((t ^ (p - 1) * (1 - t) ^ (q - 1) : ℝ) : ℂ)
       have hp' : (t : ℂ) ^ ((p : ℂ) - 1) = ((t ^ (p - 1) : ℝ) : ℂ) := by
-        rw [show (p : ℂ) - 1 = ((p - 1 : ℝ) : ℂ) by push_cast; ring,
+        rw [show (p : ℂ) - 1 = ((p - 1 : ℝ) : ℂ) by simp,
           ← Complex.ofReal_cpow ht0]
       have hq' : (1 - (t : ℂ)) ^ ((q : ℂ) - 1) = (((1 - t) ^ (q - 1) : ℝ) : ℂ) := by
-        rw [show (q : ℂ) - 1 = ((q - 1 : ℝ) : ℂ) by push_cast; ring,
-          show (1 : ℂ) - (t : ℝ) = ((1 - t : ℝ) : ℂ) by push_cast; ring,
+        rw [show (q : ℂ) - 1 = ((q - 1 : ℝ) : ℂ) by simp,
+          show (1 : ℂ) - (t : ℝ) = ((1 - t : ℝ) : ℂ) by simp,
           ← Complex.ofReal_cpow ht1]
-      rw [hp', hq', Complex.ofReal_mul]
-    · exact measurableSet_Ioc
+      simp_all
+    simp
   exact (IntegrableOn.iff_ofReal).mpr hcast
 
 /-- The Euler kernel converges to the beta density at `z=1` from below, whenever the endpoint
@@ -71,7 +71,7 @@ theorem realGaussEulerKernelIntegral_tendsto_one (a b c : ℝ)
     t ^ (b - 1) * (1 - t) ^ (c - b - 1) * (1 - x * t) ^ (-a)
   have hweight : Integrable w (volume.restrict s) := by
     simpa [w, s] using
-      (realEulerBetaWeight_integrable b (c - a - b) hb hδ).integrable
+      (realEulerBetaWeight_integrable b _ hb hδ).integrable
   have hxpos : ∀ᶠ x : ℝ in F, 0 < x := by
     dsimp [F]
     exact Filter.Eventually.filter_mono nhdsWithin_le_nhds
@@ -81,7 +81,7 @@ theorem realGaussEulerKernelIntegral_tendsto_one (a b c : ℝ)
     exact eventually_mem_nhdsWithin
   have hxrange : ∀ᶠ x : ℝ in F, x ∈ Ioc 0 1 := by
     filter_upwards [hxpos, hxlt] with x hxp hxl
-    exact ⟨hxp, hxl.le⟩
+    grind
   have hmeas : ∀ᶠ x : ℝ in F,
       AEStronglyMeasurable (fun t : ℝ => k x t) (volume.restrict s) := by
     filter_upwards [hxrange] with x hx
@@ -130,23 +130,22 @@ theorem realGaussEulerKernelIntegral_tendsto_one (a b c : ℝ)
     have hpow : Tendsto (fun x : ℝ => (1 - x * t) ^ (-a)) F
         (𝓝 ((1 - t) ^ (-a))) := by
       have hcont : ContinuousAt (fun p : ℝ × ℝ => p.1 ^ p.2) (1 - t, -a) :=
-        Real.continuousAt_rpow (1 - t, -a)
+        Real.continuousAt_rpow _
           (Or.inl (ne_of_gt (by linarith : 0 < 1 - t)))
       have hp : Tendsto (fun x : ℝ => (1 - x * t, -a)) F (𝓝 (1 - t, -a)) :=
         hbase.prodMk_nhds tendsto_const_nhds
       simpa [Function.comp_def] using hcont.tendsto.comp hp
     have hconst : Tendsto (fun _ : ℝ => t ^ (b - 1) * (1 - t) ^ (c - b - 1))
-        F (𝓝 (t ^ (b - 1) * (1 - t) ^ (c - b - 1))) := tendsto_const_nhds
-    have hmul := hconst.mul hpow
+        F _ := tendsto_const_nhds
     have hrewrite :
         t ^ (b - 1) * (1 - t) ^ (c - b - 1) * (1 - t) ^ (-a) = w t := by
       dsimp [w]
       rw [mul_assoc, ← Real.rpow_add (by linarith : 0 < 1 - t)]
       congr 1
       ring_nf
-    simpa [k, Function.comp_def, hrewrite] using hmul
+    simpa [k, Function.comp_def, hrewrite] using (hconst.mul hpow)
   have hdc := MeasureTheory.tendsto_integral_filter_of_dominated_convergence
-    (μ := volume.restrict s) (l := F) (F := fun x t => k x t) (f := w)
+    (μ := volume.restrict s)
     w hmeas hbound hweight hlim
   simpa [realGaussEulerKernelIntegral, k, w, s, F] using hdc
 
@@ -156,14 +155,14 @@ theorem realEulerBetaIntegral_eq_gamma_ratio (p q : ℝ)
     (∫ t : ℝ in Ioc 0 1, t ^ (p - 1) * (1 - t) ^ (q - 1)) =
       Real.Gamma p * Real.Gamma q / Real.Gamma (p + q) := by
   have hβ := Complex.betaIntegral_eq_Gamma_mul_div
-    (p : ℂ) (q : ℂ) (by simp [Complex.ofReal_re]; linarith)
-      (by simp [Complex.ofReal_re]; linarith)
+    p q (by assumption)
+      (by assumption)
   rw [betaIntegral_ofReal] at hβ
   apply Complex.ofReal_injective
   have hβ' := hβ
   rw [← Complex.ofReal_add, Complex.Gamma_ofReal, Complex.Gamma_ofReal,
     Complex.Gamma_ofReal] at hβ'
-  simpa [Complex.ofReal_mul, Complex.ofReal_div] using hβ'
+  simp_all
 
 /-- After division by the Euler beta normalization, the real Euler kernel has the classical Gauss
 endpoint value. This is the scalar limit needed by the first connection coefficient. -/
@@ -178,32 +177,28 @@ theorem realGaussEulerKernelIntegral_tendsto_gauss_value (a b c : ℝ)
         (Real.Gamma (c - a) * Real.Gamma (c - b)))) := by
   have hcb : 0 < c - b := by linarith
   have hca : 0 < c - a := by linarith
-  have hΓb : 0 < Real.Gamma b := Real.Gamma_pos_of_pos hb
-  have hΓcb : 0 < Real.Gamma (c - b) := Real.Gamma_pos_of_pos hcb
-  have hΓca : 0 < Real.Gamma (c - a) := Real.Gamma_pos_of_pos hca
-  have hβ := realEulerBetaIntegral_eq_gamma_ratio b (c - a - b) hb hδ
+  have hΓb := Real.Gamma_pos_of_pos hb
+  have hΓcb := Real.Gamma_pos_of_pos hcb
+  have hΓca := Real.Gamma_pos_of_pos hca
+  have hβ := realEulerBetaIntegral_eq_gamma_ratio b _ hb hδ
   have hβ' :
       (∫ t : ℝ in Ioc 0 1, t ^ (b - 1) * (1 - t) ^ (c - a - b - 1)) =
         Real.Gamma b * Real.Gamma (c - a - b) / Real.Gamma (c - a) := by
-    simpa only [show b + (c - a - b) = c - a by ring] using hβ
+    simp_all
   have hratio :
       (Real.Gamma c / (Real.Gamma b * Real.Gamma (c - b))) *
         (∫ t : ℝ in Ioc 0 1, t ^ (b - 1) * (1 - t) ^ (c - a - b - 1)) =
           Real.Gamma c * Real.Gamma (c - a - b) /
             (Real.Gamma (c - a) * Real.Gamma (c - b)) := by
-    rw [hβ']
-    field_simp [hΓb.ne', hΓcb.ne', hΓca.ne']
-  have hlim := realGaussEulerKernelIntegral_tendsto_one a b c ha hb hδ
+    grind
   have hscaled : Tendsto
-      (fun x : ℝ =>
+      (fun x =>
         (Real.Gamma c / (Real.Gamma b * Real.Gamma (c - b))) *
           realGaussEulerKernelIntegral a b c x)
       (𝓝[Iio 1] 1)
       (𝓝 ((Real.Gamma c / (Real.Gamma b * Real.Gamma (c - b))) *
         (∫ t : ℝ in Ioc 0 1,
-          t ^ (b - 1) * (1 - t) ^ (c - a - b - 1)))) := by
-    exact tendsto_const_nhds.mul hlim
-  rw [← hratio]
-  simpa [realGaussEulerKernelIntegral] using hscaled
+          t ^ (b - 1) * (1 - t) ^ (c - a - b - 1)))) := tendsto_const_nhds.mul (realGaussEulerKernelIntegral_tendsto_one a b c ha hb hδ)
+  simp_all
 
 end DOZZ.Proofs

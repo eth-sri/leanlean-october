@@ -28,20 +28,18 @@ theorem retained_uniform_disk_lower {N : ℕ} (μ : Measure ℂ)
     calc
       _ ≤ ∑ _j : Fin N, γ * A := Finset.sum_le_sum (fun j _ => by
         rw [abs_mul, abs_of_pos hγ]
-        exact mul_le_mul_of_nonneg_left (hα j) hγ.le)
+        simp_all)
       _ = _ := by simp
   have hi : |γ * αinf| ≤ γ * A := by
     rw [abs_mul, abs_of_pos hγ]
-    exact mul_le_mul_of_nonneg_left hinf hγ.le
-  have hc : ENNReal.ofReal ((2 : ℝ) ^ (-(N * (γ * A)))) *
+    simp_all
+  have hc : ENNReal.ofReal (2 ^ (-(N * (γ * A)))) *
       ENNReal.ofReal ((R + 2) ^ (-(γ * A))) ≤
-      ENNReal.ofReal ((2 : ℝ) ^ (-∑ j, |γ * α j|)) *
+      ENNReal.ofReal (2 ^ (-∑ j, |γ * α j|)) *
         ENNReal.ofReal ((R + 2) ^ (-|γ * αinf|)) := by
     apply mul_le_mul'
-    · exact ENNReal.ofReal_le_ofReal
-        (Real.rpow_le_rpow_of_exponent_le (by norm_num) (by linarith))
-    · exact ENNReal.ofReal_le_ofReal
-        (Real.rpow_le_rpow_of_exponent_le (by linarith) (by linarith))
+    · bound
+    bound
   exact (mul_le_mul' hc le_rfl).trans
     (retained_coulomb_mass_ge_exterior_ball μ γ α z αinf O R hR hz hO)
 

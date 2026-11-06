@@ -27,24 +27,19 @@ theorem planarTaylorRemainder_integral_scale_norm (k β : ℝ) (hk : 0 < k)
   have hα : 0 < 2 + k - β := by linarith
   by_cases hz : z = 0
   · subst z
-    have hzero : DOZZ.planarTaylorRemainder k β 0 = fun _ : ℂ => (0 : ℝ) := by
+    have hzero : DOZZ.planarTaylorRemainder k β 0 = fun _ : ℂ => 0 := by
       funext u
       simp [DOZZ.planarTaylorRemainder]
     rw [hzero]
     simp [Real.zero_rpow, hα.ne']
-  · let r : ℝ := ‖z‖
-    let ξ : ℂ := z / (r : ℂ)
-    have hr : 0 < r := by dsimp [r]; exact norm_pos_iff.mpr hz
-    have hrC : (r : ℂ) ≠ 0 := by exact_mod_cast hr.ne'
+  · let r := ‖z‖
+    let ξ := z / r
+    have hr : 0 < r := by positivity
+    have hrC : r ≠ 0 := by exact_mod_cast hr.ne'
     have hξ : ‖ξ‖ = 1 := by
-      dsimp [ξ]
-      rw [norm_div, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hr]
-      dsimp [r]
-      exact div_self (norm_ne_zero_iff.mpr hz)
-    have hξr : ξ * (r : ℂ) = z := by
-      dsimp [ξ]
-      field_simp [hrC]
-    have hscale := planarTaylorRemainder_integral_scale k β hk hβ ξ hξ r hr z hξr
-    simpa [r] using hscale
+      aesop
+    have hξr : ξ * r = z := by
+      aesop
+    simpa [r] using (planarTaylorRemainder_integral_scale k β hk hβ ξ hξ r hr z hξr)
 
 end DOZZ.Proofs

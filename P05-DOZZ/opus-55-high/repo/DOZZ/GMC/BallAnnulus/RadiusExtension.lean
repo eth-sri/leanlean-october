@@ -29,7 +29,7 @@ theorem gmc_twoSided_radius_extend
   have hd : 0 < d := Real.rpow_pos_of_pos ha _
   have hD : 0 < D := Real.rpow_pos_of_pos ha _
   let C := C₀ + u/d + D/l + 1
-  have hC : 0 < C := by dsimp [C]; positivity
+  have hC : 0 < C := by positivity
   have hCC₀ : C₀ ≤ C := by dsimp [C]; linarith [div_nonneg hu hd.le, (div_pos hD hl).le]
   have huC : u/d ≤ C := by dsimp [C]; linarith [div_nonneg hu hd.le, (div_pos hD hl).le]
   have hDC : D/l ≤ C := by dsimp [C]; linarith [div_nonneg hu hd.le]
@@ -42,21 +42,19 @@ theorem gmc_twoSided_radius_extend
       hup.trans (ENNReal.ofReal_le_ofReal (mul_le_mul_of_nonneg_right hCC₀
         (Real.rpow_nonneg hr.le _)))⟩
   · have har := (le_of_not_ge hra)
-    have hrd : d ≤ r ^ ξ :=
+    have hrd :=
       (Real.rpow_le_rpow ha.le har (abs_nonneg ξ)).trans
         (Real.rpow_le_rpow_of_exponent_ge hr hr1 (le_abs_self ξ))
-    have hrD : r ^ ξ ≤ D :=
+    have hrD :=
       (Real.rpow_le_rpow_of_exponent_ge hr hr1 (neg_abs_le ξ)).trans
         (Real.rpow_le_rpow_of_nonpos ha har (neg_nonpos.mpr (abs_nonneg ξ)))
     obtain ⟨hlo, hup⟩ := hlarge z r har hr1
     constructor
     · apply le_trans (ENNReal.ofReal_le_ofReal ?_) hlo
-      have hDl : D ≤ C*l := (div_le_iff₀ hl).mp hDC
-      have hh : r ^ ξ / C ≤ l := (div_le_iff₀ hC).mpr (by nlinarith only [hrD, hDl])
+      have hh : r ^ ξ / C ≤ l := (div_le_iff₀ hC).mpr (by nlinarith only [hrD, ((div_le_iff₀ hl).mp hDC)])
       simpa only [div_eq_mul_inv, mul_comm] using hh
     · apply hup.trans (ENNReal.ofReal_le_ofReal ?_)
-      have huc : u ≤ C*d := (div_le_iff₀ hd).mp huC
-      exact huc.trans (mul_le_mul_of_nonneg_left hrd hC.le)
+      exact ((div_le_iff₀ hd).mp huC).trans (mul_le_mul_of_nonneg_left hrd hC.le)
 
 end DOZZ.Proofs
 end

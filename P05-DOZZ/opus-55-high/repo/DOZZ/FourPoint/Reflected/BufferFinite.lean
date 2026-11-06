@@ -29,15 +29,12 @@ theorem reflected_spatial_buffer_first_order_eventually_finite {Ω : Type*} [Mea
     (measurableSet_lt measurable_norm measurable_const)
   have hball : U ⊆ Metric.ball 0 (‖z‖^(1-ξ)) := by
     intro x hx
-    simpa only [Metric.mem_ball,dist_zero_right] using hx.2
+    simpa using hx.2
   have hsep : ∀ x ∈ U, 0 < ‖x‖ ∧ ‖z‖ ≤ Real.exp h*‖x‖ := by
     intro x hx
-    have hn : 0 < ‖z‖ := norm_pos_iff.mpr hz0
-    refine ⟨(mul_pos (Real.exp_pos _) hn).trans_le hx.1, ?_⟩
-    have hh := mul_le_mul_of_nonneg_left hx.1 (Real.exp_pos h).le
+    refine ⟨(mul_pos (Real.exp_pos _) (norm_pos_iff.mpr hz0)).trans_le hx.1, ?_⟩
     have he : Real.exp h*Real.exp (-h) = 1 := by rw [← Real.exp_add,add_neg_cancel,Real.exp_zero]
-    simpa only [← mul_assoc,he,one_mul] using hh
-  have hh := hb z ξ U hU hball hsep hz.1 hz.2.2.2.2 hz.2.2.2.1
-  exact lt_of_le_of_lt hh ENNReal.ofReal_lt_top
+    simpa only [← mul_assoc,he,one_mul] using (mul_le_mul_of_nonneg_left hx.1 (Real.exp_pos h).le)
+  exact lt_of_le_of_lt (hb z ξ U hU hball hsep hz.1 hz.2.2.2.2 hz.2.2.2.1) ENNReal.ofReal_lt_top
 
 end DOZZ.Proofs

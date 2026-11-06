@@ -29,12 +29,11 @@ theorem mixed_vertex_tilt_retained_mass
     ∫⁻ ω, ((M ω).withDensity (fun x => ENNReal.ofReal (Real.exp
       (γ * ∑ i, α i * ∫ v, gffKernel x v ∂circleMeasure (z i) (r i)))) O) ^ p ∂P := by
   let L : Ω → ℝ := fun ω => ∑ i, α i * Xc ω (z i) (r i)
-  have hL := circle_vertices_gaussianL2Limit P X hX Xc hXc α z r
   obtain ⟨c, hc, hcov⟩ := mixed_circle_covariance_uniform P X hX Xc hXc α z r
   let H : (TestFn → ℝ) → Measure ℂ → ℝ≥0∞ := fun _ μ => μ O ^ p
   have hH : Measurable (fun q : (TestFn → ℝ) × Measure ℂ => H q.1 q.2) :=
     ((Measure.measurable_coe ho).comp measurable_snd).pow_const p
-  have ht := equatorGFF_GMC_tilt P X hX γ hγ hγ2 M hM Xc hXc L hL c hcov H hH
-  simpa only [L, H, hc] using ht
+  have ht := equatorGFF_GMC_tilt P X hX γ hγ hγ2 M hM Xc hXc L (circle_vertices_gaussianL2Limit P X hX Xc hXc α z r) c hcov H hH
+  aesop
 
 end DOZZ.Proofs

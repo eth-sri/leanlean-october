@@ -26,17 +26,15 @@ theorem copied_multiplier_error_mass_le
       ENNReal.ofReal ((derivBound+supBound*(pinCorrectionEnvelope z γ N Nbar+4))*
         Real.exp (pinCorrectionEnvelope z γ N Nbar+4)) *
           weightedGmcBallMass γ μ (α-1/γ) 0 ρ := by
-  have hd : 0 ≤ derivBound := hFamily.2.2.1
-  have hs : 0 ≤ supBound := hFamily.2.1
+  have hd := hFamily.2.2.1
+  have hs := hFamily.2.1
   have hD : 0 ≤ pinCorrectionEnvelope z γ N Nbar := by
     unfold pinCorrectionEnvelope
-    exact add_nonneg (mul_nonneg
-      (div_nonneg (abs_nonneg _) (offCenter_pin_variance_pos z hz).le)
-      (abs_nonneg _)) (sq_nonneg _)
+    bound
   exact first_order_singular_mass_le γ α _ hγ (by positivity) _ ρ
     (fun x hx => copied_multiplier_local_bound K Family radius supBound derivBound lowerBound
       hFamily z hzk hz F hF γ N Nbar x
-      ((show ‖x‖ < ρ from by simpa only [Metric.mem_ball,dist_zero_right] using hx).le.trans hρ)) μ
+      ((show ‖x‖ < ρ from by simp_all).le.trans hρ)) μ
 
 
 end DOZZ.Proofs

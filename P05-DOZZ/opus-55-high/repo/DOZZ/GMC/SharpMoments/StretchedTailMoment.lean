@@ -33,22 +33,27 @@ namespace DOZZ.Proofs
 noncomputable def stretchedTail_layer (q : ℝ) (n : ℕ) (v : ℝ≥0∞) : ℝ≥0∞ :=
   {w : ℝ≥0∞ | w ≤ ENNReal.ofReal (Real.exp (-(n : ℝ)))}.indicator
     (fun _ => ENNReal.ofReal (Real.exp (q * ((n : ℝ) + 1)))) v
+section
+variable (q : ℝ)
 
 /-- On its level set a layer equals its weight. -/
-theorem stretchedTail_layer_of_le (q : ℝ) (n : ℕ) {v : ℝ≥0∞}
+theorem stretchedTail_layer_of_le (n : ℕ) {v : ℝ≥0∞}
     (hv : v ≤ ENNReal.ofReal (Real.exp (-(n : ℝ)))) :
     stretchedTail_layer q n v = ENNReal.ofReal (Real.exp (q * ((n : ℝ) + 1))) :=
-  Set.indicator_of_mem (s := {w : ℝ≥0∞ | w ≤ ENNReal.ofReal (Real.exp (-(n : ℝ)))}) hv _
+  Set.indicator_of_mem (s := {w : ℝ≥0∞ | w ≤ ENNReal.ofReal _}) hv _
+section
+variable (hq : 0 < q)
+include hq
 
 /-- Every layer weight is at least `1`, because `q > 0`. -/
-theorem stretchedTail_one_le_weight (q : ℝ) (hq : 0 < q) (n : ℕ) :
+theorem stretchedTail_one_le_weight (n : ℕ) :
     1 ≤ ENNReal.ofReal (Real.exp (q * ((n : ℝ) + 1))) := by
   rw [← ENNReal.ofReal_one]
   exact ENNReal.ofReal_le_ofReal (Real.one_le_exp (by positivity))
 
 /-- At `v = 0` both sides of the layer-cake bound are infinite: `0` lies in every level set and
 the weights are at least `1`. -/
-theorem stretchedTail_zero_case (q : ℝ) (hq : 0 < q) :
+theorem stretchedTail_zero_case :
     (0 : ℝ≥0∞) ^ (-q) ≤ 1 + ∑' n : ℕ, stretchedTail_layer q n 0 := by
   have hsum : ∑' n : ℕ, stretchedTail_layer q n 0 = ⊤ := by
     refine top_le_iff.1 ?_
@@ -56,38 +61,38 @@ theorem stretchedTail_zero_case (q : ℝ) (hq : 0 < q) :
     refine ENNReal.tsum_le_tsum fun n => ?_
     rw [stretchedTail_layer_of_le q n zero_le]
     exact stretchedTail_one_le_weight q hq n
-  rw [hsum, ENNReal.zero_rpow_of_neg (neg_lt_zero.2 hq)]
-  simp
+  simp_all
 
 /-- A real number `r ∈ (0, 1]` lies in some level `r ≤ e^{-n}` with `r^(-q) ≤ e^{q (n+1)}`. -/
-theorem stretchedTail_exists_level (q : ℝ) (hq : 0 < q) (r : ℝ) (hr : 0 < r) (hr1 : r ≤ 1) :
+theorem stretchedTail_exists_level (r : ℝ) (hr : 0 < r) (hr1 : r ≤ 1) :
     ∃ n : ℕ, r ≤ Real.exp (-(n : ℝ)) ∧ r ^ (-q) ≤ Real.exp (q * ((n : ℝ) + 1)) := by
   have ht0 : 0 ≤ -Real.log r := by
     have : Real.log r ≤ 0 := Real.log_nonpos hr.le hr1
     linarith
   refine ⟨⌊-Real.log r⌋₊, ?_, ?_⟩
-  · have h1 : ((⌊-Real.log r⌋₊ : ℕ) : ℝ) ≤ -Real.log r := Nat.floor_le ht0
-    calc r = Real.exp (-(-Real.log r)) := by rw [neg_neg, Real.exp_log hr]
-      _ ≤ Real.exp (-(⌊-Real.log r⌋₊ : ℝ)) := Real.exp_le_exp.2 (neg_le_neg h1)
+  · have h1 := Nat.floor_le ht0
+    calc r = Real.exp _ := by rw [neg_neg, Real.exp_log hr]
+      _ ≤ Real.exp _ := Real.exp_le_exp.2 (neg_le_neg h1)
   · have h2 : -Real.log r < (⌊-Real.log r⌋₊ : ℝ) + 1 := Nat.lt_floor_add_one _
     calc r ^ (-q) = Real.exp (-Real.log r * q) := by
           rw [Real.rpow_def_of_pos hr]; congr 1; ring
-      _ ≤ Real.exp (q * ((⌊-Real.log r⌋₊ : ℝ) + 1)) := by
+      _ ≤ Real.exp _ := by
           apply Real.exp_le_exp.2
-          rw [mul_comm q]
-          exact mul_le_mul_of_nonneg_right h2.le hq.le
+          nlinarith
+section
+variable (v : ℝ≥0∞)
 
 /-- The layer-cake bound at a value `0 < v < ⊤`. -/
-theorem stretchedTail_pos_case (q : ℝ) (hq : 0 < q) (v : ℝ≥0∞) (hv0 : v ≠ 0) (hvt : v ≠ ⊤) :
+theorem stretchedTail_pos_case (hv0 : v ≠ 0) (hvt : v ≠ ⊤) :
     v ^ (-q) ≤ 1 + ∑' n : ℕ, stretchedTail_layer q n v := by
   by_cases hv1 : 1 ≤ v
   · exact (ENNReal.rpow_le_one_of_one_le_of_neg hv1 (neg_lt_zero.2 hq)).trans le_self_add
   · obtain ⟨r, hr, rfl⟩ : ∃ r : ℝ, 0 < r ∧ ENNReal.ofReal r = v :=
       ⟨v.toReal, ENNReal.toReal_pos hv0 hvt, ENNReal.ofReal_toReal hvt⟩
-    have hr1 : r ≤ 1 := (ENNReal.ofReal_lt_one.1 (not_le.1 hv1)).le
+    have hr1 := (ENNReal.ofReal_lt_one.1 (not_le.1 hv1)).le
     obtain ⟨n, hn1, hn2⟩ := stretchedTail_exists_level q hq r hr hr1
-    calc ENNReal.ofReal r ^ (-q) = ENNReal.ofReal (r ^ (-q)) := ENNReal.ofReal_rpow_of_pos hr
-      _ ≤ ENNReal.ofReal (Real.exp (q * ((n : ℝ) + 1))) := ENNReal.ofReal_le_ofReal hn2
+    calc ENNReal.ofReal r ^ (-q) = ENNReal.ofReal _ := ENNReal.ofReal_rpow_of_pos hr
+      _ ≤ ENNReal.ofReal _ := ENNReal.ofReal_le_ofReal hn2
       _ = stretchedTail_layer q n (ENNReal.ofReal r) :=
           (stretchedTail_layer_of_le q n (ENNReal.ofReal_le_ofReal hn1)).symm
       _ ≤ ∑' k : ℕ, stretchedTail_layer q k (ENNReal.ofReal r) :=
@@ -96,21 +101,32 @@ theorem stretchedTail_pos_case (q : ℝ) (hq : 0 < q) (v : ℝ≥0∞) (hv0 : v 
 
 /-- Pointwise layer-cake bound: `v ^ (-q)` is at most `1` plus the weighted indicators of the
 levels `{w ≤ e^{-n}}`. -/
-theorem stretchedTail_rpow_neg_le (q : ℝ) (hq : 0 < q) (v : ℝ≥0∞) :
+theorem stretchedTail_rpow_neg_le :
     v ^ (-q) ≤ 1 + ∑' n : ℕ, stretchedTail_layer q n v := by
   rcases eq_or_ne v 0 with rfl | hv0
   · exact stretchedTail_zero_case q hq
   rcases eq_or_ne v ⊤ with rfl | hvt
-  · rw [ENNReal.top_rpow_of_neg (neg_lt_zero.2 hq)]
-    exact zero_le
+  · simp_all
   · exact stretchedTail_pos_case q hq v hv0 hvt
+
+end
+
+end
+
+end
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+section
+variable (m : Ω → ℝ≥0∞)
+section
+variable (hm : AEMeasurable m P) (q : ℝ) (n : ℕ)
+include hm
 
 /-! ### Integration of the layer cake -/
 
 /-- The integral of the `n`-th layer composed with `m` is its weight times the small-ball
 probability `P {m ≤ e^{-n}}`. -/
-theorem stretchedTail_lintegral_layer {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (m : Ω → ℝ≥0∞) (hm : AEMeasurable m P) (q : ℝ) (n : ℕ) :
+theorem stretchedTail_lintegral_layer :
     ∫⁻ ω, stretchedTail_layer q n (m ω) ∂P =
       ENNReal.ofReal (Real.exp (q * ((n : ℝ) + 1))) *
         P {ω | m ω ≤ ENNReal.ofReal (Real.exp (-(n : ℝ)))} := by
@@ -121,14 +137,16 @@ theorem stretchedTail_lintegral_layer {Ω : Type*} [MeasurableSpace Ω] (P : Mea
 
 /-- Each layer composed with an almost everywhere measurable `m` is almost everywhere
 measurable. -/
-theorem stretchedTail_aemeasurable_layer {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (m : Ω → ℝ≥0∞) (hm : AEMeasurable m P) (q : ℝ) (n : ℕ) :
+theorem stretchedTail_aemeasurable_layer :
     AEMeasurable (fun ω => stretchedTail_layer q n (m ω)) P :=
   (measurable_const.indicator measurableSet_Iic).comp_aemeasurable hm
 
+end
+
+end
+
 /-- The negative moment is at most `1` plus the weighted small-ball probabilities. -/
-theorem stretchedTail_lintegral_le {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    [IsProbabilityMeasure P] (m : Ω → ℝ≥0∞) (hm : AEMeasurable m P) (q : ℝ) (hq : 0 < q) :
+theorem stretchedTail_lintegral_le [IsProbabilityMeasure P] (m : Ω → ℝ≥0∞) (hm : AEMeasurable m P) (q : ℝ) (hq : 0 < q) :
     ∫⁻ ω, m ω ^ (-q) ∂P ≤ 1 + ∑' n : ℕ, ENNReal.ofReal (Real.exp (q * ((n : ℝ) + 1))) *
       P {ω | m ω ≤ ENNReal.ofReal (Real.exp (-(n : ℝ)))} := by
   calc ∫⁻ ω, m ω ^ (-q) ∂P
@@ -140,6 +158,8 @@ theorem stretchedTail_lintegral_le {Ω : Type*} [MeasurableSpace Ω] (P : Measur
     _ = _ := by
         simp_rw [stretchedTail_lintegral_layer P m hm q]
 
+end
+
 /-! ### Summability of the stretched-exponential series -/
 
 /-- The `n`-th term of the dominating series: `e^{q (n+1)} * (max C 0 * exp (-d n^β))`. -/
@@ -148,7 +168,7 @@ noncomputable def stretchedTail_term (C d β q : ℝ) (n : ℕ) : ℝ :=
 
 /-- The terms of the dominating series are nonnegative. -/
 theorem stretchedTail_term_nonneg (C d β q : ℝ) (n : ℕ) : 0 ≤ stretchedTail_term C d β q n :=
-  mul_nonneg (Real.exp_pos _).le (mul_nonneg (le_max_right _ _) (Real.exp_pos _).le)
+  mul_nonneg (Real.exp_pos _).le (mul_nonneg (le_max_right ..) (Real.exp_pos _).le)
 
 /-- Since `β > 1`, the exponent `q (n+1) - d n^β` is eventually at most `-n`. -/
 theorem stretchedTail_eventually_exponent_le (d β q : ℝ) (hd : 0 < d) (hβ : 1 < β) (hq : 0 < q) :
@@ -160,51 +180,49 @@ theorem stretchedTail_eventually_exponent_le (d β q : ℝ) (hd : 0 < d) (hβ : 
   have hn0 : (0 : ℝ) < n := lt_of_lt_of_le one_pos hn1'
   have hsplit : (n : ℝ) ^ β = (n : ℝ) ^ (β - 1) * n := by
     have h := Real.rpow_add_one hn0.ne' (β - 1)
-    rwa [sub_add_cancel] at h
+    simp_all
   have h1 : 2 * q + 1 ≤ d * (n : ℝ) ^ (β - 1) := by
     rw [div_le_iff₀ hd] at hn
     linarith
-  have h2 : (2 * q + 1) * n ≤ d * (n : ℝ) ^ β := by
-    rw [hsplit, ← mul_assoc]
-    exact mul_le_mul_of_nonneg_right h1 hn0.le
-  have h3 : q ≤ q * n := le_mul_of_one_le_right hq.le hn1'
-  linarith
+  nlinarith
+section
+variable (C d β q : ℝ)
 
 /-- The dominating series is summable; this is where `β > 1` enters. -/
-theorem stretchedTail_summable (C d β q : ℝ) (hd : 0 < d) (hβ : 1 < β) (hq : 0 < q) :
+theorem stretchedTail_summable (hd : 0 < d) (hβ : 1 < β) (hq : 0 < q) :
     Summable (stretchedTail_term C d β q) := by
   refine Summable.of_norm_bounded_eventually_nat
-    (g := fun n : ℕ => max C 0 * Real.exp (-(n : ℝ))) (Real.summable_exp_neg_nat.mul_left _) ?_
+    (g := fun n : ℕ => max C 0 * Real.exp (-n)) (Real.summable_exp_neg_nat.mul_left _) ?_
   filter_upwards [stretchedTail_eventually_exponent_le d β q hd hβ hq] with n hn
   rw [Real.norm_of_nonneg (stretchedTail_term_nonneg C d β q n)]
   calc stretchedTail_term C d β q n
-      = max C 0 * Real.exp (q * ((n : ℝ) + 1) + -d * (n : ℝ) ^ β) := by
+      = max C 0 * Real.exp (q * (n + 1) + -d * n ^ β) := by
         rw [stretchedTail_term, Real.exp_add]
         ring
-    _ ≤ max C 0 * Real.exp (-(n : ℝ)) :=
-        mul_le_mul_of_nonneg_left (Real.exp_le_exp.2 hn) (le_max_right _ _)
+    _ ≤ max C 0 * Real.exp (-n) :=
+        by bound
 
 /-! ### The main bound -/
 
 /-- The tail hypothesis at level `n` bounds the `n`-th weighted probability by the `n`-th term of
 the dominating series. -/
-theorem stretchedTail_term_le (C d β q : ℝ) (n : ℕ) {p : ℝ≥0∞}
+theorem stretchedTail_term_le (n : ℕ) {p : ℝ≥0∞}
     (hp : p ≤ ENNReal.ofReal (C * Real.exp (-d * (n : ℝ) ^ β))) :
     ENNReal.ofReal (Real.exp (q * ((n : ℝ) + 1))) * p ≤
       ENNReal.ofReal (stretchedTail_term C d β q n) := by
-  calc ENNReal.ofReal (Real.exp (q * ((n : ℝ) + 1))) * p
-      ≤ ENNReal.ofReal (Real.exp (q * ((n : ℝ) + 1))) *
-          ENNReal.ofReal (C * Real.exp (-d * (n : ℝ) ^ β)) := mul_le_mul_right hp _
-    _ = ENNReal.ofReal (Real.exp (q * ((n : ℝ) + 1)) * (C * Real.exp (-d * (n : ℝ) ^ β))) :=
+  calc ENNReal.ofReal _ * p
+      ≤ ENNReal.ofReal _ *
+          ENNReal.ofReal _ := mul_le_mul_right hp _
+    _ = ENNReal.ofReal _ :=
         (ENNReal.ofReal_mul (Real.exp_pos _).le).symm
-    _ ≤ ENNReal.ofReal (stretchedTail_term C d β q n) := by
+    _ ≤ ENNReal.ofReal _ := by
         refine ENNReal.ofReal_le_ofReal (mul_le_mul_of_nonneg_left ?_ (Real.exp_pos _).le)
-        exact mul_le_mul_of_nonneg_right (le_max_left _ _) (Real.exp_pos _).le
+        bound
 
 /-- A stretched-exponential bound on small-ball probabilities gives every negative moment, with a
 bound depending only on the tail constants and the order. -/
 theorem lintegral_rpow_neg_le_of_stretched_tail
-    (C d β q : ℝ) (hd : 0 < d) (hβ : 1 < β) (hq : 0 < q) :
+    (hd : 0 < d) (hβ : 1 < β) (hq : 0 < q) :
     ∃ K : ℝ, ∀ {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
       (m : Ω → ℝ≥0∞), AEMeasurable m P →
       (∀ x : ℝ, 0 ≤ x → P {ω | m ω ≤ ENNReal.ofReal (Real.exp (-x))} ≤
@@ -212,17 +230,18 @@ theorem lintegral_rpow_neg_le_of_stretched_tail
       ∫⁻ ω, m ω ^ (-q) ∂P ≤ ENNReal.ofReal K := by
   refine ⟨1 + ∑' n : ℕ, stretchedTail_term C d β q n, ?_⟩
   intro Ω _ P _ m hm htail
-  have hsum := stretchedTail_summable C d β q hd hβ hq
   calc ∫⁻ ω, m ω ^ (-q) ∂P
-      ≤ 1 + ∑' n : ℕ, ENNReal.ofReal (Real.exp (q * ((n : ℝ) + 1))) *
-          P {ω | m ω ≤ ENNReal.ofReal (Real.exp (-(n : ℝ)))} :=
+      ≤ 1 + ∑' n : ℕ, ENNReal.ofReal (Real.exp (q * (n + 1))) *
+          P {ω | m ω ≤ ENNReal.ofReal (Real.exp (-n))} :=
         stretchedTail_lintegral_le P m hm q hq
     _ ≤ 1 + ∑' n : ℕ, ENNReal.ofReal (stretchedTail_term C d β q n) :=
         add_le_add_right (ENNReal.tsum_le_tsum fun n =>
           stretchedTail_term_le C d β q n (htail (n : ℝ) (Nat.cast_nonneg n))) _
     _ = ENNReal.ofReal (1 + ∑' n : ℕ, stretchedTail_term C d β q n) := by
         rw [ENNReal.ofReal_add zero_le_one (tsum_nonneg (stretchedTail_term_nonneg C d β q)),
-          ENNReal.ofReal_tsum_of_nonneg (stretchedTail_term_nonneg C d β q) hsum,
+          ENNReal.ofReal_tsum_of_nonneg (stretchedTail_term_nonneg C d β q) (stretchedTail_summable C d β q hd hβ hq),
           ENNReal.ofReal_one]
+
+end
 
 end DOZZ.Proofs

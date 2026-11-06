@@ -7,6 +7,7 @@ public import DOZZ.FourPoint.Fusion.InverseInterpolationFubini
 public import DOZZ.FourPoint.Fusion.DifferenceMassIntegral
 public import DOZZ.FourPoint.Fusion.MassSegment
 public import DOZZ.FourPoint.Fusion.MassPositiveFinite
+import DOZZ.ShiftEquations.Mobius.InversionMoment
 /-! # Signed interpolation of the actual GMC inverse expectations -/
 @[expose] public section
 open MeasureTheory Set
@@ -22,7 +23,7 @@ theorem fusion_mass_expectation_interpolation {Ω : Type*} [MeasurableSpace Ω]
       -p * ∫ t in Icc (0 : ℝ) 1, ∫ ω,
         (fusionUnrootedSegment γ α₁ α₂ α₃ t z (M ω) ^ (-p - 1)).toReal *
           (∫ x, fusionDifferenceKernel γ α₁ α₂ α₃ z x ∂M ω) ∂P := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   let a := fun ω => coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![0, 0, 1] α₃
   let b := fun ω => coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃
   have ha := gmc_coulombMass_aemeasurable P X hX γ hγ hγ2 M hM ![-γ / 2, α₁, α₂] ![0, 0, 1] α₃
@@ -31,13 +32,13 @@ theorem fusion_mass_expectation_interpolation {Ω : Type*} [MeasurableSpace Ω]
   have hbp := fusion_gammaHalfMass_pos_finite_ae P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα₁ hα₂ hα₃ z hz hz4
   obtain ⟨C, _, hbound⟩ := coulomb_inverse_moment_uniform_roots P X hX γ hγ hγ2 M hM ![-γ / 2, α₁, α₂] α₃ p hp
   have hav : ∀ j : Fin 3, ‖(![0, 0, 1] : Fin 3 → ℂ) j‖ ≤ 1 := by intro j; fin_cases j <;> simp
-  have hbv : ∀ j : Fin 3, ‖(![z, 0, 1] : Fin 3 → ℂ) j‖ ≤ 1 := by
+  have hbv : ∀ j : Fin 3, ‖(![z, 0, 1]) j‖ ≤ 1 := by
     intro j; fin_cases j
     · change ‖z‖ ≤ 1; linarith
     · simp
     · simp
   have hat : (∫⁻ ω, a ω ^ (-p) ∂P) ≠ ⊤ := ne_top_of_le_ne_top ENNReal.ofReal_ne_top (hbound _ hav)
-  have hbt : (∫⁻ ω, b ω ^ (-p) ∂P) ≠ ⊤ := ne_top_of_le_ne_top ENNReal.ofReal_ne_top (hbound _ hbv)
+  have hbt := ne_top_of_le_ne_top ENNReal.ofReal_ne_top (hbound _ hbv)
   have hai : Integrable (fun ω => (a ω).toReal ^ (-p)) P := by
     simpa only [ENNReal.toReal_rpow] using integrable_toReal_of_lintegral_ne_top (ha.pow_const _) hat
   have hbi : Integrable (fun ω => (b ω).toReal ^ (-p)) P := by
@@ -58,10 +59,9 @@ theorem fusion_mass_expectation_interpolation {Ω : Type*} [MeasurableSpace Ω]
   rw [← integral_const_mul]
   apply integral_congr_ae
   filter_upwards [hap, hbp,
-    gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM z,
-    gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 0,
-    gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 1] with ω haω hbω hωz hω0 hω1
-  have hd := (fusion_difference_mass_integral γ α₁ α₂ α₃ z (M ω) hωz hω0 hω1 hbω.2 haω.2).2
+    DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM z,
+    DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM 0,
+    DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM 1] with ω haω hbω hωz hω0 hω1
   have he : (fusionUnrootedSegment γ α₁ α₂ α₃ t z (M ω)).toReal =
       t * (b ω).toReal + (1 - t) * (a ω).toReal := by
     rw [fusionUnrootedSegment, ENNReal.toReal_add
@@ -70,7 +70,7 @@ theorem fusion_mass_expectation_interpolation {Ω : Type*} [MeasurableSpace Ω]
     simp only [ENNReal.toReal_mul, ENNReal.toReal_ofReal ht.1,
       ENNReal.toReal_ofReal (sub_nonneg.mpr ht.2)]
     rfl
-  rw [← ENNReal.toReal_rpow, he, hd]
+  rw [← ENNReal.toReal_rpow, he, ((fusion_difference_mass_integral γ α₁ α₂ α₃ z (M ω) hωz hω0 hω1 hbω.2 haω.2).2)]
   change -p * ((b ω).toReal - (a ω).toReal) * _ = -p * (_ * ((b ω).toReal - (a ω).toReal))
   ring
 end DOZZ.Proofs

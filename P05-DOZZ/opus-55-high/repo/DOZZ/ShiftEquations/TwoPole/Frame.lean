@@ -28,23 +28,26 @@ open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
+section
+variable {N : ℕ} (γ : ℝ)
 
 /-- A root of zero charge does not change the Coulomb weight. -/
-theorem coulombWeight_cons_zero {N : ℕ} (γ : ℝ) (α : Fin N → ℝ) (z₀ : ℂ) (z : Fin N → ℂ)
+theorem coulombWeight_cons_zero (α : Fin N → ℝ) (z₀ : ℂ) (z : Fin N → ℂ)
     (αinf : ℝ) (x : ℂ) :
     coulombWeight γ (Fin.cons 0 α : Fin (N + 1) → ℝ) (Fin.cons z₀ z : Fin (N + 1) → ℂ) αinf x =
       coulombWeight γ α z αinf x := by
   unfold coulombWeight
   rw [Fin.prod_univ_succ]
-  simp only [Fin.cons_zero, Fin.cons_succ, mul_zero, ENNReal.rpow_eq_pow, ENNReal.rpow_zero,
-    one_mul]
+  simp
 
-theorem coulombMass_cons_zero {N : ℕ} (γ : ℝ) (μ : Measure ℂ) (α : Fin N → ℝ) (z₀ : ℂ)
+theorem coulombMass_cons_zero (μ : Measure ℂ) (α : Fin N → ℝ) (z₀ : ℂ)
     (z : Fin N → ℂ) (αinf : ℝ) :
     coulombMass γ μ (Fin.cons 0 α : Fin (N + 1) → ℝ) (Fin.cons z₀ z : Fin (N + 1) → ℂ) αinf =
       coulombMass γ μ α z αinf := by
   rw [coulombMass_eq_lintegral_coulombWeight, coulombMass_eq_lintegral_coulombWeight]
   simp_rw [coulombWeight_cons_zero]
+
+end
 
 /-- The two roots of a two-root Coulomb mass may be listed in either order. -/
 theorem coulombMass_swap (γ : ℝ) (μ : Measure ℂ) (a₁ a₂ : ℝ) (z₁ z₂ : ℂ) (αinf : ℝ) :
@@ -53,7 +56,7 @@ theorem coulombMass_swap (γ : ℝ) (μ : Measure ℂ) (a₁ a₂ : ℝ) (z₁ z
   refine lintegral_congr fun x => ?_
   unfold coulombWeight
   rw [Fin.prod_univ_two, Fin.prod_univ_two]
-  simp only [Matrix.cons_val_zero, Matrix.cons_val_one]
+  simp
   ring
 
 /-- Without atoms at the roots, the total mass at charge `x` is the three-root Coulomb mass. -/
@@ -65,20 +68,19 @@ theorem totalMass_eq_coulombMass (γ η x : ℝ) (μ : Measure ℂ) (h0 : μ {0}
   rw [poleTotalMass_eq, coulombMass_eq_lintegral_coulombWeight]
   have e0 : ∀ᵐ y ∂μ, y ≠ 0 := by
     rw [ae_iff]
-    simpa using h0
+    simp_all
   have e1 : ∀ᵐ y ∂μ, y ≠ 2 := by
     rw [ae_iff]
-    simpa using h2
+    simp_all
   have e2 : ∀ᵐ y ∂μ, y ≠ -2 := by
     rw [ae_iff]
-    simpa using h2'
+    simp_all
   refine lintegral_congr_ae ?_
   filter_upwards [e0, e1, e2] with y hy0 hy1 hy2
   have hw := poleWeight_eq_coulombWeight γ η hy1 hy2
-  have hn : 0 < ‖y‖ := norm_pos_iff.mpr hy0
   unfold coulombWeight at hw ⊢
   rw [Fin.prod_univ_succ, hw]
-  simp only [Fin.cons_zero, Fin.cons_succ, sub_zero, zeroTilt, ENNReal.ofReal_div_of_pos hn,
+  simp only [Fin.cons_zero, Fin.cons_succ, sub_zero, zeroTilt, ENNReal.ofReal_div_of_pos (norm_pos_iff.mpr hy0),
     mul_zero, ENNReal.rpow_eq_pow, ENNReal.rpow_zero, mul_one]
 
 /-- `α₂ + α₃ = 4/γ` turns the inversion constant into `2^{-4q}`. -/
@@ -92,9 +94,7 @@ theorem frame_inversion_constant {γ : ℝ} (hγ : 0 < γ) (η q : ℝ) :
   rw [h2, ENNReal.rpow_eq_pow, ENNReal.rpow_eq_pow, ENNReal.rpow_eq_pow,
     ← ENNReal.rpow_add _ _ (by simp) ENNReal.ofReal_ne_top, ← ENNReal.rpow_mul,
     ENNReal.ofReal_rpow_of_pos (by norm_num)]
-  congr 2
-  field_simp
-  ring
+  grind
 
 /-- The translated roots. -/
 theorem frame_translate_roots :
@@ -112,24 +112,24 @@ theorem frame_infSExp {γ : ℝ} (hγ : 0 < γ) (η x : ℝ) :
     -infSExp γ (![2 / γ + η, 2 / γ - η] : Fin 2 → ℝ) x = 1 - x / γ := by
   unfold infSExp
   rw [Fin.sum_univ_two, Q]
-  simp only [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_fin_one]
+  simp
   field_simp
   ring
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+section
+variable (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (η x : ℝ)
+include hX hγ hγ2 hM
 
 /-- **The frame identity** `E[Z_ℂ(x)^w] = 2^{-4w} E[ρ(x, α₂, α₃)^w]`, `w = 1 - x/γ`. -/
-theorem lintegral_totalMass_rpow_eq_rho {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (η x : ℝ) :
+theorem lintegral_totalMass_rpow_eq_rho :
     ∫⁻ ω, poleTotalMass γ x (2 / γ + η) (2 / γ - η) (M ω) ^ (1 - x / γ) ∂P =
       ENNReal.ofReal (2 ^ (-(4 * (1 - x / γ)))) *
         ∫⁻ ω, rho γ (M ω) x (2 / γ + η) (2 / γ - η) ^ (1 - x / γ) ∂P := by
   have hz1 : ∀ k, (![2, -2] : Fin 2 → ℂ) k ≠ 0 := by
-    intro k
-    fin_cases k <;> norm_num
+    simp
   have hz2 : ∀ k, (![1] : Fin 1 → ℂ) k ≠ 0 := by
-    intro k
-    fin_cases k
-    norm_num
+    simp
   -- step 0: the total mass as a three-root Coulomb mass
   have h0 : ∫⁻ ω, poleTotalMass γ x (2 / γ + η) (2 / γ - η) (M ω) ^ (1 - x / γ) ∂P =
       ∫⁻ ω, ENNReal.rpow (coulombMass γ (M ω)
@@ -162,14 +162,14 @@ theorem lintegral_totalMass_rpow_eq_rho {Ω : Type*} [MeasurableSpace Ω] (P : M
     norm_num
   rw [hc3, one_mul, hinv3] at h3
   have hswap : ∀ ω, coulombMass γ (M ω) ![2 / γ + η, 2 / γ - η] ![1, 0] x =
-      coulombMass γ (M ω) (Fin.cons (2 / γ - η) ![2 / γ + η] : Fin 2 → ℝ)
-        (Fin.cons 0 ![1] : Fin 2 → ℂ) x :=
+      coulombMass γ (M ω) (Fin.cons (2 / γ - η) ![2 / γ + η])
+        (Fin.cons 0 ![1]) x :=
     fun ω => coulombMass_swap γ (M ω) (2 / γ + η) (2 / γ - η) 1 0 x
   simp_rw [hswap] at h2
   -- step 4: the structure-constant mass
   have h4 : ∫⁻ ω, rho γ (M ω) x (2 / γ + η) (2 / γ - η) ^ (1 - x / γ) ∂P =
-      ∫⁻ ω, ENNReal.rpow (coulombMass γ (M ω) (Fin.cons x ![2 / γ + η] : Fin 2 → ℝ)
-        (Fin.cons 0 ![1] : Fin 2 → ℂ) (2 / γ - η)) (1 - x / γ) ∂P := by
+      ∫⁻ ω, ENNReal.rpow (coulombMass γ (M ω) (Fin.cons x ![2 / γ + η])
+        (Fin.cons 0 ![1]) (2 / γ - η)) (1 - x / γ) ∂P := by
     refine lintegral_congr_ae ?_
     filter_upwards [gmc_rho_eq_coulombMass_ae P X hX γ hγ hγ2 M hM x (2 / γ + η)
       (2 / γ - η)] with ω hω
@@ -179,9 +179,7 @@ theorem lintegral_totalMass_rpow_eq_rho {Ω : Type*} [MeasurableSpace Ω] (P : M
 
 /-- **The structure constant in the pole frame**:
 `C̄(x, α₂, α₃) = (2/γ) (2^{4(1-x/γ)} E[Z_ℂ(x)^{1-x/γ}])`. -/
-theorem unitVolumeStructureConstant_eq_frame {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (η x : ℝ) :
+theorem unitVolumeStructureConstant_eq_frame :
     unitVolumeStructureConstant P M γ x (2 / γ + η) (2 / γ - η) =
       2 / γ * (ENNReal.ofReal (2 ^ (4 * (1 - x / γ))) *
         ∫⁻ ω, poleTotalMass γ x (2 / γ + η) (2 / γ - η) (M ω) ^ (1 - x / γ) ∂P).toReal := by
@@ -194,25 +192,36 @@ theorem unitVolumeStructureConstant_eq_frame {Ω : Type*} [MeasurableSpace Ω] (
     ← ENNReal.ofReal_mul (by positivity), ← Real.rpow_add two_pos, add_neg_cancel,
     Real.rpow_zero, ENNReal.ofReal_one, one_mul]
 
-theorem extendedSeiberg3_swap12 {γ a b c : ℝ} (h : ExtendedSeiberg3 γ a b c) :
+end
+
+end
+section
+variable {γ a b c : ℝ}
+section
+variable (h : ExtendedSeiberg3 γ a b c)
+include h
+
+theorem extendedSeiberg3_swap12 :
     ExtendedSeiberg3 γ b a c := by
   obtain ⟨ha, hb, hc, hs⟩ := h
   refine ⟨hb, ha, hc, ?_⟩
   have hsym : sExp γ b a c = sExp γ a b c := by
     unfold sExp
     ring_nf
-  rw [hsym, min_left_comm (2 / γ * (Q γ - b))]
-  exact hs
+  grind
 
-theorem extendedSeiberg3_swap23 {γ a b c : ℝ} (h : ExtendedSeiberg3 γ a b c) :
+theorem extendedSeiberg3_swap23 :
     ExtendedSeiberg3 γ a c b := by
   obtain ⟨ha, hb, hc, hs⟩ := h
   refine ⟨ha, hc, hb, ?_⟩
   have hsym : sExp γ a c b = sExp γ a b c := by
     unfold sExp
     ring_nf
-  rw [hsym, min_comm (2 / γ * (Q γ - c))]
-  exact hs
+  grind
+
+end
+
+end
 
 /-- The structure constant of the two-pole expansion in the order of the pole frame. -/
 theorem unitVolumeStructureConstant_pole_order {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
@@ -226,9 +235,8 @@ theorem unitVolumeStructureConstant_pole_order {Ω : Type*} [MeasurableSpace Ω]
     ring
   rw [hQ]
   have h23 := extendedSeiberg3_swap23 hα
-  have h12 := extendedSeiberg3_swap12 h23
-  rw [(unitVolumeStructureConstant_symmetric_extended P X M γ (2 / γ - η) x (2 / γ + η) hγ hγ2
-    hX hM h12).1, (unitVolumeStructureConstant_symmetric_extended P X M γ x (2 / γ - η)
+  rw [(unitVolumeStructureConstant_symmetric_extended P X M γ _ x _ hγ hγ2
+    hX hM (extendedSeiberg3_swap12 h23)).1, (unitVolumeStructureConstant_symmetric_extended P X M γ x _
     (2 / γ + η) hγ hγ2 hX hM h23).2.1]
 
 end DOZZ.Proofs

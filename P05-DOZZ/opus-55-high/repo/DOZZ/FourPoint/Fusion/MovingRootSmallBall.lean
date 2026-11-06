@@ -10,6 +10,7 @@ import DOZZ.GMC.SharpMoments.SeibergPieces
 import DOZZ.GMC.SharpMoments.WeightedLocalSufficiency
 import DOZZ.GMC.SharpMoments.CutoffUIConvergenceAux
 import DOZZ.GMC.Construction.RootedMeasureKernel
+import DOZZ.ShiftEquations.Mobius.InversionMoment
 
 /-! # Vanishing small-ball errors for the moving rooted mass -/
 
@@ -26,18 +27,18 @@ theorem fusion_rootedKernel_smallBall_moment {Ω : Type*} [MeasurableSpace Ω]
     (hpRange : p < min (4 / γ ^ 2) (2 / γ * (Q γ - (α₁ + γ / 2))))
     (y : ℂ) (hy : y ≠ 0) :
     let ξ := γ * (Q γ - (α₁ + γ / 2)) * p - γ ^ 2 * p ^ 2 / 2
-    0 < ξ ∧ ∃ C : ℝ≥0∞, C < ⊤ ∧ ∀ (δ : ℝ), 0 < δ → δ ≤ 1 / 16 →
+    0 < ξ ∧ ∃ C : ℝ≥0∞, C < ⊤ ∧ ∀ δ, 0 < δ → δ ≤ 1 / 16 →
       ∀ z : ℂ, ‖y * z‖ ≤ δ →
-      (∫⁻ ω, (∫⁻ x in Metric.ball (0 : ℂ) δ,
+      (∫⁻ ω, (∫⁻ x in Metric.ball 0 δ,
         ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x *
           Real.exp (γ ^ 2 * gffKernel (y * z) x)) ∂M ω) ^ p ∂P) ≤
         C * ENNReal.ofReal (δ ^ ξ) := by
   obtain ⟨hξ, D, hD, hbound⟩ := fusion_weightedMoment_small_uniform
     P X hX γ hγ hγ2 M hM (α₁ + γ / 2) p hp hpRange
   let ξ := γ * (Q γ - (α₁ + γ / 2)) * p - γ ^ 2 * p ^ 2 / 2
-  let A : ℝ≥0∞ := ENNReal.ofReal
-    ((2 : ℝ) ^ |γ * α₂| * (1 + 2 / ‖y‖) ^ (γ ^ 2 / 2))
-  refine ⟨hξ, A ^ p * (D + D * ENNReal.ofReal ((2 : ℝ) ^ ξ)), ?_, ?_⟩
+  let A := ENNReal.ofReal
+    (2 ^ |γ * α₂| * (1 + 2 / ‖y‖) ^ (γ ^ 2 / 2))
+  refine ⟨hξ, A ^ p * (D + D * ENNReal.ofReal (2 ^ ξ)), ?_, ?_⟩
   · exact ENNReal.mul_lt_top
       (ENNReal.rpow_ne_top_of_nonneg hp.le ENNReal.ofReal_ne_top).lt_top
       (ENNReal.add_lt_top.mpr ⟨hD, ENNReal.mul_lt_top hD ENNReal.ofReal_lt_top⟩)
@@ -45,37 +46,37 @@ theorem fusion_rootedKernel_smallBall_moment {Ω : Type*} [MeasurableSpace Ω]
     have hw0 := gmc_weighted_mass_aemeasurable P X hX γ hγ hγ2 M hM (α₁ + γ / 2) 0 δ
     have hwu := gmc_weighted_mass_aemeasurable P X hX γ hγ hγ2 M hM
       (α₁ + γ / 2) (y * z) (2 * δ)
-    have hae : ∀ᵐ ω ∂P, (∫⁻ x in Metric.ball (0 : ℂ) δ,
+    have hae : ∀ᵐ ω ∂P, (∫⁻ x in Metric.ball 0 δ,
         ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x *
           Real.exp (γ ^ 2 * gffKernel (y * z) x)) ∂M ω) ^ p ≤
         A ^ p * (weightedGmcBallMass γ (M ω) (α₁ + γ / 2) 0 δ ^ p +
           weightedGmcBallMass γ (M ω) (α₁ + γ / 2) (y * z) (2 * δ) ^ p) := by
-      filter_upwards [gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 0,
-        gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM (y * z)] with ω h0 hu
+      filter_upwards [DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM 0,
+        DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM _] with ω h0 hu
       have h := ENNReal.rpow_le_rpow
         (fusion_rootedKernel_smallBall_le γ α₁ α₂ α₃ hγ hα y z hy (M ω) h0 hu δ hδ
           (by linarith) hz) hp.le
       rw [ENNReal.mul_rpow_of_nonneg _ _ hp.le] at h
       exact h.trans (mul_le_mul' le_rfl (ENNReal.rpow_add_le_add_rpow _ _ hp.le hp1))
     have hb0 := hbound 0 (by simp) δ hδ (by linarith)
-    have hbu := hbound (y * z) (by linarith) (2 * δ) (by positivity) (by linarith)
+    have hbu := hbound _ (by linarith) (2 * δ) (by positivity) (by linarith)
     have hr : ENNReal.ofReal ((2 * δ) ^ ξ) =
-        ENNReal.ofReal ((2 : ℝ) ^ ξ) * ENNReal.ofReal (δ ^ ξ) := by
-      rw [Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 2) hδ.le,
+        ENNReal.ofReal (2 ^ ξ) * ENNReal.ofReal (δ ^ ξ) := by
+      rw [Real.mul_rpow (by norm_num) hδ.le,
         ENNReal.ofReal_mul (Real.rpow_nonneg (by norm_num) _)]
     calc
-      _ ≤ ∫⁻ ω, A ^ p * (weightedGmcBallMass γ (M ω) (α₁ + γ / 2) 0 δ ^ p +
-          weightedGmcBallMass γ (M ω) (α₁ + γ / 2) (y * z) (2 * δ) ^ p) ∂P := lintegral_mono_ae hae
-      _ = A ^ p * (weightedGmcBallMoment P M γ (α₁ + γ / 2) 0 δ p +
-          weightedGmcBallMoment P M γ (α₁ + γ / 2) (y * z) (2 * δ) p) := by
+      _ ≤ ∫⁻ ω, A ^ p * (weightedGmcBallMass γ (M ω) _ 0 δ ^ p +
+          weightedGmcBallMass γ (M ω) _ _ _ ^ p) ∂P := lintegral_mono_ae hae
+      _ = A ^ p * (weightedGmcBallMoment P M γ _ 0 δ p +
+          weightedGmcBallMoment P M γ _ _ _ p) := by
         have hm : AEMeasurable (fun ω =>
-            weightedGmcBallMass γ (M ω) (α₁ + γ / 2) 0 δ ^ p +
-            weightedGmcBallMass γ (M ω) (α₁ + γ / 2) (y * z) (2 * δ) ^ p) P :=
+            weightedGmcBallMass γ (M ω) _ 0 δ ^ p +
+            weightedGmcBallMass γ (M ω) _ _ _ ^ p) P :=
           (hw0.pow_const p).add (hwu.pow_const p)
         rw [lintegral_const_mul'' _ hm,
           lintegral_add_left' (hw0.pow_const p)]
         rfl
-      _ ≤ A ^ p * (D * ENNReal.ofReal (δ ^ ξ) + D * ENNReal.ofReal ((2 * δ) ^ ξ)) :=
+      _ ≤ A ^ p * (D * ENNReal.ofReal _ + D * ENNReal.ofReal _) :=
         mul_le_mul' le_rfl (add_le_add hb0 hbu)
       _ = _ := by rw [hr]; ring
 

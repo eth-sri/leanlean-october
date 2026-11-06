@@ -23,7 +23,7 @@ theorem reflected_inverse_increment_integrable
     (hpow.comp_aemeasurable hAm)).aestronglyMeasurable
   apply hInv.mono' hm
   filter_upwards [hA,hT] with ω hAω hTω
-  have hneg : (A ω+T ω)^(-p)-(A ω)^(-p) ≤ 0 :=
+  have hneg :=
     sub_nonpos.mpr (Real.rpow_le_rpow_of_nonpos hAω
       (le_add_of_nonneg_right hTω) (neg_nonpos.mpr hp.le))
   change ‖(A ω+T ω)^(-p)-(A ω)^(-p)‖ ≤ (A ω)^(-p)

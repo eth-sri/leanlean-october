@@ -42,8 +42,8 @@ theorem conditionedPositiveStateAt_dyadicLastExit_sub_tendsto_zero
       atTop (𝓝 c) := by
     simpa only [conditionedPositiveStateAt, neg_neg] using hpath.neg
   have hsub := hstate.sub
-    (tendsto_const_nhds : Tendsto (fun _ : ℕ => c) atTop (𝓝 c))
-  simpa using hsub
+    (tendsto_const_nhds : Tendsto (fun _ => c) atTop (𝓝 c))
+  simp_all
 
 /-- Almost surely, the conditioned state at the dyadic endpoint selected by the finite last exit
 converges to the barrier. -/
@@ -57,10 +57,9 @@ theorem ae_conditionedPositiveStateAt_dyadicLastExit_sub_tendsto_zero
       (fun n => conditionedPositiveStateAt
         (dyadicLastExitCeilingTime n (negativeLastExitTime p c)) p - c)
       atTop (𝓝 0) := by
-  have hgood := ae_negativeConditionedLevelHitSet_nonempty_bddAbove hP hB hν c hc
-  filter_upwards [hgood] with p hp
+  filter_upwards [(ae_negativeConditionedLevelHitSet_nonempty_bddAbove hP hB hν c hc)] with p hp
   exact conditionedPositiveStateAt_dyadicLastExit_sub_tendsto_zero
-    p (c : ℝ) hp.1 hp.2
+    p c hp.1 hp.2
 
 end DOZZ.Proofs
 

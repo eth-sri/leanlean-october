@@ -83,10 +83,14 @@ def constant_path_continuation_lift
     calc
       y = D.solution D.center := (D.solution_center.trans hinitial).symm
       _ = D.solution z := by rw [hcenter]
+section
+variable {N i : ℕ}
+section
+variable (hN : 0 < N)
+include hN
 
 /-- Every mesh point of a positive equal subdivision belongs to `[0,1]`. -/
-theorem pathContinuationMeshPoint_mem_unitInterval {N i : ℕ} (hN : 0 < N)
-    (hi : i ≤ N) : (i : ℝ) / (N : ℝ) ∈ Icc (0 : ℝ) 1 := by
+theorem pathContinuationMeshPoint_mem_unitInterval (hi : i ≤ N) : (i : ℝ) / (N : ℝ) ∈ Icc (0 : ℝ) 1 := by
   have hNreal : 0 < (N : ℝ) := by exact_mod_cast hN
   constructor
   · positivity
@@ -94,8 +98,7 @@ theorem pathContinuationMeshPoint_mem_unitInterval {N i : ℕ} (hN : 0 < N)
     exact_mod_cast hi
 
 /-- Every segment of a positive equal subdivision lies in `[0,1]`. -/
-theorem pathContinuationSegment_mem_unitInterval {N i : ℕ} (hN : 0 < N)
-    (hi : i < N) {t : ℝ}
+theorem pathContinuationSegment_mem_unitInterval (hi : i < N) {t : ℝ}
     (ht : t ∈ Icc ((i : ℝ) / (N : ℝ)) (((i + 1 : ℕ) : ℝ) / (N : ℝ))) :
     t ∈ Icc (0 : ℝ) 1 := by
   have hNreal : 0 < (N : ℝ) := by exact_mod_cast hN
@@ -105,12 +108,15 @@ theorem pathContinuationSegment_mem_unitInterval {N i : ℕ} (hN : 0 < N)
     exact_mod_cast hi1
   exact ⟨le_trans (by positivity) ht.1, le_trans ht.2 hupper⟩
 
+end
+
+end
+
 /-- A packaged finite-chain lift inherits local holomorphic charts along its path. -/
 theorem path_continuation_lift_has_solution_charts
     {γ : ℝ → ℂ} (hγ : ContinuousOn γ (Icc (0 : ℝ) 1))
     {H : ℂ → E →L[ℂ] E} {y : E} (A : PathContinuationLift γ H y) :
-    ∀ t ∈ Icc (0 : ℝ) 1, Nonempty (PathSolutionChart γ H A.value t) := by
-  exact disk_chain_lift_has_path_solution_charts hγ A.subdivision A.subdivision_pos
+    ∀ t ∈ Icc (0 : ℝ) 1, Nonempty (PathSolutionChart γ H A.value t) := disk_chain_lift_has_path_solution_charts hγ A.subdivision A.subdivision_pos
     A.radius A.coefficient_bound A.radius_pos A.coefficient_bound_nonneg H A.disks
     A.centers A.operator_bound A.path_cover A.overlap A.local_formula
 
@@ -196,18 +202,12 @@ theorem exists_path_continuation_lift [CompleteSpace E]
     · apply (div_le_one hNreal).2
       exact_mod_cast hi
   have hbound : ∀ i ≤ N, ∀ z ∈ Metric.ball (D i).center r, ‖H z‖ ≤ M := by
-    intro i hi z hz
-    have h := (hlocal ((i : ℝ) / (N : ℝ)) (hcoord i hi)).2
-    have hz' : z ∈ Metric.ball (γ ((i : ℝ) / (N : ℝ))) r := by
-      rw [← hcenters i hi]
-      exact hz
-    exact h z hz'
+    grind
   have hoverlap' : ∀ i < N, ∀ z ∈ Metric.ball (D (i + 1)).center (r / 2),
       (D i).solution z = (D (i + 1)).solution z := by
     intro i hi z hz
-    have hc := hcenters (i + 1) (Nat.succ_le_iff.mpr hi)
     have hz' : z ∈ Metric.ball (γ (((i + 1 : ℕ) : ℝ) / (N : ℝ))) (r / 2) := by
-      simpa [hc] using hz
+      simpa [(hcenters _ (Nat.succ_le_iff.mpr hi))] using hz
     exact hoverlap i hi z hz'
   obtain ⟨F, hFcont, hFstart, _, hFformula⟩ :=
     exists_continuous_lift_from_disk_chain H hγ N hN r hr D y hD0c hD0i
@@ -223,30 +223,24 @@ theorem path_continuation_lift_value_one_eq_final_disk
   let i := A.subdivision - 1
   have hi : i < A.subdivision := by have hpos := A.subdivision_pos; dsimp [i]; omega
   have hsucc : i + 1 = A.subdivision := by
-    have hpos := A.subdivision_pos
-    dsimp [i]
     omega
   have hNreal : 0 < (A.subdivision : ℝ) := by exact_mod_cast A.subdivision_pos
   have hseg : (1 : ℝ) ∈ Icc ((i : ℝ) / (A.subdivision : ℝ))
       (((i + 1 : ℕ) : ℝ) / (A.subdivision : ℝ)) := by
     constructor
     · apply (div_le_one hNreal).2
-      exact_mod_cast (show i ≤ A.subdivision by omega)
+      aesop
     · rw [hsucc, div_self (by exact_mod_cast A.subdivision_pos.ne')]
   have hform := A.local_formula i hi 1 hseg
   have hcenter := A.centers A.subdivision le_rfl
   have hNdiv : (A.subdivision : ℝ) / (A.subdivision : ℝ) = 1 :=
     div_self hNreal.ne'
   have hfinalCenter : (A.disks (i + 1)).center = γ 1 := by
-    rw [hsucc]
-    simpa [hNdiv] using hcenter
+    simp_all
   have hover := A.overlap i hi (γ 1) (by
     rw [← hfinalCenter]
     exact Metric.mem_ball_self (by linarith [A.radius_pos]))
-  calc
-    A.value 1 = (A.disks i).solution (γ 1) := hform
-    _ = (A.disks (i + 1)).solution (γ 1) := hover
-    _ = (A.disks A.subdivision).solution (γ 1) := by rw [hsucc]
+  simp_all
 
 /-- Restrict a packaged lift to an affine subinterval of its path. A fresh finite chain on the
 subpath has the same terminal vector as the original continuous lift at the subinterval endpoint.
@@ -262,33 +256,31 @@ theorem exists_path_continuation_lift_affine_reparam [CompleteSpace E]
     ∃ B : PathContinuationLift (fun s => γ (a + c * s)) H (A.value a),
       B.value 1 = A.value (a + c) := by
   let φ : ℝ → ℝ := fun s => a + c * s
-  have hφcont : ContinuousOn φ (Icc (0 : ℝ) 1) := by
-    exact (continuous_const.add (continuous_const.mul continuous_id)).continuousOn
-  have hγ' : ContinuousOn (fun s => γ (φ s)) (Icc (0 : ℝ) 1) :=
+  have hφcont : ContinuousOn φ (Icc 0 1) := (continuous_const.add (continuous_const.mul continuous_id)).continuousOn
+  have hγ' :=
     hγ.comp hφcont (fun s hs => hparam s hs)
-  have hpath' : ∀ s ∈ Icc (0 : ℝ) 1, γ (φ s) ∈ U :=
+  have hpath' : ∀ s ∈ Icc 0 1, γ (φ s) ∈ U :=
     fun s hs => hpath (φ s) (hparam s hs)
   obtain ⟨B⟩ := exists_path_continuation_lift hγ' U hU H hH hpath' (A.value a)
   let F : ℝ → E := fun s => A.value (φ s)
-  have hFcont : ContinuousOn F (Icc (0 : ℝ) 1) :=
+  have hFcont :=
     A.value_continuous.comp hφcont (fun s hs => hparam s hs)
-  have hFchart : ∀ s ∈ Icc (0 : ℝ) 1,
+  have hFchart : ∀ s ∈ Icc 0 1,
       Nonempty (PathSolutionChart (fun u => γ (φ u)) H F s) := by
     intro s hs
     obtain ⟨C⟩ := path_continuation_lift_has_solution_charts hγ A (φ s) (hparam s hs)
     exact ⟨C.affineReparam hc (a := a) (c := c) (u := s) hparam⟩
-  have hBchart := path_continuation_lift_has_solution_charts hγ' B
   have hstart : F 0 = B.value 0 := by
     rw [B.value_initial]
     simp [F, φ]
   have hEq := continuous_path_solution_lifts_unique hγ' H hFcont
-    B.value_continuous hFchart hBchart hstart
+    B.value_continuous hFchart (path_continuation_lift_has_solution_charts hγ' B) hstart
   refine ⟨B, ?_⟩
   have hlast := hEq 1 (by norm_num)
   change A.value (φ 1) = B.value 1 at hlast
   calc
     B.value 1 = A.value (φ 1) := hlast.symm
-    _ = A.value (a + c) := by congr 1; simp [φ]
+    _ = A.value _ := by aesop
 
 /-- The finite-chain path lift is independent of its local disk choices and subdivision. -/
 theorem path_continuation_lifts_unique

@@ -60,7 +60,6 @@ theorem extendHolomorphicDiskSolution_agrees
     linarith
   have hsub : Metric.ball d (r / 2) ⊆ Metric.ball D.center r := by
     intro z hz
-    rw [Metric.mem_ball] at hz ⊢
     calc
       dist z D.center ≤ dist z d + dist d D.center := dist_triangle z d D.center
       _ < r / 2 + r / 2 := add_lt_add_of_lt_of_le hz hd.le
@@ -69,7 +68,7 @@ theorem extendHolomorphicDiskSolution_agrees
   have hboundHalf : ∀ w ∈ Metric.ball d (r / 2), ‖H w‖ ≤ M :=
     fun w hw => hbound w (Metric.ball_subset_ball (by linarith) hw)
   have hEq := holomorphic_linear_system_solution_unique_of_eq_at
-    d (r / 2) M H hM hboundHalf
+    d _ M H hM hboundHalf
     (fun w hw => D.derivative w (hsub hw))
     (fun w hw => D'.derivative w (Metric.ball_subset_ball (by linarith) hw))
     (Metric.mem_ball_self (by linarith)) hz

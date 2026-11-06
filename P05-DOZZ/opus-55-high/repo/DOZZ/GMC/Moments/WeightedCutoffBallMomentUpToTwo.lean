@@ -29,7 +29,7 @@ theorem ennreal_lintegral_rpow_const_mul_root_eq
   have hp0 : 0 ≤ p := hp.le
   have hpowMeas : AEMeasurable (fun ω => ENNReal.rpow (f ω) p) P :=
     ENNReal.continuous_rpow_const.measurable.comp_aemeasurable hf
-  have hcPow : c ^ p < ⊤ :=
+  have hcPow :=
     lt_top_iff_ne_top.mpr (ENNReal.rpow_ne_top_of_nonneg hp0 hc.ne)
   have hfactor :
       (∫⁻ ω, ENNReal.rpow (c * f ω) p ∂P) =
@@ -41,49 +41,29 @@ theorem ennreal_lintegral_rpow_const_mul_root_eq
         exact ENNReal.mul_rpow_of_nonneg c (f ω) hp0
       _ = _ := lintegral_const_mul'' _ hpowMeas
   have hroot : (c ^ p) ^ (1 / p) = c := by
-    rw [← ENNReal.rpow_mul]
-    rw [show p * (1 / p) = 1 by field_simp [ne_of_gt hp]]
-    exact ENNReal.rpow_one c
+    aesop
   rw [hfactor, ENNReal.mul_rpow_of_ne_top hcPow.ne hfmom.ne, hroot]
 
-private theorem ennreal_ofReal_rpow_of_pos_upto_two {x p : ℝ} (hx : 0 < x) :
-    ENNReal.rpow (ENNReal.ofReal x) p = ENNReal.ofReal (x ^ p) := by
-  have hx0 : ENNReal.ofReal x ≠ 0 := ne_of_gt (ENNReal.ofReal_pos.mpr hx)
-  have hleft : ENNReal.rpow (ENNReal.ofReal x) p ≠ ⊤ :=
-    ENNReal.rpow_ne_top_of_ne_zero hx0 ENNReal.ofReal_ne_top
-  have hright : ENNReal.ofReal (x ^ p) ≠ ⊤ := ENNReal.ofReal_ne_top
-  apply (ENNReal.toReal_eq_toReal_iff' hleft hright).1
-  calc
-    (ENNReal.rpow (ENNReal.ofReal x) p).toReal = (ENNReal.ofReal x).toReal ^ p :=
-      (ENNReal.toReal_rpow _ _).symm
-    _ = x ^ p := by rw [ENNReal.toReal_ofReal hx.le]
-    _ = (ENNReal.ofReal (x ^ p)).toReal :=
-      (ENNReal.toReal_ofReal (Real.rpow_nonneg hx.le p)).symm
-
-/-- Extracting a positive real scale from an `ENNReal` moment root. -/
 theorem ennreal_root_mul_ofReal_rpow_eq
     (C : ℝ≥0∞) (hC : C < ⊤) (a xi p : ℝ) (ha : 0 < a) (hp : 0 < p) :
     (C * ENNReal.ofReal (a ^ xi)) ^ (1 / p) =
       C ^ (1 / p) * ENNReal.ofReal (a ^ (xi / p)) := by
-  have hreal : 0 < a ^ xi := Real.rpow_pos_of_pos ha xi
   calc
     _ = C ^ (1 / p) * ENNReal.rpow (ENNReal.ofReal (a ^ xi)) (1 / p) :=
       ENNReal.mul_rpow_of_ne_top hC.ne ENNReal.ofReal_ne_top _
     _ = C ^ (1 / p) * ENNReal.ofReal ((a ^ xi) ^ (1 / p)) := by
-      rw [ennreal_ofReal_rpow_of_pos_upto_two hreal]
+      rw [DOZZ.Proofs.ennreal_ofReal_rpow_of_pos_cutoff (Real.rpow_pos_of_pos ha xi)]
     _ = C ^ (1 / p) * ENNReal.ofReal (a ^ (xi / p)) := by
       congr 2
       rw [← Real.rpow_mul ha.le]
-      congr 1
-      field_simp [ne_of_gt hp]
+      ring
 
 private theorem weighted_cutoff_rpow_exponent_relation (γ α p : ℝ)
     (hγ : 0 < γ) (hp : 0 < p) :
     -γ * α + (2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2) / p =
       weightedCutoffMomentScaleExponent γ α p / p := by
   dsimp [weightedCutoffMomentScaleExponent, Q]
-  field_simp [ne_of_gt hγ, ne_of_gt hp]
-  ring
+  grind
 
 theorem weighted_cutoff_core_rpow_identity
     (γ α p δ : ℝ) (hγ : 0 < γ) (hp : 0 < p) (hδ : 0 < δ) :
@@ -99,11 +79,11 @@ theorem weighted_cutoff_core_rpow_identity
   calc
     _ = (δ ^ (-γ * α) * δ ^
           ((2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2) / p)) *
-          ((1 / 8 : ℝ)⁻¹) ^
+          ((1 / 8)⁻¹) ^
             ((2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2) / p) := by ac_rfl
     _ = δ ^ (-γ * α +
           (2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2) / p) *
-          ((1 / 8 : ℝ)⁻¹) ^
+          ((1 / 8)⁻¹) ^
             ((2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2) / p) := by
       rw [← Real.rpow_add hδ]
     _ = _ := by
@@ -119,21 +99,16 @@ theorem weighted_cutoff_shell_rpow_identity
           ((2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2) / p) *
         R ^ (weightedCutoffMomentScaleExponent γ α p / p) *
           ((1 / 2 : ℝ) ^ (weightedCutoffMomentScaleExponent γ α p / p)) ^ (n + 1) := by
-  let ρ : ℝ := cutoffDyadicBallRadius R (n + 1)
+  let ρ := cutoffDyadicBallRadius R (n + 1)
   have hρ : 0 < ρ := by dsimp [ρ, cutoffDyadicBallRadius]; positivity
   have hstep : cutoffDyadicBallRadius R n = 2 * ρ := by
     dsimp [ρ, cutoffDyadicBallRadius]
-    rw [pow_succ]
-    field_simp
+    ring
   have hratio : cutoffDyadicBallRadius R n / (1 / 8 : ℝ) =
       (2 / (1 / 8 : ℝ)) * ρ := by
-    rw [hstep]
-    field_simp
-  have hrel := weighted_cutoff_rpow_exponent_relation γ α p hγ hp
+    linarith
   have hrad : ρ = R * (1 / 2 : ℝ) ^ (n + 1) := by
-    dsimp [ρ, cutoffDyadicBallRadius]
-    rw [show (1 / 2 : ℝ) = (2 : ℝ)⁻¹ by norm_num, inv_pow]
-    field_simp
+    aesop
   calc
     _ = ρ ^ (-γ * α) *
         ((2 / (1 / 8 : ℝ)) ^
@@ -154,14 +129,14 @@ theorem weighted_cutoff_shell_rpow_identity
             ρ ^ (-γ * α +
               (2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2) / p) := by
           rw [← Real.rpow_add hρ]
-        _ = _ := by rw [hrel]
+        _ = _ := by rw [(weighted_cutoff_rpow_exponent_relation γ α p hγ hp)]
     _ = (2 / (1 / 8 : ℝ)) ^
           ((2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2) / p) *
         (R ^ (weightedCutoffMomentScaleExponent γ α p / p) *
           ((1 / 2 : ℝ) ^ (weightedCutoffMomentScaleExponent γ α p / p)) ^ (n + 1)) := by
       rw [hrad, Real.mul_rpow hR.le (by positivity)]
       have hhalf : 0 ≤ (1 / 2 : ℝ) := by norm_num
-      rw [← Real.rpow_natCast_mul hhalf (n + 1)
+      rw [← Real.rpow_natCast_mul hhalf _
           (weightedCutoffMomentScaleExponent γ α p / p)]
       rw [show ((n + 1 : ℕ) : ℝ) *
           (weightedCutoffMomentScaleExponent γ α p / p) =
@@ -199,48 +174,38 @@ theorem cutoffWeightedGmcBallMoment_positive_lp_shell_bound
     match i with
     | none => core ω
     | some n => shell n ω
-  let indices : Finset (Option ℕ) :=
+  let indices :=
     insert none ((Finset.range (N + 1)).image some)
   have hcoreMeas : AEMeasurable core P := by
     dsimp [core]
     exact aemeasurable_const.mul (regularizedGMC_mass_aemeasurable P X hX Xc hXc γ
-      (Real.log (1 / δ)) (Metric.ball z δ) Metric.isOpen_ball.measurableSet)
+      (Real.log _) _ Metric.isOpen_ball.measurableSet)
   have hshellMeas (n : ℕ) : AEMeasurable (shell n) P := by
     dsimp [shell]
     exact aemeasurable_const.mul (regularizedGMC_mass_aemeasurable P X hX Xc hXc γ
-      (Real.log (1 / δ)) (Metric.ball z (cutoffDyadicBallRadius R n))
+      (Real.log _) _
       Metric.isOpen_ball.measurableSet)
   have htermMeas : ∀ i ∈ indices, AEMeasurable (term i) P := by
-    intro i hi
-    cases i with
-    | none => exact hcoreMeas
-    | some n => exact hshellMeas n
+    aesop
   have htsum (ω : Ω) :
       (∑' n : ℕ, if n ≤ N then
         ENNReal.ofReal ((cutoffDyadicBallRadius R (n + 1)) ^ (-γ * α)) *
           regularizedGMC P Xc γ (Real.log (1 / δ)) ω
             (Metric.ball z (cutoffDyadicBallRadius R n)) else 0) =
         ∑ n ∈ Finset.range (N + 1), shell n ω := by
-    rw [tsum_eq_sum (s := Finset.range (N + 1))]
+    rw [tsum_eq_sum (s := Finset.range _)]
     · apply Finset.sum_congr rfl
       intro n hn
       have hnle : n ≤ N := by
         have : n < N + 1 := Finset.mem_range.mp hn
         omega
       simp [shell, cutoffDyadicBallWeight, hnle]
-    · intro n hn
-      have hnrange : ¬ n < N + 1 := by
-        intro hnlt
-        exact hn (Finset.mem_range.mpr hnlt)
-      have hnlt : N < n := by
-        omega
-      have hnle : ¬ n ≤ N := by omega
-      simp [hnle]
+    · simp_all
   have hdecomp (ω : Ω) :
       cutoffWeightedGmcBallMass P Xc γ α z R δ ω ≤
         core ω + ∑ n ∈ Finset.range (N + 1), shell n ω := by
     change (∫⁻ x in Metric.ball z R,
-      ENNReal.ofReal ((‖x - z‖ + δ) ^ (-γ * α)) ∂
+      ENNReal.ofReal _ ∂
         regularizedGMC P Xc γ (Real.log (1 / δ)) ω) ≤ _
     have h := cutoffWeightedGmcBallMass_le_positive_dyadic_cover
       (regularizedGMC P Xc γ (Real.log (1 / δ)) ω) γ α z R δ N
@@ -257,11 +222,11 @@ theorem cutoffWeightedGmcBallMoment_positive_lp_shell_bound
     rw [hsum]
     exact ENNReal.rpow_le_rpow (hdecomp ω) (le_trans zero_le_one hp)
   calc
-    _ ≤ (∫⁻ ω, ENNReal.rpow (∑ i ∈ indices, term i ω) p ∂P) ^ (1 / p) := by
+    _ ≤ (∫⁻ ω, ENNReal.rpow _ p ∂P) ^ (1 / p) := by
       apply ENNReal.rpow_le_rpow
       · exact lintegral_mono hpoint
-      · exact one_div_nonneg.mpr (le_trans zero_le_one hp)
-    _ ≤ ∑ i ∈ indices, (∫⁻ ω, ENNReal.rpow (term i ω) p ∂P) ^ (1 / p) :=
+      · positivity
+    _ ≤ ∑ i ∈ indices, (∫⁻ ω, ENNReal.rpow _ p ∂P) ^ (1 / p) :=
       ennreal_lintegral_rpow_finset_sum_root_le indices term p hp htermMeas
     _ = _ := by
       simp [indices, term, Finset.sum_image, core, shell]

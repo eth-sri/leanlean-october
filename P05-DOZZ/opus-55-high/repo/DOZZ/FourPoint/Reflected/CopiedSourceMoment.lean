@@ -28,31 +28,31 @@ theorem reflected_copied_separatedMoment_source
         ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x)*
           ENNReal.ofReal (reflected_global_reinsertionWeight γ (originRadialPath Xc ω.1) x) ∂N ω.2)+
         gammaHalfOuterMass γ α₁ α₂ α₃ (M ω.1) z ξ)^(-q) ∂P.prod P := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   let U := reflected_innerRegion s
   let V := reflected_outerRegion (‖z‖^(1-ξ))
-  let K := fun x : ℂ => ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x)
+  let K := fun x => ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x)
   have hU : MeasurableSet U := (measurableSet_lt measurable_const measurable_norm).inter
     (measurableSet_lt measurable_norm measurable_const)
   have hV : MeasurableSet V := (measurableSet_lt measurable_const measurable_norm).inter
-    (measurableSet_insert.mpr (measurableSet_singleton (1 : ℂ)) : MeasurableSet ({0,1} : Set ℂ)).compl
-  have hU0 : U ⊆ ({0} : Set ℂ)ᶜ := by
+    (measurableSet_insert.mpr (measurableSet_singleton 1)).compl
+  have hU0 : U ⊆ ({0})ᶜ := by
     intro x hx
-    simpa only [mem_compl_iff,mem_singleton_iff] using norm_pos_iff.mp hx.1
-  have hV0 : V ⊆ ({0} : Set ℂ)ᶜ := by
+    simpa using norm_pos_iff.mp hx.1
+  have hV0 : V ⊆ ({0})ᶜ := by
     intro x hx
-    simpa only [mem_compl_iff,mem_singleton_iff] using norm_pos_iff.mp (hr.trans hx.1)
-  have hK : Measurable K := (reflected_gammaHalfKernel_measurable γ α₁ α₂ α₃ z).ennreal_ofReal
+    simpa using norm_pos_iff.mp (hr.trans hx.1)
+  have hK := (reflected_gammaHalfKernel_measurable γ α₁ α₂ α₃ z).ennreal_ofReal
   have hF : Measurable (fun p : ℝ≥0∞ × ℝ≥0∞ => (p.1+p.2)^(-q)) := by fun_prop
   have he := reflected_copied_reinserted_regions_regroup P (originRadialPath Xc) N
     (originRadialPath_aemeasurable P X Xc hc hcont) hN hi hfin γ U V hU hV hU0 hV0 K hK _ hF
-  change reflected_copied_separatedMoment P Xc N γ α₁ α₂ α₃ z s (‖z‖^(1-ξ)) q = _ at he
+  change reflected_copied_separatedMoment P Xc N γ α₁ α₂ α₃ z s _ q = _ at he
   rw [he]
   apply lintegral_congr_ae
   filter_upwards [measurePreserving_fst.quasiMeasurePreserving.ae heq,
     measurePreserving_fst.quasiMeasurePreserving.ae
       (reflected_source_outerMass_eq_comparison_region P X hX γ hγ hγ₂ M hM α₁ α₂ α₃ ξ z hz)] with ω hn ho
-  rw [hn,reflected_reinserted_region_eq γ (originRadialPath Xc ω.1) (M ω.1) V hV hV0 K hK,ho]
+  rw [hn,reflected_reinserted_region_eq γ _ (M ω.1) V hV hV0 K hK,ho]
   rfl
 
 end DOZZ.Proofs

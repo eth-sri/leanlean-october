@@ -53,8 +53,7 @@ theorem fusion_localR1_rooting {Ω : Type*} [MeasurableSpace Ω]
     fin_cases j
     · change -γ / 2 < Q γ
       unfold Q
-      have : 0 < 2 / γ := by positivity
-      linarith
+      nlinarith
     · change α₁ < Q γ
       unfold Q
       linarith
@@ -64,21 +63,19 @@ theorem fusion_localR1_rooting {Ω : Type*} [MeasurableSpace Ω]
   have h := (fusion_rooted_coulomb_complex_integral P X hX γ hγ hγ2 M hM
     ![-γ / 2, α₁, α₂] ![z, 0, 1] hzunit α₃ s hs hmfin (B.indicator f)
     (hf.indicator Metric.isOpen_ball.measurableSet) hfi).2.2.2
-  have he : (fun x : ℂ => B.indicator f x *
+  have he : (fun x => B.indicator f x *
       ((∫⁻ ω, coulombMass γ (gmcRootedMeasure γ x (M ω))
         ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ ^ s ∂P).toReal : ℂ)) =
       B.indicator (fun x => f x *
         ((∫⁻ ω, coulombMass γ (gmcRootedMeasure γ x (M ω))
           ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ ^ s ∂P).toReal : ℂ)) := by
     funext x
-    by_cases hx : x ∈ B
-    · simp only [Set.indicator_of_mem hx]
-    · simp only [Set.indicator_of_notMem hx, zero_mul]
+    by_cases hx : x ∈ B <;> simp_all
   rw [he, integral_indicator (show MeasurableSet B from Metric.isOpen_ball.measurableSet)] at h
   change _ = ∫ x, _ ∂volume.restrict B
   rw [gmcReferenceMeasure_restrict_unit_chart B Metric.isOpen_ball.measurableSet
     (fun x hx => by
-      have hx' : ‖x‖ < 1 / 2 := by simpa only [B, Metric.mem_ball, dist_zero_right] using hx
+      have hx' : ‖x‖ < 1 / 2 := by aesop
       linarith)] at h
   simpa only [integral_indicator (show MeasurableSet B from Metric.isOpen_ball.measurableSet)] using h
 

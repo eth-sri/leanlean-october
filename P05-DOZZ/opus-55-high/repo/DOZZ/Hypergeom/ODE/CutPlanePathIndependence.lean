@@ -21,33 +21,39 @@ namespace DOZZ.Proofs
 endpoint projection outside `[0,1]`. -/
 noncomputable def subtypePathFunction {U : Set ℂ} {x y : U} (p : Path x y) : ℝ → ℂ :=
   fun t => (p (Set.projIcc 0 1 zero_le_one t) : ℂ)
+section
+variable {U : Set ℂ} {x y : U} (p : Path x y)
 
 /-- The real-parameter projection of a subtype path is continuous. -/
-theorem subtypePathFunction_continuous {U : Set ℂ} {x y : U} (p : Path x y) :
+theorem subtypePathFunction_continuous :
     Continuous (subtypePathFunction p) := by
-  change Continuous (fun t => (p (Set.projIcc 0 1 zero_le_one t) : ℂ))
-  exact continuous_subtype_val.comp (p.continuous.comp continuous_projIcc)
+  change Continuous (fun t => (p _ : ℂ))
+  fun_prop
 
 /-- Every projected value of a subtype path remains in its subtype. -/
 theorem subtypePathFunction_mem
-    {U : Set ℂ} {x y : U} (p : Path x y) (t : ℝ) :
+    (t : ℝ) :
     subtypePathFunction p t ∈ U :=
-  (p (Set.projIcc 0 1 zero_le_one t)).property
+  (p _).property
+
+end
 
 /-- The real-parameter form of a path in the subtype `gaussCutPlane`, extended by endpoint
 projection outside `[0,1]`. -/
 noncomputable def gaussCutPlanePathFunction {x y : gaussCutPlane} (p : Path x y) : ℝ → ℂ :=
   subtypePathFunction p
+section
+variable {x y : gaussCutPlane} (p : Path x y)
 
 /-- A cut-plane path, viewed as a real-parameter complex-valued map, is continuous. -/
-theorem gaussCutPlanePathFunction_continuous {x y : gaussCutPlane} (p : Path x y) :
-    Continuous (gaussCutPlanePathFunction p) := by
-  exact subtypePathFunction_continuous p
+theorem gaussCutPlanePathFunction_continuous :
+    Continuous (gaussCutPlanePathFunction p) := subtypePathFunction_continuous p
 
 /-- Every value of the endpoint-projected real path remains in the cut plane. -/
-theorem gaussCutPlanePathFunction_mem {x y : gaussCutPlane} (p : Path x y) (t : ℝ) :
-    gaussCutPlanePathFunction p t ∈ gaussCutPlane := by
-  exact subtypePathFunction_mem p t
+theorem gaussCutPlanePathFunction_mem (t : ℝ) :
+    gaussCutPlanePathFunction p t ∈ gaussCutPlane := subtypePathFunction_mem p t
+
+end
 
 /-- Any two finite-chain lifts of the same initial Gauss state along paths with common endpoints
 in a simply connected subtype of the regular plane have the same terminal value. -/
@@ -68,21 +74,21 @@ theorem subtype_path_lifts_endpoint_eq_of_simplyConnected
   have hbottomPath : ∀ t ∈ Icc (0 : ℝ) 1,
       bottom t = subtypePathFunction p t := by
     intro t ht
-    change Γ (t, 0) = (p (Set.projIcc 0 1 zero_le_one t) : ℂ)
+    change Γ _ = (p _ : ℂ)
     rw [hbottom t ht]
     exact congrArg (fun s : unitInterval => (p s : ℂ))
       (Set.projIcc_of_mem zero_le_one ht).symm
   have htopPath : ∀ t ∈ Icc (0 : ℝ) 1,
       top t = subtypePathFunction q t := by
     intro t ht
-    change Γ (t, 1) = (q (Set.projIcc 0 1 zero_le_one t) : ℂ)
+    change Γ _ = (q _ : ℂ)
     rw [htop t ht]
     exact congrArg (fun s : unitInterval => (q s : ℂ))
       (Set.projIcc_of_mem zero_le_one ht).symm
   let A' := path_continuation_lift_congr A (fun t ht => (hbottomPath t ht).symm)
   let B' := path_continuation_lift_congr B (fun t ht => (htopPath t ht).symm)
   exact homotopy_path_continuation_endpoint_eq hΓ gaussRegularPlane
-    gaussRegularPlane_isOpen (gaussSystemOperator a b c)
+    gaussRegularPlane_isOpen _
     (gaussSystemOperator_differentiableOn a b c)
     (fun z hz => hU (himage z hz))
     x₀ x₁ hleft hright initial A' B'
@@ -96,8 +102,7 @@ theorem gauss_cut_plane_path_lifts_endpoint_eq
       (gaussSystemOperator a b c) initial)
     (B : PathContinuationLift (gaussCutPlanePathFunction q)
       (gaussSystemOperator a b c) initial) :
-    A.value 1 = B.value 1 := by
-  exact subtype_path_lifts_endpoint_eq_of_simplyConnected gaussCutPlane_subset_regularPlane
+    A.value 1 = B.value 1 := subtype_path_lifts_endpoint_eq_of_simplyConnected gaussCutPlane_subset_regularPlane
     a b c p q initial A B
 
 end DOZZ.Proofs

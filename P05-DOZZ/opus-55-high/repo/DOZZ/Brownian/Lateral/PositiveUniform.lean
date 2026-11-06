@@ -45,20 +45,20 @@ theorem lateralGMC_compact_moment_endpoints_across_one
     (hq : ∀ γ ∈ Kγ, ∀ q ∈ Kq, q < 4 / γ ^ 2) :
     ∃ l u δ : ℝ, l < 0 ∧ 1 < u ∧ 0 < δ ∧
       (∀ q ∈ Kq, l < q ∧ q < u) ∧ (∀ γ ∈ Kγ, u + δ ≤ 4 / γ ^ 2) := by
-  let K := Kq ∪ ({0, 1} : Set ℝ)
+  let K := Kq ∪ ({0, 1})
   have hK : IsCompact K := hKq.union (Set.toFinite _).isCompact
-  have h0 : (0 : ℝ) ∈ K := Or.inr (by simp)
-  have h1 : (1 : ℝ) ∈ K := Or.inr (by simp)
+  have h0 : (0 : ℝ) ∈ K := by tauto
+  have h1 : (1 : ℝ) ∈ K := by tauto
   have hsub : ∀ γ ∈ Kγ, ∀ q ∈ K, q < 4 / γ ^ 2 := by
     intro γ hγ q hqm
     have hγp := (hZ γ hγ).1
     have hγhi := (hZ γ hγ).2.1
-    have hs : 0 < γ ^ 2 := sq_pos_of_pos hγp
+    have hs := sq_pos_of_pos hγp
     rcases hqm with hqm | hqm
-    · exact hq γ hγ q hqm
-    · have hq01 : q = 0 ∨ q = 1 := by simpa only [mem_insert_iff, mem_singleton_iff] using hqm
+    · simp_all
+    · have hq01 : q = 0 ∨ q = 1 := by simpa using hqm
       rcases hq01 with rfl | rfl
-      · exact div_pos (by norm_num) hs
+      · positivity
       · apply (lt_div_iff₀ hs).mpr
         nlinarith
   obtain ⟨l, u, δ, hδ, hend, hmargin⟩ := lateralGMC_compact_moment_endpoints

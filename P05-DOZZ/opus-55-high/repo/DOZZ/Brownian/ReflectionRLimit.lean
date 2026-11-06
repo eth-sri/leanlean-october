@@ -22,13 +22,15 @@ open MeasureTheory Filter Topology Set
 open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ μ : ℝ)
+section
+variable (hγ : 0 < γ) (hμ : 0 < μ) (B : ℝ → Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
+include hγ hμ
 
 /-- If the unit-volume reflection moment tends to one at `Q`, then the full probabilistic
 reflection coefficient tends to `-1`. -/
 theorem reflectionR_tendsto_Q_of_reflectionBarR
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ μ : ℝ)
-    (hγ : 0 < γ) (hμ : 0 < μ)
-    (B : ℝ → Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
     (hBar : Tendsto
       (fun α : ℝ => reflectionBarR P γ α (B α) Z)
       (𝓝[<] (Q γ)) (𝓝 1)) :
@@ -40,21 +42,19 @@ theorem reflectionR_tendsto_Q_of_reflectionBarR
       (tendsto_reflectionExponent_at_Q γ).mono_left nhdsWithin_le_nhds
   have hpPos : ∀ᶠ α : ℝ in 𝓝[<] (Q γ), 0 < p α := by
     filter_upwards [self_mem_nhdsWithin] with α hα
-    have hαQ : α < Q γ := by simpa using hα
+    have hαQ : α < Q γ := by assumption
     dsimp [p, reflectionExponent]
-    exact div_pos (mul_pos (by norm_num) (sub_pos.mpr hαQ)) hγ
+    positivity
   have hnegp : Tendsto (fun α : ℝ => ((-p α : ℝ) : ℂ))
       (𝓝[<] (Q γ)) (𝓝[≠] (0 : ℂ)) := by
     apply tendsto_nhdsWithin_iff.mpr
     refine ⟨?_, ?_⟩
     · have hcont : Continuous (fun x : ℝ => ((-x : ℝ) : ℂ)) := by fun_prop
       convert hcont.continuousAt.tendsto.comp hp0 using 1
-      · ext α
-        rfl
+      · rfl
       · simp
     · filter_upwards [hpPos] with α hα
-      simp only [mem_compl_iff, mem_singleton_iff]
-      exact Complex.ofReal_ne_zero.mpr (neg_ne_zero.mpr hα.ne')
+      aesop
   have hgammaComplex : Tendsto
       (fun α : ℝ => ((-p α : ℝ) : ℂ) * Complex.Gamma ((-p α : ℝ) : ℂ))
       (𝓝[<] (Q γ)) (𝓝 1) :=
@@ -69,17 +69,12 @@ theorem reflectionR_tendsto_Q_of_reflectionBarR
       funext α
       rw [Complex.Gamma_ofReal]
       simp
-    have hre' : Tendsto (fun α : ℝ => Complex.re
-        (((-p α : ℝ) : ℂ) * Complex.Gamma ((-p α : ℝ) : ℂ)))
-        (𝓝[<] (Q γ)) (𝓝 1) := by
-      exact hre
-    rw [hEq] at hre'
-    exact hre'
+    continuity
   have hgammaReal : Tendsto
       (fun α : ℝ => p α * Real.Gamma (-p α))
       (𝓝[<] (Q γ)) (𝓝 (-1)) := by
     have h := hgammaNegReal.neg
-    simpa using h
+    simp_all
   have hmu : Tendsto (fun α : ℝ => μ ^ p α)
       (𝓝[<] (Q γ)) (𝓝 1) := by
     have hcont :=
@@ -89,8 +84,7 @@ theorem reflectionR_tendsto_Q_of_reflectionBarR
       (fun α : ℝ => μ ^ p α * (p α * Real.Gamma (-p α)) *
         reflectionBarR P γ α (B α) Z)
       (𝓝[<] (Q γ)) (𝓝 (-1)) := by
-    have h := (hmu.mul hgammaReal).mul hBar
-    simpa using h
+    simpa using ((hmu.mul hgammaReal).mul hBar)
   have hformula : (fun α : ℝ => reflectionR P γ μ α (B α) Z) =
       (fun α => μ ^ p α * (p α * Real.Gamma (-p α)) *
         reflectionBarR P γ α (B α) Z) := by
@@ -103,9 +97,6 @@ theorem reflectionR_tendsto_Q_of_reflectionBarR
 reparameterized by `ν = Q γ - α`, implies the endpoint limit for the full reflection
 coefficient. -/
 theorem reflectionR_tendsto_Q_of_zeroDriftMoment
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (γ μ : ℝ)
-    (hγ : 0 < γ) (hμ : 0 < μ)
-    (B : ℝ → Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
     (hMoment : Tendsto
       (fun ν : ℝ =>
         (∫⁻ ω, ENNReal.rpow (twoSidedReflectionMass γ
@@ -113,29 +104,24 @@ theorem reflectionR_tendsto_Q_of_zeroDriftMoment
       (𝓝[>] (0 : ℝ)) (𝓝 1)) :
     Tendsto (fun α : ℝ => reflectionR P γ μ α (B α) Z)
       (𝓝[<] (Q γ)) (𝓝 (-1)) := by
-  have hQsub : Tendsto (fun α : ℝ => Q γ - α)
-      (𝓝[<] (Q γ)) (𝓝[>] (0 : ℝ)) := by
+  have hQsub : Tendsto (fun α => Q γ - α)
+      (𝓝[<] (Q γ)) (𝓝[>] 0) := by
     apply tendsto_nhdsWithin_iff.mpr
     refine ⟨?_, ?_⟩
-    · have hcont : ContinuousAt (fun α : ℝ => Q γ - α) (Q γ) := by fun_prop
+    · have hcont : ContinuousAt (fun α => Q γ - α) (Q γ) := by fun_prop
       simpa using hcont.tendsto.mono_left nhdsWithin_le_nhds
     · filter_upwards [self_mem_nhdsWithin] with α hα
-      have hα' : α < Q γ := by simpa using hα
-      exact sub_pos.mpr hα'
+      simp_all
   have hBar : Tendsto
-      (fun α : ℝ => reflectionBarR P γ α (B α) Z)
+      (fun α => reflectionBarR P γ α (B α) Z)
       (𝓝[<] (Q γ)) (𝓝 1) := by
     have hcomp := hMoment.comp hQsub
-    have hEq : (fun α : ℝ => reflectionBarR P γ α (B α) Z) =
-        (fun α =>
-          (∫⁻ ω, ENNReal.rpow (twoSidedReflectionMass γ
-            (B (Q γ - (Q γ - α))) Z ω)
-            (2 * (Q γ - α) / γ) ∂P).toReal) := by
-      funext α
-      simp [reflectionBarR, reflectionExponent]
-    rw [hEq]
-    exact hcomp
+    continuity
   exact reflectionR_tendsto_Q_of_reflectionBarR P γ μ hγ hμ B Z hBar
+
+end
+
+end
 
 end DOZZ.Proofs
 

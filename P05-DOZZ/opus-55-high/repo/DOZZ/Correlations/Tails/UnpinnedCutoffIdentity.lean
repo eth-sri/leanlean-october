@@ -16,43 +16,42 @@ open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+section
+variable (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
+include hX hc
 
 /-- The actual cutoff GMC integral, expressed against planar volume. -/
 theorem regularized_integral_volume
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (γ r : ℝ) (ω : Ω) (f : ℂ → ℝ) :
     (∫ x, f x ∂regularizedGMC P Xc γ r ω) =
       ∫ x, f x * Real.exp (γ * Xc ω x r - γ ^ 2 / 2 * ∫ ω', Xc ω' x r ^ 2 ∂P) *
         normPlus x ^ (-4 : ℝ) ∂volume := by
   let : IsProbabilityMeasure P := hX.1
-  have hV : Measurable (fun x : ℂ => ∫ ω', Xc ω' x r ^ 2 ∂P) := by
+  have hV : Measurable (fun x => ∫ ω', Xc ω' x r ^ 2 ∂P) := by
     have h : Measurable (fun q : ℂ × Ω => Xc q.2 q.1 r ^ 2) :=
       ((hc.1 r).comp measurable_swap).pow_const 2
     exact h.stronglyMeasurable.integral_prod_right.measurable
-  have hD : Measurable (fun x : ℂ => ENNReal.ofReal
+  have hD : Measurable (fun x => ENNReal.ofReal
       (Real.exp (γ * Xc ω x r - γ ^ 2 / 2 * ∫ ω', Xc ω' x r ^ 2 ∂P) *
         normPlus x ^ (-4 : ℝ))) := by
-    have hC : Measurable (fun x : ℂ => Xc ω x r) :=
+    have hC : Measurable (fun x => Xc ω x r) :=
       (hc.1 r).comp (measurable_const.prodMk measurable_id)
-    have hN : Measurable (fun x : ℂ => normPlus x ^ (-4 : ℝ)) := by
+    have hN : Measurable (fun x => normPlus x ^ (-4 : ℝ)) := by
       unfold normPlus
       fun_prop
-    exact ENNReal.measurable_ofReal.comp
-      (((hC.const_mul γ).sub (hV.const_mul _)).exp.mul hN)
+    fun_prop
   rw [regularizedGMC, integral_withDensity_eq_integral_toReal_smul hD
     (ae_of_all _ fun x => ENNReal.ofReal_lt_top)]
   apply integral_congr_ae
   filter_upwards [] with x
   rw [ENNReal.toReal_ofReal (mul_nonneg (Real.exp_nonneg _)
     (Real.rpow_nonneg (by unfold normPlus; positivity) _))]
-  simp only [smul_eq_mul]
   ring
 
 /-- On every compact subchart the cutoff pin removal is an exact scalar times an actual GMC test. -/
 theorem unpinned_cutoff_test_identity
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (z : ℂ) (hz : 2 ≤ ‖z‖) (γ r ρ : ℝ) (hr : ρ + Real.exp (-r) ≤ 1)
     (f g : BoundedContinuousFunction ℂ ℝ)
     (hf : ∀ x, f x ≠ 0 → ‖x‖ ≤ ρ)
@@ -67,35 +66,39 @@ theorem unpinned_cutoff_test_identity
       (subset_univ _)]
     simp only [logRegularizationReference, Measure.restrict_univ]
     exact gmcReferenceMeasure_restrict_unit_chart _ Metric.isOpen_ball.measurableSet
-      (fun x hx => (by simpa only [Metric.mem_ball, dist_zero_right] using hx : ‖x‖ < 1).le)
+      (fun x hx => (by simp_all : ‖x‖ < 1).le)
   have hlog : Real.log (1 / Real.exp (-r)) = r := by
-    rw [one_div, Real.log_inv, Real.log_exp, neg_neg]
+    simp
   rw [regularizedLogChaosTestMass, hRef, hlog,
     regularized_integral_volume P X Xc hX hc γ r ω g]
   rw [← integral_add_left_eq_self (μ := volume)
-    (fun w : ℂ => g w * Real.exp (γ * Xc ω w r - γ ^ 2 / 2 * ∫ ω', Xc ω' w r ^ 2 ∂P) *
+    (fun w : ℂ => g w * Real.exp _ *
       normPlus w ^ (-4 : ℝ)) z]
   rw [← integral_const_mul]
-  rw [integral_restrict_eq_integral_of_zero_on_compl volume (Metric.ball 0 1)
+  rw [integral_restrict_eq_integral_of_zero_on_compl volume _
     Metric.isOpen_ball.measurableSet _ (by
       intro x hx
       have hf0 : f x = 0 := by
         by_contra h
         have hnorm := hf x h
         have hlt : ‖x‖ < 1 := by linarith [Real.exp_pos (-r)]
-        exact hx (by simpa only [Metric.mem_ball, dist_zero_right] using hlt)
+        exact hx (by simp_all)
       simp only [hf0, zero_mul])]
   apply integral_congr_ae
   filter_upwards [] with x
-  rw [hg (z+x), add_sub_cancel_left]
+  rw [hg _, add_sub_cancel_left]
   by_cases hx : f x = 0
-  · simp only [hx, zero_mul, mul_zero]
-  · let p : localCircle := ⟨(x,r), by dsimp; linarith [hf x hx]⟩
+  · simp_all
+  · let p : localCircle := ⟨(x,r), by grind⟩
     obtain ⟨hO, hU⟩ := local_circle_second_moments P X Xc hX hc z hz p
-    change (∫ ω', Xc ω' (z+x) r ^ 2 ∂P) = _ at hO
-    change (∫ ω', (Xc ω' (z+x) r - Xc ω' z 0) ^ 2 ∂P) = r at hU
+    change _ = _ at hO
+    change _ = r at hU
     rw [hO, hU, unpinned_density_ratio Xc z hz γ ω p]
     ring
+
+end
+
+end
 
 
 end DOZZ.Proofs

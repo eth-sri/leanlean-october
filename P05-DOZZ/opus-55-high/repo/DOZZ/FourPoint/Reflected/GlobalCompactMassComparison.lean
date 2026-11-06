@@ -33,11 +33,10 @@ theorem reflected_global_compact_mass_comparison
       m*(∫⁻ ω : Ω × Ω, (J f₀ ω.1+J f₁ ω.2)^(-q) ∂P.prod P) ∧
     (∫⁻ ω : Ω × Ω, (J f₀ ω.1+J f₁ ω.2)^(-q) ∂P.prod P) ≤
       m*(∫⁻ ω, (J f₀ ω+J f₁ ω)^(-q) ∂P) := by
-  have hK0 : K ⊆ ({0} : Set ℂ)ᶜ := by
+  have hK0 : K ⊆ ({0})ᶜ := by
     intro x hx
     have hh : 2*ρ < ‖x‖ := hKU hx
-    have hx0 : x ≠ 0 := norm_ne_zero_iff.mp (ne_of_gt (by linarith : 0 < ‖x‖))
-    simpa using hx0
+    exact norm_ne_zero_iff.mp (ne_of_gt (by linarith : 0 < ‖x‖))
   have hW : Measurable (fun x => ENNReal.ofReal (reflected_global_reinsertionWeight γ a x)) :=
     ((reflected_global_reinsertionWeight_measurable γ).comp
       (measurable_const.prodMk measurable_id)).ennreal_ofReal
@@ -48,7 +47,7 @@ theorem reflected_global_compact_mass_comparison
     have ht := reflected_global_compact_test_ofReal γ a (N ω) K hK hK0 (hfin ω)
       (f₀+f₁) (fun x => add_nonneg (hf₀ x) (hf₁ x))
       ((tsupport_add f₀ f₁).trans (union_subset hf₀K hf₁K))
-    simp only [BoundedContinuousFunction.add_apply] at ht
+    simp at ht
     rw [ht]
     simp_rw [ENNReal.ofReal_add (hf₀ _) (hf₁ _), add_mul]
     exact lintegral_add_left (f₀.continuous.measurable.ennreal_ofReal.mul hW) _

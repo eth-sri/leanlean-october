@@ -7,6 +7,8 @@ module
 public import DOZZ.FourPoint.ReflectedEnd.InnerClassificationReduction
 public import DOZZ.Statements.FourPoint.GammaHalfReflectedInnerLimit
 public import DOZZ.Statements.FourPoint.DegenerateFourPointDiagonalClassification
+import DOZZ.FourPoint.Diagonal.Assembly
+import DOZZ.FourPoint.Reflected.InnerLimit
 
 /-! The reflected formula follows from the inner limit `DOZZ.gammaHalf_reflected_inner_limit` and
 the physical diagonal classification `DOZZ.degenerateFourPoint_diagonal_classification`. -/
@@ -44,11 +46,11 @@ theorem gammaHalf_reflected_formula {Ω : Type*} [MeasurableSpace Ω]
                 structureConstant P M γ μ (2 * Q γ - α₁ - γ / 2) α₂ α₃ *
                   ‖gaussFPlus H a b c z‖ ^ 2 := by
   obtain ⟨ξ, hξ, hξ₂, hslack, hfreeze⟩ := hnear
-  have hinner := DOZZ.gammaHalf_reflected_inner_limit P M X γ μ α₁ α₂ α₃ ξ
+  have hinner := DOZZ.Proofs.gammaHalf_reflected_inner_limit P M X γ μ α₁ α₂ α₃ ξ
     hγ hγ₂ hμ hα₁ hα₂ hα₃ hs hξ hξ₂ hreflect
     (lt_min (hslack.trans hξ₂) hslack) hfreeze hX hM
-  have hclass := DOZZ.degenerateFourPoint_diagonal_classification hH
-    P X M γ μ (γ / 2) α₁ α₂ α₃ hγ hγ₂ hμ
+  have hclass := DOZZ.Proofs.degenerateFourPoint_diagonal_classification hH
+    P X M γ μ _ α₁ α₂ α₃ hγ hγ₂ hμ
     (Or.inl rfl) hα₁ hα₂ hα₃ hs hX hM
   exact gammaHalf_reflected_formula_of_inner_limit hH
     P M X γ μ α₁ α₂ α₃ ξ hγ hγ₂ hμ hα₁ hα₂ hα₃ hs hreflect

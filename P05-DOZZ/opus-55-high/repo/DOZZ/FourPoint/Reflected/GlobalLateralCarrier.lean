@@ -20,21 +20,17 @@ theorem reflected_removed_mass_compact_finite (γ : ℝ) (A : TwoSidedPath)
   let f : ℂ → ℝ := fun x => Real.exp (-γ*A (-Real.log ‖x‖)+γ*Q γ*|Real.log ‖x‖|)
   have hc : ContinuousOn f K := by
     intro x hx
-    have hx0 : ‖x‖ ≠ 0 := norm_ne_zero_iff.mpr (by simpa using hK0 hx)
-    have hl : ContinuousAt (fun x : ℂ => Real.log ‖x‖) x :=
-      continuous_norm.continuousAt.log hx0
-    exact ((continuousAt_const.mul (A.continuous.continuousAt.comp hl.neg)).add
-      (continuousAt_const.mul hl.abs)).rexp.continuousWithinAt
-  have hi := ContinuousOn.integrableOn_compact hK hc (μ := μ)
+    have hx0 := norm_ne_zero_iff.mpr (by tauto)
+    fun_prop
   have he : (∫⁻ x in K, lateralRadialWeight γ A x ∂μ) =
       ∫⁻ x in K, ENNReal.ofReal (f x) ∂μ := by
     apply setLIntegral_congr_fun hK.measurableSet
     intro x hx
-    have hx0 : ‖x‖ ≠ 0 := norm_ne_zero_iff.mpr (by simpa using hK0 hx)
+    have hx0 := norm_ne_zero_iff.mpr (by tauto)
     simp only [lateralRadialWeight, ite_eq_right hx0]
     rfl
   rw [withDensity_apply _ hK.measurableSet, he,
-    ← ofReal_integral_eq_lintegral_ofReal hi (ae_of_all _ (fun x => (Real.exp_pos _).le))]
+    ← ofReal_integral_eq_lintegral_ofReal (ContinuousOn.integrableOn_compact hK hc (μ := μ)) (ae_of_all _ (fun x => (Real.exp_pos _).le))]
   exact ENNReal.ofReal_lt_top
 
 /-- A single measurable independent lateral measure agrees with the actual radial-removed
@@ -57,15 +53,14 @@ theorem reflected_global_lateral_carrier
   have hMF : Measurable MF := Measurable.subtype_mk hM'
   let N : Ω → Measure ℂ := fun ω => (M' ω).withDensity
     (lateralRadialWeight γ (hA.mk A ω))
-  have harg : Measurable (fun ω : Ω => ((γ, hA.mk A ω), MF ω)) :=
-    ((measurable_const.prodMk hA.measurable_mk).prodMk hMF)
+  have harg : Measurable (fun ω => ((γ, hA.mk A ω), MF ω)) :=
+    by fun_prop
   have hN : Measurable N := by
     change Measurable ((fun p : (ℝ × TwoSidedPath) × FiniteMeasure ℂ =>
       (p.2 : Measure ℂ).withDensity (lateralRadialWeight p.1.1 p.1.2)) ∘
-        fun ω : Ω => ((γ, hA.mk A ω), MF ω))
+        fun ω => ((γ, hA.mk A ω), MF ω))
     exact measurable_originRadialRemovedGMC_finite.comp harg
-  have heq : N =ᵐ[P] (fun ω => (M ω).withDensity (lateralRadialWeight γ (A ω))) := by
-    exact (hMeq.and hA.ae_eq_mk).mono fun ω hω =>
+  have heq : N =ᵐ[P] (fun ω => (M ω).withDensity (lateralRadialWeight γ (A ω))) := (hMeq.and hA.ae_eq_mk).mono fun ω hω =>
       congrArg₂ (fun (μ : Measure ℂ) (a : TwoSidedPath) =>
         μ.withDensity (lateralRadialWeight γ a)) hω.1.symm hω.2.symm
   refine Exists.intro N ?_
@@ -77,6 +72,6 @@ theorem reflected_global_lateral_carrier
     · intro ω K hK hK0
       let _ := hMf ω
       exact reflected_removed_mass_compact_finite γ (hA.mk A ω) (M' ω) K hK hK0
-    · exact heq
+    assumption
 
 end DOZZ.Proofs

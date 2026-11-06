@@ -19,12 +19,12 @@ theorem reflected_source_buffer_inverse_littleO {Ω : Type*} [MeasurableSpace Ω
     (hfreeze : γ*(Q γ-α₁) < (1-ξ)*(γ*(Q γ-α₁)+(α₁+γ/2-Q γ)^2/2))
     (hh : 0 ≤ h) (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) :
     let p := (α₁+α₂+α₃-γ/2-2*Q γ)/γ
-    IsComplexLittleOAtZero (γ*(Q γ-α₁)) (fun z : ℂ =>
+    IsComplexLittleOAtZero (γ*(Q γ-α₁)) (fun z =>
       ((gammaHalfMoment P M γ α₁ α₂ α₃ p z-
         (reflected_source_separatedMoment P M γ α₁ α₂ α₃ z (Real.exp (-h)*‖z‖) (‖z‖^(1-ξ)) p).toReal : ℝ) : ℂ)) := by
   let p := (α₁+α₂+α₃-γ/2-2*Q γ)/γ
-  have hp : 0 < p := div_pos (by linarith only [hs]) hγ
-  let E := fun z : ℂ => (∫⁻ ω, (∫⁻ x in {x : ℂ | Real.exp (-h)*‖z‖ ≤ ‖x‖ ∧ ‖x‖ < ‖z‖^(1-ξ)},
+  have hp : 0 < p := div_pos (by linarith) hγ
+  let E := fun z => (∫⁻ ω, (∫⁻ x in {x : ℂ | Real.exp (-h)*‖z‖ ≤ ‖x‖ ∧ ‖x‖ < ‖z‖^(1-ξ)},
     ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂M ω)*
       gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ^(-(p+1)) ∂P).toReal
   have hE := reflected_spatial_buffer_first_order_littleO P X M γ α₁ α₂ α₃ ξ h
@@ -36,13 +36,12 @@ theorem reflected_source_buffer_inverse_littleO {Ω : Type*} [MeasurableSpace Ω
         (reflected_source_separatedMoment P M γ α₁ α₂ α₃ z (Real.exp (-h)*‖z‖) (‖z‖^(1-ξ)) p).toReal| ≤ p*E z := by
     filter_upwards [reflected_outer_cutoff_geometry ξ 1 hξ hξ₁ zero_lt_one,hEf,self_mem_nhdsWithin]
       with z hz hfin hz0
-    have hr := hz.1
-    have hr1 : ‖z‖^(1-ξ) ≤ 1 := hz.2.2.2.2.le
-    have hzr : ‖z‖ < ‖z‖^(1-ξ) := by linarith only [hr,hz.2.2.2.1]
+    have hr1 := hz.2.2.2.2.le
+    have hzr : ‖z‖ < ‖z‖^(1-ξ) := by linarith
     have hzn : ‖z‖ < 1 := hzr.trans_le hr1
     have hz1 : z ≠ 1 := by intro he; simp [he] at hzn
     have hss : 0 < Real.exp (-h)*‖z‖ := mul_pos (Real.exp_pos _) (norm_pos_iff.mpr hz0)
-    have hsr : Real.exp (-h)*‖z‖ ≤ ‖z‖^(1-ξ) :=
+    have hsr :=
       (mul_le_of_le_one_left (norm_nonneg z) (Real.exp_le_one_iff.mpr (neg_nonpos.mpr hh))).trans hzr.le
     exact reflected_source_buffer_inverse_error P X hX γ hγ hγ₂ M hM α₁ α₂ α₃ ξ
       (Real.exp (-h)*‖z‖) p hp hα₁ hα₂ hα₃ z hz0 hz1 hzn.le hr1 hzr hss hsr hfin

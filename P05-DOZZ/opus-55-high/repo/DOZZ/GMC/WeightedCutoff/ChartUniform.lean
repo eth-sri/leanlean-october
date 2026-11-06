@@ -24,17 +24,16 @@ theorem cutoffWeightedGmcBallMoment_compact_gamma_chart
       0 < R → R ≤ 1 / 2 → ‖z‖ + 2 * R ≤ 1 → 0 < δ → δ ≤ R →
       (∫⁻ ω, cutoffWeightedGmcBallMass P Xc γ t.1 z R δ ω ^ t.2 ∂P) ≤
         C * ENNReal.ofReal (R ^ weightedCutoffMomentScaleExponent γ t.1 t.2) := by
-  classical
   rcases Set.eq_empty_or_nonempty Γ with hΓe | hΓn
   · refine ⟨0, by simp, ?_⟩
-    simp [hΓe]
+    simp_all
   rcases Set.eq_empty_or_nonempty T with hTe | hTn
   · refine ⟨0, by simp, ?_⟩
-    simp [hTe]
+    simp_all
   obtain ⟨q, hq, hqcrit, hqorders⟩ := exists_weighted_cutoff_order_cap Γ hΓ hΓn hΓ2 T hT hTn
-    (fun γ hγ t ht => lt_of_lt_of_le (hTadm γ hγ t ht).2 (min_le_left _ _))
-  let Ts : Set (ℝ × ℝ) := T ∩ {t | t.2 ≤ 1}
-  let Tp : Set (ℝ × ℝ) := T ∩ {t | 1 ≤ t.2}
+    (fun γ hγ t ht => lt_of_lt_of_le (hTadm γ hγ t ht).2 (min_le_left ..))
+  let Ts := T ∩ {t | t.2 ≤ 1}
+  let Tp := T ∩ {t | 1 ≤ t.2}
   have hTs : IsCompact Ts := hT.inter_right (isClosed_Iic.preimage continuous_snd)
   have hTp : IsCompact Tp := hT.inter_right (isClosed_Ici.preimage continuous_snd)
   have hsadm : ∀ γ ∈ Γ, ∀ t ∈ Ts, 0 < t.2 ∧ t.2 ≤ 1 ∧
@@ -52,11 +51,11 @@ theorem cutoffWeightedGmcBallMoment_compact_gamma_chart
   obtain ⟨Cn, hCn, hnonpos⟩ := cutoffWeightedGmcBallMoment_nonpos_compact_gamma_chart
     P X hX Xc hXc Γ hΓ (fun γ hγ => (hΓ2 hγ).1) Tp hTp (fun t ht => ht.2)
     q hq hqcrit (fun t ht => hqorders t ht.1)
-  let C : ℝ≥0∞ := max Cs (max Cp Cn)
-  have hC : C < ⊤ := max_lt_iff.mpr ⟨hCs, max_lt_iff.mpr ⟨hCp, hCn⟩⟩
-  have hsC : Cs ≤ C := le_max_left _ _
-  have hpC : Cp ≤ C := (le_max_left _ _).trans (le_max_right _ _)
-  have hnC : Cn ≤ C := (le_max_right _ _).trans (le_max_right _ _)
+  let C := max Cs (max Cp Cn)
+  have hC : C < ⊤ := by grind
+  have hsC : Cs ≤ C := le_max_left ..
+  have hpC : Cp ≤ C := by grind
+  have hnC : Cn ≤ C := by grind
   refine ⟨C, hC, ?_⟩
   intro γ hγ t ht z R δ hR hRhalf hchart hδ hδR
   by_cases hp : t.2 ≤ 1

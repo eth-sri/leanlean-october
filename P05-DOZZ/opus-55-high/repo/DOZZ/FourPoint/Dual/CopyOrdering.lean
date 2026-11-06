@@ -19,9 +19,7 @@ theorem dual_radial_copy_lintegral_regroup
     (∫⁻ v, F v ∂(P.map A).prod (P.prod P)) =
       ∫⁻ v : (Ω × Ω) × Ω, F (A v.1.1,(v.2,v.1.2)) ∂(P.prod P).prod P := by
   let G : Ω × (Ω × Ω) → ℝ≥0∞ := fun v => F (A v.1,(v.2.2,v.2.1))
-  have hG : AEMeasurable G (P.prod (P.prod P)) := hF.comp_aemeasurable
-    (hA.comp_fst.prodMk ((measurable_snd.comp measurable_snd).prodMk
-      (measurable_fst.comp measurable_snd)).aemeasurable)
+  have hG : AEMeasurable G (P.prod (P.prod P)) := by fun_prop
   have he := (measurePreserving_prodAssoc P P P).lintegral_comp_emb
     MeasurableEquiv.prodAssoc.measurableEmbedding G
   change (∫⁻ v : (Ω × Ω) × Ω, F (A v.1.1,(v.2,v.1.2)) ∂(P.prod P).prod P) =
@@ -32,6 +30,6 @@ theorem dual_radial_copy_lintegral_regroup
   rw [lintegral_map' hk.aemeasurable hA]
   apply lintegral_congr
   intro ω
-  exact (lintegral_prod_swap (μ := P) (ν := P) (fun v : Ω × Ω => F (A ω,v))).symm
+  exact (lintegral_prod_swap (fun v => F _)).symm
 
 end DOZZ.Proofs

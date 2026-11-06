@@ -25,7 +25,7 @@ theorem tendstoInMeasure_countable_selection
     (hcoord : ∀ i, TendstoInMeasure P (fun n ω => f n ω i) atTop (fun ω => g ω i)) :
     TendstoInMeasure P (fun n ω => f n ω (choice ω)) atTop (fun ω => g ω (choice ω)) := by
   let select : (k : ℕ) → Ω → Fin (k+1) :=
-    fun k ω => ⟨min (choice ω) k, Nat.lt_succ_of_le (min_le_right _ _)⟩
+    fun k ω => ⟨min (choice ω) k, Nat.lt_succ_of_le (min_le_right ..)⟩
   let a : ℕ → ℕ → Ω → ℝ := fun k n ω => f n ω (select k ω)
   let b : ℕ → Ω → ℝ := fun k ω => g ω (select k ω)
   have hab (k : ℕ) : TendstoInMeasure P (a k) atTop (b k) :=
@@ -36,11 +36,9 @@ theorem tendstoInMeasure_countable_selection
   have hS (k : ℕ) : MeasurableSet (S k) := measurableSet_lt measurable_const hc
   have hanti : Antitone S := by
     intro i j hij ω hω
-    exact lt_of_le_of_lt hij hω
+    grind
   have hempty : (⋂ k, S k) = ∅ := by
-    apply eq_empty_iff_forall_notMem.mpr
-    intro ω hω
-    exact (lt_irrefl (choice ω)) ((mem_iInter.mp hω) (choice ω))
+    aesop
   have he : Tendsto (fun k => P (S k)) atTop (𝓝 0) := by
     have h := tendsto_measure_iInter_atTop (fun k => (hS k).nullMeasurableSet)
       hanti ⟨0, measure_ne_top P _⟩
@@ -54,16 +52,16 @@ theorem tendstoInMeasure_countable_selection
     by_contra hn
     have hle : choice ω ≤ k := le_of_not_gt hn
     have hsame : (select k ω : ℕ) = choice ω := min_eq_left hle
-    change ε ≤ ‖f n ω (choice ω) - f n ω (select k ω)‖ at hω
+    change ε ≤ ‖f n ω (choice ω) - f n ω _‖ at hω
     rw [hsame, sub_self, norm_zero] at hω
-    exact (not_le_of_gt hε) hω
+    linarith
   · intro k
     apply measure_mono
     intro ω hω
     by_contra hn
     have hle : choice ω ≤ k := le_of_not_gt hn
     have hsame : (select k ω : ℕ) = choice ω := min_eq_left hle
-    change ε ≤ ‖g ω (select k ω) - g ω (choice ω)‖ at hω
+    change ε ≤ ‖g ω _ - g ω (choice ω)‖ at hω
     rw [hsame, sub_self, norm_zero] at hω
     exact (not_le_of_gt hε) hω
 

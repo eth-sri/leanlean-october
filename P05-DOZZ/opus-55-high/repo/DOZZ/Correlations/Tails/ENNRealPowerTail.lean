@@ -29,18 +29,15 @@ theorem ennreal_power_tail_le_moment
     rw [← ENNReal.ofReal_rpow_of_pos hh]
     exact ENNReal.rpow_le_rpow hω.le hr.le
   have hp : ENNReal.ofReal (h^r) ≠ 0 :=
-    (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos hh r)).ne'
-  have hb0 := meas_ge_le_lintegral_div (hE.pow_const r) hp ENNReal.ofReal_ne_top
-  change P {ω | ENNReal.ofReal (h^r) ≤ E ω^r} ≤ (∫⁻ ω, E ω^r ∂P)/ENNReal.ofReal (h^r) at hb0
-  have hb := (measure_mono (μ := P) hsub).trans hb0
+    by positivity
   have hquot : (∫⁻ ω, E ω^r ∂P)/ENNReal.ofReal (h^r) ≤ C/ENNReal.ofReal (h^r) :=
     ENNReal.div_le_div_right hm _
   have ht := ENNReal.toReal_mono
-    (ENNReal.div_ne_top hC.ne hp) (hb.trans hquot)
+    (ENNReal.div_ne_top hC.ne hp) (((measure_mono hsub).trans (meas_ge_le_lintegral_div (hE.pow_const r) hp ENNReal.ofReal_ne_top)).trans hquot)
   rw [ENNReal.toReal_div,ENNReal.toReal_ofReal (Real.rpow_nonneg hh.le _)] at ht
   have he : C.toReal/(h^r) = C.toReal*h^(-r) := by
     rw [Real.rpow_neg hh.le,div_eq_mul_inv]
-  exact ht.trans_eq he
+  linarith
 
 
 end DOZZ.Proofs

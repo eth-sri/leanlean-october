@@ -29,22 +29,20 @@ theorem localized_translated_test
   let V : ℂ → ℝ := fun x => Real.exp (-(γ^2+4)*Real.log (normPlus (z+x)))
   have hV : Continuous V :=
     (((continuous_const.max (continuous_const.add continuous_id).norm).log
-      (fun _ => ne_of_gt (lt_of_lt_of_le zero_lt_one (le_max_left _ _)))).const_mul
+      (fun _ => ne_of_gt (lt_of_lt_of_le zero_lt_one (le_max_left ..)))).const_mul
         (-(γ^2+4))).rexp
   let G : ℂ → ℝ := fun x => χ x * (F (z+x)*V x)
   have hs : tsupport G ⊆ tsupport (χ : ℂ → ℝ) := tsupport_mul_subset_left
   have hsu : tsupport G ⊆ Metric.ball 0 (2*radius) := by
     intro x hx
-    have h := hχs (hs hx)
-    have hn : ‖x‖ < min radius 1 := by simpa only [Metric.mem_ball, dist_zero_right] using h
+    have hn : ‖x‖ < min radius 1 := by simpa using (hχs (hs hx))
     have hr := hFamily.1
-    simp only [Metric.mem_ball, dist_zero_right]
-    exact hn.trans_le ((min_le_left _ _).trans (by linarith))
+    simp
+    exact hn.trans_le ((min_le_left ..).trans (by linarith))
   have hFc : ContinuousOn (fun x => F (z+x)) (Metric.ball 0 (2*radius)) := by
-    have hcont := (hFamily.2.2.2.2 z hzk F hF).2.2.2.1.continuousOn
-    exact hcont.comp (continuous_const.add continuous_id).continuousOn (by
+    exact ((hFamily.2.2.2.2 z hzk F hF).2.2.2.1.continuousOn).comp (continuous_const.add continuous_id).continuousOn (by
       intro x hx
-      simpa only [Metric.mem_ball, dist_eq_norm, add_sub_cancel_left, sub_zero] using hx)
+      simpa using hx)
   have hGc : Continuous G :=
     (χ.continuous.continuousOn.mul (hFc.mul hV.continuousOn)).continuous_of_tsupport_subset
       Metric.isOpen_ball hsu
@@ -53,13 +51,12 @@ theorem localized_translated_test
   let g := BoundedContinuousFunction.ofNormedAddCommGroup G hGc hb.choose hb.choose_spec
   refine ⟨g, hGs, ?_, ?_, ?_⟩
   · intro x
-    change χ x * (F (z+x)*V x) = _
-    rw [mul_assoc]
+    change χ x * (F _*V x) = _
+    linarith
   · intro x
-    change 0 ≤ χ x * (F (z+x)*V x)
     exact mul_nonneg (hχ0 x) (mul_nonneg
-      ((hFamily.2.2.2.2 z hzk F hF).2.1 (z+x)).1 (Real.exp_nonneg _))
-  · exact hs.trans (hχs.trans (Metric.ball_subset_ball (min_le_right _ _)))
+      ((hFamily.2.2.2.2 z hzk F hF).2.1 _).1 (Real.exp_nonneg _))
+  · exact hs.trans (hχs.trans (Metric.ball_subset_ball (min_le_right ..)))
 
 
 end DOZZ.Proofs

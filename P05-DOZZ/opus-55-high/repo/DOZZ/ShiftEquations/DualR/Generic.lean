@@ -78,21 +78,20 @@ theorem dualShift_eventually {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) 
             lFun (2 + 4 / (γ : ℂ) ^ 2 - 2 * ((γ / 2 - (γ / 8 + u) : ℝ) : ℂ) / γ)) := by
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
   have hγh : γ / 2 < 2 / γ := by
-    rw [div_lt_div_iff₀ (by norm_num) hγ]
-    nlinarith
+    gcongr
   have hγc : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ.ne'
   -- the two representatives agree as germs on the common strip
-  set h' : ℝ := min hR h₅ with hh'
+  set h' := min hR h₅ with hh'
   have hh'0 : 0 < h' := lt_min hhR hh₅
   have hsub₁ : horizontalStrip h' ⊆ horizontalStrip hR := fun z hz =>
-    lt_of_lt_of_le (show |z.im| < h' from hz) (min_le_left _ _)
+    lt_of_lt_of_le (show |z.im| < h' from hz) (min_le_left ..)
   have hsub₂ : horizontalStrip h' ⊆ horizontalStrip h₅ := fun z hz =>
-    lt_of_lt_of_le (show |z.im| < h' from hz) (min_le_right _ _)
+    lt_of_lt_of_le (show |z.im| < h' from hz) (min_le_right ..)
   have hgerm : ∀ w ∈ horizontalStrip h', R =ᶠ[𝓝[≠] w] R₅ := by
     intro w hw
-    set x₀ : ℝ := (γ / 2 + Q γ) / 2 with hx₀
-    have hx₀1 : γ / 2 < x₀ := by rw [hx₀]; linarith
-    have hx₀2 : x₀ < Q γ := by rw [hx₀]; linarith
+    set x₀ := (γ / 2 + Q γ) / 2 with hx₀
+    have hx₀1 : γ / 2 < x₀ := by linarith
+    have hx₀2 : x₀ < Q γ := by linarith
     have hev : ∀ᶠ t : ℝ in 𝓝[≠] x₀, R t = R₅ t :=
       eventually_nhdsWithin_of_eventually_nhds (Filter.eventually_of_mem
         (Ioo_mem_nhds hx₀1 hx₀2) fun t ht => by
@@ -120,7 +119,7 @@ theorem dualShift_eventually {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) 
       (hR₅m _ (ofReal_mem_horizontalStrip hh₅ _)).eventually_analyticAt
   have e6 : ∀ᶠ u : ℝ in 𝓝[≠] 0, R₅ ((Q γ + γ / 8 + u * 1 : ℝ) : ℂ) *
       R₅ (2 * Q γ - ((Q γ + γ / 8 + u * 1 : ℝ) : ℂ)) = 1 :=
-    eventually_ofReal_affine (p := fun z => R₅ z * R₅ (2 * Q γ - z) = 1) one_ne_zero
+    eventually_ofReal_affine one_ne_zero
       ((eventually_codiscrete_iff_forall_eventually_nhdsNE.mp hinv) _)
   have e7 : ∀ᶠ u : ℝ in 𝓝[≠] 0,
       ∀ n : ℕ, dualArg₁ γ ((γ / 2 - γ / 8 + u * (-1) : ℝ) : ℂ) ≠ -(n : ℂ) := by
@@ -138,12 +137,12 @@ theorem dualShift_eventually {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) 
   have e8 : ∀ᶠ u : ℝ in 𝓝[≠] 0, u ∈ Ioo (-(γ / 16)) (γ / 16) :=
     nhdsWithin_le_nhds (Ioo_mem_nhds (by linarith) (by linarith))
   filter_upwards [e1, e2, e3, e4, e5, e6, e7, e8] with u a1 a2 a3 a4 a5 a6 a7 a8
-  set θ : ℝ := γ / 8 + u with hθ
-  have hθ₁ : 0 < θ := by rw [hθ]; linarith [a8.1]
-  have hθ₂ : θ < γ / 4 := by rw [hθ]; linarith [a8.2]
-  have r1 : (γ / 2 - γ / 8 + u * (-1) : ℝ) = γ / 2 - θ := by rw [hθ]; ring
-  have r2 : (Q γ + γ / 8 + u * 1 : ℝ) = Q γ + θ := by rw [hθ]; ring
-  have r3 : (Q γ - γ / 8 + u * (-1) : ℝ) = Q γ - θ := by rw [hθ]; ring
+  set θ := γ / 8 + u with hθ
+  have hθ₁ : 0 < θ := by grind
+  have hθ₂ : θ < γ / 4 := by grind
+  have r1 : (γ / 2 - γ / 8 + u * (-1) : ℝ) = γ / 2 - θ := by linarith
+  have r2 : (Q γ + γ / 8 + u * 1 : ℝ) = Q γ + θ := by linarith
+  have r3 : (Q γ - γ / 8 + u * (-1) : ℝ) = Q γ - θ := by linarith
   rw [r1] at a1 a7
   rw [r2] at a2 a4 a6
   rw [r3] at a3 a5

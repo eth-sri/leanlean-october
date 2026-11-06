@@ -15,6 +15,6 @@ open Complex MeasureTheory Set Filter Topology
 namespace DOZZ
 
 /-- `s = (Σ α_k - 2Q)/γ` ([KRV, (defs)]) for three insertions. -/
-noncomputable def sExp (γ : ℝ) (α₁ α₂ α₃ : ℝ) : ℝ := (α₁ + α₂ + α₃ - 2 * Q γ) / γ
+noncomputable def sExp (γ α₁ α₂ α₃ : ℝ) : ℝ := (α₁ + α₂ + α₃ - 2 * Q γ) / γ
 
 end DOZZ

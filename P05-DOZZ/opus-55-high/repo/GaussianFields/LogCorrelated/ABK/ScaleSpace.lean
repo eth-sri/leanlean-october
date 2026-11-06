@@ -42,27 +42,11 @@ noncomputable def scaleSpaceMeasurableEquiv (d : Nat) :
 theorem scaleSpaceMeasurePreserving (d : Nat) :
     MeasurePreserving (scaleSpaceMeasurableEquiv d) := by
   simpa [ScaleSpace, scaleSpaceMeasurableEquiv] using
-    (volume_preserving_piFinSuccAbove (fun _ : Fin (d + 1) => ℝ) 0)
+    (volume_preserving_piFinSuccAbove (fun _ => ℝ) 0)
 
-/-- The scale coordinate in `R^{1+d}`. -/
-@[expose]
-def scaleCoord {d : Nat} (z : ScaleSpace d) : ℝ :=
-  z 0
 
-/-- The spatial coordinates in `R^{1+d}`. -/
-@[expose]
-def spaceCoord {d : Nat} (z : ScaleSpace d) : Vec d :=
-  fun i => z (Fin.succ i)
 
-@[simp]
-theorem scaleSpaceMeasurableEquiv_fst {d : Nat} (z : ScaleSpace d) :
-    (scaleSpaceMeasurableEquiv d z).1 = scaleCoord z :=
-  rfl
 
-@[simp]
-theorem scaleSpaceMeasurableEquiv_snd {d : Nat} (z : ScaleSpace d) :
-    (scaleSpaceMeasurableEquiv d z).2 = spaceCoord z :=
-  rfl
 
 /-- The deterministic Hilbert space for ABK scale-space white noise. -/
 noncomputable abbrev ScaleSpaceWhiteNoiseHilbert (d : Nat) :=
@@ -88,18 +72,16 @@ instance instIsProbabilityMeasure_scaleSpaceWhiteNoiseMeasure (d : Nat) :
 noncomputable def scaleSpaceWhiteNoiseL2 (d : Nat) :
     ScaleSpaceWhiteNoiseHilbert d →ₗᵢ[ℝ] Lp ℝ 2 (scaleSpaceWhiteNoiseMeasure d) :=
   scalarWhiteNoiseL2 (d + 1)
+section
+variable {d : Nat}
 
-@[simp]
-theorem scaleSpaceWhiteNoiseL2_apply {d : Nat} (f : ScaleSpaceWhiteNoiseHilbert d) :
-    scaleSpaceWhiteNoiseL2 d f = scalarWhiteNoiseL2 (d + 1) f :=
-  rfl
 
-theorem covariance_scaleSpaceWhiteNoiseL2 {d : Nat}
-    (f g : ScaleSpaceWhiteNoiseHilbert d) :
+theorem covariance_scaleSpaceWhiteNoiseL2 (f g : ScaleSpaceWhiteNoiseHilbert d) :
     cov[scaleSpaceWhiteNoiseL2 d f, scaleSpaceWhiteNoiseL2 d g;
         scaleSpaceWhiteNoiseMeasure d] =
-      ⟪f, g⟫_ℝ := by
-  exact covariance_scalarWhiteNoiseL2 f g
+      ⟪f, g⟫_ℝ := covariance_scalarWhiteNoiseL2 f g
+
+end
 
 /-! ## Deterministic ABK test data -/
 
@@ -127,8 +109,7 @@ instance {d : Nat} : CoeFun (MeanZeroTestFunction d) (fun _ => Vec d → ℝ) wh
 theorem ext {d : Nat} {ψ φ : MeanZeroTestFunction d} (h : ∀ x, ψ x = φ x) : ψ = φ := by
   cases ψ
   cases φ
-  simp only [mk.injEq]
-  exact funext h
+  aesop
 
 end MeanZeroTestFunction
 

@@ -24,24 +24,22 @@ noncomputable def localBallProbability (R : ℝ) :
 
 theorem localBallProbability_isProbability {R : ℝ} (hR : 0 < R) :
     IsProbabilityMeasure (localBallProbability R) := by
-  let S := {z : ℂ // z ∈ Metric.closedBall (0 : ℂ) R}
+  let S := {z : ℂ // z ∈ Metric.closedBall 0 R}
   let : MeasureSpace S := Measure.Subtype.measureSpace
-  have htotal : (volume : Measure S) Set.univ = ENNReal.ofReal R ^ 2 * (NNReal.pi : ℝ≥0∞) := by
+  have htotal : (volume : Measure S) Set.univ = ENNReal.ofReal R ^ 2 * NNReal.pi := by
     rw [Measure.Subtype.volume_univ Metric.isClosed_closedBall.measurableSet.nullMeasurableSet,
       Complex.volume_closedBall]
   have hne : (volume : Measure S) Set.univ ≠ 0 := by
     rw [htotal]
-    have hR' : ENNReal.ofReal R ≠ 0 := ENNReal.ofReal_ne_zero_iff.mpr hR
+    have hR' := ENNReal.ofReal_ne_zero_iff.mpr hR
     have hπ : (NNReal.pi : ℝ≥0∞) ≠ 0 := by
       rw [ENNReal.coe_ne_zero]
       exact ne_of_gt NNReal.pi_pos
-    exact ne_of_gt (ENNReal.mul_pos (pow_ne_zero 2 hR') hπ)
+    positivity
   have htop : (volume : Measure S) Set.univ ≠ ∞ := by
     rw [htotal]
-    exact ENNReal.mul_ne_top (by simp) (by simp)
+    tauto
   refine ⟨?_⟩
-  change (((volume : Measure S) Set.univ)⁻¹ • (volume : Measure S)) Set.univ = 1
-  rw [Measure.smul_apply]
   exact ENNReal.inv_mul_cancel hne htop
 
 end DOZZ.Proofs

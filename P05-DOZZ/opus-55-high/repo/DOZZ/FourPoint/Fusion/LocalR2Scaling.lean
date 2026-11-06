@@ -24,16 +24,15 @@ noncomputable def fusionLocalR2 {Ω : Type*} [MeasurableSpace Ω]
           (gammaHalfKernel γ α₁ α₂ α₃ (t * z) x : ℂ) / (‖x - t * z‖ ^ 2 : ℝ) ∂M ω) ∂P))
 
 /-- The mixed phase is the norm squared, leaving the same real time weight. -/
-theorem fusion_mixed_time_scaling_factor (e : ℝ) (t : ℝ) (ht : 0 < t) (z : ℂ) (hz : z ≠ 0) :
+theorem fusion_mixed_time_scaling_factor (e t : ℝ) (ht : 0 < t) (z : ℂ) (hz : z ≠ 0) :
     z * star z * (‖(t : ℂ) * z‖ ^ e : ℝ) =
       (‖z‖ ^ (e + 2) : ℝ) * (t ^ e : ℝ) := by
-  have hn : ‖(t : ℂ) * z‖ = t * ‖z‖ := by
+  have hn : ‖t * z‖ = t * ‖z‖ := by
     rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg ht.le]
-  have hp : ‖z‖ ^ (e + 2) = ‖z‖ ^ (2 : ℕ) * ‖z‖ ^ e := by
+  have hp : ‖z‖ ^ (e + 2) = ‖z‖ ^ 2 * ‖z‖ ^ e := by
     rw [← Real.rpow_natCast, ← Real.rpow_add (norm_pos_iff.mpr hz)]
-    congr 1
     ring
-  have hzstar : z * star z = (‖z‖ ^ (2 : ℕ) : ℝ) := by
+  have hzstar : z * star z = (‖z‖ ^ 2 : ℝ) := by
     simpa only [starRingEnd_apply, Complex.normSq_eq_norm_sq] using Complex.mul_conj z
   rw [hzstar, hn, Real.mul_rpow ht.le (norm_nonneg _), hp]
   push_cast
@@ -53,7 +52,6 @@ theorem fusionLocalR2_scaled {Ω : Type*} [MeasurableSpace Ω]
           (∫ y : ℂ, (planarMixedKernel (γ ^ 2 / 2) (γ * α₁) 1 y : ℝ) *
             (fusionScaledFactor P M γ α₁ α₂ α₃ (-p - 1) y ((t : ℂ) * z) : ℂ))) := by
   let κ := γ * (Q γ - α₁)
-  have hκ := fusion_exponent_eq γ α₁ hγ.ne'
   have hpoint : ∀ᵐ t : ℝ ∂volume.restrict (Icc 0 1),
       z * star z * ((1 - t : ℝ) *
         (∫ ω, ((coulombMass γ (M ω) ![-γ / 2, α₁, α₂] ![t * z, 0, 1] α₃ ^ (-p - 1)).toReal : ℂ) *
@@ -64,25 +62,25 @@ theorem fusionLocalR2_scaled {Ω : Type*} [MeasurableSpace Ω]
           (fusionScaledFactor P M γ α₁ α₂ α₃ (-p - 1) y ((t : ℂ) * z) : ℂ))) := by
     filter_upwards [ae_restrict_mem measurableSet_Icc,
       ae_restrict_of_ae (Measure.ae_ne volume (0 : ℝ))] with t ht ht0
-    have htpos : 0 < t := lt_of_le_of_ne ht.1 (Ne.symm ht0)
-    have htz : (t : ℂ) * z ≠ 0 := mul_ne_zero (Complex.ofReal_ne_zero.mpr ht0) hz
+    have htpos : 0 < t := by grind
+    have htz : (t : ℂ) * z ≠ 0 := by simp_all
     have htz4 : ‖(t : ℂ) * z‖ ≤ 1 / 4 := by
       rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg ht.1]
       calc
         t * ‖z‖ ≤ 1 * ‖z‖ := mul_le_mul_of_nonneg_right ht.2 (norm_nonneg _)
-        _ ≤ 1 / 4 := by simpa only [one_mul] using hz4
+        _ ≤ 1 / 4 := by linarith
     rw [fusion_localR2_rooting P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hβ hα₁ hα₂ hα₃
       (-p - 1) (by linarith) ((t : ℂ) * z) htz htz4,
-      fusion_localR2_reference_scaled P X hX γ hγ hγ2 M hM α₁ α₂ α₃ (-p - 1) ((t : ℂ) * z) htz]
+      fusion_localR2_reference_scaled P X hX γ hγ hγ2 M hM α₁ α₂ α₃ _ ((t : ℂ) * z) htz]
     have hfac := fusion_mixed_time_scaling_factor (γ ^ 2 / 2 - γ * α₁) t htpos z hz
-    have he : γ ^ 2 / 2 - γ * α₁ + 2 = κ := by dsimp only [κ]; linarith only [hκ]
+    have he : γ ^ 2 / 2 - γ * α₁ + 2 = κ := by dsimp only [κ]; linarith only [(fusion_exponent_eq γ α₁ hγ.ne')]
     rw [he] at hfac
     push_cast
     calc
       _ = (z * star z * (‖(t : ℂ) * z‖ ^ (γ ^ 2 / 2 - γ * α₁) : ℝ)) *
-          ((1 - (t : ℂ)) * (∫ y : ℂ, (planarMixedKernel (γ ^ 2 / 2) (γ * α₁) 1 y : ℝ) *
-            (fusionScaledFactor P M γ α₁ α₂ α₃ (-p - 1) y ((t : ℂ) * z) : ℂ))) := by ring
-      _ = _ := by rw [hfac]; ring
+          ((1 - (t : ℂ)) * (∫ y : ℂ, (planarMixedKernel _ _ 1 y : ℝ) *
+            (fusionScaledFactor P M γ α₁ α₂ α₃ _ y ((t : ℂ) * z) : ℂ))) := by ring
+      _ = _ := by grind
   unfold fusionLocalR2
   rw [mul_assoc (((-2 * p * (γ ^ 2 / 4) ^ 2 : ℝ) : ℂ)) z (star z)]
   rw [mul_assoc, ← integral_const_mul, integral_congr_ae hpoint, integral_const_mul, ← mul_assoc]

@@ -17,6 +17,6 @@ namespace DOZZ
 
 /-- Uniqueness of `Υ_{γ/2}` (identity theorem on the strip). -/
 theorem IsUpsilon.unique {γ : ℝ} {U V : ℂ → ℂ} (hγ : 0 < γ) (hU : IsUpsilon γ U) (hV : IsUpsilon γ V) :
-    U = V := by exact DOZZ.Proofs.IsUpsilon.unique hγ hU hV
+    U = V := DOZZ.Proofs.IsUpsilon.unique hγ hU hV
 
 end DOZZ

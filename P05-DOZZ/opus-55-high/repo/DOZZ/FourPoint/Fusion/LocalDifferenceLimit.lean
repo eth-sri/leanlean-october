@@ -23,17 +23,15 @@ theorem fusion_localDifference_normalized_tendsto {Ω : Type*} [MeasurableSpace 
       (nhds (gammaHalfRootedCoefficient P M γ α₁ α₂ α₃ p)) := by
   obtain ⟨hk, hβ, hβ2, _, _⟩ := fusion_difference_parameters γ α₁ hγ hlo hα₁
   let K := planarDifferenceKernel (γ ^ 2 / 2) (γ * α₁) 1
-  have hK : Integrable K volume := (planar_difference_integral _ _ hk hβ hβ2 1).1
   have hm : Measurable K := by
     unfold K planarDifferenceKernel
-    exact (((measurable_id.sub_const (1 : ℂ)).norm.pow_const _).sub
-      (measurable_id.norm.pow_const _)).div (measurable_id.norm.pow_const _)
+    fun_prop
   have hc := fusionInterpolatedTimeIntegral_tendsto P X hX γ hγ hγ2 M hM α₁ α₂ α₃
-    (by have := div_pos (show (0 : ℝ) < 1 by norm_num) hγ; linarith)
-    hα₁ hα₂ hα₃ (-p - 1) (by linarith) (fun y => (K y : ℂ))
-    (Complex.measurable_ofReal.comp hm) (hK.ofReal)
+    (by nlinarith)
+    hα₁ hα₂ hα₃ (-p - 1) (by linarith) (fun y => (K y))
+    (Complex.measurable_ofReal.comp hm) (((planar_difference_integral _ _ hk hβ hβ2 1).1).ofReal)
   have hi : (∫ y : ℂ, (K y : ℂ)) = planarGaussConstant (γ ^ 2 / 2) (γ * α₁) := by
-    simpa only [norm_one, Real.one_rpow, Complex.ofReal_one, one_mul] using
+    simpa using
       (planar_difference_integral _ _ hk hβ hβ2 1).2
   rw [hi] at hc
   have hr := Complex.continuous_re.continuousAt.tendsto.comp hc
@@ -41,22 +39,22 @@ theorem fusion_localDifference_normalized_tendsto {Ω : Type*} [MeasurableSpace 
       ∫⁻ ω, gammaHalfRootedMass γ α₁ α₂ α₃ M ω ^ (-p - 1) ∂P := by
     apply lintegral_congr_ae
     filter_upwards [fusionMovingMass_eq_rooted_ae P X hX γ hγ hγ2 M hM α₁ α₂ α₃ 1 0] with ω h
-    simp only [mul_zero] at h
+    simp at h
     rw [h]
     rfl
   simp only [Function.comp_def, ← Complex.ofReal_mul, integral_complex_ofReal, Complex.ofReal_re,
     Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero, he] at hr
-  change Tendsto _ _ (nhds (gammaHalfRootedCoefficient P M γ α₁ α₂ α₃ p)) at hr
+  change Tendsto .. at hr
   apply (hr.mono_left nhdsWithin_le_nhds).congr'
   have hz4 : ∀ᶠ z : ℂ in nhdsWithin 0 {0}ᶜ, ‖z‖ ≤ 1 / 4 :=
-    (((continuous_norm.tendsto (0 : ℂ)).eventually_lt_const (by simp : ‖(0 : ℂ)‖ < (1 / 4 : ℝ))).filter_mono
+    (((continuous_norm.tendsto (0 : ℂ)).eventually_lt_const (by simp)).filter_mono
       nhdsWithin_le_nhds).mono fun _ h => h.le
   filter_upwards [hz4, self_mem_nhdsWithin] with z hz4 hz
-  have hz0 : z ≠ 0 := by simpa only [mem_compl_iff, mem_singleton_iff] using hz
-  have hi' : (∫ t in Icc (0 : ℝ) 1, ∫ ω,
+  have hz0 : z ≠ 0 := by assumption
+  have hi' : (∫ t in Icc 0 1, ∫ ω,
       (fusionUnrootedSegment γ α₁ α₂ α₃ t z (M ω) ^ (-p - 1)).toReal *
-        (∫ x in Metric.ball (0 : ℂ) (1 / 2), fusionDifferenceKernel γ α₁ α₂ α₃ z x ∂M ω) ∂P) =
-      ‖z‖ ^ (γ * (Q γ - α₁)) * ∫ t in Icc (0 : ℝ) 1,
+        (∫ x in Metric.ball 0 (1 / 2), fusionDifferenceKernel γ α₁ α₂ α₃ z x ∂M ω) ∂P) =
+      ‖z‖ ^ (γ * (Q γ - α₁)) * ∫ t in Icc 0 1,
         ∫ y : ℂ, K y * fusionInterpolatedFactor P M γ α₁ α₂ α₃ (-p - 1) t y z := by
     rw [← integral_const_mul]
     apply integral_congr_ae

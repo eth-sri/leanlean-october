@@ -23,11 +23,12 @@ estimate `twoInsertion_tail_sum_uniform`.
 open MeasureTheory ProbabilityTheory Filter Topology Set
 
 namespace DOZZ.Proofs
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ)
 
 /-- **The `R̄` representation from the γ/2 crossing and the residue bridge.** -/
 theorem reflectionBarR_holomorphic_representation_of_crossing_bridge
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
+    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
     (hCross : ∀ μ α' ε α : ℝ, 0 < μ → γ / 2 < ε → ε < 2 / γ → α < Q γ → α' < Q γ →
       2 * Q γ < α + α' + ε - γ / 2 →
@@ -65,8 +66,7 @@ theorem reflectionBarR_holomorphic_representation_of_crossing_bridge
 /-- **The first shift of `R` from the γ/2 crossing, the residue bridge and the two-insertion tail
 estimate.** -/
 theorem reflectionR_first_shift_meromorphic_of_crossing_bridge_tail
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) (γ μ : ℝ)
+    (γ μ : ℝ)
     (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
     (hCross : ∀ μ α' ε α : ℝ, 0 < μ → γ / 2 < ε → ε < 2 / γ → α < Q γ → α' < Q γ →
@@ -126,8 +126,7 @@ theorem reflectionR_first_shift_meromorphic_of_crossing_bridge_tail
 /-- **The `R̄` representation from the γ/2 crossing alone** (the residue bridge is the theorem
 `unitVolumeStructureConstant_threeToTwo_residue_bridge`). -/
 theorem reflectionBarR_holomorphic_representation_of_crossing
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
+    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
     (hCross : ∀ μ α' ε α : ℝ, 0 < μ → γ / 2 < ε → ε < 2 / γ → α < Q γ → α' < Q γ →
       2 * Q γ < α + α' + ε - γ / 2 →
@@ -160,8 +159,7 @@ theorem reflectionBarR_holomorphic_representation_of_crossing
 are the theorems `unitVolumeStructureConstant_threeToTwo_residue_bridge` and
 `twoInsertion_tail_sum_uniform`). -/
 theorem reflectionR_first_shift_meromorphic_of_crossing
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) (γ μ : ℝ)
+    (γ μ : ℝ)
     (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
     (hCross : ∀ μ α' ε α : ℝ, 0 < μ → γ / 2 < ε → ε < 2 / γ → α < Q γ → α' < Q γ →
@@ -193,6 +191,8 @@ theorem reflectionR_first_shift_meromorphic_of_crossing
         derivBound lowerBound hF2 hF3 =>
       twoInsertion_tail_sum_uniform P X M γ hγ hγ2 hX hM K2 K3 hK2 hK3 hpos2 hpos3 hsep A2 A3
         hA2 hA3 hα2 hα3 F2s F3s radius supBound derivBound lowerBound hF2 hF3)
+
+end
 
 end DOZZ.Proofs
 

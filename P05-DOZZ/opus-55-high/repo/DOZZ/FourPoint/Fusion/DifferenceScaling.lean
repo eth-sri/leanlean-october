@@ -13,9 +13,8 @@ namespace DOZZ.Proofs
 /-- Real spatial change of variables by a nonzero complex multiplier. -/
 theorem fusion_integral_mul_complex_real (F : ℂ → ℝ) (z : ℂ) (hz : z ≠ 0) :
     (∫ x : ℂ, F x) = ‖z‖ ^ 2 * ∫ y : ℂ, F (y * z) := by
-  have h := fusion_integral_mul_complex (fun x => (F x : ℂ)) z hz
-  have he : ((∫ x : ℂ, F x : ℝ) : ℂ) = ((‖z‖ ^ 2 * ∫ y : ℂ, F (y * z) : ℝ) : ℂ) := by
-    simpa only [integral_complex_ofReal, Complex.ofReal_mul] using h
+  have he : ((∫ x : ℂ, F x : ℝ)) = ((‖z‖ ^ 2 * ∫ y : ℂ, F (y * z) : ℝ) : ℂ) := by
+    simpa only [integral_complex_ofReal, Complex.ofReal_mul] using (fusion_integral_mul_complex (fun x => (F x : ℂ)) z hz)
   exact Complex.ofReal_inj.mp he
 /-- The literal local rooted reference integral has the exact signed difference scaling. -/
 theorem fusion_difference_reference_scaled {Ω : Type*} [MeasurableSpace Ω]
@@ -42,7 +41,7 @@ theorem fusion_difference_reference_scaled {Ω : Type*} [MeasurableSpace Ω]
           ∫⁻ ω, fusionInterpolatedMass γ α₁ α₂ α₃ t y z (M ω) ^ s ∂P := by
         apply lintegral_congr_ae
         filter_upwards [fusionUnrootedSegment_rooted_ae P X hX γ hγ hγ2 M hM α₁ α₂ α₃ t y z] with ω hω
-        rw [hω]
+        simp_all
       rw [he]
       simp only [fusionInterpolatedFactor, ite_eq_left hy]
       ring
@@ -50,10 +49,10 @@ theorem fusion_difference_reference_scaled {Ω : Type*} [MeasurableSpace Ω]
       simp only [F, Set.indicator_of_notMem hyB, fusionInterpolatedFactor, ite_eq_right hy, mul_zero]
   have h := fusion_integral_mul_complex_real F z hz
   have he : (fun y => F (y * z)) = fun y => ‖z‖ ^ (γ ^ 2 / 2 - γ * α₁) *
-      (planarDifferenceKernel (γ ^ 2 / 2) (γ * α₁) 1 y *
+      (planarDifferenceKernel _ _ 1 y *
         fusionInterpolatedFactor P M γ α₁ α₂ α₃ s t y z) := funext hp
   rw [he, integral_const_mul] at h
-  have hpow : ‖z‖ ^ (2 : ℕ) * ‖z‖ ^ (γ ^ 2 / 2 - γ * α₁) =
+  have hpow : ‖z‖ ^ 2 * ‖z‖ ^ (γ ^ 2 / 2 - γ * α₁) =
       ‖z‖ ^ (2 + γ ^ 2 / 2 - γ * α₁) := by
     rw [← Real.rpow_natCast, ← Real.rpow_add (norm_pos_iff.mpr hz)]
     congr 1
@@ -61,5 +60,5 @@ theorem fusion_difference_reference_scaled {Ω : Type*} [MeasurableSpace Ω]
   calc
     _ = ∫ x : ℂ, F x := (integral_indicator (show MeasurableSet B from Metric.isOpen_ball.measurableSet)).symm
     _ = _ := h
-    _ = _ := by rw [← mul_assoc, hpow]
+    _ = _ := by grind
 end DOZZ.Proofs

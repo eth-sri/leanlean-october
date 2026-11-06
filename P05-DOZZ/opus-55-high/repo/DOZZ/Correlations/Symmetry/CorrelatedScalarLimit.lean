@@ -10,10 +10,12 @@ public import Mathlib.MeasureTheory.Measure.Prod
 open MeasureTheory Filter Set
 open scoped Topology ENNReal
 namespace DOZZ.Proofs
+section
+variable {Ω ι : Type*} [MeasurableSpace Ω] {P : Measure Ω}
 
 /-- A finite correlated scalar preserves convergence in probability. No independence is used. -/
 theorem tendstoInMeasure_mul_same_space
-    {Ω ι : Type*} [MeasurableSpace Ω] {P : Measure Ω} [IsFiniteMeasure P]
+    [IsFiniteMeasure P]
     {l : Filter ι} (f : ι → Ω → ℝ) (g W : Ω → ℝ)
     (hW : Measurable W) (hfg : TendstoInMeasure P f l g) :
     TendstoInMeasure P (fun i ω => W ω * f i ω) l (fun ω => W ω * g ω) := by
@@ -23,11 +25,11 @@ theorem tendstoInMeasure_mul_same_space
   intro δ hδ
   let T : ℕ → Set Ω := fun n => {ω | (n : ℝ) < |W ω|}
   have hTmeas n : MeasurableSet (T n) :=
-    measurableSet_lt measurable_const (continuous_abs.measurable.comp hW)
+    by measurability
   have hTanti : Antitone T := by
     intro n m hnm ω hω
-    change (m : ℝ) < |W ω| at hω
-    change (n : ℝ) < |W ω|
+    change m < |W ω| at hω
+    change n < |W ω|
     exact lt_of_le_of_lt (by exact_mod_cast hnm) hω
   have hTinter : (⋂ n, T n) = ∅ := by
     ext ω
@@ -38,15 +40,14 @@ theorem tendstoInMeasure_mul_same_space
   have htail : Tendsto (fun n => P (T n)) atTop (𝓝 0) := by
     have h := tendsto_measure_iInter_atTop (μ := P) (s := T)
       (fun n => (hTmeas n).nullMeasurableSet) hTanti ⟨0, measure_ne_top P _⟩
-    simpa only [hTinter, measure_empty, Function.comp_def] using h
+    aesop
   obtain ⟨N, hN⟩ := (ENNReal.tendsto_atTop_zero.mp htail) (δ / 2)
     (ENNReal.div_pos_iff.mpr ⟨hδ.ne', by simp⟩)
-  let K : ℝ := (N : ℝ) + 1
-  have hK : 0 < K := by dsimp [K]; positivity
+  let K : ℝ := N + 1
+  have hK : 0 < K := by positivity
   have hKtail : P {ω | K < |W ω|} ≤ δ / 2 := by
     simpa [T, K, Nat.cast_add, Nat.cast_one] using hN (N + 1) (by omega)
-  have hbase := (tendstoInMeasure_iff_norm.mp hfg) (ε / K) (div_pos hε hK)
-  filter_upwards [(ENNReal.tendsto_nhds_zero.mp hbase) (δ / 2)
+  filter_upwards [(ENNReal.tendsto_nhds_zero.mp ((tendstoInMeasure_iff_norm.mp hfg) (ε / K) (div_pos hε hK))) (δ / 2)
     (ENNReal.div_pos_iff.mpr ⟨hδ.ne', by simp⟩)] with i hi
   have hsubset : {ω | ε ≤ ‖W ω * f i ω - W ω * g ω‖} ⊆
       {ω | K < |W ω|} ∪ {ω | ε / K ≤ ‖f i ω - g ω‖} := by
@@ -63,25 +64,25 @@ theorem tendstoInMeasure_mul_same_space
         _ = ε := mul_div_cancel₀ ε hK.ne'
     exact (not_le_of_gt hh) hω
   calc
-    _ ≤ P ({ω | K < |W ω|} ∪ {ω | ε / K ≤ ‖f i ω - g ω‖}) := measure_mono hsubset
-    _ ≤ P {ω | K < |W ω|} + P {ω | ε / K ≤ ‖f i ω - g ω‖} := measure_union_le _ _
+    _ ≤ P _ := measure_mono hsubset
+    _ ≤ P {ω | K < |W ω|} + P {ω | ε / K ≤ ‖f i ω - g ω‖} := measure_union_le ..
     _ ≤ δ / 2 + δ / 2 := add_le_add hKtail hi
     _ = δ := ENNReal.add_halves δ
 
 /-- Correlated real differences preserve convergence in probability. -/
 theorem tendstoInMeasure_sub_same_space
-    {Ω ι : Type*} [MeasurableSpace Ω] {P : Measure Ω} {l : Filter ι}
+    {l : Filter ι}
     (f g : ι → Ω → ℝ) (F G : Ω → ℝ)
     (hf : TendstoInMeasure P f l F) (hg : TendstoInMeasure P g l G) :
     TendstoInMeasure P (fun i ω => f i ω - g i ω) l (fun ω => F ω - G ω) := by
   rw [tendstoInMeasure_iff_norm] at hf hg ⊢
   intro ε hε
-  have hhalf : 0 < ε / 2 := half_pos hε
+  have hhalf := half_pos hε
   have ht : Tendsto (fun i => P {ω | ε / 2 ≤ ‖f i ω - F ω‖} +
       P {ω | ε / 2 ≤ ‖g i ω - G ω‖}) l (𝓝 0) := by
-    simpa only [zero_add] using (hf (ε / 2) hhalf).add (hg (ε / 2) hhalf)
+    simpa using (hf _ hhalf).add (hg (ε / 2) hhalf)
   apply tendsto_of_tendsto_of_tendsto_of_le_of_le
-    (tendsto_const_nhds : Tendsto (fun _ : ι => (0 : ℝ≥0∞)) l (𝓝 0)) ht (fun _ => bot_le)
+    tendsto_const_nhds ht (fun _ => bot_le)
   intro i
   calc
     _ ≤ P ({ω | ε / 2 ≤ ‖f i ω - F ω‖} ∪ {ω | ε / 2 ≤ ‖g i ω - G ω‖}) := by
@@ -93,9 +94,10 @@ theorem tendstoInMeasure_sub_same_space
       have h2 : ‖g i ω - G ω‖ < ε / 2 := lt_of_not_ge hn.2
       have heq : (f i ω - g i ω) - (F ω - G ω) =
           (f i ω - F ω) - (g i ω - G ω) := by ring
-      have hb := norm_sub_le (f i ω - F ω) (g i ω - G ω)
       change ε ≤ ‖(f i ω - g i ω) - (F ω - G ω)‖ at hω
       rw [heq] at hω
-      exact (not_le_of_gt (lt_of_le_of_lt hb (by linarith only [h1, h2]))) hω
-    _ ≤ _ := measure_union_le _ _
+      exact (not_le_of_gt (lt_of_le_of_lt (norm_sub_le (f i ω - F ω) (g i ω - G ω)) (by linarith))) hω
+    _ ≤ _ := measure_union_le ..
+
+end
 end DOZZ.Proofs

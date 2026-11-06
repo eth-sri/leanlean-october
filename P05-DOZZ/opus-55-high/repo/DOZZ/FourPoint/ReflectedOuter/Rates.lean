@@ -20,14 +20,13 @@ theorem reflected_outer_cutoff_geometry (ξ ε : ℝ) (hξ : 0 < ξ) (hξ₁ : �
       0 < ‖z‖ ^ (1 - ξ) ∧ ‖z‖ ^ (1 - ξ) ≤ 1 ∧ ‖z‖ ≤ 1 ∧
         ‖z‖ ≤ ‖z‖ ^ (1 - ξ) / 2 ∧ ‖z‖ ^ (1 - ξ) < ε := by
   let l := nhdsWithin (0 : ℂ) {z : ℂ | z ≠ 0}
-  have hn : Tendsto (fun z : ℂ => ‖z‖) l (nhds 0) := by
-    simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
-  have hr : Tendsto (fun z : ℂ => ‖z‖ ^ (1 - ξ)) l (nhds 0) := by
-    have hh := ((Real.continuous_rpow_const (by linarith only [hξ₁] : 0 ≤ 1 - ξ)).tendsto 0).comp hn
-    simpa only [Function.comp_def, Real.zero_rpow (by linarith only [hξ₁] : 1 - ξ ≠ 0)] using hh
-  have hs : Tendsto (fun z : ℂ => ‖z‖ ^ ξ) l (nhds 0) := by
-    have hh := ((Real.continuous_rpow_const hξ.le).tendsto 0).comp hn
-    simpa only [Function.comp_def, Real.zero_rpow hξ.ne'] using hh
+  have hn : Tendsto (fun z => ‖z‖) l (nhds 0) := by
+    simpa using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
+  have hr : Tendsto (fun z => ‖z‖ ^ (1 - ξ)) l (nhds 0) := by
+    have hh := ((Real.continuous_rpow_const (by positivity : 0 ≤ 1 - ξ)).tendsto 0).comp hn
+    simpa only [Function.comp_def, Real.zero_rpow (by positivity : 1 - ξ ≠ 0)] using hh
+  have hs : Tendsto (fun z => ‖z‖ ^ ξ) l (nhds 0) := by
+    simpa only [Function.comp_def, Real.zero_rpow hξ.ne'] using (((Real.continuous_rpow_const hξ.le).tendsto 0).comp hn)
   filter_upwards [hr.eventually (gt_mem_nhds hε), hr.eventually (gt_mem_nhds zero_lt_one),
     hn.eventually (gt_mem_nhds zero_lt_one), hs.eventually (gt_mem_nhds (by norm_num : (0 : ℝ) < 1 / 2)),
     self_mem_nhdsWithin] with z hzε hzr hz₁ hzsep hz0
@@ -36,8 +35,7 @@ theorem reflected_outer_cutoff_geometry (ξ ε : ℝ) (hξ : 0 < ξ) (hξ₁ : �
     rw [← Real.rpow_add hz, sub_add_cancel, Real.rpow_one]
   refine ⟨Real.rpow_pos_of_pos hz _, hzr.le, hz₁.le, ?_, hzε⟩
   have hh := mul_le_mul_of_nonneg_left hzsep.le (Real.rpow_nonneg hz.le (1 - ξ))
-  rw [he] at hh
-  linarith only [hh]
+  linarith
 
 /-- Dividing the two explicit rates by the target power leaves two strictly positive powers. -/
 theorem reflected_outer_rate_littleO (κ ξ e C₁ C₂ : ℝ) (f : ℂ → ℂ)
@@ -46,14 +44,13 @@ theorem reflected_outer_rate_littleO (κ ξ e C₁ C₂ : ℝ) (f : ℂ → ℂ)
       ‖f z‖ ≤ C₁ * ‖z‖ ^ ξ + C₂ * (‖z‖ ^ (1 - ξ)) ^ e) :
     IsComplexLittleOAtZero κ f := by
   let l := nhdsWithin (0 : ℂ) {z : ℂ | z ≠ 0}
-  have hn : Tendsto (fun z : ℂ => ‖z‖) l (nhds 0) := by
-    simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
-  have ht (a : ℝ) (ha : 0 < a) : Tendsto (fun z : ℂ => ‖z‖ ^ a) l (nhds 0) := by
-    have hh := ((Real.continuous_rpow_const ha.le).tendsto 0).comp hn
-    simpa only [Function.comp_def, Real.zero_rpow ha.ne'] using hh
-  have hlimit : Tendsto (fun z : ℂ => C₁ * ‖z‖ ^ (ξ - κ) +
+  have hn : Tendsto (fun z => ‖z‖) l (nhds 0) := by
+    simpa using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
+  have ht (a : ℝ) (ha : 0 < a) : Tendsto (fun z => ‖z‖ ^ a) l (nhds 0) := by
+    simpa only [Function.comp_def, Real.zero_rpow ha.ne'] using (((Real.continuous_rpow_const ha.le).tendsto 0).comp hn)
+  have hlimit : Tendsto (fun z => C₁ * ‖z‖ ^ (ξ - κ) +
       C₂ * ‖z‖ ^ ((1 - ξ) * e - κ)) l (nhds 0) := by
-    simpa only [mul_zero, zero_add] using
+    simpa using
       ((ht (ξ - κ) (sub_pos.mpr hslack)).const_mul C₁).add
         ((ht ((1 - ξ) * e - κ) (sub_pos.mpr hfreeze)).const_mul C₂)
   apply tendsto_of_tendsto_of_tendsto_of_le_of_le' tendsto_const_nhds hlimit

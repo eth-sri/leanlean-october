@@ -38,18 +38,17 @@ theorem cutoffLaplace_affine_ball_scaling
         (y + 2 * Real.log c + γ ^ 2 / 2 * Real.log c + γ * w)
         ∂gaussianReal 0 ⟨-Real.log c, neg_nonneg.mpr (Real.log_nonpos hc.le hc1)⟩ := by
   classical
-  let G : Measure ℝ := gaussianReal 0 ⟨-Real.log c,
+  let G := gaussianReal 0 ⟨-Real.log c,
     neg_nonneg.mpr (Real.log_nonpos hc.le hc1)⟩
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   have hG : IsProbabilityMeasure G := by
     simpa [G] using (ProbabilityTheory.instIsProbabilityMeasureGaussianReal 0
       ⟨-Real.log c, neg_nonneg.mpr (Real.log_nonpos hc.le hc1)⟩)
-  let _ : IsProbabilityMeasure G := hG
+  let _ := hG
   let _ : IsProbabilityMeasure (P.prod G) := inferInstance
   let scaleFactor : ℝ → ℝ := fun w =>
     c ^ 2 * Real.exp (γ * w - γ ^ 2 / 2 * (-Real.log c))
   have hscale : Measurable scaleFactor := by
-    dsimp [scaleFactor]
     fun_prop
   let t : Ω → Fin 1 → ℝ := fun ω _ =>
     (regularizedGMC P Xc γ (r - Real.log c) ω (Metric.ball a (c * R))).toReal
@@ -92,9 +91,8 @@ theorem cutoffLaplace_affine_ball_scaling
           measurable_fst)).const_mul _)).aestronglyMeasurable
     · rw [Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
       apply cutoffLaplace_integrand_le_one _ _ (Real.exp_pos y).le
-      exact mul_nonneg (by positivity) ENNReal.toReal_nonneg
-  have hswap := integral_prod_symm (μ := P) (ν := G) _ hint
-  rw [hleft, hmid, hright, hswap]
+      positivity
+  rw [hleft, hmid, hright, (integral_prod_symm (μ := P) (ν := G) _ hint)]
   apply integral_congr_ae
   filter_upwards [] with w
   unfold cutoffLaplace
@@ -105,7 +103,7 @@ theorem cutoffLaplace_affine_ball_scaling
       Real.exp (y + 2 * Real.log c + γ ^ 2 / 2 * Real.log c + γ * w) := by
     dsimp [scaleFactor]
     rw [show c ^ 2 = Real.exp (2 * Real.log c) by
-      rw [show (2 : ℝ) * Real.log c = Real.log c + Real.log c by ring, Real.exp_add,
+      rw [show 2 * Real.log c = Real.log c + Real.log c by ring, Real.exp_add,
         Real.exp_log hc]
       ring]
     rw [← Real.exp_add, ← Real.exp_add]

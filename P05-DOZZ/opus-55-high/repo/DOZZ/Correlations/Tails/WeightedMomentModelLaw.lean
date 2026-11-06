@@ -24,14 +24,12 @@ theorem weighted_moment_model_law
     (M' : Ω' → Measure ℂ) (hM' : IsGMCOf P' X' γ M')
     (α : ℝ) (z : ℂ) (ρ t : ℝ) :
     weightedGmcBallMoment P M γ α z ρ t = weightedGmcBallMoment P' M' γ α z ρ t := by
-  have hw : Measurable (fun μ : Measure ℂ => weightedGmcBallMass γ μ α z ρ) := by
-    have hk : Measurable (fun x : ℂ => (ENNReal.ofReal ‖x-z‖)^(-γ*α)) :=
-      ENNReal.continuous_rpow_const.measurable.comp
-        (ENNReal.measurable_ofReal.comp (measurable_id.sub_const z).norm)
+  have hw : Measurable (fun μ => weightedGmcBallMass γ μ α z ρ) := by
+    have hk : Measurable (fun x => (ENNReal.ofReal ‖x-z‖)^(-γ*α)) :=
+      by fun_prop
     have hb : MeasurableSet (Metric.ball z ρ) := Metric.isOpen_ball.measurableSet
-    have hm := Measure.measurable_lintegral (hk.indicator hb)
     simpa only [lintegral_indicator hb,
-      weightedGmcBallMass, ENNReal.rpow_eq_pow] using hm
+      weightedGmcBallMass, ENNReal.rpow_eq_pow] using (Measure.measurable_lintegral (hk.indicator hb))
   exact equatorGFF_GMC_law_transport P X hX P' X' hX' γ hγ hγ2 M hM M' hM'
     (fun _ μ => weightedGmcBallMass γ μ α z ρ ^ t)
     ((hw.comp measurable_snd).pow_const t)
@@ -50,7 +48,7 @@ theorem weighted_moment_uniform_models
   refine ⟨K, hK, ?_⟩
   intro P' X' M' hX' hM' α t hα ht hbulk hins
   rw [← weighted_moment_model_law P X hX P' X' hX' γ hγ hγ2 M hM M' hM' α 0 ρ t]
-  exact hb α t hα ht hbulk hins
+  simp_all
 
 
 end DOZZ.Proofs

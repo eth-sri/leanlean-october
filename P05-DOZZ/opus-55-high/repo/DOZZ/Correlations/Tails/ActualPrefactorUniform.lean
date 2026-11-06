@@ -31,7 +31,7 @@ theorem actual_prefactor_moment_uniform
   intro z hzk f hf hfb r hr hrR
   have hN := offCenter_pin_law P X Xc hX hc z (hz z hzk)
   have hm : (∫ ω, Xc ω z 0 ∂P) = 0 := by
-    simpa only [integral_id_gaussianReal] using hN.integral_eq
+    simpa using hN.integral_eq
   have hv : variance (fun ω => Xc ω z 0) P = 2*Real.log ‖z‖ := by
     simpa only [variance_id_gaussianReal,
       Real.coe_toNNReal _ (offCenter_pin_variance_pos z (hz z hzk)).le] using hN.variance_eq
@@ -40,21 +40,21 @@ theorem actual_prefactor_moment_uniform
   apply ENNReal.rpow_le_rpow _ hr.le
   apply ENNReal.ofReal_le_ofReal
   have hn : ‖z‖^(-4 : ℝ) ≤ 1 :=
-    Real.rpow_le_one_of_one_le_of_nonpos (by linarith [hz z hzk]) (by norm_num)
+    Real.rpow_le_one_of_one_le_of_nonpos (by grind) (by norm_num)
   have hD : pinCorrectionEnvelope z γ (Xc ω z 0) (Xc ω z 0) = γ^2 := by
     unfold pinCorrectionEnvelope
-    simp only [sub_self,abs_zero,mul_zero,zero_add]
+    simp
   simp only [zero_mul,add_zero,hD]
   have he : 1 ≤ Real.exp (γ^2+4) := Real.one_le_exp_iff.mpr (by positivity)
   have hfb' : f*‖z‖^(-4 : ℝ) ≤ b :=
     (mul_le_of_le_one_right hf hn).trans hfb
   have hbb : b ≤ b*Real.exp (γ^2+4) := le_mul_of_one_le_right hb he
   calc
-    _ ≤ b*Real.exp (γ*Xc ω z 0-γ^2*Real.log ‖z‖) :=
+    _ ≤ b*Real.exp _ :=
       mul_le_mul_of_nonneg_right hfb' (Real.exp_nonneg _)
-    _ ≤ (b*Real.exp (γ^2+4))*Real.exp (γ*Xc ω z 0-γ^2*Real.log ‖z‖) :=
+    _ ≤ (b*Real.exp _)*Real.exp _ :=
       mul_le_mul_of_nonneg_right hbb (Real.exp_nonneg _)
-    _ = _ := mul_comm _ _
+    _ = _ := mul_comm ..
 
 
 end DOZZ.Proofs

@@ -29,7 +29,6 @@ variable {γ χ α₁ α₂ α₃ : ℝ}
 /-- The plane without the roots `0` and `1` is open. -/
 theorem bpz_isOpen_regularPlane : IsOpen {z : ℂ | z ≠ 0 ∧ z ≠ 1} := by
   have : {z : ℂ | z ≠ 0 ∧ z ≠ 1} = {z : ℂ | z ≠ 0} ∩ {z : ℂ | z ≠ 1} := rfl
-  rw [this]
   exact isOpen_ne.inter isOpen_ne
 
 /-- Bounds on the expectations of the moment fields, uniform near `z₀` and in the softening. -/
@@ -46,9 +45,9 @@ theorem bpz_momField_uniform {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) 
   obtain ⟨Y, hYint, hG⟩ := bpz_moment_setup P X hX hγ hγ2 M hM hMm hχ ha1 hα₁ hα₂ hα₃ hs hz0 hz1
   have hG' : ∀ᵐ ω ∂P, (∀ x, M ω {x} = 0) ∧ 0 < Y ω ∧
       ∀ z : ℂ, ‖z - z₀‖ ≤ 1 → ∀ ε : ℝ, 0 ≤ ε → ε ≤ 1 →
-        Integrable (fun x => (Complex.normSq (x - z) + ε ^ 2) ^ (γ * χ / 2) *
+        Integrable (fun x => (Complex.normSq _ + ε ^ 2) ^ (γ * χ / 2) *
           bpzBaseWeight γ χ α₁ α₂ α₃ x) (M ω) ∧
-        Y ω ≤ bpzSoftMassReal (γ * χ / 2) ε (bpzBaseWeight γ χ α₁ α₂ α₃) (M ω) z :=
+        Y ω ≤ bpzSoftMassReal _ ε (bpzBaseWeight γ χ α₁ α₂ α₃) (M ω) z :=
     hG.mono fun ω h => ⟨h.1, h.2.1, h.2.2.2.2⟩
   obtain ⟨r₁, hr₁, C₁, -, hQ1⟩ := bpz_momField1_bounds P X hX hγ hγ2 M hM hMm hχ ha1 hα₁ hα₂
     hα₃ hs hz0 hz1 hYint hG'
@@ -65,10 +64,10 @@ theorem bpz_momField_uniform {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) 
           refine integral_mono_ae hF.norm ((hF.sub hG).norm.add (hYint.const_mul c)) ?_
           filter_upwards [hb] with ω h
           calc ‖F ω‖ = ‖(F ω - G ω) + G ω‖ := by rw [sub_add_cancel]
-            _ ≤ ‖F ω - G ω‖ + ‖G ω‖ := norm_add_le _ _
+            _ ≤ ‖F ω - G ω‖ + ‖G ω‖ := norm_add_le ..
             _ ≤ ‖F ω - G ω‖ + c * Y ω ^ (-s) := add_le_add le_rfl h
       _ = ∫ ω, ‖F ω - G ω‖ ∂P + c * ∫ ω, Y ω ^ (-s) ∂P := by
-          have hi1 : Integrable (fun ω => ‖F ω - G ω‖) P := (hF.sub hG).norm
+          have hi1 : Integrable (fun ω => ‖F ω - G ω‖) P := by fun_prop
           have hi2 : Integrable (fun ω => c * Y ω ^ (-s)) P := hYint.const_mul c
           rw [integral_add hi1 hi2, integral_const_mul]
   refine ⟨min (min 1 (r₁ / 2)) (min 1 (r₂ / 2)), lt_min (lt_min one_pos (half_pos hr₁))
@@ -85,13 +84,13 @@ theorem bpz_momField_uniform {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) 
         (s * (s + 1) * (4 * (γ * χ / 2) / r₂) ^ 2 +
           s * (4 * (4 * (γ * χ / 2) * (1 - γ * χ / 2) + 2 * (γ * χ / 2)) / r₂ ^ 2)) *
           ∫ ω, Y ω ^ (-s) ∂P), fun ε hε0 hε1 z hz => ⟨?_, ?_⟩⟩
-  · have hz' : ‖z - z₀‖ ≤ min 1 (r₁ / 2) := hz.le.trans (min_le_left _ _)
+  · have hz' : ‖z - z₀‖ ≤ min 1 (r₁ / 2) := hz.le.trans (min_le_left ..)
     obtain ⟨h1, h2, h3, h4⟩ := hQ1 r₁ hr₁ le_rfl ε hε0 hε1 z hz'
-    refine (key _ _ _ h1 h2 h4).trans (le_trans ?_ (le_max_left _ _))
-    exact add_le_add h3 le_rfl
-  · have hz' : ‖z - z₀‖ ≤ min 1 (r₂ / 2) := hz.le.trans (min_le_right _ _)
+    refine (key _ _ _ h1 h2 h4).trans (le_trans ?_ (le_max_left ..))
+    linarith
+  · have hz' : ‖z - z₀‖ ≤ min 1 (r₂ / 2) := hz.le.trans (min_le_right ..)
     obtain ⟨h1, h2, h3, h4⟩ := hQ2 r₂ hr₂ le_rfl ε hε0 hε1 z hz'
-    refine (key _ _ _ h1 h2 h4).trans (le_trans ?_ (le_max_right _ _))
+    refine (key _ _ _ h1 h2 h4).trans (le_trans ?_ (le_max_right ..))
     exact add_le_add h3 le_rfl
 
 /-- Sequential continuity at regular roots gives continuity on the regular plane. -/
@@ -102,12 +101,14 @@ theorem bpz_continuousOn_of_seq {F : Type*} [TopologicalSpace F] {g : ℂ → F}
   intro z₀ hz₀
   refine ContinuousAt.continuousWithinAt ?_
   exact tendsto_nhds_iff_seq_tendsto.mpr fun zs hzs => h z₀ hz₀.1 hz₀.2 zs hzs
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+section
+variable (X : Ω → Distr) (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (hMm : Measurable M) (hχ : 0 < χ) (ha1 : γ * χ / 2 ≤ 1) (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) {s : ℝ} (hs : 0 ≤ s)
+include hX hγ hγ2 hM hMm hχ ha1 hα₁ hα₂ hα₃ hs
 
 /-- The expectation of the first moment field at `ε = 0` is continuous on the regular plane. -/
-theorem bpz_continuousOn_momField1 {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (hMm : Measurable M) (hχ : 0 < χ) (ha1 : γ * χ / 2 ≤ 1)
-    (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) {s : ℝ} (hs : 0 ≤ s) :
+theorem bpz_continuousOn_momField1 :
     ContinuousOn (fun z => ∫ ω, bpzMomField1 (γ * χ / 2) s 0 (bpzBaseWeight γ χ α₁ α₂ α₃)
       (bpzBaseWeight γ χ α₁ α₂ α₃) (M ω) z ∂P) {z : ℂ | z ≠ 0 ∧ z ≠ 1} :=
   bpz_continuousOn_of_seq fun _ hz0 hz1 _ hzs =>
@@ -115,30 +116,31 @@ theorem bpz_continuousOn_momField1 {Ω : Type*} [MeasurableSpace Ω] (P : Measur
       (fun _ => le_rfl) (fun _ => zero_le_one) tendsto_const_nhds hzs
 
 /-- The expectation of the second moment field at `ε = 0` is continuous on the regular plane. -/
-theorem bpz_continuousOn_momField2 {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (hMm : Measurable M) (hχ : 0 < χ) (ha1 : γ * χ / 2 ≤ 1)
-    (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) {s : ℝ} (hs : 0 ≤ s) :
+theorem bpz_continuousOn_momField2 :
     ContinuousOn (fun z => ∫ ω, bpzMomField2 (γ * χ / 2) s 0 (bpzBaseWeight γ χ α₁ α₂ α₃)
       (bpzBaseWeight γ χ α₁ α₂ α₃) (M ω) z ∂P) {z : ℂ | z ≠ 0 ∧ z ≠ 1} :=
   bpz_continuousOn_of_seq fun _ hz0 hz1 _ hzs =>
     bpz_tendsto_momField2_gmc P X hX hγ hγ2 M hM hMm hχ ha1 hα₁ hα₂ hα₃ hs hz0 hz1
       (fun _ => le_rfl) (fun _ => zero_le_one) tendsto_const_nhds hzs
 
+end
+
+end
+
 /-- The softening parameters `1/(n+1)`. -/
 theorem bpz_softSeq_props :
     (∀ n : ℕ, 0 < 1 / ((n : ℝ) + 1)) ∧ (∀ n : ℕ, 1 / ((n : ℝ) + 1) ≤ 1) ∧
       Tendsto (fun n : ℕ => 1 / ((n : ℝ) + 1)) atTop (𝓝 0) := by
   refine ⟨fun n => by positivity, fun n => ?_, tendsto_one_div_add_atTop_nhds_zero_nat⟩
-  rw [div_le_one (by positivity)]
-  have : (0 : ℝ) ≤ n := Nat.cast_nonneg n
-  linarith
+  bound
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+section
+variable (X : Ω → Distr) (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (hMm : Measurable M) (hχ : 0 < χ) (ha1 : γ * χ / 2 ≤ 1) (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) {s : ℝ} (hs : 0 < s)
+include hX hγ hγ2 hM hMm hχ ha1 hα₁ hα₂ hα₃ hs
 
 /-- Derivatives of the softened moments, at a regular root. -/
-theorem bpz_hasFDerivAt_softMoments {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (hMm : Measurable M) (hχ : 0 < χ) (ha1 : γ * χ / 2 ≤ 1)
-    (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) {s : ℝ} (hs : 0 < s) {ε : ℝ}
+theorem bpz_hasFDerivAt_softMoments {ε : ℝ}
     (hε : 0 < ε) (hε1 : ε ≤ 1) {z₀ : ℂ} (hz0 : z₀ ≠ 0) (hz1 : z₀ ≠ 1) :
     HasFDerivAt (fun z => ∫ ω, bpzSoftMassReal (γ * χ / 2) ε (bpzBaseWeight γ χ α₁ α₂ α₃)
         (M ω) z ^ (-s) ∂P)
@@ -164,7 +166,7 @@ theorem bpz_hasFDerivAt_softMoments {Ω : Type*} [MeasurableSpace Ω] (P : Measu
       bpzBaseWeight γ χ α₁ α₂ α₃ x) (M ω) := by
     filter_upwards [hG] with ω h
     exact (h.2.2.2.2 z₀ (by simp) ε hε.le hε1).1
-  have hYpos : ∀ᵐ ω ∂P, 0 < Y ω := hG.mono fun ω h => h.2.1
+  have hYpos := hG.mono fun ω h => h.2.1
   have hlow : ∀ᵐ ω ∂P, ∀ z ∈ Metric.ball z₀ 1, Y ω ≤ bpzSoftMassReal (γ * χ / 2) ε
       (bpzBaseWeight γ χ α₁ α₂ α₃) (M ω) z := by
     filter_upwards [hG] with ω h z hz
@@ -178,10 +180,7 @@ theorem bpz_hasFDerivAt_softMoments {Ω : Type*} [MeasurableSpace Ω] (P : Measu
 /-- **Two derivatives of the negative moment.** On the regular plane, `z ↦ E[I(z)^{-s}]` has
 derivative the expectation of the first moment field, which in turn has derivative the
 expectation of the second moment field. -/
-theorem bpz_hasFDerivAt_moments {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) (hMm : Measurable M) (hχ : 0 < χ) (ha1 : γ * χ / 2 ≤ 1)
-    (hα₁ : α₁ < Q γ) (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) {s : ℝ} (hs : 0 < s) :
+theorem bpz_hasFDerivAt_moments :
     (∀ z ∈ {z : ℂ | z ≠ 0 ∧ z ≠ 1},
       HasFDerivAt (fun z => ∫ ω, bpzSoftMassReal (γ * χ / 2) 0 (bpzBaseWeight γ χ α₁ α₂ α₃)
           (M ω) z ^ (-s) ∂P)
@@ -194,9 +193,9 @@ theorem bpz_hasFDerivAt_moments {Ω : Type*} [MeasurableSpace Ω] (P : Measure �
           (bpzBaseWeight γ χ α₁ α₂ α₃) (M ω) z ∂P) z) := by
   obtain ⟨hεpos, hεle, hεlim⟩ := bpz_softSeq_props
   have hbd : ∀ z ∈ {z : ℂ | z ≠ 0 ∧ z ≠ 1}, ∃ r > 0, ∃ C : ℝ, ∀ n : ℕ, ∀ w ∈ Metric.ball z r,
-      ‖∫ ω, bpzMomField1 (γ * χ / 2) s (1 / ((n : ℝ) + 1)) (bpzBaseWeight γ χ α₁ α₂ α₃)
+      ‖∫ ω, bpzMomField1 (γ * χ / 2) s (1 / (n + 1)) (bpzBaseWeight γ χ α₁ α₂ α₃)
           (bpzBaseWeight γ χ α₁ α₂ α₃) (M ω) w ∂P‖ ≤ C ∧
-      ‖∫ ω, bpzMomField2 (γ * χ / 2) s (1 / ((n : ℝ) + 1)) (bpzBaseWeight γ χ α₁ α₂ α₃)
+      ‖∫ ω, bpzMomField2 (γ * χ / 2) s (1 / (n + 1)) (bpzBaseWeight γ χ α₁ α₂ α₃)
           (bpzBaseWeight γ χ α₁ α₂ α₃) (M ω) w ∂P‖ ≤ C := by
     intro z hz
     obtain ⟨ρ, hρ, K, hK⟩ := bpz_momField_uniform P X hX hγ hγ2 M hM hMm hχ ha1 hα₁ hα₂ hα₃
@@ -204,11 +203,11 @@ theorem bpz_hasFDerivAt_moments {Ω : Type*} [MeasurableSpace Ω] (P : Measure �
     refine ⟨ρ, hρ, K, fun n w hw => ?_⟩
     rw [Metric.mem_ball, dist_eq_norm] at hw
     exact hK _ (hεpos n).le (hεle n) w hw
-  have h1 := bpz_hasFDerivAt_of_tendsto_deriv (U := {z : ℂ | z ≠ 0 ∧ z ≠ 1})
-    (f := fun (n : ℕ) z => ∫ ω, bpzSoftMassReal (γ * χ / 2) (1 / ((n : ℝ) + 1))
+  have h1 := bpz_hasFDerivAt_of_tendsto_deriv
+    (f := fun (n : ℕ) z => ∫ ω, bpzSoftMassReal _ _
       (bpzBaseWeight γ χ α₁ α₂ α₃) (M ω) z ^ (-s) ∂P)
-    (f' := fun (n : ℕ) z => ∫ ω, bpzMomField1 (γ * χ / 2) s (1 / ((n : ℝ) + 1))
-      (bpzBaseWeight γ χ α₁ α₂ α₃) (bpzBaseWeight γ χ α₁ α₂ α₃) (M ω) z ∂P)
+    (f' := fun (n : ℕ) z => ∫ ω, bpzMomField1 _ s _
+      (bpzBaseWeight γ χ α₁ α₂ α₃) _ (M ω) z ∂P)
     bpz_isOpen_regularPlane
     (fun n z hz => (bpz_hasFDerivAt_softMoments P X hX hγ hγ2 M hM hMm hχ ha1 hα₁ hα₂ hα₃ hs
       (hεpos n) (hεle n) hz.1 hz.2).1)
@@ -220,11 +219,11 @@ theorem bpz_hasFDerivAt_moments {Ω : Type*} [MeasurableSpace Ω] (P : Measure �
       obtain ⟨r, hr, C, hC⟩ := hbd z hz
       exact ⟨r, hr, C, fun n w hw => (hC n w hw).1⟩)
     (bpz_continuousOn_momField1 P X hX hγ hγ2 M hM hMm hχ ha1 hα₁ hα₂ hα₃ hs.le)
-  have h2 := bpz_hasFDerivAt_of_tendsto_deriv (U := {z : ℂ | z ≠ 0 ∧ z ≠ 1})
-    (f := fun (n : ℕ) z => ∫ ω, bpzMomField1 (γ * χ / 2) s (1 / ((n : ℝ) + 1))
-      (bpzBaseWeight γ χ α₁ α₂ α₃) (bpzBaseWeight γ χ α₁ α₂ α₃) (M ω) z ∂P)
-    (f' := fun (n : ℕ) z => ∫ ω, bpzMomField2 (γ * χ / 2) s (1 / ((n : ℝ) + 1))
-      (bpzBaseWeight γ χ α₁ α₂ α₃) (bpzBaseWeight γ χ α₁ α₂ α₃) (M ω) z ∂P)
+  have h2 := bpz_hasFDerivAt_of_tendsto_deriv
+    (f := fun (n : ℕ) z => ∫ ω, bpzMomField1 _ s _
+      (bpzBaseWeight γ χ α₁ α₂ α₃) _ (M ω) z ∂P)
+    (f' := fun (n : ℕ) z => ∫ ω, bpzMomField2 _ s _
+      (bpzBaseWeight γ χ α₁ α₂ α₃) _ (M ω) z ∂P)
     bpz_isOpen_regularPlane
     (fun n z hz => (bpz_hasFDerivAt_softMoments P X hX hγ hγ2 M hM hMm hχ ha1 hα₁ hα₂ hα₃ hs
       (hεpos n) (hεle n) hz.1 hz.2).2)
@@ -237,5 +236,9 @@ theorem bpz_hasFDerivAt_moments {Ω : Type*} [MeasurableSpace Ω] (P : Measure �
       exact ⟨r, hr, C, fun n w hw => (hC n w hw).2⟩)
     (bpz_continuousOn_momField2 P X hX hγ hγ2 M hM hMm hχ ha1 hα₁ hα₂ hα₃ hs.le)
   exact ⟨h1, h2⟩
+
+end
+
+end
 
 end DOZZ.Proofs

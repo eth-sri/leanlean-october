@@ -24,8 +24,7 @@ def gaussConnectionIntegerRange : Set ℂ := Set.range fun n : ℤ => (n : ℂ)
 
 private theorem gaussConnectionIntegerRange_isClosed :
     IsClosed gaussConnectionIntegerRange := by
-  have hIso : Isometry (fun n : ℤ => (n : ℂ)) := Complex.isometry_intCast
-  exact hIso.isClosedEmbedding.isClosed_range
+  exact Complex.isometry_intCast.isClosedEmbedding.isClosed_range
 
 private theorem gaussNonintegerDomain_isOpen :
     IsOpen gaussConnectionIntegerRangeᶜ :=
@@ -33,11 +32,11 @@ private theorem gaussNonintegerDomain_isOpen :
 
 private theorem gaussNonintegerDomain_isPreconnected :
     IsPreconnected gaussConnectionIntegerRangeᶜ := by
-  have hcount : gaussConnectionIntegerRange.Countable :=
+  have hcount :=
     Set.countable_range fun n : ℤ => (n : ℂ)
   have hpath : IsPathConnected gaussConnectionIntegerRangeᶜ :=
     Set.Countable.isPathConnected_compl_of_one_lt_rank
-      (E := ℂ) (by rw [Complex.rank_real_complex]; norm_num) hcount
+      (E := ℂ) (by simp) hcount
   exact hpath.isConnected.isPreconnected
 
 /-- Convert the product coordinates `(c, δ, a)` to the source parameter order `(a,b,c)`. -/
@@ -69,20 +68,20 @@ theorem eq_of_eq_on_open_gaussConnection_box
       DifferentiableAt ℂ (fun x => F x δ a) c := by
     have hcoord : gaussConnectionCoordinates c δ a ∈ gaussConnectionParameterDomain := by
       have hcoord' : (∀ n : ℤ, c ≠ (n : ℂ)) ∧ ∀ n : ℤ, δ ≠ (n : ℂ) := by
-        simpa [gaussConnectionIntegerRange, eq_comm] using And.intro hc hδ
+        tauto
       simpa [F, gaussConnectionCoordinates, gaussConnectionParameterDomain] using hcoord'
-    have hmap : DifferentiableAt ℂ (fun x : ℂ => gaussConnectionCoordinates x δ a) c := by
+    have hmap : DifferentiableAt ℂ (fun x => gaussConnectionCoordinates x δ a) c := by
       dsimp [gaussConnectionCoordinates]
       fun_prop
-    exact (hf _ hcoord).comp c hmap
+    fun_prop
   have hGdiff (c δ a : ℂ) (hc : c ∈ gaussConnectionIntegerRangeᶜ)
       (hδ : δ ∈ gaussConnectionIntegerRangeᶜ) :
       DifferentiableAt ℂ (fun x => G x δ a) c := by
     have hcoord : gaussConnectionCoordinates c δ a ∈ gaussConnectionParameterDomain := by
       have hcoord' : (∀ n : ℤ, c ≠ (n : ℂ)) ∧ ∀ n : ℤ, δ ≠ (n : ℂ) := by
-        simpa [gaussConnectionIntegerRange, eq_comm] using And.intro hc hδ
+        tauto
       simpa [G, gaussConnectionCoordinates, gaussConnectionParameterDomain] using hcoord'
-    have hmap : DifferentiableAt ℂ (fun x : ℂ => gaussConnectionCoordinates x δ a) c := by
+    have hmap : DifferentiableAt ℂ (fun x => gaussConnectionCoordinates x δ a) c := by
       dsimp [gaussConnectionCoordinates]
       fun_prop
     exact (hg _ hcoord).comp c hmap
@@ -93,7 +92,7 @@ theorem eq_of_eq_on_open_gaussConnection_box
       have hcoord' : (∀ n : ℤ, c ≠ (n : ℂ)) ∧ ∀ n : ℤ, δ ≠ (n : ℂ) := by
         simpa [gaussConnectionIntegerRange, eq_comm] using And.intro hc hδ
       simpa [F, gaussConnectionCoordinates, gaussConnectionParameterDomain] using hcoord'
-    have hmap : DifferentiableAt ℂ (fun x : ℂ => gaussConnectionCoordinates c x a) δ := by
+    have hmap : DifferentiableAt ℂ (fun x => gaussConnectionCoordinates c x a) δ := by
       dsimp [gaussConnectionCoordinates]
       fun_prop
     exact (hf _ hcoord).comp δ hmap
@@ -104,29 +103,29 @@ theorem eq_of_eq_on_open_gaussConnection_box
       have hcoord' : (∀ n : ℤ, c ≠ (n : ℂ)) ∧ ∀ n : ℤ, δ ≠ (n : ℂ) := by
         simpa [gaussConnectionIntegerRange, eq_comm] using And.intro hc hδ
       simpa [G, gaussConnectionCoordinates, gaussConnectionParameterDomain] using hcoord'
-    have hmap : DifferentiableAt ℂ (fun x : ℂ => gaussConnectionCoordinates c x a) δ := by
+    have hmap : DifferentiableAt ℂ (fun x => gaussConnectionCoordinates c x a) δ := by
       dsimp [gaussConnectionCoordinates]
       fun_prop
     exact (hg _ hcoord).comp δ hmap
   have hFaDiff (c δ a : ℂ) (hc : c ∈ gaussConnectionIntegerRangeᶜ)
       (hδ : δ ∈ gaussConnectionIntegerRangeᶜ) :
-      DifferentiableAt ℂ (fun x => F c δ x) a := by
+      DifferentiableAt ℂ (F c δ) a := by
     have hcoord : gaussConnectionCoordinates c δ a ∈ gaussConnectionParameterDomain := by
       have hcoord' : (∀ n : ℤ, c ≠ (n : ℂ)) ∧ ∀ n : ℤ, δ ≠ (n : ℂ) := by
         simpa [gaussConnectionIntegerRange, eq_comm] using And.intro hc hδ
       simpa [F, gaussConnectionCoordinates, gaussConnectionParameterDomain] using hcoord'
-    have hmap : DifferentiableAt ℂ (fun x : ℂ => gaussConnectionCoordinates c δ x) a := by
+    have hmap : DifferentiableAt ℂ (fun x => gaussConnectionCoordinates c δ x) a := by
       dsimp [gaussConnectionCoordinates]
       fun_prop
     exact (hf _ hcoord).comp a hmap
   have hGaDiff (c δ a : ℂ) (hc : c ∈ gaussConnectionIntegerRangeᶜ)
       (hδ : δ ∈ gaussConnectionIntegerRangeᶜ) :
-      DifferentiableAt ℂ (fun x => G c δ x) a := by
+      DifferentiableAt ℂ (G c δ) a := by
     have hcoord : gaussConnectionCoordinates c δ a ∈ gaussConnectionParameterDomain := by
       have hcoord' : (∀ n : ℤ, c ≠ (n : ℂ)) ∧ ∀ n : ℤ, δ ≠ (n : ℂ) := by
         simpa [gaussConnectionIntegerRange, eq_comm] using And.intro hc hδ
       simpa [G, gaussConnectionCoordinates, gaussConnectionParameterDomain] using hcoord'
-    have hmap : DifferentiableAt ℂ (fun x : ℂ => gaussConnectionCoordinates c δ x) a := by
+    have hmap : DifferentiableAt ℂ (fun x => gaussConnectionCoordinates c δ x) a := by
       dsimp [gaussConnectionCoordinates]
       fun_prop
     exact (hg _ hcoord).comp a hmap
@@ -175,17 +174,17 @@ theorem eq_of_eq_on_open_gaussConnection_box
       (hT hδ₀) hnear) hδ
   have hA (c δ : ℂ) (hc : c ∈ gaussConnectionIntegerRangeᶜ)
       (hδ : δ ∈ gaussConnectionIntegerRangeᶜ) : ∀ a, F c δ a = G c δ a := by
-    have hFan : AnalyticOnNhd ℂ (fun x => F c δ x) Set.univ := by
+    have hFan : AnalyticOnNhd ℂ (F c δ) Set.univ := by
       apply DifferentiableOn.analyticOnNhd
       · intro x _
         exact (hFaDiff c δ x hc hδ).differentiableWithinAt
       · exact isOpen_univ
-    have hGan : AnalyticOnNhd ℂ (fun x => G c δ x) Set.univ := by
+    have hGan : AnalyticOnNhd ℂ (G c δ) Set.univ := by
       apply DifferentiableOn.analyticOnNhd
       · intro x _
         exact (hGaDiff c δ x hc hδ).differentiableWithinAt
       · exact isOpen_univ
-    have hnear : (fun x => F c δ x) =ᶠ[𝓝 a₀] (fun x => G c δ x) := by
+    have hnear : (F c δ) =ᶠ[𝓝 a₀] (G c δ) := by
       filter_upwards [hVopen.mem_nhds ha₀] with x hx
       exact hDelta c hc δ hδ x hx
     intro a
@@ -194,12 +193,10 @@ theorem eq_of_eq_on_open_gaussConnection_box
     exact hEqA (Set.mem_univ a)
   have hTarget : F c (c - a - b) a = G c (c - a - b) a := by
     have hc' : c ∈ gaussConnectionIntegerRangeᶜ := by
-      have := hp.1
-      simpa [gaussConnectionParameterDomain, gaussConnectionIntegerRange, eq_comm] using this
+      simpa [gaussConnectionParameterDomain, gaussConnectionIntegerRange, eq_comm] using hp.1
     have hδ' : c - a - b ∈ gaussConnectionIntegerRangeᶜ := by
-      have := hp.2
-      simpa [gaussConnectionParameterDomain, gaussConnectionIntegerRange, eq_comm] using this
-    exact hA c (c - a - b) hc' hδ' a
+      simpa [gaussConnectionParameterDomain, gaussConnectionIntegerRange, eq_comm] using hp.2
+    exact hA c _ hc' hδ' a
   have htuple : gaussConnectionCoordinates c (c - a - b) a = (a, b, c) := by
     simp [gaussConnectionCoordinates]
     ring

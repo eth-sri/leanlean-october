@@ -39,20 +39,18 @@ private theorem tendstoInMeasure_pi_of_coord
     intro ω hω
     by_contra hnot
     have hlt (i : {i // i ∈ s}) : edist (f r ω i) (g ω i) < ε := by
-      exact lt_of_not_ge (fun hi => hnot (Set.mem_iUnion.2 ⟨i, hi⟩))
-    have hsup : Finset.univ.sup (fun i : {i // i ∈ s} =>
-        edist (f r ω i) (g ω i)) < ε :=
+      aesop
+    have hsup : Finset.univ.sup (fun i =>
+        edist ..) < ε :=
       (Finset.sup_lt_iff hε).2 (fun i _ => hlt i)
-    change ε ≤ edist (f r ω) (g ω) at hω
-    rw [edist_pi_def] at hω
     exact (not_lt_of_ge hω) hsup
   have hbound (r : ℝ) : μ {ω | ε ≤ edist (f r ω) (g ω)} ≤
       ∑ i : {i // i ∈ s}, μ (A r i) := by
     calc
-      μ {ω | ε ≤ edist (f r ω) (g ω)} ≤ μ (⋃ i, A r i) := measure_mono (hsub r)
-      _ ≤ ∑ i : {i // i ∈ s}, μ (A r i) := by
-        simpa [A] using measure_biUnion_finset_le (μ := μ)
-          (Finset.univ : Finset {i // i ∈ s}) (fun i : {i // i ∈ s} => A r i)
+      μ {ω | ε ≤ edist _ (g ω)} ≤ μ _ := measure_mono (hsub r)
+      _ ≤ ∑ i : {i // i ∈ s}, μ _ := by
+        simpa [A] using measure_biUnion_finset_le
+          Finset.univ (A r)
   have hsum : Tendsto (fun r => ∑ i : {i // i ∈ s}, μ (A r i)) atTop (𝓝 0) := by
     have hsum' := tendsto_finsetSum (s := Finset.univ)
       (fun i hi => hcoord i ε hε)
@@ -67,46 +65,48 @@ private theorem tendstoInMeasure_add_of_sub
     (hgy : TendstoInMeasure P g atTop y) : TendstoInMeasure P f atTop y := by
   rw [tendstoInMeasure_iff_norm] at hfg hgy ⊢
   intro ε hε
-  let δ : ℝ := ε / 2
-  have hδ : 0 < δ := by dsimp [δ]; linarith
+  let δ := ε / 2
+  have hδ : 0 < δ := by positivity
   have hfg' : Tendsto (fun r => P {ω | δ ≤ ‖f r ω - g r ω‖}) atTop (𝓝 0) := by
-    simpa [δ, sub_zero] using hfg δ hδ
-  have hgy' : Tendsto (fun r => P {ω | δ ≤ ‖g r ω - y ω‖}) atTop (𝓝 0) := hgy δ hδ
+    simp_all
   have hadd : Tendsto (fun r =>
       P {ω | δ ≤ ‖f r ω - g r ω‖} + P {ω | δ ≤ ‖g r ω - y ω‖}) atTop (𝓝 0) := by
-    simpa using hfg'.add hgy'
+    simpa using hfg'.add (hgy δ hδ)
   apply tendsto_of_tendsto_of_tendsto_of_le_of_le'
-    (tendsto_const_nhds : Tendsto (fun _ : ℝ => (0 : ℝ≥0∞)) atTop (𝓝 0)) hadd
-  · exact Filter.Eventually.of_forall (fun _ => bot_le)
+    tendsto_const_nhds hadd
+  · simp
   · filter_upwards [] with r
     calc
       P {ω | ε ≤ ‖f r ω - y ω‖} ≤
-          P ({ω | δ ≤ ‖f r ω - g r ω‖} ∪ {ω | δ ≤ ‖g r ω - y ω‖}) := by
+          P _ := by
             apply measure_mono
             intro ω hω
             by_contra hnot
             have hnot' : ¬ (ω ∈ {ω | δ ≤ ‖f r ω - g r ω‖} ∨
                 ω ∈ {ω | δ ≤ ‖g r ω - y ω‖}) := by
-              simpa only [Set.mem_union] using hnot
+              simpa using hnot
             rcases not_or.mp hnot' with ⟨h1, h2⟩
             have hsum : ‖f r ω - y ω‖ < ε := by
               calc
-                ‖f r ω - y ω‖ = ‖(f r ω - g r ω) + (g r ω - y ω)‖ := by congr 1; ring
-                _ ≤ ‖f r ω - g r ω‖ + ‖g r ω - y ω‖ := norm_add_le _ _
-                _ < δ + δ := add_lt_add (lt_of_not_ge h1) (lt_of_not_ge h2)
-                _ = ε := by dsimp [δ]; ring
+                ‖f r ω - y ω‖ = ‖(f r ω - g r ω) + (g r ω - y ω)‖ := by simp
+                _ ≤ ‖f r ω - g r ω‖ + ‖g r ω - y ω‖ := norm_add_le ..
+                _ < δ + δ := by grind
+                _ = ε := by ring
             exact (not_le_of_gt hsum) hω
       _ ≤ P {ω | δ ≤ ‖f r ω - g r ω‖} + P {ω | δ ≤ ‖g r ω - y ω‖} :=
-        MeasureTheory.measure_union_le _ _
+        MeasureTheory.measure_union_le ..
 
 private def gmcCoordinateB (i : Option (ℚ × ℚ)) : Set ℂ :=
   match i with
   | none => Set.univ
   | some j => gmcLowerBox j
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+section
+variable (X : Ω → Distr)
 
 private theorem exists_measurable_unweighted_finitePath_proxy
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
+    (hX : IsEquatorGFF P X) (γ : ℝ)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (s : Finset gmcTiltCoordinateIndex) :
     ∃ G : Ω → (∀ _i : {i // i ∈ s}, ℝ),
@@ -137,36 +137,33 @@ private theorem exists_measurable_unweighted_finitePath_proxy
     | inl f =>
       simp [gmcTiltFiniteCoordinatePath, gmcTiltCoordinatePath, G, eval, hi]
     | inr j =>
-      have hcoord := congrFun hω j
       simp only [gmcTiltFiniteCoordinatePath, gmcTiltCoordinatePath, G, hi, eval]
-      convert congrArg ENNReal.toReal hcoord using 1
+      convert congrArg ENNReal.toReal (congrFun hω j) using 1
       all_goals cases j <;> rfl
-  exact ⟨G, hG, hEq⟩
+  tauto
+section
+variable (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+include hX hXc
 
 private theorem measurable_regularizedGMC_withDensity
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (γ r : ℝ) (W : ℂ → ℝ≥0∞) (hW : Measurable W) :
     Measurable (fun ω => (regularizedGMC P Xc γ r ω).withDensity W) := by
-  have hμ : Measurable (fun ω => regularizedGMC P Xc γ r ω) :=
+  have hμ :=
     regularizedGMC_measurable P X hX Xc hXc γ r
   apply Measure.measurable_of_measurable_coe
   intro A hA
   have hEq : (fun ω => (regularizedGMC P Xc γ r ω).withDensity W A) =
       fun ω => ∫⁻ z, A.indicator W z ∂regularizedGMC P Xc γ r ω := by
-    funext ω
-    rw [withDensity_apply _ hA, ← lintegral_indicator hA]
+    simp_all
   rw [hEq]
-  exact (Measure.measurable_lintegral (hW.indicator hA)).comp hμ
+  fun_prop
+section
+variable (γ : ℝ) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+include hM
 
 /-- The unweighted joint field/chaos finite coordinates converge in measure to any `IsGMCOf`
 limit. -/
 theorem regularizedGMC_finiteCoordinatePath_tendstoInMeasure
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ : ℝ)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (s : Finset gmcTiltCoordinateIndex) :
     TendstoInMeasure P
       (fun r ω => gmcTiltFiniteCoordinatePath s (fun f => X ω f)
@@ -175,17 +172,17 @@ theorem regularizedGMC_finiteCoordinatePath_tendstoInMeasure
   apply tendstoInMeasure_pi_of_coord P s
   intro i
   change TendstoInMeasure P
-    (fun r ω => gmcTiltCoordinatePath (fun f => X ω f)
+    (fun r ω => gmcTiltCoordinatePath (X ω)
       (regularizedGMC P Xc γ r ω) i.1) atTop
-    (fun ω => gmcTiltCoordinatePath (fun f => X ω f) (M ω) i.1)
+    (fun ω => gmcTiltCoordinatePath (X ω) (M ω) i.1)
   rcases i.1 with f | j
   · intro ε hε
     simp [gmcTiltCoordinatePath, hε.ne']
   · cases j with
     | none =>
       have h := regularizedGMC_withDensity_univ_mass_tendstoInMeasure
-        P X hX Xc hXc γ M hM (1 : BoundedContinuousFunction ℂ ℝ)
-        (by intro z; norm_num)
+        P X hX Xc hXc γ M hM 1
+        (by simp)
       simpa [gmcTiltFiniteCoordinatePath, gmcTiltCoordinatePath,
         gmcTiltCoordinateSet, gmcCoordinateB] using h
     | some j =>
@@ -196,10 +193,6 @@ theorem regularizedGMC_finiteCoordinatePath_tendstoInMeasure
 /-- Under a uniformly convergent family of nonnegative covariance weights, the shifted field and
 weighted cutoff chaos converge in measure on every finite coordinate set. -/
 theorem regularizedGMC_varyingWeighted_finiteCoordinatePath_tendstoInMeasure
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ : ℝ)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (shift : TestFn → ℝ)
     (u : ℝ → BoundedContinuousFunction ℂ ℝ) (hu : ∀ r z, 0 ≤ u r z)
     (v : BoundedContinuousFunction ℂ ℝ) (hv : ∀ z, 0 ≤ v z)
@@ -216,7 +209,7 @@ theorem regularizedGMC_varyingWeighted_finiteCoordinatePath_tendstoInMeasure
   change TendstoInMeasure P
     (fun r ω => gmcTiltCoordinatePath (fun f => X ω f + shift f)
       ((regularizedGMC P Xc γ r ω).withDensity
-        (fun z => ENNReal.ofReal (u r z))) i.1) atTop
+        (fun z => ENNReal.ofReal _)) i.1) atTop
     (fun ω => gmcTiltCoordinatePath (fun f => X ω f + shift f)
       ((M ω).withDensity (fun z => ENNReal.ofReal (v z))) i.1)
   rcases i.1 with f | j
@@ -250,10 +243,15 @@ theorem regularizedGMC_varyingWeighted_finiteCoordinatePath_tendstoInMeasure
         leftVarying, limitMass] using
         tendstoInMeasure_add_of_sub P leftVarying rightVarying limitMass hdiff hfix
 
+end
+
+end
+
+end
+
 /-- A fixed Cameron--Martin density has total mass one. -/
 theorem equatorGFF_gaussianL2_tilt_density_integral_eq_one
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P]
+    [IsProbabilityMeasure P]
     (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (L : Ω → ℝ) (hL : IsGaussianL2Limit P X L) :
@@ -261,18 +259,18 @@ theorem equatorGFF_gaussianL2_tilt_density_integral_eq_one
   have htilt := equatorGFF_finite_test_circle_tilt
     (P := P) (X := X) (hX := hX) (Xc := Xc) (hXc := hXc) (r := 0)
     (L := L) (hL := hL) (coord := fun i : Empty => i.elim)
-    (t := 1) (F := fun _ => (1 : ℝ≥0∞)) (hF := measurable_const)
+    (t := 1) (F := fun _ => 1) (hF := measurable_const)
   calc
     _ = P Set.univ := by simpa [div_eq_mul_inv, mul_comm] using htilt
     _ = 1 := measure_univ
+section
+variable (X : Ω → Distr)
+section
+variable (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ : ℝ) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (L : Ω → ℝ) (hL : IsGaussianL2Limit P X L)
+include hX hXc hM hL
 
 /-- The unweighted finite coordinate vector converges in measure under a fixed Gaussian tilt. -/
 theorem equatorGFF_unweightedFiniteCoordinate_tendstoInMeasure_under_tilt
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ : ℝ)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (L : Ω → ℝ) (hL : IsGaussianL2Limit P X L)
     (s : Finset gmcTiltCoordinateIndex) :
     TendstoInMeasure
       (P.withDensity (fun ω => ENNReal.ofReal
@@ -282,20 +280,17 @@ theorem equatorGFF_unweightedFiniteCoordinate_tendstoInMeasure_under_tilt
       (fun ω => gmcTiltFiniteCoordinatePath s (fun f => X ω f) (M ω)) := by
   let density : Ω → ℝ≥0∞ := fun ω => ENNReal.ofReal
     (Real.exp (L ω - gaussianVariance P L / 2))
-  let Q : Measure Ω := P.withDensity density
+  let Q := P.withDensity density
   let field : Ω → TestFn → ℝ := fun ω f => X ω f
   have hmass : ∫⁻ ω, density ω ∂P = 1 := by
     simpa [density] using
       @equatorGFF_gaussianL2_tilt_density_integral_eq_one Ω _ P hX.1 X hX Xc hXc L hL
   have hdenAEMeas : AEMeasurable density P := by
     have hLmeas : AEMeasurable L P := hL.1.aestronglyMeasurable.aemeasurable
-    have hExpArg : AEMeasurable (fun ω => L ω - gaussianVariance P L / 2) P :=
-      hLmeas.sub_const _
-    exact ENNReal.measurable_ofReal.comp_aemeasurable
-      (Real.measurable_exp.comp_aemeasurable hExpArg)
+    fun_prop
   have hdenNe : ∀ᵐ ω ∂P, density ω ≠ 0 := by
     filter_upwards [] with ω
-    apply (ENNReal.ofReal_pos.mpr (Real.exp_pos _)).ne'
+    positivity
   obtain ⟨proxy, hproxyMeas, hproxyAE⟩ :=
     exists_measurable_unweighted_finitePath_proxy P X hX γ M hM s
   have hfieldMeas : Measurable field := by
@@ -309,26 +304,17 @@ theorem equatorGFF_unweightedFiniteCoordinate_tendstoInMeasure_under_tilt
         (regularizedGMC_measurable P X hX Xc hXc γ r))
   have hbase : TendstoInMeasure P
       (fun r ω => gmcTiltFiniteCoordinatePath s (field ω)
-        (regularizedGMC P Xc γ r ω)) atTop proxy := by
-    exact (regularizedGMC_finiteCoordinatePath_tendstoInMeasure
-      P X hX Xc hXc γ M hM s).congr_right (by simpa [field] using hproxyAE)
-  have htiltedProxy : TendstoInMeasure Q
-      (fun r ω => gmcTiltFiniteCoordinatePath s (field ω)
-        (regularizedGMC P Xc γ r ω)) atTop proxy :=
+        (regularizedGMC P Xc γ r ω)) atTop proxy := (regularizedGMC_finiteCoordinatePath_tendstoInMeasure
+      P X hX Xc hXc γ M hM s).congr_right (by assumption)
+  have htiltedProxy :=
     tendstoInMeasure_withDensity_of_lintegral_lt_top density
-      (by rw [hmass]; norm_num) hcutoffMeas hproxyMeas hbase
-  have hproxyQ : (fun ω => gmcTiltFiniteCoordinatePath s (field ω) (M ω)) =ᵐ[Q] proxy := by
-    exact (withDensity_ae_eq hdenAEMeas hdenNe).2 (by simpa [field, Q, density] using hproxyAE)
+      (by simp_all) hcutoffMeas hproxyMeas hbase
+  have hproxyQ : (fun ω => gmcTiltFiniteCoordinatePath s (field ω) (M ω)) =ᵐ[Q] proxy := (withDensity_ae_eq hdenAEMeas hdenNe).2 (by assumption)
   exact htiltedProxy.congr_right hproxyQ.symm
 
 /-- The radius-dependent exact covariance weights have the same finite-coordinate limit as
 their uniformly convergent bounded-continuous representatives. -/
 theorem equatorGFF_expCovariance_finiteCoordinate_tendstoInMeasure
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (γ : ℝ) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (L : Ω → ℝ) (hL : IsGaussianL2Limit P X L)
     (c : BoundedContinuousFunction ℂ ℝ)
     (hc : TendstoUniformly
       (fun r z => gaussianCovariance P (fun ω => Xc ω z r) L) c atTop)
@@ -388,11 +374,14 @@ theorem equatorGFF_expCovariance_finiteCoordinate_tendstoInMeasure
   refine ⟨u, w, hu, hw, hconv, heventual, ?_⟩
   exact hBCF.congr' hcutoffEq EventuallyEq.rfl
 
+end
+
+end
+
 /-- The uniform limit of the bounded-continuous covariance exponential weights is the stated
 exponential of the limiting covariance profile. -/
 theorem equatorGFF_expCovariance_weight_limit_value
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (Xc : Ω → ℂ → ℝ → ℝ) (L : Ω → ℝ) (γ : ℝ)
+    (Xc : Ω → ℂ → ℝ → ℝ) (L : Ω → ℝ) (γ : ℝ)
     (c : BoundedContinuousFunction ℂ ℝ)
     (hc : TendstoUniformly
       (fun r z => gaussianCovariance P (fun ω => Xc ω z r) L) c atTop)
@@ -402,26 +391,21 @@ theorem equatorGFF_expCovariance_weight_limit_value
     (heventual : ∀ᶠ r : ℝ in atTop, ∀ z : ℂ,
       u r z = Real.exp (γ * gaussianCovariance P (fun ω => Xc ω z r) L))
     (z : ℂ) : w z = Real.exp (γ * c z) := by
-  have hcovPoint := hc.tendsto_at z
-  have harg : Tendsto (fun r : ℝ => γ *
-      gaussianCovariance P (fun ω => Xc ω z r) L) atTop (𝓝 (γ * c z)) :=
-    tendsto_const_nhds.mul hcovPoint
-  have hexp : Tendsto (fun r : ℝ => Real.exp (γ *
-      gaussianCovariance P (fun ω => Xc ω z r) L)) atTop
-      (𝓝 (Real.exp (γ * c z))) :=
-    (Real.continuous_exp.tendsto (γ * c z)).comp harg
-  have huPoint := hconv.tendsto_at z
-  have hEqEvent : (fun r : ℝ => u r z) =ᶠ[atTop]
+  have harg : Tendsto (fun r => γ *
+      gaussianCovariance P (fun ω => Xc ω z r) L) atTop _ :=
+    tendsto_const_nhds.mul (hc.tendsto_at z)
+  have hexp :=
+    (Real.continuous_exp.tendsto _).comp harg
+  have hEqEvent : (fun r => u r z) =ᶠ[atTop]
       fun r => Real.exp (γ * gaussianCovariance P (fun ω => Xc ω z r) L) := by
     filter_upwards [heventual] with r hr
-    exact hr z
-  exact tendsto_nhds_unique huPoint (hexp.congr' hEqEvent.symm)
+    simp_all
+  exact tendsto_nhds_unique (hconv.tendsto_at z) (hexp.congr' hEqEvent.symm)
 
 /-- Equality of the finite-dimensional weak limits passes the exact finite-radius
 Cameron--Martin identity to the limiting chaos coordinates. -/
 theorem equatorGFF_finiteGmcCoordinate_limit_law
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+    (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (γ : ℝ) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (L : Ω → ℝ) (hL : IsGaussianL2Limit P X L)
@@ -440,7 +424,7 @@ theorem equatorGFF_finiteGmcCoordinate_limit_law
   classical
   let density : Ω → ℝ≥0∞ := fun ω => ENNReal.ofReal
     (Real.exp (L ω - gaussianVariance P L / 2))
-  let Q : Measure Ω := P.withDensity density
+  let Q := P.withDensity density
   let field : Ω → TestFn → ℝ := fun ω f => X ω f
   let shift : TestFn → ℝ := fun f => gaussianCovariance P (fun ω => X ω f) L
   let leftCutoff : ℝ → Ω → (∀ _i : {i // i ∈ s}, ℝ) := fun r ω =>
@@ -500,16 +484,12 @@ theorem equatorGFF_finiteGmcCoordinate_limit_law
       dsimp [Q]
       rw [withDensity_apply density MeasurableSet.univ]
       simp
-    rw [hQmass]
-    exact hmass
+    rwa [hQmass]
   have hleftDistAux [IsProbabilityMeasure Q] :
       TendstoInDistribution leftCutoff atTop leftLimit (fun _ : ℝ => Q) Q :=
     hleftMeasure.tendstoInDistribution (fun r => (hleftMeas r).aemeasurable)
-  have hleftDist := @hleftDistAux hQprob
   have hrightDistAux [IsProbabilityMeasure P] :
-      TendstoInDistribution rightCutoff atTop rightLimit (fun _ : ℝ => P) P := by
-    exact hrightMeasure'.tendstoInDistribution (fun r => (hrightMeas r).aemeasurable)
-  have hrightDist := @hrightDistAux hX.1
+      TendstoInDistribution rightCutoff atTop rightLimit (fun _ : ℝ => P) P := hrightMeasure'.tendstoInDistribution (fun r => (hrightMeas r).aemeasurable)
   have hcutlaw (r : ℝ) : Measure.map (leftCutoff r) Q = Measure.map (rightCutoff r) P := by
     dsimp [leftCutoff, rightCutoff, Q, density, field, shift]
     exact equatorGFF_tilted_finiteGmcCoordinate_law_at_cutoff
@@ -529,14 +509,14 @@ theorem equatorGFF_finiteGmcCoordinate_limit_law
     (m' := inferInstance) (mE := inferInstance) inferInstance inferInstance
     (X := leftCutoff) (l := atTop) (Z := leftLimit)
     (μ := fun _ : ℝ => Q) (fun _ => hQprob)
-    (μ' := Q) hQprob hleftDist
+    (μ' := Q) hQprob (@hleftDistAux hQprob)
   have hrightTendsto := @TendstoInDistribution.tendsto
     (ι := ℝ) (E := ∀ _i : {i // i ∈ s}, ℝ) (Ω' := Ω)
     (Ω := fun _ : ℝ => Ω) (m := fun _ => inferInstance)
     (m' := inferInstance) (mE := inferInstance) inferInstance inferInstance
     (X := rightCutoff) (l := atTop) (Z := rightLimit)
     (μ := fun _ : ℝ => P) (fun _ => hX.1)
-    (μ' := P) hX.1 hrightDist
+    (μ' := P) hX.1 (@hrightDistAux hX.1)
   rw [← hseq] at hrightTendsto
   have hlimit := tendsto_nhds_unique hleftTendsto hrightTendsto
   have hmapLimit := congrArg Subtype.val hlimit
@@ -555,12 +535,14 @@ theorem equatorGFF_finiteGmcCoordinate_limit_law
     simp only [rightLimit, field, shift]
     simp_rw [hweight]
   change Measure.map (fun ω => gmcTiltFiniteCoordinatePath s
-      (fun f => X ω f) (M ω)) (P.withDensity density) =
+      (X ω) (M ω)) (P.withDensity density) =
     Measure.map (fun ω => gmcTiltFiniteCoordinatePath s
       (fun f => X ω f + gaussianCovariance P (fun ω' => X ω' f) L)
-      ((M ω).withDensity (fun z => ENNReal.ofReal (Real.exp (γ * c z))))) P
+      ((M ω).withDensity (fun z => ENNReal.ofReal _))) P
   rw [hleftPath, hrightPath]
   change Measure.map leftLimit Q = Measure.map rightLimit P
   exact hmapLimit
+
+end
 
 end DOZZ.Proofs

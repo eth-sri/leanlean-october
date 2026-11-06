@@ -25,12 +25,10 @@ theorem exists_everywhere_finite_measure_version
     (hfinite : ∀ᵐ ω ∂P, IsFiniteMeasure (M ω)) :
     ∃ N : Ω → Measure ℂ,
       Measurable N ∧ (∀ ω, IsFiniteMeasure (N ω)) ∧ ∀ᵐ ω ∂P, N ω = M ω := by
-  classical
-  let good : Set Ω := {ω | M ω Set.univ < ∞}
+  let good := {ω | M ω Set.univ < ∞}
   have hEval : Measurable (fun ω => M ω Set.univ) :=
     (Measure.measurable_coe MeasurableSet.univ).comp hM
   have hgood : MeasurableSet good := by
-    dsimp [good]
     measurability
   let N : Ω → Measure ℂ := fun ω => if ω ∈ good then M ω else 0
   have hN : Measurable N := Measurable.ite hgood hM measurable_const
@@ -38,12 +36,11 @@ theorem exists_everywhere_finite_measure_version
   · intro ω
     by_cases hω : ω ∈ good
     · have hmass : M ω Set.univ < ∞ := by simpa [good] using hω
-      exact ⟨by simpa [N, hω] using hmass⟩
+      exact ⟨by aesop⟩
     · have hzero : IsFiniteMeasure (0 : Measure ℂ) := ⟨by simp⟩
-      simpa [N, hω] using hzero
+      aesop
   · filter_upwards [hfinite] with ω hω
-    have hmass : M ω Set.univ < ∞ := hω.measure_univ_lt_top
-    simp [N, good, hmass]
+    aesop
 
 /-- Compact-test convergence in measure is unchanged when the limiting random measure is modified
 on a null set. -/
@@ -55,6 +52,6 @@ theorem tendstoInMeasure_integral_after_ae_measure_change
     TendstoInMeasure P F l (fun ω => ∫ x, f x ∂N ω) := by
   apply hT.congr_right
   filter_upwards [hMN] with ω hω
-  rw [hω]
+  simp_all
 
 end DOZZ.Proofs

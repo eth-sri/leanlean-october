@@ -40,8 +40,6 @@ theorem dual_full_copied_inverse_littleO
     α₁ α₂ α₃ q ξ κ h hq hα₁ hα₂ hα₃ hβ hξ hξ1 hslack
   refine ⟨N, hN, ?_⟩
   have ht := hfull.add hcopy
-  simp only [zero_add] at ht
-  apply ht.congr'
-  exact Eventually.of_forall fun z => by dsimp only; ring
+  grind
 
 end DOZZ.Proofs

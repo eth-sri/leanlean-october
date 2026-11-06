@@ -24,29 +24,34 @@ namespace DOZZ
 /-- A nested cutoff which is one on the ball of radius `n + 2`. -/
 noncomputable def equatorGlobalCutoff (n : ℕ) : ℂ → ℝ :=
   localTorusCutoff ((n : ℝ) + 1) (by positivity)
+section
+variable (n : ℕ)
 
-theorem equatorGlobalCutoff_contDiff (n : ℕ) :
+theorem equatorGlobalCutoff_contDiff :
     ContDiff ℝ (↑(⊤ : ENat)) (equatorGlobalCutoff n) := by
   simpa [equatorGlobalCutoff] using
-    (localTorusCutoff ((n : ℝ) + 1) (by positivity)).contDiff
+    (localTorusCutoff _ (by positivity)).contDiff
+section
+variable {z : ℂ}
 
-theorem equatorGlobalCutoff_eq_one (n : ℕ) {z : ℂ}
-    (hz : z ∈ closedBall 0 ((n : ℝ) + 2)) : equatorGlobalCutoff n z = 1 := by
-  have hrad : (n : ℝ) + 2 = ((n : ℝ) + 1) + 1 := by ring
+theorem equatorGlobalCutoff_eq_one (hz : z ∈ closedBall 0 ((n : ℝ) + 2)) : equatorGlobalCutoff n z = 1 := by
+  have hrad : n + 2 = ((n : ℝ) + 1) + 1 := by ring
   rw [hrad] at hz
-  exact localTorusCutoff_eq_one ((n : ℝ) + 1) (by positivity)
+  exact localTorusCutoff_eq_one _ (by positivity)
     hz
 
-theorem equatorGlobalCutoff_eq_zero_of_not_mem (n : ℕ) {z : ℂ}
-    (hz : z ∉ closedBall 0 ((n : ℝ) + 3)) : equatorGlobalCutoff n z = 0 := by
-  have hrad : (n : ℝ) + 3 = ((n : ℝ) + 1) + 2 := by ring
+theorem equatorGlobalCutoff_eq_zero_of_not_mem (hz : z ∉ closedBall 0 ((n : ℝ) + 3)) : equatorGlobalCutoff n z = 0 := by
+  have hrad : n + 3 = ((n : ℝ) + 1) + 2 := by ring
   rw [hrad] at hz
   have hnotsupp : z ∉ tsupport (equatorGlobalCutoff n) := by
     simpa [equatorGlobalCutoff, localTorusCutoff_tsupport] using hz
   have hnotsupport : z ∉ Function.support (equatorGlobalCutoff n) := fun hs =>
     hnotsupp (subset_tsupport _ hs)
-  by_contra hne
-  exact hnotsupport (Function.mem_support.mpr hne)
+  simp_all
+
+end
+
+end
 
 /-- The `n`th member of a telescoping smooth partition: the first cutoff, followed by successive
 differences. -/
@@ -56,37 +61,38 @@ noncomputable def equatorPartitionFunction (n : ℕ) : ℂ → ℝ :=
 
 @[simp]
 theorem equatorPartitionFunction_zero : equatorPartitionFunction 0 = equatorGlobalCutoff 0 := by
-  simp [equatorPartitionFunction]
+  rfl
+section
+variable (n : ℕ)
 
-theorem equatorPartitionFunction_succ (n : ℕ) :
+theorem equatorPartitionFunction_succ :
     equatorPartitionFunction (n + 1) = equatorGlobalCutoff (n + 1) - equatorGlobalCutoff n := by
-  simp [equatorPartitionFunction]
+  rfl
 
-theorem equatorPartitionFunction_contDiff (n : ℕ) :
+theorem equatorPartitionFunction_contDiff :
     ContDiff ℝ (↑(⊤ : ENat)) (equatorPartitionFunction n) := by
   unfold equatorPartitionFunction
   split_ifs
   · simpa [equatorGlobalCutoff] using
-      (localTorusCutoff (1 : ℝ) (by norm_num)).contDiff
+      (localTorusCutoff 1 (by norm_num)).contDiff
   · exact (equatorGlobalCutoff_contDiff n).sub (equatorGlobalCutoff_contDiff (n - 1))
 
-theorem equatorPartitionFunction_eq_zero_of_not_mem (n : ℕ) {z : ℂ}
+theorem equatorPartitionFunction_eq_zero_of_not_mem {z : ℂ}
     (hz : z ∉ closedBall 0 ((n : ℝ) + 3)) : equatorPartitionFunction n z = 0 := by
   by_cases hn : n = 0
   · subst n
     rw [equatorPartitionFunction_zero]
-    exact equatorGlobalCutoff_eq_zero_of_not_mem 0 (by simpa using hz)
+    exact equatorGlobalCutoff_eq_zero_of_not_mem 0 (by assumption)
   · rw [equatorPartitionFunction, ite_eq_right hn]
-    have hcur := equatorGlobalCutoff_eq_zero_of_not_mem n hz
     have hprev : equatorGlobalCutoff (n - 1) z = 0 := by
       apply equatorGlobalCutoff_eq_zero_of_not_mem
       intro hzprev
       apply hz
       exact closedBall_subset_closedBall (by
-        have hn' : ((n - 1 : ℕ) : ℝ) ≤ (n : ℝ) := by
-          exact_mod_cast Nat.sub_le n 1
-        linarith) hzprev
-    simp [hcur, hprev]
+        simp) hzprev
+    simp [(equatorGlobalCutoff_eq_zero_of_not_mem n hz), hprev]
+
+end
 
 /-- The finite telescoping identity for the smooth partition. -/
 theorem sum_equatorPartitionFunction_range (N : ℕ) (z : ℂ) :
@@ -95,10 +101,7 @@ theorem sum_equatorPartitionFunction_range (N : ℕ) (z : ℂ) :
   induction N with
   | zero => simp [equatorPartitionFunction_zero]
   | succ N ih =>
-      rw [Finset.sum_range_succ]
-      rw [equatorPartitionFunction_succ]
-      rw [ih]
-      rw [Pi.sub_apply]
+      rw [Finset.sum_range_succ, equatorPartitionFunction_succ, ih, Pi.sub_apply]
       ring
 
 /-- Multiplication by one member of the smooth partition, as a continuous map on tests. -/
@@ -109,8 +112,7 @@ noncomputable def equatorPartitionCLM (n : ℕ) : TestFn →L[ℝ] TestFn :=
 @[simp]
 theorem equatorPartitionCLM_apply (n : ℕ) (f : TestFn) :
     equatorPartitionCLM n f = fun z => f z * equatorPartitionFunction n z := by
-  ext z
-  simp [equatorPartitionCLM, TestFunction.bilinLeftCLM_apply]
+  rfl
 
 theorem exists_nat_equatorPartition_tail_zero (f : TestFn) :
     ∃ N : ℕ, ∀ n ≥ N + 1, equatorPartitionCLM n f = 0 := by
@@ -126,22 +128,19 @@ theorem exists_nat_equatorPartition_tail_zero (f : TestFn) :
   rw [equatorPartitionCLM_apply]
   by_cases hz : z ∈ tsupport f
   · have hzball : z ∈ ball (0 : ℂ) R := hball hz
-    have hnorm : ‖z‖ < R := by simpa [mem_ball, dist_eq_norm] using hzball
+    have hnorm : ‖z‖ < R := by simp_all
     have hbase : z ∈ closedBall (0 : ℂ) ((N : ℝ) + 2) := by
       have hnormle : ‖z‖ ≤ (N : ℝ) + 2 := by linarith
-      simpa [mem_closedBall, dist_eq_norm] using hnormle
+      simp_all
     have hcur : equatorGlobalCutoff n z = 1 := by
       apply equatorGlobalCutoff_eq_one n
       exact closedBall_subset_closedBall (by linarith) hbase
     have hprev : equatorGlobalCutoff (n - 1) z = 1 := by
-      apply equatorGlobalCutoff_eq_one (n - 1)
+      apply equatorGlobalCutoff_eq_one _
       exact closedBall_subset_closedBall (by linarith) hbase
     change f z * equatorPartitionFunction n z = 0
     rw [equatorPartitionFunction, ite_eq_right (by omega : n ≠ 0)]
-    change f z * (equatorGlobalCutoff n z -
-      equatorGlobalCutoff (n - 1) z) = 0
-    rw [hcur, hprev]
-    simp
+    simp_all
   · have hfz : f z = 0 := by
       by_contra hne
       exact hz (Function.mem_support.mpr hne |> subset_tsupport f)
@@ -160,15 +159,15 @@ theorem exists_nat_equatorPartition_zero_on_compact
   have hprevNat : N ≤ n - 1 := by omega
   have hprevReal : (N : ℝ) ≤ ((n - 1 : ℕ) : ℝ) := by exact_mod_cast hprevNat
   have hzball : z ∈ ball (0 : ℂ) R := hball hz
-  have hnorm : ‖z‖ < R := by simpa [mem_ball, dist_eq_norm] using hzball
+  have hnorm : ‖z‖ < R := by simp_all
   have hbase : z ∈ closedBall (0 : ℂ) ((N : ℝ) + 2) := by
     have hnormle : ‖z‖ ≤ (N : ℝ) + 2 := by linarith
-    simpa [mem_closedBall, dist_eq_norm] using hnormle
+    simp_all
   have hcur : equatorGlobalCutoff n z = 1 := by
     apply equatorGlobalCutoff_eq_one n
     exact closedBall_subset_closedBall (by linarith) hbase
   have hprev : equatorGlobalCutoff (n - 1) z = 1 := by
-    apply equatorGlobalCutoff_eq_one (n - 1)
+    apply equatorGlobalCutoff_eq_one _
     exact closedBall_subset_closedBall (by linarith) hbase
   rw [equatorPartitionFunction, ite_eq_right (by omega : n ≠ 0), Pi.sub_apply, hcur, hprev]
   simp
@@ -223,32 +222,35 @@ noncomputable def equatorDistributionEval
     (ω : GaussianFields.ScaleSpaceWhiteNoiseSpace 2) (f : TestFn) : ℝ :=
   by classical
     exact if equatorHaarCommonGood ω then equatorDistributionSeriesEval ω f else 0
+section
+variable (f : TestFn)
 
 theorem measurable_equatorDistributionPartialSum
-    (f : TestFn) (N : ℕ) :
+    (N : ℕ) :
     Measurable (fun ω : GaussianFields.ScaleSpaceWhiteNoiseSpace 2 =>
       equatorDistributionPartialSum ω f N) := by
-  unfold equatorDistributionPartialSum
   apply Finset.measurable_fun_sum
   intro n hn
-  exact measurable_equatorLocalFourierEval (n + 5) (equatorPartitionCLM n f)
+  exact measurable_equatorLocalFourierEval ..
 
-theorem measurable_equatorDistributionSeriesEval (f : TestFn) :
+theorem measurable_equatorDistributionSeriesEval :
     Measurable (equatorDistributionSeriesEval · f) := by
   have hstrong : ∀ N, StronglyMeasurable (fun ω =>
       equatorDistributionPartialSum ω f N) :=
     fun N => (measurable_equatorDistributionPartialSum f N).stronglyMeasurable
-  exact (StronglyMeasurable.limUnder (l := atTop) hstrong).measurable
+  exact (StronglyMeasurable.limUnder hstrong).measurable
 
-theorem measurable_equatorDistributionEval (f : TestFn) :
+theorem measurable_equatorDistributionEval :
     Measurable (equatorDistributionEval · f) := by
-  classical
-  unfold equatorDistributionEval
   exact Measurable.ite measurableSet_equatorHaarCommonGood
     (measurable_equatorDistributionSeriesEval f) measurable_const
 
+end
+section
+variable (ω : GaussianFields.ScaleSpaceWhiteNoiseSpace 2) (f : TestFn)
+
 theorem equatorDistributionPartialSum_eventually_const_of_tail_zero
-    (ω : GaussianFields.ScaleSpaceWhiteNoiseSpace 2) (f : TestFn) (N : ℕ)
+    (N : ℕ)
     (hN : ∀ n ≥ N + 1, equatorPartitionCLM n f = 0) :
     ∀ᶠ m in atTop,
       equatorDistributionPartialSum ω f m =
@@ -266,12 +268,12 @@ theorem equatorDistributionPartialSum_eventually_const_of_tail_zero
         have hindex : (N + 1) + (d + 1) = ((N + 1) + d) + 1 := by omega
         rw [hindex]
         unfold equatorDistributionPartialSum at *
-        rw [Finset.sum_range_succ, ih, hN ((N + 1) + d) (by omega)]
+        rw [Finset.sum_range_succ, ih, hN _ (by omega)]
         simp
-  exact htail d
+  simp_all
 
 theorem equatorDistributionPartialSum_eventually_const
-    (ω : GaussianFields.ScaleSpaceWhiteNoiseSpace 2) (f : TestFn) :
+    :
     ∃ N : ℕ, ∀ᶠ m in atTop,
       equatorDistributionPartialSum ω f m =
         equatorDistributionPartialSum ω f (N + 1) := by
@@ -279,67 +281,64 @@ theorem equatorDistributionPartialSum_eventually_const
   exact ⟨N, equatorDistributionPartialSum_eventually_const_of_tail_zero ω f N hN⟩
 
 theorem equatorDistributionPartialSum_tendsto
-    (ω : GaussianFields.ScaleSpaceWhiteNoiseSpace 2) (f : TestFn) :
+    :
     Tendsto (equatorDistributionPartialSum ω f) atTop
       (𝓝 (equatorDistributionSeriesEval ω f)) := by
   obtain ⟨N, hconst⟩ := equatorDistributionPartialSum_eventually_const ω f
-  have hconst' : (fun _ : ℕ => equatorDistributionPartialSum ω f (N + 1)) =ᶠ[atTop]
-      equatorDistributionPartialSum ω f := hconst.mono fun _ h => h.symm
-  have htendsto : Tendsto (equatorDistributionPartialSum ω f) atTop
-      (𝓝 (equatorDistributionPartialSum ω f (N + 1))) :=
-    tendsto_const_nhds.congr' hconst'
+  have htendsto :=
+    tendsto_const_nhds.congr' (hconst.mono fun _ h => h.symm)
   have hlim := htendsto.limUnder_eq
   change Tendsto (equatorDistributionPartialSum ω f) atTop
     (𝓝 (limUnder atTop (equatorDistributionPartialSum ω f)))
-  rw [hlim]
-  exact htendsto
+  simp_all
 
 theorem equatorDistributionSeriesEval_eq_partialSum_of_tail_zero
-    (ω : GaussianFields.ScaleSpaceWhiteNoiseSpace 2) (f : TestFn) (N : ℕ)
+    (N : ℕ)
     (hN : ∀ n ≥ N + 1, equatorPartitionCLM n f = 0) :
     equatorDistributionSeriesEval ω f =
       equatorDistributionPartialSum ω f (N + 1) := by
   have hconst :=
     equatorDistributionPartialSum_eventually_const_of_tail_zero ω f N hN
-  have hconst' : (fun _ : ℕ => equatorDistributionPartialSum ω f (N + 1)) =ᶠ[atTop]
-      equatorDistributionPartialSum ω f := hconst.mono fun _ h => h.symm
-  have htendsto : Tendsto (equatorDistributionPartialSum ω f) atTop
-      (𝓝 (equatorDistributionPartialSum ω f (N + 1))) :=
-    tendsto_const_nhds.congr' hconst'
-  change limUnder atTop (equatorDistributionPartialSum ω f) = _
+  have htendsto :=
+    tendsto_const_nhds.congr' (hconst.mono fun _ h => h.symm)
   exact htendsto.limUnder_eq
+
+end
 
 theorem equatorLocalFourierEval_eq_equatorLocalChartCLM
     (R : ℕ) (ω : GaussianFields.ScaleSpaceWhiteNoiseSpace 2)
     (hω : equatorHaarCommonGood ω) (f : TestFn) :
     equatorLocalFourierEval R f ω = equatorLocalChartCLM R ω hω f := by
-  unfold equatorLocalChartCLM
   exact equatorLocalFourierEval_eq_distributionCLM_apply R f ω
     (equatorHaarCommonCosEval_summable_of_good R ω hω)
     (equatorHaarCommonSinEval_summable_of_good R ω hω)
+section
+variable (ω : GaussianFields.ScaleSpaceWhiteNoiseSpace 2)
+section
+variable (hω : equatorHaarCommonGood ω)
+include hω
 
 theorem equatorDistributionPartialSum_add
-    (ω : GaussianFields.ScaleSpaceWhiteNoiseSpace 2)
-    (hω : equatorHaarCommonGood ω) (f g : TestFn) (N : ℕ) :
+    (f g : TestFn) (N : ℕ) :
     equatorDistributionPartialSum ω (f + g) N =
       equatorDistributionPartialSum ω f N + equatorDistributionPartialSum ω g N := by
   unfold equatorDistributionPartialSum
   calc
     _ = ∑ n ∈ Finset.range N,
-        (equatorLocalFourierEval (n + 5) (equatorPartitionCLM n f) ω +
-          equatorLocalFourierEval (n + 5) (equatorPartitionCLM n g) ω) := by
+        (equatorLocalFourierEval _ _ ω +
+          equatorLocalFourierEval _ (equatorPartitionCLM n g) ω) := by
       apply Finset.sum_congr rfl
       intro n hn
       calc
-        _ = equatorLocalChartCLM (n + 5) ω hω
-            (equatorPartitionCLM n (f + g)) :=
-          equatorLocalFourierEval_eq_equatorLocalChartCLM (n + 5) ω hω _
+        _ = equatorLocalChartCLM _ ω hω
+            (equatorPartitionCLM n _) :=
+          equatorLocalFourierEval_eq_equatorLocalChartCLM _ ω hω _
         _ = equatorLocalChartCLM (n + 5) ω hω
             (equatorPartitionCLM n f + equatorPartitionCLM n g) := by
-          rw [(equatorPartitionCLM n).map_add]
+          simp
         _ = equatorLocalChartCLM (n + 5) ω hω (equatorPartitionCLM n f) +
             equatorLocalChartCLM (n + 5) ω hω (equatorPartitionCLM n g) := by
-          rw [(equatorLocalChartCLM (n + 5) ω hω).map_add]
+          simp
         _ = _ := by
           rw [← equatorLocalFourierEval_eq_equatorLocalChartCLM (n + 5) ω hω _,
             ← equatorLocalFourierEval_eq_equatorLocalChartCLM (n + 5) ω hω _]
@@ -347,69 +346,62 @@ theorem equatorDistributionPartialSum_add
     _ = _ := by rw [Finset.sum_add_distrib]
 
 theorem equatorDistributionPartialSum_smul
-    (ω : GaussianFields.ScaleSpaceWhiteNoiseSpace 2)
-    (hω : equatorHaarCommonGood ω) (c : ℝ) (f : TestFn) (N : ℕ) :
+    (c : ℝ) (f : TestFn) (N : ℕ) :
     equatorDistributionPartialSum ω (c • f) N =
       c • equatorDistributionPartialSum ω f N := by
   unfold equatorDistributionPartialSum
   calc
     _ = ∑ n ∈ Finset.range N,
-        c • equatorLocalFourierEval (n + 5) (equatorPartitionCLM n f) ω := by
+        c • equatorLocalFourierEval _ (equatorPartitionCLM n f) ω := by
       apply Finset.sum_congr rfl
       intro n hn
       calc
-        _ = equatorLocalChartCLM (n + 5) ω hω
-            (equatorPartitionCLM n (c • f)) :=
-          equatorLocalFourierEval_eq_equatorLocalChartCLM (n + 5) ω hω _
+        _ = equatorLocalChartCLM _ ω hω
+            (equatorPartitionCLM n _) :=
+          equatorLocalFourierEval_eq_equatorLocalChartCLM _ ω hω _
         _ = equatorLocalChartCLM (n + 5) ω hω
             (c • equatorPartitionCLM n f) := by
-          rw [(equatorPartitionCLM n).map_smul]
+          simp
         _ = c • equatorLocalChartCLM (n + 5) ω hω
             (equatorPartitionCLM n f) := by
-          rw [(equatorLocalChartCLM (n + 5) ω hω).map_smul]
+          simp
         _ = _ := by
           rw [← equatorLocalFourierEval_eq_equatorLocalChartCLM (n + 5) ω hω _]
     _ = _ := by rw [Finset.smul_sum]
 
+end
+
 theorem equatorDistributionEval_add
-    (ω : GaussianFields.ScaleSpaceWhiteNoiseSpace 2)
     (f g : TestFn) :
     equatorDistributionEval ω (f + g) =
       equatorDistributionEval ω f + equatorDistributionEval ω g := by
-  classical
   by_cases hω : equatorHaarCommonGood ω
   · have hf := equatorDistributionPartialSum_tendsto ω f
-    have hg := equatorDistributionPartialSum_tendsto ω g
-    have hfg := equatorDistributionPartialSum_tendsto ω (f + g)
-    have hlim := hf.add hg
+    have hlim := hf.add (equatorDistributionPartialSum_tendsto ω g)
     have hcongr : (fun N => equatorDistributionPartialSum ω (f + g) N) =ᶠ[atTop]
         fun N => equatorDistributionPartialSum ω f N +
           equatorDistributionPartialSum ω g N :=
       Filter.Eventually.of_forall fun N =>
         equatorDistributionPartialSum_add ω hω f g N
-    have hlim' := hlim.congr' hcongr.symm
-    have hEq := tendsto_nhds_unique hfg hlim'
+    have hEq := tendsto_nhds_unique (equatorDistributionPartialSum_tendsto ω (f + g)) (hlim.congr' hcongr.symm)
     simpa [equatorDistributionEval, hω] using hEq
   · simp [equatorDistributionEval, hω]
 
 theorem equatorDistributionEval_smul
-    (ω : GaussianFields.ScaleSpaceWhiteNoiseSpace 2)
     (c : ℝ) (f : TestFn) :
     equatorDistributionEval ω (c • f) =
       c • equatorDistributionEval ω f := by
-  classical
   by_cases hω : equatorHaarCommonGood ω
   · have hf := equatorDistributionPartialSum_tendsto ω f
-    have hcf := equatorDistributionPartialSum_tendsto ω (c • f)
-    have hlim := hf.const_smul c
     have hcongr : (fun N => equatorDistributionPartialSum ω (c • f) N) =ᶠ[atTop]
         fun N => c • equatorDistributionPartialSum ω f N :=
       Filter.Eventually.of_forall fun N =>
         equatorDistributionPartialSum_smul ω hω c f N
-    have hlim' := hlim.congr' hcongr.symm
-    have hEq := tendsto_nhds_unique hcf hlim'
-    simpa [equatorDistributionEval, hω] using hEq
+    have hlim' := (hf.const_smul c).congr' hcongr.symm
+    simpa [equatorDistributionEval, hω] using (tendsto_nhds_unique (equatorDistributionPartialSum_tendsto ω (c • f)) hlim')
   · simp [equatorDistributionEval, hω]
+
+end
 
 theorem equatorPartitionCLM_zero_of_supportedIn
     (K : TopologicalSpace.Compacts ℂ) (hK : (K : Set ℂ) ⊆ Set.univ)
@@ -417,14 +409,10 @@ theorem equatorPartitionCLM_zero_of_supportedIn
     (hcut : ∀ z ∈ (K : Set ℂ), equatorPartitionFunction n z = 0) :
     equatorPartitionCLM n (TestFunction.ofSupportedIn hK f) = 0 := by
   ext z
-  rw [equatorPartitionCLM_apply]
-  by_cases hz : z ∈ (K : Set ℂ)
-  · change (TestFunction.ofSupportedIn hK f) z *
-      equatorPartitionFunction n z = (0 : ℝ)
-    rw [hcut z hz]
-    simp
-  · have hfz : f z = 0 := f.zero_on_compl hz
-    simp [hfz]
+  by_cases hz : z ∈ K
+  · simp_all
+  · have hfz := f.zero_on_compl hz
+    simp_all
 
 /-- The global random distribution on the common full-measure event. -/
 noncomputable def equatorDistributionCLM

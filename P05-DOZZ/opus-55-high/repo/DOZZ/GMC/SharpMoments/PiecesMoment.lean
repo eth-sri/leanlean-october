@@ -29,7 +29,7 @@ theorem lintegral_rpow_le_of_le_pieces
       2 ^ t * (2 ^ t * ((N : ℝ≥0∞) ^ t * ∑ k, a k ^ t * ∫⁻ ω, Xr k ω ^ t ∂P +
         b ^ t * ∫⁻ ω, B ω ^ t ∂P) + e ^ t * ∫⁻ ω, V ω ^ t ∂P) := by
   have hcard : ((Finset.univ : Finset (Fin N)).card : ℝ≥0∞) = N := by
-    rw [Finset.card_univ, Fintype.card_fin]
+    simp
   have hpt : ∀ᵐ ω ∂P, Y ω ^ t ≤
       2 ^ t * (2 ^ t * ((N : ℝ≥0∞) ^ t * ∑ k, a k ^ t * Xr k ω ^ t + b ^ t * B ω ^ t) +
         e ^ t * V ω ^ t) := by

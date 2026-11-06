@@ -6,6 +6,7 @@ module
 
 public import DOZZ.Brownian.LastExitKernel
 public import DOZZ.Brownian.Williams.ConditionedBandFinite
+import DOZZ.Brownian.ConditionedKernelProbability
 
 /-!
 # Full-future avoidance shift for the Brownian reference law
@@ -37,17 +38,6 @@ theorem measurable_brownianUpperConditionedPositivePath (x : ℝ) :
   intro t
   exact measurable_const.sub (ContinuousMap.measurable_eval t)
 
-private theorem conditionedH_pos_of_pos {ν x : ℝ} (hν : 0 < ν) (hx : 0 < x) :
-    0 < conditionedH ν x := by
-  rw [conditionedH, ite_eq_right hν.ne']
-  apply sub_pos.mpr
-  apply Real.exp_lt_one_iff.mpr
-  nlinarith
-
-/-- For the actual Brownian reference law, strict avoidance of `c` by the positive path started
-at `x` has mass `a_c(x)`, and after shifting down by `c` its entire future path law is the same
-upper-conditioned reference law started at `x-c`. The identity is for every measurable
-nonnegative full-path test. -/
 theorem brownianBelowConditionedLaw_avoidance_shift_integral
     (B : Measure BrownianPath)
     (hB : IsBrownianReal (fun t p => p t) B)
@@ -60,10 +50,10 @@ theorem brownianBelowConditionedLaw_avoidance_shift_integral
         ∫⁻ q, F (brownianUpperConditionedPositivePath (x - c) q) ∂
           brownianBelowConditionedLaw B ν (x - c) := by
   have _ := hB
-  let hx : ℝ := conditionedH ν x
-  let hxc : ℝ := conditionedH ν (x - c)
-  have hxpos : 0 < hx := conditionedH_pos_of_pos hν (lt_trans hc hcx)
-  have hxcpos : 0 < hxc := conditionedH_pos_of_pos hν (sub_pos.mpr hcx)
+  let hx := conditionedH ν x
+  let hxc := conditionedH ν (x - c)
+  have hxpos : 0 < hx := DOZZ.Proofs.conditionedH_pos_of_pos_drift hν (lt_trans hc hcx)
+  have hxcpos : 0 < hxc := DOZZ.Proofs.conditionedH_pos_of_pos_drift hν (sub_pos.mpr hcx)
   have hset : MeasurableSet (brownianPathStrictlyBelow (x - c)) :=
     measurableSet_brownianPath_below (x - c)
   have hD : Measurable (driftedBrownianPath (-ν)) :=
@@ -85,10 +75,7 @@ theorem brownianBelowConditionedLaw_avoidance_shift_integral
       driftedBrownianPath (-ν) p t < x - c} ⊆
       {p : BrownianPath | ∀ t : ℝ≥0,
         driftedBrownianPath (-ν) p t < x} := by
-    intro p hp
-    simp only [Set.mem_ofPred_eq] at hp ⊢
-    intro t
-    exact (hp t).trans (by linarith)
+    grind
   have hrawIntegrand :
       ({p : BrownianPath | ∀ t : ℝ≥0,
           driftedBrownianPath (-ν) p t < x}).indicator
@@ -106,10 +93,10 @@ theorem brownianBelowConditionedLaw_avoidance_shift_integral
           driftedBrownianPath (-ν) p t < x} := hsub hp
       have hq : driftedBrownianPath (-ν) p ∈ brownianPathStrictlyBelow (x - c) := by
         simpa [brownianPathStrictlyBelow] using hp
-      simp [hp, hp', hq]
+      simp_all
     · have hq : driftedBrownianPath (-ν) p ∉ brownianPathStrictlyBelow (x - c) := by
         simpa [brownianPathStrictlyBelow] using hp
-      simp [hp, hq]
+      simp_all
   have hcoeff : ENNReal.ofReal (hxc / hx) * (ENNReal.ofReal hxc)⁻¹ =
       (ENNReal.ofReal hx)⁻¹ := by
     rw [ENNReal.ofReal_div_of_pos hxpos, div_eq_mul_inv]
@@ -152,7 +139,7 @@ theorem brownianBelowConditionedLaw_avoidance_shift_integral
           (fun q => F (brownianUpperConditionedPositivePath (x - c) q)) hF']
     _ = ENNReal.ofReal (lastExitAvoidanceFactor ν c x) *
         ∫⁻ q, F (brownianUpperConditionedPositivePath (x - c) q) ∂
-          brownianBelowConditionedLaw B ν (x - c) := by
+          brownianBelowConditionedLaw B ν _ := by
         have hA0 : ENNReal.ofReal hxc ≠ 0 :=
           ne_of_gt (ENNReal.ofReal_pos.mpr hxcpos)
         have hAtop : ENNReal.ofReal hxc ≠ ∞ := ENNReal.ofReal_ne_top
@@ -160,32 +147,32 @@ theorem brownianBelowConditionedLaw_avoidance_shift_integral
         calc
           (ENNReal.ofReal hx)⁻¹ *
               (ENNReal.ofReal hxc *
-                ∫⁻ q, F (brownianUpperConditionedPositivePath (x - c) q) ∂
-                  brownianBelowConditionedLaw B ν (x - c)) =
+                ∫⁻ q, F _ ∂
+                  brownianBelowConditionedLaw B ν _) =
             ((ENNReal.ofReal hx)⁻¹ * ENNReal.ofReal hxc) *
-                ∫⁻ q, F (brownianUpperConditionedPositivePath (x - c) q) ∂
-                  brownianBelowConditionedLaw B ν (x - c) := by ac_rfl
-          _ = ENNReal.ofReal (hxc / hx) *
-                ∫⁻ q, F (brownianUpperConditionedPositivePath (x - c) q) ∂
-                  brownianBelowConditionedLaw B ν (x - c) := by
+                ∫⁻ q, F _ ∂
+                  brownianBelowConditionedLaw B ν _ := by ac_rfl
+          _ = ENNReal.ofReal _ *
+                ∫⁻ q, F _ ∂
+                  brownianBelowConditionedLaw B ν _ := by
             calc
               ((ENNReal.ofReal hx)⁻¹ * ENNReal.ofReal hxc) *
-                  ∫⁻ q, F (brownianUpperConditionedPositivePath (x - c) q) ∂
-                    brownianBelowConditionedLaw B ν (x - c) =
-                ((ENNReal.ofReal (hxc / hx) * (ENNReal.ofReal hxc)⁻¹) *
+                  ∫⁻ q, F _ ∂
+                    brownianBelowConditionedLaw B ν _ =
+                ((ENNReal.ofReal _ * (ENNReal.ofReal hxc)⁻¹) *
                     ENNReal.ofReal hxc) *
-                  ∫⁻ q, F (brownianUpperConditionedPositivePath (x - c) q) ∂
-                    brownianBelowConditionedLaw B ν (x - c) := by rw [hcoeff]
-              _ = ENNReal.ofReal (hxc / hx) *
-                  ∫⁻ q, F (brownianUpperConditionedPositivePath (x - c) q) ∂
-                    brownianBelowConditionedLaw B ν (x - c) := by
+                  ∫⁻ q, F _ ∂
+                    brownianBelowConditionedLaw B ν _ := by tauto
+              _ = ENNReal.ofReal _ *
+                  ∫⁻ q, F _ ∂
+                    brownianBelowConditionedLaw B ν _ := by
                 congr 1
                 calc
-                  (ENNReal.ofReal (hxc / hx) * (ENNReal.ofReal hxc)⁻¹) *
+                  (ENNReal.ofReal _ * (ENNReal.ofReal hxc)⁻¹) *
                       ENNReal.ofReal hxc =
-                    ENNReal.ofReal (hxc / hx) *
+                    ENNReal.ofReal _ *
                       ((ENNReal.ofReal hxc)⁻¹ * ENNReal.ofReal hxc) := by ac_rfl
-                  _ = ENNReal.ofReal (hxc / hx) := by
+                  _ = ENNReal.ofReal _ := by
                     rw [ENNReal.inv_mul_cancel hA0 hAtop, mul_one]
 
 end DOZZ.Proofs

@@ -31,16 +31,15 @@ theorem circleAverage_finite_family_jointly_gaussian
   · intro a
     let S : Ω → ℝ := fun ω => ∑ i, a i * Xc ω (p i).1 (p i).2
     have hWeighted : IsGaussianProcess
-        (fun i => fun ω => a i * Xc ω (p i).1 (p i).2) P := by
+        (fun i ω => a i * Xc ω (p i).1 (p i).2) P := by
       have hParam : IsGaussianProcess
-          (fun i => fun ω => Xc ω (p i).1 (p i).2) P := by
+          (fun i ω => Xc ω (p i).1 (p i).2) P := by
         simpa only [Function.comp_def] using hProcess.comp_right p
-      simpa only [smul_eq_mul] using hParam.smul a
+      simpa using hParam.smul a
     have hLaw : HasGaussianLaw S P := by
-      simpa only [S, smul_eq_mul] using
-        hWeighted.hasGaussianLaw_fun_sum (I := Finset.univ)
+      simpa using
+        hWeighted.hasGaussianLaw_fun_sum
     have hMeanS : (∫ ω, S ω ∂P) = 0 := by
-      dsimp [S]
       rw [integral_finsetSum]
       · simp only [integral_const_mul, hMean, mul_zero, Finset.sum_const_zero]
       · intro i hi

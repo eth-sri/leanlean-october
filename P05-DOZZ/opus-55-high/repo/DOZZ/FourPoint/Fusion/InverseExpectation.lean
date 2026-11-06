@@ -20,19 +20,18 @@ theorem fusion_small_moment_order (γ α₁ : ℝ) (hγ : 0 < γ) (hα₁ : α�
       p < min (4 / γ ^ 2) (2 / γ * (Q γ - (α₁ + γ / 2))) := by
   have hgap : 0 < Q γ - (α₁ + γ / 2) := by unfold Q; linarith
   let b := min (4 / γ ^ 2) (2 / γ * (Q γ - (α₁ + γ / 2)))
-  have hb : 0 < b := lt_min (by positivity) (by positivity)
+  have hb : 0 < b := by positivity
   refine ⟨min 1 b / 2, by positivity, ?_, ?_⟩
-  · have := min_le_left (1 : ℝ) b
-    linarith
-  · have := min_le_right (1 : ℝ) b
-    have : 0 < min (1 : ℝ) b := lt_min zero_lt_one hb
-    linarith
+  · grind
+  grind
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+section
+variable (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+include hX hγ hγ2 hM
 
 /-- Inverse expectations converge at zero without a first moment assumption on the mass. -/
-theorem fusionMovingMass_inverse_expectation {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ : ℝ) (hα : γ / 2 ≤ α₁) (hα₁ : α₁ < 2 / γ)
+theorem fusionMovingMass_inverse_expectation (α₁ α₂ α₃ : ℝ) (hα : γ / 2 ≤ α₁) (hα₁ : α₁ < 2 / γ)
     (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) (y : ℂ) (hy : y ≠ 0)
     (s : ℝ) (hs : s < 0) :
     Tendsto (fun z => ∫⁻ ω, fusionMovingMass γ α₁ α₂ α₃ y z (M ω) ^ s ∂P)
@@ -44,13 +43,14 @@ theorem fusionMovingMass_inverse_expectation {Ω : Type*} [MeasurableSpace Ω]
     hα hα₁ hα₂ hα₃ hp hp1 hpRange y hy z hz s hs
 
 /-- The limiting inverse expectation is finite, as needed for `toReal` continuity. -/
-theorem fusionMovingMass_inverse_expectation_finite {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ s : ℝ) (hs : s ≤ 0) (y : ℂ) :
+theorem fusionMovingMass_inverse_expectation_finite (α₁ α₂ α₃ s : ℝ) (hs : s ≤ 0) (y : ℂ) :
     (∫⁻ ω, fusionMovingMass γ α₁ α₂ α₃ y 0 (M ω) ^ s ∂P) < ⊤ := by
   obtain ⟨C, hC, hbound⟩ := fusionMovingMass_inverse_moment_uniform P X hX γ hγ hγ2 M hM
     α₁ α₂ α₃ s hs
   exact (hbound y 0 (by simp)).trans_lt hC
+
+end
+
+end
 
 end DOZZ.Proofs

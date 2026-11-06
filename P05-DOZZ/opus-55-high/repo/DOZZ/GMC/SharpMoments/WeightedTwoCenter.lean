@@ -31,16 +31,16 @@ theorem weightedGmcBallMoment_le_transfer
       ENNReal.ofReal (Real.exp (γ ^ 2 * (2 * (Real.log 3 + 2 * Real.log (1 + R))) / 2 *
           |p ^ 2 - p|)) * ENNReal.ofReal ((1 + R) ^ 4) ^ |p| *
         weightedGmcBallMoment P M γ α z₂ ρ p := by
-  set T : ℝ≥0∞ := ENNReal.ofReal (Real.exp (γ ^ 2 * (2 * (Real.log 3 +
-      2 * Real.log (1 + R))) / 2 * |p ^ 2 - p|)) * ENNReal.ofReal ((1 + R) ^ 4) ^ |p| with hT
+  set T := ENNReal.ofReal (Real.exp (γ ^ 2 * (2 * (Real.log 3 +
+      2 * Real.log _)) / 2 * |p ^ 2 - p|)) * ENNReal.ofReal _ ^ |p| with hT
   have hB : MeasurableSet (Metric.ball z₁ ρ) := Metric.isOpen_ball.measurableSet
   -- the bounded-weight transfer, uniformly in the truncation height
   have hN : ∀ N : ℕ, ∫⁻ ω, (∫⁻ x in Metric.ball z₁ ρ,
-      (insertionTruncWeight γ α N (x - z₁) : ℝ≥0∞) ∂M ω) ^ p ∂P ≤
+      (insertionTruncWeight γ α N (x - z₁)) ∂M ω) ^ p ∂P ≤
         T * weightedGmcBallMoment P M γ α z₂ ρ p := by
     intro N
     refine (gmc_weighted_ball_moment_transfer P X hX γ hγ hγ2 M hM z₁ z₂ ρ R hρ hρ8 hR h₁ h₂
-      (insertionTruncWeight γ α N) (measurable_insertionTruncWeight γ α N) (N : ℝ≥0)
+      (insertionTruncWeight γ α N) (measurable_insertionTruncWeight γ α N) N
       (insertionTruncWeight_le γ α N) p hp hp4).trans (mul_le_mul' le_rfl ?_)
     apply lintegral_mono
     intro ω
@@ -49,27 +49,26 @@ theorem weightedGmcBallMoment_le_transfer
     intro x
     dsimp only
     rw [coe_insertionTruncWeight]
-    exact insertionTruncWeightE_le_weight γ α N (x - z₂)
+    exact insertionTruncWeightE_le_weight γ α N _
   -- monotone convergence in the truncation height
   have hmeas : ∀ N : ℕ, AEMeasurable (fun ω => (∫⁻ x in Metric.ball z₁ ρ,
-      (insertionTruncWeight γ α N (x - z₁) : ℝ≥0∞) ∂M ω) ^ p) P := fun N =>
+      (insertionTruncWeight γ α N _) ∂M ω) ^ p) P := fun N =>
     (gmc_setLIntegral_aemeasurable P X hX γ hγ hγ2 M hM _
       (measurable_coe_nnreal_ennreal.comp ((measurable_insertionTruncWeight γ α N).comp
         (measurable_id.sub_const z₁))) _ hB).pow_const p
-  have hmono : ∀ᵐ ω ∂P, Monotone fun N : ℕ => (∫⁻ x in Metric.ball z₁ ρ,
+  have hmono : ∀ᵐ ω ∂P, Monotone fun N => (∫⁻ x in Metric.ball z₁ ρ,
       (insertionTruncWeight γ α N (x - z₁) : ℝ≥0∞) ∂M ω) ^ p := by
     refine Eventually.of_forall fun ω m n hmn => ENNReal.rpow_le_rpow ?_ hp.le
     apply lintegral_mono
     intro x
     simp only [coe_insertionTruncWeight]
-    exact insertionTruncWeightE_mono γ α (x - z₁) hmn
-  have hlim : ∀ᵐ ω ∂P, Tendsto (fun N : ℕ => (∫⁻ x in Metric.ball z₁ ρ,
-      (insertionTruncWeight γ α N (x - z₁) : ℝ≥0∞) ∂M ω) ^ p) atTop
-        (𝓝 (ENNReal.rpow (weightedGmcBallMass γ (M ω) α z₁ ρ) p)) :=
+    exact insertionTruncWeightE_mono γ α _ hmn
+  have hlim : ∀ᵐ ω ∂P, Tendsto (fun N => (∫⁻ x in Metric.ball z₁ ρ,
+      (insertionTruncWeight γ α N _ : ℝ≥0∞) ∂M ω) ^ p) atTop
+        (𝓝 _) :=
     Eventually.of_forall fun ω =>
-      ((ENNReal.continuous_rpow_const (y := p)).tendsto _).comp
+      ((ENNReal.continuous_rpow_const).tendsto _).comp
         (insertionTrunc_mass_tendsto γ α (M ω) z₁ ρ)
-  have hconv := lintegral_tendsto_of_tendsto_of_monotone hmeas hmono hlim
-  exact le_of_tendsto' hconv hN
+  exact le_of_tendsto' (lintegral_tendsto_of_tendsto_of_monotone hmeas hmono hlim) hN
 
 end DOZZ.Proofs

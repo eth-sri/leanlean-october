@@ -28,27 +28,25 @@ theorem crossing_connection_first_ratio (a b c : ℝ)
         (Real.Gamma a)⁻¹ * (Real.Gamma b)⁻¹) * ((c - 1) / (c - a - b))) =
       lR a * lR b / (lR c * lR (a + b - c)) := by
   let δ := c - a - b
-  have hΓa : Real.Gamma a ≠ 0 := (Real.Gamma_pos_of_pos ha).ne'
-  have hΓb : Real.Gamma b ≠ 0 := (Real.Gamma_pos_of_pos hb).ne'
-  have hΓ1a : Real.Gamma (1 - a) ≠ 0 := (Real.Gamma_pos_of_pos (sub_pos.mpr ha1)).ne'
-  have hΓ1b : Real.Gamma (1 - b) ≠ 0 := (Real.Gamma_pos_of_pos (sub_pos.mpr hb1)).ne'
-  have hΓc : Real.Gamma c ≠ 0 := (Real.Gamma_pos_of_pos hc).ne'
+  have hΓ1a := (Real.Gamma_pos_of_pos (sub_pos.mpr ha1)).ne'
+  have hΓ1b := (Real.Gamma_pos_of_pos (sub_pos.mpr hb1)).ne'
+  have hΓc := (Real.Gamma_pos_of_pos hc).ne'
   have hΓδ : Real.Gamma (-δ) ≠ 0 := Real.Gamma_ne_zero
-    (real_ne_neg_nat_of_frac (k := -1) (by push_cast; dsimp [δ]; linarith only [hδ1])
-      (by push_cast; dsimp [δ]; linarith only [hδ]))
-  have hcm : c - 1 ≠ 0 := by linarith only [hc1]
-  have hdm : δ ≠ 0 := hδ.ne'
-  have hab : a + b - c = -δ := by dsimp [δ]; ring
+    (real_ne_neg_nat_of_frac (k := -1) (by grind)
+      (by aesop))
+  have hcm : c - 1 ≠ 0 := by linarith
+  have hdm := hδ.ne'
+  have hab : a + b - c = -δ := by linarith
   rw [hab]
   calc
-    _ = (-δ / (c - 1)) * (Real.Gamma (2 - c) / Real.Gamma c) *
+    _ = (-δ / (c - 1)) * (Real.Gamma _ / Real.Gamma c) *
         (Real.Gamma δ / Real.Gamma (-δ)) * lR a * lR b := by
       unfold lR
-      change -(Real.Gamma (2 - c) * Real.Gamma δ *
-          (Real.Gamma (1 - a))⁻¹ * (Real.Gamma (1 - b))⁻¹) /
+      change -(Real.Gamma _ * Real.Gamma δ *
+          (Real.Gamma _)⁻¹ * (Real.Gamma _)⁻¹) /
         ((Real.Gamma c * Real.Gamma (-δ) * (Real.Gamma a)⁻¹ * (Real.Gamma b)⁻¹) *
           ((c - 1) / δ)) = _
-      field_simp [hΓa, hΓb, hΓ1a, hΓ1b, hΓc, hΓδ, hcm, hdm]
+      field_simp [((Real.Gamma_pos_of_pos ha).ne'), ((Real.Gamma_pos_of_pos hb).ne'), hΓ1a, hΓ1b, hΓc, hΓδ, hcm, hdm]
     _ = _ := dual_connection_first_multiplier a b c δ hc hc1 hδ hδ1
 
 end DOZZ.Proofs

@@ -45,7 +45,6 @@ theorem positiveBlockEnvelope_rpow (γ q : ℝ) (n : ℝ≥0) (p : BrownianPath)
   rw [positiveBlockEnvelope, ennreal_exp_rpow]
   unfold positiveBlockEnvelope
   rw [abs_of_nonneg hγ, abs_of_nonneg (mul_nonneg hq hγ)]
-  congr 2
   ring
 
 /-- A block of the positive half-cylinder for an arbitrary continuous radial path and measure. -/
@@ -62,26 +61,22 @@ theorem positiveLateralBlock_le_envelope (γ : ℝ) (hγ : 0 ≤ γ) (n : ℝ≥
   rw [← setLIntegral_const]
   apply setLIntegral_mono' measurableSet_Ioc
   intro s hs
-  let t : ℝ≥0 := ⟨s - (n : ℝ), sub_nonneg.mpr hs.1.le⟩
-  have ht : t ∈ Icc 0 (1 : ℝ≥0) := ⟨bot_le, by exact_mod_cast (by
-    change s - (n : ℝ) ≤ 1
-    linarith [hs.2])⟩
-  have hspos : 0 ≤ s := n.coe_nonneg.trans hs.1.le
+  let t : ℝ≥0 := ⟨s - n, sub_nonneg.mpr hs.1.le⟩
+  have ht : t ∈ Icc 0 1 := ⟨bot_le, by exact_mod_cast (by
+    change s - n ≤ 1
+    grind)⟩
   have he : Real.toNNReal s = n + t := by
     apply NNReal.eq_iff.mpr
-    rw [Real.coe_toNNReal s hspos, NNReal.coe_add]
-    change s = (n : ℝ) + (s - (n : ℝ))
+    rw [Real.coe_toNNReal s (n.coe_nonneg.trans hs.1.le), NNReal.coe_add]
+    change s = n + (s - n)
     ring
-  have hn := ((brownianShiftPath n p).restrict (Icc 0 (1 : ℝ≥0))).norm_coe_le_norm ⟨t, ht⟩
-  change |p (n + t) - p n| ≤ brownianUnitNorm (brownianShiftPath n p) at hn
+  have hn := ((brownianShiftPath n p).restrict _).norm_coe_le_norm ⟨t, ht⟩
+  change |p _ - p n| ≤ brownianUnitNorm _ at hn
   have hex : p (Real.toNNReal s) ≤ p n + brownianUnitNorm (brownianShiftPath n p) := by
-    rw [he]
-    have hle := (le_abs_self (p (n + t) - p n)).trans hn
-    linarith
+    grind
   apply ENNReal.ofReal_le_ofReal
   apply Real.exp_le_exp.mpr
   rw [abs_of_nonneg hγ]
-  have h := mul_le_mul_of_nonneg_left hex hγ
   nlinarith
 
 /-- Independent radial and lateral inputs factor the arbitrary given-chaos block estimate. -/
@@ -93,15 +88,14 @@ theorem positiveLateralBlock_moment_le_independent_envelope
     (∫⁻ ω, (positiveLateralBlock γ n (B ω) (Z ω)) ^ q ∂P) ≤
       (∫⁻ ω, positiveBlockEnvelope (q * γ) n (B ω) ∂P) *
         (∫⁻ ω, (Z ω (Ioc (n : ℝ) ((n : ℝ) + 1))) ^ q ∂P) := by
-  let f : BrownianPath → ℝ≥0∞ := positiveBlockEnvelope (q * γ) n
-  let g : Measure ℝ → ℝ≥0∞ := fun μ => (μ (Ioc (n : ℝ) ((n : ℝ) + 1))) ^ q
-  have hf : Measurable f := measurable_positiveBlockEnvelope _ _
+  let f := positiveBlockEnvelope (q * γ) n
+  let g : Measure ℝ → ℝ≥0∞ := fun μ => (μ (Ioc n ((n : ℝ) + 1))) ^ q
+  have hf : Measurable f := measurable_positiveBlockEnvelope ..
   have hg : Measurable g := ENNReal.continuous_rpow_const.measurable.comp
     (Measure.measurable_coe measurableSet_Ioc)
-  have hind := hi.comp hf hg
   have he := lintegral_mul_eq_lintegral_mul_lintegral_of_indepFun''
-    (hf.comp_aemeasurable hB) (hg.comp_aemeasurable hZ) hind
-  change (∫⁻ ω, f (B ω) * g (Z ω) ∂P) =
+    (hf.comp_aemeasurable hB) (hg.comp_aemeasurable hZ) (hi.comp hf hg)
+  change _ =
     (∫⁻ ω, f (B ω) ∂P) * (∫⁻ ω, g (Z ω) ∂P) at he
   rw [← he]
   apply lintegral_mono
@@ -118,18 +112,16 @@ theorem positive_unit_intervals_union :
   constructor
   · intro hs
     obtain ⟨n, hn⟩ := mem_iUnion.mp hs
-    exact lt_of_le_of_lt (Nat.cast_nonneg _) hn.1
+    grind
   · intro hs
-    have hceil : 1 ≤ Nat.ceil s := Nat.one_le_ceil_iff.mpr hs
-    let n : ℕ := Nat.ceil s - 1
-    have hn : n + 1 = Nat.ceil s := Nat.sub_add_cancel hceil
-    have he : (n : ℝ) + 1 = (Nat.ceil s : ℝ) := by exact_mod_cast hn
+    let n := Nat.ceil s - 1
+    have he : n + 1 = (Nat.ceil s : ℝ) := by exact_mod_cast (Nat.sub_add_cancel (Nat.one_le_ceil_iff.mpr hs))
     apply mem_iUnion.mpr
     refine ⟨n, ?_, ?_⟩
     · have hc := Nat.ceil_lt_add_one hs.le
       linarith
     · rw [he]
-      exact Nat.le_ceil s
+      bound
 
 /-- The positive unit intervals are disjoint even at their shared integer endpoints. -/
 theorem positive_unit_intervals_pairwise_disjoint :
@@ -140,9 +132,9 @@ theorem positive_unit_intervals_pairwise_disjoint :
   intro x hm hn
   rcases lt_or_gt_of_ne hmn with h | h
   · have he : (m : ℝ) + 1 ≤ n := by exact_mod_cast Nat.add_one_le_iff.mpr h
-    exact not_lt_of_ge (hm.2.trans he) hn.1
+    grind
   · have he : (n : ℝ) + 1 ≤ m := by exact_mod_cast Nat.add_one_le_iff.mpr h
-    exact not_lt_of_ge (hn.2.trans he) hm.1
+    grind
 
 /-- Integrating the exponential radial weight over the positive half-line. -/
 noncomputable def positiveLateralMass (γ : ℝ) (p : BrownianPath) (μ : Measure ℝ) : ℝ≥0∞ :=
@@ -155,13 +147,16 @@ theorem positiveLateralMass_eq_tsum_blocks (γ : ℝ) (p : BrownianPath) (μ : M
   rw [← positive_unit_intervals_union]
   exact lintegral_iUnion (fun _ => measurableSet_Ioc)
     positive_unit_intervals_pairwise_disjoint _
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (F : ℕ → Ω → ℝ≥0∞)
+section
+variable (hF : ∀ n, AEMeasurable (F n) P) (q : ℝ) (hq : 1 ≤ q)
+include hF hq
 
 private theorem lintegral_finset_rpow_root_le_sum
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (F : ℕ → Ω → ℝ≥0∞)
-    (hF : ∀ n, AEMeasurable (F n) P) (q : ℝ) (hq : 1 ≤ q) (S : Finset ℕ) :
+    (S : Finset ℕ) :
     (∫⁻ ω, (∑ n ∈ S, F n ω) ^ q ∂P) ^ (1 / q) ≤
       ∑ n ∈ S, (∫⁻ ω, (F n ω) ^ q ∂P) ^ (1 / q) := by
-  classical
   induction S using Finset.induction_on with
   | empty =>
     simp only [Finset.sum_empty, lintegral_zero,
@@ -171,11 +166,9 @@ private theorem lintegral_finset_rpow_root_le_sum
   | @insert n S hn ih =>
     have hs : AEMeasurable (fun ω => ∑ i ∈ S, F i ω) P :=
       by
-        convert Finset.aemeasurable_sum S (fun i _ => hF i) using 1
-        funext ω
-        exact (Finset.sum_apply ω S F).symm
+        fun_prop
     have hb := ENNReal.lintegral_Lp_add_le (hF n) hs hq
-    change (∫⁻ ω, (F n ω + ∑ i ∈ S, F i ω) ^ q ∂P) ^ (1 / q) ≤
+    change _ ^ (1 / q) ≤
       (∫⁻ ω, (F n ω) ^ q ∂P) ^ (1 / q) +
         (∫⁻ ω, (∑ i ∈ S, F i ω) ^ q ∂P) ^ (1 / q) at hb
     simp only [Finset.sum_insert hn]
@@ -183,37 +176,35 @@ private theorem lintegral_finset_rpow_root_le_sum
 
 /-- Infinite Minkowski assembly for nonnegative block masses, using their actual root moments. -/
 theorem lintegral_tsum_rpow_le_root_moments_power
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (F : ℕ → Ω → ℝ≥0∞)
-    (hF : ∀ n, AEMeasurable (F n) P) (q : ℝ) (hq : 1 ≤ q)
     : (∫⁻ ω, (∑' n, F n ω) ^ q ∂P) ≤
       (∑' n, (∫⁻ ω, (F n ω) ^ q ∂P) ^ (1 / q)) ^ q := by
-  have hqp : 0 < q := lt_of_lt_of_le zero_lt_one hq
-  let C : ℝ≥0∞ := ∑' n, (∫⁻ ω, (F n ω) ^ q ∂P) ^ (1 / q)
+  have hqp := lt_of_lt_of_le zero_lt_one hq
+  let C := ∑' n, (∫⁻ ω, (F n ω) ^ q ∂P) ^ (1 / q)
   have hb : ∀ N : ℕ, (∫⁻ ω, (∑ n ∈ Finset.range N, F n ω) ^ q ∂P) ≤ C ^ q := by
     intro N
     have h := (lintegral_finset_rpow_root_le_sum P F hF q hq (Finset.range N)).trans
       (ENNReal.sum_le_tsum (Finset.range N))
     have he := ENNReal.rpow_le_rpow h hqp.le
-    rw [← ENNReal.rpow_mul, one_div_mul_cancel hqp.ne', ENNReal.rpow_one] at he
-    exact he
+    rwa [← ENNReal.rpow_mul, one_div_mul_cancel hqp.ne', ENNReal.rpow_one] at he
   have hm : ∀ N : ℕ, AEMeasurable
       (fun ω => (∑ n ∈ Finset.range N, F n ω) ^ q) P := fun N =>
     ENNReal.continuous_rpow_const.measurable.comp_aemeasurable
       (by
-        classical
-        convert Finset.aemeasurable_sum (Finset.range N) (fun n _ => hF n) using 1
-        funext ω
-        exact (Finset.sum_apply ω (Finset.range N) F).symm)
-  have hmono : ∀ ω : Ω, Monotone (fun N : ℕ => (∑ n ∈ Finset.range N, F n ω) ^ q) := by
+        fun_prop)
+  have hmono : ∀ ω : Ω, Monotone (fun N => (∑ n ∈ Finset.range N, F n ω) ^ q) := by
     intro ω N M hNM
     apply ENNReal.rpow_le_rpow _ hqp.le
-    exact Finset.sum_le_sum_of_subset_of_nonneg (Finset.range_mono hNM) (fun _ _ _ => bot_le)
+    gcongr
   have hlim : ∀ ω : Ω, Tendsto
-      (fun N : ℕ => (∑ n ∈ Finset.range N, F n ω) ^ q) atTop (𝓝 ((∑' n, F n ω) ^ q)) :=
+      (fun N => (∑ n ∈ Finset.range N, F n ω) ^ q) atTop (𝓝 ((∑' n, F n ω) ^ q)) :=
     fun ω => ENNReal.continuous_rpow_const.continuousAt.tendsto.comp
       (ENNReal.tendsto_nat_tsum (fun n => F n ω))
   have hi := lintegral_tendsto_of_tendsto_of_monotone hm
     (ae_of_all _ hmono) (ae_of_all _ hlim)
   exact le_of_tendsto' hi hb
+
+end
+
+end
 
 end DOZZ.Proofs

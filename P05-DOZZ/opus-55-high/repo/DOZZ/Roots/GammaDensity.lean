@@ -8,6 +8,7 @@ public import DOZZ.Roots.Normalization
 import Mathlib.Topology.Instances.Irrational
 import Mathlib.Topology.ClusterPt
 import Mathlib.Analysis.SpecialFunctions.Gamma.Beta
+import DOZZ.ShiftEquations.Residual.Calibration
 /-! # Irrational-square density and pole-free gamma neighborhoods -/
 @[expose] public section
 open MeasureTheory Set Filter Topology
@@ -19,37 +20,43 @@ theorem roots_frequently_irrational_sq (γ : ℝ) (hγ : 0 < γ) :
   intro V hV
   have ht : Tendsto Real.sqrt (nhds (γ ^ 2)) (nhds γ) := by
     have ht := Real.continuous_sqrt.tendsto (γ ^ 2)
-    have he : Real.sqrt (γ ^ 2) = γ := Real.sqrt_sq hγ.le
-    rw [he] at ht
-    exact ht
+    have he := Real.sqrt_sq hγ.le
+    simp_all
   have hq : ∀ᶠ q : ℝ in nhds (γ ^ 2), Real.sqrt q ∈ V ∧ 0 ≤ q := by
-    filter_upwards [ht.eventually hV, ((continuousAt_const.eventually_lt (show ContinuousAt (fun q : ℝ => q) (γ ^ 2) from continuousAt_id) (by positivity : (0 : ℝ) < γ ^ 2)))] with q hq hpos
-    exact ⟨hq, hpos.le⟩
-  have hi : ∃ᶠ q : ℝ in nhds (γ ^ 2), Irrational q :=
+    filter_upwards [ht.eventually hV, ((continuousAt_const.eventually_lt (show ContinuousAt (fun q => q) (γ ^ 2) from continuousAt_id) (by positivity)))] with q hq hpos
+    bound
+  have hi :=
     mem_closure_iff_frequently.mp (dense_irrational (γ ^ 2))
   obtain ⟨q, hqi, hqV, hqpos⟩ := (hi.and_eventually hq).exists
-  exact ⟨Real.sqrt q, hqV, by rwa [Real.sq_sqrt hqpos]⟩
+  aesop
+section
+variable (γ a b c : ℝ)
+section
+variable (hγ : γ ≠ 0)
+include hγ
 /-- The zero-mode exponent is continuous as gamma varies away from zero. -/
-theorem roots_sExp_gamma_continuousAt (γ a b c : ℝ) (hγ : γ ≠ 0) :
+theorem roots_sExp_gamma_continuousAt :
     ContinuousAt (fun g => sExp g a b c) γ := by
-  unfold sExp
   exact (continuousAt_const.sub (continuousAt_const.mul (continuousAt_Q hγ))).div continuousAt_id hγ
 /-- Avoidance of all Gamma poles persists locally at a pole-free triple. -/
-theorem roots_poleFree_gamma_nhds (γ a b c : ℝ) (hγ : γ ≠ 0)
-    (hs : ∀ n : ℕ, sExp γ a b c ≠ -(n : ℝ)) :
+theorem roots_poleFree_gamma_nhds (hs : ∀ n : ℕ, sExp γ a b c ≠ -(n : ℝ)) :
     ∀ᶠ g : ℝ in nhds γ, ∀ n : ℕ, sExp g a b c ≠ -(n : ℝ) := by
-  have hS : ContinuousAt (fun g : ℝ => (sExp g a b c : ℂ)) γ :=
+  have hS :=
     Complex.continuous_ofReal.continuousAt.comp (roots_sExp_gamma_continuousAt γ a b c hγ)
   have hc : ContinuousAt (fun g : ℝ => (Complex.Gamma (sExp g a b c : ℂ))⁻¹) γ := by
     simpa only [Function.comp_def] using Complex.differentiable_one_div_Gamma.continuous.continuousAt.comp (f := fun g : ℝ => (sExp g a b c : ℂ)) hS
-  have hΓ : (Complex.Gamma (sExp γ a b c : ℂ))⁻¹ ≠ 0 := inv_ne_zero
+  have hΓ := inv_ne_zero
     (Complex.Gamma_ne_zero (fun n hn => hs n (Complex.ofReal_inj.mp
-      (by simpa only [Complex.ofReal_neg, Complex.ofReal_natCast] using hn))))
-  have he : ∀ᶠ g : ℝ in nhds γ, (Complex.Gamma (sExp g a b c : ℂ))⁻¹ ≠ 0 :=
+      (by aesop))))
+  have he :=
     hc.eventually_ne hΓ
   filter_upwards [he] with g hg n hn
   apply hg
   rw [hn, Complex.ofReal_neg, Complex.ofReal_natCast, Complex.Gamma_neg_nat_eq_zero, inv_zero]
+
+end
+
+end
 /-- The full structure constant is continuous in gamma at every finite extended triple. -/
 theorem roots_structureConstant_gamma_continuousAt {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (M : ℝ → Ω → Measure ℂ) (hX : IsEquatorGFF P X)
@@ -58,8 +65,6 @@ theorem roots_structureConstant_gamma_continuousAt {Ω : Type*} [MeasurableSpace
     (hα : ExtendedSeiberg3 γ a b c) (hs : ∀ n : ℕ, sExp γ a b c ≠ -(n : ℝ)) :
     ContinuousAt (fun g => structureConstant P (M g) g μ a b c) γ := by
   have hS := roots_sExp_gamma_continuousAt γ a b c hγ.ne'
-  have hpow := (Real.continuous_const_rpow hμ.ne').continuousAt.comp hS.neg
-  have hΓ := (Real.differentiableAt_Gamma hs).continuousAt.comp (f := fun g => sExp g a b c) hS
   have hm := roots_unitVolume_gamma_continuousAt P X M hX hM γ a b c hγ hγ2 hα
-  simpa only [Function.comp_def, Pi.mul_def, Pi.neg_def, residue_structureConstant_eq_unitVolume] using (hpow.mul hΓ).mul hm
+  simpa only [Function.comp_def, Pi.mul_def, Pi.neg_def, DOZZ.Proofs.structureConstant_eq_mul_unitVolume] using (((Real.continuous_const_rpow hμ.ne').continuousAt.comp hS.neg).mul ((Real.differentiableAt_Gamma hs).continuousAt.comp (f := fun g => sExp g a b c) hS)).mul hm
 end DOZZ.Proofs

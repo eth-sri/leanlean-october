@@ -30,7 +30,7 @@ theorem uniform_oneInsertion_cut_moments
   have hβ (α : ℝ) (hαk : α ∈ K) : 0 < β α := by
     have hb : p α < β α := lt_min (lt_add_of_pos_right _ (by positivity))
       (residue_critical_order_bounds γ α hγ (hα α hαk).1 (hα α hαk).2).2
-    exact (hp α hαk).trans hb
+    grind
   have hpc : Continuous p := by unfold p reflectionExponent; fun_prop
   have hβc : Continuous β := by unfold β oneInsertionMomentCeiling reflectionExponent; fun_prop
   let t := fun α => (β α-p α-η)/β α
@@ -38,7 +38,7 @@ theorem uniform_oneInsertion_cut_moments
     ((hβc.continuousOn.sub hpc.continuousOn).sub continuous_const.continuousOn).div
       hβc.continuousOn (fun α hαk => (hβ α hαk).ne')
   have hηt (α : ℝ) (hαk : α ∈ K) : η < t α := by
-    have hc := (lt_div_iff₀ (by linarith only [hβ α hαk] : 0 < 1+β α)).mp (hceil α hαk)
+    have hc := (lt_div_iff₀ (by grind : 0 < 1+β α)).mp (hceil α hαk)
     apply (lt_div_iff₀ (hβ α hαk)).mpr
     change η*(1+β α) < β α-p α at hc
     linarith only [hc]
@@ -46,7 +46,7 @@ theorem uniform_oneInsertion_cut_moments
   obtain ⟨a,hηa,hat₀⟩ := exists_between (hηt α₀ hα₀)
   have hat (α : ℝ) (hαk : α ∈ K) : a < t α := hat₀.trans_le (hmin hαk)
   have ha1 : a < 1 := by
-    have ht1 : t α₀ < 1 := (div_lt_one (hβ α₀ hα₀)).mpr (by linarith only [hp α₀ hα₀,hη])
+    have ht1 : t α₀ < 1 := (div_lt_one (hβ α₀ hα₀)).mpr (by grind)
     exact hat₀.trans ht1
   have hden : 0 < 1-a := sub_pos.mpr ha1
   let low := fun α => (p α+η)/(1-a)
@@ -59,18 +59,18 @@ theorem uniform_oneInsertion_cut_moments
   let r := fun α => (low α+β α)/2
   have hr (α : ℝ) (hαk : α ∈ K) : 0 < r α ∧ r α < β α ∧ p α+η < (1-a)*r α := by
     obtain ⟨hl0,hlβ⟩ := hlow α hαk
-    have hrl : low α < r α := by dsimp [r]; linarith only [hlβ]
-    refine ⟨hl0.trans hrl,by dsimp [r]; linarith only [hlβ],?_⟩
+    have hrl : low α < r α := by grind
+    refine ⟨hl0.trans hrl,by grind,?_⟩
     simpa only [mul_comm] using (div_lt_iff₀ hden).mp hrl
-  have hrc : Continuous r := (hpc.add continuous_const).div_const (1-a) |>.add hβc |>.div_const 2
+  have hrc : Continuous r := by fun_prop
   have hΔc : Continuous (fun α => β α-r α) := hβc.sub hrc
   obtain ⟨αδ,hαδ,hδmin⟩ := hK.exists_isMinOn hn hΔc.continuousOn
   let δ := β αδ-r αδ
-  have hδ : 0 < δ := sub_pos.mpr (hr αδ hαδ).2.1
+  have hδ : 0 < δ := by grind
   have hδle (α : ℝ) (hαk : α ∈ K) : δ ≤ β α-r α := hδmin hαk
   obtain ⟨αM,hαM,hMmax⟩ := hK.exists_isMaxOn hn hrc.continuousOn
   let M := r αM
-  have hM : 0 < M := (hr αM hαM).1
+  have hM : 0 < M := by grind
   have hrM (α : ℝ) (hαk : α ∈ K) : r α ≤ M := hMmax hαk
   let qH := 1+δ/(4*(M+1))
   have hqH : 1 < qH := lt_add_of_pos_right 1 (div_pos hδ (by positivity))
@@ -79,12 +79,11 @@ theorem uniform_oneInsertion_cut_moments
   let g := δ/4
   let R := 4/γ^2-δ/2
   have hrR (α : ℝ) (hαk : α ∈ K) : r α ≤ R := by
-    have hβbulk : β α ≤ 4/γ^2 := min_le_right _ _
-    have hΔ := hδle α hαk
+    have hβbulk : β α ≤ 4/γ^2 := min_le_right ..
     dsimp [R]
-    linarith only [hβbulk,hΔ,hδ]
+    linarith only [hβbulk,(hδle α hαk),hδ]
   refine ⟨a,r,R,g,pH,qH,hηa,ha1,(hr α₀ hα₀).1.trans_le (hrR α₀ hα₀),
-    by dsimp [R]; linarith only [hδ],by dsimp [g]; positivity,hpq,?_⟩
+    by grind,by positivity,hpq,?_⟩
   intro α hαk
   refine ⟨(hr α hαk).1,hrR α hαk,(hr α hαk).2.2,?_⟩
   have hsmall : r α*(δ/(4*(M+1))) ≤ δ/4 := by
@@ -92,13 +91,10 @@ theorem uniform_oneInsertion_cut_moments
     rw [← mul_div_assoc]
     apply (div_le_iff₀ hd).mpr
     have he : (δ/4)*(4*(M+1)) = δ*(M+1) := by ring
-    rw [he]
-    have hb := mul_le_mul_of_nonneg_right (hrM α hαk) hδ.le
-    nlinarith only [hb,hδ]
-  have hΔ := hδle α hαk
+    nlinarith only [(mul_le_mul_of_nonneg_right (hrM α hαk) hδ.le),hδ]
   change r α*(1+δ/(4*(M+1)))+δ/4 ≤ β α
   rw [mul_add,mul_one]
-  linarith only [hsmall,hΔ,hδ]
+  linarith only [hsmall,(hδle α hαk),hδ]
 
 
 end DOZZ.Proofs

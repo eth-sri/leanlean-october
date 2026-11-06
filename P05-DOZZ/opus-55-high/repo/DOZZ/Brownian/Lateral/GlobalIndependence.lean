@@ -41,7 +41,7 @@ theorem measurable_measure_restrict {E : Type*} [MeasurableSpace E]
   apply Measure.measurable_of_measurable_coe
   intro T hT
   have heq : (fun μ : Measure E => μ.restrict S T) = fun μ => μ (T ∩ S) :=
-    funext (fun μ => Measure.restrict_apply hT)
+    by simp_all
   rw [heq]
   exact Measure.measurable_coe (hT.inter hS)
 
@@ -77,8 +77,7 @@ theorem indepFun_measure_of_restrict_exhaustion
       funext ω
       calc N ω S = (N ω).restrict (⋃ n, U n) S := congrArg (fun μ : Measure E => μ S) (hsupport ω).symm
         _ = _ := Measure.restrict_iUnion_apply_eq_iSup hmono.directed_le hS
-    rw [hs]
-    exact Measurable.iSup hcoord
+    measurability
   have hi : Indep (⨆ n, m n)
       ((inferInstance : MeasurableSpace F).comap A) P := by
     apply indep_iSup_of_monotone
@@ -86,11 +85,10 @@ theorem indepFun_measure_of_restrict_exhaustion
       exact (IndepFun_iff_Indep _ _ P).mp (hindep n).symm
     · exact hle
     · exact hA.comap_le
-    · exact hm
+    assumption
   apply (IndepFun_iff _ _ P).mpr
   intro S T hS hT
-  have hT' : MeasurableSet[⨆ n, m n] T := hNSup.comap_le T hT
-  simpa only [inter_comm, mul_comm] using ((Indep_iff _ _ P).mp hi T S hT' hS)
+  simpa only [inter_comm, mul_comm] using ((Indep_iff _ _ P).mp hi T S (hNSup.comap_le T hT) hS)
 
 /-- Radii for a countable increasing exhaustion of the punctured plane. -/
 noncomputable def originLateralChartRadius (n : ℕ) : ℝ := 1 / ((n : ℝ) + 1)
@@ -102,7 +100,7 @@ theorem originLateralChartRadius_pos (n : ℕ) : 0 < originLateralChartRadius n 
 /-- The exhaustion radii decrease with their index. -/
 theorem originLateralChartRadius_antitone : Antitone originLateralChartRadius := by
   intro n k hnk
-  exact one_div_le_one_div_of_le (by positivity) (by exact_mod_cast Nat.add_le_add_right hnk 1)
+  exact one_div_le_one_div_of_le (by positivity) (by simp_all)
 
 /-- The increasing charts cover exactly the punctured plane. -/
 theorem originLateralChart_exhaustion :
@@ -112,12 +110,12 @@ theorem originLateralChart_exhaustion :
   · rintro ⟨_, ⟨n, rfl⟩, hx⟩
     exact originLateralChart_ne_zero _ (originLateralChartRadius_pos n) x hx
   · intro hx
-    have hxpos : 0 < ‖x‖ := norm_pos_iff.mpr hx
+    have hxpos := norm_pos_iff.mpr hx
     have ht : Tendsto (fun n : ℕ => 2 * originLateralChartRadius n) atTop (𝓝 0) := by
       simpa only [originLateralChartRadius, mul_zero] using
         tendsto_const_nhds.mul (tendsto_one_div_add_atTop_nhds_zero_nat (𝕜 := ℝ))
     obtain ⟨n, hn⟩ := ((tendsto_order.mp ht).2 _ hxpos).exists
-    exact mem_iUnion.mpr ⟨n, hn⟩
+    aesop
 
 /-- Removing the radial factor from a finite measure is jointly measurable in the
 charge, continuous radial path and finite measure. -/
@@ -130,9 +128,7 @@ theorem measurable_originRadialRemovedGMC_finite :
       S.indicator (fun x => lateralRadialWeight p.1.1 p.1.2 x) p.2) :=
     measurable_lateralRadialWeight.indicator (hS.preimage measurable_snd)
   have hm := measurable_lintegral_finiteMeasure_parameter hi
-  convert hm using 1
-  funext p
-  rw [withDensity_apply _ hS, ← lintegral_indicator hS]
+  simp_all
 
 /-- The actual radial-removed plane GMC is measurable up to a null event. -/
 theorem originRadialRemovedGMC_aemeasurable {Ω : Type*} [MeasurableSpace Ω]
@@ -141,7 +137,7 @@ theorem originRadialRemovedGMC_aemeasurable {Ω : Type*} [MeasurableSpace Ω]
     (hMf : ∀ ω, IsFiniteMeasure (M ω)) :
     AEMeasurable (fun ω => (M ω).withDensity (lateralRadialWeight γ (A ω))) P := by
   let N : Ω → FiniteMeasure ℂ := fun ω => ⟨M ω, hMf ω⟩
-  have hN : AEMeasurable N P :=
+  have hN :=
     @AEMeasurable.subtype_mk Ω (Measure ℂ) _ _ M P hMm {μ | IsFiniteMeasure μ} hMf
   have hp : AEMeasurable (fun ω => ((γ, A ω), N ω)) P :=
     ((aemeasurable_const.prodMk hA).prodMk hN)
@@ -161,11 +157,12 @@ theorem originRadialRemovedGMC_origin (γ : ℝ) (A : TwoSidedPath) (M : Measure
   subst x
   simp only [lateralRadialWeight, norm_zero, ite_true, ENNReal.ofReal_zero]
   rfl
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
 
 /-- A measurable version of the actual removed measure can be chosen with exact
 zero mass at the origin, without changing its almost-everywhere value. -/
-theorem originRadialRemovedGMC_measurable_version {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (γ : ℝ) (A : Ω → TwoSidedPath) (hA : AEMeasurable A P)
+theorem originRadialRemovedGMC_measurable_version (γ : ℝ) (A : Ω → TwoSidedPath) (hA : AEMeasurable A P)
     (M : Ω → Measure ℂ) (hMm : AEMeasurable M P)
     (hMf : ∀ ω, IsFiniteMeasure (M ω)) :
     ∃ N : Ω → Measure ℂ, Measurable N ∧
@@ -177,27 +174,25 @@ theorem originRadialRemovedGMC_measurable_version {Ω : Type*} [MeasurableSpace 
   have hNm : Measurable N := (measurable_measure_restrict _
     (measurableSet_singleton (0 : ℂ)).compl).comp hF.measurable_mk
   refine ⟨N, hNm, ?_, ?_⟩
-  · intro ω
-    exact Measure.restrict_restrict_of_subset subset_rfl
+  · aesop
   · filter_upwards [hF.ae_eq_mk] with ω hω
     change (hF.mk F ω).restrict ({0} : Set ℂ)ᶜ = F ω
     rw [← hω]
     apply Measure.restrict_eq_self_of_ae_mem
     rw [ae_iff]
     have hset : {x : ℂ | x ∉ ({0} : Set ℂ)ᶜ} = {0} := by
-      ext x
-      simp only [mem_ofPred_eq, mem_compl_iff, not_not]
+      simp
     rw [hset]
     exact originRadialRemovedGMC_origin γ (A ω) (M ω)
+section
+variable (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
+section
+variable (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2)) (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
+include hX hc hm hcont
 
 /-- Each actual chart restriction of the radial-removed GMC is independent of the
 entire radial path, by the local measure identification. -/
 theorem originRadialRemovedGMC_restrict_indep
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
     (ρ γ : ℝ) (hρ : 0 < ρ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
     IndepFun (originRadialPath Xc) (fun ω =>
@@ -206,22 +201,19 @@ theorem originRadialRemovedGMC_restrict_indep
   obtain ⟨N, _, hi, heq⟩ := exists_originLateralChartGMC_radial_removed_identity
     P X Xc hX hc hm hcont ρ γ hρ hγ hγ2 M hM
   exact hi.congr (ae_of_all P (fun _ => rfl)) heq
+section
+variable (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
+include hγ hγ2 hM
 
 /-- Chart independence assembles to independence of the full actual plane measure,
 using its exact zero mass at the excluded origin. -/
 theorem originRadialRemovedGMC_indep
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
+    :
     IndepFun (originRadialPath Xc)
       (fun ω => (M ω).withDensity (lateralRadialWeight γ (originRadialPath Xc ω))) P := by
   let : IsProbabilityMeasure P := hX.1
   let A := originRadialPath Xc
-  have hA : AEMeasurable A P := originRadialPath_aemeasurable P X Xc hc hcont
+  have hA := originRadialPath_aemeasurable P X Xc hc hcont
   obtain ⟨N, hNm, hN0, hNF⟩ := originRadialRemovedGMC_measurable_version P γ A hA M
     (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ2 M hM) hM.1
   have hUmono : Monotone (fun n => originLateralChart (originLateralChartRadius n)) :=
@@ -232,31 +224,31 @@ theorem originRadialRemovedGMC_indep
       (fun n => (isOpen_originLateralChart _).measurableSet) hUmono
     · intro ω
       rw [originLateralChart_exhaustion]
-      exact hN0 ω
+      simp_all
     · intro n
       have hlocal := originRadialRemovedGMC_restrict_indep P X Xc hX hc hm hcont
         (originLateralChartRadius n) γ (originLateralChartRadius_pos n) hγ hγ2 M hM
       apply hlocal.congr hA.ae_eq_mk
       filter_upwards [hNF] with ω hω
-      exact congrArg (fun μ : Measure ℂ => μ.restrict (originLateralChart
-        (originLateralChartRadius n))) hω.symm
+      tauto
   exact hi.congr hA.ae_eq_mk.symm hNF
 
 /-- The actual polar projection is independent of the entire radial path. -/
 theorem lateralProjectedGMC_indep
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (hm : Measurable (fun p : Ω × (ℂ × ℝ) => Xc p.1 p.2.1 p.2.2))
-    (hcont : ∀ᵐ ω ∂P, Continuous (fun p : ℂ × ℝ => Xc ω p.1 p.2))
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) :
+    :
     IndepFun (originRadialPath Xc)
       (fun ω => lateralProjectedGMC γ (originRadialPath Xc ω) (M ω)) P := by
-  have hi := originRadialRemovedGMC_indep P X Xc hX hc hm hcont γ hγ hγ2 M hM
   have hlog : Measurable (fun x : ℂ => -Real.log ‖x‖) :=
-    measurable_neg.comp (Real.measurable_log.comp measurable_norm)
-  exact hi.comp measurable_id (Measure.measurable_map _ hlog)
+    by fun_prop
+  exact (originRadialRemovedGMC_indep P X Xc hX hc hm hcont γ hγ hγ2 M hM).comp measurable_id (Measure.measurable_map _ hlog)
+
+end
+
+end
+
+end
+
+end
 
 
 /-- Equal restrictions on every exhaustion chart determine measures which vanish at
@@ -268,19 +260,11 @@ theorem originRadialRemovedGMC_eq_of_chart_restrictions (μ ν : Measure ℂ)
   have hμ0 : μ.restrict ({0} : Set ℂ)ᶜ = μ := by
     apply Measure.restrict_eq_self_of_ae_mem
     rw [ae_iff]
-    have hset : {x : ℂ | x ∉ ({0} : Set ℂ)ᶜ} = {0} := by
-      ext x
-      simp only [mem_ofPred_eq, mem_compl_iff, not_not]
-    rw [hset]
-    exact hμ
+    simp_all
   have hν0 : ν.restrict ({0} : Set ℂ)ᶜ = ν := by
     apply Measure.restrict_eq_self_of_ae_mem
     rw [ae_iff]
-    have hset : {x : ℂ | x ∉ ({0} : Set ℂ)ᶜ} = {0} := by
-      ext x
-      simp only [mem_ofPred_eq, mem_compl_iff, not_not]
-    rw [hset]
-    exact hν
+    simp_all
   have heq : μ.restrict (⋃ n, originLateralChart (originLateralChartRadius n)) =
       ν.restrict (⋃ n, originLateralChart (originLateralChartRadius n)) :=
     Measure.restrict_iUnion_congr.mpr hchart
@@ -311,11 +295,10 @@ theorem equatorGFF_exists_sourceLateralProjection
   have hB := originRadialPath_isBrownian P X Xc hX hc hcont
   have hZ := lateralProjectedGMC_aemeasurable P γ A hA M
     (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ2 M hM) hM.1
-  have hi := lateralProjectedGMC_indep P X Xc hX hc hm hcont γ hγ hγ2 M hM
   refine ⟨Xc, hc, hm, hcont, ?_, ae_lateralProjectedGMC_interval_ne_top P γ A M hM.1⟩
   refine ⟨hX, hM, A, ⟨Xc, hc, ?_⟩, hA,
     originRadialPath_zero_ae P X Xc hc hcont, hB.1, hB.2,
-    originRadialPath_halves_indep P X Xc hX hc hcont, hZ, hi, ae_of_all P (fun _ => rfl)⟩
+    originRadialPath_halves_indep P X Xc hX hc hcont, hZ, (lateralProjectedGMC_indep P X Xc hX hc hm hcont γ hγ hγ2 M hM), ae_of_all P (fun _ => rfl)⟩
   intro s
   exact (originRadialPath_eval_ae hcont).mono (fun ω hω => hω s)
 

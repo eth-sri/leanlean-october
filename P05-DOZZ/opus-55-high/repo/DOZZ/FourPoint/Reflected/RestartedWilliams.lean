@@ -22,12 +22,10 @@ theorem reflected_restarted_radial_path_law
     (T : ℝ≥0) :
     P.map (fun ω => brownianShiftPath T (radialPositiveHalf (A ω))) =
       P.map (fun ω => radialPositiveHalf (A ω)) := by
-  have hD := continuous_radialPositiveHalf.measurable.comp_aemeasurable hA
   have hs : Measurable (brownianShiftPath T) :=
     continuous_brownianShiftPath.measurable.comp (measurable_const.prodMk measurable_id)
-  have he := (AEMeasurable.map_map_of_aemeasurable hs.aemeasurable hD).symm.trans
+  exact (AEMeasurable.map_map_of_aemeasurable hs.aemeasurable (continuous_radialPositiveHalf.measurable.comp_aemeasurable hA)).symm.trans
     (brownianPath_deterministic_shift_map _
       (radialPositiveHalf_map_isBrownian P A hA hB) T)
-  simpa only [Function.comp_def] using he
 
 end DOZZ.Proofs

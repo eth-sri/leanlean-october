@@ -37,19 +37,20 @@ theorem centerInsertion_annulus_norm_bounds {R : ℝ} (hR : 0 < R) {x : ℂ}
     have := norm_sub_le x (x - (((3 * R / 4 : ℝ)) : ℂ))
     rw [sub_sub_cancel] at this
     linarith
-  rw [hc] at h1 h2
-  constructor <;> linarith
+  grind
+section
+variable (μ : Measure ℂ) (γ α : ℝ)
 
 /-- The weighted mass of the half-radius disk plus the weighted mass of a disk inside the annulus,
 the latter against the lower bound `R ^ (-γα)` of the weight, is at most the weighted mass of the
 full disk. -/
-theorem centerInsertion_mass_add_le (μ : Measure ℂ) (γ α : ℝ) (hγα : 0 < γ * α) {R : ℝ}
+theorem centerInsertion_mass_add_le (hγα : 0 < γ * α) {R : ℝ}
     (hR : 0 < R) :
     weightedGmcBallMass γ μ α 0 ((1 / 2) * R) +
         ENNReal.rpow (ENNReal.ofReal R) (-γ * α) *
           μ (Metric.ball (((3 * R / 4 : ℝ)) : ℂ) (R / 4)) ≤
       weightedGmcBallMass γ μ α 0 R := by
-  set B : Set ℂ := Metric.ball (((3 * R / 4 : ℝ)) : ℂ) (R / 4) with hB
+  set B := Metric.ball (((3 * R / 4 : ℝ)) : ℂ) _ with hB
   have hBm : MeasurableSet B := Metric.isOpen_ball.measurableSet
   have hdisj : Disjoint (Metric.ball (0 : ℂ) ((1 / 2) * R)) B := by
     rw [Set.disjoint_left]
@@ -63,35 +64,35 @@ theorem centerInsertion_mass_add_le (μ : Measure ℂ) (γ α : ℝ) (hγα : 0 
     rw [Metric.mem_ball, dist_zero_right]
     exact (centerInsertion_annulus_norm_bounds hR hx).2
   have hs : -γ * α ≤ 0 := by
-    rw [neg_mul]
-    exact neg_nonpos.mpr hγα.le
-  unfold weightedGmcBallMass
-  calc ∫⁻ x in Metric.ball (0 : ℂ) ((1 / 2) * R),
-          ENNReal.rpow (ENNReal.ofReal ‖x - 0‖) (-γ * α) ∂μ +
-          ENNReal.rpow (ENNReal.ofReal R) (-γ * α) * μ B
-      ≤ ∫⁻ x in Metric.ball (0 : ℂ) ((1 / 2) * R),
-          ENNReal.rpow (ENNReal.ofReal ‖x - 0‖) (-γ * α) ∂μ +
-          ∫⁻ x in B, ENNReal.rpow (ENNReal.ofReal ‖x - 0‖) (-γ * α) ∂μ := by
+    linarith
+  calc ∫⁻ x in Metric.ball (0 : ℂ) _,
+          ENNReal.rpow _ _ ∂μ +
+          ENNReal.rpow (ENNReal.ofReal R) _ * μ B
+      ≤ ∫⁻ x in Metric.ball (0 : ℂ) _,
+          ENNReal.rpow _ _ ∂μ +
+          ∫⁻ x in B, ENNReal.rpow _ _ ∂μ := by
         gcongr
-        calc ENNReal.rpow (ENNReal.ofReal R) (-γ * α) * μ B
-            = ∫⁻ _x in B, ENNReal.rpow (ENNReal.ofReal R) (-γ * α) ∂μ :=
-              (setLIntegral_const _ _).symm
-          _ ≤ ∫⁻ x in B, ENNReal.rpow (ENNReal.ofReal ‖x - 0‖) (-γ * α) ∂μ := by
+        calc ENNReal.rpow (ENNReal.ofReal R) _ * μ B
+            = ∫⁻ _x in B, ENNReal.rpow (ENNReal.ofReal R) _ ∂μ :=
+              (setLIntegral_const ..).symm
+          _ ≤ ∫⁻ x in B, ENNReal.rpow _ _ ∂μ := by
               apply setLIntegral_mono' hBm
               intro x hx
               rw [sub_zero]
               exact ennreal_rpow_antitone_of_nonpos
                 (ENNReal.ofReal_le_ofReal (centerInsertion_annulus_norm_bounds hR hx).2.le) hs
-    _ = ∫⁻ x in Metric.ball (0 : ℂ) ((1 / 2) * R) ∪ B,
-          ENNReal.rpow (ENNReal.ofReal ‖x - 0‖) (-γ * α) ∂μ :=
+    _ = ∫⁻ x in Metric.ball (0 : ℂ) _ ∪ B,
+          ENNReal.rpow _ _ ∂μ :=
         (lintegral_union hBm hdisj).symm
-    _ ≤ ∫⁻ x in Metric.ball (0 : ℂ) R, ENNReal.rpow (ENNReal.ofReal ‖x - 0‖) (-γ * α) ∂μ :=
+    _ ≤ ∫⁻ x in Metric.ball (0 : ℂ) R, ENNReal.rpow _ _ ∂μ :=
         lintegral_mono_set hsub
 
 /-- The weighted mass about the center is monotone in the radius. -/
-theorem centerInsertion_mass_mono (μ : Measure ℂ) (γ α : ℝ) {r s : ℝ} (h : r ≤ s) :
+theorem centerInsertion_mass_mono {r s : ℝ} (h : r ≤ s) :
     weightedGmcBallMass γ μ α 0 r ≤ weightedGmcBallMass γ μ α 0 s :=
   lintegral_mono_set (Metric.ball_subset_ball h)
+
+end
 
 /-- At and below the insertion threshold the weighted moment about the chart center diverges. -/
 theorem weightedGmcBallMoment_center_eq_top_of_insertion
@@ -102,7 +103,7 @@ theorem weightedGmcBallMoment_center_eq_top_of_insertion
     (he : (2 - γ * α) * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2 ≤ 0)
     (R : ℝ) (hR : 0 < R) (hR1 : R < 1) :
     weightedGmcBallMoment P M γ α 0 R p = ⊤ := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   by_contra hne
   have hI : weightedGmcBallMoment P M γ α 0 R p < ⊤ := lt_top_iff_ne_top.mpr hne
   -- scaling by `1 / 2` with a nonpositive exponent can only increase the moment
@@ -122,15 +123,12 @@ theorem weightedGmcBallMoment_center_eq_top_of_insertion
       weightedGmcBallMoment P M γ α 0 R p :=
     lintegral_mono fun ω => ENNReal.rpow_le_rpow
       (centerInsertion_mass_mono (M ω) γ α (by linarith)) hp.le
-  have hIhalf : weightedGmcBallMoment P M γ α 0 ((1 / 2) * R) p < ⊤ := lt_of_le_of_lt hle hI
+  have hIhalf := lt_of_le_of_lt hle hI
   -- the half-radius mass is almost surely finite
-  have hWhalf := gmc_weighted_mass_aemeasurable P X hX γ hγ hγ2 M hM α 0 ((1 / 2) * R)
-  have hWfull := gmc_weighted_mass_aemeasurable P X hX γ hγ hγ2 M hM α 0 R
   have hfin : ∀ᵐ ω ∂P, weightedGmcBallMass γ (M ω) α 0 ((1 / 2) * R) < ⊤ := by
-    filter_upwards [ae_lt_top' (hWhalf.pow_const p) hIhalf.ne] with ω hω
+    filter_upwards [ae_lt_top' ((gmc_weighted_mass_aemeasurable P X hX γ hγ hγ2 M hM α 0 ((1 / 2) * R)).pow_const p) hIhalf.ne] with ω hω
     by_contra hcon
-    have htop : weightedGmcBallMass γ (M ω) α 0 ((1 / 2) * R) = ⊤ := not_lt_top_iff.mp hcon
-    rw [htop, ENNReal.top_rpow_of_pos hp] at hω
+    rw [(not_lt_top_iff.mp hcon), ENNReal.top_rpow_of_pos hp] at hω
     exact lt_irrefl _ hω
   -- the annulus ball has almost surely positive mass
   have hpos := gmc_ball_mass_pos_ae P X hX γ hγ hγ2 M hM (((3 * R / 4 : ℝ)) : ℂ) (R / 4)
@@ -143,9 +141,8 @@ theorem weightedGmcBallMoment_center_eq_top_of_insertion
     exact ENNReal.rpow_lt_rpow (lt_of_lt_of_le
       (ENNReal.lt_add_right hω1.ne (mul_ne_zero hc0.ne' hω2.ne'))
       (centerInsertion_mass_add_le (M ω) γ α (mul_pos hγ hα) hR)) hp
-  have hstrict : weightedGmcBallMoment P M γ α 0 ((1 / 2) * R) p <
-      weightedGmcBallMoment P M γ α 0 R p :=
-    lintegral_strict_mono (NeZero.ne P) (hWfull.pow_const p) hIhalf.ne hlt
+  have hstrict :=
+    lintegral_strict_mono (NeZero.ne P) ((gmc_weighted_mass_aemeasurable P X hX γ hγ hγ2 M hM α 0 R).pow_const p) hIhalf.ne hlt
   exact absurd hge (not_le.mpr hstrict)
 
 end DOZZ.Proofs

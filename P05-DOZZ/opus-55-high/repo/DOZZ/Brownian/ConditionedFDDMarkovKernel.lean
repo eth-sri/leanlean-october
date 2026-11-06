@@ -46,32 +46,36 @@ theorem measurable_conditionedPositiveTransitionKernelOnReal_density (ν dt : �
       if 0 < x then ENNReal.ofReal (conditionedPositiveTransitionDensity ν dt x y)
       else ENNReal.ofReal (conditionedPositiveEntranceDensity ν 1 y))) := by
   change Measurable (fun z : ℝ × ℝ =>
-    if 0 < z.1 then ENNReal.ofReal (conditionedPositiveTransitionDensity ν dt z.1 z.2)
-    else ENNReal.ofReal (conditionedPositiveEntranceDensity ν 1 z.2))
+    if 0 < z.1 then ENNReal.ofReal _
+    else ENNReal.ofReal _)
   apply Measurable.ite
-  · exact measurableSet_lt measurable_const measurable_fst
+  · measurability
   · exact ENNReal.measurable_ofReal.comp
       (measurable_conditionedPositiveTransitionDensity_pair ν dt)
   · exact ENNReal.measurable_ofReal.comp
       ((measurable_conditionedPositiveEntranceDensity_arg ν 1).comp measurable_snd)
+section
+variable {ν dt x : ℝ}
 
 theorem conditionedPositiveTransitionKernelOnReal_apply_of_pos
-    {ν dt x : ℝ} (hx : 0 < x) :
+    (hx : 0 < x) :
     conditionedPositiveTransitionKernelOnReal ν dt x =
       conditionedPositiveTransitionMeasure ν dt x := by
   rw [conditionedPositiveTransitionKernelOnReal, Kernel.withDensity_apply
-    (Kernel.const ℝ (volume : Measure ℝ))
+    (Kernel.const ℝ volume)
     (measurable_conditionedPositiveTransitionKernelOnReal_density ν dt), Kernel.const_apply]
-  simp [conditionedPositiveTransitionMeasure, hx]
+  aesop
 
 theorem conditionedPositiveTransitionKernelOnReal_apply_of_nonpos
-    {ν dt x : ℝ} (hx : x ≤ 0) :
+    (hx : x ≤ 0) :
     conditionedPositiveTransitionKernelOnReal ν dt x =
       conditionedPositiveEntranceMeasure ν 1 := by
   rw [conditionedPositiveTransitionKernelOnReal, Kernel.withDensity_apply
-    (Kernel.const ℝ (volume : Measure ℝ))
+    (Kernel.const ℝ volume)
     (measurable_conditionedPositiveTransitionKernelOnReal_density ν dt), Kernel.const_apply]
-  simp [conditionedPositiveEntranceMeasure, not_lt.mpr hx]
+  bound
+
+end
 
 theorem isMarkovKernel_conditionedPositiveTransitionKernelOnReal
     (ν dt : ℝ) (hν : 0 ≤ ν) (hdt : 0 < dt) :
@@ -80,7 +84,7 @@ theorem isMarkovKernel_conditionedPositiveTransitionKernelOnReal
   by_cases hx : 0 < x
   · rw [conditionedPositiveTransitionKernelOnReal_apply_of_pos hx]
     exact isProbabilityMeasure_conditionedPositiveTransitionMeasure ν dt x hν hdt hx
-  · have hx' : x ≤ 0 := le_of_not_gt hx
+  · have hx' := le_of_not_gt hx
     rw [conditionedPositiveTransitionKernelOnReal_apply_of_nonpos hx']
     exact isProbabilityMeasure_conditionedPositiveEntranceMeasure ν 1 hν (by norm_num)
 
@@ -93,7 +97,7 @@ theorem negativeConditionedLaw_twoTime_compProd
     P.map (fun p => (-(p t₀), -(p (t₀ + dt)))) =
       conditionedPositiveEntranceMeasure ν (t₀ : ℝ) ⊗ₘ
         conditionedPositiveTransitionKernelOnReal ν (dt : ℝ) := by
-  have hentrance : Measurable (fun x : ℝ =>
+  have hentrance : Measurable (fun x =>
       ENNReal.ofReal (conditionedPositiveEntranceDensity ν (t₀ : ℝ) x)) :=
     ENNReal.measurable_ofReal.comp
       (measurable_conditionedPositiveEntranceDensity_arg ν (t₀ : ℝ))
@@ -111,14 +115,11 @@ theorem negativeConditionedLaw_twoTime_compProd
     by_cases hx : 0 < z.1
     · have he : 0 ≤ conditionedPositiveEntranceDensity ν (t₀ : ℝ) z.1 :=
         conditionedPositiveEntranceDensity_nonneg hP.1 ht₀ z.1
-      have ht : 0 ≤ conditionedPositiveTransitionDensity ν (dt : ℝ) z.1 z.2 :=
-        conditionedPositiveTransitionDensity_nonneg hP.1 hdt hx z.2
-      simp [hx, max_eq_right (mul_nonneg he ht)]
-      rw [← ENNReal.ofReal_mul he]
+      simp_all
     · have hx' : z.1 ≤ 0 := le_of_not_gt hx
       have he : conditionedPositiveEntranceDensity ν (t₀ : ℝ) z.1 = 0 := by
         simp [conditionedPositiveEntranceDensity, not_lt.mpr hx']
-      simp [hx, he]
+      simp_all
   have hcompAux :
       ((volume : Measure ℝ).withDensity
           (fun x => ENNReal.ofReal (conditionedPositiveEntranceDensity ν (t₀ : ℝ) x))) ⊗ₘ
@@ -136,21 +137,20 @@ theorem negativeConditionedLaw_twoTime_compProd
           ENNReal.ofReal (conditionedPositiveEntranceDensity ν (t₀ : ℝ) z.1) *
             (if 0 < z.1 then
               ENNReal.ofReal (conditionedPositiveTransitionDensity ν (dt : ℝ) z.1 z.2)
-            else ENNReal.ofReal (conditionedPositiveEntranceDensity ν 1 z.2))) := by
+            else ENNReal.ofReal _)) := by
           rw [Measure.withDensity_compProd_withDensity
-            (μ := (volume : Measure ℝ))
-            (κ := Kernel.const ℝ (volume : Measure ℝ)) hentrance htransition,
+           
+            hentrance htransition,
             Measure.compProd_const]
-      _ = _ := by rw [← Measure.volume_eq_prod ℝ ℝ]
+      _ = _ := by rfl
   have hcomp : conditionedPositiveEntranceMeasure ν (t₀ : ℝ) ⊗ₘ
       conditionedPositiveTransitionKernelOnReal ν (dt : ℝ) =
-        (volume : Measure (ℝ × ℝ)).withDensity (fun z =>
+        (volume : Measure _).withDensity (fun z =>
           ENNReal.ofReal (conditionedPositiveEntranceDensity ν (t₀ : ℝ) z.1) *
             (if 0 < z.1 then
               ENNReal.ofReal (conditionedPositiveTransitionDensity ν (dt : ℝ) z.1 z.2)
             else ENNReal.ofReal (conditionedPositiveEntranceDensity ν 1 z.2))) := by
-    rw [conditionedPositiveEntranceMeasure, conditionedPositiveTransitionKernelOnReal,
-      hcompAux, ← Measure.volume_eq_prod ℝ ℝ]
+    assumption
   rw [negativeConditionedLaw_twoTime_positiveFDD hP t₀ dt ht₀ hdt]
   rw [hcomp]
   congr 1

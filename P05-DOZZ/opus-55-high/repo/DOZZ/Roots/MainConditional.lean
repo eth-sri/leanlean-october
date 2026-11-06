@@ -50,7 +50,6 @@ theorem dozz_main_of_residual_factor (γ μ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2
   have hC : ContinuousAt (fun g => (structureConstant P (N g) g μ α₁ α₂ α₃ : ℂ)) γ :=
     Complex.continuous_ofReal.continuousAt.comp
       (roots_structureConstant_gamma_continuousAt P X N hX hN γ μ α₁ α₂ α₃ hγ hγ2 hμ hα hs)
-  have hD := roots_dozzFormula_gamma_continuousAt V hV γ μ α₁ α₂ α₃ hγ hγ2 hμ hα hs
   have heq : ∃ᶠ g : ℝ in nhds γ,
       (structureConstant P (N g) g μ α₁ α₂ α₃ : ℂ) = dozzFormula g μ (V g) α₁ α₂ α₃ := by
     have hfreq := (roots_frequently_irrational_sq γ hγ).and_eventually
@@ -62,6 +61,5 @@ theorem dozz_main_of_residual_factor (γ μ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2
       exact hresidual P X (N g) g μ η (V g) hg hg2 hgirr hμ hη hX (hN g hg hg2) (hV g ⟨hg, hg2⟩)
     · exact hgα
     · exact hgs
-  have he := tendsto_nhds_unique_of_frequently_eq hC.tendsto hD.tendsto heq
-  simpa only [hNγ, hVγ] using he
+  simpa only [hNγ, hVγ] using (tendsto_nhds_unique_of_frequently_eq hC.tendsto (roots_dozzFormula_gamma_continuousAt V hV γ μ α₁ α₂ α₃ hγ hγ2 hμ hα hs).tendsto heq)
 end DOZZ.Proofs

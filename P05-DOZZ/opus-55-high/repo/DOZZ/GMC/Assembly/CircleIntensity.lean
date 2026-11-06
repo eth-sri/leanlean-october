@@ -55,13 +55,14 @@ theorem circleRegularization_admissible
 theorem logRegularizationReference_univ_circleDensity :
     logRegularizationReference Set.univ circleDensity = gmcReferenceMeasure := by
   unfold logRegularizationReference gmcReferenceMeasure
-  rw [Measure.restrict_univ]
+  simp
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
 
 
 /-- Integrals of Borel tests against the circle cutoff chaos are admissible cutoff integrals. -/
 theorem integral_regularizedGMC_eq_admissibleCutoffIntegral
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+    (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (γ r : ℝ) (f : ℂ → ℝ) (ω : Ω) :
     ∫ x, f x ∂regularizedGMC P Xc γ r ω =
@@ -82,7 +83,6 @@ theorem integral_regularizedGMC_eq_admissibleCutoffIntegral
   have hd₁ : Measurable d₁ := by
     have hfield : Measurable (fun x : ℂ => Xc ω x r) :=
       (hXc.1 r).comp (measurable_const.prodMk measurable_id)
-    dsimp [d₁]
     fun_prop
   have he₀ : Measurable (fun x => ENNReal.ofReal (d₀ x)) :=
     ENNReal.measurable_ofReal.comp hweightMeas
@@ -112,13 +112,11 @@ theorem integral_regularizedGMC_eq_admissibleCutoffIntegral
   apply integral_congr_ae
   filter_upwards [] with x
   rw [ENNReal.toReal_ofReal (hd₀nonneg x), ENNReal.toReal_ofReal (hd₁nonneg x)]
-  simp only [d₀, d₁]
   ring
 
 /-- The admissible cutoff integral of a Borel test is measurable in the sample. -/
 theorem admissibleCutoffIntegral_measurable
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P]
+    [IsProbabilityMeasure P]
     (U : Set ℂ) (dens : ℂ → ℝ) (ε₀ : ℝ)
     (Y : Ω → ℝ → ℂ → ℝ)
     (hY : IsAdmissibleLogRegularization P U dens ε₀ Y) (g r : ℝ) (f : ℂ → ℝ)
@@ -130,23 +128,22 @@ theorem admissibleCutoffIntegral_measurable
         fun x => gaussianVariance P (fun ω => Y ω (Real.exp (-r)) x) := by
       funext x
       unfold gaussianVariance gaussianCovariance
-      simp only [pow_two]
-    rw [heq]; exact hv
+      ring
+    simp_all
   have hfield : Measurable (fun q : Ω × ℂ => Y q.1 (Real.exp (-r)) q.2) :=
     hY.measurableAtScale _
   have hF : Measurable (fun q : Ω × ℂ => f q.2 * Real.exp (g * Y q.1 (Real.exp (-r)) q.2 -
       g ^ 2 / 2 * ∫ ω', Y ω' (Real.exp (-r)) q.2 ^ 2 ∂P)) := by
     have h2 : Measurable (fun q : Ω × ℂ => ∫ ω', Y ω' (Real.exp (-r)) q.2 ^ 2 ∂P) :=
       hv'.comp measurable_snd
-    have h3 : Measurable (fun q : Ω × ℂ => f q.2) := hf.comp measurable_snd
     fun_prop
   exact hF.stronglyMeasurable.integral_prod_right.measurable
+section
+variable (X : Ω → Distr) (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+include hX hXc
 
 /-- Test integrals against the circle cutoff chaos are measurable in the sample. -/
 theorem regularizedGMC_integral_measurable
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (γ r : ℝ) (f : ℂ → ℝ) (hf : Measurable f) :
     Measurable (fun ω => ∫ x, f x ∂regularizedGMC P Xc γ r ω) := by
   have : IsProbabilityMeasure P := hX.1
@@ -161,11 +158,8 @@ theorem regularizedGMC_integral_measurable
 /-- The circle cutoff chaos is uniformly `L¹` Cauchy over compact subcritical charge sets and
 bounded Borel tests supported in a compact set. -/
 theorem regularizedGMC_integral_L1_uniform_cauchy
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (I : Set ℝ) (hI : IsCompact I) (hI2 : I ⊆ Ioo 0 2)
-    (K : Set ℂ) (hK : IsCompact K) (L : ℝ) (ε : ℝ) (hε : 0 < ε) :
+    (K : Set ℂ) (hK : IsCompact K) (L ε : ℝ) (hε : 0 < ε) :
     ∃ R : ℝ, ∀ r s : ℝ, R ≤ r → R ≤ s → ∀ γ ∈ I, ∀ f : ℂ → ℝ, Measurable f →
       (∀ x, |f x| ≤ L) → (∀ x ∉ K, f x = 0) →
       ∫⁻ ω, ENNReal.ofReal |∫ x, f x ∂regularizedGMC P Xc γ r ω -
@@ -175,7 +169,11 @@ theorem regularizedGMC_integral_L1_uniform_cauchy
     (circleRegularization_admissible P X hX Xc hXc) K hK (Set.subset_univ K) I hI hI2 L ε hε
   refine ⟨R, fun r s hr hs γ hγ f hf hfL hfK => ?_⟩
   simp only [integral_regularizedGMC_eq_admissibleCutoffIntegral P X hX Xc hXc]
-  exact hR r s hr hs γ hγ f hf hfL hfK
+  simp_all
+
+end
+
+end
 
 end DOZZ.Assembly
 
@@ -194,11 +192,14 @@ open scoped ENNReal NNReal Distributions BoundedContinuousFunction
 namespace DOZZ.Assembly
 
 open DOZZ.Proofs
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+section
+variable (hX : IsEquatorGFF P X)
+include hX
 
 /-- A circle GMC version converges along the cutoffs of every circle-average witness. -/
 theorem isGMCOf_tendstoInMeasure
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (γ : ℝ) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (f : ℂ →ᵇ ℝ) :
     TendstoInMeasure P (fun r ω => ∫ x, f x ∂regularizedGMC P Xc γ r ω) atTop
@@ -206,12 +207,10 @@ theorem isGMCOf_tendstoInMeasure
   obtain ⟨Xc', hXc', hconv⟩ := hM.2
   refine (hconv f).congr_left (fun r => ?_)
   filter_upwards [regularizedGMC_ae_eq_of_circleAverage P X hX Xc' Xc hXc' hXc γ r] with ω hω
-  rw [hω]
+  simp_all
 
 /-- Fatou bound for a nonnegative bounded continuous test against a circle GMC version. -/
 theorem isGMCOf_lintegral_ofReal_integral_le
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (γ : ℝ) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (f : ℂ →ᵇ ℝ) (hf : ∀ x, 0 ≤ f x) :
     ∫⁻ ω, ENNReal.ofReal (∫ x, f x ∂M ω) ∂P ≤
       ∫⁻ x, ENNReal.ofReal (f x) ∂gmcReferenceMeasure := by
@@ -232,6 +231,10 @@ theorem isGMCOf_lintegral_ofReal_integral_le
         regularizedGMC_lintegral_test_eq_reference P X hX Xc hXc γ r _
           (ENNReal.measurable_ofReal.comp f.continuous.measurable)
 
+end
+
+end
+
 /-- Continuous ramps increasing to the indicator of an open set with nonempty complement. -/
 noncomputable def openRamp (V : Set ℂ) (n : ℕ) : ℂ →ᵇ ℝ :=
   BoundedContinuousFunction.ofNormedAddCommGroup
@@ -242,54 +245,64 @@ noncomputable def openRamp (V : Set ℂ) (n : ℕ) : ℂ →ᵇ ℝ :=
         le_min zero_le_one (mul_nonneg (Nat.cast_nonneg _) Metric.infDist_nonneg)
       rw [Real.norm_eq_abs, abs_of_nonneg h0]
       exact min_le_left _ _)
+section
+variable (V : Set ℂ)
+section
+variable (n : ℕ) (x : ℂ)
 
-theorem openRamp_apply (V : Set ℂ) (n : ℕ) (x : ℂ) :
+theorem openRamp_apply :
     openRamp V n x = min 1 ((n : ℝ) * Metric.infDist x Vᶜ) := rfl
 
-theorem openRamp_nonneg (V : Set ℂ) (n : ℕ) (x : ℂ) : 0 ≤ openRamp V n x := by
-  rw [openRamp_apply]
+theorem openRamp_nonneg : 0 ≤ openRamp V n x := by
   exact le_min zero_le_one (mul_nonneg (Nat.cast_nonneg _) Metric.infDist_nonneg)
 
-theorem openRamp_le_indicator (V : Set ℂ) (n : ℕ) (x : ℂ) : ENNReal.ofReal (openRamp V n x) ≤ V.indicator (fun _ => (1 : ℝ≥0∞)) x := by
+theorem openRamp_le_indicator : ENNReal.ofReal (openRamp V n x) ≤ V.indicator (fun _ => (1 : ℝ≥0∞)) x := by
   by_cases hx : x ∈ V
   · rw [Set.indicator_of_mem hx, openRamp_apply]
-    exact ENNReal.ofReal_le_one.mpr (min_le_left _ _)
+    simp
   · rw [Set.indicator_of_notMem hx, openRamp_apply,
       Metric.infDist_zero_of_mem (show x ∈ Vᶜ from hx)]
     simp
 
-theorem openRamp_mono (V : Set ℂ) (x : ℂ) : Monotone (fun n => openRamp V n x) := by
+end
+
+theorem openRamp_mono (x : ℂ) : Monotone (fun n => openRamp V n x) := by
   intro n m hnm
-  simp only [openRamp_apply]
   apply min_le_min le_rfl
   exact mul_le_mul_of_nonneg_right (by exact_mod_cast hnm) Metric.infDist_nonneg
 
-theorem openRamp_tendsto (V : Set ℂ) (hV : IsOpen V) (hVc : Vᶜ.Nonempty) (x : ℂ) :
+theorem openRamp_tendsto (hV : IsOpen V) (hVc : Vᶜ.Nonempty) (x : ℂ) :
     Tendsto (fun n => ENNReal.ofReal (openRamp V n x)) atTop
       (𝓝 (V.indicator (fun _ => (1 : ℝ≥0∞)) x)) := by
   by_cases hx : x ∈ V
   · rw [Set.indicator_of_mem hx]
-    have hpos : 0 < Metric.infDist x Vᶜ :=
+    have hpos :=
       (hV.isClosed_compl.notMem_iff_infDist_pos hVc).mp (fun h => h hx)
     obtain ⟨N, hN⟩ := exists_nat_gt (1 / Metric.infDist x Vᶜ)
     apply tendsto_const_nhds.congr'
     filter_upwards [eventually_ge_atTop N] with n hn
     rw [openRamp_apply]
-    have hn' : (1 : ℝ) ≤ (n : ℝ) * Metric.infDist x Vᶜ := by
+    have hn' : 1 ≤ n * Metric.infDist x Vᶜ := by
       have h1 : 1 / Metric.infDist x Vᶜ < n := lt_of_lt_of_le hN (by exact_mod_cast hn)
       rw [div_lt_iff₀ hpos] at h1
       linarith
-    rw [min_eq_left hn', ENNReal.ofReal_one]
+    simp_all
   · rw [Set.indicator_of_notMem hx]
     apply tendsto_const_nhds.congr'
     filter_upwards [] with n
     rw [openRamp_apply, Metric.infDist_zero_of_mem (show x ∈ Vᶜ from hx)]
     simp
 
+end
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+section
+variable (N : Ω → Measure ℂ)
+
 /-- A measurable random measure is bounded in expectation by the reference measure on every open
 set, given the bound for all nonnegative bounded continuous tests. -/
 theorem lintegral_measure_isOpen_le_of_test_bound
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (N : Ω → Measure ℂ) (hN : Measurable N)
+    (hN : Measurable N)
     (ν : Measure ℂ)
     (htest : ∀ f : ℂ →ᵇ ℝ, (∀ x, 0 ≤ f x) →
       ∫⁻ ω, ∫⁻ x, ENNReal.ofReal (f x) ∂N ω ∂P ≤ ∫⁻ x, ENNReal.ofReal (f x) ∂ν)
@@ -304,7 +317,7 @@ theorem lintegral_measure_isOpen_le_of_test_bound
       rw [← lintegral_iSup hrampMeas (fun n m hnm x =>
         ENNReal.ofReal_le_ofReal (openRamp_mono V x hnm))]
       have hlim (x : ℂ) : (⨆ n, ENNReal.ofReal (openRamp V n x)) =
-          V.indicator (fun _ => (1 : ℝ≥0∞)) x :=
+          V.indicator (fun _ => 1) x :=
         tendsto_nhds_unique (tendsto_atTop_iSup fun n m hnm =>
           ENNReal.ofReal_le_ofReal (openRamp_mono V x hnm)) (openRamp_tendsto V hV hVc x)
       simp only [hlim]
@@ -312,28 +325,25 @@ theorem lintegral_measure_isOpen_le_of_test_bound
     have hmeasω (n : ℕ) : Measurable (fun ω => ∫⁻ x, ENNReal.ofReal (openRamp V n x) ∂N ω) :=
       (Measure.measurable_lintegral (hrampMeas n)).comp hN
     calc ∫⁻ ω, N ω V ∂P = ∫⁻ ω, ⨆ n, ∫⁻ x, ENNReal.ofReal (openRamp V n x) ∂N ω ∂P := by
-          simp only [hpoint]
+          simp_all
       _ = ⨆ n, ∫⁻ ω, ∫⁻ x, ENNReal.ofReal (openRamp V n x) ∂N ω ∂P :=
           lintegral_iSup hmeasω (fun n m hnm ω => hmono ω hnm)
       _ ≤ ν V := by
           apply iSup_le
           intro n
-          refine (htest (openRamp V n) (openRamp_nonneg V n)).trans ?_
-          calc ∫⁻ x, ENNReal.ofReal (openRamp V n x) ∂ν ≤
-                ∫⁻ x, V.indicator (fun _ => (1 : ℝ≥0∞)) x ∂ν :=
+          refine (htest _ (openRamp_nonneg V n)).trans ?_
+          calc ∫⁻ x, ENNReal.ofReal _ ∂ν ≤
+                ∫⁻ x, V.indicator (fun _ => 1) x ∂ν :=
                 lintegral_mono fun x => openRamp_le_indicator V n x
             _ = ν V := by rw [lintegral_indicator_const hV.measurableSet, one_mul]
   · have hVuniv : V = Set.univ := by
-      rw [Set.not_nonempty_iff_eq_empty, Set.compl_empty_iff] at hVc
-      exact hVc
+      rwa [Set.not_nonempty_iff_eq_empty, Set.compl_empty_iff] at hVc
     subst hVuniv
-    have h := htest (BoundedContinuousFunction.const ℂ 1) (fun _ => zero_le_one)
-    simpa using h
+    simpa using (htest (BoundedContinuousFunction.const ℂ 1) (fun _ => zero_le_one))
 
 /-- A measurable random measure bounded in expectation by a finite reference measure on open
 sets is bounded by it on every Borel set. -/
 theorem lintegral_measure_le_of_isOpen_bound
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (N : Ω → Measure ℂ)
     (ν : Measure ℂ) [IsFiniteMeasure ν]
     (hopen : ∀ V : Set ℂ, IsOpen V → ∫⁻ ω, N ω V ∂P ≤ ν V) (A : Set ℂ) :
     ∫⁻ ω, N ω A ∂P ≤ ν A := by
@@ -342,11 +352,12 @@ theorem lintegral_measure_le_of_isOpen_bound
   obtain ⟨V, hAV, hV, hVc⟩ := A.exists_isOpen_lt_of_lt c hc
   exact lt_of_le_of_lt ((lintegral_mono fun ω => measure_mono hAV).trans (hopen V hV)) hVc
 
+end
+
 /-- Intensity upper bound for a circle GMC version: for every nonnegative Borel test, the
 expected integral against the random measure is at most its reference integral. -/
 theorem isGMCOf_lintegral_le
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
+    (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
     (φ : ℂ → ℝ≥0∞) (hφ : Measurable φ) :
     ∫⁻ ω, ∫⁻ x, φ x ∂M ω ∂P ≤ ∫⁻ x, φ x ∂gmcReferenceMeasure := by
@@ -363,19 +374,20 @@ theorem isGMCOf_lintegral_le
     filter_upwards [hMN] with ω hω
     rw [hω, ← ofReal_integral_eq_lintegral_ofReal
       (f.integrable (N ω)) (ae_of_all _ hf)]
-  have hopen := lintegral_measure_isOpen_le_of_test_bound P N hNmeas gmcReferenceMeasure htest
   have hbind : P.bind N ≤ gmcReferenceMeasure := by
     rw [Measure.le_iff]
     intro s hs
     rw [Measure.bind_apply hs hNmeas.aemeasurable]
-    exact lintegral_measure_le_of_isOpen_bound P N gmcReferenceMeasure hopen s
+    exact lintegral_measure_le_of_isOpen_bound P N gmcReferenceMeasure (lintegral_measure_isOpen_le_of_test_bound P N hNmeas gmcReferenceMeasure htest) s
   calc ∫⁻ ω, ∫⁻ x, φ x ∂M ω ∂P = ∫⁻ ω, ∫⁻ x, φ x ∂N ω ∂P := by
         apply lintegral_congr_ae
         filter_upwards [hMN] with ω hω
-        rw [hω]
+        simp_all
     _ = ∫⁻ x, φ x ∂P.bind N := (Measure.lintegral_bind hNmeas.aemeasurable
         hφ.aemeasurable).symm
     _ ≤ ∫⁻ x, φ x ∂gmcReferenceMeasure := lintegral_mono' hbind le_rfl
+
+end
 
 end DOZZ.Assembly
 
@@ -397,57 +409,55 @@ noncomputable def clampAbs (L t : ℝ) : ℝ := max (-L) (min L t)
 
 theorem continuous_clampAbs (L : ℝ) : Continuous (clampAbs L) :=
   continuous_const.max (continuous_const.min continuous_id)
+section
+variable (L t : ℝ)
+section
+variable (hL : 0 ≤ L)
+include hL
 
-theorem abs_clampAbs_le (L t : ℝ) (hL : 0 ≤ L) : |clampAbs L t| ≤ L := by
+theorem abs_clampAbs_le : |clampAbs L t| ≤ L := by
   unfold clampAbs
-  rw [abs_le]
-  constructor
-  · exact le_max_left _ _
-  · exact max_le (by linarith) (min_le_left _ _)
+  grind
 
-theorem abs_clampAbs_le_abs (L t : ℝ) (hL : 0 ≤ L) : |clampAbs L t| ≤ |t| := by
+theorem abs_clampAbs_le_abs : |clampAbs L t| ≤ |t| := by
   unfold clampAbs
-  rcases le_total t (-L) with h | h
-  · rw [min_eq_right (by linarith), max_eq_left h, abs_neg, abs_of_nonneg hL,
-      abs_of_nonpos (by linarith)]
-    linarith
-  · rcases le_total t L with h' | h'
-    · rw [min_eq_right h', max_eq_right h]
-    · rw [min_eq_left h', max_eq_right (by linarith), abs_of_nonneg hL, abs_of_nonneg (by linarith)]
-      exact h'
+  grind
+
+end
+
+end
 
 theorem abs_sub_clampAbs_le (L s t : ℝ) (hs : |s| ≤ L) : |s - clampAbs L t| ≤ |s - t| := by
   unfold clampAbs
-  have hs' := abs_le.mp hs
-  rcases le_total t (-L) with h | h
-  · rw [min_eq_right (by linarith), max_eq_left h]
-    rw [abs_of_nonneg (by linarith), abs_of_nonneg (by linarith)]
-    linarith
-  · rcases le_total t L with h' | h'
-    · rw [min_eq_right h', max_eq_right h]
-    · rw [min_eq_left h', max_eq_right (by linarith)]
-      rw [abs_of_nonpos (by linarith), abs_of_nonpos (by linarith)]
-      linarith
+  grind
 
 /-- The radial cutoff equal to one on the ball of radius `ρ` and vanishing off radius `ρ + 1`. -/
 noncomputable def ballCutoff (ρ : ℝ) (x : ℂ) : ℝ := max 0 (min 1 (ρ + 1 - ‖x‖))
+section
+variable (ρ : ℝ)
 
-theorem continuous_ballCutoff (ρ : ℝ) : Continuous (ballCutoff ρ) := by
+theorem continuous_ballCutoff : Continuous (ballCutoff ρ) := by
   unfold ballCutoff
   fun_prop
+section
+variable (x : ℂ)
 
-theorem ballCutoff_nonneg (ρ : ℝ) (x : ℂ) : 0 ≤ ballCutoff ρ x := le_max_left _ _
+theorem ballCutoff_nonneg : 0 ≤ ballCutoff ρ x := le_max_left ..
 
-theorem ballCutoff_le_one (ρ : ℝ) (x : ℂ) : ballCutoff ρ x ≤ 1 :=
-  max_le zero_le_one (min_le_left _ _)
+theorem ballCutoff_le_one : ballCutoff ρ x ≤ 1 :=
+  max_le zero_le_one (min_le_left ..)
 
-theorem ballCutoff_eq_one (ρ : ℝ) (x : ℂ) (hx : ‖x‖ ≤ ρ) : ballCutoff ρ x = 1 := by
+theorem ballCutoff_eq_one (hx : ‖x‖ ≤ ρ) : ballCutoff ρ x = 1 := by
   unfold ballCutoff
-  rw [min_eq_left (by linarith), max_eq_right zero_le_one]
+  grind
 
-theorem ballCutoff_eq_zero (ρ : ℝ) (x : ℂ) (hx : ρ + 1 < ‖x‖) : ballCutoff ρ x = 0 := by
+theorem ballCutoff_eq_zero (hx : ρ + 1 < ‖x‖) : ballCutoff ρ x = 0 := by
   unfold ballCutoff
-  rw [max_eq_left (min_le_right _ _ |>.trans (by linarith))]
+  grind
+
+end
+
+end
 
 /-- Continuous `L¹` approximation of bounded Borel tests with bound and support control. -/
 theorem exists_continuous_L1_approx
@@ -455,10 +465,10 @@ theorem exists_continuous_L1_approx
     (hfL : ∀ x, |f x| ≤ L) (hfρ : ∀ x, ρ < ‖x‖ → f x = 0) (δ : ℝ≥0∞) (hδ : δ ≠ 0) :
     ∃ h : ℂ → ℝ, Continuous h ∧ (∀ x, |h x| ≤ L) ∧ (∀ x, ρ + 1 < ‖x‖ → h x = 0) ∧
       ∫⁻ x, ENNReal.ofReal |f x - h x| ∂ν ≤ δ := by
-  have hL : 0 ≤ L := (abs_nonneg _).trans (hfL 0)
+  have hL := (abs_nonneg _).trans (hfL 0)
   have hfint : Integrable f ν :=
     Integrable.of_bound hf.aestronglyMeasurable L (ae_of_all _ fun x => by
-      rw [Real.norm_eq_abs]; exact hfL x)
+      simp_all)
   obtain ⟨g, -, hg, hgcont, -⟩ := hfint.exists_hasCompactSupport_lintegral_sub_le hδ
   refine ⟨fun x => ballCutoff ρ x * clampAbs L (g x),
     (continuous_ballCutoff ρ).mul ((continuous_clampAbs L).comp hgcont), ?_, ?_, ?_⟩
@@ -498,25 +508,23 @@ theorem ofReal_abs_integral_sub_le_lintegral {α : Type*} [MeasurableSpace α] (
         intro hsub
         apply hhi
         have h1 : Integrable (fun x => f x - (f x - h x)) μ := hfi.sub hsub
-        exact h1.congr (ae_of_all _ fun x => sub_sub_cancel (f x) (h x))
+        simp_all
       have htop : ∫⁻ x, ‖f x - h x‖ₑ ∂μ = ⊤ := by
         by_contra hne
         exact hnot ⟨(hf.sub hh).aestronglyMeasurable, lt_top_iff_ne_top.mpr hne⟩
       simp_rw [Real.enorm_eq_ofReal_abs] at htop
-      rw [htop]
-      exact le_top
+      simp_all
   · by_cases hhi : Integrable h μ
     · have hnot : ¬ Integrable (fun x => f x - h x) μ := by
         intro hsub
         apply hfi
         have h1 : Integrable (fun x => (f x - h x) + h x) μ := hsub.add hhi
-        exact h1.congr (ae_of_all _ fun x => sub_add_cancel (f x) (h x))
+        simp_all
       have htop : ∫⁻ x, ‖f x - h x‖ₑ ∂μ = ⊤ := by
         by_contra hne
         exact hnot ⟨(hf.sub hh).aestronglyMeasurable, lt_top_iff_ne_top.mpr hne⟩
       simp_rw [Real.enorm_eq_ofReal_abs] at htop
-      rw [htop]
-      exact le_top
+      simp_all
     · rw [integral_undef hfi, integral_undef hhi, sub_self, abs_zero, ENNReal.ofReal_zero]
       exact zero_le
 

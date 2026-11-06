@@ -40,8 +40,8 @@ theorem brownian_firstHit_reversal_law
   let Y := negativeConditionedLastExitSegment c
   let μ := P.map X
   let η := Qν.map Y
-  have hX : Measurable X := measurable_reversedPositiveFirstHitSegment ν c
-  have hY : Measurable Y := measurable_negativeConditionedLastExitSegment c
+  have hX := measurable_reversedPositiveFirstHitSegment ν c
+  have hY := measurable_negativeConditionedLastExitSegment c
   have hmark : SameStoppedPreterminalLaws μ η := by
     intro n ss hss hs0
     rw [Measure.restrict_map hX (measurableSet_lt measurable_const measurable_fst),
@@ -57,8 +57,7 @@ theorem brownian_firstHit_reversal_law
           (firstPassageTime (driftedBrownianPath ν p) c-
             min (ss i) (firstPassageTime (driftedBrownianPath ν p) c))-c) = _
         rw [min_comm, tsub_min]
-        change -(p _+ν*(_ : ℝ)-c) = c-(p _+ν*(_ : ℝ))
-        ring
+        aesop
       · rfl
     rw [heX]
     change (P.restrict {p | ss (Fin.last n) < firstPassageTime (driftedBrownianPath ν p) c}).map
@@ -79,7 +78,7 @@ theorem brownian_firstHit_reversal_law
     exact brownian_firstHit_reversal_finite_marked_law ν c hν hc P hP Qν hQν n ss hss hs0
   have hfirst := brownianPath_positiveDrift_firstHit_ae P hP ν c hν hc
   let cN := Real.toNNReal c
-  have hcN : 0 < (cN : ℝ) := by simpa only [cN, Real.coe_toNNReal _ hc.le] using hc
+  have hcN : 0 < (cN : ℝ) := by positivity
   have hgood := ae_negativeConditionedLevelHitSet_nonempty_bddAbove hQν hP hν cN hcN
   simp only [cN, Real.coe_toNNReal _ hc.le] at hgood
   have hlast : ∀ᵐ p ∂Qν, p (negativeLastExitTime p c) = -c ∧ 0 < negativeLastExitTime p c := by
@@ -121,14 +120,11 @@ theorem brownian_firstHit_reversal_law
         · intro hz
           refine ⟨?_, hz z.1 le_rfl⟩
           ext t
-          change z.2 t = z.2 (min t z.1)
-          by_cases ht : t ≤ z.1
-          · rw [min_eq_left ht]
-          · rw [min_eq_right (not_le.mp ht).le]
-            exact neg_injective ((hz t (not_le.mp ht).le).trans (hz z.1 le_rfl).symm)
+          change z.2 t = z.2 _
+          grind
         · rintro ⟨hstop, hend⟩ t ht
           have he := congrArg (fun p : BrownianPath => p t) hstop
-          change z.2 t = z.2 (min t z.1) at he
+          change z.2 t = z.2 _ at he
           rw [min_eq_right ht] at he
           rwa [he]
       rw [heq]
@@ -141,18 +137,18 @@ theorem brownian_firstHit_reversal_law
     filter_upwards [hP.eval_zero_ae_eq_zero] with p hp
     intro t ht
     change -(driftedBrownianPath ν p
-      (firstPassageTime (driftedBrownianPath ν p) c-
-        min t (firstPassageTime (driftedBrownianPath ν p) c))-c) = c
-    change firstPassageTime (driftedBrownianPath ν p) c ≤ t at ht
+      (firstPassageTime _ c-
+        min t _)-c) = c
+    change firstPassageTime _ c ≤ t at ht
     rw [min_eq_right ht, tsub_self]
-    change -(p 0+ν*(0 : ℝ≥0)-c) = c
-    simp only [hp, NNReal.coe_zero, mul_zero, zero_add, zero_sub, neg_neg]
+    change -(p 0+ν*0-c) = c
+    simp only [hp, mul_zero, zero_add, zero_sub, neg_neg]
   have hηend : ∀ᵐ z ∂η, ∀ t, z.1 ≤ t → -(z.2 t) = c := by
     apply (ae_map_iff hY.aemeasurable hmEnd).mpr
     filter_upwards [hlast] with p hp
     intro t ht
     change negativeLastExitTime p c ≤ t at ht
-    change -(p (min t (negativeLastExitTime p c))) = c
+    change -(p _) = c
     rw [min_eq_right ht, hp.1, neg_neg]
   exact hmark.measure_eq hμpos hηpos hμzero hηzero c hμend hηend
 

@@ -8,6 +8,7 @@ public import DOZZ.FourPoint.Dual.OuterInverseGuard
 public import DOZZ.Statements.GMC.EquatorGFFRootedGMCIdentity
 import DOZZ.GMC.SharpMoments.SeibergWeight
 import Mathlib.Tactic
+import DOZZ.GMC.Construction.RootedIdentity
 
 /-! # The zero kernel with an independent retained radius -/
 
@@ -24,12 +25,9 @@ noncomputable def dualRetainedZeroMass (γ α₁ α₂ α₃ r : ℝ) (μ : Meas
 theorem dual_retainedZero_measure_measurable (γ α₁ α₂ α₃ r : ℝ) :
     Measurable (dualRetainedZeroMass γ α₁ α₂ α₃ r) := by
   have hD : MeasurableSet {x : ℂ | r ≤ ‖x‖} :=
-    (isClosed_le continuous_const continuous_norm).measurableSet
-  have hf := (measurable_coulombWeight γ ![-2 / γ, α₁, α₂] ![0, 0, 1] α₃).indicator hD
-  convert Measure.measurable_lintegral hf using 1
-  funext μ
-  rw [lintegral_indicator hD]
-  rfl
+    by measurability
+  convert Measure.measurable_lintegral ((measurable_coulombWeight γ ![-2 / γ, α₁, α₂] ![0, 0, 1] α₃).indicator hD) using 1
+  aesop
 
 /-- Rooting the deleted spatial weight keeps the same literal retained mass. -/
 theorem dual_retainedZero_rooted_identity {Ω : Type*} [MeasurableSpace Ω]
@@ -41,7 +39,7 @@ theorem dual_retainedZero_rooted_identity {Ω : Type*} [MeasurableSpace Ω]
     ∫⁻ u, ∫⁻ ω, f u *
       (dualRetainedZeroMass γ α₁ α₂ α₃ r (gmcRootedMeasure γ u (M ω))) ^ (-q)
         ∂P ∂gmcReferenceMeasure := by
-  apply DOZZ.equatorGFF_rooted_GMC_identity P X hX γ hγ hγ₂ M hM
+  apply DOZZ.Proofs.equatorGFF_rooted_GMC_identity P X hX γ hγ hγ₂ M hM
     (fun u _ μ => f u * (dualRetainedZeroMass γ α₁ α₂ α₃ r μ) ^ (-q))
   exact (hf.comp measurable_fst).mul
     (((dual_retainedZero_measure_measurable γ α₁ α₂ α₃ r).comp
@@ -60,7 +58,7 @@ theorem dual_retainedZero_fixed_disk_lower (γ α₁ α₂ α₃ r : ℝ) (μ : 
       simpa only [Metric.mem_ball, dist_eq_norm] using hx
     have hh := norm_sub_norm_le (3 : ℂ) x
     rw [show ‖(3 : ℂ)‖ = 3 by norm_num, norm_sub_rev] at hh
-    exact hr.trans (by linarith only [hh, hdist])
+    grind
   have hy : ∀ i : Fin 3, ‖(![0, 0, 1] : Fin 3 → ℂ) i‖ ≤ 1 := by
     intro i
     fin_cases i <;> simp
@@ -78,25 +76,24 @@ theorem dual_retainedZero_inverse_moment_uniform
     ∃ C : ℝ, 0 < C ∧ ∀ r : ℝ, r ≤ 1 →
       (∫⁻ ω, dualRetainedZeroMass γ α₁ α₂ α₃ r (M ω) ^ (-q) ∂P) ≤
         ENNReal.ofReal C := by
-  let w : ℝ := (2 : ℝ) ^ (-∑ i : Fin 3, |γ * (![-2 / γ, α₁, α₂] : Fin 3 → ℝ) i|) *
-    (4 : ℝ) ^ (-|γ * α₃|)
-  have hw : 0 < w := by dsimp only [w]; positivity
+  let w := (2 : ℝ) ^ (-∑ i : Fin 3, |γ * (![-2 / γ, α₁, α₂] : Fin 3 → ℝ) i|) *
+    4 ^ (-|γ * α₃|)
+  have hw : 0 < w := by positivity
   have hp : -q < 4 / γ ^ 2 := lt_of_le_of_lt (neg_nonpos.mpr hq) (by positivity)
   obtain ⟨Cb, hCb, hball⟩ := equatorGFF_GMC_ball_moment_bound P X hX γ hγ hγ₂ M hM
-    (-q) hp {(3 : ℂ)} isCompact_singleton
-  let e : ℝ := γ * Q γ * (-q) - γ ^ 2 * (-q) ^ 2 / 2
-  let C : ℝ := w ^ (-q) * (Cb * (1 / 8 : ℝ) ^ e)
-  have hC : 0 < C := by dsimp only [C]; positivity
+    (-q) hp {3} isCompact_singleton
+  let e := γ * Q γ * (-q) - γ ^ 2 * (-q) ^ 2 / 2
+  let C := w ^ (-q) * (Cb * (1 / 8) ^ e)
+  have hC : 0 < C := by positivity
   refine ⟨C, hC, ?_⟩
   intro r hr
   have hb (ω : Ω) : dualRetainedZeroMass γ α₁ α₂ α₃ r (M ω) ^ (-q) ≤
-      ENNReal.ofReal (w ^ (-q)) * M ω (Metric.ball (3 : ℂ) (1 / 8)) ^ (-q) := by
-    have hlow := dual_retainedZero_fixed_disk_lower γ α₁ α₂ α₃ r (M ω) hr
+      ENNReal.ofReal (w ^ (-q)) * M ω (Metric.ball 3 (1 / 8)) ^ (-q) := by
     have hanti : dualRetainedZeroMass γ α₁ α₂ α₃ r (M ω) ^ (-q) ≤
-        (ENNReal.ofReal w * M ω (Metric.ball (3 : ℂ) (1 / 8))) ^ (-q) := by
+        (ENNReal.ofReal w * M ω (Metric.ball 3 (1 / 8))) ^ (-q) := by
       rw [ENNReal.rpow_neg, ENNReal.rpow_neg]
-      exact ENNReal.inv_le_inv.mpr (ENNReal.rpow_le_rpow hlow hq)
-    have hfinite : M ω (Metric.ball (3 : ℂ) (1 / 8)) ≠ ⊤ := by
+      exact ENNReal.inv_le_inv.mpr (ENNReal.rpow_le_rpow (dual_retainedZero_fixed_disk_lower γ α₁ α₂ α₃ r (M ω) hr) hq)
+    have hfinite : M ω (Metric.ball 3 (1 / 8)) ≠ ⊤ := by
       let _ := hM.1 ω
       exact measure_ne_top _ _
     rwa [ENNReal.mul_rpow_of_ne_top ENNReal.ofReal_ne_top hfinite,
@@ -104,11 +101,11 @@ theorem dual_retainedZero_inverse_moment_uniform
   have hbound := (hball 3 (Set.mem_singleton _) (1 / 8) (by norm_num) (by norm_num)).2
   calc
     (∫⁻ ω, dualRetainedZeroMass γ α₁ α₂ α₃ r (M ω) ^ (-q) ∂P) ≤
-        ∫⁻ ω, ENNReal.ofReal (w ^ (-q)) * M ω (Metric.ball (3 : ℂ) (1 / 8)) ^ (-q) ∂P :=
+        ∫⁻ ω, ENNReal.ofReal _ * M ω _ ^ (-q) ∂P :=
       lintegral_mono hb
-    _ = ENNReal.ofReal (w ^ (-q)) * gmcMassMoment P M (Metric.ball (3 : ℂ) (1 / 8)) (-q) :=
+    _ = ENNReal.ofReal _ * gmcMassMoment P M _ (-q) :=
       lintegral_const_mul' _ _ ENNReal.ofReal_ne_top
-    _ ≤ ENNReal.ofReal (w ^ (-q)) * ENNReal.ofReal (Cb * (1 / 8 : ℝ) ^ e) :=
+    _ ≤ ENNReal.ofReal _ * ENNReal.ofReal _ :=
       mul_le_mul' le_rfl hbound
     _ = ENNReal.ofReal C := (ENNReal.ofReal_mul (Real.rpow_pos_of_pos hw _).le).symm
 

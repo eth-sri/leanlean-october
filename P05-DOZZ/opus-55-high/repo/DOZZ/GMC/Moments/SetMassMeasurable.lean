@@ -31,6 +31,6 @@ theorem gmc_set_mass_aemeasurable_of_isGMCOf
     (Measure.measurable_coe hA).comp hNmeas
   apply hEval.aemeasurable.congr
   filter_upwards [hMN] with ω hω
-  rw [hω]
+  simp_all
 
 end DOZZ.Proofs

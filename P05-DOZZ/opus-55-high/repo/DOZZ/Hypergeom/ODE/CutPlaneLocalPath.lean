@@ -22,10 +22,10 @@ noncomputable def gaussLocalSegmentValue (z w : ℂ) (t : unitInterval) : ℂ :=
 theorem gaussLocalSegmentValue_dist (z w : ℂ) (t : unitInterval) :
     dist (gaussLocalSegmentValue z w t) z = (t : ℝ) * dist w z := by
   calc
-    dist (gaussLocalSegmentValue z w t) z =
+    dist _ z =
         ‖gaussLocalSegmentValue z w t - z‖ := by rw [dist_eq_norm]
     _ = ‖(t : ℝ) • (w - z)‖ := by simp [gaussLocalSegmentValue]
-    _ = ‖(t : ℝ)‖ * ‖w - z‖ := norm_smul _ _
+    _ = ‖(t : ℝ)‖ * ‖w - z‖ := norm_smul ..
     _ = (t : ℝ) * dist w z := by
       rw [Real.norm_eq_abs, abs_of_nonneg t.property.1, dist_eq_norm]
 
@@ -67,61 +67,47 @@ theorem gaussCutPlaneLocalPath_mem_halfBall
   have hmul : (t : ℝ) * dist (w : ℂ) (z : ℂ) ≤ dist (w : ℂ) (z : ℂ) := by
     have h := mul_le_mul_of_nonneg_right t.property.2
       (dist_nonneg : 0 ≤ dist (w : ℂ) (z : ℂ))
-    simpa using h
+    linarith
   calc
     dist (gaussLocalSegmentValue (z : ℂ) w t) (z : ℂ) =
         (t : ℝ) * dist (w : ℂ) (z : ℂ) := gaussLocalSegmentValue_dist (z : ℂ) w t
     _ ≤ dist (w : ℂ) (z : ℂ) := hmul
     _ < r / 2 := by simpa [dist_comm] using hw
+section
+variable {x y z : gaussCutPlane} (p : Path x y) (q : Path y z) {s : ℝ}
+section
+variable (hs : s ∈ Icc (0 : ℝ) 1)
+include hs
 
 /-- The first half of a concatenated cut-plane path is its left path with linear reparameterization.
 -/
 theorem gaussCutPlanePathFunction_trans_left
-    {x y z : gaussCutPlane} (p : Path x y) (q : Path y z)
-    {s : ℝ} (hs : s ∈ Icc (0 : ℝ) 1) :
+    :
     gaussCutPlanePathFunction (p.trans q) (s / 2) =
       gaussCutPlanePathFunction p s := by
-  have hs2 : s / 2 ∈ Icc (0 : ℝ) 1 := by constructor <;> nlinarith [hs.1, hs.2]
+  have hs2 : s / 2 ∈ Icc (0 : ℝ) 1 := by grind
   have hproj2 := Set.projIcc_of_mem zero_le_one hs2
   have hproj := Set.projIcc_of_mem zero_le_one hs
-  change ((p.trans q) (Set.projIcc 0 1 zero_le_one (s / 2)) : ℂ) =
-    (p (Set.projIcc 0 1 zero_le_one s) : ℂ)
-  rw [hproj2, hproj, Path.trans_apply]
-  have hbranch : ((⟨s / 2, hs2⟩ : unitInterval) : ℝ) ≤ 1 / 2 := by
-    change s / 2 ≤ 1 / 2
-    linarith [hs.2]
-  split_ifs with h
-  · apply congrArg (fun t : unitInterval => (p t : ℂ))
-    apply Subtype.ext
-    change 2 * (s / 2) = s
-    ring
-  · exact (h hbranch).elim
+  change ((p.trans q) _ : ℂ) =
+    (p _ : ℂ)
+  grind
 
 /-- The second half of a concatenated cut-plane path is its right path with linear reparameterization.
 -/
 theorem gaussCutPlanePathFunction_trans_right
-    {x y z : gaussCutPlane} (p : Path x y) (q : Path y z)
-    {s : ℝ} (hs : s ∈ Icc (0 : ℝ) 1) :
+    :
     gaussCutPlanePathFunction (p.trans q) (1 / 2 + s / 2) =
       gaussCutPlanePathFunction q s := by
-  have ht : 1 / 2 + s / 2 ∈ Icc (0 : ℝ) 1 := by constructor <;> nlinarith [hs.1, hs.2]
-  have hprojT := Set.projIcc_of_mem zero_le_one ht
-  have hprojS := Set.projIcc_of_mem zero_le_one hs
-  change ((p.trans q) (Set.projIcc 0 1 zero_le_one (1 / 2 + s / 2)) : ℂ) =
-    (q (Set.projIcc 0 1 zero_le_one s) : ℂ)
-  rw [hprojT, hprojS, Path.trans_apply]
+  have ht : 1 / 2 + s / 2 ∈ Icc (0 : ℝ) 1 := by grind
+  change ((p.trans q) _ : ℂ) =
+    (q _ : ℂ)
+  rw [(Set.projIcc_of_mem zero_le_one ht), (Set.projIcc_of_mem zero_le_one hs), Path.trans_apply]
   by_cases hs0 : s = 0
-  · subst s
-    simp [p.target, q.source]
-  · have hspos : 0 < s := lt_of_le_of_ne hs.1 (Ne.symm hs0)
-    have hbranch : ¬ ((⟨1 / 2 + s / 2, ht⟩ : unitInterval) : ℝ) ≤ 1 / 2 := by
-      change ¬ (1 / 2 + s / 2 ≤ 1 / 2)
-      linarith
-    split_ifs with h
-    · exact (hbranch h).elim
-    · apply congrArg (fun t : unitInterval => (q t : ℂ))
-      apply Subtype.ext
-      change 2 * (1 / 2 + s / 2) - 1 = s
-      ring
+  · simp_all
+  grind
+
+end
+
+end
 
 end DOZZ.Proofs

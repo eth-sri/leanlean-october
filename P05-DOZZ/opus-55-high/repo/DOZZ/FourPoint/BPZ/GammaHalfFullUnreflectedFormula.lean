@@ -42,12 +42,11 @@ theorem gammaHalf_full_unreflected_formula {Ω : Type*} [MeasurableSpace Ω]
               ‖gaussFPlus H a b c z‖ ^ 2 := by
   exact bpz_gammaHalf_full_unreflected_formula_of_diag hH P X M γ μ α₁ α₂ α₃ hγ hγ₂ hμ hαlo
     hαhi hα₂ hα₃ hs hX hM fun M' γ' t h0 h2 hM' hlo hhi h₂ h₃ hs' =>
-      degenerateFourPoint_diagonal_classification hH P X M' γ' μ (γ' / 2) t α₂ α₃ h0 h2 hμ
+      degenerateFourPoint_diagonal_classification hH P X M' γ' μ _ t α₂ α₃ h0 h2 hμ
         (Or.inl rfl)
         (by
           have hQ : Q γ' = 2 / γ' + γ' / 2 := rfl
-          have : (0 : ℝ) < γ' / 2 := by positivity
-          rw [hQ]; linarith)
+          linarith)
         h₂ h₃ hs' hX hM'
 
 end DOZZ.Proofs

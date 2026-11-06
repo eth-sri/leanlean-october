@@ -24,11 +24,10 @@ theorem IsGaussHypergeometricFamily.differentiableOn_params_unitDisk
     DifferentiableOn ℂ (fun p : ℂ × ℂ × ℂ => H p.1 p.2.1 p.2.2 z)
       gaussParameterPoleFreeDomain := by
   intro p hp
-  have hseries := ordinaryHypergeometric_differentiableAt_params p z hp hz
-  have hlocal : (fun q : ℂ × ℂ × ℂ => H q.1 q.2.1 q.2.2 z) =ᶠ[𝓝 p]
+  have hlocal : (fun q => H q.1 q.2.1 q.2.2 z) =ᶠ[𝓝 p]
       (fun q => ordinaryHypergeometric q.1 q.2.1 q.2.2 z) := by
     filter_upwards [gaussParameterPoleFreeDomain_isOpen.mem_nhds hp] with q hq
     exact (hH q.1 q.2.1 q.2.2 hq).2 z hz
-  exact (hseries.congr_of_eventuallyEq hlocal).differentiableWithinAt
+  exact ((ordinaryHypergeometric_differentiableAt_params p z hp hz).congr_of_eventuallyEq hlocal).differentiableWithinAt
 
 end DOZZ.Proofs

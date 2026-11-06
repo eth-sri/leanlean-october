@@ -10,33 +10,34 @@ import Mathlib.Tactic
 open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal
 namespace DOZZ.Proofs
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
 
 /-- Almost-sure equality of the lateral plane carriers preserves the full copied observable. -/
 theorem dual_copied_inverse_moment_congr
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) [IsProbabilityMeasure P]
+    [IsProbabilityMeasure P]
     (Xc : Ω → ℂ → ℝ → ℝ) (hAr : AEMeasurable (originRadialPath Xc) P)
     (N₁ N₂ : Ω → Measure ℂ) (he : N₁ =ᵐ[P] N₂)
     (γ α₁ α₂ α₃ q : ℝ) (z : ℂ) (s r : ℝ) :
     dualCopiedSeparatedInverseMoment P Xc N₁ γ α₁ α₂ α₃ q z s r =
       dualCopiedSeparatedInverseMoment P Xc N₂ γ α₁ α₂ α₃ q z s r := by
-  let _ : IsProbabilityMeasure (P.map (originRadialPath Xc)) :=
+  let _ :=
     (Measure.isProbabilityMeasure_map_iff hAr).mpr inferInstance
   have hpair : ∀ᵐ v : Ω × Ω ∂P.prod P, N₁ v.1 = N₂ v.1 ∧ N₁ v.2 = N₂ v.2 := by
     filter_upwards [measurePreserving_fst.quasiMeasurePreserving.ae he,
       measurePreserving_snd.quasiMeasurePreserving.ae he] with v h₁ h₂
-    exact ⟨h₁,h₂⟩
+    simp_all
   have hwhole := (measurePreserving_snd (μ := P.map (originRadialPath Xc))
-    (ν := P.prod P)).quasiMeasurePreserving.ae hpair
-  unfold dualCopiedSeparatedInverseMoment
+   ).quasiMeasurePreserving.ae hpair
   apply lintegral_congr_ae
   filter_upwards [hwhole] with v hv
-  rw [hv.1,hv.2]
+  simp_all
 
 /-- The supplied chaos admits independent lateral copies whose actual signed separated-mass
 error is little-o at every exponent below `ξ`. Their radial removal and independence are
 proved on the same eventual family of source carriers. -/
 theorem dual_full_copied_constant_carrier
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+    (X : Ω → Distr)
     (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (hm : Measurable (fun v : Ω × (ℂ × ℝ) => Xc v.1 v.2.1 v.2.2))
     (hcont : ∀ᵐ ω ∂P, Continuous (fun v : ℂ × ℝ => Xc ω v.1 v.2))
@@ -52,17 +53,18 @@ theorem dual_full_copied_constant_carrier
          (dualCopiedSeparatedInverseMoment P Xc N γ α₁ α₂ α₃ q z
           (Real.exp (-h)*‖z‖) (‖z‖^(1-ξ))).toReal)/‖z‖^κ)
         (𝓝[≠] (0 : ℂ)) (𝓝 0) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   obtain ⟨N, hNm, hi, hfin, heq, _, _⟩ := reflected_copied_radial_plane_observable
     P X Xc hX hc hm hcont γ hγ hγ₂ M hM
   obtain ⟨Nz, hNz, ht⟩ := dual_full_copied_inverse_littleO P X Xc hX hc hm hcont
     γ hγ hγ₂ M hM α₁ α₂ α₃ q h ξ κ hq hα₁ hα₂ hα₃ hβ hslack hξ hξ1 hκ
   refine ⟨N, hNm, hi, hfin, heq, ?_⟩
-  have hAr := originRadialPath_aemeasurable P X Xc hc hcont
   apply ht.congr'
   filter_upwards [hNz] with z hz
-  have he := dual_copied_inverse_moment_congr P Xc hAr (Nz z) N
+  have he := dual_copied_inverse_moment_congr P Xc (originRadialPath_aemeasurable P X Xc hc hcont) (Nz z) N
     (hz.2.2.2.trans heq.symm) γ α₁ α₂ α₃ q z (Real.exp (-h)*‖z‖) (‖z‖^(1-ξ))
   rw [he]
+
+end
 
 end DOZZ.Proofs

@@ -66,7 +66,7 @@ theorem dual_source_williams_cut_increment_tendsto
   let F := fun z : ℂ => ∫ ω, b z ω*(A z ω)^(-p-1) ∂P
   let J₁ := ∫ ω, (twoSidedReflectionMass γ B Z ω).toReal ∂P
   let Err := fun c z => p*Real.exp (γ*c)*F z*J₁
-  have hp : 0 < p := div_pos (by linarith only [hs]) hγ
+  have hp : 0 < p := div_pos (by linarith) hγ
   have ha : 0 < a := div_pos (mul_pos (by norm_num) (sub_pos.mpr hα₁)) hγ
   have ha1 : a < 1 := by
     dsimp only [a, ν]
@@ -87,12 +87,12 @@ theorem dual_source_williams_cut_increment_tendsto
     (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
   have hF : Tendsto (fun z => F z/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 0) := by
     have ht := dual_radial_first_order_littleO P X hX γ hγ hγ₂ M hM Xc hc
-      α₁ α₂ α₃ ξ (p+1) h κ hh hξ hξ1 (by linarith only [hp]) hslack
+      α₁ α₂ α₃ ξ (p+1) h κ hh hξ hξ1 (by positivity) hslack
     apply ht.congr'
     filter_upwards [self_mem_nhdsWithin, hn.eventually (gt_mem_nhds (by norm_num : ‖(0 : ℂ)‖ < 1))]
       with z hz0 hz
     have he := (dual_radial_scale_real_expectation P X hX γ hγ hγ₂ M hM Xc hc
-      ν h 1 α₁ α₂ α₃ ξ (p+1) hh hξ hξ1 (by linarith only [hp]) z hz0 hz.le).2
+      ν h 1 α₁ α₂ α₃ ξ (p+1) hh hξ hξ1 (by positivity) z hz0 hz.le).2
     simp only [Real.rpow_one, show -(p+1) = -p-1 by ring] at he
     change _ = F z/‖z‖^κ
     dsimp only [F, A, b]
@@ -104,12 +104,10 @@ theorem dual_source_williams_cut_increment_tendsto
     simp only [mul_zero] at ht
     apply ht.congr
     intro z
-    dsimp only [Err]
     ring
-  change Tendsto (fun z => D z/‖z‖^κ) (𝓝[≠] (0 : ℂ)) (𝓝 L)
   apply dual_cut_squeeze_tendsto _ _ (fun z => Dfull z/‖z‖^κ)
     (fun c z => Dc c z/‖z‖^κ) (fun c z => Err c z/‖z‖^κ) Cc L hfull
-    (fun c => by simpa only [add_zero] using (hcut c).add (hErr c)) hCoeff
+    (fun c => by simpa using (hcut c).add (hErr c)) hCoeff
   intro c
   filter_upwards [self_mem_nhdsWithin, hn.eventually (gt_mem_nhds (by norm_num : ‖(0 : ℂ)‖ < 1))]
     with z hz0 hz
@@ -118,7 +116,6 @@ theorem dual_source_williams_cut_increment_tendsto
     α₁ α₂ α₃ ξ h p c hα₁ hα₂ hα₃ hh hp hξ hξ1 B Z hData z hz0 hz1 hz.le
   have hden : 0 ≤ ‖z‖^κ := Real.rpow_nonneg (norm_nonneg z) _
   refine ⟨div_le_div_of_nonneg_right hb.1 hden, ?_⟩
-  have hu := div_le_div_of_nonneg_right hb.2 hden
-  simpa only [add_div] using hu
+  simpa only [add_div] using (div_le_div_of_nonneg_right hb.2 hden)
 
 end DOZZ.Proofs

@@ -19,18 +19,16 @@ theorem realMonodromyPhase_ne_one_of_not_int (t : ℝ)
   intro hphase
   rw [Complex.exp_eq_one_iff] at hphase
   obtain ⟨n, hn⟩ := hphase
-  have hbase : (2 * (Real.pi : ℂ) * Complex.I) ≠ 0 := by
-    exact mul_ne_zero (mul_ne_zero (by norm_num) (by exact_mod_cast Real.pi_ne_zero))
+  have hbase : (2 * Real.pi * Complex.I) ≠ 0 := mul_ne_zero (mul_ne_zero (by norm_num) (by exact_mod_cast Real.pi_ne_zero))
       Complex.I_ne_zero
   have harg :
-      (2 * (Real.pi : ℂ) * Complex.I) * (t : ℂ) =
-        (2 * (Real.pi : ℂ) * Complex.I) * (n : ℂ) := by
+      (2 * Real.pi * Complex.I) * t =
+        (2 * Real.pi * Complex.I) * n := by
     calc
-      (2 * (Real.pi : ℂ) * Complex.I) * (t : ℂ) =
-          (n : ℂ) * (2 * (Real.pi : ℂ) * Complex.I) := hn
-      _ = (2 * (Real.pi : ℂ) * Complex.I) * (n : ℂ) := by ring
-  have htn : (t : ℂ) = (n : ℂ) := mul_left_cancel₀ hbase harg
-  exact ht n (by exact_mod_cast htn)
+      (2 * Real.pi * Complex.I) * t =
+          n * (2 * Real.pi * Complex.I) := hn
+      _ = (2 * Real.pi * Complex.I) * n := by ring
+  exact ht n (by exact_mod_cast (mul_left_cancel₀ hbase harg))
 
 /-- The local power `z^(1-c)` has nontrivial monodromy whenever `c` is nonintegral. -/
 theorem gaussZeroMonodromyPhase_ne_one

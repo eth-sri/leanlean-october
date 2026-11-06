@@ -47,24 +47,27 @@ power. -/
 theorem weightedDyadicSum_pow_rpow_comm (q : ℝ≥0∞) (r : ℝ) (n : ℕ) :
     (q ^ n) ^ r = (q ^ r) ^ n := by
   calc
-    (q ^ n) ^ r = (q ^ (n : ℝ)) ^ r := by rw [ENNReal.rpow_natCast]
-    _ = q ^ ((n : ℝ) * r) := (ENNReal.rpow_mul _ _ _).symm
-    _ = q ^ (r * (n : ℝ)) := by rw [mul_comm]
-    _ = (q ^ r) ^ (n : ℝ) := ENNReal.rpow_mul _ _ _
-    _ = (q ^ r) ^ n := ENNReal.rpow_natCast _ _
+    (q ^ n) ^ r = (q ^ (n : ℝ)) ^ r := by simp
+    _ = q ^ (n * r) := (ENNReal.rpow_mul ..).symm
+    _ = q ^ (r * n) := by ring
+    _ = (q ^ r) ^ (n : ℝ) := ENNReal.rpow_mul ..
+    _ = (q ^ r) ^ n := ENNReal.rpow_natCast ..
+section
+variable {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} (f : ℕ → Ω → ℝ≥0∞)
+section
+variable (hf : ∀ n, AEMeasurable (f n) P) {p : ℝ}
+include hf
 
 /-- For `p > 1`, a series of nonnegative terms whose `p`th moments are dominated by a finite
 geometric sequence has a finite `p`th moment. The proof applies Minkowski's inequality for
 series. -/
 theorem weightedDyadicSum_lintegral_tsum_rpow_lt_top_of_one_lt
-    {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
-    (f : ℕ → Ω → ℝ≥0∞) (hf : ∀ n, AEMeasurable (f n) P) {p : ℝ} (hp : 1 < p)
+    (hp : 1 < p)
     {K q : ℝ≥0∞} (hK : K ≠ ⊤) (hq : q < 1)
     (hbound : ∀ n, ∫⁻ ω, f n ω ^ p ∂P ≤ K * q ^ n) :
     ∫⁻ ω, (∑' n, f n ω) ^ p ∂P < ⊤ := by
-  have hp0 : 0 < p := zero_lt_one.trans hp
-  have hinv : 0 < 1 / p := one_div_pos.2 hp0
-  have hqroot : q ^ (1 / p) < 1 := ENNReal.rpow_lt_one hq hinv
+  have hp0 := zero_lt_one.trans hp
+  have hinv := one_div_pos.2 hp0
   have hroot (n : ℕ) :
       (∫⁻ ω, f n ω ^ p ∂P) ^ (1 / p) ≤ K ^ (1 / p) * (q ^ (1 / p)) ^ n :=
     calc
@@ -72,8 +75,7 @@ theorem weightedDyadicSum_lintegral_tsum_rpow_lt_top_of_one_lt
         ENNReal.rpow_le_rpow (hbound n) hinv.le
       _ = K ^ (1 / p) * (q ^ n) ^ (1 / p) := ENNReal.mul_rpow_of_nonneg _ _ hinv.le
       _ = K ^ (1 / p) * (q ^ (1 / p)) ^ n := by rw [weightedDyadicSum_pow_rpow_comm]
-  have hrootK : K ^ (1 / p) ≠ ⊤ := (ENNReal.rpow_lt_top_of_nonneg hinv.le hK).ne
-  have hgeom : (1 - q ^ (1 / p))⁻¹ < ⊤ := ENNReal.inv_lt_top.2 (tsub_pos_of_lt hqroot)
+  have hgeom : (1 - q ^ (1 / p))⁻¹ < ⊤ := ENNReal.inv_lt_top.2 (tsub_pos_of_lt (ENNReal.rpow_lt_one hq hinv))
   calc
     ∫⁻ ω, (∑' n, f n ω) ^ p ∂P ≤ (∑' n, (∫⁻ ω, f n ω ^ p ∂P) ^ (1 / p)) ^ p :=
       ennreal_lintegral_rpow_tsum_le_of_roots_summable f p hp.le hf
@@ -81,13 +83,12 @@ theorem weightedDyadicSum_lintegral_tsum_rpow_lt_top_of_one_lt
       ENNReal.rpow_le_rpow (ENNReal.tsum_le_tsum hroot) hp0.le
     _ = (K ^ (1 / p) * (1 - q ^ (1 / p))⁻¹) ^ p := by
       rw [ENNReal.tsum_mul_left, ENNReal.tsum_geometric]
-    _ < ⊤ := ENNReal.rpow_lt_top_of_nonneg hp0.le (ENNReal.mul_lt_top hrootK.lt_top hgeom).ne
+    _ < ⊤ := ENNReal.rpow_lt_top_of_nonneg hp0.le (ENNReal.mul_lt_top ((ENNReal.rpow_lt_top_of_nonneg hinv.le hK).ne).lt_top hgeom).ne
 
 /-- A series of nonnegative terms whose `p`th moments, for `p > 0`, are dominated by a finite
 geometric sequence has a finite `p`th moment. -/
 theorem weightedDyadicSum_lintegral_tsum_rpow_lt_top
-    {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
-    (f : ℕ → Ω → ℝ≥0∞) (hf : ∀ n, AEMeasurable (f n) P) {p : ℝ} (hp : 0 < p)
+    (hp : 0 < p)
     {K q : ℝ≥0∞} (hK : K ≠ ⊤) (hq : q < 1)
     (hbound : ∀ n, ∫⁻ ω, f n ω ^ p ∂P ≤ K * q ^ n) :
     ∫⁻ ω, (∑' n, f n ω) ^ p ∂P < ⊤ := by
@@ -95,13 +96,17 @@ theorem weightedDyadicSum_lintegral_tsum_rpow_lt_top
   · exact weightedDyadicSum_lintegral_tsum_rpow_lt_top_of_le_one f hf hp hp1 hK hq hbound
   · exact weightedDyadicSum_lintegral_tsum_rpow_lt_top_of_one_lt f hf hp1 hK hq hbound
 
+end
+
+end
+
 /-! ### The dyadic shell terms -/
 
 /-- The `p`th power of the dyadic coefficient is an explicit real power. -/
 theorem weightedDyadicSum_coeff_rpow (γ α p R : ℝ) (hR : 0 < R) (n : ℕ) :
     (ENNReal.rpow (ENNReal.ofReal (R / (2 : ℝ) ^ (n + 1))) (-γ * α)) ^ p =
       ENNReal.ofReal ((R / (2 : ℝ) ^ (n + 1)) ^ (-γ * α * p)) := by
-  have hrad : 0 < R / (2 : ℝ) ^ (n + 1) := by positivity
+  have hrad : 0 < R / 2 ^ (n + 1) := by positivity
   rw [ENNReal.rpow_eq_pow, ← ENNReal.rpow_mul, ENNReal.ofReal_rpow_of_pos hrad]
 
 /-- The `p`th moment of the `n`th shell term is bounded by the sharp ball bound evaluated at the
@@ -116,24 +121,23 @@ theorem weightedDyadicSum_shell_moment_le
         M ω (Metric.ball z (R / (2 : ℝ) ^ n))) ^ p ∂P ≤
       ENNReal.ofReal ((R / (2 : ℝ) ^ (n + 1)) ^ (-γ * α * p) *
         (C * (R / (2 : ℝ) ^ n) ^ ξ)) := by
-  have hrad : 0 < R / (2 : ℝ) ^ (n + 1) := by positivity
+  have hrad : 0 < R / 2 ^ (n + 1) := by positivity
   have hρ : 0 < R / (2 : ℝ) ^ n := by positivity
-  have hρR : R / (2 : ℝ) ^ n ≤ R := div_le_self hR.le (one_le_pow₀ (by norm_num))
+  have hρR : R / (2 : ℝ) ^ n ≤ R := by bound
   have hmeas : AEMeasurable
       (fun ω => ENNReal.rpow (M ω (Metric.ball z (R / (2 : ℝ) ^ n))) p) P :=
-    ENNReal.continuous_rpow_const.measurable.comp_aemeasurable
-      (hM _ Metric.isOpen_ball.measurableSet)
+    by measurability
   calc
-    _ = ∫⁻ ω, (ENNReal.rpow (ENNReal.ofReal (R / (2 : ℝ) ^ (n + 1))) (-γ * α)) ^ p *
-          ENNReal.rpow (M ω (Metric.ball z (R / (2 : ℝ) ^ n))) p ∂P :=
+    _ = ∫⁻ ω, (ENNReal.rpow ..) ^ p *
+          ENNReal.rpow _ p ∂P :=
       lintegral_congr fun ω => ENNReal.mul_rpow_of_nonneg _ _ hp.le
-    _ = (ENNReal.rpow (ENNReal.ofReal (R / (2 : ℝ) ^ (n + 1))) (-γ * α)) ^ p *
-          gmcMassMoment P M (Metric.ball z (R / (2 : ℝ) ^ n)) p :=
+    _ = (ENNReal.rpow ..) ^ p *
+          gmcMassMoment P M _ p :=
       lintegral_const_mul'' _ hmeas
-    _ ≤ ENNReal.ofReal ((R / (2 : ℝ) ^ (n + 1)) ^ (-γ * α * p)) *
-          ENNReal.ofReal (C * (R / (2 : ℝ) ^ n) ^ ξ) := by
+    _ ≤ ENNReal.ofReal _ *
+          ENNReal.ofReal _ := by
       rw [weightedDyadicSum_coeff_rpow γ α p R hR n]
-      exact mul_le_mul' le_rfl (hball _ hρ hρR)
+      bound
     _ = _ := (ENNReal.ofReal_mul (Real.rpow_nonneg hrad.le _)).symm
 
 /-- Real-variable identity: the dyadic coefficient times the sharp bound at the dyadic radius is a
@@ -142,23 +146,18 @@ theorem weightedDyadicSum_real_term (γ α p ξ C R : ℝ) (hR : 0 < R) (n : ℕ
     (R / (2 : ℝ) ^ (n + 1)) ^ (-γ * α * p) * (C * (R / (2 : ℝ) ^ n) ^ ξ) =
       (C * (R / 2) ^ (-γ * α * p) * R ^ ξ) * ((1 / 2 : ℝ) ^ (ξ - γ * α * p)) ^ n := by
   have hhalf : (1 / 2 : ℝ) ^ n = ((2 : ℝ) ^ n)⁻¹ := by
-    rw [div_pow, one_pow, one_div]
+    simp
   have hpos : 0 < (1 / 2 : ℝ) ^ n := by positivity
-  have h1 : R / (2 : ℝ) ^ (n + 1) = (R / 2) * (1 / 2 : ℝ) ^ n := by
-    rw [pow_succ, hhalf]
-    field_simp
-  have h2 : R / (2 : ℝ) ^ n = R * (1 / 2 : ℝ) ^ n := by
-    rw [hhalf, div_eq_mul_inv]
+  have h1 : R / 2 ^ (n + 1) = (R / 2) * (1 / 2 : ℝ) ^ n := by
+    grind
+  have h2 : R / 2 ^ n = R * (1 / 2 : ℝ) ^ n := by
+    aesop
   have hmerge : ((1 / 2 : ℝ) ^ n) ^ (-γ * α * p) * ((1 / 2 : ℝ) ^ n) ^ ξ =
-      ((1 / 2 : ℝ) ^ (ξ - γ * α * p)) ^ n := by
+      ((1 / 2) ^ (ξ - γ * α * p)) ^ n := by
     rw [← Real.rpow_add hpos, Real.rpow_pow_comm (by norm_num)]
-    congr 1
     ring
   rw [h1, h2, Real.mul_rpow (by positivity) hpos.le, Real.mul_rpow hR.le hpos.le]
-  calc
-    _ = C * (R / 2) ^ (-γ * α * p) * R ^ ξ *
-          (((1 / 2 : ℝ) ^ n) ^ (-γ * α * p) * ((1 / 2 : ℝ) ^ n) ^ ξ) := by ring
-    _ = _ := by rw [hmerge]
+  grind
 
 /-! ### Main theorem -/
 
@@ -173,20 +172,20 @@ theorem weightedGmcBallMoment_lt_top_of_ball_upper
     (hball : ∀ ρ : ℝ, 0 < ρ → ρ ≤ R →
       gmcMassMoment P M (Metric.ball z ρ) p ≤ ENNReal.ofReal (C * ρ ^ ξ)) :
     weightedGmcBallMoment P M γ α z R p < ⊤ := by
-  let qReal : ℝ := (1 / 2 : ℝ) ^ (ξ - γ * α * p)
+  let qReal : ℝ := (1 / 2) ^ (ξ - γ * α * p)
   let shell : ℕ → Ω → ℝ≥0∞ := fun n ω =>
-    ENNReal.rpow (ENNReal.ofReal (R / (2 : ℝ) ^ (n + 1))) (-γ * α) *
-      M ω (Metric.ball z (R / (2 : ℝ) ^ n))
-  have hqNonneg : 0 ≤ qReal := Real.rpow_nonneg (by norm_num) _
+    ENNReal.rpow (ENNReal.ofReal (R / 2 ^ (n + 1))) (-γ * α) *
+      M ω (Metric.ball z (R / 2 ^ n))
+  have hqNonneg : 0 ≤ qReal := by positivity
   have hqLt : qReal < 1 := Real.rpow_lt_one (by norm_num) (by norm_num) he
   have hshellMeas (n : ℕ) : AEMeasurable (shell n) P :=
-    aemeasurable_const.mul (hM _ Metric.isOpen_ball.measurableSet)
+    by measurability
   have hshellBound (n : ℕ) : ∫⁻ ω, shell n ω ^ p ∂P ≤
       ENNReal.ofReal (C * (R / 2) ^ (-γ * α * p) * R ^ ξ) * ENNReal.ofReal qReal ^ n := by
     refine (weightedDyadicSum_shell_moment_le P M hM γ α p ξ C R z hp hR n hball).trans ?_
     rw [weightedDyadicSum_real_term γ α p ξ C R hR n, ENNReal.ofReal_mul' (pow_nonneg hqNonneg n),
       ENNReal.ofReal_pow hqNonneg]
-  have hsum : ∫⁻ ω, (∑' n, shell n ω) ^ p ∂P < ⊤ :=
+  have hsum :=
     weightedDyadicSum_lintegral_tsum_rpow_lt_top shell hshellMeas hp ENNReal.ofReal_ne_top
       (ENNReal.ofReal_lt_one.2 hqLt) hshellBound
   calc

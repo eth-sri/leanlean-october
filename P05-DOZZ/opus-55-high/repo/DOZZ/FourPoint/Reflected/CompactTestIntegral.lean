@@ -18,7 +18,7 @@ theorem reflected_compact_test_integral_ofReal
     (hfK : tsupport (f : ℂ → ℝ) ⊆ K) :
     ENNReal.ofReal (∫ x, f x ∂μ) = ∫⁻ x in K, ENNReal.ofReal (f x) ∂μ := by
   let _ : IsFiniteMeasure (μ.restrict K) :=
-    ⟨by simpa only [Measure.restrict_apply_univ] using hμ⟩
+    ⟨by simp_all⟩
   have he : (∫ x, f x ∂μ.restrict K) = ∫ x, f x ∂μ := by
     apply setIntegral_eq_integral_of_forall_compl_eq_zero
     intro x hx

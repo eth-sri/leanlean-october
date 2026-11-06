@@ -43,18 +43,17 @@ theorem gmcReferenceMeasure_univ_ne_top :
   have hballBound : (∫⁻ x in B, f x ∂volume) ≤ volume B := by
     calc
       (∫⁻ x in B, f x ∂volume) ≤ ∫⁻ x in B, (1 : ℝ≥0∞) ∂volume :=
-        setLIntegral_mono (s := B) (f := f) (g := fun _ : ℂ => (1 : ℝ≥0∞))
+        setLIntegral_mono
           measurable_const (fun x hx => by
-        have hnorm : 1 ≤ normPlus x := le_max_left _ _
+        have hnorm : 1 ≤ normPlus x := le_max_left ..
         have hp : normPlus x ^ (-4 : ℝ) ≤ 1 :=
           Real.rpow_le_one_of_one_le_of_nonpos hnorm (by norm_num)
-        simp only [f]
         exact ENNReal.ofReal_le_one.mpr hp)
       _ = volume B := by simp
   have htailBound : (∫⁻ x in Bᶜ, f x ∂volume) ≤
       ∫⁻ x in Bᶜ, ENNReal.ofReal (‖x‖ ^ (-4 : ℝ)) ∂volume := by
-    exact setLIntegral_mono (s := Bᶜ) (f := f)
-      (g := fun x : ℂ => ENNReal.ofReal (‖x‖ ^ (-4 : ℝ))) (by fun_prop)
+    exact setLIntegral_mono
+      (by fun_prop)
       (fun x hx => by
         have hxnorm : 1 ≤ ‖x‖ := by
           change ¬ x ∈ Metric.ball (0 : ℂ) 1 at hx

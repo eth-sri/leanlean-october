@@ -39,16 +39,15 @@ theorem reflected_source_full_copied_littleO
         (reflected_copied_separatedMoment P Xc N γ α₁ α₂ α₃ z
           (Real.exp (-h)*‖z‖) (‖z‖^(1-ξ)) p).toReal : ℝ) : ℂ)) := by
   let p := (α₁+α₂+α₃-γ/2-2*Q γ)/γ
-  have hp : 0 < p := div_pos (by linarith only [hs]) hγ
+  have hp : 0 < p := div_pos (by linarith) hγ
   obtain ⟨_,_,herror⟩ := reflected_source_decorrelation_error_on_carrier
     P X Xc hX hc hm hcont γ hγ hγ₂ M hM N hN hfin hwhole hNa
-    α₁ α₂ α₃ p ξ (γ*(Q γ-α₁)) hp hξ hξ1 hnear
+    α₁ α₂ α₃ p ξ _ hp hξ hξ1 hnear
   have hb := reflected_source_buffer_inverse_littleO P X M γ α₁ α₂ α₃ ξ h
     hγ hγ₂ hα₁ hα₂ hα₃ hreflect hs hξ hξ1 hnear hfreeze hh hX hM
-  have he := DOZZ.Proofs.IsComplexLittleOAtZero.add hb (herror h hh).2
-  convert he using 1
+  convert (DOZZ.Proofs.IsComplexLittleOAtZero.add hb (herror h hh).2) using 1
   funext z
-  simp only [Complex.ofReal_sub]
+  simp
   ring
 
 end DOZZ.Proofs

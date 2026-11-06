@@ -26,7 +26,6 @@ theorem reflected_reinserted_inner_kernel_mass_squeeze
       (ENNReal.ofReal (‖z‖^(γ^2/2))*J) ≤ I ∧
     I ≤ ENNReal.ofReal ((1+R)^(γ^2/2)*(1-η)⁻¹^|γ*α₂|)*
       (ENNReal.ofReal (‖z‖^(γ^2/2))*J) := by
-  dsimp only
   let E := {x : ℂ | 0 < ‖x‖ ∧ ‖x‖ < Real.exp (-(T : ℝ))}
   have hE : MeasurableSet E := (measurableSet_lt measurable_const measurable_norm).inter
     (measurableSet_lt measurable_norm measurable_const)
@@ -38,23 +37,21 @@ theorem reflected_reinserted_inner_kernel_mass_squeeze
       ← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
     apply lintegral_mono_ae
     filter_upwards [ae_restrict_mem hE] with x hx
-    have hh := ENNReal.ofReal_le_ofReal (hb x hx).1
     simpa only [ENNReal.ofReal_mul (by positivity : 0 ≤ (1-R)^(γ^2/2)),
       ENNReal.ofReal_mul (by positivity : 0 ≤ (1-Real.exp (-(T : ℝ)))⁻¹^(-|γ*α₂|)),
       ENNReal.ofReal_mul (by positivity : 0 ≤ (1-R)^(γ^2/2)*
         (1-Real.exp (-(T : ℝ)))⁻¹^(-|γ*α₂|)),
       ENNReal.ofReal_mul (Real.rpow_nonneg hz.le (γ^2/2)),mul_assoc] using
-        mul_le_mul_left hh (ENNReal.ofReal (reflected_global_reinsertionWeight γ A x))
+        mul_le_mul_left (ENNReal.ofReal_le_ofReal (hb x hx).1) (ENNReal.ofReal (reflected_global_reinsertionWeight γ A x))
   · rw [← mul_assoc,← ENNReal.ofReal_mul (by positivity),
       ← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
     apply lintegral_mono_ae
     filter_upwards [ae_restrict_mem hE] with x hx
-    have hh := ENNReal.ofReal_le_ofReal (hb x hx).2
     simpa only [ENNReal.ofReal_mul (by positivity : 0 ≤ (1+R)^(γ^2/2)),
       ENNReal.ofReal_mul (by positivity : 0 ≤ (1-Real.exp (-(T : ℝ)))⁻¹^|γ*α₂|),
       ENNReal.ofReal_mul (by positivity : 0 ≤ (1+R)^(γ^2/2)*
         (1-Real.exp (-(T : ℝ)))⁻¹^|γ*α₂|),
       ENNReal.ofReal_mul (Real.rpow_nonneg hz.le (γ^2/2)),mul_assoc] using
-        mul_le_mul_left hh (ENNReal.ofReal (reflected_global_reinsertionWeight γ A x))
+        mul_le_mul_left (ENNReal.ofReal_le_ofReal (hb x hx).2) (ENNReal.ofReal (reflected_global_reinsertionWeight γ A x))
 
 end DOZZ.Proofs

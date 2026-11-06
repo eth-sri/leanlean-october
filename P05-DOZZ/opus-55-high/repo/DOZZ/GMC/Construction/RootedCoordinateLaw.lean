@@ -14,11 +14,15 @@ open MeasureTheory Filter Topology
 open scoped Distributions ENNReal NNReal BoundedContinuousFunction
 
 namespace DOZZ.Proofs
+section
+variable {Ω : Type*} [MeasurableSpace Ω]
+section
+variable (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ)
+include hX
 
 /-- The point-rooted field and chaos coordinate path is jointly measurable. -/
 theorem measurable_pointRootedCoordinatePath
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) (γ : ℝ) (M : Ω → Measure ℂ)
+    (M : Ω → Measure ℂ)
     (hMmeas : Measurable M) (hfinite : ∀ ω, IsFiniteMeasure (M ω)) :
     Measurable (fun q : ℂ × Ω => gmcTiltCoordinatePath
       (fun f => X q.2 f + γ * gffRootCovariance q.1 f)
@@ -34,9 +38,7 @@ theorem measurable_pointRootedCoordinatePath
 
 /-- The finite-dimensional rooted marked law on a bounded root set. -/
 theorem rooted_finite_coordinate_law
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
+    (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (hMmeas : Measurable M)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (A : Set ℂ) (hA : MeasurableSet A) (R : ℝ)
@@ -54,7 +56,7 @@ theorem rooted_finite_coordinate_law
   have hmass : Measurable (fun ω => M ω A) := (Measure.measurable_coe hA).comp hMmeas
   have hmean : (∫⁻ ω, M ω A ∂P) ≠ ⊤ := by
     rw [equatorGFF_GMC_intensity P X hX γ hγ hγ2 M hM A hA]
-    exact measure_ne_top _ _
+    simp
   let _ := isFiniteMeasure_withDensity hmean
   have hl : Measurable (fun ω => gmcTiltFiniteCoordinatePath s (fun f => X ω f) (M ω)) :=
     (measurable_gmcTiltFiniteCoordinatePath s).comp
@@ -81,6 +83,10 @@ theorem rooted_finite_coordinate_law
   simpa only [ψ, BoundedContinuousFunction.comp_apply, ENNReal.ofReal_coe_nnreal,
     Pi.mul_apply, mul_comm] using heq
 
+end
+
+end
+
 /-- Finite measures on a product sigma algebra are determined by all finite-coordinate maps. -/
 theorem measure_eq_of_finite_coordinate_map_eq
     {ι : Type*} (μ ν : Measure (ι → ℝ)) [IsFiniteMeasure μ]
@@ -91,14 +97,13 @@ theorem measure_eq_of_finite_coordinate_map_eq
     intro A hA
     obtain ⟨s, S, hS, rfl⟩ := (mem_measurableCylinders A).mp hA
     have hm : Measurable (fun q : ι → ℝ => fun i : {i // i ∈ s} => q i.1) :=
-      measurable_pi_iff.mpr fun i => measurable_pi_apply i.1
-    have heq := congrArg (fun m : Measure (∀ _i : {i // i ∈ s}, ℝ) => m S) (h s)
-    rw [Measure.map_apply hm hS, Measure.map_apply hm hS] at heq
-    exact heq
+      by fun_prop
+    have heq := congrArg (fun m => m S) (h s)
+    rwa [Measure.map_apply hm hS, Measure.map_apply hm hS] at heq
   exact ext_of_generate_finite C
-    (generateFrom_measurableCylinders (α := fun _ : ι => ℝ)).symm
+    (generateFrom_measurableCylinders).symm
     isPiSystem_measurableCylinders hC
-    (hC Set.univ (univ_mem_measurableCylinders (fun _ : ι => ℝ)))
+    (hC Set.univ (univ_mem_measurableCylinders (fun _ => ℝ)))
 
 /-- The complete determining-coordinate law on a bounded root set, without restricting the
 observable to finitely many coordinates. -/
@@ -120,18 +125,17 @@ theorem rooted_full_coordinate_law
   let _ : IsFiniteMeasure gmcReferenceMeasure := ⟨gmcReferenceMeasure_univ_ne_top.lt_top⟩
   have hmean : (∫⁻ ω, M ω A ∂P) ≠ ⊤ := by
     rw [equatorGFF_GMC_intensity P X hX γ hγ hγ2 M hM A hA]
-    exact measure_ne_top _ _
+    simp
   let _ := isFiniteMeasure_withDensity hmean
   have hl : Measurable (fun ω => gmcTiltCoordinatePath (fun f => X ω f) (M ω)) :=
     measurable_gmcTiltCoordinatePath.comp
       ((measurable_pi_iff.mpr fun f => (hX.2 f).1).prodMk hMmeas)
-  have hr := measurable_pointRootedCoordinatePath P X hX γ M hMmeas hM.1
   apply measure_eq_of_finite_coordinate_map_eq
   intro s
   have hm : Measurable (fun q : gmcTiltCoordinateIndex → ℝ =>
       fun i : {i // i ∈ s} => q i.1) :=
-    measurable_pi_iff.mpr fun i => measurable_pi_apply i.1
-  rw [Measure.map_map hm hl, Measure.map_map hm hr]
+    by fun_prop
+  rw [Measure.map_map hm hl, Measure.map_map hm (measurable_pointRootedCoordinatePath P X hX γ M hMmeas hM.1)]
   exact rooted_finite_coordinate_law P X hX γ hγ hγ2 M hM hMmeas
     Xc hXc A hA R hAR hRoot s
 

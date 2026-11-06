@@ -54,18 +54,17 @@ theorem brownian_firstHit_reversal_finite_marked_law
     (continuous_brownianDriftPath.comp (continuous_const.prodMk continuous_id)).measurable
   have hmL : Measurable L := measurable_negativeLastExitTime_joint.comp
     (measurable_const.prodMk measurable_id)
-  have hmμ := measurable_brownianFirstHitReversedIncreasingObservation ν c n ss
   have hmη := measurable_conditionedLastExitMarkedObservation c n ss
   have hsμ : ∀ᵐ z ∂μ, (ss (Fin.last n) : ℝ) < z.2 := by
-    apply (ae_map_iff hmμ.aemeasurable
+    apply (ae_map_iff (measurable_brownianFirstHitReversedIncreasingObservation ν c n ss).aemeasurable
       (measurableSet_lt measurable_const measurable_snd)).mpr
     filter_upwards [ae_restrict_mem (measurableSet_lt measurable_const hmT)] with p hp
-    exact NNReal.coe_lt_coe.mpr hp
+    assumption
   have hsη : ∀ᵐ z ∂η, (ss (Fin.last n) : ℝ) < z.2 := by
     apply (ae_map_iff hmη.aemeasurable
       (measurableSet_lt measurable_const measurable_snd)).mpr
     filter_upwards [ae_restrict_mem (measurableSet_lt measurable_const hmL)] with p hp
-    exact NNReal.coe_lt_coe.mpr hp
+    assumption
   apply measure_eq_of_prod_Ioc_above μ η (ss (Fin.last n) : ℝ) hsμ hsη
   intro A hA a b ha hab
   have ha0 : 0 ≤ a := (NNReal.coe_nonneg _).trans ha.le
@@ -77,7 +76,7 @@ theorem brownian_firstHit_reversal_finite_marked_law
     apply NNReal.coe_lt_coe.mp
     simpa only [u, Real.coe_toNNReal _ ha0] using ha
   have huv : u ≤ v := Real.toNNReal_mono hab.le
-  have hcN : 0 < (cN : ℝ) := by simpa only [cN, Real.coe_toNNReal _ hc.le] using hc
+  have hcN : 0 < (cN : ℝ) := by positivity
   have htimes (i : Fin (n+1)) : 0 < (ss i : ℝ) :=
     NNReal.coe_pos.mpr (hs0.trans_le (hss.monotone (Fin.zero_le i)))
   have hηrect : η.real (A ×ˢ Ioc a b) =
@@ -92,17 +91,14 @@ theorem brownian_firstHit_reversal_finite_marked_law
       have hau : (u : ℝ) = a := Real.coe_toNNReal _ ha0
       have hbv : (v : ℝ) = b := Real.coe_toNNReal _ hb0
       rw [← hau, ← hbv]
-      simp only [mem_inter_iff, mem_preimage, mem_prod, mem_Ioc,
-        conditionedLastExitMarkedObservation, mem_ofPred_eq, NNReal.coe_lt_coe,
-        NNReal.coe_le_coe, L]
+      simp
       constructor
-      · rintro ⟨⟨hp, hlow, hhigh⟩, _⟩
-        exact ⟨hp, hlow, hhigh⟩
+      · tauto
       · rintro ⟨hp, hlow, hhigh⟩
         exact ⟨⟨hp, hlow, hhigh⟩, hu.trans hlow⟩
     unfold Measure.real
     change ((Q.restrict {p | ss (Fin.last n) < L p}).map
-      (conditionedLastExitMarkedObservation c n ss) (A ×ˢ Ioc a b)).toReal = _
+      (conditionedLastExitMarkedObservation c n ss) _).toReal = _
     rw [Measure.map_apply hmη (hA.prod measurableSet_Ioc), Measure.restrict_apply hE, he]
   have hlast := negativeConditionedLaw_finitePast_lastExit_Ioc hQ hB hν cN hcN n ss htimes hss u v hu huv A hA
   simp only [cN, Real.coe_toNNReal _ hc.le, u, v, Real.coe_toNNReal _ ha0,
@@ -110,8 +106,7 @@ theorem brownian_firstHit_reversal_finite_marked_law
   have hreal : μ.real (A ×ˢ Ioc a b) = η.real (A ×ˢ Ioc a b) := by
     rw [brownianPath_firstHit_reversedIncreasing_rectangle P hB ν c hν hc n ss hss hs0 A hA a b,
       hηrect, hlast]
-  have heq := congrArg ENNReal.ofReal hreal
-  simpa only [Measure.real, ENNReal.ofReal_toReal (measure_ne_top _ _)] using heq
+  simpa using (congrArg ENNReal.ofReal hreal)
 
 end DOZZ.Proofs
 end

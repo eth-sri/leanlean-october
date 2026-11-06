@@ -23,38 +23,37 @@ private theorem tendstoInMeasure_add_of_sub
     (hgy : TendstoInMeasure P g l y) : TendstoInMeasure P f l y := by
   rw [tendstoInMeasure_iff_norm] at hfg hgy ⊢
   intro ε hε
-  let δ : ℝ := ε / 2
-  have hδ : 0 < δ := by dsimp [δ]; linarith
+  let δ := ε / 2
+  have hδ : 0 < δ := by positivity
   have hfg' : Tendsto (fun i => P {ω | δ ≤ ‖f i ω - g i ω‖}) l (𝓝 0) := by
-    simpa [δ, sub_zero] using hfg δ hδ
-  have hgy' : Tendsto (fun i => P {ω | δ ≤ ‖g i ω - y ω‖}) l (𝓝 0) := hgy δ hδ
+    simp_all
   have hadd : Tendsto (fun i =>
       P {ω | δ ≤ ‖f i ω - g i ω‖} + P {ω | δ ≤ ‖g i ω - y ω‖}) l (𝓝 0) := by
-    simpa using hfg'.add hgy'
+    simpa using hfg'.add (hgy δ hδ)
   apply tendsto_of_tendsto_of_tendsto_of_le_of_le'
-    (tendsto_const_nhds : Tendsto (fun _ : ι => (0 : ℝ≥0∞)) l (𝓝 0)) hadd
-  · exact Filter.Eventually.of_forall (fun _ => bot_le)
+    tendsto_const_nhds hadd
+  · simp
   · filter_upwards [] with i
     calc
       P {ω | ε ≤ ‖f i ω - y ω‖} ≤
-          P ({ω | δ ≤ ‖f i ω - g i ω‖} ∪ {ω | δ ≤ ‖g i ω - y ω‖}) := by
+          P _ := by
             apply measure_mono
             intro ω hω
             by_contra hnot
             have hnot' : ¬ (ω ∈ {ω | δ ≤ ‖f i ω - g i ω‖} ∨
                 ω ∈ {ω | δ ≤ ‖g i ω - y ω‖}) := by
-              simpa only [Set.mem_union] using hnot
+              simpa using hnot
             rcases not_or.mp hnot' with ⟨h1, h2⟩
             have h1' : ‖f i ω - g i ω‖ < δ := lt_of_not_ge h1
             have h2' : ‖g i ω - y ω‖ < δ := lt_of_not_ge h2
             have hsum : ‖f i ω - y ω‖ < ε := by
               calc
-                ‖f i ω - y ω‖ = ‖(f i ω - g i ω) + (g i ω - y ω)‖ := by congr 1; ring
-                _ ≤ ‖f i ω - g i ω‖ + ‖g i ω - y ω‖ := norm_add_le _ _
+                ‖f i ω - y ω‖ = ‖(f i ω - g i ω) + (g i ω - y ω)‖ := by simp
+                _ ≤ ‖f i ω - g i ω‖ + ‖g i ω - y ω‖ := norm_add_le ..
                 _ < δ + δ := add_lt_add h1' h2'
-                _ = ε := by dsimp [δ]; ring
+                _ = ε := by ring
             exact (not_le_of_gt hsum) hω
-        _ ≤ P {ω | δ ≤ ‖f i ω - g i ω‖} + P {ω | δ ≤ ‖g i ω - y ω‖} := MeasureTheory.measure_union_le _ _
+        _ ≤ P {ω | δ ≤ ‖f i ω - g i ω‖} + P {ω | δ ≤ ‖g i ω - y ω‖} := MeasureTheory.measure_union_le ..
 
 /-- For an `IsGMCOf` limit, the total cutoff mass under a uniformly convergent family of
 nonnegative bounded-continuous weights converges in measure to the limit mass under the fixed

@@ -44,16 +44,15 @@ theorem total_copied_remainder_uniform
   let : IsProbabilityMeasure P := hX.1
   obtain ⟨D,hD,hError⟩ := actual_copied_multiplier_error_uniform P X Xc hX hc
     γ hγ hγ2 M hM K hK hz Family radius supBound derivBound lowerBound hFamily
-    ρ hρ hρR Amax g (R*pH) hg (mul_pos hR hpq.pos) pH qH hpq
+    ρ hρ hρR Amax g _ hg (mul_pos hR hpq.pos) pH qH hpq
   have hδ : 0 < ρ/4 := by positivity
-  have hδ1 : ρ/4 ≤ 1 := by linarith only [hρR.trans (min_le_right _ _),hρ]
+  have hδ1 : ρ/4 ≤ 1 := by grind
   obtain ⟨L,hL,hAnn⟩ := prefactored_annular_remainder_moment_uniform P X Xc hX hc
     γ hγ hγ2 M hM K hK hz (ρ/4) A supBound R hδ hδ1 hFamily.2.1 hR hRbulk
   have htwo : (2 : ℝ≥0∞)^R ≠ ⊤ := ENNReal.rpow_ne_top_of_nonneg hR.le (by norm_num)
   refine ⟨(2 : ℝ≥0∞)^R*(D+L),ENNReal.mul_lt_top (lt_top_iff_ne_top.mpr htwo)
     (ENNReal.add_lt_top.mpr ⟨hD,hL⟩),?_⟩
   intro z hzk F hF N hN α r hα hαA hαmax hr hrR hbulk hins
-  dsimp only
   let E₁ := fun q : Ω × Ω =>
     ENNReal.ofReal (Real.exp (γ*Xc q.2 z 0-γ^2*Real.log ‖z‖)) *
       (∫⁻ x in Metric.ball (0 : ℂ) ρ, ENNReal.ofReal
@@ -66,21 +65,16 @@ theorem total_copied_remainder_uniform
   obtain ⟨hFm,hFb,_,_,_⟩ := hFamily.2.2.2.2 z hzk F hF
   have hFz : 0 ≤ F z ∧ F z ≤ supBound := ⟨(hFb z).1,
     (le_abs_self (F z)).trans (hFb z).2⟩
-  have hE₁ := copied_error_mass_aemeasurable P X Xc hX hc γ hγ hγ2 z N hN F hFm α ρ
   have hE₂ := prefactored_annular_remainder_aemeasurable P X Xc hX hc
     γ hγ hγ2 z (F z) α (ρ/4) N hN
-  change AEMeasurable E₁ (P.prod P) at hE₁
-  change AEMeasurable E₂ (P.prod P) at hE₂
-  change AEMeasurable (fun q => E₁ q+E₂ q) (P.prod P) ∧ _
-  refine ⟨hE₁.add hE₂,?_⟩
-  have h₁ : (∫⁻ q, E₁ q^r ∂P.prod P) ≤ D := hError z hzk F hF N hN α r hαmax hr hbulk hins
+  refine ⟨(copied_error_mass_aemeasurable P X Xc hX hc γ hγ hγ2 z N hN F hFm α ρ).add hE₂,?_⟩
+  have h₁ := hError z hzk F hF N hN α r hαmax hr hbulk hins
     (mul_le_mul_of_nonneg_right hrR hpq.pos.le)
-  have h₂ : (∫⁻ q, E₂ q^r ∂P.prod P) ≤ L := hAnn z hzk (F z) hFz.1 hFz.2 N hN α r hα hαA hr hrR
-  calc _ ≤ ∫⁻ q, (2 : ℝ≥0∞)^R*(E₁ q^r+E₂ q^r) ∂P.prod P :=
+  calc _ ≤ ∫⁻ q, 2^R*(E₁ q^r+E₂ q^r) ∂P.prod P :=
         lintegral_mono fun q => ennreal_rpow_add_le_uniform_order_cap _ _ r R hr.le hrR
-    _ = (2 : ℝ≥0∞)^R*((∫⁻ q, E₁ q^r ∂P.prod P)+(∫⁻ q, E₂ q^r ∂P.prod P)) := by
+    _ = 2^R*((∫⁻ q, E₁ q^r ∂P.prod P)+(∫⁻ q, E₂ q^r ∂P.prod P)) := by
         rw [lintegral_const_mul' _ _ htwo,lintegral_add_right' _ (hE₂.pow_const r)]
-    _ ≤ (2 : ℝ≥0∞)^R*(D+L) := mul_le_mul' le_rfl (add_le_add h₁ h₂)
+    _ ≤ 2^R*(D+L) := mul_le_mul' le_rfl (add_le_add h₁ (hAnn z hzk (F z) hFz.1 hFz.2 N hN α r hα hαA hr hrR))
 
 
 end DOZZ.Proofs

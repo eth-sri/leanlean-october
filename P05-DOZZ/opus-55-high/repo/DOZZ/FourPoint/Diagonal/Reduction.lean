@@ -46,9 +46,7 @@ theorem degenerateFourPoint_diagonal_classification_of_BPZ {Ω : Type*} [Measura
             gaussCoefficientRatio a b c *
               ‖gaussFPlus H a b c z‖ ^ 2) := by
   have hχpos : 0 < χ := by
-    rcases hχ with rfl | rfl
-    · exact div_pos hγ (by norm_num)
-    · exact div_pos (by norm_num) hγ
+    aesop
   have hcont := fourPointT_continuousAt_zero P X M γ μ χ α₁ α₂ α₃
     hγ hγ₂ hχpos hα₁ hα₂ hα₃ hs hX hM
   have hnorm := real_gauss_solution_physical_normalization hH γ χ α₁ α₂ α₃

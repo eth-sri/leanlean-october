@@ -30,9 +30,9 @@ theorem lintegral_rpow_le_mean_rpow
     (hq0 : 0 ≤ q) (hq1 : q ≤ 1) :
     (∫⁻ ω, X ω ^ q ∂P) ≤ (∫⁻ ω, X ω ∂P) ^ q := by
   have h := ENNReal.lintegral_mul_norm_pow_le
-    hX (measurable_const.aemeasurable : AEMeasurable (fun _ : Ω => (1 : ℝ≥0∞)) P)
+    hX (measurable_const.aemeasurable : AEMeasurable (fun _ => (1 : ℝ≥0∞)) P)
     hq0 (by linarith) (by linarith : q + (1 - q) = 1)
-  simpa [lintegral_const, hP.measure_univ] using h
+  simp_all
 
 end DOZZ.Proofs
 

@@ -36,31 +36,30 @@ theorem frame_inversion_constant_gen (γ α₂ α₃ q : ℝ) :
   rw [h2, ENNReal.rpow_eq_pow, ENNReal.rpow_eq_pow, ENNReal.rpow_eq_pow,
     ← ENNReal.rpow_add _ _ (by simp) ENNReal.ofReal_ne_top, ← ENNReal.rpow_mul,
     ENNReal.ofReal_rpow_of_pos (by norm_num)]
-  congr 2
   ring
 
 theorem frame_infSExp_gen (γ α₁ α₂ α₃ : ℝ) :
     -infSExp γ (![α₂, α₃] : Fin 2 → ℝ) α₁ = -sExp γ α₁ α₂ α₃ := by
   unfold infSExp sExp
   rw [Fin.sum_univ_two]
-  simp only [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_fin_one]
+  simp
   ring
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+section
+variable (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (α₁ α₂ α₃ : ℝ)
+include hX hγ hγ2 hM
 
 /-- **The general frame identity** `E[I_{(0,2,-2)}^q] = 2^{-γ(α₂+α₃)q} E[ρ^q]`, `q = -s`. -/
-theorem lintegral_coulombMass_frame_eq_rho {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (α₁ α₂ α₃ : ℝ) :
+theorem lintegral_coulombMass_frame_eq_rho :
     ∫⁻ ω, ENNReal.rpow (coulombMass γ (M ω) ![α₁, α₂, α₃] ![0, 2, -2] 0)
         (-sExp γ α₁ α₂ α₃) ∂P =
       ENNReal.ofReal (2 ^ (-(γ * (α₂ + α₃) * (-sExp γ α₁ α₂ α₃)))) *
         ∫⁻ ω, rho γ (M ω) α₁ α₂ α₃ ^ (-sExp γ α₁ α₂ α₃) ∂P := by
   have hz1 : ∀ k, (![2, -2] : Fin 2 → ℂ) k ≠ 0 := by
-    intro k
-    fin_cases k <;> norm_num
+    simp
   have hz2 : ∀ k, (![1] : Fin 1 → ℂ) k ≠ 0 := by
-    intro k
-    fin_cases k
-    norm_num
+    simp
   -- step 1: inversion sends `α₁` to infinity; the zero-charge root drops
   have h1 := coulombMass_inv_moment_cons P X hX γ hγ hγ2 M hM α₁ 0 ![α₂, α₃] ![2, -2] hz1
     (-sExp γ α₁ α₂ α₃)
@@ -83,7 +82,7 @@ theorem lintegral_coulombMass_frame_eq_rho {Ω : Type*} [MeasurableSpace Ω] (P 
     norm_num
   rw [hc3, one_mul, hinv3] at h3
   have hswap : ∀ ω, coulombMass γ (M ω) ![α₂, α₃] ![1, 0] α₁ =
-      coulombMass γ (M ω) (Fin.cons α₃ ![α₂] : Fin 2 → ℝ) (Fin.cons 0 ![1] : Fin 2 → ℂ) α₁ :=
+      coulombMass γ (M ω) (Fin.cons α₃ ![α₂]) (Fin.cons 0 ![1]) α₁ :=
     fun ω => coulombMass_swap γ (M ω) α₂ α₃ 1 0 α₁
   simp_rw [hswap] at h2
   -- step 4: the structure-constant mass
@@ -99,9 +98,7 @@ theorem lintegral_coulombMass_frame_eq_rho {Ω : Type*} [MeasurableSpace Ω] (P 
   rw [h0, h0', h1, ← h2, h3, ← h4]
 
 /-- **The structure constant through a finite frame.** -/
-theorem unitVolumeStructureConstant_eq_nPoint {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (α₁ α₂ α₃ : ℝ) :
+theorem unitVolumeStructureConstant_eq_nPoint :
     unitVolumeStructureConstant P M γ α₁ α₂ α₃ =
       2 ^ (γ * (α₂ + α₃) * (-sExp γ α₁ α₂ α₃)) /
           nPointCoulombPrefactor ![α₁, α₂, α₃] ![0, 2, -2] *
@@ -113,21 +110,24 @@ theorem unitVolumeStructureConstant_eq_nPoint {Ω : Type*} [MeasurableSpace Ω] 
     · refine Real.rpow_pos_of_pos (norm_pos_iff.mpr (sub_ne_zero.mpr ?_)) _
       fin_cases i <;> fin_cases j
       all_goals first | (simp_all; done) | (simp_all; norm_num)
-    · exact one_pos
+    simp
   have hs : nPointSExp γ ![α₁, α₂, α₃] = sExp γ α₁ α₂ α₃ := by
     unfold nPointSExp sExp
     rw [Fin.sum_univ_three]
     simp
-  have hframe := lintegral_coulombMass_frame_eq_rho P X hX γ hγ hγ2 M hM α₁ α₂ α₃
   have hrho : ∫⁻ ω, rho γ (M ω) α₁ α₂ α₃ ^ (-sExp γ α₁ α₂ α₃) ∂P =
       ENNReal.ofReal (2 ^ (γ * (α₂ + α₃) * (-sExp γ α₁ α₂ α₃))) *
         ∫⁻ ω, ENNReal.rpow (coulombMass γ (M ω) ![α₁, α₂, α₃] ![0, 2, -2] 0)
           (-sExp γ α₁ α₂ α₃) ∂P := by
-    rw [hframe, ← mul_assoc, ← ENNReal.ofReal_mul (by positivity), ← Real.rpow_add two_pos,
+    rw [(lintegral_coulombMass_frame_eq_rho P X hX γ hγ hγ2 M hM α₁ α₂ α₃), ← mul_assoc, ← ENNReal.ofReal_mul (by positivity), ← Real.rpow_add two_pos,
       add_neg_cancel, Real.rpow_zero, ENNReal.ofReal_one, one_mul]
   unfold unitVolumeStructureConstant unitVolumeNPointCorrelation
   rw [hs, hrho, ENNReal.toReal_mul, ENNReal.toReal_ofReal (by positivity)]
   field_simp
+
+end
+
+end
 
 end DOZZ.Proofs
 

@@ -42,17 +42,16 @@ theorem dual_full_copied_path_law_carrier
          (dualCopiedSeparatedInverseMoment P Xc N γ α₁ α₂ α₃ q z
           (Real.exp (-h)*‖z‖) (‖z‖^(1-ξ))).toReal)/‖z‖^κ)
         (𝓝[≠] (0 : ℂ)) (𝓝 0) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   obtain ⟨N, hNm, hi, hfin, heq, hlaw⟩ := dual_source_copied_outer_joint_law
     P X Xc hX hc hm hcont γ hγ hγ₂ M hM
   obtain ⟨N₀, _, _, _, heq₀, ht⟩ := dual_full_copied_constant_carrier
     P X Xc hX hc hm hcont γ hγ hγ₂ M hM α₁ α₂ α₃ q h ξ κ
       hq hα₁ hα₂ hα₃ hβ hslack hξ hξ1 hκ
   refine ⟨N, hNm, hi, hfin, heq, hlaw, ?_⟩
-  have hAr := originRadialPath_aemeasurable P X Xc hc hcont
   apply ht.congr
   intro z
-  have he := dual_copied_inverse_moment_congr P Xc hAr N₀ N
+  have he := dual_copied_inverse_moment_congr P Xc (originRadialPath_aemeasurable P X Xc hc hcont) N₀ N
     (heq₀.trans heq.symm) γ α₁ α₂ α₃ q z (Real.exp (-h)*‖z‖) (‖z‖^(1-ξ))
   rw [he]
 

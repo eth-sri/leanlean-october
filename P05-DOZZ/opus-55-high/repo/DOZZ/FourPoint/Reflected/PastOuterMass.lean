@@ -17,19 +17,21 @@ noncomputable def reflectedPastOuterMassCode (γ α₁ α₂ α₃ r : ℝ) (z :
   reflectedPuncturedMassCode (fun q : (BrownianPath × BrownianPath) × ℂ =>
     (reflected_outerRegion r).indicator (fun x => ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x)*
       ENNReal.ofReal (reflectedPastPlaneWeight γ q.1 x)) q.2) p
+section
+variable (γ α₁ α₂ α₃ r : ℝ) (z : ℂ)
 
-theorem reflected_pastOuterMassCode_measurable (γ α₁ α₂ α₃ r : ℝ) (z : ℂ) :
+theorem reflected_pastOuterMassCode_measurable :
     Measurable (reflectedPastOuterMassCode γ α₁ α₂ α₃ r z) := by
   apply reflected_puncturedMassCode_measurable
   have hU : MeasurableSet (reflected_outerRegion r) :=
-    (measurableSet_lt measurable_const measurable_norm).inter (measurableSet_insert.mpr (measurableSet_singleton (1 : ℂ)) : MeasurableSet ({0,1} : Set ℂ)).compl
+    (measurableSet_lt measurable_const measurable_norm).inter (measurableSet_insert.mpr (measurableSet_singleton 1)).compl
   have hF := ((reflected_gammaHalfKernel_measurable γ α₁ α₂ α₃ z).comp measurable_snd).ennreal_ofReal.mul
     (reflected_pastPlaneWeight_measurable γ).ennreal_ofReal
   exact Measurable.ite (hU.preimage measurable_snd) hF measurable_const
 
 /-- On the retained exterior, stopping the inward path at the restart leaves its mass
 unchanged, including the complete exterior half of the radial path. -/
-theorem reflected_pastOuterMassCode_eq (γ α₁ α₂ α₃ r : ℝ) (z : ℂ) (a : TwoSidedPath)
+theorem reflected_pastOuterMassCode_eq (a : TwoSidedPath)
     (T : ℝ≥0) (μ : Measure ℂ) (hr : 0 < r) (hT : Real.exp (-(T : ℝ)) ≤ r)
     (hfin : ∀ K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → μ K < ⊤) :
     reflectedPastOuterMassCode γ α₁ α₂ α₃ r z
@@ -37,19 +39,21 @@ theorem reflected_pastOuterMassCode_eq (γ α₁ α₂ α₃ r : ℝ) (z : ℂ) 
       ∫⁻ x in reflected_outerRegion r, ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x)*
         ENNReal.ofReal (reflected_global_reinsertionWeight γ a x) ∂μ := by
   have hU : MeasurableSet (reflected_outerRegion r) :=
-    (measurableSet_lt measurable_const measurable_norm).inter (measurableSet_insert.mpr (measurableSet_singleton (1 : ℂ)) : MeasurableSet ({0,1} : Set ℂ)).compl
-  have hU0 : reflected_outerRegion r ⊆ ({0} : Set ℂ)ᶜ := by
+    (measurableSet_lt measurable_const measurable_norm).inter (measurableSet_insert.mpr (measurableSet_singleton 1)).compl
+  have hU0 : reflected_outerRegion r ⊆ ({0})ᶜ := by
     intro x hx
-    have hn : 0 < ‖x‖ := hr.trans hx.1
-    simpa only [mem_compl_iff,mem_singleton_iff] using norm_pos_iff.mp hn
+    have hn := hr.trans hx.1
+    simp_all
   rw [reflectedPastOuterMassCode,reflected_puncturedMassCode_eq _ _ _ hfin]
-  dsimp only [Prod.fst,Prod.snd]
+  dsimp
   rw [setLIntegral_indicator hU,inter_eq_left.mpr hU0]
   apply setLIntegral_congr_fun hU
   intro x hx
-  have hl := Real.log_le_log (Real.exp_pos (-(T : ℝ))) (hT.trans hx.1.le)
+  have hl := Real.log_le_log (Real.exp_pos (-T)) (hT.trans hx.1.le)
   rw [Real.log_exp] at hl
   beta_reduce
-  rw [reflected_pastPlaneWeight_eq γ a T x (by linarith only [hl])]
+  rw [reflected_pastPlaneWeight_eq γ a T x (by linarith)]
+
+end
 
 end DOZZ.Proofs

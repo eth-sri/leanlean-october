@@ -26,24 +26,20 @@ theorem crossing_connection_det_real (a b c : ℝ)
         (Real.Gamma (1 - a))⁻¹ * (Real.Gamma (1 - b))⁻¹) =
     (c - 1) / (c - a - b) := by
   have hcC : ∀ n : ℤ, (c : ℂ) ≠ (n : ℂ) := by
-    intro n hn
-    apply hc n
-    exact_mod_cast hn
+    norm_cast
   have hδC : ∀ n : ℤ, (c : ℂ) - (a : ℂ) - (b : ℂ) ≠ (n : ℂ) := by
-    intro n hn
-    apply hδ n
-    exact_mod_cast hn
+    norm_cast
   have hd := gauss_connection_det (a : ℂ) (b : ℂ) (c : ℂ) hcC hδC
-  have hca : (c : ℂ) - (a : ℂ) = ((c - a : ℝ) : ℂ) := by push_cast; rfl
-  have hcb : (c : ℂ) - (b : ℂ) = ((c - b : ℝ) : ℂ) := by push_cast; rfl
-  have hδcast : (c : ℂ) - (a : ℂ) - (b : ℂ) = ((c - a - b : ℝ) : ℂ) := by push_cast; rfl
-  have hsum : (a : ℂ) + (b : ℂ) - (c : ℂ) = ((a + b - c : ℝ) : ℂ) := by push_cast; rfl
-  have hc2 : (2 : ℂ) - (c : ℂ) = ((2 - c : ℝ) : ℂ) := by push_cast; rfl
-  have ha1 : (1 : ℂ) - (a : ℂ) = ((1 - a : ℝ) : ℂ) := by push_cast; rfl
-  have hb1 : (1 : ℂ) - (b : ℂ) = ((1 - b : ℝ) : ℂ) := by push_cast; rfl
-  have hac : (a : ℂ) - (c : ℂ) + 1 = ((a - c + 1 : ℝ) : ℂ) := by push_cast; rfl
-  have hbc : (b : ℂ) - (c : ℂ) + 1 = ((b - c + 1 : ℝ) : ℂ) := by push_cast; rfl
-  have hcm : (c : ℂ) - 1 = ((c - 1 : ℝ) : ℂ) := by push_cast; rfl
+  have hca : (c : ℂ) - (a : ℂ) = ((c - a : ℝ) : ℂ) := by simp
+  have hcb : (c : ℂ) - (b : ℂ) = ((c - b : ℝ) : ℂ) := by simp
+  have hδcast : (c : ℂ) - (a : ℂ) - (b : ℂ) = ((c - a - b : ℝ) : ℂ) := by simp
+  have hsum : (a : ℂ) + (b : ℂ) - (c : ℂ) = ((a + b - c : ℝ) : ℂ) := by simp
+  have hc2 : (2 : ℂ) - (c : ℂ) = ((2 - c : ℝ) : ℂ) := by simp
+  have ha1 : (1 : ℂ) - (a : ℂ) = ((1 - a : ℝ) : ℂ) := by simp
+  have hb1 : (1 : ℂ) - (b : ℂ) = ((1 - b : ℝ) : ℂ) := by simp
+  have hac : (a : ℂ) - (c : ℂ) + 1 = ((a - c + 1 : ℝ) : ℂ) := by simp
+  have hbc : (b : ℂ) - (c : ℂ) + 1 = ((b - c + 1 : ℝ) : ℂ) := by simp
+  have hcm : (c : ℂ) - 1 = ((c - 1 : ℝ) : ℂ) := by simp
   rw [hδcast, hca, hcb, hsum, hc2, ha1, hb1, hac, hbc, hcm] at hd
   simp only [Complex.Gamma_ofReal, ← Complex.ofReal_mul, ← Complex.ofReal_inv,
     ← Complex.ofReal_sub, ← Complex.ofReal_div] at hd

@@ -22,6 +22,6 @@ theorem lintegral_lower_rpow_const_mul_le
     _ = 1 + c ^ q * ∫⁻ ω, f ω ^ q ∂P := by
       simp_rw [ENNReal.mul_rpow_of_nonneg _ _ hq]
       rw [measure_univ, lintegral_const_mul'' _ hmeas]
-    _ ≤ _ := add_le_add le_rfl (mul_le_mul_right hD _)
+    _ ≤ _ := by bound
 
 end DOZZ.Proofs

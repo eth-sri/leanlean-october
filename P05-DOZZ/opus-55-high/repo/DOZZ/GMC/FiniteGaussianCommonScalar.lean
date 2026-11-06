@@ -22,21 +22,21 @@ private theorem gaussianReal_standard_scale_map (c : ℝ) :
     (gaussianReal 0 (1 : ℝ≥0)).map (fun x : ℝ => c * x) =
       gaussianReal 0 ⟨c ^ 2, sq_nonneg c⟩ := by
   rw [gaussianReal_map_const_mul]
-  congr 1
-  · ring
-  · apply Subtype.ext
-    simp
+  aesop
+section
+variable {Ω ι : Type*} [MeasurableSpace Ω] [Fintype ι] (P : Measure Ω) (Z : Ω → ι → ℝ)
+section
+variable (hZ : DOZZ.IsCenteredJointlyGaussian P Z) (c : ℝ)
+include hZ
 
 /-- The sum of an arbitrary centered jointly Gaussian finite family and an independent common
 centered Gaussian coordinate is again centered jointly Gaussian. -/
 theorem independent_common_scalar_add_isCenteredJointlyGaussian
-    {Ω ι : Type*} [MeasurableSpace Ω] [Fintype ι]
-    (P : Measure Ω) (Z : Ω → ι → ℝ)
-    (hZ : DOZZ.IsCenteredJointlyGaussian P Z) (c : ℝ) :
+    :
     DOZZ.IsCenteredJointlyGaussian (P.prod (gaussianReal 0 1))
       (fun ω i => Z ω.1 i + c * ω.2) := by
   classical
-  let Q : Measure ℝ := gaussianReal 0 1
+  let Q := gaussianReal 0 1
   have hQ : IsProbabilityMeasure Q := inferInstance
   have hP : IsProbabilityMeasure P := hZ.1
   let : IsProbabilityMeasure P := hP
@@ -53,11 +53,11 @@ theorem independent_common_scalar_add_isCenteredJointlyGaussian
     let S : Ω × ℝ → ℝ := fun ω => U ω.1 + V ω.2
     obtain ⟨hUmem, ⟨vU, hUmap⟩⟩ := hZ.2.2 a
     have hUmeas : AEMeasurable U P := hUmem.aemeasurable
-    have hUlaw : HasLaw U (gaussianReal 0 vU) P := ⟨hUmeas, hUmap⟩
-    let d : ℝ := (∑ i, a i) * c
+    have hUlaw : HasLaw U (gaussianReal 0 vU) P := by tauto
+    let d := (∑ i, a i) * c
     have hVmem : MemLp V 2 Q := by
       dsimp [V, Q, d]
-      exact (memLp_id_gaussianReal (2 : ℝ≥0)).const_mul ((∑ i, a i) * c)
+      exact (memLp_id_gaussianReal (2 : ℝ≥0)).const_mul _
     have hVlaw : HasLaw V (gaussianReal 0 ⟨d ^ 2, sq_nonneg d⟩) Q := by
       refine ⟨?_, ?_⟩
       · exact (measurable_const_mul d).aemeasurable
@@ -79,9 +79,7 @@ theorem independent_common_scalar_add_isCenteredJointlyGaussian
       calc
         (∑ i, a i * (Z ω.1 i + c * ω.2)) =
             ∑ i, (a i * Z ω.1 i + a i * (c * ω.2)) := by
-              congr 1
-              funext i
-              ring
+              field_simp
         _ = (∑ i, a i * Z ω.1 i) + ∑ i, a i * (c * ω.2) := Finset.sum_add_distrib
         _ = U ω.1 + V ω.2 := by
               simp only [U, V]
@@ -95,15 +93,13 @@ theorem independent_common_scalar_add_isCenteredJointlyGaussian
 
 /-- The common scalar increases every covariance entry by its variance. -/
 theorem gaussianCovariance_independent_common_scalar_add
-    {Ω ι : Type*} [MeasurableSpace Ω] [Fintype ι]
-    (P : Measure Ω) (Z : Ω → ι → ℝ)
-    (hZ : DOZZ.IsCenteredJointlyGaussian P Z) (c : ℝ) (i j : ι) :
+    (i j : ι) :
     DOZZ.gaussianCovariance (P.prod (gaussianReal 0 1))
       (fun ω => Z ω.1 i + c * ω.2) (fun ω => Z ω.1 j + c * ω.2) =
         DOZZ.gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω j) + c ^ 2 := by
   classical
-  let Q : Measure ℝ := gaussianReal 0 1
-  let μ : Measure (Ω × ℝ) := P.prod Q
+  let Q := gaussianReal 0 1
+  let μ := P.prod Q
   let Xi : Ω × ℝ → ℝ := fun ω => Z ω.1 i
   let Xj : Ω × ℝ → ℝ := fun ω => Z ω.1 j
   let N : Ω × ℝ → ℝ := fun ω => c * ω.2
@@ -122,14 +118,12 @@ theorem gaussianCovariance_independent_common_scalar_add
     obtain ⟨hm, _⟩ := hZ.2.2 (Pi.single j 1)
     simpa [Zj, Pi.single_apply] using hm
   have hXi2 : MemLp Xi 2 μ := by
-    change MemLp (Zi ∘ Prod.fst) 2 μ
     exact hiMem.comp_measurePreserving hfst
   have hXj2 : MemLp Xj 2 μ := by
-    change MemLp (Zj ∘ Prod.fst) 2 μ
     exact hjMem.comp_measurePreserving hfst
   have hN2 : MemLp N 2 μ := by
     have hcoord : MemLp (fun x : ℝ => c * x) 2 Q := by
-      simpa [Q] using (memLp_id_gaussianReal (2 : ℝ≥0)).const_mul c
+      simpa [Q] using (memLp_id_gaussianReal 2).const_mul c
     change MemLp ((fun x : ℝ => c * x) ∘ Prod.snd) 2 μ
     exact hcoord.comp_measurePreserving hsnd
   obtain ⟨_, _, hmeanZi, _⟩ := coordinate_mean_variance P Z hZ i
@@ -138,14 +132,14 @@ theorem gaussianCovariance_independent_common_scalar_add
     have hmap := integral_map hfst.aemeasurable
       (by
         rw [hfst.map_eq]
-        exact (hiMem.integrable (by norm_num : 1 ≤ (2 : ENNReal))).aestronglyMeasurable)
+        exact (hiMem.integrable (by norm_num)).aestronglyMeasurable)
     rw [hfst.map_eq] at hmap
     simpa [Xi, Zi, Function.comp_def] using hmap.symm.trans hmeanZi
   have hmeanXj : (∫ ω, Xj ω ∂μ) = 0 := by
     have hmap := integral_map hfst.aemeasurable
       (by
         rw [hfst.map_eq]
-        exact (hjMem.integrable (by norm_num : 1 ≤ (2 : ENNReal))).aestronglyMeasurable)
+        exact (hjMem.integrable (by norm_num)).aestronglyMeasurable)
     rw [hfst.map_eq] at hmap
     simpa [Xj, Zj, Function.comp_def] using hmap.symm.trans hmeanZj
   have hNlaw : HasLaw N (gaussianReal 0 v) μ := by
@@ -157,30 +151,27 @@ theorem gaussianCovariance_independent_common_scalar_add
   have hmeanN : (∫ ω, N ω ∂μ) = 0 := by
     calc
       ∫ ω, N ω ∂μ = ∫ x, x ∂gaussianReal 0 v := hNlaw.integral_eq
-      _ = 0 := by simp [integral_id_gaussianReal]
+      _ = 0 := by simp
   have hvarN : ProbabilityTheory.covariance N N μ = c ^ 2 := by
     calc
       ProbabilityTheory.covariance N N μ = variance N μ :=
         ProbabilityTheory.covariance_self hN2.aemeasurable
-      _ = variance id (gaussianReal 0 v) := hNlaw.variance_eq
+      _ = variance id _ := hNlaw.variance_eq
       _ = c ^ 2 := by rw [variance_id_gaussianReal]; rfl
-  have hXi : MemLp Xi 2 μ := hXi2
-  have hXj : MemLp Xj 2 μ := hXj2
-  have hN : MemLp N 2 μ := hN2
-  have hXiN : Xi ⟂ᵢ[μ] N := by
-    exact indepFun_prod₀ (hZ.2.1 i)
+  have hXi := hXi2
+  have hXj := hXj2
+  have hN := hN2
+  have hXiN : Xi ⟂ᵢ[μ] N := indepFun_prod₀ (hZ.2.1 i)
       (measurable_const_mul c).aemeasurable
-  have hXjN : Xj ⟂ᵢ[μ] N := by
-    exact indepFun_prod₀ (hZ.2.1 j)
+  have hXjN : Xj ⟂ᵢ[μ] N := indepFun_prod₀ (hZ.2.1 j)
       (measurable_const_mul c).aemeasurable
-  have hNj : N ⟂ᵢ[μ] Xj := hXjN.symm
   have hsumCov : ProbabilityTheory.covariance (Xi + N) (Xj + N) μ =
       ProbabilityTheory.covariance Xi Xj μ + ProbabilityTheory.covariance N N μ := by
     rw [ProbabilityTheory.covariance_add_left hXi hN (hXj.add hN),
       ProbabilityTheory.covariance_add_right (X := Xi) (Y := Xj) (Z := N) hXi hXj hN,
       ProbabilityTheory.covariance_add_right (X := N) (Y := Xj) (Z := N) hN hXj hN]
     simp [ProbabilityTheory.IndepFun.covariance_eq_zero hXiN hXi hN,
-      ProbabilityTheory.IndepFun.covariance_eq_zero hNj hN hXj]
+      ProbabilityTheory.IndepFun.covariance_eq_zero hXjN.symm hN hXj]
   have hcovXiXj : ProbabilityTheory.covariance Xi Xj μ =
       DOZZ.gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω j) := by
     have hiMeasMap : AEStronglyMeasurable Zi (μ.map Prod.fst) := by
@@ -202,27 +193,31 @@ theorem gaussianCovariance_independent_common_scalar_add
           ProbabilityTheory.covariance Zi Zj (μ.map Prod.fst) := by
             symm
             simpa [Xi, Xj, Zi, Zj] using hcovMap
-      _ = ProbabilityTheory.covariance Zi Zj P := by rw [hfst.map_eq]
+      _ = ProbabilityTheory.covariance Zi Zj P := by aesop
       _ = DOZZ.gaussianCovariance P Zi Zj := hcovOrig
   rw [show (fun ω : Ω × ℝ => Z ω.1 i + c * ω.2) = Xi + N by rfl,
     show (fun ω : Ω × ℝ => Z ω.1 j + c * ω.2) = Xj + N by rfl]
   rw [show DOZZ.gaussianCovariance μ (Xi + N) (Xj + N) =
-      ProbabilityTheory.covariance (Xi + N) (Xj + N) μ by
+      ProbabilityTheory.covariance _ _ μ by
         rw [ProbabilityTheory.covariance_eq_sub (hXi.add hN) (hXj.add hN)]
         have hmeanSumX : (∫ ω, (Xi + N) ω ∂μ) = 0 := by
           calc
             ∫ ω, (Xi + N) ω ∂μ = ∫ ω, Xi ω + N ω ∂μ := rfl
             _ = ∫ ω, Xi ω ∂μ + ∫ ω, N ω ∂μ :=
               integral_add (hXi.integrable (by norm_num)) (hN.integrable (by norm_num))
-            _ = 0 := by rw [hmeanXi, hmeanN]; simp
+            _ = 0 := by linarith
         have hmeanSumY : (∫ ω, (Xj + N) ω ∂μ) = 0 := by
           calc
             ∫ ω, (Xj + N) ω ∂μ = ∫ ω, Xj ω + N ω ∂μ := rfl
             _ = ∫ ω, Xj ω ∂μ + ∫ ω, N ω ∂μ :=
               integral_add (hXj.integrable (by norm_num)) (hN.integrable (by norm_num))
-            _ = 0 := by rw [hmeanXj, hmeanN]; simp
+            _ = 0 := by linarith
         rw [hmeanSumX, hmeanSumY]
         simp [DOZZ.gaussianCovariance]]
   rw [hsumCov, hcovXiXj, hvarN]
+
+end
+
+end
 
 end DOZZ.Proofs

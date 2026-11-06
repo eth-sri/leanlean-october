@@ -53,6 +53,6 @@ theorem disk_chain_lifts_unique
   · intro t ht
     exact disk_chain_lift_has_path_solution_charts hγ N₂ hN₂ r₂ M₂ hr₂ hM₂ H D₂
       hcenters₂ hbound₂ hcover₂ hoverlap₂ hGformula t ht
-  · exact hstart
+  assumption
 
 end DOZZ.Proofs

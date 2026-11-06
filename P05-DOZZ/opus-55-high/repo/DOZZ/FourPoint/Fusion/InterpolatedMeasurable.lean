@@ -10,26 +10,31 @@ public import DOZZ.FourPoint.Fusion.RootOnlyKernelMeasurable
 @[expose] public section
 open MeasureTheory
 namespace DOZZ.Proofs
+section
+variable {U : Type*} [MeasurableSpace U] (γ α₁ α₂ α₃ : ℝ) (μ : U → Measure ℂ)
+section
+variable (hμ : Measurable μ) (hfin : ∀ u, IsFiniteMeasure (μ u)) (y z : U → ℂ) (hy : Measurable y) (hz : Measurable z)
+include hμ hfin hy hz
 /-- Measurability of a rooted mass in an arbitrary finite measurable family. -/
-theorem fusionMovingMass_family_measurable {U : Type*} [MeasurableSpace U]
-    (γ α₁ α₂ α₃ : ℝ) (μ : U → Measure ℂ) (hμ : Measurable μ) (hfin : ∀ u, IsFiniteMeasure (μ u))
-    (y z : U → ℂ) (hy : Measurable y) (hz : Measurable z) :
+theorem fusionMovingMass_family_measurable :
     Measurable (fun u => fusionMovingMass γ α₁ α₂ α₃ (y u) (z u) (μ u)) := by
   apply measurable_lintegral_finite_family μ hμ hfin
-    (fun q : U × ℂ => fusionMovingKernel γ α₁ α₂ α₃ (y q.1) (z q.1) q.2)
+    (fun q => fusionMovingKernel γ α₁ α₂ α₃ (y q.1) (z q.1) q.2)
   have hp : Measurable (fun q : U × ℂ => ((y q.1, z q.1), q.2)) :=
-    ((hy.comp measurable_fst).prodMk (hz.comp measurable_fst)).prodMk measurable_snd
+    by fun_prop
   simpa only [Function.comp_def] using (fusionMovingKernel_joint_measurable γ α₁ α₂ α₃).comp hp
 /-- Measurability of a rooted mass in an arbitrary finite measurable family. -/
-theorem fusionRootOnlyMass_family_measurable {U : Type*} [MeasurableSpace U]
-    (γ α₁ α₂ α₃ : ℝ) (μ : U → Measure ℂ) (hμ : Measurable μ) (hfin : ∀ u, IsFiniteMeasure (μ u))
-    (y z : U → ℂ) (hy : Measurable y) (hz : Measurable z) :
+theorem fusionRootOnlyMass_family_measurable :
     Measurable (fun u => fusionRootOnlyMass γ α₁ α₂ α₃ (y u) (z u) (μ u)) := by
   apply measurable_lintegral_finite_family μ hμ hfin
-    (fun q : U × ℂ => fusionRootOnlyKernel γ α₁ α₂ α₃ (y q.1) (z q.1) q.2)
+    (fun q => fusionRootOnlyKernel γ α₁ α₂ α₃ (y q.1) (z q.1) q.2)
   have hp : Measurable (fun q : U × ℂ => ((y q.1, z q.1), q.2)) :=
-    ((hy.comp measurable_fst).prodMk (hz.comp measurable_fst)).prodMk measurable_snd
+    by fun_prop
   simpa only [Function.comp_def] using (fusionRootOnlyKernel_joint_measurable γ α₁ α₂ α₃).comp hp
+
+end
+
+end
 /-- The inverse expectation is jointly measurable in time, rescaled root, and insertion. -/
 theorem fusionInterpolatedMass_expectation_measurable {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
@@ -37,12 +42,12 @@ theorem fusionInterpolatedMass_expectation_measurable {Ω : Type*} [MeasurableSp
     (α₁ α₂ α₃ s : ℝ) :
     Measurable (fun q : ℝ × (ℂ × ℂ) => ∫⁻ ω,
       fusionInterpolatedMass γ α₁ α₂ α₃ q.1 q.2.1 q.2.2 (M ω) ^ s ∂P) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   obtain ⟨N, hN, hf, he⟩ := equatorGFF_GMC_measurable_version P X hX γ hγ hγ2 M hM
   have hy : Measurable (fun q : (ℝ × (ℂ × ℂ)) × Ω => q.1.2.1) :=
-    measurable_fst.comp (measurable_snd.comp measurable_fst)
+    by fun_prop
   have hz : Measurable (fun q : (ℝ × (ℂ × ℂ)) × Ω => q.1.2.2) :=
-    measurable_snd.comp (measurable_snd.comp measurable_fst)
+    by fun_prop
   have hm1 := fusionMovingMass_family_measurable γ α₁ α₂ α₃ (fun q : (ℝ × (ℂ × ℂ)) × Ω => N q.2)
     (hN.comp measurable_snd) (fun q => hf q.2) _ _ hy hz
   have hm0 := fusionRootOnlyMass_family_measurable γ α₁ α₂ α₃ (fun q : (ℝ × (ℂ × ℂ)) × Ω => N q.2)
@@ -54,13 +59,12 @@ theorem fusionInterpolatedMass_expectation_measurable {Ω : Type*} [MeasurableSp
       ((ENNReal.measurable_ofReal.comp (measurable_const.sub ht)).mul hm0)
   have hmeas : Measurable (fun q : ℝ × (ℂ × ℂ) => ∫⁻ ω,
       fusionInterpolatedMass γ α₁ α₂ α₃ q.1 q.2.1 q.2.2 (N ω) ^ s ∂P) :=
-    (hm.pow_const s).lintegral_prod_right'
+    by fun_prop
   have heq : (fun q : ℝ × (ℂ × ℂ) => ∫⁻ ω,
       fusionInterpolatedMass γ α₁ α₂ α₃ q.1 q.2.1 q.2.2 (M ω) ^ s ∂P) =
       (fun q : ℝ × (ℂ × ℂ) => ∫⁻ ω,
       fusionInterpolatedMass γ α₁ α₂ α₃ q.1 q.2.1 q.2.2 (N ω) ^ s ∂P) := by
     funext q
-    exact lintegral_congr_ae (he.mono fun ω h => by dsimp only; rw [h])
-  rw [heq]
-  exact hmeas
+    exact lintegral_congr_ae (he.mono fun ω h => by simp_all)
+  simp_all
 end DOZZ.Proofs

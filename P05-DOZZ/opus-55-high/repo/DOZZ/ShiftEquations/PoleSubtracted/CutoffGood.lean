@@ -38,12 +38,11 @@ theorem ae_cutoffGood (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X
     (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) {η δ : ℝ}
     (hW : TwoPoleWindow γ η δ) : ∀ᵐ ω ∂P, CutoffGood M γ η ω := by
   have hη := (window_eta_pos hW).le
-  have hηγ := window_eta_le_two_div hγ hγ2 hW
   have hη2 : η < γ / 2 := by linarith [window_eta_lt_quarter hW]
-  filter_upwards [ae_localMass_pos P X hX γ hγ hγ2 M hM hη hηγ,
+  filter_upwards [ae_localMass_pos P X hX γ hγ hγ2 M hM hη (window_eta_le_two_div hγ hγ2 hW),
     ae_totalMass_lt_top P X hX γ hγ hγ2 M hM hη hη2,
     gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM 0] with ω h1 h2 h3
-  exact ⟨h1, h2, h3⟩
+  tauto
 
 theorem baseMassReal_eq (M : Ω → Measure ℂ) (γ η : ℝ) (n : ℕ) (ω : Ω) :
     baseMassReal M γ η n ω = (cutoffTiltedMass γ η 0 n (M ω)).toReal := by
@@ -67,18 +66,23 @@ theorem localMass_lt_top (h : CutoffGood M γ η ω) :
 omit [MeasurableSpace Ω] in
 theorem localMassReal_pos (h : CutoffGood M γ η ω) : 0 < localMassReal M γ η ω :=
   ENNReal.toReal_pos h.1.ne' h.localMass_lt_top.ne
+section
+variable (h : CutoffGood M γ η ω) (hγ : 0 < γ) (n : ℕ)
+include h hγ
 
-theorem localMassReal_le (h : CutoffGood M γ η ω) (hγ : 0 < γ) (n : ℕ) :
+theorem localMassReal_le :
     localMassReal M γ η ω ≤ baseMassReal M γ η n ω := by
   rw [baseMassReal_eq]
   exact ENNReal.toReal_mono (h.cutoffTiltedMass_lt_top hγ 0 n).ne
     (localMass_le_cutoffTiltedMass γ η 0 n (M ω))
 
-theorem baseMassReal_le_succ (h : CutoffGood M γ η ω) (hγ : 0 < γ) (n : ℕ) :
+theorem baseMassReal_le_succ :
     baseMassReal M γ η n ω ≤ baseMassReal M γ η (n + 1) ω := by
   rw [baseMassReal_eq, baseMassReal_eq]
-  exact ENNReal.toReal_mono (h.cutoffTiltedMass_lt_top hγ 0 (n + 1)).ne
+  exact ENNReal.toReal_mono (h.cutoffTiltedMass_lt_top hγ 0 _).ne
     (monotone_cutoffTiltedMass γ η 0 (M ω) (Nat.le_succ n))
+
+end
 
 end CutoffGood
 
@@ -87,13 +91,11 @@ theorem ofReal_sub_mul_rpow_add_rpow {T L : ℝ≥0∞} (hL : 0 < L) (hLT : L �
     (s : ℝ) :
     ENNReal.ofReal ((T.toReal - L.toReal) * (T.toReal ^ s + L.toReal ^ s)) =
       (T - L) * (T ^ s + L ^ s) := by
-  have hL' : L ≠ ⊤ := ne_top_of_le_ne_top hT hLT
-  have hLr : 0 < L.toReal := ENNReal.toReal_pos hL.ne' hL'
-  have hTr : 0 < T.toReal := ENNReal.toReal_pos (hL.trans_le hLT).ne' hT
+  have hL' := ne_top_of_le_ne_top hT hLT
   rw [ENNReal.ofReal_mul (sub_nonneg.2 (ENNReal.toReal_mono hT hLT)),
     ENNReal.ofReal_sub _ ENNReal.toReal_nonneg, ENNReal.ofReal_toReal hT,
     ENNReal.ofReal_toReal hL', ENNReal.ofReal_add (by positivity) (by positivity),
-    ← ENNReal.ofReal_rpow_of_pos hTr, ← ENNReal.ofReal_rpow_of_pos hLr,
+    ← ENNReal.ofReal_rpow_of_pos (ENNReal.toReal_pos (hL.trans_le hLT).ne' hT), ← ENNReal.ofReal_rpow_of_pos (ENNReal.toReal_pos hL.ne' hL'),
     ENNReal.ofReal_toReal hT, ENNReal.ofReal_toReal hL']
 
 /-! ### Measurability -/
@@ -101,20 +103,26 @@ theorem ofReal_sub_mul_rpow_add_rpow {T L : ℝ≥0∞} (hL : 0 < L) (hLT : L �
 theorem measurable_circleAverage_origin {P : Measure Ω} {X : Ω → Distr} {Xc : Ω → ℂ → ℝ → ℝ}
     (hXc : IsCircleAverage P X Xc) (m : ℕ) : Measurable fun ω => Xc ω 0 m :=
   (hXc.1 m).comp (measurable_id.prodMk measurable_const)
+section
+variable (P : Measure Ω)
+section
+variable (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (η : ℝ)
+include hX hγ hγ2 hM
 
-theorem aemeasurable_baseMassReal (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (η : ℝ)
-    (n : ℕ) : AEMeasurable (baseMassReal M γ η n) P := by
-  have h : AEMeasurable (fun ω => (cutoffTiltedMass γ η 0 n (M ω)).toReal) P :=
+theorem aemeasurable_baseMassReal (n : ℕ) : AEMeasurable (baseMassReal M γ η n) P := by
+  have h :=
     (aemeasurable_measure_functional P X hX γ hγ hγ2 M hM
       (measurable_cutoffTiltedMass γ η 0 n)).ennreal_toReal
   exact h.congr (Eventually.of_forall fun ω => (baseMassReal_eq M γ η n ω).symm)
 
-theorem aemeasurable_localMassReal (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (η : ℝ) :
+theorem aemeasurable_localMassReal :
     AEMeasurable (localMassReal M γ η) P :=
   (aemeasurable_measure_functional P X hX γ hγ hγ2 M hM
     (measurable_poleLocalMass γ η)).ennreal_toReal
+
+end
+
+end
 
 /-! ### The tilted domination -/
 
@@ -146,8 +154,7 @@ theorem integrable_cutoffDomination (P : Measure Ω) (X : Ω → Distr) (hX : Is
   have hmeas : AEMeasurable (fun ω => (baseMassReal M γ η n ω - localMassReal M γ η ω) *
       cutoffWeight γ (Xc ω 0 m) (baseMassReal M γ η n ω) (localMassReal M γ η ω) a) P := by
     unfold cutoffWeight
-    exact (hB.sub hL).mul ((Real.measurable_exp.comp_aemeasurable (hXm.const_mul a)).mul
-      ((hB.pow_const _).add (hL.pow_const _)))
+    fun_prop
   have hgood := ae_cutoffGood P X hX γ hγ hγ2 M hM hW
   have hnonneg : 0 ≤ᵐ[P] fun ω => (baseMassReal M γ η n ω - localMassReal M γ η ω) *
       cutoffWeight γ (Xc ω 0 m) (baseMassReal M γ η n ω) (localMassReal M γ η ω) a := by
@@ -179,7 +186,7 @@ theorem integrable_cutoffDomination (P : Measure Ω) (X : Ω → Distr) (hX : Is
   simp_rw [hfac]
   rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top,
     lintegral_circleTilt P X hX γ hγ hγ2 M hM Xc hXc a m _
-      (measurable_dominationFunctional γ η (-a / γ) n)]
+      (measurable_dominationFunctional γ η _ n)]
   refine ENNReal.mul_lt_top ENNReal.ofReal_lt_top ?_
   have hae : ∀ᵐ ω ∂P, dominationFunctional γ η (-a / γ) n
       ((M ω).withDensity (circleTiltDensity γ a m)) =

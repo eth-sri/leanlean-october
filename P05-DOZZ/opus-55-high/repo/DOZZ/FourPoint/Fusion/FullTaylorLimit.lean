@@ -22,9 +22,9 @@ theorem fusionFullOneRooted_normalized_tendsto {Ω : Type*} [MeasurableSpace Ω]
   let κ := γ * (Q γ - α₁)
   let E1 := fusionPureSpatial P M γ α₁ α₂ α₃ p (Metric.ball (0 : ℂ) (1 / 2))ᶜ
   let E2 := fusionMixedSpatial P M γ α₁ α₂ α₃ p (Metric.ball (0 : ℂ) (1 / 2))ᶜ
-  let R1 := fun z : ℂ => ((-p * (γ ^ 2 / 4) * (γ ^ 2 / 4 - 1) : ℝ) : ℂ) * z ^ 2 *
+  let R1 := fun z => ((-p * (γ ^ 2 / 4) * (γ ^ 2 / 4 - 1) : ℝ) : ℂ) * z ^ 2 *
     (∫ t in Icc (0 : ℝ) 1, (1 - t : ℝ) * E1 ((t : ℂ) * z))
-  let R2 := fun z : ℂ => ((-2 * p * (γ ^ 2 / 4) ^ 2 : ℝ) : ℂ) * z * star z *
+  let R2 := fun z => ((-2 * p * (γ ^ 2 / 4) ^ 2 : ℝ) : ℂ) * z * star z *
     (∫ t in Icc (0 : ℝ) 1, (1 - t : ℝ) * E2 ((t : ℂ) * z))
   have hκ : κ < 2 := (fusion_taylor_parameters γ α₁ hγ hlo hsq hα₁).2.2.2.2.2
   obtain ⟨C1, hC1, hb1⟩ := fusion_exteriorR1_expectation_bound P X hX γ hγ hγ2 M hM
@@ -36,10 +36,9 @@ theorem fusionFullOneRooted_normalized_tendsto {Ω : Type*} [MeasurableSpace Ω]
   have hR2 : IsComplexLittleOAtZero κ R2 := fusion_mixed_quadratic_time_error E2 _ κ C2 hC2.le hκ
     (fun z hz hz4 => (hb2 z hz hz4).2)
   have h1 := fusion_normalized_tendsto_of_littleO κ R1 hR1
-  have h2 := fusion_normalized_tendsto_of_littleO κ R2 hR2
   have hl := fusionLocalOneRooted_normalized_tendsto P X hX γ hγ hγ2 M hM
     α₁ α₂ α₃ hlo hsq hα₁ hα₂ hα₃ p hp
-  have h := ((hl.add h1).add h2).add h1.star
+  have h := ((hl.add h1).add (fusion_normalized_tendsto_of_littleO κ R2 hR2)).add h1.star
   simp only [add_zero, star_zero] at h
   apply h.congr'
   have hz4 : ∀ᶠ z : ℂ in nhdsWithin 0 {0}ᶜ, ‖z‖ ≤ 1 / 4 := by
@@ -47,14 +46,9 @@ theorem fusionFullOneRooted_normalized_tendsto {Ω : Type*} [MeasurableSpace Ω]
       (continuous_norm.tendsto (0 : ℂ)).eventually_lt_const (by simp)
     exact (h.filter_mono nhdsWithin_le_nhds).mono fun _ h => h.le
   filter_upwards [hz4, self_mem_nhdsWithin] with z hz4 hz
-  have hz0 : z ≠ 0 := by simpa only [mem_compl_iff, mem_singleton_iff] using hz
-  have hs1 := fusionRootedR1_split P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hlo hsq hα₁ hα₂ hα₃ p hp z hz0 hz4
-  have hs2 := fusionRootedR2_split P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hlo hsq hα₁ hα₂ hα₃ p hp z hz0 hz4
-  change gammaHalfRootedR1 P M γ α₁ α₂ α₃ p z = fusionLocalR1 P M γ α₁ α₂ α₃ p z + R1 z at hs1
-  change gammaHalfRootedR2 P M γ α₁ α₂ α₃ p z = fusionLocalR2 P M γ α₁ α₂ α₃ p z + R2 z at hs2
+  have hz0 : z ≠ 0 := by assumption
   have hreal (r : ℝ) : star (r : ℂ) = (r : ℂ) := by simp
-  dsimp only [κ]
-  simp only [gammaHalfOneRootedTerm, gammaHalfRootedR3, hs1, hs2, star_add,
+  simp only [gammaHalfOneRootedTerm, gammaHalfRootedR3, (fusionRootedR1_split P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hlo hsq hα₁ hα₂ hα₃ p hp z hz0 hz4), (fusionRootedR2_split P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hlo hsq hα₁ hα₂ hα₃ p hp z hz0 hz4), star_add,
     star_div₀, hreal]
   ring
 end DOZZ.Proofs

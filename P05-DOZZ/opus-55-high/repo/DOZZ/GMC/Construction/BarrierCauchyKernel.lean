@@ -25,7 +25,7 @@ theorem finite_gaussian_wick_pair_tilt_with_coarse_rectangle
     (e : κ → ι) (barrier : κ → ℝ) :
     let F : (ι → ℝ) → ℝ≥0∞ := fun z =>
       Set.indicator {z | ∀ i, z (e i) ≤ barrier i}
-        (fun _ => (1 : ℝ≥0∞)) z
+        (fun _ => 1) z
     ∫⁻ ω,
       ENNReal.ofReal (Real.exp (γ * V ω p - γ ^ 2 / 2 *
         gaussianVariance P (fun ω => V ω p))) *
@@ -38,22 +38,16 @@ theorem finite_gaussian_wick_pair_tilt_with_coarse_rectangle
       (∫⁻ ω, F (fun i => V ω i + γ *
           gaussianCovariance P (fun ω => V ω i) (fun ω => V ω p) + γ *
           gaussianCovariance P (fun ω => V ω i) (fun ω => V ω q)) ∂P) := by
-  classical
   let F : (ι → ℝ) → ℝ≥0∞ := fun z =>
     Set.indicator {z | ∀ i, z (e i) ≤ barrier i}
-      (fun _ => (1 : ℝ≥0∞)) z
+      (fun _ => 1) z
   have hEq : (⋂ i : κ, {z : ι → ℝ | z (e i) ≤ barrier i}) =
       {z | ∀ i : κ, z (e i) ≤ barrier i} := by
-    ext z
-    simp only [Set.mem_iInter, Set.mem_ofPred_eq]
+    aesop
   have hset : MeasurableSet {z : ι → ℝ | ∀ i : κ, z (e i) ≤ barrier i} := by
-    rw [← hEq]
-    apply MeasurableSet.iInter
-    intro i
-    exact measurableSet_le (measurable_pi_apply (e i)) measurable_const
+    measurability
   have hF : Measurable F := by
-    dsimp [F]
-    exact measurable_const.indicator hset
+    fun_prop
   simpa [F] using finite_gaussian_wick_pair_tilt P V hV p q γ F hF
 
 
@@ -66,14 +60,7 @@ theorem integral_gaussianRectangleIndicator_abs_le_one
   classical
   let R : Set (ι → ℝ) := {z | ∀ i, z i + shift i ≤ barrier i}
   have hR : MeasurableSet R := by
-    have hEq : (⋂ i, {z : ι → ℝ | z i + shift i ≤ barrier i}) = R := by
-      ext z
-      simp [R]
-    rw [← hEq]
-    apply MeasurableSet.iInter
-    intro i
-    have hcoord : Measurable (fun z : ι → ℝ => z i + shift i) := by fun_prop
-    exact measurableSet_le hcoord measurable_const
+    measurability
   have hZae : AEMeasurable Z P := by
     apply AEMeasurable.of_eval
     intro i
@@ -83,8 +70,7 @@ theorem integral_gaussianRectangleIndicator_abs_le_one
     dsimp [F]
     exact Measurable.ite hR measurable_const measurable_const
   have hEq : gaussianRectangleIndicator Z barrier shift = F ∘ Z := by
-    funext ω
-    simp [gaussianRectangleIndicator, F, R]
+    rfl
   have hRect : AEStronglyMeasurable (gaussianRectangleIndicator Z barrier shift) P := by
     rw [hEq]
     exact (hF.comp_aemeasurable hZae).aestronglyMeasurable
@@ -98,7 +84,7 @@ theorem integral_gaussianRectangleIndicator_abs_le_one
     rw [hZ.1.measure_univ]
     exact ENNReal.one_lt_top
   have hone : Integrable (fun _ : Ω => (1 : ℝ)) P := by
-    exact (integrable_const_iff (μ := P) (c := (1 : ℝ))).2 (Or.inr hPfinite)
+    exact (integrable_const_iff (μ := P) (c := 1)).2 (Or.inr hPfinite)
   have hRectIntegrable : Integrable (gaussianRectangleIndicator Z barrier shift) P :=
     hone.mono' hRect hbound
   have hnorm := norm_integral_le_integral_norm (μ := P)
@@ -106,12 +92,12 @@ theorem integral_gaussianRectangleIndicator_abs_le_one
   have hnormBound :
       (∫ ω, ‖gaussianRectangleIndicator Z barrier shift ω‖ ∂P) ≤ 1 := by
     calc
-      _ ≤ ∫ ω, (1 : ℝ) ∂P :=
+      _ ≤ ∫ ω, 1 ∂P :=
         integral_mono_ae hRectIntegrable.norm hone hbound
       _ = 1 := by
         rw [integral_const, Measure.real_def, hZ.1.measure_univ]
         norm_num
-  have hnormResult : ‖∫ ω, gaussianRectangleIndicator Z barrier shift ω ∂P‖ ≤ 1 :=
+  have hnormResult :=
     hnorm.trans hnormBound
   simpa [Real.norm_eq_abs] using hnormResult
 
@@ -134,29 +120,28 @@ theorem tendsto_uniformlyOn_product_of_tendsto_uniformlyOn
       0 < ε → ε ≤ ε₀ → 0 < ε' → ε' ≤ ε₀ → ∀ p ∈ S,
         |F ε ε' p * G ε ε' p - F₀ 0 0 p * G₀ 0 0 p| < η' := by
   intro η' hη'
-  let δ : ℝ := min 1 (η' / (4 * (M + 1)))
-  have hδ : 0 < δ := lt_min one_pos (div_pos hη' (by positivity))
-  have hδone : δ ≤ 1 := min_le_left _ _
-  have hδsmall : δ ≤ η' / (4 * (M + 1)) := min_le_right _ _
+  let δ := min 1 (η' / (4 * (M + 1)))
+  have hδ : 0 < δ := by positivity
+  have hδone : δ ≤ 1 := min_le_left ..
+  have hδsmall : δ ≤ η' / (4 * (M + 1)) := min_le_right ..
   obtain ⟨εF, hεF, hFclose⟩ := hF δ hδ
   obtain ⟨εG, hεG, hGclose⟩ := hGcloseFam δ hδ
-  let ε₀ : ℝ := min εF εG
-  have hε₀ : 0 < ε₀ := lt_min hεF hεG
-  refine ⟨ε₀, hε₀, ?_⟩
+  let ε₀ := min εF εG
+  refine ⟨ε₀, (lt_min hεF hεG), ?_⟩
   intro ε ε' hε hεcut hε' hε'cut p hp
-  have hFc : |F ε ε' p - F₀ 0 0 p| < δ :=
-    hFclose ε ε' hε (le_trans hεcut (min_le_left _ _)) hε'
-      (le_trans hε'cut (min_le_left _ _)) p hp
-  have hGc : |G ε ε' p - G₀ 0 0 p| < δ :=
-    hGclose ε ε' hε (le_trans hεcut (min_le_right _ _)) hε'
-      (le_trans hε'cut (min_le_right _ _)) p hp
+  have hFc :=
+    hFclose ε ε' hε (le_trans hεcut (min_le_left ..)) hε'
+      (le_trans hε'cut (min_le_left ..)) p hp
+  have hGc :=
+    hGclose ε ε' hε (le_trans hεcut (min_le_right ..)) hε'
+      (le_trans hε'cut (min_le_right ..)) p hp
   have hFbound : |F ε ε' p| ≤ M + δ := by
     calc
       |F ε ε' p| = |(F ε ε' p - F₀ 0 0 p) + F₀ 0 0 p| := by
         congr 1
         ring
-      _ ≤ |F ε ε' p - F₀ 0 0 p| + |F₀ 0 0 p| := abs_add_le _ _
-      _ ≤ δ + M := add_le_add hFc.le (hF₀ p hp)
+      _ ≤ |F ε ε' p - F₀ 0 0 p| + |F₀ 0 0 p| := abs_add_le ..
+      _ ≤ δ + M := by grind
       _ = M + δ := by ring
   have hprod :
       |F ε ε' p * G ε ε' p - F₀ 0 0 p * G₀ 0 0 p| ≤
@@ -170,11 +155,11 @@ theorem tendsto_uniformlyOn_product_of_tendsto_uniformlyOn
             |F ε ε' p - F₀ 0 0 p| * |G₀ 0 0 p| := by
               calc
                 _ ≤ |F ε ε' p * (G ε ε' p - G₀ 0 0 p)| +
-                    |(F ε ε' p - F₀ 0 0 p) * G₀ 0 0 p| := abs_add_le _ _
-                _ = _ := by rw [abs_mul, abs_mul]
+                    |(F ε ε' p - F₀ 0 0 p) * G₀ 0 0 p| := abs_add_le ..
+                _ = _ := by simp
       _ ≤ (M + δ) * δ + δ := by
         apply add_le_add
-        · exact mul_le_mul (hFbound) hGc.le (abs_nonneg _) (by positivity)
+        · bound
         · calc
             |F ε ε' p - F₀ 0 0 p| * |G₀ 0 0 p| ≤ δ * 1 :=
               mul_le_mul hFc.le (hG₀ p hp) (abs_nonneg _) (by positivity)
@@ -187,19 +172,19 @@ theorem tendsto_uniformlyOn_product_of_tendsto_uniformlyOn
         _ = η' * (M / (4 * (M + 1))) := by ring
         _ ≤ η' * (1 / 4) := by
           apply mul_le_mul_of_nonneg_left _ hη'.le
-          apply (div_le_div_iff₀ (by positivity : (0 : ℝ) < 4 * (M + 1))
-            (by norm_num : (0 : ℝ) < 4)).2
-          nlinarith [hM]
+          apply (div_le_div_iff₀ (by positivity)
+            (by norm_num)).2
+          nlinarith
         _ = η' / 4 := by ring
     have hδsmall' : δ ≤ η' / 4 := by
       calc
         δ ≤ η' / (4 * (M + 1)) := hδsmall
         _ ≤ η' / 4 := by
-          apply (div_le_div_iff₀ (by positivity : (0 : ℝ) < 4 * (M + 1))
-            (by norm_num : (0 : ℝ) < 4)).2
-          nlinarith [hM, hη']
-    have hδsq : δ ^ 2 ≤ δ := by nlinarith [hδone, sq_nonneg (δ - 1)]
-    nlinarith [hMd, hδsmall', hδsq]
+          apply (div_le_div_iff₀ (by positivity)
+            (by norm_num)).2
+          nlinarith
+    have hδsq : δ ^ 2 ≤ δ := by nlinarith
+    nlinarith
   exact lt_of_le_of_lt hprod hsmall
 
 /-- One regularized Gaussian Wick weight, in nonnegative form for Tonelli arguments. -/
@@ -250,7 +235,6 @@ theorem compatibleAdmissibleSelectedMixedGrowingBarrierPairKernel_le_finiteBarri
     compatibleAdmissibleSelectedMixedGrowingBarrierPairKernel P Y Z γ a k₀ r s x y b₁ b₂ ≤
       compatibleAdmissibleSelectedFiniteBarrierPairKernel P Y Z γ a k₀ m
         (Real.exp (-r)) (Real.exp (-s)) x y b₁ b₂ := by
-  classical
   have hsubset (t : ℝ) (hmt : (m : ℝ) ≤ t) (ω : Ω) (z : ℂ) :
       Set.indicator (admissibleGrowingBarrierSet Y a k₀ t)
           (fun _ => (1 : ℝ≥0∞)) (ω, z) ≤
@@ -259,61 +243,14 @@ theorem compatibleAdmissibleSelectedMixedGrowingBarrierPairKernel_le_finiteBarri
     by_cases hgood : (ω, z) ∈ admissibleGrowingBarrierSet Y a k₀ t
     · have hsmall : (ω, z) ∈ admissibleGrowingBarrierSet Y a k₀ (m : ℝ) := by
         intro k hk₀ hkm
-        have hkt : (k : ℝ) ≤ t := le_trans hkm hmt
-        exact hgood k hk₀ hkt
-      simp [Set.indicator, hgood, hsmall]
-    · simp [Set.indicator, hgood]
+        bound
+      simp_all
+    simp_all
   unfold compatibleAdmissibleSelectedMixedGrowingBarrierPairKernel
     compatibleAdmissibleSelectedFiniteBarrierPairKernel
   apply lintegral_mono
   intro ω
-  let w₁ := admissibleLogWickWeight P (if b₁ then Y else Z) γ (Real.exp (-r)) x ω
-  let w₂ := admissibleLogWickWeight P (if b₂ then Y else Z) γ (Real.exp (-s)) y ω
-  change w₁ * w₂ *
-      Set.indicator (admissibleGrowingBarrierSet Y a k₀ r)
-        (fun _ => (1 : ℝ≥0∞)) (ω, x) *
-      Set.indicator (admissibleGrowingBarrierSet Y a k₀ s)
-        (fun _ => (1 : ℝ≥0∞)) (ω, y) ≤
-    w₁ * w₂ * Set.indicator (admissibleGrowingBarrierSet Y a k₀ (m : ℝ))
-      (fun _ => (1 : ℝ≥0∞)) (ω, x) *
-      Set.indicator (admissibleGrowingBarrierSet Y a k₀ (m : ℝ))
-        (fun _ => (1 : ℝ≥0∞)) (ω, y)
-  have hbarrierProduct :
-      Set.indicator (admissibleGrowingBarrierSet Y a k₀ r)
-          (fun _ => (1 : ℝ≥0∞)) (ω, x) *
-        Set.indicator (admissibleGrowingBarrierSet Y a k₀ s)
-          (fun _ => (1 : ℝ≥0∞)) (ω, y) ≤
-      Set.indicator (admissibleGrowingBarrierSet Y a k₀ (m : ℝ))
-          (fun _ => (1 : ℝ≥0∞)) (ω, x) *
-        Set.indicator (admissibleGrowingBarrierSet Y a k₀ (m : ℝ))
-          (fun _ => (1 : ℝ≥0∞)) (ω, y) := by
-    calc
-      _ = Set.indicator (admissibleGrowingBarrierSet Y a k₀ s)
-            (fun _ => (1 : ℝ≥0∞)) (ω, y) *
-          Set.indicator (admissibleGrowingBarrierSet Y a k₀ r)
-            (fun _ => (1 : ℝ≥0∞)) (ω, x) := mul_comm _ _
-      _ ≤ Set.indicator (admissibleGrowingBarrierSet Y a k₀ s)
-            (fun _ => (1 : ℝ≥0∞)) (ω, y) *
-          Set.indicator (admissibleGrowingBarrierSet Y a k₀ (m : ℝ))
-            (fun _ => (1 : ℝ≥0∞)) (ω, x) :=
-          mul_le_mul_of_nonneg_left (hsubset r hmr ω x) (by positivity)
-      _ = _ := mul_comm _ _
-      _ ≤ Set.indicator (admissibleGrowingBarrierSet Y a k₀ (m : ℝ))
-            (fun _ => (1 : ℝ≥0∞)) (ω, x) *
-          Set.indicator (admissibleGrowingBarrierSet Y a k₀ (m : ℝ))
-            (fun _ => (1 : ℝ≥0∞)) (ω, y) :=
-          mul_le_mul_of_nonneg_left (hsubset s hms ω y) (by positivity)
-  calc
-    _ = (Set.indicator (admissibleGrowingBarrierSet Y a k₀ r)
-          (fun _ => (1 : ℝ≥0∞)) (ω, x) *
-        Set.indicator (admissibleGrowingBarrierSet Y a k₀ s)
-          (fun _ => (1 : ℝ≥0∞)) (ω, y)) * (w₁ * w₂) := by ac_rfl
-    _ ≤ (Set.indicator (admissibleGrowingBarrierSet Y a k₀ (m : ℝ))
-          (fun _ => (1 : ℝ≥0∞)) (ω, x) *
-        Set.indicator (admissibleGrowingBarrierSet Y a k₀ (m : ℝ))
-          (fun _ => (1 : ℝ≥0∞)) (ω, y)) * (w₁ * w₂) :=
-      mul_le_mul_left hbarrierProduct (w₁ * w₂)
-    _ = _ := by ac_rfl
+  bound
 
 
 

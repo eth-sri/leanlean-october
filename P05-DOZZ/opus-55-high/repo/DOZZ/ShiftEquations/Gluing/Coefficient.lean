@@ -32,7 +32,7 @@ theorem complex_ne_int_of_mem_unit {c : ℝ} (h0 : 0 < c) (h1 : c < 1) :
     ∀ n : ℤ, (c : ℂ) ≠ (n : ℂ) := by
   intro n hn
   have hcn : c = n := by exact_mod_cast hn
-  have h0' : (0 : ℤ) < n := by exact_mod_cast (hcn ▸ h0)
+  have h0' : 0 < n := by simp_all
   have h1' : n < 1 := by exact_mod_cast (hcn ▸ h1)
   omega
 
@@ -57,13 +57,12 @@ theorem second_coefficient_of_classification {Ω : Type*} [MeasurableSpace Ω] (
             (gaussParameterC γ χ α₁) z‖ ^ 2) :
     K = gaussCoefficientRatio (gaussParameterA γ χ α₁ α₂ α₃) (gaussParameterB γ χ α₁ α₂ α₃)
         (gaussParameterC γ χ α₁) * structureConstant P M γ μ (α₁ - χ) α₂ α₃ := by
-  have h := diagonal_gauss_coefficients_unique hH hc (T := fourPointT P M γ μ (-χ) α₁ α₂ α₃)
-    (A₁ := structureConstant P M γ μ (α₁ - χ) α₂ α₃) (A₂ := structureConstant P M γ μ (α₁ - χ) α₂ α₃)
-    (D₁ := K) (D₂ := structureConstant P M γ μ (α₁ - χ) α₂ α₃ *
-      gaussCoefficientRatio (gaussParameterA γ χ α₁ α₂ α₃) (gaussParameterB γ χ α₁ α₂ α₃)
+  have h := diagonal_gauss_coefficients_unique hH hc
+   
+    (D₂ := structureConstant P M γ μ _ α₂ α₃ *
+      gaussCoefficientRatio _ _
         (gaussParameterC γ χ α₁)) hform (fun z hz => by rw [h22 z hz]; ring)
-  rw [h.2]
-  ring
+  linarith
 
 end DOZZ.Proofs
 

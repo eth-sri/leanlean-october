@@ -9,8 +9,10 @@ public import DOZZ.FourPoint.Fusion.RootOnlyInverseMoments
 open MeasureTheory Set Filter Topology
 open scoped ENNReal NNReal
 namespace DOZZ.Proofs
+section
+variable (a b : ℝ≥0∞)
 /-- Every nonpositive moment of a convex mass segment is bounded by the two endpoint moments. -/
-theorem fusion_convexMass_inverse_bound (a b : ℝ≥0∞) (t s : ℝ)
+theorem fusion_convexMass_inverse_bound (t s : ℝ)
     (ht : t ∈ Icc (0 : ℝ) 1) (hs : s ≤ 0) :
     (ENNReal.ofReal t * a + ENNReal.ofReal (1 - t) * b) ^ s ≤ a ^ s + b ^ s := by
   have hsum : ENNReal.ofReal t + ENNReal.ofReal (1 - t) = 1 := by
@@ -19,26 +21,28 @@ theorem fusion_convexMass_inverse_bound (a b : ℝ≥0∞) (t s : ℝ)
   rcases le_total a b with hab | hba
   · have h : a ≤ ENNReal.ofReal t * a + ENNReal.ofReal (1 - t) * b := by
       calc
-        a = (ENNReal.ofReal t + ENNReal.ofReal (1 - t)) * a := by rw [hsum, one_mul]
+        a = (ENNReal.ofReal t + ENNReal.ofReal _) * a := by rw [hsum, one_mul]
         _ ≤ _ := by rw [add_mul]; exact add_le_add le_rfl (mul_le_mul' le_rfl hab)
     exact (ennreal_rpow_antitone_of_nonpos h hs).trans le_self_add
   · have h : b ≤ ENNReal.ofReal t * a + ENNReal.ofReal (1 - t) * b := by
       calc
-        b = (ENNReal.ofReal t + ENNReal.ofReal (1 - t)) * b := by rw [hsum, one_mul]
+        b = (ENNReal.ofReal t + ENNReal.ofReal _) * b := by rw [hsum, one_mul]
         _ ≤ _ := by rw [add_mul]; exact add_le_add (mul_le_mul' le_rfl hba) le_rfl
     exact (ennreal_rpow_antitone_of_nonpos h hs).trans le_add_self
 
 /-- Positive finite endpoints give a positive finite segment, including its endpoints. -/
-theorem fusion_convexMass_pos_finite (a b : ℝ≥0∞) (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1)
+theorem fusion_convexMass_pos_finite (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1)
     (ha0 : a ≠ 0) (hat : a ≠ ⊤) (hb0 : b ≠ 0) (hbt : b ≠ ⊤) :
     ENNReal.ofReal t * a + ENNReal.ofReal (1 - t) * b ≠ 0 ∧
       ENNReal.ofReal t * a + ENNReal.ofReal (1 - t) * b ≠ ⊤ := by
   refine ⟨?_, ENNReal.add_ne_top.mpr ⟨ENNReal.mul_ne_top ENNReal.ofReal_ne_top hat,
     ENNReal.mul_ne_top ENNReal.ofReal_ne_top hbt⟩⟩
   by_cases ht0 : t = 0
-  · simpa only [ht0, ENNReal.ofReal_zero, zero_mul, sub_zero, ENNReal.ofReal_one, one_mul, zero_add] using hb0
+  · simp_all
   · exact ne_of_gt ((ENNReal.mul_pos (ENNReal.ofReal_pos.mpr
       (lt_of_le_of_ne ht.1 (Ne.symm ht0))).ne' ha0).trans_le le_self_add)
+
+end
 
 /-- Convex combinations of finite endpoint masses converging to the same limit also converge
 in probability. Independence is not needed. -/
@@ -68,8 +72,7 @@ theorem fusion_convexMass_tendstoInMeasure {Ω : Type*} [MeasurableSpace Ω]
     filter_upwards [hua, hvb] with ω hωa hωb
     have h := ((hωa.comp hv.tendsto_atTop).const_mul t).add (hωb.const_mul (1 - t))
     have he : t * (g ω).toReal + (1 - t) * (g ω).toReal = (g ω).toReal := by ring
-    rw [he] at h
-    exact h
+    rwa [he] at h
   apply TendstoInMeasure.congr_left _ hc
   intro n
   filter_upwards [haf n, hbf n] with ω hωa hωb

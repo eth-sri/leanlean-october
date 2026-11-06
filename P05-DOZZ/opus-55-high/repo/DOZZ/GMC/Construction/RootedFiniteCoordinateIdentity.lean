@@ -37,47 +37,41 @@ theorem rooted_finite_coordinate_identity
       (fun f => X ω f + γ * gffRootCovariance u f)
       (gmcRootedMeasure γ u (M ω)))) ∂P ∂gmcReferenceMeasure := by
   let _ : IsFiniteMeasure gmcReferenceMeasure := ⟨gmcReferenceMeasure_univ_ne_top.lt_top⟩
-  let mark : Ω → ℝ := fun ω => φ (gmcTiltFiniteCoordinatePath s (fun f => X ω f) (M ω))
+  let mark : Ω → ℝ := fun ω => φ (gmcTiltFiniteCoordinatePath s (X ω) (M ω))
   have hmark : Measurable mark := by
-    have hx : Measurable (fun ω f => X ω f) := measurable_pi_iff.mpr fun f => (hX.2 f).1
     exact φ.continuous.measurable.comp
-      ((measurable_gmcTiltFiniteCoordinatePath s).comp (hx.prodMk hMmeas))
+      ((measurable_gmcTiltFiniteCoordinatePath s).comp ((measurable_pi_iff.mpr fun f => (hX.2 f).1).prodMk hMmeas))
   let H : ℂ → (TestFn → ℝ) → Measure ℂ → ℝ≥0∞ := fun u q μ =>
     A.indicator (fun _ => ENNReal.ofReal (φ (gmcTiltFiniteCoordinatePath s q μ))) u
-  have hH : Measurable (fun q : ℂ × ((TestFn → ℝ) × Measure ℂ) => H q.1 q.2.1 q.2.2) := by
-    exact (ENNReal.measurable_ofReal.comp (φ.continuous.measurable.comp
+  have hH : Measurable (fun q : ℂ × ((TestFn → ℝ) × Measure ℂ) => H q.1 q.2.1 q.2.2) := (ENNReal.measurable_ofReal.comp (φ.continuous.measurable.comp
       ((measurable_gmcTiltFiniteCoordinatePath s).comp measurable_snd))).indicator
         (hA.preimage measurable_fst)
   have heq (n : ℕ) :
-      (∫⁻ ω, ENNReal.ofReal (mark ω) * regularizedGMC P Xc γ (n : ℝ) ω A ∂P) =
+      (∫⁻ ω, ENNReal.ofReal (mark ω) * regularizedGMC P Xc γ n ω A ∂P) =
       ∫⁻ u in A, ∫⁻ ω, ENNReal.ofReal (φ (gmcTiltFiniteCoordinatePath s
-        (fun f => X ω f + γ * circleCross u (n : ℝ) f)
+        (fun f => X ω f + γ * circleCross u n f)
         ((M ω).withDensity (fun x => ENNReal.ofReal
-          (Real.exp (γ ^ 2 * ∫ v, gffKernel x v ∂circleMeasure u (n : ℝ))))))) ∂P
+          (Real.exp (γ ^ 2 * ∫ v, gffKernel x v ∂circleMeasure u n)))))) ∂P
         ∂gmcReferenceMeasure := by
     have ht := regularizedGMC_integrated_rooted_limiting_mark_identity
-      P X hX γ hγ hγ2 M hM hMmeas Xc hXc (n : ℝ) H hH
-    have hl : (∫⁻ ω, ∫⁻ u, H u (fun f => X ω f) (M ω)
-        ∂regularizedGMC P Xc γ (n : ℝ) ω ∂P) =
-        ∫⁻ ω, ENNReal.ofReal (mark ω) * regularizedGMC P Xc γ (n : ℝ) ω A ∂P := by
-      apply lintegral_congr
-      intro ω
-      exact lintegral_indicator_const hA _
-    have hr : (∫⁻ u, ∫⁻ ω, H u (fun f => X ω f + γ * circleCross u (n : ℝ) f)
+      P X hX γ hγ hγ2 M hM hMmeas Xc hXc n H hH
+    have hl : (∫⁻ ω, ∫⁻ u, H u (X ω) (M ω)
+        ∂regularizedGMC P Xc γ n ω ∂P) =
+        ∫⁻ ω, ENNReal.ofReal (mark ω) * regularizedGMC P Xc γ n ω A ∂P := by
+      aesop
+    have hr : (∫⁻ u, ∫⁻ ω, H u (fun f => X ω f + γ * circleCross u n f)
         ((M ω).withDensity (fun x => ENNReal.ofReal
-          (Real.exp (γ ^ 2 * ∫ v, gffKernel x v ∂circleMeasure u (n : ℝ))))) ∂P
+          (Real.exp (γ ^ 2 * ∫ v, gffKernel x v ∂circleMeasure u n)))) ∂P
         ∂gmcReferenceMeasure) =
         ∫⁻ u in A, ∫⁻ ω, ENNReal.ofReal (φ (gmcTiltFiniteCoordinatePath s
-          (fun f => X ω f + γ * circleCross u (n : ℝ) f)
+          (fun f => X ω f + γ * circleCross u n f)
           ((M ω).withDensity (fun x => ENNReal.ofReal
-            (Real.exp (γ ^ 2 * ∫ v, gffKernel x v ∂circleMeasure u (n : ℝ))))))) ∂P
+            (Real.exp (γ ^ 2 * ∫ v, gffKernel x v ∂circleMeasure u n)))))) ∂P
           ∂gmcReferenceMeasure := by
       rw [← lintegral_indicator hA]
       apply lintegral_congr
       intro u
-      by_cases hu : u ∈ A
-      · simp only [H, Set.indicator_of_mem hu]
-      · simp only [H, Set.indicator_of_notMem hu, lintegral_zero]
+      by_cases hu : u ∈ A <;> aesop
     exact hl.symm.trans (ht.trans hr)
   have hl := regularizedGMC_bounded_mass_mark_lintegral_tendsto
     P X hX γ hγ hγ2 M hM Xc hXc A hA R hAR mark hmark.aestronglyMeasurable
@@ -85,6 +79,6 @@ theorem rooted_finite_coordinate_identity
     (fun ω => φ.norm_coe_le_norm _)
   have hr := circleRooted_bounded_coordinate_lintegral_tendsto
     P X hX γ hγ hγ2 M hM hMmeas (gmcReferenceMeasure.restrict A) hRoot s φ
-  exact tendsto_nhds_unique hl (by simpa only [heq] using hr)
+  exact tendsto_nhds_unique hl (by simp_all)
 
 end DOZZ.Proofs

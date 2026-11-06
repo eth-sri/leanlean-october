@@ -31,31 +31,27 @@ theorem reflected_global_lateral_admissible
   refine ⟨N, hN, hi, hfin, heq, ?_⟩
   intro ρ hρ
   let U := originLateralChart ρ
-  have hU : MeasurableSet U := (isOpen_originLateralChart ρ).measurableSet
+  have hU := (isOpen_originLateralChart ρ).measurableSet
   obtain ⟨Nc, hNc, _, hcEq⟩ := exists_originLateralChartGMC_radial_removed_identity
     P X Xc hX hc hm hcont ρ γ hρ hγ hγ₂ M hM
   have hEq : Nc =ᵐ[P] (fun ω => (N ω).restrict U) := by
     filter_upwards [hcEq, heq] with ω hω hNω
-    rw [hω, hNω]
+    aesop
   refine ⟨(measurable_measure_restrict U hU).comp hN, ?_, ?_, ?_⟩
-  · intro ω
-    change ((N ω).restrict U) Uᶜ = 0
-    rw [Measure.restrict_apply hU.compl, compl_inter_self, measure_empty]
+  · simp_all
   · intro ω K hK hKU
     rw [Measure.restrict_apply hK.measurableSet]
     apply lt_of_le_of_lt (measure_mono inter_subset_left)
     apply hfin ω K hK
     intro x hx
     have hh : 2*ρ < ‖x‖ := hKU hx
-    have hx0 : x ≠ 0 := norm_ne_zero_iff.mp (ne_of_gt (by linarith : 0 < ‖x‖))
-    simpa using hx0
+    exact norm_ne_zero_iff.mp (ne_of_gt (by linarith))
   · intro f hfc hfU
-    have ht := hNc.2.2.2 f hfc hfU
     have htests : (fun ω => ∫ x, f x ∂Nc ω) =ᵐ[P]
         fun ω => ∫ x, f x ∂(N ω).restrict U := by
       filter_upwards [hEq] with ω hω
       rw [hω]
     exact TendstoInMeasure.congr' (Eventually.of_forall fun _ => ae_of_all P fun _ => rfl)
-      htests ht
+      htests (hNc.2.2.2 f hfc hfU)
 
 end DOZZ.Proofs

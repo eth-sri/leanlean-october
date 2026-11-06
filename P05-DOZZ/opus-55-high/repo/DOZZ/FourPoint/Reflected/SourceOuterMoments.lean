@@ -21,18 +21,18 @@ theorem reflected_source_outerMass_positive_finite_ae
     (hr : ‖z‖^(1-ξ) ≤ 1) :
     ∀ᵐ ω ∂P, 0 < gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ ∧
       gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ < ⊤ := by
-  have hinj : Function.Injective (![z,0,1] : Fin 3 → ℂ) := by
+  have hinj : Function.Injective (![z,0,1]) := by
     intro i j hij
     fin_cases i <;> fin_cases j <;> simp_all
-  have hcharges : ∀ i : Fin 3, (![-γ/2,α₁,α₂] : Fin 3 → ℝ) i < Q γ := by
+  have hcharges : ∀ i : Fin 3, (![-γ/2,α₁,α₂]) i < Q γ := by
     intro i
     fin_cases i
     · change -γ/2 < Q γ
       unfold Q
-      have hinv : 0 < 2/γ := div_pos (by norm_num) hγ
-      linarith only [hγ,hinv]
+      have hinv : 0 < 2/γ := by positivity
+      linarith
     · exact hα₁
-    · exact hα₂
+    assumption
   have hfull := reflected_coulombMass_ae_finite P X hX γ hγ hγ₂ M hM
     ![z,0,1] hinj ![-γ/2,α₁,α₂] α₃ hcharges hα₃
   have hmeas : AEMeasurable (fun ω => gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ) P :=
@@ -45,13 +45,10 @@ theorem reflected_source_outerMass_positive_finite_ae
   filter_upwards [hfull, ae_lt_top' (hmeas.pow_const (-(1 : ℝ))) hInv.ne] with ω hf hi
   constructor
   · apply pos_iff_ne_zero.mpr
-    intro he
-    rw [he, ENNReal.zero_rpow_of_neg (by norm_num : -(1 : ℝ) < 0)] at hi
-    exact lt_irrefl _ hi
+    aesop
   · have hle : gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ ≤
         coulombMass γ (M ω) ![-γ/2,α₁,α₂] ![z,0,1] α₃ := by
-      unfold gammaHalfOuterMass coulombMass
       exact lintegral_mono' Measure.restrict_le_self le_rfl
-    exact hle.trans_lt hf
+    grind
 
 end DOZZ.Proofs

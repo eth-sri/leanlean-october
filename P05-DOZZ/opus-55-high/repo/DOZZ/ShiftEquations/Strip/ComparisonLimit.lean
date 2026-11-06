@@ -26,15 +26,15 @@ theorem lastone_addition_smallPower_finite
     calc
       _ ≤ ∫⁻ ω, (1 + B ω ^ t) ∂P :=
         lintegral_mono fun ω => weightedGrid_ennreal_rpow_le_one_add_rpow _ hp hpt
-      _ = 1 + ∫⁻ ω, B ω ^ t ∂P := by simp [lintegral_add_left measurable_const]
-      _ < ⊤ := ENNReal.add_lt_top.mpr ⟨by norm_num, hBt⟩
+      _ = 1 + ∫⁻ ω, B ω ^ t ∂P := by simp
+      _ < ⊤ := by simp_all
   calc
     _ ≤ ∫⁻ ω, ENNReal.LpAddConst (ENNReal.ofReal p)⁻¹ * (A ω ^ p + B ω ^ p) ∂P :=
       lintegral_mono fun ω => ENNReal.rpow_add_le_mul_rpow_add_rpow' _ _ hp.le
     _ = ENNReal.LpAddConst (ENNReal.ofReal p)⁻¹ *
         ((∫⁻ ω, A ω ^ p ∂P) + ∫⁻ ω, B ω ^ p ∂P) := by
       have hsum : AEMeasurable (fun ω => A ω ^ p + B ω ^ p) P :=
-        (hA.pow_const p).add (hB.pow_const p)
+        by fun_prop
       rw [lintegral_const_mul'' _ hsum,
         lintegral_add_left' (hA.pow_const p)]
     _ < ⊤ := ENNReal.mul_lt_top (ENNReal.LpAddConst_lt_top _)
@@ -61,7 +61,7 @@ theorem lastone_mass_comparison_limit
     Tendsto (fun i => (∫⁻ ω, C i ω ^ e i ∂P).toReal) l (𝓝 L) := by
   let A : ι → Ω → ℝ≥0∞ := fun i ω => k₂ * R i ω
   let B : ι → Ω → ℝ≥0∞ := fun _ ω => k₃ * U ω
-  have hA (i) : AEMeasurable (A i) P := aemeasurable_const.mul (hR i)
+  have hA (i) : AEMeasurable (A i) P := by fun_prop
   have hB (i) : AEMeasurable (B i) P := aemeasurable_const.mul hU
   have hAi : ∀ᶠ i in l, ∫⁻ ω, A i ω ^ (-2 * q) ∂P ≤ k₂ ^ (-2 * q) * D := by
     filter_upwards [hRi] with i hi
@@ -80,34 +80,30 @@ theorem lastone_mass_comparison_limit
   have hfinite : ∀ᶠ i in l, ∀ᵐ ω ∂P,
       A i ω ≠ 0 ∧ A i ω ≠ ⊤ ∧ B i ω ≠ ⊤ := by
     filter_upwards [hAi, hAp, hepos] with i hi hp hep
-    have hai := ae_lt_top' ((hA i).pow_const _) (hi.trans_lt hAit).ne
-    have hap := ae_lt_top' ((hA i).pow_const _) hp.ne
     have hbp := ae_lt_top' ((hB i).pow_const _) (hBp i).ne
-    filter_upwards [hai, hap, hbp] with ω hωi hωp hωb
+    filter_upwards [(ae_lt_top' ((hA i).pow_const _) (hi.trans_lt hAit).ne), (ae_lt_top' ((hA i).pow_const _) hp.ne), hbp] with ω hωi hωp hωb
     refine ⟨?_, (ENNReal.rpow_lt_top_iff_of_pos hep).mp hωp |>.ne,
-      (ENNReal.rpow_lt_top_iff_of_pos (by positivity : 0 < 2 * q)).mp hωb |>.ne⟩
+      (ENNReal.rpow_lt_top_iff_of_pos (by positivity)).mp hωb |>.ne⟩
     intro h0
     rw [h0, ENNReal.zero_rpow_of_neg (by linarith)] at hωi
     exact (lt_irrefl _ hωi)
   have hAlim := lastone_scale_smallPower_limit P R hR l e he k₂ hk₂0 hk₂T L hlim
   have hsumlim := lastone_addition_smallPower_limit P A B l e q L hq hq1
-    (k₂ ^ (-2 * q) * D) (∫⁻ ω, (k₃ * U ω) ^ (2 * q) ∂P)
+    (k₂ ^ (-2 * q) * D) _
     hAit (lintegral_const_mul_rpow_lt_top hU hk₃T (by positivity) hUp) he hepos (Eventually.of_forall hA) (Eventually.of_forall hB)
     hfinite hAp hAi (Eventually.of_forall fun _ => le_rfl) hAlim
-  have hlowlim := lastone_scale_smallPower_limit P R hR l e he k₁ hk₁0 hk₁T L hlim
   have hsmall := he.eventually (eventually_le_nhds (by positivity : 0 < 2 * q))
   have hrealbounds : ∀ᶠ i in l,
       (∫⁻ ω, (k₁ * R i ω) ^ e i ∂P).toReal ≤ (∫⁻ ω, C i ω ^ e i ∂P).toReal ∧
       (∫⁻ ω, C i ω ^ e i ∂P).toReal ≤ (∫⁻ ω, (A i ω + B i ω) ^ e i ∂P).toReal := by
     filter_upwards [hbounds, hAp, hepos, hsmall] with i hi hp hep hpeq
     have hsumfin := lastone_addition_smallPower_finite P (A i) (B i) (hA i) (hB i)
-      (e i) (2 * q) hep hpeq hp (hBp i)
+      (e i) _ hep hpeq hp (hBp i)
     have hupper := lintegral_mono_ae (hi.mono fun ω hω => ENNReal.rpow_le_rpow hω.2 hep.le)
-    have hCfin := hupper.trans_lt hsumfin
-    exact ⟨ENNReal.toReal_mono hCfin.ne (lintegral_mono_ae
+    exact ⟨ENNReal.toReal_mono (hupper.trans_lt hsumfin).ne (lintegral_mono_ae
       (hi.mono fun ω hω => ENNReal.rpow_le_rpow hω.1 hep.le)),
       ENNReal.toReal_mono hsumfin.ne hupper⟩
-  exact tendsto_of_tendsto_of_tendsto_of_le_of_le' hlowlim hsumlim
+  exact tendsto_of_tendsto_of_tendsto_of_le_of_le' (lastone_scale_smallPower_limit P R hR l e he k₁ hk₁0 hk₁T L hlim) hsumlim
     (hrealbounds.mono fun _ hi => hi.1) (hrealbounds.mono fun _ hi => hi.2)
 
 end DOZZ.Proofs

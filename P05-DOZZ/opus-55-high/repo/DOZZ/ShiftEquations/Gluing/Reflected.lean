@@ -46,9 +46,9 @@ theorem gaussParameterC_half_mem {γ α₁ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
     (h1 : Q γ - γ / 16 < α₁) (h2 : α₁ < Q γ) :
     0 < gaussParameterC γ (γ / 2) α₁ ∧ gaussParameterC γ (γ / 2) α₁ < 1 := by
   unfold gaussParameterC
-  have hpos : 0 < γ / 2 * (Q γ - α₁) := mul_pos (by positivity) (by linarith)
+  have hpos : 0 < γ / 2 * (Q γ - α₁) := by positivity
   have hlt : γ / 2 * (Q γ - α₁) < γ / 2 * (γ / 16) :=
-    mul_lt_mul_of_pos_left (by linarith) (by positivity)
+    by nlinarith
   constructor <;> nlinarith
 
 /-- **The reflected coefficient at real charges near `Q`**
@@ -100,7 +100,6 @@ theorem reflected_coefficient_real {Ω : Type*} [MeasurableSpace Ω] (P : Measur
       nlinarith
     rw [show Q γ = 2 / γ + γ / 2 from rfl] at h1
     linarith
-  have h22 := hDiagonal hH α₁ h2 hs
   obtain ⟨B', Z', -, hRD', h37⟩ := hReflected hH α₁ h2 hs (by linarith)
     (reflected_near_window hγ hγ2 h1 h2)
   have h37' : ∀ z ∈ gaussCutPlane, fourPointT P M γ μ (-(γ / 2)) α₁ α₂ α₃ z =
@@ -114,8 +113,8 @@ theorem reflected_coefficient_real {Ω : Type*} [MeasurableSpace Ω] (P : Measur
     intro z hz
     rw [← neg_div]
     exact h37 z hz
-  have hK := second_coefficient_of_classification P M hH γ μ (γ / 2) α₁ α₂ α₃ _
-    (complex_ne_int_of_mem_unit hc.1 hc.2) h22 h37'
+  have hK := second_coefficient_of_classification P M hH γ μ _ α₁ α₂ α₃ _
+    (complex_ne_int_of_mem_unit hc.1 hc.2) (hDiagonal hH α₁ h2 hs) h37'
   rw [reflectionR_eq_of_isReflectionData P P γ μ α₁ (B α₁) Z (B' α₁) Z'
     (hRD α₁ hα₁ h2) hRD', hK]
 

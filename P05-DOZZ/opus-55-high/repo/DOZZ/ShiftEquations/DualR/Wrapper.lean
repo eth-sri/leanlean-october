@@ -25,6 +25,11 @@ crossing `DOZZ.gammaHalf_crossing` alone (`reflectionR_first_shift_meromorphic_o
 open MeasureTheory Filter Topology Set
 
 namespace DOZZ.Proofs
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ μ : ℝ)
+section
+variable (hγ : 0 < γ) (hγ2 : γ < 2) (hγirr : Irrational (γ ^ 2)) (hμ : 0 < μ) (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) (hCross : ∀ μ α' ε α : ℝ, 0 < μ → γ / 2 < ε → ε < 2 / γ → α < Q γ → α' < Q γ → 2 * Q γ < α + α' + ε - γ / 2 → unitVolumeStructureConstant P M γ (α' - γ / 2) ε α = gammaHalfUnitCrossingMultiplier γ μ α' ε α * unitVolumeStructureConstant P M γ α' (ε + γ / 2) α)
+include hγ hγ2 hγirr hμ hX hM hCross
 
 /-- **The dual shift of `R` from the γ/2 crossing, the gluing, the inversion and the second dual
 seed.** `hCross` is the unit-volume conjunct of `DOZZ.gammaHalf_crossing`; `hShiftGluing`, `hInversion`, `hSeed`
@@ -32,15 +37,6 @@ are the conclusions of `DOZZ.structureConstant_reflected_shift_and_gluing`,
 `DOZZ.reflectionR_inversion_meromorphic` and `DOZZ.dual_crossing_seed_two`, at the given field,
 chaos, coupling and cosmological constant. -/
 theorem reflectionR_dual_shift_unknown_constant_of_crossing
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) (γ μ : ℝ)
-    (hγ : 0 < γ) (hγ2 : γ < 2) (hγirr : Irrational (γ ^ 2)) (hμ : 0 < μ)
-    (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
-    (hCross : ∀ μ α' ε α : ℝ, 0 < μ → γ / 2 < ε → ε < 2 / γ → α < Q γ → α' < Q γ →
-      2 * Q γ < α + α' + ε - γ / 2 →
-      unitVolumeStructureConstant P M γ (α' - γ / 2) ε α =
-        gammaHalfUnitCrossingMultiplier γ μ α' ε α *
-          unitVolumeStructureConstant P M γ α' (ε + γ / 2) α)
     (hShiftGluing : ∀ η : ℝ, (0 < η ∧ Q γ - 2 * η > γ) → ∀ α₂ α₃ : ℝ,
       (Q γ - η < α₂ ∧ α₂ < Q γ) → (Q γ - η < α₃ ∧ α₃ < Q γ) →
       ∃ B : ℝ → Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
@@ -111,15 +107,6 @@ directly), and `DOZZ.reflectionR_inversion_meromorphic` follows from
 `hFirstStrip` is the conclusion of `DOZZ.structureConstant_first_shift_strip` at the given field, chaos,
 coupling and cosmological constant. -/
 theorem reflectionR_dual_shift_unknown_constant_of_crossing_firstShift
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) (γ μ : ℝ)
-    (hγ : 0 < γ) (hγ2 : γ < 2) (hγirr : Irrational (γ ^ 2)) (hμ : 0 < μ)
-    (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
-    (hCross : ∀ μ α' ε α : ℝ, 0 < μ → γ / 2 < ε → ε < 2 / γ → α < Q γ → α' < Q γ →
-      2 * Q γ < α + α' + ε - γ / 2 →
-      unitVolumeStructureConstant P M γ (α' - γ / 2) ε α =
-        gammaHalfUnitCrossingMultiplier γ μ α' ε α *
-          unitVolumeStructureConstant P M γ α' (ε + γ / 2) α)
     (hFirstStrip : ∀ η : ℝ, (0 < η ∧ Q γ - 2 * η > γ) → ∀ α₂ α₃ : ℝ,
       (Q γ - η < α₂ ∧ α₂ < Q γ) → (Q γ - η < α₃ ∧ α₃ < Q γ) →
       ∃ h : ℝ, 0 < h ∧ ∃ C : ℂ → ℂ,
@@ -154,10 +141,9 @@ theorem reflectionR_dual_shift_unknown_constant_of_crossing_firstShift
                   R z = -cγ * R (z + 2 / γ) /
                     (lFun (-4 / (γ : ℂ) ^ 2) * lFun (2 * z / γ) *
                       lFun (2 + 4 / (γ : ℂ) ^ 2 - 2 * z / γ)) := by
-  have hFirstShift := reflectionR_first_shift_meromorphic_of_crossing P X M γ μ hγ hγ2 hμ hX hM hCross
   have hShiftGluing := fun η hη α₂ α₃ hα₂ hα₃ =>
     structureConstant_reflected_shift_and_gluing_of_shifts P X M γ μ η hγ hγ2 hμ hη hX hM α₂ α₃
-      hα₂ hα₃ hFirstShift (hFirstStrip η hη α₂ α₃ hα₂ hα₃)
+      hα₂ hα₃ (reflectionR_first_shift_meromorphic_of_crossing P X M γ μ hγ hγ2 hμ hX hM hCross) (hFirstStrip η hη α₂ α₃ hα₂ hα₃)
   exact reflectionR_dual_shift_unknown_constant_of_crossing P X M γ μ hγ hγ2 hγirr hμ hX hM hCross
     hShiftGluing (reflectionR_inversion_meromorphic_of_reflected_shift_and_gluing P X M γ μ hγ hγ2 hμ hX hM hShiftGluing) hSeed
 
@@ -165,15 +151,6 @@ theorem reflectionR_dual_shift_unknown_constant_of_crossing_firstShift
 `DOZZ.structureConstant_first_shift_strip` proved from the unreflected formula
 (`structureConstant_first_shift_strip_unconditional`). -/
 theorem reflectionR_dual_shift_unknown_constant_of_crossing_seed
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (M : Ω → Measure ℂ) (γ μ : ℝ)
-    (hγ : 0 < γ) (hγ2 : γ < 2) (hγirr : Irrational (γ ^ 2)) (hμ : 0 < μ)
-    (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
-    (hCross : ∀ μ α' ε α : ℝ, 0 < μ → γ / 2 < ε → ε < 2 / γ → α < Q γ → α' < Q γ →
-      2 * Q γ < α + α' + ε - γ / 2 →
-      unitVolumeStructureConstant P M γ (α' - γ / 2) ε α =
-        gammaHalfUnitCrossingMultiplier γ μ α' ε α *
-          unitVolumeStructureConstant P M γ α' (ε + γ / 2) α)
     (hSeed : ∀ α ε α' : ℝ, α < Q γ → ε < Q γ → α' < Q γ → 2 * Q γ + 2 / γ < α + ε + α' →
       ∃ Bε Bα : Ω → BrownianPath × BrownianPath, ∃ Z : Ω → Measure ℝ,
         IsSourceLateralProjection P X γ M Z ∧ IsReflectionData P γ ε Bε Z ∧
@@ -202,6 +179,10 @@ theorem reflectionR_dual_shift_unknown_constant_of_crossing_seed
     hCross (fun η hη α₂ α₃ hα₂ hα₃ =>
       structureConstant_first_shift_strip_unconditional P X M γ μ η hγ hγ2 hμ hη hX hM α₂ α₃ hα₂ hα₃)
     hSeed
+
+end
+
+end
 
 end DOZZ.Proofs
 

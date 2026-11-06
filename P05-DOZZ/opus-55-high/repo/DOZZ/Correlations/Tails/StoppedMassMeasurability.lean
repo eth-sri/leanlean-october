@@ -6,6 +6,7 @@ module
 
 public import DOZZ.Correlations.Tails.WilliamsPolarSplit
 public import DOZZ.Brownian.Reflection.LastCut
+import DOZZ.Brownian.ReflectionMassMeasurability
 
 /-! A measurable code for the lifetime-marked reflection integral against locally finite chaos. -/
 
@@ -22,7 +23,7 @@ noncomputable def stoppedReflectionIntegrand (γ : ℝ)
 
 theorem measurable_stoppedReflectionIntegrand (γ : ℝ) :
     Measurable (stoppedReflectionIntegrand γ) := by
-  have hval := measurable_uncurry_reflectionPairValue.comp
+  have hval := DOZZ.Proofs.measurable_reflectionPairValue.comp
     (measurable_fst.snd.prodMk measurable_snd : Measurable
       (fun z : (ℝ≥0 × (BrownianPath × BrownianPath)) × ℝ => (z.1.2,z.2)))
   exact Measurable.ite (measurableSet_le measurable_fst.fst.coe_nnreal_real.neg measurable_snd)
@@ -33,8 +34,10 @@ noncomputable def stoppedReflectionMassCode (γ : ℝ)
     (z : (ℝ≥0 × (BrownianPath × BrownianPath)) × Measure ℝ) : ℝ≥0∞ :=
   ∑' n : ℕ, ∫⁻ s, stoppedReflectionIntegrand γ (z.1,s)
     ∂(finiteRestrictionOnSet (translationShell n) z.2 : Measure ℝ)
+section
+variable (γ : ℝ)
 
-theorem measurable_stoppedReflectionMassCode (γ : ℝ) :
+theorem measurable_stoppedReflectionMassCode :
     Measurable (stoppedReflectionMassCode γ) := by
   apply Measurable.tsum
   intro n
@@ -44,14 +47,16 @@ theorem measurable_stoppedReflectionMassCode (γ : ℝ) :
     ((measurable_finiteRestrictionOnSet _ (measurableSet_translationShell n)).comp measurable_snd))
 
 /-- On locally finite measures the measurable code is the literal stopped reflection integral. -/
-theorem stoppedReflectionMassCode_eq (γ : ℝ) (τ : ℝ≥0)
+theorem stoppedReflectionMassCode_eq (τ : ℝ≥0)
     (B : BrownianPath × BrownianPath) (Z : Measure ℝ)
     (hfin : ∀ a b : ℝ, Z (Icc a b) < ⊤) :
     stoppedReflectionMassCode γ ((τ,B),Z) = stoppedReflectionMass γ τ B Z := by
   have hshell (n : ℕ) : Z (translationShell n) < ⊤ :=
-    lt_of_le_of_lt (measure_mono (translationShell_subset_window n)) (hfin _ _)
+    lt_of_le_of_lt (measure_mono (translationShell_subset_window n)) (hfin ..)
   exact (lintegral_eq_tsum_finiteRestrictionOnSet_translationShell
-    (fun s => stoppedReflectionIntegrand γ ((τ,B),s)) Z hshell).symm
+    (fun s => stoppedReflectionIntegrand γ _) Z hshell).symm
+
+end
 
 
 end DOZZ.Proofs

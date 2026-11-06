@@ -32,7 +32,6 @@ theorem prefactored_copied_localization_comparison
       V*(∫⁻ x in Metric.ball (0 : ℂ) 1 \ Metric.ball (0 : ℂ) δ,
         (ENNReal.ofReal ‖x‖)^(-γ*α) ∂μ)
     L ≤ B+E ∧ B ≤ L+E := by
-  dsimp only
   have h := actual_copied_localization_comparison μ z γ α n nb δ ρ hδρ hρ1 F hFm hF
     χ hχ hχzero hχone
   let S := ENNReal.ofReal (Real.exp (γ*nb-γ^2*Real.log ‖z‖))

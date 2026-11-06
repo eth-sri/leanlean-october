@@ -25,10 +25,14 @@ noncomputable def localPicardTransfer
     (r M : ℝ) (H : ℂ → E →L[ℂ] E) {c : ℂ}
     (D : LocalHolomorphicODEData r M H c) (y : E) (z : ℂ) : E :=
   holomorphicPicardSolution c r H D.differentiable y z
+section
+variable (r M : ℝ)
+section
+variable (hr : 0 < r) (hM : 0 ≤ M) (H : ℂ → E →L[ℂ] E)
+include hr hM
 
 theorem localPicardTransfer_comp_eq
-    (r M : ℝ) (hr : 0 < r) (hM : 0 ≤ M)
-    (H : ℂ → E →L[ℂ] E) {c d e : ℂ}
+    {c d e : ℂ}
     (Dc : LocalHolomorphicODEData r M H c)
     (Dd : LocalHolomorphicODEData r M H d)
     (hdc : dist d c < r / 4) (hec : dist e c < r / 4) (y : E) :
@@ -36,39 +40,36 @@ theorem localPicardTransfer_comp_eq
         (localPicardTransfer r M H Dc y d) e =
       localPicardTransfer r M H Dc y e := by
   have hde : dist e d < r / 2 := by
-    have htri : dist e d ≤ dist e c + dist c d := dist_triangle e c d
+    have htri := dist_triangle e c d
     rw [dist_comm c d] at htri
     linarith
   have hballSubset : Metric.ball d (r / 2) ⊆ Metric.ball c r := by
     intro z hz
-    rw [Metric.mem_ball] at hz ⊢
     calc
       dist z c ≤ dist z d + dist d c := dist_triangle z d c
       _ < r / 2 + r / 4 := add_lt_add_of_lt_of_le hz hdc.le
       _ < r := by linarith
   have hboundHalf : ∀ z ∈ Metric.ball d (r / 2), ‖H z‖ ≤ M :=
     fun z hz => Dd.bounded z (Metric.ball_subset_ball (by linarith) hz)
-  let F : ℂ → E := localPicardTransfer r M H Dc y
-  let G : ℂ → E := localPicardTransfer r M H Dd (F d)
+  let F := localPicardTransfer r M H Dc y
+  let G := localPicardTransfer r M H Dd (F d)
   have hF : ∀ z ∈ Metric.ball d (r / 2), HasDerivAt F (H z (F z)) z := by
     intro z hz
     exact holomorphicPicardSolution_hasDerivAt c r M H Dc.differentiable y hM
-      Dc.bounded (z := z) (hballSubset hz)
+      Dc.bounded (hballSubset hz)
   have hG : ∀ z ∈ Metric.ball d (r / 2), HasDerivAt G (H z (G z)) z := by
     intro z hz
     exact holomorphicPicardSolution_hasDerivAt d r M H Dd.differentiable (F d) hM
-      Dd.bounded (z := z) (Metric.ball_subset_ball (by linarith) hz)
+      Dd.bounded (Metric.ball_subset_ball (by linarith) hz)
   have hstart : F d = G d := by
     simp [F, G, localPicardTransfer, holomorphicPicardSolution_apply_center]
-  have he : e ∈ Metric.ball d (r / 2) := Metric.mem_ball.mpr hde
   have hEq := holomorphic_linear_system_solution_unique_of_eq_at
-    d (r / 2) M H hM hboundHalf hF hG
-    (Metric.mem_ball_self (by linarith)) he hstart
-  simpa [F, G] using hEq.symm
+    d _ M H hM hboundHalf hF hG
+    (Metric.mem_ball_self (by linarith)) (Metric.mem_ball.mpr hde) hstart
+  tauto
 
 theorem localPicardTransfer_square_commutes
-    (r M : ℝ) (hr : 0 < r) (hM : 0 ≤ M)
-    (H : ℂ → E →L[ℂ] E) {c cRight cUp cDiag : ℂ}
+    {c cRight cUp cDiag : ℂ}
     (Dc : LocalHolomorphicODEData r M H c)
     (DRight : LocalHolomorphicODEData r M H cRight)
     (DUp : LocalHolomorphicODEData r M H cUp)
@@ -87,5 +88,9 @@ theorem localPicardTransfer_square_commutes
     _ = localPicardTransfer r M H DUp
         (localPicardTransfer r M H Dc y cUp) cDiag :=
           (localPicardTransfer_comp_eq r M hr hM H Dc DUp hUp hDiag y).symm
+
+end
+
+end
 
 end DOZZ.Proofs

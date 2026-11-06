@@ -70,7 +70,7 @@ theorem compatible_finite_mixed_pair_kernel_tendsto_uniformly
     compatible_finite_coarse_double_root_barrier_probability_tendsto_uniformly
       P U dens ε₀ ε₁ Y Z hY hZ hYZ K hK hKU S (fun p => p.1) (fun p => p.2)
       hrootX hrootY scale center hcenter hscale hv b₁ b₂ barrier Γ B hB hΓ
-  let S' : Set (ℝ × (ℂ × ℂ)) := Γ ×ˢ S
+  let S' := Γ ×ˢ S
   let limCov : ℂ × ℂ → ℝ := fun p =>
     Real.log (1 / ‖p.1 - p.2‖) + H p.1 p.2
   let F : ℝ → ℝ → ℝ × (ℂ × ℂ) → ℝ := fun ε ε' q =>
@@ -100,32 +100,29 @@ theorem compatible_finite_mixed_pair_kernel_tendsto_uniformly
   have hdistpos : ∀ p ∈ S, 0 < ‖p.1 - p.2‖ := by
     intro p hp
     exact lt_of_lt_of_le hs (hsep p hp)
-  have hinv : ContinuousOn (fun p : ℂ × ℂ => (‖p.1 - p.2‖)⁻¹) S :=
+  have hinv : ContinuousOn (fun p => (‖p.1 - p.2‖)⁻¹) S :=
     hdist.continuousOn.inv₀ (fun p hp => ne_of_gt (hdistpos p hp))
-  have harg : ContinuousOn (fun p : ℂ × ℂ => 1 / ‖p.1 - p.2‖) S := by
+  have harg : ContinuousOn (fun p => 1 / ‖p.1 - p.2‖) S := by
     simpa [one_div] using hinv
   have hargNe : ∀ p ∈ S, 1 / ‖p.1 - p.2‖ ∈ ({0} : Set ℝ)ᶜ := by
     intro p hp
-    rw [Set.mem_compl_iff, Set.mem_singleton_iff]
     exact ne_of_gt (one_div_pos.mpr (hdistpos p hp))
-  have hlog : ContinuousOn (fun p : ℂ × ℂ => Real.log (1 / ‖p.1 - p.2‖)) S :=
+  have hlog : ContinuousOn (fun p => Real.log (1 / ‖p.1 - p.2‖)) S :=
     ContinuousOn.comp' Real.continuousOn_log harg hargNe
   have hlimCov : ContinuousOn limCov S := by
-    dsimp [limCov]
-    have hHcont : ContinuousOn (fun p : ℂ × ℂ => H p.1 p.2) S := by
-      change ContinuousOn (Function.uncurry H) S
+    have hHcont : ContinuousOn (fun p => H p.1 p.2) S := by
       exact hH.mono hSsub
     exact hlog.add hHcont
-  have hlimAbs : ContinuousOn (fun p : ℂ × ℂ => |limCov p|) S := hlimCov.abs
+  have hlimAbs : ContinuousOn (fun p => |limCov p|) S := hlimCov.abs
   obtain ⟨R, hR⟩ := hS.bddAbove_image hlimAbs
-  let C : ℝ := max 0 R
-  have hC : 0 ≤ C := by dsimp [C]; exact le_max_left _ _
+  let C := max 0 R
+  have hC : 0 ≤ C := by positivity
   have hlimCovAbs : ∀ p ∈ S, |limCov p| ≤ C := by
     intro p hp
-    have himg : |limCov p| ∈ (fun q : ℂ × ℂ => |limCov q|) '' S := ⟨p, hp, rfl⟩
-    exact (hR himg).trans (le_max_right _ _)
-  let M : ℝ := Real.exp (B ^ 2 * C)
-  have hM : 0 ≤ M := by dsimp [M]; positivity
+    have himg : |limCov p| ∈ (fun q => |limCov q|) '' S := by tauto
+    exact (hR himg).trans (le_max_right ..)
+  let M := Real.exp (B ^ 2 * C)
+  have hM : 0 ≤ M := by positivity
   have hF : ∀ η : ℝ, 0 < η → ∃ δ : ℝ, 0 < δ ∧ ∀ ε ε' : ℝ,
       0 < ε → ε ≤ δ → 0 < ε' → ε' ≤ δ → ∀ q ∈ S',
         |F ε ε' q - F₀ 0 0 q| < η := by
@@ -135,7 +132,7 @@ theorem compatible_finite_mixed_pair_kernel_tendsto_uniformly
     intro ε ε' hε hεcut hε' hε'cut q hq
     rcases q with ⟨γ, p⟩
     rcases hq with ⟨hγ, hp⟩
-    have h := hclose ε ε' hε (by simpa using hεcut) hε' (by simpa using hε'cut) γ hγ p hp
+    have h := hclose ε ε' hε (by assumption) hε' (by assumption) γ hγ p hp
     simpa [F, F₀, limCov] using h
   have hG : ∀ η : ℝ, 0 < η → ∃ δ : ℝ, 0 < δ ∧ ∀ ε ε' : ℝ,
       0 < ε → ε ≤ δ → 0 < ε' → ε' ≤ δ → ∀ q ∈ S',
@@ -146,7 +143,7 @@ theorem compatible_finite_mixed_pair_kernel_tendsto_uniformly
     intro ε ε' hε hεcut hε' hε'cut q hq
     rcases q with ⟨γ, p⟩
     rcases hq with ⟨hγ, hp⟩
-    have h := hclose ε ε' hε (by simpa using hεcut) hε' (by simpa using hε'cut) γ hγ p hp
+    have h := hclose ε ε' hε (by assumption) hε' (by assumption) γ hγ p hp
     simpa [G, G₀] using h
   have hF₀ : ∀ q ∈ S', |F₀ 0 0 q| ≤ M := by
     intro q hq
@@ -161,7 +158,6 @@ theorem compatible_finite_mixed_pair_kernel_tendsto_uniformly
         γ ^ 2 * limCov p ≤ γ ^ 2 * C :=
           mul_le_mul_of_nonneg_left hlimle (sq_nonneg γ)
         _ ≤ B ^ 2 * C := mul_le_mul_of_nonneg_right hγsq hC
-    dsimp [F₀]
     rw [abs_of_pos (Real.exp_pos _)]
     exact Real.exp_le_exp.mpr hexp
   have hG₀ : ∀ q ∈ S', |G₀ 0 0 q| ≤ 1 := by
@@ -172,19 +168,18 @@ theorem compatible_finite_mixed_pair_kernel_tendsto_uniformly
     have hW : IsCenteredJointlyGaussian P W := by
       apply hY.gaussian n (fun i => (Real.exp (-(scale i : ℝ)), center p i))
       intro i
-      exact ⟨Real.exp_pos _, le_trans (hscale i) (min_le_left _ _)⟩
+      exact ⟨Real.exp_pos _, le_trans (hscale i) (min_le_left ..)⟩
     simpa [G₀, W] using integral_gaussianRectangleIndicator_abs_le_one P W hW barrier
-      (fun i => γ * coarseKernel (scale i) p.1 (center p i) +
-        γ * coarseKernel (scale i) p.2 (center p i))
+      (fun i => γ * coarseKernel (scale i) p.1 _ +
+        γ * coarseKernel (scale i) p.2 _)
   refine ⟨H, hH, coarseKernel, ?_⟩
   intro η hη
   obtain ⟨δ', hδ', hprod'⟩ := tendsto_uniformlyOn_product_of_tendsto_uniformlyOn
     S' M hM F F₀ G G₀ hF hG hF₀ hG₀ η hη
   refine ⟨δ', hδ', ?_⟩
   intro ε ε' hε hεcut hε' hε'cut γ hγ p hp
-  have hεδ : ε ≤ δ' := le_trans hεcut (min_le_left _ _)
-  have hε'δ : ε' ≤ δ' := le_trans hε'cut (min_le_left _ _)
-  have h := hprod' ε ε' hε hεδ hε' hε'δ (γ, p) ⟨hγ, hp⟩
-  simpa [F, F₀, G, G₀, limCov] using h
+  have hεδ : ε ≤ δ' := le_trans hεcut (min_le_left ..)
+  have hε'δ : ε' ≤ δ' := le_trans hε'cut (min_le_left ..)
+  simpa [F, F₀, G, G₀, limCov] using (hprod' ε ε' hε hεδ hε' hε'δ (γ, p) ⟨hγ, hp⟩)
 
 end DOZZ.Proofs

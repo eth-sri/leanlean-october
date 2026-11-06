@@ -9,6 +9,7 @@ public import DOZZ.FourPoint.Dual.PhysicalFusionCoefficient
 public import DOZZ.Statements.FourPoint.FourPointTZeroEqStructureConstant
 import DOZZ.FourPoint.Reflected.Normalization
 import Mathlib.Tactic
+import DOZZ.FourPoint.FourPointTZeroEqStructureConstant
 
 /-! # Dual fusion normalization and classification assembly
 
@@ -102,7 +103,7 @@ let κ := (4 / γ) * (Q γ - α₁)
     fourPointT_eq_dualKernelMoment P X hX γ hγ hγ₂ M hM μ α₁ α₂ α₃ z
   have hzero : N*E₀ = C₀ := by
     have h2 : 0 < 2/γ := by positivity
-    have hz := DOZZ.fourPointT_zero_eq_structureConstant P X M γ μ (2/γ) α₁ α₂ α₃
+    have hz := DOZZ.Proofs.fourPointT_zero_eq_structureConstant P X M γ μ (2/γ) α₁ α₂ α₃
       hγ hγ₂ hμ (by linarith only [hαhi,h2])
       hα₂ hα₃ (by linarith only [hs]) hX hM
     change N*E₀ = structureConstant P M γ μ (α₁-2/γ) α₂ α₃

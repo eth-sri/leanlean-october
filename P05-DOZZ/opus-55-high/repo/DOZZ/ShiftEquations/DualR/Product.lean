@@ -70,8 +70,7 @@ theorem dualShift_product {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X 
       (2 * (μ * Real.pi : ℂ) * R γ /
         ((γ : ℂ) * (lFun (-((γ : ℂ) ^ 2) / 4) * lFun ((γ : ℂ) ^ 2 / 4)))) * (-4) := by
   have hγh : γ / 2 < 2 / γ := by
-    rw [div_lt_div_iff₀ (by norm_num) hγ]
-    nlinarith
+    gcongr
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
   -- the crossed seed for all small `η > 0`
   have hRev : ∀ᶠ η : ℝ in 𝓝[>] 0, AnalyticAt ℂ R ((γ / 2 + η : ℝ) : ℂ) := by
@@ -80,7 +79,7 @@ theorem dualShift_product {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X 
     filter_upwards [nhdsWithin_mono _ (fun x (hx : (0 : ℝ) < x) => hx.ne') hev] with η hη
     simpa using hη
   have h42 : 4 / γ = 2 * (2 / γ) := by ring
-  have hpos : 0 < min (γ / 2) (4 / γ - γ) := lt_min (by linarith) (by linarith)
+  have hpos : 0 < min (γ / 2) (4 / γ - γ) := by bound
   have hT : ∀ᶠ η : ℝ in 𝓝[>] 0,
       R ((γ / 2 - θ : ℝ) : ℂ) * R ((Q γ + θ : ℝ) : ℂ) *
           (structureConstant P M γ μ (Q γ - θ) (γ / 2 + η) (2 / γ + θ) : ℂ) =
@@ -89,21 +88,19 @@ theorem dualShift_product {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X 
             (structureConstant P M γ μ (γ / 2 - θ) (Q γ - η) (2 / γ + θ) : ℂ) := by
     filter_upwards [hRev, Ioo_mem_nhdsGT hpos] with η hRa hη
     exact tkea P X M hγ hγ2 hμ hX hM hSeed hShiftGluing hhR hRm hBR hRv hθ₁ hθ₂ hη.1
-      (lt_of_lt_of_le hη.2 (min_le_left _ _)) (lt_of_lt_of_le hη.2 (min_le_right _ _)) hRe hRx
+      (lt_of_lt_of_le hη.2 (min_le_left ..)) (lt_of_lt_of_le hη.2 (min_le_right ..)) hRe hRx
       hRa hg₁
   -- the left side
   have hL : Tendsto (fun η : ℝ => (η : ℂ) * (R ((γ / 2 - θ : ℝ) : ℂ) * R ((Q γ + θ : ℝ) : ℂ) *
       (structureConstant P M γ μ (Q γ - θ) (γ / 2 + η) (2 / γ + θ) : ℂ))) (𝓝[>] 0)
       (𝓝 (R ((γ / 2 - θ : ℝ) : ℂ) * R ((Q γ + θ : ℝ) : ℂ) * 2)) := by
     have h1 := tendsto_mul_structureConstant_chargeZero P X M hγ hγ2 hμ hX hM
-      (a := Q γ - θ) (b := γ / 2) (c := 2 / γ + θ) (by rw [hQ]; ring) (by linarith)
+      (a := Q γ - θ) (b := γ / 2) (c := 2 / γ + θ) (by linarith) (by linarith)
       (by linarith) (by linarith)
-    have h1c := (Complex.continuous_ofReal.tendsto _).comp h1
-    have h := (tendsto_const_nhds (x := R ((γ / 2 - θ : ℝ) : ℂ) * R ((Q γ + θ : ℝ) : ℂ))).mul h1c
+    have h := (tendsto_const_nhds (x := R ((γ / 2 - θ : ℝ) : ℂ) * R ((Q γ + θ : ℝ) : ℂ))).mul ((Complex.continuous_ofReal.tendsto _).comp h1)
     simp only [Complex.ofReal_ofNat] at h
     refine h.congr' (Eventually.of_forall fun η => ?_)
-    simp only [Function.comp_apply]
-    push_cast
+    simp
     ring
   -- the right side
   have hRt : Tendsto (fun η : ℝ => (η : ℂ) *
@@ -114,25 +111,22 @@ theorem dualShift_product {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X 
         lFun (1 + 4 / (γ : ℂ) ^ 2) * (lFun (1 - 2 * θ / γ))⁻¹) *
         (2 * (μ * Real.pi : ℂ) * R γ /
           ((γ : ℂ) * (lFun (-((γ : ℂ) ^ 2) / 4) * lFun ((γ : ℂ) ^ 2 / 4)))) * (-4))) := by
-    have h4 := tendsto_dualLC_div (γ := γ) hγ hθ₁
-    have h3 := tendsto_mul_reflection_pole (μ := μ) hγ hγ2 hRγ hshift
     have h2 := structureConstant_lastone_limit P X M γ μ (γ / 2 - θ) hγ hγ2 hμ
       ⟨by linarith, lt_min (by linarith) (by linarith)⟩ hX hM
     have h2' : Tendsto (fun η : ℝ => η * structureConstant P M γ μ (γ / 2 - θ) (Q γ - η)
         (2 / γ + θ)) (𝓝[>] 0) (𝓝 (-4)) := by
-      have e : Q γ - (γ / 2 - θ) = 2 / γ + θ := by rw [hQ]; ring
+      have e : Q γ - (γ / 2 - θ) = 2 / γ + θ := by linarith
       rw [e] at h2
       exact h2
     have h2c := (Complex.continuous_ofReal.tendsto _).comp h2'
-    have h := (h4.mul h3).mul h2c
+    have h := ((tendsto_dualLC_div (γ := γ) hγ hθ₁).mul (tendsto_mul_reflection_pole (μ := μ) hγ hγ2 hRγ hshift)).mul h2c
     simp only [Complex.ofReal_neg, Complex.ofReal_ofNat] at h
     refine h.congr' ?_
     filter_upwards [self_mem_nhdsWithin] with η (hη : 0 < η)
     have hηc : (η : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hη.ne'
-    simp only [Function.comp_apply]
-    push_cast
+    simp
     field_simp
-  exact tendsto_nhds_unique hL (hRt.congr' (hT.mono fun η h => by simp only [h]))
+  exact tendsto_nhds_unique hL (hRt.congr' (hT.mono fun η h => by tauto))
 
 end DOZZ.Proofs
 

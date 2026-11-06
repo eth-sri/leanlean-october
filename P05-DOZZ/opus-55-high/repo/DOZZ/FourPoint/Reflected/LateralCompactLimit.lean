@@ -47,11 +47,11 @@ theorem reflected_lateral_compact_chaos_comparison
   have hδ : 0 < δ := lt_min hd (lt_min hρ (by norm_num))
   let R₀ := -Real.log δ
   have hR₀ : Real.exp (-R₀) = δ := by dsimp only [R₀]; rw [neg_neg, Real.exp_log hδ]
-  have hR₀ρ : Real.exp (-R₀) ≤ min ρ 1 := hR₀ ▸ min_le_right _ _
+  have hR₀ρ : Real.exp (-R₀) ≤ min ρ 1 := hR₀ ▸ min_le_right ..
   have hcut (a : ℝ) : Real.exp (-max a R₀) ≤ min d ρ := by
-    apply (Real.exp_le_exp.mpr (neg_le_neg (le_max_right _ _))).trans
+    apply (Real.exp_le_exp.mpr (neg_le_neg (le_max_right ..))).trans
     rw [hR₀]
-    exact le_min (min_le_left _ _) ((min_le_right _ _).trans (min_le_left _ _))
+    exact le_min (min_le_left ..) ((min_le_right ..).trans (min_le_left ..))
   let Φ := fun a ω x => Y ω (Real.exp (-max a R₀)) x
   have hΦ (a : ℝ) : IsCenteredGaussianField P (Φ a) := by
     constructor
@@ -61,7 +61,7 @@ theorem reflected_lateral_compact_chaos_comparison
         (fun i => (Real.exp (-max a R₀), xs i))
   let f := f₀+f₁
   have hf : ∀ x, 0 ≤ f x := fun x => add_nonneg (hf₀ x) (hf₁ x)
-  have hfK : tsupport (f : ℂ → ℝ) ⊆ K :=
+  have hfK :=
     (tsupport_add f₀ f₁).trans (union_subset hf₀K hf₁K)
   obtain ⟨hν, hXc⟩ := reflected_admissible_field_test_limit P _ _ _ Y hY γ N hN
     K hK hKU f hf hfK R₀ hR₀ρ
@@ -69,24 +69,21 @@ theorem reflected_lateral_compact_chaos_comparison
   let _ := hν
   have hYc := reflected_admissible_copied_test_limit P _ _ _ Y hY γ N hN K hK hKU
     A hA f₀ f₁ hf₀ hf₁ hf₀K hf₁K hf₀A hf₁A R₀ hR₀ρ hΦ
-  have ho (a : ℝ) (x y : ℂ) (hxK : x ∈ K) (hyK : y ∈ K)
+  have ho (a : ℝ) (x y) (hxK : x ∈ K) (hyK : y ∈ K)
       (hx : x ∉ A) (hy : y ∈ A) :
       |gaussianCovariance P (fun ω => Φ a ω x) (fun ω => Φ a ω y)| ≤ 2*R+η := by
     have hxo := houter x hxK hx
     have hyi := hinner y hyK hy
     have hrel : ‖y‖ ≤ R*‖x‖ := hyi.trans (mul_le_mul_of_nonneg_left hxo hR0)
     have hdist : (1-R)*r ≤ ‖x-y‖ := by
-      have hh := norm_sub_norm_le x y
-      linarith only [hxo, hyi, hh]
+      linarith only [hxo, hyi, (norm_sub_norm_le x y)]
     exact hb _ _ (Real.exp_pos _) (hcut a) (Real.exp_pos _) (hcut a) x hxK y hyK hdist hrel
   have hbill : 0 ≤ 2*R+η := by linarith
   have hcross (a : ℝ) : ∀ᵐ xy ∂ν.prod ν, ¬(xy.1 ∈ A ↔ xy.2 ∈ A) →
       |gaussianCovariance P (fun ω => Φ a ω xy.1) (fun ω => Φ a ω xy.2)| ≤
         (Real.sqrt (2*R+η))^2 := by
     have hk : ∀ᵐ x ∂ν, x ∈ K := ae_restrict_mem hK.measurableSet
-    have hk₁ : ∀ᵐ xy : ℂ × ℂ ∂ν.prod ν, xy.1 ∈ K := (Measure.quasiMeasurePreserving_fst (μ := ν) (ν := ν)).ae hk
-    have hk₂ : ∀ᵐ xy : ℂ × ℂ ∂ν.prod ν, xy.2 ∈ K := (Measure.quasiMeasurePreserving_snd (μ := ν) (ν := ν)).ae hk
-    filter_upwards [hk₁, hk₂] with xy hxK hyK hne
+    filter_upwards [((Measure.quasiMeasurePreserving_fst).ae hk), ((Measure.quasiMeasurePreserving_snd (μ := ν)).ae hk)] with xy hxK hyK hne
     rw [Real.sq_sqrt hbill]
     by_cases hx : xy.1 ∈ A
     · have hy : xy.2 ∉ A := fun hy => hne ⟨fun _ => hy, fun _ => hx⟩
@@ -95,16 +92,15 @@ theorem reflected_lateral_compact_chaos_comparison
         unfold gaussianCovariance
         simp only [mul_comm]
       rw [he]
-      exact ho a xy.2 xy.1 hyK hxK hy hx
+      bound
     · have hy : xy.2 ∈ A := by
         by_contra hh
         exact hne ⟨fun h => False.elim (hx h), fun h => False.elim (hh h)⟩
       exact ho a xy.1 xy.2 hxK hyK hx hy
-  have hh : Measurable (fun x => (f x).toNNReal) := f.continuous.measurable.real_toNNReal
   have hbound : ∃ b : ℝ≥0, ∀ x, (f x).toNNReal ≤ b :=
     ⟨‖f‖.toNNReal, fun x => Real.toNNReal_mono ((le_abs_self _).trans (f.norm_coe_le_norm x))⟩
   have hc' := reflected_kahane_decoupling_limit P Φ hΦ A hA ν (fun x => (f x).toNNReal)
-    hh hbound γ q (Real.sqrt (2*R+η)) hq hcross _ _ hXc hYc
+    f.continuous.measurable.real_toNNReal hbound γ q _ hq hcross _ _ hXc hYc
   simpa only [Real.sq_sqrt hbill] using hc'
 
 end DOZZ.Proofs

@@ -30,14 +30,6 @@ noncomputable def unitBoxSecondDerivativeCLM (L : ℝ) (v : ℂ) :
   let D : TestFn →L[ℝ] TestFn := TestFunction.lineDerivCLM ℝ v
   exact L ^ 2 • (D.comp D)
 
-theorem lineDerivCLM_eq_directionalDerivativeTest (f : TestFn) (v : ℂ) :
-    TestFunction.lineDerivCLM ℝ v f = directionalDerivativeTest f v := by
-  ext z
-  rw [TestFunction.lineDerivCLM_apply_of_le (by simp : (⊤ : ENat) + 1 ≤ ⊤)]
-  rw [directionalDerivativeTest_apply]
-  have hd : DifferentiableAt ℝ (f : ℂ → ℝ) z :=
-    (f.contDiff.differentiable (by simp)).differentiableAt
-  exact hd.lineDeriv_eq_fderiv
 
 theorem unitBoxSecondDerivativeCLM_apply (L : ℝ) (v : ℂ) (f : TestFn) :
     unitBoxSecondDerivativeCLM L v f =
@@ -45,14 +37,13 @@ theorem unitBoxSecondDerivativeCLM_apply (L : ℝ) (v : ℂ) (f : TestFn) :
         (unitBoxDirectionalDerivativeTest L f v) v := by
   let D : TestFn →L[ℝ] TestFn := TestFunction.lineDerivCLM ℝ v
   have hunit (g : TestFn) : unitBoxDirectionalDerivativeTest L g v = L • D g := by
-    rw [unitBoxDirectionalDerivativeTest, ← lineDerivCLM_eq_directionalDerivativeTest]
-  change L ^ 2 • (D (D f)) = _
+    rfl
   calc
     L ^ 2 • (D (D f)) = L • (L • D (D f)) := by
       rw [smul_smul, pow_two]
-    _ = L • D (L • D f) := by rw [map_smul]
-    _ = L • D (unitBoxDirectionalDerivativeTest L f v) := by rw [hunit]
-    _ = unitBoxDirectionalDerivativeTest L (unitBoxDirectionalDerivativeTest L f v) v :=
+    _ = L • D _ := by rw [map_smul]
+    _ = L • D _ := by rfl
+    _ = unitBoxDirectionalDerivativeTest L _ v :=
       (hunit _).symm
 
 /-- The unweighted Fourier coefficient isometrically represented in complex `ℓ²`. -/
@@ -86,64 +77,60 @@ theorem torusH2WeightedFourierCoeffCLM_apply (L R : ℝ) (hL : 0 < L)
     torusH2WeightedFourierCoeffCLM L f k = torusSobolevWeight k •
       UnitAddTorus.mFourierCoeff (torusPeriodizationLp L f) k := by
   let c₀ := UnitAddTorus.mFourierCoeff (torusPeriodizationLp L f) k
-  have hcoeff0 : (torusRawFourierCoeffCLM L f) k = c₀ :=
+  have hcoeff0 :=
     torusRawFourierCoeffCLM_apply L f k
   have hD0 : (torusRawFourierCoeffCLM L
       (unitBoxSecondDerivativeCLM L 1 f)) k =
-      ((2 * Real.pi * Complex.I * (k 0 : ℝ)) ^ 2) * c₀ := by
+      ((2 * Real.pi * Complex.I * (k 0)) ^ 2) * c₀ := by
     rw [unitBoxSecondDerivativeCLM_apply, torusRawFourierCoeffCLM_apply]
     have hfreq := torusPeriodizationCoeff_unitBoxDirectionalDerivative_twice
       L R hL hRbox f hf 1 k
-    have hinner : (innerSL ℝ) (unitTorusFourierFrequency k) (1 : ℂ) =
-        (k 0 : ℝ) := by
+    have hinner : (innerSL ℝ) (unitTorusFourierFrequency k) 1 =
+        (k 0) := by
       rw [unitTorusFourierFrequency_innerSL]
       simp
-    rw [hinner] at hfreq
-    simpa [c₀] using hfreq
+    aesop
   have hD1 : (torusRawFourierCoeffCLM L
       (unitBoxSecondDerivativeCLM L Complex.I f)) k =
-      ((2 * Real.pi * Complex.I * (k 1 : ℝ)) ^ 2) * c₀ := by
+      ((2 * Real.pi * Complex.I * (k 1)) ^ 2) * c₀ := by
     rw [unitBoxSecondDerivativeCLM_apply, torusRawFourierCoeffCLM_apply]
     have hfreq := torusPeriodizationCoeff_unitBoxDirectionalDerivative_twice
       L R hL hRbox f hf Complex.I k
     have hinner : (innerSL ℝ) (unitTorusFourierFrequency k) Complex.I =
-        (k 1 : ℝ) := by
+        (k 1) := by
       rw [unitTorusFourierFrequency_innerSL]
       simp
-    rw [hinner] at hfreq
-    simpa [c₀] using hfreq
-  let c : ℝ := (4 * Real.pi ^ 2)⁻¹
+    aesop
+  let c := (4 * Real.pi ^ 2)⁻¹
   have hscalar (j : Fin 2) :
-      ((c : ℂ) * ((2 * Real.pi * Complex.I * (k j : ℝ)) ^ 2)) =
-        -((k j : ℝ) ^ 2 : ℂ) := by
-    have hfreq : ((2 * Real.pi * Complex.I * (k j : ℝ)) ^ 2) =
-        -((4 * Real.pi ^ 2 * (k j : ℝ) ^ 2 : ℝ) : ℂ) := by
+      (c * ((2 * Real.pi * Complex.I * (k j)) ^ 2)) =
+        -((k j) ^ 2) := by
+    have hfreq : ((2 * Real.pi * Complex.I * (k j)) ^ 2) =
+        -((4 * Real.pi ^ 2 * (k j) ^ 2)) := by
       simp only [mul_pow, Complex.I_sq]
-      push_cast
       ring
     rw [hfreq]
     dsimp [c]
     push_cast
-    have hden : (4 * Real.pi ^ 2 : ℝ) ≠ 0 := by positivity
+    have hden : (4 * Real.pi ^ 2) ≠ 0 := by positivity
     field_simp [hden]
   have hscalar_mul (j : Fin 2) :
-      c • (((2 * Real.pi * Complex.I * (k j : ℝ)) ^ 2) * c₀) =
-        -((k j : ℝ) ^ 2) • c₀ := by
+      c • (((2 * Real.pi * Complex.I * (k j)) ^ 2) * c₀) =
+        -((k j) ^ 2) • c₀ := by
     rw [Complex.real_smul, ← mul_assoc, hscalar]
-    simp [Complex.real_smul]
+    simp
   change (torusRawFourierCoeffCLM L f -
       (4 * Real.pi ^ 2)⁻¹ •
-        torusRawFourierCoeffCLM L (unitBoxSecondDerivativeCLM L 1 f) -
+        torusRawFourierCoeffCLM L _ -
       (4 * Real.pi ^ 2)⁻¹ •
-        torusRawFourierCoeffCLM L (unitBoxSecondDerivativeCLM L Complex.I f)) k = _
+        torusRawFourierCoeffCLM L _) k = _
   simp only [lp.coeFn_sub, lp.coeFn_smul]
   change (torusRawFourierCoeffCLM L f) k -
       (4 * Real.pi ^ 2)⁻¹ •
         (torusRawFourierCoeffCLM L (unitBoxSecondDerivativeCLM L 1 f)) k -
       (4 * Real.pi ^ 2)⁻¹ •
         (torusRawFourierCoeffCLM L (unitBoxSecondDerivativeCLM L Complex.I f)) k = _
-  rw [hcoeff0, hD0, hD1]
-  rw [hscalar_mul 0, hscalar_mul 1]
+  rw [hcoeff0, hD0, hD1, hscalar_mul 0, hscalar_mul 1]
   simp [c₀, torusSobolevWeight, sub_eq_add_neg, add_smul]
 
 end DOZZ

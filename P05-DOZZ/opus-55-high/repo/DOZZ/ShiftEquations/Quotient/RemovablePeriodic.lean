@@ -55,13 +55,13 @@ theorem structureConstant_DOZZ_quotient_removable_periodic
     ∃ Ψ : ℂ → ℂ, DifferentiableOn ℂ Ψ (horizontalStrip h) ∧
       (∀ᶠ z in codiscrete ℂ, Ψ z * dozzFormula γ μ U z (α₂ : ℂ) (α₃ : ℂ) = C z) ∧
       ∀ z ∈ horizontalStrip h, Ψ (z + γ) = Ψ z ∧ Ψ (z + 4 / γ) = Ψ z := by
-  set b : ℝ := γ / 2 with hbdef
+  set b := γ / 2 with hbdef
   set b' : ℝ := 2 / γ with hb'def
   have hb : 0 < b := by positivity
   have hb' : 0 < b' := by positivity
   have hγ0 : (γ : ℂ) ≠ 0 := by exact_mod_cast hγ.ne'
-  have hbc : ((b : ℝ) : ℂ) = (γ : ℂ) / 2 := by rw [hbdef]; push_cast; ring
-  have hb'c : ((b' : ℝ) : ℂ) = 2 / (γ : ℂ) := by rw [hb'def]; push_cast; ring
+  have hbc : ((b : ℝ) : ℂ) = (γ : ℂ) / 2 := by simp_all
+  have hb'c : ((b' : ℝ) : ℂ) = 2 / (γ : ℂ) := by simp_all
   have hirr : Irrational (b / b') := by
     have e : b / b' = γ ^ 2 / (4 : ℕ) := by
       rw [hbdef, hb'def]; push_cast; field_simp; ring
@@ -69,12 +69,12 @@ theorem structureConstant_DOZZ_quotient_removable_periodic
     exact hγirr.div_natCast (by norm_num)
   have hγk : ∀ n : ℤ, 4 / γ ^ 2 ≠ n := four_div_sq_ne_int_of_irrational hγirr
   have hγk' : ∀ k : ℕ, 4 / γ ^ 2 ≠ (k : ℝ) := fun k hk => hγk k (by exact_mod_cast hk)
-  have hQη : 0 < Q γ - η := by linarith [hη.1, hη.2]
+  have hQη : 0 < Q γ - η := by linarith
   -- the DOZZ formula and its divisor
-  have hU₂ : U (α₂ : ℂ) ≠ 0 := IsUpsilon.ne_zero_of_re hU (by simp; linarith [hα₂.1])
-    (by simpa using hα₂.2)
-  have hU₃ : U (α₃ : ℂ) ≠ 0 := IsUpsilon.ne_zero_of_re hU (by simp; linarith [hα₃.1])
-    (by simpa using hα₃.2)
+  have hU₂ : U (α₂ : ℂ) ≠ 0 := IsUpsilon.ne_zero_of_re hU (by simp; linarith)
+    (by simp_all)
+  have hU₃ : U (α₃ : ℂ) ≠ 0 := IsUpsilon.ne_zero_of_re hU (by simp; linarith)
+    (by simp_all)
   have hD := (meromorphicOn_dozzFormula hγ hγ2 hμ hU (α₂ : ℂ) (α₃ : ℂ)).mono_set
     (Set.subset_univ (horizontalStrip h))
   have hD0 := eventually_dozzFormula_ne_zero hγ hγ2 hμ hU hU₂ hU₃
@@ -89,11 +89,10 @@ theorem structureConstant_DOZZ_quotient_removable_periodic
     have hbase : ((dozzBase γ μ : ℝ) : ℂ) ^ ((4 / γ ^ 2 : ℝ) : ℂ) ≠ 0 :=
       Complex.cpow_ne_zero_iff.mpr (Or.inl (by exact_mod_cast (dozzBase_pos hγ hγ2 hμ).ne'))
     have hμ' : dualMu γ μ ≠ 0 := by
-      unfold dualMu
       exact div_ne_zero hbase (mul_ne_zero (by exact_mod_cast Real.pi_ne_zero) hl)
     exact neg_ne_zero.mpr (one_div_ne_zero (mul_ne_zero (by exact_mod_cast Real.pi_ne_zero) hμ'))
   have hA₁ := eventually_shiftCoeffA_ne_zero γ (α₂ : ℂ) (α₃ : ℂ)
-    (χ := (γ : ℂ) / 2) (div_ne_zero hγ0 two_ne_zero)
+    (div_ne_zero hγ0 two_ne_zero)
     (lFun_ne_zero_of_forall_ne_int fun n hn => by
       have hq : 0 < γ ^ 2 / 4 := by positivity
       have hq1 : γ ^ 2 / 4 < 1 := by nlinarith
@@ -103,12 +102,11 @@ theorem structureConstant_DOZZ_quotient_removable_periodic
       rcases lt_trichotomy n 0 with hlt | heq | hgt
       · have : (n : ℝ) ≤ -1 := by exact_mod_cast Int.le_sub_one_of_lt hlt
         linarith
-      · rw [heq, Int.cast_zero] at hn'
-        linarith
+      · simp_all
       · have : (1 : ℝ) ≤ n := by exact_mod_cast hgt
         linarith)
   have hA₂ := eventually_shiftCoeffA_ne_zero γ (α₂ : ℂ) (α₃ : ℂ)
-    (χ := 2 / (γ : ℂ)) (div_ne_zero two_ne_zero hγ0)
+    (div_ne_zero two_ne_zero hγ0)
     (lFun_ne_zero_of_forall_ne_int fun n hn => hγk (-n) (by
       have e : -(2 / (γ : ℂ)) ^ 2 = ((-(4 / γ ^ 2)) : ℝ) := by push_cast; ring
       rw [e] at hn
@@ -141,9 +139,7 @@ theorem structureConstant_DOZZ_quotient_removable_periodic
     else C z / dozzFormula γ μ U z (α₂ : ℂ) (α₃ : ℂ), ?_, ?_, ?_⟩
   · exact (differentiableOn_const c).congr fun z hz => ite_eq_left hz
   · filter_upwards [hc, hD0] with z hz hDz
-    by_cases hzS : z ∈ horizontalStrip h
-    · rw [ite_eq_left hzS, hz hzS]
-    · rw [ite_eq_right hzS, div_mul_cancel₀ _ hDz]
+    grind
   · intro z hz
     have hz' : |z.im| < h := hz
     have h1 : z + (γ : ℂ) ∈ horizontalStrip h := by
@@ -151,7 +147,7 @@ theorem structureConstant_DOZZ_quotient_removable_periodic
       simpa using hz'
     have h2 : z + 4 / (γ : ℂ) ∈ horizontalStrip h := by
       change |(z + 4 / (γ : ℂ)).im| < h
-      rw [show (4 / (γ : ℂ)) = ((4 / γ : ℝ) : ℂ) by push_cast; ring, Complex.add_im,
+      rw [show (4 / (γ : ℂ)) = ((4 / γ : ℝ) : ℂ) by simp, Complex.add_im,
         Complex.ofReal_im, add_zero]
       exact hz'
     exact ⟨(ite_eq_left h1).trans (ite_eq_left hz).symm,

@@ -21,7 +21,6 @@ theorem reflected_gmc_sphere_null
   have hint := equatorGFF_GMC_intensity P X hX γ hγ hγ₂ M hM
     (Metric.sphere c r) Metric.isClosed_sphere.measurableSet
   have href : gmcReferenceMeasure (Metric.sphere c r) = 0 := by
-    unfold gmcReferenceMeasure
     exact withDensity_absolutelyContinuous _ _ (MeasureTheory.Measure.addHaar_sphere volume c r)
   rw [href] at hint
   exact (lintegral_eq_zero_iff'
@@ -33,12 +32,11 @@ theorem reflected_exterior_integral_open (μ : Measure ℂ) (r : ℝ)
     (hcircle : μ (Metric.sphere (0 : ℂ) r) = 0) (f : ℂ → ℝ≥0∞) :
     (∫⁻ x in {x : ℂ | r ≤ ‖x‖}, f x ∂μ) =
       ∫⁻ x in {x : ℂ | r < ‖x‖}, f x ∂μ := by
-  have he : ({x : ℂ | r ≤ ‖x‖} : Set ℂ) =ᵐ[μ] {x : ℂ | r < ‖x‖} := by
-    have hn : ∀ᵐ x ∂μ, x ∉ Metric.sphere (0 : ℂ) r := by
-      exact measure_eq_zero_iff_ae_notMem.mp hcircle
+  have he : ({x : ℂ | r ≤ ‖x‖}) =ᵐ[μ] {x : ℂ | r < ‖x‖} := by
+    have hn : ∀ᵐ x ∂μ, x ∉ Metric.sphere 0 r := measure_eq_zero_iff_ae_notMem.mp hcircle
     filter_upwards [hn] with x hx
-    have hne : ‖x‖ ≠ r := by simpa only [Metric.mem_sphere, dist_zero_right] using hx
-    exact propext ⟨fun h => lt_of_le_of_ne h hne.symm, fun h => h.le⟩
+    have hne : ‖x‖ ≠ r := by simp_all
+    grind
   rw [Measure.restrict_congr_set he]
 
 /-- The literal retained Coulomb mass equals its open-exterior kernel integral. -/
@@ -57,19 +55,18 @@ theorem reflected_open_exterior_remove_roots (μ : Measure ℂ) (r : ℝ) (hr : 
     (h1 : μ {1} = 0) (f : ℂ → ℝ≥0∞) :
     (∫⁻ x in {x : ℂ | r < ‖x‖}, f x ∂μ) =
       ∫⁻ x in {x : ℂ | r < ‖x‖} ∩ ({0, 1} : Set ℂ)ᶜ, f x ∂μ := by
-  have hn : ∀ᵐ x ∂μ, x ∉ ({1} : Set ℂ) := measure_eq_zero_iff_ae_notMem.mp h1
-  have he : ({x : ℂ | r < ‖x‖} : Set ℂ) =ᵐ[μ]
-      {x : ℂ | r < ‖x‖} ∩ ({0, 1} : Set ℂ)ᶜ := by
-    filter_upwards [hn] with x hx
-    have hx1 : x ≠ 1 := by simpa only [mem_singleton_iff] using hx
+  have he : ({x : ℂ | r < ‖x‖}) =ᵐ[μ]
+      {x : ℂ | r < ‖x‖} ∩ ({0, 1})ᶜ := by
+    filter_upwards [(measure_eq_zero_iff_ae_notMem.mp h1)] with x hx
+    have hx1 : x ≠ 1 := by assumption
     apply propext
     constructor
     · intro h
       have hx0 : x ≠ 0 := by
         intro hh
         simp only [hh, norm_zero, not_lt_of_ge hr.le] at h
-      exact ⟨h, by simp [hx0, hx1]⟩
-    · exact fun h => h.1
+      simp_all
+    simp_all
   rw [Measure.restrict_congr_set he]
 
 /-- The retained mass `gammaHalfOuterMass` is exactly the full open region required by
@@ -95,9 +92,9 @@ theorem reflected_source_outerMass_eq_comparison_region
         ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x) ∂M ω := by
   filter_upwards [reflected_gmc_sphere_null P X hX γ hγ hγ₂ M hM 0 0,
     reflected_gmc_sphere_null P X hX γ hγ hγ₂ M hM 1 0,
-    reflected_gmc_sphere_null P X hX γ hγ hγ₂ M hM 0 (‖z‖ ^ (1 - ξ))]
+    reflected_gmc_sphere_null P X hX γ hγ hγ₂ M hM 0 _]
       with ω h0 h1 hs
-  simp only [Metric.sphere_zero] at h0 h1
+  simp at h0 h1
   exact reflected_outerMass_eq_comparison_region γ α₁ α₂ α₃ ξ z (M ω) h0 h1 hz hs
 
 end DOZZ.Proofs

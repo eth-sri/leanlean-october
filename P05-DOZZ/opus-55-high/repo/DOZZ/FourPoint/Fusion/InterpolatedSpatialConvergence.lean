@@ -30,23 +30,20 @@ theorem fusionInterpolatedIntegral_tendsto {Ω : Type*} [MeasurableSpace Ω]
   obtain ⟨B, hB, hbound⟩ := fusionInterpolatedFactor_uniform_bound P X hX γ hγ hγ2 M hM α₁ α₂ α₃ s hs.le
   have hmeas := fusionInterpolatedFactor_measurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ s
   have hF : ∀ᶠ z : ℂ in nhds 0, AEStronglyMeasurable
-      (fun y => K y * (fusionInterpolatedFactor P M γ α₁ α₂ α₃ s t y z : ℂ)) volume := by
+      (fun y => K y * (fusionInterpolatedFactor P M γ α₁ α₂ α₃ s t y z)) volume := by
     apply Eventually.of_forall
-    intro z
-    exact hK.aestronglyMeasurable.mul
-      ((Complex.measurable_ofReal.comp (hmeas.comp (measurable_const.prodMk (measurable_id.prodMk measurable_const)))).aestronglyMeasurable)
+    measurability
   have hdom : ∀ᶠ z : ℂ in nhds 0, ∀ᵐ y : ℂ ∂volume,
-      ‖K y * (fusionInterpolatedFactor P M γ α₁ α₂ α₃ s t y z : ℂ)‖ ≤ ‖K y‖ * B := by
-    have hz : ∀ᶠ z : ℂ in nhds 0, ‖z‖ ≤ 1 := by
-      exact ((continuous_norm.tendsto (0 : ℂ)).eventually_lt_const (by simp)).mono fun z h => h.le
+      ‖K y * (fusionInterpolatedFactor P M γ α₁ α₂ α₃ s t y z)‖ ≤ ‖K y‖ * B := by
+    have hz : ∀ᶠ z : ℂ in nhds 0, ‖z‖ ≤ 1 := ((continuous_norm.tendsto 0).eventually_lt_const (by simp)).mono fun z h => h.le
     filter_upwards [hz] with z hz
     exact ae_of_all _ fun y => by
       rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
-      exact mul_le_mul_of_nonneg_left (hbound t ht y z hz) (norm_nonneg _)
+      bound
   have hlim : ∀ᵐ y : ℂ ∂volume, Tendsto
-      (fun z : ℂ => K y * (fusionInterpolatedFactor P M γ α₁ α₂ α₃ s t y z : ℂ)) (nhds 0)
-      (nhds (K y * ((∫⁻ ω, fusionMovingMass γ α₁ α₂ α₃ 1 0 (M ω) ^ s ∂P).toReal : ℂ))) := by
-    filter_upwards [Measure.ae_ne volume (0 : ℂ)] with y hy
+      (fun z => K y * (fusionInterpolatedFactor P M γ α₁ α₂ α₃ s t y z)) (nhds 0)
+      (nhds (K y * ((∫⁻ ω, fusionMovingMass γ α₁ α₂ α₃ 1 0 (M ω) ^ s ∂P).toReal))) := by
+    filter_upwards [Measure.ae_ne volume 0] with y hy
     have hf := fusionInterpolatedFactor_tendsto P X hX γ hγ hγ2 M hM α₁ α₂ α₃
       hα hα₁ hα₂ hα₃ t ht y hy s hs
     have he : (∫⁻ ω, fusionMovingMass γ α₁ α₂ α₃ y 0 (M ω) ^ s ∂P) =

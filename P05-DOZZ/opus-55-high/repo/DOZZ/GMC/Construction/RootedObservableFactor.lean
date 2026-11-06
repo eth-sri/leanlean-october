@@ -27,8 +27,8 @@ theorem rooted_observable_factors_through_coordinates
   let lift : ℂ × (Q × FiniteMeasure ℂ) → ℂ × (Q × E) :=
     Prod.map id gmcJointFiniteEval
   have hJoint : MeasurableSpace.comap gmcJointFiniteEval
-      (inferInstance : MeasurableSpace (Q × E)) =
-      (inferInstance : MeasurableSpace (Q × FiniteMeasure ℂ)) := by
+      (inferInstance : MeasurableSpace _) =
+      (inferInstance : MeasurableSpace _) := by
     change MeasurableSpace.comap (fun p : Q × FiniteMeasure ℂ =>
       (p.1, gmcFiniteMeasureEval p.2))
       ((inferInstance : MeasurableSpace Q).prod (inferInstance : MeasurableSpace E)) =
@@ -37,12 +37,11 @@ theorem rooted_observable_factors_through_coordinates
     rw [show (inferInstance : MeasurableSpace (FiniteMeasure ℂ)) =
       MeasurableSpace.comap gmcFiniteMeasureEval (inferInstance : MeasurableSpace E) from
         gmcFiniteMeasure_sigma_eq]
-    rw [MeasurableSpace.comap_comp]
-    rfl
+    aesop
   have hSigma : MeasurableSpace.comap lift
-      (inferInstance : MeasurableSpace (ℂ × (Q × E))) =
-      (inferInstance : MeasurableSpace (ℂ × (Q × FiniteMeasure ℂ))) := by
-    change MeasurableSpace.comap (Prod.map id gmcJointFiniteEval)
+      (inferInstance : MeasurableSpace _) =
+      (inferInstance : MeasurableSpace _) := by
+    change MeasurableSpace.comap _
       ((inferInstance : MeasurableSpace ℂ).prod inferInstance) = _
     rw [MeasurableSpace.comap_prodMap, MeasurableSpace.comap_id, hJoint]
     rfl
@@ -59,10 +58,7 @@ theorem rooted_observable_factors_through_coordinates
   let decode : (gmcTiltCoordinateIndex → ℝ) → Q × E := fun v =>
     (fun f => v (.inl f), fun j => ENNReal.ofReal (v (.inr j)))
   have hd : Measurable decode := by
-    apply Measurable.prodMk
-    · exact measurable_pi_iff.mpr fun f => measurable_pi_apply (Sum.inl f)
-    · exact measurable_pi_iff.mpr fun j => ENNReal.measurable_ofReal.comp
-        (measurable_pi_apply (Sum.inr j))
+    fun_prop
   refine ⟨fun p => G (p.1, decode p.2),
     hG.comp (measurable_fst.prodMk (hd.comp measurable_snd)), ?_⟩
   intro u q μ hμ
@@ -73,12 +69,9 @@ theorem rooted_observable_factors_through_coordinates
     · funext j
       change ENNReal.ofReal (μ (gmcTiltCoordinateSet j)).toReal =
         gmcFiniteMeasureEval ⟨μ, hμ⟩ j
-      rw [ENNReal.ofReal_toReal (@measure_ne_top ℂ _ μ hμ _)]
-      cases j <;> rfl
-  have hf := congrFun hGfactor (u, (q, ⟨μ, hμ⟩))
-  change H u q μ = G (u, gmcJointFiniteEval (q, ⟨μ, hμ⟩)) at hf
-  change H u q μ = G (u, decode (gmcTiltCoordinatePath q μ))
+      aesop
+  change H u q μ = G _
   rw [heq]
-  exact hf
+  exact (congrFun hGfactor (u, (q, ⟨μ, hμ⟩)))
 
 end DOZZ.Proofs

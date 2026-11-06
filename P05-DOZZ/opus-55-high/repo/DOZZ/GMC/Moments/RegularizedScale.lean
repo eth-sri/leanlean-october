@@ -20,16 +20,16 @@ open MeasureTheory ProbabilityTheory
 open scoped Distributions ENNReal NNReal
 
 namespace DOZZ.Proofs
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+section
+variable (X : Ω → Distr) (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ r : ℝ) (K : Set ℂ) (hK : MeasurableSet K) (hK_unit : ∀ x ∈ K, ‖x‖ ≤ 1) (f : ℂ → ℝ) (hf : Measurable f) (hf_zero : ∀ x, x ∉ K → f x = 0)
+include hX hXc hK hK_unit hf hf_zero
 
 /-- On a chart contained in the unit disk, compactly supported cutoff GMC test integrals are
 exactly the corresponding Wick integrals against planar volume. -/
 theorem regularizedGMC_test_integral_eq_local_wick
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (γ r : ℝ) (K : Set ℂ) (hK : MeasurableSet K)
-    (hK_unit : ∀ x ∈ K, ‖x‖ ≤ 1) (f : ℂ → ℝ) (hf : Measurable f)
-    (hf_zero : ∀ x, x ∉ K → f x = 0) (ω : Ω) :
+    (ω : Ω) :
     (∫ x, f x ∂regularizedGMC P Xc γ r ω) =
       ∫ x in K, f x * Real.exp (γ * Xc ω x r - γ ^ 2 / 2 *
         gaussianVariance P (fun ω' => Xc ω' x r)) ∂volume := by
@@ -42,28 +42,23 @@ theorem regularizedGMC_test_integral_eq_local_wick
     simp [V, gaussianVariance, gaussianCovariance, pow_two]
   have hV : Measurable V := by
     have h := circleAverage_variance_measurable (P := P) Xc hXc.1 r
-    convert h using 1
-    funext x
-    exact (hVarEq x).symm
+    simp_all
   have hfield : Measurable (fun p : Ω × ℂ => Xc p.1 p.2 r) := hXc.1 r
   have hnorm : Measurable (fun x : ℂ => normPlus x) := by
     unfold normPlus
-    exact measurable_const.max measurable_norm
-  have hD : Measurable D := by
-    dsimp [D]
     fun_prop
-  have hDω : Measurable (fun x : ℂ => D (ω, x)) := hD.comp
-    (measurable_const.prodMk measurable_id)
+  have hD : Measurable D := by
+    fun_prop
+  have hDω : Measurable (fun x : ℂ => D (ω, x)) := by fun_prop
   have hDtop : ∀ᵐ x ∂volume, D (ω, x) < ∞ := by
-    filter_upwards [] with x
-    exact ENNReal.ofReal_lt_top
+    aesop
   have hraw : (∫ x, f x ∂regularizedGMC P Xc γ r ω) =
       ∫ x, (Real.exp (γ * Xc ω x r - γ ^ 2 / 2 * V x) *
         normPlus x ^ (-4 : ℝ)) * f x ∂volume := by
     rw [regularizedGMC, integral_withDensity_eq_integral_toReal_smul hDω hDtop]
     apply integral_congr_ae
     filter_upwards [] with x
-    change (ENNReal.ofReal (Real.exp (γ * Xc ω x r - γ ^ 2 / 2 * V x) *
+    change (ENNReal.ofReal (Real.exp _ *
       normPlus x ^ (-4 : ℝ))).toReal • f x = _
     have hnormpos : 0 < normPlus x := by
       unfold normPlus
@@ -81,19 +76,17 @@ theorem regularizedGMC_test_integral_eq_local_wick
         unfold normPlus
         rw [max_eq_left (hK_unit x hx)]
       rw [hnp]
-      simp
       ring
-    · rw [hf_zero x hx]
-      simp
+    · simp_all
   have hVarPoint (x : ℂ) : f x * Real.exp (γ * Xc ω x r - γ ^ 2 / 2 * V x) =
       f x * Real.exp (γ * Xc ω x r - γ ^ 2 / 2 *
         gaussianVariance P (fun ω' => Xc ω' x r)) := by
     rw [← hVarEq x]
   rw [hraw]
   calc
-    (∫ x, (Real.exp (γ * Xc ω x r - γ ^ 2 / 2 * V x) *
+    (∫ x, (Real.exp _ *
         normPlus x ^ (-4 : ℝ)) * f x ∂volume) =
-      ∫ x, f x * Real.exp (γ * Xc ω x r - γ ^ 2 / 2 * V x) ∂volume := by
+      ∫ x, f x * Real.exp _ ∂volume := by
         apply integral_congr_ae
         exact Filter.Eventually.of_forall hfactor
     _ = ∫ x, f x * Real.exp (γ * Xc ω x r - γ ^ 2 / 2 *
@@ -110,12 +103,7 @@ theorem regularizedGMC_test_integral_eq_local_wick
 /-- Compactly supported cutoff tests are measurable random variables. This is needed to pass the
 finite-cutoff scaling law to limits specified by `IsGMCOf`. -/
 theorem regularizedGMC_test_integral_aemeasurable
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (γ r : ℝ) (K : Set ℂ) (hK : MeasurableSet K)
-    (hK_unit : ∀ x ∈ K, ‖x‖ ≤ 1) (f : ℂ → ℝ) (hf : Measurable f)
-    (hf_zero : ∀ x, x ∉ K → f x = 0) :
+    :
     AEMeasurable (fun ω => ∫ x, f x ∂regularizedGMC P Xc γ r ω) P := by
   classical
   let : IsProbabilityMeasure P := hX.1
@@ -131,13 +119,12 @@ theorem regularizedGMC_test_integral_aemeasurable
       ((measurable_const.mul hfield).sub (measurable_const.mul (hvar.comp measurable_snd)))
   let G : Ω × ℂ → ℝ := fun p => if p.2 ∈ K then H p else 0
   have hG : Measurable G := by
-    exact Measurable.ite (hK.preimage measurable_snd) hH measurable_const
+    grind
   have hI : Measurable (fun ω => ∫ x, G (ω, x) ∂volume) :=
     hG.stronglyMeasurable.integral_prod_right'.measurable
   have hGsection (ω : Ω) : (fun x => G (ω, x)) =
       K.indicator (fun x => H (ω, x)) := by
-    funext x
-    by_cases hx : x ∈ K <;> simp [G, hx]
+    rfl
   have hEq (ω : Ω) :
       (∫ x, f x ∂regularizedGMC P Xc γ r ω) = ∫ x, G (ω, x) ∂volume := by
     calc
@@ -146,7 +133,7 @@ theorem regularizedGMC_test_integral_aemeasurable
             gaussianVariance P (fun ω' => Xc ω' x r)) ∂volume :=
         regularizedGMC_test_integral_eq_local_wick P X hX Xc hXc γ r K hK
           hK_unit f hf hf_zero ω
-      _ = ∫ x, G (ω, x) ∂volume := by
+      _ = ∫ x, G _ ∂volume := by
         rw [hGsection ω]
         dsimp [H]
         exact (integral_indicator hK).symm
@@ -157,6 +144,10 @@ theorem regularizedGMC_test_integral_aemeasurable
   rw [hfun]
   exact hI.aemeasurable
 
+end
+
+end
+
 /-- A disk-normalized spatial average multiplied by the disk area is the unnormalized planar
 integral. -/
 theorem localBallProbability_integral_mul_area
@@ -166,45 +157,44 @@ theorem localBallProbability_integral_mul_area
       (ENNReal.ofReal R ^ 2 * (NNReal.pi : ℝ≥0∞)).toReal *
         ∫ x : {z : ℂ // z ∈ Metric.closedBall (0 : ℂ) R}, f x.1
           ∂localBallProbability R := by
-  let S := {z : ℂ // z ∈ Metric.closedBall (0 : ℂ) R}
+  let S := {z : ℂ // z ∈ Metric.closedBall 0 R}
   let : MeasureSpace S := Measure.Subtype.measureSpace
-  let m : ℝ≥0∞ := (volume : Measure S) Set.univ
-  have hm : m = ENNReal.ofReal R ^ 2 * (NNReal.pi : ℝ≥0∞) := by
+  let m := (volume : Measure S) Set.univ
+  have hm : m = ENNReal.ofReal R ^ 2 * NNReal.pi := by
     dsimp [m, S]
     rw [Measure.Subtype.volume_univ
       Metric.isClosed_closedBall.measurableSet.nullMeasurableSet, Complex.volume_closedBall]
   have hm_ne : m ≠ 0 := by
     rw [hm]
-    have hR' : ENNReal.ofReal R ≠ 0 := ENNReal.ofReal_ne_zero_iff.mpr hR
+    have hR' := ENNReal.ofReal_ne_zero_iff.mpr hR
     have hπ : (NNReal.pi : ℝ≥0∞) ≠ 0 := by
       rw [ENNReal.coe_ne_zero]
       exact ne_of_gt NNReal.pi_pos
-    exact ne_of_gt (ENNReal.mul_pos (pow_ne_zero 2 hR') hπ)
+    positivity
   have hm_top : m ≠ ∞ := by
     rw [hm]
-    exact ENNReal.mul_ne_top (by simp) (by simp)
+    tauto
   have hcancel : m.toReal * (m⁻¹).toReal = 1 := by
     rw [← ENNReal.toReal_mul, ENNReal.mul_inv_cancel hm_ne hm_top]
     simp
   have hprobint : (∫ x : S, f x.1 ∂localBallProbability R) =
-      (m⁻¹).toReal * ∫ x : S, f x.1 ∂(volume : Measure S) := by
+      (m⁻¹).toReal * ∫ x : S, f x.1 ∂volume := by
     rw [localBallProbability, integral_smul_measure, smul_eq_mul]
-  have hsub : (∫ x : S, f x.1 ∂(volume : Measure S)) =
-      ∫ x in Metric.closedBall (0 : ℂ) R, f x ∂volume := by
-    exact integral_subtype Metric.isClosed_closedBall.measurableSet f
+  have hsub : (∫ x : S, f x.1 ∂volume) =
+      ∫ x in Metric.closedBall 0 R, f x ∂volume := integral_subtype Metric.isClosed_closedBall.measurableSet f
   calc
-    (∫ x in Metric.closedBall (0 : ℂ) R, f x ∂volume) =
-        ∫ x : S, f x.1 ∂(volume : Measure S) := hsub.symm
+    (∫ x in Metric.closedBall 0 R, f x ∂volume) =
+        ∫ x : S, f x.1 ∂volume := hsub.symm
     _ = m.toReal * ((m⁻¹).toReal * ∫ x : S, f x.1 ∂(volume : Measure S)) := by
           calc
-            _ = 1 * ∫ x : S, f x.1 ∂(volume : Measure S) := by simp
-            _ = (m.toReal * (m⁻¹).toReal) * ∫ x : S, f x.1 ∂(volume : Measure S) := by
+            _ = 1 * ∫ x : S, f x.1 ∂volume := by simp
+            _ = (m.toReal * (m⁻¹).toReal) * ∫ x : S, f x.1 ∂volume := by
                   rw [hcancel]
             _ = m.toReal * ((m⁻¹).toReal * ∫ x : S, f x.1 ∂(volume : Measure S)) := by ring
     _ = m.toReal * ∫ x : S, f x.1 ∂localBallProbability R := by
           rw [hprobint]
-    _ = (ENNReal.ofReal R ^ 2 * (NNReal.pi : ℝ≥0∞)).toReal *
-          ∫ x : S, f x.1 ∂localBallProbability R := by rw [hm]
+    _ = (ENNReal.ofReal R ^ 2 * NNReal.pi).toReal *
+          ∫ x : S, f x.1 ∂localBallProbability R := by simp_all
 
 /-- The regularized measures `DOZZ.regularizedGMC` obey exact affine scaling on compactly supported
 chart tests at matching cutoffs. The scalar is independent and has the Gaussian law dictated by the
@@ -232,13 +222,13 @@ theorem regularizedGMC_affine_cutoff_test_vector_law
   classical
   let S := {z : ℂ // z ∈ Metric.closedBall (0 : ℂ) R}
   let : MeasureSpace S := Measure.Subtype.measureSpace
-  let ν : Measure S := localBallProbability R
+  let ν := localBallProbability R
   have hν : IsProbabilityMeasure ν := by
     simpa [ν] using localBallProbability_isProbability hR
   let : IsProbabilityMeasure ν := hν
   let : IsProbabilityMeasure P := hX.1
-  let σ : ℝ := -Real.log c
-  let G : Measure ℝ := gaussianReal 0 ⟨σ,
+  let σ := -Real.log c
+  let G := gaussianReal 0 ⟨σ,
     neg_nonneg.mpr (Real.log_nonpos (le_of_lt hc) hc1)⟩
   have hG : IsProbabilityMeasure G := by
     simpa [G, σ] using (ProbabilityTheory.instIsProbabilityMeasureGaussianReal 0
@@ -258,31 +248,31 @@ theorem regularizedGMC_affine_cutoff_test_vector_law
     ∫ x, weight j x * Real.exp (γ * Xc ω x.1 r -
       γ ^ 2 / 2 * (varianceBase x : ℝ)) ∂ν
   let factor : Ω × ℝ → ℝ := fun p => Real.exp (γ * p.2 - γ ^ 2 / 2 * σ)
-  let area : ℝ := (ENNReal.ofReal R ^ 2 * (NNReal.pi : ℝ≥0∞)).toReal
-  let k : ℝ := c ^ 2 * area
+  let area := (ENNReal.ofReal R ^ 2 * (NNReal.pi : ℝ≥0∞)).toReal
+  let k := c ^ 2 * area
   let A : (Fin m → ℝ) → Fin m → ℝ := fun v j => k * v j
   let targetVector : Ω → Fin m → ℝ := fun ω j =>
     ∫ x, f j x ∂regularizedGMC P Xc γ (r - Real.log c) ω
   let baseVector : Ω → Fin m → ℝ := fun ω j =>
     ∫ x, f j (a + c • x) ∂regularizedGMC P Xc γ r ω
   have himage : (fun x : ℂ => a + c • x) '' Metric.closedBall (0 : ℂ) R =
-      Metric.closedBall a (c * R) := complex_affine_image_closedBall hc
+      Metric.closedBall a _ := complex_affine_image_closedBall hc
   have hmapInj : Function.Injective (fun x : ℂ => a + c • x) := by
     intro x y hxy
     have hsmul : c • x = c • y := add_left_cancel hxy
     exact (smul_right_injective ℂ hc.ne') hsmul
   have hfzeroTarget (j : Fin m) : ∀ x, x ∉ Metric.closedBall a (c * R) → f j x = 0 :=
     boundedContinuousFunction_eq_zero_off_tsupport_subset (f j)
-      (Metric.closedBall a (c * R)) (hf_support j)
+      (Metric.closedBall a _) (hf_support j)
   have hfzeroBase (j : Fin m) : ∀ x, x ∉ Metric.closedBall (0 : ℂ) R →
       f j (a + c • x) = 0 := by
     intro x hx
     apply hfzeroTarget j
     intro hy
     have hy' : a + c • x ∈ (fun y : ℂ => a + c • y) ''
-        Metric.closedBall (0 : ℂ) R := by rw [himage]; exact hy
+        Metric.closedBall (0 : ℂ) R := by grind
     obtain ⟨y, hyball, hyEq⟩ := hy'
-    have hxy : x = y := hmapInj (by simpa using hyEq.symm)
+    have hxy : x = y := by tauto
     exact hx (hxy ▸ hyball)
   have hweightMeas : ∀ j, Measurable (weight j) := by
     intro j
@@ -290,12 +280,12 @@ theorem regularizedGMC_affine_cutoff_test_vector_law
     fun_prop
   have hweightNonneg : ∀ j x, 0 ≤ weight j x := by
     intro j x
-    exact hf_nonneg j (a + c • x.1)
+    exact hf_nonneg j _
   have hweightInt : ∀ j, Integrable (weight j) ν := by
     intro j
     have hbound : ∀ x, ‖weight j x‖ ≤ ‖f j‖ := by
       intro x
-      exact (f j).norm_coe_le_norm (a + c • x.1)
+      exact (f j).norm_coe_le_norm _
     refine (integrable_const ‖f j‖).mono' (hweightMeas j).aestronglyMeasurable ?_
     exact Filter.Eventually.of_forall hbound
   have hvarBaseMeas : Measurable varianceBase := by
@@ -304,23 +294,23 @@ theorem regularizedGMC_affine_cutoff_test_vector_law
         (measurable_subtype_coe)
   have hvarTotalMeas : Measurable varianceTotal := by
     exact (measurable_real_toNNReal.comp
-      (circleAverage_variance_measurable (P := P) Xc hXc.1 (r - Real.log c))).comp
+      (circleAverage_variance_measurable (P := P) Xc hXc.1 _)).comp
         (by fun_prop : Measurable (fun x : S => a + c • x.1))
   have hfieldBase : Measurable (fun p : Ω × S => Xc p.1 p.2.1 r) :=
     (hXc.1 r).comp (by
       dsimp [S]
       fun_prop : Measurable (fun p : Ω × S => (p.1, p.2.1)))
   have hfieldTotal : Measurable (fun p : Ω × S =>
-      Xc p.1 (a + c • p.2.1) (r - Real.log c)) :=
+      Xc p.1 _ (r - Real.log c)) :=
     (hXc.1 (r - Real.log c)).comp (by
       dsimp [S]
       fun_prop : Measurable (fun p : Ω × S => (p.1, a + c • p.2.1)))
   have hvarianceBaseReal : Measurable (fun p : Ω × S =>
       (varianceBase p.2 : ℝ)) :=
-    measurable_coe_nnreal_real.comp (hvarBaseMeas.comp measurable_snd)
+    by fun_prop
   have hvarianceTotalReal : Measurable (fun p : Ω × S =>
       (varianceTotal p.2 : ℝ)) :=
-    measurable_coe_nnreal_real.comp (hvarTotalMeas.comp measurable_snd)
+    by fun_prop
   have hwickBaseMeas : Measurable (fun p : Ω × S => Real.exp
       (γ * Xc p.1 p.2.1 r - γ ^ 2 / 2 * (varianceBase p.2 : ℝ))) := by
     exact Real.measurable_exp.comp
@@ -463,7 +453,7 @@ theorem regularizedGMC_affine_cutoff_test_vector_law
       (∫ x in Metric.closedBall (0 : ℂ) R, f j (a + c • x) * Real.exp
           (γ * Xc ω x r - γ ^ 2 / 2 *
             gaussianVariance P (fun ω' => Xc ω' x r)) ∂volume) =
-        area * baseWick ω j := by rw [hnormed, hrawWickEq]
+        area * baseWick ω j := by grind
     )
   have htargetFun : targetVector = fun ω => A (targetWick ω) := by
     funext ω j
@@ -477,7 +467,7 @@ theorem regularizedGMC_affine_cutoff_test_vector_law
     dsimp [A, k]
     ring
   have hshift : (fun p : Ω × ℝ => A (fun j => factor p * baseWick p.1 j)) =
-        (fun p => fun j => c ^ 2 * Real.exp (γ * p.2 - γ ^ 2 / 2 * (-Real.log c)) *
+        (fun p j => c ^ 2 * Real.exp (γ * p.2 - γ ^ 2 / 2 * (-Real.log c)) *
           baseVector p.1 j) := by
     funext p j
     rw [hshiftPoint p]

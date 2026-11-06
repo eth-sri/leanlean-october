@@ -45,14 +45,13 @@ theorem normalized_cutoff_exponential_polydisc
             γ z ((n + 1 : ℕ) : ℝ) β -
           normalizedVertexMoment P Xc M (retainedRegion z (n : ℝ))
             γ z (n : ℝ) β‖ ≤ K * Real.exp (-κ * n) := by
-  classical
   obtain ⟨K, κ, hK, hκ, hdec⟩ := coulomb_power_increment_exponential
     P X hX γ hγ hγ2 M hM z hz δ R Zs A a gap m g lo hi q b hδ hδ8 hR hZs hsep hzn hzR
       hgap ha hm hm1 hms hg hlo hhi hq hbulk hroot
   obtain ⟨E, hE, hgrowth⟩ := normalized_imaginary_growth P X Xc hX hc γ hγ.ne' z
   let d := κ / (2 * E)
-  have hd : 0 < d := div_pos hκ (mul_pos (by norm_num) hE)
-  have hEd : E * d = κ / 2 := by dsimp only [d]; field_simp
+  have hd : 0 < d := by positivity
+  have hEd : E * d = κ / 2 := by grind
   have hbulkβ : ∀ β ∈ complexPolydisc (fun i => (center i : ℂ)) radius,
       (complexMomentPower γ β).re < 4 / γ ^ 2 := by
     intro β hβ
@@ -63,12 +62,10 @@ theorem normalized_cutoff_exponential_polydisc
   filter_upwards [hdec, retained_cutoff_geometry_eventually z δ R hδ] with n hn hgeo
   intro β hβ him
   have hpars := hbox β hβ
-  have hmass := hn β hpars.1 hpars.2.1 hpars.2.2.1 hpars.2.2.2.1 hpars.2.2.2.2
   have hr : (0 : ℝ) ≤ (n : ℝ) := Nat.cast_nonneg _
-  have hrs : (n : ℝ) ≤ ((n + 1 : ℕ) : ℝ) := by exact_mod_cast Nat.le_succ n
-  have hball := exterior_ball_subset_retainedRegion z R hR hzR (n : ℝ) hr hgeo.2.2.2
+  have hrs : (n : ℝ) ≤ ((n + 1 : ℕ) : ℝ) := by simp
   have hne : (retainedRegion z (n : ℝ)).Nonempty :=
-    (Metric.nonempty_ball.mpr (by norm_num : (0 : ℝ) < 1 / 8)).mono hball
+    (Metric.nonempty_ball.mpr (by norm_num : (0 : ℝ) < 1 / 8)).mono (exterior_ball_subset_retainedRegion z R hR hzR (n : ℝ) hr hgeo.2.2.2)
   have hne' : (retainedRegion z ((n + 1 : ℕ) : ℝ)).Nonempty :=
     hne.mono (retainedRegion_mono z hrs)
   have hobs := normalized_cutoff_increment_norm_le
@@ -77,24 +74,22 @@ theorem normalized_cutoff_exponential_polydisc
     (retainedRegion_isOpen z _) (retainedRegion_isBounded z _) hne
     (retainedRegion_isOpen z _) (retainedRegion_isBounded z _) hne'
     Set.Subset.rfl Set.Subset.rfl center radius hradius hbulkβ β hβ
-  have hdet := hgrowth ((n + 1 : ℕ) : ℝ) (Nat.cast_nonneg _) β
   have hdet' : (normalizedVertexPolynomial P Xc γ z ((n + 1 : ℕ) : ℝ) β).re +
         gaussianVariance P (fun ω => ∑ i, (β i).re * Xc ω (mixedVertexCenters z i)
           (mixedVertexTimes N ((n + 1 : ℕ) : ℝ) i)) / 2 +
         (γ * ∑ i, (β i.castSucc).re * equatorCircleMean (z i) ((n + 1 : ℕ) : ℝ)) *
           (complexMomentPower γ β).re ≤ E * ((n : ℝ) + 2) * ∑ i, (β i).im ^ 2 := by
-    simpa only [Nat.cast_add, Nat.cast_one, add_assoc, one_add_one_eq_two] using hdet
+    simpa only [Nat.cast_add, Nat.cast_one, add_assoc, one_add_one_eq_two] using (hgrowth ((n + 1 : ℕ) : ℝ) (Nat.cast_nonneg _) β)
   have hthin : E * (∑ i, (β i).im ^ 2) ≤ κ / 2 := by
     exact (mul_le_mul_of_nonneg_left him hE.le).trans_eq hEd
-  have he := imaginary_decay_absorption K E (∑ i, (β i).im ^ 2) κ (n : ℝ) hK hthin hr
   apply (ENNReal.ofReal_le_ofReal_iff (by positivity)).mp
   calc
     _ ≤ ENNReal.ofReal (Real.exp (E * ((n : ℝ) + 2) * ∑ i, (β i).im ^ 2)) *
-        ENNReal.ofReal (K * Real.exp (-κ * n)) :=
+        ENNReal.ofReal _ :=
       hobs.trans (mul_le_mul'
-        (ENNReal.ofReal_le_ofReal (Real.exp_le_exp.mpr hdet')) hmass)
+        (ENNReal.ofReal_le_ofReal (Real.exp_le_exp.mpr hdet')) (hn β hpars.1 hpars.2.1 hpars.2.2.1 hpars.2.2.2.1 hpars.2.2.2.2))
     _ ≤ _ := by
       rw [← ENNReal.ofReal_mul (Real.exp_nonneg _)]
-      exact ENNReal.ofReal_le_ofReal he
+      exact ENNReal.ofReal_le_ofReal (imaginary_decay_absorption K E _ κ (n : ℝ) hK hthin hr)
 
 end DOZZ.Proofs

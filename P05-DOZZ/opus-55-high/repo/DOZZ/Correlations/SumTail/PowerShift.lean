@@ -20,7 +20,7 @@ theorem sumtail_rpow_half_bound (T t x r : ℝ) (hT : 0 ≤ T) (hr : r ≤ T)
       _ ≤ (x/2)^(-r) := Real.rpow_le_rpow_of_nonpos (by positivity) ht (by linarith only [h])
       _ = 2^r*x^(-r) := by
         rw [Real.div_rpow hx.le (by norm_num), Real.rpow_neg (by norm_num : (0:ℝ) ≤ 2)]
-        simp only [div_eq_mul_inv, inv_inv]
+        simp
         ring
       _ ≤ _ := mul_le_mul_of_nonneg_right
         (Real.rpow_le_rpow_of_exponent_le (by norm_num) hr) (Real.rpow_nonneg hx.le _)
@@ -43,7 +43,7 @@ theorem sumtail_power_sqrt_shift (T p x : ℝ) (hp : 0 < p) (hpT : p ≤ T) (hx 
     |(x-Real.sqrt x)^(-p)-x^(-p)| ≤ T*2^(T+1)*x^(-p-1/2) := by
   have hx0 : 0 < x := by linarith only [hx]
   obtain ⟨_,ht,htx⟩ := sumtail_sqrt_shift_bounds x hx
-  have hb := dual_negative_power_lipschitz p (x/2) (x-Real.sqrt x) x hp
+  have hb := dual_negative_power_lipschitz p _ _ x hp
     (by positivity) ht (by linarith only [hx0])
   have hd : |x-Real.sqrt x-x| = Real.sqrt x := by
     rw [sub_sub_cancel_left, abs_neg, abs_of_nonneg (Real.sqrt_nonneg x)]
@@ -82,8 +82,7 @@ theorem sumtail_shifted_one_error (Ptail : ℝ → ℝ) (T p e d θ β C H c x :
     simpa only [hexp] using hh
   have hr1 := Real.rpow_le_rpow_of_exponent_le hx1 (show -p-e+d ≤ -β+θ by linarith only [hβe,hdθ])
   have hr2 := Real.rpow_le_rpow_of_exponent_le hx1 (show -p-1/2 ≤ -β+θ by linarith only [hβs,hdθ,hd])
-  have hT : 0 ≤ T := hp.le.trans hpT
-  have hshift := sumtail_power_sqrt_shift T p x hp hpT hx
+  have hT := hp.le.trans hpT
   calc
     _ ≤ |Ptail (x-Real.sqrt x)-c*(x-Real.sqrt x)^(-p)|+
         |c*((x-Real.sqrt x)^(-p)-x^(-p))| := by
@@ -91,11 +90,11 @@ theorem sumtail_shifted_one_error (Ptail : ℝ → ℝ) (T p e d θ β C H c x :
           (Ptail (x-Real.sqrt x)-c*(x-Real.sqrt x)^(-p))+
             c*((x-Real.sqrt x)^(-p)-x^(-p)) := by ring
       rw [heq]
-      exact abs_add_le _ _
+      exact abs_add_le ..
     _ ≤ C*(2^(T+1)*x^(-p-e+d))+H*(T*2^(T+1)*x^(-p-1/2)) := by
       rw [abs_mul]
       exact add_le_add (herr.trans (mul_le_mul_of_nonneg_left hh' hC))
-        (mul_le_mul hc hshift (abs_nonneg _) hH)
+        (mul_le_mul hc (sumtail_power_sqrt_shift T p x hp hpT hx) (abs_nonneg _) hH)
     _ ≤ C*(2^(T+1)*x^(-β+θ))+H*(T*2^(T+1)*x^(-β+θ)) := by
       gcongr
     _ = _ := by ring

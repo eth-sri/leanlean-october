@@ -15,28 +15,29 @@ joint-tail estimate. -/
 open MeasureTheory ProbabilityTheory Metric Set
 
 namespace DOZZ.Proofs
+section
+variable (c x y : ℂ)
+section
+variable (hx : ‖x-c‖ ≤ 1) (hy : ‖y-c‖ ≤ 1)
+include hx hy
 
 
 /-- On a unit disk inside the disk of radius `5/4`, the regular Green numerator stays
 uniformly separated from zero, including at the coincident pair. -/
-theorem separatedTail_green_numerator_bounds (c x y : ℂ)
-    (hx : ‖x-c‖ ≤ 1) (hy : ‖y-c‖ ≤ 1) :
+theorem separatedTail_green_numerator_bounds :
     (9/16 : ℝ) ≤ ‖((5/4 : ℝ) : ℂ)^2-(x-c)*star (y-c)‖ ∧
       ‖((5/4 : ℝ) : ℂ)^2-(x-c)*star (y-c)‖ ≤ 41/16 := by
   have hprod : ‖(x-c)*star (y-c)‖ ≤ 1 := by
     rw [norm_mul, norm_star]
-    nlinarith [norm_nonneg (x-c), norm_nonneg (y-c)]
+    bound
   have hs : ‖((5/4 : ℝ) : ℂ)^2‖ = (25/16 : ℝ) := by
-    rw [norm_pow, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (by norm_num)]
     norm_num
   have hupper := norm_sub_le (((5/4 : ℝ) : ℂ)^2) ((x-c)*star (y-c))
   have hlower := norm_sub_norm_le (((5/4 : ℝ) : ℂ)^2) ((x-c)*star (y-c))
-  rw [hs] at hupper hlower
-  constructor <;> linarith
+  grind
 
 /-- The regular Green logarithm has an absolute bound independent of the disk center. -/
-theorem separatedTail_green_regular_log_abs_le (c x y : ℂ)
-    (hx : ‖x-c‖ ≤ 1) (hy : ‖y-c‖ ≤ 1) :
+theorem separatedTail_green_regular_log_abs_le :
     |Real.log ‖((5/4 : ℝ) : ℂ)^2-(x-c)*star (y-c)‖| ≤ 3 := by
   obtain ⟨hl, hu⟩ := separatedTail_green_numerator_bounds c x y hx hy
   have h0 : 0 < ‖((5/4 : ℝ) : ℂ)^2-(x-c)*star (y-c)‖ := by linarith
@@ -46,8 +47,11 @@ theorem separatedTail_green_regular_log_abs_le (c x y : ℂ)
     calc
       _ ≤ (9/16 : ℝ)⁻¹ := (inv_le_inv₀ h0 (by norm_num)).mpr hl
       _ = _ := by norm_num
-  rw [abs_le]
-  constructor <;> linarith
+  grind
+
+end
+
+end
 
 /-- The equator regular circle term is bounded on every bounded chart. -/
 theorem separatedTail_circle_regular_bounds (c x : ℂ) (R r : ℝ)
@@ -55,16 +59,16 @@ theorem separatedTail_circle_regular_bounds (c x : ℂ) (R r : ℝ)
     0 ≤ (∫ z, Real.log (normPlus z) ∂circleMeasure x r) ∧
       (∫ z, Real.log (normPlus z) ∂circleMeasure x r) ≤ R := by
   let _ := circleMeasure_isProbability x r
-  have hi : Integrable (fun z => Real.log (normPlus z)) (circleMeasure x r) :=
+  have hi :=
     integrable_circleMeasure_of_circleIntegrable x r continuous_log_normPlus.measurable
       continuous_log_normPlus.continuousOn.circleIntegrable'
-  refine ⟨integral_nonneg (fun z => Real.log_nonneg (le_max_left _ _)), ?_⟩
+  refine ⟨integral_nonneg (fun z => Real.log_nonneg (le_max_left ..)), ?_⟩
   have hb : ∀ᵐ z ∂circleMeasure x r, Real.log (normPlus z) ≤ R := by
-    filter_upwards [interior_circle_norm_le_pin c x R (5/4) r hpin hx] with z hz
+    filter_upwards [interior_circle_norm_le_pin c x R _ r hpin hx] with z hz
     have hnorm : normPlus z ≤ R := max_le hR.le hz
-    have hp : 0 < normPlus z := zero_lt_one.trans_le (le_max_left _ _)
+    have hp : 0 < normPlus z := zero_lt_one.trans_le (le_max_left ..)
     exact (Real.log_le_sub_one_of_pos hp).trans (by linarith)
-  simpa only [integral_const, probReal_univ, one_smul] using
+  simpa using
     integral_mono_ae hi (integrable_const R) hb
 
 /-- The literal finite-cutoff covariance difference cancels the same circle logarithmic
@@ -87,14 +91,13 @@ theorem separatedTail_circle_covariance_discrepancy
   rw [circleField_covariance_eq P X hX Xc hc x y r]
   unfold circleKernel
   rw [integral_integral_gffKernel_eq_logmax, hDc x y hxi hyi,
-    integral_integral_diskGreenKernel c x y (5/4) r r (by norm_num) hxi hyi]
+    integral_integral_diskGreenKernel c x y _ r r (by norm_num) hxi hyi]
   obtain ⟨hxl, hxu⟩ := separatedTail_circle_regular_bounds c x R r hR hpin hxi
   obtain ⟨hyl, hyu⟩ := separatedTail_circle_regular_bounds c y R r hR hpin hyi
   have hreg := abs_le.mp (separatedTail_green_regular_log_abs_le c x y hx hy)
-  have hlogl : 0 ≤ Real.log (5/4 : ℝ) := Real.log_nonneg (by norm_num)
+  have hlogl : 0 ≤ Real.log (5/4 : ℝ) := by positivity
   have hlogu : Real.log (5/4 : ℝ) ≤ 1 :=
     (Real.log_le_sub_one_of_pos (by norm_num)).trans (by norm_num)
-  rw [abs_le]
-  constructor <;> linarith
+  grind
 
 end DOZZ.Proofs

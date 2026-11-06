@@ -23,11 +23,9 @@ private theorem intCast_abs_sub_lower_bound (q : ℝ) (hq0 : 0 < q) (hq1 : q < 1
   have hn : n ≤ 0 ∨ 1 ≤ n := by omega
   rcases hn with hn | hn
   · have hnR : (n : ℝ) ≤ 0 := by exact_mod_cast hn
-    rw [abs_of_nonpos (by linarith)]
-    exact (min_le_left q (1 - q)).trans (by linarith)
+    grind
   · have hnR : (1 : ℝ) ≤ n := by exact_mod_cast hn
-    rw [abs_of_nonneg (by linarith)]
-    exact (min_le_right q (1 - q)).trans (by linarith)
+    grind
 
 private theorem realInterval_accumulates_in_complex (lo x hi : ℝ)
     (hlo : lo < x) (hhi : x < hi) :
@@ -35,22 +33,16 @@ private theorem realInterval_accumulates_in_complex (lo x hi : ℝ)
       ((fun y : ℝ => (y : ℂ)) '' (Ioo lo hi \ {x})) := by
   rw [Metric.mem_closure_iff]
   intro ε hε
-  let d : ℝ := min (ε / 2) ((hi - x) / 2)
-  have hd : 0 < d := by dsimp [d]; positivity
+  let d := min (ε / 2) ((hi - x) / 2)
+  have hd : 0 < d := by positivity
   have hdε : d < ε := by
-    dsimp [d]
-    have hleft : ε / 2 < ε := by linarith
-    exact (min_le_left _ _).trans_lt hleft
+    aesop
   have hdhi : d < hi - x := by
-    dsimp [d]
-    have hright : (hi - x) / 2 < hi - x := by linarith
-    exact (min_le_right _ _).trans_lt hright
+    aesop
   have hy : x + d ∈ Ioo lo hi \ {x} := by
-    constructor
-    · constructor <;> linarith
-    · simp [ne_of_gt hd]
+    grind
   refine ⟨(x + d : ℝ), ?_, ?_⟩
-  · exact ⟨x + d, hy, rfl⟩
+  · grind
   · have hdiff : (x : ℂ) - ((x + d : ℝ) : ℂ) = -(d : ℂ) := by push_cast; ring
     rw [dist_eq_norm, hdiff, norm_neg, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hd]
     exact hdε
@@ -61,32 +53,21 @@ private theorem ofReal_interval_subset_ball {lo q hi r : ℝ}
     (x : ℂ) ∈ Metric.ball (q : ℂ) r := by
   rcases hx with ⟨hxlo, hxhi⟩
   have hbound : |x - q| < r := by
-    apply abs_lt.mpr
-    constructor <;> linarith
+    grind
   rw [Metric.mem_ball, dist_eq_norm]
-  have hnorm : ‖(x : ℂ) - (q : ℂ)‖ = |x - q| := by
-    rw [show (x : ℂ) - (q : ℂ) = ((x - q : ℝ) : ℂ) by push_cast; ring,
-      Complex.norm_real, Real.norm_eq_abs]
-  rw [hnorm]
-  exact hbound
+  norm_cast
 
-private theorem ofReal_ball_subset_integerRange_compl (q r : ℝ)
+theorem ofReal_ball_subset_integerRange_compl (q r : ℝ)
     (hq0 : 0 < q) (hq1 : q < 1) (hr : r < min q (1 - q)) :
     Metric.ball (q : ℂ) r ⊆ gaussConnectionIntegerRangeᶜ := by
   intro z hz hzInt
   rcases hzInt with ⟨n, hn⟩
   subst z
   have hdist : ‖(n : ℂ) - (q : ℂ)‖ < r := by
-    have hball := Metric.mem_ball.mp hz
-    simpa [dist_eq_norm] using hball
+    simpa [dist_eq_norm] using (Metric.mem_ball.mp hz)
   have hdistLower : min q (1 - q) ≤ ‖(n : ℂ) - (q : ℂ)‖ := by
     have hnormEq : ‖(n : ℂ) - (q : ℂ)‖ = |(n : ℝ) - q| := by
-      calc
-        ‖(n : ℂ) - (q : ℂ)‖ = ‖(((n : ℝ) - q : ℝ) : ℂ)‖ := by
-          congr 1
-          push_cast
-          ring
-        _ = |(n : ℝ) - q| := by rw [Complex.norm_real, Real.norm_eq_abs]
+      norm_cast
     rw [hnormEq]
     exact intCast_abs_sub_lower_bound q hq0 hq1 n
   linarith
@@ -94,10 +75,9 @@ private theorem ofReal_ball_subset_integerRange_compl (q r : ℝ)
 private theorem ofReal_mem_integerRange_compl_of_between_zero_one {x : ℝ}
     (hx0 : 0 < x) (hx1 : x < 1) :
     (x : ℂ) ∈ gaussConnectionIntegerRangeᶜ := by
-  rw [gaussConnectionIntegerRange, Set.mem_compl_iff]
   rintro ⟨n, hn⟩
-  have hnC : ((n : ℝ) : ℂ) = (x : ℂ) := by
-    simpa only [Complex.ofReal_intCast] using hn
+  have hnC : (n) = (x : ℂ) := by
+    assumption
   have hnR : (n : ℝ) = x := Complex.ofReal_injective hnC
   have hnCases : n ≤ 0 ∨ 1 ≤ n := by omega
   rcases hnCases with hn | hn
@@ -105,11 +85,15 @@ private theorem ofReal_mem_integerRange_compl_of_between_zero_one {x : ℝ}
     linarith
   · have hn' : (1 : ℝ) ≤ n := by exact_mod_cast hn
     linarith
+section
+variable {H : ℂ → ℂ → ℂ → ℂ → ℂ}
+section
+variable (hH : IsGaussHypergeometricFamily H)
+include hH
 
 /-- On the real Euler region, the first midpoint Cramer coefficient is the first Gamma
 coefficient. Nonintegrality is retained only for the ODE connection-basis hypotheses. -/
 theorem connectionMinusFirstCramer_eq_gamma_of_real
-    {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H)
     (a b c : ℝ) (ha : 0 < a) (hb : 0 < b) (hδ : 0 < c - a - b)
     (hcInt : (c : ℂ) ∈ gaussConnectionIntegerRangeᶜ)
     (hδInt : ((c - a - b : ℝ) : ℂ) ∈ gaussConnectionIntegerRangeᶜ) :
@@ -123,15 +107,11 @@ theorem connectionMinusFirstCramer_eq_gamma_of_real
     change (∀ n : ℤ, (c : ℂ) ≠ (n : ℂ)) ∧
       ∀ n : ℤ, (c : ℂ) - (a : ℂ) - (b : ℂ) ≠ (n : ℂ)
     constructor
-    · intro n heq
-      apply hcInt
-      exact ⟨n, heq.symm⟩
+    · tauto
     · intro n heq
       apply hδInt
       refine ⟨n, ?_⟩
-      calc
-        (n : ℂ) = (c : ℂ) - (a : ℂ) - (b : ℂ) := heq.symm
-        _ = ((c - a - b : ℝ) : ℂ) := by push_cast; ring
+      simp_all
   have hEulerValue :
       Tendsto (fun x : ℝ =>
         ((Real.Gamma c / (Real.Gamma b * Real.Gamma (c - b)) : ℝ) : ℂ) *
@@ -141,28 +121,22 @@ theorem connectionMinusFirstCramer_eq_gamma_of_real
           (Real.Gamma (c - a) * Real.Gamma (c - b)) : ℝ) : ℂ)) := by
     convert Complex.continuous_ofReal.continuousAt.tendsto.comp
       (realGaussEulerKernelIntegral_tendsto_gauss_value a b c ha hb hδ) using 1
-    · funext x
-      change ((Real.Gamma c / (Real.Gamma b * Real.Gamma (c - b)) : ℝ) : ℂ) *
-          (realGaussEulerKernelIntegral a b c x : ℂ) =
-        ((Real.Gamma c / (Real.Gamma b * Real.Gamma (c - b)) *
-          realGaussEulerKernelIntegral a b c x : ℝ) : ℂ)
-      exact (Complex.ofReal_mul _ _).symm
+    aesop
   have hxpos : ∀ᶠ x : ℝ in 𝓝[Iio 1] 1, 0 < x := by
     exact Filter.Eventually.filter_mono nhdsWithin_le_nhds
       (eventually_gt_nhds (show (0 : ℝ) < 1 by norm_num))
   have hxlt : ∀ᶠ x : ℝ in 𝓝[Iio 1] 1, x < 1 := by
     change ∀ᶠ x : ℝ in 𝓝[Iio (1 : ℝ)] 1, x ∈ Iio 1
-    simpa only [mem_Iio] using
+    simpa using
       (eventually_mem_nhdsWithin : ∀ᶠ x : ℝ in 𝓝[Iio (1 : ℝ)] 1, x ∈ Iio 1)
   have hEulerEq : ∀ᶠ x : ℝ in 𝓝[Iio 1] 1,
       H (a : ℂ) (b : ℂ) (c : ℂ) (x : ℂ) =
         ((Real.Gamma c / (Real.Gamma b * Real.Gamma (c - b)) : ℝ) : ℂ) *
           (realGaussEulerKernelIntegral a b c x : ℂ) := by
     filter_upwards [hxpos, hxlt] with x hx hx1
-    have heq := realGaussEulerIntegral_eq_family hH a b c x ha hb hcb hx hx1
-    simpa [realGaussEulerKernelIntegral] using heq.symm
+    simpa [realGaussEulerKernelIntegral] using (realGaussEulerIntegral_eq_family hH a b c x ha hb hcb hx hx1).symm
   have hEulerEq' : ∀ᶠ x : ℝ in 𝓝[Iio 1] 1,
-      ((Real.Gamma c / (Real.Gamma b * Real.Gamma (c - b)) : ℝ) : ℂ) *
+      ((Real.Gamma c / (Real.Gamma b * Real.Gamma _) : ℝ) : ℂ) *
           (realGaussEulerKernelIntegral a b c x : ℂ) =
         H (a : ℂ) (b : ℂ) (c : ℂ) (x : ℂ) :=
     hEulerEq.mono fun x hx => hx.symm
@@ -173,10 +147,9 @@ theorem connectionMinusFirstCramer_eq_gamma_of_real
           (Real.Gamma (c - a) * Real.Gamma (c - b)) : ℝ) : ℂ)) := by
     simpa [gaussFMinus] using Filter.Tendsto.congr' hEulerEq' hEulerValue
   have hδre : 0 < (((c : ℂ) - (a : ℂ) - (b : ℂ)).re) := by
-    rw [show (c : ℂ) - (a : ℂ) - (b : ℂ) = ((c - a - b : ℝ) : ℂ) by push_cast; ring]
+    rw [show (c : ℂ) - (a : ℂ) - (b : ℂ) = ((c - a - b : ℝ) : ℂ) by simp]
     simp only [Complex.ofReal_re]
     exact hδ
-  have hcoeff := connectionMinusFirstCramer_eq_of_endpoint_limit hH hp hδre hF
   have hGamma :
       ((Real.Gamma c * Real.Gamma (c - a - b) /
           (Real.Gamma (c - a) * Real.Gamma (c - b)) : ℝ) : ℂ) =
@@ -187,33 +160,33 @@ theorem connectionMinusFirstCramer_eq_gamma_of_real
     have hΓca : Real.Gamma (c - a) ≠ 0 := (Real.Gamma_pos_of_pos hca).ne'
     have hΓcb : Real.Gamma (c - b) ≠ 0 := (Real.Gamma_pos_of_pos hcb).ne'
     dsimp [gaussConnectionMinusGammaCoefficient₁, p]
-    rw [show (c : ℂ) - (a : ℂ) - (b : ℂ) = ((c - a - b : ℝ) : ℂ) by push_cast; ring,
-      show (c : ℂ) - (a : ℂ) = ((c - a : ℝ) : ℂ) by push_cast; ring,
-      show (c : ℂ) - (b : ℂ) = ((c - b : ℝ) : ℂ) by push_cast; ring,
-      Complex.Gamma_ofReal c, Complex.Gamma_ofReal (c - a - b),
-      Complex.Gamma_ofReal (c - a), Complex.Gamma_ofReal (c - b)]
+    rw [show (c : ℂ) - (a : ℂ) - (b : ℂ) = ((c - a - b : ℝ) : ℂ) by simp,
+      show (c : ℂ) - (a : ℂ) = ((c - a : ℝ) : ℂ) by simp,
+      show (c : ℂ) - (b : ℂ) = ((c - b : ℝ) : ℂ) by simp,
+      Complex.Gamma_ofReal c, Complex.Gamma_ofReal _,
+      Complex.Gamma_ofReal _, Complex.Gamma_ofReal _]
     push_cast
     field_simp [hΓc, hΓδ, hΓca, hΓcb]
-  simpa [p] using hcoeff.trans hGamma
+  simpa [p] using (connectionMinusFirstCramer_eq_of_endpoint_limit hH hp hδre hF).trans hGamma
 
 /-- The real first-coefficient identity extends to an open complex parameter box by applying the
 one-variable identity theorem successively in `c`, `δ`, and `a`. -/
 theorem connectionMinusFirstCramer_eq_gamma_on_open_box
-    {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H) :
+    :
     ∀ c ∈ Metric.ball (3 / 4 : ℂ) (1 / 8 : ℝ),
       ∀ δ ∈ Metric.ball (1 / 4 : ℂ) (1 / 8 : ℝ),
         ∀ a ∈ Metric.ball (1 / 4 : ℂ) (1 / 8 : ℝ),
           connectionMinusFirstCramerCoefficient H
               (gaussConnectionCoordinates c δ a) =
             gaussConnectionMinusGammaCoefficient₁ (gaussConnectionCoordinates c δ a) := by
-  let SC : Set ℂ := Metric.ball (3 / 4 : ℂ) (1 / 8 : ℝ)
-  let TC : Set ℂ := Metric.ball (1 / 4 : ℂ) (1 / 8 : ℝ)
-  let VC : Set ℂ := Metric.ball (1 / 4 : ℂ) (1 / 8 : ℝ)
-  let SR : Set ℝ := Ioo (11 / 16 : ℝ) (13 / 16 : ℝ)
-  let TR : Set ℝ := Ioo (3 / 16 : ℝ) (5 / 16 : ℝ)
-  let VR : Set ℝ := Ioo (3 / 16 : ℝ) (5 / 16 : ℝ)
-  let f : ℂ × ℂ × ℂ → ℂ := connectionMinusFirstCramerCoefficient H
-  let g : ℂ × ℂ × ℂ → ℂ := gaussConnectionMinusGammaCoefficient₁
+  let SC := Metric.ball (3 / 4 : ℂ) (1 / 8 : ℝ)
+  let TC := Metric.ball (1 / 4 : ℂ) (1 / 8 : ℝ)
+  let VC := Metric.ball (1 / 4 : ℂ) (1 / 8 : ℝ)
+  let SR := Ioo (11 / 16 : ℝ) (13 / 16 : ℝ)
+  let TR := Ioo (3 / 16 : ℝ) (5 / 16 : ℝ)
+  let VR := Ioo (3 / 16 : ℝ) (5 / 16 : ℝ)
+  let f := connectionMinusFirstCramerCoefficient H
+  let g := gaussConnectionMinusGammaCoefficient₁
   have hSCInt : SC ⊆ gaussConnectionIntegerRangeᶜ := by
     simpa [SC, Complex.ofReal_div] using
       (ofReal_ball_subset_integerRange_compl (3 / 4) (1 / 8) (by norm_num)
@@ -224,38 +197,33 @@ theorem connectionMinusFirstCramer_eq_gamma_on_open_box
         (by norm_num) (by norm_num))
   have hSCReal {x : ℝ} (hx : x ∈ SR) : (x : ℂ) ∈ SC := by
     simpa [SC, Complex.ofReal_div] using
-      (ofReal_interval_subset_ball (lo := 11 / 16) (q := 3 / 4)
+      (ofReal_interval_subset_ball (q := 3 / 4)
         (hi := 13 / 16) (r := 1 / 8) (by norm_num) (by norm_num) hx)
   have hTCReal {x : ℝ} (hx : x ∈ TR) : (x : ℂ) ∈ TC := by
     simpa [TC, Complex.ofReal_div] using
-      (ofReal_interval_subset_ball (lo := 3 / 16) (q := 1 / 4)
+      (ofReal_interval_subset_ball (q := 1 / 4)
         (hi := 5 / 16) (r := 1 / 8) (by norm_num) (by norm_num) hx)
   have hVCReal {x : ℝ} (hx : x ∈ VR) : (x : ℂ) ∈ VC := by
-    simpa [VC, Complex.ofReal_div] using
-      (ofReal_interval_subset_ball (lo := 3 / 16) (q := 1 / 4)
-        (hi := 5 / 16) (r := 1 / 8) (by norm_num) (by norm_num) hx)
+    tauto
   have hrealEq : ∀ c ∈ SR, ∀ δ ∈ TR, ∀ a ∈ VR,
       f (gaussConnectionCoordinates (c : ℂ) (δ : ℂ) (a : ℂ)) =
         g (gaussConnectionCoordinates (c : ℂ) (δ : ℂ) (a : ℂ)) := by
     intro c hc δ hδ a ha
-    have hcpos : 0 < c := by rcases hc with ⟨h₁, h₂⟩; norm_num at h₁ h₂ ⊢; linarith
-    have hcLt : c < 1 := by rcases hc with ⟨h₁, h₂⟩; norm_num at h₁ h₂ ⊢; linarith
-    have hδpos : 0 < δ := by rcases hδ with ⟨h₁, h₂⟩; norm_num at h₁ h₂ ⊢; linarith
-    have hδLt : δ < 1 := by rcases hδ with ⟨h₁, h₂⟩; norm_num at h₁ h₂ ⊢; linarith
-    have hap : 0 < a := by rcases ha with ⟨h₁, h₂⟩; norm_num at h₁ h₂ ⊢; linarith
+    have hcpos : 0 < c := by grind
+    have hcLt : c < 1 := by grind
+    have hδpos : 0 < δ := by grind
+    have hδLt : δ < 1 := by grind
+    have hap : 0 < a := by grind
     have hb : 0 < c - δ - a := by
       rcases hc with ⟨hcLo, hcHi⟩
       rcases hδ with ⟨hδLo, hδHi⟩
       rcases ha with ⟨haLo, haHi⟩
-      norm_num at hcLo hcHi hδLo hδHi haLo haHi
       linarith
-    have hcInt := ofReal_mem_integerRange_compl_of_between_zero_one hcpos hcLt
-    have hδInt := ofReal_mem_integerRange_compl_of_between_zero_one hδpos hδLt
-    have hdelta : 0 < c - a - (c - δ - a) := by simpa only [show c - a - (c - δ - a) = δ by ring] using hδpos
-    have hreal := connectionMinusFirstCramer_eq_gamma_of_real hH a (c - δ - a) c
-      hap hb hdelta hcInt (by
+    have hdelta : 0 < c - a - (c - δ - a) := by linarith
+    have hreal := connectionMinusFirstCramer_eq_gamma_of_real hH a _ c
+      hap hb hdelta (ofReal_mem_integerRange_compl_of_between_zero_one hcpos hcLt) (by
         rw [show c - a - (c - δ - a) = δ by ring]
-        exact hδInt)
+        exact (ofReal_mem_integerRange_compl_of_between_zero_one hδpos hδLt))
     simpa [f, g, gaussConnectionCoordinates] using hreal
   have hf : ∀ p ∈ gaussConnectionParameterDomain, DifferentiableAt ℂ f p := by
     intro p hp
@@ -266,7 +234,7 @@ theorem connectionMinusFirstCramer_eq_gamma_on_open_box
   have hcoord (c δ a : ℂ) (hc : c ∈ SC) (hδ : δ ∈ TC) :
       gaussConnectionCoordinates c δ a ∈ gaussConnectionParameterDomain := by
     have hparams : c ∈ gaussConnectionIntegerRangeᶜ ∧
-        δ ∈ gaussConnectionIntegerRangeᶜ := ⟨hSCInt hc, hTCInt hδ⟩
+        δ ∈ gaussConnectionIntegerRangeᶜ := by tauto
     simpa [gaussConnectionCoordinates, gaussConnectionParameterDomain,
       gaussConnectionIntegerRange, eq_comm] using hparams
   have hfC (δ a : ℂ) (hδ : δ ∈ TC) (ha : a ∈ VC) :
@@ -325,7 +293,7 @@ theorem connectionMinusFirstCramer_eq_gamma_on_open_box
     · exact Metric.isOpen_ball
   have hcCenter : (3 / 4 : ℂ) ∈ SC := by norm_num [SC, Metric.mem_ball, dist_eq_norm]
   have hδCenter : (1 / 4 : ℂ) ∈ TC := by norm_num [TC, Metric.mem_ball, dist_eq_norm]
-  have haCenter : (1 / 4 : ℂ) ∈ VC := by norm_num [VC, Metric.mem_ball, dist_eq_norm]
+  have haCenter : (1 / 4 : ℂ) ∈ VC := by assumption
   have hC (δ : ℝ) (hδ : δ ∈ TR) (a : ℝ) (ha : a ∈ VR) :
       ∀ c ∈ SC, f (gaussConnectionCoordinates c (δ : ℂ) (a : ℂ)) =
         g (gaussConnectionCoordinates c (δ : ℂ) (a : ℂ)) := by
@@ -345,7 +313,7 @@ theorem connectionMinusFirstCramer_eq_gamma_on_open_box
         · intro heq
           apply hcn
           have heqC : (c : ℂ) = (3 / 4 : ℂ) := by
-            simpa only [Set.mem_singleton_iff] using heq
+            simpa using heq
           have heq' : c = (3 / 4 : ℝ) :=
             Complex.ofReal_injective (heqC.trans (by norm_num))
           exact Set.mem_singleton_iff.mpr heq'
@@ -373,7 +341,7 @@ theorem connectionMinusFirstCramer_eq_gamma_on_open_box
         · intro heq
           apply hδn
           have heqC : (δ : ℂ) = (1 / 4 : ℂ) := by
-            simpa only [Set.mem_singleton_iff] using heq
+            simpa using heq
           have heq' : δ = (1 / 4 : ℝ) :=
             Complex.ofReal_injective (heqC.trans (by norm_num))
           exact Set.mem_singleton_iff.mpr heq'
@@ -400,7 +368,7 @@ theorem connectionMinusFirstCramer_eq_gamma_on_open_box
         · intro heq
           apply han
           have heqC : (a : ℂ) = (1 / 4 : ℂ) := by
-            simpa only [Set.mem_singleton_iff] using heq
+            simpa using heq
           have heq' : a = (1 / 4 : ℝ) :=
             Complex.ofReal_injective (heqC.trans (by norm_num))
           exact Set.mem_singleton_iff.mpr heq'
@@ -412,5 +380,9 @@ theorem connectionMinusFirstCramer_eq_gamma_on_open_box
     exact hEq ha
   intro c hc δ hδ a ha
   exact hA c δ hc hδ a ha
+
+end
+
+end
 
 end DOZZ.Proofs

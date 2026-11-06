@@ -47,7 +47,7 @@ theorem integral_sq_localTest_le_seminorm (K : TopologicalSpace.Compacts ℂ)
     simpa [Real.norm_eq_abs, sq_abs] using hfmem.integrable_sq
   have hconst : Integrable (fun _ : ℂ => C ^ 2) μ := by
     by_cases hC : C ^ 2 = 0
-    · simp [hC]
+    · simp_all
     · exact (integrable_const_iff_isFiniteMeasure hC).2
         (MeasureTheory.isFiniteMeasure_restrict.mpr hfinite.ne)
   have hmono :
@@ -141,9 +141,6 @@ noncomputable def equatorKernelLimitMapCLM :
       simpa using htarget
     exact (ContDiffMapSupportedIn.mkCLMtoNormedSpace ℝ A hAadd hAsmul hbound).continuous
 
-@[simp]
-theorem equatorKernelLimitMapCLM_apply (f : TestFn) :
-    equatorKernelLimitMapCLM f = equatorKernelLimitMap f := rfl
 
 end DOZZ
 

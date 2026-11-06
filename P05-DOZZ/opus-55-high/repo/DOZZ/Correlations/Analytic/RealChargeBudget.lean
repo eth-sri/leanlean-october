@@ -25,22 +25,20 @@ theorem real_charge_moment_budget {I : Type*} [Fintype I]
       0 < m ∧ m ≤ 1 ∧ m < min (4 / γ ^ 2) (2 / γ * (Q γ - (a + gap))) ∧
       0 < g ∧ lo ≤ 0 ∧ lo < p - 1 ∧ 0 ≤ hi ∧ p < hi ∧ 1 < q ∧ |p| < b ∧
       hi * q + g ≤ 4 / γ ^ 2 ∧ hi * q + g ≤ 2 / γ * (Q γ - a) := by
-  classical
   have hb0 : 0 < 4 / γ ^ 2 := by positivity
   have hi0 (i : I) : 0 < 2 / γ * (Q γ - α i) :=
-    mul_pos (by positivity) (sub_pos.mpr (ha i))
+    by simp_all
   have eb : ∀ᶠ t in 𝓝[>] (max p 0), t ∈ Ioo (max p 0) (4 / γ ^ 2) :=
     Ioo_mem_nhdsGT (max_lt hp hb0)
   have ei : ∀ᶠ t in 𝓝[>] (max p 0), ∀ i, t ∈ Ioo (max p 0) (2 / γ * (Q γ - α i)) :=
     eventually_all.mpr (fun i => Ioo_mem_nhdsGT (max_lt (hpi i) (hi0 i)))
   obtain ⟨t, ht, hti⟩ := (eb.and ei).exists
-  have ht0 : 0 < t := (le_max_right p 0).trans_lt ht.1
-  have hpt : p < t := (le_max_left p 0).trans_lt ht.1
+  have ht0 : 0 < t := by grind
+  have hpt : p < t := by grind
   let u := Q γ - γ * t / 2
   have hau (i : I) : α i < u := by
     have hi := mul_lt_mul_of_pos_right (hti i).2 hγ
     have he : (2 / γ * (Q γ - α i)) * γ = 2 * (Q γ - α i) := by field_simp
-    rw [he] at hi
     dsimp only [u]
     nlinarith
   have ea : ∀ᶠ a in 𝓝[<] u, ∀ i, α i < a :=
@@ -53,16 +51,15 @@ theorem real_charge_moment_budget {I : Type*} [Fintype I]
   have htroot : t < 2 / γ * (Q γ - a) := by
     apply (mul_lt_mul_iff_of_pos_right hγ).mp
     have he : (2 / γ * (Q γ - a)) * γ = 2 * (Q γ - a) := by field_simp
-    rw [he]
     dsimp only [u] at hau'
     nlinarith
   let gap := (Q γ - a) / 2
-  have hgap : 0 < gap := by dsimp only [gap]; linarith
-  have hgapQ : a + gap < Q γ := by dsimp only [gap]; linarith
+  have hgap : 0 < gap := by positivity
+  have hgapQ : a + gap < Q γ := by grind
   let T := min (4 / γ ^ 2) (2 / γ * (Q γ - (a + gap)))
-  have hT : 0 < T := lt_min hb0 (mul_pos (by positivity) (by linarith))
+  have hT : 0 < T := by positivity
   let m := min 1 T / 2
-  have hm : 0 < m := half_pos (lt_min zero_lt_one hT)
+  have hm : 0 < m := by positivity
   have hmT : m < T := by
     have := min_le_right (1 : ℝ) T
     dsimp only [m]
@@ -72,24 +69,23 @@ theorem real_charge_moment_budget {I : Type*} [Fintype I]
     dsimp only [m]
     linarith
   let hi := (max p 0 + t) / 2
-  have hhi : 0 < hi := by dsimp only [hi]; nlinarith [le_max_right p 0]
-  have hphi : p < hi := by dsimp only [hi]; linarith [le_max_left p 0]
-  have hhit : hi < t := by dsimp only [hi]; linarith [ht.1]
+  have hhi : 0 < hi := by positivity
+  have hphi : p < hi := by grind
+  have hhit : hi < t := by grind
   let q := 1 + (t - hi) / (2 * hi)
   have hq : 1 < q := by dsimp only [q]; linarith [div_pos (sub_pos.mpr hhit) (by positivity : 0 < 2 * hi)]
-  have hhiq : hi * q = (hi + t) / 2 := by dsimp only [q]; field_simp; ring
+  have hhiq : hi * q = (hi + t) / 2 := by grind
   let g := (t - hi * q) / 2
-  have hg : 0 < g := by dsimp only [g]; rw [hhiq]; linarith
-  have hgt : hi * q + g < t := by dsimp only [g]; rw [hhiq]; linarith
+  have hg : 0 < g := by grind
+  have hgt : hi * q + g < t := by grind
   let A := 1 + ∑ i, |α i|
   have hA (i : I) : |α i| < A := by
-    have he := Finset.single_le_sum (f := fun j => |α j|)
+    have he := Finset.single_le_sum
       (fun j _ => abs_nonneg (α j)) (Finset.mem_univ i)
-    dsimp only [A]
     linarith
   let lo := min (-1) (p - 2)
-  have hlo : lo ≤ 0 := (min_le_left _ _).trans (by norm_num)
-  have hlop : lo < p - 1 := (min_le_right _ _).trans_lt (by linarith)
+  have hlo : lo ≤ 0 := by grind
+  have hlop : lo < p - 1 := by grind
   exact ⟨A, a, gap, m, g, lo, hi, q, |p| + 1, hA, hαa, hgap, hgapQ, hm, hm1,
     hmT, hg, hlo, hlop, hhi.le, hphi, hq, by linarith, hgt.le.trans ht.2.le, hgt.le.trans htroot.le⟩
 

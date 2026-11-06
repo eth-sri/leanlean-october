@@ -29,10 +29,11 @@ open MeasureTheory Filter Topology Set Metric
 open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
 
 /-- **Cauchy bounds on a rectangle** around a point of the interval. -/
-theorem exists_rectangle_cauchy_bound {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
+theorem exists_rectangle_cauchy_bound (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (Xc : Ω → ℂ → ℝ → ℝ)
     (hXc : IsCircleAverage P X Xc) {η δ : ℝ} (hW : TwoPoleWindow γ η δ)
     (x₀ : Ioo (-2 * η - δ) (1 / γ)) :
@@ -41,24 +42,18 @@ theorem exists_rectangle_cauchy_bound {Ω : Type*} [MeasurableSpace Ω] (P : Mea
         ‖poleSubtractedCutoff P Xc M γ η (n + 1) z -
             poleSubtractedCutoff P Xc M γ η n z‖ ≤ K * Real.exp (-κ * n) := by
   obtain ⟨x, hx1, hx2⟩ := x₀
-  set ρ : ℝ := min (x - (-2 * η - δ)) (1 / γ - x) / 2 with hρ
+  set ρ := min (x - (-2 * η - δ)) (1 / γ - x) / 2 with hρ
   have hρ0 : 0 < ρ := by
-    rw [hρ]
-    have : 0 < min (x - (-2 * η - δ)) (1 / γ - x) := lt_min (by linarith) (by linarith)
-    linarith
+    positivity
   have hlo : -2 * η - δ < x - ρ := by
-    have : ρ ≤ (x - (-2 * η - δ)) / 2 := by
-      rw [hρ]
-      exact div_le_div_of_nonneg_right (min_le_left _ _) (by norm_num)
-    linarith
+    grind
   have hhi : x + ρ < 1 / γ := by
     have : ρ ≤ (1 / γ - x) / 2 := by
-      rw [hρ]
-      exact div_le_div_of_nonneg_right (min_le_right _ _) (by norm_num)
+      exact div_le_div_of_nonneg_right (min_le_right ..) (by norm_num)
     linarith
   obtain ⟨C, κ, hC, hκ, hb⟩ :=
     exists_cutoff_cauchy_bound P X hX γ hγ hγ2 M hM Xc hXc hW hlo hhi
-  set h : ℝ := min 1 (κ / 2) with hh
+  set h := min 1 (κ / 2) with hh
   set W : ℝ := 1 + (|x| + ρ + 1) / γ with hWdef
   refine ⟨ρ, h, W * C * Real.exp (κ / 4), 3 * κ / 4, hρ0, lt_min one_pos (by linarith),
     by positivity, by linarith, hlo, hhi, fun z hzre hzim n => ?_⟩
@@ -66,8 +61,8 @@ theorem exists_rectangle_cauchy_bound {Ω : Type*} [MeasurableSpace Ω] (P : Mea
     rw [abs_lt] at hzre
     constructor <;> linarith
   refine (hb z hz n).trans ?_
-  have him1 : |z.im| ≤ 1 := hzim.le.trans (min_le_left _ _)
-  have him2 : |z.im| ≤ κ / 2 := hzim.le.trans (min_le_right _ _)
+  have him1 : |z.im| ≤ 1 := by grind
+  have him2 : |z.im| ≤ κ / 2 := by grind
   have himsq : z.im ^ 2 ≤ κ / 2 := by
     rw [← sq_abs]
     calc |z.im| ^ 2 = |z.im| * |z.im| := sq _
@@ -85,7 +80,6 @@ theorem exists_rectangle_cauchy_bound {Ω : Type*} [MeasurableSpace Ω] (P : Mea
     have hzn : ‖z‖ ≤ |x| + ρ + 1 := by
       have hre : |z.re| ≤ |x| + ρ := by
         have := abs_sub_abs_le_abs_sub z.re x
-        rw [abs_lt] at hzre
         rw [abs_le]
         constructor <;> cases abs_cases x <;> cases abs_cases z.re <;> linarith
       linarith [Complex.norm_le_abs_re_add_abs_im z]
@@ -95,7 +89,7 @@ theorem exists_rectangle_cauchy_bound {Ω : Type*} [MeasurableSpace Ω] (P : Mea
       _ ≤ W := by
           rw [hWdef]
           gcongr
-  calc Real.exp (((n + 1 : ℕ) : ℝ) * z.im ^ 2 / 2) * ‖1 - z / γ‖ * (C * Real.exp (-κ * n))
+  calc Real.exp (((n + 1 : ℕ) : ℝ) * z.im ^ 2 / 2) * ‖1 - z / γ‖ * (C * Real.exp _)
       ≤ (Real.exp (κ / 4) * Real.exp (κ / 4 * n)) * W * (C * Real.exp (-κ * n)) := by
         apply mul_le_mul_of_nonneg_right _ (by positivity)
         exact mul_le_mul hexp hnorm (norm_nonneg _) (by positivity)
@@ -110,7 +104,6 @@ holomorphically to a neighborhood of the entire interval of that lemma. The last
 the compact-uniform Cauchy decay of the limit-chaos analytic approximants; the corrected Markov
 threshold (erratum K4, see docs/ERRATA-AND-DEVIATIONS.md) is part of this assertion. -/
 theorem poleSubtractedObservable_holomorphic
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (M : Ω → Measure ℂ) (γ η δ : ℝ)
     (hγ : 0 < γ) (hγ2 : γ < 2) (hX : IsEquatorGFF P X)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
@@ -130,8 +123,8 @@ theorem poleSubtractedObservable_holomorphic
                 ‖poleSubtractedCutoff P Xc M γ η (n + 1) z -
                     poleSubtractedCutoff P Xc M γ η n z‖ ≤
                   C * Real.exp (-κ * n) := by
-  set F : ℕ → ℂ → ℂ := poleSubtractedCutoff P Xc M γ η with hFdef
-  have hrect := fun x₀ : Ioo (-2 * η - δ) (1 / γ) =>
+  set F := poleSubtractedCutoff P Xc M γ η with hFdef
+  have hrect := fun x₀ =>
     exists_rectangle_cauchy_bound P X hX γ hγ hγ2 M hM Xc hXc hWindow x₀
   choose ρ hgt Kb κ hρ hhgt hKb hκ hlo _ hbound using hrect
   set R : Ioo (-2 * η - δ) (1 / γ) → Set ℂ :=
@@ -140,7 +133,7 @@ theorem poleSubtractedObservable_holomorphic
     (isOpen_lt (continuous_abs.comp (Complex.continuous_re.sub continuous_const))
       continuous_const).inter (isOpen_lt (continuous_abs.comp Complex.continuous_im)
         continuous_const)
-  set V : Set ℂ := ⋃ x₀, R x₀ with hVdef
+  set V := ⋃ x₀, R x₀ with hVdef
   have hVopen : IsOpen V := isOpen_iUnion hRopen
   have hVH : V ⊆ cutoffHalfPlane η δ := by
     intro z hz
@@ -170,13 +163,12 @@ theorem poleSubtractedObservable_holomorphic
   have hlim : ∀ z ∈ V, Tendsto (fun n => F n z) atTop (𝓝 (Flim z)) := fun z hz =>
     tendsto_nhds_limUnder (hconv z hz)
   have hdist : ∀ x₀, ∀ z ∈ R x₀, ∀ n : ℕ, dist (F n z) (Flim z) ≤
-      Kb x₀ * Real.exp (-κ x₀) ^ n / (1 - Real.exp (-κ x₀)) := fun x₀ z hz n =>
+      Kb x₀ * Real.exp _ ^ n / (1 - Real.exp (-κ x₀)) := fun x₀ z hz n =>
     dist_le_of_le_geometric_of_tendsto _ _ (hr1 x₀) (hgeom x₀ z hz)
       (hlim z (mem_iUnion.2 ⟨x₀, hz⟩)) n
   have hFdiff : ∀ n, DifferentiableOn ℂ (F n) V := fun n => by
     have h1 := (differentiableOn_cutoffFamily P X hX γ hγ hγ2 M hM Xc hXc hWindow
       (le_refl n)).1
-    rw [← poleSubtractedCutoff_eq_cutoffFamily] at h1
     exact h1.mono hVH
   have hTLU : TendstoLocallyUniformlyOn F Flim atTop V := by
     rw [Metric.tendstoLocallyUniformlyOn_iff]
@@ -207,15 +199,17 @@ theorem poleSubtractedObservable_holomorphic
       have h1 : 1 / κ i ≤ ∑ j ∈ t, 1 / κ j :=
         Finset.single_le_sum (fun j _ => (one_div_pos.2 (hκ j)).le) hi
       rw [div_le_iff₀ (by linarith)]
-      have h2 : κ i * (1 / κ i) = 1 := mul_one_div_cancel (hκ i).ne'
+      have h2 : κ i * (1 / κ i) = 1 := by grind
       nlinarith [hκ i]
-    calc ‖F (n + 1) z - F n z‖ ≤ Kb i * Real.exp (-κ i * n) := hbound i z hzi.1 hzi.2 n
-      _ ≤ (∑ j ∈ t, Kb j) * Real.exp (-(1 / (1 + ∑ j ∈ t, 1 / κ j)) * n) := by
+    calc ‖F _ z - F n z‖ ≤ Kb i * Real.exp _ := hbound i z hzi.1 hzi.2 n
+      _ ≤ (∑ j ∈ t, Kb j) * Real.exp _ := by
         apply mul_le_mul (Finset.single_le_sum (fun j _ => hKb j) hi) _ (Real.exp_pos _).le
           (Finset.sum_nonneg fun j _ => hKb j)
         apply Real.exp_le_exp.2
         have hn : (0 : ℝ) ≤ n := Nat.cast_nonneg n
         nlinarith
+
+end
 
 end DOZZ.Proofs
 

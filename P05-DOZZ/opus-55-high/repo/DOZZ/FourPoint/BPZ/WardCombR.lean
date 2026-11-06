@@ -34,25 +34,17 @@ noncomputable def bpzWCR_H (z : ℂ) (k : ℂ → ℝ) (ℓ : ℂ →L[ℝ] ℝ)
 /-- The elementary inequality `1/u ≤ 1 + 1/u²`. -/
 theorem bpzWCR_inv_le (u : ℝ) : u⁻¹ ≤ 1 + (u ^ 2)⁻¹ := by
   rw [← inv_pow]
-  linarith [sq_nonneg (u⁻¹ - 1 / 2)]
+  nlinarith
 
 /-- `‖t/(z - x)‖ ≤ (1 + ‖x - z‖^{-2}) t` for `t ≥ 0`. -/
 theorem bpzWCR_norm_div_le {z x : ℂ} (hx : x ≠ z) {t : ℝ} (ht : 0 ≤ t) :
     ‖(t : ℂ) / (z - x)‖ ≤ (1 + ‖x - z‖ ^ (-2 : ℝ)) * t := by
-  have hu : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx)
   rw [norm_div, Complex.norm_real, Real.norm_of_nonneg ht, norm_sub_rev z x,
-    Real.rpow_neg hu.le, Real.rpow_two]
+    Real.rpow_neg (norm_pos_iff.mpr (sub_ne_zero.mpr hx)).le, Real.rpow_two]
   calc t / ‖x - z‖ = ‖x - z‖⁻¹ * t := by ring
     _ ≤ (1 + (‖x - z‖ ^ 2)⁻¹) * t :=
         mul_le_mul_of_nonneg_right (bpzWCR_inv_le _) ht
 
-/-- The algebra behind the domination of the Ward integrand by `A/2 (g(x) k(y) + k(x) g(y))`. -/
-theorem bpzWCR_alg_bound {A r s a b : ℝ} (hA : 0 ≤ A) (ha : 0 ≤ a) (hb : 0 ≤ b) :
-    A * (1 + r + s) * (a * b) / 2 ≤ A / 2 * ((1 + r) * a * b + a * ((1 + s) * b)) := by
-  have h : 0 ≤ A * (a * b) := mul_nonneg hA (mul_nonneg ha hb)
-  have e : A / 2 * ((1 + r) * a * b + a * ((1 + s) * b)) - A * (1 + r + s) * (a * b) / 2 =
-      A * (a * b) / 2 := by ring
-  linarith
 
 /-! ### The pointwise combination -/
 
@@ -82,9 +74,9 @@ theorem bpzWCR_pointwise {z x y : ℂ} (k : ℂ → ℝ) (hxy : x ≠ y) (hx : x
       ((k x : ℂ) * (k y : ℂ) - z * (z - 1) * (((k x : ℂ) / (z - x)) * ((k y : ℂ) / (z - y)))) /
         4 := by
   have h1 : ((((bpzG z x).re - (bpzG z y).re) * bpzKern 1 (x - y) : ℝ) +
-        Complex.I * ((((bpzG z x).im - (bpzG z y).im) * bpzKern 1 (x - y) : ℝ) : ℂ) -
-        Complex.I * ((((bpzG z x).re - (bpzG z y).re) * bpzKern Complex.I (x - y) : ℝ) : ℂ) +
-        ((((bpzG z x).im - (bpzG z y).im) * bpzKern Complex.I (x - y) : ℝ) : ℂ)) / 2 =
+        Complex.I * ((((bpzG z x).im - (bpzG z y).im) * bpzKern 1 _ : ℝ) : ℂ) -
+        Complex.I * ((((bpzG z x).re - (bpzG z y).re) * bpzKern Complex.I _ : ℝ) : ℂ) +
+        ((((bpzG z x).im - (bpzG z y).im) * bpzKern Complex.I _ : ℝ) : ℂ)) / 2 =
       -(bpzG z x - bpzG z y) / (2 * (x - y)) := bpz_g_kern_combination hxy
   have h2 : (bpzG z x - bpzG z y) / (x - y) =
       -1 + z * (z - 1) / ((z - x) * (z - y)) := bpz_g_diff_quot hxy hx hy
@@ -104,7 +96,7 @@ theorem bpzWCR_pointwise {z x y : ℂ} (k : ℂ → ℝ) (hxy : x ≠ y) (hx : x
 /-- The Ward integrand is jointly measurable. -/
 theorem bpzWCR_H_measurable (z : ℂ) {k : ℂ → ℝ} (hk : Measurable k) (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ) :
     Measurable (Function.uncurry (bpzWCR_H z k ℓ v)) := by
-  have hg : Measurable (fun x => ℓ (bpzG z x)) := bpzWardG_measurable z ℓ
+  have hg := bpzWardG_measurable z ℓ
   exact ((((hg.comp measurable_fst).sub (hg.comp measurable_snd)).mul
     ((hk.comp measurable_fst).mul (hk.comp measurable_snd))).mul
       ((measurable_bpzKern v).comp (measurable_fst.sub measurable_snd))).div_const _
@@ -115,33 +107,34 @@ theorem bpzWCR_integrable_k {z : ℂ} {m : Measure ℂ} {k : ℂ → ℝ} (hkm :
     Integrable k m := by
   refine hgi.mono' hkm.aestronglyMeasurable (Eventually.of_forall fun x => ?_)
   rw [Real.norm_eq_abs, abs_of_nonneg (hk0 x)]
-  have h : 0 ≤ ‖x - z‖ ^ (-2 : ℝ) := bpz_rpow_neg_two_nonneg (norm_nonneg _)
+  have h : 0 ≤ ‖x - z‖ ^ (-2 : ℝ) := by simp
   exact le_mul_of_one_le_left (hk0 x) (by linarith)
+section
+variable {m : Measure ℂ} [IsFiniteMeasure m]
 
 /-- An almost sure property of the points of `m` holds for both coordinates `m ⊗ m`-a.e. -/
-theorem bpzWCR_ae_prod {m : Measure ℂ} [IsFiniteMeasure m] {s : Set ℂ} (h : ∀ᵐ x ∂m, x ∈ s) :
+theorem bpzWCR_ae_prod {s : Set ℂ} (h : ∀ᵐ x ∂m, x ∈ s) :
     ∀ᵐ p ∂(m.prod m), p.1 ∈ s ∧ p.2 ∈ s := by
   have h1 := (Measure.quasiMeasurePreserving_fst (μ := m) (ν := m)).ae h
-  have h2 := (Measure.quasiMeasurePreserving_snd (μ := m) (ν := m)).ae h
-  filter_upwards [h1, h2] with p hp1 hp2
-  exact ⟨hp1, hp2⟩
+  have h2 := (Measure.quasiMeasurePreserving_snd (μ := m)).ae h
+  simp_all
 
 /-- For a measure without atoms the diagonal is null for the product measure. -/
-theorem bpzWCR_ae_prod_ne {m : Measure ℂ} [IsFiniteMeasure m] (hno : ∀ x, m {x} = 0) :
+theorem bpzWCR_ae_prod_ne (hno : ∀ x, m {x} = 0) :
     ∀ᵐ p ∂(m.prod m), p.1 ≠ p.2 := by
   have hm : MeasurableSet {p : ℂ × ℂ | p.1 ≠ p.2} :=
-    (measurableSet_eq_fun measurable_fst measurable_snd).compl
+    by measurability
   rw [Measure.ae_prod_iff_ae_ae hm]
   refine Eventually.of_forall fun x => ?_
   rw [ae_iff]
-  have : {y : ℂ | ¬ ((x, y).1 ≠ (x, y).2)} = {x} := by
-    ext y
-    simp [eq_comm]
-  rw [this]
-  exact hno x
+  simp_all
+
+end
+section
+variable {z : ℂ}
 
 /-- Pointwise domination of the Ward integrand on the regular set. -/
-theorem bpzWCR_abs_H_le {z : ℂ} {k : ℂ → ℝ} (hk0 : ∀ x, 0 ≤ k x) (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ)
+theorem bpzWCR_abs_H_le {k : ℂ → ℝ} (hk0 : ∀ x, 0 ≤ k x) (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ)
     {A : ℝ} (hA0 : 0 ≤ A)
     (hA : ∀ x ∈ bpzRegular z, ∀ y ∈ bpzRegular z,
       |(ℓ (bpzG z x) - ℓ (bpzG z y)) * bpzKern v (x - y)| ≤
@@ -149,16 +142,14 @@ theorem bpzWCR_abs_H_le {z : ℂ} {k : ℂ → ℝ} (hk0 : ∀ x, 0 ≤ k x) (�
     {x y : ℂ} (hx : x ∈ bpzRegular z) (hy : y ∈ bpzRegular z) :
     |bpzWCR_H z k ℓ v x y| ≤
       A / 2 * ((1 + ‖x - z‖ ^ (-2 : ℝ)) * k x * k y + k x * ((1 + ‖y - z‖ ^ (-2 : ℝ)) * k y)) := by
-  have hkk : 0 ≤ k x * k y := mul_nonneg (hk0 x) (hk0 y)
+  have hkk : 0 ≤ k x * k y := by bound
   rw [bpzWCR_H_eq, abs_div, abs_two, abs_mul, abs_of_nonneg hkk]
   refine (div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right (hA x hx y hy) hkk)
     zero_le_two).trans ?_
-  have := bpzWCR_alg_bound (A := A) (r := ‖x - z‖ ^ (-2 : ℝ)) (s := ‖y - z‖ ^ (-2 : ℝ))
-    hA0 (hk0 x) (hk0 y)
-  linarith
+  nlinarith
 
 /-- Integrability of the Ward integrand on the product and the bound for its double integral. -/
-theorem bpzWCR_integrable_double {z : ℂ} {m : Measure ℂ} [IsFiniteMeasure m] {k : ℂ → ℝ}
+theorem bpzWCR_integrable_double {m : Measure ℂ} [IsFiniteMeasure m] {k : ℂ → ℝ}
     (hkm : Measurable k) (hk0 : ∀ x, 0 ≤ k x) (hreg : ∀ᵐ x ∂m, x ∈ bpzRegular z)
     (hgi : Integrable (fun x => (1 + ‖x - z‖ ^ (-2 : ℝ)) * k x) m)
     (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ) {A : ℝ} (hA0 : 0 ≤ A)
@@ -169,34 +160,38 @@ theorem bpzWCR_integrable_double {z : ℂ} {m : Measure ℂ} [IsFiniteMeasure m]
       |∫ x, ∫ y, bpzWCR_H z k ℓ v x y ∂m ∂m| ≤
         A * ((∫ x, (1 + ‖x - z‖ ^ (-2 : ℝ)) * k x ∂m) * ∫ x, k x ∂m) := by
   have hki : Integrable k m := bpzWCR_integrable_k hkm hk0 hgi
-  have hbi : Integrable (fun p : ℂ × ℂ => A / 2 * ((1 + ‖p.1 - z‖ ^ (-2 : ℝ)) * k p.1 * k p.2 +
+  have hbi : Integrable (fun p => A / 2 * ((1 + ‖p.1 - z‖ ^ (-2 : ℝ)) * k p.1 * k p.2 +
       k p.1 * ((1 + ‖p.2 - z‖ ^ (-2 : ℝ)) * k p.2))) (m.prod m) :=
     ((hgi.mul_prod hki).add (hki.mul_prod hgi)).const_mul _
   have hbd : ∀ᵐ p ∂(m.prod m), ‖bpzWCR_H z k ℓ v p.1 p.2‖ ≤
       A / 2 * ((1 + ‖p.1 - z‖ ^ (-2 : ℝ)) * k p.1 * k p.2 +
         k p.1 * ((1 + ‖p.2 - z‖ ^ (-2 : ℝ)) * k p.2)) := by
     filter_upwards [bpzWCR_ae_prod hreg] with p hp
-    rw [Real.norm_eq_abs]
     exact bpzWCR_abs_H_le hk0 ℓ v hA0 hA hp.1 hp.2
-  have hint : Integrable (fun p : ℂ × ℂ => bpzWCR_H z k ℓ v p.1 p.2) (m.prod m) :=
+  have hint : Integrable (fun p => bpzWCR_H z k ℓ v p.1 p.2) (m.prod m) :=
     hbi.mono' (bpzWCR_H_measurable z hkm ℓ v).aestronglyMeasurable hbd
   refine ⟨hint, ?_⟩
   rw [show ∫ x, ∫ y, bpzWCR_H z k ℓ v x y ∂m ∂m =
     ∫ p : ℂ × ℂ, bpzWCR_H z k ℓ v p.1 p.2 ∂(m.prod m) from
-      (integral_prod (fun p : ℂ × ℂ => bpzWCR_H z k ℓ v p.1 p.2) hint).symm,
+      (integral_prod (fun p => bpzWCR_H z k ℓ v p.1 p.2) hint).symm,
     ← Real.norm_eq_abs]
   refine (norm_integral_le_of_norm_le hbi hbd).trans (le_of_eq ?_)
   rw [integral_const_mul, integral_add (hgi.mul_prod hki) (hki.mul_prod hgi),
-    integral_prod_mul (f := fun x => (1 + ‖x - z‖ ^ (-2 : ℝ)) * k x) (g := k),
-    integral_prod_mul (f := k) (g := fun x => (1 + ‖x - z‖ ^ (-2 : ℝ)) * k x)]
+    integral_prod_mul (f := fun x => (1 + ‖x - z‖ ^ (-2)) * k x),
+    integral_prod_mul (f := k) (g := fun x => (1 + ‖x - z‖ ^ (-2)) * k x)]
   ring
+
+end
+section
+variable {α : Type*} [MeasurableSpace α] {μ : Measure α} {f₁ f₂ f₃ f₄ : α → ℝ}
+section
+variable (h₁ : Integrable f₁ μ) (h₂ : Integrable f₂ μ) (h₃ : Integrable f₃ μ) (h₄ : Integrable f₄ μ)
+include h₁ h₂ h₃ h₄
 
 /-! ### The combination of the four double integrals -/
 
 /-- A combination of four integrable real functions, as a complex integral. -/
-theorem bpzWCR_integral_comb {α : Type*} [MeasurableSpace α] {μ : Measure α}
-    {f₁ f₂ f₃ f₄ : α → ℝ} (h₁ : Integrable f₁ μ) (h₂ : Integrable f₂ μ) (h₃ : Integrable f₃ μ)
-    (h₄ : Integrable f₄ μ) :
+theorem bpzWCR_integral_comb :
     (((∫ a, f₁ a ∂μ : ℝ) : ℂ) + Complex.I * ((∫ a, f₂ a ∂μ : ℝ) : ℂ) -
         Complex.I * ((∫ a, f₃ a ∂μ : ℝ) : ℂ) + ((∫ a, f₄ a ∂μ : ℝ) : ℂ)) / 2 =
       ∫ a, (((f₁ a : ℝ) : ℂ) + Complex.I * ((f₂ a : ℝ) : ℂ) - Complex.I * ((f₃ a : ℝ) : ℂ) +
@@ -213,19 +208,18 @@ theorem bpzWCR_integral_comb {α : Type*} [MeasurableSpace α] {μ : Measure α}
     integral_complex_ofReal, integral_complex_ofReal]
 
 /-- The combination of four integrable real functions is integrable. -/
-theorem bpzWCR_integrable_comb {α : Type*} [MeasurableSpace α] {μ : Measure α}
-    {f₁ f₂ f₃ f₄ : α → ℝ} (h₁ : Integrable f₁ μ) (h₂ : Integrable f₂ μ) (h₃ : Integrable f₃ μ)
-    (h₄ : Integrable f₄ μ) :
+theorem bpzWCR_integrable_comb :
     Integrable (fun a => (((f₁ a : ℝ) : ℂ) + Complex.I * ((f₂ a : ℝ) : ℂ) -
       Complex.I * ((f₃ a : ℝ) : ℂ) + ((f₄ a : ℝ) : ℂ)) / 2) μ := by
   have i₁ : Integrable (fun a => ((f₁ a : ℝ) : ℂ)) μ := h₁.ofReal
   have i₂ : Integrable (fun a => Complex.I * ((f₂ a : ℝ) : ℂ)) μ := h₂.ofReal.const_mul _
   have i₃ : Integrable (fun a => Complex.I * ((f₃ a : ℝ) : ℂ)) μ := h₃.ofReal.const_mul _
   have i₄ : Integrable (fun a => ((f₄ a : ℝ) : ℂ)) μ := h₄.ofReal
-  have i₁₂ : Integrable (fun a => ((f₁ a : ℝ) : ℂ) + Complex.I * ((f₂ a : ℝ) : ℂ)) μ := i₁.add i₂
-  have i₁₂₃ : Integrable (fun a => ((f₁ a : ℝ) : ℂ) + Complex.I * ((f₂ a : ℝ) : ℂ) -
-      Complex.I * ((f₃ a : ℝ) : ℂ)) μ := i₁₂.sub i₃
-  exact (i₁₂₃.add i₄).div_const _
+  fun_prop
+
+end
+
+end
 
 /-- The combination of the four real Ward integrals, for a measure without atoms. -/
 theorem bpzWCR_combo {z : ℂ} {m : Measure ℂ} [IsFiniteMeasure m] (hno : ∀ x, m {x} = 0)
@@ -243,10 +237,10 @@ theorem bpzWCR_combo {z : ℂ} {m : Measure ℂ} [IsFiniteMeasure m] (hno : ∀ 
         ((∫ x, ∫ y, bpzWCR_H z k Complex.imCLM Complex.I x y ∂m ∂m : ℝ) : ℂ)) / 2 =
       ((((∫ x, k x ∂m : ℝ) : ℂ)) ^ 2 - z * (z - 1) * (∫ x, (k x : ℂ) / (z - x) ∂m) ^ 2) / 4 := by
   have e : ∀ (ℓ : ℂ →L[ℝ] ℝ) (v : ℂ),
-      Integrable (fun p : ℂ × ℂ => bpzWCR_H z k ℓ v p.1 p.2) (m.prod m) →
+      Integrable (fun p => bpzWCR_H z k ℓ v p.1 p.2) (m.prod m) →
       ∫ x, ∫ y, bpzWCR_H z k ℓ v x y ∂m ∂m =
         ∫ p : ℂ × ℂ, bpzWCR_H z k ℓ v p.1 p.2 ∂(m.prod m) := fun ℓ v h =>
-    (integral_prod (fun p : ℂ × ℂ => bpzWCR_H z k ℓ v p.1 p.2) h).symm
+    (integral_prod (fun p => bpzWCR_H z k ℓ v p.1 p.2) h).symm
   rw [e _ _ h₁, e _ _ h₂, e _ _ h₃, e _ _ h₄, bpzWCR_integral_comb h₁ h₂ h₃ h₄]
   have hae : ∀ᵐ p ∂(m.prod m), (((bpzWCR_H z k Complex.reCLM 1 p.1 p.2 : ℝ) : ℂ) +
         Complex.I * ((bpzWCR_H z k Complex.imCLM 1 p.1 p.2 : ℝ) : ℂ) -
@@ -304,7 +298,7 @@ theorem bpzWCR_dom_alg {a b I G T A c γ : ℝ} (ha : 0 ≤ a) (hc : 0 ≤ c) (h
     |c * (a * (γ ^ 2 * T))| ≤ c * γ ^ 2 * A * (b * G) := by
   rw [abs_mul, abs_mul, abs_mul, abs_of_nonneg hc, abs_of_nonneg ha, abs_of_nonneg (sq_nonneg γ)]
   calc c * (a * (γ ^ 2 * |T|)) ≤ c * (a * (γ ^ 2 * (A * (G * I)))) := by gcongr
-    _ = c * γ ^ 2 * A * (b * G) := by rw [hab]; ring
+    _ = c * γ ^ 2 * A * (b * G) := by grind
 
 /-- `I^{-(s+1)} = I^{-(s+1)-1} I`. -/
 theorem bpzWCR_rpow_mul {I : ℝ} (hI : 0 < I) (s : ℝ) :
@@ -325,15 +319,18 @@ theorem bpzWCR_F_integrable {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {
     (bpzWCR_F_measurable D.meas D.fin D.km γ s z ℓ v).aestronglyMeasurable ?_
   filter_upwards [D.regular, D.sing, D.pos] with ω hr hg hp
   have := D.fin ω
-  rw [Real.norm_eq_abs]
   exact bpzWCR_dom_alg (Real.rpow_nonneg hp.le _) (by linarith [D.s_nonneg]) (bpzWCR_rpow_mul hp s)
     (bpzWCR_integrable_double D.km D.nonneg hr hg ℓ v hA0 hA).2
+section
+variable {z : ℂ} {m : Measure ℂ} {k : ℂ → ℝ}
+section
+variable (hkm : Measurable k) (hk0 : ∀ x, 0 ≤ k x)
+include hkm hk0
 
 /-! ### The expectation of the combination -/
 
 /-- The weight `k/(z - x)` is integrable once the singular weight is. -/
-theorem bpzWCR_integrable_div {z : ℂ} {m : Measure ℂ} {k : ℂ → ℝ} (hkm : Measurable k)
-    (hk0 : ∀ x, 0 ≤ k x) (hreg : ∀ᵐ x ∂m, x ∈ bpzRegular z)
+theorem bpzWCR_integrable_div (hreg : ∀ᵐ x ∂m, x ∈ bpzRegular z)
     (hgi : Integrable (fun x => (1 + ‖x - z‖ ^ (-2 : ℝ)) * k x) m) :
     Integrable (fun x => (k x : ℂ) / (z - x)) m := by
   refine hgi.mono' ((Complex.measurable_ofReal.comp hkm).div
@@ -342,12 +339,15 @@ theorem bpzWCR_integrable_div {z : ℂ} {m : Measure ℂ} {k : ℂ → ℝ} (hkm
   exact bpzWCR_norm_div_le hx.2.2 (hk0 x)
 
 /-- The mass is bounded by the singular mass. -/
-theorem bpzWCR_integral_le {z : ℂ} {m : Measure ℂ} {k : ℂ → ℝ} (hkm : Measurable k)
-    (hk0 : ∀ x, 0 ≤ k x) (hgi : Integrable (fun x => (1 + ‖x - z‖ ^ (-2 : ℝ)) * k x) m) :
+theorem bpzWCR_integral_le (hgi : Integrable (fun x => (1 + ‖x - z‖ ^ (-2 : ℝ)) * k x) m) :
     ∫ x, k x ∂m ≤ ∫ x, (1 + ‖x - z‖ ^ (-2 : ℝ)) * k x ∂m := by
   refine integral_mono (bpzWCR_integrable_k hkm hk0 hgi) hgi fun x => ?_
-  have h : 0 ≤ ‖x - z‖ ^ (-2 : ℝ) := bpz_rpow_neg_two_nonneg (norm_nonneg _)
+  have h : 0 ≤ ‖x - z‖ ^ (-2 : ℝ) := by simp
   exact le_mul_of_one_le_left (hk0 x) (by linarith)
+
+end
+
+end
 
 /-- The algebra behind the identification of the combination with `J` and `D₂`. -/
 theorem bpzWCR_alg2 (c a γ I T₁ T₂ T₃ T₄ : ℝ) (z D : ℂ)
@@ -359,17 +359,20 @@ theorem bpzWCR_alg2 (c a γ I T₁ T₂ T₃ T₄ : ℝ) (z D : ℂ)
       (c : ℂ) * ((γ ^ 2 / 4 : ℝ) : ℂ) *
         (((a * I ^ 2 : ℝ) : ℂ) - z * (z - 1) * ((a : ℂ) * D ^ 2)) := by
   push_cast at h ⊢
-  linear_combination ((c : ℂ) * a * γ ^ 2) * h
+  grind
 
 /-- `I^{-s} = I^{-s-2} I²`. -/
 theorem bpzWCR_rpow_neg_two {I : ℝ} (hI : 0 < I) (s : ℝ) :
     I ^ (-s) = I ^ (-s - 2) * I ^ 2 := by
   rw [← Real.rpow_two, ← Real.rpow_add hI]
   ring_nf
+section
+variable {Ω : Type*} [MeasurableSpace Ω]
+section
+variable {P : Measure Ω} {M : Ω → Measure ℂ} {k : ℂ → ℝ} {z : ℂ}
 
 /-- The integrand of `J = E[I^{-s}]` is integrable. -/
-theorem bpzWCR_J_integrable {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {M : Ω → Measure ℂ}
-    {k : ℂ → ℝ} {z : ℂ} {s : ℝ} (D : bpzWCR_Data P M k z s) :
+theorem bpzWCR_J_integrable {s : ℝ} (D : bpzWCR_Data P M k z s) :
     Integrable (fun ω => (∫ x, k x ∂M ω) ^ (-s)) P := by
   refine D.dom.mono' (((measurable_integral_measure D.km).comp D.meas).pow_const _
     ).aestronglyMeasurable ?_
@@ -379,10 +382,14 @@ theorem bpzWCR_J_integrable {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {
       rw [← Real.rpow_add_one hp.ne']; ring_nf]
   exact mul_le_mul_of_nonneg_left (bpzWCR_integral_le D.km D.nonneg hg)
     (Real.rpow_nonneg hp.le _)
+section
+variable {s γ : ℝ}
+section
+variable (D : bpzWCR_Data P M k z s)
+include D
 
 /-- The almost sure identity for the combination of the four Ward integrands. -/
-theorem bpzWCR_ae_comb {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {M : Ω → Measure ℂ}
-    {k : ℂ → ℝ} {z : ℂ} {s γ : ℝ} (D : bpzWCR_Data P M k z s) (hz0 : z ≠ 0) (hz1 : z ≠ 1) :
+theorem bpzWCR_ae_comb (hz0 : z ≠ 0) (hz1 : z ≠ 1) :
     ∀ᵐ ω ∂P, (((bpzWCR_F k γ s z Complex.reCLM 1 (M ω) : ℝ) : ℂ) +
         Complex.I * ((bpzWCR_F k γ s z Complex.imCLM 1 (M ω) : ℝ) : ℂ) -
         Complex.I * ((bpzWCR_F k γ s z Complex.reCLM Complex.I (M ω) : ℝ) : ℂ) +
@@ -396,9 +403,7 @@ theorem bpzWCR_ae_comb {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {M : �
   obtain ⟨A₄, hA₄0, hA₄⟩ := bpz_g_kern_bound hz0 hz1 Complex.imCLM Complex.I
   filter_upwards [D.noAtoms, D.regular, D.sing, D.pos] with ω hno hr hg hp
   have := D.fin ω
-  have hki := bpzWCR_integrable_k D.km D.nonneg hg
-  have hdi := bpzWCR_integrable_div D.km D.nonneg hr hg
-  have hc := bpzWCR_combo hno hr hki hdi
+  have hc := bpzWCR_combo hno hr (bpzWCR_integrable_k D.km D.nonneg hg) (bpzWCR_integrable_div D.km D.nonneg hr hg)
     (bpzWCR_integrable_double D.km D.nonneg hr hg Complex.reCLM 1 hA₁0 hA₁).1
     (bpzWCR_integrable_double D.km D.nonneg hr hg Complex.imCLM 1 hA₂0 hA₂).1
     (bpzWCR_integrable_double D.km D.nonneg hr hg Complex.reCLM Complex.I hA₃0 hA₃).1
@@ -408,8 +413,7 @@ theorem bpzWCR_ae_comb {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {M : �
   exact bpzWCR_alg2 _ _ _ _ _ _ _ _ _ _ hc
 
 /-- The combination of the four expectations, for abstract data. -/
-theorem bpzWCR_main {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {M : Ω → Measure ℂ}
-    {k : ℂ → ℝ} {z : ℂ} {s γ : ℝ} (D : bpzWCR_Data P M k z s) (hγ : γ ≠ 0) (hz0 : z ≠ 0)
+theorem bpzWCR_main (hγ : γ ≠ 0) (hz0 : z ≠ 0)
     (hz1 : z ≠ 1) :
     (((∫ ω, bpzWCR_F k γ s z Complex.reCLM 1 (M ω) ∂P : ℝ) : ℂ) +
         Complex.I * ((∫ ω, bpzWCR_F k γ s z Complex.imCLM 1 (M ω) ∂P : ℝ) : ℂ) -
@@ -433,24 +437,28 @@ theorem bpzWCR_main {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {M : Ω �
     exact_mod_cast (by positivity : (s + 1 : ℝ) ≠ 0)
   have hγ4 : ((γ ^ 2 / 4 : ℝ) : ℂ) ≠ 0 := by
     exact_mod_cast (by positivity : (γ ^ 2 / 4 : ℝ) ≠ 0)
-  have hc' := mul_ne_zero hs1 hγ4
   have hJc : Integrable (fun ω => (((∫ x, k x ∂M ω) ^ (-s) : ℝ) : ℂ)) P :=
     (bpzWCR_J_integrable D).ofReal
-  have hcomb := bpzWCR_integrable_comb F₁ F₂ F₃ F₄
   have hD2 : Integrable (fun ω => z * (z - 1) *
       ((((∫ x, k x ∂M ω) ^ (-s - 2) : ℝ) : ℂ) * (∫ x, (k x : ℂ) / (z - x) ∂M ω) ^ 2)) P := by
-    refine (hJc.sub (hcomb.div_const (((s + 1 : ℝ) : ℂ) * ((γ ^ 2 / 4 : ℝ) : ℂ)))).congr ?_
+    refine (hJc.sub ((bpzWCR_integrable_comb F₁ F₂ F₃ F₄).div_const (((s + 1 : ℝ) : ℂ) * ((γ ^ 2 / 4 : ℝ) : ℂ)))).congr ?_
     filter_upwards [hae] with ω hω
     simp only [Pi.sub_apply]
-    rw [hω, mul_div_cancel_left₀ _ hc']
+    rw [hω, mul_div_cancel_left₀ _ (mul_ne_zero hs1 hγ4)]
     ring
   rw [bpzWCR_integral_comb F₁ F₂ F₃ F₄, integral_congr_ae hae, integral_const_mul,
     integral_sub hJc hD2, integral_const_mul, integral_complex_ofReal]
 
+end
+
+end
+
+end
+
 /-- **The combination of the four Ward right sides.** For the test function `g(x) = x(x-1)/(z-x)`
 the combination `(R_{Re,1} + i R_{Im,1} - i R_{Re,i} + R_{Im,i}) / 2` of the right sides of the
 real Ward identity equals `(s + 1) (γ² / 4) (J - z (z - 1) D₂)`. -/
-theorem bpz_wardRHS_combination {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+theorem bpz_wardRHS_combination (P : Measure Ω)
     (X : Ω → Distr) (hX : IsEquatorGFF P X) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
     (hM : IsGMCOf P X γ M) (hMm : Measurable M) (hχ : 0 < χ) (hα₁ : α₁ < Q γ)
     (hα₂ : α₂ < Q γ) (hα₃ : α₃ < Q γ) {s : ℝ} (hs : 0 ≤ s) {z : ℂ} (hz0 : z ≠ 0)
@@ -462,9 +470,9 @@ theorem bpz_wardRHS_combination {Ω : Type*} [MeasurableSpace Ω] (P : Measure �
       ((s + 1 : ℝ) : ℂ) * ((γ ^ 2 / 4 : ℝ) : ℂ) *
         ((bpzMomJ P M γ χ α₁ α₂ α₃ s z : ℂ) - z * (z - 1) * bpzMomD2 P M γ χ α₁ α₂ α₃ s z) := by
   have hq1 : 1 ≤ s + 1 := by linarith
-  have hgood := bpz_singular_integrable_ae (α₁ := α₁) (α₂ := α₂) (α₃ := α₃) P X hX hγ hγ2 M hM
+  have hgood := bpz_singular_integrable_ae P X hX hγ hγ2 M hM
     hχ hα₁ hα₂ hα₃ hq1 hz0 hz1
-  have hdom := bpz_singular_dom_integrable (α₁ := α₁) (α₂ := α₂) (α₃ := α₃) P X hX hγ hγ2 M hM
+  have hdom := bpz_singular_dom_integrable P X hX hγ hγ2 M hM
     hMm hχ hα₁ hα₂ hα₃ hq1 hz0 hz1
   have hkm := measurable_bpzSoftWeight (γ := γ) (χ := χ) (α₁ := α₁) (α₂ := α₂) (α₃ := α₃) 0 z
   have hk0 := bpzSoftWeight_nonneg (γ := γ) (χ := χ) (α₁ := α₁) (α₂ := α₂) (α₃ := α₃) 0 z
@@ -485,5 +493,7 @@ theorem bpz_wardRHS_combination {Ω : Type*} [MeasurableSpace Ω] (P : Measure �
         exact ENNReal.toReal_pos hpos.ne' hfin.ne
       dom := hdom }
   exact bpzWCR_main D hγ.ne' hz0 hz1
+
+end
 
 end DOZZ.Proofs

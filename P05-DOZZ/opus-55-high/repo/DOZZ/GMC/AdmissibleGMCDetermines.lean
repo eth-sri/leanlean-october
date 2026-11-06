@@ -45,14 +45,13 @@ theorem admissible_countable_tests_determine_chart_measures
     constructor
     intro S hS
     rw [e.comap_apply]
-    apply hμfin (Subtype.val '' S) (hS.image continuous_subtype_val)
-    rintro x ⟨y, hy, rfl⟩
-    exact y.property
+    apply hμfin _ (hS.image continuous_subtype_val)
+    simp
   have hνUfinite : IsFiniteMeasureOnCompacts νU := by
     constructor
     intro S hS
     rw [e.comap_apply]
-    apply hνfin (Subtype.val '' S) (hS.image continuous_subtype_val)
+    apply hνfin _ (hS.image continuous_subtype_val)
     rintro x ⟨y, hy, rfl⟩
     exact y.property
   have : IsFiniteMeasureOnCompacts μU := hμUfinite
@@ -63,7 +62,7 @@ theorem admissible_countable_tests_determine_chart_measures
   have : νU.Regular := hνUreg
   have hUintegrals : ∀ g : C_c(↥U, ℝ), ∫ x, g x ∂μU = ∫ x, g x ∂νU := by
     intro g
-    let gext : ℂ → ℝ := Subtype.val.extend (fun x : ↥U => g x) 0
+    let gext := Subtype.val.extend (fun x : ↥U => g x) 0
     have hgextval (x : ↥U) : gext x = g x := by
       simp [gext]
     have hgextCont : Continuous gext :=
@@ -82,12 +81,7 @@ theorem admissible_countable_tests_determine_chart_measures
       have hj : Continuous j := by fun_prop
       have hrange : Set.range j = W := by
         ext x
-        constructor
-        · rintro ⟨y, rfl⟩
-          exact y.2
-        · intro hx
-          refine ⟨⟨x.1, hx⟩, ?_⟩
-          exact Subtype.ext rfl
+        constructor <;> aesop
       rw [← hrange]
       exact isCompact_range hj
     have hWμ : μU W < ∞ := by
@@ -95,8 +89,7 @@ theorem admissible_countable_tests_determine_chart_measures
       have himage : Subtype.val '' W = K n := by
         ext x
         constructor
-        · rintro ⟨y, hy, rfl⟩
-          exact hy
+        · aesop
         · intro hx
           exact ⟨⟨x, hKU n hx⟩, hx, rfl⟩
       rw [himage]
@@ -106,17 +99,15 @@ theorem admissible_countable_tests_determine_chart_measures
       have himage : Subtype.val '' W = K n := by
         ext x
         constructor
-        · rintro ⟨y, hy, rfl⟩
-          exact hy
+        · aesop
         · intro hx
           exact ⟨⟨x, hKU n hx⟩, hx, rfl⟩
       rw [himage]
       exact hνfin (K n) (hKcompact n) (hKU n)
     have hWmeas : MeasurableSet W := by
-      change MeasurableSet (Subtype.val ⁻¹' K n)
       exact (hKcompact n).isClosed.measurableSet.preimage continuous_subtype_val.measurable
     let gCc : C_c(ℂ, ℝ) := ⟨gC, hgextCompact⟩
-    let qg : BoundedContinuousFunction ℂ ℝ := gCc.toBoundedContinuousFunction
+    let qg := gCc.toBoundedContinuousFunction
     have hqgSupport : tsupport (qg : ℂ → ℝ) ⊆ U := by
       change tsupport gext ⊆ U
       exact hgextSupport
@@ -145,12 +136,10 @@ theorem admissible_countable_tests_determine_chart_measures
       exact ae_of_all _ fun x => (hqgOnU x).symm
     have hfamilyU (m : ℕ) :
         ∫ x : ↥U, f (n, m) x ∂μU = ∫ x : ↥U, f (n, m) x ∂νU := by
-      have hμ := hlift μ μU rfl (f (n, m)) ((hfK n m).2.trans (hKU n))
-      have hν := hlift ν νU rfl (f (n, m)) ((hfK n m).2.trans (hKU n))
       calc
-        ∫ x : ↥U, f (n, m) x ∂μU = ∫ x, f (n, m) x ∂μ := hμ
-        _ = ∫ x, f (n, m) x ∂ν := hfamily n m
-        _ = ∫ x : ↥U, f (n, m) x ∂νU := hν.symm
+        ∫ x : ↥U, f _ x ∂μU = ∫ x, f _ x ∂μ := (hlift μ μU rfl _ ((hfK n m).2.trans (hKU n)))
+        _ = ∫ x, f _ x ∂ν := hfamily n m
+        _ = ∫ x : ↥U, f _ x ∂νU := (hlift ν νU rfl _ ((hfK n m).2.trans (hKU n))).symm
     have hgμInt : Integrable g μU := g.continuous.integrable_of_hasCompactSupport g.hasCompactSupport'
     have hgνInt : Integrable g νU := g.continuous.integrable_of_hasCompactSupport g.hasCompactSupport'
     have hclose (lamU : Measure (↥U)) (hlamfin : IsFiniteMeasureOnCompacts lamU)
@@ -195,7 +184,7 @@ theorem admissible_countable_tests_determine_chart_measures
         by_cases hx : x ∈ W
         · simp [Set.indicator, hx, d]
           have h := happrox x.1
-          have hcg : gC x.1 = g x := by simpa [gC] using hgextval x
+          have hcg : gC x.1 = g x := by tauto
           rw [hcg] at h
           rw [abs_sub_comm]
           exact h.le
@@ -215,17 +204,17 @@ theorem admissible_countable_tests_determine_chart_measures
         ∀ m, (∀ x, ‖f (n, m) x - gC x‖ < δ) →
           ‖∫ x : ↥U, g x ∂lamU - ∫ x : ↥U, f (n, m) x ∂lamU‖ ≤ δ * lamU.real W := by
       intro m happrox
-      exact hclose lamU hlamfin hlamW (f (n, m)) (hfK n m).2 δ hδ happrox
-    let Mμ : ℝ := μU.real W
-    let Mν : ℝ := νU.real W
-    have hMμ : 0 ≤ Mμ := by simp [Mμ]
-    have hMν : 0 ≤ Mν := by simp [Mν]
+      exact hclose lamU hlamfin hlamW _ (hfK n m).2 δ hδ happrox
+    let Mμ := μU.real W
+    let Mν := νU.real W
+    have hMμ : 0 ≤ Mμ := by positivity
+    have hMν : 0 ≤ Mν := by positivity
     by_contra hne
     have hD : 0 < ‖(∫ x : ↥U, g x ∂μU) - ∫ x : ↥U, g x ∂νU‖ := by
       exact norm_pos_iff.mpr (sub_ne_zero.mpr hne)
-    let δ : ℝ := ‖(∫ x : ↥U, g x ∂μU) - ∫ x : ↥U, g x ∂νU‖ /
+    let δ := ‖(∫ x : ↥U, g x ∂μU) - ∫ x : ↥U, g x ∂νU‖ /
       (2 * (Mμ + Mν + 1))
-    have hδ : 0 < δ := by dsimp [δ]; positivity
+    have hδ : 0 < δ := by positivity
     obtain ⟨m, happrox⟩ := hdense n gC hgextCompact hgnK δ hδ
     have hμclose :
         ‖∫ x : ↥U, g x ∂μU - ∫ x : ↥U, f (n, m) x ∂μU‖ ≤ δ * Mμ := by
@@ -244,8 +233,8 @@ theorem admissible_countable_tests_determine_chart_measures
       rw [hdecomp]
       calc
         ‖_ + _‖ ≤
-            ‖(∫ x : ↥U, g x ∂μU) - ∫ x : ↥U, f (n, m) x ∂μU‖ +
-              ‖(∫ x : ↥U, f (n, m) x ∂νU) - ∫ x : ↥U, g x ∂νU‖ := norm_add_le _ _
+            ‖(∫ x : ↥U, g x ∂μU) - ∫ x : ↥U, f _ x ∂μU‖ +
+              ‖(∫ x : ↥U, f _ x ∂νU) - ∫ x : ↥U, g x ∂νU‖ := norm_add_le ..
         _ ≤ δ * Mμ + δ * Mν := by
           apply add_le_add hμclose
           simpa [norm_sub_rev] using hνclose

@@ -19,13 +19,11 @@ theorem circle_vertex_hasGaussianLaw
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (z : Fin N → ℂ) (r : Fin N → ℝ) :
     HasGaussianLaw (fun ω i => Xc ω (z i) (r i)) P := by
-  have hp := (circleAverage_isGaussianProcess P X Xc hX hXc).1
-  have hparam : IsGaussianProcess (fun i : Fin N => fun ω => Xc ω (z i) (r i)) P := by
-    simpa only [Function.comp_def] using hp.comp_right (fun i => (z i, r i))
+  have hparam : IsGaussianProcess (fun i ω => Xc ω (z i) (r i)) P := by
+    simpa only [Function.comp_def] using ((circleAverage_isGaussianProcess P X Xc hX hXc).1).comp_right (fun i => (z i, r i))
   apply hasGaussianLaw_pi_of_linearCombinations (fun i ω => Xc ω (z i) (r i))
   · exact fun i => hparam.aemeasurable i
   · intro a
-    have hscaled := hparam.smul a
-    simpa only [smul_eq_mul] using hscaled.hasGaussianLaw_fun_sum (I := Finset.univ)
+    simpa using (hparam.smul a).hasGaussianLaw_fun_sum
 
 end DOZZ.Proofs

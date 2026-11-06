@@ -77,16 +77,16 @@ theorem reflection_endpoint_and_gamma_continuity_of_representation
     · obtain ⟨A, hXcA, hAm, hA0, hBf, hBb, hInd, hLm, hIndL, hLat⟩ :=
         equatorGFF_lateral_GMC_decomposition P X (M γ) γ h.1 h.2 hX (hM γ h.1 h.2)
       have hSLP : IsSourceLateralProjection P X γ (M γ)
-          (fun ω => lateralProjectedGMC γ (A ω) (M γ ω)) :=
+          (fun ω => lateralProjectedGMC γ (A ω) _) :=
         ⟨hX, hM γ h.1 h.2, A, hXcA, hAm, hA0, hBf, hBb, hInd, hLm, hIndL,
           Eventually.of_forall fun _ => rfl⟩
       obtain ⟨B, hB⟩ := exists_reflectionData_family P X γ (M γ) _ hSLP hLat
-      exact ⟨(B, fun ω => lateralProjectedGMC γ (A ω) (M γ ω)),
+      exact ⟨(B, fun ω => lateralProjectedGMC γ (A ω) _),
         fun _ _ => ⟨hSLP, fun α _ hα => hB α hα⟩⟩
-    · exact ⟨(fun _ _ => (0, 0), fun _ => 0), fun h1 h2 => absurd ⟨h1, h2⟩ h⟩
+    simp_all
   choose BZ hBZ using hW
   have hData : ∀ γ, 0 < γ → γ < 2 → ∀ α, γ / 2 < α → α < Q γ →
-      IsReflectionData P γ α ((BZ γ).1 α) (BZ γ).2 :=
+      IsReflectionData P γ α _ (BZ γ).2 :=
     fun γ h1 h2 α ha1 ha2 => (hBZ γ h1 h2).2 α ha1 ha2
   refine ⟨fun γ => (BZ γ).1, fun γ => (BZ γ).2, fun γ h1 h2 => hBZ γ h1 h2,
     fun γ h1 h2 => reflection_endpoint_limits P γ μ h1 h2 hμ _ _ (hData γ h1 h2),

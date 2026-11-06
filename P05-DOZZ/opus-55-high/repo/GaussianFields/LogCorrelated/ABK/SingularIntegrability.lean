@@ -35,7 +35,7 @@ theorem real_exp_sub_one_le_mul_exp_of_nonneg {t : ℝ} (_ht : 0 ≤ t) :
     Real.exp t - 1 = Real.exp t * (1 - Real.exp (-t)) := by
       rw [mul_sub, mul_one, ← Real.exp_add, add_neg_cancel, Real.exp_zero]
     _ ≤ Real.exp t * t := by
-      simpa [mul_comm, mul_left_comm, mul_assoc] using hmul
+      linarith
     _ = t * Real.exp t := by ring_nf
 
 /-- On a bounded interval away from infinity, the centered Riesz slope is dominated by the
@@ -51,16 +51,15 @@ theorem abs_rpow_neg_sub_one_div_le_abkSingularMajorant {α ρ R : ℝ}
   have hsing_nonneg : 0 ≤ ρ ^ abkSingularMajorantExponent :=
     Real.rpow_nonneg hρ_pos.le _
   by_cases hρ_le_one : ρ ≤ 1
-  · let u : ℝ := ρ⁻¹
+  · let u := ρ⁻¹
     have hu_pos : 0 < u := inv_pos.mpr hρ_pos
     have hu_one : 1 ≤ u := by
-      dsimp [u]
-      exact (one_le_inv₀ hρ_pos).mpr hρ_le_one
+      bound
     have hu_pow_ge : 1 ≤ u ^ α :=
       Real.one_le_rpow hu_one hα_pos.le
     have hslope_nonneg : 0 ≤ (ρ ^ (-α) - 1) / α := by
       rw [Real.rpow_neg_eq_inv_rpow]
-      exact div_nonneg (sub_nonneg.mpr hu_pow_ge) hα_pos.le
+      positivity
     have hslope_eq :
         |(ρ ^ (-α) - 1) / α| = (u ^ α - 1) / α := by
       rw [abs_of_nonneg hslope_nonneg, Real.rpow_neg_eq_inv_rpow]
@@ -76,15 +75,10 @@ theorem abs_rpow_neg_sub_one_div_le_abkSingularMajorant {α ρ R : ℝ}
     have hdiv :
         (u ^ α - 1) / α ≤ Real.log u * u ^ α := by
       rw [div_le_iff₀ hα_pos]
-      calc
-        u ^ α - 1 ≤ (α * Real.log u) * u ^ α := hpow_sub
-        _ = α * (Real.log u * u ^ α) := by ring_nf
-        _ = Real.log u * u ^ α * α := by ring_nf
+      linarith
     have hlog_bound : Real.log u ≤ 4 * u ^ (1 / 4 : ℝ) := by
       have h := Real.log_le_rpow_div hu_pos.le (by norm_num : (0 : ℝ) < 1 / 4)
-      calc
-        Real.log u ≤ u ^ (1 / 4 : ℝ) / (1 / 4 : ℝ) := h
-        _ = 4 * u ^ (1 / 4 : ℝ) := by ring_nf
+      linarith
     have hpow_le : u ^ α ≤ u ^ (1 / 2 : ℝ) :=
       Real.rpow_le_rpow_of_exponent_le hu_one hα_le
     have hmain :
@@ -156,7 +150,7 @@ theorem abs_rpow_neg_sub_one_div_le_abkSingularMajorant {α ρ R : ℝ}
 
 /-- The one-dimensional function `|x|^{-3/4}`, restricted to a symmetric interval. -/
 @[expose]
-noncomputable def abkOneDimensionalSingularMajorant (R : ℝ) (x : ℝ) : ℝ :=
+noncomputable def abkOneDimensionalSingularMajorant (R x : ℝ) : ℝ :=
   (Set.Icc (-R) R).indicator (fun t : ℝ => |t| ^ abkSingularMajorantExponent) x
 
 /-- A coordinate-box majorant with one singular coordinate and bounded indicators in all other
@@ -194,12 +188,10 @@ noncomputable def abkPairDifferenceBoxMajorant {d : Nat} (R : ℝ)
 theorem abkBoxIndicatorVec_eq_one_of_forall_abs_apply_le {d : Nat}
     {R : ℝ} {x : Vec d} (hx : ∀ j : Fin d, |x j| ≤ R) :
     abkBoxIndicatorVec R x = 1 := by
-  unfold abkBoxIndicatorVec
   refine Finset.prod_eq_one ?_
   intro j _hj
-  have hj : x j ∈ Set.Icc (-R) R := by
-    exact (abs_le.mp (hx j))
-  rw [Set.indicator_of_mem hj]
+  have hj : x j ∈ Set.Icc (-R) R := by grind
+  simp_all
 
 /-- The one-dimensional singular majorant equals `|x|^{-3/4}` inside the box. -/
 theorem abkOneDimensionalSingularMajorant_eq_rpow_of_abs_le
@@ -208,7 +200,7 @@ theorem abkOneDimensionalSingularMajorant_eq_rpow_of_abs_le
       |x| ^ abkSingularMajorantExponent := by
   unfold abkOneDimensionalSingularMajorant
   have hxmem : x ∈ Set.Icc (-R) R := abs_le.mp hx
-  rw [Set.indicator_of_mem hxmem]
+  simp_all
 
 /-- The coordinate-box singular majorant reduces to the singular coordinate inside the box. -/
 theorem abkCoordinateBoxSingularMajorant_eq_abs_apply_rpow_of_forall_abs_apply_le
@@ -222,8 +214,8 @@ theorem abkCoordinateBoxSingularMajorant_eq_abs_apply_rpow_of_forall_abs_apply_l
     exact abkOneDimensionalSingularMajorant_eq_rpow_of_abs_le (hx i)
   · intro j hji
     rw [ite_eq_right hji]
-    have hj : x j ∈ Set.Icc (-R) R := abs_le.mp (hx j)
-    rw [Set.indicator_of_mem hj]
+    have hj : x j ∈ Set.Icc (-R) R := by grind
+    simp_all
 
 /-- The one-dimensional singular majorant is nonnegative. -/
 theorem abkOneDimensionalSingularMajorant_nonneg (R x : ℝ) :
@@ -231,25 +223,24 @@ theorem abkOneDimensionalSingularMajorant_nonneg (R x : ℝ) :
   unfold abkOneDimensionalSingularMajorant
   by_cases hx : x ∈ Set.Icc (-R) R
   · rw [Set.indicator_of_mem hx]
-    exact Real.rpow_nonneg (abs_nonneg x) _
-  · rw [Set.indicator_of_notMem hx]
+    positivity
+  simp_all
+section
+variable {d : Nat}
 
 /-- The coordinate-box indicator is nonnegative. -/
-theorem abkBoxIndicatorVec_nonneg {d : Nat} (R : ℝ) (x : Vec d) :
+theorem abkBoxIndicatorVec_nonneg (R : ℝ) (x : Vec d) :
     0 ≤ abkBoxIndicatorVec R x := by
-  unfold abkBoxIndicatorVec
   refine Finset.prod_nonneg ?_
   intro j _hj
   by_cases hx : x j ∈ Set.Icc (-R) R
-  · rw [Set.indicator_of_mem hx]
-    norm_num
-  · rw [Set.indicator_of_notMem hx]
+  · simp_all
+  simp_all
 
 /-- The coordinate-box singular majorant is nonnegative. -/
-theorem abkCoordinateBoxSingularMajorant_nonneg {d : Nat} (i : Fin d)
+theorem abkCoordinateBoxSingularMajorant_nonneg (i : Fin d)
     (R : ℝ) (x : Vec d) :
     0 ≤ abkCoordinateBoxSingularMajorant i R x := by
-  unfold abkCoordinateBoxSingularMajorant
   refine Finset.prod_nonneg ?_
   intro j _hj
   by_cases hji : j = i
@@ -257,30 +248,27 @@ theorem abkCoordinateBoxSingularMajorant_nonneg {d : Nat} (i : Fin d)
     exact abkOneDimensionalSingularMajorant_nonneg R (x j)
   · rw [ite_eq_right hji]
     by_cases hx : x j ∈ Set.Icc (-R) R
-    · rw [Set.indicator_of_mem hx]
-      norm_num
-    · rw [Set.indicator_of_notMem hx]
+    · simp_all
+    simp_all
 
 /-- The pair-space bounded box majorant is nonnegative. -/
-theorem abkPairDifferenceBoxMajorant_nonneg {d : Nat} (R : ℝ)
+theorem abkPairDifferenceBoxMajorant_nonneg (R : ℝ)
     (p : Vec d × Vec d) :
     0 ≤ abkPairDifferenceBoxMajorant (d := d) R p := by
-  unfold abkPairDifferenceBoxMajorant
   exact mul_nonneg (abkBoxIndicatorVec_nonneg (2 * R) (p.1 - p.2))
     (abkBoxIndicatorVec_nonneg R p.2)
 
 /-- The pair-space singular box majorant is nonnegative. -/
-theorem abkPairDifferenceBoxSingularMajorant_nonneg {d : Nat} (i : Fin d)
+theorem abkPairDifferenceBoxSingularMajorant_nonneg (i : Fin d)
     (R : ℝ) (p : Vec d × Vec d) :
     0 ≤ abkPairDifferenceBoxSingularMajorant i R p := by
-  unfold abkPairDifferenceBoxSingularMajorant
   exact mul_nonneg
-    (abkCoordinateBoxSingularMajorant_nonneg i (2 * R) (p.1 - p.2))
+    (abkCoordinateBoxSingularMajorant_nonneg i _ (p.1 - p.2))
     (abkBoxIndicatorVec_nonneg R p.2)
 
 /-- The pair-space bounded box majorant is one inside the corresponding pair box. -/
 theorem abkPairDifferenceBoxMajorant_eq_one_of_forall_abs_apply_le
-    {d : Nat} {R : ℝ} {p : Vec d × Vec d}
+    {R : ℝ} {p : Vec d × Vec d}
     (hdiff : ∀ j : Fin d, |(p.1 - p.2) j| ≤ 2 * R)
     (hy : ∀ j : Fin d, |p.2 j| ≤ R) :
     abkPairDifferenceBoxMajorant R p = 1 := by
@@ -290,7 +278,7 @@ theorem abkPairDifferenceBoxMajorant_eq_one_of_forall_abs_apply_le
 
 /-- The pair-space singular box majorant is the singular coordinate inside the pair box. -/
 theorem abkPairDifferenceBoxSingularMajorant_eq_abs_apply_rpow_of_forall_abs_apply_le
-    {d : Nat} (i : Fin d) {R : ℝ} {p : Vec d × Vec d}
+    (i : Fin d) {R : ℝ} {p : Vec d × Vec d}
     (hdiff : ∀ j : Fin d, |(p.1 - p.2) j| ≤ 2 * R)
     (hy : ∀ j : Fin d, |p.2 j| ≤ R) :
     abkPairDifferenceBoxSingularMajorant i R p =
@@ -299,8 +287,15 @@ theorem abkPairDifferenceBoxSingularMajorant_eq_abs_apply_rpow_of_forall_abs_app
   rw [abkCoordinateBoxSingularMajorant_eq_abs_apply_rpow_of_forall_abs_apply_le i hdiff,
     abkBoxIndicatorVec_eq_one_of_forall_abs_apply_le hy, mul_one]
 
+end
+section
+variable (R : ℝ)
+section
+variable (hR : 0 ≤ R)
+include hR
+
 /-- The one-dimensional singular majorant is integrable on every bounded symmetric interval. -/
-theorem integrableOn_abs_rpow_abkSingularMajorantExponent_Icc (R : ℝ) (hR : 0 ≤ R) :
+theorem integrableOn_abs_rpow_abkSingularMajorantExponent_Icc :
     IntegrableOn
       (fun x : ℝ => |x| ^ abkSingularMajorantExponent)
       (Set.Icc (-R) R) (volume : Measure ℝ) := by
@@ -348,30 +343,23 @@ theorem integrableOn_abs_rpow_abkSingularMajorantExponent_Icc (R : ℝ) (hR : 0 
       (intervalIntegrable_iff_integrableOn_Icc_of_le hle).mp hneg_interval
     refine hpow.congr_fun ?_ measurableSet_Icc
     intro x hx
-    simp [abs_of_nonpos hx.2]
+    grind
   have hcover : Set.Icc (-R) R = Set.Icc (-R) 0 ∪ Set.Icc 0 R := by
-    ext x
-    constructor
-    · intro hx
-      rcases le_total x 0 with hx0 | h0x
-      · exact Or.inl ⟨hx.1, hx0⟩
-      · exact Or.inr ⟨h0x, hx.2⟩
-    · intro hx
-      rcases hx with hx | hx
-      · exact ⟨hx.1, hx.2.trans hR⟩
-      · exact ⟨(neg_nonpos.mpr hR).trans hx.1, hx.2⟩
+    simp_all
   rw [hcover]
   exact hneg.union hpos
 
 /-- The one-dimensional singular majorant, extended by zero off the box, is integrable. -/
-theorem integrable_abkOneDimensionalSingularMajorant (R : ℝ) (hR : 0 ≤ R) :
+theorem integrable_abkOneDimensionalSingularMajorant :
     Integrable (abkOneDimensionalSingularMajorant R) (volume : Measure ℝ) := by
   unfold abkOneDimensionalSingularMajorant
   exact (integrableOn_abs_rpow_abkSingularMajorantExponent_Icc R hR).integrable_indicator
     measurableSet_Icc
 
+end
+
 /-- The bounded one-dimensional box indicator is integrable. -/
-theorem integrable_indicator_Icc_one (R : ℝ) (_hR : 0 ≤ R) :
+theorem integrable_indicator_Icc_one (_hR : 0 ≤ R) :
     Integrable
       ((Set.Icc (-R) R).indicator (fun _ : ℝ => (1 : ℝ)))
       (volume : Measure ℝ) := by
@@ -380,8 +368,12 @@ theorem integrable_indicator_Icc_one (R : ℝ) (_hR : 0 ≤ R) :
     exact continuousOn_const.integrableOn_Icc
   exact hint.integrable_indicator measurableSet_Icc
 
+end
+section
+variable {d : Nat}
+
 /-- The coordinate-box singular majorant is integrable on `Vec d`. -/
-theorem integrable_abkCoordinateBoxSingularMajorant {d : Nat} (i : Fin d)
+theorem integrable_abkCoordinateBoxSingularMajorant (i : Fin d)
     (R : ℝ) (hR : 0 ≤ R) :
     Integrable (abkCoordinateBoxSingularMajorant i R)
       (volume : Measure (Vec d)) := by
@@ -389,44 +381,34 @@ theorem integrable_abkCoordinateBoxSingularMajorant {d : Nat} (i : Fin d)
     if j = i then
       abkOneDimensionalSingularMajorant R x
     else
-      (Set.Icc (-R) R).indicator (fun _ : ℝ => (1 : ℝ)) x
-  have hf : ∀ j : Fin d, Integrable (f j) (volume : Measure ℝ) := fun j => by
+      (Set.Icc (-R) R).indicator (fun _ : ℝ => 1) x
+  have hf : ∀ j : Fin d, Integrable (f j) volume := fun j => by
     by_cases hji : j = i
     · subst hji
       simpa [f] using integrable_abkOneDimensionalSingularMajorant R hR
     · simpa [f, hji] using integrable_indicator_Icc_one R hR
-  have hprod :
-      Integrable (fun x : Fin d → ℝ => ∏ j : Fin d, f j (x j))
-        (Measure.pi fun _ : Fin d => (volume : Measure ℝ)) :=
+  exact 
     Integrable.fintype_prod hf
-  rw [MeasureTheory.volume_pi]
-  unfold abkCoordinateBoxSingularMajorant
-  simpa only [f] using hprod
 
 /-- The coordinate-box indicator is integrable on `Vec d`. -/
-theorem integrable_abkBoxIndicatorVec {d : Nat} (R : ℝ) (hR : 0 ≤ R) :
+theorem integrable_abkBoxIndicatorVec (R : ℝ) (hR : 0 ≤ R) :
     Integrable (abkBoxIndicatorVec (d := d) R) (volume : Measure (Vec d)) := by
   let f : Fin d → ℝ → ℝ := fun _ x =>
-    (Set.Icc (-R) R).indicator (fun _ : ℝ => (1 : ℝ)) x
-  have hf : ∀ j : Fin d, Integrable (f j) (volume : Measure ℝ) := fun _ =>
+    (Set.Icc (-R) R).indicator (fun _ : ℝ => 1) x
+  have hf : ∀ j : Fin d, Integrable (f j) volume := fun _ =>
     integrable_indicator_Icc_one R hR
-  have hprod :
-      Integrable (fun x : Fin d → ℝ => ∏ j : Fin d, f j (x j))
-        (Measure.pi fun _ : Fin d => (volume : Measure ℝ)) :=
+  exact 
     Integrable.fintype_prod hf
-  rw [MeasureTheory.volume_pi]
-  unfold abkBoxIndicatorVec
-  simpa only [f] using hprod
 
 /-- The pair-space difference singular majorant is integrable. -/
-theorem integrable_abkPairDifferenceBoxSingularMajorant {d : Nat} (i : Fin d)
+theorem integrable_abkPairDifferenceBoxSingularMajorant (i : Fin d)
     (R : ℝ) (hR : 0 ≤ R) :
     Integrable (abkPairDifferenceBoxSingularMajorant i R)
       ((volume : Measure (Vec d)).prod (volume : Measure (Vec d))) := by
   let μ : Measure (Vec d × Vec d) :=
-    (volume : Measure (Vec d)).prod (volume : Measure (Vec d))
+    volume.prod volume
   let T : Vec d × Vec d → Vec d × Vec d := fun p => (p.1 - p.2, p.2)
-  have h2R : 0 ≤ 2 * R := mul_nonneg (by norm_num) hR
+  have h2R : 0 ≤ 2 * R := by positivity
   have hprod :
       Integrable
         (fun q : Vec d × Vec d =>
@@ -434,88 +416,85 @@ theorem integrable_abkPairDifferenceBoxSingularMajorant {d : Nat} (i : Fin d)
             abkBoxIndicatorVec R q.2)
         μ := by
     simpa [μ] using
-      (integrable_abkCoordinateBoxSingularMajorant i (2 * R) h2R).mul_prod
+      (integrable_abkCoordinateBoxSingularMajorant i _ h2R).mul_prod
         (integrable_abkBoxIndicatorVec (d := d) R hR)
   have hT : MeasurePreserving T μ μ := by
     simpa [T, μ] using
       (measurePreserving_sub_prod
-        (volume : Measure (Vec d)) (volume : Measure (Vec d)))
+        volume volume)
   unfold abkPairDifferenceBoxSingularMajorant
   change Integrable
     (fun p : Vec d × Vec d =>
-      abkCoordinateBoxSingularMajorant i (2 * R) (p.1 - p.2) *
+      abkCoordinateBoxSingularMajorant i _ (p.1 - p.2) *
         abkBoxIndicatorVec R p.2) μ
   exact hT.integrable_comp_of_integrable hprod
 
 /-- The pair-space bounded box majorant is integrable. -/
-theorem integrable_abkPairDifferenceBoxMajorant {d : Nat}
-    (R : ℝ) (hR : 0 ≤ R) :
+theorem integrable_abkPairDifferenceBoxMajorant (R : ℝ) (hR : 0 ≤ R) :
     Integrable (abkPairDifferenceBoxMajorant (d := d) R)
       ((volume : Measure (Vec d)).prod (volume : Measure (Vec d))) := by
   let μ : Measure (Vec d × Vec d) :=
-    (volume : Measure (Vec d)).prod (volume : Measure (Vec d))
+    volume.prod volume
   let T : Vec d × Vec d → Vec d × Vec d := fun p => (p.1 - p.2, p.2)
-  have h2R : 0 ≤ 2 * R := mul_nonneg (by norm_num) hR
+  have h2R : 0 ≤ 2 * R := by positivity
   have hprod :
       Integrable
-        (fun q : Vec d × Vec d =>
-          abkBoxIndicatorVec (d := d) (2 * R) q.1 *
+        (fun q =>
+          abkBoxIndicatorVec (2 * R) q.1 *
             abkBoxIndicatorVec R q.2)
         μ := by
     simpa [μ] using
-      (integrable_abkBoxIndicatorVec (d := d) (2 * R) h2R).mul_prod
-        (integrable_abkBoxIndicatorVec (d := d) R hR)
+      (integrable_abkBoxIndicatorVec _ h2R).mul_prod
+        (integrable_abkBoxIndicatorVec R hR)
   have hT : MeasurePreserving T μ μ := by
     simpa [T, μ] using
       (measurePreserving_sub_prod
-        (volume : Measure (Vec d)) (volume : Measure (Vec d)))
-  unfold abkPairDifferenceBoxMajorant
+        volume volume)
   change Integrable
     (fun p : Vec d × Vec d =>
-      abkBoxIndicatorVec (2 * R) (p.1 - p.2) * abkBoxIndicatorVec R p.2) μ
+      abkBoxIndicatorVec _ (p.1 - p.2) * abkBoxIndicatorVec R p.2) μ
   exact hT.integrable_comp_of_integrable hprod
 
 /-- After the additive shear, any fixed coordinate of the difference is nonzero a.e. -/
-theorem ae_sub_apply_ne_zero_volume_prod {d : Nat} (i : Fin d) :
+theorem ae_sub_apply_ne_zero_volume_prod (i : Fin d) :
     ∀ᵐ p : Vec d × Vec d
       ∂((volume : Measure (Vec d)).prod (volume : Measure (Vec d))),
       (p.1 - p.2) i ≠ 0 := by
   let μ : Measure (Vec d × Vec d) :=
-    (volume : Measure (Vec d)).prod (volume : Measure (Vec d))
+    volume.prod volume
   let T : Vec d × Vec d → Vec d × Vec d := fun p => (p.1 - p.2, p.2)
   have hcoord : ∀ᵐ v : Vec d ∂(volume : Measure (Vec d)), v i ≠ 0 := by
     simpa [MeasureTheory.volume_pi] using
-      (Measure.ae_eval_ne (fun _ : Fin d => (volume : Measure ℝ)) i (0 : ℝ))
+      (Measure.ae_eval_ne (fun _ : Fin d => volume) i 0)
   have hprod : ∀ᵐ q : Vec d × Vec d ∂μ, q.1 i ≠ 0 := by
-    have hmeas : MeasurableSet {q : Vec d × Vec d | q.1 i ≠ 0} := by
-      exact (isClosed_eq ((continuous_apply i).comp continuous_fst) continuous_const).measurableSet.compl
+    have hmeas : MeasurableSet {q : Vec d × Vec d | q.1 i ≠ 0} := by measurability
     rw [Measure.ae_prod_iff_ae_ae hmeas]
-    filter_upwards [hcoord] with v hv
-    exact Filter.Eventually.of_forall fun _ => hv
+    simp_all
   have hT : MeasurePreserving T μ μ := by
     simpa [T, μ] using
       (measurePreserving_sub_prod
-        (volume : Measure (Vec d)) (volume : Measure (Vec d)))
+        volume volume)
   simpa [T, μ] using hT.quasiMeasurePreserving.ae hprod
+section
+variable (hd : 0 < d) (ψ φ : MeanZeroTestFunction d)
+include hd
 
 /-- The centered Riesz slope integrand is a.e. strongly measurable for nonzero `α`. -/
 theorem aestronglyMeasurable_abkCenteredRieszSlopeKernel_integrand_of_ne
-    {d : Nat} (hd : 0 < d) (ψ φ : MeanZeroTestFunction d) {α : ℝ}
+    {α : ℝ}
     (hα : α ≠ 0) :
     AEStronglyMeasurable
       (fun p : Vec d × Vec d =>
         ψ p.1 * φ p.2 * abkCenteredRieszSlopeKernel α p.1 p.2)
       ((volume : Measure (Vec d)).prod (volume : Measure (Vec d))) := by
   let μ : Measure (Vec d × Vec d) :=
-    (volume : Measure (Vec d)).prod (volume : Measure (Vec d))
+    volume.prod volume
   let s : Set (Vec d × Vec d) := {p | p.1 ≠ p.2}
-  have hs : MeasurableSet s := by
-    exact (isClosed_eq continuous_fst continuous_snd).measurableSet.compl
+  have hs : MeasurableSet s := by measurability
   have hfull : ∀ᵐ p : Vec d × Vec d ∂μ, p ∈ s := by
     simpa [s, μ] using ae_fst_ne_snd_volume_prod hd
   have hnorm :
-      ContinuousOn (fun p : Vec d × Vec d => euclideanNorm (p.1 - p.2)) s := by
-    exact ((continuous_euclideanNorm (d := d)).comp
+      ContinuousOn (fun p : Vec d × Vec d => euclideanNorm (p.1 - p.2)) s := ((continuous_euclideanNorm (d := d)).comp
       (continuous_fst.sub continuous_snd)).continuousOn
   have hpow :
       ContinuousOn
@@ -524,8 +503,7 @@ theorem aestronglyMeasurable_abkCenteredRieszSlopeKernel_integrand_of_ne
     intro p hp
     left
     have hdiff : p.1 - p.2 ≠ 0 := by
-      intro hzero
-      exact hp (sub_eq_zero.mp hzero)
+      grind
     exact ne_of_gt (abkEuclideanNorm_pos_of_ne_zero hdiff)
   have hslope :
       ContinuousOn
@@ -537,8 +515,7 @@ theorem aestronglyMeasurable_abkCenteredRieszSlopeKernel_integrand_of_ne
   have hcont :
       ContinuousOn
         (fun p : Vec d × Vec d =>
-          ψ p.1 * φ p.2 * abkCenteredRieszSlopeKernel α p.1 p.2) s := by
-    exact (((ψ.continuous.comp continuous_fst).continuousOn).mul
+          ψ p.1 * φ p.2 * abkCenteredRieszSlopeKernel α p.1 p.2) s := (((ψ.continuous.comp continuous_fst).continuousOn).mul
       ((φ.continuous.comp continuous_snd).continuousOn)).mul hslope
   have hsm := hcont.aestronglyMeasurable (μ := μ) hs
   rw [Measure.restrict_eq_self_of_ae_mem hfull] at hsm
@@ -546,7 +523,7 @@ theorem aestronglyMeasurable_abkCenteredRieszSlopeKernel_integrand_of_ne
 
 /-- Near `α = 0+`, the centered Riesz slope integrands are a.e. strongly measurable. -/
 theorem eventually_aestronglyMeasurable_abkCenteredRieszSlopeKernel_integrand
-    {d : Nat} (hd : 0 < d) (ψ φ : MeanZeroTestFunction d) :
+    :
     ∀ᶠ α : ℝ in 𝓝[>] (0 : ℝ),
       AEStronglyMeasurable
         (fun p : Vec d × Vec d =>
@@ -556,10 +533,12 @@ theorem eventually_aestronglyMeasurable_abkCenteredRieszSlopeKernel_integrand
   exact aestronglyMeasurable_abkCenteredRieszSlopeKernel_integrand_of_ne
     hd ψ φ hα.ne'
 
+end
+
 /-- Pointwise domination of the centered Riesz slope integrand by the concrete pair-box
 majorant, assuming explicit support and uniform bounds for the two test functions. -/
 theorem norm_abkCenteredRieszSlopeKernel_integrand_le_pair_majorant
-    {d : Nat} (i : Fin d) (ψ φ : MeanZeroTestFunction d)
+    (i : Fin d) (ψ φ : MeanZeroTestFunction d)
     {R Mψ Mφ α : ℝ}
     (hR : 1 ≤ R)
     (hMψ_nonneg : 0 ≤ Mψ) (hMφ_nonneg : 0 ≤ Mφ)
@@ -573,23 +552,19 @@ theorem norm_abkCenteredRieszSlopeKernel_integrand_le_pair_majorant
       (Mψ * Mφ * (4 + Real.log (2 * R))) *
         (abkPairDifferenceBoxMajorant R p +
           abkPairDifferenceBoxSingularMajorant i R p) := by
-  let C : ℝ := Mψ * Mφ * (4 + Real.log (2 * R))
+  let C := Mψ * Mφ * (4 + Real.log (2 * R))
   have h2R : 1 ≤ 2 * R := by nlinarith
   have hcoef_nonneg : 0 ≤ 4 + Real.log (2 * R) := by
-    have hlog : 0 ≤ Real.log (2 * R) := Real.log_nonneg h2R
-    linarith
+    bound
   have hC_nonneg : 0 ≤ C := by
-    dsimp [C]
-    exact mul_nonneg (mul_nonneg hMψ_nonneg hMφ_nonneg) hcoef_nonneg
-  have hsum_nonneg :
-      0 ≤ abkPairDifferenceBoxMajorant R p +
-        abkPairDifferenceBoxSingularMajorant i R p :=
+    positivity
+  have hsum_nonneg :=
     add_nonneg (abkPairDifferenceBoxMajorant_nonneg R p)
       (abkPairDifferenceBoxSingularMajorant_nonneg i R p)
   by_cases hψ_zero : ψ p.1 = 0
   · calc
       ‖ψ p.1 * φ p.2 * abkCenteredRieszSlopeKernel α p.1 p.2‖ = 0 := by
-        simp [hψ_zero]
+        simp_all
       _ ≤ C *
           (abkPairDifferenceBoxMajorant R p +
             abkPairDifferenceBoxSingularMajorant i R p) :=
@@ -602,54 +577,44 @@ theorem norm_abkCenteredRieszSlopeKernel_integrand_le_pair_majorant
           (abkPairDifferenceBoxMajorant R p +
             abkPairDifferenceBoxSingularMajorant i R p) :=
         mul_nonneg hC_nonneg hsum_nonneg
-  have hx_norm : euclideanNorm p.1 ≤ R := hψ_support hψ_zero
-  have hy_norm : euclideanNorm p.2 ≤ R := hφ_support hφ_zero
+  have hy_norm := hφ_support hφ_zero
   have hy_box : ∀ j : Fin d, |p.2 j| ≤ R := by
     intro j
     exact (abs_apply_le_euclideanNorm p.2 j).trans hy_norm
   have hρ_le : euclideanNorm (p.1 - p.2) ≤ 2 * R := by
     have hsub : p.1 - p.2 = p.1 + (-p.2) := by
       ext j
-      simp only [Pi.sub_apply, Pi.add_apply, Pi.neg_apply]
+      simp
       ring_nf
     calc
-      euclideanNorm (p.1 - p.2) = euclideanNorm (p.1 + (-p.2)) := by rw [hsub]
+      euclideanNorm (p.1 - p.2) = euclideanNorm (p.1 + (-p.2)) := by rfl
       _ ≤ euclideanNorm p.1 + euclideanNorm (-p.2) := euclideanNorm_add_le p.1 (-p.2)
       _ = euclideanNorm p.1 + euclideanNorm p.2 := by rw [euclideanNorm_neg]
-      _ ≤ R + R := add_le_add hx_norm hy_norm
+      _ ≤ R + R := add_le_add (hψ_support hψ_zero) hy_norm
       _ = 2 * R := by ring_nf
   have hdiff_box : ∀ j : Fin d, |(p.1 - p.2) j| ≤ 2 * R := by
     intro j
     exact (abs_apply_le_euclideanNorm (p.1 - p.2) j).trans hρ_le
-  have hbox :
-      abkPairDifferenceBoxMajorant R p = 1 :=
+  have hbox :=
     abkPairDifferenceBoxMajorant_eq_one_of_forall_abs_apply_le hdiff_box hy_box
-  have hsing :
-      abkPairDifferenceBoxSingularMajorant i R p =
-        |(p.1 - p.2) i| ^ abkSingularMajorantExponent :=
+  have hsing :=
     abkPairDifferenceBoxSingularMajorant_eq_abs_apply_rpow_of_forall_abs_apply_le
       i hdiff_box hy_box
   have hdiff_ne : p.1 - p.2 ≠ 0 := by
     intro hzero
-    exact hp_coord (by rw [hzero]; rfl)
-  have hρ_pos : 0 < euclideanNorm (p.1 - p.2) :=
+    exact hp_coord (by tauto)
+  have hρ_pos :=
     abkEuclideanNorm_pos_of_ne_zero hdiff_ne
-  have hslope_abs :
-      |((euclideanNorm (p.1 - p.2)) ^ (-α) - 1) / α| ≤
-        (4 + Real.log (2 * R)) *
-          (1 + (euclideanNorm (p.1 - p.2)) ^ abkSingularMajorantExponent) :=
+  have hslope_abs :=
     abs_rpow_neg_sub_one_div_le_abkSingularMajorant
       (α := α) (ρ := euclideanNorm (p.1 - p.2)) (R := 2 * R)
       hα_pos hα_le hρ_pos hρ_le h2R
-  have hcoord_pos : 0 < |(p.1 - p.2) i| := abs_pos.mpr hp_coord
-  have hcoord_le : |(p.1 - p.2) i| ≤ euclideanNorm (p.1 - p.2) :=
+  have hcoord_le :=
     abs_apply_le_euclideanNorm (p.1 - p.2) i
   have hexp_nonpos : abkSingularMajorantExponent ≤ 0 := by
     norm_num [abkSingularMajorantExponent]
-  have hρ_sing_le :
-      (euclideanNorm (p.1 - p.2)) ^ abkSingularMajorantExponent ≤
-        |(p.1 - p.2) i| ^ abkSingularMajorantExponent :=
-    Real.rpow_le_rpow_of_nonpos hcoord_pos hcoord_le hexp_nonpos
+  have hρ_sing_le :=
+    Real.rpow_le_rpow_of_nonpos (abs_pos.mpr hp_coord) hcoord_le hexp_nonpos
   have hψ_norm : ‖ψ p.1‖ ≤ Mψ := by
     simpa [Real.norm_eq_abs] using hψ_bound p.1
   have hφ_norm : ‖φ p.2‖ ≤ Mφ := by
@@ -658,29 +623,24 @@ theorem norm_abkCenteredRieszSlopeKernel_integrand_le_pair_majorant
       ‖abkCenteredRieszSlopeKernel α p.1 p.2‖ ≤
         (4 + Real.log (2 * R)) *
           (1 + (euclideanNorm (p.1 - p.2)) ^ abkSingularMajorantExponent) := by
-    rw [abkCenteredRieszSlopeKernel, Real.norm_eq_abs]
-    exact hslope_abs
-  have hψφ_norm : ‖ψ p.1‖ * ‖φ p.2‖ ≤ Mψ * Mφ := by
-    exact mul_le_mul hψ_norm hφ_norm (norm_nonneg _) hMψ_nonneg
+    rwa [abkCenteredRieszSlopeKernel, Real.norm_eq_abs]
+  have hψφ_norm : ‖ψ p.1‖ * ‖φ p.2‖ ≤ Mψ * Mφ := mul_le_mul hψ_norm hφ_norm (norm_nonneg _) hMψ_nonneg
   have htarget_nonneg :
-      0 ≤ (4 + Real.log (2 * R)) *
-          (1 + (euclideanNorm (p.1 - p.2)) ^ abkSingularMajorantExponent) := by
-    exact mul_nonneg hcoef_nonneg
+      0 ≤ (4 + Real.log _) *
+          (1 + (euclideanNorm (p.1 - p.2)) ^ abkSingularMajorantExponent) := mul_nonneg hcoef_nonneg
       (add_nonneg zero_le_one (Real.rpow_nonneg (euclideanNorm_nonneg _) _))
   calc
     ‖ψ p.1 * φ p.2 * abkCenteredRieszSlopeKernel α p.1 p.2‖
         ≤ ‖ψ p.1‖ * ‖φ p.2‖ *
             ‖abkCenteredRieszSlopeKernel α p.1 p.2‖ := norm_mul₃_le
     _ ≤ (Mψ * Mφ) *
-          ((4 + Real.log (2 * R)) *
-            (1 + (euclideanNorm (p.1 - p.2)) ^ abkSingularMajorantExponent)) := by
-          exact mul_le_mul hψφ_norm hslope_norm (norm_nonneg _)
+          ((4 + Real.log _) *
+            (1 + (euclideanNorm (p.1 - p.2)) ^ abkSingularMajorantExponent)) := mul_le_mul hψφ_norm hslope_norm (norm_nonneg _)
             (mul_nonneg hMψ_nonneg hMφ_nonneg)
     _ = C * (1 + (euclideanNorm (p.1 - p.2)) ^ abkSingularMajorantExponent) := by
           dsimp [C]
           ring_nf
-    _ ≤ C * (1 + |(p.1 - p.2) i| ^ abkSingularMajorantExponent) := by
-          exact mul_le_mul_of_nonneg_left (add_le_add le_rfl hρ_sing_le) hC_nonneg
+    _ ≤ C * (1 + |(p.1 - p.2) i| ^ abkSingularMajorantExponent) := mul_le_mul_of_nonneg_left (add_le_add le_rfl hρ_sing_le) hC_nonneg
     _ = C *
           (abkPairDifferenceBoxMajorant R p +
             abkPairDifferenceBoxSingularMajorant i R p) := by
@@ -689,7 +649,7 @@ theorem norm_abkCenteredRieszSlopeKernel_integrand_le_pair_majorant
 /-- Concrete integrable dominated-convergence majorant for the centered Riesz slope
 integrands associated to two ABK test functions. -/
 theorem exists_integrable_bound_abkCenteredRieszSlopeKernel_integrand
-    {d : Nat} (hd : 0 < d) (ψ φ : MeanZeroTestFunction d) :
+    (hd : 0 < d) (ψ φ : MeanZeroTestFunction d) :
     ∃ bound : Vec d × Vec d → ℝ,
       Integrable bound
         ((volume : Measure (Vec d)).prod (volume : Measure (Vec d))) ∧
@@ -706,11 +666,11 @@ theorem exists_integrable_bound_abkCenteredRieszSlopeKernel_integrand
     ⟨Mψ, hMψ_nonneg, hψ_bound⟩
   rcases exists_abs_meanZeroTestFunction_le φ with
     ⟨Mφ, hMφ_nonneg, hφ_bound⟩
-  let R : ℝ := max 1 (max Rψ Rφ)
-  have hR : 1 ≤ R := le_max_left _ _
+  let R := max 1 (max Rψ Rφ)
+  have hR : 1 ≤ R := le_max_left ..
   have hR_nonneg : 0 ≤ R := zero_le_one.trans hR
   have hRψ_le : Rψ ≤ R := by
-    exact (le_max_left Rψ Rφ).trans (le_max_right 1 (max Rψ Rφ))
+    aesop
   have hRφ_le : Rφ ≤ R := by
     exact (le_max_right Rψ Rφ).trans (le_max_right 1 (max Rψ Rφ))
   have hψ_support : Function.support ψ ⊆ {x : Vec d | euclideanNorm x ≤ R} := by
@@ -719,7 +679,7 @@ theorem exists_integrable_bound_abkCenteredRieszSlopeKernel_integrand
   have hφ_support : Function.support φ ⊆ {x : Vec d | euclideanNorm x ≤ R} := by
     intro x hx
     exact (hφ_support₀ hx).trans hRφ_le
-  let C : ℝ := Mψ * Mφ * (4 + Real.log (2 * R))
+  let C := Mψ * Mφ * (4 + Real.log (2 * R))
   let bound : Vec d × Vec d → ℝ := fun p =>
     C * (abkPairDifferenceBoxMajorant R p +
       abkPairDifferenceBoxSingularMajorant i R p)
@@ -732,18 +692,20 @@ theorem exists_integrable_bound_abkCenteredRieszSlopeKernel_integrand
           ((volume : Measure (Vec d)).prod (volume : Measure (Vec d))) :=
       (integrable_abkPairDifferenceBoxMajorant (d := d) R hR_nonneg).add
         (integrable_abkPairDifferenceBoxSingularMajorant i R hR_nonneg)
-    simpa [bound, C] using hsum.const_mul C
+    fun_prop
   · filter_upwards [Ioc_mem_nhdsGT (by norm_num : (0 : ℝ) < 1 / 2)] with α hα
     filter_upwards [ae_sub_apply_ne_zero_volume_prod i] with p hp_coord
     simpa [bound, C] using
       norm_abkCenteredRieszSlopeKernel_integrand_le_pair_majorant
         i ψ φ hR hMψ_nonneg hMφ_nonneg hψ_bound hφ_bound
         hψ_support hφ_support hα.1 hα.2 hp_coord
+section
+variable (hd : 0 < d) (ψ φ : MeanZeroTestFunction d) {α : ℝ} (hα_pos : 0 < α) (hα_le : α ≤ 1 / 2)
+include hd hα_pos hα_le
 
 /-- For each fixed small positive `α`, the centered Riesz slope integrand is integrable. -/
 theorem integrable_abkCenteredRieszSlopeKernel_integrand_of_pos_le_half
-    {d : Nat} (hd : 0 < d) (ψ φ : MeanZeroTestFunction d) {α : ℝ}
-    (hα_pos : 0 < α) (hα_le : α ≤ 1 / 2) :
+    :
     Integrable
       (fun p : Vec d × Vec d =>
         ψ p.1 * φ p.2 * abkCenteredRieszSlopeKernel α p.1 p.2)
@@ -757,40 +719,27 @@ theorem integrable_abkCenteredRieszSlopeKernel_integrand_of_pos_le_half
     ⟨Mψ, hMψ_nonneg, hψ_bound⟩
   rcases exists_abs_meanZeroTestFunction_le φ with
     ⟨Mφ, hMφ_nonneg, hφ_bound⟩
-  let R : ℝ := max 1 (max Rψ Rφ)
-  have hR : 1 ≤ R := le_max_left _ _
-  have hR_nonneg : 0 ≤ R := zero_le_one.trans hR
-  have hRψ_le : Rψ ≤ R := by
-    exact (le_max_left Rψ Rφ).trans (le_max_right 1 (max Rψ Rφ))
-  have hRφ_le : Rφ ≤ R := by
-    exact (le_max_right Rψ Rφ).trans (le_max_right 1 (max Rψ Rφ))
+  let R := max 1 (max Rψ Rφ)
+  have hR : 1 ≤ R := le_max_left ..
+  have hR_nonneg := zero_le_one.trans hR
+  have hRψ_le : Rψ ≤ R := by aesop
+  have hRφ_le : Rφ ≤ R := by aesop
   have hψ_support : Function.support ψ ⊆ {x : Vec d | euclideanNorm x ≤ R} := by
-    intro x hx
-    exact (hψ_support₀ hx).trans hRψ_le
+    grind
   have hφ_support : Function.support φ ⊆ {x : Vec d | euclideanNorm x ≤ R} := by
-    intro x hx
-    exact (hφ_support₀ hx).trans hRφ_le
-  let C : ℝ := Mψ * Mφ * (4 + Real.log (2 * R))
+    grind
+  let C := Mψ * Mφ * (4 + Real.log (2 * R))
   let bound : Vec d × Vec d → ℝ := fun p =>
     C * (abkPairDifferenceBoxMajorant R p +
       abkPairDifferenceBoxSingularMajorant i R p)
   have hbound_int :
       Integrable bound
-        ((volume : Measure (Vec d)).prod (volume : Measure (Vec d))) := by
-    have hsum :
-        Integrable
-          (fun p : Vec d × Vec d =>
-            abkPairDifferenceBoxMajorant R p +
-              abkPairDifferenceBoxSingularMajorant i R p)
-          ((volume : Measure (Vec d)).prod (volume : Measure (Vec d))) :=
+        (volume.prod volume) := by
+    have hsum :=
       (integrable_abkPairDifferenceBoxMajorant (d := d) R hR_nonneg).add
         (integrable_abkPairDifferenceBoxSingularMajorant i R hR_nonneg)
     simpa [bound, C] using hsum.const_mul C
-  have hmeas :
-      AEStronglyMeasurable
-        (fun p : Vec d × Vec d =>
-          ψ p.1 * φ p.2 * abkCenteredRieszSlopeKernel α p.1 p.2)
-        ((volume : Measure (Vec d)).prod (volume : Measure (Vec d))) :=
+  have hmeas :=
     aestronglyMeasurable_abkCenteredRieszSlopeKernel_integrand_of_ne
       hd ψ φ hα_pos.ne'
   refine hbound_int.mono' hmeas ?_
@@ -802,39 +751,31 @@ theorem integrable_abkCenteredRieszSlopeKernel_integrand_of_pos_le_half
 
 /-- For each fixed small positive `α`, the Riesz kernel integrand is integrable. -/
 theorem integrable_abkRieszKernel_integrand_of_pos_le_half
-    {d : Nat} (hd : 0 < d) (ψ φ : MeanZeroTestFunction d) {α : ℝ}
-    (hα_pos : 0 < α) (hα_le : α ≤ 1 / 2) :
+    :
     Integrable
       (fun p : Vec d × Vec d => ψ p.1 * φ p.2 * abkRieszKernel α p.1 p.2)
       ((volume : Measure (Vec d)).prod (volume : Measure (Vec d))) := by
   let μ : Measure (Vec d × Vec d) :=
-    (volume : Measure (Vec d)).prod (volume : Measure (Vec d))
-  have hslope :
-      Integrable
-        (fun p : Vec d × Vec d =>
-          ψ p.1 * φ p.2 * abkCenteredRieszSlopeKernel α p.1 p.2) μ :=
+    volume.prod volume
+  have hslope :=
     integrable_abkCenteredRieszSlopeKernel_integrand_of_pos_le_half
       hd ψ φ hα_pos hα_le
-  have hconst :
-      Integrable (fun p : Vec d × Vec d => ψ p.1 * φ p.2 * (1 : ℝ)) μ :=
+  have hconst :=
     integrable_abkKernelPairing_const_one ψ φ
-  have hsum :
-      Integrable
-        (fun p : Vec d × Vec d =>
-          α * (ψ p.1 * φ p.2 * abkCenteredRieszSlopeKernel α p.1 p.2) +
-            ψ p.1 * φ p.2 * (1 : ℝ)) μ :=
+  have hsum :=
     (hslope.const_mul α).add hconst
   refine hsum.congr ?_
   filter_upwards with p
-  have hα_ne : α ≠ 0 := hα_pos.ne'
   simp [abkCenteredRieszSlopeKernel, abkRieszKernel]
-  field_simp [hα_ne]
+  field_simp [hα_pos.ne']
   ring_nf
+
+end
 
 /-- The ABK reciprocal normalization times the centered Riesz difference pairing converges to
 the logarithmic covariance pairing with the `M₀` prefactor. -/
 theorem tendsto_abkMAlphaInv_mul_centeredRieszDifferencePairing
-    {d : Nat} (hd : 0 < d) (ζ : ABKCutoff d) (ψ φ : MeanZeroTestFunction d) :
+    (hd : 0 < d) (ζ : ABKCutoff d) (ψ φ : MeanZeroTestFunction d) :
     Tendsto
       (fun α : ℝ =>
         abkMAlphaInv ζ α * abkCenteredRieszDifferencePairing ψ φ α)
@@ -846,6 +787,8 @@ theorem tendsto_abkMAlphaInv_mul_centeredRieszDifferencePairing
     hd ζ ψ φ bound
     (eventually_aestronglyMeasurable_abkCenteredRieszSlopeKernel_integrand hd ψ φ)
     hbound hbound_int
+
+end
 
 end GaussianFields
 

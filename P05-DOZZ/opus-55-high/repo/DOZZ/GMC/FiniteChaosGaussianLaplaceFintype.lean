@@ -29,15 +29,14 @@ theorem centeredJointlyGaussian_reindex
     have hsum (ω : Ω) :
         (∑ k, a k * Z ω (e k)) = ∑ i, b i * Z ω i := by
       calc
-        ∑ k, a k * Z ω (e k) = ∑ i, (a (e.symm i) * Z ω (e (e.symm i))) :=
+        ∑ k, a k * Z ω (e k) = ∑ i, (a (e.symm i) * Z ω _) :=
           (e.symm.sum_comp (fun k => a k * Z ω (e k))).symm
-        _ = ∑ i, b i * Z ω i := by simp [b]
+        _ = ∑ i, b i * Z ω i := by aesop
     have hsumFun : (fun ω => ∑ k, a k * Z ω (e k)) =
         fun ω => ∑ i, b i * Z ω i := funext hsum
     obtain ⟨v, hmap⟩ := (hZ.2.2 b).2
     refine ⟨hsumFun ▸ (hZ.2.2 b).1, v, ?_⟩
-    rw [hsumFun]
-    exact hmap
+    simp_all
 
 /-- The finite Laplace Kahane comparison for arbitrary finite families of coordinates. Empty
 families have zero chaos mass; nonempty families are reindexed by `Fin (card ι)`. -/
@@ -55,22 +54,18 @@ theorem kahane_finite_laplace_lintegral_fintype
   by_cases hι : Nonempty ι
   · have hcardNe : Fintype.card ι ≠ 0 := Fintype.card_ne_zero
     have hcardLe : 1 ≤ Fintype.card ι := Nat.one_le_iff_ne_zero.mpr hcardNe
-    let n : ℕ := Fintype.card ι - 1
+    let n := Fintype.card ι - 1
     have hcard : Fintype.card ι = n + 1 := by
-      dsimp [n]
       omega
-    let e : Fin (n + 1) ≃ ι := (Fintype.equivFinOfCardEq hcard).symm
+    let e := (Fintype.equivFinOfCardEq hcard).symm
     let X' : ΩX → Fin (n + 1) → ℝ := fun ω i => X ω (e i)
     let Y' : ΩY → Fin (n + 1) → ℝ := fun ω i => Y ω (e i)
     let a' : Fin (n + 1) → ℝ := fun i => a (e i)
-    have hX' := centeredJointlyGaussian_reindex PX e X hX
-    have hY' := centeredJointlyGaussian_reindex PY e Y hY
     have ha' : ∀ i, 0 ≤ a' i := fun i => ha (e i)
     have hcov' : ∀ i j, DOZZ.gaussianCovariance PX (fun ω => X' ω i)
         (fun ω => X' ω j) ≤ DOZZ.gaussianCovariance PY (fun ω => Y' ω i)
           (fun ω => Y' ω j) := by
-      intro i j
-      exact hcov (e i) (e j)
+      tauto
     have hmassX (ω : ΩX) : DOZZ.finiteChaosMass PX X' a' γ ω =
         DOZZ.finiteChaosMass PX X a γ ω := by
       simp only [DOZZ.finiteChaosMass, X', a']
@@ -81,21 +76,8 @@ theorem kahane_finite_laplace_lintegral_fintype
       simp only [DOZZ.finiteChaosMass, Y', a']
       exact e.sum_comp (fun i => a i * Real.exp
         (γ * Y ω i - γ ^ 2 / 2 * DOZZ.gaussianVariance PY (fun ω => Y ω i)))
-    have hfin := kahane_finite_laplace_lintegral PX PY X' Y' hX' hY' a' ha' γ s hs hcov'
-    have hconvertX : (∫⁻ ω, ENNReal.ofReal
-        (Real.exp (-s * DOZZ.finiteChaosMass PX X' a' γ ω)) ∂PX) =
-        ∫⁻ ω, ENNReal.ofReal
-          (Real.exp (-s * DOZZ.finiteChaosMass PX X a γ ω)) ∂PX := by
-      apply lintegral_congr_ae
-      exact ae_of_all PX fun ω => by simp only [hmassX ω]
-    have hconvertY : (∫⁻ ω, ENNReal.ofReal
-        (Real.exp (-s * DOZZ.finiteChaosMass PY Y' a' γ ω)) ∂PY) =
-        ∫⁻ ω, ENNReal.ofReal
-          (Real.exp (-s * DOZZ.finiteChaosMass PY Y a γ ω)) ∂PY := by
-      apply lintegral_congr_ae
-      exact ae_of_all PY fun ω => by simp only [hmassY ω]
-    rw [← hconvertX, ← hconvertY]
-    exact hfin
+    have hfin := kahane_finite_laplace_lintegral PX PY X' Y' (centeredJointlyGaussian_reindex PX e X hX) (centeredJointlyGaussian_reindex PY e Y hY) a' ha' γ s hs hcov'
+    simp_all
   · have hmassX (ω : ΩX) : DOZZ.finiteChaosMass PX X a γ ω = 0 := by
       have huniv : (Finset.univ : Finset ι) = ∅ :=
         Finset.eq_empty_iff_forall_notMem.mpr (fun i _ => hι ⟨i⟩)

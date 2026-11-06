@@ -25,10 +25,9 @@ theorem meas_ge_le_lintegral_rpow_div {Ω : Type*} [MeasurableSpace Ω] {P : Mea
     {f : Ω → ℝ≥0∞} (hf : AEMeasurable f P) {a : ℝ≥0∞} (ha : a ≠ 0) (ha' : a ≠ ⊤) {t : ℝ}
     (ht : 0 < t) :
     P {ω | a ≤ f ω} ≤ (∫⁻ ω, f ω ^ t ∂P) / a ^ t := by
-  have hat0 : a ^ t ≠ 0 := (ENNReal.rpow_pos (pos_iff_ne_zero.mpr ha) ha').ne'
-  have hat : a ^ t ≠ ⊤ := ENNReal.rpow_ne_top_of_nonneg ht.le ha'
+  have hat0 : a ^ t ≠ 0 := by positivity
   refine le_trans (measure_mono fun ω hω => ?_) (meas_ge_le_lintegral_div (hf.pow_const t) hat0
-    hat)
+    (ENNReal.rpow_ne_top_of_nonneg ht.le ha'))
   exact ENNReal.rpow_le_rpow hω ht.le
 
 /-- Real parts of two quantities split into bad and good parts. -/
@@ -39,20 +38,13 @@ theorem toReal_abs_sub_le_of_split {a b c a' b' c' : ℝ≥0∞} (ha : a = b + c
   rw [ENNReal.toReal_add hb hc, ENNReal.toReal_add hb' hc']
   have h1 := ENNReal.toReal_nonneg (a := b)
   have h2 := ENNReal.toReal_nonneg (a := b')
-  rw [abs_le]
-  constructor
-  · have := neg_abs_le (c.toReal - c'.toReal)
-    linarith
-  · have := le_abs_self (c.toReal - c'.toReal)
-    linarith
+  grind
 
 /-- If a real number is at least `e`, one of three nonnegative summands bounding it is at least
 `e / 3`. -/
 theorem le_of_three_le_sum {e x y z w : ℝ} (hxw : e ≤ w) (hw : w ≤ x + y + z) :
     e / 3 ≤ x ∨ e / 3 ≤ y ∨ e / 3 ≤ z := by
-  by_contra h
-  push Not at h
-  linarith [h.1, h.2.1, h.2.2]
+  grind
 
 /-- The probability that two split quantities differ by at least `ε` is controlled by the
 moments of the bad parts and the `L¹` distance of the good parts. -/
@@ -68,34 +60,32 @@ theorem prob_edist_le_of_split {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω
         (∫⁻ ω, badl ω ^ t ∂P) / ENNReal.ofReal (e / 3) ^ t +
           (∫⁻ ω, ENNReal.ofReal |(goodr ω).toReal - (goodl ω).toReal| ∂P) /
             ENNReal.ofReal (e / 3) := by
-  set a : ℝ≥0∞ := ENNReal.ofReal (e / 3) with ha
+  set a := ENNReal.ofReal _ with ha
   have ha0 : a ≠ 0 := (ENNReal.ofReal_pos.mpr (by positivity)).ne'
   have hat : a ≠ ⊤ := ENNReal.ofReal_ne_top
-  set B1 : Set Ω := {ω | a ≤ badr ω} with hB1
-  set B2 : Set Ω := {ω | a ≤ badl ω} with hB2
-  set B3 : Set Ω := {ω | a ≤ ENNReal.ofReal |(goodr ω).toReal - (goodl ω).toReal|} with hB3
-  have hle : {ω | ε ≤ edist (Zr ω).toReal (Z ω).toReal} ≤ᵐ[P] (B1 ∪ B2 ∪ B3 : Set Ω) := by
+  set B1 := {ω | a ≤ badr ω} with hB1
+  set B2 := {ω | a ≤ badl ω} with hB2
+  set B3 := {ω | a ≤ ENNReal.ofReal |(goodr ω).toReal - (goodl ω).toReal|} with hB3
+  have hle : {ω | ε ≤ edist (Zr ω).toReal (Z ω).toReal} ≤ᵐ[P] (B1 ∪ B2 ∪ B3) := by
     filter_upwards [hZr, hZ, hbr, hbl, hgr, hgl] with ω h1 h2 h3 h4 h5 h6 hA
     have hA' : ε ≤ ENNReal.ofReal |(Zr ω).toReal - (Z ω).toReal| := by
-      rw [edist_dist, Real.dist_eq] at hA
-      exact hA
-    have he' : e ≤ |(Zr ω).toReal - (Z ω).toReal| :=
+      rwa [edist_dist, Real.dist_eq] at hA
+    have he' :=
       (ENNReal.ofReal_le_ofReal_iff (abs_nonneg _)).mp (hεe.trans hA')
     have hsplit := toReal_abs_sub_le_of_split h1 h2 h3 h5 h4 h6
     rcases le_of_three_le_sum he' hsplit with hx | hx | hx
     · left; left
       show a ≤ badr ω
       rw [ha, ← ENNReal.ofReal_toReal h3]
-      exact ENNReal.ofReal_le_ofReal hx
+      bound
     · left; right
       show a ≤ badl ω
       rw [ha, ← ENNReal.ofReal_toReal h4]
-      exact ENNReal.ofReal_le_ofReal hx
-    · right
-      exact ENNReal.ofReal_le_ofReal hx
-  calc P {ω | ε ≤ edist (Zr ω).toReal (Z ω).toReal} ≤ P (B1 ∪ B2 ∪ B3) := measure_mono_ae hle
-    _ ≤ P B1 + P B2 + P B3 := (measure_union_le _ _).trans
-        (add_le_add_left (measure_union_le _ _) _)
+      bound
+    · simp_all
+  calc P {ω | ε ≤ edist (Zr ω).toReal (Z ω).toReal} ≤ P _ := measure_mono_ae hle
+    _ ≤ P B1 + P B2 + P B3 := (measure_union_le ..).trans
+        (add_le_add_left (measure_union_le ..) _)
     _ ≤ _ := by
         gcongr
         · exact meas_ge_le_lintegral_rpow_div hbrm ha0 hat ht

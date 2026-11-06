@@ -19,15 +19,15 @@ theorem reflected_kernel_coefficient_spatial_limits (γ α h : ℝ) :
   have hl := (reflected_inner_root_factor_limit (Real.exp (-h)) (-|γ*α|)).const_mul
     ((1-Real.exp (-h))^(γ^2/2))
   constructor
-  · simpa only [mul_one] using (tendsto_const_nhds (x := (1 : ℝ))).max hi
-  · simpa only [mul_one] using (tendsto_const_nhds (x := (1 : ℝ))).min hl
+  · simpa using (tendsto_const_nhds).max hi
+  · simpa using (tendsto_const_nhds).min hl
 
 theorem reflected_kernel_coefficient_depth_limit (γ : ℝ) :
     Tendsto (fun h : ℝ => (max 1 ((1+Real.exp (-h))^(γ^2/2)),
       min 1 ((1-Real.exp (-h))^(γ^2/2)))) atTop (𝓝 (1,1)) := by
   have h := reflected_inner_scalar_squeeze_limit γ
-  simpa only [max_self,min_self] using
-    ((tendsto_const_nhds (x := (1 : ℝ))).max h.snd_nhds).prodMk_nhds
-      ((tendsto_const_nhds (x := (1 : ℝ))).min h.fst_nhds)
+  simpa using
+    ((tendsto_const_nhds (x := 1)).max h.snd_nhds).prodMk_nhds
+      ((tendsto_const_nhds (x := 1)).min h.fst_nhds)
 
 end DOZZ.Proofs

@@ -41,30 +41,26 @@ def dyadicLastExitCellFutureEvent (n k : ℕ) (c : ℝ≥0)
     (C : Set (ℚ → ℝ)) : Set BrownianPath :=
   {p | lastExitRationalShift (c : ℝ)
       (conditionedPositiveFutureRationalEvals (dyadicLastExitCellEndTime n k) p) ∈ C}
+section
+variable (n k : ℕ) (c : ℝ≥0) (C : Set (ℚ → ℝ))
 
 theorem measurableSet_dyadicLastExitCellFutureEvent
-    (n k : ℕ) (c : ℝ≥0) (C : Set (ℚ → ℝ)) (hC : MeasurableSet C) :
+    (hC : MeasurableSet C) :
     MeasurableSet (dyadicLastExitCellFutureEvent n k c C) := by
   let b := dyadicLastExitCellEndTime n k
-  have hEval : Measurable (conditionedPositiveFutureRationalEvals b) :=
+  have hEval :=
     measurable_conditionedPositiveFutureRationalEvals b
-  have hShift : Measurable (fun y : ℚ → ℝ => lastExitRationalShift (c : ℝ) y) := by
+  have hShift : Measurable (lastExitRationalShift c) := by
     apply measurable_pi_iff.mpr
     intro r
     exact (measurable_pi_apply r).sub measurable_const
   change MeasurableSet
-    ((fun p => lastExitRationalShift (c : ℝ)
+    ((fun p => lastExitRationalShift c
       (conditionedPositiveFutureRationalEvals b p)) ⁻¹' C)
-  exact hC.preimage (hShift.comp hEval)
+  measurability
 
-/-- The test integrand in the last-exit cell formula is the indicator of the corresponding
-rational-future event. -/
-theorem lastExitShiftedFutureTest_eq_dyadicCellEventIndicator
-    (n k : ℕ) (c : ℝ≥0) (C : Set (ℚ → ℝ)) (p : BrownianPath) :
-    lastExitShiftedFutureTest (c : ℝ) C
-        (conditionedPositiveFutureRationalEvals (dyadicLastExitCellEndTime n k) p) =
-      (dyadicLastExitCellFutureEvent n k c C).indicator (fun _ => (1 : ℝ)) p := by
-  rfl
+
+end
 
 /-- The deterministic-time cell identity, converted from an indicator integral to the probability
 of the cell and future cylinder event. -/
@@ -88,39 +84,31 @@ theorem negativeConditionedDyadicLastExitCell_test_measure
   let b := dyadicLastExitCellEndTime n k
   let L := negativeConditionedLastExitTimeCell a b c
   let E := dyadicLastExitCellFutureEvent n k c C
-  have hb : 0 < (b : ℝ) := dyadicLastExitCellEndTime_pos n k
   have hcell := negativeConditionedLastExitCell_avoidance_shift_setIntegral
-    hP hB a b c hb hν hc C hC
-  have hE : MeasurableSet E := measurableSet_dyadicLastExitCellFutureEvent n k c C hC
-  have hL : MeasurableSet L := measurableSet_negativeConditionedLastExitTimeCell a b c
-  have hprob : P.real (L ∩ E) = ∫ p in L ∩ E, (1 : ℝ) ∂P := by
-    calc
-      P.real (L ∩ E) =
-          ∫ p, (L ∩ E).indicator (fun _ => (1 : ℝ)) p ∂P :=
-        (integral_indicator_one (hL.inter hE)).symm
-      _ = ∫ p in L ∩ E, (1 : ℝ) ∂P := integral_indicator (hL.inter hE)
+    hP hB a b c (dyadicLastExitCellEndTime_pos n k) hν hc C hC
+  have hprob : P.real (L ∩ E) = ∫ p in L ∩ E, 1 ∂P := by
+    simp
   have htest : ∀ p : BrownianPath,
-      lastExitShiftedFutureTest (c : ℝ) C
+      lastExitShiftedFutureTest c C
         (conditionedPositiveFutureRationalEvals b p) =
-          E.indicator (fun _ => (1 : ℝ)) p := by
-    intro p
-    simpa [E, b] using lastExitShiftedFutureTest_eq_dyadicCellEventIndicator n k c C p
+          E.indicator (fun _ => 1) p := by
+    tauto
   calc
-    P.real (L ∩ E) = ∫ p in L, E.indicator (fun _ => (1 : ℝ)) p ∂P := by
+    P.real (L ∩ E) = ∫ p in L, E.indicator (fun _ => 1) p ∂P := by
       calc
-        P.real (L ∩ E) = ∫ p in L ∩ E, (1 : ℝ) ∂P := hprob
-        _ = ∫ p in L, E.indicator (fun _ => (1 : ℝ)) p ∂P := by
-          rw [← setIntegral_indicator hE]
-    _ = ∫ p in L, lastExitShiftedFutureTest (c : ℝ) C
+        P.real (L ∩ E) = ∫ p in L ∩ E, 1 ∂P := hprob
+        _ = ∫ p in L, E.indicator (fun _ => 1) p ∂P := by
+          rw [← setIntegral_indicator (measurableSet_dyadicLastExitCellFutureEvent n k c C hC)]
+    _ = ∫ p in L, lastExitShiftedFutureTest c C
           (conditionedPositiveFutureRationalEvals b p) ∂P := by
-      apply setIntegral_congr_fun hL
+      apply setIntegral_congr_fun (measurableSet_negativeConditionedLastExitTimeCell a b c)
       intro p hp
       exact (htest p).symm
     _ = ∫ p in conditionedPositiveHistoryHitsOnInterval a b c,
-        lastExitAvoidanceFactor ν (c : ℝ) (conditionedPositiveStateAt b p) *
+        lastExitAvoidanceFactor ν c (conditionedPositiveStateAt b p) *
           (brownianUpperConditionedReferenceFutureKernel B ν hν
             (conditionedPositiveStateAt b p - c)).real C ∂P := by
-      simpa only [a, b, L] using hcell
+      simpa using hcell
 
 end DOZZ.Proofs
 

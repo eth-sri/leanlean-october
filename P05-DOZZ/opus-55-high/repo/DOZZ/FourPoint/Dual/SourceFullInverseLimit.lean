@@ -46,13 +46,13 @@ theorem dual_source_full_inverse_increment_tendsto
       (𝓝 ((a*Real.Gamma (-a)*Real.Gamma (p+a)/Real.Gamma p)*
         (∫⁻ ω, rho γ (M ω) (2*Q γ-α₁-2/γ) α₂ α₃^(-(p+a)) ∂P).toReal*
         (∫⁻ ω, twoSidedReflectionMass γ B Z ω^a ∂P).toReal)) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   let ν := Q γ-α₁
   let a := 2*ν/γ
   let p := (α₁+α₂+α₃-2/γ-2*Q γ)/γ
   let κ := (4/γ)*ν
-  have hp : 0 < p := div_pos (by linarith only [hs]) hγ
-  have hαshift : α₁-2/γ < Q γ := by linarith only [hα₁, div_pos (by norm_num : (0 : ℝ) < 2) hγ]
+  have hp : 0 < p := div_pos (by linarith) hγ
+  have hαshift : α₁-2/γ < Q γ := by linarith
   let W := fun h : ℝ => dual_full_copied_path_law_carrier P X Xc hX hc hm hcont γ hγ hγ₂ M hM
     α₁ α₂ α₃ p h ξ κ hp hα₁ hα₂ hα₃ hβ hspatial hξ hξ1 hκξ
   let N := fun h => Classical.choose (W h)
@@ -99,17 +99,16 @@ theorem dual_source_full_inverse_increment_tendsto
     dual_inner_kernel_relative_error_buffer_tendsto
   intro h hh
   have hn : Tendsto (fun z : ℂ => ‖z‖) (𝓝[≠] (0 : ℂ)) (𝓝 (0 : ℝ)) := by
-    simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
+    simpa using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
   filter_upwards [self_mem_nhdsWithin, hn.eventually (gt_mem_nhds (by norm_num : (0 : ℝ) < 1))]
     with z hz0 hz
   have hzpos : 0 < ‖z‖ := norm_pos_iff.mpr hz0
   have hz1 : z ≠ 1 := by intro he; simp only [he, norm_one, lt_self_iff_false] at hz
   have hstrict : ‖z‖ < ‖z‖^(1-ξ) := by
-    simpa only [Real.rpow_one] using Real.rpow_lt_rpow_of_exponent_gt hzpos hz
-      (by linarith only [hξ] : 1-ξ < 1)
+    simpa using Real.rpow_lt_rpow_of_exponent_gt hzpos hz
+      (by linarith : 1-ξ < 1)
   have htime : 0 ≤ -Real.log ‖z‖+h := by
-    have hl := Real.log_nonpos hzpos.le hz.le
-    linarith only [hl, hh]
+    linarith only [(Real.log_nonpos hzpos.le hz.le), hh]
   have hT : (T h z : ℝ) = -Real.log ‖z‖+h := Real.coe_toNNReal _ htime
   have hηEq : Real.exp (-(T h z : ℝ)) = Real.exp (-h)*‖z‖ := by
     rw [hT]
@@ -118,7 +117,7 @@ theorem dual_source_full_inverse_increment_tendsto
   have hR : Real.exp (-h) < 1 := Real.exp_lt_one_iff.mpr (neg_neg_of_pos hh)
   have hη : Real.exp (-(T h z : ℝ)) < 1 := by
     rw [hηEq]
-    exact (mul_lt_mul_of_pos_left hz (Real.exp_pos _)).trans_le (by simpa only [mul_one] using hR.le)
+    exact (mul_lt_mul_of_pos_left hz (Real.exp_pos _)).trans_le (by linarith)
   have hr : Real.exp (-(T h z : ℝ)) ≤ ‖z‖^(1-ξ) := by
     rw [hηEq]
     exact (mul_le_of_le_one_left hzpos.le hR.le).trans hstrict.le
@@ -136,10 +135,9 @@ theorem dual_source_full_inverse_increment_tendsto
     ring
   have hdecomp : f z-g h z = (full z-copied h z)/‖z‖^κ+
       (outer z-zero)/‖z‖^κ+(copied h z-outer z-D h z)/‖z‖^κ := by
-    dsimp only [f, g]
     ring
   rw [hdecomp]
-  exact (abs_add_le _ _).trans (add_le_add
-    (abs_add_le ((full z-copied h z)/‖z‖^κ) ((outer z-zero)/‖z‖^κ)) hb')
+  exact (abs_add_le ..).trans (add_le_add
+    (abs_add_le ..) hb')
 
 end DOZZ.Proofs

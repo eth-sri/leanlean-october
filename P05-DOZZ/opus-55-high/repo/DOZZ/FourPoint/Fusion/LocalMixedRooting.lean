@@ -41,29 +41,27 @@ theorem fusion_localR2_rooting {Ω : Type*} [MeasurableSpace Ω]
     funext x
     by_cases hx : x ∈ B
     · rw [Set.indicator_of_mem hx, Set.indicator_of_mem hx, fusion_secondKernel_norm]
-      simp only [f, Complex.ofReal_div]
-    · simp only [Set.indicator_of_notMem hx, norm_zero, Complex.ofReal_zero]
-  have hfi : Integrable (B.indicator f) gmcReferenceMeasure := heq ▸ hfi1.norm.ofReal
+      aesop
+    · simp_all
   have hz1 : z ≠ 1 := by
     intro he
     rw [he, norm_one] at hz4
     norm_num at hz4
-  have hzunit : ∀ j : Fin 3, ‖(![z, 0, 1] : Fin 3 → ℂ) j‖ ≤ 1 := by
+  have hzunit : ∀ j : Fin 3, ‖(![z, 0, 1]) j‖ ≤ 1 := by
     intro j
     fin_cases j
     · change ‖z‖ ≤ 1; linarith
     · simp
     · simp
-  have hzinj : Function.Injective (![z, 0, 1] : Fin 3 → ℂ) := by
+  have hzinj : Function.Injective (![z, 0, 1]) := by
     intro i j hij
     fin_cases i <;> fin_cases j <;> simp_all
-  have ha : ∀ j : Fin 3, (![-γ / 2, α₁, α₂] : Fin 3 → ℝ) j < Q γ := by
+  have ha : ∀ j : Fin 3, (![-γ / 2, α₁, α₂]) j < Q γ := by
     intro j
     fin_cases j
     · change -γ / 2 < Q γ
       unfold Q
-      have : 0 < 2 / γ := by positivity
-      linarith
+      nlinarith
     · change α₁ < Q γ
       unfold Q
       linarith
@@ -72,17 +70,15 @@ theorem fusion_localR2_rooting {Ω : Type*} [MeasurableSpace Ω]
     ![z, 0, 1] hzinj α₃ ha hα₃
   have h := (fusion_rooted_coulomb_complex_integral P X hX γ hγ hγ2 M hM
     ![-γ / 2, α₁, α₂] ![z, 0, 1] hzunit α₃ s hs hmfin (B.indicator f)
-    (hf.indicator Metric.isOpen_ball.measurableSet) hfi).2.2.2
-  have he : (fun x : ℂ => B.indicator f x *
+    (hf.indicator Metric.isOpen_ball.measurableSet) (heq ▸ hfi1.norm.ofReal)).2.2.2
+  have he : (fun x => B.indicator f x *
       ((∫⁻ ω, coulombMass γ (gmcRootedMeasure γ x (M ω))
         ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ ^ s ∂P).toReal : ℂ)) =
       B.indicator (fun x => f x *
         ((∫⁻ ω, coulombMass γ (gmcRootedMeasure γ x (M ω))
           ![-γ / 2, α₁, α₂] ![z, 0, 1] α₃ ^ s ∂P).toReal : ℂ)) := by
     funext x
-    by_cases hx : x ∈ B
-    · simp only [Set.indicator_of_mem hx]
-    · simp only [Set.indicator_of_notMem hx, zero_mul]
+    by_cases hx : x ∈ B <;> simp_all
   rw [he, integral_indicator (show MeasurableSet B from Metric.isOpen_ball.measurableSet)] at h
   change _ = ∫ x, _ ∂volume.restrict B
   rw [gmcReferenceMeasure_restrict_unit_chart B Metric.isOpen_ball.measurableSet

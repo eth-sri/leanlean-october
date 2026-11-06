@@ -13,9 +13,11 @@ public import DOZZ.Correlations.Analytic.RetainedRegions
 open MeasureTheory Set
 open scoped ENNReal
 namespace DOZZ.Proofs
+section
+variable {N : ℕ}
 
 /-- Doubling the excluded disk radii avoids any assumption on masses of circle boundaries. -/
-theorem retained_complement_cover {N : ℕ} (z : Fin N → ℂ) (r : ℝ) :
+theorem retained_complement_cover (z : Fin N → ℂ) (r : ℝ) :
     (retainedRegion z r)ᶜ ⊆
       (⋃ i, Metric.ball (z i) (2 * Real.exp (-r))) ∪
         {x : ℂ | Real.exp r / 2 < ‖x‖} := by
@@ -24,7 +26,7 @@ theorem retained_complement_cover {N : ℕ} (z : Fin N → ℂ) (r : ℝ) :
   · have hi : ∃ i, ‖x - z i‖ ≤ Real.exp (-r) := by
       by_contra h
       push Not at h
-      exact hx ⟨hout, h⟩
+      tauto
     obtain ⟨i, hi⟩ := hi
     apply Or.inl
     apply mem_iUnion.mpr
@@ -33,26 +35,26 @@ theorem retained_complement_cover {N : ℕ} (z : Fin N → ℂ) (r : ℝ) :
     linarith [Real.exp_pos (-r)]
   · apply Or.inr
     have he := Real.exp_pos r
-    exact lt_of_lt_of_le (by linarith : Real.exp r / 2 < Real.exp r) (le_of_not_gt hout)
+    grind
 
 /-- The excluded Coulomb mass is dominated by finitely many open insertion disks and one
 open exterior region. -/
-theorem retained_complement_mass_le {N : ℕ} (μ : Measure ℂ)
+theorem retained_complement_mass_le (μ : Measure ℂ)
     (γ : ℝ) (α : Fin N → ℝ) (z : Fin N → ℂ) (αinf r : ℝ) :
     (∫⁻ x in (retainedRegion z r)ᶜ, coulombWeight γ α z αinf x ∂μ) ≤
       (∑ i, ∫⁻ x in Metric.ball (z i) (2 * Real.exp (-r)), coulombWeight γ α z αinf x ∂μ) +
         ∫⁻ x in {x : ℂ | Real.exp r / 2 < ‖x‖}, coulombWeight γ α z αinf x ∂μ := by
   let ν := μ.withDensity (coulombWeight γ α z αinf)
-  have he (O : Set ℂ) (hO : MeasurableSet O) :
+  have he (O : Set ℂ) hO :
       ν O = ∫⁻ x in O, coulombWeight γ α z αinf x ∂μ :=
     withDensity_apply _ hO
   rw [← he _ (retainedRegion_isOpen z r).measurableSet.compl]
   calc
-    _ ≤ ν ((⋃ i, Metric.ball (z i) (2 * Real.exp (-r))) ∪
+    _ ≤ ν ((⋃ i, Metric.ball (z i) _) ∪
         {x : ℂ | Real.exp r / 2 < ‖x‖}) := measure_mono (retained_complement_cover z r)
-    _ ≤ ν (⋃ i, Metric.ball (z i) (2 * Real.exp (-r))) +
-        ν {x : ℂ | Real.exp r / 2 < ‖x‖} := measure_union_le _ _
-    _ ≤ (∑ i, ν (Metric.ball (z i) (2 * Real.exp (-r)))) +
+    _ ≤ ν _ +
+        ν {x : ℂ | Real.exp r / 2 < ‖x‖} := measure_union_le ..
+    _ ≤ (∑ i, ν _) +
         ν {x : ℂ | Real.exp r / 2 < ‖x‖} :=
       add_le_add (measure_iUnion_fintype_le ν _) le_rfl
     _ = _ := by
@@ -61,6 +63,8 @@ theorem retained_complement_mass_le {N : ℕ} (μ : Measure ℂ)
       apply Finset.sum_congr rfl
       intro i _
       exact he _ Metric.isOpen_ball.measurableSet
+
+end
 
 /-- Subunit moments of the excluded mass are bounded by the sum of the insertion and exterior
 moments. -/
@@ -75,7 +79,6 @@ theorem retained_complement_moment_le
         coulombWeight γ α z αinf x ∂M ω) ^ m ∂P) +
       ∫⁻ ω, (∫⁻ x in {x : ℂ | Real.exp r / 2 < ‖x‖},
         coulombWeight γ α z αinf x ∂M ω) ^ m ∂P := by
-  classical
   let F (i : Fin N) (ω : Ω) := ∫⁻ x in Metric.ball (z i) (2 * Real.exp (-r)),
     coulombWeight γ α z αinf x ∂M ω
   let E (ω : Ω) := ∫⁻ x in {x : ℂ | Real.exp r / 2 < ‖x‖},
@@ -95,7 +98,7 @@ theorem retained_complement_moment_le
         (retained_complement_mass_le (M ω) γ α z αinf r) hm.le).trans
       apply (ENNReal.rpow_add_le_add_rpow _ _ hm.le hm1).trans
       apply add_le_add _ le_rfl
-      simpa only [tsum_fintype] using
+      simpa using
         (ennreal_rpow_tsum_le_tsum_rpow (fun i => F i ω) hm hm1)
     _ = _ := by
       rw [lintegral_add_right' _ hE, lintegral_finsetSum' Finset.univ (fun i _ => hF i)]

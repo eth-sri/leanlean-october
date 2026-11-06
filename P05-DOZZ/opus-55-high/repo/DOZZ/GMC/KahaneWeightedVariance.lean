@@ -27,7 +27,7 @@ theorem weighted_variance_bounds
   classical
   have hfirst : |∑ i, a i * w i| ≤ B * ∑ i, w i := by
     calc
-      _ ≤ ∑ i, |a i * w i| := Finset.abs_sum_le_sum_abs _ _
+      _ ≤ ∑ i, |a i * w i| := Finset.abs_sum_le_sum_abs ..
       _ = ∑ i, |a i| * w i := by
         apply Finset.sum_congr rfl
         intro i hi
@@ -54,7 +54,6 @@ theorem weighted_variance_bounds
   · rw [abs_div, abs_of_pos hW]
     exact (div_le_iff₀ hW).mpr hfirst
   · apply (div_le_iff₀ (sq_pos_of_pos hW)).mpr
-    have h := mul_le_mul_of_nonneg_right hsecond hW.le
-    nlinarith only [h, sq_nonneg (∑ i, a i * w i)]
+    nlinarith only [(mul_le_mul_of_nonneg_right hsecond hW.le), sq_nonneg (∑ i, a i * w i)]
 
 end DOZZ.Proofs

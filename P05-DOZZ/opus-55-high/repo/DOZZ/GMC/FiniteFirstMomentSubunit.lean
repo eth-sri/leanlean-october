@@ -24,9 +24,9 @@ theorem ennreal_rpow_le_one_add_of_mem_unitInterval
     x ^ p ≤ 1 + x := by
   by_cases hx : x ≤ 1
   · exact (ENNReal.rpow_le_one hx hp0).trans (by simp)
-  · have hx1 : 1 ≤ x := le_of_not_ge hx
+  · have hx1 := le_of_not_ge hx
     calc
-      x ^ p ≤ x ^ (1 : ℝ) := ENNReal.rpow_le_rpow_of_exponent_le hx1 hp1
+      x ^ p ≤ x ^ 1 := ENNReal.rpow_le_rpow_of_exponent_le hx1 hp1
       _ = x := ENNReal.rpow_one x
       _ ≤ 1 + x := le_add_of_nonneg_left (by norm_num)
 
@@ -40,7 +40,6 @@ theorem lintegral_rpow_le_one_add_of_probability
     ∫⁻ ω, (f ω) ^ p ∂P ≤ ∫⁻ ω, (1 + f ω) ∂P :=
       lintegral_mono fun ω => ennreal_rpow_le_one_add_of_mem_unitInterval (f ω) hp0 hp1
     _ = 1 + ∫⁻ ω, f ω ∂P := by
-      rw [lintegral_add_left' aemeasurable_const, lintegral_one]
       simp
 
 end DOZZ.Proofs

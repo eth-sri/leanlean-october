@@ -21,7 +21,6 @@ namespace DOZZ.Proofs
 theorem pin_envelope_bound (z : ℂ) (γ N Nbar a : ℝ)
     (hz : 2 ≤ ‖z‖) (ha : |γ| / (2 * Real.log ‖z‖) ≤ a) :
     pinCorrectionEnvelope z γ N Nbar ≤ a * (|Nbar| + |N|) + γ ^ 2 := by
-  unfold pinCorrectionEnvelope
   apply add_le_add _ le_rfl
   exact (mul_le_mul_of_nonneg_left (abs_sub Nbar N)
     (div_nonneg (abs_nonneg γ) (offCenter_pin_variance_pos z hz).le)).trans

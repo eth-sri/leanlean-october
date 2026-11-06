@@ -20,10 +20,10 @@ theorem roots_formula_line_meromorphic {γ μ : ℝ} {U : ℂ → ℂ}
   intro z _
   have ha : ∀ i, AnalyticAt ℂ (A i) z := fun i => (hA i).analyticAt z
   have hS : AnalyticAt ℂ (fun w => (A 0 w + A 1 w + A 2 w - 2 * Q γ) / γ) z :=
-    (((ha 0).add (ha 1)).add (ha 2)).sub analyticAt_const |>.div_const
+    by fun_prop
   have hμslit : (μ : ℂ) ∈ slitPlane := Complex.ofReal_mem_slitPlane.mpr hμ
   have hnorm : MeromorphicAt (fun w => (μ : ℂ) ^ ((A 0 w + A 1 w + A 2 w - 2 * Q γ) / γ) /
-      Complex.Gamma ((A 0 w + A 1 w + A 2 w - 2 * Q γ) / γ)) z :=
+      Complex.Gamma _) z :=
     (analyticAt_const.cpow hS hμslit).meromorphicAt.fun_div
       ((meromorphicAt_complexGamma _).comp_analyticAt hS)
   have hb : (((dozzBase γ μ * (γ / 2) ^ (2 - γ ^ 2 / 2) : ℝ)) : ℂ) ∈ slitPlane :=

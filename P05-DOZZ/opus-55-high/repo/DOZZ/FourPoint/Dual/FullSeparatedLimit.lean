@@ -9,6 +9,8 @@ public import DOZZ.FourPoint.Dual.SeparatedSplit
 public import DOZZ.FourPoint.Dual.SourceDecouplingLimit
 public import DOZZ.FourPoint.ReflectedOuter.InverseDifference
 import Mathlib.Tactic
+import DOZZ.Brownian.Lateral.RadialProjection
+import DOZZ.ShiftEquations.Mobius.InversionMoment
 /-! Removing the actual intermediate annulus from the full inverse expectation. -/
 @[expose] public section
 open MeasureTheory Set Filter Topology
@@ -41,7 +43,7 @@ theorem dual_full_separated_inverse_littleO
     (∫⁻ x in reflected_outerRegion (r z), ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ z x) ∂M ω)
   let R := fun z ω => ENNReal.ofReal p*(I z ω*B z ω^(-(p+1)))
   have ht := (dual_discarded_annulus_rooted_littleO P X hX γ hγ hγ₂ M hM
-    α₁ α₂ α₃ (p+1) ξ κ h (by linarith only [hp]) hβ hξ1 hslack).const_mul p
+    α₁ α₂ α₃ (p+1) ξ κ h (by positivity) hβ hξ1 hslack).const_mul p
   simp only [mul_zero] at ht
   rw [tendsto_zero_iff_norm_tendsto_zero]
   apply squeeze_zero' (Eventually.of_forall fun z => norm_nonneg _) ?_ ht
@@ -55,14 +57,14 @@ theorem dual_full_separated_inverse_littleO
   obtain ⟨Cb, _, hbi⟩ := dual_outerMass_inverse_moment_uniform P X hX γ hγ hγ₂ M hM
     α₁ α₂ α₃ p hp.le
   obtain ⟨Cd, _, hdb⟩ := dual_deleted_disk_rooted_bound P X hX γ hγ hγ₂ M hM
-    α₁ α₂ α₃ (p+1) (by linarith only [hp]) hβ
+    α₁ α₂ α₃ (p+1) (by positivity) hβ
   filter_upwards [self_mem_nhdsWithin, hn.eventually (gt_mem_nhds zero_lt_one),
     (hpow (1-ξ) (sub_pos.mpr hξ1)).eventually (gt_mem_nhds (by norm_num : (0 : ℝ) < 1/2)),
     (hpow ξ hξ).eventually (gt_mem_nhds zero_lt_one),
     hratio.eventually (gt_mem_nhds zero_lt_one)] with z hz0 hz hcut hsmall hsr
   have hz1 : z ≠ 1 := by intro he; simp [he] at hz
-  have hr : 0 < r z := Real.rpow_pos_of_pos (norm_pos_iff.mpr hz0) _
-  have hs : 0 < s z := mul_pos (Real.exp_pos _) (norm_pos_iff.mpr hz0)
+  have hr : 0 < r z := by positivity
+  have hs : 0 < s z := by positivity
   have hsr' : s z ≤ r z := by
     have hh : s z/r z < 1 := by simpa only [s,r,dual_restart_radius_ratio z hz0 h ξ] using hsr
     exact ((div_lt_one hr).mp hh).le
@@ -75,18 +77,16 @@ theorem dual_full_separated_inverse_littleO
       _ = _ := mul_one _
   have hsource : ∀ᵐ ω ∂P, 0 < B z ω ∧ F z ω < ⊤ ∧ F z ω = S z ω+I z ω ∧ B z ω ≤ S z ω := by
     filter_upwards [dual_source_outerMass_positive_finite_ae P X hX γ hγ hγ₂ M hM
-      α₁ α₂ α₃ ξ hα₁ hα₂ hα₃ z hz0 hz1 hz.le (by linarith only [hcut]),
+      α₁ α₂ α₃ ξ hα₁ hα₂ hα₃ z hz0 hz1 hz.le (by linarith),
       dual_full_kernel_finite_ae P X hX γ hγ hγ₂ M hM α₁ α₂ α₃ hα₁ hα₂ hα₃ z hz0 hz1,
-      gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ₂ M hM 0,
-      gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ₂ M hM 1,
+      DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ₂ M hM 0,
+      DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ₂ M hM 1,
       reflected_gmc_sphere_null P X hX γ hγ hγ₂ M hM 0 (r z)] with ω hb hf h0 h1 hc
-    have he := dual_kernel_separated_split γ α₁ α₂ α₃ (s z) (r z) hs hsr' z (M ω) h0 h1 hc
-    have hB := dual_outerMass_eq_comparison_region γ α₁ α₂ α₃ ξ hγ.ne' z (M ω) h0 h1 hzsep hc
-    refine ⟨hb.1,hf,he,?_⟩
+    refine ⟨hb.1,hf,(dual_kernel_separated_split γ α₁ α₂ α₃ (s z) (r z) hs hsr' z (M ω) h0 h1 hc),?_⟩
     dsimp only [B,S]
-    rw [hB]
+    rw [(dual_outerMass_eq_comparison_region γ α₁ α₂ α₃ ξ hγ.ne' z (M ω) h0 h1 hzsep hc)]
     exact le_add_left le_rfl
-  have hmM := gmc_measure_aemeasurable_of_isGMCOf P X hX γ hγ hγ₂ M hM
+  have hmM := DOZZ.Proofs.equatorGFF_GMC_aemeasurable P X hX γ hγ hγ₂ M hM
   have hk := (dual_kernel_measurable γ α₁ α₂ α₃ z).ennreal_ofReal
   have hFm : AEMeasurable (F z) P := (Measure.measurable_lintegral hk).comp_aemeasurable hmM
   have hSm : AEMeasurable (S z) P := by
@@ -96,21 +96,19 @@ theorem dual_full_separated_inverse_littleO
     have ho : MeasurableSet (reflected_outerRegion (r z)) :=
       (isOpen_lt continuous_const continuous_norm).measurableSet.inter
         (isClosed_singleton.union isClosed_singleton).measurableSet.compl
-    have hmi := (Measure.measurable_lintegral (hk.indicator hi)).comp_aemeasurable hmM
-    have hmo := (Measure.measurable_lintegral (hk.indicator ho)).comp_aemeasurable hmM
-    convert hmi.add hmo using 1
+    convert ((Measure.measurable_lintegral (hk.indicator hi)).comp_aemeasurable hmM).add ((Measure.measurable_lintegral (hk.indicator ho)).comp_aemeasurable hmM) using 1
     funext ω
     simp only [S, Pi.add_apply, Function.comp_apply, lintegral_indicator hi, lintegral_indicator ho]
   have hSt : (∫⁻ ω, S z ω^(-p) ∂P) ≠ ⊤ := by
     apply ne_top_of_le_ne_top ENNReal.ofReal_ne_top
     apply le_trans (lintegral_mono_ae (hsource.mono fun ω hh =>
       ennreal_rpow_antitone_of_nonpos hh.2.2.2 (neg_nonpos.mpr hp.le)))
-    exact hbi z ξ hz.le (by linarith only [hcut])
+    exact hbi z ξ hz.le (by linarith)
   have hFt : (∫⁻ ω, F z ω^(-p) ∂P) ≠ ⊤ := ne_top_of_le_ne_top hSt
     (lintegral_mono_ae (hsource.mono fun ω hh => ennreal_rpow_antitone_of_nonpos
       (le_self_add.trans_eq hh.2.2.1.symm) (neg_nonpos.mpr hp.le)))
   have hIB : (∫⁻ ω, I z ω*B z ω^(-(p+1)) ∂P) ≠ ⊤ := by
-    have hb := hdb z ξ (r z) hz.le (by linarith only [hcut]) hr hcut.le
+    have hb := hdb z ξ (r z) hz.le (by linarith) hr hcut.le
     have hd : (∫⁻ ω, I z ω*B z ω^(-(p+1)) ∂P) ≤
         ENNReal.ofReal ((1+Real.exp h)^2)*
           (∫⁻ ω, (∫⁻ x in Metric.ball (0 : ℂ) (r z),
@@ -142,17 +140,15 @@ theorem dual_full_separated_inverse_littleO
       dsimp only [R]
       rw [mul_assoc]
       exact mul_le_mul' le_rfl (mul_le_mul' le_rfl
-        (ennreal_rpow_antitone_of_nonpos hh.2.2.2 (by linarith only [hp] : -(p+1) ≤ 0)))))
+        (ennreal_rpow_antitone_of_nonpos hh.2.2.2 (by linarith : -(p+1) ≤ 0)))))
   have hFS : ∀ᵐ ω ∂P, F z ω^(-p) ≤ S z ω^(-p)+R z ω :=
     hsource.mono fun ω hh => (ennreal_rpow_antitone_of_nonpos
       (le_self_add.trans_eq hh.2.2.1.symm) (neg_nonpos.mpr hp.le)).trans le_self_add
   have hb := reflected_lintegral_toReal_difference_bound P (fun ω => F z ω^(-p))
     (fun ω => S z ω^(-p)) (R z) (hFm.pow_const _) (hSm.pow_const _) hFt hSt hRt hFS hSF
-  dsimp only [R] at hb
   rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top, ENNReal.toReal_mul,
     ENNReal.toReal_ofReal hp.le] at hb
   rw [Real.norm_eq_abs, abs_div, abs_of_nonneg (Real.rpow_nonneg (norm_nonneg z) κ)]
-  have hdiv := div_le_div_of_nonneg_right hb (Real.rpow_nonneg (norm_nonneg z) κ)
-  simpa only [dualSeparatedInverseMoment, F, S, I, B, s, r, mul_div_assoc] using hdiv
+  simpa only [dualSeparatedInverseMoment, F, S, I, B, s, r, mul_div_assoc] using (div_le_div_of_nonneg_right hb (Real.rpow_nonneg (norm_nonneg z) κ))
 
 end DOZZ.Proofs

@@ -29,29 +29,23 @@ theorem nonneg_integral_abs_sub_tendsto_zero
       filter_upwards [hfn n, hgn] with ω hfω hgω
       simp only [Real.norm_eq_abs, abs_of_nonneg (le_min hfω hgω),
         abs_of_nonneg hgω]
-      exact min_le_right _ _)
+      simp)
   have hmin : Tendsto (fun n => ∫ ω, min (f n ω) (g ω) ∂P) atTop
       (𝓝 (∫ ω, g ω ∂P)) := by
     apply tendsto_integral_of_dominated_convergence g
-    · intro n
-      exact (hminInt n).aestronglyMeasurable
+    · fun_prop
     · exact hg
     · intro n
       filter_upwards [hfn n, hgn] with ω hfω hgω
       rw [Real.norm_eq_abs, abs_of_nonneg (le_min hfω hgω)]
-      exact min_le_right _ _
+      simp
     · filter_upwards [hlim] with ω hω
       simpa using hω.min (tendsto_const_nhds (x := g ω))
   have heq (n : ℕ) : (∫ ω, |f n ω - g ω| ∂P) =
       (∫ ω, f n ω ∂P) + (∫ ω, g ω ∂P) - 2 * (∫ ω, min (f n ω) (g ω) ∂P) := by
     have hid : (fun ω => |f n ω - g ω|) =
         (fun ω => f n ω + g ω - 2 * min (f n ω) (g ω)) := by
-      funext ω
-      rcases le_total (f n ω) (g ω) with h | h
-      · rw [min_eq_left h, abs_of_nonpos (sub_nonpos.mpr h)]
-        ring
-      · rw [min_eq_right h, abs_of_nonneg (sub_nonneg.mpr h)]
-        ring
+      grind
     rw [hid]
     rw [integral_sub (f := fun ω => f n ω + g ω)
       (g := fun ω => 2 * min (f n ω) (g ω))

@@ -35,11 +35,11 @@ theorem rooted_joint_coordinate_law
   let _ := hX.1
   let _ : IsFiniteMeasure gmcReferenceMeasure := ⟨gmcReferenceMeasure_univ_ne_top.lt_top⟩
   let leftPath : Ω → gmcTiltCoordinateIndex → ℝ := fun ω =>
-    gmcTiltCoordinatePath (fun f => X ω f) (M ω)
+    gmcTiltCoordinatePath (X ω) (M ω)
   let rightPath : ℂ × Ω → gmcTiltCoordinateIndex → ℝ := fun q =>
     gmcTiltCoordinatePath (fun f => X q.2 f + γ * gffRootCovariance q.1 f)
       (gmcRootedMeasure γ q.1 (M q.2))
-  have hl : Measurable leftPath := measurable_gmcTiltCoordinatePath.comp
+  have hl := measurable_gmcTiltCoordinatePath.comp
     ((measurable_pi_iff.mpr fun f => (hX.2 f).1).prodMk hMmeas)
   have hr : Measurable rightPath := measurable_pointRootedCoordinatePath P X hX γ M hMmeas hM.1
   have hres : Measurable (fun ω => (M ω).restrict B) := by
@@ -51,9 +51,9 @@ theorem rooted_joint_coordinate_law
     let _ := hM.1 ω
     infer_instance
   have hmean : (∫⁻ ω, (M ω).restrict B Set.univ ∂P) < ⊤ := by
-    simp only [Measure.restrict_apply MeasurableSet.univ, Set.univ_inter]
+    simp
     rw [equatorGFF_GMC_intensity P X hX γ hγ hγ2 M hM B hB]
-    exact measure_lt_top _ _
+    exact measure_lt_top ..
   let _ := isFiniteMeasure_bind_markedMeasure P _ hres hfin leftPath hl hmean
   apply Measure.ext_prod
   intro A D hA hD
@@ -63,22 +63,21 @@ theorem rooted_joint_coordinate_law
     exact Measure.restrict_apply hA
   rw [hden]
   have hRootAB : ∀ᵐ u ∂gmcReferenceMeasure.restrict (A ∩ B),
-      ∀ᵐ ω ∂P, IsFiniteMeasure (gmcRootedMeasure γ u (M ω)) :=
+      ∀ᵐ ω ∂P, IsFiniteMeasure _ :=
     ae_restrict_of_ae_restrict_of_subset Set.inter_subset_right hRoot
   have hLaw := rooted_full_coordinate_law P X hX γ hγ hγ2 M hM hMmeas
-    Xc hXc (A ∩ B) (hA.inter hB) R (Set.inter_subset_right.trans hBR) hRootAB
-  have heval := congrArg (fun μ : Measure (gmcTiltCoordinateIndex → ℝ) => μ D) hLaw
-  change Measure.map leftPath (P.withDensity (fun ω => M ω (A ∩ B))) D =
-    Measure.map (fun q : ℂ × Ω => (q.1, rightPath q))
-      ((gmcReferenceMeasure.restrict B).prod P) (A ×ˢ D)
-  rw [heval]
+    Xc hXc _ (hA.inter hB) R (Set.inter_subset_right.trans hBR) hRootAB
+  change Measure.map leftPath (P.withDensity (fun ω => M ω _)) D =
+    Measure.map (fun q => (q.1, rightPath q))
+      ((gmcReferenceMeasure.restrict B).prod P) _
+  rw [(congrArg (fun μ : Measure (gmcTiltCoordinateIndex → ℝ) => μ D) hLaw)]
   rw [Measure.map_apply hr hD,
     Measure.map_apply (measurable_fst.prodMk hr) (hA.prod hD)]
   rw [← Measure.restrict_restrict hA, Measure.restrict_prod_eq_prod_univ,
     Measure.restrict_apply (hr hD)]
   congr 1
   ext q
-  simp only [Set.mem_inter_iff, Set.mem_preimage, Set.mem_prod, Set.mem_univ, and_true]
+  simp
   exact and_comm
 
 end DOZZ.Proofs

@@ -26,7 +26,7 @@ theorem dual_past_exterior_mass_reinserted (γ α₁ α₂ α₃ : ℝ) (z : ℂ
     (Set.Finite.measurableSet (by simp)).compl
   have hU0 : U ⊆ ({0} : Set ℂ)ᶜ := by
     intro x hx hx0
-    exact hx.2 (by simp [mem_singleton_iff.mp hx0])
+    exact hx.2 (by simp_all)
   rw [setLIntegral_indicator hU, inter_eq_left.mpr hU0]
   have hW : Measurable (fun x => ENNReal.ofReal (reflected_global_reinsertionWeight γ A x)) :=
     ((reflected_global_reinsertionWeight_measurable γ).comp
@@ -35,7 +35,7 @@ theorem dual_past_exterior_mass_reinserted (γ α₁ α₂ α₃ : ℝ) (z : ℂ
     (dual_kernel_measurable γ α₁ α₂ α₃ z).ennreal_ofReal hU]
   apply setLIntegral_congr_fun hU
   intro x _
-  exact mul_comm _ _
+  exact mul_comm ..
 
 /-- The supplied GMC and its exact radial removal identify the stopped-past observable
 with the actual retained mass, including the removed deterministic boundary. -/
@@ -55,7 +55,7 @@ theorem dual_source_past_exterior_mass_eq
     (Set.Finite.measurableSet (by simp)).compl
   have hU0 : U ⊆ ({0} : Set ℂ)ᶜ := by
     intro x hx hx0
-    exact hx.2 (by simp [mem_singleton_iff.mp hx0])
+    exact hx.2 (by simp_all)
   filter_upwards [heq, dual_source_outerMass_eq_comparison_region P X hX γ hγ hγ₂ M hM
     α₁ α₂ α₃ ξ z hz] with ω hω houter
   rw [dual_past_exterior_mass_reinserted γ α₁ α₂ α₃ z (A ω) T _ hT]
@@ -64,8 +64,8 @@ theorem dual_source_past_exterior_mass_eq
       (M ω).restrict ({0} : Set ℂ)ᶜ := by
     rw [hω]
     exact reflected_global_reinsertion_measure γ (A ω) (M ω)
-  change (∫⁻ x in U, ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ z x)
-    ∂(N ω).withDensity (fun x => ENNReal.ofReal (reflected_global_reinsertionWeight γ (A ω) x))) = _
+  change (∫⁻ x in U, ENNReal.ofReal _
+    ∂(N ω).withDensity (fun x => ENNReal.ofReal _)) = _
   rw [hrein, Measure.restrict_restrict hU, inter_eq_left.mpr hU0]
   exact houter.symm
 

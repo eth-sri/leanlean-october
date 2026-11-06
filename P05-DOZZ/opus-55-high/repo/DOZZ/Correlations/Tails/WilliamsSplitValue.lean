@@ -31,35 +31,30 @@ theorem williams_split_value (ν : ℝ) (p : BrownianPath) (t : ℝ≥0) :
   by_cases hst : σ ≤ t
   · have hs : 0 ≤ (t : ℝ) - (σ : ℝ) := sub_nonneg.mpr (by exact_mod_cast hst)
     have he : σ + (NNReal.mk ((t : ℝ) - (σ : ℝ)) hs) = t := by
-      apply NNReal.eq
-      simp only [NNReal.coe_add, NNReal.coe_mk]
-      ring
-    change twoSidedConditionedValue (fun _ : Unit => williamsSplitPaths ν p) ()
+      aesop
+    change twoSidedConditionedValue (fun _ => williamsSplitPaths ν p) ()
       ((t : ℝ) - (σ : ℝ)) = _
     rw [twoSidedConditionedValue, dite_eq_left hs]
     change p (σ + (NNReal.mk ((t : ℝ) - (σ : ℝ)) hs)) -
       ν * ((σ + (NNReal.mk ((t : ℝ) - (σ : ℝ)) hs) : ℝ≥0) : ℝ) -
         driftedBrownianMaximum ν p = _
-    rw [he]
+    simp_all
   · have hts : t < σ := lt_of_not_ge hst
     have hs : ¬ 0 ≤ (t : ℝ) - (σ : ℝ) := not_le.mpr
       (sub_neg.mpr (by exact_mod_cast hts))
     have hnn : 0 ≤ -((t : ℝ) - (σ : ℝ)) := by
-      exact neg_nonneg.mpr (le_of_lt (sub_neg.mpr (by exact_mod_cast hts)))
+      linarith
     have he : (NNReal.mk (-((t : ℝ) - (σ : ℝ))) hnn) = σ - t := by
-      apply NNReal.eq
-      rw [NNReal.coe_sub hts.le]
-      simp only [NNReal.coe_mk]
-      ring
-    change twoSidedConditionedValue (fun _ : Unit => williamsSplitPaths ν p) ()
+      aesop
+    change twoSidedConditionedValue (fun _ => williamsSplitPaths ν p) ()
       ((t : ℝ) - (σ : ℝ)) = _
     rw [twoSidedConditionedValue, dite_eq_right hs]
     change (stopBrownianPath (⟨fun u => p u - ν * (u : ℝ), by fun_prop⟩ : BrownianPath) σ)
       (σ - min (NNReal.mk (-((t : ℝ) - (σ : ℝ))) hnn) σ) -
         driftedBrownianMaximum ν p = _
     rw [he, min_eq_left tsub_le_self, tsub_tsub_cancel_of_le hts.le]
-    change p (min t σ) - ν * ((min t σ : ℝ≥0) : ℝ) - driftedBrownianMaximum ν p = _
-    rw [min_eq_left hts.le]
+    change p _ - ν * ((min t σ : ℝ≥0) : ℝ) - driftedBrownianMaximum ν p = _
+    grind
 
 
 end DOZZ.Proofs

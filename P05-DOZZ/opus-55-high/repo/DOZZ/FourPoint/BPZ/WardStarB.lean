@@ -35,14 +35,13 @@ theorem bpzWard_cut_integrable (hd : BPZWardData γ q r δ ρ kt k₂ φ D)
       (Real.measurable_exp.comp ((continuous_bpzPin r).measurable.const_mul _))).aestronglyMeasurable
   · have hk := bpzWardCutWeight_nonneg hd y
     have hρ0 := hd.ρ_nonneg y
-    have hρ1 := hd.ρ_le_one y
     rw [Real.norm_eq_abs, abs_of_nonneg (by positivity)]
     by_cases hy : ρ y = 0
-    · rw [hy]; simp [hB0]
+    · simp_all
     · have h := hB y hy
-      calc ρ y * bpzWardCutWeight γ q r kt y * Real.exp (γ ^ 2 * bpzPin r y)
-          = ρ y * (bpzWardCutWeight γ q r kt y * Real.exp (γ ^ 2 * bpzPin r y)) := by ring
-        _ ≤ 1 * B := mul_le_mul hρ1 h (by positivity) zero_le_one
+      calc ρ y * bpzWardCutWeight γ q r kt y * Real.exp _
+          = ρ y * (bpzWardCutWeight γ q r kt y * Real.exp _) := by ring
+        _ ≤ 1 * B := mul_le_mul (hd.ρ_le_one y) h (by positivity) zero_le_one
         _ = B := one_mul B
 
 /-- The cutoff chaos has no atoms. -/
@@ -60,10 +59,10 @@ theorem bpzWard_hasLineDerivAt_Psi (hd : BPZWardData γ q r δ ρ kt k₂ φ D)
         bpzRootedMixedDerivApply γ r ρ (bpzWardCutWeight γ q r kt) k₂ x₀ v
           (regularizedGMC P Xc γ r ω) (M ω) ∂P) x₀ v := by
   set k₁ := bpzWardCutWeight γ q r kt with hk₁def
-  have hk₁m : Measurable k₁ := measurable_bpzWardCutWeight hd
-  have hk₁0 : ∀ y, 0 ≤ k₁ y := bpzWardCutWeight_nonneg hd
+  have hk₁m := measurable_bpzWardCutWeight hd
+  have hk₁0 := bpzWardCutWeight_nonneg hd
   have hsep := hd.sep x₀ hx₀
-  have hq0 : 0 ≤ q := le_trans zero_le_one hd.q_ge
+  have hq0 := le_trans zero_le_one hd.q_ge
   have hI₁ := bpzWard_cut_integrable hd hp
   have hI₂ := hp.k₂_int
   have hJm := measurable_bpzWard_J (γ := γ) (r := r) P X hp.hX M hp.hMm hp.hM.1 Xc hp.hXc
@@ -88,8 +87,7 @@ theorem bpzWard_hasLineDerivAt_Psi (hd : BPZWardData γ q r δ ρ kt k₂ φ D)
     filter_upwards [hI₁, hI₂] with ω h1 h2
     exact bpzRootedMixedDeriv_apply hd.ρ_meas hk₁m hd.k₂_meas hd.ρ_nonneg hd.ρ_le_one hk₁0
       hd.k₂_nonneg h1 h2 hd.δ_pos hd.δ_r hsep v
-  have hmeasD : AEStronglyMeasurable
-      (fun ω => bpzRootedMixedDeriv γ r ρ k₁ k₂ x₀ (regularizedGMC P Xc γ r ω) (M ω) v) P :=
+  have hmeasD :=
     ((hSm.comp (measurable_id.prodMk measurable_const)).aestronglyMeasurable).congr hDeq.symm
   have hint := bpzWard_integrable_rpow_neg hp hd.D_meas (hmeas 0 |>.congr (by simp)) hc
     hlowω hq0
@@ -105,19 +103,18 @@ theorem bpzWard_hasLineDerivAt_Psi (hd : BPZWardData γ q r δ ρ kt k₂ φ D)
           (regularizedGMC P Xc γ r ω) (M ω) := by
     filter_upwards [hDeq] with ω hω
     rw [hω]
-  rw [integral_congr_ae hcongr] at hderiv
-  exact hderiv
+  rwa [integral_congr_ae hcongr] at hderiv
 
 /-- A pointwise bound by a multiple of an integrable nonnegative weight bounds the lintegral. -/
 theorem bpz_lintegral_ofReal_abs_le {m : Measure ℂ} {F w : ℂ → ℝ} {C : ℝ} (hC : 0 ≤ C)
     (hw : Integrable w m) (hw0 : ∀ y, 0 ≤ w y) (hF : ∀ y, |F y| ≤ C * w y) :
     ∫⁻ y, ENNReal.ofReal |F y| ∂m ≤ ENNReal.ofReal (C * ∫ y, w y ∂m) := by
-  calc ∫⁻ y, ENNReal.ofReal |F y| ∂m ≤ ∫⁻ y, ENNReal.ofReal (C * w y) ∂m :=
+  calc ∫⁻ y, ENNReal.ofReal |F y| ∂m ≤ ∫⁻ y, ENNReal.ofReal _ ∂m :=
         lintegral_mono fun y => ENNReal.ofReal_le_ofReal (hF y)
-    _ = ENNReal.ofReal (∫ y, C * w y ∂m) :=
+    _ = ENNReal.ofReal _ :=
         (ofReal_integral_eq_lintegral_ofReal (hw.const_mul C)
           (Eventually.of_forall fun y => mul_nonneg hC (hw0 y))).symm
-    _ = ENNReal.ofReal (C * ∫ y, w y ∂m) := by rw [integral_const_mul]
+    _ = ENNReal.ofReal _ := by rw [integral_const_mul]
 
 /-- The left test weight vanishes off the support of the test function and is dominated by the
 cutoff weight on it. -/
@@ -149,24 +146,24 @@ theorem bpzWard_left_weight_bound (hd : BPZWardData γ q r δ ρ kt k₂ φ D) (
     have hfx : |fderiv ℝ f x v| ≤ max Cf 0 := by
       have := hCf x
       rw [Real.norm_eq_abs] at this
-      exact this.trans (le_max_left _ _)
+      exact this.trans (le_max_left ..)
     calc |fderiv ℝ (fun x => φ x * kt x) x v| *
-          (normPlus x ^ (4 : ℝ) * Real.exp (γ ^ 2 * q * bpzPin r x))
-        ≤ max Cf 0 * (normPlus x ^ (4 : ℝ) * Real.exp (γ ^ 2 * q * bpzPin r x)) :=
+          (normPlus x ^ (4 : ℝ) * Real.exp _)
+        ≤ max Cf 0 * (normPlus x ^ (4 : ℝ) * Real.exp _) :=
           mul_le_mul_of_nonneg_right hfx hn
-      _ ≤ max Cf 0 / c * kt x * (normPlus x ^ (4 : ℝ) * Real.exp (γ ^ 2 * q * bpzPin r x)) := by
+      _ ≤ max Cf 0 / c * kt x * (normPlus x ^ (4 : ℝ) * Real.exp _) := by
           apply mul_le_mul_of_nonneg_right _ hn
           rw [div_mul_eq_mul_div, le_div_iff₀ hc]
-          exact mul_le_mul_of_nonneg_left hkx (le_max_right _ _)
-      _ = max Cf 0 / c * (kt x * normPlus x ^ (4 : ℝ) * Real.exp (γ ^ 2 * q * bpzPin r x)) := by
+          exact mul_le_mul_of_nonneg_left hkx (le_max_right ..)
+      _ = max Cf 0 / c * (kt x * normPlus x ^ (4 : ℝ) * Real.exp _) := by
           ring
   · have hfx : fderiv ℝ f x = 0 := by
       apply image_eq_zero_of_notMem_tsupport
       exact fun h => hx ((tsupport_fderiv_subset ℝ).trans
-        (tsupport_mul_subset_left (f := φ) (g := kt)) h)
+        (tsupport_mul_subset_left (f := φ)) h)
     unfold bpzWardLeftWeight
     rw [hfx]
-    simp only [zero_apply, zero_mul, abs_zero]
+    simp
     exact mul_nonneg (by positivity) (mul_nonneg (hd.ρ_nonneg x)
       (bpzWardCutWeight_nonneg hd x))
 
@@ -190,20 +187,19 @@ theorem bpzMixedReal_nonneg {ρ k₁ k₂ : ℂ → ℝ} (hρ0 : ∀ y, 0 ≤ ρ
     (hk₁0 : ∀ y, 0 ≤ k₁ y) (hk₂0 : ∀ y, 0 ≤ k₂ y) (m₁ m₂ : Measure ℂ) :
     0 ≤ bpzMixedReal ρ k₁ k₂ m₁ m₂ :=
   add_nonneg (integral_nonneg fun y => mul_nonneg (hρ0 y) (hk₁0 y))
-    (integral_nonneg fun y => mul_nonneg (by linarith [hρ1 y]) (hk₂0 y))
+    (integral_nonneg fun y => mul_nonneg (by simp_all) (hk₂0 y))
 
 theorem bpzRootedMixedReal_nonneg {γ r : ℝ} {ρ k₁ k₂ : ℂ → ℝ} (hρ0 : ∀ y, 0 ≤ ρ y)
     (hρ1 : ∀ y, ρ y ≤ 1) (hk₁0 : ∀ y, 0 ≤ k₁ y) (hk₂0 : ∀ y, 0 ≤ k₂ y) (x : ℂ)
     (m₁ m₂ : Measure ℂ) : 0 ≤ bpzRootedMixedReal γ r ρ k₁ k₂ x m₁ m₂ :=
   add_nonneg (integral_nonneg fun y => mul_nonneg (mul_nonneg (hρ0 y) (hk₁0 y))
       (bpzCutRootKernel_pos γ r x y).le)
-    (integral_nonneg fun y => mul_nonneg (mul_nonneg (by linarith [hρ1 y]) (hk₂0 y))
+    (integral_nonneg fun y => mul_nonneg (mul_nonneg (by simp_all) (hk₂0 y))
       (bpzLimRootKernel_pos γ r x y).le)
 
 theorem bpz_exp_mul_rpow_neg {a J q : ℝ} (hJ : 0 ≤ J) :
     (Real.exp a * J) ^ (-q) = Real.exp (-(q * a)) * J ^ (-q) := by
   rw [Real.mul_rpow (Real.exp_pos _).le hJ, ← Real.exp_mul]
-  congr 2
   ring
 
 /-- The left side of the cutoff Ward identity, rooted at the integration point. -/
@@ -218,7 +214,7 @@ theorem bpzWard_left_deroot (hd : BPZWardData γ q r δ ρ kt k₂ φ D)
   have hk₁m : Measurable k₁ := measurable_bpzWardCutWeight hd
   have hk₁0 : ∀ y, 0 ≤ k₁ y := bpzWardCutWeight_nonneg hd
   have hq0 : 0 ≤ q := le_trans zero_le_one hd.q_ge
-  set wL : ℂ → ℝ := bpzWardLeftWeight γ q r kt φ v with hwL
+  set wL := bpzWardLeftWeight γ q r kt φ v with hwL
   have hwLc : Continuous wL := by
     have h1 : Continuous fun x => fderiv ℝ (fun x => φ x * kt x) x v :=
       (hd.f_C1.continuous_fderiv one_ne_zero).clm_apply continuous_const
@@ -247,19 +243,18 @@ theorem bpzWard_left_deroot (hd : BPZWardData γ q r δ ρ kt k₂ φ D)
   have hInt1 := bpzWard_integrable_rpow_neg hp hd.D_meas hImeas.aestronglyMeasurable hcI hlowI
     (p := q - 1) (by linarith [hd.q_ge])
   have hcut := bpzWard_cut_integrable hd hp
-  have hcut' := bpzWard_cut_integrable' hd hp
   have hint : ∫⁻ ω, ∫⁻ x, ENNReal.ofReal |F x (regularizedGMC P Xc γ r ω) (M ω)|
       ∂regularizedGMC P Xc γ r ω ∂P < ⊤ := by
     have hbound : ∀ᵐ ω ∂P, ∫⁻ x, ENNReal.ofReal |F x (regularizedGMC P Xc γ r ω) (M ω)|
         ∂regularizedGMC P Xc γ r ω ≤ ENNReal.ofReal (C *
           bpzMixedReal ρ k₁ k₂ (regularizedGMC P Xc γ r ω) (M ω) ^ (-(q - 1))) := by
-      filter_upwards [hcut', hlowI, bpzWard_far_mass_pos hp hd.D_meas, hp.k₂_int] with
+      filter_upwards [(bpzWard_cut_integrable' hd hp), hlowI, bpzWard_far_mass_pos hp hd.D_meas, hp.k₂_int] with
         ω hρk hlow hpos hk₂i
-      set I := bpzMixedReal ρ k₁ k₂ (regularizedGMC P Xc γ r ω) (M ω) with hIdef
+      set I := bpzMixedReal ρ k₁ k₂ _ (M ω) with hIdef
       have hIpos : 0 < I := lt_of_lt_of_le (mul_pos hcI hpos) hlow
       have hIq : 0 ≤ I ^ (-q) := Real.rpow_nonneg hIpos.le _
       have hle := bpz_lintegral_ofReal_abs_le (m := regularizedGMC P Xc γ r ω)
-        (F := fun x => F x (regularizedGMC P Xc γ r ω) (M ω)) (w := fun y => ρ y * k₁ y)
+        (F := fun x => F x _ (M ω)) (w := fun y => ρ y * k₁ y)
         (C := C * I ^ (-q)) (mul_nonneg hC0 hIq) hρk
         (fun y => mul_nonneg (hd.ρ_nonneg y) (hk₁0 y)) (fun x => by
           simp only [hF]
@@ -283,7 +278,7 @@ theorem bpzWard_left_deroot (hd : BPZWardData γ q r δ ρ kt k₂ φ D)
     refine lt_of_le_of_lt (lintegral_mono_ae hbound) ?_
     rw [← ofReal_integral_eq_lintegral_ofReal (hInt1.const_mul C)
       (Eventually.of_forall fun ω => mul_nonneg hC0 (Real.rpow_nonneg
-        (bpzMixedReal_nonneg hd.ρ_nonneg hd.ρ_le_one hk₁0 hd.k₂_nonneg _ _) _))]
+        (bpzMixedReal_nonneg hd.ρ_nonneg hd.ρ_le_one hk₁0 hd.k₂_nonneg ..) _))]
     exact ENNReal.ofReal_lt_top
   rw [bpz_cutoff_deroot_real P X hp.hX hd.γ_pos hp.γ2 M hp.hM hp.hMm Xc hp.hXc r F hFm hFx hint]
   congr 1
@@ -295,7 +290,7 @@ theorem bpzWard_left_deroot (hd : BPZWardData γ q r δ ρ kt k₂ φ D)
     intro ω
     simp only [hF]
     rw [bpzMixedReal_tilt, bpz_exp_mul_rpow_neg (bpzRootedMixedReal_nonneg hd.ρ_nonneg
-      hd.ρ_le_one hk₁0 hd.k₂_nonneg x _ _)]
+      hd.ρ_le_one hk₁0 hd.k₂_nonneg x ..)]
     ring
   simp_rw [hstep]
   rw [integral_const_mul]
@@ -308,27 +303,30 @@ theorem bpzWard_left_deroot (hd : BPZWardData γ q r δ ρ kt k₂ φ D)
     exact Real.exp_zero
   simp only [hwL, bpzWardLeftWeight]
   calc normPlus x ^ (-4 : ℝ) * (fderiv ℝ (fun x => φ x * kt x) x v * normPlus x ^ (4 : ℝ) *
-        Real.exp (γ ^ 2 * q * bpzPin r x) * Real.exp (-(q * (γ ^ 2 * bpzPin r x))) *
-        ∫ ω, bpzRootedMixedReal γ r ρ k₁ k₂ x (regularizedGMC P Xc γ r ω) (M ω) ^ (-q) ∂P)
+        Real.exp _ * Real.exp _ *
+        ∫ ω, bpzRootedMixedReal γ r ρ k₁ k₂ x _ (M ω) ^ (-q) ∂P)
       = fderiv ℝ (fun x => φ x * kt x) x v *
           (normPlus x ^ (-4 : ℝ) * normPlus x ^ (4 : ℝ)) *
-          (Real.exp (γ ^ 2 * q * bpzPin r x) * Real.exp (-(q * (γ ^ 2 * bpzPin r x)))) *
+          (Real.exp _ * Real.exp (-(q * (γ ^ 2 * bpzPin r x)))) *
           ∫ ω, bpzRootedMixedReal γ r ρ k₁ k₂ x (regularizedGMC P Xc γ r ω) (M ω) ^ (-q) ∂P := by
         ring
-    _ = _ := by rw [hn, he, mul_one, mul_one]
+    _ = _ := by simp_all
+section
+variable {γ r : ℝ} {ρ k₁ k₂ : ℂ → ℝ}
+section
+variable (hρ0 : ∀ y, 0 ≤ ρ y) (hρ1 : ∀ y, ρ y ≤ 1) (hk₁0 : ∀ y, 0 ≤ k₁ y) (hk₂0 : ∀ y, 0 ≤ k₂ y) {m₁ m₂ : Measure ℂ}
+include hρ0 hρ1 hk₁0 hk₂0
 
 /-- The untilted root-derivative functional is bounded by the mixed mass. -/
-theorem abs_bpzMixedDerivReal_le {γ r : ℝ} {ρ k₁ k₂ : ℂ → ℝ} (hρ0 : ∀ y, 0 ≤ ρ y)
-    (hρ1 : ∀ y, ρ y ≤ 1) (hk₁0 : ∀ y, 0 ≤ k₁ y) (hk₂0 : ∀ y, 0 ≤ k₂ y) {m₁ m₂ : Measure ℂ}
-    (h₁ : Integrable (fun y => ρ y * k₁ y) m₁) (h₂ : Integrable (fun y => (1 - ρ y) * k₂ y) m₂)
+theorem abs_bpzMixedDerivReal_le (h₁ : Integrable (fun y => ρ y * k₁ y) m₁) (h₂ : Integrable (fun y => (1 - ρ y) * k₂ y) m₂)
     (x v : ℂ) :
     |bpzMixedDerivReal γ r ρ k₁ k₂ x v m₁ m₂| ≤
       γ ^ 2 * Real.exp r * ‖v‖ * bpzMixedReal ρ k₁ k₂ m₁ m₂ := by
-  set K : ℝ := γ ^ 2 * Real.exp r * ‖v‖ with hK
+  set K := γ ^ 2 * Real.exp r * ‖v‖ with hK
   have hK0 : 0 ≤ K := by positivity
   unfold bpzMixedDerivReal bpzMixedReal
   rw [mul_add]
-  refine (abs_add_le _ _).trans (add_le_add ?_ ?_)
+  refine (abs_add_le ..).trans (add_le_add ?_ ?_)
   · rw [← integral_const_mul]
     refine (abs_integral_le_integral_abs).trans (integral_mono_of_nonneg
       (Eventually.of_forall fun y => abs_nonneg _) (h₁.const_mul K)
@@ -338,78 +336,75 @@ theorem abs_bpzMixedDerivReal_le {γ r : ℝ} {ρ k₁ k₂ : ℂ → ℝ} (hρ0
     rw [abs_mul, abs_of_nonneg hw, abs_mul, abs_of_nonneg (sq_nonneg γ)]
     have hL : |bpzLamDeriv r (x - y) v| ≤ Real.exp r * ‖v‖ := by
       rw [← Real.norm_eq_abs]
-      exact ((bpzLamDeriv r (x - y)).le_opNorm v).trans
+      exact ((bpzLamDeriv r _).le_opNorm v).trans
         (mul_le_mul_of_nonneg_right (norm_bpzLamDeriv_le_exp r _) (norm_nonneg v))
-    calc ρ y * k₁ y * (γ ^ 2 * |bpzLamDeriv r (x - y) v|)
+    calc ρ y * k₁ y * (γ ^ 2 * |bpzLamDeriv r _ v|)
         ≤ ρ y * k₁ y * (γ ^ 2 * (Real.exp r * ‖v‖)) := by gcongr
-      _ = K * (ρ y * k₁ y) := by rw [hK]; ring
+      _ = K * (ρ y * k₁ y) := by linarith
   · rw [← integral_const_mul]
     refine (abs_integral_le_integral_abs).trans (integral_mono_of_nonneg
       (Eventually.of_forall fun y => abs_nonneg _) (h₂.const_mul K)
       (Eventually.of_forall fun y => ?_))
-    have hw : 0 ≤ (1 - ρ y) * k₂ y := mul_nonneg (by linarith [hρ1 y]) (hk₂0 y)
+    have hw : 0 ≤ (1 - ρ y) * k₂ y := by bound
     dsimp only
     rw [abs_mul, abs_of_nonneg hw, abs_mul, abs_of_nonneg (sq_nonneg γ)]
     have hT : |bpzTruncLogDeriv r (x - y) v| ≤ Real.exp r * ‖v‖ := by
       rw [← Real.norm_eq_abs]
-      exact ((bpzTruncLogDeriv r (x - y)).le_opNorm v).trans
+      exact ((bpzTruncLogDeriv r _).le_opNorm v).trans
         (mul_le_mul_of_nonneg_right (norm_bpzTruncLogDeriv_le r _).1 (norm_nonneg v))
-    calc (1 - ρ y) * k₂ y * (γ ^ 2 * |bpzTruncLogDeriv r (x - y) v|)
+    calc (1 - ρ y) * k₂ y * (γ ^ 2 * |bpzTruncLogDeriv r _ v|)
         ≤ (1 - ρ y) * k₂ y * (γ ^ 2 * (Real.exp r * ‖v‖)) := by gcongr
-      _ = K * ((1 - ρ y) * k₂ y) := by rw [hK]; ring
+      _ = K * ((1 - ρ y) * k₂ y) := by linarith
 
 /-- The rooted root-derivative functional is bounded by the rooted mixed mass. -/
-theorem abs_bpzRootedMixedDerivApply_le {γ r : ℝ} {ρ k₁ k₂ : ℂ → ℝ} (hρ0 : ∀ y, 0 ≤ ρ y)
-    (hρ1 : ∀ y, ρ y ≤ 1) (hk₁0 : ∀ y, 0 ≤ k₁ y) (hk₂0 : ∀ y, 0 ≤ k₂ y) {m₁ m₂ : Measure ℂ}
-    {x : ℂ} (h₁ : Integrable (fun y => ρ y * k₁ y * bpzCutRootKernel γ r x y) m₁)
+theorem abs_bpzRootedMixedDerivApply_le {x : ℂ} (h₁ : Integrable (fun y => ρ y * k₁ y * bpzCutRootKernel γ r x y) m₁)
     (h₂ : Integrable (fun y => (1 - ρ y) * k₂ y * bpzLimRootKernel γ r x y) m₂) (v : ℂ) :
     |bpzRootedMixedDerivApply γ r ρ k₁ k₂ x v m₁ m₂| ≤
       γ ^ 2 * Real.exp r * ‖v‖ * bpzRootedMixedReal γ r ρ k₁ k₂ x m₁ m₂ := by
-  set K : ℝ := γ ^ 2 * Real.exp r * ‖v‖ with hK
+  set K := γ ^ 2 * Real.exp r * ‖v‖ with hK
   unfold bpzRootedMixedDerivApply bpzRootedMixedReal
   rw [mul_add]
-  refine (abs_add_le _ _).trans (add_le_add ?_ ?_)
+  refine (abs_add_le ..).trans (add_le_add ?_ ?_)
   · rw [← integral_const_mul]
     refine (abs_integral_le_integral_abs).trans (integral_mono_of_nonneg
       (Eventually.of_forall fun y => abs_nonneg _) (h₁.const_mul K)
       (Eventually.of_forall fun y => ?_))
-    have ha : 0 ≤ ρ y * k₁ y * (bpzCutRootKernel γ r x y * γ ^ 2) :=
+    have ha :=
       mul_nonneg (mul_nonneg (hρ0 y) (hk₁0 y))
         (mul_nonneg (bpzCutRootKernel_pos γ r x y).le (sq_nonneg γ))
     have hL : |bpzLamDeriv r (x - y) v| ≤ Real.exp r * ‖v‖ := by
-      rw [← Real.norm_eq_abs]
-      exact ((bpzLamDeriv r (x - y)).le_opNorm v).trans
+      exact ((bpzLamDeriv r _).le_opNorm v).trans
         (mul_le_mul_of_nonneg_right (norm_bpzLamDeriv_le_exp r _) (norm_nonneg v))
     dsimp only
     rw [abs_mul, abs_of_nonneg ha]
-    calc ρ y * k₁ y * (bpzCutRootKernel γ r x y * γ ^ 2) * |bpzLamDeriv r (x - y) v|
-        ≤ ρ y * k₁ y * (bpzCutRootKernel γ r x y * γ ^ 2) * (Real.exp r * ‖v‖) :=
-          mul_le_mul_of_nonneg_left hL ha
-      _ = K * (ρ y * k₁ y * bpzCutRootKernel γ r x y) := by rw [hK]; ring
+    nlinarith
   · rw [← integral_const_mul]
     refine (abs_integral_le_integral_abs).trans (integral_mono_of_nonneg
       (Eventually.of_forall fun y => abs_nonneg _) (h₂.const_mul K)
       (Eventually.of_forall fun y => ?_))
     have ha : 0 ≤ (1 - ρ y) * k₂ y * (bpzLimRootKernel γ r x y * γ ^ 2) :=
-      mul_nonneg (mul_nonneg (by linarith [hρ1 y]) (hk₂0 y))
+      mul_nonneg (mul_nonneg (by simp_all) (hk₂0 y))
         (mul_nonneg (bpzLimRootKernel_pos γ r x y).le (sq_nonneg γ))
     have hT : |bpzTruncLogDeriv r (x - y) v| ≤ Real.exp r * ‖v‖ := by
-      rw [← Real.norm_eq_abs]
-      exact ((bpzTruncLogDeriv r (x - y)).le_opNorm v).trans
+      exact ((bpzTruncLogDeriv r _).le_opNorm v).trans
         (mul_le_mul_of_nonneg_right (norm_bpzTruncLogDeriv_le r _).1 (norm_nonneg v))
     dsimp only
     rw [abs_mul, abs_of_nonneg ha]
-    calc (1 - ρ y) * k₂ y * (bpzLimRootKernel γ r x y * γ ^ 2) * |bpzTruncLogDeriv r (x - y) v|
+    calc (1 - ρ y) * k₂ y * (bpzLimRootKernel γ r x y * γ ^ 2) * |bpzTruncLogDeriv r _ v|
         ≤ (1 - ρ y) * k₂ y * (bpzLimRootKernel γ r x y * γ ^ 2) * (Real.exp r * ‖v‖) :=
           mul_le_mul_of_nonneg_left hT ha
-      _ = K * ((1 - ρ y) * k₂ y * bpzLimRootKernel γ r x y) := by rw [hK]; ring
+      _ = K * ((1 - ρ y) * k₂ y * bpzLimRootKernel γ r x y) := by linarith
+
+end
+
+end
 
 theorem bpzMixedReal_cut_le {ρ k₁ k₂ : ℂ → ℝ} (hρ1 : ∀ y, ρ y ≤ 1) (hk₂0 : ∀ y, 0 ≤ k₂ y)
     (m₁ m₂ : Measure ℂ) : ∫ y, ρ y * k₁ y ∂m₁ ≤ bpzMixedReal ρ k₁ k₂ m₁ m₂ := by
   have h2 := integral_nonneg (μ := m₂) (f := fun y => (1 - ρ y) * k₂ y)
-    fun y => mul_nonneg (by linarith [hρ1 y]) (hk₂0 y)
+    fun y => mul_nonneg (by simp_all) (hk₂0 y)
   show ∫ y, ρ y * k₁ y ∂m₁ ≤ ∫ y, ρ y * k₁ y ∂m₁ + ∫ y, (1 - ρ y) * k₂ y ∂m₂
-  exact le_add_of_nonneg_right h2
+  linarith
 
 theorem bpz_mul_rpow_neg_mul_le {C I A q : ℝ} (hC : 0 ≤ C) (hI : 0 < I) (hA : A ≤ I) :
     C * I ^ (-q) * A ≤ C * I ^ (-(q - 1)) := by
@@ -417,12 +412,14 @@ theorem bpz_mul_rpow_neg_mul_le {C I A q : ℝ} (hC : 0 ≤ C) (hI : 0 < I) (hA 
         mul_le_mul_of_nonneg_left hA (mul_nonneg hC (Real.rpow_nonneg hI.le _))
     _ = C * I ^ (-(q - 1)) := by
         rw [mul_assoc, ← Real.rpow_add_one hI.ne']
-        congr 2
         ring
+section
+variable (hd : BPZWardData γ q r δ ρ kt k₂ φ D)
+include hd
 
 /-- A bounded function vanishing off the support of the test function, times the pinned `|x|₊⁴`
 factor, is dominated by the cutoff weight. -/
-theorem bpzWard_weight_bound_of (hd : BPZWardData γ q r δ ρ kt k₂ φ D) {g : ℂ → ℝ} {B : ℝ}
+theorem bpzWard_weight_bound_of {g : ℂ → ℝ} {B : ℝ}
     (hgB : ∀ x, |g x| ≤ B) (hg0 : ∀ x, x ∉ tsupport φ → g x = 0) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ x, |g x * normPlus x ^ (4 : ℝ) * Real.exp (γ ^ 2 * q * bpzPin r x)| ≤
       C * (ρ x * bpzWardCutWeight γ q r kt x) := by
@@ -436,24 +433,21 @@ theorem bpzWard_weight_bound_of (hd : BPZWardData γ q r δ ρ kt k₂ φ D) {g 
       have h := hd.sep x hx x (lt_of_le_of_ne (hd.ρ_le_one x) hne)
       rw [sub_self, norm_zero] at h
       linarith [hd.δ_pos]
-    have hkx := hck x hx
-    unfold bpzWardCutWeight
     rw [hρx, one_mul, mul_assoc, abs_mul, abs_of_nonneg hn]
-    calc |g x| * (normPlus x ^ (4 : ℝ) * Real.exp (γ ^ 2 * q * bpzPin r x))
-        ≤ max B 0 * (normPlus x ^ (4 : ℝ) * Real.exp (γ ^ 2 * q * bpzPin r x)) :=
-          mul_le_mul_of_nonneg_right ((hgB x).trans (le_max_left _ _)) hn
+    calc |g x| * (normPlus x ^ 4 * Real.exp _)
+        ≤ max B 0 * (normPlus x ^ 4 * Real.exp _) :=
+          mul_le_mul_of_nonneg_right ((hgB x).trans (le_max_left ..)) hn
       _ ≤ max B 0 / c * kt x * (normPlus x ^ (4 : ℝ) * Real.exp (γ ^ 2 * q * bpzPin r x)) := by
           apply mul_le_mul_of_nonneg_right _ hn
           rw [div_mul_eq_mul_div, le_div_iff₀ hc]
-          exact mul_le_mul_of_nonneg_left hkx (le_max_right _ _)
-      _ = max B 0 / c * (kt x * normPlus x ^ (4 : ℝ) * Real.exp (γ ^ 2 * q * bpzPin r x)) := by
+          exact mul_le_mul_of_nonneg_left (hck x hx) (le_max_right ..)
+      _ = max B 0 / c * (kt x * normPlus x ^ (4 : ℝ) * Real.exp _) := by
           ring
   · rw [hg0 x hx, zero_mul, zero_mul, abs_zero]
     exact mul_nonneg (by positivity) (mul_nonneg (hd.ρ_nonneg x) (bpzWardCutWeight_nonneg hd x))
 
 /-- The right side of the cutoff Ward identity, rooted at the integration point. -/
-theorem bpzWard_right_deroot (hd : BPZWardData γ q r δ ρ kt k₂ φ D)
-    (hp : BPZWardProb P X γ M Xc ρ k₂ D) (v : ℂ) :
+theorem bpzWard_right_deroot (hp : BPZWardProb P X γ M Xc ρ k₂ D) (v : ℂ) :
     ∫ ω, bpzMixedReal ρ (bpzWardCutWeight γ q r kt) k₂ (regularizedGMC P Xc γ r ω) (M ω) ^
         (-q - 1) * ∫ x, φ x * bpzWardCutWeight γ q r kt x * bpzMixedDerivReal γ r ρ
           (bpzWardCutWeight γ q r kt) k₂ x v (regularizedGMC P Xc γ r ω) (M ω)
@@ -470,7 +464,7 @@ theorem bpzWard_right_deroot (hd : BPZWardData γ q r δ ρ kt k₂ φ D)
     fun x => rfl
   have hφk : ∀ x, φ x * k₁ x =
       φ x * kt x * normPlus x ^ (4 : ℝ) * Real.exp (γ ^ 2 * q * bpzPin r x) := by
-    intro x; rw [hk₁x]; ring
+    grind
   have hφkc : Continuous fun x => φ x * k₁ x := by
     simp_rw [hφk]
     exact (hd.f_C1.continuous.mul (bpz_continuous_normPlus.rpow_const fun x => Or.inl
@@ -507,24 +501,23 @@ theorem bpzWard_right_deroot (hd : BPZWardData γ q r δ ρ kt k₂ φ D)
   have hgc : Continuous fun x => φ x * kt x := hd.f_C1.continuous
   obtain ⟨B, hB⟩ := hgc.bounded_above_of_compact_support hd.φ_compact.mul_right
   obtain ⟨C, hC0, hC⟩ := bpzWard_weight_bound_of hd (g := fun x => φ x * kt x) (B := B)
-    (fun x => by rw [← Real.norm_eq_abs]; exact hB x)
+    (fun x => by simp_all)
     (fun x hx => by rw [image_eq_zero_of_notMem_tsupport hx, zero_mul])
-  have hC' : ∀ x, |φ x * k₁ x| ≤ C * (ρ x * k₁ x) := fun x => by rw [hφk]; exact hC x
-  set K : ℝ := γ ^ 2 * Real.exp r * ‖v‖ with hK
+  have hC' : ∀ x, |φ x * k₁ x| ≤ C * (ρ x * k₁ x) := fun x => by simp_all
+  set K := γ ^ 2 * Real.exp r * ‖v‖ with hK
   have hK0 : 0 ≤ K := by positivity
   obtain ⟨cI, hcI, hlowI⟩ := bpzWard_mixed_lower hd hp k₁ hk₁0 (P := P) (Xc := Xc) (r := r)
   have hInt1 := bpzWard_integrable_rpow_neg hp hd.D_meas hImeas.aestronglyMeasurable hcI hlowI
     (p := q - 1) (by linarith [hd.q_ge])
-  have hcut' := bpzWard_cut_integrable' hd hp
   have hint : ∫⁻ ω, ∫⁻ x, ENNReal.ofReal |F x (regularizedGMC P Xc γ r ω) (M ω)|
       ∂regularizedGMC P Xc γ r ω ∂P < ⊤ := by
     have hbound : ∀ᵐ ω ∂P, ∫⁻ x, ENNReal.ofReal |F x (regularizedGMC P Xc γ r ω) (M ω)|
         ∂regularizedGMC P Xc γ r ω ≤ ENNReal.ofReal (C * K *
           bpzMixedReal ρ k₁ k₂ (regularizedGMC P Xc γ r ω) (M ω) ^ (-(q - 1))) := by
-      filter_upwards [hcut', hlowI, bpzWard_far_mass_pos hp hd.D_meas, hp.k₂_int] with
+      filter_upwards [(bpzWard_cut_integrable' hd hp), hlowI, bpzWard_far_mass_pos hp hd.D_meas, hp.k₂_int] with
         ω hρk hlow hpos hk₂i
       set I := bpzMixedReal ρ k₁ k₂ (regularizedGMC P Xc γ r ω) (M ω) with hIdef
-      have hIpos : 0 < I := lt_of_lt_of_le (mul_pos hcI hpos) hlow
+      have hIpos : 0 < I := by nlinarith
       have hIq : 0 ≤ I ^ (-q) := Real.rpow_nonneg hIpos.le _
       have hIq1 : 0 ≤ I ^ (-q - 1) := Real.rpow_nonneg hIpos.le _
       have hY := abs_bpzMixedDerivReal_le (γ := γ) (r := r) hd.ρ_nonneg hd.ρ_le_one hk₁0
@@ -541,7 +534,7 @@ theorem bpzWard_right_deroot (hd : BPZWardData γ q r δ ρ kt k₂ φ D)
                   (regularizedGMC P Xc γ r ω) (M ω)| ≤ I ^ (-q - 1) * (K * I) :=
                   mul_le_mul_of_nonneg_left (hY x v) hIq1
               _ = K * I ^ (-q - 1 + 1) := by rw [Real.rpow_add_one hIpos.ne']; ring
-              _ = K * I ^ (-q) := by rw [show -q - 1 + 1 = -q by ring]
+              _ = K * I ^ (-q) := by simp
           rw [abs_mul]
           calc |φ x * k₁ x| * |I ^ (-q - 1) * bpzMixedDerivReal γ r ρ k₁ k₂ x v
                 (regularizedGMC P Xc γ r ω) (M ω)| ≤ C * (ρ x * k₁ x) * (K * I ^ (-q)) :=
@@ -550,11 +543,11 @@ theorem bpzWard_right_deroot (hd : BPZWardData γ q r δ ρ kt k₂ φ D)
             _ = C * K * I ^ (-q) * (ρ x * k₁ x) := by ring)
       refine hle.trans (ENNReal.ofReal_le_ofReal ?_)
       exact bpz_mul_rpow_neg_mul_le (mul_nonneg hC0 hK0) hIpos
-        (bpzMixedReal_cut_le hd.ρ_le_one hd.k₂_nonneg _ _)
+        (bpzMixedReal_cut_le hd.ρ_le_one hd.k₂_nonneg ..)
     refine lt_of_le_of_lt (lintegral_mono_ae hbound) ?_
     rw [← ofReal_integral_eq_lintegral_ofReal (hInt1.const_mul (C * K))
       (Eventually.of_forall fun ω => mul_nonneg (mul_nonneg hC0 hK0) (Real.rpow_nonneg
-        (bpzMixedReal_nonneg hd.ρ_nonneg hd.ρ_le_one hk₁0 hd.k₂_nonneg _ _) _))]
+        (bpzMixedReal_nonneg hd.ρ_nonneg hd.ρ_le_one hk₁0 hd.k₂_nonneg ..) _))]
     exact ENNReal.ofReal_lt_top
   rw [bpz_cutoff_deroot_real P X hp.hX hd.γ_pos hp.γ2 M hp.hM hp.hMm Xc hp.hXc r F hFm hFx hint]
   congr 1
@@ -568,7 +561,7 @@ theorem bpzWard_right_deroot (hd : BPZWardData γ q r δ ρ kt k₂ φ D)
     simp only [hF]
     rw [bpzMixedReal_tilt, bpzMixedDerivReal_tilt, show -q - 1 = -(q + 1) by ring,
       bpz_exp_mul_rpow_neg (bpzRootedMixedReal_nonneg hd.ρ_nonneg hd.ρ_le_one hk₁0
-        hd.k₂_nonneg x _ _)]
+        hd.k₂_nonneg x ..)]
     have hexp : Real.exp (-((q + 1) * (γ ^ 2 * bpzPin r x))) * Real.exp (γ ^ 2 * bpzPin r x) =
         Real.exp (-(q * (γ ^ 2 * bpzPin r x))) := by
       rw [← Real.exp_add]
@@ -587,14 +580,16 @@ theorem bpzWard_right_deroot (hd : BPZWardData γ q r δ ρ kt k₂ φ D)
     exact Real.exp_zero
   rw [hk₁x]
   calc normPlus x ^ (-4 : ℝ) * (φ x * (kt x * normPlus x ^ (4 : ℝ) *
-        Real.exp (γ ^ 2 * q * bpzPin r x)) * Real.exp (-(q * (γ ^ 2 * bpzPin r x))) *
-        ∫ ω, bpzRootedMixedReal γ r ρ k₁ k₂ x (regularizedGMC P Xc γ r ω) (M ω) ^ (-q - 1) *
-          bpzRootedMixedDerivApply γ r ρ k₁ k₂ x v (regularizedGMC P Xc γ r ω) (M ω) ∂P)
+        Real.exp _) * Real.exp _ *
+        ∫ ω, bpzRootedMixedReal γ r ρ k₁ k₂ x _ (M ω) ^ (-q - 1) *
+          bpzRootedMixedDerivApply γ r ρ k₁ k₂ x v _ (M ω) ∂P)
       = φ x * kt x * (normPlus x ^ (-4 : ℝ) * normPlus x ^ (4 : ℝ)) *
-          (Real.exp (γ ^ 2 * q * bpzPin r x) * Real.exp (-(q * (γ ^ 2 * bpzPin r x)))) *
+          (Real.exp _ * Real.exp (-(q * (γ ^ 2 * bpzPin r x)))) *
           ∫ ω, bpzRootedMixedReal γ r ρ k₁ k₂ x (regularizedGMC P Xc γ r ω) (M ω) ^ (-q - 1) *
             bpzRootedMixedDerivApply γ r ρ k₁ k₂ x v (regularizedGMC P Xc γ r ω) (M ω) ∂P := by
         ring
-    _ = _ := by rw [hn, he, mul_one, mul_one]
+    _ = _ := by grind
+
+end
 
 end DOZZ.Proofs

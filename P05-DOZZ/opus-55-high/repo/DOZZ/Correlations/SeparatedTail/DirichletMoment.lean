@@ -20,14 +20,18 @@ namespace DOZZ.Proofs
 /-- The softened singular weight is bounded and globally measurable. -/
 noncomputable def separatedTail_softWeight (γ α s : ℝ) (c x : ℂ) : ℝ≥0 :=
   ((‖x-c‖+s)^(-γ*α)).toNNReal
+section
+variable (γ α s : ℝ) (c : ℂ)
 
-theorem separatedTail_softWeight_measurable (γ α s : ℝ) (c : ℂ) :
+theorem separatedTail_softWeight_measurable :
     Measurable (separatedTail_softWeight γ α s c) :=
-  (limitWeightedFatou_weight_measurable (-γ*α) s).comp (measurable_id.sub_const c)
+  (limitWeightedFatou_weight_measurable _ s).comp (measurable_id.sub_const c)
 
-theorem separatedTail_softWeight_bounded (γ α s : ℝ) (c : ℂ) (he : -γ*α ≤ 0) (hs : 0 < s) :
+theorem separatedTail_softWeight_bounded (he : -γ*α ≤ 0) (hs : 0 < s) :
     ∃ b : ℝ≥0, ∀ x, separatedTail_softWeight γ α s c x ≤ b :=
-  ⟨(s^(-γ*α)).toNNReal, fun x => limitWeightedFatou_weight_le he hs (x-c)⟩
+  ⟨(s^(-γ*α)).toNNReal, fun x => limitWeightedFatou_weight_le he hs _⟩
+
+end
 
 /-- A Dirichlet circle cutoff moment is bounded by the literal equator cutoff moment.
 The same reference density and softened weight are used on both sides. -/
@@ -56,8 +60,8 @@ theorem separatedTail_dirichlet_cutoff_moment_le
     simp only [separatedTail_diskPoint, ite_eq_left hx, ite_eq_left hy]
     rw [abs_sub_comm]
     exact separatedTail_circle_covariance_discrepancy P X hX Xc hc Dc c R (Real.log (1/δ)) hR hpin
-      (by simpa only [hscale] using hDc) x y (mem_ball_iff_norm.mp hx).le
-      (mem_ball_iff_norm.mp hy).le (by simpa only [hscale] using hδ4)
+      (by simp_all) x y (mem_ball_iff_norm.mp hx).le
+      (mem_ball_iff_norm.mp hy).le (by linarith)
   have hcov : ∀ᵐ xy ∂(gmcReferenceMeasure.restrict (ball c 1)).prod
       (gmcReferenceMeasure.restrict (ball c 1)),
       |(∫ ω, Dc ω (separatedTail_diskPoint c xy.1) (Real.log (1/δ))*

@@ -34,7 +34,7 @@ theorem normalized_real_vertex_tilt
   let A := γ * ∑ i, β i.castSucc * equatorCircleMean (z i) r
   let C := ENNReal.ofReal (Real.exp A)
   let K := ENNReal.ofReal (Real.exp (-p * A))
-  have hc0 : C ≠ 0 := (ENNReal.ofReal_pos.mpr (Real.exp_pos _)).ne'
+  have hc0 : C ≠ 0 := by positivity
   have hct : C ≠ ⊤ := ENNReal.ofReal_ne_top
   have hcancel : K * C ^ p = 1 := by
     dsimp only [K, C]

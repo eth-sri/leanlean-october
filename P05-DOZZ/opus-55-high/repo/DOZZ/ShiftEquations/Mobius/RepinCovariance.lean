@@ -35,7 +35,7 @@ theorem circleMeasure_singleton_eq_zero (x : ℂ) (r : ℝ) (y : ℂ) :
     circleMeasure x r {y} = 0 := by
   have hcount : (circleMap x (Real.exp (-r)) ⁻¹' {y}).Countable :=
     (Set.countable_singleton y).preimage_circleMap x (Real.exp_pos _).ne'
-  rw [circleMeasure, Measure.smul_apply, Measure.map_apply (measurable_circleMap _ _)
+  rw [circleMeasure, Measure.smul_apply, Measure.map_apply (measurable_circleMap ..)
     (measurableSet_singleton y), Measure.restrict_apply' measurableSet_Ioc,
     measure_mono_null Set.inter_subset_left (hcount.measure_zero _), smul_zero]
 
@@ -44,7 +44,7 @@ namespace RepinCovariance
 /-- Almost every point of a circle differs from a given point. -/
 theorem ae_ne_circleMeasure (x : ℂ) (r : ℝ) (y : ℂ) : ∀ᵐ u ∂circleMeasure x r, u ≠ y := by
   rw [ae_iff]
-  simpa only [ne_eq, not_not, Set.ofPred_eq_eq_singleton] using
+  simpa using
     circleMeasure_singleton_eq_zero x r y
 
 /-- A continuous function is integrable on every circle. -/
@@ -52,7 +52,7 @@ theorem integrable_circleMeasure_of_continuous {g : ℂ → ℝ} (hg : Continuou
     Integrable g (circleMeasure x r) := by
   have _ := circleMeasure_isProbability x r
   obtain ⟨C, hC⟩ :=
-    (isCompact_sphere x (Real.exp (-r))).exists_bound_of_continuousOn hg.continuousOn
+    (isCompact_sphere x _).exists_bound_of_continuousOn hg.continuousOn
   exact Integrable.of_bound hg.aestronglyMeasurable C
     (by filter_upwards [ae_mem_sphere_circleMeasure x r] with u hu using hC u hu)
 
@@ -64,9 +64,14 @@ theorem integrable_testFn (f : TestFn) : Integrable f :=
 theorem integrable_testFn_mul {h : ℂ → ℝ} (hh : Continuous h) (f : TestFn) :
     Integrable (fun y => f y * h y) :=
   (f.continuous.mul hh).integrable_of_hasCompactSupport f.hasCompactSupport.mul_right
+section
+variable (a b : ℂ)
+section
+variable (ha : a ≠ 0) (x y : ℂ) (r : ℝ)
+include ha
 
 /-- The circle potential at an affine image point, with the circle left unpushed. -/
-theorem integral_gffKernel_affine_circleMeasure (a b : ℂ) (ha : a ≠ 0) (x y : ℂ) (r : ℝ) :
+theorem integral_gffKernel_affine_circleMeasure :
     ∫ v, gffKernel (a * x + b) (a * v + b) ∂circleMeasure y r =
       (∫ v, gffKernel x v ∂circleMeasure y r) + affineDefect a b x +
         ∫ v, affineDefect a b v ∂circleMeasure y r := by
@@ -75,15 +80,15 @@ theorem integral_gffKernel_affine_circleMeasure (a b : ℂ) (ha : a ≠ 0) (x y 
       fun v => gffKernel x v + affineDefect a b x + affineDefect a b v := by
     filter_upwards [ae_ne_circleMeasure y r x] with v hv
     exact gffKernel_affine a b ha (Ne.symm hv)
-  have hG : Integrable (fun v => gffKernel x v) (circleMeasure y r) :=
+  have hG : Integrable (gffKernel x) (circleMeasure y r) :=
     integrable_gffKernel_circleMeasure y x r
   have hGc : Integrable (fun v => gffKernel x v + affineDefect a b x) (circleMeasure y r) :=
-    hG.add (integrable_const _)
+    by simp_all
   rw [integral_congr_ae hae, integral_add hGc (integrable_affineDefect_circleMeasure a b ha y r),
     integral_add hG (integrable_const _), integral_const, probReal_univ, one_smul]
 
 /-- The potential of an affinely pushed circle at an affine image point. -/
-theorem integral_gffKernel_circleMeasure_affine (a b : ℂ) (ha : a ≠ 0) (x y : ℂ) (r : ℝ) :
+theorem integral_gffKernel_circleMeasure_affine :
     ∫ z, gffKernel (a * x + b) z ∂circleMeasure (a * y + b) (r - Real.log ‖a‖) =
       (∫ v, gffKernel x v ∂circleMeasure y r) + affineDefect a b x +
         ∫ v, affineDefect a b v ∂circleMeasure y r := by
@@ -91,13 +96,15 @@ theorem integral_gffKernel_circleMeasure_affine (a b : ℂ) (ha : a ≠ 0) (x y 
     integral_map (by fun_prop) (CirclePotential.measurable_gffKernel _).aestronglyMeasurable]
   exact integral_gffKernel_affine_circleMeasure a b ha x y r
 
+end
+
 /-- The potential of a pushed test function at an affine image point. -/
-theorem integral_gffKernel_mul_affinePushTestFn (a b : ℂ) (ha : a ≠ 0) (g : TestFn) (z : ℂ) :
+theorem integral_gffKernel_mul_affinePushTestFn (ha : a ≠ 0) (g : TestFn) (z : ℂ) :
     ∫ w, gffKernel (a * z + b) w * affinePushTestFn a b g w =
       (∫ w, gffKernel z w * g w) + affineDefect a b z * (∫ w, g w) +
         ∫ w, g w * affineDefect a b w := by
   have hcomm : ∀ w, gffKernel (a * z + b) w * affinePushTestFn a b g w =
-      affinePushTestFn a b g w * gffKernel (a * z + b) w := fun w => mul_comm _ _
+      affinePushTestFn a b g w * gffKernel _ w := fun w => mul_comm ..
   simp_rw [hcomm]
   rw [integral_affinePushTestFn_mul a b ha g (gffKernel (a * z + b))]
   have hae : (fun y => g y * gffKernel (a * z + b) (a * y + b)) =ᵐ[volume]
@@ -107,19 +114,26 @@ theorem integral_gffKernel_mul_affinePushTestFn (a b : ℂ) (ha : a ≠ 0) (g : 
     ring
   have h1 : Integrable (fun y => gffKernel z y * g y) := integrable_testKernel_section g z
   have h2 : Integrable (fun y => affineDefect a b z * g y) := (integrable_testFn g).const_mul _
-  have h3 : Integrable (fun y => g y * affineDefect a b y) :=
+  have h3 :=
     integrable_testFn_mul (continuous_affineDefect a b) g
   have h12 : Integrable (fun y => gffKernel z y * g y + affineDefect a b z * g y) := h1.add h2
   rw [integral_congr_ae hae, integral_add h12 h3, integral_add h1 h2, integral_const_mul]
 
+end
+
 end RepinCovariance
+section
+variable (a b : ℂ)
+section
+variable (ha : a ≠ 0)
+include ha
 
 /-- Test covariance of the pushed tests. -/
-theorem gffCov_affinePush (a b : ℂ) (ha : a ≠ 0) (f g : TestFn) :
+theorem gffCov_affinePush (f g : TestFn) :
     gffCov (affinePushTestFn a b f) (affinePushTestFn a b g) =
       gffCov f g + (∫ y, f y) * (∫ y, g y * affineDefect a b y) +
         (∫ y, g y) * (∫ y, f y * affineDefect a b y) := by
-  rw [gffCov_eq_integral_testKernel (affinePushTestFn a b f) (affinePushTestFn a b g),
+  rw [gffCov_eq_integral_testKernel ..,
     gffCov_eq_integral_testKernel f g,
     integral_affinePushTestFn_mul a b ha f
       (fun z => ∫ w, gffKernel z w * affinePushTestFn a b g w)]
@@ -139,14 +153,16 @@ theorem gffCov_affinePush (a b : ℂ) (ha : a ≠ 0) (f g : TestFn) :
   simp_rw [e]
   rw [integral_add h12 h3, integral_add h1 h2, integral_const_mul, integral_const_mul]
   ring
+section
+variable (f : TestFn)
 
 /-- Cross energy of a pushed test with the repinning circle. -/
-theorem circleCross_repin_affinePush (a b : ℂ) (ha : a ≠ 0) (f : TestFn) :
+theorem circleCross_repin_affinePush :
     circleCross b (-Real.log ‖a‖) (affinePushTestFn a b f) =
       (∫ y, f y * affineDefect a b y) + repinKappa a b * ∫ y, f y := by
   unfold circleCross
   change ∫ y, affinePushTestFn a b f y * repinPotential a b y = _
-  rw [integral_affinePushTestFn_mul a b ha f (repinPotential a b)]
+  rw [integral_affinePushTestFn_mul a b ha f _]
   simp_rw [repinPotential_affine a b ha]
   have h1 : Integrable (fun y => f y * affineDefect a b y) :=
     RepinCovariance.integrable_testFn_mul (continuous_affineDefect a b) f
@@ -158,15 +174,15 @@ theorem circleCross_repin_affinePush (a b : ℂ) (ha : a ≠ 0) (f : TestFn) :
   rw [integral_add h1 h2, integral_const_mul]
 
 /-- Cross energy of a pushed test with a pushed circle. -/
-theorem circleCross_affinePush (a b : ℂ) (ha : a ≠ 0) (f : TestFn) (y : ℂ) (r : ℝ) :
+theorem circleCross_affinePush (y : ℂ) (r : ℝ) :
     circleCross (a * y + b) (r - Real.log ‖a‖) (affinePushTestFn a b f) =
       circleCross y r f + (∫ v, f v * affineDefect a b v) +
         (∫ v, f v) * ∫ u, affineDefect a b u ∂circleMeasure y r := by
   unfold circleCross
   rw [integral_affinePushTestFn_mul a b ha f
-    (fun x => ∫ z, gffKernel x z ∂circleMeasure (a * y + b) (r - Real.log ‖a‖))]
+    (fun x => ∫ z, gffKernel x z ∂circleMeasure _ (r - Real.log ‖a‖))]
   simp_rw [RepinCovariance.integral_gffKernel_circleMeasure_affine a b ha _ y r]
-  have h1 : Integrable (fun v => f v * ∫ u, gffKernel v u ∂circleMeasure y r) :=
+  have h1 :=
     RepinCovariance.integrable_testFn_mul (continuous_circleKernelPotential y r) f
   have h2 : Integrable (fun v => f v * affineDefect a b v) :=
     RepinCovariance.integrable_testFn_mul (continuous_affineDefect a b) f
@@ -182,8 +198,10 @@ theorem circleCross_affinePush (a b : ℂ) (ha : a ≠ 0) (f : TestFn) (y : ℂ)
   rw [integral_add h12 h3, integral_add h1 h2, integral_const_mul]
   ring
 
+end
+
 /-- Double circle energy of two pushed circles. -/
-theorem circleEnergy_affine (a b : ℂ) (ha : a ≠ 0) (y y' : ℂ) (r r' : ℝ) :
+theorem circleEnergy_affine (y y' : ℂ) (r r' : ℝ) :
     ∫ u, ∫ v, gffKernel u v ∂circleMeasure (a * y' + b) (r' - Real.log ‖a‖)
         ∂circleMeasure (a * y + b) (r - Real.log ‖a‖) =
       (∫ u, ∫ v, gffKernel u v ∂circleMeasure y' r' ∂circleMeasure y r) +
@@ -192,17 +210,21 @@ theorem circleEnergy_affine (a b : ℂ) (ha : a ≠ 0) (y y' : ℂ) (r r' : ℝ)
   have _ := circleMeasure_isProbability y r
   rw [← circleMeasure_map_affine a b ha y r,
     integral_map (by fun_prop)
-      (continuous_circleKernelPotential (a * y' + b) (r' - Real.log ‖a‖)).aestronglyMeasurable]
+      (continuous_circleKernelPotential ..).aestronglyMeasurable]
   simp_rw [RepinCovariance.integral_gffKernel_circleMeasure_affine a b ha _ y' r']
-  have h1 : Integrable (fun u => ∫ v, gffKernel u v ∂circleMeasure y' r') (circleMeasure y r) :=
+  have h1 :=
     RepinCovariance.integrable_circleMeasure_of_continuous
       (continuous_circleKernelPotential y' r') y r
-  have h2 : Integrable (affineDefect a b) (circleMeasure y r) :=
+  have h2 :=
     integrable_affineDefect_circleMeasure a b ha y r
   have h12 : Integrable (fun u => (∫ v, gffKernel u v ∂circleMeasure y' r') +
-      affineDefect a b u) (circleMeasure y r) := h1.add h2
+      affineDefect a b u) _ := h1.add h2
   rw [integral_add h12 (integrable_const _), integral_add h1 h2, integral_const, probReal_univ,
     one_smul]
+
+end
+
+end
 
 end DOZZ.Proofs
 

@@ -14,6 +14,7 @@ import DOZZ.Brownian.Lateral.ReflectionJointLaw
 import DOZZ.Correlations.Residue.FullFromUnit
 import DOZZ.Correlations.Symmetry.SymmetricExtended
 import DOZZ.ShiftEquations.Rbar.Continuation
+import DOZZ.ShiftEquations.Residual.Calibration
 
 /-!
 # The first dual crossing seed from the dual fusion statement
@@ -46,8 +47,8 @@ theorem structureConstant_swap12 {Ω : Type*} [MeasurableSpace Ω] (P : Measure 
     (M : Ω → Measure ℂ) {γ μ a b c : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
     (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) (h : ExtendedSeiberg3 γ a b c) :
     structureConstant P M γ μ a b c = structureConstant P M γ μ b a c := by
-  rw [residue_structureConstant_eq_unitVolume, residue_structureConstant_eq_unitVolume,
-    (unitVolumeStructureConstant_symmetric_extended P X M γ a b c hγ hγ2 hX hM h).1,
+  rw [DOZZ.Proofs.structureConstant_eq_mul_unitVolume, DOZZ.Proofs.structureConstant_eq_mul_unitVolume,
+    (DOZZ.Proofs.unitVolumeStructureConstant_symmetric_extended P X M γ a b c hγ hγ2 hX hM h).1,
     show sExp γ b a c = sExp γ a b c by unfold sExp; ring_nf]
 
 /-- **The first dual crossing seed from the dual fusion statement.** `hFusion` is the
@@ -107,11 +108,10 @@ theorem dual_crossing_seed_one_of_fusion {Ω : Type u} [MeasurableSpace Ω]
               structureConstant P M γ μ α (2 * Q γ - ε - 2 / γ) α' := by
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
   have hγh : γ / 2 < 2 / γ := by
-    rw [div_lt_div_iff₀ (by norm_num) hγ]
-    nlinarith
+    gcongr
   -- the witnesses
   obtain ⟨A, hXcA, hAm, hA0, hBf, hBb, hInd, hLm, hIndL, hLat⟩ :=
-    equatorGFF_lateral_GMC_decomposition P X M γ hγ hγ₂ hX hM
+    DOZZ.Proofs.equatorGFF_lateral_GMC_decomposition P X M γ hγ hγ₂ hX hM
   have hSLP : IsSourceLateralProjection P X γ M
       (fun ω => lateralProjectedGMC γ (A ω) (M ω)) :=
     ⟨hX, hM, A, hXcA, hAm, hA0, hBf, hBb, hInd, hLm, hIndL, Eventually.of_forall fun _ => rfl⟩

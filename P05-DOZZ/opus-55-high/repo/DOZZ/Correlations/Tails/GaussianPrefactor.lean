@@ -34,9 +34,7 @@ theorem gaussian_wick_power_moment
     rw [show (γ * U ω - γ ^ 2 * variance U P / 2) * p =
       -p * γ ^ 2 * variance U P / 2 + (p * γ) * U ω by ring, Real.exp_add]
     ring
-  rw [heq, integral_const_mul, gaussian_centered_mgf P U hU hmean (p * γ)]
-  rw [mul_assoc, ← Real.exp_add]
-  congr 2
+  rw [heq, integral_const_mul, gaussian_centered_mgf P U hU hmean _, mul_assoc, ← Real.exp_add]
   ring
 
 /-- The exponent of the lognormal moment and plane background simplifies to the
@@ -63,19 +61,18 @@ theorem offCenter_prefactor_moment
       ‖z‖ ^ (-4 * α * (Q γ - α)) * Fz ^ (reflectionExponent γ α) := by
   have hn : 0 < ‖z‖ := norm_pos_iff.mpr hz
   have hK : 0 < Fz * ‖z‖ ^ (-4 : ℝ) :=
-    mul_pos hFz (Real.rpow_pos_of_pos hn _)
+    by positivity
   let p := reflectionExponent γ α
   rw [gaussian_wick_power_moment P N hN hmean γ
-    (Fz * ‖z‖ ^ (-4 : ℝ)) p hK, hvar,
+    (Fz * ‖z‖ ^ (-4)) p hK, hvar,
     Real.mul_rpow hFz.le (Real.rpow_pos_of_pos hn _).le, ← Real.rpow_mul hn.le]
-  rw [Real.rpow_def_of_pos hn, Real.rpow_def_of_pos hn]
-  rw [mul_assoc, ← Real.exp_add]
+  rw [Real.rpow_def_of_pos hn, Real.rpow_def_of_pos hn, mul_assoc, ← Real.exp_add]
   have he : Real.log ‖z‖ * (-4 * p) + γ ^ 2 * (2 * Real.log ‖z‖) * (p ^ 2 - p) / 2 =
       Real.log ‖z‖ * (-4 * α * (Q γ - α)) := by
     calc
       _ = Real.log ‖z‖ * (-4 * p + γ ^ 2 * (p ^ 2 - p)) := by ring
       _ = _ := by rw [prefactor_exponent γ α hγ]
-  rw [he, mul_comm]
+  grind
 
 
 end DOZZ.Proofs

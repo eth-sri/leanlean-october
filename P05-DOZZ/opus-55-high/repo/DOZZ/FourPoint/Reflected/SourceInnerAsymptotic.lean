@@ -44,7 +44,7 @@ theorem reflected_source_inner_increment_tendsto
     let ν := Q γ-α₁
     let a := 2*ν/γ
     let p := (α₁+α₂+α₃-γ/2-2*Q γ)/γ
-    Tendsto (fun z : ℂ =>
+    Tendsto (fun z =>
       (gammaHalfMoment P M γ α₁ α₂ α₃ p z-gammaHalfOuterMoment P M γ α₁ α₂ α₃ p z ξ)/‖z‖^(γ*ν))
       (𝓝[≠] 0) (𝓝 ((a*Real.Gamma (-a)*Real.Gamma (p+a)/Real.Gamma p)*
         (∫⁻ ω, rho γ (M ω) (2*Q γ-α₁-γ/2) α₂ α₃^(-(p+a)) ∂P).toReal*
@@ -69,13 +69,13 @@ theorem reflected_source_inner_increment_tendsto
     (1-Real.exp (-h)*‖z‖)⁻¹^|γ*α₂|)
   let Clo := fun (h : ℝ) (z : ℂ) => min 1 ((1-Real.exp (-h))^(γ^2/2)*
     (1-Real.exp (-h)*‖z‖)⁻¹^(-|γ*α₂|))
-  let f := fun z : ℂ => (gammaHalfMoment P M γ α₁ α₂ α₃ p z-
+  let f := fun z => (gammaHalfMoment P M γ α₁ α₂ α₃ p z-
     gammaHalfOuterMoment P M γ α₁ α₂ α₃ p z ξ)/‖z‖^κ
   let g := fun h z => Chi h z*(W h z/‖z‖^κ)+E h z/‖z‖^κ
   let k := fun h z => Clo h z*(W h z/‖z‖^κ)+E h z/‖z‖^κ
-  let Llo := fun h : ℝ => max 1 ((1+Real.exp (-h))^(γ^2/2))*L
-  let Lhi := fun h : ℝ => min 1 ((1-Real.exp (-h))^(γ^2/2))*L
-  have hp : 0 < p := div_pos (by linarith only [hs]) hγ
+  let Llo := fun h => max 1 ((1+Real.exp (-h))^(γ^2/2))*L
+  let Lhi := fun h => min 1 ((1-Real.exp (-h))^(γ^2/2))*L
+  have hp : 0 < p := div_pos (by linarith) hγ
   have hW (h : ℝ) (hh : 0 < h) : Tendsto (fun z => W h z/‖z‖^κ) (𝓝[≠] 0) (𝓝 L) :=
     reflected_source_williams_increment_tendsto P X hX γ hγ hγ₂ M hM Xc hc
       α₁ α₂ α₃ ξ h hα₁ hreflect hα₂ hα₃ hh.le hs hξ hξ1 B Z hData B₀ hB₀
@@ -84,25 +84,21 @@ theorem reflected_source_inner_increment_tendsto
       (reflected_source_full_copied_littleO P X Xc hX hc hm hcont γ hγ hγ₂ M hM
         N hN hfin hwhole hNa α₁ α₂ α₃ ξ h hα₁ hα₂ hα₃ hreflect hs hξ hξ1 hnear hfreeze hh.le)
   have hg (h : ℝ) (hh : 0 < h) : Tendsto (g h) (𝓝[≠] 0) (𝓝 (Llo h)) := by
-    have hc := (reflected_kernel_coefficient_spatial_limits γ α₂ h).1.mono_left (nhdsWithin_le_nhds (s := ({0} : Set ℂ)ᶜ))
-    simpa only [g,Llo,add_zero] using (hc.mul (hW h hh)).add (hE h hh)
+    simpa only [g,Llo,add_zero] using (((reflected_kernel_coefficient_spatial_limits γ α₂ h).1.mono_left (nhdsWithin_le_nhds)).mul (hW h hh)).add (hE h hh)
   have hk (h : ℝ) (hh : 0 < h) : Tendsto (k h) (𝓝[≠] 0) (𝓝 (Lhi h)) := by
-    have hc := (reflected_kernel_coefficient_spatial_limits γ α₂ h).2.mono_left (nhdsWithin_le_nhds (s := ({0} : Set ℂ)ᶜ))
-    simpa only [k,Lhi,add_zero] using (hc.mul (hW h hh)).add (hE h hh)
+    simpa only [k,Lhi,add_zero] using (((reflected_kernel_coefficient_spatial_limits γ α₂ h).2.mono_left (nhdsWithin_le_nhds)).mul (hW h hh)).add (hE h hh)
   have hdepth := reflected_kernel_coefficient_depth_limit γ
   have hLlo : Tendsto Llo atTop (𝓝 L) := by
-    simpa only [Llo,one_mul] using hdepth.fst_nhds.mul_const L
+    simpa using hdepth.fst_nhds.mul_const L
   have hLhi : Tendsto Lhi atTop (𝓝 L) := by
-    simpa only [Lhi,one_mul] using hdepth.snd_nhds.mul_const L
+    simpa using hdepth.snd_nhds.mul_const L
   have hbound (h : ℝ) (hh : 0 < h) : ∀ᶠ z : ℂ in 𝓝[≠] 0, g h z ≤ f z ∧ f z ≤ k h z := by
-    have hQν := hData.1.1.2
     have hb := reflected_source_williams_kernel_squeeze P X hX Xc hc hm hcont γ hγ hγ₂ M hM
-      N hN hi heq hfin α₁ α₂ α₃ ξ h hα₁ B hL hData _ hQν p hp hα₂ hα₃ hξ hξ1 hh
+      N hN hi heq hfin α₁ α₂ α₃ ξ h hα₁ B hL hData _ hData.1.1.2 p hp hα₂ hα₃ hξ hξ1 hh
     filter_upwards [hb] with z hz
-    have hlo := div_le_div_of_nonneg_right hz.1 (Real.rpow_nonneg (norm_nonneg z) κ)
     have hhi := div_le_div_of_nonneg_right hz.2 (Real.rpow_nonneg (norm_nonneg z) κ)
-    exact ⟨by simpa only [g,Chi,E,f,W,ν,add_div,mul_div_assoc] using hlo,
-      by simpa only [k,Clo,E,f,W,ν,add_div,mul_div_assoc] using hhi⟩
+    exact ⟨by simpa only [g,Chi,E,f,W,ν,add_div,mul_div_assoc] using (div_le_div_of_nonneg_right hz.1 (Real.rpow_nonneg (norm_nonneg z) κ)),
+      by grind⟩
   exact reflected_ordered_two_sided_squeeze (𝓝[≠] (0 : ℂ)) f g k L Llo Lhi hg hk hLlo hLhi hbound
 
 end DOZZ.Proofs

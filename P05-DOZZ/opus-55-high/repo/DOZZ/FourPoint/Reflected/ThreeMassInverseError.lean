@@ -41,15 +41,15 @@ theorem reflected_three_mass_inverse_error
       le_self_add
   have hGF : ∀ᵐ ω ∂P, S ω^(-p) ≤ F ω^(-p)+R ω := by
     filter_upwards [heq,hOf,hFf] with ω he ho hf
-    have hsfin : S ω ≠ ⊤ := ne_top_of_le_ne_top hf (he ▸ le_self_add)
-    have hbfin : B ω ≠ ⊤ := ne_top_of_le_ne_top hf (he ▸ le_add_left le_rfl)
-    have hsz : S ω ≠ 0 := ne_zero_of_lt (ho.trans_le (le_add_left le_rfl))
+    have hsfin : S ω ≠ ⊤ := by aesop
+    have hbfin : B ω ≠ ⊤ := by simp_all
+    have hsz : S ω ≠ 0 := by positivity
     have hb := reflected_ennreal_inverse_add_bound p hp (S ω) (B ω) hsz hsfin hbfin
     rw [← he] at hb
     apply hb.trans
     apply add_le_add_right
     have hpow := ennreal_rpow_antitone_of_nonpos (le_add_left le_rfl : O ω ≤ S ω)
-      (by linarith only [hp] : -(p+1) ≤ 0)
+      (by linarith : -(p+1) ≤ 0)
     simpa only [R,mul_assoc] using mul_le_mul_right hpow (ENNReal.ofReal p*B ω)
   have h := reflected_lintegral_toReal_difference_bound P (fun ω => F ω^(-p))
     (fun ω => S ω^(-p)) R (hF.pow_const (-p)) (hS.pow_const (-p)) hFinv hSinv hRfin hFG hGF

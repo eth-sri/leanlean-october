@@ -29,42 +29,38 @@ private theorem cdfGeneralizedQuantile_lt_iff_exists_rat
     cdfGeneralizedQuantile (ProbabilityTheory.cdf μ) u < a ↔
       ∃ q : ℚ, (q : ℝ) < a ∧ u ≤ ProbabilityTheory.cdf μ q := by
   let F := ProbabilityTheory.cdf μ
-  let S : Set ℝ := {y | u ≤ F y}
+  let S := {y | u ≤ F y}
   have hnonempty : S.Nonempty := by
-    have hev : ∀ᶠ y : ℝ in atTop, u < F y :=
+    have hev :=
       (ProbabilityTheory.tendsto_cdf_atTop μ).eventually (Ioi_mem_nhds hu1)
     obtain ⟨y, hy⟩ := Filter.eventually_atTop.1 hev
     exact ⟨y, le_of_lt (hy y le_rfl)⟩
   have hbounded : BddBelow S := by
-    have hev : ∀ᶠ y : ℝ in atBot, F y < u :=
+    have hev :=
       (ProbabilityTheory.tendsto_cdf_atBot μ).eventually (Iio_mem_nhds hu)
     obtain ⟨b, hb⟩ := Filter.eventually_atBot.1 hev
     refine ⟨b, ?_⟩
     intro y hy
-    change u ≤ F y at hy
-    by_contra hnot
-    exact (not_lt_of_ge hy) (hb y (le_of_lt (lt_of_not_ge hnot)))
+    grind
   change sInf S < a ↔ _
   constructor
   · intro hqa
     obtain ⟨q, hqlo, hqhi⟩ := exists_rat_btwn hqa
     have hqF : u ≤ F q := by
       by_contra hnot
-      have hlt : F q < u := lt_of_not_ge hnot
-      have hqLower : (q : ℝ) ≤ sInf S := by
+      have hlt := lt_of_not_ge hnot
+      have hqLower : q ≤ sInf S := by
         apply le_csInf hnonempty
         intro y hy
         change u ≤ F y at hy
         by_contra hyq
-        have hyq' : y ≤ (q : ℝ) := le_of_lt (lt_of_not_ge hyq)
-        have hmono := ProbabilityTheory.monotone_cdf μ hyq'
-        exact (not_lt_of_ge hy) (lt_of_le_of_lt hmono hlt)
+        have hmono := ProbabilityTheory.monotone_cdf μ (le_of_lt (lt_of_not_ge hyq))
+        linarith
       linarith
-    exact ⟨q, hqhi, hqF⟩
+    tauto
   · rintro ⟨q, hqa, hqF⟩
-    have hqmem : (q : ℝ) ∈ S := hqF
-    have hq : sInf S ≤ (q : ℝ) := csInf_le hbounded hqmem
-    exact hq.trans_lt hqa
+    have hq := csInf_le hbounded hqF
+    linarith
 
 private theorem measurable_conditionedTransitionCDF_start
     {ν t : ℝ} (hν : 0 ≤ ν) (ht : 0 < t) (z : ℝ) :
@@ -74,7 +70,7 @@ private theorem measurable_conditionedTransitionCDF_start
   intro x y hxy
   change ProbabilityTheory.cdf
       (conditionedPositiveTransitionMeasure ν t y.1) z ≤
-    ProbabilityTheory.cdf (conditionedPositiveTransitionMeasure ν t x.1) z
+    ProbabilityTheory.cdf _ z
   rw [conditionedPositiveTransitionMeasure_cdf_eq_integral hν ht y.property,
     conditionedPositiveTransitionMeasure_cdf_eq_integral hν ht x.property]
   exact conditionedPositiveTransitionDensity_start_cdf_le
@@ -91,9 +87,9 @@ theorem measurable_conditionedTransitionQuantileOn
   let E : ℚ → Set (Set.Ioi (0 : ℝ) × Set.Ioo (0 : ℝ) 1) := fun q =>
     {z | z.2.1 ≤ ProbabilityTheory.cdf
       (conditionedPositiveTransitionMeasure ν t z.1.1) q}
-  have hpre : (fun z : Set.Ioi (0 : ℝ) × Set.Ioo (0 : ℝ) 1 =>
+  have hpre : (fun z =>
       conditionedTransitionQuantile ν t z.1.1 z.2.1) ⁻¹' Set.Iio a =
-        ⋃ q : {q : ℚ // (q : ℝ) < a}, E q.1 := by
+        ⋃ q : {q : ℚ // q < a}, E q.1 := by
     ext z
     simp only [Set.mem_preimage, Set.mem_Iio, Set.mem_iUnion, E]
     let : IsProbabilityMeasure
@@ -103,21 +99,14 @@ theorem measurable_conditionedTransitionQuantileOn
     exact (cdfGeneralizedQuantile_lt_iff_exists_rat
       (conditionedPositiveTransitionMeasure ν t z.1.1)
       z.2.2.1 z.2.2.2).trans (by
-        simp only [Set.mem_ofPred_eq]
-        constructor
-        · rintro ⟨q, hqa, hqF⟩
-          exact ⟨⟨q, hqa⟩, hqF⟩
-        · rintro ⟨q, hqF⟩
-          exact ⟨q.1, q.2, hqF⟩)
+        simp)
   rw [hpre]
   apply MeasurableSet.iUnion
   intro q
-  have hCDF := measurable_conditionedTransitionCDF_start hν ht q.1
   have hpair : Measurable (fun z : Set.Ioi (0 : ℝ) × Set.Ioo (0 : ℝ) 1 =>
       (z.2.1, ProbabilityTheory.cdf
-        (conditionedPositiveTransitionMeasure ν t z.1.1) q.1)) := by
-    exact (measurable_subtype_coe.comp measurable_snd).prodMk
-      (hCDF.comp measurable_fst)
+        (conditionedPositiveTransitionMeasure ν t z.1.1) q.1)) := (measurable_subtype_coe.comp measurable_snd).prodMk
+      ((measurable_conditionedTransitionCDF_start hν ht q.1).comp measurable_fst)
   exact (measurableSet_le measurable_fst measurable_snd).preimage hpair
 
 end DOZZ.Proofs

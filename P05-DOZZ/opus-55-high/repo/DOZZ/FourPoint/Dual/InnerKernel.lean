@@ -31,9 +31,6 @@ theorem dual_inner_kernel_squeeze (γ α₁ α₂ α₃ R η : ℝ) (hγ : γ �
   rw [dual_kernel_eq_scaled_half γ α₁ α₂ α₃ hγ z x]
   have hh := reflected_inner_kernel_squeeze 2 (γ * α₁ / 2) (γ * α₂ / 2)
     (γ * α₃ / 2) R η z x hR hR₁ hη hη₁ hz hx hsep hsmall
-  rw [show (2 : ℝ) ^ 2 / 2 = 2 by norm_num,
-    show 2 * (γ * α₁ / 2) = γ * α₁ by ring,
-    show 2 * (γ * α₂ / 2) = γ * α₂ by ring] at hh
-  exact hh
+  grind
 
 end DOZZ.Proofs

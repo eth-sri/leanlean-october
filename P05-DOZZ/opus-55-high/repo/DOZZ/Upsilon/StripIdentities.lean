@@ -31,11 +31,9 @@ theorem IsUpsilon.center {γ : ℝ} {U : ℂ → ℂ} (hγ : 0 < γ) (hU : IsUps
     unfold Q
     positivity
   have hleft : 0 < (Q γ / 2 : ℂ).re := by
-    simp only [Complex.div_ofNat_re, Complex.ofReal_re]
-    positivity
+    simp_all
   have hright : (Q γ / 2 : ℂ).re < Q γ := by
-    simp only [Complex.div_ofNat_re, Complex.ofReal_re]
-    linarith
+    simp_all
   rw [hU.2 _ hleft hright, upsilonLog_center, Complex.exp_zero]
 
 /-- Literal reflection of the logarithmic integral across the strip midpoint. -/
@@ -43,11 +41,11 @@ theorem upsilonLog_reflect (γ : ℝ) (z : ℂ)
     (_hz₀ : 0 < z.re) (_hzQ : z.re < Q γ) :
     upsilonLog γ ((Q γ : ℂ) - z) = upsilonLog γ z := by
   have hcenter :
-      (Q γ / 2 : ℂ) - ((Q γ : ℂ) - z) = -((Q γ / 2 : ℂ) - z) := by
+      (Q γ / 2) - ((Q γ) - z) = -((Q γ / 2) - z) := by
     ring
   change
-    (∫ t in Ioi (0 : ℝ), upsilonLogIntegrand γ ((Q γ : ℂ) - z) t ∂volume) =
-      ∫ t in Ioi (0 : ℝ), upsilonLogIntegrand γ z t ∂volume
+    (∫ t in Ioi 0, upsilonLogIntegrand γ _ t ∂volume) =
+      ∫ t in Ioi 0, upsilonLogIntegrand γ z t ∂volume
   apply setIntegral_congr_fun measurableSet_Ioi
   intro t ht
   rw [upsilonLogIntegrand, upsilonLogIntegrand, hcenter]

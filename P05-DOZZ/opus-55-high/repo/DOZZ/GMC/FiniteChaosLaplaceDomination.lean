@@ -32,34 +32,28 @@ theorem finiteChaosMatrixLaplaceInterpolationTestDerivative_norm_le
           ((∑ k, |A i k| * |z.1 k|) + (∑ k, |B i k| * |z.2 k|)) +
         (γ ^ 2 / 2) * |finiteChaosMatrixRowVariance A i -
           finiteChaosMatrixRowVariance B i|) := by
-  classical
   have hrball : |r - t| < ε := by
-    simpa [Real.dist_eq] using hr
+    assumption
   have hrlo : ε ≤ r := by
-    have h := abs_lt.mp hrball
-    linarith
+    grind
   have hrhi : ε ≤ 1 - r := by
-    have h := abs_lt.mp hrball
-    linarith
-  have hsqrtR : Real.sqrt ε ≤ Real.sqrt r := Real.sqrt_le_sqrt hrlo
-  have hsqrtS : Real.sqrt ε ≤ Real.sqrt (1 - r) := Real.sqrt_le_sqrt hrhi
+    grind
+  have hsqrtR := Real.sqrt_le_sqrt hrlo
+  have hsqrtS := Real.sqrt_le_sqrt hrhi
   have hdenE : 0 < 2 * Real.sqrt ε := by positivity
-  have hdenR : 0 < 2 * Real.sqrt r := by
-    exact mul_pos (by norm_num) (lt_of_lt_of_le (Real.sqrt_pos.2 hε) hsqrtR)
-  have hdenS : 0 < 2 * Real.sqrt (1 - r) := by
-    exact mul_pos (by norm_num) (lt_of_lt_of_le (Real.sqrt_pos.2 hε) hsqrtS)
+  have hdenR : 0 < 2 * Real.sqrt r := by linarith
+  have hdenS : 0 < 2 * Real.sqrt (1 - r) := by linarith
   let vA := finiteChaosMatrixRowVariance A
   let vB := finiteChaosMatrixRowVariance B
   let V := finiteChaosMatrixTwoBlockVariance A B r
   let W := finiteChaosMatrixTwoBlockField A B r
-  let H : ℝ := |γ| / (2 * Real.sqrt ε)
+  let H := |γ| / (2 * Real.sqrt ε)
   let score (i : Fin (n + 1)) := finiteChaosMatrixLaplaceScore A B a γ s r i z
   let deriv (i : Fin (n + 1)) :=
     γ * (finiteChaosLinearImageVector A z.1 i / (2 * Real.sqrt r) -
       finiteChaosLinearImageVector B z.2 i / (2 * Real.sqrt (1 - r))) -
       γ ^ 2 / 2 * (vA i - vB i)
   have hscore (i : Fin (n + 1)) : ‖score i‖ ≤ 1 := by
-    dsimp [score, finiteChaosMatrixLaplaceScore, V, W, vA, vB]
     exact finiteChaos_laplace_first_weight_bound a
       (finiteChaosMatrixTwoBlockVariance A B r) γ s ha hs
       (finiteChaosMatrixTwoBlockField A B r z.1 z.2) i
@@ -68,15 +62,15 @@ theorem finiteChaosMatrixLaplaceInterpolationTestDerivative_norm_le
     calc
       |finiteChaosLinearImageVector A z.1 i| =
           |∑ k, A i k * z.1 k| := by rfl
-      _ ≤ ∑ k, |A i k * z.1 k| := Finset.abs_sum_le_sum_abs _ _
-      _ = ∑ k, |A i k| * |z.1 k| := by simp [abs_mul]
+      _ ≤ ∑ k, |A i k * z.1 k| := Finset.abs_sum_le_sum_abs ..
+      _ = ∑ k, |A i k| * |z.1 k| := by simp
   have hBrow (i : Fin (n + 1)) :
       |finiteChaosLinearImageVector B z.2 i| ≤ ∑ k, |B i k| * |z.2 k| := by
     calc
       |finiteChaosLinearImageVector B z.2 i| =
           |∑ k, B i k * z.2 k| := by rfl
-      _ ≤ ∑ k, |B i k * z.2 k| := Finset.abs_sum_le_sum_abs _ _
-      _ = ∑ k, |B i k| * |z.2 k| := by simp [abs_mul]
+      _ ≤ ∑ k, |B i k * z.2 k| := Finset.abs_sum_le_sum_abs ..
+      _ = ∑ k, |B i k| * |z.2 k| := by simp
   have hderiv (i : Fin (n + 1)) :
       ‖deriv i‖ ≤ H *
         ((∑ k, |A i k| * |z.1 k|) + (∑ k, |B i k| * |z.2 k|)) +
@@ -85,12 +79,12 @@ theorem finiteChaosMatrixLaplaceInterpolationTestDerivative_norm_le
         |finiteChaosLinearImageVector A z.1 i / (2 * Real.sqrt r)| ≤
           |finiteChaosLinearImageVector A z.1 i| / (2 * Real.sqrt ε) := by
       rw [abs_div, abs_of_pos hdenR]
-      exact div_le_div_of_nonneg_left (abs_nonneg _) hdenE (by nlinarith [hsqrtR])
+      exact div_le_div_of_nonneg_left (abs_nonneg _) hdenE (by nlinarith)
     have hdivB :
         |finiteChaosLinearImageVector B z.2 i / (2 * Real.sqrt (1 - r))| ≤
           |finiteChaosLinearImageVector B z.2 i| / (2 * Real.sqrt ε) := by
       rw [abs_div, abs_of_pos hdenS]
-      exact div_le_div_of_nonneg_left (abs_nonneg _) hdenE (by nlinarith [hsqrtS])
+      exact div_le_div_of_nonneg_left (abs_nonneg _) hdenE (by nlinarith)
     have htriangle : |deriv i| ≤
         |γ| * (|finiteChaosLinearImageVector A z.1 i / (2 * Real.sqrt r)| +
           |finiteChaosLinearImageVector B z.2 i / (2 * Real.sqrt (1 - r))|) +
@@ -98,24 +92,20 @@ theorem finiteChaosMatrixLaplaceInterpolationTestDerivative_norm_le
       dsimp [deriv]
       calc
         |γ * (finiteChaosLinearImageVector A z.1 i / (2 * Real.sqrt r) -
-            finiteChaosLinearImageVector B z.2 i / (2 * Real.sqrt (1 - r))) -
+            finiteChaosLinearImageVector B z.2 i / (2 * Real.sqrt _)) -
             γ ^ 2 / 2 * (vA i - vB i)| ≤
           |γ * (finiteChaosLinearImageVector A z.1 i / (2 * Real.sqrt r) -
-              finiteChaosLinearImageVector B z.2 i / (2 * Real.sqrt (1 - r)))| +
-            |γ ^ 2 / 2 * (vA i - vB i)| := abs_sub _ _
+              finiteChaosLinearImageVector B z.2 i / (2 * Real.sqrt _))| +
+            |γ ^ 2 / 2 * (vA i - vB i)| := abs_sub ..
         _ = |γ| * |finiteChaosLinearImageVector A z.1 i / (2 * Real.sqrt r) -
-              finiteChaosLinearImageVector B z.2 i / (2 * Real.sqrt (1 - r))| +
+              finiteChaosLinearImageVector B z.2 i / (2 * Real.sqrt _)| +
             |γ ^ 2 / 2 * (vA i - vB i)| := by rw [abs_mul]
         _ ≤ |γ| * (|finiteChaosLinearImageVector A z.1 i / (2 * Real.sqrt r)| +
-              |finiteChaosLinearImageVector B z.2 i / (2 * Real.sqrt (1 - r))|) +
+              |finiteChaosLinearImageVector B z.2 i / (2 * Real.sqrt _)|) +
             |γ ^ 2 / 2 * (vA i - vB i)| := by
               gcongr
-              exact abs_sub _ _
-    have hfactor :
-        |finiteChaosLinearImageVector A z.1 i / (2 * Real.sqrt r)| +
-            |finiteChaosLinearImageVector B z.2 i / (2 * Real.sqrt (1 - r))| ≤
-          |finiteChaosLinearImageVector A z.1 i| / (2 * Real.sqrt ε) +
-            |finiteChaosLinearImageVector B z.2 i| / (2 * Real.sqrt ε) :=
+              exact abs_sub ..
+    have hfactor :=
       add_le_add hdivA hdivB
     have hvarNonneg : 0 ≤ γ ^ 2 / 2 := by positivity
     have hvarAbs : |γ ^ 2 / 2 * (vA i - vB i)| =
@@ -140,31 +130,31 @@ theorem finiteChaosMatrixLaplaceInterpolationTestDerivative_norm_le
       _ ≤ H * ((∑ k, |A i k| * |z.1 k|) +
             (∑ k, |B i k| * |z.2 k|)) +
             (γ ^ 2 / 2) * |vA i - vB i| := by
-              have hH : 0 ≤ H := by dsimp [H]; positivity
+              have hH : 0 ≤ H := by positivity
               exact add_le_add
                 (mul_le_mul_of_nonneg_left (add_le_add (hArow i) (hBrow i)) hH) le_rfl
   calc
     ‖kahaneInterpolatedTestDerivative
         (finiteChaosLinearImageVector A) (finiteChaosLinearImageVector B)
         (finiteChaosMatrixRowVariance A) (finiteChaosMatrixRowVariance B) a γ
-        (fun x => -s * Real.exp (-s * x)) r z‖ =
+        (fun x => -s * Real.exp _) r z‖ =
       ‖∑ i, score i * deriv i‖ := by
         rw [kahaneInterpolatedLaplaceTestDerivative_eq_score_sum]
-    _ ≤ ∑ i, ‖score i * deriv i‖ := norm_sum_le _ _
+    _ ≤ ∑ i, ‖score i * deriv i‖ := norm_sum_le ..
     _ ≤ ∑ i,
         (H * ((∑ k, |A i k| * |z.1 k|) + (∑ k, |B i k| * |z.2 k|)) +
           (γ ^ 2 / 2) * |vA i - vB i|) := by
           apply Finset.sum_le_sum
           intro i hi
           calc
-            ‖score i * deriv i‖ = ‖score i‖ * ‖deriv i‖ := norm_mul _ _
+            ‖score i * deriv i‖ = ‖score i‖ * ‖deriv i‖ := norm_mul ..
             _ ≤ 1 * ‖deriv i‖ := mul_le_mul_of_nonneg_right (hscore i) (norm_nonneg _)
             _ = ‖deriv i‖ := by simp
             _ = |deriv i| := Real.norm_eq_abs _
             _ ≤ H * ((∑ k, |A i k| * |z.1 k|) +
                 (∑ k, |B i k| * |z.2 k|)) +
                 (γ ^ 2 / 2) * |vA i - vB i| := hderiv i
-    _ = _ := by simp [H, vA, vB]
+    _ = _ := by rfl
 
 /-- A concrete integrable majorant for the finite Laplace interpolation derivative. -/
 noncomputable def finiteChaosMatrixLaplaceInterpolationDerivativeBound
@@ -174,73 +164,49 @@ noncomputable def finiteChaosMatrixLaplaceInterpolationDerivativeBound
       ((∑ k, |A i k| * |z.1 k|) + (∑ k, |B i k| * |z.2 k|)) +
         (γ ^ 2 / 2) * |finiteChaosMatrixRowVariance A i -
           finiteChaosMatrixRowVariance B i|)
+section
+variable {n : ℕ} (A B : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
 
 /-- The concrete majorant is integrable under the product standard-Gaussian law. -/
 theorem finiteChaosMatrixLaplaceInterpolationDerivativeBound_integrable
-    {n : ℕ} (A B : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
     (γ ε : ℝ) :
     Integrable (finiteChaosMatrixLaplaceInterpolationDerivativeBound A B γ ε)
       ((standardGaussianFinMeasure n).prod (standardGaussianFinMeasure n)) := by
-  classical
   let μ := standardGaussianFinMeasure n
   let ν := μ.prod μ
   have hcoordPi (k : Fin (n + 1)) : Integrable
-      (fun x : Fin (n + 1) → ℝ => x k) μ := by
+      (fun x => x k) μ := by
     simpa [μ, standardGaussianFinMeasure] using
       (integrable_eval IsGaussian.integrable_id :
-        Integrable (fun x : Fin (n + 1) → ℝ => x k)
-          (Measure.pi fun _ : Fin (n + 1) => gaussianReal 0 1))
+        Integrable (fun x => x k)
+          (Measure.pi fun _ => gaussianReal 0 1))
   have hcoordX (k : Fin (n + 1)) : Integrable
-      (fun z : (Fin (n + 1) → ℝ) × (Fin (n + 1) → ℝ) => |z.1 k|) ν := by
-    have h := (hcoordPi k).norm
-    simpa only [Real.norm_eq_abs] using h.comp_fst μ
+      (fun z => |z.1 k|) ν := by
+    simpa using ((hcoordPi k).norm).comp_fst μ
   have hcoordY (k : Fin (n + 1)) : Integrable
-      (fun z : (Fin (n + 1) → ℝ) × (Fin (n + 1) → ℝ) => |z.2 k|) ν := by
-    have h := (hcoordPi k).norm
-    simpa only [Real.norm_eq_abs] using h.comp_snd μ
+      (fun z => |z.2 k|) ν := by
+    simpa using ((hcoordPi k).norm).comp_snd μ
   have hArow (i : Fin (n + 1)) : Integrable
-      (fun z : (Fin (n + 1) → ℝ) × (Fin (n + 1) → ℝ) =>
+      (fun z =>
         ∑ k, |A i k| * |z.1 k|) ν := by
-    apply integrable_finsetSum Finset.univ
-    intro k hk
-    simpa [mul_comm] using (hcoordX k).const_mul (|A i k|)
+    fun_prop
   have hBrow (i : Fin (n + 1)) : Integrable
-      (fun z : (Fin (n + 1) → ℝ) × (Fin (n + 1) → ℝ) =>
+      (fun z =>
         ∑ k, |B i k| * |z.2 k|) ν := by
-    apply integrable_finsetSum Finset.univ
-    intro k hk
-    simpa [mul_comm] using (hcoordY k).const_mul (|B i k|)
+    fun_prop
   have hterm (i : Fin (n + 1)) : Integrable
-      (fun z : (Fin (n + 1) → ℝ) × (Fin (n + 1) → ℝ) =>
+      (fun z =>
         ((|γ| / (2 * Real.sqrt ε)) *
             ((∑ k, |A i k| * |z.1 k|) + (∑ k, |B i k| * |z.2 k|)) +
           (γ ^ 2 / 2) * |finiteChaosMatrixRowVariance A i -
             finiteChaosMatrixRowVariance B i|)) ν := by
-    have hsum := (hArow i).add (hBrow i)
-    have hscaled' := hsum.const_mul (|γ| / (2 * Real.sqrt ε))
-    have hscaled : Integrable (fun z : (Fin (n + 1) → ℝ) × (Fin (n + 1) → ℝ) =>
-        (|γ| / (2 * Real.sqrt ε)) *
-          ((∑ k, |A i k| * |z.1 k|) + (∑ k, |B i k| * |z.2 k|))) ν := by
-      have heq :
-          (fun z : (Fin (n + 1) → ℝ) × (Fin (n + 1) → ℝ) =>
-            ((∑ k, |A i k| * |z.1 k|) + (∑ k, |B i k| * |z.2 k|)) *
-              (|γ| / (2 * Real.sqrt ε))) =
-          (fun z => (|γ| / (2 * Real.sqrt ε)) *
-            ((∑ k, |A i k| * |z.1 k|) + (∑ k, |B i k| * |z.2 k|))) := by
-        funext z
-        ring
-      exact heq ▸ hscaled'
-    have hconst : Integrable (fun _ : (Fin (n + 1) → ℝ) × (Fin (n + 1) → ℝ) =>
-        (γ ^ 2 / 2) * |finiteChaosMatrixRowVariance A i -
-          finiteChaosMatrixRowVariance B i|) ν := integrable_const _
-    exact hscaled.add hconst
+    fun_prop
   have hsum : Integrable
-      (fun z : (Fin (n + 1) → ℝ) × (Fin (n + 1) → ℝ) =>
+      (fun z =>
         ∑ i, ((|γ| / (2 * Real.sqrt ε)) *
             ((∑ k, |A i k| * |z.1 k|) + (∑ k, |B i k| * |z.2 k|)) +
           (γ ^ 2 / 2) * |finiteChaosMatrixRowVariance A i -
-            finiteChaosMatrixRowVariance B i|)) ν := by
-    exact integrable_finsetSum Finset.univ fun i hi => hterm i
+            finiteChaosMatrixRowVariance B i|)) ν := by fun_prop
   change Integrable (fun z : (Fin (n + 1) → ℝ) × (Fin (n + 1) → ℝ) =>
       ∑ i, ((|γ| / (2 * Real.sqrt ε)) *
           ((∑ k, |A i k| * |z.1 k|) + (∑ k, |B i k| * |z.2 k|)) +
@@ -251,7 +217,6 @@ theorem finiteChaosMatrixLaplaceInterpolationDerivativeBound_integrable
 /-- The expectation derivative sign is now concrete: the only analytic input is the finite
 standard-Gaussian first moment, which supplies the derivative majorant. -/
 theorem finiteChaosMatrixLaplaceInterpolationExpectation_deriv_nonpos_concrete
-    {n : ℕ} (A B : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ)
     (a : Fin (n + 1) → ℝ) (γ s t : ℝ)
     (ha : ∀ i, 0 ≤ a i) (hs : 0 ≤ s) (ht : 0 < t) (ht1 : t < 1)
     (hcov : ∀ i j, finiteChaosMatrixRowCovariance A i j ≤
@@ -270,18 +235,13 @@ theorem finiteChaosMatrixLaplaceInterpolationExpectation_deriv_nonpos_concrete
           (fun x => -s * Real.exp (-s * x)) t z
         ∂((standardGaussianFinMeasure n).prod (standardGaussianFinMeasure n))) ≤ 0 := by
   classical
-  let ε : ℝ := min (t / 2) ((1 - t) / 2)
+  let ε := min (t / 2) ((1 - t) / 2)
   have hε : 0 < ε := by
-    dsimp [ε]
     positivity
   have h2εt : 2 * ε ≤ t := by
-    calc
-      2 * ε ≤ 2 * (t / 2) := mul_le_mul_of_nonneg_left (min_le_left _ _) (by positivity)
-      _ = t := by ring
+    grind
   have h2εt' : 2 * ε ≤ 1 - t := by
-    calc
-      2 * ε ≤ 2 * ((1 - t) / 2) := mul_le_mul_of_nonneg_left (min_le_right _ _) (by positivity)
-      _ = 1 - t := by ring
+    grind
   have hεt : ε ≤ t := by linarith
   have hεt' : ε ≤ 1 - t := by linarith
   let μ := standardGaussianFinMeasure n
@@ -313,19 +273,17 @@ theorem finiteChaosMatrixLaplaceInterpolationExpectation_deriv_nonpos_concrete
     have hmass (z : (Fin (n + 1) → ℝ) × (Fin (n + 1) → ℝ)) :
         0 ≤ kahaneInterpolatedMass
           (finiteChaosLinearImageVector A) (finiteChaosLinearImageVector B)
-          (finiteChaosMatrixRowVariance A) (finiteChaosMatrixRowVariance B) a γ t z := by
-      exact finiteChaosVectorMass_nonneg a
+          (finiteChaosMatrixRowVariance A) (finiteChaosMatrixRowVariance B) a γ t z := finiteChaosVectorMass_nonneg a
         (finiteChaosMatrixTwoBlockVariance A B t) γ ha
         (finiteChaosMatrixTwoBlockField A B t z.1 z.2)
     have hbound (z : (Fin (n + 1) → ℝ) × (Fin (n + 1) → ℝ)) :
-        ‖F z‖ ≤ (1 : ℝ) := by
+        ‖F z‖ ≤ 1 := by
       rw [Real.norm_eq_abs, abs_of_nonneg (Real.exp_nonneg _)]
       apply Real.exp_le_one_iff.mpr
       nlinarith [hs, hmass z]
-    apply (integrable_const (1 : ℝ)).mono'
+    apply (integrable_const 1).mono'
     · exact hFcont.aestronglyMeasurable
-    · filter_upwards [] with z
-      exact hbound z
+    · simp_all
   have hDMeas : AEStronglyMeasurable
       (fun z : (Fin (n + 1) → ℝ) × (Fin (n + 1) → ℝ) =>
         kahaneInterpolatedTestDerivative
@@ -341,8 +299,7 @@ theorem finiteChaosMatrixLaplaceInterpolationExpectation_deriv_nonpos_concrete
         kahaneInterpolatedMass, finiteChaosVectorMass, finiteChaosVectorWeight]
     exact hcont.aestronglyMeasurable
   let b := finiteChaosMatrixLaplaceInterpolationDerivativeBound A B γ ε
-  have hb : Integrable b ν := by
-    exact finiteChaosMatrixLaplaceInterpolationDerivativeBound_integrable A B γ ε
+  have hb : Integrable b ν := finiteChaosMatrixLaplaceInterpolationDerivativeBound_integrable A B γ ε
   have hbound : ∀ᵐ z ∂ν, ∀ r ∈ Metric.ball t ε,
       ‖kahaneInterpolatedTestDerivative
         (finiteChaosLinearImageVector A) (finiteChaosLinearImageVector B)
@@ -354,9 +311,11 @@ theorem finiteChaosMatrixLaplaceInterpolationExpectation_deriv_nonpos_concrete
       A B a γ s t ε ha hs hε h2εt h2εt' r hr z
   have hresult := finiteChaosMatrixLaplaceInterpolationExpectation_deriv_nonpos
     A B a γ s t ε ha hs ht ht1 hcov hε hεt hεt' hMeas
-    (by simpa [F, μ, ν] using hInt) hDMeas b (by simpa [b, ν] using hb)
-    (by simpa [b, ν] using hbound)
+    (by assumption) hDMeas b (by assumption)
+    (by assumption)
   simpa [μ, ν] using hresult
+
+end
 
 
 end DOZZ.Proofs

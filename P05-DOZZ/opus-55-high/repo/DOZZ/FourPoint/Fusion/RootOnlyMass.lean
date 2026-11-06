@@ -8,6 +8,7 @@ public import DOZZ.FourPoint.Fusion.Kernel
 public import DOZZ.FourPoint.Fusion.RootedMass
 import DOZZ.GMC.Construction.RootedMeasureKernel
 import DOZZ.GMC.SharpMoments.SeibergMoment
+import DOZZ.ShiftEquations.Mobius.InversionMoment
 
 /-! # The moving mass after rooting at `y*z` -/
 
@@ -33,32 +34,33 @@ noncomputable def fusionRootOnlyBadMass (γ α₁ α₂ α₃ : ℝ) (y z : ℂ)
 noncomputable def fusionRootOnlyGoodMass (γ α₁ α₂ α₃ : ℝ) (y z : ℂ) (δ : ℝ)
     (μ : Measure ℂ) : ℝ≥0∞ :=
   ∫⁻ x in {x : ℂ | δ ≤ ‖x‖}, fusionRootOnlyKernel γ α₁ α₂ α₃ y z x ∂μ
+section
+variable (γ α₁ α₂ α₃ : ℝ) (y z : ℂ)
 
-theorem fusionRootOnlyKernel_measurable (γ α₁ α₂ α₃ : ℝ) (y z : ℂ) :
+theorem fusionRootOnlyKernel_measurable :
     Measurable (fusionRootOnlyKernel γ α₁ α₂ α₃ y z) := by
   apply ENNReal.measurable_ofReal.comp
   apply Measurable.mul
-  · exact (fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃).comp (f := fun x : ℂ => ((0 : ℂ), x))
+  · exact (fusion_measurable_gammaHalfKernel γ α₁ α₂ α₃).comp
       (measurable_const.prodMk measurable_id)
   · exact (measurable_const.mul (measurable_pointRootPotential.comp
       (measurable_const.prodMk measurable_id))).exp
 
-theorem fusionRootOnlyMass_split (γ α₁ α₂ α₃ : ℝ) (y z : ℂ) (δ : ℝ) (μ : Measure ℂ) :
+theorem fusionRootOnlyMass_split (δ : ℝ) (μ : Measure ℂ) :
     fusionRootOnlyMass γ α₁ α₂ α₃ y z μ =
       fusionRootOnlyBadMass γ α₁ α₂ α₃ y z δ μ + fusionRootOnlyGoodMass γ α₁ α₂ α₃ y z δ μ := by
-  have hc : (Metric.ball (0 : ℂ) δ)ᶜ = {x : ℂ | δ ≤ ‖x‖} := by
-    ext x
-    simp only [Set.mem_compl_iff, Metric.mem_ball, dist_zero_right, Set.mem_ofPred_eq, not_lt]
+  have hc : (Metric.ball 0 δ)ᶜ = {x : ℂ | δ ≤ ‖x‖} := by
+    aesop
   exact (lintegral_add_compl _ Metric.isOpen_ball.measurableSet).symm.trans
-    (by rw [hc]; rfl)
+    (by tauto)
 
 /-- The real kernel mass is the Coulomb mass under the rooted measure. -/
-theorem fusionRootOnlyMass_eq_rooted (γ α₁ α₂ α₃ : ℝ) (y z : ℂ) (μ : Measure ℂ)
+theorem fusionRootOnlyMass_eq_rooted (μ : Measure ℂ)
     (hz : μ {0} = 0) (h0 : μ {0} = 0) (h1 : μ {1} = 0) :
     fusionRootOnlyMass γ α₁ α₂ α₃ y z μ =
       coulombMass γ (gmcRootedMeasure γ (y * z) μ) ![-γ / 2, α₁, α₂] ![0, 0, 1] α₃ := by
   have hrz : gmcRootedMeasure γ (y * z) μ {0} = 0 := withDensity_absolutelyContinuous _ _ hz
-  have hr0 : gmcRootedMeasure γ (y * z) μ {0} = 0 := withDensity_absolutelyContinuous _ _ h0
+  have hr0 : gmcRootedMeasure γ (y * z) μ {0} = 0 := by assumption
   have hr1 : gmcRootedMeasure γ (y * z) μ {1} = 0 := withDensity_absolutelyContinuous _ _ h1
   rw [fusion_gammaHalfMass_kernel γ α₁ α₂ α₃ 0 _ hrz hr0 hr1, gmcRootedMeasure]
   have hd : Measurable (fun x : ℂ => ENNReal.ofReal (Real.exp (γ ^ 2 * gffKernel (y * z) x))) :=
@@ -73,22 +75,27 @@ theorem fusionRootOnlyMass_eq_rooted (γ α₁ α₂ α₃ : ℝ) (y z : ℂ) (�
   dsimp [fusionRootOnlyKernel]
   rw [mul_comm, ENNReal.ofReal_mul (Real.exp_nonneg _)]
 
-theorem fusionRootOnlyMass_eq_rooted_ae {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ : ℝ) (y z : ℂ) :
+end
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+section
+variable (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (α₁ α₂ α₃ : ℝ) (y z : ℂ)
+include hX hγ hγ2 hM
+
+theorem fusionRootOnlyMass_eq_rooted_ae :
     ∀ᵐ ω ∂P, fusionRootOnlyMass γ α₁ α₂ α₃ y z (M ω) =
       coulombMass γ (gmcRootedMeasure γ (y * z) (M ω)) ![-γ / 2, α₁, α₂] ![0, 0, 1] α₃ := by
-  filter_upwards [gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 0,
-    gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 0,
-    gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM 1] with ω hz h0 h1
+  filter_upwards [DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM 0,
+    DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM 0,
+    DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM 1] with ω hz h0 h1
   exact fusionRootOnlyMass_eq_rooted γ α₁ α₂ α₃ y z (M ω) hz h0 h1
 
-theorem fusionRootOnlyMass_aemeasurable {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (α₁ α₂ α₃ : ℝ) (y z : ℂ) :
+theorem fusionRootOnlyMass_aemeasurable :
     AEMeasurable (fun ω => fusionRootOnlyMass γ α₁ α₂ α₃ y z (M ω)) P :=
-  gmc_lintegral_aemeasurable P X hX γ hγ hγ2 M hM _ (fusionRootOnlyKernel_measurable _ _ _ _ _ _)
+  gmc_lintegral_aemeasurable P X hX γ hγ hγ2 M hM _ (fusionRootOnlyKernel_measurable ..)
+
+end
+
+end
 
 end DOZZ.Proofs

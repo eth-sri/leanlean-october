@@ -21,25 +21,23 @@ private theorem kahaneSumVectorField_abs_sum_le
     {ι : Type*} [Fintype ι]
     (t : ℝ) (ht : 0 < t) (ht1 : t < 1) (z : Sum ι ι → ℝ) :
     (∑ i, |kahaneSumVectorField t z i|) ≤ ∑ k, |z k| := by
-  classical
   have hsqrtT : Real.sqrt t ≤ 1 := by
     have hs := Real.sq_sqrt (le_of_lt ht)
-    nlinarith [sq_nonneg (Real.sqrt t - 1)]
+    nlinarith
   have hsqrtOne : Real.sqrt (1 - t) ≤ 1 := by
     have hpos : 0 < 1 - t := by linarith
     have hs := Real.sq_sqrt (le_of_lt hpos)
-    nlinarith [sq_nonneg (Real.sqrt (1 - t) - 1)]
+    nlinarith
   calc
     _ ≤ ∑ i, (|z (Sum.inl i)| + |z (Sum.inr i)|) := by
       apply Finset.sum_le_sum
       intro i hi
-      dsimp [kahaneSumVectorField]
       calc
-        |Real.sqrt t * z (Sum.inl i) + Real.sqrt (1 - t) * z (Sum.inr i)| ≤
+        |Real.sqrt t * z (Sum.inl i) + Real.sqrt _ * z (Sum.inr i)| ≤
             |Real.sqrt t * z (Sum.inl i)| +
-              |Real.sqrt (1 - t) * z (Sum.inr i)| := abs_add_le _ _
+              |Real.sqrt _ * z (Sum.inr i)| := abs_add_le ..
         _ = Real.sqrt t * |z (Sum.inl i)| +
-              Real.sqrt (1 - t) * |z (Sum.inr i)| := by
+              Real.sqrt _ * |z (Sum.inr i)| := by
                 rw [abs_mul, abs_of_nonneg (Real.sqrt_nonneg _),
                   abs_mul, abs_of_nonneg (Real.sqrt_nonneg _)]
         _ ≤ |z (Sum.inl i)| + |z (Sum.inr i)| := by
@@ -49,24 +47,24 @@ private theorem kahaneSumVectorField_abs_sum_le
                     mul_le_mul_of_nonneg_right hsqrtT (abs_nonneg _)
                   _ = |z (Sum.inl i)| := one_mul _
               · calc
-                  Real.sqrt (1 - t) * |z (Sum.inr i)| ≤ 1 * |z (Sum.inr i)| :=
+                  Real.sqrt _ * |z (Sum.inr i)| ≤ 1 * |z (Sum.inr i)| :=
                     mul_le_mul_of_nonneg_right hsqrtOne (abs_nonneg _)
                   _ = |z (Sum.inr i)| := one_mul _
     _ = ∑ i, |z (Sum.inl i)| + ∑ i, |z (Sum.inr i)| := by
       rw [Finset.sum_add_distrib]
-    _ = ∑ k, |z k| := by rw [Fintype.sum_sum_type]
+    _ = ∑ k, |z k| := by simp
 
 set_option linter.style.haveILetI false in
+section
+variable {ΩX ΩY ι : Type*} [MeasurableSpace ΩX] [MeasurableSpace ΩY] [Fintype ι] [DecidableEq ι] (PX : Measure ΩX) (PY : Measure ΩY) (X : ΩX → ι → ℝ) (Y : ΩY → ι → ℝ)
+section
+variable (hX : IsCenteredJointlyGaussian PX X) (hY : IsCenteredJointlyGaussian PY Y) (a vX vY : ι → ℝ) (ha : ∀ i, 0 ≤ a i)
+include hX hY ha
 /-- The smooth Kahane Gaussian-IBP derivative is nonpositive under covariance domination when
 the first two test derivatives are bounded. All score and score-derivative integrability is
 deduced from the finite Gaussian exponential envelope, including singular covariance matrices. -/
 theorem kahaneSmoothInterpolation_integrand_nonpos_of_bounded_derivatives
-    {ΩX ΩY ι : Type*} [MeasurableSpace ΩX] [MeasurableSpace ΩY]
-    [Fintype ι] [DecidableEq ι]
-    (PX : Measure ΩX) (PY : Measure ΩY)
-    (X : ΩX → ι → ℝ) (Y : ΩY → ι → ℝ)
-    (hX : IsCenteredJointlyGaussian PX X) (hY : IsCenteredJointlyGaussian PY Y)
-    (a vX vY : ι → ℝ) (ha : ∀ i, 0 ≤ a i) (γ t : ℝ)
+    (γ t : ℝ)
     (F' F'' : ℝ → ℝ) (B₁ B₂ : ℝ)
     (hF'meas : Measurable F') (hF''meas : Measurable F'')
     (hF' : ∀ x, HasDerivAt F' (F'' x) x)
@@ -95,7 +93,7 @@ theorem kahaneSmoothInterpolation_integrand_nonpos_of_bounded_derivatives
     linarith
   letI : IsProbabilityMeasure PX := hX.1
   letI : IsProbabilityMeasure PY := hY.1
-  let μ : Measure (ΩX × ΩY) := PX.prod PY
+  let μ := PX.prod PY
   let v : ι → ℝ := fun i => t * vX i + (1 - t) * vY i
   let Z : ΩX × ΩY → Sum ι ι → ℝ := fun ω k => match k with
     | Sum.inl i => X ω.1 i
@@ -127,8 +125,8 @@ theorem kahaneSmoothInterpolation_integrand_nonpos_of_bounded_derivatives
         ∑ i, |z (Sum.inl i)| + ∑ i, |z (Sum.inr i)| := by
       calc
         _ ≤ ∑ k, |z k| := kahaneSumVectorField_abs_sum_le t ht ht1 z
-        _ = _ := by rw [Fintype.sum_sum_type]
-    simp only [Fintype.sum_sum_type, c]
+        _ = _ := by simp
+    simp
     calc
       2 * (|γ| * ∑ i, |kahaneSumVectorField t z i|) ≤
           2 * (|γ| * (∑ i, |z (Sum.inl i)| + ∑ i, |z (Sum.inr i)|)) := by
@@ -157,7 +155,7 @@ theorem kahaneSmoothInterpolation_integrand_nonpos_of_bounded_derivatives
     | inl j =>
         have hsqrt : Real.sqrt t ≤ 1 := by
           have hs := Real.sq_sqrt (le_of_lt ht)
-          nlinarith [sq_nonneg (Real.sqrt t - 1)]
+          nlinarith
         calc
           ‖Real.sqrt t * kahaneSumVectorFieldScoreDerivative a v γ t F' F'' z i j‖ =
               Real.sqrt t * ‖kahaneSumVectorFieldScoreDerivative a v γ t F' F'' z i j‖ := by
@@ -178,7 +176,7 @@ theorem kahaneSmoothInterpolation_integrand_nonpos_of_bounded_derivatives
     | inr j =>
         have hsqrt : Real.sqrt (1 - t) ≤ 1 := by
           have hs := Real.sq_sqrt (le_of_lt (by linarith : 0 < 1 - t))
-          nlinarith [sq_nonneg (Real.sqrt (1 - t) - 1)]
+          nlinarith
         calc
           ‖Real.sqrt (1 - t) * kahaneSumVectorFieldScoreDerivative a v γ t F' F'' z i j‖ =
               Real.sqrt (1 - t) *
@@ -237,10 +235,9 @@ theorem kahaneSmoothInterpolation_integrand_nonpos_of_bounded_derivatives
   have hScoreInt : ∀ i, Integrable (fun ω => score ω i) μ := by
     intro i
     apply hEnv.const_mul M |>.mono'
-    · exact hScoreAEMeas i
+    · fun_prop
     · filter_upwards [] with ω
-      simpa [Real.norm_eq_abs, abs_of_nonneg
-        (mul_nonneg hM (Real.exp_nonneg _))] using hscoreBound' (Z ω) i
+      tauto
   have hXScoreInt : ∀ i, Integrable
       (fun ω : ΩX × ΩY => X ω.1 i * score ω i) μ := by
     intro i
@@ -248,8 +245,7 @@ theorem kahaneSmoothInterpolation_integrand_nonpos_of_bounded_derivatives
         Real.exp (∑ k, c k * |Z ω k|)) μ := hCoordEnv (Sum.inl i)
     have hMajor : Integrable (fun ω => M * |Z ω (Sum.inl i)| *
         Real.exp (∑ k, c k * |Z ω k|)) μ := by
-      have hnorm := hCoord.norm
-      convert hnorm.const_mul M using 1
+      convert hCoord.norm.const_mul M using 1
       ext ω
       simp [Real.norm_eq_abs, abs_of_nonneg (Real.exp_nonneg _)]
       ring
@@ -258,14 +254,13 @@ theorem kahaneSmoothInterpolation_integrand_nonpos_of_bounded_derivatives
       exact (hXae i).aestronglyMeasurable.mul (hScoreAEMeas i)
     apply hMajor.mono' hmeas
     filter_upwards [] with ω
-    have h := hscoreBound' (Z ω) i
     change ‖X ω.1 i * score ω i‖ ≤
       M * |Z ω (Sum.inl i)| * Real.exp (∑ k, c k * |Z ω k|)
     calc
       ‖X ω.1 i * score ω i‖ = |X ω.1 i| * ‖score ω i‖ := by
         rw [norm_mul, Real.norm_eq_abs]
       _ ≤ |X ω.1 i| * (M * Real.exp (∑ k, c k * |Z ω k|)) :=
-        mul_le_mul_of_nonneg_left h (abs_nonneg _)
+        mul_le_mul_of_nonneg_left (hscoreBound' (Z ω) i) (abs_nonneg _)
       _ = M * |X ω.1 i| * Real.exp (∑ k, c k * |Z ω k|) := by ring
   have hYScoreInt : ∀ i, Integrable
       (fun ω : ΩX × ΩY => Y ω.2 i * score ω i) μ := by
@@ -274,8 +269,7 @@ theorem kahaneSmoothInterpolation_integrand_nonpos_of_bounded_derivatives
         Real.exp (∑ k, c k * |Z ω k|)) μ := hCoordEnv (Sum.inr i)
     have hMajor : Integrable (fun ω => M * |Z ω (Sum.inr i)| *
         Real.exp (∑ k, c k * |Z ω k|)) μ := by
-      have hnorm := hCoord.norm
-      convert hnorm.const_mul M using 1
+      convert hCoord.norm.const_mul M using 1
       ext ω
       simp [Real.norm_eq_abs, abs_of_nonneg (Real.exp_nonneg _)]
       ring
@@ -284,14 +278,13 @@ theorem kahaneSmoothInterpolation_integrand_nonpos_of_bounded_derivatives
       exact (hYae i).aestronglyMeasurable.mul (hScoreAEMeas i)
     apply hMajor.mono' hmeas
     filter_upwards [] with ω
-    have h := hscoreBound' (Z ω) i
     change ‖Y ω.2 i * score ω i‖ ≤
       M * |Z ω (Sum.inr i)| * Real.exp (∑ k, c k * |Z ω k|)
     calc
       ‖Y ω.2 i * score ω i‖ = |Y ω.2 i| * ‖score ω i‖ := by
         rw [norm_mul, Real.norm_eq_abs]
       _ ≤ |Y ω.2 i| * (M * Real.exp (∑ k, c k * |Z ω k|)) :=
-        mul_le_mul_of_nonneg_left h (abs_nonneg _)
+        mul_le_mul_of_nonneg_left (hscoreBound' (Z ω) i) (abs_nonneg _)
       _ = M * |Y ω.2 i| * Real.exp (∑ k, c k * |Z ω k|) := by ring
   have hFieldDMeas : ∀ i j, Measurable
       (fun z => kahaneSumVectorFieldScoreDerivative a v γ t F' F'' z i j) := by
@@ -310,13 +303,12 @@ theorem kahaneSmoothInterpolation_integrand_nonpos_of_bounded_derivatives
   have hFieldDInt : ∀ i j, Integrable (fun ω => fieldD ω i j) μ := by
     intro i j
     apply hEnv.const_mul M |>.mono'
-    · exact hFieldDAEMeas i j
+    · fun_prop
     · filter_upwards [] with ω
-      have h := (hscoreBound (kahaneSumVectorField t (Z ω)) i j).2
       calc
         ‖fieldD ω i j‖ ≤ M * Real.exp
             (2 * (|γ| * ∑ k, |kahaneSumVectorField t (Z ω) k|)) := by
-          simpa [fieldD, kahaneSumVectorFieldScoreDerivative] using h
+          simpa [fieldD, kahaneSumVectorFieldScoreDerivative] using ((hscoreBound (kahaneSumVectorField t (Z ω)) i j).2)
         _ ≤ M * Real.exp (∑ k, c k * |Z ω k|) := by
           apply mul_le_mul_of_nonneg_left _ hM
           exact Real.exp_le_exp.mpr (hsum_le (Z ω))
@@ -341,11 +333,9 @@ theorem kahaneSmoothInterpolation_integrand_nonpos_of_bounded_derivatives
           finiteChaosVectorWeight a v γ (kahaneSumVectorField t z) j *
           F'' (finiteChaosVectorMass a v γ (kahaneSumVectorField t z))‖ ≤
         W ^ 2 * B₂ * Real.exp (∑ k, c2 k * |z k|) := by
-      have hwi := hWeightBound (kahaneSumVectorField t z) i
-      have hwj := hWeightBound (kahaneSumVectorField t z) j
       have hfield := kahaneSumVectorField_abs_sum_le t ht ht1 z
       have hexp : 2 * (|γ| * ∑ k, |z k|) = ∑ k, c2 k * |z k| := by
-        simp only [Fintype.sum_sum_type, c2]
+        simp
         calc
           _ = 2 * |γ| * (∑ i, |z (Sum.inl i)| + ∑ i, |z (Sum.inr i)|) := by ring
           _ = _ := by
@@ -363,7 +353,7 @@ theorem kahaneSmoothInterpolation_integrand_nonpos_of_bounded_derivatives
             (W * Real.exp (|γ| * ∑ k, |kahaneSumVectorField t z k|)) *
               (W * Real.exp (|γ| * ∑ k, |kahaneSumVectorField t z k|)) * B₂ := by
         apply mul_le_mul
-        · exact mul_le_mul hwi hwj (norm_nonneg _) (by positivity)
+        · exact mul_le_mul (hWeightBound (kahaneSumVectorField t z) i) (hWeightBound (kahaneSumVectorField t z) j) (norm_nonneg _) (by positivity)
         · exact hF''bound _
         · positivity
         · positivity
@@ -374,18 +364,18 @@ theorem kahaneSmoothInterpolation_integrand_nonpos_of_bounded_derivatives
             _ ≤ (W * Real.exp (|γ| * ∑ k, |kahaneSumVectorField t z k|)) *
                   (W * Real.exp (|γ| * ∑ k, |kahaneSumVectorField t z k|)) * B₂ :=
               hproduct
-            _ = _ := by rw [pow_two]
+            _ = _ := by linarith
         _ ≤ W ^ 2 * B₂ *
             Real.exp (2 * (|γ| * ∑ k, |kahaneSumVectorField t z k|)) := by
           have hExpSq (x : ℝ) : Real.exp x ^ 2 = Real.exp (2 * x) := by
             calc
-              _ = Real.exp x * Real.exp x := by rw [pow_two]
+              _ = Real.exp x * Real.exp x := by linarith
               _ = Real.exp (x + x) := by rw [← Real.exp_add]
-              _ = Real.exp (2 * x) := by congr 1; ring
+              _ = Real.exp (2 * x) := by ring
           calc
             _ = W ^ 2 * B₂ *
                 Real.exp (|γ| * ∑ k, |kahaneSumVectorField t z k|) ^ 2 := by ring
-            _ = _ := by rw [hExpSq]
+            _ = _ := by tauto
             _ ≤ _ := le_rfl
         _ ≤ W ^ 2 * B₂ * Real.exp (∑ k, c2 k * |z k|) := by
           apply mul_le_mul_of_nonneg_left _ (by positivity)
@@ -412,12 +402,7 @@ theorem kahaneSmoothInterpolation_integrand_nonpos_of_bounded_derivatives
 convex test has nonpositive derivative along an interior finite Kahane interpolation time.
 The local domination hypotheses are exactly those consumed by the parametric integral theorem. -/
 theorem kahaneSmoothInterpolationExpectation_hasDerivAt_nonpos
-    {ΩX ΩY ι : Type*} [MeasurableSpace ΩX] [MeasurableSpace ΩY]
-    [Fintype ι] [DecidableEq ι]
-    (PX : Measure ΩX) (PY : Measure ΩY)
-    (X : ΩX → ι → ℝ) (Y : ΩY → ι → ℝ)
-    (hX : IsCenteredJointlyGaussian PX X) (hY : IsCenteredJointlyGaussian PY Y)
-    (a vX vY : ι → ℝ) (ha : ∀ i, 0 ≤ a i) (γ t ε : ℝ)
+    (γ t ε : ℝ)
     (F F' F'' : ℝ → ℝ) (B₁ B₂ : ℝ)
     (hF : ∀ x, HasDerivAt F (F' x) x)
     (hF' : ∀ x, HasDerivAt F' (F'' x) x)
@@ -453,13 +438,16 @@ theorem kahaneSmoothInterpolationExpectation_hasDerivAt_nonpos
   constructor
   · exact kahaneInterpolatedExpectation_hasDerivAt PX PY X Y vX vY a γ t ε F F' hF
       hε hεleft hεright hMeas hInt hDMeas b hb hbound
-  · have ht : 0 < t := lt_of_lt_of_le hε hεleft
+  · have ht := lt_of_lt_of_le hε hεleft
     have ht1 : t < 1 := by
-      have : 0 < 1 - t := lt_of_lt_of_le hε hεright
       linarith
     exact kahaneSmoothInterpolation_integrand_nonpos_of_bounded_derivatives
       PX PY X Y hX hY a vX vY ha γ t F' F'' B₁ B₂ hF'meas hF''meas hF'
       hF'bound hF''bound hF''nonneg ht ht1 hvX hvY hcov
+
+end
+
+end
 
 
 end DOZZ.Proofs

@@ -40,17 +40,15 @@ theorem williams_ennreal_model_tail_bound
   let : IsProbabilityMeasure μ := isProbabilityMeasure_brownianMaximumReferenceLaw hν
   have hp : 0 < 2*ν/γ := by positivity
   have hJf : ∀ᵐ ω ∂P, J ω ≠ ⊤ := by
-    have hf := ae_lt_top' (hJ.pow_const r) hJr.ne
-    filter_upwards [hf] with ω hω
+    filter_upwards [(ae_lt_top' (hJ.pow_const r) hJr.ne)] with ω hω
     intro ht
-    rw [ht,ENNReal.top_rpow_of_pos hr] at hω
-    exact lt_irrefl _ hω
+    simp_all
   obtain ⟨f,hfm,hf0,hfe,hfMom⟩ := nonnegative_moment_version P J hJ hJf
   have hJcf (c : ℝ) : ∀ᵐ ω ∂P, Jc c ω ≠ ⊤ :=
     hJf.mono fun ω hω => ne_top_of_le_ne_top hω (hJcle c ω)
   choose fc hfcm hfc0 hfce hfcMom using
-    fun c : ℝ => nonnegative_moment_version P (Jc c) (hJcm c) (hJcf c)
-  have hJcMom (c s : ℝ) (hs : 0 ≤ s) :
+    fun c => nonnegative_moment_version P (Jc c) (hJcm c) (hJcf c)
+  have hJcMom (c s : ℝ) hs :
       (∫⁻ ω, Jc c ω^s ∂P) ≤ ∫⁻ ω, J ω^s ∂P :=
     lintegral_mono fun ω => ENNReal.rpow_le_rpow (hJcle c ω) hs
   have hJcp (c : ℝ) : (∫⁻ ω, Jc c ω^(2*ν/γ) ∂P) < ⊤ :=
@@ -60,19 +58,16 @@ theorem williams_ennreal_model_tail_bound
   have hfp := hfMom _ hp.le hJp
   have hfr := hfMom r hr.le hJr
   have hAfinite : ∀ᵐ q ∂μ.prod P, A q ≠ ⊤ := by
-    have hj := (measurePreserving_snd (μ := μ) (ν := P)).quasiMeasurePreserving.ae hJf
-    filter_upwards [hupper,hj] with q hq hjq
+    filter_upwards [hupper,((measurePreserving_snd).quasiMeasurePreserving.ae hJf)] with q hq hjq
     exact ne_top_of_le_ne_top hjq hq
   have hupper' : ∀ᵐ q ∂μ.prod P, (A q).toReal ≤ f q.2 := by
-    have hj := (measurePreserving_snd (μ := μ) (ν := P)).quasiMeasurePreserving.ae hJf
-    have he := (measurePreserving_snd (μ := μ) (ν := P)).quasiMeasurePreserving.ae hfe
-    filter_upwards [hupper,hj,he] with q hq hjq heq
+    have he := (measurePreserving_snd (μ := μ)).quasiMeasurePreserving.ae hfe
+    filter_upwards [hupper,((measurePreserving_snd).quasiMeasurePreserving.ae hJf),he] with q hq hjq heq
     rw [heq]
     exact ENNReal.toReal_mono hjq hq
   have hlower' (c : ℝ) (hc : 0 ≤ c) :
       ∀ᵐ q ∂μ.prod P, c ≤ q.1 → fc c q.2 ≤ (A q).toReal := by
-    have he := (measurePreserving_snd (μ := μ) (ν := P)).quasiMeasurePreserving.ae (hfce c)
-    filter_upwards [hlower c hc,hAfinite,he] with q hq hAf heq
+    filter_upwards [hlower c hc,hAfinite,((measurePreserving_snd).quasiMeasurePreserving.ae (hfce c))] with q hq hAf heq
     intro hlevel
     rw [heq]
     exact ENNReal.toReal_mono hAf (hq hlevel)
@@ -85,21 +80,19 @@ theorem williams_ennreal_model_tail_bound
     exact hgap c hc
   have hmodel := williams_model_tail_bound P (fun q => (A q).toReal) f fc hfm hf0
     ν γ η a r D K hν hγ hη ha hr hpr hD hK hfp.1 hfr.1
-    (by rw [hfr.2]; exact hJrK) (fun c _ => hfcm c) (fun c _ => hfc0 c)
+    (by linarith) (fun c _ => hfcm c) (fun c _ => hfc0 c)
     (fun c _ => (hfcMom c _ hp.le (hJcp c)).1)
     (fun c _ => (hfcMom c r hr.le (hJcr c)).1) (fun c _ => hfcK c)
     hupper' hlower' hfgap
   intro x hx
-  have hx0 : 0 ≤ x := zero_le_one.trans hx
   have hevent : {q : ℝ × Ω | ENNReal.ofReal x < A q*ENNReal.ofReal (Real.exp (γ*q.1))}
       =ᵐ[μ.prod P] {q | x < (A q).toReal*Real.exp (γ*q.1)} := by
     filter_upwards [hAfinite] with q hq
     apply propext
     rw [← ENNReal.toReal_lt_toReal ENNReal.ofReal_ne_top
       (ENNReal.mul_lt_top hq.lt_top ENNReal.ofReal_lt_top).ne,
-      ENNReal.toReal_ofReal hx0,ENNReal.toReal_mul,ENNReal.toReal_ofReal (Real.exp_nonneg _)]
-  rw [measure_congr hevent]
-  rw [← hfp.2]
+      ENNReal.toReal_ofReal (zero_le_one.trans hx),ENNReal.toReal_mul,ENNReal.toReal_ofReal (Real.exp_nonneg _)]
+  rw [measure_congr hevent, ← hfp.2]
   exact hmodel x hx
 
 

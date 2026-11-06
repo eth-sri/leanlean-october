@@ -38,13 +38,13 @@ theorem negativeConditionedLaw_finitePast_lastExit_Ioc
           (conditionedPositiveFDDVectorDensity ν (fun i => (ss i : ℝ))) := by
   let : IsProbabilityMeasure P := hP.2.1
   let evalPast : BrownianPath → (Fin (k+1) → ℝ) := fun p i => -(p (ss i))
-  let μ : Measure (Fin (k+1) → ℝ) := volume.withDensity
+  let μ := volume.withDensity
     (conditionedPositiveFDDVectorDensity ν (fun i => (ss i : ℝ)))
   let E : ℝ≥0 → Set BrownianPath := fun w =>
     {p | evalPast p ∈ A ∧ negativeLastExitTime p (c : ℝ) ≤ w}
   have hmPast : Measurable evalPast :=
-    measurable_pi_iff.mpr fun _ => (ContinuousMap.measurable_eval _).neg
-  have hmτ : Measurable (fun p : BrownianPath => negativeLastExitTime p (c : ℝ)) :=
+    by fun_prop
+  have hmτ : Measurable (fun p => negativeLastExitTime p (c : ℝ)) :=
     measurable_negativeLastExitTime_joint.comp (measurable_const.prodMk measurable_id)
   have hE (w : ℝ≥0) : MeasurableSet (E w) :=
     (hA.preimage hmPast).inter ((measurableSet_Iic (a := w)).preimage hmτ)
@@ -74,32 +74,27 @@ theorem negativeConditionedLaw_finitePast_lastExit_Ioc
   have hdiff : {p : BrownianPath | evalPast p ∈ A ∧ negativeLastExitTime p (c : ℝ) ∈ Ioc u v} =
       E v \ E u := by
     ext p
-    simp only [E, mem_ofPred_eq, Set.mem_sdiff, mem_Ioc]
-    constructor
-    · rintro ⟨hA, huL, hLv⟩
-      exact ⟨⟨hA,hLv⟩, fun h => (not_le_of_gt huL) h.2⟩
-    · rintro ⟨⟨hA,hLv⟩, hnot⟩
-      exact ⟨hA, lt_of_not_ge (fun hLu => hnot ⟨hA,hLu⟩), hLv⟩
-  have hsub : E u ⊆ E v := fun p hp => ⟨hp.1, hp.2.trans huv⟩
+    constructor <;> aesop
+  have hsub : E u ⊆ E v := by grind
   have hv : ss (Fin.last k) < v := hu.trans_le huv
   calc
     _ = P.real (E v) - P.real (E u) := by
       rw [hdiff, measureReal_sdiff hsub (hE u) (measure_ne_top _ _)]
     _ = (∫ x in A, lastExitGaussianKernelCDF ν (c : ℝ) (x (Fin.last k))
           ((v : ℝ)-(ss (Fin.last k) : ℝ)) ∂μ) -
-        ∫ x in A, lastExitGaussianKernelCDF ν (c : ℝ) (x (Fin.last k))
+        ∫ x in A, lastExitGaussianKernelCDF ν (c : ℝ) _
           ((u : ℝ)-(ss (Fin.last k) : ℝ)) ∂μ := by
       rw [negativeConditionedLaw_finitePast_lastExit_CDF hP hB hν c hc k ss hs hmono v hv A hA,
         negativeConditionedLaw_finitePast_lastExit_CDF hP hB hν c hc k ss hs hmono u hu A hA]
-    _ = ∫ x in A, lastExitGaussianKernelCDF ν (c : ℝ) (x (Fin.last k))
+    _ = ∫ x in A, lastExitGaussianKernelCDF ν (c : ℝ) _
           ((v : ℝ)-(ss (Fin.last k) : ℝ)) -
-        lastExitGaussianKernelCDF ν (c : ℝ) (x (Fin.last k))
+        lastExitGaussianKernelCDF ν (c : ℝ) _
           ((u : ℝ)-(ss (Fin.last k) : ℝ)) ∂μ :=
       (integral_sub (hi v hv).integrableOn (hi u hu).integrableOn).symm
     _ = _ := by
       apply setIntegral_congr_ae hA
       filter_upwards [hxpos] with x hx _
-      exact (integral_lastExit_boundaryDensity_shifted_Ioc ν (c : ℝ) (x (Fin.last k))
+      exact (integral_lastExit_boundaryDensity_shifted_Ioc ν (c : ℝ) _
         (ss (Fin.last k) : ℝ) (u : ℝ) (v : ℝ) hν hc hx
         (NNReal.coe_lt_coe.mpr hu) (NNReal.coe_le_coe.mpr huv)).symm
 

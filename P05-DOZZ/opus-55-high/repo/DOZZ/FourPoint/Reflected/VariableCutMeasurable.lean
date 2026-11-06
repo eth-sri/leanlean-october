@@ -18,7 +18,7 @@ theorem reflected_williams_variable_cut_aemeasurable
     (hfin : ∀ᵐ ω ∂P, ∀ a b : ℝ, Z ω (Icc a b) < ⊤) :
     AEMeasurable (fun v : ℝ × Ω => twoSidedReflectionCutMass γ v.1 B Z v.2) (μ.prod P) := by
   have hpair := (hB.prodMk hZ).comp_quasiMeasurePreserving
-    (measurePreserving_snd (μ := μ) (ν := P)).quasiMeasurePreserving
+    (measurePreserving_snd (μ := μ)).quasiMeasurePreserving
   have hcode := (measurable_williamsCutMassCode γ).comp_aemeasurable
     (measurable_fst.aemeasurable.prodMk hpair)
   apply hcode.congr

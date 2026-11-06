@@ -33,11 +33,11 @@ theorem independent_prefactor_moment_gap
     rw [lintegral_prod_mul (hA.pow_const p) (hS.pow_const p),ENNReal.toReal_mul,mul_comm]
   rw [hprod J hJ,hprod Jc hJc,← mul_sub]
   calc
-    _ ≤ (∫⁻ ω, S ω^p ∂Q).toReal*(D*Real.exp (-γ*c)) :=
+    _ ≤ (∫⁻ ω, S ω^p ∂Q).toReal*(D*Real.exp _) :=
       mul_le_mul_of_nonneg_left hgap ENNReal.toReal_nonneg
-    _ ≤ L*(D*Real.exp (-γ*c)) :=
+    _ ≤ L*(D*Real.exp _) :=
       mul_le_mul_of_nonneg_right hSm (mul_nonneg hD (Real.exp_nonneg _))
-    _ = _ := (mul_assoc _ _ _).symm
+    _ = _ := (mul_assoc ..).symm
 
 
 end DOZZ.Proofs

@@ -38,8 +38,7 @@ theorem measurable_bpzLamDeriv (r : ℝ) : Measurable (bpzLamDeriv r) := by
     (measurable_bpzTruncLogDeriv r).comp (measurable_fst.add (measurable_const.mul
       (Complex.measurable_exp.comp (Complex.measurable_ofReal.comp measurable_snd |>.mul
         measurable_const))))
-  have hint : StronglyMeasurable (fun w : ℂ => ∫ θ in Set.Ioc 0 (2 * Real.pi),
-      bpzTruncLogDeriv r (w + Real.exp (-r) * Complex.exp (θ * Complex.I))) :=
+  have hint :=
     StronglyMeasurable.integral_prod_right' (ν := (volume.restrict (Set.Ioc 0 (2 * Real.pi))))
       hjoint.stronglyMeasurable
   have heq : bpzLamDeriv r = fun w => (2 * Real.pi)⁻¹ • ∫ θ in Set.Ioc 0 (2 * Real.pi),
@@ -47,31 +46,35 @@ theorem measurable_bpzLamDeriv (r : ℝ) : Measurable (bpzLamDeriv r) := by
     funext w
     rw [bpzLamDeriv, intervalIntegral.integral_of_le (by positivity)]
   rw [heq]
-  exact hint.measurable.const_smul ((2 * Real.pi)⁻¹ : ℝ)
+  exact hint.measurable.const_smul ((2 * Real.pi)⁻¹)
+section
+variable (γ r : ℝ)
+section
+variable (x : ℂ)
 
-theorem continuous_bpzCutRootKernel_snd (γ r : ℝ) (x : ℂ) :
+theorem continuous_bpzCutRootKernel_snd :
     Continuous (bpzCutRootKernel γ r x) := by
-  unfold bpzCutRootKernel
   exact Real.continuous_exp.comp (continuous_const.mul
     (((continuous_bpzLam r).comp (continuous_const.sub continuous_id)).add
       (continuous_bpzPin r)))
 
-theorem continuous_bpzLimRootKernel_snd (γ r : ℝ) (x : ℂ) :
+theorem continuous_bpzLimRootKernel_snd :
     Continuous (bpzLimRootKernel γ r x) := by
-  unfold bpzLimRootKernel
   refine Real.continuous_exp.comp (continuous_const.mul
     (((continuous_bpzTruncLog r).comp (continuous_const.sub continuous_id)).add ?_))
   exact Real.continuousOn_log.comp_continuous bpz_continuous_normPlus
     fun y => (bpz_normPlus_pos y).ne'
 
-theorem bpzCutRootKernel_le (γ r : ℝ) (x y : ℂ) :
+end
+
+theorem bpzCutRootKernel_le (x y : ℂ) :
     bpzCutRootKernel γ r x y ≤ Real.exp (γ ^ 2 * r) * Real.exp (γ ^ 2 * bpzPin r y) := by
-  unfold bpzCutRootKernel
   rw [← Real.exp_add]
   apply Real.exp_le_exp.mpr
   have := bpzLam_le r (x - y)
-  have hγ := sq_nonneg γ
   nlinarith
+
+end
 
 /-- The cutoff part of the rooted mixed mass is differentiable at a non-atom. -/
 theorem hasFDerivAt_bpz_cut_part {γ r : ℝ} {ρ k₁ : ℂ → ℝ} {m₁ : Measure ℂ} {x₀ : ℂ}
@@ -81,7 +84,7 @@ theorem hasFDerivAt_bpz_cut_part {γ r : ℝ} {ρ k₁ : ℂ → ℝ} {m₁ : Me
     HasFDerivAt (fun x => ∫ y, ρ y * k₁ y * bpzCutRootKernel γ r x y ∂m₁)
       (∫ y, (ρ y * k₁ y * (bpzCutRootKernel γ r x₀ y * γ ^ 2)) • bpzLamDeriv r (x₀ - y) ∂m₁)
       x₀ := by
-  set C : ℝ := γ ^ 2 * Real.exp (γ ^ 2 * r) * Real.exp r with hC
+  set C := γ ^ 2 * Real.exp (γ ^ 2 * r) * Real.exp r with hC
   have hC0 : 0 ≤ C := by positivity
   have hw : ∀ y, 0 ≤ ρ y * k₁ y := fun y => mul_nonneg (hρ0 y) (hk₁0 y)
   have hmeasF : ∀ x, Measurable fun y => ρ y * k₁ y * bpzCutRootKernel γ r x y :=
@@ -100,11 +103,11 @@ theorem hasFDerivAt_bpz_cut_part {γ r : ℝ} {ρ k₁ : ℂ → ℝ} {m₁ : Me
       _ = _ := by ring
   have hnot : ∀ᵐ y ∂m₁, y ≠ x₀ := by
     apply ae_iff.mpr; simpa using hatom
-  have hmain := hasFDerivAt_integral_of_dominated_loc_of_lip (μ := m₁) (s := Set.univ)
-    (x₀ := x₀) (F := fun x y => ρ y * k₁ y * bpzCutRootKernel γ r x y)
+  have hmain := hasFDerivAt_integral_of_dominated_loc_of_lip
+   
     (F' := fun y => (ρ y * k₁ y * (bpzCutRootKernel γ r x₀ y * γ ^ 2)) •
       bpzLamDeriv r (x₀ - y))
-    (bound := fun y => ρ y * k₁ y * Real.exp (γ ^ 2 * bpzPin r y) * C) Filter.univ_mem
+    Filter.univ_mem
     (Eventually.of_forall fun x => (hmeasF x).aestronglyMeasurable) hint₀
     hmeasF'.aestronglyMeasurable
     (Eventually.of_forall fun y => by
@@ -116,34 +119,36 @@ theorem hasFDerivAt_bpz_cut_part {γ r : ℝ} {ρ k₁ : ℂ → ℝ} {m₁ : Me
           ≤ ρ y * k₁ y * (γ ^ 2 * Real.exp (γ ^ 2 * r) * Real.exp (γ ^ 2 * bpzPin r y) *
             Real.exp r * ‖x - x'‖) :=
             mul_le_mul_of_nonneg_left (abs_bpzCutRootKernel_sub_le γ r x x' y) (hw y)
-        _ = ρ y * k₁ y * Real.exp (γ ^ 2 * bpzPin r y) * C * ‖x - x'‖ := by rw [hC]; ring)
+        _ = ρ y * k₁ y * Real.exp (γ ^ 2 * bpzPin r y) * C * ‖x - x'‖ := by linarith)
     (hI₁.mul_const C)
     (by
       filter_upwards [hnot] with y hy
       have h := (hasFDerivAt_bpzCutRootKernel γ r hy.symm).const_mul (ρ y * k₁ y)
       simpa [smul_smul, mul_assoc] using h)
   exact hmain.2
+section
+variable {γ r δ : ℝ}
 
 /-- The limit part of the rooted mixed mass is differentiable at a root separated from the
 limit region. -/
-theorem hasFDerivAt_bpz_lim_part {γ r δ : ℝ} {ρ k₂ : ℂ → ℝ} {m₂ : Measure ℂ} {x₀ : ℂ}
+theorem hasFDerivAt_bpz_lim_part {ρ k₂ : ℂ → ℝ} {m₂ : Measure ℂ} {x₀ : ℂ}
     (hρm : Measurable ρ) (hk₂ : Measurable k₂) (hρ1 : ∀ y, ρ y ≤ 1) (hk₂0 : ∀ y, 0 ≤ k₂ y)
     (hI₂ : Integrable (fun y => (1 - ρ y) * k₂ y) m₂)
     (hδ : 0 < δ) (hδr : Real.exp (-r) ≤ δ) (hsep : ∀ y, ρ y < 1 → 2 * δ ≤ ‖x₀ - y‖) :
     HasFDerivAt (fun x => ∫ y, (1 - ρ y) * k₂ y * bpzLimRootKernel γ r x y ∂m₂)
       (∫ y, ((1 - ρ y) * k₂ y * (bpzLimRootKernel γ r x₀ y * γ ^ 2)) •
         bpzTruncLogDeriv r (x₀ - y) ∂m₂) x₀ := by
-  set R : ℝ := ‖x₀‖ + δ with hR
-  set B : ℝ := (1 + (1 + R) / δ) ^ (γ ^ 2) with hB
+  set R := ‖x₀‖ + δ with hR
+  set B := (1 + (1 + R) / δ) ^ (γ ^ 2) with hB
   have hR0 : 0 ≤ R := by positivity
-  have hB0 : 0 ≤ B := Real.rpow_nonneg (by positivity) _
-  have hw : ∀ y, 0 ≤ (1 - ρ y) * k₂ y := fun y => mul_nonneg (by linarith [hρ1 y]) (hk₂0 y)
+  have hB0 : 0 ≤ B := by positivity
+  have hw : ∀ y, 0 ≤ (1 - ρ y) * k₂ y := fun y => mul_nonneg (by simp_all) (hk₂0 y)
   have hball : ∀ x ∈ Metric.ball x₀ δ, ∀ y, ρ y < 1 → ‖x‖ ≤ R ∧ δ ≤ ‖x - y‖ := by
     intro x hx y hy
     rw [Metric.mem_ball, dist_eq_norm] at hx
     refine ⟨?_, ?_⟩
     · have := norm_le_norm_add_norm_sub' x x₀
-      rw [hR]; linarith
+      linarith
     · have h1 := hsep y hy
       have h2 := norm_sub_norm_le (x₀ - y) (x₀ - x)
       rw [show x₀ - y - (x₀ - x) = x - y by ring, norm_sub_rev x₀ x] at h2
@@ -163,10 +168,10 @@ theorem hasFDerivAt_bpz_lim_part {γ r δ : ℝ} {ρ k₂ : ℂ → ℝ} {m₂ :
     rcases lt_or_eq_of_le (hρ1 y) with hy | hy
     · have hb := hball x₀ (Metric.mem_ball_self hδ) y hy
       exact mul_le_mul_of_nonneg_left (bpzLimRootKernel_le γ r hδ hδr hb.1 hb.2) (hw y)
-    · rw [hy]; simp
-  have hmain := hasFDerivAt_integral_of_dominated_loc_of_lip (μ := m₂)
-    (s := Metric.ball x₀ δ) (x₀ := x₀)
-    (F := fun x y => (1 - ρ y) * k₂ y * bpzLimRootKernel γ r x y)
+    · simp_all
+  have hmain := hasFDerivAt_integral_of_dominated_loc_of_lip
+   
+   
     (F' := fun y => ((1 - ρ y) * k₂ y * (bpzLimRootKernel γ r x₀ y * γ ^ 2)) •
       bpzTruncLogDeriv r (x₀ - y))
     (bound := fun y => (1 - ρ y) * k₂ y * (B * (γ ^ 2 / δ))) (Metric.ball_mem_nhds x₀ hδ)
@@ -200,7 +205,7 @@ theorem hasFDerivAt_bpz_lim_part {γ r δ : ℝ} {ρ k₂ : ℂ → ℝ} {m₂ :
 
 /-- The rooted mixed mass is differentiable at a root that is not an atom of the cutoff measure
 and is separated from the limit region. -/
-theorem hasFDerivAt_bpzRootedMixedReal {γ r δ : ℝ} {ρ k₁ k₂ : ℂ → ℝ} {m₁ m₂ : Measure ℂ}
+theorem hasFDerivAt_bpzRootedMixedReal {ρ k₁ k₂ : ℂ → ℝ} {m₁ m₂ : Measure ℂ}
     {x₀ : ℂ} (hρm : Measurable ρ) (hk₁ : Measurable k₁) (hk₂ : Measurable k₂)
     (hρ0 : ∀ y, 0 ≤ ρ y) (hρ1 : ∀ y, ρ y ≤ 1) (hk₁0 : ∀ y, 0 ≤ k₁ y) (hk₂0 : ∀ y, 0 ≤ k₂ y)
     (hI₁ : Integrable (fun y => ρ y * k₁ y * Real.exp (γ ^ 2 * bpzPin r y)) m₁)
@@ -210,5 +215,7 @@ theorem hasFDerivAt_bpzRootedMixedReal {γ r δ : ℝ} {ρ k₁ k₂ : ℂ → �
       (bpzRootedMixedDeriv γ r ρ k₁ k₂ x₀ m₁ m₂) x₀ :=
   (hasFDerivAt_bpz_cut_part hρm hk₁ hρ0 hk₁0 hI₁ hatom).add
     (hasFDerivAt_bpz_lim_part hρm hk₂ hρ1 hk₂0 hI₂ hδ hδr hsep)
+
+end
 
 end DOZZ.Proofs

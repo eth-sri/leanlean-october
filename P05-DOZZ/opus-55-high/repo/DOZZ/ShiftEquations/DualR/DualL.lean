@@ -41,9 +41,11 @@ noncomputable def dualArg₄ (γ : ℝ) (ε α α' : ℂ) : ℂ := -2 / (γ : �
 noncomputable def dualLC (γ : ℝ) (ε α α' : ℂ) : ℂ :=
   lFun (dualArg₁ γ ε) * lFun (dualArg₂ γ α) /
     (lFun (dualArg₃ γ ε α α') * lFun (dualArg₄ γ ε α α'))
+section
+variable {γ : ℝ}
 
 /-- **The complex coefficient at real charges is `dualCrossingL`.** -/
-theorem dualLC_ofReal {γ : ℝ} (hγ : γ ≠ 0) (ε α α' : ℝ) :
+theorem dualLC_ofReal (hγ : γ ≠ 0) (ε α α' : ℝ) :
     dualLC γ ε α α' = (dualCrossingL γ ε α α' : ℂ) := by
   have hγc : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ
   have h₁ : dualArg₁ γ ε = ((gaussParameterC γ (2 / γ) ε - 1 : ℝ) : ℂ) := by
@@ -71,37 +73,45 @@ theorem dualLC_ofReal {γ : ℝ} (hγ : γ ≠ 0) (ε α α' : ℝ) :
     ring
   unfold dualLC dualCrossingL
   rw [h₁, h₂, h₃, h₄, lFun_ofReal, lFun_ofReal, lFun_ofReal, lFun_ofReal]
-  simp only [Complex.ofReal_re]
-  push_cast
-  ring
+  simp
+section
+variable {f : ℂ → ℂ} {t : ℂ}
+section
+variable (h : AnalyticAt ℂ f t)
+include h
 
-theorem analyticAt_dualArg₁_comp {γ : ℝ} {f : ℂ → ℂ} {t : ℂ} (h : AnalyticAt ℂ f t) :
+theorem analyticAt_dualArg₁_comp :
     AnalyticAt ℂ (fun s => dualArg₁ γ (f s)) t := by
   unfold dualArg₁
-  exact (analyticAt_const.mul (h.sub analyticAt_const)).div_const
+  fun_prop
 
-theorem analyticAt_dualArg₂_comp {γ : ℝ} {f : ℂ → ℂ} {t : ℂ} (h : AnalyticAt ℂ f t) :
+theorem analyticAt_dualArg₂_comp :
     AnalyticAt ℂ (fun s => dualArg₂ γ (f s)) t := by
   unfold dualArg₂
-  exact analyticAt_const.sub (analyticAt_const.mul h).div_const
+  fun_prop
 
-theorem analyticAt_dualArg₃_comp {γ : ℝ} {f₁ f₂ f₃ : ℂ → ℂ} {t : ℂ} (h₁ : AnalyticAt ℂ f₁ t)
-    (h₂ : AnalyticAt ℂ f₂ t) (h₃ : AnalyticAt ℂ f₃ t) :
+end
+
+end
+section
+variable {f₁ f₂ f₃ : ℂ → ℂ} {t : ℂ}
+section
+variable (h₁ : AnalyticAt ℂ f₁ t) (h₂ : AnalyticAt ℂ f₂ t) (h₃ : AnalyticAt ℂ f₃ t)
+include h₁ h₂ h₃
+
+theorem analyticAt_dualArg₃_comp :
     AnalyticAt ℂ (fun s => dualArg₃ γ (f₁ s) (f₂ s) (f₃ s)) t := by
   unfold dualArg₃
-  exact analyticAt_const.add ((h₁.sub h₂).sub h₃).div_const
+  fun_prop
 
-theorem analyticAt_dualArg₄_comp {γ : ℝ} {f₁ f₂ f₃ : ℂ → ℂ} {t : ℂ} (h₁ : AnalyticAt ℂ f₁ t)
-    (h₂ : AnalyticAt ℂ f₂ t) (h₃ : AnalyticAt ℂ f₃ t) :
+theorem analyticAt_dualArg₄_comp :
     AnalyticAt ℂ (fun s => dualArg₄ γ (f₁ s) (f₂ s) (f₃ s)) t := by
   unfold dualArg₄
-  exact analyticAt_const.add ((h₁.sub h₂).add h₃).div_const
+  fun_prop
 
 /-- **The complex coefficient is meromorphic along analytic curves.** -/
-theorem meromorphicAt_dualLC_comp {γ : ℝ} {f₁ f₂ f₃ : ℂ → ℂ} {t : ℂ}
-    (h₁ : AnalyticAt ℂ f₁ t) (h₂ : AnalyticAt ℂ f₂ t) (h₃ : AnalyticAt ℂ f₃ t) :
+theorem meromorphicAt_dualLC_comp :
     MeromorphicAt (fun s => dualLC γ (f₁ s) (f₂ s) (f₃ s)) t := by
-  unfold dualLC
   exact ((meromorphicAt_lFun_comp' (analyticAt_dualArg₁_comp h₁)).fun_mul
     (meromorphicAt_lFun_comp' (analyticAt_dualArg₂_comp h₂))).fun_div
     ((meromorphicAt_lFun_comp' (analyticAt_dualArg₃_comp h₁ h₂ h₃)).fun_mul
@@ -109,9 +119,7 @@ theorem meromorphicAt_dualLC_comp {γ : ℝ} {f₁ f₂ f₃ : ℂ → ℂ} {t :
 
 /-- **The complex coefficient is analytic along analytic curves** where `Γ` is analytic at the two
 numerator arguments and at one minus the two denominator arguments. -/
-theorem analyticAt_dualLC_comp {γ : ℝ} {f₁ f₂ f₃ : ℂ → ℂ} {t : ℂ}
-    (h₁ : AnalyticAt ℂ f₁ t) (h₂ : AnalyticAt ℂ f₂ t) (h₃ : AnalyticAt ℂ f₃ t)
-    (g₁ : AnalyticAt ℂ Complex.Gamma (dualArg₁ γ (f₁ t)))
+theorem analyticAt_dualLC_comp (g₁ : AnalyticAt ℂ Complex.Gamma (dualArg₁ γ (f₁ t)))
     (g₂ : AnalyticAt ℂ Complex.Gamma (dualArg₂ γ (f₂ t)))
     (g₃ : AnalyticAt ℂ Complex.Gamma (1 - dualArg₃ γ (f₁ t) (f₂ t) (f₃ t)))
     (g₄ : AnalyticAt ℂ Complex.Gamma (1 - dualArg₄ γ (f₁ t) (f₂ t) (f₃ t))) :
@@ -122,35 +130,42 @@ theorem analyticAt_dualLC_comp {γ : ℝ} {f₁ f₂ f₃ : ℂ → ℂ} {t : �
         (lFun (dualArg₄ γ (f₁ s) (f₂ s) (f₃ s)))⁻¹ := by
     funext s
     unfold dualLC
-    rw [div_eq_mul_inv, mul_inv]
     ring
   rw [hfun]
   exact (((analyticAt_lFun_comp (f := fun s => dualArg₁ γ (f₁ s))
     (analyticAt_dualArg₁_comp h₁) g₁).mul
     (analyticAt_lFun_comp (f := fun s => dualArg₂ γ (f₂ s)) (analyticAt_dualArg₂_comp h₂) g₂)).mul
-    (analyticAt_inv_lFun_comp (f := fun s => dualArg₃ γ (f₁ s) (f₂ s) (f₃ s))
+    (analyticAt_inv_lFun_comp
       (analyticAt_dualArg₃_comp h₁ h₂ h₃) g₃)).mul
-    (analyticAt_inv_lFun_comp (f := fun s => dualArg₄ γ (f₁ s) (f₂ s) (f₃ s))
+    (analyticAt_inv_lFun_comp
       (analyticAt_dualArg₄_comp h₁ h₂ h₃) g₄)
+
+end
+
+end
+
+end
 
 
 theorem dualArg₂_ofReal (γ α : ℝ) :
     dualArg₂ γ (α : ℂ) = ((2 + 4 / γ ^ 2 - 2 * α / γ : ℝ) : ℂ) := by
-  unfold dualArg₂
-  push_cast
-  ring
+  aesop
+section
+variable (γ ε α α' : ℝ)
 
-theorem one_sub_dualArg₃_ofReal (γ ε α α' : ℝ) :
+theorem one_sub_dualArg₃_ofReal :
     1 - dualArg₃ γ (ε : ℂ) (α : ℂ) (α' : ℂ) = ((-2 / γ ^ 2 - (ε - α - α') / γ : ℝ) : ℂ) := by
   unfold dualArg₃
   push_cast
   ring
 
-theorem one_sub_dualArg₄_ofReal (γ ε α α' : ℝ) :
+theorem one_sub_dualArg₄_ofReal :
     1 - dualArg₄ γ (ε : ℂ) (α : ℂ) (α' : ℂ) = ((1 + 2 / γ ^ 2 - (ε - α + α') / γ : ℝ) : ℂ) := by
   unfold dualArg₄
   push_cast
   ring
+
+end
 
 end DOZZ.Proofs
 

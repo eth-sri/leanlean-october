@@ -31,11 +31,10 @@ noncomputable def bpzMixedDerivReal (γ r : ℝ) (ρ k₁ k₂ : ℂ → ℝ) (x
 /-- The Bochner integral of a fixed measurable function is measurable in the measure. -/
 theorem measurable_integral_measure {g : ℂ → ℝ} (hg : Measurable g) :
     Measurable (fun m : Measure ℂ => ∫ y, g y ∂m) := by
-  set A : Set (Measure ℂ) := {m | ∫⁻ y, ENNReal.ofReal |g y| ∂m < ⊤} with hA
+  set A := {m | ∫⁻ y, ENNReal.ofReal |g y| ∂m < ⊤} with hA
   have hAm : MeasurableSet A :=
-    measurableSet_lt (Measure.measurable_lintegral (ENNReal.measurable_ofReal.comp
-      (continuous_abs.measurable.comp hg))) measurable_const
-  have heq : (fun m : Measure ℂ => ∫ y, g y ∂m) = A.indicator (fun m =>
+    by measurability
+  have heq : (fun m => ∫ y, g y ∂m) = A.indicator (fun m =>
       (∫⁻ y, ENNReal.ofReal (g y) ∂m).toReal - (∫⁻ y, ENNReal.ofReal (-g y) ∂m).toReal) := by
     funext m
     by_cases hm : m ∈ A
@@ -43,8 +42,7 @@ theorem measurable_integral_measure {g : ℂ → ℝ} (hg : Measurable g) :
       have hI : Integrable g m := by
         refine ⟨hg.aestronglyMeasurable, ?_⟩
         rw [hasFiniteIntegral_iff_norm]
-        have hm' : ∫⁻ y, ENNReal.ofReal |g y| ∂m < ⊤ := hm
-        simpa only [Real.norm_eq_abs] using hm'
+        assumption
       exact integral_eq_lintegral_pos_part_sub_lintegral_neg_part hI
     · rw [Set.indicator_of_notMem hm]
       apply integral_undef
@@ -52,12 +50,8 @@ theorem measurable_integral_measure {g : ℂ → ℝ} (hg : Measurable g) :
       apply hm
       have := hI.2
       rw [hasFiniteIntegral_iff_norm] at this
-      show ∫⁻ y, ENNReal.ofReal |g y| ∂m < ⊤
-      simpa only [Real.norm_eq_abs] using this
-  rw [heq]
-  refine Measurable.indicator ?_ hAm
-  exact ((Measure.measurable_lintegral (ENNReal.measurable_ofReal.comp hg)).ennreal_toReal).sub
-    ((Measure.measurable_lintegral (ENNReal.measurable_ofReal.comp hg.neg)).ennreal_toReal)
+      assumption
+  measurability
 
 theorem measurable_bpzMixedReal {ρ k₁ k₂ : ℂ → ℝ} (hρm : Measurable ρ) (hk₁ : Measurable k₁)
     (hk₂ : Measurable k₂) :
@@ -95,14 +89,14 @@ theorem bpzMixedReal_tilt (γ r : ℝ) (ρ k₁ k₂ : ℂ → ℝ) (x : ℂ) (m
     simp only [bpzCutRootDensity, bpzCutRootKernel, smul_eq_mul,
       ENNReal.toReal_ofReal (Real.exp_pos _).le]
     rw [show γ ^ 2 * (bpzLam r (x - y) + bpzPin r x + bpzPin r y) =
-      γ ^ 2 * bpzPin r x + γ ^ 2 * (bpzLam r (x - y) + bpzPin r y) by ring, Real.exp_add]
+      γ ^ 2 * bpzPin r x + γ ^ 2 * (bpzLam r _ + bpzPin r y) by ring, Real.exp_add]
     ring
   · congr 1
     funext y
     simp only [bpzLimRootDensity, bpzLimRootKernel, smul_eq_mul,
       ENNReal.toReal_ofReal (Real.exp_pos _).le]
     rw [show γ ^ 2 * (bpzTruncLog r (x - y) + bpzPin r x + Real.log (normPlus y)) =
-      γ ^ 2 * bpzPin r x + γ ^ 2 * (bpzTruncLog r (x - y) + Real.log (normPlus y)) by ring,
+      γ ^ 2 * bpzPin r x + γ ^ 2 * (bpzTruncLog r _ + Real.log (normPlus y)) by ring,
       Real.exp_add]
     ring
 
@@ -130,14 +124,14 @@ theorem bpzMixedDerivReal_tilt (γ r : ℝ) (ρ k₁ k₂ : ℂ → ℝ) (x v : 
     simp only [bpzCutRootDensity, bpzCutRootKernel, smul_eq_mul,
       ENNReal.toReal_ofReal (Real.exp_pos _).le]
     rw [show γ ^ 2 * (bpzLam r (x - y) + bpzPin r x + bpzPin r y) =
-      γ ^ 2 * bpzPin r x + γ ^ 2 * (bpzLam r (x - y) + bpzPin r y) by ring, Real.exp_add]
+      γ ^ 2 * bpzPin r x + γ ^ 2 * (bpzLam r _ + bpzPin r y) by ring, Real.exp_add]
     ring
   · congr 1
     funext y
     simp only [bpzLimRootDensity, bpzLimRootKernel, smul_eq_mul,
       ENNReal.toReal_ofReal (Real.exp_pos _).le]
     rw [show γ ^ 2 * (bpzTruncLog r (x - y) + bpzPin r x + Real.log (normPlus y)) =
-      γ ^ 2 * bpzPin r x + γ ^ 2 * (bpzTruncLog r (x - y) + Real.log (normPlus y)) by ring,
+      γ ^ 2 * bpzPin r x + γ ^ 2 * (bpzTruncLog r _ + Real.log (normPlus y)) by ring,
       Real.exp_add]
     ring
 
@@ -150,20 +144,19 @@ theorem bpzRootedMixedDeriv_apply {γ r δ : ℝ} {ρ k₁ k₂ : ℂ → ℝ} {
     (hδ : 0 < δ) (hδr : Real.exp (-r) ≤ δ) (hsep : ∀ y, ρ y < 1 → 2 * δ ≤ ‖x₀ - y‖) (v : ℂ) :
     bpzRootedMixedDeriv γ r ρ k₁ k₂ x₀ m₁ m₂ v =
       bpzRootedMixedDerivApply γ r ρ k₁ k₂ x₀ v m₁ m₂ := by
-  have hc := integrable_bpz_cut_part (γ := γ) hρm hk₁ hρ0 hk₁0 hI₁ x₀
   have hl := integrable_bpz_lim_part (γ := γ) hρm hk₂ hρ1 hk₂0 hI₂ hδ hδr hsep
     (Metric.mem_ball_self hδ)
   have hcI : Integrable (fun y => (ρ y * k₁ y * (bpzCutRootKernel γ r x₀ y * γ ^ 2)) •
       bpzLamDeriv r (x₀ - y)) m₁ := by
-    refine ((hc.mul_const (γ ^ 2 * Real.exp r))).mono' ?_ (Eventually.of_forall fun y => ?_)
+    refine (((integrable_bpz_cut_part hρm hk₁ hρ0 hk₁0 hI₁ x₀).mul_const (γ ^ 2 * Real.exp r))).mono' ?_ (Eventually.of_forall fun y => ?_)
     · exact (((hρm.mul hk₁).mul ((continuous_bpzCutRootKernel_snd γ r x₀).measurable.mul_const
         _)).smul ((measurable_bpzLamDeriv r).comp
           (measurable_const.sub measurable_id))).aestronglyMeasurable
-    · have hw : 0 ≤ ρ y * k₁ y * (bpzCutRootKernel γ r x₀ y * γ ^ 2) :=
+    · have hw :=
         mul_nonneg (mul_nonneg (hρ0 y) (hk₁0 y))
           (mul_nonneg (bpzCutRootKernel_pos γ r x₀ y).le (sq_nonneg γ))
       rw [norm_smul, Real.norm_eq_abs, abs_of_nonneg hw]
-      calc ρ y * k₁ y * (bpzCutRootKernel γ r x₀ y * γ ^ 2) * ‖bpzLamDeriv r (x₀ - y)‖
+      calc ρ y * k₁ y * (bpzCutRootKernel γ r x₀ y * γ ^ 2) * ‖bpzLamDeriv r _‖
           ≤ ρ y * k₁ y * (bpzCutRootKernel γ r x₀ y * γ ^ 2) * Real.exp r :=
             mul_le_mul_of_nonneg_left (norm_bpzLamDeriv_le_exp r _) hw
         _ = _ := by ring
@@ -175,18 +168,18 @@ theorem bpzRootedMixedDeriv_apply {γ r δ : ℝ} {ρ k₁ k₂ : ℂ → ℝ} {
           ((measurable_bpzTruncLogDeriv r).comp
             (measurable_const.sub measurable_id))).aestronglyMeasurable
     · have hw : 0 ≤ (1 - ρ y) * k₂ y * (bpzLimRootKernel γ r x₀ y * γ ^ 2) :=
-        mul_nonneg (mul_nonneg (by linarith [hρ1 y]) (hk₂0 y))
+        mul_nonneg (mul_nonneg (by simp_all) (hk₂0 y))
           (mul_nonneg (bpzLimRootKernel_pos γ r x₀ y).le (sq_nonneg γ))
       rw [norm_smul, Real.norm_eq_abs, abs_of_nonneg hw]
       calc (1 - ρ y) * k₂ y * (bpzLimRootKernel γ r x₀ y * γ ^ 2) *
-            ‖bpzTruncLogDeriv r (x₀ - y)‖
+            ‖bpzTruncLogDeriv r _‖
           ≤ (1 - ρ y) * k₂ y * (bpzLimRootKernel γ r x₀ y * γ ^ 2) * Real.exp r :=
             mul_le_mul_of_nonneg_left (norm_bpzTruncLogDeriv_le r _).1 hw
         _ = _ := by ring
   unfold bpzRootedMixedDeriv bpzRootedMixedDerivApply
   rw [add_apply, ContinuousLinearMap.integral_apply hcI,
     ContinuousLinearMap.integral_apply hlI]
-  simp only [smul_apply, smul_eq_mul]
+  rfl
 
 /-- Parametric integrals against a measurable family of finite measures are jointly
 measurable. -/
@@ -197,13 +190,12 @@ theorem measurable_integral_finite_family {α β : Type*} [MeasurableSpace α] [
   set c : α → ℝ≥0∞ := fun a => m a Set.univ + 1 with hc
   have hcm : Measurable c :=
     (Measure.measurable_coe MeasurableSet.univ |>.comp hm).add measurable_const
-  have hc0 : ∀ a, c a ≠ 0 := fun a => by simp [hc]
+  have hc0 : ∀ a, c a ≠ 0 := fun a => by positivity
   have hctop : ∀ a, c a ≠ ⊤ := fun a => by
-    simp only [hc, ne_eq, ENNReal.add_eq_top, ENNReal.one_ne_top, or_false]
-    exact measure_ne_top _ _
+    simp_all
   have hnm : Measurable (fun p : α × β => (c p.1)⁻¹ • m p.1) := by
     refine Measure.measurable_of_measurable_coe _ fun s hs => ?_
-    simp only [Measure.smul_apply, smul_eq_mul]
+    simp
     exact ((hcm.comp measurable_fst).inv).mul
       ((Measure.measurable_coe hs).comp (hm.comp measurable_fst))
   let κ : ProbabilityTheory.Kernel (α × β) ℂ := ⟨fun p => (c p.1)⁻¹ • m p.1, hnm⟩
@@ -215,7 +207,7 @@ theorem measurable_integral_finite_family {α β : Type*} [MeasurableSpace α] [
           gcongr
           simp [hc]
       _ = 1 := ENNReal.inv_mul_cancel (hc0 _) (hctop _)
-  have hint : StronglyMeasurable fun p : α × β => ∫ y, g p.2 y ∂κ p :=
+  have hint :=
     StronglyMeasurable.integral_kernel_prod_right (κ := κ) (f := fun p y => g p.2 y)
       ((hg.comp (measurable_fst.snd.prodMk measurable_snd)).stronglyMeasurable)
   have heq : (fun p : α × β => ∫ y, g p.2 y ∂m p.1) =

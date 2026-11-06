@@ -15,10 +15,12 @@ open MeasureTheory ProbabilityTheory Set
 open scoped Distributions Topology
 
 namespace DOZZ.Proofs
+section
+variable {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
 
 /-- Admissibility depends on measurability, centered Gaussian laws and the covariance kernel. -/
 theorem isAdmissibleLogRegularization_of_covariance_eq
-    {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω} {U : Set ℂ}
+    {U : Set ℂ}
     {dens : ℂ → ℝ} {ε₀ : ℝ} {Y Z : Ω → ℝ → ℂ → ℝ}
     (hY : IsAdmissibleLogRegularization P U dens ε₀ Y)
     (hm : ∀ ε, Measurable (fun q : Ω × ℂ => Z q.1 ε q.2))
@@ -48,7 +50,6 @@ theorem isAdmissibleLogRegularization_of_covariance_eq
 /-- A jointly measurable centered Gaussian family with ordinary circle covariance is admissible
 on every open chart, even when constructed by inversion on the source probability space. -/
 theorem inversionCircle_admissible_of_geometry
-    {Ω : Type*} [MeasurableSpace Ω] {P : Measure Ω}
     (X : Ω → Distr) (hX : IsEquatorGFF P X) (Z : Ω → ℂ → ℝ → ℝ)
     (hm : ∀ r, Measurable (fun p : Ω × ℂ => Z p.1 p.2 r))
     (hg : IsGaussianProcess (fun p : ℂ × ℝ => fun ω => Z ω p.1 p.2) P)
@@ -79,9 +80,11 @@ theorem inversionCircle_admissible_of_geometry
       isCircleAverage_covariance P X hX Xc hXc]
     obtain ⟨_, _, Y0, _, _, _, _, _, _, hc0⟩ :=
       exists_equatorGFF_circle_L2_geometry X hX
-    rw [← hc0 (x, Real.log (1 / ε)) (y, Real.log (1 / δ)),
+    rw [← hc0 ..,
       ← hc0 (y, Real.log (1 / δ)) (x, Real.log (1 / ε))]
-    exact covariance_comm _ _
+    exact covariance_comm ..
+
+end
 
 
 end DOZZ.Proofs

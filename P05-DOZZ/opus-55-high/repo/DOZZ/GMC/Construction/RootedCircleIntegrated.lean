@@ -14,11 +14,14 @@ open MeasureTheory ProbabilityTheory
 open scoped Distributions ENNReal NNReal
 
 namespace DOZZ.Proofs
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+section
+variable (hX : IsEquatorGFF P X)
+include hX
 
 /-- Spatial integration of the Wick root density is integration against the cutoff chaos. -/
 theorem regularizedGMC_root_sample_lintegral
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
     (γ r : ℝ) (Ψ : ℂ × Ω → ℝ≥0∞) (hΨ : Measurable Ψ) :
     (∫⁻ ω, ∫⁻ u, Ψ (u, ω) ∂regularizedGMC P Xc γ r ω ∂P) =
@@ -33,42 +36,31 @@ theorem regularizedGMC_root_sample_lintegral
     have hg : Measurable (fun q : ℂ × Ω => Xc q.2 q.1 r ^ 2) :=
       ((hXc.1 r).comp measurable_swap).pow_const 2
     exact hg.stronglyMeasurable.integral_prod_right.measurable
-  have hn : Measurable (fun u : ℂ => normPlus u) :=
+  have hn : Measurable normPlus :=
     measurable_const.max measurable_norm
   have hb : Measurable b := by
-    dsimp [b]
-    apply ENNReal.measurable_ofReal.comp
-    have heq : (fun u : ℂ => normPlus u ^ (-4 : ℝ)) =
-        fun u => Real.exp ((-4 : ℝ) * Real.log (normPlus u)) := by
-      funext u
-      rw [Real.rpow_def_of_pos (by unfold normPlus; positivity), mul_comm]
-    rw [heq]
-    exact Real.measurable_exp.comp
-      (measurable_const.mul (Real.measurable_log.comp hn))
+    fun_prop
   have hw : Measurable w := by
     have hx : Measurable (fun q : ℂ × Ω => Xc q.2 q.1 r) :=
       (hXc.1 r).comp measurable_swap
     have hv : Measurable (fun q : ℂ × Ω => V q.1) := hV.comp measurable_fst
-    dsimp [w]
     exact ENNReal.measurable_ofReal.comp (Real.measurable_exp.comp
       ((measurable_const.mul hx).sub (measurable_const.mul hv)))
   have hprod : Measurable (fun q : Ω × ℂ => b q.2 * w (q.2, q.1) * Ψ (q.2, q.1)) :=
-    ((hb.comp measurable_snd).mul (hw.comp measurable_swap)).mul
-      (hΨ.comp measurable_swap)
+    by fun_prop
   have hinner : Measurable (fun u => ∫⁻ ω, w (u, ω) * Ψ (u, ω) ∂P) :=
-    (hw.mul hΨ).lintegral_prod_right'
+    by fun_prop
   calc
     _ = ∫⁻ ω, ∫⁻ u, b u * w (u, ω) * Ψ (u, ω) ∂volume ∂P := by
       apply lintegral_congr
       intro ω
       have hd : Measurable (fun u => ENNReal.ofReal
           (Real.exp (γ * Xc ω u r - γ ^ 2 / 2 * V u) * normPlus u ^ (-4 : ℝ))) := by
-        have hx : Measurable (fun u : ℂ => Xc ω u r) :=
+        have hx : Measurable (fun u => Xc ω u r) :=
           (hXc.1 r).comp (measurable_const.prodMk measurable_id)
         fun_prop
-      have hs : Measurable (fun u : ℂ => Ψ (u, ω)) :=
-        hΨ.comp (measurable_id.prodMk measurable_const)
-      rw [regularizedGMC]
+      have hs : Measurable (fun u => Ψ (u, ω)) :=
+        by fun_prop
       change (∫⁻ u, Ψ (u, ω) ∂volume.withDensity (fun u => ENNReal.ofReal
         (Real.exp (γ * Xc ω u r - γ ^ 2 / 2 * V u) * normPlus u ^ (-4 : ℝ)))) = _
       rw [lintegral_withDensity_eq_lintegral_mul volume hd hs]
@@ -86,14 +78,11 @@ theorem regularizedGMC_root_sample_lintegral
       exact lintegral_const_mul (b u)
         ((hw.mul hΨ).comp (measurable_const.prodMk measurable_id))
     _ = ∫⁻ u, ∫⁻ ω, w (u, ω) * Ψ (u, ω) ∂P ∂gmcReferenceMeasure := by
-      rw [gmcReferenceMeasure]
       exact (lintegral_withDensity_eq_lintegral_mul volume hb hinner).symm
     _ = _ := rfl
 
 /-- The integrated finite-circle root identity with the limiting chaos as its mark. -/
 theorem regularizedGMC_integrated_rooted_limiting_mark_identity
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
     (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
     (hM : IsGMCOf P X γ M) (hMmeas : Measurable M)
     (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (r : ℝ)
@@ -116,5 +105,9 @@ theorem regularizedGMC_integrated_rooted_limiting_mark_identity
   intro u
   exact gmc_joint_single_circle_tilt P X hX γ hγ hγ2 M hM Xc hXc u r (H u)
     (hH.comp (measurable_const.prodMk measurable_id))
+
+end
+
+end
 
 end DOZZ.Proofs

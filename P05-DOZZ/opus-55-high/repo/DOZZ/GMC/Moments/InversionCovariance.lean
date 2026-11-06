@@ -19,7 +19,7 @@ open scoped Distributions ENNReal NNReal
 namespace DOZZ.Proofs
 
 private theorem referenceDensity_pos (x : ℂ) : 0 < normPlus x ^ (-4 : ℝ) :=
-  Real.rpow_pos_of_pos (lt_of_lt_of_le one_pos (le_max_left _ _)) _
+  Real.rpow_pos_of_pos (lt_of_lt_of_le one_pos (le_max_left ..)) _
 
 /-- Lebesgue integration as integration against the compactifying reference measure. -/
 theorem integral_volume_eq_integral_gmcReferenceMeasure (f : ℂ → ℝ) :
@@ -54,9 +54,7 @@ theorem volume_gffKernel_pairing_eq_reference (f g : ℂ → ℝ) :
   apply integral_congr_ae
   filter_upwards [] with x
   rw [integral_volume_eq_integral_gmcReferenceMeasure, ← integral_const_mul]
-  apply integral_congr_ae
-  filter_upwards [] with y
-  ring
+  field_simp
 
 /-- The Jacobian-adjusted test, normalized by the reference density, is the inverted original
 test normalized by that density. -/
@@ -72,9 +70,7 @@ theorem inversionTestFunction_reference_weight (f : ℂ → ℝ) {x : ℂ} (hx :
   have hpi := (referenceDensity_pos x⁻¹).ne'
   have hj := (Real.rpow_pos_of_pos hn (-4 : ℝ)).ne'
   dsimp [inversionTestFunction]
-  rw [hJ]
-  rw [← hid]
-  field_simp
+  grind
 
 /-- The covariance form of the equator GFF is invariant on compact tests supported in the
 punctured chart. -/
@@ -92,12 +88,12 @@ theorem gffCov_inversionTest (f g : TestFn)
       filter_upwards [gmcReferenceMeasure_ae_ne 0] with x hx
       apply integral_congr_ae
       filter_upwards [gmcReferenceMeasure_ae_ne 0] with y hy
-      rw [show (inversionTest f hf : ℂ → ℝ) x = inversionTestFunction f x by rfl,
+      rw [show (inversionTest f hf) x = inversionTestFunction f x by rfl,
         show (inversionTest g hg : ℂ → ℝ) y = inversionTestFunction g y by rfl,
         inversionTestFunction_reference_weight f hx,
         inversionTestFunction_reference_weight g hy]
     _ = _ := integral_integral_gffKernel_inversion
       (fun x => f x * (normPlus x ^ (-4 : ℝ))⁻¹)
-      (fun x => g x * (normPlus x ^ (-4 : ℝ))⁻¹)
+      (fun x => g x * (normPlus x ^ (-4))⁻¹)
 
 end DOZZ.Proofs

@@ -20,10 +20,9 @@ theorem reflected_ennreal_inverse_increment_scaled (p c : ℝ) (A J : ℝ≥0∞
   · have hcN : ENNReal.ofReal c ≠ 0 := (ENNReal.ofReal_pos.mpr hc).ne'
     simp only [hJ,ENNReal.mul_top hcN,add_top,ENNReal.top_rpow_of_neg (neg_neg_of_pos hp),
       ENNReal.toReal_zero,zero_sub]
-    have hmax : 1 ≤ max 1 c := le_max_left _ _
-    have hmin : min 1 c ≤ 1 := min_le_left _ _
-    have hn := ENNReal.toReal_nonneg (a := A^(-p))
-    constructor <;> nlinarith only [hmax,hmin,hn]
+    have hmax : 1 ≤ max 1 c := le_max_left ..
+    have hmin : min 1 c ≤ 1 := min_le_left ..
+    constructor <;> nlinarith only [hmax,hmin,(ENNReal.toReal_nonneg (a := A^(-p)))]
   · have hcf : ENNReal.ofReal c*J ≠ ⊤ := ENNReal.mul_ne_top ENNReal.ofReal_ne_top hJ
     simp only [← ENNReal.toReal_rpow,ENNReal.toReal_add hAf hJ,
       ENNReal.toReal_add hAf hcf,ENNReal.toReal_mul,ENNReal.toReal_ofReal hc.le]
@@ -37,16 +36,14 @@ theorem reflected_ennreal_kernel_increment_squeeze (p cLo cHi : ℝ) (A J I : �
       ((A+I)^(-p)).toReal-(A^(-p)).toReal ∧
     ((A+I)^(-p)).toReal-(A^(-p)).toReal ≤
       min 1 cLo*(((A+J)^(-p)).toReal-(A^(-p)).toReal) := by
-  have hl := reflected_ennreal_inverse_increment_scaled p cLo A J hp hcLo hA hAf
-  have hh := reflected_ennreal_inverse_increment_scaled p cHi A J hp hcHi hA hAf
   have hfin : A^(-p) ≠ ⊤ := by
-    simp only [ne_eq,ENNReal.rpow_eq_top_iff,hA.ne',hAf,false_and,false_or,not_false_eq_true]
+    aesop
   have hbound (K : ℝ≥0∞) : (A+K)^(-p) ≠ ⊤ := ne_top_of_le_ne_top hfin
     (ennreal_rpow_antitone_of_nonpos (le_add_of_nonneg_right (show 0 ≤ K from bot_le))
       (neg_nonpos.mpr hp.le))
-  refine ⟨hh.1.trans (sub_le_sub_right (ENNReal.toReal_mono (hbound I)
+  refine ⟨(reflected_ennreal_inverse_increment_scaled p cHi A J hp hcHi hA hAf).1.trans (sub_le_sub_right (ENNReal.toReal_mono (hbound I)
     (ennreal_rpow_antitone_of_nonpos (add_le_add_right hhi A) (neg_nonpos.mpr hp.le))) _),?_⟩
   exact (sub_le_sub_right (ENNReal.toReal_mono (hbound (ENNReal.ofReal cLo*J))
-    (ennreal_rpow_antitone_of_nonpos (add_le_add_right hlo A) (neg_nonpos.mpr hp.le))) _).trans hl.2
+    (ennreal_rpow_antitone_of_nonpos (add_le_add_right hlo A) (neg_nonpos.mpr hp.le))) _).trans (reflected_ennreal_inverse_increment_scaled p cLo A J hp hcLo hA hAf).2
 
 end DOZZ.Proofs

@@ -20,35 +20,32 @@ namespace DOZZ.Proofs
 theorem gmcReferenceMeasure_compl_closedBall_tendsto_zero :
     Tendsto (fun n : ℕ => gmcReferenceMeasure (Metric.closedBall (0 : ℂ) n)ᶜ)
       atTop (𝓝 0) := by
-  let S : ℕ → Set ℂ := fun n => (Metric.closedBall (0 : ℂ) n)ᶜ
-  have hmeas (n : ℕ) : NullMeasurableSet (S n) gmcReferenceMeasure := by
-    exact ((Metric.isClosed_closedBall (x := (0 : ℂ)) (ε := (n : ℝ))).measurableSet.compl).nullMeasurableSet
+  let S : ℕ → Set ℂ := fun n => (Metric.closedBall 0 n)ᶜ
+  have hmeas (n : ℕ) : NullMeasurableSet (S n) gmcReferenceMeasure := by measurability
   have hanti : Antitone S := by
     intro n m hnm x hx
-    have hx' : x ∉ Metric.closedBall (0 : ℂ) m := hx
     intro hxclosed
-    apply hx'
+    apply hx
     apply Metric.mem_closedBall.mpr
-    have hdist : dist x (0 : ℂ) ≤ (n : ℝ) := by
-      simpa [Metric.mem_closedBall] using hxclosed
+    have hdist : dist x 0 ≤ n := by
+      assumption
     exact hdist.trans (by exact_mod_cast hnm)
   have hempty : (⋂ n, S n) = ∅ := by
     ext x
     constructor
     · intro hx
       obtain ⟨n, hn⟩ := exists_nat_gt ‖x‖
-      have hball : x ∈ Metric.closedBall (0 : ℂ) n := by
+      have hball : x ∈ Metric.closedBall 0 n := by
         apply Metric.mem_closedBall.mpr
         simpa [dist_zero_right] using hn.le
-      exact False.elim ((Set.mem_iInter.mp hx n) hball)
-    · intro hx
-      exact False.elim (Set.notMem_empty x hx)
+      bound
+    simp
   have hfinite : ∃ n, gmcReferenceMeasure (S n) ≠ ∞ := by
     refine ⟨0, ?_⟩
     apply ne_of_lt
     exact (measure_mono (Set.subset_univ _)).trans_lt
       (lt_top_iff_ne_top.mpr gmcReferenceMeasure_univ_ne_top)
   have hlim := tendsto_measure_iInter_atTop hmeas hanti hfinite
-  simpa [Function.comp_def, S, hempty] using hlim
+  aesop
 
 end DOZZ.Proofs

@@ -41,7 +41,7 @@ theorem equatorGFF_inversion_local_test_fdd_law
       P'.map (fun ω i => X' ω (f i)) := by
   classical
   apply map_eq_of_centeredJointlyGaussian_of_covariance_eq P P'
-    (fun ω i => X ω (inversionTest (f i) (hf i))) (fun ω i => X' ω (f i))
+    (fun ω i => X ω _) (fun ω i => X' ω (f i))
     (equatorGFF_finite_evaluations_jointly_gaussian P X hX
       (fun i => inversionTest (f i) (hf i)))
     (equatorGFF_finite_evaluations_jointly_gaussian P' X' hX' f)

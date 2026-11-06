@@ -32,8 +32,7 @@ theorem fusion_rootedCoefficient_moment {Ω : Type*} [MeasurableSpace Ω]
   filter_upwards [fusion_gammaHalfRootedMass_eq_ae P X hX γ hγ hγ2 M hM α₁ α₂ α₃,
     gmc_rho_eq_coulombMass_ae P X hX γ hγ hγ2 M hM (α₁ + γ / 2) α₂ α₃]
     with ω hroot hrho
-  rw [hroot, hrho]
-  rfl
+  simp_all
 
 /-- The shifted Seiberg exponent increases by one. -/
 theorem fusion_shifted_seiberg_exponent (γ α₁ α₂ α₃ : ℝ) (hγ : γ ≠ 0) :
@@ -51,12 +50,8 @@ theorem fusion_shifted_normalization (γ μ p A E : ℝ) (hμ : 0 < μ) (hp : p 
   have hm : μ * μ ^ (-(p + 1)) = μ ^ (-p) := by
     conv_lhs => lhs; rw [← Real.rpow_one μ]
     rw [← Real.rpow_add hμ]
-    congr 1
-    ring
-  calc
-    _ = -A * (2 / γ * Real.Gamma p * p * E) * μ ^ (-p) := by ring
-    _ = -A * (2 / γ * Real.Gamma p * p * E) * (μ * μ ^ (-(p + 1))) := by rw [hm]
-    _ = _ := by ring
+    simp
+  grind
 
 
 /-- The normalization in the four-point moment gives exactly the shifted structure constant. -/
@@ -81,8 +76,8 @@ theorem fusion_normalized_rootedCoefficient {Ω : Type*} [MeasurableSpace Ω]
   simpa only [he, neg_div] using
     fusion_shifted_normalization γ μ
       ((α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ)
-      (planarGaussConstant (γ ^ 2 / 2) (γ * α₁)).re
-      (∫⁻ ω, rho γ (M ω) (α₁ + γ / 2) α₂ α₃ ^
+      (planarGaussConstant ..).re
+      (∫⁻ ω, rho γ (M ω) _ α₂ α₃ ^
         (-((α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ) - 1) ∂P).toReal hμ hp
 
 end DOZZ.Proofs

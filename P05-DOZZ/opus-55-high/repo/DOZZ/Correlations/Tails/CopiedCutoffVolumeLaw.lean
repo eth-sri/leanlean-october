@@ -39,25 +39,24 @@ theorem copied_cutoff_volume_law
     simpa only [Measure.restrict_apply_univ] using (isCompact_closedBall (0 : ℂ) ρ).measure_lt_top⟩⟩
   have hr0 : 0 ≤ r := by
     have he : Real.exp (-r) ≤ 1 := by linarith
-    have := Real.exp_le_one_iff.mp he
-    linarith
+    simp_all
   let p : ℂ → localCircle := fun x =>
     if hx : x ∈ K then ⟨(x,r), by
-      have hn : ‖x‖ ≤ ρ := by simpa only [K, Metric.mem_closedBall, dist_zero_right] using hx
+      have hn : ‖x‖ ≤ ρ := by aesop
       dsimp
       linarith⟩
-    else ⟨(0,r), by dsimp; simpa only [norm_zero, zero_add] using (by linarith : Real.exp (-r) ≤ 1)⟩
+    else ⟨(0,r), by simp_all⟩
   have hp : Measurable p := by
     apply Measurable.subtype_mk
     have heq : (fun x => (p x).val) = (fun x : ℂ => if x ∈ K then (x,r) else (0,r)) := by
       funext x
       by_cases hx : x ∈ K
-      · simp only [p, dite_eq_left hx, ite_eq_left hx]
-      · simp only [p, dite_eq_right hx, ite_eq_right hx]
+      · aesop
+      · grind
     change Measurable (fun x => (p x).val)
     rw [heq]
     exact Measurable.ite hK (measurable_id.prodMk measurable_const) measurable_const
-  have hpx (x : ℂ) (hx : x ∈ K) : (p x).val = (x,r) := by simp only [p, dite_eq_left hx]
+  have hpx (x : ℂ) (hx : x ∈ K) : (p x).val = (x,r) := by aesop
   have hweight : Integrable (f : ℂ → ℝ) (ν : Measure ℂ) := f.integrable (μ := (ν : Measure ℂ))
   have hlaw := offCenter_wick_copy_finite_law P X Xc hX hc hm z hz ν p hp γ
     (fun _ : Fin 1 => (f : ℂ → ℝ)) (fun _ => f.continuous.measurable) (fun _ => hf0)
@@ -72,8 +71,7 @@ theorem copied_cutoff_volume_law
       (γ * Xc q.1 (z+(p q.2).val.1) (p q.2).val.2 - γ^2/2 *
         ((p q.2).val.2+2*Real.log ‖z+(p q.2).val.1‖).toNNReal)) := by
       have hx : Measurable (fun q : Ω × ℂ => Xc q.1
-        (z+(p q.2).val.1) (p q.2).val.2) := hm.comp (measurable_fst.prodMk
-        (((measurable_const (a := z)).add (hpv.fst.comp measurable_snd)).prodMk (hpv.snd.comp measurable_snd)))
+        (z+(p q.2).val.1) (p q.2).val.2) := by fun_prop
       fun_prop
     exact hh.stronglyMeasurable.integral_prod_right.measurable
   have htar : Measurable (fun q (_ : Fin 1) => ∫ x, f x * Real.exp
@@ -86,13 +84,10 @@ theorem copied_cutoff_volume_law
       (γ * copiedCircle Xc z q.1 (p q.2) - γ^2/2 *
         ((p q.2).val.2+2*Real.log ‖z+(p q.2).val.1‖).toNNReal)) := by
       unfold copiedCircle localPinCoefficient
-      have h1 (x : ℂ) (r : ℝ) : Measurable (fun q : (Ω × Ω) × ℂ => Xc q.1.1 x r) := hm.comp
-        (measurable_fst.fst.prodMk (measurable_const (a := (x,r))))
-      have h2 (x : ℂ) (r : ℝ) : Measurable (fun q : (Ω × Ω) × ℂ => Xc q.1.2 x r) := hm.comp
-        (measurable_fst.snd.prodMk (measurable_const (a := (x,r))))
+      have h1 (x : ℂ) (r : ℝ) : Measurable (fun q : (Ω × Ω) × ℂ => Xc q.1.1 x r) := by fun_prop
+      have h2 (x : ℂ) (r : ℝ) : Measurable (fun q : (Ω × Ω) × ℂ => Xc q.1.2 x r) := by fun_prop
       have hloc : Measurable (fun q : (Ω × Ω) × ℂ => Xc q.1.1
-        (z+(p q.2).val.1) (p q.2).val.2) := hm.comp (measurable_fst.fst.prodMk
-        (((measurable_const (a := z)).add (hpv.fst.comp measurable_snd)).prodMk (hpv.snd.comp measurable_snd)))
+        (z+(p q.2).val.1) (p q.2).val.2) := by fun_prop
       fun_prop
     exact hh.stronglyMeasurable.integral_prod_right.measurable
   have h := congrArg (fun μ : Measure (Fin 1 → ℝ) => μ.map (fun v => v 0)) hlaw
@@ -115,7 +110,7 @@ theorem copied_cutoff_volume_law
       ∫ x, f x * Real.exp (γ*Xc ω (z+x) r-γ^2/2*(r+2*Real.log ‖z+x‖)) ∂volume := by
     change (∫ x in K, _) = _
     rw [← integral_restrict_eq_integral_of_zero_on_compl volume K hK _
-      (fun x hx => by rw [hzero x hx, zero_mul])]
+      (fun x hx => by grind)]
     apply setIntegral_congr_fun hK
     intro x hx
     dsimp only
@@ -129,7 +124,7 @@ theorem copied_cutoff_volume_law
             γ^2/2*(r+2*Real.log ‖z+x‖)) ∂volume := by
     change (∫ x in K, _) = _
     rw [← integral_restrict_eq_integral_of_zero_on_compl volume K hK _
-      (fun x hx => by rw [hzero x hx, zero_mul])]
+      (fun x hx => by grind)]
     apply setIntegral_congr_fun hK
     intro x hx
     unfold copiedCircle

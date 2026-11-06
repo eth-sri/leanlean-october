@@ -51,31 +51,27 @@ theorem crossing_diagonal_coefficient_extraction (a b c d₀ d₁ E : ℝ)
   let x := Real.Gamma (2 - c) * Real.Gamma (a + b - c) *
     (Real.Gamma (a - c + 1))⁻¹ * (Real.Gamma (b - c + 1))⁻¹
   have hw : w ≠ 0 := by
-    dsimp [w]
     exact mul_ne_zero (mul_ne_zero (mul_ne_zero
-      (Real.Gamma_pos_of_pos (by linarith only [hc1])).ne'
+      (Real.Gamma_pos_of_pos (by linarith)).ne'
       (Real.Gamma_pos_of_pos hδ).ne')
       (inv_ne_zero (Real.Gamma_pos_of_pos (sub_pos.mpr ha1)).ne'))
       (inv_ne_zero (Real.Gamma_pos_of_pos (sub_pos.mpr hb1)).ne')
   have hΓneg : Real.Gamma (a + b - c) ≠ 0 := Real.Gamma_ne_zero
-    (real_ne_neg_nat_of_frac (k := -1) (by push_cast; linarith only [hδ1])
-      (by push_cast; linarith only [hδ]))
+    (real_ne_neg_nat_of_frac (k := -1) (by grind)
+      (by grind))
   have hv : v ≠ 0 := by
-    dsimp [v]
     exact mul_ne_zero (mul_ne_zero (mul_ne_zero (Real.Gamma_pos_of_pos hc).ne' hΓneg)
       (inv_ne_zero (Real.Gamma_pos_of_pos ha).ne'))
       (inv_ne_zero (Real.Gamma_pos_of_pos hb).ne')
-  have hdet : u * x - v * w = (c - 1) / (c - a - b) :=
+  have hdet :=
     crossing_connection_det_real a b c hcn hδn
   have hdet0 : u * x - v * w ≠ 0 := by
     rw [hdet]
-    exact div_ne_zero (by linarith only [hc1]) hδ.ne'
+    exact div_ne_zero (by linarith) hδ.ne'
   have hex := dual_connection_first_seed_scalar d₀ d₁ u v w x hcross hw hv hdet0
-  change E = d₀ * v ^ 2 + d₁ * x ^ 2 at hE
   rw [← hE, hdet] at hex
   have hratio := crossing_connection_first_ratio a b c ha ha1 hb hb1 hc hc1 hδ hδ1
   change -w / (v * ((c - 1) / (c - a - b))) = _ at hratio
-  rw [hratio] at hex
-  exact hex
+  rwa [hratio] at hex
 
 end DOZZ.Proofs

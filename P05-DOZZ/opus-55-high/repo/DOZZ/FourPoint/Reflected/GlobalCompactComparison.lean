@@ -22,15 +22,14 @@ theorem reflected_global_radial_test_integral (ρ γ : ℝ) (hρ : 0 < ρ)
       ∂μ.restrict (originLateralChart ρ)) =
       ∫ x, f x*originRadialReinsertionWeight ρ γ a x ∂μ := by
     apply setIntegral_eq_integral_of_forall_compl_eq_zero
-    intro x hx
-    rw [hz x hx, zero_mul]
+    simp_all
   rw [he]
   apply integral_congr_ae
   exact ae_of_all μ fun x => by
     dsimp only
     by_cases hx : x ∈ originLateralChart ρ
     · rw [reflected_global_reinsertionWeight_chart ρ γ hρ a x hx]
-    · rw [hz x hx, zero_mul, zero_mul]
+    simp_all
 
 /-- Both limiting compact comparisons apply to the global carrier, with the unclamped
 radial path weights and the exact common-Gaussian factor. -/
@@ -85,7 +84,7 @@ theorem reflected_global_compact_chaos_comparison
         ∂μ.restrict (originLateralChart ρ)) =
         ∫ x, (f₀ x+f₁ x)*reflected_global_reinsertionWeight γ a x ∂μ := by
     simpa only [BoundedContinuousFunction.add_apply] using
-      reflected_global_radial_test_integral ρ γ hρ a (f₀+f₁) hfU μ
+      reflected_global_radial_test_integral ρ γ hρ a _ hfU μ
   simpa only [hsum,
     reflected_global_radial_test_integral ρ γ hρ a f₀ (hf₀K.trans hKU),
     reflected_global_radial_test_integral ρ γ hρ a f₁ (hf₁K.trans hKU),

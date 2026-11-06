@@ -23,8 +23,7 @@ namespace GaussianFields
 /-- Pair-space form of the ABK power-decomposition integrand. -/
 @[expose]
 noncomputable def abkPowerDecompositionPairIntegrand {d : Nat}
-    (ζ : ABKCutoff d) (ψ φ : MeanZeroTestFunction d) (α : ℝ)
-    (r : ℝ) (p : Vec d × Vec d) : ℝ :=
+    (ζ : ABKCutoff d) (ψ φ : MeanZeroTestFunction d) (α r : ℝ) (p : Vec d × Vec d) : ℝ :=
   if 0 < r then
     ψ p.1 * φ p.2 *
       (r ^ (-(1 + (d : ℝ) + α)) *
@@ -35,19 +34,19 @@ noncomputable def abkPowerDecompositionPairIntegrand {d : Nat}
 /-- Tail majorant for the pair-space power-decomposition integrand. -/
 @[expose]
 noncomputable def abkPowerDecompositionPairMajorant {d : Nat}
-    (ψ φ : MeanZeroTestFunction d) (α : ℝ)
-    (r : ℝ) (p : Vec d × Vec d) : ℝ :=
+    (ψ φ : MeanZeroTestFunction d) (α r : ℝ) (p : Vec d × Vec d) : ℝ :=
   |ψ p.1 * φ p.2| *
     (Set.Ici (euclideanNorm (p.1 - p.2) / 2)).indicator
       (fun s : ℝ => (2 : ℝ) ^ d * s ^ (-(1 + α))) r
+section
+variable {d : Nat}
 
 /-- Pointwise domination of the power-decomposition pair integrand by its tail majorant. -/
-theorem norm_abkPowerDecompositionPairIntegrand_le_majorant {d : Nat}
-    (ζ : ABKCutoff d) (ψ φ : MeanZeroTestFunction d) {α r : ℝ}
+theorem norm_abkPowerDecompositionPairIntegrand_le_majorant (ζ : ABKCutoff d) (ψ φ : MeanZeroTestFunction d) {α r : ℝ}
     (p : Vec d × Vec d) :
     ‖abkPowerDecompositionPairIntegrand ζ ψ φ α r p‖ ≤
       abkPowerDecompositionPairMajorant ψ φ α r p := by
-  let ρ : ℝ := euclideanNorm (p.1 - p.2)
+  let ρ := euclideanNorm (p.1 - p.2)
   have hρ_nonneg : 0 ≤ ρ := euclideanNorm_nonneg _
   by_cases hr : 0 < r
   · by_cases htail : r ∈ Set.Ici (ρ / 2)
@@ -73,7 +72,7 @@ theorem norm_abkPowerDecompositionPairIntegrand_le_majorant {d : Nat}
           _ = (2 : ℝ) ^ d * r ^ (-(1 + α)) := by
             rw [mul_pow]
             have hrpow_nat : r ^ d = r ^ (d : ℝ) := by
-              rw [Real.rpow_natCast]
+              simp
             rw [hrpow_nat]
             calc
               r ^ (-(1 + (d : ℝ) + α)) * ((2 : ℝ) ^ d * r ^ (d : ℝ))
@@ -83,8 +82,7 @@ theorem norm_abkPowerDecompositionPairIntegrand_le_majorant {d : Nat}
                     r ^ (-(1 + (d : ℝ) + α) + (d : ℝ)) := by
                   rw [Real.rpow_add hr]
               _ = (2 : ℝ) ^ d * r ^ (-(1 + α)) := by
-                  congr 1
-                  ring_nf
+                  ring
       calc
         ‖abkPowerDecompositionPairIntegrand ζ ψ φ α r p‖
             = |ψ p.1 * φ p.2| *
@@ -110,21 +108,18 @@ theorem norm_abkPowerDecompositionPairIntegrand_le_majorant {d : Nat}
         hr, htail', hzero]
   · have hnonneg_majorant :
         0 ≤ abkPowerDecompositionPairMajorant ψ φ α r p := by
-      unfold abkPowerDecompositionPairMajorant
       refine mul_nonneg (abs_nonneg _) ?_
       by_cases htail : r ∈ Set.Ici (ρ / 2)
       · rw [Set.indicator_of_mem htail]
         have hr_nonneg : 0 ≤ r := by
           have hρ_half_nonneg : 0 ≤ ρ / 2 := by positivity
           exact hρ_half_nonneg.trans htail
-        exact mul_nonneg (pow_nonneg (by norm_num : (0 : ℝ) ≤ 2) d)
-          (Real.rpow_nonneg hr_nonneg _)
-      · rw [Set.indicator_of_notMem htail]
+        positivity
+      · aesop
     simpa [abkPowerDecompositionPairIntegrand, hr] using hnonneg_majorant
 
 /-- The power-decomposition tail majorant is a.e. strongly measurable on pair-scale space. -/
-theorem aestronglyMeasurable_abkPowerDecompositionPairMajorant {d : Nat}
-    (ψ φ : MeanZeroTestFunction d) (α : ℝ) :
+theorem aestronglyMeasurable_abkPowerDecompositionPairMajorant (ψ φ : MeanZeroTestFunction d) (α : ℝ) :
     AEStronglyMeasurable
       (fun q : (Vec d × Vec d) × ℝ =>
         abkPowerDecompositionPairMajorant ψ φ α q.2 q.1)
@@ -134,33 +129,33 @@ theorem aestronglyMeasurable_abkPowerDecompositionPairMajorant {d : Nat}
     {q | euclideanNorm (q.1.1 - q.1.2) / 2 ≤ q.2}
   have hS : MeasurableSet S := by
     exact measurableSet_le
-      (((continuous_euclideanNorm (d := d)).comp
+      (((continuous_euclideanNorm).comp
         ((continuous_fst.fst).sub (continuous_fst.snd))).div_const 2).measurable
       continuous_snd.measurable
   have hbase :
       AEStronglyMeasurable
-        (fun q : (Vec d × Vec d) × ℝ =>
+        (fun q =>
           |ψ q.1.1 * φ q.1.2| * ((2 : ℝ) ^ d * q.2 ^ (-(1 + α))))
         (((volume : Measure (Vec d)).prod (volume : Measure (Vec d))).prod
           (volume : Measure ℝ)) := by
     have hψφ_abs :
         AEStronglyMeasurable
-          (fun q : (Vec d × Vec d) × ℝ => |ψ q.1.1 * φ q.1.2|)
+          (fun q => |ψ q.1.1 * φ q.1.2|)
           (((volume : Measure (Vec d)).prod (volume : Measure (Vec d))).prod
             (volume : Measure ℝ)) :=
       (((ψ.continuous.comp (continuous_fst.fst)).mul
         (φ.continuous.comp (continuous_fst.snd))).abs).aestronglyMeasurable
     have hpow :
         AEStronglyMeasurable
-          (fun q : (Vec d × Vec d) × ℝ => q.2 ^ (-(1 + α)))
+          (fun q => q.2 ^ (-(1 + α)))
           (((volume : Measure (Vec d)).prod (volume : Measure (Vec d))).prod
             (volume : Measure ℝ)) :=
-      (continuous_snd.measurable.pow_const (-(1 + α))).aestronglyMeasurable
-    exact hψφ_abs.mul (aestronglyMeasurable_const.mul hpow)
+      (continuous_snd.measurable.pow_const _).aestronglyMeasurable
+    fun_prop
   have hindicator :
       AEStronglyMeasurable
         (S.indicator
-          (fun q : (Vec d × Vec d) × ℝ =>
+          (fun q =>
             |ψ q.1.1 * φ q.1.2| * ((2 : ℝ) ^ d * q.2 ^ (-(1 + α)))))
         (((volume : Measure (Vec d)).prod (volume : Measure (Vec d))).prod
           (volume : Measure ℝ)) :=
@@ -175,15 +170,14 @@ theorem aestronglyMeasurable_abkPowerDecompositionPairMajorant {d : Nat}
 
 /-- The power-decomposition tail majorant is integrable on pair-scale space for small positive
 `α`. -/
-theorem integrable_abkPowerDecompositionPairMajorant_of_pos_le_half {d : Nat}
-    (hd : 0 < d) (ψ φ : MeanZeroTestFunction d) {α : ℝ}
+theorem integrable_abkPowerDecompositionPairMajorant_of_pos_le_half (hd : 0 < d) (ψ φ : MeanZeroTestFunction d) {α : ℝ}
     (hα_pos : 0 < α) (hα_le : α ≤ 1 / 2) :
     Integrable
       (fun q : (Vec d × Vec d) × ℝ =>
         abkPowerDecompositionPairMajorant ψ φ α q.2 q.1)
       (((volume : Measure (Vec d)).prod (volume : Measure (Vec d))).prod
         (volume : Measure ℝ)) := by
-  let μ : Measure (Vec d × Vec d) :=
+  let μ :=
     (volume : Measure (Vec d)).prod (volume : Measure (Vec d))
   let F : (Vec d × Vec d) × ℝ → ℝ := fun q =>
     abkPowerDecompositionPairMajorant ψ φ α q.2 q.1
@@ -198,8 +192,7 @@ theorem integrable_abkPowerDecompositionPairMajorant_of_pos_le_half {d : Nat}
   constructor
   · filter_upwards [ae_fst_ne_snd_volume_prod hd] with p hp_ne
     have hdiff : p.1 - p.2 ≠ 0 := by
-      intro hzero
-      exact hp_ne (sub_eq_zero.mp hzero)
+      positivity
     have hρ_pos : 0 < euclideanNorm (p.1 - p.2) :=
       abkEuclideanNorm_pos_of_ne_zero hdiff
     have hc : 0 < euclideanNorm (p.1 - p.2) / 2 := by positivity
@@ -217,8 +210,8 @@ theorem integrable_abkPowerDecompositionPairMajorant_of_pos_le_half {d : Nat}
       convert htail.const_mul ((2 : ℝ) ^ d) using 1
       funext r
       by_cases hr : r ∈ Set.Ici (euclideanNorm (p.1 - p.2) / 2)
-      · simp [hr]
-      · simp [hr]
+      · simp_all
+      simp_all
     simpa [F, abkPowerDecompositionPairMajorant, mul_assoc] using
       hconst.const_mul |ψ p.1 * φ p.2|
   · have hmeas_int :
@@ -226,7 +219,7 @@ theorem integrable_abkPowerDecompositionPairMajorant_of_pos_le_half {d : Nat}
           (fun p : Vec d × Vec d => ∫ r : ℝ, ‖F (p, r)‖ ∂(volume : Measure ℝ))
           μ :=
       hF_meas.norm.integral_prod_right'
-    let C : ℝ := (2 : ℝ) ^ d * (2 / α)
+    let C := (2 : ℝ) ^ d * (2 / α)
     have hC_nonneg : 0 ≤ C := by
       dsimp [C]
       positivity
@@ -253,9 +246,7 @@ theorem integrable_abkPowerDecompositionPairMajorant_of_pos_le_half {d : Nat}
             (volume : Measure ℝ) := by
         convert htail.const_mul ((2 : ℝ) ^ d) using 1
         funext r
-        by_cases hr : r ∈ Set.Ici (euclideanNorm (p.1 - p.2) / 2)
-        · simp [hr]
-        · simp [hr]
+        by_cases hr : r ∈ Set.Ici (euclideanNorm (p.1 - p.2) / 2) <;> simp [hr]
       simpa [F, abkPowerDecompositionPairMajorant, mul_assoc] using
         hconst.const_mul |ψ p.1 * φ p.2|
     have hnonneg : ∀ r : ℝ, 0 ≤ F (p, r) := by
@@ -301,9 +292,7 @@ theorem integrable_abkPowerDecompositionPairMajorant_of_pos_le_half {d : Nat}
         rw [← integral_const_mul]
         refine integral_congr_ae ?_
         filter_upwards with r
-        by_cases hr : r ∈ Set.Ici (euclideanNorm (p.1 - p.2) / 2)
-        · simp [hr]
-        · simp [hr]
+        by_cases hr : r ∈ Set.Ici (euclideanNorm (p.1 - p.2) / 2) <;> simp [hr]
       change
         (∫ r : ℝ,
           |ψ p.1 * φ p.2| *
@@ -335,7 +324,7 @@ theorem integrable_abkPowerDecompositionPairMajorant_of_pos_le_half {d : Nat}
       calc
         (euclideanNorm (p.1 - p.2) / 2) ^ (-α)
             = (euclideanNorm (p.1 - p.2)) ^ (-α) * (1 / 2 : ℝ) ^ (-α) := hmul
-        _ = (euclideanNorm (p.1 - p.2)) ^ (-α) * (2 : ℝ) ^ α := by rw [hhalf_pow]
+        _ = (euclideanNorm (p.1 - p.2)) ^ (-α) * (2 : ℝ) ^ α := by simp_all
         _ ≤ (euclideanNorm (p.1 - p.2)) ^ (-α) * 2 := by
           exact mul_le_mul_of_nonneg_left htwo_pow_le
             (Real.rpow_nonneg hρ_pos.le _)
@@ -347,7 +336,7 @@ theorem integrable_abkPowerDecompositionPairMajorant_of_pos_le_half {d : Nat}
       rw [abs_of_nonneg (Real.rpow_nonneg (euclideanNorm_nonneg _) _)]
     calc
       ‖∫ r : ℝ, ‖F (p, r)‖ ∂(volume : Measure ℝ)‖
-          = ∫ r : ℝ, ‖F (p, r)‖ ∂(volume : Measure ℝ) := by
+          = ∫ r : ℝ, ‖F _‖ ∂(volume : Measure ℝ) := by
             rw [Real.norm_eq_abs, abs_of_nonneg]
             exact integral_nonneg fun r => norm_nonneg _
       _ = |ψ p.1 * φ p.2| *
@@ -375,21 +364,20 @@ theorem integrable_abkPowerDecompositionPairMajorant_of_pos_le_half {d : Nat}
                   (euclideanNorm (p.1 - p.2)) ^ (-α)) := by ring_nf
 
 /-- The pair-scale power-decomposition integrand is a.e. strongly measurable. -/
-theorem aestronglyMeasurable_abkPowerDecompositionPairIntegrand {d : Nat}
-    (ζ : ABKCutoff d) (ψ φ : MeanZeroTestFunction d) (α : ℝ) :
+theorem aestronglyMeasurable_abkPowerDecompositionPairIntegrand (ζ : ABKCutoff d) (ψ φ : MeanZeroTestFunction d) (α : ℝ) :
     AEStronglyMeasurable
       (fun q : (Vec d × Vec d) × ℝ =>
         abkPowerDecompositionPairIntegrand ζ ψ φ α q.2 q.1)
       (((volume : Measure (Vec d)).prod (volume : Measure (Vec d))).prod
         (volume : Measure ℝ)) := by
-  let μ : Measure ((Vec d × Vec d) × ℝ) :=
+  let μ :=
     ((volume : Measure (Vec d)).prod (volume : Measure (Vec d))).prod
       (volume : Measure ℝ)
   let S : Set ((Vec d × Vec d) × ℝ) := {q | 0 < q.2}
   have hS : MeasurableSet S := measurableSet_lt measurable_const continuous_snd.measurable
   have hself :
       AEStronglyMeasurable
-        (fun q : (Vec d × Vec d) × ℝ =>
+        (fun q =>
           abkScaledCutoffSelfConvolution ζ q.2 (q.1.1 - q.1.2)) μ := by
     have h_integrand :
         StronglyMeasurable
@@ -401,55 +389,50 @@ theorem aestronglyMeasurable_abkPowerDecompositionPairIntegrand {d : Nat}
         (ζ.continuous.measurable.comp (by fun_prop)).stronglyMeasurable.mul
           (ζ.continuous.measurable.comp (by fun_prop)).stronglyMeasurable
     simpa [abkScaledCutoffSelfConvolution, μ] using
-      (h_integrand.integral_prod_right' (ν := (volume : Measure (Vec d)))).aestronglyMeasurable
+      (h_integrand.integral_prod_right').aestronglyMeasurable
   have hψφ :
       AEStronglyMeasurable
-        (fun q : (Vec d × Vec d) × ℝ => ψ q.1.1 * φ q.1.2) μ :=
+        (fun q => ψ q.1.1 * φ q.1.2) μ :=
     ((ψ.continuous.comp (continuous_fst.fst)).mul
       (φ.continuous.comp (continuous_fst.snd))).aestronglyMeasurable
   have hpow :
       AEStronglyMeasurable
-        (fun q : (Vec d × Vec d) × ℝ => q.2 ^ (-(1 + (d : ℝ) + α))) μ :=
+        (fun q => q.2 ^ (-(1 + (d : ℝ) + α))) μ :=
     (continuous_snd.measurable.pow_const (-(1 + (d : ℝ) + α))).aestronglyMeasurable
   have hpos :
       AEStronglyMeasurable
-        (fun q : (Vec d × Vec d) × ℝ =>
+        (fun q =>
           ψ q.1.1 * φ q.1.2 *
             (q.2 ^ (-(1 + (d : ℝ) + α)) *
               abkScaledCutoffSelfConvolution ζ q.2 (q.1.1 - q.1.2))) (μ.restrict S) :=
     (hψφ.restrict).mul ((hpow.restrict).mul hself.restrict)
   have hzero :
-      AEStronglyMeasurable (fun _ : (Vec d × Vec d) × ℝ => (0 : ℝ)) (μ.restrict Sᶜ) :=
+      AEStronglyMeasurable (fun _ => (0 : ℝ)) (μ.restrict Sᶜ) :=
     aestronglyMeasurable_const
   have hpiece :
       AEStronglyMeasurable
         (S.piecewise
-          (fun q : (Vec d × Vec d) × ℝ =>
+          (fun q =>
             ψ q.1.1 * φ q.1.2 *
               (q.2 ^ (-(1 + (d : ℝ) + α)) *
                 abkScaledCutoffSelfConvolution ζ q.2 (q.1.1 - q.1.2)))
-          (fun _ : (Vec d × Vec d) × ℝ => 0)) μ :=
+          (fun _ => 0)) μ :=
     AEStronglyMeasurable.piecewise hS hpos hzero
-  refine hpiece.congr ?_
-  filter_upwards with q
-  by_cases hq : q ∈ S
-  · have hr : 0 < q.2 := hq
-    simp [abkPowerDecompositionPairIntegrand, S, hq, hr, Set.piecewise_eq_of_mem]
-  · have hr : ¬ 0 < q.2 := hq
-    simp [abkPowerDecompositionPairIntegrand, S, hq, hr, Set.piecewise_eq_of_notMem]
+  assumption
+section
+variable (hd : 0 < d) (ζ : ABKCutoff d) (ψ φ : MeanZeroTestFunction d) {α : ℝ} (hα_pos : 0 < α) (hα_le : α ≤ 1 / 2)
+include hd hα_pos hα_le
 
 /-- The pair-scale power-decomposition integrand is integrable for small positive `α`. -/
-theorem integrable_abkPowerDecompositionPairIntegrand_of_pos_le_half {d : Nat}
-    (hd : 0 < d) (ζ : ABKCutoff d) (ψ φ : MeanZeroTestFunction d) {α : ℝ}
-    (hα_pos : 0 < α) (hα_le : α ≤ 1 / 2) :
+theorem integrable_abkPowerDecompositionPairIntegrand_of_pos_le_half :
     Integrable
       (fun q : (Vec d × Vec d) × ℝ =>
         abkPowerDecompositionPairIntegrand ζ ψ φ α q.2 q.1)
       (((volume : Measure (Vec d)).prod (volume : Measure (Vec d))).prod
         (volume : Measure ℝ)) := by
   let μ : Measure ((Vec d × Vec d) × ℝ) :=
-    ((volume : Measure (Vec d)).prod (volume : Measure (Vec d))).prod
-      (volume : Measure ℝ)
+    (volume.prod volume).prod
+      volume
   let F : (Vec d × Vec d) × ℝ → ℝ := fun q =>
     abkPowerDecompositionPairIntegrand ζ ψ φ α q.2 q.1
   let G : (Vec d × Vec d) × ℝ → ℝ := fun q =>
@@ -466,62 +449,55 @@ theorem integrable_abkPowerDecompositionPairIntegrand_of_pos_le_half {d : Nat}
   refine hG.mono' hF_meas ?_
   filter_upwards with q
   simpa [F, G] using
-    norm_abkPowerDecompositionPairIntegrand_le_majorant ζ ψ φ (α := α) (r := q.2) q.1
+    norm_abkPowerDecompositionPairIntegrand_le_majorant ζ ψ φ q.1
 
 /-- Abel-regularized scale-product integrals are the power-decomposition/Riesz pairings. -/
 theorem integral_abkRegularizedScaleProductSection_eq_mAlphaInv_mul_centeredRiesz
-    {d : Nat} (hd : 0 < d) (ζ : ABKCutoff d)
-    (ψ φ : MeanZeroTestFunction d) {α : ℝ}
-    (hα_pos : 0 < α) (hα_le : α ≤ 1 / 2) :
+    :
     (∫ r : ℝ, abkRegularizedScaleProductSection ζ ψ φ α r
         ∂(volume : Measure ℝ)) =
       abkMAlphaInv ζ α * abkCenteredRieszDifferencePairing ψ φ α := by
   let μ : Measure (Vec d × Vec d) :=
-    (volume : Measure (Vec d)).prod (volume : Measure (Vec d))
+    volume.prod volume
   let F : (Vec d × Vec d) × ℝ → ℝ := fun q =>
     abkPowerDecompositionPairIntegrand ζ ψ φ α q.2 q.1
-  have hF_int : Integrable F (μ.prod (volume : Measure ℝ)) := by
+  have hF_int : Integrable F (μ.prod volume) := by
     simpa [F, μ] using
       integrable_abkPowerDecompositionPairIntegrand_of_pos_le_half
         hd ζ ψ φ hα_pos hα_le
-  have hR :
-      Integrable
-        (fun p : Vec d × Vec d => ψ p.1 * φ p.2 * abkRieszKernel α p.1 p.2)
-        μ :=
+  have hR :=
     integrable_abkRieszKernel_integrand_of_pos_le_half hd ψ φ hα_pos hα_le
   have hscale :
       (∫ r : ℝ, abkRegularizedScaleProductSection ζ ψ φ α r
-          ∂(volume : Measure ℝ)) =
+          ∂volume) =
         ∫ r : ℝ, ∫ p : Vec d × Vec d, F (p, r) ∂μ
-          ∂(volume : Measure ℝ) := by
-    have hp_ae :
-        ∀ᵐ r : ℝ ∂(volume : Measure ℝ),
-          Integrable (fun p : Vec d × Vec d => F (p, r)) μ :=
+          ∂volume := by
+    have hp_ae :=
       hF_int.prod_left_ae
     refine integral_congr_ae ?_
     filter_upwards [hp_ae] with r hp_int
     by_cases hr : 0 < r
     · have hprod :
           (∫ p : Vec d × Vec d, F (p, r) ∂μ) =
-            r ^ (-(1 + (d : ℝ) + α)) *
+            r ^ (-(1 + d + α)) *
               (∫ x : Vec d,
                 ψ x *
                   (∫ z : Vec d,
                     φ z * abkScaledCutoffSelfConvolution ζ r (x - z)
-                    ∂(volume : Measure (Vec d)))
-                ∂(volume : Measure (Vec d))) := by
+                    ∂volume)
+                ∂volume) := by
         rw [integral_prod _ hp_int]
         calc
           (∫ x : Vec d,
-              ∫ z : Vec d, F ((x, z), r) ∂(volume : Measure (Vec d))
-              ∂(volume : Measure (Vec d)))
+              ∫ z : Vec d, F _ ∂volume
+              ∂volume)
               = ∫ x : Vec d,
                   ∫ z : Vec d,
                     ψ x * φ z *
-                      (r ^ (-(1 + (d : ℝ) + α)) *
+                      (r ^ (-(1 + d + α)) *
                         abkScaledCutoffSelfConvolution ζ r (x - z))
-                    ∂(volume : Measure (Vec d))
-                  ∂(volume : Measure (Vec d)) := by
+                    ∂volume
+                  ∂volume := by
                 refine integral_congr_ae ?_
                 filter_upwards with x
                 refine integral_congr_ae ?_
@@ -531,10 +507,10 @@ theorem integral_abkRegularizedScaleProductSection_eq_mAlphaInv_mul_centeredRies
                 ψ x *
                   (∫ z : Vec d,
                     φ z *
-                      (r ^ (-(1 + (d : ℝ) + α)) *
-                        abkScaledCutoffSelfConvolution ζ r (x - z))
-                    ∂(volume : Measure (Vec d)))
-                ∂(volume : Measure (Vec d)) := by
+                      (r ^ (-(1 + d + α)) *
+                        abkScaledCutoffSelfConvolution ζ r _)
+                    ∂volume)
+                ∂volume := by
                 refine integral_congr_ae ?_
                 filter_upwards with x
                 rw [← integral_const_mul]
@@ -543,45 +519,45 @@ theorem integral_abkRegularizedScaleProductSection_eq_mAlphaInv_mul_centeredRies
                 ring_nf
           _ = ∫ x : Vec d,
                 ψ x *
-                  (r ^ (-(1 + (d : ℝ) + α)) *
+                  (r ^ (-(1 + d + α)) *
                     (∫ z : Vec d,
-                      φ z * abkScaledCutoffSelfConvolution ζ r (x - z)
-                      ∂(volume : Measure (Vec d))))
-                ∂(volume : Measure (Vec d)) := by
+                      φ z * abkScaledCutoffSelfConvolution ζ r _
+                      ∂volume))
+                ∂volume := by
                 refine integral_congr_ae ?_
                 filter_upwards with x
                 congr 1
                 calc
                   (∫ z : Vec d,
                     φ z *
-                      (r ^ (-(1 + (d : ℝ) + α)) *
-                        abkScaledCutoffSelfConvolution ζ r (x - z))
-                    ∂(volume : Measure (Vec d)))
+                      (r ^ (-(1 + d + α)) *
+                        abkScaledCutoffSelfConvolution ζ r _)
+                    ∂volume)
                       = ∫ z : Vec d,
-                          r ^ (-(1 + (d : ℝ) + α)) *
-                            (φ z * abkScaledCutoffSelfConvolution ζ r (x - z))
-                          ∂(volume : Measure (Vec d)) := by
+                          r ^ (-(1 + d + α)) *
+                            (φ z * abkScaledCutoffSelfConvolution ζ r _)
+                          ∂volume := by
                             refine integral_congr_ae ?_
                             filter_upwards with z
                             ring_nf
-                  _ = r ^ (-(1 + (d : ℝ) + α)) *
+                  _ = r ^ (-(1 + d + α)) *
                         (∫ z : Vec d,
-                          φ z * abkScaledCutoffSelfConvolution ζ r (x - z)
-                          ∂(volume : Measure (Vec d))) := by
+                          φ z * abkScaledCutoffSelfConvolution ζ r _
+                          ∂volume) := by
                             rw [integral_const_mul]
-          _ = r ^ (-(1 + (d : ℝ) + α)) *
+          _ = r ^ (-(1 + d + α)) *
                 (∫ x : Vec d,
                   ψ x *
                     (∫ z : Vec d,
-                      φ z * abkScaledCutoffSelfConvolution ζ r (x - z)
-                      ∂(volume : Measure (Vec d)))
-                  ∂(volume : Measure (Vec d))) := by
+                      φ z * abkScaledCutoffSelfConvolution ζ r _
+                      ∂volume)
+                  ∂volume) := by
                 rw [← integral_const_mul]
                 refine integral_congr_ae ?_
                 filter_upwards with x
                 ring_nf
       rw [hprod]
-      let A : ℝ :=
+      let A :=
         ∫ x : Vec d,
           ψ x *
             (∫ z : Vec d,
@@ -600,7 +576,7 @@ theorem integral_abkRegularizedScaleProductSection_eq_mAlphaInv_mul_centeredRies
                     = (r ^ (-α) * r ^ (-((d : ℝ) + 1))) * A := by ring_nf
                 _ = r ^ (-α + -((d : ℝ) + 1)) * A := by
                     rw [Real.rpow_add hr]
-                _ = r ^ (-(1 + (d : ℝ) + α)) * A := by
+                _ = r ^ (-(1 + d + α)) * A := by
                     congr 1
                     ring_nf
     · have hprod_zero :
@@ -611,90 +587,68 @@ theorem integral_abkRegularizedScaleProductSection_eq_mAlphaInv_mul_centeredRies
       rw [hprod_zero]
       simp [abkRegularizedScaleProductSection, hr]
   have hswap :
-      (∫ r : ℝ, ∫ p : Vec d × Vec d, F (p, r) ∂μ
-          ∂(volume : Measure ℝ)) =
-        ∫ p : Vec d × Vec d, ∫ r : ℝ, F (p, r) ∂(volume : Measure ℝ) ∂μ := by
-    exact
-      (integral_integral_swap
-        (μ := μ) (ν := (volume : Measure ℝ))
+      (∫ r : ℝ, ∫ p : Vec d × Vec d, F _ ∂μ
+          ∂volume) =
+        ∫ p : Vec d × Vec d, ∫ r : ℝ, F _ ∂volume ∂μ := (integral_integral_swap
+        (μ := μ) (ν := volume)
         (f := fun p : Vec d × Vec d => fun r : ℝ => F (p, r))
         hF_int).symm
   have hpair :
-      (∫ p : Vec d × Vec d, ∫ r : ℝ, F (p, r) ∂(volume : Measure ℝ) ∂μ) =
+      (∫ p : Vec d × Vec d, ∫ r : ℝ, F (p, r) ∂volume ∂μ) =
         abkMAlphaInv ζ α * abkRieszPairing ψ φ α := by
     have hinner :
-        (fun p : Vec d × Vec d => ∫ r : ℝ, F (p, r) ∂(volume : Measure ℝ)) =
+        (fun p : Vec d × Vec d => ∫ r : ℝ, F (p, r) ∂volume) =
           fun p : Vec d × Vec d =>
             ψ p.1 * φ p.2 *
-              (∫ r in Set.Ioi (0 : ℝ),
-                r ^ (-(1 + (d : ℝ) + α)) *
+              (∫ r in Set.Ioi 0,
+                r ^ (-(1 + d + α)) *
                   abkScaledCutoffSelfConvolution ζ r (p.1 - p.2)
-                ∂(volume : Measure ℝ)) := by
+                ∂volume) := by
       funext p
       unfold F abkPowerDecompositionPairIntegrand
       change
         (∫ r : ℝ,
-          (Set.Ioi (0 : ℝ)).indicator
+          (Set.Ioi 0).indicator
             (fun r : ℝ =>
             ψ p.1 * φ p.2 *
-              (r ^ (-(1 + (d : ℝ) + α)) *
+              (r ^ (-(1 + d + α)) *
                 abkScaledCutoffSelfConvolution ζ r (p.1 - p.2))) r) =
         ψ p.1 * φ p.2 *
-          (∫ r in Set.Ioi (0 : ℝ),
-            r ^ (-(1 + (d : ℝ) + α)) *
+          (∫ r in Set.Ioi 0,
+            r ^ (-(1 + d + α)) *
               abkScaledCutoffSelfConvolution ζ r (p.1 - p.2)
-            ∂(volume : Measure ℝ))
-      rw [integral_indicator measurableSet_Ioi]
-      rw [integral_const_mul]
+            ∂volume)
+      rw [integral_indicator measurableSet_Ioi, integral_const_mul]
     rw [hinner]
     have hpower :=
       integral_integral_abkPowerDecomposition_kernel_eq_riesz_pairing
         hd ζ ψ φ α
-    have hkernel_iter :
-        (∫ x : Vec d,
-            ψ x *
-              (∫ z : Vec d,
-                φ z *
-                  (∫ r in Set.Ioi (0 : ℝ),
-                    r ^ (-(1 + (d : ℝ) + α)) *
-                      abkScaledCutoffSelfConvolution ζ r (x - z)
-                    ∂(volume : Measure ℝ))
-                ∂(volume : Measure (Vec d)))
-            ∂(volume : Measure (Vec d))) =
-          abkMAlphaInv ζ α *
-            (∫ x : Vec d,
-              ψ x *
-                (∫ z : Vec d,
-                  φ z * (euclideanNorm (x - z)) ^ (-α)
-                  ∂(volume : Measure (Vec d)))
-              ∂(volume : Measure (Vec d))) := hpower
     have hleft_prod :
         (∫ p : Vec d × Vec d,
             ψ p.1 * φ p.2 *
-              (∫ r in Set.Ioi (0 : ℝ),
-                r ^ (-(1 + (d : ℝ) + α)) *
+              (∫ r in Set.Ioi 0,
+                r ^ (-(1 + d + α)) *
                   abkScaledCutoffSelfConvolution ζ r (p.1 - p.2)
-                ∂(volume : Measure ℝ)) ∂μ) =
+                ∂volume) ∂μ) =
           ∫ x : Vec d,
             ψ x *
               (∫ z : Vec d,
                 φ z *
-                  (∫ r in Set.Ioi (0 : ℝ),
-                    r ^ (-(1 + (d : ℝ) + α)) *
+                  (∫ r in Set.Ioi 0,
+                    r ^ (-(1 + d + α)) *
                       abkScaledCutoffSelfConvolution ζ r (x - z)
-                    ∂(volume : Measure ℝ))
-                ∂(volume : Measure (Vec d)))
-            ∂(volume : Measure (Vec d)) := by
-      have hintF := hF_int.integral_prod_left
+                    ∂volume)
+                ∂volume)
+            ∂volume := by
       have hint :
           Integrable
             (fun p : Vec d × Vec d =>
               ψ p.1 * φ p.2 *
-                (∫ r in Set.Ioi (0 : ℝ),
-                  r ^ (-(1 + (d : ℝ) + α)) *
+                (∫ r in Set.Ioi 0,
+                  r ^ (-(1 + d + α)) *
                     abkScaledCutoffSelfConvolution ζ r (p.1 - p.2)
-                  ∂(volume : Measure ℝ))) μ := by
-        simpa [hinner] using hintF
+                  ∂volume)) μ := by
+        simpa [hinner] using hF_int.integral_prod_left
       rw [integral_prod _ hint]
       refine integral_congr_ae ?_
       filter_upwards with x
@@ -708,8 +662,8 @@ theorem integral_abkRegularizedScaleProductSection_eq_mAlphaInv_mul_centeredRies
             ψ x *
               (∫ z : Vec d,
                 φ z * (euclideanNorm (x - z)) ^ (-α)
-                ∂(volume : Measure (Vec d)))
-          ∂(volume : Measure (Vec d)) := by
+                ∂volume)
+          ∂volume := by
       unfold abkRieszPairing
       rw [abkKernelPairing_eq_integral_integral ψ φ (abkRieszKernel α) hR]
       refine integral_congr_ae ?_
@@ -722,37 +676,41 @@ theorem integral_abkRegularizedScaleProductSection_eq_mAlphaInv_mul_centeredRies
     calc
       (∫ p : Vec d × Vec d,
           ψ p.1 * φ p.2 *
-            (∫ r in Set.Ioi (0 : ℝ),
-              r ^ (-(1 + (d : ℝ) + α)) *
+            (∫ r in Set.Ioi 0,
+              r ^ (-(1 + d + α)) *
                 abkScaledCutoffSelfConvolution ζ r (p.1 - p.2)
-              ∂(volume : Measure ℝ)) ∂μ)
+              ∂volume) ∂μ)
           = ∫ x : Vec d,
             ψ x *
               (∫ z : Vec d,
                 φ z *
-                  (∫ r in Set.Ioi (0 : ℝ),
-                    r ^ (-(1 + (d : ℝ) + α)) *
-                      abkScaledCutoffSelfConvolution ζ r (x - z)
-                    ∂(volume : Measure ℝ))
-                ∂(volume : Measure (Vec d)))
-            ∂(volume : Measure (Vec d)) := hleft_prod
+                  (∫ r in Set.Ioi 0,
+                    r ^ (-(1 + d + α)) *
+                      abkScaledCutoffSelfConvolution ζ r _
+                    ∂volume)
+                ∂volume)
+            ∂volume := hleft_prod
       _ = abkMAlphaInv ζ α *
             (∫ x : Vec d,
               ψ x *
                 (∫ z : Vec d,
-                  φ z * (euclideanNorm (x - z)) ^ (-α)
-                  ∂(volume : Measure (Vec d)))
-              ∂(volume : Measure (Vec d))) := hkernel_iter
-      _ = abkMAlphaInv ζ α * abkRieszPairing ψ φ α := by rw [hR_iter]
+                  φ z * (euclideanNorm _) ^ (-α)
+                  ∂volume)
+              ∂volume) := hpower
+      _ = abkMAlphaInv ζ α * abkRieszPairing ψ φ α := by simp_all
   calc
     (∫ r : ℝ, abkRegularizedScaleProductSection ζ ψ φ α r
-        ∂(volume : Measure ℝ))
-        = ∫ r : ℝ, ∫ p : Vec d × Vec d, F (p, r) ∂μ
-            ∂(volume : Measure ℝ) := hscale
-    _ = ∫ p : Vec d × Vec d, ∫ r : ℝ, F (p, r) ∂(volume : Measure ℝ) ∂μ := hswap
+        ∂volume)
+        = ∫ r : ℝ, ∫ p : Vec d × Vec d, F _ ∂μ
+            ∂volume := hscale
+    _ = ∫ p : Vec d × Vec d, ∫ r : ℝ, F _ ∂volume ∂μ := hswap
     _ = abkMAlphaInv ζ α * abkRieszPairing ψ φ α := hpair
     _ = abkMAlphaInv ζ α * abkCenteredRieszDifferencePairing ψ φ α := by
       rw [abkCenteredRieszDifferencePairing_eq_rieszPairing ψ φ α hR]
+
+end
+
+end
 
 end GaussianFields
 

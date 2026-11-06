@@ -40,7 +40,6 @@ theorem normalized_cutoff_increment_norm_le
         ∫⁻ ω, ENNReal.ofReal
           ‖((∫⁻ x in O₁, coulombWeight γ (fun i => b i.castSucc) z (b (Fin.last N)) x ∂M ω).toReal : ℂ) ^ p -
             ((∫⁻ x in O₀, coulombWeight γ (fun i => b i.castSucc) z (b (Fin.last N)) x ∂M ω).toReal : ℂ) ^ p‖ ∂P := by
-  dsimp only
   have he := normalized_vertex_fixed_region_eqOn P X hX γ hγ hγ2 M hM Xc hc
     z r s hr hrs O₀ ho₀ hb₀ hn₀ hO₀ a R hR hbulk hβ
   rw [← he]
@@ -55,7 +54,7 @@ theorem normalized_cutoff_increment_norm_le
   rw [← integral_sub h₁ h₀]
   calc
     _ ≤ ∫⁻ ω, ENNReal.ofReal ‖F O₁ ω - F O₀ ω‖ ∂P := by
-      simpa only [ofReal_norm] using
+      simpa using
         enorm_integral_le_lintegral_enorm (fun ω => F O₁ ω - F O₀ ω)
     _ = _ := by
       simp only [F, ← mul_sub]

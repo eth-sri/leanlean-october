@@ -8,6 +8,7 @@ public import DOZZ.Brownian.ConditionedKernelScoreParameter
 public import DOZZ.Brownian.ConditionedKernelParameterRatio
 public import DOZZ.Brownian.ConditionedKernelCDFOrder
 public import Mathlib.Analysis.Calculus.Deriv.MeanValue
+import DOZZ.Brownian.ConditionedKernelStartRatio
 
 /-!
 # Shifted likelihood ratio for conditioned kernels
@@ -31,44 +32,12 @@ noncomputable def conditionedKernelShiftedDensityRatio
     (Real.sinh (b * (y + d)) / Real.sinh (a * y)) *
       (Real.sinh (c * (y + d)) / Real.sinh (c * y))
 
-private theorem shiftedRatio_heatDensity_sub_factor
-    {t x y : ℝ} (ht : 0 < t) :
-    brownianHeatDensity t (y - x) - brownianHeatDensity t (y + x) =
-      Real.exp (-(x ^ 2 + y ^ 2) / (2 * t)) *
-        (2 * Real.sinh (x * y / t) / Real.sqrt (2 * Real.pi * t)) := by
-  have he₁ : -((y - x) ^ 2) / (2 * t) =
-      -(x ^ 2 + y ^ 2) / (2 * t) + x * y / t := by
-    field_simp [ht.ne']
-    ring
-  have he₂ : -((y + x) ^ 2) / (2 * t) =
-      -(x ^ 2 + y ^ 2) / (2 * t) + -(x * y / t) := by
-    field_simp [ht.ne']
-    ring
-  have hden : Real.sqrt (2 * Real.pi * t) ≠ 0 := by positivity
-  simp only [brownianHeatDensity, ht, ite_true]
-  rw [he₁, he₂, Real.exp_add, Real.exp_add, Real.sinh_eq]
-  field_simp [hden]
-
-private theorem shiftedRatio_one_sub_exp_eq_sinh (z : ℝ) :
-    1 - Real.exp (-2 * z) = 2 * Real.exp (-z) * Real.sinh z := by
-  calc
-    1 - Real.exp (-2 * z) =
-        Real.exp ((-z) + z) - Real.exp ((-z) + (-z)) := by
-          rw [show (-z) + z = 0 by ring, Real.exp_zero,
-            show -2 * z = (-z) + (-z) by ring]
-    _ = Real.exp (-z) * (Real.exp z - Real.exp (-z)) := by
-          rw [Real.exp_add, Real.exp_add]
-          ring
-    _ = 2 * Real.exp (-z) * Real.sinh z := by
-          rw [Real.sinh_eq]
-          ring
-
 private theorem shiftedRatio_conditionedH_sinh
     {ν x : ℝ} (hν : 0 < ν) :
     conditionedH ν x = 2 * Real.exp (-ν * x) * Real.sinh (ν * x) := by
   simp only [conditionedH, ite_eq_right (ne_of_gt hν)]
-  have h := shiftedRatio_one_sub_exp_eq_sinh (ν * x)
-  simpa only [mul_assoc, neg_mul] using h
+  have h := DOZZ.Proofs.one_sub_exp_neg_two_mul_eq_two_exp_neg_mul_sinh (ν * x)
+  grind
 
 /-- For strictly positive drift, the transition density's endpoint dependence is a fixed positive
 factor times its Gaussian and two hyperbolic-sine factors. -/
@@ -78,16 +47,14 @@ theorem conditionedPositiveTransitionDensity_eq_sinh_gaussian_factor
       (2 * Real.exp (-ν ^ 2 * t / 2 - x ^ 2 / (2 * t)) /
         (Real.sqrt (2 * Real.pi * t) * Real.sinh (ν * x))) *
         (Real.exp (-y ^ 2 / (2 * t)) * Real.sinh (ν * y) * Real.sinh (x * y / t)) := by
-  have hheat := shiftedRatio_heatDensity_sub_factor ht (x := x) (y := y)
-  have hHνy := shiftedRatio_conditionedH_sinh (x := y) hν
   have hHνx := shiftedRatio_conditionedH_sinh (x := x) hν
-  have hsinhX : 0 < Real.sinh (x * y / t) :=
+  have hsinhX :=
     Real.sinh_pos_iff.mpr (div_pos (mul_pos hx hy) ht)
-  have hsinhνx : 0 < Real.sinh (ν * x) :=
+  have hsinhνx :=
     Real.sinh_pos_iff.mpr (mul_pos hν hx)
   have hroot : 0 < Real.sqrt (2 * Real.pi * t) := by positivity
   simp [conditionedPositiveTransitionDensity, hν.le, ht, hx, hy,
-    hheat, hHνy, hHνx]
+    (DOZZ.Proofs.brownianHeatDensity_sub_factor ht (x := x) (y := y)), (shiftedRatio_conditionedH_sinh (x := y) hν), hHνx]
   field_simp [hroot.ne', hsinhνx.ne']
   conv_lhs => rw [← Real.exp_add, ← Real.exp_add]
   conv_rhs => rw [← Real.exp_add, ← Real.exp_add]
@@ -105,18 +72,17 @@ theorem conditionedPositiveTransitionDensity_shifted_eq_ratio
         (Real.sinh (a * x) / Real.sinh (b * x))) *
         conditionedKernelShiftedDensityRatio a b (x / t) t d y *
           conditionedPositiveTransitionDensity a t x y := by
-  have hb : 0 < b := lt_of_lt_of_le ha hab
+  have hb := lt_of_lt_of_le ha hab
   have hyD : 0 < y + d := by linarith
-  have hc : 0 < x / t := div_pos hx ht
-  have hca : Real.sinh (a * x) ≠ 0 :=
+  have hca :=
     (Real.sinh_pos_iff.mpr (mul_pos ha hx)).ne'
-  have hcb : Real.sinh (b * x) ≠ 0 :=
+  have hcb :=
     (Real.sinh_pos_iff.mpr (mul_pos hb hx)).ne'
-  have hcy : Real.sinh ((x / t) * y) ≠ 0 :=
-    (Real.sinh_pos_iff.mpr (mul_pos hc hy)).ne'
-  have hcbD : Real.sinh (b * (y + d)) ≠ 0 :=
+  have hcy :=
+    (Real.sinh_pos_iff.mpr (mul_pos (div_pos hx ht) hy)).ne'
+  have hcbD :=
     (Real.sinh_pos_iff.mpr (mul_pos hb hyD)).ne'
-  have hcaY : Real.sinh (a * y) ≠ 0 :=
+  have hcaY :=
     (Real.sinh_pos_iff.mpr (mul_pos ha hy)).ne'
   have hcoef :
       2 * Real.exp (-b ^ 2 * t / 2 - x ^ 2 / (2 * t)) /
@@ -127,9 +93,7 @@ theorem conditionedPositiveTransitionDensity_shifted_eq_ratio
             (Real.sqrt (2 * Real.pi * t) * Real.sinh (a * x))) := by
     field_simp [hca, hcb]
     rw [← Real.exp_add]
-    congr 1
-    field_simp [ht.ne']
-    ring_nf
+    grind
   have hExp : Real.exp (-(y + d) ^ 2 / (2 * t)) =
       Real.exp (-(d / t) * y - d ^ 2 / (2 * t)) *
         Real.exp (-y ^ 2 / (2 * t)) := by
@@ -152,21 +116,16 @@ theorem hasDerivAt_sinhShift_ratio
     convert ((hasDerivAt_id y).add_const d).const_mul b using 1 <;> simp
   have hdenArg : HasDerivAt (fun z : ℝ => a * z) a y := by
     convert (hasDerivAt_id y).const_mul a using 1 <;> simp
-  have hnum := (Real.hasDerivAt_sinh (b * (y + d))).comp y hnumArg
-  have hden := (Real.hasDerivAt_sinh (a * y)).comp y hdenArg
-  have hdenPos : 0 < Real.sinh (a * y) := Real.sinh_pos_iff.mpr (mul_pos ha hy)
-  have hnumPos : 0 < Real.sinh (b * (y + d)) :=
+  have hdenPos := Real.sinh_pos_iff.mpr (mul_pos ha hy)
+  have hnumPos :=
     Real.sinh_pos_iff.mpr (mul_pos hb (by linarith))
-  have hquot := hnum.div hden hdenPos.ne'
+  have hquot := ((Real.hasDerivAt_sinh _).comp y hnumArg).div ((Real.hasDerivAt_sinh _).comp y hdenArg) hdenPos.ne'
   have hquot' : HasDerivAt
       (fun z : ℝ => Real.sinh (b * (z + d)) / Real.sinh (a * z))
       ((Real.cosh (b * (y + d)) * b * Real.sinh (a * y) -
           Real.sinh (b * (y + d)) * (Real.cosh (a * y) * a)) /
         Real.sinh (a * y) ^ 2) y := by
-    convert hquot using 1
-    · funext z
-      rfl
-    · rfl
+    assumption
   have halgebra :
       (Real.cosh (b * (y + d)) * b * Real.sinh (a * y) -
           Real.sinh (b * (y + d)) * (Real.cosh (a * y) * a)) /
@@ -174,9 +133,8 @@ theorem hasDerivAt_sinhShift_ratio
       (Real.sinh (b * (y + d)) / Real.sinh (a * y)) *
         (conditionedKernelScore b (y + d) - conditionedKernelScore a y) := by
     dsimp [conditionedKernelScore]
-    field_simp [hnumPos.ne', hdenPos.ne']
-  convert hquot' using 1
-  exact halgebra.symm
+    field_simp
+  simp_all
 
 /-- The shifted kernel likelihood ratio has logarithmic derivative equal to the sum of the
 Gaussian shift and two hyperbolic score increments. -/
@@ -187,17 +145,15 @@ theorem hasDerivAt_conditionedKernelShiftedDensityRatio
       (conditionedKernelShiftedDensityRatio a b c t d y *
         (-(d / t) + (conditionedKernelScore b (y + d) - conditionedKernelScore a y) +
           (conditionedKernelScore c (y + d) - conditionedKernelScore c y))) y := by
-  have hlinear : HasDerivAt (fun z : ℝ => -(d / t) * z - d ^ 2 / (2 * t))
+  have hlinear : HasDerivAt (fun z => -(d / t) * z - d ^ 2 / (2 * t))
       (-(d / t)) y := by
     convert ((hasDerivAt_id y).const_mul (-(d / t))).sub_const (d ^ 2 / (2 * t)) using 1 <;> simp
-  have hexp := (Real.hasDerivAt_exp _).comp y hlinear
-  have hr1 := hasDerivAt_sinhShift_ratio ha hb hy hd
   have hr2 := hasDerivAt_sinhShift_ratio hc hc hy hd
-  have hprod := (hexp.mul hr1).mul hr2
-  change HasDerivAt (fun z : ℝ =>
-    Real.exp (-(d / t) * z - d ^ 2 / (2 * t)) *
-      (Real.sinh (b * (z + d)) / Real.sinh (a * z)) *
-        (Real.sinh (c * (z + d)) / Real.sinh (c * z))) _ y
+  have hprod := (((Real.hasDerivAt_exp _).comp y hlinear).mul (hasDerivAt_sinhShift_ratio ha hb hy hd)).mul hr2
+  change HasDerivAt (fun z =>
+    Real.exp _ *
+      (Real.sinh _ / Real.sinh _) *
+        (Real.sinh _ / Real.sinh _)) _ y
   convert hprod using 1
   · rfl
   · dsimp [conditionedKernelShiftedDensityRatio]
@@ -209,51 +165,47 @@ theorem conditionedKernelShiftedDensityRatio_antitoneOn
     {a b c t d : ℝ} (ha : 0 < a) (hab : a ≤ b) (hc : 0 < c)
     (_ht : 0 < t) (hd : 0 ≤ d) (hshift : d / t = b - a) :
     AntitoneOn (conditionedKernelShiftedDensityRatio a b c t d) (Set.Ioi 0) := by
-  have hb : 0 < b := lt_of_lt_of_le ha hab
+  have hb := lt_of_lt_of_le ha hab
   have hcont : ContinuousOn (conditionedKernelShiftedDensityRatio a b c t d) (Set.Ioi 0) := by
-    change ContinuousOn (fun y : ℝ =>
+    change ContinuousOn (fun y =>
       Real.exp (-(d / t) * y - d ^ 2 / (2 * t)) *
         (Real.sinh (b * (y + d)) / Real.sinh (a * y)) *
           (Real.sinh (c * (y + d)) / Real.sinh (c * y))) (Set.Ioi 0)
-    have hExp : Continuous (fun y : ℝ =>
+    have hExp : Continuous (fun y =>
         Real.exp (-(d / t) * y - d ^ 2 / (2 * t))) := by fun_prop
-    have hn1 : Continuous (fun y : ℝ => Real.sinh (b * (y + d))) := by fun_prop
-    have hd1 : Continuous (fun y : ℝ => Real.sinh (a * y)) := by fun_prop
-    have hr1 : ContinuousOn (fun y : ℝ =>
+    have hn1 : Continuous (fun y => Real.sinh (b * (y + d))) := by fun_prop
+    have hd1 : Continuous (fun y => Real.sinh (a * y)) := by fun_prop
+    have hr1 : ContinuousOn (fun y =>
         Real.sinh (b * (y + d)) / Real.sinh (a * y)) (Set.Ioi 0) := by
       apply hn1.continuousOn.div hd1.continuousOn
-      intro y hy
-      exact (Real.sinh_pos_iff.mpr (mul_pos ha (by simpa using hy))).ne'
-    have hn2 : Continuous (fun y : ℝ => Real.sinh (c * (y + d))) := by fun_prop
-    have hd2 : Continuous (fun y : ℝ => Real.sinh (c * y)) := by fun_prop
-    have hr2 : ContinuousOn (fun y : ℝ =>
+      aesop
+    have hn2 : Continuous (fun y => Real.sinh (c * (y + d))) := by fun_prop
+    have hd2 : Continuous (fun y => Real.sinh (c * y)) := by fun_prop
+    have hr2 : ContinuousOn (fun y =>
         Real.sinh (c * (y + d)) / Real.sinh (c * y)) (Set.Ioi 0) := by
       apply hn2.continuousOn.div hd2.continuousOn
-      intro y hy
-      exact (Real.sinh_pos_iff.mpr (mul_pos hc (by simpa using hy))).ne'
-    exact (hExp.continuousOn.mul hr1).mul hr2
+      aesop
+    fun_prop
   apply antitoneOn_of_deriv_nonpos (convex_Ioi 0) hcont
   · intro y hy
-    have hypos : 0 < y := by simpa using hy
+    have hypos : 0 < y := by simp_all
     exact (hasDerivAt_conditionedKernelShiftedDensityRatio ha hb hc hypos hd).differentiableAt.differentiableWithinAt
   · intro y hy
-    have hypos : 0 < y := by simpa using hy
+    have hypos : 0 < y := by simp_all
     rw [(hasDerivAt_conditionedKernelShiftedDensityRatio ha hb hc hypos hd).deriv]
     have hparam := conditionedKernelScore_mixed_increment_upper ha hypos
       (z := y + d) (by linarith) hab
     have hstate : conditionedKernelScore c (y + d) - conditionedKernelScore c y ≤ 0 := by
-      have hanti := (conditionedKernelScore_strictAntiOn_state hc).antitoneOn
-      exact sub_nonpos.mpr (hanti (Set.mem_Ioi.mpr hypos)
+      exact sub_nonpos.mpr (((conditionedKernelScore_strictAntiOn_state hc).antitoneOn) (Set.mem_Ioi.mpr hypos)
         (Set.mem_Ioi.mpr (by linarith)) (by linarith))
     have hbracket :
         -(d / t) + (conditionedKernelScore b (y + d) - conditionedKernelScore a y) +
           (conditionedKernelScore c (y + d) - conditionedKernelScore c y) ≤ 0 := by
-      rw [hshift]
       linarith
     have hratio : 0 ≤ conditionedKernelShiftedDensityRatio a b c t d y := by
       dsimp [conditionedKernelShiftedDensityRatio]
       positivity
-    exact mul_nonpos_of_nonneg_of_nonpos hratio hbracket
+    nlinarith
 
 /-- The likelihood ratio of the actual positive-drift transition densities under the shift
 `d/t = b-a` is nonincreasing in the endpoint. This is the upper single-crossing input for
@@ -264,14 +216,11 @@ theorem conditionedPositiveTransitionDensity_shifted_ratio_antitoneOn
     AntitoneOn
       (fun y => conditionedPositiveTransitionDensity b t x (y + d) /
         conditionedPositiveTransitionDensity a t x y) (Set.Ioi 0) := by
-  have hb : 0 < b := lt_of_lt_of_le ha hab
-  let C : ℝ := Real.exp (-((b ^ 2 - a ^ 2) * t / 2)) *
+  have hb := lt_of_lt_of_le ha hab
+  let C := Real.exp (-((b ^ 2 - a ^ 2) * t / 2)) *
     (Real.sinh (a * x) / Real.sinh (b * x))
   have hC : 0 < C := by
-    dsimp [C]
-    exact mul_pos (Real.exp_pos _)
-      (div_pos (Real.sinh_pos_iff.mpr (mul_pos ha hx))
-        (Real.sinh_pos_iff.mpr (mul_pos hb hx)))
+    positivity
   have hR := conditionedKernelShiftedDensityRatio_antitoneOn
     ha hab (div_pos hx ht) ht hd hshift
   have hdenPos (y : ℝ) (hy : 0 < y) :
@@ -283,14 +232,13 @@ theorem conditionedPositiveTransitionDensity_shifted_ratio_antitoneOn
         conditionedPositiveTransitionDensity a t x y =
       C * conditionedKernelShiftedDensityRatio a b (x / t) t d y := by
     rw [conditionedPositiveTransitionDensity_shifted_eq_ratio ha hab ht hx hd hy]
-    dsimp [C]
-    field_simp [(hdenPos y hy).ne']
+    grind
   intro y₁ hy₁ y₂ hy₂ hy₁₂
-  have hy₁' : 0 < y₁ := by simpa using hy₁
-  have hy₂' : 0 < y₂ := by simpa using hy₂
-  change conditionedPositiveTransitionDensity b t x (y₂ + d) /
+  have hy₁' : 0 < y₁ := by assumption
+  have hy₂' : 0 < y₂ := by assumption
+  change conditionedPositiveTransitionDensity b t x _ /
       conditionedPositiveTransitionDensity a t x y₂ ≤
-    conditionedPositiveTransitionDensity b t x (y₁ + d) /
+    conditionedPositiveTransitionDensity b t x _ /
       conditionedPositiveTransitionDensity a t x y₁
   rw [hfactor y₂ hy₂', hfactor y₁ hy₁']
   exact mul_le_mul_of_nonneg_left (hR hy₁ hy₂ hy₁₂) (le_of_lt hC)
@@ -311,34 +259,28 @@ private theorem hasDerivAt_sinhShift_div_state
         (conditionedKernelScore b (y + d) - 1 / y)) y := by
   have harg : HasDerivAt (fun z : ℝ => b * (z + d)) b y := by
     convert ((hasDerivAt_id y).add_const d).const_mul b using 1 <;> simp
-  have hnum := (Real.hasDerivAt_sinh (b * (y + d))).comp y harg
-  have hquot := hnum.div (hasDerivAt_id y) hy.ne'
+  have hquot := ((Real.hasDerivAt_sinh _).comp y harg).div (hasDerivAt_id y) hy.ne'
   have hquot' : HasDerivAt (fun z : ℝ => Real.sinh (b * (z + d)) / z)
       ((Real.cosh (b * (y + d)) * b * y - Real.sinh (b * (y + d))) / y ^ 2) y := by
-    convert hquot using 1
-    · ext z
-      simp [mul_add]
-    · simp [mul_add, id_eq]
+    aesop
   have hden : Real.sinh (b * (y + d)) ≠ 0 :=
-    (Real.sinh_pos_iff.mpr (mul_pos hb (by linarith))).ne'
+    by positivity
   have halg :
       (Real.cosh (b * (y + d)) * b * y - Real.sinh (b * (y + d))) / y ^ 2 =
         (Real.sinh (b * (y + d)) / y) *
           (conditionedKernelScore b (y + d) - 1 / y) := by
     dsimp [conditionedKernelScore]
-    field_simp [hy.ne', hden]
-  convert hquot' using 1
-  exact halg.symm
+    field_simp
+  simp_all
 
 private theorem hasDerivAt_shiftedExpFactor
     {t d y : ℝ} (_ht : 0 < t) :
     HasDerivAt (fun z : ℝ => Real.exp (-(d / t) * z - d ^ 2 / (2 * t)))
       (Real.exp (-(d / t) * y - d ^ 2 / (2 * t)) * (-(d / t))) y := by
-  have harg : HasDerivAt (fun z : ℝ => -(d / t) * z - d ^ 2 / (2 * t))
+  have harg : HasDerivAt (fun z => -(d / t) * z - d ^ 2 / (2 * t))
       (-(d / t)) y := by
     convert ((hasDerivAt_id y).const_mul (-(d / t))).add_const (-(d ^ 2 / (2 * t))) using 1
-    · ext z
-      simp [sub_eq_add_neg]
+    · rfl
     · ring
   exact (Real.hasDerivAt_exp _).comp y harg
 
@@ -351,14 +293,12 @@ theorem hasDerivAt_conditionedKernelShiftedZeroDensityRatio
       (conditionedKernelShiftedZeroDensityRatio b c t d y *
         (-(d / t) + (conditionedKernelScore b (y + d) - 1 / y) +
           (conditionedKernelScore c (y + d) - conditionedKernelScore c y))) y := by
-  have hE := hasDerivAt_shiftedExpFactor ht (d := d) (y := y)
-  have hG := hasDerivAt_sinhShift_div_state hb hy hd
   have hH := hasDerivAt_sinhShift_ratio hc hc hy hd
-  have hprod := (hE.mul hG).mul hH
-  change HasDerivAt (fun z : ℝ =>
-    (Real.exp (-(d / t) * z - d ^ 2 / (2 * t)) *
-      (Real.sinh (b * (z + d)) / z)) *
-        (Real.sinh (c * (z + d)) / Real.sinh (c * z))) _ y
+  have hprod := ((hasDerivAt_shiftedExpFactor ht (d := d)).mul (hasDerivAt_sinhShift_div_state hb hy hd)).mul hH
+  change HasDerivAt (fun z =>
+    (Real.exp _ *
+      (Real.sinh _ / z)) *
+        (Real.sinh _ / Real.sinh _)) _ y
   convert hprod using 1
   · dsimp [conditionedKernelShiftedZeroDensityRatio]
     ring_nf
@@ -371,62 +311,43 @@ theorem conditionedKernelShiftedZeroDensityRatio_antitoneOn
     AntitoneOn (conditionedKernelShiftedZeroDensityRatio b c t d) (Set.Ioi 0) := by
   have hcont : ContinuousOn (conditionedKernelShiftedZeroDensityRatio b c t d)
       (Set.Ioi 0) := by
-    change ContinuousOn (fun y : ℝ =>
-      Real.exp (-(d / t) * y - d ^ 2 / (2 * t)) *
-        (Real.sinh (b * (y + d)) / y) *
-          (Real.sinh (c * (y + d)) / Real.sinh (c * y))) (Set.Ioi 0)
-    have hE : Continuous (fun y : ℝ => Real.exp (-(d / t) * y - d ^ 2 / (2 * t))) := by
+    change ContinuousOn (fun y =>
+      Real.exp _ *
+        (Real.sinh _ / y) *
+          (Real.sinh _ / Real.sinh _)) (Set.Ioi 0)
+    have hE : Continuous (fun y => Real.exp (-(d / t) * y - d ^ 2 / (2 * t))) := by
       fun_prop
-    have hG : ContinuousOn (fun y : ℝ => Real.sinh (b * (y + d)) / y) (Set.Ioi 0) := by
+    have hG : ContinuousOn (fun y => Real.sinh (b * (y + d)) / y) (Set.Ioi 0) := by
       apply (Real.continuous_sinh.comp
         (continuous_const.mul (continuous_id.add continuous_const))).continuousOn.div
         continuousOn_id
-      intro y hy
-      exact ne_of_gt (by simpa using hy)
-    have hH : ContinuousOn (fun y : ℝ =>
+      aesop
+    have hH : ContinuousOn (fun y =>
         Real.sinh (c * (y + d)) / Real.sinh (c * y)) (Set.Ioi 0) := by
       apply (Real.continuous_sinh.comp
         (continuous_const.mul (continuous_id.add continuous_const))).continuousOn.div
         (Real.continuous_sinh.comp (continuous_const.mul continuous_id)).continuousOn
-      intro y hy
-      exact (Real.sinh_pos_iff.mpr (mul_pos hc (by simpa using hy))).ne'
-    exact (hE.continuousOn.mul hG).mul hH
+      aesop
+    fun_prop
   refine antitoneOn_of_deriv_nonpos (convex_Ioi 0) hcont ?_ ?_
   · intro y hy
-    have hy' : 0 < y := by simpa using hy
+    have hy' : 0 < y := by simp_all
     exact (hasDerivAt_conditionedKernelShiftedZeroDensityRatio hb hc ht hd hy').differentiableAt.differentiableWithinAt
   · intro y hy
-    have hy' : 0 < y := by simpa using hy
+    have hy' : 0 < y := by simp_all
     rw [(hasDerivAt_conditionedKernelShiftedZeroDensityRatio hb hc ht hd hy').deriv]
     have hyD : 0 < y + d := by linarith
     have hscoreStateB : conditionedKernelScore b (y + d) ≤ conditionedKernelScore b y := by
       have hanti := (conditionedKernelScore_strictAntiOn_state hb).antitoneOn
-      exact hanti (Set.mem_Ioi.mpr hy') (Set.mem_Ioi.mpr hyD) (by linarith)
+      aesop
     have hscoreB := conditionedKernelScore_zero_increment_bounds hb hy'
     have hscoreStateC : conditionedKernelScore c (y + d) ≤ conditionedKernelScore c y := by
       have hanti := (conditionedKernelScore_strictAntiOn_state hc).antitoneOn
-      exact hanti (Set.mem_Ioi.mpr hy') (Set.mem_Ioi.mpr hyD) (by linarith)
+      aesop
     have hratio : 0 < conditionedKernelShiftedZeroDensityRatio b c t d y := by
       dsimp [conditionedKernelShiftedZeroDensityRatio]
-      have hsB : 0 < Real.sinh (b * (y + d)) :=
-        Real.sinh_pos_iff.mpr (mul_pos hb hyD)
-      have hsCy : 0 < Real.sinh (c * y) :=
-        Real.sinh_pos_iff.mpr (mul_pos hc hy')
-      have hsCyd : 0 < Real.sinh (c * (y + d)) :=
-        Real.sinh_pos_iff.mpr (mul_pos hc hyD)
       positivity
-    have hlast : conditionedKernelScore c (y + d) - conditionedKernelScore c y ≤ 0 :=
-      sub_nonpos.mpr hscoreStateC
-    have hfirst : conditionedKernelScore b (y + d) - 1 / y ≤ b := by
-      calc
-        conditionedKernelScore b (y + d) - 1 / y ≤
-            conditionedKernelScore b y - 1 / y := sub_le_sub_right hscoreStateB _
-        _ ≤ b := hscoreB.2
-    have hslope : -(d / t) + (conditionedKernelScore b (y + d) - 1 / y) +
-        (conditionedKernelScore c (y + d) - conditionedKernelScore c y) ≤ 0 := by
-      rw [hdt]
-      linarith
-    exact mul_nonpos_of_nonneg_of_nonpos (le_of_lt hratio) hslope
+    nlinarith
 
 theorem conditionedPositiveTransitionDensity_zero_eq_sinh_gaussian_factor
     {t x y : ℝ} (ht : 0 < t) (hx : 0 < x) (hy : 0 < y) :
@@ -434,20 +355,14 @@ theorem conditionedPositiveTransitionDensity_zero_eq_sinh_gaussian_factor
       (2 * Real.exp (-x ^ 2 / (2 * t)) /
         (Real.sqrt (2 * Real.pi * t) * x)) *
         (Real.exp (-y ^ 2 / (2 * t)) * y * Real.sinh (x / t * y)) := by
-  have hheat := shiftedRatio_heatDensity_sub_factor ht (x := x) (y := y)
   have hsqrt : Real.sqrt (2 * Real.pi * t) ≠ 0 := by positivity
   simp [conditionedPositiveTransitionDensity, conditionedH, ht, hx, hy]
-  rw [hheat]
+  rw [(DOZZ.Proofs.brownianHeatDensity_sub_factor ht (x := x) (y := y))]
   have hexp : Real.exp (-(x ^ 2 + y ^ 2) / (2 * t)) =
       Real.exp (-x ^ 2 / (2 * t)) * Real.exp (-y ^ 2 / (2 * t)) := by
     rw [← Real.exp_add]
-    congr 1
-    field_simp [ht.ne']
-    ring_nf
-  rw [hexp]
-  have harg : x * y / t = x / t * y := by ring
-  rw [harg]
-  field_simp [hx.ne', hsqrt]
+    ring
+  grind
 
 /-- The actual positive-drift transition kernel shifted by `d` is the zero-drift kernel times the
 zero-endpoint shifted likelihood ratio, up to a positive factor independent of `y`. -/
@@ -458,17 +373,16 @@ theorem conditionedPositiveTransitionDensity_shifted_from_zero_eq_ratio
       (Real.exp (-b ^ 2 * t / 2) * (x / Real.sinh (b * x))) *
         conditionedKernelShiftedZeroDensityRatio b (x / t) t d y *
           conditionedPositiveTransitionDensity 0 t x y := by
-  have hc : 0 < x / t := div_pos hx ht
+  have hc := div_pos hx ht
   have hyD : 0 < y + d := by linarith
   have hpos := conditionedPositiveTransitionDensity_eq_sinh_gaussian_factor
     hb ht hx hyD
-  have hzero := conditionedPositiveTransitionDensity_zero_eq_sinh_gaussian_factor ht hx hy
   have hsqrt : Real.sqrt (2 * Real.pi * t) ≠ 0 := by positivity
-  have hsinhX : Real.sinh (b * x) ≠ 0 :=
+  have hsinhX :=
     (Real.sinh_pos_iff.mpr (mul_pos hb hx)).ne'
-  have hsinhY : Real.sinh ((x / t) * y) ≠ 0 :=
+  have hsinhY :=
     (Real.sinh_pos_iff.mpr (mul_pos hc hy)).ne'
-  have hsinhYD : Real.sinh ((x / t) * (y + d)) ≠ 0 :=
+  have hsinhYD :=
     (Real.sinh_pos_iff.mpr (mul_pos hc hyD)).ne'
   have hExp : Real.exp (-(y + d) ^ 2 / (2 * t)) =
       Real.exp (-(d / t) * y - d ^ 2 / (2 * t)) *
@@ -496,7 +410,7 @@ theorem conditionedPositiveTransitionDensity_shifted_from_zero_eq_ratio
           (2 * Real.exp (-x ^ 2 / (2 * t)) /
             (Real.sqrt (2 * Real.pi * t) * x)) := by
     simpa [Cb, C0, K] using hC
-  rw [hpos, hzero, hExp, hCexplicit]
+  rw [hpos, (conditionedPositiveTransitionDensity_zero_eq_sinh_gaussian_factor ht hx hy), hExp, hCexplicit]
   dsimp [conditionedKernelShiftedZeroDensityRatio]
   field_simp [hy.ne', hsqrt, hsinhX, hsinhY, hsinhYD]
 
@@ -509,15 +423,12 @@ theorem conditionedPositiveTransitionDensity_shifted_zero_ratio_antitoneOn
     AntitoneOn
       (fun y => conditionedPositiveTransitionDensity b t x (y + d) /
         conditionedPositiveTransitionDensity 0 t x y) (Set.Ioi 0) := by
-  have hc : 0 < x / t := div_pos hx ht
-  have hR := conditionedKernelShiftedZeroDensityRatio_antitoneOn hb hc ht hd hdt
+  have hR := conditionedKernelShiftedZeroDensityRatio_antitoneOn hb (div_pos hx ht) ht hd hdt
   have hC : 0 < Real.exp (-b ^ 2 * t / 2) * (x / Real.sinh (b * x)) := by
     positivity
   have hden (y : ℝ) (hy : 0 < y) :
       0 < conditionedPositiveTransitionDensity 0 t x y := by
     rw [conditionedPositiveTransitionDensity_zero_eq_sinh_gaussian_factor ht hx hy]
-    have hsin : 0 < Real.sinh (x * y / t) :=
-      Real.sinh_pos_iff.mpr (div_pos (mul_pos hx hy) ht)
     positivity
   have hfactor (y : ℝ) (hy : 0 < y) :
       conditionedPositiveTransitionDensity b t x (y + d) /
@@ -525,16 +436,16 @@ theorem conditionedPositiveTransitionDensity_shifted_zero_ratio_antitoneOn
       (Real.exp (-b ^ 2 * t / 2) * (x / Real.sinh (b * x))) *
         conditionedKernelShiftedZeroDensityRatio b (x / t) t d y := by
     rw [conditionedPositiveTransitionDensity_shifted_from_zero_eq_ratio hb ht hx hd hy]
-    field_simp [(hden y hy).ne']
+    grind
   intro y₁ hy₁ y₂ hy₂ hy₁₂
-  have hy₁' : 0 < y₁ := by simpa using hy₁
-  have hy₂' : 0 < y₂ := by simpa using hy₂
-  change conditionedPositiveTransitionDensity b t x (y₂ + d) /
+  have hy₁' : 0 < y₁ := by assumption
+  have hy₂' : 0 < y₂ := by assumption
+  change conditionedPositiveTransitionDensity b t x _ /
       conditionedPositiveTransitionDensity 0 t x y₂ ≤
-    conditionedPositiveTransitionDensity b t x (y₁ + d) /
+    conditionedPositiveTransitionDensity b t x _ /
       conditionedPositiveTransitionDensity 0 t x y₁
   rw [hfactor y₂ hy₂', hfactor y₁ hy₁']
-  exact mul_le_mul_of_nonneg_left (hR hy₁ hy₂ hy₁₂) (le_of_lt hC)
+  bound
 
 /-- Under the probability-density normalizations, the shifted positive-drift kernel's CDF is at
 least the unshifted BES(3) CDF. The hypothesis `m` is the shifted law's mass on the positive
@@ -566,18 +477,12 @@ theorem conditionedPositiveTransitionDensity_shifted_zero_cdf_ge
     intro y hy
     change 0 < conditionedPositiveTransitionDensity 0 t x y
     rw [conditionedPositiveTransitionDensity_zero_eq_sinh_gaussian_factor ht hx hy]
-    have hsin : 0 < Real.sinh (x * y / t) :=
-      Real.sinh_pos_iff.mpr (div_pos (mul_pos hx hy) ht)
     positivity
   have hgpos : ∀ y, 0 < y → 0 < g y := by
     intro y hy
     change 0 < conditionedPositiveTransitionDensity b t x (y + d)
     rw [conditionedPositiveTransitionDensity_eq_sinh_gaussian_factor hb ht hx
-      (by linarith [hd])]
-    have hsin₁ : 0 < Real.sinh (b * (y + d)) :=
-      Real.sinh_pos_iff.mpr (mul_pos hb (by linarith [hy, hd]))
-    have hsin₂ : 0 < Real.sinh (x * (y + d) / t) :=
-      Real.sinh_pos_iff.mpr (div_pos (mul_pos hx (by linarith [hy, hd])) ht)
+      (by linarith)]
     positivity
   have hratio : AntitoneOn r (Set.Ioi 0) := by
     have hR := conditionedPositiveTransitionDensity_shifted_zero_ratio_antitoneOn
@@ -592,12 +497,12 @@ theorem conditionedPositiveTransitionDensity_shifted_zero_cdf_ge
     dsimp [r]
     field_simp [ne_of_gt (hfpos y hy)]
   exact integral_Iic_ge_of_shiftedAntitoneDensityRatio
-    (by simpa [f] using hf) (by simpa [g] using hg)
-    (by simpa [g] using hng) hzero
-    (by simpa [f] using hunitf) (by simpa [g] using hunitg)
-    hmpos hmle (by simpa [g] using hmass)
-    (by simpa [f, g] using hfactor)
-    (by simpa [r] using hrpos) (by simpa [r] using hratio) z
+    (by assumption) (by assumption)
+    (by assumption) hzero
+    (by assumption) (by assumption)
+    hmpos hmle (by assumption)
+    (by assumption)
+    (by assumption) (by assumption) z
 
 end DOZZ.Proofs
 

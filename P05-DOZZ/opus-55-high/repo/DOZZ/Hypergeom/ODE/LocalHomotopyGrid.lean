@@ -34,7 +34,6 @@ theorem localPicard_homotopy_grid_endpoint_eq
         else v
       else v
     finiteGridHorizontal right 0 0 N y = finiteGridHorizontal right 0 N N y := by
-  dsimp
   let right : ℕ → ℕ → E → E := fun i j v =>
     if hi : i < N then
       if hj : j ≤ N then
@@ -50,20 +49,17 @@ theorem localPicard_homotopy_grid_endpoint_eq
   have hsquare : ∀ i < N, ∀ j < N, ∀ v,
       up (i + 1) j (right i j v) = right i (j + 1) (up i j v) := by
     intro i hi j hj v
-    have hiN : i + 1 ≤ N := Nat.succ_le_iff.mpr hi
-    have hjN : j + 1 ≤ N := Nat.succ_le_iff.mpr hj
     have h := localPicardTransfer_square_commutes r M hr hM H
       (data i (by omega) j (by omega))
-      (data (i + 1) hiN j (by omega))
-      (data i (by omega) (j + 1) hjN)
+      (data _ (Nat.succ_le_iff.mpr hi) j (by omega))
+      (data i (by omega) _ (Nat.succ_le_iff.mpr hj))
       (hcell i hi j hj).1 (hcell i hi j hj).2.1
       (hcell i hi j hj).2.2 v
-    simpa [right, up, hi, hiN, hj, hjN, Nat.le_of_lt hi, Nat.le_of_lt hj] using h
+    grind
   have hleftId : ∀ j < N, ∀ v, up 0 j v = v := by
     intro j hj v
-    have h0 := hleft j (Nat.le_of_lt hj)
     have h1 := hleft (j + 1) (by omega)
-    simp [up, hj, h0, h1, localPicardTransfer,
+    simp [up, hj, (hleft j (Nat.le_of_lt hj)), h1, localPicardTransfer,
       holomorphicPicardSolution_apply_center]
   have hrightId : ∀ j < N, ∀ v, up N j v = v := by
     intro j hj v

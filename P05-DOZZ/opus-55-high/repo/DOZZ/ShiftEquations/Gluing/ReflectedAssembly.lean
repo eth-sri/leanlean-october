@@ -13,6 +13,7 @@ import DOZZ.ShiftEquations.Rbar.Multiplier
 import DOZZ.ShiftEquations.Shift.FirstShift
 import DOZZ.Hypergeom.ODE.SlitPlaneGluing
 import DOZZ.Complex.Basic
+import DOZZ.Brownian.Reflection.RtheorAnalytic
 
 /-!
 # The reflected shift and gluing from the two first shifts and the two γ/2 diagonal formulas
@@ -115,17 +116,16 @@ theorem structureConstant_reflected_shift_and_gluing_of_deps
   obtain ⟨hη0, hηγ⟩ := hη
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
   have h2γ : γ / 16 < 2 / γ := by
-    rw [div_lt_div_iff₀ (by norm_num) hγ]
-    linarith only [mul_self_lt_mul_self hγ.le hγ2]
+    linarith
   obtain ⟨B, Z, hSLP, hRD, h₁, hh₁, R, hRm, hRval, hRshift⟩ := hFirstShift
   obtain ⟨h₂, hh₂, C, hCm, hCval, hCshift⟩ := hFirstStrip
   obtain ⟨H, hH⟩ := gauss_hypergeometric_exists
   set h := min h₁ h₂ with hhdef
   have hh : 0 < h := lt_min hh₁ hh₂
   have hRm' : MeromorphicOn R (horizontalStrip h) := fun z hz =>
-    hRm z (show |z.im| < h₁ from lt_of_lt_of_le (show |z.im| < h from hz) (min_le_left _ _))
+    hRm z (show |z.im| < h₁ from lt_of_lt_of_le (show |z.im| < h from hz) (min_le_left ..))
   have hCm' : MeromorphicOn C (horizontalStrip h) := fun z hz =>
-    hCm z (show |z.im| < h₂ from lt_of_lt_of_le (show |z.im| < h from hz) (min_le_right _ _))
+    hCm z (show |z.im| < h₂ from lt_of_lt_of_le (show |z.im| < h from hz) (min_le_right ..))
   -- the reflected shift at real charges near `Q`
   have hreal : ∀ α₁ : ℝ, Q γ - γ / 16 < α₁ → α₁ < Q γ →
       R ((α₁ : ℂ) + γ / 2 - γ / 2) = -(μ * Real.pi : ℂ) * R ((α₁ : ℂ) + γ / 2) /
@@ -135,12 +135,10 @@ theorem structureConstant_reflected_shift_and_gluing_of_deps
         -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) α₁ (α₂ : ℂ) (α₃ : ℂ) *
           C ((α₁ : ℂ) - γ / 2) := by
     intro α₁ h1 h2 hshift
-    have hα₁ : γ / 2 < α₁ := by rw [hQ] at h1; linarith
-    have hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃ := by linarith [hα₂.1, hα₃.1]
-    have hcoef := reflected_coefficient_real P X M hγ hγ2 hDiagonal hReflected hH hRD h1 h2 hs
-    have hc := gaussParameterC_half_mem hγ hγ2 h1 h2
+    have hα₁ : γ / 2 < α₁ := by linarith
+    have hs : 2 * Q γ + γ / 2 < α₁ + α₂ + α₃ := by linarith
     have hP1 := gaussCoefficientRatio_mul_eq_shiftCoeffA_half (α₂ := α₂) (α₃ := α₃) hγ
-      (ne_of_lt hc.2)
+      (ne_of_lt (gaussParameterC_half_mem hγ hγ2 h1 h2).2)
     have hD : lFun (-((γ : ℂ) ^ 2) / 4) *
         lFun ((γ : ℂ) * ((α₁ : ℂ) + γ / 2) / 2 - (γ : ℂ) ^ 2 / 4) *
         lFun (2 + (γ : ℂ) ^ 2 / 2 - (γ : ℂ) * ((α₁ : ℂ) + γ / 2) / 2) =
@@ -158,25 +156,25 @@ theorem structureConstant_reflected_shift_and_gluing_of_deps
     have hDne : lFun (-((γ / 2 : ℝ) : ℂ) ^ 2) * lFun (((γ / 2 : ℝ) : ℂ) * α₁) *
         lFun (2 + ((γ / 2 : ℝ) : ℂ) ^ 2 - ((γ / 2 : ℝ) : ℂ) * α₁) ≠ 0 := by
       rw [show (2 : ℂ) + ((γ / 2 : ℝ) : ℂ) ^ 2 - ((γ / 2 : ℝ) : ℂ) * α₁ =
-          ((2 + (γ / 2) ^ 2 - γ / 2 * α₁ : ℝ) : ℂ) by push_cast; ring,
-        show -((γ / 2 : ℝ) : ℂ) ^ 2 = ((-(γ / 2) ^ 2 : ℝ) : ℂ) by push_cast; ring,
-        show ((γ / 2 : ℝ) : ℂ) * α₁ = ((γ / 2 * α₁ : ℝ) : ℂ) by push_cast; ring,
+          ((2 + (γ / 2) ^ 2 - γ / 2 * α₁ : ℝ) : ℂ) by simp,
+        show -((γ / 2 : ℝ) : ℂ) ^ 2 = ((-(γ / 2) ^ 2 : ℝ) : ℂ) by simp,
+        show ((γ / 2 : ℝ) : ℂ) * α₁ = ((γ / 2 * α₁ : ℝ) : ℂ) by simp,
         lFun_ofReal_eq_lR, lFun_ofReal_eq_lR, lFun_ofReal_eq_lR]
       exact_mod_cast mul_ne_zero (mul_ne_zero
-        (lR_ne_zero_of_mem_neg (by linarith only [hγsq])
-          (by linarith only [pow_pos (half_pos hγ) 2]))
-        (lR_ne_zero_of_mem_one_two (by linarith only [hγα₁', hγQ, sq_nonneg γ])
-          (by linarith only [hγα₁, hγQ, hγsq])))
-        (lR_ne_zero_of_mem_one_two (by linarith only [hγα₁, hγQ])
-          (by linarith only [hγα₁', hγQ, hγsq]))
-    have hRα : R (α₁ : ℂ) = (reflectionR P γ μ α₁ (B α₁) Z : ℂ) := hRval α₁ hα₁ h2
+        (lR_ne_zero_of_mem_neg (by linarith)
+          (by linarith))
+        (lR_ne_zero_of_mem_one_two (by linarith)
+          (by linarith)))
+        (lR_ne_zero_of_mem_one_two (by linarith)
+          (by linarith))
+    have hRα : R (α₁ : ℂ) = (reflectionR P γ μ α₁ (B α₁) Z : ℂ) := by tauto
     have hC₁ : C (2 * Q γ - (α₁ : ℂ) - γ / 2) =
         (structureConstant P M γ μ (2 * Q γ - α₁ - γ / 2) α₂ α₃ : ℂ) := by
-      rw [show (2 * Q γ - (α₁ : ℂ) - γ / 2) = ((2 * Q γ - α₁ - γ / 2 : ℝ) : ℂ) by push_cast; ring]
+      rw [show (2 * Q γ - (α₁ : ℂ) - γ / 2) = ((2 * Q γ - α₁ - γ / 2 : ℝ) : ℂ) by simp]
       exact hCval _ (by linarith) (by linarith)
     have hC₂ : C ((α₁ : ℂ) - γ / 2) = (structureConstant P M γ μ (α₁ - γ / 2) α₂ α₃ : ℂ) := by
-      rw [show ((α₁ : ℂ) - γ / 2) = ((α₁ - γ / 2 : ℝ) : ℂ) by push_cast; ring]
-      exact hCval _ (by rw [hQ] at h1; linarith) (by linarith)
+      rw [show ((α₁ : ℂ) - γ / 2) = ((α₁ - γ / 2 : ℝ) : ℂ) by simp]
+      exact hCval _ (by linarith) (by linarith)
     rw [add_sub_cancel_right, hD] at hshift
     have hμπ : ((μ : ℂ) * Real.pi) ≠ 0 :=
       mul_ne_zero (Complex.ofReal_ne_zero.mpr hμ.ne') (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero)
@@ -185,14 +183,13 @@ theorem structureConstant_reflected_shift_and_gluing_of_deps
           (gaussParameterB γ (γ / 2) α₁ α₂ α₃) (gaussParameterC γ (γ / 2) α₁) : ℂ) *
           C ((α₁ : ℂ) - γ / 2) := by
       rw [hRα, hC₁, hC₂]
-      exact_mod_cast hcoef
-    have key := reflected_shift_algebra hμπ hDne hshift hcoef' hP1
-    rw [key, show ((γ / 2 : ℝ) : ℂ) = (γ : ℂ) / 2 by push_cast; ring]
+      exact_mod_cast (reflected_coefficient_real P X M hγ hγ2 hDiagonal hReflected hH hRD h1 h2 hs)
+    rw [(reflected_shift_algebra hμπ hDne hshift hcoef' hP1), show ((γ / 2 : ℝ) : ℂ) = (γ : ℂ) / 2 by simp]
     ring
   -- the reflected shift near every point of the strip
-  set x₀ : ℝ := Q γ - γ / 32 with hx₀
-  have hx₀1 : Q γ - γ / 16 < x₀ := by rw [hx₀]; linarith
-  have hx₀2 : x₀ < Q γ := by rw [hx₀]; linarith
+  set x₀ := Q γ - γ / 32 with hx₀
+  have hx₀1 : Q γ - γ / 16 < x₀ := by linarith
+  have hx₀2 : x₀ < Q γ := by linarith
   have hshiftloc := (eventually_codiscrete_iff_forall_eventually_nhdsNE.mp hRshift)
     ((x₀ : ℂ) + γ / 2)
   have hshiftpt : ∀ᶠ t : ℝ in 𝓝[≠] x₀,
@@ -203,23 +200,22 @@ theorem structureConstant_reflected_shift_and_gluing_of_deps
       (ShiftGluing.eventually_comp_add (z := (x₀ : ℂ)) ((γ : ℂ) / 2) hshiftloc)
   set f : ℂ → ℂ := fun z => R (z + ((γ / 2 : ℝ) : ℂ)) * C (((2 * Q γ - γ / 2 : ℝ) : ℂ) - z)
     with hfdef
-  set g : ℂ → ℂ := fun z => (-(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) z (α₂ : ℂ) (α₃ : ℂ)) *
+  set g : ℂ → ℂ := fun z => (-(1 / (Real.pi * μ)) * shiftCoeffA γ _ z (α₂ : ℂ) (α₃ : ℂ)) *
     C (z + ((-(γ / 2) : ℝ) : ℂ)) with hgdef
   have hfg_real : ∀ᶠ t : ℝ in 𝓝[≠] x₀, f t = g t := by
     filter_upwards [hshiftpt, eventually_nhdsWithin_of_eventually_nhds
       (eventually_of_mem (Ioo_mem_nhds hx₀1 hx₀2) fun t ht => ht)] with t ht hIt
-    have := hreal t hIt.1 hIt.2 ht
     simp only [hfdef, hgdef]
-    rw [show (t : ℂ) + ((γ / 2 : ℝ) : ℂ) = (t : ℂ) + γ / 2 by push_cast; ring,
+    rw [show (t : ℂ) + ((γ / 2 : ℝ) : ℂ) = (t : ℂ) + γ / 2 by simp,
       show ((2 * Q γ - γ / 2 : ℝ) : ℂ) - (t : ℂ) = 2 * Q γ - (t : ℂ) - γ / 2 by push_cast; ring,
       show (t : ℂ) + ((-(γ / 2) : ℝ) : ℂ) = (t : ℂ) - γ / 2 by push_cast; ring]
-    exact this
+    exact (hreal t hIt.1 hIt.2 ht)
   have hfm : MeromorphicOn f (horizontalStrip h) :=
-    (MeromorphicOn.comp_add_ofReal hRm' (γ / 2)).mul
-      (MeromorphicOn.comp_ofReal_sub hCm' (2 * Q γ - γ / 2))
+    (MeromorphicOn.comp_add_ofReal hRm' _).mul
+      (MeromorphicOn.comp_ofReal_sub hCm' _)
   have hgm : MeromorphicOn g (horizontalStrip h) := fun z hz =>
     ((MeromorphicAt.const _ z).mul ((meromorphic_shiftCoeffA γ _ _ _) z)).mul
-      ((MeromorphicOn.comp_add_ofReal hCm' (-(γ / 2))) z hz)
+      ((MeromorphicOn.comp_add_ofReal hCm' _) z hz)
   have hx₀S : (x₀ : ℂ) ∈ horizontalStrip h := by
     change |((x₀ : ℝ) : ℂ).im| < h
     simpa using hh
@@ -231,11 +227,10 @@ theorem structureConstant_reflected_shift_and_gluing_of_deps
   have hglue : ∀ w ∈ horizontalStrip h, ∀ᶠ z in 𝓝[≠] w, C z = R z * C (2 * Q γ - z) := by
     intro w hw
     have hw' : w - ((γ / 2 : ℝ) : ℂ) ∈ horizontalStrip h := by
-      simpa [sub_eq_add_neg] using add_ofReal_mem_horizontalStrip_glue hw (-(γ / 2))
+      simpa [sub_eq_add_neg] using DOZZ.Proofs.add_ofReal_mem_horizontalStrip hw (-(γ / 2))
     have h1 := ShiftGluing.eventually_comp_sub (z := w) ((γ / 2 : ℝ) : ℂ)
       ((eventually_codiscrete_iff_forall_eventually_nhdsNE.mp hCshift) (w - ((γ / 2 : ℝ) : ℂ)))
-    have h2 := ShiftGluing.eventually_comp_sub (z := w) ((γ / 2 : ℝ) : ℂ) (hEq _ hw')
-    filter_upwards [h1, h2] with z hz1 hz2
+    filter_upwards [h1, (ShiftGluing.eventually_comp_sub (z := w) ((γ / 2 : ℝ) : ℂ) (hEq _ hw'))] with z hz1 hz2
     simp only [hfdef, hgdef] at hz2
     rw [show z - ((γ / 2 : ℝ) : ℂ) + ((γ / 2 : ℝ) : ℂ) = z by ring,
       show ((2 * Q γ - γ / 2 : ℝ) : ℂ) - (z - ((γ / 2 : ℝ) : ℂ)) = 2 * Q γ - z by push_cast; ring,
@@ -253,9 +248,9 @@ theorem structureConstant_reflected_shift_and_gluing_of_deps
     meromorphicOn_cutoffStrip hRm' (half_le_self hh.le), fun α h1 h2 => ?_, fun α h1 h2 => ?_,
     ?_, ?_⟩
   · rw [cutoffStrip_of_lt (by simpa using half_pos hh)]
-    exact hCval α h1 h2
+    tauto
   · rw [cutoffStrip_of_lt (by simpa using half_pos hh)]
-    exact hRval α h1 h2
+    tauto
   · rw [eventually_codiscrete_iff_forall_eventually_nhdsNE]
     intro x
     have hzero : ∀ z : ℂ, ¬ |z.im| < h / 2 → cutoffStrip (h / 2) C z =
@@ -280,7 +275,7 @@ theorem structureConstant_reflected_shift_and_gluing_of_deps
   · rw [eventually_codiscrete_iff_forall_eventually_nhdsNE]
     intro x
     have hzero : ∀ z : ℂ, ¬ |z.im| < h / 2 →
-        cutoffStrip (h / 2) R (z + γ / 2) * cutoffStrip (h / 2) C (2 * Q γ - z - γ / 2) =
+        cutoffStrip (h / 2) R _ * cutoffStrip (h / 2) C (2 * Q γ - z - γ / 2) =
           -(1 / (Real.pi * μ)) * shiftCoeffA γ (γ / 2) z (α₂ : ℂ) (α₃ : ℂ) *
             cutoffStrip (h / 2) C (z - γ / 2) := fun z hz => by
       have e1 : ¬ |(z + γ / 2).im| < h / 2 := by

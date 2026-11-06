@@ -25,9 +25,9 @@ theorem gammaHalf_twoRooted_Taylor_is_littleO {Ω : Type*} [MeasurableSpace Ω]
     IsComplexLittleOAtZero (γ * (Q γ - α₁))
       (gammaHalfTwoRootedTerm P M γ α₁ α₂ α₃
         ((α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ)) := by
-  have _hsource_charges : α₂ < Q γ ∧ α₃ < Q γ := ⟨hα₂, hα₃⟩
-  let p : ℝ := (α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ
-  have hp : 0 ≤ p := (div_pos (by linarith only [hs]) hγ).le
+  have _hsource_charges : α₂ < Q γ ∧ α₃ < Q γ := by simp_all
+  let p := (α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ
+  have hp : 0 ≤ p := by bound
   obtain ⟨η, C, r, hη, hC, hr, hI⟩ := twoRooted_fundamental_estimate
     P X hX γ hγ hγ₂ hγsq M hM α₁ α₂ α₃ p hα₁ hα₁₂ hp
   obtain ⟨_, hκ, _⟩ := twoRooted_time_exponent γ α₁ hγ hγsq hα₁ hα₁₂

@@ -31,14 +31,11 @@ theorem reflected_freezing_margins (γ α₁ α₂ α₃ : ℝ) (hγ : 0 < γ)
       α₁ + γ / 2 - Q γ <
         γ * ((α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ + 1) := by
   have hp : 0 < (α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ :=
-    div_pos (by linarith only [hs]) hγ
+    by bound
   have he : γ * ((α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ + 1) =
       (α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) + γ := by
-    rw [mul_add, mul_div_cancel₀ _ hγ.ne', mul_one]
-  refine ⟨?_, by linarith only [hp], ?_⟩
-  · linarith only [hreflect]
-  · rw [he]
-    linarith only [hs, hα₁, hγ]
+    field_simp
+  grind
 
 /-- The actual local estimate needed for the buffer and the small-maximum error. -/
 theorem reflected_freezing_local_input {Ω : Type*} [MeasurableSpace Ω]
@@ -53,7 +50,7 @@ theorem reflected_freezing_local_input {Ω : Type*} [MeasurableSpace Ω]
       ENNReal.ofReal (C * ε ^ ((α₁ + γ / 2 - Q γ) ^ 2 / 2)) := by
   obtain ⟨hα, hp, ht⟩ := reflected_freezing_margins γ α₁ α₂ α₃ hγ hα₁ hreflect hs
   obtain ⟨C, ε₀, hC, hε₀, hb⟩ := freezing_annulus_negative_moment_local P M X
-    γ (α₁ + γ / 2) ((α₁ + α₂ + α₃ - γ / 2 - 2 * Q γ) / γ + 1)
+    γ _ _
     (1 / 2) {0} isCompact_singleton hγ hγ₂ hX hM (by norm_num) hα hp ht
   exact ⟨C, ε₀, hC, hε₀, hb 0 (mem_singleton 0)⟩
 

@@ -33,10 +33,10 @@ theorem weightedGmcBallMoment_eq_top_of_insertion
     (he : (2 - γ * α) * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2 ≤ 0)
     (z : ℂ) (r : ℝ) (hr : 0 < r) :
     weightedGmcBallMoment P M γ α z r p = ⊤ := by
-  set ρ : ℝ := min r (1 / 8) with hρdef
-  have hρ : 0 < ρ := lt_min hr (by norm_num)
-  have hρ8 : ρ ≤ 1 / 8 := min_le_right _ _
-  have hρr : ρ ≤ r := min_le_left _ _
+  set ρ := min r (1 / 8) with hρdef
+  have hρ : 0 < ρ := by positivity
+  have hρ8 : ρ ≤ 1 / 8 := min_le_right ..
+  have hρr : ρ ≤ r := min_le_left ..
   have h0 := weightedGmcBallMoment_center_eq_top_of_insertion P X hX γ hγ hγ2 M hM α hα p hp he
     ρ hρ (by linarith)
   have htr := weightedGmcBallMoment_center_le_transfer P X hX γ hγ hγ2 M hM α z ρ hρ hρ8 p hp hp4
@@ -65,24 +65,19 @@ theorem weightedInsertion_exponent_nonpos {γ α p : ℝ} (hγ : 0 < γ) (hp : 0
     have h := mul_le_mul_of_nonneg_left hins (by positivity : (0 : ℝ) ≤ γ / 2)
     have hl : γ / 2 * (2 / γ * (Q γ - α)) = Q γ - α := by
       field_simp
-    rw [hl] at h
     linarith
   have h2 : γ * p / 2 < 2 / γ := by
     have h := mul_lt_mul_of_pos_left hp4 (by positivity : (0 : ℝ) < γ / 2)
     have hr : γ / 2 * (4 / γ ^ 2) = 2 / γ := by
       field_simp
       ring
-    rw [hr] at h
     linarith
   have hQ2 : Q γ - 2 / γ = γ / 2 := by
-    rw [Q]
-    ring
+    grind
   refine ⟨by linarith, ?_⟩
   have hexp : (2 - γ * α) * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2 =
       γ * p * ((Q γ - α) - γ * p / 2) := by
-    have h2a : 2 - γ * α = γ * Q γ - γ ^ 2 / 2 - γ * α := by rw [hQ]; ring
-    rw [h2a]
-    ring
+    grind
   rw [hexp]
   exact mul_nonpos_of_nonneg_of_nonpos (by positivity) (by linarith)
 
@@ -102,14 +97,14 @@ theorem equatorGFF_GMC_weighted_local_moment_range
     by_contra hnot
     rw [lt_min_iff, not_and_or, not_lt, not_lt] at hnot
     by_cases hp4 : p < 4 / γ ^ 2
-    · have hins : 2 / γ * (Q γ - α) ≤ p := hnot.resolve_left (not_le.mpr hp4)
+    · have hins := hnot.resolve_left (not_le.mpr hp4)
       obtain ⟨hα0, he⟩ := weightedInsertion_exponent_nonpos hγ hp hp4 hins
       rw [weightedGmcBallMoment_eq_top_of_insertion P X hX γ hγ hγ2 M hM α hα0 p hp hp4 he z r
         hr] at hfin
-      exact lt_irrefl _ hfin
+      simp_all
     · rw [weightedGmcBallMoment_eq_top_of_bulk P X hX γ hγ hγ2 M hM α z r hr p
         (not_lt.mp hp4)] at hfin
-      exact lt_irrefl _ hfin
+      simp_all
   · intro hrange
     exact weightedGmcBallMoment_lt_top_of_sharp_range P X hX γ hγ hγ2 M hM α z r hr p hp hrange
 

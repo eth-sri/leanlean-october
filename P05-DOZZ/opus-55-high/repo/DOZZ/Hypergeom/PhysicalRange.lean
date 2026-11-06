@@ -38,11 +38,7 @@ theorem gauss_physical_parameter_range (γ χ α₁ α₂ α₃ : ℝ)
   let C := gaussParameterC γ χ α₁
   have hhalf_lt_one : γ / 2 < 1 := by linarith
   have hχpos : 0 < χ := by
-    rcases hχ with hχ | hχ
-    · rw [hχ]
-      linarith only [hγ]
-    · rw [hχ]
-      positivity
+    aesop
   have hχQ : χ * Q γ = χ ^ 2 + 1 := by
     rcases hχ with hχ | hχ
     · rw [hχ]
@@ -59,7 +55,7 @@ theorem gauss_physical_parameter_range (γ χ α₁ α₂ α₃ : ℝ)
   have hAform : A = χ / 2 * (α₁ + α₂ + α₃ - Q γ - 2 * χ) - 1 / 2 := by
     dsimp [A, gaussParameterA]
     ring
-  have hAbase : χ / 2 * (Q γ - χ) - 1 / 2 = 0 := by linear_combination hχQ / 2
+  have hAbase : χ / 2 * (Q γ - χ) - 1 / 2 = 0 := by linarith
   have hA : 0 < A := by
     rw [hAform]
     calc

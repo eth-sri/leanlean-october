@@ -20,7 +20,7 @@ theorem reflected_reflection_real_moment
     (∫ ω, (twoSidedReflectionMass γ B Z ω).toReal ^q ∂P) =
       (∫⁻ ω, twoSidedReflectionMass γ B Z ω ^q ∂P).toReal := by
   have hm := twoSidedReflectionMass_aemeasurable_of_lateral P γ B Z
-    (conditionedPair_aemeasurable P B (Q γ-α) hData.1) hData.2.1
+    (conditionedPair_aemeasurable P B _ hData.1) hData.2.1
   have hf := reflected_reflection_mass_moment_lt_top P γ α q B Z hα hData hq
   constructor
   · simpa only [ENNReal.toReal_rpow] using

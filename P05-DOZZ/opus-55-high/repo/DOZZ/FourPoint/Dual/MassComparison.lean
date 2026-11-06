@@ -15,7 +15,6 @@ namespace DOZZ.Proofs
 /-- The dual density is nonnegative, including its prescribed root values. -/
 theorem dual_kernel_nonneg (γ α₁ α₂ α₃ : ℝ) (z x : ℂ) :
     0 ≤ dualFusionKernel γ α₁ α₂ α₃ z x := by
-  unfold dualFusionKernel
   exact div_nonneg
     (mul_nonneg (Real.rpow_nonneg (norm_nonneg _) _)
       (Real.rpow_nonneg (by unfold normPlus; positivity) _))

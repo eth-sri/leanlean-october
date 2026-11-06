@@ -50,31 +50,29 @@ private theorem measurable_conditionedPositiveEntranceQuantile
   intro u v huv
   exact cdfGeneralizedQuantile_monoOn_Ioo
     (conditionedPositiveEntranceMeasure ν t₀) u.2 v.2 huv
+section
+variable (ν t₀ : ℝ) (dt : ℕ → ℝ) (hν : 0 ≤ ν) (ht₀ : 0 < t₀) (hdt : ∀ n, 0 < dt n)
 
 /-- Every fixed-time coordinate of the entrance quantile walk is measurable in the whole sequence
 of independent uniform inputs. -/
 theorem measurable_conditionedPositiveEntranceQuantileWalkOn
-    (ν t₀ : ℝ) (dt : ℕ → ℝ) (hν : 0 ≤ ν) (ht₀ : 0 < t₀)
-    (hdt : ∀ n, 0 < dt n) (n : ℕ) :
+    (n : ℕ) :
     Measurable (fun u : ℕ → Set.Ioo (0 : ℝ) 1 =>
       conditionedPositiveEntranceQuantileWalkOn ν t₀ dt u hν ht₀ hdt n) := by
   induction n with
   | zero =>
-      have hbase := measurable_conditionedPositiveEntranceQuantile hν ht₀
       have hreal : Measurable (fun u : ℕ → Set.Ioo (0 : ℝ) 1 =>
           cdfGeneralizedQuantile
-            (ProbabilityTheory.cdf (conditionedPositiveEntranceMeasure ν t₀))
-            (u 0).1) := hbase.comp (measurable_pi_apply 0)
+            (ProbabilityTheory.cdf _)
+            (u 0).1) := (measurable_conditionedPositiveEntranceQuantile hν ht₀).comp (measurable_pi_apply 0)
       exact hreal.subtype_mk (h := fun u =>
         conditionedPositiveEntranceQuantile_pos hν ht₀ (u 0).2.1 (u 0).2.2
       )
   | succ n ih =>
-      have hstep := measurable_conditionedTransitionQuantileOn ν (dt n) hν (hdt n)
-      have hreal := hstep.comp (ih.prodMk (measurable_pi_apply (n + 1)))
-      exact hreal.subtype_mk (h := fun u =>
+      exact ((measurable_conditionedTransitionQuantileOn ν (dt n) hν (hdt n)).comp (ih.prodMk (measurable_pi_apply (n + 1)))).subtype_mk (h := fun u =>
         conditionedPositiveTransitionQuantile_pos hν (hdt n)
           (conditionedPositiveEntranceQuantileWalkOn ν t₀ dt u hν ht₀ hdt n).2
-        (u (n + 1)).2.1 (u (n + 1)).2.2
+        (u _).2.1 (u (n + 1)).2.2
       )
 
 
@@ -83,8 +81,7 @@ theorem measurable_conditionedPositiveEntranceQuantileWalkOn
 /-- The time-zero coordinate of the measurable entrance chain has the explicit entrance law under
 a single uniform input. -/
 theorem conditionedPositiveEntranceQuantileWalkOn_initial_law
-    (ν t₀ : ℝ) (dt : ℕ → ℝ) (hν : 0 ≤ ν) (ht₀ : 0 < t₀)
-    (hdt : ∀ n, 0 < dt n) :
+    :
     (volume : Measure (Set.Ioo (0 : ℝ) 1)).map
       (fun u => (conditionedPositiveEntranceQuantileWalkOn ν t₀ dt (fun _ => u)
         hν ht₀ hdt 0).1) =
@@ -95,7 +92,6 @@ theorem conditionedPositiveEntranceQuantileWalkOn_initial_law
   let : IsProbabilityMeasure μ :=
     isProbabilityMeasure_conditionedPositiveEntranceMeasure ν t₀ hν ht₀
   have hqSubtype : Measurable (fun u : Set.Ioo (0 : ℝ) 1 => q u.1) := by
-    dsimp [q, μ]
     exact measurable_conditionedPositiveEntranceQuantile hν ht₀
   have hqUniform : AEMeasurable q uniformOpenUnit := by
     simpa [q, μ, uniformOpenUnit] using
@@ -105,27 +101,19 @@ theorem conditionedPositiveEntranceQuantileWalkOn_initial_law
     rw [MeasurableSet.map_coe_volume measurableSet_Ioo, uniformOpenUnit]
   have hqMap : AEMeasurable q
       ((volume : Measure (Set.Ioo (0 : ℝ) 1)).map Subtype.val) := by
-    rw [hcoe]
-    exact hqUniform
+    simp_all
   have hval : AEMeasurable (Subtype.val : Set.Ioo (0 : ℝ) 1 → ℝ)
       (volume : Measure (Set.Ioo (0 : ℝ) 1)) := measurable_subtype_coe.aemeasurable
-  have hsubtypeSampler :
-      (volume : Measure (Set.Ioo (0 : ℝ) 1)).map (fun u => q u.1) = μ := by
+  exact by
     calc
       (volume : Measure (Set.Ioo (0 : ℝ) 1)).map (fun u => q u.1) =
           ((volume : Measure (Set.Ioo (0 : ℝ) 1)).map Subtype.val).map q :=
             (AEMeasurable.map_map_of_aemeasurable hqMap hval).symm
-      _ = uniformOpenUnit.map q := by rw [hcoe]
+      _ = uniformOpenUnit.map q := by simp_all
       _ = μ := by
-        dsimp [q, μ]
         exact conditionedPositiveEntranceQuantile_map_uniformOpenUnit hν ht₀
-  calc
-    (volume : Measure (Set.Ioo (0 : ℝ) 1)).map
-        (fun u => (conditionedPositiveEntranceQuantileWalkOn ν t₀ dt (fun _ => u)
-          hν ht₀ hdt 0).1) =
-      (volume : Measure (Set.Ioo (0 : ℝ) 1)).map (fun u => q u.1) := by
-        rfl
-    _ = μ := hsubtypeSampler
+
+end
 
 end DOZZ.Proofs
 

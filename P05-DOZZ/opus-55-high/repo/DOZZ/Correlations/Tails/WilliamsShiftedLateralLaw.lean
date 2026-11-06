@@ -39,7 +39,7 @@ theorem williams_shifted_lateral_joint_law
     hDY.comp₀ hD hY hW measurable_id.aemeasurable
   have hmap := (indepFun_iff_map_prod_eq_prod_map_map hWD hY).mp hWY
   change P.map (fun ω => (williamsReversedMark ν (D ω), Y ω)) =
-    (P.map ((williamsReversedMark ν) ∘ D)).prod (P.map Y) at hmap
+    (P.map _).prod (P.map Y) at hmap
   rw [hmap, hYlaw, ← AEMeasurable.map_map_of_aemeasurable hW hD]
   have hlaw := williams_reversed_joint_law (P.map D) hB ν hν Qν hQν
   change (P.map D).map (williamsReversedMark ν) = _ at hlaw

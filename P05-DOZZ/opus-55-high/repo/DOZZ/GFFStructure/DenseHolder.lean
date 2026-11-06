@@ -28,29 +28,32 @@ section
 
 variable {X Y : Type*} [PseudoEMetricSpace X] [PseudoEMetricSpace Y] [CompleteSpace Y]
     {C r : ℝ≥0} {s : Set X} {f : s → Y}
+section
+variable (hs : Dense s)
+include hs
 
-lemma neBot_comap_nhds (hs : Dense s) (x : X) : ((𝓝 x).comap ((↑) : s → X)).NeBot :=
+lemma neBot_comap_nhds (x : X) : ((𝓝 x).comap ((↑) : s → X)).NeBot :=
   hs.isDenseInducing_val.comap_nhds_neBot _
 
-lemma Dense.holderWith_extend (hs : Dense s) (hf : HolderWith C r f) (hr : 0 < r) :
+lemma Dense.holderWith_extend (hf : HolderWith C r f) (hr : 0 < r) :
     HolderWith C r (hs.extend f) := by
   intro x y
   have hf' := hf.uniformContinuous hr
   have := neBot_comap_nhds hs
-  have hx := hs.extend_spec hf' x
-  have hy := hs.extend_spec hf' y
   refine le_of_tendsto_of_tendsto'
-    (b := ((𝓝 x).comap ((↑) : s → X)) ×ˢ ((𝓝 y).comap ((↑) : s → X))) ?_ ?_
+    (b := ((𝓝 x).comap ((↑))) ×ˢ ((𝓝 y).comap ((↑)))) ?_ ?_
     fun z : s × s ↦ hf z.1 z.2
   · change Tendsto (edist.uncurry ∘ (fun z : s × s ↦ (f z.1, f z.2))) _ _
     refine (Continuous.tendsto (by fun_prop) (hs.extend f x, hs.extend f y)).comp ?_
-    exact Tendsto.prodMk_nhds (hx.comp tendsto_fst) (hy.comp tendsto_snd)
+    exact Tendsto.prodMk_nhds ((hs.extend_spec hf' x).comp tendsto_fst) ((hs.extend_spec hf' y).comp tendsto_snd)
   · simp_rw [Subtype.edist_eq]
     change Tendsto ((fun z : X × X ↦ C * edist z.1 z.2 ^ r.toReal) ∘
       (fun z : s × s ↦ (z.1.1, z.2.1))) _ _
     refine (Continuous.tendsto ?_ (x, y)).comp ?_
     · fun_prop (disch := exact ENNReal.coe_ne_top)
     exact Tendsto.prodMk_nhds (tendsto_comap.comp tendsto_fst) (tendsto_comap.comp tendsto_snd)
+
+end
 
 lemma PseudoEMetricSpace.boundedSpace_toPseudoMetricSpace {C : ℝ≥0}
     (hX : ∀ x y : X, edist x y ≤ C) :
@@ -63,25 +66,27 @@ lemma PseudoEMetricSpace.boundedSpace_toPseudoMetricSpace {C : ℝ≥0}
   refine ⟨C, fun x y ↦ ?_⟩
   grw [dist_edist, hX, ENNReal.coe_toReal]
   exact ENNReal.coe_ne_top
+section
+variable {X Y : Type*}
 
-lemma MemHolder.mono {X Y : Type*} [PseudoMetricSpace X] [hX : BoundedSpace X]
+lemma MemHolder.mono [PseudoMetricSpace X] [hX : BoundedSpace X]
     [PseudoEMetricSpace Y] {f : X → Y} {r s : ℝ≥0} (hf : MemHolder r f) (hs : s ≤ r) :
     MemHolder s f := by
   obtain ⟨C, hf⟩ := hf
   obtain rfl | hr := eq_zero_or_pos r
   · rw [nonpos_iff_eq_zero.1 hs]
-    exact ⟨C, hf⟩
+    tauto
   obtain ⟨C', hC'⟩ := Metric.boundedSpace_iff_nndist.1 hX
   refine ⟨C * C' ^ (r - s : ℝ), fun x y ↦ ?_⟩
   obtain h | h := eq_or_ne (edist x y) 0
   · have := hf x y
     simp_all
-  nth_grw 1 [hf x y, ← sub_add_cancel r.toReal s, ENNReal.rpow_add _ _ h (edist_ne_top _ _),
+  nth_grw 1 [hf x y, ← sub_add_cancel r.toReal s, ENNReal.rpow_add _ _ h _,
     edist_nndist, edist_nndist, edist_nndist, hC', ENNReal.coe_mul, mul_assoc,
     ENNReal.coe_rpow_of_nonneg]
   all_goals simpa
 
-lemma MemHolder.mono' {X Y : Type*} [PseudoEMetricSpace X] [PseudoEMetricSpace Y]
+lemma MemHolder.mono' [PseudoEMetricSpace X] [PseudoEMetricSpace Y]
     {f : X → Y} {r s : ℝ≥0} (hf : MemHolder r f) (hs : s ≤ r) {C' : ℝ≥0}
     (hX : ∀ x y : X, edist x y ≤ C') :
     MemHolder s f := by
@@ -90,14 +95,14 @@ lemma MemHolder.mono' {X Y : Type*} [PseudoEMetricSpace X] [PseudoEMetricSpace Y
   have := PseudoEMetricSpace.boundedSpace_toPseudoMetricSpace hX
   exact DOZZ.Proofs.MemHolder.mono hf hs
 
-lemma HolderOnWith.mono_right {X Y : Type*} [PseudoMetricSpace X] [PseudoEMetricSpace Y]
+lemma HolderOnWith.mono_right [PseudoMetricSpace X] [PseudoEMetricSpace Y]
     {f : X → Y} {C r s : ℝ≥0} {t : Set X} (hf : HolderOnWith C r f t) (hs : s ≤ r)
     (ht : IsBounded t) : ∃ C', HolderOnWith C' s f t := by
   simp_rw [← HolderWith.restrict_iff] at *
   have : BoundedSpace t := boundedSpace_val_set_iff.2 ht
   exact MemHolder.mono ⟨C, hf⟩ hs
 
-lemma HolderOnWith.mono_right' {X Y : Type*} [PseudoEMetricSpace X] [PseudoEMetricSpace Y]
+lemma HolderOnWith.mono_right' [PseudoEMetricSpace X] [PseudoEMetricSpace Y]
     {f : X → Y} {C r s : ℝ≥0} {t : Set X} (hf : HolderOnWith C r f t) (hs : s ≤ r)
     {C' : ℝ≥0} (ht : ∀ ⦃x⦄, x ∈ t → ∀ ⦃y⦄, y ∈ t → edist x y ≤ C') :
     ∃ C', HolderOnWith C' s f t := by
@@ -107,6 +112,8 @@ lemma HolderOnWith.mono_right' {X Y : Type*} [PseudoEMetricSpace X] [PseudoEMetr
   have : BoundedSpace t :=
     PseudoEMetricSpace.boundedSpace_toPseudoMetricSpace fun x y : t ↦ ht x.2 y.2
   exact MemHolder.mono ⟨C, hf⟩ hs
+
+end
 
 end
 
@@ -130,19 +137,18 @@ lemma UniformContinuousOn.exists_tendsto {α β : Type*} [UniformSpace α] [Firs
       have h_cauchy := hu.cauchySeq
       rw [cauchySeq_iff] at h_cauchy
       rw [cauchySeq_iff, uniformity_subtype]
-      simp only [mem_comap, forall_exists_index, and_imp] at h_cauchy ⊢
+      simp at h_cauchy ⊢
       intro V s hs hsV
       obtain ⟨N, hN⟩ := h_cauchy s hs
-      exact ⟨N, fun k hNk l hNl ↦ hsV (hN k hNk l hNl)⟩
+      bound
     · rw [tendsto_principal]
-      have hut : ∀ᶠ n in atTop, (u n : α) ∈ t := hu.eventually_mem (ht.mem_nhds ha)
-      simp only [eventually_atTop, Set.mem_prod, Set.mem_ofPred_eq, Prod.forall,
-        Prod.exists, Prod.mk_le_mk, and_imp] at hut ⊢
+      have hut := hu.eventually_mem (ht.mem_nhds ha)
+      simp at hut ⊢
       obtain ⟨N, hN⟩ := hut
       exact ⟨N, N, fun a b hNa hNb ↦ ⟨hN a hNa, hN b hNb⟩⟩
   choose c hc using this
   obtain ⟨u, hu⟩ : ∃ u : ℕ → s, Tendsto (fun n ↦ (u n : α)) atTop (𝓝 a) := by
-    have has : a ∈ closure s := by simp [hs.closure_eq]
+    have has : a ∈ closure s := by tauto
     rw [mem_closure_iff_seq_limit] at has
     obtain ⟨u, hu_mem, hu⟩ := has
     exact ⟨fun n ↦ ⟨u n, hu_mem n⟩, hu⟩
@@ -153,18 +159,18 @@ lemma UniformContinuousOn.exists_tendsto {α β : Type*} [UniformSpace α] [Firs
   change Tendsto ((fun p ↦ (f p.1, f p.2)) ∘ (fun n ↦ (u n, v n))) atTop (uniformity β)
   rw [UniformContinuousOn] at hf
   refine hf.comp ?_
-  have hu' : Tendsto u atTop (comap Subtype.val (𝓝 a)) := by rwa [tendsto_comap_iff]
-  have hv' : Tendsto v atTop (comap Subtype.val (𝓝 a)) := by rwa [tendsto_comap_iff]
+  have hu' : Tendsto u atTop (comap Subtype.val (𝓝 a)) := by simpa
+  have hv' : Tendsto v atTop (comap Subtype.val (𝓝 a)) := by assumption
   refine Tendsto.mono_right (hu'.prodMk hv') ?_
   rw [le_inf_iff]
   constructor
   · rw [← Filter.comap_prodMap_prod, ← nhds_prod_eq, uniformity_subtype]
     refine comap_mono ?_
     exact nhds_le_uniformity a
-  · simp only [le_principal_iff]
+  · simp
     rw [mem_prod_iff]
     simp_rw [Set.prod_subset_prod_iff]
-    simp only [mem_comap]
+    simp
     refine ⟨Subtype.val ⁻¹' t, ⟨t, ?_, subset_rfl⟩, Subtype.val ⁻¹' t, ⟨t, ?_, subset_rfl⟩, ?_⟩
     · exact ht.mem_nhds ha
     · exact ht.mem_nhds ha
@@ -177,17 +183,16 @@ lemma Dense.holderOnWith_extend {X Y : Type*} [PseudoEMetricSpace X] [PseudoEMet
   intro x hx y hy
   have := neBot_comap_nhds hs
   have h_mem x (hx : x ∈ U) : ∀ᶠ z in (𝓝 x).comap ((↑) : s → X), ↑z ∈ U := by
-    simp only [eventually_comap, Subtype.forall]
+    simp
     suffices ∀ᶠ z in 𝓝 x, z ∈ U by
       filter_upwards [this] with z hz
-      rintro _ h rfl
-      exact hz
+      simp_all
     rw [eventually_mem_set]
     exact hU.mem_nhds hx
   have h_prod_mem : ∀ᶠ z : s × s in
       ((𝓝 x).comap ((↑) : s → X)) ×ˢ ((𝓝 y).comap ((↑) : s → X)),
       ↑z.1 ∈ U ∧ ↑z.2 ∈ U := by
-    simp only [eventually_and]
+    simp
     exact ⟨(h_mem x hx).prod_inl _, (h_mem y hy).prod_inr _⟩
   have hfx : Tendsto f ((𝓝 x).comap ((↑) : s → X)) (𝓝 (hs.extend f x)) := by
     refine tendsto_nhds_limUnder ?_
@@ -224,19 +229,19 @@ lemma exists_modification_on_of_edist_modification_on {T Ω E : Type*} {mΩ : Me
     {P : Measure Ω} [PseudoEMetricSpace E] [MeasurableSpace E] [BorelSpace E]
     {X Y : T → Ω → E} (hY : ∀ t, Measurable (Y t)) {U : Set T}
     (h_edist : ∀ t ∈ U, ∀ᵐ ω ∂P, edist (Y t ω) (X t ω) = 0) :
-    ∃ Z : T → Ω → E, (∀ t, Measurable (Z t)) ∧ (∀ t, ∀ ω, edist (Z t ω) (Y t ω) = 0) ∧
+    ∃ Z : T → Ω → E, (∀ t, Measurable (Z t)) ∧ (∀ t ω, edist (Z t ω) (Y t ω) = 0) ∧
       ∀ t ∈ U, Z t =ᵐ[P] X t := by
   let Z t ω := if ω ∈ {ω | edist (Y t ω) (X t ω) = 0} then X t ω else Y t ω
   have h_edist_Z t ω : edist (Z t ω) (Y t ω) = 0 := by
     simp only [Set.mem_ofPred_eq, Z]
     split_ifs with hω
     · rw [edist_comm]
-      simp [hω]
+      assumption
     · simp
   have hZ_meas t : Measurable (Z t) := DOZZ.Proofs.Measurable.of_edist_eq_zero (hY t) (h_edist_Z t)
   refine ⟨Z, hZ_meas, h_edist_Z, fun t ht ↦ ?_⟩
   filter_upwards [h_edist t ht] with ω hω
-  simp [Z, hω]
+  aesop
 
 end aux
 
@@ -257,14 +262,13 @@ lemma Measurable.measurableSet_edist_eqOn_zero_of_continuous [SecondCountableTop
   have : {ω | ∀ t ∈ U, edist (f t ω) (g t ω) = 0}
       = {ω | ∀ (t : T'), ↑t ∈ U → edist (f t ω) (g t ω) = 0} := by
     ext ω
-    simp only [Set.mem_ofPred_eq, Subtype.forall]
+    simp
     refine ⟨fun h t _ ↦ h t, fun h ↦ ?_⟩
     have h_eqOn : Set.EqOn (fun t ↦ edist (f t ω) (g t ω)) 0 (T' ∩ U) := by
       intro t htU
-      exact h t htU.1 htU.2
+      simp_all
     refine Set.EqOn.of_subset_closure h_eqOn ?_ (by fun_prop) Set.inter_subset_right ?_
-    · intro x hx
-      exact (hf ω x hx).edist (hg ω x hx)
+    · fun_prop
     · exact subset_closure_dense_inter hT'_dense hU
   rw [this]
   have : {ω | ∀ (t : T'), ↑t ∈ U → edist (f t ω) (g t ω) = 0}
@@ -302,16 +306,17 @@ lemma IsKolmogorovProcess.measurableSet_holderSet
           ({ω | edist (X s ω) (X t ω) = 0} ∪ {ω | edist s t ≠ 0}) := by
       ext; simp [imp_iff_or_not]
     change MeasurableSet {ω | ∀ (s t : (T' ∩ U : Set T)),
-      edist s t = 0 → edist (X s ω) (X t ω) = 0}
+      edist s t = 0 → edist _ _ = 0}
     rw [h_eq]
     refine MeasurableSet.iInter (fun s ↦ MeasurableSet.iInter (fun t ↦ ?_))
     refine MeasurableSet.union ?_ ?_
     · exact MeasurableSet.preimage (measurableSet_singleton 0) hX.measurable_edist
     · exact (MeasurableSet.preimage (measurableSet_singleton 0) (by fun_prop)).compl
+section
+variable (hT : HasBoundedCoveringNumber U c d) (hp_pos : 0 < p) (hβ_pos : 0 < β) {T' : Set T} {ω : Ω} (hω : ω ∈ holderSet X T' p β U)
+include hT hp_pos hβ_pos hω
 
-lemma holderOnWith_of_mem_holderSet (hT : HasBoundedCoveringNumber U c d)
-    (hp_pos : 0 < p) (hβ_pos : 0 < β)
-    {T' : Set T} {ω : Ω} (hω : ω ∈ holderSet X T' p β U) :
+lemma holderOnWith_of_mem_holderSet :
     letI C ω := ⨆ (s : (T' ∩ U : Set T)) (t : (T' ∩ U : Set T)),
       edist (X s ω) (X t ω) ^ p / edist s t ^ (β * p)
     HolderOnWith (C ω ^ p⁻¹).toNNReal β (fun (t : T') ↦ X t ω) {t' | (t' : T) ∈ U} := by
@@ -320,12 +325,10 @@ lemma holderOnWith_of_mem_holderSet (hT : HasBoundedCoveringNumber U c d)
     calc edist s t ≤ Metric.ediam U := Metric.edist_le_ediam_of_mem (x := s.val) (y := t.val) hs ht
     _ < ∞ := hT.ediam_lt_top
   have h_dist_top : edist s t ^ (β : ℝ) ≠ ∞ := by
-    simp only [ne_eq, ENNReal.rpow_eq_top_iff, NNReal.coe_pos, not_or, not_and, not_lt,
-      NNReal.zero_le_coe, implies_true, nonpos_iff_eq_zero, true_and]
-    exact fun h_eq_top ↦ absurd h_eq_top h_edist_lt_top.ne
+    aesop
   by_cases h_dist_zero : edist s t = 0
   · simpa [h_dist_zero, hβ_pos] using hω.2 ⟨s, ⟨s.2, hs⟩⟩ ⟨t, ⟨t.2, ht⟩⟩ h_dist_zero
-  rw [← ENNReal.div_le_iff (by simp [h_dist_zero]) h_dist_top]
+  rw [← ENNReal.div_le_iff (by positivity) h_dist_top]
   rw [ENNReal.coe_toNNReal]
   swap; · exact ENNReal.rpow_ne_top_of_nonneg (by positivity) hω.1.ne
   rw [ENNReal.le_rpow_inv_iff hp_pos, ENNReal.div_rpow_of_nonneg _ _ hp_pos.le,
@@ -334,17 +337,15 @@ lemma holderOnWith_of_mem_holderSet (hT : HasBoundedCoveringNumber U c d)
     edist (X s ω) (X t ω) ^ p / edist s t ^ (β * p))
 
 lemma uniformContinuousOn_of_mem_holderSet
-    (hT : HasBoundedCoveringNumber U c d)
-    (hp_pos : 0 < p) (hβ_pos : 0 < β)
-    {T' : Set T} {ω : Ω} (hω : ω ∈ holderSet X T' p β U) :
+    :
     UniformContinuousOn (fun (t : T') ↦ X t ω) {x : T' | ↑x ∈ U} :=
       (holderOnWith_of_mem_holderSet hT hp_pos hβ_pos hω).uniformContinuousOn hβ_pos
 
-lemma continuousOn_of_mem_holderSet (hT : HasBoundedCoveringNumber U c d)
-    (hp_pos : 0 < p) (hβ_pos : 0 < β)
-    {T' : Set T} {ω : Ω} (hω : ω ∈ holderSet X T' p β U) :
+lemma continuousOn_of_mem_holderSet :
     ContinuousOn (fun (t : T') ↦ X t ω) {x : T' | ↑x ∈ U} :=
   (holderOnWith_of_mem_holderSet hT hp_pos hβ_pos hω).continuousOn hβ_pos
+
+end
 
 lemma exists_tendsto_of_mem_holderSet [CompleteSpace E]
     (hT : HasBoundedCoveringNumber U c d) (hU : IsOpen U)

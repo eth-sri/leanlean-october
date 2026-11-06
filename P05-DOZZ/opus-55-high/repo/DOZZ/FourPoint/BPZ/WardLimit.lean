@@ -29,22 +29,22 @@ variable {γ q δ : ℝ} {ρ kt k₂ φ : ℂ → ℝ} {D : Set ℂ}
 variable {P : Measure Ω} {X : Ω → Distr} {M : Ω → Measure ℂ} {Xc : Ω → ℂ → ℝ → ℝ}
 
 namespace BPZLimitData
+section
+variable (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb P X γ M Xc ρ k₂ D)
+include hd hp
 
-theorem measurable_mixTest_joint (hd : BPZLimitData γ q δ ρ kt k₂ φ D)
-    (hp : BPZWardProb P X γ M Xc ρ k₂ D) {k L : ℂ → ℝ} (hk : Measurable k)
+theorem measurable_mixTest_joint {k L : ℂ → ℝ} (hk : Measurable k)
     (hL : Measurable L) :
     Measurable (fun p : Ω × ℂ => bpzMixTest φ ρ k k₂ L (M p.1) p.2) := by
-  unfold bpzMixTest
   exact measurable_integral_finite_family M hp.hMm hp.hM.1
-    (fun x y => (1 - ρ y) * k₂ y * (φ x * k x * L (x - y)))
+    (fun x y => (1 - ρ y) * k₂ y * (φ x * k x * L _))
     ((((measurable_const.sub (hd.ρ_meas.comp measurable_snd)).mul
       (hd.k₂_meas.comp measurable_snd)).mul
       (((hd.phi_cont.measurable.comp measurable_fst).mul (hk.comp measurable_fst)).mul
         (hL.comp (measurable_fst.sub measurable_snd)))))
 
 /-- **The Ward identity in the limit.** -/
-theorem ward_limit (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb P X γ M Xc ρ k₂ D)
-    (v : ℂ) :
+theorem ward_limit (v : ℂ) :
     ∫ ω, (∫ y, ρ y * k₂ y ∂M ω + ∫ y, (1 - ρ y) * k₂ y ∂M ω) ^ (-q) *
         ∫ x, fderiv ℝ (fun x => φ x * kt x) x v * normPlus x ^ (4 + γ ^ 2 * q) ∂M ω ∂P =
       ∫ ω, q * ((∫ y, ρ y * k₂ y ∂M ω + ∫ y, (1 - ρ y) * k₂ y ∂M ω) ^ (-q - 1) *
@@ -71,7 +71,6 @@ theorem ward_limit (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb
   have hLwm : ∀ n, Measurable (Lw n) := by
     intro n
     refine (measurable_integral_measure ?_).comp (hμ.meas n)
-    unfold bpzWardLeftWeight
     exact ((hd.continuous_fderiv_apply v).measurable.mul (bpz_measurable_normPlus.pow_const _)).mul
       (Real.measurable_exp.comp ((continuous_bpzPin _).measurable.const_mul _))
   have hLm : ∀ n : ℕ, Measurable fun w => bpzLamDeriv n w v := fun n =>
@@ -85,9 +84,8 @@ theorem ward_limit (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb
     BPZWeakConv.measurable_integral_random (hμ.meas n) (hμ.fin n)
       (hd.measurable_mixTest_joint hp (hd.measurable_cutWeight n) (hTm n))
   -- convergences
-  have hAconv : TendstoInMeasure P A atTop (fun ω => ∫ y, ρ y * k₂ y ∂M ω) := hd.conv_cut hp
-  have hIconv : TendstoInMeasure P (fun n ω => A n ω + I₂ ω) atTop
-      (fun ω => ∫ y, ρ y * k₂ y ∂M ω + I₂ ω) :=
+  have hAconv := hd.conv_cut hp
+  have hIconv :=
     bpz_tendstoInMeasure_add (fun n => (hAm n).aestronglyMeasurable)
       (fun _ => hI₂m.aestronglyMeasurable) hAconv
       (tendstoInMeasure_of_tendsto_ae (fun _ => hI₂m.aestronglyMeasurable)
@@ -95,9 +93,7 @@ theorem ward_limit (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb
   have hLconv := hd.conv_left hp v
   have hSconv := hd.conv_sym hp v
   have hMxconv := hd.conv_mix hp v
-  have hSMconv : TendstoInMeasure P (fun n ω => S n ω + Mx n ω) atTop
-      (fun ω => (∫ x, ∫ y, bpzSymKer φ ρ k₂ (bpzKern v) x y ∂M ω ∂M ω) +
-        ∫ x, bpzMixTest φ ρ k₂ k₂ (bpzKern v) (M ω) x ∂M ω) :=
+  have hSMconv :=
     bpz_tendstoInMeasure_add (fun n => (hSm n).aestronglyMeasurable)
       (fun n => (hMxm n).aestronglyMeasurable) hSconv hMxconv
   -- positivity of the limit mass
@@ -110,7 +106,7 @@ theorem ward_limit (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb
   have hpos₀ : ∀ᵐ ω ∂P, 0 < ∫ y, ρ y * k₂ y ∂M ω + I₂ ω := by
     filter_upwards [hlow, hDpos] with ω h1 h2
     have := hρk0 ω
-    nlinarith [mul_pos hc h2]
+    nlinarith
   -- the integrands
   have hZconv := bpz_tendstoInMeasure_map₂ (fun n => ((hAm n).add hI₂m).aestronglyMeasurable)
     (fun n => (hLwm n).aestronglyMeasurable) hIconv hLconv (fun a b => a ^ (-q) * b)
@@ -121,50 +117,47 @@ theorem ward_limit (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb
     (fun a b => q * (a ^ (-q - 1) * (γ ^ 2 * b)))
     (measurable_const.mul ((measurable_fst.pow_const _).mul (measurable_const.mul measurable_snd)))
     (hpos₀.mono fun ω h => by
-      show ContinuousAt (fun p : ℝ × ℝ => q * (p.1 ^ (-q - 1) * (γ ^ 2 * p.2))) _
       exact continuousAt_const.mul ((continuousAt_fst.rpow_const (Or.inl h.ne')).mul
         (continuousAt_const.mul continuousAt_snd)))
   -- domination
   obtain ⟨CL, hCL0, hCL⟩ := hd.abs_leftInt_le v
   obtain ⟨CS, hCS0, hCS⟩ := hd.abs_symInt_le v
   obtain ⟨CM, hCM0, hCM⟩ := hd.abs_mixInt_le v
-  set Cd : ℝ := CL + q * γ ^ 2 * (CS + CM) with hCd
+  set Cd := CL + q * γ ^ 2 * (CS + CM) with hCd
   set Bd : Ω → ℝ := fun ω => Cd * (c * (M ω D).toReal) ^ (-(q - 1)) with hBd
-  have hmD : Measurable fun ω => (M ω D).toReal :=
+  have hmD :=
     ((Measure.measurable_coe hd.D_meas).comp hp.hMm).ennreal_toReal
-  have hBdint : Integrable Bd P :=
+  have hBdint :=
     (bpzWard_integrable_rpow_neg hp hd.D_meas (hmD.const_mul c).aestronglyMeasurable hc
       (Eventually.of_forall fun _ => le_rfl) (p := q - 1) (by linarith [hd.q_ge])).const_mul Cd
   have hgood : ∀ᵐ ω ∂P, ∀ n : ℕ, 0 < c * (M ω D).toReal ∧
       c * (M ω D).toReal ≤ A n ω + I₂ ω ∧ Integrable (fun y => (1 - ρ y) * k₂ y) (M ω) := by
     filter_upwards [hlow, hDpos, hp.k₂_int] with ω h1 h2 h3 n
-    exact ⟨mul_pos hc h2, by linarith [hA0 n ω], h3⟩
+    exact ⟨mul_pos hc h2, by grind, h3⟩
   have hpow : ∀ {I Y : ℝ}, 0 < Y → Y ≤ I → I ^ (1 - q) ≤ Y ^ (-(q - 1)) := by
     intro I Y hY hYI
     rw [show -(q - 1) = 1 - q by ring]
     exact Real.rpow_le_rpow_of_nonpos hY hYI (by linarith [hd.q_ge])
-  have hI₂le : ∀ ω, I₂ ω ≤ A 0 ω + I₂ ω := fun ω => by linarith [hA0 0 ω]
+  have hI₂le : ∀ ω, I₂ ω ≤ A 0 ω + I₂ ω := fun ω => by bound
   have hZb : ∀ n : ℕ, ∀ᵐ ω ∂P, |(A n ω + I₂ ω) ^ (-q) * Lw n ω| ≤ Bd ω := by
     intro n
     filter_upwards [hgood] with ω hω
     obtain ⟨hY, hYI, -⟩ := hω n
-    have hI : 0 < A n ω + I₂ ω := lt_of_lt_of_le hY hYI
+    have hI := lt_of_lt_of_le hY hYI
     have := hμ.fin n ω
-    have hL := hCL n (μ n ω)
     rw [abs_mul, abs_of_nonneg (Real.rpow_nonneg hI.le _)]
     have h1 : A n ω ≤ A n ω + I₂ ω := by
       have : 0 ≤ I₂ ω := integral_nonneg fun y =>
         mul_nonneg (by linarith [hd.ρ_le_one y]) (hd.k₂_nonneg y)
       linarith
     calc (A n ω + I₂ ω) ^ (-q) * |Lw n ω| ≤ (A n ω + I₂ ω) ^ (-q) * (CL * A n ω) :=
-          mul_le_mul_of_nonneg_left hL (Real.rpow_nonneg hI.le _)
+          mul_le_mul_of_nonneg_left (hCL n (μ n ω)) (Real.rpow_nonneg hI.le _)
       _ = CL * ((A n ω + I₂ ω) ^ (-q) * A n ω) := by ring
       _ ≤ CL * (A n ω + I₂ ω) ^ (1 - q) :=
           mul_le_mul_of_nonneg_left (bpz_rpow_neg_mul_le hI h1) hCL0
       _ ≤ CL * (c * (M ω D).toReal) ^ (-(q - 1)) :=
           mul_le_mul_of_nonneg_left (hpow hY hYI) hCL0
       _ ≤ Bd ω := by
-          simp only [hBd, hCd]
           apply mul_le_mul_of_nonneg_right _ (Real.rpow_nonneg hY.le _)
           have : 0 ≤ q * γ ^ 2 * (CS + CM) := by positivity
           linarith
@@ -173,16 +166,14 @@ theorem ward_limit (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb
     intro n
     filter_upwards [hgood] with ω hω
     obtain ⟨hY, hYI, hint⟩ := hω n
-    have hI : 0 < A n ω + I₂ ω := lt_of_lt_of_le hY hYI
+    have hI := lt_of_lt_of_le hY hYI
     have := hμ.fin n ω
     have hI₂0 : 0 ≤ I₂ ω := integral_nonneg fun y =>
       mul_nonneg (by linarith [hd.ρ_le_one y]) (hd.k₂_nonneg y)
     have h1 : A n ω ≤ A n ω + I₂ ω := by linarith
     have h2 : I₂ ω ≤ A n ω + I₂ ω := by linarith [hA0 n ω]
-    have hSb := hCS n (μ n ω)
-    have hMb := hCM n (μ n ω) (M ω) hint
     have hSM : |S n ω + Mx n ω| ≤ CS * (A n ω * A n ω) + CM * (A n ω * I₂ ω) :=
-      (abs_add_le _ _).trans (add_le_add hSb hMb)
+      (abs_add_le ..).trans (add_le_add (hCS n (μ n ω)) (hCM n (μ n ω) (M ω) hint))
     have hIp : 0 ≤ (A n ω + I₂ ω) ^ (-q - 1) := Real.rpow_nonneg hI.le _
     rw [abs_mul, abs_mul, abs_mul, abs_of_nonneg hq0, abs_of_nonneg hIp,
       abs_of_nonneg (sq_nonneg γ)]
@@ -199,7 +190,6 @@ theorem ward_limit (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb
       _ ≤ q * γ ^ 2 * (CS + CM) * (c * (M ω D).toReal) ^ (-(q - 1)) :=
           mul_le_mul_of_nonneg_left (hpow hY hYI) (by positivity)
       _ ≤ Bd ω := by
-          simp only [hBd, hCd]
           apply mul_le_mul_of_nonneg_right _ (Real.rpow_nonneg hY.le _)
           linarith
   -- equal expectations along the sequence
@@ -212,6 +202,8 @@ theorem ward_limit (hd : BPZLimitData γ q δ ρ kt k₂ φ D) (hp : BPZWardProb
     (fun n => (measurable_const.mul ((((hAm n).add hI₂m).pow_const _).mul
       (measurable_const.mul ((hSm n).add (hMxm n))))).aestronglyMeasurable)
     hZconv hWconv hBdint hZb hWb heq
+
+end
 
 end BPZLimitData
 

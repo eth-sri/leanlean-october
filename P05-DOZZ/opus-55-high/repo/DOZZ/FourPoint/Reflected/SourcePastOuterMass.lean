@@ -29,26 +29,25 @@ theorem reflected_source_outerMass_pastCode_ae
   let U := reflected_outerRegion (‖z‖^(1-ξ))
   let F := fun x : ℂ => ENNReal.ofReal (gammaHalfKernel γ α₁ α₂ α₃ z x)
   have hU : MeasurableSet U := (measurableSet_lt measurable_const measurable_norm).inter
-    (measurableSet_insert.mpr (measurableSet_singleton (1 : ℂ)) : MeasurableSet ({0,1} : Set ℂ)).compl
-  have hU0 : U ⊆ ({0} : Set ℂ)ᶜ := by
+    (measurableSet_insert.mpr (measurableSet_singleton 1)).compl
+  have hU0 : U ⊆ ({0})ᶜ := by
     intro x hx
     have hn := hr.trans hx.1
-    simpa only [mem_compl_iff,mem_singleton_iff] using norm_pos_iff.mp hn
+    simp_all
   have hF : Measurable F := (reflected_gammaHalfKernel_measurable γ α₁ α₂ α₃ z).ennreal_ofReal
   filter_upwards [heq,reflected_source_outerMass_eq_comparison_region P X hX γ hγ hγ₂ M hM
     α₁ α₂ α₃ ξ z hz] with ω hω ho
-  rw [reflected_pastOuterMassCode_eq γ α₁ α₂ α₃ (‖z‖^(1-ξ)) z (A ω) T (N ω) hr hT (hfin ω)]
+  rw [reflected_pastOuterMassCode_eq γ α₁ α₂ α₃ _ z (A ω) T (N ω) hr hT (hfin ω)]
   have hW : Measurable (fun x : ℂ => ENNReal.ofReal (reflected_global_reinsertionWeight γ (A ω) x)) :=
     ((reflected_global_reinsertionWeight_measurable γ).comp (measurable_const.prodMk measurable_id)).ennreal_ofReal
   rw [ho]
-  change (∫⁻ x in U, F x*ENNReal.ofReal (reflected_global_reinsertionWeight γ (A ω) x) ∂N ω) =
+  change _ =
     ∫⁻ x in U, F x ∂M ω
   rw [show (fun x : ℂ => F x*ENNReal.ofReal (reflected_global_reinsertionWeight γ (A ω) x)) =
-    (fun x => ENNReal.ofReal (reflected_global_reinsertionWeight γ (A ω) x)*F x) from
-      funext fun _ => mul_comm _ _]
+    (fun x => ENNReal.ofReal _*F x) from
+      funext fun _ => mul_comm ..]
   have hw := setLIntegral_withDensity_eq_setLIntegral_mul (N ω) hW hF hU
-  simp only [Pi.mul_apply] at hw
-  rw [← hw]
-  rw [hω,reflected_global_reinsertion_measure,Measure.restrict_restrict hU,inter_eq_left.mpr hU0]
+  simp at hw
+  rw [← hw, hω,reflected_global_reinsertion_measure,Measure.restrict_restrict hU,inter_eq_left.mpr hU0]
 
 end DOZZ.Proofs

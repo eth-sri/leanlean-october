@@ -33,10 +33,9 @@ theorem map_prod_graph_apply_rect
     (μ.prod η).map (fun z => (z.1, f z)) (A ×ˢ B) =
       ∫⁻ x in A, K x B ∂μ := by
   let F : X × U → X × Y := fun z => (z.1, f z)
-  have hF : Measurable F := measurable_fst.prodMk hf
-  have hRect : MeasurableSet (A ×ˢ B) := hA.prod hB
-  have hPre : MeasurableSet (F ⁻¹' (A ×ˢ B)) := hRect.preimage hF
-  rw [Measure.map_apply hF hRect, Measure.prod_apply hPre]
+  have hF := measurable_fst.prodMk hf
+  have hRect := hA.prod hB
+  rw [Measure.map_apply hF hRect, Measure.prod_apply (hRect.preimage hF)]
   rw [← lintegral_indicator hA]
   apply lintegral_congr
   intro x
@@ -45,15 +44,11 @@ theorem map_prod_graph_apply_rect
       hf.comp (measurable_const.prodMk measurable_id)
     have hset : Prod.mk x ⁻¹' (F ⁻¹' (A ×ˢ B)) =
         (fun u => f (x, u)) ⁻¹' B := by
-      ext u
-      simp [F, hx]
-    rw [hset, Set.indicator_of_mem hx]
-    rw [← Measure.map_apply hfx hB, hK x]
+      aesop
+    rw [hset, Set.indicator_of_mem hx, ← Measure.map_apply hfx hB, hK x]
   · have hset : Prod.mk x ⁻¹' (F ⁻¹' (A ×ˢ B)) = ∅ := by
-      ext u
-      simp [F, hx]
-    rw [hset]
-    simp [hx]
+      aesop
+    aesop
 
 /-- A fresh uniform level in the subtype `(0,1)` samples the explicit transition probability
 measure from every positive start. -/
@@ -75,19 +70,16 @@ theorem conditionedPositiveTransitionQuantile_map_uniformSubtype
     rw [MeasurableSet.map_coe_volume measurableSet_Ioo, uniformOpenUnit]
   have hqMap : AEMeasurable q
       ((volume : Measure (Set.Ioo (0 : ℝ) 1)).map Subtype.val) := by
-    rw [hcoe]
-    exact hqUniform
+    simp_all
   have hval : AEMeasurable (Subtype.val : Set.Ioo (0 : ℝ) 1 → ℝ)
       (volume : Measure (Set.Ioo (0 : ℝ) 1)) := measurable_subtype_coe.aemeasurable
   calc
     (volume : Measure (Set.Ioo (0 : ℝ) 1)).map
         (fun u => conditionedTransitionQuantile ν t x.1 u.1) =
-      ((volume : Measure (Set.Ioo (0 : ℝ) 1)).map Subtype.val).map q := by
-        change (volume : Measure (Set.Ioo (0 : ℝ) 1)).map (fun u => q u.1) = _
+      (volume.map Subtype.val).map q := by
         exact (AEMeasurable.map_map_of_aemeasurable hqMap hval).symm
-    _ = uniformOpenUnit.map q := by rw [hcoe]
+    _ = uniformOpenUnit.map q := by simp_all
     _ = μ := by
-      dsimp [q, μ]
       exact conditionedPositiveTransitionQuantile_map_uniformOpenUnit hν ht x.2
 
 end DOZZ.Proofs

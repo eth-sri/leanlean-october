@@ -30,20 +30,23 @@ theorem weightedCutoffSlack_pos_iff (q : ℝ × ℝ × ℝ) :
       q.2.2 < min (4 / q.1 ^ 2) (2 / q.1 * (Q q.1 - q.2.1)) := by
   simp only [weightedCutoffSlack, lt_min_iff, sub_pos]
   tauto
+section
+variable {p : ℝ × ℝ × ℝ}
 
-theorem continuousAt_weightedCutoffSlack {p : ℝ × ℝ × ℝ} (hp : p.1 ≠ 0) :
+theorem continuousAt_weightedCutoffSlack (hp : p.1 ≠ 0) :
     ContinuousAt weightedCutoffSlack p := by
   unfold weightedCutoffSlack Q
   fun_prop (disch := simp [hp])
 
 /-- Around each admissible triple there is a closed product box of admissible triples. -/
-theorem exists_admissible_box {p : ℝ × ℝ × ℝ} (hp : 0 < weightedCutoffSlack p) :
+theorem exists_admissible_box (hp : 0 < weightedCutoffSlack p) :
     ∃ ε : ℝ, 0 < ε ∧ ∀ q : ℝ × ℝ × ℝ, dist q p < 2 * ε → 0 < weightedCutoffSlack q := by
-  have hp1 : p.1 ≠ 0 := ((weightedCutoffSlack_pos_iff p).mp hp).1.ne'
-  have hev : ∀ᶠ q in 𝓝 p, 0 < weightedCutoffSlack q :=
-    (continuousAt_weightedCutoffSlack hp1).eventually (lt_mem_nhds hp)
+  have hev :=
+    (continuousAt_weightedCutoffSlack (((weightedCutoffSlack_pos_iff p).mp hp).1.ne')).eventually (lt_mem_nhds hp)
   obtain ⟨ε', hε', hball⟩ := Metric.eventually_nhds_iff.mp hev
   exact ⟨ε' / 2, half_pos hε', fun q hq => hball (by linarith)⟩
+
+end
 
 /-- The γ-uniform weighted cutoff bound over a compact set of admissible triples
 `(γ, α, t)`. -/
@@ -58,7 +61,6 @@ theorem weightedCutoff_bound_uniform_compact
       (∫⁻ ω, ENNReal.rpow (cutoffWeightedGmcBallMass P Xc p.1 p.2.1 z R δ ω) p.2.2 ∂P) ≤
         ENNReal.ofReal (C * Real.rpow R
           (p.1 * (Q p.1 - p.2.1) * p.2.2 - p.1 ^ 2 * p.2.2 ^ 2 / 2)) := by
-  classical
   -- boxes and their constants
   have hbox : ∀ p : Sc, ∃ ε : ℝ, 0 < ε ∧ ∃ C : ℝ, 0 < C ∧
       ∀ q : ℝ × ℝ × ℝ, dist q p.1 ≤ ε → ∀ z ∈ K, ∀ δ R : ℝ, 0 < δ → δ ≤ R → R ≤ r₀ →
@@ -71,27 +73,25 @@ theorem weightedCutoff_bound_uniform_compact
         0 < weightedCutoffSlack (γ, t) := by
       intro γ hγ t ht
       refine hε' _ ?_
-      rw [Prod.dist_eq]
       exact lt_of_le_of_lt (max_le (mem_closedBall.mp hγ) (mem_closedBall.mp ht)) (by linarith)
     obtain ⟨C, hC, hCb⟩ := equatorGFF_GMC_weighted_cutoff_bound_uniform_gamma P X hX
-      (closedBall p.1 ε) (isCompact_closedBall _ _)
+      (closedBall p.1 ε) (isCompact_closedBall ..)
       (fun γ hγ => by
-        have h := (weightedCutoffSlack_pos_iff (γ, p.2)).mp (hin γ hγ p.2 (mem_closedBall_self
+        have h := (weightedCutoffSlack_pos_iff _).mp (hin γ hγ p.2 (mem_closedBall_self
           hε.le))
         exact ⟨h.1, h.2.1⟩)
-      Xc hXc (closedBall p.2 ε) (isCompact_closedBall _ _)
+      Xc hXc (closedBall p.2 ε) (isCompact_closedBall ..)
       (fun γ hγ t ht => by
         have h := (weightedCutoffSlack_pos_iff (γ, t)).mp (hin γ hγ t ht)
         exact ⟨h.2.2.1, h.2.2.2.1, h.2.2.2.2⟩)
       K hK r₀ hr₀
     refine ⟨ε, hε, C, hC, fun q hq z hz δ R hδ hδR hRr => ?_⟩
     have hq' : dist q p ≤ ε := hq
-    rw [Prod.dist_eq] at hq'
-    exact hCb q.1 (mem_closedBall.mpr ((le_max_left _ _).trans hq')) q.2
-      (mem_closedBall.mpr ((le_max_right _ _).trans hq')) z hz δ R hδ hδR hRr
+    exact hCb q.1 (mem_closedBall.mpr ((le_max_left ..).trans hq')) q.2
+      (mem_closedBall.mpr ((le_max_right ..).trans hq')) z hz δ R hδ hδR hRr
   choose ε hε C hC hCb using hbox
   -- a finite subcover of the compact set
-  obtain ⟨t, ht⟩ := hSc.elim_finite_subcover (fun p : Sc => ball p.1 (ε p))
+  obtain ⟨t, ht⟩ := hSc.elim_finite_subcover (fun p => ball p.1 (ε p))
     (fun _ => isOpen_ball) (fun q hq => Set.mem_iUnion.mpr ⟨⟨q, hq⟩, mem_ball_self (hε _)⟩)
   have hsum0 : 0 ≤ ∑ p ∈ t, C p := Finset.sum_nonneg fun p _ => (hC p).le
   refine ⟨1 + ∑ p ∈ t, C p, by linarith, fun q hq z hz δ R hδ hδR hRr => ?_⟩

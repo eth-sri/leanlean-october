@@ -44,38 +44,45 @@ theorem extendedSeiberg3_of_lt {γ α₁ α₂ α₃ : ℝ} (hγ : 0 < γ) (h₁
   · have h := div_lt_div_of_pos_right h0 hγ
     rwa [div_div, ← sq] at h
   · have h := div_lt_div_of_pos_right hk₁ hγ
-    rwa [show 2 * (Q γ - α₁) / γ = 2 / γ * (Q γ - α₁) by ring] at h
+    grind
   · have h := div_lt_div_of_pos_right hk₂ hγ
-    rwa [show 2 * (Q γ - α₂) / γ = 2 / γ * (Q γ - α₂) by ring] at h
+    grind
   · have h := div_lt_div_of_pos_right hk₃ hγ
-    rwa [show 2 * (Q γ - α₃) / γ = 2 / γ * (Q γ - α₃) by ring] at h
+    grind
+section
+variable {γ ε a : ℝ}
+section
+variable (hγ : 0 < γ) (hε₁ : γ / 2 < ε) (hε₂ : ε < 2 / γ) (ha₁ : γ / 4 + ε / 2 < a) (ha₂ : a < Q γ)
+include hγ hε₁ hε₂ ha₁ ha₂
 
 /-- The shifted triple `(a - γ/2, ε, a)` is in the extended domain for `γ/4 + ε/2 < a < Q`. -/
-theorem extendedSeiberg3_shift {γ ε a : ℝ} (hγ : 0 < γ) (hε₁ : γ / 2 < ε) (hε₂ : ε < 2 / γ)
-    (ha₁ : γ / 4 + ε / 2 < a) (ha₂ : a < Q γ) : ExtendedSeiberg3 γ (a - γ / 2) ε a := by
+theorem extendedSeiberg3_shift : ExtendedSeiberg3 γ (a - γ / 2) ε a := by
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
   have hQ2 : 2 * Q γ = 4 / γ + γ := by
-    rw [hQ]
-    ring
-  refine extendedSeiberg3_of_lt hγ (by linarith) (by rw [hQ]; linarith) ha₂ ?_ ?_ ?_ ?_ <;>
+    grind
+  refine extendedSeiberg3_of_lt hγ (by linarith) (by linarith) ha₂ ?_ ?_ ?_ ?_ <;>
     linarith
 
 /-- The raised triple `(a, ε + γ/2, a)` is in the extended domain for `γ/4 + ε/2 < a < Q`. -/
-theorem extendedSeiberg3_raise {γ ε a : ℝ} (hγ : 0 < γ) (hε₁ : γ / 2 < ε) (hε₂ : ε < 2 / γ)
-    (ha₁ : γ / 4 + ε / 2 < a) (ha₂ : a < Q γ) : ExtendedSeiberg3 γ a (ε + γ / 2) a := by
+theorem extendedSeiberg3_raise : ExtendedSeiberg3 γ a (ε + γ / 2) a := by
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
   have hQ2 : 2 * Q γ = 4 / γ + γ := by
-    rw [hQ]
-    ring
-  refine extendedSeiberg3_of_lt hγ ha₂ (by rw [hQ]; linarith) ha₂ ?_ ?_ ?_ ?_ <;> linarith
+    grind
+  refine extendedSeiberg3_of_lt hγ ha₂ (by linarith) ha₂ ?_ ?_ ?_ ?_ <;> linarith
+
+end
+
+end
 
 /-- The charge triple `(z - γ/2, ε, z)`. -/
 noncomputable def shiftTriple (γ ε : ℝ) (z : ℂ) : Fin 3 → ℂ := ![z - (γ : ℂ) / 2, (ε : ℂ), z]
 
 /-- The charge triple `(z, ε + γ/2, z)`. -/
 noncomputable def raiseTriple (γ ε : ℝ) (z : ℂ) : Fin 3 → ℂ := ![z, (ε : ℂ) + (γ : ℂ) / 2, z]
+section
+variable (γ ε : ℝ)
 
-theorem differentiable_shiftTriple (γ ε : ℝ) : Differentiable ℂ (shiftTriple γ ε) := by
+theorem differentiable_shiftTriple : Differentiable ℂ (shiftTriple γ ε) := by
   rw [differentiable_pi]
   intro i
   fin_cases i
@@ -83,7 +90,7 @@ theorem differentiable_shiftTriple (γ ε : ℝ) : Differentiable ℂ (shiftTrip
   · exact differentiable_const _
   · exact differentiable_id
 
-theorem differentiable_raiseTriple (γ ε : ℝ) : Differentiable ℂ (raiseTriple γ ε) := by
+theorem differentiable_raiseTriple : Differentiable ℂ (raiseTriple γ ε) := by
   rw [differentiable_pi]
   intro i
   fin_cases i
@@ -91,15 +98,21 @@ theorem differentiable_raiseTriple (γ ε : ℝ) : Differentiable ℂ (raiseTrip
   · exact differentiable_const _
   · exact differentiable_id
 
-theorem shiftTriple_ofReal (γ ε t : ℝ) :
+end
+section
+variable (γ ε t : ℝ)
+
+theorem shiftTriple_ofReal :
     shiftTriple γ ε (t : ℂ) = complexifyNCharges ![t - γ / 2, ε, t] := by
   funext i
   fin_cases i <;> simp [shiftTriple, complexifyNCharges]
 
-theorem raiseTriple_ofReal (γ ε t : ℝ) :
+theorem raiseTriple_ofReal :
     raiseTriple γ ε (t : ℂ) = complexifyNCharges ![t, ε + γ / 2, t] := by
   funext i
   fin_cases i <;> simp [raiseTriple, complexifyNCharges]
+
+end
 
 /-- **The diagonal γ/2 crossing, continued in the charge** from the crossing region
 `2Q < 2a + ε - γ/2` to `γ/4 + ε/2 < a < Q`, by the identity theorem. -/
@@ -121,9 +134,9 @@ theorem unitVolume_crossing_diag_continued {Ω : Type*} [MeasurableSpace Ω]
       crossingMultiplierReal γ ε a * unitVolumeStructureConstant P M γ a (ε + γ / 2) a := by
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
   have h2γ : 0 < 2 / γ := by positivity
-  set J : Set ℝ := Ioo (γ / 4 + ε / 2) (Q γ) with hJ
+  set J := Ioo (γ / 4 + ε / 2) (Q γ) with hJ
   -- the domain of both holomorphic sides
-  set D : Set ℂ := reflectionStrip γ ∩ shiftTriple γ ε ⁻¹' V₃ ∩ raiseTriple γ ε ⁻¹' V₃ with hD
+  set D := reflectionStrip γ ∩ shiftTriple γ ε ⁻¹' V₃ ∩ raiseTriple γ ε ⁻¹' V₃ with hD
   have hDo : IsOpen D := ((isOpen_reflectionStrip γ).inter
     (hV₃.preimage (differentiable_shiftTriple γ ε).continuous)).inter
       (hV₃.preimage (differentiable_raiseTriple γ ε).continuous)
@@ -138,7 +151,7 @@ theorem unitVolume_crossing_diag_continued {Ω : Type*} [MeasurableSpace Ω]
   have hJD : ∀ t ∈ J, (t : ℂ) ∈ D := fun t ht => by
     refine ⟨⟨⟨?_, ?_⟩, ?_⟩, ?_⟩
     · rw [Complex.ofReal_re]
-      linarith [ht.1]
+      grind
     · rw [Complex.ofReal_re]
       exact ht.2
     · change shiftTriple γ ε (t : ℂ) ∈ V₃
@@ -158,22 +171,22 @@ theorem unitVolume_crossing_diag_continued {Ω : Type*} [MeasurableSpace Ω]
   -- they agree on the crossing region
   have hcross : ∀ t : ℝ, Q γ - (ε - γ / 2) / 2 < t → t < Q γ → g₁ (t : ℂ) = g₂ (t : ℂ) := by
     intro t ht1 ht2
-    have htJ : t ∈ J := ⟨by rw [hQ] at ht1; linarith, ht2⟩
-    have hx : 0 < (2 * t + ε - γ / 2 - 2 * Q γ) / γ := div_pos (by linarith) hγ
+    have htJ : t ∈ J := by grind
+    have hx : 0 < (2 * t + ε - γ / 2 - 2 * Q γ) / γ := by bound
     simp only [hg₁, hg₂]
     rw [hS t htJ, hR t htJ, hCross t ht2 (by linarith), Complex.ofReal_mul,
       gammaHalfUnitCrossingMultiplier_eq_diag hγ one_pos hε₁ hε₂ hx]
   -- the identity theorem on the component of `D` through a crossing point
-  set a₀ : ℝ := Q γ - (ε - γ / 2) / 4 with ha₀
-  have ha₀J : a₀ ∈ J := ⟨by rw [ha₀, hQ]; linarith, by rw [ha₀]; linarith⟩
+  set a₀ := Q γ - (ε - γ / 2) / 4 with ha₀
+  have ha₀J : a₀ ∈ J := ⟨by linarith, by linarith⟩
   set U := connectedComponentIn D (a₀ : ℂ) with hU
   have hUo : IsOpen U := hDo.connectedComponentIn
   have hUD : U ⊆ D := connectedComponentIn_subset D _
   have ha₀U : (a₀ : ℂ) ∈ U := mem_connectedComponentIn (hJD a₀ ha₀J)
   have hev : ∀ᶠ t : ℝ in 𝓝[≠] a₀, g₁ (t : ℂ) = g₂ (t : ℂ) :=
     eventually_nhdsWithin_of_eventually_nhds
-      (eventually_of_mem (Ioo_mem_nhds (show Q γ - (ε - γ / 2) / 2 < a₀ by rw [ha₀]; linarith)
-        (show a₀ < Q γ by rw [ha₀]; linarith)) fun t ht => hcross t ht.1 ht.2)
+      (eventually_of_mem (Ioo_mem_nhds (show Q γ - (ε - γ / 2) / 2 < a₀ by linarith)
+        (show a₀ < Q γ by linarith)) fun t ht => hcross t ht.1 ht.2)
   have htend : Tendsto (fun t : ℝ => (t : ℂ)) (𝓝[≠] a₀) (𝓝[≠] (a₀ : ℂ)) :=
     tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within _
       (Complex.continuous_ofReal.continuousAt.tendsto.mono_left nhdsWithin_le_nhds)

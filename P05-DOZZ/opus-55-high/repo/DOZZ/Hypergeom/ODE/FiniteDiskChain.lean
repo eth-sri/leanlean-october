@@ -39,7 +39,7 @@ theorem exists_finite_holomorphic_disk_chain
     (hbound 0 (by omega))
   let D : ℕ → HolomorphicDiskSolution H r := Nat.rec Dzero fun i Di =>
     if hi : i < N then
-      extendHolomorphicDiskSolution r M H hM Di (centers (i + 1))
+      extendHolomorphicDiskSolution r M H hM Di _
         (hH (i + 1) (by omega)) (hbound (i + 1) (by omega))
     else Di
   have hcenter (i : ℕ) (hi : i ≤ N) : (D i).center = centers i := by
@@ -50,26 +50,23 @@ theorem exists_finite_holomorphic_disk_chain
         have hi_le : i ≤ N := by omega
         simp [D, hi', extendHolomorphicDiskSolution, holomorphicDiskSolutionOfBound]
   refine ⟨D, hcenter 0 (by omega), ?_, ?_, ?_⟩
-  · simp [D, Dzero, holomorphicDiskSolutionOfBound]
+  · rfl
   · exact hcenter
   · intro i hi
     have hi1 : i + 1 ≤ N := by omega
     have hprev : i ≤ N := by omega
-    have hcenterNext := hcenter (i + 1) hi1
     have hbuild : (D (i + 1)) =
-        extendHolomorphicDiskSolution r M H hM (D i) (centers (i + 1))
-          (hH (i + 1) hi1) (hbound (i + 1) hi1) := by
-      simp [D, hi]
-    refine ⟨hcenterNext, ?_, ?_⟩
-    · rw [hbuild]
-      rfl
+        extendHolomorphicDiskSolution r M H hM (D i) _
+          (hH _ hi1) (hbound (i + 1) hi1) := by
+      aesop
+    refine ⟨(hcenter _ hi1), ?_, ?_⟩
+    · aesop
     · intro z hz
       rw [hbuild]
       have hnear : dist (centers (i + 1)) (D i).center < r / 2 := by
-        rw [hcenter i hprev]
-        exact hclose i hi
+        simp_all
       exact extendHolomorphicDiskSolution_agrees r M H hM (D i)
-        (centers (i + 1)) hnear (hH (i + 1) hi1) (hbound (i + 1) hi1) z hz
+        (centers _) hnear (hH _ hi1) _ z hz
 
 /-- A continuous path with one uniform family of holomorphic coefficient disks and a uniform
 operator bound admits a finite analytic continuation chain from its initial value. -/
@@ -115,18 +112,14 @@ theorem exists_path_holomorphic_disk_chain
     exists_finite_holomorphic_disk_chain N centers r M H hM hHcenters
       hboundCenters hcloseCenters y
   refine ⟨N, hN, D, ?_, hD0i, ?_, ?_, ?_, ?_⟩
-  · simpa [centers] using hD0c
+  · grind
+  · assumption
   · intro i hi
-    simpa [centers] using hDcenters i hi
-  · intro i hi
-    have hstep := hDstep i hi
-    simpa [centers] using hstep.2.1
+    simpa [centers] using (hDstep i hi).2.1
   · intro i hi t ht
-    have hcenter := hDcenters i (Nat.le_of_lt hi)
-    rw [hcenter]
-    exact Metric.mem_ball.mpr (by simpa [centers] using hcover i hi t ht)
+    rw [(hDcenters i (Nat.le_of_lt hi))]
+    tauto
   · intro i hi z hz
-    have hstep := hDstep i hi
-    simpa [centers] using hstep.2.2 z hz
+    simpa [centers] using (hDstep i hi).2.2 z hz
 
 end DOZZ.Proofs

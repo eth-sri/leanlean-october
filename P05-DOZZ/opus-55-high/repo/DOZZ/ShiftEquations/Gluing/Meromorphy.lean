@@ -9,6 +9,7 @@ public import DOZZ.Statements.Complex.HorizontalStrip
 public import Mathlib.Analysis.Meromorphic.Complex
 import DOZZ.ShiftEquations.Quotient.Divisors
 import DOZZ.Complex.Basic
+import DOZZ.Brownian.Reflection.RtheorAnalytic
 
 /-!
 # Meromorphic germs for the gluing identities
@@ -29,7 +30,7 @@ theorem meromorphic_shiftCoeffA (γ : ℝ) (χ α₂ α₃ : ℂ) :
     Meromorphic (fun z => shiftCoeffA γ χ z α₂ α₃) := by
   intro x
   unfold shiftCoeffA
-  have h1 : MeromorphicAt (fun _ : ℂ => lFun (-χ ^ 2)) x := MeromorphicAt.const _ _
+  have h1 : MeromorphicAt (fun _ : ℂ => lFun (-χ ^ 2)) x := MeromorphicAt.const ..
   have h2 := meromorphicAt_lFun_comp (f := fun z : ℂ => χ * z) (z := x) (by fun_prop)
   have h3 := meromorphicAt_lFun_comp (f := fun z : ℂ => χ * z - χ ^ 2) (z := x) (by fun_prop)
   have h4 := meromorphicAt_lFun_comp (f := fun z : ℂ => χ / 2 * ((z + α₂ + α₃) - 2 * z - χ))
@@ -40,33 +41,41 @@ theorem meromorphic_shiftCoeffA (γ : ℝ) (χ α₂ α₃ : ℂ) :
     (f := fun z : ℂ => χ / 2 * ((z + α₂ + α₃) - 2 * α₃ - χ)) (z := x) (by fun_prop)
   have h7 := meromorphicAt_lFun_comp
     (f := fun z : ℂ => χ / 2 * ((z + α₂ + α₃) - 2 * α₂ - χ)) (z := x) (by fun_prop)
-  exact (((h1.mul h2).mul h3).mul h4).div ((h5.mul h6).mul h7)
+  fun_prop
+section
+variable {h : ℝ} {z : ℂ}
+section
+variable (hz : z ∈ horizontalStrip h) (t : ℝ)
+include hz
 
-/-- Real translations preserve horizontal strips. -/
-theorem add_ofReal_mem_horizontalStrip_glue {h : ℝ} {z : ℂ} (hz : z ∈ horizontalStrip h) (t : ℝ) :
-    z + (t : ℂ) ∈ horizontalStrip h := by
-  have hz' : |z.im| < h := hz
-  change |(z + (t : ℂ)).im| < h
-  simpa using hz'
-
-/-- Reflections across real points preserve horizontal strips. -/
-theorem ofReal_sub_mem_horizontalStrip_glue {h : ℝ} {z : ℂ} (hz : z ∈ horizontalStrip h) (t : ℝ) :
+theorem ofReal_sub_mem_horizontalStrip_glue :
     (t : ℂ) - z ∈ horizontalStrip h := by
   have hz' : |z.im| < h := hz
   change |((t : ℂ) - z).im| < h
-  simpa [abs_neg] using hz'
+  simp_all
+
+end
+
+end
+section
+variable {f : ℂ → ℂ} {h : ℝ}
+section
+variable (hf : MeromorphicOn f (horizontalStrip h)) (t : ℝ)
+include hf
 
 /-- Meromorphy is preserved by a real translation of the variable. -/
-theorem MeromorphicOn.comp_add_ofReal {f : ℂ → ℂ} {h : ℝ} (hf : MeromorphicOn f (horizontalStrip h))
-    (t : ℝ) : MeromorphicOn (fun z => f (z + t)) (horizontalStrip h) := fun z hz =>
-  (hf _ (add_ofReal_mem_horizontalStrip_glue hz t)).comp_analyticAt (g := fun w => w + (t : ℂ))
+theorem MeromorphicOn.comp_add_ofReal : MeromorphicOn (fun z => f (z + t)) (horizontalStrip h) := fun z hz =>
+  (hf _ (DOZZ.Proofs.add_ofReal_mem_horizontalStrip hz t)).comp_analyticAt (g := fun w => w + (t : ℂ))
     (by fun_prop)
 
 /-- Meromorphy is preserved by a reflection of the variable across a real point. -/
-theorem MeromorphicOn.comp_ofReal_sub {f : ℂ → ℂ} {h : ℝ} (hf : MeromorphicOn f (horizontalStrip h))
-    (t : ℝ) : MeromorphicOn (fun z => f ((t : ℂ) - z)) (horizontalStrip h) := fun z hz =>
-  (hf _ (ofReal_sub_mem_horizontalStrip_glue hz t)).comp_analyticAt (g := fun w => (t : ℂ) - w)
+theorem MeromorphicOn.comp_ofReal_sub : MeromorphicOn (fun z => f ((t : ℂ) - z)) (horizontalStrip h) := fun z hz =>
+  (hf _ (ofReal_sub_mem_horizontalStrip_glue hz t)).comp_analyticAt
     (by fun_prop)
+
+end
+
+end
 
 /-- Horizontal strips are preconnected. -/
 theorem isPreconnected_horizontalStrip (h : ℝ) : IsPreconnected (horizontalStrip h) := by
@@ -75,18 +84,14 @@ theorem isPreconnected_horizontalStrip (h : ℝ) : IsPreconnected (horizontalStr
     change |(a • x + b • y).im| < h
     have hx' : |x.im| < h := hx
     have hy' : |y.im| < h := hy
-    simp only [Complex.add_im, Complex.real_smul, Complex.mul_im, Complex.ofReal_re,
-      Complex.ofReal_im, zero_mul, add_zero]
+    simp
     calc |a * x.im + b * y.im| ≤ |a * x.im| + |b * y.im| := abs_add_le _ _
       _ = a * |x.im| + b * |y.im| := by rw [abs_mul, abs_mul, abs_of_nonneg ha, abs_of_nonneg hb]
       _ < a * h + b * h := by
           rcases ha.lt_or_eq with ha' | ha'
-          · nlinarith [mul_le_mul_of_nonneg_left hy'.le hb]
-          · subst ha'
-            simp only [zero_add, zero_mul] at hab ⊢
-            rw [hab]
-            linarith
-      _ = h := by rw [← add_mul, hab, one_mul]
+          · nlinarith
+          nlinarith
+      _ = h := by grind
   exact hconv.isPreconnected
 
 end DOZZ.Proofs

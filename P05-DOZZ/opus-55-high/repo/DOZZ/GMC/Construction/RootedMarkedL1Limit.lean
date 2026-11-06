@@ -14,10 +14,11 @@ open MeasureTheory Filter Topology
 open scoped Distributions ENNReal
 
 namespace DOZZ.Proofs
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
 
 /-- A fixed bounded measurable mark can multiply an L1-convergent density. -/
 theorem integral_bounded_mul_tendsto_of_l1
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (F : ℕ → Ω → ℝ) (G φ : Ω → ℝ)
     (hF : ∀ n, Integrable (F n) P) (hG : Integrable G P)
     (hφ : AEStronglyMeasurable φ P) (B : ℝ) (hB : 0 ≤ B)
@@ -26,12 +27,12 @@ theorem integral_bounded_mul_tendsto_of_l1
     Tendsto (fun n => ∫ ω, φ ω * F n ω ∂P) atTop
       (𝓝 (∫ ω, φ ω * G ω ∂P)) := by
   have hφnorm : ∀ᵐ ω ∂P, ‖φ ω‖ ≤ B := ae_of_all _ fun ω => by
-    simpa only [Real.norm_eq_abs] using hbound ω
+    simp_all
   have hFG : Tendsto (fun n => ∫⁻ ω, ‖φ ω * F n ω - φ ω * G ω‖ₑ ∂P)
       atTop (𝓝 0) := by
     have hscale : Tendsto (fun n => ENNReal.ofReal B *
         ∫⁻ ω, ENNReal.ofReal |F n ω - G ω| ∂P) atTop (𝓝 0) := by
-      simpa only [mul_zero] using ENNReal.Tendsto.const_mul hL1 (Or.inr ENNReal.ofReal_ne_top)
+      simpa using ENNReal.Tendsto.const_mul hL1 (Or.inr ENNReal.ofReal_ne_top)
     apply tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds hscale
       (fun _ => zero_le) (fun n => ?_)
     calc
@@ -50,41 +51,36 @@ theorem integral_bounded_mul_tendsto_of_l1
 
 /-- A finite expected nonnegative mass has an integrable real representative. -/
 theorem integrable_mass_toReal_of_finite_expectation
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (a : Ω → ℝ≥0∞)
+    (a : Ω → ℝ≥0∞)
     (ha : AEMeasurable a P) (haFinite : ∀ᵐ ω ∂P, a ω ≠ ⊤)
     (hmean : (∫⁻ ω, a ω ∂P) < ⊤) : Integrable (fun ω => (a ω).toReal) P := by
   refine ⟨(ENNReal.measurable_toReal.comp_aemeasurable ha).aestronglyMeasurable, ?_⟩
   rw [hasFiniteIntegral_iff_ofReal (ae_of_all _ fun _ => ENNReal.toReal_nonneg)]
   have heq : (fun ω => ENNReal.ofReal (a ω).toReal) =ᵐ[P] a := by
     filter_upwards [haFinite] with ω hω
-    exact ENNReal.ofReal_toReal hω
+    simp_all
   exact (lintegral_congr_ae heq).trans_lt hmean
+section
+variable (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (A : Set ℂ) (hA : MeasurableSet A) (R : ℝ) (hAR : A ⊆ Metric.closedBall (0 : ℂ) R) (φ : Ω → ℝ) (hφ : AEStronglyMeasurable φ P)
+include hX hγ hγ2 hM hXc hA hAR hφ
 
 /-- Bounded observables of the sample, including any fixed field/chaos cylinder, can multiply
 the bounded-set cutoff mass while retaining convergence of its expected value. -/
 theorem regularizedGMC_bounded_mass_mark_integral_tendsto
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (A : Set ℂ) (hA : MeasurableSet A) (R : ℝ)
-    (hAR : A ⊆ Metric.closedBall (0 : ℂ) R)
-    (φ : Ω → ℝ) (hφ : AEStronglyMeasurable φ P)
     (B : ℝ) (hB : 0 ≤ B) (hbound : ∀ ω, |φ ω| ≤ B) :
     Tendsto (fun n : ℕ => ∫ ω, φ ω *
       (regularizedGMC P Xc γ (n : ℝ) ω A).toReal ∂P) atTop
       (𝓝 (∫ ω, φ ω * (M ω A).toReal ∂P)) := by
-  have href : gmcReferenceMeasure A < ⊤ :=
+  have href :=
     lt_of_le_of_lt (measure_mono (Set.subset_univ A)) gmcReferenceMeasure_univ_ne_top.lt_top
   have hcut (n : ℕ) : Integrable (fun ω =>
-      (regularizedGMC P Xc γ (n : ℝ) ω A).toReal) P := by
+      (regularizedGMC P Xc γ n ω A).toReal) P := by
     apply integrable_mass_toReal_of_finite_expectation
     · exact ((Measure.measurable_coe hA).comp
-        (regularizedGMC_measurable P X hX Xc hXc γ (n : ℝ))).aemeasurable
-    · filter_upwards [regularizedGMC_finite_ae P X hX Xc hXc γ (n : ℝ)] with ω hω
-      exact @measure_ne_top ℂ _ _ hω A
-    · rw [regularizedGMC_lintegral_eq_reference P X hX Xc hXc γ (n : ℝ) A hA]
+        (regularizedGMC_measurable P X hX Xc hXc γ n)).aemeasurable
+    · filter_upwards [regularizedGMC_finite_ae P X hX Xc hXc γ n] with ω hω
+      simp
+    · rw [regularizedGMC_lintegral_eq_reference P X hX Xc hXc γ n A hA]
       exact href
   have hlim : Integrable (fun ω => (M ω A).toReal) P := by
     apply integrable_mass_toReal_of_finite_expectation
@@ -95,45 +91,36 @@ theorem regularizedGMC_bounded_mass_mark_integral_tendsto
   exact integral_bounded_mul_tendsto_of_l1 P _ _ φ hcut hlim hφ B hB hbound
     ((equatorGFF_GMC_bounded_mass_l1_of_uniform_L1
       P X hX γ hγ hγ2 M hM Xc hXc A hA R hAR).comp
-        (tendsto_natCast_atTop_atTop : Tendsto (fun n : ℕ => (n : ℝ)) atTop atTop))
+        tendsto_natCast_atTop_atTop)
 
 /-- A bounded nonnegative sample mark preserves convergence of extended expected set masses. -/
 theorem regularizedGMC_bounded_mass_mark_lintegral_tendsto
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
-    (A : Set ℂ) (hA : MeasurableSet A) (R : ℝ)
-    (hAR : A ⊆ Metric.closedBall (0 : ℂ) R)
-    (φ : Ω → ℝ) (hφ : AEStronglyMeasurable φ P)
     (hφpos : ∀ ω, 0 ≤ φ ω) (B : ℝ) (hB : 0 ≤ B) (hbound : ∀ ω, |φ ω| ≤ B) :
     Tendsto (fun n : ℕ => ∫⁻ ω, ENNReal.ofReal (φ ω) *
       regularizedGMC P Xc γ (n : ℝ) ω A ∂P) atTop
       (𝓝 (∫⁻ ω, ENNReal.ofReal (φ ω) * M ω A ∂P)) := by
-  have href : gmcReferenceMeasure A < ⊤ :=
+  have href :=
     lt_of_le_of_lt (measure_mono (Set.subset_univ A)) gmcReferenceMeasure_univ_ne_top.lt_top
   have hmark (a : Ω → ℝ≥0∞) (ha : AEMeasurable a P)
       (hafin : ∀ᵐ ω ∂P, a ω ≠ ⊤) (hmean : (∫⁻ ω, a ω ∂P) < ⊤) :
       ENNReal.ofReal (∫ ω, φ ω * (a ω).toReal ∂P) =
         ∫⁻ ω, ENNReal.ofReal (φ ω) * a ω ∂P := by
-    have hi := integrable_mass_toReal_of_finite_expectation P a ha hafin hmean
-    have hprod := hi.bdd_mul hφ (ae_of_all _ fun ω => by
-      simpa only [Real.norm_eq_abs] using hbound ω)
+    have hprod := (integrable_mass_toReal_of_finite_expectation P a ha hafin hmean).bdd_mul hφ (ae_of_all _ fun ω => by
+      tauto)
     rw [ofReal_integral_eq_lintegral_ofReal hprod
       (ae_of_all _ fun ω => mul_nonneg (hφpos ω) ENNReal.toReal_nonneg)]
     apply lintegral_congr_ae
     filter_upwards [hafin] with ω hω
-    rw [ENNReal.ofReal_mul (hφpos ω), ENNReal.ofReal_toReal hω]
+    simp_all
   have hcut (n : ℕ) : ENNReal.ofReal (∫ ω, φ ω *
-      (regularizedGMC P Xc γ (n : ℝ) ω A).toReal ∂P) =
-      ∫⁻ ω, ENNReal.ofReal (φ ω) * regularizedGMC P Xc γ (n : ℝ) ω A ∂P := by
+      (regularizedGMC P Xc γ n ω A).toReal ∂P) =
+      ∫⁻ ω, ENNReal.ofReal (φ ω) * regularizedGMC P Xc γ n ω A ∂P := by
     apply hmark
     · exact ((Measure.measurable_coe hA).comp
-        (regularizedGMC_measurable P X hX Xc hXc γ (n : ℝ))).aemeasurable
-    · filter_upwards [regularizedGMC_finite_ae P X hX Xc hXc γ (n : ℝ)] with ω hω
-      exact @measure_ne_top ℂ _ _ hω A
-    · rw [regularizedGMC_lintegral_eq_reference P X hX Xc hXc γ (n : ℝ) A hA]
+        (regularizedGMC_measurable P X hX Xc hXc γ n)).aemeasurable
+    · filter_upwards [regularizedGMC_finite_ae P X hX Xc hXc γ n] with ω hω
+      simp
+    · rw [regularizedGMC_lintegral_eq_reference P X hX Xc hXc γ n A hA]
       exact href
   have hlim : ENNReal.ofReal (∫ ω, φ ω * (M ω A).toReal ∂P) =
       ∫⁻ ω, ENNReal.ofReal (φ ω) * M ω A ∂P := by
@@ -145,5 +132,9 @@ theorem regularizedGMC_bounded_mass_mark_lintegral_tendsto
   simpa only [Function.comp_def, hcut, hlim] using ENNReal.continuous_ofReal.continuousAt.tendsto.comp
     (regularizedGMC_bounded_mass_mark_integral_tendsto
       P X hX γ hγ hγ2 M hM Xc hXc A hA R hAR φ hφ B hB hbound)
+
+end
+
+end
 
 end DOZZ.Proofs

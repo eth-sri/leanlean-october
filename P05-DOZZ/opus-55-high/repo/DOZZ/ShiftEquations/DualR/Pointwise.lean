@@ -27,26 +27,22 @@ namespace DOZZ.Proofs
 theorem lFun_mul_lFun_one_sub_eq_one {x : ℂ} (h₁ : Complex.Gamma x ≠ 0)
     (h₂ : Complex.Gamma (1 - x) ≠ 0) : lFun x * lFun (1 - x) = 1 := by
   unfold lFun
-  rw [show (1 : ℂ) - (1 - x) = x by ring]
-  field_simp
+  simp_all
 
 /-- `4/γ²` is not an integer when `γ²` is irrational. -/
 theorem four_div_sq_ne_nat {γ : ℝ} (hγ : 0 < γ) (hγirr : Irrational (γ ^ 2)) (n : ℕ) :
     (-4 / (γ : ℂ) ^ 2) ≠ -(n : ℂ) := by
   intro hn
-  have hr : ((4 / γ ^ 2 : ℝ) : ℂ) = (n : ℂ) := by
-    push_cast
-    linear_combination -hn
-  have hr' : 4 / γ ^ 2 = (n : ℝ) := by exact_mod_cast hr
+  have hr : ((4 / γ ^ 2)) = (n : ℂ) := by
+    grind
+  have hr' : 4 / γ ^ 2 = n := by exact_mod_cast hr
   have hγ2 : 0 < γ ^ 2 := by positivity
   have hn0 : (n : ℝ) ≠ 0 := by
-    rw [← hr']
-    positivity
+    aesop
   apply hγirr
   refine ⟨4 / n, ?_⟩
   push_cast
-  field_simp at hr' ⊢
-  linarith
+  grind
 
 /-- **The dual shift of `R` at `ε = γ/2 - θ`** from the product identity and the inversion. -/
 theorem dualShift_of_product {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hγirr : Irrational (γ ^ 2))
@@ -64,14 +60,14 @@ theorem dualShift_of_product {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hγir
           lFun (2 + 4 / (γ : ℂ) ^ 2 - 2 * ((γ / 2 - θ : ℝ) : ℂ) / γ)) := by
   have hγc : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ.ne'
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
-  set ε : ℂ := ((γ / 2 - θ : ℝ) : ℂ) with hε
+  set ε := ((γ / 2 - θ : ℝ) : ℂ) with hε
   -- the shifted point
   have hshift : ε + 2 / γ = ((Q γ - θ : ℝ) : ℂ) := by
     rw [hε, hQ]
     push_cast
     ring
   -- `l(-4/γ²) l(1 + 4/γ²) = 1`
-  set X : ℂ := lFun (-4 / (γ : ℂ) ^ 2) with hX
+  set X := lFun (-4 / (γ : ℂ) ^ 2) with hX
   have hXA : X * lFun (1 + 4 / (γ : ℂ) ^ 2) = 1 := by
     have h := lFun_mul_lFun_one_sub_eq_one (x := -4 / (γ : ℂ) ^ 2)
       (Complex.Gamma_ne_zero (four_div_sq_ne_nat hγ hγirr))
@@ -87,7 +83,7 @@ theorem dualShift_of_product {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hγir
     rwa [show (1 : ℂ) - -4 / (γ : ℂ) ^ 2 = 1 + 4 / (γ : ℂ) ^ 2 by ring] at h
   have hX0 : X ≠ 0 := left_ne_zero_of_mul_eq_one hXA
   -- `l(2(ε - Q)/γ) l(2 + 4/γ² - 2ε/γ) = 1`
-  set Y : ℂ := lFun (2 + 4 / (γ : ℂ) ^ 2 - 2 * ε / γ) with hY
+  set Y := lFun (2 + 4 / (γ : ℂ) ^ 2 - 2 * ε / γ) with hY
   have hY1 : 1 - dualArg₁ γ ε = 2 + 4 / (γ : ℂ) ^ 2 - 2 * ε / γ := by
     unfold dualArg₁
     rw [hQ]
@@ -108,21 +104,20 @@ theorem dualShift_of_product {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hγir
   have hY0 : Y ≠ 0 := right_ne_zero_of_mul_eq_one hl₁Y
   -- `l(γ²/4) l(-γ²/4) = -16/γ⁴`
   have hPQ : lFun (-((γ : ℂ) ^ 2) / 4) * lFun ((γ : ℂ) ^ 2 / 4) = -16 / (γ : ℂ) ^ 4 := by
-    have hq : ((γ : ℂ) ^ 2 / 4) ≠ 0 := div_ne_zero (pow_ne_zero 2 hγc) (by norm_num)
+    have hq : ((γ : ℂ) ^ 2 / 4) ≠ 0 := by simp_all
     have hΓ1 : Complex.Gamma ((γ : ℂ) ^ 2 / 4) ≠ 0 := by
-      rw [show (γ : ℂ) ^ 2 / 4 = ((γ ^ 2 / 4 : ℝ) : ℂ) by push_cast; ring]
+      rw [show (γ : ℂ) ^ 2 / 4 = ((γ ^ 2 / 4 : ℝ) : ℂ) by simp]
       refine Complex.Gamma_ne_zero fun n hn => ?_
       have hr : (γ ^ 2 / 4 : ℝ) = -(n : ℝ) := by exact_mod_cast hn
       have : (0 : ℝ) ≤ n := Nat.cast_nonneg n
       have : (0 : ℝ) < γ ^ 2 / 4 := by positivity
       linarith
     have hΓ2 : Complex.Gamma (-((γ : ℂ) ^ 2 / 4)) ≠ 0 := by
-      rw [show -((γ : ℂ) ^ 2 / 4) = ((-(γ ^ 2 / 4) : ℝ) : ℂ) by push_cast; ring]
+      rw [show -((γ : ℂ) ^ 2 / 4) = ((-(γ ^ 2 / 4) : ℝ) : ℂ) by simp]
       exact Complex.Gamma_ne_zero (ofReal_ne_neg_nat_of_mem (Or.inl ⟨by nlinarith, by
         have : (0 : ℝ) < γ ^ 2 / 4 := by positivity
         linarith⟩))
-    have h := lFun_mul_neg hq hΓ1 hΓ2
-    rw [show -((γ : ℂ) ^ 2) / 4 = -((γ : ℂ) ^ 2 / 4) by ring, mul_comm, h]
+    rw [show -((γ : ℂ) ^ 2) / 4 = -((γ : ℂ) ^ 2 / 4) by ring, mul_comm, (lFun_mul_neg hq hΓ1 hΓ2)]
     field_simp
     ring
   -- `l(1 - 2θ/γ) = l(2ε/γ) ≠ 0`
@@ -132,14 +127,14 @@ theorem dualShift_of_product {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hγir
     push_cast
     field_simp
   have hB0 : lFun (2 * ε / γ) ≠ 0 := by
-    rw [← hB, show (1 : ℂ) - 2 * θ / γ = ((1 - 2 * θ / γ : ℝ) : ℂ) by push_cast; ring]
+    rw [← hB, show (1 : ℂ) - 2 * θ / γ = ((1 - 2 * θ / γ : ℝ) : ℂ) by simp]
     have hθγ : 2 * θ / γ < 1 / 2 := by
       rw [div_lt_iff₀ hγ]
       linarith
     have hθγ' : 0 < 2 * θ / γ := by positivity
     refine lFun_ne_zero (ofReal_ne_neg_nat_of_mem (Or.inr (Or.inl ⟨by linarith, by linarith⟩)))
       ?_
-    rw [show (1 : ℂ) - ((1 - 2 * θ / γ : ℝ) : ℂ) = ((2 * θ / γ : ℝ) : ℂ) by push_cast; ring]
+    rw [show (1 : ℂ) - ((1 - 2 * θ / γ : ℝ) : ℂ) = ((2 * θ / γ : ℝ) : ℂ) by simp]
     exact ofReal_ne_neg_nat_of_mem (Or.inr (Or.inl ⟨hθγ', by linarith⟩))
   -- assemble
   have hR : R ε = R ε * R ((Q γ + θ : ℝ) : ℂ) * R ((Q γ - θ : ℝ) : ℂ) := by

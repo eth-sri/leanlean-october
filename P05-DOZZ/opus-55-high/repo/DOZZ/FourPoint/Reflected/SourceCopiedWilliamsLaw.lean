@@ -37,27 +37,26 @@ theorem reflected_source_copied_williams_joint_law
     let D := fun ω => brownianShiftPath T (radialPositiveHalf (A ω))
     let Y := fun ω => (gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ,
       reflected_radial_scale γ (Q γ-α₁) h Xc z ω)
-    (P.prod P).map (fun v : Ω × Ω => (Y v.1,∫⁻ t,
+    (P.prod P).map (fun v => (Y v.1,∫⁻ t,
       (if 0 < t then ENNReal.ofReal (Real.exp (γ*(D v.1 (Real.toNNReal t)-(Q γ-α₁)*t))) else 0)
         ∂(Z v.2).map (fun s => s-(T : ℝ)))) =
     (P.map Y).prod (((brownianMaximumReferenceLaw (Q γ-α₁)).prod P).map
       (fun q => ENNReal.ofReal (Real.exp (γ*q.1))*twoSidedReflectionCutMass γ q.1 B Z q.2)) := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   let A := originRadialPath Xc
   let Z := fun ω => lateralProjectedGMC γ (A ω) (M ω)
   let D := fun ω => brownianShiftPath T (radialPositiveHalf (A ω))
   let Y := fun ω => (gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ,
     reflected_radial_scale γ (Q γ-α₁) h Xc z ω)
   have hA := originRadialPath_aemeasurable P X Xc hc hcont
-  have hs : Measurable (fun a : TwoSidedPath => brownianShiftPath T (radialPositiveHalf a)) :=
+  have hs : Measurable (fun a => brownianShiftPath T (radialPositiveHalf a)) :=
     continuous_brownianShiftPath.measurable.comp (measurable_const.prodMk continuous_radialPositiveHalf.measurable)
-  have hD := hs.comp_aemeasurable hA
   have hB₀ := (originRadialPath_isBrownian P X Xc hX hc hcont).1
   have hlaw := reflected_restarted_radial_path_law P A hA hB₀ T
   have hDb : IsBrownianReal (fun t p => p t) (P.map D) := by
     rw [show P.map D = P.map (fun ω => radialPositiveHalf (A ω)) from hlaw]
     exact radialPositiveHalf_map_isBrownian P A hA hB₀
-  have hDZ : IndepFun D Z P :=
+  have hDZ :=
     (lateralProjectedGMC_indep P X Xc hX hc hm hcont γ hγ hγ₂ M hM).comp₀ hA
       hL.2.2.2.1 hs.aemeasurable measurable_id.aemeasurable
   have hYD := (reflected_source_outer_past_indep P X hX Xc hc hcont γ hγ hγ₂ M hM
@@ -65,13 +64,10 @@ theorem reflected_source_copied_williams_joint_law
   have hYm : AEMeasurable Y P := by
     have ho := (reflected_outerMass_measure_measurable γ α₁ α₂ α₃ ξ z).comp_aemeasurable
       (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ₂ M hM)
-    have ht := (hc.2.1 0 (-Real.log ‖z‖+h)).aemeasurable
-    have hb : AEMeasurable (reflected_radial_scale γ (Q γ-α₁) h Xc z) P := by
-      exact ((ht.const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
+    have hb : AEMeasurable (reflected_radial_scale γ (Q γ-α₁) h Xc z) P := ((((hc.2.1 0 _).aemeasurable).const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
     exact ho.prodMk hb
-  have hh := reflected_copied_translated_williams_joint_law P D hD hDb γ Z hL hDZ
-    Y hYm hYD (Q γ-α₁) (sub_pos.mpr hα₁) Qν hQν T
-  rw [williams_source_input_law P γ α₁ hα₁ B Z hData Qν hQν] at hh
-  exact hh
+  have hh := reflected_copied_translated_williams_joint_law P D (hs.comp_aemeasurable hA) hDb γ Z hL hDZ
+    Y hYm hYD _ (sub_pos.mpr hα₁) Qν hQν T
+  rwa [williams_source_input_law P γ α₁ hα₁ B Z hData Qν hQν] at hh
 
 end DOZZ.Proofs

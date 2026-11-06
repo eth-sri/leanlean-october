@@ -23,6 +23,6 @@ theorem fusionScaledIntegral_bound {Ω : Type*} [MeasurableSpace Ω]
       apply norm_integral_le_of_norm_le (hK.norm.mul_const B)
       exact ae_of_all _ fun y => by
         rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
-        exact mul_le_mul_of_nonneg_left (hb y z hz) (norm_nonneg _)
-    _ = _ := integral_mul_const _ _
+        bound
+    _ = _ := integral_mul_const ..
 end DOZZ.Proofs

@@ -35,27 +35,22 @@ theorem connectionMinusSecondCramer_eq_gamma_of_real
     change (∀ n : ℤ, (c : ℂ) ≠ (n : ℂ)) ∧
       ∀ n : ℤ, (c : ℂ) - (a : ℂ) - (b : ℂ) ≠ (n : ℂ)
     constructor
-    · intro n heq
-      apply hcInt
-      exact ⟨n, heq.symm⟩
+    · tauto
     · intro n heq
       apply hδInt
       refine ⟨n, ?_⟩
-      calc
-        (n : ℂ) = (c : ℂ) - (a : ℂ) - (b : ℂ) := heq.symm
-        _ = ((c - a - b : ℝ) : ℂ) := by push_cast; ring
+      simp_all
   let F : Filter ℝ := 𝓝[Iio 1] 1
   let η : ℝ := a + b - c
-  have hη : η = c - (c - a) - (c - b) := by dsimp [η]; ring
+  have hη : η = c - (c - a) - (c - b) := by linarith
   have hη' : c - (c - a) - (c - b) = η := hη.symm
   have hca' : c - (c - a) = a := by ring
   have hcb' : c - (c - b) = b := by ring
-  have hη'' : a - (c - b) = η := by dsimp [η]; ring
+  have hη'' : a - (c - b) = η := by linarith
   have hcbTrans : 0 < c - (c - b) := by
-    rw [hcb']
-    exact hb
+    linarith
   have hEulerValue := realGaussEulerKernelIntegral_tendsto_gauss_value
-    (c - a) (c - b) c hca hcb (by rw [show c - (c - a) - (c - b) = a + b - c by ring]; exact heta)
+    (c - a) (c - b) c hca hcb (by linarith)
   have hEulerValueC : Tendsto
       (fun x : ℝ =>
         ((Real.Gamma c / (Real.Gamma (c - b) * Real.Gamma b) : ℂ) *
@@ -69,7 +64,7 @@ theorem connectionMinusSecondCramer_eq_gamma_of_real
             realGaussEulerKernelIntegral (c - a) (c - b) c x)
         F (𝓝 (Real.Gamma c * Real.Gamma η /
           (Real.Gamma a * Real.Gamma b))) := by
-      simpa only [hca', hcb', hη''] using hEulerValue
+      aesop
     have hvalueC0 : Tendsto
         (fun x : ℝ =>
           (((Real.Gamma c / (Real.Gamma (c - b) * Real.Gamma b) : ℝ) *
@@ -107,8 +102,7 @@ theorem connectionMinusSecondCramer_eq_gamma_of_real
           ((Real.Gamma (c - b) : ℂ) * (Real.Gamma b : ℂ)) *
           (realGaussEulerKernelIntegral (c - a) (c - b) c x : ℂ)) := by
     filter_upwards [hxpos, hxlt] with x hx hx1
-    have htransform := realGaussEulerTransform_family hH a b c x ha hb hca hcb hx hx1
-    have hfamily := realGaussEulerIntegral_eq_family hH (c - a) (c - b) c x
+    have hfamily := realGaussEulerIntegral_eq_family hH _ _ c x
       hca hcb hcbTrans hx hx1
     have hbase : (1 : ℂ) - (x : ℂ) ≠ 0 := by
       apply sub_ne_zero.mpr
@@ -125,11 +119,11 @@ theorem connectionMinusSecondCramer_eq_gamma_of_real
           ((1 - (x : ℂ)) ^ ((c : ℂ) - (a : ℂ) - (b : ℂ)) *
             H (c - a : ℝ) (c - b : ℝ) (c : ℝ) (x : ℝ)) := by
         rw [show gaussFMinus H (a : ℂ) (b : ℂ) (c : ℂ) (x : ℂ) =
-          H (a : ℂ) (b : ℂ) (c : ℂ) (x : ℂ) by rfl, htransform]
+          H (a : ℂ) (b : ℂ) (c : ℂ) (x : ℂ) by rfl, (realGaussEulerTransform_family hH a b c x ha hb hca hcb hx hx1)]
       _ = H (c - a : ℝ) (c - b : ℝ) (c : ℝ) (x : ℝ) := hcancel
       _ = (Real.Gamma c : ℂ) /
-          ((Real.Gamma (c - b) : ℂ) * (Real.Gamma b : ℂ)) *
-          (realGaussEulerKernelIntegral (c - a) (c - b) c x : ℂ) := by
+          ((Real.Gamma _ : ℂ) * (Real.Gamma b : ℂ)) *
+          (realGaussEulerKernelIntegral _ _ c x : ℂ) := by
         simpa [realGaussEulerKernelIntegral, Complex.ofReal_div,
           Complex.ofReal_mul] using hfamily.symm
   have hscaled : Tendsto
@@ -160,7 +154,7 @@ theorem connectionMinusSecondCramer_eq_gamma_of_real
     dsimp [gaussConnectionMinusGammaCoefficient₂, p, η]
     rw [show (a : ℂ) + (b : ℂ) - (c : ℂ) = ((a + b - c : ℝ) : ℂ) by
       push_cast; ring,
-      Complex.Gamma_ofReal c, Complex.Gamma_ofReal (a + b - c),
+      Complex.Gamma_ofReal c, Complex.Gamma_ofReal _,
       Complex.Gamma_ofReal a, Complex.Gamma_ofReal b]
     push_cast
     field_simp [hΓc, hΓη, hΓa, hΓb]
@@ -168,7 +162,7 @@ theorem connectionMinusSecondCramer_eq_gamma_of_real
       (Real.Gamma c : ℂ) * (Real.Gamma η : ℂ) /
           ((Real.Gamma a : ℂ) * (Real.Gamma b : ℂ)) =
         gaussConnectionMinusGammaCoefficient₂ p := by
-    simpa only [Complex.ofReal_mul, Complex.ofReal_div] using hGamma
+    simpa using hGamma
   simpa [p] using hcoeff.trans hGamma'
 
 end DOZZ.Proofs

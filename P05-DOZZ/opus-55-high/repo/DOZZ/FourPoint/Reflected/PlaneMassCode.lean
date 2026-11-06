@@ -18,10 +18,10 @@ theorem reflected_finitePlaneRestriction_measurable (K : Set ℂ) (hK : Measurab
     Measurable (reflectedFinitePlaneRestriction K) := by
   have hg : MeasurableSet {μ : Measure ℂ | μ K < ⊤} :=
     measurableSet_lt (Measure.measurable_coe hK) measurable_const
-  have hm : Measurable (fun μ : Measure ℂ => (reflectedFinitePlaneRestriction K μ : Measure ℂ)) := by
+  have hm : Measurable (fun μ => (reflectedFinitePlaneRestriction K μ : Measure ℂ)) := by
     apply Measure.measurable_of_measurable_coe
     intro s hs
-    have he : (fun μ : Measure ℂ => (reflectedFinitePlaneRestriction K μ : Measure ℂ) s) =
+    have he : (fun μ => (reflectedFinitePlaneRestriction K μ : Measure ℂ) s) =
         (fun μ => if μ K < ⊤ then μ (s ∩ K) else 0) := by
       funext μ
       by_cases h : μ K < ⊤
@@ -46,41 +46,44 @@ noncomputable def reflectedPuncturedCompact (n : ℕ) : Set ℂ :=
 noncomputable def reflectedPuncturedMassCode {A : Type*} (F : A × ℂ → ℝ≥0∞)
     (p : A × Measure ℂ) : ℝ≥0∞ :=
   ⨆ n : ℕ, ∫⁻ x, F (p.1,x) ∂(reflectedFinitePlaneRestriction (reflectedPuncturedCompact n) p.2 : Measure ℂ)
+section
+variable {A : Type*}
 
-theorem reflected_puncturedMassCode_measurable {A : Type*} [MeasurableSpace A]
+theorem reflected_puncturedMassCode_measurable [MeasurableSpace A]
     (F : A × ℂ → ℝ≥0∞) (hF : Measurable F) : Measurable (reflectedPuncturedMassCode F) := by
   apply Measurable.iSup
   intro n
-  have hK : IsCompact (reflectedPuncturedCompact n) :=
+  have hK :=
     (reflectedPuncturedExhaustion.isCompact n).image continuous_subtype_val
   exact (measurable_lintegral_finiteMeasure_parameter hF).comp
     (measurable_fst.prodMk ((reflected_finitePlaneRestriction_measurable _ hK.measurableSet).comp measurable_snd))
 
-theorem reflected_puncturedMassCode_eq {A : Type*} (F : A × ℂ → ℝ≥0∞)
+theorem reflected_puncturedMassCode_eq (F : A × ℂ → ℝ≥0∞)
     (p : A) (μ : Measure ℂ)
     (hfin : ∀ K, IsCompact K → K ⊆ ({0} : Set ℂ)ᶜ → μ K < ⊤) :
     reflectedPuncturedMassCode F (p,μ) = ∫⁻ x in ({0} : Set ℂ)ᶜ, F (p,x) ∂μ := by
   have hK (n : ℕ) : IsCompact (reflectedPuncturedCompact n) :=
     (reflectedPuncturedExhaustion.isCompact n).image continuous_subtype_val
-  have hK0 (n : ℕ) : reflectedPuncturedCompact n ⊆ ({0} : Set ℂ)ᶜ := by
+  have hK0 (n : ℕ) : reflectedPuncturedCompact n ⊆ ({0})ᶜ := by
     rintro x ⟨y,-,rfl⟩
     exact y.property
   have hKm : Monotone reflectedPuncturedCompact := fun _ _ h => image_mono
     (reflectedPuncturedExhaustion.subset h)
-  have hKe : (⋃ n,reflectedPuncturedCompact n) = ({0} : Set ℂ)ᶜ := by
+  have hKe : (⋃ n,reflectedPuncturedCompact n) = ({0})ᶜ := by
     ext x
     constructor
-    · rintro ⟨-,⟨n,rfl⟩,hx⟩
-      exact hK0 n hx
+    · aesop
     · intro hx
       obtain ⟨n,hn⟩ := reflectedPuncturedExhaustion.exists_mem ⟨x,hx⟩
       exact mem_iUnion.mpr ⟨n,⟨⟨x,hx⟩,hn,rfl⟩⟩
   unfold reflectedPuncturedMassCode
-  have he (n : ℕ) : (reflectedFinitePlaneRestriction (reflectedPuncturedCompact n) μ : Measure ℂ) =
+  have he (n : ℕ) : (reflectedFinitePlaneRestriction (reflectedPuncturedCompact n) μ) =
       μ.restrict (reflectedPuncturedCompact n) := by
     simp [reflectedFinitePlaneRestriction,hfin _ (hK n) (hK0 n)]
   simp_rw [he]
   rw [← hKe]
   exact (setLIntegral_iUnion_of_directed _ hKm.directed_le).symm
+
+end
 
 end DOZZ.Proofs

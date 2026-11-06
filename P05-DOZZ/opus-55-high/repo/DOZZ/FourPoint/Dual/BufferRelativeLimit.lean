@@ -21,30 +21,24 @@ theorem dual_buffer_relative_squeeze_tendsto {A : Type*} (l : Filter A)
     (hb : ∀ h, 0 < h → ∀ᶠ x in l, |f x-g h x| ≤ d h x+e h x*(-g h x)) :
     Tendsto f l (𝓝 L) := by
   have hLower : Tendsto (fun h => L-(0+C h*(-L))) atTop (𝓝 L) := by
-    simpa only [zero_mul, add_zero, sub_zero] using
-      (tendsto_const_nhds (x := L)).sub ((tendsto_const_nhds (x := (0 : ℝ))).add
+    simpa using
+      (tendsto_const_nhds (x := L)).sub ((tendsto_const_nhds (x := 0)).add
         (hC.mul (tendsto_const_nhds (x := -L))))
   have hUpper : Tendsto (fun h => L+(0+C h*(-L))) atTop (𝓝 L) := by
     simpa only [zero_mul, add_zero] using
-      (tendsto_const_nhds (x := L)).add ((tendsto_const_nhds (x := (0 : ℝ))).add
-        (hC.mul (tendsto_const_nhds (x := -L))))
+      (tendsto_const_nhds (x := L)).add ((tendsto_const_nhds (x := 0)).add
+        (hC.mul (tendsto_const_nhds)))
   apply tendsto_order.mpr
   constructor
   · intro a ha
-    obtain ⟨h, hh, hc⟩ := ((eventually_gt_atTop (0 : ℝ)).and
+    obtain ⟨h, hh, hc⟩ := ((eventually_gt_atTop 0).and
       (hLower.eventually (lt_mem_nhds ha))).exists
-    have ht := (hg h hh).sub ((hd h hh).add ((he h hh).mul (hg h hh).neg))
-    filter_upwards [ht.eventually (lt_mem_nhds hc), hb h hh] with x hx hbound
-    have hlow := (abs_le.mp hbound).1
-    have hf : g h x-(d h x+e h x*(-g h x)) ≤ f x := by linarith only [hlow]
-    exact hx.trans_le hf
+    filter_upwards [((hg h hh).sub ((hd h hh).add ((he h hh).mul (hg h hh).neg))).eventually (lt_mem_nhds hc), hb h hh] with x hx hbound
+    grind
   · intro b hb'
-    obtain ⟨h, hh, hc⟩ := ((eventually_gt_atTop (0 : ℝ)).and
+    obtain ⟨h, hh, hc⟩ := ((eventually_gt_atTop 0).and
       (hUpper.eventually (gt_mem_nhds hb'))).exists
-    have ht := (hg h hh).add ((hd h hh).add ((he h hh).mul (hg h hh).neg))
-    filter_upwards [ht.eventually (gt_mem_nhds hc), hb h hh] with x hx hbound
-    have hhigh := (abs_le.mp hbound).2
-    have hf : f x ≤ g h x+(d h x+e h x*(-g h x)) := by linarith only [hhigh]
-    exact hf.trans_lt hx
+    filter_upwards [((hg h hh).add ((hd h hh).add ((he h hh).mul (hg h hh).neg))).eventually (gt_mem_nhds hc), hb h hh] with x hx hbound
+    grind
 
 end DOZZ.Proofs

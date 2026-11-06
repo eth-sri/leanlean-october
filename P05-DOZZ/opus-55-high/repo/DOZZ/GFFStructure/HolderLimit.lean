@@ -45,20 +45,20 @@ lemma IsKolmogorovProcess.tendstoInMeasure (hX : IsKolmogorovProcess X P p q M)
     change Tendsto ((fun x : ℝ≥0∞ ↦ x ^ q) ∘ (fun n ↦ edist (u n).1 t)) atTop (𝓝 0)
     refine Tendsto.comp ?_ this
     convert ENNReal.continuous_rpow_const.tendsto 0
-    simp [hq_pos]
+    simp_all
   suffices Tendsto (fun n ↦ P {ω | ε ^ p ≤ edist (X (u n) ω) (X t ω) ^ p}) atTop (𝓝 0) by
     convert this using 3 with n
     ext ω
-    simp only [Set.mem_ofPred_eq]
+    simp
     rw [ENNReal.rpow_le_rpow_iff hX.p_pos]
   refine tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds ?_ (fun _ ↦ zero_le) ?_
     (h := fun n ↦ (ε ^ p)⁻¹ * ∫⁻ ω, edist (X (u n) ω) (X t ω) ^ p ∂P)
-  · rw [← mul_zero (ε ^ p)⁻¹]
-    exact ENNReal.Tendsto.const_mul h_tendsto (by simp [hε_top, hε.ne'])
+  · rw [← mul_zero _⁻¹]
+    exact ENNReal.Tendsto.const_mul h_tendsto (by aesop)
   · refine fun n ↦ (meas_ge_le_lintegral_div ?_ ?_ ?_).trans_eq ?_
     · exact (hX.measurable_edist.pow_const _).aemeasurable
-    · simp [hε.ne', hX.p_pos.le]
-    · simp [hε.ne', hε_top]
+    · positivity
+    · aesop
     · rw [ENNReal.div_eq_inv_mul]
 
 variable [MeasurableSpace E] [BorelSpace E] [CompleteSpace E] [hE : Nonempty E]
@@ -71,31 +71,30 @@ def holderModification (X : T → Ω → E) (β : ℝ≥0) (p : ℝ) (U : Set T)
   fun t ω ↦ if t ∈ U then limUnder (comap Subtype.val (𝓝 t))
     (fun t' : denseCountable T ↦ indicatorProcess X (holderSet X (denseCountable T) p β U) t' ω)
     else hE.some
+section
+variable (hT : HasBoundedCoveringNumber U c d) [DecidablePred (· ∈ U)] (hU : IsOpen U) (hX : IsKolmogorovProcess X P p q M) (hc : c ≠ ∞) (hd_pos : 0 < d) (hdq_lt : d < q) (hβ_pos : 0 < β) (hβ_lt : β < (q - d) / p)
+include hT hU hX hc hd_pos hdq_lt hβ_pos hβ_lt
 
 lemma isLimitOfIndicator_holderModification
-    (hT : HasBoundedCoveringNumber U c d) [DecidablePred (· ∈ U)] (hU : IsOpen U)
-    (hX : IsKolmogorovProcess X P p q M)
-    (hc : c ≠ ∞) (hd_pos : 0 < d) (hdq_lt : d < q) (hβ_pos : 0 < β) (hβ_lt : β < (q - d) / p) :
+    :
     IsLimitOfIndicator (holderModification X β p U) X P U := by
   let A := holderSet X (denseCountable T) p β U
   have hA_meas : MeasurableSet A := DOZZ.Proofs.IsKolmogorovProcess.measurableSet_holderSet hX countable_denseCountable
-  have hA_ae : ∀ᵐ ω ∂P, ω ∈ A := ae_mem_holderSet hT hX hc hd_pos hdq_lt hβ_pos hβ_lt
+  have hA_ae := ae_mem_holderSet hT hX hc hd_pos hdq_lt hβ_pos hβ_lt
     countable_denseCountable
   refine ⟨A, hA_meas, hA_ae, fun t htU ω hω ↦ ?_, fun t htU ω ↦ ?_, fun t htUc ω ↦ ?_⟩
   · exact exists_tendsto_of_mem_holderSet hT hU hX.p_pos hβ_pos dense_denseCountable
       hω t htU
   · simp only [holderModification, htU, ↓reduceIte, Dense.extend, IsDenseInducing.extend, A]
-    exact edist_self _
+    simp
   · simp [holderModification, htUc]
 
-lemma measurable_holderModification (hT : HasBoundedCoveringNumber U c d)
-    [DecidablePred (· ∈ U)] (hU : IsOpen U)
-    (hX : IsKolmogorovProcess X P p q M)
-    (hc : c ≠ ∞) (hd_pos : 0 < d) (hdq_lt : d < q) (hβ_pos : 0 < β) (hβ_lt : β < (q - d) / p)
-    (t : T) :
+lemma measurable_holderModification (t : T) :
     Measurable (holderModification X β p U t) :=
   IsLimitOfIndicator.measurable hX.measurable
     (isLimitOfIndicator_holderModification hT hU hX hc hd_pos hdq_lt hβ_pos hβ_lt) t
+
+end
 
 omit [MeasurableSpace E] [BorelSpace E] in
 lemma holderOnWith_holderModification
@@ -113,8 +112,7 @@ lemma holderOnWith_holderModification
     refine ⟨C, ?_⟩
     -- missing congr lemma?
     intro s hs t ht
-    specialize hHolder s hs t ht
-    simpa only [hs, ↓reduceIte, ht]
+    aesop
   classical
   by_cases hω : ω ∈ holderSet X (denseCountable T) p β U
   · simp only [hω, ↓reduceIte, indicatorProcess_apply]
@@ -192,7 +190,7 @@ lemma edist_holderModification_eq_zero (hT : HasBoundedCoveringNumber U c d) (hU
     refine ContinuousOn.continuousAt ?_ ?_ (s := {x : denseCountable T | (x : T) ∈ U})
     · exact continuousOn_of_mem_holderSet hT hX.p_pos hβ_pos hω
     · refine IsOpen.mem_nhds ?_ ?_
-      · exact Continuous.isOpen_preimage (by fun_prop) _ hU
+      · tauto
       · simpa
   refine tendsto_nhds_unique_inseparable (f := fun t' : denseCountable T ↦ X t' ω)
     (l := comap Subtype.val (𝓝 t')) ?_ ?_
@@ -201,9 +199,11 @@ lemma edist_holderModification_eq_zero (hT : HasBoundedCoveringNumber U c d) (hU
   · rwa [← nhds_subtype]
 
 variable [IsFiniteMeasure P]
+section
+variable (hT : HasBoundedCoveringNumber U c d)
+include hT
 
-lemma edist_modification_holderModification (hT : HasBoundedCoveringNumber U c d)
-    [DecidablePred (· ∈ U)] (hU : IsOpen U)
+lemma edist_modification_holderModification [DecidablePred (· ∈ U)] (hU : IsOpen U)
     (hX : IsKolmogorovProcess X P p q M)
     (hc : c ≠ ∞) (hd_pos : 0 < d) (hdq_lt : d < q) (hβ_pos : 0 < β) (hβ_lt : β < (q - d) / p)
     (t : T) (htU : t ∈ U) :
@@ -227,10 +227,10 @@ lemma edist_modification_holderModification (hT : HasBoundedCoveringNumber U c d
   have hY_unif ω : UniformContinuousOn (fun t ↦ Y t ω) U :=
     uniformContinuousOn_holderModification hT hU hX hβ_pos ω
   have hY_cont ω : ContinuousOn (fun t ↦ Y t ω) U :=
-    continuousOn_holderModification hT hU hX hβ_pos ω
+    by fun_prop
   -- Main proof
   suffices ∀ᵐ ω ∂P, edist (Y t ω) (X t ω) ≤ 0 by
-    filter_upwards [this] with ω h using by simpa using h
+    simpa
   obtain ⟨u, huU, hu⟩ : ∃ u : ℕ → denseCountable T, (∀ n, ↑(u n) ∈ U) ∧
       Tendsto (fun n ↦ (u n : T)) atTop (𝓝 t) := by
     have ht_mem_closure : t ∈ closure (denseCountable T) := by
@@ -241,17 +241,14 @@ lemma edist_modification_holderModification (hT : HasBoundedCoveringNumber U c d
       obtain ⟨t', ht'⟩ := dense_denseCountable.exists_mem_open hU ⟨t, htU⟩
       exact ⟨⟨t', ht'.1⟩, ht'.2⟩
     refine ⟨fun n ↦ if u' n ∈ U then ⟨u' n, hu'_mem n⟩ else t₀, fun n ↦ ?_, ?_⟩
-    · simp only
-      split_ifs with hmem
-      · simp [hmem]
-      · simp [ht₀]
+    · grind
     · have h_eventually_mem := Tendsto.eventually_mem hu' (hU.mem_nhds htU)
       refine hu'.congr' ?_
       filter_upwards [h_eventually_mem] with n hmem
-      simp [hmem]
+      simp_all
   have h_le n {ω} (hω : ω ∈ A) : edist (Y t ω) (X t ω)
       ≤ edist (Y t ω) (Y (u n) ω) + edist (X (u n) ω) (X t ω) := by
-    refine (edist_triangle4 (Y t ω) (Y (u n) ω) (X (u n) ω) (X t ω)).trans_eq ?_
+    refine (edist_triangle4 (Y t ω) (Y (u n) ω) (X (u n) ω) _).trans_eq ?_
     simp [hY_eq hω (u n) (huU n)]
   -- `X (u n)` converges in measure to `X t`
   have h_tendsto_X : TendstoInMeasure P (fun n ↦ X (u n)) atTop (X t) :=
@@ -264,28 +261,27 @@ lemma edist_modification_holderModification (hT : HasBoundedCoveringNumber U c d
     refine tendstoInMeasure_of_tendsto_ae_of_measurable_edist (fun n ↦ ?_) (ae_of_all _ h_ae)
     exact measurable_edist_holderModification' hT hU hX hc hd_pos hdq_lt hβ_pos hβ_lt hβ_pos hβ_lt
       (u n) t
-  refine (ae_le_const_iff_forall_gt_measure_zero _ _).mpr fun ε hε ↦ ?_
+  refine (ae_le_const_iff_forall_gt_measure_zero ..).mpr fun ε hε ↦ ?_
   suffices Tendsto (fun n : ℕ ↦ P {ω | ε ≤ edist (Y t ω) (X t ω)}) atTop (𝓝 0) by
     simpa using this
   have hP_le n : P {ω | ε ≤ edist (Y t ω) (X t ω)}
       ≤ P {ω | ε/2 ≤ edist (Y (u n) ω) (Y t ω)} + P {ω | ε/2 ≤ edist (X (u n) ω) (X t ω)} := by
-    calc P {ω | ε ≤ edist (Y t ω) (X t ω)}
-    _ = P ({ω | ε ≤ edist (Y t ω) (X t ω)} ∩ A) := by rw [hPA]
+    calc P {ω | ε ≤ edist _ _}
+    _ = P _ := by rw [hPA]
     _ ≤ P ({ω | ε ≤ edist (Y (u n) ω) (Y t ω) + edist (X (u n) ω) (X t ω)} ∩ A) := by
       refine measure_mono fun ω ↦ ?_
-      simp only [Set.mem_inter_iff, Set.mem_ofPred_eq, and_imp]
+      simp
       refine fun hε_le hω ↦ ⟨(hε_le.trans (h_le n hω)).trans_eq ?_, hω⟩
       rw [edist_comm]
-    _ = P {ω | ε ≤ edist (Y (u n) ω) (Y t ω) + edist (X (u n) ω) (X t ω)} := by rw [hPA]
-    _ ≤ P {ω | ε / 2 ≤ edist (Y (u n) ω) (Y t ω)}
-        + P {ω | ε / 2 ≤ edist (X (u n) ω) (X t ω)} := measure_add_ge_le_add_measure_ge_half
+    _ = P {ω | ε ≤ edist (Y (u n) ω) _ + edist _ _} := by tauto
+    _ ≤ P {ω | ε / 2 ≤ edist _ _}
+        + P {ω | ε / 2 ≤ edist _ _} := measure_add_ge_le_add_measure_ge_half
   refine tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds ?_ (fun _ ↦ zero_le) hP_le
   rw [← add_zero (0 : ℝ≥0∞)]
-  exact Tendsto.add (h_tendsto_Y (ε / 2) (ENNReal.half_pos hε.ne'))
-    (h_tendsto_X (ε / 2) (ENNReal.half_pos hε.ne'))
+  exact Tendsto.add (h_tendsto_Y _ (ENNReal.half_pos hε.ne'))
+    (h_tendsto_X _ (ENNReal.half_pos hε.ne'))
 
-lemma exists_edist_modification_holder_aux' (hT : HasBoundedCoveringNumber U c d)
-    (hU : IsOpen U)
+lemma exists_edist_modification_holder_aux' (hU : IsOpen U)
     (hX : IsKolmogorovProcess X P p q M)
     (hc : c ≠ ∞) (hd_pos : 0 < d) (hdq_lt : d < q)
     (hβ_pos : 0 < β) (hβ_lt : β < (q - d) / p) :
@@ -298,14 +294,15 @@ lemma exists_edist_modification_holder_aux' (hT : HasBoundedCoveringNumber U c d
   · exact holderOnWith_holderModification hT hU hX hβ_pos
   · exact isLimitOfIndicator_holderModification hT hU hX hc hd_pos hdq_lt hβ_pos hβ_lt
 
+end
+
 lemma HolderOnWith.congr_edist {T E : Type*} [PseudoEMetricSpace T] [PseudoEMetricSpace E]
-    {f g : T → E} {U : Set T} {C : ℝ≥0} {β : ℝ≥0}
+    {f g : T → E} {U : Set T} {C β : ℝ≥0}
     (hfg : ∀ s t, s ∈ U → t ∈ U → edist (g s) (g t) = edist (f s) (f t))
     (hf : HolderOnWith C β f U) :
     HolderOnWith C β g U := by
   rw [HolderOnWith] at hf ⊢
-  convert hf using 5 with s hsU t htU
-  exact hfg s t hsU htU
+  simp_all
 
 lemma exists_modification_holder_aux' (hT : HasBoundedCoveringNumber U c d)
     (hU : IsOpen U)
@@ -329,7 +326,7 @@ lemma exists_modification_holder_aux' (hT : HasBoundedCoveringNumber U c d)
     · specialize hYU t htU ω
       refine le_antisymm ?_ zero_le
       refine (edist_triangle _ (Y t ω) _).trans ?_
-      simpa [hZ_edist]
+      simp_all
     · specialize hYUc t htU ω
       refine le_antisymm ?_ zero_le
       refine (edist_triangle _ (Y t ω) _).trans ?_
@@ -346,12 +343,11 @@ lemma indistinguishable_of_edist_modification_on {T Ω E : Type*} {mΩ : Measura
   let ⟨D, D_countable, D_dense⟩ := ‹SeparableSpace T›
   have DU_countable : (D ∩ U).Countable := D_countable.mono Set.inter_subset_left
   have eq (ht : ∀ t ∈ (D ∩ U), ∀ᵐ ω ∂P, edist (X t ω) (Y t ω) = 0) :
-      ∀ᵐ ω ∂P, ∀ t ∈ (D ∩ U), edist (X t ω) (Y t ω) = 0 := (ae_ball_iff DU_countable).mpr ht
+      ∀ᵐ ω ∂P, ∀ t ∈ (D ∩ U), edist _ _ = 0 := (ae_ball_iff DU_countable).mpr ht
   filter_upwards [hX, hY, eq (fun t ht ↦ h t ht.2)] with ω hX hY h t htU
   suffices Set.EqOn (fun t ↦ edist (X t ω) (Y t ω)) 0 U from this htU
   refine Set.EqOn.of_subset_closure h ?_ (by fun_prop) Set.inter_subset_right ?_
-  · intro s hsU
-    exact (hX s hsU).edist (hY s hsU)
+  · fun_prop
   exact subset_closure_dense_inter D_dense hU
 
 end PseudoEMetricSpace

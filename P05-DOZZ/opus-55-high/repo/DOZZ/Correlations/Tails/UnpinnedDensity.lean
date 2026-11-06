@@ -19,13 +19,14 @@ namespace DOZZ.Proofs
 /-- The translated point in a local circle chart is outside the unit equator. -/
 theorem local_circle_normPlus (z : ℂ) (hz : 2 ≤ ‖z‖)
     (p : localCircle) : normPlus (z + p.val.1) = ‖z + p.val.1‖ := by
-  unfold normPlus
   apply max_eq_right
   have h := localCircle_exterior z hz p
   linarith [Real.exp_pos (-p.val.2)]
+section
+variable {Ω : Type*}
 
 /-- Exact density ratio between the unpinned local chaos and the translated equator chaos. -/
-theorem unpinned_density_ratio {Ω : Type*} (Xc : Ω → ℂ → ℝ → ℝ)
+theorem unpinned_density_ratio (Xc : Ω → ℂ → ℝ → ℝ)
     (z : ℂ) (hz : 2 ≤ ‖z‖) (γ : ℝ) (ω : Ω) (p : localCircle) :
     Real.exp (γ * (Xc ω (z + p.val.1) p.val.2 - Xc ω z 0) - γ ^ 2 / 2 * p.val.2) =
       Real.exp (-γ * Xc ω z 0) *
@@ -36,12 +37,11 @@ theorem unpinned_density_ratio {Ω : Type*} (Xc : Ω → ℂ → ℝ → ℝ)
   have hn : 0 < normPlus (z + p.val.1) := by unfold normPlus; positivity
   rw [Real.rpow_def_of_pos hn, ← Real.exp_add, ← Real.exp_add, ← Real.exp_add,
     local_circle_normPlus z hz p]
-  congr 1
   ring
 
 /-- The original and unpinned second moments at local circle coordinates. -/
 theorem local_circle_second_moments
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
+    [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
     (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (z : ℂ) (hz : 2 ≤ ‖z‖) (p : localCircle) :
     (∫ ω, Xc ω (z+p.val.1) p.val.2 ^ 2 ∂P) =
@@ -50,14 +50,15 @@ theorem local_circle_second_moments
   let : IsProbabilityMeasure P := hX.1
   obtain ⟨hG, hm⟩ := circleAverage_isGaussianProcess P X Xc hX hc
   have hmU : (∫ ω, Xc ω (z+p.val.1) p.val.2 - Xc ω z 0 ∂P) = 0 := by
-    rw [integral_sub ((hc.2.1 _ _).integrable (by norm_num))
-      ((hc.2.1 _ _).integrable (by norm_num)), hm, hm, sub_self]
+    rw [integral_sub ((hc.2.1 ..).integrable (by norm_num))
+      ((hc.2.1 ..).integrable (by norm_num)), hm, hm, sub_self]
   have hO := offCenter_circle_self_covariance P X Xc hX hc z hz p
   have hU := offCenter_unpinned_circle_covariance P X Xc hX hc z hz p p
   rw [local_circle_self_potential] at hU
   simp only [covariance, hm] at hO
   simp only [covariance, hmU] at hU
-  simp only [sub_zero, ← pow_two] at hO hU
-  exact ⟨hO, hU⟩
+  grind
+
+end
 
 end DOZZ.Proofs

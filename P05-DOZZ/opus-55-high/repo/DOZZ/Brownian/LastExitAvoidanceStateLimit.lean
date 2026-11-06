@@ -25,29 +25,25 @@ private theorem lastExitAvoidanceFactor_nonneg_le_one
     {ν c y : ℝ} (hν : 0 < ν) (hc : 0 < c) :
     0 ≤ lastExitAvoidanceFactor ν c y ∧ lastExitAvoidanceFactor ν c y ≤ 1 := by
   by_cases hcy : c < y
-  · have hy : 0 < y := lt_trans hc hcy
-    have hyc : 0 < y - c := sub_pos.mpr hcy
+  · have hy := lt_trans hc hcy
+    have hyc := sub_pos.mpr hcy
     have hnumExp : Real.exp (-2 * ν * (y - c)) < 1 := by
-      apply Real.exp_lt_one_iff.mpr
-      nlinarith
+      simp_all
     have hdenExp : Real.exp (-2 * ν * y) < 1 := by
-      apply Real.exp_lt_one_iff.mpr
-      nlinarith
+      simp_all
     have hnum : 0 < 1 - Real.exp (-2 * ν * (y - c)) := by linarith
     have hden : 0 < 1 - Real.exp (-2 * ν * y) := by linarith
     have harg : -2 * ν * y ≤ -2 * ν * (y - c) := by
-      have hstep : 0 < 2 * ν * c := by positivity
       nlinarith
     have hratio : 1 - Real.exp (-2 * ν * (y - c)) ≤
         1 - Real.exp (-2 * ν * y) := by
-      have hexp := Real.exp_le_exp.mpr harg
-      linarith
+      bound
     have hfactor : lastExitAvoidanceFactor ν c y =
         (1 - Real.exp (-2 * ν * (y - c))) /
           (1 - Real.exp (-2 * ν * y)) := by
       simp [lastExitAvoidanceFactor, conditionedH, hν.ne', hcy]
     rw [hfactor]
-    exact ⟨(div_nonneg hnum.le hden.le), (div_le_one hden).2 hratio⟩
+    bound
   · simp [lastExitAvoidanceFactor, hcy]
 
 private theorem measurable_lastExitAvoidanceFactor
@@ -61,7 +57,7 @@ private theorem measurable_lastExitAvoidanceFactor
       · simp [conditionedH, hzero]
         fun_prop
     exact (hH.comp (measurable_id.sub measurable_const)).div hH
-  · exact measurable_const
+  simp
 
 /-- The expected avoidance probability at time `t` converges to one for a positive-drift
 conditioned entrance path. -/
@@ -72,10 +68,9 @@ theorem tendsto_integral_lastExitAvoidanceFactor_atTop
     Tendsto (fun t : ℝ≥0 =>
       ∫ p, lastExitAvoidanceFactor ν c (-(p t)) ∂P) atTop (𝓝 1) := by
   let : IsProbabilityMeasure P := hP.2.1
-  have hfactorlim := lastExitAvoidanceFactor_tendsto_one_atTop (ν := ν) (c := c) hν
   have hstate := conditionedPositiveStateAt_measureReal_Iic_tendsto_zero_atTop
     hP hν
-  have hmeasFactor : Measurable (lastExitAvoidanceFactor ν c) :=
+  have hmeasFactor :=
     measurable_lastExitAvoidanceFactor ν c
   have hfactorBound (x : ℝ) :
       0 ≤ lastExitAvoidanceFactor ν c x ∧ lastExitAvoidanceFactor ν c x ≤ 1 :=
@@ -84,19 +79,19 @@ theorem tendsto_integral_lastExitAvoidanceFactor_atTop
     (ContinuousMap.measurable_eval t).neg
   have hInt (t : ℝ≥0) : Integrable
       (fun p : BrownianPath => lastExitAvoidanceFactor ν c (-(p t))) P := by
-    apply Integrable.mono' (integrable_const (1 : ℝ))
+    apply Integrable.mono' (integrable_const 1)
       ((hmeasFactor.comp (hX t)).aestronglyMeasurable)
     filter_upwards [] with p
-    change ‖lastExitAvoidanceFactor ν c (-(p t))‖ ≤ (1 : ℝ)
+    change ‖lastExitAvoidanceFactor ν c (-(p t))‖ ≤ 1
     rw [Real.norm_eq_abs, abs_of_nonneg (hfactorBound (-(p t))).1]
-    simpa using (hfactorBound (-(p t))).2
+    simp_all
   have hIntegralBound (t : ℝ≥0) :
       0 ≤ (∫ p, lastExitAvoidanceFactor ν c (-(p t)) ∂P) ∧
       (∫ p, lastExitAvoidanceFactor ν c (-(p t)) ∂P) ≤ 1 := by
     constructor
     · exact integral_nonneg (fun p => (hfactorBound (-(p t))).1)
     · calc
-        _ ≤ ∫ _ : BrownianPath, (1 : ℝ) ∂P :=
+        _ ≤ ∫ _ : BrownianPath, 1 ∂P :=
           integral_mono (hInt t) (integrable_const 1)
             (fun p => (hfactorBound (-(p t))).2)
         _ = 1 := by simp
@@ -106,36 +101,32 @@ theorem tendsto_integral_lastExitAvoidanceFactor_atTop
   have hLower : ∀ ε : ℝ, 0 < ε → ∀ᶠ t : ℝ≥0 in atTop,
       1 - ε ≤ ∫ p, lastExitAvoidanceFactor ν c (-(p t)) ∂P := by
     intro ε hε
-    let δ : ℝ := ε / 2
-    have hδ : 0 < δ := by dsimp [δ]; linarith
+    let δ := ε / 2
+    have hδ : 0 < δ := by positivity
     have hlarge : ∀ᶠ y : ℝ in atTop,
         1 - δ < lastExitAvoidanceFactor ν c y :=
-      hfactorlim.eventually (Ioi_mem_nhds (by linarith))
+      (lastExitAvoidanceFactor_tendsto_one_atTop (ν := ν) (c := c) hν).eventually (Ioi_mem_nhds (by linarith))
     obtain ⟨M₀, hM₀⟩ := (eventually_atTop.1 hlarge)
-    let M : ℝ := max M₀ (max c 1)
-    have hM : 0 < M := by dsimp [M]; positivity
-    have hsmallM := hsmall M hM
-    filter_upwards [hsmallM.eventually (Iio_mem_nhds hδ)] with t ht
+    let M := max M₀ (max c 1)
+    have hM : 0 < M := by positivity
+    filter_upwards [(hsmall M hM).eventually (Iio_mem_nhds hδ)] with t ht
     have hA : MeasurableSet {p : BrownianPath | -(p t) ≤ M} :=
       measurableSet_le (hX t) measurable_const
     let f : BrownianPath → ℝ := fun p => 1 - lastExitAvoidanceFactor ν c (-(p t))
     let g : BrownianPath → ℝ := fun p =>
-      ({p : BrownianPath | -(p t) ≤ M}).indicator (fun _ => (1 : ℝ)) p + δ
+      ({p : BrownianPath | -(p t) ≤ M}).indicator (fun _ => 1) p + δ
     have hf : Integrable f P := by
       have hconst : Integrable (fun _ : BrownianPath => (1 : ℝ)) P := integrable_const 1
-      have hsub := hconst.sub (hInt t)
-      exact hsub.congr (Filter.Eventually.of_forall fun p => by simp [f])
-    have hg : Integrable g P := by
-      exact ((integrable_const (1 : ℝ)).indicator hA).add (integrable_const δ)
+      exact (hconst.sub (hInt t)).congr (Filter.Eventually.of_forall fun p => by rfl)
+    have hg : Integrable g P := by fun_prop
     have hfg : f ≤ g := by
       intro p
       by_cases hp : -(p t) ≤ M
       · have hnonneg := (hfactorBound (-(p t))).1
         simp [f, g, hp]
         linarith
-      · have hgt : M < -(p t) := lt_of_not_ge hp
-        have hyM : M₀ ≤ -(p t) := le_trans (le_max_left _ _) hgt.le
-        have hlarg := hM₀ (-(p t)) hyM
+      · have hgt := lt_of_not_ge hp
+        have hlarg := hM₀ (-(p t)) (le_trans (le_max_left ..) hgt.le)
         have hlt : 1 - lastExitAvoidanceFactor ν c (-(p t)) < δ := by linarith
         simp [f, g, hp]
         linarith
@@ -143,16 +134,16 @@ theorem tendsto_integral_lastExitAvoidanceFactor_atTop
       calc
         _ ≤ ∫ p, g p ∂P := integral_mono hf hg hfg
         _ = (∫ p, ({p : BrownianPath | -(p t) ≤ M}.indicator
-            (fun _ => (1 : ℝ))) p ∂P) + ∫ p, (δ : ℝ) ∂P := by
-              rw [integral_add ((integrable_const (1 : ℝ)).indicator hA)
+            (fun _ => 1)) p ∂P) + ∫ p, δ ∂P := by
+              rw [integral_add ((integrable_const 1).indicator hA)
                 (integrable_const δ)]
         _ = P.real {p | -(p t) ≤ M} + δ := by
           have hInd :
               (∫ p, ({p : BrownianPath | -(p t) ≤ M}.indicator
-                (fun _ => (1 : ℝ))) p ∂P) = P.real {p | -(p t) ≤ M} := by
+                (fun _ => 1)) p ∂P) = P.real {p | -(p t) ≤ M} := by
             calc
               _ = ∫ p, ({p : BrownianPath | -(p t) ≤ M}.indicator
-                  (1 : BrownianPath → ℝ)) p ∂P := by
+                  1) p ∂P := by
                     congr 1
               _ = P.real {p | -(p t) ≤ M} := integral_indicator_one hA
           rw [hInd]
@@ -161,13 +152,12 @@ theorem tendsto_integral_lastExitAvoidanceFactor_atTop
         1 - ∫ p, lastExitAvoidanceFactor ν c (-(p t)) ∂P := by
       calc
         _ = ∫ p, (1 - lastExitAvoidanceFactor ν c (-(p t))) ∂P := rfl
-        _ = (∫ _ : BrownianPath, (1 : ℝ) ∂P) -
-            ∫ p, lastExitAvoidanceFactor ν c (-(p t)) ∂P :=
+        _ = (∫ _ : BrownianPath, 1 ∂P) -
+            ∫ p, lastExitAvoidanceFactor ν c _ ∂P :=
           integral_sub (integrable_const 1) (hInt t)
         _ = _ := by simp
-    rw [htotal] at hbound
     dsimp [δ] at hbound ht hδ
-    nlinarith [ht, hbound]
+    nlinarith
   have htop : ∀ ε : ℝ, 0 < ε → ∀ᶠ t : ℝ≥0 in atTop,
       (∫ p, lastExitAvoidanceFactor ν c (-(p t)) ∂P) < 1 + ε := by
     intro ε hε
@@ -177,11 +167,11 @@ theorem tendsto_integral_lastExitAvoidanceFactor_atTop
   constructor
   · intro a ha
     have hε : 0 < (1 - a) / 2 := by linarith
-    filter_upwards [hLower ((1 - a) / 2) hε] with t ht
-    nlinarith [ht]
+    filter_upwards [hLower _ hε] with t ht
+    nlinarith
   · intro a ha
     have hε : 0 < a - 1 := by linarith
-    filter_upwards [htop (a - 1) hε] with t ht
+    filter_upwards [htop _ hε] with t ht
     linarith
 
 end DOZZ.Proofs

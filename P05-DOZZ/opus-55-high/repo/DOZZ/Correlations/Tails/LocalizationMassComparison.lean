@@ -14,9 +14,11 @@ open MeasureTheory Set
 open scoped ENNReal
 
 namespace DOZZ.Proofs
+section
+variable (μ : Measure ℂ)
 
 theorem localized_mass_comparison
-    (μ : Measure ℂ) (z : ℂ) (δ : ℝ)
+    (z : ℂ) (δ : ℝ)
     (χ : ℂ → ℝ) (hχ : ∀ x, 0 ≤ χ x ∧ χ x ≤ 1)
     (hχzero : ∀ x ∉ Metric.ball z 1, χ x = 0)
     (hχone : ∀ x ∈ Metric.ball z δ, χ x = 1)
@@ -25,17 +27,16 @@ theorem localized_mass_comparison
     (∫⁻ x in Metric.ball z 1, w x ∂μ) ≤
       (∫⁻ x, ENNReal.ofReal (χ x)*w x ∂μ)+
         (∫⁻ x in Metric.ball z 1 \ Metric.ball z δ, w x ∂μ) := by
-  have hball := (Metric.isOpen_ball (x := z) (ε := (1 : ℝ))).measurableSet
+  have hball := (Metric.isOpen_ball (x := z) (ε := 1)).measurableSet
   have hdiff := hball.diff ((Metric.isOpen_ball (x := z) (ε := δ)).measurableSet)
   constructor
   · rw [← lintegral_indicator hball]
     apply lintegral_mono
     intro x
-    dsimp only
     by_cases hx : x ∈ Metric.ball z 1
     · rw [indicator_of_mem hx]
       exact mul_le_of_le_one_left' (ENNReal.ofReal_le_one.mpr (hχ x).2)
-    · rw [indicator_of_notMem hx,hχzero x hx,ENNReal.ofReal_zero,zero_mul]
+    simp_all
   · rw [← lintegral_indicator hball,← lintegral_indicator hdiff]
     rw [← lintegral_add_right _ (hw.indicator hdiff)]
     apply lintegral_mono
@@ -46,12 +47,12 @@ theorem localized_mass_comparison
       by_cases hxδ : x ∈ Metric.ball z δ
       · rw [hχone x hxδ,ENNReal.ofReal_one,one_mul]
         exact le_self_add
-      · exact le_add_of_le_right (by rw [indicator_of_mem (show x ∈ Metric.ball z 1 \ Metric.ball z δ from ⟨hx,hxδ⟩)])
+      · exact le_add_of_le_right (by simp_all)
     · rw [indicator_of_notMem hx]
       exact zero_le
 
 theorem copied_mass_comparison
-    (μ : Measure ℂ) (δ ρ : ℝ) (hδρ : δ ≤ ρ) (hρ1 : ρ ≤ 1)
+    (δ ρ : ℝ) (hδρ : δ ≤ ρ) (hρ1 : ρ ≤ 1)
     (χ : ℂ → ℝ) (hχ : ∀ x, 0 ≤ χ x ∧ χ x ≤ 1)
     (hχzero : ∀ x ∉ Metric.ball (0 : ℂ) ρ, χ x = 0)
     (hχone : ∀ x ∈ Metric.ball (0 : ℂ) δ, χ x = 1)
@@ -75,8 +76,7 @@ theorem copied_mass_comparison
     by_cases hx : x ∈ Metric.ball (0 : ℂ) ρ
     · rw [indicator_of_mem hx,indicator_of_mem (hsub hx)]
       exact (mul_le_of_le_one_left' (ENNReal.ofReal_le_one.mpr (hχ x).2)).trans (huv x hx).1
-    · rw [hχzero x hx,ENNReal.ofReal_zero,zero_mul]
-      exact zero_le
+    simp_all
   · rw [← lintegral_indicator hb,← lintegral_indicator hρm,← lintegral_indicator hd,
       ← lintegral_add_right _ (he.indicator hρm),← lintegral_add_right _ (hv.indicator hd)]
     apply lintegral_mono
@@ -88,9 +88,11 @@ theorem copied_mass_comparison
       · have hxρ := Metric.ball_subset_ball hδρ hxδ
         rw [hχone x hxδ,ENNReal.ofReal_one,one_mul,indicator_of_mem hxρ]
         exact (huv x hxρ).2.trans le_self_add
-      · exact le_add_of_le_right (by rw [indicator_of_mem (show x ∈ Metric.ball (0 : ℂ) 1 \ Metric.ball 0 δ from ⟨hx,hxδ⟩)])
+      · exact le_add_of_le_right (by simp_all)
     · rw [indicator_of_notMem hx]
       exact zero_le
+
+end
 
 
 end DOZZ.Proofs

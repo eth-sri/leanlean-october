@@ -25,7 +25,7 @@ theorem coulomb_mass_pos_finite_ae
       coulombMass γ (M ω) α z αinf ≠ ⊤ := by
   let := hX.1
   have h4 : (0 : ℝ) < 4 / γ ^ 2 := by positivity
-  have hi0 : 0 < 2 / γ * (Q γ - αinf) := mul_pos (by positivity) (sub_pos.mpr hi)
+  have hi0 : 0 < 2 / γ * (Q γ - αinf) := by positivity
   have hk0 : ∀ k, 0 < 2 / γ * (Q γ - α k) :=
     fun k => mul_pos (by positivity) (sub_pos.mpr (ha k))
   have e1 : ∀ᶠ t in 𝓝[>] (0 : ℝ), t ∈ Ioo 0 (4 / γ ^ 2) := Ioo_mem_nhdsGT h4
@@ -33,11 +33,10 @@ theorem coulomb_mass_pos_finite_ae
   have e3 : ∀ᶠ t in 𝓝[>] (0 : ℝ), ∀ k, t ∈ Ioo 0 (2 / γ * (Q γ - α k)) :=
     eventually_all.mpr fun k => Ioo_mem_nhdsGT (hk0 k)
   obtain ⟨t, ht⟩ := (e1.and (e2.and e3)).exists
-  have hm := gmc_coulombMass_aemeasurable P X hX γ hγ hγ2 M hM α z αinf
   have hfin := coulombMass_moment_lt_top_of_pos P X hX γ hγ hγ2 M hM z hz α αinf t
     ht.1.1 ht.1.2 (fun k => (ht.2.2 k).2) ht.2.1.2
   obtain ⟨hR, hzR⟩ := coulomb_exterior_radius_bounds z
-  let c : ℝ≥0∞ := ENNReal.ofReal ((2 : ℝ) ^ (-∑ j, |γ * α j|)) *
+  let c := ENNReal.ofReal ((2 : ℝ) ^ (-∑ j, |γ * α j|)) *
     ENNReal.ofReal ((1 + 2 * ∑ j, ‖z j‖ + 2) ^ (-|γ * αinf|))
   have hc : c ≠ 0 := by
     have hs : 0 ≤ ∑ j, ‖z j‖ := Finset.sum_nonneg fun j _ => norm_nonneg _
@@ -46,12 +45,12 @@ theorem coulomb_mass_pos_finite_ae
       (ENNReal.ofReal_pos.mpr (Real.rpow_pos_of_pos (by linarith) _)).ne'
   have hpos := gmc_ball_mass_pos_ae P X hX γ hγ hγ2 M hM
     (((1 + 2 * ∑ j, ‖z j‖ + 1 : ℝ)) : ℂ) (1 / 8) (by norm_num)
-  filter_upwards [ae_lt_top' (hm.pow_const t) hfin.ne, hpos] with ω hf hp
+  filter_upwards [ae_lt_top' ((gmc_coulombMass_aemeasurable P X hX γ hγ hγ2 M hM α z αinf).pow_const t) hfin.ne, hpos] with ω hf hp
   constructor
   · exact (lt_of_lt_of_le (ENNReal.mul_pos hc hp.ne')
       (coulombMass_ge_exterior_ball (M ω) γ α z αinf hR hzR)).ne'
   · intro htop
     rw [htop, ENNReal.top_rpow_of_pos ht.1.1] at hf
-    exact lt_irrefl _ hf
+    tauto
 
 end DOZZ.Proofs

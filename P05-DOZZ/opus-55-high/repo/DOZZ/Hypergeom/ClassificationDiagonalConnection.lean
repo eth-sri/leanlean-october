@@ -38,11 +38,11 @@ theorem gaussGammaConnection_weighted_cross_eq_zero_of_constraint
   have hnegδcast : ((a + b - c : ℝ) : ℂ) = (a : ℂ) + (b : ℂ) - (c : ℂ) := by
     push_cast
     ring
-  have hcaCast : ((c - a : ℝ) : ℂ) = (c : ℂ) - (a : ℂ) := by push_cast; ring
-  have hcbCast : ((c - b : ℝ) : ℂ) = (c : ℂ) - (b : ℂ) := by push_cast; ring
-  have h2cCast : ((2 - c : ℝ) : ℂ) = (2 : ℂ) - (c : ℂ) := by push_cast; ring
-  have h1aCast : ((1 - a : ℝ) : ℂ) = (1 : ℂ) - (a : ℂ) := by push_cast; ring
-  have h1bCast : ((1 - b : ℝ) : ℂ) = (1 : ℂ) - (b : ℂ) := by push_cast; ring
+  have hcaCast : ((c - a : ℝ) : ℂ) = (c : ℂ) - (a : ℂ) := by simp
+  have hcbCast : ((c - b : ℝ) : ℂ) = (c : ℂ) - (b : ℂ) := by simp
+  have h2cCast : ((2 - c : ℝ) : ℂ) = (2 : ℂ) - (c : ℂ) := by simp
+  have h1aCast : ((1 - a : ℝ) : ℂ) = (1 : ℂ) - (a : ℂ) := by simp
+  have h1bCast : ((1 - b : ℝ) : ℂ) = (1 : ℂ) - (b : ℂ) := by simp
   have hac1Cast : ((a - c + 1 : ℝ) : ℂ) = (a : ℂ) - (c : ℂ) + 1 := by
     push_cast
     ring
@@ -77,13 +77,13 @@ theorem gaussGammaConnection_weighted_cross_eq_zero_of_constraint
     calc
       α * u * v + δ * w * x = α * (u * v) + δ * (w * x) := by ring
       _ =
-          α * (Real.Gamma (c - a - b) * Real.Gamma (a + b - c) * gaussK₁ a b c) +
-            δ * (Real.Gamma (c - a - b) * Real.Gamma (a + b - c) * gaussK₂ a b c) := by
+          α * (Real.Gamma _ * Real.Gamma _ * gaussK₁ a b c) +
+            δ * (Real.Gamma _ * Real.Gamma _ * gaussK₂ a b c) := by
         rw [hUV, hWX]
       _ =
-          Real.Gamma (c - a - b) * Real.Gamma (a + b - c) *
+          Real.Gamma _ * Real.Gamma (a + b - c) *
             (gaussK₁ a b c * α + gaussK₂ a b c * δ) := by ring
-      _ = 0 := by rw [hconstraint]; ring
+      _ = 0 := by simp_all
   rw [hU, hV, hW, hX]
   exact_mod_cast hcross
 
@@ -121,11 +121,11 @@ theorem gauss_diagonal_one_basis_of_constraint
   have hnegδcast : ((a + b - c : ℝ) : ℂ) = (a : ℂ) + (b : ℂ) - (c : ℂ) := by
     push_cast
     ring
-  have hcaCast : ((c - a : ℝ) : ℂ) = (c : ℂ) - (a : ℂ) := by push_cast; ring
-  have hcbCast : ((c - b : ℝ) : ℂ) = (c : ℂ) - (b : ℂ) := by push_cast; ring
-  have h2cCast : ((2 - c : ℝ) : ℂ) = (2 : ℂ) - (c : ℂ) := by push_cast; ring
-  have h1aCast : ((1 - a : ℝ) : ℂ) = (1 : ℂ) - (a : ℂ) := by push_cast; ring
-  have h1bCast : ((1 - b : ℝ) : ℂ) = (1 : ℂ) - (b : ℂ) := by push_cast; ring
+  have hcaCast : ((c - a : ℝ) : ℂ) = (c : ℂ) - (a : ℂ) := by simp
+  have hcbCast : ((c - b : ℝ) : ℂ) = (c : ℂ) - (b : ℂ) := by simp
+  have h2cCast : ((2 - c : ℝ) : ℂ) = (2 : ℂ) - (c : ℂ) := by simp
+  have h1aCast : ((1 - a : ℝ) : ℂ) = (1 : ℂ) - (a : ℂ) := by simp
+  have h1bCast : ((1 - b : ℝ) : ℂ) = (1 : ℂ) - (b : ℂ) := by simp
   have hac1Cast : ((a - c + 1 : ℝ) : ℂ) = (a : ℂ) - (c : ℂ) + 1 := by
     push_cast
     ring

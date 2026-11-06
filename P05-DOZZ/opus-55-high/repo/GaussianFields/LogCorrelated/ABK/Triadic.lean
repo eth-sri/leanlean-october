@@ -32,40 +32,9 @@ noncomputable instance instDecidableMem_abkTriadicScaleShell (n : ℤ) (r : ℝ)
   unfold abkTriadicScaleShell
   infer_instance
 
-/-- The `n`th ABK triadic product-coordinate shell kernel. -/
-@[expose]
-noncomputable def abkTriadicLogKernelProd {d : Nat} (normalization : ℝ)
-    (ζ : ABKCutoff d) (ψ : MeanZeroTestFunction d) (n : ℤ) :
-    ℝ × Vec d → ℝ :=
-  abkAnnularLogKernelProd normalization ζ ψ ((3 : ℝ) ^ (n - 1)) ((3 : ℝ) ^ n)
 
-/-- The `n`th ABK triadic shell kernel on concrete scale-space. -/
-@[expose]
-noncomputable def abkTriadicLogKernel {d : Nat} (normalization : ℝ)
-    (ζ : ABKCutoff d) (ψ : MeanZeroTestFunction d) (n : ℤ) :
-    ScaleSpace d → ℝ :=
-  abkAnnularLogKernel normalization ζ ψ ((3 : ℝ) ^ (n - 1)) ((3 : ℝ) ^ n)
 
-/-- The `n`th ABK triadic `L²(R^{1+d})` kernel. -/
-@[expose]
-noncomputable def abkTriadicLogKernelLp {d : Nat} (normalization : ℝ)
-    (ζ : ABKCutoff d) (ψ : MeanZeroTestFunction d) (n : ℤ)
-    (hprod :
-      MemLp (abkTriadicLogKernelProd normalization ζ ψ n) 2
-        (volume : Measure (ℝ × Vec d))) :
-    ScaleSpaceWhiteNoiseHilbert d :=
-  abkAnnularLogKernelLp normalization ζ ψ ((3 : ℝ) ^ (n - 1)) ((3 : ℝ) ^ n) hprod
 
-/-- The `n`th ABK triadic shell contribution, tested against `ψ`. -/
-@[expose]
-noncomputable def abkTriadicLogCorrelatedFieldL2 {d : Nat} (normalization : ℝ)
-    (ζ : ABKCutoff d) (ψ : MeanZeroTestFunction d) (n : ℤ)
-    (hprod :
-      MemLp (abkTriadicLogKernelProd normalization ζ ψ n) 2
-        (volume : Measure (ℝ × Vec d))) :
-    Lp ℝ 2 (scaleSpaceWhiteNoiseMeasure d) :=
-  abkAnnularLogCorrelatedFieldL2 normalization ζ ψ
-    ((3 : ℝ) ^ (n - 1)) ((3 : ℝ) ^ n) hprod
 
 end GaussianFields
 

@@ -14,31 +14,29 @@ theorem fusion_inverse_interpolation_integrable (a b p : ℝ) (ha : 0 < a) (hb :
     IntegrableOn (fun t : ℝ => -p * (b - a) * (t * b + (1 - t) * a) ^ (-p - 1)) (Icc 0 1) volume ∧
     (∫ t in Icc (0 : ℝ) 1, ‖-p * (b - a) * (t * b + (1 - t) * a) ^ (-p - 1)‖) =
       |b ^ (-p) - a ^ (-p)| := by
-  have hpos : ∀ t ∈ Icc (0 : ℝ) 1, 0 < t * b + (1 - t) * a := by
+  have hpos : ∀ t ∈ Icc 0 1, 0 < t * b + (1 - t) * a := by
     intro t ht
     by_cases ht0 : t = 0
-    · subst t; simpa using ha
+    · simp_all
     · have h1 := mul_pos (lt_of_le_of_ne ht.1 (Ne.symm ht0)) hb
       have h2 := mul_nonneg (sub_nonneg.mpr ht.2) ha.le
       linarith
   have hc : ContinuousOn (fun t : ℝ => (t * b + (1 - t) * a) ^ (-p - 1)) (Icc 0 1) := by
     apply ContinuousOn.rpow_const
     · fun_prop
-    · intro t ht; exact Or.inl (hpos t ht).ne'
+    grind
   have hi : IntegrableOn (fun t : ℝ => -p * (b - a) * (t * b + (1 - t) * a) ^ (-p - 1))
       (Icc 0 1) volume := (hc.integrableOn_Icc).const_mul (-p * (b - a))
   refine ⟨hi, ?_⟩
-  have he := fusion_inverse_interpolation a b p ha hb
   have hn : (fun t : ℝ => ‖-p * (b - a) * (t * b + (1 - t) * a) ^ (-p - 1)‖) =ᵐ[volume.restrict (Icc 0 1)]
       (fun t => |-p * (b - a)| * (t * b + (1 - t) * a) ^ (-p - 1)) := by
     filter_upwards [ae_restrict_mem measurableSet_Icc] with t ht
     rw [norm_mul, Real.norm_eq_abs, Real.norm_of_nonneg (Real.rpow_nonneg (hpos t ht).le _)]
-  have hnonneg : 0 ≤ ∫ t in Icc (0 : ℝ) 1, (t * b + (1 - t) * a) ^ (-p - 1) := by
+  have hnonneg : 0 ≤ ∫ t in Icc 0 1, (t * b + (1 - t) * a) ^ (-p - 1) := by
     apply integral_nonneg_of_ae
     filter_upwards [ae_restrict_mem measurableSet_Icc] with t ht
     exact Real.rpow_nonneg (hpos t ht).le _
-  rw [integral_congr_ae hn, integral_const_mul, he, abs_mul, abs_mul, abs_of_nonneg hnonneg]
-  rw [abs_mul]
+  rw [integral_congr_ae hn, integral_const_mul, (fusion_inverse_interpolation a b p ha hb), abs_mul, abs_mul, abs_of_nonneg hnonneg, abs_mul]
 /-- Absolute time integration and the two endpoint inverse moments supply the integrability
 needed for Fubini. -/
 theorem fusion_inverse_expectation_interpolation {Ω : Type*} [MeasurableSpace Ω]

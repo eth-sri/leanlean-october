@@ -8,6 +8,7 @@ public import DOZZ.FourPoint.Dual.Kernel
 public import DOZZ.FourPoint.Reflected.MassFiniteness
 import DOZZ.FourPoint.RootedPairMoments
 import Mathlib.Tactic
+import DOZZ.ShiftEquations.Mobius.InversionMoment
 
 /-! # Convergence of the literal dual retained mass
 
@@ -33,16 +34,20 @@ theorem dual_zero_kernel_integral_eq_rho (γ α₁ α₂ α₃ : ℝ) (hγ : γ 
     (∫⁻ x, ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ 0 x) ∂μ) =
       rho γ μ (α₁ - 2 / γ) α₂ α₃ := by
   have ha0 : ∀ᵐ x ∂μ, x ≠ 0 := by
-    rw [ae_iff]; simpa only [not_not, Set.ofPred_eq_eq_singleton] using h0
+    rw [ae_iff]; simpa using h0
   have ha1 : ∀ᵐ x ∂μ, x ≠ 1 := by
-    rw [ae_iff]; simpa only [not_not, Set.ofPred_eq_eq_singleton] using h1
-  unfold rho
+    rw [ae_iff]; simpa using h1
   apply lintegral_congr_ae
   filter_upwards [ha0, ha1] with x hx0 hx1
   exact congrArg ENNReal.ofReal (dual_zero_kernel_weight γ α₁ α₂ α₃ hγ x hx0 hx1)
+section
+variable (γ α₁ α₂ α₃ ξ : ℝ)
+section
+variable (hγ : γ ≠ 0)
+include hγ
 
 /-- The moving root is absent from the retained region, so no atom assumption at `z` is needed. -/
-theorem dual_outerMass_eq_kernel_integral (γ α₁ α₂ α₃ ξ : ℝ) (hγ : γ ≠ 0) (z : ℂ)
+theorem dual_outerMass_eq_kernel_integral (z : ℂ)
     (μ : Measure ℂ) (h0 : μ {0} = 0) (h1 : μ {1} = 0)
     (hz : ‖z‖ < ‖z‖ ^ (1 - ξ)) :
     dualOuterMass γ α₁ α₂ α₃ μ z ξ =
@@ -51,8 +56,7 @@ theorem dual_outerMass_eq_kernel_integral (γ α₁ α₂ α₃ ξ : ℝ) (hγ :
   let D : Set ℂ := {x | ‖z‖ ^ (1 - ξ) ≤ ‖x‖}
   have hzD : z ∉ D := not_le.mpr hz
   have hzr : (μ.restrict D) {z} = 0 := by
-    rw [Measure.restrict_apply (measurableSet_singleton z),
-      singleton_inter_of_notMem hzD, measure_empty]
+    simp_all
   have h0r : (μ.restrict D) {0} = 0 := by
     apply le_zero_iff.mp
     rw [Measure.restrict_apply (measurableSet_singleton 0)]
@@ -65,7 +69,7 @@ theorem dual_outerMass_eq_kernel_integral (γ α₁ α₂ α₃ ξ : ℝ) (hγ :
   exact (dual_kernel_integral_eq_coulombMass γ α₁ α₂ α₃ hγ z (μ.restrict D) hzr h0r h1r).symm
 
 /-- The literal retained mass tends to its rho, including when the first bare charge is above Q. -/
-theorem dual_outerMass_tendsto (γ α₁ α₂ α₃ ξ : ℝ) (hγ : γ ≠ 0) (μ : Measure ℂ)
+theorem dual_outerMass_tendsto (μ : Measure ℂ)
     (hξ : 0 < ξ) (hξ₁ : ξ < 1) (h0 : μ {0} = 0) (h1 : μ {1} = 0)
     (hfin : rho γ μ (α₁ - 2 / γ) α₂ α₃ ≠ ⊤) :
     Tendsto (fun z : ℂ => dualOuterMass γ α₁ α₂ α₃ μ z ξ)
@@ -73,18 +77,22 @@ theorem dual_outerMass_tendsto (γ α₁ α₂ α₃ ξ : ℝ) (hγ : γ ≠ 0) 
       (nhds (rho γ μ (α₁ - 2 / γ) α₂ α₃)) := by
   have heq := dual_zero_kernel_integral_eq_rho γ α₁ α₂ α₃ hγ μ h0 h1
   have ht := dual_outer_kernel_integral_tendsto γ α₁ α₂ α₃ ξ hγ μ hξ hξ₁ h0
-    (by rw [heq]; exact hfin)
+    (by simp_all)
   rw [heq] at ht
   have hn : Tendsto (fun z : ℂ => ‖z‖)
       (nhdsWithin (0 : ℂ) {z : ℂ | z ≠ 0}) (nhds 0) := by
-    simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
+    simpa using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
   apply ht.congr'
   filter_upwards [hn.eventually (gt_mem_nhds zero_lt_one), self_mem_nhdsWithin] with z hz hz0
   have hr : ‖z‖ < ‖z‖ ^ (1 - ξ) := by
     have hh := Real.rpow_lt_rpow_of_exponent_gt (norm_pos_iff.mpr hz0) hz
-      (by linarith only [hξ] : 1 - ξ < 1)
-    simpa only [Real.rpow_one] using hh
+      (by linarith : 1 - ξ < 1)
+    simp_all
   exact (dual_outerMass_eq_kernel_integral γ α₁ α₂ α₃ ξ hγ z μ h0 h1 hr).symm
+
+end
+
+end
 
 /-- Almost-sure convergence of the actual retained GMC mass in the reflected chart. -/
 theorem dual_outerMass_ae_tendsto {Ω : Type*} [MeasurableSpace Ω]
@@ -95,9 +103,9 @@ theorem dual_outerMass_ae_tendsto {Ω : Type*} [MeasurableSpace Ω]
     ∀ᵐ ω ∂P, Tendsto (fun z : ℂ => dualOuterMass γ α₁ α₂ α₃ (M ω) z ξ)
       (nhdsWithin (0 : ℂ) {z : ℂ | z ≠ 0})
       (nhds (rho γ (M ω) (α₁ - 2 / γ) α₂ α₃)) := by
-  filter_upwards [gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ₂ M hM 0,
-    gmc_atomless_at_root_of_isGMCOf P X hX γ hγ hγ₂ M hM 1,
-    reflected_rho_ae_finite P X hX γ hγ hγ₂ M hM (α₁ - 2 / γ) α₂ α₃
+  filter_upwards [DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ₂ M hM 0,
+    DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ₂ M hM 1,
+    reflected_rho_ae_finite P X hX γ hγ hγ₂ M hM _ α₂ α₃
       hα₁ hα₂ hα₃] with ω h0 h1 hf
   exact dual_outerMass_tendsto γ α₁ α₂ α₃ ξ hγ.ne' (M ω) hξ hξ₁ h0 h1 hf.ne
 

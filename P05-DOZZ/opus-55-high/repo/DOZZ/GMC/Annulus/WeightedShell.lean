@@ -29,6 +29,6 @@ namespace DOZZ.Proofs
 theorem gmcScaleExponent_eq_polynomial (γ p : ℝ) (hγ : γ ≠ 0) :
     gmcScaleExponent γ p = 2 * p + γ ^ 2 * p / 2 - γ ^ 2 * p ^ 2 / 2 := by
   unfold gmcScaleExponent Q
-  field_simp [hγ]
+  field_simp
 
 end DOZZ.Proofs

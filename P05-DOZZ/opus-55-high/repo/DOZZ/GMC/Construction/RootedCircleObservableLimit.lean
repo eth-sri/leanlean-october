@@ -37,30 +37,29 @@ theorem circleRooted_bounded_coordinate_lintegral_tendsto
         (gmcRootedMeasure γ u (M ω)))) ∂P ∂ν)) := by
   let _ := hX.1
   let F : ℕ → ℂ × Ω → ℝ≥0∞ := fun n q => ENNReal.ofReal (φ (gmcTiltFiniteCoordinatePath s
-    (fun f => X q.2 f + γ * circleCross q.1 (n : ℝ) f)
+    (fun f => X q.2 f + γ * circleCross q.1 n f)
     ((M q.2).withDensity (fun x => ENNReal.ofReal
-      (Real.exp (γ ^ 2 * ∫ v, gffKernel x v ∂circleMeasure q.1 (n : ℝ)))))))
+      (Real.exp (γ ^ 2 * ∫ v, gffKernel x v ∂circleMeasure q.1 n))))))
   let G : ℂ × Ω → ℝ≥0∞ := fun q => ENNReal.ofReal (φ (gmcTiltFiniteCoordinatePath s
     (fun f => X q.2 f + γ * gffRootCovariance q.1 f)
     (gmcRootedMeasure γ q.1 (M q.2))))
   have hF (n : ℕ) : Measurable (F n) := by
     have hfield : Measurable (fun q : ℂ × Ω =>
-        fun f => X q.2 f + γ * circleCross q.1 (n : ℝ) f) := by
+        fun f => X q.2 f + γ * circleCross q.1 n f) := by
       rw [measurable_pi_iff]
       intro f
       exact ((hX.2 f).1.comp measurable_snd).add
-        (measurable_const.mul ((measurable_circleCross_center (n : ℝ) f).comp measurable_fst))
+        (measurable_const.mul ((measurable_circleCross_center n f).comp measurable_fst))
     exact ENNReal.measurable_ofReal.comp (φ.continuous.measurable.comp ((measurable_gmcTiltFiniteCoordinatePath s).comp
-      (hfield.prodMk (measurable_circleRootedMeasure_family M hMmeas hM.1 γ (n : ℝ)))))
-  have hbound (n : ℕ) (q : ℂ × Ω) : F n q ≤ ENNReal.ofReal ‖φ‖ := by
+      (hfield.prodMk (measurable_circleRootedMeasure_family M hMmeas hM.1 γ n))))
+  have hbound (n : ℕ) q : F n q ≤ ENNReal.ofReal ‖φ‖ := by
     apply ENNReal.ofReal_le_ofReal
     exact (le_abs_self _).trans (φ.norm_coe_le_norm _)
   have hlim : ∀ᵐ u ∂ν, Tendsto (fun n => ∫⁻ ω, F n (u, ω) ∂P) atTop
       (𝓝 (∫⁻ ω, G (u, ω) ∂P)) := by
     filter_upwards [hRoot] with u hu
     apply tendsto_lintegral_of_dominated_convergence (fun _ => ENNReal.ofReal ‖φ‖)
-    · intro n
-      exact (hF n).comp (measurable_const.prodMk measurable_id)
+    · fun_prop
     · intro n
       exact ae_of_all _ fun ω => hbound n (u, ω)
     · simp

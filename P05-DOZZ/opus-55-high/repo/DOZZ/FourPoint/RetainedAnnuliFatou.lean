@@ -38,10 +38,10 @@ theorem two_mass_fatou
       (ENNReal.ofReal (g₀ ω)) ^ p * (ENNReal.ofReal (g₁ ω)) ^ q := by
     filter_upwards [hsub₀, hsub₁, hg₀, hg₁] with ω h₀ h₁ hg₀ hg₁
     have he₀ : Tendsto (fun n => (ENNReal.ofReal (f₀ (ns n) ω)) ^ p) atTop
-        (nhds ((ENNReal.ofReal (g₀ ω)) ^ p)) := ENNReal.continuous_rpow_const.continuousAt.tendsto.comp
+        (nhds _) := ENNReal.continuous_rpow_const.continuousAt.tendsto.comp
       (ENNReal.continuous_ofReal.continuousAt.tendsto.comp (h₀.comp ht.tendsto_atTop))
     have he₁ : Tendsto (fun n => (ENNReal.ofReal (f₁ (ns n) ω)) ^ q) atTop
-        (nhds ((ENNReal.ofReal (g₁ ω)) ^ q)) := ENNReal.continuous_rpow_const.continuousAt.tendsto.comp
+        (nhds _) := ENNReal.continuous_rpow_const.continuousAt.tendsto.comp
       (ENNReal.continuous_ofReal.continuousAt.tendsto.comp h₁)
     have hn₀ : (ENNReal.ofReal (g₀ ω)) ^ p ≠ ⊤ :=
       ENNReal.rpow_ne_top_of_ne_zero (ENNReal.ofReal_pos.mpr hg₀).ne' ENNReal.ofReal_ne_top
@@ -71,10 +71,10 @@ theorem fieldChaosMass_indicator
         (Real.exp (γ * Φ ω x - γ ^ 2 / 2 * ∫ ω', Φ ω' x ^ 2 ∂P))) := by
     funext x
     by_cases hx : x ∈ A
-    · simp only [Set.indicator_of_mem hx, ENNReal.coe_one, one_mul]
-    · simp only [Set.indicator_of_notMem hx, ENNReal.coe_zero, zero_mul]
+    · simp_all
+    simp_all
   rw [he, lintegral_indicator hA, Measure.restrict_restrict hA,
     inter_eq_left.mpr hAU]
-  simp only [ENNReal.coe_one, one_mul]
+  simp
 
 end DOZZ.Proofs

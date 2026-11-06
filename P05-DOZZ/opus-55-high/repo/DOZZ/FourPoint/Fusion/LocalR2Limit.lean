@@ -27,26 +27,24 @@ theorem fusionLocalR2_normalized_tendsto {Ω : Type*} [MeasurableSpace Ω]
           ((∫ y : ℂ, (planarMixedKernel (γ ^ 2 / 2) (γ * α₁) 1 y : ℝ)) *
             ((∫⁻ ω, fusionMovingMass γ α₁ α₂ α₃ 1 0 (M ω) ^ (-p - 1) ∂P).toReal : ℂ))))) := by
   obtain ⟨hk, hβ, hβ2, hβlin, _, _⟩ := fusion_taylor_parameters γ α₁ hγ hlo hsq hα₁
-  have hK : Integrable (fun y : ℂ => (planarMixedKernel (γ ^ 2 / 2) (γ * α₁) 1 y : ℂ)) volume :=
-    (planar_mixed_integral (γ ^ 2 / 2) (γ * α₁) hk hβ hβ2 1 (by norm_num)).1.ofReal
-  have hKm : Measurable (fun y : ℂ => (planarMixedKernel (γ ^ 2 / 2) (γ * α₁) 1 y : ℂ)) := by
+  have hK : Integrable (fun y => (planarMixedKernel (γ ^ 2 / 2) (γ * α₁) 1 y : ℂ)) volume :=
+    (planar_mixed_integral _ _ hk hβ hβ2 1 (by norm_num)).1.ofReal
+  have hKm : Measurable (fun y => (planarMixedKernel (γ ^ 2 / 2) (γ * α₁) 1 y : ℂ)) := by
     unfold planarMixedKernel
-    exact Complex.measurable_ofReal.comp
-      (((measurable_id.sub_const (1 : ℂ)).norm.pow_const _).div (measurable_id.norm.pow_const _))
+    fun_prop
   have h := fusionScaledTimeIntegral_tendsto P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hlo.le hα₁ hα₂ hα₃
     (-p - 1) (by linarith) _ hKm hK (γ ^ 2 / 2 - γ * α₁) (by linarith)
   simp only [integral_complex_ofReal] at h
-  have hc := (tendsto_const_nhds (x := ((-2 * p * (γ ^ 2 / 4) ^ 2 : ℝ) : ℂ))).mul h
-  apply (hc.mono_left (show nhdsWithin (0 : ℂ) {0}ᶜ ≤ nhds 0 from nhdsWithin_le_nhds)).congr' 
+  apply (((tendsto_const_nhds (x := ((-2 * p * (γ ^ 2 / 4) ^ 2 : ℝ) : ℂ))).mul h).mono_left (show nhdsWithin (0 : ℂ) {0}ᶜ ≤ nhds 0 from nhdsWithin_le_nhds)).congr' 
   have hz4 : ∀ᶠ z : ℂ in nhdsWithin 0 {0}ᶜ, ‖z‖ ≤ 1 / 4 := by
     have h : ∀ᶠ z : ℂ in nhds 0, ‖z‖ < 1 / 4 :=
       (continuous_norm.tendsto (0 : ℂ)).eventually_lt_const (by simp)
     exact (h.filter_mono nhdsWithin_le_nhds).mono fun _ h => h.le
   filter_upwards [hz4, self_mem_nhdsWithin] with z hz4 hz
-  have hz0 : z ≠ 0 := by simpa only [mem_compl_iff, mem_singleton_iff] using hz
+  have hz0 : z ≠ 0 := by assumption
   rw [fusionLocalR2_scaled P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hβ hα₁ hα₂ hα₃ p hp z hz0 hz4]
   have hr : (‖z‖ ^ (γ * (Q γ - α₁)) : ℝ) ≠ 0 :=
-    (Real.rpow_pos_of_pos (norm_pos_iff.mpr hz0) _).ne'
+    by positivity
   have hcancel (a b c : ℂ) (hb : b ≠ 0) : a * b * c / b = a * c := by
     rw [mul_assoc, mul_comm b c, ← mul_assoc, mul_div_cancel_right₀ _ hb]
   exact (hcancel _ _ _ (Complex.ofReal_ne_zero.mpr hr)).symm

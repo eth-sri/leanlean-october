@@ -33,33 +33,33 @@ theorem homotopy_path_continuation_endpoint_eq
     A.value 1 = B.value 1 := by
   let bottomPath : ℝ → ℂ := fun t => Γ (t, 0)
   let topPath : ℝ → ℂ := fun t => Γ (t, 1)
-  have hbottomCont : ContinuousOn bottomPath (Icc (0 : ℝ) 1) := by
+  have hbottomCont : ContinuousOn bottomPath (Icc 0 1) := by
     apply hΓ.comp (by fun_prop)
     intro t ht
-    exact ⟨ht, by norm_num⟩
-  have htopCont : ContinuousOn topPath (Icc (0 : ℝ) 1) := by
+    simp_all
+  have htopCont : ContinuousOn topPath (Icc 0 1) := by
     apply hΓ.comp (by fun_prop)
     intro t ht
-    exact ⟨ht, by norm_num⟩
+    simp_all
   let G := homotopyPicardGridOf hΓ U hU H hH himage z₀ z₁ hleft hright y
   obtain ⟨bottom, top, hbottomCont', htopCont', hbottomStart, htopStart, hendEq,
       hbottomFormula, htopFormula, hbottomCenters, hbottomBound, hbottomCover,
       hbottomOverlap, htopCenters, htopBound, htopCover, htopOverlap⟩ :=
     homotopy_grid_boundary_lifts_endpoint_eq_with_formulas G hΓ
-  let Db : ℕ → HolomorphicDiskSolution H G.r :=
+  let Db :=
     homotopyGridRowChain G 0 (by omega)
-  let Dt : ℕ → HolomorphicDiskSolution H G.r :=
+  let Dt :=
     homotopyGridRowChain G G.N le_rfl
   have hDbInitial : (Db 0).initial = y := by
     calc
       (Db 0).initial = finiteGridHorizontal (homotopyGridRight G) 0 0 0 y := by
         simpa [Db] using homotopyGridRowChain_initial G 0 (by omega) 0 (by omega)
-      _ = y := by simp [finiteGridHorizontal]
+      _ = y := by rfl
   have hDtInitial : (Dt 0).initial = y := by
     calc
       (Dt 0).initial = finiteGridHorizontal (homotopyGridRight G) 0 G.N 0 y := by
         simpa [Dt] using homotopyGridRowChain_initial G G.N le_rfl 0 (by omega)
-      _ = y := by simp [finiteGridHorizontal]
+      _ = y := by rfl
   let gridBottom : PathContinuationLift bottomPath H y := {
     subdivision := G.N
     subdivision_pos := G.N_pos
@@ -116,11 +116,9 @@ theorem homotopy_path_continuation_endpoint_eq
       intro i hi t ht
       simpa [Dt, topPath] using htopFormula i hi t ht
   }
-  have hbottomEq := path_continuation_lifts_unique hbottomCont H y A gridBottom
-  have htopEq := path_continuation_lifts_unique htopCont H y gridTop B
   calc
-    A.value 1 = bottom 1 := hbottomEq 1 (by norm_num)
+    A.value 1 = bottom 1 := (path_continuation_lifts_unique hbottomCont H y A gridBottom) 1 (by norm_num)
     _ = top 1 := hendEq
-    _ = B.value 1 := htopEq 1 (by norm_num)
+    _ = B.value 1 := (path_continuation_lifts_unique htopCont H y gridTop B) 1 (by norm_num)
 
 end DOZZ.Proofs

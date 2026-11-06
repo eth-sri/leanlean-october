@@ -49,8 +49,7 @@ theorem reflectionBarR_eq_of_joint_input_law
   let f : (BrownianPath × BrownianPath) × Measure ℝ → ℝ≥0∞ := fun z =>
     ENNReal.rpow (twoSidedReflectionMassInput γ z) (reflectionExponent γ α)
   have hMassMoment' : AEMeasurable f (P'.map pair') := by
-    rw [← hLaw]
-    exact hMassMoment
+    aesop
   have hmoment :
       (∫⁻ ω, ENNReal.rpow (twoSidedReflectionMass γ B Z ω)
         (reflectionExponent γ α) ∂P) =
@@ -58,18 +57,14 @@ theorem reflectionBarR_eq_of_joint_input_law
         (reflectionExponent γ α) ∂P') := by
     calc
       _ = ∫⁻ ω, f (pair ω) ∂P := by
-        apply lintegral_congr
-        intro ω
         rfl
       _ = ∫⁻ z, f z ∂P.map pair := (lintegral_map' hMassMoment hPair).symm
-      _ = ∫⁻ z, f z ∂P'.map pair' := by rw [hLaw]
+      _ = ∫⁻ z, f z ∂P'.map pair' := by tauto
       _ = ∫⁻ ω, f (pair' ω) ∂P' := lintegral_map' hMassMoment' hPair'
       _ = _ := by
-        apply lintegral_congr
-        intro ω
         rfl
   unfold reflectionBarR
-  exact congrArg ENNReal.toReal hmoment
+  simp_all
 
 end DOZZ.Proofs
 

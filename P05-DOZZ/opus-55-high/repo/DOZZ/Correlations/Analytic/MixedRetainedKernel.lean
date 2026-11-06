@@ -13,29 +13,31 @@ public import DOZZ.Correlations.Analytic.OutwardVertexKernel
 open MeasureTheory
 open scoped ENNReal
 namespace DOZZ.Proofs
+section
+variable {N : ℕ}
+section
+variable (γ : ℝ)
 
 /-- The Coulomb weight including the infinity charge is the exponential of its logarithmic
 potential away from the finite roots. -/
-theorem coulomb_weight_exp_log_infinity {N : ℕ} (γ : ℝ) (α : Fin N → ℝ)
+theorem coulomb_weight_exp_log_infinity (α : Fin N → ℝ)
     (z : Fin N → ℂ) (αinf : ℝ) (x : ℂ) (hx : ∀ i, x ≠ z i) :
     coulombWeight γ α z αinf x = ENNReal.ofReal
       (Real.exp ((∑ i, γ * α i * Real.log (normPlus x / ‖x - z i‖)) +
         γ * αinf * Real.log (normPlus x))) := by
-  have hn : 0 < normPlus x := lt_of_lt_of_le one_pos (le_max_left _ _)
+  have hn : 0 < normPlus x := lt_of_lt_of_le one_pos (le_max_left ..)
   have he : coulombWeight γ α z αinf x = coulombWeight γ α z 0 x *
       ENNReal.ofReal (normPlus x) ^ (γ * αinf) := by
     unfold coulombWeight
-    simp only [mul_zero, ENNReal.rpow_eq_pow, ENNReal.rpow_zero, mul_one]
+    simp
   rw [he, coulomb_weight_exp_log γ α z x hx,
     ENNReal.ofReal_rpow_of_pos hn, Real.rpow_def_of_pos hn,
     ← ENNReal.ofReal_mul (Real.exp_nonneg _), ← Real.exp_add]
-  congr 2
-  ring_nf
+  ring
 
 /-- On the retained region, mixed circle averaging produces precisely the finite Coulomb
 weight with the final charge at infinity, times the finite equator pin factor. -/
-theorem mixed_retained_vertex_density {N : ℕ} (γ : ℝ)
-    (β : Fin (N + 1) → ℝ) (z : Fin N → ℂ) (r : ℝ) (hr : 0 ≤ r)
+theorem mixed_retained_vertex_density (β : Fin (N + 1) → ℝ) (z : Fin N → ℂ) (r : ℝ) (hr : 0 ≤ r)
     (x : ℂ) (hx : x ∈ retainedRegion z r) :
     ENNReal.ofReal (Real.exp (γ * ∑ i, β i *
       ∫ v, gffKernel x v ∂circleMeasure (mixedVertexCenters z i)
@@ -47,7 +49,7 @@ theorem mixed_retained_vertex_density {N : ℕ} (γ : ℝ)
     have hh := hx.2 i
     simp only [he, sub_self, norm_zero] at hh
     exact (not_lt_of_ge (Real.exp_pos _).le) hh
-  rw [coulomb_weight_exp_log_infinity γ (fun i => β i.castSucc) z (β (Fin.last N)) x hne,
+  rw [coulomb_weight_exp_log_infinity γ (fun i => β i.castSucc) z _ x hne,
     ← ENNReal.ofReal_mul (Real.exp_nonneg _), ← Real.exp_add]
   congr 2
   rw [Fin.sum_univ_castSucc]
@@ -59,10 +61,11 @@ theorem mixed_retained_vertex_density {N : ℕ} (γ : ℝ)
   simp only [mul_add, Finset.mul_sum]
   ring_nf
 
+end
+
 /-- The mixed tilted measure on a retained region is exactly the singular Coulomb mass,
 including the charge at infinity and its deterministic equator factor. -/
-theorem mixed_tilted_retained_measure_eq {N : ℕ}
-    (μ : Measure ℂ) (γ : ℝ) (β : Fin (N + 1) → ℝ) (z : Fin N → ℂ) (r : ℝ) (hr : 0 ≤ r)
+theorem mixed_tilted_retained_measure_eq (μ : Measure ℂ) (γ : ℝ) (β : Fin (N + 1) → ℝ) (z : Fin N → ℂ) (r : ℝ) (hr : 0 ≤ r)
     (O : Set ℂ) (ho : MeasurableSet O) (hO : O ⊆ retainedRegion z r) :
     μ.withDensity (fun x => ENNReal.ofReal (Real.exp (γ * ∑ i, β i *
       ∫ v, gffKernel x v ∂circleMeasure (mixedVertexCenters z i)
@@ -70,9 +73,11 @@ theorem mixed_tilted_retained_measure_eq {N : ℕ}
       ENNReal.ofReal (Real.exp (γ * ∑ i, β i.castSucc * equatorCircleMean (z i) r)) *
         ∫⁻ x in O, coulombWeight γ (fun i => β i.castSucc) z (β (Fin.last N)) x ∂μ := by
   rw [withDensity_apply _ ho,
-    ← lintegral_const_mul _ (measurable_coulombWeight γ (fun i => β i.castSucc) z (β (Fin.last N)))]
+    ← lintegral_const_mul _ (measurable_coulombWeight γ (fun i => β i.castSucc) z _)]
   apply setLIntegral_congr_fun ho
   intro x hx
   exact mixed_retained_vertex_density γ β z r hr x (hO hx)
+
+end
 
 end DOZZ.Proofs

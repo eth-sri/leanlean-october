@@ -8,6 +8,7 @@ public import DOZZ.FourPoint.BPZ.Grid
 public import DOZZ.FourPoint.BPZ.WardTilt
 public import DOZZ.FourPoint.BPZ.Rooting
 public import DOZZ.GMC.Construction.RootedAllRootFinite
+import DOZZ.ShiftEquations.Mobius.InversionMoment
 
 /-! # The chaos measure has no atoms
 
@@ -27,8 +28,10 @@ namespace DOZZ.Proofs
 /-- The mass of the dyadic grid square of generation `k` containing `x`. -/
 noncomputable def bpzDyadicMass (k : ℕ) (m : Measure ℂ) (x : ℂ) : ℝ≥0∞ :=
   m (bpzGridIdx ((2 ^ k)⁻¹) ⁻¹' {bpzGridIdx ((2 ^ k)⁻¹) x})
+section
+variable (k : ℕ)
 
-theorem measurable_bpzDyadicMass (k : ℕ) :
+theorem measurable_bpzDyadicMass :
     Measurable (fun p : Measure ℂ × ℂ => bpzDyadicMass k p.1 p.2) := by
   set h : ℝ := (2 ^ k)⁻¹
   have hF : Measurable (fun q : (ℤ × ℤ) × Measure ℂ => q.2 (bpzGridIdx h ⁻¹' {q.1})) :=
@@ -36,55 +39,51 @@ theorem measurable_bpzDyadicMass (k : ℕ) :
       Measure.measurable_coe (measurableSet_bpzGridCell h i)
   exact hF.comp (((measurable_bpzGridIdx h).comp measurable_snd).prodMk measurable_fst)
 
-theorem bpzDyadic_cell_subset_ball (k : ℕ) (x : ℂ) :
+theorem bpzDyadic_cell_subset_ball (x : ℂ) :
     bpzGridIdx ((2 ^ k)⁻¹) ⁻¹' {bpzGridIdx ((2 ^ k)⁻¹) x} ⊆
       Metric.closedBall x (4 * (2 ^ k)⁻¹) := by
   intro y hy
   set h : ℝ := (2 ^ k)⁻¹ with hhdef
-  have hh : (0 : ℝ) < h := by positivity
-  simp only [Set.mem_preimage, Set.mem_singleton_iff] at hy
+  have hh : 0 < h := by positivity
   rw [Metric.mem_closedBall, dist_eq_norm]
-  set c := bpzGridCorner h (bpzGridIdx h x)
+  set c := bpzGridCorner h _
   have h1 := norm_sub_bpzGridCorner_le hh y
-  have h2 : ‖x - c‖ ≤ 2 * h := norm_sub_bpzGridCorner_le hh x
   rw [hy] at h1
   calc ‖y - x‖ = ‖(y - c) - (x - c)‖ := by ring_nf
-    _ ≤ ‖y - c‖ + ‖x - c‖ := norm_sub_le _ _
-    _ ≤ 2 * h + 2 * h := add_le_add h1 h2
+    _ ≤ ‖y - c‖ + ‖x - c‖ := norm_sub_le ..
+    _ ≤ 2 * h + 2 * h := add_le_add h1 (norm_sub_bpzGridCorner_le hh x)
     _ = 4 * h := by ring
 
-theorem le_bpzDyadicMass (k : ℕ) (m : Measure ℂ) (x : ℂ) : m {x} ≤ bpzDyadicMass k m x :=
+theorem le_bpzDyadicMass (m : Measure ℂ) (x : ℂ) : m {x} ≤ bpzDyadicMass k m x :=
   measure_mono (Set.singleton_subset_iff.mpr (by simp))
+
+end
 
 theorem iInter_closedBall_four_mul_inv_pow (x : ℂ) :
     ⋂ k : ℕ, Metric.closedBall x (4 * (2 ^ k)⁻¹ : ℝ) = {x} := by
   ext y
-  simp only [Set.mem_iInter, Metric.mem_closedBall, Set.mem_singleton_iff]
+  simp
   constructor
   · intro hy
     by_contra hne
-    have hpos : 0 < dist y x := dist_pos.mpr hne
+    have hpos := dist_pos.mpr hne
     obtain ⟨k, hk⟩ := exists_pow_lt_of_lt_one (show 0 < dist y x / 4 by positivity)
-      (show (1 / 2 : ℝ) < 1 by norm_num)
+      (show (1 / 2) < 1 by norm_num)
     have := hy k
     rw [one_div, inv_pow] at hk
     linarith
-  · rintro rfl k
-    rw [dist_self]
-    positivity
+  simp_all
 
 /-- For a finite measure, the dyadic masses at a point decrease to the atom at the point. -/
 theorem iInf_bpzDyadicMass_le (m : Measure ℂ) [IsFiniteMeasure m] (x : ℂ) :
     ⨅ k, bpzDyadicMass k m x ≤ m {x} := by
-  have hanti : Antitone fun k : ℕ => Metric.closedBall x (4 * (2 ^ k)⁻¹ : ℝ) := by
+  have hanti : Antitone fun k => Metric.closedBall x (4 * (2 ^ k)⁻¹ : ℝ) := by
     intro i j hij
     apply Metric.closedBall_subset_closedBall
-    have : ((2 : ℝ) ^ j)⁻¹ ≤ ((2 : ℝ) ^ i)⁻¹ :=
-      inv_anti₀ (by positivity) (pow_le_pow_right₀ (by norm_num) hij)
-    linarith
-  calc ⨅ k, bpzDyadicMass k m x ≤ ⨅ k : ℕ, m (Metric.closedBall x (4 * (2 ^ k)⁻¹)) :=
+    bound
+  calc ⨅ k, bpzDyadicMass k m x ≤ ⨅ k : ℕ, m _ :=
         iInf_mono fun k => measure_mono (bpzDyadic_cell_subset_ball k x)
-    _ = m (⋂ k : ℕ, Metric.closedBall x (4 * (2 ^ k)⁻¹)) :=
+    _ = m (⋂ k : ℕ, Metric.closedBall x _) :=
         (hanti.measure_iInter (fun _ => measurableSet_closedBall.nullMeasurableSet)
           ⟨0, measure_ne_top _ _⟩).symm
     _ = m {x} := by rw [iInter_closedBall_four_mul_inv_pow]
@@ -92,7 +91,6 @@ theorem iInf_bpzDyadicMass_le (m : Measure ℂ) [IsFiniteMeasure m] (x : ℂ) :
 /-- A measure for which almost every point is not an atom has no atoms. -/
 theorem measure_singleton_eq_zero_of_ae {μ : Measure ℂ} (h : ∀ᵐ u ∂μ, μ {u} = 0) (x : ℂ) :
     μ {x} = 0 := by
-  rw [ae_iff] at h
   by_contra hx
   exact hx (le_antisymm ((measure_mono (Set.singleton_subset_iff.mpr hx)).trans h.le)
     zero_le)
@@ -107,14 +105,13 @@ theorem gmc_noAtoms_ae {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : �
     Measurable.iInf fun k => measurable_bpzDyadicMass k
   set H : ℂ → (TestFn → ℝ) → Measure ℂ → ℝ≥0∞ := fun u _ m => g m u with hH
   have hHm : Measurable (fun q : ℂ × ((TestFn → ℝ) × Measure ℂ) => H q.1 q.2.1 q.2.2) :=
-    hgm.comp ((measurable_snd.comp measurable_snd).prodMk measurable_fst)
-  have hid := equatorGFF_rooted_GMC_identity P X hX γ hγ hγ2 M hM H hHm
+    by fun_prop
   have hzero : ∀ u, ∫⁻ ω, H u (fun f => X ω f + γ * gffRootCovariance u f)
       (gmcRootedMeasure γ u (M ω)) ∂P = 0 := by
     intro u
     rw [lintegral_eq_zero_iff' ?_]
     · filter_upwards [equatorGFF_rooted_measure_finite P X hX γ hγ hγ2 M hM u,
-        gmc_singleton_mass_eq_zero_ae P X hX γ hγ hγ2 M hM u] with ω hfin h0
+        DOZZ.Proofs.gmc_atomless_of_isGMCOf P X hX γ hγ hγ2 M hM u] with ω hfin h0
       have hroot0 : gmcRootedMeasure γ u (M ω) {u} = 0 :=
         withDensity_absolutelyContinuous _ _ h0
       exact le_antisymm ((iInf_bpzDyadicMass_le _ u).trans hroot0.le) zero_le
@@ -130,15 +127,15 @@ theorem gmc_noAtoms_ae {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : �
           hMm
       exact (hgm.comp (hroot.prodMk measurable_const)).aemeasurable
   have hlhs : ∫⁻ ω, ∫⁻ u, g (M ω) u ∂M ω ∂P = 0 := by
-    have h := hid
+    have h := (equatorGFF_rooted_GMC_identity P X hX γ hγ hγ2 M hM H hHm)
     simp only [hH] at h hzero
     rw [h]
     simp [hzero]
-  have hmeas : Measurable fun ω => ∫⁻ u, g (M ω) u ∂M ω :=
+  have hmeas :=
     (bpz_measurable_lintegral_finite_family M hMm hM.1 g hgm).comp
       (measurable_id.prodMk hMm)
   filter_upwards [(lintegral_eq_zero_iff hmeas).mp hlhs] with ω hω
-  have hgω : g (M ω) =ᵐ[M ω] 0 :=
+  have hgω :=
     (lintegral_eq_zero_iff (hgm.comp (measurable_const.prodMk measurable_id))).mp hω
   refine measure_singleton_eq_zero_of_ae ?_
   filter_upwards [hgω] with u hu

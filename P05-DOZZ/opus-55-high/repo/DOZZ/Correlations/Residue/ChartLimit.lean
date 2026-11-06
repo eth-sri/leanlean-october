@@ -35,41 +35,26 @@ theorem residue_unit_limit_from_chart_limit
     ring
   have hexp (ε : ℝ) : -(γ * (α3 + α2 - (α3 - α2 + ε)) *
       sExp γ α3 α2 (α3 - α2 + ε) / 2) =
-      -(γ * (2 * α2 - ε) * (-p + ε / γ) / 2) := by rw [hs]; ring
+      -(γ * (2 * α2 - ε) * (-p + ε / γ) / 2) := by grind
   have he : Tendsto (fun ε : ℝ => ε) (𝓝[>] 0) (𝓝 0) := tendsto_id.mono_left nhdsWithin_le_nhds
   have hexplim : Tendsto (fun ε : ℝ =>
       -(γ * (2 * α2 - ε) * (-p + ε / γ) / 2)) (𝓝[>] 0) (𝓝 (γ * α2 * p)) := by
     have hl : Tendsto (fun ε : ℝ => 2 * α2 - ε) (𝓝[>] 0) (𝓝 (2 * α2)) := by
-      simpa only [sub_zero] using
-        (tendsto_const_nhds.sub he : Tendsto (fun ε : ℝ => 2 * α2 - ε) (𝓝[>] 0) (𝓝 (2 * α2 - 0)))
+      simpa using
+        (tendsto_const_nhds.sub he : Tendsto (fun ε : ℝ => 2 * α2 - ε) _ _)
     have hr : Tendsto (fun ε : ℝ => -p + ε / γ) (𝓝[>] 0) (𝓝 (-p)) := by
-      simpa only [zero_div, add_zero] using
-        (tendsto_const_nhds.add (he.div_const γ) : Tendsto (fun ε : ℝ => -p + ε / γ) (𝓝[>] 0) (𝓝 (-p + 0 / γ)))
+      simpa using
+        (tendsto_const_nhds.add (he.div_const γ) : Tendsto (fun ε : ℝ => -p + ε / γ) _ _)
     have hh := (((hl.const_mul γ).mul hr).div_const 2).neg
-    convert hh using 1
-    congr 1
-    ring
+    grind
   have hfactor := ((Real.continuous_const_rpow (by norm_num : (4 : ℝ) ≠ 0)).continuousAt.tendsto.comp hexplim).const_mul (2 / γ)
-  have hprod := hfactor.mul hmass
-  convert hprod using 1
+  convert (hfactor.mul hmass) using 1
   · ext ε
-    rw [unitVolumeStructureConstant_swap13 P X M γ (α3 - α2 + ε) α2 α3 hγ hγ2 hX hM,
-      residue_unitVolume_finite_chart P X M γ α3 α2 (α3 - α2 + ε) hγ hγ2 hX hM, hexp ε]
-    rw [hs]
-    have hq : -(-p + ε / γ) = p - ε / γ := by ring
-    rw [hq]
-    dsimp only [Function.comp_def, p]
-    ring
+    rw [unitVolumeStructureConstant_swap13 P X M γ _ α2 α3 hγ hγ2 hX hM,
+      residue_unitVolume_finite_chart P X M γ α3 α2 _ hγ hγ2 hX hM, hexp ε]
+    grind
   · have hpowers : (4 : ℝ) ^ (γ * α2 * p) * 4 ^ (-(γ * α2 * p)) = 1 := by
       rw [← Real.rpow_add (by norm_num : (0 : ℝ) < 4), add_neg_cancel, Real.rpow_zero]
-    dsimp only [p] at hpowers
-    congr 1
-    symm
-    dsimp only [p]
-    calc _ = (2 * m * reflectionExponent γ α3 * Rbar) *
-        ((4 : ℝ) ^ (γ * α2 * reflectionExponent γ α3) *
-          (4 : ℝ) ^ (-(γ * α2 * reflectionExponent γ α3))) := by
-            field_simp [hγ.ne']
-      _ = _ := by rw [hpowers, mul_one]
+    grind
 
 end DOZZ.Proofs

@@ -72,7 +72,7 @@ theorem reflected_source_separated_moment_error
   have hb := reflected_source_full_lateral_comparison_on_carrier
     P X Xc hX hc hm hcont γ hγ hγ₂ M hM N hN hfin hwhole hNa
     α₁ α₂ α₃ z hz (reflected_innerRegion s) (reflected_outerRegion r)
-    hU₀ hU₁ hroot₀ hroot₁ (Metric.ball 0 r) Metric.isOpen_ball.measurableSet
+    hU₀ hU₁ hroot₀ hroot₁ _ Metric.isOpen_ball.measurableSet
     hpart₀ hpart₁ (s/r) r (s/r) (div_pos hs hr).le hsep hr (div_pos hs hr)
     hn₀ hn₁ hD q hq
   have he : 2*(s/r)+s/r = 3*(s/r) := by ring
@@ -90,7 +90,7 @@ theorem reflected_source_separated_moment_error
         rw [hω]
         exact ennreal_rpow_antitone_of_nonpos (le_add_left le_rfl) (neg_nonpos.mpr hq.le)
       _ ≤ _ := hCbound z ξ hz hr1
-  have hoFin : original ≠ ⊤ := ne_top_of_le_ne_top ENNReal.ofReal_ne_top ho
+  have hoFin := ne_top_of_le_ne_top ENNReal.ofReal_ne_top ho
   have hm1 : 1 ≤ m := Real.one_le_exp (by
     exact mul_nonneg (div_nonneg (mul_nonneg (sq_nonneg γ)
       (mul_nonneg (by norm_num) (div_pos hs hr).le)) (by norm_num))

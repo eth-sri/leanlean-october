@@ -5,6 +5,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import DOZZ.Brownian.Reflection.Moments
+import DOZZ.ShiftEquations.Strip.UnitBlock
 
 /-! Initial-block inverse bounds with a common radial constant for all subcritical charges. -/
 
@@ -14,25 +15,11 @@ open MeasureTheory ProbabilityTheory Set Filter Topology
 open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
+section
+variable {Ω : Type*}
 
-/-- The initial positive unit block is retained in the full two-sided mass, including its
-endpoint convention. -/
-theorem twosided_initial_block_le_mass {Ω : Type*} (γ : ℝ)
-    (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ) (ω : Ω) :
-    initialUnitBlockMass γ (B ω).1 (Z ω) ≤ twoSidedReflectionMass γ B Z ω := by
-  unfold initialUnitBlockMass twoSidedReflectionMass
-  apply lintegral_mono
-  intro t
-  by_cases ht : 0 ≤ t ∧ t ≤ 1
-  · simp only [ht, dite_true, twoSidedConditionedValue]
-    rfl
-  · simp only [ht, dite_false, ENNReal.ofReal_zero]
-    exact zero_le
-
-/-- A bounded drift range and one uniform lateral inverse moment give a uniform inverse
-moment of the full mass. Its radial factor uses only the first half-path. -/
 theorem twosided_inverse_moment_uniform_from_lateral
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (Kγ Kν : Set ℝ)
+    [MeasurableSpace Ω] (P : Measure Ω) (Kγ Kν : Set ℝ)
     (B : ℝ → Ω → BrownianPath × BrownianPath) (Z : ℝ → Ω → Measure ℝ)
     (hData : ∀ γ ∈ Kγ, ∀ ν ∈ Kν,
       IsTwoSidedConditionedBrownianProcess P (B ν) ν ∧
@@ -42,8 +29,8 @@ theorem twosided_inverse_moment_uniform_from_lateral
     (hUnit : ∀ γ ∈ Kγ, (∫⁻ ω, (Z γ ω (Ioc 0 1)) ^ p ∂P) ≤ L) :
     ∃ C : ℝ≥0∞, C < ⊤ ∧ ∀ γ ∈ Kγ, ∀ ν ∈ Kν,
       (∫⁻ ω, ENNReal.rpow (twoSidedReflectionMass γ (B ν) (Z γ) ω) p ∂P) ≤ C := by
-  let θ : ℝ := (-p) * 2
-  have hθ : 0 ≤ θ := mul_nonneg (neg_nonneg.mpr hp.le) (by norm_num)
+  let θ := (-p) * 2
+  have hθ : 0 ≤ θ := by linarith
   obtain ⟨C, hC, hOsc⟩ := isNegativeConditionedBrownianLaw_unitIncrement_exp_le θ N hθ
   refine ⟨C * L, ENNReal.mul_lt_top hC hL, ?_⟩
   intro γ hγ ν hν
@@ -53,31 +40,28 @@ theorem twosided_inverse_moment_uniform_from_lateral
   let f : BrownianPath → ℝ≥0∞ := fun p =>
     ENNReal.ofReal (Real.exp (θ * brownianUnitNorm (brownianShiftPath 0 p)))
   let g : Measure ℝ → ℝ≥0∞ := fun μ => (μ (Icc 0 1)) ^ p
-  have hshift : Continuous (fun p : BrownianPath => brownianShiftPath 0 p) :=
+  have hshift : Continuous (brownianShiftPath 0) :=
     continuous_brownianShiftPath.comp (continuous_const.prodMk continuous_id)
   have hf : Measurable f := ENNReal.measurable_ofReal.comp (Real.measurable_exp.comp
     (measurable_const.mul (continuous_brownianUnitNorm.comp hshift).measurable))
   have hg : Measurable g := ENNReal.continuous_rpow_const.measurable.comp
     (Measure.measurable_coe measurableSet_Icc)
-  have hiX : IndepFun X (Z γ) P := hi.comp measurable_fst measurable_id
   have hprod := lintegral_mul_eq_lintegral_mul_lintegral_of_indepFun''
-    (hf.comp_aemeasurable hX.1) (hg.comp_aemeasurable hZ.2.2.2.1) (hiX.comp hf hg)
-  change (∫⁻ ω, f (X ω) * g (Z γ ω) ∂P) =
-    (∫⁻ ω, f (X ω) ∂P) * (∫⁻ ω, g (Z γ ω) ∂P) at hprod
-  have hzero : ∀ᵐ ω ∂P, X ω 0 = 0 := ae_of_ae_map hX.1 hX.2.2.2.1
+    (hf.comp_aemeasurable hX.1) (hg.comp_aemeasurable hZ.2.2.2.1) ((hi.comp measurable_fst measurable_id).comp hf hg)
+  change _ =
+    (∫⁻ ω, f (X ω) ∂P) * (∫⁻ ω, g _ ∂P) at hprod
   have hfX : (∫⁻ ω, f (X ω) ∂P) ≤ C := by
     rw [← lintegral_map' hf.aemeasurable hX.1]
     exact hOsc ν (hνN ν hν) _ hX.2 0
   have hUnit' : (∫⁻ ω, g (Z γ ω) ∂P) ≤ L := by
-    change (∫⁻ ω, (Z γ ω (Icc 0 1)) ^ p ∂P) ≤ L
     rw [lateralGMC_Icc_moment_eq_Ioc P γ (Z γ) hZ 0 1 p (by norm_num)]
     exact hUnit γ hγ
   calc (∫⁻ ω, ENNReal.rpow (twoSidedReflectionMass γ (B ν) (Z γ) ω) p ∂P)
       ≤ ∫⁻ ω, f (X ω) * g (Z γ ω) ∂P := by
         apply lintegral_mono_ae
-        filter_upwards [hzero, hZ.2.2.2.2.1] with ω h0 hfin
-        have hlow := (initialUnitBlockMass_ge γ hZ.1.le (X ω) (Z γ ω)).trans
-          (twosided_initial_block_le_mass γ (B ν) (Z γ) ω)
+        filter_upwards [(ae_of_ae_map hX.1 hX.2.2.2.1), hZ.2.2.2.2.1] with ω h0 hfin
+        have hlow := (initialUnitBlockMass_ge γ hZ.1.le (X ω) _).trans
+          (DOZZ.Proofs.lastone_initialUnitBlockMass_le γ (B ν) (Z γ) ω)
         rw [h0, zero_sub] at hlow
         have h := ennreal_rpow_antitone_nonpos _ _ p hlow hp.le
         rw [ENNReal.mul_rpow_of_ne_top ENNReal.ofReal_ne_top (hfin 0 1).ne,
@@ -91,7 +75,9 @@ theorem twosided_inverse_moment_uniform_from_lateral
         apply Real.exp_le_exp.mpr
         exact mul_le_mul_of_nonneg_right
           (mul_le_mul_of_nonneg_left hZ.2.1.le (neg_nonneg.mpr hp.le)) (norm_nonneg _)
-    _ = (∫⁻ ω, f (X ω) ∂P) * (∫⁻ ω, g (Z γ ω) ∂P) := hprod
+    _ = (∫⁻ ω, f (X ω) ∂P) * (∫⁻ ω, g _ ∂P) := hprod
     _ ≤ C * L := mul_le_mul' hfX hUnit'
+
+end
 
 end DOZZ.Proofs

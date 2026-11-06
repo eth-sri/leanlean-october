@@ -74,10 +74,8 @@ theorem ae_summable_equatorWhiteNoiseSq_of_summable_energy {ι : Type*} [Countab
   let eNN : ι → ℝ≥0 := fun i => ‖equatorKernelLimitMap (t i)‖₊ ^ 2
   have hNN : Summable eNN := by
     apply NNReal.summable_coe.1
-    convert henergy using 1
-    ext i
-    simp [eNN]
-  have hfiniteNN : (∑' i, (eNN i : ℝ≥0∞)) ≠ ∞ :=
+    assumption
+  have hfiniteNN :=
     ENNReal.tsum_coe_ne_top_iff_summable_coe.mpr (NNReal.summable_coe.2 hNN)
   have hnorm (i : ι) : eLpNorm (W i) 2 μ = ENNReal.ofReal
       ‖equatorKernelLimitMap (t i)‖ := by
@@ -85,10 +83,10 @@ theorem ae_summable_equatorWhiteNoiseSq_of_summable_energy {ι : Type*} [Countab
       eLpNorm (W i) 2 μ = ENNReal.ofReal (ENNReal.toReal (eLpNorm (W i) 2 μ)) := by
         symm
         exact ENNReal.ofReal_toReal (Lp.eLpNorm_ne_top (W i))
-      _ = ENNReal.ofReal ‖W i‖ := by rw [Lp.norm_def]
+      _ = ENNReal.ofReal ‖W i‖ := by rfl
       _ = ENNReal.ofReal ‖equatorKernelLimitMap (t i)‖ := by simp [W]
   have hmoment (i : ι) :
-    eLpNorm (fun ω => (W i ω) ^ 2) 1 μ = (eNN i : ℝ≥0∞) := by
+    eLpNorm (fun ω => (W i ω) ^ 2) 1 μ = (eNN i) := by
     rw [eLpNorm_sq_eq_eLpNorm_two_sq (fun ω => W i ω)
       (Lp.aestronglyMeasurable (W i)), hnorm]
     simp [eNN, enorm_eq_nnnorm]
@@ -100,32 +98,32 @@ theorem ae_summable_equatorWhiteNoiseSq_of_summable_energy {ι : Type*} [Countab
   have hae := ae_summable_sq_of_tsum_eLpNorm_sq_ne_top
     (fun i ω => W i ω) hfinite
   simpa [W] using hae
+section
+variable (R : ℕ)
 
 /-- The local cosine-mode white-noise coefficients are square summable almost everywhere. -/
-theorem ae_summable_gffLocalCosSobolevModeEvaluation (R : ℕ) :
+theorem ae_summable_gffLocalCosSobolevModeEvaluation :
     ∀ᵐ ω ∂GaussianFields.scaleSpaceWhiteNoiseMeasure 2,
       Summable fun k : Fin 2 → ℤ =>
         (GaussianFields.scalarWhiteNoiseL2 3
           (equatorKernelLimitMap (gffLocalCosSobolevModeTest R k)) ω) ^ 2 := by
-  have h := ae_summable_equatorWhiteNoiseSq_of_summable_energy
+  exact ae_summable_equatorWhiteNoiseSq_of_summable_energy
     (gffLocalCosSobolevModeTest R)
     (summable_localTorusCosHSEnergy (gffLocalModeRadius R)
       (gffLocalModeBoxSide R) (gffLocalModeRadius_pos R))
-  simpa [GaussianFields.scaleSpaceWhiteNoiseMeasure,
-    GaussianFields.scalarWhiteNoiseMeasure] using h
 
 /-- The local sine-mode white-noise coefficients are square summable almost everywhere. -/
-theorem ae_summable_gffLocalSinSobolevModeEvaluation (R : ℕ) :
+theorem ae_summable_gffLocalSinSobolevModeEvaluation :
     ∀ᵐ ω ∂GaussianFields.scaleSpaceWhiteNoiseMeasure 2,
       Summable fun k : Fin 2 → ℤ =>
         (GaussianFields.scalarWhiteNoiseL2 3
           (equatorKernelLimitMap (gffLocalSinSobolevModeTest R k)) ω) ^ 2 := by
-  have h := ae_summable_equatorWhiteNoiseSq_of_summable_energy
+  exact ae_summable_equatorWhiteNoiseSq_of_summable_energy
     (gffLocalSinSobolevModeTest R)
     (summable_localTorusSinHSEnergy (gffLocalModeRadius R)
       (gffLocalModeBoxSide R) (gffLocalModeRadius_pos R))
-  simpa [GaussianFields.scaleSpaceWhiteNoiseMeasure,
-    GaussianFields.scalarWhiteNoiseMeasure] using h
+
+end
 
 /-- The finite Haar truncations have a common almost-surely convergent subsequence on all local
 H² modes. The index is countable (`ℕ × Sum (ℤ²) (ℤ²)`), and each coordinate converges in measure by

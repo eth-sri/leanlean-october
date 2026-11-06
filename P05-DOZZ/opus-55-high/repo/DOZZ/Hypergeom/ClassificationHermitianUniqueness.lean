@@ -29,19 +29,19 @@ theorem hermitianTensor_coefficients_eq_of_wirtinger_jet
     linear_combination dg * h₀₀ - g * h₁₀
   have hR₂prod : (f * dg - df * g) * (C * star f + D * star g) = 0 := by
     linear_combination f * h₁₀ - df * h₀₀
-  have hR₁ : A * star f + B * star g = 0 :=
+  have hR₁ :=
     (mul_eq_zero.mp hR₁prod).resolve_left hW
-  have hR₂ : C * star f + D * star g = 0 :=
+  have hR₂ :=
     (mul_eq_zero.mp hR₂prod).resolve_left hW
   have hS₁prod : (f * dg - df * g) * (A * star df + B * star dg) = 0 := by
     linear_combination dg * h₀₁ - g * h₁₁
   have hS₂prod : (f * dg - df * g) * (C * star df + D * star dg) = 0 := by
     linear_combination f * h₁₁ - df * h₀₁
-  have hS₁ : A * star df + B * star dg = 0 :=
+  have hS₁ :=
     (mul_eq_zero.mp hS₁prod).resolve_left hW
-  have hS₂ : C * star df + D * star dg = 0 :=
+  have hS₂ :=
     (mul_eq_zero.mp hS₂prod).resolve_left hW
-  have hWstar : star (f * dg - df * g) ≠ 0 := star_ne_zero.mpr hW
+  have hWstar := star_ne_zero.mpr hW
   have hAprod : star (f * dg - df * g) * A = 0 := by
     rw [star_sub, star_mul, star_mul]
     linear_combination star dg * hR₁ - star g * hS₁
@@ -72,9 +72,9 @@ theorem hermitianOffDiagonal_eq_zero_of_value_and_z_derivative
     linear_combination dg * h₀ - g * h₁
   have hCfProd : (f * dg - df * g) * (C * star f) = 0 := by
     linear_combination f * h₁ - df * h₀
-  have hBg : B * star g = 0 :=
+  have hBg :=
     (mul_eq_zero.mp hBgProd).resolve_left hW
-  have hCf : C * star f = 0 :=
+  have hCf :=
     (mul_eq_zero.mp hCfProd).resolve_left hW
   by_cases hg : g = 0
   · have hf : f ≠ 0 := by
@@ -82,13 +82,13 @@ theorem hermitianOffDiagonal_eq_zero_of_value_and_z_derivative
       apply hW
       rw [hf, hg]
       ring
-    have hC : C = 0 := (mul_eq_zero.mp hCf).resolve_right (star_ne_zero.mpr hf)
+    have hC := (mul_eq_zero.mp hCf).resolve_right (star_ne_zero.mpr hf)
     have hB : B = 0 := by
       calc
         B = star C := by simpa using (congrArg star hHerm).symm
         _ = 0 := by rw [hC]; simp
     exact ⟨hB, hC⟩
-  · have hB : B = 0 := (mul_eq_zero.mp hBg).resolve_right (star_ne_zero.mpr hg)
+  · have hB := (mul_eq_zero.mp hBg).resolve_right (star_ne_zero.mpr hg)
     exact ⟨hB, by rw [hHerm, hB]; simp⟩
 
 end DOZZ.Proofs

@@ -19,26 +19,30 @@ supported samplewise distribution versions remain separate constructions.
 open Filter MeasureTheory ProbabilityTheory Set Metric
 open scoped Topology ENNReal NNReal
 namespace DOZZ.Proofs
+section
+variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+section
+variable (c : ℂ) (ρ : ℝ) (U : ℂ → E) (hU : ContinuousOn U (ball c ρ)) (f : TestFn) (hf : tsupport f ⊆ ball c ρ)
+include hU hf
 
 /-- A compact interior test localizes any continuous disk-valued family. -/
-theorem continuous_testFn_smul_on_disk {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    (c : ℂ) (ρ : ℝ) (U : ℂ → E) (hU : ContinuousOn U (ball c ρ))
-    (f : TestFn) (hf : tsupport f ⊆ ball c ρ) : Continuous (fun z => f z • U z) := by
+theorem continuous_testFn_smul_on_disk : Continuous (fun z => f z • U z) := by
   apply continuous_iff_continuousAt.mpr
   intro z
   by_cases hz : z ∈ ball c ρ
   · exact f.continuous.continuousAt.smul (hU.continuousAt (isOpen_ball.mem_nhds hz))
   · have hzs : z ∉ tsupport f := fun h => hz (hf h)
-    apply (show ContinuousAt (fun _ : ℂ => (0 : E)) z from continuousAt_const).congr_of_eventuallyEq
+    apply (show ContinuousAt (fun _ => (0 : E)) z from continuousAt_const).congr_of_eventuallyEq
     filter_upwards [notMem_tsupport_iff_eventuallyEq.mp hzs] with w hw
-    change f w = 0 at hw
-    rw [hw,zero_smul]
+    simp_all
 
 /-- Compact interior weights make the disk L² family Bochner integrable. -/
-theorem integrable_testFn_smul_on_disk {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    (c : ℂ) (ρ : ℝ) (U : ℂ → E) (hU : ContinuousOn U (ball c ρ))
-    (f : TestFn) (hf : tsupport f ⊆ ball c ρ) : Integrable (fun z => f z • U z) :=
+theorem integrable_testFn_smul_on_disk : Integrable (fun z => f z • U z) :=
   (continuous_testFn_smul_on_disk c ρ U hU f hf).integrable_of_hasCompactSupport f.hasCompactSupport.smul_right
+
+end
+
+end
 
 /-- Zero extension of the original harmonic coordinates into their probability-space L². -/
 noncomputable def poissonFamilyL2 {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
@@ -59,10 +63,11 @@ theorem poissonFamilyL2_ae_eq {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
 noncomputable def poissonTestIntegralL2 {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
     (c : ℂ) (ρ : ℝ) (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
     (f : TestFn) : Lp ℝ 2 P := ∫ z, f z • poissonFamilyL2 P c ρ V hV z
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
 
 /-- Samplewise Fubini retains the literal harmonic test integral. -/
-theorem poissonTestIntegralL2_ae_eq {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    [IsProbabilityMeasure P] (c : ℂ) (ρ : ℝ)
+theorem poissonTestIntegralL2_ae_eq [IsProbabilityMeasure P] (c : ℂ) (ρ : ℝ)
     (V : Ω → ℂ → ℝ) (hm : Measurable (fun p : Ω × ℂ => V p.1 p.2))
     (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
@@ -76,7 +81,7 @@ theorem poissonTestIntegralL2_ae_eq {Ω : Type*} [MeasurableSpace Ω] (P : Measu
     by_cases hz : z ∈ ball c ρ
     · filter_upwards [Lp.coeFn_smul (f z) (poissonFamilyL2 P c ρ V hV z),
         poissonFamilyL2_ae_eq P c ρ V hV z hz] with ω hs he
-      rw [hs,Pi.smul_apply,smul_eq_mul,he]
+      simp_all
     · have hf0 : f z = 0 := by
         by_contra h
         exact hz (hf (subset_closure h))
@@ -84,24 +89,23 @@ theorem poissonTestIntegralL2_ae_eq {Ω : Type*} [MeasurableSpace Ω] (P : Measu
       exact Lp.coeFn_zero ℝ 2 P
 
 /-- All zero-extended harmonic L² coordinates are centered. -/
-theorem poissonFamilyL2_integral_zero {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (c : ℂ) (ρ : ℝ) (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
+theorem poissonFamilyL2_integral_zero (c : ℂ) (ρ : ℝ) (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
     (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0) (z : ℂ) :
     (∫ ω, poissonFamilyL2 P c ρ V hV z ω ∂P) = 0 := by
   by_cases hz : z ∈ ball c ρ
   · rw [integral_congr_ae (poissonFamilyL2_ae_eq P c ρ V hV z hz)]
-    exact hmean z hz
+    simp_all
   · simp only [poissonFamilyL2,dite_eq_right hz]
     rw [integral_congr_ae (Lp.coeFn_zero ℝ 2 P)]
-    simp only [Pi.zero_apply, integral_zero]
+    simp
+section
+variable [IsProbabilityMeasure P] (c : ℂ) (ρ : ℝ) (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
+section
+variable (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0) (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ)) (f : TestFn) (hf : tsupport f ⊆ ball c ρ)
+include hmean hU hf
 
 /-- The harmonic test averages are centered. -/
-theorem poissonTestIntegralL2_integral_zero {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    [IsProbabilityMeasure P] (c : ℂ) (ρ : ℝ)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
-    (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (f : TestFn) (hf : tsupport f ⊆ ball c ρ) :
+theorem poissonTestIntegralL2_integral_zero :
     (∫ ω, poissonTestIntegralL2 P c ρ V hV f ω ∂P) = 0 := by
   apply integral_mean_L2_integral_eq_zero volume _ (integrable_testFn_smul_on_disk c ρ _ hU f hf)
   apply ae_of_all
@@ -109,12 +113,7 @@ theorem poissonTestIntegralL2_integral_zero {Ω : Type*} [MeasurableSpace Ω] (P
   rw [integral_mean_L2_smul,poissonFamilyL2_integral_zero P c ρ V hV hmean z,mul_zero]
 
 /-- Covariance of harmonic test averages is a genuine Bochner integral of coordinate covariances. -/
-theorem poissonTestIntegralL2_covariance {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    [IsProbabilityMeasure P] (c : ℂ) (ρ : ℝ)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
-    (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (f : TestFn) (hf : tsupport f ⊆ ball c ρ) (W : Lp ℝ 2 P) :
+theorem poissonTestIntegralL2_covariance (W : Lp ℝ 2 P) :
     covariance (poissonTestIntegralL2 P c ρ V hV f) W P =
       ∫ z, f z*covariance (poissonFamilyL2 P c ρ V hV z) W P := by
   rw [poissonTestIntegralL2,covariance_L2_integral_left volume _
@@ -126,8 +125,16 @@ theorem poissonTestIntegralL2_covariance {Ω : Type*} [MeasurableSpace Ω] (P : 
   · intro z
     rw [integral_mean_L2_smul,poissonFamilyL2_integral_zero P c ρ V hV hmean z,mul_zero]
 
+end
+
+end
+
+end
+section
+variable (c z : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
+
 /-- The zero-extended Green section needs no area restriction in its inner integral. -/
-theorem integral_diskGreen_test_restrict_eq (c z : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (f : TestFn) :
+theorem integral_diskGreen_test_restrict_eq (f : TestFn) :
     (∫ w in ball c ρ, diskGreenKernel c ρ hρ z w*f w) =
       ∫ w, diskGreenKernel c ρ hρ z w*f w := by
   apply setIntegral_eq_integral_of_forall_compl_eq_zero
@@ -135,41 +142,46 @@ theorem integral_diskGreen_test_restrict_eq (c z : ℂ) (ρ : ℝ) (hρ : 0 < ρ
   simp only [diskGreenKernel,hw,and_false,false_and,ite_false,zero_mul]
 
 /-- The outer Green test potential is zero away from its disk. -/
-theorem diskGreen_testPotential_eq_zero_of_notMem (c z : ℂ) (ρ : ℝ) (hρ : 0 < ρ)
-    (hz : z ∉ ball c ρ) (f g : TestFn) :
+theorem diskGreen_testPotential_eq_zero_of_notMem (hz : z ∉ ball c ρ) (f g : TestFn) :
     f z*(∫ w, diskGreenKernel c ρ hρ z w*g w) = 0 := by
   simp only [diskGreenKernel,hz,false_and,ite_false,zero_mul,integral_zero,mul_zero]
 
+end
+section
+variable (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (f g : TestFn)
+
 /-- Global tests paired against the zero-extended Green potential are integrable. -/
-theorem integrable_diskGreen_testPotential_global (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (f g : TestFn) :
+theorem integrable_diskGreen_testPotential_global :
     Integrable (fun z => f z*(∫ w, diskGreenKernel c ρ hρ z w*g w)) := by
   have hs : Function.support (fun z => f z*(∫ w, diskGreenKernel c ρ hρ z w*g w)) ⊆ ball c ρ := by
     intro z hz
     by_contra he
     exact hz (diskGreen_testPotential_eq_zero_of_notMem c z ρ hρ he f g)
   apply (integrableOn_iff_integrable_of_support_subset hs).mp
-  change Integrable (fun z => f z*(∫ w, diskGreenKernel c ρ hρ z w*g w)) (volume.restrict (ball c ρ))
+  change Integrable (fun z => f z*(∫ w, diskGreenKernel c ρ hρ z w*g w)) _
   simpa only [integral_diskGreen_test_restrict_eq] using integrable_diskGreenPotential_test c ρ hρ f g
 
 /-- The restricted Green covariance `DOZZ.diskGreenCovariance` equals the literal globally
 zero-extended pairing. -/
-theorem diskGreenCovariance_eq_global_pair (c : ℂ) (ρ : ℝ) (hρ : 0 < ρ) (f g : TestFn) :
+theorem diskGreenCovariance_eq_global_pair :
     diskGreenCovariance c ρ hρ f g = ∫ z, f z*(∫ w, diskGreenKernel c ρ hρ z w*g w) := by
   simp only [diskGreenCovariance,integral_diskGreen_test_restrict_eq]
   apply setIntegral_eq_integral_of_forall_compl_eq_zero
   intro z hz
   exact diskGreen_testPotential_eq_zero_of_notMem c z ρ hρ hz f g
 
+end
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+
 /-- Covariance is additive under subtraction in the L² carrier. -/
-theorem covariance_L2_sub_left {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    [IsProbabilityMeasure P] (U V W : Lp ℝ 2 P) :
+theorem covariance_L2_sub_left [IsProbabilityMeasure P] (U V W : Lp ℝ 2 P) :
     covariance (⇑(U-V)) W P = covariance U W P-covariance V W P := by
   rw [covariance_congr_ae (Lp.coeFn_sub U V) (ae_eq_refl _)]
   exact covariance_sub_left (Lp.memLp U) (Lp.memLp V) (Lp.memLp W)
 
 /-- Every compact interior harmonic test average has the exact global mixed Green correction. -/
-theorem poissonTestIntegralL2_test_covariance {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
+theorem poissonTestIntegralL2_test_covariance (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
     (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
     (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
     (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
@@ -191,7 +203,7 @@ theorem poissonTestIntegralL2_test_covariance {Ω : Type*} [MeasurableSpace Ω]
         f z*(∫ w, diskGreenKernel c ρ hρ z w*g w) := by
     funext z
     by_cases h0 : f z = 0
-    · simp only [h0,zero_mul,sub_zero]
+    · simp_all
     · have hz := hf (subset_closure h0)
       rw [covariance_congr_ae (poissonFamilyL2_ae_eq P c ρ V hV z hz)
         (exteriorPinnedTestL2_ae_eq P X Xc hX hc R (by linarith) g),
@@ -207,6 +219,8 @@ theorem poissonTestIntegralL2_test_covariance {Ω : Type*} [MeasurableSpace Ω]
     covariance_congr_ae (exteriorPinnedTestL2_ae_eq P X Xc hX hc R (by linarith) f)
       (exteriorPinnedTestL2_ae_eq P X Xc hX hc R (by linarith) g),
     (exteriorPinnedEvaluation_covariance P X Xc hX hc R hR f g).2]
+
+end
 
 /-- The interior Dirichlet test residual, still on the given probability space. -/
 noncomputable def dirichletResidualL2 {Ω : Type*} [MeasurableSpace Ω]
@@ -248,13 +262,14 @@ theorem poisson_covariance_eq_exteriorPinnedKernel_sub_Green (c z w : ℂ) (R ρ
   rw [exteriorPinnedKernel_eq_log_sub hR (hn z hz) (hn w hw),
     diskGreenKernel_eq_log_parts c z w ρ hρ hz hw hzw]
   ring
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+section
+variable (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
 
 /-- Against an interior test, each harmonic coordinate pairs equally with the original
 field and with its harmonic test integral. -/
-theorem poissonFamilyL2_covariance_test_eq_integral {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c z : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
+theorem poissonFamilyL2_covariance_test_eq_integral (c z : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
     (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
     (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
@@ -277,9 +292,9 @@ theorem poissonFamilyL2_covariance_test_eq_integral {Ω : Type*} [MeasurableSpac
   calc
     _ = ∫ w, exteriorPinnedKernel R (by linarith) z w*g w-diskGreenKernel c ρ hρ z w*g w := by
       apply integral_congr_ae
-      filter_upwards [(volume : Measure ℂ).ae_ne z] with w hwz
+      filter_upwards [volume.ae_ne z] with w hwz
       by_cases h0 : g w = 0
-      · simp only [h0,mul_zero,zero_mul,sub_zero]
+      · simp_all
       · have hw := hg (subset_closure h0)
         rw [covariance_comm, covariance_congr_ae (poissonFamilyL2_ae_eq P c ρ V hV z hz)
           (poissonFamilyL2_ae_eq P c ρ V hV w hw),hcov z w hz hw,
@@ -289,10 +304,7 @@ theorem poissonFamilyL2_covariance_test_eq_integral {Ω : Type*} [MeasurableSpac
       (integrable_diskGreen_test_section c z R ρ (by linarith) hρ hpin hz g)
 
 /-- Harmonic test integrals pair equally with original interior tests and their harmonic parts. -/
-theorem poissonTestIntegralL2_covariance_integral_eq_test {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
+theorem poissonTestIntegralL2_covariance_integral_eq_test (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
     (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
     (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
@@ -313,23 +325,23 @@ theorem poissonTestIntegralL2_covariance_integral_eq_test {Ω : Type*} [Measurab
   apply ae_of_all
   intro z
   by_cases h0 : f z = 0
-  · simp only [h0,zero_mul]
+  · simp_all
   · have hz := hf (subset_closure h0)
     dsimp only
     rw [poissonFamilyL2_covariance_test_eq_integral P X Xc hX hc c z R ρ ε hR hρ hε hpin
       V hV hmean hU hcov hlim hz g hg]
 
+end
+
 /-- Subtracting a second L² argument commutes with covariance. -/
-theorem covariance_L2_sub_right {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    [IsProbabilityMeasure P] (U V W : Lp ℝ 2 P) :
+theorem covariance_L2_sub_right [IsProbabilityMeasure P] (U V W : Lp ℝ 2 P) :
     covariance U (⇑(V-W)) P = covariance U V P-covariance U W P := by
   rw [covariance_comm,covariance_L2_sub_left,covariance_comm V U,covariance_comm W U]
+section
+variable (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (c : ℂ)
 
 /-- The interior Dirichlet residual retains the literal samplewise test-minus-harmonic formula. -/
-theorem dirichletResidualL2_ae_eq {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ : ℝ) (hR : 0 < R) (V : Ω → ℂ → ℝ)
+theorem dirichletResidualL2_ae_eq (R ρ : ℝ) (hR : 0 < R) (V : Ω → ℂ → ℝ)
     (hm : Measurable (fun p : Ω × ℂ => V p.1 p.2))
     (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
@@ -340,23 +352,13 @@ theorem dirichletResidualL2_ae_eq {Ω : Type*} [MeasurableSpace Ω]
   filter_upwards [Lp.coeFn_sub (exteriorPinnedTestL2 P X Xc hX hc R hR f)
     (poissonTestIntegralL2 P c ρ V hV f),exteriorPinnedTestL2_ae_eq P X Xc hX hc R hR f,
     poissonTestIntegralL2_ae_eq P c ρ V hm hV hU f hf] with ω hs hy hh
-  rw [dirichletResidualL2,hs,Pi.sub_apply,hy,hh]
+  aesop
+section
+variable (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R) (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P) (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0) (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ)) (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ → covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ- Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖) (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm (fun ω => exteriorPinnedEvaluation X Xc R (zero_lt_one.trans hR) ω (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0)) (f g : TestFn) (hf : tsupport f ⊆ ball c ρ) (hg : tsupport g ⊆ ball c ρ)
+include hR hpin hmean hU hcov hlim hf hg
 
 /-- Interior residuals are orthogonal to all interior harmonic test averages. -/
-theorem dirichletResidualL2_harmonic_covariance_zero {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
-    (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
-    (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
-      (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
-        (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
-    (f g : TestFn) (hf : tsupport f ⊆ ball c ρ) (hg : tsupport g ⊆ ball c ρ) :
+theorem dirichletResidualL2_harmonic_covariance_zero :
     covariance (dirichletResidualL2 P X Xc hX hc c R ρ (by linarith) V hV f)
       (poissonTestIntegralL2 P c ρ V hV g) P = 0 := by
   let _ := hX.1
@@ -368,20 +370,7 @@ theorem dirichletResidualL2_harmonic_covariance_zero {Ω : Type*} [MeasurableSpa
 
 /-- The literal interior residual has exactly the disk Green test covariance
 `DOZZ.diskGreenCovariance`. -/
-theorem dirichletResidualL2_covariance {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
-    (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
-    (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
-      (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
-        (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
-    (f g : TestFn) (hf : tsupport f ⊆ ball c ρ) (hg : tsupport g ⊆ ball c ρ) :
+theorem dirichletResidualL2_covariance :
     covariance (dirichletResidualL2 P X Xc hX hc c R ρ (by linarith) V hV f)
       (dirichletResidualL2 P X Xc hX hc c R ρ (by linarith) V hV g) P = diskGreenCovariance c ρ hρ f g := by
   let _ := hX.1
@@ -392,11 +381,10 @@ theorem dirichletResidualL2_covariance {Ω : Type*} [MeasurableSpace Ω]
     dirichletResidualL2_harmonic_covariance_zero P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hcov hlim f g hf hg,
     sub_zero]
 
+end
+
 /-- The residual test evaluations are centered. -/
-theorem dirichletResidualL2_integral_zero {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ : ℝ) (hR : 0 < R) (V : Ω → ℂ → ℝ)
+theorem dirichletResidualL2_integral_zero (R ρ : ℝ) (hR : 0 < R) (V : Ω → ℂ → ℝ)
     (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
     (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
     (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
@@ -408,6 +396,10 @@ theorem dirichletResidualL2_integral_zero {Ω : Type*} [MeasurableSpace Ω]
     exteriorPinnedEvaluation_integral_zero P X Xc hX hc R hR f,
     poissonTestIntegralL2_integral_zero P c ρ V hV hmean hU f hf,sub_self]
 
+end
+
+end
+
 /-- A single Gaussian L² carrier containing both the harmonic and original test coordinates. -/
 noncomputable def poissonTestFamilyL2 {Ω : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
@@ -417,12 +409,11 @@ noncomputable def poissonTestFamilyL2 {Ω : Type*} [MeasurableSpace Ω]
     ({z : ℂ // z ∈ ball c ρ} ⊕ TestFn) → Lp ℝ 2 P :=
   Sum.elim (fun z => poissonFamilyL2 P c ρ V hV z.1)
     (exteriorPinnedTestL2 P X Xc hX hc R hR)
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ) (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc) (c : ℂ)
 
 /-- The actual raw collar limits and all test representatives retain joint Gaussianity in L². -/
-theorem poissonTestFamilyL2_isGaussianProcess {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ ε : ℝ) (hR : 0 < R) (hρ : 0 < ρ) (hε : 0 < ε)
+theorem poissonTestFamilyL2_isGaussianProcess (R ρ ε : ℝ) (hR : 0 < R) (hρ : 0 < ρ) (hε : 0 < ε)
     (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
     (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
       (fun ω => exteriorPinnedEvaluation X Xc R hR ω
@@ -433,15 +424,14 @@ theorem poissonTestFamilyL2_isGaussianProcess {Ω : Type*} [MeasurableSpace Ω]
   cases t with
   | inl z => exact (poissonFamilyL2_ae_eq P c ρ V hV z.1 z.2).symm
   | inr f => exact (exteriorPinnedTestL2_ae_eq P X Xc hX hc R hR f).symm
+section
+variable (R ρ : ℝ) (hR : 0 < R) (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
+section
+variable (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ)) (f : TestFn) (hf : tsupport f ⊆ ball c ρ)
+include hU hf
 
 /-- The harmonic integral of an interior test stays inside the original Gaussian Hilbert span. -/
-theorem poissonTestIntegralL2_mem_gaussianHilbertSpan {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ : ℝ) (hR : 0 < R) (V : Ω → ℂ → ℝ)
-    (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (f : TestFn) (hf : tsupport f ⊆ ball c ρ) :
+theorem poissonTestIntegralL2_mem_gaussianHilbertSpan :
     poissonTestIntegralL2 P c ρ V hV f ∈ gaussianHilbertSpan
       (poissonTestFamilyL2 P X Xc hX hc c R ρ hR V hV) := by
   let _ := hX.1
@@ -453,37 +443,24 @@ theorem poissonTestIntegralL2_mem_gaussianHilbertSpan {Ω : Type*} [MeasurableSp
   by_cases hz : z ∈ ball c ρ
   · exact mem_gaussianHilbertSpan (poissonTestFamilyL2 P X Xc hX hc c R ρ hR V hV) (Sum.inl ⟨z,hz⟩)
   · simp only [poissonFamilyL2,dite_eq_right hz]
-    exact Submodule.zero_mem _
+    norm_num
 
 /-- Interior Dirichlet residuals stay in the same Gaussian Hilbert space as the original field. -/
-theorem dirichletResidualL2_mem_gaussianHilbertSpan {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ : ℝ) (hR : 0 < R) (V : Ω → ℂ → ℝ)
-    (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (f : TestFn) (hf : tsupport f ⊆ ball c ρ) :
+theorem dirichletResidualL2_mem_gaussianHilbertSpan :
     dirichletResidualL2 P X Xc hX hc c R ρ hR V hV f ∈ gaussianHilbertSpan
-      (poissonTestFamilyL2 P X Xc hX hc c R ρ hR V hV) := by
-  exact Submodule.sub_mem _ (mem_gaussianHilbertSpan _ (Sum.inr f))
+      (poissonTestFamilyL2 P X Xc hX hc c R ρ hR V hV) := Submodule.sub_mem _ (mem_gaussianHilbertSpan _ (Sum.inr f))
     (poissonTestIntegralL2_mem_gaussianHilbertSpan P X Xc hX hc c R ρ hR V hV hU f hf)
+
+end
+
+end
+section
+variable (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R) (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P) (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0) (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ)) (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ → covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ- Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖) (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm (fun ω => exteriorPinnedEvaluation X Xc R (zero_lt_one.trans hR) ω (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0)) (f : TestFn) (hf : tsupport f ⊆ ball c ρ)
+include hR hpin hmean hU hcov hlim hf
 
 
 /-- The actual centered residual has the Green norm squared. -/
-theorem dirichletResidualL2_norm_sq {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
-    (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
-    (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
-      (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
-        (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
-    (f : TestFn) (hf : tsupport f ⊆ ball c ρ) :
+theorem dirichletResidualL2_norm_sq :
     ‖dirichletResidualL2 P X Xc hX hc c R ρ (by linarith) V hV f‖^2 = diskGreenCovariance c ρ hρ f f := by
   let _ := hX.1
   have h := dirichletResidualL2_covariance P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hcov hlim f f hf hf
@@ -492,25 +469,16 @@ theorem dirichletResidualL2_norm_sq {Ω : Type*} [MeasurableSpace Ω]
   exact h
 
 /-- The interior residual has the actual bounded Green L² estimate required for completion. -/
-theorem dirichletResidualL2_norm_sq_le {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (Xc : Ω → ℂ → ℝ → ℝ)
-    (hX : IsEquatorGFF P X) (hc : IsCircleAverage P X Xc)
-    (c : ℂ) (R ρ ε : ℝ) (hR : 1 < R) (hρ : 0 < ρ) (hε : 0 < ε) (hpin : ‖c‖+ρ ≤ R)
-    (V : Ω → ℂ → ℝ) (hV : ∀ z ∈ ball c ρ, MemLp (fun ω => V ω z) 2 P)
-    (hmean : ∀ z ∈ ball c ρ, (∫ ω, V ω z ∂P) = 0)
-    (hU : ContinuousOn (poissonFamilyL2 P c ρ V hV) (ball c ρ))
-    (hcov : ∀ z w, z ∈ ball c ρ → w ∈ ball c ρ →
-      covariance (fun ω => V ω z) (fun ω => V ω w) P = Real.log R+Real.log ρ-
-        Real.log ‖(ρ : ℂ)^2-(z-c)*star (w-c)‖)
-    (hlim : ∀ z (hz : z ∈ ball c ρ), Tendsto (fun k => eLpNorm
-      (fun ω => exteriorPinnedEvaluation X Xc R (by linarith) ω
-        (canonicalPoissonCollarTest c z ρ ε hρ hε hz k)-V ω z) 2 P) atTop (𝓝 0))
-    (f : TestFn) (hf : tsupport f ⊆ ball c ρ) :
+theorem dirichletResidualL2_norm_sq_le :
     ‖dirichletResidualL2 P X Xc hX hc c R ρ (by linarith) V hV f‖^2 ≤
       (∫ p : ℂ × ℂ, ‖diskGreenKernel c ρ hρ p.1 p.2‖^2
         ∂((volume.restrict (ball c ρ)).prod (volume.restrict (ball c ρ))))^(1/2 : ℝ)*
       (∫ z in ball c ρ, ‖f z‖^2) := by
   rw [dirichletResidualL2_norm_sq P X Xc hX hc c R ρ ε hR hρ hε hpin V hV hmean hU hcov hlim f hf]
   exact (le_abs_self _).trans (abs_diskGreenCovariance_self_le_diskL2 c ρ hρ f)
+
+end
+
+end
 
 end DOZZ.Proofs

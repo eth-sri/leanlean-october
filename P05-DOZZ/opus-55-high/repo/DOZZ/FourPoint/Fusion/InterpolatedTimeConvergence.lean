@@ -22,24 +22,24 @@ theorem fusionInterpolatedTimeIntegral_tendsto {Ω : Type*} [MeasurableSpace Ω]
         ((∫⁻ ω, fusionMovingMass γ α₁ α₂ α₃ 1 0 (M ω) ^ s ∂P).toReal : ℂ))) := by
   obtain ⟨B, hB, hb⟩ := fusionInterpolatedFactor_uniform_bound P X hX γ hγ hγ2 M hM α₁ α₂ α₃ s hs.le
   let D := (∫ y : ℂ, ‖K y‖) * B
-  have hD : 0 ≤ D := mul_nonneg (integral_nonneg fun _ => norm_nonneg _) hB
+  have hD : 0 ≤ D := by positivity
   have hm := fusionInterpolatedFactor_measurable P X hX γ hγ hγ2 M hM α₁ α₂ α₃ s
   have hmeas : ∀ᶠ z : ℂ in nhds 0, AEStronglyMeasurable
-      (fun t : ℝ => ∫ y : ℂ, K y * (fusionInterpolatedFactor P M γ α₁ α₂ α₃ s t y z : ℂ))
+      (fun t => ∫ y : ℂ, K y * (fusionInterpolatedFactor P M γ α₁ α₂ α₃ s t y z : ℂ))
       (volume.restrict (Icc 0 1)) := by
     apply Eventually.of_forall
     intro z
     have hp : Measurable (fun q : ℝ × ℂ => (q.1, (q.2, z))) :=
-      measurable_fst.prodMk (measurable_snd.prodMk measurable_const)
+      by fun_prop
     have hfactor : Measurable (fun q : ℝ × ℂ =>
         (fusionInterpolatedFactor P M γ α₁ α₂ α₃ s q.1 q.2 z : ℂ)) := by
-      simpa only [Function.comp_def] using Complex.measurable_ofReal.comp (hm.comp hp)
+      fun_prop
     have hf : Measurable (fun q : ℝ × ℂ => K q.2 *
         (fusionInterpolatedFactor P M γ α₁ α₂ α₃ s q.1 q.2 z : ℂ)) :=
-      (hKm.comp measurable_snd).mul hfactor
+      by fun_prop
     exact hf.stronglyMeasurable.integral_prod_right'.aestronglyMeasurable
   have hdom : ∀ᶠ z : ℂ in nhds 0, ∀ᵐ t : ℝ ∂volume.restrict (Icc 0 1),
-      ‖∫ y : ℂ, K y * (fusionInterpolatedFactor P M γ α₁ α₂ α₃ s t y z : ℂ)‖ ≤ D := by
+      ‖∫ y : ℂ, K y * (fusionInterpolatedFactor P M γ α₁ α₂ α₃ s t y z)‖ ≤ D := by
     have hz : ∀ᶠ z : ℂ in nhds 0, ‖z‖ ≤ 1 :=
       ((continuous_norm.tendsto (0 : ℂ)).eventually_lt_const (by simp)).mono fun _ h => h.le
     filter_upwards [hz] with z hz
@@ -49,15 +49,14 @@ theorem fusionInterpolatedTimeIntegral_tendsto {Ω : Type*} [MeasurableSpace Ω]
         (ae_of_all _ fun y => by
           rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
           exact mul_le_mul_of_nonneg_left (hb t ht y z hz) (norm_nonneg _))
-      _ = D := integral_mul_const _ _
+      _ = D := integral_mul_const ..
   have hlim : ∀ᵐ t : ℝ ∂volume.restrict (Icc 0 1), Tendsto
-      (fun z : ℂ => ∫ y : ℂ, K y * (fusionInterpolatedFactor P M γ α₁ α₂ α₃ s t y z : ℂ))
+      (fun z => ∫ y : ℂ, K y * (fusionInterpolatedFactor P M γ α₁ α₂ α₃ s t y z))
       (nhds 0) (nhds ((∫ y : ℂ, K y) *
-        ((∫⁻ ω, fusionMovingMass γ α₁ α₂ α₃ 1 0 (M ω) ^ s ∂P).toReal : ℂ))) := by
+        ((∫⁻ ω, fusionMovingMass γ α₁ α₂ α₃ 1 0 (M ω) ^ s ∂P).toReal))) := by
     filter_upwards [ae_restrict_mem measurableSet_Icc] with t ht
     exact fusionInterpolatedIntegral_tendsto P X hX γ hγ hγ2 M hM α₁ α₂ α₃ hα hα₁ hα₂ hα₃ s hs t ht K hK
-  have h := tendsto_integral_filter_of_dominated_convergence (fun _ : ℝ => D)
+  have h := tendsto_integral_filter_of_dominated_convergence (fun _ => D)
     hmeas hdom (integrable_const D) hlim
-  simpa only [integral_const, Measure.real, Measure.restrict_apply_univ, Real.volume_Icc, sub_zero, ENNReal.ofReal_one,
-    ENNReal.toReal_one, one_smul] using h
+  simpa using h
 end DOZZ.Proofs

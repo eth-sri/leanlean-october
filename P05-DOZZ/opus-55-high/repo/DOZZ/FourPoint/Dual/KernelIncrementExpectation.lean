@@ -24,29 +24,27 @@ theorem dual_negative_increment_kernel_integral
       max |θlo-1| |θhi-1| * (∫ ω, (A ω)^(-p)-(A ω+t ω)^(-p) ∂P) := by
   have hu : ∀ᵐ ω ∂P, 0 ≤ u ω := by
     filter_upwards [ht, hsqueeze] with ω htω hs
-    exact (mul_nonneg hlo htω).trans hs.1
+    nlinarith
   have hInt (v : Ω → ℝ) (hv : ∀ᵐ ω ∂P, 0 ≤ v ω) (hvm : AEMeasurable v P) :
       Integrable (fun ω => (A ω+v ω)^(-p)-(A ω)^(-p)) P := by
-    have hm := ((hAm.add hvm).pow_const (-p)).sub (hAm.pow_const (-p))
     have hm' : AEStronglyMeasurable (fun ω => (A ω+v ω)^(-p)-(A ω)^(-p)) P := by
-      convert hm.aestronglyMeasurable using 1
+      convert (((hAm.add hvm).pow_const (-p)).sub (hAm.pow_const (-p))).aestronglyMeasurable using 1
     apply hInv.mono' hm'
     filter_upwards [hA, hv] with ω hAω hvω
-    simpa only [Real.norm_eq_abs] using
+    simpa using
       dual_negative_increment_abs_le p (A ω) (v ω) hp.le hAω hvω
   have hit := hInt t ht htm
-  have hiu := hInt u hu hum
   have hLoss : Integrable (fun ω => (A ω)^(-p)-(A ω+t ω)^(-p)) P := by
     convert hit.neg using 1
     ext ω
     change (A ω)^(-p)-(A ω+t ω)^(-p) = -((A ω+t ω)^(-p)-(A ω)^(-p))
     ring
-  rw [← integral_sub hiu hit]
+  rw [← integral_sub (hInt u hu hum) hit]
   have hb := norm_integral_le_of_norm_le
     (f := fun ω => ((A ω+u ω)^(-p)-(A ω)^(-p))-((A ω+t ω)^(-p)-(A ω)^(-p)))
-    (hLoss.const_mul (max |θlo-1| |θhi-1|)) (by
+    (hLoss.const_mul _) (by
       filter_upwards [hA, ht, hsqueeze] with ω hAω htω hs
-      simpa only [Real.norm_eq_abs] using
+      simpa using
         dual_negative_increment_kernel_squeeze p (A ω) (t ω) (u ω) θlo θhi
           hp hAω htω hlo hhi hs.1 hs.2)
   simpa only [Real.norm_eq_abs, integral_const_mul] using hb

@@ -77,7 +77,7 @@ theorem structureConstant_reflected_shift_and_gluing_of_shifts
                     C (z - γ / 2)) :=
   structureConstant_reflected_shift_and_gluing_of_deps P X M γ μ η hγ hγ2 hμ hη α₂ α₃ hα₂ hα₃
     hFirstShift hFirstStrip
-    (fun hH α₁ hα₁ hs => degenerateFourPoint_diagonal_classification hH P X M γ μ (γ / 2) α₁ α₂ α₃
+    (fun hH α₁ hα₁ hs => DOZZ.Proofs.degenerateFourPoint_diagonal_classification hH P X M γ μ _ α₁ α₂ α₃
       hγ hγ2 hμ (Or.inl rfl) hα₁ hα₂.2 hα₃.2 hs hX hM)
     (fun hH α₁ hα₁ hs hreflect hnear => gammaHalf_reflected_formula hH P M X γ μ α₁ α₂ α₃ hγ hγ2
       hμ hα₁ hα₂.2 hα₃.2 hs hreflect hnear hX hM)

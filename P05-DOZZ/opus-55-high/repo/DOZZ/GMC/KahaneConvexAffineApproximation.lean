@@ -14,13 +14,18 @@ public import Mathlib.Topology.Semicontinuity.Lindelof
 open Set Function
 
 namespace DOZZ.Proofs
+section
+variable (F : ℝ → ℝ)
+section
+variable (hF : ConvexOn ℝ (Ici 0) F)
+include hF
 
 /-- The right derivative at an interior positive point defines a supporting affine function. -/
 theorem convex_right_tangent_le
-    (F : ℝ → ℝ) (hF : ConvexOn ℝ (Ici 0) F) (r : ℝ) (hr : 0 < r)
+    (r : ℝ) (hr : 0 < r)
     (x : ℝ) (hx : 0 < x) :
     F r + derivWithin F (Ioi r) r * (x - r) ≤ F x := by
-  have hrint : r ∈ interior (Ici (0 : ℝ)) := by simpa only [interior_Ici, mem_Ioi] using hr
+  have hrint : r ∈ interior (Ici 0) := by simpa using hr
   rcases lt_trichotomy r x with hlt | heq | hgt
   · have h := hF.rightDeriv_le_slope_of_mem_interior hrint hx.le hlt
     rw [slope_def_field] at h
@@ -37,11 +42,10 @@ theorem convex_right_tangent_le
 /-- Every convex test on the nonnegative half-line is the pointwise supremum on positive
 arguments of a countable family of globally affine minorants. -/
 theorem convex_positive_countable_affine_minorants
-    (F : ℝ → ℝ) (hF : ConvexOn ℝ (Ici 0) F) :
+    :
     ∃ (a b : ℕ → ℝ),
       (∀ n x, 0 < x → a n * x + b n ≤ F x) ∧
         ∀ x, 0 < x → (⨆ n, a n * x + b n) = F x := by
-  classical
   let S := Ioi (0 : ℝ)
   let G : S → ℝ := fun x => F x.val
   let L : ℝ → ℝ → ℝ := fun r x =>
@@ -54,7 +58,7 @@ theorem convex_positive_countable_affine_minorants
   have hAlub : IsLUB A G := by
     refine ⟨hAupper, ?_⟩
     intro g hg x
-    have h := hg (show (fun y : S => L x.val y.val) ∈ A from
+    have h := hg (show (fun y => L x.val y.val) ∈ A from
       ⟨x.val, x.property, rfl⟩) x
     simpa [L, G] using h
   have hAcont : ∀ f ∈ A, LowerSemicontinuous f := by
@@ -65,9 +69,9 @@ theorem convex_positive_countable_affine_minorants
   obtain ⟨A', hsub, hcount, hlub⟩ := exists_countable_lowerSemicontinuous_isLUB hAcont hAlub
   have hnonempty : A'.Nonempty := by
     by_contra hempty
-    have heq : A' = ∅ := Set.not_nonempty_iff_eq_empty.mp hempty
-    have hbound : (fun x : S => G x - 1) ∈ upperBounds A' := by simp [heq]
-    have h := hlub.2 hbound (⟨1, by change (0 : ℝ) < 1; norm_num⟩ : S)
+    have heq := Set.not_nonempty_iff_eq_empty.mp hempty
+    have hbound : (fun x => G x - 1) ∈ upperBounds A' := by simp [heq]
+    have h := hlub.2 hbound (⟨1, by change 0 < 1; norm_num⟩)
     linarith
   obtain ⟨f, hf⟩ := hcount.exists_eq_range hnonempty
   have hrep (n : ℕ) : ∃ r : ℝ, 0 < r ∧ f n = fun x => L r x.val :=
@@ -77,7 +81,6 @@ theorem convex_positive_countable_affine_minorants
   let b : ℕ → ℝ := fun n => F (r n) - a n * r n
   have hline (n : ℕ) (x : S) : f n x = a n * x.val + b n := by
     rw [hfr n]
-    dsimp [L, a, b]
     ring
   have hsup : (⨆ n, f n) = G := by
     rw [← sSup_range, ← hf]
@@ -87,7 +90,10 @@ theorem convex_positive_countable_affine_minorants
     rw [← hline n ⟨x, hx⟩]
     exact hAupper (hsub (hf ▸ mem_range_self n)) ⟨x, hx⟩
   · intro x hx
-    have h := congrFun hsup (⟨x, hx⟩ : S)
-    simpa only [iSup_apply, hline, G] using h
+    simpa only [iSup_apply, hline, G] using (congrFun hsup (⟨x, hx⟩))
+
+end
+
+end
 
 end DOZZ.Proofs

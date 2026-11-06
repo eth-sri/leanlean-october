@@ -38,9 +38,9 @@ theorem williamsMassFunctional_lastExit
       (((m,negativeConditionedLastExitSegment m qminus),qplus),Z) =
         ENNReal.ofReal (Real.exp (γ*m)) * twoSidedReflectionCutMass γ m
           (fun _ : Unit => (qplus,qminus)) (fun _ : Unit => Z) () := by
-  change ENNReal.ofReal (Real.exp (γ*m)) * stoppedReflectionMassCode γ
+  change ENNReal.ofReal _ * stoppedReflectionMassCode γ
     ((negativeLastExitTime qminus m,
-      (qplus,stopBrownianPath qminus (negativeLastExitTime qminus m))),Z) = _
+      (qplus,stopBrownianPath qminus _)),Z) = _
   rw [stoppedReflectionMassCode_eq γ _ _ _ hfin,
     stopped_reflection_mass_lastExit]
 
@@ -59,25 +59,15 @@ theorem williams_polar_mass_law
           (P.map Z)).map (williamsMassFunctional γ) := by
   let Y := fun ω => (Z ω).map
     (fun s => s - (driftedBrownianMaximumTime ν (D ω) : ℝ))
-  have hY := (maximum_shift_lateral_law P D hD hB γ Z hZ hInd ν hν).1
-  have hW := (williamsReversedMark_aemeasurable (P.map D) hB ν hν).comp_aemeasurable hD
   have hpair : AEMeasurable (fun ω => (williamsReversedMark ν (D ω),Y ω)) P :=
-    hW.prodMk hY
+    ((williamsReversedMark_aemeasurable (P.map D) hB ν hν).comp_aemeasurable hD).prodMk ((maximum_shift_lateral_law P D hD hB γ Z hZ hInd ν hν).1)
   have heq : (fun ω => ∫⁻ t, (if 0 < t then ENNReal.ofReal
       (Real.exp (γ * (D ω (Real.toNNReal t) - ν * t))) else 0) ∂Z ω) =ᵐ[P]
       (fun ω => williamsMassFunctional γ (williamsReversedMark ν (D ω),Y ω)) := by
     filter_upwards [hZ.2.2.2.2.1, lateralGMC_singleton_ae P γ Z hZ 0] with ω hfin hzero
     have hYfin (a b : ℝ) : Y ω (Icc a b) < ⊤ := by
       have hm : Measurable (fun s : ℝ => s - (driftedBrownianMaximumTime ν (D ω) : ℝ)) := by fun_prop
-      rw [show Y ω = (Z ω).map (fun s => s - (driftedBrownianMaximumTime ν (D ω) : ℝ)) from rfl,
-        Measure.map_apply hm measurableSet_Icc]
-      apply lt_of_le_of_lt (measure_mono ?_) (hfin
-        (a + (driftedBrownianMaximumTime ν (D ω) : ℝ))
-        (b + (driftedBrownianMaximumTime ν (D ω) : ℝ)))
-      intro s hs
-      change a ≤ s - (driftedBrownianMaximumTime ν (D ω) : ℝ) ∧
-        s - (driftedBrownianMaximumTime ν (D ω) : ℝ) ≤ b at hs
-      exact ⟨by linarith only [hs.1], by linarith only [hs.2]⟩
+      aesop
     rw [williams_polar_split γ ν (D ω) (Z ω) hzero]
     change _ = ENNReal.ofReal (Real.exp (γ * driftedBrownianMaximum ν (D ω))) *
       stoppedReflectionMassCode γ

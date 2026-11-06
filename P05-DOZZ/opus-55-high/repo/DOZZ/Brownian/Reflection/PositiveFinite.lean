@@ -34,7 +34,7 @@ theorem reflectionBarR_positive_finite
         (reflectionExponent γ α) ∂P) < ⊤ := by
   have hrange := reflectionExponent_in_subcritical_range γ α hγ hα
   exact reflectionBarR_pos_of_reflectionData_of_moment_finite P γ α hγ hγ2 hα B Z hData
-    (twoSidedReflectionMass_rpow_lintegral_lt_top P γ (Q γ - α) (reflectionExponent γ α) hγ
+    (twoSidedReflectionMass_rpow_lintegral_lt_top P γ _ _ hγ
       hrange.1 hrange.2.1 hrange.2.2 B Z hData.1 hData.2.1 hData.2.2)
 
 end DOZZ.Proofs

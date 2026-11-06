@@ -50,14 +50,14 @@ theorem gmc_inversion_annular_test_vector_law
       P.map (fun ω i => Z ω (xs i) (Real.log (1 / ε))) =
       P.map (fun ω i => Xc ω (xs i) (Real.log (1 / ε))) := by
     exact inversionCircle_fdd_law P X hX P X hX Xc hXc
-      (fun i => (xs i, Real.log (1 / ε)))
-      (fun i ω => Z ω (xs i) (Real.log (1 / ε))) (fun i => hmem _ _)
-      (fun i => g (xs i, Real.log (1 / ε))) (fun i => hg _)
+      (fun i => (xs i, Real.log _))
+      (fun i ω => Z ω (xs i) _) (fun i => hmem ..)
+      (fun i => g _) (fun i => hg _)
       (fun i => hgap _) (fun i => hlim _)
   have hlaw := admissibleLogChaos_limit_vector_law_of_fdd P P U
-    (fun x => normPlus x ^ (-4 : ℝ)) (min (m / 2) 1) 1
-    (fun ω ε x => Z ω x (Real.log (1 / ε)))
-    (fun ω ε x => Xc ω x (Real.log (1 / ε))) hZ hY γ N A hN hA hfdd f hfc hfU
+    (fun x => normPlus x ^ (-4 : ℝ)) _ 1
+    (fun ω ε x => Z ω x _)
+    (fun ω ε x => Xc ω x _) hZ hY γ N A hN hA hfdd f hfc hfU
   have heq (μ : Measure ℂ) (j : Fin k) : ∫ x, f j x ∂μ.restrict U = ∫ x, f j x ∂μ :=
     integral_restrict_eq_integral_of_zero_on_compl μ U hUopen.measurableSet (f j)
       (boundedContinuousFunction_eq_zero_off_tsupport_subset (f j) U (hfU j))

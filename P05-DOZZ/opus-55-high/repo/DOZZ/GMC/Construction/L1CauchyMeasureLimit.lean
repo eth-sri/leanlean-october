@@ -28,36 +28,31 @@ theorem lintegral_abs_sub_limit_le_of_uniform_l1_cauchy
     ∫⁻ ω, ENNReal.ofReal |F r ω - G ω| ∂P ≤ ENNReal.ofReal C := by
   obtain ⟨ns, hnsTop, hseqMeasure⟩ := hFG.exists_seq_tendstoInMeasure_atTop
   obtain ⟨nsub, hnsub, hae⟩ := hseqMeasure.exists_seq_tendsto_ae
-  let ms : ℕ → ℝ := ns ∘ nsub
+  let ms := ns ∘ nsub
   have hmsTop : Tendsto ms atTop atTop := hnsTop.comp hnsub.tendsto_atTop
   let Q : ℕ → Ω → ℝ≥0∞ := fun n ω =>
     ENNReal.ofReal |F r ω - F (ms n) ω|
   have hQmeas : ∀ n, Measurable (Q n) := by
-    intro n
-    exact ENNReal.measurable_ofReal.comp
-      (continuous_abs.measurable.comp ((hFmeas r).sub (hFmeas (ms n))))
+    fun_prop
   have hQlim : ∀ᵐ ω ∂P, Tendsto (fun n => Q n ω) atTop
       (𝓝 (ENNReal.ofReal |F r ω - G ω|)) := by
     filter_upwards [hae] with ω hω
     have hsub : Tendsto (fun n => F r ω - F (ms n) ω) atTop
-        (𝓝 (F r ω - G ω)) := tendsto_const_nhds.sub hω
-    have habs : Tendsto (fun n => |F r ω - F (ms n) ω|) atTop
-        (𝓝 |F r ω - G ω|) := hsub.abs
-    exact (ENNReal.continuous_ofReal.tendsto _).comp habs
+        (𝓝 _) := tendsto_const_nhds.sub hω
+    exact (ENNReal.continuous_ofReal.tendsto _).comp hsub.abs
   have hliminf : (fun ω => liminf (fun n => Q n ω) atTop) =ᵐ[P]
       fun ω => ENNReal.ofReal |F r ω - G ω| := by
     filter_upwards [hQlim] with ω hω
     exact hω.liminf_eq
-  have hEventual : ∀ᶠ n : ℕ in atTop, R ≤ ms n :=
+  have hEventual :=
     hmsTop.eventually (eventually_ge_atTop R)
   have hIntegralBound : ∀ᶠ n : ℕ in atTop,
       ∫⁻ ω, Q n ω ∂P ≤ ENNReal.ofReal C := by
     filter_upwards [hEventual] with n hn
-    simpa [Q, ms] using hbound (ns (nsub n)) hn
+    simpa [Q, ms] using hbound _ hn
   calc
     ∫⁻ ω, ENNReal.ofReal |F r ω - G ω| ∂P =
-        ∫⁻ ω, liminf (fun n => Q n ω) atTop ∂P := by
-          exact lintegral_congr_ae hliminf.symm
+        ∫⁻ ω, liminf (fun n => Q n ω) atTop ∂P := lintegral_congr_ae hliminf.symm
     _ ≤ liminf (fun n => ∫⁻ ω, Q n ω ∂P) atTop := lintegral_liminf_le hQmeas
     _ ≤ ENNReal.ofReal C := liminf_le_of_frequently_le' hIntegralBound.frequently
 

@@ -20,21 +20,21 @@ noncomputable def fieldWickDensity {Ω S : Type*} [MeasurableSpace Ω]
     (P : Measure Ω) (Φ : Ω → S → ℝ) (h : S → ℝ≥0) (γ : ℝ) (ω : Ω) (x : S) : ℝ :=
   (h x : ℝ) * Real.exp (γ * Φ ω x - γ ^ 2 / 2 *
     DOZZ.gaussianVariance P (fun ω => Φ ω x))
+section
+variable {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S]
 
 /-- The spatial Wick density is jointly measurable. -/
 theorem fieldWickDensity_measurable
-    {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S]
     (P : Measure Ω) (Φ : Ω → S → ℝ) (hΦ : DOZZ.IsCenteredGaussianField P Φ)
     (h : S → ℝ≥0) (hh : Measurable h) (γ : ℝ) :
-    Measurable (fun p : Ω × S => fieldWickDensity P Φ h γ p.1 p.2) := by
-  exact ((measurable_coe_nnreal_real.comp hh).comp measurable_snd).mul
+    Measurable (fun p : Ω × S => fieldWickDensity P Φ h γ p.1 p.2) := ((measurable_coe_nnreal_real.comp hh).comp measurable_snd).mul
     (Real.measurable_exp.comp ((measurable_const.mul hΦ.1).sub
       (measurable_const.mul
         ((centeredGaussianField_variance_measurable P Φ hΦ).comp measurable_snd))))
 
 /-- Wick normalization gives joint integrability and the exact spatial mean. -/
 theorem fieldWickDensity_integrable_mean
-    {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S] [Nonempty S]
+    [Nonempty S]
     (P : Measure Ω) (Φ : Ω → S → ℝ) (hΦ : DOZZ.IsCenteredGaussianField P Φ)
     (ν : FiniteMeasure S) (h : S → ℝ≥0) (hh : Measurable h)
     (hhb : ∃ c : ℝ≥0, ∀ x, h x ≤ c) (γ : ℝ) :
@@ -44,25 +44,27 @@ theorem fieldWickDensity_integrable_mean
       ∂(P.prod (ν.normalize : Measure S))) = ∫ x, (h x : ℝ) ∂(ν.normalize : Measure S) := by
   have : IsProbabilityMeasure P := (hΦ.2 0 (fun i : Fin 0 => Fin.elim0 i)).1
   have hpoint (x : S) : Integrable (fun ω => fieldWickDensity P Φ h γ ω x) P ∧
-      (∫ ω, fieldWickDensity P Φ h γ ω x ∂P) = (h x : ℝ) := by
+      (∫ ω, fieldWickDensity P Φ h γ ω x ∂P) = (h x) := by
     have hw := wick_exponential_integrable_expectation P
-      (fun ω (_ : Fin 1) => Φ ω x) (hΦ.2 1 (fun _ => x)) (0 : Fin 1) γ
+      (fun ω (_ : Fin 1) => Φ ω x) (hΦ.2 1 (fun _ => x)) 0 γ
     constructor
     · exact hw.1.const_mul _
-    · change (∫ ω, (h x : ℝ) * Real.exp _ ∂P) = _
+    · change (∫ ω, (h x) * Real.exp _ ∂P) = _
       rw [integral_const_mul, hw.2, mul_one]
-  have hnorm (x : S) : (∫ ω, ‖fieldWickDensity P Φ h γ ω x‖ ∂P) = (h x : ℝ) := by
+  have hnorm (x : S) : (∫ ω, ‖fieldWickDensity P Φ h γ ω x‖ ∂P) = (h x) := by
     simpa only [fieldWickDensity, Real.norm_eq_abs,
       abs_of_nonneg (mul_nonneg (NNReal.coe_nonneg _) (Real.exp_nonneg _))] using (hpoint x).2
   have hint : Integrable (fun p : Ω × S => fieldWickDensity P Φ h γ p.1 p.2)
-      (P.prod (ν.normalize : Measure S)) := by
+      (P.prod ν.normalize) := by
     apply (integrable_prod_iff' (fieldWickDensity_measurable P Φ hΦ h hh γ).aestronglyMeasurable).2
     constructor
-    · exact ae_of_all _ fun x => (hpoint x).1
+    · simp_all
     · simp_rw [hnorm]
       exact centeredGaussianField_bounded_weight_integrable ν h hh hhb
   refine ⟨hint, ?_⟩
   rw [integral_prod_symm _ hint]
-  simp_rw [(hpoint _).2]
+  simp_all
+
+end
 
 end DOZZ.Proofs

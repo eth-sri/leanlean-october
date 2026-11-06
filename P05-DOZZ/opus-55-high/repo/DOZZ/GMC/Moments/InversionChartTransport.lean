@@ -8,6 +8,7 @@ public import DOZZ.GMC.CircleAverage
 public import DOZZ.GMC.Moments.InversionAdmissibleVersion
 public import DOZZ.GMC.Moments.InversionAtomless
 public import DOZZ.GMC.Moments.InversionCoordinate
+import DOZZ.Brownian.Reflection.MassBlocks
 
 /-! Transport of arbitrary limiting GMC versions through the punctured inversion chart. -/
 
@@ -33,12 +34,11 @@ theorem isGMCOf_inversion_chart_transport
         (fun ω ε x => Xc ω (complexInvOpenPartialHomeomorph x)
           (Real.log (1 / ε))) γ N ∧
       ∀ᵐ ω ∂P, (M ω).map complexInvOpenPartialHomeomorph = N ω := by
-  classical
   have hP : IsProbabilityMeasure P := hX.1
-  let U : Set ℂ := inversionChart
+  let U := inversionChart
   let dens : ℂ → ℝ := fun x => normPlus x ^ (-4 : ℝ)
   let Y : Ω → ℝ → ℂ → ℝ := fun ω ε x => Xc ω x (Real.log (1 / ε))
-  let φ : ℂ → ℂ := complexInvOpenPartialHomeomorph
+  let φ := complexInvOpenPartialHomeomorph
   have hφ : Measurable φ := by
     change Measurable (fun x : ℂ => x⁻¹)
     fun_prop
@@ -56,8 +56,7 @@ theorem isGMCOf_inversion_chart_transport
     apply Measure.measurable_of_measurable_coe
     intro A hA
     have hEq : (fun ω => N ω A) = fun ω => Mchart ω (φ ⁻¹' A) := by
-      funext ω
-      exact Measure.map_apply hφ hA
+      aesop
     rw [hEq]
     exact (Measure.measurable_coe (hA.preimage hφ)).comp hMchart.1
   have hNfinite : ∀ ω, IsFiniteMeasure (N ω) := by
@@ -67,20 +66,18 @@ theorem isGMCOf_inversion_chart_transport
     intro ω
     have hUcomp : MeasurableSet (Uᶜ) := by
       have hUmeas : MeasurableSet U := by
-        change MeasurableSet (({0} : Set ℂ)ᶜ)
         exact (isOpen_compl_singleton : IsOpen (({0} : Set ℂ)ᶜ)).measurableSet
       exact hUmeas.compl
     have hpre : φ ⁻¹' Uᶜ ⊆ Uᶜ := by
       intro x hx
       by_contra hxU
-      have hx0 : x ≠ 0 := by simpa [U, inversionChart] using hxU
+      have hx0 : x ≠ 0 := by tauto
       have hφx : φ x ≠ 0 := by
-        change x⁻¹ ≠ 0
         exact inv_ne_zero hx0
-      exact hx (by simpa [U, inversionChart] using hφx)
+      exact hx (by assumption)
     apply le_antisymm
     · calc
-        N ω Uᶜ = (Mchart ω) (φ ⁻¹' Uᶜ) := by
+        N ω Uᶜ = (Mchart ω) _ := by
           rw [show N ω = (Mchart ω).map φ by rfl,
             Measure.map_apply hφ hUcomp]
         _ ≤ (Mchart ω) Uᶜ := measure_mono hpre
@@ -100,15 +97,12 @@ theorem isGMCOf_inversion_chart_transport
     obtain ⟨g, hgcompact, hgU, hgOn, _hgOff, hmass⟩ :=
       @regularizedLogChaosTestMass_inversion_coordinate_change Ω _ P hP Y hY γ f
         hfcompact hfU
-    have hMlim := hMchart.2.2.2 g hgcompact hgU
     have hMapTest (ω : Ω) :
         ∫ x, f x ∂N ω = ∫ x, g x ∂Mchart ω := by
       have hUae : ∀ᵐ x ∂Mchart ω, x ∈ U := by
-        rw [ae_iff]
         exact hMchart.2.1 ω
       calc
         ∫ x, f x ∂N ω = ∫ x, f (φ x) ∂Mchart ω := by
-          dsimp [N]
           exact integral_map hφ.aemeasurable f.continuous.aestronglyMeasurable
         _ = ∫ x, g x ∂Mchart ω := by
           apply integral_congr_ae
@@ -118,30 +112,26 @@ theorem isGMCOf_inversion_chart_transport
         (fun ω => regularizedLogChaosTestMass P U dens Y γ r ω g) =ᵐ[P]
           fun ω => regularizedLogChaosTestMass P U dens
             (fun ω ε x => Y ω ε (φ x)) γ r ω f :=
-      ae_of_all P (fun ω => hmass r ω)
+      ae_of_all P (hmass r)
     have hright : (fun ω => ∫ x, g x ∂Mchart ω) =ᵐ[P]
         fun ω => ∫ x, f x ∂N ω := ae_of_all P (fun ω => (hMapTest _).symm)
-    exact TendstoInMeasure.congr hleft hright hMlim
+    exact TendstoInMeasure.congr hleft hright (hMchart.2.2.2 g hgcompact hgU)
   have hN : IsAdmissibleGMCVersion P U dens
       (fun ω ε x => Y ω ε (φ x)) γ N :=
-    ⟨hNmeas, hNsupport, hNcompact, hNlimit⟩
-  have hAtom := gmc_atomless_at_zero_of_isGMCOf P X hX γ hγ hγ2 M hM
-  have hfull : ∀ᵐ ω ∂P, (M ω).map (fun x : ℂ => x⁻¹) = N ω := by
-    filter_upwards [hAtom, hMrestrict] with ω hωAtom hωrestrict
+    by trivial
+  have hfull : ∀ᵐ ω ∂P, (M ω).map (fun x => x⁻¹) = N ω := by
+    filter_upwards [(DOZZ.Proofs.equatorGFF_GMC_origin_null_ae P X hX γ hγ hγ2 M hM), hMrestrict] with ω hωAtom hωrestrict
     have hUae : ∀ᵐ x ∂M ω, x ∈ U := by
       rw [ae_iff]
       simpa [U, inversionChart] using hωAtom
-    have hMself : (M ω).restrict U = M ω :=
+    have hMself :=
       Measure.restrict_eq_self_of_ae_mem hUae
     calc
-      (M ω).map (fun x : ℂ => x⁻¹) = ((M ω).restrict U).map (fun x : ℂ => x⁻¹) :=
-        congrArg (fun μ : Measure ℂ => μ.map (fun x : ℂ => x⁻¹)) hMself.symm
+      (M ω).map (fun x => x⁻¹) = ((M ω).restrict U).map (fun x => x⁻¹) :=
+        congrArg (fun μ => μ.map (fun x => x⁻¹)) hMself.symm
       _ = ((M ω).restrict U).map φ := by
         rfl
-      _ = N ω := congrArg (fun μ : Measure ℂ => μ.map φ) hωrestrict
-  refine ⟨N, ?_, ?_⟩
-  · simpa [Y, φ, U, dens] using hN
-  · filter_upwards [hfull] with ω hω
-    simpa [φ, complexInvOpenPartialHomeomorph] using hω
+      _ = N ω := congrArg (fun μ => μ.map φ) hωrestrict
+  refine ⟨N, ?_, ?_⟩ <;> assumption
 
 end DOZZ.Proofs

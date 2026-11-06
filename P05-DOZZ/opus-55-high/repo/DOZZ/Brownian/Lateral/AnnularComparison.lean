@@ -32,51 +32,52 @@ def lateralLogAnnulus (a b : ℝ) : Set ℂ :=
 
 /-- The annulus is a Borel set even when its interval is empty. -/
 theorem measurableSet_lateralLogAnnulus (a b : ℝ) :
-    MeasurableSet (lateralLogAnnulus a b) := by
-  exact (measurableSet_singleton (0 : ℂ)).compl.inter
+    MeasurableSet (lateralLogAnnulus a b) := (measurableSet_singleton 0).compl.inter
     (measurableSet_Ioc.preimage
       (measurable_neg.comp (Real.measurable_log.comp measurable_norm)))
 
 /-- A measurable pathwise bound for the absolute forward radial exponent on a compact window. -/
 noncomputable def lateralWindowBound (γ a b : ℝ) (A : TwoSidedPath) : ℝ :=
   |γ| * ‖A.restrict (Icc a b)‖ + |γ * Q γ| * max |a| |b|
+section
+variable (γ a b : ℝ)
 
 /-- Compact-window bounds vary continuously with the full radial path. -/
-theorem continuous_lateralWindowBound (γ a b : ℝ) :
+theorem continuous_lateralWindowBound :
     Continuous (lateralWindowBound γ a b) := by
-  unfold lateralWindowBound
   exact (continuous_const.mul
     (continuous_norm.comp (ContinuousMap.continuous_restrict _))).add continuous_const
+section
+variable (A : TwoSidedPath)
 
 /-- Every compact-window exponent bound is nonnegative. -/
-theorem lateralWindowBound_nonneg (γ a b : ℝ) (A : TwoSidedPath) :
+theorem lateralWindowBound_nonneg :
     0 ≤ lateralWindowBound γ a b A := by
   unfold lateralWindowBound
   positivity
+section
+variable (s : ℝ)
+section
+variable (hs : s ∈ Icc a b)
+include hs
 
 /-- The compact norm controls every exponent on the specified interval. -/
-theorem abs_lateralForwardExponent_le (γ a b : ℝ) (A : TwoSidedPath)
-    (s : ℝ) (hs : s ∈ Icc a b) :
+theorem abs_lateralForwardExponent_le :
     abs (γ * A s - γ * Q γ * |s|) ≤ lateralWindowBound γ a b A := by
-  have hA : |A s| ≤ ‖A.restrict (Icc a b)‖ :=
-    (A.restrict (Icc a b)).norm_coe_le_norm ⟨s, hs⟩
+  have hA :=
+    (A.restrict _).norm_coe_le_norm ⟨s, hs⟩
   have hsabs : |s| ≤ max |a| |b| := by
-    apply abs_le.mpr
-    constructor
-    · exact le_trans (neg_le_neg (le_max_left _ _))
-        (le_trans (neg_abs_le a) hs.1)
-    · exact le_trans hs.2 (le_trans (le_abs_self b) (le_max_right _ _))
+    grind
   calc
-    _ ≤ |γ * A s| + abs (γ * Q γ * |s|) := abs_sub _ _
+    _ ≤ |γ * A s| + abs _ := abs_sub ..
     _ = |γ| * |A s| + |γ * Q γ| * |s| := by
-      rw [abs_mul, abs_mul, abs_abs]
+      simp
     _ ≤ lateralWindowBound γ a b A :=
       add_le_add (mul_le_mul_of_nonneg_left hA (abs_nonneg _))
         (mul_le_mul_of_nonneg_left hsabs (abs_nonneg _))
 
 /-- The forward weight lies between positive reciprocal bounds on every compact window. -/
-theorem lateralForwardWeight_window_bounds (γ a b : ℝ) (A : TwoSidedPath)
-    (s : ℝ) (hs : s ∈ Icc a b) :
+theorem lateralForwardWeight_window_bounds :
     ENNReal.ofReal (Real.exp (-lateralWindowBound γ a b A)) ≤
         lateralForwardWeight γ A s ∧
       lateralForwardWeight γ A s ≤
@@ -85,9 +86,14 @@ theorem lateralForwardWeight_window_bounds (γ a b : ℝ) (A : TwoSidedPath)
   exact ⟨ENNReal.ofReal_le_ofReal (Real.exp_le_exp.mpr h.1),
     ENNReal.ofReal_le_ofReal (Real.exp_le_exp.mpr h.2)⟩
 
+end
+
+end
+section
+variable (M : Measure ℂ)
+
 /-- Reinsertion on an interval is exactly annulus mass; no no-atom hypothesis at zero is needed. -/
-theorem lateralProjectedGMC_reinsert_interval (γ a b : ℝ) (A : TwoSidedPath)
-    (M : Measure ℂ) :
+theorem lateralProjectedGMC_reinsert_interval :
     (∫⁻ s in Ioc a b, lateralForwardWeight γ A s ∂lateralProjectedGMC γ A M) =
       M (lateralLogAnnulus a b) := by
   rw [← lintegral_indicator measurableSet_Ioc]
@@ -97,26 +103,24 @@ theorem lateralProjectedGMC_reinsert_interval (γ a b : ℝ) (A : TwoSidedPath)
     by_cases hs : s ∈ Ioc a b <;> simp [hs]
   rw [heq, lateralProjectedGMC_reinsert_lintegral γ A M _
     (measurable_const.indicator measurableSet_Ioc)]
-  have hfun : (fun x : ℂ => if x = 0 then (0 : ℝ≥0∞) else
+  have hfun : (fun x => if x = 0 then (0 : ℝ≥0∞) else
       (Ioc a b).indicator (fun _ => 1) (-Real.log ‖x‖)) =
       (lateralLogAnnulus a b).indicator (fun _ => 1) := by
     funext x
     by_cases hx : x = 0
     · have hm : x ∉ lateralLogAnnulus a b := fun h => h.1 hx
-      rw [indicator_of_notMem hm]
-      simp only [hx, ite_true]
+      simp_all
     · by_cases hs : -Real.log ‖x‖ ∈ Ioc a b
       · have hm : x ∈ lateralLogAnnulus a b := ⟨hx, hs⟩
-        simp only [hx, ite_false, indicator_of_mem hs, indicator_of_mem hm]
+        simp_all
       · have hm : x ∉ lateralLogAnnulus a b := fun h => hs h.2
-        simp only [hx, ite_false, indicator_of_notMem hs, indicator_of_notMem hm]
+        simp_all
   rw [hfun, lintegral_indicator (measurableSet_lateralLogAnnulus a b),
     setLIntegral_const, one_mul]
 
 /-- Annulus mass is bounded above and below by the same projected interval mass, with the
 measurable radial-window factor. This deterministic identity is valid for every plane measure. -/
-theorem lateralProjectedGMC_annular_mass_bounds (γ a b : ℝ) (A : TwoSidedPath)
-    (M : Measure ℂ) :
+theorem lateralProjectedGMC_annular_mass_bounds :
     ENNReal.ofReal (Real.exp (-lateralWindowBound γ a b A)) *
         lateralProjectedGMC γ A M (Ioc a b) ≤ M (lateralLogAnnulus a b) ∧
       M (lateralLogAnnulus a b) ≤
@@ -132,6 +136,12 @@ theorem lateralProjectedGMC_annular_mass_bounds (γ a b : ℝ) (A : TwoSidedPath
     apply setLIntegral_mono' measurableSet_Ioc
     intro s hs
     exact (lateralForwardWeight_window_bounds γ a b A s ⟨hs.1.le, hs.2⟩).2
+
+end
+
+end
+
+end
 
 /-- Exponentiation of a positive finite exponential factor agrees with the real exponential. -/
 theorem ennreal_exp_rpow (x q : ℝ) :
@@ -151,29 +161,27 @@ theorem ennreal_rpow_le_of_exp_sandwich (x y : ℝ≥0∞) (C q : ℝ)
     rw [ENNReal.mul_rpow_of_ne_top ENNReal.ofReal_ne_top hy,
       ennreal_exp_rpow] at h
     rw [abs_of_nonneg hq]
-    have he : -C * q = -q * C := by ring
-    simpa only [he] using h
+    grind
   · have hq' : 0 ≤ -q := by linarith
     have h := ENNReal.inv_le_inv.mpr (ENNReal.rpow_le_rpow hu hq')
     rw [← ENNReal.rpow_neg, ← ENNReal.rpow_neg, neg_neg,
       ENNReal.mul_rpow_of_ne_top ENNReal.ofReal_ne_top hy,
       ennreal_exp_rpow] at h
-    rw [abs_of_neg (lt_of_not_ge hq)]
-    have he : C * q = -(-q) * C := by ring
-    simpa only [he] using h
+    grind
 
 /-- Attenuation used to factor a moment comparison without inverse radial factors. -/
 noncomputable def lateralMomentAttenuation (γ a b q : ℝ) (A : TwoSidedPath) : ℝ≥0∞ :=
   ENNReal.ofReal (Real.exp (-|q| * lateralWindowBound γ a b A))
+section
+variable (γ a b q : ℝ)
 
 /-- The attenuation is measurable on the full continuous-path carrier. -/
-theorem measurable_lateralMomentAttenuation (γ a b q : ℝ) :
-    Measurable (lateralMomentAttenuation γ a b q) := by
-  exact ENNReal.measurable_ofReal.comp (Real.measurable_exp.comp
+theorem measurable_lateralMomentAttenuation :
+    Measurable (lateralMomentAttenuation γ a b q) := ENNReal.measurable_ofReal.comp (Real.measurable_exp.comp
     (measurable_const.mul (continuous_lateralWindowBound γ a b).measurable))
 
 /-- The comparison factor is strictly positive and at most one on every path. -/
-theorem lateralMomentAttenuation_bounds (γ a b q : ℝ) (A : TwoSidedPath) :
+theorem lateralMomentAttenuation_bounds (A : TwoSidedPath) :
     0 < lateralMomentAttenuation γ a b q A ∧
       lateralMomentAttenuation γ a b q A ≤ 1 := by
   constructor
@@ -184,28 +192,29 @@ theorem lateralMomentAttenuation_bounds (γ a b q : ℝ) (A : TwoSidedPath) :
     exact le_trans (ENNReal.ofReal_le_ofReal
       (Real.exp_le_exp.mpr he)) (by simp)
 
+end
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+
 /-- Under any probability law, the mean attenuation is a strictly positive finite factor. -/
-theorem lateralMomentAttenuation_mean_bounds {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) [IsProbabilityMeasure P] (γ a b q : ℝ)
+theorem lateralMomentAttenuation_mean_bounds [IsProbabilityMeasure P] (γ a b q : ℝ)
     (A : Ω → TwoSidedPath) (hA : AEMeasurable A P) :
     0 < (∫⁻ ω, lateralMomentAttenuation γ a b q (A ω) ∂P) ∧
       (∫⁻ ω, lateralMomentAttenuation γ a b q (A ω) ∂P) ≤ 1 := by
-  have hm := (measurable_lateralMomentAttenuation γ a b q).comp_aemeasurable hA
   constructor
   · apply pos_iff_ne_zero.mpr
     intro hz
-    have hae := (lintegral_eq_zero_iff' hm).mp hz
+    have hae := (lintegral_eq_zero_iff' ((measurable_lateralMomentAttenuation γ a b q).comp_aemeasurable hA)).mp hz
     obtain ⟨ω, hω⟩ := hae.exists
     exact (ne_of_gt (lateralMomentAttenuation_bounds γ a b q (A ω)).1) hω
   · calc
-      _ ≤ ∫⁻ _ : Ω, (1 : ℝ≥0∞) ∂P :=
+      _ ≤ ∫⁻ _ : Ω, 1 ∂P :=
         lintegral_mono (fun ω => (lateralMomentAttenuation_bounds γ a b q (A ω)).2)
       _ = 1 := by simp
 
 /-- At every real moment order, actual independent radial removal gives the factored lower
 bound by the corresponding plane-annulus moment. -/
-theorem lateral_interval_moment_annular_comparison {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (γ a b q : ℝ) (A : Ω → TwoSidedPath)
+theorem lateral_interval_moment_annular_comparison (γ a b q : ℝ) (A : Ω → TwoSidedPath)
     (M : Ω → Measure ℂ) (Z : Ω → Measure ℝ)
     (hA : AEMeasurable A P) (hZ : AEMeasurable Z P)
     (hInd : IndepFun A Z P)
@@ -214,29 +223,28 @@ theorem lateral_interval_moment_annular_comparison {Ω : Type*} [MeasurableSpace
     (∫⁻ ω, lateralMomentAttenuation γ a b q (A ω) ∂P) *
         (∫⁻ ω, (Z ω (Ioc a b)) ^ q ∂P) ≤
       ∫⁻ ω, (M ω (lateralLogAnnulus a b)) ^ q ∂P := by
-  let f : TwoSidedPath → ℝ≥0∞ := lateralMomentAttenuation γ a b q
+  let f := lateralMomentAttenuation γ a b q
   let g : Measure ℝ → ℝ≥0∞ := fun μ => (μ (Ioc a b)) ^ q
-  have hf : Measurable f := measurable_lateralMomentAttenuation γ a b q
+  have hf := measurable_lateralMomentAttenuation γ a b q
   have hg : Measurable g := ENNReal.continuous_rpow_const.measurable.comp
     (Measure.measurable_coe measurableSet_Ioc)
-  have hi : IndepFun (fun ω => f (A ω)) (fun ω => g (Z ω)) P := hInd.comp hf hg
   have hprod := lintegral_mul_eq_lintegral_mul_lintegral_of_indepFun''
-    (hf.comp_aemeasurable hA) (hg.comp_aemeasurable hZ) hi
-  change (∫⁻ ω, f (A ω) * g (Z ω) ∂P) =
+    (hf.comp_aemeasurable hA) (hg.comp_aemeasurable hZ) (hInd.comp hf hg)
+  change _ =
     (∫⁻ ω, f (A ω) ∂P) * (∫⁻ ω, g (Z ω) ∂P) at hprod
-  change (∫⁻ ω, f (A ω) ∂P) * (∫⁻ ω, g (Z ω) ∂P) ≤ _
   rw [← hprod]
   apply lintegral_mono_ae
   filter_upwards [hEq, hfinite] with ω he hfω
   have hb := lateralProjectedGMC_annular_mass_bounds γ a b (A ω) (M ω)
   rw [← he] at hb
   exact ennreal_rpow_le_of_exp_sandwich _ _ _ _ hfω.ne hb.1 hb.2
+section
+variable (X : Ω → Distr) (γ : ℝ) (M : Ω → Measure ℂ) (Z : Ω → Measure ℝ) (hS : IsSourceLateralProjection P X γ M Z)
+include hS
 
 /-- Source data already supply independence of the actual radial path and the given lateral
 measure. Compatible-cutoff uniqueness is needed to construct source data, not to consume them. -/
-theorem sourceLateral_exists_independent_radial {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (γ : ℝ) (M : Ω → Measure ℂ)
-    (Z : Ω → Measure ℝ) (hS : IsSourceLateralProjection P X γ M Z) :
+theorem sourceLateral_exists_independent_radial :
     ∃ A : Ω → TwoSidedPath, AEMeasurable A P ∧ IndepFun A Z P ∧
       (∀ᵐ ω ∂P, Z ω = lateralProjectedGMC γ (A ω) (M ω)) := by
   obtain ⟨_, _, A, _, hA, _, _, _, _, _, hInd, he⟩ := hS
@@ -245,10 +253,7 @@ theorem sourceLateral_exists_independent_radial {Ω : Type*} [MeasurableSpace Ω
 /-- A finite plane-annulus moment transfers to the given lateral interval at the same order,
 including inverse orders. No positive or negative moment assumption is hidden in the source
 predicate. -/
-theorem sourceLateral_interval_moment_finite_of_annular {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (γ : ℝ) (M : Ω → Measure ℂ)
-    (Z : Ω → Measure ℝ) (hS : IsSourceLateralProjection P X γ M Z)
-    (hZ : AEMeasurable Z P) (a b q : ℝ)
+theorem sourceLateral_interval_moment_finite_of_annular (hZ : AEMeasurable Z P) (a b q : ℝ)
     (hMoment : (∫⁻ ω, (M ω (lateralLogAnnulus a b)) ^ q ∂P) < ⊤) :
     (∫⁻ ω, (Z ω (Ioc a b)) ^ q ∂P) < ⊤ := by
   let _ := hS.1.1
@@ -259,14 +264,13 @@ theorem sourceLateral_interval_moment_finite_of_annular {Ω : Type*} [Measurable
     let _ := hS.2.1.1 ω
     exact lt_of_le_of_lt (measure_mono Ioc_subset_Icc_self)
       (lateralProjectedGMC_Icc_ne_top γ (A ω) (M ω) a b)
-  have hb := lateral_interval_moment_annular_comparison P γ a b q A M Z hA hZ hi he hf
-  have hp := (lateralMomentAttenuation_mean_bounds P γ a b q A hA).1
-  exact ENNReal.lt_top_of_mul_ne_top_right (lt_of_le_of_lt hb hMoment).ne hp.ne'
+  exact ENNReal.lt_top_of_mul_ne_top_right (lt_of_le_of_lt (lateral_interval_moment_annular_comparison P γ a b q A M Z hA hZ hi he hf) hMoment).ne ((lateralMomentAttenuation_mean_bounds P γ a b q A hA).1).ne'
+
+end
 
 /-- Quantitative division of the annular comparison by any deterministic lower bound for
 its mean radial factor. The estimate holds at every real order and retains the source mass. -/
-theorem lateral_interval_moment_le_annular_div {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (γ a b q : ℝ) (A : Ω → TwoSidedPath)
+theorem lateral_interval_moment_le_annular_div (γ a b q : ℝ) (A : Ω → TwoSidedPath)
     (M : Ω → Measure ℂ) (Z : Ω → Measure ℝ)
     (hA : AEMeasurable A P) (hZ : AEMeasurable Z P) (hInd : IndepFun A Z P)
     (hEq : ∀ᵐ ω ∂P, Z ω = lateralProjectedGMC γ (A ω) (M ω))
@@ -288,14 +292,14 @@ bounds. Stationarity then supplies every translate required by the conclusion of
 `DOZZ.lateralGMC_interval_moment_range`. The two quantitative analytic inputs are explicit, so
 this theorem does not presume their closure from intensity or local finiteness. -/
 theorem lateralGMC_uniform_interval_moments_of_annular_comparison
-    {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (Kγ Kq : Set ℝ)
+    (Kγ Kq : Set ℝ)
     (Z : ℝ → Ω → Measure ℝ) (hZ : ∀ γ ∈ Kγ, IsLateralGMCOf P γ (Z γ))
     (A : ℝ → Ω → TwoSidedPath) (M : ℝ → Ω → Measure ℂ)
     (hA : ∀ γ ∈ Kγ, AEMeasurable (A γ) P)
     (hInd : ∀ γ ∈ Kγ, IndepFun (A γ) (Z γ) P)
     (hEq : ∀ γ ∈ Kγ, ∀ᵐ ω ∂P,
       Z γ ω = lateralProjectedGMC γ (A γ ω) (M γ ω))
-    (a b : ℝ) (η : ℝ) (hη : 0 < η) (C : ℝ≥0∞) (hC : C < ⊤)
+    (a b η : ℝ) (hη : 0 < η) (C : ℝ≥0∞) (hC : C < ⊤)
     (hRadial : ∀ γ ∈ Kγ, ∀ q ∈ Kq,
       ENNReal.ofReal η ≤ ∫⁻ ω, lateralMomentAttenuation γ a b q (A γ ω) ∂P)
     (hAnnular : ∀ γ ∈ Kγ, ∀ q ∈ Kq,
@@ -306,26 +310,29 @@ theorem lateralGMC_uniform_interval_moments_of_annular_comparison
     ENNReal.div_lt_top hC.ne (ne_of_gt (ENNReal.ofReal_pos.mpr hη)), ?_⟩
   intro γ hγ q hq t
   rw [lateralGMC_interval_moment_translation_eq P γ (Z γ) (hZ γ hγ) a b q t]
-  have hf := lateralGMC_interval_mass_finite_ae P γ (Z γ) (hZ γ hγ)
   have hb := lateral_interval_moment_le_annular_div P γ a b q (A γ) (M γ) (Z γ)
     (hA γ hγ) (hZ γ hγ).2.2.2.1 (hInd γ hγ) (hEq γ hγ)
-    (hf.mono (fun _ h => h a b)) η hη (hRadial γ hγ q hq)
+    ((lateralGMC_interval_mass_finite_ae P γ (Z γ) (hZ γ hγ)).mono (fun _ h => h a b)) η hη (hRadial γ hγ q hq)
   exact hb.trans (ENNReal.div_le_div_right (hAnnular γ hγ q hq) _)
+
+end
+section
+variable (a b : ℝ)
 
 /-- The logarithmic annulus is literally a radial norm annulus. In particular its inner
 boundary stays away from zero, as required for local GMC moment estimates. -/
-theorem mem_lateralLogAnnulus_iff (a b : ℝ) (x : ℂ) :
+theorem mem_lateralLogAnnulus_iff (x : ℂ) :
     x ∈ lateralLogAnnulus a b ↔ Real.exp (-b) ≤ ‖x‖ ∧ ‖x‖ < Real.exp (-a) := by
   constructor
   · rintro ⟨hx, hleft, hright⟩
-    have hn : 0 < ‖x‖ := norm_pos_iff.mpr hx
+    have hn := norm_pos_iff.mpr hx
     constructor
     · rw [← Real.exp_log hn]
-      exact Real.exp_le_exp.mpr (by linarith)
+      bound
     · rw [← Real.exp_log hn]
       exact Real.exp_lt_exp.mpr (by linarith)
   · rintro ⟨hleft, hright⟩
-    have hn : 0 < ‖x‖ := (Real.exp_pos _).trans_le hleft
+    have hn := (Real.exp_pos _).trans_le hleft
     refine ⟨norm_ne_zero_iff.mp hn.ne', ?_, ?_⟩
     · have hlog := Real.log_lt_log hn hright
       rw [Real.log_exp] at hlog
@@ -335,10 +342,12 @@ theorem mem_lateralLogAnnulus_iff (a b : ℝ) (x : ℂ) :
       linarith
 
 /-- The source annulus lies in a fixed ball, independently of the radial witness. -/
-theorem lateralLogAnnulus_subset_ball (a b : ℝ) :
+theorem lateralLogAnnulus_subset_ball :
     lateralLogAnnulus a b ⊆ Metric.ball (0 : ℂ) (Real.exp (-a)) := by
   intro x hx
   rw [Metric.mem_ball, dist_zero_right]
   exact ((mem_lateralLogAnnulus_iff a b x).mp hx).2
+
+end
 
 end DOZZ.Proofs

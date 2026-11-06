@@ -38,18 +38,16 @@ theorem kahane_finite_smooth_convex
   let μ := PX.prod PY
   let vX : ι → ℝ := fun i => DOZZ.gaussianVariance PX (fun ω => X ω i)
   let vY : ι → ℝ := fun i => DOZZ.gaussianVariance PY (fun ω => Y ω i)
-  let M : ℝ → ΩX × ΩY → ℝ := kahaneInterpolatedMass X Y vX vY a γ
+  let M := kahaneInterpolatedMass X Y vX vY a γ
   let T : ℝ → ΩX × ΩY → ℝ := fun t ω => F (M t ω)
-  let D : ℝ → ΩX × ΩY → ℝ := kahaneInterpolatedTestDerivative X Y vX vY a γ F'
+  let D := kahaneInterpolatedTestDerivative X Y vX vY a γ F'
   let φ : ℝ → ℝ := fun t => ∫ ω, T t ω ∂μ
-  have hFcont : Continuous F := continuous_iff_continuousAt.mpr fun x => (hF x).continuousAt
-  have hF'cont : Continuous F' := continuous_iff_continuousAt.mpr fun x => (hF' x).continuousAt
-  have hB₁nonneg : 0 ≤ B₁ := (norm_nonneg (F' 0)).trans (hB₁ 0)
-  have hvX (i : ι) : 0 ≤ vX i := by
-    exact integral_nonneg fun ω => mul_self_nonneg (X ω i)
-  have hvY (i : ι) : 0 ≤ vY i := by
-    exact integral_nonneg fun ω => mul_self_nonneg (Y ω i)
-  have hV : AEMeasurable (fun ω : ΩX × ΩY => (X ω.1, Y ω.2)) μ :=
+  have hFcont := continuous_iff_continuousAt.mpr fun x => (hF x).continuousAt
+  have hF'cont := continuous_iff_continuousAt.mpr fun x => (hF' x).continuousAt
+  have hB₁nonneg := (norm_nonneg (F' 0)).trans (hB₁ 0)
+  have hvX (i : ι) : 0 ≤ vX i := integral_nonneg fun ω => mul_self_nonneg (X ω i)
+  have hvY (i : ι) : 0 ≤ vY i := integral_nonneg fun ω => mul_self_nonneg (Y ω i)
+  have hV :=
     (aemeasurable_pi_iff.mpr hX.2.1).comp_fst.prodMk
       (aemeasurable_pi_iff.mpr hY.2.1).comp_snd
   have hM (s : ℝ) : AEMeasurable (M s) μ := by
@@ -59,7 +57,7 @@ theorem kahane_finite_smooth_convex
     change AEMeasurable (fun ω => M s ω) μ
     simpa only [Function.comp_def, M, kahaneInterpolatedMass] using h.comp_aemeasurable hV
   have hT (s : ℝ) : AEStronglyMeasurable (T s) μ :=
-    (hFcont.measurable.comp_aemeasurable (hM s)).aestronglyMeasurable
+    by fun_prop
   have hD (s : ℝ) : AEStronglyMeasurable (D s) μ := by
     have h : Measurable (fun z : (ι → ℝ) × (ι → ℝ) =>
         kahaneInterpolatedTestDerivative (fun x => x) (fun x => x) vX vY a γ F' s z) := by
@@ -81,7 +79,7 @@ theorem kahane_finite_smooth_convex
     Real.exp (|γ| * ∑ i, (|X ω.1 i| + |Y ω.2 i|))
   have hb : Integrable b μ := (integrable_const _).add
     ((kahaneEndpointAbsExp_integrable PX PY X Y hX hY γ).const_mul (B₁ * ∑ i, a i))
-  have hbound (s : ℝ) (hs : s ∈ Icc (0 : ℝ) 1) (ω : ΩX × ΩY) : ‖T s ω‖ ≤ b ω := by
+  have hbound (s : ℝ) (hs : s ∈ Icc (0 : ℝ) 1) ω : ‖T s ω‖ ≤ b ω := by
     calc
       _ ≤ ‖F 0‖ + B₁ * ‖M s ω‖ := hFgrowth _
       _ ≤ _ := by
@@ -90,9 +88,9 @@ theorem kahane_finite_smooth_convex
         apply add_le_add le_rfl
         simpa only [mul_assoc] using mul_le_mul_of_nonneg_left
           (kahaneInterpolatedMass_norm_le_absExp X Y vX vY a hvX hvY ha γ s hs ω) hB₁nonneg
-  have hInt (s : ℝ) (hs : s ∈ Icc (0 : ℝ) 1) : Integrable (T s) μ :=
+  have hInt (s : ℝ) hs : Integrable (T s) μ :=
     hb.mono' (hT s) (ae_of_all _ (hbound s hs))
-  have hcont : ContinuousOn φ (Icc (0 : ℝ) 1) := by
+  have hcont : ContinuousOn φ (Icc 0 1) := by
     apply continuousOn_of_dominated (fun s _ => hT s) (fun s hs => ae_of_all _ (hbound s hs)) hb
     filter_upwards [] with ω
     have hMass : Continuous (fun s => M s ω) := by
@@ -101,12 +99,12 @@ theorem kahane_finite_smooth_convex
     exact (hFcont.comp hMass).continuousOn
   have hderiv (t : ℝ) (ht : t ∈ Ioo (0 : ℝ) 1) :
       HasDerivAt φ (∫ ω, D t ω ∂μ) t ∧ (∫ ω, D t ω ∂μ) ≤ 0 := by
-    let ε : ℝ := min t (1 - t) / 4
-    have htpos : 0 < t := ht.1
-    have htpos' : 0 < 1 - t := by linarith [ht.2]
-    have hε : 0 < ε := by dsimp [ε]; positivity
-    have hεt : 4 * ε ≤ t := by dsimp [ε]; linarith [min_le_left t (1 - t)]
-    have hεt' : 4 * ε ≤ 1 - t := by dsimp [ε]; linarith [min_le_right t (1 - t)]
+    let ε := min t (1 - t) / 4
+    have htpos := ht.1
+    have htpos' : 0 < 1 - t := by grind
+    have hε : 0 < ε := by positivity
+    have hεt : 4 * ε ≤ t := by grind
+    have hεt' : 4 * ε ≤ 1 - t := by grind
     let db : ΩX × ΩY → ℝ := fun ω => B₁ * (∑ i, a i) *
       Real.exp (|γ| * ∑ i, (|X ω.1 i| + |Y ω.2 i|)) *
         (|γ| / (2 * Real.sqrt ε) * (∑ i, (|X ω.1 i| + |Y ω.2 i|)) +
@@ -115,9 +113,9 @@ theorem kahane_finite_smooth_convex
       PX PY X Y hX hY vX vY a γ ε B₁
     have hDbound : ∀ᵐ ω ∂μ, ∀ s ∈ Metric.ball t ε, ‖D s ω‖ ≤ db ω := by
       filter_upwards [] with ω s hs
-      have hsabs : |s - t| < ε := by simpa only [Metric.mem_ball, Real.dist_eq] using hs
-      have hsleft : ε ≤ s := by linarith [(abs_lt.mp hsabs).1]
-      have hsright : ε ≤ 1 - s := by linarith [(abs_lt.mp hsabs).2]
+      have hsabs : |s - t| < ε := by assumption
+      have hsleft : ε ≤ s := by grind
+      have hsright : ε ≤ 1 - s := by grind
       exact kahaneInterpolatedTestDerivative_norm_le_absExp X Y vX vY a hvX hvY ha
         γ ε s B₁ F' hB₁nonneg hB₁ hε hsleft hsright ω
     exact kahaneSmoothInterpolationExpectation_hasDerivAt_nonpos
@@ -130,17 +128,16 @@ theorem kahane_finite_smooth_convex
     (fun t ht => (hderiv t ht).2)
   have hzero : φ 0 = ∫ ω, F (DOZZ.finiteChaosMass PY Y a γ ω) ∂PY := by
     dsimp [φ, T, M, μ, kahaneInterpolatedMass]
-    simp only [Real.sqrt_zero, Real.sqrt_one, zero_mul, one_mul, zero_add,
-      sub_zero]
+    simp
     change (∫ ω : ΩX × ΩY, F (DOZZ.finiteChaosMass PY Y a γ ω.2) ∂PX.prod PY) = _
-    simpa only [probReal_univ, one_smul] using
-      integral_fun_snd (μ := PX) (ν := PY) (fun ω => F (DOZZ.finiteChaosMass PY Y a γ ω))
+    simpa using
+      integral_fun_snd (μ := PX) (ν := PY) (fun ω => F _)
   have hone : φ 1 = ∫ ω, F (DOZZ.finiteChaosMass PX X a γ ω) ∂PX := by
     dsimp [φ, T, M, μ, kahaneInterpolatedMass]
-    simp only [Real.sqrt_zero, Real.sqrt_one, zero_mul, one_mul, add_zero, sub_self]
+    simp
     change (∫ ω : ΩX × ΩY, F (DOZZ.finiteChaosMass PX X a γ ω.1) ∂PX.prod PY) = _
-    simpa only [probReal_univ, one_smul] using
-      integral_fun_fst (μ := PX) (ν := PY) (fun ω => F (DOZZ.finiteChaosMass PX X a γ ω))
+    simpa using
+      integral_fun_fst (μ := PX) (ν := PY) (fun ω => F _)
   rwa [hone, hzero] at hend
 
 

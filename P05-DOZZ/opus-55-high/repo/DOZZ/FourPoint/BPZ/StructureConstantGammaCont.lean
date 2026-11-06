@@ -55,31 +55,36 @@ theorem bpzSG_moment_eq {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : 
   filter_upwards [gmc_rho_eq_coulombMass_ae P X hX γ hγ hγ2 M hM a b c] with ω hω
   rw [hω, bpzSG_coulombMass_zero_first, bpzSG_nPointSExp_zero_first]
   rfl
+section
+variable {f : ℝ → ℝ}
+section
+variable (hf : Continuous f) (α₂ α₃ : ℝ) {γ₀ : ℝ}
+include hf
 
 /-- The Seiberg exponent is continuous in `γ` for a continuously varying first charge. -/
-theorem bpzSG_continuousAt_sExp {f : ℝ → ℝ} (hf : Continuous f) (α₂ α₃ : ℝ) {γ₀ : ℝ}
-    (hγ₀ : γ₀ ≠ 0) : ContinuousAt (fun γ => sExp γ (f γ) α₂ α₃) γ₀ := by
+theorem bpzSG_continuousAt_sExp (hγ₀ : γ₀ ≠ 0) : ContinuousAt (fun γ => sExp γ (f γ) α₂ α₃) γ₀ := by
   have hQ : ContinuousAt Q γ₀ := by
     unfold Q
-    exact (continuousAt_const.div continuousAt_id hγ₀).add (continuousAt_id.div_const 2)
+    fun_prop
   unfold sExp
-  exact (((hf.continuousAt.add continuousAt_const).add continuousAt_const).sub
-    (continuousAt_const.mul hQ)).div continuousAt_id hγ₀
+  fun_prop
 
 /-- The admissibility conditions at `γ₀` hold on a neighbourhood of `γ₀`. -/
-theorem bpzSG_domain_nhds {f : ℝ → ℝ} (hf : Continuous f) (α₂ α₃ : ℝ) {γ₀ : ℝ}
-    (hγ₀ : γ₀ ∈ Ioo (0 : ℝ) 2) (h1 : f γ₀ < Q γ₀) (h2 : α₂ < Q γ₀) (h3 : α₃ < Q γ₀)
+theorem bpzSG_domain_nhds (hγ₀ : γ₀ ∈ Ioo (0 : ℝ) 2) (h1 : f γ₀ < Q γ₀) (h2 : α₂ < Q γ₀) (h3 : α₃ < Q γ₀)
     (hs : 0 < sExp γ₀ (f γ₀) α₂ α₃) :
     ∀ᶠ γ in 𝓝 γ₀, γ ∈ Ioo (0 : ℝ) 2 ∧ f γ < Q γ ∧ α₂ < Q γ ∧ α₃ < Q γ ∧
       0 < sExp γ (f γ) α₂ α₃ := by
   have hQ : ContinuousAt Q γ₀ := by
-    unfold Q
     exact (continuousAt_const.div continuousAt_id hγ₀.1.ne').add (continuousAt_id.div_const 2)
   filter_upwards [Ioo_mem_nhds hγ₀.1 hγ₀.2, hf.continuousAt.eventually_lt hQ h1,
     continuousAt_const.eventually_lt hQ h2, continuousAt_const.eventually_lt hQ h3,
     continuousAt_const.eventually_lt (bpzSG_continuousAt_sExp hf α₂ α₃ hγ₀.1.ne') hs] with
     γ hγ hf' h2' h3' hs'
-  exact ⟨hγ, hf', h2', h3', hs'⟩
+  simp_all
+
+end
+
+end
 
 /-- The four-point charges `(0, a, b, c)` lie in the extended Seiberg domain when all charges are
 below `Q` and the Seiberg exponent is positive. -/
@@ -88,18 +93,18 @@ theorem bpzSG_extendedSeiberg {γ a b c : ℝ} (hγ : 0 < γ) (ha : a < Q γ) (h
   have hQ : 0 < Q γ := by
     unfold Q
     positivity
-  have hlt : ∀ i, (![0, a, b, c] : Fin 4 → ℝ) i < Q γ := by
+  have hlt : ∀ i, (![0, a, b, c]) i < Q γ := by
     intro i
     fin_cases i
     · exact hQ
     · exact ha
     · exact hb
-    · exact hc
+    assumption
   have hns : -nPointSExp γ ![0, a, b, c] < 0 := by
     rw [bpzSG_nPointSExp_zero_first]
     linarith
   refine ⟨hlt, hns.trans (by positivity), fun i => hns.trans ?_⟩
-  exact mul_pos (div_pos two_pos hγ) (sub_pos.mpr (hlt i))
+  simp_all
 
 /-- The prefactor `2 μ^{-s} γ⁻¹ Γ(s)` is continuous at `γ₀` where `s > 0`. -/
 theorem bpzSG_continuousAt_prefactor {μ : ℝ} (hμ : 0 < μ) {f : ℝ → ℝ} (hf : Continuous f)
@@ -107,12 +112,11 @@ theorem bpzSG_continuousAt_prefactor {μ : ℝ} (hμ : 0 < μ) {f : ℝ → ℝ}
     ContinuousAt (fun γ => 2 * μ ^ (-sExp γ (f γ) α₂ α₃) / γ *
       Real.Gamma (sExp γ (f γ) α₂ α₃)) γ₀ := by
   have hsc := bpzSG_continuousAt_sExp hf α₂ α₃ hγ₀
-  have hpow : ContinuousAt (fun γ => μ ^ (-sExp γ (f γ) α₂ α₃)) γ₀ :=
+  have hpow :=
     ContinuousAt.rpow continuousAt_const hsc.neg (Or.inl hμ.ne')
-  have hG : ContinuousAt Real.Gamma (sExp γ₀ (f γ₀) α₂ α₃) :=
+  have hG :=
     (Real.differentiableOn_Gamma_Ioi.differentiableAt (Ioi_mem_nhds hs)).continuousAt
-  exact ((continuousAt_const.mul hpow).div continuousAt_id hγ₀).mul
-    (ContinuousAt.comp (f := fun γ => sExp γ (f γ) α₂ α₃) hG hsc)
+  fun_prop
 
 /-- Along a family of GMC measures, the structure constant with a continuously varying first
 charge is continuous in `γ`. -/
@@ -126,24 +130,20 @@ theorem bpz_continuousAt_structureConstant_gamma {Ω : Type*} [MeasurableSpace �
     local_compact_nhds (bpzSG_domain_nhds hf α₂ α₃ hγ₀ h1 h2 h3 hs)
   let J : ℝ → ℝ × (Fin 4 → ℝ) := fun γ => (γ, ![0, f γ, α₂, α₃])
   have hJ : Continuous J := by
-    unfold J
     fun_prop
   have hKdom : ∀ q ∈ J '' K₀, 0 < q.1 ∧ q.1 < 2 ∧ ExtendedSeibergN q.1 q.2 := by
     rintro _ ⟨γ, hγ, rfl⟩
     obtain ⟨hγ', hf', h2', h3', hs'⟩ := hK₀sub hγ
     exact ⟨hγ'.1, hγ'.2, bpzSG_extendedSeiberg hγ'.1 hf' h2' h3' hs'⟩
   have hM : ∀ q ∈ J '' K₀, IsGMCOf P X q.1 (Mfam q.1) := by
-    rintro _ ⟨γ, hγ, rfl⟩
-    exact hMfam γ (hK₀sub hγ).1
+    simp_all
   have hcont := fourPointMoment_jointly_continuous_parameters P X Mfam 2
     ⟨two_ne_zero, by norm_num⟩ (J '' K₀) (hK₀cpt.image hJ) hKdom hX hM
-  have hat := (hcont.comp hJ.continuousOn (mapsTo_image J K₀)).continuousAt hK₀nhds
   have hmom : ContinuousAt (fun γ => (∫⁻ ω, rho γ (Mfam γ ω) (f γ) α₂ α₃ ^
       (-sExp γ (f γ) α₂ α₃) ∂P).toReal) γ₀ := by
-    refine hat.congr ?_
+    refine ((hcont.comp hJ.continuousOn (mapsTo_image J K₀)).continuousAt hK₀nhds).congr ?_
     filter_upwards [hK₀nhds] with γ hγ
     obtain ⟨hγ', -⟩ := hK₀sub hγ
-    simp only [Function.comp_apply, J]
     rw [bpzSG_moment_eq P X hX (Mfam γ) hγ'.1 hγ'.2 (hMfam γ hγ') 2 (f γ) α₂ α₃]
     rfl
   exact (bpzSG_continuousAt_prefactor hμ hf α₂ α₃ hγ₀.1.ne' hs).mul hmom

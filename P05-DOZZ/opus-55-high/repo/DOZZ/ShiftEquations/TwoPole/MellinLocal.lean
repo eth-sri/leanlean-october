@@ -31,24 +31,22 @@ open MeasureTheory ProbabilityTheory Filter Topology Set
 open scoped ENNReal NNReal
 
 namespace DOZZ.Proofs
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+section
+variable (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) {η δ : ℝ} (hW : TwoPoleWindow γ η δ)
+include hX hγ hγ2 hM hW
 
 /-- The local mass is almost surely positive and finite. -/
-theorem ae_localMassReal_pos {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω) (X : Ω → Distr)
-    (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) (M : Ω → Measure ℂ)
-    (hM : IsGMCOf P X γ M) {η δ : ℝ} (hW : TwoPoleWindow γ η δ) :
+theorem ae_localMassReal_pos :
     ∀ᵐ ω ∂P, 0 < localMassReal M γ η ω ∧
       poleLocalMass γ (2 / γ + η) (2 / γ - η) (M ω) < ⊤ := by
   filter_upwards [ae_cutoffGood P X hX γ hγ hγ2 M hM hW] with ω hω
   exact ⟨hω.localMassReal_pos, hω.localMass_lt_top⟩
 
 /-- The local mass has negative real moments of all orders. -/
-theorem integrable_localMassReal_rpow_neg {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
-    (X : Ω → Distr) (hX : IsEquatorGFF P X) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
-    (M : Ω → Measure ℂ) (hM : IsGMCOf P X γ M) {η δ : ℝ} (hW : TwoPoleWindow γ η δ)
-    {q : ℝ} (hq : 0 < q) : Integrable (fun ω => localMassReal M γ η ω ^ (-q)) P := by
-  have hη := (window_eta_pos hW).le
-  have hηγ := window_eta_le_two_div hγ hγ2 hW
-  have hfin := lintegral_localMass_rpow_neg_lt_top P X hX γ hγ hγ2 M hM hη hηγ hq
+theorem integrable_localMassReal_rpow_neg {q : ℝ} (hq : 0 < q) : Integrable (fun ω => localMassReal M γ η ω ^ (-q)) P := by
+  have hfin := lintegral_localMass_rpow_neg_lt_top P X hX γ hγ hγ2 M hM ((window_eta_pos hW).le) (window_eta_le_two_div hγ hγ2 hW) hq
   have hmeas : AEMeasurable (fun ω => localMassReal M γ η ω ^ (-q)) P :=
     (aemeasurable_localMassReal P X hX γ hγ hγ2 M hM η).pow_const _
   refine ⟨hmeas.aestronglyMeasurable, ?_⟩
@@ -58,6 +56,10 @@ theorem integrable_localMassReal_rpow_neg {Ω : Type*} [MeasurableSpace Ω] (P :
   refine lt_of_le_of_lt (le_of_eq (lintegral_congr_ae ?_)) hfin
   filter_upwards [ae_localMassReal_pos P X hX γ hγ hγ2 M hM hW] with ω hω
   rw [← ENNReal.ofReal_rpow_of_pos hω.1, localMassReal, ENNReal.ofReal_toReal hω.2.ne]
+
+end
+
+end
 
 /-- The tail coefficient of a pole is positive. -/
 theorem oneInsertionTailCoefficient_pos {γ α R F : ℝ} {z : ℂ} (hz : z ≠ 0) (hF : 0 < F)
@@ -97,8 +99,8 @@ theorem exists_localMass_mellin {Ω : Type*} [MeasurableSpace Ω] (P : Measure �
   have hη := (window_eta_pos hW)
   have hηγ := window_eta_le_two_div hγ hγ2 hW
   have hp := window_threshold_pos hγ hW
-  set Lr : Ω → ℝ := localMassReal M γ η with hLr
-  have hY : AEMeasurable Lr P := aemeasurable_localMassReal P X hX γ hγ hγ2 M hM η
+  set Lr := localMassReal M γ η with hLr
+  have hY := aemeasurable_localMassReal P X hX γ hγ hγ2 M hM η
   have hgood := ae_localMassReal_pos P X hX γ hγ hγ2 M hM hW
   have hpos : ∀ᵐ ω ∂P, 0 < Lr ω := by
     filter_upwards [hgood] with ω hω
@@ -106,8 +108,7 @@ theorem exists_localMass_mellin {Ω : Type*} [MeasurableSpace Ω] (P : Measure �
   have hinv : ∀ q : ℝ, 0 < q → Integrable (fun ω => Lr ω ^ (-q)) P := fun q hq =>
     integrable_localMassReal_rpow_neg P X hX γ hγ hγ2 M hM hW hq
   have hβ₁ : 0 < reflectionExponent γ (2 / γ + η) := by
-    rw [reflectionExponent_pole hγ η]
-    exact hp
+    rwa [reflectionExponent_pole hγ η]
   have hβ₁₂ : reflectionExponent γ (2 / γ + η) < reflectionExponent γ (2 / γ - η) := by
     rw [reflectionExponent_pole hγ η]
     have : reflectionExponent γ (2 / γ - η) = 1 + 2 * η / γ := by
@@ -123,9 +124,9 @@ theorem exists_localMass_mellin {Ω : Type*} [MeasurableSpace Ω] (P : Measure �
   have hF₃ : 0 < poleFactorNegTwo γ η (-2) := by
     rw [poleFactorNegTwo_negTwo hγ]
     positivity
-  have hc₁ := oneInsertionTailCoefficient_pos (γ := γ) (α := 2 / γ + η) (z := (2 : ℂ))
+  have hc₁ := oneInsertionTailCoefficient_pos (γ := γ) (α := 2 / γ + η)
     two_ne_zero hF₂ hR₂
-  have hc₂ := oneInsertionTailCoefficient_pos (γ := γ) (α := 2 / γ - η) (z := (-2 : ℂ))
+  have hc₂ := oneInsertionTailCoefficient_pos (γ := γ) (α := 2 / γ - η) (z := (-2))
     (by norm_num) hF₃ hR₃
   have hc₃ : 0 < max C 1 := lt_max_of_lt_right one_pos
   have htail' : ∀ t : ℝ, 1 ≤ t →
@@ -140,7 +141,6 @@ theorem exists_localMass_mellin {Ω : Type*} [MeasurableSpace Ω] (P : Measure �
         localSingularMass M (poleFactorTwo γ η) 2 γ (2 / γ + η) ω +
           localSingularMass M (poleFactorNegTwo γ η) (-2) γ (2 / γ - η) ω} := by
       refine measure_congr ?_
-      rw [eventuallyEqSet_iff]
       filter_upwards [hgood] with ω hω
       rw [← poleLocalMass_eq_localSingularMass M hγ hη.le hηγ ω, hLr, localMassReal,
         ENNReal.ofReal_lt_iff_lt_toReal (by linarith) hω.2.ne]
@@ -148,16 +148,16 @@ theorem exists_localMass_mellin {Ω : Type*} [MeasurableSpace Ω] (P : Measure �
     rw [← hevent] at h
     simp only [Real.rpow_eq_pow] at h
     calc _ = |(P {ω | t < Lr ω}).toReal -
-          (oneInsertionTailCoefficient γ (2 / γ + η) 2 (poleFactorTwo γ η 2) R₂ *
-              t ^ (-reflectionExponent γ (2 / γ + η)) +
-            oneInsertionTailCoefficient γ (2 / γ - η) (-2) (poleFactorNegTwo γ η (-2)) R₃ *
-              t ^ (-reflectionExponent γ (2 / γ - η)))| := by
+          (oneInsertionTailCoefficient γ _ 2 _ R₂ *
+              t ^ (-reflectionExponent γ _) +
+            oneInsertionTailCoefficient γ _ (-2) _ R₃ *
+              t ^ (-reflectionExponent γ _))| := by
           rw [realUpperTail, sub_sub]
-      _ ≤ C * t ^ (-(twoInsertionTailCeiling γ (2 / γ + η) (2 / γ - η) - θ)) := h
-      _ ≤ max C 1 * t ^ (-(twoInsertionTailCeiling γ (2 / γ + η) (2 / γ - η) - θ)) :=
-          mul_le_mul_of_nonneg_right (le_max_left _ _) (by positivity)
+      _ ≤ C * t ^ (-(twoInsertionTailCeiling γ _ _ - θ)) := h
+      _ ≤ max C 1 * t ^ (-(twoInsertionTailCeiling γ _ _ - θ)) :=
+          by bound
   obtain ⟨hint, -, r, hr, -, hform, -⟩ := complexMoment_two_tail_residues_of_inverse_moments
-    P Lr hY hpos hinv _ _ (max C 1) _ _ _ hc₁ hc₂ hc₃ hβ₁ hβ₁₂ hβ htail'
+    P Lr hY hpos hinv _ _ _ _ _ _ hc₁ hc₂ hc₃ hβ₁ hβ₁₂ hβ htail'
   exact ⟨r, hr, fun s hs => ⟨hint s hs, hform s hs⟩⟩
 
 end DOZZ.Proofs

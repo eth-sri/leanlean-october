@@ -26,27 +26,24 @@ theorem williams_reference_input_law
   let μ := brownianMaximumReferenceLaw ν
   let : IsProbabilityMeasure μ := isProbabilityMeasure_brownianMaximumReferenceLaw hν
   let Raw := ((ℝ × BrownianPath) × BrownianPath) × Measure ℝ
-  let R : Measure Raw := ((μ.prod Qν).prod Qν).prod L
+  let R := ((μ.prod Qν).prod Qν).prod L
   let mark := fun v : ℝ × BrownianPath => (v.1,negativeConditionedLastExitSegment v.1 v.2)
-  have hmark : Measurable mark := measurable_fst.prodMk measurable_lastExitSegment_joint
+  have hmark := measurable_fst.prodMk measurable_lastExitSegment_joint
   let H : Raw → ((ℝ × StoppedBrownianPath) × BrownianPath) × Measure ℝ :=
     Prod.map (Prod.map mark id) id
-  have hH : Measurable H := (hmark.prodMap measurable_id).prodMap measurable_id
+  have hH : Measurable H := by fun_prop
   have hMarked : (((μ.prod Qν).map mark).prod Qν).prod L = R.map H := by
     rw [← Measure.map_id (μ := Qν), Measure.map_prod_map _ _ hmark measurable_id,
       ← Measure.map_id (μ := L), Measure.map_prod_map _ _ (hmark.prodMap measurable_id) measurable_id]
-    simp only [Measure.map_id]
-    rfl
+    aesop
   rw [hMarked,Measure.map_map (measurable_williamsMassFunctional γ) hH]
   let T : Raw → ℝ × ((BrownianPath × BrownianPath) × Measure ℝ) :=
     fun w => (w.1.1.1,((w.1.2,w.1.1.2),w.2))
   have hT : MeasurePreserving T R (μ.prod ((Qν.prod Qν).prod L)) := by
-    have h1 := (measurePreserving_prodAssoc μ Qν Qν).prod (MeasurePreserving.id L)
-    have h2 := measurePreserving_prodAssoc μ (Qν.prod Qν) L
     have h3 := (MeasurePreserving.id μ).prod
       ((Measure.measurePreserving_swap (μ := Qν) (ν := Qν)).prod (MeasurePreserving.id L))
-    exact h3.comp (h2.comp h1)
-  have hRfin : ∀ᵐ w ∂R, ∀ a b : ℝ, w.2 (Icc a b) < ⊤ :=
+    exact h3.comp ((measurePreserving_prodAssoc μ (Qν.prod Qν) L).comp ((measurePreserving_prodAssoc μ Qν Qν).prod (MeasurePreserving.id L)))
+  have hRfin :=
     (measurePreserving_snd (μ := (μ.prod Qν).prod Qν) (ν := L)).quasiMeasurePreserving.ae hfin
   have he : (williamsMassFunctional γ ∘ H) =ᵐ[R]
       (williamsInputMassCode γ ∘ T) := by
@@ -54,7 +51,7 @@ theorem williams_reference_input_law
     change williamsMassFunctional γ
       (((w.1.1.1,negativeConditionedLastExitSegment w.1.1.1 w.1.1.2),w.1.2),w.2) = _
     rw [williamsMassFunctional_lastExit γ _ _ _ _ hw]
-    exact congrArg (fun t => ENNReal.ofReal (Real.exp (γ*w.1.1.1))*t)
+    exact congrArg (fun t => ENNReal.ofReal _*t)
       (williamsCutMassCode_eq γ _ _ _ hw).symm
   rw [Measure.map_congr he,← Measure.map_map (measurable_williamsInputMassCode γ)
     hT.measurable,hT.map_eq]

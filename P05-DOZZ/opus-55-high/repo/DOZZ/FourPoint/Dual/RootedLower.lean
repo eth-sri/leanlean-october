@@ -20,31 +20,32 @@ open MeasureTheory Set
 open scoped ENNReal
 
 namespace DOZZ.Proofs
+section
+variable (γ α₁ α₂ α₃ ξ : ℝ) (μ : Measure ℂ) (z u : ℂ)
 
 /-- The covariance lower bound survives the actual moving spatial restriction. -/
-theorem dual_rooted_outerMass_lower (γ α₁ α₂ α₃ ξ : ℝ) (μ : Measure ℂ) (z u : ℂ) :
+theorem dual_rooted_outerMass_lower :
     ENNReal.ofReal (Real.exp (-γ ^ 2 * Real.log 2)) *
         dualOuterMass γ α₁ α₂ α₃ μ z ξ ≤
       dualOuterMass γ α₁ α₂ α₃ (gmcRootedMeasure γ u μ) z ξ := by
   let D : Set ℂ := {x | ‖z‖ ^ (1 - ξ) ≤ ‖x‖}
-  have hD : MeasurableSet D := (isClosed_le continuous_const continuous_norm).measurableSet
+  have hD : MeasurableSet D := by measurability
   have he : (gmcRootedMeasure γ u μ).restrict D = gmcRootedMeasure γ u (μ.restrict D) := by
     unfold gmcRootedMeasure
-    exact restrict_withDensity hD _
+    aesop
   unfold dualOuterMass
   rw [he]
   exact fusion_rootedCoulombMass_lower γ u (μ.restrict D) ![-2 / γ, α₁, α₂] ![z, 0, 1] α₃
 
 /-- One fixed disk controls every rooted dual retained mass simultaneously. -/
-theorem dual_rooted_outerMass_fixed_disk_lower (γ α₁ α₂ α₃ ξ : ℝ) (μ : Measure ℂ)
-    (z u : ℂ) (hz : ‖z‖ ≤ 1) (hr : ‖z‖ ^ (1 - ξ) ≤ 1) :
+theorem dual_rooted_outerMass_fixed_disk_lower (hz : ‖z‖ ≤ 1) (hr : ‖z‖ ^ (1 - ξ) ≤ 1) :
     ENNReal.ofReal (Real.exp (-γ ^ 2 * Real.log 2) *
       ((2 : ℝ) ^ (-∑ i : Fin 3, |γ * (![-2 / γ, α₁, α₂] : Fin 3 → ℝ) i|) *
         (4 : ℝ) ^ (-|γ * α₃|))) * μ (Metric.ball (3 : ℂ) (1 / 8)) ≤
       dualOuterMass γ α₁ α₂ α₃ (gmcRootedMeasure γ u μ) z ξ := by
-  have hb := dual_outerMass_fixed_disk_lower γ α₁ α₂ α₃ ξ μ z hz hr
-  have hroot := dual_rooted_outerMass_lower γ α₁ α₂ α₃ ξ μ z u
   rw [ENNReal.ofReal_mul (Real.exp_pos _).le, mul_assoc]
-  exact (mul_le_mul' le_rfl hb).trans hroot
+  exact (mul_le_mul' le_rfl (dual_outerMass_fixed_disk_lower γ α₁ α₂ α₃ ξ μ z hz hr)).trans (dual_rooted_outerMass_lower γ α₁ α₂ α₃ ξ μ z u)
+
+end
 
 end DOZZ.Proofs

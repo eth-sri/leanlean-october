@@ -17,9 +17,8 @@ namespace DOZZ.Proofs
 /-- A power of the doubled cutoff radius has the exact exponential rate. -/
 theorem scaled_exp_radius_power (r k : ℝ) :
     (2 * Real.exp (-r)) ^ k = (2 : ℝ) ^ k * Real.exp (-k * r) := by
-  rw [Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 2) (Real.exp_nonneg _), ← Real.exp_mul]
-  congr 1
-  ring_nf
+  rw [Real.mul_rpow (by norm_num) (Real.exp_nonneg _), ← Real.exp_mul]
+  ring
 
 /-- The complete excluded Coulomb mass has a uniform exponentially decaying small moment
 on every bounded charge box with a strict upper charge gap. -/
@@ -40,11 +39,11 @@ theorem complement_exponential_moment
           ENNReal.ofReal (Real.exp (-(γ * gap * m) * n)) * K := by
   obtain ⟨C, hC, hb⟩ := retained_complement_moment_decay
     P X hX γ hγ hγ2 M hM z δ hδ hδ1 hsep A a gap m hgap ha hm hm1 hms
-  refine ⟨ENNReal.ofReal ((2 : ℝ) ^ (γ * gap * m)) * C,
+  refine ⟨ENNReal.ofReal (2 ^ (γ * gap * m)) * C,
     ENNReal.mul_lt_top ENNReal.ofReal_lt_top hC, ?_⟩
   filter_upwards [retained_cutoff_geometry_eventually z δ 1 hδ] with n hn
   intro α αinf hα hinf hαup hinfup
-  have he := hb α αinf hα hinf hαup hinfup (n : ℝ) hn.1 hn.2.1 hn.2.2.1
+  have he := hb α αinf hα hinf hαup hinfup n hn.1 hn.2.1 hn.2.2.1
   rw [scaled_exp_radius_power,
     ENNReal.ofReal_mul (Real.rpow_nonneg (by norm_num) _)] at he
   simpa only [mul_assoc, mul_comm, mul_left_comm] using he

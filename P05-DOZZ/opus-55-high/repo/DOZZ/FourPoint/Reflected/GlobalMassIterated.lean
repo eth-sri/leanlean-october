@@ -23,19 +23,18 @@ theorem reflected_global_mass_iterated
     ∫⁻ a, ∫⁻ ω, (∫⁻ x in ({0} : Set ℂ)ᶜ,
       f x*ENNReal.ofReal (reflected_global_reinsertionWeight γ a x) ∂N ω)^q ∂P ∂P.map A := by
   let F : TwoSidedPath × Ω → ℝ≥0∞ := fun p =>
-    (∫⁻ x in ({0} : Set ℂ)ᶜ,
+    (∫⁻ x in ({0})ᶜ,
       f x*ENNReal.ofReal (reflected_global_reinsertionWeight γ p.1 x) ∂N p.2)^q
-  have hF : Measurable F :=
-    (reflected_chart_parameter_mass_measurable ({0} : Set ℂ)ᶜ
-      (isClosed_singleton (x := (0 : ℂ))).isOpen_compl N hN hfin
-      (fun p => f p.2*ENNReal.ofReal (reflected_global_reinsertionWeight γ p.1 p.2))
+  have hF :=
+    (reflected_chart_parameter_mass_measurable _ᶜ
+      (isClosed_singleton).isOpen_compl N hN hfin
+      (fun p => f p.2*ENNReal.ofReal _)
       ((hf.comp measurable_snd).mul
         (reflected_global_reinsertionWeight_measurable γ).ennreal_ofReal)).pow_const q
-  have hp : AEMeasurable (fun ω : Ω × Ω => (A ω.1, ω.2)) (P.prod P) :=
-    (hA.comp_quasiMeasurePreserving measurePreserving_fst.quasiMeasurePreserving).prodMk
-      measurable_snd.aemeasurable
+  have hp : AEMeasurable (fun ω => (A ω.1, ω.2)) (P.prod P) :=
+    by fun_prop
   have he := lintegral_prod _ (hF.comp_aemeasurable hp)
   have hm := lintegral_map' (hF.lintegral_prod_right' (ν := P)).aemeasurable hA
-  exact he.trans hm.symm
+  grind
 
 end DOZZ.Proofs

@@ -50,8 +50,8 @@ end BPZWeakConv
 
 theorem bpz_indicator_one_abs_le (A : Set ℂ) (x : ℂ) : |A.indicator (1 : ℂ → ℝ) x| ≤ 1 := by
   by_cases hx : x ∈ A
-  · simp [hx]
-  · simp [hx]
+  · simp_all
+  simp_all
 
 theorem bpz_indicator_one_eq_zero_of_subset {A : Set ℂ} {R : ℝ}
     (hA : A ⊆ Metric.closedBall 0 R) (x : ℂ) (hx : R < ‖x‖) : A.indicator (1 : ℂ → ℝ) x = 0 := by
@@ -63,12 +63,11 @@ theorem bpz_indicator_one_eq_zero_of_subset {A : Set ℂ} {R : ℝ}
 theorem bpzGrid_cell_subset (h : ℝ) (hh : 0 < h) (i : ℤ × ℤ) :
     bpzGridIdx h ⁻¹' {i} ⊆ Metric.closedBall 0 (‖bpzGridCorner h i‖ + 2 * h) := by
   intro x hx
-  simp only [Set.mem_preimage, Set.mem_singleton_iff] at hx
   rw [Metric.mem_closedBall, dist_zero_right]
   have := norm_sub_bpzGridCorner_le hh x
   rw [hx] at this
   calc ‖x‖ = ‖(x - bpzGridCorner h i) + bpzGridCorner h i‖ := by ring_nf
-    _ ≤ ‖x - bpzGridCorner h i‖ + ‖bpzGridCorner h i‖ := norm_add_le _ _
+    _ ≤ ‖x - bpzGridCorner h i‖ + ‖bpzGridCorner h i‖ := norm_add_le ..
     _ ≤ 2 * h + ‖bpzGridCorner h i‖ := by linarith
     _ = ‖bpzGridCorner h i‖ + 2 * h := by ring
 
@@ -78,8 +77,8 @@ theorem bpz_ball_subset_closedBall (c : ℂ) (r : ℝ) :
   rw [Metric.mem_ball, dist_eq_norm] at hx
   rw [Metric.mem_closedBall, dist_zero_right]
   calc ‖x‖ = ‖(x - c) + c‖ := by ring_nf
-    _ ≤ ‖x - c‖ + ‖c‖ := norm_add_le _ _
-    _ ≤ |r| + ‖c‖ := by linarith [le_abs_self r]
+    _ ≤ ‖x - c‖ + ‖c‖ := norm_add_le ..
+    _ ≤ |r| + ‖c‖ := by grind
     _ = ‖c‖ + |r| := by ring
 
 /-- A real random variable times a scale tending to zero is small in probability. -/
@@ -95,8 +94,7 @@ theorem bpz_exists_scale_small [IsFiniteMeasure P] {W : Ω → ℝ} (hW : Measur
   have h := (ENNReal.tendsto_nhds_zero.1 (hconv s hs)) t ht
   obtain ⟨k, hk⟩ := h.exists
   refine ⟨k, le_trans (measure_mono fun ω hω => ?_) hk⟩
-  simp only [Set.mem_ofPred_eq, zero_mul, sub_zero, Real.norm_eq_abs] at hω ⊢
-  exact hω
+  simp_all
 
 namespace BPZWeakConv
 
@@ -125,7 +123,7 @@ theorem tendstoInMeasure_double [IsProbabilityMeasure P] (hμ : BPZWeakConv P μ
   set ND : ℕ → Ω → ℝ := fun k ω => bpzNearDiag ρ₃ (1 / ((k : ℝ) + 1)) (μ₀ ω) with hND
   have hNDm : ∀ k, Measurable (ND k) := fun k =>
     bpz_measurable_double_integral hμ.meas₀ hμ.fin₀ hμ.meas₀ hμ.fin₀ _
-      (measurable_bpzNearKernel _ _)
+      (measurable_bpzNearKernel ..)
   have hNDconv : TendstoInMeasure P ND atTop (fun _ => 0) := by
     refine tendstoInMeasure_of_tendsto_ae (fun k => (hNDm k).aestronglyMeasurable) ?_
     filter_upwards [hatom] with ω hω
@@ -135,7 +133,7 @@ theorem tendstoInMeasure_double [IsProbabilityMeasure P] (hμ : BPZWeakConv P μ
   have hWm : Measurable Wv :=
     ((Measure.measurable_coe measurableSet_closedBall).comp hμ.meas₀).ennreal_toReal
   refine bpz_tendstoInMeasure_of_approx fun ε hε => ?_
-  set C' : ℝ := C + 1 with hC'
+  set C' := C + 1 with hC'
   have hC'0 : 0 < C' := by positivity
   -- choose the near-diagonal width
   obtain ⟨k₁, hk₁⟩ : ∃ k₁ : ℕ, P {ω | ε / (8 * C') ≤ ND k₁ ω} ≤ ENNReal.ofReal (ε / 4) := by
@@ -144,22 +142,22 @@ theorem tendstoInMeasure_double [IsProbabilityMeasure P] (hμ : BPZWeakConv P μ
       (ENNReal.ofReal (ε / 4)) (ENNReal.ofReal_pos.2 (by positivity))
     obtain ⟨k, hk⟩ := h.exists
     refine ⟨k, le_trans (measure_mono fun ω hω => ?_) hk⟩
-    simp only [Set.mem_ofPred_eq, sub_zero, Real.norm_eq_abs] at hω ⊢
+    simp at hω ⊢
     exact hω.trans (le_abs_self _)
   -- choose the uniform tolerance
   obtain ⟨k₂, hk₂⟩ := bpz_exists_scale_small (P := P) (hWm.mul hWm) (s := ε / 8) (by positivity)
     (t := ENNReal.ofReal (ε / 4)) (ENNReal.ofReal_pos.2 (by positivity))
   set t : ℝ := 1 / ((k₁ : ℝ) + 1) with ht
   have ht0 : 0 < t := by positivity
-  set η : ℝ := t / 2 with hη
+  set η := t / 2 with hη
   have hη0 : 0 < η := by positivity
   set ε₁ : ℝ := 1 / ((k₂ : ℝ) + 1) with hε₁
   have hε₁0 : 0 < ε₁ := by positivity
   obtain ⟨δ, hδ, hcδ⟩ := hcont η hη0 ε₁ hε₁0
-  set h : ℝ := min (min (η / 4) (1 / 4)) (δ / 2) with hhdef
+  set h := min (min (η / 4) (1 / 4)) (δ / 2) with hhdef
   have hh0 : 0 < h := by positivity
-  have hh1 : h ≤ 1 / 4 := (min_le_left _ _).trans (min_le_right _ _)
-  have hhη : h ≤ η / 4 := (min_le_left _ _).trans (min_le_left _ _)
+  have hh1 : h ≤ 1 / 4 := by bound
+  have hhη : h ≤ η / 4 := by bound
   have hhδ : 2 * h ≤ δ := by have := min_le_right (min (η / 4) (1 / 4)) (δ / 2); linarith
   set S := bpzGridBox ⌈R / h⌉₊ with hS
   set S' := bpzGridBox ⌈ρ₂ / h⌉₊ with hS'
@@ -176,16 +174,16 @@ theorem tendstoInMeasure_double [IsProbabilityMeasure P] (hμ : BPZWeakConv P μ
     have h := hμ.conv_sum_mul S (fun i => (cell i).indicator 1) (fun i y => H₀ (c i) y)
       (fun i => measurable_one.indicator (hcellm i)) hslice (fun _ => max 1 C)
       (fun i => max (‖c i‖ + 2 * h) R)
-      (fun i x => (bpz_indicator_one_abs_le _ x).trans (le_max_left _ _))
-      (fun i x => (hbd₀ _ x).trans (le_max_right _ _))
+      (fun i x => (bpz_indicator_one_abs_le _ x).trans (le_max_left ..))
+      (fun i x => (hbd₀ _ x).trans (le_max_right ..))
       (fun i x hx => bpz_indicator_one_eq_zero_of_subset (bpzGrid_cell_subset h hh0 i) x
-        (lt_of_le_of_lt (le_max_left _ _) hx))
-      (fun i x hx => hsupp₀ _ x (Or.inr (lt_of_le_of_lt (le_max_right _ _) hx)))
+        (lt_of_le_of_lt (le_max_left ..) hx))
+      (fun i x hx => hsupp₀ _ x (Or.inr (lt_of_le_of_lt (le_max_right ..) hx)))
     simp only [integral_indicator_one (hcellm _)] at h
     exact h
   -- the near-diagonal grid sums
   set G : ℕ → Ω → ℝ := fun n ω =>
-    ∑ i ∈ S', (μ n ω).real (cell i) * (μ n ω).real (Metric.ball (c i) (η + 2 * h)) with hG
+    ∑ i ∈ S', (μ n ω).real (cell i) * (μ n ω).real _ with hG
   set G₀ : Ω → ℝ := fun ω =>
     ∑ i ∈ S', (μ₀ ω).real (cell i) * (μ₀ ω).real (Metric.ball (c i) (η + 2 * h)) with hG₀
   have hGconv : TendstoInMeasure P G atTop G₀ := by
@@ -196,9 +194,9 @@ theorem tendstoInMeasure_double [IsProbabilityMeasure P] (hμ : BPZWeakConv P μ
       (fun i => max (‖c i‖ + 2 * h) (‖c i‖ + |η + 2 * h|))
       (fun i x => bpz_indicator_one_abs_le _ x) (fun i x => bpz_indicator_one_abs_le _ x)
       (fun i x hx => bpz_indicator_one_eq_zero_of_subset (bpzGrid_cell_subset h hh0 i) x
-        (lt_of_le_of_lt (le_max_left _ _) hx))
-      (fun i x hx => bpz_indicator_one_eq_zero_of_subset (bpz_ball_subset_closedBall _ _) x
-        (lt_of_le_of_lt (le_max_right _ _) hx))
+        (lt_of_le_of_lt (le_max_left ..) hx))
+      (fun i x hx => bpz_indicator_one_eq_zero_of_subset (bpz_ball_subset_closedBall ..) x
+        (lt_of_le_of_lt (le_max_right ..) hx))
     simp only [integral_indicator_one (hcellm _), integral_indicator_one measurableSet_ball] at h
     exact h
   have hmassm : ∀ (s : Set ℂ), MeasurableSet s → ∀ n, Measurable fun ω => (μ n ω).real s :=
@@ -225,9 +223,9 @@ theorem tendstoInMeasure_double [IsProbabilityMeasure P] (hμ : BPZWeakConv P μ
         (fun _ => max ρ₂ R) (fun _ x => bpz_indicator_one_abs_le _ x)
         (fun _ x => bpz_indicator_one_abs_le _ x)
         (fun _ x hx => bpz_indicator_one_eq_zero_of_subset subset_rfl x
-          (lt_of_le_of_lt (le_max_left _ _) hx))
+          (lt_of_le_of_lt (le_max_left ..) hx))
         (fun _ x hx => bpz_indicator_one_eq_zero_of_subset subset_rfl x
-          (lt_of_le_of_lt (le_max_right _ _) hx))
+          (lt_of_le_of_lt (le_max_right ..) hx))
       have hB₂m : MeasurableSet B₂ := measurableSet_closedBall
       have hBm : MeasurableSet B := measurableSet_closedBall
       simp only [Finset.sum_singleton, integral_indicator_one hB₂m, integral_indicator_one hBm] at h
@@ -251,15 +249,12 @@ theorem tendstoInMeasure_double [IsProbabilityMeasure P] (hμ : BPZWeakConv P μ
       mul_le_mul (measureReal_mono hsub2) (measureReal_mono hsub) measureReal_nonneg
         measureReal_nonneg
     have hgrid : G₀ ω ≤ ND k₁ ω := by
-      have h1 := grid_le_bpzNearDiag (μ₀ ω) (t := η) (N := ⌈ρ₂ / h⌉₊) hh0
-        (ρ := ρ₃) (bpzGrid_box_radius hρ₂0 hh0 hh1)
+      have h1 := grid_le_bpzNearDiag (μ₀ ω) (t := η) hh0
+        (bpzGrid_box_radius hρ₂0 hh0 hh1)
       have h2 : bpzNearDiag ρ₃ (η + 4 * h) (μ₀ ω) ≤ bpzNearDiag ρ₃ t (μ₀ ω) :=
         bpzNearDiag_mono le_rfl (by linarith) _
       exact h1.trans h2
-    simp only [hB₀]
-    have h1 := mul_le_mul_of_nonneg_left hgrid (mul_nonneg zero_le_two hC)
-    have h2 := mul_le_mul_of_nonneg_left hm2 (mul_nonneg zero_le_two hε₁0.le)
-    linarith only [h1, h2]
+    linarith only [(mul_le_mul_of_nonneg_left hgrid (mul_nonneg zero_le_two hC)), (mul_le_mul_of_nonneg_left hm2 (mul_nonneg zero_le_two hε₁0.le))]
   -- the probability bound on the limit
   have hP₀ : P {ω | ε / 2 ≤ 2 * (ε₁ * (Wv ω * Wv ω)) + 2 * C * ND k₁ ω} ≤
       ENNReal.ofReal (ε / 2) := by
@@ -271,7 +266,7 @@ theorem tendstoInMeasure_double [IsProbabilityMeasure P] (hμ : BPZWeakConv P μ
       push Not at hcon
       obtain ⟨h1, h2⟩ := hcon
       have hND0 : 0 ≤ ND k₁ ω := by
-        have := hμ.fin₀ ω; exact bpzNearDiag_nonneg _ _ _
+        have := hμ.fin₀ ω; exact bpzNearDiag_nonneg ..
       have h1' : ε₁ * (Wv ω * Wv ω) < ε / 8 := lt_of_le_of_lt (le_abs_self _) h1
       have h2' : 2 * C * ND k₁ ω < ε / 4 := by
         have : C * ND k₁ ω ≤ C' * ND k₁ ω := mul_le_mul_of_nonneg_right (by linarith) hND0
@@ -280,11 +275,11 @@ theorem tendstoInMeasure_double [IsProbabilityMeasure P] (hμ : BPZWeakConv P μ
         linarith
       linarith
     calc P {ω | ε / 2 ≤ 2 * (ε₁ * (Wv ω * Wv ω)) + 2 * C * ND k₁ ω}
-        ≤ P ({ω | ε / 8 ≤ |ε₁ * (Wv ω * Wv ω)|} ∪ {ω | ε / (8 * C') ≤ ND k₁ ω}) :=
+        ≤ P _ :=
           measure_mono hsub
       _ ≤ P {ω | ε / 8 ≤ |ε₁ * (Wv ω * Wv ω)|} + P {ω | ε / (8 * C') ≤ ND k₁ ω} :=
-          measure_union_le _ _
-      _ ≤ ENNReal.ofReal (ε / 4) + ENNReal.ofReal (ε / 4) := add_le_add hk₂ hk₁
+          measure_union_le ..
+      _ ≤ ENNReal.ofReal _ + ENNReal.ofReal (ε / 4) := add_le_add hk₂ hk₁
       _ = ENNReal.ofReal (ε / 2) := by
           rw [← ENNReal.ofReal_add (by positivity) (by positivity)]; ring_nf
   refine ⟨A, A₀, hAconv, ?_, ?_⟩
@@ -299,7 +294,6 @@ theorem tendstoInMeasure_double [IsProbabilityMeasure P] (hμ : BPZWeakConv P μ
       have hBn0 : 0 ≤ Bn n ω := by
         have h1 : 0 ≤ G n ω := Finset.sum_nonneg fun i _ =>
           mul_nonneg measureReal_nonneg measureReal_nonneg
-        simp only [hBn]
         have : 0 ≤ (μ n ω).real B₂ * (μ n ω).real B :=
           mul_nonneg measureReal_nonneg measureReal_nonneg
         exact add_nonneg (mul_nonneg (mul_nonneg zero_le_two hε₁0.le) this)
@@ -308,17 +302,13 @@ theorem tendstoInMeasure_double [IsProbabilityMeasure P] (hμ : BPZWeakConv P μ
       split_ifs with hn
       · have herr := bpz_double_grid_error (μ n ω) (H n) H₀ (hHm n) hH₀m hR hh0 hh1 hhδ
           hε₁0.le (hbd n) hbd₀ (hsupp n) hsupp₀ (hn₀ n hn) hcδ
-        have hnd := bpzNearDiag_le_grid (μ n ω) (ρ := ρ₂) (t := η) hh0
         calc _ ≤ 2 * ε₁ * ((μ n ω).real B₂ * (μ n ω).real B) +
               2 * C * bpzNearDiag ρ₂ η (μ n ω) := herr
           _ ≤ Bn n ω := by
-              simp only [hBn, hG]
-              have := mul_le_mul_of_nonneg_left hnd (mul_nonneg zero_le_two hC)
-              linarith only [this]
+              linarith only [(mul_le_mul_of_nonneg_left (bpzNearDiag_le_grid (μ n ω) (ρ := ρ₂) (t := η) hh0) (mul_nonneg zero_le_two hC))]
       · rw [abs_zero]; exact hBn0
     have hfin := bpz_eventually_measure_le_of_le_tendstoInMeasure hBconv hEB hε
       (lt_of_le_of_lt ((measure_mono fun ω hω => (by
-        simp only [Set.mem_ofPred_eq] at hω ⊢
         exact hω.trans (hB₀le ω))).trans hP₀)
         (ENNReal.ofReal_lt_ofReal_iff hε |>.2 (by linarith)))
     filter_upwards [hfin, eventually_ge_atTop n₀] with n hn hn'
@@ -343,15 +333,13 @@ theorem tendstoInMeasure_double [IsProbabilityMeasure P] (hμ : BPZWeakConv P μ
       calc _ ≤ 2 * ε₁ * ((μ₀ ω).real B₂ * (μ₀ ω).real B) + 2 * C * bpzNearDiag ρ₂ η (μ₀ ω) :=
             herr
         _ ≤ 2 * (ε₁ * (Wv ω * Wv ω)) + 2 * C * ND k₁ ω := by
-            have h1 := mul_le_mul_of_nonneg_left hnd (mul_nonneg zero_le_two hC)
-            have h2 := mul_le_mul_of_nonneg_left hm2 (mul_nonneg zero_le_two hε₁0.le)
-            linarith only [h1, h2]
+            linarith only [(mul_le_mul_of_nonneg_left hnd (mul_nonneg zero_le_two hC)), (mul_le_mul_of_nonneg_left hm2 (mul_nonneg zero_le_two hε₁0.le))]
     calc P {ω | ε ≤ |(∫ x, ∫ y, H₀ x y ∂μ₀ ω ∂μ₀ ω) - A₀ ω|}
         ≤ P {ω | ε / 2 ≤ 2 * (ε₁ * (Wv ω * Wv ω)) + 2 * C * ND k₁ ω} :=
           measure_mono fun ω hω => by
-            simp only [Set.mem_ofPred_eq] at hω ⊢
+            simp at hω ⊢
             linarith [hle ω]
-      _ ≤ ENNReal.ofReal (ε / 2) := hP₀
+      _ ≤ ENNReal.ofReal _ := hP₀
       _ ≤ ENNReal.ofReal ε := ENNReal.ofReal_le_ofReal (by linarith)
 
 end BPZWeakConv

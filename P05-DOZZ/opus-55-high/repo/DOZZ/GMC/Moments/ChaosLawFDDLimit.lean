@@ -36,7 +36,7 @@ theorem map_eq_of_seq_map_eq_of_tendstoInMeasure
       (∫ ω, φ (fLimit ω) ∂P) = ∫ ω, φ (gLimit ω) ∂P' := by
     intro φ
     obtain ⟨ns, hns, hfae⟩ := hfconv.exists_seq_tendsto_ae
-    have hgsub : TendstoInMeasure P' (fun n => g (ns n)) atTop gLimit :=
+    have hgsub :=
       hgconv.comp hns.tendsto_atTop
     obtain ⟨ms, hms, hgae⟩ := hgsub.exists_seq_tendsto_ae
     let fs : ℕ → Ω → E := fun n => f (ns (ms n))
@@ -44,17 +44,12 @@ theorem map_eq_of_seq_map_eq_of_tendstoInMeasure
     have hfs : ∀ n, AEMeasurable (fs n) P := fun n => hf _
     have hgs : ∀ n, AEMeasurable (gs n) P' := fun n => hg _
     have hmaps : ∀ n, Measure.map (fs n) P = Measure.map (gs n) P' := by
-      intro n
-      exact hmap (ns (ms n))
+      tauto
     have hfseq : ∀ᵐ ω ∂P, Tendsto (fun n => fs n ω) atTop (𝓝 (fLimit ω)) := by
       filter_upwards [hfae] with ω hω
-      have hcomp := hω.comp hms.tendsto_atTop
-      change Tendsto (fun n => f (ns (ms n)) ω) atTop (𝓝 (fLimit ω)) at hcomp
-      exact hcomp
+      exact hω.comp hms.tendsto_atTop
     have hgseq : ∀ᵐ ω ∂P', Tendsto (fun n => gs n ω) atTop (𝓝 (gLimit ω)) := by
-      filter_upwards [hgae] with ω hω
-      change Tendsto (fun n => g (ns (ms n)) ω) atTop (𝓝 (gLimit ω)) at hω
-      exact hω
+      assumption
     exact integral_bcf_eq_of_map_eq_of_ae_tendsto fs gs fLimit gLimit
       hfs hgs hmaps hfseq hgseq φ
   apply ext_of_forall_integral_eq_of_IsFiniteMeasure
@@ -81,25 +76,20 @@ theorem tendstoInMeasure_pi_finite
     change ε ≤ ‖f n ω - g ω‖ at hω
     by_contra hnot
     have hcoord : ∀ i, ‖(f n ω - g ω) i‖ < ε := by
-      intro i
-      apply lt_of_not_ge
-      intro h
-      exact hnot (Set.mem_iUnion.2 ⟨i, by simpa using h⟩)
-    have hnorm : ‖f n ω - g ω‖ < ε :=
-      (pi_norm_lt_iff hε).2 (by simpa only [Pi.sub_apply] using hcoord)
+      simp_all
+    have hnorm :=
+      (pi_norm_lt_iff hε).2 (by assumption)
     exact (not_le_of_gt hnorm) hω
   have hsum : Tendsto (fun n => ∑ i : ι, μ {ω | ε ≤ ‖f n ω i - g ω i‖})
       atTop (𝓝 0) := by
     have hsum' : Tendsto (fun n => ∑ i : ι, μ {ω | ε ≤ ‖f n ω i - g ω i‖})
-        atTop (𝓝 (∑ i : ι, (0 : ℝ≥0∞))) := by
-      exact tendsto_finsetSum
-        (f := fun i n => μ {ω | ε ≤ ‖f n ω i - g ω i‖}) (x := atTop)
-        (a := fun _ => (0 : ℝ≥0∞)) Finset.univ
+        atTop (𝓝 (∑ i : ι, 0)) := tendsto_finsetSum
+       
+        (a := fun _ => 0) Finset.univ
         (by intro i hi; exact (tendstoInMeasure_iff_norm.mp (hcoord i)) ε hε)
     simpa using hsum'
   have hle (n : ℕ) : μ {ω | ε ≤ ‖f n ω - g ω‖} ≤
-      ∑ i : ι, μ {ω | ε ≤ ‖f n ω i - g ω i‖} := by
-    exact (measure_mono (hsubset n)).trans (measure_iUnion_fintype_le μ _)
+      ∑ i : ι, μ {ω | ε ≤ ‖f n ω i - g ω i‖} := (measure_mono (hsubset n)).trans (measure_iUnion_fintype_le μ _)
   exact tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds hsum
     (fun _ => zero_le) hle
 
@@ -120,8 +110,7 @@ theorem gmc_limit_test_vector_law
       (fun ω => limitX ω j))
     (hconvY : ∀ j, TendstoInMeasure P' (fun n ω => cutoffY n ω j) atTop
       (fun ω => limitY ω j)) :
-    Measure.map limitX P = Measure.map limitY P' := by
-  exact map_eq_of_seq_map_eq_of_tendstoInMeasure cutoffX cutoffY limitX limitY
+    Measure.map limitX P = Measure.map limitY P' := map_eq_of_seq_map_eq_of_tendstoInMeasure cutoffX cutoffY limitX limitY
     hcutoffX hcutoffY hlimitX hlimitY hcutoffLaw
     (tendstoInMeasure_pi_finite P cutoffX limitX hconvX)
     (tendstoInMeasure_pi_finite P' cutoffY limitY hconvY)

@@ -31,7 +31,6 @@ def brownianPositiveRationalBelow (a : ℝ) : Set BrownianPath :=
 
 theorem measurableSet_brownianPositiveRationalBelow (a : ℝ) :
     MeasurableSet (brownianPositiveRationalBelow a) := by
-  unfold brownianPositiveRationalBelow
   apply MeasurableSet.iInter
   intro r
   by_cases hr : 0 < (r : ℝ)
@@ -39,7 +38,7 @@ theorem measurableSet_brownianPositiveRationalBelow (a : ℝ) :
     exact measurableSet_lt (ContinuousMap.measurable_eval
       (⟨(r : ℝ), hr.le⟩ : ℝ≥0))
       measurable_const
-  · simp [hr]
+  bound
 
 /-- Evaluation of a continuous path at rational times, with nonpositive coordinates set to time
 zero. -/
@@ -51,7 +50,7 @@ theorem measurable_brownianPathRationalEvals :
   apply measurable_pi_iff.mpr
   intro r
   exact ContinuousMap.measurable_eval
-    (⟨max (r : ℝ) 0, le_max_right _ _⟩ : ℝ≥0)
+    (⟨max (r : ℝ) 0, le_max_right ..⟩ : ℝ≥0)
 
 private theorem rational_strict_below_implies_weak_all_times
     (q : BrownianPath) {a : ℝ} (ha : 0 < a) (hq0 : q 0 = 0)
@@ -62,21 +61,14 @@ private theorem rational_strict_below_implies_weak_all_times
   have htpos : 0 < (t : ℝ) := by
     by_contra h
     have ht0 : t = 0 := by
-      apply Subtype.ext
-      exact le_antisymm (le_of_not_gt h) t.2
-    subst t
-    simp [hq0] at hgt
-    linarith
+      simp_all
+    grind
   let F : ℝ → ℝ := fun r => q ⟨max r 0, le_max_right r 0⟩
   have hF : Continuous F := by
-    apply q.continuous.comp
-    exact (continuous_max.comp (continuous_id.prodMk continuous_const)).subtype_mk
-      (fun r => le_max_right r 0)
+    fun_prop
   have hF_eval (r : ℝ) (hr : 0 ≤ r) : F r = q ⟨r, hr⟩ := by
-    change q ⟨max r 0, le_max_right r 0⟩ = q ⟨r, hr⟩
-    congr 1
-    exact Subtype.ext (max_eq_left hr)
-  let U : Set ℝ := {r | 0 < r ∧ a < F r}
+    aesop
+  let U := {r | 0 < r ∧ a < F r}
   have hU : IsOpen U := isOpen_Ioi.inter (isOpen_Ioi.preimage hF)
   have htU : (t : ℝ) ∈ U := by
     change 0 < (t : ℝ) ∧ a < F (t : ℝ)
@@ -85,14 +77,13 @@ private theorem rational_strict_below_implies_weak_all_times
     exact hgt
   obtain ⟨r, hrU⟩ := Rat.denseRange_cast.exists_mem_open hU ⟨t, htU⟩
   have hr : 0 < (r : ℝ) ∧ a < F (r : ℝ) := by
-    change (r : ℝ) ∈ U at hrU
     exact hrU
   have hr0 : 0 ≤ (r : ℝ) := hr.1.le
   have hrat := hq r hr.1
-  have heval : F (r : ℝ) = q ⟨(r : ℝ), hr0⟩ := hF_eval (r : ℝ) hr0
+  have heval : F (r : ℝ) = q ⟨(r : ℝ), hr0⟩ := by simp_all
   have hsub : (⟨(r : ℝ), hr0⟩ : ℝ≥0) = ⟨(r : ℝ), hr.1.le⟩ := Subtype.ext rfl
-  have heval' : F (r : ℝ) = q ⟨(r : ℝ), hr.1.le⟩ := heval.trans (congrArg q hsub)
-  linarith [hrat, hr.2, heval']
+  have heval' : F (r : ℝ) = q ⟨(r : ℝ), hr.1.le⟩ := by assumption
+  linarith
 
 /-- The rational and real-time strict survival events agree under the upper-conditioned reference
 law. A path in their difference would have global drifted maximum exactly at the barrier. -/
@@ -104,26 +95,25 @@ theorem brownianBelowConditionedLaw_rational_below_ae
       q ∈ brownianPositiveRationalBelow a ↔ q ∈ brownianPathStrictlyBelow a := by
   have _ := hax
   classical
-  let D : BrownianPath → BrownianPath := driftedBrownianPath (-ν)
-  let R : Set BrownianPath := brownianPositiveRationalBelow a
-  let S : Set BrownianPath := brownianPathStrictlyBelow a
-  have hR : MeasurableSet R := measurableSet_brownianPositiveRationalBelow a
-  have hS : MeasurableSet S := measurableSet_brownianPath_below a
-  have hdiff : MeasurableSet (R \ S) := hR.diff hS
+  let D := driftedBrownianPath (-ν)
+  let R := brownianPositiveRationalBelow a
+  let S := brownianPathStrictlyBelow a
+  have hS := measurableSet_brownianPath_below a
+  have hdiff : MeasurableSet (R \ S) := (measurableSet_brownianPositiveRationalBelow a).diff hS
   have hD : Measurable D := continuous_driftedBrownianPath.measurable.comp
     (measurable_const.prodMk measurable_id)
-  have hM : AEMeasurable (driftedBrownianMaximum ν) B :=
+  have hM :=
     aemeasurable_driftedBrownianMaximum B hB ν hν
-  have hmap : B.map (driftedBrownianMaximum ν) = brownianMaximumReferenceLaw ν :=
+  have hmap :=
     brownianPath_globalMaximum_map B hB ν hν
   let _ := noAtoms_brownianMaximumReferenceLaw ν
   have hmaxzero : B {p | driftedBrownianMaximum ν p = a} = 0 := by
     have hsingle := congrArg (fun m : Measure ℝ => m {a}) hmap
     rw [Measure.map_apply_of_aemeasurable hM (measurableSet_singleton a)] at hsingle
-    simpa only [Set.preimage, mem_singleton_iff, eq_comm, measure_singleton] using hsingle
+    aesop
   have hmaxae : ∀ᵐ p ∂B, driftedBrownianMaximum ν p ≠ a := by
     apply ae_iff.mpr
-    simpa only [not_not] using hmaxzero
+    simp_all
   have hrawae : ∀ᵐ p ∂B, p ∉ D ⁻¹' (R \ S) := by
     filter_upwards [hmaxae, hB.eval_zero_ae_eq_zero] with p hmax hp0
     intro hp
@@ -145,7 +135,6 @@ theorem brownianBelowConditionedLaw_rational_below_ae
       apply hp.2
       intro t
       exact lt_of_not_ge (fun h => hn ⟨t, h⟩)
-    have hEq : D p t = a := le_antisymm (hweak t) ht
     have hbound : BddAbove (Set.range (fun t : ℝ≥0 => D p t)) :=
       ⟨a, fun z hz => by
         rcases hz with ⟨u, rfl⟩
@@ -169,7 +158,7 @@ theorem brownianBelowConditionedLaw_rational_below_ae
         exact hweak u)
     have hge : a ≤ driftedBrownianMaximum ν p := by
       calc
-        a = D p t := hEq.symm
+        a = D p t := (le_antisymm (hweak t) ht).symm
         _ ≤ sSup (Set.range (fun u : ℝ≥0 => D p u)) := le_csSup hbound (Set.mem_range_self t)
         _ = driftedBrownianMaximum ν p := hsup.symm
     exact hmax (le_antisymm hle hge)
@@ -193,28 +182,18 @@ theorem brownianBelowConditionedLaw_rational_below_ae
     simp only [S, brownianPathStrictlyBelow, Set.mem_ofPred_eq] at hq
     intro r
     by_cases hr : 0 < (r : ℝ)
-    · simp only [hr, dite_eq_left, Set.mem_ofPred_eq]
-      exact hq ⟨(r : ℝ), hr.le⟩
-    · simp [hr]
+    · aesop
+    · grind
   have hsetNot : {q | ¬ q ∉ R \ S} = R \ S := by
     ext q
     simp
   have hnot : ∀ᵐ q ∂brownianBelowConditionedLaw B ν x, q ∉ R \ S := by
     apply ae_iff.mpr
-    rw [hsetNot]
-    exact hzeroLaw
+    rwa [hsetNot]
   filter_upwards [hnot] with q hq
   constructor
-  · intro hR
-    by_contra hS
-    exact hq ⟨hR, hS⟩
-  · intro hS
-    simp only [brownianPositiveRationalBelow, Set.mem_iInter]
-    intro r
-    by_cases hr : 0 < (r : ℝ)
-    · simp only [hr, dite_eq_left, Set.mem_ofPred_eq]
-      simpa [brownianPathStrictlyBelow] using hS ⟨(r : ℝ), hr.le⟩
-    · simp [hr]
+  · aesop
+  · tauto
 
 end DOZZ.Proofs
 

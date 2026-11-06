@@ -16,18 +16,23 @@ open MeasureTheory ProbabilityTheory Set
 open scoped NNReal ENNReal
 
 namespace DOZZ.Proofs
+section
+variable {c : ℝ}
+section
+variable (hc : 0 < c)
+include hc
 
 /-- Dilating a circle by a positive factor is the pushforward of its normalized arclength
 measure. Logarithmic radius is shifted by the inverse dilation. -/
-theorem circleMeasure_scale {c : ℝ} (hc : 0 < c) (x : ℂ) (s : ℝ) :
+theorem circleMeasure_scale (x : ℂ) (s : ℝ) :
     circleMeasure (c * x) (s - Real.log c) =
       Measure.map (fun z : ℂ => c * z) (circleMeasure x s) := by
-  let μ : Measure ℝ := volume.restrict (Ioc 0 (2 * Real.pi))
+  let μ := volume.restrict (Ioc 0 (2 * Real.pi))
   let scale : ℂ → ℂ := fun z => c * z
   have hrad : Real.exp (-(s - Real.log c)) = c * Real.exp (-s) := by
     calc
-      Real.exp (-(s - Real.log c)) = Real.exp (Real.log c + -s) := by congr 1; ring
-      _ = Real.exp (Real.log c) * Real.exp (-s) := Real.exp_add _ _
+      Real.exp _ = Real.exp _ := by ring
+      _ = Real.exp (Real.log c) * Real.exp (-s) := Real.exp_add ..
       _ = c * Real.exp (-s) := by rw [Real.exp_log hc]
   have hcircle :
       (fun θ : ℝ => circleMap (c * x) (Real.exp (-(s - Real.log c))) θ) =
@@ -39,19 +44,19 @@ theorem circleMeasure_scale {c : ℝ} (hc : 0 < c) (x : ℂ) (s : ℝ) :
     ring
   have hscale : Measurable scale := by fun_prop
   have hangle : Measurable (circleMap x (Real.exp (-s))) :=
-    measurable_circleMap _ _
+    measurable_circleMap ..
   unfold circleMeasure
-  change ENNReal.ofReal (2 * Real.pi)⁻¹ •
-      μ.map (circleMap (c * x) (Real.exp (-(s - Real.log c)))) =
+  change ENNReal.ofReal _⁻¹ •
+      μ.map _ =
     Measure.map scale
-      (ENNReal.ofReal (2 * Real.pi)⁻¹ • μ.map (circleMap x (Real.exp (-s))))
+      (ENNReal.ofReal _⁻¹ • μ.map _)
   rw [Measure.map_smul _ hscale.aemeasurable,
     Measure.map_map hscale hangle, ← hcircle]
 
 /-- The clipped logarithmic interaction of two circles gains `log c` under a common dilation.
 The proof uses the pushforward formula for normalized arclength, so it also covers tangent and
 intersecting circles without branch analysis of the closed potential series. -/
-theorem circleLogPotential_scale {c : ℝ} (hc : 0 < c) (x y : ℂ) (r s : ℝ) :
+theorem circleLogPotential_scale (x y : ℂ) (r s : ℝ) :
     circleLogPotential ‖c * x - c * y‖₊
         ⟨Real.exp (-(r - Real.log c)), Real.exp_pos _⟩
         ⟨Real.exp (-(s - Real.log c)), Real.exp_pos _⟩ =
@@ -63,12 +68,12 @@ theorem circleLogPotential_scale {c : ℝ} (hc : 0 < c) (x y : ℂ) (r s : ℝ) 
     dsimp [f]
     have hdist : Continuous (fun w : ℂ => ‖w - c * y‖) := by fun_prop
     exact (continuous_const.max hdist).log
-      (fun _ => ne_of_gt ((Real.exp_pos _).trans_le (le_max_left _ _)))
+      (fun _ => ne_of_gt ((Real.exp_pos _).trans_le (le_max_left ..)))
   have hgcont : Continuous g := by
     dsimp [g]
     have hdist : Continuous (fun w : ℂ => ‖w - y‖) := by fun_prop
     exact (continuous_const.max hdist).log
-      (fun _ => ne_of_gt ((Real.exp_pos _).trans_le (le_max_left _ _)))
+      (fun _ => ne_of_gt ((Real.exp_pos _).trans_le (le_max_left ..)))
   have hfint : Integrable f (circleMeasure (c * x) (r - Real.log c)) :=
     integrable_circleMeasure_of_circleIntegrable _ _ hfcont.measurable
       hfcont.continuousOn.circleIntegrable'
@@ -78,26 +83,26 @@ theorem circleLogPotential_scale {c : ℝ} (hc : 0 < c) (x y : ℂ) (r s : ℝ) 
   have hscale : Measurable (fun z : ℂ => c * z) := by fun_prop
   have hrad : Real.exp (-(s - Real.log c)) = c * Real.exp (-s) := by
     calc
-      Real.exp (-(s - Real.log c)) = Real.exp (Real.log c + -s) := by congr 1; ring
-      _ = Real.exp (Real.log c) * Real.exp (-s) := Real.exp_add _ _
+      Real.exp (-(s - Real.log c)) = Real.exp (Real.log c + -s) := by ring
+      _ = Real.exp (Real.log c) * Real.exp (-s) := Real.exp_add ..
       _ = c * Real.exp (-s) := by rw [Real.exp_log hc]
   have hintegrand (z : ℂ) : f (c * z) = Real.log c + g z := by
     dsimp [f, g]
     have hnorm : ‖c * z - c * y‖ = c * ‖z - y‖ := by
       rw [← mul_sub, norm_mul]
       have hcNorm : ‖(c : ℂ)‖ = c := by simp [abs_of_pos hc]
-      rw [hcNorm]
+      simp_all
     rw [hrad, hnorm, ← mul_max_of_nonneg _ _ hc.le,
       Real.log_mul hc.ne' (ne_of_gt
-        (lt_of_lt_of_le (Real.exp_pos (-s)) (le_max_left _ _)))]
+        (lt_of_lt_of_le (Real.exp_pos (-s)) (le_max_left ..)))]
   calc
     circleLogPotential ‖c * x - c * y‖₊
         ⟨Real.exp (-(r - Real.log c)), Real.exp_pos _⟩
-        ⟨Real.exp (-(s - Real.log c)), Real.exp_pos _⟩ =
-      ∫ w, f w ∂circleMeasure (c * x) (r - Real.log c) := by
+        ⟨Real.exp _, Real.exp_pos _⟩ =
+      ∫ w, f w ∂circleMeasure .. := by
         symm
         exact integral_logmax_circleMeasure_eq_closed _ _ _ (Real.exp_pos _)
-    _ = ∫ z, f (c * z) ∂circleMeasure x r := by
+    _ = ∫ z, f _ ∂circleMeasure x r := by
         rw [circleMeasure_scale hc x r]
         exact integral_map hscale.aemeasurable hfcont.measurable.aestronglyMeasurable
     _ = ∫ z, (Real.log c + g z) ∂circleMeasure x r := by
@@ -110,6 +115,10 @@ theorem circleLogPotential_scale {c : ℝ} (hc : 0 < c) (x y : ℂ) (r s : ℝ) 
         ⟨Real.exp (-r), Real.exp_pos _⟩ ⟨Real.exp (-s), Real.exp_pos _⟩ := by
         rw [integral_logmax_circleMeasure_eq_closed]
 
+end
+
+end
+
 /-- The regular pinning potential vanishes when the entire averaging circle is in the unit
 logarithmic chart. -/
 theorem circleLogPotential_pin_eq_zero_of_inside {x : ℂ} {r : ℝ}
@@ -118,9 +127,9 @@ theorem circleLogPotential_pin_eq_zero_of_inside {x : ℂ} {r : ℝ}
   rw [← integral_log_normPlus_circleMeasure_eq_closed]
   have hzero : (fun w : ℂ => Real.log (normPlus w)) =ᵐ[circleMeasure x r] fun _ => 0 := by
     filter_upwards [ae_norm_sub_le_center_add_circleMeasure x 0 r] with w hw
-    have hinside' : ‖x - 0‖ + Real.exp (-r) ≤ 1 := by simpa using hinside
+    have hinside' : ‖x - 0‖ + Real.exp (-r) ≤ 1 := by simp_all
     have hn : ‖w‖ ≤ 1 := by
-      simpa only [sub_zero] using hw.trans hinside'
+      simpa using hw.trans hinside'
     simp [normPlus, max_eq_left hn]
   rw [integral_congr_ae hzero, integral_zero]
 
@@ -136,12 +145,11 @@ theorem circleAverage_covariance_affine_scale
     covariance (fun ω => Xc ω (a + c * x) (r - Real.log c))
         (fun ω => Xc ω (a + c * y) (s - Real.log c)) P =
       covariance (fun ω => Xc ω x r) (fun ω => Xc ω y s) P - Real.log c := by
-  rw [circleAverage_covariance P X Xc hX hc (a + c * x) (a + c * y)
-      (r - Real.log c) (s - Real.log c),
+  rw [circleAverage_covariance P X Xc hX hc _ _
+      (r - Real.log c) _,
     circleAverage_covariance P X Xc hX hc x y r s]
   have hdiff : (a + c * x) - (a + c * y) = c * x - c * y := by ring
-  rw [hdiff]
-  rw [circleLogPotential_scale hscale x y r s]
+  rw [hdiff, circleLogPotential_scale hscale x y r s]
   rw [circleLogPotential_pin_eq_zero_of_inside hax,
     circleLogPotential_pin_eq_zero_of_inside hay,
     circleLogPotential_pin_eq_zero_of_inside hx,
@@ -164,12 +172,12 @@ theorem circleAverage_affine_scaled_fdd_law
           neg_nonneg.mpr (Real.log_nonpos (le_of_lt hscale) hc_le)⟩)) := by
   let : IsProbabilityMeasure P := hX.1
   let v : ℝ≥0 := ⟨-Real.log c, neg_nonneg.mpr (Real.log_nonpos (le_of_lt hscale) hc_le)⟩
-  let G : Measure ℝ := gaussianReal 0 v
+  let G := gaussianReal 0 v
   let A : ι → Ω → ℝ := fun i ω => Xc ω (z i) (r i)
   let T : Ω → ι → ℝ := fun ω i => Xc ω (a + c * z i) (r i - Real.log c)
   let B : Ω × ℝ → ι → ℝ := fun p i => A i p.1 + p.2
   have hW : HasLaw (id : ℝ → ℝ) (gaussianReal 0 v) G := by
-    exact ⟨aemeasurable_id, Measure.map_id⟩
+    aesop
   have hA : IsCenteredJointlyGaussian P (fun ω i => A i ω) := by
     simpa [A] using circleAverage_finite_family_jointly_gaussian P X hX Xc hc
       (fun i => (z i, r i))
@@ -182,9 +190,9 @@ theorem circleAverage_affine_scaled_fdd_law
         (id : ℝ → ℝ) hA hW
   have hcircleMean := (circleAverage_isGaussianProcess P X Xc hX hc).2
   have hTmean (i : ι) : (∫ ω, T ω i ∂P) = 0 := by
-    exact hcircleMean (a + c * z i) (r i - Real.log c)
+    tauto
   have hAmean (i : ι) : (∫ ω, A i ω ∂P) = 0 := by
-    exact hcircleMean (z i) (r i)
+    tauto
   have hBmean (i : ι) : (∫ p, B p i ∂(P.prod G)) = 0 := by
     exact coord_mean (P.prod G) B hB i
   have htargetCov (i j : ι) :
@@ -212,8 +220,8 @@ theorem circleAverage_affine_scaled_fdd_law
   have hproductCov (i j : ι) :
       covariance (fun p : Ω × ℝ => A i p.1 + p.2)
           (fun p => A j p.1 + p.2) (P.prod G) = covariance (A i) (A j) P + (v : ℝ) := by
-    let Ai : Ω → ℝ := A i
-    let Aj : Ω → ℝ := A j
+    let Ai := A i
+    let Aj := A j
     have hAi : MemLp Ai 2 P := hc.2.1 (z i) (r i)
     have hAj : MemLp Aj 2 P := hc.2.1 (z j) (r j)
     have hScalar : MemLp (id : ℝ → ℝ) 2 G := memLp_id_gaussianReal 2
@@ -230,8 +238,7 @@ theorem circleAverage_affine_scaled_fdd_law
       have hAjMap : AEStronglyMeasurable Aj ((P.prod G).map Prod.fst) := by
         rw [measurePreserving_fst.map_eq]
         exact hAj.aestronglyMeasurable
-      have h := covariance_map_fun hAiMap hAjMap measurable_fst.aemeasurable
-      simpa [AiProd, AjProd] using h
+      simpa [AiProd, AjProd] using (covariance_map_fun hAiMap hAjMap measurable_fst.aemeasurable)
     have hNoiseCov : covariance WProd WProd (P.prod G) = (v : ℝ) := by
       have hWMap : AEStronglyMeasurable (id : ℝ → ℝ) ((P.prod G).map Prod.snd) := by
         rw [measurePreserving_snd.map_eq]

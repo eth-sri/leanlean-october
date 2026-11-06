@@ -18,12 +18,12 @@ namespace DOZZ.Proofs
 theorem williams_maximum_pos_ae (ν : ℝ) :
     ∀ᵐ m ∂brownianMaximumReferenceLaw ν, 0 < m := by
   rw [ae_iff]
-  simp only [not_lt]
+  simp
   change brownianMaximumReferenceLaw ν (Iic 0) = 0
   rw [brownianMaximumReferenceLaw, withDensity_apply _ measurableSet_Iic]
   apply lintegral_eq_zero_of_ae_eq_zero
   filter_upwards [ae_restrict_mem measurableSet_Iic] with m hm
-  change ENNReal.ofReal (if 0 < m then 2*ν*Real.exp (-2*ν*m) else 0) = 0
+  change ENNReal.ofReal _ = 0
   rw [ite_eq_right (not_lt.mpr hm), ENNReal.ofReal_zero]
 
 /-- Fixed-level ordering passes through Fubini to the random maximum. This avoids
@@ -44,8 +44,8 @@ theorem williams_last_exit_mono_prod_ae (ν c : ℝ) (hν : 0 < ν)
   filter_upwards [williams_maximum_pos_ae ν] with m hm
   by_cases hc : c ≤ m
   · exact (conditioned_last_exit_mono_ae ν c m hν hm hc P hP).mono
-      (fun _ h => fun _ => h)
-  · exact ae_of_all _ fun _ h => False.elim (hc h)
+      (fun _ h _ => h)
+  simp_all
 
 
 end DOZZ.Proofs

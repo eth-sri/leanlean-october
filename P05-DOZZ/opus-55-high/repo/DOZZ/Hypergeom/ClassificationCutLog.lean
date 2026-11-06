@@ -13,10 +13,12 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Complex
 open scoped ComplexConjugate
 
 namespace DOZZ.Proofs
+section
+variable {z : ℂ}
 
 /-- In the upper half-plane, the principal logarithm of `z` is the logarithm of `-z` plus
 `π i`. -/
-theorem complexLog_eq_log_neg_add_pi_I {z : ℂ} (hz : 0 < z.im) :
+theorem complexLog_eq_log_neg_add_pi_I (hz : 0 < z.im) :
     Complex.log z = Complex.log (-z) + (Real.pi : ℂ) * Complex.I := by
   apply Complex.ext
   · simp [Complex.log_re]
@@ -27,7 +29,7 @@ theorem complexLog_eq_log_neg_add_pi_I {z : ℂ} (hz : 0 < z.im) :
 
 /-- In the lower half-plane, the principal logarithm of `z` is the logarithm of `-z` minus
 `π i`. -/
-theorem complexLog_eq_log_neg_sub_pi_I {z : ℂ} (hz : z.im < 0) :
+theorem complexLog_eq_log_neg_sub_pi_I (hz : z.im < 0) :
     Complex.log z = Complex.log (-z) - (Real.pi : ℂ) * Complex.I := by
   apply Complex.ext
   · simp [Complex.log_re]
@@ -36,8 +38,12 @@ theorem complexLog_eq_log_neg_sub_pi_I {z : ℂ} (hz : z.im < 0) :
     rw [Complex.arg_neg_eq_arg_add_pi_of_im_neg hz]
     norm_num [Complex.ofReal_re]
 
+end
+section
+variable {z r : ℂ}
+
 /-- The principal power changes by its positive-side monodromy factor in the upper half-plane. -/
-theorem complexCpow_eq_exp_log_neg_phase_upper {z r : ℂ} (hz : 0 < z.im) :
+theorem complexCpow_eq_exp_log_neg_phase_upper (hz : 0 < z.im) :
       z ^ r = Complex.exp (Complex.log (-z) * r) *
       Complex.exp ((Real.pi : ℂ) * Complex.I * r) := by
   have hz0 : z ≠ 0 := by
@@ -48,7 +54,7 @@ theorem complexCpow_eq_exp_log_neg_phase_upper {z r : ℂ} (hz : 0 < z.im) :
     add_mul, Complex.exp_add]
 
 /-- The principal power changes by its negative-side monodromy factor in the lower half-plane. -/
-theorem complexCpow_eq_exp_log_neg_phase_lower {z r : ℂ} (hz : z.im < 0) :
+theorem complexCpow_eq_exp_log_neg_phase_lower (hz : z.im < 0) :
       z ^ r = Complex.exp (Complex.log (-z) * r) *
       Complex.exp (-(Real.pi : ℂ) * Complex.I * r) := by
   have hz0 : z ≠ 0 := by
@@ -58,5 +64,7 @@ theorem complexCpow_eq_exp_log_neg_phase_lower {z r : ℂ} (hz : z.im < 0) :
   rw [Complex.cpow_def_of_ne_zero hz0 r, complexLog_eq_log_neg_sub_pi_I hz,
     sub_mul, Complex.exp_sub, div_eq_mul_inv, ← Complex.exp_neg]
   ring_nf
+
+end
 
 end DOZZ.Proofs

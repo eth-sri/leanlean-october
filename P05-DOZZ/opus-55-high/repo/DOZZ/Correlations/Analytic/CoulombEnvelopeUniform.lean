@@ -51,23 +51,22 @@ theorem coulomb_envelope_uniform_moment
     filter_upwards [hb] with ω hω
     exact ⟨mul_ne_zero hc hω.1, ENNReal.mul_ne_top hc' hω.2⟩
   let KL := ∫⁻ ω, L ω ^ (lo * q) ∂P
-  have hKL : KL < ⊤ := scaled_disk_negative_moment
-    P X hX γ hγ hγ2 M hM center (1 / 8) (by norm_num) le_rfl c hc hc'
+  have hKL := scaled_disk_negative_moment
+    P X hX γ hγ hγ2 M hM center _ (by norm_num) le_rfl c hc hc'
       (lo * q) (mul_nonpos_of_nonpos_of_nonneg hlo (by linarith))
   obtain ⟨KU, hKU, hUbound⟩ : ∃ KU : ℝ≥0∞, KU < ⊤ ∧
-      ∀ (α : Fin N → ℝ) (αinf : ℝ), (∀ i, |α i| ≤ A) → |αinf| ≤ A →
+      ∀ α αinf, (∀ i, |α i| ≤ A) → |αinf| ≤ A →
         hi * q + g ≤ 4 / γ ^ 2 →
         (∀ i, hi * q + g ≤ 2 / γ * (Q γ - α i)) →
         hi * q + g ≤ 2 / γ * (Q γ - αinf) →
         (∫⁻ ω, coulombMass γ (M ω) α z αinf ^ (hi * q) ∂P) ≤ KU := by
     by_cases hzero : hi = 0
     · refine ⟨1, ENNReal.one_lt_top, fun α αinf _ _ _ _ _ => ?_⟩
-      simp only [hzero, zero_mul, ENNReal.rpow_zero, lintegral_const, measure_univ, mul_one]
-      exact le_rfl
+      bound
     · obtain ⟨KU, hKU, hb⟩ := coulombMass_moment_uniform_pos
-        P X hX γ hγ hγ2 M hM N hδ hδ8 hR (A := A) hZs hg
+        P X hX γ hγ hγ2 M hM N hδ hδ8 hR hZs hg
       refine ⟨KU, hKU, fun α αinf hα hinf hbulk hroot hinfty => ?_⟩
-      exact hb z α αinf (hi * q) hsep hzn hzR hα hinf
+      exact hb z α αinf _ hsep hzn hzR hα hinf
         (mul_pos (lt_of_le_of_ne hhi (Ne.symm hzero)) (by linarith)) hbulk hroot hinfty
   refine ⟨(2 : ℝ≥0∞) ^ (q - 1) * (KL + KU), ENNReal.mul_lt_top
     (ENNReal.rpow_lt_top_of_nonneg (by linarith) (by norm_num))

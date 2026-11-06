@@ -38,7 +38,7 @@ theorem exists_countable_dense_admissible_tests
   classical
   let : LocallyCompactSpace (↥U) := hU.locallyCompactSpace
   let : SigmaCompactSpace (↥U) := inferInstance
-  let E : CompactExhaustion (↥U) := CompactExhaustion.choice (↥U)
+  let E := CompactExhaustion.choice (↥U)
   let K : ℕ → Set ℂ := fun n => Subtype.val '' E n
   have hKcompact (n : ℕ) : IsCompact (K n) := by
     dsimp [K]
@@ -99,13 +99,13 @@ theorem exists_countable_dense_admissible_tests
       simp [HasCompactSupport]
     · rfl
   let seq : (n : ℕ) → ℕ → ↥(R n) := fun n => by
-    letI : SeparableSpace (↥(R n)) := hRsep n
-    letI : Nonempty (↥(R n)) := hRnonempty n
-    exact TopologicalSpace.denseSeq (↥(R n))
+    letI : SeparableSpace _ := hRsep n
+    letI : Nonempty _ := hRnonempty n
+    exact TopologicalSpace.denseSeq _
   have hseq (n : ℕ) : DenseRange (seq n) := by
     let : SeparableSpace (↥(R n)) := hRsep n
     let : Nonempty (↥(R n)) := hRnonempty n
-    exact TopologicalSpace.denseRange_denseSeq (↥(R n))
+    exact TopologicalSpace.denseRange_denseSeq _
   let source : (n m : ℕ) → ↥(S n) :=
     fun n m => Classical.choose (Set.mem_range.mp (seq n m).property)
   have hsource (n m : ℕ) :
@@ -132,7 +132,7 @@ theorem exists_countable_dense_admissible_tests
     let : SecondCountableTopology (↥(R n)) := inferInstance
     let : PseudoMetricSpace (↥(R n)) := inferInstance
     let gS : ↥(S n) := ⟨g, ⟨hg, hgs⟩⟩
-    let target : C(↑(K n), ℝ) := g.restrict (K n)
+    let target := g.restrict (K n)
     have htarget : target ∈ R n := ⟨gS, rfl⟩
     let targetR : ↥(R n) := ⟨target, htarget⟩
     have hclosure : targetR ∈ closure (Set.range (seq n)) := hseq n targetR
@@ -144,7 +144,7 @@ theorem exists_countable_dense_admissible_tests
     · have hpoint := ContinuousMap.dist_apply_le_dist
         (f := target) (g := (seq n m).1) ⟨x, hx⟩
       have hdistAmbient : dist target (seq n m).1 < δ := by
-        change dist target (↑(seq n m)) < δ at hdist
+        change dist target _ < δ at hdist
         exact hdist
       have hdistx : dist (g x) ((seq n m).1 ⟨x, hx⟩) < δ :=
         lt_of_le_of_lt hpoint hdistAmbient
@@ -158,8 +158,8 @@ theorem exists_countable_dense_admissible_tests
       rw [htesteq]
       calc
         ‖(seq n m).1 ⟨x, hx⟩ - g x‖ =
-            dist ((seq n m).1 ⟨x, hx⟩) (g x) := (dist_eq_norm _ _).symm
-        _ = dist (g x) ((seq n m).1 ⟨x, hx⟩) := dist_comm _ _
+            dist ((seq n m).1 ⟨x, hx⟩) (g x) := (dist_eq_norm ..).symm
+        _ = dist (g x) ((seq n m).1 ⟨x, hx⟩) := dist_comm ..
         _ < δ := hdistx
     · have hgzero : g x = 0 := image_eq_zero_of_notMem_tsupport
         (fun hx' => hx (hgs hx'))

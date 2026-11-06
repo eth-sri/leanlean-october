@@ -9,10 +9,11 @@ public import DOZZ.GMC.Construction.GMCVaryingWeightedTotalMassLimit
 open MeasureTheory Filter Set
 open scoped Distributions ENNReal Topology
 namespace DOZZ.Proofs
+section
+variable (μ : Measure ℂ) [IsFiniteMeasure μ] (w : BoundedContinuousFunction ℂ ℝ)
 
 /-- Bounded continuous densities preserve finiteness. -/
-theorem symmetry_bcf_withDensity_finite (μ : Measure ℂ) [IsFiniteMeasure μ]
-    (w : BoundedContinuousFunction ℂ ℝ) :
+theorem symmetry_bcf_withDensity_finite :
     IsFiniteMeasure (μ.withDensity (fun z => ENNReal.ofReal (w z))) := by
   apply isFiniteMeasure_withDensity
   apply ne_of_lt
@@ -25,8 +26,7 @@ theorem symmetry_bcf_withDensity_finite (μ : Measure ℂ) [IsFiniteMeasure μ]
       exact ENNReal.mul_lt_top ENNReal.ofReal_lt_top (measure_lt_top μ univ)
 
 /-- The real total mass of a nonnegative bounded density is its Bochner integral. -/
-theorem symmetry_weighted_total_eq_integral (μ : Measure ℂ) [IsFiniteMeasure μ]
-    (w : BoundedContinuousFunction ℂ ℝ) (hw : ∀ z, 0 ≤ w z) :
+theorem symmetry_weighted_total_eq_integral (hw : ∀ z, 0 ≤ w z) :
     ((μ.withDensity (fun z => ENNReal.ofReal (w z))) univ).toReal = ∫ z, w z ∂μ := by
   let := symmetry_bcf_withDensity_finite μ w
   have hm : Measurable (fun z => ENNReal.ofReal (w z)) :=
@@ -34,11 +34,9 @@ theorem symmetry_weighted_total_eq_integral (μ : Measure ℂ) [IsFiniteMeasure 
   have hf : ∀ᵐ z ∂μ, ENNReal.ofReal (w z) < ∞ := ae_of_all _ (fun _ => ENNReal.ofReal_lt_top)
   have h := integral_withDensity_eq_integral_toReal_smul hm hf (fun _ : ℂ => (1 : ℝ))
   simp only [integral_const, Measure.real_def, smul_eq_mul, mul_one] at h
-  rw [h]
-  apply integral_congr_ae
-  exact ae_of_all _ (fun z => by
-    change (ENNReal.ofReal (w z)).toReal = w z
-    exact ENNReal.toReal_ofReal (hw z))
+  simp_all
+
+end
 
 /-- Uniformly convergent nonnegative weights give convergence of actual real integrals. -/
 theorem regularizedGMC_varying_bcf_integral
@@ -56,7 +54,7 @@ theorem regularizedGMC_varying_bcf_integral
   · intro r
     filter_upwards [regularizedGMC_finite_ae P X hX Xc hXc γ r] with ω hω
     let := hω
-    exact symmetry_weighted_total_eq_integral (regularizedGMC P Xc γ r ω) (u r) (hu r)
+    exact symmetry_weighted_total_eq_integral _ (u r) (hu r)
   · exact ae_of_all _ (fun ω => by
       let := hM.1 ω
       exact symmetry_weighted_total_eq_integral (M ω) v hv)

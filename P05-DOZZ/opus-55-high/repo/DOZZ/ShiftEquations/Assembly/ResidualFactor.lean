@@ -46,8 +46,7 @@ theorem unitVolume_residual_factor_eq_one
                   (unitVolumeStructureConstant P M γ α₁ α₂ α₃ : ℂ) =
                     cγ * ((μ : ℂ) ^ ((sExp γ α₁ α₂ α₃ : ℂ)) /
                       Complex.Gamma (sExp γ α₁ α₂ α₃ : ℂ) *
-                        dozzFormula γ μ U (α₁ : ℂ) (α₂ : ℂ) (α₃ : ℂ)) := by
-  exact unitVolume_residual_factor_eq_one_of_crossing_seeds P X M γ μ η U hγ hγ2 hγirr hμ hη hX hM hU
+                        dozzFormula γ μ U (α₁ : ℂ) (α₂ : ℂ) (α₃ : ℂ)) := unitVolume_residual_factor_eq_one_of_crossing_seeds P X M γ μ η U hγ hγ2 hγirr hμ hη hX hM hU
     (fun P X M γ μ α' ε α hγ hγ₂ hμ h1 h2 h3 h4 h5 hX hM =>
       gammaHalf_crossing P X M γ μ α' ε α hγ hγ₂ hμ h1 h2 h3 h4 h5 hX hM)
     (fun P M X γ μ α ε α' hγ hγ₂ hμ hα hε hα' hs hX hM =>

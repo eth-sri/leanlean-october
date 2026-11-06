@@ -30,9 +30,9 @@ theorem holomorphic_linear_system_solution_unique_of_eq_at
   let fpath : ℝ → E := fun t => F (path t)
   let gpath : ℝ → E := fun t => G (path t)
   let v : ℝ → E → E := fun t x => (z - z₀) • H (path t) x
-  let K : ℝ≥0 := ‖z - z₀‖₊ * M.toNNReal
+  let K := ‖z - z₀‖₊ * M.toNNReal
   have hK : (K : ℝ) = ‖z - z₀‖ * M := by
-    simp [K, hM, mul_comm]
+    aesop
   have hr : 0 < r := lt_of_le_of_lt dist_nonneg (Metric.mem_ball.mp hz)
   have hseg : MapsTo path (Icc (0 : ℝ) 1) (Metric.ball c r) :=
     (convex_ball c r).mapsTo_lineMap hz₀ hz
@@ -43,9 +43,9 @@ theorem holomorphic_linear_system_solution_unique_of_eq_at
     have hw : path t ∈ Metric.ball c r := hseg (Ico_subset_Icc_self ht)
     have hHxy : ‖H (path t) x - H (path t) y‖ ≤ M * ‖x - y‖ := by
       calc
-        ‖H (path t) x - H (path t) y‖ = ‖H (path t) (x - y)‖ := by rw [map_sub]
+        ‖H (path t) x - H (path t) y‖ = ‖H (path t) _‖ := by simp
         _ ≤ ‖H (path t)‖ * ‖x - y‖ := (H (path t)).le_opNorm _
-        _ ≤ M * ‖x - y‖ := mul_le_mul_of_nonneg_right (hHbound _ hw) (norm_nonneg _)
+        _ ≤ M * ‖x - y‖ := by bound
     have hvxy : v t x - v t y = (z - z₀) • (H (path t) x - H (path t) y) := by
       dsimp [v]
       rw [← smul_sub]
@@ -57,26 +57,24 @@ theorem holomorphic_linear_system_solution_unique_of_eq_at
   have hFpath : ∀ t ∈ Icc (0 : ℝ) 1,
       HasDerivAt fpath (v t (fpath t)) t := by
     intro t ht
-    have hFt := hF (path t) (hseg ht)
-    have hcomp := hFt.hasFDerivAt.restrictScalars ℝ |>.comp_hasDerivAt t
-      (AffineMap.hasDerivAt_lineMap (a := z₀) (b := z))
+    have hcomp := (hF (path t) (hseg ht)).hasFDerivAt.restrictScalars ℝ |>.comp_hasDerivAt t
+      (AffineMap.hasDerivAt_lineMap (a := z₀))
     simpa [fpath, v, path, Function.comp_def, AffineMap.lineMap_apply_module] using hcomp
   have hGpath : ∀ t ∈ Icc (0 : ℝ) 1,
       HasDerivAt gpath (v t (gpath t)) t := by
     intro t ht
-    have hGt := hG (path t) (hseg ht)
-    have hcomp := hGt.hasFDerivAt.restrictScalars ℝ |>.comp_hasDerivAt t
-      (AffineMap.hasDerivAt_lineMap (a := z₀) (b := z))
+    have hcomp := (hG (path t) (hseg ht)).hasFDerivAt.restrictScalars ℝ |>.comp_hasDerivAt t
+      (AffineMap.hasDerivAt_lineMap)
     simpa [gpath, v, path, Function.comp_def, AffineMap.lineMap_apply_module] using hcomp
   have hFcont : ContinuousOn fpath (Icc (0 : ℝ) 1) :=
     continuousOn_of_forall_continuousAt fun t ht => (hFpath t ht).continuousAt
   have hGcont : ContinuousOn gpath (Icc (0 : ℝ) 1) :=
     continuousOn_of_forall_continuousAt fun t ht => (hGpath t ht).continuousAt
   have hFwithin : ∀ t ∈ Ico (0 : ℝ) 1,
-      HasDerivWithinAt fpath (v t (fpath t)) (Ici t) t :=
+      HasDerivWithinAt fpath _ (Ici t) t :=
     fun t ht => (hFpath t (Ico_subset_Icc_self ht)).hasDerivWithinAt
   have hGwithin : ∀ t ∈ Ico (0 : ℝ) 1,
-      HasDerivWithinAt gpath (v t (gpath t)) (Ici t) t :=
+      HasDerivWithinAt gpath _ (Ici t) t :=
     fun t ht => (hGpath t (Ico_subset_Icc_self ht)).hasDerivWithinAt
   have hEq := ODE_solution_unique_of_mem_Icc_right
     (fun t ht => (hv t ht).lipschitzOnWith)

@@ -8,6 +8,7 @@ public import DOZZ.GMC.SharpMoments.InverseUniform
 public import DOZZ.GMC.SharpMoments.GluedFieldGaussian
 public import DOZZ.GMC.SharpMoments.LaplaceProduct
 public import DOZZ.GMC.FieldChaosNegativePower
+import DOZZ.GMC.SharpMoments.LaplaceBase
 
 /-! # The two-branch inequality and cutoff-uniform inverse moments
 
@@ -34,21 +35,14 @@ noncomputable def invSepConst : ℝ≥0 :=
     linarith⟩
 
 theorem invSepConst_pos : 0 < invSepConst := by
-  rw [← NNReal.coe_pos]
-  change 0 < Real.log 16 + (Real.log 3 + 2 * Real.log (1 + 1 / 8))
-  have h1 : 0 < Real.log 16 := Real.log_pos (by norm_num)
-  have h2 : 0 ≤ Real.log 3 := Real.log_nonneg (by norm_num)
-  have h3 : 0 ≤ Real.log (1 + 1 / 8) := Real.log_nonneg (by norm_num)
-  linarith
+  change 0 < Real.log 16 + (Real.log 3 + 2 * Real.log _)
+  positivity
 
 theorem norm_le_of_mem_invSub {b x : ℂ} (hb : ‖b‖ = 1 / 16)
     (hx : x ∈ Metric.ball b (1 / 4 * (1 / 8))) : ‖x‖ ≤ 1 / 8 := by
   rw [Metric.mem_ball, dist_eq_norm] at hx
   have := norm_le_norm_add_norm_sub' x b
-  calc ‖x‖ ≤ ‖b‖ + ‖x - b‖ := by
-        have h := norm_add_le b (x - b)
-        rwa [add_sub_cancel] at h
-    _ ≤ 1 / 8 := by rw [hb]; linarith
+  linarith
 
 theorem invSub_sep {x y : ℂ} (hx : x ∈ Metric.ball invSubCenterLeft (1 / 4 * (1 / 8)))
     (hy : y ∈ Metric.ball invSubCenterRight (1 / 4 * (1 / 8))) : 1 / 16 ≤ ‖x - y‖ := by
@@ -59,7 +53,7 @@ theorem invSub_sep {x y : ℂ} (hx : x ∈ Metric.ball invSubCenterLeft (1 / 4 *
     norm_num
   have h := norm_sub_le_norm_sub_add_norm_sub invSubCenterLeft x y
   have h' := norm_sub_le_norm_sub_add_norm_sub x y invSubCenterRight
-  have hxl : ‖invSubCenterLeft - x‖ = ‖x - invSubCenterLeft‖ := norm_sub_rev _ _
+  have hxl : ‖invSubCenterLeft - x‖ = ‖x - invSubCenterLeft‖ := norm_sub_rev ..
   have hlr := norm_sub_le_norm_sub_add_norm_sub invSubCenterLeft y invSubCenterRight
   linarith
 
@@ -80,16 +74,15 @@ theorem circleField_covariance_le_invSepConst
     (hx : x ∈ Metric.ball invSubCenterLeft (1 / 4 * (1 / 8)))
     (hy : y ∈ Metric.ball invSubCenterRight (1 / 4 * (1 / 8))) :
     ∫ ω, Xc ω x r * Xc ω y r ∂P ≤ (invSepConst : ℝ) := by
-  have h := circleField_covariance_le_log P X hX Xc hXc (1 / 8) r (by norm_num) hr x y
+  have h := circleField_covariance_le_log P X hX Xc hXc _ r (by norm_num) hr x y
     (norm_le_of_mem_invSub norm_invSubCenterLeft hx)
     (norm_le_of_mem_invSub norm_invSubCenterRight hy)
-  have hsep := invSub_sep hx hy
-  have hmax : 1 / 16 ≤ max ‖x - y‖ (Real.exp (-r)) := le_max_of_le_left hsep
+  have hmax : 1 / 16 ≤ max ‖x - y‖ (Real.exp (-r)) := le_max_of_le_left (invSub_sep hx hy)
   have hlog : Real.log (1 / max ‖x - y‖ (Real.exp (-r))) ≤ Real.log 16 := by
     apply Real.log_le_log (by positivity)
     rw [div_le_iff₀ (by linarith)]
     linarith
-  change _ ≤ Real.log 16 + (Real.log 3 + 2 * Real.log (1 + 1 / 8))
+  change _ ≤ Real.log 16 + (Real.log 3 + 2 * Real.log _)
   linarith
 
 theorem norm_lt_of_mem_invSub {b x : ℂ} (hb : ‖b‖ = 1 / 16)
@@ -97,28 +90,31 @@ theorem norm_lt_of_mem_invSub {b x : ℂ} (hb : ‖b‖ = 1 / 16)
   rw [Metric.mem_ball, dist_eq_norm] at hx
   calc ‖x‖ ≤ ‖b‖ + ‖x - b‖ := by
         have h := norm_add_le b (x - b)
-        rwa [add_sub_cancel] at h
-    _ < 1 / 8 := by rw [hb]; linarith
+        simp_all
+    _ < 1 / 8 := by linarith
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+section
+variable (X : Ω → Distr) (hX : IsEquatorGFF P X) (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc)
+include hX hXc
 
 /-- The two-branch inequality at every cutoff: Kahane's Laplace comparison with two independent
 copies of the circle field on the subdisks and a common scalar of variance `invSepConst`. -/
 theorem cutoffLaplace_twoBranch
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ r : ℝ) (hr : 0 ≤ r) (x : ℝ) :
+    (γ r : ℝ) (hr : 0 ≤ r) (x : ℝ) :
     cutoffLaplace P Xc γ r (Metric.ball 0 (1 / 8)) x ≤
       ∫ ξ, cutoffLaplace P Xc γ r (Metric.ball invSubCenterLeft (1 / 4 * (1 / 8)))
           (x + γ * ξ - γ ^ 2 * invSepConst / 2) *
         cutoffLaplace P Xc γ r (Metric.ball invSubCenterRight (1 / 4 * (1 / 8)))
           (x + γ * ξ - γ ^ 2 * invSepConst / 2) ∂gaussianReal 0 invSepConst := by
   classical
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   have : IsFiniteMeasure gmcReferenceMeasure := ⟨gmcReferenceMeasure_univ_ne_top.lt_top⟩
-  set C : ℝ≥0 := invSepConst with hCdef
-  set D : Set ℂ := Metric.ball (0 : ℂ) (1 / 8) with hDdef
-  set D₁ : Set ℂ := Metric.ball invSubCenterLeft (1 / 4 * (1 / 8)) with hD₁def
-  set D₂ : Set ℂ := Metric.ball invSubCenterRight (1 / 4 * (1 / 8)) with hD₂def
-  set U : Set ℂ := D₁ ∪ D₂ with hUdef
+  set C := invSepConst with hCdef
+  set D := Metric.ball (0 : ℂ) _ with hDdef
+  set D₁ := Metric.ball invSubCenterLeft _ with hD₁def
+  set D₂ := Metric.ball invSubCenterRight _ with hD₂def
+  set U := D₁ ∪ D₂ with hUdef
   have hD : MeasurableSet D := Metric.isOpen_ball.measurableSet
   have hD₁ : MeasurableSet D₁ := Metric.isOpen_ball.measurableSet
   have hD₂ : MeasurableSet D₂ := Metric.isOpen_ball.measurableSet
@@ -144,13 +140,12 @@ theorem cutoffLaplace_twoBranch
   -- Step 2: Kahane's Laplace comparison with the glued field
   set Φ : Ω → ℂ → ℝ := fun ω z => Xc ω z r with hΦdef
   have hΦ : IsCenteredGaussianField P Φ := circleAverage_isCenteredGaussianField P X hX Xc hXc r
-  have hΨ := gluedField_isCenteredGaussianField P Φ hΦ D₁ hD₁ C
-  set PY : Measure (Ω × Ω × ℝ) := P.prod (P.prod (gaussianReal 0 C)) with hPY
+  set PY := P.prod (P.prod (gaussianReal 0 C)) with hPY
   let _ : IsProbabilityMeasure (gaussianReal 0 C) := inferInstance
   let _ : IsProbabilityMeasure PY := inferInstance
-  set νM : Measure ℂ := gmcReferenceMeasure.restrict U with hνM
+  set νM := gmcReferenceMeasure.restrict U with hνM
   have hσfin : gmcReferenceMeasure U ≠ ⊤ :=
-    ne_top_of_le_ne_top gmcReferenceMeasure_univ_ne_top (measure_mono (Set.subset_univ _))
+    by simp
   have hνfin : IsFiniteMeasure νM := by
     rw [hνM]
     exact isFiniteMeasure_restrict.mpr hσfin
@@ -158,7 +153,7 @@ theorem cutoffLaplace_twoBranch
   have hσpos : gmcReferenceMeasure D₁ ≠ 0 := by
     have hball : Metric.ball (0 : ℂ) (1 / 4 * (1 / 8)) ⊆ Metric.ball 0 1 :=
       Metric.ball_subset_ball (by norm_num)
-    have hpos := gmc_reference_ball_intensity_pos (by norm_num : (0 : ℝ) < 1 / 4 * (1 / 8))
+    have hpos := DOZZ.Proofs.laplaceBase_ball_pos (by norm_num : (0 : ℝ) < 1 / 4 * (1 / 8))
       (by norm_num)
     intro hzero
     -- translate positivity: reference density is `1` on the unit disk, so mass is volume
@@ -168,18 +163,16 @@ theorem cutoffLaplace_twoBranch
       Metric.isOpen_ball.measurableSet (fun z hz => by
         rw [Metric.mem_ball, dist_zero_right] at hz; linarith)
     have hv1 : gmcReferenceMeasure D₁ = volume D₁ := by
-      have := congrArg (fun μ : Measure ℂ => μ Set.univ) hres1
-      simpa [Measure.restrict_apply_univ] using this
+      simpa [Measure.restrict_apply_univ] using (congrArg (fun μ : Measure ℂ => μ Set.univ) hres1)
     have hv0 : gmcReferenceMeasure (Metric.ball (0 : ℂ) (1 / 4 * (1 / 8))) =
         volume (Metric.ball (0 : ℂ) (1 / 4 * (1 / 8))) := by
-      have := congrArg (fun μ : Measure ℂ => μ Set.univ) hres0
-      simpa [Measure.restrict_apply_univ] using this
+      simpa [Measure.restrict_apply_univ] using (congrArg (fun μ : Measure ℂ => μ Set.univ) hres0)
     rw [hv1, hD₁def, Measure.addHaar_ball_center] at hzero
     rw [hv0] at hpos
     exact hpos.ne' hzero
   have hν : ν ≠ 0 := by
     intro h0
-    have hval : (ν : Measure ℂ) Set.univ = 0 := by rw [h0]; rfl
+    have hval : (ν : Measure ℂ) Set.univ = 0 := by aesop
     change νM Set.univ = 0 at hval
     rw [hνM, Measure.restrict_apply_univ] at hval
     exact hσpos (measure_mono_null Set.subset_union_left hval)
@@ -193,7 +186,6 @@ theorem cutoffLaplace_twoBranch
     exact hxy
   have hmemU1 : ∀ᵐ z ∂(ν : Measure ℂ), z ∈ U := by
     change ∀ᵐ z ∂νM, z ∈ U
-    rw [hνM]
     exact ae_restrict_mem hU
   have hcov : ∀ᵐ xy ∂(ν : Measure ℂ).prod ν,
       gaussianCovariance P (fun ω => Φ ω xy.1) (fun ω => Φ ω xy.2) ≤
@@ -213,15 +205,14 @@ theorem cutoffLaplace_twoBranch
           ∫ q, gluedField Φ D₁ q xy.2 * gluedField Φ D₁ q xy.1 ∂PY := by
         congr 1
         funext q
-        exact mul_comm _ _
+        exact mul_comm ..
       rw [hcomm, gluedField_covariance_of_mem_of_notMem P Φ hΦ D₁ C hy1 hx1]
-      have h := circleField_covariance_le_invSepConst P X hX Xc hXc r hr hy1 hx2
       have hcomm' : ∫ ω, Φ ω xy.1 * Φ ω xy.2 ∂P = ∫ ω, Φ ω xy.2 * Φ ω xy.1 ∂P := by
         congr 1
         funext ω
-        exact mul_comm _ _
+        exact mul_comm ..
       rw [hcomm']
-      exact h
+      exact (circleField_covariance_le_invSepConst P X hX Xc hXc r hr hy1 hx2)
     · rw [gluedField_covariance_of_notMem_of_notMem P Φ hΦ D₁ C hx1 hy1]
       linarith
   have hdiag : ∀ᵐ z ∂(ν : Measure ℂ),
@@ -234,7 +225,7 @@ theorem cutoffLaplace_twoBranch
       linarith
     · rw [gluedField_covariance_of_notMem_of_notMem P Φ hΦ D₁ C hz hz]
       linarith
-  have hK := kahane_field_laplace_of_nonzero_finite_measure_eq P PY Φ (gluedField Φ D₁) hΦ hΨ
+  have hK := DOZZ.Proofs.kahane_field_laplace_of_nonzero_finite_measure P PY Φ _ hΦ (gluedField_isCenteredGaussianField P Φ hΦ D₁ hD₁ C)
     ν hν (fun _ => 1) measurable_const ⟨1, fun _ => le_rfl⟩ γ (Real.exp x)
     (Real.exp_pos x).le hcov hdiag
   -- Step 3: identify the left side with the Laplace transform on `U`
@@ -255,7 +246,6 @@ theorem cutoffLaplace_twoBranch
   have hm₁meas : Measurable m₁ := measurable_regularizedGMC_apply_toReal P X hX Xc hXc γ r D₁ hD₁
   have hm₂meas : Measurable m₂ := measurable_regularizedGMC_apply_toReal P X hX Xc hXc γ r D₂ hD₂
   have hSmeas : Measurable S := by
-    rw [hS]
     fun_prop
   have hrestr₁ : νM.restrict D₁ = gmcReferenceMeasure.restrict D₁ := by
     rw [hνM, Measure.restrict_restrict hD₁, Set.inter_eq_left.mpr Set.subset_union_left]
@@ -315,7 +305,7 @@ theorem cutoffLaplace_twoBranch
           measurable_snd)).neg).mul (hm₂meas.comp (measurable_fst.comp
           measurable_snd))))).aestronglyMeasurable
       · rw [norm_mul]
-        calc ‖Real.exp (-S q.2.2 * m₁ q.1)‖ * ‖Real.exp (-S q.2.2 * m₂ q.2.1)‖ ≤ 1 * 1 :=
+        calc ‖Real.exp _‖ * ‖Real.exp _‖ ≤ 1 * 1 :=
               mul_le_mul (laplaceProduct_integrand_bound _ _ (hSnn _) ENNReal.toReal_nonneg)
                 (laplaceProduct_integrand_bound _ _ (hSnn _) ENNReal.toReal_nonneg)
                 (norm_nonneg _) zero_le_one
@@ -334,14 +324,16 @@ theorem cutoffLaplace_twoBranch
 /-- Every inverse moment of the cutoff mass of the reference disk is bounded uniformly in the
 cutoff. -/
 theorem regularizedGMC_reference_inverse_moment_uniform
-    {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (hX : IsEquatorGFF P X)
-    (Xc : Ω → ℂ → ℝ → ℝ) (hXc : IsCircleAverage P X Xc) (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
+    (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2)
     (q : ℝ) (hq : 0 < q) :
     ∃ K : ℝ, ∀ r : ℝ, 0 ≤ r →
       ∫⁻ ω, (regularizedGMC P Xc γ r ω (Metric.ball 0 (1 / 8))) ^ (-q) ∂P ≤ ENNReal.ofReal K :=
   regularizedGMC_reference_inverse_moment_uniform_of_twoBranch P X hX Xc hXc γ hγ hγ2
     invSepConst invSepConst_pos (fun r hr x => cutoffLaplace_twoBranch P X hX Xc hXc γ r
       (by linarith [Real.log_nonneg (by norm_num : (1 : ℝ) ≤ 4)]) x) q hq
+
+end
+
+end
 
 end DOZZ.Proofs

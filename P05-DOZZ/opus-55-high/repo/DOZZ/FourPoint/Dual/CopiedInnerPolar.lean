@@ -42,7 +42,7 @@ theorem dual_copied_inner_mass_squeeze
   have hb := dual_inner_kernel_mass_squeeze γ α₁ α₂ α₃ R hγ z A
     (N.withDensity W) T hR hR₁ hz hT hsep
   rw [reflected_reinserted_lateral_projection γ A N h0,
-    reflected_inner_polar_restart γ (Q γ - α₁) A _ T] at hb
+    reflected_inner_polar_restart γ _ A _ T] at hb
   dsimp only at hb ⊢
   rw [setLIntegral_withDensity_eq_setLIntegral_mul N hW hk hU] at hb
   have he (c : ℝ) : ENNReal.ofReal (c * ‖z‖ ^ (2 : ℝ)) *

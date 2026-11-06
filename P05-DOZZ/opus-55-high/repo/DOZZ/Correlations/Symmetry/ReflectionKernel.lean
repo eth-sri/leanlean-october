@@ -16,31 +16,33 @@ noncomputable def symmetryReflectionPotential (x : ℂ) : ℝ :=
 
 /-- Reflection is involutive. -/
 theorem symmetryReflection_involutive : Function.Involutive (fun x : ℂ => 1 - x) := by
-  intro x
-  ring
+  simp
+section
+variable (x : ℂ)
 
 /-- The potential reverses sign under reflection. -/
-theorem symmetryReflectionPotential_reflect (x : ℂ) :
+theorem symmetryReflectionPotential_reflect :
     symmetryReflectionPotential (1 - x) = -symmetryReflectionPotential x := by
   unfold symmetryReflectionPotential
-  rw [show (1 : ℂ) - (1 - x) = x by ring]
-  ring
+  simp
 /-- The two compactifying norms are comparable under reflection. -/
-theorem normPlus_reflection_le (x : ℂ) : normPlus (1 - x) ≤ 2 * normPlus x := by
-  have h1 : 1 ≤ normPlus x := le_max_left _ _
-  have hx : ‖x‖ ≤ normPlus x := le_max_right _ _
+theorem normPlus_reflection_le : normPlus (1 - x) ≤ 2 * normPlus x := by
+  have h1 : 1 ≤ normPlus x := le_max_left ..
+  have hx : ‖x‖ ≤ normPlus x := le_max_right ..
   apply max_le
   · linarith
-  · have h := norm_sub_le (1 : ℂ) x
+  · have h := norm_sub_le 1 x
     rw [norm_one] at h
     linarith
 
+end
+
 /-- The affine re-pinning potential is continuous on the plane. -/
 theorem symmetryReflectionPotential_continuous : Continuous symmetryReflectionPotential := by
-  have hn : Continuous (fun x : ℂ => normPlus x) := continuous_const.max continuous_norm
+  have hn : Continuous normPlus := continuous_const.max continuous_norm
   have hp (x : ℂ) : normPlus x ≠ 0 :=
     (lt_of_lt_of_le zero_lt_one (le_max_left 1 ‖x‖)).ne'
-  exact ((hn.comp (continuous_const.sub continuous_id)).log (fun x => hp (1 - x))).sub
+  exact ((hn.comp (continuous_const.sub continuous_id)).log (fun x => hp _)).sub
     (hn.log hp)
 
 /-- The change of pinning is uniformly bounded, including at infinity. -/
@@ -58,7 +60,7 @@ theorem symmetryReflectionPotential_bound (x : ℂ) :
   · have h := hu (1 - x)
     rw [symmetryReflectionPotential_reflect] at h
     linarith
-  · exact hu x
+  simp_all
 
 /-- A bounded continuous representative of the affine pinning potential for Gaussian tilt. -/
 noncomputable def symmetryReflectionPotentialBCF : BoundedContinuousFunction ℂ ℝ :=

@@ -121,25 +121,22 @@ theorem reflectionR_dual_shift_unknown_constant_of_deps
   obtain ⟨B₅, Z₅, -, hB₅, h₅, hh₅, R₅, hR₅m, hR₅v, hinv⟩ := hInversion
   have hQ : Q γ = 2 / γ + γ / 2 := rfl
   have hγh : γ / 2 < 2 / γ := by
-    rw [div_lt_div_iff₀ (by norm_num) hγ]
-    nlinarith
+    gcongr
   have hγc : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ.ne'
-  have hRγ := analyticAt_reflection_gamma P X M hγ hγ2 hμ hγirr hBarRRepresentation hh hRm hBd hRv
   have hev := dualShift_eventually P X M hγ hγ2 hγirr hμ hX hM hSeed hShiftGluing hh hRm hBd hRv hshift
-    hRγ hh₅ hR₅m hB₅ hR₅v hinv
+    (analyticAt_reflection_gamma P X M hγ hγ2 hμ hγirr hBarRRepresentation hh hRm hBd hRv) hh₅ hR₅m hB₅ hR₅v hinv
   set cγ : ℂ := (γ : ℂ) ^ 2 / 4 * (μ * Real.pi : ℂ) * R γ with hcγ
-  set D : ℂ → ℂ := fun z => lFun (-4 / (γ : ℂ) ^ 2) * lFun (2 * z / γ) *
+  set D : ℂ → ℂ := fun z => lFun (-4 / (γ : ℂ) ^ 2) * lFun _ *
     lFun (2 + 4 / (γ : ℂ) ^ 2 - 2 * z / γ) with hD
   set G : ℂ → ℂ := fun z => -cγ * R (z + ((2 / γ : ℝ) : ℂ)) / D z with hG
   have hGm : MeromorphicOn G (horizontalStrip h) := by
     intro z hz
-    have hRs := MeromorphicOn.comp_add_ofReal (h := h) hRm (2 / γ) z hz
     have hDm : MeromorphicAt D z :=
       ((meromorphicAt_lFun_comp' analyticAt_const).fun_mul
         (meromorphicAt_lFun_comp' (f := fun w : ℂ => 2 * w / γ) (by fun_prop))).fun_mul
         (meromorphicAt_lFun_comp' (f := fun w : ℂ => 2 + 4 / (γ : ℂ) ^ 2 - 2 * w / γ)
           (by fun_prop))
-    exact ((MeromorphicAt.const _ z).fun_mul hRs).fun_div hDm
+    exact ((MeromorphicAt.const _ z).fun_mul (MeromorphicOn.comp_add_ofReal (h := h) hRm _ z hz)).fun_div hDm
   -- frequent agreement near `3γ/8`
   have hfreq : ∃ᶠ z in 𝓝[≠] ((γ / 2 - γ / 8 : ℝ) : ℂ), R z = G z := by
     have ht := tendsto_affine_nhdsNE (z₀ := ((γ / 2 - γ / 8 : ℝ) : ℂ)) (a := -1) (by norm_num)
@@ -161,11 +158,10 @@ theorem reflectionR_dual_shift_unknown_constant_of_deps
     rw [Complex.ofReal_zero, add_zero, hz]
     simp only [hG]
     ring
-  have hcut := cutoff_relation_codiscrete hh 0 (2 / γ) hrel
   have hRt : ∀ x : ℝ, cutoffStrip (h / 2) R (x : ℂ) = R x := fun x =>
-    cutoffStrip_of_lt (by simp only [Complex.ofReal_im, abs_zero]; positivity)
+    cutoffStrip_of_lt (by simpa)
   refine ⟨B, Z, hproj, hBd, h / 2, half_pos hh, cutoffStrip (h / 2) R,
-    meromorphicOn_cutoffStrip hRm (half_le_self hh.le), fun α h1 h2 => by rw [hRt]; exact hRv α h1 h2,
+    meromorphicOn_cutoffStrip hRm (half_le_self hh.le), fun α h1 h2 => by grind,
     (γ : ℂ) ^ 2 / 4 * (μ * Real.pi : ℂ) * cutoffStrip (h / 2) R γ, ?_, rfl, ?_⟩
   · rw [hRt, hRv γ (by linarith) (by linarith)]
     have hR0 := reflectionR_gamma_ne_zero P (μ := μ) hγ hγ2 hμ hγirr (hBd γ (by linarith)
@@ -174,11 +170,10 @@ theorem reflectionR_dual_shift_unknown_constant_of_deps
       (Complex.ofReal_ne_zero.mpr hR0)
     exact mul_ne_zero (Complex.ofReal_ne_zero.mpr hμ.ne')
       (Complex.ofReal_ne_zero.mpr Real.pi_pos.ne')
-  · filter_upwards [hcut] with z hz
+  · filter_upwards [(cutoff_relation_codiscrete hh 0 _ hrel)] with z hz
     rw [Complex.ofReal_zero, add_zero] at hz
     rw [hz, hRt]
-    simp only [hD, hcγ]
-    push_cast
+    simp
     ring
 
 end DOZZ.Proofs

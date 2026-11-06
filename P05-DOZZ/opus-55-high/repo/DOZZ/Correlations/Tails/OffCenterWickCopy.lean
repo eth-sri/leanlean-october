@@ -51,28 +51,27 @@ theorem copied_circle_fdd_law
     apply measurable_pi_iff.mpr
     intro j
     cases j with
-    | none => exact hm.comp (measurable_id.prodMk (measurable_const (a := (z, (0 : ℝ)))))
+    | none => exact hm.comp (measurable_id.prodMk (measurable_const (a := (z, 0))))
     | some p => exact hm.comp (measurable_id.prodMk
         (measurable_const (a := (z + p.val.1, p.val.2))))
   have hT : Measurable T := by
     apply measurable_pi_iff.mpr
     intro j
-    have h1 (x : ℂ) (r : ℝ) : Measurable (fun q : Ω × Ω => Xc q.1 x r) :=
-      hm.comp (measurable_fst.prodMk (measurable_const (a := (x, r))))
-    have h2 (x : ℂ) (r : ℝ) : Measurable (fun q : Ω × Ω => Xc q.2 x r) :=
-      hm.comp (measurable_snd.prodMk (measurable_const (a := (x, r))))
+    have h1 (x : ℂ) r : Measurable (fun q : Ω × Ω => Xc q.1 x r) :=
+      by fun_prop
+    have h2 (x : ℂ) r : Measurable (fun q : Ω × Ω => Xc q.2 x r) :=
+      by fun_prop
     cases j with
     | none => exact h2 z 0
     | some p =>
-      exact ((h2 z 0).add ((h1 _ _).sub (h1 z 0))).add
+      exact ((h2 z 0).add ((h1 ..).sub (h1 z 0))).add
         (((h2 z 0).sub (h1 z 0)).const_mul _)
   let E : (Option localCircle → ℝ) → ι → ℝ := fun f i => f (some (p i))
-  have hE : Measurable E := measurable_pi_iff.mpr fun i => measurable_pi_apply _
+  have hE : Measurable E := by fun_prop
   have h := congrArg (fun μ => μ.map E)
     (offCenter_circle_pin_copy_law P X Xc hX hc hm z hz)
   change (P.map S).map E = ((P.prod P).map T).map E at h
-  rw [Measure.map_map hE hS, Measure.map_map hE hT] at h
-  exact h
+  rwa [Measure.map_map hE hS, Measure.map_map hE hT] at h
 
 /-- The copied circle has the original scalar Gaussian law. -/
 theorem copied_circle_hasLaw
@@ -84,19 +83,13 @@ theorem copied_circle_hasLaw
       (gaussianReal 0 (p.val.2 + 2 * Real.log ‖z + p.val.1‖).toNNReal) (P.prod P) := by
   have he := copied_circle_fdd_law (ι := Unit) P X Xc hX hc hm z hz (fun _ => p)
   have hmS : Measurable (fun ω (_ : Unit) => Xc ω (z + p.val.1) p.val.2) :=
-    measurable_pi_iff.mpr fun _ => hm.comp (measurable_id.prodMk
-      (measurable_const (a := (z + p.val.1, p.val.2))))
+    by fun_prop
   have hmT : Measurable (fun q (_ : Unit) => copiedCircle Xc z q p) := by
     apply measurable_pi_iff.mpr
     intro i
     unfold copiedCircle
-    have h1 (x : ℂ) (r : ℝ) : Measurable (fun q : Ω × Ω => Xc q.1 x r) :=
-      hm.comp (measurable_fst.prodMk (measurable_const (a := (x, r))))
-    have h2 (x : ℂ) (r : ℝ) : Measurable (fun q : Ω × Ω => Xc q.2 x r) :=
-      hm.comp (measurable_snd.prodMk (measurable_const (a := (x, r))))
-    exact ((h2 z 0).add ((h1 _ _).sub (h1 z 0))).add
-      (((h2 z 0).sub (h1 z 0)).const_mul _)
-  have he' := congrArg (fun μ => μ.map (fun f : Unit → ℝ => f ())) he
+    fun_prop
+  have he' := congrArg (fun μ => μ.map (fun f => f ())) he
   rw [Measure.map_map (measurable_pi_apply ()) hmS,
     Measure.map_map (measurable_pi_apply ()) hmT] at he'
   exact ⟨((measurable_pi_apply ()).comp hmT).aemeasurable,

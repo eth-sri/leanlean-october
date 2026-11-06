@@ -43,10 +43,10 @@ theorem reflected_source_williams_expectation_squeeze
       p*Real.exp (γ*H)*
         (∫⁻ ω, ENNReal.ofReal (b ω)*gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ ^(-(p+1)) ∂P).toReal*
         (∫⁻ ω, twoSidedReflectionMass γ B Z ω ∂P).toReal := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   let ν := Q γ-α₁
   let μ := brownianMaximumReferenceLaw ν
-  let _ : IsProbabilityMeasure μ := isProbabilityMeasure_brownianMaximumReferenceLaw (sub_pos.mpr hα₁)
+  let _ := isProbabilityMeasure_brownianMaximumReferenceLaw (sub_pos.mpr hα₁)
   let R := μ.prod P
   let A := fun ω => (gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ).toReal
   let b := reflected_radial_scale γ ν h Xc z
@@ -56,16 +56,15 @@ theorem reflected_source_williams_expectation_squeeze
     Xc hc ν h p α₁ α₂ α₃ ξ (sub_pos.mpr hα₁) hh hp hξ hξ₁ hα₁ hα₂ hα₃ z hz0 hz1 hz
   have hInv := (reflected_radial_scale_real_expectation P X hX γ hγ hγ₂ M hM Xc hc
     ν h 0 α₁ α₂ α₃ ξ p hh hξ hξ₁ hp.le z hz0 hz).1
-  simp only [Real.rpow_zero,one_mul] at hInv
+  simp at hInv
   have hF := reflected_radial_scale_real_expectation P X hX γ hγ hγ₂ M hM Xc hc
-    ν h 1 α₁ α₂ α₃ ξ (p+1) hh hξ hξ₁ (by linarith only [hp]) z hz0 hz
+    ν h 1 α₁ α₂ α₃ ξ (p+1) hh hξ hξ₁ (by positivity) z hz0 hz
   have hAm : AEMeasurable A P :=
     ((reflected_outerMass_measure_measurable γ α₁ α₂ α₃ ξ z).comp_aemeasurable
       (equatorGFF_GMC_aemeasurable P X hX γ hγ hγ₂ M hM)).ennreal_toReal
-  have hcoord := (hc.2.1 0 (-Real.log ‖z‖+h)).aemeasurable
   have hbm : AEMeasurable b P := by
     dsimp only [b,reflected_radial_scale]
-    exact ((hcoord.const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
+    exact ((((hc.2.1 0 (-Real.log ‖z‖+h)).aemeasurable).const_mul γ).sub aemeasurable_const).sub aemeasurable_const |>.exp
   have hbp : ∀ᵐ ω ∂P, 0 ≤ b ω := ae_of_all P fun _ => (Real.exp_pos _).le
   have hFi : Integrable (fun ω => b ω*(A ω)^(-p-1)) P := by
     simpa only [Real.rpow_one,show -(p+1) = -p-1 by ring] using hF.1
@@ -80,13 +79,12 @@ theorem reflected_source_williams_expectation_squeeze
     nlinarith only [hγ,hγ₂]
   have heJ : (∫ v : ℝ × Ω, (twoSidedReflectionMass γ B Z v.2).toReal ∂R) =
       (∫⁻ ω, twoSidedReflectionMass γ B Z ω ∂P).toReal := by
-    have he := integral_prod_mul (fun _ : ℝ => (1 : ℝ))
+    have he := integral_prod_mul (fun _ : ℝ => 1)
       (fun ω => (twoSidedReflectionMass γ B Z ω).toReal) (μ := μ) (ν := P)
-    simp only [one_mul,integral_const,probReal_univ,smul_eq_mul] at he
+    simp at he
     rw [he]
-    simpa only [Real.rpow_one,ENNReal.rpow_one] using
+    simpa using
       (reflected_reflection_real_moment P γ α₁ 1 B Z hα₁ hData h4).2
-  rw [heF,heJ] at hbnd
-  exact hbnd
+  rwa [heF,heJ] at hbnd
 
 end DOZZ.Proofs

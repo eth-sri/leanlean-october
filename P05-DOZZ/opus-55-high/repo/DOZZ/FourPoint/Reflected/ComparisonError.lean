@@ -15,23 +15,18 @@ Only the original moment needs a finiteness bound; the copied one inherits it. -
 theorem reflected_moment_comparison_error (a b : ℝ≥0∞) (m : ℝ) (hm : 1 ≤ m)
     (ha : a ≠ ⊤) (hab : a ≤ ENNReal.ofReal m*b) (hba : b ≤ ENNReal.ofReal m*a) :
     b ≠ ⊤ ∧ |a.toReal-b.toReal| ≤ (m-1)*m*a.toReal := by
-  have hm0 : 0 ≤ m := zero_le_one.trans hm
-  have hb : b ≠ ⊤ := ne_top_of_le_ne_top (ENNReal.mul_ne_top ENNReal.ofReal_ne_top ha) hba
+  have hm0 := zero_le_one.trans hm
+  have hb := ne_top_of_le_ne_top (ENNReal.mul_ne_top ENNReal.ofReal_ne_top ha) hba
   have hab' : a.toReal ≤ m*b.toReal := by
     have h := ENNReal.toReal_mono (ENNReal.mul_ne_top ENNReal.ofReal_ne_top hb) hab
-    simpa only [ENNReal.toReal_mul, ENNReal.toReal_ofReal hm0] using h
+    simp_all
   have hba' : b.toReal ≤ m*a.toReal := by
     have h := ENNReal.toReal_mono (ENNReal.mul_ne_top ENNReal.ofReal_ne_top ha) hba
-    simpa only [ENNReal.toReal_mul, ENNReal.toReal_ofReal hm0] using h
-  have hm1 : 0 ≤ m-1 := sub_nonneg.mpr hm
-  have hbound := mul_le_mul_of_nonneg_left hba' hm1
-  have ha0 := ENNReal.toReal_nonneg (a := a)
-  have hma : a.toReal ≤ m*a.toReal := le_mul_of_one_le_left ha0 hm
+    simp_all
+  have hbound := mul_le_mul_of_nonneg_left hba' (sub_nonneg.mpr hm)
+  have hma := le_mul_of_one_le_left (ENNReal.toReal_nonneg (a := a)) hm
   refine ⟨hb, abs_sub_le_iff.mpr ⟨?_, ?_⟩⟩
-  · calc a.toReal-b.toReal ≤ (m-1)*b.toReal := by linarith only [hab']
-         _ ≤ (m-1)*m*a.toReal := by simpa only [mul_assoc] using hbound
-  · calc b.toReal-a.toReal ≤ (m-1)*a.toReal := by linarith only [hba']
-         _ ≤ (m-1)*m*a.toReal := by
-           simpa only [mul_assoc] using mul_le_mul_of_nonneg_left hma hm1
+  · linarith
+  nlinarith
 
 end DOZZ.Proofs

@@ -27,9 +27,7 @@ theorem parameter_integral_grid_error
       ENNReal.ofReal (1 / ((k : ℝ) + 1)) * (ENNReal.ofReal (Lcoef t) * μ K) := by
   have hgrid := parameter_grid_error k t
   have hstep : 1 / ((k : ℝ) + 1) ≤ 1 := by
-    apply (div_le_one (by positivity : 0 < (k : ℝ) + 1)).mpr
-    have hk : 0 ≤ (k : ℝ) := Nat.cast_nonneg k
-    linarith
+    bound
   have hpoint (x : ℂ) : ENNReal.ofReal |F t x - F (parameterGrid k t) x| ≤
       K.indicator (fun _ => ENNReal.ofReal (Lcoef t * (1 / ((k : ℝ) + 1)))) x := by
     by_cases hx : x ∈ K
@@ -37,17 +35,16 @@ theorem parameter_integral_grid_error
       exact ENNReal.ofReal_le_ofReal ((hLip t _ (hgrid.trans hstep) x hx).trans
         (mul_le_mul_of_nonneg_left hgrid (hLcoef t)))
     · rw [Set.indicator_of_notMem hx]
-      have h1 := image_eq_zero_of_notMem_tsupport (fun h => hx (hFK t h))
       have h2 := image_eq_zero_of_notMem_tsupport
         (fun h => hx (hFK (parameterGrid k t) h))
-      simp only [h1, h2, sub_self, abs_zero, ENNReal.ofReal_zero, le_refl]
+      simp only [(image_eq_zero_of_notMem_tsupport (fun h => hx (hFK t h))), h2, sub_self, abs_zero, ENNReal.ofReal_zero, le_refl]
   calc
-    _ ≤ ∫⁻ x, ENNReal.ofReal |F t x - F (parameterGrid k t) x| ∂μ := by
+    _ ≤ ∫⁻ x, ENNReal.ofReal |F t x - F _ x| ∂μ := by
       simpa only [Real.norm_eq_abs] using DOZZ.Assembly.ofReal_abs_integral_sub_le_lintegral μ
         (F t) (F (parameterGrid k t)) (F t).continuous.measurable
           (F (parameterGrid k t)).continuous.measurable
     _ ≤ ∫⁻ x, K.indicator (fun _ =>
-        ENNReal.ofReal (Lcoef t * (1 / ((k : ℝ) + 1)))) x ∂μ := lintegral_mono hpoint
+        ENNReal.ofReal (Lcoef t * (1 / (k + 1)))) x ∂μ := lintegral_mono hpoint
     _ = _ := by
       rw [lintegral_indicator hK, lintegral_const, Measure.restrict_apply_univ,
         ENNReal.ofReal_mul (hLcoef t)]
@@ -93,7 +90,7 @@ theorem tendstoInMeasure_parameter_integral
     exact ((hright.comp ((hgrid k).prodMk measurable_id)).sub
       (hright.comp (hθ.prodMk measurable_id))).norm.ennreal_ofReal.aemeasurable
   · intro k n ω
-    exact parameter_integral_grid_error F K hK.measurableSet hFK Lcoef hLcoef hLip (N n ω) k (θ ω)
+    exact parameter_integral_grid_error F K hK.measurableSet hFK Lcoef hLcoef hLip _ k (θ ω)
   · intro k ω
     rw [norm_sub_rev]
     exact parameter_integral_grid_error F K hK.measurableSet hFK Lcoef hLcoef hLip (M ω) k (θ ω)

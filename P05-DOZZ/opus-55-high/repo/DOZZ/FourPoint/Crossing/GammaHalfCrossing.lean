@@ -9,6 +9,9 @@ public import DOZZ.Statements.Hypergeom.GaussHypergeometricExists
 public import DOZZ.Statements.FourPoint.DegenerateFourPointBPZ
 public import DOZZ.Statements.FourPoint.GammaHalfFullUnreflectedFormula
 import Mathlib.Tactic
+import DOZZ.FourPoint.BPZ.DegenerateFourPointBPZ
+import DOZZ.FourPoint.BPZ.GammaHalfFullUnreflectedFormula
+import DOZZ.Hypergeom.ODE.SlitPlaneGluing
 
 /-! # The half-charge crossing reduction
 
@@ -22,18 +25,16 @@ which gives the unconditional theorem `gammaHalf_crossing`. The target is the ex
 public section
 open MeasureTheory
 namespace DOZZ.Proofs
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
+section
+variable (X : Ω → Distr) (M : Ω → Measure ℂ) (γ μ α' ε α : ℝ) (hγ : 0 < γ) (hγ₂ : γ < 2) (hμ : 0 < μ) (hεlo : γ / 2 < ε) (hεhi : ε < 2 / γ) (hα : α < Q γ) (hα' : α' < Q γ) (hs : 2 * Q γ < α + α' + ε - γ / 2) (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
+include hγ hγ₂ hμ hεlo hεhi hα hα' hs hX hM
 
 /-- The conclusion of `DOZZ.gammaHalf_crossing` follows from the two exact theorem inputs
 `DOZZ.degenerateFourPoint_BPZ` and `DOZZ.gammaHalf_full_unreflected_formula`. The Gauss family,
 physical guards, normalization and coefficient extraction are all discharged. -/
-theorem gammaHalf_crossing_of_unreflected {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ μ α' ε α : ℝ)
-    (hγ : 0 < γ) (hγ₂ : γ < 2) (hμ : 0 < μ)
-    (hεlo : γ / 2 < ε) (hεhi : ε < 2 / γ)
-    (hα : α < Q γ) (hα' : α' < Q γ)
-    (hs : 2 * Q γ < α + α' + ε - γ / 2)
-    (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M)
-    (hBPZ : ∀
+theorem gammaHalf_crossing_of_unreflected (hBPZ : ∀
       (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ μ χ α₁ α₂ α₃ : ℝ)
       (_hγ : 0 < γ) (_hγ₂ : γ < 2) (_hμ : 0 < μ)
       (_hχ : χ = γ / 2 ∨ χ = 2 / γ)
@@ -70,34 +71,31 @@ theorem gammaHalf_crossing_of_unreflected {Ω : Type*} [MeasurableSpace Ω]
       unitVolumeStructureConstant P M γ (α' - γ / 2) ε α =
         gammaHalfUnitCrossingMultiplier γ μ α' ε α *
           unitVolumeStructureConstant P M γ α' (ε + γ / 2) α := by
-  obtain ⟨H, hH⟩ := DOZZ.gauss_hypergeometric_exists
+  obtain ⟨H, hH⟩ := DOZZ.Proofs.gauss_hypergeometric_exists
   have hεQ : ε < Q γ := by unfold Q; linarith only [hεhi, hγ]
-  have hsum : 2 * Q γ + γ / 2 < α' + ε + α := by linarith only [hs]
-  have hsum' : 2 * Q γ + γ / 2 < ε + α' + α := by linarith only [hs]
-  have hbpz := hBPZ P X M γ μ (γ / 2) α' ε α hγ hγ₂ hμ
+  have hsum : 2 * Q γ + γ / 2 < α' + ε + α := by linarith
+  have hsum' : 2 * Q γ + γ / 2 < ε + α' + α := by linarith
+  have hbpz := hBPZ P X M γ μ _ α' ε α hγ hγ₂ hμ
     (Or.inl rfl) hα' hεQ hα hsum hX hM
   have hformula := hUnreflected hH P X M γ μ ε α' α hγ hγ₂ hμ
     hεlo hεhi hα' hα hsum' hX hM
   exact gammaHalf_crossing_of_BPZ_and_unreflected hH P X M γ μ α' ε α
-    hγ hγ₂ hμ hεhi hα hα' hs hX hM (by simpa only [neg_div] using hbpz) hformula
+    hγ hγ₂ hμ hεhi hα hα' hs hX hM (by grind) hformula
 
 /-- Unconditional crossing theorem, with precisely the statement of `DOZZ.gammaHalf_crossing`. -/
-theorem gammaHalf_crossing {Ω : Type*} [MeasurableSpace Ω]
-    (P : Measure Ω) (X : Ω → Distr) (M : Ω → Measure ℂ) (γ μ α' ε α : ℝ)
-    (hγ : 0 < γ) (hγ₂ : γ < 2) (hμ : 0 < μ)
-    (hεlo : γ / 2 < ε) (hεhi : ε < 2 / γ)
-    (hα : α < Q γ) (hα' : α' < Q γ)
-    (hs : 2 * Q γ < α + α' + ε - γ / 2)
-    (hX : IsEquatorGFF P X) (hM : IsGMCOf P X γ M) :
+theorem gammaHalf_crossing :
     structureConstant P M γ μ (α' - γ / 2) ε α =
         gammaHalfCrossingMultiplier γ μ α' ε α *
           structureConstant P M γ μ α' (ε + γ / 2) α ∧
       unitVolumeStructureConstant P M γ (α' - γ / 2) ε α =
         gammaHalfUnitCrossingMultiplier γ μ α' ε α *
-          unitVolumeStructureConstant P M γ α' (ε + γ / 2) α := by
-  exact gammaHalf_crossing_of_unreflected P X M γ μ α' ε α
+          unitVolumeStructureConstant P M γ α' (ε + γ / 2) α := gammaHalf_crossing_of_unreflected P X M γ μ α' ε α
     hγ hγ₂ hμ hεlo hεhi hα hα' hs hX hM
-    DOZZ.degenerateFourPoint_BPZ DOZZ.gammaHalf_full_unreflected_formula
+    DOZZ.Proofs.degenerateFourPoint_BPZ DOZZ.Proofs.gammaHalf_full_unreflected_formula
+
+end
+
+end
 
 
 end DOZZ.Proofs

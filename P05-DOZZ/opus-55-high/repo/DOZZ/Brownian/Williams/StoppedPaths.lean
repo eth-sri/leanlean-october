@@ -30,9 +30,9 @@ namespace DOZZ.Proofs
 /-- The compact crossing event is jointly measurable in its level and continuous path. -/
 theorem measurableSet_brownianPath_joint_crossing (T : ℝ≥0) :
     MeasurableSet {z : ℝ × BrownianPath | ∃ u ≤ T, z.1 ≤ z.2 u} := by
-  have hm : Measurable (fun p : BrownianPath => ⨆ u : Iic T, p u) :=
+  have hm :=
     (measurable_brownianPath_runningMaximum T).mono
-      ((brownianRawFiltration _ (fun t => ContinuousMap.measurable_eval t)).le T) le_rfl
+      ((brownianRawFiltration _ ContinuousMap.measurable_eval).le T) le_rfl
   have he : {z : ℝ × BrownianPath | ∃ u ≤ T, z.1 ≤ z.2 u} =
       {z | z.1 ≤ ⨆ u : Iic T, z.2 u} := by
     ext z
@@ -41,7 +41,7 @@ theorem measurableSet_brownianPath_joint_crossing (T : ℝ≥0) :
       exact h.trans (le_ciSup (brownianPath_Iic_bddAbove z.2 T) ⟨u,hu⟩)
     · intro h
       obtain ⟨u,hu⟩ := brownianPath_runningMaximum_attained z.2 T
-      exact ⟨u.1,u.2,hu ▸ h⟩
+      grind
   rw [he]
   exact measurableSet_le measurable_fst (hm.comp measurable_snd)
 
@@ -50,44 +50,42 @@ theorem brownianPath_joint_hit_eq_iUnion :
     {z : ℝ × BrownianPath | ∃ u : ℝ≥0, z.1 ≤ z.2 u} =
       ⋃ n : ℕ, {z | ∃ u ≤ (n : ℝ≥0), z.1 ≤ z.2 u} := by
   ext z
-  simp only [mem_ofPred_eq,mem_iUnion]
+  simp
   constructor
   · rintro ⟨u,hu⟩
-    obtain ⟨n,hn⟩ := exists_nat_ge (u : ℝ)
-    exact ⟨n,u,by exact_mod_cast hn,hu⟩
-  · rintro ⟨n,u,_,hu⟩
-    exact ⟨u,hu⟩
+    obtain ⟨n,hn⟩ := exists_nat_ge u
+    tauto
+  tauto
 
 /-- Ever reaching an upper level is jointly measurable in that level and the entire path. -/
 theorem measurableSet_brownianPath_joint_hit :
     MeasurableSet {z : ℝ × BrownianPath | ∃ u : ℝ≥0, z.1 ≤ z.2 u} := by
   rw [brownianPath_joint_hit_eq_iUnion]
   exact MeasurableSet.iUnion (fun n => measurableSet_brownianPath_joint_crossing n)
+section
+variable (p : BrownianPath) (c : ℝ)
 
 /-- A nonempty upper hitting set contains the literal first-passage time. -/
-theorem firstPassageTime_mem (p : BrownianPath) (c : ℝ)
-    (h : ∃ u : ℝ≥0, c ≤ p u) : c ≤ p (firstPassageTime p c) := by
+theorem firstPassageTime_mem (h : ∃ u : ℝ≥0, c ≤ p u) : c ≤ p (firstPassageTime p c) := by
   have hc : IsClosed {u : ℝ≥0 | c ≤ p u} := isClosed_le continuous_const p.continuous
   exact hc.csInf_mem h (OrderBot.bddBelow _)
 
 /-- The infimum convention adds the no-hit event to every finite sublevel. -/
-theorem firstPassageTime_le_iff (p : BrownianPath) (c : ℝ) (s : ℝ≥0) :
+theorem firstPassageTime_le_iff (s : ℝ≥0) :
     firstPassageTime p c ≤ s ↔ (¬∃ u : ℝ≥0, c ≤ p u) ∨ ∃ u ≤ s, c ≤ p u := by
   by_cases hh : ∃ u : ℝ≥0, c ≤ p u
   · constructor
     · intro hs
       exact Or.inr ⟨_,hs,firstPassageTime_mem p c hh⟩
     · rintro (hn | ⟨u,hu,hcu⟩)
-      · exact (hn hh).elim
+      · simp_all
       · exact (csInf_le (s := {u : ℝ≥0 | c ≤ p u}) (OrderBot.bddBelow _) hcu).trans hu
   · have he : {u : ℝ≥0 | c ≤ p u} = ∅ := by
-      apply Set.eq_empty_iff_forall_notMem.mpr
-      intro u hu
-      exact hh ⟨u,hu⟩
+      aesop
     rw [firstPassageTime,he]
-    have hempty : sInf (∅ : Set ℝ≥0) = 0 := NNReal.sInf_empty
-    rw [hempty]
-    exact ⟨fun _ => Or.inl hh,fun _ => zero_le⟩
+    simp_all
+
+end
 
 /-- The literal first-passage time is jointly measurable, including its no-hit value zero. -/
 theorem measurable_firstPassageTime_joint :
@@ -111,15 +109,13 @@ theorem measurable_firstPassageTime (c : ℝ) : Measurable (fun p => firstPassag
 theorem continuous_stopBrownianPath :
     Continuous (fun z : ℝ≥0 × BrownianPath => stopBrownianPath z.2 z.1) := by
   apply ContinuousMap.continuous_of_continuous_uncurry
-  change Continuous (fun z : (ℝ≥0 × BrownianPath) × ℝ≥0 => z.1.2 (min z.2 z.1.1))
-  exact continuous_eval.comp (continuous_fst.snd.prodMk (continuous_snd.min continuous_fst.fst))
+  change Continuous (fun z : (ℝ≥0 × BrownianPath) × ℝ≥0 => z.1.2 _)
+  fun_prop
 
 /-- The drift definition `DOZZ.driftedBrownianPath` used in the marked paths is the same literal
 translation already constructed. -/
 theorem driftedBrownianPath_eq (ν : ℝ) (p : BrownianPath) :
     driftedBrownianPath ν p = brownianDriftPath ν p := by
-  apply ContinuousMap.ext
-  intro t
   rfl
 
 /-- The drift map `DOZZ.driftedBrownianPath` is jointly continuous. -/
@@ -148,8 +144,7 @@ theorem continuous_brownianPath_reverse_recenter :
   apply ContinuousMap.continuous_of_continuous_uncurry
   change Continuous (fun z : ((ℝ≥0 × ℝ) × BrownianPath) × ℝ≥0 =>
     z.1.2 (z.1.1.1-min z.2 z.1.1.1)-z.1.1.2)
-  exact (continuous_eval.comp (continuous_fst.snd.prodMk
-    (continuous_fst.fst.fst.sub (continuous_snd.min continuous_fst.fst.fst)))).sub continuous_fst.fst.snd
+  fun_prop
 
 /-- The reversed positive first-hit segment has its literal lifetime-marked measurable law. -/
 theorem measurable_reversedPositiveFirstHitSegment (ν c : ℝ) :
@@ -168,7 +163,7 @@ theorem continuous_brownianTranslatePath :
     Continuous (fun z : ℝ≥0 × BrownianPath => brownianTranslatePath z.1 z.2) := by
   apply ContinuousMap.continuous_of_continuous_uncurry
   change Continuous (fun z : (ℝ≥0 × BrownianPath) × ℝ≥0 => z.1.2 (z.1.1+z.2))
-  exact continuous_eval.comp (continuous_fst.snd.prodMk (continuous_fst.fst.add continuous_snd))
+  fun_prop
 
 /-- A level-distance test encoded as a literal continuous path. -/
 noncomputable def brownianLevelDistancePath (c : ℝ) (p : BrownianPath) : BrownianPath :=
@@ -179,7 +174,7 @@ theorem continuous_brownianLevelDistancePath :
     Continuous (fun z : ℝ × BrownianPath => brownianLevelDistancePath z.1 z.2) := by
   apply ContinuousMap.continuous_of_continuous_uncurry
   change Continuous (fun z : (ℝ × BrownianPath) × ℝ≥0 => -|z.1.2 z.2+z.1.1|)
-  exact ((continuous_eval.comp (continuous_fst.snd.prodMk continuous_snd)).add continuous_fst.fst).abs.neg
+  fun_prop
 
 /-- A compact level hit is the zero maximum of the negative level-distance test. -/
 theorem brownianPath_compact_levelHit_iff (p : BrownianPath) (c : ℝ) (s T : ℝ≥0) :
@@ -189,38 +184,38 @@ theorem brownianPath_compact_levelHit_iff (p : BrownianPath) (c : ℝ) (s T : �
   have hnonpos : (⨆ u : Iic T, q u) ≤ 0 := ciSup_le (fun u => neg_nonpos.mpr (abs_nonneg _))
   constructor
   · rintro ⟨u,hu,hpu⟩
-    have hut : u-s ≤ T := (tsub_le_iff_right).mpr (by simpa only [add_comm] using hu.2)
+    have hut : u-s ≤ T := (tsub_le_iff_right).mpr (by grind)
     have hqu : q (u-s) = 0 := by
-      change -|p (s+(u-s))+c| = 0
-      rw [add_tsub_cancel_of_le hu.1,hpu,neg_add_cancel,abs_zero,neg_zero]
+      change -|p _+c| = 0
+      simp_all
     apply le_antisymm hnonpos
     rw [← hqu]
     exact le_ciSup (brownianPath_Iic_bddAbove q T) ⟨u-s,hut⟩
   · intro hM
     obtain ⟨u,hu⟩ := brownianPath_runningMaximum_attained q T
-    refine ⟨s+u.1,⟨le_add_of_nonneg_right (zero_le),add_le_add (α := ℝ≥0) (show s ≤ s from le_rfl) u.2⟩,?_⟩
-    have he : q u.1 = 0 := hu.symm.trans hM
-    change -|p (s+u.1)+c| = 0 at he
-    have hv : p (s+u.1)+c = 0 := abs_eq_zero.mp (neg_eq_zero.mp he)
-    linarith
+    refine ⟨s+u.1,⟨le_add_of_nonneg_right (zero_le),add_le_add (show s ≤ s from le_rfl) u.2⟩,?_⟩
+    have he := hu.symm.trans hM
+    change -|p _+c| = 0 at he
+    grind
 
 /-- Existence of a level hit on a fixed compact interval is jointly measurable in the level and path. -/
 theorem measurableSet_brownianPath_compact_levelHit (s T : ℝ≥0) :
     MeasurableSet {z : ℝ × BrownianPath | ∃ u ∈ Icc s (s+T), z.2 u = -z.1} := by
   have hmM : Measurable (fun p : BrownianPath => ⨆ u : Iic T, p u) :=
     (measurable_brownianPath_runningMaximum T).mono
-      ((brownianRawFiltration _ (fun t => ContinuousMap.measurable_eval t)).le T) le_rfl
+      ((brownianRawFiltration _ ContinuousMap.measurable_eval).le T) le_rfl
   have hmT : Measurable (fun z : ℝ × BrownianPath => brownianTranslatePath s z.2) :=
     continuous_brownianTranslatePath.measurable.comp (measurable_const.prodMk measurable_snd)
-  have hmD := continuous_brownianLevelDistancePath.measurable.comp (measurable_fst.prodMk hmT)
   have he : {z : ℝ × BrownianPath | ∃ u ∈ Icc s (s+T), z.2 u = -z.1} =
       {z | (⨆ u : Iic T, brownianLevelDistancePath z.1 (brownianTranslatePath s z.2) u) = 0} := by
     ext z
     exact brownianPath_compact_levelHit_iff z.2 z.1 s T
   rw [he]
-  exact measurableSet_eq_fun (hmM.comp hmD) measurable_const
+  exact measurableSet_eq_fun (hmM.comp (continuous_brownianLevelDistancePath.measurable.comp (measurable_fst.prodMk hmT))) measurable_const
+section
+variable (s : ℝ≥0)
 /-- Visits strictly after a deterministic time are exhausted by countably many compact interval tests. -/
-theorem brownianPath_levelHit_after_eq_iUnion (s : ℝ≥0) :
+theorem brownianPath_levelHit_after_eq_iUnion :
     {z : ℝ × BrownianPath | ∃ u : ℝ≥0, s < u ∧ z.2 u = -z.1} =
       ⋃ j : ℕ, ⋃ n : ℕ, {z | ∃ u ∈ Icc (s+1/((j : ℝ≥0)+1))
         (s+1/((j : ℝ≥0)+1)+(n : ℝ≥0)), z.2 u = -z.1} := by
@@ -228,26 +223,28 @@ theorem brownianPath_levelHit_after_eq_iUnion (s : ℝ≥0) :
   simp only [mem_ofPred_eq,mem_iUnion]
   constructor
   · rintro ⟨u,hu,hp⟩
-    have hgap : 0 < (u : ℝ)-(s : ℝ) := sub_pos.mpr (by exact_mod_cast hu)
+    have hgap : 0 < (u : ℝ)-(s : ℝ) := by simp_all
     obtain ⟨j,hj⟩ := exists_nat_one_div_lt hgap
-    let ε : ℝ≥0 := 1/((j : ℝ≥0)+1)
-    have hε : (ε : ℝ) < (u : ℝ)-(s : ℝ) := by simpa [ε] using hj
+    let ε : ℝ≥0 := 1/(j+1)
+    have hε : ε < u-(s : ℝ) := by assumption
     have hsu : s+ε ≤ u := by
-      have he : (s : ℝ)+(ε : ℝ) ≤ (u : ℝ) := by linarith
+      have he : s+ε ≤ (u : ℝ) := by linarith
       exact_mod_cast he
-    obtain ⟨n,hn⟩ := exists_nat_ge (u : ℝ)
-    have hun : u ≤ (n : ℝ≥0) := by exact_mod_cast hn
+    obtain ⟨n,hn⟩ := exists_nat_ge u
+    have hun : u ≤ n := by exact_mod_cast hn
     exact ⟨j,n,u,⟨hsu,hun.trans (le_add_of_nonneg_left zero_le)⟩,hp⟩
   · rintro ⟨j,n,u,hu,hp⟩
-    have hε : (0 : ℝ≥0) < 1/((j : ℝ≥0)+1) := by positivity
+    have hε : 0 < 1/((j : ℝ≥0)+1) := by positivity
     exact ⟨u,(lt_add_of_pos_right s hε).trans_le hu.1,hp⟩
 
 /-- Future level visits are measurable, without treating a last exit as a stopping time. -/
-theorem measurableSet_brownianPath_levelHit_after (s : ℝ≥0) :
+theorem measurableSet_brownianPath_levelHit_after :
     MeasurableSet {z : ℝ × BrownianPath | ∃ u : ℝ≥0, s < u ∧ z.2 u = -z.1} := by
   rw [brownianPath_levelHit_after_eq_iUnion]
   exact MeasurableSet.iUnion (fun j => MeasurableSet.iUnion (fun n =>
-    measurableSet_brownianPath_compact_levelHit (s+1/((j : ℝ≥0)+1)) n))
+    measurableSet_brownianPath_compact_levelHit _ n))
+
+end
 
 /-- Boundedness of the full level-hit set is a countable exhaustion property. -/
 theorem brownianPath_levelHits_bddAbove_iff (p : BrownianPath) (c : ℝ) :
@@ -255,21 +252,21 @@ theorem brownianPath_levelHits_bddAbove_iff (p : BrownianPath) (c : ℝ) :
       ∃ n : ℕ, ¬∃ u : ℝ≥0, (n : ℝ≥0) < u ∧ p u = -c := by
   constructor
   · rintro ⟨b,hb⟩
-    obtain ⟨n,hn⟩ := exists_nat_ge (b : ℝ)
+    obtain ⟨n,hn⟩ := exists_nat_ge b
     refine ⟨n,?_⟩
     rintro ⟨u,hu,hpu⟩
-    have hbn : b ≤ (n : ℝ≥0) := by exact_mod_cast hn
+    have hbn : b ≤ n := by exact_mod_cast hn
     exact ((hb hpu).trans hbn).not_gt hu
   · rintro ⟨n,hn⟩
     refine ⟨n,?_⟩
     intro u hpu
-    exact le_of_not_gt (fun h => hn ⟨u,h,hpu⟩)
+    grind
 
 /-- Boundedness of level-hit times is jointly measurable in the level and actual continuous path. -/
 theorem measurableSet_brownianPath_levelHits_bddAbove :
     MeasurableSet {z : ℝ × BrownianPath | BddAbove {u : ℝ≥0 | z.2 u = -z.1}} := by
   have he : {z : ℝ × BrownianPath | BddAbove {u : ℝ≥0 | z.2 u = -z.1}} =
-      ⋃ n : ℕ, {z : ℝ × BrownianPath | ∃ u : ℝ≥0, (n : ℝ≥0) < u ∧ z.2 u = -z.1}ᶜ := by
+      ⋃ n : ℕ, {z : ℝ × BrownianPath | ∃ u : ℝ≥0, n < u ∧ z.2 u = -z.1}ᶜ := by
     ext z
     simp only [mem_ofPred_eq,mem_iUnion,mem_compl_iff,brownianPath_levelHits_bddAbove_iff]
   rw [he]
@@ -295,7 +292,7 @@ theorem measurable_negativeLastExitTime_joint :
     Measurable (fun z : ℝ × BrownianPath => negativeLastExitTime z.2 z.1) := by
   apply measurable_of_Iic
   intro s
-  have he : (fun z : ℝ × BrownianPath => negativeLastExitTime z.2 z.1) ⁻¹' Iic s =
+  have he : (fun z => negativeLastExitTime z.2 z.1) ⁻¹' Iic s =
       {z : ℝ × BrownianPath | BddAbove {u : ℝ≥0 | z.2 u = -z.1}}ᶜ ∪
       {z : ℝ × BrownianPath | ∃ u : ℝ≥0, s < u ∧ z.2 u = -z.1}ᶜ := by
     ext z
@@ -306,7 +303,7 @@ theorem measurable_negativeLastExitTime_joint :
     · have hzero : negativeLastExitTime z.2 z.1 = 0 := by
         rw [negativeLastExitTime,csSup_of_not_bddAbove hb,csSup_empty]
         rfl
-      simp only [hzero,zero_le,hb,not_false_eq_true,true_or]
+      simp_all
   rw [he]
   exact measurableSet_brownianPath_levelHits_bddAbove.compl.union
     (measurableSet_brownianPath_levelHit_after s).compl
@@ -314,7 +311,7 @@ theorem measurable_negativeLastExitTime_joint :
 /-- Every literal conditioned last-exit segment is measurable on the actual path carrier. -/
 theorem measurable_negativeConditionedLastExitSegment (c : ℝ) :
     Measurable (negativeConditionedLastExitSegment c) := by
-  have hmτ : Measurable (fun p : BrownianPath => negativeLastExitTime p c) :=
+  have hmτ :=
     measurable_negativeLastExitTime_joint.comp ((measurable_const (a := c)).prodMk measurable_id)
   exact hmτ.prodMk (continuous_stopBrownianPath.measurable.comp (hmτ.prodMk measurable_id))
 /-- Once a hit occurs before the cap, the capped and uncapped first-passage times are literally
@@ -323,23 +320,24 @@ theorem firstPassageTime_eq_capped_of_hit (p : BrownianPath) (c : ℝ) (T : ℝ�
     (h : ∃ u ≤ T, c ≤ p u) : firstPassageTime p c = cappedBrownianFirstPassage c T p := by
   obtain ⟨u,hu,hcu⟩ := h
   have hh : ∃ u : ℝ≥0, c ≤ p u := ⟨u,hcu⟩
-  have hτu : firstPassageTime p c ≤ u :=
+  have hτu :=
     csInf_le (s := {u : ℝ≥0 | c ≤ p u}) (OrderBot.bddBelow _) hcu
   have hτT := hτu.trans hu
   apply le_antisymm
   · rcases cappedBrownianFirstPassage_mem c T p with hv | he
-    · exact csInf_le (s := {u : ℝ≥0 | c ≤ p u}) (OrderBot.bddBelow _) hv.2
-    · rw [he]
-      exact hτT
-  · exact csInf_le (s := {u : ℝ≥0 | u ≤ T ∧ c ≤ p u} ∪ {T})
+    · exact csInf_le (OrderBot.bddBelow _) hv.2
+    aesop
+  · exact csInf_le
       (OrderBot.bddBelow _) (Or.inl ⟨hτT,firstPassageTime_mem p c hh⟩)
+section
+variable (P : Measure BrownianPath)
 
 
 /-- The literal lifetime-marked first-hit kernel is measurable for every nonnegative measurable test. -/
-theorem measurable_positiveFirstHit_kernel (P : Measure BrownianPath) [SFinite P]
+theorem measurable_positiveFirstHit_kernel [SFinite P]
     (ν : ℝ) (F : ℝ × StoppedBrownianPath → ℝ≥0∞) (hF : Measurable F) :
     Measurable (fun m : ℝ => ∫⁻ u, F (m,u) ∂P.map (positiveDriftFirstHitSegment ν m)) := by
-  have hm : Measurable (fun z : ℝ × BrownianPath => F (z.1,positiveDriftFirstHitSegment ν z.1 z.2)) :=
+  have hm :=
     hF.comp (measurable_fst.prodMk (measurable_positiveDriftFirstHitSegment_joint ν))
   convert hm.lintegral_prod_right' (ν := P) using 1
   funext m
@@ -348,13 +346,14 @@ theorem measurable_positiveFirstHit_kernel (P : Measure BrownianPath) [SFinite P
 
 /-- The exact measurability conjunct of Williams' kernel identity follows on the maximum reference
 law. -/
-theorem aemeasurable_positiveFirstHit_kernel (P : Measure BrownianPath)
-    (hB : IsBrownianReal (fun t p => p t) P) (ν : ℝ)
+theorem aemeasurable_positiveFirstHit_kernel (hB : IsBrownianReal (fun t p => p t) P) (ν : ℝ)
     (F : ℝ × StoppedBrownianPath → ℝ≥0∞) (hF : Measurable F) :
     AEMeasurable (fun m : ℝ => ∫⁻ u, F (m,u) ∂P.map (positiveDriftFirstHitSegment ν m))
       (brownianMaximumReferenceLaw ν) := by
   let _ := (hB.hasLaw_eval 0).isProbabilityMeasure
   exact (measurable_positiveFirstHit_kernel P ν F hF).aemeasurable
+
+end
 
 
 end DOZZ.Proofs

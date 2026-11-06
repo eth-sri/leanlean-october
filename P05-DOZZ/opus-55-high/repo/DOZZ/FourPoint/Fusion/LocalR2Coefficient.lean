@@ -21,7 +21,6 @@ theorem fusion_mixed_coefficient (p e q E J : ℝ) (he : -1 < e) (A : ℂ)
       ((-p / 2 * (e + 2) / (e + 1) : ℝ) : ℂ) * (A * (E : ℂ)) := by
   have h1 : ((e + 1 : ℝ) : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (by linarith)
   have h2 : ((e + 2 : ℝ) : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (by linarith)
-  push_cast at h1 h2
   calc
     _ = (-2 * p : ℂ) * ((1 / ((e + 1) * (e + 2)) : ℝ) : ℂ) *
         (((q ^ 2 * J : ℝ) : ℂ) * (E : ℂ)) := by push_cast; ring
@@ -40,17 +39,17 @@ theorem fusionLocalR2_coefficient_tendsto {Ω : Type*} [MeasurableSpace Ω]
   obtain ⟨hk, hβ, hβ2, hβlin, _, _⟩ := fusion_taylor_parameters γ α₁ hγ hlo hsq hα₁
   have h := fusionLocalR2_normalized_tendsto P X hX γ hγ hγ2 M hM α₁ α₂ α₃
     hlo hsq hα₁ hα₂ hα₃ p hp
-  have hJ := (planar_mixed_integral (γ ^ 2 / 2) (γ * α₁) hk hβ hβ2 1 (by norm_num)).2
+  have hJ := (planar_mixed_integral _ _ hk hβ hβ2 1 (by norm_num)).2
   simp only [norm_one, Real.one_rpow, mul_one] at hJ
   have hq : γ ^ 2 / 2 / 2 = γ ^ 2 / 4 := by ring
   rw [hq] at hJ
   have he : 2 + γ ^ 2 / 2 - γ * α₁ = γ ^ 2 / 2 - γ * α₁ + 2 := by ring
   rw [he] at hJ
-  have hc := fusion_mixed_coefficient p (γ ^ 2 / 2 - γ * α₁) (γ ^ 2 / 4)
+  have hc := fusion_mixed_coefficient p _ _
     (∫⁻ ω, fusionMovingMass γ α₁ α₂ α₃ 1 0 (M ω) ^ (-p - 1) ∂P).toReal
-    (∫ y : ℂ, planarMixedKernel (γ ^ 2 / 2) (γ * α₁) 1 y) (by linarith) _ hJ
+    (∫ y : ℂ, planarMixedKernel _ _ 1 y) (by linarith) _ hJ
   rw [hc, fusion_planarGauss_real _ _ hk hβ hβ2 hβlin,
-    fusion_local_inverse_coefficient_eq P X hX γ hγ hγ2 M hM α₁ α₂ α₃ (-p - 1)] at h
+    fusion_local_inverse_coefficient_eq P X hX γ hγ hγ2 M hM α₁ α₂ α₃ _] at h
   simpa only [gammaHalfRootedCoefficient, ENNReal.rpow_eq_pow, Complex.ofReal_mul, mul_assoc] using h
 
 end DOZZ.Proofs

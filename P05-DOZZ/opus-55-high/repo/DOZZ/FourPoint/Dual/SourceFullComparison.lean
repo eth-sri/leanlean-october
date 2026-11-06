@@ -41,9 +41,8 @@ theorem dual_source_full_lateral_comparison
         (J U₀ (p.1, p.2.1)+J U₁ (p.1, p.2.2))^(-q) ∂(P.map (originRadialPath Xc)).prod (P.prod P)
       let m := ENNReal.ofReal (Real.exp (γ^2*(2*R+η)/2*(q^2+q)))
       original ≤ m*copied ∧ copied ≤ m*original := by
-  let _ : IsProbabilityMeasure P := hX.1
+  let _ := hX.1
   let Ar := originRadialPath Xc
-  have hAr : AEMeasurable Ar P := originRadialPath_aemeasurable P X Xc hc hcont
   let Qr := P.map Ar
   let _ : IsProbabilityMeasure Qr := inferInstance
   obtain ⟨N, hN, hi, hfin, heq, hNa, hwhole⟩ := reflected_copied_radial_plane_observable
@@ -54,23 +53,22 @@ theorem dual_source_full_lateral_comparison
     Qr U₀ U₁ hU₀ hU₁ hroot₀ hroot₁ A hA hU₀A hU₁A R r η hR0 hR hr hη
       hn₀ hn₁ hD q hq hguard.ne
   let k : ℂ → ℝ≥0∞ := fun x => ENNReal.ofReal (dualFusionKernel γ α₁ α₂ α₃ z x)
-  have hk : Measurable k := (dual_kernel_measurable γ α₁ α₂ α₃ z).ennreal_ofReal
+  have hk := (dual_kernel_measurable γ α₁ α₂ α₃ z).ennreal_ofReal
   let U := U₀ ∪ U₁
-  have hU : MeasurableSet U := hU₀.measurableSet.union hU₁.measurableSet
-  have hU0 : U ⊆ ({0} : Set ℂ)ᶜ := by
+  have hU := hU₀.measurableSet.union hU₁.measurableSet
+  have hU0 : U ⊆ ({0})ᶜ := by
     intro x hx
-    have hh : x ∈ ({0, 1} : Set ℂ)ᶜ := (union_subset hroot₀ hroot₁) hx
-    have hx0 : x ≠ 0 := fun he => hh (by simp [he])
+    have hh := (union_subset hroot₀ hroot₁) hx
+    have hx0 : x ≠ 0 := fun he => hh (by tauto)
     simpa using hx0
-  have hdis : Disjoint U₀ U₁ := Set.disjoint_left.mpr fun x hx₀ hx₁ =>
+  have hdis := Set.disjoint_left.mpr fun x hx₀ hx₁ =>
     hU₁A hx₁ (hU₀A hx₀)
-  have hsource (μ : Measure ℂ) : (∫⁻ x in ({0} : Set ℂ)ᶜ, U.indicator k x ∂μ) =
+  have hsource (μ : Measure ℂ) : (∫⁻ x in ({0})ᶜ, U.indicator k x ∂μ) =
       (∫⁻ x in U₀, k x ∂μ)+(∫⁻ x in U₁, k x ∂μ) := by
     rw [setLIntegral_indicator hU, inter_eq_left.mpr hU0]
     exact lintegral_union hU₁.measurableSet hdis
   let W : TwoSidedPath × ℂ → ℝ≥0∞ := fun p =>
     ENNReal.ofReal (reflected_global_reinsertionWeight γ p.1 p.2)
-  have hW : Measurable W := (reflected_global_reinsertionWeight_measurable γ).ennreal_ofReal
   have hcopied (a : TwoSidedPath) (μ : Measure ℂ) :
       (∫⁻ x in ({0} : Set ℂ)ᶜ, U.indicator k x*W (a, x) ∂μ) =
       (∫⁻ x in U₀, k x*W (a, x) ∂μ)+(∫⁻ x in U₁, k x*W (a, x) ∂μ) := by
@@ -81,14 +79,14 @@ theorem dual_source_full_lateral_comparison
     exact lintegral_union hU₁.measurableSet hdis
   have hlaw := hwhole (U.indicator k) (hk.indicator hU)
     (fun p => p.2^(-q)) (measurable_snd.pow_const (-q))
-  have hit := reflected_global_mass_iterated P Ar hAr γ N hN hfin
+  have hit := reflected_global_mass_iterated P Ar (originRadialPath_aemeasurable P X Xc hc hcont) γ N hN hfin
     (U.indicator k) (hk.indicator hU) (-q)
   dsimp only [W] at hcopied
   simp only [hsource, hcopied] at hlaw hit
-  have hFm := reflected_chart_parameter_mass_measurable ({0} : Set ℂ)ᶜ
-    (isClosed_singleton (x := (0 : ℂ))).isOpen_compl N hN hfin
+  have hFm := reflected_chart_parameter_mass_measurable _ᶜ
+    (isClosed_singleton (x := 0)).isOpen_compl N hN hfin
     (fun p => U.indicator k p.2*W p)
-    (((hk.indicator hU).comp measurable_snd).mul hW)
+    (((hk.indicator hU).comp measurable_snd).mul ((reflected_global_reinsertionWeight_measurable γ).ennreal_ofReal))
   have hp : Measurable (fun p : TwoSidedPath × Ω =>
       ((∫⁻ x in U₀, k x*W (p.1, x) ∂N p.2)+(∫⁻ x in U₁, k x*W (p.1, x) ∂N p.2))^(-q)) := by
     simpa only [W, hcopied] using hFm.pow_const (-q)
@@ -96,11 +94,9 @@ theorem dual_source_full_lateral_comparison
     (fun p : TwoSidedPath × Ω =>
       ((∫⁻ x in U₀, k x*W (p.1, x) ∂N p.2)+(∫⁻ x in U₁, k x*W (p.1, x) ∂N p.2))^(-q))
     hp.aemeasurable (μ := Qr) (ν := P)
-  dsimp only [W] at hprod
   have he := hlaw.trans (hit.trans hprod.symm)
   refine ⟨N, hN, hi, hfin, heq, ?_⟩
   dsimp only at hb ⊢
-  rw [← he] at hb
-  exact hb
+  rwa [← he] at hb
 
 end DOZZ.Proofs

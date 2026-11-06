@@ -29,7 +29,7 @@ theorem dual_source_radial_scale_eq_path_ae
       (fun ω => dualPathRadialScale γ ν h z (originRadialPath Xc ω)) := by
   filter_upwards [originRadialPath_eval_ae hcont] with ω hω
   unfold dual_radial_scale dualPathRadialScale
-  rw [hω]
+  simp_all
 
 /-- At the actual restart time, the path likelihood is exactly the stopped-past terminal
 likelihood used in the Williams joint law. -/
@@ -40,13 +40,13 @@ theorem dual_path_radial_scale_eq_past (γ ν h : ℝ) (z : ℂ) (hz0 : z ≠ 0)
   have he := dual_radial_scale_eq_restart γ ν h
     (fun (_ : Unit) (_ : ℂ) t => A t) z hz0 ()
   change dualPathRadialScale γ ν h z A =
-    ‖z‖^(2 : ℝ)*Real.exp (γ*(A (-Real.log ‖z‖+h)-ν*(-Real.log ‖z‖+h))) at he
+    ‖z‖^2*Real.exp (γ*(A (-Real.log ‖z‖+h)-ν*(-Real.log ‖z‖+h))) at he
   rw [he]
   unfold dualPastRestartWeight
   simp only [stopBrownianPath, ContinuousMap.coe_mk, min_self,
     radialPositiveHalf, ContinuousMap.comp_apply]
-  change ‖z‖^(2 : ℝ)*Real.exp (γ*(A (-Real.log ‖z‖+h)-ν*(-Real.log ‖z‖+h))) =
-    ‖z‖^(2 : ℝ)*Real.exp (γ*(A (T : ℝ)-ν*(T : ℝ)))
-  rw [hT]
+  change ‖z‖^2*Real.exp (γ*(A (-Real.log ‖z‖+h)-ν*(-Real.log ‖z‖+h))) =
+    ‖z‖^2*Real.exp (γ*(A T-ν*T))
+  simp_all
 
 end DOZZ.Proofs

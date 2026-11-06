@@ -42,29 +42,31 @@ noncomputable def rbarShiftMultiplierReal (γ a : ℝ) : ℝ :=
 theorem rbarShiftMultiplier_ofReal (γ a : ℝ) :
     rbarShiftMultiplier γ a = (rbarShiftMultiplierReal γ a : ℂ) := by
   unfold rbarShiftMultiplier rbarShiftMultiplierReal
-  rw [show -((γ : ℂ) ^ 2) / 4 = ((-(γ ^ 2) / 4 : ℝ) : ℂ) by push_cast; ring,
-    show (γ : ℂ) * a / 2 - (γ : ℂ) ^ 2 / 4 = ((γ * a / 2 - γ ^ 2 / 4 : ℝ) : ℂ) by push_cast; ring,
+  rw [show -((γ : ℂ) ^ 2) / 4 = ((-(γ ^ 2) / 4 : ℝ) : ℂ) by simp,
+    show (γ : ℂ) * a / 2 - (γ : ℂ) ^ 2 / 4 = ((γ * a / 2 - γ ^ 2 / 4 : ℝ) : ℂ) by simp,
     show 2 + (γ : ℂ) ^ 2 / 2 - (γ : ℂ) * a / 2 = ((2 + γ ^ 2 / 2 - γ * a / 2 : ℝ) : ℂ) by
       push_cast; ring,
     lFun_ofReal_eq_lR, lFun_ofReal_eq_lR, lFun_ofReal_eq_lR]
   push_cast
   ring
+section
+variable (γ : ℝ)
 
 /-- **The shift multiplier is meromorphic on `ℂ`.** -/
-theorem meromorphicOn_rbarShiftMultiplier (γ : ℝ) :
+theorem meromorphicOn_rbarShiftMultiplier :
     MeromorphicOn (rbarShiftMultiplier γ) Set.univ := by
   intro x _
   unfold rbarShiftMultiplier
-  have hn : AnalyticAt ℂ (fun z : ℂ => 2 * ((Q γ : ℂ) - z) / γ * Real.pi) x := by fun_prop
-  have h1 : MeromorphicAt (fun _ : ℂ => lFun (-((γ : ℂ) ^ 2) / 4)) x := MeromorphicAt.const _ _
-  have h2 := meromorphicAt_lFun_comp (f := fun z : ℂ => (γ : ℂ) * z / 2 - (γ : ℂ) ^ 2 / 4)
+  have hn : AnalyticAt ℂ (fun z : ℂ => 2 * ((Q γ) - z) / γ * Real.pi) x := by fun_prop
+  have h1 : MeromorphicAt (fun _ : ℂ => lFun (-((γ : ℂ) ^ 2) / 4)) x := MeromorphicAt.const ..
+  have h2 := meromorphicAt_lFun_comp (f := fun z : ℂ => γ * z / 2 - γ ^ 2 / 4)
     (z := x) (by fun_prop)
-  have h3 := meromorphicAt_lFun_comp (f := fun z : ℂ => 2 + (γ : ℂ) ^ 2 / 2 - (γ : ℂ) * z / 2)
+  have h3 := meromorphicAt_lFun_comp (f := fun z : ℂ => 2 + γ ^ 2 / 2 - γ * z / 2)
     (z := x) (by fun_prop)
-  exact hn.meromorphicAt.div ((h1.mul h2).mul h3)
+  fun_prop
 
 /-- The shift multiplier in Gamma-factor form. -/
-theorem rbarShiftMultiplier_eq (γ : ℝ) (z : ℂ) :
+theorem rbarShiftMultiplier_eq (z : ℂ) :
     rbarShiftMultiplier γ z = 2 * ((Q γ : ℂ) - z) / γ * Real.pi *
       (lFun (-((γ : ℂ) ^ 2) / 4))⁻¹ *
       (Complex.Gamma (1 - ((γ : ℂ) * z / 2 - (γ : ℂ) ^ 2 / 4)) *
@@ -75,37 +77,39 @@ theorem rbarShiftMultiplier_eq (γ : ℝ) (z : ℂ) :
   rw [← lFun_inv, ← lFun_inv, div_eq_mul_inv, mul_inv, mul_inv]
   ring
 
+end
+
 /-- **The shift multiplier is holomorphic on `γ < Re z < Q`.** -/
 theorem differentiableOn_rbarShiftMultiplier {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) :
     DifferentiableOn ℂ (rbarShiftMultiplier γ) {z | γ < z.re ∧ z.re < Q γ} := by
   obtain ⟨hQ, hQ2, hγh, h42, h2⟩ := slice_facts hγ hγ2
   intro z hz
   apply DifferentiableAt.differentiableWithinAt
-  have hfun : rbarShiftMultiplier γ = fun z => 2 * ((Q γ : ℂ) - z) / γ * Real.pi *
-      (lFun (-((γ : ℂ) ^ 2) / 4))⁻¹ *
-      (Complex.Gamma (1 - ((γ : ℂ) * z / 2 - (γ : ℂ) ^ 2 / 4)) *
-        (Complex.Gamma ((γ : ℂ) * z / 2 - (γ : ℂ) ^ 2 / 4))⁻¹) *
-      (Complex.Gamma (1 - (2 + (γ : ℂ) ^ 2 / 2 - (γ : ℂ) * z / 2)) *
-        (Complex.Gamma (2 + (γ : ℂ) ^ 2 / 2 - (γ : ℂ) * z / 2))⁻¹) :=
+  have hfun : rbarShiftMultiplier γ = fun z => 2 * ((Q γ) - z) / γ * Real.pi *
+      (lFun _)⁻¹ *
+      (Complex.Gamma _ *
+        (Complex.Gamma _)⁻¹) *
+      (Complex.Gamma _ *
+        (Complex.Gamma _)⁻¹) :=
     funext (rbarShiftMultiplier_eq γ)
   rw [hfun]
-  have hu : DifferentiableAt ℂ (fun w : ℂ => (γ : ℂ) * w / 2 - (γ : ℂ) ^ 2 / 4) z := by
+  have hu : DifferentiableAt ℂ (fun w : ℂ => γ * w / 2 - γ ^ 2 / 4) z := by
     fun_prop
-  have hv : DifferentiableAt ℂ (fun w : ℂ => 2 + (γ : ℂ) ^ 2 / 2 - (γ : ℂ) * w / 2) z := by
+  have hv : DifferentiableAt ℂ (fun w : ℂ => 2 + γ ^ 2 / 2 - γ * w / 2) z := by
     fun_prop
-  have hre1 : 0 < (1 - ((γ : ℂ) * z / 2 - (γ : ℂ) ^ 2 / 4)).re := by
+  have hre1 : 0 < (1 - (γ * z / 2 - γ ^ 2 / 4)).re := by
     simp [Complex.mul_re, pow_two]
     have : γ * z.re < γ * Q γ := mul_lt_mul_of_pos_left hz.2 hγ
-    have hγQ : γ * Q γ = 2 + γ ^ 2 / 2 := by rw [hQ]; field_simp
+    have hγQ : γ * Q γ = 2 + γ ^ 2 / 2 := by grind
     nlinarith
-  have hre2a : -1 < (1 - (2 + (γ : ℂ) ^ 2 / 2 - (γ : ℂ) * z / 2)).re := by
+  have hre2a : -1 < (1 - (2 + γ ^ 2 / 2 - γ * z / 2)).re := by
     simp [Complex.mul_re, pow_two]
     have : γ * γ < γ * z.re := mul_lt_mul_of_pos_left hz.1 hγ
     nlinarith
-  have hre2b : (1 - (2 + (γ : ℂ) ^ 2 / 2 - (γ : ℂ) * z / 2)).re < 0 := by
+  have hre2b : (1 - (2 + γ ^ 2 / 2 - γ * z / 2)).re < 0 := by
     simp [Complex.mul_re, pow_two]
     have : γ * z.re < γ * Q γ := mul_lt_mul_of_pos_left hz.2 hγ
-    have hγQ : γ * Q γ = 2 + γ ^ 2 / 2 := by rw [hQ]; field_simp
+    have hγQ : γ * Q γ = 2 + γ ^ 2 / 2 := by grind
     nlinarith
   exact ((((differentiableAt_const _).sub differentiableAt_id).const_mul _ |>.div_const _
     |>.mul_const _).mul (differentiableAt_const _)).mul
@@ -123,13 +127,11 @@ theorem slice_multiplier_eq {γ η : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hη : 
   obtain ⟨hQ, hQ2, hγh, h42, h2⟩ := slice_facts hγ hγ2
   have hγη : γ * η < 2 - γ ^ 2 / 2 := by
     have := mul_lt_mul_of_pos_left hηγ hγ
-    have h' : γ * (2 / γ - γ / 2) = 2 - γ ^ 2 / 2 := by field_simp
-    linarith
+    grind
   have hγη4 : γ * η < γ ^ 2 / 4 := by
-    have := mul_lt_mul_of_pos_left hη4 hγ
     nlinarith
   have hγsq : γ ^ 2 < 4 := by nlinarith
-  have hγηpos : 0 < γ * η := mul_pos hγ hη
+  have hγηpos := mul_pos hγ hη
   unfold crossingMultiplier3Real rbarShiftMultiplierReal
   rw [show γ ^ 2 / 4 * ((2 / γ + η + (Q γ - η) + -(2 * η) - γ / 2 - 2 * Q γ) / γ) =
       -(γ * η / 2) - γ ^ 2 / 4 by rw [hQ]; field_simp; ring,
@@ -147,19 +149,19 @@ theorem slice_multiplier_eq {γ η : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hη : 
   have hG0 : Real.Gamma (-(γ * η / 2) - γ ^ 2 / 4) ≠ 0 :=
     Real.Gamma_ne_zero (real_ne_neg_nat_of_frac (k := -1) (by push_cast; linarith)
       (by push_cast; linarith))
-  have hG1 : Real.Gamma (1 - (-(γ * η / 2) - γ ^ 2 / 4)) ≠ 0 :=
+  have hG1 :=
     (Real.Gamma_pos_of_pos (by linarith)).ne'
   have hLB : lR (-(γ * η)) ≠ 0 := lR_ne_zero_of_mem_neg (by linarith) (by linarith)
   have hLC : lR (1 - γ * η / 2) ≠ 0 := lR_ne_zero_of_mem_unit (by linarith) (by linarith)
   have hLm : lR (-(γ ^ 2) / 4) ≠ 0 := lR_ne_zero_of_mem_neg (by linarith) (by linarith)
   rw [Real.Gamma_add_one hA0,
     show lR (1 - (-(γ * η / 2) - γ ^ 2 / 4)) = Real.Gamma (1 - (-(γ * η / 2) - γ ^ 2 / 4)) /
-      Real.Gamma (-(γ * η / 2) - γ ^ 2 / 4) by unfold lR; rw [sub_sub_cancel]]
-  generalize Real.Gamma (-(γ * η / 2) - γ ^ 2 / 4) = G0 at hG0 ⊢
-  generalize Real.Gamma (1 - (-(γ * η / 2) - γ ^ 2 / 4)) = G1 at hG1 ⊢
-  generalize lR (-(γ * η)) = LB at hLB ⊢
-  generalize lR (1 - γ * η / 2) = LC at hLC ⊢
-  generalize lR (-(γ ^ 2) / 4) = Lm at hLm ⊢
+      Real.Gamma _ by unfold lR; rw [sub_sub_cancel]]
+  generalize Real.Gamma _ = G0 at hG0 ⊢
+  generalize Real.Gamma _ = G1 at hG1 ⊢
+  generalize lR _ = LB at hLB ⊢
+  generalize lR _ = LC at hLC ⊢
+  generalize lR _ = Lm at hLm ⊢
   have hηγ2 : η + γ / 2 ≠ 0 := by positivity
   field_simp
   ring
@@ -219,18 +221,17 @@ theorem reflectionBarR_shift_of_window {Ω : Type*} [MeasurableSpace Ω] (P : Me
     reflectionBarR P γ (Q γ - η - γ / 2) B₁ Z₁ =
       rbarShiftMultiplierReal γ (Q γ - η) * reflectionBarR P γ (Q γ - η) B₂ Z₂ := by
   obtain ⟨hη, hη1, hδ, hδ1, hδ2, -⟩ := id hW
-  have hηγ : η < 2 / γ - γ / 2 := lt_of_lt_of_le hη1 (min_le_left _ _)
-  have hη4 : η < γ / 4 := lt_of_lt_of_le hη1 ((min_le_right _ _).trans (min_le_left _ _))
-  have hη2γ : η < 1 / (2 * γ) := lt_of_lt_of_le hη1 ((min_le_right _ _).trans (min_le_right _ _))
+  have hηγ := lt_of_lt_of_le hη1 (min_le_left ..)
+  have hη4 := lt_of_lt_of_le hη1 ((min_le_right ..).trans (min_le_left ..))
   obtain ⟨B₄, Z₄, -, -, hRD₄, V, hV, hVx, F, r, -, hr, hFx, hFexp⟩ :=
     structureConstant_two_pole_expansion_of_tail P X M γ η δ hγ hγ2 hX hM hW hTail
   have hres := secondResidue_eq_of_bridge P X M hγ hγ2 hX hM hCross hBridge hV₃ hV₃mem hf₃
-    hf₃eq hη hη4 hηγ hη2γ hδ hδ1 hδ2 hV hVx hr hFx hFexp B₂ Z₂ h₂
+    hf₃eq hη hη4 hηγ (lt_of_lt_of_le hη1 ((min_le_right ..).trans (min_le_right ..))) hδ hδ1 hδ2 hV hVx hr hFx hFexp B₂ Z₂ h₂
   have hres' : twoPoleSecondResidue P γ B₄ Z₄ η = 4 * η / γ *
       crossingMultiplier3Real γ (Q γ - η) (-(2 * η)) (2 / γ + η) *
         reflectionBarR P γ (Q γ - η) B₂ Z₂ := by exact_mod_cast hres
   unfold twoPoleSecondResidue at hres'
-  rw [reflectionBarR_eq_of_isReflectionData P P γ (Q γ - η - γ / 2) (B₄ (Q γ - η - γ / 2)) Z₄
+  rw [reflectionBarR_eq_of_isReflectionData P P γ _ _ Z₄
     B₁ Z₁ hRD₄ h₁, show Q γ - (Q γ - η) + γ / 2 = η + γ / 2 by ring] at hres'
   rw [← slice_multiplier_eq hγ hγ2 hη hηγ hη4]
   have hne : (4 / γ * (η + γ / 2)) ≠ 0 := by positivity

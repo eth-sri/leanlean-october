@@ -65,20 +65,21 @@ theorem bpzWirt2L_apply (B : ℂ →L[ℝ] ℂ →L[ℝ] ℝ) :
 the first. -/
 theorem bpzWirt2L_smulRight (L : ℂ →L[ℝ] ℝ) : bpzWirt2L (L.smulRight L) = bpzWirtL L ^ 2 := by
   rw [bpzWirt2L_apply, bpzWirtL_apply]
-  simp only [ContinuousLinearMap.smulRight_apply, smul_apply, smul_eq_mul]
-  push_cast
-  linear_combination (-((L Complex.I : ℂ) ^ 2) / 4) * Complex.I_sq
+  simp
+  linear_combination (-((L Complex.I) ^ 2) / 4) * Complex.I_sq
+section
+variable (a : ℝ)
 
 /-! ### Integrability of the meromorphic integrands -/
 
 /-- `|u|^{2a} = ‖u‖^{2a}`, with `|u|` the complex modulus written through `normSq`. -/
-theorem bpz_normSq_rpow_eq (a : ℝ) (u : ℂ) : Complex.normSq u ^ a = ‖u‖ ^ (2 * a) := by
+theorem bpz_normSq_rpow_eq (u : ℂ) : Complex.normSq u ^ a = ‖u‖ ^ (2 * a) := by
   rw [Complex.normSq_eq_norm_sq, ← Real.rpow_natCast, ← Real.rpow_mul (norm_nonneg _)]
   congr 1
 
 /-- Off the root, the modulus of the meromorphic integrand is the weight times a power of the
 distance to the root. -/
-theorem bpz_norm_div_root_pow (a : ℝ) (n : ℕ) {w : ℝ} (hw : 0 ≤ w) {x z : ℂ} (hxz : x ≠ z) :
+theorem bpz_norm_div_root_pow (n : ℕ) {w : ℝ} (hw : 0 ≤ w) {x z : ℂ} (hxz : x ≠ z) :
     ‖((Complex.normSq (x - z) ^ a * w : ℝ) : ℂ) / (z - x) ^ n‖ =
       w * ‖x - z‖ ^ (2 * a - n) := by
   have hu : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
@@ -88,50 +89,56 @@ theorem bpz_norm_div_root_pow (a : ℝ) (n : ℕ) {w : ℝ} (hw : 0 ≤ w) {x z 
     bpz_normSq_rpow_eq, Real.rpow_sub hu, Real.rpow_natCast]
   field_simp
 
+end
+
 /-- A measure with no atom at `z` gives full mass to `{x | x ≠ z}`. -/
 theorem bpz_ae_ne_of_measure_singleton {m : Measure ℂ} {z : ℂ} (hz : m {z} = 0) :
     ∀ᵐ x ∂m, x ≠ z := by
   rw [ae_iff]
-  simpa using hz
+  simp_all
 
 /-- The meromorphic integrand is measurable. -/
 theorem bpz_measurable_div_root_pow (a : ℝ) {w : ℂ → ℝ} (hw : Measurable w) (z : ℂ) (n : ℕ) :
     Measurable (fun x : ℂ => ((Complex.normSq (x - z) ^ a * w x : ℝ) : ℂ) / (z - x) ^ n) := by
-  have h1 : Measurable (fun x : ℂ => Complex.normSq (x - z) ^ a * w x) :=
-    ((Complex.continuous_normSq.measurable.comp (measurable_id.sub_const z)).pow_const a).mul hw
-  exact (Complex.measurable_ofReal.comp h1).div ((measurable_const.sub measurable_id).pow_const n)
+  fun_prop
+section
+variable {a : ℝ}
+section
+variable {w : ℂ → ℝ}
+section
+variable (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ} {z : ℂ} (hz : m {z} = 0)
+include hw hw0 hz
 
 /-- For a measure without an atom at the root `z`, the meromorphic integrand
 `|x − z|^{2a} w(x) / (z − x)` is integrable as soon as `w(x) |x − z|^{2a−1}` is. -/
-theorem bpz_integrable_div_root {a : ℝ} {w : ℂ → ℝ} (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x)
-    {m : Measure ℂ} {z : ℂ} (hz : m {z} = 0)
-    (hint : Integrable (fun x => w x * ‖x - z‖ ^ (2 * a - 1)) m) :
+theorem bpz_integrable_div_root (hint : Integrable (fun x => w x * ‖x - z‖ ^ (2 * a - 1)) m) :
     Integrable (fun x => ((Complex.normSq (x - z) ^ a * w x : ℝ) : ℂ) / (z - x)) m := by
   refine Integrable.mono' hint ?_ ?_
   · simpa using (bpz_measurable_div_root_pow a hw z 1).aestronglyMeasurable
   · filter_upwards [bpz_ae_ne_of_measure_singleton hz] with x hx
-    have h := bpz_norm_div_root_pow a 1 (hw0 x) hx
-    simpa using h.le
+    simpa using (bpz_norm_div_root_pow a 1 (hw0 x) hx).le
 
 /-- For a measure without an atom at the root `z`, the meromorphic integrand
 `|x − z|^{2a} w(x) / (z − x)²` is integrable as soon as `w(x) |x − z|^{2a−2}` is. -/
-theorem bpz_integrable_div_root_sq {a : ℝ} {w : ℂ → ℝ} (hw : Measurable w)
-    (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ} {z : ℂ} (hz : m {z} = 0)
-    (hint : Integrable (fun x => w x * ‖x - z‖ ^ (2 * a - 2)) m) :
+theorem bpz_integrable_div_root_sq (hint : Integrable (fun x => w x * ‖x - z‖ ^ (2 * a - 2)) m) :
     Integrable (fun x => ((Complex.normSq (x - z) ^ a * w x : ℝ) : ℂ) / (z - x) ^ 2) m := by
   refine Integrable.mono' hint ?_ ?_
   · exact (bpz_measurable_div_root_pow a hw z 2).aestronglyMeasurable
   · filter_upwards [bpz_ae_ne_of_measure_singleton hz] with x hx
-    have h := bpz_norm_div_root_pow a 2 (hw0 x) hx
-    simpa using h.le
+    simpa using (bpz_norm_div_root_pow a 2 (hw0 x) hx).le
+
+end
+
+end
+section
+variable (ha : 0 < a) (ha1 : a ≤ 1) {w : ℂ → ℝ} (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ} {z : ℂ} (hz : m {z} = 0)
+include ha ha1 hw hw0 hz
 
 /-! ### Integrability of the derivative integrands at `ε = 0` -/
 
 /-- For `0 < a ≤ 1` and a measure without an atom at the root `z`, the first-derivative integrand
 at `ε = 0` is integrable as soon as `w(x) |x − z|^{2a−1}` is. -/
-theorem bpz_integrable_softDeriv_zero {a : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w : ℂ → ℝ}
-    (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ} {z : ℂ} (hz : m {z} = 0)
-    (hint : Integrable (fun x => w x * ‖x - z‖ ^ (2 * a - 1)) m) :
+theorem bpz_integrable_softDeriv_zero (hint : Integrable (fun x => w x * ‖x - z‖ ^ (2 * a - 1)) m) :
     Integrable (fun x => w x • bpzSoftDeriv a 0 x z) m := by
   refine Integrable.mono' (hint.const_mul (2 * a))
     (hw.aestronglyMeasurable.smul (bpzSoftDeriv_aestronglyMeasurable a 0 z m)) ?_
@@ -144,9 +151,7 @@ theorem bpz_integrable_softDeriv_zero {a : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w 
 /-- For `0 < a ≤ 1` and a measure without an atom at the root `z`, the second-derivative
 integrand at `ε = 0` is integrable as soon as `w(x) |x − z|^{2a−2}` is. (Its statement involves
 the local instance shortcuts for the space of bilinear forms.) -/
-theorem bpz_integrable_softDeriv2_zero {a : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w : ℂ → ℝ}
-    (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ} {z : ℂ} (hz : m {z} = 0)
-    (hint : Integrable (fun x => w x * ‖x - z‖ ^ (2 * a - 2)) m) :
+theorem bpz_integrable_softDeriv2_zero (hint : Integrable (fun x => w x * ‖x - z‖ ^ (2 * a - 2)) m) :
     Integrable (fun x => w x • bpzSoftDeriv2 a 0 x z) m := by
   refine Integrable.mono' (hint.const_mul (4 * a * (1 - a) + 2 * a))
     (hw.aestronglyMeasurable.smul (bpzSoftDeriv2_aestronglyMeasurable a 0 z m)) ?_
@@ -161,9 +166,7 @@ theorem bpz_integrable_softDeriv2_zero {a : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w
 
 /-- At `ε = 0` the Wirtinger combination of the first derivative mass is the meromorphic integral
 `a ∫ |x − z|^{2a} w(x) / (z − x) dm(x)`. -/
-theorem bpzWirtL_softMassDeriv_zero {a : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w : ℂ → ℝ}
-    (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ} {z : ℂ} (hz : m {z} = 0)
-    (hint : Integrable (fun x => w x * ‖x - z‖ ^ (2 * a - 1)) m) :
+theorem bpzWirtL_softMassDeriv_zero (hint : Integrable (fun x => w x * ‖x - z‖ ^ (2 * a - 1)) m) :
     bpzWirtL (bpzSoftMassDeriv a 0 w m z) =
       (a : ℂ) * ∫ x, ((Complex.normSq (x - z) ^ a * w x : ℝ) : ℂ) / (z - x) ∂m := by
   unfold bpzSoftMassDeriv
@@ -177,9 +180,7 @@ theorem bpzWirtL_softMassDeriv_zero {a : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w : 
 
 /-- At `ε = 0` the second Wirtinger combination of the second derivative mass is the meromorphic
 integral `a (a − 1) ∫ |x − z|^{2a} w(x) / (z − x)² dm(x)`. -/
-theorem bpzWirt2L_softMassDeriv2_zero {a : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w : ℂ → ℝ}
-    (hw : Measurable w) (hw0 : ∀ x, 0 ≤ w x) {m : Measure ℂ} {z : ℂ} (hz : m {z} = 0)
-    (hint : Integrable (fun x => w x * ‖x - z‖ ^ (2 * a - 2)) m) :
+theorem bpzWirt2L_softMassDeriv2_zero (hint : Integrable (fun x => w x * ‖x - z‖ ^ (2 * a - 2)) m) :
     bpzWirt2L (bpzSoftMassDeriv2 a 0 w m z) =
       ((a * (a - 1) : ℝ) : ℂ) *
         ∫ x, ((Complex.normSq (x - z) ^ a * w x : ℝ) : ℂ) / (z - x) ^ 2 ∂m := by
@@ -188,10 +189,13 @@ theorem bpzWirt2L_softMassDeriv2_zero {a : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {w 
     (bpz_integrable_softDeriv2_zero ha ha1 hw hw0 hz hint), ← integral_const_mul]
   refine integral_congr_ae ?_
   filter_upwards [bpz_ae_ne_of_measure_singleton hz] with x hx
-  have hsym := bpzSoftDeriv2_symm a 0 x z Complex.I 1
   have hw2 := bpzSoftDeriv2_wirtinger_zero a hx
-  rw [map_smul, Complex.real_smul, bpzWirt2L_apply, hsym]
+  rw [map_smul, Complex.real_smul, bpzWirt2L_apply, (bpzSoftDeriv2_symm a 0 x z Complex.I 1)]
   push_cast at hw2 ⊢
-  linear_combination (w x : ℂ) * hw2
+  linear_combination (w x) * hw2
+
+end
+
+end
 
 end DOZZ.Proofs

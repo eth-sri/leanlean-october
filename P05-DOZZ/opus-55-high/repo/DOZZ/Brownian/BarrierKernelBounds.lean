@@ -32,16 +32,11 @@ theorem gaussianKernelDifference_nonneg
       exp (-((y + β) ^ 2 / (2 * t))) =
         exp (-((y - β) ^ 2 / (2 * t))) * exp (-(2 * y * β / t)) := by
     rw [← exp_add]
-    congr 1
-    field_simp
     ring
   have hexp : exp (-(2 * y * β / t)) ≤ 1 :=
-    exp_le_one_iff.mpr (by linarith)
+    by simp_all
   rw [hfactor]
-  calc
-    _ = exp (-((y - β) ^ 2 / (2 * t))) *
-        (1 - exp (-(2 * y * β / t))) := by ring
-    _ ≥ 0 := mul_nonneg (exp_pos _).le (sub_nonneg.mpr hexp)
+  bound
 
 end DOZZ.Proofs
 

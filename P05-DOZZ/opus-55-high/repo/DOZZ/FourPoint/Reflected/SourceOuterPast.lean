@@ -33,17 +33,14 @@ theorem reflected_source_outer_past_indep
         reflected_radial_scale γ ν h Xc z ω)) P := by
   let _ : IsProbabilityMeasure P := hX.1
   let A := originRadialPath Xc
-  have hA := originRadialPath_aemeasurable P X Xc hc hcont
-  have hB := (originRadialPath_isBrownian P X Xc hX hc hcont).1
   have hh := originRadialPath_halves_indep P X Xc hX hc hcont
-  have hp := reflected_radial_future_indep_full_past_lateral P A hA hB hh N hN.aemeasurable hi T
+  have hp := reflected_radial_future_indep_full_past_lateral P A (originRadialPath_aemeasurable P X Xc hc hcont) ((originRadialPath_isBrownian P X Xc hX hc hcont).1) hh N hN.aemeasurable hi T
   let Φ : (BrownianPath × BrownianPath) × Measure ℂ → ℝ≥0∞ × ℝ := fun p =>
     (reflectedPastOuterMassCode γ α₁ α₂ α₃ (‖z‖^(1-ξ)) z p,
       Real.exp (γ*p.1.1 T-γ*ν*T-γ^2/2*(-Real.log ‖z‖)))
-  have hΦ : Measurable Φ := (reflected_pastOuterMassCode_measurable γ α₁ α₂ α₃ (‖z‖^(1-ξ)) z).prodMk
+  have hΦ := (reflected_pastOuterMassCode_measurable γ α₁ α₂ α₃ (‖z‖^(1-ξ)) z).prodMk
     ((((ContinuousMap.measurable_eval T).comp measurable_fst.fst).const_mul γ).sub_const
       (γ*ν*T) |>.sub_const (γ^2/2*(-Real.log ‖z‖)) |>.exp)
-  have hiΦ := hp.comp measurable_id hΦ
   have ho := reflected_source_outerMass_pastCode_ae P X hX γ hγ hγ₂ M hM A N heq hfin
     α₁ α₂ α₃ ξ z T hr hz hT
   have he : (fun ω => Φ ((stopBrownianPath (radialPositiveHalf (A ω)) T,
@@ -51,13 +48,13 @@ theorem reflected_source_outer_past_indep
       (fun ω => (gammaHalfOuterMass γ α₁ α₂ α₃ (M ω) z ξ,reflected_radial_scale γ ν h Xc z ω)) := by
     filter_upwards [ho,originRadialPath_eval_ae hcont] with ω hω hev
     apply Prod.ext hω
-    have heT : stopBrownianPath (radialPositiveHalf (A ω)) T T = A ω (T : ℝ) := by
-      change A ω (min (T : ℝ) (T : ℝ)) = A ω (T : ℝ)
+    have heT : stopBrownianPath (radialPositiveHalf (A ω)) T T = A ω T := by
+      change A ω (min T T) = A ω T
       rw [min_self]
     change Real.exp (γ*(stopBrownianPath (radialPositiveHalf (A ω)) T T)-γ*ν*T-γ^2/2*(-Real.log ‖z‖)) = _
     rw [heT]
     dsimp only [reflected_radial_scale]
     rw [hev,hcoord]
-  exact hiΦ.congr (ae_of_all P fun _ => rfl) he
+  exact (hp.comp measurable_id hΦ).congr (ae_of_all P fun _ => rfl) he
 
 end DOZZ.Proofs

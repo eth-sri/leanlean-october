@@ -31,9 +31,7 @@ theorem lastExitAvoidanceFactor_tendsto_one_atTop
     have hmul : Tendsto (fun y : ℝ => (-2 * ν) * y) atTop atBot :=
       tendsto_id.const_mul_atTop_of_neg hcoef
     have hshift := tendsto_atBot_add_const_right _ (2 * ν * c) hmul
-    convert hshift using 1
-    ext y
-    ring
+    grind
   have harg' : Tendsto (fun y : ℝ => -2 * ν * y) atTop atBot :=
     tendsto_id.const_mul_atTop_of_neg hcoef
   have hexp : Tendsto (fun y : ℝ => Real.exp (-2 * ν * (y - c))) atTop (𝓝 0) :=

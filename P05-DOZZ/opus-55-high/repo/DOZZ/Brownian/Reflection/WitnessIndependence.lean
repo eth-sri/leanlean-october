@@ -23,29 +23,29 @@ open MeasureTheory ProbabilityTheory Filter Topology TopologicalSpace Set
 open scoped ENNReal NNReal Topology
 
 namespace DOZZ.Proofs
+section
+variable {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω'] (P : Measure Ω) (P' : Measure Ω')
 
 /-- The reflection moment does not depend on the probability space or chosen reflection data.
 Its law is pinned by the conditioned entrance law, lateral-law uniqueness, and independence. -/
 theorem reflectionBarR_eq_of_isReflectionData
-    {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
-    (P : Measure Ω) (P' : Measure Ω') (γ α : ℝ)
+    (γ α : ℝ)
     (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
     (B' : Ω' → BrownianPath × BrownianPath) (Z' : Ω' → Measure ℝ)
     (hData : IsReflectionData P γ α B Z) (hData' : IsReflectionData P' γ α B' Z') :
-    reflectionBarR P γ α B Z = reflectionBarR P' γ α B' Z' := by
-  exact reflectionBarR_eq_of_lateralLaw_eq P P' γ α B Z B' Z' hData hData'
+    reflectionBarR P γ α B Z = reflectionBarR P' γ α B' Z' := reflectionBarR_eq_of_lateralLaw_eq P P' γ α B Z B' Z' hData hData'
     (isLateralGMCOf_map_eq P P' γ Z Z' hData.2.1 hData'.2.1)
 
 /-- Well-definedness of the full coefficient follows from that of its reflection moment. -/
 theorem reflectionR_eq_of_isReflectionData
-    {Ω Ω' : Type*} [MeasurableSpace Ω] [MeasurableSpace Ω']
-    (P : Measure Ω) (P' : Measure Ω') (γ μ α : ℝ)
+    (γ μ α : ℝ)
     (B : Ω → BrownianPath × BrownianPath) (Z : Ω → Measure ℝ)
     (B' : Ω' → BrownianPath × BrownianPath) (Z' : Ω' → Measure ℝ)
     (hData : IsReflectionData P γ α B Z) (hData' : IsReflectionData P' γ α B' Z') :
-    reflectionR P γ μ α B Z = reflectionR P' γ μ α B' Z' := by
-  exact reflectionR_eq_of_reflectionBarR_eq P P' γ μ α B Z B' Z'
+    reflectionR P γ μ α B Z = reflectionR P' γ μ α B' Z' := reflectionR_eq_of_reflectionBarR_eq P P' γ μ α B Z B' Z'
     (reflectionBarR_eq_of_isReflectionData P P' γ α B Z B' Z' hData hData')
+
+end
 
 end DOZZ.Proofs
 
