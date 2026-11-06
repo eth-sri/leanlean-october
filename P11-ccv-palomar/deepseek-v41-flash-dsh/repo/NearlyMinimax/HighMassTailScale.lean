@@ -11,14 +11,14 @@ proved independently for the actual constructed prior. -/
 noncomputable section
 open Filter
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 600000
 
 /-- The actual fixed geometric mass-MGF constant. -/
 def highHistoryMassMomentConstant (d : ℕ) (a b : ℝ) : ℝ :=
   (2 : ℝ)^(2*d) * (b-a)^2 / 8
 
-theorem highHistoryMassMomentConstant_pos (d : ℕ) (a b : ℝ) (hab : a < b) :
+variable (d : ℕ) (a b : ℝ)
+
+theorem highHistoryMassMomentConstant_pos (hab : a < b) :
     0 < highHistoryMassMomentConstant d a b := by
   unfold highHistoryMassMomentConstant
   positivity
@@ -30,7 +30,7 @@ theorem highHistoryMassParameter_eq_hpower (d k : ℕ) (a b : ℝ) (hk : 0 < k) 
   simp only [div_eq_mul_inv, mul_inv_rev, inv_pow]
   ring
 
-theorem highHistoryMassParameter_lowerSaddle (d : ℕ) (m θ C a b x : ℝ) :
+theorem highHistoryMassParameter_lowerSaddle (m θ C a b x : ℝ) :
     highHistoryMassParameter d (lowerSaddleGrid d m θ C x) a b =
       highHistoryMassMomentConstant d a b * (lowerSaddleH d m θ C x)^(d : ℝ) := by
   rw [highHistoryMassParameter_eq_hpower d _ a b
@@ -43,15 +43,14 @@ theorem eventually_highHistoryMass_saddle_guard {d : ℕ} (hd : 0 < d)
     ∀ᶠ x : ℝ in atTop, 2 ≤ lowerSaddleGrid d m θ C x ∧
       8 * highHistoryMassParameter d (lowerSaddleGrid d m θ C x) a b * x ≤ cm / lowerSaddleM m x := by
   have hdR : (0 : ℝ) < d := by exact_mod_cast hd
-  have hCmgf := highHistoryMassMomentConstant_pos d a b hab
-  filter_upwards [eventually_lowerSaddle_grid_and_mass hdR hm hθ hcm hCmgf C 2] with x hx
+  filter_upwards [eventually_lowerSaddle_grid_and_mass hdR hm hθ hcm (highHistoryMassMomentConstant_pos d a b hab) C 2] with x hx
   refine ⟨hx.1, ?_⟩
   rw [highHistoryMassParameter_lowerSaddle]
   unfold lowerSaddleMu at hx
   nlinarith only [hx.2]
 
 /-- The genuine tilted-tail numerical expression equals the source saddle tail envelope. -/
-theorem highHistoryMass_saddle_tail_eq (d : ℕ) (m θ C cm a b x : ℝ) :
+theorem highHistoryMass_saddle_tail_eq (m θ C cm a b x : ℝ) :
     2 * Real.exp (-(cm / (lowerSaddleM m x : ℝ))^2 /
       (8 * highHistoryMassParameter d (lowerSaddleGrid d m θ C x) a b)) =
       lowerSaddleExceptionalTail d m θ C (cm^2 / (8 * highHistoryMassMomentConstant d a b)) x := by

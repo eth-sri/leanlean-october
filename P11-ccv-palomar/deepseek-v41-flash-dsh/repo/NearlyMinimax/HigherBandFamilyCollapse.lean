@@ -14,8 +14,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1400000
 attribute [local instance] Classical.propDecidable
 
 section Matrix
@@ -25,18 +23,20 @@ theorem responseMatrixAction_matrix_zero (q : ℕ) (C : ℝ)
   simp [responseMatrixAction, covarianceAction, covarianceWeight]
 end Matrix
 
-def higherBandCoarseFirstAction {d n : ℕ} (ad bd lam ell N mu : ℝ)
+variable {d n : ℕ} (ad bd lam ell N mu : ℝ)
+
+def higherBandCoarseFirstAction (ad bd lam ell N mu : ℝ)
     (r D q : ℕ) (C : ℝ) (U : Fin n → Covariate d) (p : Fin n → ℝ)
     (c : HighFrameIndex d D → ℝ) (Φ : (HighFrameIndex d D → ℝ) → ℝ) : ℝ :=
   higherBandFirstAction ad bd lam ell (min ell (higherBandTargetScale d r N mu)) r D D q C false U p c Φ
 
-def higherBandFineFirstAction {d n : ℕ} (ad bd lam ell N mu : ℝ)
+def higherBandFineFirstAction (ad bd lam ell N mu : ℝ)
     (r M D q : ℕ) (C : ℝ) (U : Fin n → Covariate d) (p : Fin n → ℝ)
     (c : HighFrameIndex d D → ℝ) (Φ : (HighFrameIndex d D → ℝ) → ℝ) : ℝ :=
   if ell < higherBandTargetScale d r N mu then
     higherBandFirstAction ad bd lam ell (higherBandTargetScale d r N mu) r M D q C true U p c Φ else 0
 
-theorem higherBandFamilyFirstAction_coarse_fine {d n : ℕ} (ad bd lam ell N mu : ℝ)
+theorem higherBandFamilyFirstAction_coarse_fine 
     (D M q : ℕ) (C : ℝ) (hell : 1 ≤ ell)
     (hnu : ∀ j : Fin (D-2), 0 < higherBandTargetScale d (j.val+3) N mu)
     (hFine : ∀ j : Fin (D-2), ell < higherBandTargetScale d (j.val+3) N mu → j.val+3 ≤ M)
@@ -52,8 +52,8 @@ theorem higherBandFamilyFirstAction_coarse_fine {d n : ℕ} (ad bd lam ell N mu 
     higherBandCoarseFirstAction, higherBandFineFirstAction, Finset.sum_add_distrib]
   exact add_comm _ _
 
-theorem higherBandCoarseFirstAction_zero_other_count {d n : ℕ}
-    (ad bd lam ell N mu : ℝ) (ha : 0 < ad) (hab : ad < bd) (hell : 0 < ell)
+theorem higherBandCoarseFirstAction_zero_other_count 
+    (ha : 0 < ad) (hab : ad < bd) (hell : 0 < ell)
     (r D q : ℕ) (hr : 1 ≤ r) (hD : 1 ≤ D) (hnD : n ≤ D) (hne : n ≠ r)
     (hnu : 0 < higherBandTargetScale d r N mu) (C : ℝ)
     (U : Fin n → Covariate d) (hU : ∀ i j, |U i j| ≤ 2)
@@ -67,8 +67,8 @@ theorem higherBandCoarseFirstAction_zero_other_count {d n : ℕ}
     rw [higherBand_coarse_below_one_signed_zero d r D D q ad bd C lam ell _ (lt_min hell hnu) (not_le.mp hT)]
     simp
 
-theorem higherBandFineFirstAction_zero_small_count {d n : ℕ}
-    (ad bd lam ell N mu : ℝ) (ha : 0 < ad) (hab : ad < bd) (hell : 1 ≤ ell)
+theorem higherBandFineFirstAction_zero_small_count 
+    (ha : 0 < ad) (hab : ad < bd) (hell : 1 ≤ ell)
     (r M D q : ℕ) (hr : 1 ≤ r) (hD : 1 ≤ D) (hnD : n ≤ D) (hnr : n < r) (C : ℝ)
     (U : Fin n → Covariate d) (hU : ∀ i j, |U i j| ≤ 2)
     (p : Fin n → ℝ) (hp : ∀ i, p i ∈ Icc ad bd)
@@ -80,8 +80,8 @@ theorem higherBandFineFirstAction_zero_small_count {d n : ℕ}
       r M D q hr hD hnD hnr C true U hU p hp c Φ
   · rfl
 
-theorem higherBand_matched_coarse_fine {d n : ℕ}
-    (ad bd lam ell N mu : ℝ) (ha : 0 < ad) (hab : ad < bd) (hlam : 0 ≤ lam) (hell : 1 ≤ ell)
+theorem higherBand_matched_coarse_fine 
+    (ha : 0 < ad) (hab : ad < bd) (hlam : 0 ≤ lam) (hell : 1 ≤ ell)
     (M D q : ℕ) (hn : 2 ≤ n) (hD : 1 ≤ D) (hnD : n ≤ D)
     (hnu : 0 < higherBandTargetScale d n N mu)
     (hFine : ell < higherBandTargetScale d n N mu → n ≤ M) (C : ℝ)
@@ -126,8 +126,8 @@ theorem higherBand_matched_coarse_fine {d n : ℕ}
 
 /-- The selected genuine higher family is exactly its matched full target
 plus ordinary fine rows with strictly smaller target counts. -/
-theorem higherBandFamilyFirstAction_matched_and_fine_below {d n : ℕ}
-    (ad bd lam ell N mu : ℝ) (ha : 0 < ad) (hab : ad < bd) (hlam : 0 ≤ lam) (hell : 1 ≤ ell)
+theorem higherBandFamilyFirstAction_matched_and_fine_below 
+    (ha : 0 < ad) (hab : ad < bd) (hlam : 0 ≤ lam) (hell : 1 ≤ ell)
     (D M q : ℕ) (hn : 3 ≤ n) (hnD : n ≤ D)
     (hnu : ∀ j : Fin (D-2), 0 < higherBandTargetScale d (j.val+3) N mu)
     (hFine : ∀ j : Fin (D-2), ell < higherBandTargetScale d (j.val+3) N mu → j.val+3 ≤ M)

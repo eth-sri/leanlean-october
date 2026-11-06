@@ -11,17 +11,21 @@ noncomputable section
 open MeasureTheory ProbabilityTheory Set
 open scoped BigOperators ENNReal
 namespace NearlyMinimax
-set_option maxHeartbeats 2000000
 set_option backward.isDefEq.respectTransparency true
 attribute [local instance] Classical.propDecidable
 attribute [local irreducible] highUnionSourceDensity highUnionSourceRegression highUnionSourceState
   historyMarkedPrior massPowerNormalizer highRawDensityMass highMarginalRealScore highRealSampleKernel
 
+variable {d : ℕ}
+
+section
+variable [NeZero d] (C : ModelConstants d)
+
 /-- All constants imposing model legality and the response floor are fixed
 before the extension domain and every statistical parameter. The only energy
 inputs are genuine raw local numerator envelopes and their factorial sum. -/
-theorem highCompleteSource_minimax_path_bound_uniform_above {d : ℕ} [NeZero d]
-    (C : ModelConstants d) (Q : LowSmoothnessTernaryConstants C) (CfrMin : ℝ) :
+theorem highCompleteSource_minimax_path_bound_uniform_above 
+    (Q : LowSmoothnessTernaryConstants C) (CfrMin : ℝ) :
     ∃ Cfr eta0 : ℝ, 1 ≤ Cfr ∧ CfrMin ≤ Cfr ∧ 0 < eta0 ∧
       ∀ U : ExtensionDomain d, ∀ k D M q : ℕ,
       ∀ (_ : NeZero k) (_ : LinearOrder (HighWindowLabels d k)),
@@ -179,8 +183,8 @@ theorem highCompleteSource_minimax_path_bound_uniform_above {d : ℕ} [NeZero d]
   simpa only [ModelConstants.withDomain,effectiveVarianceUpper] using hout
 
 
- theorem highCompleteSource_cost_risk_uniform_above {d : ℕ} [NeZero d]
-    (C : ModelConstants d) (Q : LowSmoothnessTernaryConstants C) (CfrMin : ℝ) :
+ theorem highCompleteSource_cost_risk_uniform_above 
+    (Q : LowSmoothnessTernaryConstants C) (CfrMin : ℝ) :
     ∃ Cfr eta0 ctr : ℝ, 1 ≤ Cfr ∧ CfrMin ≤ Cfr ∧ 0 < eta0 ∧ 0 < ctr ∧
       ∀ U : ExtensionDomain d, ∀ k D M q : ℕ,
       ∀ (_ : NeZero k) (_ : LinearOrder (HighWindowLabels d k)),
@@ -247,6 +251,8 @@ theorem highCompleteSource_minimax_path_bound_uniform_above {d : ℕ} [NeZero d]
     (show delta*I ≤ localScorePathLength c Bl I*I from le_rfl) hK hnumE hIE
   have hout := (ENNReal.ofReal_le_ofReal (sub_le_sub_right hn _)).trans hh
   exact hout
+
+end
 
 
 end NearlyMinimax

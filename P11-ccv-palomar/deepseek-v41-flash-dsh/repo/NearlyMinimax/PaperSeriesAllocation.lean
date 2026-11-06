@@ -12,19 +12,19 @@ noncomputable section
 open Filter
 open scoped BigOperators
 namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 
-def paperPilotMomentFactor {d : ℕ} (C : ModelConstants d) (A : ℝ) : ℝ :=
+variable {d : ℕ} (C : ModelConstants d) (A : ℝ)
+
+def paperPilotMomentFactor (C : ModelConstants d) (A : ℝ) : ℝ :=
   A ^ 2 * (Fintype.card (incrementVariables (anchoredDimension d C.order)) *
     preconditionedPilotMomentConstant C C.order)
 
-theorem paperPilotMomentFactor_nonneg {d : ℕ} (C : ModelConstants d) (A : ℝ) :
+theorem paperPilotMomentFactor_nonneg (C : ModelConstants d) (A : ℝ) :
     0 ≤ paperPilotMomentFactor C A := by
   unfold paperPilotMomentFactor
   exact mul_nonneg (sq_nonneg _) (mul_nonneg (Nat.cast_nonneg _) (preconditionedPilotMomentConstant_pos C _).le)
 
-theorem dyadicPilotSeries_eq_factorialSeries {d : ℕ} (C : ModelConstants d)
+theorem dyadicPilotSeries_eq_factorialSeries 
     (A Λ : ℝ) (j m : ℕ) :
     dyadicPilotSeries C A Λ j m = factorialSeries (m + anchoredDimension d C.order + 1)
       (paperPilotMomentFactor C A * dyadicPilotScale d j / Λ) := by
@@ -43,22 +43,19 @@ theorem factorialSeries_mono_argument (D : ℕ) {x y : ℝ} (hx : 0 ≤ x) (hxy 
 
 /-- A genuine pilot block denominator and a fixed model constant dominate the
 actual raw-feature moment argument. -/
-theorem paper_pilot_series_argument_le {d : ℕ} (C : ModelConstants d) (A : ℝ)
+theorem paper_pilot_series_argument_le 
     {n Λ C₀ : ℝ} (hn : 0 < n) (hΛ : n / 12 ≤ Λ)
     (hC : 12 * paperPilotMomentFactor C A ≤ C₀) (j : ℕ) :
     paperPilotMomentFactor C A * dyadicPilotScale d j / Λ ≤ C₀ * dyadicPilotScale d j / n := by
-  have hp := paperPilotMomentFactor_nonneg C A
   have hk := (dyadicPilotScale_pos d j).le
-  have hΛpos : 0 < Λ := (div_pos hn (by norm_num)).trans_le hΛ
-  have hCpos : 0 ≤ C₀ := (mul_nonneg (by norm_num) hp).trans hC
-  apply (div_le_div_iff₀ hΛpos hn).mpr
+  apply (div_le_div_iff₀ ((div_pos hn (by norm_num)).trans_le hΛ) hn).mpr
   have hm := mul_le_mul_of_nonneg_right hC hk
-  have hnΛ := mul_le_mul_of_nonneg_left hΛ (mul_nonneg hCpos hk)
+  have hnΛ := mul_le_mul_of_nonneg_left hΛ (mul_nonneg ((mul_nonneg (by norm_num) (paperPilotMomentFactor_nonneg C A)).trans hC) hk)
   nlinarith
 
 /-- Exact total degree and original normalization give a levelwise domination
 by the already-proved scalar variance profile. -/
-theorem paper_pilot_series_weight_le_profile {d : ℕ} (C : ModelConstants d) (A a offset : ℝ)
+theorem paper_pilot_series_weight_le_profile (A a offset : ℝ)
     {n Λ C₀ C_D : ℝ} (hn : 0 < n) (hΛ : n / 12 ≤ Λ) (hΛn : Λ ≤ n)
     (hC : 0 < C₀) (hD : 0 < C_D) (hS : 0 < allocationWidth a offset n)
     (hcoef : 12 * paperPilotMomentFactor C A ≤ C₀) (j : ℕ)
@@ -69,11 +66,9 @@ theorem paper_pilot_series_weight_le_profile {d : ℕ} (C : ModelConstants d) (A
         max 1 (Λ / dyadicPilotScale d j) ≤
       profileVarianceWeight C₀ C_D (paperDegreeSlope C) (allocationWidth a offset n)
         (allocationLevelPosition (paperDyadicStep C) a offset (C₀ * C_D) n j) := by
-  rw [actual_profileVarianceWeight_eq_cell_weight j hC hD hn hS, ← dyadicPilotScale_eq_exp C]
-  rw [dyadicPilotSeries_eq_factorialSeries]
-  have hΛpos : 0 < Λ := (div_pos hn (by norm_num)).trans_le hΛ
+  rw [actual_profileVarianceWeight_eq_cell_weight j hC hD hn hS, ← dyadicPilotScale_eq_exp C, dyadicPilotSeries_eq_factorialSeries]
   have hx : 0 ≤ paperPilotMomentFactor C A * dyadicPilotScale d j / Λ :=
-    div_nonneg (mul_nonneg (paperPilotMomentFactor_nonneg C A) (dyadicPilotScale_pos _ _).le) hΛpos.le
+    div_nonneg (mul_nonneg (paperPilotMomentFactor_nonneg C A) (dyadicPilotScale_pos _ _).le) ((div_pos hn (by norm_num)).trans_le hΛ).le
   have hseries := factorialSeries_mono_argument
     (paperDyadicTotalDegree C a offset (C₀ * C_D) n j) hx
     (paper_pilot_series_argument_le C A hn hΛ hcoef j)
@@ -86,7 +81,7 @@ theorem paper_pilot_series_weight_le_profile {d : ℕ} (C : ModelConstants d) (A
 
 /-- Uniform comparison of the actual maximum series on the actual three-block
 pilot sample with the scalar maximum at H=C₀ C_D. -/
-theorem eventually_paper_dyadic_series_envelope_le {d : ℕ} (C : ModelConstants d)
+theorem eventually_paper_dyadic_series_envelope_le (C : ModelConstants d)
     (hs : 1 < C.smoothness) (A a offset C₀ C_D : ℝ)
     (ha : 0 < a) (hC : 0 < C₀) (hD : 0 < C_D)
     (hcoef : 12 * paperPilotMomentFactor C A ≤ C₀) :

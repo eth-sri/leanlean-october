@@ -13,8 +13,6 @@ noncomputable section
 open Set MeasureTheory
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 attribute [local instance] Classical.propDecidable
 
 /-- Response-independent raw densities and actual uncentered response

@@ -12,9 +12,6 @@ noncomputable section
 open MeasureTheory
 open scoped RealInnerProductSpace
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option synthInstance.maxHeartbeats 200000
-set_option maxHeartbeats 600000
 
 theorem PairPilotAssumptions.mono_lam {Ω : Type*} [MeasurableSpace Ω] {d : ℕ}
     {θ : RegressionParameter d} {k : ℕ} {hk : 0 < k} {μ : Measure Ω}
@@ -87,12 +84,8 @@ theorem scalarPilot_covariance_sample_budget {Cp W test Λ n : ℝ}
     (hn : 0 < n) (hW : 0 ≤ W) (htest : 0 ≤ test) (hΛ : n / 12 ≤ Λ)
     (hCp : 72 * test ≤ Cp ^ 2) :
     6 * (test * W / Λ) ≤ Cp ^ 2 * W / n := by
-  have hΛ0 : 0 < Λ := (div_pos hn (by norm_num)).trans_le hΛ
-  have hm := mul_le_mul_of_nonneg_right hCp hW
-  have hden := mul_le_mul_of_nonneg_left hΛ (mul_nonneg (sq_nonneg Cp) hW)
   rw [← mul_div_assoc]
-  apply (div_le_div_iff₀ hΛ0 hn).mpr
-  have hmn := mul_le_mul_of_nonneg_right hm hn.le
-  nlinarith only [hmn, hden]
+  apply (div_le_div_iff₀ ((div_pos hn (by norm_num)).trans_le hΛ) hn).mpr
+  nlinarith only [(mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hCp hW) hn.le), (mul_le_mul_of_nonneg_left hΛ (mul_nonneg (sq_nonneg Cp) hW))]
 
 end NearlyMinimax

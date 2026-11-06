@@ -10,8 +10,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 500000
 
 theorem finePairTimeFieldMeasure_abs_time_integral (d : ℕ) [NeZero d]
     (lo hi : ℝ) (hlo : 0 ≤ lo) (horder : lo ≤ hi) :

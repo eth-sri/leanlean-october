@@ -15,9 +15,12 @@ namespace NearlyMinimax
 
 variable {Ω : Type*} [MeasurableSpace Ω]
 
+section
+variable (μ : Measure Ω) [IsProbabilityMeasure μ] (m : Ω → ℝ)
+
 /-- The source mean-one power normalizer is at least one, by the actual tangent inequality. -/
-theorem massPowerNormalizer_one_le (μ : Measure Ω) [IsProbabilityMeasure μ]
-    (m : Ω → ℝ) (hm : Measurable m) (n : ℕ) (l b : ℝ) (hl : 0 < l)
+theorem massPowerNormalizer_one_le 
+    (hm : Measurable m) (n : ℕ) (l b : ℝ) (hl : 0 < l)
     (hbound : ∀ ω, l ≤ m ω ∧ m ω ≤ b) (hmean : ∫ ω, m ω ∂μ = 1) :
     1 ≤ massPowerNormalizer μ m n := by
   have hi := massPower_integrable μ m hm 1 l b hl hbound
@@ -35,8 +38,8 @@ theorem massPowerNormalizer_one_le (μ : Measure Ω) [IsProbabilityMeasure μ]
   exact hh
 
 /-- The true mass-power tilt of a measurable event is its normalized weighted indicator integral. -/
-theorem massPowerTilt_real_apply (μ : Measure Ω) [IsProbabilityMeasure μ]
-    (m : Ω → ℝ) (hm : Measurable m) (n : ℕ) (l b : ℝ) (hl : 0 < l)
+theorem massPowerTilt_real_apply 
+    (hm : Measurable m) (n : ℕ) (l b : ℝ) (hl : 0 < l)
     (hbound : ∀ ω, l ≤ m ω ∧ m ω ≤ b) (S : Set Ω) (hS : MeasurableSet S) :
     (massPowerTilt μ m n).real S =
       ∫ ω, S.indicator (fun ω => m ω ^ n / massPowerNormalizer μ m n) ω ∂μ := by
@@ -53,8 +56,8 @@ theorem massPowerTilt_real_apply (μ : Measure Ω) [IsProbabilityMeasure μ]
   by_cases hω : ω ∈ S <;> simp [hω, ENNReal.toReal_ofReal hp, smul_eq_mul]
 
 /-- A positive bounded mass has an integrable exponential at every real parameter. -/
-theorem boundedMass_exp_integrable (μ : Measure Ω) [IsProbabilityMeasure μ]
-    (m : Ω → ℝ) (hm : Measurable m) (l b : ℝ) (hl : 0 < l)
+theorem boundedMass_exp_integrable 
+    (hm : Measurable m) (l b : ℝ) (hl : 0 < l)
     (hbound : ∀ ω, l ≤ m ω ∧ m ω ≤ b) (u : ℝ) :
     Integrable (fun ω => Real.exp (u * (m ω - 1))) μ := by
   apply Integrable.of_bound (Real.measurable_exp.comp (measurable_const.mul (hm.sub measurable_const))).aestronglyMeasurable
@@ -74,8 +77,8 @@ theorem boundedMass_exp_integrable (μ : Measure Ω) [IsProbabilityMeasure μ]
   exact (le_abs_self _).trans (by rw [abs_mul]; exact mul_le_mul_of_nonneg_left hz (abs_nonneg u))
 
 /-- The positive-side event under a true mass-power tilt satisfies a genuine Chernoff bound. -/
-theorem massPowerTilt_right_chernoff (μ : Measure Ω) [IsProbabilityMeasure μ]
-    (m : Ω → ℝ) (hm : Measurable m) (n : ℕ) (l b : ℝ) (hl : 0 < l)
+theorem massPowerTilt_right_chernoff 
+    (hm : Measurable m) (n : ℕ) (l b : ℝ) (hl : 0 < l)
     (hbound : ∀ ω, l ≤ m ω ∧ m ω ≤ b) (hmean : ∫ ω, m ω ∂μ = 1)
     (ε u : ℝ) (hu : 0 ≤ u) :
     (massPowerTilt μ m n).real {ω | ε < m ω - 1} ≤
@@ -111,8 +114,8 @@ theorem massPowerTilt_right_chernoff (μ : Measure Ω) [IsProbabilityMeasure μ]
     positivity
 
 /-- The negative-side Chernoff bound uses the true mass-power tilt and m^n≤1 on the lower event. -/
-theorem massPowerTilt_left_chernoff (μ : Measure Ω) [IsProbabilityMeasure μ]
-    (m : Ω → ℝ) (hm : Measurable m) (n : ℕ) (l b : ℝ) (hl : 0 < l)
+theorem massPowerTilt_left_chernoff 
+    (hm : Measurable m) (n : ℕ) (l b : ℝ) (hl : 0 < l)
     (hbound : ∀ ω, l ≤ m ω ∧ m ω ≤ b) (hmean : ∫ ω, m ω ∂μ = 1)
     (ε u : ℝ) (hε : 0 ≤ ε) (hu : 0 ≤ u) :
     (massPowerTilt μ m n).real {ω | m ω - 1 < -ε} ≤
@@ -140,8 +143,12 @@ theorem massPowerTilt_left_chernoff (μ : Measure Ω) [IsProbabilityMeasure μ]
   · simp only [Set.indicator_of_notMem hω]
     positivity
 
+end
+
+variable (a ε : ℝ)
+
 /-- The exact source ε≥8an guard controls the positive-side tilted exponent. -/
-theorem massTilt_exponent_right (a ε : ℝ) (n : ℕ) (ha : 0 < a)
+theorem massTilt_exponent_right (n : ℕ) (ha : 0 < a)
     (hε : 8 * a * (n : ℝ) ≤ ε) :
     0 ≤ ε / (2 * a) - (n : ℝ) ∧
       -(ε / (2 * a) - (n : ℝ)) * ε + a * ((n : ℝ) + (ε / (2 * a) - (n : ℝ))) ^ 2 ≤
@@ -160,7 +167,7 @@ theorem massTilt_exponent_right (a ε : ℝ) (n : ℕ) (ha : 0 < a)
   exact ⟨hu, by rw [hid]; simp only [neg_div]; linarith⟩
 
 /-- The exact source lower-tail exponent before weakening its constant. -/
-theorem massTilt_exponent_left (a ε : ℝ) (ha : 0 < a) :
+theorem massTilt_exponent_left (ha : 0 < a) :
     -(ε / (2 * a)) * ε + a * (-(ε / (2 * a))) ^ 2 ≤ -ε ^ 2 / (8 * a) := by
   have hid : -(ε / (2 * a)) * ε + a * (-(ε / (2 * a))) ^ 2 =
       -2 * (ε ^ 2 / (8 * a)) := by field_simp; ring

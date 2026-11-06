@@ -10,8 +10,6 @@ variance heat and the genuine marked append generator. -/
 noncomputable section
 open MeasureTheory ProbabilityTheory Filter Set
 namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 
 def highTiltedObservableMean {Ω : Type*} [MeasurableSpace Ω] {d : ℕ}
     (ν : Measure Ω) (n : ℕ) (a V : ℝ) (p F : Ω → Covariate d → ℝ)
@@ -22,7 +20,9 @@ def highTiltedObservableMean {Ω : Type*} [MeasurableSpace Ω] {d : ℕ}
 
 variable {J : Type*} [Fintype J] [LinearOrder J]
 
-theorem historyMarkedPrior_tiltedObservable_eq_raw (dependent : J → J → Prop)
+variable (dependent : J → J → Prop)
+
+theorem historyMarkedPrior_tiltedObservable_eq_raw 
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (Δ : ℕ) (hΔ : 1 ≤ Δ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
     (T Ba : ℝ) (hBa : 0 ≤ Ba)
@@ -60,7 +60,7 @@ theorem historyMarkedPrior_tiltedObservable_eq_raw (dependent : J → J → Prop
       aRaw bRaw haRaw hraw ha.ne' (hq t ht) H hH B hB hHb,
     massPowerNormalizer_eq_of_massLaw _ _ _ (highRawDensityMass_joint_measurable p hp) n (hmass t ht)]
 
-theorem historyMarkedPrior_tiltedObservable_hasDerivAt (dependent : J → J → Prop)
+theorem historyMarkedPrior_tiltedObservable_hasDerivAt 
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (Δ : ℕ) (hΔ : 1 ≤ Δ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
     (T Ba : ℝ) (hBa : 0 ≤ Ba)
@@ -101,7 +101,7 @@ theorem historyMarkedPrior_tiltedObservable_hasDerivAt (dependent : J → J → 
     π activation hactivation hcenter habound hsmall n a v η aRaw bRaw ha haRaw p F hp hF hraw hq hmass
     H hH B hB hHb u ⟨hu.1.le, hu.2.le⟩
 
-theorem historyMarkedPrior_tiltedObservable_exists_lipschitz (dependent : J → J → Prop)
+theorem historyMarkedPrior_tiltedObservable_exists_lipschitz 
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (Δ : ℕ) (hΔ : 1 ≤ Δ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
     (T Ba : ℝ) (hBa : 0 ≤ Ba)

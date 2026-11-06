@@ -12,8 +12,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 attribute [local instance] Classical.propDecidable
 
 theorem fine_pair_filtered_sum_abs_bound {I : Type*} (s : Finset I) (P : I → Prop) [DecidablePred P]
@@ -49,8 +47,10 @@ theorem finePairDistance_response_bound_of_chart (q : ℕ) (hn : 1 ≤ n)
     ha hη hρ hηρ U g w c y hc hg hw
     (fun v hv i => highFrameProfile_abs_le_one C hC (U i) (hU i) v hv) hp
 
+variable (ad bd T0 N : ℝ)
+
 theorem finePairPairAliasAction_abs_bound_of_chart
-    (ad bd T0 N : ℝ) (haD : 0 < ad) (hab : ad < bd) (M q : ℕ) (hn : 1 ≤ n)
+    (haD : 0 < ad) (hab : ad < bd) (M q : ℕ) (hn : 1 ≤ n)
     (C a V η ρ : ℝ) (hC : 1 ≤ C) (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ)
     (hηρ : η ≤ ρ/2) (U : Fin n → Covariate d) (hU : ∀ i l, |U i l| ≤ 2)
     (p g w : Fin n → ℝ) (hpD : ∀ i, p i ∈ Icc ad bd)
@@ -72,7 +72,7 @@ theorem finePairPairAliasAction_abs_bound_of_chart
     (finePairDistance_response_bound_of_chart q hn C a V η ρ hC ha hη hρ hηρ U hU g w c y hc hg hw hp)
 
 theorem finePairEvenFieldAction_abs_bound_of_chart
-    (ad bd T0 N : ℝ) (haD : 0 < ad) (hab : ad < bd) (M q : ℕ) (hn : 1 ≤ n)
+    (haD : 0 < ad) (hab : ad < bd) (M q : ℕ) (hn : 1 ≤ n)
     (C a V η ρ : ℝ) (hC : 1 ≤ C) (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ)
     (hηρ : η ≤ ρ/2) (U : Fin n → Covariate d) (hU : ∀ i l, |U i l| ≤ 2)
     (p g w : Fin n → ℝ) (hpD : ∀ i, p i ∈ Icc ad bd)

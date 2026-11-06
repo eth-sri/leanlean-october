@@ -24,10 +24,12 @@ variable {J : Type*} [Fintype J] [LinearOrder J]
   change historyFiniteMarkAppendEquiv n (fresh, marks) ((Fin.last n).succAbove x) = marks x at hh
   simpa only [Fin.succAbove_last_apply] using hh
 
+variable (dependent : J → J → Prop) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i) (j : J) (g : HistoryShape (fun a b => ¬ dependent a b)) {E : Type*}
+
 /-- Actual prefix occurrences have the old mark coordinates in the canonical append. -/
-theorem historyCanonicalAppendCoordinates_old (dependent : J → J → Prop)
-    (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (j : J) (g : HistoryShape (fun a b => ¬ dependent a b))
+theorem historyCanonicalAppendCoordinates_old 
+    
+    
     (x : WordHeapPiece g.out dependent) :
     historyCanonicalAppendCoordinates dependent hsymm j g
       (Fin.cast (historyShapeLength_out dependent g).symm x.position).castSucc =
@@ -47,11 +49,14 @@ theorem historyCanonicalAppendCoordinates_old (dependent : J → J → Prop)
       ((finCongr hlen) (Fin.cast (historyShapeLength_out dependent g).symm x.position).castSucc)) = _
   rw [hp, historyHeapCoordinateEquiv_position]
 
+section
+variable [MeasurableSpace E] (fresh : E) (marks : Fin (historyShapeLength dependent g) → E)
+
 /-- Every old occurrence in the canonical append carries exactly its original mark. -/
-theorem historyCanonicalMarkAppendEquiv_old (dependent : J → J → Prop)
-    (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (j : J) (g : HistoryShape (fun a b => ¬ dependent a b)) {E : Type*} [MeasurableSpace E]
-    (fresh : E) (marks : Fin (historyShapeLength dependent g) → E)
+theorem historyCanonicalMarkAppendEquiv_old 
+    
+    
+    
     (x : WordHeapPiece g.out dependent) :
     historyCanonicalMarkAppendEquiv dependent hsymm j g (fresh, marks)
       (Fin.cast (historyShapeLength_out dependent (historyShapeAppend dependent j g)).symm
@@ -72,10 +77,10 @@ theorem historyCanonicalMarkAppendEquiv_old (dependent : J → J → Prop)
   rw [hh, historyFiniteMarkAppendEquiv_old]
 
 /-- The source deleted polynomial equals the original marked density, with no deletion-density premise. -/
-theorem historyCanonicalAppend_density_delete (dependent : J → J → Prop)
-    (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (j : J) (g : HistoryShape (fun a b => ¬ dependent a b)) {E : Type*} [MeasurableSpace E]
-    (fresh : E) (marks : Fin (historyShapeLength dependent g) → E)
+theorem historyCanonicalAppend_density_delete 
+    
+    
+    
     (a : E → ℝ) (ρ t : ℝ) :
     historyScaledUpperDensity
       (historyMarkedPieceWeight dependent a
@@ -95,5 +100,7 @@ theorem historyCanonicalAppend_density_delete (dependent : J → J → Prop)
     exact congrArg a (historyCanonicalMarkAppendEquiv_old dependent hsymm j g fresh marks x)
   rw [historyPrefixHeap_density_delete, hw] at ht
   exact ht
+
+end
 
 end NearlyMinimax

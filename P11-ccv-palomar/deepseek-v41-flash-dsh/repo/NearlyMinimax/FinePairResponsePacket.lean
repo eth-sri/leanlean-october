@@ -10,8 +10,6 @@ noncomputable section
 open Set MeasureTheory
 open scoped BigOperators ENNReal
 namespace NearlyMinimax
-set_option maxHeartbeats 700000
-set_option backward.isDefEq.respectTransparency false
 
 abbrev FinePairPacketIndex (ι : Type*) (M q : ℕ) := FinePairDensityIndex M × HighResponseMarkIndex ι q
 
@@ -23,14 +21,16 @@ def finePairPacketWeight (a b : ℝ) (M q : ℕ) (C : ℝ) (A : Z → ι → ι 
     (e : Z × FinePairPacketIndex ι M q) : ℝ :=
   finePairDensityWeight a b M e.2.1 * highResponseMarkWeight C q (A e.1) e.2.2
 
-theorem finePairPacketWeight_slice_measurable (a b : ℝ) (M q : ℕ) (C : ℝ)
-    (A : Z → ι → ι → ℝ) (hA : ∀ i j, Measurable (fun ζ => A ζ i j))
+variable (a b : ℝ) (M q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
+
+theorem finePairPacketWeight_slice_measurable 
+    (hA : ∀ i j, Measurable (fun ζ => A ζ i j))
     (h : FinePairPacketIndex ι M q) : Measurable (fun ζ => finePairPacketWeight a b M q C A (ζ, h)) := by
   dsimp [finePairPacketWeight, highResponseMarkWeight, covarianceWeight]
   fun_prop
 
-theorem finePairPacketWeight_measurable (a b : ℝ) (M q : ℕ) (C : ℝ)
-    (A : Z → ι → ι → ℝ) (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) :
+theorem finePairPacketWeight_measurable 
+    (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) :
     Measurable (finePairPacketWeight a b M q C A) :=
   measurable_from_prod_countable_left (finePairPacketWeight_slice_measurable a b M q C A hA)
 
@@ -68,8 +68,8 @@ theorem finePairPacketSignedMeasure_integral (σ : Measure Z) [IsFiniteMeasure �
     integral_prod _ (hw.mul_bdd hm.aestronglyMeasurable (Filter.Eventually.of_forall (fun e => hb e.1 e.2)))]
   simp only [integral_count]
 
-theorem finePairPacketWeight_variation (a b : ℝ) (M q : ℕ) (C : ℝ)
-    (A : Z → ι → ι → ℝ) (ζ : Z) :
+theorem finePairPacketWeight_variation 
+    (ζ : Z) :
     (∑ h : FinePairPacketIndex ι M q, |finePairPacketWeight a b M q C A (ζ, h)|) =
       (∑ h : FinePairDensityIndex M, |finePairDensityWeight a b M h|) *
         (∑ h : Fin (2 * q + 2), |responseWeight q h|) * (2 * C ^ 2) * separatedMatrixCost A ζ := by
@@ -101,8 +101,8 @@ def finePairPacketObservable (a b : ℝ) (M q : ℕ) (C : ℝ) (c : ι → ℝ)
   G e.1 (finePairDensityAtom a b M e.2.1).1 (finePairDensityAtom a b M e.2.1).2 *
     Φ (coefficientReset c (highResponseMarkAtom C q e.2.2).2 (highResponseMarkAtom C q e.2.2).1)
 
-theorem finePairPacketObservable_finite_action (a b : ℝ) (M q : ℕ) (C : ℝ)
-    (A : Z → ι → ι → ℝ) (c : ι → ℝ) (G : Z → ℝ → ℝ → ℝ) (Φ : (ι → ℝ) → ℝ) (ζ : Z) :
+theorem finePairPacketObservable_finite_action 
+    (c : ι → ℝ) (G : Z → ℝ → ℝ → ℝ) (Φ : (ι → ℝ) → ℝ) (ζ : Z) :
     (∑ h : FinePairPacketIndex ι M q, finePairPacketWeight a b M q C A (ζ, h) *
       finePairPacketObservable a b M q C c G Φ (ζ, h)) =
       (∫ᵛ e, G ζ e.1 e.2 ∂<•finePairDensitySignedRule a b M) * responseMatrixAction q C (A ζ) c Φ := by

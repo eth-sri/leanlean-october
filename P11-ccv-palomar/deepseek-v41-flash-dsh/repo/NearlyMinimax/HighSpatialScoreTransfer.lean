@@ -12,8 +12,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators ENNReal
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 800000
 
 theorem high_raw_square_patch_integrable_bound {d k r : ℕ} [NeZero k]
     (hk : 4 ≤ k) (j : HighWindowLabels d k)

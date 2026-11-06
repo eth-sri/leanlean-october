@@ -9,8 +9,6 @@ public import NearlyMinimax.HistoryExpectationRegularity
 noncomputable section
 open MeasureTheory ProbabilityTheory Filter Set
 namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 variable {J : Type*} [Fintype J] [LinearOrder J]
 
 theorem historyMarkedPrior_variable_observable_lipschitz (dependent : J → J → Prop)
@@ -33,7 +31,7 @@ theorem historyMarkedPrior_variable_observable_lipschitz (dependent : J → J �
   let ρ := historyReferenceRho Δ
   let C : ℝ := (3 / 2 : ℝ) ^ Fintype.card J
   let D : ℝ := ρ⁻¹ * (Fintype.card J : ℝ) * B * C
-  have hρ : 0 < ρ := historyReferenceRho_pos Δ
+  have hρ := historyReferenceRho_pos Δ
   have hC : 0 ≤ C := by positivity
   have hD : 0 ≤ D := by dsimp [D]; positivity
   have hs (u : ℝ) (hu : u ∈ Icc 0 T) : u * B / ρ ≤ 1 / (2 + 8 * (Δ : ℝ) ^ 2) :=

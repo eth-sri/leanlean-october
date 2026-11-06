@@ -9,8 +9,6 @@ public import NearlyMinimax.HighRawObservableDerivative
 noncomputable section
 open MeasureTheory ProbabilityTheory Filter Set
 namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 variable {J : Type*} [Fintype J] [LinearOrder J]
 
 theorem historyMarkedPrior_rawObservable_hasDerivAt (dependent : J → J → Prop)

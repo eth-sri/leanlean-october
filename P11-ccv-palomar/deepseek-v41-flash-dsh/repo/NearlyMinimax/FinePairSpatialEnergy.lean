@@ -11,8 +11,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 attribute [local instance] Classical.propDecidable
 
  theorem finite_sum_abs_square_integrable {X I : Type*} [MeasurableSpace X]

@@ -13,8 +13,6 @@ noncomputable section
 open MeasureTheory
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 600000
 attribute [local instance] Classical.propDecidable
 
 section GenericFamily
@@ -59,7 +57,12 @@ end GenericFamily
 section ActualField
 variable {E : Type*} [MeasurableSpace E]
 
-def highFrameMarkedScore (d k D n : ℕ) [NeZero k]
+variable (d k D n : ℕ)
+
+section
+variable [NeZero k]
+
+def highFrameMarkedScore 
     (π : HighWindowLabels d k → Measure E)
     (activation : HighWindowLabels d k → E → ℝ) (a V η : ℝ) (p : Fin n → ℝ)
     (pReset : HighWindowLabels d k → E → Fin n → ℝ)
@@ -74,7 +77,7 @@ def highFrameMarkedScore (d k D n : ℕ) [NeZero k]
 /-- Conditional orthogonality of the true complete signed-generator scores
 is proved from actual response normalization, conditional density zero mass,
 and the original window supports. -/
-theorem highFrameMarkedScore_orthogonal (d k D n : ℕ) [NeZero k] (hk : 4 ≤ k)
+theorem highFrameMarkedScore_orthogonal (hk : 4 ≤ k)
     (π : HighWindowLabels d k → Measure E)
     (activation : HighWindowLabels d k → E → ℝ) (hAct : ∀ j, Integrable (activation j) (π j))
     (a V η pPlus : ℝ) (ha : a ≠ 0) (hpPlus : 0 ≤ pPlus) (p : Fin n → ℝ)
@@ -97,8 +100,7 @@ theorem highFrameMarkedScore_orthogonal (d k D n : ℕ) [NeZero k] (hk : 4 ≤ k
       highFrameMarkedScore d k D n π activation a V η p pReset cReset c x l y
       ∂Measure.pi (fun i => ternaryIndexMeasure a
         (highFrameField d k η (fun l => highFramePolynomial (c l)) (x i)) V
-        ha (fun b => (hp i b).le))) = 0 := by
-  exact highMarkedLocalScores_orthogonal π activation a V η ha p pReset cReset
+        ha (fun b => (hp i b).le))) = 0 := highMarkedLocalScores_orthogonal π activation a V η ha p pReset cReset
     (fun j i => highLocalFieldWithout d k D η c j (x i))
     (fun j i => highPeriodicTensor d k j (x i))
     (fun j i => highLocalFrameFeature k j (x i)) c
@@ -114,7 +116,7 @@ theorem highFrameMarkedScore_orthogonal (d k D n : ℕ) [NeZero k] (hk : 4 ≤ k
 /-- The exact source overlap factor is established for the complete union
 score, after the single variance correction and the genuine local field
 decomposition. No covariance or score-energy bound is a premise. -/
-theorem highFrameMarkedScore_energy_bound (d k D n : ℕ) [NeZero k] (hk : 4 ≤ k)
+theorem highFrameMarkedScore_energy_bound (hk : 4 ≤ k)
     (π : HighWindowLabels d k → Measure E)
     (activation : HighWindowLabels d k → E → ℝ) (hAct : ∀ j, Integrable (activation j) (π j))
     (a V η pPlus : ℝ) (ha : a ≠ 0) (hpPlus : 0 ≤ pPlus) (p : Fin n → ℝ)
@@ -154,6 +156,8 @@ theorem highFrameMarkedScore_energy_bound (d k D n : ℕ) [NeZero k] (hk : 4 ≤
   · intro j l hjl
     exact highFrameMarkedScore_orthogonal d k D n hk π activation hAct a V η pPlus ha hpPlus
       p pReset hReset hBound cReset hcReset c x hpd hp hpReset hDensity j l hjl
+
+end
 
 end ActualField
 end NearlyMinimax

@@ -12,8 +12,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 700000
 
 def highUnionRowRestrict {d k D : ℕ} {I : Type*} {E : I → Type*} [∀ i, MeasurableSpace (E i)]
     (R : HighUnionRowData d k D I E) (i : I) : HighUnionRowData d k D Unit (fun _ => E i) where
@@ -34,17 +32,22 @@ def SourceRowMark (d D M q : ℕ) (a b C lam ℓ N μ : ℝ) :
   | .inr (.inl _) => SingletonRowMark d D q
   | .inr (.inr i) => HigherBandFamilyMark d D M q a b C lam ℓ N μ i
 
-instance sourceRowMark_measurable (d D M q : ℕ) (a b C lam ℓ N μ : ℝ)
-    (i : SourceRowIndex d D M q a b C lam ℓ N μ) : MeasurableSpace (SourceRowMark d D M q a b C lam ℓ N μ i) := by
+section
+variable (d D M q : ℕ) (a b C lam ℓ N μ : ℝ) (i : SourceRowIndex d D M q a b C lam ℓ N μ)
+
+instance sourceRowMark_measurable 
+    : MeasurableSpace (SourceRowMark d D M q a b C lam ℓ N μ i) := by
   cases i with
   | inl p => exact finePairRowMark_measurable d D M q p
   | inr i => cases i <;> dsimp [SourceRowMark] <;> infer_instance
 
-instance sourceRowMark_standardBorel (d D M q : ℕ) (a b C lam ℓ N μ : ℝ)
-    (i : SourceRowIndex d D M q a b C lam ℓ N μ) : StandardBorelSpace (SourceRowMark d D M q a b C lam ℓ N μ i) := by
+instance sourceRowMark_standardBorel 
+    : StandardBorelSpace (SourceRowMark d D M q a b C lam ℓ N μ i) := by
   cases i with
   | inl p => exact finePairRowMark_standardBorel d D M q p
   | inr i => cases i <;> dsimp [SourceRowMark, sourceRowMark_measurable] <;> infer_instance
+
+end
 
 def sourceRowComponent (d k D M q : ℕ) (a b C lam ℓ N μ : ℝ) :
     (i : SourceRowIndex d D M q a b C lam ℓ N μ) →
@@ -53,7 +56,9 @@ def sourceRowComponent (d k D M q : ℕ) (a b C lam ℓ N μ : ℝ) :
   | .inr (.inl _) => singletonRowData d k D q a b C
   | .inr (.inr i) => higherBandFamilyComponent d k D M q a b C lam ℓ N μ i
 
-def sourceRowData (d k D M q : ℕ) (a b C lam ℓ N μ : ℝ) :
+variable (d k D M q : ℕ) (a b C lam ℓ N μ : ℝ)
+
+def sourceRowData :
     HighUnionRowData d k D (SourceRowIndex d D M q a b C lam ℓ N μ)
       (SourceRowMark d D M q a b C lam ℓ N μ) where
   rowLaw := fun i => (sourceRowComponent d k D M q a b C lam ℓ N μ i).rowLaw ()
@@ -64,7 +69,7 @@ def sourceRowData (d k D M q : ℕ) (a b C lam ℓ N μ : ℝ) :
   rowVector := fun i => (sourceRowComponent d k D M q a b C lam ℓ N μ i).rowVector ()
   rowTime := fun i => (sourceRowComponent d k D M q a b C lam ℓ N μ i).rowTime ()
 
-theorem sourceRowMass_nonneg (d k D M q : ℕ) (a b C lam ℓ N μ : ℝ)
+theorem sourceRowMass_nonneg 
     (i : SourceRowIndex d D M q a b C lam ℓ N μ) :
     0 ≤ (sourceRowData d k D M q a b C lam ℓ N μ).rowMass i := by
   cases i with
@@ -74,7 +79,7 @@ theorem sourceRowMass_nonneg (d k D M q : ℕ) (a b C lam ℓ N μ : ℝ)
     | inl _ => exact signedMarkMass_nonneg _ _
     | inr i => exact (higherBandFamily_mass_positive d k D M q a b C lam ℓ N μ i).le
 
-theorem sourceRowTotalMass_positive (d k D M q : ℕ) (hq : 1 ≤ q)
+theorem sourceRowTotalMass_positive (hq : 1 ≤ q)
     (a b : ℝ) (ha : 0 < a) (hab : a < b) (C : ℝ) (hC : 0 < C) (lam ℓ N μ : ℝ) :
     0 < highRowTotalMass (sourceRowData d k D M q a b C lam ℓ N μ).rowMass := by
   apply (singletonRowMass_positive d D q hq a b ha hab C hC).trans_le

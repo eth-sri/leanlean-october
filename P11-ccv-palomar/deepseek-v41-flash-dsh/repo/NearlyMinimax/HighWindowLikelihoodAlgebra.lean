@@ -11,7 +11,6 @@ noncomputable section
 open MeasureTheory
 open scoped BigOperators
 namespace NearlyMinimax
-set_option maxHeartbeats 600000
 attribute [local instance] Classical.propDecidable
 
  theorem highMarkedLocalScore_sum_of_partition {J ι E : Type*}

@@ -13,8 +13,6 @@ noncomputable section
 open MeasureTheory Set Filter
 open scoped Topology
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1200000
 attribute [local instance] Classical.propDecidable
 
 section Pointwise
@@ -47,15 +45,17 @@ theorem completeSourceMass_prior_tilted_tail (hk : 2 ≤ k) (T : ℝ) (hT : 0 �
 
 end Pointwise
 
+variable {d : ℕ}
+
 /-- The fixed canonical source coefficient; it depends only on model constants. -/
-def highCompleteSourceSaddleCoefficient {d : ℕ} (C : ModelConstants d) : ℝ :=
+def highCompleteSourceSaddleCoefficient (C : ModelConstants d) : ℝ :=
   lowerSaddleCoefficient C.smoothness d (densityIntervalExponent C.densityLower C.densityUpper)
 
-def highCompleteSourceSaddleTheta {d : ℕ} (C : ModelConstants d) : ℝ :=
+def highCompleteSourceSaddleTheta (C : ModelConstants d) : ℝ :=
   lowerSaddleTheta C.smoothness d (densityIntervalExponent C.densityLower C.densityUpper)
 
 /-- The actual geometric envelope for the complete-row tilted bad mass. -/
-def highCompleteSourceSaddleTail {d : ℕ} (C : ModelConstants d) (Cω cm : ℝ) (n : ℕ) : ℝ :=
+def highCompleteSourceSaddleTail (C : ModelConstants d) (Cω cm : ℝ) (n : ℕ) : ℝ :=
   lowerSaddleExceptionalTail d (highCompleteSourceSaddleCoefficient C) (highCompleteSourceSaddleTheta C) Cω
     (cm^2/(8*highHistoryMassMomentConstant d C.densityLower C.densityUpper)) n
 

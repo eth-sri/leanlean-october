@@ -13,16 +13,16 @@ noncomputable section
 open MeasureTheory Set MvPolynomial
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 800000
 
-def spatialAffineExponent {d : ℕ} (z : Fin d × Bool) : Fin d →₀ ℕ :=
+variable {d : ℕ} (x y : Covariate d)
+
+def spatialAffineExponent (z : Fin d × Bool) : Fin d →₀ ℕ :=
   if z.2 then 0 else Finsupp.single z.1 1
 
-def spatialAffineCoefficient {d : ℕ} (x y : Covariate d) (z : Fin d × Bool) : ℝ :=
+def spatialAffineCoefficient (x y : Covariate d) (z : Fin d × Bool) : ℝ :=
   if z.2 then (y z.1 - x z.1) * y z.1 else -8 * (y z.1 - x z.1)
 
-theorem spatial_cardinal_affine_monomial_sum {d : ℕ} (x y : Covariate d) :
+theorem spatial_cardinal_affine_monomial_sum :
     spatialCardinalAffine x y =
       ∑ z : Fin d × Bool, MvPolynomial.monomial (spatialAffineExponent z) (spatialAffineCoefficient x y z) := by
   classical
@@ -32,11 +32,10 @@ theorem spatial_cardinal_affine_monomial_sum {d : ℕ} (x y : Covariate d) :
   intro r hr
   rw [Fintype.sum_bool]
   simp only [spatialAffineExponent, spatialAffineCoefficient, Bool.false_eq_true, ite_false, ite_true]
-  rw [← MvPolynomial.C_apply, ← MvPolynomial.C_mul_X_eq_monomial]
-  rw [show (-8 : ℝ) * (y r - x r) = -(8 * (y r - x r)) by ring, map_neg]
+  rw [← MvPolynomial.C_apply, ← MvPolynomial.C_mul_X_eq_monomial, show (-8 : ℝ) * (y r - x r) = -(8 * (y r - x r)) by ring, map_neg]
   ring
 
-theorem spatial_cardinal_affine_coefficient_l1_le {d : ℕ} (x y : Covariate d)
+theorem spatial_cardinal_affine_coefficient_l1_le (x y : Covariate d)
     (hy : ∀ r, |y r| ≤ 2) :
     frameCoefficientL1 (spatialCardinalAffine x y) ≤ 10 * ∑ r, |y r - x r| := by
   rw [spatial_cardinal_affine_monomial_sum]
@@ -52,7 +51,7 @@ theorem spatial_cardinal_affine_coefficient_l1_le {d : ℕ} (x y : Covariate d)
 
 /-- The actual affine coefficient norm vanishes at a collision and is
 controlled by squared spatial distance everywhere. -/
-theorem spatial_cardinal_affine_coefficient_l1_square_le {d : ℕ} (x y : Covariate d)
+theorem spatial_cardinal_affine_coefficient_l1_square_le 
     (hy : ∀ r, |y r| ≤ 2) :
     (frameCoefficientL1 (spatialCardinalAffine x y)) ^ 2 ≤ 100 * (d : ℝ) * spatialSquaredDistance x y := by
   have hb := spatial_cardinal_affine_coefficient_l1_le x y hy
@@ -79,11 +78,16 @@ theorem spatial_cardinal_polynomial_coefficient_l1_square_le {d n : ℕ}
         (fun j _ => spatial_cardinal_affine_coefficient_l1_square_le _ _ (hU j.val))
     _ = _ := by rw [Finset.prod_mul_distrib]; simp
 
-def spatialMatrixL1 {d D : ℕ} (A : HighFrameIndex d D → HighFrameIndex d D → ℝ) : ℝ :=
+section
+variable {d D : ℕ}
+
+def spatialMatrixL1 (A : HighFrameIndex d D → HighFrameIndex d D → ℝ) : ℝ :=
   ∑ β, ∑ β', |A β β'|
 
-theorem spatial_matrix_l1_nonnegative {d D : ℕ} (A : HighFrameIndex d D → HighFrameIndex d D → ℝ) :
+theorem spatial_matrix_l1_nonnegative (A : HighFrameIndex d D → HighFrameIndex d D → ℝ) :
     0 ≤ spatialMatrixL1 A := Finset.sum_nonneg (fun _ _ => Finset.sum_nonneg (fun _ _ => abs_nonneg _))
+
+end
 
 theorem spatial_centered_matrix_l1_eq {d n D : ℕ} (i : Fin n) (lam : ℝ)
     (U : Fin n → Covariate d) (t : SpatialScaleVector i) :
@@ -103,15 +107,21 @@ theorem spatial_centered_matrix_l1_eq {d n D : ℕ} (i : Fin n) (lam : ℝ)
     rw [← Finset.sum_mul, ← Finset.mul_sum]]
   ring
 
-theorem spatial_cardinal_scale_nonnegative {d n : ℕ} (i : Fin n) (lam : ℝ)
-    (U : Fin n → Covariate d) (t : SpatialScaleVector i) (ht : t ∈ Ici 0) :
+section
+variable {d n : ℕ} (i : Fin n) (lam : ℝ)
+
+section
+variable (U : Fin n → Covariate d) (t : SpatialScaleVector i)
+
+theorem spatial_cardinal_scale_nonnegative 
+    (ht : t ∈ Ici 0) :
     0 ≤ spatialCardinalScale lam (spatialScaleExtend i t) U i := by
   rw [spatial_cardinal_scale_product]
   exact Finset.prod_nonneg (fun j _ =>
     mul_nonneg (mul_nonneg (ht j) (sq_nonneg _)) (Real.exp_pos _).le)
 
-theorem spatial_cardinal_weight_eq_scale_distance_product {d n : ℕ} (i : Fin n) (lam : ℝ)
-    (U : Fin n → Covariate d) (t : SpatialScaleVector i) :
+theorem spatial_cardinal_weight_eq_scale_distance_product 
+    :
     spatialCardinalWeight lam (spatialScaleExtend i t) U i =
       spatialCardinalScale lam (spatialScaleExtend i t) U i *
         (∏ j : SpatialScaleIndex i, spatialSquaredDistance (U i) (U j.val)) ^ 2 := by
@@ -121,6 +131,10 @@ theorem spatial_cardinal_weight_eq_scale_distance_product {d n : ℕ} (i : Fin n
   unfold spatialUnaryWeight
   rw [mul_pow]
   ring
+
+end
+
+end
 
 /-- Actual pointwise cardinal matrix envelope. Multiplication by the true
 Gamma weight avoids division, so this includes every collision. -/

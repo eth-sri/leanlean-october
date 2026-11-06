@@ -21,13 +21,15 @@ variable {J : Type*} {n : ℕ}
 def historyPositionStep (dependent : J → J → Prop) (labels : Fin n → J)
     (x y : Fin n) : Prop := x < y ∧ dependent (labels x) (labels y)
 
-theorem historyAdjacent_swap_lt (labels : Fin n → J) (dependent : J → J → Prop)
+variable (labels : Fin n → J) (dependent : J → J → Prop)
+
+theorem historyAdjacent_swap_lt 
     (i j x y : Fin n) (hij : i.val + 1 = j.val)
     (hind : ¬ dependent (labels i) (labels j))
     (hxy : historyPositionStep dependent labels x y) :
     Equiv.swap i j x < Equiv.swap i j y := by
   have hne : i ≠ j := by intro he; have := congrArg Fin.val he; omega
-  have hlt : x.val < y.val := hxy.1
+  have hlt := hxy.1
   by_cases hxi : x = i
   · subst x
     by_cases hyj : y = j
@@ -109,21 +111,20 @@ def wordHeapOrderIsoPosition (word word' : List J) (dependent : J → J → Prop
     exact (historyEquiv_reachable_iff e _ _ hstep x.position y.position).symm
 
 /-- Tuple positions and their actual finite word positions are canonically identical. -/
-def historyTuplePositionEquiv (labels : Fin n → J) : Fin (List.ofFn labels).length ≃ Fin n :=
+def historyTuplePositionEquiv : Fin (List.ofFn labels).length ≃ Fin n :=
   finCongr List.length_ofFn
 
-theorem historyTuplePositionEquiv_get (labels : Fin n → J) (i : Fin (List.ofFn labels).length) :
-    (List.ofFn labels).get i = labels (historyTuplePositionEquiv labels i) := by
-  exact List.get_ofFn labels i
+theorem historyTuplePositionEquiv_get (i : Fin (List.ofFn labels).length) :
+    (List.ofFn labels).get i = labels (historyTuplePositionEquiv labels i) := List.get_ofFn labels i
 
 /-- The actual word-position permutation of an adjacent tuple exchange. -/
-def historyTupleSwapPositions (labels : Fin n → J) (i j : Fin n) :
+def historyTupleSwapPositions (i j : Fin n) :
     Fin (List.ofFn labels).length ≃ Fin (List.ofFn (labels ∘ Equiv.swap i j)).length :=
   (historyTuplePositionEquiv labels).trans
     ((Equiv.swap i j).trans (historyTuplePositionEquiv (labels ∘ Equiv.swap i j)).symm)
 
 /-- Swapping adjacent independent updates constructs an actual dependency-heap order isomorphism. -/
-def historyTupleSwapHeapIso (labels : Fin n → J) (dependent : J → J → Prop)
+def historyTupleSwapHeapIso 
     (hsymm : ∀ ⦃a b⦄, dependent a b → dependent b a)
     (i j : Fin n) (hij : i.val + 1 = j.val) (hind : ¬ dependent (labels i) (labels j)) :
     WordHeapPiece (List.ofFn labels) dependent ≃o

@@ -9,8 +9,10 @@ noncomputable section
 namespace NearlyMinimax
 open Polynomial Finset
 
+variable (m : ℕ) (i : Fin ((2 * m + 1) + 1))
+
 /-- The odd-order Chebyshev derivative-rule weights. -/
-def lobattoDerivativeWeight (m : ℕ) (i : Fin ((2 * m + 1) + 1)) : ℝ :=
+def lobattoDerivativeWeight (i : Fin ((2 * m + 1) + 1)) : ℝ :=
   (Lagrange.basis Finset.univ (lobattoNode (2 * m + 1)) i).derivative.eval 0
 
 theorem lobattoNode_reflection (n : ℕ) (hn : 1 ≤ n) (i : Fin (n + 1)) :
@@ -26,7 +28,7 @@ theorem lobattoNode_reflection (n : ℕ) (hn : 1 ≤ n) (i : Fin (n + 1)) :
   unfold lobattoNode
   rw [hangle, Real.cos_pi_sub]
 
-theorem odd_lobattoNode_ne_zero (m : ℕ) (i : Fin ((2 * m + 1) + 1)) :
+theorem odd_lobattoNode_ne_zero :
     lobattoNode (2 * m + 1) i ≠ 0 := by
   intro hz
   have hrev := lobattoNode_reflection (2 * m + 1) (by omega) i
@@ -35,7 +37,7 @@ theorem odd_lobattoNode_ne_zero (m : ℕ) (i : Fin ((2 * m + 1) + 1)) :
   simp only [Fin.val_rev] at hval
   omega
 
-private theorem odd_lobatto_nodal_even (m : ℕ) :
+private theorem odd_lobatto_nodal_even :
     (Lagrange.nodal Finset.univ (lobattoNode (2 * m + 1))).comp (-X) =
       Lagrange.nodal Finset.univ (lobattoNode (2 * m + 1)) := by
   rw [Lagrange.nodal, Polynomial.prod_comp]
@@ -54,7 +56,7 @@ private theorem odd_lobatto_nodal_even (m : ℕ) :
   rw [heven, one_mul]
   exact Fintype.prod_equiv Fin.revPerm _ _ (fun i => rfl)
 
-private theorem odd_lobatto_nodal_derivative_zero (m : ℕ) :
+private theorem odd_lobatto_nodal_derivative_zero :
     (Lagrange.nodal Finset.univ (lobattoNode (2 * m + 1))).derivative.eval 0 = 0 := by
   have h := congrArg (fun p : ℝ[X] => p.derivative.eval 0) (odd_lobatto_nodal_even m)
   simp only [Polynomial.derivative_comp, Polynomial.derivative_neg, Polynomial.derivative_X,
@@ -63,7 +65,7 @@ private theorem odd_lobatto_nodal_derivative_zero (m : ℕ) :
   linarith
 
 /-- Interpolation proves derivative exactness through odd order `2m+1`. -/
-theorem lobatto_derivative_rule_exact (m : ℕ) (P : ℝ[X]) (hP : P.degree ≤ 2 * m + 1) :
+theorem lobatto_derivative_rule_exact (P : ℝ[X]) (hP : P.degree ≤ 2 * m + 1) :
     (∑ i : Fin ((2 * m + 1) + 1), lobattoDerivativeWeight m i * P.eval (lobattoNode (2 * m + 1) i)) =
       P.derivative.eval 0 := by
   apply cardinal_derivative_exact Finset.univ (lobattoNode (2 * m + 1))
@@ -71,8 +73,11 @@ theorem lobatto_derivative_rule_exact (m : ℕ) (P : ℝ[X]) (hP : P.degree ≤ 
   simpa using hP.trans_lt (show (2 * m + 1 : WithBot ℕ) < ((2 * m + 1) + 1 : ℕ) by
     exact_mod_cast Nat.lt_succ_self (2 * m + 1))
 
-private theorem cardinal_mul_node_factor {ι : Type*} [DecidableEq ι]
-    (S : Finset ι) (z : ι → ℝ) (i : ι) (hi : i ∈ S) :
+section
+variable {ι : Type*} [DecidableEq ι] (S : Finset ι) (z : ι → ℝ) (i : ι)
+
+private theorem cardinal_mul_node_factor 
+    (hi : i ∈ S) :
     Lagrange.basis S z i * (X - C (z i)) =
       C (Lagrange.nodalWeight S z i) * Lagrange.nodal S z := by
   have hb : Lagrange.basis S z i = C (Lagrange.nodalWeight S z i) *
@@ -82,8 +87,8 @@ private theorem cardinal_mul_node_factor {ι : Type*} [DecidableEq ι]
   rw [hb, Lagrange.nodal_eq_mul_nodal_erase hi]
   ring
 
-private theorem cardinal_derivative_zero_formula {ι : Type*} [DecidableEq ι]
-    (S : Finset ι) (z : ι → ℝ) (i : ι) (hi : i ∈ S) (hzi : z i ≠ 0)
+private theorem cardinal_derivative_zero_formula 
+    (hi : i ∈ S) (hzi : z i ≠ 0)
     (hW : (Lagrange.nodal S z).derivative.eval 0 = 0) :
     (Lagrange.basis S z i).derivative.eval 0 =
       -(Lagrange.nodal S z).eval 0 * Lagrange.nodalWeight S z i / (z i) ^ 2 := by
@@ -98,6 +103,8 @@ private theorem cardinal_derivative_zero_formula {ι : Type*} [DecidableEq ι]
   field_simp at h
   apply (eq_div_iff (pow_ne_zero 2 hzi)).mpr
   nlinarith
+
+end
 
 private theorem decreasing_nodalWeight_sign (n : ℕ) (z : Fin (n + 1) → ℝ)
     (hz : StrictAnti z) (i : Fin (n + 1)) :
@@ -125,7 +132,7 @@ private theorem decreasing_nodalWeight_sign (n : ℕ) (z : Fin (n + 1) → ℝ)
   rw [← hs, Finset.abs_prod, ← Finset.prod_mul_distrib]
   exact Finset.prod_congr rfl hf
 
-private theorem lobattoDerivativeWeight_factorization (m : ℕ) (i : Fin ((2 * m + 1) + 1)) :
+private theorem lobattoDerivativeWeight_factorization :
     lobattoDerivativeWeight m i =
       -(Lagrange.nodal Finset.univ (lobattoNode (2 * m + 1))).eval 0 * (-1 : ℝ) ^ i.val *
         (|Lagrange.nodalWeight Finset.univ (lobattoNode (2 * m + 1)) i| /
@@ -143,7 +150,7 @@ private theorem chebyshev_at_lobatto (n : ℕ) (hn : 1 ≤ n) (i : Fin (n + 1)) 
   norm_num [intervalChebyshev, exteriorNode] at h
   exact h
 
-private theorem chebyshev_odd_derivative_abs (m : ℕ) :
+private theorem chebyshev_odd_derivative_abs :
     |(Polynomial.Chebyshev.T ℝ ((2 * m + 1 : ℕ) : ℤ)).derivative.eval 0| = (2 * m + 1 : ℕ) := by
   rw [Polynomial.Chebyshev.T_derivative_eq_U]
   simp only [eval_mul, eval_intCast, eval_natCast, Int.cast_natCast]
@@ -154,7 +161,7 @@ private theorem chebyshev_odd_derivative_abs (m : ℕ) :
   rw [hs, mul_one, abs_of_nonneg (Nat.cast_nonneg (2 * m + 1))]
 
 /-- Exact total atom variation of the odd Chebyshev derivative rule. -/
-theorem lobatto_derivative_rule_variation (m : ℕ) :
+theorem lobatto_derivative_rule_variation :
     (∑ i : Fin ((2 * m + 1) + 1), |lobattoDerivativeWeight m i|) = (2 * m + 1 : ℕ) := by
   let c := -(Lagrange.nodal Finset.univ (lobattoNode (2 * m + 1))).eval 0
   let r := fun i : Fin ((2 * m + 1) + 1) =>
@@ -193,7 +200,7 @@ theorem lobatto_derivative_rule_variation (m : ℕ) :
     _ = _ := by rw [hexact, chebyshev_odd_derivative_abs]
 
 /-- Reflection pairs opposite derivative weights; consequently their absolute weights are symmetric. -/
-theorem lobattoDerivativeWeight_reflection (m : ℕ) (i : Fin ((2 * m + 1) + 1)) :
+theorem lobattoDerivativeWeight_reflection :
     lobattoDerivativeWeight m i.rev = -lobattoDerivativeWeight m i := by
   let n := 2 * m + 1
   let z := lobattoNode n
@@ -213,8 +220,7 @@ theorem lobattoDerivativeWeight_reflection (m : ℕ) (i : Fin ((2 * m + 1) + 1))
       simpa using (show (n : WithBot ℕ) < ((n + 1 : ℕ) : WithBot ℕ) by
         exact_mod_cast Nat.lt_succ_self n)
     · intro j hj
-      rw [eval_comp, eval_neg, eval_X]
-      rw [← lobattoNode_reflection n hn j]
+      rw [eval_comp, eval_neg, eval_X, ← lobattoNode_reflection n hn j]
       by_cases hij : i = j
       · subst j
         rw [Lagrange.eval_basis_self hv (Finset.mem_univ i.rev),
@@ -235,12 +241,12 @@ theorem lobattoDerivativeWeight_reflection (m : ℕ) (i : Fin ((2 * m + 1) + 1))
   linarith
 
 /-- Symmetric total variation of the finite derivative rule. -/
-theorem lobattoDerivativeWeight_abs_reflection (m : ℕ) (i : Fin ((2 * m + 1) + 1)) :
+theorem lobattoDerivativeWeight_abs_reflection :
     |lobattoDerivativeWeight m i.rev| = |lobattoDerivativeWeight m i| := by
   rw [lobattoDerivativeWeight_reflection, abs_neg]
 
 /-- Even nodal parity extends derivative exactness by one degree beyond ordinary interpolation. -/
-theorem lobatto_derivative_rule_exact_extra (m : ℕ) (P : ℝ[X])
+theorem lobatto_derivative_rule_exact_extra (P : ℝ[X])
     (hP : P.degree ≤ (2 * m + 1) + 1) :
     (∑ i : Fin ((2 * m + 1) + 1), lobattoDerivativeWeight m i * P.eval (lobattoNode (2 * m + 1) i)) =
       P.derivative.eval 0 := by
@@ -282,7 +288,10 @@ theorem lobatto_derivative_rule_exact_extra (m : ℕ) (P : ℝ[X])
 /-- The largest odd order at most `D`, used in the paper's derivative rule. -/
 def derivativeOrder (D : ℕ) : ℕ := 2 * ((D - 1) / 2) + 1
 
-theorem derivativeOrder_bounds (D : ℕ) (hD : 1 ≤ D) :
+section
+variable (D : ℕ)
+
+theorem derivativeOrder_bounds (hD : 1 ≤ D) :
     derivativeOrder D ≤ D ∧ D ≤ derivativeOrder D + 1 := by
   have hmod := Nat.mod_lt (D - 1) (by norm_num : 0 < 2)
   have hdiv := Nat.mod_add_div (D - 1) 2
@@ -290,7 +299,7 @@ theorem derivativeOrder_bounds (D : ℕ) (hD : 1 ≤ D) :
   omega
 
 /-- The rule differentiates every polynomial through the requested order `D` exactly. -/
-theorem derivative_rule_exact (D : ℕ) (hD : 1 ≤ D) (P : ℝ[X]) (hP : P.degree ≤ D) :
+theorem derivative_rule_exact (hD : 1 ≤ D) (P : ℝ[X]) (hP : P.degree ≤ D) :
     (∑ i : Fin (derivativeOrder D + 1),
       lobattoDerivativeWeight ((D - 1) / 2) i * P.eval (lobattoNode (derivativeOrder D) i)) =
       P.derivative.eval 0 := by
@@ -298,11 +307,13 @@ theorem derivative_rule_exact (D : ℕ) (hD : 1 ≤ D) (P : ℝ[X]) (hP : P.degr
   exact hP.trans (by exact_mod_cast (derivativeOrder_bounds D hD).2)
 
 /-- Its variation is the largest odd integer below `D`, hence at most `D`. -/
-theorem derivative_rule_variation (D : ℕ) (hD : 1 ≤ D) :
+theorem derivative_rule_variation (hD : 1 ≤ D) :
     (∑ i : Fin (derivativeOrder D + 1), |lobattoDerivativeWeight ((D - 1) / 2) i|) =
       derivativeOrder D ∧ (derivativeOrder D : ℝ) ≤ D := by
   constructor
   · exact lobatto_derivative_rule_variation ((D - 1) / 2)
   · exact_mod_cast (derivativeOrder_bounds D hD).1
+
+end
 
 end NearlyMinimax

@@ -14,8 +14,6 @@ open MeasureTheory ProbabilityTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
 
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 
 abbrev LocalPilotIndex (d ℓ : ℕ) :=
   Sum (AnchoredIndex d ℓ × AnchoredIndex d ℓ) (Sum (AnchoredIndex d ℓ) (AnchoredIndex d ℓ))
@@ -26,22 +24,28 @@ theorem dyadicPilotScale_pos (d j : ℕ) : 0 < dyadicPilotScale d j := by
   unfold dyadicPilotScale
   positivity
 
-def dyadicPilotCell {d : ℕ} (j : ℕ) (x : Covariate d) : Set (Covariate d) :=
+section
+variable {d : ℕ}
+
+def dyadicPilotCell (j : ℕ) (x : Covariate d) : Set (Covariate d) :=
   {z | regularGridCell ((2 : ℕ) ^ j) (by positivity) z =
     regularGridCell ((2 : ℕ) ^ j) (by positivity) x}
 
-theorem dyadicPilotCell_measurable {d : ℕ} (j : ℕ) (x : Covariate d) :
+theorem dyadicPilotCell_measurable (j : ℕ) (x : Covariate d) :
     MeasurableSet (dyadicPilotCell j x) :=
   measurableSet_eq_fun (regular_grid_cell_measurable _ _) measurable_const
 
-theorem dyadicAnchoredFeature_measurable {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
-    (γ : AnchoredIndex d ℓ) : Measurable (fun z => dyadicAnchoredFeature j x z γ) := by
-  exact ((anchoredMonomial_continuous γ).comp (continuous_pi (fun i =>
+end
+
+variable {d ℓ : ℕ} (j : ℕ) (x : Covariate d) (a : LocalPilotIndex d ℓ) (z : Observation d)
+
+theorem dyadicAnchoredFeature_measurable 
+    (γ : AnchoredIndex d ℓ) : Measurable (fun z => dyadicAnchoredFeature j x z γ) := ((anchoredMonomial_continuous γ).comp (continuous_pi (fun i =>
     continuous_const.mul ((continuous_apply i).sub continuous_const)))).measurable
 
 /-- Current-cell normalization bounds the exact anchored monomials, including
 the assigned right cube boundary. -/
-theorem dyadicAnchoredFeature_abs_le_one {d ℓ : ℕ} (j : ℕ) (x z : Covariate d)
+theorem dyadicAnchoredFeature_abs_le_one (x z : Covariate d)
     (hx : x ∈ unitCube d) (hz : z ∈ unitCube d) (hc : z ∈ dyadicPilotCell j x)
     (γ : AnchoredIndex d ℓ) : |dyadicAnchoredFeature j x z γ| ≤ 1 := by
   apply anchoredMonomial_abs_le_one
@@ -53,7 +57,7 @@ theorem dyadicAnchoredFeature_abs_le_one {d ℓ : ℕ} (j : ℕ) (x z : Covariat
   rw [abs_mul, abs_of_pos hk]
   exact (mul_le_mul_of_nonneg_left hr hk.le).trans_eq (by field_simp)
 
-def dyadicPilotScalar {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
+def dyadicPilotScalar (j : ℕ) (x : Covariate d)
     (a : LocalPilotIndex d ℓ) (z : Observation d) : ℝ :=
   match a with
   | Sum.inl (γ, δ) => dyadicAnchoredFeature j x z.1 γ * dyadicAnchoredFeature j x z.1 δ
@@ -62,13 +66,16 @@ def dyadicPilotScalar {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
 
 /-- The actual raw coordinates: normalized Gram, response vector, and
 constant-response vector. Their mean is taken under the original law. -/
-def dyadicPilotFeature {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
+def dyadicPilotFeature (j : ℕ) (x : Covariate d)
     (a : LocalPilotIndex d ℓ) (z : Observation d) : ℝ :=
   dyadicPilotScale d j * (Prod.fst ⁻¹' dyadicPilotCell j x).indicator
     (dyadicPilotScalar j x a) z
 
-theorem dyadicPilotScalar_measurable {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
-    (a : LocalPilotIndex d ℓ) : Measurable (dyadicPilotScalar j x a) := by
+section
+variable (a : LocalPilotIndex d ℓ)
+
+theorem dyadicPilotScalar_measurable 
+    : Measurable (dyadicPilotScalar j x a) := by
   cases a with
   | inl a =>
     exact ((dyadicAnchoredFeature_measurable j x a.1).comp measurable_fst).mul
@@ -80,13 +87,15 @@ theorem dyadicPilotScalar_measurable {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
         ((dyadicAnchoredFeature_measurable j x γ).comp measurable_fst)
     | inr γ => exact (dyadicAnchoredFeature_measurable j x γ).comp measurable_fst
 
-theorem dyadicPilotFeature_measurable {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
-    (a : LocalPilotIndex d ℓ) : Measurable (dyadicPilotFeature j x a) :=
+theorem dyadicPilotFeature_measurable 
+    : Measurable (dyadicPilotFeature j x a) :=
   measurable_const.mul ((dyadicPilotScalar_measurable j x a).indicator
     (measurable_fst (dyadicPilotCell_measurable j x)))
 
-theorem dyadicPilotScalar_abs_bound {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
-    (a : LocalPilotIndex d ℓ) (z : Observation d) (hx : x ∈ unitCube d)
+end
+
+theorem dyadicPilotScalar_abs_bound 
+    (hx : x ∈ unitCube d)
     (hz : z.1 ∈ unitCube d) (hc : z.1 ∈ dyadicPilotCell j x) :
     |dyadicPilotScalar j x a z| ≤ 1 + |z.2| := by
   have hb := dyadicAnchoredFeature_abs_le_one (ℓ := ℓ) j x z.1 hx hz hc
@@ -106,8 +115,8 @@ theorem dyadicPilotScalar_abs_bound {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
     | inr γ => exact (hb γ).trans (le_add_of_nonneg_right (abs_nonneg z.2))
 
 /-- Exact geometric support and the paper's raw feature envelope. -/
-theorem dyadicPilotFeature_abs_bound {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
-    (a : LocalPilotIndex d ℓ) (z : Observation d) (hx : x ∈ unitCube d)
+theorem dyadicPilotFeature_abs_bound 
+    (hx : x ∈ unitCube d)
     (hz : z.1 ∈ unitCube d) :
     |dyadicPilotFeature j x a z| ≤ dyadicPilotScale d j *
       (Prod.fst ⁻¹' dyadicPilotCell j x).indicator
@@ -120,7 +129,7 @@ theorem dyadicPilotFeature_abs_bound {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
       (dyadicPilotScale_pos d j).le
   · simp [dyadicPilotFeature, hc]
 
-theorem dyadicPilotFeature_memLp_two {d ℓ : ℕ} (C : ModelConstants d)
+theorem dyadicPilotFeature_memLp_two (C : ModelConstants d)
     (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
     (hx : x ∈ unitCube d) (a : LocalPilotIndex d ℓ) :
     MemLp (dyadicPilotFeature j x a) 2 (observationLaw θ) := by
@@ -136,19 +145,24 @@ theorem dyadicPilotFeature_memLp_two {d ℓ : ℕ} (C : ModelConstants d)
   by_cases hc : z.1 ∈ dyadicPilotCell j x <;> simp [hc]
   exact mul_nonneg (dyadicPilotScale_pos d j).le (by positivity)
 
-def dyadicPilotMomentConstant {d : ℕ} (C : ModelConstants d) : ℝ :=
+section
+variable {d : ℕ}
+
+def dyadicPilotMomentConstant (C : ModelConstants d) : ℝ :=
   (2 * (1 + responseSecondBound C)) * C.densityUpper
 
-theorem dyadicPilotMomentConstant_pos {d : ℕ} (C : ModelConstants d) :
+theorem dyadicPilotMomentConstant_pos (C : ModelConstants d) :
     0 < dyadicPilotMomentConstant C := by
   have hden := C.one_lt_densityUpper
   have hresp := responseSecondBound_pos C
   unfold dyadicPilotMomentConstant
   positivity
 
+end
+
 /-- The order-independent raw coordinate budget `C_g K_j` follows from
 the actual cell volume, design density cap, and conditional error moment. -/
-theorem dyadicPilotFeature_second_le {d ℓ : ℕ} (C : ModelConstants d)
+theorem dyadicPilotFeature_second_le (C : ModelConstants d)
     (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
     (hx : x ∈ unitCube d) (a : LocalPilotIndex d ℓ) :
     (∫ z, dyadicPilotFeature j x a z ^ 2 ∂observationLaw θ) ≤
@@ -194,7 +208,7 @@ theorem dyadicPilotFeature_second_le {d ℓ : ℕ} (C : ModelConstants d)
   rw [heq] at hm
   simpa only [mul_assoc] using hm
 
-def dyadicPilotPopulation {d ℓ : ℕ} (θ : RegressionParameter d) (j : ℕ) (x : Covariate d) :
+def dyadicPilotPopulation (θ : RegressionParameter d) (j : ℕ) (x : Covariate d) :
     LocalPilotIndex d ℓ → ℝ := fun a => ∫ z, dyadicPilotFeature j x a z ∂observationLaw θ
 
 end NearlyMinimax

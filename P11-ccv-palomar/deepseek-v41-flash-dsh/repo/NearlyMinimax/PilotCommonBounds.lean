@@ -11,11 +11,14 @@ noncomputable section
 open MeasureTheory ProbabilityTheory
 open scoped BigOperators
 namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 
-theorem dyadicMultilevelErrorField_envelope_test_moment_facts {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
+variable {d : ℕ} (C : ModelConstants d)
+
+section
+variable [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d)
+
+theorem dyadicMultilevelErrorField_envelope_test_moment_facts 
+    (hθ : Admissible C θ)
     (n J L : ℕ) (hJL : J ≤ L) (y : ℝ) (hy : |y| ≤ max C.holderBound 1) (m : ℕ → ℕ)
     (hdegree : ∀ j : Fin (J + 1), m j.val + anchoredDimension d C.order + 1 ≤ n)
     (ν : Covariate d × Covariate d → ℝ)
@@ -29,8 +32,8 @@ theorem dyadicMultilevelErrorField_envelope_test_moment_facts {d : ℕ} (C : Mod
   exact dyadicMultilevelErrorField_test_moment_facts (pilotModelConstants C) θ
     (admissible_pilotModelConstants C θ hθ) n J L hJL y hy m hdegree ν hν
 
-theorem dyadicMultilevelErrorField_envelope_weighted_integrable {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
+theorem dyadicMultilevelErrorField_envelope_weighted_integrable 
+    (hθ : Admissible C θ)
     (n J L : ℕ) (hJL : J ≤ L) (y : ℝ) (hy : |y| ≤ max C.holderBound 1) (m : ℕ → ℕ)
     (hdegree : ∀ j : Fin (J + 1), m j.val + anchoredDimension d C.order + 1 ≤ n)
     (ν : Covariate d × Covariate d → ℝ)
@@ -43,10 +46,11 @@ theorem dyadicMultilevelErrorField_envelope_weighted_integrable {d : ℕ} (C : M
   have hi (j : Fin (J + 1)) := dyadicPilotErrorField_weighted_integrable (pilotModelConstants C) θ
     (admissible_pilotModelConstants C θ hθ) n j.val L ((Nat.le_of_lt_succ j.isLt).trans hJL)
       y hy (m j.val) (hdegree j) ν hν t
-  have hsum := integrable_finsetSum Finset.univ (fun j _ => hi j)
-  convert hsum using 1
+  convert (integrable_finsetSum Finset.univ (fun j _ => hi j)) using 1
   funext w
   simp only [dyadicMultilevelErrorField, Finset.mul_sum]
   rfl
+
+end
 
 end NearlyMinimax

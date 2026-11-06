@@ -10,9 +10,9 @@ public import NearlyMinimax.AnchoredSpectrum
 
 noncomputable section
 namespace NearlyMinimax
+
 open Matrix MeasureTheory
 open scoped BigOperators Matrix.Norms.L2Operator
-
 section Reindex
 variable {n m : Type*} [Fintype n] [Fintype m] [DecidableEq n] [DecidableEq m]
     [Nonempty n] [Nonempty m]
@@ -39,48 +39,50 @@ end Reindex
 
 abbrev anchoredDimension (d ℓ : ℕ) := Fintype.card (AnchoredIndex d ℓ)
 
-instance anchoredDimension_neZero {d ℓ : ℕ} [Nonempty (AnchoredIndex d ℓ)] :
+variable {d ℓ : ℕ} (u : Covariate d) (p : Covariate d → ℝ)
+
+instance anchoredDimension_neZero [Nonempty (AnchoredIndex d ℓ)] :
     NeZero (anchoredDimension d ℓ) := ⟨Fintype.card_ne_zero⟩
 
 def anchoredFinReindex (d ℓ : ℕ) : Matrix (AnchoredIndex d ℓ) (AnchoredIndex d ℓ) ℝ ≃ₐ[ℝ]
     Matrix (Fin (anchoredDimension d ℓ)) (Fin (anchoredDimension d ℓ)) ℝ :=
   Matrix.reindexAlgEquiv ℝ ℝ (Fintype.equivFin (AnchoredIndex d ℓ))
 
-def anchoredFinNormalizedGram {d ℓ : ℕ} (u : Covariate d) (p : Covariate d → ℝ) :
+def anchoredFinNormalizedGram (u : Covariate d) (p : Covariate d → ℝ) :
     Matrix (Fin (anchoredDimension d ℓ)) (Fin (anchoredDimension d ℓ)) ℝ :=
   anchoredFinReindex d ℓ ((anchoredGram u)⁻¹ * anchoredDensityGram u p)
 
-def anchoredFinSimilarityUnit {d ℓ : ℕ} (u : Covariate d) :
+def anchoredFinSimilarityUnit (u : Covariate d) :
     (Matrix (Fin (anchoredDimension d ℓ)) (Fin (anchoredDimension d ℓ)) ℝ)ˣ :=
   Units.map (anchoredFinReindex d ℓ).toMonoidHom (anchoredSimilarityUnit u)
 
-@[simp] theorem anchoredFinSimilarityUnit_val {d ℓ : ℕ} (u : Covariate d) :
+@[simp] theorem anchoredFinSimilarityUnit_val :
     (anchoredFinSimilarityUnit (ℓ := ℓ) u).val = anchoredFinReindex d ℓ (anchoredSimilarityUnit u).val := rfl
 
-@[simp] theorem anchoredFinSimilarityUnit_inv_val {d ℓ : ℕ} (u : Covariate d) :
+@[simp] theorem anchoredFinSimilarityUnit_inv_val :
     ((anchoredFinSimilarityUnit (ℓ := ℓ) u)⁻¹).val =
       anchoredFinReindex d ℓ ((anchoredSimilarityUnit u)⁻¹).val := rfl
 
-theorem anchoredFin_similarity {d ℓ : ℕ} (u : Covariate d) (p : Covariate d → ℝ) :
+theorem anchoredFin_similarity :
     matrixSimilarity (anchoredFinSimilarityUnit (ℓ := ℓ) u)⁻¹ (anchoredFinNormalizedGram u p) =
       anchoredFinReindex d ℓ (anchoredWhitenedGram u p) := by
   change anchoredFinReindex d ℓ _ * anchoredFinReindex d ℓ _ * anchoredFinReindex d ℓ _ = _
   rw [← map_mul, ← map_mul]
   exact congrArg (anchoredFinReindex d ℓ) (anchored_preconditioned_similarity u p)
 
-theorem anchoredFin_similarity_isHermitian {d ℓ : ℕ} (u : Covariate d) (p : Covariate d → ℝ) :
+theorem anchoredFin_similarity_isHermitian (p : Covariate d → ℝ) :
     (matrixSimilarity (anchoredFinSimilarityUnit (ℓ := ℓ) u)⁻¹ (anchoredFinNormalizedGram u p)).IsHermitian := by
   rw [anchoredFin_similarity]
   exact (anchoredWhitenedGram_isHermitian u p).reindex (Fintype.equivFin (AnchoredIndex d ℓ))
 
-theorem anchoredFin_similarity_spectrum {d ℓ : ℕ} (u : Covariate d)
-    (p : Covariate d → ℝ) (hpmeas : Measurable p) (a b : ℝ) (ha : 0 ≤ a)
+theorem anchoredFin_similarity_spectrum 
+    (hpmeas : Measurable p) (a b : ℝ) (ha : 0 ≤ a)
     (hp : ∀ᵐ w ∂cubeVolume d, a ≤ p w ∧ p w ≤ b) :
     spectrum ℝ (matrixSimilarity (anchoredFinSimilarityUnit (ℓ := ℓ) u)⁻¹ (anchoredFinNormalizedGram u p)) ⊆ Set.Icc a b := by
   rw [anchoredFin_similarity, AlgEquiv.spectrum_eq]
   exact anchoredWhitenedGram_spectrum u p hpmeas a b ha hp
 
-theorem anchoredFinSimilarityUnit_uniform_condition {d ℓ : ℕ} [Nonempty (AnchoredIndex d ℓ)] :
+theorem anchoredFinSimilarityUnit_uniform_condition [Nonempty (AnchoredIndex d ℓ)] :
     ∃ χ : ℝ, 0 < χ ∧ ∀ u ∈ unitCube d,
       ‖(anchoredFinSimilarityUnit (ℓ := ℓ) u).val‖ *
         ‖((anchoredFinSimilarityUnit (ℓ := ℓ) u)⁻¹).val‖ ≤ χ := by
@@ -103,7 +105,7 @@ theorem positive_spectral_matrix_norm_le {n : Type*} [Fintype n] [DecidableEq n]
   rw [id_eq, Real.norm_eq_abs, abs_of_nonneg (ha.trans (hSpec ht).1)]
   exact (hSpec ht).2
 
-theorem anchoredFinNormalizedGram_norm_le {d ℓ : ℕ} [Nonempty (AnchoredIndex d ℓ)]
+theorem anchoredFinNormalizedGram_norm_le [Nonempty (AnchoredIndex d ℓ)]
     (u : Covariate d) (p : Covariate d → ℝ) (hpmeas : Measurable p)
     (a b χ : ℝ) (ha : 0 ≤ a) (hb : 0 ≤ b) (hχ : 0 ≤ χ)
     (hp : ∀ᵐ w ∂cubeVolume d, a ≤ p w ∧ p w ≤ b)
@@ -146,7 +148,7 @@ theorem incrementValuation_norm_le {r : ℕ} [NeZero r]
 
 /-- The population center is constructed from actual normalized density Grams.
 Only the four vector-moment bounds remain as explicit input to this constructor. -/
-def populationInverseDerivativeCenter {d ℓ : ℕ} [Nonempty (AnchoredIndex d ℓ)]
+def populationInverseDerivativeCenter [Nonempty (AnchoredIndex d ℓ)]
     (u v : Covariate d) (p q : Covariate d → ℝ) (hpmeas : Measurable p) (hqmeas : Measurable q)
     (a b χ W : ℝ) (ha : 0 ≤ a) (hb : 0 ≤ b) (hχ : 0 ≤ χ) (hW : 0 ≤ W)
     (hp : ∀ᵐ w ∂cubeVolume d, a ≤ p w ∧ p w ≤ b)
@@ -175,7 +177,7 @@ def anchoredFinTransport (d ℓ : ℕ) :
 
 /-- The actual anchored population matrices obey the common derivative bound.
 No chart, spectrum, or condition bound is supplied by the caller. -/
-theorem anchored_population_inverse_derivatives {d ℓ : ℕ} [Nonempty (AnchoredIndex d ℓ)]
+theorem anchored_population_inverse_derivatives [Nonempty (AnchoredIndex d ℓ)]
     (a b W Y : ℝ) (ha : 0 < a) (hab : a < b) (hW : 0 ≤ W) (hY : 0 ≤ Y) :
     ∃ C A : ℝ, 0 < C ∧ 0 < A ∧
       ∀ (u v : Covariate d), u ∈ unitCube d → v ∈ unitCube d →

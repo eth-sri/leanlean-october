@@ -12,9 +12,6 @@ noncomputable section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal RealInnerProductSpace
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option synthInstance.maxHeartbeats 200000
-set_option maxHeartbeats 800000
 
 def pairRiskBudget {d : ℕ} (C : ModelConstants d) (m k : ℕ)
     (Cp W lam B b a : ℝ) : ℝ :=

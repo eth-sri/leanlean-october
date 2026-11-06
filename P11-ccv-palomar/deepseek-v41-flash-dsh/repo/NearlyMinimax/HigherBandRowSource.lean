@@ -14,8 +14,6 @@ noncomputable section
 open Set MeasureTheory
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1200000
 attribute [local instance] Classical.propDecidable
 
 theorem highPacketSlope_joint_measurable_general {Z : Type*} [MeasurableSpace Z]
@@ -35,15 +33,17 @@ theorem highPacketSlope_joint_measurable_general {Z : Type*} [MeasurableSpace Z]
   exact hc.mul (Finset.measurable_fun_sum _ (fun l _ => (he l).mul
     ((hB l).comp ((measurable_fst.comp measurable_fst).prodMk measurable_snd))))
 
-def higherBandSourceRow {d : ℕ} (C : ModelConstants d) (k r m D q : ℕ)
+variable {d : ℕ} (C : ModelConstants d) (k r m D q : ℕ)
+
+def higherBandSourceRow (C : ModelConstants d) (k r m D q : ℕ)
     (M Cfr lam L T : ℝ) (fine : Bool) :
     HighUnionRowData d k D Unit (fun _ => HigherBandRowMark d r m D q fine) :=
   higherBandRowData d k r m D q (C.densityLower+1/M) (C.densityUpper-1/M) Cfr lam L T fine
 
 /-- Every actual selected positive-mass higher-band row satisfies the
 source's primitive probability, reset, and mean-one balancing inputs. -/
-theorem higherBandSourceRow_guards {d : ℕ} (C : ModelConstants d)
-    (k r m D q : ℕ) (hr : 1 ≤ r) (M Cfr lam L T : ℝ) (fine : Bool)
+theorem higherBandSourceRow_guards 
+    (hr : 1 ≤ r) (M Cfr lam L T : ℝ) (fine : Bool)
     (hM : highCenterResolutionThreshold C ≤ M) (hCfr : 1 ≤ Cfr) (hT : 1 ≤ T)
     (hpos : 0 < higherBandRowMass d r m D q (C.densityLower+1/M)
       (C.densityUpper-1/M) Cfr lam L T fine) :

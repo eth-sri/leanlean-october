@@ -11,8 +11,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 600000
 
 /-- The true scalar pair kernel from the source integral. -/
 def pairLaplaceKernel (N r : ℝ) : ℝ := ∫ T in (0 : ℝ)..N, T * Real.exp (-(T*r))
@@ -20,7 +18,9 @@ def pairLaplaceKernel (N r : ℝ) : ℝ := ∫ T in (0 : ℝ)..N, T * Real.exp (
 /-- The true fine alias Laplace kernel. -/
 def fineAliasLaplaceKernel (T0 N r : ℝ) : ℝ := ∫ T in T0..N, T * Real.exp (-(T*r))
 
-theorem exactEuclideanDistance_eq_euclideanNorm {d : ℕ} (x y : Covariate d) :
+variable {d : ℕ}
+
+theorem exactEuclideanDistance_eq_euclideanNorm (x y : Covariate d) :
     exactEuclideanDistance x y = euclideanNorm (fun i => x i - y i) := by
   unfold exactEuclideanDistance spatialSquaredDistance euclideanNorm
   congr 1
@@ -28,23 +28,25 @@ theorem exactEuclideanDistance_eq_euclideanNorm {d : ℕ} (x y : Covariate d) :
   intro i _
   ring
 
+section
+variable {r : ℝ}
+
 /-- The actual complete positive-tail Laplace integral. -/
-theorem laplace_linear_tail_integral {r : ℝ} (hr : 0 < r) (A : ℝ) :
+theorem laplace_linear_tail_integral (hr : 0 < r) (A : ℝ) :
     (∫ T : ℝ in Ici A, T * Real.exp (-(T*r))) =
       (1 + A*r) * Real.exp (-(A*r)) / r^2 := by
-  have hh := gamma_polynomial_tail_integral hr A 1
   have he : (∫ T : ℝ in Ici A, T * Real.exp (-(T*r))) =
       Real.exp (-(r*A)) * (1/r^2 + A/r) := by
-    simpa [Finset.sum_range_succ, mul_comm] using hh
+    simpa [Finset.sum_range_succ, mul_comm] using (gamma_polynomial_tail_integral hr A 1)
   rw [he, mul_comm r A]
   field_simp
 
-theorem laplace_linear_tail_integrable {r : ℝ} (hr : 0 < r) (A : ℝ) :
+theorem laplace_linear_tail_integrable (hr : 0 < r) (A : ℝ) :
     IntegrableOn (fun T : ℝ => T * Real.exp (-(T*r))) (Ici A) := by
   simpa [mul_comm] using gamma_polynomial_tail_integrable hr A 1
 
 /-- Actual finite Laplace integration, derived by subtracting two genuine complete tails. -/
-theorem pairLaplaceKernel_formula {r : ℝ} (hr : 0 < r) (N : ℝ) :
+theorem pairLaplaceKernel_formula (hr : 0 < r) (N : ℝ) :
     pairLaplaceKernel N r = (1 - (1+N*r)*Real.exp (-(N*r))) / r^2 := by
   unfold pairLaplaceKernel
   rw [← intervalIntegral.integral_Ici_sub_Ici'
@@ -52,6 +54,8 @@ theorem pairLaplaceKernel_formula {r : ℝ} (hr : 0 < r) (N : ℝ) :
     laplace_linear_tail_integral hr 0, laplace_linear_tail_integral hr N]
   simp only [zero_mul, add_zero, neg_zero, Real.exp_zero, mul_one]
   ring
+
+end
 
 /-- The exact count-two cancellation identity, including zero distance. -/
 theorem pairLaplaceKernel_defect (N r : ℝ) (hr : 0 ≤ r) :
@@ -99,7 +103,7 @@ theorem fineAliasLaplaceKernel_measurable (T0 N : ℝ) (hN : T0 ≤ N) :
 def spatialInverseFourConstant (d : ℕ) : ℝ :=
   (d : ℝ) * volume.real (Metric.ball (0 : EuclideanSpace ℝ (Fin d)) 1) * ((d-5).factorial : ℝ)
 
-private theorem radial_inverse_four_monomial {d : ℕ} (hd : 4 < d) {r : ℝ} (hr : r ≠ 0) (T : ℝ) :
+private theorem radial_inverse_four_monomial (hd : 4 < d) {r : ℝ} (hr : r ≠ 0) (T : ℝ) :
     r^(d-1) * (Real.exp (-(T*r))/r^4) = r^(d-5) * Real.exp (-(T*r)) := by
   calc
     _ = (r^(d-1)/r^4) * Real.exp (-(T*r)) := by ring
@@ -108,7 +112,7 @@ private theorem radial_inverse_four_monomial {d : ℕ} (hd : 4 < d) {r : ℝ} (h
       field_simp
 
 /-- The singular envelope is actually integrable exactly in the source dimension regime. -/
-theorem euclidean_inverse_four_exponential_integrable {d : ℕ} (hd : 4 < d)
+theorem euclidean_inverse_four_exponential_integrable (hd : 4 < d)
     {T : ℝ} (hT : 0 < T) :
     Integrable (fun z : EuclideanSpace ℝ (Fin d) => Real.exp (-(T*‖z‖))/‖z‖^4) volume := by
   let : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp (by omega)
@@ -121,7 +125,7 @@ theorem euclidean_inverse_four_exponential_integrable {d : ℕ} (hd : 4 < d)
   exact (radial_inverse_four_monomial hd hr.ne' T).symm
 
 /-- Exact genuine fine-envelope scaling from the radial Gamma integral. -/
-theorem euclidean_inverse_four_exponential_integral {d : ℕ} (hd : 4 < d)
+theorem euclidean_inverse_four_exponential_integral (hd : 4 < d)
     {T : ℝ} (hT : 0 < T) :
     (∫ z : EuclideanSpace ℝ (Fin d), Real.exp (-(T*‖z‖))/‖z‖^4) =
       spatialInverseFourConstant d / T^(d-4) := by
@@ -131,13 +135,12 @@ theorem euclidean_inverse_four_exponential_integral {d : ℕ} (hd : 4 < d)
   have he : (∫ r : ℝ in Ioi 0, r^(d-1)*(Real.exp (-(T*r))/r^4)) =
       ∫ r : ℝ in Ioi 0, r^(d-5)*Real.exp (-(T*r)) :=
     setIntegral_congr_fun measurableSet_Ioi (fun r hr => radial_inverse_four_monomial hd hr.ne' T)
-  rw [he, ← integral_Ici_eq_integral_Ioi, gamma_monomial_integral hT]
-  rw [show d-5+1 = d-4 by omega]
+  rw [he, ← integral_Ici_eq_integral_Ioi, gamma_monomial_integral hT, show d-5+1 = d-4 by omega]
   unfold spatialInverseFourConstant
   ring
 
 /-- The actual finite fine alias kernel has the source complete-space squared L² bound. -/
-theorem euclidean_fineAlias_squared_integrable_and_integral_le {d : ℕ} (hd : 4 < d)
+theorem euclidean_fineAlias_squared_integrable_and_integral_le (hd : 4 < d)
     {T0 N : ℝ} (hT0 : 0 < T0) (hN : T0 ≤ N) :
     Integrable (fun z : EuclideanSpace ℝ (Fin d) => (fineAliasLaplaceKernel T0 N ‖z‖)^2) volume ∧
       (∫ z : EuclideanSpace ℝ (Fin d), (fineAliasLaplaceKernel T0 N ‖z‖)^2) ≤
@@ -151,7 +154,6 @@ theorem euclidean_fineAlias_squared_integrable_and_integral_le {d : ℕ} (hd : 4
     filter_upwards [volume.ae_ne (0 : EuclideanSpace ℝ (Fin d))] with z hz
     have hr : 0 < ‖z‖ := norm_pos_iff.mpr hz
     have hw := fineAliasLaplaceKernel_nonneg_le hr hT0.le hN
-    have hp := pair_defect_exponential_absorption (T0*‖z‖) (mul_nonneg hT0.le hr.le)
     calc
       _ ≤ ((1+T0*‖z‖)*Real.exp (-(T0*‖z‖))/‖z‖^2)^2 := pow_le_pow_left₀ hw.1 hw.2 2
       _ = (1+T0*‖z‖)^2 * Real.exp (-(2*T0*‖z‖)) / ‖z‖^4 := by
@@ -159,7 +161,7 @@ theorem euclidean_fineAlias_squared_integrable_and_integral_le {d : ℕ} (hd : 4
           show (‖z‖^2)^2 = ‖z‖^4 by ring,
           show ((2 : ℕ) : ℝ) * -(T0*‖z‖) = -(2*T0*‖z‖) by ring]
       _ ≤ 6 * Real.exp (-(T0*‖z‖)) / ‖z‖^4 :=
-        div_le_div_of_nonneg_right (by simpa only [mul_assoc] using hp) (by positivity)
+        div_le_div_of_nonneg_right (by simpa only [mul_assoc] using (pair_defect_exponential_absorption (T0*‖z‖) (mul_nonneg hT0.le hr.le))) (by positivity)
       _ = _ := by ring
   have hi : Integrable (fun z : EuclideanSpace ℝ (Fin d) => (fineAliasLaplaceKernel T0 N ‖z‖)^2) volume :=
     (henv.const_mul 6).mono' hm.aestronglyMeasurable (hb.mono fun z hz => by
@@ -172,7 +174,7 @@ theorem euclidean_fineAlias_squared_integrable_and_integral_le {d : ℕ} (hd : 4
     _ = _ := by rw [integral_const_mul, euclidean_inverse_four_exponential_integral hd hT0]; ring
 
 /-- The same genuine fine-alias squared bound in actual source coordinates and at every center. -/
-theorem fineAlias_spatial_squared_integrable_and_integral_le {d : ℕ} (hd : 4 < d)
+theorem fineAlias_spatial_squared_integrable_and_integral_le (hd : 4 < d)
     {T0 N : ℝ} (hT0 : 0 < T0) (hN : T0 ≤ N) (x : Covariate d) :
     Integrable (fun y => (fineAliasLaplaceKernel T0 N (exactEuclideanDistance x y))^2) volume ∧
       (∫ y, (fineAliasLaplaceKernel T0 N (exactEuclideanDistance x y))^2) ≤

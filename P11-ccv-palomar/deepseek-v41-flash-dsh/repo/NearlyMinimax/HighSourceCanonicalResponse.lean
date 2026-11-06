@@ -12,7 +12,6 @@ open Set MeasureTheory
 open scoped BigOperators
 namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency true
-set_option maxHeartbeats 1300000
 attribute [local irreducible] highUnionSourceDensity highUnionSourceState historyMarkedAppend
 
 section
@@ -34,7 +33,9 @@ variable (hp : ∀ v : HighFrameIndex d D → ℝ, (∑ γ, |v γ|) ≤ Cfr⁻¹
     0 ≤ ternaryMass a (coefficientRegression η g w (fun u : Fin n => highLocalFrameFeature (D := D) k j (x u)) v u) V b)
 include hD hq hM hCfr hℓ hℓN hx ha hp
 
-theorem completeSourceResponseAction_eq_signed_first_action (y : Fin n → Fin 3) :
+variable (y : Fin n → Fin 3)
+
+theorem completeSourceResponseAction_eq_signed_first_action :
     highMarkedResponseAction (highUnionLaw R (highCenterMix C))
       (highUnionActivation R (highCenterMix C)) a V η
       (fun e u => highUnionSourceResetDensity C R j h e (x u))
@@ -44,7 +45,7 @@ theorem completeSourceResponseAction_eq_signed_first_action (y : Fin n → Fin 3
         (fun u => highUnionSourceDensity C R h (x u)) ((highUnionSourceState C R h).2 j)
         (fun v => highResponseProduct a V η g w (fun u : Fin n => highLocalFrameFeature (D := D) k j (x u)) v y) := by
   let Φ := fun v : HighFrameIndex d D → ℝ => highResponseProduct a V η g w (fun u : Fin n => highLocalFrameFeature (D := D) k j (x u)) v y
-  have hmΦ : Measurable Φ := highMarkedResponseProduct_measurable a V η (fun v => v)
+  have hmΦ := highMarkedResponseProduct_measurable a V η (fun v => v)
     (fun γ => measurable_pi_apply γ) g w (fun u : Fin n => highLocalFrameFeature (D := D) k j (x u)) y
   have hbΦ (v : HighFrameIndex d D → ℝ) (hv : ∑ γ, |v γ| ≤ Cfr⁻¹) : |Φ v| ≤ 1 :=
     highMarkedResponseProduct_abs_le_one a V η ha g w (fun u : Fin n => highLocalFrameFeature (D := D) k j (x u)) v (hp v hv) y
@@ -57,7 +58,7 @@ theorem completeSourceResponseAction_eq_signed_first_action (y : Fin n → Fin 3
   dsimp only [Φ]
   ring
 
-theorem completeSourceRawNumerator_eq_canonical (y : Fin n → Fin 3) :
+theorem completeSourceRawNumerator_eq_canonical :
     highMarkedLocalScoreNumerator (highUnionLaw R (highCenterMix C))
       (highUnionActivation R (highCenterMix C)) a V η
       (fun u => highUnionSourceDensity C R h (x u))

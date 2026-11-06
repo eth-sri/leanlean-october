@@ -11,9 +11,6 @@ noncomputable section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal RealInnerProductSpace
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option synthInstance.maxHeartbeats 200000
-set_option maxHeartbeats 800000
 
 /-- Proposition `prop:pair-risk`, with the universally valid floor `a=1/4`.
 The displayed constant depends only on the model, pilot constant, and fixed

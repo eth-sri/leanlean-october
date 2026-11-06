@@ -10,8 +10,6 @@ noncomputable section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 500000
 variable {H X : Type*} [MeasurableSpace H] [MeasurableSpace X]
 
 theorem partitionFieldFiber_product_integrable (μ : Measure H) [IsProbabilityMeasure μ]

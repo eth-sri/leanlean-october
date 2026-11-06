@@ -11,17 +11,19 @@ noncomputable section
 open MeasureTheory Matrix
 open scoped BigOperators Matrix.Norms.L2Operator
 namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option synthInstance.maxHeartbeats 300000
-set_option backward.isDefEq.respectTransparency false
 
-instance finiteInputMultilinearMeasurableSpace {p k : ℕ} {F : Type*}
+section
+variable {p k : ℕ} {F : Type*}
+
+instance finiteInputMultilinearMeasurableSpace 
     [NormedAddCommGroup F] [NormedSpace ℝ F] :
     MeasurableSpace (ContinuousMultilinearMap ℝ (fun _ : Fin k => Fin p → ℝ) F) := borel _
 
-instance finiteInputMultilinearBorelSpace {p k : ℕ} {F : Type*}
+instance finiteInputMultilinearBorelSpace 
     [NormedAddCommGroup F] [NormedSpace ℝ F] :
     BorelSpace (ContinuousMultilinearMap ℝ (fun _ : Fin k => Fin p → ℝ) F) := ⟨rfl⟩
+
+end
 
 instance finiteInputScalarMultilinearFiniteDimensional (p k : ℕ) :
     FiniteDimensional ℝ (ContinuousMultilinearMap ℝ (fun _ : Fin k => Fin p → ℝ) ℝ) := by
@@ -70,10 +72,15 @@ theorem continuous_multilinear_pullback {p q k : ℕ} :
     (fun _ : Fin k => Fin q → ℝ) (fun _ : Fin k => Fin p → ℝ) ℝ).cont.comp
     (continuous_pi (fun _ => continuous_snd))).clm_apply continuous_fst
 
+variable {d : ℕ} (C : ModelConstants d)
+
+section
+variable [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d)
+
 /-- The anchor and arbitrary measurable physical row determine a Borel
 global derivative field under the original admissible population law. -/
-theorem dyadicIncrementKernel_field_measurable {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
+theorem dyadicIncrementKernel_field_measurable 
+    (hθ : Admissible C θ)
     (j : ℕ) (y : ℝ) (m k : ℕ)
     (row : Covariate d × Covariate d → Fin (anchoredDimension d C.order) → ℝ)
     (hrow : Measurable row) :
@@ -109,8 +116,8 @@ theorem dyadicIncrementKernel_field_measurable {d : ℕ} (C : ModelConstants d)
 /-- A finite level has a genuine bounded coefficient field on every
 bounded-row, cube-supported parameter measure. This cap is used only to
 justify Bochner integration; the sharper raw-energy estimate is separate. -/
-theorem dyadicIncrementKernel_field_norm_bound {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
+theorem dyadicIncrementKernel_field_norm_bound 
+    (hθ : Admissible C θ)
     (j : ℕ) (y : ℝ) (hy : |y| ≤ C.holderBound) (m k : ℕ)
     (row : Covariate d × Covariate d → Fin (anchoredDimension d C.order) → ℝ)
     (M : Measure (Covariate d × Covariate d)) (R : ℝ) (hR : 0 ≤ R)
@@ -125,8 +132,7 @@ theorem dyadicIncrementKernel_field_norm_bound {d : ℕ} (C : ModelConstants d)
   apply le_trans _ (le_max_right _ _)
   unfold dyadicIncrementKernel
   apply (ContinuousMultilinearMap.norm_compContinuousLinearMap_le _ _).trans
-  have hlprod : (∏ _i : Fin k, ‖incrementPilotCoordinate (ℓ := C.order) j w.1‖) ≤ L ^ k := by
-    exact (Finset.prod_le_prod₀ (fun i _ => norm_nonneg _) (fun i _ => hmap _ hw)).trans_eq (by simp)
+  have hlprod : (∏ _i : Fin k, ‖incrementPilotCoordinate (ℓ := C.order) j w.1‖) ≤ L ^ k := (Finset.prod_le_prod₀ (fun i _ => norm_nonneg _) (fun i _ => hmap _ hw)).trans_eq (by simp)
   have hd : ‖iteratedFDeriv ℝ k (incrementFinScalar (anchoredDimension d C.order)
       C.densityLower C.densityUpper (anchoredFinTransport d C.order) y m (row w))
       (dyadicIncrementRawMean θ j w.1)‖ ≤ R * D * (k.factorial : ℝ) * A ^ k := by
@@ -134,8 +140,8 @@ theorem dyadicIncrementKernel_field_norm_bound {d : ℕ} (C : ModelConstants d)
     gcongr
   exact mul_le_mul hd hlprod (Finset.prod_nonneg (fun i _ => norm_nonneg _)) (by positivity)
 
-theorem dyadicIncrementKernel_weighted_integrable {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
+theorem dyadicIncrementKernel_weighted_integrable 
+    (hθ : Admissible C θ)
     (j : ℕ) (y : ℝ) (hy : |y| ≤ C.holderBound) (m k : ℕ)
     (row : Covariate d × Covariate d → Fin (anchoredDimension d C.order) → ℝ)
     (hrowMeas : Measurable row) (M : Measure (Covariate d × Covariate d)) [IsFiniteMeasure M]
@@ -146,5 +152,7 @@ theorem dyadicIncrementKernel_weighted_integrable {d : ℕ} (C : ModelConstants 
   obtain ⟨B, _, hcap⟩ := dyadicIncrementKernel_field_norm_bound C θ hθ j y hy m k row M R hR hcube hrow
   exact (hν.integrable (by norm_num)).smul_bdd B
     (dyadicIncrementKernel_field_measurable C θ hθ j y m k row hrowMeas).aestronglyMeasurable hcap
+
+end
 
 end NearlyMinimax

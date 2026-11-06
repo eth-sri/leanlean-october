@@ -11,8 +11,6 @@ append/heat likelihood Fisher energy. -/
 noncomputable section
 open MeasureTheory ProbabilityTheory Filter Set
 namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 variable {J : Type*} [Fintype J] [LinearOrder J]
 
 theorem highMarginalRealScore_memLp_energy {E : Type*} [MeasurableSpace E]
@@ -44,11 +42,10 @@ theorem highMarginalRealScore_memLp_energy {E : Type*} [MeasurableSpace E]
     highHistoryLikelihoodDerivative dependent hsymm π activation n a V η p F z.1 z.2
   let m := fun ω => highRawDensityMass (p ω)
   let G := massPowerNormalizer ν m n
-  have hm := highRawDensityMass_joint_measurable p hp
   have hb (ω) : aRaw ≤ m ω ∧ m ω ≤ bRaw :=
     highRawDensityMass_mem_Icc (p ω) hp.of_uncurry_left aRaw bRaw haRaw
       (Eventually.of_forall (hraw ω))
-  have hG : 0 < G := massPowerNormalizer_pos ν m hm n aRaw bRaw haRaw hb
+  have hG : 0 < G := massPowerNormalizer_pos ν m (highRawDensityMass_joint_measurable p hp) n aRaw bRaw haRaw hb
   have hpb (ω : HistoryMarked dependent E) (x : Covariate d) : |p ω x| ≤ |bRaw| := by
     rw [abs_of_nonneg (haRaw.le.trans (hraw ω x).1)]
     exact (hraw ω x).2.trans (le_abs_self _)
@@ -75,8 +72,7 @@ theorem highMarginalRealScore_memLp_energy {E : Type*} [MeasurableSpace E]
   change Pi = μ.withDensity (fun z => ENNReal.ofReal ((∫ ω, L (ω,z) ∂ν) / G)) at hden
   rw [← hden] at he
   have hmap : (highRealSampleKernel n a V p F hp hF) ∘ₘ massPowerTilt ν m n =
-      Pi.map (encodeDesignResponse a) := by
-    exact (Measure.map_comp _ _ (encodeDesignResponse_measurable a)).symm
+      Pi.map (encodeDesignResponse a) := (Measure.map_comp _ _ (encodeDesignResponse_measurable a)).symm
   have hR := highMarginalRealScore_measurable dependent hsymm ν π activation ham n a V η p F hp hF
   have hcomp : (fun z => highMarginalRealScore dependent hsymm ν π activation n a V η p F
       (encodeDesignResponse a z)) = highMarginalIndexScore dependent hsymm ν π activation n a V η p F := by

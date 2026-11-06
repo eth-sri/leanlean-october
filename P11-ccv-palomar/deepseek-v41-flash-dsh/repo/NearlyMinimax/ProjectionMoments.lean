@@ -8,7 +8,6 @@ public import NearlyMinimax.Projection
 open Matrix MeasureTheory ProbabilityTheory
 open scoped BigOperators
 
-set_option maxHeartbeats 1000000
 
 namespace NearlyMinimax
 

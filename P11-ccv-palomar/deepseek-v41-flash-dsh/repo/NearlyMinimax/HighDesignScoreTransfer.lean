@@ -14,14 +14,15 @@ noncomputable section
 open MeasureTheory ProbabilityTheory Set
 open scoped BigOperators ENNReal
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 attribute [local instance] Classical.propDecidable
+
+section
+variable {α : Type*} [MeasurableSpace α] (μ : Measure α) [IsProbabilityMeasure μ] (n : ℕ) (A : Set α)
 
 /-- Exact selected-coordinate integral on an actual membership cell.
 No independence or binomial-weight premise is supplied. -/
-theorem iid_selected_membership_integral {α : Type*} [MeasurableSpace α]
-    (μ : Measure α) [IsProbabilityMeasure μ] (n : ℕ) (A : Set α)
+theorem iid_selected_membership_integral 
+    
     (S : Finset (Fin n)) (H : (S → α) → ℝ) :
     (∫ x in designMembershipCell n A S, H (fun i : S => x i.val)
       ∂Measure.pi (fun _ : Fin n => μ)) =
@@ -61,8 +62,8 @@ theorem iid_selected_membership_integral {α : Type*} [MeasurableSpace α]
 
 /-- Every measurable iid patch admits the true disjoint membership-cell
 partition of an integrable data function. -/
-theorem iid_integral_eq_membership_sum {α : Type*} [MeasurableSpace α]
-    (μ : Measure α) [IsProbabilityMeasure μ] (n : ℕ) (A : Set α) (hA : MeasurableSet A)
+theorem iid_integral_eq_membership_sum 
+    (hA : MeasurableSet A)
     (H : (Fin n → α) → ℝ) (hH : Integrable H (Measure.pi (fun _ : Fin n => μ))) :
     (∫ x, H x ∂Measure.pi (fun _ : Fin n => μ)) =
       ∑ S : Finset (Fin n), ∫ x in designMembershipCell n A S, H x
@@ -81,8 +82,8 @@ theorem iid_integral_eq_membership_sum {α : Type*} [MeasurableSpace α]
 
 /-- Conditional iid energy is bounded by the actual selected-observation
 energies; the unused-observation probability is bounded by one. -/
-theorem iid_local_energy_le_selected_sum {α : Type*} [MeasurableSpace α]
-    (μ : Measure α) [IsProbabilityMeasure μ] (n : ℕ) (A : Set α) (hA : MeasurableSet A)
+theorem iid_local_energy_le_selected_sum 
+    (hA : MeasurableSet A)
     (E : (Fin n → α) → ℝ) (hE : Integrable E (Measure.pi (fun _ : Fin n => μ)))
     (H : (S : Finset (Fin n)) → (S → α) → ℝ)
     (hH : ∀ S, Integrable (H S) (Measure.pi (fun _ : S => μ.restrict A)))
@@ -134,5 +135,7 @@ theorem iid_local_energy_le_selected_sum {α : Type*} [MeasurableSpace α]
     _ ≤ _ := by
       have hmass : (μ.real Aᶜ) ^ (n - S.card) ≤ 1 := pow_le_one₀ measureReal_nonneg measureReal_le_one
       exact (mul_le_mul_of_nonneg_right hmass (integral_nonneg (hHn S))).trans_eq (one_mul _)
+
+end
 
 end NearlyMinimax

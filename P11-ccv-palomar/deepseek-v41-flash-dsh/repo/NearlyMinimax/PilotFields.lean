@@ -12,7 +12,6 @@ noncomputable section
 open MeasureTheory
 open scoped RealInnerProductSpace
 namespace NearlyMinimax.PilotFields
-set_option backward.isDefEq.respectTransparency false
 
 variable {Ω W H : Type*} [MeasurableSpace Ω] [MeasurableSpace W]
 variable [NormedAddCommGroup H] [InnerProductSpace ℝ H]
@@ -25,14 +24,16 @@ theorem toLp_norm_sq {f : W → H} (hf : MemLp f 2 M) :
   filter_upwards [hf.coeFn_toLp] with w hw
   rw [hw, real_inner_self_eq_norm_sq]
 
-theorem toLp_inner {f g : W → H} (hf : MemLp f 2 M) (hg : MemLp g 2 M) :
+variable {f g : W → H} (hf : MemLp f 2 M) (hg : MemLp g 2 M)
+
+theorem toLp_inner :
     ⟪hf.toLp f, hg.toLp g⟫ = ∫ w, ⟪f w, g w⟫ ∂M := by
   rw [L2.inner_def]
   apply integral_congr_ae
   filter_upwards [hf.coeFn_toLp, hg.coeFn_toLp] with w hfw hgw
   rw [hfw, hgw]
 
-theorem inner_integral_sq_le {f g : W → H} (hf : MemLp f 2 M) (hg : MemLp g 2 M) :
+theorem inner_integral_sq_le (hf : MemLp f 2 M) (hg : MemLp g 2 M) :
     (∫ w, ⟪f w, g w⟫ ∂M) ^ 2 ≤
       (∫ w, ‖f w‖ ^ 2 ∂M) * (∫ w, ‖g w‖ ^ 2 ∂M) := by
   rw [← toLp_inner hf hg, ← toLp_norm_sq hf, ← toLp_norm_sq hg]
@@ -42,7 +43,7 @@ theorem inner_integral_sq_le {f g : W → H} (hf : MemLp f 2 M) (hg : MemLp g 2 
         (abs_real_inner_le_norm (hf.toLp f) (hg.toLp g)) 2
     _ = _ := by ring
 
-theorem inner_integrable {f g : W → H} (hf : MemLp f 2 M) (hg : MemLp g 2 M) :
+theorem inner_integrable (hf : MemLp f 2 M) (hg : MemLp g 2 M) :
     Integrable (fun w => ⟪f w, g w⟫) M := by
   apply (L2.integrable_inner (𝕜 := ℝ) (hf.toLp f) (hg.toLp g)).congr
   filter_upwards [hf.coeFn_toLp, hg.coeFn_toLp] with w hfw hgw
@@ -128,7 +129,9 @@ theorem bilinear_measurable {η : Ω → W → H}
         (hmη.comp (measurable_fst.snd.prodMk measurable_snd)))
   exact hm.stronglyMeasurable.integral_prod_right'.measurable
 
-theorem operatorField_memLp {B : W → H →L[ℝ] H}
+variable {B : W → H →L[ℝ] H}
+
+theorem operatorField_memLp 
     (hmB : Measurable (fun z : W × H => B z.1 z.2))
     {C : ℝ} (hbound : ∀ w, ‖B w‖ ≤ C)
     {f : W → H} (hmf : Measurable f) (hf : MemLp f 2 M) :
@@ -138,7 +141,7 @@ theorem operatorField_memLp {B : W → H →L[ℝ] H}
   exact Filter.Eventually.of_forall (fun w =>
     ((B w).le_opNorm _).trans (mul_le_mul_of_nonneg_right (hbound w) (norm_nonneg _)))
 
-theorem operatorField_energy_le {B : W → H →L[ℝ] H}
+theorem operatorField_energy_le 
     (hmB : Measurable (fun z : W × H => B z.1 z.2))
     {C : ℝ} (hC : 0 ≤ C) (hbound : ∀ w, ‖B w‖ ≤ C)
     {f : W → H} (hmf : Measurable f) (hf : MemLp f 2 M) :
@@ -284,8 +287,7 @@ theorem fluctuation_energy_le {η : Ω → W → H}
   have h₃ := bilinear_sq_integrable hmη hη hmB hC hlam hbound htest
   calc
     _ ≤ ∫ z : Ω × Ω, 3 * (test (M := M) η v₁ z.1 ^ 2 +
-        test (M := M) η v₂ z.2 ^ 2 + bilinear (M := M) η B z ^ 2) ∂μ.prod μ := by
-      exact integral_mono
+        test (M := M) η v₂ z.2 ^ 2 + bilinear (M := M) η B z ^ 2) ∂μ.prod μ := integral_mono
         (fluctuation_memLp_two hmη hη hmB hC hlam hbound htest hv₁ hv₂).integrable_sq
         (((h₁.add h₂).add h₃).const_mul 3)
         (fun _ => PilotFluctuation.three_square_le _ _ _)

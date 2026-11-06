@@ -13,8 +13,6 @@ noncomputable section
 open Set MeasureTheory
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1200000
 attribute [local instance] Classical.propDecidable
 
 abbrev FinePairRowDensityMark (d D M : ℕ) : FinePairRowTag → Type
@@ -25,17 +23,19 @@ abbrev FinePairRowDensityMark (d D M : ℕ) : FinePairRowTag → Type
 instance (d D M : ℕ) (i : FinePairRowTag) : MeasurableSpace (FinePairRowDensityMark d D M i) := by
   cases i <;> dsimp only [FinePairRowDensityMark] <;> infer_instance
 
-def finePairRowDensityProj (d D M q : ℕ) (i : FinePairRowTag) :
+variable (d D M q : ℕ) (i : FinePairRowTag) (r : HighResponseMarkIndex (HighFrameIndex d D) q)
+
+def finePairRowDensityProj :
     FinePairRowMark d D M q i → FinePairRowDensityMark d D M i := by
   cases i <;> exact fun e => (e.1,e.2.1)
 
-def finePairRowWithResponse (d D M q : ℕ) (i : FinePairRowTag)
+def finePairRowWithResponse 
     (r : HighResponseMarkIndex (HighFrameIndex d D) q) :
     FinePairRowDensityMark d D M i → FinePairRowMark d D M q i := by
   cases i <;> exact fun e => (e.1,(e.2,r))
 
-theorem finePairRowWithResponse_measurable (d D M q : ℕ) (i : FinePairRowTag)
-    (r : HighResponseMarkIndex (HighFrameIndex d D) q) :
+theorem finePairRowWithResponse_measurable 
+    :
     Measurable (finePairRowWithResponse d D M q i r) := by
   cases i <;> exact measurable_fst.prodMk (measurable_snd.prodMk measurable_const)
 

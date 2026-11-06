@@ -13,8 +13,6 @@ and sample size; no energy, regularity or desired-rate guard is assumed. -/
 noncomputable section
 open Filter Set
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 
 abbrev completeSaddleM {d : ℕ} (C : ModelConstants d) (x : ℝ) :=
   lowerSaddleM (highCompleteSourceSaddleCoefficient C) x

@@ -15,15 +15,17 @@ namespace NearlyMinimax
 bounded total degree and has `(order+1)^dimension` elements. -/
 abbrev PolynomialBox (d ℓ : ℕ) := Fin d → Fin (ℓ + 1)
 
-def polynomialBoxExponent {d ℓ : ℕ} (γ : PolynomialBox d ℓ) : Fin d →₀ ℕ :=
+variable {d ℓ : ℕ} (P : MvPolynomial (Fin d) ℝ)
+
+def polynomialBoxExponent (γ : PolynomialBox d ℓ) : Fin d →₀ ℕ :=
   Finsupp.equivFunOnFinite.symm (fun i => (γ i).val)
 
-@[simp] theorem polynomial_box_exponent_apply {d ℓ : ℕ}
+@[simp] theorem polynomial_box_exponent_apply 
     (γ : PolynomialBox d ℓ) (i : Fin d) : polynomialBoxExponent γ i = (γ i).val := by
   change Finsupp.equivFunOnFinite (Finsupp.equivFunOnFinite.symm (fun i => (γ i).val)) i = _
   simp
 
-theorem polynomial_box_exponent_injective {d ℓ : ℕ} :
+theorem polynomial_box_exponent_injective :
     Function.Injective (polynomialBoxExponent (d := d) (ℓ := ℓ)) := by
   intro γ δ he
   funext i
@@ -31,7 +33,7 @@ theorem polynomial_box_exponent_injective {d ℓ : ℕ} :
   simpa only [polynomial_box_exponent_apply] using congrArg (fun w : Fin d →₀ ℕ => w i) he
 
 /-- Total degree bounds every coordinate of every nonzero coefficient. -/
-theorem polynomial_coefficient_box_bound {d ℓ : ℕ} (P : MvPolynomial (Fin d) ℝ)
+theorem polynomial_coefficient_box_bound 
     (hP : P.totalDegree ≤ ℓ) (w : Fin d →₀ ℕ) (hw : P.coeff w ≠ 0) :
     ∀ i, w i ≤ ℓ := by
   have hsupport : w ∈ P.support := mem_support_iff.mpr hw
@@ -42,7 +44,7 @@ theorem polynomial_coefficient_box_bound {d ℓ : ℕ} (P : MvPolynomial (Fin d)
 
 /-- Every bounded-degree polynomial has an exact expansion in the
 finite rectangular monomial feature set. -/
-theorem polynomial_as_box_sum {d ℓ : ℕ} (P : MvPolynomial (Fin d) ℝ)
+theorem polynomial_as_box_sum 
     (hP : P.totalDegree ≤ ℓ) :
     P = ∑ γ : PolynomialBox d ℓ,
       monomial (polynomialBoxExponent γ) (P.coeff (polynomialBoxExponent γ)) := by
@@ -77,7 +79,7 @@ theorem polynomial_as_box_sum {d ℓ : ℕ} (P : MvPolynomial (Fin d) ℝ)
     simp only [hne, ite_false]
 
 /-- Polynomial evaluation is exactly finite feature-vector evaluation. -/
-theorem polynomial_box_evaluation {d ℓ : ℕ} (P : MvPolynomial (Fin d) ℝ)
+theorem polynomial_box_evaluation 
     (hP : P.totalDegree ≤ ℓ) (x : Covariate d) :
     eval x P = ∑ γ : PolynomialBox d ℓ,
       (P.coeff (polynomialBoxExponent γ)) * ∏ i, (x i) ^ (γ i).val := by
@@ -90,12 +92,12 @@ theorem polynomial_box_evaluation {d ℓ : ℕ} (P : MvPolynomial (Fin d) ℝ)
 
 /-- The empirical design for cellwise polynomial approximation,
 using the actual sample covariates and their actual cell labels. -/
-def cellPolynomialDesign {d ℓ : ℕ} {ι κ : Type*} [DecidableEq κ]
+def cellPolynomialDesign {ι κ : Type*} [DecidableEq κ]
     (cell : ι → κ) (x : ι → Covariate d) : Matrix ι (κ × PolynomialBox d ℓ) ℝ :=
   fun i j => if cell i = j.1 then ∏ r, (x i r) ^ (j.2 r).val else 0
 
 /-- The actual design evaluates every cellwise bounded-degree polynomial. -/
-theorem cell_polynomial_design_evaluation {d ℓ : ℕ} {ι κ : Type*}
+theorem cell_polynomial_design_evaluation {ι κ : Type*}
     [Fintype κ] [DecidableEq κ] (cell : ι → κ) (x : ι → Covariate d)
     (P : κ → MvPolynomial (Fin d) ℝ) (hP : ∀ c, (P c).totalDegree ≤ ℓ) :
     cellPolynomialDesign (ℓ := ℓ) cell x *ᵥ
@@ -116,11 +118,14 @@ theorem cell_polynomial_design_evaluation {d ℓ : ℕ} {ι κ : Type*}
   · intro hnot
     exact (hnot (Finset.mem_univ _)).elim
 
+section
+variable {ι κ : Type*} [Fintype ι] [DecidableEq ι] [Fintype κ] [DecidableEq κ] (cell : ι → κ) (x : ι → Covariate d)
+
 /-- Every concrete cellwise polynomial fitted by this matrix is killed
 by its exact residual projector, including irregular or deficient designs. -/
-theorem cell_polynomial_residual_kills {d ℓ : ℕ} {ι κ : Type*}
-    [Fintype ι] [DecidableEq ι] [Fintype κ] [DecidableEq κ]
-    (cell : ι → κ) (x : ι → Covariate d)
+theorem cell_polynomial_residual_kills 
+    
+    
     (P : κ → MvPolynomial (Fin d) ℝ) (hP : ∀ c, (P c).totalDegree ≤ ℓ) :
     (1 - empiricalDesignProjection (cellPolynomialDesign (ℓ := ℓ) cell x)) *ᵥ
       (fun i => eval (x i) (P (cell i))) = 0 := by
@@ -129,9 +134,9 @@ theorem cell_polynomial_residual_kills {d ℓ : ℕ} {ι κ : Type*}
 
 /-- A genuine polynomial approximation error controls residual energy;
 the fitting and projection steps are proved from matrix evaluation. -/
-theorem cell_polynomial_residual_bound {d ℓ : ℕ} {ι κ : Type*}
-    [Fintype ι] [DecidableEq ι] [Fintype κ] [DecidableEq κ]
-    (cell : ι → κ) (x : ι → Covariate d) (f : ι → ℝ)
+theorem cell_polynomial_residual_bound 
+    
+    (f : ι → ℝ)
     (P : κ → MvPolynomial (Fin d) ℝ) (hP : ∀ c, (P c).totalDegree ≤ ℓ)
     (b : ℝ) (hb : 0 ≤ b) (herror : ∀ i, |f i - eval (x i) (P (cell i))| ≤ b) :
     projectionEnergy ((1 - empiricalDesignProjection (cellPolynomialDesign (ℓ := ℓ) cell x)) *ᵥ f) ≤
@@ -143,14 +148,16 @@ theorem cell_polynomial_residual_bound {d ℓ : ℕ} {ι κ : Type*}
 
 
 /-- The box design has a fixed number of monomial columns per cell. -/
-theorem cell_polynomial_residual_degrees {d ℓ : ℕ} {ι κ : Type*}
-    [Fintype ι] [DecidableEq ι] [Fintype κ] [DecidableEq κ]
-    (cell : ι → κ) (x : ι → Covariate d) :
+theorem cell_polynomial_residual_degrees 
+    
+    :
     (Fintype.card ι : ℝ) - Fintype.card κ * (ℓ + 1 : ℕ) ^ d ≤
       (1 - empiricalDesignProjection (cellPolynomialDesign (ℓ := ℓ) cell x)).trace := by
   simpa only [Fintype.card_prod, Fintype.card_fun, Fintype.card_fin,
     Nat.cast_mul, Nat.cast_pow] using
     empirical_design_residual_degrees (cellPolynomialDesign (ℓ := ℓ) cell x)
+
+end
 
 /-- Monomial evaluation and cell labels give a Borel polynomial design. -/
 theorem cell_polynomial_design_measurable {X ι κ : Type*} {d ℓ : ℕ}

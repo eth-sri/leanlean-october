@@ -58,7 +58,9 @@ theorem historyUpperRows_card_by_size (D : ℕ)
       simpa only [Nat.add_sub_cancel] using
         (graph_connected_subsets_card_le (historyCoverGraph α) D hD x (j + 1))
 
-theorem historyUpperRows_activity_le (weight : α → ℝ) (ρ t B : ℝ)
+variable (weight : α → ℝ) (ρ t B : ℝ)
+
+theorem historyUpperRows_activity_le 
     (hρ : 0 < ρ) (ht : 0 ≤ t) (hB : 0 ≤ B) (hw : ∀ x, |weight x| ≤ B)
     (D : ℕ) (hD : ∀ x : α, (historyCoverGraph α).degree x ≤ D)
     (hsmall : t * B / ρ ≤ 1 / (2 + 2 * (D : ℝ) ^ 2)) (R : Finset α) (x : α) :
@@ -67,7 +69,7 @@ theorem historyUpperRows_activity_le (weight : α → ℝ) (ρ t B : ℝ)
   classical
   let A := historyGasRows (historyUpperPolymers Finset.univ) historyMaximalPieces R x
   let ε := t * B / ρ
-  have hε : 0 ≤ ε := div_nonneg (mul_nonneg ht hB) hρ.le
+  have hε := div_nonneg (mul_nonneg ht hB) hρ.le
   have hthreshold := history_degree_activity_threshold hε hsmall
   have hmap : ∀ P ∈ A, P.card - 1 ∈ Finset.range (Fintype.card α) := by
     intro P hP
@@ -123,7 +125,7 @@ theorem historyUpperRows_activity_le (weight : α → ℝ) (ρ t B : ℝ)
     _ ≤ 1 / 2 := hthreshold.2.2
 
 /-- Actual finite history-density positivity, with activity derived from the cover graph. -/
-theorem historyUpperDensity_positive_of_degree_bound (weight : α → ℝ) (ρ t B : ℝ)
+theorem historyUpperDensity_positive_of_degree_bound 
     (hρ : 0 < ρ) (ht : 0 ≤ t) (hB : 0 ≤ B) (hw : ∀ x, |weight x| ≤ B)
     (D : ℕ) (hD : ∀ x : α, (historyCoverGraph α).degree x ≤ D)
     (hsmall : t * B / ρ ≤ 1 / (2 + 2 * (D : ℝ) ^ 2)) :
@@ -137,14 +139,14 @@ theorem historyUpperDensity_positive_of_degree_bound (weight : α → ℝ) (ρ t
   exact historyUpperRows_activity_le weight ρ t B hρ ht hB hw D hD hsmall R x
 
 omit [Fintype α] in
-@[simp] theorem historyRestrictedUpperDensity_empty (weight : α → ℝ) (ρ t : ℝ) (S : Finset α) :
+@[simp] theorem historyRestrictedUpperDensity_empty (ρ t : ℝ) (S : Finset α) :
     historyRestrictedUpperDensity weight ρ t S ∅ = 1 := by
   rw [historyRestrictedUpperDensity_eq_gas]
   exact historyGasPartition_empty (historyUpperPolymers S) historyMaximalPieces
     (historyComponentWeight weight ρ t) (fun _ hP => historyUpperPolymer_support_nonempty hP)
 
 /-- The actual finite history density has the source's uniform maximal-piece bounds. -/
-theorem historyUpperDensity_bounds_of_degree_bound (weight : α → ℝ) (ρ t B : ℝ)
+theorem historyUpperDensity_bounds_of_degree_bound 
     (hρ : 0 < ρ) (ht : 0 ≤ t) (hB : 0 ≤ B) (hw : ∀ x, |weight x| ≤ B)
     (D : ℕ) (hD : ∀ x : α, (historyCoverGraph α).degree x ≤ D)
     (hsmall : t * B / ρ ≤ 1 / (2 + 2 * (D : ℝ) ^ 2)) :

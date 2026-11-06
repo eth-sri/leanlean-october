@@ -19,7 +19,9 @@ namespace NearlyMinimax
 
 variable {A B : Type*} [PartialOrder A] [PartialOrder B] [DecidableEq A] [DecidableEq B]
 
-theorem historyMaximalPieces_orderIso_map (e : A ≃o B) (S : Finset A) :
+variable (e : A ≃o B) (weight : B → ℝ)
+
+theorem historyMaximalPieces_orderIso_map (S : Finset A) :
     historyMaximalPieces (S.map e.toEquiv.toEmbedding) =
       (historyMaximalPieces S).map e.toEquiv.toEmbedding := by
   classical
@@ -44,11 +46,10 @@ theorem historyMaximalPieces_orderIso_map (e : A ≃o B) (S : Finset A) :
   · rintro ⟨hb, hm⟩
     refine ⟨hb, ?_⟩
     intro c hc hbc
-    have hh := hm (e.symm c) ((hmem S c).1 hc) (e.symm.monotone hbc)
-    simpa only [e.apply_symm_apply] using congrArg e hh
+    simpa only [e.apply_symm_apply] using congrArg e (hm (e.symm c) ((hmem S c).1 hc) (e.symm.monotone hbc))
 
 /-- All genuine deletion coefficients are preserved, not just their eventual bounds. -/
-theorem historyDeletionCoefficient_orderIso_map (e : A ≃o B) (weight : B → ℝ)
+theorem historyDeletionCoefficient_orderIso_map 
     (k : ℕ) (S : Finset A) :
     historyDeletionCoefficient weight k (S.map e.toEquiv.toEmbedding) =
       historyDeletionCoefficient (weight ∘ e) k S := by
@@ -63,7 +64,7 @@ theorem historyDeletionCoefficient_orderIso_map (e : A ≃o B) (weight : B → �
     rfl
 
 /-- The actual upper-set density inherits invariance from its proved deletion polynomial. -/
-theorem historyUpperDensity_orderIso_map (e : A ≃o B) (weight : B → ℝ)
+theorem historyUpperDensity_orderIso_map 
     (S : Finset A) (t : ℝ) :
     historyUpperDensity weight (S.map e.toEquiv.toEmbedding) t =
       historyUpperDensity (weight ∘ e) S t := by
@@ -75,7 +76,7 @@ theorem historyUpperDensity_orderIso_map (e : A ≃o B) (weight : B → ℝ)
   rw [historyDeletionCoefficient_orderIso_map]
 
 /-- In particular, the actual source density with its rho factors transports exactly. -/
-theorem historyScaledUpperDensity_orderIso_map (e : A ≃o B) (weight : B → ℝ)
+theorem historyScaledUpperDensity_orderIso_map 
     (ρ : ℝ) (S : Finset A) (t : ℝ) :
     historyScaledUpperDensity weight ρ (S.map e.toEquiv.toEmbedding) t =
       historyScaledUpperDensity (weight ∘ e) ρ S t := by

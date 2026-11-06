@@ -13,8 +13,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 600000
 
 abbrev SingletonRowMark (d D q : ℕ) := Unit × HighPacketMarkIndex (HighFrameIndex d D) D 1 D q
 
@@ -31,7 +29,9 @@ def singletonRowData (d k D q : ℕ) (a b C : ℝ) :
   rowVector := fun _ e => (highResponseMarkAtom C q e.2.2).2
   rowTime := fun _ e => (highResponseMarkAtom 0 q e.2.2).1
 
-theorem singletonRowMass_positive (d D q : ℕ) (hq : 1 ≤ q)
+variable (d D q : ℕ)
+
+theorem singletonRowMass_positive (hq : 1 ≤ q)
     (a b : ℝ) (ha : 0 < a) (hab : a < b) (C : ℝ) (hC : 0 < C) :
     0 < singletonRowMass d D q a b C := by
   rw [singletonRowMass, highPacketMarkMass_eq_variation (Measure.dirac ()) a b D 1 D q C
@@ -48,10 +48,9 @@ theorem singletonRowMass_positive (d D q : ℕ) (hq : 1 ≤ q)
     exact_mod_cast he
   have hr : 0 < ∑ h : Fin (2*q+2), |responseWeight q h| :=
     lt_of_lt_of_le zero_lt_one (response_absolute_cost_ge_one q hq)
-  have hA := finePairUnitMatrix_l1_pos d D
   exact mul_pos (mul_pos (mul_pos
     (mul_pos (mul_pos (abs_pos.mpr hp) (Real.cosh_pos _)) (pow_pos hn _)) hr)
-      (mul_pos (by norm_num) (pow_pos hC _))) hA
+      (mul_pos (by norm_num) (pow_pos hC _))) (finePairUnitMatrix_l1_pos d D)
 
 theorem singletonRow_probability (d k D q : ℕ) (hq : 1 ≤ q)
     (a b : ℝ) (ha : 0 < a) (hab : a < b) (C : ℝ) (hC : 0 < C) :
@@ -59,7 +58,7 @@ theorem singletonRow_probability (d k D q : ℕ) (hq : 1 ≤ q)
   highPacketAbsoluteLaw_probability (Measure.dirac ()) a b D 1 D q C (fun _ => finePairUnitMatrix d D)
     (fun _ _ => measurable_const) (integrable_const _) (singletonRowMass_positive d D q hq a b ha hab C hC)
 
-theorem singletonRowMass_exponential_bound (d D q : ℕ) (hD : 1 ≤ D)
+theorem singletonRowMass_exponential_bound (hD : 1 ≤ D)
     (a b : ℝ) (ha : 0 < a) (hab : a < b) (C : ℝ) :
     singletonRowMass d D q a b C ≤
       (Real.exp (1+exteriorTau ((a+b)/(b-a))) * |b/densityMargin a b 0|) * D *
@@ -71,7 +70,6 @@ theorem singletonRowMass_exponential_bound (d D q : ℕ) (hD : 1 ≤ D)
     (by norm_num) hD C (fun _ => finePairUnitMatrix d D) (fun _ _ => measurable_const) (integrable_const _)
   simp only [pow_one, separatedMatrixCost, integral_dirac] at h
   apply h.trans
-  have hA : (∑ i, ∑ j, |finePairUnitMatrix d D i j|) ≤ 1 := finePairUnitMatrix_l1_le d D
-  exact (mul_le_mul_of_nonneg_left hA (by positivity)).trans_eq (mul_one _)
+  exact (mul_le_mul_of_nonneg_left (finePairUnitMatrix_l1_le d D) (by positivity)).trans_eq (mul_one _)
 
 end NearlyMinimax

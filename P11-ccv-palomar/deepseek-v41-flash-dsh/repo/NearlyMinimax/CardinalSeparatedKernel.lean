@@ -13,15 +13,15 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 800000
 
 abbrev CardinalSeparatedMark (d n : ℕ) := Σ i : Fin n, CenteredCardinalMark d n i
 
 def cardinalSeparatedMeasure (d n : ℕ) (T : ℝ) : Measure (CardinalSeparatedMark d n) :=
   ∑ i : Fin n, Measure.map (Sigma.mk i) (centeredCardinalMeasure i d T)
 
-def cardinalSeparatedAmplitude {d n D : ℕ} (lam : ℝ)
+variable {d n D : ℕ} (lam : ℝ) {T : ℝ}
+
+def cardinalSeparatedAmplitude (lam : ℝ)
     (z : CardinalSeparatedMark d n) : HighFrameIndex d D → HighFrameIndex d D → ℝ :=
   centeredCardinalAmplitude z.1 lam z.2
 
@@ -29,33 +29,49 @@ def cardinalSeparatedFactor {d n : ℕ} (lam : ℝ) (z : CardinalSeparatedMark d
     (l : Fin n) (x : Covariate d) : ℝ :=
   centeredCardinalFactor z.1 lam z.2 l x
 
-theorem cardinal_separated_mark_standardBorel (d n : ℕ) : StandardBorelSpace (CardinalSeparatedMark d n) :=
+section
+variable (d n : ℕ)
+
+theorem cardinal_separated_mark_standardBorel : StandardBorelSpace (CardinalSeparatedMark d n) :=
   sigma_standardBorel_actual
 
-theorem cardinal_separated_measure_finite (d n : ℕ) {T : ℝ} (hT : 1 ≤ T) :
+theorem cardinal_separated_measure_finite {T : ℝ} (hT : 1 ≤ T) :
     IsFiniteMeasure (cardinalSeparatedMeasure d n T) := by
   letI : ∀ i : Fin n, IsFiniteMeasure (centeredCardinalMeasure i d T) :=
     fun i => centered_cardinal_measure_finite i d hT
   unfold cardinalSeparatedMeasure
   infer_instance
 
-theorem cardinal_separated_amplitude_measurable {d n D : ℕ} (lam : ℝ)
+end
+
+theorem cardinal_separated_amplitude_measurable 
     (β β' : HighFrameIndex d D) :
     Measurable (fun z : CardinalSeparatedMark d n => cardinalSeparatedAmplitude lam z β β') :=
   measurable_sigma_of_fibers _ (fun i => centered_cardinal_amplitude_measurable i lam β β')
 
-theorem cardinal_separated_factor_measurable {d n : ℕ} (lam : ℝ) (l : Fin n) (x : Covariate d) :
+section
+variable {d n : ℕ}
+
+section
+variable (lam : ℝ)
+
+theorem cardinal_separated_factor_measurable (l : Fin n) (x : Covariate d) :
     Measurable (fun z : CardinalSeparatedMark d n => cardinalSeparatedFactor lam z l x) :=
   measurable_sigma_of_fibers _ (fun i => centered_cardinal_factor_measurable i lam l x)
 
-theorem cardinal_separated_factor_abs_le_one {d n : ℕ} (lam : ℝ) (z : CardinalSeparatedMark d n)
+theorem cardinal_separated_factor_abs_le_one (z : CardinalSeparatedMark d n)
     (l : Fin n) (x : Covariate d) (hx : ∀ r, |x r| ≤ 2) :
     |cardinalSeparatedFactor lam z l x| ≤ 1 :=
   centered_cardinal_factor_abs_le_one z.1 lam z.2 l x hx
 
+end
+
+section
+variable (T : ℝ) (f : CardinalSeparatedMark d n → ℝ)
+
 /-- Generic integration over the actual finite disjoint-center mixture. -/
-theorem cardinal_separated_integrable_of_fibers {d n : ℕ} (T : ℝ)
-    (f : CardinalSeparatedMark d n → ℝ) (hf : Measurable f)
+theorem cardinal_separated_integrable_of_fibers 
+    (hf : Measurable f)
     (hi : ∀ i : Fin n, Integrable (fun z => f ⟨i, z⟩) (centeredCardinalMeasure i d T)) :
     Integrable f (cardinalSeparatedMeasure d n T) := by
   unfold cardinalSeparatedMeasure
@@ -64,8 +80,8 @@ theorem cardinal_separated_integrable_of_fibers {d n : ℕ} (T : ℝ)
   apply (integrable_map_measure hf.aestronglyMeasurable (measurable_sigma_mk_actual i).aemeasurable).mpr
   exact hi i
 
-theorem cardinal_separated_integral_eq_sum {d n : ℕ} (T : ℝ)
-    (f : CardinalSeparatedMark d n → ℝ) (hf : Measurable f)
+theorem cardinal_separated_integral_eq_sum 
+    (hf : Measurable f)
     (hi : ∀ i : Fin n, Integrable (fun z => f ⟨i, z⟩) (centeredCardinalMeasure i d T)) :
     (∫ z, f z ∂cardinalSeparatedMeasure d n T) =
       ∑ i : Fin n, ∫ z, f ⟨i, z⟩ ∂centeredCardinalMeasure i d T := by
@@ -76,17 +92,21 @@ theorem cardinal_separated_integral_eq_sum {d n : ℕ} (T : ℝ)
   intro i _
   exact integral_map (measurable_sigma_mk_actual i).aemeasurable hf.aestronglyMeasurable
 
-theorem cardinal_separated_cost_measurable {d n D : ℕ} (lam : ℝ) :
+end
+
+end
+
+theorem cardinal_separated_cost_measurable :
     Measurable (separatedMatrixCost (cardinalSeparatedAmplitude (d := d) (n := n) (D := D) lam)) :=
   Finset.measurable_fun_sum _ (fun β _ => Finset.measurable_fun_sum _
     (fun β' _ => (cardinal_separated_amplitude_measurable lam β β').abs))
 
-theorem cardinal_separated_cost_integrable {d n D : ℕ} (lam : ℝ) {T : ℝ} (hT : 1 ≤ T) :
+theorem cardinal_separated_cost_integrable (hT : 1 ≤ T) :
     Integrable (separatedMatrixCost (cardinalSeparatedAmplitude (D := D) lam)) (cardinalSeparatedMeasure d n T) :=
   cardinal_separated_integrable_of_fibers T _ (cardinal_separated_cost_measurable lam)
     (fun i => centered_cardinal_cost_integrable i lam hT)
 
-theorem cardinal_separated_cost_integral_le {d n D : ℕ} (hn : 2 ≤ n) (lam : ℝ)
+theorem cardinal_separated_cost_integral_le (hn : 2 ≤ n) (lam : ℝ)
     {T : ℝ} (hT : 1 ≤ T) :
     (∫ z, separatedMatrixCost (cardinalSeparatedAmplitude (D := D) lam) z ∂cardinalSeparatedMeasure d n T) ≤
       (n : ℝ) * (1024 * |lam| * (d : ℝ) ^ 2) ^ (n - 1) * T ^ 2 * (1 + Real.log T) ^ (n - 2) := by
@@ -98,8 +118,8 @@ theorem cardinal_separated_cost_integral_le {d n D : ℕ} (hn : 2 ≤ n) (lam : 
     (fun i _ => centered_cardinal_cost_integral_le (d := d) (D := D) hn i lam hT)
   simpa only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul, mul_assoc] using h
 
-theorem cardinal_separated_product_entry_integrable {d n D : ℕ} (lam : ℝ)
-    {T : ℝ} (hT : 1 ≤ T) (U : Fin n → Covariate d) (hU : ∀ l r, |U l r| ≤ 2)
+theorem cardinal_separated_product_entry_integrable 
+    (hT : 1 ≤ T) (U : Fin n → Covariate d) (hU : ∀ l r, |U l r| ≤ 2)
     (β β' : HighFrameIndex d D) :
     Integrable (fun z => (∏ l, cardinalSeparatedFactor lam z l (U l)) * cardinalSeparatedAmplitude lam z β β')
       (cardinalSeparatedMeasure d n T) := by
@@ -112,7 +132,7 @@ theorem cardinal_separated_product_entry_integrable {d n D : ℕ} (lam : ℝ)
 
 /-- Exact one-measure positive separated representation of the full spatial
 cardinal covariance, with its actual symmetric matrix marks. -/
-theorem integrated_cardinal_separated_exact {d n D : ℕ} (lam : ℝ) (hlam : 0 ≤ lam)
+theorem integrated_cardinal_separated_exact (hlam : 0 ≤ lam)
     {T : ℝ} (hT : 1 ≤ T) (U : Fin n → Covariate d) (hU : ∀ l r, |U l r| ≤ 2)
     (β β' : HighFrameIndex d D) :
     integratedCardinalMatrix lam T U β β' =
@@ -134,8 +154,8 @@ def cardinalSeparatedSymmetricFactor {d n : ℕ} (lam : ℝ)
     (z : CardinalSeparatedMark d n) (U : Fin n → Covariate d) : ℝ :=
   (∑ τ : Equiv.Perm (Fin n), ∏ l, cardinalSeparatedFactor lam z l (U (τ l))) / (n.factorial : ℝ)
 
-theorem cardinal_separated_symmetric_entry_integrable {d n D : ℕ} (lam : ℝ)
-    {T : ℝ} (hT : 1 ≤ T) (U : Fin n → Covariate d) (hU : ∀ l r, |U l r| ≤ 2)
+theorem cardinal_separated_symmetric_entry_integrable 
+    (hT : 1 ≤ T) (U : Fin n → Covariate d) (hU : ∀ l r, |U l r| ≤ 2)
     (β β' : HighFrameIndex d D) :
     Integrable (fun z => cardinalSeparatedSymmetricFactor lam z U * cardinalSeparatedAmplitude lam z β β')
       (cardinalSeparatedMeasure d n T) := by
@@ -145,7 +165,7 @@ theorem cardinal_separated_symmetric_entry_integrable {d n D : ℕ} (lam : ℝ)
 
 /-- The permutation average is an exact representation, because the actual
 cardinal covariance itself is invariant under coordinate reindexing. -/
-theorem integrated_cardinal_symmetric_separated_exact {d n D : ℕ} (lam : ℝ) (hlam : 0 ≤ lam)
+theorem integrated_cardinal_symmetric_separated_exact (hlam : 0 ≤ lam)
     {T : ℝ} (hT : 1 ≤ T) (U : Fin n → Covariate d) (hU : ∀ l r, |U l r| ≤ 2)
     (β β' : HighFrameIndex d D) :
     integratedCardinalMatrix lam T U β β' =

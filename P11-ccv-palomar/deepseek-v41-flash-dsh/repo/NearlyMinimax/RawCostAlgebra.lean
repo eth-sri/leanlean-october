@@ -9,7 +9,6 @@ raw-energy lemma. All constants are chosen before the sample size. -/
 noncomputable section
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
 
 def rawCostConstants (CB C5 C6 C7 cf ch : ℝ) : Fin 7 → ℝ :=
   ![1, C6, ch, 1 + CB ^ 2, 3 * (C5 + C7) * cf ^ 4,
@@ -18,11 +17,13 @@ def rawCostConstants (CB C5 C6 C7 cf ch : ℝ) : Fin 7 → ℝ :=
 def rawCostConstant (CB C5 C6 C7 cf ch : ℝ) : ℝ :=
   Finset.univ.sup' (by simp) (rawCostConstants CB C5 C6 C7 cf ch)
 
-theorem rawCostConstant_ge (CB C5 C6 C7 cf ch : ℝ) (i : Fin 7) :
+variable (CB C5 C6 C7 cf ch : ℝ)
+
+theorem rawCostConstant_ge (i : Fin 7) :
     rawCostConstants CB C5 C6 C7 cf ch i ≤ rawCostConstant CB C5 C6 C7 cf ch :=
   Finset.le_sup' _ (Finset.mem_univ i)
 
-theorem rawCostConstant_ge_one (CB C5 C6 C7 cf ch : ℝ) :
+theorem rawCostConstant_ge_one :
     1 ≤ rawCostConstant CB C5 C6 C7 cf ch := rawCostConstant_ge _ _ _ _ _ _ 0
 
 theorem factorial_succ_energy_reduction {n v mu eta4 h4s cf c C F : ℝ}

@@ -10,12 +10,13 @@ noncomputable section
 open MeasureTheory Set MvPolynomial
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 200000
 
 def unaryScaleDensity (alpha t : ℝ) : ℝ := t * alpha ^ 2 * Real.exp (-(alpha * t))
 
-theorem unary_scale_density_integrable (alpha : ℝ) (ha : 0 ≤ alpha) :
+section
+variable (alpha : ℝ)
+
+theorem unary_scale_density_integrable (ha : 0 ≤ alpha) :
     IntegrableOn (unaryScaleDensity alpha) (Ici (0 : ℝ)) := by
   rcases eq_or_lt_of_le ha with hzero | hpos
   · subst alpha
@@ -30,7 +31,7 @@ theorem unary_scale_density_integrable (alpha : ℝ) (ha : 0 ≤ alpha) :
     simp only [Real.rpow_one]
     ring
 
-theorem unary_scale_density_integral (alpha : ℝ) (ha : 0 ≤ alpha) :
+theorem unary_scale_density_integral (ha : 0 ≤ alpha) :
     (∫ t in Ici (0 : ℝ), unaryScaleDensity alpha t) = if alpha = 0 then 0 else 1 := by
   by_cases hzero : alpha = 0
   · simp [unaryScaleDensity, hzero]
@@ -45,11 +46,15 @@ theorem unary_scale_density_integral (alpha : ℝ) (ha : 0 ≤ alpha) :
     norm_num only [show (2 : ℝ) - 1 = 1 by norm_num, Real.rpow_one] at hGamma
     have hG2 : Real.Gamma 2 = 1 := by
       simpa using Real.Gamma_nat_eq_factorial 1
-    rw [hGamma, hG2, mul_one]
-    rw [Real.rpow_two]
+    rw [hGamma, hG2, mul_one, Real.rpow_two]
     field_simp
 
-theorem spatial_unary_scale_integrable {d : ℕ} (lam : ℝ) (hlam : 0 ≤ lam)
+end
+
+section
+variable {d : ℕ} (lam : ℝ)
+
+theorem spatial_unary_scale_integrable (hlam : 0 ≤ lam)
     (x y : Covariate d) :
     IntegrableOn (fun t => spatialUnaryWeight lam t x y) (Ici (0 : ℝ)) := by
   have hdist : 0 ≤ spatialSquaredDistance x y := Finset.sum_nonneg (fun r _ => sq_nonneg _)
@@ -61,7 +66,7 @@ theorem spatial_unary_scale_integrable {d : ℕ} (lam : ℝ) (hlam : 0 ≤ lam)
   rw [he]
   exact unary_scale_density_integrable _ (mul_nonneg hlam hdist)
 
-theorem spatial_unary_scale_integral_le_one {d : ℕ} (lam : ℝ) (hlam : 0 ≤ lam)
+theorem spatial_unary_scale_integral_le_one (hlam : 0 ≤ lam)
     (x y : Covariate d) :
     (∫ t in Ici (0 : ℝ), spatialUnaryWeight lam t x y) ≤ 1 := by
   have hdist : 0 ≤ spatialSquaredDistance x y := Finset.sum_nonneg (fun r _ => sq_nonneg _)
@@ -73,7 +78,11 @@ theorem spatial_unary_scale_integral_le_one {d : ℕ} (lam : ℝ) (hlam : 0 ≤ 
   rw [he, unary_scale_density_integral _ (mul_nonneg hlam hdist)]
   split_ifs <;> norm_num
 
-theorem spatial_cardinal_weight_scale_product {d n : ℕ} (i : Fin n) (lam : ℝ)
+end
+
+variable {d n : ℕ} (i : Fin n) (lam : ℝ)
+
+theorem spatial_cardinal_weight_scale_product 
     (U : Fin n → Covariate d) (t : SpatialScaleVector i) :
     spatialCardinalWeight lam (spatialScaleExtend i t) U i =
       ∏ j : SpatialScaleIndex i, spatialUnaryWeight lam (t j) (U i) (U j.val) := by
@@ -94,8 +103,8 @@ theorem spatial_scale_orthant_measure {n : ℕ} (i : Fin n) :
   rw [hset]
   exact Measure.restrict_pi_pi (μ := fun _j : SpatialScaleIndex i => (volume : Measure ℝ)) _
 
-theorem spatial_cardinal_weight_orthant_integrable {d n : ℕ} (i : Fin n)
-    (lam : ℝ) (hlam : 0 ≤ lam) (U : Fin n → Covariate d) :
+theorem spatial_cardinal_weight_orthant_integrable 
+    (hlam : 0 ≤ lam) (U : Fin n → Covariate d) :
     Integrable (fun t => spatialCardinalWeight lam (spatialScaleExtend i t) U i)
       (volume.restrict (Ici (0 : SpatialScaleVector i))) := by
   simp_rw [spatial_cardinal_weight_scale_product]
@@ -105,8 +114,8 @@ theorem spatial_cardinal_weight_orthant_integrable {d n : ℕ} (i : Fin n)
     (μ := fun _j : SpatialScaleIndex i => volume.restrict (Ici (0 : ℝ)))
     (fun j => spatial_unary_scale_integrable lam hlam (U i) (U j.val))
 
-theorem spatial_cardinal_weight_orthant_nonnegative {d n : ℕ} (i : Fin n)
-    (lam : ℝ) (U : Fin n → Covariate d) :
+theorem spatial_cardinal_weight_orthant_nonnegative 
+    (U : Fin n → Covariate d) :
     0 ≤ᵐ[volume.restrict (Ici (0 : SpatialScaleVector i))]
       (fun t => spatialCardinalWeight lam (spatialScaleExtend i t) U i) := by
   have hae : ∀ᵐ t : SpatialScaleVector i ∂volume.restrict (Ici (0 : SpatialScaleVector i)),
@@ -119,8 +128,8 @@ theorem spatial_cardinal_weight_orthant_nonnegative {d n : ℕ} (i : Fin n)
   unfold spatialUnaryWeight
   positivity
 
-theorem spatial_cardinal_weight_orthant_integral_le_one {d n : ℕ} (i : Fin n)
-    (lam : ℝ) (hlam : 0 ≤ lam) (U : Fin n → Covariate d) :
+theorem spatial_cardinal_weight_orthant_integral_le_one 
+    (hlam : 0 ≤ lam) (U : Fin n → Covariate d) :
     (∫ t, spatialCardinalWeight lam (spatialScaleExtend i t) U i
       ∂volume.restrict (Ici (0 : SpatialScaleVector i))) ≤ 1 := by
   simp_rw [spatial_cardinal_weight_scale_product]
@@ -142,7 +151,7 @@ theorem spatial_scale_measure_le_orthant {n : ℕ} (i : Fin n) (T : ℝ) :
 
 /-- The genuine integrated weights belong to [0,1], by the exact
 unary Gamma normalization and finite-product Fubini. -/
-theorem integrated_cardinal_weight_mem_unit {d n : ℕ} (i : Fin n)
+theorem integrated_cardinal_weight_mem_unit 
     (lam T : ℝ) (hlam : 0 ≤ lam) (U : Fin n → Covariate d) :
     integratedCardinalWeight lam T U i ∈ Icc (0 : ℝ) 1 := by
   have hnn := spatial_cardinal_weight_orthant_nonnegative i lam U
@@ -159,7 +168,10 @@ theorem spatial_scale_domain_mono {n : ℕ} (i : Fin n) {L T : ℝ}
   exact (show spatialScaleLogSum i t ≤ 2 * Real.log L from ht.2).trans
     (mul_le_mul_of_nonneg_left (Real.log_le_log hL hLT) (by norm_num))
 
-theorem spatial_squared_distance_pos {d : ℕ} (x y : Covariate d) (hxy : x ≠ y) :
+section
+variable {d : ℕ}
+
+theorem spatial_squared_distance_pos (x y : Covariate d) (hxy : x ≠ y) :
     0 < spatialSquaredDistance x y := by
   have he : ∃ r, x r ≠ y r := by
     by_contra hn
@@ -169,7 +181,7 @@ theorem spatial_squared_distance_pos {d : ℕ} (x y : Covariate d) (hxy : x ≠ 
   apply Finset.sum_pos' (fun _ _ => sq_nonneg _)
   exact ⟨r, Finset.mem_univ r, sq_pos_of_ne_zero (sub_ne_zero.mpr (Ne.symm hr))⟩
 
-theorem spatial_unary_scale_integral_eq_one {d : ℕ} (lam : ℝ) (hlam : 0 < lam)
+theorem spatial_unary_scale_integral_eq_one (lam : ℝ) (hlam : 0 < lam)
     (x y : Covariate d) (hxy : x ≠ y) :
     (∫ t in Ici (0 : ℝ), spatialUnaryWeight lam t x y) = 1 := by
   have ha : 0 < lam * spatialSquaredDistance x y := mul_pos hlam (spatial_squared_distance_pos x y hxy)
@@ -180,10 +192,12 @@ theorem spatial_unary_scale_integral_eq_one {d : ℕ} (lam : ℝ) (hlam : 0 < la
     ring
   rw [he, unary_scale_density_integral _ ha.le, ite_eq_right ha.ne']
 
+end
+
 /-- Away from coincident observations the full untruncated scale
 measure has exact weight one. -/
-theorem spatial_cardinal_weight_orthant_integral_eq_one {d n : ℕ} (i : Fin n)
-    (lam : ℝ) (hlam : 0 < lam) (U : Fin n → Covariate d)
+theorem spatial_cardinal_weight_orthant_integral_eq_one 
+    (hlam : 0 < lam) (U : Fin n → Covariate d)
     (hU : ∀ j, j ≠ i → U i ≠ U j) :
     (∫ t, spatialCardinalWeight lam (spatialScaleExtend i t) U i
       ∂volume.restrict (Ici (0 : SpatialScaleVector i))) = 1 := by
@@ -195,7 +209,10 @@ theorem spatial_cardinal_weight_orthant_integral_eq_one {d n : ℕ} (i : Fin n)
   intro j _
   exact spatial_unary_scale_integral_eq_one lam hlam (U i) (U j.val) (hU j.val j.property)
 
-theorem spatial_scale_domain_one {n : ℕ} (i : Fin n) : spatialScaleDomain i 1 = {0} := by
+section
+variable {n : ℕ}
+
+theorem spatial_scale_domain_one (i : Fin n) : spatialScaleDomain i 1 = {0} := by
   ext t
   constructor
   · intro ht
@@ -211,7 +228,7 @@ theorem spatial_scale_domain_one {n : ℕ} (i : Fin n) : spatialScaleDomain i 1 
     · change (0 : SpatialScaleVector i) ≤ 0; exact le_rfl
     · simp [spatialScaleLogSum]
 
-theorem spatial_scale_measure_one_eq_zero {n : ℕ} (hn : 2 ≤ n) (i : Fin n) :
+theorem spatial_scale_measure_one_eq_zero (hn : 2 ≤ n) (i : Fin n) :
     spatialScaleMeasure i 1 = 0 := by
   have hni : Nontrivial (Fin n) := Fin.nontrivial_iff_two_le.mpr hn
   letI := hni
@@ -220,6 +237,8 @@ theorem spatial_scale_measure_one_eq_zero {n : ℕ} (hn : 2 ≤ n) (i : Fin n) :
   unfold spatialScaleMeasure
   rw [spatial_scale_domain_one]
   exact Measure.restrict_eq_zero.mpr (measure_singleton (0 : SpatialScaleVector i))
+
+end
 
 theorem integrated_cardinal_matrix_one_eq_zero {d n D : ℕ} (hn : 2 ≤ n)
     (lam : ℝ) (U : Fin n → Covariate d) : integratedCardinalMatrix (D := D) lam 1 U = 0 := by
@@ -231,7 +250,7 @@ theorem integrated_cardinal_matrix_one_eq_zero {d n D : ℕ} (hn : 2 ≤ n)
 /-- The true interpolation defect is exactly the complementary scale
 integral off the collision set. This supplies the object to which the
 Gamma-tail spatial estimates apply. -/
-theorem integrated_cardinal_weight_defect_eq_complement {d n : ℕ} (i : Fin n)
+theorem integrated_cardinal_weight_defect_eq_complement 
     (lam T : ℝ) (hlam : 0 < lam) (U : Fin n → Covariate d)
     (hU : ∀ j, j ≠ i → U i ≠ U j) :
     1 - integratedCardinalWeight lam T U i =

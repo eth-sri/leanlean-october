@@ -11,8 +11,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 800000
 
 theorem source_exteriorTau_nonneg {a b : ℝ} (ha : 0 < a) (hab : a < b) :
     0 ≤ exteriorTau ((a+b)/(b-a)) := by
@@ -63,7 +61,9 @@ def sourceActivityConstant (d q : ℕ) (C B lam : ℝ) : ℝ :=
   B^2 * sourceResponseCost q C * (1+512*(d : ℝ)) + B * sourceResponseCost q C +
     4 * higherBandGeometricPrefactor B (higherBandInterpolationBase d lam) (sourceResponseCost q C)
 
-theorem sourceActivityConstant_nonneg (d q : ℕ) (C B lam : ℝ) (hB : 0 ≤ B) :
+variable (d q : ℕ) (C B lam : ℝ)
+
+theorem sourceActivityConstant_nonneg (hB : 0 ≤ B) :
     0 ≤ sourceActivityConstant d q C B lam := by
   unfold sourceActivityConstant higherBandGeometricPrefactor higherBandInterpolationBase sourceResponseCost
   positivity

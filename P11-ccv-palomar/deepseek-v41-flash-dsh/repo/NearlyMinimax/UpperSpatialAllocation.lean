@@ -11,31 +11,34 @@ noncomputable section
 open Filter
 open scoped Topology
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 600000
 
-def paperAllocatedDepth {d : ℕ} (C : ModelConstants d) (H x : ℝ) : ℝ :=
+variable {d : ℕ} (C : ModelConstants d)
+
+def paperAllocatedDepth (C : ModelConstants d) (H x : ℝ) : ℝ :=
   roundedTerminalDepth (paperDyadicStep C) (Real.log x)
     (candidateTerminalDepth (paperUpperSaddle C) (paperUpperShift C) H (paperDegreeReserve C) x)
 
-def paperAllocatedLogSide {d : ℕ} (C : ModelConstants d) (H x : ℝ) : ℝ :=
+def paperAllocatedLogSide (C : ModelConstants d) (H x : ℝ) : ℝ :=
   spatialBalanceLog C.smoothness d (Real.log x) (paperAllocatedDepth C H x)
 
-def paperAllocatedFinestLevel {d : ℕ} (C : ModelConstants d) (H x : ℝ) : ℕ :=
+def paperAllocatedFinestLevel (C : ModelConstants d) (H x : ℝ) : ℕ :=
   dyadicLevelFromLogSide (paperAllocatedLogSide C H x)
 
-def paperAllocatedSide {d : ℕ} (C : ModelConstants d) (H x : ℝ) : ℝ :=
+def paperAllocatedSide (C : ModelConstants d) (H x : ℝ) : ℝ :=
   dyadicRoundedSide (paperAllocatedLogSide C H x)
 
-def paperAllocatedRiskScale {d : ℕ} (C : ModelConstants d) (H x : ℝ) : ℝ :=
+def paperAllocatedRiskScale (C : ModelConstants d) (H x : ℝ) : ℝ :=
   Real.exp (-rateExponent C.smoothness d * Real.log x -
     paperUpperRiskDepthCoefficient C * paperAllocatedDepth C H x)
 
-theorem paperAllocatedDepth_eq_level {d : ℕ} (C : ModelConstants d) (H x : ℝ) :
+section
+variable (C : ModelConstants d)
+
+theorem paperAllocatedDepth_eq_level (H x : ℝ) :
     paperAllocatedDepth C H x = paperDyadicStep C *
       (paperDyadicTerminalLevel C (paperUpperSaddle C) (paperUpperShift C) H x : ℝ) - Real.log x := rfl
 
-theorem eventually_paper_allocated_depth_le_width {d : ℕ} (C : ModelConstants d)
+theorem eventually_paper_allocated_depth_le_width 
     (hreg : highSmoothnessRegime C) {H : ℝ} (hH : 0 < H) :
     ∀ᶠ x : ℝ in atTop, paperAllocatedDepth C H x ≤
       allocationWidth (paperUpperSaddle C) (paperUpperShift C) x := by
@@ -49,19 +52,17 @@ theorem eventually_paper_allocated_depth_le_width {d : ℕ} (C : ModelConstants 
     Real.log_nonneg (by linarith only [hS])
   have hlogH : 0 ≤ Real.log (H * allocationWidth (paperUpperSaddle C) (paperUpperShift C) x) :=
     Real.log_nonneg hHS
-  have hm := mul_nonneg (paperDegreeReserve_pos C hreg.1).le hlog
   unfold candidateTerminalDepth at ht
-  exact ht.trans (by linarith only [hlogH, hm])
+  exact ht.trans (by linarith only [hlogH, (mul_nonneg (paperDegreeReserve_pos C hreg.1).le hlog)])
 
 /-- The actual finest pair grid refines the allocated terminal pilot grid. -/
-theorem eventually_paper_allocated_grid_guard {d : ℕ} (C : ModelConstants d)
+theorem eventually_paper_allocated_grid_guard 
     (hreg : highSmoothnessRegime C) {H : ℝ} (hH : 0 < H) :
     ∀ᶠ x : ℝ in atTop,
       paperAllocatedLogSide C H x ≤ 0 ∧
       paperDyadicTerminalLevel C (paperUpperSaddle C) (paperUpperShift C) H x ≤
         paperAllocatedFinestLevel C H x := by
-  have hw := allocationWidth_tendsto_atTop (paperUpperSaddle_pos C hreg) (paperUpperShift C)
-  filter_upwards [hw.eventually (eventually_ge_atTop (2 : ℝ)),
+  filter_upwards [(allocationWidth_tendsto_atTop (paperUpperSaddle_pos C hreg) (paperUpperShift C)).eventually (eventually_ge_atTop (2 : ℝ)),
     Real.tendsto_log_atTop.eventually (eventually_ge_atTop (0 : ℝ)),
     eventually_paper_allocated_depth_le_width C hreg hH] with x hS hL hT
   have hb := quadratic_allocation_budget (paperDegreeSlope_pos C hreg.1)
@@ -77,13 +78,11 @@ theorem eventually_paper_allocated_grid_guard {d : ℕ} (C : ModelConstants d)
       _ = (paperDegreeSlope C * paperUpperSaddle C ^ 2 / 4) * Real.log x := by ring
       _ = _ := by rw [paper_upper_saddle_budget_identity C hreg]
   rw [hbase] at hb
-  have hm := mul_le_mul_of_nonneg_left hT (paperUpperEta_pos C).le
   have hquad : 0 ≤ paperDegreeSlope C *
-      (allocationWidth (paperUpperSaddle C) (paperUpperShift C) x) ^ 2 / 4 := by
-    exact div_nonneg (mul_nonneg (paperDegreeSlope_pos C hreg.1).le (sq_nonneg _)) (by norm_num)
+      (allocationWidth (paperUpperSaddle C) (paperUpperShift C) x) ^ 2 / 4 := div_nonneg (mul_nonneg (paperDegreeSlope_pos C hreg.1).le (sq_nonneg _)) (by norm_num)
   have hn : -2 * paperUpperVarpi C * Real.log x +
       paperUpperEta C * paperAllocatedDepth C H x ≤ 0 := by
-    nlinarith only [hb, hm, hquad, hS]
+    nlinarith only [hb, (mul_le_mul_of_nonneg_left hT (paperUpperEta_pos C).le), hquad, hS]
   rw [← paper_spatial_reserve_identity C hreg] at hn
   have hd : 0 < (d : ℝ) := Nat.cast_pos.mpr C.dimension_pos
   have hlevel : Real.log x + paperAllocatedDepth C H x =
@@ -106,7 +105,9 @@ theorem eventually_paper_allocated_grid_guard {d : ℕ} (C : ModelConstants d)
     mul_nonneg (Real.log_pos (by norm_num)).le (Nat.cast_nonneg _)
   exact ⟨by linarith only [hg, hnonneg], dyadicRoundedLevel_ge hg⟩
 
-theorem paper_allocated_pair_noise_bound {d : ℕ} (C : ModelConstants d)
+end
+
+theorem paper_allocated_pair_noise_bound 
     (hreg : highSmoothnessRegime C) (H x : ℝ) (hg : paperAllocatedLogSide C H x ≤ 0) :
     Real.exp (-Real.log x - (d : ℝ) / 2 * dyadicRoundedLogSide (paperAllocatedLogSide C H x)) ≤
       Real.exp ((d : ℝ) / 2 * Real.log 2) * paperAllocatedRiskScale C H x := by
@@ -115,7 +116,7 @@ theorem paper_allocated_pair_noise_bound {d : ℕ} (C : ModelConstants d)
   exact h
 
 /-- The displayed stretched exponential and logarithmic gap are exact. -/
-theorem paper_allocated_risk_scale_bracket {d : ℕ} (C : ModelConstants d)
+theorem paper_allocated_risk_scale_bracket 
     (hreg : highSmoothnessRegime C) {H : ℝ} (hH : 0 < H) :
     ∃ A B : ℝ, 0 < A ∧ 0 < B ∧ ∀ᶠ x : ℝ in atTop,
       A * Real.exp (-rateExponent C.smoothness d * Real.log x -

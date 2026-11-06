@@ -12,8 +12,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1800000
 attribute [local instance] Classical.propDecidable
 attribute [local irreducible] highUnionSourceDensity highUnionSourceState historyMarkedAppend
 
@@ -53,13 +51,9 @@ theorem completeSource_original_response_exact_and_low_counts {d : ℕ} [NeZero 
   let g := fun i : Fin n => highLocalFieldWithout d k D eta c j (x i)
   let w := fun i : Fin n => highPeriodicTensor d k j (x i)
   have hfr1 := hfr0.trans hfr
-  have G := completeSourceRows_guards C k D M q hD hq hM Cfr lam ell N mu hfr1 hell hellN
-  have H := hguards k D M q hk0 horder hk hD hq hM Cfr lam ell N mu cf hfr hell hellN hcf heta h
   have hmass (v : HighFrameIndex d D → ℝ) (hv : ∑ γ, |v γ| ≤ Cfr⁻¹) (i : Fin n) (b : Fin 3) :
       0 ≤ ternaryMass Q.a
-        (coefficientRegression eta g w (fun u : Fin n => highLocalFrameFeature k j (x u)) v i) V b := by
-    have hf := H.ternary_floor Q hV j v hv (x i) b
-    exact Q.c_pos.le.trans hf
+        (coefficientRegression eta g w (fun u : Fin n => highLocalFrameFeature k j (x u)) v i) V b := Q.c_pos.le.trans ((hguards k D M q hk0 horder hk hD hq hM Cfr lam ell N mu cf hfr hell hellN hcf heta h).ternary_floor Q hV j v hv (x i) b)
   have he := completeSourceRawNumerator_eq_canonical C hD hq hM Cfr lam ell N mu
     hfr1 hell hellN j h x hx Q.a V eta Q.a_pos.ne' g w hmass y
   change highUnionSourceMarkedNumerator C R n Q.a V eta j h x y =
@@ -69,7 +63,7 @@ theorem completeSource_original_response_exact_and_low_counts {d : ℕ} [NeZero 
   rw [he]
   obtain ⟨ha,hab⟩ := high_source_interval_numeric C (M : ℝ) hM
   have hp (i : Fin n) : p i ∈ Icc (C.densityLower+1/(M : ℝ)) (C.densityUpper-1/(M : ℝ)) :=
-    highUnionSourceDensity_interval C R G h (x i)
+    highUnionSourceDensity_interval C R (completeSourceRows_guards C k D M q hD hq hM Cfr lam ell N mu hfr1 hell hellN) h (x i)
   have hU (i : Fin n) (r : Fin d) : |U i r| ≤ 2 :=
     (highLocalCoordinates_abs_le_one d k j (x i) r).trans (by norm_num)
   have hcases : n = 0 ∨ n = 1 := by omega

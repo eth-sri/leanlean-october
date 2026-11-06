@@ -43,7 +43,9 @@ theorem sameLabelKernel_memLp : MemLp (sameLabelKernel label) 2 (μ.prod μ) := 
   unfold sameLabelKernel
   split_ifs <;> norm_num
 
-theorem sameLabelKernel_symmetric (z : X × X) :
+variable (z : X × X)
+
+theorem sameLabelKernel_symmetric :
     sameLabelKernel label z.swap = sameLabelKernel label z := by
   simp only [sameLabelKernel, Prod.fst_swap, Prod.snd_swap, eq_comm]
 
@@ -82,7 +84,10 @@ theorem sameLabelKernel_row_square_integral :
 
 end Partition
 
-theorem finite_probability_second_moment_le {B : Type*} [Fintype B]
+section
+variable {B : Type*} [Fintype B]
+
+theorem finite_probability_second_moment_le 
     (p : B → ℝ) (cap : ℝ) (hp : ∀ c, 0 ≤ p c) (hsum : ∑ c, p c = 1)
     (hcap : ∀ c, p c ≤ cap) : ∑ c, p c ^ 2 ≤ cap := by
   calc
@@ -92,7 +97,7 @@ theorem finite_probability_second_moment_le {B : Type*} [Fintype B]
       nlinarith [mul_le_mul_of_nonneg_right (hcap c) (hp c)]
     _ = cap := by rw [← Finset.mul_sum, hsum, mul_one]
 
-theorem finite_probability_third_moment_le {B : Type*} [Fintype B]
+theorem finite_probability_third_moment_le 
     (p : B → ℝ) (cap : ℝ) (hp : ∀ c, 0 ≤ p c) (hsum : ∑ c, p c = 1)
     (hcap : ∀ c, p c ≤ cap) (hc : 0 ≤ cap) : ∑ c, p c ^ 3 ≤ cap ^ 2 := by
   calc
@@ -105,10 +110,14 @@ theorem finite_probability_third_moment_le {B : Type*} [Fintype B]
       (finite_probability_second_moment_le p cap hp hsum hcap) hc
     _ = cap ^ 2 := by ring
 
-def regularGridCollisionMass {d : ℕ} (θ : RegressionParameter d) (k : ℕ) (hk : 0 < k) : ℝ :=
+end
+
+variable {d : ℕ} (C : ModelConstants d)
+
+def regularGridCollisionMass (θ : RegressionParameter d) (k : ℕ) (hk : 0 < k) : ℝ :=
   ∑ c, regularGridProbability θ k hk c ^ 2
 
-theorem regularGridCollisionMass_lower {d : ℕ} (C : ModelConstants d)
+theorem regularGridCollisionMass_lower 
     (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k) :
     1 / (k : ℝ) ^ d ≤ regularGridCollisionMass θ k hk := by
   have hmass := partitionPairMass_lower (regularGridProbability θ k hk)
@@ -117,13 +126,13 @@ theorem regularGridCollisionMass_lower {d : ℕ} (C : ModelConstants d)
   have hkr : 0 < (k : ℝ) := by exact_mod_cast hk
   exact (div_le_iff₀ (pow_pos hkr d)).2 (by simpa only [mul_comm, regularGridCollisionMass] using hmass)
 
-theorem regularGridCollisionMass_upper {d : ℕ} (C : ModelConstants d)
+theorem regularGridCollisionMass_upper 
     (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k) :
     regularGridCollisionMass θ k hk ≤ C.densityUpper / (k : ℝ) ^ d :=
   finite_probability_second_moment_le _ _ (regularGridProbability_nonneg θ k hk)
     (regularGridProbability_sum C θ hθ k hk) (regularGridProbability_cap C θ hθ k hk)
 
-theorem regularGridCollisionRowEnergy_upper {d : ℕ} (C : ModelConstants d)
+theorem regularGridCollisionRowEnergy_upper 
     (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k) :
     (∑ c, regularGridProbability θ k hk c ^ 3) ≤
       (C.densityUpper / (k : ℝ) ^ d) ^ 2 := by

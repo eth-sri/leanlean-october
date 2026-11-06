@@ -15,8 +15,6 @@ noncomputable section
 open MeasureTheory Set Filter
 open scoped BigOperators Topology
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 2000000
 attribute [local instance] Classical.propDecidable
 attribute [local irreducible] sourceRowData highRowTotalMass
   highUnionSourceDensity highUnionSourceState historyMarkedAppend

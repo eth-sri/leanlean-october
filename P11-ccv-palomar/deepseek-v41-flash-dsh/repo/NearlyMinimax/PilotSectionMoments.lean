@@ -9,7 +9,6 @@ public import NearlyMinimax.PilotFields
 noncomputable section
 open MeasureTheory
 namespace NearlyMinimax.PilotFields
-set_option backward.isDefEq.respectTransparency false
 
 variable {Ω W H : Type*} [MeasurableSpace Ω] [MeasurableSpace W]
 variable [NormedAddCommGroup H] [InnerProductSpace ℝ H]

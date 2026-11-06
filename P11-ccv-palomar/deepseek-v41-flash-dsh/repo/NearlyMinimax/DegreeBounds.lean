@@ -19,13 +19,15 @@ open scoped Topology
 
 namespace NearlyMinimax
 
-theorem sq_div_sqrt_eq_mul_sqrt {L : ℝ} (hL : 0 < L) :
+variable {L : ℝ}
+
+theorem sq_div_sqrt_eq_mul_sqrt (hL : 0 < L) :
     L ^ 2 / Real.sqrt L = L * Real.sqrt L := by
   apply (div_eq_iff (Real.sqrt_pos.2 hL).ne').2
   rw [mul_assoc, Real.mul_self_sqrt hL.le]
   ring
 
-theorem mul_sqrt_eq_three_halves_power {L : ℝ} (hL : 0 < L) :
+theorem mul_sqrt_eq_three_halves_power (hL : 0 < L) :
     L * Real.sqrt L = L ^ (3 / 2 : ℝ) := by
   calc
     L * Real.sqrt L = L ^ (1 : ℝ) * L ^ (1 / 2 : ℝ) := by rw [Real.rpow_one, Real.sqrt_eq_rpow]

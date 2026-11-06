@@ -19,7 +19,6 @@ open Set MeasureTheory
 
 namespace NearlyMinimax
 
-set_option backward.isDefEq.respectTransparency false
 
 /-- Projection of a real-valued statistic to an interval. -/
 def clip (lo hi x : ℝ) : ℝ := max lo (min hi x)
@@ -31,12 +30,13 @@ theorem clip_lipschitz (lo hi : ℝ) : LipschitzWith 1 (clip lo hi) := by
 
 /-- The clipped statistic lies in the designated interval. -/
 theorem clip_mem_Icc {lo hi x : ℝ} (hinterval : lo ≤ hi) :
-    clip lo hi x ∈ Icc lo hi := by
-  exact ⟨le_max_left _ _, max_le hinterval (min_le_left _ _)⟩
+    clip lo hi x ∈ Icc lo hi := ⟨le_max_left _ _, max_le hinterval (min_le_left _ _)⟩
+
+variable {lo hi V x : ℝ}
 
 /-- Any clipped statistic and interval-valued target are separated by
 at most the diameter of the interval. -/
-theorem clip_error_le_diameter {lo hi V x : ℝ} (hlo : lo ≤ V) (hhi : V ≤ hi) :
+theorem clip_error_le_diameter (hlo : lo ≤ V) (hhi : V ≤ hi) :
     |clip lo hi x - V| ≤ hi - lo := by
   have hc := clip_mem_Icc (x := x) (hlo.trans hhi)
   apply abs_le.mpr
@@ -48,7 +48,7 @@ theorem clip_target {lo hi V : ℝ} (hlo : lo ≤ V) (hhi : V ≤ hi) :
   simp [clip, min_eq_right hhi, max_eq_right hlo]
 
 /-- Clipping cannot increase the absolute error at an admissible target. -/
-theorem clip_error_le {lo hi V x : ℝ} (hlo : lo ≤ V) (hhi : V ≤ hi) :
+theorem clip_error_le (hlo : lo ≤ V) (hhi : V ≤ hi) :
     |clip lo hi x - V| ≤ |x - V| := by
   by_cases hxlo : x ≤ lo
   · have hxhi : x ≤ hi := hxlo.trans (hlo.trans hhi)
@@ -101,8 +101,7 @@ theorem stabilized_ratio_error {lo hi V N D ED a : ℝ}
     have htotal : 0 ≤ |N - V * D| + hi * |D - ED| := by positivity
     calc
       |N - V * max D a| / max D a ≤
-          (|N - V * D| + hi * |D - ED|) / max D a := by
-        exact div_le_div_of_nonneg_right hnum hmax.le
+          (|N - V * D| + hi * |D - ED|) / max D a := div_le_div_of_nonneg_right hnum hmax.le
       _ ≤ (|N - V * D| + hi * |D - ED|) / a :=
         div_le_div_of_nonneg_left htotal ha (le_max_right D a)
       _ = _ := by ring

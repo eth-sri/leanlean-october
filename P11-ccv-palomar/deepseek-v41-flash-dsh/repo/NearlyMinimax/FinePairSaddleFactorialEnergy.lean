@@ -11,9 +11,10 @@ absorbed into the factorial-tail constant before the saddle shift is chosen. -/
 noncomputable section
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
 
-theorem fine_pair_alias_cutoff_inverse {d : ℕ} (hd : 4 ≤ d)
+variable {d : ℕ}
+
+theorem fine_pair_alias_cutoff_inverse (hd : 4 ≤ d)
     {N ell c0 D : ℝ} (hN : 0 < N) (hell : ell=N*Real.exp (-c0*D)) :
     1/ell^(d-4) = N^(4-(d : ℝ))*Real.exp (c0*D*((d : ℝ)-4)) := by
   have hnat : ((d-4 : ℕ) : ℝ) = (d : ℝ)-4 := by
@@ -35,8 +36,7 @@ theorem fine_pair_alias_cutoff_scale_le {d M : ℕ} (hd : 4 ≤ d)
     (hc0 : 0 ≤ c0) (hK : 0 ≤ K) (htau : tau ≤ c0) (hD : D ≤ K*M) :
     Real.exp (2*tau*M)/ell^(d-4) ≤
       N^(4-(d : ℝ))*Real.exp (finePairSaddleAliasExponent d c0 K*M) := by
-  rw [div_eq_mul_inv, ← one_div, fine_pair_alias_cutoff_inverse hd hN hell]
-  rw [← mul_assoc, mul_comm (Real.exp _) (N^_), mul_assoc, ← Real.exp_add]
+  rw [div_eq_mul_inv, ← one_div, fine_pair_alias_cutoff_inverse hd hN hell, ← mul_assoc, mul_comm (Real.exp _) (N^_), mul_assoc, ← Real.exp_add]
   apply mul_le_mul_of_nonneg_left _ (Real.rpow_nonneg hN.le _)
   apply Real.exp_le_exp.mpr
   have hdR : (4 : ℝ) ≤ d := by exact_mod_cast hd
@@ -50,7 +50,7 @@ def finePairSaddleAliasFactorialConstant (d q : ℕ) (aD bD C a rho c0 K Cs : �
     (finePairUniformSpatialPrefactor d q aD bD C a rho c0 * 6*(2 : ℝ)^d*spatialInverseFourConstant d)
     Cs (finePairAliasGeometricBase d bD*2^8) (finePairSaddleAliasExponent d c0 K)
 
-theorem finite_fine_pair_saddle_alias_budget_le {d : ℕ} (hd : 4 ≤ d)
+theorem finite_fine_pair_saddle_alias_budget_le (hd : 4 ≤ d)
     {aD bD ad bd c0 K : ℝ} (haD : 0 < aD) (ha : aD ≤ ad) (hb : bd ≤ bD)
     (hab : ad < bd) (htau : exteriorTau ((ad+bd)/(bd-ad)) ≤ c0)
     (hc0 : 0 ≤ c0) (hK : 0 ≤ K) (M D q J : ℕ)
@@ -68,7 +68,7 @@ theorem finite_fine_pair_saddle_alias_budget_le {d : ℕ} (hd : 4 ≤ d)
     dsimp [A]
     positivity [finePairUniformSpatialPrefactor_nonneg d q aD bD C a rho c0,
       spatialInverseFourConstant_nonneg d]
-  have hBase : 0 ≤ finePairAliasGeometricBase d bD := finePairAliasGeometricBase_nonneg d bD
+  have hBase := finePairAliasGeometricBase_nonneg d bD
   have hL : 0 ≤ finePairSaddleAliasExponent d c0 K := by
     unfold finePairSaddleAliasExponent
     have hdR : (4 : ℝ) ≤ d := by exact_mod_cast hd

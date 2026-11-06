@@ -11,7 +11,6 @@ noncomputable section
 open MeasureTheory
 open scoped ENNReal
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
 
 theorem two_stage_mean_squared_bound {P X : Type*}
     [MeasurableSpace P] [MeasurableSpace X]
@@ -45,10 +44,9 @@ theorem two_stage_mean_squared_bound {P X : Type*}
       intro z
       have hs : (T z - c) ^ 2 ≤ 2 * (T z - L z.1) ^ 2 + 2 * (L z.1 - c) ^ 2 := by
         nlinarith [sq_nonneg ((T z - L z.1) - (L z.1 - c))]
-      have he := ENNReal.ofReal_le_ofReal hs
       simpa only [f, g, ENNReal.ofReal_add (by positivity : 0 ≤ 2 * (T z - L z.1) ^ 2)
         (by positivity : 0 ≤ 2 * (L z.1 - c) ^ 2),
-        ENNReal.ofReal_mul (by norm_num : (0 : ℝ) ≤ 2), ENNReal.ofReal_ofNat] using he
+        ENNReal.ofReal_mul (by norm_num : (0 : ℝ) ≤ 2), ENNReal.ofReal_ofNat] using (ENNReal.ofReal_le_ofReal hs)
     _ = 2 * (∫⁻ z, f z ∂μ.prod ν) + 2 * (∫⁻ z, g z ∂μ.prod ν) := by
       have hf2 : Measurable (fun z : P × X => (2 : ℝ≥0∞) * f z) := measurable_const.mul hf
       rw [lintegral_add_left hf2, lintegral_const_mul _ hf, lintegral_const_mul _ hg]

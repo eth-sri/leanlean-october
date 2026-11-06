@@ -13,7 +13,6 @@ open Set MeasureTheory
 open scoped BigOperators
 namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency true
-set_option maxHeartbeats 1500000
 attribute [local instance] Classical.propDecidable
 
 def sourceRowSignedMeasure (d k D M q : ℕ) (a b C lam ℓ N μ : ℝ) :

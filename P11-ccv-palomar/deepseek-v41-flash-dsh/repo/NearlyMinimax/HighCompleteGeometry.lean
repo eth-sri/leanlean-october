@@ -12,8 +12,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 attribute [local instance] Classical.propDecidable
 
  def completeSourceGeometryEnvelope {d : ℕ} (D M R q : ℕ)
@@ -25,8 +23,10 @@ attribute [local instance] Classical.propDecidable
       completeSourceHigherGeometryEnvelope (D := D) aD bD c0 ell N mu M R q C a rho eta U
     else (3*Chi^2)^(n+3)*eta^4*(Bl+1)^2
 
- theorem completeSourceGeometryEnvelope_nonneg {d : ℕ} (D M R q : ℕ)
-    (aD bD c0 ell N mu C a rho eta Chi Bl : ℝ) (n : ℕ) (U : Fin n → Covariate d) :
+ variable {d : ℕ} (D M R q : ℕ) (aD bD c0 ell N mu C a rho eta Chi Bl : ℝ)
+
+theorem completeSourceGeometryEnvelope_nonneg 
+    (n : ℕ) (U : Fin n → Covariate d) :
     0 ≤ completeSourceGeometryEnvelope D M R q aD bD c0 ell N mu C a rho eta Chi Bl n U := by
   rcases n with _|_|_|n
   · norm_num [completeSourceGeometryEnvelope]
@@ -37,7 +37,7 @@ attribute [local instance] Classical.propDecidable
     · exact completeSourceHigherGeometryEnvelope_nonneg _ _ _ _ _ _ _ _ _ _ _ _ _ _
     · positivity
 
- theorem completeSourceGeometryEnvelope_integrable {d : ℕ} [NeZero d] (hd : 5 ≤ d)
+ theorem completeSourceGeometryEnvelope_integrable [NeZero d] (hd : 5 ≤ d)
     (D M R q : ℕ) (aD bD c0 ell N mu C a rho eta Chi Bl : ℝ)
     (hell : 1 ≤ ell) (hN : ell ≤ N) (n : ℕ) :
     Integrable (completeSourceGeometryEnvelope (d := d) D M R q aD bD c0 ell N mu C a rho eta Chi Bl n)
@@ -54,13 +54,13 @@ attribute [local instance] Classical.propDecidable
     · exact completeSourceHigherGeometryEnvelope_integrable hd (by omega) _ _ _ _ _ _ _ _ _ _ _ _ _ hell hN
     · exact integrable_const _
 
- theorem completeSourceGeometryEnvelope_pair_integral_le {d : ℕ} (D M R q : ℕ)
-    (aD bD c0 ell N mu C a rho eta Chi Bl : ℝ) (hd : 0 < d) (hN : 0 < N) :
+ theorem completeSourceGeometryEnvelope_pair_integral_le 
+    (hd : 0 < d) (hN : 0 < N) :
     (∫ U, completeSourceGeometryEnvelope (d := d) D M R q aD bD c0 ell N mu C a rho eta Chi Bl 2 U
       ∂fullSpatialPatchDesign d 2) ≤ 9*finePairCountTwoSpatialBudget d (bD-(M : ℝ)⁻¹) a rho eta N :=
     (finePairCountTwoGeometryEnvelope_integrable_and_le hd _ _ _ _ hN).2
 
- theorem completeSourceGeometryEnvelope_exterior_integral {d : ℕ} (D M R q n : ℕ)
+ theorem completeSourceGeometryEnvelope_exterior_integral (D M R q n : ℕ)
     (aD bD c0 ell N mu C a rho eta Chi Bl : ℝ) (hn : D < n+3) :
     (∫ U, completeSourceGeometryEnvelope (d := d) D M R q aD bD c0 ell N mu C a rho eta Chi Bl (n+3) U
       ∂fullSpatialPatchDesign d (n+3)) =
@@ -70,7 +70,7 @@ attribute [local instance] Classical.propDecidable
   rw [pow_mul, mul_pow]
   ring
 
- theorem fineFieldGeometryEnvelope_count_three {d : ℕ} (ad bd T0 N : ℝ)
+ theorem fineFieldGeometryEnvelope_count_three (ad bd T0 N : ℝ)
     (M q : ℕ) (C a rho eta : ℝ) (U : Fin 3 → Covariate d) :
     fineFieldGeometryEnvelope ad bd T0 N M q C a rho eta U = 0 := by
   have hs : ((Finset.univ : Finset (Fin 3)).powerset).filter

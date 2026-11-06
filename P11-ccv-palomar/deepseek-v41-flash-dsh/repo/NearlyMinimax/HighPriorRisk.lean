@@ -13,7 +13,6 @@ noncomputable section
 open MeasureTheory ProbabilityTheory Filter Set
 open scoped ENNReal
 namespace NearlyMinimax
-set_option maxHeartbeats 1000000
 set_option backward.isDefEq.respectTransparency true
 variable {J : Type*} [Fintype J] [LinearOrder J]
 attribute [local irreducible] highMarginalRealScore highRealSampleKernel historyMarkedPrior

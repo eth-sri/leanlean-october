@@ -14,8 +14,11 @@ namespace NearlyMinimax
 
 variable {J : Type*}
 
+section
+variable {independent : J → J → Prop}
+
 /-- Shape equivalence can be prefixed by any word. -/
-theorem historyShapeRelation_prefix {independent : J → J → Prop} (preword : List J)
+theorem historyShapeRelation_prefix (preword : List J)
     {u v : List J} (h : Relation.EqvGen (IndependentHistoryExchange independent) u v) :
     Relation.EqvGen (IndependentHistoryExchange independent) (preword ++ u) (preword ++ v) := by
   induction preword with
@@ -23,7 +26,7 @@ theorem historyShapeRelation_prefix {independent : J → J → Prop} (preword : 
   | cons a preword ih => exact historyShapeRelation_cons a ih
 
 /-- A piece can be moved to the last position precisely across independent following labels. -/
-theorem historyShapeRelation_move_last {independent : J → J → Prop} (a : J) (after : List J)
+theorem historyShapeRelation_move_last (a : J) (after : List J)
     (hafter : ∀ b ∈ after, independent a b) :
     Relation.EqvGen (IndependentHistoryExchange independent) (a :: after) (after ++ [a]) := by
   induction after with
@@ -34,14 +37,18 @@ theorem historyShapeRelation_move_last {independent : J → J → Prop} (a : J) 
     exact .trans _ _ _ (.rel _ _ (IndependentHistoryExchange.swap [] after a b hb))
       (historyShapeRelation_cons b hi)
 
+end
+
+variable (word : List J) (dependent : J → J → Prop) (x : WordHeapPiece word dependent)
+
 /-- The concrete word obtained by deleting one specified actual occurrence. -/
-def historyWordDeletePiece (word : List J) (dependent : J → J → Prop)
+def historyWordDeletePiece 
     (x : WordHeapPiece word dependent) : List J :=
   word.take x.position.val ++ word.drop (x.position.val + 1)
 
 /-- Every label after a maximal occurrence is independent of it. -/
-theorem wordHeap_maximal_suffix_independent (word : List J) (dependent : J → J → Prop)
-    (x : WordHeapPiece word dependent) (hx : x ∈ historyMaximalPieces Finset.univ) :
+theorem wordHeap_maximal_suffix_independent 
+    (hx : x ∈ historyMaximalPieces Finset.univ) :
     ∀ b ∈ word.drop (x.position.val + 1), ¬ dependent (wordHeapLabel x) b := by
   intro b hb hdep
   obtain ⟨k, hk, hkb⟩ := List.mem_iff_getElem.1 hb
@@ -60,8 +67,8 @@ theorem wordHeap_maximal_suffix_independent (word : List J) (dependent : J → J
   omega
 
 /-- The actual word heap deletion has exactly the shape required by append. -/
-theorem wordHeap_maximal_delete_shape (word : List J) (dependent : J → J → Prop)
-    (x : WordHeapPiece word dependent) (hx : x ∈ historyMaximalPieces Finset.univ) :
+theorem wordHeap_maximal_delete_shape 
+    (hx : x ∈ historyMaximalPieces Finset.univ) :
     Relation.EqvGen (IndependentHistoryExchange (fun a b => ¬ dependent a b))
       word (historyWordDeletePiece word dependent x ++ [wordHeapLabel x]) := by
   have hmove := historyShapeRelation_move_last (independent := fun a b => ¬ dependent a b) (wordHeapLabel x)
@@ -78,26 +85,29 @@ variable [Fintype J] [LinearOrder J]
 
 omit [Fintype J] [LinearOrder J] in
 /-- Deleting a true maximal piece is a genuine preimage of its labelled append map. -/
-theorem wordHeap_maximal_delete_append (word : List J) (dependent : J → J → Prop)
-    (x : WordHeapPiece word dependent) (hx : x ∈ historyMaximalPieces Finset.univ) :
+theorem wordHeap_maximal_delete_append 
+    (hx : x ∈ historyMaximalPieces Finset.univ) :
     historyShapeAppend dependent (wordHeapLabel x) (Quotient.mk _ (historyWordDeletePiece word dependent x)) =
       (Quotient.mk _ word : HistoryShape (fun a b => ¬ dependent a b)) := by
   rw [historyShapeAppend_mk]
   exact (Quotient.sound (wordHeap_maximal_delete_shape word dependent x hx)).symm
 
+section
+variable (j : J)
+
 /-- The concrete last occurrence in a word with an appended label. -/
-def wordHeapAppendedPiece (word : List J) (dependent : J → J → Prop) (j : J) :
+def wordHeapAppendedPiece :
     WordHeapPiece (word ++ [j]) dependent := ⟨⟨word.length, by simp⟩⟩
 
 omit [Fintype J] [LinearOrder J] in
-@[simp] theorem wordHeapAppendedPiece_label (word : List J) (dependent : J → J → Prop) (j : J) :
+@[simp] theorem wordHeapAppendedPiece_label :
     wordHeapLabel (wordHeapAppendedPiece word dependent j) = j := by
   unfold wordHeapLabel wordHeapAppendedPiece
   rw [List.get_eq_getElem, List.getElem_append_right (by rfl)]
   simp
 
 omit [Fintype J] [LinearOrder J] in
-theorem wordHeapAppendedPiece_maximal (word : List J) (dependent : J → J → Prop) (j : J) :
+theorem wordHeapAppendedPiece_maximal :
     wordHeapAppendedPiece word dependent j ∈ historyMaximalPieces Finset.univ := by
   apply mem_historyMaximalPieces.2
   refine ⟨Finset.mem_univ _, ?_⟩
@@ -110,6 +120,8 @@ theorem wordHeapAppendedPiece_maximal (word : List J) (dependent : J → J → P
   change word.length ≤ y.position.val at hlo
   change y.position.val = word.length
   omega
+
+end
 
 omit [Fintype J] [LinearOrder J] in
 /-- The terminal-shape range is exactly the genuine maximal-piece label condition. -/

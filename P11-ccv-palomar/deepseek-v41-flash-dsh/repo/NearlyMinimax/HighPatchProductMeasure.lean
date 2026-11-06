@@ -11,11 +11,11 @@ noncomputable section
 open Set MeasureTheory
 open scoped BigOperators ENNReal
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 800000
+
+variable {I : Type*} (d k : ℕ) (j : HighWindowLabels d k)
 
 /-- Finite products preserve coordinatewise domination of actual measures. -/
-theorem finite_pi_measure_mono {I : Type*} [Fintype I] {E : I → Type*}
+theorem finite_pi_measure_mono [Fintype I] {E : I → Type*}
     [∀ i, MeasurableSpace (E i)] (μ ν : (i : I) → Measure (E i))
     (h : ∀ i, μ i ≤ ν i) : Measure.pi μ ≤ Measure.pi ν := by
   have ho : (OuterMeasure.pi (fun i => (μ i).toOuterMeasure)) ≤
@@ -28,16 +28,19 @@ theorem finite_pi_measure_mono {I : Type*} [Fintype I] {E : I → Type*}
   rw [Measure.pi_def, toMeasure_apply _ _ hS, Measure.pi_def, toMeasure_apply _ _ hS]
   exact ho S
 
-def highPatchProductChart {I : Type*} (d k : ℕ) (j : HighWindowLabels d k)
+def highPatchProductChart (j : HighWindowLabels d k)
     (x : I → Covariate d) : I → Covariate d := fun i => highLocalCoordinates d k j (x i)
 
-theorem highPatchProductChart_measurable {I : Type*} (d k : ℕ) (j : HighWindowLabels d k) :
+theorem highPatchProductChart_measurable :
     Measurable (highPatchProductChart (I := I) d k j) :=
   measurable_pi_iff.mpr (fun i => (highLocalCoordinates_measurable d k j).comp (measurable_pi_apply i))
 
+section
+variable [Fintype I] {d k : ℕ} [NeZero k]
+
 /-- The true iid product-chart law is dominated by the cardinal power of
 its one-point Jacobian bound. -/
-theorem highPatchProductChart_map_le {I : Type*} [Fintype I] {d k : ℕ} [NeZero k]
+theorem highPatchProductChart_map_le 
     (hk : 4 ≤ k) (j : HighWindowLabels d k) :
     Measure.map (highPatchProductChart (I := I) d k j)
       (Measure.pi (fun _ : I => (cubeVolume d).restrict (highTorusPatch d k j))) ≤
@@ -57,7 +60,7 @@ theorem highPatchProductChart_map_le {I : Type*} [Fintype I] {d k : ℕ} [NeZero
 
 /-- Genuine integrability after all selected points are placed in the
 actual periodic torus chart. -/
-theorem highPatchProductChart_integrable {I : Type*} [Fintype I] {d k : ℕ} [NeZero k]
+theorem highPatchProductChart_integrable 
     (hk : 4 ≤ k) (j : HighWindowLabels d k) (H : (I → Covariate d) → ℝ)
     (hH : Integrable H (Measure.pi (fun _ : I => volume.restrict (spatialPatchBox d)))) :
     Integrable (fun x => H (highPatchProductChart d k j x))
@@ -69,7 +72,7 @@ theorem highPatchProductChart_integrable {I : Type*} [Fintype I] {d k : ℕ} [Ne
 
 /-- Actual nonnegative real integral comparison for the selected spatial
 score numerators under independent original covariates. -/
-theorem highPatchProductChart_integral_le {I : Type*} [Fintype I] {d k : ℕ} [NeZero k]
+theorem highPatchProductChart_integral_le 
     (hk : 4 ≤ k) (j : HighWindowLabels d k) (H : (I → Covariate d) → ℝ)
     (hH : Integrable H (Measure.pi (fun _ : I => volume.restrict (spatialPatchBox d))))
     (hH0 : ∀ x, 0 ≤ H x) :
@@ -79,13 +82,14 @@ theorem highPatchProductChart_integral_le {I : Type*} [Fintype I] {d k : ℕ} [N
       ∫ u, H u ∂Measure.pi (fun _ : I => volume.restrict (spatialPatchBox d)) := by
   have hs := hH.smul_measure (c := ENNReal.ofReal (((2/(k : ℝ))^d)^(Fintype.card I)))
     ENNReal.ofReal_ne_top
-  have hm := hs.mono_measure (highPatchProductChart_map_le hk j)
-  rw [← integral_map (highPatchProductChart_measurable d k j).aemeasurable hm.aestronglyMeasurable]
+  rw [← integral_map (highPatchProductChart_measurable d k j).aemeasurable (hs.mono_measure (highPatchProductChart_map_le hk j)).aestronglyMeasurable]
   calc
     _ ≤ ∫ x, H x ∂ENNReal.ofReal (((2/(k : ℝ))^d)^(Fintype.card I)) •
         Measure.pi (fun _ : I => volume.restrict (spatialPatchBox d)) :=
       integral_mono_measure (highPatchProductChart_map_le hk j)
         (Filter.Eventually.of_forall hH0) hs
     _ = _ := by rw [integral_smul_measure, ENNReal.toReal_ofReal (by positivity), smul_eq_mul]
+
+end
 
 end NearlyMinimax

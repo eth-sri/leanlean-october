@@ -10,8 +10,6 @@ noncomputable section
 open MeasureTheory Set Polynomial
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1500000
 
 /-- Leibniz and the binomial theorem give a count-power derivative bound
 for a genuine finite product, without an exponential in the count. -/
@@ -51,8 +49,11 @@ theorem polynomial_product_iterate_derivative_abs_bound {ι : Type*} [DecidableE
         congr 1
         ring
 
+section
+variable (P : ℝ[X]) (r : ℕ)
+
 /-- Analytic iterated derivatives coincide with formal polynomial ones. -/
-theorem polynomial_iteratedDeriv_eval (P : ℝ[X]) (r : ℕ) :
+theorem polynomial_iteratedDeriv_eval :
     iteratedDeriv r (fun z => P.eval z) = fun z => (derivative^[r] P).eval z := by
   induction r with
   | zero => simp
@@ -61,7 +62,7 @@ theorem polynomial_iteratedDeriv_eval (P : ℝ[X]) (r : ℕ) :
     funext z
     exact ((derivative^[r] P).hasDerivAt z).deriv
 
-theorem polynomial_iteratedDerivWithin_eval (P : ℝ[X]) (r : ℕ) (z : ℝ)
+theorem polynomial_iteratedDerivWithin_eval (z : ℝ)
     (hz : z ∈ Icc (0 : ℝ) 1) :
     iteratedDerivWithin r (fun z => P.eval z) (Icc (0 : ℝ) 1) z =
       (derivative^[r] P).eval z := by
@@ -71,12 +72,16 @@ theorem polynomial_iteratedDerivWithin_eval (P : ℝ[X]) (r : ℕ) (z : ℝ)
       (P.contDiff_aeval (𝕜 := ℝ) r).contDiffAt
   · exact hz
 
+end
+
 /-- Coefficient truncation is exactly the analytic Taylor polynomial at
 zero, including its one-sided endpoint derivatives. -/
 def polynomialResponseTaylor (q : ℕ) (P : ℝ[X]) : ℝ[X] :=
   ∑ k ∈ Finset.range (2 * q + 2), monomial k (P.coeff k)
 
-theorem polynomial_response_taylor_eval (q : ℕ) (P : ℝ[X]) (z : ℝ) :
+variable (q : ℕ) (P : ℝ[X])
+
+theorem polynomial_response_taylor_eval (z : ℝ) :
     (polynomialResponseTaylor q P).eval z =
       taylorWithinEval (fun z => P.eval z) (2 * q + 1) (Icc (0 : ℝ) 1) 0 z := by
   rw [taylor_within_apply]
@@ -89,7 +94,7 @@ theorem polynomial_response_taylor_eval (q : ℕ) (P : ℝ[X]) (z : ℝ) :
   have hk0 : (k.factorial : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr (Nat.factorial_ne_zero k)
   field_simp
 
-theorem polynomial_response_taylor_exact (q : ℕ) (hq : 1 ≤ q) (P : ℝ[X]) :
+theorem polynomial_response_taylor_exact (hq : 1 ≤ q) (P : ℝ[X]) :
     (∑ j : Fin (2 * q + 2), responseWeight q j *
       (polynomialResponseTaylor q P).eval (responseNode q j)) = P.coeff 2 := by
   have hdeg : (polynomialResponseTaylor q P).natDegree ≤ 2 * q + 1 := by
@@ -105,7 +110,7 @@ theorem polynomial_response_taylor_exact (q : ℕ) (hq : 1 ≤ q) (P : ℝ[X]) :
 
 /-- The fixed extraction defect follows from an actual derivative bound
 and Taylor's theorem, with exact extraction of every lower-order term. -/
-theorem polynomial_response_extraction_remainder (q : ℕ) (hq : 1 ≤ q)
+theorem polynomial_response_extraction_remainder (hq : 1 ≤ q)
     (P : ℝ[X]) (B : ℝ) (hB : 0 ≤ B)
     (hderiv : ∀ z ∈ Icc (0 : ℝ) 1,
       |(derivative^[2 * q + 2] P).eval z| ≤ B) :
@@ -138,9 +143,12 @@ theorem polynomial_response_extraction_remainder (q : ℕ) (hq : 1 ≤ q)
       exact (mul_le_mul_of_nonneg_left hpow hB).trans_eq (mul_one B)
     _ = _ := by rw [Finset.sum_mul]
 
+section
+variable (a f V δ z : ℝ) (y : Fin 3)
+
 /-- First and second formal line derivatives are the actual ternary
 derivatives; all subsequent ones vanish. -/
-theorem ternary_line_derivative_eval (a f V δ z : ℝ) (y : Fin 3) :
+theorem ternary_line_derivative_eval :
     (ternaryLinePolynomial a f V δ y).derivative.eval z =
       δ * ternaryMeanDerivative a (f + z * δ) y := by
   have h := (ternary_hasDerivAt_mean a (f + z * δ) V y).comp z
@@ -149,7 +157,7 @@ theorem ternary_line_derivative_eval (a f V δ z : ℝ) (y : Fin 3) :
   simp only [ternary_line_polynomial_eval] at he
   exact he.unique (h.congr_deriv (by ring))
 
-theorem ternary_line_second_derivative_eval (a f V δ z : ℝ) (y : Fin 3) :
+theorem ternary_line_second_derivative_eval :
     (ternaryLinePolynomial a f V δ y).derivative.derivative.eval z =
       δ ^ 2 * ternaryMeanSecondDerivative a y := by
   have h := ((ternary_hasDerivAt_mean_derivative a (f + z * δ) y).comp z
@@ -157,6 +165,8 @@ theorem ternary_line_second_derivative_eval (a f V δ z : ℝ) (y : Fin 3) :
   have he := (ternaryLinePolynomial a f V δ y).derivative.hasDerivAt z
   simp only [ternary_line_derivative_eval] at he
   exact he.unique (h.congr_deriv (by ring))
+
+end
 
 theorem ternary_line_iterate_derivative_abs_bound (a f V δ η ρ B z : ℝ)
     (y : Fin 3) (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ)
@@ -189,7 +199,7 @@ theorem ternary_line_iterate_derivative_abs_bound (a f V δ η ρ B z : ℝ)
 
 /-- The scalar response error at every count has the true fixed high
 power of the signal amplitude, with a count-polynomial prefactor. -/
-theorem response_scalar_high_order_remainder (q : ℕ) (hq : 1 ≤ q) (n : ℕ)
+theorem response_scalar_high_order_remainder (hq : 1 ≤ q) (n : ℕ)
     (a V η ρ B : ℝ) (f δ : Fin n → ℝ) (y : Fin n → Fin 3)
     (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ) (hB : 1 ≤ B)
     (hMean : (2 * ρ + a) / a ^ 2 ≤ B) (hSecond : 2 / a ^ 2 ≤ B)
@@ -214,17 +224,22 @@ theorem response_scalar_high_order_remainder (q : ℕ) (hq : 1 ≤ q) (n : ℕ)
 section SpatialRemainder
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
+variable {n : ℕ} (q : ℕ) (C a V η : ℝ) (A : ι → ι → ℝ)
+
 /-- The genuine Hessian contraction, represented by its polynomial
 quadratic coefficient. -/
-def highResponseQuadraticAction {n : ℕ} (C a V η : ℝ) (A : ι → ι → ℝ)
+def highResponseQuadraticAction (C a V η : ℝ) (A : ι → ι → ℝ)
     (g w : Fin n → ℝ) (φ : Fin n → ι → ℝ) (c : ι → ℝ)
     (y : Fin n → Fin 3) : ℝ :=
   covarianceAction C A (fun v =>
     (responseLinePolynomial n a V (coefficientRegression η g w φ c)
       (coefficientDirection η w φ c v) y).coeff 2)
 
-theorem high_response_quadratic_eq_exact_rule {n : ℕ} (C a V η : ℝ)
-    (A : ι → ι → ℝ) (g w : Fin n → ℝ) (φ : Fin n → ι → ℝ)
+section
+variable (C a V η : ℝ) (A : ι → ι → ℝ)
+
+theorem high_response_quadratic_eq_exact_rule 
+    (g w : Fin n → ℝ) (φ : Fin n → ι → ℝ)
     (c : ι → ℝ) (y : Fin n → Fin 3) :
     highResponseQuadraticAction C a V η A g w φ c y =
       responseMatrixAction n C A c (fun c => highResponseProduct a V η g w φ c y) := by
@@ -234,8 +249,8 @@ theorem high_response_quadratic_eq_exact_rule {n : ℕ} (C a V η : ℝ)
   simp only [highResponseProduct, coefficientRegression_reset]
   exact (response_line_rule_exact n n a V _ _ y le_rfl).symm
 
-theorem high_response_quadratic_heat {n : ℕ} (C a V η : ℝ)
-    (A : ι → ι → ℝ) (hC : C ≠ 0) (hA : ∀ i j, A i j = A j i)
+theorem high_response_quadratic_heat 
+    (hC : C ≠ 0) (hA : ∀ i j, A i j = A j i)
     (g w : Fin n → ℝ) (φ : Fin n → ι → ℝ) (c : ι → ℝ)
     (y : Fin n → Fin 3) (d : Fin n → ℝ)
     (hdiag : ∀ i l, spatialFrameCovariance A φ i l = if i = l then d i else 0) :
@@ -244,8 +259,10 @@ theorem high_response_quadratic_heat {n : ℕ} (C a V η : ℝ)
   rw [high_response_quadratic_eq_exact_rule]
   exact high_response_matrix_heat n le_rfl C a V η A hC hA g w φ c y d hdiag
 
+end
+
 omit [DecidableEq ι] in
-theorem coefficient_direction_abs_le {n : ℕ} (C η : ℝ) (hη : 0 ≤ η)
+theorem coefficient_direction_abs_le (C η : ℝ) (hη : 0 ≤ η)
     (w : Fin n → ℝ) (φ : Fin n → ι → ℝ) (c v : ι → ℝ)
     (hc : ∑ k, |c k| ≤ C⁻¹) (hv : ∑ k, |v k| ≤ C⁻¹)
     (hw : ∀ i, |w i| ≤ 1)
@@ -262,7 +279,7 @@ theorem coefficient_direction_abs_le {n : ℕ} (C η : ℝ) (hη : 0 ≤ η)
   exact (mul_le_mul hm hprof (abs_nonneg _) hη).trans_eq (by ring)
 
 omit [DecidableEq ι] in
-theorem coefficient_regression_reset_abs_le {n : ℕ} (C η ρ : ℝ)
+theorem coefficient_regression_reset_abs_le (C η ρ : ℝ)
     (hη : 0 ≤ η) (hηρ : η ≤ ρ / 2) (g w : Fin n → ℝ)
     (φ : Fin n → ι → ℝ) (c v : ι → ℝ) (z : ℝ) (hz : z ∈ Icc (0 : ℝ) 1)
     (hc : ∑ k, |c k| ≤ C⁻¹) (hv : ∑ k, |v k| ≤ C⁻¹)
@@ -285,7 +302,7 @@ theorem coefficient_regression_reset_abs_le {n : ℕ} (C η ρ : ℝ)
 
 /-- The actual finite signed matrix reset differs from its Hessian by
 the paper's high-order response remainder, for every local count. -/
-theorem high_response_matrix_high_order_remainder {n : ℕ} (q : ℕ) (hq : 1 ≤ q)
+theorem high_response_matrix_high_order_remainder (hq : 1 ≤ q)
     (C a V η ρ B : ℝ) (hC : 0 < C) (ha : 0 < a)
     (hη : 0 ≤ η) (hρ : 0 ≤ ρ) (hηρ : η ≤ ρ / 2)
     (hB : 1 ≤ B) (hMean : (2 * ρ + a) / a ^ 2 ≤ B) (hSecond : 2 / a ^ 2 ≤ B)
@@ -332,12 +349,11 @@ def highResponseDerivativeBudget (a ρ : ℝ) : ℝ :=
 theorem highResponseDerivativeBudget_guards (a ρ : ℝ) :
     1 ≤ highResponseDerivativeBudget a ρ ∧
     (2 * ρ + a) / a ^ 2 ≤ highResponseDerivativeBudget a ρ ∧
-    2 / a ^ 2 ≤ highResponseDerivativeBudget a ρ := by
-  exact ⟨le_max_left _ _, (le_max_left _ _).trans (le_max_right _ _),
+    2 / a ^ 2 ≤ highResponseDerivativeBudget a ρ := ⟨le_max_left _ _, (le_max_left _ _).trans (le_max_right _ _),
     (le_max_right _ _).trans (le_max_right _ _)⟩
 
 /-- The actual response Taylor defect. -/
-def highResponseDefect {n : ℕ} (q : ℕ) (C a V η : ℝ) (A : ι → ι → ℝ)
+def highResponseDefect (q : ℕ) (C a V η : ℝ) (A : ι → ι → ℝ)
     (g w : Fin n → ℝ) (φ : Fin n → ι → ℝ) (c : ι → ℝ)
     (y : Fin n → Fin 3) : ℝ :=
   responseMatrixAction q C A c (fun c => highResponseProduct a V η g w φ c y) -
@@ -345,8 +361,8 @@ def highResponseDefect {n : ℕ} (q : ℕ) (C a V η : ℝ) (A : ι → ι → �
 
 /-- Actual cardinal heat identity with the full response remainder at
 every count, rather than a truncated count hypothesis. -/
-theorem high_response_matrix_heat_with_defect {n : ℕ} (q : ℕ)
-    (C a V η : ℝ) (A : ι → ι → ℝ) (hC : C ≠ 0) (hA : ∀ i j, A i j = A j i)
+theorem high_response_matrix_heat_with_defect 
+    (hC : C ≠ 0) (hA : ∀ i j, A i j = A j i)
     (g w : Fin n → ℝ) (φ : Fin n → ι → ℝ) (c : ι → ℝ)
     (y : Fin n → Fin 3) (d : Fin n → ℝ)
     (hdiag : ∀ i l, spatialFrameCovariance A φ i l = if i = l then d i else 0) :
@@ -363,7 +379,7 @@ def highResponseRemainderConstant (q : ℕ) (C a ρ : ℝ) : ℝ :=
   2 * C ^ 2 * (∑ j : Fin (2 * q + 2), |responseWeight q j|) *
     (2 * highResponseDerivativeBudget a ρ) ^ (2 * q + 2)
 
-theorem high_response_defect_abs_bound {n : ℕ} (q : ℕ) (hq : 1 ≤ q)
+theorem high_response_defect_abs_bound (hq : 1 ≤ q)
     (C a V η ρ : ℝ) (hC : 0 < C) (ha : 0 < a)
     (hη : 0 ≤ η) (hρ : 0 ≤ ρ) (hηρ : η ≤ ρ / 2)
     (A : ι → ι → ℝ) (g w : Fin n → ℝ) (φ : Fin n → ι → ℝ)

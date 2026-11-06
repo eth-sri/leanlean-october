@@ -17,8 +17,11 @@ namespace NearlyMinimax
 variable {E : Type*} [MeasurableSpace E] [Nonempty E]
 
 omit [Nonempty E] in
+section
+variable (n : ℕ)
+
 /-- The finite independent insertion is exactly the ordinary last-coordinate tuple recursion. -/
-theorem finiteMarkAppend_eq_snoc (n : ℕ) (fresh : E) (marks : Fin n → E) :
+theorem finiteMarkAppend_eq_snoc (fresh : E) (marks : Fin n → E) :
     historyFiniteMarkAppendEquiv n (fresh, marks) = Fin.snoc marks fresh := by
   funext i
   refine Fin.lastCases ?_ (fun k => ?_) i
@@ -27,12 +30,14 @@ theorem finiteMarkAppend_eq_snoc (n : ℕ) (fresh : E) (marks : Fin n → E) :
 
 omit [Nonempty E] in
 /-- Independent last-coordinate insertion preserves the genuine product law, allowing nonidentical laws. -/
-theorem finiteMarkAppend_preserving_varying (n : ℕ) (π : Fin (n + 1) → Measure E)
+theorem finiteMarkAppend_preserving_varying (π : Fin (n + 1) → Measure E)
     [∀ i, IsProbabilityMeasure (π i)] :
     MeasurePreserving (historyFiniteMarkAppendEquiv n (E := E))
       ((π (Fin.last n)).prod (Measure.pi (fun i : Fin n => π i.castSucc))) (Measure.pi π) := by
   simpa only [historyFiniteMarkAppendEquiv, Fin.succAbove_last_apply] using
     (measurePreserving_piFinSuccAbove π (Fin.last n)).symm _
+
+end
 
 /-- The uncentered one-coordinate exponential bound follows from the proved oscillation lemma. -/
 theorem exp_integral_le_of_oscillation (π : Measure E) [IsProbabilityMeasure π]
@@ -40,7 +45,6 @@ theorem exp_integral_le_of_oscillation (π : Measure E) [IsProbabilityMeasure π
     (hbound : ∀ e, |X e| ≤ R) (hosc : ∀ e f, |X e - X f| ≤ c) (u : ℝ) :
     (∫ e, Real.exp (u * X e) ∂π) ≤
       Real.exp (u * ∫ e, X e ∂π) * Real.exp (u ^ 2 * c ^ 2 / 8) := by
-  have hh := centered_mgf_le_of_oscillation π X hX R c hc hbound hosc u
   have hf : (fun e => Real.exp (u * X e)) =
       (fun e => Real.exp (u * ∫ f, X f ∂π) * Real.exp (u * (X e - ∫ f, X f ∂π))) := by
     funext e
@@ -48,13 +52,19 @@ theorem exp_integral_le_of_oscillation (π : Measure E) [IsProbabilityMeasure π
     congr 1
     ring
   rw [hf, integral_const_mul]
-  exact mul_le_mul_of_nonneg_left hh (Real.exp_pos _).le
+  exact mul_le_mul_of_nonneg_left (centered_mgf_le_of_oscillation π X hX R c hc hbound hosc u) (Real.exp_pos _).le
+
+section
+variable (n : ℕ) (π : Fin n → Measure E)
+
+section
+variable [∀ i, IsProbabilityMeasure (π i)] (F : (Fin n → E) → ℝ)
 
 /-- True McDiarmid moment bound for an arbitrary bounded measurable function of finite independent blocks.
 Only the actual coordinate oscillation is an input; the concentration inequality is proved. -/
-theorem product_exp_integral_le (n : ℕ) (π : Fin n → Measure E)
-    [∀ i, IsProbabilityMeasure (π i)]
-    (F : (Fin n → E) → ℝ) (hF : Measurable F) (R c : ℝ) (hc : 0 ≤ c)
+theorem product_exp_integral_le 
+    
+    (hF : Measurable F) (R c : ℝ) (hc : 0 ≤ c)
     (hbound : ∀ x, |F x| ≤ R)
     (hosc : ∀ i x y, |F (Function.update x i y) - F x| ≤ c) (u : ℝ) :
     (∫ x, Real.exp (u * F x) ∂Measure.pi π) ≤
@@ -140,14 +150,13 @@ theorem product_exp_integral_le (n : ℕ) (π : Fin n → Measure E)
         ring
 
 /-- Centering gives the exact source exponent N c² u²/8. -/
-theorem product_centered_mgf_le (n : ℕ) (π : Fin n → Measure E)
-    [∀ i, IsProbabilityMeasure (π i)]
-    (F : (Fin n → E) → ℝ) (hF : Measurable F) (R c : ℝ) (hc : 0 ≤ c)
+theorem product_centered_mgf_le 
+    
+    (hF : Measurable F) (R c : ℝ) (hc : 0 ≤ c)
     (hbound : ∀ x, |F x| ≤ R)
     (hosc : ∀ i x y, |F (Function.update x i y) - F x| ≤ c) (u : ℝ) :
     (∫ x, Real.exp (u * (F x - ∫ y, F y ∂Measure.pi π)) ∂Measure.pi π) ≤
       Real.exp ((n : ℝ) * u ^ 2 * c ^ 2 / 8) := by
-  have hh := product_exp_integral_le n π F hF R c hc hbound hosc u
   let m := ∫ y, F y ∂Measure.pi π
   have hf : (fun x => Real.exp (u * (F x - m))) =
       (fun x => Real.exp (-u * m) * Real.exp (u * F x)) := by
@@ -163,7 +172,11 @@ theorem product_centered_mgf_le (n : ℕ) (π : Fin n → Measure E)
   calc
     _ ≤ Real.exp (-u * m) *
         (Real.exp (u * m) * Real.exp ((n : ℝ) * u ^ 2 * c ^ 2 / 8)) :=
-      mul_le_mul_of_nonneg_left hh (Real.exp_pos _).le
+      mul_le_mul_of_nonneg_left (product_exp_integral_le n π F hF R c hc hbound hosc u) (Real.exp_pos _).le
     _ = _ := by rw [← mul_assoc, hprod, one_mul]
+
+end
+
+end
 
 end NearlyMinimax

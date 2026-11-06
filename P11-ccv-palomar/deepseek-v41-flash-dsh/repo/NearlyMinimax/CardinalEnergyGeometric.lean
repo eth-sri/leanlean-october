@@ -11,8 +11,6 @@ budgets, with fixed density upper bound before the density shrinking. -/
 noncomputable section
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 800000
 
  def cardinalAliasSpatialComponent (d n : ℕ) (bd a η T : ℝ) : ℝ :=
   2*cardinalRawAliasCoefficient n bd a η^2 * (n : ℝ)^2*(2 : ℝ)^d*cardinalDefectSquareBudget d n T
@@ -21,7 +19,9 @@ set_option maxHeartbeats 800000
   2*cardinalRawTaylorCoefficient n q bd C a ρ η^2 * (n : ℝ)^2*(2 : ℝ)^d*
     ((100*(d : ℝ))^2*16*spatialScaleIntegralConstant d)^(n-1)
 
- theorem cardinalRawSpatialEnergyBudget_split (d n q : ℕ) (bd C a ρ η T : ℝ) :
+ variable (d n q : ℕ)
+
+theorem cardinalRawSpatialEnergyBudget_split (bd C a ρ η T : ℝ) :
     cardinalRawSpatialEnergyBudget d n q bd C a ρ η T =
       cardinalAliasSpatialComponent d n bd a η T + cardinalTaylorSpatialComponent d n q bd C a ρ η := by
   unfold cardinalRawSpatialEnergyBudget cardinalAliasSpatialComponent cardinalTaylorSpatialComponent
@@ -50,7 +50,10 @@ set_option maxHeartbeats 800000
  def cardinalTaylorEnergyPrefactor (d q : ℕ) (C a ρ : ℝ) : ℝ :=
   2*(2 : ℝ)^d*highResponseRemainderConstant q C a ρ^2
 
- theorem cardinalAliasSpatialComponent_geometric_le {bd B : ℝ} (hbd : 0 ≤ bd) (hB : bd ≤ B)
+ section
+variable {bd B : ℝ}
+
+theorem cardinalAliasSpatialComponent_geometric_le (hbd : 0 ≤ bd) (hB : bd ≤ B)
     (d n : ℕ) (a η T : ℝ) (ha : 0 < a) (hT : 1 ≤ T) :
     cardinalAliasSpatialComponent d n bd a η T ≤
       cardinalInterpolationEnergyPrefactor d a * cardinalSpatialGeometricBase B (16*spatialUnaryIntegralConstant d)^n *
@@ -67,7 +70,7 @@ set_option maxHeartbeats 800000
     ring
   · ring
 
- theorem cardinalTaylorSpatialComponent_geometric_le {bd B : ℝ} (hbd : 0 ≤ bd) (hB : bd ≤ B)
+ theorem cardinalTaylorSpatialComponent_geometric_le (hbd : 0 ≤ bd) (hB : bd ≤ B)
     (d n q : ℕ) (C a ρ η : ℝ) :
     cardinalTaylorSpatialComponent d n q bd C a ρ η ≤
       cardinalTaylorEnergyPrefactor d q C a ρ *
@@ -85,5 +88,7 @@ set_option maxHeartbeats 800000
   · simp only [mul_pow, ← pow_mul]
     ring_nf
   · ring
+
+end
 
 end NearlyMinimax

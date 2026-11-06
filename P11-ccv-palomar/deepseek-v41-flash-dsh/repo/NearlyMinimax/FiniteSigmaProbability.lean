@@ -10,16 +10,20 @@ families used in the actual separated cardinal kernel. -/
 noncomputable section
 open MeasureTheory Set
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 300000
 
-theorem measurable_sigma_mk_actual {ι : Type*} {E : ι → Type*}
-    [∀ i, MeasurableSpace (E i)] (i : ι) : Measurable (Sigma.mk i : E i → Sigma E) := by
+section
+variable {ι : Type*} {E : ι → Type*}
+
+section
+variable [∀ i, MeasurableSpace (E i)]
+
+theorem measurable_sigma_mk_actual 
+    (i : ι) : Measurable (Sigma.mk i : E i → Sigma E) := by
   apply Measurable.of_le_map
   exact iInf_le _ i
 
-theorem measurable_sigma_of_fibers {ι : Type*} {E : ι → Type*}
-    [∀ i, MeasurableSpace (E i)] {X : Type*} [MeasurableSpace X]
+theorem measurable_sigma_of_fibers 
+    {X : Type*} [MeasurableSpace X]
     (f : Sigma E → X) (hf : ∀ i, Measurable (fun e : E i => f ⟨i, e⟩)) : Measurable f := by
   apply Measurable.of_le_map
   change _ ≤ (⨅ i, (inferInstance : MeasurableSpace (E i)).map (Sigma.mk i)).map f
@@ -28,6 +32,10 @@ theorem measurable_sigma_of_fibers {ι : Type*} {E : ι → Type*}
   intro i
   rw [MeasurableSpace.map_comp]
   exact (hf i).le_map
+
+end
+
+end
 
 /-- A countable disjoint union of Borel spaces has precisely the Borel
 sigma-algebra of its disjoint-union topology. -/

@@ -27,7 +27,10 @@ def profileVarianceWeight (C₀ C_D β S z : ℝ) : ℝ :=
   factorialSeries (profileVarianceDegree β S z) (profileVarianceArgument C_D S z) *
     max 1 (C₀ / profileVarianceArgument C_D S z)
 
-theorem profileVariance_coarse_ratio {β C_D S z : ℝ}
+section
+variable {β C_D S z : ℝ}
+
+theorem profileVariance_coarse_ratio 
     (hβ : 0 ≤ β) (hD1 : 1 ≤ C_D) (hDβ : 4 * β ≤ C_D) (hS : 2 ≤ S) (hz : z ≤ 0) :
     (profileVarianceDegree β S z : ℝ) * profileVarianceArgument C_D S z ≤ 1 / 2 := by
   have hS₀ : 0 < S := by linarith
@@ -44,7 +47,7 @@ theorem profileVariance_coarse_ratio {β C_D S z : ℝ}
   apply (div_le_iff₀ hCS).2
   nlinarith [mul_nonneg hβ hS₀.le]
 
-theorem profileVariance_fine_degree_bounds {β C_D S z : ℝ}
+theorem profileVariance_fine_degree_bounds 
     (hβ : 0 ≤ β) (hDβ : 4 * β ≤ C_D) (hS : 0 < S) (hz0 : 0 ≤ z) (hzS : z ≤ S) :
     (profileVarianceDegree β S z : ℝ) ≤ C_D * S ∧
       (profileVarianceDegree β S z : ℝ) * z ≤ β * S ^ 2 / 4 := by
@@ -60,7 +63,11 @@ theorem profileVariance_fine_degree_bounds {β C_D S z : ℝ}
   · have hfm := mul_le_mul_of_nonneg_right hf hz0
     nlinarith
 
-theorem profileVarianceWeight_coarse_bound {C₀ C_D β S z : ℝ}
+end
+
+variable {C₀ C_D β S z : ℝ}
+
+theorem profileVarianceWeight_coarse_bound 
     (hC : 1 ≤ C₀) (hD1 : 1 ≤ C_D) (hDβ : 4 * β ≤ C_D)
     (hβ : 0 ≤ β) (hS : 2 ≤ S) (hz : z ≤ 0) :
     profileVarianceWeight C₀ C_D β S z ≤ 2 * C₀ := by
@@ -85,7 +92,7 @@ theorem profileVarianceWeight_coarse_bound {C₀ C_D β S z : ℝ}
       mul_le_mul_of_nonneg_right hs (div_nonneg hC₀.le hx.le)
     _ = 2 * C₀ := by field_simp
 
-theorem profileVarianceWeight_fine_bound {C₀ C_D β S z : ℝ}
+theorem profileVarianceWeight_fine_bound 
     (hC : 1 ≤ C₀) (hD1 : 1 ≤ C_D) (hDβ : 4 * β ≤ C_D)
     (hβ : 0 ≤ β) (hS : 2 ≤ S) (hz0 : 0 ≤ z) (hzS : z ≤ S) :
     profileVarianceWeight C₀ C_D β S z ≤
@@ -113,7 +120,7 @@ theorem profileVarianceWeight_fine_bound {C₀ C_D β S z : ℝ}
     (by positivity) hweight
 
 /-- Both coarse and fine levels obey the same explicit envelope. -/
-theorem profileVarianceWeight_uniform_bound {C₀ C_D β S z : ℝ}
+theorem profileVarianceWeight_uniform_bound 
     (hC : 1 ≤ C₀) (hD1 : 1 ≤ C_D) (hDβ : 4 * β ≤ C_D)
     (hβ : 0 ≤ β) (hS : 2 ≤ S) (hz : z ≤ S) :
     profileVarianceWeight C₀ C_D β S z ≤
@@ -203,8 +210,11 @@ def actualAllocationVarianceRatio (δ a C C₀ C_D γ β η varpi x : ℝ) : ℝ
       actualVarianceMaximum δ a C C₀ C_D γ β x
 
 set_option maxHeartbeats 600000 in
+section
+variable {δ a C₀ C_D γ β η varpi : ℝ}
+
 /-- The actual scalar variance ratio has an explicit exponentially vanishing reserve. -/
-theorem eventually_actualAllocationVarianceRatio_bound {δ a C₀ C_D γ β η varpi : ℝ}
+theorem eventually_actualAllocationVarianceRatio_bound 
     (hδ : 0 < δ) (ha : 0 < a) (hC : 1 ≤ C₀) (hD1 : 1 ≤ C_D)
     (hDβ : 4 * β ≤ C_D) (hβ : 0 < β) (hγ : 0 ≤ γ) (hη : 0 ≤ η)
     (C : ℝ) (hshift : C = 1 + 2 * (η + 2) / β) (hcoef : β * a ^ 2 / 4 = 2 * varpi) :
@@ -264,7 +274,7 @@ theorem eventually_actualAllocationVarianceRatio_bound {δ a C₀ C_D γ β η v
         ring
 
 /-- Consequently `W≤1` eventually follows for this actual scalar allocation, rather than being assumed. -/
-theorem actualAllocationVarianceRatio_tends_zero {δ a C₀ C_D γ β η varpi : ℝ}
+theorem actualAllocationVarianceRatio_tends_zero 
     (hδ : 0 < δ) (ha : 0 < a) (hC : 1 ≤ C₀) (hD1 : 1 ≤ C_D)
     (hDβ : 4 * β ≤ C_D) (hβ : 0 < β) (hγ : 0 ≤ γ) (hη : 0 ≤ η)
     (C : ℝ) (hshift : C = 1 + 2 * (η + 2) / β) (hcoef : β * a ^ 2 / 4 = 2 * varpi) :
@@ -272,5 +282,7 @@ theorem actualAllocationVarianceRatio_tends_zero {δ a C₀ C_D γ β η varpi :
   have hb := eventually_actualAllocationVarianceRatio_bound hδ ha hC hD1 hDβ hβ hγ hη C hshift hcoef
   apply squeeze_zero' (hb.mono fun x hx => hx.1) (hb.mono fun x hx => hx.2)
   exact (tendsto_allocation_reserve_bound C₀ C_D).comp (allocationWidth_tendsto_atTop ha C)
+
+end
 
 end NearlyMinimax

@@ -11,19 +11,19 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 400000
+
+variable {b : ℝ}
 
 /-- The actual Gamma moment, with respect to Lebesgue measure on the positive
 half-line. -/
-theorem gamma_monomial_integrable {b : ℝ} (hb : 0 < b) (r : ℕ) :
+theorem gamma_monomial_integrable (hb : 0 < b) (r : ℕ) :
     IntegrableOn (fun v : ℝ => v ^ r * Real.exp (-(b * v))) (Ici 0) := by
   rw [integrableOn_Ici_iff_integrableOn_Ioi]
   have h := integrableOn_rpow_mul_exp_neg_mul_rpow (s := (r : ℝ)) (p := 1)
     (b := b) (by exact lt_of_lt_of_le (by norm_num) (Nat.cast_nonneg r)) (by norm_num) hb
   simpa only [Real.rpow_natCast, Real.rpow_one, neg_mul] using h
 
-theorem gamma_monomial_integral {b : ℝ} (hb : 0 < b) (r : ℕ) :
+theorem gamma_monomial_integral (hb : 0 < b) (r : ℕ) :
     (∫ v : ℝ in Ici 0, v ^ r * Real.exp (-(b * v))) =
       (r.factorial : ℝ) / b ^ (r + 1) := by
   rw [integral_Ici_eq_integral_Ioi]
@@ -32,8 +32,7 @@ theorem gamma_monomial_integral {b : ℝ} (hb : 0 < b) (r : ℕ) :
   simp only [add_sub_cancel_right, Real.rpow_natCast, Real.Gamma_nat_eq_factorial] at h
   rw [h]
   have he : (r : ℝ) + 1 = ((r + 1 : ℕ) : ℝ) := by norm_num
-  rw [he, Real.rpow_natCast]
-  rw [div_pow, one_pow]
+  rw [he, Real.rpow_natCast, div_pow, one_pow]
   field_simp
 
 /-- Translation of a genuine set integral; no integrability premise is
@@ -49,7 +48,7 @@ theorem integral_Ici_translate (A : ℝ) (f : ℝ → ℝ) :
   rw [hs] at hp
   exact hp.integral_comp (MeasurableEquiv.addLeft A).measurableEmbedding f
 
-theorem gamma_translated_monomial_integrable {b : ℝ} (hb : 0 < b)
+theorem gamma_translated_monomial_integrable (hb : 0 < b)
     (A : ℝ) (m : ℕ) :
     IntegrableOn (fun v : ℝ => (A + v) ^ m * Real.exp (-(b * v))) (Ici 0) := by
   have he : (fun v : ℝ => (A + v) ^ m * Real.exp (-(b * v))) =
@@ -65,7 +64,7 @@ theorem gamma_translated_monomial_integrable {b : ℝ} (hb : 0 < b)
 
 /-- Exact exponential tail of an integer-shape Gamma density. The right-hand
 side is a finite polynomial, derived by translation and the binomial theorem. -/
-theorem gamma_polynomial_tail_integral {b : ℝ} (hb : 0 < b) (A : ℝ) (m : ℕ) :
+theorem gamma_polynomial_tail_integral (hb : 0 < b) (A : ℝ) (m : ℕ) :
     (∫ u : ℝ in Ici A, u ^ m * Real.exp (-(b * u)) / (m.factorial : ℝ)) =
       Real.exp (-(b * A)) *
         ∑ l ∈ Finset.range (m + 1), A ^ l / ((l.factorial : ℝ) * b ^ (m + 1 - l)) := by
@@ -102,7 +101,7 @@ theorem gamma_polynomial_tail_integral {b : ℝ} (hb : 0 < b) (A : ℝ) (m : ℕ
 
 /-- The original tail integrand is genuinely integrable, including at an
 arbitrary translated boundary. -/
-theorem gamma_polynomial_tail_integrable {b : ℝ} (hb : 0 < b) (A : ℝ) (m : ℕ) :
+theorem gamma_polynomial_tail_integrable (hb : 0 < b) (A : ℝ) (m : ℕ) :
     IntegrableOn (fun u : ℝ => u ^ m * Real.exp (-(b * u)) / (m.factorial : ℝ))
       (Ici A) := by
   have hp := (measurePreserving_add_left (volume : Measure ℝ) A).restrict_preimage

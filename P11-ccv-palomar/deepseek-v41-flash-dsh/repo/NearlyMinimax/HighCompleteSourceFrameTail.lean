@@ -13,7 +13,6 @@ open Set MeasureTheory
 open scoped BigOperators
 namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency true
-set_option maxHeartbeats 1800000
 attribute [local instance] Classical.propDecidable
 attribute [local irreducible] highUnionSourceDensity highUnionSourceState historyMarkedAppend
 
@@ -67,7 +66,6 @@ theorem completeSourceNumerator_original_field_bound {d : ℕ} [NeZero d]
     apply (highFramePolynomial_coefficientL1_le _).trans
     exact (highUnionSourceState_coefficient_ball C R G h l).trans
       ((inv_le_inv₀ (by linarith : 0 < Cfr) (by linarith : 0 < Cfr0)).mpr hfr)
-  have hF := (hfield k hk0 hk cf hcf (fun l => highFramePolynomial (c l)) hP).1
   have hw (u) : |w u| ≤ 1 := by
     rw [abs_of_nonneg (highPeriodicTensor_nonneg d k j (x u))]
     exact highPeriodicTensor_le_one d k (by omega) j (x u)
@@ -75,16 +73,14 @@ theorem completeSourceNumerator_original_field_bound {d : ℕ} [NeZero d]
       |∑ γ, φ u γ*v γ| ≤ 1 :=
     highLocalFrameFeature_ball_abs_le_one k j (x u) Cfr (hfr0.trans hfr) v hv
   have hg (u) : |g u| ≤ Q.ρ/2 := by
-    have hprof := hφ (c j) (highUnionSourceState_coefficient_ball C R G h j) u
     have hh : |η*w u*(∑ γ, φ u γ*c j γ)| ≤ η := by
       rw [abs_mul,abs_mul,abs_of_nonneg hηn]
-      have ht := mul_le_mul (hw u) hprof (abs_nonneg _) (by norm_num : (0 : ℝ) ≤ 1)
+      have ht := mul_le_mul (hw u) (hφ (c j) (highUnionSourceState_coefficient_ball C R G h j) u) (abs_nonneg _) (by norm_num : (0 : ℝ) ≤ 1)
       nlinarith [mul_le_mul_of_nonneg_left ht hηn]
-    have hd := highFrameField_local_decomposition d k D hk η c j (x u)
     have he : g u = highFrameField d k η (fun l => highFramePolynomial (c l)) (x u)-
-        η*w u*(∑ γ, φ u γ*c j γ) := by dsimp [g,w,φ]; linarith [hd]
+        η*w u*(∑ γ, φ u γ*c j γ) := by dsimp [g,w,φ]; linarith [(highFrameField_local_decomposition d k D hk η c j (x u))]
     rw [he]
-    exact (abs_sub _ _).trans ((add_le_add (hF (x u)) hh).trans (by nlinarith only [hamp]))
+    exact (abs_sub _ _).trans ((add_le_add (((hfield k hk0 hk cf hcf (fun l => highFramePolynomial (c l)) hP).1) (x u)) hh).trans (by nlinarith only [hamp]))
   exact completeSourceNumerator_all_count_exponential_bound C hD hq hM Cfr lam ℓ N μ
     (hfr0.trans hfr) hℓ hℓN hn j h Q.a V η Q.ρ Q.a_pos hηn Q.ρ_pos.le hηρ x g w φ
     hg hw hφ (fun f hf z => Q.c_pos.le.trans ((Q.legal f V hf hV).2.2.1 z)) y

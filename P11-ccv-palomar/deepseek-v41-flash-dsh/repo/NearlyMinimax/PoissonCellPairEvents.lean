@@ -10,8 +10,6 @@ noncomputable section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 400000
 variable {H X : Type*} [MeasurableSpace H] [MeasurableSpace X]
 
 def pairSameIndicator (ρ : H → X → Fin 2) (x y : X) (h : H) : ℝ :=

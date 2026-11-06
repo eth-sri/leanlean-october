@@ -11,7 +11,6 @@ open MeasureTheory
 open scoped RealInnerProductSpace
 namespace NearlyMinimax.PilotFluctuation
 
-set_option backward.isDefEq.respectTransparency false
 
 variable {Ω H : Type*} [MeasurableSpace Ω]
 variable [NormedAddCommGroup H] [InnerProductSpace ℝ H]

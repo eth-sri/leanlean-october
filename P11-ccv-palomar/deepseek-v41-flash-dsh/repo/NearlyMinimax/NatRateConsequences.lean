@@ -17,11 +17,10 @@ theorem polynomial_bounds_nat_of_rateBracket {risk : ℕ → ℝ} {lam kappa a G
         c*(n : ℝ)^(-lam-epsilon) ≤ risk n ∧ risk n ≤ A*(n : ℝ)^(-lam) := by
   obtain ⟨c,A,hc,hA,hb⟩ := h
   refine ⟨c,A,hc,hA,fun epsilon he => ?_⟩
-  have hu := tendsto_stretched_log_factor hk (a+Gamma)
   filter_upwards [hb,tendsto_natCast_atTop_atTop.eventually
     (eventually_correction_between_powers kappa a he),
     tendsto_natCast_atTop_atTop.eventually
-      (hu.eventually (gt_mem_nhds (by norm_num : (0 : ℝ)<1))),
+      ((tendsto_stretched_log_factor hk (a+Gamma)).eventually (gt_mem_nhds (by norm_num : (0 : ℝ)<1))),
     tendsto_natCast_atTop_atTop.eventually (eventually_gt_atTop (1 : ℝ))]
     with n hn hlow hupp hn1
   have hn0 : 0 < (n : ℝ) := by linarith only [hn1]
@@ -37,8 +36,7 @@ theorem polynomial_bounds_nat_of_rateBracket {risk : ℕ → ℝ} {lam kappa a G
     simp only [←mul_assoc]
     exact mul_le_mul_of_nonneg_left hlow.1 (mul_pos hc hp).le
   · apply le_trans hn.2
-    rw [rateScale_eq_base_mul_correction,Real.rpow_def_of_pos hn0]
-    rw [mul_comm (Real.log (n : ℝ)) (-lam)]
+    rw [rateScale_eq_base_mul_correction,Real.rpow_def_of_pos hn0, mul_comm (Real.log (n : ℝ)) (-lam)]
     calc
       _ ≤ A*(Real.exp (-lam*Real.log n)*1) := by gcongr
       _ = _ := by ring

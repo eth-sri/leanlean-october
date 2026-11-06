@@ -10,19 +10,24 @@ open scoped ENNReal
 noncomputable section
 namespace NearlyMinimax
 
-/-- Number of rectangular monomial features per grid cell. -/
-def polynomialFeatureCount {d : ℕ} (C : ModelConstants d) : ℕ := (C.order + 1) ^ d
+variable {d : ℕ}
 
-theorem polynomialFeatureCount_pos {d : ℕ} (C : ModelConstants d) :
+/-- Number of rectangular monomial features per grid cell. -/
+def polynomialFeatureCount (C : ModelConstants d) : ℕ := (C.order + 1) ^ d
+
+theorem polynomialFeatureCount_pos (C : ModelConstants d) :
     0 < polynomialFeatureCount C := by
   unfold polynomialFeatureCount
   positivity
 
 /-- The actual root-floor grid uses half the sample as its feature budget. -/
-def polynomialProjectionGridSize {d : ℕ} (C : ModelConstants d) (n : ℕ) : ℕ :=
+def polynomialProjectionGridSize (C : ModelConstants d) (n : ℕ) : ℕ :=
   ⌊((n : ℝ) / (2 * polynomialFeatureCount C)) ^ ((d : ℝ)⁻¹)⌋₊
 
-theorem polynomial_projection_grid_size_spec {d n : ℕ} (C : ModelConstants d)
+section
+variable {d n : ℕ} (C : ModelConstants d)
+
+theorem polynomial_projection_grid_size_spec 
     (hn : 2 * polynomialFeatureCount C ≤ n) :
     0 < polynomialProjectionGridSize C n ∧
     (polynomialProjectionGridSize C n : ℝ) ^ d * (C.order + 1 : ℕ) ^ d ≤ (n : ℝ) / 2 ∧
@@ -52,7 +57,7 @@ theorem polynomial_projection_grid_size_spec {d n : ℕ} (C : ModelConstants d)
   exact ⟨hk, hcolumns, by linarith⟩
 
 /-- Floor rounding changes inverse cell width by a fixed model factor. -/
-theorem polynomial_projection_grid_inverse_width_bound {d n : ℕ} (C : ModelConstants d)
+theorem polynomial_projection_grid_inverse_width_bound 
     (hn : 2 * polynomialFeatureCount C ≤ n) :
     1 / (polynomialProjectionGridSize C n : ℝ) ≤
       (2 * (2 * polynomialFeatureCount C : ℝ) ^ ((d : ℝ)⁻¹)) *
@@ -72,8 +77,10 @@ theorem polynomial_projection_grid_inverse_width_bound {d n : ℕ} (C : ModelCon
   rw [Real.div_rpow hnreal.le (by positivity), Real.rpow_neg hnreal.le]
   field_simp
 
+end
+
 /-- Explicit full-smoothness approximation constant, independent of sample size. -/
-def polynomialProjectionApproximationConstant {d : ℕ} (C : ModelConstants d) : ℝ :=
+def polynomialProjectionApproximationConstant (C : ModelConstants d) : ℝ :=
   4 * (taylorErrorFactor C * C.holderBound *
     (2 * (2 * polynomialFeatureCount C : ℝ) ^ ((d : ℝ)⁻¹)) ^ C.smoothness) ^ 4
 

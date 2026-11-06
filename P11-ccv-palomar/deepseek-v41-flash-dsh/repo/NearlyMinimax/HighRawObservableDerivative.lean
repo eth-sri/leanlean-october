@@ -9,8 +9,6 @@ public import NearlyMinimax.HighRawObservable
 noncomputable section
 open MeasureTheory ProbabilityTheory Filter Set
 namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 variable {Ω : Type*} [MeasurableSpace Ω]
 
 /-- Differentiating the real bounded data observable follows from the actual

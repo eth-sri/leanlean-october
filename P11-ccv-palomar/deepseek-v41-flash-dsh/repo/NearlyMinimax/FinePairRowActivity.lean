@@ -12,13 +12,13 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 700000
 
 def sourceResponseCost (q : ℕ) (C : ℝ) : ℝ :=
   (∑ h : Fin (2*q+2), |responseWeight q h|) * (2*C^2)
 
-theorem sourceResponseCost_nonneg (q : ℕ) (C : ℝ) : 0 ≤ sourceResponseCost q C := by
+variable (q : ℕ) (C : ℝ)
+
+theorem sourceResponseCost_nonneg : 0 ≤ sourceResponseCost q C := by
   unfold sourceResponseCost
   positivity
 
@@ -54,7 +54,10 @@ theorem finePairRowMass_unit_le (d D M q : ℕ) (hD : 1 ≤ D)
   dsimp [ordinaryDensityActivityBase, sourceResponseCost, spatialMatrixL1] at *
   nlinarith only [hh]
 
-theorem finePairRowMass_coarse_le (d : ℕ) [NeZero d] (D M q : ℕ) (hD : 1 ≤ D)
+section
+variable (d : ℕ) [NeZero d] (D M q : ℕ)
+
+theorem finePairRowMass_coarse_le (hD : 1 ≤ D)
     (a b : ℝ) (ha : 0 < a) (hab : a < b) (C ℓ N : ℝ) (hℓ : 0 ≤ ℓ) :
     finePairRowMass d D M q a b C ℓ N .coarse ≤
       (ordinaryDensityActivityBase a b)^2 * (D : ℝ)^2 *
@@ -71,7 +74,7 @@ theorem finePairRowMass_coarse_le (d : ℕ) [NeZero d] (D M q : ℕ) (hD : 1 ≤
   dsimp [ordinaryDensityActivityBase, sourceResponseCost, spatialMatrixL1] at *
   nlinarith only [hh]
 
-theorem finePairRowMass_fine_le (d : ℕ) [NeZero d] (D M q : ℕ)
+theorem finePairRowMass_fine_le 
     (a b : ℝ) (ha : 0 < a) (hab : a < b) (C ℓ N : ℝ) (hℓ : 0 ≤ ℓ) (hℓN : ℓ ≤ N) :
     finePairRowMass d D M q a b C ℓ N .fine ≤
       (ordinaryDensityActivityBase a b)^2 *
@@ -91,5 +94,7 @@ theorem finePairRowMass_fine_le (d : ℕ) [NeZero d] (D M q : ℕ)
   have hh := mul_le_mul_of_nonneg_left hm (sourceResponseCost_nonneg q C)
   dsimp [ordinaryDensityActivityBase, sourceResponseCost, spatialMatrixL1] at *
   nlinarith only [hh]
+
+end
 
 end NearlyMinimax

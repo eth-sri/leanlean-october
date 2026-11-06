@@ -14,8 +14,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators ENNReal
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 
 section SignedDensity
 variable {X : Type*} [MeasurableSpace X] (μ : Measure X)
@@ -107,15 +105,17 @@ def highPacketMarkWeight (a b : ℝ) (m r D q : ℕ) (C : ℝ)
     (A : Z → ι → ι → ℝ) (e : Z × HighPacketMarkIndex ι m r D q) : ℝ :=
   densityPacketWeight a b m r D e.2.1 * highResponseMarkWeight C q (A e.1) e.2.2
 
-theorem highPacketMarkWeight_slice_measurable (a b : ℝ) (m r D q : ℕ) (C : ℝ)
-    (A : Z → ι → ι → ℝ) (hA : ∀ i j, Measurable (fun ζ => A ζ i j))
+variable (a b : ℝ) (m r D q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
+
+theorem highPacketMarkWeight_slice_measurable 
+    (hA : ∀ i j, Measurable (fun ζ => A ζ i j))
     (h : HighPacketMarkIndex ι m r D q) :
     Measurable (fun ζ => highPacketMarkWeight a b m r D q C A (ζ, h)) := by
   dsimp [highPacketMarkWeight, highResponseMarkWeight, covarianceWeight]
   fun_prop
 
-theorem highPacketMarkWeight_measurable (a b : ℝ) (m r D q : ℕ) (C : ℝ)
-    (A : Z → ι → ι → ℝ) (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) :
+theorem highPacketMarkWeight_measurable 
+    (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) :
     Measurable (highPacketMarkWeight a b m r D q C A) :=
   measurable_from_prod_countable_left (highPacketMarkWeight_slice_measurable a b m r D q C A hA)
 
@@ -183,8 +183,8 @@ def highPacketObservable (a b : ℝ) (m r D q : ℕ) (C : ℝ) (c : ι → ℝ)
   G e.1 (densityPacketAtom a b m r D e.2.1).1 (densityPacketAtom a b m r D e.2.1).2 *
     Φ (coefficientReset c (highResponseMarkAtom C q e.2.2).2 (highResponseMarkAtom C q e.2.2).1)
 
-theorem highPacketObservable_finite_action (a b : ℝ) (m r D q : ℕ) (C : ℝ)
-    (A : Z → ι → ι → ℝ) (c : ι → ℝ)
+theorem highPacketObservable_finite_action 
+    (c : ι → ℝ)
     (G : Z → ℝ → (Fin r → ℝ) → ℝ) (Φ : (ι → ℝ) → ℝ) (ζ : Z) :
     (∑ h : HighPacketMarkIndex ι m r D q,
       highPacketMarkWeight a b m r D q C A (ζ, h) * highPacketObservable a b m r D q C c G Φ (ζ, h)) =
@@ -208,10 +208,13 @@ theorem highPacketObservable_finite_action (a b : ℝ) (m r D q : ℕ) (C : ℝ)
   rw [densityPacketSignedRule, atomicSignedRule_integral] at hi
   exact hi
 
+section
+variable (σ : Measure Z) [IsFiniteMeasure σ] (a b : ℝ) (m r D q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
+
 /-- The joint signed integral equals the actual iterated Xi action used
 in the local-row theorem. -/
-theorem highPacketSignedMeasure_factor_integral (σ : Measure Z) [IsFiniteMeasure σ]
-    (a b : ℝ) (m r D q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
+theorem highPacketSignedMeasure_factor_integral 
+    
     (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) (hcost : Integrable (separatedMatrixCost A) σ)
     (c : ι → ℝ) (G : Z → ℝ → (Fin r → ℝ) → ℝ)
     (hG : ∀ z ε, Measurable (fun ζ => G ζ z ε)) (L : ℝ) (hL : 0 ≤ L)
@@ -236,8 +239,8 @@ theorem highPacketSignedMeasure_factor_integral (σ : Measure Z) [IsFiniteMeasur
     rw [highPacketObservable, Real.norm_eq_abs, abs_mul]
     exact mul_le_mul (hGbound ζ h.1) (hΦ h.2) (abs_nonneg _) hL
 
-theorem highPacketSignedMeasure_variation (σ : Measure Z) [IsFiniteMeasure σ]
-    (a b : ℝ) (m r D q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
+theorem highPacketSignedMeasure_variation 
+    
     (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) (hcost : Integrable (separatedMatrixCost A) σ) :
     ((highPacketSignedMeasure σ a b m r D q C A).variation univ).toReal =
       ∫ ζ, ∑ h : HighPacketMarkIndex ι m r D q,
@@ -250,6 +253,8 @@ theorem highPacketSignedMeasure_variation (σ : Measure Z) [IsFiniteMeasure σ]
     integral_prod _ hw.norm]
   simp only [integral_count, Real.norm_eq_abs]
 
+end
+
 theorem highResponseMark_variation (q : ℕ) (C : ℝ) (A : ι → ι → ℝ) :
     (∑ h : HighResponseMarkIndex ι q, |highResponseMarkWeight C q A h|) =
       (∑ h : Fin (2 * q + 2), |responseWeight q h|) * (2 * C ^ 2 * ∑ i, ∑ j, |A i j|) := by
@@ -257,8 +262,8 @@ theorem highResponseMark_variation (q : ℕ) (C : ℝ) (A : ι → ι → ℝ) :
   simp_rw [← Finset.sum_mul, ← Finset.mul_sum]
   rw [covariance_weight_variation]
 
-theorem highPacketMarkWeight_variation (a b : ℝ) (m r D q : ℕ) (C : ℝ)
-    (A : Z → ι → ι → ℝ) (ζ : Z) :
+theorem highPacketMarkWeight_variation 
+    (ζ : Z) :
     (∑ h : HighPacketMarkIndex ι m r D q, |highPacketMarkWeight a b m r D q C A (ζ, h)|) =
       (∑ h : HighDensityMarkIndex m r D, |densityPacketWeight a b m r D h|) *
         (∑ h : Fin (2 * q + 2), |responseWeight q h|) * (2 * C ^ 2) * separatedMatrixCost A ζ := by
@@ -282,7 +287,7 @@ theorem highPacketSignedMeasure_totalVariation (σ : Measure Z) [IsFiniteMeasure
   simp only [highPacketMarkWeight_variation]
   rw [integral_const_mul]
 
-theorem densityPacketAtom_injective (a b : ℝ) (hab : a < b)
+theorem densityPacketAtom_injective (hab : a < b)
     (m r D : ℕ) (hr : 1 ≤ r) : Function.Injective (densityPacketAtom a b m r D) := by
   intro e f he
   apply Prod.ext
@@ -291,7 +296,7 @@ theorem densityPacketAtom_injective (a b : ℝ) (hab : a < b)
     exact (lobattoNode_strictAnti (derivativeOrder D) (by unfold derivativeOrder; omega)).injective
       (congrArg (fun e : ℝ × (Fin r → ℝ) => e.2 l) he)
 
-theorem densityPacketWeight_exponential_cost (a b : ℝ) (ha : 0 < a) (hab : a < b)
+theorem densityPacketWeight_exponential_cost (ha : 0 < a) (hab : a < b)
     (m r D : ℕ) (hr : 1 ≤ r) (hD : 1 ≤ D) :
     (∑ h : HighDensityMarkIndex m r D, |densityPacketWeight a b m r D h|) ≤
       (Real.exp (1 + exteriorTau ((a + b) / (b - a))) * |b / densityMargin a b 0|) ^ r *
@@ -301,8 +306,11 @@ theorem densityPacketWeight_exponential_cost (a b : ℝ) (ha : 0 < a) (hab : a <
   rw [← he]
   exact densityPacketSignedRule_exponential_cost a b ha hab m r D hr hD
 
-theorem highPacketSignedMeasure_exponential_cost (σ : Measure Z) [IsFiniteMeasure σ]
-    (a b : ℝ) (ha : 0 < a) (hab : a < b) (m r D q : ℕ) (hr : 1 ≤ r) (hD : 1 ≤ D)
+section
+variable (σ : Measure Z) [IsFiniteMeasure σ] (a b : ℝ)
+
+theorem highPacketSignedMeasure_exponential_cost 
+    (ha : 0 < a) (hab : a < b) (m r D q : ℕ) (hr : 1 ≤ r) (hD : 1 ≤ D)
     (C : ℝ) (A : Z → ι → ι → ℝ) (hA : ∀ i j, Measurable (fun ζ => A ζ i j))
     (hcost : Integrable (separatedMatrixCost A) σ) :
     ((highPacketSignedMeasure σ a b m r D q C A).variation univ).toReal ≤
@@ -320,8 +328,8 @@ theorem highPacketSignedMeasure_exponential_cost (σ : Measure Z) [IsFiniteMeasu
     intro ζ
     exact Finset.sum_nonneg (fun i _ => Finset.sum_nonneg (fun j _ => abs_nonneg (A ζ i j)))
 
-theorem highPacketSignedMeasure_zero_mass (σ : Measure Z) [IsFiniteMeasure σ]
-    (a b : ℝ) (m r D q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
+theorem highPacketSignedMeasure_zero_mass 
+    (m r D q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
     (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) (hcost : Integrable (separatedMatrixCost A) σ) :
     highPacketSignedMeasure σ a b m r D q C A univ = 0 := by
   have hw := highPacketMarkWeight_integrable σ a b m r D q C A hA hcost
@@ -335,6 +343,8 @@ theorem highPacketSignedMeasure_zero_mass (σ : Measure Z) [IsFiniteMeasure σ]
     simpa only [highPacketObservable, mul_one, mul_zero, responseMatrixAction_zero_mass,
       densityPacketAction_zero] using h
   simp only [hz, integral_zero]
+
+end
 
 variable {α : Type*} [DecidableEq α]
 

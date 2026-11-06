@@ -16,8 +16,6 @@ noncomputable section
 open MeasureTheory
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 800000
 
 theorem poissonCountWeight_mul_pow (x a : ℝ) (r : ℕ) :
     poissonCountWeight x r * a^r = poissonCountWeight (a*x) r := by
@@ -89,7 +87,12 @@ theorem finite_cardinal_geometry_budget_le {d D F : ℕ} (hd : 5 ≤ d)
     (by positivity) (lt_of_lt_of_le zero_lt_one hN) hmu.le hmu1 hTaylor
   exact (add_le_add hA hT).trans_eq (by unfold cardinalGeometryFactorialConstant; ring)
 
-theorem finite_fine_field_geometry_budget_le {d D : ℕ} [NeZero d] (hd : 5 ≤ d) (hD : 3 ≤ D)
+variable {d D : ℕ}
+
+section
+variable [NeZero d]
+
+theorem finite_fine_field_geometry_budget_le (hd : 5 ≤ d) (hD : 3 ≤ D)
     {aD bD ad bd c0 : ℝ} (haD : 0 < aD) (had : aD ≤ ad) (hbd : bd ≤ bD)
     (hab : ad < bd) (htau : exteriorTau ((ad+bd)/(bd-ad)) ≤ c0)
     (M q : ℕ) (C a rho eta ell N Cs mu : ℝ) (hell : 0 < ell)
@@ -123,7 +126,7 @@ theorem finite_fine_field_geometry_budget_le {d D : ℕ} [NeZero d] (hd : 5 ≤ 
   exact hmajor.trans (finite_fine_pair_field_budget_le haD had hbd hab htau d M q (D-3)
     C a rho eta ell (3*Cs) mu (by positivity) hmu hmu1)
 
-theorem finite_fine_pair_alias_geometry_budget_le {d D : ℕ} [NeZero d] (hd : 5 ≤ d)
+theorem finite_fine_pair_alias_geometry_budget_le (hd : 5 ≤ d)
     {aD bD ad bd c0 K : ℝ} (haD : 0 < aD) (had : aD ≤ ad) (hbd : bd ≤ bD)
     (hab : ad < bd) (htau : exteriorTau ((ad+bd)/(bd-ad)) ≤ c0)
     (hc0 : 0 ≤ c0) (hK : 0 ≤ K) (M q : ℕ) (C a rho eta ell N Cs mu : ℝ)
@@ -164,5 +167,7 @@ theorem finite_fine_pair_alias_geometry_budget_le {d D : ℕ} [NeZero d] (hd : 5
   apply (hmajor.trans (finite_refined_gated_sum_le_tail D M f hf)).trans
   exact finite_fine_pair_saddle_alias_budget_le (by omega) haD had hbd hab htau hc0 hK M D q (D-M)
     C a rho eta ell N (3*Cs) mu hN hell hDM (by positivity) hmu hmu1
+
+end
 
 end NearlyMinimax

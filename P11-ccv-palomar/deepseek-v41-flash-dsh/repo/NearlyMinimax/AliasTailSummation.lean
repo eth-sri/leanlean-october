@@ -12,8 +12,7 @@ open scoped BigOperators
 namespace NearlyMinimax
 
 theorem poissonCountWeight_mono {x y : ℝ} (hx : 0 ≤ x) (hxy : x ≤ y) (k : ℕ) :
-    poissonCountWeight x k ≤ poissonCountWeight y k := by
-  exact div_le_div_of_nonneg_right (pow_le_pow_left₀ hx hxy k) (Nat.cast_nonneg _)
+    poissonCountWeight x k ≤ poissonCountWeight y k := div_le_div_of_nonneg_right (pow_le_pow_left₀ hx hxy k) (Nat.cast_nonneg _)
 
 theorem finite_poissonCountWeight_tail_le {x : ℝ} (hx : 0 ≤ x) (a J : ℕ) :
     (∑ j ∈ Finset.range J, poissonCountWeight x (a + j)) ≤
@@ -26,7 +25,9 @@ theorem finite_poissonCountWeight_tail_le {x : ℝ} (hx : 0 ≤ x) (a J : ℕ) :
 def aliasTailConstant (A Csharp C L : ℝ) : ℝ :=
   1 + A * Real.exp (Csharp * C) + Csharp * C * Real.exp L
 
-theorem aliasTailConstant_ge_one {A Csharp C L : ℝ}
+variable {A Csharp C L : ℝ}
+
+theorem aliasTailConstant_ge_one 
     (hA : 0 ≤ A) (hCs : 0 ≤ Csharp) (hC : 0 ≤ C) :
     1 ≤ aliasTailConstant A Csharp C L := by
   unfold aliasTailConstant
@@ -34,14 +35,14 @@ theorem aliasTailConstant_ge_one {A Csharp C L : ℝ}
   have h2 : 0 ≤ Csharp * C * Real.exp L := by positivity
   linarith only [h1, h2]
 
-theorem aliasTailConstant_ge_prefactor {A Csharp C L : ℝ}
+theorem aliasTailConstant_ge_prefactor 
     (hCs : 0 ≤ Csharp) (hC : 0 ≤ C) :
     A * Real.exp (Csharp * C) ≤ aliasTailConstant A Csharp C L := by
   unfold aliasTailConstant
   have h : 0 ≤ Csharp * C * Real.exp L := by positivity
   linarith only [h]
 
-theorem aliasTailConstant_ge_base {A Csharp C L : ℝ} (hA : 0 ≤ A) :
+theorem aliasTailConstant_ge_base (hA : 0 ≤ A) :
     Csharp * C * Real.exp L ≤ aliasTailConstant A Csharp C L := by
   unfold aliasTailConstant
   have h : 0 ≤ A * Real.exp (Csharp * C) := by positivity

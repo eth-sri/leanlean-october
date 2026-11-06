@@ -11,8 +11,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 attribute [local instance] Classical.propDecidable
 
 section Pair
@@ -67,8 +65,13 @@ theorem finePairThreeRowFirstAction_higher {d n D : ℕ} [NeZero d]
     finePairFineFirstAction_alias_even_field ad bd ℓ N ha hab M q C U p hp c Φ]
   ring
 
-theorem completeSourceSignedFirstAction_higher {d n : ℕ} [NeZero d]
-    (ad bd lam ℓ N μ : ℝ) (ha : 0 < ad) (hab : ad < bd)
+variable {d n : ℕ}
+
+section
+variable [NeZero d] (ad bd lam ℓ N μ : ℝ)
+
+theorem completeSourceSignedFirstAction_higher 
+    (ha : 0 < ad) (hab : ad < bd)
     (D M q : ℕ) (hn : 3 ≤ n) (hnD : n ≤ D) (C : ℝ)
     (U : Fin n → Covariate d) (p : Fin n → ℝ) (hp : ∀ i, p i ∈ Icc ad bd)
     (c : HighFrameIndex d D → ℝ) (Φ : (HighFrameIndex d D → ℝ) → ℝ) :
@@ -81,8 +84,8 @@ theorem completeSourceSignedFirstAction_higher {d n : ℕ} [NeZero d]
     finePairThreeRowFirstAction_higher hn hnD ad bd ℓ N ha hab M q C U p hp c Φ]
   ring
 
-theorem completeSourceRawNumerator_higher {d n : ℕ} [NeZero d]
-    (ad bd lam ℓ N μ : ℝ) (ha : 0 < ad) (hab : ad < bd)
+theorem completeSourceRawNumerator_higher 
+    (ha : 0 < ad) (hab : ad < bd)
     (D M q : ℕ) (hn : 3 ≤ n) (hnD : n ≤ D) (C a V η : ℝ)
     (U : Fin n → Covariate d) (p g w : Fin n → ℝ) (hp : ∀ i, p i ∈ Icc ad bd)
     (c : HighFrameIndex d D → ℝ) (y : Fin n → Fin 3) :
@@ -97,5 +100,7 @@ theorem completeSourceRawNumerator_higher {d n : ℕ} [NeZero d]
         highResponseVarianceTerm a V η g w (fun i => highFrameFeature (U i)) c y i := by
   unfold completeSourceRawNumerator
   rw [completeSourceSignedFirstAction_higher ad bd lam ℓ N μ ha hab D M q hn hnD C U p hp c]
+
+end
 
 end NearlyMinimax

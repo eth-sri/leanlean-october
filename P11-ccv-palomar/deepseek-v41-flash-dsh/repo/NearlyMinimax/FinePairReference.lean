@@ -11,13 +11,13 @@ noncomputable section
 open Set MeasureTheory
 open scoped BigOperators ENNReal
 namespace NearlyMinimax
-set_option maxHeartbeats 600000
-set_option backward.isDefEq.respectTransparency false
 
-theorem fineModulationNode_reflection (i : Fin 3) : fineModulationNode i.rev = -fineModulationNode i := by
+variable (i : Fin 3)
+
+theorem fineModulationNode_reflection : fineModulationNode i.rev = -fineModulationNode i := by
   fin_cases i <;> norm_num [fineModulationNode, Fin.rev]
 
-theorem fineModulationWeight_abs_reflection (i : Fin 3) :
+theorem fineModulationWeight_abs_reflection :
     |fineModulationWeight i.rev| = |fineModulationWeight i| := by
   fin_cases i <;> norm_num [fineModulationWeight, Fin.rev]
 
@@ -46,20 +46,27 @@ def finePairPacketSlope (a b : ℝ) (M q : ℕ) (ψ : Z → ℝ) (e : Z × FineP
   densityMargin a b (finePairPacketIntercept a b M q e) / b *
     (finePairDensityAtom a b M e.2.1).2 * ψ e.1
 
-def finePairPacketResponseVector (M q : ℕ) (C : ℝ) (e : Z × FinePairPacketIndex ι M q) : ι → ℝ :=
+section
+variable (M q : ℕ)
+
+def finePairPacketResponseVector (C : ℝ) (e : Z × FinePairPacketIndex ι M q) : ι → ℝ :=
   (highResponseMarkAtom C q e.2.2).2
 
-def finePairPacketResponseTime (M q : ℕ) (e : Z × FinePairPacketIndex ι M q) : ℝ :=
+def finePairPacketResponseTime (e : Z × FinePairPacketIndex ι M q) : ℝ :=
   (highResponseMarkAtom 0 q e.2.2).1
 
-theorem finePairPacketIntercept_measurable (a b : ℝ) (M q : ℕ) :
+end
+
+variable (a b : ℝ) (M q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
+
+theorem finePairPacketIntercept_measurable :
     Measurable (finePairPacketIntercept (Z := Z) (ι := ι) a b M q) := by
   apply measurable_from_prod_countable_left
   intro h
   change Measurable (fun _ : Z => (finePairDensityAtom a b M h.1).1)
   exact measurable_const
 
-theorem finePairPacketSlope_measurable (a b : ℝ) (M q : ℕ) (ψ : Z → ℝ) (hψ : Measurable ψ) :
+theorem finePairPacketSlope_measurable (ψ : Z → ℝ) (hψ : Measurable ψ) :
     Measurable (finePairPacketSlope (ι := ι) a b M q ψ) := by
   apply measurable_from_prod_countable_left
   intro h
@@ -80,19 +87,19 @@ theorem finePairPacketSlope_joint_measurable {U : Type*} [MeasurableSpace U]
         (finePairDensityAtom a b M h.1).2)).comp (measurable_snd.comp measurable_fst)
   exact hc.mul (hψ.comp ((measurable_fst.comp measurable_fst).prodMk measurable_snd))
 
-theorem finePairPacketIntercept_mem (a b : ℝ) (hab : a ≤ b) (M q : ℕ)
+theorem finePairPacketIntercept_mem (hab : a ≤ b) (M q : ℕ)
     (e : Z × FinePairPacketIndex ι M q) : finePairPacketIntercept a b M q e ∈ Icc a b :=
   exteriorNode_mem a b hab (M + 2) e.2.1.1
 
-theorem finePairPacketSlope_bound (a b : ℝ) (ha : 0 < a) (hab : a < b) (M q : ℕ)
+theorem finePairPacketSlope_bound (ha : 0 < a) (hab : a < b) (M q : ℕ)
     (ψ : Z → ℝ) (hψ : ∀ ζ, |ψ ζ| ≤ 1) (e : Z × FinePairPacketIndex ι M q) :
     |finePairPacketSlope a b M q ψ e| ≤ (b - a) / (4 * b) :=
   finePairDensityReset_slope_bound a b ha hab _ _
     (exteriorNode_mem a b hab.le (M + 2) e.2.1.1) (fineModulationNode_bound e.2.1.2)
     (fun _ : Unit => ψ e.1) () (hψ e.1)
 
-theorem finePairPacketWeight_abs_reflection (a b : ℝ) (M q : ℕ) (C : ℝ)
-    (A : Z → ι → ι → ℝ) (ζ : Z) (h : FinePairPacketIndex ι M q) :
+theorem finePairPacketWeight_abs_reflection 
+    (ζ : Z) (h : FinePairPacketIndex ι M q) :
     |finePairPacketWeight a b M q C A (ζ, finePairPacketReflection ι M q h)| =
       |finePairPacketWeight a b M q C A (ζ, h)| := by
   simp only [finePairPacketWeight, finePairDensityWeight, finePairPacketReflection,
@@ -100,7 +107,7 @@ theorem finePairPacketWeight_abs_reflection (a b : ℝ) (M q : ℕ) (C : ℝ)
     Equiv.refl_apply, Fin.revPerm_apply, abs_mul,
     fineModulationWeight_abs_reflection]
 
-theorem finePairPacketSlope_reflection (a b : ℝ) (M q : ℕ) (ψ : Z → ℝ) (ζ : Z)
+theorem finePairPacketSlope_reflection (ψ : Z → ℝ) (ζ : Z)
     (h : FinePairPacketIndex ι M q) :
     finePairPacketSlope a b M q ψ (ζ, finePairPacketReflection ι M q h) =
       -finePairPacketSlope a b M q ψ (ζ, h) := by
@@ -110,8 +117,8 @@ theorem finePairPacketSlope_reflection (a b : ℝ) (M q : ℕ) (ψ : Z → ℝ) 
     fineModulationNode_reflection]
   ring
 
-theorem finePairPacketSlope_absolute_sum_zero (a b : ℝ) (M q : ℕ) (C : ℝ)
-    (A : Z → ι → ι → ℝ) (ψ : Z → ℝ) (ζ : Z) :
+theorem finePairPacketSlope_absolute_sum_zero 
+    (ψ : Z → ℝ) (ζ : Z) :
     (∑ h : FinePairPacketIndex ι M q, |finePairPacketWeight a b M q C A (ζ, h)| *
       finePairPacketSlope a b M q ψ (ζ, h)) = 0 :=
   finite_even_odd_sum_zero (finePairPacketReflection ι M q) _ _

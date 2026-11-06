@@ -10,8 +10,6 @@ noncomputable section
 open MeasureTheory ProbabilityTheory Filter Set
 open scoped ENNReal
 namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 variable {Ω Z : Type*} [MeasurableSpace Ω] [MeasurableSpace Z]
 
 /-- Tonelli gives the genuine density of the data marginal. -/

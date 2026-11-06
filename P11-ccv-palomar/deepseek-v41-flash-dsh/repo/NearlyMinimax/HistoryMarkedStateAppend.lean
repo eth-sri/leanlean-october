@@ -10,16 +10,16 @@ append, derived from the genuine heap-coordinate transport. -/
 noncomputable section
 open MeasureTheory
 namespace NearlyMinimax
-set_option maxHeartbeats 600000
-set_option backward.isDefEq.respectTransparency false
 variable {J : Type*} [Fintype J] [LinearOrder J]
 
-def historyCanonicalWordMarks (dependent : J → J → Prop)
+variable (dependent : J → J → Prop) (j : J) (g : HistoryShape (fun a b => ¬ dependent a b)) {E : Type*}
+
+def historyCanonicalWordMarks 
     (g : HistoryShape (fun a b => ¬ dependent a b)) {E : Type*}
     (marks : Fin (historyShapeLength dependent g) → E) : Fin g.out.length → E :=
   fun i => marks (Fin.cast (historyShapeLength_out dependent g).symm i)
 
-theorem historyMarkedRawState_eq_wordMarkedState (dependent : J → J → Prop)
+theorem historyMarkedRawState_eq_wordMarkedState 
     {E X : Type*} (update : J → E → X → X) (initial : X)
     (g : HistoryShape (fun a b => ¬ dependent a b))
     (marks : Fin (historyShapeLength dependent g) → E) :
@@ -43,14 +43,14 @@ theorem historyMarkedRawState_eq_wordMarkedState (dependent : J → J → Prop)
   rw [List.foldl_map] at hh
   exact hh
 
-def historyAppendWordMarks (dependent : J → J → Prop)
-    (j : J) (g : HistoryShape (fun a b => ¬ dependent a b))
-    {E : Type*} [MeasurableSpace E] (fresh : E)
+def historyAppendWordMarks 
+    
+    [MeasurableSpace E] (fresh : E)
     (marks : Fin (historyShapeLength dependent g) → E) : Fin (g.out ++ [j]).length → E :=
   fun i => historyFiniteMarkAppendEquiv (historyShapeLength dependent g) (fresh, marks)
     (Fin.cast (by rw [historyShapeLength_out]; simp) i)
 
-theorem historyCanonicalAppend_word_marks (dependent : J → J → Prop)
+theorem historyCanonicalAppend_word_marks 
     (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (j : J) (g : HistoryShape (fun a b => ¬ dependent a b))
     {E : Type*} [MeasurableSpace E] (fresh : E)
@@ -83,10 +83,13 @@ theorem historyCanonicalAppend_word_marks (dependent : J → J → Prop)
   rw [hx] at ht
   exact hh.trans ht.symm
 
-@[simp] theorem historyAppendWordMarks_old (dependent : J → J → Prop)
-    (j : J) (g : HistoryShape (fun a b => ¬ dependent a b))
-    {E : Type*} [MeasurableSpace E] (fresh : E)
-    (marks : Fin (historyShapeLength dependent g) → E) (x : WordHeapPiece g.out dependent) :
+section
+variable [MeasurableSpace E] (fresh : E) (marks : Fin (historyShapeLength dependent g) → E)
+
+@[simp] theorem historyAppendWordMarks_old 
+    
+    
+    (x : WordHeapPiece g.out dependent) :
     historyAppendWordMarks dependent j g fresh marks
       (historyPrefixHeapEmbedding g.out dependent j x).position =
       historyCanonicalWordMarks dependent g marks x.position := by
@@ -98,20 +101,20 @@ theorem historyCanonicalAppend_word_marks (dependent : J → J → Prop)
     rfl
   rw [he, historyFiniteMarkAppendEquiv_old]
 
-@[simp] theorem historyAppendWordMarks_fresh (dependent : J → J → Prop)
-    (j : J) (g : HistoryShape (fun a b => ¬ dependent a b))
-    {E : Type*} [MeasurableSpace E] (fresh : E)
-    (marks : Fin (historyShapeLength dependent g) → E) :
+@[simp] theorem historyAppendWordMarks_fresh 
+    
+    
+    :
     historyAppendWordMarks dependent j g fresh marks (wordHeapAppendedPiece g.out dependent j).position = fresh := by
   unfold historyAppendWordMarks
   have he : Fin.cast (by rw [historyShapeLength_out]; simp)
-      (wordHeapAppendedPiece g.out dependent j).position = Fin.last (historyShapeLength dependent g) := by
-    apply Fin.ext
-    exact (historyShapeLength_out dependent g).symm
+      (wordHeapAppendedPiece g.out dependent j).position = Fin.last (historyShapeLength dependent g) := Fin.ext (historyShapeLength_out dependent g).symm
   rw [he, historyFiniteMarkAppendEquiv_last]
 
-theorem historyAppendWordMarkedState (dependent : J → J → Prop)
-    (j : J) (g : HistoryShape (fun a b => ¬ dependent a b))
+end
+
+theorem historyAppendWordMarkedState 
+    
     {E X : Type*} [MeasurableSpace E] (fresh : E)
     (marks : Fin (historyShapeLength dependent g) → E)
     (update : J → E → X → X) (initial : X) :
@@ -148,7 +151,7 @@ theorem historyAppendWordMarkedState (dependent : J → J → Prop)
 
 /-- Actual canonical marked append applies exactly the fresh local update
 once, even when the canonical representative reorders old occurrences. -/
-theorem historyMarkedRawState_append (dependent : J → J → Prop)
+theorem historyMarkedRawState_append 
     (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     {E X : Type*} [MeasurableSpace E] (update : J → E → X → X)
     (hcomm : ∀ j k, ¬ dependent j k → ∀ e f state,

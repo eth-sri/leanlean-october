@@ -24,8 +24,10 @@ theorem regular_grid_index_parent (k : ℕ) (hk : 0 < k) (x : ℝ) :
   simp only [regularGridIndex, Fin.val_mk]
   omega
 
+variable {d : ℕ}
+
 /-- A genuine fine-cell equality implies equality of the dyadic parent labels. -/
-theorem regular_grid_cell_parent_eq {d : ℕ} (k : ℕ) (hk : 0 < k)
+theorem regular_grid_cell_parent_eq (k : ℕ) (hk : 0 < k)
     (x z : Covariate d)
     (h : regularGridCell (2 * k) (by omega) z = regularGridCell (2 * k) (by omega) x) :
     regularGridCell k hk z = regularGridCell k hk x := by
@@ -37,7 +39,7 @@ theorem regular_grid_cell_parent_eq {d : ℕ} (k : ℕ) (hk : 0 < k)
   rw [regular_grid_index_parent k hk, regular_grid_index_parent k hk] at hi
   exact hi
 
-theorem dyadicPilotCell_subset_parent {d : ℕ} (j : ℕ) (x : Covariate d) :
+theorem dyadicPilotCell_subset_parent (j : ℕ) (x : Covariate d) :
     dyadicPilotCell j x ⊆ dyadicPilotCell (j - 1) x := by
   cases j with
   | zero => simp

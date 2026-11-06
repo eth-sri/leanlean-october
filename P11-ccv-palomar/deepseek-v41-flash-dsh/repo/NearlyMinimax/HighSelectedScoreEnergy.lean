@@ -12,13 +12,14 @@ noncomputable section
 open MeasureTheory ProbabilityTheory Set
 open scoped BigOperators ENNReal
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 attribute [local instance] Classical.propDecidable
 
-theorem fintype_probability_pi_withDensity {κ α : Type*} [Fintype κ]
-    [MeasurableSpace α] (μ : Measure α) [IsProbabilityMeasure μ]
-    (f : α → ℝ≥0∞) (hf : Measurable f) (hprob : IsProbabilityMeasure (μ.withDensity f)) :
+section
+variable {κ α : Type*} [Fintype κ] [MeasurableSpace α] (μ : Measure α) [IsProbabilityMeasure μ] (f : α → ℝ≥0∞)
+
+theorem fintype_probability_pi_withDensity 
+    
+    (hf : Measurable f) (hprob : IsProbabilityMeasure (μ.withDensity f)) :
     Measure.pi (fun _ : κ => μ.withDensity f) =
       (Measure.pi (fun _ : κ => μ)).withDensity (fun x => ∏ i, f (x i)) := by
   let _ := hprob
@@ -51,9 +52,9 @@ theorem fintype_probability_pi_withDensity {κ α : Type*} [Fintype κ]
     rw [lintegral_indicator (hs i), withDensity_apply f (hs i)]
   · exact MeasurableSet.univ_pi hs
 
-theorem fintype_probability_pi_restrict_withDensity {κ α : Type*} [Fintype κ]
-    [MeasurableSpace α] (μ : Measure α) [IsProbabilityMeasure μ]
-    (f : α → ℝ≥0∞) (hf : Measurable f) (hprob : IsProbabilityMeasure (μ.withDensity f))
+theorem fintype_probability_pi_restrict_withDensity 
+    
+    (hf : Measurable f) (hprob : IsProbabilityMeasure (μ.withDensity f))
     (A : Set α) (hA : MeasurableSet A) :
     Measure.pi (fun _ : κ => (μ.withDensity f).restrict A) =
       (Measure.pi (fun _ : κ => μ.restrict A)).withDensity (fun x => ∏ i, f (x i)) := by
@@ -61,6 +62,8 @@ theorem fintype_probability_pi_restrict_withDensity {κ α : Type*} [Fintype κ]
     fintype_probability_pi_withDensity μ f hf hprob,
     restrict_withDensity (MeasurableSet.univ_pi (fun _ => hA)),
     Measure.restrict_pi_pi]
+
+end
 
 def selectedRawLikelihood {κ α : Type*} [Fintype κ]
     (p : α → ℝ) (q : α → Fin 3 → ℝ) (x : κ → α) (y : κ → Fin 3) : ℝ :=
@@ -75,17 +78,22 @@ def selectedRawSquareEnergy {κ α : Type*} [Fintype κ]
     (R : (κ → α) → (κ → Fin 3) → ℝ) (x : κ → α) : ℝ :=
   ∑ y : κ → Fin 3, (R x y) ^ 2
 
-theorem selected_conditional_score_energy_nonneg {κ α : Type*} [Fintype κ]
-    (p : α → ℝ) (q : α → Fin 3 → ℝ) (hq : ∀ x y, 0 ≤ q x y)
+section
+variable {κ α : Type*} [Fintype κ] (p : α → ℝ) (q : α → Fin 3 → ℝ)
+
+theorem selected_conditional_score_energy_nonneg 
+    (hq : ∀ x y, 0 ≤ q x y)
     (R : (κ → α) → (κ → Fin 3) → ℝ) (x : κ → α) :
     0 ≤ selectedConditionalScoreEnergy p q R x :=
   Finset.sum_nonneg (fun y _ => mul_nonneg (Finset.prod_nonneg (fun i _ => hq _ _)) (sq_nonneg _))
 
-theorem selected_raw_likelihood_positive {κ α : Type*} [Fintype κ]
-    (p : α → ℝ) (q : α → Fin 3 → ℝ) (x : κ → α) (y : κ → Fin 3)
+theorem selected_raw_likelihood_positive 
+    (x : κ → α) (y : κ → Fin 3)
     (hp : ∀ i, 0 < p (x i)) (hq : ∀ i, 0 < q (x i) (y i)) :
     0 < selectedRawLikelihood p q x y :=
   mul_pos (Finset.prod_pos (fun i _ => hp i)) (Finset.prod_pos (fun i _ => hq i))
+
+end
 
 theorem selected_score_density_cancel {κ α : Type*} [Fintype κ]
     (m : ℝ) (hm : 0 < m) (p : α → ℝ) (q : α → Fin 3 → ℝ)
@@ -132,9 +140,12 @@ theorem selected_raw_inverse_floor {κ α : Type*} [Fintype κ]
   rw [inv_pow]
   exact (inv_le_inv₀ hright hleft).mpr hprod
 
-theorem normalized_selected_score_density_cancel_ae {κ α : Type*} [Fintype κ]
-    [MeasurableSpace α] (μ : Measure α) [IsProbabilityMeasure μ]
-    (A : Set α) (hA : MeasurableSet A) (m : ℝ) (hm : 0 < m)
+section
+variable {κ α : Type*} [Fintype κ] [MeasurableSpace α] (μ : Measure α) [IsProbabilityMeasure μ] (A : Set α)
+
+theorem normalized_selected_score_density_cancel_ae 
+    
+    (hA : MeasurableSet A) (m : ℝ) (hm : 0 < m)
     (p : α → ℝ) (q : α → Fin 3 → ℝ)
     (R : (κ → α) → (κ → Fin 3) → ℝ)
     (hp : ∀ x ∈ A, 0 < p x) (hq : ∀ x ∈ A, ∀ y, 0 < q x y) :
@@ -154,9 +165,9 @@ theorem normalized_selected_score_density_cancel_ae {κ α : Type*} [Fintype κ]
   exact selected_score_density_cancel m hm p q R x (fun i => hp _ (hx i))
     (fun i y => hq _ (hx i) y)
 
-theorem normalized_selected_score_energy_integral_eq_raw {κ α : Type*} [Fintype κ]
-    [MeasurableSpace α] (μ : Measure α) [IsProbabilityMeasure μ]
-    (A : Set α) (hA : MeasurableSet A) (m : ℝ) (hm : 0 < m)
+theorem normalized_selected_score_energy_integral_eq_raw 
+    
+    (hA : MeasurableSet A) (m : ℝ) (hm : 0 < m)
     (p : α → ℝ) (hpMeas : Measurable p) (q : α → Fin 3 → ℝ)
     (R : (κ → α) → (κ → Fin 3) → ℝ)
     (hprob : IsProbabilityMeasure (μ.withDensity (fun x => ENNReal.ofReal (p x / m))))
@@ -183,9 +194,9 @@ theorem normalized_selected_score_energy_integral_eq_raw {κ α : Type*} [Fintyp
   apply integral_congr_ae
   exact normalized_selected_score_density_cancel_ae μ A hA m hm p q R hp hq
 
-theorem normalized_selected_score_energy_integrable_bound {κ α : Type*} [Fintype κ]
-    [MeasurableSpace α] (μ : Measure α) [IsProbabilityMeasure μ]
-    (A : Set α) (hA : MeasurableSet A) (m pMinus cMass : ℝ)
+theorem normalized_selected_score_energy_integrable_bound 
+    
+    (hA : MeasurableSet A) (m pMinus cMass : ℝ)
     (hpMinus : 0 < pMinus) (hcMass : 0 < cMass) (hm : pMinus ≤ m)
     (p : α → ℝ) (hpMeas : Measurable p) (q : α → Fin 3 → ℝ)
     (hqMeas : ∀ y, Measurable (fun x => q x y))
@@ -252,5 +263,7 @@ theorem normalized_selected_score_energy_integrable_bound {κ α : Type*} [Finty
         ∂Measure.pi (fun _ : κ => μ.restrict A) :=
       integral_mono_ae hWI hJ (hWbound.mono (fun x hx => hx.2))
     _ = _ := integral_const_mul _ _
+
+end
 
 end NearlyMinimax

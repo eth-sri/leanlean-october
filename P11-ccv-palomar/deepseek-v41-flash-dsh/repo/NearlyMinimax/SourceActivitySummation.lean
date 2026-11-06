@@ -13,10 +13,8 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 800000
-attribute [local instance] Classical.propDecidable
 
+attribute [local instance] Classical.propDecidable
 theorem finite_activity_fin_tail_le {K q : ℝ} (hK : 0 ≤ K) (hq : 0 ≤ q)
     (hqh : q ≤ 1/2) (m : ℕ) (B : Fin m → ℝ)
     (hB : ∀ j, B j ≤ K*q^(j.val+1)) :
@@ -24,12 +22,13 @@ theorem finite_activity_fin_tail_le {K q : ℝ} (hK : 0 ≤ K) (hq : 0 ≤ q)
   calc
     _ ≤ ∑ j : Fin m, K*q^(j.val+1) := Finset.sum_le_sum fun j _ => hB j
     _ = K * ∑ j : Fin m, q^(j.val+1) := (Finset.mul_sum _ _ _).symm
-    _ = K * ∑ j ∈ Finset.range m, q^(j+1) := by
-      exact congrArg (fun t : ℝ => K*t) (Fin.sum_univ_eq_sum_range (fun j => q^(j+1)) m)
+    _ = K * ∑ j ∈ Finset.range m, q^(j+1) := congrArg (fun t : ℝ => K*t) (Fin.sum_univ_eq_sum_range (fun j => q^(j+1)) m)
     _ ≤ K*(2*q) := mul_le_mul_of_nonneg_left (finite_geometric_tail_le_two_mul hq hqh m) hK
     _ = _ := by ring
 
-theorem higherBandCoarseActivity_geometric_le {d D M q : ℕ} (hd : 0 < d) (hD : 1 ≤ D)
+variable {d D M q : ℕ}
+
+theorem higherBandCoarseActivity_geometric_le (hd : 0 < d) (hD : 1 ≤ D)
     (a b C lam ℓ N μ B : ℝ) (ha : 0 < a) (hab : a < b)
     (hℓ : 0 ≤ ℓ) (hN : 1 ≤ N) (hμ : 0 ≤ μ) (hbase1 : μ*(1+Real.log N) ≤ 1)
     (hB : 0 ≤ B) (hbB : ordinaryDensityActivityBase a b ≤ B) (j : Fin (D-2)) :
@@ -51,7 +50,7 @@ theorem higherBandCoarseActivity_geometric_le {d D M q : ℕ} (hd : 0 < d) (hD :
       higherBandGeometricConstant sourceResponseCost
     positivity
 
-theorem higherBandFineActivity_geometric_le {d D M q : ℕ} (hd : 0 < d) (hD : 1 ≤ D)
+theorem higherBandFineActivity_geometric_le (hd : 0 < d) (hD : 1 ≤ D)
     (a b C lam ℓ N μ B : ℝ) (ha : 0 < a) (hab : a < b)
     (hN : 1 ≤ N) (hμ : 0 ≤ μ) (hbase1 : μ*(1+Real.log N) ≤ 1)
     (hB : 0 ≤ B) (hbB : ordinaryDensityActivityBase a b ≤ B) (j : Fin (D-2)) :

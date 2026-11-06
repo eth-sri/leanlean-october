@@ -10,22 +10,23 @@ public import NearlyMinimax.HistoryExpectationDerivative
 -/
 
 noncomputable section
-set_option backward.isDefEq.respectTransparency false
 open MeasureTheory
 namespace NearlyMinimax
 
 variable {J : Type*} [Fintype J] [LinearOrder J]
 
+variable (dependent : J → J → Prop) (ρ t : ℝ) {E : Type*} (a : E → ℝ)
+
 /-- The actual maximal-deletion contribution of one spatial label. -/
-def historyMarkedLabelTerm (dependent : J → J → Prop) (ρ t : ℝ) {E : Type*}
+def historyMarkedLabelTerm (ρ t : ℝ) {E : Type*}
     (a : E → ℝ) (j : J) (h : HistoryMarked dependent E) : ℝ :=
   ∑ x ∈ historyMaximalPieces Finset.univ,
     if wordHeapLabel x = j then historyMarkedPieceWeight dependent a h x *
       historyScaledUpperDensity (historyMarkedPieceWeight dependent a h) ρ (Finset.univ.erase x) t else 0
 
 /-- Genuine finite maximal pieces partition by their actual labels. -/
-theorem historyMarkedDensityDerivative_eq_labelSum (dependent : J → J → Prop) (ρ t : ℝ)
-    {E : Type*} (a : E → ℝ) (h : HistoryMarked dependent E) :
+theorem historyMarkedDensityDerivative_eq_labelSum 
+    (h : HistoryMarked dependent E) :
     historyMarkedDensityDerivative dependent ρ t a h =
       ρ⁻¹ * ∑ j, historyMarkedLabelTerm dependent ρ t a j h := by
   classical
@@ -37,7 +38,7 @@ theorem historyMarkedDensityDerivative_eq_labelSum (dependent : J → J → Prop
   simp
 
 /-- There is no contribution when the actual shape has no maximal piece of that label. -/
-theorem historyMarkedLabelTerm_eq_zero (dependent : J → J → Prop)
+theorem historyMarkedLabelTerm_eq_zero 
     (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i) (ρ t : ℝ)
     {E : Type*} (a : E → ℝ) (j : J) (h : HistoryMarked dependent E)
     (hn : h ∉ historyMarkedTerminalSet dependent j) : historyMarkedLabelTerm dependent ρ t a j h = 0 := by
@@ -52,7 +53,7 @@ theorem historyMarkedLabelTerm_eq_zero (dependent : J → J → Prop)
   simp [hl]
 
 /-- On a genuine append, the unique fresh maximal label has exactly the old deleted density. -/
-theorem historyMarkedLabelTerm_append (dependent : J → J → Prop)
+theorem historyMarkedLabelTerm_append 
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (ρ t : ℝ) {E : Type*} [MeasurableSpace E] (a : E → ℝ) (j : J)
     (h : HistoryMarked dependent E) (fresh : E) :
@@ -87,8 +88,8 @@ theorem historyMarkedLabelTerm_append (dependent : J → J → Prop)
     exact (hn (historyCanonicalAppendedPiece_maximal dependent hsymm j g)).elim
 
 /-- Every fixed maximal-label contribution is actually measurable. -/
-theorem historyMarkedLabelTerm_measurable (dependent : J → J → Prop) (ρ t : ℝ)
-    {E : Type*} [MeasurableSpace E] (a : E → ℝ) (ha : Measurable a) (j : J) :
+theorem historyMarkedLabelTerm_measurable 
+    [MeasurableSpace E] (a : E → ℝ) (ha : Measurable a) (j : J) :
     Measurable (historyMarkedLabelTerm dependent ρ t a j) := by
   classical
   rw [historyMarked_measurable_iff]
@@ -107,7 +108,7 @@ theorem historyMarkedLabelTerm_measurable (dependent : J → J → Prop) (ρ t :
   · exact measurable_const
 
 /-- The label contribution is bounded uniformly over all finite histories. -/
-theorem historyMarkedLabelTerm_bound (dependent : J → J → Prop)
+theorem historyMarkedLabelTerm_bound 
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (Δ : ℕ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
     (ρ t B : ℝ) (hρ : 0 < ρ) (ht : 0 ≤ t) (hB : 0 ≤ B)

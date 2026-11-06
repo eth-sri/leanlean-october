@@ -15,8 +15,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1200000
 attribute [local instance] Classical.propDecidable
 
 theorem fullSpatialPatchDesign_real_univ (d n : ℕ) :

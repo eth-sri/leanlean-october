@@ -12,8 +12,6 @@ noncomputable section
 open Filter
 open scoped Topology
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 800000
 
 theorem sourceSaddleHigherFamily_eventually_legal (d : ℕ)
     (s a b shift : ℝ) (hs : 1 < s) (hd : 4*s < (d : ℝ)) (ha : 0 < a) (hab : a < b) :
@@ -32,12 +30,8 @@ theorem sourceSaddleHigherFamily_eventually_legal (d : ℕ)
   let m := lowerSaddleCoefficient s (d : ℝ) tau
   let theta := lowerSaddleTheta s (d : ℝ) tau
   have hτ := densityIntervalExponent_pos ha hab
-  have hm := lowerSaddleCoefficient_pos hs hd hτ
-  have htheta := lowerSaddleTheta_pos hs hd hτ
   obtain ⟨Cτ, _, hcontrol⟩ := exists_actual_lowerExponentControl ha hab
-  have hN := lowerSaddleN_tendsto_atTop hs hd hm htheta hcontrol shift
-  have hhier := actual_lowerAlias_hierarchy (Cact := 1) (Cs := 1) hs hd ha hab (by norm_num) (by norm_num) shift
-  filter_upwards [hhier, hN.eventually (eventually_ge_atTop (1 : ℝ)), eventually_gt_atTop (0 : ℝ)]
+  filter_upwards [(actual_lowerAlias_hierarchy (Cact := 1) (Cs := 1) hs hd ha hab (by norm_num) (by norm_num) shift), (lowerSaddleN_tendsto_atTop hs hd (lowerSaddleCoefficient_pos hs hd hτ) (lowerSaddleTheta_pos hs hd hτ) hcontrol shift).eventually (eventually_ge_atTop (1 : ℝ)), eventually_gt_atTop (0 : ℝ)]
     with x hx hNx hxp
   change LowerAliasHierarchy s (d : ℝ) m theta shift 1 1 (tau+1) (shrunkDensityExponent a b) x at hx
   rcases hx with ⟨hell, _, _, _, _, _, _, _, _, _, hRM, hFine⟩

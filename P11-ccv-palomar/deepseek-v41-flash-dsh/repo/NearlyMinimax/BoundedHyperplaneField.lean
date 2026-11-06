@@ -12,22 +12,22 @@ noncomputable section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal NNReal BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 500000
 
-theorem hyperplaneNormalizingConstant_actual (d : ℕ) :
+variable (d : ℕ)
+
+theorem hyperplaneNormalizingConstant_actual :
     hyperplaneNormalizingConstant d = 2 * d * gaussianAbsoluteMean :=
   hyperplaneNormalizingConstant_eq d
 
-theorem hyperplaneNormalizingConstant_pos (d : ℕ) [NeZero d] :
+theorem hyperplaneNormalizingConstant_pos [NeZero d] :
     0 < hyperplaneNormalizingConstant d := by
   rw [hyperplaneNormalizingConstant_actual]
   exact mul_pos (mul_pos (by norm_num) (Nat.cast_pos.mpr (NeZero.pos d))) gaussianAbsoluteMean_pos
 
-def gaussianHyperplaneLaw (d : ℕ) : Measure (Covariate d × ℝ) :=
+def gaussianHyperplaneLaw : Measure (Covariate d × ℝ) :=
   (ENNReal.ofReal (hyperplaneNormalizingConstant d))⁻¹ • gaussianHyperplaneIntensity d
 
-instance gaussianHyperplaneLaw_probability (d : ℕ) [NeZero d] :
+instance gaussianHyperplaneLaw_probability [NeZero d] :
     IsProbabilityMeasure (gaussianHyperplaneLaw d) := by
   constructor
   rw [gaussianHyperplaneLaw, Measure.smul_apply, smul_eq_mul,
@@ -39,7 +39,10 @@ theorem gaussianPhase_sub {d : ℕ} (u v Z : Covariate d) :
     gaussianPhase u Z - gaussianPhase v Z = gaussianPhase (fun r => u r - v r) Z := by
   simp only [gaussianPhase, sub_mul, Finset.sum_sub_distrib]
 
-theorem gaussianHyperplaneLaw_separation_real (d : ℕ) [NeZero d] (u v : Covariate d)
+section
+variable [NeZero d] (u v : Covariate d)
+
+theorem gaussianHyperplaneLaw_separation_real 
     (hu : u ∈ hyperplaneCube d) (hv : v ∈ hyperplaneCube d) :
     (gaussianHyperplaneLaw d).real (hyperplaneSeparationSet u v) =
       euclideanNorm (fun r => u r - v r) / (2 * d) := by
@@ -55,7 +58,7 @@ theorem gaussianHyperplaneLaw_separation_real (d : ℕ) [NeZero d] (u v : Covari
   have hg := gaussianAbsoluteMean_pos.ne'
   field_simp
 
-theorem gaussianHyperplaneLaw_same_complement (d : ℕ) [NeZero d] (u v : Covariate d) :
+theorem gaussianHyperplaneLaw_same_complement :
     1 - partitionSameProbability (gaussianHyperplaneLaw d) hyperplaneHalfspace u v =
       (gaussianHyperplaneLaw d).real (hyperplaneSeparationSet u v) := by
   let s : Set (Covariate d × ℝ) := {h | hyperplaneHalfspace h u = hyperplaneHalfspace h v}
@@ -69,23 +72,24 @@ theorem gaussianHyperplaneLaw_same_complement (d : ℕ) [NeZero d] (u v : Covari
   rw [measureReal_compl hs]
   simp
 
-def boundedHyperplaneFieldLaw (d : ℕ) (T : ℝ) : Measure (partitionFieldMark (Covariate d × ℝ)) :=
+end
+
+def boundedHyperplaneFieldLaw (T : ℝ) : Measure (partitionFieldMark (Covariate d × ℝ)) :=
   poissonCellFieldLaw (gaussianHyperplaneLaw d) (Real.toNNReal (2 * d * T))
 
 def boundedHyperplaneFieldValue {d : ℕ} (z : partitionFieldMark (Covariate d × ℝ))
     (u : Covariate d) : ℝ := poissonCellFieldValue hyperplaneHalfspace z u
 
-instance boundedHyperplaneFieldLaw_probability (d : ℕ) [NeZero d] (T : ℝ) :
+instance boundedHyperplaneFieldLaw_probability [NeZero d] (T : ℝ) :
     IsProbabilityMeasure (boundedHyperplaneFieldLaw d T) := by
   unfold boundedHyperplaneFieldLaw
   infer_instance
 
-theorem boundedHyperplaneFieldLaw_measurable (d : ℕ) :
-    Measurable (boundedHyperplaneFieldLaw d) := by
-  exact (poissonCellFieldLaw_measurable (gaussianHyperplaneLaw d)).comp
+theorem boundedHyperplaneFieldLaw_measurable :
+    Measurable (boundedHyperplaneFieldLaw d) := (poissonCellFieldLaw_measurable (gaussianHyperplaneLaw d)).comp
     (measurable_real_toNNReal.comp (measurable_const.mul measurable_id))
 
-theorem boundedHyperplaneFieldValue_measurable (d : ℕ) :
+theorem boundedHyperplaneFieldValue_measurable :
     Measurable (fun z : partitionFieldMark (Covariate d × ℝ) × Covariate d =>
       boundedHyperplaneFieldValue z.1 z.2) :=
   poissonCellFieldValue_measurable hyperplaneHalfspace hyperplaneHalfspace_measurable
@@ -94,7 +98,10 @@ theorem boundedHyperplaneFieldValue_abs {d : ℕ}
     (z : partitionFieldMark (Covariate d × ℝ)) (u : Covariate d) :
     |boundedHyperplaneFieldValue z u| = 1 := poissonCellFieldValue_abs _ _ _
 
-theorem boundedHyperplaneField_covariance (d : ℕ) [NeZero d] (T : ℝ) (hT : 0 ≤ T)
+section
+variable [NeZero d] (T : ℝ)
+
+theorem boundedHyperplaneField_covariance (hT : 0 ≤ T)
     (u v : Covariate d) (hu : u ∈ hyperplaneCube d) (hv : v ∈ hyperplaneCube d) :
     (∫ z, boundedHyperplaneFieldValue z u * boundedHyperplaneFieldValue z v
       ∂boundedHyperplaneFieldLaw d T) =
@@ -107,8 +114,8 @@ theorem boundedHyperplaneField_covariance (d : ℕ) [NeZero d] (T : ℝ) (hT : 0
   have hd : (d : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr (NeZero.ne d)
   field_simp
 
-theorem boundedHyperplaneField_higher_moment_envelope (d : ℕ) [NeZero d]
-    (T : ℝ) (hT : 0 ≤ T) (j : ℕ) (hj : 4 ≤ j) (U : Fin j → Covariate d)
+theorem boundedHyperplaneField_higher_moment_envelope 
+    (hT : 0 ≤ T) (j : ℕ) (hj : 4 ≤ j) (U : Fin j → Covariate d)
     (hU : ∀ l, U l ∈ hyperplaneCube d) :
     |∫ z, ∏ l, boundedHyperplaneFieldValue z (U l) ∂boundedHyperplaneFieldLaw d T| ≤
       ∑ q : CellMomentQuadruple j, Real.exp (-T / 2 *
@@ -127,5 +134,7 @@ theorem boundedHyperplaneField_higher_moment_envelope (d : ℕ) [NeZero d]
   congr 1
   have hd : (d : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr (NeZero.ne d)
   field_simp
+
+end
 
 end NearlyMinimax

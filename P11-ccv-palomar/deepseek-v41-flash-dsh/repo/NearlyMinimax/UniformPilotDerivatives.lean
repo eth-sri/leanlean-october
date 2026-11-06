@@ -12,15 +12,18 @@ noncomputable section
 open Matrix MeasureTheory Set
 open scoped BigOperators Matrix.Norms.L2Operator
 namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 
-theorem pilotModelConstants_withDomain {d : ℕ} (C : ModelConstants d) (U : ExtensionDomain d) :
+variable {d : ℕ} (C : ModelConstants d)
+
+theorem pilotModelConstants_withDomain (U : ExtensionDomain d) :
     pilotModelConstants (C.withDomain U) = (pilotModelConstants C).withDomain U := rfl
 
+section
+variable [Nonempty (AnchoredIndex d C.order)] (Y : ℝ)
+
 /-- A common genuine vector derivative bound at all actual population means. -/
-theorem uniform_domain_dyadic_increment_vector_derivative_bound {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] (Y : ℝ) (hY : 0 ≤ Y) :
+theorem uniform_domain_dyadic_increment_vector_derivative_bound 
+    (hY : 0 ≤ Y) :
     ∃ D A : ℝ, 0 < D ∧ 0 < A ∧
       ∀ Udom : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain Udom) θ →
       ∀ j : ℕ, ∀ x ∈ unitCube d, ∀ y : ℝ, |y| ≤ Y → ∀ m k : ℕ,
@@ -64,8 +67,8 @@ theorem uniform_domain_dyadic_increment_vector_derivative_bound {d : ℕ} (C : M
 
 /-- Uniform-domain U5(4) after arbitrary scalar feature-row postcomposition.
 The constants precede the domain and all polynomial/derivative orders. -/
-theorem uniform_domain_admissible_dyadic_increment_all_derivative_bound {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] (Y : ℝ) (hY : 0 ≤ Y) :
+theorem uniform_domain_admissible_dyadic_increment_all_derivative_bound 
+    (hY : 0 ≤ Y) :
     ∃ D A : ℝ, 0 < D ∧ 0 < A ∧
       ∀ Udom : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain Udom) θ →
       ∀ j : ℕ, ∀ x ∈ unitCube d, ∀ y : ℝ, |y| ≤ Y → ∀ m k : ℕ,
@@ -90,5 +93,7 @@ theorem uniform_domain_admissible_dyadic_increment_all_derivative_bound {d : ℕ
     _ ≤ (∑ i, |row i|) * (D * (k.factorial : ℝ) * A ^ k * ∏ i, ‖directions i‖) :=
       mul_le_mul (rowFunctional_norm_le row) (hder Udom θ hθ j x hx y hy m k directions) (norm_nonneg _) hrow
     _ = ((∑ i, |row i|) * D * (k.factorial : ℝ) * A ^ k) * ∏ i, ‖directions i‖ := by ring
+
+end
 
 end NearlyMinimax

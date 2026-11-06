@@ -23,7 +23,9 @@ def pairGridMSEEnvelope (d : ℕ) (s x : ℝ) : ℝ :=
 theorem pairGrid_denominator_bound {x : ℝ} (hx : 2 ≤ x) :
     x ^ 2 / 2 ≤ x * (x - 1) := by nlinarith
 
-theorem pairGridMSEEnvelope_bound {d : ℕ} {s x : ℝ} (hs : 0 < s) (hx : 2 ≤ x) :
+variable {d : ℕ} {s x : ℝ}
+
+theorem pairGridMSEEnvelope_bound (hs : 0 < s) (hx : 2 ≤ x) :
     pairGridMSEEnvelope d s x ≤
       (2 * (5 : ℝ) ^ d + 1) * (1 / x + x ^ (-8 * s / ((d : ℝ) + 4 * s))) := by
   have hx1 : 1 ≤ x := by linarith
@@ -48,14 +50,14 @@ theorem sqrt_inverse_sample {x : ℝ} (hx : 0 < x) :
     Real.sqrt (1 / x) = x ^ (-(1 / 2 : ℝ)) := by
   rw [one_div, Real.sqrt_inv, Real.sqrt_eq_rpow, Real.rpow_neg hx.le]
 
-theorem sqrt_pair_rate {d : ℕ} {s x : ℝ} (hx : 0 < x) :
+theorem sqrt_pair_rate (hx : 0 < x) :
     Real.sqrt (x ^ (-8 * s / ((d : ℝ) + 4 * s))) = x ^ (-4 * s / ((d : ℝ) + 4 * s)) := by
   rw [Real.sqrt_eq_rpow, ← Real.rpow_mul hx.le]
   congr 1
   ring
 
 /-- Applying the concrete finite-grid MSE bound gives the elementary root-mean-square rate. -/
-theorem pairGrid_rms_of_mse_bound {d : ℕ} {s x C R : ℝ}
+theorem pairGrid_rms_of_mse_bound {s x C R : ℝ}
     (hs : 0 < s) (hx : 2 ≤ x) (hC : 0 ≤ C) (hR : 0 ≤ R)
     (hRisk : R ^ 2 ≤ C * pairGridMSEEnvelope d s x) :
     R ≤ Real.sqrt (C * (2 * (5 : ℝ) ^ d + 1)) *

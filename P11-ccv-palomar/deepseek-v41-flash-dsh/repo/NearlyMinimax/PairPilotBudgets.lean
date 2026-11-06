@@ -10,8 +10,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped ENNReal
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option synthInstance.maxHeartbeats 200000
 
 variable {Ω : Type*} [MeasurableSpace Ω] (μ : Measure Ω) [IsProbabilityMeasure μ]
 variable {d : ℕ} (C : ModelConstants d) (θ : RegressionParameter d) (hθ : Admissible C θ)

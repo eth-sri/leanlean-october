@@ -12,7 +12,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped ENNReal
 namespace NearlyMinimax
-set_option maxHeartbeats 2000000
 set_option backward.isDefEq.respectTransparency true
 attribute [local instance] Classical.propDecidable
 

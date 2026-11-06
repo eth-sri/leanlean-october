@@ -10,8 +10,6 @@ nonnegative weighted square. -/
 noncomputable section
 open MeasureTheory Filter Set
 namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 variable {Ω : Type*} [MeasurableSpace Ω]
 
 /-- A marginal likelihood derivative has no more Fisher energy than

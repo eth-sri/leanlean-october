@@ -15,10 +15,10 @@ noncomputable section
 open MeasureTheory Filter
 open scoped Topology
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 
-theorem uniform_domain_dyadic_pair_pilot_assumptions {d : ℕ} (C : ModelConstants d)
+variable {d : ℕ} (C : ModelConstants d)
+
+theorem uniform_domain_dyadic_pair_pilot_assumptions 
     (hs : 1 < C.smoothness) :
     ∃ A Cp : ℝ, 0 < A ∧ 0 < Cp ∧
       ∀ U : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain U) θ →
@@ -114,8 +114,8 @@ theorem uniform_domain_dyadic_pair_pilot_assumptions {d : ℕ} (C : ModelConstan
 /-- The actual paper profile produces the primitive pair assumptions under
 original sample laws, uniformly over every extension domain. No degree,
 covariance, or pilot-budget inequality is an input to this endpoint. -/
-theorem uniform_domain_eventually_allocated_pair_pilot_assumptions {d : ℕ}
-    (C : ModelConstants d) (hreg : highSmoothnessRegime C) :
+theorem uniform_domain_eventually_allocated_pair_pilot_assumptions 
+    (hreg : highSmoothnessRegime C) :
     ∃ A Cp : ℝ, 0 < A ∧ 0 < Cp ∧ ∀ C₀ C_D : ℝ, 0 < C₀ → 0 < C_D →
       ∀ᶠ n : ℕ in atTop, ∀ U : ExtensionDomain d, ∀ θ : RegressionParameter d,
       Admissible (C.withDomain U) θ →

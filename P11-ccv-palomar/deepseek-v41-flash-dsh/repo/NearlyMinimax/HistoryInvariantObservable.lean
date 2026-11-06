@@ -15,8 +15,10 @@ namespace NearlyMinimax
 
 variable {J : Type*} [Fintype J] [LinearOrder J]
 
+variable (dependent : J → J → Prop)
+
 /-- Conditional signed-mark annihilation kills the true append generator by Fubini. -/
-theorem historyMarkedGeneratorExpectation_eq_zero (dependent : J → J → Prop)
+theorem historyMarkedGeneratorExpectation_eq_zero 
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (Δ : ℕ) (hΔ : 1 ≤ Δ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
     (t B : ℝ) (ht : 0 ≤ t) (hB : 0 ≤ B) {E : Type*} [MeasurableSpace E] [StandardBorelSpace E]
@@ -62,7 +64,7 @@ theorem historyMarkedGeneratorExpectation_eq_zero (dependent : J → J → Prop)
   exact integral_zero _ _
 
 /-- An annihilated bounded observable has the same expectation throughout the closed source interval. -/
-theorem historyMarkedPrior_invariant_observable (dependent : J → J → Prop)
+theorem historyMarkedPrior_invariant_observable 
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (Δ : ℕ) (hΔ : 1 ≤ Δ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
     (T B : ℝ) (hT : 0 ≤ T) (hB : 0 ≤ B)
@@ -97,7 +99,7 @@ theorem historyMarkedPrior_invariant_observable (dependent : J → J → Prop)
       π a ha habound (hs u hu) F hF M hM hFbound hkill] at hd
     exact hd
   obtain ⟨C, hC⟩ := hAC.const_of_ae_hasDerivAt_zero hzero
-  have hft : f t = f 0 := (hC t (by simpa only [uIcc_of_le hT] using ht)).trans
+  have hft := (hC t (by simpa only [uIcc_of_le hT] using ht)).trans
     (hC 0 (by simp only [uIcc_of_le hT, mem_Icc]; exact ⟨le_rfl, hT⟩)).symm
   rw [historyMarkedPrior_integral_eq_expectation dependent hrefl hsymm Δ hlabels
     t B ht.1 hB π a ha habound (hs t ht) F]

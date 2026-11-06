@@ -15,19 +15,20 @@ open MeasureTheory ProbabilityTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
 
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 
 abbrev PilotBasisIndex (q d ℓ : ℕ) := (Fin q × PolynomialBox d ℓ) × Bool
 
-def pilotGlobalMonomial {d ℓ : ℕ} (γ : PolynomialBox d ℓ) (x : Covariate d) : ℝ :=
+section
+variable {d ℓ : ℕ}
+
+def pilotGlobalMonomial (γ : PolynomialBox d ℓ) (x : Covariate d) : ℝ :=
   ∏ i, (x i) ^ (γ i).val
 
-theorem pilotGlobalMonomial_continuous {d ℓ : ℕ} (γ : PolynomialBox d ℓ) :
+theorem pilotGlobalMonomial_continuous (γ : PolynomialBox d ℓ) :
     Continuous (pilotGlobalMonomial γ) :=
   continuous_finset_prod Finset.univ (fun i _ => (continuous_apply i).pow _)
 
-theorem pilotGlobalMonomial_abs_le_one {d ℓ : ℕ} (γ : PolynomialBox d ℓ)
+theorem pilotGlobalMonomial_abs_le_one (γ : PolynomialBox d ℓ)
     (x : Covariate d) (hx : x ∈ unitCube d) : |pilotGlobalMonomial γ x| ≤ 1 := by
   unfold pilotGlobalMonomial
   rw [Finset.abs_prod]
@@ -41,14 +42,18 @@ theorem pilotGlobalMonomial_abs_le_one {d ℓ : ℕ} (γ : PolynomialBox d ℓ)
         (fun i _ => pow_le_pow_left₀ (abs_nonneg _) (hcoord i) _)
     _ = 1 := by simp
 
+end
+
+variable {q d ℓ : ℕ} (cell : Covariate d → Fin q)
+
 /-- A fixed global coordinate: a cell indicator times a monomial, optionally
 multiplied by the observed response. Local anchored features are linear
 combinations of this finite basis. -/
-def pilotBasisFeature {q d ℓ : ℕ} (cell : Covariate d → Fin q)
+def pilotBasisFeature (cell : Covariate d → Fin q)
     (a : PilotBasisIndex q d ℓ) (z : Observation d) : ℝ :=
   if cell z.1 = a.1.1 then pilotGlobalMonomial a.1.2 z.1 * (if a.2 then z.2 else 1) else 0
 
-theorem pilotBasisFeature_measurable {q d ℓ : ℕ} (cell : Covariate d → Fin q)
+theorem pilotBasisFeature_measurable 
     (hc : Measurable cell) (a : PilotBasisIndex q d ℓ) :
     Measurable (pilotBasisFeature cell a) := by
   unfold pilotBasisFeature
@@ -58,7 +63,7 @@ theorem pilotBasisFeature_measurable {q d ℓ : ℕ} (cell : Covariate d → Fin
       (by cases a.2 <;> first | exact measurable_const | exact measurable_snd)
   · exact measurable_const
 
-theorem pilotBasisFeature_abs_bound {q d ℓ : ℕ} (cell : Covariate d → Fin q)
+theorem pilotBasisFeature_abs_bound 
     (a : PilotBasisIndex q d ℓ) (z : Observation d) (hz : z.1 ∈ unitCube d) :
     |pilotBasisFeature cell a z| ≤
       (Prod.fst ⁻¹' {x | cell x = a.1.1}).indicator
@@ -81,7 +86,7 @@ theorem observationLaw_cube_ae {d : ℕ} (C : ModelConstants d)
     (designLaw_cube_ae θ)
 
 /-- Every global pilot coordinate is genuinely L² under the original model. -/
-theorem pilotBasisFeature_memLp_two {q d ℓ : ℕ} (C : ModelConstants d)
+theorem pilotBasisFeature_memLp_two (C : ModelConstants d)
     (θ : RegressionParameter d) (hθ : Admissible C θ)
     (cell : Covariate d → Fin q) (hc : Measurable cell) (a : PilotBasisIndex q d ℓ) :
     MemLp (pilotBasisFeature cell a) 2 (observationLaw θ) := by
@@ -98,7 +103,7 @@ theorem pilotBasisFeature_memLp_two {q d ℓ : ℕ} (C : ModelConstants d)
 
 /-- Coordinate indexing compatible with the paper's finite-dimensional
 polynomial lift; this is an exact reindexing of the global basis. -/
-def pilotRawVector {q d ℓ : ℕ} (cell : Covariate d → Fin q) (z : Observation d) :
+def pilotRawVector (cell : Covariate d → Fin q) (z : Observation d) :
     Fin (Fintype.card (PilotBasisIndex q d ℓ)) → ℝ :=
   fun a => pilotBasisFeature cell ((Fintype.equivFin (PilotBasisIndex q d ℓ)).symm a) z
 

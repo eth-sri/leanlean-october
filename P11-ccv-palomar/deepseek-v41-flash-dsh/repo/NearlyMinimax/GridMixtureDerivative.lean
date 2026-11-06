@@ -13,11 +13,13 @@ open MeasureTheory Set
 open scoped Topology BigOperators
 namespace NearlyMinimax
 
-def gridSampleField (d k n : ℕ) (η : ℝ) (x : Fin n → Covariate d) :
+variable (d k n : ℕ)
+
+def gridSampleField (η : ℝ) (x : Fin n → Covariate d) :
     (Fin (gridWindowCount d k) → Fin 3) → Fin n → ℝ :=
   fun ξ i => indexedGridField d k η ξ (x i)
 
-theorem gridSampleField_measurable (d k n : ℕ) (η : ℝ) :
+theorem gridSampleField_measurable (η : ℝ) :
     Measurable (gridSampleField d k n η) := by
   apply measurable_pi_lambda
   intro ξ
@@ -27,7 +29,7 @@ theorem gridSampleField_measurable (d k n : ℕ) (η : ℝ) :
     (show Measurable (fun x : Fin n → Covariate d => x i) from measurable_pi_apply i)
   exact h
 
-theorem gridSampleField_norm_le (d k n : ℕ) (η : ℝ) (hη : 0 ≤ η)
+theorem gridSampleField_norm_le (η : ℝ) (hη : 0 ≤ η)
     (x : Fin n → Covariate d) : ‖gridSampleField d k n η x‖ ≤ (2 : ℝ) ^ d * η := by
   apply (pi_norm_le_iff_of_nonneg (by positivity)).mpr
   intro ξ
@@ -49,8 +51,14 @@ def gridMixtureScoreObservable (d k n : ℕ) (a v η t : ℝ)
     finiteExperimentScore (gridWindowCount d k) n a (v - η ^ 2 * t) η
       (gridSampleField d k n η x) ξ y
 
-theorem grid_response_likelihood_pos {d : ℕ} (C : ModelConstants d)
-    (P : LowSmoothnessTernaryConstants C) (k n : ℕ) (η t : ℝ)
+section
+variable {d : ℕ} (C : ModelConstants d)
+
+section
+variable (P : LowSmoothnessTernaryConstants C) (k n : ℕ)
+
+theorem grid_response_likelihood_pos 
+    (η t : ℝ)
     (hη : 0 ≤ η) (ht : t ∈ Icc (0 : ℝ) 1)
     (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ)
     (x : Fin n → Covariate d) (ξ : Fin (gridWindowCount d k) → Fin 3) (y : Fin n → Fin 3) :
@@ -67,8 +75,8 @@ theorem grid_response_likelihood_pos {d : ℕ} (C : ModelConstants d)
 /-- The actual grid-prior mean has the exact integrated score derivative.
 Every domination, measurability, and positivity requirement follows from
 the grid construction and the original ternary legality neighborhood. -/
-theorem grid_mixture_expectation_hasDerivAt {d : ℕ} (C : ModelConstants d)
-    (P : LowSmoothnessTernaryConstants C) (k n : ℕ) (η t M : ℝ)
+theorem grid_mixture_expectation_hasDerivAt 
+    (η t M : ℝ)
     (hη : 0 ≤ η) (ht : t ∈ Icc (0 : ℝ) 1)
     (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ)
     (T : (Fin n → Covariate d) → (Fin n → Fin 3) → ℝ) (hT : Measurable T)
@@ -81,8 +89,7 @@ theorem grid_mixture_expectation_hasDerivAt {d : ℕ} (C : ModelConstants d)
   let _ := cubeVolume_isProbability d
   have hp : ∀ (x : Fin n → Covariate d) ξ y,
       0 < finiteResponseLikelihood (gridWindowCount d k) n P.a (P.v - η ^ 2 * t)
-        (gridSampleField d k n η x) ξ y := by
-    exact grid_response_likelihood_pos C P k n η t hη ht hfield hvariance
+        (gridSampleField d k n η x) ξ y := grid_response_likelihood_pos C P k n η t hη ht hfield hvariance
   exact finite_experiment_integrated_score_hasDerivAt
     (Measure.pi (fun _ : Fin n => cubeVolume d)) (gridWindowCount d k) n P.a P.v η t
     ((2 : ℝ) ^ d * η) M (gridSampleField d k n η) T
@@ -90,7 +97,11 @@ theorem grid_mixture_expectation_hasDerivAt {d : ℕ} (C : ModelConstants d)
     (Filter.Eventually.of_forall (gridSampleField_norm_le d k n η hη)) hTBound
     (Filter.Eventually.of_forall hp)
 
-theorem grid_mixture_raw_derivative_continuous (d k n : ℕ) (a v η M : ℝ) (hη : 0 ≤ η)
+end
+
+end
+
+theorem grid_mixture_raw_derivative_continuous (a v η M : ℝ) (hη : 0 ≤ η)
     (T : (Fin n → Covariate d) → (Fin n → Fin 3) → ℝ) (hT : Measurable T)
     (hTBound : ∀ᵐ x ∂Measure.pi (fun _ : Fin n => cubeVolume d), ‖T x‖ ≤ M) :
     Continuous (fun t => ∫ x, finiteExperimentRawDerivative (gridWindowCount d k) n a v η t

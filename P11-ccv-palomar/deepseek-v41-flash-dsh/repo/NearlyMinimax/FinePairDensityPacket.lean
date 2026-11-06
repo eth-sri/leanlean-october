@@ -11,8 +11,6 @@ noncomputable section
 open Set MeasureTheory Polynomial
 open scoped BigOperators ENNReal
 namespace NearlyMinimax
-set_option maxHeartbeats 600000
-set_option backward.isDefEq.respectTransparency false
 
 def fineModulationNode (i : Fin 3) : ℝ := if i = 0 then -1 else if i = 1 then 0 else 1
 def fineModulationWeight (i : Fin 3) : ℝ := if i = 1 then -1 else 1 / 2
@@ -34,20 +32,23 @@ theorem fineModulation_moment_zero :
   rw [fineModulation_eval (fun z => z ^ 0)]
   norm_num
 
-theorem fineModulation_moment_odd (n : ℕ) (hn : Odd n) :
+section
+variable (n : ℕ)
+
+theorem fineModulation_moment_odd (hn : Odd n) :
     (∑ i : Fin 3, fineModulationWeight i * fineModulationNode i ^ n) = 0 := by
   rw [fineModulation_eval (fun z => z ^ n)]
   have hn0 : n ≠ 0 := by intro h; subst n; exact Nat.not_odd_zero hn
   simp [hn.neg_one_pow, zero_pow hn0]
   norm_num
 
-theorem fineModulation_moment_even (n : ℕ) (hn : Even n) (hn0 : n ≠ 0) :
+theorem fineModulation_moment_even (hn : Even n) (hn0 : n ≠ 0) :
     (∑ i : Fin 3, fineModulationWeight i * fineModulationNode i ^ n) = 1 := by
   rw [fineModulation_eval (fun z => z ^ n)]
   simp [hn.neg_one_pow, zero_pow hn0]
   norm_num
 
-theorem fineModulation_moment (n : ℕ) :
+theorem fineModulation_moment :
     (∑ i : Fin 3, fineModulationWeight i * fineModulationNode i ^ n) =
       if n = 0 then 0 else if Even n then 1 else 0 := by
   by_cases hn0 : n = 0
@@ -56,6 +57,8 @@ theorem fineModulation_moment (n : ℕ) :
     rcases Nat.even_or_odd n with hn | hn
     · rw [ite_eq_left hn]; exact fineModulation_moment_even n hn hn0
     · rw [ite_eq_right (Nat.not_even_iff_odd.mpr hn)]; exact fineModulation_moment_odd n hn
+
+end
 
 abbrev FinePairDensityIndex (M : ℕ) := Fin (M + 3) × Fin 3
 
@@ -70,7 +73,9 @@ def finePairDensityWeight (a b : ℝ) (M : ℕ) (i : FinePairDensityIndex M) : �
 def finePairDensitySignedRule (a b : ℝ) (M : ℕ) : SignedMeasure (ℝ × ℝ) :=
   atomicSignedRule (finePairDensityAtom a b M) (finePairDensityWeight a b M)
 
-theorem finePairDensityWeight_variation (a b : ℝ) (ha : 0 < a) (hab : a < b) (M : ℕ) :
+variable (a b : ℝ) (M : ℕ)
+
+theorem finePairDensityWeight_variation (ha : 0 < a) (hab : a < b) (M : ℕ) :
     (∑ i : FinePairDensityIndex M, |finePairDensityWeight a b M i|) =
       2 * |finePairDensityPrefactor a b| *
         Real.cosh ((M + 2 : ℕ) * exteriorTau ((a + b) / (b - a))) := by
@@ -79,10 +84,16 @@ theorem finePairDensityWeight_variation (a b : ℝ) (ha : 0 < a) (hab : a < b) (
   rw [← Finset.sum_mul, ← Finset.mul_sum, exterior_rule_variation a b ha hab (M + 2) (by omega)]
   ring
 
-def finePairDensityReset {U : Type*} (a b : ℝ) (z eps : ℝ) (p ψ : U → ℝ) (u : U) : ℝ :=
+section
+variable {U : Type*}
+
+def finePairDensityReset (a b : ℝ) (z eps : ℝ) (p ψ : U → ℝ) (u : U) : ℝ :=
   z + densityMargin a b z / b * p u * eps * ψ u
 
-theorem finePairDensityReset_mem_interval {U : Type*} (a b : ℝ) (ha : 0 < a) (hab : a < b)
+section
+variable (a b : ℝ)
+
+theorem finePairDensityReset_mem_interval (ha : 0 < a) (hab : a < b)
     (z eps : ℝ) (hz : z ∈ Icc a b) (heps : |eps| ≤ 1)
     (p ψ : U → ℝ) (u : U) (hp : p u ∈ Icc a b) (hψ : |ψ u| ≤ 1) :
     finePairDensityReset a b z eps p ψ u ∈ Icc a b := by
@@ -90,13 +101,17 @@ theorem finePairDensityReset_mem_interval {U : Type*} (a b : ℝ) (ha : 0 < a) (
     (fun _ => heps) p (fun u _ => ψ u) u hp (fun _ => hψ)
   simpa [localDensityReset, finePairDensityReset, mul_comm, mul_left_comm, mul_assoc] using hh
 
-theorem finePairDensityReset_slope_bound {U : Type*} (a b : ℝ) (ha : 0 < a) (hab : a < b)
+theorem finePairDensityReset_slope_bound (ha : 0 < a) (hab : a < b)
     (z eps : ℝ) (hz : z ∈ Icc a b) (heps : |eps| ≤ 1)
     (ψ : U → ℝ) (u : U) (hψ : |ψ u| ≤ 1) :
     |densityMargin a b z / b * eps * ψ u| ≤ (b - a) / (4 * b) := by
   have hh := localDensityReset_slope_bound a b ha hab 1 (by omega) z hz (fun _ => eps)
     (fun _ => heps) (fun u _ => ψ u) u (fun _ => hψ)
   simpa [mul_assoc] using hh
+
+end
+
+end
 
 theorem fineModulation_affine_zero (z c : ℝ) :
     (∑ i : Fin 3, fineModulationWeight i * (z + c * fineModulationNode i)) = 0 := by
@@ -130,7 +145,7 @@ def finePairCountCoefficient (a b : ℝ) (M k j : ℕ) : ℝ :=
   finePairDensityPrefactor a b * ∑ h : Fin (M + 3), exteriorWeight a b (M + 2) h *
     (exteriorNode a b (M + 2) h ^ (k - j) * (densityMargin a b (exteriorNode a b (M + 2) h) / b) ^ j)
 
-theorem finePairCountCoefficient_two (a b : ℝ) (ha : 0 < a) (hab : a < b) (M k : ℕ) :
+theorem finePairCountCoefficient_two (ha : 0 < a) (hab : a < b) (M k : ℕ) :
     finePairCountCoefficient a b M k 2 = densityCountCoefficient a b M 2 k := by
   unfold finePairCountCoefficient finePairDensityPrefactor densityCountCoefficient
   rw [Finset.mul_sum, Finset.sum_div]
@@ -138,13 +153,13 @@ theorem finePairCountCoefficient_two (a b : ℝ) (ha : 0 < a) (hab : a < b) (M k
   intro h _
   field_simp [densityMargin_zero_ne a b ha hab, (ha.trans hab).ne']
 
-theorem finePairCountCoefficient_two_exact (a b : ℝ) (ha : 0 < a) (hab : a < b)
+theorem finePairCountCoefficient_two_exact (ha : 0 < a) (hab : a < b)
     (M k : ℕ) (hk : 2 ≤ k) (hM : k ≤ M) :
     finePairCountCoefficient a b M k 2 = if k = 2 then 1 else 0 := by
   rw [finePairCountCoefficient_two a b ha hab M k]
   exact densityCountCoefficient_exact a b ha hab M 2 k (by omega) hk hM
 
-theorem finePairCountCoefficient_abs_bound (a b : ℝ) (ha : 0 < a) (hab : a < b)
+theorem finePairCountCoefficient_abs_bound (ha : 0 < a) (hab : a < b)
     (M k j : ℕ) :
     |finePairCountCoefficient a b M k j| ≤
       |finePairDensityPrefactor a b| * (b ^ (k - j) * ((b - a) / (4 * b)) ^ j) *
@@ -158,8 +173,7 @@ theorem finePairCountCoefficient_abs_bound (a b : ℝ) (ha : 0 < a) (hab : a < b
     have hz := exteriorNode_mem a b hab.le (M + 2) h
     have ht := densityMargin_bounds a b hab _ hz
     have ht0 : 0 ≤ densityMargin a b (exteriorNode a b (M + 2) h) / b := div_nonneg ht.1 hb.le
-    have htle : densityMargin a b (exteriorNode a b (M + 2) h) / b ≤ (b - a) / (4 * b) := by
-      exact (div_le_div_of_nonneg_right ht.2.2.2 hb.le).trans_eq (by ring)
+    have htle : densityMargin a b (exteriorNode a b (M + 2) h) / b ≤ (b - a) / (4 * b) := (div_le_div_of_nonneg_right ht.2.2.2 hb.le).trans_eq (by ring)
     rw [abs_mul, abs_pow, abs_pow, abs_of_nonneg (ha.le.trans hz.1), abs_of_nonneg ht0]
     exact mul_le_mul (pow_le_pow_left₀ (ha.le.trans hz.1) hz.2 _)
       (pow_le_pow_left₀ ht0 htle _) (pow_nonneg ht0 _) (pow_nonneg hb.le _)
@@ -179,7 +193,7 @@ theorem finePairCountCoefficient_abs_bound (a b : ℝ) (ha : 0 < a) (hab : a < b
       rw [← Finset.sum_mul, exterior_rule_variation a b ha hab (M + 2) (by omega)]
       ring
 
-theorem finePairDensityWeight_exponential_cost (a b : ℝ) (ha : 0 < a) (hab : a < b) (M : ℕ) :
+theorem finePairDensityWeight_exponential_cost (ha : 0 < a) (hab : a < b) (M : ℕ) :
     (∑ h : FinePairDensityIndex M, |finePairDensityWeight a b M h|) ≤
       (2 * |finePairDensityPrefactor a b| * Real.exp (2 * exteriorTau ((a + b) / (b - a)))) *
         Real.exp ((M : ℝ) * exteriorTau ((a + b) / (b - a))) := by
@@ -192,7 +206,7 @@ theorem finePairDensityWeight_exponential_cost (a b : ℝ) (ha : 0 < a) (hab : a
   rw [Nat.cast_add, Nat.cast_ofNat, add_mul, Real.exp_add]
   ring
 
-theorem finePairDensitySignedRule_integral (a b : ℝ) (M : ℕ) (f : ℝ → ℝ → ℝ) :
+theorem finePairDensitySignedRule_integral (f : ℝ → ℝ → ℝ) :
     (∫ᵛ e, f e.1 e.2 ∂<•finePairDensitySignedRule a b M) =
       finePairDensityPrefactor a b * ∑ j : Fin (M + 3), exteriorWeight a b (M + 2) j *
         ∑ i : Fin 3, fineModulationWeight i * f (exteriorNode a b (M + 2) j) (fineModulationNode i) := by
@@ -235,14 +249,17 @@ theorem finePairDensitySignedRule_product_expansion {U : Type*} [DecidableEq U]
   rw [← Finset.sum_mul, ← Finset.mul_sum]
   ring
 
-theorem finePairDensitySignedRule_mass_zero (a b : ℝ) (M : ℕ) :
+theorem finePairDensitySignedRule_mass_zero :
     (∫ᵛ _e, (1 : ℝ) ∂<•finePairDensitySignedRule a b M) = 0 := by
   rw [finePairDensitySignedRule_integral a b M (fun _ _ => 1)]
   have hw : (∑ i : Fin 3, fineModulationWeight i) = 0 := by
     simpa only [pow_zero, mul_one] using fineModulation_moment_zero
   simp [hw]
 
-theorem finePairDensitySignedRule_linear_zero {U : Type*} (a b : ℝ) (M : ℕ)
+section
+variable {U : Type*} (a b : ℝ)
+
+theorem finePairDensitySignedRule_linear_zero (M : ℕ)
     (p ψ : U → ℝ) (u : U) :
     (∫ᵛ e, finePairDensityReset a b e.1 e.2 p ψ u
       ∂<•finePairDensitySignedRule a b M) = 0 := by
@@ -254,7 +271,7 @@ theorem finePairDensitySignedRule_linear_zero {U : Type*} (a b : ℝ) (M : ℕ)
   simp_rw [he, fineModulation_affine_zero]
   simp
 
-theorem finePairDensitySignedRule_pair_exact {U : Type*} (a b : ℝ) (ha : 0 < a) (hab : a < b)
+theorem finePairDensitySignedRule_pair_exact (ha : 0 < a) (hab : a < b)
     (M : ℕ) (hM : 2 ≤ M) (p ψ : U → ℝ) (u v : U) :
     (∫ᵛ e, finePairDensityReset a b e.1 e.2 p ψ u * finePairDensityReset a b e.1 e.2 p ψ v
       ∂<•finePairDensitySignedRule a b M) = p u * p v * ψ u * ψ v := by
@@ -269,8 +286,7 @@ theorem finePairDensitySignedRule_pair_exact {U : Type*} (a b : ℝ) (ha : 0 < a
   simp only [densityCountCoefficient, Nat.sub_self, pow_zero, one_mul, ite_true] at hc
   have hθ : densityMargin a b 0 ^ 2 ≠ 0 := pow_ne_zero _ (densityMargin_zero_ne a b ha hab)
   have hs : (∑ j : Fin (M + 3), exteriorWeight a b (M + 2) j *
-      densityMargin a b (exteriorNode a b (M + 2) j) ^ 2) = densityMargin a b 0 ^ 2 := by
-    exact (div_eq_iff hθ).mp hc |>.trans (one_mul _)
+      densityMargin a b (exteriorNode a b (M + 2) j) ^ 2) = densityMargin a b 0 ^ 2 := (div_eq_iff hθ).mp hc |>.trans (one_mul _)
   have hterm (j : Fin (M + 3)) : exteriorWeight a b (M + 2) j *
       ((densityMargin a b (exteriorNode a b (M + 2) j) / b * p u * ψ u) *
        (densityMargin a b (exteriorNode a b (M + 2) j) / b * p v * ψ v)) =
@@ -281,15 +297,19 @@ theorem finePairDensitySignedRule_pair_exact {U : Type*} (a b : ℝ) (ha : 0 < a
   unfold finePairDensityPrefactor
   field_simp [hθ, densityMargin_zero_ne a b ha hab, (ha.trans hab).ne']
 
+end
+
 section Field
 variable {Z : Type*} [MeasurableSpace Z]
 
-def finePairFieldReset {U : Type*} (a b : ℝ) (M : ℕ) (p : U → ℝ) (ψ : Z → U → ℝ)
+variable {U : Type*} (a b : ℝ)
+
+def finePairFieldReset (a b : ℝ) (M : ℕ) (p : U → ℝ) (ψ : Z → U → ℝ)
     (e : Z × FinePairDensityIndex M) (u : U) : ℝ :=
   finePairDensityReset a b (finePairDensityAtom a b M e.2).1
     (finePairDensityAtom a b M e.2).2 p (ψ e.1) u
 
-theorem finePairFieldReset_mem_interval {U : Type*} (a b : ℝ) (ha : 0 < a) (hab : a < b)
+theorem finePairFieldReset_mem_interval (ha : 0 < a) (hab : a < b)
     (M : ℕ) (p : U → ℝ) (hp : ∀ u, p u ∈ Icc a b) (ψ : Z → U → ℝ)
     (hψ : ∀ ζ u, |ψ ζ u| ≤ 1) (e : Z × FinePairDensityIndex M) (u : U) :
     finePairFieldReset a b M p ψ e u ∈ Icc a b :=
@@ -297,7 +317,7 @@ theorem finePairFieldReset_mem_interval {U : Type*} (a b : ℝ) (ha : 0 < a) (ha
     (exteriorNode_mem a b hab.le (M + 2) e.2.1) (fineModulationNode_bound e.2.2)
     p (ψ e.1) u (hp u) (hψ e.1 u)
 
-theorem finePairFieldReset_abs_le {U : Type*} (a b : ℝ) (ha : 0 < a) (hab : a < b)
+theorem finePairFieldReset_abs_le (ha : 0 < a) (hab : a < b)
     (M : ℕ) (p : U → ℝ) (hp : ∀ u, p u ∈ Icc a b) (ψ : Z → U → ℝ)
     (hψ : ∀ ζ u, |ψ ζ u| ≤ 1) (e : Z × FinePairDensityIndex M) (u : U) :
     |finePairFieldReset a b M p ψ e u| ≤ b := by

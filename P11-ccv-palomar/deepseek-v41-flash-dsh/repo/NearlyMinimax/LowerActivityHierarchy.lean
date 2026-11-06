@@ -12,11 +12,12 @@ noncomputable section
 open Filter
 open scoped Topology
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 800000
+
+section
+variable {f M : ℝ → ℝ} {c : ℝ}
 
 /-- A positive polynomial-scale profile has logarithm negligible against the scale. -/
-theorem log_profile_div_scale_tends_zero {f M : ℝ → ℝ} {c : ℝ}
+theorem log_profile_div_scale_tends_zero 
     (hM : Tendsto M atTop atTop) (p : ℕ) (hc : 0 < c)
     (hf : ∀ᶠ x in atTop, 0 < f x)
     (hr : Tendsto (fun x => f x / (M x)^p) atTop (𝓝 c)) :
@@ -33,12 +34,14 @@ theorem log_profile_div_scale_tends_zero {f M : ℝ → ℝ} {c : ℝ}
   field_simp [hMx.ne']
   ring
 
-theorem positive_profile_tends_zero_of_log_div_negative {f M : ℝ → ℝ} {c : ℝ}
+theorem positive_profile_tends_zero_of_log_div_negative 
     (hM : Tendsto M atTop atTop) (hc : c < 0) (hf : ∀ᶠ x in atTop, 0 < f x)
     (hr : Tendsto (fun x => Real.log (f x) / M x) atTop (𝓝 c)) :
     Tendsto f atTop (𝓝 0) := by
   have hh := Real.tendsto_exp_atBot.comp (tendsto_atBot_of_div_negative hM hr hc)
   refine hh.congr' (hf.mono fun x hx => Real.exp_log hx)
+
+end
 
 def lowerAliasH (s d m θ C : ℝ) (τM : ℕ → ℝ) (x : ℝ) : ℝ :=
   1 + Real.log (lowerSaddleN s d m θ C τM x)

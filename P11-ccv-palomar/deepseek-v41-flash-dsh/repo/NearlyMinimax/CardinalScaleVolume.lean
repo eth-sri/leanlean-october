@@ -10,8 +10,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 600000
 
 def finiteOrthantCutoff {q : ℕ} (A : ℝ) (s : Fin q → ℝ) : ℝ :=
   if ∑ j, s j ≤ A then Real.exp (∑ j, s j) else 0
@@ -40,7 +38,10 @@ theorem finite_orthant_cutoff_integrable {q : ℕ} {A : ℝ} (hA : 0 ≤ A) :
   · rw [ite_eq_right hsum, norm_zero]
     exact Set.indicator_nonneg (fun _ _ => Real.exp_nonneg _) _
 
-theorem orthant_cutoff_split_integral {m : ℕ} (A : ℝ) :
+section
+variable {m : ℕ}
+
+theorem orthant_cutoff_split_integral (A : ℝ) :
     (∫ s : Fin (m + 1) → ℝ, finiteOrthantCutoff A s ∂exponentialOrthantMeasure (Fin (m + 1))) =
       ∫ z : ℝ × (Fin m → ℝ), orthantSumCutoff A z
       ∂((volume.restrict (Ici (0 : ℝ))).prod (exponentialOrthantMeasure (Fin m))) := by
@@ -53,7 +54,7 @@ theorem orthant_cutoff_split_integral {m : ℕ} (A : ℝ) :
       finiteOrthantCutoff, orthantSumCutoff, Fin.sum_univ_succ, Fin.insertNth_zero,
       Equiv.coe_fn_mk, Fin.cons_succ, Fin.zero_succAbove, cast_eq, Fin.cons_zero]
 
-theorem orthant_cutoff_pair_integrable {m : ℕ} {A : ℝ} (hA : 0 ≤ A) :
+theorem orthant_cutoff_pair_integrable {A : ℝ} (hA : 0 ≤ A) :
     Integrable (orthantSumCutoff A : (ℝ × (Fin m → ℝ)) → ℝ)
       ((volume.restrict (Ici (0 : ℝ))).prod (exponentialOrthantMeasure (Fin m))) := by
   have hp := (measurePreserving_piFinSuccAbove
@@ -66,6 +67,8 @@ theorem orthant_cutoff_pair_integrable {m : ℕ} {A : ℝ} (hA : 0 ≤ A) :
       finiteOrthantCutoff, orthantSumCutoff, Fin.sum_univ_succ, Fin.insertNth_zero,
       Equiv.coe_fn_mk, Fin.cons_succ, Fin.zero_succAbove, cast_eq, Fin.cons_zero]
   · rfl
+
+end
 
 theorem orthant_cutoff_scalar_integral (A S : ℝ) :
     (∫ v : ℝ in Ici 0, if v + S ≤ A then Real.exp (v + S) else 0) =
@@ -85,9 +88,7 @@ theorem orthant_cutoff_scalar_integral (A S : ℝ) :
       funext v
       rw [Real.exp_add]
       ring
-    rw [hf, integral_const_mul, integral_Icc_eq_integral_Ioc, ← intervalIntegral.integral_of_le hn, integral_exp]
-    rw [Real.exp_zero, mul_sub, ← Real.exp_add, mul_one]
-    rw [show S + (A - S) = A by ring]
+    rw [hf, integral_const_mul, integral_Icc_eq_integral_Ioc, ← intervalIntegral.integral_of_le hn, integral_exp, Real.exp_zero, mul_sub, ← Real.exp_add, mul_one, show S + (A - S) = A by ring]
   · rw [ite_eq_right h, Icc_eq_empty_of_lt (by linarith : A - S < 0)]
     simp
 
@@ -169,7 +170,12 @@ theorem log_scale_cutoff_integral_le_of_card {ι : Type*} [Fintype ι]
     finite_log_scale_cutoff_integral]
   exact finite_orthant_cutoff_integral_le hA
 
-theorem spatial_scale_domain_original {n : ℕ} (i : Fin n) (T : ℝ) :
+variable {n : ℕ}
+
+section
+variable (i : Fin n) (T : ℝ)
+
+theorem spatial_scale_domain_original :
     spatialScaleDomain i T = Ici 0 ∩
       {t : SpatialScaleVector i | ∑ j, Real.log (1 + t j) ≤ 2 * Real.log T} := by
   ext t
@@ -192,7 +198,7 @@ theorem spatial_scale_domain_original {n : ℕ} (i : Fin n) (T : ℝ) :
     rw [he ht]
     exact hlog
 
-theorem spatial_scale_domain_volume_eq_cutoff {n : ℕ} (i : Fin n) (T : ℝ) :
+theorem spatial_scale_domain_volume_eq_cutoff :
     (volume : Measure (SpatialScaleVector i)).real (spatialScaleDomain i T) =
       ∫ t : SpatialScaleVector i in Ici 0, logScaleCutoff (2 * Real.log T) t := by
   have hlog : Measurable (fun t : SpatialScaleVector i => ∑ j, Real.log (1 + t j)) :=
@@ -210,8 +216,10 @@ theorem spatial_scale_domain_volume_eq_cutoff {n : ℕ} (i : Fin n) (T : ℝ) :
   rw [hs, integral_const]
   simp only [Measure.real, Measure.restrict_apply_univ, smul_eq_mul, mul_one]
 
+end
+
 /-- Genuine Lebesgue volume of the original logarithmic scale simplex. -/
-theorem spatial_scale_domain_volume_le {n : ℕ} (hn : 2 ≤ n) (i : Fin n) {T : ℝ} (hT : 1 ≤ T) :
+theorem spatial_scale_domain_volume_le (hn : 2 ≤ n) (i : Fin n) {T : ℝ} (hT : 1 ≤ T) :
     (volume : Measure (SpatialScaleVector i)).real (spatialScaleDomain i T) ≤
       T ^ 2 * (2 * Real.log T) ^ (n - 2) := by
   have hcard : Fintype.card (SpatialScaleIndex i) = (n - 2) + 1 := by
@@ -226,7 +234,7 @@ theorem spatial_scale_domain_volume_le {n : ℕ} (hn : 2 ≤ n) (i : Fin n) {T :
   rw [he] at h
   exact h
 
-theorem spatial_scale_domain_volume_le_uniform {n : ℕ} (hn : 2 ≤ n) (i : Fin n)
+theorem spatial_scale_domain_volume_le_uniform (hn : 2 ≤ n) (i : Fin n)
     {T : ℝ} (hT : 1 ≤ T) :
     (volume : Measure (SpatialScaleVector i)).real (spatialScaleDomain i T) ≤
       2 ^ (n - 1) * T ^ 2 * (1 + Real.log T) ^ (n - 2) := by

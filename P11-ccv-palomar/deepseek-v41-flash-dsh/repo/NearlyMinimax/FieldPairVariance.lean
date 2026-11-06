@@ -11,7 +11,6 @@ noncomputable section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal
 namespace NearlyMinimax.PairUStatistic
-set_option backward.isDefEq.respectTransparency false
 
 variable {P Ω E I : Type*} [MeasurableSpace P] [MeasurableSpace Ω]
   [MeasurableSpace E] [MeasurableSpace I] [MeasurableSingletonClass I]

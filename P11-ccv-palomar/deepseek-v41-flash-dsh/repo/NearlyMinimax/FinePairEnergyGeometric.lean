@@ -12,8 +12,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 
  def finePairSpatialEnergyPrefactor (d q : ℕ) (ad bd C a ρ : ℝ) : ℝ :=
   |finePairDensityPrefactor ad bd|^2 * finePairResponseActionBudget d q C a ρ ^ 2 *
@@ -62,7 +60,9 @@ set_option maxHeartbeats 1000000
  def finePairFieldGeometricBase (d : ℕ) (bd : ℝ) : ℝ :=
   1 + bd^2 * fineFieldSubsetEnergyBase d
 
- theorem finePairFieldGeometricBase_nonneg (d : ℕ) (bd : ℝ) :
+ variable (d : ℕ) (bd : ℝ)
+
+theorem finePairFieldGeometricBase_nonneg :
     0 ≤ finePairFieldGeometricBase d bd := by
   unfold finePairFieldGeometricBase fineFieldSubsetEnergyBase
   positivity
@@ -87,13 +87,13 @@ set_option maxHeartbeats 1000000
     convert hm using 1 <;> simp only [mul_pow] <;> ring)
   convert hh using 1 <;> ring
 
- theorem spatialInverseFourConstant_nonneg (d : ℕ) : 0 ≤ spatialInverseFourConstant d := by
+ theorem spatialInverseFourConstant_nonneg : 0 ≤ spatialInverseFourConstant d := by
   unfold spatialInverseFourConstant
   positivity
 
  def finePairAliasGeometricBase (d : ℕ) (bd : ℝ) : ℝ := 1 + bd^2*(2 : ℝ)^d
 
- theorem finePairAliasGeometricBase_nonneg (d : ℕ) (bd : ℝ) :
+ theorem finePairAliasGeometricBase_nonneg :
     0 ≤ finePairAliasGeometricBase d bd := by unfold finePairAliasGeometricBase; positivity
 
  theorem finePairAliasActionSpatialBudget_geometric_le (d n M q : ℕ)

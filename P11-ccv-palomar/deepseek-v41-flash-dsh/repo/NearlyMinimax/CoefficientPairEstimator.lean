@@ -12,9 +12,6 @@ noncomputable section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal RealInnerProductSpace
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option synthInstance.maxHeartbeats 200000
-set_option maxHeartbeats 600000
 
 def coefficientPairNumeratorKernel {Ω : Type*} {d : ℕ} (k : ℕ) (hk : 0 < k)
     (c : Ω → Covariate d × Covariate d → PairVector) (p : Ω × Ω)
@@ -44,7 +41,10 @@ theorem coefficientPairNumeratorKernel_measurable {Ω : Type*} [MeasurableSpace 
   simpa only [coefficientPairNumeratorKernel, pairScoreOperator,
     ContinuousLinearMap.sub_apply, ContinuousLinearMap.smul_apply, zero_smul, sub_zero] using hm
 
-def coefficientPairStatistic {d : ℕ} (C : ModelConstants d) (m k : ℕ) (hk : 0 < k)
+section
+variable {d : ℕ}
+
+def coefficientPairStatistic (C : ModelConstants d) (m k : ℕ) (hk : 0 < k)
     (c : (Fin m → Observation d) → Covariate d × Covariate d → PairVector)
     (z : (((Fin m → Observation d) × (Fin m → Observation d)) × (Fin m → Observation d))) : ℝ :=
   stabilizedRatio C.varianceLower C.varianceUpper (1 / 4)
@@ -53,7 +53,7 @@ def coefficientPairStatistic {d : ℕ} (C : ModelConstants d) (m k : ℕ) (hk : 
     (PairUStatistic.fieldPairAverage m ((k : ℝ) ^ d) (rawModelPairNoise k hk c)
       (fun i x => x i)) z
 
-theorem coefficientPairStatistic_measurable {d : ℕ} (C : ModelConstants d) (m k : ℕ)
+theorem coefficientPairStatistic_measurable (C : ModelConstants d) (m k : ℕ)
     (hk : 0 < k) {c : (Fin m → Observation d) → Covariate d × Covariate d → PairVector}
     (hmc : Measurable (fun z : (Fin m → Observation d) × (Covariate d × Covariate d) => c z.1 z.2)) :
     Measurable (coefficientPairStatistic C m k hk c) := by
@@ -69,7 +69,11 @@ theorem coefficientPairStatistic_measurable {d : ℕ} (C : ModelConstants d) (m 
       (fun (i : Fin m) (x : Fin m → Observation d) => x i) (fun i => measurable_pi_apply i)
   exact stabilizedRatio_measurable C.varianceLower C.varianceUpper (1 / 4) hN hD
 
-def coefficientPairEstimator {d n : ℕ} (C : ModelConstants d) (k : ℕ) (hk : 0 < k)
+end
+
+variable {d n : ℕ} (C : ModelConstants d)
+
+def coefficientPairEstimator (C : ModelConstants d) (k : ℕ) (hk : 0 < k)
     (c : (Fin (threeBlockSize n) → Observation d) → Covariate d × Covariate d → PairVector)
     (hmc : Measurable (fun z : (Fin (threeBlockSize n) → Observation d) ×
       (Covariate d × Covariate d) => c z.1 z.2)) : Estimator d n :=
@@ -78,7 +82,7 @@ def coefficientPairEstimator {d n : ℕ} (C : ModelConstants d) (k : ℕ) (hk : 
 
 /-- Independent pilots and evaluation data arise from the original iid sample;
 the coefficient field is observable and carries no unknown parameter. -/
-theorem coefficientPairEstimator_rms_bound {d n : ℕ} (C : ModelConstants d)
+theorem coefficientPairEstimator_rms_bound 
     (θ : RegressionParameter d) (hθ : Admissible C θ) (hn : 6 ≤ n)
     (k : ℕ) (hk : 0 < k)
     (c : (Fin (threeBlockSize n) → Observation d) → Covariate d × Covariate d → PairVector)
@@ -113,7 +117,7 @@ theorem coefficientPairEstimator_rms_bound {d n : ℕ} (C : ModelConstants d)
   simp_rw [coefficientPairStatistic, heq, hnum, hden]
   exact h
 
-theorem minimaxRMS_le_of_estimator_rms {d n : ℕ} (C : ModelConstants d)
+theorem minimaxRMS_le_of_estimator_rms 
     (T : Estimator d n) {B : ℝ≥0∞}
     (hT : ∀ θ : RegressionParameter d, Admissible C θ → meanSquaredRisk T θ ^ (1 / 2 : ℝ) ≤ B) :
     minimaxRMS C n ≤ B := by

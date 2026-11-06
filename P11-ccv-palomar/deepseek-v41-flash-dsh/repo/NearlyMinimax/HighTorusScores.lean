@@ -12,8 +12,6 @@ noncomputable section
 open MeasureTheory ProbabilityTheory
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 600000
 attribute [local instance] Classical.propDecidable
 
 section

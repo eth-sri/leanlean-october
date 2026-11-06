@@ -14,16 +14,17 @@ namespace NearlyMinimax
 
 abbrev AnchoredCoefficientSpace (d ℓ : ℕ) := EuclideanSpace ℝ (AnchoredIndex d ℓ)
 
-def anchoredQuadratic {d ℓ : ℕ} (u : Covariate d) (c : AnchoredCoefficientSpace d ℓ) : ℝ :=
+variable {d ℓ : ℕ} (u : Covariate d) (p : Covariate d → ℝ)
+
+def anchoredQuadratic (u : Covariate d) (c : AnchoredCoefficientSpace d ℓ) : ℝ :=
   c.ofLp ⬝ᵥ (anchoredGram u *ᵥ c.ofLp)
 
-theorem anchoredGram_entry_continuous {d ℓ : ℕ} (γ δ : AnchoredIndex d ℓ) :
-    Continuous (fun u => anchoredGram u γ δ) := by
-  exact continuous_parametric_integral_of_continuous
+theorem anchoredGram_entry_continuous (γ δ : AnchoredIndex d ℓ) :
+    Continuous (fun u => anchoredGram u γ δ) := continuous_parametric_integral_of_continuous
     ((anchoredFeature_continuous γ).mul (anchoredFeature_continuous δ))
     (unitCube_isCompact d)
 
-theorem anchoredQuadratic_continuous {d ℓ : ℕ} :
+theorem anchoredQuadratic_continuous :
     Continuous (fun z : Covariate d × AnchoredCoefficientSpace d ℓ =>
       anchoredQuadratic z.1 z.2) := by
   change Continuous (fun z : Covariate d × AnchoredCoefficientSpace d ℓ =>
@@ -36,7 +37,7 @@ theorem anchoredQuadratic_continuous {d ℓ : ℕ} :
   exact ((anchoredGram_entry_continuous γ δ).comp continuous_fst).mul
     ((PiLp.continuous_apply 2 _ δ).comp continuous_snd)
 
-theorem anchoredQuadratic_pos {d ℓ : ℕ} (u : Covariate d)
+theorem anchoredQuadratic_pos 
     (c : AnchoredCoefficientSpace d ℓ) (hc : c ≠ 0) : 0 < anchoredQuadratic u c := by
   have hcf : c.ofLp ≠ 0 := by
     intro h
@@ -45,7 +46,7 @@ theorem anchoredQuadratic_pos {d ℓ : ℕ} (u : Covariate d)
   have h := (anchoredGram_posDef (ℓ := ℓ) u).dotProduct_mulVec_pos hcf
   simpa only [star_trivial, anchoredQuadratic] using h
 
-theorem anchoredQuadratic_smul {d ℓ : ℕ} (u : Covariate d)
+theorem anchoredQuadratic_smul 
     (a : ℝ) (c : AnchoredCoefficientSpace d ℓ) :
     anchoredQuadratic u (a • c) = a ^ 2 * anchoredQuadratic u c := by
   change (∑ γ, (a * c γ) * ∑ δ, anchoredGram u γ δ * (a * c δ)) =
@@ -59,7 +60,7 @@ theorem anchoredQuadratic_smul {d ℓ : ℕ} (u : Covariate d)
 
 /-- Compactness supplies uniform positive lower and finite upper bounds on
 all anchor Grams. These constants are proved to exist from concrete monomials. -/
-theorem anchoredGram_uniform_bounds {d ℓ : ℕ} [Nonempty (AnchoredIndex d ℓ)] :
+theorem anchoredGram_uniform_bounds [Nonempty (AnchoredIndex d ℓ)] :
     ∃ cB CB : ℝ, 0 < cB ∧ 0 < CB ∧
       ∀ u ∈ unitCube d, ∀ c : AnchoredCoefficientSpace d ℓ,
         cB * ‖c‖ ^ 2 ≤ anchoredQuadratic u c ∧
@@ -107,7 +108,7 @@ theorem anchoredGram_uniform_bounds {d ℓ : ℕ} [Nonempty (AnchoredIndex d ℓ
   · simpa only [mul_comm] using mul_le_mul_of_nonneg_left hup (sq_nonneg ‖c‖)
 
 /-- The concrete index set is nonempty in the manuscript's sharp regime. -/
-theorem anchoredIndex_nonempty {d ℓ : ℕ} (hd : 0 < d) (hℓ : 0 < ℓ) :
+theorem anchoredIndex_nonempty (hd : 0 < d) (hℓ : 0 < ℓ) :
     Nonempty (AnchoredIndex d ℓ) := by
   classical
   let i0 : Fin d := ⟨0, hd⟩
@@ -119,11 +120,11 @@ theorem anchoredIndex_nonempty {d ℓ : ℕ} (hd : 0 < d) (hℓ : 0 < ℓ) :
   exact ⟨⟨γ, by rw [hs]; exact ⟨by norm_num, hℓ⟩⟩⟩
 
 /-- Density-weighted actual population Gram on the normalized cube. -/
-def anchoredDensityGram {d ℓ : ℕ} (u : Covariate d) (p : Covariate d → ℝ) :
+def anchoredDensityGram (u : Covariate d) (p : Covariate d → ℝ) :
     Matrix (AnchoredIndex d ℓ) (AnchoredIndex d ℓ) ℝ :=
   fun γ δ => ∫ w, p w * (anchoredFeature u w γ * anchoredFeature u w δ) ∂cubeVolume d
 
-theorem anchoredDensityGram_isHermitian {d ℓ : ℕ} (u : Covariate d)
+theorem anchoredDensityGram_isHermitian 
     (p : Covariate d → ℝ) : (anchoredDensityGram (ℓ := ℓ) u p).IsHermitian := by
   ext γ δ
   simp only [conjTranspose_apply, star_trivial, anchoredDensityGram]
@@ -131,16 +132,16 @@ theorem anchoredDensityGram_isHermitian {d ℓ : ℕ} (u : Covariate d)
   funext w
   rw [mul_comm (anchoredFeature u w δ) (anchoredFeature u w γ)]
 
-theorem anchoredDensityGram_product_integrable {d ℓ : ℕ} (u : Covariate d)
-    (p : Covariate d → ℝ) (hpmeas : Measurable p) (b : ℝ)
+theorem anchoredDensityGram_product_integrable 
+    (hpmeas : Measurable p) (b : ℝ)
     (hp : ∀ᵐ w ∂cubeVolume d, 0 ≤ p w ∧ p w ≤ b) (γ δ : AnchoredIndex d ℓ) :
     Integrable (fun w => p w * (anchoredFeature u w γ * anchoredFeature u w δ))
       (cubeVolume d) := by
   apply (anchoredFeature_product_integrable u γ δ).bdd_mul hpmeas.aestronglyMeasurable
   exact hp.mono (fun w hw => by rw [Real.norm_eq_abs, abs_of_nonneg hw.1]; exact hw.2)
 
-theorem anchoredDensityGram_quadratic {d ℓ : ℕ} (u : Covariate d)
-    (p : Covariate d → ℝ) (hpmeas : Measurable p) (b : ℝ)
+theorem anchoredDensityGram_quadratic 
+    (hpmeas : Measurable p) (b : ℝ)
     (hp : ∀ᵐ w ∂cubeVolume d, 0 ≤ p w ∧ p w ≤ b) (c : AnchoredIndex d ℓ → ℝ) :
     c ⬝ᵥ (anchoredDensityGram u p *ᵥ c) =
       ∫ w, p w * (∑ γ, c γ * anchoredFeature u w γ) ^ 2 ∂cubeVolume d := by
@@ -175,8 +176,8 @@ theorem anchoredDensityGram_quadratic {d ℓ : ℕ} (u : Covariate d)
         (c γ)).mul_const (c δ))
 
 /-- Density bounds yield the exact quadratic-form comparison in Lemma U1(3). -/
-theorem anchoredDensityGram_quadratic_bounds {d ℓ : ℕ} (u : Covariate d)
-    (p : Covariate d → ℝ) (hpmeas : Measurable p) (a b : ℝ) (ha : 0 ≤ a)
+theorem anchoredDensityGram_quadratic_bounds 
+    (hpmeas : Measurable p) (a b : ℝ) (ha : 0 ≤ a)
     (hp : ∀ᵐ w ∂cubeVolume d, a ≤ p w ∧ p w ≤ b) (c : AnchoredIndex d ℓ → ℝ) :
     a * (c ⬝ᵥ (anchoredGram u *ᵥ c)) ≤ c ⬝ᵥ (anchoredDensityGram u p *ᵥ c) ∧
       c ⬝ᵥ (anchoredDensityGram u p *ᵥ c) ≤ b * (c ⬝ᵥ (anchoredGram u *ᵥ c)) := by
@@ -204,8 +205,8 @@ theorem anchoredDensityGram_quadratic_bounds {d ℓ : ℕ} (u : Covariate d)
       mul_le_mul_of_nonneg_right hw.2 (sq_nonneg _)))
 
 /-- A positive density lower bound makes the actual population Gram invertible. -/
-theorem anchoredDensityGram_posDef {d ℓ : ℕ} (u : Covariate d)
-    (p : Covariate d → ℝ) (hpmeas : Measurable p) (a b : ℝ) (ha : 0 < a)
+theorem anchoredDensityGram_posDef 
+    (hpmeas : Measurable p) (a b : ℝ) (ha : 0 < a)
     (hp : ∀ᵐ w ∂cubeVolume d, a ≤ p w ∧ p w ≤ b) :
     (anchoredDensityGram (ℓ := ℓ) u p).PosDef := by
   apply Matrix.PosDef.of_dotProduct_mulVec_pos (anchoredDensityGram_isHermitian u p)
@@ -217,8 +218,8 @@ theorem anchoredDensityGram_posDef {d ℓ : ℕ} (u : Covariate d)
     (anchoredDensityGram_quadratic_bounds u p hpmeas a b ha.le hp c).1
 
 /-- The manuscript's two Loewner inequalities for the actual density Gram. -/
-theorem anchoredDensityGram_sandwich {d ℓ : ℕ} (u : Covariate d)
-    (p : Covariate d → ℝ) (hpmeas : Measurable p) (a b : ℝ) (ha : 0 ≤ a)
+theorem anchoredDensityGram_sandwich 
+    (hpmeas : Measurable p) (a b : ℝ) (ha : 0 ≤ a)
     (hp : ∀ᵐ w ∂cubeVolume d, a ≤ p w ∧ p w ≤ b) :
     (anchoredDensityGram (ℓ := ℓ) u p - a • anchoredGram u).PosSemidef ∧
       (b • anchoredGram u - anchoredDensityGram (ℓ := ℓ) u p).PosSemidef := by

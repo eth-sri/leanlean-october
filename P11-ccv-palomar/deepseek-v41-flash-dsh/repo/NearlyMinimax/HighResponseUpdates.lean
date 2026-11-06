@@ -11,8 +11,6 @@ noncomputable section
 open MeasureTheory Set Polynomial
 open scoped ENNReal BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 
 /-- A ternary response on an affine regression line, as an actual polynomial. -/
 def ternaryLinePolynomial (a f V δ : ℝ) (y : Fin 3) : ℝ[X] :=
@@ -33,19 +31,21 @@ theorem ternary_line_polynomial_natDegree (a f V δ : ℝ) (y : Fin 3) :
     exact max_le (by simp) ((natDegree_monomial_le _).trans (by norm_num))
   · exact natDegree_monomial_le _
 
+variable (n : ℕ) (a V : ℝ) (f δ : Fin n → ℝ) (y : Fin n → Fin 3)
+
 /-- Complete finite product likelihood on the same line. -/
-def responseLinePolynomial (n : ℕ) (a V : ℝ) (f δ : Fin n → ℝ)
+def responseLinePolynomial (a V : ℝ) (f δ : Fin n → ℝ)
     (y : Fin n → Fin 3) : ℝ[X] := ∏ i, ternaryLinePolynomial a (f i) V (δ i) (y i)
 
-theorem response_line_polynomial_eval (n : ℕ) (a V : ℝ) (f δ : Fin n → ℝ)
-    (y : Fin n → Fin 3) (z : ℝ) :
+theorem response_line_polynomial_eval 
+    (z : ℝ) :
     (responseLinePolynomial n a V f δ y).eval z =
       ∏ i, ternaryMass a (f i + z * δ i) V (y i) := by
   simp only [responseLinePolynomial, eval_prod]
   simp only [ternary_line_polynomial_eval]
 
-theorem response_line_polynomial_natDegree (n : ℕ) (a V : ℝ) (f δ : Fin n → ℝ)
-    (y : Fin n → Fin 3) : (responseLinePolynomial n a V f δ y).natDegree ≤ 2 * n := by
+theorem response_line_polynomial_natDegree 
+    : (responseLinePolynomial n a V f δ y).natDegree ≤ 2 * n := by
   apply (natDegree_prod_le _ _).trans
   calc
     _ ≤ ∑ _i : Fin n, 2 := Finset.sum_le_sum (fun i _ => ternary_line_polynomial_natDegree _ _ _ _ _)
@@ -66,8 +66,8 @@ theorem response_line_rule_exact (q n : ℕ) (a V : ℝ) (f δ : Fin n → ℝ)
 
 /-- Formal quadratic coefficient equals half the genuine second directional
 product derivative, so its heat contraction can be evaluated explicitly. -/
-theorem response_line_quadratic_coefficient (n : ℕ) (a V : ℝ) (f δ : Fin n → ℝ)
-    (y : Fin n → Fin 3) :
+theorem response_line_quadratic_coefficient 
+    :
     2 * (responseLinePolynomial n a V f δ y).coeff 2 =
       finiteProductSecond Finset.univ
         (fun i z => ternaryMass a (f i + z * δ i) V (y i))
@@ -114,8 +114,7 @@ theorem affine_line_remainder_abs_bound (H D E : ℝ → ℝ) (B : ℝ) (hB : 0 
       (fun x hx => by simpa only [Real.norm_eq_abs] using hE x hx)
       (convex_Icc (0 : ℝ) 1) hzero hu
     simp only [Real.norm_eq_abs, sub_zero] at h
-    have huabs : |u| ≤ 1 := abs_le.mpr ⟨by linarith [hu.1], hu.2⟩
-    exact h.trans (mul_le_mul_of_nonneg_left huabs hB |>.trans_eq (mul_one B))
+    exact h.trans (mul_le_mul_of_nonneg_left (abs_le.mpr ⟨by linarith [hu.1], hu.2⟩) hB |>.trans_eq (mul_one B))
   let G := fun u => H u - H 0 - u * D 0
   have hG (u : ℝ) (hu : u ∈ Icc (0 : ℝ) 1) : HasDerivAt G (D u - D 0) u :=
     (((hH u hu).sub_const (H 0)).sub ((hasDerivAt_id u).mul_const (D 0))).congr_deriv (by ring)
@@ -123,9 +122,8 @@ theorem affine_line_remainder_abs_bound (H D E : ℝ → ℝ) (B : ℝ) (hB : 0 
     (fun x hx => (hG x hx).hasDerivWithinAt)
     (fun x hx => by simpa only [Real.norm_eq_abs] using hDdiff x hx)
     (convex_Icc (0 : ℝ) 1) hzero hz
-  have hzabs : |z| ≤ 1 := abs_le.mpr ⟨by linarith [hz.1], hz.2⟩
   simp only [G, sub_zero, zero_mul, sub_self, Real.norm_eq_abs] at h
-  exact h.trans (mul_le_mul_of_nonneg_left hzabs hB |>.trans_eq (mul_one B))
+  exact h.trans (mul_le_mul_of_nonneg_left (abs_le.mpr ⟨by linarith [hz.1], hz.2⟩) hB |>.trans_eq (mul_one B))
 
 /-- The real scalar cardinal action has the all-count quadratic derivative
 bound; its affine part cancels exactly by the proved moments. -/
@@ -214,16 +212,18 @@ smoothness or response assumptions. -/
 def spatialFrameCovariance (A : ι → ι → ℝ) {n : ℕ} (φ : Fin n → ι → ℝ)
     (i l : Fin n) : ℝ := ∑ k, ∑ m, φ i k * φ l m * A k m
 
-def coefficientRegression {n : ℕ} (η : ℝ) (g w : Fin n → ℝ)
+variable {n : ℕ} (q : ℕ)
+
+def coefficientRegression (η : ℝ) (g w : Fin n → ℝ)
     (φ : Fin n → ι → ℝ) (c : ι → ℝ) : Fin n → ℝ :=
   fun i => g i + η * w i * ∑ k, φ i k * c k
 
-def coefficientDirection {n : ℕ} (η : ℝ) (w : Fin n → ℝ)
+def coefficientDirection (η : ℝ) (w : Fin n → ℝ)
     (φ : Fin n → ι → ℝ) (c v : ι → ℝ) : Fin n → ℝ :=
   fun i => η * w i * ∑ k, φ i k * (v k - c k)
 
 omit [DecidableEq ι] in
-theorem coefficientRegression_reset {n : ℕ} (η : ℝ) (g w : Fin n → ℝ)
+theorem coefficientRegression_reset (η : ℝ) (g w : Fin n → ℝ)
     (φ : Fin n → ι → ℝ) (c v : ι → ℝ) (z : ℝ) :
     coefficientRegression η g w φ (coefficientReset c v z) =
       fun i => coefficientRegression η g w φ c i + z * coefficientDirection η w φ c v i := by
@@ -240,7 +240,7 @@ theorem coefficientRegression_reset {n : ℕ} (η : ℝ) (g w : Fin n → ℝ)
   simp only [coefficientRegression, coefficientDirection, hs, mul_sub, Finset.sum_sub_distrib]
   ring
 
-theorem covariance_direction_product {n : ℕ} (C η : ℝ) (A : ι → ι → ℝ)
+theorem covariance_direction_product (C η : ℝ) (A : ι → ι → ℝ)
     (hC : C ≠ 0) (hA : ∀ i j, A i j = A j i) (w : Fin n → ℝ)
     (φ : Fin n → ι → ℝ) (c : ι → ℝ) (i l : Fin n) :
     covarianceAction C A (fun v => coefficientDirection η w φ c v i *
@@ -266,13 +266,13 @@ theorem covariance_direction_product {n : ℕ} (C η : ℝ) (A : ι → ι → �
   rw [covarianceAction_mul, covariance_displacement_second C A hC hA]
 
 /-- Real response likelihood of a single local coefficient state. -/
-def highResponseProduct {n : ℕ} (a V η : ℝ) (g w : Fin n → ℝ)
+def highResponseProduct (a V η : ℝ) (g w : Fin n → ℝ)
     (φ : Fin n → ι → ℝ) (c : ι → ℝ) (y : Fin n → Fin 3) : ℝ :=
   ∏ i, ternaryMass a (coefficientRegression η g w φ c i) V (y i)
 
 /-- The exact finite signed response operator is its directional Hessian
 contraction through count q. This comes from actual cardinal evaluation. -/
-theorem high_response_matrix_second {n : ℕ} (q : ℕ) (hn : n ≤ q)
+theorem high_response_matrix_second (hn : n ≤ q)
     (C a V η : ℝ) (A : ι → ι → ℝ) (g w : Fin n → ℝ)
     (φ : Fin n → ι → ℝ) (c : ι → ℝ) (y : Fin n → Fin 3) :
     responseMatrixAction q C A c (fun c => highResponseProduct a V η g w φ c y) =
@@ -293,14 +293,14 @@ theorem high_response_matrix_second {n : ℕ} (q : ℕ) (hn : n ≤ q)
   linarith
 
 /-- The variance derivative before substituting a common variance. -/
-def highResponseVarianceTerm {n : ℕ} (a V η : ℝ) (g w : Fin n → ℝ)
+def highResponseVarianceTerm (a V η : ℝ) (g w : Fin n → ℝ)
     (φ : Fin n → ι → ℝ) (c : ι → ℝ) (y : Fin n → Fin 3) (i : Fin n) : ℝ :=
   ternaryVarianceDerivative a (y i) * ∏ l ∈ (Finset.univ : Finset (Fin n)).erase i,
     ternaryMass a (coefficientRegression η g w φ c l) V (y l)
 
 /-- Spatial cardinal covariance cancels every off-diagonal product derivative.
 This is the actual heat identity of the realized finite signed update. -/
-theorem high_response_matrix_heat {n : ℕ} (q : ℕ) (hn : n ≤ q)
+theorem high_response_matrix_heat (hn : n ≤ q)
     (C a V η : ℝ) (A : ι → ι → ℝ) (hC : C ≠ 0) (hA : ∀ i j, A i j = A j i)
     (g w : Fin n → ℝ) (φ : Fin n → ι → ℝ) (c : ι → ℝ) (y : Fin n → Fin 3)
     (d : Fin n → ℝ)
@@ -427,7 +427,7 @@ theorem response_scalar_product_action_abs_bound (q n : ℕ) (hn : 1 ≤ n)
 
 /-- Matrix-response bound at every count, derived from legal frame resets
 and the actual ternary product derivatives. -/
-theorem high_response_matrix_all_count_bound {n : ℕ} (q : ℕ) (hn : 1 ≤ n)
+theorem high_response_matrix_all_count_bound (hn : 1 ≤ n)
     (C a V η ρ : ℝ) (hC : 0 < C) (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ)
     (hηρ : η ≤ ρ / 2) (A : ι → ι → ℝ) (g w : Fin n → ℝ)
     (φ : Fin n → ι → ℝ) (c : ι → ℝ) (y : Fin n → Fin 3)
@@ -443,7 +443,7 @@ theorem high_response_matrix_all_count_bound {n : ℕ} (q : ℕ) (hn : 1 ≤ n)
   apply covarianceAction_abs_le
   intro k l s t
   let v := covarianceAtom C k l s t
-  have hv : (∑ k, |v k|) ≤ C⁻¹ := covarianceAtom_mem_ball C hC k l s t
+  have hv := covarianceAtom_mem_ball C hC k l s t
   let f := coefficientRegression η g w φ c
   let δ := coefficientDirection η w φ c v
   have hr (z : ℝ) : coefficientRegression η g w φ (coefficientReset c v z) =
@@ -459,10 +459,8 @@ theorem high_response_matrix_all_count_bound {n : ℕ} (q : ℕ) (hn : 1 ≤ n)
     rw [abs_mul]
     exact (mul_le_mul hm hprof (abs_nonneg _) hη).trans_eq (by ring)
   have hf (z : ℝ) (hz : z ∈ Icc (0 : ℝ) 1) (i : Fin n) : |f i + z * δ i| ≤ ρ := by
-    have hi := congrFun (hr z) i
-    rw [← hi]
-    have hball := coefficientReset_mem_ball C c v z hz hc hv
-    have hprof := hφ _ hball i
+    rw [← (congrFun (hr z) i)]
+    have hprof := hφ _ (coefficientReset_mem_ball C c v z hz hc hv) i
     change |g i + η * w i * (∑ k, φ i k * coefficientReset c v z k)| ≤ ρ
     have hm : |η * w i| ≤ η := by
       rw [abs_mul, abs_of_nonneg hη]

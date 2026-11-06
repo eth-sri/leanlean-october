@@ -85,7 +85,7 @@ theorem positive_deletion_recurrence {α β : Type*} [DecidableEq α]
         rw [← hc]
         apply deletion_comparison F (S.erase x) (S \ removed P) hsub
         intro V hV y hy
-        have hp : V ⊂ S := hV.trans_ssubset (Finset.erase_ssubset hx)
+        have hp := hV.trans_ssubset (Finset.erase_ssubset hx)
         have hlower := (ih V hp).2 y hy |>.1
         linarith
       have herr : |F S - F (S.erase x)| ≤ F (S.erase x) / 2 := by

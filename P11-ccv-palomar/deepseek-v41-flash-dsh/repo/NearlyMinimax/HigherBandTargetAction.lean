@@ -12,11 +12,11 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 attribute [local instance] Classical.propDecidable
 
-def higherBandPhysicalFirstAction {d n : ℕ} (ad bd lam ell N mu : ℝ)
+variable {d n : ℕ} (ad bd lam ell N mu : ℝ) (D M q : ℕ) (C : ℝ)
+
+def higherBandPhysicalFirstAction (ad bd lam ell N mu : ℝ)
     (D M q : ℕ) (C : ℝ) (U : Fin n → Covariate d) (p : Fin n → ℝ)
     (c : HighFrameIndex d D → ℝ) (Φ : (HighFrameIndex d D → ℝ) → ℝ)
     (i : Fin (D-2) × Bool) : ℝ :=
@@ -27,8 +27,8 @@ def higherBandPhysicalFirstAction {d n : ℕ} (ad bd lam ell N mu : ℝ)
   else higherBandFirstAction ad bd lam ell (higherBandFamilyUpper d ell N mu i)
     (higherBandFamilyTarget i) (higherBandFamilyGuardDegree M i) D q C i.2 U p c Φ
 
-theorem higherBandFamilyFirstAction_eq_physical {d n : ℕ} (ad bd lam ell N mu : ℝ)
-    (D M q : ℕ) (C : ℝ) (hell : 1 ≤ ell)
+theorem higherBandFamilyFirstAction_eq_physical 
+    (hell : 1 ≤ ell)
     (hnu : ∀ j : Fin (D-2), 0 < higherBandTargetScale d (j.val+3) N mu)
     (hFine : ∀ j : Fin (D-2), ell < higherBandTargetScale d (j.val+3) N mu → j.val+3 ≤ M)
     (U : Fin n → Covariate d) (p : Fin n → ℝ)
@@ -50,7 +50,10 @@ theorem integrated_cardinal_matrix_fin_cast {d n m D : ℕ} (h : m = n) (lam T :
   subst n
   rfl
 
-theorem integrated_cardinal_matrix_full_subset {d n D : ℕ} (lam T : ℝ)
+section
+variable {d n D : ℕ}
+
+theorem integrated_cardinal_matrix_full_subset (lam T : ℝ)
     (U : Fin n → Covariate d) (β β' : HighFrameIndex d D) :
     integratedCardinalMatrix lam T (spatialSubsetConfiguration Finset.univ U) β β' =
       integratedCardinalMatrix lam T U β β' := by
@@ -68,7 +71,7 @@ theorem integrated_cardinal_matrix_full_subset {d n D : ℕ} (lam T : ℝ)
   rw [hc, integrated_cardinal_matrix_fin_cast h]
   exact integrated_cardinal_matrix_perm τ lam T U β β'
 
-theorem higherBandActualMatrix_full_subset {d n D : ℕ} (lam L T : ℝ) (fine : Bool)
+theorem higherBandActualMatrix_full_subset (lam L T : ℝ) (fine : Bool)
     (U : Fin n → Covariate d) :
     (higherBandActualMatrix lam L T fine (spatialSubsetConfiguration Finset.univ U) : HighFrameIndex d D → _ → ℝ) =
       higherBandActualMatrix lam L T fine U := by
@@ -76,7 +79,9 @@ theorem higherBandActualMatrix_full_subset {d n D : ℕ} (lam L T : ℝ) (fine :
   cases fine <;> simp only [higherBandActualMatrix, Bool.false_eq_true, ite_false, ite_true,
     globalCardinalBandMatrix, integrated_cardinal_matrix_full_subset]
 
-theorem higherBandFirstAction_target_count {d n : ℕ} (ad bd lam L T : ℝ)
+end
+
+theorem higherBandFirstAction_target_count (ad bd lam L T : ℝ)
     (ha : 0 < ad) (hab : ad < bd) (hlam : 0 ≤ lam) (hL : 0 < L) (hT : 1 ≤ T)
     (m D q : ℕ) (hn : 2 ≤ n) (hD : 1 ≤ D) (hnD : n ≤ D) (hnm : n ≤ m)
     (C : ℝ) (fine : Bool) (U : Fin n → Covariate d) (hU : ∀ i j, |U i j| ≤ 2)

@@ -13,9 +13,10 @@ not an assumed target rate. -/
 noncomputable section
 open Filter
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
 
-def CompleteSaddleCostRiskBudget {d : ℕ} (C : ModelConstants d)
+variable {d : ℕ}
+
+def CompleteSaddleCostRiskBudget (C : ModelConstants d)
     (cf CB C5 C6 C7 ch ctr cm Cω : ℝ) (n : ℕ) : Prop :=
   let m := highCompleteSourceSaddleCoefficient C
   let theta := highCompleteSourceSaddleTheta C
@@ -32,7 +33,7 @@ def CompleteSaddleCostRiskBudget {d : ℕ} (C : ModelConstants d)
 
 /-- Fixed constants for the primitive raw cost precede the saddle shift,
 the extension domain and the sample size. -/
-theorem completeSaddle_lower_rate_of_actual_cost_budget {d : ℕ} [NeZero d]
+theorem completeSaddle_lower_rate_of_actual_cost_budget [NeZero d]
     (C : ModelConstants d) (hs : 1 < C.smoothness) (hd : 4*C.smoothness < (d : ℝ))
     {cf CB C5 C6 C7 ch ctr cm : ℝ}
     (hcf : 0 < cf) (hCB : 0 ≤ CB) (hC5 : 0 ≤ C5) (hC6 : 0 ≤ C6)

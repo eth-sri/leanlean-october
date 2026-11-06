@@ -10,7 +10,6 @@ public import NearlyMinimax.HistoryPriorDensity
 -/
 
 noncomputable section
-set_option backward.isDefEq.respectTransparency false
 open MeasureTheory
 open scoped ENNReal
 namespace NearlyMinimax
@@ -26,9 +25,17 @@ theorem historyMap_withDensity {A B : Type*} [MeasurableSpace A] [MeasurableSpac
 
 variable {J : Type*} [Fintype J] [LinearOrder J]
 
+variable (dependent : J → J → Prop)
+
+section
+variable (Δ : ℕ) (t : ℝ) {E : Type*}
+
+section
+variable [MeasurableSpace E] (π : Measure E) (a : E → ℝ)
+
 /-- The actual unnormalized mixture is exactly the reference measure tilted by Phi. -/
-theorem historyMarkedPriorRaw_eq_withDensity (dependent : J → J → Prop) (Δ : ℕ) (t : ℝ)
-    {E : Type*} [MeasurableSpace E] (π : Measure E) (a : E → ℝ) (ha : Measurable a) :
+theorem historyMarkedPriorRaw_eq_withDensity 
+    (ha : Measurable a) :
     historyMarkedPriorRaw dependent Δ t π a =
       (historyMarkedReferenceRaw dependent Δ π).withDensity
         (fun h => ENNReal.ofReal (historyMarkedDensity dependent (historyReferenceRho Δ) t a h)) := by
@@ -51,12 +58,16 @@ theorem historyMarkedPriorRaw_eq_withDensity (dependent : J → J → Prop) (Δ 
   exact congrArg (fun μ => ENNReal.ofReal (historyShapeReferenceWeight dependent Δ g) • μ) (hm g)
 
 /-- Thus the actual positive prior path uses precisely dnu_t = Phi_t d tau_0. -/
-theorem historyMarkedPrior_eq_withDensity (dependent : J → J → Prop) (Δ : ℕ) (t : ℝ)
-    {E : Type*} [MeasurableSpace E] (π : Measure E) (a : E → ℝ) (ha : Measurable a) :
+theorem historyMarkedPrior_eq_withDensity 
+    (ha : Measurable a) :
     historyMarkedPrior dependent Δ t π a =
       (historyMarkedReference dependent Δ π).withDensity
         (fun h => ENNReal.ofReal (historyMarkedDensity dependent (historyReferenceRho Δ) t a h)) := by
   unfold historyMarkedPrior historyMarkedReference
   rw [withDensity_smul_measure, historyMarkedPriorRaw_eq_withDensity dependent Δ t π a ha]
+
+end
+
+end
 
 end NearlyMinimax

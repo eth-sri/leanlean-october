@@ -12,15 +12,16 @@ noncomputable section
 open MeasureTheory
 open scoped RealInnerProductSpace
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
 
-def pairScoreFieldKernel {d : ℕ} (θ : RegressionParameter d)
+variable {d : ℕ} (C : ModelConstants d)
+
+def pairScoreFieldKernel (θ : RegressionParameter d)
     (cA cB : Covariate d × Covariate d → PairVector)
     (q : Covariate d × Covariate d → ℝ) (z : Observation d × Observation d) : ℝ :=
   q (z.1.1, z.2.1) * ⟪cA (z.1.1, z.2.1),
     pairScoreOperator θ.variance z.1.2 z.2.2 (cB (z.1.1, z.2.1))⟫
 
-theorem pairScoreFieldKernel_mean {d : ℕ} (C : ModelConstants d)
+theorem pairScoreFieldKernel_mean 
     (θ : RegressionParameter d) (hθ : Admissible C θ)
     (cA cB : Covariate d × Covariate d → PairVector)
     (q : Covariate d × Covariate d → ℝ)
@@ -48,12 +49,12 @@ theorem pairScoreFieldKernel_mean {d : ℕ} (C : ModelConstants d)
   rw [integral_const_mul, conditional_pairScoreOperator_integral (θ.errors x.1) (θ.errors x.2)
     hμ hν hx.2.2.2.1 hx'.2.2.2.1 hx.2.2.2.2.1 hx'.2.2.2.2.1]
 
-def pairNoiseFieldKernel {d : ℕ}
+def pairNoiseFieldKernel 
     (cA cB : Covariate d × Covariate d → PairVector)
     (q : Covariate d × Covariate d → ℝ) (z : Observation d × Observation d) : ℝ :=
   q (z.1.1, z.2.1) * ⟪cA (z.1.1, z.2.1), pairNoiseOperator (cB (z.1.1, z.2.1))⟫
 
-theorem pairNoiseFieldKernel_mean {d : ℕ} (C : ModelConstants d)
+theorem pairNoiseFieldKernel_mean 
     (θ : RegressionParameter d) (hθ : Admissible C θ)
     (cA cB : Covariate d × Covariate d → PairVector)
     (q : Covariate d × Covariate d → ℝ)

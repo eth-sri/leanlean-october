@@ -12,8 +12,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 attribute [local instance] Classical.propDecidable
 
 variable {ι Z : Type*} [Fintype ι] [DecidableEq ι] [MeasurableSpace ι]
@@ -22,7 +20,9 @@ variable {ι Z : Type*} [Fintype ι] [DecidableEq ι] [MeasurableSpace ι]
 def highSeparatedDerivativeBudget (a ρ : ℝ) : ℝ :=
   4 * (((2 * ρ + a) / a ^ 2) ^ 2 + 2 / a ^ 2)
 
-theorem highSeparatedDerivativeBudget_nonneg (a ρ : ℝ) :
+variable (a ρ : ℝ)
+
+theorem highSeparatedDerivativeBudget_nonneg :
     0 ≤ highSeparatedDerivativeBudget a ρ := by
   unfold highSeparatedDerivativeBudget
   positivity
@@ -97,8 +97,7 @@ theorem highSeparated_score_budget_absorb (n : ℕ) (hn : 1 ≤ n)
     pow_le_pow_left₀ (div_nonneg hpPlus (mul_pos hpMinus hcMass).le) (le_max_right _ _) _
   have hKpow : K ≤ K ^ n := le_self_pow₀ hK1 (by omega)
   calc
-    _ ≤ (R ^ n * (K * (B + 1))) * (4 : ℝ) ^ n * η ^ 2 := by
-      exact mul_le_mul_of_nonneg_right
+    _ ≤ (R ^ n * (K * (B + 1))) * (4 : ℝ) ^ n * η ^ 2 := mul_le_mul_of_nonneg_right
         (mul_le_mul (mul_le_mul hRpow hK (by positivity) (by positivity)) hnsq
           (sq_nonneg _) (by positivity)) (sq_nonneg η)
     _ ≤ (R ^ n * (K ^ n * (B + 1))) * (4 : ℝ) ^ n * η ^ 2 := by

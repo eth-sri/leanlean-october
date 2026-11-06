@@ -12,8 +12,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 600000
 
 /-- A nonnegative whole-space kernel with a uniform true section bound has
 an actual finite-domain product integral bound. -/
@@ -43,8 +41,10 @@ theorem finite_pair_kernel_integrable_and_integral_le {X : Type*}
   simpa only [integral_const, smul_eq_mul] using
     integral_mono hf.integral_prod_left (integrable_const K) hsectionBound
 
+variable {d : ℕ}
+
 /-- Actual Wfi² integration over the two source cube points. -/
-theorem fineAlias_spatial_pair_squared_integrable_and_integral_le {d : ℕ} (hd : 4 < d)
+theorem fineAlias_spatial_pair_squared_integrable_and_integral_le (hd : 4 < d)
     {T0 N : ℝ} (hT0 : 0 < T0) (hN : T0 ≤ N) :
     Integrable (fun xy : Covariate d × Covariate d =>
       (fineAliasLaplaceKernel T0 N (exactEuclideanDistance xy.1 xy.2))^2)
@@ -66,7 +66,7 @@ theorem fineAlias_spatial_pair_squared_integrable_and_integral_le {d : ℕ} (hd 
   ring
 
 /-- The same genuine fine-alias estimate in the paper's Fin2 tuple coordinates. -/
-theorem fineAlias_fullSpatialPatchDesign_squared_integrable_and_integral_le {d : ℕ} (hd : 4 < d)
+theorem fineAlias_fullSpatialPatchDesign_squared_integrable_and_integral_le (hd : 4 < d)
     {T0 N : ℝ} (hT0 : 0 < T0) (hN : T0 ≤ N) :
     Integrable (fun U : Fin 2 → Covariate d =>
       (fineAliasLaplaceKernel T0 N (exactEuclideanDistance (U 0) (U 1)))^2)

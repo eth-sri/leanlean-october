@@ -13,8 +13,6 @@ noncomputable section
 open Set MeasureTheory
 open scoped BigOperators ContDiff ENNReal
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 attribute [local instance] Classical.propDecidable
 
 theorem finite_sum_norm_le_active_count {J E : Type*} [Fintype J]
@@ -51,8 +49,7 @@ theorem holder_of_scaled_sup_and_lipschitz (k r A α q : ℝ)
   · have hp : (k * r) ^ (1 - α) ≤ 1 :=
       Real.rpow_le_one (mul_nonneg hk.le hr) hkr (sub_nonneg.mpr hα1)
     have hid : k ^ (1 - α) * r = (k * r) ^ (1 - α) * r ^ α := by
-      rw [Real.mul_rpow hk.le hr]
-      rw [mul_assoc, ← Real.rpow_add hrpos]
+      rw [Real.mul_rpow hk.le hr, mul_assoc, ← Real.rpow_add hrpos]
       simp only [sub_add_cancel, Real.rpow_one]
     have hsmall : A * k ^ (1 - α) * r ≤ A * r ^ α := by
       calc
@@ -68,11 +65,13 @@ theorem holder_of_scaled_sup_and_lipschitz (k r A α q : ℝ)
       simpa only [Real.mul_rpow hk.le hr, one_mul, mul_comm] using hp
     exact hsup.trans (mul_le_mul_of_nonneg_left hkinv (by positivity))
 
-theorem multiIndexBasis_norm {d : ℕ} (γ : Fin d → ℕ) (j : Fin (∑ r, γ r)) :
+variable {d : ℕ} (F : Covariate d → ℝ)
+
+theorem multiIndexBasis_norm (γ : Fin d → ℕ) (j : Fin (∑ r, γ r)) :
     ‖multiIndexBasis γ j‖ = 1 := by
   simp [multiIndexBasis, wordBasis, Pi.norm_single]
 
-theorem multiPartial_norm_le_iterated {d : ℕ} (F : Covariate d → ℝ)
+theorem multiPartial_norm_le_iterated 
     (hF : ContDiff ℝ ∞ F) (γ : Fin d → ℕ) (x : Covariate d) :
     |multiPartial F γ x| ≤ ‖iteratedFDeriv ℝ (∑ r, γ r) F x‖ := by
   rw [multiPartial_eq_iteratedFDeriv univ isOpen_univ F (∑ r, γ r)
@@ -80,7 +79,7 @@ theorem multiPartial_norm_le_iterated {d : ℕ} (F : Covariate d → ℝ)
   have hh := (iteratedFDeriv ℝ (∑ r, γ r) F x).le_opNorm (multiIndexBasis γ)
   simpa only [Real.norm_eq_abs, multiIndexBasis_norm, Finset.prod_const_one, mul_one] using hh
 
-theorem multiPartial_diff_norm_le_iterated {d : ℕ} (F : Covariate d → ℝ)
+theorem multiPartial_diff_norm_le_iterated 
     (hF : ContDiff ℝ ∞ F) (γ : Fin d → ℕ) (x y : Covariate d) :
     |multiPartial F γ x - multiPartial F γ y| ≤
       ‖iteratedFDeriv ℝ (∑ r, γ r) F x - iteratedFDeriv ℝ (∑ r, γ r) F y‖ := by
@@ -93,14 +92,17 @@ theorem multiPartial_diff_norm_le_iterated {d : ℕ} (F : Covariate d → ℝ)
   simpa only [ContinuousMultilinearMap.sub_apply, Real.norm_eq_abs, multiIndexBasis_norm,
     Finset.prod_const_one, mul_one] using hh
 
-theorem covariate_norm_le_euclidean {d : ℕ} (x : Covariate d) : ‖x‖ ≤ euclideanNorm x := by
+theorem covariate_norm_le_euclidean (x : Covariate d) : ‖x‖ ≤ euclideanNorm x := by
   apply (pi_norm_le_iff_of_nonneg (Real.sqrt_nonneg _)).mpr
   intro r
   simpa only [Real.norm_eq_abs, euclideanNorm] using abs_coordinate_le_euclideanNorm x r
 
+section
+variable (C : ModelConstants d)
+
 /-- The actual scaled Fréchet bounds imply the manuscript's sorted mixed
 partial bounds and top-order Euclidean Hölder modulus. -/
-theorem mixed_bounds_of_scaled_derivatives {d : ℕ} (C : ModelConstants d)
+theorem mixed_bounds_of_scaled_derivatives 
     (F : Covariate d → ℝ) (hF : ContDiff ℝ ∞ F) (k A : ℝ)
     (hk : 1 ≤ k) (hA : 0 ≤ A)
     (hbound : ∀ q ≤ C.order + 1, ∀ x,
@@ -132,8 +134,7 @@ theorem mixed_bounds_of_scaled_derivatives {d : ℕ} (C : ModelConstants d)
         ring
       simpa only [he] using hbound (C.order + 1) le_rfl z
     have hlarge : ‖iteratedFDeriv ℝ C.order F x - iteratedFDeriv ℝ C.order F y‖ ≤
-        2 * A * k ^ (-C.alpha) := by
-      exact (norm_sub_le _ _).trans (by nlinarith [hsup x, hsup y])
+        2 * A * k ^ (-C.alpha) := (norm_sub_le _ _).trans (by nlinarith [hsup x, hsup y])
     have hsmall : ‖iteratedFDeriv ℝ C.order F x - iteratedFDeriv ℝ C.order F y‖ ≤
         A * k ^ (1 - C.alpha) * ‖x - y‖ := by
       have hfFinite : ContDiff ℝ (C.order + 1) F := hF.of_le (by simp)
@@ -151,7 +152,7 @@ theorem mixed_bounds_of_scaled_derivatives {d : ℕ} (C : ModelConstants d)
       (Real.rpow_le_rpow (norm_nonneg _) (covariate_norm_le_euclidean (x - y)) C.alpha_pos.le)
       (by positivity))
 
-theorem holderNorm_of_scaled_derivatives {d : ℕ} (C : ModelConstants d)
+theorem holderNorm_of_scaled_derivatives 
     (U : Set (Covariate d)) (F : Covariate d → ℝ) (hF : ContDiff ℝ ∞ F)
     (k A : ℝ) (hk : 1 ≤ k) (hA : 0 ≤ A)
     (hbound : ∀ q ≤ C.order + 1, ∀ x,
@@ -164,5 +165,7 @@ theorem holderNorm_of_scaled_derivatives {d : ℕ} (C : ModelConstants d)
   convert hh using 1
   congr 1
   ring
+
+end
 
 end NearlyMinimax

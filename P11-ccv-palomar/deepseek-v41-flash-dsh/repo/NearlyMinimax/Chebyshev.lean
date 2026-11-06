@@ -16,7 +16,10 @@ open Polynomial Finset
 /-- The nonnegative real inverse hyperbolic cosine on `[1,∞)`. -/
 def exteriorTau (x : ℝ) : ℝ := Real.log (x + Real.sqrt (x ^ 2 - 1))
 
-theorem cosh_exteriorTau (x : ℝ) (hx : 1 ≤ x) : Real.cosh (exteriorTau x) = x := by
+section
+variable (x : ℝ)
+
+theorem cosh_exteriorTau (hx : 1 ≤ x) : Real.cosh (exteriorTau x) = x := by
   have hs : 0 ≤ x ^ 2 - 1 := by nlinarith
   have hp : 0 < x + Real.sqrt (x ^ 2 - 1) := by positivity
   have hsq := Real.sq_sqrt hs
@@ -26,21 +29,25 @@ theorem cosh_exteriorTau (x : ℝ) (hx : 1 ≤ x) : Real.cosh (exteriorTau x) = 
   rw [exteriorTau, Real.cosh_log hp, hinv]
   ring
 
-theorem exteriorTau_nonneg (x : ℝ) (hx : 1 ≤ x) : 0 ≤ exteriorTau x := by
+theorem exteriorTau_nonneg (hx : 1 ≤ x) : 0 ≤ exteriorTau x := by
   apply Real.log_nonneg
   exact hx.trans (le_add_of_nonneg_right (Real.sqrt_nonneg _))
 
+end
+
+variable (a b : ℝ) (n : ℕ)
+
 /-- The two forms of the paper's exterior exponent coincide. -/
-theorem exteriorTau_sqrt_ratio (a b : ℝ) (ha : 0 < a) (hab : a < b) :
+theorem exteriorTau_sqrt_ratio (ha : 0 < a) (hab : a < b) :
     exteriorTau ((a + b) / (b - a)) =
       Real.log ((Real.sqrt b + Real.sqrt a) / (Real.sqrt b - Real.sqrt a)) := by
-  have hb : 0 < b := ha.trans hab
-  have hsqa : Real.sqrt a ^ 2 = a := Real.sq_sqrt (le_of_lt ha)
-  have hsqb : Real.sqrt b ^ 2 = b := Real.sq_sqrt (le_of_lt hb)
-  have hsa : 0 < Real.sqrt a := Real.sqrt_pos.mpr ha
-  have hsb : 0 < Real.sqrt b := Real.sqrt_pos.mpr hb
-  have hslt : Real.sqrt a < Real.sqrt b := Real.sqrt_lt_sqrt (le_of_lt ha) hab
-  have hbap : 0 < b - a := sub_pos.mpr hab
+  have hb := ha.trans hab
+  have hsqa := Real.sq_sqrt (le_of_lt ha)
+  have hsqb := Real.sq_sqrt (le_of_lt hb)
+  have hsa := Real.sqrt_pos.mpr ha
+  have hsb := Real.sqrt_pos.mpr hb
+  have hslt := Real.sqrt_lt_sqrt (le_of_lt ha) hab
+  have hbap := sub_pos.mpr hab
   have hba : b - a ≠ 0 := by linarith
   have hsminus : Real.sqrt b - Real.sqrt a ≠ 0 := by linarith
   have hsplus : Real.sqrt b + Real.sqrt a ≠ 0 := by positivity
@@ -64,18 +71,21 @@ theorem exteriorTau_sqrt_ratio (a b : ℝ) (ha : 0 < a) (hab : a < b) :
       field_simp
 
 /-- Exponential decay parameter corresponding to the paper's exponent. -/
-theorem exp_neg_exteriorTau (a b : ℝ) (ha : 0 < a) (hab : a < b) :
+theorem exp_neg_exteriorTau (ha : 0 < a) (hab : a < b) :
     Real.exp (-exteriorTau ((a + b) / (b - a))) =
       (Real.sqrt b - Real.sqrt a) / (Real.sqrt b + Real.sqrt a) := by
-  have hslt : Real.sqrt a < Real.sqrt b := Real.sqrt_lt_sqrt (le_of_lt ha) hab
-  have hd : 0 < Real.sqrt b - Real.sqrt a := sub_pos.mpr hslt
+  have hslt := Real.sqrt_lt_sqrt (le_of_lt ha) hab
+  have hd := sub_pos.mpr hslt
   have hratio : 0 < (Real.sqrt b + Real.sqrt a) / (Real.sqrt b - Real.sqrt a) := by
     have hb := ha.trans hab
     positivity
   rw [exteriorTau_sqrt_ratio a b ha hab, Real.exp_neg, Real.exp_log hratio, inv_div]
 
+section
+variable (n : ℕ)
+
 /-- A Chebyshev polynomial has degree at most its nonnegative index. -/
-theorem chebyshev_natDegree_le (n : ℕ) :
+theorem chebyshev_natDegree_le :
     (Polynomial.Chebyshev.T ℝ (n : ℤ)).natDegree ≤ n := by
   induction n using Nat.twoStepInduction with
   | zero => simp
@@ -94,7 +104,7 @@ theorem chebyshev_natDegree_le (n : ℕ) :
       · omega
 
 /-- Reflection parity of the Chebyshev polynomials. -/
-theorem chebyshev_eval_neg (n : ℕ) (x : ℝ) :
+theorem chebyshev_eval_neg (x : ℝ) :
     (Polynomial.Chebyshev.T ℝ (n : ℤ)).eval (-x) =
       (-1 : ℝ) ^ n * (Polynomial.Chebyshev.T ℝ (n : ℤ)).eval x := by
   induction n using Nat.twoStepInduction with
@@ -109,10 +119,10 @@ theorem chebyshev_eval_neg (n : ℕ) (x : ℝ) :
       ring
 
 /-- The standard Chebyshev–Lobatto nodes, in decreasing order. -/
-def lobattoNode (n : ℕ) (i : Fin (n + 1)) : ℝ :=
+def lobattoNode (i : Fin (n + 1)) : ℝ :=
   Real.cos ((i.val : ℝ) * Real.pi / n)
 
-private theorem lobatto_angle_mem (n : ℕ) (hn : 1 ≤ n) (i : Fin (n + 1)) :
+private theorem lobatto_angle_mem (hn : 1 ≤ n) (i : Fin (n + 1)) :
     (i.val : ℝ) * Real.pi / n ∈ Set.Icc 0 Real.pi := by
   have hnp : (0 : ℝ) < n := by exact_mod_cast hn
   constructor
@@ -121,18 +131,20 @@ private theorem lobatto_angle_mem (n : ℕ) (hn : 1 ≤ n) (i : Fin (n + 1)) :
     have hi : (i.val : ℝ) ≤ n := by exact_mod_cast (show i.val ≤ n by omega)
     nlinarith [Real.pi_pos]
 
-theorem lobattoNode_strictAnti (n : ℕ) (hn : 1 ≤ n) : StrictAnti (lobattoNode n) := by
+theorem lobattoNode_strictAnti (hn : 1 ≤ n) : StrictAnti (lobattoNode n) := by
   intro i j hij
   apply Real.strictAntiOn_cos (lobatto_angle_mem n hn i) (lobatto_angle_mem n hn j)
   apply div_lt_div_of_pos_right _ (by exact_mod_cast hn : (0 : ℝ) < n)
   apply mul_lt_mul_of_pos_right _ Real.pi_pos
   exact_mod_cast hij
 
+end
+
 /-- The exterior nodes appearing in the finite moment rule. -/
 def exteriorNode (a b : ℝ) (n : ℕ) (i : Fin (n + 1)) : ℝ :=
   (a + b) / 2 + ((b - a) / 2) * lobattoNode n i
 
-theorem exteriorNode_strictAnti (a b : ℝ) (hab : a < b) (n : ℕ) (hn : 1 ≤ n) :
+theorem exteriorNode_strictAnti (hab : a < b) (n : ℕ) (hn : 1 ≤ n) :
     StrictAnti (exteriorNode a b n) := by
   intro i j hij
   dsimp [exteriorNode]
@@ -140,7 +152,7 @@ theorem exteriorNode_strictAnti (a b : ℝ) (hab : a < b) (n : ℕ) (hn : 1 ≤ 
     (by linarith : (0 : ℝ) < (b - a) / 2)
   linarith
 
-theorem exteriorNode_mem (a b : ℝ) (hab : a ≤ b) (n : ℕ) (i : Fin (n + 1)) :
+theorem exteriorNode_mem (hab : a ≤ b) (n : ℕ) (i : Fin (n + 1)) :
     exteriorNode a b n i ∈ Set.Icc a b := by
   dsimp [exteriorNode, lobattoNode]
   constructor <;> nlinarith [Real.cos_le_one ((i.val : ℝ) * Real.pi / n),
@@ -152,7 +164,7 @@ def exteriorWeight (a b : ℝ) (n : ℕ) (i : Fin (n + 1)) : ℝ :=
     exteriorNode a b n j / (exteriorNode a b n j - exteriorNode a b n i)
 
 /-- Chebyshev–Lobatto exterior cardinal weights reproduce evaluation at zero through degree `n`. -/
-theorem exterior_rule_exact (a b : ℝ) (hab : a < b) (n : ℕ) (hn : 1 ≤ n)
+theorem exterior_rule_exact (hab : a < b) (n : ℕ) (hn : 1 ≤ n)
     (P : ℝ[X]) (hP : P.degree ≤ n) :
     (∑ i : Fin (n + 1), exteriorWeight a b n i * P.eval (exteriorNode a b n i)) =
       P.eval 0 := by
@@ -168,7 +180,7 @@ private theorem positive_decreasing_weight_sign (n : ℕ) (z : Fin (n + 1) → �
   let S := (Finset.univ : Finset (Fin (n + 1))).erase i
   have hf (j : Fin (n + 1)) (hj : j ∈ S) :
       z j / (z j - z i) = (if i < j then (-1 : ℝ) else 1) * |z j / (z j - z i)| := by
-    have hji : j ≠ i := (Finset.mem_erase.mp hj).1
+    have hji := (Finset.mem_erase.mp hj).1
     by_cases hij : i < j
     · rw [if_pos hij, abs_of_neg (div_neg_of_pos_of_neg (hz j)
         (sub_neg.mpr (hanti hij)))]
@@ -193,7 +205,7 @@ def intervalChebyshev (a b : ℝ) (n : ℕ) : ℝ[X] :=
   (Polynomial.Chebyshev.T ℝ (n : ℤ)).comp
     ((X - C ((a + b) / 2)) * C (((b - a) / 2)⁻¹))
 
-theorem intervalChebyshev_degree (a b : ℝ) (n : ℕ) :
+theorem intervalChebyshev_degree :
     (intervalChebyshev a b n).degree ≤ n := by
   apply Polynomial.degree_le_of_natDegree_le
   apply Polynomial.natDegree_comp_le.trans
@@ -202,7 +214,7 @@ theorem intervalChebyshev_degree (a b : ℝ) (n : ℕ) :
     simp
   exact (Nat.mul_le_mul (chebyshev_natDegree_le n) hd).trans (by simp)
 
-theorem intervalChebyshev_at_node (a b : ℝ) (hab : a < b) (n : ℕ)
+theorem intervalChebyshev_at_node (hab : a < b) (n : ℕ)
     (hn : 1 ≤ n) (i : Fin (n + 1)) :
     (intervalChebyshev a b n).eval (exteriorNode a b n i) = (-1 : ℝ) ^ i.val := by
   have hR : (b - a) / 2 ≠ 0 := by linarith
@@ -222,7 +234,7 @@ theorem intervalChebyshev_at_node (a b : ℝ) (hab : a < b) (n : ℕ)
   simpa using Real.cos_nat_mul_pi_sub 0 i.val
 
 /-- The exterior weight signs alternate along the Lobatto nodes. -/
-theorem exterior_weight_sign (a b : ℝ) (ha : 0 < a) (hab : a < b) (n : ℕ)
+theorem exterior_weight_sign (ha : 0 < a) (hab : a < b) (n : ℕ)
     (hn : 1 ≤ n) (i : Fin (n + 1)) :
     exteriorWeight a b n i = (-1 : ℝ) ^ (n - i.val) * |exteriorWeight a b n i| := by
   apply positive_decreasing_weight_sign
@@ -231,7 +243,7 @@ theorem exterior_weight_sign (a b : ℝ) (ha : 0 < a) (hab : a < b) (n : ℕ)
   · exact exteriorNode_strictAnti a b hab n hn
 
 /-- The exact atom variation of the exterior finite rule, expressed through inverse cosh. -/
-theorem exterior_rule_variation (a b : ℝ) (ha : 0 < a) (hab : a < b) (n : ℕ)
+theorem exterior_rule_variation (ha : 0 < a) (hab : a < b) (n : ℕ)
     (hn : 1 ≤ n) :
     (∑ i : Fin (n + 1), |exteriorWeight a b n i|) =
       Real.cosh ((n : ℝ) * exteriorTau ((a + b) / (b - a))) := by
@@ -269,7 +281,7 @@ theorem exterior_rule_variation (a b : ℝ) (ha : 0 < a) (hab : a < b) (n : ℕ)
   exact mul_left_cancel₀ (pow_ne_zero n (by norm_num : (-1 : ℝ) ≠ 0)) hexact
 
 /-- The exterior rule's variation has the exponential bound used in local packet costs. -/
-theorem exterior_rule_variation_le_exp (a b : ℝ) (ha : 0 < a) (hab : a < b)
+theorem exterior_rule_variation_le_exp (ha : 0 < a) (hab : a < b)
     (n : ℕ) (hn : 1 ≤ n) :
     (∑ i : Fin (n + 1), |exteriorWeight a b n i|) ≤
       Real.exp ((n : ℝ) * exteriorTau ((a + b) / (b - a))) := by
@@ -277,8 +289,7 @@ theorem exterior_rule_variation_le_exp (a b : ℝ) (ha : 0 < a) (hab : a < b)
   have hratio : 1 ≤ (a + b) / (b - a) := by
     apply (le_div_iff₀ (by linarith : 0 < b - a)).mpr
     linarith
-  have ht : 0 ≤ (n : ℝ) * exteriorTau ((a + b) / (b - a)) := by
-    exact mul_nonneg (Nat.cast_nonneg n) (exteriorTau_nonneg _ hratio)
+  have ht := mul_nonneg (Nat.cast_nonneg n) (exteriorTau_nonneg _ hratio)
   have he := Real.exp_le_exp.mpr (show
       -((n : ℝ) * exteriorTau ((a + b) / (b - a))) ≤
       (n : ℝ) * exteriorTau ((a + b) / (b - a)) by linarith)

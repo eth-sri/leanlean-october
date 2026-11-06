@@ -22,7 +22,9 @@ theorem bounded_rpow_le_linear (r M s : ℝ) (hr : 0 ≤ r) (hrM : r ≤ M) (hs 
       _ ≤ M ^ s * r := by simpa using mul_le_mul_of_nonneg_left h1r (Real.rpow_nonneg (hr.trans hrM) s)
       _ ≤ max 1 (M ^ s) * r := mul_le_mul_of_nonneg_right (le_max_right _ _) hr
 
-theorem anchoredTransport_euclidean_norm {d ℓ : ℕ} (c : AnchoredIndex d ℓ → ℝ) :
+variable {d ℓ : ℕ}
+
+theorem anchoredTransport_euclidean_norm (c : AnchoredIndex d ℓ → ℝ) :
     ‖(EuclideanSpace.equiv (AnchoredIndex d ℓ) ℝ).symm (anchoredTransport d ℓ *ᵥ c)‖ ≤
       (1 / 2) * ‖(EuclideanSpace.equiv (AnchoredIndex d ℓ) ℝ).symm c‖ := by
   have h := Matrix.l2_opNorm_mulVec (anchoredTransport d ℓ)
@@ -33,10 +35,10 @@ theorem anchoredTransport_euclidean_norm {d ℓ : ℕ} (c : AnchoredIndex d ℓ 
   apply h'.trans
   exact mul_le_mul_of_nonneg_right (anchoredTransport_norm_le_half d ℓ) (norm_nonneg _)
 
-def dyadicPopulationIncrement {d ℓ : ℕ} (θ : RegressionParameter d) (x : Covariate d) :
+def dyadicPopulationIncrement (θ : RegressionParameter d) (x : Covariate d) :
     ℕ → AnchoredIndex d ℓ → ℝ := anchoredIncrement (fun j => dyadicPopulationFit θ j x)
 
-theorem dyadicPopulationIncrement_error_identity {d ℓ : ℕ} (θ : RegressionParameter d)
+theorem dyadicPopulationIncrement_error_identity (θ : RegressionParameter d)
     (x : Covariate d) (c : AnchoredIndex d ℓ → ℝ) (j : ℕ) :
     dyadicPopulationIncrement θ x (j + 1) =
       (dyadicPopulationFit θ (j + 1) x - dyadicTaylorCoefficients c (j + 1)) -
@@ -50,7 +52,7 @@ theorem dyadic_inverse_scale_succ (j : ℕ) :
   rw [pow_succ]
   field_simp
 
-theorem dyadicPopulationIncrement_telescope {d ℓ : ℕ} (θ : RegressionParameter d)
+theorem dyadicPopulationIncrement_telescope (θ : RegressionParameter d)
     (x z : Covariate d) (J : ℕ) :
     dyadicAnchoredFeature J x z ⬝ᵥ dyadicPopulationFit (ℓ := ℓ) θ J x =
       ∑ j ∈ Finset.range (J + 1), dyadicAnchoredFeature j x z ⬝ᵥ dyadicPopulationIncrement (ℓ := ℓ) θ x j :=

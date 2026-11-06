@@ -12,7 +12,6 @@ noncomputable section
 open MeasureTheory
 open scoped RealInnerProductSpace ENNReal
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
 
 theorem product_pairScoreOperator_integral {E F : Type*}
     [MeasurableSpace E] [MeasurableSpace F]

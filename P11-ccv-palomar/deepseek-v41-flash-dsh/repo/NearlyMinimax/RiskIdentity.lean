@@ -23,7 +23,9 @@ theorem meanSquaredRisk_rpow_eq_eLpNorm {d n : ℕ} (T : Estimator d n)
   exact RoughRegime.Applications.eLpNorm_two_eq_squaredIntegral (sampleLaw θ n)
     (fun z => T.val z - θ.variance) (T.property.sub measurable_const)
 
-theorem minimaxRMS_eq_inf_sup_rms {d : ℕ} (C : ModelConstants d) (n : ℕ) :
+variable {d : ℕ} (C : ModelConstants d) (n : ℕ)
+
+theorem minimaxRMS_eq_inf_sup_rms :
     minimaxRMS C n = ⨅ T : Estimator d n,
       ⨆ θ : {θ : RegressionParameter d // Admissible C θ},
         meanSquaredRisk T θ.val ^ (1 / 2 : ℝ) := by
@@ -33,7 +35,7 @@ theorem minimaxRMS_eq_inf_sup_rms {d : ℕ} (C : ModelConstants d) (n : ℕ) :
   simp_rw [φ.map_iSup]
   rfl
 
-theorem minimaxRMS_eq_inf_sup_eLpNorm {d : ℕ} (C : ModelConstants d) (n : ℕ) :
+theorem minimaxRMS_eq_inf_sup_eLpNorm :
     minimaxRMS C n = ⨅ T : Estimator d n,
       ⨆ θ : {θ : RegressionParameter d // Admissible C θ},
         eLpNorm (fun z => T.val z - θ.val.variance) 2 (sampleLaw θ.val n) := by

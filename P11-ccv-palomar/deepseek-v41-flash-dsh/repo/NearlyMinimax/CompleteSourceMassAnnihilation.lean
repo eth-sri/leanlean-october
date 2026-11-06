@@ -14,8 +14,6 @@ noncomputable section
 open Set MeasureTheory
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1200000
 attribute [local instance] Classical.propDecidable
 
 abbrev SourceRowDensityMark (d D M q : ℕ) (a b C lam ℓ N μ : ℝ) :
@@ -25,7 +23,9 @@ abbrev SourceRowDensityMark (d D M q : ℕ) (a b C lam ℓ N μ : ℝ) :
   | .inr (.inr i) => HigherBandCarrier d (higherBandFamilyTarget i.val) i.val.2 ×
       HighDensityMarkIndex (higherBandFamilyGuardDegree M i.val) (higherBandFamilyTarget i.val) D
 
-instance sourceRowDensityMark_measurable (d D M q : ℕ) (a b C lam ℓ N μ : ℝ)
+variable (d D M q : ℕ) (a b C lam ℓ N μ : ℝ)
+
+instance sourceRowDensityMark_measurable 
     (i : SourceRowIndex d D M q a b C lam ℓ N μ) :
     MeasurableSpace (SourceRowDensityMark d D M q a b C lam ℓ N μ i) := by
   cases i with
@@ -47,7 +47,7 @@ def sourceRowDensityLift (d D M q : ℕ) (a b C lam ℓ N μ : ℝ)
   | .inr (.inl _) => fun e => (e.1,(e.2,r))
   | .inr (.inr _) => fun e => (e.1,(e.2,r))
 
-theorem sourceRowDensityLift_measurable (d D M q : ℕ) (a b C lam ℓ N μ : ℝ)
+theorem sourceRowDensityLift_measurable 
     (r : HighResponseMarkIndex (HighFrameIndex d D) q)
     (i : SourceRowIndex d D M q a b C lam ℓ N μ) :
     Measurable (sourceRowDensityLift d D M q a b C lam ℓ N μ r i) := by
@@ -55,8 +55,11 @@ theorem sourceRowDensityLift_measurable (d D M q : ℕ) (a b C lam ℓ N μ : �
   | inl p => exact finePairRowWithResponse_measurable d D M q p r
   | inr i => cases i <;> exact measurable_fst.prodMk (measurable_snd.prodMk measurable_const)
 
-theorem sourceRow_density_projection_slope (d k D M q : ℕ) (a b C lam ℓ N μ : ℝ)
-    (r : HighResponseMarkIndex (HighFrameIndex d D) q) (j : HighWindowLabels d k)
+section
+variable (d k D M q : ℕ) (a b C lam ℓ N μ : ℝ) (r : HighResponseMarkIndex (HighFrameIndex d D) q)
+
+theorem sourceRow_density_projection_slope 
+    (j : HighWindowLabels d k)
     (i : SourceRowIndex d D M q a b C lam ℓ N μ)
     (e : SourceRowMark d D M q a b C lam ℓ N μ i) (x : Covariate d) :
     (sourceRowData d k D M q a b C lam ℓ N μ).rowSlope j i e x =
@@ -67,8 +70,8 @@ theorem sourceRow_density_projection_slope (d k D M q : ℕ) (a b C lam ℓ N μ
   | inl p => cases p <;> rfl
   | inr i => cases i <;> rfl
 
-theorem sourceRow_density_projection_intercept (d k D M q : ℕ) (a b C lam ℓ N μ : ℝ)
-    (r : HighResponseMarkIndex (HighFrameIndex d D) q)
+theorem sourceRow_density_projection_intercept 
+    
     (i : SourceRowIndex d D M q a b C lam ℓ N μ)
     (e : SourceRowMark d D M q a b C lam ℓ N μ i) :
     (sourceRowData d k D M q a b C lam ℓ N μ).rowIntercept i e =
@@ -79,7 +82,15 @@ theorem sourceRow_density_projection_intercept (d k D M q : ℕ) (a b C lam ℓ 
   | inl p => cases p <;> rfl
   | inr i => cases i <;> rfl
 
-theorem sourceRow_density_observable_zero (d : ℕ) [NeZero d] (k D M q : ℕ)
+end
+
+section
+variable (d : ℕ)
+
+section
+variable [NeZero d] (k D M q : ℕ)
+
+theorem sourceRow_density_observable_zero 
     (a b C lam ℓ N μ : ℝ)
     (hpos : ∀ i, 0 < (sourceRowData d k D M q a b C lam ℓ N μ).rowMass i)
     (i : SourceRowIndex d D M q a b C lam ℓ N μ)
@@ -104,7 +115,7 @@ theorem sourceRow_density_observable_zero (d : ℕ) [NeZero d] (k D M q : ℕ)
         (higherBandFamilyUpper d ℓ N μ i.val) i.val.2 i.property.1
         (hpos (.inr (.inr i))) H hH B hB
 
-theorem sourceRowMass_positive_actual (d : ℕ) [NeZero d] (k D M q : ℕ)
+theorem sourceRowMass_positive_actual 
     (hD : 3 ≤ D) (hq : 1 ≤ q) (a b : ℝ) (ha : 0 < a) (hab : a < b)
     (C : ℝ) (hC : 0 < C) (lam ℓ N μ : ℝ) (hℓ : 0 < ℓ) (hℓN : ℓ < N)
     (i : SourceRowIndex d D M q a b C lam ℓ N μ) :
@@ -115,6 +126,10 @@ theorem sourceRowMass_positive_actual (d : ℕ) [NeZero d] (k D M q : ℕ)
     cases i with
     | inl _ => exact singletonRowMass_positive d D q hq a b ha hab C hC
     | inr i => exact higherBandFamily_mass_positive d k D M q a b C lam ℓ N μ i
+
+end
+
+end
 
 /-- Genuine canonical append annihilation for the complete actual source
 family, with only the original construction's numerical guards. -/

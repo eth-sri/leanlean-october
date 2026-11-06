@@ -14,8 +14,6 @@ noncomputable section
 open Set MeasureTheory Function
 open scoped BigOperators ENNReal
 namespace NearlyMinimax
-set_option maxHeartbeats 600000
-set_option backward.isDefEq.respectTransparency false
 attribute [local instance] Classical.propDecidable
 
 theorem affinePatchFold_density_eq {J X E V I : Type*} [DecidableEq J]

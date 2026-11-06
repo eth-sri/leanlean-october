@@ -11,8 +11,6 @@ noncomputable section
 open Set MeasureTheory
 open scoped BigOperators
 namespace NearlyMinimax
-set_option maxHeartbeats 800000
-set_option backward.isDefEq.respectTransparency false
 attribute [local instance] Classical.propDecidable
 
 /-- A larger frame constant imposes a smaller coefficient ball, and therefore
@@ -56,9 +54,8 @@ theorem highUnionSource_ternary_floor_uniform {d : ℕ} (C : ModelConstants d)
     (highFramePolynomial_coefficientL1_le _).trans (highUnionSourceState_coefficient_ball C R G h j)
   have hηn : 0 ≤ η := by dsimp [η]; positivity
   obtain ⟨_, hηsup⟩ := hguard η hηn hη
-  have hv := (hbound k hk0 hk cf hcf P hP).1 x
   have hf : |highUnionSourceRegression C R η h x| ≤ Q.ρ :=
-    hv.trans (hηsup.trans (by linarith [Q.ρ_pos]))
+    ((hbound k hk0 hk cf hcf P hP).1 x).trans (hηsup.trans (by linarith [Q.ρ_pos]))
   exact (Q.legal _ V hf hV).2.2.1 y
 
 end NearlyMinimax

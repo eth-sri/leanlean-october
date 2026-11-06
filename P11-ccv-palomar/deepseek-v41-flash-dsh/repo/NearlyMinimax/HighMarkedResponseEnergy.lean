@@ -13,8 +13,6 @@ noncomputable section
 open MeasureTheory ProbabilityTheory
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 800000
 
 theorem finite_probability_pi_embedding_preserving {I J α : Type*}
     [Fintype I] [Fintype J] [MeasurableSpace α]
@@ -53,7 +51,7 @@ theorem high_marked_selected_response_energy {ι E : Type*} [Fintype ι]
   let H : (Fin r → Fin 3) → ℝ := fun y =>
     highMarkedLocalScore π activation a V η (p ∘ e) (fun z => pReset z ∘ e)
       cReset (g ∘ e) (w ∘ e) (φ ∘ e) c y ^ 2
-  have hHm : Measurable H := measurable_of_countable H
+  have hHm := measurable_of_countable H
   calc
     _ = ∫ y, H (fun l => y (e l)) ∂Measure.pi μ := by
       apply integral_congr_ae

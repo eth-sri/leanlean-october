@@ -11,12 +11,9 @@ noncomputable section
 open MvPolynomial
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 
 theorem finePairCoordinatePolynomial_monomial {d : ℕ} (l : Fin d) :
-    finePairCoordinatePolynomial l = monomial (Finsupp.single l 1) 8 := by
-  exact C_mul_X_eq_monomial
+    finePairCoordinatePolynomial l = monomial (Finsupp.single l 1) 8 := C_mul_X_eq_monomial
 
 theorem finePairSquarePolynomial_monomial_sum (d : ℕ) :
     finePairSquarePolynomial d = ∑ l : Fin d,
@@ -31,7 +28,9 @@ theorem finePairCoordinateCoefficients_l1_le {d F : ℕ} (l : Fin d) :
   rw [finePairCoordinatePolynomial_monomial]
   simp [frameCoefficientL1, MvPolynomial.support_monomial]
 
-theorem finePairSquareCoefficients_l1_le (d F : ℕ) :
+variable (d F : ℕ)
+
+theorem finePairSquareCoefficients_l1_le :
     (∑ β : HighFrameIndex d F, |highFrameCoefficients (finePairSquarePolynomial d) β|) ≤ 64 * d := by
   apply (highFrameCoefficients_sum_abs_le _).trans
   rw [finePairSquarePolynomial_monomial_sum]
@@ -39,7 +38,7 @@ theorem finePairSquareCoefficients_l1_le (d F : ℕ) :
   simp only [show |(64 : ℝ)| = 64 by norm_num, Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
   ring
 
-theorem finePairUnitCoefficients_l1_le (d F : ℕ) :
+theorem finePairUnitCoefficients_l1_le :
     (∑ β : HighFrameIndex d F, |highFrameCoefficients (1 : MvPolynomial (Fin d) ℝ) β|) ≤ 1 :=
   (highFrameCoefficients_sum_abs_le _).trans_eq frameCoefficientL1_one
 
@@ -48,7 +47,7 @@ theorem spatial_matrix_l1_outer {d F : ℕ} (u v : HighFrameIndex d F → ℝ) :
       (∑ β, |u β|) * (∑ β, |v β|) := by
   simp only [spatialMatrixL1, abs_mul, ← Finset.mul_sum, ← Finset.sum_mul]
 
-theorem finePairUnitMatrix_l1_le (d F : ℕ) :
+theorem finePairUnitMatrix_l1_le :
     spatialMatrixL1 (finePairUnitMatrix d F) ≤ 1 := by
   unfold finePairUnitMatrix
   rw [spatial_matrix_l1_outer]
@@ -124,7 +123,7 @@ private theorem finite_quadratic_matrix_cost {κ : Type*} [Fintype κ] (d : ℕ)
       (add_le_add (add_le_add hB houterS) houterS')
   exact hh.trans_eq (by ring)
 
-theorem spatial_matrix_l1_quadratic_three_le (d F : ℕ)
+theorem spatial_matrix_l1_quadratic_three_le 
     (c0 cs : HighFrameIndex d F → ℝ) (cl : Fin d → HighFrameIndex d F → ℝ)
     (h0 : (∑ β, |c0 β|) ≤ 1) (hs : (∑ β, |cs β|) ≤ 64 * d)
     (hl : ∀ l, (∑ β, |cl l β|) ≤ 8) :
@@ -132,7 +131,7 @@ theorem spatial_matrix_l1_quadratic_three_le (d F : ℕ)
       cs β * c0 β' - c0 β * cs β') ≤ 256 * d :=
   finite_quadratic_matrix_cost d c0 cs cl h0 hs hl
 
-theorem finePairDistanceMatrix_l1_le (d F : ℕ) :
+theorem finePairDistanceMatrix_l1_le :
     spatialMatrixL1 (finePairDistanceMatrix d F) ≤ 256 * d :=
   spatial_matrix_l1_quadratic_three_le d F _ _ _
     (finePairUnitCoefficients_l1_le d F) (finePairSquareCoefficients_l1_le d F)

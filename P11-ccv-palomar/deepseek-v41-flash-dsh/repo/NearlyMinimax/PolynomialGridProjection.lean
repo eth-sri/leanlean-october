@@ -14,9 +14,11 @@ open scoped BigOperators ENNReal
 noncomputable section
 namespace NearlyMinimax
 
+variable {d : ℕ}
+
 /-- The original admissibility norm supplies a genuine cellwise Taylor
 approximation, which the actual polynomial design fits exactly. -/
-theorem admissible_cell_polynomial_residual_bound {d : ℕ} {ι κ : Type*}
+theorem admissible_cell_polynomial_residual_bound {ι κ : Type*}
     [Fintype ι] [DecidableEq ι] [Fintype κ] [DecidableEq κ]
     (C : ModelConstants d) (θ : RegressionParameter d) (hθ : Admissible C θ)
     (cell : ι → κ) (x : ι → Covariate d) (z : κ → Covariate d)
@@ -37,7 +39,7 @@ theorem admissible_cell_polynomial_residual_bound {d : ℕ} {ι κ : Type*}
 
 /-- Actual regular-grid polynomial fitting proves the approximation
 bound in every smoothness order of the original model. -/
-theorem regular_grid_polynomial_residual_bound {d : ℕ} {ι : Type*}
+theorem regular_grid_polynomial_residual_bound {ι : Type*}
     [Fintype ι] [DecidableEq ι]
     (C : ModelConstants d) (θ : RegressionParameter d) (hθ : Admissible C θ)
     (k : ℕ) (hk : 0 < k) (x : ι → Covariate d) (hx : ∀ i, x i ∈ unitCube d) :
@@ -52,7 +54,7 @@ theorem regular_grid_polynomial_residual_bound {d : ℕ} {ι : Type*}
 
 /-- The higher-order regular-grid fit leaves sample size minus its
 actual rectangular feature count as residual degrees of freedom. -/
-theorem regular_grid_polynomial_residual_degrees {d : ℕ} {ι : Type*}
+theorem regular_grid_polynomial_residual_degrees {ι : Type*}
     [Fintype ι] [DecidableEq ι] (ℓ k : ℕ) (hk : 0 < k) (x : ι → Covariate d) :
     (Fintype.card ι : ℝ) - k ^ d * (ℓ + 1 : ℕ) ^ d ≤
       (1 - empiricalDesignProjection (cellPolynomialDesign (ℓ := ℓ)
@@ -62,7 +64,7 @@ theorem regular_grid_polynomial_residual_degrees {d : ℕ} {ι : Type*}
 
 /-- A genuine Borel higher-order projection estimator on the original
 sample space. Features are explicit monomials of observed covariates. -/
-def polynomialGridEstimator {d : ℕ} (C : ModelConstants d) (n k : ℕ)
+def polynomialGridEstimator (C : ModelConstants d) (n k : ℕ)
     (hk : 0 < k) : Estimator d n :=
   ⟨fun z => projectionEstimator
     (1 - empiricalDesignProjection (cellPolynomialDesign (ℓ := C.order)
@@ -77,14 +79,20 @@ def polynomialGridEstimator {d : ℕ} (C : ModelConstants d) (n k : ℕ)
     · fun_prop⟩
 
 /-- The full-smoothness Taylor bias contribution. -/
-def polynomialGridBias {d : ℕ} (C : ModelConstants d) (k : ℕ) : ℝ :=
+def polynomialGridBias (C : ModelConstants d) (k : ℕ) : ℝ :=
   4 * (taylorErrorFactor C * C.holderBound * (1 / k) ^ C.smoothness) ^ 4
+
+section
+variable {d n : ℕ} {Ω : Type*}
+
+section
+variable [MeasurableSpace Ω] (C : ModelConstants d) (θ : RegressionParameter d)
 
 /-- The conditional full-smoothness projection MSE is proved from the
 original Hölder model, explicit features, and actual independent moments. -/
 theorem independent_polynomial_grid_projection_mse_bound
-    {d n : ℕ} {Ω : Type*} [MeasurableSpace Ω]
-    (C : ModelConstants d) (θ : RegressionParameter d) (hθ : Admissible C θ)
+    
+    (hθ : Admissible C θ)
     (k : ℕ) (hk : 0 < k) (hn : 0 < n)
     (hcolumns : (k : ℝ) ^ d * (C.order + 1 : ℕ) ^ d ≤ (n : ℝ) / 2)
     (x : Fin n → Covariate d) (hx : ∀ i, x i ∈ unitCube d)
@@ -121,8 +129,8 @@ theorem independent_polynomial_grid_projection_mse_bound
 /-- The full-smoothness conditional MSE bound in the extended-real loss
 of the actual statistical model, with integrability derived from fourth moments. -/
 theorem polynomial_grid_conditional_lintegral_bound
-    {d n : ℕ} {Ω : Type*} [MeasurableSpace Ω]
-    (C : ModelConstants d) (θ : RegressionParameter d) (hθ : Admissible C θ)
+    
+    (hθ : Admissible C θ)
     (k : ℕ) (hk : 0 < k) (hn : 0 < n)
     (hcolumns : (k : ℝ) ^ d * (C.order + 1 : ℕ) ^ d ≤ (n : ℝ) / 2)
     (x : Fin n → Covariate d) (hx : ∀ i, x i ∈ unitCube d)
@@ -152,5 +160,9 @@ theorem polynomial_grid_conditional_lintegral_bound
     ((projectionEstimator A (f + fun i => ε i ω) - θ.variance) ^ 2) ∂μ) ≤ _
   rw [← ofReal_integral_eq_lintegral_ofReal hsq (Filter.Eventually.of_forall (fun ω => sq_nonneg _))]
   exact ENNReal.ofReal_le_ofReal hbound
+
+end
+
+end
 
 end NearlyMinimax

@@ -11,8 +11,6 @@ noncomputable section
 open Set MeasureTheory
 open scoped BigOperators ENNReal
 namespace NearlyMinimax
-set_option maxHeartbeats 600000
-set_option backward.isDefEq.respectTransparency false
 
 theorem packetSum_borelSpace {A B : Type*} [TopologicalSpace A] [TopologicalSpace B]
     [MeasurableSpace A] [MeasurableSpace B] [BorelSpace A] [BorelSpace B] : BorelSpace (A ⊕ B) := by

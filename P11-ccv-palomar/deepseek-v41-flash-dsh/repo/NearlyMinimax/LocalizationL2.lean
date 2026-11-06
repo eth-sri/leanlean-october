@@ -10,7 +10,6 @@ open MeasureTheory
 open scoped BigOperators RealInnerProductSpace
 namespace NearlyMinimax.LocalizationL2
 
-set_option backward.isDefEq.respectTransparency false
 
 variable {W E : Type*} [MeasurableSpace W]
 variable [NormedAddCommGroup E] [InnerProductSpace ℝ E] [CompleteSpace E]
@@ -59,9 +58,8 @@ theorem integral_sq_le_mass_mul_integral_sq {f : W → ℝ} (hf : MemLp f 2 M) :
 /-- Integration of a Hilbert-valued `L²` field is bounded by its mass and energy. -/
 theorem norm_integral_sq_le_mass_mul_integral_norm_sq {f : W → E} (hf : MemLp f 2 M) :
     ‖∫ w, f w ∂M‖ ^ 2 ≤ M.real Set.univ * ∫ w, ‖f w‖ ^ 2 ∂M := by
-  have hn := norm_integral_le_integral_norm (f := f) (μ := M)
   have hsq : ‖∫ w, f w ∂M‖ ^ 2 ≤ (∫ w, ‖f w‖ ∂M) ^ 2 :=
-    pow_le_pow_left₀ (norm_nonneg _) hn 2
+    pow_le_pow_left₀ (norm_nonneg _) (norm_integral_le_integral_norm (f := f) (μ := M)) 2
   exact hsq.trans (integral_sq_le_mass_mul_integral_sq hf.norm)
 
 section Hilbert
@@ -86,9 +84,11 @@ theorem integral_inner_eq_zero_of_ae {N P : Measure W} {f g : W → E}
       change ⟪g v, f w⟫ = 0
       rw [real_inner_comm, hw])
 
+variable {q : ℕ} (b : W → Fin q)
+
 /-- The localization inequality for finitely many orthogonal blocks. The
 block measures may be restrictions of one finite parameter measure. -/
-theorem finite_block_integral_bound {q : ℕ}
+theorem finite_block_integral_bound 
     (N : Fin q → Measure W) [∀ c, IsFiniteMeasure (N c)]
     (F : Fin q → W → E) (hF : ∀ c, MemLp (F c) 2 (N c))
     (horth : ∀ c d, c ≠ d → ∀ᵐ v ∂N d, ∀ᵐ w ∂N c, ⟪F c w, F d v⟫ = 0)
@@ -116,7 +116,7 @@ theorem finite_block_integral_bound {q : ℕ}
     (mul_le_mul_of_nonneg_right (hL c) (integral_nonneg fun _ => sq_nonneg _))
 
 /-- Integrating over a measurable finite partition is summing the block integrals. -/
-theorem integral_eq_sum_fibers {q : ℕ} (b : W → Fin q) (hb : Measurable b)
+theorem integral_eq_sum_fibers (hb : Measurable b)
     {f : W → E} (hf : Integrable f M) :
     (∫ w, f w ∂M) = ∑ c : Fin q, ∫ w in {v | b v = c}, f w ∂M := by
   classical
@@ -139,7 +139,7 @@ theorem integral_eq_sum_fibers {q : ℕ} (b : W → Fin q) (hb : Measurable b)
 
 /-- A finite partition with mutually orthogonal kernel blocks gains the largest
 block mass instead of the total mass in the integral Cauchy bound. -/
-theorem partition_localization_bound {q : ℕ} (b : W → Fin q) (hb : Measurable b)
+theorem partition_localization_bound (b : W → Fin q) (hb : Measurable b)
     (K : W → E) (hK : MemLp K 2 M)
     (horth : ∀ w v, b w ≠ b v → ⟪K w, K v⟫ = 0)
     (L : ℝ) (hL : ∀ c, M.real {w | b w = c} ≤ L) :
@@ -180,7 +180,7 @@ theorem weighted_field_memLp_two (ν : W → ℝ) (hν : MemLp ν 2 M)
 
 /-- The weighted localization estimate of original U6, with actual Bochner
 integration and unbounded observation kernels represented in a Hilbert space. -/
-theorem weighted_partition_localization_bound {q : ℕ}
+theorem weighted_partition_localization_bound 
     (b : W → Fin q) (hb : Measurable b)
     (ν : W → ℝ) (hν : MemLp ν 2 M)
     (K : W → E) (hK : AEStronglyMeasurable K M)
@@ -188,13 +188,11 @@ theorem weighted_partition_localization_bound {q : ℕ}
     (horth : ∀ w v, b w ≠ b v → ⟪K w, K v⟫ = 0)
     (L : ℝ) (hL : ∀ c, M.real {w | b w = c} ≤ L) :
     ‖∫ w, ν w • K w ∂M‖ ^ 2 ≤ L * ∫ w, ν w ^ 2 * ‖K w‖ ^ 2 ∂M := by
-  have hlp := weighted_field_memLp_two ν hν K hK C hC hbound
   have hweightedorth : ∀ w v, b w ≠ b v → ⟪ν w • K w, ν v • K v⟫ = 0 := by
     intro w v hwv
     rw [real_inner_smul_left, real_inner_smul_right, horth w v hwv]
     ring
-  have h := partition_localization_bound b hb _ hlp hweightedorth L hL
-  simpa only [norm_smul, mul_pow, Real.norm_eq_abs, sq_abs] using h
+  simpa only [norm_smul, mul_pow, Real.norm_eq_abs, sq_abs] using (partition_localization_bound b hb _ (weighted_field_memLp_two ν hν K hK C hC hbound) hweightedorth L hL)
 
 end Hilbert
 
@@ -242,8 +240,7 @@ theorem weighted_kernel_series_localization_bound {D q : ℕ}
       L * ∫ w, ν w ^ 2 * ∑ r : Fin D, δ r * ‖K r w‖ ^ 2 ∂M := by
   have hi : ∀ r, Integrable (fun w => ν w ^ 2 * ‖K r w‖ ^ 2) M := by
     intro r
-    have hlp := weighted_field_memLp_two ν hν (K r) (hK r) (C r) (hC r) (hbound r)
-    simpa only [norm_smul, mul_pow, Real.norm_eq_abs, sq_abs] using hlp.norm.integrable_sq
+    simpa only [norm_smul, mul_pow, Real.norm_eq_abs, sq_abs] using (weighted_field_memLp_two ν hν (K r) (hK r) (C r) (hC r) (hbound r)).norm.integrable_sq
   have heq : (∫ w, ν w ^ 2 * ∑ r : Fin D, δ r * ‖K r w‖ ^ 2 ∂M) =
       ∑ r : Fin D, δ r * ∫ w, ν w ^ 2 * ‖K r w‖ ^ 2 ∂M := by
     simp_rw [Finset.mul_sum]

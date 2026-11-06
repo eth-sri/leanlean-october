@@ -8,17 +8,19 @@ public import NearlyMinimax.PopulationMomentDerivatives
 
 noncomputable section
 namespace NearlyMinimax
+
 open Matrix MeasureTheory
 open scoped BigOperators Matrix.Norms.L2Operator
+variable {r : ℕ}
 
-def rowFunctional {r : ℕ} (row : Fin r → ℝ) : (Fin r → ℝ) →L[ℝ] ℝ :=
+def rowFunctional (row : Fin r → ℝ) : (Fin r → ℝ) →L[ℝ] ℝ :=
   ∑ i, row i • (ContinuousLinearMap.proj i : (Fin r → ℝ) →L[ℝ] ℝ)
 
-@[simp] theorem rowFunctional_apply {r : ℕ} (row z : Fin r → ℝ) :
+@[simp] theorem rowFunctional_apply (row z : Fin r → ℝ) :
     rowFunctional row z = row ⬝ᵥ z := by
   simp [rowFunctional, dotProduct, ContinuousLinearMap.sum_apply, smul_eq_mul]
 
-theorem rowFunctional_norm_le {r : ℕ} (row : Fin r → ℝ) :
+theorem rowFunctional_norm_le (row : Fin r → ℝ) :
     ‖rowFunctional row‖ ≤ ∑ i, |row i| := by
   apply ContinuousLinearMap.opNorm_le_bound
   · exact Finset.sum_nonneg (fun i _ => abs_nonneg _)
@@ -33,12 +35,15 @@ theorem rowFunctional_norm_le {r : ℕ} (row : Fin r → ℝ) :
       exact mul_le_mul_of_nonneg_left (norm_le_pi_norm z i) (abs_nonneg _)
     _ = (∑ i, |row i|) * ‖z‖ := by rw [Finset.sum_mul]
 
-def incrementFinScalar (r : ℕ) (lo hi : ℝ) (T : Matrix (Fin r) (Fin r) ℝ)
+section
+variable (r : ℕ)
+
+def incrementFinScalar (lo hi : ℝ) (T : Matrix (Fin r) (Fin r) ℝ)
     (y : ℝ) (m : ℕ) (row : Fin r → ℝ) :
     (Fin (Fintype.card (incrementVariables r)) → ℝ) → ℝ :=
   fun x => row ⬝ᵥ incrementFinVector r lo hi T y m x
 
-theorem incrementFinScalar_iteratedFDeriv (r : ℕ) [NeZero r] (lo hi : ℝ)
+theorem incrementFinScalar_iteratedFDeriv [NeZero r] (lo hi : ℝ)
     (T : Matrix (Fin r) (Fin r) ℝ) (y : ℝ) (m k : ℕ) (row : Fin r → ℝ)
     (x : Fin (Fintype.card (incrementVariables r)) → ℝ)
     (v : Fin k → Fin (Fintype.card (incrementVariables r)) → ℝ) :
@@ -55,6 +60,8 @@ theorem incrementFinScalar_iteratedFDeriv (r : ℕ) [NeZero r] (lo hi : ℝ)
   change iteratedFDeriv ℝ k (incrementFinScalar r lo hi T y m row) x v =
     rowFunctional row (iteratedFDeriv ℝ k (incrementFinVector r lo hi T y m) x v) at he
   exact he
+
+end
 
 /-- Passing to a scalar row and to the genuine derivative operator norm costs
 only a fixed finite row factor. Constants still do not depend on polynomial

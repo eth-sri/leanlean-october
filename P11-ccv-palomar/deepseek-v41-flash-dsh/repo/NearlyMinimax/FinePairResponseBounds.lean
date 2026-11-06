@@ -10,8 +10,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 
 def finePairResponseActionBudget (d q : ℕ) (C a ρ : ℝ) : ℝ :=
   (512 * d * C^2) * (∑ j : Fin (2*q+2), |responseWeight q j|) * highSeparatedDerivativeBudget a ρ
@@ -42,7 +40,9 @@ def finePairDensityCoefficientBudget (ad bd : ℝ) (M n : ℕ) : ℝ :=
   |finePairDensityPrefactor ad bd| * bd^n *
     Real.cosh ((M+2 : ℕ) * exteriorTau ((ad+bd)/(bd-ad)))
 
-theorem finePairDensityCoefficientBudget_nonneg (ad bd : ℝ) (hbd : 0 ≤ bd) (M n : ℕ) :
+variable (ad bd : ℝ)
+
+theorem finePairDensityCoefficientBudget_nonneg (hbd : 0 ≤ bd) (M n : ℕ) :
     0 ≤ finePairDensityCoefficientBudget ad bd M n := by
   unfold finePairDensityCoefficientBudget
   exact mul_nonneg (mul_nonneg (abs_nonneg _) (pow_nonneg hbd _)) (Real.cosh_pos _).le

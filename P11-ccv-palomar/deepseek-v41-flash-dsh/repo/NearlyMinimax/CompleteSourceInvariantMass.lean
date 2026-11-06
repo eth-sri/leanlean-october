@@ -11,8 +11,6 @@ has a genuine time-independent raw mass law. -/
 noncomputable section
 open MeasureTheory Set
 namespace NearlyMinimax
-set_option maxHeartbeats 1200000
-set_option backward.isDefEq.respectTransparency false
 attribute [local instance] Classical.propDecidable
 
 variable {d k D M q : ℕ} [NeZero d] [NeZero k] [LinearOrder (HighWindowLabels d k)]
@@ -28,9 +26,11 @@ theorem completeSourceRows_mass_positive (i : SourceRowIndex d D M q
   exact sourceRowMass_positive_actual d k D M q hD hq _ _ ha hab Cfr
     (by linarith) lam ℓ N μ hℓ hℓN i
 
+variable (T : ℝ)
+
 /-- Probability of the actual full source path follows from its primitive
 finite packet guards and the explicit history positivity budget. -/
-theorem completeSourcePrior_probability (T : ℝ) (hT : 0 ≤ T)
+theorem completeSourcePrior_probability (hT : 0 ≤ T)
     (hsmall : T * (highRowTotalMass (completeSourceRows C k D M q Cfr lam ℓ N μ).rowMass /
       highCenterMix C) / historyReferenceRho (3^d) ≤ 1 / (2+8*((3^d : ℕ):ℝ)^2))
     (t : ℝ) (ht : t ∈ Icc 0 T) :
@@ -43,7 +43,7 @@ theorem completeSourcePrior_probability (T : ℝ) (hT : 0 ≤ T)
 
 /-- Actual canonical append cancellation closes mass-law invariance for
 all retained rows, including every higher coarse/fine target. -/
-theorem completeSourceMass_prior_law (T : ℝ) (hT : 0 ≤ T)
+theorem completeSourceMass_prior_law (hT : 0 ≤ T)
     (hsmall : T * (highRowTotalMass (completeSourceRows C k D M q Cfr lam ℓ N μ).rowMass /
       highCenterMix C) / historyReferenceRho (3^d) ≤ 1 / (2+8*((3^d : ℕ):ℝ)^2))
     (t : ℝ) (ht : t ∈ Icc 0 T) :

@@ -11,10 +11,10 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 500000
 
-def cardinalHeadSplit {d n : ℕ} (i : Fin n) :
+variable {d n : ℕ} (i : Fin n)
+
+def cardinalHeadSplit :
     (Fin n → Covariate d) ≃ᵐ Covariate d × (SpatialScaleIndex i → Covariate d) where
   toFun U := (U i, fun j => U j.val)
   invFun z := anchoredPatchConfiguration i z.1 z.2
@@ -38,7 +38,7 @@ def cardinalHeadSplit {d n : ℕ} (i : Fin n) :
       if h : j ≠ i then z.2 ⟨j, h⟩ else z.1)
     split_ifs <;> fun_prop
 
-theorem cardinalHeadSplit_measurePreserving {d n : ℕ} (i : Fin n)
+theorem cardinalHeadSplit_measurePreserving 
     (μ : Measure (Covariate d)) [SigmaFinite μ] :
     MeasurePreserving (cardinalHeadSplit i) (Measure.pi (fun _ : Fin n => μ))
       (μ.prod (Measure.pi (fun _ : SpatialScaleIndex i => μ))) := by
@@ -55,19 +55,23 @@ theorem cardinalHeadSplit_measurePreserving {d n : ℕ} (i : Fin n)
     (MeasurePreserving.id (Measure.pi (fun _ : SpatialScaleIndex i => μ)))
   exact hh.comp hs
 
-def fullSpatialPatchDesign (d n : ℕ) : Measure (Fin n → Covariate d) :=
+section
+variable (d n : ℕ)
+
+def fullSpatialPatchDesign : Measure (Fin n → Covariate d) :=
   Measure.pi (fun _ : Fin n => volume.restrict (spatialPatchBox d))
 
-instance fullSpatialPatchDesign_finite (d n : ℕ) : IsFiniteMeasure (fullSpatialPatchDesign d n) := by
+instance fullSpatialPatchDesign_finite : IsFiniteMeasure (fullSpatialPatchDesign d n) := by
   unfold fullSpatialPatchDesign
   infer_instance
 
-theorem fullSpatialPatchDesign_split {d n : ℕ} (i : Fin n)
+end
+
+theorem fullSpatialPatchDesign_split 
     (f : (Fin n → Covariate d) → ℝ) :
     (∫ U, f U ∂fullSpatialPatchDesign d n) =
       ∫ z : Covariate d × (SpatialScaleIndex i → Covariate d),
         f (anchoredPatchConfiguration i z.1 z.2)
-        ∂(volume.restrict (spatialPatchBox d)).prod (spatialPatchDesignMeasure i d) := by
-  exact (((cardinalHeadSplit_measurePreserving i (volume.restrict (spatialPatchBox d))).symm).integral_comp' f).symm
+        ∂(volume.restrict (spatialPatchBox d)).prod (spatialPatchDesignMeasure i d) := (((cardinalHeadSplit_measurePreserving i (volume.restrict (spatialPatchBox d))).symm).integral_comp' f).symm
 
 end NearlyMinimax

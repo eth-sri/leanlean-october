@@ -12,8 +12,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 attribute [local instance] Classical.propDecidable
 
  def cardinalGeometryEnvelope {d n F : ℕ} (q : ℕ) (bd C a ρ η T : ℝ)
@@ -23,12 +21,14 @@ attribute [local instance] Classical.propDecidable
     2*cardinalRawTaylorCoefficient n q bd C a ρ η^2 *
       spatialMatrixL1 (integratedCardinalMatrix (D := F) (spatialInterpolationLambda d) T U)^2)
 
- theorem cardinalGeometryEnvelope_nonneg {d n F : ℕ} (q : ℕ) (bd C a ρ η T : ℝ)
+ variable {d n F : ℕ} (q : ℕ) (bd C a ρ η T : ℝ)
+
+theorem cardinalGeometryEnvelope_nonneg 
     (U : Fin n → Covariate d) : 0 ≤ cardinalGeometryEnvelope (F := F) q bd C a ρ η T U := by
   unfold cardinalGeometryEnvelope
   positivity
 
- theorem cardinalGeometryEnvelope_integrable_and_le {d n F : ℕ} (hd : 5 ≤ d) (hn : 2 ≤ n)
+ theorem cardinalGeometryEnvelope_integrable_and_le (hd : 5 ≤ d) (hn : 2 ≤ n)
     (q : ℕ) (bd C a ρ η : ℝ) {T : ℝ} (hT : 1 ≤ T) :
     Integrable (cardinalGeometryEnvelope (d := d) (n := n) (F := F) q bd C a ρ η T)
       (fullSpatialPatchDesign d n) ∧
@@ -55,7 +55,7 @@ attribute [local instance] Classical.propDecidable
   exact (mul_le_mul_of_nonneg_left h (by positivity : 0 ≤ (3 : ℝ)^n)).trans_eq (by
     unfold cardinalRawSpatialEnergyBudget; ring)
 
- theorem highCardinalRawNumerator_sum_square_le_geometry {d n F : ℕ}
+ theorem highCardinalRawNumerator_sum_square_le_geometry 
     (ad bd : ℝ) (haD : 0 < ad) (hab : ad < bd) {T : ℝ} (hT : 1 ≤ T)
     (m D q : ℕ) (hn : 1 ≤ n) (hnm : n ≤ m) (hnD : n ≤ D) (hnF : n ≤ F) (hq : 1 ≤ q)
     (C a V η ρ : ℝ) (hC : 1 ≤ C) (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ)
@@ -140,7 +140,7 @@ attribute [local instance] Classical.propDecidable
       unfold finePairAliasActionSpatialBudget
       ring)
 
-theorem finePairPairAliasAction_sum_square_le_geometry {d n F : ℕ}
+theorem finePairPairAliasAction_sum_square_le_geometry 
     (ad bd T0 N : ℝ) (haD : 0 < ad) (hab : ad < bd) (M q : ℕ) (hn : 1 ≤ n)
     (C a V η ρ : ℝ) (hC : 1 ≤ C) (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ)
     (hηρ : η ≤ ρ/2) (U : Fin n → Covariate d) (hU : ∀ i l, |U i l| ≤ 2)
@@ -174,7 +174,7 @@ theorem finePairPairAliasAction_sum_square_le_geometry {d n F : ℕ}
     dsimp [K, Z, s]
     ring)
 
-theorem finePairEvenFieldAction_sum_square_le_geometry {d n F : ℕ}
+theorem finePairEvenFieldAction_sum_square_le_geometry 
     (ad bd T0 N : ℝ) (haD : 0 < ad) (hab : ad < bd) (M q : ℕ) (hn : 1 ≤ n)
     (C a V η ρ : ℝ) (hC : 1 ≤ C) (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ)
     (hηρ : η ≤ ρ/2) (U : Fin n → Covariate d) (hU : ∀ i l, |U i l| ≤ 2)

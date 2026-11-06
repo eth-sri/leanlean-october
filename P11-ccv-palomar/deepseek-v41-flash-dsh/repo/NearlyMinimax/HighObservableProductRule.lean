@@ -9,8 +9,6 @@ public import NearlyMinimax.HistoryPriorWeakTransport
 noncomputable section
 open MeasureTheory ProbabilityTheory Filter Set
 namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 variable {J : Type*} [Fintype J] [LinearOrder J]
 
 /-- Differentiation of a time-dependent bounded observable under the actual

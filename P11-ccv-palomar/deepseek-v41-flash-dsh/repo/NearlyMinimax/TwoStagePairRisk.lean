@@ -12,18 +12,19 @@ noncomputable section
 open MeasureTheory ProbabilityTheory
 open scoped BigOperators ENNReal
 namespace NearlyMinimax.PairUStatistic
-set_option backward.isDefEq.respectTransparency false
 
 variable {P Ω E I : Type*} [MeasurableSpace P] [MeasurableSpace Ω]
   [MeasurableSpace E] [MeasurableSpace I] [MeasurableSingletonClass I]
 variable {π : Measure P} {ν : Measure Ω} {μ : Measure E}
   [IsProbabilityMeasure π] [IsProbabilityMeasure ν] [IsProbabilityMeasure μ]
 
-def fieldPairAverage (n : ℕ) (weight : ℝ) (G : P → E × E → ℝ)
+variable (n : ℕ) (weight : ℝ)
+
+def fieldPairAverage (weight : ℝ) (G : P → E × E → ℝ)
     (X : Fin n → Ω → E) (z : P × Ω) : ℝ :=
   pairAverage n (weightedSymmetrization weight (G z.1)) (fun i => X i z.2)
 
-theorem fieldPairAverage_measurable (n : ℕ) (weight : ℝ) {G : P → E × E → ℝ}
+theorem fieldPairAverage_measurable {G : P → E × E → ℝ}
     (hmG : Measurable (fun z : P × (E × E) => G z.1 z.2))
     (X : Fin n → Ω → E) (hX : ∀ i, Measurable (X i)) :
     Measurable (fieldPairAverage n weight G X) := by

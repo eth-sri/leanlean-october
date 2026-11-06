@@ -14,7 +14,6 @@ open Set MeasureTheory
 open scoped BigOperators
 namespace NearlyMinimax
 set_option backward.isDefEq.respectTransparency true
-set_option maxHeartbeats 1800000
 attribute [local instance] Classical.propDecidable
 attribute [local irreducible] highUnionSourceDensity highUnionSourceState historyMarkedAppend
 
@@ -88,8 +87,7 @@ theorem completeSourceResponseAction_all_count_bound (hn : 1 ≤ n)
       SourceRowDensityMark d D M q ad bd Cfr lam ℓ N μ i → Fin n → ℝ :=
     fun i z u => highUnionSourceResetDensity C R j h
       (Sum.inl ⟨i,sourceRowDensityLift d D M q ad bd Cfr lam ℓ N μ r₀ i z⟩) (x u)
-  have hresetMeas (i) (u) : Measurable (fun z => reset i z u) := by
-    exact (highUnionSourceResetDensity_measurable C R G j h).comp
+  have hresetMeas (i) (u) : Measurable (fun z => reset i z u) := (highUnionSourceResetDensity_measurable C R G j h).comp
       (((measurable_inl.comp ((rowSigmaMk_measurable i).comp
         (sourceRowDensityLift_measurable d D M q ad bd Cfr lam ℓ N μ r₀ i))).prodMk measurable_const))
   have hresetBound (i) (z) (u) : |reset i z u| ≤ C.densityUpper :=

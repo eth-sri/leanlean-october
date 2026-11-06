@@ -13,8 +13,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 700000
 attribute [local instance] Classical.propDecidable
 
 section
@@ -50,7 +48,6 @@ theorem highUnionSourceMass_reference_mgf (hk : 2 ≤ k) (u : ℝ) :
         (highUnionLaw R (highCenterMix C))) ≤
       Real.exp (highHistoryMassParameter d k C.densityLower C.densityUpper * u^2) := by
   letI := highUnionSourceLaw_probability C R G
-  have hm := highUnionSourceMass_measurable C R G
   have hBound : ∀ h, |highUnionSourceMass C R h| ≤ C.densityUpper := by
     intro h
     have hp := highUnionSourceMass_interval C R G h
@@ -64,7 +61,7 @@ theorem highUnionSourceMass_reference_mgf (hk : 2 ≤ k) (u : ℝ) :
   have h := historyMarkedReference_mass_mgf (fun i j => j ∈ highNeighborLabels d k i)
     (highNeighborLabels_self_mem d k) (fun {_ _} h => highNeighborLabels_symmetric d k _ _ h)
     (3^d) (one_le_pow₀ (by norm_num : (1 : ℕ) ≤ 3)) (highNeighbor_dependency_card d k)
-    (highUnionLaw R (highCenterMix C)) (highUnionSourceMass C R) hm C.densityUpper
+    (highUnionLaw R (highCenterMix C)) (highUnionSourceMass C R) (highUnionSourceMass_measurable C R G) C.densityUpper
     ((2 / (k : ℝ))^d * (C.densityUpper-C.densityLower)) (by positivity)
     hBound (highUnionSourceMass_fiber_mean_one C R G)
     (fun g j marks marks' hMarks => highUnionSourceMass_block_oscillation C R G hk g marks marks' j hMarks) u

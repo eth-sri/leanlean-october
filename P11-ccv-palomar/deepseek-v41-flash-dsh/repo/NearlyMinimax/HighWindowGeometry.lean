@@ -9,15 +9,15 @@ noncomputable section
 open Set MeasureTheory Function
 open scoped BigOperators ENNReal
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 600000
 attribute [local instance] Classical.propDecidable
 
-def highTorusPatch (d k : ℕ) (j : HighWindowLabels d k) : Set (Covariate d) :=
+variable (d k : ℕ) (j : HighWindowLabels d k)
+
+def highTorusPatch (j : HighWindowLabels d k) : Set (Covariate d) :=
   {x | ∃ z : Fin d → ℤ, (∀ r, (z r : ZMod k) = j r) ∧
     ∀ r, |(k : ℝ) * x r - z r| < 1}
 
-theorem highTorusPatch_measurableSet (d k : ℕ) (j : HighWindowLabels d k) :
+theorem highTorusPatch_measurableSet :
     MeasurableSet (highTorusPatch d k j) := by
   unfold highTorusPatch
   simp_rw [setOf_exists]
@@ -37,11 +37,14 @@ theorem highTorusPatch_measurableSet (d k : ℕ) (j : HighWindowLabels d k) :
   · simp only [hz, false_and, setOf_false]
     exact MeasurableSet.empty
 
-def highPatchCoordinate (k : ℕ) (j : ZMod k) : Set ℝ :=
+section
+variable (k : ℕ)
+
+def highPatchCoordinate (j : ZMod k) : Set ℝ :=
   if j = 0 then Icc 0 (1 / (k : ℝ)) ∪ Icc (1 - 1 / (k : ℝ)) 1 else
     Icc (((j.val : ℝ) - 1) / k) (((j.val : ℝ) + 1) / k)
 
-theorem highPatchCoordinate_volume_le (k : ℕ) (hk : 0 < k) (j : ZMod k) :
+theorem highPatchCoordinate_volume_le (hk : 0 < k) (j : ZMod k) :
     volume (highPatchCoordinate k j) ≤ ENNReal.ofReal (2 / (k : ℝ)) := by
   have hkR : (0 : ℝ) < k := by exact_mod_cast hk
   unfold highPatchCoordinate
@@ -58,7 +61,7 @@ theorem highPatchCoordinate_volume_le (k : ℕ) (hk : 0 < k) (j : ZMod k) :
     ring_nf
     exact le_rfl
 
-theorem highPatchCoordinate_contains_lift (k : ℕ) [NeZero k] (hk : 2 ≤ k)
+theorem highPatchCoordinate_contains_lift [NeZero k] (hk : 2 ≤ k)
     (j : ZMod k) (x : ℝ) (hx : x ∈ Icc (0 : ℝ) 1) (z : ℤ)
     (hz : (z : ZMod k) = j) (hclose : |(k : ℝ) * x - z| < 1) :
     x ∈ highPatchCoordinate k j := by
@@ -117,7 +120,9 @@ theorem highPatchCoordinate_contains_lift (k : ℕ) [NeZero k] (hk : 2 ≤ k)
     convert hr using 1
     field_simp
 
-theorem highTorusPatch_cube_subset (d k : ℕ) [NeZero k] (hk : 2 ≤ k)
+end
+
+theorem highTorusPatch_cube_subset [NeZero k] (hk : 2 ≤ k)
     (j : HighWindowLabels d k) :
     highTorusPatch d k j ∩ unitCube d ⊆
       Set.pi Set.univ (fun r => highPatchCoordinate k (j r)) := by
@@ -127,7 +132,7 @@ theorem highTorusPatch_cube_subset (d k : ℕ) [NeZero k] (hk : 2 ≤ k)
 
 /-- The genuine torus patch, including patches wrapping across the
 boundary of the unit cube, has the manuscript's volume bound. -/
-theorem highTorusPatch_volume_le (d k : ℕ) [NeZero k] (hk : 2 ≤ k)
+theorem highTorusPatch_volume_le [NeZero k] (hk : 2 ≤ k)
     (j : HighWindowLabels d k) :
     cubeVolume d (highTorusPatch d k j) ≤ ENNReal.ofReal (2 / (k : ℝ)) ^ d := by
   rw [cubeVolume, Measure.restrict_apply (highTorusPatch_measurableSet d k j)]
@@ -139,23 +144,23 @@ theorem highTorusPatch_volume_le (d k : ℕ) [NeZero k] (hk : 2 ≤ k)
       Finset.prod_le_prod (fun r _ => highPatchCoordinate_volume_le k (by omega) (j r))
     _ = _ := by simp
 
-def highNeighborLabels (d k : ℕ) (j : HighWindowLabels d k) : Finset (HighWindowLabels d k) :=
+def highNeighborLabels (j : HighWindowLabels d k) : Finset (HighWindowLabels d k) :=
   Fintype.piFinset (fun r => {j r - 1, j r, j r + 1})
 
-theorem highNeighborLabels_card_le (d k : ℕ) [NeZero k] (j : HighWindowLabels d k) :
+theorem highNeighborLabels_card_le [NeZero k] (j : HighWindowLabels d k) :
     (highNeighborLabels d k j).card ≤ 3 ^ d := by
   rw [highNeighborLabels, Fintype.card_piFinset]
   calc
     _ ≤ ∏ _r : Fin d, 3 := Finset.prod_le_prod' (fun r _ => Finset.card_le_three)
     _ = _ := by simp
 
-theorem highNeighborLabels_self_mem (d k : ℕ) (j : HighWindowLabels d k) :
+theorem highNeighborLabels_self_mem :
     j ∈ highNeighborLabels d k j := by
   apply Fintype.mem_piFinset.mpr
   intro r
   simp
 
-theorem highNeighborLabels_symmetric (d k : ℕ) (j l : HighWindowLabels d k)
+theorem highNeighborLabels_symmetric (j l : HighWindowLabels d k)
     (h : l ∈ highNeighborLabels d k j) : j ∈ highNeighborLabels d k l := by
   apply Fintype.mem_piFinset.mpr
   intro r
@@ -173,7 +178,7 @@ theorem highNeighborLabels_symmetric (d k : ℕ) (j l : HighWindowLabels d k)
     rw [hr]
     ring
 
-theorem highTorusPatch_intersects_neighbor (d k : ℕ) [NeZero k]
+theorem highTorusPatch_intersects_neighbor [NeZero k]
     (j l : HighWindowLabels d k) (h : (highTorusPatch d k j ∩ highTorusPatch d k l).Nonempty) :
     l ∈ highNeighborLabels d k j := by
   obtain ⟨x, ⟨z, hz, hc⟩, ⟨q, hq, hd⟩⟩ := h
@@ -199,13 +204,12 @@ theorem highTorusPatch_intersects_neighbor (d k : ℕ) [NeZero k]
   · have he' : l r = j r + 1 := by rw [← hq r, he, Int.cast_add, ← hz r]; simp
     simp only [he', Finset.mem_insert, Finset.mem_singleton, true_or, or_true]
 
-theorem highTorusPatch_disjoint_of_not_neighbor (d k : ℕ) [NeZero k]
+theorem highTorusPatch_disjoint_of_not_neighbor [NeZero k]
     (j l : HighWindowLabels d k) (h : l ∉ highNeighborLabels d k j) :
-    Disjoint (highTorusPatch d k j) (highTorusPatch d k l) := by
-  exact Set.disjoint_left.mpr (fun x hj hl =>
+    Disjoint (highTorusPatch d k j) (highTorusPatch d k l) := Set.disjoint_left.mpr (fun x hj hl =>
     h (highTorusPatch_intersects_neighbor d k j l ⟨x, hj, hl⟩))
 
-theorem highPeriodicTensor_supported_patch (d k : ℕ) (j : HighWindowLabels d k) :
+theorem highPeriodicTensor_supported_patch :
     support (highPeriodicTensor d k j) ⊆ highTorusPatch d k j := by
   intro x hx
   obtain ⟨z, hz, hclose⟩ := highPeriodicTensor_support_lift d k j x hx

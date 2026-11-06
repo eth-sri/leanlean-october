@@ -15,10 +15,10 @@ noncomputable section
 open MeasureTheory Filter
 open scoped Topology ENNReal RealInnerProductSpace
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 800000
 
-theorem paper_upper_sharp_estimator {d : ℕ} (C : ModelConstants d)
+variable {d : ℕ} (C : ModelConstants d)
+
+theorem paper_upper_sharp_estimator 
     (hreg : highSmoothnessRegime C) :
     ∃ K : ℝ, 0 < K ∧ ∃ n₀ : ℕ, 2 ≤ n₀ ∧
       ∀ (U : ExtensionDomain d) (n : ℕ), n₀ ≤ n → ∃ T : Estimator d n,
@@ -98,7 +98,7 @@ theorem paper_upper_sharp_estimator {d : ℕ} (C : ModelConstants d)
   intro U n hn
   exact hn₀ n ((le_max_right _ _).trans hn) U
 
-theorem paper_upper_sharp {d : ℕ} (C : ModelConstants d) : UpperSharpClaim C := by
+theorem paper_upper_sharp (C : ModelConstants d) : UpperSharpClaim C := by
   intro hreg
   obtain ⟨K, hK, n₀, hn₀, hT⟩ := paper_upper_sharp_estimator C hreg
   refine ⟨K, hK, n₀, hn₀, ?_⟩

@@ -12,31 +12,39 @@ noncomputable section
 open Filter MeasureTheory Set
 open scoped BigOperators RealInnerProductSpace
 namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 
-def paperDyadicStep {d : ℕ} (_C : ModelConstants d) : ℝ := (d : ℝ) * Real.log 2
+variable {d : ℕ} (C : ModelConstants d)
 
-def paperSpatialExponent {d : ℕ} (C : ModelConstants d) : ℝ := (C.smoothness - 1) / (d : ℝ)
+def paperDyadicStep (_C : ModelConstants d) : ℝ := (d : ℝ) * Real.log 2
 
-def paperDegreeSlope {d : ℕ} (C : ModelConstants d) : ℝ := paperSpatialExponent C / paperTau C
+def paperSpatialExponent (C : ModelConstants d) : ℝ := (C.smoothness - 1) / (d : ℝ)
 
-def paperDegreeReserve {d : ℕ} (C : ModelConstants d) : ℝ :=
+def paperDegreeSlope (C : ModelConstants d) : ℝ := paperSpatialExponent C / paperTau C
+
+def paperDegreeReserve (C : ModelConstants d) : ℝ :=
   ((anchoredDimension d C.order : ℝ) + 1 / 2) / paperSpatialExponent C
 
-def paperDyadicTerminalLevel {d : ℕ} (C : ModelConstants d) (a offset H n : ℝ) : ℕ :=
+def paperDyadicTerminalLevel (C : ModelConstants d) (a offset H n : ℝ) : ℕ :=
   terminalAllocationLevel (paperDyadicStep C) a offset H (paperDegreeReserve C) n
 
-def paperDyadicApproximationDegree {d : ℕ} (C : ModelConstants d) (a offset H n : ℝ) (j : ℕ) : ℕ :=
+def paperDyadicApproximationDegree (C : ModelConstants d) (a offset H n : ℝ) (j : ℕ) : ℕ :=
   actualApproximationDegree (paperDyadicStep C) a offset H (paperDegreeSlope C) n j (paperPolynomialDimension C)
 
-theorem paperDyadicStep_pos {d : ℕ} (C : ModelConstants d) : 0 < paperDyadicStep C :=
+section
+variable (C : ModelConstants d)
+
+theorem paperDyadicStep_pos : 0 < paperDyadicStep C :=
   mul_pos (Nat.cast_pos.mpr C.dimension_pos) (Real.log_pos (by norm_num))
 
-theorem paperSpatialExponent_pos {d : ℕ} (C : ModelConstants d) (hs : 1 < C.smoothness) :
+theorem paperSpatialExponent_pos (hs : 1 < C.smoothness) :
     0 < paperSpatialExponent C := div_pos (sub_pos.mpr hs) (Nat.cast_pos.mpr C.dimension_pos)
 
-theorem dyadicPilotScale_eq_exp {d : ℕ} (C : ModelConstants d) (j : ℕ) :
+end
+
+section
+variable (j : ℕ)
+
+theorem dyadicPilotScale_eq_exp :
     dyadicPilotScale d j = Real.exp (paperDyadicStep C * (j : ℝ)) := by
   have hl : Real.log (dyadicPilotScale d j) = paperDyadicStep C * (j : ℝ) := by
     unfold dyadicPilotScale paperDyadicStep
@@ -44,16 +52,17 @@ theorem dyadicPilotScale_eq_exp {d : ℕ} (C : ModelConstants d) (j : ℕ) :
     ring
   rw [← hl, Real.exp_log (dyadicPilotScale_pos d j)]
 
-theorem dyadic_spatial_weight_eq {d : ℕ} (C : ModelConstants d) (j : ℕ) :
+theorem dyadic_spatial_weight_eq :
     (((2 : ℝ) ^ j)⁻¹) ^ (C.smoothness - 1) =
       (dyadicPilotScale d j) ^ (-paperSpatialExponent C) := by
-  rw [Real.rpow_def_of_pos (by positivity), Real.rpow_def_of_pos (dyadicPilotScale_pos d j)]
-  rw [Real.log_inv]
+  rw [Real.rpow_def_of_pos (by positivity), Real.rpow_def_of_pos (dyadicPilotScale_pos d j), Real.log_inv]
   unfold dyadicPilotScale paperSpatialExponent
   rw [Real.log_pow, Real.log_pow, Real.log_pow]
   congr 1
   have hd : (d : ℝ) ≠ 0 := (Nat.cast_pos.mpr C.dimension_pos).ne'
   field_simp
+
+end
 
 theorem exp_negative_nat_eq_pow (τ : ℝ) (m : ℕ) :
     Real.exp (-(m : ℝ) * τ) = (Real.exp (-τ)) ^ m := by
@@ -62,7 +71,7 @@ theorem exp_negative_nat_eq_pow (τ : ℝ) (m : ℕ) :
   ring
 
 /-- The actual anchored bias budget is exactly the scalar cell-mass budget. -/
-theorem dyadicPopulationBiasBudget_eq_scalar {d : ℕ} (C : ModelConstants d)
+theorem dyadicPopulationBiasBudget_eq_scalar 
     (J : ℕ) (m : ℕ → ℕ) :
     dyadicPopulationBiasBudget C J m =
       (Real.exp (paperDyadicStep C * (J : ℝ))) ^ (-paperSpatialExponent C) +
@@ -74,7 +83,7 @@ theorem dyadicPopulationBiasBudget_eq_scalar {d : ℕ} (C : ModelConstants d)
 
 /-- U12 for the actual population-bias budget and its actual floored degree
 profile, with all scalar identities supplied by the original model constants. -/
-theorem eventually_paper_dyadic_bias_budget {d : ℕ} (C : ModelConstants d)
+theorem eventually_paper_dyadic_bias_budget 
     (hs : 1 < C.smoothness) (a offset H : ℝ) (ha : 0 < a) (hH : 0 < H) :
     ∃ B : ℝ, 0 < B ∧ ∀ᶠ n : ℝ in atTop,
       dyadicPopulationBiasBudget C (paperDyadicTerminalLevel C a offset H n)

@@ -11,8 +11,6 @@ noncomputable section
 open Set MeasureTheory Function
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 800000
 attribute [local instance] Classical.propDecidable
 
 section Finite
@@ -30,8 +28,7 @@ theorem highUnionHistory_density_joint_measurable [∀ i, StandardBorelSpace (E 
     (n : ℕ) (labels : Fin n → HighWindowLabels d k)
     (initial : HighRawState d k F) (hi : Measurable initial.1) :
     Measurable (fun mx : (Fin n → HighUnionMark E) × Covariate d =>
-      (highUnionHistoryState R δ n labels initial mx.1).1 mx.2) := by
-  exact affinePatchFold_density_joint_measurable (highTorusPatch d k)
+      (highUnionHistoryState R δ n labels initial mx.1).1 mx.2) := affinePatchFold_density_joint_measurable (highTorusPatch d k)
     (highTorusPatch_measurableSet d k) (highUnionSlope R)
     (fun _ e _ => highUnionIntercept R δ e)
     (fun j => highUnionSlope_joint_measurable R hSlope j)
@@ -162,7 +159,10 @@ def highUnionMarkedMass (δ : ℝ) (initial : HighRawState d k F)
     (h : HistoryMarked dependent (HighUnionMark E)) : ℝ :=
   ∫ x, highUnionMarkedDensity R dependent δ initial h x ∂cubeVolume d
 
-theorem highUnionMarkedDensity_joint_measurable [∀ i, StandardBorelSpace (E i)]
+section
+variable [∀ i, StandardBorelSpace (E i)]
+
+theorem highUnionMarkedDensity_joint_measurable 
     (hSlope : ∀ j i, Measurable (fun ex : E i × Covariate d => R.rowSlope j i ex.1 ex.2))
     (hOffset : ∀ i, Measurable (R.rowIntercept i)) (δ : ℝ)
     (initial : HighRawState d k F) (hi : Measurable initial.1) :
@@ -180,13 +180,15 @@ theorem highUnionMarkedDensity_joint_measurable [∀ i, StandardBorelSpace (E i)
       (historyShapeLength dependent g) (historyShapeCanonicalLabels dependent g) initial hi
   exact hG.comp (historySigmaProdMeasurableEquiv X (Covariate d)).measurable
 
-theorem highUnionMarkedMass_measurable [∀ i, StandardBorelSpace (E i)]
+theorem highUnionMarkedMass_measurable 
     (hSlope : ∀ j i, Measurable (fun ex : E i × Covariate d => R.rowSlope j i ex.1 ex.2))
     (hOffset : ∀ i, Measurable (R.rowIntercept i)) (δ : ℝ)
     (initial : HighRawState d k F) (hi : Measurable initial.1) :
     Measurable (highUnionMarkedMass R dependent δ initial) := by
   letI := cubeVolume_isProbability d
   exact (highUnionMarkedDensity_joint_measurable R dependent hSlope hOffset δ initial hi).stronglyMeasurable.integral_prod_right'.measurable
+
+end
 
 theorem highUnionMarkedState_append [NeZero k] (δ : ℝ) (initial : HighRawState d k F)
     (j : HighWindowLabels d k)

@@ -14,25 +14,28 @@ noncomputable section
 open Set MeasureTheory Function MvPolynomial
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 attribute [local instance] Classical.propDecidable
 
+variable (k : ℕ) (j : ZMod k) (x : ℝ)
+
 /-- The nearest representative of the residue j in the scaled coordinate. -/
-def highChartLift (k : ℕ) (j : ZMod k) (x : ℝ) : ℤ :=
+def highChartLift (j : ZMod k) (x : ℝ) : ℤ :=
   (j.val : ℤ) + (k : ℤ) * Int.floor (x - (j.val : ℝ) / k + 1 / 2)
 
-theorem highChartLift_measurable (k : ℕ) (j : ZMod k) : Measurable (highChartLift k j) := by
+theorem highChartLift_measurable : Measurable (highChartLift k j) := by
   unfold highChartLift
   exact measurable_const.add (measurable_const.mul
     (Int.measurable_floor.comp (by fun_prop)))
 
-theorem highChartLift_residue (k : ℕ) [NeZero k] (j : ZMod k) (x : ℝ) :
+section
+variable [NeZero k]
+
+theorem highChartLift_residue (j : ZMod k) (x : ℝ) :
     (highChartLift k j x : ZMod k) = j := by
   simp [highChartLift]
 
 /-- Every point inside the source patch selects the unique nearby lift. -/
-theorem highChartLift_eq_of_close (k : ℕ) [NeZero k] (hk : 4 ≤ k)
+theorem highChartLift_eq_of_close (hk : 4 ≤ k)
     (j : ZMod k) (x : ℝ) (z : ℤ) (hz : (z : ZMod k) = j)
     (hclose : |(k : ℝ) * x - z| < 1) : highChartLift k j x = z := by
   have hkR : (0 : ℝ) < k := by exact_mod_cast (by omega : 0 < k)
@@ -52,7 +55,7 @@ theorem highChartLift_eq_of_close (k : ℕ) [NeZero k] (hk : 4 ≤ k)
   simp only [highChartLift, hf]
   exact ht.symm
 
-theorem highPeriodicWindow_eq_chart_lift (k : ℕ) [NeZero k] (hk : 4 ≤ k)
+theorem highPeriodicWindow_eq_chart_lift (hk : 4 ≤ k)
     (j : ZMod k) (x : ℝ) :
     highPeriodicWindow k j x = highWindowProfile ((k : ℝ) * x - highChartLift k j x) := by
   unfold highPeriodicWindow
@@ -70,21 +73,22 @@ theorem highPeriodicWindow_eq_chart_lift (k : ℕ) [NeZero k] (hk : 4 ≤ k)
       exact hz (highChartLift_eq_of_close k hk j x z hj hclose).symm
     · simp only [ite_eq_right hj]
 
-def highRawChartCoordinate (k : ℕ) (j : ZMod k) (x : ℝ) : ℝ :=
+end
+
+def highRawChartCoordinate (j : ZMod k) (x : ℝ) : ℝ :=
   (k : ℝ) * x - highChartLift k j x
 
-def highLocalCoordinate (k : ℕ) (j : ZMod k) (x : ℝ) : ℝ :=
+def highLocalCoordinate (j : ZMod k) (x : ℝ) : ℝ :=
   if |highRawChartCoordinate k j x| ≤ 1 then highRawChartCoordinate k j x else 0
 
 def highLocalCoordinates (d k : ℕ) (j : HighWindowLabels d k) (x : Covariate d) : Covariate d :=
   fun r => highLocalCoordinate k (j r) (x r)
 
-theorem highRawChartCoordinate_measurable (k : ℕ) (j : ZMod k) :
-    Measurable (highRawChartCoordinate k j) := by
-  exact (measurable_const.mul measurable_id).sub
+theorem highRawChartCoordinate_measurable :
+    Measurable (highRawChartCoordinate k j) := (measurable_const.mul measurable_id).sub
     ((measurable_of_countable (fun z : ℤ => (z : ℝ))).comp (highChartLift_measurable k j))
 
-theorem highLocalCoordinate_measurable (k : ℕ) (j : ZMod k) :
+theorem highLocalCoordinate_measurable :
     Measurable (highLocalCoordinate k j) := by
   unfold highLocalCoordinate
   apply Measurable.ite
@@ -92,33 +96,36 @@ theorem highLocalCoordinate_measurable (k : ℕ) (j : ZMod k) :
   · exact highRawChartCoordinate_measurable k j
   · exact measurable_const
 
-theorem highLocalCoordinate_abs_le_one (k : ℕ) (j : ZMod k) (x : ℝ) :
+theorem highLocalCoordinate_abs_le_one :
     |highLocalCoordinate k j x| ≤ 1 := by
   unfold highLocalCoordinate
   split_ifs with h
   · exact h
   · norm_num
 
-theorem highLocalCoordinates_measurable (d k : ℕ) (j : HighWindowLabels d k) :
+section
+variable (d k : ℕ)
+
+theorem highLocalCoordinates_measurable (j : HighWindowLabels d k) :
     Measurable (highLocalCoordinates d k j) := by
   apply measurable_pi_iff.mpr
   intro r
   exact (highLocalCoordinate_measurable k (j r)).comp (measurable_pi_apply r)
 
-theorem highLocalCoordinates_abs_le_one (d k : ℕ) (j : HighWindowLabels d k)
+theorem highLocalCoordinates_abs_le_one (j : HighWindowLabels d k)
     (x : Covariate d) (r : Fin d) : |highLocalCoordinates d k j x r| ≤ 1 :=
   highLocalCoordinate_abs_le_one k (j r) (x r)
 
-def highRawChartCoordinates (d k : ℕ) (j : HighWindowLabels d k) (x : Covariate d) : Covariate d :=
+def highRawChartCoordinates (j : HighWindowLabels d k) (x : Covariate d) : Covariate d :=
   fun r => highRawChartCoordinate k (j r) (x r)
 
-theorem highPeriodicTensor_eq_chart_lift (d k : ℕ) [NeZero k] (hk : 4 ≤ k)
+theorem highPeriodicTensor_eq_chart_lift [NeZero k] (hk : 4 ≤ k)
     (j : HighWindowLabels d k) (x : Covariate d) :
     highPeriodicTensor d k j x = highWindowTensor d (highRawChartCoordinates d k j x) := by
   unfold highPeriodicTensor highWindowTensor highRawChartCoordinates highRawChartCoordinate
   simp_rw [highPeriodicWindow_eq_chart_lift k hk]
 
-theorem highPeriodizedChart_eq_chart_lift (d k : ℕ) [NeZero k] (hk : 4 ≤ k)
+theorem highPeriodizedChart_eq_chart_lift [NeZero k] (hk : 4 ≤ k)
     (j : HighWindowLabels d k) (G : Covariate d → ℝ)
     (hG0 : ∀ u, highWindowTensor d u = 0 → G u = 0) (x : Covariate d) :
     highPeriodizedChart d k j G x = G (highRawChartCoordinates d k j x) := by
@@ -145,7 +152,7 @@ theorem highPeriodizedChart_eq_chart_lift (d k : ℕ) [NeZero k] (hk : 4 ≤ k)
       exact (highChartLift_eq_of_close k hk (j r) (x r) (z r) (hres r) hclose).symm
     · simp only [ite_eq_right hres]
 
-theorem highRawChartCoordinates_abs_lt_of_active (d k : ℕ) [NeZero k] (hk : 4 ≤ k)
+theorem highRawChartCoordinates_abs_lt_of_active [NeZero k] (hk : 4 ≤ k)
     (j : HighWindowLabels d k) (x : Covariate d)
     (hw : highPeriodicTensor d k j x ≠ 0) (r : Fin d) :
     |highRawChartCoordinates d k j x r| < 3/4 := by
@@ -156,7 +163,7 @@ theorem highRawChartCoordinates_abs_lt_of_active (d k : ℕ) [NeZero k] (hk : 4 
   by_contra h
   exact hp (highWindowProfile_eq_zero _ (not_lt.mp h))
 
-theorem highLocalCoordinates_eq_raw_of_active (d k : ℕ) [NeZero k] (hk : 4 ≤ k)
+theorem highLocalCoordinates_eq_raw_of_active [NeZero k] (hk : 4 ≤ k)
     (j : HighWindowLabels d k) (x : Covariate d) (hw : highPeriodicTensor d k j x ≠ 0) :
     highLocalCoordinates d k j x = highRawChartCoordinates d k j x := by
   funext r
@@ -166,11 +173,16 @@ theorem highLocalCoordinates_eq_raw_of_active (d k : ℕ) [NeZero k] (hk : 4 ≤
     linarith
   exact if_pos hbound
 
-def highLocalFrameFeature {d D : ℕ} (k : ℕ) (j : HighWindowLabels d k)
+end
+
+section
+variable {d D : ℕ}
+
+def highLocalFrameFeature (k : ℕ) (j : HighWindowLabels d k)
     (x : Covariate d) (γ : HighFrameIndex d D) : ℝ :=
   highFrameFeature (highLocalCoordinates d k j x) γ
 
-theorem highLocalFrameFeature_measurable {d D : ℕ} (k : ℕ)
+theorem highLocalFrameFeature_measurable (k : ℕ)
     (j : HighWindowLabels d k) (γ : HighFrameIndex d D) :
     Measurable (fun x => highLocalFrameFeature k j x γ) := by
   unfold highLocalFrameFeature highFrameFeature
@@ -178,7 +190,7 @@ theorem highLocalFrameFeature_measurable {d D : ℕ} (k : ℕ)
   intro r _
   exact (((measurable_pi_apply r).comp (highLocalCoordinates_measurable d k j)).div_const 8).pow_const _
 
-theorem highLocalFrameFeature_abs_le_one {d D : ℕ} (k : ℕ)
+theorem highLocalFrameFeature_abs_le_one (k : ℕ)
     (j : HighWindowLabels d k) (x : Covariate d) (γ : HighFrameIndex d D) :
     |highLocalFrameFeature k j x γ| ≤ 1 := by
   unfold highLocalFrameFeature highFrameFeature
@@ -193,7 +205,7 @@ theorem highLocalFrameFeature_abs_le_one {d D : ℕ} (k : ℕ)
     norm_num
     linarith [highLocalCoordinates_abs_le_one d k j x r]
 
-theorem highFrameMonomial_scaled_eval {d D : ℕ} (γ : HighFrameIndex d D) (u : Covariate d) :
+theorem highFrameMonomial_scaled_eval (γ : HighFrameIndex d D) (u : Covariate d) :
     MvPolynomial.eval u (frameScaledPolynomial (highFrameMonomial γ)) = highFrameFeature u γ := by
   rw [frameScaledPolynomial_eval]
   unfold highFrameMonomial highFrameFeature
@@ -202,7 +214,7 @@ theorem highFrameMonomial_scaled_eval {d D : ℕ} (γ : HighFrameIndex d D) (u :
 
 /-- The true periodized monomial chart equals its actual window times the
 bounded Borel local monomial feature, including window zeros. -/
-theorem highPeriodizedFrameMonomial_local_feature {d D : ℕ} (k : ℕ) [NeZero k]
+theorem highPeriodizedFrameMonomial_local_feature (k : ℕ) [NeZero k]
     (hk : 4 ≤ k) (j : HighWindowLabels d k) (x : Covariate d) (γ : HighFrameIndex d D) :
     highPeriodizedChart d k j (highFrameProfile (highFrameMonomial γ)) x =
       highPeriodicTensor d k j x * highLocalFrameFeature k j x γ := by
@@ -214,7 +226,7 @@ theorem highPeriodizedFrameMonomial_local_feature {d D : ℕ} (k : ℕ) [NeZero 
   · simp only [hw, zero_mul]
   · rw [highLocalFrameFeature, highLocalCoordinates_eq_raw_of_active d k hk j x hw]
 
-theorem highPeriodizedFrame_local_feature {d D : ℕ} (k : ℕ) [NeZero k]
+theorem highPeriodizedFrame_local_feature (k : ℕ) [NeZero k]
     (hk : 4 ≤ k) (j : HighWindowLabels d k) (x : Covariate d)
     (c : HighFrameIndex d D → ℝ) :
     highPeriodizedChart d k j (highFrameProfile (highFramePolynomial c)) x =
@@ -225,14 +237,19 @@ theorem highPeriodizedFrame_local_feature {d D : ℕ} (k : ℕ) [NeZero k]
   rw [highPeriodizedFrameMonomial_local_feature k hk j x γ]
   ring
 
+end
+
+section
+variable (d k D : ℕ) [NeZero k]
+
 /-- The actual regression field with one window coefficient block removed. -/
-def highLocalFieldWithout (d k D : ℕ) [NeZero k] (η : ℝ)
+def highLocalFieldWithout (η : ℝ)
     (c : HighWindowLabels d k → HighFrameIndex d D → ℝ) (j : HighWindowLabels d k)
     (x : Covariate d) : ℝ :=
   η * ∑ l ∈ (Finset.univ : Finset (HighWindowLabels d k)).erase j,
     highPeriodizedChart d k l (highFrameProfile (highFramePolynomial (c l))) x
 
-theorem highFrameField_local_decomposition (d k D : ℕ) [NeZero k] (hk : 4 ≤ k)
+theorem highFrameField_local_decomposition (hk : 4 ≤ k)
     (η : ℝ) (c : HighWindowLabels d k → HighFrameIndex d D → ℝ)
     (j : HighWindowLabels d k) (x : Covariate d) :
     highFrameField d k η (fun l => highFramePolynomial (c l)) x =
@@ -245,6 +262,8 @@ theorem highFrameField_local_decomposition (d k D : ℕ) [NeZero k] (hk : 4 ≤ 
   unfold highFrameField highLocalFieldWithout
   rw [← hs]
   ring
+
+end
 
 /-- The source's local coefficient regression representation is a theorem
 about the actual periodic field, not an additional model premise. -/
@@ -268,9 +287,12 @@ theorem highLocalFieldWithout_continuous (d k D : ℕ) [NeZero k] (η : ℝ)
     (highFrameProfile_contDiff (highFramePolynomial (c l)))
     (highFrameProfile_zero_of_window_zero (highFramePolynomial (c l)))).continuous
 
+section
+variable {d D : ℕ} (k : ℕ) (j : HighWindowLabels d k) (x : Covariate d)
+
 /-- The coefficient ball gives the actual uniformly bounded local profile. -/
-theorem highLocalFrameFeature_linear_abs_bound {d D : ℕ} (k : ℕ)
-    (j : HighWindowLabels d k) (x : Covariate d) (c : HighFrameIndex d D → ℝ) :
+theorem highLocalFrameFeature_linear_abs_bound 
+    (c : HighFrameIndex d D → ℝ) :
     |∑ γ, highLocalFrameFeature k j x γ * c γ| ≤ ∑ γ, |c γ| := by
   apply (Finset.abs_sum_le_sum_abs _ _).trans
   apply Finset.sum_le_sum
@@ -279,11 +301,13 @@ theorem highLocalFrameFeature_linear_abs_bound {d D : ℕ} (k : ℕ)
   exact (mul_le_mul_of_nonneg_right (highLocalFrameFeature_abs_le_one k j x γ)
     (abs_nonneg (c γ))).trans_eq (one_mul _)
 
-theorem highLocalFrameFeature_ball_abs_le_one {d D : ℕ} (k : ℕ)
-    (j : HighWindowLabels d k) (x : Covariate d) (C : ℝ) (hC : 1 ≤ C)
+theorem highLocalFrameFeature_ball_abs_le_one 
+    (C : ℝ) (hC : 1 ≤ C)
     (c : HighFrameIndex d D → ℝ) (hc : ∑ γ, |c γ| ≤ C⁻¹) :
     |∑ γ, highLocalFrameFeature k j x γ * c γ| ≤ 1 := by
   apply (highLocalFrameFeature_linear_abs_bound k j x c).trans
   exact hc.trans ((inv_le_one₀ (by linarith : 0 < C)).mpr hC)
+
+end
 
 end NearlyMinimax

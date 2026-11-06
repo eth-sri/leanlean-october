@@ -11,11 +11,11 @@ noncomputable section
 open MeasureTheory ProbabilityTheory Filter Set
 open scoped ENNReal BigOperators
 namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 variable {J : Type*} [Fintype J] [LinearOrder J]
 
-theorem historyMarkedDensity_joint_measurable {E : Type*} [MeasurableSpace E]
+variable {E : Type*}
+
+theorem historyMarkedDensity_joint_measurable [MeasurableSpace E]
     (dependent : J → J → Prop) (ρ : ℝ) (activation : E → ℝ) (ham : Measurable activation) :
     Measurable (fun z : ℝ × HistoryMarked dependent E =>
       historyMarkedDensity dependent ρ z.1 activation z.2) := by
@@ -63,10 +63,13 @@ theorem highRawSampleVarianceDerivative_time_measurable {Ω : Type*} [Measurable
     exact (ternaryMass_continuous_variance a _ _).comp (by fun_prop)
   · exact fun t => highRawSampleVarianceDerivative_joint_measurable n a (v-η^2*t) p F hp hF
 
-theorem highAppendLikelihoodAction_time_measurable {E : Type*} [MeasurableSpace E]
-    [StandardBorelSpace E] {d : ℕ}
-    (dependent : J → J → Prop) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (π : Measure E) [SFinite π] (activation : E → ℝ) (ham : Measurable activation)
+section
+variable [MeasurableSpace E] [StandardBorelSpace E] {d : ℕ} (dependent : J → J → Prop) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i) (π : Measure E) [SFinite π] (activation : E → ℝ)
+
+theorem highAppendLikelihoodAction_time_measurable 
+    
+    
+    (ham : Measurable activation)
     (n : ℕ) (a v η : ℝ) (p F : HistoryMarked dependent E → Covariate d → ℝ)
     (hp : Measurable (Function.uncurry p)) (hF : Measurable (Function.uncurry F)) (j : J) :
     Measurable (fun z : ℝ × (HistoryMarked dependent E × ((Fin n → Covariate d) × (Fin n → Fin 3))) =>
@@ -87,16 +90,17 @@ theorem highAppendLikelihoodAction_time_measurable {E : Type*} [MeasurableSpace 
       ((highRawSampleLikelihood_time_measurable n a v η p F hp hF).comp hc)
   exact hj.stronglyMeasurable.integral_prod_right'.measurable
 
-theorem highHistoryLikelihoodDerivative_time_measurable {E : Type*} [MeasurableSpace E]
-    [StandardBorelSpace E] {d : ℕ}
-    (dependent : J → J → Prop) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (π : Measure E) [SFinite π] (activation : E → ℝ) (ham : Measurable activation)
+theorem highHistoryLikelihoodDerivative_time_measurable 
+    
+    
+    (ham : Measurable activation)
     (n : ℕ) (a v η : ℝ) (p F : HistoryMarked dependent E → Covariate d → ℝ)
     (hp : Measurable (Function.uncurry p)) (hF : Measurable (Function.uncurry F)) :
     Measurable (fun z : ℝ × (HistoryMarked dependent E × ((Fin n → Covariate d) × (Fin n → Fin 3))) =>
-      highHistoryLikelihoodDerivative dependent hsymm π activation n a (v-η^2*z.1) η p F z.2.1 z.2.2) := by
-  exact (Finset.measurable_sum _ (fun j _ =>
+      highHistoryLikelihoodDerivative dependent hsymm π activation n a (v-η^2*z.1) η p F z.2.1 z.2.2) := (Finset.measurable_sum _ (fun j _ =>
     highAppendLikelihoodAction_time_measurable dependent hsymm π activation ham n a v η p F hp hF j)).sub
       ((highRawSampleVarianceDerivative_time_measurable n a v η p F hp hF).const_mul (η^2))
+
+end
 
 end NearlyMinimax

@@ -13,11 +13,14 @@ noncomputable section
 open MeasureTheory ProbabilityTheory
 open scoped BigOperators ENNReal
 namespace NearlyMinimax
-set_option maxHeartbeats 2000000
-set_option backward.isDefEq.respectTransparency false
 
-theorem dyadicPilotErrorField_point_second_of_variance {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
+variable {d : ℕ} (C : ModelConstants d)
+
+section
+variable [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d)
+
+theorem dyadicPilotErrorField_point_second_of_variance 
+    (hθ : Admissible C θ)
     (D A : ℝ) (hD : 0 < D) (hA : 0 < A)
     (hv : ∀ n j : ℕ,
       ∀ x ∈ unitCube d, ∀ y : ℝ, |y| ≤ C.holderBound → ∀ m : ℕ,
@@ -51,8 +54,8 @@ theorem dyadicPilotErrorField_point_second_of_variance {d : ℕ} (C : ModelConst
   exact mul_le_mul_of_nonneg_right hr hD.le
 
 
-theorem dyadicMultilevelErrorField_point_second_of_variance {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
+theorem dyadicMultilevelErrorField_point_second_of_variance 
+    (hθ : Admissible C θ)
     (D A : ℝ) (hD : 0 < D) (hA : 0 < A)
     (hv : ∀ n j : ℕ,
       ∀ x ∈ unitCube d, ∀ y : ℝ, |y| ≤ C.holderBound → ∀ m : ℕ,
@@ -102,8 +105,8 @@ theorem dyadicMultilevelErrorField_point_second_of_variance {d : ℕ} (C : Model
   ring
 
 
-theorem dyadicMultilevelErrorField_test_second_of_variance {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
+theorem dyadicMultilevelErrorField_test_second_of_variance 
+    (hθ : Admissible C θ)
     (D A : ℝ) (hD : 0 < D) (hA : 0 < A)
     (htest :     ∀ n j J : ℕ, j ≤ J →
       ∀ y : ℝ, |y| ≤ C.holderBound → ∀ m : ℕ,
@@ -184,8 +187,10 @@ theorem dyadicMultilevelErrorField_test_second_of_variance {d : ℕ} (C : ModelC
   dsimp [B, dyadicMultilevelBudget]
   ring
 
+end
 
-theorem uniform_domain_common_dyadicMultilevel_bounds {d : ℕ} (C : ModelConstants d)
+
+theorem uniform_domain_common_dyadicMultilevel_bounds 
     [Nonempty (AnchoredIndex d C.order)] :
     ∃ D A : ℝ, 0 < D ∧ 0 < A ∧ ∀ U : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain U) θ →
       ∀ n J L : ℕ, J ≤ L → ∀ y : ℝ, |y| ≤ max C.holderBound 1 → ∀ m : ℕ → ℕ,

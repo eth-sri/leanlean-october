@@ -8,7 +8,6 @@ public import NearlyMinimax.HighUnionSource
 noncomputable section
 open Set MeasureTheory
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
 attribute [local instance] Classical.propDecidable
 
 section
@@ -24,9 +23,11 @@ theorem highUnionRawUpdate_density_of_not_mem (δ : ℝ)
 
 variable [NeZero k] [LinearOrder (HighWindowLabels d k)] (C : ModelConstants d)
 
-theorem highUnionSourceState_append (j : HighWindowLabels d k)
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E))
-    (e : HighUnionMark E) :
+variable (j : HighWindowLabels d k) (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E)) (e : HighUnionMark E)
+
+theorem highUnionSourceState_append 
+    
+    :
     highUnionSourceState C R (historyMarkedAppend
       (fun i j => j ∈ highNeighborLabels d k i)
       (fun {_ _} h => highNeighborLabels_symmetric d k _ _ h) j (h,e)) =
@@ -35,9 +36,9 @@ theorem highUnionSourceState_append (j : HighWindowLabels d k)
 
 /-- Appending a full source mark leaves every density value outside that
 label's physical patch exactly unchanged. -/
-theorem highUnionSourceDensity_append_of_not_mem (j : HighWindowLabels d k)
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E))
-    (e : HighUnionMark E) (x : Covariate d) (hx : x ∉ highTorusPatch d k j) :
+theorem highUnionSourceDensity_append_of_not_mem 
+    
+    (x : Covariate d) (hx : x ∉ highTorusPatch d k j) :
     highUnionSourceDensity C R (historyMarkedAppend
       (fun i j => j ∈ highNeighborLabels d k i)
       (fun {_ _} h => highNeighborLabels_symmetric d k _ _ h) j (h,e)) x =

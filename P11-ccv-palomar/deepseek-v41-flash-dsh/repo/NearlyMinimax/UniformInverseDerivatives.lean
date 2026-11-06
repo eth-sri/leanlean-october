@@ -18,13 +18,15 @@ variable {R : Type*} [Ring R] [Algebra ℝ R]
 def matrixChebyshevT (x : R) (n : ℕ) : R := aeval x (Chebyshev.T ℝ (n : ℤ))
 def matrixChebyshevU (x : R) (n : ℤ) : R := aeval x (Chebyshev.U ℝ n)
 
-theorem matrixChebyshevT_recurrence (x : R) (n : ℕ) :
+variable (x : R) (n : ℕ)
+
+theorem matrixChebyshevT_recurrence :
     matrixChebyshevT x (n + 2) = 2 * x * matrixChebyshevT x (n + 1) - matrixChebyshevT x n := by
   unfold matrixChebyshevT
   rw [show ((n + 2 : ℕ) : ℤ) = (n : ℤ) + 2 by omega, Chebyshev.T_add_two]
   simp [map_ofNat]
 
-theorem matrixChebyshevU_recurrence (x : R) (n : ℤ) :
+theorem matrixChebyshevU_recurrence (n : ℤ) :
     matrixChebyshevU x (n + 1) = 2 * x * matrixChebyshevU x n - matrixChebyshevU x (n - 1) := by
   unfold matrixChebyshevU
   rw [Chebyshev.U_add_one]
@@ -37,7 +39,7 @@ def chebyshevForcing (x y : R) (j : ℕ) : R :=
 def chebyshevResponse (x : R) (f : ℕ → R) (n : ℕ) : R :=
   ∑ j ∈ Finset.range n, matrixChebyshevU x ((n : ℤ) - 1 - j) * f j
 
-theorem chebyshevResponse_recurrence (x : R) (f : ℕ → R) (n : ℕ) :
+theorem chebyshevResponse_recurrence (f : ℕ → R) (n : ℕ) :
     chebyshevResponse x f (n + 2) =
       2 * x * chebyshevResponse x f (n + 1) - chebyshevResponse x f n + f (n + 1) := by
   unfold chebyshevResponse
@@ -175,11 +177,12 @@ theorem matrixChebyshevU_norm_le (x : R) (hx : ∀ n, ‖matrixChebyshevT x n‖
     rw [he]
     calc
       _ ≤ ‖2 * matrixChebyshevT x (n + 2)‖ + ‖matrixChebyshevU x (n : ℤ)‖ := norm_add_le _ _
-      _ ≤ 2 * ‖matrixChebyshevT x (n + 2)‖ + ((n : ℝ) + 1) := by
-        exact add_le_add (by simpa only [norm_two_ring] using norm_mul_le (2 : R) _) hn
+      _ ≤ 2 * ‖matrixChebyshevT x (n + 2)‖ + ((n : ℝ) + 1) := add_le_add (by simpa only [norm_two_ring] using norm_mul_le (2 : R) _) hn
       _ ≤ _ := by have h := hx (n + 2); push_cast; linarith
 
-theorem chebyshevForcing_norm_le (x y : R) (δ : ℝ) (hδ : 0 ≤ δ)
+variable (x y : R)
+
+theorem chebyshevForcing_norm_le (δ : ℝ) (hδ : 0 ≤ δ)
     (hd : ‖y - x‖ ≤ δ) (j : ℕ) :
     ‖chebyshevForcing x y j‖ ≤ 2 * δ * ‖matrixChebyshevT y j‖ := by
   unfold chebyshevForcing
@@ -192,7 +195,7 @@ theorem chebyshevForcing_norm_le (x y : R) (δ : ℝ) (hδ : 0 ≤ δ)
         apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
         exact (norm_mul_le _ _).trans (by rw [norm_two_ring]; gcongr)
 
-theorem matrixChebyshevT_norm_volterra (x y : R)
+theorem matrixChebyshevT_norm_volterra 
     (hx : ∀ n, ‖matrixChebyshevT x n‖ ≤ 1) (δ : ℝ) (hδ : 0 ≤ δ)
     (hd : ‖y - x‖ ≤ δ) (n : ℕ) :
     ‖matrixChebyshevT y n‖ ≤ 1 + 2 * δ *
@@ -230,7 +233,7 @@ theorem matrixChebyshevT_norm_volterra (x y : R)
 
 /-- Uniform exponential control in a fixed noncommutative neighborhood of a bounded
 Chebyshev center. The radius depends on `η`, never on the polynomial degree. -/
-theorem matrixChebyshevT_neighborhood_bound (x y : R)
+theorem matrixChebyshevT_neighborhood_bound 
     (hx : ∀ n, ‖matrixChebyshevT x n‖ ≤ 1) (η δ : ℝ)
     (hη : 0 < η) (hη1 : η < 1) (hδ : 0 ≤ δ)
     (hsmall : 4 * δ * perturbationConstant η ≤ 1) (hd : ‖y - x‖ ≤ δ) (n : ℕ) :
@@ -278,13 +281,15 @@ variable {n : Type*} [Fintype n] [DecidableEq n] [Nonempty n]
 def normalizeMatrix (lo hi : ℝ) (A : Matrix n n ℂ) : Matrix n n ℂ :=
   (intervalHalfWidth lo hi)⁻¹ • (A - intervalCenter lo hi • 1)
 
-theorem normalizedChebyshev_aeval_complex (lo hi : ℝ) (A : Matrix n n ℂ) (k : ℕ) :
+variable (lo hi : ℝ) (A : Matrix n n ℂ)
+
+theorem normalizedChebyshev_aeval_complex (k : ℕ) :
     aeval A (normalizedChebyshev lo hi k) = matrixChebyshevT (normalizeMatrix lo hi A) k := by
   rw [normalizedChebyshev, aeval_comp]
   congr 1
   simp [normalizeMatrix, Algebra.smul_def]
 
-theorem normalizedChebyshev_complex_center_bound (lo hi : ℝ) (hlo : 0 < lo) (hlt : lo < hi)
+theorem normalizedChebyshev_complex_center_bound (hlo : 0 < lo) (hlt : lo < hi)
     (A : Matrix n n ℂ) (hA : A.IsHermitian) (hSpec : spectrum ℝ A ⊆ Set.Icc lo hi) (k : ℕ) :
     ‖matrixChebyshevT (normalizeMatrix lo hi A) k‖ ≤ 1 := by
   rw [← normalizedChebyshev_aeval_complex]
@@ -296,7 +301,7 @@ theorem normalizedChebyshev_complex_center_bound (lo hi : ℝ) (hlo : 0 < lo) (h
   exact RoughRegime.Upper.chebyshev_abs_le_one _
     (interval_argument_mem lo hi x hlo hlt (hSpec hx)) k
 
-theorem normalizeMatrix_sub (lo hi : ℝ) (A B : Matrix n n ℂ) :
+theorem normalizeMatrix_sub (A B : Matrix n n ℂ) :
     normalizeMatrix lo hi B - normalizeMatrix lo hi A =
       (intervalHalfWidth lo hi)⁻¹ • (B - A) := by
   simp only [normalizeMatrix, ← smul_sub]
@@ -318,7 +323,7 @@ theorem matrix_entry_norm_le_l2 (A : Matrix n n ℂ) (i j : n) : ‖A i j‖ ≤
 def complexKernelSeries (lo hi : ℝ) (A : Matrix n n ℂ) : Matrix n n (PowerSeries ℂ) :=
   fun i j => PowerSeries.mk (fun k => (aeval A (kernelCoefficientPolynomial lo hi k)) i j)
 
-theorem complex_kernel_coefficient_bound (lo hi : ℝ) (hlo : 0 < lo) (hlt : lo < hi)
+theorem complex_kernel_coefficient_bound (hlo : 0 < lo) (hlt : lo < hi)
     (A B : Matrix n n ℂ) (hA : A.IsHermitian) (hSpec : spectrum ℝ A ⊆ Set.Icc lo hi)
     (η δ : ℝ) (hη : 0 < η) (hη1 : η < 1) (hδ : 0 ≤ δ)
     (hsmall : 4 * δ * perturbationConstant η ≤ 1)
@@ -418,7 +423,7 @@ theorem matrixEntryPolynomial_eval_complex (p : ℝ[X]) (A : Matrix n n ℂ) (i 
   simp only [Complex.real_smul, smul_eq_mul]
   rfl
 
-theorem variableKernelSeries_eval_complex (lo hi : ℝ) (A : Matrix n n ℂ) :
+theorem variableKernelSeries_eval_complex :
     (PowerSeries.map (MvPolynomial.eval₂Hom Complex.ofRealHom (fun ij : n × n => A ij.1 ij.2))).mapMatrix
       (variableKernelSeries lo hi (n := n)) = complexKernelSeries lo hi A := by
   ext i j k
@@ -471,15 +476,17 @@ theorem eval_renamed_series_complex {V W : Type*} (f : V → W) (values : W → 
   rw [PowerSeries.coeff_map, PowerSeries.coeff_map, PowerSeries.coeff_map]
   exact MvPolynomial.eval₂_rename _ _ _ _
 
-theorem inverseVariableSeries_eval_complex (lo hi : ℝ)
-    (A C : Matrix (Fin r) (Fin r) ℂ) (i j : Fin r) :
+variable (lo hi : ℝ) (A C : Matrix (Fin r) (Fin r) ℂ) (i j : Fin r)
+
+theorem inverseVariableSeries_eval_complex 
+    :
     PowerSeries.map (MvPolynomial.eval₂Hom Complex.ofRealHom (complexParentValuation r A C))
       (inverseVariableSeries r (fun _ : Fin 1 => r) lo hi i j) = complexKernelSeries lo hi A i j := by
   rw [inverseVariableSeries, eval_renamed_series_complex]
   exact congrArg (fun K => K i j) (variableKernelSeries_eval_complex lo hi A)
 
-theorem determinantVariableSeries_eval_complex (lo hi : ℝ)
-    (A C : Matrix (Fin r) (Fin r) ℂ) (t : Fin 1) :
+theorem determinantVariableSeries_eval_complex 
+    (t : Fin 1) :
     PowerSeries.map (MvPolynomial.eval₂Hom Complex.ofRealHom (complexParentValuation r A C))
       (determinantVariableSeries r (fun _ : Fin 1 => r) lo hi t) =
       (complexKernelSeries lo hi C).det := by
@@ -488,8 +495,8 @@ theorem determinantVariableSeries_eval_complex (lo hi : ℝ)
     (variableKernelSeries lo hi).det = _
   rw [RingHom.map_det, variableKernelSeries_eval_complex]
 
-theorem parentInverseEntryPolynomial_eval_complex (lo hi : ℝ)
-    (A C : Matrix (Fin r) (Fin r) ℂ) (i j : Fin r) (m : ℕ) :
+theorem parentInverseEntryPolynomial_eval_complex 
+    (m : ℕ) :
     MvPolynomial.eval₂ Complex.ofRealHom (complexParentValuation r A C)
       (parentInverseEntryPolynomial lo hi r m i j) =
       ((intervalGeometricMean lo hi ^ (r + 1))⁻¹ : ℝ) *
@@ -519,12 +526,14 @@ variable {V : Type*} [Fintype V] [DecidableEq V]
 def polynomialCoordinateBound (P : MvPolynomial V ℝ) (R : ℝ) : ℝ :=
   ∑ α ∈ P.support, ‖P.coeff α‖ * ∏ j : V, R ^ α j
 
-theorem polynomialCoordinateBound_nonneg (P : MvPolynomial V ℝ) (R : ℝ) (hR : 0 ≤ R) :
+variable (P : MvPolynomial V ℝ) (R : ℝ)
+
+theorem polynomialCoordinateBound_nonneg (hR : 0 ≤ R) :
     0 ≤ polynomialCoordinateBound P R := by
   unfold polynomialCoordinateBound
   positivity
 
-theorem polynomial_complex_coordinate_bound (P : MvPolynomial V ℝ) (z : V → ℂ)
+theorem polynomial_complex_coordinate_bound (z : V → ℂ)
     (R : ℝ) (hR : 0 ≤ R) (hz : ∀ j, ‖z j‖ ≤ R) :
     ‖MvPolynomial.eval₂ Complex.ofRealHom z P‖ ≤ polynomialCoordinateBound P R := by
   rw [MvPolynomial.eval₂_eq']
@@ -564,13 +573,15 @@ def currentCoordinateCLM : (incrementVariables r → ℂ) →L[ℂ] Matrix (Fin 
 def parentCoordinateCLM : (incrementVariables r → ℂ) →L[ℂ] Matrix (Fin r) (Fin r) ℂ :=
   (parentCoordinateMatrix r).toContinuousLinearMap
 
-@[simp] theorem currentCoordinateCLM_apply (z : incrementVariables r → ℂ) (i j : Fin r) :
+variable (z : incrementVariables r → ℂ) (i j : Fin r)
+
+@[simp] theorem currentCoordinateCLM_apply :
     currentCoordinateCLM r z i j = z (Sum.inl (Sum.inl (i, j))) := rfl
 
-@[simp] theorem parentCoordinateCLM_apply (z : incrementVariables r → ℂ) (i j : Fin r) :
+@[simp] theorem parentCoordinateCLM_apply :
     parentCoordinateCLM r z i j = z (Sum.inl (Sum.inr ⟨0, (i, j)⟩)) := rfl
 
-theorem coordinate_parent_valuation (z : incrementVariables r → ℂ) :
+theorem coordinate_parent_valuation :
     z ∘ Sum.inl = complexParentValuation r (currentCoordinateCLM r z) (parentCoordinateCLM r z) := by
   funext v
   cases v with

@@ -13,22 +13,25 @@ noncomputable section
 open MeasureTheory Matrix
 open scoped BigOperators
 namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 
-def polynomialLiftLinearMap {Ω : Type*} {n p : ℕ}
+section
+variable {Ω : Type*} {n p : ℕ}
+
+def polynomialLiftLinearMap 
     (X : Fin n → Ω → Fin p → ℝ) (z : Ω) : MvPolynomial (Fin p) ℝ →ₗ[ℝ] ℝ where
   toFun P := Finsupp.linearCombination ℝ (fun α =>
     RoughRegime.Upper.monomialLift (RoughRegime.Upper.exponentCoordinates α) X z) P.coeff
   map_add' P Q := by simp only [AddMonoidAlgebra.coeff_add, map_add]
   map_smul' a P := by simp only [AddMonoidAlgebra.coeff_smul, map_smul, RingHom.id_apply]
 
-theorem polynomialLiftLinearMap_apply {Ω : Type*} {n p : ℕ}
+theorem polynomialLiftLinearMap_apply 
     (X : Fin n → Ω → Fin p → ℝ) (z : Ω) (P : MvPolynomial (Fin p) ℝ) :
     polynomialLiftLinearMap X z P = RoughRegime.Upper.polynomialLift P X z := by
   simp only [polynomialLiftLinearMap, Finsupp.linearCombination_apply, Finsupp.sum,
     smul_eq_mul, RoughRegime.Upper.polynomialLift, MvPolynomial.finsupp_support_eq_support]
   rfl
+
+end
 
 theorem polynomialLift_joint_measurable {Ω : Type*} [MeasurableSpace Ω] {n p : ℕ}
     (P : MvPolynomial (Fin p) ℝ) (X : Fin n → Ω → Fin p → ℝ)
@@ -56,7 +59,10 @@ theorem rowIncrementPolynomial_lift {Ω : Type*} {n r : ℕ}
 attribute [local irreducible] dyadicIncrementRawVector
 
 set_option backward.isDefEq.respectTransparency true in
-theorem dyadicPolynomialPilot_raw_joint_measurable {d : ℕ} (C : ModelConstants d)
+section
+variable {d : ℕ}
+
+theorem dyadicPolynomialPilot_raw_joint_measurable (C : ModelConstants d)
     (n j : ℕ) (y : ℝ) (m : ℕ)
     (row : Covariate d × Covariate d → Fin (anchoredDimension d C.order) → ℝ)
     (hrow : Measurable row) :
@@ -88,22 +94,22 @@ theorem dyadicPolynomialPilot_raw_joint_measurable {d : ℕ} (C : ModelConstants
     (polynomialLift_joint_measurable (n := n)
       (p := Fintype.card (incrementVariables (anchoredDimension d C.order))) _ X hX)
 
-def dyadicRawPilotSum {d : ℕ} (C : ModelConstants d) (n J : ℕ) (m : ℕ → ℕ)
+def dyadicRawPilotSum (C : ModelConstants d) (n J : ℕ) (m : ℕ → ℕ)
     (y : ℝ) (z : Fin n → Observation d) (w : Covariate d × Covariate d) : ℝ :=
   ∑ j : Fin (J + 1), dyadicPolynomialPilot C n j.val w.1 y (m j.val)
     (dyadicPilotRow j.val w.1 w.2) z
 
-def dyadicRawCoefficients {d : ℕ} (C : ModelConstants d) (n J : ℕ) (m : ℕ → ℕ)
+def dyadicRawCoefficients (C : ModelConstants d) (n J : ℕ) (m : ℕ → ℕ)
     (z : Fin n → Observation d) (w : Covariate d × Covariate d) : PairVector :=
   WithLp.toLp 2 ![1, -1 + (dyadicRawPilotSum C n J m 0 z w - dyadicRawPilotSum C n J m 1 z w),
     -dyadicRawPilotSum C n J m 0 z w]
 
-def dyadicNoiseCoefficients {d : ℕ} (C : ModelConstants d) (θ : RegressionParameter d)
+def dyadicNoiseCoefficients (C : ModelConstants d) (θ : RegressionParameter d)
     (n J : ℕ) (m : ℕ → ℕ) (z : Fin n → Observation d) (w : Covariate d × Covariate d) : PairVector :=
   twoScalarPilotVector (dyadicMultilevelErrorField C θ n J 0 m z w)
     (dyadicMultilevelErrorField C θ n J 1 m z w)
 
-theorem dyadicRawPilotSum_joint_measurable {d : ℕ} (C : ModelConstants d)
+theorem dyadicRawPilotSum_joint_measurable (C : ModelConstants d)
     (n J : ℕ) (m : ℕ → ℕ) (y : ℝ) :
     Measurable (fun t : (Fin n → Observation d) × (Covariate d × Covariate d) =>
       dyadicRawPilotSum C n J m y t.1 t.2) :=
@@ -111,21 +117,20 @@ theorem dyadicRawPilotSum_joint_measurable {d : ℕ} (C : ModelConstants d)
     dyadicPolynomialPilot_raw_joint_measurable C n j.val y (m j.val)
       (fun w => dyadicPilotRow j.val w.1 w.2) (dyadicPilotRow_field_measurable j.val))
 
-theorem dyadicRawCoefficients_joint_measurable {d : ℕ} (C : ModelConstants d)
+theorem dyadicRawCoefficients_joint_measurable (C : ModelConstants d)
     (n J : ℕ) (m : ℕ → ℕ) :
     Measurable (fun t : (Fin n → Observation d) × (Covariate d × Covariate d) =>
       dyadicRawCoefficients C n J m t.1 t.2) := by
   have h0 := dyadicRawPilotSum_joint_measurable C n J m 0
-  have h1 := dyadicRawPilotSum_joint_measurable C n J m 1
   apply (PiLp.continuous_toLp 2 (fun _ : Fin 3 => ℝ)).measurable.comp
   apply measurable_pi_iff.mpr
   intro i
   fin_cases i
   · exact measurable_const
-  · exact measurable_const.add (h0.sub h1)
+  · exact measurable_const.add (h0.sub (dyadicRawPilotSum_joint_measurable C n J m 1))
   · exact h0.neg
 
-theorem dyadicMultilevelErrorField_eq_raw_sub_population {d : ℕ} (C : ModelConstants d)
+theorem dyadicMultilevelErrorField_eq_raw_sub_population (C : ModelConstants d)
     (θ : RegressionParameter d) (n J : ℕ) (m : ℕ → ℕ) (y : ℝ)
     (z : Fin n → Observation d) (w : Covariate d × Covariate d) :
     dyadicMultilevelErrorField C θ n J y m z w = dyadicRawPilotSum C n J m y z w -
@@ -134,9 +139,7 @@ theorem dyadicMultilevelErrorField_eq_raw_sub_population {d : ℕ} (C : ModelCon
   rw [Finset.sum_sub_distrib]
   congr 1
   unfold dyadicPopulationPilotSum
-  rw [← Fin.sum_univ_eq_sum_range]
-  rw [← Fin.sum_univ_eq_sum_range]
-  rw [Finset.mul_sum, ← Finset.sum_sub_distrib]
+  rw [← Fin.sum_univ_eq_sum_range, ← Fin.sum_univ_eq_sum_range, Finset.mul_sum, ← Finset.sum_sub_distrib]
   apply Finset.sum_congr rfl
   intro j _
   rw [incrementFinScalar, incrementFinVector_affine]
@@ -148,7 +151,7 @@ theorem dyadicMultilevelErrorField_eq_raw_sub_population {d : ℕ} (C : ModelCon
   intro i _
   ring
 
-theorem dyadicRawCoefficients_eq_population_add_noise {d : ℕ} (C : ModelConstants d)
+theorem dyadicRawCoefficients_eq_population_add_noise (C : ModelConstants d)
     (θ : RegressionParameter d) (n J : ℕ) (m : ℕ → ℕ)
     (z : Fin n → Observation d) (w : Covariate d × Covariate d) :
     dyadicRawCoefficients C n J m z w = dyadicPopulationCoefficients C θ J m w +
@@ -157,5 +160,7 @@ theorem dyadicRawCoefficients_eq_population_add_noise {d : ℕ} (C : ModelConsta
   fin_cases i <;>
     simp [dyadicRawCoefficients, dyadicPopulationCoefficients, dyadicNoiseCoefficients,
       twoScalarPilotVector_coordinates, dyadicMultilevelErrorField_eq_raw_sub_population] <;> ring
+
+end
 
 end NearlyMinimax

@@ -24,7 +24,6 @@ def partitionPairMass {ι : Type*} [Fintype ι] (p : ι → ℝ) : ℝ :=
 /-- Cauchy--Schwarz proves the lower bound in (U7-mass). -/
 theorem partitionPairMass_lower {ι : Type*} [Fintype ι] (p : ι → ℝ)
     (hsum : ∑ i, p i = 1) : 1 ≤ partitionPairMass p := by
-  have h := sq_sum_le_card_mul_sum_sq (s := Finset.univ) (f := p)
-  simpa [partitionPairMass, hsum] using h
+  simpa [partitionPairMass, hsum] using (sq_sum_le_card_mul_sum_sq (s := Finset.univ) (f := p))
 
 end NearlyMinimax

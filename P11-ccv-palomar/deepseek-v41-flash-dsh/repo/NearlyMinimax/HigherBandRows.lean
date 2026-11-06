@@ -13,22 +13,28 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 800000
 
 def HigherBandCarrier (d r : ℕ) : Bool → Type
   | false => CardinalSeparatedMark d r
   | true => CardinalBandMark d r
 
-instance higherBandCarrier_measurable (d r : ℕ) (fine : Bool) :
+section
+variable (d r : ℕ)
+
+section
+variable (fine : Bool)
+
+instance higherBandCarrier_measurable :
     MeasurableSpace (HigherBandCarrier d r fine) := by
   cases fine <;> dsimp [HigherBandCarrier] <;> infer_instance
 
-instance higherBandCarrier_standardBorel (d r : ℕ) (fine : Bool) :
+instance higherBandCarrier_standardBorel :
     StandardBorelSpace (HigherBandCarrier d r fine) := by
   cases fine
   · exact cardinal_separated_mark_standardBorel d r
   · exact cardinal_band_mark_standardBorel d r
+
+end
 
 def higherBandCarrierMeasure (d r : ℕ) (L T : ℝ) :
     (fine : Bool) → Measure (HigherBandCarrier d r fine)
@@ -45,43 +51,57 @@ def higherBandCarrierFactor (d r : ℕ) (lam : ℝ) :
   | false => cardinalSeparatedFactor lam
   | true => cardinalBandFactor lam
 
-theorem higherBandCarrierMeasure_finite (d r : ℕ) (L T : ℝ) (hT : 1 ≤ T) (fine : Bool) :
+theorem higherBandCarrierMeasure_finite (L T : ℝ) (hT : 1 ≤ T) (fine : Bool) :
     IsFiniteMeasure (higherBandCarrierMeasure d r L T fine) := by
   cases fine
   · exact cardinal_separated_measure_finite d r hT
   · exact cardinal_band_measure_finite d r L hT
 
-theorem higherBandCarrierAmplitude_measurable (d r D : ℕ) (lam : ℝ) (fine : Bool)
+end
+
+section
+variable (d r D : ℕ)
+
+theorem higherBandCarrierAmplitude_measurable (lam : ℝ) (fine : Bool)
     (i j : HighFrameIndex d D) : Measurable (fun ζ => higherBandCarrierAmplitude d r D lam fine ζ i j) := by
   cases fine
   · exact cardinal_separated_amplitude_measurable lam i j
   · exact cardinal_band_amplitude_measurable lam i j
 
-theorem higherBandCarrierAmplitude_cost_integrable (d r D : ℕ) (lam L T : ℝ) (hT : 1 ≤ T)
+theorem higherBandCarrierAmplitude_cost_integrable (lam L T : ℝ) (hT : 1 ≤ T)
     (fine : Bool) : Integrable (separatedMatrixCost (higherBandCarrierAmplitude d r D lam fine))
       (higherBandCarrierMeasure d r L T fine) := by
   cases fine
   · exact cardinal_separated_cost_integrable lam hT
   · exact cardinal_band_cost_integrable lam L hT
 
-theorem higherBandCarrierFactor_joint_measurable (d r : ℕ) (lam : ℝ) (fine : Bool) (l : Fin r) :
+end
+
+section
+variable (d r : ℕ) (lam : ℝ) (fine : Bool)
+
+theorem higherBandCarrierFactor_joint_measurable (l : Fin r) :
     Measurable (fun ζx : HigherBandCarrier d r fine × Covariate d =>
       higherBandCarrierFactor d r lam fine ζx.1 l ζx.2) := by
   cases fine
   · exact cardinal_separated_factor_joint_measurable lam l
   · exact cardinal_band_factor_joint_measurable lam l
 
-theorem higherBandCarrierFactor_bound (d r : ℕ) (lam : ℝ) (fine : Bool)
+theorem higherBandCarrierFactor_bound 
     (ζ : HigherBandCarrier d r fine) (l : Fin r) (x : Covariate d) (hx : ∀ i, |x i| ≤ 2) :
     |higherBandCarrierFactor d r lam fine ζ l x| ≤ 1 := by
   cases fine
   · exact cardinal_separated_factor_abs_le_one lam ζ l x hx
   · exact cardinal_band_factor_abs_le_one lam ζ l x hx
 
+end
+
 abbrev HigherBandRowMark (d r m D q : ℕ) (fine : Bool) :=
   HigherBandCarrier d r fine × HighPacketMarkIndex (HighFrameIndex d D) m r D q
 
-def higherBandSignedRow (d r m D q : ℕ) (a b C lam L T : ℝ) (fine : Bool) :
+variable (d r m D q : ℕ) (a b C lam L T : ℝ) (fine : Bool)
+
+def higherBandSignedRow (a b C lam L T : ℝ) (fine : Bool) :
     SignedMeasure (HigherBandRowMark d r m D q fine) :=
   highPacketSignedMeasure (higherBandCarrierMeasure d r L T fine) a b m r D q C
     (higherBandCarrierAmplitude d r D lam fine)
@@ -90,12 +110,12 @@ def higherBandRowMass (d r m D q : ℕ) (a b C lam L T : ℝ) (fine : Bool) : �
   highPacketMarkMass (higherBandCarrierMeasure d r L T fine) a b m r D q C
     (higherBandCarrierAmplitude d r D lam fine)
 
-def higherBandRowLaw (d r m D q : ℕ) (a b C lam L T : ℝ) (fine : Bool) :
+def higherBandRowLaw (a b C lam L T : ℝ) (fine : Bool) :
     Measure (HigherBandRowMark d r m D q fine) :=
   highPacketAbsoluteLaw (higherBandCarrierMeasure d r L T fine) a b m r D q C
     (higherBandCarrierAmplitude d r D lam fine)
 
-def higherBandRowActivation (d r m D q : ℕ) (a b C lam L T : ℝ) (fine : Bool) :
+def higherBandRowActivation (a b C lam L T : ℝ) (fine : Bool) :
     HigherBandRowMark d r m D q fine → ℝ :=
   highPacketActivation (higherBandCarrierMeasure d r L T fine) a b m r D q C
     (higherBandCarrierAmplitude d r D lam fine)
@@ -111,7 +131,7 @@ def higherBandRowData (d k r m D q : ℕ) (a b C lam L T : ℝ) (fine : Bool) :
   rowVector := fun _ e => (highResponseMarkAtom C q e.2.2).2
   rowTime := fun _ e => (highResponseMarkAtom 0 q e.2.2).1
 
-theorem higherBandRowMass_eq_variation (d r m D q : ℕ) (a b C lam L T : ℝ)
+theorem higherBandRowMass_eq_variation 
     (hT : 1 ≤ T) (fine : Bool) : higherBandRowMass d r m D q a b C lam L T fine =
       ((higherBandSignedRow d r m D q a b C lam L T fine).variation univ).toReal := by
   letI := higherBandCarrierMeasure_finite d r L T hT fine
@@ -119,10 +139,10 @@ theorem higherBandRowMass_eq_variation (d r m D q : ℕ) (a b C lam L T : ℝ)
     (higherBandCarrierAmplitude_measurable d r D lam fine)
     (higherBandCarrierAmplitude_cost_integrable d r D lam L T hT fine)
 
-theorem higherBandRowMass_nonneg (d r m D q : ℕ) (a b C lam L T : ℝ) (fine : Bool) :
+theorem higherBandRowMass_nonneg :
     0 ≤ higherBandRowMass d r m D q a b C lam L T fine := signedMarkMass_nonneg _ _
 
-theorem higherBandRowActivation_bound (d r m D q : ℕ) (a b C lam L T : ℝ) (fine : Bool)
+theorem higherBandRowActivation_bound 
     (e : HigherBandRowMark d r m D q fine) :
     |higherBandRowActivation d r m D q a b C lam L T fine e| ≤ higherBandRowMass d r m D q a b C lam L T fine :=
   absoluteActivation_bound _ _ _

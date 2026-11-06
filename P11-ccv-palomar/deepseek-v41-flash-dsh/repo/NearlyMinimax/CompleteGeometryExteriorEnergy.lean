@@ -11,21 +11,24 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 attribute [local instance] Classical.propDecidable
 
 def completeGeometryExteriorConstant (d : ℕ) (Cs Chi : ℝ) : ℝ :=
   max 1 (Cs * (3*(2 : ℝ)^d*Chi^2))
 
-theorem completeGeometryExteriorConstant_ge_one (d : ℕ) (Cs Chi : ℝ) :
+variable (d : ℕ) (Cs Chi : ℝ)
+
+theorem completeGeometryExteriorConstant_ge_one :
     1 ≤ completeGeometryExteriorConstant d Cs Chi := le_max_left _ _
 
-theorem completeGeometryExteriorConstant_pos (d : ℕ) (Cs Chi : ℝ) :
+theorem completeGeometryExteriorConstant_pos :
     0 < completeGeometryExteriorConstant d Cs Chi :=
   zero_lt_one.trans_le (completeGeometryExteriorConstant_ge_one d Cs Chi)
 
-theorem completeSourceGeometryEnvelope_exterior_integral_of_three_le {d : ℕ}
+section
+variable {d : ℕ}
+
+theorem completeSourceGeometryEnvelope_exterior_integral_of_three_le 
     (D M R q n : ℕ) (h3 : 3 ≤ n) (hn : D < n)
     (aD bD c0 ell N mu C a rho eta Chi Bl : ℝ) :
     (∫ U, completeSourceGeometryEnvelope (d := d) D M R q aD bD c0 ell N mu C a rho eta Chi Bl n U
@@ -39,7 +42,7 @@ theorem completeSourceGeometryEnvelope_exterior_integral_of_three_le {d : ℕ}
 
 /-- The true exterior integrals, including response and spatial volume,
 give the source factorial tail with its fixed exponential constant. -/
-theorem completeSourceGeometryEnvelope_exterior_factorial_le {d : ℕ}
+theorem completeSourceGeometryEnvelope_exterior_factorial_le 
     (D M R q J : ℕ) (hD : 2 ≤ D) (aD bD c0 ell N mu C a rho eta Chi Bl Cs : ℝ)
     (hCs : 0 ≤ Cs) (hmu : 0 ≤ mu) (hmu1 : mu ≤ 1) :
     (∑ j ∈ Finset.range J, poissonCountWeight (Cs*mu) (D+1+j) *
@@ -78,6 +81,8 @@ theorem completeSourceGeometryEnvelope_exterior_factorial_le {d : ℕ}
   have h := mul_le_mul hexp hweight (poissonCountWeight_nonneg (by positivity) _)
     (Real.exp_pos ch).le
   exact (mul_le_mul_of_nonneg_left h hP).trans_eq (by dsimp [P,ch]; ring)
+
+end
 
 def completeGeometryRadialConstant (d : ℕ) (B a rho Cs : ℝ) : ℝ :=
   27*Cs^2*B^4*((2*rho+a)/a^2)^4*(2 : ℝ)^d*spatialExponentialConstant d

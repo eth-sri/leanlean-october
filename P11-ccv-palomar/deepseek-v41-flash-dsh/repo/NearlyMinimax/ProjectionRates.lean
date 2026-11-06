@@ -84,7 +84,7 @@ theorem independent_projection_half_degrees_mse
     (∫ ω, (projectionEstimator A (f + fun i => ε i ω) - V) ^ 2 ∂μ) ≤
       (4 * max C₄ (2 * V ^ 2) + 32 * V * H ^ 2) / Fintype.card ι + 4 * b ^ 4 := by
   have hnreal : (0 : ℝ) < Fintype.card ι := by exact_mod_cast hn
-  have hd : 0 < A.trace := (half_pos hnreal).trans_le hdegree
+  have hd := (half_pos hnreal).trans_le hdegree
   apply (independent_projection_estimator_mse_bound μ A hsym hidem hd f ε V C₄
     hε hind hmean hsecond hfourth).trans
   exact projection_half_degrees_risk_algebra hnreal hd hdegree

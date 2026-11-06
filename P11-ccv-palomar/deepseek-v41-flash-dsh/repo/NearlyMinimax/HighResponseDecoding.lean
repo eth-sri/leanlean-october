@@ -9,7 +9,6 @@ public import NearlyMinimax.HighObservationReal
 noncomputable section
 open MeasureTheory Set
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
 attribute [local instance] Classical.propDecidable
 
 def decodeTernaryResponse (a y : ℝ) : Fin 3 :=
@@ -21,15 +20,16 @@ theorem decodeTernaryResponse_measurable (a : ℝ) : Measurable (decodeTernaryRe
 
 theorem decodeTernaryResponse_value (a : ℝ) (ha : 0 < a) (y : Fin 3) :
     decodeTernaryResponse a (ternaryValue a y) = y := by
-  have hna : -a ≠ 0 := neg_ne_zero.mpr ha.ne'
   have han : a ≠ -a := by linarith
-  fin_cases y <;> simp [decodeTernaryResponse, ternaryValue, hna, ha.ne', han]
+  fin_cases y <;> simp [decodeTernaryResponse, ternaryValue, (neg_ne_zero.mpr ha.ne'), ha.ne', han]
 
-def decodeDesignResponse {d n : ℕ} (a : ℝ) (z : Fin n → Observation d) :
+variable {d n : ℕ} (a : ℝ)
+
+def decodeDesignResponse (a : ℝ) (z : Fin n → Observation d) :
     (Fin n → Covariate d) × (Fin n → Fin 3) :=
   (fun i => (z i).1, fun i => decodeTernaryResponse a (z i).2)
 
-theorem decodeDesignResponse_measurable {d n : ℕ} (a : ℝ) :
+theorem decodeDesignResponse_measurable :
     Measurable (decodeDesignResponse (d := d) (n := n) a) := by
   apply Measurable.prodMk
   · apply measurable_pi_lambda
@@ -39,7 +39,7 @@ theorem decodeDesignResponse_measurable {d n : ℕ} (a : ℝ) :
     intro i
     exact (decodeTernaryResponse_measurable a).comp (measurable_snd.comp (measurable_pi_apply i))
 
-theorem decodeDesignResponse_encode {d n : ℕ} (a : ℝ) (ha : 0 < a)
+theorem decodeDesignResponse_encode (ha : 0 < a)
     (z : (Fin n → Covariate d) × (Fin n → Fin 3)) :
     decodeDesignResponse a (encodeDesignResponse a z) = z := by
   apply Prod.ext

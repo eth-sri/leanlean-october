@@ -12,10 +12,8 @@ noncomputable section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 800000
-attribute [local instance] Classical.propDecidable
 
+attribute [local instance] Classical.propDecidable
 /-- Ordered four distinct observation indices, giving two disjoint pairs. -/
 abbrev CellMomentQuadruple (j : ℕ) := {q : Fin 4 → Fin j // Function.Injective q}
 
@@ -85,10 +83,13 @@ theorem poissonCellEvenIndicator_measurable (ρ : H → X → Fin 2)
   measurable_sigma_of_fibers _ (fun n =>
     (partitionFiberEvenIndicator_measurable ρ hρ n j U).comp measurable_fst)
 
+section
+variable (μ : Measure H) [IsProbabilityMeasure μ] (r : ℝ≥0) (ρ : H → X → Fin 2)
+
 /-- The actual field moment is the probability of even occupancy, from the
 constructed independent fair signs and the true Poisson mark law. -/
-theorem poissonCellField_product_moment_eq_even (μ : Measure H) [IsProbabilityMeasure μ]
-    (r : ℝ≥0) (ρ : H → X → Fin 2) (hρ : Measurable (Function.uncurry ρ))
+theorem poissonCellField_product_moment_eq_even 
+    (hρ : Measurable (Function.uncurry ρ))
     (j : ℕ) (U : Fin j → X) :
     (∫ z, ∏ l, poissonCellFieldValue ρ z (U l) ∂poissonCellFieldLaw μ r) =
       ∫ z, poissonCellEvenIndicator ρ j U z ∂poissonCellFieldLaw μ r := by
@@ -113,8 +114,8 @@ theorem poissonCellField_product_moment_eq_even (μ : Measure H) [IsProbabilityM
 /-- The higher field moment is bounded by the genuine probabilities of two
 disjoint same-cell pairs, with no assumed field moment bound. -/
 theorem poissonCellField_product_moment_le_two_pair_probabilities
-    (μ : Measure H) [IsProbabilityMeasure μ] (r : ℝ≥0)
-    (ρ : H → X → Fin 2) (hρ : Measurable (Function.uncurry ρ))
+    
+    (hρ : Measurable (Function.uncurry ρ))
     (j : ℕ) (hj : 4 ≤ j) (U : Fin j → X) :
     (∫ z, ∏ l, poissonCellFieldValue ρ z (U l) ∂poissonCellFieldLaw μ r) ≤
       ∑ q : CellMomentQuadruple j, Real.exp (-(r : ℝ) *
@@ -142,6 +143,8 @@ theorem poissonCellField_product_moment_le_two_pair_probabilities
       apply Finset.sum_congr rfl
       intro q _
       exact poissonCellBothIndicator_integral μ r ρ hρ _ _ _ _
+
+end
 
 /-- The union separation probability dominates half the sum of the two
 individual separation probabilities. This comes from the actual indicators. -/

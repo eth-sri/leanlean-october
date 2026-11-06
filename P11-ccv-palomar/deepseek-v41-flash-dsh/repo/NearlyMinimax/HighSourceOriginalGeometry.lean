@@ -14,8 +14,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1500000
 attribute [local instance] Classical.propDecidable
 attribute [local irreducible] highUnionSourceDensity highUnionSourceState historyMarkedAppend
 
@@ -61,7 +59,7 @@ attribute [local irreducible] highUnionSourceDensity highUnionSourceState histor
   have hfr1 := hfrG.trans hfrg
   have heG := heta.trans (min_le_left _ _)
   have heR := heta.trans (min_le_right _ _)
-  have hellp : 0 < ell := lt_of_lt_of_le zero_lt_one hell
+  have hellp := lt_of_lt_of_le zero_lt_one hell
   have H := hguards k D M q hk0 horder hk hD hq hM Cfr lam ell N mu cf hfrg hellp hellN hcf heG h
   have G := completeSourceRows_guards C k D M q hD hq hM Cfr lam ell N mu hfr1 hellp hellN
   obtain ⟨had,hab⟩ := high_source_interval_numeric C (M : ℝ) hM

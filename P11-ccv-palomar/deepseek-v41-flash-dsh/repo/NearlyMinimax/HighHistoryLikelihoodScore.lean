@@ -11,12 +11,15 @@ noncomputable section
 open MeasureTheory ProbabilityTheory Filter Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 variable {J : Type*} [Fintype J] [LinearOrder J]
 
-def highHistoryLikelihoodDerivative {E : Type*} [MeasurableSpace E] {d : ℕ}
-    (dependent : J → J → Prop) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
+variable {E : Type*}
+
+section
+variable [MeasurableSpace E] {d : ℕ} (dependent : J → J → Prop)
+
+def highHistoryLikelihoodDerivative 
+    (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (π : Measure E) (activation : E → ℝ) (n : ℕ) (a V η : ℝ)
     (p F : HistoryMarked dependent E → Covariate d → ℝ)
     (ω : HistoryMarked dependent E) (z : (Fin n → Covariate d) × (Fin n → Fin 3)) : ℝ :=
@@ -24,23 +27,24 @@ def highHistoryLikelihoodDerivative {E : Type*} [MeasurableSpace E] {d : ℕ}
     η^2 * highRawSampleVarianceDerivative n a V (p ω) (F ω) z
 
 /-- A true score: the actual derivative numerator divided by the raw likelihood. -/
-def highHistoryLikelihoodScore {E : Type*} [MeasurableSpace E] {d : ℕ}
-    (dependent : J → J → Prop) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
+def highHistoryLikelihoodScore 
+    (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (π : Measure E) (activation : E → ℝ) (n : ℕ) (a V η : ℝ)
     (p F : HistoryMarked dependent E → Covariate d → ℝ)
     (ω : HistoryMarked dependent E) (z : (Fin n → Covariate d) × (Fin n → Fin 3)) : ℝ :=
   highHistoryLikelihoodDerivative dependent hsymm π activation n a V η p F ω z /
     highRawSampleLikelihood n a V (p ω) (F ω) z
 
-theorem highHistoryLikelihoodDerivative_measurable {E : Type*} [MeasurableSpace E]
+end
+
+theorem highHistoryLikelihoodDerivative_measurable [MeasurableSpace E]
     [StandardBorelSpace E] {d : ℕ}
     (dependent : J → J → Prop) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (π : Measure E) [SFinite π] (activation : E → ℝ) (ham : Measurable activation)
     (n : ℕ) (a V η : ℝ) (p F : HistoryMarked dependent E → Covariate d → ℝ)
     (hp : Measurable (Function.uncurry p)) (hF : Measurable (Function.uncurry F)) :
     Measurable (fun z : HistoryMarked dependent E × ((Fin n → Covariate d) × (Fin n → Fin 3)) =>
-      highHistoryLikelihoodDerivative dependent hsymm π activation n a V η p F z.1 z.2) := by
-  exact (Finset.measurable_sum _ (fun j _ =>
+      highHistoryLikelihoodDerivative dependent hsymm π activation n a V η p F z.1 z.2) := (Finset.measurable_sum _ (fun j _ =>
     highAppendLikelihoodAction_measurable dependent hsymm π activation ham n a V p F hp hF j)).sub
       ((highRawSampleVarianceDerivative_joint_measurable n a V p F hp hF).const_mul (η^2))
 
@@ -53,7 +57,7 @@ theorem highRawSampleLikelihood_pos {Ω : Type*} {d : ℕ} (n : ℕ) (a V : ℝ)
 
 /-- Integrability and Fubini for the actual score numerator derive from
 bounded primitive likelihoods, including all reset states. -/
-theorem highHistoryLikelihoodDerivative_observable {E : Type*} [MeasurableSpace E]
+theorem highHistoryLikelihoodDerivative_observable [MeasurableSpace E]
     [StandardBorelSpace E] (π : Measure E) [IsProbabilityMeasure π] {d : ℕ}
     (dependent : J → J → Prop) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (ν : Measure (HistoryMarked dependent E)) [IsProbabilityMeasure ν]
@@ -99,8 +103,7 @@ theorem highHistoryLikelihoodDerivative_observable {E : Type*} [MeasurableSpace 
       exact mul_le_mul (hHb _) (highRawSampleVarianceDerivative_abs_le n a V P ha hP _ _ (hpb _) (hq _) z.2)
         (abs_nonneg _) hB
   have heD : (∫ z, test z * D z ∂μ) =
-      ∫ ω, highRawObservableVarianceDerivative n a V (p ω) (F ω) H ∂ν := by
-    exact MeasureTheory.integral_prod _ hiD
+      ∫ ω, highRawObservableVarianceDerivative n a V (p ω) (F ω) H ∂ν := MeasureTheory.integral_prod _ hiD
   calc
     _ = ∫ z, ((∑ j, test z * A j z) - η^2 * (test z * D z)) ∂μ := by
       apply integral_congr_ae
@@ -125,7 +128,7 @@ theorem highHistoryLikelihoodDerivative_observable {E : Type*} [MeasurableSpace 
       rw [hs]
       ring
 
-theorem highHistoryLikelihoodDerivative_abs_le {E : Type*} [MeasurableSpace E]
+theorem highHistoryLikelihoodDerivative_abs_le [MeasurableSpace E]
     (π : Measure E) [IsProbabilityMeasure π] {d : ℕ}
     (dependent : J → J → Prop) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (activation : E → ℝ) (Ba : ℝ) (hBa : 0 ≤ Ba) (habound : ∀ e, |activation e| ≤ Ba)

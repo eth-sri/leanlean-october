@@ -16,21 +16,23 @@ budget reserve, rather than assuming any estimator or minimax risk bound.
 -/
 
 noncomputable section
-open scoped BigOperators
 
+open scoped BigOperators
 namespace NearlyMinimax
 
 /-- An explicit constant that absorbs any fixed polynomial into half the exponential. -/
 def polynomialGaussianConstant (r : ℕ) (a : ℝ) : ℝ :=
   (r.factorial : ℝ) / (a / 2) ^ r * Real.exp (a / 2)
 
-theorem polynomialGaussianConstant_pos (r : ℕ) {a : ℝ} (ha : 0 < a) :
+variable (r : ℕ)
+
+theorem polynomialGaussianConstant_pos {a : ℝ} (ha : 0 < a) :
     0 < polynomialGaussianConstant r a := by
   unfold polynomialGaussianConstant
   positivity
 
 /-- The exponential-series argument behind the polynomial Gaussian absorption. -/
-theorem polynomial_exp_absorption (r : ℕ) {a t : ℝ} (ha : 0 < a) (ht : 0 ≤ t) :
+theorem polynomial_exp_absorption {a t : ℝ} (ha : 0 < a) (ht : 0 ≤ t) :
     (1 + t) ^ r * Real.exp (-a * t) ≤
       polynomialGaussianConstant r a * Real.exp (-(a / 2) * t) := by
   have hδ : 0 < a / 2 := by positivity
@@ -61,7 +63,7 @@ theorem polynomial_exp_absorption (r : ℕ) {a t : ℝ} (ha : 0 < a) (ht : 0 ≤
     _ = _ := by rw [he]; ring
 
 /-- The exact polynomial absorption step at the paper's rescaled Gaussian variable. -/
-theorem polynomial_gaussian_absorption (r : ℕ) {a S u : ℝ}
+theorem polynomial_gaussian_absorption {a S u : ℝ}
     (ha : 0 < a) (hS : 0 < S) :
     (1 + u ^ 2 / S) ^ r * Real.exp (-a * u ^ 2 / S) ≤
       polynomialGaussianConstant r a * Real.exp (-(a / 2) * u ^ 2 / S) := by
@@ -81,7 +83,7 @@ theorem profile_approximation_degree_bounds {β Q : ℝ} (q : ℕ)
   constructor <;> linarith [(Nat.cast_nonneg q : (0 : ℝ) ≤ (q : ℝ))]
 
 /-- The profile upper bound controls the entire fixed polynomial prefactor. -/
-theorem profile_polynomial_prefactor_bound (r : ℕ) {β S z m : ℝ}
+theorem profile_polynomial_prefactor_bound {β S z m : ℝ}
     (hβ : 0 ≤ β) (hS : 1 ≤ S) (hm : 0 ≤ m + 1)
     (hmQ : m + 1 ≤ β * quadraticProfile S z + 1) :
     (m + 1) ^ r ≤ (1 + 3 * β / 2) ^ r * S ^ r *
@@ -100,7 +102,7 @@ theorem profile_polynomial_prefactor_bound (r : ℕ) {β S z m : ℝ}
   simpa only [mul_pow, mul_assoc] using hp
 
 /-- The logarithmic reserve cancels `S^r` leaving the Gaussian normalizer. -/
-theorem pow_mul_log_factor_eq_inv_sqrt (r : ℕ) {S : ℝ} (hS : 0 < S) :
+theorem pow_mul_log_factor_eq_inv_sqrt {S : ℝ} (hS : 0 < S) :
     S ^ r * Real.exp (-((r : ℝ) + 1 / 2) * Real.log S) = 1 / Real.sqrt S := by
   have hsqrt : 0 < Real.sqrt S := Real.sqrt_pos.2 hS
   rw [← Real.exp_log (pow_pos hS r), Real.log_pow, ← Real.exp_add]
@@ -114,14 +116,20 @@ theorem pow_mul_log_factor_eq_inv_sqrt (r : ℕ) {S : ℝ} (hS : 0 < S) :
 def allocationBiasTermConstant (r q : ℕ) (β θ τ : ℝ) : ℝ :=
   (1 + 3 * β / 2) ^ r * Real.exp (τ * ((q : ℝ) + 1)) * polynomialGaussianConstant r θ
 
-theorem allocationBiasTermConstant_pos (r q : ℕ) {β θ τ : ℝ}
+section
+variable (r q : ℕ)
+
+theorem allocationBiasTermConstant_pos {β θ τ : ℝ}
     (hβ : 0 ≤ β) (hθ : 0 < θ) : 0 < allocationBiasTermConstant r q β θ τ := by
   unfold allocationBiasTermConstant
   exact mul_pos (mul_pos (by positivity) (Real.exp_pos _))
     (polynomialGaussianConstant_pos r hθ)
 
+section
+variable {β θ τ S z ell T m : ℝ}
+
 /-- The profile identity and degree lower bound produce the Gaussian decay. -/
-theorem allocation_bias_mass_bound (r q : ℕ) {β θ τ S z ell T m : ℝ}
+theorem allocation_bias_mass_bound 
     (_hθ : 0 < θ) (hτ : 0 < τ) (hS : 0 < S) (hθβ : τ * β = θ)
     (hm : β * quadraticProfile S z - (q : ℝ) - 1 ≤ m)
     (hreserve : ((r : ℝ) + 1 / 2) * Real.log S ≤ θ * (S - ell - T)) :
@@ -144,7 +152,7 @@ theorem allocation_bias_mass_bound (r q : ℕ) {β θ τ S z ell T m : ℝ}
   linarith
 
 /-- The actual deterministic bias summand is bounded by a normalized Gaussian. -/
-theorem allocation_bias_term_bound (r q : ℕ) {β θ τ S z ell T m : ℝ}
+theorem allocation_bias_term_bound 
     (hβ : 0 ≤ β) (hθ : 0 < θ) (hτ : 0 < τ) (hS : 1 ≤ S)
     (hθβ : τ * β = θ) (hmpos : 0 ≤ m + 1)
     (hml : β * quadraticProfile S z - (q : ℝ) - 1 ≤ m)
@@ -176,6 +184,10 @@ theorem allocation_bias_term_bound (r q : ℕ) {β θ τ S z ell T m : ℝ}
       rw [pow_mul_log_factor_eq_inv_sqrt r hS₀]
       unfold allocationBiasTermConstant
       ring
+
+end
+
+end
 
 /-- The full finite scalar bias sum, under the quadratic profile and budget conditions. -/
 theorem finite_allocation_bias_sum_bound (A : Finset ℕ) (r q : ℕ)

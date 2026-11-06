@@ -14,33 +14,43 @@ open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal BigOperators
 namespace NearlyMinimax
 
-set_option maxHeartbeats 800000
-set_option backward.isDefEq.respectTransparency false
 
-theorem gridSampleField_coordinate_measurable (d k n : ℕ) (η : ℝ)
+section
+variable (d k n : ℕ)
+
+theorem gridSampleField_coordinate_measurable (η : ℝ)
     (ξ : Fin (gridWindowCount d k) → Fin 3) (i : Fin n) :
     Measurable (fun x => gridSampleField d k n η x ξ i) :=
   (measurable_pi_apply i).comp ((measurable_pi_apply ξ).comp
     (gridSampleField_measurable d k n η))
 
-def gridMixtureLaw (d k n : ℕ) (a v η t : ℝ) :
+def gridMixtureLaw (a v η t : ℝ) :
     Measure ((Fin n → Covariate d) × LowMixtureMarks (gridWindowCount d k) n) :=
   lowMixtureLaw (Measure.pi (fun _ : Fin n => cubeVolume d)) (gridWindowCount d k) n
     a (v - η ^ 2 * t) t (gridSampleField d k n η)
     (gridSampleField_coordinate_measurable d k n η)
 
-def gridMixtureScore (d k n : ℕ) (a v η t : ℝ) :
+def gridMixtureScore (a v η t : ℝ) :
     (Fin n → Covariate d) × LowMixtureMarks (gridWindowCount d k) n → ℝ :=
   lowMixtureScore (gridWindowCount d k) n a (v - η ^ 2 * t) η (gridSampleField d k n η)
 
-def gridLiftedObservable {d n : ℕ} (k : ℕ) (a : ℝ) (T : Estimator d n) :
+end
+
+variable {d n : ℕ} (C : ModelConstants d) (P : LowSmoothnessTernaryConstants C) (k : ℕ) (η t : ℝ)
+
+section
+variable (k : ℕ)
+
+def gridLiftedObservable (a : ℝ) (T : Estimator d n) :
     (Fin n → Covariate d) × LowMixtureMarks (gridWindowCount d k) n → ℝ :=
   fun z => T.val (encodeDesignResponse a (z.1, z.2.2))
 
-theorem gridLiftedObservable_measurable {d n : ℕ} (k : ℕ) (a : ℝ)
+theorem gridLiftedObservable_measurable (a : ℝ)
     (T : Estimator d n) : Measurable (gridLiftedObservable k a T) :=
   (T.property.comp (encodeDesignResponse_measurable a)).comp
     (measurable_fst.prodMk (measurable_snd.comp measurable_snd))
+
+end
 
 theorem gridSampleField_eq_latent (d k n : ℕ) (η : ℝ) (x : Fin n → Covariate d) :
     gridSampleField d k n η x =
@@ -48,8 +58,14 @@ theorem gridSampleField_eq_latent (d k n : ℕ) (η : ℝ) (x : Fin n → Covari
   funext ξ i
   exact (grid_latent_regression_eq d k n η x ξ i).symm
 
-theorem gridMixtureConditionalEnergy_integrable {d : ℕ} (C : ModelConstants d)
-    (P : LowSmoothnessTernaryConstants C) (k n : ℕ) (η t : ℝ)
+section
+variable {d : ℕ} (C : ModelConstants d)
+
+section
+variable (P : LowSmoothnessTernaryConstants C) (k n : ℕ) (η t : ℝ)
+
+theorem gridMixtureConditionalEnergy_integrable 
+    
     (hη : 0 ≤ η) (ht : t ∈ Icc (0 : ℝ) 1)
     (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ) :
     Integrable (lowMixtureConditionalScoreEnergy (gridWindowCount d k) n P.a
@@ -64,8 +80,8 @@ theorem gridMixtureConditionalEnergy_integrable {d : ℕ} (C : ModelConstants d)
     LowSmoothnessTernaryConstants.variancePath, gridSampleField_eq_latent] using
     integrable_finsetSum (Finset.univ : Finset (Fin (gridWindowCount d k) → Fin 3)) (fun ξ _ => hξ ξ)
 
-theorem grid_mixture_probability {d : ℕ} (C : ModelConstants d)
-    (P : LowSmoothnessTernaryConstants C) (k n : ℕ) (η t : ℝ)
+theorem grid_mixture_probability 
+    
     (hη : 0 ≤ η) (ht : t ∈ Icc (0 : ℝ) 1)
     (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ) :
     IsProbabilityMeasure (gridMixtureLaw d k n P.a P.v η t) := by
@@ -73,8 +89,8 @@ theorem grid_mixture_probability {d : ℕ} (C : ModelConstants d)
   exact lowMixtureLaw_probability _ _ _ _ _ _ _ _ P.a_pos.ne' ht
     (fun x ξ i y => (grid_response_positive C P k n η t ξ x hη ht hfield hvariance i y).le)
 
-theorem grid_mixture_score_memLp {d : ℕ} (C : ModelConstants d)
-    (P : LowSmoothnessTernaryConstants C) (k n : ℕ) (η t : ℝ)
+theorem grid_mixture_score_memLp 
+    
     (hη : 0 ≤ η) (ht : t ∈ Icc (0 : ℝ) 1)
     (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ) :
     MemLp (gridMixtureScore d k n P.a P.v η t) 2
@@ -84,8 +100,8 @@ theorem grid_mixture_score_memLp {d : ℕ} (C : ModelConstants d)
     (fun x ξ i y => (grid_response_positive C P k n η t ξ x hη ht hfield hvariance i y).le)
     (gridMixtureConditionalEnergy_integrable C P k n η t hη ht hfield hvariance)
 
-theorem grid_mixture_score_centered {d : ℕ} (C : ModelConstants d)
-    (P : LowSmoothnessTernaryConstants C) (k n : ℕ) (η t : ℝ)
+theorem grid_mixture_score_centered 
+    
     (hη : 0 ≤ η) (ht : t ∈ Icc (0 : ℝ) 1)
     (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ) :
     (∫ z, gridMixtureScore d k n P.a P.v η t z
@@ -95,8 +111,8 @@ theorem grid_mixture_score_centered {d : ℕ} (C : ModelConstants d)
     (fun x ξ i y => grid_response_positive C P k n η t ξ x hη ht hfield hvariance i y)
     (gridMixtureConditionalEnergy_integrable C P k n η t hη ht hfield hvariance)
 
-theorem grid_mixture_score_energy {d : ℕ} (C : ModelConstants d)
-    (P : LowSmoothnessTernaryConstants C) (k n : ℕ) (η t : ℝ)
+theorem grid_mixture_score_energy 
+    
     (hη : 0 ≤ η) (ht : t ∈ Icc (0 : ℝ) 1)
     (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ) :
     (∫ z, (gridMixtureScore d k n P.a P.v η t z) ^ 2
@@ -115,8 +131,12 @@ theorem grid_mixture_score_energy {d : ℕ} (C : ModelConstants d)
         simp only [gridFullScoreEnergy, LowSmoothnessTernaryConstants.variancePath,
           gridSampleField_eq_latent])))
 
-theorem grid_lifted_observable_memLp {d n : ℕ} (C : ModelConstants d)
-    (P : LowSmoothnessTernaryConstants C) (k : ℕ) (η t : ℝ)
+end
+
+end
+
+theorem grid_lifted_observable_memLp 
+    
     (hη : 0 ≤ η) (ht : t ∈ Icc (0 : ℝ) 1)
     (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ)
     (T : BoundedEstimator C n) :
@@ -130,14 +150,14 @@ theorem grid_lifted_observable_memLp {d n : ℕ} (C : ModelConstants d)
   rw [abs_of_nonneg (C.varianceLower_pos.le.trans (T.property _).1)]
   exact (T.property _).2
 
-def gridStateRisk {d n : ℕ} (k : ℕ) (a v η t : ℝ) (T : Estimator d n)
+def gridStateRisk (k : ℕ) (a v η t : ℝ) (T : Estimator d n)
     (ξ : Fin (gridWindowCount d k) → Fin 3) (x : Fin n → Covariate d) : ℝ :=
   ∑ y : Fin n → Fin 3, finiteResponseLikelihood (gridWindowCount d k) n a
     (v - η ^ 2 * t) (gridSampleField d k n η x) ξ y *
       (T.val (encodeDesignResponse a (x, y)) - (v - η ^ 2 * t)) ^ 2
 
-theorem grid_state_risk_integrable {d n : ℕ} (C : ModelConstants d)
-    (P : LowSmoothnessTernaryConstants C) (k : ℕ) (η t : ℝ)
+theorem grid_state_risk_integrable 
+    
     (hη : 0 ≤ η) (ht : t ∈ Icc (0 : ℝ) 1)
     (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ)
     (T : BoundedEstimator C n) (ξ : Fin (gridWindowCount d k) → Fin 3) :
@@ -176,8 +196,8 @@ theorem grid_state_risk_integrable {d n : ℕ} (C : ModelConstants d)
     _ = B := by
       rw [← Finset.sum_mul, finite_response_normalized _ _ _ _ _ _ P.a_pos.ne', one_mul]
 
-theorem grid_mixture_risk_le_original_worstCase {d n : ℕ} (C : ModelConstants d)
-    (P : LowSmoothnessTernaryConstants C) (k : ℕ) (η b t : ℝ)
+theorem grid_mixture_risk_le_original_worstCase 
+    (η b t : ℝ)
     (hk : 1 ≤ k) (hs1 : C.smoothness ≤ 1) (hb : 0 ≤ b)
     (hη : 0 ≤ η) (ht : t ∈ Icc (0 : ℝ) 1)
     (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ)
@@ -209,19 +229,22 @@ theorem grid_mixture_risk_le_original_worstCase {d n : ℕ} (C : ModelConstants 
       · exact Finset.prod_nonneg (fun j _ => activation_prior_nonnegative t ht.1 ht.2 (ξ j))
     _ = _ := by rw [← Finset.sum_mul, activation_product_prior_normalized, one_mul]
 
-def gridEncodedObservable {d n : ℕ} (a : ℝ) (T : Estimator d n) :
+def gridEncodedObservable (a : ℝ) (T : Estimator d n) :
     (Fin n → Covariate d) → (Fin n → Fin 3) → ℝ :=
   fun x y => T.val (encodeDesignResponse a (x, y))
 
-theorem gridEncodedObservable_measurable {d n : ℕ} (a : ℝ) (T : Estimator d n) :
+section
+variable (a : ℝ)
+
+theorem gridEncodedObservable_measurable (T : Estimator d n) :
     Measurable (gridEncodedObservable a T) := by
   apply Measurable.of_eval
   intro y
   exact (T.property.comp (encodeDesignResponse_measurable a)).comp
     (measurable_id.prodMk measurable_const)
 
-theorem gridEncodedObservable_norm_le {d n : ℕ} (C : ModelConstants d)
-    (a : ℝ) (T : BoundedEstimator C n) (x : Fin n → Covariate d) :
+theorem gridEncodedObservable_norm_le 
+    (T : BoundedEstimator C n) (x : Fin n → Covariate d) :
     ‖gridEncodedObservable a T.val x‖ ≤ effectiveVarianceUpper C := by
   have hC : 0 ≤ effectiveVarianceUpper C :=
     C.varianceLower_pos.le.trans (effective_variance_interval_nondegenerate C).le
@@ -231,8 +254,10 @@ theorem gridEncodedObservable_norm_le {d n : ℕ} (C : ModelConstants d)
   rw [abs_of_nonneg (C.varianceLower_pos.le.trans (T.property _).1)]
   exact (T.property _).2
 
-theorem grid_mixture_mean_eq {d n : ℕ} (C : ModelConstants d)
-    (P : LowSmoothnessTernaryConstants C) (k : ℕ) (η t : ℝ)
+end
+
+theorem grid_mixture_mean_eq 
+    
     (hη : 0 ≤ η) (ht : t ∈ Icc (0 : ℝ) 1)
     (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ)
     (T : BoundedEstimator C n) :
@@ -247,8 +272,8 @@ theorem grid_mixture_mean_eq {d n : ℕ} (C : ModelConstants d)
     (gridSampleField_coordinate_measurable d k n η) P.a_pos.ne' ht
     (fun x ξ i y => (grid_response_positive C P k n η t ξ x hη ht hfield hvariance i y).le) _ hi
 
-theorem grid_mixture_score_observable_eq {d n : ℕ} (C : ModelConstants d)
-    (P : LowSmoothnessTernaryConstants C) (k : ℕ) (η t : ℝ)
+theorem grid_mixture_score_observable_eq 
+    
     (hη : 0 ≤ η) (ht : t ∈ Icc (0 : ℝ) 1)
     (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ)
     (T : BoundedEstimator C n) :
@@ -332,8 +357,8 @@ theorem grid_prior_boundedEstimator_separation {d n : ℕ} (C : ModelConstants d
   exact hsep.trans (mul_le_mul_of_nonneg_right (by linarith) hr)
 
 /-- Actual minimax RMS lower bound from the fully constructed grid prior. -/
-theorem grid_prior_minimax_lower {d n : ℕ} (C : ModelConstants d)
-    (P : LowSmoothnessTernaryConstants C) (k : ℕ) (η b : ℝ)
+theorem grid_prior_minimax_lower 
+    (η b : ℝ)
     (hk : 1 ≤ k) (hs1 : C.smoothness ≤ 1) (hb : 0 ≤ b) (hη : 0 ≤ η)
     (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ)
     (hscale : η = b / (k : ℝ) ^ C.smoothness)

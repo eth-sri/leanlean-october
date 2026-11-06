@@ -11,8 +11,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 attribute [local instance] Classical.propDecidable
 
 def highCardinalDensityReset {d n : ℕ} (ad bd lam : ℝ)
@@ -20,7 +18,9 @@ def highCardinalDensityReset {d n : ℕ} (ad bd lam : ℝ)
     (ζ : CardinalSeparatedMark d n) (z : ℝ) (ε : Fin n → ℝ) (i : Fin n) : ℝ :=
   localDensityReset ad bd n z ε p (fun i l => cardinalSeparatedFactor lam ζ l (U i)) i
 
-theorem cardinalSeparatedSubsetMatrix_univ {d n F : ℕ} (lam : ℝ) (hlam : 0 ≤ lam)
+variable {d n F : ℕ}
+
+theorem cardinalSeparatedSubsetMatrix_univ (lam : ℝ) (hlam : 0 ≤ lam)
     {T : ℝ} (hT : 1 ≤ T) (U : Fin n → Covariate d) (hU : ∀ i l, |U i l| ≤ 2) :
     separatedSubsetMatrix (cardinalSeparatedMeasure d n T) n
       (fun ζ i l => cardinalSeparatedFactor lam ζ l (U i))
@@ -33,7 +33,7 @@ theorem cardinalSeparatedSubsetMatrix_univ {d n F : ℕ} (lam : ℝ) (hlam : 0 �
 
 /-- Exact selector for the genuine cardinal ordinary packet at its selected
 count. Both the density selector and the matrix representation are evaluated. -/
-theorem high_cardinal_packet_action_exact {d n F : ℕ}
+theorem high_cardinal_packet_action_exact 
     (ad bd lam : ℝ) (ha : 0 < ad) (hab : ad < bd) (hlam : 0 ≤ lam)
     {T : ℝ} (hT : 1 ≤ T) (m D q : ℕ) (hn : 1 ≤ n) (hnm : n ≤ m) (hnD : n ≤ D)
     (C : ℝ) (U : Fin n → Covariate d) (hU : ∀ i l, |U i l| ≤ 2)

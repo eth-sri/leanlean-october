@@ -11,7 +11,6 @@ noncomputable section
 open MeasureTheory
 open scoped RealInnerProductSpace
 namespace NearlyMinimax.PilotFields
-set_option backward.isDefEq.respectTransparency false
 
 variable {Ω W H : Type*} [MeasurableSpace Ω] [MeasurableSpace W]
 variable [NormedAddCommGroup H] [InnerProductSpace ℝ H]
@@ -22,7 +21,9 @@ def weightedPilotKernel (c : Ω → W → H) (A : W → H →L[ℝ] H)
     (q : W → ℝ) (z : (Ω × Ω) × W) : ℝ :=
   q z.2 * ⟪c z.1.1 z.2, A z.2 (c z.1.2 z.2)⟫ ^ 2
 
-theorem weightedPilotKernel_measurable {c : Ω → W → H}
+variable {c : Ω → W → H}
+
+theorem weightedPilotKernel_measurable 
     (hmc : Measurable (fun z : Ω × W => c z.1 z.2))
     {A : W → H →L[ℝ] H} (hmA : Measurable (fun z : W × H => A z.1 z.2))
     {q : W → ℝ} (hmq : Measurable q) : Measurable (weightedPilotKernel c A q) := by
@@ -33,14 +34,17 @@ theorem weightedPilotKernel_measurable {c : Ω → W → H}
         (hmc.comp (measurable_fst.snd.prodMk measurable_snd))))
   exact (hmq.comp measurable_snd).mul (hi.pow_const 2)
 
-theorem weightedPilotKernel_section_integrable {c : Ω → W → H}
-    {A : W → H →L[ℝ] H} {q : W → ℝ} {w : W}
+section
+variable {A : W → H →L[ℝ] H} {q : W → ℝ} {w : W}
+
+theorem weightedPilotKernel_section_integrable 
+    
     (hc : MemLp (fun x => c x w) 2 μ) :
     Integrable (fun z : Ω × Ω => weightedPilotKernel c A q (z, w)) (μ.prod μ) :=
   (product_operator_kernel_sq_integrable (A w) hc hc).const_mul (q w)
 
-theorem weightedPilotKernel_section_energy_le {c : Ω → W → H}
-    {A : W → H →L[ℝ] H} {q : W → ℝ} {w : W}
+theorem weightedPilotKernel_section_energy_le 
+    
     (hc : MemLp (fun x => c x w) 2 μ) {L : ℝ} (hL : 0 ≤ L)
     (hE : (∫ x, ‖c x w‖ ^ 2 ∂μ) ≤ L) (hq : 0 ≤ q w) :
     (∫ z : Ω × Ω, weightedPilotKernel c A q (z, w) ∂μ.prod μ) ≤
@@ -51,7 +55,9 @@ theorem weightedPilotKernel_section_energy_le {c : Ω → W → H}
     (product_operator_kernel_energy_le_uniform (A w) hc hc hL hE hE) hq
   nlinarith
 
-theorem weightedPilotKernel_integrable {c : Ω → W → H}
+end
+
+theorem weightedPilotKernel_integrable 
     (hmc : Measurable (fun z : Ω × W => c z.1 z.2))
     {A : W → H →L[ℝ] H} (hmA : Measurable (fun z : W × H => A z.1 z.2))
     {q : W → ℝ} (hmq : Measurable q) (hq : ∀ᵐ w ∂ν, 0 ≤ q w)
@@ -77,7 +83,7 @@ theorem weightedPilotKernel_integrable {c : Ω → W → H}
     rw [hn]
     exact weightedPilotKernel_section_energy_le hcw hL hEw hqw
 
-theorem weightedPilotKernel_energy_le {c : Ω → W → H}
+theorem weightedPilotKernel_energy_le 
     (hmc : Measurable (fun z : Ω × W => c z.1 z.2))
     {A : W → H →L[ℝ] H} (hmA : Measurable (fun z : W × H => A z.1 z.2))
     {q : W → ℝ} (hmq : Measurable q) (hq : ∀ᵐ w ∂ν, 0 ≤ q w)

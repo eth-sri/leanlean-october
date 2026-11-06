@@ -10,7 +10,6 @@ noncomputable section
 open MeasureTheory
 open scoped RealInnerProductSpace
 namespace NearlyMinimax.PilotFields
-set_option backward.isDefEq.respectTransparency false
 
 variable {Ω W H : Type*} [MeasurableSpace Ω] [MeasurableSpace W]
 variable [NormedAddCommGroup H] [InnerProductSpace ℝ H]
@@ -20,7 +19,9 @@ variable {μ : Measure Ω} {M : Measure W} [IsProbabilityMeasure μ] [IsFiniteMe
 def pilotMean (m : W → H) (η : Ω → W → H) (B : W → H →L[ℝ] H) (z : Ω × Ω) : ℝ :=
   ∫ w, ⟪m w + η z.1 w, B w (m w + η z.2 w)⟫ ∂M
 
-theorem pilotMean_sub_eq (m : W → H) (hmm : Measurable m) (hm : MemLp m 2 M)
+variable (m : W → H)
+
+theorem pilotMean_sub_eq (hmm : Measurable m) (hm : MemLp m 2 M)
     {η : Ω → W → H} (hmη : Measurable (fun z : Ω × W => η z.1 z.2))
     {B : W → H →L[ℝ] H} (hmB : Measurable (fun z : W × H => B z.1 z.2))
     {C : ℝ} (hbound : ∀ w, ‖B w‖ ≤ C)
@@ -30,11 +31,9 @@ theorem pilotMean_sub_eq (m : W → H) (hmm : Measurable m) (hm : MemLp m 2 M)
       fluctuation (M := M) η B (fun w => B w (m w)) (fun w => B w (m w)) (x, y) := by
   have hBm := operatorField_memLp hmB hbound hmm hm
   have hmy : Measurable (η y) := hmη.comp (measurable_const.prodMk measurable_id)
-  have hBy := operatorField_memLp hmB hbound hmy hy
   have h₀ := inner_integrable hm hBm
   have h₁ := inner_integrable hx hBm
   have h₂ := inner_integrable hy hBm
-  have h₃ := inner_integrable hx hBy
   have he : (fun w => ⟪m w + η x w, B w (m w + η y w)⟫) =
       (fun w => ⟪m w, B w (m w)⟫ + ⟪η x w, B w (m w)⟫ +
         ⟪η y w, B w (m w)⟫ + ⟪η x w, B w (η y w)⟫) := by
@@ -42,7 +41,7 @@ theorem pilotMean_sub_eq (m : W → H) (hmm : Measurable m) (hm : MemLp m 2 M)
     rw [map_add, inner_add_left, inner_add_right, inner_add_right,
       hsym w (m w) (η y w), real_inner_comm (B w (m w)) (η y w)]
     ring
-  have ha := integral_add ((h₀.add h₁).add h₂) h₃
+  have ha := integral_add ((h₀.add h₁).add h₂) (inner_integrable hx (operatorField_memLp hmB hbound hmy hy))
   have hb := integral_add (h₀.add h₁) h₂
   have hc := integral_add h₀ h₁
   simp only [Pi.add_apply] at ha hb hc
@@ -52,7 +51,7 @@ theorem pilotMean_sub_eq (m : W → H) (hmm : Measurable m) (hm : MemLp m 2 M)
 
 /-- The deterministic-centered pilot mean has its variance bound derived
 from the original universal linear tests. -/
-theorem pilotMean_centered_sq_le (m : W → H) (hmm : Measurable m) (hm : MemLp m 2 M)
+theorem pilotMean_centered_sq_le (hmm : Measurable m) (hm : MemLp m 2 M)
     {η : Ω → W → H} (hmη : Measurable (fun z : Ω × W => η z.1 z.2))
     (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M))
     {B : W → H →L[ℝ] H} (hmB : Measurable (fun z : W × H => B z.1 z.2))

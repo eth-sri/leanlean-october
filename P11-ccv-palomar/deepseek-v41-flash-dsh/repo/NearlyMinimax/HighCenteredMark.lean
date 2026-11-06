@@ -13,8 +13,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators ENNReal
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 
 section AbsoluteMark
 variable {E : Type*} [MeasurableSpace E]
@@ -27,17 +25,20 @@ def absoluteMarkLaw (μ : Measure E) (w : E → ℝ) : Measure E :=
 def absoluteActivation (μ : Measure E) (w : E → ℝ) (e : E) : ℝ :=
   signedMarkMass μ w * (w e / |w e|)
 
-theorem signedMarkMass_nonneg (μ : Measure E) (w : E → ℝ) :
+section
+variable (μ : Measure E) (w : E → ℝ)
+
+theorem signedMarkMass_nonneg :
     0 ≤ signedMarkMass μ w := integral_nonneg (fun _ => abs_nonneg _)
 
-theorem signedMarkMass_eq_variation (μ : Measure E) (w : E → ℝ) (hw : Integrable w μ) :
+theorem signedMarkMass_eq_variation (hw : Integrable w μ) :
     signedMarkMass μ w = ((μ.withDensityᵥ w).variation univ).toReal := by
   rw [Measure.variation_withDensityᵥ hw, withDensity_apply _ MeasurableSet.univ]
   simp only [Measure.restrict_univ]
   rw [← integral_norm_eq_lintegral_enorm hw.aestronglyMeasurable]
   simp only [signedMarkMass, Real.norm_eq_abs]
 
-theorem absoluteMarkLaw_probability (μ : Measure E) (w : E → ℝ)
+theorem absoluteMarkLaw_probability 
     (hw : Integrable w μ) (hpos : 0 < signedMarkMass μ w) :
     IsProbabilityMeasure (absoluteMarkLaw μ w) := by
   constructor
@@ -48,11 +49,11 @@ theorem absoluteMarkLaw_probability (μ : Measure E) (w : E → ℝ)
   change ENNReal.ofReal (signedMarkMass μ w / signedMarkMass μ w) = 1
   simp only [div_self hpos.ne', ENNReal.ofReal_one]
 
-theorem absoluteActivation_measurable (μ : Measure E) (w : E → ℝ) (hw : Measurable w) :
+theorem absoluteActivation_measurable (hw : Measurable w) :
     Measurable (absoluteActivation μ w) :=
   (hw.div hw.abs).const_mul _
 
-theorem absoluteActivation_bound (μ : Measure E) (w : E → ℝ) (e : E) :
+theorem absoluteActivation_bound (e : E) :
     |absoluteActivation μ w e| ≤ signedMarkMass μ w := by
   rw [absoluteActivation, abs_mul, abs_of_nonneg (signedMarkMass_nonneg μ w)]
   have hb : |w e / (|w e|)| ≤ 1 := by
@@ -61,7 +62,7 @@ theorem absoluteActivation_bound (μ : Measure E) (w : E → ℝ) (e : E) :
     · rw [abs_div, abs_abs, div_self (abs_ne_zero.mpr he)]
   exact (mul_le_mul_of_nonneg_left hb (signedMarkMass_nonneg μ w)).trans_eq (mul_one _)
 
-theorem absoluteMarkLaw_activation_integral (μ : Measure E) (w : E → ℝ)
+theorem absoluteMarkLaw_activation_integral 
     (hmw : Measurable w) (hpos : 0 < signedMarkMass μ w) (F : E → ℝ) :
     (∫ e, absoluteActivation μ w e * F e ∂absoluteMarkLaw μ w) =
       ∫ e, w e * F e ∂μ := by
@@ -78,7 +79,7 @@ theorem absoluteMarkLaw_activation_integral (μ : Measure E) (w : E → ℝ)
   · simp [he]
   · field_simp
 
-theorem absoluteActivation_centered (μ : Measure E) (w : E → ℝ)
+theorem absoluteActivation_centered 
     (hmw : Measurable w) (hpos : 0 < signedMarkMass μ w)
     (hzero : ∫ e, w e ∂μ = 0) :
     (∫ e, absoluteActivation μ w e ∂absoluteMarkLaw μ w) = 0 := by
@@ -86,13 +87,15 @@ theorem absoluteActivation_centered (μ : Measure E) (w : E → ℝ)
   simp only [mul_one] at h
   exact h.trans hzero
 
-theorem absoluteMarkLaw_signed_action (μ : Measure E) (w : E → ℝ)
+theorem absoluteMarkLaw_signed_action 
     (hw : Integrable w μ) (hmw : Measurable w) (hpos : 0 < signedMarkMass μ w)
     (F : E → ℝ) (hF : Measurable F) (M : ℝ) (hbound : ∀ e, ‖F e‖ ≤ M) :
     (∫ e, absoluteActivation μ w e * F e ∂absoluteMarkLaw μ w) =
       ∫ᵛ e, F e ∂<•(μ.withDensityᵥ w) := by
   rw [absoluteMarkLaw_activation_integral μ w hmw hpos F,
     signedDensity_integral μ w hw hmw F hF M hbound]
+
+end
 
 end AbsoluteMark
 
@@ -117,15 +120,18 @@ def highPacketActivation (σ : Measure Z) (a b : ℝ) (m r D q : ℕ) (C : ℝ)
     (A : Z → ι → ι → ℝ) : Z × HighPacketMarkIndex ι m r D q → ℝ :=
   absoluteActivation (σ.prod Measure.count) (highPacketMarkWeight a b m r D q C A)
 
-theorem highPacketMarkMass_eq_variation (σ : Measure Z) [IsFiniteMeasure σ]
-    (a b : ℝ) (m r D q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
+section
+variable (σ : Measure Z) [IsFiniteMeasure σ] (a b : ℝ) (m r D q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
+
+theorem highPacketMarkMass_eq_variation 
+    
     (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) (hcost : Integrable (separatedMatrixCost A) σ) :
     highPacketMarkMass σ a b m r D q C A =
       ((highPacketSignedMeasure σ a b m r D q C A).variation univ).toReal :=
   signedMarkMass_eq_variation _ _ (highPacketMarkWeight_integrable σ a b m r D q C A hA hcost)
 
-theorem highPacketMarkWeight_integral_zero (σ : Measure Z) [IsFiniteMeasure σ]
-    (a b : ℝ) (m r D q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
+theorem highPacketMarkWeight_integral_zero 
+    
     (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) (hcost : Integrable (separatedMatrixCost A) σ) :
     (∫ e, highPacketMarkWeight a b m r D q C A e ∂σ.prod Measure.count) = 0 := by
   have h := highPacketSignedMeasure_zero_mass σ a b m r D q C A hA hcost
@@ -134,21 +140,23 @@ theorem highPacketMarkWeight_integral_zero (σ : Measure Z) [IsFiniteMeasure σ]
     Measure.restrict_univ] at h
   exact h
 
-theorem highPacketAbsoluteLaw_probability (σ : Measure Z) [IsFiniteMeasure σ]
-    (a b : ℝ) (m r D q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
+theorem highPacketAbsoluteLaw_probability 
+    
     (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) (hcost : Integrable (separatedMatrixCost A) σ)
     (hpos : 0 < highPacketMarkMass σ a b m r D q C A) :
     IsProbabilityMeasure (highPacketAbsoluteLaw σ a b m r D q C A) :=
   absoluteMarkLaw_probability _ _ (highPacketMarkWeight_integrable σ a b m r D q C A hA hcost) hpos
 
-theorem highPacketActivation_centered (σ : Measure Z) [IsFiniteMeasure σ]
-    (a b : ℝ) (m r D q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
+theorem highPacketActivation_centered 
+    
     (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) (hcost : Integrable (separatedMatrixCost A) σ)
     (hpos : 0 < highPacketMarkMass σ a b m r D q C A) :
     (∫ e, highPacketActivation σ a b m r D q C A e
       ∂highPacketAbsoluteLaw σ a b m r D q C A) = 0 :=
   absoluteActivation_centered _ _ (highPacketMarkWeight_measurable a b m r D q C A hA)
     hpos (highPacketMarkWeight_integral_zero σ a b m r D q C A hA hcost)
+
+end
 
 theorem highPacketActivation_bound (σ : Measure Z) (a b : ℝ) (m r D q : ℕ) (C : ℝ)
     (A : Z → ι → ι → ℝ) (e : Z × HighPacketMarkIndex ι m r D q) :

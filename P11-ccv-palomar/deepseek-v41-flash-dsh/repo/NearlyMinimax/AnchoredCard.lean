@@ -14,7 +14,9 @@ namespace NearlyMinimax
 abbrev TotalDegreeIndex (d ℓ : ℕ) :=
   {γ : PolynomialBox d ℓ // (∑ i, (γ i).val) ≤ ℓ}
 
-def totalDegreeSlackEquiv (d ℓ : ℕ) :
+variable (d ℓ : ℕ)
+
+def totalDegreeSlackEquiv :
     TotalDegreeIndex d ℓ ≃ {v : Option (Fin d) → ℕ // ∑ i, v i = ℓ} where
   toFun γ := ⟨fun i => i.casesOn (ℓ - ∑ j, (γ.val j).val) (fun j => (γ.val j).val), by
     rw [Fintype.sum_option]
@@ -43,17 +45,16 @@ def totalDegreeSlackEquiv (d ℓ : ℕ) :
       omega
     | some i => rfl
 
-theorem totalDegreeIndex_card (d ℓ : ℕ) :
+theorem totalDegreeIndex_card :
     Fintype.card (TotalDegreeIndex d ℓ) = (d + ℓ).choose d := by
   let e := (totalDegreeSlackEquiv d ℓ).trans (Sym.equivNatSumOfFintype (Option (Fin d)) ℓ).symm
   rw [Fintype.card_congr e, Sym.card_sym_eq_choose]
   simp only [Fintype.card_option, Fintype.card_fin]
   have h : d + 1 + ℓ - 1 = d + ℓ := by omega
   rw [h]
-  have hc := Nat.choose_symm (show ℓ ≤ d + ℓ by omega)
-  simpa only [Nat.add_sub_cancel] using hc.symm
+  simpa only [Nat.add_sub_cancel] using (Nat.choose_symm (show ℓ ≤ d + ℓ by omega)).symm
 
-def anchoredNonzeroEquiv (d ℓ : ℕ) : AnchoredIndex d ℓ ≃
+def anchoredNonzeroEquiv : AnchoredIndex d ℓ ≃
     {γ : TotalDegreeIndex d ℓ // ¬ (∑ i, (γ.val i).val) = 0} where
   toFun γ := ⟨⟨γ.val, γ.property.2⟩, ne_of_gt γ.property.1⟩
   invFun γ := ⟨γ.val.val, Nat.pos_of_ne_zero γ.property, γ.val.property⟩
@@ -61,7 +62,7 @@ def anchoredNonzeroEquiv (d ℓ : ℕ) : AnchoredIndex d ℓ ≃
   right_inv γ := by rfl
 
 /-- The concrete feature dimension is exactly the manuscript's `q_s - 1`. -/
-theorem anchoredIndex_card (d ℓ : ℕ) :
+theorem anchoredIndex_card :
     Fintype.card (AnchoredIndex d ℓ) = (d + ℓ).choose d - 1 := by
   classical
   let z : {γ : TotalDegreeIndex d ℓ // (∑ i, (γ.val i).val) = 0} :=

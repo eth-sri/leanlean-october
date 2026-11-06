@@ -9,7 +9,6 @@ noncomputable section
 open MeasureTheory
 open scoped ENNReal
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
 
  def sampleBlockIndexEquiv (a b c : ℕ) :
     ((Fin a ⊕ Fin b) ⊕ Fin c) ≃ Fin (a + b + c) :=

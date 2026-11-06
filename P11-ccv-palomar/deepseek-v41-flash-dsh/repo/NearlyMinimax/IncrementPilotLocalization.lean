@@ -13,15 +13,15 @@ noncomputable section
 open MeasureTheory ProbabilityTheory Matrix Set
 open scoped BigOperators ENNReal Matrix.Norms.L2Operator
 namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 
-theorem preconditionedPilotFeature_zero_off_cell {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
+variable {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
+
+theorem preconditionedPilotFeature_zero_off_cell 
     (a : LocalPilotIndex d ℓ) (z : Observation d) (hz : z.1 ∉ dyadicPilotCell j x) :
     preconditionedPilotFeature j x a z = 0 := by
   simp [preconditionedPilotFeature, dyadicPilotFeature, hz]
 
-theorem dyadicIncrementRawVector_zero_off_parent {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
+theorem dyadicIncrementRawVector_zero_off_parent 
     (z : Observation d) (hz : z.1 ∉ dyadicPilotCell (j - 1) x) :
     dyadicIncrementRawVector (ℓ := ℓ) j x z = 0 := by
   have hj : j ≠ 0 := by
@@ -58,7 +58,10 @@ theorem dyadicIncrementRawVector_zero_off_parent {d ℓ : ℕ} (j : ℕ) (x : Co
       | simpa [dyadicIncrementFeature, hj] using
           preconditionedPilotFeature_zero_off_cell (j - 1) x (Sum.inr (Sum.inr (anchoredFinIndex i))) z hz
 
-theorem dyadic_increment_raw_kernel_zero_off_parent {d ℓ k : ℕ} (j : ℕ) (x : Covariate d)
+section
+variable {d ℓ k : ℕ}
+
+theorem dyadic_increment_raw_kernel_zero_off_parent (j : ℕ) (x : Covariate d)
     (H : ContinuousMultilinearMap ℝ
       (fun _ : Fin k => Fin (Fintype.card (incrementVariables (anchoredDimension d ℓ))) → ℝ) ℝ)
     (z : Fin k → Observation d) (i : Fin k) (hz : (z i).1 ∉ dyadicPilotCell (j - 1) x) :
@@ -67,7 +70,7 @@ theorem dyadic_increment_raw_kernel_zero_off_parent {d ℓ k : ℕ} (j : ℕ) (x
 
 /-- Raw derivative kernels on different actual parent cells are orthogonal
 before any centering. No covariance orthogonality is postulated. -/
-theorem dyadic_increment_raw_kernels_disjoint {d ℓ k : ℕ} (hk : 0 < k)
+theorem dyadic_increment_raw_kernels_disjoint (hk : 0 < k)
     (j : ℕ) (x y : Covariate d)
     (hcell : dyadicPilotLabel (j - 1) x ≠ dyadicPilotLabel (j - 1) y)
     (H G : ContinuousMultilinearMap ℝ
@@ -85,6 +88,8 @@ theorem dyadic_increment_raw_kernels_disjoint {d ℓ k : ℕ} (hk : 0 < k)
     rw [dyadic_increment_raw_kernel_zero_off_parent j y G z i hzy, mul_zero]
   · rw [dyadic_increment_raw_kernel_zero_off_parent j x H z i hz, zero_mul]
 
+end
+
 /-- Each actual parent-anchor block has weighted-pair mass at most
 `p₊² / K_parent`, the localization gain required by U7. -/
 theorem regularPairDesignMeasure_parent_block_mass {d : ℕ} (C : ModelConstants d)
@@ -96,7 +101,6 @@ theorem regularPairDesignMeasure_parent_block_mass {d : ℕ} (C : ModelConstants
   let := cubeVolume_isProbability d
   let A : Set (Covariate d) := (regularGridCell ((2 : ℕ) ^ (j - 1)) (by positivity)) ⁻¹' {c}
   have hA : MeasurableSet A := measurableSet_singleton c |>.preimage (regular_grid_cell_measurable _ _)
-  have hmap := regularPairDesignMeasure_fst_cube_le C θ hθ k hk
   have hfirst : (regularPairDesignMeasure θ k hk).real (Prod.fst ⁻¹' A) ≤
       C.densityUpper ^ 2 * (cubeVolume d).real A := by
     rw [← map_measureReal_apply measurable_fst hA]
@@ -104,13 +108,12 @@ theorem regularPairDesignMeasure_parent_block_mass {d : ℕ} (C : ModelConstants
       (show (ENNReal.ofReal (C.densityUpper ^ 2) • cubeVolume d) A ≠ ⊤ by
         simp only [Measure.smul_apply, smul_eq_mul]
         exact ENNReal.mul_ne_top ENNReal.ofReal_ne_top (measure_ne_top (cubeVolume d) A))
-      (hmap A)
+      ((regularPairDesignMeasure_fst_cube_le C θ hθ k hk) A)
     simpa only [measureReal_def, Measure.smul_apply, smul_eq_mul, ENNReal.toReal_mul,
       ENNReal.toReal_ofReal (sq_nonneg _)] using ht
   have hvol : (cubeVolume d).real A ≤ (1 / ((2 : ℝ) ^ (j - 1))) ^ d := by
-    have hv := regular_grid_fiber_volume_le ((2 : ℕ) ^ (j - 1)) (by positivity) c
     have ht := ENNReal.toReal_mono (by finiteness :
-      ENNReal.ofReal (1 / (((2 : ℕ) ^ (j - 1) : ℕ) : ℝ)) ^ d ≠ ⊤) hv
+      ENNReal.ofReal (1 / (((2 : ℕ) ^ (j - 1) : ℕ) : ℝ)) ^ d ≠ ⊤) (regular_grid_fiber_volume_le ((2 : ℕ) ^ (j - 1)) (by positivity) c)
     simpa [measureReal_def, A, ENNReal.toReal_pow, Nat.cast_pow,
       ENNReal.toReal_ofReal (by positivity : 0 ≤ 1 / (((2 : ℕ) ^ (j - 1) : ℕ) : ℝ))] using ht
   apply hfirst.trans

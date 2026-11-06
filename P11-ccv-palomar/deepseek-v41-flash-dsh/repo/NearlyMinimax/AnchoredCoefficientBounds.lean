@@ -16,15 +16,16 @@ namespace NearlyMinimax
 theorem finiteContinuousFamily_uniform_cube_bound {d : ℕ} {ι : Type*} [Fintype ι]
     (f : Covariate d → ι → ℝ) (hf : ∀ i, Continuous (fun x => f x i)) :
     ∃ M : ℝ, 0 < M ∧ ∀ x ∈ unitCube d, ∀ i, |f x i| ≤ M := by
-  have hc : Continuous f := continuous_pi hf
-  obtain ⟨M, hM⟩ := (unitCube_isCompact d).bddAbove_image hc.norm.continuousOn
+  obtain ⟨M, hM⟩ := (unitCube_isCompact d).bddAbove_image (continuous_pi hf).norm.continuousOn
   refine ⟨max 1 M, zero_lt_one.trans_le (le_max_left _ _), ?_⟩
   intro x hx i
   have hi : |f x i| ≤ ‖f x‖ := by
     simpa only [Real.norm_eq_abs] using norm_le_pi_norm (f x) i
   exact hi.trans ((hM (mem_image_of_mem _ hx)).trans (le_max_right _ _))
 
-theorem dyadicPilotPolynomial_coeff_continuous {d ℓ : ℕ} (j : ℕ)
+variable {d ℓ : ℕ} (j : ℕ)
+
+theorem dyadicPilotPolynomial_coeff_continuous 
     (a : LocalPilotIndex d ℓ) (e : Fin d →₀ ℕ) :
     Continuous (fun x : Covariate d => (dyadicPilotPolynomial j x a).coeff e) := by
   cases a with
@@ -33,7 +34,7 @@ theorem dyadicPilotPolynomial_coeff_continuous {d ℓ : ℕ} (j : ℕ)
 
 /-- The entire finite raw pilot polynomial family is uniformly bounded at a
 fixed level. This bound has no claimed uniformity in the level. -/
-theorem dyadicPilotPolynomial_coeff_uniform_bound {d ℓ : ℕ} (j : ℕ) :
+theorem dyadicPilotPolynomial_coeff_uniform_bound :
     ∃ M : ℝ, 0 < M ∧ ∀ x ∈ unitCube d, ∀ a : LocalPilotIndex d ℓ,
       ∀ β : PolynomialBox d (2 * ℓ),
         |(dyadicPilotPolynomial j x a).coeff (polynomialBoxExponent β)| ≤ M := by

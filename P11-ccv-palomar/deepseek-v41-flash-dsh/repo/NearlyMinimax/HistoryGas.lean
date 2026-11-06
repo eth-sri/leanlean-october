@@ -63,14 +63,20 @@ theorem historyGasPartition_empty (P : Finset β) (support : β → Finset α) (
   rw [hfamilies]
   simp
 
-theorem historyGasFamily_unique_at {P : Finset β} {support : β → Finset α} {S : Finset α}
-    {F : Finset β} (hF : F ∈ historyGasFamilies P support S) {p q : β} {x : α}
+section
+variable {P : Finset β} {support : β → Finset α} {S : Finset α} {F : Finset β}
+
+theorem historyGasFamily_unique_at 
+    (hF : F ∈ historyGasFamilies P support S) {p q : β} {x : α}
     (hp : p ∈ F) (hq : q ∈ F) (hxp : x ∈ support p) (hxq : x ∈ support q) : p = q := by
   by_contra hpq
   exact Finset.disjoint_left.1 ((mem_historyGasFamilies.1 hF).2.1 p hp q hq hpq) hxp hxq
 
-theorem historyGasFamily_erase_component {P : Finset β} {support : β → Finset α} {S : Finset α}
-    {F : Finset β} {p : β} (hF : F ∈ historyGasFamilies P support S) (hp : p ∈ F) :
+section
+variable {p : β}
+
+theorem historyGasFamily_erase_component 
+    (hF : F ∈ historyGasFamilies P support S) (hp : p ∈ F) :
     F.erase p ∈ historyGasFamilies P support (S \ support p) := by
   obtain ⟨hFP, hcompat, hsupport⟩ := mem_historyGasFamilies.1 hF
   rw [mem_historyGasFamilies]
@@ -82,8 +88,8 @@ theorem historyGasFamily_erase_component {P : Finset β} {support : β → Finse
     exact Finset.mem_sdiff.2 ⟨hsupport q hqF hx,
       fun hxp => Finset.disjoint_left.1 (hcompat q hqF p hp hqp) hx hxp⟩
 
-theorem historyGasFamily_insert_component {P : Finset β} {support : β → Finset α} {S : Finset α}
-    {F : Finset β} {p : β} (hF : F ∈ historyGasFamilies P support (S \ support p))
+theorem historyGasFamily_insert_component 
+    (hF : F ∈ historyGasFamilies P support (S \ support p))
     (hp : p ∈ P) (hps : support p ⊆ S) : insert p F ∈ historyGasFamilies P support S := by
   obtain ⟨hFP, hcompat, hsupport⟩ := mem_historyGasFamilies.1 hF
   rw [mem_historyGasFamilies]
@@ -108,11 +114,15 @@ theorem historyGasFamily_insert_component {P : Finset β} {support : β → Fins
     · exact (hsupport q hq).trans Finset.sdiff_subset
 
 omit [DecidableEq β] in
-theorem historyGasComponent_not_mem {P : Finset β} {support : β → Finset α} {S : Finset α}
-    {F : Finset β} {p : β} {x : α} (hF : F ∈ historyGasFamilies P support (S \ support p))
+theorem historyGasComponent_not_mem 
+    {x : α} (hF : F ∈ historyGasFamilies P support (S \ support p))
     (hxp : x ∈ support p) : p ∉ F := by
   intro hp
   exact (Finset.mem_sdiff.1 ((mem_historyGasFamilies.1 hF).2.2 p hp hxp)).2 hxp
+
+end
+
+end
 
 omit [DecidableEq β] in
 theorem historyGasFamilies_erase (P : Finset β) (support : β → Finset α) (S : Finset α) (x : α) :
@@ -139,8 +149,14 @@ def historyGasActiveFamilies (P : Finset β) (support : β → Finset α) (S : F
   classical
   exact (historyGasFamilies P support S).filter (fun F => ∃ p ∈ F, x ∈ support p)
 
-theorem historyGas_active_sum (P : Finset β) (support : β → Finset α) (weight : β → ℝ)
-    (S : Finset α) (x : α) :
+section
+variable (P : Finset β) (support : β → Finset α) (weight : β → ℝ)
+
+section
+variable (S : Finset α) (x : α)
+
+theorem historyGas_active_sum 
+    :
     (∑ F ∈ historyGasActiveFamilies P support S x, ∏ p ∈ F, weight p) =
       ∑ p ∈ historyGasRows P support S x, weight p * historyGasPartition P support weight (S \ support p) := by
   classical
@@ -191,8 +207,8 @@ theorem historyGas_active_sum (P : Finset β) (support : β → Finset α) (weig
   rw [Finset.mul_sum]
 
 /-- The actual signed finite partition sum satisfies the paper's deletion recurrence. -/
-theorem historyGasPartition_deletion (P : Finset β) (support : β → Finset α) (weight : β → ℝ)
-    (S : Finset α) (x : α) :
+theorem historyGasPartition_deletion 
+    :
     historyGasPartition P support weight S = historyGasPartition P support weight (S.erase x) +
       ∑ p ∈ historyGasRows P support S x, weight p * historyGasPartition P support weight (S \ support p) := by
   classical
@@ -201,8 +217,10 @@ theorem historyGasPartition_deletion (P : Finset β) (support : β → Finset α
   rw [add_comm]
   exact (Finset.sum_filter_add_sum_filter_not _ _ _).symm
 
+end
+
 /-- Positivity is a theorem about the concrete finite sum, not a recurrence hypothesis. -/
-theorem historyGasPartition_positive (P : Finset β) (support : β → Finset α) (weight : β → ℝ)
+theorem historyGasPartition_positive 
     (hne : ∀ p ∈ P, (support p).Nonempty)
     (hactivity : ∀ S x, x ∈ S →
       (∑ p ∈ historyGasRows P support S x, |weight p| * (2 : ℝ) ^ ((support p).card - 1)) ≤ 1 / 2) :
@@ -216,5 +234,7 @@ theorem historyGasPartition_positive (P : Finset β) (support : β → Finset α
   · intro S x hx
     exact historyGasPartition_deletion P support weight S x
   · exact hactivity
+
+end
 
 end NearlyMinimax

@@ -10,21 +10,21 @@ noncomputable section
 open Set MeasureTheory
 open scoped ContDiff ENNReal BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 600000
 attribute [local instance] Classical.propDecidable
 
-def highWindowHolderConstant {d : ℕ} (C : ModelConstants d) : ℝ :=
+variable {d : ℕ}
+
+def highWindowHolderConstant (C : ModelConstants d) : ℝ :=
   (2 : ℝ) ^ d * (((d + C.order).choose d : ℝ) + 2)
 
-theorem highWindowHolderConstant_pos {d : ℕ} (C : ModelConstants d) :
+theorem highWindowHolderConstant_pos (C : ModelConstants d) :
     0 < highWindowHolderConstant C := by
   unfold highWindowHolderConstant
   positivity
 
 /-- With the original binomial count, the full norm constant is exactly
 the manuscript's C_w. -/
-theorem highFrameField_original_model_bounds {d : ℕ} (C : ModelConstants d) :
+theorem highFrameField_original_model_bounds (C : ModelConstants d) :
     ∃ Cfr : ℝ, 1 ≤ Cfr ∧ ∀ k : ℕ, ∀ (_ : NeZero k), 4 ≤ k →
       ∀ cf : ℝ, 0 ≤ cf → ∀ P : HighWindowLabels d k → MvPolynomial (Fin d) ℝ,
       (∀ j, frameCoefficientL1 (P j) ≤ Cfr⁻¹) →
@@ -51,7 +51,7 @@ theorem highFrameField_original_model_bounds {d : ℕ} (C : ModelConstants d) :
   unfold highWindowHolderConstant
   ring
 
-theorem highFrame_ternary_amplitude_guards {d : ℕ} {C : ModelConstants d}
+theorem highFrame_ternary_amplitude_guards {C : ModelConstants d}
     (Q : LowSmoothnessTernaryConstants C) :
     ∃ η0 : ℝ, 0 < η0 ∧ ∀ η : ℝ, 0 ≤ η → η ≤ η0 →
       η ^ 2 ≤ Q.ρ ∧ (2 : ℝ) ^ d * η ≤ Q.ρ / 2 := by
@@ -61,8 +61,8 @@ theorem highFrame_ternary_amplitude_guards {d : ℕ} {C : ModelConstants d}
     exact lt_min (Real.sqrt_pos.2 Q.ρ_pos) (div_pos Q.ρ_pos (by positivity))
   refine ⟨η0, hη0, ?_⟩
   intro η hη hηU
-  have hηsqrt : η ≤ Real.sqrt Q.ρ := hηU.trans (min_le_left _ _)
-  have hηρ : η ≤ Q.ρ / (2 * (2 : ℝ) ^ d) := hηU.trans (min_le_right _ _)
+  have hηsqrt := hηU.trans (min_le_left _ _)
+  have hηρ := hηU.trans (min_le_right _ _)
   constructor
   · nlinarith [Real.sq_sqrt Q.ρ_pos.le, Real.sqrt_nonneg Q.ρ]
   · have h := (le_div_iff₀ (by positivity : 0 < 2 * (2 : ℝ) ^ d)).mp hηρ

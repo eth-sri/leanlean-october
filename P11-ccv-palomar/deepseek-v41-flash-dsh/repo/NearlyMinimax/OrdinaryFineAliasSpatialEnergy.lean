@@ -13,8 +13,6 @@ noncomputable section
 open MeasureTheory Set Filter
 open scoped BigOperators Topology
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 attribute [local instance] Classical.propDecidable
 
 /-- The exact raw target-r ordinary fine-band expression produced by the
@@ -267,7 +265,9 @@ def ordinaryAliasSpatialCountBase (d : ℕ) (bd : ℝ) : ℝ :=
 def ordinaryAliasSpatialResponseBase (d : ℕ) (bd : ℝ) : ℝ :=
   3*ordinaryAliasSpatialCountBase d bd
 
-theorem ordinaryAliasSpatialPrefactor_nonneg (d q R : ℕ) (ad bd c0 C a ρ : ℝ) :
+variable (d q R : ℕ) (ad bd c0 C a ρ : ℝ)
+
+theorem ordinaryAliasSpatialPrefactor_nonneg :
     0 ≤ ordinaryAliasSpatialPrefactor d q R ad bd c0 C a ρ := by
   unfold ordinaryAliasSpatialPrefactor
   exact mul_nonneg (mul_nonneg (sq_nonneg _) (sq_nonneg _)) (lowerAliasSpatialA_nonneg d R)

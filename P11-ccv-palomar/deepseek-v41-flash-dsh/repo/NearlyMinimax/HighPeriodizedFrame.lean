@@ -10,8 +10,6 @@ noncomputable section
 open Set Function Filter
 open scoped Topology BigOperators ContDiff
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 attribute [local instance] Classical.propDecidable
 
 theorem integerLatticeTranslate_locallyFinite (d : ℕ) (G : Covariate d → ℝ)
@@ -28,8 +26,7 @@ theorem integerLatticeTranslate_locallyFinite (d : ℕ) (G : Covariate d → ℝ
   intro r
   have hclose := abs_lt.mp (hG (fun r => y r - z r) hy r)
   have hnorm : ‖y - x‖ < 1 := by simpa only [Metric.mem_ball, dist_eq_norm] using hnear
-  have hcoord : |y r - x r| < 1 := by
-    exact (show |y r - x r| ≤ ‖y - x‖ from by
+  have hcoord : |y r - x r| < 1 := (show |y r - x r| ≤ ‖y - x‖ from by
       simpa only [Pi.sub_apply, Real.norm_eq_abs] using norm_le_pi_norm (y - x) r).trans_lt hnorm
   have hcoord' := abs_lt.mp hcoord
   have hfloor := Int.floor_le (x r)
@@ -43,13 +40,15 @@ theorem integerLatticeTranslate_locallyFinite (d : ℕ) (G : Covariate d → ℝ
     push_cast
     linarith
 
-def highPeriodizedChart (d k : ℕ) (j : HighWindowLabels d k)
+variable (d k : ℕ) (j : HighWindowLabels d k) (G : Covariate d → ℝ)
+
+def highPeriodizedChart (j : HighWindowLabels d k)
     (G : Covariate d → ℝ) (x : Covariate d) : ℝ :=
   ∑ᶠ z : Fin d → ℤ, if (∀ r, (z r : ZMod k) = j r) then
     G (fun r => (k : ℝ) * x r - z r) else 0
 
-theorem highPeriodizedChart_locallyFinite (d k : ℕ) (j : HighWindowLabels d k)
-    (G : Covariate d → ℝ) (hG0 : ∀ u, highWindowTensor d u = 0 → G u = 0) :
+theorem highPeriodizedChart_locallyFinite 
+    (hG0 : ∀ u, highWindowTensor d u = 0 → G u = 0) :
     LocallyFinite (fun z : Fin d → ℤ => support (fun x : Covariate d =>
       if (∀ r, (z r : ZMod k) = j r) then G (fun r => (k : ℝ) * x r - z r) else 0)) := by
   have hlf := integerLatticeTranslate_locallyFinite d G (by
@@ -67,8 +66,8 @@ theorem highPeriodizedChart_locallyFinite (d k : ℕ) (j : HighWindowLabels d k)
     exact hx
   · simp [hz] at hx
 
-theorem highPeriodizedChart_contDiff (d k : ℕ) (j : HighWindowLabels d k)
-    (G : Covariate d → ℝ) (hG : ContDiff ℝ ∞ G)
+theorem highPeriodizedChart_contDiff 
+    (hG : ContDiff ℝ ∞ G)
     (hG0 : ∀ u, highWindowTensor d u = 0 → G u = 0) :
     ContDiff ℝ ∞ (highPeriodizedChart d k j G) := by
   unfold highPeriodizedChart
@@ -94,9 +93,12 @@ theorem highPeriodicWindow_term_le (k : ℕ) (j : ZMod k) (x : ℝ)
       · exact le_rfl)
   simpa only [ite_eq_left hz, highPeriodicWindow] using hh
 
+section
+variable [NeZero k]
+
 /-- Any chart supported by the compact profile has one smooth chart formula
 in a neighborhood, including points where that formula is zero. -/
-theorem highPeriodizedChart_eventuallyEq_single (d k : ℕ) [NeZero k] (hk : 4 ≤ k)
+theorem highPeriodizedChart_eventuallyEq_single (hk : 4 ≤ k)
     (j : HighWindowLabels d k) (G : Covariate d → ℝ)
     (hG0 : ∀ u, highWindowTensor d u = 0 → G u = 0) (x : Covariate d) :
     ∃ z : Fin d → ℤ, (∀ r, (z r : ZMod k) = j r) ∧
@@ -137,7 +139,7 @@ theorem highPeriodizedChart_eventuallyEq_single (d k : ℕ) [NeZero k] (hk : 4 �
       exact hq hqeq
     · simp only [ite_eq_right hqj]
 
-theorem highPeriodizedChart_derivative_bound (d k : ℕ) [NeZero k] (hk : 4 ≤ k)
+theorem highPeriodizedChart_derivative_bound (hk : 4 ≤ k)
     (j : HighWindowLabels d k) (G : Covariate d → ℝ) (hG : ContDiff ℝ ∞ G)
     (hG0 : ∀ u, highWindowTensor d u = 0 → G u = 0)
     (q : ℕ) (B : ℝ) (hB : ∀ u, ‖iteratedFDeriv ℝ q G u‖ ≤ B) (x : Covariate d) :
@@ -150,6 +152,8 @@ theorem highPeriodizedChart_derivative_bound (d k : ℕ) [NeZero k] (hk : 4 ≤ 
     B * |(k : ℝ)| ^ q at hh
   rwa [abs_of_nonneg (show (0 : ℝ) ≤ k from Nat.cast_nonneg k)] at hh
 
+end
+
 theorem highPeriodizedChart_tsupport_profile (d : ℕ) (G : Covariate d → ℝ)
     (hG0 : ∀ u, highWindowTensor d u = 0 → G u = 0) :
     tsupport G ⊆ tsupport (highWindowTensor d) := by
@@ -157,7 +161,10 @@ theorem highPeriodizedChart_tsupport_profile (d : ℕ) (G : Covariate d → ℝ)
   intro u hu
   exact fun h => hu (hG0 u h)
 
-theorem highPeriodizedChart_derivative_support_lift (d k : ℕ) [NeZero k] (hk : 4 ≤ k)
+section
+variable [NeZero k]
+
+theorem highPeriodizedChart_derivative_support_lift (hk : 4 ≤ k)
     (j : HighWindowLabels d k) (G : Covariate d → ℝ)
     (hG0 : ∀ u, highWindowTensor d u = 0 → G u = 0) (q : ℕ) (x : Covariate d)
     (hx : iteratedFDeriv ℝ q (highPeriodizedChart d k j G) x ≠ 0) :
@@ -177,7 +184,7 @@ theorem highPeriodizedChart_derivative_support_lift (d k : ℕ) [NeZero k] (hk :
   exact ⟨z, hz, highWindowTensor_tsupport_bound
     (highPeriodizedChart_tsupport_profile d G hG0 ht)⟩
 
-theorem highPeriodizedChart_derivative_active_subset (d k : ℕ) [NeZero k] (hk : 4 ≤ k)
+theorem highPeriodizedChart_derivative_active_subset (hk : 4 ≤ k)
     (G : HighWindowLabels d k → Covariate d → ℝ)
     (hG0 : ∀ j u, highWindowTensor d u = 0 → G j u = 0) (q : ℕ) (x : Covariate d) :
     Finset.univ.filter (fun j => iteratedFDeriv ℝ q (highPeriodizedChart d k j (G j)) x ≠ 0) ⊆
@@ -192,7 +199,7 @@ theorem highPeriodizedChart_derivative_active_subset (d k : ℕ) [NeZero k] (hk 
   · simp only [← hz r, he, Finset.mem_insert, Finset.mem_singleton, true_or]
   · simp only [← hz r, he, Finset.mem_insert, Finset.mem_singleton, or_true]
 
-theorem highPeriodizedChart_derivative_overlap (d k : ℕ) [NeZero k] (hk : 4 ≤ k)
+theorem highPeriodizedChart_derivative_overlap (hk : 4 ≤ k)
     (G : HighWindowLabels d k → Covariate d → ℝ)
     (hG0 : ∀ j u, highWindowTensor d u = 0 → G j u = 0) (q : ℕ) (x : Covariate d) :
     (Finset.univ.filter (fun j => iteratedFDeriv ℝ q (highPeriodizedChart d k j (G j)) x ≠ 0)).card ≤
@@ -200,15 +207,17 @@ theorem highPeriodizedChart_derivative_overlap (d k : ℕ) [NeZero k] (hk : 4 �
   (Finset.card_le_card (highPeriodizedChart_derivative_active_subset d k hk G hG0 q x)).trans
     (highActiveLabelBox_card_le d k x)
 
-def highFrameField (d k : ℕ) [NeZero k] (η : ℝ)
+def highFrameField (η : ℝ)
     (P : HighWindowLabels d k → MvPolynomial (Fin d) ℝ) (x : Covariate d) : ℝ :=
   η * ∑ j, highPeriodizedChart d k j (highFrameProfile (P j)) x
+
+end
 
 theorem highFrameProfile_zero_of_window_zero {d : ℕ} (P : MvPolynomial (Fin d) ℝ)
     (u : Covariate d) (hu : highWindowTensor d u = 0) : highFrameProfile P u = 0 := by
   simp only [highFrameProfile, hu, zero_mul]
 
-theorem highFrameField_contDiff (d k : ℕ) [NeZero k] (η : ℝ)
+theorem highFrameField_contDiff [NeZero k] (η : ℝ)
     (P : HighWindowLabels d k → MvPolynomial (Fin d) ℝ) :
     ContDiff ℝ ∞ (highFrameField d k η P) := by
   unfold highFrameField

@@ -14,14 +14,17 @@ noncomputable section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 600000
 
-def boundedHyperplaneSpatialMoment (d : ℕ) (T : ℝ) (j : ℕ)
+variable (d : ℕ)
+
+def boundedHyperplaneSpatialMoment (T : ℝ) (j : ℕ)
     (U : Fin j → Covariate d) : ℝ :=
   ∫ z, ∏ l, boundedHyperplaneFieldValue z (U l) ∂boundedHyperplaneFieldLaw d T
 
-theorem boundedHyperplaneSpatialMoment_measurable (d : ℕ) [NeZero d] (T : ℝ) (j : ℕ) :
+section
+variable [NeZero d] (T : ℝ) (j : ℕ)
+
+theorem boundedHyperplaneSpatialMoment_measurable :
     Measurable (boundedHyperplaneSpatialMoment d T j) := by
   have hm : Measurable (fun Uz : (Fin j → Covariate d) × partitionFieldMark (Covariate d × ℝ) =>
       ∏ l, boundedHyperplaneFieldValue Uz.2 (Uz.1 l)) :=
@@ -30,8 +33,8 @@ theorem boundedHyperplaneSpatialMoment_measurable (d : ℕ) [NeZero d] (T : ℝ)
         (measurable_snd.prodMk ((measurable_pi_apply l).comp measurable_fst)))
   exact hm.stronglyMeasurable.integral_prod_right'.measurable
 
-theorem boundedHyperplaneSpatialMoment_abs_le_one (d : ℕ) [NeZero d]
-    (T : ℝ) (j : ℕ) (U : Fin j → Covariate d) :
+theorem boundedHyperplaneSpatialMoment_abs_le_one 
+    (U : Fin j → Covariate d) :
     |boundedHyperplaneSpatialMoment d T j U| ≤ 1 := by
   unfold boundedHyperplaneSpatialMoment
   calc
@@ -40,16 +43,24 @@ theorem boundedHyperplaneSpatialMoment_abs_le_one (d : ℕ) [NeZero d]
     _ = 1 := by simp only [Finset.abs_prod, boundedHyperplaneFieldValue_abs,
       Finset.prod_const_one, integral_const, probReal_univ, smul_eq_mul, one_mul]
 
-def spatialQuadDistance {d j : ℕ} (q : CellMomentQuadruple j)
+end
+
+section
+variable {d j : ℕ}
+
+def spatialQuadDistance (q : CellMomentQuadruple j)
     (U : Fin j → Covariate d) : ℝ :=
   exactEuclideanDistance (U (q.val 0)) (U (q.val 1)) +
     exactEuclideanDistance (U (q.val 2)) (U (q.val 3))
 
-theorem spatialQuadDistance_nonneg {d j : ℕ} (q : CellMomentQuadruple j)
+section
+variable (q : CellMomentQuadruple j)
+
+theorem spatialQuadDistance_nonneg 
     (U : Fin j → Covariate d) : 0 ≤ spatialQuadDistance q U :=
   add_nonneg (exactEuclideanDistance_nonneg _ _) (exactEuclideanDistance_nonneg _ _)
 
-theorem spatialQuadDistance_continuous {d j : ℕ} (q : CellMomentQuadruple j) :
+theorem spatialQuadDistance_continuous :
     Continuous (spatialQuadDistance (d := d) q) := by
   have hm01 : Continuous (fun U : Fin j → Covariate d => (U (q.val 0), U (q.val 1))) :=
     (continuous_apply (q.val 0)).prodMk (continuous_apply (q.val 1))
@@ -63,13 +74,17 @@ theorem spatialQuadDistance_continuous {d j : ℕ} (q : CellMomentQuadruple j) :
     simpa only [Function.comp_def] using (exactEuclideanDistance_continuous (d := d)).comp hm23
   exact h01.add h23
 
-theorem spatialPatchBox_eq_hyperplaneCube (d : ℕ) :
+end
+
+end
+
+theorem spatialPatchBox_eq_hyperplaneCube :
     spatialPatchBox d = hyperplaneCube d := by
   ext x
   simp only [spatialPatchBox, mem_Icc, Pi.le_def, hyperplaneCube, mem_ofPred_eq, abs_le]
   exact ⟨fun h r => ⟨h.1 r, h.2 r⟩, fun h => ⟨fun r => (h r).1, fun r => (h r).2⟩⟩
 
-theorem spatialPatchProbability_ae_cube (d : ℕ) :
+theorem spatialPatchProbability_ae_cube :
     ∀ᵐ x ∂spatialPatchProbability d, x ∈ hyperplaneCube d := by
   rw [spatialPatchProbability, ← spatialPatchBox_eq_hyperplaneCube]
   exact (ae_restrict_mem measurableSet_Icc).filter_mono (Measure.ae_smul_measure_le _)
@@ -85,7 +100,7 @@ theorem spatialPatchProbability_pi_ae_cube (d j : ℕ) :
 
 /-- Genuine squared higher-moment bound under normalized independent spatial coordinates. -/
 theorem boundedHyperplaneSpatialMoment_squared_probability_integral_le
-    (d : ℕ) [NeZero d] (T : ℝ) (hT : 0 < T) (j : ℕ) (hj : 4 ≤ j) :
+    [NeZero d] (T : ℝ) (hT : 0 < T) (j : ℕ) (hj : 4 ≤ j) :
     (∫ U : Fin j → Covariate d, (boundedHyperplaneSpatialMoment d T j U)^2
       ∂Measure.pi (fun _ : Fin j => spatialPatchProbability d)) ≤
       (j : ℝ)^8 * (spatialExponentialConstant d / T^d)^2 := by
@@ -154,13 +169,13 @@ theorem boundedHyperplaneSpatialMoment_squared_probability_integral_le
       exact mul_le_mul_of_nonneg_right hb (sq_nonneg _)
 
 /-- The actual source cube volume is its volume times the genuine uniform law. -/
-theorem spatialPatchVolume_eq_smulProbability (d : ℕ) :
+theorem spatialPatchVolume_eq_smulProbability :
     volume.restrict (spatialPatchBox d) = (2 : ℝ≥0∞)^d • spatialPatchProbability d := by
   rw [spatialPatchProbability, smul_smul, ENNReal.mul_inv_cancel (by positivity) (by finiteness), one_smul]
 
 /-- The genuine unnormalized source-cube product integral with the exact volume factor. -/
 theorem boundedHyperplaneSpatialMoment_squared_cube_integral_le
-    (d : ℕ) [NeZero d] (T : ℝ) (hT : 0 < T) (j : ℕ) (hj : 4 ≤ j) :
+    [NeZero d] (T : ℝ) (hT : 0 < T) (j : ℕ) (hj : 4 ≤ j) :
     (∫ U : Fin j → Covariate d, (boundedHyperplaneSpatialMoment d T j U)^2
       ∂Measure.pi (fun _ : Fin j => volume.restrict (spatialPatchBox d))) ≤
       (2 : ℝ)^(d*j) * (j : ℝ)^8 * (spatialExponentialConstant d / T^d)^2 := by
@@ -180,7 +195,7 @@ theorem boundedHyperplaneSpatialMoment_squared_cube_integral_le
 def hyperplaneSpatialMomentConstant (d : ℕ) : ℝ :=
   (2 : ℝ)^d * (1 + spatialExponentialConstant d)
 
-theorem hyperplaneSpatialMomentConstant_positive (d : ℕ) :
+theorem hyperplaneSpatialMomentConstant_positive :
     0 < hyperplaneSpatialMomentConstant d := by
   unfold hyperplaneSpatialMomentConstant
   have := spatialExponentialConstant_nonneg d
@@ -189,7 +204,7 @@ theorem hyperplaneSpatialMomentConstant_positive (d : ℕ) :
 /-- The paper's higher-moment L² estimate for the genuinely constructed field,
 with no spatial-moment or integral bound as a premise. -/
 theorem boundedHyperplaneSpatialMoment_L2_le
-    (d : ℕ) [NeZero d] (T : ℝ) (hT : 0 < T) (j : ℕ) (hj : 4 ≤ j) :
+    [NeZero d] (T : ℝ) (hT : 0 < T) (j : ℕ) (hj : 4 ≤ j) :
     Real.sqrt (∫ U : Fin j → Covariate d, (boundedHyperplaneSpatialMoment d T j U)^2
       ∂Measure.pi (fun _ : Fin j => volume.restrict (spatialPatchBox d))) ≤
       (hyperplaneSpatialMomentConstant d)^j * (j : ℝ)^4 / T^d := by

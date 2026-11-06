@@ -13,8 +13,6 @@ noncomputable section
 open MeasureTheory ProbabilityTheory Matrix
 open scoped BigOperators Matrix.Norms.L2Operator
 namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 
 abbrev DyadicGlobalDimension (d ℓ j : ℕ) :=
   Fintype.card (PilotBasisIndex (Fintype.card (DyadicPilotLabelIndex d j)) d (2 * ℓ))
@@ -22,33 +20,35 @@ abbrev DyadicGlobalDimension (d ℓ j : ℕ) :=
 abbrev IncrementGlobalIndex (d ℓ j : ℕ) :=
   Unit ⊕ (Fin (DyadicGlobalDimension d ℓ j) ⊕ Fin (DyadicGlobalDimension d ℓ (j - 1)))
 
-def incrementGlobalFeature {d ℓ : ℕ} (j : ℕ) (a : IncrementGlobalIndex d ℓ j)
+variable {d ℓ : ℕ} (j : ℕ) (x : Covariate d) (a : LocalPilotIndex d ℓ)
+
+def incrementGlobalFeature (a : IncrementGlobalIndex d ℓ j)
     (z : Observation d) : ℝ :=
   match a with
   | Sum.inl _ => 1
   | Sum.inr (Sum.inl i) => pilotRawVector (ℓ := 2 * ℓ) (dyadicPilotLabel j) z i
   | Sum.inr (Sum.inr i) => pilotRawVector (ℓ := 2 * ℓ) (dyadicPilotLabel (j - 1)) z i
 
-def incrementGlobalVector {d ℓ : ℕ} (j : ℕ) (z : Observation d) :
+def incrementGlobalVector (z : Observation d) :
     Fin (Fintype.card (IncrementGlobalIndex d ℓ j)) → ℝ :=
   fun a => incrementGlobalFeature j ((Fintype.equivFin (IncrementGlobalIndex d ℓ j)).symm a) z
 
-def incrementGlobalMean {d ℓ : ℕ} (θ : RegressionParameter d) (j : ℕ) :
+def incrementGlobalMean (θ : RegressionParameter d) (j : ℕ) :
     Fin (Fintype.card (IncrementGlobalIndex d ℓ j)) → ℝ :=
   fun a => ∫ z, incrementGlobalVector (ℓ := ℓ) j z a ∂observationLaw θ
 
-theorem incrementGlobalFeature_measurable {d ℓ : ℕ} (j : ℕ)
+theorem incrementGlobalFeature_measurable 
     (a : IncrementGlobalIndex d ℓ j) : Measurable (incrementGlobalFeature j a) := by
   cases a with
   | inl _ => exact measurable_const
   | inr a =>
     cases a <;> exact pilotBasisFeature_measurable _ (dyadicPilotLabel_measurable _) _
 
-theorem incrementGlobalVector_measurable {d ℓ : ℕ} (j : ℕ) :
+theorem incrementGlobalVector_measurable :
     Measurable (incrementGlobalVector (d := d) (ℓ := ℓ) j) :=
   measurable_pi_iff.mpr (fun _ => incrementGlobalFeature_measurable j _)
 
-theorem incrementGlobalFeature_memLp_two {d ℓ : ℕ} (C : ModelConstants d)
+theorem incrementGlobalFeature_memLp_two (C : ModelConstants d)
     (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ)
     (a : IncrementGlobalIndex d ℓ j) : MemLp (incrementGlobalFeature j a) 2 (observationLaw θ) := by
   let := observationLaw_isProbability C θ hθ
@@ -57,51 +57,56 @@ theorem incrementGlobalFeature_memLp_two {d ℓ : ℕ} (C : ModelConstants d)
   | inr a =>
     cases a <;> exact pilotBasisFeature_memLp_two C θ hθ _ (dyadicPilotLabel_measurable _) _
 
-def incrementGlobalCurrent {d ℓ : ℕ} (j : ℕ) :
+def incrementGlobalCurrent :
     (Fin (Fintype.card (IncrementGlobalIndex d ℓ j)) → ℝ) →L[ℝ]
       (Fin (DyadicGlobalDimension d ℓ j) → ℝ) :=
   ContinuousLinearMap.pi (fun i => ContinuousLinearMap.proj
     ((Fintype.equivFin (IncrementGlobalIndex d ℓ j)) (Sum.inr (Sum.inl i))))
 
-def incrementGlobalParent {d ℓ : ℕ} (j : ℕ) :
+def incrementGlobalParent :
     (Fin (Fintype.card (IncrementGlobalIndex d ℓ j)) → ℝ) →L[ℝ]
       (Fin (DyadicGlobalDimension d ℓ (j - 1)) → ℝ) :=
   ContinuousLinearMap.pi (fun i => ContinuousLinearMap.proj
     ((Fintype.equivFin (IncrementGlobalIndex d ℓ j)) (Sum.inr (Sum.inr i))))
 
-def incrementGlobalOne {d ℓ : ℕ} (j : ℕ) :
+def incrementGlobalOne :
     (Fin (Fintype.card (IncrementGlobalIndex d ℓ j)) → ℝ) →L[ℝ] ℝ :=
   ContinuousLinearMap.proj ((Fintype.equivFin (IncrementGlobalIndex d ℓ j)) (Sum.inl ()))
 
-@[simp] theorem incrementGlobalCurrent_raw {d ℓ : ℕ} (j : ℕ) (z : Observation d) :
+section
+variable (z : Observation d)
+
+@[simp] theorem incrementGlobalCurrent_raw :
     incrementGlobalCurrent (ℓ := ℓ) j (incrementGlobalVector j z) =
       pilotRawVector (ℓ := 2 * ℓ) (dyadicPilotLabel j) z := by
   funext i
   simp [incrementGlobalCurrent, incrementGlobalVector, incrementGlobalFeature]
 
-@[simp] theorem incrementGlobalParent_raw {d ℓ : ℕ} (j : ℕ) (z : Observation d) :
+@[simp] theorem incrementGlobalParent_raw :
     incrementGlobalParent (ℓ := ℓ) j (incrementGlobalVector j z) =
       pilotRawVector (ℓ := 2 * ℓ) (dyadicPilotLabel (j - 1)) z := by
   funext i
   simp [incrementGlobalParent, incrementGlobalVector, incrementGlobalFeature]
 
-@[simp] theorem incrementGlobalOne_raw {d ℓ : ℕ} (j : ℕ) (z : Observation d) :
+@[simp] theorem incrementGlobalOne_raw :
     incrementGlobalOne (ℓ := ℓ) j (incrementGlobalVector j z) = 1 := by
   simp [incrementGlobalOne, incrementGlobalVector, incrementGlobalFeature]
 
-def preconditionedPilotCoordinate {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
+end
+
+def preconditionedPilotCoordinate (x : Covariate d)
     (a : LocalPilotIndex d ℓ) : (Fin (DyadicGlobalDimension d ℓ j) → ℝ) →L[ℝ] ℝ :=
   ∑ β : AnchoredIndex d ℓ, (dyadicKnownGram j x)⁻¹ (localPilotRow a) β •
     dyadicPilotCoordinate j x (localPilotReplaceRow a β)
 
-@[simp] theorem preconditionedPilotCoordinate_raw {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
-    (a : LocalPilotIndex d ℓ) (z : Observation d) :
+@[simp] theorem preconditionedPilotCoordinate_raw 
+    (z : Observation d) :
     preconditionedPilotCoordinate j x a (pilotRawVector (dyadicPilotLabel j) z) =
       preconditionedPilotFeature j x a z := by
   simp [preconditionedPilotCoordinate, preconditionedPilotFeature, smul_eq_mul,
     dyadicPilotCoordinate_raw_apply]
 
-def incrementPilotFreeCoordinate {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
+def incrementPilotFreeCoordinate (x : Covariate d)
     (a : incrementVariables (anchoredDimension d ℓ)) :
     (Fin (Fintype.card (IncrementGlobalIndex d ℓ j)) → ℝ) →L[ℝ] ℝ :=
   match a with
@@ -123,13 +128,13 @@ def incrementPilotFreeCoordinate {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
           (if pri.2.1 then Sum.inr (Sum.inr (anchoredFinIndex pri.2.2))
             else Sum.inr (Sum.inl (anchoredFinIndex pri.2.2)))).comp (incrementGlobalCurrent j)
 
-def incrementPilotCoordinate {d ℓ : ℕ} (j : ℕ) (x : Covariate d) :
+def incrementPilotCoordinate (x : Covariate d) :
     (Fin (Fintype.card (IncrementGlobalIndex d ℓ j)) → ℝ) →L[ℝ]
       (Fin (Fintype.card (incrementVariables (anchoredDimension d ℓ))) → ℝ) :=
   ContinuousLinearMap.pi (fun a => incrementPilotFreeCoordinate j x
     ((Fintype.equivFin (incrementVariables (anchoredDimension d ℓ))).symm a))
 
-theorem incrementPilotFreeCoordinate_raw {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
+theorem incrementPilotFreeCoordinate_raw 
     (a : incrementVariables (anchoredDimension d ℓ)) (z : Observation d) :
     incrementPilotFreeCoordinate j x a (incrementGlobalVector j z) = dyadicIncrementFeature j x a z := by
   cases a with
@@ -147,7 +152,7 @@ theorem incrementPilotFreeCoordinate_raw {d ℓ : ℕ} (j : ℕ) (x : Covariate 
     cases parent <;> cases response <;> by_cases hj : j = 0
     all_goals simp [incrementPilotFreeCoordinate, dyadicIncrementFeature, hj]
 
-@[simp] theorem incrementPilotCoordinate_raw {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
+@[simp] theorem incrementPilotCoordinate_raw 
     (z : Observation d) :
     incrementPilotCoordinate j x (incrementGlobalVector j z) = dyadicIncrementRawVector (ℓ := ℓ) j x z := by
   funext a
@@ -155,7 +160,7 @@ theorem incrementPilotFreeCoordinate_raw {d ℓ : ℕ} (j : ℕ) (x : Covariate 
 
 /-- Actual original-law population integration commutes with the exact
 global-coordinate map. This is the common mean needed by field covariance. -/
-theorem incrementPilotCoordinate_mean {d ℓ : ℕ} (C : ModelConstants d)
+theorem incrementPilotCoordinate_mean (C : ModelConstants d)
     (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d) :
     incrementPilotCoordinate (ℓ := ℓ) j x (incrementGlobalMean θ j) = dyadicIncrementRawMean θ j x := by
   let := observationLaw_isProbability C θ hθ

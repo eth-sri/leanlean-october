@@ -11,11 +11,11 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 attribute [local instance] Classical.propDecidable
 
- theorem fullSpatialPatchDesign_ae_hyperplaneCube {d n : ℕ} :
+ variable {d n : ℕ}
+
+theorem fullSpatialPatchDesign_ae_hyperplaneCube :
     ∀ᵐ U ∂fullSpatialPatchDesign d n, ∀ i, U i ∈ hyperplaneCube d := by
   have hU : ∀ᵐ U ∂fullSpatialPatchDesign d n, ∀ i, U i ∈ spatialPatchBox d := by
     apply ae_all_iff.mpr
@@ -32,8 +32,7 @@ attribute [local instance] Classical.propDecidable
       fineAliasLaplaceKernel lo hi (exactEuclideanDistance (U 0) (U 1)) := by
   unfold finePairTimeSubsetMoment
   simp only [Fin.prod_univ_two]
-  rw [finePairTimeFieldValue_weighted_covariance d lo hi hlo _ _ (hU 0) (hU 1)]
-  rw [exactEuclideanDistance_eq_euclideanNorm]
+  rw [finePairTimeFieldValue_weighted_covariance d lo hi hlo _ _ (hU 0) (hU 1), exactEuclideanDistance_eq_euclideanNorm]
   unfold fineAliasLaplaceKernel
   rw [intervalIntegral.integral_of_le hhi, ← integral_Icc_eq_integral_Ioc]
   apply integral_congr_ae
@@ -54,7 +53,7 @@ attribute [local instance] Classical.propDecidable
   refine ⟨h.1.congr he.symm, ?_⟩
   exact (integral_congr_ae he).trans_le h.2
 
- theorem finePairTimeSubsetMoment_two_subset_square_integrable_and_le {d n : ℕ} [NeZero d]
+ theorem finePairTimeSubsetMoment_two_subset_square_integrable_and_le [NeZero d]
     (hd : 4 < d) {lo hi : ℝ} (hlo : 0 < lo) (hhi : lo ≤ hi)
     (S : Finset (Fin n)) (hS : S.card = 2) :
     Integrable (fun U : Fin n → Covariate d => finePairTimeSubsetMoment lo hi U S ^ 2)
@@ -67,8 +66,7 @@ attribute [local instance] Classical.propDecidable
   · simp_rw [finePairTimeSubsetMoment_reindex (S := S)]
     exact spatial_subset_square_integrable_enumerated S _ h.1
   · rw [finePairTimeSubsetMoment_square_integral_reindex]
-    have hb := mul_le_mul_of_nonneg_left h.2 (by positivity : 0 ≤ (2 : ℝ)^(d*(n-S.card)))
-    simpa only [hS] using hb
+    simpa only [hS] using (mul_le_mul_of_nonneg_left h.2 (by positivity : 0 ≤ (2 : ℝ)^(d*(n-S.card))))
 
  def finePairAliasActionSpatialBudget (d n M q : ℕ) (ad bd C a ρ η T0 : ℝ) : ℝ :=
   (finePairDensityCoefficientBudget ad bd M n *

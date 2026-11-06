@@ -12,8 +12,6 @@ noncomputable section
 open Set MeasureTheory
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1800000
 attribute [local instance] Classical.propDecidable
 attribute [local irreducible] highUnionSourceDensity highUnionSourceState historyMarkedAppend
 
@@ -50,7 +48,6 @@ theorem completeSourceCanonicalAction_eq_signed_first_action
     Φ (highUnionSourceResetCoefficient C R j h e)
   letI : StandardBorelSpace (HighUnionMark (SourceRowMark d D M q ad bd Cfr lam ℓ N μ)) :=
     highUnionMark_standardBorel
-  have hc := highUnionSourceState_coefficient_ball C R G h j
   have hmCoef : Measurable (highUnionSourceResetCoefficient C R j h) :=
     measurable_pi_iff.mpr (highUnionSourceResetCoefficient_measurable C R G j h)
   have hmO : Measurable O := (Finset.measurable_fun_prod _ (fun u _ =>
@@ -62,7 +59,7 @@ theorem completeSourceCanonicalAction_eq_signed_first_action
     exact mul_le_mul (finite_density_product_abs_bound _ C.densityUpper
       (lt_trans zero_lt_one C.one_lt_densityUpper).le
       (fun u => highUnionSourceResetDensity_abs_le C R G j h e (x u)))
-      (hΦ _ (highUnionResponseReset_ball R Cfr (by linarith) G.vector_ball G.time_interval e c hc))
+      (hΦ _ (highUnionResponseReset_ball R Cfr (by linarith) G.vector_ball G.time_interval e c (highUnionSourceState_coefficient_ball C R G h j)))
       (abs_nonneg _) (pow_nonneg (lt_trans zero_lt_one C.one_lt_densityUpper).le n)
   have hreset (i) (e : SourceRowMark d D M q ad bd Cfr lam ℓ N μ i) (u) :
       highUnionSourceResetDensity C R j h (Sum.inl ⟨i,e⟩) (x u) =

@@ -12,15 +12,22 @@ noncomputable section
 open Set
 namespace NearlyMinimax
 
-def lowSmoothnessScoreConstant {d : ℕ} {C : ModelConstants d}
+variable {d : ℕ}
+
+section
+variable {C : ModelConstants d}
+
+def lowSmoothnessScoreConstant 
     (P : LowSmoothnessTernaryConstants C) : ℝ :=
   (40 : ℝ) ^ d * ternaryScoreExponentialConstant P.a P.ρ P.c ^ 2 *
     Real.exp (ternaryScoreExponentialConstant P.a P.ρ P.c)
 
-theorem lowSmoothnessScoreConstant_nonneg {d : ℕ} {C : ModelConstants d}
+theorem lowSmoothnessScoreConstant_nonneg 
     (P : LowSmoothnessTernaryConstants C) : 0 ≤ lowSmoothnessScoreConstant P := by
   unfold lowSmoothnessScoreConstant
   positivity
+
+end
 
 structure LowSmoothnessPriorConstants {d : ℕ} (C : ModelConstants d) where
   ternary : LowSmoothnessTernaryConstants C
@@ -33,7 +40,7 @@ structure LowSmoothnessPriorConstants {d : ℕ} (C : ModelConstants d) where
   score_guard : lowSmoothnessScoreConstant ternary * b ^ 4 ≤ 1
 
 /-- All prior legality and score guards hold for a fixed positive amplitude. -/
-theorem lowSmoothnessPriorConstants_exists {d : ℕ} (C : ModelConstants d) :
+theorem lowSmoothnessPriorConstants_exists (C : ModelConstants d) :
     Nonempty (LowSmoothnessPriorConstants C) := by
   obtain ⟨P⟩ := lowSmoothnessTernaryConstants_exists C
   let M := (2 : ℝ) ^ d + 2

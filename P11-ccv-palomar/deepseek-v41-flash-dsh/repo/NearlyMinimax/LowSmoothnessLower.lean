@@ -16,7 +16,6 @@ open MeasureTheory Set
 open scoped ENNReal BigOperators
 namespace NearlyMinimax
 
-set_option backward.isDefEq.respectTransparency false
 
 /-- The nonparametric low-smoothness minimax lower bound for all sample sizes
 n≥1, proved in the original regression experiment without a rate premise. -/

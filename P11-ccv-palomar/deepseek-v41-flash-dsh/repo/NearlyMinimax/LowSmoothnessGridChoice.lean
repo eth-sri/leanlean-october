@@ -24,12 +24,14 @@ def lowSmoothnessGrid (d : ℕ) (s x : ℝ) : ℕ := Nat.ceil (4 * x ^ lowSmooth
 
 def lowSmoothnessAmplitude (d : ℕ) (s b x : ℝ) : ℝ := b / (lowSmoothnessGrid d s x : ℝ) ^ s
 
-theorem lowSmoothnessGridExponent_pos {d : ℕ} {s : ℝ} (hs : 0 < s) :
+variable {d : ℕ} {s x : ℝ}
+
+theorem lowSmoothnessGridExponent_pos {s : ℝ} (hs : 0 < s) :
     0 < lowSmoothnessGridExponent d s := by
   unfold lowSmoothnessGridExponent
   positivity
 
-theorem lowSmoothnessGrid_rounding {d : ℕ} {s x : ℝ} (hs : 0 < s) (hx : 1 ≤ x) :
+theorem lowSmoothnessGrid_rounding (hs : 0 < s) (hx : 1 ≤ x) :
     4 * x ^ lowSmoothnessGridExponent d s ≤ (lowSmoothnessGrid d s x : ℝ) ∧
       (lowSmoothnessGrid d s x : ℝ) ≤ 5 * x ^ lowSmoothnessGridExponent d s := by
   have hbase : 1 ≤ x ^ lowSmoothnessGridExponent d s :=
@@ -39,19 +41,19 @@ theorem lowSmoothnessGrid_rounding {d : ℕ} {s x : ℝ} (hs : 0 < s) (hx : 1 �
   change (lowSmoothnessGrid d s x : ℝ) < 4 * x ^ lowSmoothnessGridExponent d s + 1 at hc
   linarith
 
-theorem lowSmoothnessGrid_ge_four {d : ℕ} {s x : ℝ} (hs : 0 < s) (hx : 1 ≤ x) :
+theorem lowSmoothnessGrid_ge_four (hs : 0 < s) (hx : 1 ≤ x) :
     4 ≤ lowSmoothnessGrid d s x := by
   have hbase : 1 ≤ x ^ lowSmoothnessGridExponent d s :=
     Real.one_le_rpow hx (lowSmoothnessGridExponent_pos hs).le
   have hh := (lowSmoothnessGrid_rounding (d := d) hs hx).1
   exact_mod_cast (show (4 : ℝ) ≤ (lowSmoothnessGrid d s x : ℝ) by linarith)
 
-theorem lowSmoothnessGrid_positive {d : ℕ} {s x : ℝ} (hs : 0 < s) (hx : 1 ≤ x) :
+theorem lowSmoothnessGrid_positive (hs : 0 < s) (hx : 1 ≤ x) :
     0 < (lowSmoothnessGrid d s x : ℝ) := by
   have hh := lowSmoothnessGrid_ge_four (d := d) hs hx
   exact_mod_cast (by omega : 0 < lowSmoothnessGrid d s x)
 
-theorem lowSmoothness_design_occupancy {d : ℕ} {s x : ℝ}
+theorem lowSmoothness_design_occupancy 
     (hs : 0 < s) (hd : 4 * s ≤ (d : ℝ)) (hx : 1 ≤ x) :
     x * (2 / (lowSmoothnessGrid d s x : ℝ)) ^ d ≤ 1 := by
   have hx0 : 0 < x := by linarith
@@ -75,12 +77,15 @@ theorem lowSmoothness_design_occupancy {d : ℕ} {s x : ℝ}
   rw [div_pow, ← mul_div_assoc]
   exact (div_le_iff₀ (pow_pos hk d)).2 (by simpa only [one_mul] using hbudget)
 
-theorem lowSmoothnessAmplitude_nonneg {d : ℕ} {s b x : ℝ}
+section
+variable {s b x : ℝ}
+
+theorem lowSmoothnessAmplitude_nonneg 
     (hs : 0 < s) (hb : 0 ≤ b) (hx : 1 ≤ x) : 0 ≤ lowSmoothnessAmplitude d s b x := by
   unfold lowSmoothnessAmplitude
   exact div_nonneg hb (Real.rpow_pos_of_pos (lowSmoothnessGrid_positive (d := d) hs hx) s).le
 
-theorem lowSmoothnessAmplitude_le_budget {d : ℕ} {s b x : ℝ}
+theorem lowSmoothnessAmplitude_le_budget 
     (hs : 0 < s) (hb : 0 ≤ b) (hx : 1 ≤ x) : lowSmoothnessAmplitude d s b x ≤ b := by
   have hk : 1 ≤ (lowSmoothnessGrid d s x : ℝ) := by
     have hh := lowSmoothnessGrid_ge_four (d := d) hs hx
@@ -88,7 +93,9 @@ theorem lowSmoothnessAmplitude_le_budget {d : ℕ} {s b x : ℝ}
   unfold lowSmoothnessAmplitude
   exact div_le_self hb (Real.one_le_rpow hk hs.le)
 
-theorem lowSmoothness_grid_power_budget {d : ℕ} {s x : ℝ} (hs : 0 < s) (hx : 1 ≤ x) :
+end
+
+theorem lowSmoothness_grid_power_budget (hs : 0 < s) (hx : 1 ≤ x) :
     x ^ (2 : ℕ) ≤ (lowSmoothnessGrid d s x : ℝ) ^ ((d : ℝ) + 4 * s) := by
   have hx0 : 0 < x := by linarith
   have hk := lowSmoothnessGrid_positive (d := d) hs hx
@@ -105,8 +112,11 @@ theorem lowSmoothness_grid_power_budget {d : ℕ} {s x : ℝ} (hs : 0 < s) (hx :
   rw [heq, Real.rpow_two] at hh
   exact hh
 
+section
+variable {s b x : ℝ}
+
 /-- The full source factor `n² eta⁴/k^d` is bounded uniformly for every `n>=1`. -/
-theorem lowSmoothness_numeric_score_budget {d : ℕ} {s b x : ℝ}
+theorem lowSmoothness_numeric_score_budget 
     (hs : 0 < s) (_hb : 0 ≤ b) (hx : 1 ≤ x) :
     x ^ 2 * (lowSmoothnessAmplitude d s b x) ^ 4 / (lowSmoothnessGrid d s x : ℝ) ^ d ≤ b ^ 4 := by
   have hk := lowSmoothnessGrid_positive (d := d) hs hx
@@ -127,7 +137,7 @@ theorem lowSmoothness_numeric_score_budget {d : ℕ} {s b x : ℝ}
   simpa only [mul_one] using mul_le_mul_of_nonneg_left hh (by positivity : 0 ≤ b ^ (4 : ℕ))
 
 /-- The actual variance separation has the paper's all-sample polynomial lower rate. -/
-theorem lowSmoothness_variance_separation {d : ℕ} {s b x : ℝ}
+theorem lowSmoothness_variance_separation 
     (hs : 0 < s) (hx : 1 ≤ x) :
     b ^ 2 / (5 : ℝ) ^ (2 * s) * x ^ (-4 * s / ((d : ℝ) + 4 * s)) ≤
       (lowSmoothnessAmplitude d s b x) ^ 2 := by
@@ -157,7 +167,9 @@ theorem lowSmoothness_variance_separation {d : ℕ} {s b x : ℝ}
   rw [← hleft]
   exact hh
 
-theorem lowSmoothness_amplitude_legal_guards {d : ℕ} {s b x ρ : ℝ}
+end
+
+theorem lowSmoothness_amplitude_legal_guards {s b x ρ : ℝ}
     (hs : 0 < s) (hb : 0 ≤ b) (hx : 1 ≤ x)
     (hlinear : ((2 : ℝ) ^ d + 2) * b ≤ ρ) (hsquare : b ^ 2 ≤ ρ) :
     0 ≤ lowSmoothnessAmplitude d s b x ∧
@@ -169,13 +181,13 @@ theorem lowSmoothness_amplitude_legal_guards {d : ℕ} {s b x ρ : ℝ}
   exact (mul_le_mul_of_nonneg_left hbnd (by positivity : 0 ≤ (2 : ℝ) ^ d + 2)).trans hlinear
 
 /-- A fixed source score multiplier `Q` produces a fixed all-sample energy budget. -/
-theorem lowSmoothness_total_score_budget {d : ℕ} {s b x Q : ℝ}
+theorem lowSmoothness_total_score_budget {s b x Q : ℝ}
     (hs : 0 < s) (hb : 0 ≤ b) (hx : 1 ≤ x) (hQ : 0 ≤ Q) :
     Q * (x ^ 2 * (lowSmoothnessAmplitude d s b x) ^ 4 / (lowSmoothnessGrid d s x : ℝ) ^ d) ≤ Q * b ^ 4 :=
   mul_le_mul_of_nonneg_left (lowSmoothness_numeric_score_budget hs hb hx) hQ
 
 /-- The same rounded grid balances the concrete pair-estimator variance. -/
-theorem lowSmoothnessGrid_pair_variance_budget {d : ℕ} {s x : ℝ}
+theorem lowSmoothnessGrid_pair_variance_budget 
     (hs : 0 < s) (hx : 1 ≤ x) :
     (lowSmoothnessGrid d s x : ℝ) ^ d / x ^ 2 ≤
       (5 : ℝ) ^ d * x ^ (-8 * s / ((d : ℝ) + 4 * s)) := by
@@ -193,7 +205,7 @@ theorem lowSmoothnessGrid_pair_variance_budget {d : ℕ} {s x : ℝ}
   rw [← hid]
   exact div_le_div_of_nonneg_right hupper (sq_nonneg x)
 
-theorem lowSmoothnessGrid_pair_bias_budget {d : ℕ} {s x : ℝ}
+theorem lowSmoothnessGrid_pair_bias_budget 
     (hs : 0 < s) (hx : 1 ≤ x) :
     (lowSmoothnessGrid d s x : ℝ) ^ (-4 * s) ≤ x ^ (-8 * s / ((d : ℝ) + 4 * s)) := by
   have hx0 : 0 < x := by linarith

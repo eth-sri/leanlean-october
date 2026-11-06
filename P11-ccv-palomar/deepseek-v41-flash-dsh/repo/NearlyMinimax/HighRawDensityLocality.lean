@@ -13,8 +13,6 @@ noncomputable section
 open Set MeasureTheory Function
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 600000
 attribute [local instance] Classical.propDecidable
 
 section Recursion
@@ -29,9 +27,11 @@ def affineRawHistory (patch : J → Set X) (slope intercept : J → E → X → 
     (slope (labels i) (marks i)) (intercept (labels i) (marks i))
     (response (labels i) (marks i)) state) initial
 
+variable (patch : J → Set X) (slope intercept : J → E → X → ℝ) (response : J → E → C → C) (labels : I → J) (indices : List I) (marks : I → E)
+
 theorem affineRawHistory_density_eq_outside_label
-    (patch : J → Set X) (slope intercept : J → E → X → ℝ)
-    (response : J → E → C → C) (labels : I → J) (indices : List I)
+    
+    
     (marks marks' : I → E) (j : J) (hm : ∀ i, labels i ≠ j → marks i = marks' i)
     (initial initial' : (X → ℝ) × (J → C)) (x : X) (hx : x ∉ patch j)
     (hi : initial.1 x = initial'.1 x) :
@@ -53,9 +53,9 @@ theorem affineRawHistory_density_eq_outside_label
         else initial'.1 x)
       rw [hi]
 
-theorem affineRawHistory_density_interval (patch : J → Set X)
-    (slope intercept : J → E → X → ℝ) (response : J → E → C → C)
-    (labels : I → J) (indices : List I) (marks : I → E)
+theorem affineRawHistory_density_interval 
+    
+    
     (a b : ℝ)
     (hlegal : ∀ j e x v, v ∈ Icc a b → slope j e x * v + intercept j e x ∈ Icc a b)
     (initial : (X → ℝ) × (J → C)) (hi : ∀ x, initial.1 x ∈ Icc a b) :
@@ -132,7 +132,9 @@ theorem highTorusPatch_real_volume_le (d k : ℕ) [NeZero k] (hk : 2 ≤ k)
   simpa only [measureReal_def, ENNReal.toReal_pow,
     ENNReal.toReal_ofReal (by positivity : (0 : ℝ) ≤ 2 / (k : ℝ))] using h
 
-theorem highAffineRawHistory_mass_block_oscillation {E C : Type*}
+variable {E C : Type*} (d k : ℕ)
+
+theorem highAffineRawHistory_mass_block_oscillation 
     (d k n : ℕ) [NeZero k] (hk : 2 ≤ k)
     (slope intercept : HighWindowLabels d k → E → Covariate d → ℝ)
     (hSlope : ∀ j e, Measurable (slope j e)) (hIntercept : ∀ j e, Measurable (intercept j e))
@@ -164,8 +166,11 @@ theorem highAffineRawHistory_mass_block_oscillation {E C : Type*}
       labels indices marks marks' j hm initial initial x hx rfl)).trans
   exact mul_le_mul_of_nonneg_right (highTorusPatch_real_volume_le d k hk j) (sub_nonneg.mpr hab)
 
-def highAffineMarkedMass {E C : Type*} (d k : ℕ) [NeZero k]
-    [LinearOrder (HighWindowLabels d k)] (dependent : HighWindowLabels d k → HighWindowLabels d k → Prop)
+section
+variable [NeZero k] [LinearOrder (HighWindowLabels d k)]
+
+def highAffineMarkedMass 
+    (dependent : HighWindowLabels d k → HighWindowLabels d k → Prop)
     (slope intercept : HighWindowLabels d k → E → Covariate d → ℝ)
     (response : HighWindowLabels d k → E → C → C)
     (initial : (Covariate d → ℝ) × (HighWindowLabels d k → C))
@@ -176,8 +181,8 @@ def highAffineMarkedMass {E C : Type*} (d k : ℕ) [NeZero k]
 
 /-- The actual canonical marked history mass has bounded differences when
 an entire label block of independent marks is replaced. -/
-theorem highAffineMarkedMass_block_oscillation {E C : Type*}
-    (d k : ℕ) [NeZero k] [LinearOrder (HighWindowLabels d k)] (hk : 2 ≤ k)
+theorem highAffineMarkedMass_block_oscillation 
+    (hk : 2 ≤ k)
     (dependent : HighWindowLabels d k → HighWindowLabels d k → Prop)
     (slope intercept : HighWindowLabels d k → E → Covariate d → ℝ)
     (hSlope : ∀ j e, Measurable (slope j e)) (hIntercept : ∀ j e, Measurable (intercept j e))
@@ -191,10 +196,11 @@ theorem highAffineMarkedMass_block_oscillation {E C : Type*}
     (hm : ∀ i, historyShapeCanonicalLabels dependent g i ≠ j → marks i = marks' i) :
     |highAffineMarkedMass d k dependent slope intercept response initial ⟨g, marks⟩ -
       highAffineMarkedMass d k dependent slope intercept response initial ⟨g, marks'⟩| ≤
-        (2 / (k : ℝ))^d * (b-a) := by
-  exact highAffineRawHistory_mass_block_oscillation d k (historyShapeLength dependent g) hk
+        (2 / (k : ℝ))^d * (b-a) := highAffineRawHistory_mass_block_oscillation d k (historyShapeLength dependent g) hk
     slope intercept hSlope hIntercept response (historyShapeCanonicalLabels dependent g)
     (List.ofFn (fun i : Fin (historyShapeLength dependent g) => i)) marks marks' j hm
     a b hab hlegal initial him hi
+
+end
 
 end NearlyMinimax

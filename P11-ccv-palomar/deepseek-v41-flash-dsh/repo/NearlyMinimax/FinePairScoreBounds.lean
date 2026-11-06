@@ -13,8 +13,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 800000
 
 theorem densitySeparatedSym_identical_columns (ψ : Fin 2 → ℝ) :
     densitySeparatedSym 2 (fun i _ => ψ i) Finset.univ = ψ 0 * ψ 1 := by
@@ -38,15 +36,16 @@ theorem ordinaryPairDensity_action (a b : ℝ) (ha : 0 < a) (hab : a < b)
   simpa only [Finset.card_univ, Fintype.card_fin, ite_true, hpow, Finset.sum_singleton,
     Fin.prod_univ_two, densitySeparatedSym_identical_columns, mul_assoc] using hh
 
-theorem ordinaryPairDensity_action_small_count {n : ℕ} (hn : n < 2)
+variable {n : ℕ}
+
+theorem ordinaryPairDensity_action_small_count (hn : n < 2)
     (a b : ℝ) (ha : 0 < a) (hab : a < b) (m D : ℕ) (hD : 1 ≤ D)
     (p : Fin n → ℝ) (ψ : Fin n → ℝ) :
     densityPacketAction a b m 2 D (fun z eps =>
-      ∏ i, localDensityReset a b 2 z eps p (fun i _ => ψ i) i) = 0 := by
-  exact density_packet_product_zero_of_small_count Finset.univ a b ha hab m 2 D
+      ∏ i, localDensityReset a b 2 z eps p (fun i _ => ψ i) i) = 0 := density_packet_product_zero_of_small_count Finset.univ a b ha hab m 2 D
     (by omega) hD (by simpa using (show n ≤ D by omega)) (by simpa using hn) p _
 
-theorem finePairDensity_action_small_count {n : ℕ} (hn : n < 2)
+theorem finePairDensity_action_small_count (hn : n < 2)
     (a b : ℝ) (M : ℕ) (p ψ : Fin n → ℝ) :
     (∫ᵛ e, (∏ i, finePairDensityReset a b e.1 e.2 p ψ i)
       ∂<•finePairDensitySignedRule a b M) = 0 := by
@@ -103,7 +102,9 @@ theorem finePairResponseAtomBound_le (q : ℕ) (C : ℝ) (c : ι → ℝ) (Φ : 
       |Φ (coefficientReset c (highResponseMarkAtom C q h).2 (highResponseMarkAtom C q h).1)|)
     (fun _ _ => abs_nonneg _) (Finset.mem_univ h)
 
-theorem ordinaryPairReset_measurable {n : ℕ} (a b : ℝ) (p : Fin n → ℝ)
+variable {n : ℕ} (a b : ℝ)
+
+theorem ordinaryPairReset_measurable (p : Fin n → ℝ)
     (ψ : Z → Fin n → ℝ) (hψ : ∀ i, Measurable (fun ζ => ψ ζ i))
     (z : ℝ) (eps : Fin 2 → ℝ) (i : Fin n) :
     Measurable (fun ζ => localDensityReset a b 2 z eps p (fun i _ => ψ ζ i) i) := by
@@ -111,7 +112,7 @@ theorem ordinaryPairReset_measurable {n : ℕ} (a b : ℝ) (p : Fin n → ℝ)
   exact measurable_const.add ((Finset.measurable_fun_sum _
     (fun l _ => (hψ i).const_mul (eps l))).const_mul _)
 
-theorem ordinaryPairReset_atom_abs_le {n : ℕ} (a b : ℝ) (ha : 0 < a) (hab : a < b)
+theorem ordinaryPairReset_atom_abs_le (ha : 0 < a) (hab : a < b)
     (m D : ℕ) (p : Fin n → ℝ) (hp : ∀ i, p i ∈ Icc a b)
     (ψ : Fin n → ℝ) (hψ : ∀ i, |ψ i| ≤ 1)
     (e : HighDensityMarkIndex m 2 D) (i : Fin n) :
@@ -148,7 +149,7 @@ theorem ordinaryPairPacket_pair_action (σ : Measure Z) [IsFiniteMeasure σ]
   simp_rw [he]
   exact integral_const_mul _ _
 
-theorem ordinaryPairPacket_small_count {n : ℕ} (hn : n < 2)
+theorem ordinaryPairPacket_small_count (hn : n < 2)
     (σ : Measure Z) [IsFiniteMeasure σ] (a b : ℝ) (ha : 0 < a) (hab : a < b)
     (m D q : ℕ) (hD : 1 ≤ D) (C : ℝ)
     (A : Z → ι → ι → ℝ) (hA : ∀ i j, Measurable (fun ζ => A ζ i j))
@@ -170,7 +171,7 @@ theorem ordinaryPairPacket_small_count {n : ℕ} (hn : n < 2)
     zero_mul]
   exact integral_zero _ _
 
-theorem finePairPacket_small_count {n : ℕ} (hn : n < 2)
+theorem finePairPacket_small_count (hn : n < 2)
     (σ : Measure Z) [IsFiniteMeasure σ] (a b : ℝ) (ha : 0 < a) (hab : a < b)
     (M q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
     (hA : ∀ i j, Measurable (fun ζ => A ζ i j))
@@ -204,14 +205,16 @@ theorem responseMatrixAction_matrix_add {ι : Type*} [Fintype ι] [DecidableEq �
 section ActualRows
 variable {d F : ℕ} [NeZero d]
 
-def finePairUnitFirstAction {n : ℕ} (ad bd : ℝ) (D q : ℕ) (C : ℝ)
+variable {n : ℕ}
+
+def finePairUnitFirstAction (ad bd : ℝ) (D q : ℕ) (C : ℝ)
     (p : Fin n → ℝ) (c : HighFrameIndex d F → ℝ)
     (Φ : (HighFrameIndex d F → ℝ) → ℝ) : ℝ :=
   ∫ᵛ e, highPacketObservable ad bd D 2 D q C c
     (fun _ z eps => ∏ i, localDensityReset ad bd 2 z eps p (fun _ _ => 1) i) Φ e
     ∂<•highPacketSignedMeasure (Measure.dirac ()) ad bd D 2 D q C (fun _ => finePairUnitMatrix d F)
 
-def finePairCoarseFirstAction {n : ℕ} (ad bd T0 : ℝ) (D q : ℕ) (C : ℝ)
+def finePairCoarseFirstAction (ad bd T0 : ℝ) (D q : ℕ) (C : ℝ)
     (U : Fin n → Covariate d) (p : Fin n → ℝ) (c : HighFrameIndex d F → ℝ)
     (Φ : (HighFrameIndex d F → ℝ) → ℝ) : ℝ :=
   ∫ᵛ e, highPacketObservable ad bd D 2 D q C c
@@ -220,7 +223,7 @@ def finePairCoarseFirstAction {n : ℕ} (ad bd T0 : ℝ) (D q : ℕ) (C : ℝ)
     ∂<•highPacketSignedMeasure (finePairTimeFieldMeasure d 0 T0) ad bd D 2 D q C
       (finePairTimeMatrix d (finePairDistanceMatrix d F))
 
-def finePairFineFirstAction {n : ℕ} (ad bd T0 N : ℝ) (M q : ℕ) (C : ℝ)
+def finePairFineFirstAction (ad bd T0 N : ℝ) (M q : ℕ) (C : ℝ)
     (U : Fin n → Covariate d) (p : Fin n → ℝ) (c : HighFrameIndex d F → ℝ)
     (Φ : (HighFrameIndex d F → ℝ) → ℝ) : ℝ :=
   ∫ᵛ e, finePairPacketObservable ad bd M q C c
@@ -229,7 +232,7 @@ def finePairFineFirstAction {n : ℕ} (ad bd T0 N : ℝ) (M q : ℕ) (C : ℝ)
     ∂<•finePairPacketSignedMeasure (finePairTimeFieldMeasure d T0 N) ad bd M q C
       (finePairTimeMatrix d (finePairDistanceMatrix d F))
 
-def finePairThreeRowFirstAction {n : ℕ} (ad bd T0 N : ℝ) (D M q : ℕ) (C : ℝ)
+def finePairThreeRowFirstAction (ad bd T0 N : ℝ) (D M q : ℕ) (C : ℝ)
     (U : Fin n → Covariate d) (p : Fin n → ℝ) (c : HighFrameIndex d F → ℝ)
     (Φ : (HighFrameIndex d F → ℝ) → ℝ) : ℝ :=
   finePairUnitFirstAction ad bd D q C p c Φ + finePairCoarseFirstAction ad bd T0 D q C U p c Φ +
@@ -259,7 +262,10 @@ theorem finePairCoarseFirstAction_pair (ad bd T0 : ℝ) (ha : 0 < ad) (hab : ad 
     (fun ζ i => (finePairTimeFieldValue_abs ζ (U i)).le)]
   rw [finePairTime_response_integral d 0 T0 (le_refl 0) (U 0) (U 1) (hU 0) (hU 1)]
 
-theorem finePairFineFirstAction_pair (ad bd T0 N : ℝ) (ha : 0 < ad) (hab : ad < bd)
+section
+variable (ad bd T0 N : ℝ)
+
+theorem finePairFineFirstAction_pair (ha : 0 < ad) (hab : ad < bd)
     (hT0 : 0 ≤ T0) (M q : ℕ) (hM : 2 ≤ M) (C : ℝ) (U : Fin 2 → Covariate d)
     (hU : ∀ i, U i ∈ hyperplaneCube d) (p : Fin 2 → ℝ) (hp : ∀ i, p i ∈ Icc ad bd)
     (c : HighFrameIndex d F → ℝ) (Φ : (HighFrameIndex d F → ℝ) → ℝ) :
@@ -276,7 +282,7 @@ theorem finePairFineFirstAction_pair (ad bd T0 N : ℝ) (ha : 0 < ad) (hab : ad 
     Φ (finePairResponseAtomBound q C c Φ) (finePairResponseAtomBound_le q C c Φ)]
   rw [finePairTime_response_integral d T0 N hT0 (U 0) (U 1) (hU 0) (hU 1)]
 
-theorem finePairThreeRowFirstAction_pair (ad bd T0 N : ℝ) (ha : 0 < ad) (hab : ad < bd)
+theorem finePairThreeRowFirstAction_pair (ha : 0 < ad) (hab : ad < bd)
     (hT0 : 0 ≤ T0) (hN : T0 ≤ N) (D M q : ℕ) (hD : 2 ≤ D) (hM : 2 ≤ M)
     (C : ℝ) (U : Fin 2 → Covariate d) (hU : ∀ i, U i ∈ hyperplaneCube d)
     (p : Fin 2 → ℝ) (hp : ∀ i, p i ∈ Icc ad bd) (c : HighFrameIndex d F → ℝ)
@@ -290,8 +296,7 @@ theorem finePairThreeRowFirstAction_pair (ad bd T0 N : ℝ) (ha : 0 < ad) (hab :
   change _ = (p 0 * p 1) * responseMatrixAction q C
     (fun i j => finePairUnitMatrix d F i j +
       pairLaplaceKernel N (exactEuclideanDistance (U 0) (U 1)) * finePairDistanceMatrix d F i j) c Φ
-  rw [responseMatrixAction_matrix_add, responseMatrixAction_scalar_matrix]
-  rw [exactEuclideanDistance_eq_euclideanNorm]
+  rw [responseMatrixAction_matrix_add, responseMatrixAction_scalar_matrix, exactEuclideanDistance_eq_euclideanNorm]
   have hsplit := pairLaplaceKernel_split hT0 hN (euclideanNorm (fun r => U 0 r - U 1 r))
   have he : (fun T : ℝ => T * Real.exp (-T * euclideanNorm (fun r => U 0 r - U 1 r))) =
       (fun T => T * Real.exp (-(T * euclideanNorm (fun r => U 0 r - U 1 r)))) := by
@@ -300,6 +305,8 @@ theorem finePairThreeRowFirstAction_pair (ad bd T0 N : ℝ) (ha : 0 < ad) (hab :
     ring
   rw [he, ← hsplit]
   ring
+
+end
 
 theorem finePairThreeRow_count_two_numerator (hF : 3 ≤ F)
     (ad bd T0 N : ℝ) (ha : 0 < ad) (hab : ad < bd) (hT0 : 0 ≤ T0) (hN : T0 ≤ N)
@@ -324,23 +331,20 @@ theorem finePairThreeRow_count_two_numerator (hF : 3 ≤ F)
     Real.sq_sqrt (Finset.sum_nonneg (fun _ _ => sq_nonneg _))
   rw [← hsq, mul_comm (pairLaplaceKernel _ _), pairLaplaceKernel_defect N _ hr]
 
-theorem finePairThreeRowFirstAction_small_count {n : ℕ} (hn : n < 2)
+theorem finePairThreeRowFirstAction_small_count (hn : n < 2)
     (ad bd T0 N : ℝ) (ha : 0 < ad) (hab : ad < bd) (D M q : ℕ) (hD : 1 ≤ D)
     (C : ℝ) (U : Fin n → Covariate d) (p : Fin n → ℝ) (hp : ∀ i, p i ∈ Icc ad bd)
     (c : HighFrameIndex d F → ℝ) (Φ : (HighFrameIndex d F → ℝ) → ℝ) :
     finePairThreeRowFirstAction ad bd T0 N D M q C U p c Φ = 0 := by
-  have hunit : finePairUnitFirstAction ad bd D q C p c Φ = 0 := by
-    exact ordinaryPairPacket_small_count hn (Measure.dirac ()) ad bd ha hab D D q hD C
+  have hunit : finePairUnitFirstAction ad bd D q C p c Φ = 0 := ordinaryPairPacket_small_count hn (Measure.dirac ()) ad bd ha hab D D q hD C
       (fun _ => finePairUnitMatrix d F) (fun _ _ => measurable_const) (integrable_const _) c p hp
       (fun _ _ => 1) (fun _ => measurable_const) (by intro _ _; norm_num) Φ
-  have hcoarse : finePairCoarseFirstAction ad bd T0 D q C U p c Φ = 0 := by
-    exact ordinaryPairPacket_small_count hn _ ad bd ha hab D D q hD C _
+  have hcoarse : finePairCoarseFirstAction ad bd T0 D q C U p c Φ = 0 := ordinaryPairPacket_small_count hn _ ad bd ha hab D D q hD C _
       (finePairTimeMatrix_measurable d _) (finePairTimeMatrix_cost_integrable d 0 T0 _) c p hp
       (fun ζ i => finePairTimeFieldValue ζ (U i))
       (fun i => (boundedHyperplaneFieldValue_section_measurable d (U i)).comp measurable_snd)
       (fun ζ i => (finePairTimeFieldValue_abs ζ (U i)).le) Φ
-  have hfine : finePairFineFirstAction ad bd T0 N M q C U p c Φ = 0 := by
-    exact finePairPacket_small_count hn _ ad bd ha hab M q C _
+  have hfine : finePairFineFirstAction ad bd T0 N M q C U p c Φ = 0 := finePairPacket_small_count hn _ ad bd ha hab M q C _
       (finePairTimeMatrix_measurable d _) (finePairTimeMatrix_cost_integrable d T0 N _) c p hp
       (fun ζ i => finePairTimeFieldValue ζ (U i))
       (fun i => (boundedHyperplaneFieldValue_section_measurable d (U i)).comp measurable_snd)

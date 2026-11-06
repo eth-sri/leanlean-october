@@ -11,17 +11,15 @@ noncomputable section
 open MvPolynomial
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 
-theorem frameCoefficientL1_mul {d : ℕ} (P Q : MvPolynomial (Fin d) ℝ) :
+variable {d : ℕ}
+
+theorem frameCoefficientL1_mul (P Q : MvPolynomial (Fin d) ℝ) :
     frameCoefficientL1 (P * Q) ≤ frameCoefficientL1 P * frameCoefficientL1 Q := by
   classical
-  have hP : P = ∑ β : P.support, monomial β.val (P.coeff β.val) := by
-    exact P.as_sum.trans (Finset.sum_coe_sort P.support
+  have hP := P.as_sum.trans (Finset.sum_coe_sort P.support
       (fun β => monomial β (P.coeff β))).symm
-  have hQ : Q = ∑ β : Q.support, monomial β.val (Q.coeff β.val) := by
-    exact Q.as_sum.trans (Finset.sum_coe_sort Q.support
+  have hQ := Q.as_sum.trans (Finset.sum_coe_sort Q.support
       (fun β => monomial β (Q.coeff β))).symm
   have hprod : P * Q = ∑ β : P.support × Q.support,
       monomial (β.1.val + β.2.val) (P.coeff β.1.val * Q.coeff β.2.val) := by
@@ -48,12 +46,12 @@ theorem frameCoefficientL1_mul {d : ℕ} (P Q : MvPolynomial (Fin d) ℝ) :
       rw [Finset.sum_coe_sort P.support (fun β => |P.coeff β|)]
       rfl
 
-theorem frameCoefficientL1_one {d : ℕ} :
+theorem frameCoefficientL1_one :
     frameCoefficientL1 (1 : MvPolynomial (Fin d) ℝ) = 1 := by
   classical
   simp [frameCoefficientL1, MvPolynomial.support_one]
 
-theorem frameCoefficientL1_prod {d : ℕ} {I : Type*} (s : Finset I)
+theorem frameCoefficientL1_prod {I : Type*} (s : Finset I)
     (P : I → MvPolynomial (Fin d) ℝ) :
     frameCoefficientL1 (∏ i ∈ s, P i) ≤ ∏ i ∈ s, frameCoefficientL1 (P i) := by
   classical
@@ -64,7 +62,7 @@ theorem frameCoefficientL1_prod {d : ℕ} {I : Type*} (s : Finset I)
     exact (frameCoefficientL1_mul _ _).trans
       (mul_le_mul_of_nonneg_left ih (frameCoefficientL1_nonneg _))
 
-theorem frameCoefficientL1_coeff_sum_le {d : ℕ} (P : MvPolynomial (Fin d) ℝ)
+theorem frameCoefficientL1_coeff_sum_le (P : MvPolynomial (Fin d) ℝ)
     (s : Finset (Fin d →₀ ℕ)) :
     (∑ β ∈ s, |P.coeff β|) ≤ frameCoefficientL1 P := by
   classical

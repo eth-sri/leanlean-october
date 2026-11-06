@@ -11,9 +11,10 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
 
-theorem spatial_subset_product_reindex {d k : ℕ} (S : Finset (Fin k))
+variable {d k : ℕ} (lo hi : ℝ)
+
+theorem spatial_subset_product_reindex (S : Finset (Fin k))
     (U : Fin k → Covariate d) (f : Covariate d → ℝ) :
     (∏ i ∈ S, f (U i)) = ∏ j : Fin S.card, f (spatialSubsetConfiguration S U j) := by
   classical
@@ -21,7 +22,7 @@ theorem spatial_subset_product_reindex {d k : ℕ} (S : Finset (Fin k))
   rw [← Finset.prod_coe_sort S (fun i => f (U i))]
   exact (e.symm.prod_comp (fun i : S => f (U i.val))).symm
 
-theorem finePairTimeSubsetMoment_reindex {d k : ℕ} (lo hi : ℝ)
+theorem finePairTimeSubsetMoment_reindex 
     (U : Fin k → Covariate d) (S : Finset (Fin k)) :
     finePairTimeSubsetMoment lo hi U S =
       finePairTimeSubsetMoment lo hi (spatialSubsetConfiguration S U) Finset.univ := by
@@ -43,13 +44,16 @@ theorem finePairTimeSubsetMoment_univ_measurable {d j : ℕ} [NeZero d] (lo hi :
   simp_rw [finePairTimeSubsetMoment_univ_eq]
   exact h
 
-theorem finePairTimeSubsetMoment_measurable {d k : ℕ} [NeZero d] (lo hi : ℝ)
+section
+variable [NeZero d]
+
+theorem finePairTimeSubsetMoment_measurable (lo hi : ℝ)
     (S : Finset (Fin k)) :
     Measurable (fun U : Fin k → Covariate d => finePairTimeSubsetMoment lo hi U S) := by
   simp_rw [finePairTimeSubsetMoment_reindex (S := S)]
   exact (finePairTimeSubsetMoment_univ_measurable lo hi).comp (spatialSubsetConfiguration_measurable S)
 
-theorem finePairTimeSubsetMoment_square_integrable {d k : ℕ} [NeZero d]
+theorem finePairTimeSubsetMoment_square_integrable 
     (hd : 3 ≤ d) {lo hi : ℝ} (hlo : 0 < lo) (S : Finset (Fin k)) (hS : 4 ≤ S.card) :
     Integrable (fun U : Fin k → Covariate d => finePairTimeSubsetMoment lo hi U S ^ 2)
       (fullSpatialPatchDesign d k) := by
@@ -58,8 +62,10 @@ theorem finePairTimeSubsetMoment_square_integrable {d k : ℕ} [NeZero d]
     (fun V => finePairTimeSubsetMoment lo hi V Finset.univ)
     (finePairTimeSubsetMoment_univ_square_integrable hd hS hlo)
 
-theorem finePairTimeSubsetMoment_square_integral_reindex {d k : ℕ}
-    (lo hi : ℝ) (S : Finset (Fin k)) :
+end
+
+theorem finePairTimeSubsetMoment_square_integral_reindex 
+    (S : Finset (Fin k)) :
     (∫ U : Fin k → Covariate d, finePairTimeSubsetMoment lo hi U S ^ 2
       ∂fullSpatialPatchDesign d k) = (2 : ℝ) ^ (d * (k - S.card)) *
         ∫ V : Fin S.card → Covariate d, finePairTimeSubsetMoment lo hi V Finset.univ ^ 2
@@ -68,7 +74,7 @@ theorem finePairTimeSubsetMoment_square_integral_reindex {d k : ℕ}
   exact spatial_subset_square_integral_enumerated (d := d) S
     (fun V => finePairTimeSubsetMoment lo hi V Finset.univ)
 
-theorem finePairTimeSubsetMoment_square_integral_le {d k : ℕ} [NeZero d]
+theorem finePairTimeSubsetMoment_square_integral_le [NeZero d]
     (hd : 3 ≤ d) {lo hi : ℝ} (hlo : 0 < lo) (S : Finset (Fin k)) (hS : 4 ≤ S.card) :
     (∫ U : Fin k → Covariate d, finePairTimeSubsetMoment lo hi U S ^ 2
       ∂fullSpatialPatchDesign d k) ≤
@@ -76,11 +82,9 @@ theorem finePairTimeSubsetMoment_square_integral_le {d k : ℕ} [NeZero d]
         (hyperplaneSpatialMomentConstant d ^ S.card * (S.card : ℝ) ^ 4 * lo ^ (2 - (d : ℝ))) ^ 2 := by
   rw [finePairTimeSubsetMoment_square_integral_reindex]
   apply mul_le_mul_of_nonneg_left _ (by positivity)
-  have hb := finePairTimeSubsetMoment_univ_L2_le (d := d) hd hS (hi := hi) hlo
   have hn : 0 ≤ ∫ V : Fin S.card → Covariate d,
       finePairTimeSubsetMoment lo hi V Finset.univ ^ 2 ∂fullSpatialPatchDesign d S.card :=
     integral_nonneg (fun _ => sq_nonneg _)
-  have hs := (sq_le_sq₀ (Real.sqrt_nonneg _) (by positivity [hyperplaneSpatialMomentConstant_positive d])).mpr hb
-  simpa only [Real.sq_sqrt hn] using hs
+  simpa only [Real.sq_sqrt hn] using ((sq_le_sq₀ (Real.sqrt_nonneg _) (by positivity [hyperplaneSpatialMomentConstant_positive d])).mpr (finePairTimeSubsetMoment_univ_L2_le (d := d) hd hS (hi := hi) hlo))
 
 end NearlyMinimax

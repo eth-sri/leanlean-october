@@ -11,7 +11,6 @@ noncomputable section
 open MeasureTheory
 open scoped RealInnerProductSpace
 namespace NearlyMinimax.PilotFields
-set_option backward.isDefEq.respectTransparency false
 
 variable {Ω W H : Type*} [MeasurableSpace Ω] [MeasurableSpace W]
 variable [NormedAddCommGroup H] [InnerProductSpace ℝ H]
@@ -22,21 +21,22 @@ def maskedPilotKernel (c : Ω → W → H) (A : W → H →L[ℝ] H)
     (q : W → ℝ) (z : (Ω × Ω) × W) : ℝ :=
   q z.2 * ⟪c z.1.1 z.2, A z.2 (c z.1.2 z.2)⟫
 
-theorem maskedPilotKernel_measurable {c : Ω → W → H}
+variable {c : Ω → W → H}
+
+theorem maskedPilotKernel_measurable 
     (hmc : Measurable (fun z : Ω × W => c z.1 z.2))
     {A : W → H →L[ℝ] H} (hmA : Measurable (fun z : W × H => A z.1 z.2))
-    {q : W → ℝ} (hmq : Measurable q) : Measurable (maskedPilotKernel c A q) := by
-  exact (hmq.comp measurable_snd).mul
+    {q : W → ℝ} (hmq : Measurable q) : Measurable (maskedPilotKernel c A q) := (hmq.comp measurable_snd).mul
     ((hmc.comp (measurable_fst.fst.prodMk measurable_snd)).inner
       (hmA.comp (measurable_snd.prodMk
         (hmc.comp (measurable_fst.snd.prodMk measurable_snd)))))
 
-theorem maskedPilotKernel_sq_eq {c : Ω → W → H} {A : W → H →L[ℝ] H}
+theorem maskedPilotKernel_sq_eq {A : W → H →L[ℝ] H}
     {q : W → ℝ} (hq : ∀ w, q w ^ 2 = q w) (z : (Ω × Ω) × W) :
     maskedPilotKernel c A q z ^ 2 = weightedPilotKernel c A q z := by
   simp only [maskedPilotKernel, weightedPilotKernel, mul_pow, hq]
 
-theorem maskedPilotKernel_memLp {c : Ω → W → H}
+theorem maskedPilotKernel_memLp 
     (hmc : Measurable (fun z : Ω × W => c z.1 z.2))
     {A : W → H →L[ℝ] H} (hmA : Measurable (fun z : W × H => A z.1 z.2))
     {q : W → ℝ} (hmq : Measurable q) (hq : ∀ w, q w ^ 2 = q w)
@@ -50,7 +50,7 @@ theorem maskedPilotKernel_memLp {c : Ω → W → H}
   exact weightedPilotKernel_integrable hmc hmA hmq
     (Filter.Eventually.of_forall (fun w => (hq w).symm ▸ sq_nonneg (q w))) hA hc hL hE
 
-theorem maskedPilotKernel_energy_le {c : Ω → W → H}
+theorem maskedPilotKernel_energy_le 
     (hmc : Measurable (fun z : Ω × W => c z.1 z.2))
     {A : W → H →L[ℝ] H} (hmA : Measurable (fun z : W × H => A z.1 z.2))
     {q : W → ℝ} (hmq : Measurable q) (hq : ∀ w, q w ^ 2 = q w)

@@ -16,8 +16,10 @@ namespace NearlyMinimax
 
 variable {J : Type*} [Fintype J] [LinearOrder J]
 
+variable (dependent : J → J → Prop)
+
 /-- The genuine reference mean is one when every actual canonical mark fiber has mean one. -/
-theorem historyMarkedReference_mean_one (dependent : J → J → Prop)
+theorem historyMarkedReference_mean_one 
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (Δ : ℕ) (hΔ : 1 ≤ Δ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
     {E : Type*} [MeasurableSpace E] (π : Measure E) [IsProbabilityMeasure π]
@@ -36,7 +38,7 @@ theorem historyMarkedReference_mean_one (dependent : J → J → Prop)
 /-- Actual source mean-one and label-block oscillation prove the mass MGF under the true infinite reference.
 The hypotheses describe the actual measurable mass function, its finite recursion mean, and geometric locality.
 No mass concentration or statistical rate bound is a premise. -/
-theorem historyMarkedReference_mass_mgf (dependent : J → J → Prop)
+theorem historyMarkedReference_mass_mgf 
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (Δ : ℕ) (hΔ : 1 ≤ Δ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
     {E : Type*} [MeasurableSpace E] [Nonempty E] (π : Measure E) [IsProbabilityMeasure π]

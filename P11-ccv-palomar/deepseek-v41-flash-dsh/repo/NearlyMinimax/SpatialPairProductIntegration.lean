@@ -28,8 +28,10 @@ theorem spatialPi_projection_preserving {I J E : Type*} [Fintype I] [Fintype J]
   have he := (iIndepFun_iff_map_fun_eq_pi_map (fun i => (measurable_pi_apply (e i)).aemeasurable)).mp hs
   simpa only [(measurePreserving_eval (fun _ : J => π) _).map_eq] using he
 
+variable {J E : Type*}
+
 /-- Scaling each genuine finite coordinate measure scales its product by the cardinal power. -/
-theorem spatialPi_const_smul {J E : Type*} [Fintype J] [MeasurableSpace E]
+theorem spatialPi_const_smul [Fintype J] [MeasurableSpace E]
     (π : Measure E) [SigmaFinite π] (c : ℝ≥0∞) [SigmaFinite (c • π)] :
     Measure.pi (fun _ : J => c • π) = c^(Fintype.card J) • Measure.pi (fun _ : J => π) := by
   classical
@@ -38,24 +40,32 @@ theorem spatialPi_const_smul {J E : Type*} [Fintype J] [MeasurableSpace E]
   rw [Measure.smul_apply, smul_eq_mul, Measure.pi_pi]
   simp only [Measure.smul_apply, smul_eq_mul, Finset.prod_mul_distrib, Finset.prod_const, Finset.card_univ]
 
+section
+variable (d : ℕ)
+
 /-- The actual uniform probability law on the source local cube. -/
-def spatialPatchProbability (d : ℕ) : Measure (Covariate d) :=
+def spatialPatchProbability : Measure (Covariate d) :=
   ((2 : ℝ≥0∞)^d)⁻¹ • volume.restrict (spatialPatchBox d)
 
-instance spatialPatchProbability_isProbability (d : ℕ) : IsProbabilityMeasure (spatialPatchProbability d) := by
+instance spatialPatchProbability_isProbability : IsProbabilityMeasure (spatialPatchProbability d) := by
   constructor
   rw [spatialPatchProbability, Measure.smul_apply, smul_eq_mul, Measure.restrict_apply_univ, spatialPatchBox_volume]
   exact ENNReal.inv_mul_cancel (by positivity) (by finiteness)
 
-theorem spatialPatchProbability_le_volume (d : ℕ) : spatialPatchProbability d ≤ volume := by
+theorem spatialPatchProbability_le_volume : spatialPatchProbability d ≤ volume := by
   have hc : ((2 : ℝ≥0∞)^d)⁻¹ ≤ 1 := ENNReal.inv_le_one.mpr (one_le_pow₀ (by norm_num))
   intro S
   rw [spatialPatchProbability, Measure.smul_apply, smul_eq_mul]
   exact (mul_le_of_le_one_left (show 0 ≤ (volume.restrict (spatialPatchBox d)) S from zero_le) hc).trans (Measure.restrict_le_self S)
 
+end
+
+section
+variable [Fintype J] [MeasurableSpace E] (π : Measure E) [IsProbabilityMeasure π] (i j : J)
+
 /-- Actual distinct-coordinate pair evaluation preserves the true independent product law. -/
-theorem spatialPi_pair_preserving {J E : Type*} [Fintype J] [MeasurableSpace E]
-    (π : Measure E) [IsProbabilityMeasure π] (i j : J) (hij : i ≠ j) :
+theorem spatialPi_pair_preserving 
+    (hij : i ≠ j) :
     MeasurePreserving (fun U : J → E => (U i, U j))
       (Measure.pi (fun _ : J => π)) (π.prod π) := by
   classical
@@ -67,13 +77,15 @@ theorem spatialPi_pair_preserving {J E : Type*} [Fintype J] [MeasurableSpace E]
   simp [MeasurableEquiv.finTwoArrow, e]
 
 /-- Genuine integration through an actual pair projection. -/
-theorem spatialPi_pair_integral {J E : Type*} [Fintype J] [MeasurableSpace E]
-    (π : Measure E) [IsProbabilityMeasure π] (i j : J) (hij : i ≠ j)
+theorem spatialPi_pair_integral 
+    (hij : i ≠ j)
     (F : E × E → ℝ) (hF : Measurable F) :
     (∫ U : J → E, F (U i, U j) ∂Measure.pi (fun _ : J => π)) = ∫ z, F z ∂π.prod π := by
   have hp := spatialPi_pair_preserving π i j hij
   exact (integral_map hp.measurable.aemeasurable hF.aestronglyMeasurable).symm.trans
     (congrArg (fun μ : Measure (E × E) => ∫ z, F z ∂μ) hp.map_eq)
+
+end
 
 /-- A true probability spatial law dominated by volume has the dimension-scaled pair exponential integral. -/
 theorem spatial_probability_pair_exponential_integral_le {d : ℕ} (hd : 0 < d)
@@ -99,7 +111,7 @@ theorem spatial_probability_pair_exponential_integral_le {d : ℕ} (hd : 0 < d)
     integral_mono hi.integral_prod_left (integrable_const _) hb
 
 /-- Genuine factorization of functions of two disjoint iid coordinate pairs. -/
-theorem spatialPi_two_pair_functions_factor {J E : Type*} [Fintype J] [MeasurableSpace E]
+theorem spatialPi_two_pair_functions_factor [Fintype J] [MeasurableSpace E]
     (π : Measure E) [IsProbabilityMeasure π] (q : Fin 4 ↪ J)
     (F : E × E → ℝ) (hF : Measurable F) :
     (∫ U : J → E, F (U (q 0), U (q 1)) * F (U (q 2), U (q 3))

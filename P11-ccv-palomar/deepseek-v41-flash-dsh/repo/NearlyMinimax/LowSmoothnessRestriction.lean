@@ -17,8 +17,10 @@ namespace NearlyMinimax
 
 attribute [local instance] Classical.propDecidable
 
-private theorem patch_variance_ratio' (n : ℕ) (a V η z : ℝ) (g w : Fin n → ℝ)
-    (y : Fin n → Fin 3) (i : Fin n)
+variable (n : ℕ) (a V η z : ℝ) (g w : Fin n → ℝ) (y : Fin n → Fin 3)
+
+private theorem patch_variance_ratio' 
+    (i : Fin n)
     (hp : ∀ k, 0 < ternaryMass a (g k + η * w k * z) V (y k)) :
     patchVarianceTerm n a V η g w y z i / patchResponseProduct n a V η g w y z =
       ternaryVarianceDerivative a (y i) / ternaryMass a (g i + η * w i * z) V (y i) := by
@@ -26,8 +28,8 @@ private theorem patch_variance_ratio' (n : ℕ) (a V η z : ℝ) (g w : Fin n �
   rw [← Finset.mul_prod_erase _ _ (Finset.mem_univ i)]
   exact mul_div_mul_right _ _ (ne_of_gt (Finset.prod_pos (fun k _ => hp k)))
 
-theorem patch_score_ratio_formula (n : ℕ) (a V η z : ℝ) (g w : Fin n → ℝ)
-    (y : Fin n → Fin 3)
+theorem patch_score_ratio_formula 
+    
     (hp : ∀ k, 0 < ternaryMass a (g k + η * w k * z) V (y k)) :
     patchObservableScore n a V η g w y z =
       symmetricDifference (patchResponseProduct n a V η g w y) /
@@ -85,8 +87,8 @@ theorem patch_score_restrict (n k : ℕ) (a V η z : ℝ) (g w : Fin n → ℝ)
       simp [hw i hi]
 
 /-- The full patch score vanishes when its actual observed support has size at most one. -/
-theorem patch_score_zero_of_support_count_lt_two (n : ℕ) (a V η z : ℝ)
-    (g w : Fin n → ℝ) (S : Finset (Fin n)) (hw : ∀ i, i ∉ S → w i = 0)
+theorem patch_score_zero_of_support_count_lt_two 
+    (S : Finset (Fin n)) (hw : ∀ i, i ∉ S → w i = 0)
     (y : Fin n → Fin 3) (ha : a ≠ 0) (hcount : S.card < 2) :
     patchObservableScore n a V η g w y z = 0 := by
   have hcases : S.card = 0 ∨ S.card = 1 := by omega
@@ -99,10 +101,13 @@ theorem patch_score_zero_of_support_count_lt_two (n : ℕ) (a V η z : ℝ)
       (fun k hki => hw k (by simpa [hS] using hki))
     simp [patchObservableScore, hnum]
 
+section
+variable (a V η z ρ c : ℝ) (g w : Fin n → ℝ) (S : Finset (Fin n))
+
 /-- Actual full-response score bound with the size of its observed support.
 The field and weights may be any functions of the design tuple. -/
-theorem patch_score_square_support_bound (n : ℕ) (a V η z ρ c : ℝ)
-    (g w : Fin n → ℝ) (S : Finset (Fin n)) (y : Fin n → Fin 3)
+theorem patch_score_square_support_bound 
+    (y : Fin n → Fin 3)
     (hcount : 1 ≤ S.card) (ha : 0 < a) (hρ : 0 ≤ ρ) (hc : 0 < c)
     (hz : z ∈ Icc (-1 : ℝ) 1) (hwzero : ∀ i, i ∉ S → w i = 0)
     (hw : ∀ i ∈ S, |w i| ≤ 1)
@@ -136,8 +141,8 @@ theorem patch_score_square_support_bound (n : ℕ) (a V η z ρ c : ℝ)
 
 /-- Genuine full conditional response energy has the collision envelope,
 with the actual support count rather than an assumed restricted experiment. -/
-theorem patch_expected_score_energy_support_bound (n : ℕ) (a V η z ρ c : ℝ)
-    (g w : Fin n → ℝ) (S : Finset (Fin n))
+theorem patch_expected_score_energy_support_bound 
+    
     (ha : 0 < a) (hρ : 0 ≤ ρ) (hc : 0 < c)
     (hz : z ∈ Icc (-1 : ℝ) 1) (hwzero : ∀ i, i ∉ S → w i = 0)
     (hw : ∀ i ∈ S, |w i| ≤ 1)
@@ -169,6 +174,8 @@ theorem patch_expected_score_energy_support_bound (n : ℕ) (a V η z ρ c : ℝ
     rw [patch_score_zero_of_support_count_lt_two n a V η z g w S hwzero y ha.ne' hlt]
     ring
 
+end
+
 theorem patch_expected_score_energy_measurable {α : Type*} [MeasurableSpace α]
     (n : ℕ) (a V η z : ℝ) (g w : α → Fin n → ℝ)
     (hg : ∀ i, Measurable (fun x => g x i)) (hw : ∀ i, Measurable (fun x => w x i)) :
@@ -194,9 +201,12 @@ theorem patch_expected_score_energy_measurable {α : Type*} [MeasurableSpace α]
       |>.sub (hpatch 0 y)).sub (hcorr.const_mul (η ^ 2))).div (hpatch z y)
   exact Finset.measurable_sum _ (fun y _ => (hpatch z y).mul ((hscore y).pow_const 2))
 
+section
+variable {α : Type*} [MeasurableSpace α] (μ : Measure α) [IsProbabilityMeasure μ] (n : ℕ) (A : Set α)
+
 /-- Every function of the actual bounded design count is integrable. -/
-theorem iid_design_count_observable_integrable {α : Type*} [MeasurableSpace α]
-    (μ : Measure α) [IsProbabilityMeasure μ] (n : ℕ) (A : Set α) (hA : MeasurableSet A)
+theorem iid_design_count_observable_integrable 
+    (hA : MeasurableSet A)
     (e : ℕ → ℝ) :
     Integrable (fun x : Fin n → α => e (designPatchCount n A x))
       (Measure.pi (fun _ : Fin n => μ)) := by
@@ -212,8 +222,8 @@ theorem iid_design_count_observable_integrable {α : Type*} [MeasurableSpace α]
 /-- The actual full conditional response energy, integrated over a genuine
 IID design, satisfies the collision bound even when all fields depend on
 the complete observed design tuple. -/
-theorem iid_design_full_patch_score_energy_bound {α : Type*} [MeasurableSpace α]
-    (μ : Measure α) [IsProbabilityMeasure μ] (n : ℕ) (A : Set α) (hA : MeasurableSet A)
+theorem iid_design_full_patch_score_energy_bound 
+    (hA : MeasurableSet A)
     (a V η z ρ c : ℝ) (g w : (Fin n → α) → Fin n → ℝ)
     (hg : ∀ i, Measurable (fun x => g x i)) (hwmeas : ∀ i, Measurable (fun x => w x i))
     (ha : 0 < a) (hρ : 0 ≤ ρ) (hc : 0 < c) (hz : z ∈ Icc (-1 : ℝ) 1)
@@ -256,6 +266,8 @@ theorem iid_design_full_patch_score_energy_bound {α : Type*} [MeasurableSpace �
   exact (integral_mono henergy he hpoint).trans
     (iid_design_collision_energy_bound μ n A hA K η e hK hmean (by simp [e])
       (by simp [e]) (fun k hk => by simp [e, hk]))
+
+end
 
 /-- Uniform legal fields make their actual conditional response energies
 integrable; no energy or integrability conclusion is assumed. -/

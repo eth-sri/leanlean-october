@@ -13,8 +13,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 attribute [local instance] Classical.propDecidable
 
  theorem highCardinalRawNumerator_eq_matrix_heat {d n F : ℕ}
@@ -33,7 +31,9 @@ attribute [local instance] Classical.propDecidable
   simp only [mul_sub, sub_mul, mul_one, Finset.sum_sub_distrib]
   ring
 
- theorem higherBandTargetScale_pos_of_physical {d n D : ℕ} (hn : 3 ≤ n) (hnD : n ≤ D)
+ variable {d n D : ℕ} (aD bD c0 ℓ N μ : ℝ) (M R q : ℕ) (C a ρ η : ℝ)
+
+theorem higherBandTargetScale_pos_of_physical (hn : 3 ≤ n) (hnD : n ≤ D)
     (N μ : ℝ) (hnu : ∀ j : Fin (D-2), 0 < higherBandTargetScale d (j.val+3) N μ) :
     0 < higherBandTargetScale d n N μ := by
   let j : Fin (D-2) := ⟨n-3, by omega⟩
@@ -80,8 +80,8 @@ attribute [local instance] Classical.propDecidable
     (if M<n then finePairAliasGeometryEnvelope (aD+(M : ℝ)⁻¹) (bD-(M : ℝ)⁻¹) ℓ N M q C a ρ η U else 0) +
     fineFieldGeometryEnvelope (aD+(M : ℝ)⁻¹) (bD-(M : ℝ)⁻¹) ℓ N M q C a ρ η U)
 
- theorem completeSourceHigherGeometryEnvelope_nonneg {d n D : ℕ} (aD bD c0 ℓ N μ : ℝ)
-    (M R q : ℕ) (C a ρ η : ℝ) (U : Fin n → Covariate d) :
+ theorem completeSourceHigherGeometryEnvelope_nonneg 
+    (U : Fin n → Covariate d) :
     0 ≤ completeSourceHigherGeometryEnvelope (D := D) aD bD c0 ℓ N μ M R q C a ρ η U := by
   unfold completeSourceHigherGeometryEnvelope
   have hA := cardinalGeometryEnvelope_nonneg (F := D) q (bD-(M : ℝ)⁻¹) C a ρ η (max 1 (higherBandTargetScale d n N μ)) U
@@ -175,7 +175,7 @@ attribute [local instance] Classical.propDecidable
       (sq_le_sq₀ (abs_nonneg _) (Finset.sum_nonneg (fun _ _ => abs_nonneg _))).mpr hb
   exact hs.const_mul ((3 : ℝ)^n)
 
- theorem completeSourceHigherGeometryEnvelope_integrable {d n D : ℕ} [NeZero d]
+ theorem completeSourceHigherGeometryEnvelope_integrable [NeZero d]
     (hd : 5 ≤ d) (hn : 2 ≤ n) (aD bD c0 ℓ N μ : ℝ) (M R q : ℕ) (C a ρ η : ℝ)
     (hℓ : 1 ≤ ℓ) (hN : ℓ ≤ N) :
     Integrable (completeSourceHigherGeometryEnvelope (d := d) (n := n) (D := D)

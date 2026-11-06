@@ -11,7 +11,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option maxHeartbeats 1000000
 set_option backward.isDefEq.respectTransparency true
 attribute [local instance] Classical.propDecidable
 attribute [local irreducible] highUnionSourceDensity highUnionSourceState historyMarkedAppend
@@ -22,8 +21,10 @@ variable {d k D : ℕ} {I : Type*} [Fintype I] {E : I → Type*}
     (C : ModelConstants d) (R : HighUnionRowData d k D I E)
     {M Cfr : ℝ} (G : HighUnionSourceGuards C M Cfr R)
 
+variable (j : HighWindowLabels d k) (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E)) (e : HighUnionMark E) (x : Covariate d)
+
 /-- The actual density after appending the mark at the given window. -/
-def highUnionSourceResetDensity (j : HighWindowLabels d k)
+def highUnionSourceResetDensity 
     (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E))
     (e : HighUnionMark E) (x : Covariate d) : ℝ :=
   highUnionSourceDensity C R (historyMarkedAppend
@@ -31,7 +32,7 @@ def highUnionSourceResetDensity (j : HighWindowLabels d k)
     (fun {_ _} h => highNeighborLabels_symmetric d k _ _ h) j (h,e)) x
 
 /-- The actual reset coefficient vector at the selected window. -/
-def highUnionSourceResetCoefficient (j : HighWindowLabels d k)
+def highUnionSourceResetCoefficient 
     (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E))
     (e : HighUnionMark E) : HighFrameIndex d D → ℝ :=
   highUnionResponseReset R e ((highUnionSourceState C R h).2 j)
@@ -46,8 +47,8 @@ theorem highUnionSourceDensity_coarse_interval
   constructor <;> linarith [hb.1,hb.2,one_div_pos.mpr hM]
 
 include G in
-theorem highUnionSourceResetDensity_measurable (j : HighWindowLabels d k)
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E)) :
+theorem highUnionSourceResetDensity_measurable 
+    :
     Measurable (Function.uncurry (highUnionSourceResetDensity C R j h)) := by
   letI : StandardBorelSpace (HighUnionMark E) := highUnionMark_standardBorel
   have ha : Measurable (fun ex : HighUnionMark E × Covariate d =>
@@ -60,9 +61,9 @@ theorem highUnionSourceResetDensity_measurable (j : HighWindowLabels d k)
   exact (highUnionSourceDensity_joint_measurable C R G).comp (ha.prodMk measurable_snd)
 
 include G in
-theorem highUnionSourceResetDensity_abs_le (j : HighWindowLabels d k)
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E))
-    (e : HighUnionMark E) (x : Covariate d) :
+theorem highUnionSourceResetDensity_abs_le 
+    
+    :
     |highUnionSourceResetDensity C R j h e x| ≤ C.densityUpper := by
   have hb := highUnionSourceDensity_coarse_interval C R G
     (historyMarkedAppend (fun i j => j ∈ highNeighborLabels d k i)
@@ -71,8 +72,8 @@ theorem highUnionSourceResetDensity_abs_le (j : HighWindowLabels d k)
   exact hb.2
 
 include G in
-theorem highUnionSourceResetCoefficient_measurable (j : HighWindowLabels d k)
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E))
+theorem highUnionSourceResetCoefficient_measurable 
+    
     (γ : HighFrameIndex d D) :
     Measurable (fun e => highUnionSourceResetCoefficient C R j h e γ) := by
   unfold highUnionSourceResetCoefficient highUnionResponseReset coefficientReset
@@ -80,9 +81,9 @@ theorem highUnionSourceResetCoefficient_measurable (j : HighWindowLabels d k)
     measurable_const |>.add ((highUnionResponseTime_measurable R G.time_measurable).mul
       (highUnionResponseVector_measurable R G.vector_measurable γ))
 
-theorem highUnionSourceResetDensity_outside (j : HighWindowLabels d k)
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E))
-    (e : HighUnionMark E) (x : Covariate d) (hx : x ∉ highTorusPatch d k j) :
+theorem highUnionSourceResetDensity_outside 
+    
+    (hx : x ∉ highTorusPatch d k j) :
     highUnionSourceResetDensity C R j h e x = highUnionSourceDensity C R h x :=
   highUnionSourceDensity_append_of_not_mem R C j h e x hx
 

@@ -12,14 +12,20 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 900000
 
-def anchoredCardinalScale {d n : ℕ} (i : Fin n) (lam : ℝ) (x : Covariate d)
+variable {d n : ℕ}
+
+section
+variable (i : Fin n)
+
+def anchoredCardinalScale (lam : ℝ) (x : Covariate d)
     (t : SpatialScaleVector i) (Y : SpatialScaleIndex i → Covariate d) : ℝ :=
   spatialCardinalScale lam (spatialScaleExtend i t) (anchoredPatchConfiguration i x Y) i
 
-theorem anchored_cardinal_scale_product_actual {d n : ℕ} (i : Fin n) (lam : ℝ) (x : Covariate d)
+section
+variable (lam : ℝ) (x : Covariate d)
+
+theorem anchored_cardinal_scale_product_actual 
     (t : SpatialScaleVector i) (Y : SpatialScaleIndex i → Covariate d) :
     anchoredCardinalScale i lam x t Y = ∏ j : SpatialScaleIndex i,
       t j * lam ^ 2 * Real.exp (-(t j * lam * spatialSquaredDistance x (Y j))) := by
@@ -27,19 +33,24 @@ theorem anchored_cardinal_scale_product_actual {d n : ℕ} (i : Fin n) (lam : �
   rw [spatial_cardinal_scale_product]
   simp_rw [anchored_configuration_same, anchored_configuration_other]
 
-theorem anchored_cardinal_scale_continuous_actual {d n : ℕ} (i : Fin n) (lam : ℝ) (x : Covariate d) :
+theorem anchored_cardinal_scale_continuous_actual :
     Continuous (fun z : SpatialScaleVector i × (SpatialScaleIndex i → Covariate d) =>
       anchoredCardinalScale i lam x z.1 z.2) := by
   simp_rw [anchored_cardinal_scale_product_actual]
   unfold spatialSquaredDistance
   fun_prop
 
-theorem anchored_cardinal_scale_nonnegative_actual {d n : ℕ} (i : Fin n) (lam : ℝ) (x : Covariate d)
+theorem anchored_cardinal_scale_nonnegative_actual 
     (t : SpatialScaleVector i) (ht : t ∈ Ici 0) (Y : SpatialScaleIndex i → Covariate d) :
     0 ≤ anchoredCardinalScale i lam x t Y :=
   spatial_cardinal_scale_nonnegative i lam (anchoredPatchConfiguration i x Y) t ht
 
-theorem anchored_cardinal_scale_upper_bound {d n : ℕ} (i : Fin n) {lam T : ℝ}
+end
+
+section
+variable {lam T : ℝ}
+
+theorem anchored_cardinal_scale_upper_bound 
     (hlam : 0 ≤ lam) (hT : 1 ≤ T) (x : Covariate d) (t : SpatialScaleVector i)
     (ht : t ∈ spatialScaleDomain i T) (Y : SpatialScaleIndex i → Covariate d) :
     |anchoredCardinalScale i lam x t Y| ≤ (T ^ 2 * lam ^ 2) ^ Fintype.card (SpatialScaleIndex i) := by
@@ -60,7 +71,7 @@ theorem anchored_cardinal_scale_upper_bound {d n : ℕ} (i : Fin n) {lam T : ℝ
           (by simpa only [mul_one] using mul_le_mul_of_nonneg_right (show t j ≤ T ^ 2 by linarith) (sq_nonneg lam))
     _ = _ := by simp
 
-theorem anchored_cardinal_band_scale_joint_integrable {d n : ℕ} (i : Fin n) {lam T : ℝ}
+theorem anchored_cardinal_band_scale_joint_integrable 
     (hlam : 0 ≤ lam) (hT : 1 ≤ T) (L : ℝ) (x : Covariate d) :
     Integrable (fun z : SpatialScaleVector i × (SpatialScaleIndex i → Covariate d) =>
       anchoredCardinalScale i lam x z.1 z.2)
@@ -82,11 +93,15 @@ theorem anchored_cardinal_band_scale_joint_integrable {d n : ℕ} (i : Fin n) {l
   rw [Real.norm_eq_abs]
   exact anchored_cardinal_scale_upper_bound i hlam hT x z.1 hz z.2
 
+end
+
+end
+
 def spatialScaleIntegralConstant (d : ℕ) : ℝ :=
   (spatialInterpolationLambda d) ^ 2 * Real.exp (1 / 2) *
     (Real.sqrt (2 * Real.pi / spatialInterpolationLambda d)) ^ d
 
-theorem anchored_cardinal_scale_spatial_integral_product {d n : ℕ} (i : Fin n) (lam : ℝ)
+theorem anchored_cardinal_scale_spatial_integral_product (i : Fin n) (lam : ℝ)
     (x : Covariate d) (t : SpatialScaleVector i) :
     (∫ Y, anchoredCardinalScale i lam x t Y ∂spatialPatchDesignMeasure i d) =
       ∏ j : SpatialScaleIndex i, lam ^ 2 * ∫ y in spatialPatchBox d,
@@ -103,7 +118,7 @@ theorem anchored_cardinal_scale_spatial_integral_product {d n : ℕ} (i : Fin n)
   funext y
   ring
 
-theorem anchored_cardinal_scale_spatial_integral_decay {d n : ℕ} (hd : 0 < d) (i : Fin n)
+theorem anchored_cardinal_scale_spatial_integral_decay (hd : 0 < d) (i : Fin n)
     (x : Covariate d) (hx : x ∈ spatialPatchBox d) (t : SpatialScaleVector i) (ht : t ∈ Ici 0) :
     (∫ Y, anchoredCardinalScale i (spatialInterpolationLambda d) x t Y ∂spatialPatchDesignMeasure i d) ≤
       (spatialScaleIntegralConstant d) ^ Fintype.card (SpatialScaleIndex i) *
@@ -127,7 +142,7 @@ theorem anchored_cardinal_scale_spatial_integral_decay {d n : ℕ} (hd : 0 < d) 
 
 /-- The actual squared-kernel spatial decay integrated over a true
 truncated scale band, with every Fubini exchange justified. -/
-theorem anchored_cardinal_band_scale_spatial_integral_bound {d n : ℕ} (hd : 5 ≤ d) (hn : 2 ≤ n)
+theorem anchored_cardinal_band_scale_spatial_integral_bound (hd : 5 ≤ d) (hn : 2 ≤ n)
     (i : Fin n) (x : Covariate d) (hx : x ∈ spatialPatchBox d) {L T : ℝ} (hL : 1 ≤ L) (hT : 1 ≤ T) :
     (∫ Y, (∫ t : SpatialScaleVector i in spatialScaleDomain i T \ spatialScaleDomain i L,
       anchoredCardinalScale i (spatialInterpolationLambda d) x t Y) ∂spatialPatchDesignMeasure i d) ≤

@@ -9,10 +9,11 @@ public import NearlyMinimax.HistoryCanonicalDeletion
 linear extensions of one labelled dependency heap. -/
 noncomputable section
 namespace NearlyMinimax
-set_option maxHeartbeats 600000
-set_option backward.isDefEq.respectTransparency false
 
-theorem historyFold_move_to_front {ι X : Type*} (update : ι → X → X)
+section
+variable {ι X : Type*}
+
+theorem historyFold_move_to_front (update : ι → X → X)
     (before after : List ι) (x : ι)
     (hcomm : ∀ y ∈ before, ∀ state, update x (update y state) = update y (update x state))
     (initial : X) :
@@ -25,14 +26,13 @@ theorem historyFold_move_to_front {ι X : Type*} (update : ι → X → X)
     | cons y ys ih =>
       intro state
       simp only [List.foldl_cons]
-      rw [ih (fun z hz => hcomm z (List.mem_cons_of_mem y hz))]
-      rw [hcomm y List.mem_cons_self]
+      rw [ih (fun z hz => hcomm z (List.mem_cons_of_mem y hz)), hcomm y List.mem_cons_self]
   simp only [List.foldl_append, List.foldl_cons]
   rw [hfold]
 
 /-- Finite heap linear extensions preserve the actual marked update fold.
 Only incomparable actions must commute. -/
-theorem historyFold_linear_extension_invariant {ι X : Type*} [PartialOrder ι]
+theorem historyFold_linear_extension_invariant [PartialOrder ι]
     (dependent : ι → ι → Prop) (update : ι → X → X)
     (hcomp : ∀ x y, dependent x y → x ≤ y ∨ y ≤ x)
     (hcomm : ∀ x y, ¬ dependent x y → ∀ state,
@@ -68,12 +68,16 @@ theorem historyFold_linear_extension_invariant {ι X : Type*} [PartialOrder ι]
     rw [historyFold_move_to_front update before after x hmove initial]
     exact ih htailperm htail hl'.of_cons (update x initial)
 
-def historyWordMarkedState {J E X : Type*} (update : J → E → X → X)
+end
+
+variable {J E X : Type*}
+
+def historyWordMarkedState (update : J → E → X → X)
     (initial : X) (word : List J) (marks : Fin word.length → E) : X :=
   historyWordState (fun p : J × E => update p.1 p.2) initial
     (List.ofFn (fun i => (word.get i, marks i)))
 
-theorem historyWordMarkedState_eq_heapFold {J E X : Type*}
+theorem historyWordMarkedState_eq_heapFold 
     (dependent : J → J → Prop) (update : J → E → X → X)
     (initial : X) (word : List J) (marks : Fin word.length → E) :
     historyWordMarkedState update initial word marks =
@@ -89,7 +93,7 @@ theorem historyWordMarkedState_eq_heapFold {J E X : Type*}
 
 /-- Any actual labelled heap isomorphism transports all marks and the raw
 folded state exactly. Representative invariance is a proved conclusion. -/
-theorem historyHeapMarkEquiv_state {J E X : Type*} [MeasurableSpace E]
+theorem historyHeapMarkEquiv_state [MeasurableSpace E]
     (dependent : J → J → Prop)
     (hsymm : ∀ ⦃a b⦄, dependent a b → dependent b a)
     (update : J → E → X → X)
@@ -110,13 +114,11 @@ theorem historyHeapMarkEquiv_state {J E X : Type*} [MeasurableSpace E]
     intro x
     constructor
     · intro _
-      apply List.mem_ofFn.mpr
-      exact ⟨(e x).position, by
+      exact List.mem_ofFn.mpr ⟨(e x).position, by
         have hx : (⟨(e x).position⟩ : WordHeapPiece v dependent) = e x := by cases e x; rfl
         rw [hx, e.symm_apply_apply]⟩
     · intro _
-      apply List.mem_ofFn.mpr
-      exact ⟨x.position, by cases x; rfl⟩)
+      exact List.mem_ofFn.mpr ⟨x.position, by cases x; rfl⟩)
   have hl : l.Pairwise (fun x y => ¬ y ≤ x) := by
     apply List.pairwise_iff_getElem.mpr
     intro i j hi hj hij hle
@@ -136,9 +138,7 @@ theorem historyHeapMarkEquiv_state {J E X : Type*} [MeasurableSpace E]
     (fun x y : WordHeapPiece u dependent => dependent (wordHeapLabel x) (wordHeapLabel y)) action
     (fun _ _ => wordHeap_dependent_comparable hsymm)
     (fun x y h state => hcomm _ _ h _ _ state) hp hl hl' initial
-  rw [historyWordMarkedState_eq_heapFold dependent update initial u marks]
-  rw [hfold]
-  rw [historyWordMarkedState_eq_heapFold dependent update initial v (historyHeapMarkEquiv e marks)]
+  rw [historyWordMarkedState_eq_heapFold dependent update initial u marks, hfold, historyWordMarkedState_eq_heapFold dependent update initial v (historyHeapMarkEquiv e marks)]
   have hmap : l' = (List.ofFn (fun i : Fin v.length => (⟨i⟩ : WordHeapPiece v dependent))).map e.symm := by
     rw [List.map_ofFn]
     rfl

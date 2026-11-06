@@ -15,12 +15,14 @@ to the last cell. -/
 def regularGridIndex (k : ℕ) (hk : 0 < k) (x : ℝ) : Fin k :=
   ⟨min ⌊(k : ℝ) * x⌋₊ (k - 1), (min_le_right _ _).trans_lt (by omega)⟩
 
+variable {d : ℕ} (k : ℕ) (hk : 0 < k) (x : Covariate d)
+
 /-- Product cell label of a covariate. -/
-def regularGridCell {d : ℕ} (k : ℕ) (hk : 0 < k) (x : Covariate d) : Fin d → Fin k :=
+def regularGridCell (hk : 0 < k) (x : Covariate d) : Fin d → Fin k :=
   fun i => regularGridIndex k hk (x i)
 
 /-- The lower corner of an actual regular-grid cell. -/
-def regularGridCorner {d : ℕ} (k : ℕ) (c : Fin d → Fin k) : Covariate d :=
+def regularGridCorner (c : Fin d → Fin k) : Covariate d :=
   fun i => (c i : ℝ) / k
 
 /-- The explicit floor-based label and corner have the claimed cell
@@ -51,7 +53,7 @@ theorem regular_grid_index_radius (k : ℕ) (hk : 0 < k) (x : ℝ)
     nlinarith [mul_le_mul_of_nonneg_right hx1 hkreal.le]
 
 /-- Every chosen cell corner belongs to the model's design cube. -/
-theorem regular_grid_corner_mem_cube {d : ℕ} (k : ℕ) (hk : 0 < k)
+theorem regular_grid_corner_mem_cube (hk : 0 < k)
     (c : Fin d → Fin k) : regularGridCorner k c ∈ unitCube d := by
   intro i
   have hkreal : (0 : ℝ) < k := by exact_mod_cast hk
@@ -62,8 +64,8 @@ theorem regular_grid_corner_mem_cube {d : ℕ} (k : ℕ) (hk : 0 < k)
 
 /-- The regular-grid radius follows directly from the covariate's cube
 membership, with no assumed approximation property. -/
-theorem regular_grid_cell_radius {d : ℕ} (k : ℕ) (hk : 0 < k)
-    (x : Covariate d) (hx : x ∈ unitCube d) (i : Fin d) :
+theorem regular_grid_cell_radius 
+    (hx : x ∈ unitCube d) (i : Fin d) :
     |x i - regularGridCorner k (regularGridCell k hk x) i| ≤ 1 / k :=
   regular_grid_index_radius k hk (x i) (hx i).1 (hx i).2
 
@@ -73,7 +75,7 @@ theorem regular_grid_index_measurable (k : ℕ) (hk : 0 < k) :
   let f : ℕ → Fin k := fun m => ⟨min m (k - 1), (min_le_right _ _).trans_lt (by omega)⟩
   exact (measurable_of_countable f).comp ((measurable_const.mul measurable_id).nat_floor)
 
-theorem regular_grid_cell_measurable {d : ℕ} (k : ℕ) (hk : 0 < k) :
+theorem regular_grid_cell_measurable :
     Measurable (regularGridCell (d := d) k hk) := by
   apply measurable_pi_iff.mpr
   intro i

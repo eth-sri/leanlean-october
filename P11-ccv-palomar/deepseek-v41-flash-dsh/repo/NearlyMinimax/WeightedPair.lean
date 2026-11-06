@@ -10,7 +10,6 @@ noncomputable section
 open MeasureTheory
 open scoped BigOperators ENNReal
 namespace NearlyMinimax.PairUStatistic
-set_option backward.isDefEq.respectTransparency false
 
 variable {E I : Type*} [MeasurableSpace E] [MeasurableSpace I]
 variable [MeasurableSingletonClass I]
@@ -19,19 +18,21 @@ variable {μ : Measure E} [IsProbabilityMeasure μ]
 def weightedSymmetrization (weight : ℝ) (G : E × E → ℝ) (z : E × E) : ℝ :=
   weight / 4 * (G z + G z.swap)
 
-theorem weightedSymmetrization_measurable (weight : ℝ) {G : E × E → ℝ}
+variable (weight : ℝ) {G : E × E → ℝ}
+
+theorem weightedSymmetrization_measurable 
     (hmG : Measurable G) : Measurable (weightedSymmetrization weight G) :=
   (hmG.add (hmG.comp measurable_swap)).const_mul _
 
-theorem weightedSymmetrization_symmetric (weight : ℝ) (G : E × E → ℝ) (x y : E) :
+theorem weightedSymmetrization_symmetric (G : E × E → ℝ) (x y : E) :
     weightedSymmetrization weight G (x, y) = weightedSymmetrization weight G (y, x) := by
   simp only [weightedSymmetrization, Prod.swap_prod_mk, add_comm]
 
-theorem weightedSymmetrization_memLp (weight : ℝ) {G : E × E → ℝ}
+theorem weightedSymmetrization_memLp 
     (hG : MemLp G 2 (μ.prod μ)) : MemLp (weightedSymmetrization weight G) 2 (μ.prod μ) :=
   (hG.add (hG.comp_measurePreserving Measure.measurePreserving_swap)).const_mul _
 
-theorem weightedSymmetrization_mean (weight : ℝ) {G : E × E → ℝ}
+theorem weightedSymmetrization_mean 
     (hG : MemLp G 2 (μ.prod μ)) :
     (∫ z, weightedSymmetrization weight G z ∂μ.prod μ) =
       weight / 2 * ∫ z, G z ∂μ.prod μ := by
@@ -44,7 +45,7 @@ theorem weightedSymmetrization_mean (weight : ℝ) {G : E × E → ℝ}
   rw [integral_const_mul, ha, integral_prod_swap G]
   ring
 
-theorem weightedSymmetrization_energy_le (weight : ℝ) {G : E × E → ℝ}
+theorem weightedSymmetrization_energy_le 
     (hG : MemLp G 2 (μ.prod μ)) :
     (∫ z, weightedSymmetrization weight G z ^ 2 ∂μ.prod μ) ≤
       weight ^ 2 / 4 * ∫ z, G z ^ 2 ∂μ.prod μ := by
@@ -66,7 +67,7 @@ theorem weightedSymmetrization_energy_le (weight : ℝ) {G : E × E → ℝ}
       rw [integral_const_mul, ha, integral_prod_swap (fun z => G z ^ 2)]
       ring
 
-theorem weightedSymmetrization_supported (weight : ℝ) (label : E → I)
+theorem weightedSymmetrization_supported (label : E → I)
     {G : E × E → ℝ} (hsupport : ∀ x y, label x ≠ label y → G (x, y) = 0) :
     ∀ x y, label x ≠ label y → weightedSymmetrization weight G (x, y) = 0 := by
   intro x y hxy

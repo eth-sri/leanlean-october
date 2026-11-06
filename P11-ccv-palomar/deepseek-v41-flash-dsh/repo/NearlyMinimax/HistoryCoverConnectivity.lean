@@ -28,28 +28,27 @@ def HistoryCoverConnected (U : Finset α) (a b : α) : Prop :=
 
 omit [DecidableEq α] in
 theorem historyCoverConnected_comparable {U : Finset α} {a b : α}
-    (h : HistoryCoverConnected U a b) : HistoryConnected U a b := by
-  exact Relation.EqvGen.mono (r := historyCoverEdge U) (p := historyComparableEdge U)
+    (h : HistoryCoverConnected U a b) : HistoryConnected U a b := Relation.EqvGen.mono (r := historyCoverEdge U) (p := historyComparableEdge U)
     (fun _ _ h => ⟨h.1, h.2.1, h.2.2.elim (fun h => Or.inl h.le) (fun h => Or.inr h.le)⟩) a b h
 
 omit [DecidableEq α] in
-theorem historyCoverConnected_of_le [Fintype α] {U : Finset α}
+section
+variable [Fintype α] {U : Finset α}
+
+theorem historyCoverConnected_of_le 
     (hU : IsHistoryUpper Finset.univ U) {a b : α} (ha : a ∈ U) (hab : a ≤ b) :
     HistoryCoverConnected U a b := by
   classical
   let : LocallyFiniteOrder α := Fintype.toLocallyFiniteOrder
-  have hh := le_iff_reflTransGen_covBy.1 hab
-  induction hh with
+  induction (le_iff_reflTransGen_covBy.1 hab) with
   | refl => exact .refl _
   | @tail c b hac hcb ih =>
-    have hac' : a ≤ c := le_iff_reflTransGen_covBy.2 hac
-    have hc : c ∈ U := hU.2 a ha c (Finset.mem_univ _) hac'
-    have hb : b ∈ U := hU.2 a ha b (Finset.mem_univ _) (hac'.trans hcb.le)
-    exact .trans _ _ _ (ih hac') (.rel _ _ ⟨hc, hb, Or.inl hcb⟩)
+    have hac' := le_iff_reflTransGen_covBy.2 hac
+    exact .trans _ _ _ (ih hac') (.rel _ _ ⟨(hU.2 a ha c (Finset.mem_univ _) hac'), (hU.2 a ha b (Finset.mem_univ _) (hac'.trans hcb.le)), Or.inl hcb⟩)
 
 omit [DecidableEq α] in
 /-- Actual upper-set comparability connectivity equals cover connectivity. -/
-theorem historyConnected_iff_coverConnected [Fintype α] {U : Finset α}
+theorem historyConnected_iff_coverConnected 
     (hU : IsHistoryUpper Finset.univ U) {a b : α} :
     HistoryConnected U a b ↔ HistoryCoverConnected U a b := by
   constructor
@@ -64,7 +63,11 @@ theorem historyConnected_iff_coverConnected [Fintype α] {U : Finset α}
     | trans a b c hab hbc ihab ihbc => exact .trans _ _ _ ihab ihbc
   · exact historyCoverConnected_comparable
 
-def historyInducedCoverGraph (U : Finset α) : SimpleGraph U where
+end
+
+variable (U : Finset α)
+
+def historyInducedCoverGraph : SimpleGraph U where
   Adj a b := (a : α) ⋖ b ∨ (b : α) ⋖ a
   symm := ⟨fun _ _ h => h.symm⟩
   loopless := ⟨fun _ h => h.elim (fun h => h.ne rfl) (fun h => h.ne rfl)⟩
@@ -77,7 +80,10 @@ def historyCoverGraph (α : Type*) [PartialOrder α] : SimpleGraph α where
 instance historyCoverGraph_locallyFinite [Fintype α] : (historyCoverGraph α).LocallyFinite :=
   fun _ => Fintype.ofFinite _
 
-theorem historyCoverConnected_reachable {U : Finset α} {a b : α}
+section
+variable {U : Finset α}
+
+theorem historyCoverConnected_reachable {a b : α}
     (ha : a ∈ U) (hb : b ∈ U) (h : HistoryCoverConnected U a b) :
     (historyInducedCoverGraph U).Reachable ⟨a, ha⟩ ⟨b, hb⟩ := by
   induction h with
@@ -104,13 +110,15 @@ theorem historyCoverConnected_reachable {U : Finset α} {a b : α}
       · exact (hbU hab'.2).elim
 
 omit [DecidableEq α] in
-theorem historyInducedCoverGraph_reachable_connected {U : Finset α} {a b : U}
+theorem historyInducedCoverGraph_reachable_connected {a b : U}
     (h : (historyInducedCoverGraph U).Reachable a b) :
     HistoryCoverConnected U a b := by
   obtain ⟨p⟩ := h
   induction p with
   | nil => exact .refl _
   | @cons a c b hac p ih => exact .trans _ _ _ (.rel _ _ ⟨a.prop, c.prop, hac⟩) ih
+
+end
 
 theorem historyConnected_iff_coverGraph_reachable [Fintype α] {U : Finset α}
     (hU : IsHistoryUpper Finset.univ U) {a b : α} (ha : a ∈ U) (hb : b ∈ U) :

@@ -19,7 +19,6 @@ open scoped BigOperators
 
 namespace NearlyMinimax
 
-set_option backward.isDefEq.respectTransparency false
 
 variable {Ω : Type*} [MeasurableSpace Ω] {μ : Measure Ω}
 
@@ -35,7 +34,6 @@ theorem response_second_moment_of_centered_error [IsProbabilityMeasure μ]
     {ε : Ω → ℝ} (hε : MemLp ε 2 μ) (hmean : ∫ ω, ε ω ∂μ = 0)
     {V : ℝ} (hsecond : ∫ ω, ε ω ^ 2 ∂μ = V) (f : ℝ) :
     (∫ ω, (f + ε ω) ^ 2 ∂μ) = f ^ 2 + V := by
-  have hY : MemLp (fun ω => f + ε ω) 2 μ := (memLp_const f).add hε
   have hmY : (∫ ω, f + ε ω ∂μ) = f := by
     rw [integral_add (integrable_const f) (hε.integrable (by norm_num)),
       integral_const, hmean]
@@ -44,7 +42,7 @@ theorem response_second_moment_of_centered_error [IsProbabilityMeasure μ]
     rw [centered_variance_eq_second_moment hε hmean, hsecond]
   have hvY : variance (fun ω => f + ε ω) μ = V := by
     rw [variance_const_add hε.aestronglyMeasurable f, hvε]
-  have heq := variance_eq_sub hY
+  have heq := variance_eq_sub ((memLp_const f).add hε)
   change variance (fun ω => f + ε ω) μ =
     (∫ ω, (f + ε ω) ^ 2 ∂μ) - (∫ ω, f + ε ω ∂μ) ^ 2 at heq
   rw [hvY, hmY] at heq

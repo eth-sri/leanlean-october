@@ -54,8 +54,11 @@ def upperSaddleCoefficient (s d τ : ℝ) : ℝ :=
 def lowerSaddleCoefficient (s d τ : ℝ) : ℝ :=
   Real.sqrt (8 * (d - 4 * s) * (s - 1) / (d ^ 2 * (d + 4) * τ))
 
+section
+variable {s d τ : ℝ}
+
 /-- The upper saddle identifies the paper's stretched-exponential constant. -/
-theorem upper_saddle_stretchConstant {s d τ : ℝ} (hs : 1 < s)
+theorem upper_saddle_stretchConstant (hs : 1 < s)
     (hd : 4 * s < d) (hτ : 0 < τ) :
     2 * (s - 1) / (d + 4) * upperSaddleCoefficient s d τ = stretchConstant s d τ := by
   have hd₀ : 0 < d := by linarith
@@ -71,7 +74,7 @@ theorem upper_saddle_stretchConstant {s d τ : ℝ} (hs : 1 < s)
   ring
 
 /-- The lower saddle gives exactly the same stretched-exponential constant. -/
-theorem lower_saddle_stretchConstant {s d τ : ℝ} (hs : 1 < s)
+theorem lower_saddle_stretchConstant (hs : 1 < s)
     (hd : 4 * s < d) (hτ : 0 < τ) :
     2 * d * τ / (d + 4) * lowerSaddleCoefficient s d τ = stretchConstant s d τ := by
   have hd₀ : 0 < d := by linarith
@@ -86,12 +89,17 @@ theorem lower_saddle_stretchConstant {s d τ : ℝ} (hs : 1 < s)
   field_simp
   ring
 
+end
+
 /-- Logarithm of the unrounded bandwidth `h°` in `eq:Urate-h`. -/
 def spatialBalanceLog (s d L T : ℝ) : ℝ :=
   2 / (d + 4) * (-L + 2 * ((s - 1) / d) * (L + T))
 
+section
+variable {s d : ℝ}
+
 /-- Exact equality of the bias and pair-noise logarithms, before rounding. -/
-theorem spatial_balance {s d : ℝ} (hs : 1 < s) (hd : 4 * s < d) (L T : ℝ) :
+theorem spatial_balance (hs : 1 < s) (hd : 4 * s < d) (L T : ℝ) :
     2 * spatialBalanceLog s d L T - 2 * ((s - 1) / d) * (L + T) =
       -L - d / 2 * spatialBalanceLog s d L T := by
   have h₁ : d ≠ 0 := by linarith
@@ -101,7 +109,7 @@ theorem spatial_balance {s d : ℝ} (hs : 1 < s) (hd : 4 * s < d) (L T : ℝ) :
   ring
 
 /-- The exact risk exponent identity in `eq:Urate-scale`. -/
-theorem spatial_balance_rate {s d : ℝ} (hs : 1 < s) (hd : 4 * s < d) (L T : ℝ) :
+theorem spatial_balance_rate (hs : 1 < s) (hd : 4 * s < d) (L T : ℝ) :
     -L - d / 2 * spatialBalanceLog s d L T =
       -rateExponent s d * L - 2 * (s - 1) / (d + 4) * T := by
   have h₁ : d ≠ 0 := by linarith
@@ -109,6 +117,8 @@ theorem spatial_balance_rate {s d : ℝ} (hs : 1 < s) (hd : 4 * s < d) (L T : �
   unfold spatialBalanceLog rateExponent
   field_simp
   ring
+
+end
 
 /-- Exact algebra of the lower saddle's logarithm of `N`. -/
 def lowerSaddleLogN (s d L ω τ M : ℝ) : ℝ :=
@@ -132,12 +142,14 @@ def rateLog (lam κ a x : ℝ) : ℝ :=
 /-- A total real-valued definition of the scale; asymptotic results use `x > 1`. -/
 def rateScale (lam κ a x : ℝ) : ℝ := Real.exp (rateLog lam κ a x)
 
-theorem rateScale_pos (lam κ a x : ℝ) : 0 < rateScale lam κ a x := Real.exp_pos _
+variable (lam κ a x : ℝ)
 
-theorem log_rateScale (lam κ a x : ℝ) :
+theorem rateScale_pos : 0 < rateScale lam κ a x := Real.exp_pos _
+
+theorem log_rateScale :
     Real.log (rateScale lam κ a x) = rateLog lam κ a x := Real.log_exp _
 
-theorem rateScale_eq_base_mul_correction (lam κ a x : ℝ) :
+theorem rateScale_eq_base_mul_correction :
     rateScale lam κ a x = Real.exp (-lam * Real.log x) *
       Real.exp (-κ * Real.sqrt (Real.log x) + a * Real.log (Real.log x)) := by
   unfold rateScale rateLog

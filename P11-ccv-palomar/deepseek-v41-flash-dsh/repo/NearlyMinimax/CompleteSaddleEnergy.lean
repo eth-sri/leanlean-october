@@ -18,26 +18,31 @@ set_option backward.isDefEq.respectTransparency false
 set_option maxHeartbeats 1500000
 attribute [local instance] Classical.propDecidable
 
- def completeSaddleScoreFactor {d : ℕ} (C : ModelConstants d) (Q : LowSmoothnessTernaryConstants C) : ℝ :=
+ variable {d : ℕ}
+
+def completeSaddleScoreFactor (C : ModelConstants d) (Q : LowSmoothnessTernaryConstants C) : ℝ :=
   highFixedScoreDenominator C.densityLower Q.c*(2 : ℝ)^d
  def completeSaddleDegreeFactor (d : ℕ) : ℝ := ((d : ℝ)+8)/4+1
- def completeSaddleOrdinaryConstant {d : ℕ} (C : ModelConstants d) (Q : LowSmoothnessTernaryConstants C) (Cfr : ℝ) : ℝ :=
+ section
+variable (C : ModelConstants d)
+
+def completeSaddleOrdinaryConstant (Q : LowSmoothnessTernaryConstants C) (Cfr : ℝ) : ℝ :=
   ordinaryFineAliasFactorialConstant C.smoothness d (lowerSaddleResponseOrder C.smoothness d)
     C.densityLower C.densityUpper Cfr Q.a Q.ρ (completeSaddleScoreFactor C Q)
- def completeSaddleDefectConstant {d : ℕ} (C : ModelConstants d) (Q : LowSmoothnessTernaryConstants C) (Cfr : ℝ) : ℝ :=
+ def completeSaddleDefectConstant (Q : LowSmoothnessTernaryConstants C) (Cfr : ℝ) : ℝ :=
   completeGeometryDefectConstant d (lowerSaddleResponseOrder C.smoothness d) C.densityUpper Cfr Q.a Q.ρ
     (completeSaddleScoreFactor C Q)
- def completeSaddleFieldConstant {d : ℕ} (C : ModelConstants d) (Q : LowSmoothnessTernaryConstants C) (Cfr : ℝ) : ℝ :=
+ def completeSaddleFieldConstant (Q : LowSmoothnessTernaryConstants C) (Cfr : ℝ) : ℝ :=
   completeGeometryFieldConstant d (lowerSaddleResponseOrder C.smoothness d) C.densityLower C.densityUpper Cfr Q.a Q.ρ
     (completeSaddleC0 C) (completeSaddleScoreFactor C Q)
- def completeSaddleAliasConstant {d : ℕ} (C : ModelConstants d) (Q : LowSmoothnessTernaryConstants C) (Cfr : ℝ) : ℝ :=
+ def completeSaddleAliasConstant (Q : LowSmoothnessTernaryConstants C) (Cfr : ℝ) : ℝ :=
   completeGeometryAliasConstant d (lowerSaddleResponseOrder C.smoothness d) C.densityLower C.densityUpper Cfr Q.a Q.ρ
     (completeSaddleC0 C) (completeSaddleDegreeFactor d) (completeSaddleScoreFactor C Q) (completeSaddleOrdinaryConstant C Q Cfr)
- def completeSaddleExteriorConstant {d : ℕ} (C : ModelConstants d) (Q : LowSmoothnessTernaryConstants C) : ℝ :=
+ def completeSaddleExteriorConstant (Q : LowSmoothnessTernaryConstants C) : ℝ :=
   completeGeometryExteriorConstant d (completeSaddleScoreFactor C Q)
     (highSeparatedScoreExponentialConstant Q.a Q.ρ C.densityUpper 1 1)
 
- def completeSaddleEnergyBudget {d : ℕ} (C : ModelConstants d) (Q : LowSmoothnessTernaryConstants C)
+ def completeSaddleEnergyBudget (Q : LowSmoothnessTernaryConstants C)
     (Cfr cf Cω : ℝ) (n : ℕ) : ℝ :=
   lowerSaddleRawEnergyBound C.smoothness d (highCompleteSourceSaddleCoefficient C)
     (highCompleteSourceSaddleTheta C) Cω cf (completeSaddleDefectConstant C Q Cfr)
@@ -45,20 +50,23 @@ attribute [local instance] Classical.propDecidable
     (completeSourceSaddleActivity C (lowerSaddleResponseOrder C.smoothness d) Cfr (spatialInterpolationLambda d) Cω n)
     (shrunkDensityExponent C.densityLower C.densityUpper) n
 
- theorem completeSaddleScoreFactor_pos {d : ℕ} (C : ModelConstants d) (Q : LowSmoothnessTernaryConstants C) :
+ section
+variable (Q : LowSmoothnessTernaryConstants C)
+
+theorem completeSaddleScoreFactor_pos :
     0 < completeSaddleScoreFactor C Q := by
   unfold completeSaddleScoreFactor highFixedScoreDenominator
   positivity [C.densityLower_pos, Q.c_pos]
- theorem completeSaddleDefectConstant_pos {d : ℕ} (C : ModelConstants d) (Q : LowSmoothnessTernaryConstants C) (Cfr : ℝ) :
+ theorem completeSaddleDefectConstant_pos (Cfr : ℝ) :
     0 < completeSaddleDefectConstant C Q Cfr := completeGeometryDefectConstant_pos _ _ _ _ _ _ _
- theorem completeSaddleAliasConstant_pos {d : ℕ} (C : ModelConstants d) (Q : LowSmoothnessTernaryConstants C) (Cfr : ℝ) :
+ theorem completeSaddleAliasConstant_pos (Cfr : ℝ) :
     0 < completeSaddleAliasConstant C Q Cfr := completeGeometryAliasConstant_pos _ _ _ _ _ _ _ _ _ _ _
- theorem completeSaddleFieldConstant_pos {d : ℕ} (C : ModelConstants d) (Q : LowSmoothnessTernaryConstants C) (Cfr : ℝ) :
+ theorem completeSaddleFieldConstant_pos (Cfr : ℝ) :
     0 < completeSaddleFieldConstant C Q Cfr := completeGeometryFieldConstant_pos _ _ _ _ _ _ _ _ _
- theorem completeSaddleExteriorConstant_pos {d : ℕ} (C : ModelConstants d) (Q : LowSmoothnessTernaryConstants C) :
+ theorem completeSaddleExteriorConstant_pos :
     0 < completeSaddleExteriorConstant C Q := completeGeometryExteriorConstant_pos _ _ _
 
- theorem completeSaddleEnergyBudget_nonneg {d : ℕ} (C : ModelConstants d) (Q : LowSmoothnessTernaryConstants C)
+ theorem completeSaddleEnergyBudget_nonneg 
     (Cfr cf Cω : ℝ) (n : ℕ) : 0 ≤ completeSaddleEnergyBudget C Q Cfr cf Cω n := by
   unfold completeSaddleEnergyBudget lowerSaddleRawEnergyBound
   have h5 := (completeSaddleDefectConstant_pos C Q Cfr).le
@@ -72,7 +80,11 @@ attribute [local instance] Classical.propDecidable
     positivity [lowerSaddleH_positive d (highCompleteSourceSaddleCoefficient C) (highCompleteSourceSaddleTheta C) Cω n]
   positivity
 
- theorem eventually_completeSaddleGeometry_factorial {d : ℕ} [NeZero d]
+end
+
+end
+
+ theorem eventually_completeSaddleGeometry_factorial [NeZero d]
     (C : ModelConstants d) (Q : LowSmoothnessTernaryConstants C) (hs : 1 < C.smoothness)
     (hd : 4*C.smoothness < (d : ℝ)) {cf : ℝ} (hcf : 0 < cf) (Cfr Cω : ℝ) :
     ∀ᶠ n : ℕ in atTop,
@@ -85,7 +97,7 @@ attribute [local instance] Classical.propDecidable
     have h : (4 : ℝ)<d := by linarith only [hs,hd]
     have h' : 4<d := by exact_mod_cast h
     omega
-  have hbd : 0 ≤ C.densityUpper := (zero_lt_one.trans C.one_lt_densityUpper).le
+  have hbd := (zero_lt_one.trans C.one_lt_densityUpper).le
   have hOrdConst : 0 ≤ completeSaddleOrdinaryConstant C Q Cfr :=
     zero_le_one.trans (ordinaryFineAliasFactorialConstant_ge_one hbd hCs)
   have hCal : 0 ≤ finePairSaddleAliasFactorialConstant d (lowerSaddleResponseOrder C.smoothness d)
@@ -118,7 +130,7 @@ attribute [local instance] Classical.propDecidable
   let Cord := completeSaddleOrdinaryConstant C Q Cfr
   let Bl := completeSourceSaddleActivity C q Cfr (spatialInterpolationLambda d) Cω n
   let Chi := highSeparatedScoreExponentialConstant Q.a Q.ρ C.densityUpper 1 1
-  have hD : 3 ≤ D := hphysical.2.1
+  have hD := hphysical.2.1
   have hext : exteriorTau (((C.densityLower+(M : ℝ)⁻¹)+(C.densityUpper-(M : ℝ)⁻¹))/
       ((C.densityUpper-(M : ℝ)⁻¹)-(C.densityLower+(M : ℝ)⁻¹))) = tau := by
     have h := exteriorTau_sqrt_ratio (completeSaddleAD C n) (completeSaddleBD C n) G.ad_positive G.density_interval

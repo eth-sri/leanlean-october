@@ -9,8 +9,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 400000
 
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
@@ -46,20 +44,25 @@ theorem orthant_exponential_product (b : ℝ) (s : ι → ℝ) :
   congr 1
   rw [Finset.mul_sum, Finset.sum_neg_distrib]
 
-theorem scalar_exponential_integrable {b : ℝ} (hb : 0 < b) :
+variable {b : ℝ}
+
+theorem scalar_exponential_integrable (hb : 0 < b) :
     IntegrableOn (fun v : ℝ => Real.exp (-(b * v))) (Ici 0) := by
   simpa only [pow_zero, one_mul] using gamma_monomial_integrable hb 0
 
-theorem scalar_exponential_tail_integral {b : ℝ} (hb : 0 < b) (A : ℝ) :
+theorem scalar_exponential_tail_integral (hb : 0 < b) (A : ℝ) :
     (∫ v : ℝ in Ici A, Real.exp (-(b * v))) = Real.exp (-(b * A)) / b := by
   simpa [div_eq_mul_inv] using gamma_polynomial_tail_integral hb A 0
 
-theorem scalar_exponential_indicator_integrable {b A : ℝ} (hb : 0 < b) :
+section
+variable {b A : ℝ}
+
+theorem scalar_exponential_indicator_integrable (hb : 0 < b) :
     Integrable ((Ioi A).indicator (fun v : ℝ => Real.exp (-(b * v))))
       (volume.restrict (Ici 0)) :=
   (scalar_exponential_integrable hb).indicator measurableSet_Ioi
 
-theorem scalar_exponential_indicator_integral {b A : ℝ} (hb : 0 < b) (hA : 0 ≤ A) :
+theorem scalar_exponential_indicator_integral (hb : 0 < b) (hA : 0 ≤ A) :
     (∫ v : ℝ in Ici 0, (Ioi A).indicator (fun v : ℝ => Real.exp (-(b * v))) v) =
       Real.exp (-(b * A)) / b := by
   rw [integral_indicator measurableSet_Ioi, Measure.restrict_restrict measurableSet_Ioi]
@@ -69,7 +72,9 @@ theorem scalar_exponential_indicator_integral {b A : ℝ} (hb : 0 < b) (hA : 0 �
     exact le_of_lt (lt_of_le_of_lt hA hv)
   rw [hs, ← integral_Ici_eq_integral_Ioi, scalar_exponential_tail_integral hb]
 
-theorem orthant_exponential_integrable {b : ℝ} (hb : 0 < b) :
+end
+
+theorem orthant_exponential_integrable (hb : 0 < b) :
     Integrable (orthantExponential b : (ι → ℝ) → ℝ) (exponentialOrthantMeasure ι) := by
   change Integrable (fun s : ι → ℝ => orthantExponential b s) (exponentialOrthantMeasure ι)
   simp_rw [orthant_exponential_product]
@@ -78,7 +83,10 @@ theorem orthant_exponential_integrable {b : ℝ} (hb : 0 < b) :
     (μ := fun _ : ι => volume.restrict (Ici (0 : ℝ)))
     (fun _ => scalar_exponential_integrable hb)
 
-theorem orthant_coordinate_tail_integrable {b A : ℝ} (hb : 0 < b) (j : ι) :
+section
+variable {b A : ℝ}
+
+theorem orthant_coordinate_tail_integrable (hb : 0 < b) (j : ι) :
     Integrable (orthantCoordinateTail b A j) (exponentialOrthantMeasure ι) := by
   unfold orthantCoordinateTail exponentialOrthantMeasure
   exact Integrable.fintype_prod (𝕜 := ℝ)
@@ -89,7 +97,7 @@ theorem orthant_coordinate_tail_integrable {b A : ℝ} (hb : 0 < b) (j : ι) :
       · exact scalar_exponential_indicator_integrable hb
       · exact scalar_exponential_integrable hb)
 
-theorem orthant_coordinate_tail_integral {b A : ℝ} (hb : 0 < b) (hA : 0 ≤ A) (j : ι) :
+theorem orthant_coordinate_tail_integral (hb : 0 < b) (hA : 0 ≤ A) (j : ι) :
     (∫ s : ι → ℝ, orthantCoordinateTail b A j s ∂exponentialOrthantMeasure ι) =
       Real.exp (-(b * A)) / b ^ Fintype.card ι := by
   unfold orthantCoordinateTail exponentialOrthantMeasure
@@ -123,8 +131,10 @@ theorem orthant_coordinate_tail_integral {b A : ℝ} (hb : 0 < b) (hA : 0 ≤ A)
   rw [hpow, div_pow, one_pow]
   field_simp
 
+end
+
 /-- Exact conditional integration of the distinguished orthant coordinate. -/
-theorem orthant_head_tail_scalar_integral {b : ℝ} (hb : 0 < b) (A S : ℝ) :
+theorem orthant_head_tail_scalar_integral (hb : 0 < b) (A S : ℝ) :
     (∫ v : ℝ in Ici 0,
       (Ici (A - S)).indicator (fun v : ℝ => Real.exp (-(b * (v + S)))) v) =
       Real.exp (-(b * max A S)) / b := by
@@ -136,8 +146,7 @@ theorem orthant_head_tail_scalar_integral {b : ℝ} (hb : 0 < b) (A S : ℝ) :
     rw [← Real.exp_add]
     congr 1
     ring
-  rw [he, integral_const_mul, scalar_exponential_tail_integral hb]
-  rw [div_eq_mul_inv, ← mul_assoc, ← Real.exp_add]
+  rw [he, integral_const_mul, scalar_exponential_tail_integral hb, div_eq_mul_inv, ← mul_assoc, ← Real.exp_add]
   have hmax : S + max (A - S) 0 = max A S := by
     by_cases h : S ≤ A
     · rw [max_eq_left (by linarith), max_eq_left h]
@@ -148,14 +157,14 @@ theorem orthant_head_tail_scalar_integral {b : ℝ} (hb : 0 < b) (A S : ℝ) :
     hmax]
   rfl
 
-theorem orthant_head_tail_le_constant {b : ℝ} (hb : 0 < b) (A : ℝ) (s : ι → ℝ) :
+theorem orthant_head_tail_le_constant (hb : 0 < b) (A : ℝ) (s : ι → ℝ) :
     orthantHeadTail b A s ≤ Real.exp (-(b * A)) / b := by
   apply div_le_div_of_nonneg_right _ hb.le
   apply Real.exp_le_exp.mpr
   have h := le_max_left A (∑ j, s j)
   nlinarith
 
-theorem orthant_head_tail_le_exponential {b : ℝ} (hb : 0 < b) (A : ℝ) (s : ι → ℝ) :
+theorem orthant_head_tail_le_exponential (hb : 0 < b) (A : ℝ) (s : ι → ℝ) :
     orthantHeadTail b A s ≤ orthantExponential b s / b := by
   unfold orthantHeadTail orthantExponential
   apply div_le_div_of_nonneg_right _ hb.le
@@ -181,7 +190,7 @@ theorem orthant_coordinate_tail_eq_exponential {b A : ℝ} {j : ι} {s : ι → 
     exact Set.indicator_of_mem hsj _
   · rfl
 
-theorem orthant_head_tail_integrable {b : ℝ} (hb : 0 < b) (A : ℝ) :
+theorem orthant_head_tail_integrable (hb : 0 < b) (A : ℝ) :
     Integrable (orthantHeadTail b A : (ι → ℝ) → ℝ) (exponentialOrthantMeasure ι) := by
   have hcont : Continuous (orthantHeadTail b A : (ι → ℝ) → ℝ) :=
     (Real.continuous_exp.comp (continuous_const.mul
@@ -267,7 +276,7 @@ vector of further coordinates. -/
 def orthantSumTail (b A : ℝ) (z : ℝ × (ι → ℝ)) : ℝ :=
   if A ≤ z.1 + ∑ j, z.2 j then Real.exp (-(b * (z.1 + ∑ j, z.2 j))) else 0
 
-theorem orthant_sum_tail_integrable {b : ℝ} (hb : 0 < b) (A : ℝ) :
+theorem orthant_sum_tail_integrable (hb : 0 < b) (A : ℝ) :
     Integrable (orthantSumTail b A : (ℝ × (ι → ℝ)) → ℝ)
       ((volume.restrict (Ici (0 : ℝ))).prod (exponentialOrthantMeasure ι)) := by
   have hbase := (scalar_exponential_integrable hb).mul_prod (orthant_exponential_integrable (ι := ι) hb)
@@ -286,7 +295,7 @@ theorem orthant_sum_tail_integrable {b : ℝ} (hb : 0 < b) (A : ℝ) :
   funext z
   simp only [orthantSumTail, Set.indicator, mem_setOf_eq]
 
-theorem orthant_sum_tail_integral_eq {b : ℝ} (hb : 0 < b) (A : ℝ) :
+theorem orthant_sum_tail_integral_eq (hb : 0 < b) (A : ℝ) :
     (∫ z : ℝ × (ι → ℝ), orthantSumTail b A z
       ∂((volume.restrict (Ici (0 : ℝ))).prod (exponentialOrthantMeasure ι))) =
       ∫ s : ι → ℝ, orthantHeadTail b A s ∂exponentialOrthantMeasure ι := by
@@ -372,7 +381,10 @@ theorem orthant_sum_tail_integral_uniform {b A : ℝ} (hb : (1 / 2 : ℝ) ≤ b)
 def finiteOrthantTail {q : ℕ} (b A : ℝ) (s : Fin q → ℝ) : ℝ :=
   if A ≤ ∑ j, s j then Real.exp (-(b * ∑ j, s j)) else 0
 
-theorem finite_orthant_tail_split_integral {m : ℕ} (b A : ℝ) :
+section
+variable {m : ℕ}
+
+theorem finite_orthant_tail_split_integral (b A : ℝ) :
     (∫ s : Fin (m + 1) → ℝ, finiteOrthantTail b A s
       ∂exponentialOrthantMeasure (Fin (m + 1))) =
       ∫ z : ℝ × (Fin m → ℝ), orthantSumTail b A z
@@ -386,7 +398,7 @@ theorem finite_orthant_tail_split_integral {m : ℕ} (b A : ℝ) :
       finiteOrthantTail, orthantSumTail, Fin.sum_univ_succ, Fin.insertNth_zero,
       Equiv.coe_fn_mk, Fin.cons_succ, Fin.zero_succAbove, cast_eq, Fin.cons_zero]
 
-theorem finite_orthant_tail_integrable {m : ℕ} {b : ℝ} (hb : 0 < b) (A : ℝ) :
+theorem finite_orthant_tail_integrable {b : ℝ} (hb : 0 < b) (A : ℝ) :
     Integrable (finiteOrthantTail b A : (Fin (m + 1) → ℝ) → ℝ)
       (exponentialOrthantMeasure (Fin (m + 1))) := by
   have hp := (measurePreserving_piFinSuccAbove
@@ -399,12 +411,14 @@ theorem finite_orthant_tail_integrable {m : ℕ} {b : ℝ} (hb : 0 < b) (A : ℝ
       Equiv.coe_fn_mk, Fin.cons_succ, Fin.zero_succAbove, cast_eq, Fin.cons_zero]
   · rfl
 
-theorem finite_orthant_tail_integral_uniform {m : ℕ} {b A : ℝ}
+theorem finite_orthant_tail_integral_uniform {b A : ℝ}
     (hb : (1 / 2 : ℝ) ≤ b) (hA : 0 ≤ A) :
     (∫ s : Fin (m + 1) → ℝ, finiteOrthantTail b A s
       ∂exponentialOrthantMeasure (Fin (m + 1))) ≤
       8 ^ (m + 1) * Real.exp (-(b * A)) * (1 + A) ^ m := by
   rw [finite_orthant_tail_split_integral]
   simpa using orthant_sum_tail_integral_uniform (ι := Fin m) hb hA
+
+end
 
 end NearlyMinimax

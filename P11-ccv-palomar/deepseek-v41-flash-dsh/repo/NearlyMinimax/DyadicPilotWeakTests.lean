@@ -12,9 +12,6 @@ noncomputable section
 open MeasureTheory ProbabilityTheory Matrix Set
 open scoped BigOperators ENNReal Matrix.Norms.L2Operator
 namespace NearlyMinimax
-set_option maxHeartbeats 5000000
-set_option synthInstance.maxHeartbeats 300000
-set_option backward.isDefEq.respectTransparency false
 
 theorem dyadicPilotRow_field_measurable {d ℓ : ℕ} (j : ℕ) :
     Measurable (fun w : Covariate d × Covariate d => dyadicPilotRow (ℓ := ℓ) j w.1 w.2) := by
@@ -25,7 +22,9 @@ theorem dyadicPilotRow_field_measurable {d ℓ : ℕ} (j : ℕ) :
       (((continuous_apply t).comp continuous_snd).sub
         ((continuous_apply t).comp continuous_fst))))).measurable
 
-theorem regularPairDesignMeasure_same_cell_ae {d : ℕ} (θ : RegressionParameter d)
+variable {d : ℕ} (C : ModelConstants d)
+
+theorem regularPairDesignMeasure_same_cell_ae (θ : RegressionParameter d)
     (k : ℕ) (hk : 0 < k) :
     ∀ᵐ w ∂regularPairDesignMeasure θ k hk, regularGridCell k hk w.1 = regularGridCell k hk w.2 := by
   unfold regularPairDesignMeasure
@@ -49,7 +48,7 @@ theorem dyadicPilotRow_pair_cap {d ℓ : ℕ} (C : ModelConstants d)
     regularPairDesignMeasure_same_cell_ae θ ((2 : ℕ) ^ J) (by positivity)] with w hw hc
   exact dyadicPilotRow_sum_abs_le_fine_cell j J hj w.1 w.2 hw.1 hw.2 hc.symm
 
-def dyadicPilotErrorField {d : ℕ} (C : ModelConstants d) (θ : RegressionParameter d)
+def dyadicPilotErrorField (C : ModelConstants d) (θ : RegressionParameter d)
     (n j : ℕ) (y : ℝ) (m : ℕ) (z : Fin n → Observation d) (w : Covariate d × Covariate d) : ℝ :=
   dyadicPolynomialPilot C n j w.1 y m (dyadicPilotRow j w.1 w.2) z -
     incrementFinScalar (anchoredDimension d C.order) C.densityLower C.densityUpper
@@ -58,7 +57,7 @@ def dyadicPilotErrorField {d : ℕ} (C : ModelConstants d) (θ : RegressionParam
 
 /-- Every L² test of the actual centered pilot error is truly L² and has
 mean zero under the original sample law. -/
-theorem dyadicPilotErrorField_test_moment_facts {d : ℕ} (C : ModelConstants d)
+theorem dyadicPilotErrorField_test_moment_facts 
     [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
     (n j J : ℕ) (hj : j ≤ J) (y : ℝ) (hy : |y| ≤ C.holderBound) (m : ℕ)
     (hdegree : m + anchoredDimension d C.order + 1 ≤ n)

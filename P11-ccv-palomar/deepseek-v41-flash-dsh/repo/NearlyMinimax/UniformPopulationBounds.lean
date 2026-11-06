@@ -12,11 +12,14 @@ noncomputable section
 open MeasureTheory Set Matrix
 open scoped BigOperators RealInnerProductSpace Matrix.Norms.L2Operator
 namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 
-theorem uniform_domain_admissible_dyadicPopulationFit_taylor_coefficients {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] :
+variable {d : ℕ} (C : ModelConstants d)
+
+section
+variable [Nonempty (AnchoredIndex d C.order)]
+
+theorem uniform_domain_admissible_dyadicPopulationFit_taylor_coefficients 
+    :
     ∃ D : ℝ, 0 < D ∧ ∀ Udom : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain Udom) θ →
       ∀ x ∈ unitCube d, ∃ c : AnchoredIndex d C.order → ℝ, ∀ j : ℕ,
       ‖(EuclideanSpace.equiv (AnchoredIndex d C.order) ℝ).symm
@@ -45,8 +48,8 @@ theorem uniform_domain_admissible_dyadicPopulationFit_taylor_coefficients {d : �
       mul_le_mul_of_nonneg_right (le_max_right _ _) (Real.rpow_nonneg (by positivity) _)
 
 
-theorem uniform_domain_admissible_dyadicPopulationFit_spatial_error {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] :
+theorem uniform_domain_admissible_dyadicPopulationFit_spatial_error 
+    :
     ∃ E : ℝ, 0 < E ∧ ∀ Udom : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain Udom) θ →
       ∀ j : ℕ, ∀ x ∈ unitCube d, ∀ w ∈ unitCube d,
       |dyadicRegressionDifference θ j x w - anchoredFitPolynomial (dyadicNormalizedAnchor j x)
@@ -92,12 +95,11 @@ theorem uniform_domain_admissible_dyadicPopulationFit_spatial_error {d : ℕ} (C
         D * R * euclideanNorm (w - dyadicNormalizedAnchor j x) := by gcongr
     _ = (T * max 1 ((Real.sqrt (d : ℝ)) ^ C.smoothness) + D * (taylorErrorFactor C * C.holderBound)) *
         (((2 : ℝ) ^ j)⁻¹) ^ C.smoothness * euclideanNorm (w - dyadicNormalizedAnchor j x) := by dsimp [R]; ring
-    _ ≤ E * (((2 : ℝ) ^ j)⁻¹) ^ C.smoothness * euclideanNorm (w - dyadicNormalizedAnchor j x) := by
-      exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right (le_max_right _ _)
+    _ ≤ E * (((2 : ℝ) ^ j)⁻¹) ^ C.smoothness * euclideanNorm (w - dyadicNormalizedAnchor j x) := mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right (le_max_right _ _)
         (Real.rpow_nonneg (by positivity) _)) hr0
 
-theorem uniform_domain_admissible_dyadicPopulationIncrement_successor_bound {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] :
+theorem uniform_domain_admissible_dyadicPopulationIncrement_successor_bound 
+    :
     ∃ E : ℝ, 0 < E ∧ ∀ Udom : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain Udom) θ →
       ∀ x ∈ unitCube d, ∀ j : ℕ,
       ‖(EuclideanSpace.equiv (AnchoredIndex d C.order) ℝ).symm (dyadicPopulationIncrement θ x (j + 1))‖ ≤
@@ -124,8 +126,8 @@ theorem uniform_domain_admissible_dyadicPopulationIncrement_successor_bound {d :
   dsimp [E]
   ring
 
-theorem uniform_domain_admissible_dyadicPopulationIncrement_root_bound {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] :
+theorem uniform_domain_admissible_dyadicPopulationIncrement_root_bound 
+    :
     ∃ E : ℝ, 0 < E ∧ ∀ Udom : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain Udom) θ →
       ∀ x ∈ unitCube d,
       ‖(EuclideanSpace.equiv (AnchoredIndex d C.order) ℝ).symm (dyadicPopulationIncrement θ x 0)‖ ≤ E := by
@@ -154,8 +156,8 @@ theorem uniform_domain_admissible_dyadicPopulationIncrement_root_bound {d : ℕ}
   simpa only [sub_zero, dyadicNormalizedAnchor, E] using h.trans (le_max_right 1 _)
 
 
-theorem uniform_domain_admissible_dyadicPopulationIncrement_bound {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] :
+theorem uniform_domain_admissible_dyadicPopulationIncrement_bound 
+    :
     ∃ E : ℝ, 0 < E ∧ ∀ Udom : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain Udom) θ →
       ∀ x ∈ unitCube d, ∀ j : ℕ,
       ‖(EuclideanSpace.equiv (AnchoredIndex d C.order) ℝ).symm (dyadicPopulationIncrement θ x j)‖ ≤
@@ -170,8 +172,8 @@ theorem uniform_domain_admissible_dyadicPopulationIncrement_bound {d : ℕ} (C :
     exact (hsucc Udom θ hθ x hx j).trans
       (mul_le_mul_of_nonneg_right (le_max_right _ _) (Real.rpow_nonneg (by positivity) _))
 
-theorem uniform_domain_admissible_dyadicPopulationFit_physical_error {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] :
+theorem uniform_domain_admissible_dyadicPopulationFit_physical_error 
+    :
     ∃ E : ℝ, 0 < E ∧ ∀ Udom : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain Udom) θ →
       ∀ j : ℕ, ∀ x ∈ unitCube d, ∀ y ∈ unitCube d, y ∈ dyadicPilotCell j x →
       |θ.regression y - θ.regression x - dyadicAnchoredFeature j x y ⬝ᵥ dyadicPopulationFit (ℓ := C.order) θ j x| ≤
@@ -192,8 +194,8 @@ theorem uniform_domain_admissible_dyadicPopulationFit_physical_error {d : ℕ} (
   ring
 
 
-theorem uniform_domain_admissible_dyadic_increment_polynomial_error {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] :
+theorem uniform_domain_admissible_dyadic_increment_polynomial_error 
+    :
     ∃ E : ℝ, 0 < E ∧ ∀ Udom : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain Udom) θ →
       ∀ j : ℕ, ∀ x ∈ unitCube d, ∀ m : ℕ,
       ‖(EuclideanSpace.equiv (Fin (anchoredDimension d C.order)) ℝ).symm
@@ -270,8 +272,8 @@ theorem uniform_domain_admissible_dyadic_increment_polynomial_error {d : ℕ} (C
       gcongr
       exact le_max_right _ _
 
-theorem uniform_domain_admissible_dyadic_polynomial_row_error {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] :
+theorem uniform_domain_admissible_dyadic_polynomial_row_error 
+    :
     ∃ E : ℝ, 0 < E ∧ ∀ Udom : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain Udom) θ →
       ∀ j : ℕ, ∀ x ∈ unitCube d, ∀ y ∈ unitCube d, y ∈ dyadicPilotCell j x → ∀ m : ℕ,
       |dyadicPilotRow j x y ⬝ᵥ dyadicPopulationPolynomial C θ j x (θ.regression x) m -
@@ -310,7 +312,9 @@ theorem uniform_domain_admissible_dyadic_polynomial_row_error {d : ℕ} (C : Mod
       gcongr
       exact le_max_right _ _
 
-theorem uniform_domain_admissible_dyadicPopulationResidual_bound {d : ℕ} (C : ModelConstants d)
+end
+
+theorem uniform_domain_admissible_dyadicPopulationResidual_bound 
     (hs : 1 < C.smoothness) :
     ∃ E : ℝ, 0 < E ∧ ∀ Udom : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain Udom) θ →
       ∀ J : ℕ, ∀ m : ℕ → ℕ, ∀ x ∈ unitCube d, ∀ y ∈ unitCube d,
@@ -365,7 +369,7 @@ theorem uniform_domain_admissible_dyadicPopulationResidual_bound {d : ℕ} (C : 
       ring
 
 
-theorem uniform_domain_admissible_dyadicFinPilotMoments_uniform_bound {d : ℕ} (C : ModelConstants d) :
+theorem uniform_domain_admissible_dyadicFinPilotMoments_uniform_bound :
     ∃ W : ℝ, 0 < W ∧ ∀ Udom : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain Udom) θ →
       ∀ j : ℕ, ∀ x ∈ unitCube d, ∀ t : Bool,
         ‖dyadicFinPilotMoments (ℓ := C.order) θ j x t‖ ≤ W := by
@@ -379,7 +383,7 @@ theorem uniform_domain_admissible_dyadicFinPilotMoments_uniform_bound {d : ℕ} 
       (fun w hw => ⟨C.densityLower_pos.le.trans hw.1, hw.2⟩))
     (fun w hw => admissible_regression_value_bound (C.withDomain Udom) θ hθ _ (dyadicCellAffine_mem_cube j x w hw)) t
 
-theorem uniform_domain_admissible_dyadicPopulationPolynomial_uniform_bound {d : ℕ} (C : ModelConstants d)
+theorem uniform_domain_admissible_dyadicPopulationPolynomial_uniform_bound 
     [Nonempty (AnchoredIndex d C.order)] (Y : ℝ) (hY : 0 ≤ Y) :
     ∃ B : ℝ, 0 < B ∧ ∀ Udom : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain Udom) θ →
       ∀ j : ℕ, ∀ x ∈ unitCube d, ∀ y : ℝ, |y| ≤ Y → ∀ m : ℕ,
@@ -417,7 +421,7 @@ theorem uniform_domain_admissible_dyadicPopulationPolynomial_uniform_bound {d : 
   simpa only [dyadicPopulationPolynomial, iteratedFDeriv_zero_apply, Nat.factorial_zero, Nat.cast_one, pow_zero, mul_one,
     Fin.prod_univ_zero] using hd
 
-theorem uniform_domain_admissible_dyadicPopulationRawPolynomial_uniform_bound {d : ℕ} (C : ModelConstants d)
+theorem uniform_domain_admissible_dyadicPopulationRawPolynomial_uniform_bound 
     (hs : 1 < C.smoothness) :
     ∃ B : ℝ, 0 < B ∧ ∀ Udom : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain Udom) θ →
       ∀ j : ℕ, ∀ x ∈ unitCube d, ∀ t : Bool, ∀ m : ℕ,
@@ -441,7 +445,7 @@ theorem uniform_domain_admissible_dyadicPopulationRawPolynomial_uniform_bound {d
     rw [he]
     exact (norm_sub_le _ _).trans (by linarith)
 
-theorem uniform_domain_admissible_dyadicPopulationPilotSum_uniform_bound {d : ℕ} (C : ModelConstants d)
+theorem uniform_domain_admissible_dyadicPopulationPilotSum_uniform_bound 
     (hs : 1 < C.smoothness) :
     ∃ R : ℝ, 0 ≤ R ∧ ∀ Udom : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain Udom) θ →
       ∀ J : ℕ, ∀ m : ℕ → ℕ, ∀ x ∈ unitCube d, ∀ y ∈ unitCube d,
@@ -462,7 +466,7 @@ theorem uniform_domain_admissible_dyadicPopulationPilotSum_uniform_bound {d : �
       rw [Finset.sum_mul]
     _ ≤ R := mul_le_mul_of_nonneg_right (dyadicPilotRow_total_abs_le J x y hx hy hcell) hB.le
 
-theorem uniform_domain_admissible_dyadicPopulationCoefficients_uniform_bound {d : ℕ} (C : ModelConstants d)
+theorem uniform_domain_admissible_dyadicPopulationCoefficients_uniform_bound 
     (hs : 1 < C.smoothness) :
     ∃ Cp : ℝ, 0 < Cp ∧ ∀ Udom : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain Udom) θ →
       ∀ J : ℕ, ∀ m : ℕ → ℕ, ∀ x ∈ unitCube d, ∀ y ∈ unitCube d,

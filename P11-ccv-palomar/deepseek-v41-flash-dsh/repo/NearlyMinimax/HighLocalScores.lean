@@ -11,8 +11,6 @@ noncomputable section
 open MeasureTheory Set Polynomial
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1500000
 
 section Packet
 variable {ι E : Type*} [Fintype ι] [DecidableEq ι] [Fintype E]
@@ -24,7 +22,10 @@ def highDensityResponseAction (q : ℕ) (C : ℝ) (weights : E → ℝ)
   ∑ e, weights e * b e * responseMatrixAction q C (A e) c Φ
 
 omit [DecidableEq ι] in
-theorem high_response_product_normalized {n : ℕ} (a V η : ℝ) (ha : a ≠ 0)
+section
+variable {n : ℕ} (a V η : ℝ)
+
+theorem high_response_product_normalized (ha : a ≠ 0)
     (g w : Fin n → ℝ) (φ : Fin n → ι → ℝ) (c : ι → ℝ) :
     ∑ y : Fin n → Fin 3, highResponseProduct a V η g w φ c y = 1 := by
   unfold highResponseProduct
@@ -32,11 +33,13 @@ theorem high_response_product_normalized {n : ℕ} (a V η : ℝ) (ha : a ≠ 0)
   simp [ternary_normalized a _ V ha]
 
 omit [DecidableEq ι] in
-theorem high_response_variance_term_sum_zero {n : ℕ} (a V η : ℝ)
+theorem high_response_variance_term_sum_zero 
     (g w : Fin n → ℝ) (φ : Fin n → ι → ℝ) (c : ι → ℝ) (i : Fin n) :
     ∑ y : Fin n → Fin 3, highResponseVarianceTerm a V η g w φ c y i = 0 := by
   simpa only [highResponseVarianceTerm, patchVarianceTerm, zero_mul, add_zero] using
     patch_variance_term_sum_zero n a V 0 (coefficientRegression η g w φ c) (fun _ => 0) 0 i
+
+end
 
 /-- The explicit finite covariance-mark variation entering the response
 packet; it is determined by the actual matrices and density weights. -/
@@ -47,7 +50,10 @@ def highLocalDerivativeConstant (q : ℕ) (a ρ : ℝ) : ℝ :=
   (∑ j : Fin (2 * q + 2), |responseWeight q j|) *
     (4 * (((2 * ρ + a) / a ^ 2) ^ 2 + 2 / a ^ 2))
 
-theorem finite_density_product_abs_bound {n : ℕ} (p : Fin n → ℝ) (pPlus : ℝ)
+section
+variable {n : ℕ}
+
+theorem finite_density_product_abs_bound (p : Fin n → ℝ) (pPlus : ℝ)
     (_hpPlus : 0 ≤ pPlus) (hp : ∀ i, |p i| ≤ pPlus) :
     |∏ i, p i| ≤ pPlus ^ n := by
   rw [Finset.abs_prod]
@@ -56,7 +62,7 @@ theorem finite_density_product_abs_bound {n : ℕ} (p : Fin n → ℝ) (pPlus : 
       (fun i (_ : i ∈ (Finset.univ : Finset (Fin n))) => hp i)
 
 omit [DecidableEq ι] in
-theorem high_response_variance_term_abs_bound {n : ℕ} (a V η : ℝ) (ha : 0 < a)
+theorem high_response_variance_term_abs_bound (a V η : ℝ) (ha : 0 < a)
     (g w : Fin n → ℝ) (φ : Fin n → ι → ℝ) (c : ι → ℝ)
     (hp : ∀ i u, 0 ≤ ternaryMass a (coefficientRegression η g w φ c i) V u)
     (y : Fin n → Fin 3) (i : Fin n) :
@@ -74,7 +80,7 @@ theorem high_response_variance_term_abs_bound {n : ℕ} (a V η : ℝ) (ha : 0 <
   exact (mul_le_mul (ternary_variance_derivative_abs_bound a ha (y i)) hprod
     (abs_nonneg _) (by positivity : 0 ≤ 1 / a ^ 2)).trans_eq (mul_one _)
 
-theorem high_density_response_product_abs_bound {n : ℕ} (q : ℕ) (hn : 1 ≤ n)
+theorem high_density_response_product_abs_bound (q : ℕ) (hn : 1 ≤ n)
     (C a V η ρ pPlus : ℝ) (hC : 0 < C) (ha : 0 < a) (hη : 0 ≤ η)
     (hρ : 0 ≤ ρ) (hηρ : η ≤ ρ / 2) (hpPlus : 0 ≤ pPlus)
     (weights : E → ℝ) (A : E → ι → ι → ℝ) (pReset : E → Fin n → ℝ)
@@ -110,6 +116,8 @@ theorem high_density_response_product_abs_bound {n : ℕ} (q : ℕ) (hn : 1 ≤ 
       apply Finset.sum_congr rfl
       intro e _
       ring
+
+end
 
 end Packet
 end NearlyMinimax

@@ -12,14 +12,15 @@ noncomputable section
 open Filter
 open scoped Topology
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
 
 def lowerSaddleFineFieldScale (s d m theta C c0 : ℝ) (tauM : ℕ → ℝ) (x : ℝ) : ℝ :=
   Real.exp (2 * tauM (lowerSaddleM m x) * lowerSaddleM m x) *
     lowerSaddleN s d m theta C tauM x ^ (4 - d) *
     Real.exp (c0 * (2 * d - 4) * lowerSaddleD d m x)
 
-theorem lowerSaddleFineFieldScale_positive (s d m theta C c0 : ℝ) (tauM : ℕ → ℝ) (x : ℝ) :
+variable (s d m theta C c0 : ℝ) (tauM : ℕ → ℝ) (x : ℝ)
+
+theorem lowerSaddleFineFieldScale_positive :
     0 < lowerSaddleFineFieldScale s d m theta C c0 tauM x := by
   unfold lowerSaddleFineFieldScale
   positivity [lowerSaddleN_positive s d m theta C tauM x]
@@ -33,10 +34,7 @@ theorem lowerSaddleFineFieldScale_tends_zero {s d m theta tau Ctau : ℝ}
   have hM := lowerSaddleM_tendsto_atTop hm
   have hM2 : Tendsto (fun x : ℝ => (lowerSaddleM m x : ℝ) ^ 2) atTop atTop :=
     (tendsto_pow_atTop (by decide : (2 : ℕ) ≠ 0)).comp hM
-  have htau := ((lowerSaddleTau_limit hm hcontrol).mul hM.inv_tendsto_atTop).const_mul 2
-  have hN := (lowerSaddleLogN_div_M_sq_limit hd0 hm htheta hcontrol s C).const_mul (4 - d)
-  have hD := (lowerSaddleD_div_M_sq_tends_zero hd0 hm).const_mul (c0 * (2 * d - 4))
-  have hh := (htau.add hN).add hD
+  have hh := ((((lowerSaddleTau_limit hm hcontrol).mul hM.inv_tendsto_atTop).const_mul 2).add ((lowerSaddleLogN_div_M_sq_limit hd0 hm htheta hcontrol s C).const_mul (4 - d))).add ((lowerSaddleD_div_M_sq_tends_zero hd0 hm).const_mul (c0 * (2 * d - 4)))
   simp only [mul_zero, zero_add, add_zero] at hh
   apply positive_profile_tends_zero_of_log_div_negative
     (c := (4 - d) * (((d - 4 * s) / (d * (d + 4))) / m ^ 2)) hM2
@@ -72,8 +70,7 @@ theorem fine_field_scale_absorption {d N mu ell tau M D c0 : ℝ}
   have hmu2 : mu ^ 2 ≤ 1 := pow_le_one₀ hmu hmu1
   have hprod : mu ^ 2 * (Real.exp (2 * tau * M) * N ^ (4 - d) *
       Real.exp (c0 * (2 * d - 4) * D)) ≤ 1 := by
-    have h := mul_le_mul hmu2 hscale (by positivity) (by norm_num : (0 : ℝ) ≤ 1)
-    simpa only [one_mul] using h
+    simpa only [one_mul] using (mul_le_mul hmu2 hscale (by positivity) (by norm_num : (0 : ℝ) ≤ 1))
   calc
     _ = (mu ^ 2 * N ^ (-d)) * (mu ^ 2 *
         (Real.exp (2 * tau * M) * N ^ (4 - d) * Real.exp (c0 * (2 * d - 4) * D))) := by

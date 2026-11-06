@@ -13,10 +13,10 @@ noncomputable section
 open MeasureTheory ProbabilityTheory
 open scoped BigOperators ENNReal
 namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 
-def dyadicMultilevelErrorField {d : ℕ} (C : ModelConstants d) (θ : RegressionParameter d)
+variable {d : ℕ} (C : ModelConstants d)
+
+def dyadicMultilevelErrorField (C : ModelConstants d) (θ : RegressionParameter d)
     (n J : ℕ) (y : ℝ) (m : ℕ → ℕ) (z : Fin n → Observation d)
     (w : Covariate d × Covariate d) : ℝ :=
   ∑ j : Fin (J + 1), dyadicPilotErrorField C θ n j.val y (m j.val) z w
@@ -31,8 +31,11 @@ theorem dyadicPilotRowCap_square (d ℓ j L : ℕ) (D : ℝ) :
   simp only [dyadicPilotRowCap, mul_pow, Real.sq_sqrt (Nat.cast_nonneg d)]
   ring
 
-theorem dyadicPilotErrorField_point_moment_facts {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
+section
+variable [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d)
+
+theorem dyadicPilotErrorField_point_moment_facts 
+    (hθ : Admissible C θ)
     (n j : ℕ) (x : Covariate d) (hx : x ∈ unitCube d) (z : Covariate d)
     (y : ℝ) (m : ℕ) (hdegree : m + anchoredDimension d C.order + 1 ≤ n) :
     MemLp (fun t => dyadicPilotErrorField C θ n j y m t (x, z)) 2 (sampleLaw θ n) ∧
@@ -45,33 +48,9 @@ theorem dyadicPilotErrorField_point_moment_facts {d : ℕ} (C : ModelConstants d
   rw [integral_sub (hL2.integrable (by norm_num)) (integrable_const _), hmean]
   simp
 
-theorem admissible_dyadicPilotErrorField_point_second {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] :
-    ∃ D A : ℝ, 0 < D ∧ 0 < A ∧ ∀ θ : RegressionParameter d, Admissible C θ →
-      ∀ n j L : ℕ, j ≤ L → ∀ x ∈ unitCube d, ∀ z ∈ unitCube d,
-      regularGridCell ((2 : ℕ) ^ L) (by positivity) x =
-        regularGridCell ((2 : ℕ) ^ L) (by positivity) z →
-      ∀ y : ℝ, |y| ≤ C.holderBound → ∀ m : ℕ,
-      m + anchoredDimension d C.order + 1 ≤ n → ∀ Λ : ℝ, 0 < Λ →
-      Λ ≤ (n : ℝ) - (m + anchoredDimension d C.order + 1) + 1 →
-      (∫ t, dyadicPilotErrorField C θ n j y m t (x, z) ^ 2 ∂sampleLaw θ n) ≤
-        (dyadicPilotRowCap d C.order j L * D) ^ 2 * dyadicPilotSeries C A Λ j m := by
-  obtain ⟨D, A, hD, hA, hv⟩ := admissible_dyadicPolynomialPilot_variance C
-  refine ⟨D, A, hD, hA, ?_⟩
-  intro θ hθ n j L hj x hx z hz hc y hy m hdegree Λ hΛ hΛn
-  obtain ⟨hL2, hmean⟩ := dyadicPolynomialPilot_moment_facts C θ hθ n j x hx y m
-    (dyadicPilotRow j x z) hdegree
-  have h := hv θ hθ n j x hx y hy m (dyadicPilotRow j x z) hdegree Λ hΛ hΛn
-  rw [variance_eq_integral hL2.aemeasurable, hmean] at h
-  have hr := dyadicPilotRow_sum_abs_le_fine_cell (ℓ := C.order) j L hj x z hx hz hc.symm
-  apply h.trans
-  change ((∑ i, |dyadicPilotRow j x z i|) * D) ^ 2 * dyadicPilotSeries C A Λ j m ≤ _
-  apply mul_le_mul_of_nonneg_right _ (dyadicPilotSeries_nonneg C A Λ hΛ.le _ _)
-  apply pow_le_pow_left₀ (mul_nonneg (Finset.sum_nonneg (fun i _ => abs_nonneg _)) hD.le)
-  exact mul_le_mul_of_nonneg_right hr hD.le
 
-theorem dyadicMultilevelErrorField_point_moment_facts {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
+theorem dyadicMultilevelErrorField_point_moment_facts 
+    (hθ : Admissible C θ)
     (n J : ℕ) (x : Covariate d) (hx : x ∈ unitCube d) (z : Covariate d)
     (y : ℝ) (m : ℕ → ℕ)
     (hdegree : ∀ j : Fin (J + 1), m j.val + anchoredDimension d C.order + 1 ≤ n) :
@@ -85,8 +64,8 @@ theorem dyadicMultilevelErrorField_point_moment_facts {d : ℕ} (C : ModelConsta
   rw [integral_finsetSum Finset.univ (fun j _ => (hf j).1.integrable (by norm_num))]
   exact Finset.sum_eq_zero (fun j _ => (hf j).2)
 
-theorem dyadicPilotErrorField_weighted_integrable {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
+theorem dyadicPilotErrorField_weighted_integrable 
+    (hθ : Admissible C θ)
     (n j L : ℕ) (hj : j ≤ L) (y : ℝ) (hy : |y| ≤ C.holderBound) (m : ℕ)
     (hdegree : m + anchoredDimension d C.order + 1 ≤ n)
     (ν : Covariate d × Covariate d → ℝ)
@@ -120,8 +99,8 @@ theorem dyadicPilotErrorField_weighted_integrable {d : ℕ} (C : ModelConstants 
     rfl
   rwa [heq]
 
-theorem dyadicMultilevelErrorField_test_integral_sum {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
+theorem dyadicMultilevelErrorField_test_integral_sum 
+    (hθ : Admissible C θ)
     (n J L : ℕ) (hJL : J ≤ L) (y : ℝ) (hy : |y| ≤ C.holderBound) (m : ℕ → ℕ)
     (hdegree : ∀ j : Fin (J + 1), m j.val + anchoredDimension d C.order + 1 ≤ n)
     (ν : Covariate d × Covariate d → ℝ)
@@ -137,8 +116,8 @@ theorem dyadicMultilevelErrorField_test_integral_sum {d : ℕ} (C : ModelConstan
     dyadicPilotErrorField_weighted_integrable C θ hθ n j.val L
       ((Nat.le_of_lt_succ j.isLt).trans hJL) y hy (m j.val) (hdegree j) ν hν t)
 
-theorem dyadicMultilevelErrorField_test_moment_facts {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
+theorem dyadicMultilevelErrorField_test_moment_facts 
+    (hθ : Admissible C θ)
     (n J L : ℕ) (hJL : J ≤ L) (y : ℝ) (hy : |y| ≤ C.holderBound) (m : ℕ → ℕ)
     (hdegree : ∀ j : Fin (J + 1), m j.val + anchoredDimension d C.order + 1 ≤ n)
     (ν : Covariate d × Covariate d → ℝ)
@@ -155,8 +134,8 @@ theorem dyadicMultilevelErrorField_test_moment_facts {d : ℕ} (C : ModelConstan
   rw [integral_finsetSum Finset.univ (fun j _ => (hf j).1.integrable (by norm_num))]
   exact Finset.sum_eq_zero (fun j _ => (hf j).2)
 
-theorem dyadicMultilevelErrorField_joint_measurable {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
+theorem dyadicMultilevelErrorField_joint_measurable 
+    (hθ : Admissible C θ)
     (n J : ℕ) (y : ℝ) (m : ℕ → ℕ)
     (hdegree : ∀ j : Fin (J + 1), m j.val + anchoredDimension d C.order + 1 ≤ n) :
     Measurable (fun t : (Fin n → Observation d) × (Covariate d × Covariate d) =>
@@ -168,5 +147,7 @@ theorem dyadicMultilevelErrorField_joint_measurable {d : ℕ} (C : ModelConstant
   funext t
   simp only [dyadicMultilevelErrorField, Finset.sum_apply]
   rfl
+
+end
 
 end NearlyMinimax

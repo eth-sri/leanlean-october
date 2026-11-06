@@ -10,23 +10,28 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators ENNReal
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 600000
+
+variable {d : ℕ}
 
 /-- The exact Euclidean distance in the source's actual coordinate space. -/
-def exactEuclideanDistance {d : ℕ} (x y : Covariate d) : ℝ :=
+def exactEuclideanDistance (x y : Covariate d) : ℝ :=
   Real.sqrt (spatialSquaredDistance x y)
 
-theorem exactEuclideanDistance_nonneg {d : ℕ} (x y : Covariate d) :
+section
+variable (x y : Covariate d)
+
+theorem exactEuclideanDistance_nonneg :
     0 ≤ exactEuclideanDistance x y := Real.sqrt_nonneg _
 
-theorem exactEuclideanDistance_eq_norm {d : ℕ} (x y : Covariate d) :
+theorem exactEuclideanDistance_eq_norm :
     exactEuclideanDistance x y = ‖WithLp.toLp 2 (y-x)‖ := by
   rw [EuclideanSpace.norm_eq]
   unfold exactEuclideanDistance spatialSquaredDistance
   simp [Real.norm_eq_abs, sq_abs]
 
-theorem exactEuclideanDistance_continuous {d : ℕ} :
+end
+
+theorem exactEuclideanDistance_continuous :
     Continuous (fun xy : Covariate d × Covariate d => exactEuclideanDistance xy.1 xy.2) := by
   unfold exactEuclideanDistance spatialSquaredDistance
   fun_prop
@@ -35,7 +40,7 @@ theorem exactEuclideanDistance_continuous {d : ℕ} :
 def spatialExponentialConstant (d : ℕ) : ℝ :=
   (d : ℝ) * volume.real (Metric.ball (0 : EuclideanSpace ℝ (Fin d)) 1) * Real.Gamma d
 
-theorem euclidean_exponential_integrable {d : ℕ} (hd : 0 < d) {N : ℝ} (hN : 0 < N) :
+theorem euclidean_exponential_integrable (hd : 0 < d) {N : ℝ} (hN : 0 < N) :
     Integrable (fun x : EuclideanSpace ℝ (Fin d) => Real.exp (-(N * ‖x‖))) volume := by
   let : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
   apply (integrable_fun_norm_addHaar volume (f := fun r : ℝ => Real.exp (-(N*r)))).2
@@ -45,7 +50,7 @@ theorem euclidean_exponential_integrable {d : ℕ} (hd : 0 < d) {N : ℝ} (hN : 
     Real.rpow_natCast, Real.rpow_one, neg_mul] using hi
 
 /-- The actual Euclidean exponential kernel has exact inverse-volume scaling. -/
-theorem euclidean_exponential_integral {d : ℕ} (hd : 0 < d) {N : ℝ} (hN : 0 < N) :
+theorem euclidean_exponential_integral (hd : 0 < d) {N : ℝ} (hN : 0 < N) :
     (∫ x : EuclideanSpace ℝ (Fin d), Real.exp (-(N * ‖x‖))) =
       spatialExponentialConstant d / N^d := by
   let : Nonempty (Fin d) := Fin.pos_iff_nonempty.mp hd
@@ -61,7 +66,7 @@ theorem euclidean_exponential_integral {d : ℕ} (hd : 0 < d) {N : ℝ} (hN : 0 
   ring
 
 /-- The source coordinate exponential kernel is genuinely integrable at every center. -/
-theorem exactEuclideanDistance_exponential_integrable {d : ℕ} (hd : 0 < d)
+theorem exactEuclideanDistance_exponential_integrable (hd : 0 < d)
     {N : ℝ} (hN : 0 < N) (x : Covariate d) :
     Integrable (fun y => Real.exp (-(N * exactEuclideanDistance x y))) volume := by
   have hi := euclidean_exponential_integrable hd hN
@@ -72,7 +77,7 @@ theorem exactEuclideanDistance_exponential_integrable {d : ℕ} (hd : 0 < d)
   simpa only [exactEuclideanDistance_eq_norm] using hi0.comp_sub_right x
 
 /-- Exact translated source-coordinate integral, using the true Euclidean measure equivalence. -/
-theorem exactEuclideanDistance_exponential_integral {d : ℕ} (hd : 0 < d)
+theorem exactEuclideanDistance_exponential_integral (hd : 0 < d)
     {N : ℝ} (hN : 0 < N) (x : Covariate d) :
     (∫ y, Real.exp (-(N * exactEuclideanDistance x y))) = spatialExponentialConstant d / N^d := by
   simp_rw [exactEuclideanDistance_eq_norm]
@@ -87,33 +92,38 @@ theorem pair_defect_exponential_absorption (t : ℝ) (ht : 0 ≤ t) :
     (1+t)^2 * Real.exp (-(2*t)) ≤ 6 * Real.exp (-t) := by
   have hp := Real.pow_div_factorial_le_exp t ht 2
   norm_num only [Nat.factorial, Nat.cast_ofNat, Nat.cast_one, mul_one] at hp
-  have h1 : 1 ≤ Real.exp t := Real.one_le_exp_iff.mpr ht
+  have h1 := Real.one_le_exp_iff.mpr ht
   have hpoly : (1+t)^2 ≤ 6 * Real.exp t := by nlinarith [sq_nonneg (t-1)]
   have hh := mul_le_mul_of_nonneg_right hpoly (Real.exp_nonneg (-(2*t)))
   rw [mul_assoc, ← Real.exp_add, show t + -(2*t) = -t by ring] at hh
   exact hh
 
-theorem spatialExponentialConstant_nonneg (d : ℕ) : 0 ≤ spatialExponentialConstant d := by
+section
+variable (d : ℕ)
+
+theorem spatialExponentialConstant_nonneg : 0 ≤ spatialExponentialConstant d := by
   unfold spatialExponentialConstant
   exact mul_nonneg (mul_nonneg (Nat.cast_nonneg d) ENNReal.toReal_nonneg)
     (Real.Gamma_nonneg_of_nonneg (Nat.cast_nonneg d))
 
-theorem spatialPatchBox_volume (d : ℕ) : volume (spatialPatchBox d) = (2 : ℝ≥0∞)^d := by
+theorem spatialPatchBox_volume : volume (spatialPatchBox d) = (2 : ℝ≥0∞)^d := by
   simp only [spatialPatchBox, Real.volume_Icc_pi, sub_neg_eq_add, Finset.prod_const, Finset.card_univ, Fintype.card_fin]
   norm_num
 
-theorem spatialPatchBox_real_volume (d : ℕ) : volume.real (spatialPatchBox d) = (2 : ℝ)^d := by
+theorem spatialPatchBox_real_volume : volume.real (spatialPatchBox d) = (2 : ℝ)^d := by
   rw [measureReal_def, spatialPatchBox_volume, ENNReal.toReal_pow]
   norm_num
 
-instance spatialPatchBox_isFinite (d : ℕ) :
+instance spatialPatchBox_isFinite :
     IsFiniteMeasure (volume.restrict (spatialPatchBox d)) := by
   constructor
   rw [Measure.restrict_apply_univ, spatialPatchBox_volume]
   finiteness
 
+end
+
 /-- Actual bounded-domain pair integration loses only the first point's volume. -/
-theorem exactEuclideanDistance_pair_exponential_integral_le {d : ℕ} (hd : 0 < d)
+theorem exactEuclideanDistance_pair_exponential_integral_le (hd : 0 < d)
     {T : ℝ} (hT : 0 < T) (S : Set (Covariate d)) (hfinite : volume S < ∞) :
     (∫ xy : Covariate d × Covariate d, Real.exp (-(T * exactEuclideanDistance xy.1 xy.2))
       ∂(volume.restrict S).prod (volume.restrict S)) ≤ volume.real S * spatialExponentialConstant d / T^d := by
@@ -140,7 +150,7 @@ theorem exactEuclideanDistance_pair_exponential_integral_le {d : ℕ} (hd : 0 < 
     _ = _ := by simp only [integral_const, smul_eq_mul, μ, measureReal_def, Measure.restrict_apply_univ]; ring
 
 /-- The source Q=[-1,1]^d pair integral has a genuine fixed spatial constant. -/
-theorem spatialPatchBox_pair_exponential_integral_le {d : ℕ} (hd : 0 < d)
+theorem spatialPatchBox_pair_exponential_integral_le (hd : 0 < d)
     {T : ℝ} (hT : 0 < T) :
     (∫ xy : Covariate d × Covariate d, Real.exp (-(T * exactEuclideanDistance xy.1 xy.2))
       ∂(volume.restrict (spatialPatchBox d)).prod (volume.restrict (spatialPatchBox d))) ≤

@@ -14,8 +14,10 @@ namespace NearlyMinimax
 
 variable {J : Type*} [Fintype J] [LinearOrder J]
 
+variable (dependent : J → J → Prop)
+
 /-- A source-positive history prior expectation is exactly its actual polynomial integral. -/
-theorem historyMarkedPrior_integral_eq_expectation (dependent : J → J → Prop)
+theorem historyMarkedPrior_integral_eq_expectation 
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (Δ : ℕ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
     (t B : ℝ) (ht : 0 ≤ t) (hB : 0 ≤ B) {E : Type*} [MeasurableSpace E]
@@ -40,7 +42,7 @@ theorem historyMarkedPrior_integral_eq_expectation (dependent : J → J → Prop
   ring
 
 /-- The signed local append expression evaluated under the actual positive prior. -/
-def historyMarkedPriorGenerator (dependent : J → J → Prop)
+def historyMarkedPriorGenerator 
     (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i) (Δ : ℕ) (t : ℝ)
     {E : Type*} [MeasurableSpace E] (π : Measure E) (a : E → ℝ)
     (F : HistoryMarked dependent E → ℝ) : ℝ :=
@@ -49,7 +51,7 @@ def historyMarkedPriorGenerator (dependent : J → J → Prop)
       ∂(historyMarkedPrior dependent Δ t π a).prod π
 
 /-- The genuine prior generator equals the source reference polynomial generator. -/
-theorem historyMarkedPriorGenerator_eq_reference (dependent : J → J → Prop)
+theorem historyMarkedPriorGenerator_eq_reference 
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (Δ : ℕ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
     (t B : ℝ) (ht : 0 ≤ t) (hB : 0 ≤ B) {E : Type*} [MeasurableSpace E]

@@ -11,31 +11,36 @@ noncomputable section
 open MeasureTheory Set MvPolynomial
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 500000
 
-def gaussianAffineExponent {d : ℕ} (a : Fin d) (s : Bool) : Fin d →₀ ℕ :=
+variable {d : ℕ}
+
+def gaussianAffineExponent (a : Fin d) (s : Bool) : Fin d →₀ ℕ :=
   if s then Finsupp.single a 1 else 0
 
 def gaussianAffineCoefficient (s : Bool) : ℝ := if s then -8 else 2
 
-theorem gaussianAffinePolynomial_monomial {d : ℕ} (a : Fin d) (s : Bool) :
+theorem gaussianAffinePolynomial_monomial (a : Fin d) (s : Bool) :
     gaussianAffinePolynomial a s =
       monomial (gaussianAffineExponent a s) (gaussianAffineCoefficient s) := by
   cases s <;> simp only [gaussianAffinePolynomial, gaussianAffineExponent, gaussianAffineCoefficient,
     Bool.false_eq_true, ite_false, ite_true, C_apply, X, monomial_mul_monomial,
     zero_add, mul_one]
 
-def gaussianPolynomialProduct {κ : Type*} [Fintype κ] {d : ℕ}
+section
+variable {κ : Type*} [Fintype κ] {d : ℕ}
+
+def gaussianPolynomialProduct 
     (a : κ → Fin d) (s : κ → Bool) : MvPolynomial (Fin d) ℝ := ∏ i, gaussianAffinePolynomial (a i) (s i)
 
-theorem gaussianPolynomialProduct_monomial {κ : Type*} [Fintype κ] {d : ℕ}
+theorem gaussianPolynomialProduct_monomial 
     (a : κ → Fin d) (s : κ → Bool) :
     gaussianPolynomialProduct a s =
       monomial (∑ i, gaussianAffineExponent (a i) (s i)) (∏ i, gaussianAffineCoefficient (s i)) := by
   unfold gaussianPolynomialProduct
   simp_rw [gaussianAffinePolynomial_monomial]
   exact (monomial_sum_prod _ _ _).symm
+
+end
 
 theorem gaussianAffineCoefficient_abs_le_eight (s : Bool) : |gaussianAffineCoefficient s| ≤ 8 := by
   cases s <;> norm_num [gaussianAffineCoefficient]

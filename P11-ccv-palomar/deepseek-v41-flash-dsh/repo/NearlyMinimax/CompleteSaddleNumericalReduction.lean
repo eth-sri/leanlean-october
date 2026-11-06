@@ -14,8 +14,6 @@ noncomputable section
 open Filter
 open scoped Topology
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 
  theorem completeSourceSaddle_penalized_numeric_envelope {d : ℕ} [NeZero d]
     (C : ModelConstants d) (hs : 1 < C.smoothness) (hd : 4*C.smoothness < (d : ℝ))

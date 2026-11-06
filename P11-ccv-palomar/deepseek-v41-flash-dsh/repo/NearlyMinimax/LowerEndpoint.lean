@@ -20,7 +20,9 @@ def densityIntervalExponent (a b : ℝ) : ℝ :=
 def shrunkDensityExponent (a b : ℝ) (M : ℕ) : ℝ :=
   densityIntervalExponent (a + (M : ℝ)⁻¹) (b - (M : ℝ)⁻¹)
 
-theorem densityIntervalExponent_pos {a b : ℝ} (ha : 0 < a) (hab : a < b) :
+variable {a b : ℝ}
+
+theorem densityIntervalExponent_pos (ha : 0 < a) (hab : a < b) :
     0 < densityIntervalExponent a b := by
   have hsa := Real.sqrt_pos.2 ha
   have hsb := Real.sqrt_lt_sqrt ha.le hab
@@ -43,7 +45,7 @@ theorem densityIntervalExponent_shrink_mono {a b t : ℝ}
   have hp := mul_le_mul hAA hBB hB (Real.sqrt_nonneg (a + t))
   nlinarith
 
-theorem densityIntervalExponent_differentiable_shrink {a b : ℝ}
+theorem densityIntervalExponent_differentiable_shrink 
     (ha : 0 < a) (hab : a < b) :
     DifferentiableAt ℝ (fun t : ℝ => densityIntervalExponent (a + t) (b - t)) 0 := by
   have hb : 0 < b := ha.trans hab
@@ -64,14 +66,13 @@ theorem densityIntervalExponent_differentiable_shrink {a b : ℝ}
   · simpa using hratio
 
 /-- The fixed `Cτ` exists before the sample size is chosen. No exponent estimate is assumed. -/
-theorem exists_shrunkDensityExponent_control {a b : ℝ} (ha : 0 < a) (hab : a < b) :
+theorem exists_shrunkDensityExponent_control (ha : 0 < a) (hab : a < b) :
     ∃ Cτ : ℝ, 0 ≤ Cτ ∧ ∀ᶠ M : ℕ in atTop,
       densityIntervalExponent a b ≤ shrunkDensityExponent a b M ∧
       (shrunkDensityExponent a b M - densityIntervalExponent a b) * (M : ℝ) ≤ Cτ := by
   have hf := densityIntervalExponent_differentiable_shrink ha hab
   obtain ⟨K, hK⟩ := hf.isBigO_sub.bound
-  have ht : Tendsto (fun M : ℕ => (M : ℝ)⁻¹) atTop (𝓝 0) := by
-    exact tendsto_natCast_atTop_atTop.inv_tendsto_atTop
+  have ht : Tendsto (fun M : ℕ => (M : ℝ)⁻¹) atTop (𝓝 0) := tendsto_natCast_atTop_atTop.inv_tendsto_atTop
   have hsmall := ht.eventually (gt_mem_nhds (by linarith : 0 < (b - a) / 2))
   refine ⟨max K 0, le_max_right _ _, ?_⟩
   filter_upwards [ht.eventually hK, hsmall, eventually_ge_atTop (1 : ℕ)] with M hbound hMsmall hM

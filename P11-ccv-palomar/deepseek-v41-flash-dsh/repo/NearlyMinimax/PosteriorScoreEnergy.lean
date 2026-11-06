@@ -10,8 +10,6 @@ noncomputable section
 open MeasureTheory Filter Set
 open scoped ENNReal
 namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 variable {Ω Z : Type*} [MeasurableSpace Ω] [MeasurableSpace Z]
 
 def posteriorMeanScore (ν : Measure Ω) (L D : Ω × Z → ℝ) (z : Z) : ℝ :=

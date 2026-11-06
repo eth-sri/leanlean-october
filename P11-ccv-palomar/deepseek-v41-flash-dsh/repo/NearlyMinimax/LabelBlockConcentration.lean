@@ -71,16 +71,14 @@ theorem label_block_centered_mgf_le {I : Type*} [Fintype I] [DecidableEq J]
   let μ := Measure.pi (fun _ : J => ν)
   let G := F ∘ labelBlockReconstruct labels
   have hp := labelBlockReconstruct_preserving labels π
-  have hG : Measurable G := hF.comp (labelBlockReconstruct_measurable labels)
   have ho : ∀ j blocks new, |G (Function.update blocks j new) - G blocks| ≤ c := by
     intro j blocks new
     apply hosc j (labelBlockReconstruct labels (Function.update blocks j new)) (labelBlockReconstruct labels blocks)
     intro i hi
     exact labelBlockReconstruct_update_other labels blocks j new i hi
-  have hh := fintype_product_centered_mgf_le (fun _ : J => ν) G hG R c hc
+  have hh := fintype_product_centered_mgf_le (fun _ : J => ν) G (hF.comp (labelBlockReconstruct_measurable labels)) R c hc
     (fun blocks => hbound (labelBlockReconstruct labels blocks)) ho u
-  have hm : (∫ blocks, G blocks ∂μ) = ∫ marks, F marks ∂ν := by
-    exact (integral_map hp.measurable.aemeasurable hF.aestronglyMeasurable).symm.trans
+  have hm : (∫ blocks, G blocks ∂μ) = ∫ marks, F marks ∂ν := (integral_map hp.measurable.aemeasurable hF.aestronglyMeasurable).symm.trans
       (congrArg (fun m : Measure (I → E) => ∫ marks, F marks ∂m) hp.map_eq)
   change (∫ blocks, Real.exp (u * (G blocks - ∫ blocks', G blocks' ∂μ)) ∂μ) ≤ _ at hh
   rw [hm] at hh

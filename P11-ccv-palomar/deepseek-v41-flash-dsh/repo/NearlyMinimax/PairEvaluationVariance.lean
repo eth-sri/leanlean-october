@@ -11,28 +11,30 @@ noncomputable section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal RealInnerProductSpace
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option synthInstance.maxHeartbeats 200000
-set_option maxHeartbeats 800000
 
 def pairEvaluationCoefficient {d : ℕ} (C : ModelConstants d) (m k : ℕ) : ℝ :=
   C.densityUpper / (m : ℝ) + (k : ℝ) ^ d / (2 * (m : ℝ) * (m - 1 : ℕ))
 
-def pairPilotVarianceBase {Ω : Type*} [MeasurableSpace Ω] {d : ℕ}
-    (θ : RegressionParameter d) (k : ℕ) (hk : 0 < k) (μ : Measure Ω)
+section
+variable {Ω : Type*} [MeasurableSpace Ω] {d : ℕ} (θ : RegressionParameter d) (k : ℕ)
+
+def pairPilotVarianceBase 
+    (hk : 0 < k) (μ : Measure Ω)
     (bar : Covariate d × Covariate d → PairVector)
     (η : Ω → Covariate d × Covariate d → PairVector) : ℝ :=
   2 * (∫ w, ‖bar w‖ ^ 2 ∂regularPairDesignMeasure θ k hk) +
     ∫ z : Ω × (Covariate d × Covariate d), ‖η z.1 z.2‖ ^ 2
       ∂μ.prod (regularPairDesignMeasure θ k hk)
 
-theorem pairPilotVarianceBase_nonneg {Ω : Type*} [MeasurableSpace Ω] {d : ℕ}
-    (θ : RegressionParameter d) (k : ℕ) (hk : 0 < k) (μ : Measure Ω)
+theorem pairPilotVarianceBase_nonneg 
+    (hk : 0 < k) (μ : Measure Ω)
     (bar : Covariate d × Covariate d → PairVector)
     (η : Ω → Covariate d × Covariate d → PairVector) :
     0 ≤ pairPilotVarianceBase θ k hk μ bar η := by
   unfold pairPilotVarianceBase
   positivity
+
+end
 
 section
 variable {Ω Ξ : Type*} [MeasurableSpace Ω] [MeasurableSpace Ξ]

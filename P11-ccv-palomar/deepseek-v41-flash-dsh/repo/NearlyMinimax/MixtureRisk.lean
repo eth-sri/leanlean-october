@@ -11,8 +11,6 @@ noncomputable section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 600000
 
 theorem probability_kernel_integral {Α Ω : Type*} [MeasurableSpace Α] [MeasurableSpace Ω]
     (μ : Measure Α) [IsProbabilityMeasure μ] (K : Kernel Α Ω) [IsMarkovKernel K]

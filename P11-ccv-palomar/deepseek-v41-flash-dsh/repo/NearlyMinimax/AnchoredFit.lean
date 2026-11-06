@@ -12,20 +12,22 @@ open MeasureTheory Set Matrix
 open scoped BigOperators Matrix.Norms.L2Operator
 namespace NearlyMinimax
 
-def anchoredPopulationFit {d ℓ : ℕ} (u : Covariate d) (p g : Covariate d → ℝ) :
+variable {d ℓ : ℕ} (u : Covariate d) (p g : Covariate d → ℝ)
+
+def anchoredPopulationFit (u : Covariate d) (p g : Covariate d → ℝ) :
     AnchoredIndex d ℓ → ℝ := (anchoredDensityGram u p)⁻¹ *ᵥ anchoredVectorMoment u p g
 
-def anchoredFitPolynomial {d ℓ : ℕ} (u : Covariate d) (c : AnchoredIndex d ℓ → ℝ) :
+def anchoredFitPolynomial (u : Covariate d) (c : AnchoredIndex d ℓ → ℝ) :
     Covariate d → ℝ := fun w => ∑ γ, c γ * anchoredFeature u w γ
 
-theorem anchoredFitPolynomial_continuous {d ℓ : ℕ} (u : Covariate d)
+theorem anchoredFitPolynomial_continuous 
     (c : AnchoredIndex d ℓ → ℝ) : Continuous (anchoredFitPolynomial u c) := by
   apply continuous_finsetSum
   intro γ _
   exact ((anchoredMonomial_continuous γ).comp (continuous_id.sub continuous_const)).const_mul _
 
-theorem anchoredPopulationFit_normal_equation {d ℓ : ℕ} (u : Covariate d)
-    (p g : Covariate d → ℝ) (hpmeas : Measurable p) (a b : ℝ) (ha : 0 < a)
+theorem anchoredPopulationFit_normal_equation 
+    (hpmeas : Measurable p) (a b : ℝ) (ha : 0 < a)
     (hp : ∀ᵐ w ∂cubeVolume d, a ≤ p w ∧ p w ≤ b) :
     anchoredDensityGram (ℓ := ℓ) u p *ᵥ anchoredPopulationFit u p g =
       anchoredVectorMoment u p g := by
@@ -33,7 +35,7 @@ theorem anchoredPopulationFit_normal_equation {d ℓ : ℕ} (u : Covariate d)
     (anchoredDensityGram_posDef (ℓ := ℓ) u p hpmeas a b ha hp).isUnit
   rw [anchoredPopulationFit, Matrix.mulVec_mulVec, Matrix.mul_nonsing_inv _ hdet, Matrix.one_mulVec]
 
-theorem anchoredVectorMoment_polynomial {d ℓ : ℕ} (u : Covariate d)
+theorem anchoredVectorMoment_polynomial 
     (p : Covariate d → ℝ) (hpmeas : Measurable p) (b : ℝ)
     (hp : ∀ᵐ w ∂cubeVolume d, 0 ≤ p w ∧ p w ≤ b) (c : AnchoredIndex d ℓ → ℝ) :
     anchoredVectorMoment u p (anchoredFitPolynomial u c) = anchoredDensityGram u p *ᵥ c := by
@@ -58,7 +60,7 @@ theorem anchoredVectorMoment_polynomial {d ℓ : ℕ} (u : Covariate d)
     rw [he]
     exact (anchoredDensityGram_product_integrable u p hpmeas b hp γ δ).mul_const _
 
-theorem dyadicAnchoredFeature_transport_dot {d ℓ : ℕ} (j : ℕ) (x z : Covariate d)
+theorem dyadicAnchoredFeature_transport_dot (j : ℕ) (x z : Covariate d)
     (c : AnchoredIndex d ℓ → ℝ) :
     dyadicAnchoredFeature (j + 1) x z ⬝ᵥ (anchoredTransport d ℓ *ᵥ c) =
       dyadicAnchoredFeature j x z ⬝ᵥ c := by
@@ -72,7 +74,7 @@ def anchoredIncrement {d ℓ : ℕ} (a : ℕ → AnchoredIndex d ℓ → ℝ) :
   | j + 1 => a (j + 1) - anchoredTransport d ℓ *ᵥ a j
 
 /-- Exact feature transport makes the actual increment field telescope. -/
-theorem anchored_increment_telescope {d ℓ : ℕ} (a : ℕ → AnchoredIndex d ℓ → ℝ)
+theorem anchored_increment_telescope (a : ℕ → AnchoredIndex d ℓ → ℝ)
     (x z : Covariate d) (J : ℕ) :
     (∑ j ∈ Finset.range (J + 1), dyadicAnchoredFeature j x z ⬝ᵥ anchoredIncrement a j) =
       dyadicAnchoredFeature J x z ⬝ᵥ a J := by

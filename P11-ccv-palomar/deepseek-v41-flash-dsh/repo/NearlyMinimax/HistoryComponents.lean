@@ -259,8 +259,7 @@ theorem historyGasFamily_piece_disjoint {S R : Finset α} {F : Finset (Finset α
 
 theorem historyGasFamily_biUnion_upper {S R : Finset α} {F : Finset (Finset α)}
     (hF : F ∈ historyGasFamilies (historyUpperPolymers S) historyMaximalPieces R) :
-    IsHistoryUpper S (F.biUnion id) := by
-  exact historyUpper_biUnion (fun _ hP => (mem_historyUpperPolymers.1 ((mem_historyGasFamilies.1 hF).1 hP)).1)
+    IsHistoryUpper S (F.biUnion id) := historyUpper_biUnion (fun _ hP => (mem_historyUpperPolymers.1 ((mem_historyGasFamilies.1 hF).1 hP)).1)
 
 theorem historyGasFamily_component_at {S R : Finset α} {F : Finset (Finset α)}
     (hF : F ∈ historyGasFamilies (historyUpperPolymers S) historyMaximalPieces R)
@@ -324,7 +323,7 @@ theorem historyGasFamily_biUnion_restricted {S R : Finset α} {F : Finset (Finse
   intro x hx
   obtain ⟨hxU, hm⟩ := mem_historyMaximalPieces.1 hx
   obtain ⟨P, hP, hxP⟩ := Finset.mem_biUnion.1 hxU
-  have hxmaxP : x ∈ historyMaximalPieces P := mem_historyMaximalPieces.2 ⟨hxP, fun y hy hxy =>
+  have hxmaxP := mem_historyMaximalPieces.2 ⟨hxP, fun y hy hxy =>
     hm y (Finset.mem_biUnion.2 ⟨P, hP, hy⟩) hxy⟩
   exact (mem_historyGasFamilies.1 hF).2.2 P hP hxmaxP
 

@@ -12,7 +12,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option maxHeartbeats 1500000
 set_option backward.isDefEq.respectTransparency true
 attribute [local instance] Classical.propDecidable
 attribute [local irreducible] highUnionSourceDensity highUnionSourceRegression highUnionSourceState
@@ -66,12 +65,12 @@ include G hpos in
   letI := highUnionSourceLaw_probability C R G
   let p := highUnionSourceDensity C R
   let F := highUnionSourceRegression C R η
-  have hp : Measurable (Function.uncurry p) := highUnionSourceDensity_joint_measurable C R G
-  have hF : Measurable (Function.uncurry F) := highUnionSourceRegression_joint_measurable C R G η
+  have hp := highUnionSourceDensity_joint_measurable C R G
+  have hF := highUnionSourceRegression_joint_measurable C R G η
   let D := highHistoryLikelihoodDerivative (fun i j => j ∈ highNeighborLabels d k i)
     (fun {_ _} h => highNeighborLabels_symmetric d k _ _ h)
     (highUnionLaw R (highCenterMix C)) (highUnionActivation R (highCenterMix C)) n a V η p F
-  have hDm : Measurable (Function.uncurry D) := highHistoryLikelihoodDerivative_measurable
+  have hDm := highHistoryLikelihoodDerivative_measurable
     (fun i j => j ∈ highNeighborLabels d k i)
     (fun {_ _} h => highNeighborLabels_symmetric d k _ _ h)
     (highUnionLaw R (highCenterMix C)) (highUnionActivation R (highCenterMix C))

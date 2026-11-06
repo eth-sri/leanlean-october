@@ -17,8 +17,8 @@ noncomputable section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal BigOperators
 namespace NearlyMinimax
-open RoughRegime.GeneralTesting RoughRegime.LowerMeasure
 
+open RoughRegime.GeneralTesting RoughRegime.LowerMeasure
 def labelBase : Measure (Fin 3) := ENNReal.ofReal (1 / 3 : ℝ) • Measure.count
 
 instance labelBase_isProbability : IsProbabilityMeasure labelBase := by
@@ -26,7 +26,9 @@ instance labelBase_isProbability : IsProbabilityMeasure labelBase := by
   simp [labelBase, Measure.smul_apply, Measure.count_univ]
   exact ENNReal.inv_mul_cancel (by norm_num) (by norm_num)
 
-def ternaryDensityLaw (a V : ℝ) (ha : a ≠ 0)
+variable (a V : ℝ) (ha : a ≠ 0) (hp : ∀ y, 0 ≤ ternaryMass a 0 V y)
+
+def ternaryDensityLaw (ha : a ≠ 0)
     (hp : ∀ y, 0 ≤ ternaryMass a 0 V y) : DensityLaw labelBase where
   density y := 3 * ternaryMass a 0 V y
   measurable := measurable_of_countable _
@@ -38,8 +40,8 @@ def ternaryDensityLaw (a V : ℝ) (ha : a ≠ 0)
     rw [← Finset.mul_sum, ternary_normalized a 0 V ha]
     norm_num
 
-theorem ternaryDensityLaw_measure (a V : ℝ) (ha : a ≠ 0)
-    (hp : ∀ y, 0 ≤ ternaryMass a 0 V y) :
+theorem ternaryDensityLaw_measure 
+    :
     (ternaryDensityLaw a V ha hp).measure =
       Measure.count.withDensity (fun y => ENNReal.ofReal (ternaryMass a 0 V y)) := by
   unfold DensityLaw.measure ternaryDensityLaw labelBase
@@ -52,8 +54,8 @@ theorem ternaryDensityLaw_measure (a V : ℝ) (ha : a ≠ 0)
     ring
   · exact ENNReal.measurable_ofReal.comp (measurable_of_countable _)
 
-theorem ternaryDensityLaw_map (a V : ℝ) (ha : a ≠ 0)
-    (hp : ∀ y, 0 ≤ ternaryMass a 0 V y) :
+theorem ternaryDensityLaw_map 
+    :
     (ternaryDensityLaw a V ha hp).measure.map (ternaryValue a) = ternaryMeasure a 0 V := by
   rw [ternaryDensityLaw_measure, count_withDensity,
     Measure.map_sum (measurable_of_countable _).aemeasurable, Measure.sum_fintype]
@@ -88,17 +90,22 @@ theorem ternary_submodel_admissible {d : ℕ} (C : ModelConstants d)
         mul_zero, add_zero] at he
       exact he.trans_le hfourth
 
-def encodeResponse {d n : ℕ} (a : ℝ) :
+section
+variable {d n : ℕ}
+
+def encodeResponse (a : ℝ) :
     (Fin n → Fin 3) × (Fin n → Covariate d) → (Fin n → Observation d) :=
   fun z i => (z.2 i, ternaryValue a (z.1 i))
 
-theorem encodeResponse_measurable {d n : ℕ} (a : ℝ) :
+theorem encodeResponse_measurable (a : ℝ) :
     Measurable (encodeResponse (d := d) (n := n) a) := by
   apply Measurable.of_eval
   intro i
   exact ((measurable_pi_apply i).comp measurable_snd).prodMk
     ((measurable_of_countable (ternaryValue a)).comp
       ((measurable_pi_apply i).comp measurable_fst))
+
+end
 
 theorem ternary_label_design_map {d : ℕ} (a V : ℝ) (ha : a ≠ 0)
     (hp : ∀ y, 0 ≤ ternaryMass a 0 V y) :
@@ -146,7 +153,7 @@ theorem encodeResponse_measurePreserving {d n : ℕ} (a V : ℝ) (ha : a ≠ 0)
 def ternaryDensitySlope (a : ℝ) : Fin 3 → ℝ :=
   ![3 / (2 * a ^ 2), -3 / a ^ 2, 3 / (2 * a ^ 2)]
 
-theorem ternary_density_affine (a V : ℝ) (y : Fin 3) :
+theorem ternary_density_affine (y : Fin 3) :
     3 * ternaryMass a 0 V y = ![0, 3, 0] y + V * ternaryDensitySlope a y := by
   fin_cases y <;> simp [ternaryMass, ternaryDensitySlope, div_eq_mul_inv] <;> ring
 
@@ -213,13 +220,11 @@ theorem ternary_two_point_minimax_lower {d : ℕ} (C : ModelConstants d) (n : �
   rw [hL, hR] at ht
   have he₀ : eLpNorm (fun z => T.val (encodeResponse a z) - V₀) 2
       ((Measure.pi (fun _ : Fin n => P₀.measure)).prod ν) =
-      eLpNorm (fun z => T.val z - θ₀.variance) 2 (sampleLaw θ₀ n) := by
-    exact eLpNorm_comp_measurePreserving (T.property.sub measurable_const).aestronglyMeasurable
+      eLpNorm (fun z => T.val z - θ₀.variance) 2 (sampleLaw θ₀ n) := eLpNorm_comp_measurePreserving (T.property.sub measurable_const).aestronglyMeasurable
       (encodeResponse_measurePreserving a V₀ ha.ne' hp₀)
   have he₁ : eLpNorm (fun z => T.val (encodeResponse a z) - V₁) 2
       ((Measure.pi (fun _ : Fin n => P₁.measure)).prod ν) =
-      eLpNorm (fun z => T.val z - θ₁.variance) 2 (sampleLaw θ₁ n) := by
-    exact eLpNorm_comp_measurePreserving (T.property.sub measurable_const).aestronglyMeasurable
+      eLpNorm (fun z => T.val z - θ₁.variance) 2 (sampleLaw θ₁ n) := eLpNorm_comp_measurePreserving (T.property.sub measurable_const).aestronglyMeasurable
       (encodeResponse_measurePreserving a V₁ ha.ne' hp₁)
   change _ ≤ eLpNorm (fun z => T.val (encodeResponse a z) - V₀) 2 _ ∨
     _ ≤ eLpNorm (fun z => T.val (encodeResponse a z) - V₁) 2 _ at ht

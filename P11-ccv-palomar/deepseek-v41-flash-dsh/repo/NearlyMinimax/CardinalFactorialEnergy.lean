@@ -10,8 +10,6 @@ paper's cutoffs, including omitted cutoffs below one. -/
 noncomputable section
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 800000
 
  theorem target_max_one_defect_budget_le {d : ℕ} (hd : 0 < d)
     {N μ : ℝ} (hN : 1 ≤ N) (hμ : 0 < μ) (hsmall : μ*(1+Real.log N) ≤ 1) (j : ℕ) :
@@ -29,7 +27,9 @@ set_option maxHeartbeats 800000
 
  def matchedCardinalTargetCutoff (d j : ℕ) (N μ : ℝ) : ℝ := max 1 (N*(μ*(1+Real.log N))^((j : ℝ)/d))
 
- theorem cardinalAliasSpatialComponent_allocated_le {bd B : ℝ} (hbd : 0 ≤ bd) (hB : bd ≤ B)
+ variable {bd B : ℝ}
+
+theorem cardinalAliasSpatialComponent_allocated_le (hbd : 0 ≤ bd) (hB : bd ≤ B)
     {d : ℕ} (hd : 0 < d) (j : ℕ) (a η : ℝ) (ha : 0 < a)
     {N μ : ℝ} (hN : 1 ≤ N) (hμ : 0 < μ) (hsmall : μ*(1+Real.log N) ≤ 1) :
     cardinalAliasSpatialComponent d (2+j) bd a η (matchedCardinalTargetCutoff d j N μ) ≤
@@ -46,7 +46,7 @@ set_option maxHeartbeats 800000
   apply h.trans
   convert hh using 1 <;> (try dsimp [matchedCardinalTargetCutoff]) <;> (try simp only [show 2+j-2=j by omega]) <;> ring
 
- theorem cardinalTaylorSpatialComponent_allocated_le {bd B : ℝ} (hbd : 0 ≤ bd) (hB : bd ≤ B)
+ theorem cardinalTaylorSpatialComponent_allocated_le (hbd : 0 ≤ bd) (hB : bd ≤ B)
     (d n q : ℕ) (C a ρ η : ℝ) {N : ℝ} (hN : 0 < N) (hsmall : η^(4*q)*N^d ≤ 1) :
     cardinalTaylorSpatialComponent d n q bd C a ρ η ≤
       cardinalTaylorEnergyPrefactor d q C a ρ *
@@ -68,7 +68,7 @@ set_option maxHeartbeats 800000
   cardinalInterpolationEnergyPrefactor d a *
     defectTailConstant Csharp (cardinalSpatialGeometricBase B (16*spatialUnaryIntegralConstant d)*2^2)
 
- theorem finite_cardinal_interpolation_budget_le {bd B : ℝ} (hbd : 0 ≤ bd) (hB : bd ≤ B)
+ theorem finite_cardinal_interpolation_budget_le (hbd : 0 ≤ bd) (hB : bd ≤ B)
     {d : ℕ} (hd : 0 < d) (J : ℕ) (a η Csharp : ℝ) (ha : 0 < a) (hCs : 0 ≤ Csharp)
     {N μ : ℝ} (hN : 1 ≤ N) (hμ : 0 < μ) (hsmall : μ*(1+Real.log N) ≤ 1) :
     (∑ j ∈ Finset.range J, poissonCountWeight (Csharp*μ) (2+j) *
@@ -95,7 +95,7 @@ set_option maxHeartbeats 800000
   cardinalTaylorEnergyPrefactor d q C a ρ * defectTailConstant Csharp
     (cardinalSpatialGeometricBase B ((100*(d : ℝ))^2*16*spatialScaleIntegralConstant d)*2^(4*q+6))
 
- theorem finite_cardinal_taylor_budget_le {bd B : ℝ} (hbd : 0 ≤ bd) (hB : bd ≤ B)
+ theorem finite_cardinal_taylor_budget_le (hbd : 0 ≤ bd) (hB : bd ≤ B)
     (d q J : ℕ) (C a ρ η Csharp : ℝ) (hCs : 0 ≤ Csharp)
     {N μ : ℝ} (hN : 0 < N) (hμ : 0 ≤ μ) (hμ1 : μ ≤ 1) (hsmall : η^(4*q)*N^d ≤ 1) :
     (∑ j ∈ Finset.range J, poissonCountWeight (Csharp*μ) (2+j) *

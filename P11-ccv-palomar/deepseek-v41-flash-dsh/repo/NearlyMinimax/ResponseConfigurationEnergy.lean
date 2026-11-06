@@ -10,7 +10,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators ENNReal
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-attribute [local instance] Classical.propDecidable
 
+attribute [local instance] Classical.propDecidable
 end NearlyMinimax

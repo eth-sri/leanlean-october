@@ -13,16 +13,19 @@ noncomputable section
 open Set MeasureTheory
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1500000
 attribute [local instance] Classical.propDecidable
 
 section Packet
 variable {Z ι : Type*} [MeasurableSpace Z] [Fintype ι] [DecidableEq ι]
   [MeasurableSpace ι] [MeasurableSingletonClass ι]
 
-theorem highPacket_reference_all_count_bound {n : ℕ}
-    (σ : Measure Z) [IsFiniteMeasure σ] (ad bd : ℝ) (m r D q : ℕ) (hn : 1 ≤ n)
+variable {n : ℕ}
+
+section
+variable (σ : Measure Z) [IsFiniteMeasure σ] (ad bd : ℝ)
+
+theorem highPacket_reference_all_count_bound 
+    (m r D q : ℕ) (hn : 1 ≤ n)
     (C a V η ρ pPlus : ℝ) (hC : 0 < C) (ha : 0 < a) (hη : 0 ≤ η)
     (hρ : 0 ≤ ρ) (hηρ : η ≤ ρ/2) (hpPlus : 0 ≤ pPlus)
     (A : Z → ι → ι → ℝ) (hA : ∀ γ δ, Measurable (fun ζ => A ζ γ δ))
@@ -41,8 +44,7 @@ theorem highPacket_reference_all_count_bound {n : ℕ}
       (fun e => coefficientReset c (highResponseMarkAtom C q e.2.2).2
         (highResponseMarkAtom 0 q e.2.2).1) g w φ y| ≤
       (pPlus^n*highSeparatedDerivativeBudget a ρ*(n : ℝ)^2*η^2)*
-        highPacketMarkMass σ ad bd m r D q C A := by
-  exact responseTensor_reference_all_count_bound σ q hn C a V η ρ pPlus hC ha hη hρ hηρ hpPlus
+        highPacketMarkMass σ ad bd m r D q C A := responseTensor_reference_all_count_bound σ q hn C a V η ρ pPlus hC ha hη hρ hηρ hpPlus
     (densityPacketWeight ad bd m r D) A
     (highPacketMarkWeight_measurable ad bd m r D q C A hA)
     (highPacketMarkWeight_integrable σ ad bd m r D q C A hA hcost) hpos
@@ -50,8 +52,8 @@ theorem highPacket_reference_all_count_bound {n : ℕ}
     (fun e i => (hmReset i).comp (measurable_id.prodMk measurable_const))
     (fun ζ e i => hReset (ζ,e) i) g w φ c hc hg hw hφ hp y
 
-theorem finePairPacket_reference_all_count_bound {n : ℕ}
-    (σ : Measure Z) [IsFiniteMeasure σ] (ad bd : ℝ) (M q : ℕ) (hn : 1 ≤ n)
+theorem finePairPacket_reference_all_count_bound 
+    (M q : ℕ) (hn : 1 ≤ n)
     (C a V η ρ pPlus : ℝ) (hC : 0 < C) (ha : 0 < a) (hη : 0 ≤ η)
     (hρ : 0 ≤ ρ) (hηρ : η ≤ ρ/2) (hpPlus : 0 ≤ pPlus)
     (A : Z → ι → ι → ℝ) (hA : ∀ γ δ, Measurable (fun ζ => A ζ γ δ))
@@ -70,14 +72,15 @@ theorem finePairPacket_reference_all_count_bound {n : ℕ}
       (fun e => coefficientReset c (finePairPacketResponseVector M q C e)
         (finePairPacketResponseTime M q e)) g w φ y| ≤
       (pPlus^n*highSeparatedDerivativeBudget a ρ*(n : ℝ)^2*η^2)*
-        finePairPacketMarkMass σ ad bd M q C A := by
-  exact responseTensor_reference_all_count_bound σ q hn C a V η ρ pPlus hC ha hη hρ hηρ hpPlus
+        finePairPacketMarkMass σ ad bd M q C A := responseTensor_reference_all_count_bound σ q hn C a V η ρ pPlus hC ha hη hρ hηρ hpPlus
     (finePairDensityWeight ad bd M) A
     (finePairPacketWeight_measurable ad bd M q C A hA)
     (finePairPacketWeight_integrable σ ad bd M q C A hA hcost) hpos
     (fun ζ e => reset (ζ,e))
     (fun e i => (hmReset i).comp (measurable_id.prodMk measurable_const))
     (fun ζ e i => hReset (ζ,e) i) g w φ c hc hg hw hφ hp y
+
+end
 
 end Packet
 

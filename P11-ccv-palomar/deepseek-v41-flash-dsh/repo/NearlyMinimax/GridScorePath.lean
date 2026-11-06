@@ -12,7 +12,10 @@ open MeasureTheory Set
 open scoped Topology BigOperators
 namespace NearlyMinimax
 
-theorem grid_full_score_energy_joint_measurable (d k n : ℕ) (a v η : ℝ)
+section
+variable (d k n : ℕ) (a v η : ℝ)
+
+theorem grid_full_score_energy_joint_measurable 
     (ξ : Fin (gridWindowCount d k) → Fin 3) :
     Measurable (fun z : ℝ × (Fin n → Covariate d) =>
       gridFullScoreEnergy d k n a (v - η ^ 2 * z.1) η ξ z.2) := by
@@ -52,7 +55,7 @@ theorem grid_full_score_energy_joint_measurable (d k n : ℕ) (a v η : ℝ)
       ((Finset.measurable_sum _ (fun i _ => hU y i)).const_mul (η ^ 2))).div (hL ξ y)
   exact Finset.measurable_sum _ (fun y _ => (hL ξ y).mul ((hR y).pow_const 2))
 
-theorem grid_prior_score_energy_path_measurable (d k n : ℕ) (a v η : ℝ) :
+theorem grid_prior_score_energy_path_measurable :
     Measurable (gridPriorScoreEnergy d k n a v η) := by
   let _ := cubeVolume_isProbability d
   unfold gridPriorScoreEnergy
@@ -65,13 +68,20 @@ theorem grid_prior_score_energy_path_measurable (d k n : ℕ) (a v η : ℝ) :
     (ν := Measure.pi (fun _ : Fin n => cubeVolume d))
   exact hPrior.mul hInt.measurable
 
-def gridUniformScoreBudget {d : ℕ} {C : ModelConstants d}
+end
+
+variable {d : ℕ} (C : ModelConstants d)
+
+def gridUniformScoreBudget {C : ModelConstants d}
     (P : LowSmoothnessTernaryConstants C) (k n : ℕ) (η : ℝ) : ℝ :=
   (40 : ℝ) ^ d * ternaryScoreExponentialConstant P.a P.ρ P.c ^ 2 *
     Real.exp (ternaryScoreExponentialConstant P.a P.ρ P.c) * n ^ 2 * η ^ 4 / (k : ℝ) ^ d
 
-theorem grid_sqrt_score_energy_intervalIntegrable {d : ℕ} (C : ModelConstants d)
-    (P : LowSmoothnessTernaryConstants C) (k n : ℕ) (η : ℝ) (hk : 1 ≤ k)
+section
+variable (P : LowSmoothnessTernaryConstants C) (k n : ℕ) (η : ℝ)
+
+theorem grid_sqrt_score_energy_intervalIntegrable 
+    (hk : 1 ≤ k)
     (hη : 0 ≤ η) (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ)
     (hmean : n * (2 / (k : ℝ)) ^ d ≤ 1) :
     IntervalIntegrable (fun t => Real.sqrt (gridPriorScoreEnergy d k n P.a P.v η t)) volume 0 1 := by
@@ -85,8 +95,8 @@ theorem grid_sqrt_score_energy_intervalIntegrable {d : ℕ} (C : ModelConstants 
   apply IntegrableOn.intervalIntegrable
   simpa only [uIcc_of_le (by norm_num : (0 : ℝ) ≤ 1)] using hI
 
-theorem grid_sqrt_score_energy_integral_le {d : ℕ} (C : ModelConstants d)
-    (P : LowSmoothnessTernaryConstants C) (k n : ℕ) (η : ℝ) (hk : 1 ≤ k)
+theorem grid_sqrt_score_energy_integral_le 
+    (hk : 1 ≤ k)
     (hη : 0 ≤ η) (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ)
     (hmean : n * (2 / (k : ℝ)) ^ d ≤ 1) :
     (∫ t in (0 : ℝ)..1, Real.sqrt (gridPriorScoreEnergy d k n P.a P.v η t)) ≤
@@ -97,12 +107,14 @@ theorem grid_sqrt_score_energy_integral_le {d : ℕ} (C : ModelConstants d)
     (fun t ht => Real.sqrt_le_sqrt (grid_prior_score_energy_bound C P k n η t hk hη ht hfield hvariance hmean))
   simpa only [intervalIntegral.integral_const, sub_zero, smul_eq_mul, one_mul] using h
 
-theorem grid_sqrt_score_energy_integral_le_one {d : ℕ} (C : ModelConstants d)
-    (P : LowSmoothnessTernaryConstants C) (k n : ℕ) (η : ℝ) (hk : 1 ≤ k)
+theorem grid_sqrt_score_energy_integral_le_one 
+    (hk : 1 ≤ k)
     (hη : 0 ≤ η) (hfield : ((2 : ℝ) ^ d + 2) * η ≤ P.ρ) (hvariance : η ^ 2 ≤ P.ρ)
     (hmean : n * (2 / (k : ℝ)) ^ d ≤ 1) (hbudget : gridUniformScoreBudget P k n η ≤ 1) :
     (∫ t in (0 : ℝ)..1, Real.sqrt (gridPriorScoreEnergy d k n P.a P.v η t)) ≤ 1 := by
   apply (grid_sqrt_score_energy_integral_le C P k n η hk hη hfield hvariance hmean).trans
   simpa only [Real.sqrt_one] using Real.sqrt_le_sqrt hbudget
+
+end
 
 end NearlyMinimax

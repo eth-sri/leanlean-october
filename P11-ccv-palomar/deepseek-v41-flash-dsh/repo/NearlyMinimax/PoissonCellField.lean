@@ -11,8 +11,6 @@ noncomputable section
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 400000
 
 abbrev partitionFieldFiber (H : Type*) (n : ℕ) :=
   (Fin n → H) × ((Fin n → Fin 2) → Fin 2)
@@ -67,19 +65,23 @@ theorem poissonCellFieldLaw_measurable (μ : Measure H) :
   apply Measurable.ennreal_tsum
   intro n
   apply Measurable.mul_const
-  apply ENNReal.measurable_ofReal.comp
-  exact (((measurable_coe_nnreal_real.neg.exp).mul
+  exact ENNReal.measurable_ofReal.comp (((measurable_coe_nnreal_real.neg.exp).mul
     (measurable_coe_nnreal_real.pow_const n)).div_const _)
 
 instance partitionFieldMark_standardBorel [StandardBorelSpace H] :
     StandardBorelSpace (partitionFieldMark H) := sigma_standardBorel_actual
 
-def partitionFieldPattern (ρ : H → X → Fin 2) {n : ℕ}
+section
+variable (ρ : H → X → Fin 2) {n : ℕ}
+
+def partitionFieldPattern 
     (h : Fin n → H) (x : X) : Fin n → Fin 2 := fun i => ρ (h i) x
 
-def partitionFieldFiberValue (ρ : H → X → Fin 2) {n : ℕ}
+def partitionFieldFiberValue 
     (z : partitionFieldFiber H n) (x : X) : ℝ :=
   fairSignValue (z.2 (partitionFieldPattern ρ z.1 x))
+
+end
 
 def poissonCellFieldValue (ρ : H → X → Fin 2)
     (z : partitionFieldMark H) (x : X) : ℝ := partitionFieldFiberValue ρ z.2 x
@@ -123,8 +125,7 @@ theorem partitionFieldFiberValue_measurable_fixed (ρ : H → X → Fin 2)
 
 theorem poissonCellFieldValue_measurable_fixed (ρ : H → X → Fin 2)
     (hρ : Measurable (Function.uncurry ρ)) (x : X) :
-    Measurable (fun z : partitionFieldMark H => poissonCellFieldValue ρ z x) := by
-  exact measurable_sigma_of_fibers _ (fun n => partitionFieldFiberValue_measurable_fixed ρ hρ n x)
+    Measurable (fun z : partitionFieldMark H => poissonCellFieldValue ρ z x) := measurable_sigma_of_fibers _ (fun n => partitionFieldFiberValue_measurable_fixed ρ hρ n x)
 
 theorem poissonCellField_integral_series (μ : Measure H) [IsProbabilityMeasure μ]
     (r : ℝ≥0) (f : partitionFieldMark H → ℝ) (hf : Measurable f)

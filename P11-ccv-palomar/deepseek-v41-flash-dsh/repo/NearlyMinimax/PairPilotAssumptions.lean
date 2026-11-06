@@ -14,9 +14,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped RealInnerProductSpace ENNReal
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option synthInstance.maxHeartbeats 200000
-set_option maxHeartbeats 800000
 
 theorem regularPairDesignMeasure_ae_of_supported {d : ℕ}
     (θ : RegressionParameter d) (k : ℕ) (hk : 0 < k)
@@ -91,8 +88,7 @@ include C hθ
 theorem pairPilotScoreKernel_memLp :
     MemLp (fun z : (Ω × Ω) × (Observation d × Observation d) =>
       pairPilotScoreKernel θ k hk bar η z.1 z.2) 2
-      ((μ.prod μ).prod ((observationLaw θ).prod (observationLaw θ))) := by
-  exact rawModelPairScore_memLp μ C θ hθ k hk
+      ((μ.prod μ).prod ((observationLaw θ).prod (observationLaw θ))) := rawModelPairScore_memLp μ C θ hθ k hk
     (pairPilotCoefficient_measurable μ θ k hk bar η Cp W lam hp)
     (pairPilotCoefficient_sections μ θ k hk bar η Cp W lam hp)
     (by nlinarith [hp.constantNonnegative, hp.budgetNonnegative,
@@ -102,8 +98,7 @@ theorem pairPilotScoreKernel_memLp :
 theorem pairPilotNoiseKernel_memLp :
     MemLp (fun z : (Ω × Ω) × (Observation d × Observation d) =>
       pairPilotNoiseKernel k hk bar η z.1 z.2) 2
-      ((μ.prod μ).prod ((observationLaw θ).prod (observationLaw θ))) := by
-  exact rawModelPairNoise_memLp μ C θ hθ k hk
+      ((μ.prod μ).prod ((observationLaw θ).prod (observationLaw θ))) := rawModelPairNoise_memLp μ C θ hθ k hk
     (pairPilotCoefficient_measurable μ θ k hk bar η Cp W lam hp)
     (pairPilotCoefficient_sections μ θ k hk bar η Cp W lam hp)
     (by nlinarith [hp.constantNonnegative, hp.budgetNonnegative,
@@ -114,12 +109,10 @@ theorem pairPilotAssumptions_meanConditions :
     PairPilotMeanConditions θ k hk μ bar η Cp lam := by
   let := regularPairDesignMeasure_isFinite C θ hθ k hk
   let := observationLaw_isProbability C θ hθ
-  have hs := regularPairDesignMeasure_ae_of_supported θ k hk hp.noiseSection
-  have he := regularPairDesignMeasure_ae_of_supported θ k hk hp.noiseEnergy
   refine ⟨hp.barMeasurable, regularPairDesignMeasure_ae_of_supported θ k hk hp.barBound,
     hp.noiseMeasurable, ?_, hp.noiseCentered, hp.lamNonnegative, hp.linearTest, ?_, ?_⟩
-  · exact PilotFields.memLp_joint_of_uniform_section_energy hp.noiseMeasurable hs
-      (mul_nonneg hp.constantNonnegative hp.budgetNonnegative) he
+  · exact PilotFields.memLp_joint_of_uniform_section_energy hp.noiseMeasurable (regularPairDesignMeasure_ae_of_supported θ k hk hp.noiseSection)
+      (mul_nonneg hp.constantNonnegative hp.budgetNonnegative) (regularPairDesignMeasure_ae_of_supported θ k hk hp.noiseEnergy)
   · exact ((pairPilotScoreKernel_memLp μ C θ hθ k hk bar η Cp W lam hp).integrable
       (by norm_num : (1 : ℝ≥0∞) ≤ 2)).prod_right_ae
   · exact ((pairPilotNoiseKernel_memLp μ C θ hθ k hk bar η Cp W lam hp).integrable
@@ -131,8 +124,7 @@ theorem pairPilotScoreKernel_energy_le :
       pairPilotScoreKernel θ k hk bar η z.1 z.2 ^ 2
       ∂(μ.prod μ).prod ((observationLaw θ).prod (observationLaw θ))) ≤
       (2 * Cp ^ 2 + 2 * Cp * W) ^ 2 *
-        (responseOperatorEnergyBound C * (C.densityUpper / (k : ℝ) ^ d)) := by
-  exact rawModelPairScore_energy_le μ C θ hθ k hk
+        (responseOperatorEnergyBound C * (C.densityUpper / (k : ℝ) ^ d)) := rawModelPairScore_energy_le μ C θ hθ k hk
     (pairPilotCoefficient_measurable μ θ k hk bar η Cp W lam hp)
     (pairPilotCoefficient_sections μ θ k hk bar η Cp W lam hp)
     (by nlinarith [hp.constantNonnegative, hp.budgetNonnegative,
@@ -143,8 +135,7 @@ theorem pairPilotNoiseKernel_energy_le :
     (∫ z : (Ω × Ω) × (Observation d × Observation d),
       pairPilotNoiseKernel k hk bar η z.1 z.2 ^ 2
       ∂(μ.prod μ).prod ((observationLaw θ).prod (observationLaw θ))) ≤
-      (2 * Cp ^ 2 + 2 * Cp * W) ^ 2 * (4 * (C.densityUpper / (k : ℝ) ^ d)) := by
-  exact rawModelPairNoise_energy_le μ C θ hθ k hk
+      (2 * Cp ^ 2 + 2 * Cp * W) ^ 2 * (4 * (C.densityUpper / (k : ℝ) ^ d)) := rawModelPairNoise_energy_le μ C θ hθ k hk
     (pairPilotCoefficient_measurable μ θ k hk bar η Cp W lam hp)
     (pairPilotCoefficient_sections μ θ k hk bar η Cp W lam hp)
     (by nlinarith [hp.constantNonnegative, hp.budgetNonnegative,

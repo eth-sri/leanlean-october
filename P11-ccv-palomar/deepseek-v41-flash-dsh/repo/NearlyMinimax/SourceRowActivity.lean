@@ -10,10 +10,8 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 700000
-attribute [local instance] Classical.propDecidable
 
+attribute [local instance] Classical.propDecidable
 theorem higherBandRowMass_le_activityCap_of_fine (d r m D q : ℕ) (hr : 2 ≤ r) (hD : 1 ≤ D)
     (a b : ℝ) (ha : 0 < a) (hab : a < b) (C lam L T : ℝ)
     (hT : 1 ≤ T) (fine : Bool) (hLT : fine = true → L ≤ T) :
@@ -33,7 +31,10 @@ def higherBandCoarseActivity (d D M q : ℕ) (a b C lam ℓ N μ : ℝ) (j : Fin
 def higherBandFineActivity (d D M q : ℕ) (a b C lam ℓ N μ : ℝ) (j : Fin (D-2)) : ℝ :=
   higherBandFilteredMass d D M q a b C lam ℓ N μ (j,true)
 
-theorem higherBandFamily_totalMass_eq (d k D M q : ℕ) (a b C lam ℓ N μ : ℝ) :
+section
+variable (d k D M q : ℕ) (a b C lam ℓ N μ : ℝ)
+
+theorem higherBandFamily_totalMass_eq :
     highRowTotalMass (higherBandFamilyData d k D M q a b C lam ℓ N μ).rowMass =
       (∑ j : Fin (D-2), higherBandCoarseActivity d D M q a b C lam ℓ N μ j) +
       (∑ j : Fin (D-2), higherBandFineActivity d D M q a b C lam ℓ N μ j) := by
@@ -49,12 +50,14 @@ theorem higherBandFamily_totalMass_eq (d k D M q : ℕ) (a b C lam ℓ N μ : �
     higherBandFilteredMass, Finset.sum_add_distrib]
   exact add_comm _ _
 
-theorem sourceRowTotalMass_eq (d k D M q : ℕ) (a b C lam ℓ N μ : ℝ) :
+theorem sourceRowTotalMass_eq :
     highRowTotalMass (sourceRowData d k D M q a b C lam ℓ N μ).rowMass =
       highRowTotalMass (finePairRowData d k D M q a b C ℓ N).rowMass + singletonRowMass d D q a b C +
       highRowTotalMass (higherBandFamilyData d k D M q a b C lam ℓ N μ).rowMass := by
   classical
   simp only [highRowTotalMass, Fintype.sum_sum_type, sourceRowData, sourceRowComponent,
     highUnionRowRestrict, Fintype.sum_unique, singletonRowData, higherBandFamilyData, add_assoc]
+
+end
 
 end NearlyMinimax

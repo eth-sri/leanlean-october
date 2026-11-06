@@ -11,7 +11,6 @@ noncomputable section
 open MeasureTheory
 open scoped RealInnerProductSpace ENNReal
 namespace NearlyMinimax.PilotFields
-set_option backward.isDefEq.respectTransparency false
 
 variable {Ω W H : Type*} [MeasurableSpace Ω] [MeasurableSpace W]
 variable [NormedAddCommGroup H] [InnerProductSpace ℝ H] [CompleteSpace H]
@@ -42,7 +41,9 @@ theorem fluctuation_mean_zero {η : Ω → W → H}
     bilinear_mean_zero hmη hη hcenter hmB hC hlam hbound htest]
   simp
 
-theorem pilotMean_eq_fluctuation_ae (m : W → H) (hmm : Measurable m) (hm : MemLp m 2 M)
+variable (m : W → H)
+
+theorem pilotMean_eq_fluctuation_ae (hmm : Measurable m) (hm : MemLp m 2 M)
     {η : Ω → W → H} (hmη : Measurable (fun z : Ω × W => η z.1 z.2))
     (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M))
     {B : W → H →L[ℝ] H} (hmB : Measurable (fun z : W × H => B z.1 z.2))
@@ -56,7 +57,7 @@ theorem pilotMean_eq_fluctuation_ae (m : W → H) (hmm : Measurable m) (hm : Mem
   have he := pilotMean_sub_eq m hmm hm hmη hmB hbound hsym hx hy
   linarith
 
-theorem pilotMean_memLp_two (m : W → H) (hmm : Measurable m) (hm : MemLp m 2 M)
+theorem pilotMean_memLp_two (hmm : Measurable m) (hm : MemLp m 2 M)
     {η : Ω → W → H} (hmη : Measurable (fun z : Ω × W => η z.1 z.2))
     (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M))
     {B : W → H →L[ℝ] H} (hmB : Measurable (fun z : W × H => B z.1 z.2))
@@ -70,7 +71,7 @@ theorem pilotMean_memLp_two (m : W → H) (hmm : Measurable m) (hm : MemLp m 2 M
     (memLp_const (∫ w, ⟪m w, B w (m w)⟫ ∂M))).ae_eq
       (pilotMean_eq_fluctuation_ae m hmm hm hmη hη hmB hbound hsym).symm
 
-theorem pilotMean_mean_eq (m : W → H) (hmm : Measurable m) (hm : MemLp m 2 M)
+theorem pilotMean_mean_eq (hmm : Measurable m) (hm : MemLp m 2 M)
     {η : Ω → W → H} (hmη : Measurable (fun z : Ω × W => η z.1 z.2))
     (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M))
     (hcenter : ∀ᵐ w ∂M, (∫ x, η x w ∂μ) = 0)

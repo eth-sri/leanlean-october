@@ -13,13 +13,13 @@ open Matrix MeasureTheory Set MvPolynomial
 open scoped BigOperators Matrix.Norms.L2Operator
 namespace NearlyMinimax
 
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 
-def anchoredFinVector {d ℓ : ℕ} (v : AnchoredIndex d ℓ → ℝ) :
+variable {d ℓ : ℕ} (C : ModelConstants d)
+
+def anchoredFinVector (v : AnchoredIndex d ℓ → ℝ) :
     Fin (anchoredDimension d ℓ) → ℝ := fun i => v (anchoredFinIndex i)
 
-theorem anchoredFinVector_norm {d ℓ : ℕ} (v : AnchoredIndex d ℓ → ℝ) :
+theorem anchoredFinVector_norm (v : AnchoredIndex d ℓ → ℝ) :
     ‖(EuclideanSpace.equiv (Fin (anchoredDimension d ℓ)) ℝ).symm (anchoredFinVector v)‖ =
       ‖(EuclideanSpace.equiv (AnchoredIndex d ℓ) ℝ).symm v‖ := by
   let e := LinearIsometryEquiv.piLpCongrLeft 2 ℝ ℝ (Fintype.equivFin (AnchoredIndex d ℓ))
@@ -30,8 +30,11 @@ theorem anchoredFinVector_norm {d ℓ : ℕ} (v : AnchoredIndex d ℓ → ℝ) :
   rw [← he]
   exact e.norm_map _
 
-theorem anchoredFinReindex_mulVec {d ℓ : ℕ}
-    (A : Matrix (AnchoredIndex d ℓ) (AnchoredIndex d ℓ) ℝ)
+section
+variable (A : Matrix (AnchoredIndex d ℓ) (AnchoredIndex d ℓ) ℝ)
+
+theorem anchoredFinReindex_mulVec 
+    
     (v : AnchoredIndex d ℓ → ℝ) :
     anchoredFinReindex d ℓ A *ᵥ anchoredFinVector v = anchoredFinVector (A *ᵥ v) := by
   ext i
@@ -40,18 +43,20 @@ theorem anchoredFinReindex_mulVec {d ℓ : ℕ}
   exact (Fintype.equivFin (AnchoredIndex d ℓ)).symm.sum_comp
     (fun γ : AnchoredIndex d ℓ => A (anchoredFinIndex i) γ * v γ)
 
-theorem anchoredFinReindex_inv {d ℓ : ℕ}
-    (A : Matrix (AnchoredIndex d ℓ) (AnchoredIndex d ℓ) ℝ) :
+theorem anchoredFinReindex_inv 
+    :
     (anchoredFinReindex d ℓ A)⁻¹ = anchoredFinReindex d ℓ A⁻¹ :=
   Matrix.inv_reindex _ _ A
 
-theorem anchoredFinVector_sub {d ℓ : ℕ} (v w : AnchoredIndex d ℓ → ℝ) :
+end
+
+theorem anchoredFinVector_sub (v w : AnchoredIndex d ℓ → ℝ) :
     anchoredFinVector (v - w) = anchoredFinVector v - anchoredFinVector w := rfl
 
-theorem anchoredFinVector_smul {d ℓ : ℕ} (a : ℝ) (v : AnchoredIndex d ℓ → ℝ) :
+theorem anchoredFinVector_smul (a : ℝ) (v : AnchoredIndex d ℓ → ℝ) :
     anchoredFinVector (a • v) = a • anchoredFinVector v := rfl
 
-theorem dyadicFinPilotMoments_eq_actual {d ℓ : ℕ} (C : ModelConstants d)
+theorem dyadicFinPilotMoments_eq_actual 
     (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ)
     (x : Covariate d) (hx : x ∈ unitCube d) (t : Bool) :
     dyadicFinPilotMoments (ℓ := ℓ) θ j x t = anchoredFinVector
@@ -64,7 +69,7 @@ theorem dyadicFinPilotMoments_eq_actual {d ℓ : ℕ} (C : ModelConstants d)
   all_goals simp only [localPilotRow, localPilotReplaceRow, Matrix.mulVec, dotProduct,
     dyadicPilotPopulation_response C θ hθ j x hx, dyadicPilotPopulation_constant C θ hθ]
 
-theorem dyadicFinPilot_fit {d ℓ : ℕ} (C : ModelConstants d)
+theorem dyadicFinPilot_fit 
     (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ)
     (x : Covariate d) (hx : x ∈ unitCube d) :
     (dyadicFinPilotGram (ℓ := ℓ) θ j x)⁻¹ *ᵥ
@@ -78,7 +83,7 @@ theorem dyadicFinPilot_fit {d ℓ : ℕ} (C : ModelConstants d)
   rw [dyadicFinPilotGram, anchoredFinReindex_inv, anchoredFinReindex_mulVec,
     dyadicPopulationFit_preconditioner_cancels C θ hθ]
 
-theorem dyadicFinite_increment_eq_actual {d ℓ : ℕ} (C : ModelConstants d)
+theorem dyadicFinite_increment_eq_actual 
     (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ)
     (x : Covariate d) (hx : x ∈ unitCube d) :
     (dyadicFinPilotGram (ℓ := ℓ) θ j x)⁻¹ *ᵥ
@@ -93,8 +98,7 @@ theorem dyadicFinite_increment_eq_actual {d ℓ : ℕ} (C : ModelConstants d)
   | zero => simp [dyadicPopulationIncrement, anchoredIncrement]
   | succ j =>
     simp only [Nat.add_one_ne_zero, ↓reduceIte, Nat.add_sub_cancel_right]
-    rw [dyadicFinPilot_fit C θ hθ j x hx]
-    rw [anchoredFinTransport, anchoredFinReindex_mulVec, ← anchoredFinVector_sub]
+    rw [dyadicFinPilot_fit C θ hθ j x hx, anchoredFinTransport, anchoredFinReindex_mulVec, ← anchoredFinVector_sub]
     rfl
 
 theorem incrementFinVector_eval_population {r : ℕ} [NeZero r] (a b : ℝ)
@@ -110,7 +114,7 @@ theorem incrementFinVector_eval_population {r : ℕ} [NeZero r] (a b : ℝ)
 /-- Density bounds yield the actual Hermitian charts used in the inverse
 approximation. Only the explicitly displayed small increment enters this
 generic deterministic helper. -/
-theorem anchoredNormalized_increment_error {d ℓ : ℕ} [Nonempty (AnchoredIndex d ℓ)]
+theorem anchoredNormalized_increment_error [Nonempty (AnchoredIndex d ℓ)]
     (u v : Covariate d) (p q : Covariate d → ℝ) (hpmeas : Measurable p) (hqmeas : Measurable q)
     (a b χ ε : ℝ) (ha : 0 < a) (hab : a < b)
     (hp : ∀ᵐ w ∂cubeVolume d, a ≤ p w ∧ p w ≤ b)

@@ -14,7 +14,9 @@ namespace NearlyMinimax
 def fieldTailConstant (Csharp C : ℝ) : ℝ :=
   Real.exp (Csharp * C) * poissonCountWeight (Csharp * C) 4
 
-theorem finite_geometric_field_count_tail_le {P Csharp C mu : ℝ}
+variable {P Csharp C mu : ℝ}
+
+theorem finite_geometric_field_count_tail_le 
     (hP : 0 ≤ P) (hCs : 0 ≤ Csharp) (hC : 0 ≤ C)
     (hmu : 0 ≤ mu) (hmu1 : mu ≤ 1) (J : ℕ) (R : ℕ → ℝ)
     (hR : ∀ j ∈ Finset.range J, R (4 + j) ≤ P * C ^ (4 + j)) :
@@ -41,7 +43,7 @@ theorem finite_geometric_field_count_tail_le {P Csharp C mu : ℝ}
   unfold fieldTailConstant
   ring
 
-theorem finite_polynomial_field_count_tail_le {P Csharp C mu : ℝ}
+theorem finite_polynomial_field_count_tail_le 
     (hP : 0 ≤ P) (hCs : 0 ≤ Csharp) (hC : 0 ≤ C)
     (hmu : 0 ≤ mu) (hmu1 : mu ≤ 1) (a J : ℕ) (R : ℕ → ℝ)
     (hR : ∀ j ∈ Finset.range J, R (4 + j) ≤ P * C ^ (4 + j) * (4 + j : ℕ) ^ a) :

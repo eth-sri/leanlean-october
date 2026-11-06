@@ -10,8 +10,6 @@ noncomputable section
 open MeasureTheory
 open scoped RealInnerProductSpace BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option synthInstance.maxHeartbeats 200000
 
 namespace PairUStatistic
 variable {P Ω E : Type*} [MeasurableSpace P] [MeasurableSpace Ω] [MeasurableSpace E]
@@ -32,7 +30,10 @@ theorem fieldPairAverage_add_smul (n : ℕ) (weight V : ℝ)
   ring
 end PairUStatistic
 
-def pairPilotNumeratorKernel {Ω : Type*} {d : ℕ} (k : ℕ) (hk : 0 < k)
+section
+variable {Ω : Type*} {d : ℕ}
+
+def pairPilotNumeratorKernel (k : ℕ) (hk : 0 < k)
     (bar : Covariate d × Covariate d → PairVector)
     (η : Ω → Covariate d × Covariate d → PairVector) (p : Ω × Ω)
     (z : Observation d × Observation d) : ℝ :=
@@ -42,7 +43,7 @@ def pairPilotNumeratorKernel {Ω : Type*} {d : ℕ} (k : ℕ) (hk : 0 < k)
         (pairResponseVector z.1.2 z.2.2)
           (pairPilotCoefficient bar η p.2 (pairCovariates z))⟫
 
-theorem pairPilotNumeratorKernel_eq_score_add_noise {Ω : Type*} {d : ℕ}
+theorem pairPilotNumeratorKernel_eq_score_add_noise 
     (θ : RegressionParameter d) (k : ℕ) (hk : 0 < k)
     (bar : Covariate d × Covariate d → PairVector)
     (η : Ω → Covariate d × Covariate d → PairVector) :
@@ -58,5 +59,7 @@ theorem pairPilotNumeratorKernel_eq_score_add_noise {Ω : Type*} {d : ℕ}
     inner_sub_right, inner_smul_right]
   rw [hq]
   ring
+
+end
 
 end NearlyMinimax

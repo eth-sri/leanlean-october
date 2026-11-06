@@ -13,42 +13,52 @@ noncomputable section
 open MeasureTheory Set
 open scoped RealInnerProductSpace ENNReal
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
 
 variable {Ω : Type*} [MeasurableSpace Ω]
 
-def pairPilotCoefficient {d : ℕ} (bar : Covariate d × Covariate d → PairVector)
+section
+variable {d : ℕ}
+
+def pairPilotCoefficient (bar : Covariate d × Covariate d → PairVector)
     (η : Ω → Covariate d × Covariate d → PairVector) (x : Ω)
     (w : Covariate d × Covariate d) : PairVector := bar w + η x w
 
-def pairPilotScoreKernel {d : ℕ} (θ : RegressionParameter d) (k : ℕ) (hk : 0 < k)
+def pairPilotScoreKernel (θ : RegressionParameter d) (k : ℕ) (hk : 0 < k)
     (bar : Covariate d × Covariate d → PairVector)
     (η : Ω → Covariate d × Covariate d → PairVector) (x : Ω × Ω) :
     Observation d × Observation d → ℝ :=
   pairScoreFieldKernel θ (pairPilotCoefficient bar η x.1) (pairPilotCoefficient bar η x.2)
     (sameLabelKernel (regularGridCell k hk))
 
-def pairPilotNoiseKernel {d : ℕ} (k : ℕ) (hk : 0 < k)
+def pairPilotNoiseKernel (k : ℕ) (hk : 0 < k)
     (bar : Covariate d × Covariate d → PairVector)
     (η : Ω → Covariate d × Covariate d → PairVector) (x : Ω × Ω) :
     Observation d × Observation d → ℝ :=
   pairNoiseFieldKernel (pairPilotCoefficient bar η x.1) (pairPilotCoefficient bar η x.2)
     (sameLabelKernel (regularGridCell k hk))
 
-def pairPilotScoreMean {d : ℕ} (θ : RegressionParameter d) (k : ℕ) (hk : 0 < k)
+section
+variable (θ : RegressionParameter d) (k : ℕ)
+
+def pairPilotScoreMean (hk : 0 < k)
     (bar : Covariate d × Covariate d → PairVector)
     (η : Ω → Covariate d × Covariate d → PairVector) (x : Ω × Ω) : ℝ :=
   PairUStatistic.fieldPairMean (μ := observationLaw θ) ((k : ℝ) ^ d)
     (pairPilotScoreKernel θ k hk bar η) x
 
-def pairPilotNoiseMean {d : ℕ} (θ : RegressionParameter d) (k : ℕ) (hk : 0 < k)
+def pairPilotNoiseMean (hk : 0 < k)
     (bar : Covariate d × Covariate d → PairVector)
     (η : Ω → Covariate d × Covariate d → PairVector) (x : Ω × Ω) : ℝ :=
   PairUStatistic.fieldPairMean (μ := observationLaw θ) ((k : ℝ) ^ d)
     (pairPilotNoiseKernel k hk bar η) x
 
-theorem pairPilotScoreMean_eq_half_pilotMean {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k)
+end
+
+section
+variable (C : ModelConstants d) (θ : RegressionParameter d)
+
+theorem pairPilotScoreMean_eq_half_pilotMean 
+    (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k)
     (bar : Covariate d × Covariate d → PairVector)
     (η : Ω → Covariate d × Covariate d → PairVector) (x : Ω × Ω)
     (hi : Integrable (pairPilotScoreKernel θ k hk bar η x)
@@ -87,8 +97,8 @@ theorem pairPilotScoreMean_eq_half_pilotMean {d : ℕ} (C : ModelConstants d)
       filter_upwards [boundedPairRegressionOperator_eq_ae C θ hθ k hk] with w hw
       simp only [PilotFields.pilotMean, pairPilotCoefficient, hw]
 
-theorem pairPilotNoiseMean_eq_half_pilotMean {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k)
+theorem pairPilotNoiseMean_eq_half_pilotMean 
+    (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k)
     (bar : Covariate d × Covariate d → PairVector)
     (η : Ω → Covariate d × Covariate d → PairVector) (x : Ω × Ω)
     (hi : Integrable (pairPilotNoiseKernel k hk bar η x)
@@ -111,13 +121,20 @@ theorem pairPilotNoiseMean_eq_half_pilotMean {d : ℕ} (C : ModelConstants d)
   rw [hM]
   ring
 
+end
+
+end
+
 section HalfMean
 variable {W H : Type*} [MeasurableSpace W]
 variable [NormedAddCommGroup H] [InnerProductSpace ℝ H] [CompleteSpace H]
 variable [MeasurableSpace H] [BorelSpace H] [SecondCountableTopology H]
 variable {μ : Measure Ω} {M : Measure W} [IsProbabilityMeasure μ] [IsFiniteMeasure M]
 
-theorem half_pilotMean_mean_eq (bar : W → H) (hbarMeas : Measurable bar) (hbar : MemLp bar 2 M)
+section
+variable (bar : W → H)
+
+theorem half_pilotMean_mean_eq (hbarMeas : Measurable bar) (hbar : MemLp bar 2 M)
     {η : Ω → W → H} (hmη : Measurable (fun z : Ω × W => η z.1 z.2))
     (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M))
     (hcenter : ∀ᵐ w ∂M, (∫ x, η x w ∂μ) = 0)
@@ -131,7 +148,7 @@ theorem half_pilotMean_mean_eq (bar : W → H) (hbarMeas : Measurable bar) (hbar
   rw [integral_const_mul,
     PilotFields.pilotMean_mean_eq bar hbarMeas hbar hmη hη hcenter hmB hcB hlam hbound hsym htest]
 
-theorem half_pilotMean_centered_sq_le (bar : W → H) (hbarMeas : Measurable bar) (hbar : MemLp bar 2 M)
+theorem half_pilotMean_centered_sq_le (hbarMeas : Measurable bar) (hbar : MemLp bar 2 M)
     {η : Ω → W → H} (hmη : Measurable (fun z : Ω × W => η z.1 z.2))
     (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M))
     (hcenter : ∀ᵐ w ∂M, (∫ x, η x w ∂μ) = 0)
@@ -155,7 +172,7 @@ theorem half_pilotMean_centered_sq_le (bar : W → H) (hbarMeas : Measurable bar
     (by norm_num : (0 : ℝ) ≤ 1 / 4)
   convert h using 1 <;> ring
 
-theorem half_pilotMean_variance_transfer (bar : W → H) (hbarMeas : Measurable bar) (hbar : MemLp bar 2 M)
+theorem half_pilotMean_variance_transfer (hbarMeas : Measurable bar) (hbar : MemLp bar 2 M)
     {η : Ω → W → H} (hmη : Measurable (fun z : Ω × W => η z.1 z.2))
     (hη : MemLp (fun z : Ω × W => η z.1 z.2) 2 (μ.prod M))
     (hcenter : ∀ᵐ w ∂M, (∫ x, η x w ∂μ) = 0)
@@ -181,6 +198,8 @@ theorem half_pilotMean_variance_transfer (bar : W → H) (hbarMeas : Measurable 
     rw [hx, hMean]
   rw [integral_congr_ae hSq]
   exact half_pilotMean_centered_sq_le bar hbarMeas hbar hmη hη hcenter hmB hcB hlam hbound hsym htest
+
+end
 
 end HalfMean
 

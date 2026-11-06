@@ -11,7 +11,9 @@ noncomputable section
 open scoped BigOperators
 namespace NearlyMinimax
 
-theorem finite_refined_sum_le_start_two (D : ℕ) (f : ℕ → ℝ) (hf : ∀ r, 0 ≤ f r) :
+variable (D : ℕ)
+
+theorem finite_refined_sum_le_start_two (f : ℕ → ℝ) (hf : ∀ r, 0 ≤ f r) :
     (∑ j ∈ Finset.range (D-2), f (3+j)) ≤
       ∑ j ∈ Finset.range (D-1), f (2+j) := by
   apply Finset.sum_le_sum_of_injOn (fun j => j+1)
@@ -50,7 +52,7 @@ theorem finite_refined_gated_sum_le_tail (D M : ℕ) (f : ℕ → ℝ)
   · intro j _ _
     exact hf _
 
-theorem finite_refined_sum_eq_start_four (D : ℕ) (hD : 3 ≤ D)
+theorem finite_refined_sum_eq_start_four (hD : 3 ≤ D)
     (f : ℕ → ℝ) (hf3 : f 3 = 0) :
     (∑ j ∈ Finset.range (D-2), f (3+j)) =
       ∑ j ∈ Finset.range (D-3), f (4+j) := by

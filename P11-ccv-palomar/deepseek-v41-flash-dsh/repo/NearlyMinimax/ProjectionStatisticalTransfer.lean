@@ -11,9 +11,11 @@ open scoped ENNReal
 noncomputable section
 namespace NearlyMinimax
 
+variable {d n : ℕ} (C : ModelConstants d)
+
 /-- The actual iid-sample polynomial-projection risk upper bound in
 all smoothness orders. No conditional independence or risk identity is assumed. -/
-theorem polynomial_grid_sample_risk_bound {d n : ℕ} (C : ModelConstants d)
+theorem polynomial_grid_sample_risk_bound 
     (θ : RegressionParameter d) (hθ : Admissible C θ)
     (k : ℕ) (hk : 0 < k) (hn : 0 < n)
     (hcolumns : (k : ℝ) ^ d * (C.order + 1 : ℕ) ^ d ≤ (n : ℝ) / 2) :
@@ -34,7 +36,7 @@ theorem polynomial_grid_sample_risk_bound {d n : ℕ} (C : ModelConstants d)
       x hcube (conditionalErrorLaw θ x) (fun i u => u i) hε hind hmean hsecond hfourth
   exact (lintegral_mono_ae hconditional).trans_eq (by simp)
 
-theorem polynomial_grid_worst_case_risk_bound {d n : ℕ} (C : ModelConstants d)
+theorem polynomial_grid_worst_case_risk_bound 
     (k : ℕ) (hk : 0 < k) (hn : 0 < n)
     (hcolumns : (k : ℝ) ^ d * (C.order + 1 : ℕ) ^ d ≤ (n : ℝ) / 2) :
     worstCaseRisk C (polynomialGridEstimator C n k hk) ≤

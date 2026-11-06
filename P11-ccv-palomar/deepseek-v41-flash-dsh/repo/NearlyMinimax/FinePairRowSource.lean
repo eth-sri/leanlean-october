@@ -12,11 +12,11 @@ noncomputable section
 open Set MeasureTheory
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 800000
 attribute [local instance] Classical.propDecidable
 
-def finePairSourceRows {d : ℕ} (C : ModelConstants d) (k D M q : ℕ)
+variable {d : ℕ} (C : ModelConstants d)
+
+def finePairSourceRows (C : ModelConstants d) (k D M q : ℕ)
     (Cfr T₀ N : ℝ) :
     HighUnionRowData d k D FinePairRowTag (FinePairRowMark d D M q) :=
   finePairRowData d k D M q (C.densityLower+1/(M : ℝ))
@@ -24,7 +24,7 @@ def finePairSourceRows {d : ℕ} (C : ModelConstants d) (k D M q : ℕ)
 
 /-- The three true unit/coarse/fine packet rows satisfy every primitive
 source guard under their physical numerical parameter conditions. -/
-theorem finePairSourceRows_guards {d : ℕ} (C : ModelConstants d) [NeZero d]
+theorem finePairSourceRows_guards [NeZero d]
     (k D M q : ℕ) (hD : 3 ≤ D) (hq : 1 ≤ q)
     (hM : highCenterResolutionThreshold C ≤ (M : ℝ))
     (Cfr : ℝ) (hCfr : 1 ≤ Cfr) (T₀ N : ℝ) (hT₀ : 0 < T₀) (hTN : T₀ < N) :

@@ -19,14 +19,16 @@ def ternaryMeasure (a f V : ℝ) : Measure ℝ :=
   ∑ y : Fin 3, ENNReal.ofReal (ternaryMass a f V y) •
     Measure.dirac (ternaryValue a y)
 
-theorem ternaryMeasure_integrable (a f V : ℝ) (g : ℝ → ℝ) :
+variable (a f V : ℝ)
+
+theorem ternaryMeasure_integrable (g : ℝ → ℝ) :
     Integrable g (ternaryMeasure a f V) := by
   unfold ternaryMeasure
   apply integrable_finset_sum_measure.mpr
   intro y hy
   exact (integrable_dirac (by simp)).smul_measure ENNReal.ofReal_ne_top
 
-theorem ternaryMeasure_isProbability (a f V : ℝ) (ha : a ≠ 0)
+theorem ternaryMeasure_isProbability (ha : a ≠ 0)
     (hp : ∀ y, 0 ≤ ternaryMass a f V y) :
     IsProbabilityMeasure (ternaryMeasure a f V) := by
   constructor
@@ -35,7 +37,7 @@ theorem ternaryMeasure_isProbability (a f V : ℝ) (ha : a ≠ 0)
   rw [← ENNReal.ofReal_sum_of_nonneg (fun y _ => hp y), ternary_normalized a f V ha]
   simp
 
-theorem ternaryMeasure_integral (a f V : ℝ)
+theorem ternaryMeasure_integral 
     (hp : ∀ y, 0 ≤ ternaryMass a f V y) (g : ℝ → ℝ) :
     (∫ y, g y ∂ternaryMeasure a f V) = ternaryExpectation a f V g := by
   unfold ternaryMeasure
@@ -45,39 +47,47 @@ theorem ternaryMeasure_integral (a f V : ℝ)
   · intro y hy
     exact (integrable_dirac (by simp)).smul_measure ENNReal.ofReal_ne_top
 
-theorem ternaryMeasure_mean (a f V : ℝ) (ha : a ≠ 0)
+theorem ternaryMeasure_mean (ha : a ≠ 0)
     (hp : ∀ y, 0 ≤ ternaryMass a f V y) :
     (∫ y, y ∂ternaryMeasure a f V) = f := by
   rw [ternaryMeasure_integral a f V hp]
   exact ternary_mean a f V ha
 
-theorem ternaryMeasure_variance (a f V : ℝ) (ha : a ≠ 0)
+theorem ternaryMeasure_variance (ha : a ≠ 0)
     (hp : ∀ y, 0 ≤ ternaryMass a f V y) :
     (∫ y, (y - f) ^ 2 ∂ternaryMeasure a f V) = V := by
   rw [ternaryMeasure_integral a f V hp]
   exact ternary_variance a f V ha
 
-theorem ternaryMeasure_fourthMoment (a f V : ℝ) (ha : a ≠ 0)
+theorem ternaryMeasure_fourthMoment (ha : a ≠ 0)
     (hp : ∀ y, 0 ≤ ternaryMass a f V y) :
     (∫ y, (y - f) ^ 4 ∂ternaryMeasure a f V) =
       a ^ 2 * V + (6 * V - 3 * a ^ 2) * f ^ 2 + 3 * f ^ 4 := by
   rw [ternaryMeasure_integral a f V hp]
   exact ternary_fourth_central_moment a f V ha
 
-theorem unitCube_eq_pi (d : ℕ) :
+section
+variable (d : ℕ)
+
+theorem unitCube_eq_pi :
     unitCube d = Set.univ.pi (fun _ : Fin d => Set.Icc (0 : ℝ) 1) := by
   ext x
   simp only [unitCube, Set.mem_setOf_eq, Set.mem_pi, Set.mem_univ, true_imp_iff, Set.mem_Icc]
 
-theorem cubeVolume_univ (d : ℕ) : cubeVolume d Set.univ = 1 := by
+theorem cubeVolume_univ : cubeVolume d Set.univ = 1 := by
   rw [cubeVolume, Measure.restrict_apply MeasurableSet.univ, Set.univ_inter, unitCube_eq_pi,
     volume_pi, Measure.pi_pi]
   simp
 
-theorem cubeVolume_isProbability (d : ℕ) : IsProbabilityMeasure (cubeVolume d) :=
+theorem cubeVolume_isProbability : IsProbabilityMeasure (cubeVolume d) :=
   ⟨cubeVolume_univ d⟩
 
-theorem multiPartial_zero {d : ℕ} (γ : Fin d → ℕ) :
+end
+
+section
+variable {d : ℕ}
+
+theorem multiPartial_zero (γ : Fin d → ℕ) :
     multiPartial (fun _ : Covariate d => (0 : ℝ)) γ = 0 := by
   have hc (i : Fin d) : coordinatePartial i (fun _ : Covariate d => (0 : ℝ)) = 0 := by
     funext x
@@ -90,9 +100,11 @@ theorem multiPartial_zero {d : ℕ} (γ : Fin d → ℕ) :
       rw [List.foldl_cons, hc]
       convert ih using 1
 
-theorem holderNorm_zero {d : ℕ} (U : Set (Covariate d)) (ℓ : ℕ) (α : ℝ) :
+theorem holderNorm_zero (U : Set (Covariate d)) (ℓ : ℕ) (α : ℝ) :
     holderNorm U (fun _ : Covariate d => (0 : ℝ)) ℓ α = 0 := by
   simp [holderNorm, multiPartial_zero, derivativeSup, holderSeminorm]
+
+end
 
 def uniformZeroParameter (d : ℕ) (a V : ℝ) (ha : a ≠ 0)
     (hp : ∀ y, 0 ≤ ternaryMass a 0 V y) : RegressionParameter d := by
@@ -104,15 +116,20 @@ def uniformZeroParameter (d : ℕ) (a V : ℝ) (ha : a ≠ 0)
     errors := Kernel.const _ (ternaryMeasure a 0 V)
     errors_markov := inferInstance }
 
-theorem uniformZeroParameter_admissible {d : ℕ} (C : ModelConstants d)
+section
+variable {d : ℕ}
+
+section
+variable (C : ModelConstants d)
+
+theorem uniformZeroParameter_admissible 
     (a V : ℝ) (ha : 0 < a) (hV : C.varianceLower ≤ V)
     (hVupper : V ≤ C.varianceUpper) (hVa : V < a ^ 2)
     (hfourth : a ^ 2 * V ≤ C.fourthBound) :
     ∃ θ : RegressionParameter d, Admissible C θ ∧ θ.variance = V := by
-  have hVp : 0 < V := C.varianceLower_pos.trans_le hV
   have hp : ∀ y, 0 ≤ ternaryMass a 0 V y := by
     apply fun y => (ternary_mass_positive a 0 V ha (by simpa using hVa)
-      (by simpa using hVp) y).le
+      (by simpa using (C.varianceLower_pos.trans_le hV)) y).le
   let θ := uniformZeroParameter d a V ha.ne' hp
   refine ⟨θ, ?_, rfl⟩
   refine ⟨measurable_const, measurable_const, ?_, ?_, ?_, hV, hVupper, ?_⟩
@@ -135,7 +152,7 @@ theorem uniformZeroParameter_admissible {d : ℕ} (C : ModelConstants d)
       exact he.trans_le hfourth
 
 /-- The conditional fourth-moment constraint gives the effective variance bound. -/
-theorem admissible_variance_sq_le_fourth {d : ℕ} (C : ModelConstants d)
+theorem admissible_variance_sq_le_fourth 
     (θ : RegressionParameter d) (hθ : Admissible C θ) :
     θ.variance ^ 2 ≤ C.fourthBound := by
   letI := designLaw_isProbability C θ hθ
@@ -151,18 +168,20 @@ theorem admissible_variance_sq_le_fourth {d : ℕ} (C : ModelConstants d)
   rw [hi2] at hj
   exact hj.trans hbound
 
-theorem admissible_variance_effective_interval {d : ℕ} (C : ModelConstants d)
+theorem admissible_variance_effective_interval 
     (θ : RegressionParameter d) (hθ : Admissible C θ) :
-    θ.variance ∈ Icc C.varianceLower (min C.varianceUpper (Real.sqrt C.fourthBound)) := by
-  exact ⟨hθ.2.2.2.2.2.1, le_min hθ.2.2.2.2.2.2.1
+    θ.variance ∈ Icc C.varianceLower (min C.varianceUpper (Real.sqrt C.fourthBound)) := ⟨hθ.2.2.2.2.2.1, le_min hθ.2.2.2.2.2.2.1
     (Real.le_sqrt_of_sq_le (admissible_variance_sq_le_fourth C θ hθ))⟩
 
-theorem effective_variance_interval_nondegenerate {d : ℕ} (C : ModelConstants d) :
+theorem effective_variance_interval_nondegenerate :
     C.varianceLower < min C.varianceUpper (Real.sqrt C.fourthBound) := by
   apply lt_min C.variance_interval
-  have h4pos : 0 < C.fourthBound := (sq_nonneg _).trans_lt C.fourth_margin
-  have he := Real.sq_sqrt h4pos.le
+  have he := Real.sq_sqrt ((sq_nonneg _).trans_lt C.fourth_margin).le
   nlinarith [Real.sqrt_nonneg C.fourthBound, C.varianceLower_pos, C.fourth_margin]
+
+end
+
+end
 
 /-- The admissible submodel used for the parametric lower bound is a genuine
 continuous uniform design independent of the ternary response. -/

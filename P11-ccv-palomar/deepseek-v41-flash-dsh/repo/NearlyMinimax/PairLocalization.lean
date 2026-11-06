@@ -10,13 +10,14 @@ public import NearlyMinimax.PilotFields
 noncomputable section
 open MeasureTheory Set
 namespace NearlyMinimax.PairUStatistic
-set_option backward.isDefEq.respectTransparency false
 
 variable {E I : Type*} [MeasurableSpace E] [MeasurableSpace I]
 variable [MeasurableSingletonClass I]
 variable {μ : Measure E} [IsProbabilityMeasure μ]
 
-theorem supported_row_sq_le (label : E → I) (hlabel : Measurable label)
+variable (label : E → I)
+
+theorem supported_row_sq_le (hlabel : Measurable label)
     {K : E × E → ℝ} (hsupport : ∀ x y, label x ≠ label y → K (x, y) = 0)
     (x : E) (hKx : MemLp (fun y => K (x, y)) 2 μ)
     {cap : ℝ} (hcap : ∀ i, μ.real (label ⁻¹' {i}) ≤ cap) :
@@ -49,7 +50,7 @@ theorem supported_row_sq_le (label : E → I) (hlabel : Measurable label)
     _ ≤ _ := mul_le_mul_of_nonneg_right (hcap (label x))
       (integral_nonneg (fun _ => sq_nonneg _))
 
-theorem partition_row_energy_le (label : E → I) (hlabel : Measurable label)
+theorem partition_row_energy_le (hlabel : Measurable label)
     {K : E × E → ℝ} (hK : MemLp K 2 (μ.prod μ))
     (hsupport : ∀ x y, label x ≠ label y → K (x, y) = 0)
     {cap : ℝ} (hcap : ∀ i, μ.real (label ⁻¹' {i}) ≤ cap) :

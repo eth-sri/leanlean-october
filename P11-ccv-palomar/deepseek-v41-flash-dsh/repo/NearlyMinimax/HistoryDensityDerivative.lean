@@ -10,14 +10,15 @@ public import NearlyMinimax.HistoryReferenceAppendTransport
 -/
 
 noncomputable section
-set_option backward.isDefEq.respectTransparency false
 open MeasureTheory
 namespace NearlyMinimax
 
 variable {J : Type*} [Fintype J] [LinearOrder J]
 
+variable (dependent : J → J → Prop) (ρ t : ℝ) {E : Type*} (a : E → ℝ)
+
 /-- Every genuine maximal deletion is the old canonical density of an actual append inverse. -/
-theorem historyMarkedDensity_deleted_bounds (dependent : J → J → Prop)
+theorem historyMarkedDensity_deleted_bounds 
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (Δ : ℕ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
     (ρ t B : ℝ) (hρ : 0 < ρ) (ht : 0 ≤ t) (hB : 0 ≤ B)
@@ -46,21 +47,21 @@ theorem historyMarkedDensity_deleted_bounds (dependent : J → J → Prop)
   exact historyMarkedDensity_bounds dependent hrefl hsymm Δ hlabels ρ t B hρ ht hB a ha hsmall ⟨old, p.2⟩
 
 /-- The true finite maximal-deletion expression for the time derivative. -/
-def historyMarkedDensityDerivative (dependent : J → J → Prop) (ρ t : ℝ)
+def historyMarkedDensityDerivative (ρ t : ℝ)
     {E : Type*} (a : E → ℝ) (h : HistoryMarked dependent E) : ℝ :=
   ρ⁻¹ * ∑ x ∈ historyMaximalPieces Finset.univ,
     historyMarkedPieceWeight dependent a h x *
       historyScaledUpperDensity (historyMarkedPieceWeight dependent a h) ρ (Finset.univ.erase x) t
 
 /-- Differentiability comes from the actual finite upper-set polynomial. -/
-theorem historyMarkedDensity_hasDerivAt (dependent : J → J → Prop) (ρ t : ℝ)
-    {E : Type*} (a : E → ℝ) (h : HistoryMarked dependent E) :
+theorem historyMarkedDensity_hasDerivAt 
+    (h : HistoryMarked dependent E) :
     HasDerivAt (fun u => historyMarkedDensity dependent ρ u a h)
       (historyMarkedDensityDerivative dependent ρ t a h) t :=
   historyScaledUpperDensity_hasDerivAt _ ρ Finset.univ t
 
 /-- The derivative bound depends on the finite label set, not the unbounded history length. -/
-theorem historyMarkedDensityDerivative_bound (dependent : J → J → Prop)
+theorem historyMarkedDensityDerivative_bound 
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (Δ : ℕ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
     (ρ t B : ℝ) (hρ : 0 < ρ) (ht : 0 ≤ t) (hB : 0 ≤ B)
@@ -96,9 +97,12 @@ theorem historyMarkedDensityDerivative_bound (dependent : J → J → Prop)
       change _ ≤ ρ⁻¹ * (Fintype.card J : ℝ) * B * C
       nlinarith [mul_nonneg hB hC, mul_le_mul_of_nonneg_right hc (mul_nonneg (inv_nonneg.2 hρ.le) (mul_nonneg hB hC))]
 
+section
+variable [MeasurableSpace E] (a : E → ℝ)
+
 /-- Actual polynomial measurability on every fixed canonical deletion subset. -/
-theorem historyMarkedSubdensity_fiber_measurable (dependent : J → J → Prop) (ρ t : ℝ)
-    {E : Type*} [MeasurableSpace E] (a : E → ℝ) (ha : Measurable a)
+theorem historyMarkedSubdensity_fiber_measurable 
+    (ha : Measurable a)
     (g : HistoryShape (fun i j => ¬ dependent i j)) (S : Finset (WordHeapPiece g.out dependent)) :
     Measurable (fun marks : Fin (historyShapeLength dependent g) → E =>
       historyScaledUpperDensity (historyMarkedPieceWeight dependent a ⟨g, marks⟩) ρ S t) := by
@@ -115,8 +119,8 @@ theorem historyMarkedSubdensity_fiber_measurable (dependent : J → J → Prop) 
   exact ha.comp (measurable_pi_apply (Fin.cast (historyShapeLength_out dependent g).symm x.position))
 
 /-- The actual finite derivative is measurably evaluable under the countable reference law. -/
-theorem historyMarkedDensityDerivative_measurable (dependent : J → J → Prop) (ρ t : ℝ)
-    {E : Type*} [MeasurableSpace E] (a : E → ℝ) (ha : Measurable a) :
+theorem historyMarkedDensityDerivative_measurable 
+    (ha : Measurable a) :
     Measurable (historyMarkedDensityDerivative dependent ρ t a) := by
   classical
   rw [historyMarked_measurable_iff]
@@ -131,5 +135,7 @@ theorem historyMarkedDensityDerivative_measurable (dependent : J → J → Prop)
   intro x hx
   exact (ha.comp (measurable_pi_apply (Fin.cast (historyShapeLength_out dependent g).symm x.position))).mul
     (historyMarkedSubdensity_fiber_measurable dependent ρ t a ha g (Finset.univ.erase x))
+
+end
 
 end NearlyMinimax

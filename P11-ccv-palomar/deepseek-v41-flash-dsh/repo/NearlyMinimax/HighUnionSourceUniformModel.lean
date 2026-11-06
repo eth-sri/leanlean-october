@@ -13,8 +13,6 @@ noncomputable section
 open Set MeasureTheory
 open scoped ENNReal ContDiff BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 800000
 attribute [local instance] Classical.propDecidable
 
 /-- Uniform original-model legality for actual complete-row canonical histories.
@@ -72,7 +70,6 @@ theorem highUnionSource_original_model_uniform {d : ℕ} (C : ModelConstants d)
     Filter.Eventually.of_forall (fun x => highUnionSourceDensity_interval C R G h x)
   have hM := (highCenterResolution_guards C M G.resolution).1
   have hM0 : 0 < M := by linarith
-  have hint := highRawDensity_integrable C M hM0 p hp hraw
   have hp0 : 0 ≤ᵐ[cubeVolume d] p := by
     filter_upwards [hraw] with x hx
     change 0 ≤ p x
@@ -81,7 +78,7 @@ theorem highUnionSource_original_model_uniform {d : ℕ} (C : ModelConstants d)
     (high_raw_mass_lower C M cm (highRawDensityMass p) hM hcm hcmU hmass)
   refine ⟨highNormalizedDensity_measurable p hp, hF.continuous.measurable,
     highNormalizedDensity_bounds C M cm hM hcm hcmU p hraw hmass,
-    highNormalizedDensity_normalized p hint hp0 hmass0, ?_,
+    highNormalizedDensity_normalized p (highRawDensity_integrable C M hM0 p hp hraw) hp0 hmass0, ?_,
     (hlegal 0).1.le, (hlegal 0).2.1.le, ?_⟩
   · refine ⟨f, fun _ _ => rfl, (hF.of_le (by simp)).contDiffOn, ?_⟩
     exact (hnorm U.carrier).trans (ENNReal.ofReal_le_ofReal hcfH)

@@ -12,16 +12,17 @@ namespace NearlyMinimax
 open Matrix MeasureTheory
 open scoped BigOperators Matrix.Norms.L2Operator
 
-set_option backward.isDefEq.respectTransparency false
 
-def incrementFinRawVector (r : ℕ) (a b : ℝ) (T : Matrix (Fin r) (Fin r) ℝ)
+variable (r : ℕ) (a b : ℝ) (T : Matrix (Fin r) (Fin r) ℝ)
+
+def incrementFinRawVector (a b : ℝ) (T : Matrix (Fin r) (Fin r) ℝ)
     (response : Bool) (m : ℕ) :
     (Fin (Fintype.card (incrementVariables r)) → ℝ) → Fin r → ℝ :=
   fun x i => MvPolynomial.eval x
     (MvPolynomial.rename (Fintype.equivFin (incrementVariables r))
       (rawIncrementEntryPolynomial r a b T response m i))
 
-theorem incrementFinVector_affine (r : ℕ) (a b : ℝ) (T : Matrix (Fin r) (Fin r) ℝ)
+theorem incrementFinVector_affine 
     (y : ℝ) (m : ℕ) :
     incrementFinVector r a b T y m = incrementFinRawVector r a b T false m -
       y • incrementFinRawVector r a b T true m := by

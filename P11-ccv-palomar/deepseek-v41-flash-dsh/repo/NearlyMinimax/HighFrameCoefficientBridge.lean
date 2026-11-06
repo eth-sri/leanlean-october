@@ -11,8 +11,6 @@ noncomputable section
 open MvPolynomial
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 600000
 
 theorem frameCoefficientL1_sum_monomial_le {d : ℕ} {I : Type*} [Fintype I]
     (e : I → Fin d →₀ ℕ) (c : I → ℝ) :
@@ -39,15 +37,20 @@ theorem frameCoefficientL1_sum_monomial_le {d : ℕ} {I : Type*} [Fintype I]
       · exact le_rfl
       · exact abs_nonneg _
 
-def highFramePolynomial {d D : ℕ} (c : HighFrameIndex d D → ℝ) :
+variable {d D : ℕ}
+
+def highFramePolynomial (c : HighFrameIndex d D → ℝ) :
     MvPolynomial (Fin d) ℝ :=
   ∑ γ, MvPolynomial.monomial (polynomialBoxExponent γ.val) (c γ)
 
-theorem highFramePolynomial_coefficientL1_le {d D : ℕ} (c : HighFrameIndex d D → ℝ) :
+section
+variable (c : HighFrameIndex d D → ℝ)
+
+theorem highFramePolynomial_coefficientL1_le :
     frameCoefficientL1 (highFramePolynomial c) ≤ ∑ γ, |c γ| :=
   frameCoefficientL1_sum_monomial_le _ _
 
-theorem highFramePolynomial_scaled_eval {d D : ℕ} (c : HighFrameIndex d D → ℝ)
+theorem highFramePolynomial_scaled_eval 
     (x : Covariate d) :
     MvPolynomial.eval x (frameScaledPolynomial (highFramePolynomial c)) =
       ∑ γ, c γ * highFrameFeature x γ := by
@@ -60,5 +63,7 @@ theorem highFramePolynomial_scaled_eval {d D : ℕ} (c : HighFrameIndex d D → 
   congr 1
   rw [Finsupp.prod_fintype _ _ (fun _ => by simp)]
   simp only [polynomial_box_exponent_apply]
+
+end
 
 end NearlyMinimax

@@ -26,8 +26,10 @@ section Cardinal
 
 variable {F : Type*} [Field F] {ι : Type*} [DecidableEq ι]
 
+variable (s : Finset ι) (v : ι → F)
+
 /-- Applying cardinal evaluation weights is evaluation at the chosen point. -/
-theorem cardinal_evaluation_exact (s : Finset ι) (v : ι → F)
+theorem cardinal_evaluation_exact 
     (hv : Set.InjOn v s) (P : F[X]) (hP : P.degree < s.card) (x : F) :
     (∑ i ∈ s, (Lagrange.basis s v i).eval x * P.eval (v i)) = P.eval x := by
   have h := congrArg (fun p : F[X] => p.eval x) (Lagrange.eq_interpolate hv hP)
@@ -35,7 +37,7 @@ theorem cardinal_evaluation_exact (s : Finset ι) (v : ι → F)
     mul_comm] using h.symm
 
 /-- Coefficients of cardinal polynomials extract that coefficient exactly. -/
-theorem cardinal_coefficient_exact (s : Finset ι) (v : ι → F)
+theorem cardinal_coefficient_exact 
     (hv : Set.InjOn v s) (P : F[X]) (hP : P.degree < s.card) (a : ℕ) :
     (∑ i ∈ s, (Lagrange.basis s v i).coeff a * P.eval (v i)) = P.coeff a := by
   have h := congrArg (fun p : F[X] => p.coeff a) (Lagrange.eq_interpolate hv hP)
@@ -43,7 +45,7 @@ theorem cardinal_coefficient_exact (s : Finset ι) (v : ι → F)
   simpa only [mul_comm] using h.symm
 
 /-- Differentiating cardinal interpolation gives the finite derivative rule. -/
-theorem cardinal_derivative_exact (s : Finset ι) (v : ι → F)
+theorem cardinal_derivative_exact 
     (hv : Set.InjOn v s) (P : F[X]) (hP : P.degree < s.card) (x : F) :
     (∑ i ∈ s, (Lagrange.basis s v i).derivative.eval x * P.eval (v i)) =
       P.derivative.eval x := by
@@ -54,7 +56,7 @@ theorem cardinal_derivative_exact (s : Finset ι) (v : ι → F)
   simpa only [mul_comm] using h.symm
 
 /-- The exterior cardinal weight has the product formula in Lemma 3(a). -/
-theorem cardinal_weight_at_zero (s : Finset ι) (v : ι → F) (i : ι) :
+theorem cardinal_weight_at_zero (i : ι) :
     (Lagrange.basis s v i).eval 0 = ∏ j ∈ s.erase i, v j / (v j - v i) := by
   simp only [Lagrange.basis, eval_prod, Lagrange.basisDivisor, eval_mul,
     eval_C, eval_sub, eval_X, zero_sub]
@@ -64,13 +66,13 @@ theorem cardinal_weight_at_zero (s : Finset ι) (v : ι → F) (i : ι) :
   simp [div_eq_mul_inv, mul_comm]
 
 /-- The explicit exterior product rule reproduces every polynomial in its degree range. -/
-theorem exterior_product_rule_exact (s : Finset ι) (v : ι → F)
+theorem exterior_product_rule_exact 
     (hv : Set.InjOn v s) (P : F[X]) (hP : P.degree < s.card) :
     (∑ i ∈ s, (∏ j ∈ s.erase i, v j / (v j - v i)) * P.eval (v i)) = P.eval 0 := by
   simpa only [cardinal_weight_at_zero] using cardinal_evaluation_exact s v hv P hP 0
 
 /-- The coefficient rule has Kronecker monomial moments. -/
-theorem cardinal_coefficient_monomial (s : Finset ι) (v : ι → F)
+theorem cardinal_coefficient_monomial 
     (hv : Set.InjOn v s) (a b : ℕ) (hb : b < s.card) :
     (∑ i ∈ s, (Lagrange.basis s v i).coeff a * (v i) ^ b) =
       if b = a then 1 else 0 := by
@@ -80,11 +82,13 @@ theorem cardinal_coefficient_monomial (s : Finset ι) (v : ι → F)
 
 end Cardinal
 
+variable (q : ℕ)
+
 /-- The fixed scalar-response nodes from Lemma 3(c). -/
-def responseNode (q : ℕ) (j : Fin (2 * q + 2)) : ℝ :=
+def responseNode (j : Fin (2 * q + 2)) : ℝ :=
   (j.val : ℝ) / (2 * q + 1 : ℕ)
 
-theorem responseNode_injective (q : ℕ) : Function.Injective (responseNode q) := by
+theorem responseNode_injective : Function.Injective (responseNode q) := by
   intro i j hij
   have hn : (2 * q + 1 : ℝ) ≠ 0 := by positivity
   have h : (i.val : ℝ) = j.val := by
@@ -93,35 +97,33 @@ theorem responseNode_injective (q : ℕ) : Function.Injective (responseNode q) :
   exact Fin.ext (by exact_mod_cast h)
 
 /-- The scalar-response extraction weights. -/
-def responseWeight (q : ℕ) (j : Fin (2 * q + 2)) : ℝ :=
+def responseWeight (j : Fin (2 * q + 2)) : ℝ :=
   (Lagrange.basis Finset.univ (responseNode q) j).coeff 2
 
 /-- The paper's fixed rule extracts the quadratic coefficient, including zero mass and mean. -/
 theorem response_rule_moments (q a : ℕ) (ha : a ≤ 2 * q + 1) :
     (∑ j : Fin (2 * q + 2), responseWeight q j * (responseNode q j) ^ a) =
-      if a = 2 then 1 else 0 := by
-  exact cardinal_coefficient_monomial Finset.univ (responseNode q)
+      if a = 2 then 1 else 0 := cardinal_coefficient_monomial Finset.univ (responseNode q)
     (responseNode_injective q).injOn 2 a (by simpa using (show a < 2 * q + 2 by omega))
 
 /-- Exactness of the fixed quadratic-extraction rule on every polynomial of the stated degree. -/
-theorem response_rule_exact (q : ℕ) (P : ℝ[X]) (hP : P.degree < 2 * q + 2) :
+theorem response_rule_exact (P : ℝ[X]) (hP : P.degree < 2 * q + 2) :
     (∑ j : Fin (2 * q + 2), responseWeight q j * P.eval (responseNode q j)) =
-      P.coeff 2 := by
-  exact cardinal_coefficient_exact Finset.univ (responseNode q)
+      P.coeff 2 := cardinal_coefficient_exact Finset.univ (responseNode q)
     (responseNode_injective q).injOn P (by simpa using hP) 2
 
 /-- The fixed response rule has zero total mass. -/
-theorem response_zero_mass (q : ℕ) :
+theorem response_zero_mass :
     (∑ j : Fin (2 * q + 2), responseWeight q j) = 0 := by
   simpa using response_rule_moments q 0 (by omega)
 
 /-- The fixed response rule has zero first moment. -/
-theorem response_zero_mean (q : ℕ) :
+theorem response_zero_mean :
     (∑ j : Fin (2 * q + 2), responseWeight q j * responseNode q j) = 0 := by
   simpa using response_rule_moments q 1 (by omega)
 
 /-- When at least three nodes are present, the second moment is one. -/
-theorem response_second_moment (q : ℕ) (hq : 1 ≤ q) :
+theorem response_second_moment (hq : 1 ≤ q) :
     (∑ j : Fin (2 * q + 2), responseWeight q j * responseNode q j ^ 2) = 1 := by
   simpa using response_rule_moments q 2 (by omega)
 
@@ -131,8 +133,7 @@ def fairSign (b : Bool) : ℝ := if b then 1 else -1
 @[simp] theorem fairSign_abs (b : Bool) : |fairSign b| = 1 := by cases b <;> norm_num [fairSign]
 
 private theorem finite_sum_abs_bound {κ : Type*} [Fintype κ] (g b : κ → ℝ)
-    (h : ∀ k, |g k| ≤ b k) : |∑ k, g k| ≤ ∑ k, b k := by
-  exact (Finset.abs_sum_le_sum_abs _ _).trans
+    (h : ∀ k, |g k| ≤ b k) : |∑ k, g k| ≤ ∑ k, b k := (Finset.abs_sum_le_sum_abs _ _).trans
     (Finset.sum_le_sum (fun k hk => h k))
 
 section Covariance
@@ -174,8 +175,10 @@ private theorem sign_second (C a x y u v : ℝ) (hC : C ≠ 0) :
   field_simp
   ring
 
+variable (C : ℝ) (A : ι → ι → ℝ)
+
 /-- The action is additive in the test function. -/
-theorem covarianceAction_add (C : ℝ) (A : ι → ι → ℝ)
+theorem covarianceAction_add 
     (f g : (ι → ℝ) → ℝ) :
     covarianceAction C A (fun x => f x + g x) =
       covarianceAction C A f + covarianceAction C A g := by
@@ -200,21 +203,21 @@ theorem covarianceAction_sum {κ : Type*} (S : Finset κ) (C : ℝ)
       rw [covarianceAction_add, ih]
 
 /-- The covariance rule annihilates constants. -/
-theorem covariance_zero_mass (C : ℝ) (A : ι → ι → ℝ) :
+theorem covariance_zero_mass :
     covarianceAction C A (fun _ => 1) = 0 := by
   simp only [covarianceAction, covarianceWeight, mul_one]
   simp_rw [sign_mass]
   simp
 
 /-- The covariance rule annihilates each coordinate. -/
-theorem covariance_zero_mean (C : ℝ) (A : ι → ι → ℝ) (k : ι) :
+theorem covariance_zero_mean (k : ι) :
     covarianceAction C A (fun x => x k) = 0 := by
   simp only [covarianceAction, covarianceWeight, covarianceAtom]
   simp_rw [sign_mean]
   simp
 
 /-- Without a symmetry assumption the second moment is the matrix's symmetric part. -/
-theorem covariance_second_moment (C : ℝ) (A : ι → ι → ℝ) (hC : C ≠ 0) (k l : ι) :
+theorem covariance_second_moment (hC : C ≠ 0) (k l : ι) :
     covarianceAction C A (fun x => x k * x l) = (A k l + A l k) / 2 := by
   simp only [covarianceAction, covarianceWeight, covarianceAtom]
   simp_rw [sign_second C _ _ _ _ _ hC]
@@ -222,14 +225,14 @@ theorem covariance_second_moment (C : ℝ) (A : ι → ι → ℝ) (hC : C ≠ 0
   ring
 
 /-- For symmetric matrices the covariance rule has precisely the prescribed second moment. -/
-theorem covariance_second_moment_symmetric (C : ℝ) (A : ι → ι → ℝ)
+theorem covariance_second_moment_symmetric 
     (hC : C ≠ 0) (hA : ∀ i j, A i j = A j i) (k l : ι) :
     covarianceAction C A (fun x => x k * x l) = A k l := by
   rw [covariance_second_moment C A hC, hA l k]
   ring
 
 /-- Each atom lies in the coefficient ball of radius `1/C`. -/
-theorem covarianceAtom_mem_ball (C : ℝ) (hC : 0 < C) (i j : ι) (s t : Bool) :
+theorem covarianceAtom_mem_ball (hC : 0 < C) (i j : ι) (s t : Bool) :
     (∑ k, |covarianceAtom C i j s t k|) ≤ C⁻¹ := by
   have hden : 0 < 2 * C := by positivity
   calc
@@ -248,7 +251,7 @@ theorem covarianceAtom_mem_ball (C : ℝ) (hC : 0 < C) (i j : ι) (s t : Bool) :
       ring
 
 /-- The sum of absolute atom weights is the variation bound in the paper. -/
-theorem covariance_weight_variation (C : ℝ) (A : ι → ι → ℝ) :
+theorem covariance_weight_variation :
     (∑ i, ∑ j, ∑ s : Bool, ∑ t : Bool, |covarianceWeight C A i j s t|) =
       2 * C ^ 2 * ∑ i, ∑ j, |A i j| := by
   have hw (i j : ι) (s t : Bool) : |covarianceWeight C A i j s t| = C ^ 2 / 2 * |A i j| := by

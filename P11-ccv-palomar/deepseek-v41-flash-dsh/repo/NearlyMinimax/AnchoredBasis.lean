@@ -11,9 +11,11 @@ open MvPolynomial Matrix
 open scoped BigOperators
 namespace NearlyMinimax
 
+variable {d ℓ : ℕ} (a : Covariate d) (h : ℝ) (P : MvPolynomial (Fin d) ℝ)
+
 /-- A bounded-degree polynomial with zero constant coefficient uses precisely
 our concrete nonconstant monomial coordinates. -/
-theorem polynomial_as_anchored_sum {d ℓ : ℕ} (P : MvPolynomial (Fin d) ℝ)
+theorem polynomial_as_anchored_sum (P : MvPolynomial (Fin d) ℝ)
     (hP : P.totalDegree ≤ ℓ) (hzero : P.coeff 0 = 0) :
     P = anchoredPolynomial (fun γ : AnchoredIndex d ℓ => P.coeff (anchoredExponent γ)) := by
   classical
@@ -59,14 +61,14 @@ def affinePullbackPolynomial {d : ℕ} (ℓ : ℕ) (a : Covariate d) (h : ℝ)
   ∑ γ : PolynomialBox d ℓ, C (P.coeff (polynomialBoxExponent γ)) *
     ∏ i, (C (a i) + C h * X i) ^ (γ i).val
 
-theorem affinePullbackPolynomial_eval {d ℓ : ℕ} (a : Covariate d) (h : ℝ)
-    (P : MvPolynomial (Fin d) ℝ) (hP : P.totalDegree ≤ ℓ) (v : Covariate d) :
+theorem affinePullbackPolynomial_eval 
+    (hP : P.totalDegree ≤ ℓ) (v : Covariate d) :
     eval v (affinePullbackPolynomial ℓ a h P) = eval (fun i => a i + h * v i) P := by
   rw [polynomial_box_evaluation P hP]
   simp only [affinePullbackPolynomial, map_sum, map_mul, map_prod, map_pow, map_add,
     eval_C, eval_X]
 
-theorem affinePullbackPolynomial_degree {d ℓ : ℕ} (a : Covariate d) (h : ℝ)
+theorem affinePullbackPolynomial_degree 
     (P : MvPolynomial (Fin d) ℝ) (hP : P.totalDegree ≤ ℓ) :
     (affinePullbackPolynomial ℓ a h P).totalDegree ≤ ℓ := by
   unfold affinePullbackPolynomial
@@ -91,12 +93,12 @@ theorem affinePullbackPolynomial_degree {d ℓ : ℕ} (a : Covariate d) (h : ℝ
 
 /-- Every polynomial of the correct degree vanishing at its anchor has an
 exact centered monomial representation on all of the ambient space. -/
-theorem polynomial_centered_representation {d ℓ : ℕ} (u : Covariate d)
+theorem polynomial_centered_representation (u : Covariate d)
     (P : MvPolynomial (Fin d) ℝ) (hP : P.totalDegree ≤ ℓ) (hu : eval u P = 0) :
     ∃ c : AnchoredIndex d ℓ → ℝ, ∀ z : Covariate d,
       eval z P = ∑ γ, c γ * anchoredFeature u z γ := by
   let Q := affinePullbackPolynomial ℓ u 1 P
-  have hQ : Q.totalDegree ≤ ℓ := affinePullbackPolynomial_degree u 1 P hP
+  have hQ := affinePullbackPolynomial_degree u 1 P hP
   have hQ0 : Q.coeff 0 = 0 := by
     rw [← constantCoeff_eq, ← eval_zero]
     have he := affinePullbackPolynomial_eval u 1 P hP 0

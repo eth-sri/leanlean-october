@@ -9,7 +9,6 @@ noncomputable section
 open MeasureTheory ProbabilityTheory
 open scoped BigOperators
 namespace NearlyMinimax.PairUStatistic
-set_option backward.isDefEq.respectTransparency false
 
 variable {P Ω E : Type*} [MeasurableSpace P] [MeasurableSpace Ω] [MeasurableSpace E]
 variable {π : Measure P} {ν : Measure Ω} {μ : Measure E}
@@ -34,10 +33,9 @@ theorem fieldPairAverage_memLp {n : ℕ} (weight : ℝ) {G : P → E × E → �
   apply MemLp.const_mul
   apply memLp_finsetSum
   intro p hp
-  have hij := (Finset.mem_filter.mp hp).2
   have hm : MeasurePreserving (fun z : P × Ω => (z.1, (X p.1 z.2, X p.2 z.2)))
       (π.prod ν) (π.prod (μ.prod μ)) :=
-    (MeasurePreserving.id π).prod (pair_measurePreserving X hind hX hij)
+    (MeasurePreserving.id π).prod (pair_measurePreserving X hind hX ((Finset.mem_filter.mp hp).2))
   exact (fieldWeightedSymmetrization_memLp weight hG).comp_measurePreserving hm
 
 end NearlyMinimax.PairUStatistic

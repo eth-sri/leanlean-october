@@ -9,10 +9,10 @@ public import NearlyMinimax.UniformInverseDerivatives
 
 noncomputable section
 namespace NearlyMinimax
+
 open Polynomial
 open scoped BigOperators Matrix.Norms.L2Operator
 open RoughRegime.Upper RoughRegime.MatrixDeterminant
-
 section Similarity
 variable {n : Type*} [Fintype n] [DecidableEq n] [Nonempty n]
 
@@ -24,7 +24,9 @@ def complexMatrixSimilarity (Q : (Matrix n n ℂ)ˣ) : Matrix n n ℂ →ₐ[ℝ
   map_add' A B := by simp [Matrix.mul_add, Matrix.add_mul]
   commutes' c := by rw [Algebra.algebraMap_eq_smul_one]; simp
 
-theorem complexMatrixSimilarity_norm_le (Q : (Matrix n n ℂ)ˣ) (A : Matrix n n ℂ) :
+variable (Q : (Matrix n n ℂ)ˣ) (A : Matrix n n ℂ)
+
+theorem complexMatrixSimilarity_norm_le :
     ‖complexMatrixSimilarity Q A‖ ≤ ‖(Q : Matrix n n ℂ)‖ * ‖(↑Q⁻¹ : Matrix n n ℂ)‖ * ‖A‖ := by
   calc
     _ ≤ ‖(Q : Matrix n n ℂ) * A‖ * ‖(↑Q⁻¹ : Matrix n n ℂ)‖ := norm_mul_le _ _
@@ -32,16 +34,19 @@ theorem complexMatrixSimilarity_norm_le (Q : (Matrix n n ℂ)ˣ) (A : Matrix n n
       mul_le_mul_of_nonneg_right (norm_mul_le _ _) (norm_nonneg _)
     _ = _ := by ring
 
-@[simp] theorem complexMatrixSimilarity_inverse (Q : (Matrix n n ℂ)ˣ) (A : Matrix n n ℂ) :
+@[simp] theorem complexMatrixSimilarity_inverse :
     complexMatrixSimilarity Q (complexMatrixSimilarity Q⁻¹ A) = A := by
   simp [complexMatrixSimilarity, Matrix.mul_assoc]
 
-theorem normalizeMatrix_similarity (lo hi : ℝ) (Q : (Matrix n n ℂ)ˣ) (A : Matrix n n ℂ) :
+section
+variable (lo hi : ℝ)
+
+theorem normalizeMatrix_similarity (Q : (Matrix n n ℂ)ˣ) (A : Matrix n n ℂ) :
     normalizeMatrix lo hi (complexMatrixSimilarity Q A) =
       complexMatrixSimilarity Q (normalizeMatrix lo hi A) := by
   simp [normalizeMatrix, map_sub, map_smul]
 
-theorem similar_complex_kernel_coefficient_bound (lo hi : ℝ) (hlo : 0 < lo) (hlt : lo < hi)
+theorem similar_complex_kernel_coefficient_bound (hlo : 0 < lo) (hlt : lo < hi)
     (A B : Matrix n n ℂ) (Q : (Matrix n n ℂ)ˣ) (χ : ℝ) (hχ : 0 ≤ χ)
     (hQ : ‖(Q : Matrix n n ℂ)‖ * ‖(↑Q⁻¹ : Matrix n n ℂ)‖ ≤ χ)
     (hA : (complexMatrixSimilarity Q⁻¹ A).IsHermitian)
@@ -71,6 +76,8 @@ theorem similar_complex_kernel_coefficient_bound (lo hi : ℝ) (hlo : 0 < lo) (h
     _ ≤ χ * (4 * (intervalRho lo hi / η) ^ k) := mul_le_mul hQ hc (norm_nonneg _) hχ
     _ = _ := by ring
 
+end
+
 end Similarity
 
 section RealCharts
@@ -94,20 +101,22 @@ theorem complexify_matrix_norm (A : Matrix n n ℝ) : ‖A.map Complex.ofReal‖
 def complexifyMatrixUnit (Q : (Matrix n n ℝ)ˣ) : (Matrix n n ℂ)ˣ :=
   Units.map Complex.ofRealHom.mapMatrix.toMonoidHom Q
 
-@[simp] theorem complexifyMatrixUnit_coe (Q : (Matrix n n ℝ)ˣ) :
+variable (Q : (Matrix n n ℝ)ˣ)
+
+@[simp] theorem complexifyMatrixUnit_coe :
     (complexifyMatrixUnit Q : Matrix n n ℂ) = (Q : Matrix n n ℝ).map Complex.ofReal := rfl
 
-@[simp] theorem complexifyMatrixUnit_inv (Q : (Matrix n n ℝ)ˣ) :
+@[simp] theorem complexifyMatrixUnit_inv :
     complexifyMatrixUnit Q⁻¹ = (complexifyMatrixUnit Q)⁻¹ := by
   rfl
 
-theorem complexifyMatrixUnit_condition (Q : (Matrix n n ℝ)ˣ) :
+theorem complexifyMatrixUnit_condition :
     ‖(complexifyMatrixUnit Q : Matrix n n ℂ)‖ * ‖(↑(complexifyMatrixUnit Q)⁻¹ : Matrix n n ℂ)‖ =
       ‖(Q : Matrix n n ℝ)‖ * ‖(↑Q⁻¹ : Matrix n n ℝ)‖ := by
   rw [← complexifyMatrixUnit_inv, complexifyMatrixUnit_coe, complexifyMatrixUnit_coe,
     complexify_matrix_norm, complexify_matrix_norm]
 
-theorem complexify_matrix_similarity (Q : (Matrix n n ℝ)ˣ) (A : Matrix n n ℝ) :
+theorem complexify_matrix_similarity (A : Matrix n n ℝ) :
     complexMatrixSimilarity (complexifyMatrixUnit Q) (A.map Complex.ofReal) =
       (matrixSimilarity Q A).map Complex.ofReal := by
   change _ * _ * _ = ((Q : Matrix n n ℝ) * A * (↑Q⁻¹ : Matrix n n ℝ)).map Complex.ofReal
@@ -127,7 +136,9 @@ def similarInverseCoordinateRadius (lo hi η χ : ℝ) : ℝ :=
     (χ * max 1 (|(intervalHalfWidth lo hi)⁻¹| *
       (‖currentCoordinateCLM r‖ + ‖parentCoordinateCLM r‖))))
 
-theorem similarInverseCoordinateRadius_pos (lo hi η χ : ℝ)
+variable (lo hi η χ : ℝ)
+
+theorem similarInverseCoordinateRadius_pos 
     (hη : 0 < η) (hη1 : η < 1) (hχ : 0 < χ) :
     0 < similarInverseCoordinateRadius r lo hi η χ := by
   have hK := perturbationConstant_pos η hη hη1
@@ -137,7 +148,7 @@ theorem similarInverseCoordinateRadius_pos (lo hi η χ : ℝ)
   apply mul_pos hχ
   exact (zero_lt_one : (0 : ℝ) < 1).trans_le (le_max_left _ _)
 
-theorem coordinate_similar_perturbation (lo hi η χ : ℝ) (hχ : 0 < χ)
+theorem coordinate_similar_perturbation (hχ : 0 < χ)
     (z z₀ : incrementVariables r → ℂ)
     (hz : ‖z - z₀‖ < similarInverseCoordinateRadius r lo hi η χ)
     (F : (incrementVariables r → ℂ) →L[ℂ] Matrix (Fin r) (Fin r) ℂ)
@@ -285,9 +296,11 @@ private theorem norm_reindex_le {V W : Type*} [Fintype V] [Fintype W]
   intro j
   exact norm_le_pi_norm z (f j)
 
+variable (lo hi : ℝ)
+
 /-- All positive-order real derivatives of the actual free-moment increment obey a
 single factorial bound, uniformly in truncation degree, bounded response, and center. -/
-theorem actual_similar_increment_derivative_bound (lo hi : ℝ) (hlo : 0 < lo) (hlt : lo < hi)
+theorem actual_similar_increment_derivative_bound (hlo : 0 < lo) (hlt : lo < hi)
     (η : ℝ) (hρη : intervalRho lo hi < η) (hη1 : η < 1)
     (χ : ℝ) (hχ : 0 < χ) (L Y : ℝ) (hL : 0 ≤ L) (hY : 0 ≤ Y)
     (T : Matrix (Fin r) (Fin r) ℝ) (y : ℝ) (hy : |y| ≤ Y)
@@ -327,7 +340,7 @@ theorem actual_similar_increment_derivative_bound (lo hi : ℝ) (hlo : 0 < lo) (
   exact (norm_reindex_le _ _).trans_lt hz
 
 /-- The zeroth-order endpoint uses the same envelope as every derivative order. -/
-theorem actual_similar_increment_order_zero_bound (lo hi : ℝ) (hlo : 0 < lo) (hlt : lo < hi)
+theorem actual_similar_increment_order_zero_bound (hlo : 0 < lo) (hlt : lo < hi)
     (η : ℝ) (hρη : intervalRho lo hi < η) (hη1 : η < 1)
     (χ : ℝ) (hχ : 0 < χ) (L Y : ℝ) (hL : 0 ≤ L) (hY : 0 ≤ Y)
     (T : Matrix (Fin r) (Fin r) ℝ) (y : ℝ) (hy : |y| ≤ Y)
@@ -395,9 +408,11 @@ theorem similarIncrementEnvelope_nonneg (lo hi q χ L Y : ℝ)
     (polynomialCoordinateBound_nonneg _ _ (by positivity))
     (mul_nonneg hY (polynomialCoordinateBound_nonneg _ _ (by positivity))))
 
+variable (lo hi : ℝ)
+
 /-- The complete U5 analytic input: every order, the actual complexified polynomials,
 and constants independent of truncation degree and the admissible center. -/
-theorem paper_inverse_derivative_bound (lo hi : ℝ) (hlo : 0 < lo) (hlt : lo < hi)
+theorem paper_inverse_derivative_bound (hlo : 0 < lo) (hlt : lo < hi)
     (η : ℝ) (hρη : intervalRho lo hi < η) (hη1 : η < 1)
     (χ : ℝ) (hχ : 0 < χ) (L Y : ℝ) (hL : 0 ≤ L) (hY : 0 ≤ Y)
     (T : Matrix (Fin r) (Fin r) ℝ) (y : ℝ) (hy : |y| ≤ Y)
@@ -454,12 +469,12 @@ def incrementFinVector (lo hi : ℝ) (T : Matrix (Fin r) (Fin r) ℝ) (y : ℝ) 
     (Fin (Fintype.card (incrementVariables r)) → ℝ) → Fin r → ℝ :=
   fun x i => MvPolynomial.eval x (incrementFinPolynomial r lo hi T y m i)
 
-theorem incrementFinVector_contDiff (lo hi : ℝ) (T : Matrix (Fin r) (Fin r) ℝ) (y : ℝ) (m : ℕ) :
+theorem incrementFinVector_contDiff (T : Matrix (Fin r) (Fin r) ℝ) (y : ℝ) (m : ℕ) :
     ContDiff ℝ ⊤ (incrementFinVector r lo hi T y m) :=
   contDiff_pi.mpr (fun i => RoughRegime.PolynomialDerivatives.polynomial_contDiff _)
 
 /-- Vector-valued derivative endpoint in the fixed finite-coordinate norm. -/
-theorem paper_inverse_vector_derivative_bound (lo hi : ℝ) (hlo : 0 < lo) (hlt : lo < hi)
+theorem paper_inverse_vector_derivative_bound (hlo : 0 < lo) (hlt : lo < hi)
     (η : ℝ) (hρη : intervalRho lo hi < η) (hη1 : η < 1)
     (χ : ℝ) (hχ : 0 < χ) (L Y : ℝ) (hL : 0 ≤ L) (hY : 0 ≤ Y)
     (T : Matrix (Fin r) (Fin r) ℝ) (y : ℝ) (hy : |y| ≤ Y)

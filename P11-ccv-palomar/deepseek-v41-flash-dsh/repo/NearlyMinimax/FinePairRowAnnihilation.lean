@@ -11,8 +11,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 800000
 
 theorem finite_response_density_zero {I J : Type*} [Fintype I] [Fintype J]
     (w : I → ℝ) (v : J → ℝ) (hv : ∑ j, v j = 0) (F : I → ℝ) :
@@ -27,8 +25,11 @@ section Generic
 variable {Z ι : Type*} [MeasurableSpace Z] [Fintype ι] [DecidableEq ι]
   [MeasurableSpace ι] [MeasurableSingletonClass ι]
 
-theorem highPacketAbsoluteLaw_density_observable_zero (σ : Measure Z) [IsFiniteMeasure σ]
-    (a b : ℝ) (m r D q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
+section
+variable (σ : Measure Z) [IsFiniteMeasure σ] (a b : ℝ)
+
+theorem highPacketAbsoluteLaw_density_observable_zero 
+    (m r D q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
     (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) (hcost : Integrable (separatedMatrixCost A) σ)
     (hpos : 0 < highPacketMarkMass σ a b m r D q C A)
     (F : Z × HighDensityMarkIndex m r D → ℝ) (hF : Measurable F)
@@ -53,8 +54,8 @@ theorem highPacketAbsoluteLaw_density_observable_zero (σ : Measure Z) [IsFinite
       (highResponseMarkWeight C q (A ζ)) hz (fun h => F (ζ,h))
   simp only [he, integral_zero]
 
-theorem finePairPacketAbsoluteLaw_density_observable_zero (σ : Measure Z) [IsFiniteMeasure σ]
-    (a b : ℝ) (M q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
+theorem finePairPacketAbsoluteLaw_density_observable_zero 
+    (M q : ℕ) (C : ℝ) (A : Z → ι → ι → ℝ)
     (hA : ∀ i j, Measurable (fun ζ => A ζ i j)) (hcost : Integrable (separatedMatrixCost A) σ)
     (hpos : 0 < finePairPacketMarkMass σ a b M q C A)
     (F : Z × FinePairDensityIndex M → ℝ) (hF : Measurable F)
@@ -78,6 +79,8 @@ theorem finePairPacketAbsoluteLaw_density_observable_zero (σ : Measure Z) [IsFi
     exact finite_response_density_zero (finePairDensityWeight a b M)
       (highResponseMarkWeight C q (A ζ)) hz (fun h => F (ζ,h))
   simp only [he, integral_zero]
+
+end
 
 end Generic
 end NearlyMinimax

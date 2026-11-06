@@ -10,8 +10,6 @@ public import NearlyMinimax.HighObservableRegularity
 noncomputable section
 open MeasureTheory ProbabilityTheory Filter Set
 namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 variable {Ω : Type*} [MeasurableSpace Ω]
 
 theorem highRawObservable_lipschitzOn {d : ℕ} (n : ℕ) (a v η T P B : ℝ)

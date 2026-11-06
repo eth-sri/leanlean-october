@@ -10,7 +10,6 @@ public import NearlyMinimax.ObservationMoments
 noncomputable section
 open MeasureTheory
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
 
 theorem observationPair_integral_conditioning {d : ℕ} (C : ModelConstants d)
     (θ : RegressionParameter d) (hθ : Admissible C θ)

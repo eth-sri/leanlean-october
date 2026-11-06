@@ -13,10 +13,10 @@ noncomputable section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal BigOperators
 namespace NearlyMinimax
-set_option maxHeartbeats 800000
-set_option backward.isDefEq.respectTransparency false
 
-theorem highRawDensity_integrable_of_interval {d : ℕ} (p : Covariate d → ℝ)
+variable {d : ℕ} (p : Covariate d → ℝ)
+
+theorem highRawDensity_integrable_of_interval 
     (hp : Measurable p) (a b : ℝ) (ha : 0 < a)
     (hb : ∀ᵐ x ∂cubeVolume d, a ≤ p x ∧ p x ≤ b) :
     Integrable p (cubeVolume d) := by
@@ -26,7 +26,7 @@ theorem highRawDensity_integrable_of_interval {d : ℕ} (p : Covariate d → ℝ
   rw [Real.norm_eq_abs, abs_of_nonneg (ha.le.trans hx.1)]
   exact hx.2
 
-theorem highRawDensityMass_mem_Icc {d : ℕ} (p : Covariate d → ℝ)
+theorem highRawDensityMass_mem_Icc 
     (hp : Measurable p) (a b : ℝ) (ha : 0 < a)
     (hb : ∀ᵐ x ∂cubeVolume d, a ≤ p x ∧ p x ≤ b) :
     highRawDensityMass p ∈ Icc a b := by
@@ -38,21 +38,19 @@ theorem highRawDensityMass_mem_Icc {d : ℕ} (p : Covariate d → ℝ)
   · simpa [highRawDensityMass] using
       integral_mono_ae hi (integrable_const b) (hb.mono fun x hx => hx.2)
 
-theorem normalizedDensityTernaryParameter_design_probability {d : ℕ}
-    (p : Covariate d → ℝ) (hp : Measurable p) (a b : ℝ) (ha : 0 < a)
+theorem normalizedDensityTernaryParameter_design_probability 
+    (hp : Measurable p) (a b : ℝ) (ha : 0 < a)
     (hb : ∀ᵐ x ∂cubeVolume d, a ≤ p x ∧ p x ≤ b) :
     IsProbabilityMeasure ((cubeVolume d).withDensity
       (fun x => ENNReal.ofReal (highNormalizedDensity p x))) := by
   let _ := cubeVolume_isProbability d
-  have hi := highRawDensity_integrable_of_interval p hp a b ha hb
-  have hm := highRawDensityMass_mem_Icc p hp a b ha hb
   constructor
   rw [withDensity_apply _ MeasurableSet.univ]
-  simpa using highNormalizedDensity_normalized p hi
-    (hb.mono fun x hx => ha.le.trans hx.1) (ha.trans_le hm.1)
+  simpa using highNormalizedDensity_normalized p (highRawDensity_integrable_of_interval p hp a b ha hb)
+    (hb.mono fun x hx => ha.le.trans hx.1) (ha.trans_le (highRawDensityMass_mem_Icc p hp a b ha hb).1)
 
-theorem normalizedDensityTernaryParameter_observation_index_map {d : ℕ}
-    (p : Covariate d → ℝ) (hdesign : IsProbabilityMeasure ((cubeVolume d).withDensity (fun x => ENNReal.ofReal (highNormalizedDensity p x))))
+theorem normalizedDensityTernaryParameter_observation_index_map 
+    (hdesign : IsProbabilityMeasure ((cubeVolume d).withDensity (fun x => ENNReal.ofReal (highNormalizedDensity p x))))
     (a V : ℝ) (F : Covariate d → ℝ) (hF : Measurable F) (ha : a ≠ 0)
     (hp : ∀ x y, 0 ≤ ternaryMass a (F x) V y) :
     (((cubeVolume d).withDensity (fun x => ENNReal.ofReal (highNormalizedDensity p x))).compProd (responseIndexKernel a V F hF)).map
@@ -90,8 +88,8 @@ theorem normalizedDensityTernaryParameter_observation_index_map {d : ℕ}
   have he : F x + (ternaryValue a y - F x) = ternaryValue a y := by ring
   by_cases h : (x, ternaryValue a y) ∈ s <;> simp [Set.indicator, he, h]
 
-theorem normalizedDensityTernaryParameter_sample_index_map {d : ℕ}
-    (p : Covariate d → ℝ) (hdesign : IsProbabilityMeasure ((cubeVolume d).withDensity (fun x => ENNReal.ofReal (highNormalizedDensity p x))))
+theorem normalizedDensityTernaryParameter_sample_index_map 
+    (hdesign : IsProbabilityMeasure ((cubeVolume d).withDensity (fun x => ENNReal.ofReal (highNormalizedDensity p x))))
     (n : ℕ) (a V : ℝ) (F : Covariate d → ℝ) (hF : Measurable F) (ha : a ≠ 0)
     (hp : ∀ x y, 0 ≤ ternaryMass a (F x) V y) :
     ((Measure.pi (fun _ : Fin n => (cubeVolume d).withDensity (fun x => ENNReal.ofReal (highNormalizedDensity p x)))).compProd
@@ -174,13 +172,16 @@ theorem probability_pi_withDensity {α : Type*} [MeasurableSpace α]
     rw [lintegral_indicator (hs i), withDensity_apply f (hs i)]
   · exact MeasurableSet.univ_pi hs
 
-def highSampleLikelihood {d : ℕ} (n : ℕ) (a V : ℝ)
+section
+variable (n : ℕ)
+
+def highSampleLikelihood (a V : ℝ)
     (p F : Covariate d → ℝ) (z : (Fin n → Covariate d) × (Fin n → Fin 3)) : ℝ :=
   (∏ i, p (z.1 i)) / highRawDensityMass p ^ n *
     ∏ i, ternaryMass a (F (z.1 i)) V (z.2 i)
 
 /-- Exact iid sample density with the raw mass raised to the sample size. -/
-theorem highSample_index_density {d : ℕ} (n : ℕ) (p F : Covariate d → ℝ)
+theorem highSample_index_density (p F : Covariate d → ℝ)
     (hp : Measurable p) (hF : Measurable F) (a V : ℝ)
     (hdesign : IsProbabilityMeasure ((cubeVolume d).withDensity
       (fun x => ENNReal.ofReal (highNormalizedDensity p x))))
@@ -222,5 +223,7 @@ theorem highSample_index_density {d : ℕ} (n : ℕ) (p F : Covariate d → ℝ)
     ← ENNReal.ofReal_mul (Finset.prod_nonneg (fun i _ => hpn i))]
   congr 1
   simp [highSampleLikelihood, highNormalizedDensity, Finset.prod_div_distrib]
+
+end
 
 end NearlyMinimax

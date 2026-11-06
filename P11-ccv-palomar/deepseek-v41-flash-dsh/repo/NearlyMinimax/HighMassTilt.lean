@@ -11,7 +11,6 @@ open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal BigOperators
 namespace NearlyMinimax
 set_option maxHeartbeats 800000
-set_option backward.isDefEq.respectTransparency false
 variable {Ω : Type*} [MeasurableSpace Ω]
 
 def massPowerNormalizer (μ : Measure Ω) (m : Ω → ℝ) (n : ℕ) : ℝ :=
@@ -20,8 +19,11 @@ def massPowerNormalizer (μ : Measure Ω) (m : Ω → ℝ) (n : ℕ) : ℝ :=
 def massPowerTilt (μ : Measure Ω) (m : Ω → ℝ) (n : ℕ) : Measure Ω :=
   μ.withDensity (fun ω => ENNReal.ofReal (m ω ^ n / massPowerNormalizer μ m n))
 
-theorem massPower_integrable (μ : Measure Ω) [IsProbabilityMeasure μ]
-    (m : Ω → ℝ) (hm : Measurable m) (n : ℕ) (a b : ℝ) (ha : 0 < a)
+section
+variable (μ : Measure Ω) [IsProbabilityMeasure μ] (m : Ω → ℝ)
+
+theorem massPower_integrable 
+    (hm : Measurable m) (n : ℕ) (a b : ℝ) (ha : 0 < a)
     (hbound : ∀ ω, a ≤ m ω ∧ m ω ≤ b) : Integrable (fun ω => m ω ^ n) μ := by
   apply (integrable_const (b ^ n)).mono' (hm.pow_const n).aestronglyMeasurable
   apply Filter.Eventually.of_forall
@@ -29,8 +31,8 @@ theorem massPower_integrable (μ : Measure Ω) [IsProbabilityMeasure μ]
   rw [Real.norm_eq_abs, abs_of_nonneg (pow_nonneg (ha.le.trans (hbound ω).1) n)]
   exact pow_le_pow_left₀ (ha.le.trans (hbound ω).1) (hbound ω).2 n
 
-theorem massPowerNormalizer_mem_Icc (μ : Measure Ω) [IsProbabilityMeasure μ]
-    (m : Ω → ℝ) (hm : Measurable m) (n : ℕ) (a b : ℝ) (ha : 0 < a)
+theorem massPowerNormalizer_mem_Icc 
+    (hm : Measurable m) (n : ℕ) (a b : ℝ) (ha : 0 < a)
     (hbound : ∀ ω, a ≤ m ω ∧ m ω ≤ b) :
     massPowerNormalizer μ m n ∈ Icc (a ^ n) (b ^ n) := by
   have hi := massPower_integrable μ m hm n a b ha hbound
@@ -41,13 +43,13 @@ theorem massPowerNormalizer_mem_Icc (μ : Measure Ω) [IsProbabilityMeasure μ]
       (Filter.Eventually.of_forall (fun ω =>
         pow_le_pow_left₀ (ha.le.trans (hbound ω).1) (hbound ω).2 n))
 
-theorem massPowerNormalizer_pos (μ : Measure Ω) [IsProbabilityMeasure μ]
-    (m : Ω → ℝ) (hm : Measurable m) (n : ℕ) (a b : ℝ) (ha : 0 < a)
+theorem massPowerNormalizer_pos 
+    (hm : Measurable m) (n : ℕ) (a b : ℝ) (ha : 0 < a)
     (hbound : ∀ ω, a ≤ m ω ∧ m ω ≤ b) : 0 < massPowerNormalizer μ m n :=
   (pow_pos ha n).trans_le (massPowerNormalizer_mem_Icc μ m hm n a b ha hbound).1
 
-theorem massPowerTilt_isProbability (μ : Measure Ω) [IsProbabilityMeasure μ]
-    (m : Ω → ℝ) (hm : Measurable m) (n : ℕ) (a b : ℝ) (ha : 0 < a)
+theorem massPowerTilt_isProbability 
+    (hm : Measurable m) (n : ℕ) (a b : ℝ) (ha : 0 < a)
     (hbound : ∀ ω, a ≤ m ω ∧ m ω ≤ b) : IsProbabilityMeasure (massPowerTilt μ m n) := by
   have hi := massPower_integrable μ m hm n a b ha hbound
   have hG := massPowerNormalizer_pos μ m hm n a b ha hbound
@@ -59,6 +61,8 @@ theorem massPowerTilt_isProbability (μ : Measure Ω) [IsProbabilityMeasure μ]
       div_nonneg (pow_nonneg (ha.le.trans (hbound ω).1) n) hG.le)), integral_div]
   change ENNReal.ofReal (massPowerNormalizer μ m n / massPowerNormalizer μ m n) = 1
   rw [div_self hG.ne', ENNReal.ofReal_one]
+
+end
 
 /-- Equality of actual mass laws makes the power normalizer time independent. -/
 theorem massPowerNormalizer_eq_of_massLaw (μ ν : Measure Ω) (m : Ω → ℝ)
@@ -98,12 +102,14 @@ theorem massPowerTilt_massLaw_eq (μ ν : Measure Ω) (m : Ω → ℝ)
     ENNReal.measurable_ofReal.comp ((measurable_id.pow_const n).div_const _)
   rw [map_withDensity_pullback μ m hm _ hf, map_withDensity_pullback ν m hm _ hf, hlaw]
 
+variable {d : ℕ} (n : ℕ) (a V : ℝ) (p F : Covariate d → ℝ)
+
 /-- The unnormalized product likelihood appearing in the weak generator. -/
-def highRawSampleLikelihood {d : ℕ} (n : ℕ) (a V : ℝ)
+def highRawSampleLikelihood (a V : ℝ)
     (p F : Covariate d → ℝ) (z : (Fin n → Covariate d) × (Fin n → Fin 3)) : ℝ :=
   ∏ i, p (z.1 i) * ternaryMass a (F (z.1 i)) V (z.2 i)
 
-theorem highRawSampleLikelihood_joint_measurable {d : ℕ} (n : ℕ) (a V : ℝ)
+theorem highRawSampleLikelihood_joint_measurable 
     (p F : Ω → Covariate d → ℝ) (hp : Measurable (Function.uncurry p))
     (hF : Measurable (Function.uncurry F)) :
     Measurable (fun z : Ω × ((Fin n → Covariate d) × (Fin n → Fin 3)) =>
@@ -117,15 +123,15 @@ theorem highRawSampleLikelihood_joint_measurable {d : ℕ} (n : ℕ) (a V : ℝ)
   exact Finset.measurable_prod _ (fun i _ => (hp.comp (hx i)).mul
     ((ternaryMass_joint_measurable a V (Function.uncurry F) hF).comp ((hx i).prodMk (hy i))))
 
-theorem highSampleLikelihood_mass_cancellation {d : ℕ} (n : ℕ) (a V : ℝ)
-    (p F : Covariate d → ℝ) (hm : highRawDensityMass p ≠ 0)
+theorem highSampleLikelihood_mass_cancellation 
+    (hm : highRawDensityMass p ≠ 0)
     (z : (Fin n → Covariate d) × (Fin n → Fin 3)) :
     highRawDensityMass p ^ n * highSampleLikelihood n a V p F z =
       highRawSampleLikelihood n a V p F z := by
   simp only [highSampleLikelihood, highRawSampleLikelihood, Finset.prod_mul_distrib]
   field_simp
 
-instance highSampleIndexKernel_isSFinite {d : ℕ} (n : ℕ) (a V : ℝ)
+instance highSampleIndexKernel_isSFinite 
     (p F : Ω → Covariate d → ℝ) (hp : Measurable (Function.uncurry p))
     (hF : Measurable (Function.uncurry F)) : IsSFiniteKernel (highSampleIndexKernel n a V p F hp hF) := by
   change IsSFiniteKernel ((Kernel.const Ω (highSampleReference d n)).withDensity
@@ -134,7 +140,7 @@ instance highSampleIndexKernel_isSFinite {d : ℕ} (n : ℕ) (a V : ℝ)
 
 /-- The actual tilted-prior/sample measure has the raw product likelihood
  divided only by the prior normalizer. -/
-theorem massPowerTilt_highSample_compProd {d : ℕ} (ν : Measure Ω) [IsProbabilityMeasure ν]
+theorem massPowerTilt_highSample_compProd (ν : Measure Ω) [IsProbabilityMeasure ν]
     (n : ℕ) (a V : ℝ) (p F : Ω → Covariate d → ℝ)
     (hp : Measurable (Function.uncurry p)) (hF : Measurable (Function.uncurry F))
     (aRaw bRaw : ℝ) (haRaw : 0 < aRaw)

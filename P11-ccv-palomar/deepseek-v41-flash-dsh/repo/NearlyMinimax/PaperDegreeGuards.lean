@@ -13,22 +13,25 @@ noncomputable section
 open Filter MeasureTheory
 open scoped BigOperators
 namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 
-theorem paperPolynomialDimension_eq_anchoredDimension_add_one {d : ℕ} (C : ModelConstants d) :
+variable {d : ℕ} (C : ModelConstants d)
+
+theorem paperPolynomialDimension_eq_anchoredDimension_add_one :
     paperPolynomialDimension C = anchoredDimension d C.order + 1 := by
   unfold paperPolynomialDimension anchoredDimension
   rw [anchoredIndex_card]
   have hp : 0 < (d + C.order).choose d := Nat.choose_pos (by omega)
   omega
 
-def paperDyadicTotalDegree {d : ℕ} (C : ModelConstants d) (a offset H n : ℝ) (j : ℕ) : ℕ :=
+def paperDyadicTotalDegree (C : ModelConstants d) (a offset H n : ℝ) (j : ℕ) : ℕ :=
   paperDyadicApproximationDegree C a offset H n j + anchoredDimension d C.order + 1
+
+section
+variable (C : ModelConstants d)
 
 /-- Eventually the coordinate subtraction has no truncation: the actual total
 lift degree is exactly the floor of the quadratic profile at every level. -/
-theorem eventually_paper_total_degree_eq_floor {d : ℕ} (C : ModelConstants d)
+theorem eventually_paper_total_degree_eq_floor 
     (hs : 1 < C.smoothness) (a offset H : ℝ) (ha : 0 < a) :
     ∀ᶠ n : ℝ in atTop, ∀ j : ℕ,
       paperDyadicTotalDegree C a offset H n j =
@@ -48,7 +51,7 @@ theorem eventually_paper_total_degree_eq_floor {d : ℕ} (C : ModelConstants d)
   exact Nat.sub_add_cancel hq
 
 /-- The exact lift degrees have the paper's uniform logarithmic growth. -/
-theorem eventually_paper_total_degree_log_bound {d : ℕ} (C : ModelConstants d)
+theorem eventually_paper_total_degree_log_bound 
     (hs : 1 < C.smoothness) (a offset H : ℝ) (ha : 0 < a) (hH : 0 < H) :
     ∀ᶠ n : ℝ in atTop, ∀ j ≤ paperDyadicTerminalLevel C a offset H n,
       (paperDyadicTotalDegree C a offset H n j : ℝ) ≤
@@ -67,7 +70,7 @@ theorem eventually_paper_total_degree_log_bound {d : ℕ} (C : ModelConstants d)
   exact hn j (Finset.mem_range.mpr (by change j < paperDyadicTerminalLevel C a offset H n + 1; omega))
 
 /-- Every fixed positive sample fraction dominates all actual lift degrees. -/
-theorem eventually_paper_total_degree_lt_fraction {d : ℕ} (C : ModelConstants d)
+theorem eventually_paper_total_degree_lt_fraction 
     (hs : 1 < C.smoothness) (a offset H : ℝ) (ha : 0 < a) (hH : 0 < H)
     {ε : ℝ} (hε : 0 < ε) :
     ∀ᶠ n : ℝ in atTop, ∀ j ≤ paperDyadicTerminalLevel C a offset H n,
@@ -80,7 +83,7 @@ theorem eventually_paper_total_degree_lt_fraction {d : ℕ} (C : ModelConstants 
 
 /-- The actual two-pilot split permits the exact factorial lifts and the
 variance denominator Λ=N/2, uniformly over every allocated level. -/
-theorem eventually_paper_degree_three_block_guards {d : ℕ} (C : ModelConstants d)
+theorem eventually_paper_degree_three_block_guards 
     (hs : 1 < C.smoothness) (a offset H : ℝ) (ha : 0 < a) (hH : 0 < H) :
     ∀ᶠ n : ℕ in atTop, ∀ j ≤ paperDyadicTerminalLevel C a offset H n,
       paperDyadicTotalDegree C a offset H n j ≤ threeBlockSize n ∧
@@ -101,5 +104,7 @@ theorem eventually_paper_degree_three_block_guards {d : ℕ} (C : ModelConstants
     exact_mod_cast (lt_of_lt_of_le (by omega : 0 < (2 : ℕ)) (threeBlockSize_two_le h6))
   refine ⟨?_, by positivity, by linarith⟩
   exact_mod_cast (hhalf.trans (by linarith : (threeBlockSize n : ℝ) / 2 ≤ threeBlockSize n))
+
+end
 
 end NearlyMinimax

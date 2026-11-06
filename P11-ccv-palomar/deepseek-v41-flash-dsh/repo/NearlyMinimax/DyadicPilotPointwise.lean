@@ -16,11 +16,12 @@ open MeasureTheory ProbabilityTheory Matrix MvPolynomial
 open scoped BigOperators Matrix.Norms.L2Operator
 namespace NearlyMinimax
 
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 
-theorem dyadicFinPilotMoments_eq_anchored {d ℓ : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
+section
+variable {d ℓ : ℕ} (C : ModelConstants d) (θ : RegressionParameter d)
+
+theorem dyadicFinPilotMoments_eq_anchored 
+    (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
     (hx : x ∈ unitCube d) :
     dyadicFinPilotMoments (ℓ := ℓ) θ j x = anchoredFinMomentFamilies
       (dyadicNormalizedAnchor j x) (dyadicNormalizedDensity θ j x)
@@ -28,8 +29,8 @@ theorem dyadicFinPilotMoments_eq_anchored {d ℓ : ℕ} (C : ModelConstants d)
   funext t i
   exact dyadicFinPilotMoments_eq_normalized C θ hθ j x hx t i
 
-theorem dyadicIncrementRawMean_eq_normalized {d ℓ : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (hj : j ≠ 0)
+theorem dyadicIncrementRawMean_eq_normalized 
+    (hθ : Admissible C θ) (j : ℕ) (hj : j ≠ 0)
     (x : Covariate d) (hx : x ∈ unitCube d) :
     dyadicIncrementRawMean (ℓ := ℓ) θ j x = fun a =>
       incrementValuation
@@ -45,6 +46,8 @@ theorem dyadicIncrementRawMean_eq_normalized {d ℓ : ℕ} (C : ModelConstants d
     dyadicFinPilotGram_eq_normalized C θ hθ,
     dyadicFinPilotMoments_eq_anchored C θ hθ j x hx,
     dyadicFinPilotMoments_eq_anchored C θ hθ (j - 1) x hx]
+
+end
 
 /-- Uniform genuine derivative operator bounds at the true free-moment mean
 of the actual current/parent observations. -/
@@ -76,17 +79,20 @@ theorem admissible_dyadic_increment_derivative_bound {d : ℕ} (C : ModelConstan
     (fun w hw => admissible_regression_value_bound C θ hθ _ (dyadicCellAffine_mem_cube (j - 1) x w hw))
     y hy m k row
 
-def rowIncrementPolynomial (r : ℕ) (a b : ℝ) (T : Matrix (Fin r) (Fin r) ℝ)
+section
+variable (r : ℕ)
+
+def rowIncrementPolynomial (a b : ℝ) (T : Matrix (Fin r) (Fin r) ℝ)
     (y : ℝ) (m : ℕ) (row : Fin r → ℝ) :
     MvPolynomial (Fin (Fintype.card (incrementVariables r))) ℝ :=
   ∑ i, C (row i) * incrementFinPolynomial r a b T y m i
 
-theorem rowIncrementPolynomial_eval (r : ℕ) (a b : ℝ) (T : Matrix (Fin r) (Fin r) ℝ)
+theorem rowIncrementPolynomial_eval (a b : ℝ) (T : Matrix (Fin r) (Fin r) ℝ)
     (y : ℝ) (m : ℕ) (row : Fin r → ℝ) (z : Fin (Fintype.card (incrementVariables r)) → ℝ) :
     eval z (rowIncrementPolynomial r a b T y m row) = incrementFinScalar r a b T y m row z := by
   simp [rowIncrementPolynomial, incrementFinScalar, incrementFinVector, dotProduct]
 
-theorem rowIncrementPolynomial_degree (r : ℕ) [NeZero r] (a b : ℝ)
+theorem rowIncrementPolynomial_degree [NeZero r] (a b : ℝ)
     (T : Matrix (Fin r) (Fin r) ℝ) (y : ℝ) (m : ℕ) (row : Fin r → ℝ) :
     (rowIncrementPolynomial r a b T y m row).totalDegree ≤ m + r + 1 := by
   apply totalDegree_finsetSum_le
@@ -95,7 +101,12 @@ theorem rowIncrementPolynomial_degree (r : ℕ) [NeZero r] (a b : ℝ)
   simpa only [totalDegree_C, zero_add, incrementFinPolynomial] using
     (totalDegree_rename_le _ _).trans (incrementEntryPolynomial_degree r a b T y m i)
 
-theorem anchoredFinNormalizedGram_one {d ℓ : ℕ} (u : Covariate d) :
+end
+
+section
+variable {d ℓ : ℕ}
+
+theorem anchoredFinNormalizedGram_one (u : Covariate d) :
     anchoredFinNormalizedGram (ℓ := ℓ) u (fun _ => 1) = 1 := by
   have hG : anchoredDensityGram (ℓ := ℓ) u (fun _ => 1) = anchoredGram u := by
     ext γ δ
@@ -105,7 +116,7 @@ theorem anchoredFinNormalizedGram_one {d ℓ : ℕ} (u : Covariate d) :
     ((Matrix.isUnit_iff_isUnit_det _).mp (anchoredGram_posDef u).isUnit)]
   exact map_one _
 
-theorem dyadicIncrementRawMean_root_eq_normalized {d ℓ : ℕ} (C : ModelConstants d)
+theorem dyadicIncrementRawMean_root_eq_normalized (C : ModelConstants d)
     (θ : RegressionParameter d) (hθ : Admissible C θ) (x : Covariate d) (hx : x ∈ unitCube d) :
     dyadicIncrementRawMean (ℓ := ℓ) θ 0 x = fun a =>
       incrementValuation
@@ -118,10 +129,18 @@ theorem dyadicIncrementRawMean_root_eq_normalized {d ℓ : ℕ} (C : ModelConsta
   simp only [dyadicIncrementPopulation, ite_true, anchoredFinNormalizedGram_one,
     dyadicFinPilotGram_eq_normalized C θ hθ, dyadicFinPilotMoments_eq_anchored C θ hθ 0 x hx]
 
+end
+
+section
+variable {d : ℕ} (C : ModelConstants d)
+
+section
+variable [Nonempty (AnchoredIndex d C.order)]
+
 /-- The deterministic virtual parent is a genuine unit-density normalized
 Gram with zero vector families; its derivative constants are uniform too. -/
-theorem admissible_dyadic_increment_root_derivative_bound {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] :
+theorem admissible_dyadic_increment_root_derivative_bound 
+    :
     ∃ D A : ℝ, 0 < D ∧ 0 < A ∧
       ∀ θ : RegressionParameter d, Admissible C θ → ∀ x ∈ unitCube d,
       ∀ y : ℝ, |y| ≤ C.holderBound → ∀ m k : ℕ,
@@ -171,8 +190,8 @@ theorem admissible_dyadic_increment_root_derivative_bound {d : ℕ} (C : ModelCo
       mul_le_mul (rowFunctional_norm_le row) hd (norm_nonneg _) hrow
     _ = ((∑ i, |row i|) * D * (k.factorial : ℝ) * A ^ k) * ∏ i, ‖directions i‖ := by ring
 
-theorem admissible_dyadic_increment_all_derivative_bound {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] :
+theorem admissible_dyadic_increment_all_derivative_bound 
+    :
     ∃ D A : ℝ, 0 < D ∧ 0 < A ∧
       ∀ θ : RegressionParameter d, Admissible C θ → ∀ j : ℕ,
       ∀ x ∈ unitCube d, ∀ y : ℝ, |y| ≤ C.holderBound → ∀ m k : ℕ,
@@ -194,7 +213,9 @@ theorem admissible_dyadic_increment_all_derivative_bound {d : ℕ} (C : ModelCon
   · apply (hnext θ hθ j hj x hx y hy m k row).trans
     gcongr <;> exact le_max_right _ _
 
-def dyadicPolynomialPilot {d : ℕ} (C : ModelConstants d) (n j : ℕ) (x : Covariate d)
+end
+
+def dyadicPolynomialPilot (n j : ℕ) (x : Covariate d)
     (y : ℝ) (m : ℕ) (row : Fin (anchoredDimension d C.order) → ℝ)
     (z : Fin n → Observation d) : ℝ :=
   RoughRegime.Upper.polynomialLift
@@ -204,7 +225,7 @@ def dyadicPolynomialPilot {d : ℕ} (C : ModelConstants d) (n j : ℕ) (x : Cova
 
 /-- The concrete coefficient lift is L² and exactly unbiased at its genuine
 population polynomial, even though the observed responses are unbounded. -/
-theorem dyadicPolynomialPilot_moment_facts {d : ℕ} (C : ModelConstants d)
+theorem dyadicPolynomialPilot_moment_facts 
     [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
     (n j : ℕ) (x : Covariate d) (hx : x ∈ unitCube d) (y : ℝ) (m : ℕ)
     (row : Fin (anchoredDimension d C.order) → ℝ)
@@ -221,59 +242,7 @@ theorem dyadicPolynomialPilot_moment_facts {d : ℕ} (C : ModelConstants d)
   exact LiftL2.polynomialLift_expectation_l2 _ _ (dyadicIncrementRawMean θ j x)
     (rowIncrementPolynomial_degree _ _ _ _ _ _ _) hdegree hind hmeas hid hL2 hmean
 
-/-- The actual pointwise pilot variance satisfies the U6 factorial series.
-All stochastic moment and derivative bounds in this endpoint are consequences
-of original-model admissibility. -/
-theorem admissible_dyadicPolynomialPilot_variance {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] :
-    ∃ D A : ℝ, 0 < D ∧ 0 < A ∧
-      ∀ θ : RegressionParameter d, Admissible C θ → ∀ n j : ℕ,
-      ∀ x ∈ unitCube d, ∀ y : ℝ, |y| ≤ C.holderBound → ∀ m : ℕ,
-      ∀ row : Fin (anchoredDimension d C.order) → ℝ,
-      m + anchoredDimension d C.order + 1 ≤ n →
-      ∀ Λ : ℝ, 0 < Λ → Λ ≤ (n : ℝ) - (m + anchoredDimension d C.order + 1) + 1 →
-        variance (dyadicPolynomialPilot C n j x y m row) (sampleLaw θ n) ≤
-          ((∑ i, |row i|) * D) ^ 2 *
-            ∑ t : Fin (m + anchoredDimension d C.order + 1),
-              ((t.val + 1).factorial : ℝ) *
-                (A ^ 2 * (Fintype.card (incrementVariables (anchoredDimension d C.order)) *
-                  preconditionedPilotMomentConstant C C.order * dyadicPilotScale d j) / Λ) ^ (t.val + 1) := by
-  obtain ⟨D, A, hD, hA, hder⟩ := admissible_dyadic_increment_all_derivative_bound C
-  refine ⟨D, A, hD, hA, ?_⟩
-  intro θ hθ n j x hx y hy m row hdegree Λ hΛ hΛn
-  let := sampleLaw_isProbability C θ hθ n
-  let F := rowIncrementPolynomial (anchoredDimension d C.order) C.densityLower C.densityUpper
-    (anchoredFinTransport d C.order) y m row
-  let X (i : Fin n) (z : Fin n → Observation d) := dyadicIncrementRawVector (ℓ := C.order) j x (z i)
-  let E := (Fintype.card (incrementVariables (anchoredDimension d C.order)) : ℝ) *
-    preconditionedPilotMomentConstant C C.order * dyadicPilotScale d j
-  have hE : 0 ≤ E := by
-    exact mul_nonneg (mul_nonneg (Nat.cast_nonneg _) (preconditionedPilotMomentConstant_pos C _).le)
-      (dyadicPilotScale_pos _ _).le
-  have hrow : 0 ≤ (∑ i, |row i|) * D :=
-    mul_nonneg (Finset.sum_nonneg (fun i _ => abs_nonneg _)) hD.le
-  obtain ⟨hind, hmeas, hid, hL2, hmean⟩ := dyadicIncrementRawVector_sample_facts C θ hθ j x hx
-  have hv := LiftL2.polynomialLift_variance_le_raw_power_l2 F X (dyadicIncrementRawMean θ j x)
-    (rowIncrementPolynomial_degree _ _ _ _ _ _ _) hdegree hind hmeas hid hL2 hmean Λ hΛ
-    (by simpa only [Nat.cast_add, Nat.cast_one] using hΛn)
-  apply hv.trans
-  rw [Finset.mul_sum]
-  apply Finset.sum_le_sum
-  intro t _
-  let e := Fin.castLEEmb ((Nat.succ_le_of_lt t.isLt).trans hdegree)
-  have hFeval : (fun z => eval z F) = incrementFinScalar (anchoredDimension d C.order)
-      C.densityLower C.densityUpper (anchoredFinTransport d C.order) y m row := by
-    funext z
-    exact rowIncrementPolynomial_eval _ _ _ _ _ _ _ _
-  have hd : ‖iteratedFDeriv ℝ (t.val + 1) (fun z => eval z F) (dyadicIncrementRawMean θ j x)‖ ≤
-      ((∑ i, |row i|) * D) * ((t.val + 1).factorial : ℝ) * A ^ (t.val + 1) := by
-    rw [hFeval]
-    exact hder θ hθ j x hx y hy m (t.val + 1) row
-  have hb := KernelMomentBounds.factorial_kernel_budget
-    (iteratedFDeriv ℝ (t.val + 1) (fun z => eval z F) (dyadicIncrementRawMean θ j x))
-    (fun i => X (e i)) (hind.precomp e.injective) (fun i => hmeas (e i))
-    (fun i a => hL2 (e i) a) E ((∑ i, |row i|) * D) A Λ hE hrow hA.le hΛ
-    (fun i => dyadicIncrementRawVector_sample_second_le C θ hθ j x hx (e i)) hd
-  simpa only [E, e, mul_assoc] using hb
+end
+
 
 end NearlyMinimax

@@ -9,8 +9,6 @@ public import NearlyMinimax.HighWindowGeometry
 intercepts may depend on the entire source mark, including its spatial mark. -/
 noncomputable section
 namespace NearlyMinimax
-set_option maxHeartbeats 600000
-set_option backward.isDefEq.respectTransparency false
 variable {J : Type*} [Fintype J] [LinearOrder J]
 
 theorem historyMarkedRawState_patch_append {Z E R : Type*} [DecidableEq J] [MeasurableSpace E]

@@ -9,8 +9,6 @@ the source bounded-differences MGF gives its exceptional mass probability. -/
 noncomputable section
 open MeasureTheory Set
 namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 attribute [local instance] Classical.propDecidable
 
 section Generic
@@ -24,8 +22,7 @@ include G
 theorem highUnionSourceMass_coarse_interval
     (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E)) :
     highUnionSourceMass C R h ∈ Icc C.densityLower C.densityUpper := by
-  have hg := highCenterResolution_guards C M G.resolution
-  have hM0 : 0 < M := by linarith [hg.1]
+  have hM0 : 0 < M := by linarith [(highCenterResolution_guards C M G.resolution).1]
   have hb := highUnionSourceMass_interval C R G h
   constructor
   · exact (le_add_of_nonneg_right (one_div_pos.mpr hM0).le).trans hb.1

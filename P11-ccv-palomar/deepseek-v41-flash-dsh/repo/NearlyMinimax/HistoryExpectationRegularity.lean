@@ -10,14 +10,15 @@ public import NearlyMinimax.HistoryPriorWeakTransport
 -/
 
 noncomputable section
-set_option backward.isDefEq.respectTransparency false
 open MeasureTheory Filter Set
 namespace NearlyMinimax
 
 variable {J : Type*} [Fintype J] [LinearOrder J]
 
+variable (dependent : J → J → Prop)
+
 /-- The actual finite density has a Lipschitz constant uniform over unbounded histories. -/
-theorem historyMarkedDensity_lipschitzOn (dependent : J → J → Prop)
+theorem historyMarkedDensity_lipschitzOn 
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (Δ : ℕ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
     (ρ T B : ℝ) (hρ : 0 < ρ) (hB : 0 ≤ B) {E : Type*} [MeasurableSpace E]
@@ -35,7 +36,7 @@ theorem historyMarkedDensity_lipschitzOn (dependent : J → J → Prop)
     ((div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right hu.2 hB) hρ.le).trans hsmall) h
 
 /-- Every bounded observable-density product is integrable, including the endpoints. -/
-theorem historyMarkedDensityObservable_integrable (dependent : J → J → Prop)
+theorem historyMarkedDensityObservable_integrable 
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (Δ : ℕ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
     (ρ t B : ℝ) (hρ : 0 < ρ) (ht : 0 ≤ t) (hB : 0 ≤ B)
@@ -58,7 +59,7 @@ theorem historyMarkedDensityObservable_integrable (dependent : J → J → Prop)
   exact mul_le_mul (hFbound h) hb.2 hp hM
 
 /-- Actual history expectations are Lipschitz on the closed source interval. -/
-theorem historyMarkedExpectation_lipschitzOn (dependent : J → J → Prop)
+theorem historyMarkedExpectation_lipschitzOn 
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (Δ : ℕ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
     (ρ T B : ℝ) (hρ : 0 < ρ) (hB : 0 ≤ B)
@@ -94,7 +95,7 @@ theorem historyMarkedExpectation_lipschitzOn (dependent : J → J → Prop)
   simpa using norm_integral_le_of_norm_le_const hb
 
 /-- In particular, expectation regularity on the entire interval is proved, not assumed. -/
-theorem historyMarkedExpectation_absolutelyContinuous (dependent : J → J → Prop)
+theorem historyMarkedExpectation_absolutelyContinuous 
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (Δ : ℕ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
     (ρ T B : ℝ) (hρ : 0 < ρ) (hT : 0 ≤ T) (hB : 0 ≤ B)

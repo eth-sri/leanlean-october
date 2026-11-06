@@ -18,7 +18,9 @@ premise.
 noncomputable section
 namespace NearlyMinimax
 
-theorem graph_walk_count_le {V : Type*} [DecidableEq V] (G : SimpleGraph V)
+variable {V : Type*}
+
+theorem graph_walk_count_le [DecidableEq V] (G : SimpleGraph V)
     [G.LocallyFinite] (D : ℕ) (hD : ∀ v, G.degree v ≤ D) (n : ℕ) (u v : V) :
     (G.finsetWalkLength n u v).card ≤ D ^ n := by
   induction n generalizing u with
@@ -39,16 +41,16 @@ theorem graph_walk_count_le {V : Type*} [DecidableEq V] (G : SimpleGraph V)
       _ ≤ D * D ^ n := Nat.mul_le_mul_right _ (hD u)
       _ = D ^ (n + 1) := by rw [pow_succ, Nat.mul_comm]
 
-def graphConnectedSubsets {V : Type*} [Fintype V] (G : SimpleGraph V) (x : V) (k : ℕ) : Finset (Finset V) := by
+def graphConnectedSubsets [Fintype V] (G : SimpleGraph V) (x : V) (k : ℕ) : Finset (Finset V) := by
   classical
   exact Finset.univ.powerset.filter (fun P => x ∈ P ∧ P.card = k ∧ (G.induce (P : Set V)).Connected)
 
-theorem mem_graphConnectedSubsets {V : Type*} [Fintype V] {G : SimpleGraph V} {x : V} {k : ℕ} {P : Finset V} :
+theorem mem_graphConnectedSubsets [Fintype V] {G : SimpleGraph V} {x : V} {k : ℕ} {P : Finset V} :
     P ∈ graphConnectedSubsets G x k ↔ x ∈ P ∧ P.card = k ∧ (G.induce (P : Set V)).Connected := by
   classical
   simp [graphConnectedSubsets]
 
-theorem graphConnectedSubset_closed_walk {V : Type*} [Fintype V] [DecidableEq V] {G : SimpleGraph V} {x : V} {k : ℕ}
+theorem graphConnectedSubset_closed_walk [Fintype V] [DecidableEq V] {G : SimpleGraph V} {x : V} {k : ℕ}
     {P : Finset V} (hP : P ∈ graphConnectedSubsets G x k) :
     ∃ p : G.Walk x x, p.length = 2 * (k - 1) ∧ p.support.toFinset = P := by
   classical
@@ -69,7 +71,7 @@ theorem graphConnectedSubset_closed_walk {V : Type*} [Fintype V] [DecidableEq V]
       exact ⟨⟨y, hy⟩, hpall _, rfl⟩
 
 /-- The source connected-set bound, uniformly in the number of vertices. -/
-theorem graph_connected_subsets_card_le {V : Type*} [Fintype V] [DecidableEq V]
+theorem graph_connected_subsets_card_le [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [G.LocallyFinite] (D : ℕ) (hD : ∀ v, G.degree v ≤ D) (x : V) (k : ℕ) :
     (graphConnectedSubsets G x k).card ≤ D ^ (2 * (k - 1)) := by
   classical

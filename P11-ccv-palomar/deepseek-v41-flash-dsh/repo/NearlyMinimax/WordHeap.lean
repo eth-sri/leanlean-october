@@ -22,17 +22,22 @@ namespace NearlyMinimax
 structure WordHeapPiece {J : Type*} (word : List J) (dependent : J → J → Prop) where
   position : Fin word.length
 
-@[ext] theorem WordHeapPiece.ext {J : Type*} {word : List J} {dependent : J → J → Prop}
+variable {J : Type*} {word : List J} {dependent : J → J → Prop}
+
+@[ext] theorem WordHeapPiece.ext {dependent : J → J → Prop}
     {x y : WordHeapPiece word dependent} (h : x.position = y.position) : x = y := by
   cases x
   cases y
   cases h
   rfl
 
-instance wordHeapPiece_decidableEq {J : Type*} (word : List J) (dependent : J → J → Prop) :
+section
+variable (word : List J) (dependent : J → J → Prop)
+
+instance wordHeapPiece_decidableEq :
     DecidableEq (WordHeapPiece word dependent) := Classical.decEq _
 
-instance wordHeapPiece_fintype {J : Type*} (word : List J) (dependent : J → J → Prop) :
+instance wordHeapPiece_fintype :
     Fintype (WordHeapPiece word dependent) :=
   Fintype.ofEquiv (Fin word.length) {
     toFun := fun i => ⟨i⟩
@@ -40,21 +45,28 @@ instance wordHeapPiece_fintype {J : Type*} (word : List J) (dependent : J → J 
     left_inv := fun _ => rfl
     right_inv := fun _ => rfl }
 
-def wordHeapLabel {J : Type*} {word : List J} {dependent : J → J → Prop}
+end
+
+def wordHeapLabel 
     (x : WordHeapPiece word dependent) : J := word.get x.position
 
-def wordHeapStep {J : Type*} {word : List J} {dependent : J → J → Prop}
+section
+variable {dependent : J → J → Prop}
+
+def wordHeapStep 
     (x y : WordHeapPiece word dependent) : Prop :=
   x.position < y.position ∧ dependent (wordHeapLabel x) (wordHeapLabel y)
 
-theorem wordHeap_reachable_position_le {J : Type*} {word : List J} {dependent : J → J → Prop}
+theorem wordHeap_reachable_position_le 
     {x y : WordHeapPiece word dependent} (h : Relation.ReflTransGen wordHeapStep x y) :
     x.position ≤ y.position := by
   induction h with
   | refl => exact le_rfl
   | tail hreach hstep ih => exact ih.trans hstep.1.le
 
-instance wordHeap_partialOrder {J : Type*} (word : List J) (dependent : J → J → Prop) :
+end
+
+instance wordHeap_partialOrder (word : List J) (dependent : J → J → Prop) :
     PartialOrder (WordHeapPiece word dependent) where
   le := Relation.ReflTransGen wordHeapStep
   le_refl _ := Relation.ReflTransGen.refl
@@ -63,11 +75,14 @@ instance wordHeap_partialOrder {J : Type*} (word : List J) (dependent : J → J 
     apply WordHeapPiece.ext
     exact le_antisymm (wordHeap_reachable_position_le hxy) (wordHeap_reachable_position_le hyx)
 
-theorem wordHeapStep_le {J : Type*} {word : List J} {dependent : J → J → Prop}
+section
+variable {dependent : J → J → Prop}
+
+theorem wordHeapStep_le 
     {x y : WordHeapPiece word dependent} (h : wordHeapStep x y) : x ≤ y :=
   Relation.ReflTransGen.single h
 
-theorem wordHeap_dependent_comparable {J : Type*} {word : List J} {dependent : J → J → Prop}
+theorem wordHeap_dependent_comparable 
     (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i) {x y : WordHeapPiece word dependent}
     (hdep : dependent (wordHeapLabel x) (wordHeapLabel y)) : x ≤ y ∨ y ≤ x := by
   rcases lt_trichotomy x.position y.position with hxy | heq | hyx
@@ -77,20 +92,18 @@ theorem wordHeap_dependent_comparable {J : Type*} {word : List J} {dependent : J
     exact Or.inl le_rfl
   · exact Or.inr (wordHeapStep_le ⟨hyx, hsymm hdep⟩)
 
-theorem wordHeap_cover_dependent {J : Type*} {word : List J} {dependent : J → J → Prop}
+theorem wordHeap_cover_dependent 
     {x y : WordHeapPiece word dependent} (hcov : x ⋖ y) :
     dependent (wordHeapLabel x) (wordHeapLabel y) := by
-  have hxy : Relation.ReflTransGen wordHeapStep x y := hcov.le
-  cases hxy with
+  cases (hcov.le) with
   | refl => exact (hcov.ne rfl).elim
   | @tail z y hxz hzy =>
-    have hbetween := hcov.eq_or_eq hxz (wordHeapStep_le hzy)
-    rcases hbetween with rfl | hzyEq
+    rcases (hcov.eq_or_eq hxz (wordHeapStep_le hzy)) with rfl | hzyEq
     · exact hzy.2
     · have hh : z.position < z.position := by simpa only [hzyEq] using hzy.1
       exact (lt_irrefl _ hh).elim
 
-theorem wordHeap_equal_labels_comparable {J : Type*} {word : List J} {dependent : J → J → Prop}
+theorem wordHeap_equal_labels_comparable 
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     {x y : WordHeapPiece word dependent} (hlab : wordHeapLabel x = wordHeapLabel y) :
     x ≤ y ∨ y ≤ x := by
@@ -98,7 +111,7 @@ theorem wordHeap_equal_labels_comparable {J : Type*} {word : List J} {dependent 
   rw [hlab]
   exact hrefl _
 
-theorem wordHeap_upper_cover_label_injective {J : Type*} {word : List J} {dependent : J → J → Prop}
+theorem wordHeap_upper_cover_label_injective 
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     {x y z : WordHeapPiece word dependent} (hxy : x ⋖ y) (hxz : x ⋖ z)
     (hlab : wordHeapLabel y = wordHeapLabel z) : y = z := by
@@ -110,7 +123,7 @@ theorem wordHeap_upper_cover_label_injective {J : Type*} {word : List J} {depend
     · exact (hxz.ne hzx.symm).elim
     · exact hzy.symm
 
-theorem wordHeap_lower_cover_label_injective {J : Type*} {word : List J} {dependent : J → J → Prop}
+theorem wordHeap_lower_cover_label_injective 
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     {x y z : WordHeapPiece word dependent} (hyx : y ⋖ x) (hzx : z ⋖ x)
     (hlab : wordHeapLabel y = wordHeapLabel z) : y = z := by
@@ -122,7 +135,7 @@ theorem wordHeap_lower_cover_label_injective {J : Type*} {word : List J} {depend
     · exact hyz
     · exact (hyx.ne hyxEq).elim
 
-theorem wordHeap_maximal_label_injective {J : Type*} {word : List J} {dependent : J → J → Prop}
+theorem wordHeap_maximal_label_injective 
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i) (S : Finset (WordHeapPiece word dependent)) :
     Set.InjOn wordHeapLabel (historyMaximalPieces S : Set (WordHeapPiece word dependent)) := by
   intro x hx y hy hlab
@@ -132,65 +145,80 @@ theorem wordHeap_maximal_label_injective {J : Type*} {word : List J} {dependent 
   · exact (hxmax y hyS hxy).symm
   · exact hymax x hxS hyx
 
-theorem wordHeap_maximal_card_le_labels {J : Type*} [Fintype J] [DecidableEq J]
+end
+
+theorem wordHeap_maximal_card_le_labels [Fintype J] [DecidableEq J]
     {word : List J} {dependent : J → J → Prop}
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i) (S : Finset (WordHeapPiece word dependent)) :
     (historyMaximalPieces S).card ≤ Fintype.card J := by
   rw [← Finset.card_image_iff.2 (wordHeap_maximal_label_injective hrefl hsymm S)]
   exact Finset.card_le_card (Finset.subset_univ _)
 
-def wordHeapUpperCovers {J : Type*} {word : List J} {dependent : J → J → Prop}
+section
+variable {dependent : J → J → Prop}
+
+def wordHeapUpperCovers 
     (x : WordHeapPiece word dependent) : Finset (WordHeapPiece word dependent) := by
   classical
   exact Finset.univ.filter (fun y => x ⋖ y)
 
-def wordHeapLowerCovers {J : Type*} {word : List J} {dependent : J → J → Prop}
+def wordHeapLowerCovers 
     (x : WordHeapPiece word dependent) : Finset (WordHeapPiece word dependent) := by
   classical
   exact Finset.univ.filter (fun y => y ⋖ x)
 
-def dependentLabelFinset {J : Type*} [Fintype J] (dependent : J → J → Prop) (j : J) : Finset J := by
+end
+
+def dependentLabelFinset [Fintype J] (dependent : J → J → Prop) (j : J) : Finset J := by
   classical
   exact Finset.univ.filter (fun i => dependent j i)
 
-theorem wordHeap_upper_covers_card {J : Type*} [Fintype J] {word : List J} {dependent : J → J → Prop}
+section
+variable [Fintype J] {word : List J} {dependent : J → J → Prop}
+
+theorem wordHeap_upper_covers_card 
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (x : WordHeapPiece word dependent) :
     (wordHeapUpperCovers x).card ≤ (dependentLabelFinset dependent (wordHeapLabel x)).card := by
   classical
   apply Finset.card_le_card_of_injOn wordHeapLabel
   · intro y hy
-    have hxy : x ⋖ y := (Finset.mem_filter.1 hy).2
-    exact Finset.mem_filter.2 ⟨Finset.mem_univ _, wordHeap_cover_dependent hxy⟩
+    exact Finset.mem_filter.2 ⟨Finset.mem_univ _, wordHeap_cover_dependent ((Finset.mem_filter.1 hy).2)⟩
   · intro y hy z hz hlab
     exact wordHeap_upper_cover_label_injective hrefl hsymm
       (Finset.mem_filter.1 hy).2 (Finset.mem_filter.1 hz).2 hlab
 
-theorem wordHeap_lower_covers_card {J : Type*} [Fintype J] {word : List J} {dependent : J → J → Prop}
+theorem wordHeap_lower_covers_card 
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (x : WordHeapPiece word dependent) :
     (wordHeapLowerCovers x).card ≤ (dependentLabelFinset dependent (wordHeapLabel x)).card := by
   classical
   apply Finset.card_le_card_of_injOn wordHeapLabel
   · intro y hy
-    have hyx : y ⋖ x := (Finset.mem_filter.1 hy).2
-    exact Finset.mem_filter.2 ⟨Finset.mem_univ _, hsymm (wordHeap_cover_dependent hyx)⟩
+    exact Finset.mem_filter.2 ⟨Finset.mem_univ _, hsymm (wordHeap_cover_dependent ((Finset.mem_filter.1 hy).2))⟩
   · intro y hy z hz hlab
     exact wordHeap_lower_cover_label_injective hrefl hsymm
       (Finset.mem_filter.1 hy).2 (Finset.mem_filter.1 hz).2 hlab
 
-def wordHeapCoverGraph {J : Type*} (word : List J) (dependent : J → J → Prop) :
+end
+
+section
+variable (word : List J) (dependent : J → J → Prop)
+
+def wordHeapCoverGraph :
     SimpleGraph (WordHeapPiece word dependent) where
   Adj x y := x ⋖ y ∨ y ⋖ x
   symm := ⟨fun _ _ h => Or.symm h⟩
   loopless := ⟨fun x h => by
     rcases h with h | h <;> exact h.ne rfl⟩
 
-instance wordHeapCoverGraph_neighbor_fintype {J : Type*} (word : List J) (dependent : J → J → Prop)
+instance wordHeapCoverGraph_neighbor_fintype 
     (x : WordHeapPiece word dependent) : Fintype ((wordHeapCoverGraph word dependent).neighborSet x) :=
   Fintype.ofFinite _
 
-theorem wordHeapCoverGraph_neighbors {J : Type*} {word : List J} {dependent : J → J → Prop}
+end
+
+theorem wordHeapCoverGraph_neighbors {dependent : J → J → Prop}
     (x : WordHeapPiece word dependent) :
     (wordHeapCoverGraph word dependent).neighborFinset x = wordHeapUpperCovers x ∪ wordHeapLowerCovers x := by
   classical
@@ -201,7 +229,7 @@ theorem wordHeapCoverGraph_neighbors {J : Type*} {word : List J} {dependent : J 
   rfl
 
 /-- The cover graph's degree is bounded by twice the number of dependent labels, uniformly in history size. -/
-theorem wordHeapCoverGraph_degree_le {J : Type*} [Fintype J] {word : List J} {dependent : J → J → Prop}
+theorem wordHeapCoverGraph_degree_le [Fintype J] {word : List J} {dependent : J → J → Prop}
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (x : WordHeapPiece word dependent) :
     (wordHeapCoverGraph word dependent).degree x ≤

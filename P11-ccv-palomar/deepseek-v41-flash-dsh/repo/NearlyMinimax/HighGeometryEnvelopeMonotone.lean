@@ -11,8 +11,6 @@ and the complete geometry H increases with this budget. -/
 noncomputable section
 open MeasureTheory Set
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 300000
 attribute [local instance] Classical.propDecidable
 
  theorem completeSourceGeometryEnvelope_mono_total {d : ℕ} (D M R q : ℕ)

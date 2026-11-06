@@ -20,8 +20,10 @@ open MeasureTheory Set
 
 namespace NearlyMinimax.GaussianSum
 
+variable (S : Finset ℝ) {δ c : ℝ}
+
 /-- The kth point of a nonnegative δ-separated finite set lies at least kδ from zero. -/
-theorem orderEmbOfFin_ge_mul_sep (S : Finset ℝ) {δ : ℝ} (_hδ : 0 ≤ δ)
+theorem orderEmbOfFin_ge_mul_sep {δ : ℝ} (_hδ : 0 ≤ δ)
     (hnonneg : ∀ x ∈ S, 0 ≤ x)
     (hsep : ∀ x ∈ S, ∀ y ∈ S, x ≠ y → δ ≤ |x - y|)
     (k : Fin S.card) : (k.val : ℝ) * δ ≤ S.orderEmbOfFin rfl k := by
@@ -47,7 +49,7 @@ theorem orderEmbOfFin_ge_mul_sep (S : Finset ℝ) {δ : ℝ} (_hδ : 0 ≤ δ)
   exact hrank k.val k.isLt
 
 /-- A separated finite Gaussian sum is bounded by its equally spaced comparison sum. -/
-theorem separated_gaussian_sum_le (S : Finset ℝ) {δ c : ℝ} (hδ : 0 < δ)
+theorem separated_gaussian_sum_le (hδ : 0 < δ)
     (hc : 0 < c) (hnonneg : ∀ x ∈ S, 0 ≤ x)
     (hsep : ∀ x ∈ S, ∀ y ∈ S, x ≠ y → δ ≤ |x - y|) :
     ∑ x ∈ S, Real.exp (-c * x ^ 2) ≤
@@ -127,8 +129,11 @@ theorem gaussian_constant_spacing (c δ : ℝ) (hc : 0 < c) (hδ : 0 < δ) :
   rw [halg, Real.sqrt_div (div_nonneg Real.pi_pos.le hc.le),
     Real.sqrt_sq_eq_abs, abs_of_pos hδ]
 
+section
+variable (δ a : ℝ)
+
 /-- Translating a separated finite set preserves its separation. -/
-theorem separated_translate (S : Finset ℝ) (δ a : ℝ)
+theorem separated_translate 
     (hsep : ∀ x ∈ S, ∀ y ∈ S, x ≠ y → δ ≤ |x - y|) :
     ∀ u ∈ S.image (fun x => x - a), ∀ v ∈ S.image (fun x => x - a),
       u ≠ v → δ ≤ |u - v| := by
@@ -145,7 +150,7 @@ theorem separated_translate (S : Finset ℝ) (δ a : ℝ)
   ring
 
 /-- Reflection about a center preserves separation. -/
-theorem separated_reflect (S : Finset ℝ) (δ a : ℝ)
+theorem separated_reflect 
     (hsep : ∀ x ∈ S, ∀ y ∈ S, x ≠ y → δ ≤ |x - y|) :
     ∀ u ∈ S.image (fun x => a - x), ∀ v ∈ S.image (fun x => a - x),
       u ≠ v → δ ≤ |u - v| := by
@@ -162,8 +167,10 @@ theorem separated_reflect (S : Finset ℝ) (δ a : ℝ)
   congr 1
   ring
 
+end
+
 /-- A nonnegative separated Gaussian sum is bounded by the half Gaussian integral. -/
-theorem gaussian_half_sum (S : Finset ℝ) {δ c : ℝ}
+theorem gaussian_half_sum 
     (hδ : 0 < δ) (hc : 0 < c)
     (hnonneg : ∀ x ∈ S, 0 ≤ x)
     (hsep : ∀ x ∈ S, ∀ y ∈ S, x ≠ y → δ ≤ |x - y|) :
@@ -179,7 +186,7 @@ theorem gaussian_half_sum (S : Finset ℝ) {δ c : ℝ}
         rw [gaussian_constant_spacing c δ hc hδ]
 
 /-- A Gaussian sum over an arbitrary separated finite set, centered at a. -/
-theorem gaussian_centered_sum (S : Finset ℝ) {δ c : ℝ} (a : ℝ)
+theorem gaussian_centered_sum (a : ℝ)
     (hδ : 0 < δ) (hc : 0 < c)
     (hsep : ∀ x ∈ S, ∀ y ∈ S, x ≠ y → δ ≤ |x - y|) :
     (∑ x ∈ S, Real.exp (-c * (x - a) ^ 2)) ≤
@@ -216,8 +223,7 @@ theorem gaussian_centered_sum (S : Finset ℝ) {δ c : ℝ} (a : ℝ)
     ring
   have hsplit : (∑ x ∈ S, Real.exp (-c * (x - a) ^ 2)) =
       (∑ x ∈ P, Real.exp (-c * (x - a) ^ 2)) +
-      (∑ x ∈ N, Real.exp (-c * (x - a) ^ 2)) := by
-    exact (Finset.sum_filter_add_sum_filter_not S (fun x => a ≤ x)
+      (∑ x ∈ N, Real.exp (-c * (x - a) ^ 2)) := (Finset.sum_filter_add_sum_filter_not S (fun x => a ≤ x)
       (fun x => Real.exp (-c * (x - a) ^ 2))).symm
   rw [hsplit]
   linarith
@@ -240,8 +246,11 @@ theorem arithmetic_lattice_separated (u₀ b : ℝ) (hb : 0 < b) (A : Finset ℕ
     have hdiff : b ≤ (u₀ + (i : ℝ) * b) - (u₀ + (j : ℝ) * b) := by nlinarith
     exact hdiff.trans (le_abs_self _)
 
+section
+variable (A : Finset ℕ) (u₀ a b S : ℝ)
+
 /-- A finite lattice Gaussian sum with an explicit bound uniform in its center. -/
-theorem gaussian_lattice_sum_le (A : Finset ℕ) (u₀ a b S : ℝ)
+theorem gaussian_lattice_sum_le 
     (ha : 0 < a) (hb : 0 < b) (hS : 1 ≤ S) :
     (∑ j ∈ A, Real.exp (-a * (u₀ + (j : ℝ) * b) ^ 2 / S)) ≤
       (2 + Real.sqrt (Real.pi / a) / b) * Real.sqrt S := by
@@ -274,11 +283,13 @@ theorem gaussian_lattice_sum_le (A : Finset ℕ) (u₀ a b S : ℝ)
       nlinarith
 
 /-- After the `S⁻¹ᐟ²` factor in `eq:U12-term`, the allocation sum is uniformly bounded. -/
-theorem normalized_gaussian_lattice_sum_le (A : Finset ℕ) (u₀ a b S : ℝ)
+theorem normalized_gaussian_lattice_sum_le 
     (ha : 0 < a) (hb : 0 < b) (hS : 1 ≤ S) :
     (∑ j ∈ A, Real.exp (-a * (u₀ + (j : ℝ) * b) ^ 2 / S)) / Real.sqrt S ≤
       2 + Real.sqrt (Real.pi / a) / b := by
   have hp : 0 < Real.sqrt S := Real.sqrt_pos.2 (lt_of_lt_of_le zero_lt_one hS)
   exact (div_le_iff₀ hp).2 (gaussian_lattice_sum_le A u₀ a b S ha hb hS)
+
+end
 
 end NearlyMinimax.GaussianSum

@@ -10,17 +10,19 @@ public import NearlyMinimax.PopulationInverseDerivatives
 
 noncomputable section
 namespace NearlyMinimax
+
 open Matrix MeasureTheory
 open scoped BigOperators Matrix.Norms.L2Operator
+variable {d ℓ : ℕ}
 
 /-- The two population vector families are the density-feature moment and the
 response-feature moment, with the known Lebesgue Gram preconditioner. -/
-def anchoredFinMomentFamilies {d ℓ : ℕ} (u : Covariate d)
+def anchoredFinMomentFamilies (u : Covariate d)
     (p f : Covariate d → ℝ) : Bool → Fin (anchoredDimension d ℓ) → ℝ :=
   fun t i => anchoredPreconditionedMoment u p (if t then fun _ => 1 else f)
     ((Fintype.equivFin (AnchoredIndex d ℓ)).symm i)
 
-theorem anchoredFinMomentFamilies_uniform_bound {d ℓ : ℕ}
+theorem anchoredFinMomentFamilies_uniform_bound 
     (b F : ℝ) (hb : 0 ≤ b) (hF : 0 ≤ F) :
     ∃ W : ℝ, 0 < W ∧ ∀ u ∈ unitCube d, ∀ p f : Covariate d → ℝ,
       (∀ᵐ w ∂cubeVolume d, 0 ≤ p w ∧ p w ≤ b) →
@@ -35,14 +37,13 @@ theorem anchoredFinMomentFamilies_uniform_bound {d ℓ : ℕ}
     cases t
     · exact (hf w hw).trans (le_max_right _ _)
     · simp
-  have h := hm u hu p _ hp hg
   apply (pi_norm_le_iff_of_nonneg hW.le).mpr
   intro i
-  exact (norm_le_pi_norm _ ((Fintype.equivFin (AnchoredIndex d ℓ)).symm i)).trans h
+  exact (norm_le_pi_norm _ ((Fintype.equivFin (AnchoredIndex d ℓ)).symm i)).trans (hm u hu p _ hp hg)
 
 /-- The paper's common all-order inverse derivative estimate, with all matrix
 charts and vector-size bounds derived from actual density and response bounds. -/
-theorem anchored_actual_population_inverse_derivatives {d ℓ : ℕ}
+theorem anchored_actual_population_inverse_derivatives 
     [Nonempty (AnchoredIndex d ℓ)] (a b F Y : ℝ)
     (ha : 0 < a) (hab : a < b) (hF : 0 ≤ F) (hY : 0 ≤ Y) :
     ∃ C A : ℝ, 0 < C ∧ 0 < A ∧
@@ -60,8 +61,7 @@ theorem anchored_actual_population_inverse_derivatives {d ℓ : ℕ}
             (anchoredFinMomentFamilies u p f) (anchoredFinMomentFamilies v q g)
             ((Fintype.equivFin (incrementVariables (anchoredDimension d ℓ))).symm j)) directions‖ ≤
           C * (k.factorial : ℝ) * A ^ k * ∏ j, ‖directions j‖ := by
-  have hb : 0 ≤ b := (ha.trans hab).le
-  obtain ⟨W, hW, hmom⟩ := anchoredFinMomentFamilies_uniform_bound (d := d) (ℓ := ℓ) b F hb hF
+  obtain ⟨W, hW, hmom⟩ := anchoredFinMomentFamilies_uniform_bound (d := d) (ℓ := ℓ) b F ((ha.trans hab).le) hF
   obtain ⟨C, A, hC, hA, hder⟩ := anchored_population_inverse_derivatives
     (d := d) (ℓ := ℓ) a b W Y ha hab hW.le hY
   refine ⟨C, A, hC, hA, ?_⟩

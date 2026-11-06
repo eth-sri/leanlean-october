@@ -12,8 +12,6 @@ noncomputable section
 open MeasureTheory Set Filter
 open scoped BigOperators Topology
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1200000
 attribute [local instance] Classical.propDecidable
 
 def ordinaryFineAliasSaddleGeometryEnvelope (s : ℝ) (d q : ℕ)
@@ -31,10 +29,12 @@ def ordinaryFineAliasSaddleGeometryEnvelope (s : ℝ) (d q : ℕ)
   ordinaryFineAliasFamilyResponseSquareEnvelope (F := F) (ordinaryFineAliasTargetSet d D L N mu)
     M R q ad bd c0 C a rho eta L (fun r => higherBandTargetScale d r N mu) U
 
+variable {s ad bd : ℝ} {d : ℕ}
+
 /-- True universal Q^n envelope moment, at all counts and frame degrees.
 The fixed constant is chosen before x, n, F or nuisance data. -/
 theorem eventually_ordinaryFineAliasSaddleGeometryEnvelope_integrable_and_scale_le
-    {s ad bd : ℝ} {d : ℕ} (hs : 1 < s) (hd : 4*s < (d : ℝ))
+    (hs : 1 < s) (hd : 4*s < (d : ℝ))
     (haD : 0 < ad) (hab : ad < bd) (Cw cf : ℝ) (q : ℕ) (C a rho : ℝ) :
     ∀ᶠ x in atTop, ∀ (n F : ℕ),
       Integrable (ordinaryFineAliasSaddleGeometryEnvelope s d q ad bd Cw cf C a rho x n F)
@@ -78,7 +78,7 @@ theorem eventually_ordinaryFineAliasSaddleGeometryEnvelope_integrable_and_scale_
 moment, at the paper's rounded M/D/N/mu and eta=cf*h^s. No nuisance or
 conditional pointwise norm premise is needed. -/
 theorem eventually_ordinaryFineAliasSaddleGeometryEnvelope_factorial_tail
-    {s ad bd : ℝ} {d : ℕ} (hs : 1 < s) (hd : 4*s < (d : ℝ))
+    (hs : 1 < s) (hd : 4*s < (d : ℝ))
     (haD : 0 < ad) (hab : ad < bd) (Cw cf : ℝ) (q : ℕ)
     (C a rho Csharp : ℝ) (hCs : 0 ≤ Csharp) :
     ∀ᶠ x in atTop,
@@ -133,8 +133,7 @@ theorem eventually_ordinaryFineAliasSaddleGeometryEnvelope_factorial_tail
     (fun n => ∫ U, ordinaryFineAliasSaddleGeometryEnvelope s d q ad bd Cw cf C a rho x
       n (F n) U ∂fullSpatialPatchDesign d n)
   intro j hj
-  have he := (henergy (M+1+j) (F (M+1+j))).2
-  convert he using 1 <;> simp only [A,P,L,B,m,theta,M,D,N,mu,eta,
+  convert ((henergy (M+1+j) (F (M+1+j))).2) using 1 <;> simp only [A,P,L,B,m,theta,M,D,N,mu,eta,
     ordinaryFineAliasSaddleTailPrefactor, ordinaryFineAliasSaddleTailExponent,
     ordinaryFineAliasSaddleTargetBound, ordinaryFineAliasSaddleCoefficient, ordinaryFineAliasSaddleTheta] <;> ring
 

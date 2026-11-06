@@ -10,16 +10,19 @@ noncomputable section
 open MeasureTheory Set MvPolynomial
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 300000
 
-theorem radial_gaussian_factorization {d : ℕ} (b : ℝ) (x y : Covariate d) :
+variable {d : ℕ}
+
+section
+variable (b : ℝ)
+
+theorem radial_gaussian_factorization (x y : Covariate d) :
     Real.exp (-b * spatialSquaredDistance x y) =
       ∏ r, Real.exp (-b * (y r - x r) ^ 2) := by
   unfold spatialSquaredDistance
   rw [Finset.mul_sum, Real.exp_sum]
 
-theorem radial_gaussian_integrable {d : ℕ} (b : ℝ) (hb : 0 < b) (x : Covariate d) :
+theorem radial_gaussian_integrable (hb : 0 < b) (x : Covariate d) :
     Integrable (fun y => Real.exp (-b * spatialSquaredDistance x y)) volume := by
   simp_rw [radial_gaussian_factorization]
   exact Integrable.fintype_prod (𝕜 := ℝ)
@@ -29,13 +32,15 @@ theorem radial_gaussian_integrable {d : ℕ} (b : ℝ) (hb : 0 < b) (x : Covaria
 
 /-- Exact finite-dimensional Gaussian normalization, including arbitrary
 spatial center. -/
-theorem radial_gaussian_integral {d : ℕ} (b : ℝ) (x : Covariate d) :
+theorem radial_gaussian_integral (x : Covariate d) :
     (∫ y, Real.exp (-b * spatialSquaredDistance x y)) = (Real.sqrt (Real.pi / b)) ^ d := by
   simp_rw [radial_gaussian_factorization]
   rw [integral_fintype_prod_volume_eq_prod
     (fun (r : Fin d) (y : ℝ) => Real.exp (-b * (y - x r) ^ 2))]
   simp_rw [integral_sub_right_eq_self (μ := volume) (fun y : ℝ => Real.exp (-b * y ^ 2)), integral_gaussian]
   simp only [Finset.prod_const, Finset.card_univ, Fintype.card_fin]
+
+end
 
 /-- A second-order exponential-series term absorbs the squared radial
 factor at every nonnegative argument. -/
@@ -95,7 +100,7 @@ def spatialPatchBox (d : ℕ) : Set (Covariate d) := Icc (fun _ => -1) (fun _ =>
 
 def spatialInterpolationLambda (d : ℕ) : ℝ := 1 / (8 * (d : ℝ))
 
-theorem spatial_patch_alpha_bounds {d : ℕ} (hd : 0 < d) (x y : Covariate d)
+theorem spatial_patch_alpha_bounds (hd : 0 < d) (x y : Covariate d)
     (hx : x ∈ spatialPatchBox d) (hy : y ∈ spatialPatchBox d) :
     0 ≤ spatialInterpolationLambda d * spatialSquaredDistance x y ∧
       spatialInterpolationLambda d * spatialSquaredDistance x y ≤ 1 / 2 := by
@@ -120,7 +125,7 @@ theorem spatial_patch_alpha_bounds {d : ℕ} (hd : 0 < d) (x y : Covariate d)
     rw [one_div_mul_eq_div, div_le_iff₀ (by positivity : 0 < 8 * (d : ℝ))]
     linarith
 
-theorem spatial_unary_patch_integrable {d : ℕ} (lam t : ℝ) (x : Covariate d) :
+theorem spatial_unary_patch_integrable (lam t : ℝ) (x : Covariate d) :
     IntegrableOn (fun y => spatialUnaryWeight lam t x y) (spatialPatchBox d) := by
   apply ContinuousOn.integrableOn_compact isCompact_Icc
   unfold spatialUnaryWeight spatialSquaredDistance
@@ -128,7 +133,7 @@ theorem spatial_unary_patch_integrable {d : ℕ} (lam t : ℝ) (x : Covariate d)
 
 /-- The paper's unary spatial integral bound, before rewriting the
 Gaussian normalization as its (1+t)^(-d/2) power. -/
-theorem spatial_unary_patch_integral_bound {d : ℕ} (hd : 0 < d)
+theorem spatial_unary_patch_integral_bound (hd : 0 < d)
     (t : ℝ) (ht : 0 ≤ t) (x : Covariate d) (hx : x ∈ spatialPatchBox d) :
     (∫ y in spatialPatchBox d, spatialUnaryWeight (spatialInterpolationLambda d) t x y) ≤
       (8 * Real.exp (1 / 2) / (1 + t)) *
@@ -179,7 +184,7 @@ def spatialUnaryIntegralConstant (d : ℕ) : ℝ :=
 
 /-- Exact power-form unary spatial decay in Appendix A, proved from
 actual Gaussian normalization and exponential-series domination. -/
-theorem spatial_unary_patch_integral_decay {d : ℕ} (hd : 0 < d)
+theorem spatial_unary_patch_integral_decay (hd : 0 < d)
     (t : ℝ) (ht : 0 ≤ t) (x : Covariate d) (hx : x ∈ spatialPatchBox d) :
     (∫ y in spatialPatchBox d, spatialUnaryWeight (spatialInterpolationLambda d) t x y) ≤
       spatialUnaryIntegralConstant d * (1 + t) ^ (-(d : ℝ) / 2 - 1) := by
@@ -193,7 +198,7 @@ theorem spatial_unary_patch_integral_decay {d : ℕ} (hd : 0 < d)
   ring
 
 /-- The other unary spatial estimate used in the L² covariance bound. -/
-theorem spatial_scale_exponential_patch_integral_decay {d : ℕ} (hd : 0 < d)
+theorem spatial_scale_exponential_patch_integral_decay (hd : 0 < d)
     (t : ℝ) (ht : 0 ≤ t) (x : Covariate d) (hx : x ∈ spatialPatchBox d) :
     (∫ y in spatialPatchBox d,
       t * Real.exp (-(t * spatialInterpolationLambda d * spatialSquaredDistance x y))) ≤

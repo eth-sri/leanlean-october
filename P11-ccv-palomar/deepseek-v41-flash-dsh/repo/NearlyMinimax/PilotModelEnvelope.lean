@@ -10,12 +10,14 @@ noncomputable section
 open MeasureTheory
 namespace NearlyMinimax
 
-def pilotModelConstants {d : ℕ} (C : ModelConstants d) : ModelConstants d :=
+variable {d : ℕ} (C : ModelConstants d)
+
+def pilotModelConstants (C : ModelConstants d) : ModelConstants d :=
   { C with
     holderBound := max C.holderBound 1
     holderBound_pos := C.holderBound_pos.trans_le (le_max_left _ _) }
 
-theorem admissible_pilotModelConstants {d : ℕ} (C : ModelConstants d)
+theorem admissible_pilotModelConstants 
     (θ : RegressionParameter d) (hθ : Admissible C θ) :
     Admissible (pilotModelConstants C) θ := by
   obtain ⟨hpd, hpf, hpb, hpone, ⟨F, hFeq, hFdiff, hFnorm⟩, hVlo, hVhi, herr⟩ := hθ

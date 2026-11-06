@@ -15,31 +15,43 @@ namespace NearlyMinimax
 
 variable {J : Type*}
 
+variable (word : List J) (dependent : J → J → Prop) (j : J)
+
+section
+variable (j : J)
+
 /-- Actual old positions embedded in the word with one appended occurrence. -/
-def historyPrefixPosition (word : List J) (j : J) : Fin word.length ↪ Fin (word ++ [j]).length where
+def historyPrefixPosition : Fin word.length ↪ Fin (word ++ [j]).length where
   toFun x := ⟨x.val, by have := x.isLt; simp only [List.length_append, List.length_singleton]; omega⟩
   inj' := by
     intro x y h
     apply Fin.ext
     exact congrArg (fun z : Fin (word ++ [j]).length => z.val) h
 
-@[simp] theorem historyPrefixPosition_val (word : List J) (j : J) (x : Fin word.length) :
+section
+variable (x : Fin word.length)
+
+@[simp] theorem historyPrefixPosition_val :
     (historyPrefixPosition word j x).val = x.val := rfl
 
 /-- All existing labels retain their actual evaluation. -/
-theorem historyPrefixPosition_get (word : List J) (j : J) (x : Fin word.length) :
+theorem historyPrefixPosition_get :
     (word ++ [j]).get (historyPrefixPosition word j x) = word.get x := by
   change (word ++ [j]).get ⟨x.val, _⟩ = word.get x
   rw [List.get_eq_getElem, List.getElem_append_left x.isLt, List.get_eq_getElem]
 
+end
+
 /-- An appended word position lying inside the old word has the same label. -/
-theorem historyPrefixPosition_get_of_lt (word : List J) (j : J)
+theorem historyPrefixPosition_get_of_lt 
     (x : Fin (word ++ [j]).length) (hx : x.val < word.length) :
     (word ++ [j]).get x = word.get ⟨x.val, hx⟩ := by
   rw [List.get_eq_getElem, List.getElem_append_left hx, List.get_eq_getElem]
 
+end
+
 /-- Existing generating edges embed into the genuinely appended dependency word. -/
-theorem historyPrefixPosition_step (word : List J) (dependent : J → J → Prop) (j : J)
+theorem historyPrefixPosition_step 
     {x y : Fin word.length} (hxy : historyPositionStep dependent word.get x y) :
     historyPositionStep dependent (word ++ [j]).get
       (historyPrefixPosition word j x) (historyPrefixPosition word j y) := by
@@ -47,7 +59,7 @@ theorem historyPrefixPosition_step (word : List J) (dependent : J → J → Prop
   simpa only [historyPrefixPosition_get] using hxy.2
 
 /-- A path whose endpoint is in the prefix cannot have passed through the appended occurrence. -/
-theorem historyPrefixPosition_reachable_reflect (word : List J) (dependent : J → J → Prop) (j : J)
+theorem historyPrefixPosition_reachable_reflect 
     {p q : Fin (word ++ [j]).length} (hp : p.val < word.length) (hq : q.val < word.length)
     (h : Relation.ReflTransGen (historyPositionStep dependent (word ++ [j]).get) p q) :
     Relation.ReflTransGen (historyPositionStep dependent word.get) ⟨p.val, hp⟩ ⟨q.val, hq⟩ := by
@@ -62,7 +74,7 @@ theorem historyPrefixPosition_reachable_reflect (word : List J) (dependent : J �
     simpa only [historyPrefixPosition_get_of_lt word j r hr, historyPrefixPosition_get_of_lt word j q hq] using hstep.2
 
 /-- Exact reflection of the full actual heap relation in prefix positions. -/
-theorem historyPrefixPosition_reachable_iff (word : List J) (dependent : J → J → Prop) (j : J)
+theorem historyPrefixPosition_reachable_iff 
     (x y : Fin word.length) :
     Relation.ReflTransGen (historyPositionStep dependent word.get) x y ↔
       Relation.ReflTransGen (historyPositionStep dependent (word ++ [j]).get)
@@ -77,7 +89,7 @@ theorem historyPrefixPosition_reachable_iff (word : List J) (dependent : J → J
     exact hh
 
 /-- The actual prefix dependency heap is an order embedding in the appended heap. -/
-def historyPrefixHeapEmbedding (word : List J) (dependent : J → J → Prop) (j : J) :
+def historyPrefixHeapEmbedding :
     WordHeapPiece word dependent ↪o WordHeapPiece (word ++ [j]) dependent where
   toFun x := ⟨historyPrefixPosition word j x.position⟩
   inj' := by intro x y h; apply WordHeapPiece.ext; exact (historyPrefixPosition word j).injective (congrArg WordHeapPiece.position h)
@@ -86,13 +98,13 @@ def historyPrefixHeapEmbedding (word : List J) (dependent : J → J → Prop) (j
     rw [wordHeap_le_iff_position_reachable, wordHeap_le_iff_position_reachable]
     exact (historyPrefixPosition_reachable_iff word dependent j x.position y.position).symm
 
-@[simp] theorem historyPrefixHeapEmbedding_label (word : List J) (dependent : J → J → Prop)
-    (j : J) (x : WordHeapPiece word dependent) :
+@[simp] theorem historyPrefixHeapEmbedding_label 
+    (x : WordHeapPiece word dependent) :
     wordHeapLabel (historyPrefixHeapEmbedding word dependent j x) = wordHeapLabel x :=
   historyPrefixPosition_get word j x.position
 
 /-- Deleting the appended maximal occurrence leaves exactly the image of the actual prefix heap. -/
-theorem historyPrefixHeapEmbedding_univ (word : List J) (dependent : J → J → Prop) (j : J) :
+theorem historyPrefixHeapEmbedding_univ :
     (Finset.univ : Finset (WordHeapPiece word dependent)).map (historyPrefixHeapEmbedding word dependent j).toEmbedding =
       (Finset.univ : Finset (WordHeapPiece (word ++ [j]) dependent)).erase (wordHeapAppendedPiece word dependent j) := by
   classical
@@ -126,8 +138,8 @@ theorem historyPrefixHeapEmbedding_univ (word : List J) (dependent : J → J →
     rfl
 
 /-- Exact density deletion formula for the actual appended occurrence. -/
-theorem historyPrefixHeap_density_delete (word : List J) (dependent : J → J → Prop)
-    (j : J) (weight : WordHeapPiece (word ++ [j]) dependent → ℝ) (ρ t : ℝ) :
+theorem historyPrefixHeap_density_delete 
+    (weight : WordHeapPiece (word ++ [j]) dependent → ℝ) (ρ t : ℝ) :
     historyScaledUpperDensity weight ρ (Finset.univ.erase (wordHeapAppendedPiece word dependent j)) t =
       historyScaledUpperDensity (weight ∘ historyPrefixHeapEmbedding word dependent j) ρ Finset.univ t := by
   rw [← historyPrefixHeapEmbedding_univ]

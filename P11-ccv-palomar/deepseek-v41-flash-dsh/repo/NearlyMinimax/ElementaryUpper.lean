@@ -13,27 +13,37 @@ noncomputable section
 open MeasureTheory ProbabilityTheory Set Filter
 open scoped BigOperators ENNReal
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 800000
 
-def elementaryDenominatorKernel {d : ℕ} (k : ℕ) (hk : 0 < k) :
+variable {d : ℕ}
+
+section
+variable (k : ℕ)
+
+def elementaryDenominatorKernel (hk : 0 < k) :
     Observation d × Observation d → ℝ := sameLabelKernel (regularObservationLabel k hk)
 
-def elementaryNumeratorKernel {d : ℕ} (k : ℕ) (hk : 0 < k) :
+def elementaryNumeratorKernel (hk : 0 < k) :
     Observation d × Observation d → ℝ :=
   pairWindowScore (regularObservationLabel k hk) Prod.snd 0
 
-def elementaryNumerator {d : ℕ} (n k : ℕ) (hk : 0 < k) :
+end
+
+section
+variable (n k : ℕ)
+
+def elementaryNumerator (hk : 0 < k) :
     (Fin n → Observation d) → ℝ :=
   PairUStatistic.pairAverage n (elementaryNumeratorKernel k hk)
 
-def elementaryDenominator {d : ℕ} (n k : ℕ) (hk : 0 < k) :
+def elementaryDenominator (hk : 0 < k) :
     (Fin n → Observation d) → ℝ :=
   PairUStatistic.pairAverage n (elementaryDenominatorKernel k hk)
 
+end
+
 def elementaryFloor (d k : ℕ) : ℝ := 1 / (2 * (k : ℝ) ^ d)
 
-def elementaryGridEstimator {d : ℕ} (C : ModelConstants d) (n k : ℕ) (hk : 0 < k) :
+def elementaryGridEstimator (C : ModelConstants d) (n k : ℕ) (hk : 0 < k) :
     Estimator d n :=
   ⟨stabilizedRatio C.varianceLower C.varianceUpper (elementaryFloor d k)
       (elementaryNumerator n k hk) (elementaryDenominator n k hk),
@@ -52,7 +62,7 @@ theorem pairAverage_sub_mul {E : Type*} [MeasurableSpace E] (n : ℕ)
   simp_rw [Finset.sum_sub_distrib, ← Finset.mul_sum]
   ring
 
-theorem elementary_score_identity {d : ℕ} (θ : RegressionParameter d)
+theorem elementary_score_identity (θ : RegressionParameter d)
     (n k : ℕ) (hk : 0 < k) (z : Fin n → Observation d) :
     elementaryNumerator n k hk z - θ.variance * elementaryDenominator n k hk z =
       PairUStatistic.pairAverage n (regularPairScore θ k hk) z := by
@@ -103,25 +113,33 @@ theorem elementary_denominator_fluctuation_le {d n : ℕ} (C : ModelConstants d)
     (mul_le_mul_of_nonneg_left hr (by positivity))
     (mul_le_mul_of_nonneg_left hm (by positivity)))
 
-def elementaryRowBound {d : ℕ} (C : ModelConstants d) : ℝ :=
+def elementaryRowBound (C : ModelConstants d) : ℝ :=
   responseFourthBound C + (C.varianceUpper + responseSecondBound C) ^ 2
 
-def elementaryKernelBound {d : ℕ} (C : ModelConstants d) : ℝ :=
+def elementaryKernelBound (C : ModelConstants d) : ℝ :=
   8 * responseFourthBound C + 2 * C.varianceUpper ^ 2
 
-theorem elementaryRowBound_pos {d : ℕ} (C : ModelConstants d) :
+section
+variable (C : ModelConstants d)
+
+theorem elementaryRowBound_pos :
     0 < elementaryRowBound C := by
   unfold elementaryRowBound
   exact add_pos_of_pos_of_nonneg (responseFourthBound_pos C) (sq_nonneg _)
 
-theorem elementaryKernelBound_pos {d : ℕ} (C : ModelConstants d) :
+theorem elementaryKernelBound_pos :
     0 < elementaryKernelBound C := by
   unfold elementaryKernelBound
   have hh := responseFourthBound_pos C
   positivity
 
-theorem elementary_score_fluctuation_le {d n : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (hn : 2 ≤ n)
+end
+
+section
+variable {d n : ℕ} (C : ModelConstants d) (θ : RegressionParameter d)
+
+theorem elementary_score_fluctuation_le 
+    (hθ : Admissible C θ) (hn : 2 ≤ n)
     (k : ℕ) (hk : 0 < k) :
     (∫ z, (PairUStatistic.pairAverage n (regularPairScore θ k hk) z -
       ∫ p, regularPairScore θ k hk p ∂(observationLaw θ).prod (observationLaw θ)) ^ 2
@@ -170,8 +188,8 @@ theorem elementary_score_fluctuation_le {d n : ℕ} (C : ModelConstants d)
     (mul_le_mul_of_nonneg_left hker (by positivity)))
   convert hb using 1 <;> first | rfl | ring
 
-theorem elementary_score_second_moment_le {d n : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (hn : 2 ≤ n)
+theorem elementary_score_second_moment_le 
+    (hθ : Admissible C θ) (hn : 2 ≤ n)
     (k : ℕ) (hk : 0 < k) :
     (∫ z, (elementaryNumerator n k hk z - θ.variance * elementaryDenominator n k hk z) ^ 2
       ∂sampleLaw θ n) ≤
@@ -221,8 +239,8 @@ theorem elementary_score_second_moment_le {d n : ℕ} (C : ModelConstants d)
   rw [hEq]
   exact add_le_add (elementary_score_fluctuation_le C θ hθ hn k hk) hbsq
 
-theorem elementary_grid_mse_explicit {d n : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (hn : 2 ≤ n)
+theorem elementary_grid_mse_explicit 
+    (hθ : Admissible C θ) (hn : 2 ≤ n)
     (k : ℕ) (hk : 0 < k) :
     (∫ z, ((elementaryGridEstimator C n k hk).val z - θ.variance) ^ 2
       ∂sampleLaw θ n) ≤
@@ -275,10 +293,12 @@ theorem elementary_grid_mse_explicit {d n : ℕ} (C : ModelConstants d)
   field_simp [hk0.ne', hn0.ne', hn1.ne', pow_ne_zero d hk0.ne']
   <;> ring
 
-def elementaryBiasFactor {d : ℕ} (C : ModelConstants d) : ℝ :=
+end
+
+def elementaryBiasFactor (C : ModelConstants d) : ℝ :=
   (2 * ((d : ℝ) + 1) * C.holderBound) ^ 4 * (Real.sqrt d) ^ (4 * elementarySmoothness C)
 
-theorem regularGridOscillation_fourth {d : ℕ} (C : ModelConstants d)
+theorem regularGridOscillation_fourth (C : ModelConstants d)
     (k : ℕ) (hk : 0 < k) :
     regularGridOscillation C k ^ 4 = elementaryBiasFactor C *
       (k : ℝ) ^ (-4 * elementarySmoothness C) := by
@@ -295,13 +315,13 @@ theorem regularGridOscillation_fourth {d : ℕ} (C : ModelConstants d)
   rw [mul_pow, he]
   ring
 
-def elementaryUpperConstant {d : ℕ} (C : ModelConstants d) : ℝ :=
+def elementaryUpperConstant (C : ModelConstants d) : ℝ :=
   (64 * C.densityUpper ^ 2 * elementaryRowBound C +
     32 * C.densityUpper ^ 2 * C.varianceUpper ^ 2) +
     (16 * C.densityUpper * (elementaryKernelBound C + C.varianceUpper ^ 2)) +
     (2 * C.densityUpper ^ 2 * elementaryBiasFactor C)
 
-theorem elementaryUpperConstant_pos {d : ℕ} (C : ModelConstants d) :
+theorem elementaryUpperConstant_pos (C : ModelConstants d) :
     0 < elementaryUpperConstant C := by
   have hU : 0 < C.densityUpper := (by norm_num : (0 : ℝ) < 1).trans C.one_lt_densityUpper
   have hR := elementaryRowBound_pos C
@@ -310,7 +330,10 @@ theorem elementaryUpperConstant_pos {d : ℕ} (C : ModelConstants d) :
   unfold elementaryUpperConstant
   positivity
 
-theorem elementary_grid_mse_le {d n : ℕ} (C : ModelConstants d)
+section
+variable {d n : ℕ} (C : ModelConstants d)
+
+theorem elementary_grid_mse_le 
     (θ : RegressionParameter d) (hθ : Admissible C θ) (hn : 2 ≤ n)
     (k : ℕ) (hk : 0 < k) :
     (∫ z, ((elementaryGridEstimator C n k hk).val z - θ.variance) ^ 2
@@ -344,7 +367,7 @@ theorem elementary_grid_mse_le {d n : ℕ} (C : ModelConstants d)
   unfold elementaryUpperConstant
   convert add_le_add (add_le_add h1 h2) h3 using 1 <;> ring
 
-theorem elementary_grid_risk_le {d n : ℕ} (C : ModelConstants d)
+theorem elementary_grid_risk_le 
     (θ : RegressionParameter d) (hθ : Admissible C θ) (hn : 2 ≤ n)
     (k : ℕ) (hk : 0 < k) :
     meanSquaredRisk (elementaryGridEstimator C n k hk) θ ≤
@@ -367,7 +390,7 @@ theorem elementary_grid_risk_le {d n : ℕ} (C : ModelConstants d)
     (Eventually.of_forall (fun z => sq_nonneg _))]
   exact ENNReal.ofReal_mono (elementary_grid_mse_le C θ hθ hn k hk)
 
-theorem elementary_grid_worstCaseRisk_le {d n : ℕ} (C : ModelConstants d)
+theorem elementary_grid_worstCaseRisk_le 
     (hn : 2 ≤ n) (k : ℕ) (hk : 0 < k) :
     worstCaseRisk C (elementaryGridEstimator C n k hk) ≤
       ENNReal.ofReal (elementaryUpperConstant C *
@@ -377,7 +400,9 @@ theorem elementary_grid_worstCaseRisk_le {d n : ℕ} (C : ModelConstants d)
   intro θ
   exact elementary_grid_risk_le C θ.val θ.property hn k hk
 
-def elementaryChosenGrid {d : ℕ} (C : ModelConstants d) (n : ℕ) : ℕ :=
+end
+
+def elementaryChosenGrid (C : ModelConstants d) (n : ℕ) : ℕ :=
   lowSmoothnessGrid d (elementarySmoothness C) n
 
 theorem elementaryChosenGrid_pos {d n : ℕ} (C : ModelConstants d) (hn : 0 < n) :
@@ -387,17 +412,20 @@ theorem elementaryChosenGrid_pos {d n : ℕ} (C : ModelConstants d) (hn : 0 < n)
   unfold elementaryChosenGrid
   omega
 
-def elementaryEstimator {d : ℕ} (C : ModelConstants d) (n : ℕ) : Estimator d n :=
+def elementaryEstimator (C : ModelConstants d) (n : ℕ) : Estimator d n :=
   if hn : 2 ≤ n then
     elementaryGridEstimator C n (elementaryChosenGrid C n)
       (elementaryChosenGrid_pos C (by omega))
   else constantEstimator d n C.varianceLower
 
-def elementaryRMSConstant {d : ℕ} (C : ModelConstants d) : ℝ :=
+def elementaryRMSConstant (C : ModelConstants d) : ℝ :=
   2 * Real.sqrt (elementaryUpperConstant C * (2 * (5 : ℝ) ^ d + 1)) +
     (C.varianceUpper - C.varianceLower)
 
-theorem elementary_rms_upper_of_two_le {d n : ℕ} (C : ModelConstants d) (hn : 2 ≤ n) :
+section
+variable {d n : ℕ} (C : ModelConstants d)
+
+theorem elementary_rms_upper_of_two_le (hn : 2 ≤ n) :
     (worstCaseRisk C (elementaryEstimator C n)) ^ (1 / 2 : ℝ) ≤
       ENNReal.ofReal (Real.sqrt (elementaryUpperConstant C * (2 * (5 : ℝ) ^ d + 1)) *
         ((n : ℝ) ^ (-(1 / 2 : ℝ)) +
@@ -432,7 +460,7 @@ theorem elementary_rms_upper_of_two_le {d n : ℕ} (C : ModelConstants d) (hn : 
 
 /-- All sample sizes, including the one-observation constant estimator.
 This gives the full low-smoothness branch of the paper's elementary upper. -/
-theorem elementary_rms_upper {d n : ℕ} (C : ModelConstants d) (hn : 0 < n) :
+theorem elementary_rms_upper (hn : 0 < n) :
     (worstCaseRisk C (elementaryEstimator C n)) ^ (1 / 2 : ℝ) ≤
       ENNReal.ofReal (elementaryRMSConstant C * max
         ((n : ℝ) ^ (-(1 / 2 : ℝ)))
@@ -472,11 +500,13 @@ theorem elementary_rms_upper {d n : ℕ} (C : ModelConstants d) (hn : 0 < n) :
     have hs := Real.sqrt_nonneg (elementaryUpperConstant C * (2 * (5 : ℝ) ^ d + 1))
     linarith
 
-theorem elementary_upper_low_smoothness {d n : ℕ} (C : ModelConstants d)
+theorem elementary_upper_low_smoothness 
     (hs : C.smoothness ≤ 1) (hn : 0 < n) :
     (worstCaseRisk C (elementaryEstimator C n)) ^ (1 / 2 : ℝ) ≤
       ENNReal.ofReal (elementaryRMSConstant C * max ((n : ℝ) ^ (-(1 / 2 : ℝ)))
         ((n : ℝ) ^ (-4 * C.smoothness / ((d : ℝ) + 4 * C.smoothness)))) := by
   simpa only [elementarySmoothness, min_eq_left hs] using elementary_rms_upper C hn
+
+end
 
 end NearlyMinimax

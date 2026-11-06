@@ -9,8 +9,6 @@ noncomputable section
 open MeasureTheory ProbabilityTheory Set
 open scoped BigOperators RealInnerProductSpace
 namespace NearlyMinimax
-set_option maxHeartbeats 600000
-set_option backward.isDefEq.respectTransparency false
 
 def gaussianAbsoluteMean : ℝ := ∫ z : ℝ, |z| ∂standardGaussianLine
 
@@ -34,17 +32,19 @@ theorem gaussianAbsoluteMean_pos : 0 < gaussianAbsoluteMean := by
   rw [variance_zero] at hv
   exact one_ne_zero hv
 
-theorem euclideanNorm_eq_toLp_norm {d : ℕ} (v : Covariate d) :
+variable {d : ℕ} (v : Covariate d)
+
+theorem euclideanNorm_eq_toLp_norm (v : Covariate d) :
     euclideanNorm v = ‖WithLp.toLp 2 v‖ := by
   simp only [euclideanNorm, EuclideanSpace.norm_eq, PiLp.toLp_apply,
     Real.norm_eq_abs, sq_abs]
 
-theorem gaussianPhase_eq_inner {d : ℕ} (v Z : Covariate d) :
+theorem gaussianPhase_eq_inner (v Z : Covariate d) :
     gaussianPhase v Z = inner ℝ (WithLp.toLp 2 v) (WithLp.toLp 2 Z) := by
   simp only [gaussianPhase, PiLp.inner_apply, WithLp.ofLp_toLp, RCLike.inner_apply,
     conj_trivial, mul_comm]
 
-theorem gaussianPhase_map_eq_scaled_gaussian {d : ℕ} (v : Covariate d) :
+theorem gaussianPhase_map_eq_scaled_gaussian :
     (standardGaussianPi d).map (gaussianPhase v) =
       standardGaussianLine.map (fun z : ℝ => euclideanNorm v * z) := by
   let L : StrongDual ℝ (EuclideanSpace ℝ (Fin d)) := innerSL ℝ (WithLp.toLp 2 v)
@@ -61,7 +61,7 @@ theorem gaussianPhase_map_eq_scaled_gaussian {d : ℕ} (v : Covariate d) :
   simp only [L, innerSL_apply_norm, ← euclideanNorm_eq_toLp_norm]
   rfl
 
-theorem gaussianPhase_abs_integral {d : ℕ} (v : Covariate d) :
+theorem gaussianPhase_abs_integral :
     (∫ Z, |gaussianPhase v Z| ∂standardGaussianPi d) =
       gaussianAbsoluteMean * euclideanNorm v := by
   have hphase : Measurable (gaussianPhase v) := by unfold gaussianPhase; fun_prop

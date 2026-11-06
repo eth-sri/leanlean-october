@@ -12,7 +12,9 @@ open MeasureTheory Set Matrix MvPolynomial
 open scoped BigOperators Matrix.Norms.L2Operator
 namespace NearlyMinimax
 
-def dyadicRegressionDifference {d : ℕ} (θ : RegressionParameter d) (j : ℕ)
+variable {d : ℕ} (j : ℕ) (x w : Covariate d)
+
+def dyadicRegressionDifference (θ : RegressionParameter d) (j : ℕ)
     (x : Covariate d) : Covariate d → ℝ :=
   fun w => θ.regression (dyadicCellAffine j x w) - θ.regression x
 
@@ -22,19 +24,19 @@ def dyadicPopulationFit {d ℓ : ℕ} (θ : RegressionParameter d) (j : ℕ)
   (dyadicPopulationGram θ j x)⁻¹ *ᵥ
     (dyadicResponseMoment θ j x - θ.regression x • dyadicConstantMoment θ j x)
 
-theorem dyadicCellAffine_continuous {d : ℕ} (j : ℕ) (x : Covariate d) :
+theorem dyadicCellAffine_continuous (x : Covariate d) :
     Continuous (dyadicCellAffine j x) := by
   apply continuous_pi
   intro i
   exact continuous_const.add (continuous_const.mul (continuous_apply i))
 
-theorem dyadicCellAffine_mem_cube {d : ℕ} (j : ℕ) (x w : Covariate d)
+theorem dyadicCellAffine_mem_cube 
     (hw : w ∈ unitCube d) : dyadicCellAffine j x w ∈ unitCube d := by
   apply gridClosedBox_subset_cube ((2 : ℕ) ^ j) (by positivity) (regularGridCell _ (by positivity) x)
   change w ∈ gridAffine _ _ ⁻¹' gridClosedBox _ _
   rwa [gridAffine_preimage_box _ (by positivity) _]
 
-theorem dyadicCellAffine_anchor {d : ℕ} (j : ℕ) (x : Covariate d) :
+theorem dyadicCellAffine_anchor (x : Covariate d) :
     dyadicCellAffine j x (dyadicNormalizedAnchor j x) = x := by
   funext i
   simp only [dyadicCellAffine, gridAffine, dyadicNormalizedAnchor, gridNormalizedAnchor,
@@ -43,7 +45,7 @@ theorem dyadicCellAffine_anchor {d : ℕ} (j : ℕ) (x : Covariate d) :
   field_simp
   ring
 
-theorem dyadicCellAffine_difference {d : ℕ} (j : ℕ) (x w : Covariate d) :
+theorem dyadicCellAffine_difference (x w : Covariate d) :
     dyadicCellAffine j x w - x = ((2 : ℝ) ^ j)⁻¹ • (w - dyadicNormalizedAnchor j x) := by
   funext i
   simp only [dyadicCellAffine, gridAffine, dyadicNormalizedAnchor, gridNormalizedAnchor,
@@ -52,7 +54,7 @@ theorem dyadicCellAffine_difference {d : ℕ} (j : ℕ) (x w : Covariate d) :
   field_simp
   ring
 
-theorem dyadicCellAffine_radius {d : ℕ} (j : ℕ) (x w : Covariate d)
+theorem dyadicCellAffine_radius 
     (hx : x ∈ unitCube d) (hw : w ∈ unitCube d) (i : Fin d) :
     |dyadicCellAffine j x w i - x i| ≤ ((2 : ℝ) ^ j)⁻¹ := by
   have hu : dyadicNormalizedAnchor j x ∈ unitCube d :=
@@ -65,17 +67,21 @@ theorem dyadicCellAffine_radius {d : ℕ} (j : ℕ) (x w : Covariate d)
   rw [he, abs_mul, abs_of_nonneg (by positivity : 0 ≤ ((2 : ℝ) ^ j)⁻¹)]
   exact (mul_le_mul_of_nonneg_left hi (by positivity)).trans_eq (mul_one _)
 
-theorem admissible_regression_continuousOn_cube {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) :
+section
+variable (C : ModelConstants d) (θ : RegressionParameter d)
+
+theorem admissible_regression_continuousOn_cube 
+    (hθ : Admissible C θ) :
     ContinuousOn θ.regression (unitCube d) := by
   obtain ⟨F, hF, hreg, hNorm⟩ := hθ.2.2.2.2.1
   exact (hreg.continuousOn.mono C.cube_subset).congr (fun x hx => (hF x hx).symm)
 
-theorem dyadicRegressionDifference_continuousOn {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d) :
-    ContinuousOn (dyadicRegressionDifference θ j x) (unitCube d) := by
-  exact ((admissible_regression_continuousOn_cube C θ hθ).comp
+theorem dyadicRegressionDifference_continuousOn 
+    (hθ : Admissible C θ) (j : ℕ) (x : Covariate d) :
+    ContinuousOn (dyadicRegressionDifference θ j x) (unitCube d) := ((admissible_regression_continuousOn_cube C θ hθ).comp
     (dyadicCellAffine_continuous j x).continuousOn (dyadicCellAffine_mem_cube j x)).sub continuousOn_const
+
+end
 
 theorem dyadicPopulationFit_eq_normalized {d ℓ : ℕ} (C : ModelConstants d)
     (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d) :

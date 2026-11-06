@@ -12,8 +12,6 @@ desired-rate premise occurs in its raw-energy input. -/
 noncomputable section
 open Filter
 namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 
 /-- The three actual primitive local-score energy contributions. -/
 def lowerSaddleRawEnergyBound (s d m θ C cf C5 C6 C7 ch Bl : ℝ)

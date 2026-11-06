@@ -12,8 +12,6 @@ noncomputable section
 open MeasureTheory ProbabilityTheory
 open scoped BigOperators ENNReal
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 800000
 
 def finiteResponseSquareEnergy {α : Type*} [MeasurableSpace α] (n : ℕ)
     (a V : ℝ) (F : α → ℝ) (S : ((Fin n → α) × (Fin n → Fin 3)) → ℝ)

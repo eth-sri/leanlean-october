@@ -32,19 +32,21 @@ theorem historyShapeRelation_append {independent : J → J → Prop} {u v : List
   | symm _ _ _ ih => exact .symm _ _ ih
   | trans _ _ _ _ _ ih₁ ih₂ => exact .trans _ _ _ ih₁ ih₂
 
+variable (dependent : J → J → Prop) (j : J)
+
 /-- Appending an actual local-update label is well-defined on the history shape. -/
-def historyShapeAppend (dependent : J → J → Prop) (j : J) :
+def historyShapeAppend (j : J) :
     HistoryShape (fun a b => ¬ dependent a b) → HistoryShape (fun a b => ¬ dependent a b) :=
   Quotient.lift (fun word => Quotient.mk _ (word ++ [j]))
     (fun _ _ h => Quotient.sound (historyShapeRelation_append h [j]))
 
 omit [Fintype J] [LinearOrder J] in
-@[simp] theorem historyShapeAppend_mk (dependent : J → J → Prop) (j : J) (word : List J) :
+@[simp] theorem historyShapeAppend_mk (word : List J) :
     historyShapeAppend dependent j (Quotient.mk _ word) = Quotient.mk _ (word ++ [j]) := rfl
 
 omit [Fintype J] in
 /-- The append map cannot merge histories: dependent pair words right-cancel. -/
-theorem historyShapeAppend_injective (dependent : J → J → Prop)
+theorem historyShapeAppend_injective 
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i) (j : J) :
     Function.Injective (historyShapeAppend dependent j) := by
   intro g h heq
@@ -62,7 +64,7 @@ theorem historyShapeAppend_injective (dependent : J → J → Prop)
   exact List.append_cancel_right hc
 
 omit [Fintype J] in
-@[simp] theorem historyShapeMultiplicity_append (dependent : J → J → Prop) (j i : J)
+@[simp] theorem historyShapeMultiplicity_append (j i : J)
     (g : HistoryShape (fun a b => ¬ dependent a b)) :
     historyShapeMultiplicity dependent i (historyShapeAppend dependent j g) =
       historyShapeMultiplicity dependent i g + if j = i then 1 else 0 := by
@@ -73,7 +75,7 @@ omit [Fintype J] in
   · subst j; simp
   · simp [hj]
 
-@[simp] theorem historyShapeLength_append (dependent : J → J → Prop) (j : J)
+@[simp] theorem historyShapeLength_append 
     (g : HistoryShape (fun a b => ¬ dependent a b)) :
     historyShapeLength dependent (historyShapeAppend dependent j g) = historyShapeLength dependent g + 1 := by
   induction g using Quotient.inductionOn
@@ -82,7 +84,7 @@ omit [Fintype J] in
   simp
 
 /-- The exact source reference factor needed for append/delete change of variables. -/
-theorem historyShapeReferenceWeight_append (dependent : J → J → Prop) (Δ : ℕ) (j : J)
+theorem historyShapeReferenceWeight_append (Δ : ℕ) (j : J)
     (g : HistoryShape (fun a b => ¬ dependent a b)) :
     historyShapeReferenceWeight dependent Δ (historyShapeAppend dependent j g) =
       historyReferenceRho Δ * historyShapeReferenceWeight dependent Δ g := by

@@ -22,8 +22,10 @@ abbrev HistoryMaximalLabelShape (dependent : J → J → Prop) (j : J) :=
   {g : HistoryShape (fun a b => ¬ dependent a b) // ∃ x : WordHeapPiece g.out dependent,
     x ∈ historyMaximalPieces Finset.univ ∧ wordHeapLabel x = j}
 
+variable (dependent : J → J → Prop) (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i) (j : J)
+
 /-- The actual append bijection onto shapes having a true maximal piece with that label. -/
-def historyShapeTerminalEquiv (dependent : J → J → Prop)
+def historyShapeTerminalEquiv 
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (j : J) : HistoryShape (fun a b => ¬ dependent a b) ≃ HistoryMaximalLabelShape dependent j :=
   (Equiv.ofInjective (historyShapeAppend dependent j)
@@ -31,9 +33,9 @@ def historyShapeTerminalEquiv (dependent : J → J → Prop)
       ((Equiv.refl _).subtypeEquiv (fun g => historyShape_terminal_iff_maximal dependent hsymm j g))
 
 omit [Fintype J] in
-@[simp] theorem historyShapeTerminalEquiv_val (dependent : J → J → Prop)
-    (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
-    (j : J) (g : HistoryShape (fun a b => ¬ dependent a b)) :
+@[simp] theorem historyShapeTerminalEquiv_val 
+    
+    (g : HistoryShape (fun a b => ¬ dependent a b)) :
     (historyShapeTerminalEquiv dependent hrefl hsymm j g).val = historyShapeAppend dependent j g := rfl
 
 end NearlyMinimax

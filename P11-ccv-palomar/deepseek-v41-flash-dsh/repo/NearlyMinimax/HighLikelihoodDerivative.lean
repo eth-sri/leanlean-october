@@ -12,17 +12,17 @@ noncomputable section
 open MeasureTheory ProbabilityTheory Filter Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option maxHeartbeats 800000
-set_option backward.isDefEq.respectTransparency false
 variable {Ω : Type*} [MeasurableSpace Ω]
 
-def highRawSampleVarianceDerivative {d : ℕ} (n : ℕ) (a V : ℝ)
+variable {d : ℕ} (n : ℕ) (a V : ℝ) (p F : Covariate d → ℝ)
+
+def highRawSampleVarianceDerivative (a V : ℝ)
     (p F : Covariate d → ℝ) (z : (Fin n → Covariate d) × (Fin n → Fin 3)) : ℝ :=
   (∏ i, p (z.1 i)) * ∑ i, (∏ j ∈ Finset.univ.erase i,
     ternaryMass a (F (z.1 j)) V (z.2 j)) * ternaryVarianceDerivative a (z.2 i)
 
-theorem highRawSampleLikelihood_hasDerivAt_variance {d : ℕ} (n : ℕ) (a V : ℝ)
-    (p F : Covariate d → ℝ) (z : (Fin n → Covariate d) × (Fin n → Fin 3)) :
+theorem highRawSampleLikelihood_hasDerivAt_variance 
+    (z : (Fin n → Covariate d) × (Fin n → Fin 3)) :
     HasDerivAt (fun W => highRawSampleLikelihood n a W p F z)
       (highRawSampleVarianceDerivative n a V p F z) V := by
   have h := (HasDerivAt.fun_finsetProd (u := (Finset.univ : Finset (Fin n)))
@@ -31,7 +31,7 @@ theorem highRawSampleLikelihood_hasDerivAt_variance {d : ℕ} (n : ℕ) (a V : �
   simpa only [highRawSampleLikelihood, highRawSampleVarianceDerivative,
     Finset.prod_mul_distrib, smul_eq_mul] using h
 
-theorem highRawSampleLikelihood_hasDerivAt_path {d : ℕ} (n : ℕ) (a v η t : ℝ)
+theorem highRawSampleLikelihood_hasDerivAt_path (a v η t : ℝ)
     (p F : Covariate d → ℝ) (z : (Fin n → Covariate d) × (Fin n → Fin 3)) :
     HasDerivAt (fun u => highRawSampleLikelihood n a (v - η ^ 2 * u) p F z)
       (-η ^ 2 * highRawSampleVarianceDerivative n a (v - η ^ 2 * t) p F z) t := by
@@ -39,7 +39,10 @@ theorem highRawSampleLikelihood_hasDerivAt_path {d : ℕ} (n : ℕ) (a v η t : 
     ((hasDerivAt_const t v).sub ((hasDerivAt_id t).const_mul (η ^ 2)))
   simpa only [Function.comp_def, Pi.sub_apply, id_eq, zero_sub, mul_one, mul_comm] using h
 
-theorem highRawSampleLikelihood_abs_le {d : ℕ} (n : ℕ) (a V P : ℝ) (hP : 0 ≤ P)
+section
+variable (a V P : ℝ)
+
+theorem highRawSampleLikelihood_abs_le (hP : 0 ≤ P)
     (p F : Covariate d → ℝ) (hp : ∀ x, |p x| ≤ P) (ha : a ≠ 0)
     (hq : ∀ x y, 0 ≤ ternaryMass a (F x) V y)
     (z : (Fin n → Covariate d) × (Fin n → Fin 3)) :
@@ -57,7 +60,7 @@ theorem highRawSampleLikelihood_abs_le {d : ℕ} (n : ℕ) (a V P : ℝ) (hP : 0
         _ = P := mul_one _
     _ = _ := by simp
 
-theorem highRawSampleVarianceDerivative_abs_le {d : ℕ} (n : ℕ) (a V P : ℝ)
+theorem highRawSampleVarianceDerivative_abs_le 
     (ha : 0 < a) (hP : 0 ≤ P) (p F : Covariate d → ℝ)
     (hp : ∀ x, |p x| ≤ P) (hq : ∀ x y, 0 ≤ ternaryMass a (F x) V y)
     (z : (Fin n → Covariate d) × (Fin n → Fin 3)) :
@@ -89,7 +92,9 @@ theorem highRawSampleVarianceDerivative_abs_le {d : ℕ} (n : ℕ) (a V P : ℝ)
   rw [highRawSampleVarianceDerivative, abs_mul]
   exact mul_le_mul hpp hs (abs_nonneg _) (pow_nonneg hP n)
 
-theorem highRawSampleVarianceDerivative_joint_measurable {d : ℕ} (n : ℕ) (a V : ℝ)
+end
+
+theorem highRawSampleVarianceDerivative_joint_measurable 
     (p F : Ω → Covariate d → ℝ) (hp : Measurable (Function.uncurry p))
     (hF : Measurable (Function.uncurry F)) :
     Measurable (fun z : Ω × ((Fin n → Covariate d) × (Fin n → Fin 3)) =>

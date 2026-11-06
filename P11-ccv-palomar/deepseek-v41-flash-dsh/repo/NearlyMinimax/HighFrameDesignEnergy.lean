@@ -19,8 +19,13 @@ set_option maxHeartbeats 1500000
 section
 variable {E : Type*} [MeasurableSpace E]
 
-def highFrameFullMarkedScore (d k D n : ℕ) [NeZero k]
-    (π : HighWindowLabels d k → Measure E) (activation : HighWindowLabels d k → E → ℝ)
+variable (d k D n : ℕ)
+
+section
+variable [NeZero k] (π : HighWindowLabels d k → Measure E)
+
+def highFrameFullMarkedScore 
+    (activation : HighWindowLabels d k → E → ℝ)
     (a V η : ℝ) (p : Covariate d → ℝ)
     (pReset : HighWindowLabels d k → E → Covariate d → ℝ)
     (cReset : HighWindowLabels d k → E → HighFrameIndex d D → ℝ)
@@ -29,8 +34,8 @@ def highFrameFullMarkedScore (d k D n : ℕ) [NeZero k]
   ∑ j, highFrameMarkedScore d k D n π activation a V η (p ∘ z.1)
     (fun j e => pReset j e ∘ z.1) cReset c z.1 j z.2
 
-theorem highFrameFullMarkedScore_measurable (d k D n : ℕ) [NeZero k]
-    (π : HighWindowLabels d k → Measure E) [∀ j, SFinite (π j)]
+theorem highFrameFullMarkedScore_measurable 
+    [∀ j, SFinite (π j)]
     (activation : HighWindowLabels d k → E → ℝ) (hAct : ∀ j, Measurable (activation j))
     (a V η : ℝ) (p : Covariate d → ℝ) (hp : Measurable p)
     (pReset : HighWindowLabels d k → E → Covariate d → ℝ)
@@ -64,7 +69,9 @@ theorem highFrameFullMarkedScore_measurable (d k D n : ℕ) [NeZero k]
   simp_rw [high_marked_sample_score_eq_ratio]
   exact hR.div hL
 
-theorem high_frame_complete_design_spatial_series (d k D n : ℕ) [NeZero k] (hk : 4 ≤ k)
+end
+
+theorem high_frame_complete_design_spatial_series [NeZero k] (hk : 4 ≤ k)
     (π : HighWindowLabels d k → Measure E) [∀ j, SFinite (π j)]
     (activation : HighWindowLabels d k → E → ℝ)
     (hAct : ∀ j, Measurable (activation j)) (hActI : ∀ j, Integrable (activation j) (π j))

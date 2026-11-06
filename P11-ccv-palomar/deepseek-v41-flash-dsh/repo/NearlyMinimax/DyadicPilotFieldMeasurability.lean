@@ -12,8 +12,6 @@ noncomputable section
 open MeasureTheory
 open scoped BigOperators
 namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 
 theorem centeredKernelExpansion_field_measurable {Ω W : Type*}
     [MeasurableSpace Ω] [MeasurableSpace W] {n p R : ℕ}

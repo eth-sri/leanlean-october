@@ -11,11 +11,11 @@ noncomputable section
 open MeasureTheory ProbabilityTheory Filter Set
 open scoped Topology
 namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 variable {J : Type*} [Fintype J] [LinearOrder J]
 
-theorem historyMarkedPrior_dataScore_centered (dependent : J → J → Prop)
+variable (dependent : J → J → Prop)
+
+theorem historyMarkedPrior_dataScore_centered 
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (Δ : ℕ) (hΔ : 1 ≤ Δ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
     (T Ba : ℝ) (hBa : 0 ≤ Ba)
@@ -64,7 +64,7 @@ theorem historyMarkedPrior_dataScore_centered (dependent : J → J → Prop)
   have hc := (hasDerivAt_const t (1 : ℝ)).congr_of_eventuallyEq he
   simpa only [one_mul] using hd.unique hc
 
-theorem historyMarkedPrior_dataScore_centered_ae (dependent : J → J → Prop)
+theorem historyMarkedPrior_dataScore_centered_ae 
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (Δ : ℕ) (hΔ : 1 ≤ Δ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
     (T Ba : ℝ) (hBa : 0 ≤ Ba)

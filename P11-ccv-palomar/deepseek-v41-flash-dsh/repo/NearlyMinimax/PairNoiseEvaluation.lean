@@ -10,11 +10,10 @@ noncomputable section
 open MeasureTheory
 open scoped RealInnerProductSpace
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option synthInstance.maxHeartbeats 200000
-set_option maxHeartbeats 1000000
 
-theorem observationPairNoiseOperator_energy_integrable {d : ℕ} (C : ModelConstants d)
+variable {d : ℕ} (C : ModelConstants d)
+
+theorem observationPairNoiseOperator_energy_integrable 
     (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k) :
     Integrable (fun z : Observation d × Observation d =>
       sameLabelKernel (regularObservationLabel k hk) z * ‖pairNoiseOperator‖ ^ 2)
@@ -23,7 +22,7 @@ theorem observationPairNoiseOperator_energy_integrable {d : ℕ} (C : ModelConst
   exact ((sameLabelKernel_memLp (observationLaw θ) _
     (regularObservationLabel_measurable k hk)).integrable (by norm_num)).mul_const _
 
-theorem observationPairNoiseOperator_energy_le {d : ℕ} (C : ModelConstants d)
+theorem observationPairNoiseOperator_energy_le 
     (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k) :
     (∫ z : Observation d × Observation d,
       sameLabelKernel (regularObservationLabel k hk) z * ‖pairNoiseOperator‖ ^ 2
@@ -53,8 +52,7 @@ def rawModelPairNoise {Ω : Type*} {d : ℕ} (k : ℕ) (hk : 0 < k)
 theorem rawModelPairNoise_measurable {Ω : Type*} [MeasurableSpace Ω] {d : ℕ}
     (k : ℕ) (hk : 0 < k) {c : Ω → Covariate d × Covariate d → PairVector}
     (hmc : Measurable (fun z : Ω × (Covariate d × Covariate d) => c z.1 z.2)) :
-    Measurable (fun z : (Ω × Ω) × (Observation d × Observation d) => rawModelPairNoise k hk c z.1 z.2) := by
-  exact PilotFields.maskedPilotKernel_measurable
+    Measurable (fun z : (Ω × Ω) × (Observation d × Observation d) => rawModelPairNoise k hk c z.1 z.2) := PilotFields.maskedPilotKernel_measurable
     (c := fun x z => c x (pairCovariates z))
     (A := fun _ : Observation d × Observation d => pairNoiseOperator)
     (q := sameLabelKernel (regularObservationLabel (d := d) k hk))
@@ -63,9 +61,12 @@ theorem rawModelPairNoise_measurable {Ω : Type*} [MeasurableSpace Ω] {d : ℕ}
     (sameLabelKernel_measurable (regularObservationLabel (d := d) k hk)
       (regularObservationLabel_measurable (d := d) k hk))
 
-theorem rawModelPairNoise_memLp {Ω : Type*} [MeasurableSpace Ω]
-    (π : Measure Ω) [IsProbabilityMeasure π] {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k)
+section
+variable {Ω : Type*} [MeasurableSpace Ω] (π : Measure Ω) [IsProbabilityMeasure π] {d : ℕ} (C : ModelConstants d) (θ : RegressionParameter d)
+
+theorem rawModelPairNoise_memLp 
+    
+    (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k)
     {c : Ω → Covariate d × Covariate d → PairVector}
     (hmc : Measurable (fun z : Ω × (Covariate d × Covariate d) => c z.1 z.2))
     (hc : ∀ᵐ w ∂(designLaw θ).prod (designLaw θ),
@@ -93,9 +94,9 @@ theorem rawModelPairNoise_memLp {Ω : Type*} [MeasurableSpace Ω]
   · exact hL
   · exact hmp.quasiMeasurePreserving.ae hE
 
-theorem rawModelPairNoise_energy_le {Ω : Type*} [MeasurableSpace Ω]
-    (π : Measure Ω) [IsProbabilityMeasure π] {d : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k)
+theorem rawModelPairNoise_energy_le 
+    
+    (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k)
     {c : Ω → Covariate d × Covariate d → PairVector}
     (hmc : Measurable (fun z : Ω × (Covariate d × Covariate d) => c z.1 z.2))
     (hc : ∀ᵐ w ∂(designLaw θ).prod (designLaw θ),
@@ -121,5 +122,7 @@ theorem rawModelPairNoise_energy_le {Ω : Type*} [MeasurableSpace Ω]
     (hmp.quasiMeasurePreserving.ae hc) hL (hmp.quasiMeasurePreserving.ae hE)
   exact he.trans (mul_le_mul_of_nonneg_left (observationPairNoiseOperator_energy_le C θ hθ k hk)
     (sq_nonneg L))
+
+end
 
 end NearlyMinimax

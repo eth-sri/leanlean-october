@@ -10,22 +10,22 @@ noncomputable section
 open Set MeasureTheory
 open scoped BigOperators ENNReal
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 600000
 attribute [local instance] Classical.propDecidable
 
-def boundedMultiIndexMultiset (d ℓ : ℕ) (γ : Fin d → Fin (ℓ + 1)) : Multiset (Fin (d + 1)) :=
+variable (d ℓ : ℕ)
+
+def boundedMultiIndexMultiset (γ : Fin d → Fin (ℓ + 1)) : Multiset (Fin (d + 1)) :=
   (∑ r, Multiset.replicate (γ r).val r.castSucc) +
     Multiset.replicate (ℓ - ∑ r, (γ r).val) (Fin.last d)
 
-theorem boundedMultiIndexMultiset_card (d ℓ : ℕ) (γ : Fin d → Fin (ℓ + 1))
+theorem boundedMultiIndexMultiset_card (γ : Fin d → Fin (ℓ + 1))
     (hγ : (∑ r, (γ r).val) ≤ ℓ) :
     (boundedMultiIndexMultiset d ℓ γ).card = ℓ := by
   simp only [boundedMultiIndexMultiset, Multiset.card_add, Multiset.card_sum,
     Multiset.card_replicate]
   omega
 
-theorem boundedMultiIndexMultiset_count (d ℓ : ℕ) (γ : Fin d → Fin (ℓ + 1)) (r : Fin d) :
+theorem boundedMultiIndexMultiset_count (γ : Fin d → Fin (ℓ + 1)) (r : Fin d) :
     (boundedMultiIndexMultiset d ℓ γ).count r.castSucc = (γ r).val := by
   simp only [boundedMultiIndexMultiset, Multiset.count_add, Multiset.count_sum',
     Multiset.count_replicate]
@@ -38,7 +38,7 @@ theorem boundedMultiIndexMultiset_count (d ℓ : ℕ) (γ : Fin d → Fin (ℓ +
   simpa only [Finset.mem_univ, ite_true] using
     Finset.sum_ite_eq' Finset.univ r (fun i => (γ i).val)
 
-theorem bounded_multiIndex_count_le (d ℓ : ℕ) :
+theorem bounded_multiIndex_count_le :
     (Finset.univ.filter (fun γ : Fin d → Fin (ℓ + 1) => (∑ r, (γ r).val) ≤ ℓ)).card ≤
       (d + ℓ).choose d := by
   let A := Finset.univ.filter (fun γ : Fin d → Fin (ℓ + 1) => (∑ r, (γ r).val) ≤ ℓ)

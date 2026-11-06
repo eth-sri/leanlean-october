@@ -13,8 +13,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators ENNReal
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 800000
 attribute [local instance] Classical.propDecidable
 
 theorem finset_sum_cardinality {n : ℕ} (F : ℕ → ℝ) :
@@ -29,8 +27,11 @@ theorem finset_sum_cardinality {n : ℕ} (F : ℕ → ℝ) :
     nsmul_eq_mul, Nat.cast_ofNat] using
       (Finset.sum_powersetCard r (Finset.univ : Finset (Fin n)) F)
 
-theorem iid_local_energy_le_binomial_spatial_series {α : Type*} [MeasurableSpace α]
-    (μ : Measure α) [IsProbabilityMeasure μ] (n : ℕ) (A : Set α) (hA : MeasurableSet A)
+section
+variable {α : Type*} [MeasurableSpace α] (μ : Measure α) [IsProbabilityMeasure μ] (n : ℕ) (A : Set α)
+
+theorem iid_local_energy_le_binomial_spatial_series 
+    (hA : MeasurableSet A)
     (E : (Fin n → α) → ℝ) (hE : Integrable E (Measure.pi (fun _ : Fin n => μ)))
     (H : (S : Finset (Fin n)) → (S → α) → ℝ)
     (hH : ∀ S, Integrable (H S) (Measure.pi (fun _ : S => μ.restrict A)))
@@ -51,8 +52,8 @@ theorem iid_local_energy_le_binomial_spatial_series {α : Type*} [MeasurableSpac
       intro r hr
       ring
 
-theorem iid_local_energy_le_factorial_spatial_series {α : Type*} [MeasurableSpace α]
-    (μ : Measure α) [IsProbabilityMeasure μ] (n : ℕ) (A : Set α) (hA : MeasurableSet A)
+theorem iid_local_energy_le_factorial_spatial_series 
+    (hA : MeasurableSet A)
     (E : (Fin n → α) → ℝ) (hE : Integrable E (Measure.pi (fun _ : Fin n => μ)))
     (H : (S : Finset (Fin n)) → (S → α) → ℝ)
     (hH : ∀ S, Integrable (H S) (Measure.pi (fun _ : S => μ.restrict A)))
@@ -66,9 +67,10 @@ theorem iid_local_energy_le_factorial_spatial_series {α : Type*} [MeasurableSpa
   apply Finset.sum_le_sum
   intro r hr
   calc
-    _ ≤ ((n : ℝ) ^ r / (r.factorial : ℝ)) * ψ ^ r * J r := by
-      exact mul_le_mul_of_nonneg_right
+    _ ≤ ((n : ℝ) ^ r / (r.factorial : ℝ)) * ψ ^ r * J r := mul_le_mul_of_nonneg_right
         (mul_le_mul_of_nonneg_right (Nat.choose_le_pow_div r n) (pow_nonneg hψ r)) (hJ r)
     _ = _ := by rw [mul_pow]; ring
+
+end
 
 end NearlyMinimax

@@ -17,11 +17,11 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1400000
 attribute [local instance] Classical.propDecidable
 
-def higherBandFirstAction {d n : ℕ} (ad bd lam L T : ℝ) (r m D q : ℕ)
+variable {d n : ℕ} (ad bd lam L T : ℝ)
+
+def higherBandFirstAction (ad bd lam L T : ℝ) (r m D q : ℕ)
     (C : ℝ) (fine : Bool) (U : Fin n → Covariate d) (p : Fin n → ℝ)
     (c : HighFrameIndex d D → ℝ) (Φ : (HighFrameIndex d D → ℝ) → ℝ) : ℝ :=
   ∫ᵛ e, highPacketObservable ad bd m r D q C c
@@ -29,8 +29,8 @@ def higherBandFirstAction {d n : ℕ} (ad bd lam L T : ℝ) (r m D q : ℕ)
       (fun i l => higherBandCarrierFactor d r lam fine ζ l (U i)) i) Φ e
     ∂<•higherBandSignedRow d r m D q ad bd C lam L T fine
 
-theorem higherBandFirstAction_eq_packet {d n : ℕ}
-    (ad bd lam L T : ℝ) (ha : 0 < ad) (hab : ad < bd) (hT : 1 ≤ T)
+theorem higherBandFirstAction_eq_packet 
+    (ha : 0 < ad) (hab : ad < bd) (hT : 1 ≤ T)
     (r m D q : ℕ) (hr : 1 ≤ r) (C : ℝ) (fine : Bool)
     (U : Fin n → Covariate d) (hU : ∀ i j, |U i j| ≤ 2)
     (p : Fin n → ℝ) (hp : ∀ i, p i ∈ Icc ad bd)
@@ -70,8 +70,8 @@ theorem higherBandFirstAction_eq_packet {d n : ℕ}
     (fun ζ e => finite_density_product_abs_bound _ bd (ha.trans hab).le (hb ζ e))
     Φ (finePairResponseAtomBound q C c Φ) (finePairResponseAtomBound_le q C c Φ)
 
-theorem higherBandFirstAction_count_expansion {d n : ℕ}
-    (ad bd lam L T : ℝ) (ha : 0 < ad) (hab : ad < bd) (hT : 1 ≤ T)
+theorem higherBandFirstAction_count_expansion 
+    (ha : 0 < ad) (hab : ad < bd) (hT : 1 ≤ T)
     (r m D q : ℕ) (hr : 1 ≤ r) (hD : 1 ≤ D) (hnD : n ≤ D)
     (C : ℝ) (fine : Bool) (U : Fin n → Covariate d) (hU : ∀ i j, |U i j| ≤ 2)
     (p : Fin n → ℝ) (hp : ∀ i, p i ∈ Icc ad bd)
@@ -95,8 +95,8 @@ theorem higherBandFirstAction_count_expansion {d n : ℕ}
       (higherBandCarrierAmplitude_measurable d r D lam fine)
       (higherBandCarrierAmplitude_cost_integrable d r D lam L T hT fine) c Φ
 
-theorem higherBandFirstAction_zero_small_count {d n : ℕ}
-    (ad bd lam L T : ℝ) (ha : 0 < ad) (hab : ad < bd) (hT : 1 ≤ T)
+theorem higherBandFirstAction_zero_small_count 
+    (ha : 0 < ad) (hab : ad < bd) (hT : 1 ≤ T)
     (r m D q : ℕ) (hr : 1 ≤ r) (hD : 1 ≤ D) (hnD : n ≤ D) (hnr : n < r)
     (C : ℝ) (fine : Bool) (U : Fin n → Covariate d) (hU : ∀ i j, |U i j| ≤ 2)
     (p : Fin n → ℝ) (hp : ∀ i, p i ∈ Icc ad bd)
@@ -108,8 +108,8 @@ theorem higherBandFirstAction_zero_small_count {d n : ℕ}
     Finset.powersetCard_eq_empty.mpr (by simpa using hnr)
   simp only [he, Finset.sum_empty, mul_zero]
 
-theorem higherBandFirstAction_zero_other_count {d n : ℕ}
-    (ad bd lam L T : ℝ) (ha : 0 < ad) (hab : ad < bd) (hT : 1 ≤ T)
+theorem higherBandFirstAction_zero_other_count 
+    (ha : 0 < ad) (hab : ad < bd) (hT : 1 ≤ T)
     (r m D q : ℕ) (hr : 1 ≤ r) (hD : 1 ≤ D) (hnD : n ≤ D)
     (hnm : n ≤ m) (hne : n ≠ r) (C : ℝ) (fine : Bool)
     (U : Fin n → Covariate d) (hU : ∀ i j, |U i j| ≤ 2)
@@ -123,7 +123,7 @@ theorem higherBandFirstAction_zero_other_count {d n : ℕ}
     C fine U hU p hp c Φ,
     densityCountCoefficient_exact ad bd ha hab m r n hr (by omega) hnm, if_neg hne, zero_mul]
 
-theorem cardinal_density_subset_sym_eq {d n : ℕ} (lam : ℝ)
+theorem cardinal_density_subset_sym_eq (lam : ℝ)
     (S : Finset (Fin n)) (z : CardinalSeparatedMark d S.card)
     (U : Fin n → Covariate d) :
     densitySeparatedSym S.card (fun i l => cardinalSeparatedFactor lam z l (U i)) S =
@@ -143,11 +143,14 @@ theorem cardinal_density_subset_sym_eq {d n : ℕ} (lam : ℝ)
   intro l _
   rfl
 
-def higherBandActualMatrix {d n D : ℕ} (lam L T : ℝ) (fine : Bool)
+section
+variable {d n D : ℕ}
+
+def higherBandActualMatrix (lam L T : ℝ) (fine : Bool)
     (U : Fin n → Covariate d) : HighFrameIndex d D → HighFrameIndex d D → ℝ :=
   if fine then globalCardinalBandMatrix lam L T U else integratedCardinalMatrix lam T U
 
-theorem higherBand_subset_matrix_actual {d n D : ℕ} (lam : ℝ) (hlam : 0 ≤ lam)
+theorem higherBand_subset_matrix_actual (lam : ℝ) (hlam : 0 ≤ lam)
     (L T : ℝ) (hL : 0 < L) (hT : 1 ≤ T) (fine : Bool)
     (S : Finset (Fin n)) (hS : 2 ≤ S.card) (U : Fin n → Covariate d)
     (hU : ∀ i j, |U i j| ≤ 2) :
@@ -169,8 +172,10 @@ theorem higherBand_subset_matrix_actual {d n D : ℕ} (lam : ℝ) (hlam : 0 ≤ 
     simp_rw [cardinal_density_subset_sym_eq]
     exact (integrated_cardinal_actual_band_separated_exact hS lam hlam hL hT _ hb β β').symm
 
-theorem higherBandFirstAction_actual_count_expansion {d n : ℕ}
-    (ad bd lam L T : ℝ) (ha : 0 < ad) (hab : ad < bd) (hlam : 0 ≤ lam)
+end
+
+theorem higherBandFirstAction_actual_count_expansion 
+    (ha : 0 < ad) (hab : ad < bd) (hlam : 0 ≤ lam)
     (hL : 0 < L) (hT : 1 ≤ T) (r m D q : ℕ) (hr : 2 ≤ r) (hD : 1 ≤ D) (hnD : n ≤ D)
     (C : ℝ) (fine : Bool) (U : Fin n → Covariate d) (hU : ∀ i j, |U i j| ≤ 2)
     (p : Fin n → ℝ) (hp : ∀ i, p i ∈ Icc ad bd)
@@ -191,7 +196,7 @@ theorem higherBandFirstAction_actual_count_expansion {d n : ℕ}
   subst r
   rw [hh]
 
-def singletonFirstAction {d n : ℕ} (ad bd : ℝ) (D q : ℕ) (C : ℝ)
+def singletonFirstAction (ad bd : ℝ) (D q : ℕ) (C : ℝ)
     (p : Fin n → ℝ) (c : HighFrameIndex d D → ℝ)
     (Φ : (HighFrameIndex d D → ℝ) → ℝ) : ℝ :=
   ∫ᵛ e, highPacketObservable ad bd D 1 D q C c
@@ -200,8 +205,11 @@ def singletonFirstAction {d n : ℕ} (ad bd : ℝ) (D q : ℕ) (C : ℝ)
       (fun _ => finePairUnitMatrix d D)
 
 set_option maxHeartbeats 120000 in
-theorem singletonFirstAction_eq_packet {d n : ℕ}
-    (ad bd : ℝ) (ha : 0 < ad) (hab : ad < bd) (D q : ℕ) (C : ℝ)
+section
+variable (ad bd : ℝ)
+
+theorem singletonFirstAction_eq_packet 
+    (ha : 0 < ad) (hab : ad < bd) (D q : ℕ) (C : ℝ)
     (p : Fin n → ℝ) (hp : ∀ i, p i ∈ Icc ad bd)
     (c : HighFrameIndex d D → ℝ) (Φ : (HighFrameIndex d D → ℝ) → ℝ) :
     singletonFirstAction ad bd D q C p c Φ =
@@ -225,8 +233,8 @@ theorem singletonFirstAction_eq_packet {d n : ℕ}
     (fun _ e => finite_density_product_abs_bound _ bd (ha.trans hab).le (hb e))
     Φ (finePairResponseAtomBound q C c Φ) (finePairResponseAtomBound_le q C c Φ)
 
-theorem singletonFirstAction_zero_other_count {d n : ℕ}
-    (ad bd : ℝ) (ha : 0 < ad) (hab : ad < bd) (D q : ℕ) (hD : 1 ≤ D)
+theorem singletonFirstAction_zero_other_count 
+    (ha : 0 < ad) (hab : ad < bd) (D q : ℕ) (hD : 1 ≤ D)
     (hnD : n ≤ D) (hne : n ≠ 1) (C : ℝ)
     (p : Fin n → ℝ) (hp : ∀ i, p i ∈ Icc ad bd)
     (c : HighFrameIndex d D → ℝ) (Φ : (HighFrameIndex d D → ℝ) → ℝ) :
@@ -246,6 +254,8 @@ theorem singletonFirstAction_zero_other_count {d n : ℕ}
     (by intro _ _ _; norm_num) C (fun _ => finePairUnitMatrix d D)
     (fun _ _ => measurable_const) (integrable_const _) c Φ
   simpa only [Finset.card_univ, Fintype.card_fin, if_neg hne] using hh
+
+end
 
 theorem densitySeparatedSym_one {α : Type*} [DecidableEq α] (r : ℕ)
     (S : Finset α) (hS : S.card = r) : densitySeparatedSym r (fun _ _ => (1 : ℝ)) S = 1 := by
@@ -275,7 +285,7 @@ theorem singletonFirstAction_count_one {d : ℕ}
   simp_rw [hh]
   simp
 
-def completeSourceSignedFirstAction {d n : ℕ} (ad bd lam ℓ N μ : ℝ)
+def completeSourceSignedFirstAction (ad bd lam ℓ N μ : ℝ)
     (D M q : ℕ) (C : ℝ) (U : Fin n → Covariate d) (p : Fin n → ℝ)
     (c : HighFrameIndex d D → ℝ) (Φ : (HighFrameIndex d D → ℝ) → ℝ) : ℝ :=
   finePairThreeRowFirstAction ad bd ℓ N D M q C U p c Φ +
@@ -286,7 +296,7 @@ def completeSourceSignedFirstAction {d n : ℕ} (ad bd lam ℓ N μ : ℝ)
 
 /-- The raw complete-source numerator subtracts the global variance
 derivative once, after adding every genuine row first action. -/
-def completeSourceRawNumerator {d n : ℕ} (ad bd lam ℓ N μ : ℝ)
+def completeSourceRawNumerator (ad bd lam ℓ N μ : ℝ)
     (D M q : ℕ) (C a V η : ℝ) (U : Fin n → Covariate d) (p g w : Fin n → ℝ)
     (c : HighFrameIndex d D → ℝ) (y : Fin n → Fin 3) : ℝ :=
   completeSourceSignedFirstAction ad bd lam ℓ N μ D M q C U p c

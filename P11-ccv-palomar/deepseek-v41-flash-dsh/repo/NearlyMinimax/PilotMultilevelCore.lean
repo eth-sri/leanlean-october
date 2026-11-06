@@ -11,7 +11,6 @@ noncomputable section
 open MeasureTheory ProbabilityTheory
 open scoped BigOperators ENNReal
 namespace NearlyMinimax
-set_option maxHeartbeats 500000
 
 theorem secondMoment_sum_le_weighted {Ω ι : Type*} [MeasurableSpace Ω] [Fintype ι]
     (μ : Measure Ω) (X : ι → Ω → ℝ) (hX : ∀ i, MemLp (X i) 2 μ)

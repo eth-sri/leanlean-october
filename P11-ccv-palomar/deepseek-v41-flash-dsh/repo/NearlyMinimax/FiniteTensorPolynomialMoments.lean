@@ -12,16 +12,16 @@ noncomputable section
 open MeasureTheory MvPolynomial
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 600000
 
 variable {σ E F : Type*} [DecidableEq σ] [MeasurableSpace E] [MeasurableSpace F]
 
 def polynomialPairMoment (w : E → ℝ) (P P' : E → MvPolynomial σ ℝ)
     (β β' : σ →₀ ℕ) (e : E) : ℝ := w e * (P e).coeff β * (P' e).coeff β'
 
+variable (w : E → ℝ)
+
 theorem polynomialPairMoment_mul_expansion
-    (w : E → ℝ) (v : F → ℝ) (P P' : E → MvPolynomial σ ℝ)
+    (v : F → ℝ) (P P' : E → MvPolynomial σ ℝ)
     (Q Q' : F → MvPolynomial σ ℝ) (β β' : σ →₀ ℕ) (z : E × F) :
     polynomialPairMoment (fun z : E × F => w z.1 * v z.2)
       (fun z => P z.1 * Q z.2) (fun z => P' z.1 * Q' z.2) β β' z =
@@ -39,9 +39,12 @@ theorem polynomialPairMoment_mul_expansion
   intro b' hb'
   ring
 
+section
+variable (μ : Measure E) (ν : Measure F) [SigmaFinite μ] [SigmaFinite ν] (w : E → ℝ) (v : F → ℝ)
+
 theorem polynomialPairMoment_product_integrable
-    (μ : Measure E) (ν : Measure F) [SigmaFinite μ] [SigmaFinite ν]
-    (w : E → ℝ) (v : F → ℝ) (P P' : E → MvPolynomial σ ℝ)
+    
+    (P P' : E → MvPolynomial σ ℝ)
     (Q Q' : F → MvPolynomial σ ℝ)
     (hP : ∀ β β', Integrable (polynomialPairMoment w P P' β β') μ)
     (hQ : ∀ β β', Integrable (polynomialPairMoment v Q Q' β β') ν)
@@ -56,8 +59,8 @@ theorem polynomialPairMoment_product_integrable
     (hP b.1 b'.1).mul_prod (hQ b.2 b'.2)
 
 theorem polynomialPairMoment_product_integral
-    (μ : Measure E) (ν : Measure F) [SigmaFinite μ] [SigmaFinite ν]
-    (w : E → ℝ) (v : F → ℝ) (P P' : E → MvPolynomial σ ℝ)
+    
+    (P P' : E → MvPolynomial σ ℝ)
     (Q Q' : F → MvPolynomial σ ℝ)
     (hP : ∀ β β', Integrable (polynomialPairMoment w P P' β β') μ)
     (hQ : ∀ β β', Integrable (polynomialPairMoment v Q Q' β β') ν)
@@ -82,6 +85,8 @@ theorem polynomialPairMoment_product_integral
   apply Finset.sum_congr rfl
   intro c' hc'
   ring
+
+end
 
 def tensorPolynomialPairMoment {n : ℕ} (w : Fin n → E → ℝ)
     (P P' : Fin n → E → MvPolynomial σ ℝ) (β β' : σ →₀ ℕ)

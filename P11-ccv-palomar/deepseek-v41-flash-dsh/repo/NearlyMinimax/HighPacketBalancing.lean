@@ -11,8 +11,6 @@ noncomputable section
 open Set MeasureTheory ProbabilityTheory
 open scoped ENNReal BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 600000
 
 section Packet
 variable {Z ι : Type*} [MeasurableSpace Z] [Fintype ι] [DecidableEq ι]
@@ -27,13 +25,15 @@ include hA hcost hpos
 
 end Packet
 
-def highCenterResolutionThreshold {d : ℕ} (C : ModelConstants d) : ℝ :=
+variable {d : ℕ}
+
+def highCenterResolutionThreshold (C : ModelConstants d) : ℝ :=
   max 2 (highCenterRadius C)⁻¹
 
-theorem highCenterResolution_guards {d : ℕ} (C : ModelConstants d) (M : ℝ)
+theorem highCenterResolution_guards (C : ModelConstants d) (M : ℝ)
     (hM : highCenterResolutionThreshold C ≤ M) : 2 ≤ M ∧ 1 / M ≤ highCenterRadius C := by
-  have hM2 : 2 ≤ M := (le_max_left _ _).trans hM
-  have hMr : (highCenterRadius C)⁻¹ ≤ M := (le_max_right _ _).trans hM
+  have hM2 := (le_max_left _ _).trans hM
+  have hMr := (le_max_right _ _).trans hM
   have hM0 : 0 < M := by linarith
   refine ⟨hM2, ?_⟩
   apply (div_le_iff₀ hM0).mpr

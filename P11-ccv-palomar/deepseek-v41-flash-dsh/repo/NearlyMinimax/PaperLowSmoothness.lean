@@ -13,9 +13,10 @@ constructed pair estimator and the actual ternary submodels. -/
 noncomputable section
 open scoped ENNReal
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
 
-theorem lowSmoothnessScale_eq_root {d n : ℕ} (C : ModelConstants d)
+variable {d n : ℕ} (C : ModelConstants d)
+
+theorem lowSmoothnessScale_eq_root 
     (hd : (d : ℝ) ≤ 4 * C.smoothness) (hn : 1 ≤ n) :
     lowSmoothnessScale C.smoothness d n = (n : ℝ) ^ (-(1 / 2 : ℝ)) := by
   have hden : 0 < (d : ℝ) + 4 * C.smoothness := by
@@ -26,10 +27,9 @@ theorem lowSmoothnessScale_eq_root {d n : ℕ} (C : ModelConstants d)
     apply neg_le_neg
     apply (le_div_iff₀ hden).mpr
     nlinarith
-  have hpow := Real.rpow_le_rpow_of_exponent_le (by exact_mod_cast hn : (1 : ℝ) ≤ n) hexp
-  exact max_eq_left hpow
+  exact max_eq_left (Real.rpow_le_rpow_of_exponent_le (by exact_mod_cast hn : (1 : ℝ) ≤ n) hexp)
 
-theorem lowSmoothnessScale_eq_nonparametric {d n : ℕ} (C : ModelConstants d)
+theorem lowSmoothnessScale_eq_nonparametric 
     (hd : 4 * C.smoothness ≤ (d : ℝ)) (hn : 1 ≤ n) :
     lowSmoothnessScale C.smoothness d n =
       (n : ℝ) ^ (-4 * C.smoothness / ((d : ℝ) + 4 * C.smoothness)) := by
@@ -40,10 +40,9 @@ theorem lowSmoothnessScale_eq_nonparametric {d n : ℕ} (C : ModelConstants d)
     apply neg_le_neg
     apply (div_le_iff₀ hden).mpr
     nlinarith
-  have hpow := Real.rpow_le_rpow_of_exponent_le (by exact_mod_cast hn : (1 : ℝ) ≤ n) hexp
   have he : -(4 * C.smoothness / ((d : ℝ) + 4 * C.smoothness)) =
       -4 * C.smoothness / ((d : ℝ) + 4 * C.smoothness) := by ring
-  simpa only [lowSmoothnessScale, he] using max_eq_right hpow
+  simpa only [lowSmoothnessScale, he] using max_eq_right (Real.rpow_le_rpow_of_exponent_le (by exact_mod_cast hn : (1 : ℝ) ≤ n) hexp)
 
 /-- A genuine lower bound for the maximum of the two low-smoothness rates,
 including the critical dimension and n = 1. -/
@@ -79,8 +78,7 @@ theorem paper_low_smoothness {d : ℕ} (C : ModelConstants d) : LowSmoothnessCla
       _ = c := inv_inv c
   refine ⟨A, hA, ?_⟩
   intro n hn
-  have hscale : 0 ≤ lowSmoothnessScale C.smoothness d n := by
-    exact (Real.rpow_nonneg (Nat.cast_nonneg n) _).trans (le_max_left _ _)
+  have hscale : 0 ≤ lowSmoothnessScale C.smoothness d n := (Real.rpow_nonneg (Nat.cast_nonneg n) _).trans (le_max_left _ _)
   constructor
   · exact (ENNReal.ofReal_le_ofReal (mul_le_mul_of_nonneg_right hAc hscale)).trans (hbound n hn)
   · have hupper := (ENNReal.rpow_le_rpow

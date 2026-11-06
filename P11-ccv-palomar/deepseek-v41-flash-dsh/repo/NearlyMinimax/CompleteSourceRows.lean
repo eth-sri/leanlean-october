@@ -13,11 +13,11 @@ noncomputable section
 open Set MeasureTheory
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1200000
 attribute [local instance] Classical.propDecidable
 
-theorem high_source_interval_numeric {d : ℕ} (C : ModelConstants d) (M : ℝ)
+variable {d : ℕ} (C : ModelConstants d)
+
+theorem high_source_interval_numeric (C : ModelConstants d) (M : ℝ)
     (hM : highCenterResolutionThreshold C ≤ M) :
     0 < C.densityLower+1/M ∧ C.densityLower+1/M < C.densityUpper-1/M := by
   have hg := highCenterResolution_guards C M hM
@@ -34,7 +34,7 @@ def completeSourceRows {d : ℕ} (C : ModelConstants d) (k D M q : ℕ)
 
 /-- The actual singleton response/density row satisfies every source
 primitive guard; its nondegeneracy and centering follow from finite rules. -/
-theorem singletonRowSource_guards {d : ℕ} (C : ModelConstants d) (k D M q : ℕ)
+theorem singletonRowSource_guards (k D M q : ℕ)
     (hq : 1 ≤ q) (hM : highCenterResolutionThreshold C ≤ (M : ℝ))
     (Cfr : ℝ) (hCfr : 1 ≤ Cfr) :
     HighUnionSourceGuards C (M : ℝ) Cfr
@@ -120,7 +120,7 @@ theorem HighUnionSourceGuards.restrict {d k F : ℕ} {I : Type*} [Fintype I] {E 
 /-- The complete actual source family satisfies every primitive source
 condition from numerical guards alone. In particular the final prior is
 not restricted to the pair rows or a single higher-target packet. -/
-theorem completeSourceRows_guards {d : ℕ} (C : ModelConstants d) [NeZero d]
+theorem completeSourceRows_guards [NeZero d]
     (k D M q : ℕ) (hD : 3 ≤ D) (hq : 1 ≤ q)
     (hM : highCenterResolutionThreshold C ≤ (M : ℝ))
     (Cfr lam ℓ N μ : ℝ) (hCfr : 1 ≤ Cfr) (hℓ : 0 < ℓ) (hℓN : ℓ < N) :

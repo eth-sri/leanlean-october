@@ -12,8 +12,6 @@ noncomputable section
 open MeasureTheory Filter
 open scoped Topology BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 800000
 
 def higherBandInterpolationBase (d : ℕ) (lam : ℝ) : ℝ := 1024 * |lam| *(d : ℝ)^2
 
@@ -186,7 +184,9 @@ theorem ordinaryDensityActivityBase_shrunk_le {a b t c0 : ℝ}
 def higherBandSourceCact (d : ℕ) (a b c0 lam : ℝ) : ℝ :=
   higherBandGeometricConstant (uniformOrdinaryDensityActivityBase a b c0) (higherBandInterpolationBase d lam)
 
-theorem higherBandSourceCact_positive (d : ℕ) {a b c0 lam : ℝ} (ha : 0 < a) (hab : a < b) :
+variable (d : ℕ)
+
+theorem higherBandSourceCact_positive {a b c0 lam : ℝ} (ha : 0 < a) (hab : a < b) :
     0 < higherBandSourceCact d a b c0 lam := by
   have hB : 0 < uniformOrdinaryDensityActivityBase a b c0 :=
     mul_pos (Real.exp_pos _) (div_pos (sub_pos.mpr hab) ha)

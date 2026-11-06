@@ -11,11 +11,14 @@ noncomputable section
 open MeasureTheory ProbabilityTheory Matrix MvPolynomial
 open scoped BigOperators ENNReal Matrix.Norms.L2Operator
 namespace NearlyMinimax
-set_option maxHeartbeats 2000000
-set_option backward.isDefEq.respectTransparency false
 
-theorem dyadicIncrementKernel_raw_budget_of_derivative {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
+variable {d : ℕ} (C : ModelConstants d)
+
+section
+variable [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d)
+
+theorem dyadicIncrementKernel_raw_budget_of_derivative 
+    (hθ : Admissible C θ)
     (D A : ℝ) (hD : 0 < D) (hA : 0 < A)
     (hder : ∀ j : ℕ, ∀ x ∈ unitCube d, ∀ y : ℝ, |y| ≤ C.holderBound → ∀ m k : ℕ,
       ∀ row : Fin (anchoredDimension d C.order) → ℝ,
@@ -40,8 +43,7 @@ theorem dyadicIncrementKernel_raw_budget_of_derivative {d : ℕ} (C : ModelConst
   let e := Fin.castLEEmb hk
   let E := (Fintype.card (incrementVariables (anchoredDimension d C.order)) : ℝ) *
     preconditionedPilotMomentConstant C C.order * dyadicPilotScale d j
-  have hE : 0 ≤ E := by
-    exact mul_nonneg (mul_nonneg (Nat.cast_nonneg _) (preconditionedPilotMomentConstant_pos C _).le)
+  have hE : 0 ≤ E := mul_nonneg (mul_nonneg (Nat.cast_nonneg _) (preconditionedPilotMomentConstant_pos C _).le)
       (dyadicPilotScale_pos _ _).le
   have hrow : 0 ≤ (∑ i, |row i|) * D :=
     mul_nonneg (Finset.sum_nonneg (fun i _ => abs_nonneg _)) hD.le
@@ -64,8 +66,8 @@ theorem dyadicIncrementKernel_raw_budget_of_derivative {d : ℕ} (C : ModelConst
   exact hb
 
 
-theorem dyadicPolynomialPilot_variance_of_derivative {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
+theorem dyadicPolynomialPilot_variance_of_derivative 
+    (hθ : Admissible C θ)
     (D A : ℝ) (hD : 0 < D) (hA : 0 < A)
     (hder : ∀ j : ℕ, ∀ x ∈ unitCube d, ∀ y : ℝ, |y| ≤ C.holderBound → ∀ m k : ℕ,
       ∀ row : Fin (anchoredDimension d C.order) → ℝ,
@@ -90,8 +92,7 @@ theorem dyadicPolynomialPilot_variance_of_derivative {d : ℕ} (C : ModelConstan
   let X (i : Fin n) (z : Fin n → Observation d) := dyadicIncrementRawVector (ℓ := C.order) j x (z i)
   let E := (Fintype.card (incrementVariables (anchoredDimension d C.order)) : ℝ) *
     preconditionedPilotMomentConstant C C.order * dyadicPilotScale d j
-  have hE : 0 ≤ E := by
-    exact mul_nonneg (mul_nonneg (Nat.cast_nonneg _) (preconditionedPilotMomentConstant_pos C _).le)
+  have hE : 0 ≤ E := mul_nonneg (mul_nonneg (Nat.cast_nonneg _) (preconditionedPilotMomentConstant_pos C _).le)
       (dyadicPilotScale_pos _ _).le
   have hrow : 0 ≤ (∑ i, |row i|) * D :=
     mul_nonneg (Finset.sum_nonneg (fun i _ => abs_nonneg _)) hD.le
@@ -120,8 +121,8 @@ theorem dyadicPolynomialPilot_variance_of_derivative {d : ℕ} (C : ModelConstan
   simpa only [E, e, mul_assoc] using hb
 
 
-theorem dyadicPilotErrorField_test_variance_of_raw_budget {d : ℕ} (C : ModelConstants d)
-    [Nonempty (AnchoredIndex d C.order)] (θ : RegressionParameter d) (hθ : Admissible C θ)
+theorem dyadicPilotErrorField_test_variance_of_raw_budget 
+    (hθ : Admissible C θ)
     (D A : ℝ) (hD : 0 < D) (hA : 0 < A)
     (hraw : ∀ n j : ℕ,
       ∀ x ∈ unitCube d, ∀ y : ℝ, |y| ≤ C.holderBound → ∀ m k : ℕ,
@@ -266,9 +267,10 @@ theorem dyadicPilotErrorField_test_variance_of_raw_budget {d : ℕ} (C : ModelCo
       (dyadicPolynomialPilot_centered_global C θ hθ n j w.1 y m (dyadicPilotRow j w.1 w.2) hdegree z)
   rw [herr, hrhs] at hu
   exact hu.trans (by
-    have hL : 0 ≤ C.densityUpper ^ 2 / dyadicPilotScale d (j - 1) := by
-      exact div_nonneg (sq_nonneg _) (dyadicPilotScale_pos _ _).le
+    have hL : 0 ≤ C.densityUpper ^ 2 / dyadicPilotScale d (j - 1) := div_nonneg (sq_nonneg _) (dyadicPilotScale_pos _ _).le
     simpa only [P, R, rowcap, mul_assoc] using mul_le_mul_of_nonneg_left hile hL)
+
+end
 
 
 end NearlyMinimax

@@ -11,14 +11,14 @@ noncomputable section
 open Set Function MeasureTheory MvPolynomial
 open scoped BigOperators ContDiff
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 attribute [local instance] Classical.propDecidable
 
-def highFrameMonomial {d D : ℕ} (γ : HighFrameIndex d D) : MvPolynomial (Fin d) ℝ :=
+variable {d D : ℕ}
+
+def highFrameMonomial (γ : HighFrameIndex d D) : MvPolynomial (Fin d) ℝ :=
   MvPolynomial.monomial (polynomialBoxExponent γ.val) 1
 
-theorem highFrameProfile_evaluation {d D : ℕ} (c : HighFrameIndex d D → ℝ) (x : Covariate d) :
+theorem highFrameProfile_evaluation (c : HighFrameIndex d D → ℝ) (x : Covariate d) :
     highFrameProfile (highFramePolynomial c) x =
       ∑ γ, c γ * highFrameProfile (highFrameMonomial γ) x := by
   unfold highFrameProfile
@@ -34,7 +34,10 @@ theorem highFrameProfile_evaluation {d D : ℕ} (c : HighFrameIndex d D → ℝ)
   rw [hm]
   ring
 
-theorem highPeriodizedFrame_evaluation (d k D : ℕ) (j : HighWindowLabels d k)
+section
+variable (d k D : ℕ)
+
+theorem highPeriodizedFrame_evaluation (j : HighWindowLabels d k)
     (c : HighFrameIndex d D → ℝ) (x : Covariate d) :
     highPeriodizedChart d k j (highFrameProfile (highFramePolynomial c)) x =
       ∑ γ, c γ * highPeriodizedChart d k j (highFrameProfile (highFrameMonomial γ)) x := by
@@ -61,12 +64,14 @@ theorem highPeriodizedFrame_evaluation (d k D : ℕ) (j : HighWindowLabels d k)
       (sum_finsum_comm Finset.univ _ (fun γ _ => hfinite γ)).symm
     _ = _ := by simp_rw [← mul_finsum]
 
-theorem highFrameField_finite_evaluation (d k D : ℕ) [NeZero k] (η : ℝ)
+theorem highFrameField_finite_evaluation [NeZero k] (η : ℝ)
     (c : HighWindowLabels d k → HighFrameIndex d D → ℝ) (x : Covariate d) :
     highFrameField d k η (fun j => highFramePolynomial (c j)) x =
       η * ∑ j, ∑ γ, c j γ * highPeriodizedChart d k j (highFrameProfile (highFrameMonomial γ)) x := by
   unfold highFrameField
   simp_rw [highPeriodizedFrame_evaluation]
+
+end
 
 theorem highFrameField_joint_measurable {Ω : Type*} [MeasurableSpace Ω]
     (d k D : ℕ) [NeZero k] (η : ℝ)

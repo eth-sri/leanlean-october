@@ -12,7 +12,6 @@ noncomputable section
 open MeasureTheory
 open scoped RealInnerProductSpace BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
 
 abbrev PairVector := EuclideanSpace ℝ (Fin 3)
 
@@ -62,7 +61,7 @@ theorem pairScoreOperator_norm_sq_le (V y y' : ℝ) :
       pairResponseVector_norm_sq]
     nlinarith [sq_nonneg (y ^ 2 - y' ^ 2), sq_nonneg (y ^ 2 - 1),
       sq_nonneg (y' ^ 2 - 1)]
-  have hv : |V| ^ 2 = V ^ 2 := sq_abs V
+  have hv := sq_abs V
   nlinarith [sq_nonneg (‖pairResponseVector y y'‖ ^ 2 - 2 * |V|)]
 
 theorem pairResponseVector_continuous :
@@ -73,8 +72,7 @@ theorem pairResponseVector_continuous :
   fin_cases i <;> simp [pairResponseVector] <;> fun_prop
 
 theorem pairScoreOperator_continuous (V : ℝ) :
-    Continuous (fun z : ℝ × ℝ => pairScoreOperator V z.1 z.2) := by
-  exact ((InnerProductSpace.rankOne ℝ).continuous.comp pairResponseVector_continuous).clm_apply
+    Continuous (fun z : ℝ × ℝ => pairScoreOperator V z.1 z.2) := ((InnerProductSpace.rankOne ℝ).continuous.comp pairResponseVector_continuous).clm_apply
     pairResponseVector_continuous |>.sub continuous_const
 
 theorem pairResponseVector_inner (a : PairVector) (y y' : ℝ) :

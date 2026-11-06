@@ -13,7 +13,6 @@ open MeasureTheory Set Filter
 open scoped BigOperators
 namespace NearlyMinimax
 attribute [local instance] Classical.propDecidable
-set_option backward.isDefEq.respectTransparency false
 
 section Partition
 variable {X B : Type*} [MeasurableSpace X] [Fintype B] [MeasurableSpace B]
@@ -24,7 +23,10 @@ include hlabel
 def labelLocalizedKernel (g : X → ℝ) (z : X × X) : ℝ :=
   if label z.1 = label z.2 then g z.2 else 0
 
-theorem labelLocalizedKernel_integrable (g : X → ℝ) (hg : Integrable g μ) :
+section
+variable (g : X → ℝ)
+
+theorem labelLocalizedKernel_integrable (hg : Integrable g μ) :
     Integrable (labelLocalizedKernel label g) (μ.prod μ) := by
   have he : labelLocalizedKernel label g =
       {z : X × X | label z.1 = label z.2}.indicator (fun z => g z.2) := by
@@ -35,12 +37,14 @@ theorem labelLocalizedKernel_integrable (g : X → ℝ) (hg : Integrable g μ) :
     (measurableSet_eq_fun (hlabel.comp measurable_fst) (hlabel.comp measurable_snd))
 
 omit hlabel in
-theorem labelLocalizedKernel_row (g : X → ℝ) (x : X) :
+theorem labelLocalizedKernel_row (x : X) :
     (∫ y, labelLocalizedKernel label g (x, y) ∂μ) =
       ∫ y, (label ⁻¹' {label x}).indicator g y ∂μ := by
   congr 1
   funext y
   simp [labelLocalizedKernel, Set.indicator_apply, eq_comm]
+
+end
 
 theorem partition_mass_integrable :
     Integrable (fun x => μ.real (label ⁻¹' {label x})) μ := by
@@ -51,7 +55,10 @@ theorem partition_mass_integrable :
   rw [Real.norm_eq_abs, abs_of_nonneg measureReal_nonneg]
   exact measureReal_le_one
 
-theorem labelLocalizedKernel_integral_le (g : X → ℝ) (hg : Integrable g μ)
+section
+variable (g : X → ℝ)
+
+theorem labelLocalizedKernel_integral_le (hg : Integrable g μ)
     (M : ℝ) (hloc : ∀ c : B,
       (∫ x, (label ⁻¹' {c}).indicator g x ∂μ) ≤ M * μ.real (label ⁻¹' {c})) :
     (∫ z, labelLocalizedKernel label g z ∂μ.prod μ) ≤
@@ -69,7 +76,7 @@ theorem labelLocalizedKernel_integral_le (g : X → ℝ) (hg : Integrable g μ)
         finite_label_integral μ label hlabel (fun c => μ.real (label ⁻¹' {c}))]
       simp only [pow_two]
 
-theorem labelLocalizedKernel_integral (g : X → ℝ) (hg : Integrable g μ) :
+theorem labelLocalizedKernel_integral (hg : Integrable g μ) :
     (∫ z, labelLocalizedKernel label g z ∂μ.prod μ) =
       ∑ c : B, μ.real (label ⁻¹' {c}) *
         (∫ x, (label ⁻¹' {c}).indicator g x ∂μ) := by
@@ -77,6 +84,8 @@ theorem labelLocalizedKernel_integral (g : X → ℝ) (hg : Integrable g μ) :
   simp_rw [labelLocalizedKernel_row μ label g]
   exact finite_label_integral μ label hlabel
     (fun c => ∫ x, (label ⁻¹' {c}).indicator g x ∂μ)
+
+end
 
 omit hlabel in
 theorem sameLabelKernel_mul_eq_sum (r : X → ℝ) (z : X × X) :
@@ -115,7 +124,10 @@ theorem sameLabelKernel_mul_integral (r : X → ℝ) (hr : Integrable r μ) :
 def pairWindowScore (r : X → ℝ) (V : ℝ) (z : X × X) : ℝ :=
   if label z.1 = label z.2 then (r z.1 - r z.2) ^ 2 / 2 - V else 0
 
-theorem pairWindowScore_measurable (r : X → ℝ) (hr : Measurable r) (V : ℝ) :
+section
+variable (r : X → ℝ)
+
+theorem pairWindowScore_measurable (hr : Measurable r) (V : ℝ) :
     Measurable (pairWindowScore label r V) := by
   unfold pairWindowScore
   exact Measurable.ite
@@ -124,14 +136,17 @@ theorem pairWindowScore_measurable (r : X → ℝ) (hr : Measurable r) (V : ℝ)
       |>.div_const 2).sub measurable_const) measurable_const
 
 omit hlabel in
-theorem pairWindowScore_symmetric (r : X → ℝ) (V : ℝ) (x y : X) :
+section
+variable (V : ℝ)
+
+theorem pairWindowScore_symmetric (x y : X) :
     pairWindowScore label r V (x, y) = pairWindowScore label r V (y, x) := by
   unfold pairWindowScore
   simp only [Prod.fst, Prod.snd, eq_comm]
   split_ifs <;> ring
 
 omit hlabel in
-theorem pairWindowScore_abs_le (r : X → ℝ) (V : ℝ) (z : X × X) :
+theorem pairWindowScore_abs_le (z : X × X) :
     |pairWindowScore label r V z| ≤ r z.1 ^ 2 + r z.2 ^ 2 + |V| := by
   unfold pairWindowScore
   split_ifs with h
@@ -144,7 +159,7 @@ theorem pairWindowScore_abs_le (r : X → ℝ) (V : ℝ) (z : X × X) :
     positivity
 
 omit hlabel in
-theorem pairWindowScore_sq_le (r : X → ℝ) (V : ℝ) (z : X × X) :
+theorem pairWindowScore_sq_le (z : X × X) :
     pairWindowScore label r V z ^ 2 ≤
       4 * (r z.1 ^ 4 + r z.2 ^ 4) + 2 * V ^ 2 := by
   unfold pairWindowScore
@@ -157,7 +172,9 @@ theorem pairWindowScore_sq_le (r : X → ℝ) (V : ℝ) (z : X × X) :
   · simp only [zero_pow (by decide : (2 : ℕ) ≠ 0)]
     positivity
 
-theorem pairWindowScore_memLp (r : X → ℝ) (hr : Measurable r) (V : ℝ)
+end
+
+theorem pairWindowScore_memLp (hr : Measurable r) (V : ℝ)
     (h4 : Integrable (fun x => r x ^ 4) μ) :
     MemLp (pairWindowScore label r V) 2 (μ.prod μ) := by
   apply (memLp_two_iff_integrable_sq
@@ -172,7 +189,7 @@ theorem pairWindowScore_memLp (r : X → ℝ) (hr : Measurable r) (V : ℝ)
   exact pairWindowScore_sq_le label r V z
 
 omit hlabel in
-theorem pairWindowScore_local_sq_le (r : X → ℝ) (V : ℝ) (z : X × X) :
+theorem pairWindowScore_local_sq_le (V : ℝ) (z : X × X) :
     pairWindowScore label r V z ^ 2 ≤
       4 * (labelLocalizedKernel label (fun x => r x ^ 4) z +
         labelLocalizedKernel label (fun x => r x ^ 4) z.swap) +
@@ -184,7 +201,7 @@ theorem pairWindowScore_local_sq_le (r : X → ℝ) (V : ℝ) (z : X × X) :
     nlinarith
   · simp [pairWindowScore, labelLocalizedKernel, sameLabelKernel, h, Ne.symm h]
 
-theorem pairWindowScore_energy_le (r : X → ℝ) (hr : Measurable r) (V M4 : ℝ)
+theorem pairWindowScore_energy_le (hr : Measurable r) (V M4 : ℝ)
     (h4 : Integrable (fun x => r x ^ 4) μ)
     (hloc : ∀ c : B, (∫ x, (label ⁻¹' {c}).indicator (fun x => r x ^ 4) x ∂μ) ≤
       M4 * μ.real (label ⁻¹' {c})) :
@@ -209,7 +226,7 @@ theorem pairWindowScore_energy_le (r : X → ℝ) (hr : Measurable r) (V M4 : �
   dsimp [L] at hb
   nlinarith
 
-theorem pairWindowScore_row_abs_le (r : X → ℝ) (hr : Measurable r) (V M2 : ℝ)
+theorem pairWindowScore_row_abs_le (hr : Measurable r) (V M2 : ℝ)
     (h2 : Integrable (fun x => r x ^ 2) μ)
     (hloc : ∀ c : B, (∫ x, (label ⁻¹' {c}).indicator (fun x => r x ^ 2) x ∂μ) ≤
       M2 * μ.real (label ⁻¹' {c})) (x : X) :
@@ -249,7 +266,7 @@ theorem pairWindowScore_row_abs_le (r : X → ℝ) (hr : Measurable r) (V M2 : �
   dsimp [A] at hb
   nlinarith
 
-theorem pairWindowScore_row_energy_le (r : X → ℝ) (hr : Measurable r)
+theorem pairWindowScore_row_energy_le (hr : Measurable r)
     (V M2 M4 cap : ℝ) (hM2 : 0 ≤ M2) (hcap : 0 ≤ cap)
     (h2 : Integrable (fun x => r x ^ 2) μ)
     (h4 : Integrable (fun x => r x ^ 4) μ)
@@ -277,8 +294,7 @@ theorem pairWindowScore_row_energy_le (r : X → ℝ) (hr : Measurable r)
         pow_le_pow_left₀ (abs_nonneg _) hb 2
       _ = p ^ 2 * (r x ^ 2 + (|V| + M2)) ^ 2 := by ring
       _ ≤ cap ^ 2 * (r x ^ 2 + (|V| + M2)) ^ 2 := by gcongr
-      _ ≤ cap ^ 2 * (2 * ((r x ^ 2) ^ 2 + (|V| + M2) ^ 2)) := by
-        exact mul_le_mul_of_nonneg_left add_sq_le (sq_nonneg cap)
+      _ ≤ cap ^ 2 * (2 * ((r x ^ 2) ^ 2 + (|V| + M2) ^ 2)) := mul_le_mul_of_nonneg_left add_sq_le (sq_nonneg cap)
       _ = _ := by ring
   have hb := integral_mono hi hd hp
   rw [integral_const_mul, integral_add h4 (integrable_const _), integral_const] at hb
@@ -286,7 +302,7 @@ theorem pairWindowScore_row_energy_le (r : X → ℝ) (hr : Measurable r)
   have hc2 : 0 ≤ 2 * cap ^ 2 := by positivity
   exact hb.trans (mul_le_mul_of_nonneg_left (add_le_add hglobal le_rfl) hc2)
 
-theorem pairWindowScore_integral (r : X → ℝ) (hr : Measurable r) (V : ℝ)
+theorem pairWindowScore_integral (hr : Measurable r) (V : ℝ)
     (hr2 : MemLp r 2 μ) :
     (∫ z, pairWindowScore label r V z ∂μ.prod μ) =
       ∑ c : B, (μ.real (label ⁻¹' {c}) *
@@ -322,6 +338,8 @@ theorem pairWindowScore_integral (r : X → ℝ) (hr : Measurable r) (V : ℝ)
     sameLabelKernel_integral μ label hlabel]
   rw [Finset.sum_sub_distrib, Finset.sum_sub_distrib, ← Finset.mul_sum]
   ring
+
+end
 
 end Partition
 end NearlyMinimax

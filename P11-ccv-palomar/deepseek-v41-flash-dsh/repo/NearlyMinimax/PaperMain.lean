@@ -16,16 +16,18 @@ open Filter
 open scoped Topology
 namespace NearlyMinimax
 
-theorem paper_main {d : ℕ} (C : ModelConstants d) : MainBracketClaim C :=
+variable {d : ℕ} (C : ModelConstants d)
+
+theorem paper_main (C : ModelConstants d) : MainBracketClaim C :=
   mainBracketClaim_of_separate_bounds C (paper_upper_sharp C) (paper_lower_sharp C)
 
-theorem paper_exponent_limit {d : ℕ} (C : ModelConstants d)
+theorem paper_exponent_limit 
     (hreg : highSmoothnessRegime C) :
     Tendsto (fun n : ℕ => -Real.log (minimaxRMS C n).toReal / Real.log (n : ℝ))
       atTop (𝓝 (rateExponent C.smoothness d)) :=
   paper_exponent_limit_of_mainBracketClaim C hreg (paper_main C)
 
-theorem paper_polynomial_bounds {d : ℕ} (C : ModelConstants d)
+theorem paper_polynomial_bounds 
     (hreg : highSmoothnessRegime C) :
     ∃ c A : ℝ, 0 < c ∧ 0 < A ∧ ∀ epsilon : ℝ, 0 < epsilon →
       ∀ᶠ n : ℕ in atTop,

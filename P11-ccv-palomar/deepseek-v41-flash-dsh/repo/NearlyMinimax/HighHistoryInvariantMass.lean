@@ -15,8 +15,6 @@ The source dependency relation is the genuine torus-neighbor relation.
 noncomputable section
 open MeasureTheory Set
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 600000
 
 theorem highNeighbor_dependency_card (d k : ℕ) [NeZero k] (j : HighWindowLabels d k) :
     (dependentLabelFinset (fun i j => j ∈ highNeighborLabels d k i) j).card ≤ 3^d := by

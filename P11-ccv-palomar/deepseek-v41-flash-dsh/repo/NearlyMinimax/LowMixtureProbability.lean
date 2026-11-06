@@ -12,8 +12,6 @@ noncomputable section
 open MeasureTheory ProbabilityTheory Set Filter
 open scoped ENNReal BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 800000
 
 abbrev LowMixtureMarks (m n : ℕ) := (Fin m → Fin 3) × (Fin n → Fin 3)
 
@@ -22,16 +20,19 @@ def lowMixtureWeight {α : Type*} (m n : ℕ) (a V t : ℝ)
     (z : LowMixtureMarks m n) : ℝ :=
   activationProductPrior m t z.1 * finiteResponseLikelihood m n a V (f x) z.1 z.2
 
-theorem lowMixtureWeight_measurable {α : Type*} [MeasurableSpace α]
-    (m n : ℕ) (a V t : ℝ) (f : α → (Fin m → Fin 3) → Fin n → ℝ)
+section
+variable {α : Type*} [MeasurableSpace α] (m n : ℕ)
+
+theorem lowMixtureWeight_measurable 
+    (a V t : ℝ) (f : α → (Fin m → Fin 3) → Fin n → ℝ)
     (hf : ∀ ξ i, Measurable (fun x => f x ξ i)) (z : LowMixtureMarks m n) :
     Measurable (fun x => lowMixtureWeight m n a V t f x z) := by
   unfold lowMixtureWeight finiteResponseLikelihood
   exact (Finset.measurable_prod _ (fun i _ =>
     ternaryMass_measurable_comp a V _ (hf z.1 i) (z.2 i))).const_mul _
 
-def lowMixtureIndexKernel {α : Type*} [MeasurableSpace α]
-    (m n : ℕ) (a V t : ℝ) (f : α → (Fin m → Fin 3) → Fin n → ℝ)
+def lowMixtureIndexKernel 
+    (a V t : ℝ) (f : α → (Fin m → Fin 3) → Fin n → ℝ)
     (hf : ∀ ξ i, Measurable (fun x => f x ξ i)) : Kernel α (LowMixtureMarks m n) where
   toFun x := ∑ z : LowMixtureMarks m n,
     ENNReal.ofReal (lowMixtureWeight m n a V t f x z) • Measure.dirac z
@@ -42,12 +43,14 @@ def lowMixtureIndexKernel {α : Type*} [MeasurableSpace α]
     exact Finset.measurable_sum _ (fun z _ =>
       (ENNReal.measurable_ofReal.comp (lowMixtureWeight_measurable m n a V t f hf z)).mul_const _)
 
-theorem lowMixtureIndexKernel_apply {α : Type*} [MeasurableSpace α]
-    (m n : ℕ) (a V t : ℝ) (f : α → (Fin m → Fin 3) → Fin n → ℝ)
+theorem lowMixtureIndexKernel_apply 
+    (a V t : ℝ) (f : α → (Fin m → Fin 3) → Fin n → ℝ)
     (hf : ∀ ξ i, Measurable (fun x => f x ξ i)) (x : α) :
     lowMixtureIndexKernel m n a V t f hf x =
       ∑ z : LowMixtureMarks m n,
         ENNReal.ofReal (lowMixtureWeight m n a V t f x z) • Measure.dirac z := rfl
+
+end
 
 theorem lowMixtureWeight_nonneg {α : Type*} (m n : ℕ) (a V t : ℝ)
     (f : α → (Fin m → Fin 3) → Fin n → ℝ) (ht : t ∈ Icc (0 : ℝ) 1)
@@ -55,9 +58,12 @@ theorem lowMixtureWeight_nonneg {α : Type*} (m n : ℕ) (a V t : ℝ)
     0 ≤ lowMixtureWeight m n a V t f x z :=
   finite_experiment_joint_nonnegative m n a V t (f x) ht.1 ht.2 (hp x) z.1 z.2
 
-theorem lowMixtureIndexKernel_markov {α : Type*} [MeasurableSpace α]
-    (m n : ℕ) (a V t : ℝ) (f : α → (Fin m → Fin 3) → Fin n → ℝ)
-    (hf : ∀ ξ i, Measurable (fun x => f x ξ i)) (ha : a ≠ 0)
+section
+variable {α : Type*} [MeasurableSpace α] (m n : ℕ) (a V t : ℝ) (f : α → (Fin m → Fin 3) → Fin n → ℝ) (hf : ∀ ξ i, Measurable (fun x => f x ξ i))
+
+theorem lowMixtureIndexKernel_markov 
+    
+    (ha : a ≠ 0)
     (ht : t ∈ Icc (0 : ℝ) 1) (hp : ∀ x ξ i y, 0 ≤ ternaryMass a (f x ξ i) V y) :
     IsMarkovKernel (lowMixtureIndexKernel m n a V t f hf) := by
   constructor
@@ -71,9 +77,9 @@ theorem lowMixtureIndexKernel_markov {α : Type*} [MeasurableSpace α]
   rw [finite_experiment_joint_normalized m n a V t (f x) ha]
   simp
 
-theorem lowMixtureIndexKernel_integral {α : Type*} [MeasurableSpace α]
-    (m n : ℕ) (a V t : ℝ) (f : α → (Fin m → Fin 3) → Fin n → ℝ)
-    (hf : ∀ ξ i, Measurable (fun x => f x ξ i))
+theorem lowMixtureIndexKernel_integral 
+    
+    
     (ht : t ∈ Icc (0 : ℝ) 1) (hp : ∀ x ξ i y, 0 ≤ ternaryMass a (f x ξ i) V y)
     (x : α) (H : LowMixtureMarks m n → ℝ) :
     (∫ z, H z ∂lowMixtureIndexKernel m n a V t f hf x) =
@@ -94,26 +100,31 @@ theorem lowMixtureIndexKernel_integral {α : Type*} [MeasurableSpace α]
   · intro z hz
     exact (integrable_dirac (by simp)).smul_measure ENNReal.ofReal_ne_top
 
+end
+
 def lowMixtureLaw {α : Type*} [MeasurableSpace α]
     (μ : Measure α) (m n : ℕ) (a V t : ℝ)
     (f : α → (Fin m → Fin 3) → Fin n → ℝ)
     (hf : ∀ ξ i, Measurable (fun x => f x ξ i)) : Measure (α × LowMixtureMarks m n) :=
   μ.compProd (lowMixtureIndexKernel m n a V t f hf)
 
-theorem lowMixtureLaw_probability {α : Type*} [MeasurableSpace α]
-    (μ : Measure α) [IsProbabilityMeasure μ] (m n : ℕ) (a V t : ℝ)
-    (f : α → (Fin m → Fin 3) → Fin n → ℝ)
-    (hf : ∀ ξ i, Measurable (fun x => f x ξ i)) (ha : a ≠ 0)
+section
+variable {α : Type*} [MeasurableSpace α] (μ : Measure α) [IsProbabilityMeasure μ] (m n : ℕ) (a V t : ℝ) (f : α → (Fin m → Fin 3) → Fin n → ℝ) (hf : ∀ ξ i, Measurable (fun x => f x ξ i))
+
+theorem lowMixtureLaw_probability 
+    
+    
+    (ha : a ≠ 0)
     (ht : t ∈ Icc (0 : ℝ) 1) (hp : ∀ x ξ i y, 0 ≤ ternaryMass a (f x ξ i) V y) :
     IsProbabilityMeasure (lowMixtureLaw μ m n a V t f hf) := by
   let := lowMixtureIndexKernel_markov m n a V t f hf ha ht hp
   unfold lowMixtureLaw
   infer_instance
 
-theorem lowMixtureLaw_integrable_of_weighted_norm {α : Type*} [MeasurableSpace α]
-    (μ : Measure α) [IsProbabilityMeasure μ] (m n : ℕ) (a V t : ℝ)
-    (f : α → (Fin m → Fin 3) → Fin n → ℝ)
-    (hf : ∀ ξ i, Measurable (fun x => f x ξ i)) (ha : a ≠ 0)
+theorem lowMixtureLaw_integrable_of_weighted_norm 
+    
+    
+    (ha : a ≠ 0)
     (ht : t ∈ Icc (0 : ℝ) 1) (hp : ∀ x ξ i y, 0 ≤ ternaryMass a (f x ξ i) V y)
     (H : α × LowMixtureMarks m n → ℝ) (hH : Measurable H)
     (hNorm : Integrable (fun x => ∑ ξ, activationProductPrior m t ξ *
@@ -128,10 +139,10 @@ theorem lowMixtureLaw_integrable_of_weighted_norm {α : Type*} [MeasurableSpace 
       Real.norm_eq_abs]
     exact hNorm
 
-theorem lowMixtureLaw_integral {α : Type*} [MeasurableSpace α]
-    (μ : Measure α) [IsProbabilityMeasure μ] (m n : ℕ) (a V t : ℝ)
-    (f : α → (Fin m → Fin 3) → Fin n → ℝ)
-    (hf : ∀ ξ i, Measurable (fun x => f x ξ i)) (ha : a ≠ 0)
+theorem lowMixtureLaw_integral 
+    
+    
+    (ha : a ≠ 0)
     (ht : t ∈ Icc (0 : ℝ) 1) (hp : ∀ x ξ i y, 0 ≤ ternaryMass a (f x ξ i) V y)
     (H : α × LowMixtureMarks m n → ℝ)
     (hH : Integrable H (lowMixtureLaw μ m n a V t f hf)) :
@@ -142,8 +153,13 @@ theorem lowMixtureLaw_integral {α : Type*} [MeasurableSpace α]
   rw [lowMixtureLaw, Measure.integral_compProd hH]
   simp_rw [lowMixtureIndexKernel_integral m n a V t f hf ht hp]
 
-theorem finiteResponseLikelihood_measurable_comp {α : Type*} [MeasurableSpace α]
-    (m n : ℕ) (a V : ℝ) (f : α → (Fin m → Fin 3) → Fin n → ℝ)
+end
+
+section
+variable {α : Type*} [MeasurableSpace α] (m n : ℕ)
+
+theorem finiteResponseLikelihood_measurable_comp 
+    (a V : ℝ) (f : α → (Fin m → Fin 3) → Fin n → ℝ)
     (hf : ∀ ξ i, Measurable (fun x => f x ξ i))
     (ξ : Fin m → Fin 3) (y : Fin n → Fin 3) :
     Measurable (fun x => finiteResponseLikelihood m n a V (f x) ξ y) := by
@@ -151,8 +167,8 @@ theorem finiteResponseLikelihood_measurable_comp {α : Type*} [MeasurableSpace �
   exact Finset.measurable_prod _ (fun i _ =>
     ternaryMass_measurable_comp a V _ (hf ξ i) (y i))
 
-theorem finiteExperimentScore_measurable_comp {α : Type*} [MeasurableSpace α]
-    (m n : ℕ) (a V η : ℝ) (f : α → (Fin m → Fin 3) → Fin n → ℝ)
+theorem finiteExperimentScore_measurable_comp 
+    (a V η : ℝ) (f : α → (Fin m → Fin 3) → Fin n → ℝ)
     (hf : ∀ ξ i, Measurable (fun x => f x ξ i))
     (ξ : Fin m → Fin 3) (y : Fin n → Fin 3) :
     Measurable (fun x => finiteExperimentScore m n a V η (f x) ξ y) := by
@@ -172,6 +188,8 @@ theorem finiteExperimentScore_measurable_comp {α : Type*} [MeasurableSpace α]
   exact ((Finset.measurable_sum _ (fun j _ => hD j)).sub
     ((Finset.measurable_sum _ (fun i _ => hU i)).const_mul (η ^ 2))).div (hL ξ y)
 
+end
+
 def lowMixtureScore {α : Type*} (m n : ℕ) (a V η : ℝ)
     (f : α → (Fin m → Fin 3) → Fin n → ℝ) (z : α × LowMixtureMarks m n) : ℝ :=
   finiteExperimentScore m n a V η (f z.1) z.2.1 z.2.2
@@ -190,10 +208,13 @@ def lowMixtureConditionalScoreEnergy {α : Type*} (m n : ℕ) (a V η t : ℝ)
     finiteResponseLikelihood m n a V (f x) ξ y *
       finiteExperimentScore m n a V η (f x) ξ y ^ 2
 
-theorem lowMixtureScore_sq_integrable {α : Type*} [MeasurableSpace α]
-    (μ : Measure α) [IsProbabilityMeasure μ] (m n : ℕ) (a V η t : ℝ)
-    (f : α → (Fin m → Fin 3) → Fin n → ℝ)
-    (hf : ∀ ξ i, Measurable (fun x => f x ξ i)) (ha : a ≠ 0)
+section
+variable {α : Type*} [MeasurableSpace α] (μ : Measure α) [IsProbabilityMeasure μ] (m n : ℕ) (a V η t : ℝ) (f : α → (Fin m → Fin 3) → Fin n → ℝ) (hf : ∀ ξ i, Measurable (fun x => f x ξ i))
+
+theorem lowMixtureScore_sq_integrable 
+    
+    
+    (ha : a ≠ 0)
     (ht : t ∈ Icc (0 : ℝ) 1) (hp : ∀ x ξ i y, 0 ≤ ternaryMass a (f x ξ i) V y)
     (hE : Integrable (lowMixtureConditionalScoreEnergy m n a V η t f) μ) :
     Integrable (fun z => lowMixtureScore m n a V η f z ^ 2)
@@ -216,15 +237,17 @@ theorem lowMixtureScore_sq_integrable {α : Type*} [MeasurableSpace α]
   rw [heq]
   exact hE
 
-theorem lowMixtureScore_memLp_two {α : Type*} [MeasurableSpace α]
-    (μ : Measure α) [IsProbabilityMeasure μ] (m n : ℕ) (a V η t : ℝ)
-    (f : α → (Fin m → Fin 3) → Fin n → ℝ)
-    (hf : ∀ ξ i, Measurable (fun x => f x ξ i)) (ha : a ≠ 0)
+theorem lowMixtureScore_memLp_two 
+    
+    
+    (ha : a ≠ 0)
     (ht : t ∈ Icc (0 : ℝ) 1) (hp : ∀ x ξ i y, 0 ≤ ternaryMass a (f x ξ i) V y)
     (hE : Integrable (lowMixtureConditionalScoreEnergy m n a V η t f) μ) :
     MemLp (lowMixtureScore m n a V η f) 2 (lowMixtureLaw μ m n a V t f hf) :=
   (memLp_two_iff_integrable_sq (lowMixtureScore_measurable m n a V η f hf).aestronglyMeasurable).mpr
     (lowMixtureScore_sq_integrable μ m n a V η t f hf ha ht hp hE)
+
+end
 
 theorem lowMixtureIndexKernel_score_centered {α : Type*} [MeasurableSpace α]
     (m n : ℕ) (a V η t : ℝ) (f : α → (Fin m → Fin 3) → Fin n → ℝ)
@@ -241,8 +264,11 @@ theorem lowMixtureIndexKernel_score_centered {α : Type*} [MeasurableSpace α]
   simp_rw [hc, mul_zero]
   simp
 
-theorem lowMixtureScore_centered {α : Type*} [MeasurableSpace α]
-    (μ : Measure α) [IsProbabilityMeasure μ] (m n : ℕ) (a V η t : ℝ)
+section
+variable {α : Type*} [MeasurableSpace α] (μ : Measure α) [IsProbabilityMeasure μ] (m n : ℕ)
+
+theorem lowMixtureScore_centered 
+    (a V η t : ℝ)
     (f : α → (Fin m → Fin 3) → Fin n → ℝ)
     (hf : ∀ ξ i, Measurable (fun x => f x ξ i)) (ha : a ≠ 0)
     (ht : t ∈ Icc (0 : ℝ) 1) (hp : ∀ x ξ i y, 0 < ternaryMass a (f x ξ i) V y)
@@ -258,8 +284,8 @@ theorem lowMixtureScore_centered {α : Type*} [MeasurableSpace α]
 
 /-- Integrate the design first in each latent state, with all integrability
 hypotheses stated on genuine finite response expectations. -/
-theorem lowMixtureLaw_integral_sum {α : Type*} [MeasurableSpace α]
-    (μ : Measure α) [IsProbabilityMeasure μ] (m n : ℕ) (a V t : ℝ)
+theorem lowMixtureLaw_integral_sum 
+    (a V t : ℝ)
     (f : α → (Fin m → Fin 3) → Fin n → ℝ)
     (hf : ∀ ξ i, Measurable (fun x => f x ξ i)) (ha : a ≠ 0)
     (ht : t ∈ Icc (0 : ℝ) 1) (hp : ∀ x ξ i y, 0 ≤ ternaryMass a (f x ξ i) V y)
@@ -274,8 +300,8 @@ theorem lowMixtureLaw_integral_sum {α : Type*} [MeasurableSpace α]
     integral_finsetSum _ (fun ξ _ => (hξ ξ).const_mul _)]
   simp_rw [integral_const_mul]
 
-theorem lowMixtureLaw_nonneg_integral_sum {α : Type*} [MeasurableSpace α]
-    (μ : Measure α) [IsProbabilityMeasure μ] (m n : ℕ) (a V t : ℝ)
+theorem lowMixtureLaw_nonneg_integral_sum 
+    (a V t : ℝ)
     (f : α → (Fin m → Fin 3) → Fin n → ℝ)
     (hf : ∀ ξ i, Measurable (fun x => f x ξ i)) (ha : a ≠ 0)
     (ht : t ∈ Icc (0 : ℝ) 1) (hp : ∀ x ξ i y, 0 ≤ ternaryMass a (f x ξ i) V y)
@@ -302,6 +328,8 @@ theorem lowMixtureLaw_nonneg_integral_sum {α : Type*} [MeasurableSpace α]
     exact integrable_finsetSum _ (fun ξ _ => (hξ ξ).const_mul _)
   exact lowMixtureLaw_integral_sum μ m n a V t f hf ha ht hp H
     (lowMixtureLaw_integrable_of_weighted_norm μ m n a V t f hf ha ht hp H hH hNorm) hξ
+
+end
 
 theorem lowMixtureConditionalScoreEnergy_integrable {α : Type*} [MeasurableSpace α]
     (μ : Measure α) (m n : ℕ) (a V η t : ℝ)

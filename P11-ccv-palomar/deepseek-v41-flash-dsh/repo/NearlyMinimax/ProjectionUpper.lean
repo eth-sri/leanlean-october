@@ -10,25 +10,27 @@ open scoped ENNReal
 noncomputable section
 namespace NearlyMinimax
 
+variable {d : ℕ}
+
 /-- A single finite model constant for all sample sizes, including the
 small-sample fallback. -/
-def projectionUpperConstant {d : ℕ} (C : ModelConstants d) : ℝ :=
+def projectionUpperConstant (C : ModelConstants d) : ℝ :=
   gridProjectionConstant C + polynomialProjectionApproximationConstant C +
     2 * polynomialFeatureCount C * (C.varianceUpper - C.varianceLower) ^ 2
 
-theorem polynomialProjectionApproximationConstant_nonneg {d : ℕ} (C : ModelConstants d) :
+theorem polynomialProjectionApproximationConstant_nonneg (C : ModelConstants d) :
     0 ≤ polynomialProjectionApproximationConstant C := by
   unfold polynomialProjectionApproximationConstant
   positivity
 
-theorem projectionUpperConstant_nonneg {d : ℕ} (C : ModelConstants d) :
+theorem projectionUpperConstant_nonneg (C : ModelConstants d) :
     0 ≤ projectionUpperConstant C := by
   have hg := gridProjectionConstant_nonneg C
   have ha := polynomialProjectionApproximationConstant_nonneg C
   unfold projectionUpperConstant
   positivity
 
-theorem projection_upper_constant_bounds {d : ℕ} (C : ModelConstants d) :
+theorem projection_upper_constant_bounds (C : ModelConstants d) :
     gridProjectionConstant C ≤ projectionUpperConstant C ∧
     polynomialProjectionApproximationConstant C ≤ projectionUpperConstant C ∧
     2 * polynomialFeatureCount C * (C.varianceUpper - C.varianceLower) ^ 2 ≤
@@ -43,15 +45,18 @@ theorem projection_upper_constant_bounds {d : ℕ} (C : ModelConstants d) :
 
 /-- Explicit Borel estimator: the polynomial grid when its feature budget
 fits, and the admissible lower variance endpoint for smaller samples. -/
-def projectionUpperEstimator {d : ℕ} (C : ModelConstants d) (n : ℕ) : Estimator d n :=
+def projectionUpperEstimator (C : ModelConstants d) (n : ℕ) : Estimator d n :=
   if hn : 2 * polynomialFeatureCount C ≤ n then
     polynomialGridEstimator C n (polynomialProjectionGridSize C n)
       (polynomial_projection_grid_size_spec C hn).1
   else constantEstimator d n C.varianceLower
 
+section
+variable {d n : ℕ} (C : ModelConstants d)
+
 /-- Uniform worst-case risk of the constructed estimator, against the
 original iid model, in every smoothness order and every positive sample size. -/
-theorem projection_upper_estimator_risk {d n : ℕ} (C : ModelConstants d) (hn : 0 < n) :
+theorem projection_upper_estimator_risk (hn : 0 < n) :
     worstCaseRisk C (projectionUpperEstimator C n) ≤
       ENNReal.ofReal (projectionUpperConstant C *
         (1 / (n : ℝ) + (n : ℝ) ^ (-(4 * C.smoothness / d)))) := by
@@ -96,14 +101,14 @@ theorem projection_upper_estimator_risk {d n : ℕ} (C : ModelConstants d) (hn :
 /-- The polynomial-projection upper bound for the paper's original
 minimax MSE: `C (n⁻¹ + n^(-4s/d))`. Every statistical and approximation
 hypothesis is supplied by the original admissibility definition. -/
-theorem minimax_projection_upper {d n : ℕ} (C : ModelConstants d) (hn : 0 < n) :
+theorem minimax_projection_upper (hn : 0 < n) :
     minimaxRisk C n ≤ ENNReal.ofReal (projectionUpperConstant C *
       (1 / (n : ℝ) + (n : ℝ) ^ (-(4 * C.smoothness / d)))) :=
   (minimaxRisk_le_worstCaseRisk C _).trans (projection_upper_estimator_risk C hn)
 
 /-- The projection upper bound in the paper's root mean square scale,
 with the maximum of parametric and smoothness contributions. -/
-theorem minimax_rms_projection_upper {d n : ℕ} (C : ModelConstants d) (hn : 0 < n) :
+theorem minimax_rms_projection_upper (hn : 0 < n) :
     minimaxRMS C n ≤ ENNReal.ofReal (Real.sqrt (2 * projectionUpperConstant C) *
       max ((n : ℝ) ^ (-(1 / 2 : ℝ))) ((n : ℝ) ^ (-(2 * C.smoothness / d)))) := by
   have hnreal : (0 : ℝ) < n := by exact_mod_cast hn
@@ -140,7 +145,7 @@ theorem minimax_rms_projection_upper {d n : ℕ} (C : ModelConstants d) (hn : 0 
   rw [← Real.sqrt_eq_rpow, Real.sqrt_mul (by positivity : 0 ≤ 2 * projectionUpperConstant C),
     Real.sqrt_sq hm0]
 
-theorem minimax_rms_projection_parametric_upper {d n : ℕ} (C : ModelConstants d)
+theorem minimax_rms_projection_parametric_upper 
     (hn : 0 < n) (hparametric : (d : ℝ) ≤ 4 * C.smoothness) :
     minimaxRMS C n ≤ ENNReal.ofReal (Real.sqrt (2 * projectionUpperConstant C) *
       (n : ℝ) ^ (-(1 / 2 : ℝ))) := by
@@ -152,5 +157,7 @@ theorem minimax_rms_projection_parametric_upper {d n : ℕ} (C : ModelConstants 
     nlinarith [hparametric]
   have hp := Real.rpow_le_rpow_of_exponent_le hn1 hexp
   simpa only [max_eq_left hp] using minimax_rms_projection_upper C hn
+
+end
 
 end NearlyMinimax

@@ -14,9 +14,10 @@ noncomputable section
 open MeasureTheory Filter
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
 
-theorem completeSaddleSpatialSeries_eq {d : ℕ} (C : ModelConstants d)
+variable {d : ℕ}
+
+theorem completeSaddleSpatialSeries_eq (C : ModelConstants d)
     (Q : LowSmoothnessTernaryConstants C) (Cfr cf Cω : ℝ) (n : ℕ)
     [NeZero (lowerSaddleGrid d (highCompleteSourceSaddleCoefficient C)
       (highCompleteSourceSaddleTheta C) Cω n)] :
@@ -44,7 +45,7 @@ theorem completeSaddleSpatialSeries_eq {d : ℕ} (C : ModelConstants d)
   simp only [poissonCountWeight,fullSpatialPatchDesign]
   ring
 
-theorem eventually_completeSaddleSpatialSeries_le {d : ℕ} [NeZero d]
+theorem eventually_completeSaddleSpatialSeries_le [NeZero d]
     (C : ModelConstants d) (Q : LowSmoothnessTernaryConstants C)
     (hs : 1 < C.smoothness) (hd : 4*C.smoothness < (d : ℝ))
     {cf : ℝ} (hcf : 0 < cf) (Cfr Cω : ℝ) :

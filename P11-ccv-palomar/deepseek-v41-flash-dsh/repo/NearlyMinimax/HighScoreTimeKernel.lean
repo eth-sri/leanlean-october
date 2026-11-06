@@ -11,12 +11,16 @@ noncomputable section
 open MeasureTheory ProbabilityTheory Filter Set
 open scoped ENNReal
 namespace NearlyMinimax
-set_option maxHeartbeats 1000000
 set_option backward.isDefEq.respectTransparency true
 variable {J : Type*} [Fintype J] [LinearOrder J]
 
-def highHistoryIndexTimeKernel {E : Type*} [MeasurableSpace E] {d : ℕ}
-    (dependent : J → J → Prop) (Δ : ℕ) (π : Measure E)
+variable {E : Type*}
+
+section
+variable [MeasurableSpace E] {d : ℕ} (dependent : J → J → Prop) (Δ : ℕ) (π : Measure E)
+
+def highHistoryIndexTimeKernel 
+    
     [SFinite (historyMarkedReference dependent Δ π)]
     (activation : E → ℝ) (ham : Measurable activation) (n : ℕ) (a v η : ℝ)
     (p F : HistoryMarked dependent E → Covariate d → ℝ)
@@ -29,8 +33,8 @@ def highHistoryIndexTimeKernel {E : Type*} [MeasurableSpace E] {d : ℕ}
           (fun ω => highRawDensityMass (p ω)) n))
 
 
-instance highHistoryIndexTimeKernel_isSFinite {E : Type*} [MeasurableSpace E] {d : ℕ}
-    (dependent : J → J → Prop) (Δ : ℕ) (π : Measure E)
+instance highHistoryIndexTimeKernel_isSFinite 
+    
     [SFinite (historyMarkedReference dependent Δ π)]
     (activation : E → ℝ) (ham : Measurable activation) (n : ℕ) (a v η : ℝ)
     (p F : HistoryMarked dependent E → Covariate d → ℝ)
@@ -39,8 +43,8 @@ instance highHistoryIndexTimeKernel_isSFinite {E : Type*} [MeasurableSpace E] {d
   unfold highHistoryIndexTimeKernel
   exact Kernel.isSFiniteKernel_withDensity_of_isFiniteKernel _ (fun _ _ => ENNReal.ofReal_ne_top)
 
-def highHistoryRealTimeKernel {E : Type*} [MeasurableSpace E] {d : ℕ}
-    (dependent : J → J → Prop) (Δ : ℕ) (π : Measure E)
+def highHistoryRealTimeKernel 
+    
     [SFinite (historyMarkedReference dependent Δ π)]
     (activation : E → ℝ) (ham : Measurable activation) (n : ℕ) (a v η : ℝ)
     (p F : HistoryMarked dependent E → Covariate d → ℝ)
@@ -48,8 +52,8 @@ def highHistoryRealTimeKernel {E : Type*} [MeasurableSpace E] {d : ℕ}
     Kernel ℝ (Fin n → Observation d) :=
   (highHistoryIndexTimeKernel dependent Δ π activation ham n a v η p F hp hF).map (encodeDesignResponse a)
 
-instance highHistoryRealTimeKernel_isSFinite {E : Type*} [MeasurableSpace E] {d : ℕ}
-    (dependent : J → J → Prop) (Δ : ℕ) (π : Measure E)
+instance highHistoryRealTimeKernel_isSFinite 
+    
     [SFinite (historyMarkedReference dependent Δ π)]
     (activation : E → ℝ) (ham : Measurable activation) (n : ℕ) (a v η : ℝ)
     (p F : HistoryMarked dependent E → Covariate d → ℝ)
@@ -58,8 +62,8 @@ instance highHistoryRealTimeKernel_isSFinite {E : Type*} [MeasurableSpace E] {d 
   unfold highHistoryRealTimeKernel
   infer_instance
 
-theorem highHistoryIndexTimeKernel_apply {E : Type*} [MeasurableSpace E] {d : ℕ}
-    (dependent : J → J → Prop) (Δ : ℕ) (π : Measure E)
+theorem highHistoryIndexTimeKernel_apply 
+    
     [SFinite (historyMarkedReference dependent Δ π)]
     (activation : E → ℝ) (ham : Measurable activation) (n : ℕ) (a v η : ℝ)
     (p F : HistoryMarked dependent E → Covariate d → ℝ)
@@ -79,8 +83,8 @@ theorem highHistoryIndexTimeKernel_apply {E : Type*} [MeasurableSpace E] {d : �
       ((highMassPowerNormalizer_time_measurable dependent Δ π activation ham n p hp).comp measurable_fst)).ennreal_ofReal
   exact Kernel.withDensity_apply _ hd t
 
-theorem highHistoryRealTimeKernel_eq_data {E : Type*} [MeasurableSpace E] {d : ℕ}
-    (dependent : J → J → Prop) (Δ : ℕ) (π : Measure E)
+theorem highHistoryRealTimeKernel_eq_data 
+    
     [SFinite (historyMarkedReference dependent Δ π)]
     (activation : E → ℝ) (ham : Measurable activation) (n : ℕ) (a v η : ℝ)
     (p F : HistoryMarked dependent E → Covariate d → ℝ)
@@ -99,7 +103,9 @@ theorem highHistoryRealTimeKernel_eq_data {E : Type*} [MeasurableSpace E] {d : �
     Measure.map_comp _ _ (encodeDesignResponse_measurable a)]
   rfl
 
-theorem highHistoryScoreEnergyProxy_measurable {E : Type*} [MeasurableSpace E]
+end
+
+theorem highHistoryScoreEnergyProxy_measurable [MeasurableSpace E]
     [StandardBorelSpace E] {d : ℕ}
     (dependent : J → J → Prop) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (Δ : ℕ) (π : Measure E) [SFinite π] [SFinite (historyMarkedReference dependent Δ π)]
@@ -130,7 +136,7 @@ theorem intervalIntegrable_sqrt_of_measurable_bound (f : ℝ → ℝ)
 /-- The actual observed posterior Fisher-energy path is integrable on the
 source time interval as a consequence of its uniform complete-likelihood
 energy budget. No path-integrability premise is supplied. -/
-theorem highHistoryScore_sqrt_energy_intervalIntegrable {E : Type*} [MeasurableSpace E]
+theorem highHistoryScore_sqrt_energy_intervalIntegrable [MeasurableSpace E]
     [StandardBorelSpace E] {d : ℕ}
     (dependent : J → J → Prop) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (Δ : ℕ) (π : Measure E) [IsProbabilityMeasure π]

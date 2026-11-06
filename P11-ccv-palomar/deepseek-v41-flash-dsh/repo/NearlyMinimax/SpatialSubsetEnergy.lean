@@ -11,7 +11,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped ENNReal BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
 
 theorem finite_pi_reindex_integrable {I J E : Type*} [Fintype I] [Fintype J]
     [MeasurableSpace E] (μ : Measure E) [SigmaFinite μ] (e : I ≃ J) (f : (J → E) → ℝ)

@@ -11,8 +11,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 400000
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 def exponentialScaleMap (s : ι → ℝ) : ι → ℝ := fun j => Real.exp (s j) - 1
@@ -20,7 +18,9 @@ def exponentialScaleMap (s : ι → ℝ) : ι → ℝ := fun j => Real.exp (s j)
 def exponentialScaleDerivative (s : ι → ℝ) : (ι → ℝ) →L[ℝ] (ι → ℝ) :=
   ContinuousLinearMap.pi (fun j => Real.exp (s j) • ContinuousLinearMap.proj j)
 
-theorem exponential_scale_hasFDerivAt (s : ι → ℝ) :
+variable (s : ι → ℝ)
+
+theorem exponential_scale_hasFDerivAt :
     HasFDerivAt exponentialScaleMap (exponentialScaleDerivative s) s := by
   apply hasFDerivAt_pi.mpr
   intro j
@@ -30,7 +30,7 @@ theorem exponential_scale_hasFDerivAt (s : ι → ℝ) :
       (Real.hasDerivAt_exp (s j)).comp_hasFDerivAt s (hasFDerivAt_apply j s)
   exact h.sub_const 1
 
-theorem exponential_scale_derivative_det (s : ι → ℝ) :
+theorem exponential_scale_derivative_det :
     (exponentialScaleDerivative s).det = ∏ j, Real.exp (s j) := by
   have he : (exponentialScaleDerivative s).toLinearMap =
       LinearMap.pi (fun j => ((Real.exp (s j)) • (LinearMap.id : ℝ →ₗ[ℝ] ℝ)).comp (LinearMap.proj j)) := by
@@ -68,9 +68,12 @@ theorem exponential_scale_image_orthant :
       rw [Real.exp_log (by linarith)]
       ring
 
+section
+variable (f : (ι → ℝ) → ℝ)
+
 /-- Change of variables for every actual Bochner integrand, over the entire
 positive orthant. -/
-theorem integral_exponential_scale_change (f : (ι → ℝ) → ℝ) :
+theorem integral_exponential_scale_change :
     (∫ t : ι → ℝ in Ici 0, f t) =
       ∫ s : ι → ℝ in Ici 0, (∏ j, Real.exp (s j)) * f (exponentialScaleMap s) := by
   have h := integral_image_eq_integral_abs_det_fderiv_smul (volume : Measure (ι → ℝ))
@@ -84,7 +87,7 @@ theorem integral_exponential_scale_change (f : (ι → ℝ) → ℝ) :
   simp_rw [hdet, smul_eq_mul] at h
   exact h
 
-theorem integrableOn_exponential_scale_change_iff (f : (ι → ℝ) → ℝ) :
+theorem integrableOn_exponential_scale_change_iff :
     IntegrableOn f (Ici 0) ↔
       IntegrableOn (fun s : ι → ℝ => (∏ j, Real.exp (s j)) * f (exponentialScaleMap s)) (Ici 0) := by
   have h := integrableOn_image_iff_integrableOn_abs_det_fderiv_smul (volume : Measure (ι → ℝ))
@@ -97,6 +100,8 @@ theorem integrableOn_exponential_scale_change_iff (f : (ι → ℝ) → ℝ) :
     rw [exponential_scale_derivative_det, abs_of_nonneg (Finset.prod_nonneg (fun j _ => Real.exp_nonneg _))]
   simp_rw [hdet, smul_eq_mul] at h
   exact h
+
+end
 
 /-- The closed logarithmic scale tail with its actual power-law integrand. -/
 def logScaleTail (b A : ℝ) (t : ι → ℝ) : ℝ :=
@@ -132,7 +137,10 @@ theorem finite_log_scale_tail_integral {q : ℕ} (b A : ℝ) :
   apply integral_congr_ae
   exact Filter.Eventually.of_forall fun s => log_scale_tail_change_pointwise b A s
 
-theorem finite_log_scale_tail_integrable {m : ℕ} {b : ℝ} (hb : 0 < b) (A : ℝ) :
+section
+variable {m : ℕ}
+
+theorem finite_log_scale_tail_integrable {b : ℝ} (hb : 0 < b) (A : ℝ) :
     IntegrableOn (logScaleTail b A : (Fin (m + 1) → ℝ) → ℝ) (Ici 0) := by
   apply (integrableOn_exponential_scale_change_iff _).mpr
   have h := finite_orthant_tail_integrable (m := m) hb A
@@ -145,11 +153,13 @@ theorem finite_log_scale_tail_integrable {m : ℕ} {b : ℝ} (hb : 0 < b) (A : �
   exact h
 
 /-- Quantitative logarithmic-simplex tail with the actual scale Jacobian. -/
-theorem finite_log_scale_tail_integral_uniform {m : ℕ} {b A : ℝ}
+theorem finite_log_scale_tail_integral_uniform {b A : ℝ}
     (hb : (1 / 2 : ℝ) ≤ b) (hA : 0 ≤ A) :
     (∫ t : Fin (m + 1) → ℝ in Ici 0, logScaleTail b A t) ≤
       8 ^ (m + 1) * Real.exp (-(b * A)) * (1 + A) ^ m := by
   rw [finite_log_scale_tail_integral]
   exact finite_orthant_tail_integral_uniform hb hA
+
+end
 
 end NearlyMinimax

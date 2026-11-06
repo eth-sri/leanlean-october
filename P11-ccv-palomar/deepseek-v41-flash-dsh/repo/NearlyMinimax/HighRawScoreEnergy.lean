@@ -12,8 +12,6 @@ noncomputable section
 open MeasureTheory ProbabilityTheory Set
 open scoped BigOperators ENNReal
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 
 theorem normalized_likelihood_score_square_transfer {Z : Type*} [MeasurableSpace Z]
     (μ : Measure Z) (c : ℝ) (hc : 0 < c) (L D : Z → ℝ)
@@ -56,7 +54,7 @@ theorem raw_joint_fisher_integrable_bound {Ω Z : Type*}
     Integrable (fun z : Ω × Z => D z.1 z.2 ^ 2 / L z.1 z.2) (ν.prod μ) ∧
     (∫ z : Ω × Z, D z.1 z.2 ^ 2 / L z.1 z.2 ∂ν.prod μ) ≤ (∫ ω, c ω ∂ν) * B := by
   let W : Ω × Z → ℝ := fun z => D z.1 z.2 ^ 2 / L z.1 z.2
-  have hW : Measurable W := (hD.pow_const 2).div hL
+  have hW := (hD.pow_const 2).div hL
   have hWi (ω : Ω) : Integrable (fun z => W (ω, z)) μ :=
     (normalized_likelihood_score_square_transfer μ (c ω) (hc ω) (L ω) (D ω)
       hL.of_uncurry_left (hpos ω)).1.mp (hscore ω)
@@ -65,8 +63,7 @@ theorem raw_joint_fisher_integrable_bound {Ω Z : Type*}
       (∫ z, (D ω z / L ω z) ^ 2 ∂μ.withDensity (fun z => ENNReal.ofReal (L ω z / c ω))) := by
     have hs := (normalized_likelihood_score_square_transfer μ (c ω) (hc ω) (L ω) (D ω)
       hL.of_uncurry_left (hpos ω)).2
-    rw [hs]
-    rw [← mul_assoc, mul_inv_cancel₀ (hc ω).ne', one_mul]
+    rw [hs, ← mul_assoc, mul_inv_cancel₀ (hc ω).ne', one_mul]
   have hnorm (ω : Ω) : (∫ z, ‖W (ω, z)‖ ∂μ) ≤ c ω * B := by
     have heNorm : (fun z => ‖W (ω, z)‖) = (fun z => W (ω, z)) := by
       funext z
@@ -120,7 +117,7 @@ theorem high_raw_joint_fisher_integrable_bound {Ω : Type*} [MeasurableSpace Ω]
       (Filter.Eventually.of_forall (hraw ω))
   have hm (ω : Ω) : 0 < highRawDensityMass (p ω) := haRaw.trans_le (hmBound ω).1
   have hc : ∀ ω, 0 < c ω := fun ω => pow_pos (hm ω) n
-  have hcm : Measurable c := (highRawDensityMass_joint_measurable p hp).pow_const n
+  have hcm := (highRawDensityMass_joint_measurable p hp).pow_const n
   have hci : Integrable c ν := by
     apply (integrable_const (bRaw ^ n)).mono' hcm.aestronglyMeasurable
     apply Filter.Eventually.of_forall

@@ -70,7 +70,9 @@ def historyOrderVolume (S : Finset α) : ℝ := historyOrderCount S / (S.card.fa
 @[simp] theorem historyOrderVolume_empty : historyOrderVolume (∅ : Finset α) = 1 := by
   simp [historyOrderVolume]
 
-theorem historyOrderCount_recursion (S : Finset α) (hS : S.Nonempty) :
+variable (S : Finset α)
+
+theorem historyOrderCount_recursion (hS : S.Nonempty) :
     historyOrderCount S = ∑ x ∈ historyMaximalPieces S, historyOrderCount (S.erase x) := by
   have hpos := Finset.card_pos.2 hS
   have hc : S.card = (S.card - 1) + 1 := by omega
@@ -78,10 +80,9 @@ theorem historyOrderCount_recursion (S : Finset α) (hS : S.Nonempty) :
   rw [hc, historyDeletionCoefficient_succ]
   apply Finset.sum_congr rfl
   intro x hx
-  have hxS := historyMaximalPieces_subset S hx
-  rw [Finset.card_erase_of_mem hxS, one_mul]
+  rw [Finset.card_erase_of_mem (historyMaximalPieces_subset S hx), one_mul]
 
-theorem historyOrderCount_nonneg (S : Finset α) : 0 ≤ historyOrderCount S := by
+theorem historyOrderCount_nonneg : 0 ≤ historyOrderCount S := by
   have hh : ∀ k (T : Finset α), 0 ≤ historyDeletionCoefficient (fun _ : α => (1 : ℝ)) k T := by
     intro k
     induction k with
@@ -94,7 +95,7 @@ theorem historyOrderCount_nonneg (S : Finset α) : 0 ≤ historyOrderCount S := 
       simpa only [one_mul] using ih (T.erase x)
   exact hh S.card S
 
-theorem historyOrderCount_le_factorial (S : Finset α) : historyOrderCount S ≤ (S.card.factorial : ℝ) := by
+theorem historyOrderCount_le_factorial : historyOrderCount S ≤ (S.card.factorial : ℝ) := by
   induction S using Finset.strongInductionOn
   rename_i S ih
   by_cases he : S = ∅
@@ -119,13 +120,12 @@ theorem historyOrderCount_le_factorial (S : Finset α) : historyOrderCount S ≤
         congr 1
         exact_mod_cast hc
 
-theorem historyOrderVolume_nonneg (S : Finset α) : 0 ≤ historyOrderVolume S :=
+theorem historyOrderVolume_nonneg : 0 ≤ historyOrderVolume S :=
   div_nonneg (historyOrderCount_nonneg S) (by positivity)
 
-theorem historyOrderVolume_le_one (S : Finset α) : historyOrderVolume S ≤ 1 := by
-  exact (div_le_one (by positivity : 0 < (S.card.factorial : ℝ))).2 (historyOrderCount_le_factorial S)
+theorem historyOrderVolume_le_one : historyOrderVolume S ≤ 1 := (div_le_one (by positivity : 0 < (S.card.factorial : ℝ))).2 (historyOrderCount_le_factorial S)
 
-theorem historyOrderVolume_recursion (S : Finset α) :
+theorem historyOrderVolume_recursion :
     (S.card : ℝ) * historyOrderVolume S = ∑ x ∈ historyMaximalPieces S, historyOrderVolume (S.erase x) := by
   classical
   by_cases he : S = ∅
@@ -162,8 +162,7 @@ theorem historyOrderVolume_union {P Q : Finset α} (hinc : IncomparableHistoryPa
     intro P Q hn hinc
     by_cases he : P ∪ Q = ∅
     · have hP : P = ∅ := (Finset.union_eq_empty.1 he).1
-      have hQ : Q = ∅ := (Finset.union_eq_empty.1 he).2
-      simp [hP, hQ]
+      simp [hP, ((Finset.union_eq_empty.1 he).2)]
     · have hdis := hinc.disjoint
       have hmaxdis : Disjoint (historyMaximalPieces P) (historyMaximalPieces Q) :=
         hdis.mono (historyMaximalPieces_subset P) (historyMaximalPieces_subset Q)
@@ -209,11 +208,10 @@ theorem historyOrderVolume_union {P Q : Finset α} (hinc : IncomparableHistoryPa
           _ = _ := by rw [← historyOrderVolume_recursion]; ring
       have hrec := historyOrderVolume_recursion (P ∪ Q)
       rw [historyMaximalPieces_union hinc, Finset.sum_union hmaxdis, hleft, hright] at hrec
-      have hcard : (P ∪ Q).card = P.card + Q.card := Finset.card_union_of_disjoint hdis
       have hpos : 0 < ((P ∪ Q).card : ℝ) := by
         exact_mod_cast Finset.card_pos.2 (Finset.nonempty_iff_ne_empty.2 he)
       apply (mul_left_cancel₀ hpos.ne')
-      rw [hrec, hcard]
+      rw [hrec, (Finset.card_union_of_disjoint hdis)]
       push_cast
       ring
   exact hmain (P ∪ Q).card P Q rfl hinc
@@ -235,7 +233,7 @@ theorem historyComponentWeight_union (weight : α → ℝ) (ρ t : ℝ) {P Q : F
 theorem historyComponentWeight_abs_le {weight : α → ℝ} {ρ t B : ℝ} (P : Finset α)
     (hρ : 0 < ρ) (ht : 0 ≤ t) (_hB : 0 ≤ B) (hw : ∀ x ∈ P, |weight x| ≤ B) :
     |historyComponentWeight weight ρ t P| ≤ (t * B / ρ) ^ P.card := by
-  have hp : 0 ≤ t / ρ := div_nonneg ht hρ.le
+  have hp := div_nonneg ht hρ.le
   have hprod : (∏ x ∈ P, |weight x|) ≤ B ^ P.card := by
     calc
       _ ≤ ∏ _x ∈ P, B := Finset.prod_le_prod₀ (fun _ _ => abs_nonneg _) hw

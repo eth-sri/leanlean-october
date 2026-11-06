@@ -9,7 +9,6 @@ noncomputable section
 open MeasureTheory ProbabilityTheory
 open scoped BigOperators Classical
 namespace NearlyMinimax.PairUStatistic
-set_option backward.isDefEq.respectTransparency false
 
 variable {Ω E ι : Type*} [MeasurableSpace Ω] [MeasurableSpace E]
 variable {ν : Measure Ω} {μ : Measure E} [IsProbabilityMeasure ν] [IsProbabilityMeasure μ]
@@ -22,7 +21,10 @@ theorem integral_comp_measurePreserving (f : Ω → E)
   exact (integral_map hf.aemeasurable hg.aestronglyMeasurable).symm
 
 omit [IsProbabilityMeasure μ] in
-theorem pair_measurePreserving (X : ι → Ω → E)
+section
+variable (X : ι → Ω → E)
+
+theorem pair_measurePreserving 
     (hind : iIndepFun X ν) (hX : ∀ i, MeasurePreserving (X i) ν μ)
     {i j : ι} (hij : i ≠ j) :
     MeasurePreserving (fun x => (X i x, X j x)) ν (μ.prod μ) := by
@@ -30,7 +32,7 @@ theorem pair_measurePreserving (X : ι → Ω → E)
   rw [(hind.indepFun hij).map_prod_eq_prod_map_map (hX i).aemeasurable
     (hX j).aemeasurable, (hX i).map_eq, (hX j).map_eq]
 
-theorem triple_measurePreserving (X : ι → Ω → E)
+theorem triple_measurePreserving 
     (hind : iIndepFun X ν) (hX : ∀ i, MeasurePreserving (X i) ν μ)
     {i j k : ι} (hij : i ≠ j) (hik : i ≠ k) (hjk : j ≠ k) :
     MeasurePreserving (fun x => ((X i x, X j x), X k x)) ν ((μ.prod μ).prod μ) := by
@@ -39,17 +41,19 @@ theorem triple_measurePreserving (X : ι → Ω → E)
       ((hX i).aemeasurable.prodMk (hX j).aemeasurable) (hX k).aemeasurable,
     (pair_measurePreserving X hind hX hij).map_eq, (hX k).map_eq]
 
-theorem kernel_pair_memLp (X : ι → Ω → E)
+theorem kernel_pair_memLp 
     (hind : iIndepFun X ν) (hX : ∀ i, MeasurePreserving (X i) ν μ)
     {K : E × E → ℝ} (hK : MemLp K 2 (μ.prod μ))
     {i j : ι} (hij : i ≠ j) : MemLp (fun x => K (X i x, X j x)) 2 ν :=
   hK.comp_measurePreserving (pair_measurePreserving X hind hX hij)
 
-theorem kernel_pair_integral (X : ι → Ω → E)
+theorem kernel_pair_integral 
     (hind : iIndepFun X ν) (hX : ∀ i, MeasurePreserving (X i) ν μ)
     {K : E × E → ℝ} (hK : Measurable K) {i j : ι} (hij : i ≠ j) :
     (∫ x, K (X i x, X j x) ∂ν) = ∫ z, K z ∂μ.prod μ :=
   integral_comp_measurePreserving _ (pair_measurePreserving X hind hX hij) K hK
+
+end
 
 theorem shared_product_integrable {K : E × E → ℝ} (hK : MemLp K 2 (μ.prod μ)) :
     Integrable (fun z : (E × E) × E => K z.1 * K (z.1.1, z.2))
@@ -65,17 +69,20 @@ theorem shared_product_integrable {K : E × E → ℝ} (hK : MemLp K 2 (μ.prod 
 
 def rowIntegral (K : E × E → ℝ) (x : E) : ℝ := ∫ y, K (x, y) ∂μ
 
-theorem row_product_integrable {K : E × E → ℝ} (hK : MemLp K 2 (μ.prod μ)) :
+section
+variable {K : E × E → ℝ}
+
+theorem row_product_integrable (hK : MemLp K 2 (μ.prod μ)) :
     Integrable (fun z : E × E => K z * rowIntegral (μ := μ) K z.1) (μ.prod μ) := by
   have hi := (shared_product_integrable hK).integral_prod_left
   simpa only [integral_const_mul, rowIntegral] using hi
 
-theorem rowIntegral_sq_integrable {K : E × E → ℝ} (hK : MemLp K 2 (μ.prod μ)) :
+theorem rowIntegral_sq_integrable (hK : MemLp K 2 (μ.prod μ)) :
     Integrable (fun x => rowIntegral (μ := μ) K x ^ 2) μ := by
   have hi := (row_product_integrable hK).integral_prod_left
   simpa only [integral_mul_const, rowIntegral, pow_two] using hi
 
-theorem shared_product_integral {K : E × E → ℝ} (hK : MemLp K 2 (μ.prod μ)) :
+theorem shared_product_integral (hK : MemLp K 2 (μ.prod μ)) :
     (∫ z : (E × E) × E, K z.1 * K (z.1.1, z.2) ∂(μ.prod μ).prod μ) =
       ∫ x, rowIntegral (μ := μ) K x ^ 2 ∂μ := by
   rw [integral_prod _ (shared_product_integrable hK)]
@@ -84,7 +91,12 @@ theorem shared_product_integral {K : E × E → ℝ} (hK : MemLp K 2 (μ.prod μ
   rw [integral_prod _ (row_product_integrable hK)]
   simp only [integral_mul_const, rowIntegral, pow_two]
 
-theorem kernel_shared_product_integral (X : ι → Ω → E)
+end
+
+section
+variable (X : ι → Ω → E)
+
+theorem kernel_shared_product_integral 
     (hind : iIndepFun X ν) (hX : ∀ i, MeasurePreserving (X i) ν μ)
     {K : E × E → ℝ} (hmK : Measurable K) (hK : MemLp K 2 (μ.prod μ))
     {i j k : ι} (hij : i ≠ j) (hik : i ≠ k) (hjk : j ≠ k) :
@@ -96,7 +108,7 @@ theorem kernel_shared_product_integral (X : ι → Ω → E)
     (triple_measurePreserving X hind hX hij hik hjk) _ hg).trans
     (shared_product_integral hK)
 
-theorem kernel_disjoint_product_integral (X : ι → Ω → E)
+theorem kernel_disjoint_product_integral 
     (hind : iIndepFun X ν) (hX : ∀ i, MeasurePreserving (X i) ν μ)
     {K : E × E → ℝ} (hmK : Measurable K)
     {i j k l : ι} (hij : i ≠ j) (hkl : k ≠ l)
@@ -112,18 +124,23 @@ theorem kernel_disjoint_product_integral (X : ι → Ω → E)
   rw [he, kernel_pair_integral X hind hX hmK hij, kernel_pair_integral X hind hX hmK hkl,
     pow_two]
 
+end
+
 /-- Ordered-pair U-statistic with its actual finite sample normalization. -/
 def pairAverage (n : ℕ) (K : E × E → ℝ) (x : Fin n → E) : ℝ :=
   ((n : ℝ) * (n - 1 : ℕ))⁻¹ * ∑ i, ∑ j with j ≠ i, K (x i, x j)
 
-theorem kernel_pair_sq_integral (X : ι → Ω → E)
+section
+variable (X : ι → Ω → E)
+
+theorem kernel_pair_sq_integral 
     (hind : iIndepFun X ν) (hX : ∀ i, MeasurePreserving (X i) ν μ)
     {K : E × E → ℝ} (hmK : Measurable K) {i j : ι} (hij : i ≠ j) :
     (∫ x, K (X i x, X j x) ^ 2 ∂ν) = ∫ z, K z ^ 2 ∂μ.prod μ :=
   kernel_pair_integral X hind hX (hmK.pow_const 2) hij
 
 /-- Exact overlap classification for a symmetric kernel. -/
-theorem kernel_pair_product_classification (X : ι → Ω → E)
+theorem kernel_pair_product_classification 
     (hind : iIndepFun X ν) (hX : ∀ i, MeasurePreserving (X i) ν μ)
     {K : E × E → ℝ} (hmK : Measurable K) (hK : MemLp K 2 (μ.prod μ))
     (hsym : ∀ x y, K (x, y) = K (y, x))
@@ -185,6 +202,8 @@ theorem kernel_pair_product_classification (X : ι → Ω → E)
         · simp only [hik, hil, hjk, hjl, false_and, false_or, ite_false]
           exact kernel_disjoint_product_integral X hind hX hmK hij hkl hik hil hjk hjl
 
+end
+
 theorem kernel_pair_covariance_le [DecidableEq ι] (X : ι → Ω → E)
     (hind : iIndepFun X ν) (hX : ∀ i, MeasurePreserving (X i) ν μ)
     {K : E × E → ℝ} (hmK : Measurable K) (hK : MemLp K 2 (μ.prod μ))
@@ -211,12 +230,15 @@ theorem kernel_pair_covariance_le [DecidableEq ι] (X : ι → Ω → E)
       true_and, and_true, or_true, true_or, false_and, and_false, false_or, or_false,
       ite_true, ite_false, zero_add, add_zero, mul_zero, mul_one, sub_self] <;> nlinarith
 
-theorem pairAverage_eq_orderedPairs {n : ℕ} (K : E × E → ℝ) (x : Fin n → E) :
+section
+variable {n : ℕ}
+
+theorem pairAverage_eq_orderedPairs (K : E × E → ℝ) (x : Fin n → E) :
     pairAverage n K x =
       ((n : ℝ) * (n - 1 : ℕ))⁻¹ * ∑ p ∈ orderedPairs n, K (x p.1, x p.2) := by
   rw [pairAverage, sum_orderedPairs]
 
-theorem pairAverage_memLp_two {n : ℕ} (X : Fin n → Ω → E)
+theorem pairAverage_memLp_two (X : Fin n → Ω → E)
     (hind : iIndepFun X ν) (hX : ∀ i, MeasurePreserving (X i) ν μ)
     {K : E × E → ℝ} (hK : MemLp K 2 (μ.prod μ)) :
     MemLp (fun x => pairAverage n K (fun i => X i x)) 2 ν := by
@@ -226,7 +248,7 @@ theorem pairAverage_memLp_two {n : ℕ} (X : Fin n → Ω → E)
   intro p hp
   exact kernel_pair_memLp X hind hX hK (Finset.mem_filter.mp hp).2
 
-theorem pairAverage_integral {n : ℕ} (hn : 2 ≤ n) (X : Fin n → Ω → E)
+theorem pairAverage_integral (hn : 2 ≤ n) (X : Fin n → Ω → E)
     (hind : iIndepFun X ν) (hX : ∀ i, MeasurePreserving (X i) ν μ)
     {K : E × E → ℝ} (hmK : Measurable K) (hK : MemLp K 2 (μ.prod μ)) :
     (∫ x, pairAverage n K (fun i => X i x) ∂ν) = ∫ z, K z ∂μ.prod μ := by
@@ -249,7 +271,7 @@ theorem pairAverage_integral {n : ℕ} (hn : 2 ≤ n) (X : Fin n → Ω → E)
 /-- The order-two localized variance bound, valid for unbounded L² kernels.
 The four shared slots cost the row energy; the two equal unordered pairs
 cost the full kernel energy. -/
-theorem pairAverage_variance_le {n : ℕ} (hn : 2 ≤ n) (X : Fin n → Ω → E)
+theorem pairAverage_variance_le (hn : 2 ≤ n) (X : Fin n → Ω → E)
     (hind : iIndepFun X ν) (hX : ∀ i, MeasurePreserving (X i) ν μ)
     {K : E × E → ℝ} (hmK : Measurable K) (hK : MemLp K 2 (μ.prod μ))
     (hsym : ∀ x y, K (x, y) = K (y, x)) :
@@ -275,8 +297,7 @@ theorem pairAverage_variance_le {n : ℕ} (hn : 2 ≤ n) (X : Fin n → Ω → E
         simpa only [Y, overlapMajorant, A, B, Prod.mk.eta, Prod.swap] using
           kernel_pair_covariance_le X hind hX hmK hK hsym
             (Finset.mem_filter.mp hp).2 (Finset.mem_filter.mp hq).2
-      _ = ∑ _p ∈ orderedPairs n, (4 * (n - 1 : ℕ) * B + 2 * A) := by
-        exact Finset.sum_congr rfl (fun p hp => overlap_majorant_sum hp A B)
+      _ = ∑ _p ∈ orderedPairs n, (4 * (n - 1 : ℕ) * B + 2 * A) := Finset.sum_congr rfl (fun p hp => overlap_majorant_sum hp A B)
       _ = _ := by
         simp only [Finset.sum_const, orderedPairs_card, nsmul_eq_mul, Nat.cast_mul]
   simp only [pairAverage_eq_orderedPairs]
@@ -293,7 +314,7 @@ theorem pairAverage_variance_le {n : ℕ} (hn : 2 ≤ n) (X : Fin n → Ω → E
       <;> ring
 
 /-- Mean-squared fluctuation form used by the ratio estimators. -/
-theorem pairAverage_centered_sq_le {n : ℕ} (hn : 2 ≤ n) (X : Fin n → Ω → E)
+theorem pairAverage_centered_sq_le (hn : 2 ≤ n) (X : Fin n → Ω → E)
     (hind : iIndepFun X ν) (hX : ∀ i, MeasurePreserving (X i) ν μ)
     {K : E × E → ℝ} (hmK : Measurable K) (hK : MemLp K 2 (μ.prod μ))
     (hsym : ∀ x y, K (x, y) = K (y, x)) :
@@ -304,6 +325,8 @@ theorem pairAverage_centered_sq_le {n : ℕ} (hn : 2 ≤ n) (X : Fin n → Ω �
   rw [variance_eq_integral (pairAverage_memLp_two X hind hX hK).aemeasurable,
     pairAverage_integral hn X hind hX hmK hK] at hv
   exact hv
+
+end
 
 theorem pairAverage_measurable (n : ℕ) {K : E × E → ℝ} (hmK : Measurable K) :
     Measurable (pairAverage n K) := by

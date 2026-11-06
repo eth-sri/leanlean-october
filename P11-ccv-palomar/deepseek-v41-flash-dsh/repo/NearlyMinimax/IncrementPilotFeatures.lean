@@ -14,13 +14,13 @@ open MeasureTheory ProbabilityTheory Matrix
 open scoped BigOperators Matrix.Norms.L2Operator
 namespace NearlyMinimax
 
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 
-def anchoredFinIndex {d ℓ : ℕ} (i : Fin (anchoredDimension d ℓ)) : AnchoredIndex d ℓ :=
+variable {d ℓ : ℕ} (C : ModelConstants d)
+
+def anchoredFinIndex (i : Fin (anchoredDimension d ℓ)) : AnchoredIndex d ℓ :=
   (Fintype.equivFin (AnchoredIndex d ℓ)).symm i
 
-def dyadicIncrementFeature {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
+def dyadicIncrementFeature (j : ℕ) (x : Covariate d)
     (v : incrementVariables (anchoredDimension d ℓ)) (z : Observation d) : ℝ :=
   match v with
   | Sum.inl m => match m with
@@ -35,12 +35,12 @@ def dyadicIncrementFeature {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
         (if pri.2.1 then Sum.inr (Sum.inr (anchoredFinIndex pri.2.2))
           else Sum.inr (Sum.inl (anchoredFinIndex pri.2.2))) z
 
-def dyadicIncrementRawVector {d ℓ : ℕ} (j : ℕ) (x : Covariate d) (z : Observation d) :
+def dyadicIncrementRawVector (j : ℕ) (x : Covariate d) (z : Observation d) :
     Fin (Fintype.card (incrementVariables (anchoredDimension d ℓ))) → ℝ :=
   fun a => dyadicIncrementFeature j x
     ((Fintype.equivFin (incrementVariables (anchoredDimension d ℓ))).symm a) z
 
-def dyadicIncrementRawMean {d ℓ : ℕ} (θ : RegressionParameter d) (j : ℕ) (x : Covariate d) :
+def dyadicIncrementRawMean (θ : RegressionParameter d) (j : ℕ) (x : Covariate d) :
     Fin (Fintype.card (incrementVariables (anchoredDimension d ℓ))) → ℝ :=
   fun a => ∫ z, dyadicIncrementRawVector j x z a ∂observationLaw θ
 
@@ -48,7 +48,10 @@ theorem dyadicPilotScale_parent_le (d j : ℕ) : dyadicPilotScale d (j - 1) ≤ 
   unfold dyadicPilotScale
   exact pow_le_pow_left₀ (by positivity) (pow_le_pow_right₀ (by norm_num) (Nat.sub_le j 1)) d
 
-theorem dyadicIncrementFeature_measurable {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
+section
+variable (j : ℕ) (x : Covariate d)
+
+theorem dyadicIncrementFeature_measurable 
     (v : incrementVariables (anchoredDimension d ℓ)) : Measurable (dyadicIncrementFeature j x v) := by
   cases v with
   | inl v =>
@@ -70,11 +73,13 @@ theorem dyadicIncrementFeature_measurable {d ℓ : ℕ} (j : ℕ) (x : Covariate
           else Sum.inr (Sum.inl (anchoredFinIndex i))) z)
     split_ifs <;> first | exact measurable_const | exact preconditionedPilotFeature_measurable _ x _
 
-theorem dyadicIncrementRawVector_measurable {d ℓ : ℕ} (j : ℕ) (x : Covariate d) :
+theorem dyadicIncrementRawVector_measurable :
     Measurable (dyadicIncrementRawVector (ℓ := ℓ) j x) :=
   measurable_pi_iff.mpr (fun _ => dyadicIncrementFeature_measurable j x _)
 
-theorem dyadicIncrementFeature_memLp_two {d ℓ : ℕ} (C : ModelConstants d)
+end
+
+theorem dyadicIncrementFeature_memLp_two 
     (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
     (hx : x ∈ unitCube d) (v : incrementVariables (anchoredDimension d ℓ)) :
     MemLp (dyadicIncrementFeature j x v) 2 (observationLaw θ) := by
@@ -101,7 +106,7 @@ theorem dyadicIncrementFeature_memLp_two {d ℓ : ℕ} (C : ModelConstants d)
 
 /-- Original-law moment bound for every current/parent free coordinate;
 the level-zero identity parent is covered by the same fixed constant. -/
-theorem dyadicIncrementFeature_second_le {d ℓ : ℕ} (C : ModelConstants d)
+theorem dyadicIncrementFeature_second_le 
     (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
     (hx : x ∈ unitCube d) (v : incrementVariables (anchoredDimension d ℓ)) :
     (∫ z, dyadicIncrementFeature j x v z ^ 2 ∂observationLaw θ) ≤
@@ -148,7 +153,7 @@ theorem dyadicIncrementFeature_second_le {d ℓ : ℕ} (C : ModelConstants d)
         | simpa [dyadicIncrementFeature, hj] using hparent
             (Sum.inr (Sum.inr (anchoredFinIndex i)))
 
-theorem dyadicIncrementRawVector_second_le {d ℓ : ℕ} (C : ModelConstants d)
+theorem dyadicIncrementRawVector_second_le 
     (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
     (hx : x ∈ unitCube d) :
     (∫ z, ‖dyadicIncrementRawVector (ℓ := ℓ) j x z‖ ^ 2 ∂observationLaw θ) ≤
@@ -161,17 +166,17 @@ theorem dyadicIncrementRawVector_second_le {d ℓ : ℕ} (C : ModelConstants d)
     (by simp [mul_assoc])
 
 /-- The finite-coordinate current Gram and the two true vector moment families. -/
-def dyadicFinPilotGram {d ℓ : ℕ} (θ : RegressionParameter d) (j : ℕ) (x : Covariate d) :
+def dyadicFinPilotGram (θ : RegressionParameter d) (j : ℕ) (x : Covariate d) :
     Matrix (Fin (anchoredDimension d ℓ)) (Fin (anchoredDimension d ℓ)) ℝ :=
   anchoredFinReindex d ℓ (dyadicPreconditionedGram θ j x)
 
-def dyadicFinPilotMoments {d ℓ : ℕ} (θ : RegressionParameter d) (j : ℕ) (x : Covariate d) :
+def dyadicFinPilotMoments (θ : RegressionParameter d) (j : ℕ) (x : Covariate d) :
     Bool → Fin (anchoredDimension d ℓ) → ℝ :=
   fun response i => preconditionedPilotPopulation θ j x
     (if response then Sum.inr (Sum.inr (anchoredFinIndex i))
       else Sum.inr (Sum.inl (anchoredFinIndex i)))
 
-def dyadicIncrementPopulation {d ℓ : ℕ} (θ : RegressionParameter d) (j : ℕ) (x : Covariate d) :
+def dyadicIncrementPopulation (θ : RegressionParameter d) (j : ℕ) (x : Covariate d) :
     incrementVariables (anchoredDimension d ℓ) → ℝ :=
   incrementValuation (dyadicFinPilotGram θ j x)
     (if j = 0 then 1 else dyadicFinPilotGram θ (j - 1) x)
@@ -180,7 +185,7 @@ def dyadicIncrementPopulation {d ℓ : ℕ} (θ : RegressionParameter d) (j : �
 
 /-- Original observation-law integration produces precisely the free-moment
 population point, including the deterministic identity/zero root parent. -/
-theorem dyadicIncrementFeature_integral {d ℓ : ℕ} (C : ModelConstants d)
+theorem dyadicIncrementFeature_integral 
     (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
     (hx : x ∈ unitCube d) (v : incrementVariables (anchoredDimension d ℓ)) :
     (∫ z, dyadicIncrementFeature j x v z ∂observationLaw θ) =
@@ -212,7 +217,7 @@ theorem dyadicIncrementFeature_integral {d ℓ : ℕ} (C : ModelConstants d)
     all_goals simp [dyadicIncrementFeature, dyadicIncrementPopulation, incrementValuation,
       dyadicFinPilotMoments, hj, preconditionedPilotPopulation]
 
-theorem dyadicIncrementRawMean_eq_population {d ℓ : ℕ} (C : ModelConstants d)
+theorem dyadicIncrementRawMean_eq_population 
     (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
     (hx : x ∈ unitCube d) :
     dyadicIncrementRawMean (ℓ := ℓ) θ j x = fun a =>
@@ -221,14 +226,14 @@ theorem dyadicIncrementRawMean_eq_population {d ℓ : ℕ} (C : ModelConstants d
   funext a
   exact dyadicIncrementFeature_integral C θ hθ j x hx _
 
-theorem dyadicFinPilotGram_eq_normalized {d ℓ : ℕ} (C : ModelConstants d)
+theorem dyadicFinPilotGram_eq_normalized 
     (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d) :
     dyadicFinPilotGram (ℓ := ℓ) θ j x =
       anchoredFinNormalizedGram (dyadicNormalizedAnchor j x) (dyadicNormalizedDensity θ j x) := by
   unfold dyadicFinPilotGram dyadicPreconditionedGram anchoredFinNormalizedGram
   rw [dyadicKnownGram_eq_normalized, dyadicPopulationGram_eq_normalized C θ hθ]
 
-theorem dyadicFinPilotMoments_eq_normalized {d ℓ : ℕ} (C : ModelConstants d)
+theorem dyadicFinPilotMoments_eq_normalized 
     (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
     (hx : x ∈ unitCube d) (t : Bool) (i : Fin (anchoredDimension d ℓ)) :
     dyadicFinPilotMoments θ j x t i =
@@ -238,8 +243,11 @@ theorem dyadicFinPilotMoments_eq_normalized {d ℓ : ℕ} (C : ModelConstants d)
   · exact preconditionedPilotPopulation_response C θ hθ j x hx _
   · exact preconditionedPilotPopulation_constant C θ hθ j x hx _
 
-theorem dyadicIncrementRawVector_sample_facts {d ℓ n : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
+section
+variable {d ℓ n : ℕ} (C : ModelConstants d) (θ : RegressionParameter d)
+
+theorem dyadicIncrementRawVector_sample_facts 
+    (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
     (hx : x ∈ unitCube d) :
     iIndepFun (fun i (z : Fin n → Observation d) => dyadicIncrementRawVector (ℓ := ℓ) j x (z i)) (sampleLaw θ n) ∧
     (∀ i : Fin n, Measurable (fun z : Fin n → Observation d => dyadicIncrementRawVector (ℓ := ℓ) j x (z i))) ∧
@@ -268,8 +276,8 @@ theorem dyadicIncrementRawVector_sample_facts {d ℓ n : ℕ} (C : ModelConstant
       ((dyadicIncrementFeature_measurable j x
         ((Fintype.equivFin (incrementVariables (anchoredDimension d ℓ))).symm a)).aestronglyMeasurable)
 
-theorem dyadicIncrementRawVector_sample_second_le {d ℓ n : ℕ} (C : ModelConstants d)
-    (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
+theorem dyadicIncrementRawVector_sample_second_le 
+    (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
     (hx : x ∈ unitCube d) (i : Fin n) :
     (∫ z : Fin n → Observation d, ‖dyadicIncrementRawVector (ℓ := ℓ) j x (z i)‖ ^ 2 ∂sampleLaw θ n) ≤
       Fintype.card (incrementVariables (anchoredDimension d ℓ)) *
@@ -279,5 +287,7 @@ theorem dyadicIncrementRawVector_sample_second_le {d ℓ n : ℕ} (C : ModelCons
   rw [integral_comp_eval (μ := fun _ : Fin n => observationLaw θ) (i := i)
     (((dyadicIncrementRawVector_measurable (ℓ := ℓ) j x).norm.pow_const 2).aestronglyMeasurable)]
   exact dyadicIncrementRawVector_second_le C θ hθ j x hx
+
+end
 
 end NearlyMinimax

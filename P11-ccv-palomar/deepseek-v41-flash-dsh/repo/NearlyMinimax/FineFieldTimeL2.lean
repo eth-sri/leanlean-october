@@ -15,7 +15,6 @@ noncomputable section
 open MeasureTheory ProbabilityTheory Set
 open scoped BigOperators ENNReal
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
 
 /-- The constructed field moment is jointly Borel in its scale and spatial tuple. -/
 theorem boundedHyperplaneSpatialMoment_joint_measurable (d j : ℕ) [NeZero d] :
@@ -29,22 +28,24 @@ theorem boundedHyperplaneSpatialMoment_joint_measurable (d j : ℕ) [NeZero d] :
 
 def fineFieldScaleWeight (d : ℕ) (T : ℝ) : ℝ := T / T ^ d
 
-theorem fineFieldScaleWeight_continuousOn {d : ℕ} {lo hi : ℝ} (hlo : 0 < lo) :
+variable {d : ℕ} {lo hi : ℝ}
+
+theorem fineFieldScaleWeight_continuousOn (hlo : 0 < lo) :
     ContinuousOn (fineFieldScaleWeight d) (Icc lo hi) := by
   apply continuousOn_id.div (continuous_pow d).continuousOn
   intro T hT
   exact (pow_pos (hlo.trans_le hT.1) d).ne'
 
-theorem fineFieldScaleWeight_integrableOn {d : ℕ} {lo hi : ℝ} (hlo : 0 < lo) :
+theorem fineFieldScaleWeight_integrableOn (hlo : 0 < lo) :
     IntegrableOn (fineFieldScaleWeight d) (Icc lo hi) :=
   (fineFieldScaleWeight_continuousOn hlo).integrableOn_compact isCompact_Icc
 
-theorem fineFieldScaleWeight_eq_rpow {d : ℕ} {T : ℝ} (hT : 0 < T) :
+theorem fineFieldScaleWeight_eq_rpow {T : ℝ} (hT : 0 < T) :
     fineFieldScaleWeight d T = T ^ (1 - (d : ℝ)) := by
   unfold fineFieldScaleWeight
   rw [Real.rpow_sub hT, Real.rpow_one, Real.rpow_natCast]
 
-theorem fineFieldScaleWeight_integral_le {d : ℕ} (hd : 3 ≤ d) {lo hi : ℝ} (hlo : 0 < lo) :
+theorem fineFieldScaleWeight_integral_le (hd : 3 ≤ d) {lo hi : ℝ} (hlo : 0 < lo) :
     (∫ T in Icc lo hi, fineFieldScaleWeight d T) ≤ lo ^ (2 - (d : ℝ)) / (d - 2 : ℝ) := by
   have hdR : (3 : ℝ) ≤ d := by exact_mod_cast hd
   have hdec : (1 : ℝ) - d < -1 := by linarith only [hdR]
@@ -60,11 +61,9 @@ theorem fineFieldScaleWeight_integral_le {d : ℕ} (hd : 3 ≤ d) {lo hi : ℝ} 
   rw [he]
   apply (integral_mono_measure (Measure.restrict_mono_set volume Icc_subset_Ici_self)
     (by filter_upwards [ae_restrict_mem measurableSet_Ici] with T hT; exact Real.rpow_nonneg (hlo.le.trans hT) _) htail).trans_eq
-  rw [integral_Ici_eq_integral_Ioi]
-  rw [integral_Ioi_rpow_of_lt hdec hlo]
+  rw [integral_Ici_eq_integral_Ioi, integral_Ioi_rpow_of_lt hdec hlo]
   have he : (1 - (d : ℝ)) + 1 = 2 - (d : ℝ) := by ring
-  rw [he]
-  rw [show (2 : ℝ) - d = -(d - 2 : ℝ) by ring]
+  rw [he, show (2 : ℝ) - d = -(d - 2 : ℝ) by ring]
   simp only [div_neg]
   ring
 
@@ -141,7 +140,13 @@ theorem weighted_scale_square_energy_le {X : Type*} [MeasurableSpace X]
   refine ⟨hsi, ?_⟩
   convert hfinal using 1 <;> dsimp [f, W, nu] <;> ring
 
-theorem finePairTimeSubsetMoment_univ_eq {d j : ℕ} [NeZero d]
+section
+variable {d j : ℕ}
+
+section
+variable [NeZero d]
+
+theorem finePairTimeSubsetMoment_univ_eq 
     (lo hi : ℝ) (U : Fin j → Covariate d) :
     finePairTimeSubsetMoment lo hi U Finset.univ =
       ∫ T in Icc lo hi, T * boundedHyperplaneSpatialMoment d T j U := by
@@ -149,7 +154,7 @@ theorem finePairTimeSubsetMoment_univ_eq {d j : ℕ} [NeZero d]
   rfl
 
 /-- The actual time-mark integral is genuinely square integrable over Q^j. -/
-theorem finePairTimeSubsetMoment_univ_square_integrable {d j : ℕ} [NeZero d]
+theorem finePairTimeSubsetMoment_univ_square_integrable 
     (hd : 3 ≤ d) (hj : 4 ≤ j) {lo hi : ℝ} (hlo : 0 < lo) :
     Integrable (fun U : Fin j → Covariate d =>
       finePairTimeSubsetMoment lo hi U Finset.univ ^ 2) (fullSpatialPatchDesign d j) := by
@@ -174,7 +179,7 @@ theorem finePairTimeSubsetMoment_univ_square_integrable {d j : ℕ} [NeZero d]
 
 /-- True spatial decay after scale integration, for the fine row's actual
 carrier and field law, rather than an assumed moment or time-energy bound. -/
-theorem finePairTimeSubsetMoment_univ_L2_le {d j : ℕ} [NeZero d]
+theorem finePairTimeSubsetMoment_univ_L2_le 
     (hd : 3 ≤ d) (hj : 4 ≤ j) {lo hi : ℝ} (hlo : 0 < lo) :
     Real.sqrt (∫ U : Fin j → Covariate d,
       finePairTimeSubsetMoment lo hi U Finset.univ ^ 2 ∂fullSpatialPatchDesign d j) ≤
@@ -210,5 +215,9 @@ theorem finePairTimeSubsetMoment_univ_L2_le {d j : ℕ} [NeZero d]
   refine ⟨mul_nonneg hK (Real.rpow_nonneg hlo.le _), ?_⟩
   simp_rw [finePairTimeSubsetMoment_univ_eq]
   exact (hh.2.trans ht).trans_eq (mul_pow _ _ 2).symm
+
+end
+
+end
 
 end NearlyMinimax

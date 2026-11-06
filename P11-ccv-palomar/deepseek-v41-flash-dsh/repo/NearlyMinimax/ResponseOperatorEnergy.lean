@@ -11,7 +11,6 @@ open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
 attribute [local instance] Classical.propDecidable
-set_option backward.isDefEq.respectTransparency false
 
 section Partition
 variable {E I : Type*} [MeasurableSpace E] [Fintype I] [MeasurableSpace I]
@@ -24,11 +23,13 @@ include hlabel hmr
 def localizedResponseOperatorEnergy (V : ℝ) (z : E × E) : ℝ :=
   sameLabelKernel label z * ‖pairScoreOperator V (r z.1) (r z.2)‖ ^ 2
 
-theorem localizedResponseOperatorEnergy_integrable (V : ℝ)
+variable (V : ℝ)
+
+theorem localizedResponseOperatorEnergy_integrable 
     (hr4 : Integrable (fun x => r x ^ 4) μ) :
     Integrable (localizedResponseOperatorEnergy label r V) (μ.prod μ) := by
   let G := labelLocalizedKernel label (fun x => r x ^ 4)
-  have hG : Integrable G (μ.prod μ) := labelLocalizedKernel_integrable μ label hlabel _ hr4
+  have hG := labelLocalizedKernel_integrable μ label hlabel _ hr4
   have hGs : Integrable (fun z : E × E => G z.swap) (μ.prod μ) :=
     integrable_swap_iff.mpr hG
   have hq := (sameLabelKernel_memLp μ label hlabel).integrable (by norm_num)
@@ -59,7 +60,7 @@ theorem localizedResponseOperatorEnergy_integral_le (V B4 : ℝ)
     (∫ z, localizedResponseOperatorEnergy label r V z ∂μ.prod μ) ≤
       (12 * B4 + 6 + 8 * V ^ 2) * ∑ i : I, μ.real (label ⁻¹' {i}) ^ 2 := by
   let G := labelLocalizedKernel label (fun x => r x ^ 4)
-  have hG : Integrable G (μ.prod μ) := labelLocalizedKernel_integrable μ label hlabel _ hr4
+  have hG := labelLocalizedKernel_integrable μ label hlabel _ hr4
   have hGs : Integrable (fun z : E × E => G z.swap) (μ.prod μ) :=
     integrable_swap_iff.mpr hG
   have hq := (sameLabelKernel_memLp μ label hlabel).integrable (by norm_num)
@@ -88,16 +89,18 @@ theorem localizedResponseOperatorEnergy_integral_le (V B4 : ℝ)
 
 end Partition
 
-def responseOperatorEnergyBound {d : ℕ} (C : ModelConstants d) : ℝ :=
+variable {d : ℕ} (C : ModelConstants d)
+
+def responseOperatorEnergyBound (C : ModelConstants d) : ℝ :=
   12 * responseFourthBound C + 6 + 8 * C.varianceUpper ^ 2
 
-theorem responseOperatorEnergyBound_pos {d : ℕ} (C : ModelConstants d) :
+theorem responseOperatorEnergyBound_pos (C : ModelConstants d) :
     0 < responseOperatorEnergyBound C := by
   have h4 := responseFourthBound_pos C
   unfold responseOperatorEnergyBound
   positivity
 
-theorem regularResponseOperatorEnergy_integrable {d : ℕ} (C : ModelConstants d)
+theorem regularResponseOperatorEnergy_integrable 
     (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k) :
     Integrable (localizedResponseOperatorEnergy (regularObservationLabel k hk)
       Prod.snd θ.variance) ((observationLaw θ).prod (observationLaw θ)) := by
@@ -106,7 +109,7 @@ theorem regularResponseOperatorEnergy_integrable {d : ℕ} (C : ModelConstants d
     (regularObservationLabel_measurable k hk) Prod.snd measurable_snd θ.variance
       (observationLaw_response_fourth_integrable C θ hθ)
 
-theorem regularResponseOperatorEnergy_le {d : ℕ} (C : ModelConstants d)
+theorem regularResponseOperatorEnergy_le 
     (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k) :
     (∫ z, localizedResponseOperatorEnergy (regularObservationLabel k hk)
       Prod.snd θ.variance z ∂(observationLaw θ).prod (observationLaw θ)) ≤
@@ -120,9 +123,9 @@ theorem regularResponseOperatorEnergy_le {d : ℕ} (C : ModelConstants d)
       exact observationLaw_localized_fourth_integral_le C θ hθ _
         ((measurableSet_singleton i).preimage (regular_grid_cell_measurable k hk)))
   simp_rw [regularObservationLabel_mass C θ hθ k hk] at hb
-  have hV0 : 0 ≤ θ.variance := C.varianceLower_pos.le.trans hθ.2.2.2.2.2.1
+  have hV0 := C.varianceLower_pos.le.trans hθ.2.2.2.2.2.1
   have hVup := hθ.2.2.2.2.2.2.1
-  have hvsq : θ.variance ^ 2 ≤ C.varianceUpper ^ 2 := pow_le_pow_left₀ hV0 hVup 2
+  have hvsq := pow_le_pow_left₀ hV0 hVup 2
   have hmass : 0 ≤ regularGridCollisionMass θ k hk := by
     unfold regularGridCollisionMass
     exact Finset.sum_nonneg (fun _ _ => sq_nonneg _)

@@ -27,11 +27,13 @@ def FinePairRowMark (d D M q : ℕ) : FinePairRowTag → Type
   | .coarse => (ℝ × FinePairFieldMark d) × HighPacketMarkIndex (HighFrameIndex d D) D 2 D q
   | .fine => (ℝ × FinePairFieldMark d) × FinePairPacketIndex (HighFrameIndex d D) M q
 
-instance finePairRowMark_measurable (d D M q : ℕ) (i : FinePairRowTag) :
+variable (d D M q : ℕ) (i : FinePairRowTag)
+
+instance finePairRowMark_measurable :
     MeasurableSpace (FinePairRowMark d D M q i) := by
   cases i <;> dsimp [FinePairRowMark] <;> infer_instance
 
-instance finePairRowMark_standardBorel (d D M q : ℕ) (i : FinePairRowTag) :
+instance finePairRowMark_standardBorel :
     StandardBorelSpace (FinePairRowMark d D M q i) := by
   letI : StandardBorelSpace (ℝ × FinePairFieldMark d) := by infer_instance
   letI : StandardBorelSpace (HighPacketMarkIndex (HighFrameIndex d D) D 2 D q) := by infer_instance
@@ -100,16 +102,21 @@ def finePairRowData (d k D M q : ℕ) (a b C T₀ N : ℝ) :
   rowVector := finePairRowVector d D M q C
   rowTime := finePairRowTime d D M q
 
-theorem finePairRowMass_nonneg (d D M q : ℕ) (a b C T₀ N : ℝ) (i : FinePairRowTag) :
+section
+variable (a b C T₀ N : ℝ) (i : FinePairRowTag)
+
+theorem finePairRowMass_nonneg :
     0 ≤ finePairRowMass d D M q a b C T₀ N i := by
   cases i <;> exact signedMarkMass_nonneg _ _
 
-theorem finePairRowActivation_bound (d D M q : ℕ) (a b C T₀ N : ℝ)
-    (i : FinePairRowTag) (e : FinePairRowMark d D M q i) :
+theorem finePairRowActivation_bound 
+    (e : FinePairRowMark d D M q i) :
     |finePairRowActivation d D M q a b C T₀ N i e| ≤ finePairRowMass d D M q a b C T₀ N i := by
   cases i <;> exact absoluteActivation_bound _ _ _
 
-theorem finePairRowIntercept_mem (d D M q : ℕ) (a b : ℝ) (hab : a ≤ b)
+end
+
+theorem finePairRowIntercept_mem (a b : ℝ) (hab : a ≤ b)
     (i : FinePairRowTag) (e : FinePairRowMark d D M q i) :
     finePairRowIntercept d D M q a b i e ∈ Icc a b := by
   cases i
@@ -117,12 +124,12 @@ theorem finePairRowIntercept_mem (d D M q : ℕ) (a b : ℝ) (hab : a ≤ b)
   · exact (densityPacketAtom_mem a b hab D 2 D e.2.1).1
   · exact finePairPacketIntercept_mem a b hab M q e
 
-theorem finePairRowVector_ball (d D M q : ℕ) (C : ℝ) (hC : 0 < C)
+theorem finePairRowVector_ball (C : ℝ) (hC : 0 < C)
     (i : FinePairRowTag) (e : FinePairRowMark d D M q i) :
     (∑ γ, |finePairRowVector d D M q C i e γ|) ≤ C⁻¹ := by
   cases i <;> exact covarianceAtom_mem_ball C hC _ _ _ _
 
-theorem finePairRowTime_unit (d D M q : ℕ) (i : FinePairRowTag)
+theorem finePairRowTime_unit 
     (e : FinePairRowMark d D M q i) : finePairRowTime d D M q i e ∈ Icc (0 : ℝ) 1 := by
   cases i <;> exact responseNode_mem_unit q _
 

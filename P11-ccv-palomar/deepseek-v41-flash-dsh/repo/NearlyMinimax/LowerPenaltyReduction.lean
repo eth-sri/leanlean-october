@@ -11,8 +11,6 @@ noncomputable section
 open Filter
 open scoped Topology
 namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 
 /-- The exact numeric lower envelope, after the true tilted exceptional
 penalty, dominates a fixed positive multiple of the manuscript's squared

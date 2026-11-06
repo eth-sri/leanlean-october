@@ -11,10 +11,10 @@ noncomputable section
 open Filter MeasureTheory Set
 open scoped RealInnerProductSpace
 namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 
-theorem uniform_domain_admissible_dyadicPopulationCoefficients_supported_bound {d : ℕ} (C : ModelConstants d)
+variable {d : ℕ} (C : ModelConstants d)
+
+theorem uniform_domain_admissible_dyadicPopulationCoefficients_supported_bound 
     (hs : 1 < C.smoothness) :
     ∃ Cp : ℝ, 0 < Cp ∧ ∀ Udom : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain Udom) θ →
       ∀ J Jh : ℕ, J ≤ Jh → ∀ m : ℕ → ℕ,
@@ -40,7 +40,7 @@ theorem uniform_domain_admissible_dyadicPopulationCoefficients_supported_bound {
 
 /-- A single bias constant works for every extension domain and original
 admissible parameter, at the actual allocation and every dyadic refinement. -/
-theorem uniform_domain_eventually_allocated_population_pair_residual {d : ℕ} (C : ModelConstants d)
+theorem uniform_domain_eventually_allocated_population_pair_residual 
     (hs : 1 < C.smoothness) (a offset H : ℝ) (ha : 0 < a) (hH : 0 < H) :
     ∃ B : ℝ, 0 < B ∧ ∀ᶠ n : ℕ in atTop,
       ∀ Udom : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain Udom) θ →
@@ -54,16 +54,14 @@ theorem uniform_domain_eventually_allocated_population_pair_residual {d : ℕ} (
   obtain ⟨E, hE, he⟩ := uniform_domain_admissible_dyadicPopulationResidual_bound C hs
   obtain ⟨B, hB, hb⟩ := eventually_paper_dyadic_bias_budget C hs a offset H ha hH
   refine ⟨E * B, mul_pos hE hB, ?_⟩
-  have hbNat := tendsto_natCast_atTop_atTop.eventually hb
-  filter_upwards [hbNat] with n hn
+  filter_upwards [(tendsto_natCast_atTop_atTop.eventually hb)] with n hn
   intro Udom θ hθ Jh hJJh
   filter_upwards [regularPairDesignMeasure_cube_ae (C.withDomain Udom) θ hθ ((2 : ℕ) ^ Jh) (by positivity),
     regularPairDesignMeasure_dyadic_cell_ae θ Jh] with w hw hc
   rw [dyadicPopulationCoefficients_residual]
   have hr : euclideanNorm (w.2 - w.1) ≤ Real.sqrt (d : ℝ) * ((2 : ℝ) ^ Jh)⁻¹ := by
-    have hcoord := regular_grid_same_cell_radius ((2 : ℕ) ^ Jh) (by positivity) w.2 w.1 hw.2 hw.1 hc
     simpa [Nat.cast_pow, one_div] using euclideanNorm_le_coordinate_radius (w.2 - w.1)
-      (1 / (((2 : ℕ) ^ Jh : ℕ) : ℝ)) (by positivity) hcoord
+      (1 / (((2 : ℕ) ^ Jh : ℕ) : ℝ)) (by positivity) (regular_grid_same_cell_radius ((2 : ℕ) ^ Jh) (by positivity) w.2 w.1 hw.2 hw.1 hc)
   apply (he Udom θ hθ _ _ w.1 hw.1 w.2 hw.2
     (dyadicPilotCell_subset_coarser _ Jh hJJh w.1 hc)).trans
   have hdist : 0 ≤ euclideanNorm (w.2 - w.1) := by unfold euclideanNorm; positivity
@@ -81,7 +79,7 @@ theorem uniform_domain_eventually_allocated_population_pair_residual {d : ℕ} (
 
 /-- The population witnesses consumed by the concrete sharp upper estimator,
 with all constants and the eventual sample cutoff uniform over extension domains. -/
-theorem uniform_domain_allocated_population_pair_witnesses {d : ℕ} (C : ModelConstants d)
+theorem uniform_domain_allocated_population_pair_witnesses 
     (hreg : highSmoothnessRegime C) {H : ℝ} (hH : 0 < H) :
     ∃ Cp B : ℝ, 0 < Cp ∧ 0 < B ∧ ∀ᶠ n : ℕ in atTop,
       ∀ Udom : ExtensionDomain d, ∀ θ : RegressionParameter d, Admissible (C.withDomain Udom) θ →

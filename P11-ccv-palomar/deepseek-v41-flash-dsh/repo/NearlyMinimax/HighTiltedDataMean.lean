@@ -11,8 +11,6 @@ mixture kernel, on the original real sample space. -/
 noncomputable section
 open MeasureTheory ProbabilityTheory Filter Set
 namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 variable {Ω : Type*} [MeasurableSpace Ω]
 
 theorem highTiltedObservableMean_eq_dataMean {d : ℕ} (ν : Measure Ω) [IsProbabilityMeasure ν]
@@ -25,11 +23,10 @@ theorem highTiltedObservableMean_eq_dataMean {d : ℕ} (ν : Measure Ω) [IsProb
     highTiltedObservableMean ν n a V p F hp hF H =
       ∫ z, H z ∂(highRealSampleKernel n a V p F hp hF) ∘ₘ
         (massPowerTilt ν (fun ω => highRawDensityMass (p ω)) n) := by
-  have hm := highRawDensityMass_joint_measurable p hp
   have hb (ω) : aRaw ≤ highRawDensityMass (p ω) ∧ highRawDensityMass (p ω) ≤ bRaw :=
     highRawDensityMass_mem_Icc (p ω) hp.of_uncurry_left aRaw bRaw haRaw
       (Eventually.of_forall (hraw ω))
-  let _ := massPowerTilt_isProbability ν _ hm n aRaw bRaw haRaw hb
+  let _ := massPowerTilt_isProbability ν _ (highRawDensityMass_joint_measurable p hp) n aRaw bRaw haRaw hb
   let _ := highRealSampleKernel_markov n a V p F hp hF aRaw bRaw haRaw hraw ha hq
   have hi : Integrable H ((highRealSampleKernel n a V p F hp hF) ∘ₘ
       (massPowerTilt ν (fun ω => highRawDensityMass (p ω)) n)) := by

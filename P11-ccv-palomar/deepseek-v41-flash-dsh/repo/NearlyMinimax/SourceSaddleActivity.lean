@@ -11,14 +11,14 @@ noncomputable section
 open MeasureTheory Filter Set
 open scoped BigOperators Topology
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 
 def sourceSaddleActivityConstant (d q : ℕ) (a b C lam : ℝ) : ℝ :=
   1 + sourceActivityConstant d q C
     (uniformOrdinaryDensityActivityBase a b (densityIntervalExponent a b+1)) lam
 
-theorem sourceSaddleActivityConstant_positive (d q : ℕ) (a b C lam : ℝ)
+variable (d q : ℕ) (a b C lam : ℝ)
+
+theorem sourceSaddleActivityConstant_positive 
     (ha : 0 < a) (hab : a < b) : 0 < sourceSaddleActivityConstant d q a b C lam := by
   have hB : 0 ≤ uniformOrdinaryDensityActivityBase a b (densityIntervalExponent a b+1) := by
     unfold uniformOrdinaryDensityActivityBase
@@ -41,7 +41,7 @@ def sourceSaddleTotalMass (d k q : ℕ) (s a b C lam shift x : ℝ) : ℝ :=
 /-- A fixed positive constant bounds the entire actual row activity for
 all sufficiently large sample scales and every spatial grid. No activity,
 row-budget, density-neighborhood, or selected-target hypothesis is assumed. -/
-theorem sourceSaddleTotalMass_eventually_bound (d q : ℕ) [NeZero d]
+theorem sourceSaddleTotalMass_eventually_bound [NeZero d]
     (s a b C lam shift : ℝ) (hs : 1 < s) (hd : 4*s < (d : ℝ))
     (ha : 0 < a) (hab : a < b) :
     ∀ᶠ x in atTop, ∀ k : ℕ,

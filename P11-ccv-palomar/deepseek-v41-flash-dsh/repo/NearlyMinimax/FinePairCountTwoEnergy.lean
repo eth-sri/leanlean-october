@@ -11,13 +11,13 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 
-def finePairDistanceFactor {d : ℕ} (N : ℝ) (x y : Covariate d) : ℝ :=
+variable {d : ℕ} {N : ℝ}
+
+def finePairDistanceFactor (N : ℝ) (x y : Covariate d) : ℝ :=
   (1 + N * exactEuclideanDistance x y) * Real.exp (-(N * exactEuclideanDistance x y))
 
-theorem finePairDistanceFactor_nonneg {d : ℕ} {N : ℝ} (hN : 0 ≤ N) (x y : Covariate d) :
+theorem finePairDistanceFactor_nonneg (hN : 0 ≤ N) (x y : Covariate d) :
     0 ≤ finePairDistanceFactor N x y := by
   unfold finePairDistanceFactor
   exact mul_nonneg (by have h := exactEuclideanDistance_nonneg x y; positivity) (Real.exp_pos _).le
@@ -28,7 +28,7 @@ theorem finePairDistanceFactor_measurable (d : ℕ) (N : ℝ) :
   exact ((continuous_const.add (exactEuclideanDistance_continuous.const_mul N)).mul
     (exactEuclideanDistance_continuous.const_mul N |>.neg |>.rexp)).measurable
 
-theorem finePairDistanceFactor_square_absorption {d : ℕ} {N : ℝ} (hN : 0 ≤ N)
+theorem finePairDistanceFactor_square_absorption (hN : 0 ≤ N)
     (x y : Covariate d) :
     (finePairDistanceFactor N x y)^2 ≤ 6 * Real.exp (-(N * exactEuclideanDistance x y)) := by
   unfold finePairDistanceFactor
@@ -39,7 +39,7 @@ theorem finePairDistanceFactor_square_absorption {d : ℕ} {N : ℝ} (hN : 0 ≤
   exact pair_defect_exponential_absorption _
     (mul_nonneg hN (exactEuclideanDistance_nonneg x y))
 
-theorem finePairDistanceFactor_square_integrable {d : ℕ} {N : ℝ} (hN : 0 < N) :
+theorem finePairDistanceFactor_square_integrable (hN : 0 < N) :
     Integrable (fun xy : Covariate d × Covariate d => (finePairDistanceFactor N xy.1 xy.2)^2)
       ((volume.restrict (spatialPatchBox d)).prod (volume.restrict (spatialPatchBox d))) := by
   have hm := (finePairDistanceFactor_measurable d N).pow_const 2
@@ -57,7 +57,7 @@ theorem finePairDistanceFactor_square_integrable {d : ℕ} {N : ℝ} (hN : 0 < N
     rw [Real.norm_eq_abs, abs_sq]
     exact finePairDistanceFactor_square_absorption hN.le _ _
 
-theorem finePairDistanceFactor_square_integral_le {d : ℕ} (hd : 0 < d) {N : ℝ} (hN : 0 < N) :
+theorem finePairDistanceFactor_square_integral_le (hd : 0 < d) {N : ℝ} (hN : 0 < N) :
     (∫ xy : Covariate d × Covariate d, (finePairDistanceFactor N xy.1 xy.2)^2
       ∂(volume.restrict (spatialPatchBox d)).prod (volume.restrict (spatialPatchBox d))) ≤
       6 * (2 : ℝ)^d * spatialExponentialConstant d / N^d := by
@@ -111,7 +111,13 @@ theorem fine_pair_scalar_product_abs_le (η b L d w0 w1 p0 p1 m0 m1 : ℝ)
     _ ≤ (η^2*d) * ((1*b^2)*L^2) := hs
     _ = _ := by ring
 
-theorem finePairCountTwoRawNumerator_abs_le {d F : ℕ} [NeZero d] (hF : 3 ≤ F)
+section
+variable {d F : ℕ}
+
+section
+variable [NeZero d]
+
+theorem finePairCountTwoRawNumerator_abs_le (hF : 3 ≤ F)
     (ad bd T0 N : ℝ) (haD : 0 < ad) (hab : ad < bd) (hT0 : 0 ≤ T0) (hN : T0 ≤ N)
     (D M q : ℕ) (hD : 2 ≤ D) (hM : 2 ≤ M) (hq : 2 ≤ q)
     (C a V η ρ : ℝ) (hC : C ≠ 0) (ha : 0 < a) (hρ : 0 ≤ ρ)
@@ -133,7 +139,7 @@ theorem finePairCountTwoRawNumerator_abs_le {d F : ℕ} [NeZero d] (hF : 3 ≤ F
     (ternary_mean_derivative_abs_bound a _ ρ ha hρ (hf 0) (y 0))
     (ternary_mean_derivative_abs_bound a _ ρ ha hρ (hf 1) (y 1))
 
-theorem finePairCountTwoRawNumerator_sum_square_le {d F : ℕ} [NeZero d] (hF : 3 ≤ F)
+theorem finePairCountTwoRawNumerator_sum_square_le (hF : 3 ≤ F)
     (ad bd T0 N : ℝ) (haD : 0 < ad) (hab : ad < bd) (hT0 : 0 ≤ T0) (hN : T0 ≤ N)
     (D M q : ℕ) (hD : 2 ≤ D) (hM : 2 ≤ M) (hq : 2 ≤ q)
     (C a V η ρ : ℝ) (hC : C ≠ 0) (ha : 0 < a) (hρ : 0 ≤ ρ)
@@ -153,5 +159,9 @@ theorem finePairCountTwoRawNumerator_sum_square_le {d F : ℕ} [NeZero d] (hF : 
       C a V η ρ hC ha hρ U hU p g w hp hw c hf y
     simpa only [sq_abs] using (sq_le_sq₀ (abs_nonneg _) hb).mpr h
   exact (Finset.sum_le_sum (fun y _ => hy y)).trans_eq (by simp; ring)
+
+end
+
+end
 
 end NearlyMinimax

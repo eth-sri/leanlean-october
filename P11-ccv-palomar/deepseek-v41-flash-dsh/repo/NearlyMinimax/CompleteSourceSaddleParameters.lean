@@ -13,8 +13,6 @@ noncomputable section
 open MeasureTheory Filter Set
 open scoped Topology
 namespace NearlyMinimax
-set_option maxHeartbeats 1200000
-set_option backward.isDefEq.respectTransparency false
 attribute [local instance] Classical.propDecidable
 attribute [local irreducible] sourceRowData highRowTotalMass
 
@@ -31,21 +29,22 @@ def completeSourceSaddleRows {d : ℕ} (C : ModelConstants d)
       (shrunkDensityExponent C.densityLower C.densityUpper) x)
     (lowerSaddleMu d m theta Cω x)
 
-def completeSourceSaddleActivity {d : ℕ} (C : ModelConstants d)
+variable {d : ℕ} (C : ModelConstants d)
+
+def completeSourceSaddleActivity (C : ModelConstants d)
     (q : ℕ) (Cfr lam Cω x : ℝ) : ℝ :=
   highRowTotalMass (completeSourceSaddleRows C q Cfr lam Cω x).rowMass/highCenterMix C
 
-def completeSourceSaddleActivityConstant {d : ℕ} (C : ModelConstants d)
+def completeSourceSaddleActivityConstant (C : ModelConstants d)
     (q : ℕ) (Cfr lam : ℝ) : ℝ :=
   sourceSaddleActivityConstant d q C.densityLower C.densityUpper Cfr lam/highCenterMix C
 
-theorem completeSourceSaddleActivityConstant_pos {d : ℕ} (C : ModelConstants d)
-    (q : ℕ) (Cfr lam : ℝ) : 0 < completeSourceSaddleActivityConstant C q Cfr lam := by
-  exact div_pos (sourceSaddleActivityConstant_positive d q _ _ _ _ C.densityLower_pos
+theorem completeSourceSaddleActivityConstant_pos (C : ModelConstants d)
+    (q : ℕ) (Cfr lam : ℝ) : 0 < completeSourceSaddleActivityConstant C q Cfr lam := div_pos (sourceSaddleActivityConstant_positive d q _ _ _ _ C.densityLower_pos
     (C.densityLower_lt_one.trans C.one_lt_densityUpper)) (highCenterMix_mem C).1
 
 /-- The row-budget constant includes the balancing reference factor exactly. -/
-theorem completeSourceSaddleActivity_eventually_bound {d : ℕ} [NeZero d]
+theorem completeSourceSaddleActivity_eventually_bound [NeZero d]
     (C : ModelConstants d) (hs : 1 < C.smoothness) (hd : 4*C.smoothness < (d : ℝ))
     (q : ℕ) (Cfr lam Cω : ℝ) :
     ∀ᶠ x : ℝ in atTop,
@@ -87,7 +86,7 @@ theorem completeSourceSaddleActivity_eventually_bound {d : ℕ} [NeZero d]
   ring
 
 /-- The source's physical amplitude is exactly the rounded saddle amplitude. -/
-theorem completeSourceSaddle_eta_eq {d : ℕ} (C : ModelConstants d) (Cω cf x : ℝ) :
+theorem completeSourceSaddle_eta_eq (Cω cf x : ℝ) :
     cf*(lowerSaddleGrid d (highCompleteSourceSaddleCoefficient C)
       (highCompleteSourceSaddleTheta C) Cω x : ℝ)^(-C.smoothness) =
       lowerSaddleEta C.smoothness d (highCompleteSourceSaddleCoefficient C)
@@ -97,7 +96,7 @@ theorem completeSourceSaddle_eta_eq {d : ℕ} (C : ModelConstants d) (Cω cf x :
     Real.rpow_neg (lowerSaddleGrid_positive _ _ _ _ _).le]
 
 /-- Exact inverse-volume accounting for the physical rounded grid. -/
-theorem completeSourceSaddle_inverse_volume {d : ℕ} (C : ModelConstants d) (Cω x : ℝ) :
+theorem completeSourceSaddle_inverse_volume (Cω x : ℝ) :
     (lowerSaddleGrid d (highCompleteSourceSaddleCoefficient C)
       (highCompleteSourceSaddleTheta C) Cω x : ℝ)^d =
       (lowerSaddleH d (highCompleteSourceSaddleCoefficient C)
@@ -106,7 +105,7 @@ theorem completeSourceSaddle_inverse_volume {d : ℕ} (C : ModelConstants d) (C�
   rw [Real.rpow_neg (inv_nonneg.mpr (Nat.cast_nonneg _)),Real.rpow_natCast,inv_pow,inv_inv]
 
 /-- Fixed positive amplitudes and mass tolerances satisfying the original model budgets. -/
-theorem completeSourceSaddle_numeric_constants {d : ℕ} (C : ModelConstants d) :
+theorem completeSourceSaddle_numeric_constants (C : ModelConstants d) :
     ∃ cf cm : ℝ, 0 < cf ∧ highWindowHolderConstant C*cf ≤ C.holderBound ∧
       0 < cm ∧ cm ≤ 1/C.densityUpper := by
   let cf := C.holderBound/highWindowHolderConstant C
@@ -118,7 +117,7 @@ theorem completeSourceSaddle_numeric_constants {d : ℕ} (C : ModelConstants d) 
 
 /-- All elementary source, amplitude and mass guards hold at the actual
 rounded grid, for constants fixed independently of the extension domain. -/
-theorem eventually_completeSourceSaddle_parameters {d : ℕ} [NeZero d]
+theorem eventually_completeSourceSaddle_parameters [NeZero d]
     (C : ModelConstants d) (hs : 1 < C.smoothness) (hd : 4*C.smoothness < (d : ℝ))
     {cf eta0 cm : ℝ} (_hcf : 0 < cf) (heta0 : 0 < eta0) (hcm : 0 < cm) (Cω : ℝ) :
     ∀ᶠ x : ℝ in atTop,
@@ -148,7 +147,6 @@ theorem eventually_completeSourceSaddle_parameters {d : ℕ} [NeZero d]
   obtain ⟨Ctau,_,hcontrol⟩ := exists_actual_lowerExponentControl C.densityLower_pos hab
   have hgrid : Tendsto (lowerSaddleGrid d m theta Cω) atTop atTop :=
     tendsto_natCast_atTop_iff.mp (lowerSaddleGrid_tendsto_atTop hd0 hm htheta Cω)
-  have htauM := (lowerSaddleM_nat_tendsto_atTop hm).eventually hcontrol
   filter_upwards [hgrid.eventually (eventually_ge_atTop 4),
     (lowerSaddleM_tendsto_atTop hm).eventually
       (eventually_ge_atTop (max (highCenterResolutionThreshold C) 3)),
@@ -157,7 +155,7 @@ theorem eventually_completeSourceSaddle_parameters {d : ℕ} [NeZero d]
     (lowerSaddleEta_tends_zero C.smoothness_pos hd0 hm htheta Cω cf).eventually
       (gt_mem_nhds heta0),
     eventually_highHistoryMass_saddle_guard (NeZero.pos d) hm htheta hcm Cω
-      C.densityLower C.densityUpper hab,htauM] with x hk hM hN heta heps htauMx
+      C.densityLower C.densityUpper hab,((lowerSaddleM_nat_tendsto_atTop hm).eventually hcontrol)] with x hk hM hN heta heps htauMx
   dsimp only
   have hM3 : (3 : ℝ) ≤ lowerSaddleM m x := (le_max_right _ _).trans hM
   have hD : 3 ≤ lowerSaddleD d m x := by

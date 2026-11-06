@@ -8,8 +8,6 @@ public import NearlyMinimax.FinePairRowActivity
 No degree-dependent exponential is added to the local activity. -/
 noncomputable section
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 600000
 
 theorem source_pair_polynomial_exponential_le {D : ℝ} (hD : 0 ≤ D) :
     D^2*Real.exp (-D) ≤ 2 := by
@@ -29,11 +27,10 @@ theorem source_pair_coarse_scale_le {D N tau c0 : ℝ} (hD : 0 ≤ D)
     Real.exp_le_exp.mpr (by nlinarith)
   have hp := source_pair_polynomial_exponential_le hD
   have hm := mul_le_mul_of_nonneg_left he (sq_nonneg D)
-  have hbound : D^2*Real.exp ((tau-2*c0)*D) ≤ 2 := hm.trans hp
+  have hbound := hm.trans hp
   have hid : D^2*Real.exp (tau*D)*(N*Real.exp (-c0*D))^2 =
       N^2*(D^2*Real.exp ((tau-2*c0)*D)) := by
-    rw [mul_pow, ← Real.exp_nat_mul]
-    rw [show (tau-2*c0)*D = tau*D+((2:ℕ):ℝ)*(-c0*D) by norm_num; ring, Real.exp_add]
+    rw [mul_pow, ← Real.exp_nat_mul, show (tau-2*c0)*D = tau*D+((2:ℕ):ℝ)*(-c0*D) by norm_num; ring, Real.exp_add]
     ring
   rw [hid]
   simpa only [mul_comm] using mul_le_mul_of_nonneg_left hbound (sq_nonneg N)

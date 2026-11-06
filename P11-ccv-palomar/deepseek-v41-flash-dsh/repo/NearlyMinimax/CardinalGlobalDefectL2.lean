@@ -11,27 +11,28 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
 
-def cardinalWeightDefect {d n : ℕ} (i : Fin n) (lam T : ℝ)
+variable {d n : ℕ} (i : Fin n) {lam : ℝ}
+
+def cardinalWeightDefect (i : Fin n) (lam T : ℝ)
     (U : Fin n → Covariate d) : ℝ := 1 - integratedCardinalWeight lam T U i
 
 def cardinalDefectSquareBudget (d n : ℕ) (T : ℝ) : ℝ :=
   (16 * spatialUnaryIntegralConstant d) ^ (n - 1) *
     T ^ (-(d : ℝ)) * (1 + Real.log T) ^ (n - 2)
 
-theorem cardinalWeightDefect_measurable {d n : ℕ} (i : Fin n) (lam : ℝ)
+theorem cardinalWeightDefect_measurable (i : Fin n) (lam : ℝ)
     {T : ℝ} (hT : 1 ≤ T) : Measurable (cardinalWeightDefect (d := d) i lam T) :=
   measurable_const.sub (integrated_cardinal_weight_continuous i lam hT).measurable
 
-theorem cardinalWeightDefect_mem_unit {d n : ℕ} (i : Fin n) {lam : ℝ}
+theorem cardinalWeightDefect_mem_unit 
     (hlam : 0 ≤ lam) (T : ℝ) (U : Fin n → Covariate d) :
     cardinalWeightDefect i lam T U ∈ Icc (0 : ℝ) 1 := by
   have h := integrated_cardinal_weight_mem_unit i lam T hlam U
   unfold cardinalWeightDefect
   constructor <;> linarith only [h.1, h.2]
 
-theorem cardinalWeightDefect_square_integrable {d n : ℕ} (i : Fin n) {lam : ℝ}
+theorem cardinalWeightDefect_square_integrable 
     (hlam : 0 ≤ lam) {T : ℝ} (hT : 1 ≤ T) :
     Integrable (fun U => cardinalWeightDefect i lam T U ^ 2) (fullSpatialPatchDesign d n) := by
   apply Integrable.of_bound ((cardinalWeightDefect_measurable i lam hT).pow_const 2).aestronglyMeasurable 1
@@ -40,7 +41,7 @@ theorem cardinalWeightDefect_square_integrable {d n : ℕ} (i : Fin n) {lam : �
     have h := cardinalWeightDefect_mem_unit i hlam T U
     nlinarith only [h.1, h.2])
 
-theorem cardinalWeightDefect_joint_square_integrable {d n : ℕ} (i : Fin n) {lam : ℝ}
+theorem cardinalWeightDefect_joint_square_integrable (i : Fin n) {lam : ℝ}
     (hlam : 0 ≤ lam) {T : ℝ} (hT : 1 ≤ T) :
     Integrable (fun z : Covariate d × (SpatialScaleIndex i → Covariate d) =>
       anchoredCardinalDefect i lam T z.1 z.2 ^ 2)
@@ -48,7 +49,7 @@ theorem cardinalWeightDefect_joint_square_integrable {d n : ℕ} (i : Fin n) {la
   have hp := (cardinalHeadSplit_measurePreserving i (volume.restrict (spatialPatchBox d))).symm
   exact hp.integrable_comp_of_integrable (cardinalWeightDefect_square_integrable i hlam hT)
 
-theorem cardinalWeightDefect_full_square_integral_le {d n : ℕ} (hd : 0 < d)
+theorem cardinalWeightDefect_full_square_integral_le (hd : 0 < d)
     (hn : 2 ≤ n) (i : Fin n) {T : ℝ} (hT : 1 ≤ T) :
     (∫ U, cardinalWeightDefect i (spatialInterpolationLambda d) T U ^ 2
       ∂fullSpatialPatchDesign d n) ≤ (2 : ℝ) ^ d * cardinalDefectSquareBudget d n T := by
@@ -69,7 +70,7 @@ theorem cardinalWeightDefect_full_square_integral_le {d n : ℕ} (hd : 0 < d)
   change volume.real (spatialPatchBox d) * cardinalDefectSquareBudget d n T = _
   rw [spatialPatchBox_real_volume]
 
-theorem cardinalWeightDefect_sum_square_integral_le {d n : ℕ} (hd : 0 < d)
+theorem cardinalWeightDefect_sum_square_integral_le (hd : 0 < d)
     (hn : 2 ≤ n) {T : ℝ} (hT : 1 ≤ T) :
     (∫ U, (∑ i : Fin n, cardinalWeightDefect i (spatialInterpolationLambda d) T U) ^ 2
       ∂fullSpatialPatchDesign d n) ≤

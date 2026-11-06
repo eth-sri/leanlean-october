@@ -13,17 +13,19 @@ open Matrix MeasureTheory Set
 open scoped BigOperators ENNReal Matrix.Norms.L2Operator
 namespace NearlyMinimax
 
+variable {d ℓ : ℕ} (u : Covariate d)
+
 /-- The normalized scalar-feature moment before known-Gram preconditioning. -/
-def anchoredVectorMoment {d ℓ : ℕ} (u : Covariate d)
+def anchoredVectorMoment (u : Covariate d)
     (p g : Covariate d → ℝ) : AnchoredIndex d ℓ → ℝ :=
   fun γ => ∫ w, p w * anchoredFeature u w γ * g w ∂cubeVolume d
 
 /-- The actual density and regression vector moments in the manuscript. -/
-def anchoredPreconditionedMoment {d ℓ : ℕ} (u : Covariate d)
+def anchoredPreconditionedMoment (u : Covariate d)
     (p g : Covariate d → ℝ) : AnchoredIndex d ℓ → ℝ :=
   (anchoredGram u)⁻¹ *ᵥ anchoredVectorMoment u p g
 
-theorem anchoredVectorMoment_coordinate_bound {d ℓ : ℕ} (u : Covariate d)
+theorem anchoredVectorMoment_coordinate_bound 
     (hu : u ∈ unitCube d) (p g : Covariate d → ℝ) (b F : ℝ)
     (hb : 0 ≤ b) (hF : 0 ≤ F)
     (hp : ∀ᵐ w ∂cubeVolume d, 0 ≤ p w ∧ p w ≤ b)
@@ -45,7 +47,7 @@ theorem anchoredVectorMoment_coordinate_bound {d ℓ : ℕ} (u : Covariate d)
   simpa only [Real.norm_eq_abs, measureReal_def, measure_univ, ENNReal.toReal_one, mul_one, anchoredVectorMoment]
     using norm_integral_le_of_norm_le_const hbound
 
-theorem anchoredVectorMoment_norm_bound {d ℓ : ℕ} (u : Covariate d)
+theorem anchoredVectorMoment_norm_bound 
     (hu : u ∈ unitCube d) (p g : Covariate d → ℝ) (b F : ℝ)
     (hb : 0 ≤ b) (hF : 0 ≤ F)
     (hp : ∀ᵐ w ∂cubeVolume d, 0 ≤ p w ∧ p w ≤ b)
@@ -68,7 +70,7 @@ theorem anchoredVectorMoment_norm_bound {d ℓ : ℕ} (u : Covariate d)
         simp only [mul_pow, Real.sq_sqrt (Nat.cast_nonneg _)]
 
 /-- The actual known-Gram inverse has a fixed finite bound on all cube anchors. -/
-theorem anchoredGram_inverse_uniform_bound {d ℓ : ℕ} :
+theorem anchoredGram_inverse_uniform_bound :
     ∃ N : ℝ, 0 < N ∧ ∀ u ∈ unitCube d, ‖(anchoredGram (ℓ := ℓ) u)⁻¹‖ ≤ N := by
   have hc : Continuous (fun u : Covariate d => (anchoredGram (ℓ := ℓ) u)⁻¹) := by
     have heq : (fun u : Covariate d => (anchoredGram (ℓ := ℓ) u)⁻¹) =
@@ -82,7 +84,7 @@ theorem anchoredGram_inverse_uniform_bound {d ℓ : ℕ} :
   exact (hM (mem_image_of_mem _ hu)).trans (le_max_right _ _)
 
 /-- A uniform scalar bound for every actual preconditioned vector family. -/
-theorem anchoredPreconditionedMoment_uniform_bound {d ℓ : ℕ}
+theorem anchoredPreconditionedMoment_uniform_bound 
     (b F : ℝ) (hb : 0 ≤ b) (hF : 0 ≤ F) :
     ∃ W : ℝ, 0 < W ∧ ∀ u ∈ unitCube d, ∀ p g : Covariate d → ℝ,
       (∀ᵐ w ∂cubeVolume d, 0 ≤ p w ∧ p w ≤ b) →

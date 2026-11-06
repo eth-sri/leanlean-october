@@ -10,15 +10,16 @@ noncomputable section
 open MeasureTheory
 open scoped ENNReal
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
 
-def initialSampleSplitEquiv (d m r : ℕ) :
+variable (d m r : ℕ)
+
+def initialSampleSplitEquiv :
     (Fin (m + r) → Observation d) ≃ᵐ ((Fin m → Observation d) × (Fin r → Observation d)) :=
   (MeasurableEquiv.piCongrLeft (fun _ : Fin m ⊕ Fin r => Observation d)
     (finSumFinEquiv : (Fin m ⊕ Fin r) ≃ Fin (m + r)).symm).trans
       (MeasurableEquiv.sumPiEquivProdPi (fun _ : Fin m ⊕ Fin r => Observation d))
 
-def initialSampleBlock (d m r : ℕ) (z : Fin (m + r) → Observation d) : Fin m → Observation d :=
+def initialSampleBlock (z : Fin (m + r) → Observation d) : Fin m → Observation d :=
   (initialSampleSplitEquiv d m r z).1
 
 theorem initialSampleBlock_measurePreserving {d : ℕ} (C : ModelConstants d)
@@ -48,14 +49,17 @@ theorem sampleBlocksWithRemainder_measurePreserving {d : ℕ} (C : ModelConstant
   (sampleBlockSplit_measurePreserving C θ hθ a b c).comp
     (initialSampleBlock_measurePreserving C θ hθ (a + b + c) r)
 
-def blockEstimatorWithRemainder {d a b c r : ℕ}
+section
+variable {d a b c r : ℕ}
+
+def blockEstimatorWithRemainder 
     (T : (((Fin a → Observation d) × (Fin b → Observation d)) × (Fin c → Observation d)) → ℝ)
     (hmT : Measurable T) : Estimator d (a + b + c + r) :=
   ⟨fun z => T (sampleBlocksWithRemainder d a b c r z),
     hmT.comp ((sampleBlockSplitEquiv d a b c).measurable.comp
       (measurable_fst.comp (initialSampleSplitEquiv d (a + b + c) r).measurable))⟩
 
-theorem blockEstimatorWithRemainder_risk_eq {d a b c r : ℕ} (C : ModelConstants d)
+theorem blockEstimatorWithRemainder_risk_eq (C : ModelConstants d)
     (θ : RegressionParameter d) (hθ : Admissible C θ)
     (T : (((Fin a → Observation d) × (Fin b → Observation d)) × (Fin c → Observation d)) → ℝ)
     (hmT : Measurable T) :
@@ -65,5 +69,7 @@ theorem blockEstimatorWithRemainder_risk_eq {d a b c r : ℕ} (C : ModelConstant
   unfold meanSquaredRisk blockEstimatorWithRemainder
   exact (sampleBlocksWithRemainder_measurePreserving C θ hθ a b c r).lintegral_comp
     (((hmT.sub measurable_const).pow_const 2).ennreal_ofReal)
+
+end
 
 end NearlyMinimax

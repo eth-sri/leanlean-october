@@ -9,11 +9,11 @@ public import NearlyMinimax.HighTiltedDataMean
 noncomputable section
 open MeasureTheory ProbabilityTheory Filter Set
 namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 variable {J : Type*} [Fintype J] [LinearOrder J]
 
-theorem historyMarkedPrior_dataMean_score_hasDerivAt (dependent : J → J → Prop)
+variable (dependent : J → J → Prop)
+
+theorem historyMarkedPrior_dataMean_score_hasDerivAt 
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (Δ : ℕ) (hΔ : 1 ≤ Δ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
     (T Ba : ℝ) (hBa : 0 ≤ Ba)
@@ -77,7 +77,7 @@ theorem historyMarkedPrior_dataMean_score_hasDerivAt (dependent : J → J → Pr
     n a (v - η^2*u) aRaw bRaw B ha.ne' haRaw hB p F hp hF hraw
     (hq0 u ⟨hu.1.le,hu.2.le⟩) H hH hHb).symm
 
-theorem historyMarkedPrior_dataMean_absolutelyContinuous (dependent : J → J → Prop)
+theorem historyMarkedPrior_dataMean_absolutelyContinuous 
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (Δ : ℕ) (hΔ : 1 ≤ Δ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
     (T Ba : ℝ) (hBa : 0 ≤ Ba)
@@ -130,7 +130,7 @@ theorem historyMarkedPrior_dataMean_absolutelyContinuous (dependent : J → J �
   rw [← uIcc_of_le hT] at hKd
   exact hKd.absolutelyContinuousOnInterval
 
-theorem historyMarkedPrior_dataMean_score_hasDerivAt_ae (dependent : J → J → Prop)
+theorem historyMarkedPrior_dataMean_score_hasDerivAt_ae 
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (Δ : ℕ) (hΔ : 1 ≤ Δ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
     (T Ba : ℝ) (hBa : 0 ≤ Ba)

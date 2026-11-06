@@ -20,7 +20,9 @@ namespace NearlyMinimax
 
 universe u
 
-theorem finite_tree_closed_spanning_walk {V : Type u} [Fintype V]
+variable {V : Type u}
+
+theorem finite_tree_closed_spanning_walk [Fintype V]
     (T : SimpleGraph V) (hT : T.IsTree) (r : V) :
     ∃ p : T.Walk r r, p.length = 2 * (Fintype.card V - 1) ∧ ∀ v, v ∈ p.support := by
   classical
@@ -72,8 +74,7 @@ theorem finite_tree_closed_spanning_walk {V : Type u} [Fintype V]
       let excursion : T.Walk w w := .cons hvw.symm (.cons hvw .nil)
       let q := (left.append excursion).append right
       have hsplit : left.length + right.length = p.length := by
-        have hh := congrArg SimpleGraph.Walk.length (p.take_spec hwp)
-        simpa only [SimpleGraph.Walk.length_append] using hh
+        simpa only [SimpleGraph.Walk.length_append] using (congrArg SimpleGraph.Walk.length (p.take_spec hwp))
       have hqLen : q.length = 2 * (Fintype.card V - 1) := by
         simp only [q, excursion, SimpleGraph.Walk.length_append, SimpleGraph.Walk.length_cons,
           SimpleGraph.Walk.length_nil]
@@ -95,7 +96,7 @@ theorem finite_tree_closed_spanning_walk {V : Type u} [Fintype V]
   exact hmain (Fintype.card V) V rfl T hT r
 
 /-- The source's DFS encoding is available for every actual finite connected graph. -/
-theorem finite_connected_closed_spanning_walk {V : Type u} [Fintype V]
+theorem finite_connected_closed_spanning_walk [Fintype V]
     (G : SimpleGraph V) (hG : G.Connected) (r : V) :
     ∃ p : G.Walk r r, p.length = 2 * (Fintype.card V - 1) ∧ ∀ v, v ∈ p.support := by
   obtain ⟨T, hTG, hT⟩ := hG.exists_isTree_le

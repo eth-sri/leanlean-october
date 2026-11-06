@@ -10,7 +10,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped ENNReal
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
 
 theorem partitionPairMeasure_fst_le {X I : Type*}
     [MeasurableSpace X] [Fintype I] [MeasurableSpace I]
@@ -57,7 +56,9 @@ theorem partitionPairMeasure_fst_le {X I : Type*}
     _ ≤ ENNReal.ofReal weight * (ENNReal.ofReal cap * μ A) := by gcongr
     _ = _ := (mul_assoc _ _ _).symm
 
-theorem regularPairDesignMeasure_fst_le {d : ℕ} (C : ModelConstants d)
+variable {d : ℕ} (C : ModelConstants d)
+
+theorem regularPairDesignMeasure_fst_le 
     (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k) :
     (regularPairDesignMeasure θ k hk).map Prod.fst ≤ ENNReal.ofReal C.densityUpper • designLaw θ := by
   let := designLaw_isProbability C θ hθ
@@ -69,7 +70,7 @@ theorem regularPairDesignMeasure_fst_le {d : ℕ} (C : ModelConstants d)
   simpa only [regularPairDesignMeasure, partitionPairMeasure,
     mul_div_cancel₀ _ hkp.ne'] using h
 
-theorem regularPairDesignMeasure_fst_cube_le {d : ℕ} (C : ModelConstants d)
+theorem regularPairDesignMeasure_fst_cube_le 
     (θ : RegressionParameter d) (hθ : Admissible C θ) (k : ℕ) (hk : 0 < k) :
     (regularPairDesignMeasure θ k hk).map Prod.fst ≤
       ENNReal.ofReal (C.densityUpper ^ 2) • cubeVolume d := by

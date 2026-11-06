@@ -12,29 +12,28 @@ noncomputable section
 open MeasureTheory
 open scoped RealInnerProductSpace
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option synthInstance.maxHeartbeats 200000
-set_option maxHeartbeats 600000
 
 def twoScalarPilotVector (a b : ℝ) : PairVector :=
   (a - b) • pairCoordinateVector 1 - a • pairCoordinateVector 2
 
-theorem twoScalarPilotVector_coordinates (a b : ℝ) :
+variable (a b : ℝ)
+
+theorem twoScalarPilotVector_coordinates :
     twoScalarPilotVector a b = WithLp.toLp 2 ![0, a - b, -a] := by
   ext i
   fin_cases i <;> simp [twoScalarPilotVector, pairCoordinateVector]
 
-theorem twoScalarPilotVector_norm_sq (a b : ℝ) :
+theorem twoScalarPilotVector_norm_sq :
     ‖twoScalarPilotVector a b‖ ^ 2 = (a - b) ^ 2 + a ^ 2 := by
   rw [EuclideanSpace.real_norm_sq_eq, twoScalarPilotVector_coordinates]
   simp [Fin.sum_univ_succ]
 
-theorem twoScalarPilotVector_norm_sq_le (a b : ℝ) :
+theorem twoScalarPilotVector_norm_sq_le :
     ‖twoScalarPilotVector a b‖ ^ 2 ≤ 3 * a ^ 2 + 2 * b ^ 2 := by
   rw [twoScalarPilotVector_norm_sq]
   nlinarith only [sq_nonneg (a + b)]
 
-theorem twoScalarPilotVector_inner (a b : ℝ) (v : PairVector) :
+theorem twoScalarPilotVector_inner (v : PairVector) :
     ⟪twoScalarPilotVector a b, v⟫ = (v 1 - v 2) * a - v 1 * b := by
   rw [twoScalarPilotVector_coordinates]
   simp [PiLp.inner_apply, RCLike.inner_apply, Fin.sum_univ_succ]

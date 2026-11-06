@@ -15,15 +15,17 @@ namespace NearlyMinimax
 
 variable {J : Type*} [Fintype J] [LinearOrder J]
 
+variable (dependent : J → J → Prop)
+
 /-- The expectation weighted by the actual source history polynomial. -/
-def historyMarkedExpectation (dependent : J → J → Prop) (ρ : ℝ)
+def historyMarkedExpectation (ρ : ℝ)
     {E : Type*} [MeasurableSpace E] (μ : Measure (HistoryMarked dependent E))
     (a : E → ℝ) (F : HistoryMarked dependent E → ℝ) (t : ℝ) : ℝ :=
   ∫ h, F h * historyMarkedDensity dependent ρ t a h ∂μ
 
 /-- A bounded measurable observable has a genuine derivative under the finite reference law.
 The uniform majorant is proved from maximal-label injectivity and source positivity. -/
-theorem historyMarkedExpectation_hasDerivAt (dependent : J → J → Prop)
+theorem historyMarkedExpectation_hasDerivAt 
     (hrefl : ∀ j, dependent j j) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (Δ : ℕ) (hlabels : ∀ j, (dependentLabelFinset dependent j).card ≤ Δ)
     (ρ T B t : ℝ) (hρ : 0 < ρ) (ht : 0 < t) (htT : t < T) (hB : 0 ≤ B)

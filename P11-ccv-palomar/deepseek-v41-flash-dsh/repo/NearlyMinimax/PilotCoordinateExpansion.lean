@@ -12,17 +12,18 @@ open MeasureTheory Set MvPolynomial
 open scoped BigOperators
 namespace NearlyMinimax
 
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 
-def pilotPolynomialLinear {q d ℓ : ℕ} (c : Fin q) (P : MvPolynomial (Fin d) ℝ)
+section
+variable {q d ℓ : ℕ}
+
+def pilotPolynomialLinear (c : Fin q) (P : MvPolynomial (Fin d) ℝ)
     (response : Bool) : (Fin (Fintype.card (PilotBasisIndex q d ℓ)) → ℝ) →L[ℝ] ℝ :=
   ∑ β : PolynomialBox d ℓ, P.coeff (polynomialBoxExponent β) •
     ContinuousLinearMap.proj ((Fintype.equivFin (PilotBasisIndex q d ℓ)) ((c, β), response))
 
 /-- A polynomial with a design-cell indicator and an optional response factor
 is exactly a continuous linear function of the finite global coordinates. -/
-theorem pilotPolynomialLinear_raw_apply {q d ℓ : ℕ} (cell : Covariate d → Fin q)
+theorem pilotPolynomialLinear_raw_apply (cell : Covariate d → Fin q)
     (c : Fin q) (P : MvPolynomial (Fin d) ℝ) (hP : P.totalDegree ≤ ℓ)
     (response : Bool) (z : Observation d) :
     pilotPolynomialLinear (ℓ := ℓ) c P response (pilotRawVector cell z) =
@@ -37,35 +38,44 @@ theorem pilotPolynomialLinear_raw_apply {q d ℓ : ℕ} (cell : Covariate d → 
     rfl
   · simp [h]
 
+end
+
 abbrev DyadicPilotLabelIndex (d j : ℕ) := Fin d → Fin ((2 : ℕ) ^ j)
 
-def dyadicPilotLabel {d : ℕ} (j : ℕ) (x : Covariate d) :
+section
+variable {d : ℕ} (j : ℕ)
+
+def dyadicPilotLabel (x : Covariate d) :
     Fin (Fintype.card (DyadicPilotLabelIndex d j)) :=
   Fintype.equivFin (DyadicPilotLabelIndex d j)
     (regularGridCell ((2 : ℕ) ^ j) (by positivity) x)
 
-theorem dyadicPilotLabel_measurable {d : ℕ} (j : ℕ) :
+theorem dyadicPilotLabel_measurable :
     Measurable (dyadicPilotLabel (d := d) j) :=
   (measurable_of_countable _).comp (regular_grid_cell_measurable _ _)
 
-theorem dyadicPilotLabel_eq_iff {d : ℕ} (j : ℕ) (x z : Covariate d) :
+theorem dyadicPilotLabel_eq_iff (x z : Covariate d) :
     dyadicPilotLabel j z = dyadicPilotLabel j x ↔ z ∈ dyadicPilotCell j x :=
   (Fintype.equivFin (DyadicPilotLabelIndex d j)).injective.eq_iff
 
-def dyadicPilotPolynomial {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
+end
+
+variable {d ℓ : ℕ} (j : ℕ) (x : Covariate d) (a : LocalPilotIndex d ℓ)
+
+def dyadicPilotPolynomial (j : ℕ) (x : Covariate d)
     (a : LocalPilotIndex d ℓ) : MvPolynomial (Fin d) ℝ :=
   match a with
   | Sum.inl (γ, δ) => dyadicFeaturePolynomial j x γ * dyadicFeaturePolynomial j x δ
   | Sum.inr (Sum.inl γ) => dyadicFeaturePolynomial j x γ
   | Sum.inr (Sum.inr γ) => dyadicFeaturePolynomial j x γ
 
-def dyadicPilotResponse {d ℓ : ℕ} (a : LocalPilotIndex d ℓ) : Bool :=
+def dyadicPilotResponse (a : LocalPilotIndex d ℓ) : Bool :=
   match a with
   | Sum.inl _ => false
   | Sum.inr (Sum.inl _) => true
   | Sum.inr (Sum.inr _) => false
 
-theorem dyadicPilotPolynomial_degree {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
+theorem dyadicPilotPolynomial_degree 
     (a : LocalPilotIndex d ℓ) : (dyadicPilotPolynomial j x a).totalDegree ≤ 2 * ℓ := by
   cases a with
   | inl a =>
@@ -75,8 +85,8 @@ theorem dyadicPilotPolynomial_degree {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
   | inr a =>
     cases a <;> exact (dyadicFeaturePolynomial_degree j x _).trans (by omega)
 
-theorem dyadicPilotPolynomial_scalar {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
-    (a : LocalPilotIndex d ℓ) (z : Observation d) :
+theorem dyadicPilotPolynomial_scalar 
+    (z : Observation d) :
     eval z.1 (dyadicPilotPolynomial j x a) * (if dyadicPilotResponse a then z.2 else 1) =
       dyadicPilotScalar j x a z := by
   cases a with
@@ -86,7 +96,7 @@ theorem dyadicPilotPolynomial_scalar {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
     cases a <;> simp [dyadicPilotPolynomial, dyadicPilotResponse, dyadicPilotScalar,
       dyadicFeaturePolynomial_eval, mul_comm]
 
-def dyadicPilotCoordinate {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
+def dyadicPilotCoordinate (x : Covariate d)
     (a : LocalPilotIndex d ℓ) :
     (Fin (Fintype.card (PilotBasisIndex (Fintype.card (DyadicPilotLabelIndex d j)) d (2 * ℓ))) → ℝ) →L[ℝ] ℝ :=
   dyadicPilotScale d j • pilotPolynomialLinear (dyadicPilotLabel j x)
@@ -94,8 +104,8 @@ def dyadicPilotCoordinate {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
 
 /-- The exact raw current-cell feature is represented for every anchor and
 observation by the same global feature vector. No moment equality is assumed. -/
-theorem dyadicPilotCoordinate_raw_apply {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
-    (a : LocalPilotIndex d ℓ) (z : Observation d) :
+theorem dyadicPilotCoordinate_raw_apply 
+    (z : Observation d) :
     dyadicPilotCoordinate j x a (pilotRawVector (dyadicPilotLabel j) z) =
       dyadicPilotFeature j x a z := by
   rw [dyadicPilotCoordinate, ContinuousLinearMap.smul_apply,

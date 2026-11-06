@@ -12,13 +12,13 @@ noncomputable section
 open MeasureTheory Filter
 open scoped Topology
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 700000
 
 def cardinalBandDimensionConstant (d : ℕ) : ℝ :=
   (100 * (d : ℝ))^2 * 16 * spatialScaleIntegralConstant d
 
-theorem cardinalBandDimensionConstant_nonneg (d : ℕ) :
+variable (d : ℕ)
+
+theorem cardinalBandDimensionConstant_nonneg :
     0 ≤ cardinalBandDimensionConstant d := by
   unfold cardinalBandDimensionConstant spatialScaleIntegralConstant
   positivity
@@ -65,8 +65,7 @@ theorem cardinalBandSquareBudget_cutoff_le {d r R : ℕ} {M D K c0 N : ℝ}
       _ ≤ (Real.exp M)^(r-2) := pow_le_pow_left₀ hlog0 (hlog.trans hHexp) _
       _ ≤ (Real.exp M)^R := pow_le_pow_right₀ hexp1 (by omega)
       _ = _ := (Real.exp_nat_mul M R).symm
-  have hCpower : (cardinalBandDimensionConstant d)^(r-1) ≤ (1+cardinalBandDimensionConstant d)^R := by
-    exact (pow_le_pow_left₀ hC (by linarith) (r-1)).trans
+  have hCpower : (cardinalBandDimensionConstant d)^(r-1) ≤ (1+cardinalBandDimensionConstant d)^R := (pow_le_pow_left₀ hC (by linarith) (r-1)).trans
       (pow_le_pow_right₀ (by linarith) (by omega))
   have hr2 : (r : ℝ)^2 ≤ (R : ℝ)^2 := by exact_mod_cast Nat.pow_le_pow_left hr 2
   have hscale : (N*Real.exp (-c0*D))^(4-(d : ℝ)) ≤

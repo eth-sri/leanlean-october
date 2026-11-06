@@ -13,9 +13,9 @@ they do not assert statistical admissibility or an estimator risk bound.
 -/
 
 noncomputable section
+
 open Filter
 open scoped Topology
-
 namespace NearlyMinimax
 
 /-- The width `S=a_* sqrt(log n)-C_S`. -/
@@ -60,8 +60,10 @@ theorem log_allocationWidth_residual_limit {a : ℝ} (ha : 0 < a) (C : ℝ) :
   simp only [Function.comp_apply]
   rw [Real.log_div hw.ne' (Real.sqrt_pos.2 (Real.log_pos hx)).ne', Real.log_sqrt (Real.log_pos hx).le]
 
+variable {a H : ℝ}
+
 /-- The logarithmic correction in `T°` is proved, including its constant limit. -/
-theorem terminalDepth_expansion_limit {a H : ℝ} (ha : 0 < a) (hH : 0 < H) (C γ : ℝ) :
+theorem terminalDepth_expansion_limit (ha : 0 < a) (hH : 0 < H) (C γ : ℝ) :
     Tendsto (fun x : ℝ => candidateTerminalDepth a C H γ x - a * Real.sqrt (Real.log x) +
       (1 + γ) / 2 * Real.log (Real.log x)) atTop
         (𝓝 (-C - Real.log H - (1 + γ) * Real.log a)) := by
@@ -76,7 +78,7 @@ theorem terminalDepth_expansion_limit {a H : ℝ} (ha : 0 < a) (hH : 0 < H) (C �
   ring
 
 /-- The logarithmic depth correction is negligible relative to the diverging width. -/
-theorem terminalDepth_div_width_limit {a H : ℝ} (ha : 0 < a) (hH : 0 < H) (C γ : ℝ) :
+theorem terminalDepth_div_width_limit (ha : 0 < a) (hH : 0 < H) (C γ : ℝ) :
     Tendsto (fun x : ℝ => candidateTerminalDepth a C H γ x / allocationWidth a C x)
       atTop (𝓝 1) := by
   have hw := allocationWidth_tendsto_atTop ha C
@@ -93,7 +95,7 @@ theorem terminalDepth_div_width_limit {a H : ℝ} (ha : 0 < a) (hH : 0 < H) (C �
   field_simp
   ring
 
-theorem candidateTerminalDepth_tendsto_atTop {a H : ℝ}
+theorem candidateTerminalDepth_tendsto_atTop 
     (ha : 0 < a) (hH : 0 < H) (C γ : ℝ) :
     Tendsto (candidateTerminalDepth a C H γ) atTop atTop := by
   have hw := allocationWidth_tendsto_atTop ha C
@@ -103,7 +105,7 @@ theorem candidateTerminalDepth_tendsto_atTop {a H : ℝ}
   exact mul_div_cancel₀ _ hx.ne'
 
 /-- The unrounded saddle risk scale has an exact positive ratio limit. -/
-theorem upper_saddle_scale_ratio_limit {a H : ℝ} (ha : 0 < a) (hH : 0 < H)
+theorem upper_saddle_scale_ratio_limit (ha : 0 < a) (hH : 0 < H)
     (C γ lam c : ℝ) :
     Tendsto (fun x : ℝ =>
       Real.exp (-lam * Real.log x - c * candidateTerminalDepth a C H γ x) /
@@ -123,7 +125,7 @@ theorem upper_saddle_scale_ratio_limit {a H : ℝ} (ha : 0 < a) (hH : 0 < H)
   ring
 
 /-- The unrounded allocation scale is therefore bounded above and below by the displayed rate. -/
-theorem upper_saddle_scale_bracket {a H : ℝ} (ha : 0 < a) (hH : 0 < H)
+theorem upper_saddle_scale_bracket (ha : 0 < a) (hH : 0 < H)
     (C γ lam c : ℝ) :
     ∃ A B : ℝ, 0 < A ∧ 0 < B ∧ ∀ᶠ x : ℝ in atTop,
       A * Real.exp (-lam * Real.log x - c * a * Real.sqrt (Real.log x) +
@@ -175,7 +177,7 @@ theorem rounded_saddle_scale_bounds {δ L T c lam : ℝ}
     nlinarith
 
 /-- The candidate terminal-cell count is eventually nonnegative. -/
-theorem eventually_terminal_cell_log_nonneg {a H : ℝ}
+theorem eventually_terminal_cell_log_nonneg 
     (ha : 0 < a) (hH : 0 < H) (C γ : ℝ) :
     ∀ᶠ x : ℝ in atTop, 0 ≤ Real.log x + candidateTerminalDepth a C H γ x := by
   filter_upwards [Real.tendsto_log_atTop.eventually (eventually_ge_atTop (0 : ℝ)),

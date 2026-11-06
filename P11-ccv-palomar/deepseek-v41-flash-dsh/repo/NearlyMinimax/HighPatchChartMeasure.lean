@@ -11,17 +11,18 @@ noncomputable section
 open Set MeasureTheory Function
 open scoped ENNReal BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 800000
 attribute [local instance] Classical.propDecidable
 
 def highAffineChart (d k : ℕ) (z : Fin d → ℤ) (x : Covariate d) : Covariate d :=
   fun r => (k : ℝ) * x r - z r
 
-theorem highAffineChart_measurable (d k : ℕ) (z : Fin d → ℤ) :
+section
+variable (d k : ℕ)
+
+theorem highAffineChart_measurable (z : Fin d → ℤ) :
     Measurable (highAffineChart d k z) := by unfold highAffineChart; fun_prop
 
-theorem highAffineChart_map_volume (d k : ℕ) (hk : 0 < k) (z : Fin d → ℤ) :
+theorem highAffineChart_map_volume (hk : 0 < k) (z : Fin d → ℤ) :
     Measure.map (highAffineChart d k z) volume =
       ENNReal.ofReal ((k : ℝ)^d)⁻¹ • (volume : Measure (Covariate d)) := by
   let f : Covariate d →ₗ[ℝ] Covariate d := (k : ℝ) • LinearMap.id
@@ -38,6 +39,8 @@ theorem highAffineChart_map_volume (d k : ℕ) (hk : 0 < k) (z : Fin d → ℤ) 
     Measure.map_smul _ (by fun_prop), map_add_left_eq_self]
   congr 1
   rw [abs_of_nonneg (by positivity)]
+
+end
 
 theorem highPatch_lift_cube_cases (k : ℕ) [NeZero k] (hk : 4 ≤ k)
     (j : ZMod k) (x : ℝ) (hx : x ∈ Icc (0 : ℝ) 1) (z : ℤ)
@@ -69,10 +72,15 @@ theorem highPatch_lift_cube_cases (k : ℕ) [NeZero k] (hk : 4 ≤ k)
   · exact Or.inl (by simpa [hq0] using hq)
   · exact Or.inr (by simpa [hq1] using hq)
 
-def highPatchWrapLift {d k : ℕ} (j : HighWindowLabels d k) (b : Fin d → Bool) : Fin d → ℤ :=
+variable {d k : ℕ}
+
+def highPatchWrapLift (j : HighWindowLabels d k) (b : Fin d → Bool) : Fin d → ℤ :=
   fun r => if b r then (j r).val+(k : ℤ) else (j r).val
 
-theorem highLocalCoordinates_eq_affine_on_patch {d k : ℕ} [NeZero k] (hk : 4 ≤ k)
+section
+variable [NeZero k]
+
+theorem highLocalCoordinates_eq_affine_on_patch (hk : 4 ≤ k)
     (j : HighWindowLabels d k) {x : Covariate d} (hx : x ∈ highTorusPatch d k j)
     (z : Fin d → ℤ) (hz : ∀ r, (z r : ZMod k)=j r)
     (hc : ∀ r, |(k : ℝ)*x r-z r| < 1) :
@@ -82,7 +90,7 @@ theorem highLocalCoordinates_eq_affine_on_patch {d k : ℕ} [NeZero k] (hk : 4 �
   simp only [highLocalCoordinates, highLocalCoordinate, highRawChartCoordinate, he,
     if_pos (hc r).le, highAffineChart]
 
-theorem highLocalCoordinates_patch_mem_box {d k : ℕ} [NeZero k] (hk : 4 ≤ k)
+theorem highLocalCoordinates_patch_mem_box (hk : 4 ≤ k)
     (j : HighWindowLabels d k) {x : Covariate d} (hx : x ∈ highTorusPatch d k j) :
     highLocalCoordinates d k j x ∈ spatialPatchBox d := by
   obtain ⟨z, hz, hc⟩ := hx
@@ -95,7 +103,7 @@ theorem highLocalCoordinates_patch_mem_box {d k : ℕ} [NeZero k] (hk : 4 ≤ k)
 /-- The genuine local-coordinate pushforward on a torus patch is dominated
 by the scaled Lebesgue measure on [-1,1]^d.  The factor 2^d counts wrapping
 chart lifts and is independent of the polynomial and all sample sizes. -/
-theorem highLocalCoordinates_patch_map_le {d k : ℕ} [NeZero k] (hk : 4 ≤ k)
+theorem highLocalCoordinates_patch_map_le (hk : 4 ≤ k)
     (j : HighWindowLabels d k) :
     Measure.map (highLocalCoordinates d k j)
       ((cubeVolume d).restrict (highTorusPatch d k j)) ≤
@@ -149,5 +157,7 @@ theorem highLocalCoordinates_patch_map_le {d k : ℕ} [NeZero k] (hk : 4 ≤ k)
       congr 1
       rw [div_pow]
       ring
+
+end
 
 end NearlyMinimax

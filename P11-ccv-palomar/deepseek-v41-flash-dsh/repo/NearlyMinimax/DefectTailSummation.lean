@@ -21,9 +21,11 @@ theorem poisson_scaled_defect_identity {mu : ℝ} (hmu : 0 < mu)
   rw [mul_pow, mul_pow, pow_add mu]
   field_simp
 
+variable {P Csharp C mu : ℝ}
+
 /-- The inverse occupancy factor in the genuine interpolation deficit is
 cancelled before the finite factorial series is summed. -/
-theorem finite_interpolation_defect_tail_le {P Csharp C mu : ℝ}
+theorem finite_interpolation_defect_tail_le 
     (hP : 0 ≤ P) (hCs : 0 ≤ Csharp) (hC : 0 ≤ C) (hmu : 0 < mu)
     (J : ℕ) (R : ℕ → ℝ)
     (hR : ∀ j ∈ Finset.range J, R (2 + j) ≤ P * C ^ (2 + j) / mu ^ j) :
@@ -47,7 +49,7 @@ theorem finite_interpolation_defect_tail_le {P Csharp C mu : ℝ}
   unfold defectTailConstant
   ring
 
-theorem finite_geometric_count_energy_tail_le {P Csharp C mu : ℝ}
+theorem finite_geometric_count_energy_tail_le 
     (hP : 0 ≤ P) (hCs : 0 ≤ Csharp) (hC : 0 ≤ C)
     (hmu : 0 ≤ mu) (hmu1 : mu ≤ 1) (J : ℕ) (R : ℕ → ℝ)
     (hR : ∀ j ∈ Finset.range J, R (2 + j) ≤ P * C ^ (2 + j)) :
@@ -76,7 +78,7 @@ theorem finite_geometric_count_energy_tail_le {P Csharp C mu : ℝ}
 
 /-- The actual fixed-order Taylor derivative factor k^a is absorbed into a
 fixed geometric count factor before applying the same genuine series bound. -/
-theorem finite_taylor_count_energy_tail_le {P Csharp C mu : ℝ}
+theorem finite_taylor_count_energy_tail_le 
     (hP : 0 ≤ P) (hCs : 0 ≤ Csharp) (hC : 0 ≤ C)
     (hmu : 0 ≤ mu) (hmu1 : mu ≤ 1) (a J : ℕ) (R : ℕ → ℝ)
     (hR : ∀ j ∈ Finset.range J, R (2 + j) ≤ P * C ^ (2 + j) * (2 + j : ℕ) ^ a) :

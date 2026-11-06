@@ -10,8 +10,6 @@ legal interior density intervals and therefore precede M and its shrinking. -/
 noncomputable section
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 
  theorem finePairDensityPrefactor_eq {ad bd : ℝ} (haD : 0 < ad) (hab : ad < bd) :
     finePairDensityPrefactor ad bd = ((bd-ad)/ad)^2 := by
@@ -27,16 +25,18 @@ set_option maxHeartbeats 1000000
   unfold finePairUniformSpatialPrefactor
   positivity
 
- theorem finePairSpatialEnergyPrefactor_uniform_le {aD bD ad bd c0 : ℝ}
+ variable {aD bD ad bd c0 : ℝ}
+
+theorem finePairSpatialEnergyPrefactor_uniform_le 
     (haD : 0 < aD) (ha : aD ≤ ad) (hb : bd ≤ bD) (hab : ad < bd)
     (htau : exteriorTau ((ad+bd)/(bd-ad)) ≤ c0) (d q : ℕ) (C a ρ : ℝ) :
     finePairSpatialEnergyPrefactor d q ad bd C a ρ ≤
       finePairUniformSpatialPrefactor d q aD bD C a ρ c0 := by
-  have had : 0 < ad := haD.trans_le ha
-  have hratio0 : 0 ≤ (bd-ad)/ad := div_nonneg (sub_nonneg.mpr hab.le) had.le
+  have had := haD.trans_le ha
+  have hratio0 := div_nonneg (sub_nonneg.mpr hab.le) had.le
   have hratio : (bd-ad)/ad ≤ (bD-aD)/aD := by
     apply (div_le_div_iff₀ had haD).mpr
-    have hbD : 0 < bD := (had.trans hab).trans_le hb
+    have hbD := (had.trans hab).trans_le hb
     nlinarith only [ha, hb, haD, had, hbD, mul_nonneg (sub_nonneg.mpr ha) hbD.le,
       mul_nonneg (sub_nonneg.mpr hb) haD.le]
   have hp := pow_le_pow_left₀ hratio0 hratio 4
@@ -48,20 +48,25 @@ set_option maxHeartbeats 1000000
   rw [finePairDensityPrefactor_eq had hab, abs_of_nonneg (sq_nonneg _)]
   simpa only [← pow_mul] using h
 
- theorem finePairFieldGeometricBase_mono {bd bD : ℝ} (hbd : 0 ≤ bd) (hb : bd ≤ bD) (d : ℕ) :
+ section
+variable {bd bD : ℝ}
+
+theorem finePairFieldGeometricBase_mono (hbd : 0 ≤ bd) (hb : bd ≤ bD) (d : ℕ) :
     finePairFieldGeometricBase d bd ≤ finePairFieldGeometricBase d bD := by
   have h := mul_le_mul_of_nonneg_right (pow_le_pow_left₀ hbd hb 2)
     (by unfold fineFieldSubsetEnergyBase; positivity : 0 ≤ fineFieldSubsetEnergyBase d)
   unfold finePairFieldGeometricBase
   linarith only [h]
 
- theorem finePairAliasGeometricBase_mono {bd bD : ℝ} (hbd : 0 ≤ bd) (hb : bd ≤ bD) (d : ℕ) :
+ theorem finePairAliasGeometricBase_mono (hbd : 0 ≤ bd) (hb : bd ≤ bD) (d : ℕ) :
     finePairAliasGeometricBase d bd ≤ finePairAliasGeometricBase d bD := by
   have h := mul_le_mul_of_nonneg_right (pow_le_pow_left₀ hbd hb 2) (by positivity : 0 ≤ (2 : ℝ)^d)
   unfold finePairAliasGeometricBase
   linarith only [h]
 
- theorem finePairEvenActionSpatialBudget_uniform_geometric_le {aD bD ad bd c0 : ℝ}
+end
+
+ theorem finePairEvenActionSpatialBudget_uniform_geometric_le 
     (haD : 0 < aD) (ha : aD ≤ ad) (hb : bd ≤ bD) (hab : ad < bd)
     (htau : exteriorTau ((ad+bd)/(bd-ad)) ≤ c0) (d n M q : ℕ) (C a ρ η T0 : ℝ) :
     finePairEvenActionSpatialBudget d n M q ad bd C a ρ η T0 ≤
@@ -78,7 +83,7 @@ set_option maxHeartbeats 1000000
     (by positivity : 0 ≤ (n : ℝ)^12*η^4*Real.exp (2*exteriorTau ((ad+bd)/(bd-ad))*M)*(T0^(2-(d : ℝ)))^2)
   exact h.trans (by convert hh using 1 <;> ring)
 
- theorem finePairAliasActionSpatialBudget_uniform_geometric_le {aD bD ad bd c0 : ℝ}
+ theorem finePairAliasActionSpatialBudget_uniform_geometric_le 
     (haD : 0 < aD) (ha : aD ≤ ad) (hb : bd ≤ bD) (hab : ad < bd)
     (htau : exteriorTau ((ad+bd)/(bd-ad)) ≤ c0) (d n M q : ℕ) (C a ρ η T0 : ℝ) (hT0 : 0 < T0) :
     finePairAliasActionSpatialBudget d n M q ad bd C a ρ η T0 ≤

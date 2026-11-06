@@ -49,8 +49,10 @@ theorem factorial_term_le_geometric {D k : ℕ} {x : ℝ}
         mul_le_mul hratio hprev (by positivity) (by norm_num)
       _ = x * (1 / 2 : ℝ) ^ (k + 1) := by rw [pow_succ]; ring
 
+variable {D : ℕ}
+
 /-- The uniform coarse-level estimate in the paper. -/
-theorem factorialSeries_coarse_bound {D : ℕ} {x : ℝ}
+theorem factorialSeries_coarse_bound {x : ℝ}
     (hx : 0 ≤ x) (hD : (D : ℝ) * x ≤ 1 / 2) :
     factorialSeries D x ≤ 2 * x := by
   have hg : (∑ k ∈ Finset.range D, (1 / 2 : ℝ) ^ k) ≤ 2 := by
@@ -75,7 +77,7 @@ theorem factorial_cast_le_degree_pow {D k : ℕ} (hk : k ≤ D) :
   exact_mod_cast h
 
 /-- The finite fine-level estimate, prior to replacing `D` by its real upper bound. -/
-theorem factorialSeries_fine_bound {D : ℕ} {x z B A : ℝ}
+theorem factorialSeries_fine_bound {x z B A : ℝ}
     (hx : 0 ≤ x) (hz : 0 ≤ z) (hDx : (D : ℝ) * x ≤ Real.exp z)
     (hDz : (D : ℝ) * z ≤ B) (hDA : (D : ℝ) ≤ A) :
     factorialSeries D x ≤ A * Real.exp B := by
@@ -100,7 +102,7 @@ theorem factorialSeries_fine_bound {D : ℕ} {x z B A : ℝ}
     _ ≤ A * Real.exp B := mul_le_mul_of_nonneg_right hDA (Real.exp_pos B).le
 
 /-- Direct substitution of the fine-level allocation's `x = exp z/(C_D S)`. -/
-theorem factorialSeries_fine_allocation {D : ℕ} {z β C_D S : ℝ}
+theorem factorialSeries_fine_allocation {z β C_D S : ℝ}
     (hz : 0 ≤ z) (hCS : 0 < C_D * S)
     (hD : (D : ℝ) ≤ C_D * S) (hDz : (D : ℝ) * z ≤ β * S ^ 2 / 4) :
     factorialSeries D (Real.exp z / (C_D * S)) ≤
@@ -112,7 +114,7 @@ theorem factorialSeries_fine_allocation {D : ℕ} {z β C_D S : ℝ}
   rwa [he] at hd
 
 /-- The fine-level series remains bounded after its sampling weight. -/
-theorem factorialSeries_fine_weighted {D : ℕ} {z β C₀ C_D S M : ℝ}
+theorem factorialSeries_fine_weighted {z β C₀ C_D S M : ℝ}
     (hz : 0 ≤ z) (_hC : 0 ≤ C₀) (hCS : 0 < C_D * S)
     (hD : (D : ℝ) ≤ C_D * S) (hDz : (D : ℝ) * z ≤ β * S ^ 2 / 4)
     (hM : 0 ≤ M) (hMb : M ≤ C₀ * C_D * S) :

@@ -14,16 +14,16 @@ open MeasureTheory ProbabilityTheory Matrix
 open scoped BigOperators Matrix.Norms.L2Operator
 namespace NearlyMinimax
 
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 
-def localPilotRow {d ℓ : ℕ} (a : LocalPilotIndex d ℓ) : AnchoredIndex d ℓ :=
+variable {d ℓ : ℕ} (C : ModelConstants d)
+
+def localPilotRow (a : LocalPilotIndex d ℓ) : AnchoredIndex d ℓ :=
   match a with
   | Sum.inl (γ, _) => γ
   | Sum.inr (Sum.inl γ) => γ
   | Sum.inr (Sum.inr γ) => γ
 
-def localPilotReplaceRow {d ℓ : ℕ} (a : LocalPilotIndex d ℓ)
+def localPilotReplaceRow (a : LocalPilotIndex d ℓ)
     (β : AnchoredIndex d ℓ) : LocalPilotIndex d ℓ :=
   match a with
   | Sum.inl (_, δ) => Sum.inl (β, δ)
@@ -31,21 +31,21 @@ def localPilotReplaceRow {d ℓ : ℕ} (a : LocalPilotIndex d ℓ)
   | Sum.inr (Sum.inr _) => Sum.inr (Sum.inr β)
 
 /-- Precisely `K 1_I (B⁻¹ψψᵀ, B⁻¹ψY, B⁻¹ψ)` from the manuscript. -/
-def preconditionedPilotFeature {d ℓ : ℕ} (j : ℕ) (x : Covariate d)
+def preconditionedPilotFeature (j : ℕ) (x : Covariate d)
     (a : LocalPilotIndex d ℓ) (z : Observation d) : ℝ :=
   ∑ β : AnchoredIndex d ℓ, (dyadicKnownGram j x)⁻¹ (localPilotRow a) β *
     dyadicPilotFeature j x (localPilotReplaceRow a β) z
 
-def preconditionedPilotPopulation {d ℓ : ℕ} (θ : RegressionParameter d)
+def preconditionedPilotPopulation (θ : RegressionParameter d)
     (j : ℕ) (x : Covariate d) (a : LocalPilotIndex d ℓ) : ℝ :=
   ∫ z, preconditionedPilotFeature j x a z ∂observationLaw θ
 
-theorem preconditionedPilotFeature_measurable {d ℓ : ℕ} (j : ℕ)
+theorem preconditionedPilotFeature_measurable (j : ℕ)
     (x : Covariate d) (a : LocalPilotIndex d ℓ) : Measurable (preconditionedPilotFeature j x a) :=
   Finset.measurable_sum Finset.univ (fun β _ =>
     measurable_const.mul (dyadicPilotFeature_measurable j x _))
 
-theorem preconditionedPilotFeature_memLp_two {d ℓ : ℕ} (C : ModelConstants d)
+theorem preconditionedPilotFeature_memLp_two 
     (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
     (hx : x ∈ unitCube d) (a : LocalPilotIndex d ℓ) :
     MemLp (preconditionedPilotFeature j x a) 2 (observationLaw θ) :=
@@ -54,7 +54,7 @@ theorem preconditionedPilotFeature_memLp_two {d ℓ : ℕ} (C : ModelConstants d
 
 /-- The exact preconditioned means are the known linear transform of the
 original-law raw means; no population equivalence is assumed. -/
-theorem preconditionedPilotPopulation_eq_sum {d ℓ : ℕ} (C : ModelConstants d)
+theorem preconditionedPilotPopulation_eq_sum 
     (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
     (hx : x ∈ unitCube d) (a : LocalPilotIndex d ℓ) :
     preconditionedPilotPopulation θ j x a =
@@ -66,7 +66,7 @@ theorem preconditionedPilotPopulation_eq_sum {d ℓ : ℕ} (C : ModelConstants d
     ((dyadicPilotFeature_memLp_two C θ hθ j x hx _).integrable (by norm_num)).const_mul _)]
   simp only [integral_const_mul, dyadicPilotPopulation]
 
-theorem preconditionedPilotPopulation_gram {d ℓ : ℕ} (C : ModelConstants d)
+theorem preconditionedPilotPopulation_gram 
     (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
     (hx : x ∈ unitCube d) (γ δ : AnchoredIndex d ℓ) :
     preconditionedPilotPopulation θ j x (Sum.inl (γ, δ)) =
@@ -75,7 +75,7 @@ theorem preconditionedPilotPopulation_gram {d ℓ : ℕ} (C : ModelConstants d)
   simp only [localPilotRow, localPilotReplaceRow, dyadicPilotPopulation_gram C θ hθ,
     dyadicPreconditionedGram, Matrix.mul_apply]
 
-theorem preconditionedPilotPopulation_response {d ℓ : ℕ} (C : ModelConstants d)
+theorem preconditionedPilotPopulation_response 
     (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
     (hx : x ∈ unitCube d) (γ : AnchoredIndex d ℓ) :
     preconditionedPilotPopulation θ j x (Sum.inr (Sum.inl γ)) =
@@ -86,7 +86,7 @@ theorem preconditionedPilotPopulation_response {d ℓ : ℕ} (C : ModelConstants
     dyadicKnownGram_eq_normalized, anchoredPreconditionedMoment, Matrix.mulVec, dotProduct,
     dyadicResponseMoment_eq_normalized C θ hθ]
 
-theorem preconditionedPilotPopulation_constant {d ℓ : ℕ} (C : ModelConstants d)
+theorem preconditionedPilotPopulation_constant 
     (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
     (hx : x ∈ unitCube d) (γ : AnchoredIndex d ℓ) :
     preconditionedPilotPopulation θ j x (Sum.inr (Sum.inr γ)) =
@@ -97,7 +97,7 @@ theorem preconditionedPilotPopulation_constant {d ℓ : ℕ} (C : ModelConstants
     dyadicKnownGram_eq_normalized, anchoredPreconditionedMoment, Matrix.mulVec, dotProduct,
     dyadicConstantMoment_eq_normalized C θ hθ]
 
-theorem dyadicKnownGram_inverse_uniform_bound {d ℓ : ℕ} :
+theorem dyadicKnownGram_inverse_uniform_bound :
     ∃ L : ℝ, 0 < L ∧ ∀ j : ℕ, ∀ x ∈ unitCube d, ‖(dyadicKnownGram (ℓ := ℓ) j x)⁻¹‖ ≤ L := by
   obtain ⟨L, hL, hbound⟩ := anchoredGram_inverse_uniform_bound (d := d) (ℓ := ℓ)
   refine ⟨L, hL, ?_⟩
@@ -107,7 +107,7 @@ theorem dyadicKnownGram_inverse_uniform_bound {d ℓ : ℕ} :
 
 /-- Known preconditioning increases the raw budget by a fixed feature-count
 and inverse-Gram factor; responses still require only a second moment. -/
-theorem preconditionedPilotFeature_second_le {d ℓ : ℕ} (C : ModelConstants d)
+theorem preconditionedPilotFeature_second_le 
     (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
     (hx : x ∈ unitCube d) (a : LocalPilotIndex d ℓ)
     (L : ℝ) (hL : 0 ≤ L) (hB : ‖(dyadicKnownGram (ℓ := ℓ) j x)⁻¹‖ ≤ L) :
@@ -157,20 +157,25 @@ def pilotInverseBound (d ℓ : ℕ) : ℝ :=
 theorem pilotInverseBound_pos (d ℓ : ℕ) : 0 < pilotInverseBound d ℓ :=
   (Classical.choose_spec (dyadicKnownGram_inverse_uniform_bound (d := d) (ℓ := ℓ))).1
 
-theorem pilotInverseBound_le {d ℓ : ℕ} (j : ℕ) (x : Covariate d) (hx : x ∈ unitCube d) :
+theorem pilotInverseBound_le (j : ℕ) (x : Covariate d) (hx : x ∈ unitCube d) :
     ‖(dyadicKnownGram (ℓ := ℓ) j x)⁻¹‖ ≤ pilotInverseBound d ℓ :=
   (Classical.choose_spec (dyadicKnownGram_inverse_uniform_bound (d := d) (ℓ := ℓ))).2 j x hx
 
-def preconditionedPilotMomentConstant {d : ℕ} (C : ModelConstants d) (ℓ : ℕ) : ℝ :=
+section
+variable {d : ℕ}
+
+def preconditionedPilotMomentConstant (C : ModelConstants d) (ℓ : ℕ) : ℝ :=
   max 1 ((Fintype.card (AnchoredIndex d ℓ) : ℝ) ^ 2 * pilotInverseBound d ℓ ^ 2 *
     dyadicPilotMomentConstant C)
 
-theorem preconditionedPilotMomentConstant_pos {d : ℕ} (C : ModelConstants d) (ℓ : ℕ) :
+theorem preconditionedPilotMomentConstant_pos (C : ModelConstants d) (ℓ : ℕ) :
     0 < preconditionedPilotMomentConstant C ℓ := zero_lt_one.trans_le (le_max_left _ _)
+
+end
 
 /-- A single fixed-model constant bounds every actual preconditioned raw
 coordinate, uniformly in dyadic level and anchor. -/
-theorem preconditionedPilotFeature_uniform_second_le {d ℓ : ℕ} (C : ModelConstants d)
+theorem preconditionedPilotFeature_uniform_second_le 
     (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
     (hx : x ∈ unitCube d) (a : LocalPilotIndex d ℓ) :
     (∫ z, preconditionedPilotFeature j x a z ^ 2 ∂observationLaw θ) ≤

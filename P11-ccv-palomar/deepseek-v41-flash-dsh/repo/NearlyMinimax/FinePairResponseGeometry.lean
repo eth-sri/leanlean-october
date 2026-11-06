@@ -10,8 +10,6 @@ noncomputable section
 open MeasureTheory Set MvPolynomial
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 
 theorem high_response_matrix_two_general {ι : Type*} [Fintype ι] [DecidableEq ι]
     (q : ℕ) (hq : 2 ≤ q) (C a V η : ℝ) (A : ι → ι → ℝ)
@@ -59,8 +57,7 @@ def finePairSquarePolynomial (d : ℕ) : MvPolynomial (Fin d) ℝ :=
   ∑ l, (finePairCoordinatePolynomial l) ^ 2
 
 theorem finePairCoordinatePolynomial_degree {d : ℕ} (l : Fin d) :
-    (finePairCoordinatePolynomial l).totalDegree ≤ 1 := by
-  exact (totalDegree_mul _ _).trans (by simp [finePairCoordinatePolynomial])
+    (finePairCoordinatePolynomial l).totalDegree ≤ 1 := (totalDegree_mul _ _).trans (by simp [finePairCoordinatePolynomial])
 
 theorem finePairSquarePolynomial_degree (d : ℕ) :
     (finePairSquarePolynomial d).totalDegree ≤ 2 := by
@@ -79,20 +76,22 @@ theorem finePairSquarePolynomial_eval (d : ℕ) (x : Covariate d) :
     eval (fun r => x r / 8) (finePairSquarePolynomial d) = ∑ r, (x r) ^ 2 := by
   simp only [finePairSquarePolynomial, map_sum, map_pow, finePairCoordinatePolynomial_eval]
 
-def finePairUnitMatrix (d F : ℕ) (β β' : HighFrameIndex d F) : ℝ :=
+variable (d F : ℕ) (W : ℝ)
+
+def finePairUnitMatrix (β β' : HighFrameIndex d F) : ℝ :=
   highFrameCoefficients (1 : MvPolynomial (Fin d) ℝ) β * highFrameCoefficients 1 β'
 
-def finePairDistanceMatrix (d F : ℕ) (β β' : HighFrameIndex d F) : ℝ :=
+def finePairDistanceMatrix (β β' : HighFrameIndex d F) : ℝ :=
   (∑ l : Fin d, 2 * highFrameCoefficients (finePairCoordinatePolynomial l) β *
     highFrameCoefficients (finePairCoordinatePolynomial l) β') -
     highFrameCoefficients (finePairSquarePolynomial d) β * highFrameCoefficients 1 β' -
     highFrameCoefficients (1 : MvPolynomial (Fin d) ℝ) β *
       highFrameCoefficients (finePairSquarePolynomial d) β'
 
-theorem finePairUnitMatrix_symmetric (d F : ℕ) (β β' : HighFrameIndex d F) :
+theorem finePairUnitMatrix_symmetric (β β' : HighFrameIndex d F) :
     finePairUnitMatrix d F β β' = finePairUnitMatrix d F β' β := mul_comm _ _
 
-theorem finePairDistanceMatrix_symmetric (d F : ℕ) (β β' : HighFrameIndex d F) :
+theorem finePairDistanceMatrix_symmetric (β β' : HighFrameIndex d F) :
     finePairDistanceMatrix d F β β' = finePairDistanceMatrix d F β' β := by
   unfold finePairDistanceMatrix
   have hs : (∑ l : Fin d, 2 * highFrameCoefficients (finePairCoordinatePolynomial l) β *
@@ -103,8 +102,11 @@ theorem finePairDistanceMatrix_symmetric (d F : ℕ) (β β' : HighFrameIndex d 
   rw [hs]
   ring
 
-theorem spatial_frame_covariance_outer {κ : Type*} [Fintype κ] [DecidableEq κ]
-    {n : ℕ} (u v : κ → ℝ) (φ : Fin n → κ → ℝ) (i j : Fin n) :
+section
+variable {κ : Type*} [Fintype κ] [DecidableEq κ] {n : ℕ}
+
+theorem spatial_frame_covariance_outer 
+    (u v : κ → ℝ) (φ : Fin n → κ → ℝ) (i j : Fin n) :
     spatialFrameCovariance (fun β β' => u β * v β') φ i j =
       (∑ β, φ i β * u β) * (∑ β, φ j β * v β) := by
   simp only [spatialFrameCovariance, Finset.mul_sum, Finset.sum_mul]
@@ -115,13 +117,18 @@ theorem spatial_frame_covariance_outer {κ : Type*} [Fintype κ] [DecidableEq κ
   intro β' _
   ring
 
-theorem spatial_frame_covariance_sub {κ : Type*} [Fintype κ] [DecidableEq κ]
-    {n : ℕ} (A B : κ → κ → ℝ) (φ : Fin n → κ → ℝ) (i j : Fin n) :
+theorem spatial_frame_covariance_sub 
+    (A B : κ → κ → ℝ) (φ : Fin n → κ → ℝ) (i j : Fin n) :
     spatialFrameCovariance (fun β β' => A β β' - B β β') φ i j =
       spatialFrameCovariance A φ i j - spatialFrameCovariance B φ i j := by
   simp only [spatialFrameCovariance, mul_sub, Finset.sum_sub_distrib]
 
-theorem finePairUnitMatrix_kernel {d n F : ℕ} (U : Fin n → Covariate d) (i j : Fin n) :
+end
+
+section
+variable {d n F : ℕ}
+
+theorem finePairUnitMatrix_kernel (U : Fin n → Covariate d) (i j : Fin n) :
     spatialFrameCovariance (finePairUnitMatrix d F) (fun l => highFrameFeature (U l)) i j = 1 := by
   unfold finePairUnitMatrix
   rw [spatial_frame_covariance_outer]
@@ -131,7 +138,7 @@ theorem finePairUnitMatrix_kernel {d n F : ℕ} (U : Fin n → Covariate d) (i j
       (by simp) x).symm
   rw [he, he, one_mul]
 
-theorem finePairDistanceMatrix_kernel {d n F : ℕ} (hF : 3 ≤ F)
+theorem finePairDistanceMatrix_kernel (hF : 3 ≤ F)
     (U : Fin n → Covariate d) (i j : Fin n) :
     spatialFrameCovariance (finePairDistanceMatrix d F) (fun l => highFrameFeature (U l)) i j =
       -spatialSquaredDistance (U i) (U j) := by
@@ -140,13 +147,11 @@ theorem finePairDistanceMatrix_kernel {d n F : ℕ} (hF : 3 ≤ F)
     simpa only [map_one] using (high_frame_polynomial_evaluation (1 : MvPolynomial (Fin d) ℝ)
       (by simp) x).symm
   have hl (x : Covariate d) (l : Fin d) : (∑ β : HighFrameIndex d F,
-      highFrameFeature x β * highFrameCoefficients (finePairCoordinatePolynomial l) β) = x l := by
-    exact (high_frame_polynomial_evaluation (finePairCoordinatePolynomial l)
+      highFrameFeature x β * highFrameCoefficients (finePairCoordinatePolynomial l) β) = x l := (high_frame_polynomial_evaluation (finePairCoordinatePolynomial l)
       ((finePairCoordinatePolynomial_degree l).trans (by omega)) x).symm.trans
         (finePairCoordinatePolynomial_eval l x)
   have hs (x : Covariate d) : (∑ β : HighFrameIndex d F,
-      highFrameFeature x β * highFrameCoefficients (finePairSquarePolynomial d) β) = ∑ l, (x l) ^ 2 := by
-    exact (high_frame_polynomial_evaluation (finePairSquarePolynomial d)
+      highFrameFeature x β * highFrameCoefficients (finePairSquarePolynomial d) β) = ∑ l, (x l) ^ 2 := (high_frame_polynomial_evaluation (finePairSquarePolynomial d)
       ((finePairSquarePolynomial_degree d).trans (by omega)) x).symm.trans
         (finePairSquarePolynomial_eval d x)
   unfold finePairDistanceMatrix
@@ -160,10 +165,12 @@ theorem finePairDistanceMatrix_kernel {d n F : ℕ} (hF : 3 ≤ F)
   intro l _
   ring
 
-def finePairCombinedMatrix (d F : ℕ) (W : ℝ) (β β' : HighFrameIndex d F) : ℝ :=
+end
+
+def finePairCombinedMatrix (W : ℝ) (β β' : HighFrameIndex d F) : ℝ :=
   finePairUnitMatrix d F β β' + W * finePairDistanceMatrix d F β β'
 
-theorem finePairCombinedMatrix_symmetric (d F : ℕ) (W : ℝ) (β β' : HighFrameIndex d F) :
+theorem finePairCombinedMatrix_symmetric (β β' : HighFrameIndex d F) :
     finePairCombinedMatrix d F W β β' = finePairCombinedMatrix d F W β' β := by
   simp only [finePairCombinedMatrix, finePairUnitMatrix_symmetric d F β β',
     finePairDistanceMatrix_symmetric d F β β']

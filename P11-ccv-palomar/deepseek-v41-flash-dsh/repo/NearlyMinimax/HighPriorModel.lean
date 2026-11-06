@@ -11,10 +11,13 @@ noncomputable section
 open Set MeasureTheory ProbabilityTheory
 open scoped ENNReal ContDiff
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 600000
 
-theorem high_raw_mass_lower {d : ℕ} (C : ModelConstants d) (M cm m : ℝ)
+variable {d : ℕ} (C : ModelConstants d)
+
+section
+variable (C : ModelConstants d)
+
+theorem high_raw_mass_lower (M cm m : ℝ)
     (hM : 2 ≤ M) (hcm : 0 ≤ cm) (hcmU : cm ≤ 1 / C.densityUpper)
     (hm : |m - 1| ≤ cm / M) : 1 / 2 ≤ m := by
   have hU : 0 < C.densityUpper := lt_trans (by norm_num) C.one_lt_densityUpper
@@ -28,7 +31,7 @@ theorem high_raw_mass_lower {d : ℕ} (C : ModelConstants d) (M cm m : ℝ)
   have := (abs_le.mp hm).1
   linarith
 
-theorem high_normalized_density_interval {d : ℕ} (C : ModelConstants d)
+theorem high_normalized_density_interval 
     (M cm m p : ℝ) (hM : 2 ≤ M) (hcm : 0 ≤ cm)
     (hcmU : cm ≤ 1 / C.densityUpper) (hm : |m - 1| ≤ cm / M)
     (hp : C.densityLower + 1 / M ≤ p ∧ p ≤ C.densityUpper - 1 / M) :
@@ -56,16 +59,18 @@ theorem high_normalized_density_interval {d : ℕ} (C : ModelConstants d)
   · apply (div_le_iff₀ hm0).mpr
     nlinarith [mul_le_mul_of_nonneg_left hmass.1 hU.le]
 
-def highRawDensityMass {d : ℕ} (p : Covariate d → ℝ) : ℝ :=
+end
+
+def highRawDensityMass (p : Covariate d → ℝ) : ℝ :=
   ∫ x, p x ∂cubeVolume d
 
-def highNormalizedDensity {d : ℕ} (p : Covariate d → ℝ) (x : Covariate d) : ℝ :=
+def highNormalizedDensity (p : Covariate d → ℝ) (x : Covariate d) : ℝ :=
   p x / highRawDensityMass p
 
-theorem highNormalizedDensity_measurable {d : ℕ} (p : Covariate d → ℝ)
+theorem highNormalizedDensity_measurable (p : Covariate d → ℝ)
     (hp : Measurable p) : Measurable (highNormalizedDensity p) := hp.div_const _
 
-theorem highRawDensity_integrable {d : ℕ} (C : ModelConstants d) (M : ℝ)
+theorem highRawDensity_integrable (M : ℝ)
     (hM : 0 < M) (p : Covariate d → ℝ) (hp : Measurable p)
     (hb : ∀ᵐ x ∂cubeVolume d,
       C.densityLower + 1 / M ≤ p x ∧ p x ≤ C.densityUpper - 1 / M) :
@@ -81,7 +86,7 @@ theorem highRawDensity_integrable {d : ℕ} (C : ModelConstants d) (M : ℝ)
     linarith [one_div_pos.mpr hM]
   exact (integrable_const C.densityUpper).mono' hp.aestronglyMeasurable hbound
 
-theorem highNormalizedDensity_normalized {d : ℕ} (p : Covariate d → ℝ)
+theorem highNormalizedDensity_normalized (p : Covariate d → ℝ)
     (hp : Integrable p (cubeVolume d)) (hp0 : 0 ≤ᵐ[cubeVolume d] p)
     (hm : 0 < highRawDensityMass p) :
     (∫⁻ x, ENNReal.ofReal (highNormalizedDensity p x) ∂cubeVolume d) = 1 := by
@@ -92,7 +97,7 @@ theorem highNormalizedDensity_normalized {d : ℕ} (p : Covariate d → ℝ)
   change ENNReal.ofReal (highRawDensityMass p / highRawDensityMass p) = 1
   simp only [div_self hm.ne', ENNReal.ofReal_one]
 
-theorem highNormalizedDensity_bounds {d : ℕ} (C : ModelConstants d) (M cm : ℝ)
+theorem highNormalizedDensity_bounds (M cm : ℝ)
     (hM : 2 ≤ M) (hcm : 0 ≤ cm) (hcmU : cm ≤ 1 / C.densityUpper)
     (p : Covariate d → ℝ)
     (hb : ∀ᵐ x ∂cubeVolume d,
@@ -106,7 +111,7 @@ theorem highNormalizedDensity_bounds {d : ℕ} (C : ModelConstants d) (M cm : �
     hM hcm hcmU hm hx
 
 /-- Actual ternary regression model with a normalized, nonuniform design. -/
-def normalizedDensityTernaryParameter {d : ℕ} (p F : Covariate d → ℝ)
+def normalizedDensityTernaryParameter (p F : Covariate d → ℝ)
     (a V : ℝ) (hF : Measurable F) (ha : a ≠ 0)
     (hp : ∀ x y, 0 ≤ ternaryMass a (F x) V y) : RegressionParameter d where
   density := highNormalizedDensity p
@@ -117,7 +122,7 @@ def normalizedDensityTernaryParameter {d : ℕ} (p F : Covariate d → ℝ)
 
 /-- Pointwise mixed-derivative and Euclidean modulus bounds imply the
 original sum-over-distinct-multi-indices norm on any extension domain. -/
-theorem holderNorm_of_global_mixed_bounds {d : ℕ} (U : Set (Covariate d))
+theorem holderNorm_of_global_mixed_bounds (U : Set (Covariate d))
     (F : Covariate d → ℝ) (ℓ : ℕ) (α B L : ℝ) (hB : 0 ≤ B) (hL : 0 ≤ L)
     (hsup : ∀ γ : Fin d → Fin (ℓ + 1), (∑ i, (γ i).val) ≤ ℓ →
       ∀ x, |multiPartial F (fun i => (γ i).val) x| ≤ B)

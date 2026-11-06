@@ -13,21 +13,19 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 attribute [local instance] Classical.propDecidable
 
-theorem finite_product_split_embedding {n r : ℕ} (e : Fin r ↪ Fin n) (F : Fin n → ℝ) :
+variable {n r : ℕ} (e : Fin r ↪ Fin n) (F : Fin n → ℝ)
+
+theorem finite_product_split_embedding :
     (∏ i : Fin n, F i) =
       (∏ i ∈ (Finset.univ : Finset (Fin n)) \ Finset.univ.map e, F i) * ∏ l : Fin r, F (e l) := by
-  rw [← Finset.prod_sdiff (Finset.subset_univ (Finset.univ.map e))]
-  rw [Finset.prod_map]
+  rw [← Finset.prod_sdiff (Finset.subset_univ (Finset.univ.map e)), Finset.prod_map]
 
-theorem finite_sum_split_embedding {n r : ℕ} (e : Fin r ↪ Fin n) (F : Fin n → ℝ) :
+theorem finite_sum_split_embedding :
     (∑ i : Fin n, F i) =
       (∑ i ∈ (Finset.univ : Finset (Fin n)) \ Finset.univ.map e, F i) + ∑ l : Fin r, F (e l) := by
-  rw [← Finset.sum_sdiff (Finset.subset_univ (Finset.univ.map e))]
-  rw [Finset.sum_map]
+  rw [← Finset.sum_sdiff (Finset.subset_univ (Finset.univ.map e)), Finset.sum_map]
 
 section
 variable {ι E : Type*} [Fintype ι] [DecidableEq ι] [MeasurableSpace E]

@@ -14,8 +14,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1500000
 attribute [local instance] Classical.propDecidable
 attribute [local irreducible] highUnionSourceDensity highUnionSourceState historyMarkedAppend
 
@@ -32,7 +30,9 @@ structure HighFrameOriginalLocalGuards (d k D : ℕ) [NeZero k] (Cfr eta rho : �
     ∀ x, |highLocalFieldWithout d k D eta c j x + eta*highPeriodicTensor d k j x*
       (∑ γ, highLocalFrameFeature k j x γ*v γ)| ≤ rho
 
-theorem highFrame_original_local_guards {d : ℕ} (C : ModelConstants d)
+variable {d : ℕ}
+
+theorem highFrame_original_local_guards (C : ModelConstants d)
     (Q : LowSmoothnessTernaryConstants C) :
     ∃ Cfr0 eta0 : ℝ, 1 ≤ Cfr0 ∧ 0 < eta0 ∧
       ∀ k D : ℕ, ∀ (_ : NeZero k), 4 ≤ k → ∀ Cfr cf : ℝ,
@@ -46,7 +46,7 @@ theorem highFrame_original_local_guards {d : ℕ} (C : ModelConstants d)
   intro k D hk0 hk Cfr cf hfr hcf heta c hc
   letI := hk0
   let eta := cf*(k : ℝ)^(-C.smoothness)
-  have hfr1 : 1 ≤ Cfr := hfr0.trans hfr
+  have hfr1 := hfr0.trans hfr
   have hen : 0 ≤ eta := by dsimp [eta]; positivity
   have hamp : ((2 : ℝ)^d+1)*eta ≤ Q.ρ/2 := by
     have ht := (le_div_iff₀ (by positivity : 0 < 2*((2 : ℝ)^d+1))).mp heta
@@ -81,7 +81,7 @@ theorem highFrame_original_local_guards {d : ℕ} (C : ModelConstants d)
   intro j v hv x
   exact (abs_add_le _ _).trans (by linarith only [hg j x,hterm j v hv x,hehalf])
 
-theorem completeSource_original_local_guards {d : ℕ} [NeZero d]
+theorem completeSource_original_local_guards [NeZero d]
     (C : ModelConstants d) (Q : LowSmoothnessTernaryConstants C) :
     ∃ Cfr0 eta0 : ℝ, 1 ≤ Cfr0 ∧ 0 < eta0 ∧
       ∀ k D M q : ℕ, ∀ (_ : NeZero k), ∀ (_ : LinearOrder (HighWindowLabels d k)),
@@ -113,7 +113,6 @@ theorem HighFrameOriginalLocalGuards.ternary_floor {d k D : ℕ}
     (v : HighFrameIndex d D → ℝ) (hv : ∑ γ, |v γ| ≤ Cfr⁻¹)
     (x : Covariate d) (y : Fin 3) :
     Q.c ≤ highMarkedResponseMass Q.a V eta (highLocalFieldWithout d k D eta c j)
-      (highPeriodicTensor d k j) (fun x => highLocalFrameFeature k j x) v x y := by
-  exact (Q.legal _ V (H.regression_abs j v hv x) hV).2.2.1 y
+      (highPeriodicTensor d k j) (fun x => highLocalFrameFeature k j x) v x y := (Q.legal _ V (H.regression_abs j v hv x) hV).2.2.1 y
 
 end NearlyMinimax

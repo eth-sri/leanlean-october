@@ -8,8 +8,6 @@ noncomputable section
 open MeasureTheory Set MvPolynomial
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 200000
 
 /-- Coefficients of any finite polynomial product vary continuously
 when each factor coefficient does; the antidiagonal convolution is

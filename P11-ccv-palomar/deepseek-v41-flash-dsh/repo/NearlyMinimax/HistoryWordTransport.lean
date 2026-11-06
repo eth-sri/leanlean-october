@@ -49,9 +49,11 @@ theorem historyWord_swap_tuple (before after : List J) (a b : J) :
   rw [ht, hd] at hc
   exact hc
 
+variable (dependent : J → J → Prop) (hsymm : ∀ ⦃a b⦄, dependent a b → dependent b a)
+
 /-- The tuple exchange carries each piece's label with its occurrence. -/
-theorem historyTupleSwapHeapIso_label (dependent : J → J → Prop)
-    (hsymm : ∀ ⦃a b⦄, dependent a b → dependent b a)
+theorem historyTupleSwapHeapIso_label 
+    
     {n : ℕ} (labels : Fin n → J) (i j : Fin n) (hij : i.val + 1 = j.val)
     (hind : ¬ dependent (labels i) (labels j))
     (x : WordHeapPiece (List.ofFn labels) dependent) :
@@ -62,7 +64,7 @@ theorem historyTupleSwapHeapIso_label (dependent : J → J → Prop)
   congr 1
 
 /-- Every independent word exchange has a genuine label-preserving heap isomorphism. -/
-theorem historyWord_exchange_heapIso (dependent : J → J → Prop)
+theorem historyWord_exchange_heapIso 
     (hsymm : ∀ ⦃a b⦄, dependent a b → dependent b a)
     {u v : List J} (h : IndependentHistoryExchange (fun a b => ¬ dependent a b) u v) :
     ∃ e : WordHeapPiece u dependent ≃o WordHeapPiece v dependent,
@@ -86,12 +88,11 @@ theorem historyWord_exchange_heapIso (dependent : J → J → Prop)
         historyTupleSwapHeapIso_label dependent hsymm word.get i j (by rfl) hind'⟩
     have hw : List.ofFn (word.get ∘ Equiv.swap i j) = before ++ b :: a :: after :=
       historyWord_swap_tuple before after a b
-    have hold : List.ofFn word.get = word := List.ofFn_get word
-    rw [hold, hw] at he
+    rw [(List.ofFn_get word), hw] at he
     exact he
 
 /-- Actual equivalent words carry the same labelled dependency heap. -/
-theorem historyShapeRelation_heapIso (dependent : J → J → Prop)
+theorem historyShapeRelation_heapIso 
     (hsymm : ∀ ⦃a b⦄, dependent a b → dependent b a)
     {u v : List J} (h : Relation.EqvGen (IndependentHistoryExchange (fun a b => ¬ dependent a b)) u v) :
     ∃ e : WordHeapPiece u dependent ≃o WordHeapPiece v dependent,
@@ -103,8 +104,7 @@ theorem historyShapeRelation_heapIso (dependent : J → J → Prop)
     obtain ⟨e, he⟩ := ih
     refine ⟨e.symm, ?_⟩
     intro x
-    have hh := he (e.symm x)
-    simpa only [e.apply_symm_apply] using hh.symm
+    simpa only [e.apply_symm_apply] using (he (e.symm x)).symm
   | trans u v w h₁ h₂ ih₁ ih₂ =>
     obtain ⟨e₁, he₁⟩ := ih₁
     obtain ⟨e₂, he₂⟩ := ih₂

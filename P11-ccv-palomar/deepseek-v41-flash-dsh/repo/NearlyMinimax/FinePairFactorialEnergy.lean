@@ -9,8 +9,6 @@ Every constant is fixed before the degree, count cutoff and density shrinking. -
 noncomputable section
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 800000
 
  def finePairFieldFactorialConstant (d q : ℕ) (aD bD C a ρ c0 Csharp : ℝ) : ℝ :=
   finePairUniformSpatialPrefactor d q aD bD C a ρ c0 *

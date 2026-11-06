@@ -12,7 +12,6 @@ noncomputable section
 open MeasureTheory ProbabilityTheory Set
 open scoped ENNReal
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
 
 theorem paper_score_to_risk {Α : Type*} [MeasurableSpace Α] {d n : ℕ}
     (C : ModelConstants d) (σ : ℝ → Measure Α)

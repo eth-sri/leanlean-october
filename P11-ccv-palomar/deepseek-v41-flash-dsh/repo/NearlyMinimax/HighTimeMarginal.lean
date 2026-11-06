@@ -10,8 +10,6 @@ noncomputable section
 open MeasureTheory ProbabilityTheory Filter Set
 open scoped ENNReal
 namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 variable {J : Type*} [Fintype J] [LinearOrder J]
 
 theorem historyMarkedPrior_integral_joint_measurable {E Z : Type*}
@@ -45,7 +43,9 @@ theorem historyMarkedPrior_integral_joint_measurable {E Z : Type*}
   rw [he]
   exact hi
 
-theorem highMarginalRawLikelihood_time_measurable {E : Type*} [MeasurableSpace E] {d : ℕ}
+variable {E : Type*}
+
+theorem highMarginalRawLikelihood_time_measurable [MeasurableSpace E] {d : ℕ}
     (dependent : J → J → Prop) (Δ : ℕ) (π : Measure E)
     [SFinite (historyMarkedReference dependent Δ π)]
     (activation : E → ℝ) (ham : Measurable activation) (n : ℕ) (a v η : ℝ)
@@ -57,7 +57,7 @@ theorem highMarginalRawLikelihood_time_measurable {E : Type*} [MeasurableSpace E
   historyMarkedPrior_integral_joint_measurable dependent Δ π activation ham _
     (highRawSampleLikelihood_time_measurable n a v η p F hp hF)
 
-theorem highMarginalIndexScore_time_measurable {E : Type*} [MeasurableSpace E]
+theorem highMarginalIndexScore_time_measurable [MeasurableSpace E]
     [StandardBorelSpace E] {d : ℕ}
     (dependent : J → J → Prop) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (Δ : ℕ) (π : Measure E) [SFinite π] [SFinite (historyMarkedReference dependent Δ π)]
@@ -75,7 +75,7 @@ set_option backward.isDefEq.respectTransparency true
 attribute [local irreducible] highMarginalIndexScore highMarginalRawLikelihood
   historyMarkedPrior highRawDensityMass massPowerNormalizer
 
-theorem highMarginalRealScore_time_measurable {E : Type*} [MeasurableSpace E]
+theorem highMarginalRealScore_time_measurable [MeasurableSpace E]
     [StandardBorelSpace E] {d : ℕ}
     (dependent : J → J → Prop) (hsymm : ∀ ⦃i j⦄, dependent i j → dependent j i)
     (Δ : ℕ) (π : Measure E) [SFinite π] [SFinite (historyMarkedReference dependent Δ π)]
@@ -95,7 +95,7 @@ theorem highMarginalRealScore_time_measurable {E : Type*} [MeasurableSpace E]
       (z.1, decodeDesignResponse a z.2)) from
       measurable_fst.prodMk ((decodeDesignResponse_measurable a).comp measurable_snd))
 
-theorem highMassPowerNormalizer_time_measurable {E : Type*} [MeasurableSpace E] {d : ℕ}
+theorem highMassPowerNormalizer_time_measurable [MeasurableSpace E] {d : ℕ}
     (dependent : J → J → Prop) (Δ : ℕ) (π : Measure E)
     [SFinite (historyMarkedReference dependent Δ π)]
     (activation : E → ℝ) (ham : Measurable activation) (n : ℕ)

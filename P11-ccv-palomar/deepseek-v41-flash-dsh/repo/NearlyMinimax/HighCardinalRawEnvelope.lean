@@ -13,10 +13,10 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 
-def highCardinalRawNumerator {d n F : ℕ} (ad bd lam T : ℝ) (m D q : ℕ)
+variable {d n F : ℕ} (ad bd lam : ℝ)
+
+def highCardinalRawNumerator (ad bd lam T : ℝ) (m D q : ℕ)
     (C a V η : ℝ) (U : Fin n → Covariate d) (p g w : Fin n → ℝ)
     (c : HighFrameIndex d F → ℝ) (y : Fin n → Fin 3) : ℝ :=
   (∫ᵛ e, highPacketObservable ad bd m n D q C c
@@ -27,8 +27,8 @@ def highCardinalRawNumerator {d n F : ℕ} (ad bd lam T : ℝ) (m D q : ℕ)
     η^2 * (∏ i, p i) * ∑ i, (w i)^2 *
       highResponseVarianceTerm a V η g w (fun i => highFrameFeature (U i)) c y i
 
-theorem highCardinalRawNumerator_eq_alias_defect {d n F : ℕ}
-    (ad bd lam : ℝ) (haD : 0 < ad) (hab : ad < bd) (hlam : 0 ≤ lam)
+theorem highCardinalRawNumerator_eq_alias_defect 
+    (haD : 0 < ad) (hab : ad < bd) (hlam : 0 ≤ lam)
     {T : ℝ} (hT : 1 ≤ T) (m D q : ℕ) (hn : 1 ≤ n) (hnm : n ≤ m)
     (hnD : n ≤ D) (hnF : n ≤ F) (C a V η : ℝ) (hC : C ≠ 0)
     (U : Fin n → Covariate d) (hU : ∀ i l, |U i l| ≤ 2)
@@ -67,7 +67,7 @@ theorem highCardinalRawNumerator_eq_alias_defect {d n F : ℕ}
   simp only [mul_sub, sub_mul, mul_one, Finset.sum_sub_distrib]
   ring
 
-theorem high_cardinal_alias_abs_bound {d n F : ℕ} (lam T a V η bd : ℝ)
+theorem high_cardinal_alias_abs_bound (lam T a V η bd : ℝ)
     (hlam : 0 ≤ lam) (ha : 0 < a) (hbd : 0 ≤ bd)
     (U : Fin n → Covariate d) (p g w : Fin n → ℝ)
     (hp : ∀ i, |p i| ≤ bd) (hw : ∀ i, |w i| ≤ 1)
@@ -105,8 +105,8 @@ def cardinalRawAliasCoefficient (n : ℕ) (bd a η : ℝ) : ℝ := η^2 * bd^n /
 def cardinalRawTaylorCoefficient (n q : ℕ) (bd C a ρ η : ℝ) : ℝ :=
   bd^n * highResponseRemainderConstant q C a ρ * (n : ℝ)^(2*q+2) * η^(2*q+2)
 
-theorem highCardinalRawNumerator_abs_bound_of_chart {d n F : ℕ}
-    (ad bd lam : ℝ) (haD : 0 < ad) (hab : ad < bd) (hlam : 0 ≤ lam)
+theorem highCardinalRawNumerator_abs_bound_of_chart 
+    (haD : 0 < ad) (hab : ad < bd) (hlam : 0 ≤ lam)
     {T : ℝ} (hT : 1 ≤ T) (m D q : ℕ) (hn : 1 ≤ n) (hnm : n ≤ m)
     (hnD : n ≤ D) (hnF : n ≤ F) (hq : 1 ≤ q)
     (C a V η ρ : ℝ) (hC : 1 ≤ C) (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ)
@@ -141,8 +141,8 @@ theorem highCardinalRawNumerator_abs_bound_of_chart {d n F : ℕ}
     C a V η hCpos.ne' U hU p g w hpD c y]
   exact (abs_add_le _ _).trans (add_le_add hAlias hTaylor)
 
-theorem highCardinalRawNumerator_square_bound_of_chart {d n F : ℕ}
-    (ad bd lam : ℝ) (haD : 0 < ad) (hab : ad < bd) (hlam : 0 ≤ lam)
+theorem highCardinalRawNumerator_square_bound_of_chart 
+    (haD : 0 < ad) (hab : ad < bd) (hlam : 0 ≤ lam)
     {T : ℝ} (hT : 1 ≤ T) (m D q : ℕ) (hn : 1 ≤ n) (hnm : n ≤ m)
     (hnD : n ≤ D) (hnF : n ≤ F) (hq : 1 ≤ q)
     (C a V η ρ : ℝ) (hC : 1 ≤ C) (ha : 0 < a) (hη : 0 ≤ η) (hρ : 0 ≤ ρ)

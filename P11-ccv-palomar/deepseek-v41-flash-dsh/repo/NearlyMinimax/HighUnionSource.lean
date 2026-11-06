@@ -12,8 +12,6 @@ noncomputable section
 open Set MeasureTheory Function
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 800000
 attribute [local instance] Classical.propDecidable
 
 structure HighUnionSourceGuards {d k F : ℕ} {I : Type*} [Fintype I] {E : I → Type*}
@@ -86,8 +84,10 @@ theorem highUnionSource_vacuum_interval :
   have hr := highCenterRadius_le_margins C
   constructor <;> linarith [highCenterRadius_pos C]
 
+variable (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E)) (x : Covariate d)
+
 theorem highUnionSourceDensity_interval
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E)) (x : Covariate d) :
+    :
     highUnionSourceDensity C R h x ∈ Icc (C.densityLower+1/M) (C.densityUpper-1/M) :=
   highUnionHistory_density_interval R (highCenterMix C) _ _
     (highUnionSource_reset_interval C R G) (historyShapeLength _ h.1)
@@ -95,9 +95,8 @@ theorem highUnionSourceDensity_interval
     (fun _ => highUnionSource_vacuum_interval C R G) h.2 x
 
 theorem highUnionSourceState_coefficient_ball
-    (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E)) :
-    ∀ j, (∑ γ, |(highUnionSourceState C R h).2 j γ|) ≤ Cfr⁻¹ := by
-  exact highUnionHistory_coefficient_ball R (highCenterMix C) Cfr
+    :
+    ∀ j, (∑ γ, |(highUnionSourceState C R h).2 j γ|) ≤ Cfr⁻¹ := highUnionHistory_coefficient_ball R (highCenterMix C) Cfr
     (by linarith [G.frame]) G.vector_ball G.time_interval (historyShapeLength _ h.1)
     (historyShapeCanonicalLabels _ h.1) highUnionVacuum
     (fun _ => by simpa [highUnionVacuum] using
@@ -126,7 +125,10 @@ theorem highUnionSourceDensity_fiber_mean_one
     (highCenterMix C) (highCenterMix_mem C).1.le (highCenterMix_mem C).2
     (historyShapeLength _ g) (historyShapeCanonicalLabels _ g) highUnionVacuum (fun _ => rfl) x
 
-theorem highUnionSourceMass_interval [∀ i, StandardBorelSpace (E i)]
+section
+variable [∀ i, StandardBorelSpace (E i)]
+
+theorem highUnionSourceMass_interval 
     (h : HistoryMarked (fun i j => j ∈ highNeighborLabels d k i) (HighUnionMark E)) :
     highUnionSourceMass C R h ∈ Icc (C.densityLower+1/M) (C.densityUpper-1/M) := by
   letI := cubeVolume_isProbability d
@@ -134,7 +136,7 @@ theorem highUnionSourceMass_interval [∀ i, StandardBorelSpace (E i)]
     ((highUnionSourceDensity_joint_measurable C R G).comp (measurable_const.prodMk measurable_id))
     _ _ (highUnionSourceDensity_interval C R G h)
 
-theorem highUnionSourceMass_fiber_mean_one [∀ i, StandardBorelSpace (E i)]
+theorem highUnionSourceMass_fiber_mean_one 
     (g : HistoryShape (fun i j : HighWindowLabels d k => j ∉ highNeighborLabels d k i)) :
     (∫ marks, highUnionSourceMass C R ⟨g,marks⟩
       ∂Measure.pi (fun _ : Fin (historyShapeLength _ g) => highUnionLaw R (highCenterMix C))) = 1 := by
@@ -142,7 +144,7 @@ theorem highUnionSourceMass_fiber_mean_one [∀ i, StandardBorelSpace (E i)]
   letI := cubeVolume_isProbability d
   let f := fun mx : (Fin (historyShapeLength _ g) → HighUnionMark E) × Covariate d =>
     highUnionSourceDensity C R ⟨g,mx.1⟩ mx.2
-  have hm : Measurable f := highUnionHistory_density_joint_measurable R G.slope_measurable
+  have hm := highUnionHistory_density_joint_measurable R G.slope_measurable
     G.intercept_measurable (highCenterMix C) (historyShapeLength _ g)
     (historyShapeCanonicalLabels _ g) highUnionVacuum measurable_const
   have hM0 : 0 < M := by
@@ -167,7 +169,7 @@ theorem highUnionSourceMass_fiber_mean_one [∀ i, StandardBorelSpace (E i)]
   simp_rw [he]
   simp
 
-theorem highUnionSourceMass_block_oscillation [∀ i, StandardBorelSpace (E i)] (hk : 2 ≤ k)
+theorem highUnionSourceMass_block_oscillation (hk : 2 ≤ k)
     (g : HistoryShape (fun i j : HighWindowLabels d k => j ∉ highNeighborLabels d k i))
     (marks marks' : Fin (historyShapeLength _ g) → HighUnionMark E) (j : HighWindowLabels d k)
     (hMarks : ∀ i, historyShapeCanonicalLabels _ g i ≠ j → marks i = marks' i) :
@@ -189,6 +191,8 @@ theorem highUnionSourceMass_block_oscillation [∀ i, StandardBorelSpace (E i)] 
     linarith
   apply mul_le_mul_of_nonneg_left _ (by positivity)
   linarith [one_div_pos.mpr hM0]
+
+end
 
 end
 end NearlyMinimax

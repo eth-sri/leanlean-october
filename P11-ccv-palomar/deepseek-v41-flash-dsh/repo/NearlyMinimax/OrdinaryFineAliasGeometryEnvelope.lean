@@ -11,8 +11,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 attribute [local instance] Classical.propDecidable
 
 def ordinaryFineAliasAmplitudeFactor (n M R q : ℕ) (ad bd c0 C a rho eta : ℝ) : ℝ :=
@@ -26,11 +24,6 @@ def ordinaryFineAliasGeometryKernel {d n F : ℕ} (r : ℕ) (L T : ℝ)
     spatialMatrixL1 (globalCardinalBandMatrix (D := F) (spatialInterpolationLambda d) L T
       (spatialSubsetConfiguration S U))
 
-/-- The actual universal envelope on the full Q^n spatial domain. -/
-def ordinaryFineAliasResponseSquareEnvelope {d n F : ℕ} (M r R q : ℕ)
-    (ad bd c0 C a rho eta L T : ℝ) (U : Fin n → Covariate d) : ℝ :=
-  (3 : ℝ)^n * (ordinaryFineAliasAmplitudeFactor n M R q ad bd c0 C a rho eta)^2 *
-    (ordinaryFineAliasGeometryKernel (F := F) r L T U)^2
 
 /-- Sum the actual geometric bands before squaring. This is the genuine
 triangle/Cauchy envelope for the sum of fine signed-row actions. -/
@@ -41,13 +34,15 @@ def ordinaryFineAliasFamilyResponseSquareEnvelope {d n F : ℕ} (I : Finset ℕ)
     (∑ r ∈ I, ordinaryFineAliasAmplitudeFactor n M R q ad bd c0 C a rho eta *
       ordinaryFineAliasGeometryKernel (F := F) r L (T r) U)^2
 
-theorem ordinaryFineAliasFamilyResponseSquareEnvelope_nonneg {d n F : ℕ} (I : Finset ℕ)
+variable {d n F : ℕ} (r : ℕ)
+
+theorem ordinaryFineAliasFamilyResponseSquareEnvelope_nonneg (I : Finset ℕ)
     (M R q : ℕ) (ad bd c0 C a rho eta L : ℝ) (T : ℕ → ℝ) (U : Fin n → Covariate d) :
     0 ≤ ordinaryFineAliasFamilyResponseSquareEnvelope (F := F) I M R q ad bd c0 C a rho eta L T U := by
   unfold ordinaryFineAliasFamilyResponseSquareEnvelope
   positivity
 
-theorem ordinaryFineAliasGeometryKernel_measurable {d n F : ℕ} (r : ℕ) {L T : ℝ}
+theorem ordinaryFineAliasGeometryKernel_measurable {L T : ℝ}
     (hL : 1 ≤ L) (hT : 1 ≤ T) :
     Measurable (ordinaryFineAliasGeometryKernel (d := d) (n := n) (F := F) r L T) := by
   unfold ordinaryFineAliasGeometryKernel spatialMatrixL1
@@ -56,9 +51,12 @@ theorem ordinaryFineAliasGeometryKernel_measurable {d n F : ℕ} (r : ℕ) {L T 
       ((integrated_cardinal_band_continuous (spatialInterpolationLambda d) hL hT gamma beta).measurable.abs).comp
         (spatialSubsetConfiguration_measurable S))))
 
+section
+variable {d n F M R : ℕ}
+
 /-- Actual pointwise square domination for the entire fine family,
 separately uniform over each response's nuisance tuple. -/
-theorem ordinaryFineAliasFamilyResponseSquareEnvelope_dominates {d n F M R : ℕ}
+theorem ordinaryFineAliasFamilyResponseSquareEnvelope_dominates 
     (I : Finset ℕ) (ad bd c0 L : ℝ) (T : ℕ → ℝ) (haD : 0 < ad)
     (hshrink : ad+(M : ℝ)⁻¹ < bd-(M : ℝ)⁻¹)
     (htau : shrunkDensityExponent ad bd M ≤ c0) (hI : ∀ r ∈ I, 1 ≤ r ∧ r ≤ R)
@@ -95,7 +93,7 @@ theorem ordinaryFineAliasFamilyResponseSquareEnvelope_dominates {d n F M R : ℕ
 
 /-- True integrability and geometric scale for the response-summed family
 envelope itself; independent of every nuisance field and chart inverse. -/
-theorem ordinaryFineAliasFamilyResponseSquareEnvelope_integrable_and_scale_le {d n F M R : ℕ}
+theorem ordinaryFineAliasFamilyResponseSquareEnvelope_integrable_and_scale_le 
     (hd : 5 ≤ d) (I : Finset ℕ) (hI : ∀ r ∈ I, 2 ≤ r ∧ r ≤ R)
     (ad bd c0 C a rho eta D K N : ℝ) (hbd : 0 ≤ bd)
     (hD : 0 ≤ D) (hK : 0 ≤ K) (hc0 : 0 ≤ c0) (hDK : D ≤ K*M)
@@ -173,5 +171,7 @@ theorem ordinaryFineAliasFamilyResponseSquareEnvelope_integrable_and_scale_le {d
     unfold B ordinaryAliasFamilySpatialPrefactor ordinaryAliasSpatialResponseBase
     rw [mul_pow]
     ring)
+
+end
 
 end NearlyMinimax

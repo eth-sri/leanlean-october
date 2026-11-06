@@ -11,19 +11,23 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
 
 def fineFieldSubsetEnergyBase (d : ℕ) : ℝ :=
   4 * (2 : ℝ) ^ d * hyperplaneSpatialMomentConstant d ^ 2
 
-theorem hyperplaneSpatialMomentConstant_ge_one (d : ℕ) :
+variable (d : ℕ)
+
+theorem hyperplaneSpatialMomentConstant_ge_one :
     1 ≤ hyperplaneSpatialMomentConstant d := by
   unfold hyperplaneSpatialMomentConstant
   have hp : 1 ≤ (2 : ℝ) ^ d := one_le_pow₀ (by norm_num)
   have hc := spatialExponentialConstant_nonneg d
   nlinarith only [hp, hc]
 
-theorem finePairTimeSubsetMoment_uniform_square_integral_le {d k : ℕ} [NeZero d]
+section
+variable {d k : ℕ} [NeZero d]
+
+theorem finePairTimeSubsetMoment_uniform_square_integral_le 
     (hd : 3 ≤ d) {lo hi : ℝ} (hlo : 0 < lo) (S : Finset (Fin k)) (hS : 4 ≤ S.card) :
     (∫ U : Fin k → Covariate d, finePairTimeSubsetMoment lo hi U S ^ 2
       ∂fullSpatialPatchDesign d k) ≤
@@ -49,7 +53,7 @@ theorem finePairTimeSubsetMoment_uniform_square_integral_le {d k : ℕ} [NeZero 
 
 /-- Any family of higher subsets has the same geometric count envelope;
 the concrete even-subset field family is a particular case. -/
-theorem finePairTimeSubsetMoment_sum_abs_square_integral_le {d k : ℕ} [NeZero d]
+theorem finePairTimeSubsetMoment_sum_abs_square_integral_le 
     (hd : 3 ≤ d) {lo hi : ℝ} (hlo : 0 < lo) (s : Finset (Finset (Fin k)))
     (hs : ∀ S ∈ s, 4 ≤ S.card) :
     (∫ U : Fin k → Covariate d, (∑ S ∈ s, |finePairTimeSubsetMoment lo hi U S|) ^ 2
@@ -80,5 +84,7 @@ theorem finePairTimeSubsetMoment_sum_abs_square_integral_le {d k : ℕ} [NeZero 
     rw [show (4 : ℝ) = (2 : ℝ) ^ 2 by norm_num, ← pow_mul, Nat.mul_comm]
   rw [hfour]
   ring
+
+end
 
 end NearlyMinimax

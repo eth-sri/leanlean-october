@@ -11,8 +11,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 400000
 variable {ι κ : Type*} [Fintype ι] [Fintype κ] [DecidableEq ι] [DecidableEq κ]
 
 theorem log_scale_tail_reindex (e : κ ≃ ι) (b A : ℝ) (s : κ → ℝ) :
@@ -32,7 +30,9 @@ theorem log_scale_tail_integral_reindex (e : κ ≃ ι) (b A : ℝ) :
   rw [← hp.integral_comp']
   simp_rw [log_scale_tail_reindex]
 
-theorem log_scale_tail_integrable_of_card {m : ℕ} (hcard : Fintype.card ι = m + 1)
+variable {m : ℕ}
+
+theorem log_scale_tail_integrable_of_card (hcard : Fintype.card ι = m + 1)
     {b : ℝ} (hb : 0 < b) (A : ℝ) :
     IntegrableOn (logScaleTail b A : (ι → ℝ) → ℝ) (Ici 0) := by
   let e : Fin (m + 1) ≃ ι := (Fintype.equivFinOfCardEq hcard).symm
@@ -48,7 +48,7 @@ theorem log_scale_tail_integrable_of_card {m : ℕ} (hcard : Fintype.card ι = m
   rw [IntegrableOn, ← exponential_orthant_measure_eq_restrict] at h
   exact h
 
-theorem log_scale_tail_integral_uniform_of_card {m : ℕ} (hcard : Fintype.card ι = m + 1)
+theorem log_scale_tail_integral_uniform_of_card (hcard : Fintype.card ι = m + 1)
     {b A : ℝ} (hb : (1 / 2 : ℝ) ≤ b) (hA : 0 ≤ A) :
     (∫ t : ι → ℝ in Ici 0, logScaleTail b A t) ≤
       8 ^ (m + 1) * Real.exp (-(b * A)) * (1 + A) ^ m := by
@@ -58,14 +58,13 @@ theorem log_scale_tail_integral_uniform_of_card {m : ℕ} (hcard : Fintype.card 
 def strictLogScaleTail (b A : ℝ) (t : ι → ℝ) : ℝ :=
   ({t : ι → ℝ | A < ∑ j, Real.log (1 + t j)}).indicator (logScaleTail b A) t
 
-theorem strict_log_scale_tail_integrable_of_card {m : ℕ} (hcard : Fintype.card ι = m + 1)
+theorem strict_log_scale_tail_integrable_of_card (hcard : Fintype.card ι = m + 1)
     {b : ℝ} (hb : 0 < b) (A : ℝ) :
-    IntegrableOn (strictLogScaleTail b A : (ι → ℝ) → ℝ) (Ici 0) := by
-  exact (log_scale_tail_integrable_of_card hcard hb A).indicator
+    IntegrableOn (strictLogScaleTail b A : (ι → ℝ) → ℝ) (Ici 0) := (log_scale_tail_integrable_of_card hcard hb A).indicator
     (measurableSet_lt measurable_const (Finset.measurable_sum _ fun j _ =>
       Real.measurable_log.comp (measurable_const.add (measurable_pi_apply j))))
 
-theorem strict_log_scale_tail_integral_le {m : ℕ} (hcard : Fintype.card ι = m + 1)
+theorem strict_log_scale_tail_integral_le (hcard : Fintype.card ι = m + 1)
     {b A : ℝ} (hb : (1 / 2 : ℝ) ≤ b) (hA : 0 ≤ A) :
     (∫ t : ι → ℝ in Ici 0, strictLogScaleTail b A t) ≤
       8 ^ (m + 1) * Real.exp (-(b * A)) * (1 + A) ^ m := by
@@ -91,10 +90,16 @@ theorem strict_log_scale_tail_integral_le {m : ℕ} (hcard : Fintype.card ι = m
             exact ht)
     _ ≤ _ := log_scale_tail_integral_uniform_of_card hcard hb hA
 
-theorem spatial_scale_index_card {n : ℕ} (i : Fin n) : Fintype.card (SpatialScaleIndex i) = n - 1 := by
+section
+variable {n : ℕ}
+
+section
+variable (i : Fin n)
+
+theorem spatial_scale_index_card : Fintype.card (SpatialScaleIndex i) = n - 1 := by
   simpa [SpatialScaleIndex] using Fintype.card_subtype_compl (fun j : Fin n => j = i)
 
-theorem spatial_scale_complement_integral_eq {n : ℕ} (i : Fin n) (b T : ℝ) :
+theorem spatial_scale_complement_integral_eq (b T : ℝ) :
     (∫ t : SpatialScaleVector i in Ici 0 \ spatialScaleDomain i T,
       ∏ j, (1 + t j) ^ (-b - 1 : ℝ)) =
       ∫ t : SpatialScaleVector i in Ici 0, strictLogScaleTail b (2 * Real.log T) t := by
@@ -146,7 +151,9 @@ theorem spatial_scale_complement_integral_eq {n : ℕ} (i : Fin n) (b T : ℝ) :
     exact ht.1
   exact (if_pos hlog.le).symm
 
-theorem spatial_scale_complement_power_integrable {n : ℕ} (hn : 2 ≤ n) (i : Fin n)
+end
+
+theorem spatial_scale_complement_power_integrable (hn : 2 ≤ n) (i : Fin n)
     {b : ℝ} (hb : 0 < b) (T : ℝ) :
     IntegrableOn (fun t : SpatialScaleVector i => ∏ j, (1 + t j) ^ (-b - 1 : ℝ))
       (Ici 0 \ spatialScaleDomain i T) := by
@@ -177,7 +184,7 @@ theorem spatial_scale_complement_power_integrable {n : ℕ} (hn : 2 ≤ n) (i : 
 /-- The scale-domain complement estimate used by the actual cardinal
 interpolation defect. The logarithmic power is one less than the number of
 scales, exactly as required in the paper's interpolation bound. -/
-theorem spatial_scale_complement_power_integral_le {n : ℕ} (hn : 2 ≤ n) (i : Fin n)
+theorem spatial_scale_complement_power_integral_le (hn : 2 ≤ n) (i : Fin n)
     {b T : ℝ} (hb : (1 / 2 : ℝ) ≤ b) (hT : 1 ≤ T) :
     (∫ t : SpatialScaleVector i in Ici 0 \ spatialScaleDomain i T,
       ∏ j, (1 + t j) ^ (-b - 1 : ℝ)) ≤
@@ -213,5 +220,7 @@ theorem spatial_scale_complement_power_integral_le {n : ℕ} (hn : 2 ≤ n) (i :
   calc
     _ ≤ _ := h
     _ ≤ _ := by nlinarith [hh, hc]
+
+end
 
 end NearlyMinimax

@@ -13,8 +13,6 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators ENNReal
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 
 theorem high_marked_original_design_spatial_series {ι E : Type*}
     [Fintype ι] [DecidableEq ι] [MeasurableSpace E] {d k : ℕ} [NeZero k]

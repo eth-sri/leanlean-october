@@ -11,15 +11,15 @@ noncomputable section
 open Matrix MeasureTheory Set
 open scoped RealInnerProductSpace BigOperators Matrix.Norms.L2Operator
 namespace NearlyMinimax
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 
-def dyadicPopulationPilotSum {d : ℕ} (C : ModelConstants d) (θ : RegressionParameter d)
+variable {d : ℕ} (C : ModelConstants d)
+
+def dyadicPopulationPilotSum (C : ModelConstants d) (θ : RegressionParameter d)
     (J : ℕ) (m : ℕ → ℕ) (t : Bool) (w : Covariate d × Covariate d) : ℝ :=
   ∑ j ∈ Finset.range (J + 1),
     dyadicPilotRow j w.1 w.2 ⬝ᵥ dyadicPopulationRawPolynomial C θ j w.1 t (m j)
 
-def dyadicPopulationCoefficients {d : ℕ} (C : ModelConstants d) (θ : RegressionParameter d)
+def dyadicPopulationCoefficients (C : ModelConstants d) (θ : RegressionParameter d)
     (J : ℕ) (m : ℕ → ℕ) (w : Covariate d × Covariate d) : PairVector :=
   WithLp.toLp 2 ![1, -1 + dyadicPopulationPilotSum C θ J m true w,
     -dyadicPopulationPilotSum C θ J m false w]
@@ -64,7 +64,7 @@ theorem dyadicPilotRow_total_abs_le {d ℓ : ℕ} (J : ℕ) (x y : Covariate d)
       mul_le_mul_of_nonneg_left (dyadic_geometric_sum_le J) (by positivity)
     _ = _ := by rw [pow_succ]; field_simp
 
-theorem dyadicPopulationCoefficients_residual {d : ℕ} (C : ModelConstants d)
+theorem dyadicPopulationCoefficients_residual 
     (θ : RegressionParameter d) (J : ℕ) (m : ℕ → ℕ) (x y : Covariate d) :
     ⟪dyadicPopulationCoefficients C θ J m (x, y), pairResponseVector (θ.regression x) (θ.regression y)⟫ =
       dyadicPopulationResidual C θ J m x y := by
@@ -82,7 +82,7 @@ theorem dyadicPopulationCoefficients_residual {d : ℕ} (C : ModelConstants d)
   rw [hsum]
   ring
 
-theorem dyadicPopulationRawPolynomial_measurable {d : ℕ} (C : ModelConstants d)
+theorem dyadicPopulationRawPolynomial_measurable 
     (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (t : Bool) (m : ℕ) :
     Measurable (fun x => dyadicPopulationRawPolynomial C θ j x t m) := by
   apply measurable_pi_iff.mpr
@@ -93,7 +93,7 @@ theorem dyadicPopulationRawPolynomial_measurable {d : ℕ} (C : ModelConstants d
         (anchoredFinTransport d C.order) t m i))).measurable.comp
       (dyadicIncrementRawMean_measurable C θ hθ j)
 
-theorem dyadicPopulationPilotSum_measurable {d : ℕ} (C : ModelConstants d)
+theorem dyadicPopulationPilotSum_measurable 
     (θ : RegressionParameter d) (hθ : Admissible C θ) (J : ℕ) (m : ℕ → ℕ) (t : Bool) :
     Measurable (dyadicPopulationPilotSum C θ J m t) := by
   apply Finset.measurable_sum
@@ -103,7 +103,7 @@ theorem dyadicPopulationPilotSum_measurable {d : ℕ} (C : ModelConstants d)
   exact (dyadicAnchoredFeature_joint_measurable j (anchoredFinIndex i)).mul
     (((dyadicPopulationRawPolynomial_measurable C θ hθ j t (m j)).eval (a := i)).comp measurable_fst)
 
-theorem dyadicPopulationCoefficients_measurable {d : ℕ} (C : ModelConstants d)
+theorem dyadicPopulationCoefficients_measurable 
     (θ : RegressionParameter d) (hθ : Admissible C θ) (J : ℕ) (m : ℕ → ℕ) :
     Measurable (dyadicPopulationCoefficients C θ J m) := by
   apply (PiLp.continuous_toLp 2 (fun _ : Fin 3 => ℝ)).measurable.comp

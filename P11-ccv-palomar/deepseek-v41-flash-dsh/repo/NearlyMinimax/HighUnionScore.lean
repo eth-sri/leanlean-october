@@ -12,20 +12,20 @@ noncomputable section
 open MeasureTheory Set
 open scoped BigOperators
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 1000000
 attribute [local instance] Classical.propDecidable
 
 section
 variable {ι E : Type*} [Fintype ι] [DecidableEq ι] [MeasurableSpace E]
 
-def highMarkedResponseAction {n : ℕ} (π : Measure E) (activation : E → ℝ)
+variable {n : ℕ} (a V η : ℝ)
+
+def highMarkedResponseAction (π : Measure E) (activation : E → ℝ)
     (a V η : ℝ) (pReset : E → Fin n → ℝ) (cReset : E → ι → ℝ)
     (g w : Fin n → ℝ) (φ : Fin n → ι → ℝ) (y : Fin n → Fin 3) : ℝ :=
   ∫ e, activation e * (∏ i, pReset e i) *
     highResponseProduct a V η g w φ (cReset e) y ∂π
 
-def highMarkedLocalScore {n : ℕ} (π : Measure E) (activation : E → ℝ)
+def highMarkedLocalScore (π : Measure E) (activation : E → ℝ)
     (a V η : ℝ) (p : Fin n → ℝ) (pReset : E → Fin n → ℝ)
     (cReset : E → ι → ℝ) (g w : Fin n → ℝ) (φ : Fin n → ι → ℝ)
     (c : ι → ℝ) (y : Fin n → Fin 3) : ℝ :=
@@ -33,7 +33,7 @@ def highMarkedLocalScore {n : ℕ} (π : Measure E) (activation : E → ℝ)
     η ^ 2 * (∏ i, p i) * ∑ i, (w i) ^ 2 * highResponseVarianceTerm a V η g w φ c y i) /
     ((∏ i, p i) * highResponseProduct a V η g w φ c y)
 
-theorem highMarkedResponseProduct_measurable {n : ℕ} (a V η : ℝ)
+theorem highMarkedResponseProduct_measurable 
     (cReset : E → ι → ℝ) (hc : ∀ γ, Measurable (fun e => cReset e γ))
     (g w : Fin n → ℝ) (φ : Fin n → ι → ℝ) (y : Fin n → Fin 3) :
     Measurable (fun e => highResponseProduct a V η g w φ (cReset e) y) := by
@@ -44,7 +44,7 @@ theorem highMarkedResponseProduct_measurable {n : ℕ} (a V η : ℝ)
   unfold coefficientRegression
   fun_prop
 
-theorem highMarkedResponseProduct_abs_le_one {n : ℕ} (a V η : ℝ) (ha : a ≠ 0)
+theorem highMarkedResponseProduct_abs_le_one (ha : a ≠ 0)
     (g w : Fin n → ℝ) (φ : Fin n → ι → ℝ) (v : ι → ℝ)
     (hp : ∀ i b, 0 ≤ ternaryMass a (coefficientRegression η g w φ v i) V b)
     (y : Fin n → Fin 3) : |highResponseProduct a V η g w φ v y| ≤ 1 := by
@@ -57,10 +57,13 @@ theorem highMarkedResponseProduct_abs_le_one {n : ℕ} (a V η : ℝ) (ha : a �
     rw [abs_of_nonneg (hp i (y i))]
     exact ternary_mass_le_one a _ V ha (hp i) (y i)
 
+section
+variable (π : Measure E) (activation : E → ℝ)
+
 /-- Integrability follows from the actual integrable activation, Borel
 legal resets, and normalized nonnegative response masses. -/
-theorem highMarkedResponseAction_integrable {n : ℕ} (π : Measure E)
-    (activation : E → ℝ) (hAct : Integrable activation π)
+theorem highMarkedResponseAction_integrable 
+    (hAct : Integrable activation π)
     (a V η : ℝ) (ha : a ≠ 0) (pPlus : ℝ) (hpPlus : 0 ≤ pPlus)
     (pReset : E → Fin n → ℝ) (hReset : ∀ i, Measurable (fun e => pReset e i))
     (hBound : ∀ e i, |pReset e i| ≤ pPlus) (cReset : E → ι → ℝ)
@@ -82,7 +85,7 @@ theorem highMarkedResponseAction_integrable {n : ℕ} (π : Measure E)
 
 /-- Response normalization identifies the actual total action with the
 conditional density action, rather than assuming score centering. -/
-theorem highMarkedResponseAction_sum {n : ℕ} (π : Measure E) (activation : E → ℝ)
+theorem highMarkedResponseAction_sum 
     (a V η : ℝ) (ha : a ≠ 0) (pReset : E → Fin n → ℝ) (cReset : E → ι → ℝ)
     (g w : Fin n → ℝ) (φ : Fin n → ι → ℝ)
     (hInt : ∀ y, Integrable (fun e => activation e * (∏ i, pReset e i) *
@@ -96,7 +99,7 @@ theorem highMarkedResponseAction_sum {n : ℕ} (π : Measure E) (activation : E 
 /-- The full marked score is conditionally centered whenever the actual
 signed density action vanishes. For the source row union this primitive
 comes from each row's proved conditional zero-mass rule. -/
-theorem highMarkedLocalScore_centered {n : ℕ} (π : Measure E) (activation : E → ℝ)
+theorem highMarkedLocalScore_centered 
     (a V η : ℝ) (ha : a ≠ 0) (p : Fin n → ℝ) (pReset : E → Fin n → ℝ)
     (cReset : E → ι → ℝ) (g w : Fin n → ℝ) (φ : Fin n → ι → ℝ) (c : ι → ℝ)
     (hpd : ∀ i, p i ≠ 0)
@@ -128,8 +131,8 @@ theorem highMarkedLocalScore_centered {n : ℕ} (π : Measure E) (activation : E
   simp only [← Finset.mul_sum, high_response_variance_term_sum_zero,
     mul_zero, Finset.sum_const_zero, sub_zero, zero_div]
 
-theorem highMarkedLocalScore_depends_on_support {n : ℕ} (π : Measure E)
-    (activation : E → ℝ) (a V η : ℝ) (p : Fin n → ℝ) (pReset : E → Fin n → ℝ)
+theorem highMarkedLocalScore_depends_on_support 
+    (a V η : ℝ) (p : Fin n → ℝ) (pReset : E → Fin n → ℝ)
     (cReset : E → ι → ℝ) (g w : Fin n → ℝ) (φ : Fin n → ι → ℝ) (c : ι → ℝ)
     (S : Finset (Fin n)) (hw : ∀ i, i ∉ S → w i = 0)
     (y y' : Fin n → Fin 3) (hyy : ∀ i ∈ S, y i = y' i)
@@ -175,6 +178,8 @@ theorem highMarkedLocalScore_depends_on_support {n : ℕ} (π : Measure E)
     unfold highMarkedLocalScore
     field_simp [hB, hL]
   rw [hrep y hLy, hrep y' hLy', hfirst, hvar]
+
+end
 
 end
 

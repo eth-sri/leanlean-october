@@ -10,22 +10,27 @@ open scoped BigOperators ENNReal
 
 namespace NearlyMinimax
 
-theorem multiPartial_zero_index {d : ℕ} (F : Covariate d → ℝ) :
+variable {d : ℕ} (x : Covariate d)
+
+theorem multiPartial_zero_index (F : Covariate d → ℝ) :
     multiPartial F (fun _ => 0) = F := by
   have hflat : (List.finRange d).flatMap (fun _ => ([] : List (Fin d))) = [] :=
     List.flatMap_eq_nil_iff.mpr (fun _ _ => rfl)
   simp [multiPartial, hflat]
 
-theorem euclideanNorm_eq_sqrt_energy {d : ℕ} (x : Covariate d) :
+section
+variable (x : Covariate d)
+
+theorem euclideanNorm_eq_sqrt_energy :
     euclideanNorm x = Real.sqrt (projectionEnergy x) := by
   simp only [euclideanNorm, projectionEnergy, dotProduct, pow_two]
 
-theorem euclideanNorm_eq_zero_iff {d : ℕ} (x : Covariate d) :
+theorem euclideanNorm_eq_zero_iff :
     euclideanNorm x = 0 ↔ x = 0 := by
   rw [euclideanNorm_eq_sqrt_energy, Real.sqrt_eq_zero (projectionEnergy_nonneg x)]
   exact dotProduct_self_eq_zero
 
-theorem euclideanNorm_pos_of_ne_zero {d : ℕ} (x : Covariate d) (hx : x ≠ 0) :
+theorem euclideanNorm_pos_of_ne_zero (hx : x ≠ 0) :
     0 < euclideanNorm x := by
   have hnonneg : 0 ≤ euclideanNorm x := by unfold euclideanNorm; positivity
   have hne : euclideanNorm x ≠ 0 := by
@@ -33,9 +38,14 @@ theorem euclideanNorm_pos_of_ne_zero {d : ℕ} (x : Covariate d) (hx : x ≠ 0) 
     exact hx ((euclideanNorm_eq_zero_iff x).mp hz)
   exact lt_of_le_of_ne hnonneg hne.symm
 
+end
+
+section
+variable (U : Set (Covariate d))
+
 /-- The model's actual Hölder seminorm gives its pointwise modulus,
 using precisely the Euclidean distance in the manuscript. -/
-theorem holderSeminorm_pointwise_bound {d : ℕ} (U : Set (Covariate d))
+theorem holderSeminorm_pointwise_bound 
     (G : Covariate d → ℝ) (α H : ℝ) (hH : 0 ≤ H)
     (hseminorm : holderSeminorm U G α ≤ ENNReal.ofReal H)
     (x y : Covariate d) (hx : x ∈ U) (hy : y ∈ U) :
@@ -56,10 +66,13 @@ theorem holderSeminorm_pointwise_bound {d : ℕ} (U : Set (Covariate d))
       euclideanNorm_pos_of_ne_zero (x - y) (sub_ne_zero.mpr hxy)
     exact (div_le_iff₀ (Real.rpow_pos_of_pos hdist α)).mp hquot
 
+section
+variable (F : Covariate d → ℝ) (ℓ : ℕ) (α H : ℝ)
+
 /-- Every mixed partial counted in the model norm has the stated
 uniform pointwise bound on the extension domain. -/
-theorem holderNorm_derivative_bound {d : ℕ} (U : Set (Covariate d))
-    (F : Covariate d → ℝ) (ℓ : ℕ) (α H : ℝ) (hH : 0 ≤ H)
+theorem holderNorm_derivative_bound 
+    (hH : 0 ≤ H)
     (hNorm : holderNorm U F ℓ α ≤ ENNReal.ofReal H)
     (γ : Fin d → Fin (ℓ + 1)) (hγ : (∑ i, (γ i).val) ≤ ℓ)
     (x : Covariate d) (hx : x ∈ U) :
@@ -81,8 +94,8 @@ theorem holderNorm_derivative_bound {d : ℕ} (U : Set (Covariate d))
 
 /-- The highest-order mixed partials counted by the model norm inherit
 the actual Hölder modulus, without replacing the paper's norm. -/
-theorem holderNorm_top_derivative_modulus {d : ℕ} (U : Set (Covariate d))
-    (F : Covariate d → ℝ) (ℓ : ℕ) (α H : ℝ) (hH : 0 ≤ H)
+theorem holderNorm_top_derivative_modulus 
+    (hH : 0 ≤ H)
     (hNorm : holderNorm U F ℓ α ≤ ENNReal.ofReal H)
     (γ : Fin d → Fin (ℓ + 1)) (hγ : (∑ i, (γ i).val) = ℓ)
     (x y : Covariate d) (hx : x ∈ U) (hy : y ∈ U) :
@@ -96,18 +109,22 @@ theorem holderNorm_top_derivative_modulus {d : ℕ} (U : Set (Covariate d))
   simp only [if_pos hγ]
   exact le_rfl
 
+end
+
 /-- At order zero, the model norm is precisely the function supremum
 and its Hölder seminorm. -/
-theorem holderNorm_order_zero {d : ℕ} (U : Set (Covariate d))
+theorem holderNorm_order_zero 
     (F : Covariate d → ℝ) (α : ℝ) :
     holderNorm U F 0 α = derivativeSup U F + holderSeminorm U F α := by
   have hflat : (List.finRange d).flatMap (fun _ => ([] : List (Fin d))) = [] :=
     List.flatMap_eq_nil_iff.mpr (fun _ _ => rfl)
   simp [holderNorm, multiPartial, hflat]
 
+end
+
 /-- The paper's actual admissibility norm bounds the regression values
 uniformly on the design cube for every smoothness order. -/
-theorem admissible_regression_value_bound {d : ℕ} (C : ModelConstants d)
+theorem admissible_regression_value_bound (C : ModelConstants d)
     (θ : RegressionParameter d) (hθ : Admissible C θ)
     (x : Covariate d) (hx : x ∈ unitCube d) : |θ.regression x| ≤ C.holderBound := by
   rcases hθ with ⟨_, _, _, _, ⟨F, hcube, _, hNorm⟩, _, _, _⟩
@@ -116,7 +133,7 @@ theorem admissible_regression_value_bound {d : ℕ} (C : ModelConstants d)
   simpa only [Fin.val_zero, multiPartial_zero_index, hcube x hx] using hb
 
 /-- A cube of side length `h` has Euclidean diameter at most `sqrt(d) h`. -/
-theorem euclideanNorm_le_coordinate_radius {d : ℕ} (x : Covariate d)
+theorem euclideanNorm_le_coordinate_radius 
     (h : ℝ) (hh : 0 ≤ h) (hx : ∀ i, |x i| ≤ h) :
     euclideanNorm x ≤ Real.sqrt (d : ℝ) * h := by
   rw [euclideanNorm, Real.sqrt_le_iff]

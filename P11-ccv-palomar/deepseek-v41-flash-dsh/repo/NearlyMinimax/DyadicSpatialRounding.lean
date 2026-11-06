@@ -7,7 +7,6 @@ public import NearlyMinimax.Rates
 /-! The actual finest dyadic bandwidth and its one-cell rounding loss. -/
 noncomputable section
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
 
 def dyadicLevelFromLogSide (ell : ℝ) : ℕ := Nat.ceil (-ell / Real.log 2)
 
@@ -26,7 +25,9 @@ theorem dyadicRoundedLogSide_bounds {ell : ℝ} (hell : ell ≤ 0) :
   unfold dyadicRoundedLogSide dyadicLevelFromLogSide
   constructor <;> linarith only [hlo, hhi]
 
-theorem dyadicRoundedSide_eq_inv_pow (ell : ℝ) :
+variable (ell : ℝ)
+
+theorem dyadicRoundedSide_eq_inv_pow :
     dyadicRoundedSide ell = ((2 : ℝ) ^ dyadicLevelFromLogSide ell)⁻¹ := by
   unfold dyadicRoundedSide dyadicRoundedLogSide
   rw [neg_mul, Real.exp_neg, mul_comm, Real.exp_nat_mul, Real.exp_log (by norm_num)]
@@ -43,11 +44,9 @@ theorem dyadicRoundedSide_bounds {ell : ℝ} (hell : ell ≤ 0) :
 theorem dyadicRounded_noise_bound {ell d : ℝ} (hell : ell ≤ 0) (hd : 0 ≤ d) (L : ℝ) :
     Real.exp (-L - d / 2 * dyadicRoundedLogSide ell) ≤
       Real.exp (d / 2 * Real.log 2) * Real.exp (-L - d / 2 * ell) := by
-  have hlo := (dyadicRoundedLogSide_bounds hell).1.le
-  have hm := mul_le_mul_of_nonneg_left hlo (by positivity : 0 ≤ d / 2)
   rw [← Real.exp_add]
   apply Real.exp_le_exp.mpr
-  linarith only [hm]
+  linarith only [(mul_le_mul_of_nonneg_left ((dyadicRoundedLogSide_bounds hell).1.le) (by positivity : 0 ≤ d / 2))]
 
 theorem dyadicRoundedLevel_ge {ell : ℝ} {j : ℕ}
     (hguard : ell + Real.log 2 * (j : ℝ) ≤ 0) : j ≤ dyadicLevelFromLogSide ell := by

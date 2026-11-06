@@ -14,15 +14,15 @@ open MeasureTheory ProbabilityTheory Set Matrix
 open scoped BigOperators Matrix.Norms.L2Operator
 namespace NearlyMinimax
 
-set_option maxHeartbeats 1000000
-set_option backward.isDefEq.respectTransparency false
 
-def dyadicResponseMoment {d ℓ : ℕ} (θ : RegressionParameter d) (j : ℕ)
+variable {d ℓ : ℕ} (C : ModelConstants d)
+
+def dyadicResponseMoment (θ : RegressionParameter d) (j : ℕ)
     (x : Covariate d) : AnchoredIndex d ℓ → ℝ :=
   fun γ => dyadicPilotScale d j * ∫ z in dyadicPilotCell j x,
     dyadicAnchoredFeature j x z γ * θ.regression z ∂designLaw θ
 
-def dyadicConstantMoment {d ℓ : ℕ} (θ : RegressionParameter d) (j : ℕ)
+def dyadicConstantMoment (θ : RegressionParameter d) (j : ℕ)
     (x : Covariate d) : AnchoredIndex d ℓ → ℝ :=
   fun γ => dyadicPilotScale d j * ∫ z in dyadicPilotCell j x,
     dyadicAnchoredFeature j x z γ ∂designLaw θ
@@ -36,7 +36,7 @@ theorem observationLaw_integral_design {d : ℕ} (C : ModelConstants d)
   rw [← hp.map_eq]
   exact (integral_map hp.aemeasurable hg.aestronglyMeasurable).symm
 
-theorem dyadicPilotPopulation_gram {d ℓ : ℕ} (C : ModelConstants d)
+theorem dyadicPilotPopulation_gram 
     (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
     (γ δ : AnchoredIndex d ℓ) :
     dyadicPilotPopulation θ j x (Sum.inl (γ, δ)) = dyadicPopulationGram θ j x γ δ := by
@@ -51,7 +51,7 @@ theorem dyadicPilotPopulation_gram {d ℓ : ℕ} (C : ModelConstants d)
   rw [observationLaw_integral_design C θ hθ _
     (hg.indicator (dyadicPilotCell_measurable j x)), integral_indicator (dyadicPilotCell_measurable j x)]
 
-theorem dyadicPilotPopulation_constant {d ℓ : ℕ} (C : ModelConstants d)
+theorem dyadicPilotPopulation_constant 
     (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
     (γ : AnchoredIndex d ℓ) :
     dyadicPilotPopulation θ j x (Sum.inr (Sum.inr γ)) = dyadicConstantMoment θ j x γ := by
@@ -66,7 +66,7 @@ theorem dyadicPilotPopulation_constant {d ℓ : ℕ} (C : ModelConstants d)
 
 /-- The response vector's genuine mean uses the conditional zero mean of the
 original errors, even when their conditional laws depend on the design. -/
-theorem dyadicPilotPopulation_response {d ℓ : ℕ} (C : ModelConstants d)
+theorem dyadicPilotPopulation_response 
     (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d)
     (hx : x ∈ unitCube d) (γ : AnchoredIndex d ℓ) :
     dyadicPilotPopulation θ j x (Sum.inr (Sum.inl γ)) = dyadicResponseMoment θ j x γ := by
@@ -94,7 +94,7 @@ theorem dyadicPilotPopulation_response {d ℓ : ℕ} (C : ModelConstants d)
   rw [integral_congr_ae heq, integral_const_mul, integral_indicator (dyadicPilotCell_measurable j x)]
   rfl
 
-theorem dyadicResponseMoment_eq_normalized {d ℓ : ℕ} (C : ModelConstants d)
+theorem dyadicResponseMoment_eq_normalized 
     (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d) :
     dyadicResponseMoment (ℓ := ℓ) θ j x =
       anchoredVectorMoment (dyadicNormalizedAnchor j x) (dyadicNormalizedDensity θ j x)
@@ -109,8 +109,7 @@ theorem dyadicResponseMoment_eq_normalized {d ℓ : ℕ} (C : ModelConstants d)
     θ.density z * (dyadicAnchoredFeature j x z γ * θ.regression z) ∂cubeVolume d) = _ at h
   change dyadicPilotScale d j * (∫ z in dyadicPilotCell j x,
     θ.density z * (dyadicAnchoredFeature j x z γ * θ.regression z) ∂cubeVolume d) = _
-  rw [show dyadicPilotScale d j = ((((2 : ℕ) ^ j : ℕ) : ℝ)) ^ d by simp [dyadicPilotScale]]
-  rw [h]
+  rw [show dyadicPilotScale d j = ((((2 : ℕ) ^ j : ℕ) : ℝ)) ^ d by simp [dyadicPilotScale], h]
   unfold anchoredVectorMoment dyadicNormalizedDensity dyadicCellAffine dyadicNormalizedAnchor
   apply integral_congr_ae
   exact Filter.Eventually.of_forall (fun w => by
@@ -118,7 +117,7 @@ theorem dyadicResponseMoment_eq_normalized {d ℓ : ℕ} (C : ModelConstants d)
     rw [dyadicAnchoredFeature_affine]
     ring)
 
-theorem dyadicConstantMoment_eq_normalized {d ℓ : ℕ} (C : ModelConstants d)
+theorem dyadicConstantMoment_eq_normalized 
     (θ : RegressionParameter d) (hθ : Admissible C θ) (j : ℕ) (x : Covariate d) :
     dyadicConstantMoment (ℓ := ℓ) θ j x =
       anchoredVectorMoment (dyadicNormalizedAnchor j x) (dyadicNormalizedDensity θ j x) (fun _ => 1) := by
@@ -131,8 +130,7 @@ theorem dyadicConstantMoment_eq_normalized {d ℓ : ℕ} (C : ModelConstants d)
     θ.density z * dyadicAnchoredFeature j x z γ ∂cubeVolume d) = _ at h
   change dyadicPilotScale d j * (∫ z in dyadicPilotCell j x,
     θ.density z * dyadicAnchoredFeature j x z γ ∂cubeVolume d) = _
-  rw [show dyadicPilotScale d j = ((((2 : ℕ) ^ j : ℕ) : ℝ)) ^ d by simp [dyadicPilotScale]]
-  rw [h]
+  rw [show dyadicPilotScale d j = ((((2 : ℕ) ^ j : ℕ) : ℝ)) ^ d by simp [dyadicPilotScale], h]
   unfold anchoredVectorMoment dyadicNormalizedDensity dyadicCellAffine dyadicNormalizedAnchor
   apply integral_congr_ae
   exact Filter.Eventually.of_forall (fun w => by

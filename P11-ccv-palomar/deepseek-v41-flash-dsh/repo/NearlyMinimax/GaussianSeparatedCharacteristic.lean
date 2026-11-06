@@ -12,21 +12,22 @@ noncomputable section
 open MeasureTheory ProbabilityTheory Set
 open scoped BigOperators ENNReal
 namespace NearlyMinimax
-set_option backward.isDefEq.respectTransparency false
-set_option maxHeartbeats 500000
 
 abbrev standardGaussianLine : Measure ℝ := gaussianReal 0 1
 
 abbrev standardGaussianPi (d : ℕ) : Measure (Covariate d) :=
   Measure.pi (fun _ => standardGaussianLine)
 
-theorem standardGaussian_complex_exp (z : ℂ) :
+section
+variable (z : ℂ)
+
+theorem standardGaussian_complex_exp :
     (∫ x : ℝ, Complex.exp (z * x) ∂standardGaussianLine) = Complex.exp (z ^ 2 / 2) := by
   have h := complexMGF_id_gaussianReal (μ := 0) (v := 1) z
   simpa only [complexMGF, id_eq, Complex.ofReal_zero, mul_zero, NNReal.coe_one,
     Complex.ofReal_one, one_mul, zero_add] using h
 
-theorem standardGaussian_complex_exp_hasDerivAt (z : ℂ) :
+theorem standardGaussian_complex_exp_hasDerivAt :
     HasDerivAt (fun z : ℂ => Complex.exp (z ^ 2 / 2))
       (z * Complex.exp (z ^ 2 / 2)) z := by
   have hp : HasDerivAt (fun z : ℂ => z ^ 2 / 2) z z := by
@@ -34,7 +35,7 @@ theorem standardGaussian_complex_exp_hasDerivAt (z : ℂ) :
       simp only [Pi.pow_apply, id_eq] <;> ring
   simpa only [mul_comm] using hp.cexp
 
-theorem standardGaussian_complex_first_moment (z : ℂ) :
+theorem standardGaussian_complex_first_moment :
     (∫ x : ℝ, (x : ℂ) * Complex.exp (z * x) ∂standardGaussianLine) =
       z * Complex.exp (z ^ 2 / 2) := by
   have hz : z.re ∈ interior (integrableExpSet id standardGaussianLine) := by
@@ -46,7 +47,7 @@ theorem standardGaussian_complex_first_moment (z : ℂ) :
   rw [he] at h
   exact h.unique (standardGaussian_complex_exp_hasDerivAt z)
 
-theorem standardGaussian_complex_second_moment (z : ℂ) :
+theorem standardGaussian_complex_second_moment :
     (∫ x : ℝ, (x : ℂ) ^ 2 * Complex.exp (z * x) ∂standardGaussianLine) =
       (1 + z ^ 2) * Complex.exp (z ^ 2 / 2) := by
   have hz : z.re ∈ interior (integrableExpSet id standardGaussianLine) := by
@@ -62,9 +63,13 @@ theorem standardGaussian_complex_second_moment (z : ℂ) :
   have hu := h.unique hd
   exact hu.trans (by simp only [id_eq]; ring)
 
-def gaussianPhase {d : ℕ} (w Z : Covariate d) : ℝ := ∑ l, w l * Z l
+end
 
-theorem standardGaussian_complex_characteristic {d : ℕ} (w : Covariate d) :
+variable {d : ℕ} (w : Covariate d) (a b : Fin d)
+
+def gaussianPhase (w Z : Covariate d) : ℝ := ∑ l, w l * Z l
+
+theorem standardGaussian_complex_characteristic :
     (∫ Z, Complex.exp ((gaussianPhase w Z : ℂ) * Complex.I) ∂standardGaussianPi d) =
       Complex.exp ((-(∑ l, (w l) ^ 2) / 2 : ℝ) : ℂ) := by
   have he : (fun Z : Covariate d => Complex.exp ((gaussianPhase w Z : ℂ) * Complex.I)) =
@@ -111,7 +116,10 @@ theorem standardGaussian_line_fourier_moment (p : ℕ) (hp : p ≤ 2) (t : ℝ) 
     rw [mul_pow, Complex.I_sq]
     ring
 
-theorem gaussian_monomial_characteristic_product {d : ℕ} (p : Fin d → ℕ)
+section
+variable (p : Fin d → ℕ)
+
+theorem gaussian_monomial_characteristic_product 
     (w Z : Covariate d) :
     (∏ l, (Z l : ℂ) ^ p l) * Complex.exp ((gaussianPhase w Z : ℂ) * Complex.I) =
       ∏ l, (Z l : ℂ) ^ p l * Complex.exp ((w l : ℂ) * Complex.I * Z l) := by
@@ -123,7 +131,7 @@ theorem gaussian_monomial_characteristic_product {d : ℕ} (p : Fin d → ℕ)
   congr 1
   ring
 
-theorem gaussian_monomial_characteristic_integrable {d : ℕ} (p : Fin d → ℕ)
+theorem gaussian_monomial_characteristic_integrable 
     (w : Covariate d) :
     Integrable (fun Z => (∏ l, (Z l : ℂ) ^ p l) *
       Complex.exp ((gaussianPhase w Z : ℂ) * Complex.I)) (standardGaussianPi d) := by
@@ -138,7 +146,7 @@ theorem gaussian_monomial_characteristic_integrable {d : ℕ} (p : Fin d → ℕ
   funext Z
   exact gaussian_monomial_characteristic_product p w Z
 
-theorem standardGaussian_monomial_characteristic {d : ℕ} (p : Fin d → ℕ)
+theorem standardGaussian_monomial_characteristic 
     (hp : ∀ l, p l ≤ 2) (w : Covariate d) :
     (∫ Z, (∏ l, (Z l : ℂ) ^ p l) * Complex.exp ((gaussianPhase w Z : ℂ) * Complex.I)
       ∂standardGaussianPi d) =
@@ -155,13 +163,18 @@ theorem standardGaussian_monomial_characteristic {d : ℕ} (p : Fin d → ℕ)
     Complex.ofReal_sum, neg_div]
   rw [Finset.sum_neg_distrib, Finset.sum_div]
 
-def gaussianCrossExponent {d : ℕ} (a b l : Fin d) : ℕ :=
+end
+
+def gaussianCrossExponent (a b l : Fin d) : ℕ :=
   (if l = a then 1 else 0) + (if l = b then 1 else 0)
 
-theorem gaussianCrossExponent_le_two {d : ℕ} (a b l : Fin d) :
+theorem gaussianCrossExponent_le_two (a b l : Fin d) :
     gaussianCrossExponent a b l ≤ 2 := by unfold gaussianCrossExponent; split_ifs <;> omega
 
-theorem gaussianCrossExponent_prod {d : ℕ} (a b : Fin d) (Z : Covariate d) :
+section
+variable (a b : Fin d)
+
+theorem gaussianCrossExponent_prod (Z : Covariate d) :
     (∏ l, (Z l : ℂ) ^ gaussianCrossExponent a b l) = (Z a : ℂ) * Z b := by
   classical
   have he (a : Fin d) : (∏ l, (Z l : ℂ) ^ (if l = a then 1 else 0)) = Z a := by
@@ -173,7 +186,7 @@ theorem gaussianCrossExponent_prod {d : ℕ} (a b : Fin d) (Z : Covariate d) :
     simp_rw [hh, Fintype.prod_ite_eq']
   simp only [gaussianCrossExponent, pow_add, Finset.prod_mul_distrib, he]
 
-theorem gaussianCrossExponent_factor_prod {d : ℕ} (a b : Fin d) (w : Covariate d) :
+theorem gaussianCrossExponent_factor_prod (w : Covariate d) :
     (∏ l, gaussianFourierMomentFactor (gaussianCrossExponent a b l) (w l)) =
       (if a = b then (1 : ℂ) else 0) - (w a : ℂ) * w b := by
   classical
@@ -201,7 +214,9 @@ theorem gaussianCrossExponent_factor_prod {d : ℕ} (a b : Fin d) (w : Covariate
       _ = (w a : ℂ) * w b * Complex.I ^ 2 := by ring
       _ = _ := by rw [Complex.I_sq]; ring
 
-theorem standardGaussian_cross_complex_characteristic {d : ℕ} (w : Covariate d) (a b : Fin d) :
+end
+
+theorem standardGaussian_cross_complex_characteristic :
     (∫ Z, ((Z a : ℂ) * Z b) * Complex.exp ((gaussianPhase w Z : ℂ) * Complex.I)
       ∂standardGaussianPi d) =
       ((if a = b then (1 : ℂ) else 0) - (w a : ℂ) * w b) *
@@ -210,13 +225,13 @@ theorem standardGaussian_cross_complex_characteristic {d : ℕ} (w : Covariate d
     (gaussianCrossExponent_le_two a b) w
   simpa only [gaussianCrossExponent_prod, gaussianCrossExponent_factor_prod] using h
 
-theorem gaussian_cross_complex_characteristic_integrable {d : ℕ} (w : Covariate d) (a b : Fin d) :
+theorem gaussian_cross_complex_characteristic_integrable :
     Integrable (fun Z => ((Z a : ℂ) * Z b) *
       Complex.exp ((gaussianPhase w Z : ℂ) * Complex.I)) (standardGaussianPi d) := by
   simpa only [gaussianCrossExponent_prod] using
     gaussian_monomial_characteristic_integrable (gaussianCrossExponent a b) w
 
-theorem gaussian_hermite_complex_characteristic_integrable {d : ℕ} (w : Covariate d) (a b : Fin d) :
+theorem gaussian_hermite_complex_characteristic_integrable :
     Integrable (fun Z => ((if a = b then (1 : ℂ) else 0) - (Z a : ℂ) * Z b) *
       Complex.exp ((gaussianPhase w Z : ℂ) * Complex.I)) (standardGaussianPi d) := by
   have hi := gaussian_monomial_characteristic_integrable (fun _ : Fin d => 0) w
@@ -227,7 +242,7 @@ theorem gaussian_hermite_complex_characteristic_integrable {d : ℕ} (w : Covari
   funext Z
   exact sub_mul _ _ _
 
-theorem standardGaussian_hermite_complex_characteristic {d : ℕ} (w : Covariate d) (a b : Fin d) :
+theorem standardGaussian_hermite_complex_characteristic :
     (∫ Z, ((if a = b then (1 : ℂ) else 0) - (Z a : ℂ) * Z b) *
       Complex.exp ((gaussianPhase w Z : ℂ) * Complex.I) ∂standardGaussianPi d) =
       ((w a : ℂ) * w b) * Complex.exp ((-(∑ l, (w l) ^ 2) / 2 : ℝ) : ℂ) := by
@@ -241,7 +256,7 @@ theorem standardGaussian_hermite_complex_characteristic {d : ℕ} (w : Covariate
 
 /-- The genuine Gaussian second characteristic moment needed in the paper's
 bounded separated affine-kernel representation. -/
-theorem standardGaussian_hermite_cos_characteristic {d : ℕ} (w : Covariate d) (a b : Fin d) :
+theorem standardGaussian_hermite_cos_characteristic :
     (∫ Z, ((if a = b then (1 : ℝ) else 0) - Z a * Z b) *
       Real.cos (gaussianPhase w Z) ∂standardGaussianPi d) =
       (w a * w b) * Real.exp (-(∑ l, (w l) ^ 2) / 2) := by
