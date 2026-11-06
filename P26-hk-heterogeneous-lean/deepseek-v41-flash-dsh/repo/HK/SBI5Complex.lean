@@ -33,17 +33,12 @@ theorem sbi5Offset_succ (ρ : ℝ) (t : ℕ) :
   unfold sbi5Offset
   exact Function.iterate_succ_apply' _ _ _
 
-theorem sbi5_root_exists_internal : ∃ ρ : ℝ, 57 / 100 < ρ ∧ ρ < 29 / 50 ∧
-    60 * ρ ^ 3 - 47 * ρ ^ 2 + 9 * ρ - 1 = 0 := by
-  let p : ℝ → ℝ := fun ρ => 60 * ρ ^ 3 - 47 * ρ ^ 2 + 9 * ρ - 1
+chall sbi5_root_exists "let p : ℝ → ℝ := fun ρ => 60 * ρ ^ 3 - 47 * ρ ^ 2 + 9 * ρ - 1
   have hc : Continuous p := by dsimp [p]; fun_prop
   have hlo : p (57 / 100) < 0 := by norm_num [p]
   have hhi : 0 < p (29 / 50) := by norm_num [p]
-  obtain ⟨ρ, hρ, hp⟩ := intermediate_value_Icc (by norm_num : (57 / 100 : ℝ) ≤ 29 / 50)
-    hc.continuousOn ⟨hlo.le, hhi.le⟩
-  refine ⟨ρ, ?_, ?_, hp⟩
-  · exact lt_of_le_of_ne hρ.1 (by intro he; subst ρ; linarith)
-  · exact lt_of_le_of_ne hρ.2 (by intro he; subst ρ; linarith)
+  obtain ⟨ρ, hρ, hp⟩ := intermediate_value_Icc (by norm_num : (57 / 100 : ℝ) ≤ 29 / 50) hc.continuousOn ⟨hlo.le, hhi.le⟩
+  exact ⟨ρ, lt_of_le_of_ne hρ.1 (by intro he; subst ρ; linarith), lt_of_le_of_ne hρ.2 (by intro he; subst ρ; linarith), hp⟩"
 
 theorem sbi5_coefficients (ρ : ℝ) (hlo : 57 / 100 < ρ) (hhi : ρ < 29 / 50) :
     0 < sbi5Alpha ρ ∧ sbi5Alpha ρ < 1 ∧ 0 < sbi5Beta ρ ∧
@@ -108,21 +103,11 @@ theorem sbi5_step (z : Fin 3 → ℝ) (hz : ∀ i, |z i| ≤ 1 / 3) :
   rw [step_apply, sbi5_table z hz]
   fin_cases i <;> simp [Finset.sum_insert, sbi5_lim, sbi5Lift, sbi5LinearStep] <;> ring
 
-theorem sbi5_trajectory_internal (ρ : ℝ) (hlo : 57 / 100 < ρ) (hhi : ρ < 29 / 50)
-    (t : ℕ) : traj .sbi sbi5_r (sbi5_x0 ρ) t = sbi5_lim + sbi5Lift (sbi5Offset ρ t) := by
-  induction t with
+chall sbi5_trajectory "induction t with
   | zero => rfl
-  | succ t ih =>
-    have hs : traj .sbi sbi5_r (sbi5_x0 ρ) (t + 1) =
-        step .sbi sbi5_r (traj .sbi sbi5_r (sbi5_x0 ρ) t) := by
-      simp only [traj]
-      exact Function.iterate_succ_apply' _ _ _
-    rw [hs, ih, sbi5_step _ (sbi5_offset_small ρ hlo hhi t), sbi5Offset_succ]
+  | succ t ih => rw [traj_succ, ih, sbi5_step _ (sbi5_offset_small ρ hlo hhi t), sbi5Offset_succ]"
 
-theorem sbi5_neighbors_internal (ρ : ℝ) (hlo : 57 / 100 < ρ) (hhi : ρ < 29 / 50)
-    (t : ℕ) : neighbors .sbi sbi5_r (traj .sbi sbi5_r (sbi5_x0 ρ) t) =
-      ![{0}, {0, 1, 3}, {0, 1, 2, 3, 4}, {0, 2, 3, 4}, {4}] := by
-  rw [sbi5_trajectory_internal ρ hlo hhi, sbi5_table _ (sbi5_offset_small ρ hlo hhi t)]
+chall sbi5_neighbors "rw [sbi5_trajectory_internal ρ hlo hhi, sbi5_table _ (sbi5_offset_small ρ hlo hhi t)]"
 
 theorem sbi5_linear (a b : ℝ) (u v : Fin 3 → ℝ) :
     sbi5LinearStep (fun i => a * u i - b * v i) =
@@ -136,9 +121,7 @@ theorem sbi5_offset_recurrence (ρ : ℝ)
       sbi5Alpha ρ * sbi5Offset ρ (t + 1) i - sbi5Beta ρ * sbi5Offset ρ t i := by
   induction t with
   | zero =>
-    change sbi5LinearStep (sbi5LinearStep ![1 / 3 - ρ, 1 / 5, 0]) =
-      fun i => sbi5Alpha ρ * sbi5LinearStep ![1 / 3 - ρ, 1 / 5, 0] i -
-        sbi5Beta ρ * (![1 / 3 - ρ, 1 / 5, 0] : Fin 3 → ℝ) i
+    simp only [sbi5Offset_zero, sbi5Offset_succ]
     funext i
     fin_cases i <;> simp [sbi5LinearStep, sbi5Alpha, sbi5Beta] <;> nlinarith [hp]
   | succ t ih =>
@@ -208,15 +191,10 @@ theorem sbi5_offset_five_window (ρ : ℝ) (hlo : 57 / 100 < ρ) (hhi : ρ < 29 
         mul_nonneg_of_nonpos_of_nonpos hd.le h0]
     exact hnz hz
 
-theorem sbi5_tendsto_internal (ρ : ℝ) (hlo : 57 / 100 < ρ) (hhi : ρ < 29 / 50) :
-    Tendsto (traj .sbi sbi5_r (sbi5_x0 ρ)) atTop (𝓝 sbi5_lim) := by
-  have hpow : Tendsto (fun t : ℕ => (2 / 3 : ℝ) ^ t / 3) atTop (𝓝 0) := by
-    simpa using (tendsto_pow_atTop_nhds_zero_of_abs_lt_one
-      (by norm_num : |(2 / 3 : ℝ)| < 1)).div_const 3
-  have hz : ∀ i : Fin 3, Tendsto (fun t => sbi5Offset ρ t i) atTop (𝓝 0) := by
-    intro i
-    exact squeeze_zero_norm (fun t => by
-      simpa only [Real.norm_eq_abs] using sbi5_offset_bound ρ hlo hhi t i) hpow
+chall sbi5_tendsto "have hpow : Tendsto (fun t : ℕ => (2 / 3 : ℝ) ^ t / 3) atTop (𝓝 0) := by
+    simpa using (tendsto_pow_atTop_nhds_zero_of_abs_lt_one (by norm_num : |(2 / 3 : ℝ)| < 1)).div_const 3
+  have hz : ∀ i : Fin 3, Tendsto (fun t => sbi5Offset ρ t i) atTop (𝓝 0) := fun i =>
+    squeeze_zero_norm (fun t => by simpa only [Real.norm_eq_abs] using sbi5_offset_bound ρ hlo hhi t i) hpow
   apply tendsto_pi_nhds.2
   intro i
   fin_cases i
@@ -224,14 +202,11 @@ theorem sbi5_tendsto_internal (ρ : ℝ) (hlo : 57 / 100 < ρ) (hhi : ρ < 29 / 
   · simpa [sbi5_trajectory_internal ρ hlo hhi, sbi5_lim, sbi5Lift] using (hz 0).const_add 10
   · simpa [sbi5_trajectory_internal ρ hlo hhi, sbi5_lim, sbi5Lift] using (hz 1).const_add 18
   · simpa [sbi5_trajectory_internal ρ hlo hhi, sbi5_lim, sbi5Lift] using (hz 2).const_add 20
-  · simp [sbi5_trajectory_internal ρ hlo hhi, sbi5_lim, sbi5Lift]
+  · simp [sbi5_trajectory_internal ρ hlo hhi, sbi5_lim, sbi5Lift]"
 
-theorem sbi5_digraph_constant_internal (ρ : ℝ) (hlo : 57 / 100 < ρ) (hhi : ρ < 29 / 50)
-    (t : ℕ) : proximityDigraph .sbi sbi5_r (traj .sbi sbi5_r (sbi5_x0 ρ) t) =
-      proximityDigraph .sbi sbi5_r (sbi5_x0 ρ) := by
-  have h0 := sbi5_neighbors_internal ρ hlo hhi 0
+chall sbi5_digraph_constant "have h0 := sbi5_neighbors_internal ρ hlo hhi 0
   change neighbors .sbi sbi5_r (sbi5_x0 ρ) = _ at h0
-  simp only [proximityDigraph, sbi5_neighbors_internal ρ hlo hhi, h0]
+  simp only [proximityDigraph, sbi5_neighbors_internal ρ hlo hhi, h0]"
 
 /-- The five-window property for the moving agents, indexed by `Fin 3` (`i` is agent `i + 1`). -/
 theorem sbi5_oscillates_fin3 (ρ : ℝ)
@@ -250,41 +225,26 @@ theorem sbi5_oscillates_fin3 (ρ : ℝ)
     rw [sbi5_trajectory_internal ρ hlo hhi]
     fin_cases i <;> simpa [sbi5_lim, sbi5Lift] using hl
 
-theorem sbi5_oscillates_every_five_internal (ρ : ℝ)
-    (hlo : 57 / 100 < ρ) (hhi : ρ < 29 / 50)
-    (hp : 60 * ρ ^ 3 - 47 * ρ ^ 2 + 9 * ρ - 1 = 0) (t : ℕ) (i : Fin 5)
-    (hi : i ∈ ({1, 2, 3} : Finset (Fin 5))) :
-    (∃ k, t ≤ k ∧ k ≤ t + 4 ∧ traj .sbi sbi5_r (sbi5_x0 ρ) k i < sbi5_lim i) ∧
-    (∃ k, t ≤ k ∧ k ≤ t + 4 ∧ sbi5_lim i < traj .sbi sbi5_r (sbi5_x0 ρ) k i) := by
-  simp only [Finset.mem_insert, Finset.mem_singleton] at hi
+chall sbi5_oscillates_every_five "simp only [Finset.mem_insert, Finset.mem_singleton] at hi
   rcases hi with rfl | rfl | rfl
   · exact sbi5_oscillates_fin3 ρ hlo hhi hp t 0
   · exact sbi5_oscillates_fin3 ρ hlo hhi hp t 1
-  · exact sbi5_oscillates_fin3 ρ hlo hhi hp t 2
+  · exact sbi5_oscillates_fin3 ρ hlo hhi hp t 2"
 
-theorem sbi5_not_fixedFrom_internal (ρ : ℝ) (hlo : 57 / 100 < ρ) (hhi : ρ < 29 / 50)
-    (hp : 60 * ρ ^ 3 - 47 * ρ ^ 2 + 9 * ρ - 1 = 0) (τ : ℕ) :
-    ¬ FixedFrom (traj .sbi sbi5_r (sbi5_x0 ρ)) τ := by
-  intro hf
-  obtain ⟨⟨k, hk0, -, hk⟩, ⟨l, hl0, -, hl⟩⟩ :=
-    sbi5_oscillates_every_five_internal ρ hlo hhi hp τ 1 (by simp)
+chall sbi5_not_fixedFrom "intro hf
+  obtain ⟨⟨k, hk0, -, hk⟩, ⟨l, hl0, -, hl⟩⟩ := sbi5_oscillates_every_five_internal ρ hlo hhi hp τ 1 (by simp)
   have he1 := congrFun (hf k hk0) (1 : Fin 5)
   have he2 := congrFun (hf l hl0) (1 : Fin 5)
-  linarith
+  linarith"
 
-theorem sbi5_not_pseudoStableAfter_internal (ρ : ℝ)
-    (hlo : 57 / 100 < ρ) (hhi : ρ < 29 / 50)
-    (hp : 60 * ρ ^ 3 - 47 * ρ ^ 2 + 9 * ρ - 1 = 0) (xinf : Fin 5 → ℝ) (τ : ℕ) :
-    ¬ PseudoStableAfter (traj .sbi sbi5_r (sbi5_x0 ρ)) xinf τ := by
-  intro hps
+chall sbi5_not_pseudoStableAfter "intro hps
   have he : xinf = sbi5_lim := tendsto_nhds_unique hps.1 (sbi5_tendsto_internal ρ hlo hhi)
   rw [he] at hps
-  obtain ⟨⟨k, hk0, -, hk⟩, ⟨l, hl0, -, hl⟩⟩ :=
-    sbi5_oscillates_every_five_internal ρ hlo hhi hp τ 1 (by simp)
+  obtain ⟨⟨k, hk0, -, hk⟩, ⟨l, hl0, -, hl⟩⟩ := sbi5_oscillates_every_five_internal ρ hlo hhi hp τ 1 (by simp)
   rcases pseudoStableAfter_coordinate_side _ _ _ hps (1 : Fin 5) with hf | hbelow | habove
   · linarith [hf k hk0]
   · linarith [hbelow l hl0]
-  · linarith [habove k hk0]
+  · linarith [habove k hk0]"
 
 theorem not_conjecture23_sbi_five_internal : ¬ Conjecture23ForAgents .sbi 5 := by
   obtain ⟨ρ, hlo, hhi, hp⟩ := sbi5_root_exists_internal

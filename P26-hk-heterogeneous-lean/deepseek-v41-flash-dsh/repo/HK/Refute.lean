@@ -6,16 +6,18 @@ public import HK.SBC6
 public import HK.SBI7b
 public import HK.SBC5
 public import HK.SBI6
+public import HK.SBI5Complex
 public import HK.Generic
 
 /-!
 # The refutations, assembled; the conjunctions; the sharpness of Lemma 4.8's condition
 
 Conjecture 2.2 and Conjecture 2.3 fail in each model by the two alternating systems; Theorem 6.4(iv)
-fails in each model by the two constant-digraph systems of the source (and Conjecture 2.3 and Theorem
-6.4(iv) at five SBC and six SBI agents by the smaller systems, in `SBC5.lean` and `SBI6.lean`). The literal reading of Theorem 6.4(iv) implies the reading admitting fixed states, so it fails
-too. The equi-topology distance of the limit vanishes at the alternating agents of the two alternating
-systems and is positive at every agent of the two constant-digraph systems of the source.
+fails in each model by the two constant-digraph systems of the source, and at five SBC and six SBI
+agents by the smaller systems. The literal reading of Theorem 6.4(iv) implies the reading admitting
+fixed states, so it fails too. The equi-topology distance of the limit vanishes at the alternating
+agents of the two alternating systems and is positive at every agent of the two constant-digraph
+systems of the source.
 -/
 
 @[expose] public section
@@ -24,114 +26,62 @@ namespace HK
 
 open Filter Topology
 
-/-- Conjecture 2.2 fails for SBC. -/
-theorem not_conjecture22_sbc_internal : ¬ Conjecture22For .sbc := by
-  intro h
-  obtain ⟨τ, hτ⟩ := h 7 sbc7_r sbc7_x0 sbc7_r_pos
+chall not_conjecture22_sbc_seven "  intro h
+  obtain ⟨τ, hτ⟩ := h sbc7_r sbc7_x0 sbc7_r_pos
   obtain ⟨t, ht, hne⟩ := sbc7_digraph_not_eventually_constant_internal τ
-  exact hne (hτ t ht)
+  exact hne (hτ t ht)"
 
-/-- Conjecture 2.3 fails for SBC. -/
-theorem not_conjecture23_sbc_internal : ¬ Conjecture23For .sbc := by
-  intro h
-  obtain ⟨τ, hf | ⟨xinf, hps⟩⟩ := h 7 sbc7_r sbc7_x0 sbc7_r_pos
-  · exact sbc7_not_fixedFrom τ hf
-  · exact sbc7_not_pseudoStableAfter xinf τ hps
-
-theorem not_conjecture22_sbi_internal : ¬ Conjecture22For .sbi := by
-  intro h
-  obtain ⟨τ, hτ⟩ := h 7 sbi7_r sbi7_x0 sbi7_r_pos
+chall not_conjecture22_sbi_seven "  intro h
+  obtain ⟨τ, hτ⟩ := h sbi7_r sbi7_x0 sbi7_r_pos
   obtain ⟨t, ht, hne⟩ := sbi7_digraph_not_eventually_constant_internal τ
-  exact hne (hτ t ht)
+  exact hne (hτ t ht)"
 
-theorem not_conjecture23_sbi_internal : ¬ Conjecture23For .sbi := by
-  intro h
-  obtain ⟨τ, hf | ⟨xinf, hps⟩⟩ := h 7 sbi7_r sbi7_x0 sbi7_r_pos
-  · exact sbi7_not_fixedFrom τ hf
-  · exact sbi7_not_pseudoStableAfter xinf τ hps
+theorem not_conjecture22_sbc_internal : ¬ Conjecture22For .sbc := fun h => not_conjecture22_sbc_seven_internal (h 7)
 
-theorem not_theorem64iv_sbc_internal : ¬ Theorem64ivFor .sbc := by
-  intro h
-  have hq : (-1 / 6 : ℝ) < 0 := by norm_num
-  have ha : Tendsto (fun t : ℕ => (-1 / 6 : ℝ) ^ t * 1) atTop (𝓝 0) := by
-    simpa using tendsto_pow_atTop_nhds_zero_of_abs_lt_one
-      (show |(-1 / 6 : ℝ)| < 1 by rw [abs_of_neg hq]; norm_num)
-  obtain ⟨t₂, -, hf | ⟨xinf, hps⟩⟩ := h 6 sbc6_r sbc6_x0 sbc6_r_pos 0
-    (fun t _ => by simp only [proximityDigraph, sbc6_neighbors_internal])
-  · exact not_fixedFrom_of_closed_form _ _ sbc6_v _ sbc6_closed_form_internal'
-      (alternating _ _ hq one_ne_zero) 1 (by simp [sbc6_v]) t₂ hf
-  · exact not_pseudoStable_of_closed_form _ _ sbc6_v _ ha sbc6_closed_form_internal'
-      (alternating _ _ hq one_ne_zero) xinf t₂ hps
-
-theorem not_theorem64iv_sbi_internal : ¬ Theorem64ivFor .sbi := by
-  intro h
-  have ha : Tendsto (fun t : ℕ => sbiRate ^ t * 1) atTop (𝓝 0) := by
-    simpa using tendsto_pow_atTop_nhds_zero_of_abs_lt_one sbiRate_abs_lt_one
-  obtain ⟨t₂, -, hf | ⟨xinf, hps⟩⟩ := h 7 sbi7b_r sbi7b_x0 sbi7b_r_pos 0
-    (fun t _ => by simp only [proximityDigraph, sbi7b_neighbors_internal])
-  · exact not_fixedFrom_of_closed_form _ _ sbi_v _ sbi7b_closed_form_internal'
-      (alternating _ _ sbiRate_neg one_ne_zero) 1 (by simp [sbi_v]) t₂ hf
-  · exact not_pseudoStable_of_closed_form _ _ sbi_v _ ha sbi7b_closed_form_internal'
-      (alternating _ _ sbiRate_neg one_ne_zero) xinf t₂ hps
+theorem not_conjecture22_sbi_internal : ¬ Conjecture22For .sbi := fun h => not_conjecture22_sbi_seven_internal (h 7)
 
 theorem not_conjecture22_internal : ¬ Conjecture22 := fun h => not_conjecture22_sbc_internal (h .sbc)
 
+theorem not_conjecture23_sbc_internal : ¬ Conjecture23For .sbc := fun h => not_conjecture23_sbc_five_internal (h 5)
+
+theorem not_conjecture23_sbi_internal : ¬ Conjecture23For .sbi := fun h => not_conjecture23_sbi_six_internal (h 6)
+
 theorem not_conjecture23_internal : ¬ Conjecture23 := fun h => not_conjecture23_sbc_internal (h .sbc)
+
+chall not_theorem64iv_sbc "  intro h
+  obtain ⟨t₂, -, hf | ⟨xinf, hps⟩⟩ := h 6 sbc6_r sbc6_x0 sbc6_r_pos 0
+    (fun t _ => by simp only [proximityDigraph, sbc6_neighbors_internal])
+  · exact sbc6_not_fixedFrom t₂ hf
+  · exact sbc6_not_pseudoStableAfter xinf t₂ hps"
+
+chall not_theorem64iv_sbi "  intro h
+  obtain ⟨t₂, -, hf | ⟨xinf, hps⟩⟩ := h 7 sbi7b_r sbi7b_x0 sbi7b_r_pos 0
+    (fun t _ => by simp only [proximityDigraph, sbi7b_neighbors_internal])
+  · exact sbi7b_not_fixedFrom t₂ hf
+  · exact sbi7b_not_pseudoStableAfter xinf t₂ hps"
 
 theorem not_theorem64iv_internal : ¬ Theorem64iv := fun h => not_theorem64iv_sbc_internal (h .sbc)
 
-theorem not_theorem64iv_literal_sbc_internal : ¬ Theorem64ivLiteralFor .sbc := by
-  intro h
+chall not_theorem64iv_literal_sbc "  intro h
   apply not_theorem64iv_sbc_internal
   intro n r x₀ hr τ hτ
   obtain ⟨t₂, ht₂, hps⟩ := h n r x₀ hr τ hτ
-  exact ⟨t₂, ht₂, Or.inr hps⟩
+  exact ⟨t₂, ht₂, Or.inr hps⟩"
 
-theorem not_theorem64iv_literal_sbi_internal : ¬ Theorem64ivLiteralFor .sbi := by
-  intro h
+chall not_theorem64iv_literal_sbi "  intro h
   apply not_theorem64iv_sbi_internal
   intro n r x₀ hr τ hτ
   obtain ⟨t₂, ht₂, hps⟩ := h n r x₀ hr τ hτ
-  exact ⟨t₂, ht₂, Or.inr hps⟩
+  exact ⟨t₂, ht₂, Or.inr hps⟩"
 
 theorem not_theorem64iv_literal_internal : ¬ Theorem64ivLiteral :=
   fun h => not_theorem64iv_literal_sbc_internal (h .sbc)
 
-theorem tendsto_limits_internal :
-    Tendsto (traj .sbc sbc7_r sbc7_x0) atTop (𝓝 sbc7_lim) ∧
-    Tendsto (traj .sbi sbi7_r sbi7_x0) atTop (𝓝 sbi7_lim) ∧
-    Tendsto (traj .sbc sbc6_r sbc6_x0) atTop (𝓝 sbc6_lim) ∧
-    Tendsto (traj .sbi sbi7b_r sbi7b_x0) atTop (𝓝 sbi7b_lim) := by
-  have hq : |(-1 / 6 : ℝ)| < 1 := by rw [abs_of_neg (by norm_num)]; norm_num
-  refine ⟨sbc7_tendsto, sbi7_tendsto, ?_, ?_⟩
-  · exact tendsto_of_closed_form _ _ sbc6_v _
-      (by simpa using tendsto_pow_atTop_nhds_zero_of_abs_lt_one hq) sbc6_closed_form_internal'
-  · exact tendsto_of_closed_form _ _ sbi_v _
-      (by simpa using tendsto_pow_atTop_nhds_zero_of_abs_lt_one sbiRate_abs_lt_one)
-      sbi7b_closed_form_internal'
+chall tendsto_limits "exact ⟨tendsto_of_geom1 _ sbc7_lim sbc7_v (-1 / 6) sbc7_rate.1 sbc7_rate.2 sbc7_closed_form_internal, tendsto_of_geom _ sbi7_lim sbi_v (fun t => sbiRate ^ t / 2) sbi7_rate_tendsto sbi7_closed_form_internal, tendsto_of_geom1 _ sbc6_lim sbc6_v (-1 / 6) sbc6_rate.1 sbc6_rate.2 sbc6_closed_form_internal, tendsto_of_geom1 _ sbi7b_lim sbi_v sbiRate sbiRate_mem.1 sbiRate_mem.2 sbi7b_closed_form_internal⟩"
 
-theorem not_fixedFrom_internal (τ : ℕ) :
-    ¬ FixedFrom (traj .sbc sbc7_r sbc7_x0) τ ∧ ¬ FixedFrom (traj .sbi sbi7_r sbi7_x0) τ ∧
-    ¬ FixedFrom (traj .sbc sbc6_r sbc6_x0) τ ∧ ¬ FixedFrom (traj .sbi sbi7b_r sbi7b_x0) τ :=
-  ⟨sbc7_not_fixedFrom τ, sbi7_not_fixedFrom τ,
-    not_fixedFrom_of_closed_form _ _ sbc6_v _ sbc6_closed_form_internal'
-      (alternating _ _ (by norm_num) one_ne_zero) 1 (by simp [sbc6_v]) τ,
-    not_fixedFrom_of_closed_form _ _ sbi_v _ sbi7b_closed_form_internal'
-      (alternating _ _ sbiRate_neg one_ne_zero) 1 (by simp [sbi_v]) τ⟩
+chall not_fixedFrom "exact ⟨sbc7_not_fixedFrom τ, sbi7_not_fixedFrom τ, sbc6_not_fixedFrom τ, sbi7b_not_fixedFrom τ⟩"
 
-theorem not_pseudoStableAfter_internal (xinf : Fin 7 → ℝ) (yinf : Fin 6 → ℝ) (τ : ℕ) :
-    ¬ PseudoStableAfter (traj .sbc sbc7_r sbc7_x0) xinf τ ∧
-    ¬ PseudoStableAfter (traj .sbi sbi7_r sbi7_x0) xinf τ ∧
-    ¬ PseudoStableAfter (traj .sbc sbc6_r sbc6_x0) yinf τ ∧
-    ¬ PseudoStableAfter (traj .sbi sbi7b_r sbi7b_x0) xinf τ := by
-  have hq : |(-1 / 6 : ℝ)| < 1 := by rw [abs_of_neg (by norm_num)]; norm_num
-  refine ⟨sbc7_not_pseudoStableAfter xinf τ, sbi7_not_pseudoStableAfter xinf τ, ?_, ?_⟩
-  · exact not_pseudoStable_of_closed_form _ _ sbc6_v _
-      (by simpa using tendsto_pow_atTop_nhds_zero_of_abs_lt_one hq) sbc6_closed_form_internal'
-      (alternating _ _ (by norm_num) one_ne_zero) yinf τ
-  · exact not_pseudoStable_of_closed_form _ _ sbi_v _
-      (by simpa using tendsto_pow_atTop_nhds_zero_of_abs_lt_one sbiRate_abs_lt_one)
-      sbi7b_closed_form_internal' (alternating _ _ sbiRate_neg one_ne_zero) xinf τ
+chall not_pseudoStableAfter "exact ⟨sbc7_not_pseudoStableAfter xinf τ, sbi7_not_pseudoStableAfter xinf τ, sbc6_not_pseudoStableAfter yinf τ, sbi7b_not_pseudoStableAfter xinf τ⟩"
 
 /-- A positive lower bound `c` on every term of the equi-topology set (with some `j ≠ i`) makes the
 equi-topology distance positive. -/
@@ -177,17 +127,11 @@ theorem ref_sbi7b_etd_pos (i : Fin 7) : 0 < equiTopologyDistance sbi7b_r sbi7b_l
 theorem alternating_fvct_internal (t : ℕ) :
     fvct .sbc sbc7_r (traj .sbc sbc7_r sbc7_x0 t) = sbc7_lim ∧
     fvct .sbi sbi7_r (traj .sbi sbi7_r sbi7_x0 t) = sbi7_lim :=
-  ⟨sbc7_fvct t, sbi7_fvct t⟩
+  ⟨sbc7_fvct t, sbi7_fvct_internal t⟩
 
-theorem equiTopologyDistance_pos_internal :
-    (∀ i, 0 < equiTopologyDistance sbc6_r sbc6_lim i) ∧
-    (∀ i, 0 < equiTopologyDistance sbi7b_r sbi7b_lim i) :=
-  ⟨ref_sbc6_etd_pos, ref_sbi7b_etd_pos⟩
+chall equiTopologyDistance_pos "exact ⟨ref_sbc6_etd_pos, ref_sbi7b_etd_pos⟩"
 
-theorem equiTopologyDistance_eq_zero_internal :
-    (∀ i ∈ ({2, 3, 4} : Finset (Fin 7)), equiTopologyDistance sbc7_r sbc7_lim i = 0) ∧
-    (∀ i ∈ ({1, 3, 5} : Finset (Fin 7)), equiTopologyDistance sbi7_r sbi7_lim i = 0) := by
-  constructor
+chall equiTopologyDistance_eq_zero "  constructor
   · intro i hi
     simp only [Finset.mem_insert, Finset.mem_singleton] at hi
     rcases hi with rfl | rfl | rfl
@@ -202,39 +146,14 @@ theorem equiTopologyDistance_eq_zero_internal :
     · exact equiTopologyDistance_eq_zero_of _ _ 1 3 (by decide) (by norm_num [sbi7_r, sbi7_lim])
     · exact ref_equiTopologyDistance_eq_zero_of' _ _ 3 1 (by decide)
         (by norm_num [sbi7_r, sbi7_lim])
-    · exact equiTopologyDistance_eq_zero_of _ _ 5 3 (by decide) (by norm_num [sbi7_r, sbi7_lim])
+    · exact equiTopologyDistance_eq_zero_of _ _ 5 3 (by decide) (by norm_num [sbi7_r, sbi7_lim])"
 
-theorem not_conjecture22_sbc_seven_internal : ¬ Conjecture22ForAgents .sbc 7 := by
-  intro h
-  obtain ⟨τ, hτ⟩ := h sbc7_r sbc7_x0 sbc7_r_pos
-  obtain ⟨t, ht, hne⟩ := sbc7_digraph_not_eventually_constant_internal τ
-  exact hne (hτ t ht)
+chall small_tendsto "exact ⟨sbc5_tendsto, sbi6_tendsto⟩"
 
-theorem not_conjecture22_sbi_seven_internal : ¬ Conjecture22ForAgents .sbi 7 := by
-  intro h
-  obtain ⟨τ, hτ⟩ := h sbi7_r sbi7_x0 sbi7_r_pos
-  obtain ⟨t, ht, hne⟩ := sbi7_digraph_not_eventually_constant_internal τ
-  exact hne (hτ t ht)
+chall small_digraph_constant "exact ⟨sbc5_digraph_constant t, sbi6_digraph_constant t⟩"
 
-theorem small_tendsto_internal :
-    Tendsto (traj .sbc sbc5_r sbc5_x0) atTop (𝓝 sbc5_lim) ∧
-    Tendsto (traj .sbi sbi6_r sbi6_x0) atTop (𝓝 sbi6_lim) :=
-  ⟨sbc5_tendsto, sbi6_tendsto⟩
+chall small_not_fixedFrom "exact ⟨sbc5_not_fixedFrom τ, sbi6_not_fixedFrom τ⟩"
 
-theorem small_digraph_constant_internal (t : ℕ) :
-    proximityDigraph .sbc sbc5_r (traj .sbc sbc5_r sbc5_x0 t) =
-      proximityDigraph .sbc sbc5_r sbc5_x0 ∧
-    proximityDigraph .sbi sbi6_r (traj .sbi sbi6_r sbi6_x0 t) =
-      proximityDigraph .sbi sbi6_r sbi6_x0 :=
-  ⟨sbc5_digraph_constant t, sbi6_digraph_constant t⟩
-
-theorem small_not_fixedFrom_internal (τ : ℕ) :
-    ¬ FixedFrom (traj .sbc sbc5_r sbc5_x0) τ ∧ ¬ FixedFrom (traj .sbi sbi6_r sbi6_x0) τ :=
-  ⟨sbc5_not_fixedFrom τ, sbi6_not_fixedFrom τ⟩
-
-theorem small_not_pseudoStableAfter_internal (xinf : Fin 5 → ℝ) (yinf : Fin 6 → ℝ) (τ : ℕ) :
-    ¬ PseudoStableAfter (traj .sbc sbc5_r sbc5_x0) xinf τ ∧
-    ¬ PseudoStableAfter (traj .sbi sbi6_r sbi6_x0) yinf τ :=
-  ⟨sbc5_not_pseudoStableAfter xinf τ, sbi6_not_pseudoStableAfter yinf τ⟩
+chall small_not_pseudoStableAfter "exact ⟨sbc5_not_pseudoStableAfter xinf τ, sbi6_not_pseudoStableAfter yinf τ⟩"
 
 end HK

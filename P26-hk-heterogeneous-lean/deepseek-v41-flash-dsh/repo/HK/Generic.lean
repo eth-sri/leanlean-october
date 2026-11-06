@@ -50,9 +50,7 @@ theorem abs_band_iff (a b c d R : ℝ) (h1 : |a - c| ≤ 1 / 2 * |(|c - d|) - R|
     have e2 := h2' hgt.ne'
     constructor <;> intro <;> linarith
 
-theorem proximityDigraph_eq_of_equiTopologyNbhd_internal (m : Model) {n : ℕ} (r z y : Fin n → ℝ)
-    (h : EquiTopologyNbhd r z y) : proximityDigraph m r y = proximityDigraph m r z := by
-  have hS_bdd : ∀ i, BddBelow {d : ℝ | ∃ j, j ≠ i ∧
+chall proximityDigraph_eq_of_equiTopologyNbhd "  have hS_bdd : ∀ i, BddBelow {d : ℝ | ∃ j, j ≠ i ∧
       (d = |(|z i - z j|) - r i| ∨ d = |(|z i - z j|) - r j|)} := fun i =>
     ⟨0, by rintro d ⟨k, -, rfl | rfl⟩ <;> exact abs_nonneg _⟩
   have hle : ∀ i j, j ≠ i → ∀ R, (R = r i ∨ R = r j) →
@@ -109,13 +107,9 @@ theorem proximityDigraph_eq_of_equiTopologyNbhd_internal (m : Model) {n : ℕ} (
   unfold proximityDigraph
   congr 1
   funext i j
-  exact propext (key i j)
+  exact propext (key i j)"
 
-theorem eventually_constant_of_tendsto_internal (m : Model) {n : ℕ} (r x₀ xinf : Fin n → ℝ)
-    (hconv : Tendsto (traj m r x₀) atTop (𝓝 xinf))
-    (hε : ∀ i, 0 < equiTopologyDistance r xinf i) :
-    ∃ T, ∀ t, T ≤ t → proximityDigraph m r (traj m r x₀ t) = proximityDigraph m r xinf := by
-  have hev : ∀ᶠ t in atTop, ∀ i, |traj m r x₀ t i - xinf i| < equiTopologyDistance r xinf i := by
+chall eventually_constant_of_tendsto "  have hev : ∀ᶠ t in atTop, ∀ i, |traj m r x₀ t i - xinf i| < equiTopologyDistance r xinf i := by
     rw [Filter.eventually_all]
     intro i
     have hi := (tendsto_pi_nhds.mp hconv) i
@@ -124,23 +118,16 @@ theorem eventually_constant_of_tendsto_internal (m : Model) {n : ℕ} (r x₀ xi
   obtain ⟨T, hT⟩ := Filter.eventually_atTop.mp hev
   refine ⟨T, fun t ht => proximityDigraph_eq_of_equiTopologyNbhd_internal m r xinf _ ?_⟩
   intro i
-  exact ⟨fun _ => hT t ht i, fun h0 => absurd h0 (hε i).ne'⟩
+  exact ⟨fun _ => hT t ht i, fun h0 => absurd h0 (hε i).ne'⟩"
 
-theorem fvct_eq_and_equilibrium_of_tendsto_internal (m : Model) {n : ℕ} (r x₀ xinf : Fin n → ℝ)
-    (hconv : Tendsto (traj m r x₀) atTop (𝓝 xinf))
-    (hε : ∀ i, 0 < equiTopologyDistance r xinf i) :
-    (∃ T, ∀ t, T ≤ t → fvct m r (traj m r x₀ t) = xinf) ∧ step m r xinf = xinf := by
-  obtain ⟨T, hT⟩ := eventually_constant_of_tendsto_internal m r x₀ xinf hconv hε
+chall fvct_eq_and_equilibrium_of_tendsto "  obtain ⟨T, hT⟩ := eventually_constant_of_tendsto_internal m r x₀ xinf hconv hε
   set A := adjMatrix m r xinf with hA
   have hadj : ∀ t, T ≤ t → adjMatrix m r (traj m r x₀ t) = A := by
     intro t ht
     simp only [hA, adjMatrix, neighbors_eq_of_digraph_eq m r _ _ (hT t ht)]
   have hstep : ∀ t, T ≤ t → traj m r x₀ (t + 1) = A.mulVec (traj m r x₀ t) := by
     intro t ht
-    have h1 : traj m r x₀ (t + 1) = step m r (traj m r x₀ t) := by
-      simp only [traj]
-      exact Function.iterate_succ_apply' _ _ _
-    rw [h1, step, hadj t ht]
+    rw [traj_succ, step, hadj t ht]
   refine ⟨⟨T, fun t ht => ?_⟩, ?_⟩
   · have hpow : ∀ k, (A ^ k).mulVec (traj m r x₀ t) = traj m r x₀ (k + t) := by
       intro k
@@ -165,6 +152,6 @@ theorem fvct_eq_and_equilibrium_of_tendsto_internal (m : Model) {n : ℕ} (r x�
       rw [Filter.EventuallyEq, Filter.eventually_atTop]
       exact ⟨T, fun t ht => (hstep t ht).symm⟩
     rw [step]
-    exact tendsto_nhds_unique h3 h1
+    exact tendsto_nhds_unique h3 h1"
 
 end HK

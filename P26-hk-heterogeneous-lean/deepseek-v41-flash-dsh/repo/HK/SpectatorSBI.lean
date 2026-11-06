@@ -8,9 +8,7 @@ public import HK.Basic
 The seven agents of §5 with a spectator at `60` (`r = 1`), which becomes index 1 when the opinions
 are listed increasingly; for all `t` the other agents evolve as in §5 and
 `x₁(t) = 60 + φ⁻¹ ((1/4)ᵗ − λᵗ)`, so it is strictly right of `60` for every `t ≥ 1`; the
-neighbourhood table is the same at every `t`. Two atoms: `u = λᵗ ∈ [λ, 1]` and `w = (1/4)ᵗ ∈ (0, 1]`;
-the table holds on the closed box `|u| ≤ 1`, `0 ≤ w ≤ 1` with no parity split (the product atom
-`u φ` needs its own bounds, as in `HK/SBI7.lean`).
+neighbourhood table is the same at every `t`.
 -/
 
 @[expose] public section
@@ -18,7 +16,6 @@ the table holds on the closed box `|u| ≤ 1`, `0 ≤ w ≤ 1` with no parity sp
 namespace HK
 
 open Filter Topology
-
 
 /-- The state on the box: `u = λᵗ`, `w = (1/4)ᵗ`. -/
 noncomputable def spe_x (u w : ℝ) : Fin 8 → ℝ :=
@@ -43,77 +40,45 @@ theorem spe_table (u w : ℝ) (hu0 : (1 - Real.goldenRatio) / 4 ≤ u) (hu1 : u 
   have hp1 : u * Real.goldenRatio ≤ 2 := by nlinarith
   have hq0 : 0 ≤ w * Real.goldenRatio := mul_nonneg hw0 hφ0
   have hq1 : w * Real.goldenRatio ≤ 2 := by nlinarith
-  funext i
-  ext j
-  fin_cases i <;> fin_cases j <;>
-    simp [neighbors, Model.bound, sbi8_r, spe_x, abs_le] <;>
-    (try constructor) <;> (try intro) <;> linarith
+  tab sbi8_r, spe_x
 
 theorem spe_step (u w : ℝ) (hu0 : (1 - Real.goldenRatio) / 4 ≤ u) (hu1 : u ≤ 1)
     (hw0 : 0 ≤ w) (hw1 : w ≤ 1) :
-    step .sbi sbi8_r (spe_x u w) = spe_x (u * sbiRate) (w * (1 / 4)) := by
-  have hsq := Real.goldenRatio_sq
+    step .sbi sbi8_r (spe_x u w) = spe_x (sbiRate * u) (1 / 4 * w) := by
   funext i
   rw [step_apply, spe_table u w hu0 hu1 hw0 hw1, sbiRate_eq]
-  fin_cases i
-  · simp [spe_x]
-  · simp [Finset.sum_insert, spe_x]; linear_combination (-u / 4) * hsq
-  · simp [Finset.sum_insert, spe_x]; ring
-  · simp [Finset.sum_insert, spe_x]; linear_combination (-u / 4) * hsq
-  · simp [Finset.sum_insert, spe_x]; ring
-  · simp [Finset.sum_insert, spe_x]; linear_combination (u / 4) * hsq
-  · simp [Finset.sum_insert, spe_x]; ring
-  · simp [spe_x]
+  fin_cases i <;> simp [Finset.sum_insert, spe_x] <;> sq 5
 
 theorem spe_closed (t : ℕ) :
-    traj .sbi sbi8_r sbi8_x0 t = spe_x (sbiRate ^ t) ((1 / 4 : ℝ) ^ t) := by
-  induction t with
-  | zero =>
-    funext i
-    fin_cases i <;> simp [traj, sbi8_x0, spe_x] <;> ring
-  | succ t ih =>
-    have h : traj .sbi sbi8_r sbi8_x0 (t + 1) =
-        step .sbi sbi8_r (traj .sbi sbi8_r sbi8_x0 t) := by
-      simp only [traj]
-      exact Function.iterate_succ_apply' _ _ _
-    obtain ⟨h0, h1⟩ := sbiRate_pow_bounds t
-    have hw0 : 0 ≤ (1 / 4 : ℝ) ^ t := pow_nonneg (by norm_num) t
-    have hw1 : (1 / 4 : ℝ) ^ t ≤ 1 := pow_le_one₀ (by norm_num) (by norm_num)
-    rw [h, ih, spe_step _ _ h0 h1 hw0 hw1, pow_succ, pow_succ]
+    traj .sbi sbi8_r sbi8_x0 t = spe_x (sbiRate ^ t) ((1 / 4 : ℝ) ^ t) :=
+  traj_geom2 .sbi sbi8_r sbi8_x0 spe_x sbiRate (1 / 4) ((1 - Real.goldenRatio) / 4) 1
+    (fun u w h0 h1 hw0 hw1 => spe_step u w h0 h1 hw0 hw1)
+    (by funext i; fin_cases i <;> simp [sbi8_x0, spe_x] <;> ring_nf)
+    (fun t => by
+      rw [← sbiRate_eq]
+      exact pow_bounds_of_neg sbiRate_mem.1 sbiRate_mem.2 t)
+    (fun t => pos_pow_bounds (by norm_num) (by norm_num) t) t
 
-theorem sbi8_closed_form_internal (t : ℕ) :
-    traj .sbi sbi8_r sbi8_x0 t =
-      ![0, 60 + Real.goldenRatio⁻¹ * ((1 / 4 : ℝ) ^ t - sbiRate ^ t), 70 + sbiRate ^ t,
-        100 - Real.goldenRatio * sbiRate ^ t, 110, 120 + Real.goldenRatio * sbiRate ^ t,
-        150 - sbiRate ^ t, 220] := by
-  rw [spe_closed, spe_inv]; rfl
+chall sbi8_closed_form "  rw [spe_closed, spe_inv]
+  rfl"
 
-theorem sbi8_neighbors_internal (t : ℕ) :
-    neighbors .sbi sbi8_r (traj .sbi sbi8_r sbi8_x0 t) =
-      ![{0}, {0, 1, 2, 4}, {0, 2, 3, 4}, {2, 3, 4, 5}, {3, 4, 5}, {3, 4, 5, 6}, {4, 5, 6, 7}, {7}] := by
-  obtain ⟨h0, h1⟩ := sbiRate_pow_bounds t
-  have hw0 : 0 ≤ (1 / 4 : ℝ) ^ t := pow_nonneg (by norm_num) t
-  have hw1 : (1 / 4 : ℝ) ^ t ≤ 1 := pow_le_one₀ (by norm_num) (by norm_num)
-  rw [spe_closed, spe_table _ _ h0 h1 hw0 hw1]
+chall sbi8_neighbors "  obtain ⟨h0, h1⟩ := pow_bounds_of_neg sbiRate_mem.1 sbiRate_mem.2 t
+  rw [spe_closed,
+    spe_table _ _ (by rw [← sbiRate_eq]; exact h0) h1 (pow_nonneg (by norm_num) t)
+      (pow_le_one₀ (by norm_num) (by norm_num) (n := t))]"
 
-theorem spe_abs_rate : |sbiRate| < 1 / 4 := by
-  have hφ1 := Real.one_lt_goldenRatio
-  have hφ2 := Real.goldenRatio_lt_two
-  rw [abs_lt, sbiRate_eq]
-  constructor <;> linarith
-
-theorem sbi8_spectator_gt_internal (t : ℕ) (ht : 1 ≤ t) : 60 < traj .sbi sbi8_r sbi8_x0 t 1 := by
-  rw [spe_closed]
+chall sbi8_spectator_gt "  rw [spe_closed]
   have h0 : spe_x (sbiRate ^ t) ((1 / 4 : ℝ) ^ t) 1 =
       60 + (Real.goldenRatio - 1) * ((1 / 4 : ℝ) ^ t - sbiRate ^ t) := rfl
   rw [h0, ← spe_inv]
   have h1 : |sbiRate| ^ t < (1 / 4 : ℝ) ^ t :=
-    pow_lt_pow_left₀ spe_abs_rate (abs_nonneg _) (by omega)
+    pow_lt_pow_left₀ sbiRate_abs_lt_quarter (abs_nonneg _) (by omega)
   have h2 : sbiRate ^ t ≤ |sbiRate| ^ t := by
-    rw [← abs_pow]; exact le_abs_self _
+    rw [← abs_pow]
+    exact le_abs_self _
   have h3 : 0 < Real.goldenRatio⁻¹ := inv_pos.mpr Real.goldenRatio_pos
   have h4 : 0 < (1 / 4 : ℝ) ^ t - sbiRate ^ t := by linarith
   have := mul_pos h3 h4
-  linarith
+  linarith"
 
 end HK
