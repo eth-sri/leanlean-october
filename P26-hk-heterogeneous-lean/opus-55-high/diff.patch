@@ -1,0 +1,3291 @@
+diff --git a/HK.lean b/HK.lean
+index 4370b4911..45707b943 100644
+--- a/HK.lean
++++ b/HK.lean
+@@ -1,16 +1,3 @@
+ module
+ 
+ public import HK.Defs
+-public import HK.Basic
+-public import HK.SBC7
+-public import HK.SBI7
+-public import HK.SBC6
+-public import HK.SBI7b
+-public import HK.SBC5
+-public import HK.SBI6
+-public import HK.Generic
+-public import HK.Refute
+-public import HK.SpectatorSBC
+-public import HK.SpectatorSBI
+-public import HK.SBI5Complex
+-public import HK.SBC5Family
+diff --git a/HK/Basic.lean b/HK/Basic.lean
+deleted file mode 100644
+index b87157e4a..000000000
+--- a/HK/Basic.lean
++++ /dev/null
+@@ -1,185 +0,0 @@
+-module
+-
+-public import HK.Defs
+-
+-/-!
+-# Generic lemmas about the models
+-
+-The mean form of a step, the sign and size of the rates' powers, convergence of a geometric closed form
+-`L + a(t) v`, the two ways an alternating agent defeats a fixed state and pseudo-stability, the mean form of
+-`A(y) z`, neighbourhoods from digraphs, and the facts about `sbiRate = (1 − √5)/8`.
+--/
+-
+-@[expose] public section
+-
+-namespace HK
+-
+-open Filter Topology
+-
+-/-- One step, coordinatewise: the average of the out-neighbours' opinions. -/
+-theorem step_apply (m : Model) {n : ℕ} (r y : Fin n → ℝ) (i : Fin n) :
+-    step m r y i = (∑ j ∈ neighbors m r y i, y j) / (neighbors m r y i).card := by
+-  simp only [step, adjMatrix, Matrix.mulVec, dotProduct, Matrix.of_apply, ite_mul, zero_mul]
+-  rw [Finset.sum_ite_mem, Finset.univ_inter, Finset.sum_div]
+-  exact Finset.sum_congr rfl (fun j _ => by ring)
+-
+-/-- The sign and size of `(-1/6)^t` by parity. -/
+-theorem pow_even {t : ℕ} (ht : Even t) : 0 < (-1 / 6 : ℝ) ^ t ∧ (-1 / 6 : ℝ) ^ t ≤ 1 := by
+-  rw [neg_div, ht.neg_pow]
+-  exact ⟨pow_pos (by norm_num) t, pow_le_one₀ (by norm_num) (by norm_num)⟩
+-
+-theorem pow_odd {t : ℕ} (ht : Odd t) : -1 / 6 ≤ (-1 / 6 : ℝ) ^ t ∧ (-1 / 6 : ℝ) ^ t < 0 := by
+-  rw [neg_div, ht.neg_pow]
+-  have hle : (1 / 6 : ℝ) ^ t ≤ 1 / 6 :=
+-    pow_le_of_le_one (by norm_num) (by norm_num) (by rintro rfl; simp at ht)
+-  have hpos : 0 < (1 / 6 : ℝ) ^ t := pow_pos (by norm_num) t
+-  constructor <;> linarith
+-
+-/-- `λ = (1 − φ)/4`. -/
+-theorem sbiRate_eq : sbiRate = (1 - Real.goldenRatio) / 4 := by
+-  unfold sbiRate Real.goldenRatio
+-  ring
+-
+-/-- The sign and size of `λ^t / 2` by parity. -/
+-theorem sbiRate_pow_even {t : ℕ} (ht : Even t) :
+-    0 < sbiRate ^ t / 2 ∧ sbiRate ^ t / 2 ≤ 1 / 2 := by
+-  have hφ1 := Real.one_lt_goldenRatio
+-  have hφ2 := Real.goldenRatio_lt_two
+-  have h : sbiRate = -((Real.goldenRatio - 1) / 4) := by rw [sbiRate_eq]; ring
+-  rw [h, ht.neg_pow]
+-  have h0 : 0 < ((Real.goldenRatio - 1) / 4) ^ t := pow_pos (by linarith) t
+-  have h1 : ((Real.goldenRatio - 1) / 4) ^ t ≤ 1 := pow_le_one₀ (by linarith) (by linarith)
+-  constructor <;> linarith
+-
+-theorem sbiRate_pow_odd {t : ℕ} (ht : Odd t) :
+-    (1 - Real.goldenRatio) / 8 ≤ sbiRate ^ t / 2 ∧ sbiRate ^ t / 2 < 0 := by
+-  have hφ1 := Real.one_lt_goldenRatio
+-  have hφ2 := Real.goldenRatio_lt_two
+-  have h : sbiRate = -((Real.goldenRatio - 1) / 4) := by rw [sbiRate_eq]; ring
+-  rw [h, ht.neg_pow]
+-  have h0 : 0 < ((Real.goldenRatio - 1) / 4) ^ t := pow_pos (by linarith) t
+-  have h1 : ((Real.goldenRatio - 1) / 4) ^ t ≤ (Real.goldenRatio - 1) / 4 :=
+-    pow_le_of_le_one (by linarith) (by linarith) (by rintro rfl; simp at ht)
+-  constructor <;> linarith
+-
+-theorem pow_bounds (t : ℕ) : -1 / 6 ≤ (-1 / 6 : ℝ) ^ t ∧ (-1 / 6 : ℝ) ^ t ≤ 1 := by
+-  rcases Nat.even_or_odd t with ht | ht
+-  · obtain ⟨h0, h1⟩ := pow_even ht
+-    constructor <;> linarith
+-  · obtain ⟨h0, h1⟩ := pow_odd ht
+-    constructor <;> linarith
+-
+-theorem sbiRate_pow_bounds (t : ℕ) :
+-    (1 - Real.goldenRatio) / 4 ≤ sbiRate ^ t ∧ sbiRate ^ t ≤ 1 := by
+-  have hφ1 := Real.one_lt_goldenRatio
+-  rcases Nat.even_or_odd t with ht | ht
+-  · obtain ⟨h0, h1⟩ := sbiRate_pow_even ht
+-    constructor <;> linarith
+-  · obtain ⟨h0, h1⟩ := sbiRate_pow_odd ht
+-    constructor <;> linarith
+-
+-theorem tendsto_of_closed_form {n : ℕ} (x : ℕ → Fin n → ℝ) (lim v : Fin n → ℝ) (a : ℕ → ℝ)
+-    (ha : Tendsto a atTop (𝓝 0)) (hx : ∀ t, x t = fun i => lim i + a t * v i) :
+-    Tendsto x atTop (𝓝 lim) := by
+-  rw [tendsto_pi_nhds]
+-  intro i
+-  have := (ha.mul_const (v i)).const_add (lim i)
+-  simpa [hx] using this
+-
+-theorem not_monotone_side (l a b c : ℝ) (hab : a * b < 0) :
+-    ¬ ((l + a * c < l + b * c ∧ l + b * c < l) ∨ (l + a * c > l + b * c ∧ l + b * c > l)) := by
+-  rintro (⟨h1, h2⟩ | ⟨h1, h2⟩) <;> nlinarith [sq_nonneg c, sq_nonneg (b * c)]
+-
+-theorem not_pseudoStable_of_closed_form {n : ℕ} (x : ℕ → Fin n → ℝ) (lim v : Fin n → ℝ)
+-    (a : ℕ → ℝ) (ha : Tendsto a atTop (𝓝 0)) (hx : ∀ t, x t = fun i => lim i + a t * v i)
+-    (hab : ∀ t, a t * a (t + 1) < 0) (xinf : Fin n → ℝ) (τ : ℕ) :
+-    ¬ PseudoStableAfter x xinf τ := by
+-  rintro ⟨hlim, F, C, -, ⟨i, hi⟩, -, -, h⟩
+-  have hx' : xinf = lim := tendsto_nhds_unique hlim (tendsto_of_closed_form x lim v a ha hx)
+-  subst hx'
+-  have hc := (h τ le_rfl).2 i hi
+-  rw [hx, hx] at hc
+-  exact not_monotone_side _ _ _ _ (hab τ) hc
+-
+-theorem not_fixedFrom_of_closed_form {n : ℕ} (x : ℕ → Fin n → ℝ) (lim v : Fin n → ℝ)
+-    (a : ℕ → ℝ) (hx : ∀ t, x t = fun i => lim i + a t * v i)
+-    (hab : ∀ t, a t * a (t + 1) < 0) (i : Fin n) (hv : v i ≠ 0) (τ : ℕ) :
+-    ¬ FixedFrom x τ := by
+-  intro h
+-  have h1 := congrFun (h (τ + 1) (Nat.le_succ τ)) i
+-  rw [hx, hx] at h1
+-  have h2 : a (τ + 1) = a τ := mul_right_cancel₀ hv (by simpa using h1)
+-  have h3 := hab τ
+-  rw [h2] at h3
+-  nlinarith [sq_nonneg (a τ)]
+-
+-/-- `a t · a (t+1) < 0` for `a t = q^t · c` with `q < 0`, `c ≠ 0`. -/
+-theorem alternating (q c : ℝ) (hq : q < 0) (hc : c ≠ 0) (t : ℕ) :
+-    q ^ t * c * (q ^ (t + 1) * c) < 0 := by
+-  have h : q ^ t * c * (q ^ (t + 1) * c) = q * (q ^ t * c) ^ 2 := by ring
+-  rw [h]
+-  have : 0 < (q ^ t * c) ^ 2 := by
+-    have : q ^ t * c ≠ 0 := mul_ne_zero (pow_ne_zero _ hq.ne) hc
+-    positivity
+-  nlinarith
+-
+-/-- Each coordinate of a pseudo-stable trajectory sits at its limit, or stays strictly below it, or
+-stays strictly above it, from `τ` on. -/
+-theorem pseudoStableAfter_coordinate_side {n : ℕ} (x : ℕ → Fin n → ℝ)
+-    (L : Fin n → ℝ) (τ : ℕ) (hps : PseudoStableAfter x L τ) (i : Fin n) :
+-    (∀ t, τ ≤ t → x t i = L i) ∨
+-    (∀ t, τ ≤ t → x t i < L i) ∨ (∀ t, τ ≤ t → L i < x t i) := by
+-  obtain ⟨-, F, C, -, -, -, hFC, h⟩ := hps
+-  have himem : i ∈ F ∨ i ∈ C := by
+-    rw [← Finset.mem_union, hFC]
+-    exact Finset.mem_univ i
+-  rcases himem with hi | hi
+-  · exact Or.inl (fun t ht => (h t ht).1 i hi)
+-  · rcases (h τ le_rfl).2 i hi with hbelow | habove
+-    · right; left
+-      have hs : ∀ s, x (τ + s) i < L i := by
+-        intro s
+-        induction s with
+-        | zero => simpa using lt_trans hbelow.1 hbelow.2
+-        | succ s ih =>
+-          rcases (h (τ + s) (by omega)).2 i hi with hb | ha
+-          · simpa [Nat.add_assoc] using hb.2
+-          · exfalso; linarith [ha.1, ha.2]
+-      intro t ht
+-      have he : τ + (t - τ) = t := by omega
+-      simpa only [he] using hs (t - τ)
+-    · right; right
+-      have hs : ∀ s, L i < x (τ + s) i := by
+-        intro s
+-        induction s with
+-        | zero => simpa using lt_trans habove.2 habove.1
+-        | succ s ih =>
+-          rcases (h (τ + s) (by omega)).2 i hi with hb | ha
+-          · exfalso; linarith [hb.1, hb.2]
+-          · simpa [Nat.add_assoc] using ha.2
+-      intro t ht
+-      have he : τ + (t - τ) = t := by omega
+-      simpa only [he] using hs (t - τ)
+-
+-theorem sbiRate_neg : sbiRate < 0 := by
+-  rw [sbiRate_eq]; linarith [Real.one_lt_goldenRatio]
+-
+-theorem sbiRate_abs_lt_one : |sbiRate| < 1 := by
+-  rw [sbiRate_eq, abs_lt]
+-  constructor <;> linarith [Real.one_lt_goldenRatio, Real.goldenRatio_lt_two]
+-
+-theorem adj_mulVec (m : Model) {n : ℕ} (r y z : Fin n → ℝ) (i : Fin n) :
+-    (adjMatrix m r y).mulVec z i = (∑ j ∈ neighbors m r y i, z j) / (neighbors m r y i).card := by
+-  simp only [adjMatrix, Matrix.mulVec, dotProduct, Matrix.of_apply, ite_mul, zero_mul]
+-  rw [Finset.sum_ite_mem, Finset.univ_inter, Finset.sum_div]
+-  exact Finset.sum_congr rfl (fun j _ => by ring)
+-
+-theorem neighbors_eq_of_digraph_eq (m : Model) {n : ℕ} (r y z : Fin n → ℝ)
+-    (hd : proximityDigraph m r y = proximityDigraph m r z) : neighbors m r y = neighbors m r z := by
+-  funext i
+-  ext j
+-  have := congrFun (congrFun (congrArg Digraph.Adj hd) i) j
+-  simp only [proximityDigraph] at this
+-  exact Iff.of_eq this
+-
+-end HK
+diff --git a/HK/Generic.lean b/HK/Generic.lean
+deleted file mode 100644
+index 905bc9d60..000000000
+--- a/HK/Generic.lean
++++ /dev/null
+@@ -1,170 +0,0 @@
+-module
+-
+-public import HK.Basic
+-
+-/-!
+-# Mirtabatabaei–Bullo's Lemma 4.2 and Lemma 4.8
+-
+-A point of the equi-topology neighbourhood of `z` has the proximity digraph of `z`; a convergent
+-trajectory whose limit has every equi-topology distance positive has, from some time on, the
+-proximity digraph of its limit, the limit as the final value at constant topology of `x(t)`, and the
+-limit is an equilibrium. No positivity of the bounds is assumed: the case `j = i` of Lemma 4.2
+-reduces, at `y` and at `z`, to the same condition `0 ≤ R`. Also: `ε_i(z) = 0` as soon as some
+-`j ≠ i` has `|z_i − z_j| = r_i`.
+--/
+-
+-@[expose] public section
+-
+-namespace HK
+-
+-open Filter Topology
+-
+-/-- `ε_i(z) = 0` as soon as one `j ≠ i` has `|z_i − z_j| = r_i`. -/
+-theorem equiTopologyDistance_eq_zero_of {n : ℕ} (r z : Fin n → ℝ) (i j : Fin n) (hij : j ≠ i)
+-    (h : |z i - z j| = r i) : equiTopologyDistance r z i = 0 := by
+-  unfold equiTopologyDistance
+-  have hS : sInf {d : ℝ | ∃ j, j ≠ i ∧ (d = |(|z i - z j|) - r i| ∨ d = |(|z i - z j|) - r j|)} = 0 := by
+-    apply IsLeast.csInf_eq
+-    refine ⟨⟨j, hij, Or.inl (by rw [h, sub_self, abs_zero])⟩, ?_⟩
+-    rintro d ⟨k, -, rfl | rfl⟩ <;> exact abs_nonneg _
+-  rw [hS, mul_zero]
+-
+-theorem abs_band_iff (a b c d R : ℝ) (h1 : |a - c| ≤ 1 / 2 * |(|c - d|) - R|)
+-    (h2 : |b - d| ≤ 1 / 2 * |(|c - d|) - R|)
+-    (h1' : |c - d| ≠ R → |a - c| < 1 / 2 * |(|c - d|) - R|)
+-    (h2' : |c - d| ≠ R → |b - d| < 1 / 2 * |(|c - d|) - R|) :
+-    |a - b| ≤ R ↔ |c - d| ≤ R := by
+-  have t1 := abs_sub_le a c b
+-  have t2 := abs_sub_le c d b
+-  have t3 := abs_sub_le c a d
+-  have t4 := abs_sub_le a b d
+-  have s1 := abs_sub_comm c a
+-  have s2 := abs_sub_comm d b
+-  rcases lt_trichotomy (|c - d|) R with hlt | heq | hgt
+-  · rw [abs_of_neg (by linarith : |c - d| - R < 0)] at h1 h2
+-    constructor <;> intro <;> linarith
+-  · rw [heq, sub_self, abs_zero, mul_zero] at h1 h2
+-    constructor <;> intro <;> linarith
+-  · rw [abs_of_pos (by linarith : 0 < |c - d| - R)] at h1' h2'
+-    have e1 := h1' hgt.ne'
+-    have e2 := h2' hgt.ne'
+-    constructor <;> intro <;> linarith
+-
+-theorem proximityDigraph_eq_of_equiTopologyNbhd_internal (m : Model) {n : ℕ} (r z y : Fin n → ℝ)
+-    (h : EquiTopologyNbhd r z y) : proximityDigraph m r y = proximityDigraph m r z := by
+-  have hS_bdd : ∀ i, BddBelow {d : ℝ | ∃ j, j ≠ i ∧
+-      (d = |(|z i - z j|) - r i| ∨ d = |(|z i - z j|) - r j|)} := fun i =>
+-    ⟨0, by rintro d ⟨k, -, rfl | rfl⟩ <;> exact abs_nonneg _⟩
+-  have hle : ∀ i j, j ≠ i → ∀ R, (R = r i ∨ R = r j) →
+-      equiTopologyDistance r z i ≤ 1 / 2 * |(|z i - z j|) - R| := by
+-    intro i j hij R hR
+-    unfold equiTopologyDistance
+-    apply mul_le_mul_of_nonneg_left _ (by norm_num)
+-    apply csInf_le (hS_bdd i)
+-    rcases hR with rfl | rfl
+-    · exact ⟨j, hij, Or.inl rfl⟩
+-    · exact ⟨j, hij, Or.inr rfl⟩
+-  have hnn : ∀ i, 0 ≤ equiTopologyDistance r z i := by
+-    intro i
+-    unfold equiTopologyDistance
+-    apply mul_nonneg (by norm_num)
+-    apply Real.sInf_nonneg
+-    rintro d ⟨k, -, rfl | rfl⟩ <;> exact abs_nonneg _
+-  have hdev : ∀ i, |y i - z i| ≤ equiTopologyDistance r z i ∧
+-      (|y i - z i| < equiTopologyDistance r z i ∨ y i = z i) := by
+-    intro i
+-    rcases (hnn i).lt_or_eq with hpos | hzero
+-    · have := (h i).1 hpos
+-      exact ⟨this.le, Or.inl this⟩
+-    · have := (h i).2 hzero.symm
+-      refine ⟨this.le, Or.inr ?_⟩
+-      rw [← hzero] at this
+-      exact sub_eq_zero.mp (abs_eq_zero.mp this)
+-  have key : ∀ i j, (j ∈ neighbors m r y i ↔ j ∈ neighbors m r z i) := by
+-    intro i j
+-    simp only [neighbors, Finset.mem_filter, Finset.mem_univ, true_and]
+-    by_cases hij : j = i
+-    · subst hij; simp
+-    have hR : m.bound r i j = r i ∨ m.bound r i j = r j := by cases m <;> simp [Model.bound]
+-    have hi := hle i j hij _ hR
+-    have hj := hle j i (Ne.symm hij) _ hR.symm
+-    rw [abs_sub_comm (z j) (z i)] at hj
+-    obtain ⟨d1, d1'⟩ := hdev i
+-    obtain ⟨d2, d2'⟩ := hdev j
+-    apply abs_band_iff
+-    · exact d1.trans hi
+-    · exact d2.trans hj
+-    · intro hne
+-      rcases d1' with h' | h'
+-      · exact lt_of_lt_of_le h' hi
+-      · rw [h', sub_self, abs_zero]
+-        have := abs_pos.mpr (sub_ne_zero.mpr hne)
+-        linarith
+-    · intro hne
+-      rcases d2' with h' | h'
+-      · exact lt_of_lt_of_le h' hj
+-      · rw [h', sub_self, abs_zero]
+-        have := abs_pos.mpr (sub_ne_zero.mpr hne)
+-        linarith
+-  unfold proximityDigraph
+-  congr 1
+-  funext i j
+-  exact propext (key i j)
+-
+-theorem eventually_constant_of_tendsto_internal (m : Model) {n : ℕ} (r x₀ xinf : Fin n → ℝ)
+-    (hconv : Tendsto (traj m r x₀) atTop (𝓝 xinf))
+-    (hε : ∀ i, 0 < equiTopologyDistance r xinf i) :
+-    ∃ T, ∀ t, T ≤ t → proximityDigraph m r (traj m r x₀ t) = proximityDigraph m r xinf := by
+-  have hev : ∀ᶠ t in atTop, ∀ i, |traj m r x₀ t i - xinf i| < equiTopologyDistance r xinf i := by
+-    rw [Filter.eventually_all]
+-    intro i
+-    have hi := (tendsto_pi_nhds.mp hconv) i
+-    have := Metric.tendsto_nhds.mp hi _ (hε i)
+-    simpa [Real.dist_eq] using this
+-  obtain ⟨T, hT⟩ := Filter.eventually_atTop.mp hev
+-  refine ⟨T, fun t ht => proximityDigraph_eq_of_equiTopologyNbhd_internal m r xinf _ ?_⟩
+-  intro i
+-  exact ⟨fun _ => hT t ht i, fun h0 => absurd h0 (hε i).ne'⟩
+-
+-theorem fvct_eq_and_equilibrium_of_tendsto_internal (m : Model) {n : ℕ} (r x₀ xinf : Fin n → ℝ)
+-    (hconv : Tendsto (traj m r x₀) atTop (𝓝 xinf))
+-    (hε : ∀ i, 0 < equiTopologyDistance r xinf i) :
+-    (∃ T, ∀ t, T ≤ t → fvct m r (traj m r x₀ t) = xinf) ∧ step m r xinf = xinf := by
+-  obtain ⟨T, hT⟩ := eventually_constant_of_tendsto_internal m r x₀ xinf hconv hε
+-  set A := adjMatrix m r xinf with hA
+-  have hadj : ∀ t, T ≤ t → adjMatrix m r (traj m r x₀ t) = A := by
+-    intro t ht
+-    simp only [hA, adjMatrix, neighbors_eq_of_digraph_eq m r _ _ (hT t ht)]
+-  have hstep : ∀ t, T ≤ t → traj m r x₀ (t + 1) = A.mulVec (traj m r x₀ t) := by
+-    intro t ht
+-    have h1 : traj m r x₀ (t + 1) = step m r (traj m r x₀ t) := by
+-      simp only [traj]
+-      exact Function.iterate_succ_apply' _ _ _
+-    rw [h1, step, hadj t ht]
+-  refine ⟨⟨T, fun t ht => ?_⟩, ?_⟩
+-  · have hpow : ∀ k, (A ^ k).mulVec (traj m r x₀ t) = traj m r x₀ (k + t) := by
+-      intro k
+-      induction k with
+-      | zero => simp
+-      | succ k ih =>
+-        rw [pow_succ', ← Matrix.mulVec_mulVec, ih, ← hstep _ (by omega)]
+-        congr 1
+-        omega
+-    unfold fvct
+-    rw [hadj t ht]
+-    simp only [hpow]
+-    exact (hconv.comp (tendsto_add_atTop_nat t)).limUnder_eq
+-  · have hc : Continuous (fun v : Fin n → ℝ => A.mulVec v) :=
+-      continuous_const.matrix_mulVec continuous_id
+-    have h1 : Tendsto (fun t => traj m r x₀ (t + 1)) atTop (𝓝 xinf) :=
+-      hconv.comp (tendsto_add_atTop_nat 1)
+-    have h2 : Tendsto (fun t => A.mulVec (traj m r x₀ t)) atTop (𝓝 (A.mulVec xinf)) :=
+-      (hc.tendsto xinf).comp hconv
+-    have h3 : Tendsto (fun t => traj m r x₀ (t + 1)) atTop (𝓝 (A.mulVec xinf)) := by
+-      refine h2.congr' ?_
+-      rw [Filter.EventuallyEq, Filter.eventually_atTop]
+-      exact ⟨T, fun t ht => (hstep t ht).symm⟩
+-    rw [step]
+-    exact tendsto_nhds_unique h3 h1
+-
+-end HK
+diff --git a/HK/Refute.lean b/HK/Refute.lean
+deleted file mode 100644
+index 90b27ac29..000000000
+--- a/HK/Refute.lean
++++ /dev/null
+@@ -1,240 +0,0 @@
+-module
+-
+-public import HK.SBC7
+-public import HK.SBI7
+-public import HK.SBC6
+-public import HK.SBI7b
+-public import HK.SBC5
+-public import HK.SBI6
+-public import HK.Generic
+-
+-/-!
+-# The refutations, assembled; the conjunctions; the sharpness of Lemma 4.8's condition
+-
+-Conjecture 2.2 and Conjecture 2.3 fail in each model by the two alternating systems; Theorem 6.4(iv)
+-fails in each model by the two constant-digraph systems of the source (and Conjecture 2.3 and Theorem
+-6.4(iv) at five SBC and six SBI agents by the smaller systems, in `SBC5.lean` and `SBI6.lean`). The literal reading of Theorem 6.4(iv) implies the reading admitting fixed states, so it fails
+-too. The equi-topology distance of the limit vanishes at the alternating agents of the two alternating
+-systems and is positive at every agent of the two constant-digraph systems of the source.
+--/
+-
+-@[expose] public section
+-
+-namespace HK
+-
+-open Filter Topology
+-
+-/-- Conjecture 2.2 fails for SBC. -/
+-theorem not_conjecture22_sbc_internal : ¬ Conjecture22For .sbc := by
+-  intro h
+-  obtain ⟨τ, hτ⟩ := h 7 sbc7_r sbc7_x0 sbc7_r_pos
+-  obtain ⟨t, ht, hne⟩ := sbc7_digraph_not_eventually_constant_internal τ
+-  exact hne (hτ t ht)
+-
+-/-- Conjecture 2.3 fails for SBC. -/
+-theorem not_conjecture23_sbc_internal : ¬ Conjecture23For .sbc := by
+-  intro h
+-  obtain ⟨τ, hf | ⟨xinf, hps⟩⟩ := h 7 sbc7_r sbc7_x0 sbc7_r_pos
+-  · exact sbc7_not_fixedFrom τ hf
+-  · exact sbc7_not_pseudoStableAfter xinf τ hps
+-
+-theorem not_conjecture22_sbi_internal : ¬ Conjecture22For .sbi := by
+-  intro h
+-  obtain ⟨τ, hτ⟩ := h 7 sbi7_r sbi7_x0 sbi7_r_pos
+-  obtain ⟨t, ht, hne⟩ := sbi7_digraph_not_eventually_constant_internal τ
+-  exact hne (hτ t ht)
+-
+-theorem not_conjecture23_sbi_internal : ¬ Conjecture23For .sbi := by
+-  intro h
+-  obtain ⟨τ, hf | ⟨xinf, hps⟩⟩ := h 7 sbi7_r sbi7_x0 sbi7_r_pos
+-  · exact sbi7_not_fixedFrom τ hf
+-  · exact sbi7_not_pseudoStableAfter xinf τ hps
+-
+-theorem not_theorem64iv_sbc_internal : ¬ Theorem64ivFor .sbc := by
+-  intro h
+-  have hq : (-1 / 6 : ℝ) < 0 := by norm_num
+-  have ha : Tendsto (fun t : ℕ => (-1 / 6 : ℝ) ^ t * 1) atTop (𝓝 0) := by
+-    simpa using tendsto_pow_atTop_nhds_zero_of_abs_lt_one
+-      (show |(-1 / 6 : ℝ)| < 1 by rw [abs_of_neg hq]; norm_num)
+-  obtain ⟨t₂, -, hf | ⟨xinf, hps⟩⟩ := h 6 sbc6_r sbc6_x0 sbc6_r_pos 0
+-    (fun t _ => by simp only [proximityDigraph, sbc6_neighbors_internal])
+-  · exact not_fixedFrom_of_closed_form _ _ sbc6_v _ sbc6_closed_form_internal'
+-      (alternating _ _ hq one_ne_zero) 1 (by simp [sbc6_v]) t₂ hf
+-  · exact not_pseudoStable_of_closed_form _ _ sbc6_v _ ha sbc6_closed_form_internal'
+-      (alternating _ _ hq one_ne_zero) xinf t₂ hps
+-
+-theorem not_theorem64iv_sbi_internal : ¬ Theorem64ivFor .sbi := by
+-  intro h
+-  have ha : Tendsto (fun t : ℕ => sbiRate ^ t * 1) atTop (𝓝 0) := by
+-    simpa using tendsto_pow_atTop_nhds_zero_of_abs_lt_one sbiRate_abs_lt_one
+-  obtain ⟨t₂, -, hf | ⟨xinf, hps⟩⟩ := h 7 sbi7b_r sbi7b_x0 sbi7b_r_pos 0
+-    (fun t _ => by simp only [proximityDigraph, sbi7b_neighbors_internal])
+-  · exact not_fixedFrom_of_closed_form _ _ sbi_v _ sbi7b_closed_form_internal'
+-      (alternating _ _ sbiRate_neg one_ne_zero) 1 (by simp [sbi_v]) t₂ hf
+-  · exact not_pseudoStable_of_closed_form _ _ sbi_v _ ha sbi7b_closed_form_internal'
+-      (alternating _ _ sbiRate_neg one_ne_zero) xinf t₂ hps
+-
+-theorem not_conjecture22_internal : ¬ Conjecture22 := fun h => not_conjecture22_sbc_internal (h .sbc)
+-
+-theorem not_conjecture23_internal : ¬ Conjecture23 := fun h => not_conjecture23_sbc_internal (h .sbc)
+-
+-theorem not_theorem64iv_internal : ¬ Theorem64iv := fun h => not_theorem64iv_sbc_internal (h .sbc)
+-
+-theorem not_theorem64iv_literal_sbc_internal : ¬ Theorem64ivLiteralFor .sbc := by
+-  intro h
+-  apply not_theorem64iv_sbc_internal
+-  intro n r x₀ hr τ hτ
+-  obtain ⟨t₂, ht₂, hps⟩ := h n r x₀ hr τ hτ
+-  exact ⟨t₂, ht₂, Or.inr hps⟩
+-
+-theorem not_theorem64iv_literal_sbi_internal : ¬ Theorem64ivLiteralFor .sbi := by
+-  intro h
+-  apply not_theorem64iv_sbi_internal
+-  intro n r x₀ hr τ hτ
+-  obtain ⟨t₂, ht₂, hps⟩ := h n r x₀ hr τ hτ
+-  exact ⟨t₂, ht₂, Or.inr hps⟩
+-
+-theorem not_theorem64iv_literal_internal : ¬ Theorem64ivLiteral :=
+-  fun h => not_theorem64iv_literal_sbc_internal (h .sbc)
+-
+-theorem tendsto_limits_internal :
+-    Tendsto (traj .sbc sbc7_r sbc7_x0) atTop (𝓝 sbc7_lim) ∧
+-    Tendsto (traj .sbi sbi7_r sbi7_x0) atTop (𝓝 sbi7_lim) ∧
+-    Tendsto (traj .sbc sbc6_r sbc6_x0) atTop (𝓝 sbc6_lim) ∧
+-    Tendsto (traj .sbi sbi7b_r sbi7b_x0) atTop (𝓝 sbi7b_lim) := by
+-  have hq : |(-1 / 6 : ℝ)| < 1 := by rw [abs_of_neg (by norm_num)]; norm_num
+-  refine ⟨sbc7_tendsto, sbi7_tendsto, ?_, ?_⟩
+-  · exact tendsto_of_closed_form _ _ sbc6_v _
+-      (by simpa using tendsto_pow_atTop_nhds_zero_of_abs_lt_one hq) sbc6_closed_form_internal'
+-  · exact tendsto_of_closed_form _ _ sbi_v _
+-      (by simpa using tendsto_pow_atTop_nhds_zero_of_abs_lt_one sbiRate_abs_lt_one)
+-      sbi7b_closed_form_internal'
+-
+-theorem not_fixedFrom_internal (τ : ℕ) :
+-    ¬ FixedFrom (traj .sbc sbc7_r sbc7_x0) τ ∧ ¬ FixedFrom (traj .sbi sbi7_r sbi7_x0) τ ∧
+-    ¬ FixedFrom (traj .sbc sbc6_r sbc6_x0) τ ∧ ¬ FixedFrom (traj .sbi sbi7b_r sbi7b_x0) τ :=
+-  ⟨sbc7_not_fixedFrom τ, sbi7_not_fixedFrom τ,
+-    not_fixedFrom_of_closed_form _ _ sbc6_v _ sbc6_closed_form_internal'
+-      (alternating _ _ (by norm_num) one_ne_zero) 1 (by simp [sbc6_v]) τ,
+-    not_fixedFrom_of_closed_form _ _ sbi_v _ sbi7b_closed_form_internal'
+-      (alternating _ _ sbiRate_neg one_ne_zero) 1 (by simp [sbi_v]) τ⟩
+-
+-theorem not_pseudoStableAfter_internal (xinf : Fin 7 → ℝ) (yinf : Fin 6 → ℝ) (τ : ℕ) :
+-    ¬ PseudoStableAfter (traj .sbc sbc7_r sbc7_x0) xinf τ ∧
+-    ¬ PseudoStableAfter (traj .sbi sbi7_r sbi7_x0) xinf τ ∧
+-    ¬ PseudoStableAfter (traj .sbc sbc6_r sbc6_x0) yinf τ ∧
+-    ¬ PseudoStableAfter (traj .sbi sbi7b_r sbi7b_x0) xinf τ := by
+-  have hq : |(-1 / 6 : ℝ)| < 1 := by rw [abs_of_neg (by norm_num)]; norm_num
+-  refine ⟨sbc7_not_pseudoStableAfter xinf τ, sbi7_not_pseudoStableAfter xinf τ, ?_, ?_⟩
+-  · exact not_pseudoStable_of_closed_form _ _ sbc6_v _
+-      (by simpa using tendsto_pow_atTop_nhds_zero_of_abs_lt_one hq) sbc6_closed_form_internal'
+-      (alternating _ _ (by norm_num) one_ne_zero) yinf τ
+-  · exact not_pseudoStable_of_closed_form _ _ sbi_v _
+-      (by simpa using tendsto_pow_atTop_nhds_zero_of_abs_lt_one sbiRate_abs_lt_one)
+-      sbi7b_closed_form_internal' (alternating _ _ sbiRate_neg one_ne_zero) xinf τ
+-
+-/-- A positive lower bound `c` on every term of the equi-topology set (with some `j ≠ i`) makes the
+-equi-topology distance positive. -/
+-theorem ref_equiTopologyDistance_pos_of {n : ℕ} (r z : Fin n → ℝ) (i j : Fin n) (hij : j ≠ i)
+-    (c : ℝ) (hc : 0 < c)
+-    (h : ∀ k, k ≠ i → c ≤ |(|z i - z k|) - r i| ∧ c ≤ |(|z i - z k|) - r k|) :
+-    0 < equiTopologyDistance r z i := by
+-  unfold equiTopologyDistance
+-  have hS : c ≤ sInf {d : ℝ | ∃ j, j ≠ i ∧ (d = |(|z i - z j|) - r i| ∨ d = |(|z i - z j|) - r j|)} := by
+-    have hne : Set.Nonempty
+-        {d : ℝ | ∃ j, j ≠ i ∧ (d = |(|z i - z j|) - r i| ∨ d = |(|z i - z j|) - r j|)} :=
+-      ⟨_, j, hij, Or.inl rfl⟩
+-    refine le_csInf hne ?_
+-    rintro d ⟨k, hk, rfl | rfl⟩
+-    · exact (h k hk).1
+-    · exact (h k hk).2
+-  linarith
+-
+-/-- The twin of `equiTopologyDistance_eq_zero_of` with the other agent's bound. -/
+-theorem ref_equiTopologyDistance_eq_zero_of' {n : ℕ} (r z : Fin n → ℝ) (i j : Fin n) (hij : j ≠ i)
+-    (h : |z i - z j| = r j) : equiTopologyDistance r z i = 0 := by
+-  unfold equiTopologyDistance
+-  have hS : sInf {d : ℝ | ∃ j, j ≠ i ∧ (d = |(|z i - z j|) - r i| ∨ d = |(|z i - z j|) - r j|)} = 0 := by
+-    apply IsLeast.csInf_eq
+-    refine ⟨⟨j, hij, Or.inr (by rw [h, sub_self, abs_zero])⟩, ?_⟩
+-    rintro d ⟨k, -, rfl | rfl⟩ <;> exact abs_nonneg _
+-  rw [hS, mul_zero]
+-
+-/-- At the limit of the 6-agent SBC system every term of the equi-topology set is at least `10`. -/
+-theorem ref_sbc6_etd_pos (i : Fin 6) : 0 < equiTopologyDistance sbc6_r sbc6_lim i := by
+-  refine ref_equiTopologyDistance_pos_of _ _ i (i + 1) (by fin_cases i <;> decide) 10
+-    (by norm_num) ?_
+-  intro k hk
+-  fin_cases i <;> fin_cases k <;> first | exact absurd rfl hk | norm_num [sbc6_r, sbc6_lim]
+-
+-/-- At the limit of the §5 SBI system every term of the equi-topology set is at least `5`. -/
+-theorem ref_sbi7b_etd_pos (i : Fin 7) : 0 < equiTopologyDistance sbi7b_r sbi7b_lim i := by
+-  refine ref_equiTopologyDistance_pos_of _ _ i (i + 1) (by fin_cases i <;> decide) 5
+-    (by norm_num) ?_
+-  intro k hk
+-  fin_cases i <;> fin_cases k <;> first | exact absurd rfl hk | norm_num [sbi7b_r, sbi7b_lim]
+-
+-theorem alternating_fvct_internal (t : ℕ) :
+-    fvct .sbc sbc7_r (traj .sbc sbc7_r sbc7_x0 t) = sbc7_lim ∧
+-    fvct .sbi sbi7_r (traj .sbi sbi7_r sbi7_x0 t) = sbi7_lim :=
+-  ⟨sbc7_fvct t, sbi7_fvct t⟩
+-
+-theorem equiTopologyDistance_pos_internal :
+-    (∀ i, 0 < equiTopologyDistance sbc6_r sbc6_lim i) ∧
+-    (∀ i, 0 < equiTopologyDistance sbi7b_r sbi7b_lim i) :=
+-  ⟨ref_sbc6_etd_pos, ref_sbi7b_etd_pos⟩
+-
+-theorem equiTopologyDistance_eq_zero_internal :
+-    (∀ i ∈ ({2, 3, 4} : Finset (Fin 7)), equiTopologyDistance sbc7_r sbc7_lim i = 0) ∧
+-    (∀ i ∈ ({1, 3, 5} : Finset (Fin 7)), equiTopologyDistance sbi7_r sbi7_lim i = 0) := by
+-  constructor
+-  · intro i hi
+-    simp only [Finset.mem_insert, Finset.mem_singleton] at hi
+-    rcases hi with rfl | rfl | rfl
+-    · exact ref_equiTopologyDistance_eq_zero_of' _ _ 2 3 (by decide)
+-        (by norm_num [sbc7_r, sbc7_lim])
+-    · exact equiTopologyDistance_eq_zero_of _ _ 3 2 (by decide) (by norm_num [sbc7_r, sbc7_lim])
+-    · exact ref_equiTopologyDistance_eq_zero_of' _ _ 4 3 (by decide)
+-        (by norm_num [sbc7_r, sbc7_lim])
+-  · intro i hi
+-    simp only [Finset.mem_insert, Finset.mem_singleton] at hi
+-    rcases hi with rfl | rfl | rfl
+-    · exact equiTopologyDistance_eq_zero_of _ _ 1 3 (by decide) (by norm_num [sbi7_r, sbi7_lim])
+-    · exact ref_equiTopologyDistance_eq_zero_of' _ _ 3 1 (by decide)
+-        (by norm_num [sbi7_r, sbi7_lim])
+-    · exact equiTopologyDistance_eq_zero_of _ _ 5 3 (by decide) (by norm_num [sbi7_r, sbi7_lim])
+-
+-theorem not_conjecture22_sbc_seven_internal : ¬ Conjecture22ForAgents .sbc 7 := by
+-  intro h
+-  obtain ⟨τ, hτ⟩ := h sbc7_r sbc7_x0 sbc7_r_pos
+-  obtain ⟨t, ht, hne⟩ := sbc7_digraph_not_eventually_constant_internal τ
+-  exact hne (hτ t ht)
+-
+-theorem not_conjecture22_sbi_seven_internal : ¬ Conjecture22ForAgents .sbi 7 := by
+-  intro h
+-  obtain ⟨τ, hτ⟩ := h sbi7_r sbi7_x0 sbi7_r_pos
+-  obtain ⟨t, ht, hne⟩ := sbi7_digraph_not_eventually_constant_internal τ
+-  exact hne (hτ t ht)
+-
+-theorem small_tendsto_internal :
+-    Tendsto (traj .sbc sbc5_r sbc5_x0) atTop (𝓝 sbc5_lim) ∧
+-    Tendsto (traj .sbi sbi6_r sbi6_x0) atTop (𝓝 sbi6_lim) :=
+-  ⟨sbc5_tendsto, sbi6_tendsto⟩
+-
+-theorem small_digraph_constant_internal (t : ℕ) :
+-    proximityDigraph .sbc sbc5_r (traj .sbc sbc5_r sbc5_x0 t) =
+-      proximityDigraph .sbc sbc5_r sbc5_x0 ∧
+-    proximityDigraph .sbi sbi6_r (traj .sbi sbi6_r sbi6_x0 t) =
+-      proximityDigraph .sbi sbi6_r sbi6_x0 :=
+-  ⟨sbc5_digraph_constant t, sbi6_digraph_constant t⟩
+-
+-theorem small_not_fixedFrom_internal (τ : ℕ) :
+-    ¬ FixedFrom (traj .sbc sbc5_r sbc5_x0) τ ∧ ¬ FixedFrom (traj .sbi sbi6_r sbi6_x0) τ :=
+-  ⟨sbc5_not_fixedFrom τ, sbi6_not_fixedFrom τ⟩
+-
+-theorem small_not_pseudoStableAfter_internal (xinf : Fin 5 → ℝ) (yinf : Fin 6 → ℝ) (τ : ℕ) :
+-    ¬ PseudoStableAfter (traj .sbc sbc5_r sbc5_x0) xinf τ ∧
+-    ¬ PseudoStableAfter (traj .sbi sbi6_r sbi6_x0) yinf τ :=
+-  ⟨sbc5_not_pseudoStableAfter xinf τ, sbi6_not_pseudoStableAfter yinf τ⟩
+-
+-end HK
+diff --git a/HK/SBC5.lean b/HK/SBC5.lean
+deleted file mode 100644
+index 05608fe69..000000000
+--- a/HK/SBC5.lean
++++ /dev/null
+@@ -1,213 +0,0 @@
+-module
+-
+-public import HK.Basic
+-
+-/-!
+-# Five SBC agents with a constant digraph and oscillating convergence (this development)
+-
+-`x(0) = (0, 7, 12 − √2, 19, 24)`, `r = (3, 9, 9, 9, 3)`;
+-`x(t) = (0, 6, 12, 18, 24) + ((1 − √2)/3)ᵗ (0, 1, −√2, 1, 0)`. The neighbourhood table
+-`{0}, {0, 1, 2}, {1, 2, 3}, {2, 3, 4}, {4}` is the same at every `t`, yet agents 1, 2, 3 alternate sides
+-of their limits. Hence Theorem 6.4(iv) and Conjecture 2.3 fail already with five SBC agents. The
+-identities used: `√2² = 2`; `3λ − 1 = −√2`; `λ√2 = (√2 − 2)/3`; the rate lies in `(−1/6, 0)`
+-(`1.4 < √2 < 1.5`), so `λ ≤ λᵗ ≤ 1` for every `t` and one table serves both parities.
+--/
+-
+-@[expose] public section
+-
+-namespace HK
+-
+-open Filter Topology
+-
+-theorem sbc5_r_pos : ∀ i, 0 < sbc5_r i := by
+-  intro i
+-  fin_cases i <;> simp [sbc5_r]
+-
+-theorem sbc_sqrt_two_sq : Real.sqrt 2 ^ 2 = 2 := Real.sq_sqrt (by norm_num)
+-
+-theorem sbc_sqrt_two_bounds : 1.4 < Real.sqrt 2 ∧ Real.sqrt 2 < 1.5 := by
+-  constructor
+-  · exact (Real.lt_sqrt (by norm_num)).2 (by norm_num)
+-  · exact (Real.sqrt_lt' (by norm_num)).2 (by norm_num)
+-
+-theorem sbc5Rate_neg : sbc5Rate < 0 := by
+-  obtain ⟨h1, -⟩ := sbc_sqrt_two_bounds
+-  unfold sbc5Rate
+-  linarith
+-
+-theorem abs_sbc5Rate_lt_one : |sbc5Rate| < 1 := by
+-  obtain ⟨h1, h2⟩ := sbc_sqrt_two_bounds
+-  unfold sbc5Rate
+-  rw [abs_lt]
+-  constructor <;> linarith
+-
+-theorem sbc_rate_gt : -1 / 6 < sbc5Rate := by
+-  obtain ⟨-, h2⟩ := sbc_sqrt_two_bounds
+-  unfold sbc5Rate
+-  linarith
+-
+-/-- `λ ≤ λᵗ ≤ 1` for every `t`. -/
+-theorem sbc_pow_bounds (t : ℕ) : sbc5Rate ≤ sbc5Rate ^ t ∧ sbc5Rate ^ t ≤ 1 := by
+-  obtain ⟨h1, h2⟩ := sbc_sqrt_two_bounds
+-  have h : sbc5Rate = -((Real.sqrt 2 - 1) / 3) := by unfold sbc5Rate; ring
+-  rw [h]
+-  have hc0 : 0 < (Real.sqrt 2 - 1) / 3 := by linarith
+-  have hc1 : (Real.sqrt 2 - 1) / 3 ≤ 1 := by linarith
+-  rcases Nat.even_or_odd t with ht | ht
+-  · rw [ht.neg_pow]
+-    have h0 : 0 < ((Real.sqrt 2 - 1) / 3) ^ t := pow_pos hc0 t
+-    have h1 : ((Real.sqrt 2 - 1) / 3) ^ t ≤ 1 := pow_le_one₀ hc0.le hc1
+-    constructor <;> linarith
+-  · rw [ht.neg_pow]
+-    have h0 : 0 < ((Real.sqrt 2 - 1) / 3) ^ t := pow_pos hc0 t
+-    have h1 : ((Real.sqrt 2 - 1) / 3) ^ t ≤ (Real.sqrt 2 - 1) / 3 :=
+-      pow_le_of_le_one hc0.le hc1 (by rintro rfl; simp at ht)
+-    constructor <;> linarith
+-
+-/-- The five-agent table for every offset `λ ≤ u ≤ 1`. -/
+-theorem sbc_table (u : ℝ) (hu0 : sbc5Rate ≤ u) (hu1 : u ≤ 1) :
+-    neighbors .sbc sbc5_r (fun i => sbc5_lim i + u * sbc5_v i) =
+-      ![{0}, {0, 1, 2}, {1, 2, 3}, {2, 3, 4}, {4}] := by
+-  obtain ⟨hs1, hs2⟩ := sbc_sqrt_two_bounds
+-  have hr := sbc_rate_gt
+-  have hs0 : 0 ≤ Real.sqrt 2 := Real.sqrt_nonneg 2
+-  have hp0 : -1 / 2 ≤ u * Real.sqrt 2 := by nlinarith
+-  have hp1 : u * Real.sqrt 2 ≤ 3 / 2 := by nlinarith
+-  funext i
+-  ext j
+-  fin_cases i <;> fin_cases j <;>
+-    simp [neighbors, Model.bound, sbc5_r, sbc5_lim, sbc5_v, abs_le] <;>
+-    (try constructor) <;> (try intro) <;> linarith
+-
+-theorem sbc_step (u : ℝ) (hu0 : sbc5Rate ≤ u) (hu1 : u ≤ 1) :
+-    step .sbc sbc5_r (fun i => sbc5_lim i + u * sbc5_v i) =
+-      fun i => sbc5_lim i + (sbc5Rate * u) * sbc5_v i := by
+-  have h2 := sbc_sqrt_two_sq
+-  funext i
+-  rw [step_apply, sbc_table u hu0 hu1]
+-  fin_cases i
+-  · simp [sbc5_lim, sbc5_v]
+-  · simp [Finset.sum_insert, sbc5_lim, sbc5_v, sbc5Rate]; ring
+-  · simp [Finset.sum_insert, sbc5_lim, sbc5_v, sbc5Rate]; linear_combination (-u / 3) * h2
+-  · simp [Finset.sum_insert, sbc5_lim, sbc5_v, sbc5Rate]; ring
+-  · simp [sbc5_lim, sbc5_v]
+-
+-theorem sbc5_closed_form_internal (t : ℕ) :
+-    traj .sbc sbc5_r sbc5_x0 t = fun i => sbc5_lim i + sbc5Rate ^ t * sbc5_v i := by
+-  induction t with
+-  | zero =>
+-    funext i
+-    fin_cases i <;> simp [traj, sbc5_x0, sbc5_lim, sbc5_v] <;> ring
+-  | succ t ih =>
+-    have h : traj .sbc sbc5_r sbc5_x0 (t + 1) = step .sbc sbc5_r (traj .sbc sbc5_r sbc5_x0 t) := by
+-      simp only [traj]
+-      exact Function.iterate_succ_apply' _ _ _
+-    obtain ⟨h0, h1⟩ := sbc_pow_bounds t
+-    rw [h, ih, sbc_step _ h0 h1]
+-    funext i; rw [pow_succ]; ring
+-
+-theorem sbc5_neighbors_internal (t : ℕ) :
+-    neighbors .sbc sbc5_r (traj .sbc sbc5_r sbc5_x0 t) =
+-      ![{0}, {0, 1, 2}, {1, 2, 3}, {2, 3, 4}, {4}] := by
+-  obtain ⟨h0, h1⟩ := sbc_pow_bounds t
+-  rw [sbc5_closed_form_internal, sbc_table _ h0 h1]
+-
+-theorem sbc_closed_form' (t : ℕ) :
+-    traj .sbc sbc5_r sbc5_x0 t = fun i => sbc5_lim i + sbc5Rate ^ t * 1 * sbc5_v i := by
+-  rw [sbc5_closed_form_internal]; funext i; ring
+-
+-theorem sbc_rate_tendsto : Tendsto (fun t : ℕ => sbc5Rate ^ t * 1) atTop (𝓝 0) := by
+-  simpa using tendsto_pow_atTop_nhds_zero_of_abs_lt_one abs_sbc5Rate_lt_one
+-
+-theorem sbc5_tendsto : Tendsto (traj .sbc sbc5_r sbc5_x0) atTop (𝓝 sbc5_lim) :=
+-  tendsto_of_closed_form _ _ sbc5_v _ sbc_rate_tendsto sbc_closed_form'
+-
+-theorem sbc5_digraph_constant (t : ℕ) :
+-    proximityDigraph .sbc sbc5_r (traj .sbc sbc5_r sbc5_x0 t) =
+-      proximityDigraph .sbc sbc5_r sbc5_x0 := by
+-  have h0 : traj .sbc sbc5_r sbc5_x0 0 = sbc5_x0 := rfl
+-  have := sbc5_neighbors_internal 0
+-  rw [h0] at this
+-  simp only [proximityDigraph, sbc5_neighbors_internal, this]
+-
+-theorem sbc5_not_fixedFrom (τ : ℕ) : ¬ FixedFrom (traj .sbc sbc5_r sbc5_x0) τ :=
+-  not_fixedFrom_of_closed_form _ _ sbc5_v _ sbc_closed_form'
+-    (alternating _ _ sbc5Rate_neg one_ne_zero) 1 (by simp [sbc5_v]) τ
+-
+-theorem sbc5_not_pseudoStableAfter (xinf : Fin 5 → ℝ) (τ : ℕ) :
+-    ¬ PseudoStableAfter (traj .sbc sbc5_r sbc5_x0) xinf τ :=
+-  not_pseudoStable_of_closed_form _ _ sbc5_v _ sbc_rate_tendsto sbc_closed_form'
+-    (alternating _ _ sbc5Rate_neg one_ne_zero) xinf τ
+-
+-theorem not_conjecture23_sbc_five_internal : ¬ Conjecture23ForAgents .sbc 5 := by
+-  intro h
+-  obtain ⟨τ, hf | ⟨xinf, hps⟩⟩ := h sbc5_r sbc5_x0 sbc5_r_pos
+-  · exact sbc5_not_fixedFrom τ hf
+-  · exact sbc5_not_pseudoStableAfter xinf τ hps
+-
+-theorem not_theorem64iv_sbc_five_internal : ¬ Theorem64ivForAgents .sbc 5 := by
+-  intro h
+-  obtain ⟨t₂, -, hf | ⟨xinf, hps⟩⟩ := h sbc5_r sbc5_x0 sbc5_r_pos 0
+-    (fun t _ => by simp only [proximityDigraph, sbc5_neighbors_internal])
+-  · exact sbc5_not_fixedFrom t₂ hf
+-  · exact sbc5_not_pseudoStableAfter xinf t₂ hps
+-
+-theorem sbc_adj_lim (t : ℕ) :
+-    (adjMatrix .sbc sbc5_r (traj .sbc sbc5_r sbc5_x0 t)).mulVec sbc5_lim = sbc5_lim := by
+-  funext i
+-  rw [adj_mulVec, sbc5_neighbors_internal]
+-  fin_cases i <;> simp [Finset.sum_insert, sbc5_lim] <;> norm_num
+-
+-theorem sbc_adj_v (t : ℕ) :
+-    (adjMatrix .sbc sbc5_r (traj .sbc sbc5_r sbc5_x0 t)).mulVec sbc5_v = sbc5Rate • sbc5_v := by
+-  have h2 := sbc_sqrt_two_sq
+-  funext i
+-  rw [adj_mulVec, sbc5_neighbors_internal]
+-  fin_cases i
+-  · simp [sbc5_v]
+-  · simp [Finset.sum_insert, sbc5_v, sbc5Rate]; ring
+-  · simp [Finset.sum_insert, sbc5_v, sbc5Rate]; linear_combination (-1 / 3 : ℝ) * h2
+-  · simp [Finset.sum_insert, sbc5_v, sbc5Rate]; ring
+-  · simp [sbc5_v]
+-
+-theorem sbc_adj_pow (t k : ℕ) (c : ℝ) :
+-    (adjMatrix .sbc sbc5_r (traj .sbc sbc5_r sbc5_x0 t) ^ k).mulVec (sbc5_lim + c • sbc5_v) =
+-      sbc5_lim + (sbc5Rate ^ k * c) • sbc5_v := by
+-  induction k with
+-  | zero => simp
+-  | succ k ih =>
+-    rw [pow_succ', ← Matrix.mulVec_mulVec, ih, Matrix.mulVec_add, Matrix.mulVec_smul,
+-      sbc_adj_lim, sbc_adj_v, smul_smul, pow_succ]
+-    congr 2
+-    ring
+-
+-/-- The final value at constant topology along the trajectory is the limit at every `t`. -/
+-theorem sbc5_fvct_internal (t : ℕ) : fvct .sbc sbc5_r (traj .sbc sbc5_r sbc5_x0 t) = sbc5_lim := by
+-  have hx : traj .sbc sbc5_r sbc5_x0 t = sbc5_lim + (sbc5Rate ^ t) • sbc5_v := by
+-    rw [sbc5_closed_form_internal]; funext i; simp
+-  have h1 : Tendsto (fun k : ℕ => sbc5_lim + (sbc5Rate ^ k * sbc5Rate ^ t) • sbc5_v)
+-      atTop (𝓝 sbc5_lim) := by
+-    have h0 := ((tendsto_pow_atTop_nhds_zero_of_abs_lt_one abs_sbc5Rate_lt_one).mul_const
+-      (sbc5Rate ^ t)).smul_const sbc5_v
+-    have h2 := h0.const_add sbc5_lim
+-    rwa [zero_mul, zero_smul, add_zero] at h2
+-  have hA := sbc_adj_pow t
+-  unfold fvct
+-  set A := adjMatrix .sbc sbc5_r (traj .sbc sbc5_r sbc5_x0 t) with hAdef
+-  have hf : (fun k : ℕ => (A ^ k).mulVec (traj .sbc sbc5_r sbc5_x0 t)) =
+-      fun k => sbc5_lim + (sbc5Rate ^ k * sbc5Rate ^ t) • sbc5_v := by
+-    funext k; rw [hx, hA]
+-  rw [hf]
+-  exact h1.limUnder_eq
+-
+-/-- The per-step convergence factor of agents 1, 2, 3 is `λ` at every `t`. -/
+-theorem sbc5_perStepFactor_internal (t : ℕ) (i : Fin 5) (hi : i ∈ ({1, 2, 3} : Finset (Fin 5))) :
+-    perStepFactor .sbc sbc5_r (traj .sbc sbc5_r sbc5_x0) i t = sbc5Rate := by
+-  have hv : sbc5_v i ≠ 0 := by
+-    fin_cases i <;> simp_all [sbc5_v]
+-  have hp : sbc5Rate ^ t ≠ 0 := pow_ne_zero _ sbc5Rate_neg.ne
+-  rw [perStepFactor, sbc5_fvct_internal, sbc5_closed_form_internal, sbc5_closed_form_internal]
+-  simp only [add_sub_cancel_left, pow_succ]
+-  field_simp
+-
+-end HK
+diff --git a/HK/SBC5Family.lean b/HK/SBC5Family.lean
+deleted file mode 100644
+index 5e6e73936..000000000
+--- a/HK/SBC5Family.lean
++++ /dev/null
+@@ -1,167 +0,0 @@
+-module
+-
+-public import HK.SBC5
+-
+-/-!
+-# Perpetual SBC oscillation with arbitrarily small radius spread
+-
+-For `0 < δ ≤ 1`, the five-agent system has initial state `sbc5_lim + δ • sbc5_v`
+-and radii `(6-3δ, 6+3δ, 6+3δ, 6+3δ, 6-3δ)`. Its constant neighborhood table is
+-the same as that of `sbc5_x0`, and its offset at time `t` is `sbc5Rate^t * δ • sbc5_v`.
+-Thus the radius ratio can be arbitrarily close to one while the three interior agents
+-continue crossing their limits forever.
+--/
+-
+-@[expose] public section
+-
+-namespace HK
+-
+-open Filter Topology
+-
+-theorem sbc5Family_r_pos (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1) :
+-    ∀ i, 0 < sbc5Family_r δ i := by
+-  intro i
+-  fin_cases i <;> simp [sbc5Family_r] <;> linarith
+-
+-/-- The family is genuinely heterogeneous whenever the amplitude is positive. -/
+-theorem sbc5Family_r_strict (δ : ℝ) (hδ0 : 0 < δ) :
+-    sbc5Family_r δ 0 < sbc5Family_r δ 1 := by
+-  simp only [sbc5Family_r, Matrix.cons_val_zero, Matrix.cons_val_one]
+-  linarith
+-
+-/-- The fixed table holds throughout the whole interval `-δ ≤ u ≤ δ`. -/
+-theorem sbc5Family_table (δ u : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1)
+-    (hu0 : -δ ≤ u) (hu1 : u ≤ δ) :
+-    neighbors .sbc (sbc5Family_r δ) (fun i => sbc5_lim i + u * sbc5_v i) =
+-      ![{0}, {0, 1, 2}, {1, 2, 3}, {2, 3, 4}, {4}] := by
+-  obtain ⟨hs1, hs2⟩ := sbc_sqrt_two_bounds
+-  have hs0 : 0 ≤ Real.sqrt 2 := Real.sqrt_nonneg 2
+-  have hmul0 := mul_le_mul_of_nonneg_right hu0 hs0
+-  have hmul1 := mul_le_mul_of_nonneg_right hu1 hs0
+-  have hδs := mul_le_mul_of_nonneg_left hs2.le hδ0.le
+-  have hp0 : -(3 / 2) * δ ≤ u * Real.sqrt 2 := by nlinarith
+-  have hp1 : u * Real.sqrt 2 ≤ (3 / 2) * δ := by nlinarith
+-  funext i
+-  ext j
+-  fin_cases i <;> fin_cases j <;>
+-    simp [neighbors, Model.bound, sbc5Family_r, sbc5_lim, sbc5_v, abs_le] <;>
+-    (try constructor) <;> (try intro) <;> linarith
+-
+-theorem sbc5Family_step (δ u : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1)
+-    (hu0 : -δ ≤ u) (hu1 : u ≤ δ) :
+-    step .sbc (sbc5Family_r δ) (fun i => sbc5_lim i + u * sbc5_v i) =
+-      fun i => sbc5_lim i + (sbc5Rate * u) * sbc5_v i := by
+-  have h2 := sbc_sqrt_two_sq
+-  funext i
+-  rw [step_apply, sbc5Family_table δ u hδ0 hδ1 hu0 hu1]
+-  fin_cases i
+-  · simp [sbc5_lim, sbc5_v]
+-  · simp [Finset.sum_insert, sbc5_lim, sbc5_v, sbc5Rate]; ring
+-  · simp [Finset.sum_insert, sbc5_lim, sbc5_v, sbc5Rate]
+-    linear_combination (-u / 3) * h2
+-  · simp [Finset.sum_insert, sbc5_lim, sbc5_v, sbc5Rate]; ring
+-  · simp [sbc5_lim, sbc5_v]
+-
+-theorem sbc5Family_pow_bounds (δ : ℝ) (hδ0 : 0 < δ) (t : ℕ) :
+-    -δ ≤ sbc5Rate ^ t * δ ∧ sbc5Rate ^ t * δ ≤ δ := by
+-  obtain ⟨h0, h1⟩ := sbc_pow_bounds t
+-  have hr := sbc_rate_gt
+-  have hlo : -1 ≤ sbc5Rate ^ t := by linarith
+-  constructor <;> nlinarith
+-
+-theorem sbc5Family_closed_form_internal (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1)
+-    (t : ℕ) :
+-    traj .sbc (sbc5Family_r δ) (sbc5Family_x0 δ) t =
+-      fun i => sbc5_lim i + (sbc5Rate ^ t * δ) * sbc5_v i := by
+-  induction t with
+-  | zero =>
+-    funext i
+-    simp [traj, sbc5Family_x0]
+-  | succ t ih =>
+-    have h : traj .sbc (sbc5Family_r δ) (sbc5Family_x0 δ) (t + 1) =
+-        step .sbc (sbc5Family_r δ)
+-          (traj .sbc (sbc5Family_r δ) (sbc5Family_x0 δ) t) := by
+-      simp only [traj]
+-      exact Function.iterate_succ_apply' _ _ _
+-    obtain ⟨h0, h1⟩ := sbc5Family_pow_bounds δ hδ0 t
+-    rw [h, ih, sbc5Family_step δ _ hδ0 hδ1 h0 h1]
+-    funext i
+-    rw [pow_succ]
+-    ring
+-
+-theorem sbc5Family_neighbors_internal (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1)
+-    (t : ℕ) :
+-    neighbors .sbc (sbc5Family_r δ)
+-      (traj .sbc (sbc5Family_r δ) (sbc5Family_x0 δ) t) =
+-      ![{0}, {0, 1, 2}, {1, 2, 3}, {2, 3, 4}, {4}] := by
+-  obtain ⟨h0, h1⟩ := sbc5Family_pow_bounds δ hδ0 t
+-  rw [sbc5Family_closed_form_internal δ hδ0 hδ1,
+-    sbc5Family_table δ _ hδ0 hδ1 h0 h1]
+-
+-theorem sbc5Family_rate_tendsto (δ : ℝ) :
+-    Tendsto (fun t : ℕ => sbc5Rate ^ t * δ) atTop (𝓝 0) := by
+-  simpa using
+-    (tendsto_pow_atTop_nhds_zero_of_abs_lt_one abs_sbc5Rate_lt_one).mul_const δ
+-
+-theorem sbc5Family_tendsto (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1) :
+-    Tendsto (traj .sbc (sbc5Family_r δ) (sbc5Family_x0 δ)) atTop (𝓝 sbc5_lim) :=
+-  tendsto_of_closed_form _ _ sbc5_v _ (sbc5Family_rate_tendsto δ)
+-    (sbc5Family_closed_form_internal δ hδ0 hδ1)
+-
+-theorem sbc5Family_digraph_constant (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1)
+-    (t : ℕ) :
+-    proximityDigraph .sbc (sbc5Family_r δ)
+-        (traj .sbc (sbc5Family_r δ) (sbc5Family_x0 δ) t) =
+-      proximityDigraph .sbc (sbc5Family_r δ) (sbc5Family_x0 δ) := by
+-  have h0 : traj .sbc (sbc5Family_r δ) (sbc5Family_x0 δ) 0 = sbc5Family_x0 δ := rfl
+-  have ht0 := sbc5Family_neighbors_internal δ hδ0 hδ1 0
+-  rw [h0] at ht0
+-  simp only [proximityDigraph, sbc5Family_neighbors_internal δ hδ0 hδ1, ht0]
+-
+-theorem sbc5Family_not_fixedFrom (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1)
+-    (τ : ℕ) :
+-    ¬ FixedFrom (traj .sbc (sbc5Family_r δ) (sbc5Family_x0 δ)) τ :=
+-  not_fixedFrom_of_closed_form _ _ sbc5_v _
+-    (sbc5Family_closed_form_internal δ hδ0 hδ1)
+-    (alternating _ _ sbc5Rate_neg hδ0.ne') 1 (by simp [sbc5_v]) τ
+-
+-theorem sbc5Family_not_pseudoStableAfter (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1)
+-    (xinf : Fin 5 → ℝ) (τ : ℕ) :
+-    ¬ PseudoStableAfter (traj .sbc (sbc5Family_r δ) (sbc5Family_x0 δ)) xinf τ :=
+-  not_pseudoStable_of_closed_form _ _ sbc5_v _ (sbc5Family_rate_tendsto δ)
+-    (sbc5Family_closed_form_internal δ hδ0 hδ1)
+-    (alternating _ _ sbc5Rate_neg hδ0.ne') xinf τ
+-
+-/-- No positive bound on relative radius spread restores eventual pseudo-stability, even
+-for a constant-digraph SBC system on five agents. The pairwise inequalities express that
+-the largest radius divided by the smallest is strictly below `1+ε`. -/
+-theorem sbc5_near_homogeneous_internal (ε : ℝ) (hε : 0 < ε) :
+-    ∃ r x₀ : Fin 5 → ℝ,
+-      (∀ i, 0 < r i) ∧
+-      (∀ i j, r i < (1 + ε) * r j) ∧
+-      r 0 < r 1 ∧
+-      (∀ t, proximityDigraph .sbc r (traj .sbc r x₀ t) =
+-        proximityDigraph .sbc r x₀) ∧
+-      Tendsto (traj .sbc r x₀) atTop (𝓝 sbc5_lim) ∧
+-      (∀ τ, ¬ FixedFrom (traj .sbc r x₀) τ) ∧
+-      (∀ xinf τ, ¬ PseudoStableAfter (traj .sbc r x₀) xinf τ) := by
+-  let δ : ℝ := min (1 / 2) (ε / 4)
+-  have hδ0 : 0 < δ := lt_min (by norm_num) (by positivity)
+-  have hδhalf : δ ≤ 1 / 2 := min_le_left _ _
+-  have hδε : δ ≤ ε / 4 := min_le_right _ _
+-  have hδ1 : δ ≤ 1 := by linarith
+-  have hεδ := mul_le_mul_of_nonneg_left hδhalf hε.le
+-  have hspread : 6 + 3 * δ < (1 + ε) * (6 - 3 * δ) := by nlinarith
+-  refine ⟨sbc5Family_r δ, sbc5Family_x0 δ, sbc5Family_r_pos δ hδ0 hδ1, ?_,
+-    sbc5Family_r_strict δ hδ0, sbc5Family_digraph_constant δ hδ0 hδ1,
+-    sbc5Family_tendsto δ hδ0 hδ1, sbc5Family_not_fixedFrom δ hδ0 hδ1,
+-    sbc5Family_not_pseudoStableAfter δ hδ0 hδ1⟩
+-  intro i j
+-  have hi : sbc5Family_r δ i ≤ 6 + 3 * δ := by
+-    fin_cases i <;> simp [sbc5Family_r] <;> linarith
+-  have hj : 6 - 3 * δ ≤ sbc5Family_r δ j := by
+-    fin_cases j <;> simp [sbc5Family_r] <;> linarith
+-  have hm := mul_le_mul_of_nonneg_left hj (show 0 ≤ 1 + ε by linarith)
+-  exact lt_of_le_of_lt hi (lt_of_lt_of_le hspread hm)
+-
+-end HK
+diff --git a/HK/SBC6.lean b/HK/SBC6.lean
+deleted file mode 100644
+index 632d0890a..000000000
+--- a/HK/SBC6.lean
++++ /dev/null
+@@ -1,135 +0,0 @@
+-module
+-
+-public import HK.Basic
+-
+-/-!
+-# The 6-agent SBC system (Hegarty–Ognissanti–Wedin §4)
+-
+-`x(0) = (0, 22, 37, 103, 118, 140)`, `r = (10, 70, 70, 70, 70, 10)`;
+-`x(t) = (0, 20, 40, 100, 120, 140) + (−1/6)ᵗ (0, 2, −3, 3, −2, 0)`. The neighbourhood table is the
+-same at every `t` (so the proximity digraph is constant), yet agents 1–4 alternate sides of their
+-limits; their per-step convergence factor (Definition 6.1, with the final value at constant topology
+-of Definition 3.1 equal to the limit) is `−1/6` at every `t`.
+--/
+-
+-@[expose] public section
+-
+-namespace HK
+-
+-open Filter Topology
+-
+-/-- The SBC-6 table for every offset `-1/6 ≤ u ≤ 1`. -/
+-theorem sbc6_table (u : ℝ) (h0 : -1 / 6 ≤ u) (h1 : u ≤ 1) :
+-    neighbors .sbc sbc6_r (fun i => sbc6_lim i + u * sbc6_v i) =
+-      ![{0}, {0, 1, 2}, {0, 1, 2, 3}, {2, 3, 4, 5}, {3, 4, 5}, {5}] := by
+-  funext i
+-  ext j
+-  fin_cases i <;> fin_cases j <;>
+-    simp [neighbors, Model.bound, sbc6_r, sbc6_lim, sbc6_v, abs_le] <;>
+-    (try constructor) <;> (try intro) <;> linarith
+-
+-theorem sbc6_step (u : ℝ) (h0 : -1 / 6 ≤ u) (h1 : u ≤ 1) :
+-    step .sbc sbc6_r (fun i => sbc6_lim i + u * sbc6_v i) =
+-      fun i => sbc6_lim i + (-1 / 6 * u) * sbc6_v i := by
+-  funext i
+-  rw [step_apply, sbc6_table u h0 h1]
+-  fin_cases i <;> simp [Finset.sum_insert, sbc6_lim, sbc6_v] <;> ring
+-
+-/-- §4: the closed form. -/
+-theorem sbc6_closed_form_internal (t : ℕ) :
+-    traj .sbc sbc6_r sbc6_x0 t = fun i => sbc6_lim i + (-1 / 6 : ℝ) ^ t * sbc6_v i := by
+-  induction t with
+-  | zero =>
+-    funext i
+-    fin_cases i <;> simp [traj, sbc6_x0, sbc6_lim, sbc6_v] <;> norm_num
+-  | succ t ih =>
+-    have h : traj .sbc sbc6_r sbc6_x0 (t + 1) = step .sbc sbc6_r (traj .sbc sbc6_r sbc6_x0 t) := by
+-      simp only [traj]
+-      exact Function.iterate_succ_apply' _ _ _
+-    obtain ⟨h0, h1⟩ := pow_bounds t
+-    rw [h, ih, sbc6_step _ h0 h1]
+-    funext i; rw [pow_succ]; ring
+-
+-/-- §4: the neighbourhood table, the same at every `t`. -/
+-theorem sbc6_neighbors_internal (t : ℕ) :
+-    neighbors .sbc sbc6_r (traj .sbc sbc6_r sbc6_x0 t) =
+-      ![{0}, {0, 1, 2}, {0, 1, 2, 3}, {2, 3, 4, 5}, {3, 4, 5}, {5}] := by
+-  obtain ⟨h0, h1⟩ := pow_bounds t
+-  rw [sbc6_closed_form_internal, sbc6_table _ h0 h1]
+-
+-theorem sbc6_closed_form_internal' (t : ℕ) :
+-    traj .sbc sbc6_r sbc6_x0 t = fun i => sbc6_lim i + (-1 / 6 : ℝ) ^ t * 1 * sbc6_v i := by
+-  rw [sbc6_closed_form_internal]; funext i; ring
+-
+-theorem sbc6_r_pos : ∀ i, 0 < sbc6_r i := by
+-  intro i
+-  fin_cases i <;> simp [sbc6_r]
+-
+-theorem sbc6_digraph_constant_internal (t : ℕ) :
+-    proximityDigraph .sbc sbc6_r (traj .sbc sbc6_r sbc6_x0 t) =
+-      proximityDigraph .sbc sbc6_r sbc6_x0 := by
+-  have h0 : traj .sbc sbc6_r sbc6_x0 0 = sbc6_x0 := rfl
+-  have := sbc6_neighbors_internal 0
+-  rw [h0] at this
+-  simp only [proximityDigraph, sbc6_neighbors_internal, this]
+-
+-theorem sbc6_adj_lim (t : ℕ) :
+-    (adjMatrix .sbc sbc6_r (traj .sbc sbc6_r sbc6_x0 t)).mulVec sbc6_lim = sbc6_lim := by
+-  funext i
+-  rw [adj_mulVec, sbc6_neighbors_internal]
+-  fin_cases i <;> simp [Finset.sum_insert, sbc6_lim] <;> norm_num
+-
+-theorem sbc6_adj_v (t : ℕ) :
+-    (adjMatrix .sbc sbc6_r (traj .sbc sbc6_r sbc6_x0 t)).mulVec sbc6_v = (-1 / 6 : ℝ) • sbc6_v := by
+-  funext i
+-  rw [adj_mulVec, sbc6_neighbors_internal]
+-  fin_cases i <;> simp [Finset.sum_insert, sbc6_v] <;> norm_num
+-
+-theorem sbc6_adj_pow (t k : ℕ) (c : ℝ) :
+-    (adjMatrix .sbc sbc6_r (traj .sbc sbc6_r sbc6_x0 t) ^ k).mulVec (sbc6_lim + c • sbc6_v) =
+-      sbc6_lim + ((-1 / 6 : ℝ) ^ k * c) • sbc6_v := by
+-  induction k with
+-  | zero => simp
+-  | succ k ih =>
+-    rw [pow_succ', ← Matrix.mulVec_mulVec, ih, Matrix.mulVec_add, Matrix.mulVec_smul,
+-      sbc6_adj_lim, sbc6_adj_v, smul_smul, pow_succ]
+-    congr 2
+-    ring
+-
+-theorem sbc6_fvct_internal (t : ℕ) : fvct .sbc sbc6_r (traj .sbc sbc6_r sbc6_x0 t) = sbc6_lim := by
+-  have hx : traj .sbc sbc6_r sbc6_x0 t = sbc6_lim + ((-1 / 6 : ℝ) ^ t) • sbc6_v := by
+-    rw [sbc6_closed_form_internal]; funext i; simp
+-  have hq : |(-1 / 6 : ℝ)| < 1 := by rw [abs_of_neg (by norm_num)]; norm_num
+-  have h1 : Tendsto (fun k : ℕ => sbc6_lim + ((-1 / 6 : ℝ) ^ k * (-1 / 6 : ℝ) ^ t) • sbc6_v)
+-      atTop (𝓝 sbc6_lim) := by
+-    have h0 := ((tendsto_pow_atTop_nhds_zero_of_abs_lt_one hq).mul_const
+-      ((-1 / 6 : ℝ) ^ t)).smul_const sbc6_v
+-    have h2 := h0.const_add sbc6_lim
+-    rwa [zero_mul, zero_smul, add_zero] at h2
+-  have hA := sbc6_adj_pow t
+-  unfold fvct
+-  set A := adjMatrix .sbc sbc6_r (traj .sbc sbc6_r sbc6_x0 t) with hAdef
+-  have hf : (fun k : ℕ => (A ^ k).mulVec (traj .sbc sbc6_r sbc6_x0 t)) =
+-      fun k => sbc6_lim + ((-1 / 6 : ℝ) ^ k * (-1 / 6 : ℝ) ^ t) • sbc6_v := by
+-    funext k; rw [hx, hA]
+-  rw [hf]
+-  exact h1.limUnder_eq
+-
+-theorem sbc6_perStepFactor_internal (t : ℕ) (i : Fin 6) (hi : i ∈ ({1, 2, 3, 4} : Finset (Fin 6))) :
+-    perStepFactor .sbc sbc6_r (traj .sbc sbc6_r sbc6_x0) i t = -1 / 6 := by
+-  have hv : sbc6_v i ≠ 0 := by
+-    fin_cases i <;> simp_all [sbc6_v]
+-  have hp : (-1 / 6 : ℝ) ^ t ≠ 0 := pow_ne_zero _ (by norm_num)
+-  rw [perStepFactor, sbc6_fvct_internal, sbc6_closed_form_internal, sbc6_closed_form_internal]
+-  simp only [add_sub_cancel_left, pow_succ]
+-  field_simp
+-
+-theorem sbc6_perStepFactor_not_tendsto_internal (i : Fin 6) (hi : i ∈ ({1, 2, 3, 4} : Finset (Fin 6)))
+-    (ρ : ℝ) (hρ : 0 ≤ ρ) :
+-    ¬ Tendsto (fun t => perStepFactor .sbc sbc6_r (traj .sbc sbc6_r sbc6_x0) i t) atTop (𝓝 ρ) := by
+-  intro h
+-  simp only [sbc6_perStepFactor_internal _ i hi] at h
+-  have := tendsto_nhds_unique h tendsto_const_nhds
+-  linarith
+-
+-end HK
+diff --git a/HK/SBC7.lean b/HK/SBC7.lean
+deleted file mode 100644
+index 1c3e3898a..000000000
+--- a/HK/SBC7.lean
++++ /dev/null
+@@ -1,190 +0,0 @@
+-module
+-
+-public import HK.Basic
+-
+-/-!
+-# The 7-agent SBC system (Hegarty–Ognissanti–Wedin §2)
+-
+-`x(0) = (0, 38, 69, 84, 99, 130, 168)`, `r = (18, 42, 48, 12, 48, 42, 18)`;
+-`x(t) = (0, 36, 72, 84, 96, 132, 168) + (−1/6)ᵗ (0, 2, −3, 0, 3, −2, 0)`. The middle agent (index 3)
+-listens to itself alone at even `t` and to indices 2, 3, 4 at odd `t`; the proximity digraph is
+-never eventually constant; agents 1, 2, 4, 5 alternate sides of their limits.
+--/
+-
+-@[expose] public section
+-
+-namespace HK
+-
+-open Filter Topology
+-
+-/-- The SBC-7 table at an even-time offset `0 < u ≤ 1`. -/
+-theorem sbc7_table_even (u : ℝ) (h0 : 0 < u) (h1 : u ≤ 1) :
+-    neighbors .sbc sbc7_r (fun i => sbc7_lim i + u * sbc7_v i) =
+-      ![{0}, {0, 1, 2}, {1, 2, 3, 4}, {3}, {2, 3, 4, 5}, {4, 5, 6}, {6}] := by
+-  funext i
+-  ext j
+-  fin_cases i <;> fin_cases j <;>
+-    simp [neighbors, Model.bound, sbc7_r, sbc7_lim, sbc7_v, abs_le] <;>
+-    (try constructor) <;> (try intro) <;> linarith
+-
+-/-- The SBC-7 table at an odd-time offset `-1/6 ≤ u < 0`. -/
+-theorem sbc7_table_odd (u : ℝ) (h0 : -1 / 6 ≤ u) (h1 : u < 0) :
+-    neighbors .sbc sbc7_r (fun i => sbc7_lim i + u * sbc7_v i) =
+-      ![{0}, {0, 1, 2}, {1, 2, 3, 4}, {2, 3, 4}, {2, 3, 4, 5}, {4, 5, 6}, {6}] := by
+-  funext i
+-  ext j
+-  fin_cases i <;> fin_cases j <;>
+-    simp [neighbors, Model.bound, sbc7_r, sbc7_lim, sbc7_v, abs_le] <;>
+-    (try constructor) <;> (try intro) <;> linarith
+-
+-/-- The SBC-7 step at an even-time offset. -/
+-theorem sbc7_step_even (u : ℝ) (h0 : 0 < u) (h1 : u ≤ 1) :
+-    step .sbc sbc7_r (fun i => sbc7_lim i + u * sbc7_v i) =
+-      fun i => sbc7_lim i + (-1 / 6 * u) * sbc7_v i := by
+-  funext i
+-  rw [step_apply, sbc7_table_even u h0 h1]
+-  fin_cases i <;> simp [Finset.sum_insert, sbc7_lim, sbc7_v] <;> ring
+-
+-/-- The SBC-7 step at an odd-time offset. -/
+-theorem sbc7_step_odd (u : ℝ) (h0 : -1 / 6 ≤ u) (h1 : u < 0) :
+-    step .sbc sbc7_r (fun i => sbc7_lim i + u * sbc7_v i) =
+-      fun i => sbc7_lim i + (-1 / 6 * u) * sbc7_v i := by
+-  funext i
+-  rw [step_apply, sbc7_table_odd u h0 h1]
+-  fin_cases i <;> simp [Finset.sum_insert, sbc7_lim, sbc7_v] <;> ring
+-
+-/-- §2: the closed form. -/
+-theorem sbc7_closed_form_internal (t : ℕ) :
+-    traj .sbc sbc7_r sbc7_x0 t = fun i => sbc7_lim i + (-1 / 6 : ℝ) ^ t * sbc7_v i := by
+-  induction t with
+-  | zero =>
+-    funext i
+-    fin_cases i <;> simp [traj, sbc7_x0, sbc7_lim, sbc7_v] <;> norm_num
+-  | succ t ih =>
+-    have h : traj .sbc sbc7_r sbc7_x0 (t + 1) = step .sbc sbc7_r (traj .sbc sbc7_r sbc7_x0 t) := by
+-      simp only [traj]
+-      exact Function.iterate_succ_apply' _ _ _
+-    rw [h, ih, pow_succ]
+-    rcases Nat.even_or_odd t with ht | ht
+-    · obtain ⟨h0, h1⟩ := pow_even ht
+-      rw [sbc7_step_even _ h0 h1]
+-      funext i; ring
+-    · obtain ⟨h0, h1⟩ := pow_odd ht
+-      rw [sbc7_step_odd _ h0 h1]
+-      funext i; ring
+-
+-/-- §2: the neighbourhood table at every `t`. -/
+-theorem sbc7_neighbors_internal (t : ℕ) :
+-    neighbors .sbc sbc7_r (traj .sbc sbc7_r sbc7_x0 t) =
+-      ![{0}, {0, 1, 2}, {1, 2, 3, 4}, if Even t then {3} else {2, 3, 4}, {2, 3, 4, 5},
+-        {4, 5, 6}, {6}] := by
+-  rw [sbc7_closed_form_internal]
+-  rcases Nat.even_or_odd t with ht | ht
+-  · obtain ⟨h0, h1⟩ := pow_even ht
+-    rw [ite_eq_left ht, sbc7_table_even _ h0 h1]
+-  · obtain ⟨h0, h1⟩ := pow_odd ht
+-    rw [ite_eq_right (Nat.not_even_iff_odd.mpr ht), sbc7_table_odd _ h0 h1]
+-
+-/-- §2: the proximity digraph is never eventually constant (`t = τ + 1` differs from `τ`). -/
+-theorem sbc7_digraph_not_eventually_constant_internal (τ : ℕ) :
+-    ∃ t, τ ≤ t ∧ proximityDigraph .sbc sbc7_r (traj .sbc sbc7_r sbc7_x0 t) ≠
+-      proximityDigraph .sbc sbc7_r (traj .sbc sbc7_r sbc7_x0 τ) := by
+-  refine ⟨τ + 1, Nat.le_succ τ, fun h => ?_⟩
+-  have h2 := congrFun (congrFun (congrArg Digraph.Adj h) 3) 2
+-  simp only [proximityDigraph, sbc7_neighbors_internal] at h2
+-  rcases Nat.even_or_odd τ with ht | ht
+-  · have h' : ¬ Even (τ + 1) := Nat.not_even_iff_odd.mpr ht.add_one
+-    simp [h', ht] at h2
+-  · have h' : Even (τ + 1) := ht.add_one
+-    have h'' : ¬ Even τ := Nat.not_even_iff_odd.mpr ht
+-    simp [h', h''] at h2
+-
+-/-- §2: convergence to the limit. -/
+-theorem sbc7_tendsto : Tendsto (traj .sbc sbc7_r sbc7_x0) atTop (𝓝 sbc7_lim) := by
+-  have h0 : Tendsto (fun t : ℕ => (-1 / 6 : ℝ) ^ t) atTop (𝓝 0) :=
+-    tendsto_pow_atTop_nhds_zero_of_abs_lt_one (by rw [abs_of_neg (by norm_num)]; norm_num)
+-  rw [tendsto_pi_nhds]
+-  intro i
+-  have := (h0.mul_const (sbc7_v i)).const_add (sbc7_lim i)
+-  simpa [sbc7_closed_form_internal] using this
+-
+-/-- §2: never in a fixed state. -/
+-theorem sbc7_not_fixedFrom (τ : ℕ) : ¬ FixedFrom (traj .sbc sbc7_r sbc7_x0) τ := by
+-  intro h
+-  have h1 := congrFun (h (τ + 1) (Nat.le_succ τ)) 1
+-  rw [sbc7_closed_form_internal, sbc7_closed_form_internal] at h1
+-  have hne : (-1 / 6 : ℝ) ^ τ ≠ 0 := pow_ne_zero _ (by norm_num)
+-  simp [sbc7_lim, sbc7_v, pow_succ] at h1
+-  apply hne
+-  linarith
+-
+-/-- §2: never pseudo-stable, towards any `xinf`, after any `τ`. -/
+-theorem sbc7_not_pseudoStableAfter (xinf : Fin 7 → ℝ) (τ : ℕ) :
+-    ¬ PseudoStableAfter (traj .sbc sbc7_r sbc7_x0) xinf τ := by
+-  rintro ⟨hlim, F, C, -, ⟨i, hi⟩, -, -, h⟩
+-  have hx : xinf = sbc7_lim := tendsto_nhds_unique hlim sbc7_tendsto
+-  subst hx
+-  have hc := (h τ le_rfl).2 i hi
+-  rw [sbc7_closed_form_internal, sbc7_closed_form_internal] at hc
+-  simp only [pow_succ] at hc
+-  fin_cases i <;> simp [sbc7_lim, sbc7_v] at hc <;> rcases hc with ⟨h1, h2⟩ | ⟨h1, h2⟩ <;> linarith
+-
+-theorem sbc7_r_pos : ∀ i, 0 < sbc7_r i := by
+-  intro i
+-  fin_cases i <;> simp [sbc7_r]
+-
+-/-- Either parity matrix fixes the limit. -/
+-theorem ref_sbc7_adj_lim (t : ℕ) :
+-    (adjMatrix .sbc sbc7_r (traj .sbc sbc7_r sbc7_x0 t)).mulVec sbc7_lim = sbc7_lim := by
+-  funext i
+-  rw [adj_mulVec, sbc7_neighbors_internal]
+-  rcases Nat.even_or_odd t with ht | ht
+-  · rw [ite_eq_left ht]
+-    fin_cases i <;> simp [Finset.sum_insert, sbc7_lim] <;> norm_num
+-  · rw [ite_eq_right (Nat.not_even_iff_odd.mpr ht)]
+-    fin_cases i <;> simp [Finset.sum_insert, sbc7_lim] <;> norm_num
+-
+-/-- Either parity matrix scales the offset direction by `−1/6`. -/
+-theorem ref_sbc7_adj_v (t : ℕ) :
+-    (adjMatrix .sbc sbc7_r (traj .sbc sbc7_r sbc7_x0 t)).mulVec sbc7_v = (-1 / 6 : ℝ) • sbc7_v := by
+-  funext i
+-  rw [adj_mulVec, sbc7_neighbors_internal]
+-  rcases Nat.even_or_odd t with ht | ht
+-  · rw [ite_eq_left ht]
+-    fin_cases i <;> simp [Finset.sum_insert, sbc7_v] <;> norm_num
+-  · rw [ite_eq_right (Nat.not_even_iff_odd.mpr ht)]
+-    fin_cases i <;> simp [Finset.sum_insert, sbc7_v] <;> norm_num
+-
+-theorem ref_sbc7_adj_pow (t k : ℕ) (c : ℝ) :
+-    (adjMatrix .sbc sbc7_r (traj .sbc sbc7_r sbc7_x0 t) ^ k).mulVec (sbc7_lim + c • sbc7_v) =
+-      sbc7_lim + ((-1 / 6 : ℝ) ^ k * c) • sbc7_v := by
+-  induction k with
+-  | zero => simp
+-  | succ k ih =>
+-    rw [pow_succ', ← Matrix.mulVec_mulVec, ih, Matrix.mulVec_add, Matrix.mulVec_smul,
+-      ref_sbc7_adj_lim, ref_sbc7_adj_v, smul_smul, pow_succ]
+-    congr 2
+-    ring
+-
+-/-- Each parity matrix fixes the limit and scales the offset by `−1/6`, so the final value at constant
+-topology of every `x(t)` is the limit (the route of `sbc6_fvct_internal`, one table per parity). -/
+-theorem sbc7_fvct (t : ℕ) : fvct .sbc sbc7_r (traj .sbc sbc7_r sbc7_x0 t) = sbc7_lim := by
+-  have hx : traj .sbc sbc7_r sbc7_x0 t = sbc7_lim + ((-1 / 6 : ℝ) ^ t) • sbc7_v := by
+-    rw [sbc7_closed_form_internal]; funext i; simp
+-  have hq : |(-1 / 6 : ℝ)| < 1 := by rw [abs_of_neg (by norm_num)]; norm_num
+-  have h1 : Tendsto (fun k : ℕ => sbc7_lim + ((-1 / 6 : ℝ) ^ k * (-1 / 6 : ℝ) ^ t) • sbc7_v)
+-      atTop (𝓝 sbc7_lim) := by
+-    have h0 := ((tendsto_pow_atTop_nhds_zero_of_abs_lt_one hq).mul_const
+-      ((-1 / 6 : ℝ) ^ t)).smul_const sbc7_v
+-    have h2 := h0.const_add sbc7_lim
+-    rwa [zero_mul, zero_smul, add_zero] at h2
+-  have hA := ref_sbc7_adj_pow t
+-  unfold fvct
+-  set A := adjMatrix .sbc sbc7_r (traj .sbc sbc7_r sbc7_x0 t) with hAdef
+-  have hf : (fun k : ℕ => (A ^ k).mulVec (traj .sbc sbc7_r sbc7_x0 t)) =
+-      fun k => sbc7_lim + ((-1 / 6 : ℝ) ^ k * (-1 / 6 : ℝ) ^ t) • sbc7_v := by
+-    funext k; rw [hx, hA]
+-  rw [hf]
+-  exact h1.limUnder_eq
+-
+-end HK
+diff --git a/HK/SBI5Complex.lean b/HK/SBI5Complex.lean
+deleted file mode 100644
+index b1c9d5273..000000000
+--- a/HK/SBI5Complex.lean
++++ /dev/null
+@@ -1,305 +0,0 @@
+-module
+-
+-public import HK.Basic
+-
+-/-!
+-# Five SBI agents with a constant digraph and oscillatory convergence
+-
+-The averaging map on the three moving agents' offsets has a complex conjugate pair of modes; the
+-initial offset cancels its real mode. A four-step consequence of the second-order recurrence gives
+-both signs in every five consecutive times, with no trigonometry and no density argument.
+--/
+-
+-@[expose] public section
+-
+-namespace HK
+-
+-open Filter Topology
+-
+-/-- The first coefficient of the recurrence `z(t+2) = α z(t+1) − β z(t)` of the offsets. -/
+-noncomputable def sbi5Alpha (ρ : ℝ) : ℝ := 47 / 60 - ρ
+-
+-/-- The second coefficient; at the root of the cubic, `60 ρ β = 1`. -/
+-noncomputable def sbi5Beta (ρ : ℝ) : ℝ := ρ ^ 2 - 47 / 60 * ρ + 3 / 20
+-
+-theorem sbi5_r_pos : ∀ i, 0 < sbi5_r i := by
+-  intro i
+-  fin_cases i <;> norm_num [sbi5_r]
+-
+-theorem sbi5Offset_zero (ρ : ℝ) : sbi5Offset ρ 0 = ![1 / 3 - ρ, 1 / 5, 0] := rfl
+-
+-theorem sbi5Offset_succ (ρ : ℝ) (t : ℕ) :
+-    sbi5Offset ρ (t + 1) = sbi5LinearStep (sbi5Offset ρ t) := by
+-  unfold sbi5Offset
+-  exact Function.iterate_succ_apply' _ _ _
+-
+-theorem sbi5_root_exists_internal : ∃ ρ : ℝ, 57 / 100 < ρ ∧ ρ < 29 / 50 ∧
+-    60 * ρ ^ 3 - 47 * ρ ^ 2 + 9 * ρ - 1 = 0 := by
+-  let p : ℝ → ℝ := fun ρ => 60 * ρ ^ 3 - 47 * ρ ^ 2 + 9 * ρ - 1
+-  have hc : Continuous p := by dsimp [p]; fun_prop
+-  have hlo : p (57 / 100) < 0 := by norm_num [p]
+-  have hhi : 0 < p (29 / 50) := by norm_num [p]
+-  obtain ⟨ρ, hρ, hp⟩ := intermediate_value_Icc (by norm_num : (57 / 100 : ℝ) ≤ 29 / 50)
+-    hc.continuousOn ⟨hlo.le, hhi.le⟩
+-  refine ⟨ρ, ?_, ?_, hp⟩
+-  · exact lt_of_le_of_ne hρ.1 (by intro he; subst ρ; linarith)
+-  · exact lt_of_le_of_ne hρ.2 (by intro he; subst ρ; linarith)
+-
+-theorem sbi5_coefficients (ρ : ℝ) (hlo : 57 / 100 < ρ) (hhi : ρ < 29 / 50) :
+-    0 < sbi5Alpha ρ ∧ sbi5Alpha ρ < 1 ∧ 0 < sbi5Beta ρ ∧
+-      sbi5Beta ρ < sbi5Alpha ρ ^ 2 ∧ sbi5Alpha ρ ^ 2 < 2 * sbi5Beta ρ := by
+-  have hsq : (57 / 100 : ℝ) ^ 2 < ρ ^ 2 := by nlinarith
+-  dsimp [sbi5Alpha, sbi5Beta]
+-  constructor
+-  · linarith
+-  constructor
+-  · linarith
+-  constructor
+-  · nlinarith
+-  constructor <;> nlinarith
+-
+-theorem sbi5_linear_bound (z : Fin 3 → ℝ) (B : ℝ) (hB : 0 ≤ B)
+-    (hz : ∀ i, |z i| ≤ B) : ∀ i, |sbi5LinearStep z i| ≤ (2 / 3) * B := by
+-  have h0 := hz 0
+-  have h1 := hz 1
+-  have h2 := hz 2
+-  have h02 : |z 0 + z 2| ≤ 2 * B := by linarith [abs_add_le (z 0) (z 2)]
+-  have h12 : |z 1 + z 2| ≤ 2 * B := by linarith [abs_add_le (z 1) (z 2)]
+-  have h012 : |z 0 + z 1 + z 2| ≤ 3 * B := by
+-    linarith [abs_add_le (z 0) (z 1), abs_add_le (z 0 + z 1) (z 2)]
+-  intro i
+-  fin_cases i <;> simp [sbi5LinearStep, abs_div] <;> linarith
+-
+-theorem sbi5_offset_bound (ρ : ℝ) (hlo : 57 / 100 < ρ) (hhi : ρ < 29 / 50)
+-    (t : ℕ) : ∀ i, |sbi5Offset ρ t i| ≤ (2 / 3 : ℝ) ^ t / 3 := by
+-  induction t with
+-  | zero =>
+-    intro i
+-    fin_cases i <;> simp [sbi5Offset_zero, abs_le] <;> (try constructor) <;> linarith
+-  | succ t ih =>
+-    have h := sbi5_linear_bound (sbi5Offset ρ t) ((2 / 3 : ℝ) ^ t / 3)
+-      (by positivity) ih
+-    intro i
+-    have heq : (2 / 3 : ℝ) ^ (t + 1) / 3 = (2 / 3) * ((2 / 3 : ℝ) ^ t / 3) := by
+-      rw [pow_succ]; ring
+-    simpa only [sbi5Offset_succ, heq] using h i
+-
+-theorem sbi5_offset_small (ρ : ℝ) (hlo : 57 / 100 < ρ) (hhi : ρ < 29 / 50)
+-    (t : ℕ) (i : Fin 3) : |sbi5Offset ρ t i| ≤ 1 / 3 := by
+-  have h := sbi5_offset_bound ρ hlo hhi t i
+-  have hp : (2 / 3 : ℝ) ^ t ≤ 1 := pow_le_one₀ (by norm_num) (by norm_num)
+-  linarith
+-
+-theorem sbi5_table (z : Fin 3 → ℝ) (hz : ∀ i, |z i| ≤ 1 / 3) :
+-    neighbors .sbi sbi5_r (sbi5_lim + sbi5Lift z) =
+-      ![{0}, {0, 1, 3}, {0, 1, 2, 3, 4}, {0, 2, 3, 4}, {4}] := by
+-  have h0 := abs_le.mp (hz 0)
+-  have h1 := abs_le.mp (hz 1)
+-  have h2 := abs_le.mp (hz 2)
+-  funext i
+-  ext j
+-  fin_cases i <;> fin_cases j <;>
+-    simp [neighbors, Model.bound, sbi5_r, sbi5_lim, sbi5Lift, abs_le] <;>
+-    (try constructor) <;> (try intro) <;> linarith
+-
+-theorem sbi5_step (z : Fin 3 → ℝ) (hz : ∀ i, |z i| ≤ 1 / 3) :
+-    step .sbi sbi5_r (sbi5_lim + sbi5Lift z) = sbi5_lim + sbi5Lift (sbi5LinearStep z) := by
+-  funext i
+-  rw [step_apply, sbi5_table z hz]
+-  fin_cases i <;> simp [Finset.sum_insert, sbi5_lim, sbi5Lift, sbi5LinearStep] <;> ring
+-
+-theorem sbi5_trajectory_internal (ρ : ℝ) (hlo : 57 / 100 < ρ) (hhi : ρ < 29 / 50)
+-    (t : ℕ) : traj .sbi sbi5_r (sbi5_x0 ρ) t = sbi5_lim + sbi5Lift (sbi5Offset ρ t) := by
+-  induction t with
+-  | zero => rfl
+-  | succ t ih =>
+-    have hs : traj .sbi sbi5_r (sbi5_x0 ρ) (t + 1) =
+-        step .sbi sbi5_r (traj .sbi sbi5_r (sbi5_x0 ρ) t) := by
+-      simp only [traj]
+-      exact Function.iterate_succ_apply' _ _ _
+-    rw [hs, ih, sbi5_step _ (sbi5_offset_small ρ hlo hhi t), sbi5Offset_succ]
+-
+-theorem sbi5_neighbors_internal (ρ : ℝ) (hlo : 57 / 100 < ρ) (hhi : ρ < 29 / 50)
+-    (t : ℕ) : neighbors .sbi sbi5_r (traj .sbi sbi5_r (sbi5_x0 ρ) t) =
+-      ![{0}, {0, 1, 3}, {0, 1, 2, 3, 4}, {0, 2, 3, 4}, {4}] := by
+-  rw [sbi5_trajectory_internal ρ hlo hhi, sbi5_table _ (sbi5_offset_small ρ hlo hhi t)]
+-
+-theorem sbi5_linear (a b : ℝ) (u v : Fin 3 → ℝ) :
+-    sbi5LinearStep (fun i => a * u i - b * v i) =
+-      fun i => a * sbi5LinearStep u i - b * sbi5LinearStep v i := by
+-  funext i
+-  fin_cases i <;> simp [sbi5LinearStep] <;> ring
+-
+-theorem sbi5_offset_recurrence (ρ : ℝ)
+-    (hp : 60 * ρ ^ 3 - 47 * ρ ^ 2 + 9 * ρ - 1 = 0) (t : ℕ) :
+-    sbi5Offset ρ (t + 2) = fun i =>
+-      sbi5Alpha ρ * sbi5Offset ρ (t + 1) i - sbi5Beta ρ * sbi5Offset ρ t i := by
+-  induction t with
+-  | zero =>
+-    change sbi5LinearStep (sbi5LinearStep ![1 / 3 - ρ, 1 / 5, 0]) =
+-      fun i => sbi5Alpha ρ * sbi5LinearStep ![1 / 3 - ρ, 1 / 5, 0] i -
+-        sbi5Beta ρ * (![1 / 3 - ρ, 1 / 5, 0] : Fin 3 → ℝ) i
+-    funext i
+-    fin_cases i <;> simp [sbi5LinearStep, sbi5Alpha, sbi5Beta] <;> nlinarith [hp]
+-  | succ t ih =>
+-    rw [show t + 1 + 2 = t + 2 + 1 from rfl, sbi5Offset_succ]
+-    conv_lhs => rw [ih]
+-    rw [sbi5_linear]
+-    simp only [sbi5Offset_succ]
+-
+-theorem sbi5_offset_pair_nonzero (ρ : ℝ) (hlo : 57 / 100 < ρ) (hhi : ρ < 29 / 50)
+-    (hp : 60 * ρ ^ 3 - 47 * ρ ^ 2 + 9 * ρ - 1 = 0) (t : ℕ) (i : Fin 3) :
+-    ¬ (sbi5Offset ρ t i = 0 ∧ sbi5Offset ρ (t + 1) i = 0) := by
+-  have hb := (sbi5_coefficients ρ hlo hhi).2.2.1
+-  induction t with
+-  | zero =>
+-    fin_cases i <;> simp [sbi5Offset_zero, sbi5Offset_succ, sbi5LinearStep]
+-    linarith
+-  | succ t ih =>
+-    rintro ⟨h1, h2⟩
+-    have hr := congrFun (sbi5_offset_recurrence ρ hp t) i
+-    have hz : sbi5Offset ρ t i = 0 := by
+-      have hm : sbi5Beta ρ * sbi5Offset ρ t i = 0 := by
+-        rw [h1, h2] at hr
+-        linarith
+-      exact (mul_eq_zero.mp hm).resolve_left hb.ne'
+-    exact ih ⟨hz, h1⟩
+-
+-theorem sbi5_offset_four_step (ρ : ℝ)
+-    (hp : 60 * ρ ^ 3 - 47 * ρ ^ 2 + 9 * ρ - 1 = 0) (t : ℕ) (i : Fin 3) :
+-    sbi5Offset ρ (t + 4) i =
+-      sbi5Alpha ρ * (sbi5Alpha ρ ^ 2 - 2 * sbi5Beta ρ) * sbi5Offset ρ (t + 1) i +
+-      sbi5Beta ρ * (sbi5Beta ρ - sbi5Alpha ρ ^ 2) * sbi5Offset ρ t i := by
+-  have h0 := congrFun (sbi5_offset_recurrence ρ hp t) i
+-  have h1 := congrFun (sbi5_offset_recurrence ρ hp (t + 1)) i
+-  have h2 := congrFun (sbi5_offset_recurrence ρ hp (t + 2)) i
+-  simp only [Nat.add_assoc] at h0 h1 h2
+-  rw [h2, h1, h0]
+-  ring
+-
+-theorem sbi5_offset_five_window (ρ : ℝ) (hlo : 57 / 100 < ρ) (hhi : ρ < 29 / 50)
+-    (hp : 60 * ρ ^ 3 - 47 * ρ ^ 2 + 9 * ρ - 1 = 0) (t : ℕ) (i : Fin 3) :
+-    (∃ k, t ≤ k ∧ k ≤ t + 4 ∧ sbi5Offset ρ k i < 0) ∧
+-    (∃ k, t ≤ k ∧ k ≤ t + 4 ∧ 0 < sbi5Offset ρ k i) := by
+-  obtain ⟨ha, -, hb, hba, hab⟩ := sbi5_coefficients ρ hlo hhi
+-  have hc : sbi5Alpha ρ * (sbi5Alpha ρ ^ 2 - 2 * sbi5Beta ρ) < 0 :=
+-    mul_neg_of_pos_of_neg ha (by linarith)
+-  have hd : sbi5Beta ρ * (sbi5Beta ρ - sbi5Alpha ρ ^ 2) < 0 :=
+-    mul_neg_of_pos_of_neg hb (by linarith)
+-  have hrec := sbi5_offset_four_step ρ hp t i
+-  have hnz := sbi5_offset_pair_nonzero ρ hlo hhi hp t i
+-  constructor
+-  · by_contra hn
+-    push Not at hn
+-    have h0 := hn t le_rfl (by omega)
+-    have h1 := hn (t + 1) (by omega) (by omega)
+-    have h4 := hn (t + 4) (by omega) le_rfl
+-    have hz : sbi5Offset ρ t i = 0 ∧ sbi5Offset ρ (t + 1) i = 0 := by
+-      constructor <;> nlinarith [mul_nonpos_of_nonpos_of_nonneg hc.le h1,
+-        mul_nonpos_of_nonpos_of_nonneg hd.le h0]
+-    exact hnz hz
+-  · by_contra hn
+-    push Not at hn
+-    have h0 := hn t le_rfl (by omega)
+-    have h1 := hn (t + 1) (by omega) (by omega)
+-    have h4 := hn (t + 4) (by omega) le_rfl
+-    have hz : sbi5Offset ρ t i = 0 ∧ sbi5Offset ρ (t + 1) i = 0 := by
+-      constructor <;> nlinarith [mul_nonneg_of_nonpos_of_nonpos hc.le h1,
+-        mul_nonneg_of_nonpos_of_nonpos hd.le h0]
+-    exact hnz hz
+-
+-theorem sbi5_tendsto_internal (ρ : ℝ) (hlo : 57 / 100 < ρ) (hhi : ρ < 29 / 50) :
+-    Tendsto (traj .sbi sbi5_r (sbi5_x0 ρ)) atTop (𝓝 sbi5_lim) := by
+-  have hpow : Tendsto (fun t : ℕ => (2 / 3 : ℝ) ^ t / 3) atTop (𝓝 0) := by
+-    simpa using (tendsto_pow_atTop_nhds_zero_of_abs_lt_one
+-      (by norm_num : |(2 / 3 : ℝ)| < 1)).div_const 3
+-  have hz : ∀ i : Fin 3, Tendsto (fun t => sbi5Offset ρ t i) atTop (𝓝 0) := by
+-    intro i
+-    exact squeeze_zero_norm (fun t => by
+-      simpa only [Real.norm_eq_abs] using sbi5_offset_bound ρ hlo hhi t i) hpow
+-  apply tendsto_pi_nhds.2
+-  intro i
+-  fin_cases i
+-  · simp [sbi5_trajectory_internal ρ hlo hhi, sbi5_lim, sbi5Lift]
+-  · simpa [sbi5_trajectory_internal ρ hlo hhi, sbi5_lim, sbi5Lift] using (hz 0).const_add 10
+-  · simpa [sbi5_trajectory_internal ρ hlo hhi, sbi5_lim, sbi5Lift] using (hz 1).const_add 18
+-  · simpa [sbi5_trajectory_internal ρ hlo hhi, sbi5_lim, sbi5Lift] using (hz 2).const_add 20
+-  · simp [sbi5_trajectory_internal ρ hlo hhi, sbi5_lim, sbi5Lift]
+-
+-theorem sbi5_digraph_constant_internal (ρ : ℝ) (hlo : 57 / 100 < ρ) (hhi : ρ < 29 / 50)
+-    (t : ℕ) : proximityDigraph .sbi sbi5_r (traj .sbi sbi5_r (sbi5_x0 ρ) t) =
+-      proximityDigraph .sbi sbi5_r (sbi5_x0 ρ) := by
+-  have h0 := sbi5_neighbors_internal ρ hlo hhi 0
+-  change neighbors .sbi sbi5_r (sbi5_x0 ρ) = _ at h0
+-  simp only [proximityDigraph, sbi5_neighbors_internal ρ hlo hhi, h0]
+-
+-/-- The five-window property for the moving agents, indexed by `Fin 3` (`i` is agent `i + 1`). -/
+-theorem sbi5_oscillates_fin3 (ρ : ℝ)
+-    (hlo : 57 / 100 < ρ) (hhi : ρ < 29 / 50)
+-    (hp : 60 * ρ ^ 3 - 47 * ρ ^ 2 + 9 * ρ - 1 = 0) (t : ℕ) (i : Fin 3) :
+-    (∃ k, t ≤ k ∧ k ≤ t + 4 ∧
+-      traj .sbi sbi5_r (sbi5_x0 ρ) k i.succ.castSucc < sbi5_lim i.succ.castSucc) ∧
+-    (∃ k, t ≤ k ∧ k ≤ t + 4 ∧
+-      sbi5_lim i.succ.castSucc < traj .sbi sbi5_r (sbi5_x0 ρ) k i.succ.castSucc) := by
+-  obtain ⟨⟨k, hk0, hk4, hk⟩, ⟨l, hl0, hl4, hl⟩⟩ := sbi5_offset_five_window ρ hlo hhi hp t i
+-  constructor
+-  · refine ⟨k, hk0, hk4, ?_⟩
+-    rw [sbi5_trajectory_internal ρ hlo hhi]
+-    fin_cases i <;> simpa [sbi5_lim, sbi5Lift] using hk
+-  · refine ⟨l, hl0, hl4, ?_⟩
+-    rw [sbi5_trajectory_internal ρ hlo hhi]
+-    fin_cases i <;> simpa [sbi5_lim, sbi5Lift] using hl
+-
+-theorem sbi5_oscillates_every_five_internal (ρ : ℝ)
+-    (hlo : 57 / 100 < ρ) (hhi : ρ < 29 / 50)
+-    (hp : 60 * ρ ^ 3 - 47 * ρ ^ 2 + 9 * ρ - 1 = 0) (t : ℕ) (i : Fin 5)
+-    (hi : i ∈ ({1, 2, 3} : Finset (Fin 5))) :
+-    (∃ k, t ≤ k ∧ k ≤ t + 4 ∧ traj .sbi sbi5_r (sbi5_x0 ρ) k i < sbi5_lim i) ∧
+-    (∃ k, t ≤ k ∧ k ≤ t + 4 ∧ sbi5_lim i < traj .sbi sbi5_r (sbi5_x0 ρ) k i) := by
+-  simp only [Finset.mem_insert, Finset.mem_singleton] at hi
+-  rcases hi with rfl | rfl | rfl
+-  · exact sbi5_oscillates_fin3 ρ hlo hhi hp t 0
+-  · exact sbi5_oscillates_fin3 ρ hlo hhi hp t 1
+-  · exact sbi5_oscillates_fin3 ρ hlo hhi hp t 2
+-
+-theorem sbi5_not_fixedFrom_internal (ρ : ℝ) (hlo : 57 / 100 < ρ) (hhi : ρ < 29 / 50)
+-    (hp : 60 * ρ ^ 3 - 47 * ρ ^ 2 + 9 * ρ - 1 = 0) (τ : ℕ) :
+-    ¬ FixedFrom (traj .sbi sbi5_r (sbi5_x0 ρ)) τ := by
+-  intro hf
+-  obtain ⟨⟨k, hk0, -, hk⟩, ⟨l, hl0, -, hl⟩⟩ :=
+-    sbi5_oscillates_every_five_internal ρ hlo hhi hp τ 1 (by simp)
+-  have he1 := congrFun (hf k hk0) (1 : Fin 5)
+-  have he2 := congrFun (hf l hl0) (1 : Fin 5)
+-  linarith
+-
+-theorem sbi5_not_pseudoStableAfter_internal (ρ : ℝ)
+-    (hlo : 57 / 100 < ρ) (hhi : ρ < 29 / 50)
+-    (hp : 60 * ρ ^ 3 - 47 * ρ ^ 2 + 9 * ρ - 1 = 0) (xinf : Fin 5 → ℝ) (τ : ℕ) :
+-    ¬ PseudoStableAfter (traj .sbi sbi5_r (sbi5_x0 ρ)) xinf τ := by
+-  intro hps
+-  have he : xinf = sbi5_lim := tendsto_nhds_unique hps.1 (sbi5_tendsto_internal ρ hlo hhi)
+-  rw [he] at hps
+-  obtain ⟨⟨k, hk0, -, hk⟩, ⟨l, hl0, -, hl⟩⟩ :=
+-    sbi5_oscillates_every_five_internal ρ hlo hhi hp τ 1 (by simp)
+-  rcases pseudoStableAfter_coordinate_side _ _ _ hps (1 : Fin 5) with hf | hbelow | habove
+-  · linarith [hf k hk0]
+-  · linarith [hbelow l hl0]
+-  · linarith [habove k hk0]
+-
+-theorem not_conjecture23_sbi_five_internal : ¬ Conjecture23ForAgents .sbi 5 := by
+-  obtain ⟨ρ, hlo, hhi, hp⟩ := sbi5_root_exists_internal
+-  intro h
+-  obtain ⟨τ, hf | ⟨xinf, hps⟩⟩ := h sbi5_r (sbi5_x0 ρ) sbi5_r_pos
+-  · exact sbi5_not_fixedFrom_internal ρ hlo hhi hp τ hf
+-  · exact sbi5_not_pseudoStableAfter_internal ρ hlo hhi hp xinf τ hps
+-
+-theorem not_theorem64iv_sbi_five_internal : ¬ Theorem64ivForAgents .sbi 5 := by
+-  obtain ⟨ρ, hlo, hhi, hp⟩ := sbi5_root_exists_internal
+-  intro h
+-  obtain ⟨t₂, -, hf | ⟨xinf, hps⟩⟩ := h sbi5_r (sbi5_x0 ρ) sbi5_r_pos 0
+-    (fun t _ => by simpa only [traj, Function.iterate_zero, id_eq] using
+-      sbi5_digraph_constant_internal ρ hlo hhi t)
+-  · exact sbi5_not_fixedFrom_internal ρ hlo hhi hp t₂ hf
+-  · exact sbi5_not_pseudoStableAfter_internal ρ hlo hhi hp xinf t₂ hps
+-
+-end HK
+diff --git a/HK/SBI6.lean b/HK/SBI6.lean
+deleted file mode 100644
+index 012cfcfe8..000000000
+--- a/HK/SBI6.lean
++++ /dev/null
+@@ -1,218 +0,0 @@
+-module
+-
+-public import HK.Basic
+-
+-/-!
+-# Six SBI agents with a constant digraph and oscillating convergence (this development)
+-
+-`x_∞ = (0, 25, 31, 44, 55, 90)`, `v = (0, 10, −5 − √249, 8, 10, 0)/16`, `r = (45, 18, 27, 45/2, 27, 54)`,
+-`x(0) = x_∞ + v`, `x(t) = x_∞ + ((13 − √249)/40)ᵗ v`. The neighbourhood table
+-`{0}, {0, 1, 2, 3}, {0, 1, 2, 3, 4}, {0, 2, 3, 4, 5}, {2, 3, 4, 5}, {5}` is the same at every `t`, yet
+-agents 1–4 alternate sides of their limits. Hence Theorem 6.4(iv) and Conjecture 2.3 fail already with
+-six SBI agents. The identities used: `√249² = 249`; the rate `λ = (13 − √249)/40` satisfies
+-`40λ = 13 − √249` and `λ² = (13/20)λ + 1/20`; `15 < √249 < 16` gives `−3/40 < λ < −1/20`, so
+-`λ ≤ λᵗ ≤ 1` for every `t` and one table serves both parities.
+--/
+-
+-@[expose] public section
+-
+-namespace HK
+-
+-open Filter Topology
+-
+-/-- `15 < √249 < 16`. -/
+-theorem sbi_sqrt249_bounds : 15 < Real.sqrt 249 ∧ Real.sqrt 249 < 16 := by
+-  constructor
+-  · rw [Real.lt_sqrt (by norm_num)]; norm_num
+-  · rw [Real.sqrt_lt' (by norm_num)]; norm_num
+-
+-theorem sbi_sqrt249_sq : Real.sqrt 249 ^ 2 = 249 := Real.sq_sqrt (by norm_num)
+-
+-/-- `−3/40 < λ < −1/20`. -/
+-theorem sbi_sbi6Rate_bounds : -3 / 40 < sbi6Rate ∧ sbi6Rate < -1 / 20 := by
+-  obtain ⟨h0, h1⟩ := sbi_sqrt249_bounds
+-  unfold sbi6Rate
+-  constructor <;> linarith
+-
+-theorem sbi6_r_pos : ∀ i, 0 < sbi6_r i := by
+-  intro i
+-  fin_cases i <;> simp [sbi6_r]
+-
+-theorem sbi6Rate_neg : sbi6Rate < 0 := by
+-  linarith [sbi_sbi6Rate_bounds.2]
+-
+-theorem abs_sbi6Rate_lt_one : |sbi6Rate| < 1 := by
+-  obtain ⟨h0, h1⟩ := sbi_sbi6Rate_bounds
+-  rw [abs_lt]
+-  constructor <;> linarith
+-
+-/-- `λ ≤ λᵗ ≤ 1` for every `t`. -/
+-theorem si_pow_bounds (t : ℕ) : sbi6Rate ≤ sbi6Rate ^ t ∧ sbi6Rate ^ t ≤ 1 := by
+-  obtain ⟨h0, h1⟩ := sbi_sbi6Rate_bounds
+-  induction t with
+-  | zero => simp; linarith
+-  | succ t ih =>
+-    obtain ⟨ih0, ih1⟩ := ih
+-    rw [pow_succ]
+-    constructor <;> nlinarith
+-
+-/-- The table for every offset `λ ≤ u ≤ 1`. -/
+-theorem sbi_sbi6_table (u : ℝ) (h0 : sbi6Rate ≤ u) (h1 : u ≤ 1) :
+-    neighbors .sbi sbi6_r (fun i => sbi6_lim i + u * sbi6_v i) =
+-      ![{0}, {0, 1, 2, 3}, {0, 1, 2, 3, 4}, {0, 2, 3, 4, 5}, {2, 3, 4, 5}, {5}] := by
+-  obtain ⟨hs0, hs1⟩ := sbi_sqrt249_bounds
+-  obtain ⟨hl0, hl1⟩ := sbi_sbi6Rate_bounds
+-  have hsq := sbi_sqrt249_sq
+-  have hs : 0 ≤ Real.sqrt 249 := Real.sqrt_nonneg _
+-  have hm0 := mul_le_mul_of_nonneg_right h0 hs
+-  have hm1 := mul_le_mul_of_nonneg_right h1 hs
+-  have hl : sbi6Rate * Real.sqrt 249 = (13 * Real.sqrt 249 - 249) / 40 := by
+-    unfold sbi6Rate; linear_combination (-1 / 40 : ℝ) * hsq
+-  have hp0 : -27 / 20 ≤ u * Real.sqrt 249 := by nlinarith
+-  have hp1 : u * Real.sqrt 249 ≤ 16 := by nlinarith
+-  have hu0 : -3 / 40 ≤ u := by linarith
+-  funext i
+-  ext j
+-  fin_cases i <;> fin_cases j <;>
+-    simp [neighbors, Model.bound, sbi6_r, sbi6_lim, sbi6_v, abs_le] <;>
+-    (try constructor) <;> (try intro) <;> linarith
+-
+-theorem sbi_sbi6_step (u : ℝ) (h0 : sbi6Rate ≤ u) (h1 : u ≤ 1) :
+-    step .sbi sbi6_r (fun i => sbi6_lim i + u * sbi6_v i) =
+-      fun i => sbi6_lim i + (sbi6Rate * u) * sbi6_v i := by
+-  have hsq := sbi_sqrt249_sq
+-  funext i
+-  rw [step_apply, sbi_sbi6_table u h0 h1]
+-  unfold sbi6Rate
+-  fin_cases i
+-  · simp [sbi6_lim, sbi6_v]
+-  · simp [Finset.sum_insert, sbi6_lim, sbi6_v]; ring
+-  · simp [Finset.sum_insert, sbi6_lim, sbi6_v]; linear_combination (-u / 640) * hsq
+-  · simp [Finset.sum_insert, sbi6_lim, sbi6_v]; ring
+-  · simp [Finset.sum_insert, sbi6_lim, sbi6_v]; ring
+-  · simp [sbi6_lim, sbi6_v]
+-
+-theorem sbi6_closed_form_internal (t : ℕ) :
+-    traj .sbi sbi6_r sbi6_x0 t = fun i => sbi6_lim i + sbi6Rate ^ t * sbi6_v i := by
+-  induction t with
+-  | zero =>
+-    funext i
+-    fin_cases i <;> simp [traj, sbi6_x0, sbi6_lim, sbi6_v]
+-  | succ t ih =>
+-    have h : traj .sbi sbi6_r sbi6_x0 (t + 1) = step .sbi sbi6_r (traj .sbi sbi6_r sbi6_x0 t) := by
+-      simp only [traj]
+-      exact Function.iterate_succ_apply' _ _ _
+-    obtain ⟨h0, h1⟩ := si_pow_bounds t
+-    rw [h, ih, sbi_sbi6_step _ h0 h1]
+-    funext i; rw [pow_succ]; ring
+-
+-theorem sbi_sbi6_closed_form' (t : ℕ) :
+-    traj .sbi sbi6_r sbi6_x0 t = fun i => sbi6_lim i + sbi6Rate ^ t * 1 * sbi6_v i := by
+-  rw [sbi6_closed_form_internal]; funext i; ring
+-
+-theorem sbi6_neighbors_internal (t : ℕ) :
+-    neighbors .sbi sbi6_r (traj .sbi sbi6_r sbi6_x0 t) =
+-      ![{0}, {0, 1, 2, 3}, {0, 1, 2, 3, 4}, {0, 2, 3, 4, 5}, {2, 3, 4, 5}, {5}] := by
+-  obtain ⟨h0, h1⟩ := si_pow_bounds t
+-  rw [sbi6_closed_form_internal, sbi_sbi6_table _ h0 h1]
+-
+-theorem sbi_sbi6_rate_tendsto : Tendsto (fun t : ℕ => sbi6Rate ^ t * 1) atTop (𝓝 0) := by
+-  simpa using tendsto_pow_atTop_nhds_zero_of_abs_lt_one abs_sbi6Rate_lt_one
+-
+-theorem sbi6_tendsto : Tendsto (traj .sbi sbi6_r sbi6_x0) atTop (𝓝 sbi6_lim) :=
+-  tendsto_of_closed_form _ _ sbi6_v _ sbi_sbi6_rate_tendsto sbi_sbi6_closed_form'
+-
+-theorem sbi6_digraph_constant (t : ℕ) :
+-    proximityDigraph .sbi sbi6_r (traj .sbi sbi6_r sbi6_x0 t) =
+-      proximityDigraph .sbi sbi6_r sbi6_x0 := by
+-  have h0 : traj .sbi sbi6_r sbi6_x0 0 = sbi6_x0 := rfl
+-  have := sbi6_neighbors_internal 0
+-  rw [h0] at this
+-  simp only [proximityDigraph, sbi6_neighbors_internal, this]
+-
+-theorem sbi6_not_fixedFrom (τ : ℕ) : ¬ FixedFrom (traj .sbi sbi6_r sbi6_x0) τ :=
+-  not_fixedFrom_of_closed_form _ _ sbi6_v _ sbi_sbi6_closed_form'
+-    (alternating _ _ sbi6Rate_neg one_ne_zero) 1 (by simp [sbi6_v]) τ
+-
+-theorem sbi6_not_pseudoStableAfter (yinf : Fin 6 → ℝ) (τ : ℕ) :
+-    ¬ PseudoStableAfter (traj .sbi sbi6_r sbi6_x0) yinf τ :=
+-  not_pseudoStable_of_closed_form _ _ sbi6_v _ sbi_sbi6_rate_tendsto sbi_sbi6_closed_form'
+-    (alternating _ _ sbi6Rate_neg one_ne_zero) yinf τ
+-
+-theorem not_conjecture23_sbi_six_internal : ¬ Conjecture23ForAgents .sbi 6 := by
+-  intro h
+-  obtain ⟨τ, hf | ⟨xinf, hps⟩⟩ := h sbi6_r sbi6_x0 sbi6_r_pos
+-  · exact sbi6_not_fixedFrom τ hf
+-  · exact sbi6_not_pseudoStableAfter xinf τ hps
+-
+-theorem not_theorem64iv_sbi_six_internal : ¬ Theorem64ivForAgents .sbi 6 := by
+-  intro h
+-  obtain ⟨t₂, -, hf | ⟨xinf, hps⟩⟩ := h sbi6_r sbi6_x0 sbi6_r_pos 0
+-    (fun t _ => by simp only [proximityDigraph, sbi6_neighbors_internal])
+-  · exact sbi6_not_fixedFrom t₂ hf
+-  · exact sbi6_not_pseudoStableAfter xinf t₂ hps
+-
+-theorem si_adj_lim (t : ℕ) :
+-    (adjMatrix .sbi sbi6_r (traj .sbi sbi6_r sbi6_x0 t)).mulVec sbi6_lim = sbi6_lim := by
+-  funext i
+-  rw [adj_mulVec, sbi6_neighbors_internal]
+-  fin_cases i <;> simp [Finset.sum_insert, sbi6_lim] <;> norm_num
+-
+-theorem si_adj_v (t : ℕ) :
+-    (adjMatrix .sbi sbi6_r (traj .sbi sbi6_r sbi6_x0 t)).mulVec sbi6_v = sbi6Rate • sbi6_v := by
+-  have hsq := sbi_sqrt249_sq
+-  funext i
+-  rw [adj_mulVec, sbi6_neighbors_internal]
+-  unfold sbi6Rate
+-  fin_cases i
+-  · simp [sbi6_v]
+-  · simp [Finset.sum_insert, sbi6_v]; ring
+-  · simp [Finset.sum_insert, sbi6_v]; linear_combination (-1 / 640 : ℝ) * hsq
+-  · simp [Finset.sum_insert, sbi6_v]; ring
+-  · simp [Finset.sum_insert, sbi6_v]; ring
+-  · simp [sbi6_v]
+-
+-theorem si_adj_pow (t k : ℕ) (c : ℝ) :
+-    (adjMatrix .sbi sbi6_r (traj .sbi sbi6_r sbi6_x0 t) ^ k).mulVec (sbi6_lim + c • sbi6_v) =
+-      sbi6_lim + (sbi6Rate ^ k * c) • sbi6_v := by
+-  induction k with
+-  | zero => simp
+-  | succ k ih =>
+-    rw [pow_succ', ← Matrix.mulVec_mulVec, ih, Matrix.mulVec_add, Matrix.mulVec_smul,
+-      si_adj_lim, si_adj_v, smul_smul, pow_succ]
+-    congr 2
+-    ring
+-
+-/-- The final value at constant topology (Definition 3.1) is the limit at every `t`. -/
+-theorem sbi6_fvct_internal (t : ℕ) : fvct .sbi sbi6_r (traj .sbi sbi6_r sbi6_x0 t) = sbi6_lim := by
+-  have hx : traj .sbi sbi6_r sbi6_x0 t = sbi6_lim + (sbi6Rate ^ t) • sbi6_v := by
+-    rw [sbi6_closed_form_internal]; funext i; simp
+-  have h1 : Tendsto (fun k : ℕ => sbi6_lim + (sbi6Rate ^ k * sbi6Rate ^ t) • sbi6_v)
+-      atTop (𝓝 sbi6_lim) := by
+-    have h0 := ((tendsto_pow_atTop_nhds_zero_of_abs_lt_one abs_sbi6Rate_lt_one).mul_const
+-      (sbi6Rate ^ t)).smul_const sbi6_v
+-    have h2 := h0.const_add sbi6_lim
+-    rwa [zero_mul, zero_smul, add_zero] at h2
+-  have hA := si_adj_pow t
+-  unfold fvct
+-  set A := adjMatrix .sbi sbi6_r (traj .sbi sbi6_r sbi6_x0 t) with hAdef
+-  have hf : (fun k : ℕ => (A ^ k).mulVec (traj .sbi sbi6_r sbi6_x0 t)) =
+-      fun k => sbi6_lim + (sbi6Rate ^ k * sbi6Rate ^ t) • sbi6_v := by
+-    funext k; rw [hx, hA]
+-  rw [hf]
+-  exact h1.limUnder_eq
+-
+-/-- The per-step convergence factor (Definition 6.1) of agents 1–4 is the rate at every `t`. -/
+-theorem sbi6_perStepFactor_internal (t : ℕ) (i : Fin 6) (hi : i ∈ ({1, 2, 3, 4} : Finset (Fin 6))) :
+-    perStepFactor .sbi sbi6_r (traj .sbi sbi6_r sbi6_x0) i t = sbi6Rate := by
+-  have hv : sbi6_v i ≠ 0 := by
+-    have hs : (0 : ℝ) ≤ Real.sqrt 249 := Real.sqrt_nonneg _
+-    simp only [Finset.mem_insert, Finset.mem_singleton] at hi
+-    rcases hi with rfl | rfl | rfl | rfl <;> simp [sbi6_v]
+-    all_goals (intro h; linarith)
+-  have hp : sbi6Rate ^ t ≠ 0 := pow_ne_zero _ sbi6Rate_neg.ne
+-  rw [perStepFactor, sbi6_fvct_internal, sbi6_closed_form_internal, sbi6_closed_form_internal]
+-  simp only [add_sub_cancel_left, pow_succ]
+-  field_simp
+-
+-end HK
+diff --git a/HK/SBI7.lean b/HK/SBI7.lean
+deleted file mode 100644
+index 8fdcf8fd9..000000000
+--- a/HK/SBI7.lean
++++ /dev/null
+@@ -1,212 +0,0 @@
+-module
+-
+-public import HK.Basic
+-
+-/-!
+-# The 7-agent SBI system (Hegarty–Ognissanti–Wedin §3)
+-
+-`x(0) = (0, 15/2, 10 − φ/2, 11, 12 + φ/2, 29/2, 22)`, `r = (8, 4, 4, 8, 4, 4, 8)`, `φ = (1 + √5)/2`,
+-`λ = (1 − √5)/8`; `x(t) = (0, 7, 10, 11, 12, 15, 22) + (λᵗ/2) (0, 1, −φ, 0, φ, −1, 0)`. The middle
+-agent (index 3) listens to indices 1–5 at even `t` and to 2, 3, 4 at odd `t`; the proximity digraph
+-is never eventually constant; agents 1, 2, 4, 5 alternate sides of their limits. The tables need the
+-bounds on the product atom `u φ` (from `1 < φ < 2` and `φ² = φ + 1`); at odd `t` the bound is
+-`λ ≤ λᵗ`, not only `−1 ≤ λᵗ`.
+--/
+-
+-@[expose] public section
+-
+-namespace HK
+-
+-open Filter Topology
+-
+-/-- The SBI-7 table at an even-time offset `0 < w ≤ 1/2`. -/
+-theorem sbi7_table_even (w : ℝ) (hw0 : 0 < w) (hw1 : w ≤ 1 / 2) :
+-    neighbors .sbi sbi7_r (fun i => sbi7_lim i + w * sbi_v i) =
+-      ![{0}, {0, 1, 2, 3}, {1, 2, 3, 4}, {1, 2, 3, 4, 5}, {2, 3, 4, 5}, {3, 4, 5, 6}, {6}] := by
+-  have hφ1 := Real.one_lt_goldenRatio
+-  have hφ2 := Real.goldenRatio_lt_two
+-  have hp0 : 0 < w * Real.goldenRatio := mul_pos hw0 (by linarith)
+-  have hp1 : w * Real.goldenRatio ≤ 1 := by nlinarith
+-  funext i
+-  ext j
+-  fin_cases i <;> fin_cases j <;>
+-    simp [neighbors, Model.bound, sbi7_r, sbi7_lim, sbi_v, abs_le] <;>
+-    (try constructor) <;> (try intro) <;> linarith
+-
+-/-- The SBI-7 table at an odd-time offset `(1 − φ)/8 ≤ w < 0`. -/
+-theorem sbi7_table_odd (w : ℝ) (hw0 : (1 - Real.goldenRatio) / 8 ≤ w) (hw1 : w < 0) :
+-    neighbors .sbi sbi7_r (fun i => sbi7_lim i + w * sbi_v i) =
+-      ![{0}, {0, 1, 2, 3}, {1, 2, 3, 4}, {2, 3, 4}, {2, 3, 4, 5}, {3, 4, 5, 6}, {6}] := by
+-  have hφ1 := Real.one_lt_goldenRatio
+-  have hφ2 := Real.goldenRatio_lt_two
+-  have hsq := Real.goldenRatio_sq
+-  have hp1 : w * Real.goldenRatio < 0 := mul_neg_of_neg_of_pos hw1 (by linarith)
+-  have hm := mul_le_mul_of_nonneg_right hw0 (le_of_lt (lt_trans one_pos hφ1))
+-  have hp0 : -1 / 8 ≤ w * Real.goldenRatio := by nlinarith
+-  funext i
+-  ext j
+-  fin_cases i <;> fin_cases j <;>
+-    simp [neighbors, Model.bound, sbi7_r, sbi7_lim, sbi_v, abs_le] <;>
+-    (try constructor) <;> (try intro) <;> linarith
+-
+-/-- The SBI-7 step, given its table (either parity). -/
+-theorem sbi7_step_of_table (w : ℝ) (S3 : Finset (Fin 7))
+-    (hS : S3 = {1, 2, 3, 4, 5} ∨ S3 = {2, 3, 4})
+-    (htab : neighbors .sbi sbi7_r (fun i => sbi7_lim i + w * sbi_v i) =
+-      ![{0}, {0, 1, 2, 3}, {1, 2, 3, 4}, S3, {2, 3, 4, 5}, {3, 4, 5, 6}, {6}]) :
+-    step .sbi sbi7_r (fun i => sbi7_lim i + w * sbi_v i) =
+-      fun i => sbi7_lim i + ((1 - Real.goldenRatio) / 4 * w) * sbi_v i := by
+-  have hsq := Real.goldenRatio_sq
+-  funext i
+-  rw [step_apply, htab]
+-  fin_cases i
+-  · simp [sbi7_lim, sbi_v]
+-  · simp [Finset.sum_insert, sbi7_lim, sbi_v]; ring
+-  · simp [Finset.sum_insert, sbi7_lim, sbi_v]; linear_combination (-w / 4) * hsq
+-  · rcases hS with rfl | rfl <;> simp [Finset.sum_insert, sbi7_lim, sbi_v] <;> ring
+-  · simp [Finset.sum_insert, sbi7_lim, sbi_v]; linear_combination (w / 4) * hsq
+-  · simp [Finset.sum_insert, sbi7_lim, sbi_v]; ring
+-  · simp [sbi7_lim, sbi_v]
+-
+-/-- §3: the closed form. -/
+-theorem sbi7_closed_form_internal (t : ℕ) :
+-    traj .sbi sbi7_r sbi7_x0 t = fun i => sbi7_lim i + sbiRate ^ t / 2 * sbi_v i := by
+-  induction t with
+-  | zero =>
+-    funext i
+-    fin_cases i <;> simp [traj, sbi7_x0, sbi7_lim, sbi_v] <;> ring
+-  | succ t ih =>
+-    have h : traj .sbi sbi7_r sbi7_x0 (t + 1) = step .sbi sbi7_r (traj .sbi sbi7_r sbi7_x0 t) := by
+-      simp only [traj]
+-      exact Function.iterate_succ_apply' _ _ _
+-    rw [h, ih]
+-    rcases Nat.even_or_odd t with ht | ht
+-    · obtain ⟨h0, h1⟩ := sbiRate_pow_even ht
+-      rw [sbi7_step_of_table _ _ (Or.inl rfl) (sbi7_table_even _ h0 h1)]
+-      funext i; rw [pow_succ, sbiRate_eq]; ring
+-    · obtain ⟨h0, h1⟩ := sbiRate_pow_odd ht
+-      rw [sbi7_step_of_table _ _ (Or.inr rfl) (sbi7_table_odd _ h0 h1)]
+-      funext i; rw [pow_succ, sbiRate_eq]; ring
+-
+-/-- §3: the neighbourhood table at every `t`. -/
+-theorem sbi7_neighbors_internal (t : ℕ) :
+-    neighbors .sbi sbi7_r (traj .sbi sbi7_r sbi7_x0 t) =
+-      ![{0}, {0, 1, 2, 3}, {1, 2, 3, 4}, if Even t then {1, 2, 3, 4, 5} else {2, 3, 4},
+-        {2, 3, 4, 5}, {3, 4, 5, 6}, {6}] := by
+-  rw [sbi7_closed_form_internal]
+-  rcases Nat.even_or_odd t with ht | ht
+-  · obtain ⟨h0, h1⟩ := sbiRate_pow_even ht
+-    rw [ite_eq_left ht, sbi7_table_even _ h0 h1]
+-  · obtain ⟨h0, h1⟩ := sbiRate_pow_odd ht
+-    rw [ite_eq_right (Nat.not_even_iff_odd.mpr ht), sbi7_table_odd _ h0 h1]
+-
+-theorem sbi7_digraph_not_eventually_constant_internal (τ : ℕ) :
+-    ∃ t, τ ≤ t ∧ proximityDigraph .sbi sbi7_r (traj .sbi sbi7_r sbi7_x0 t) ≠
+-      proximityDigraph .sbi sbi7_r (traj .sbi sbi7_r sbi7_x0 τ) := by
+-  refine ⟨τ + 1, Nat.le_succ τ, fun h => ?_⟩
+-  have h2 := congrFun (congrFun (congrArg Digraph.Adj h) 3) 1
+-  simp only [proximityDigraph, sbi7_neighbors_internal] at h2
+-  rcases Nat.even_or_odd τ with ht | ht
+-  · have h' : ¬ Even (τ + 1) := Nat.not_even_iff_odd.mpr ht.add_one
+-    simp [h', ht] at h2
+-  · have h' : Even (τ + 1) := ht.add_one
+-    have h'' : ¬ Even τ := Nat.not_even_iff_odd.mpr ht
+-    simp [h', h''] at h2
+-
+-theorem sbi7_closed_form_internal' (t : ℕ) :
+-    traj .sbi sbi7_r sbi7_x0 t = fun i => sbi7_lim i + sbiRate ^ t * (1 / 2) * sbi_v i := by
+-  rw [sbi7_closed_form_internal]; funext i; ring
+-
+-theorem sbi7_rate_tendsto :
+-    Tendsto (fun t : ℕ => sbiRate ^ t * (1 / 2)) atTop (𝓝 0) := by
+-  have h := (tendsto_pow_atTop_nhds_zero_of_abs_lt_one sbiRate_abs_lt_one).mul_const (1 / 2 : ℝ)
+-  simpa using h
+-
+-theorem sbi7_tendsto : Tendsto (traj .sbi sbi7_r sbi7_x0) atTop (𝓝 sbi7_lim) :=
+-  tendsto_of_closed_form _ _ sbi_v (fun t => sbiRate ^ t * (1 / 2))
+-    sbi7_rate_tendsto
+-    sbi7_closed_form_internal'
+-
+-theorem sbi7_not_fixedFrom (τ : ℕ) : ¬ FixedFrom (traj .sbi sbi7_r sbi7_x0) τ :=
+-  not_fixedFrom_of_closed_form _ _ sbi_v _ sbi7_closed_form_internal'
+-    (alternating _ _ sbiRate_neg (by norm_num)) 1 (by simp [sbi_v]) τ
+-
+-theorem sbi7_not_pseudoStableAfter (xinf : Fin 7 → ℝ) (τ : ℕ) :
+-    ¬ PseudoStableAfter (traj .sbi sbi7_r sbi7_x0) xinf τ :=
+-  not_pseudoStable_of_closed_form _ _ sbi_v _
+-    sbi7_rate_tendsto
+-    sbi7_closed_form_internal' (alternating _ _ sbiRate_neg (by norm_num)) xinf τ
+-
+-theorem sbi7_r_pos : ∀ i, 0 < sbi7_r i := by
+-  intro i
+-  fin_cases i <;> simp [sbi7_r]
+-
+-/-- Either parity matrix fixes the limit. -/
+-theorem ref_sbi7_adj_lim (t : ℕ) :
+-    (adjMatrix .sbi sbi7_r (traj .sbi sbi7_r sbi7_x0 t)).mulVec sbi7_lim = sbi7_lim := by
+-  funext i
+-  rw [adj_mulVec, sbi7_neighbors_internal]
+-  rcases Nat.even_or_odd t with ht | ht
+-  · rw [ite_eq_left ht]
+-    fin_cases i <;> simp [Finset.sum_insert, sbi7_lim] <;> norm_num
+-  · rw [ite_eq_right (Nat.not_even_iff_odd.mpr ht)]
+-    fin_cases i <;> simp [Finset.sum_insert, sbi7_lim] <;> norm_num
+-
+-/-- Either parity matrix scales the offset direction by `λ`. -/
+-theorem ref_sbi7_adj_v (t : ℕ) :
+-    (adjMatrix .sbi sbi7_r (traj .sbi sbi7_r sbi7_x0 t)).mulVec sbi_v = sbiRate • sbi_v := by
+-  have hsq := Real.goldenRatio_sq
+-  funext i
+-  rw [adj_mulVec, sbi7_neighbors_internal, sbiRate_eq]
+-  rcases Nat.even_or_odd t with ht | ht
+-  · rw [ite_eq_left ht]
+-    fin_cases i
+-    · simp [sbi_v]
+-    · simp [Finset.sum_insert, sbi_v]; ring
+-    · simp [Finset.sum_insert, sbi_v]; linear_combination (-1 / 4 : ℝ) * hsq
+-    · simp [Finset.sum_insert, sbi_v]
+-    · simp [Finset.sum_insert, sbi_v]; linear_combination (1 / 4 : ℝ) * hsq
+-    · simp [Finset.sum_insert, sbi_v]; ring
+-    · simp [sbi_v]
+-  · rw [ite_eq_right (Nat.not_even_iff_odd.mpr ht)]
+-    fin_cases i
+-    · simp [sbi_v]
+-    · simp [Finset.sum_insert, sbi_v]; ring
+-    · simp [Finset.sum_insert, sbi_v]; linear_combination (-1 / 4 : ℝ) * hsq
+-    · simp [Finset.sum_insert, sbi_v]
+-    · simp [Finset.sum_insert, sbi_v]; linear_combination (1 / 4 : ℝ) * hsq
+-    · simp [Finset.sum_insert, sbi_v]; ring
+-    · simp [sbi_v]
+-
+-theorem ref_sbi7_adj_pow (t k : ℕ) (c : ℝ) :
+-    (adjMatrix .sbi sbi7_r (traj .sbi sbi7_r sbi7_x0 t) ^ k).mulVec (sbi7_lim + c • sbi_v) =
+-      sbi7_lim + (sbiRate ^ k * c) • sbi_v := by
+-  induction k with
+-  | zero => simp
+-  | succ k ih =>
+-    rw [pow_succ', ← Matrix.mulVec_mulVec, ih, Matrix.mulVec_add, Matrix.mulVec_smul,
+-      ref_sbi7_adj_lim, ref_sbi7_adj_v, smul_smul, pow_succ]
+-    congr 2
+-    ring
+-
+-/-- Each parity matrix fixes the limit and scales the offset by `λ`, so the final value at constant
+-topology of every `x(t)` is the limit (the route of `sbi7b_fvct_internal`, one table per parity). -/
+-theorem sbi7_fvct (t : ℕ) : fvct .sbi sbi7_r (traj .sbi sbi7_r sbi7_x0 t) = sbi7_lim := by
+-  have hx : traj .sbi sbi7_r sbi7_x0 t = sbi7_lim + (sbiRate ^ t / 2) • sbi_v := by
+-    rw [sbi7_closed_form_internal]; funext i; simp
+-  have h1 : Tendsto (fun k : ℕ => sbi7_lim + (sbiRate ^ k * (sbiRate ^ t / 2)) • sbi_v)
+-      atTop (𝓝 sbi7_lim) := by
+-    have h0 := ((tendsto_pow_atTop_nhds_zero_of_abs_lt_one sbiRate_abs_lt_one).mul_const
+-      (sbiRate ^ t / 2)).smul_const sbi_v
+-    have h2 := h0.const_add sbi7_lim
+-    rwa [zero_mul, zero_smul, add_zero] at h2
+-  have hA := ref_sbi7_adj_pow t
+-  unfold fvct
+-  set A := adjMatrix .sbi sbi7_r (traj .sbi sbi7_r sbi7_x0 t) with hAdef
+-  have hf : (fun k : ℕ => (A ^ k).mulVec (traj .sbi sbi7_r sbi7_x0 t)) =
+-      fun k => sbi7_lim + (sbiRate ^ k * (sbiRate ^ t / 2)) • sbi_v := by
+-    funext k; rw [hx, hA]
+-  rw [hf]
+-  exact h1.limUnder_eq
+-
+-end HK
+diff --git a/HK/SBI7b.lean b/HK/SBI7b.lean
+deleted file mode 100644
+index 80fc21220..000000000
+--- a/HK/SBI7b.lean
++++ /dev/null
+@@ -1,161 +0,0 @@
+-module
+-
+-public import HK.Basic
+-
+-/-!
+-# The second 7-agent SBI system (Hegarty–Ognissanti–Wedin §5)
+-
+-`x(0) = (0, 71, 100 − φ, 110, 120 + φ, 149, 220)`, `r = (85, 35, 35, 75, 35, 35, 85)`,
+-`λ = (1 − √5)/8`; `x(t) = (0, 70, 100, 110, 120, 150, 220) + λᵗ (0, 1, −φ, 0, φ, −1, 0)`. The
+-neighbourhood table is the same at every `t`, yet agents 1, 2, 4, 5 alternate sides of their limits;
+-their per-step convergence factor is `λ` at every `t`. Index 3 (the paper's agent 4) sits at its
+-limit.
+--/
+-
+-@[expose] public section
+-
+-namespace HK
+-
+-open Filter Topology
+-
+-/-- The SBI-7b table for every offset `(1 − φ)/4 ≤ w ≤ 1`. -/
+-theorem sbi7b_table (w : ℝ) (hw0 : (1 - Real.goldenRatio) / 4 ≤ w) (hw1 : w ≤ 1) :
+-    neighbors .sbi sbi7b_r (fun i => sbi7b_lim i + w * sbi_v i) =
+-      ![{0}, {0, 1, 2, 3}, {1, 2, 3, 4}, {2, 3, 4}, {2, 3, 4, 5}, {3, 4, 5, 6}, {6}] := by
+-  have hφ1 := Real.one_lt_goldenRatio
+-  have hφ2 := Real.goldenRatio_lt_two
+-  have hsq := Real.goldenRatio_sq
+-  have hφ0 : 0 ≤ Real.goldenRatio := by linarith
+-  have hm0 := mul_le_mul_of_nonneg_right hw0 hφ0
+-  have hm1 := mul_le_mul_of_nonneg_right hw1 hφ0
+-  have hp0 : -1 / 4 ≤ w * Real.goldenRatio := by nlinarith
+-  have hp1 : w * Real.goldenRatio ≤ 2 := by nlinarith
+-  funext i
+-  ext j
+-  fin_cases i <;> fin_cases j <;>
+-    simp [neighbors, Model.bound, sbi7b_r, sbi7b_lim, sbi_v, abs_le] <;>
+-    (try constructor) <;> (try intro) <;> linarith
+-
+-theorem sbi7b_step (w : ℝ) (hw0 : (1 - Real.goldenRatio) / 4 ≤ w) (hw1 : w ≤ 1) :
+-    step .sbi sbi7b_r (fun i => sbi7b_lim i + w * sbi_v i) =
+-      fun i => sbi7b_lim i + ((1 - Real.goldenRatio) / 4 * w) * sbi_v i := by
+-  have hsq := Real.goldenRatio_sq
+-  funext i
+-  rw [step_apply, sbi7b_table w hw0 hw1]
+-  fin_cases i
+-  · simp [sbi7b_lim, sbi_v]
+-  · simp [Finset.sum_insert, sbi7b_lim, sbi_v]; ring
+-  · simp [Finset.sum_insert, sbi7b_lim, sbi_v]; linear_combination (-w / 4) * hsq
+-  · simp [Finset.sum_insert, sbi7b_lim, sbi_v]; ring
+-  · simp [Finset.sum_insert, sbi7b_lim, sbi_v]; linear_combination (w / 4) * hsq
+-  · simp [Finset.sum_insert, sbi7b_lim, sbi_v]; ring
+-  · simp [sbi7b_lim, sbi_v]
+-
+-/-- §5: the closed form. -/
+-theorem sbi7b_closed_form_internal (t : ℕ) :
+-    traj .sbi sbi7b_r sbi7b_x0 t = fun i => sbi7b_lim i + sbiRate ^ t * sbi_v i := by
+-  induction t with
+-  | zero =>
+-    funext i
+-    fin_cases i <;> simp [traj, sbi7b_x0, sbi7b_lim, sbi_v] <;> ring
+-  | succ t ih =>
+-    have h : traj .sbi sbi7b_r sbi7b_x0 (t + 1) =
+-        step .sbi sbi7b_r (traj .sbi sbi7b_r sbi7b_x0 t) := by
+-      simp only [traj]
+-      exact Function.iterate_succ_apply' _ _ _
+-    obtain ⟨h0, h1⟩ := sbiRate_pow_bounds t
+-    rw [h, ih, sbi7b_step _ h0 h1]
+-    funext i; rw [pow_succ, sbiRate_eq]; ring
+-
+-/-- §5: the neighbourhood table, the same at every `t`. -/
+-theorem sbi7b_neighbors_internal (t : ℕ) :
+-    neighbors .sbi sbi7b_r (traj .sbi sbi7b_r sbi7b_x0 t) =
+-      ![{0}, {0, 1, 2, 3}, {1, 2, 3, 4}, {2, 3, 4}, {2, 3, 4, 5}, {3, 4, 5, 6}, {6}] := by
+-  obtain ⟨h0, h1⟩ := sbiRate_pow_bounds t
+-  rw [sbi7b_closed_form_internal, sbi7b_table _ h0 h1]
+-
+-theorem sbi7b_closed_form_internal' (t : ℕ) :
+-    traj .sbi sbi7b_r sbi7b_x0 t = fun i => sbi7b_lim i + sbiRate ^ t * 1 * sbi_v i := by
+-  rw [sbi7b_closed_form_internal]; funext i; ring
+-
+-theorem sbi7b_r_pos : ∀ i, 0 < sbi7b_r i := by
+-  intro i
+-  fin_cases i <;> simp [sbi7b_r]
+-
+-theorem sbi7b_adj_lim (t : ℕ) :
+-    (adjMatrix .sbi sbi7b_r (traj .sbi sbi7b_r sbi7b_x0 t)).mulVec sbi7b_lim = sbi7b_lim := by
+-  funext i
+-  rw [adj_mulVec, sbi7b_neighbors_internal]
+-  fin_cases i <;> simp [Finset.sum_insert, sbi7b_lim] <;> norm_num
+-
+-theorem sbi7b_adj_v (t : ℕ) :
+-    (adjMatrix .sbi sbi7b_r (traj .sbi sbi7b_r sbi7b_x0 t)).mulVec sbi_v = sbiRate • sbi_v := by
+-  have hsq := Real.goldenRatio_sq
+-  funext i
+-  rw [adj_mulVec, sbi7b_neighbors_internal, sbiRate_eq]
+-  fin_cases i
+-  · simp [sbi_v]
+-  · simp [Finset.sum_insert, sbi_v]; ring
+-  · simp [Finset.sum_insert, sbi_v]; linear_combination (-1 / 4 : ℝ) * hsq
+-  · simp [Finset.sum_insert, sbi_v]
+-  · simp [Finset.sum_insert, sbi_v]; linear_combination (1 / 4 : ℝ) * hsq
+-  · simp [Finset.sum_insert, sbi_v]; ring
+-  · simp [sbi_v]
+-
+-theorem sbi7b_adj_pow (t k : ℕ) (c : ℝ) :
+-    (adjMatrix .sbi sbi7b_r (traj .sbi sbi7b_r sbi7b_x0 t) ^ k).mulVec (sbi7b_lim + c • sbi_v) =
+-      sbi7b_lim + (sbiRate ^ k * c) • sbi_v := by
+-  induction k with
+-  | zero => simp
+-  | succ k ih =>
+-    rw [pow_succ', ← Matrix.mulVec_mulVec, ih, Matrix.mulVec_add, Matrix.mulVec_smul,
+-      sbi7b_adj_lim, sbi7b_adj_v, smul_smul, pow_succ]
+-    congr 2
+-    ring
+-
+-theorem sbi7b_fvct_internal (t : ℕ) : fvct .sbi sbi7b_r (traj .sbi sbi7b_r sbi7b_x0 t) = sbi7b_lim := by
+-  have hx : traj .sbi sbi7b_r sbi7b_x0 t = sbi7b_lim + (sbiRate ^ t) • sbi_v := by
+-    rw [sbi7b_closed_form_internal]; funext i; simp
+-  have h1 : Tendsto (fun k : ℕ => sbi7b_lim + (sbiRate ^ k * sbiRate ^ t) • sbi_v)
+-      atTop (𝓝 sbi7b_lim) := by
+-    have h0 := ((tendsto_pow_atTop_nhds_zero_of_abs_lt_one sbiRate_abs_lt_one).mul_const
+-      (sbiRate ^ t)).smul_const sbi_v
+-    have h2 := h0.const_add sbi7b_lim
+-    rwa [zero_mul, zero_smul, add_zero] at h2
+-  have hA := sbi7b_adj_pow t
+-  unfold fvct
+-  set A := adjMatrix .sbi sbi7b_r (traj .sbi sbi7b_r sbi7b_x0 t) with hAdef
+-  have hf : (fun k : ℕ => (A ^ k).mulVec (traj .sbi sbi7b_r sbi7b_x0 t)) =
+-      fun k => sbi7b_lim + (sbiRate ^ k * sbiRate ^ t) • sbi_v := by
+-    funext k; rw [hx, hA]
+-  rw [hf]
+-  exact h1.limUnder_eq
+-
+-theorem sbi7b_perStepFactor_internal (t : ℕ) (i : Fin 7) (hi : i ∈ ({1, 2, 4, 5} : Finset (Fin 7))) :
+-    perStepFactor .sbi sbi7b_r (traj .sbi sbi7b_r sbi7b_x0) i t = sbiRate := by
+-  have hv : sbi_v i ≠ 0 := by
+-    have := Real.goldenRatio_pos.ne'
+-    fin_cases i <;> simp_all [sbi_v]
+-  have hp : sbiRate ^ t ≠ 0 := pow_ne_zero _ sbiRate_neg.ne
+-  rw [perStepFactor, sbi7b_fvct_internal, sbi7b_closed_form_internal, sbi7b_closed_form_internal]
+-  simp only [add_sub_cancel_left, pow_succ]
+-  field_simp
+-
+-theorem sbi7b_perStepFactor_not_tendsto_internal (i : Fin 7) (hi : i ∈ ({1, 2, 4, 5} : Finset (Fin 7)))
+-    (ρ : ℝ) (hρ : 0 ≤ ρ) :
+-    ¬ Tendsto (fun t => perStepFactor .sbi sbi7b_r (traj .sbi sbi7b_r sbi7b_x0) i t) atTop
+-      (𝓝 ρ) := by
+-  intro h
+-  simp only [sbi7b_perStepFactor_internal _ i hi] at h
+-  have := tendsto_nhds_unique h tendsto_const_nhds
+-  linarith [sbiRate_neg]
+-
+-theorem sbi7b_digraph_constant_internal (t : ℕ) :
+-    proximityDigraph .sbi sbi7b_r (traj .sbi sbi7b_r sbi7b_x0 t) =
+-      proximityDigraph .sbi sbi7b_r sbi7b_x0 := by
+-  have h0 : traj .sbi sbi7b_r sbi7b_x0 0 = sbi7b_x0 := rfl
+-  have := sbi7b_neighbors_internal 0
+-  rw [h0] at this
+-  simp only [proximityDigraph, sbi7b_neighbors_internal, this]
+-
+-end HK
+diff --git a/HK/SpectatorSBC.lean b/HK/SpectatorSBC.lean
+deleted file mode 100644
+index 17530ce43..000000000
+--- a/HK/SpectatorSBC.lean
++++ /dev/null
+@@ -1,84 +0,0 @@
+-module
+-
+-public import HK.Basic
+-
+-/-!
+-# The 9-agent SBC spectator system (Hegarty–Ognissanti–Wedin §4)
+-
+-The six agents of §4 with a spectator at `210` (`r = 100`) and two beacons at `280` and `300`
+-(`r = 10`); for all `t`, agents 0–5 evolve as in §4, the beacons are fixed, and the spectator (index 6)
+-satisfies `x₆(t) = 210 + (12/11) ((−1/6)ᵗ − (1/5)ᵗ)`, so it is strictly left of `210` for every
+-`t ≥ 1`; the neighbourhood table is the same at every `t`. Two atoms: `u = (−1/6)ᵗ ∈ [−1/6, 1]` and
+-`w = (1/5)ᵗ ∈ (0, 1]`; the table holds on the closed box `|u| ≤ 1`, `0 ≤ w ≤ 1` with no parity split.
+--/
+-
+-@[expose] public section
+-
+-namespace HK
+-
+-open Filter Topology
+-
+-
+-/-- The SBC-9 opinion vector at the atoms `u` (the `(−1/6)ᵗ` offset) and `w` (the `(1/5)ᵗ` offset). -/
+-noncomputable def spe_sbc9_vec (u w : ℝ) : Fin 9 → ℝ :=
+-  ![0, 20 + 2 * u, 40 - 3 * u, 100 + 3 * u, 120 - 2 * u, 140, 210 + 12 / 11 * (u - w), 280, 300]
+-
+-/-- The SBC-9 table on the box `-1/6 ≤ u ≤ 1`, `0 ≤ w ≤ 1`. -/
+-theorem spe_sbc9_table (u w : ℝ) (h0 : -1 / 6 ≤ u) (h1 : u ≤ 1) (hw0 : 0 ≤ w) (hw1 : w ≤ 1) :
+-    neighbors .sbc sbc9_r (spe_sbc9_vec u w) =
+-      ![{0}, {0, 1, 2}, {0, 1, 2, 3}, {2, 3, 4, 5}, {3, 4, 5}, {5}, {4, 5, 6, 7, 8}, {7}, {8}] := by
+-  funext i
+-  ext j
+-  fin_cases i <;> fin_cases j <;>
+-    simp [neighbors, Model.bound, sbc9_r, spe_sbc9_vec, abs_le] <;>
+-    (try constructor) <;> (try intro) <;> linarith
+-
+-theorem spe_sbc9_step (u w : ℝ) (h0 : -1 / 6 ≤ u) (h1 : u ≤ 1) (hw0 : 0 ≤ w) (hw1 : w ≤ 1) :
+-    step .sbc sbc9_r (spe_sbc9_vec u w) = spe_sbc9_vec (-1 / 6 * u) (1 / 5 * w) := by
+-  funext i
+-  rw [step_apply, spe_sbc9_table u w h0 h1 hw0 hw1]
+-  fin_cases i <;> simp [Finset.sum_insert, spe_sbc9_vec] <;> ring
+-
+-theorem spe_sbc9_traj (t : ℕ) :
+-    traj .sbc sbc9_r sbc9_x0 t = spe_sbc9_vec ((-1 / 6 : ℝ) ^ t) ((1 / 5 : ℝ) ^ t) := by
+-  induction t with
+-  | zero =>
+-    funext i
+-    fin_cases i <;> simp [traj, sbc9_x0, spe_sbc9_vec] <;> norm_num
+-  | succ t ih =>
+-    have h : traj .sbc sbc9_r sbc9_x0 (t + 1) = step .sbc sbc9_r (traj .sbc sbc9_r sbc9_x0 t) := by
+-      simp only [traj]
+-      exact Function.iterate_succ_apply' _ _ _
+-    obtain ⟨h0, h1⟩ := pow_bounds t
+-    have hw0 : (0 : ℝ) ≤ (1 / 5 : ℝ) ^ t := pow_nonneg (by norm_num) t
+-    have hw1 : (1 / 5 : ℝ) ^ t ≤ 1 := pow_le_one₀ (by norm_num) (by norm_num)
+-    rw [h, ih, spe_sbc9_step _ _ h0 h1 hw0 hw1, pow_succ, pow_succ, mul_comm _ (-1 / 6 : ℝ),
+-      mul_comm _ (1 / 5 : ℝ)]
+-
+-theorem sbc9_closed_form_internal (t : ℕ) :
+-    traj .sbc sbc9_r sbc9_x0 t =
+-      ![0, 20 + 2 * (-1 / 6 : ℝ) ^ t, 40 - 3 * (-1 / 6 : ℝ) ^ t, 100 + 3 * (-1 / 6 : ℝ) ^ t,
+-        120 - 2 * (-1 / 6 : ℝ) ^ t, 140, 210 + 12 / 11 * ((-1 / 6 : ℝ) ^ t - (1 / 5 : ℝ) ^ t),
+-        280, 300] := by
+-  rw [spe_sbc9_traj]
+-  rfl
+-
+-theorem sbc9_neighbors_internal (t : ℕ) :
+-    neighbors .sbc sbc9_r (traj .sbc sbc9_r sbc9_x0 t) =
+-      ![{0}, {0, 1, 2}, {0, 1, 2, 3}, {2, 3, 4, 5}, {3, 4, 5}, {5}, {4, 5, 6, 7, 8}, {7}, {8}] := by
+-  obtain ⟨h0, h1⟩ := pow_bounds t
+-  rw [spe_sbc9_traj, spe_sbc9_table _ _ h0 h1 (pow_nonneg (by norm_num) t)
+-    (pow_le_one₀ (by norm_num) (by norm_num))]
+-
+-theorem sbc9_spectator_lt_internal (t : ℕ) (ht : 1 ≤ t) : traj .sbc sbc9_r sbc9_x0 t 6 < 210 := by
+-  have ht0 : t ≠ 0 := by omega
+-  have habs : |(-1 / 6 : ℝ) ^ t| < (1 / 5 : ℝ) ^ t := by
+-    rw [abs_pow, abs_of_neg (by norm_num : (-1 / 6 : ℝ) < 0)]
+-    exact pow_lt_pow_left₀ (by norm_num) (by norm_num) ht0
+-  have hle := le_abs_self ((-1 / 6 : ℝ) ^ t)
+-  have h6 : spe_sbc9_vec ((-1 / 6 : ℝ) ^ t) ((1 / 5 : ℝ) ^ t) 6 =
+-      210 + 12 / 11 * ((-1 / 6 : ℝ) ^ t - (1 / 5 : ℝ) ^ t) := rfl
+-  rw [spe_sbc9_traj, h6]
+-  linarith
+-
+-end HK
+diff --git a/HK/SpectatorSBI.lean b/HK/SpectatorSBI.lean
+deleted file mode 100644
+index b4210078f..000000000
+--- a/HK/SpectatorSBI.lean
++++ /dev/null
+@@ -1,119 +0,0 @@
+-module
+-
+-public import HK.Basic
+-
+-/-!
+-# The 8-agent SBI spectator system (Hegarty–Ognissanti–Wedin §5)
+-
+-The seven agents of §5 with a spectator at `60` (`r = 1`), which becomes index 1 when the opinions
+-are listed increasingly; for all `t` the other agents evolve as in §5 and
+-`x₁(t) = 60 + φ⁻¹ ((1/4)ᵗ − λᵗ)`, so it is strictly right of `60` for every `t ≥ 1`; the
+-neighbourhood table is the same at every `t`. Two atoms: `u = λᵗ ∈ [λ, 1]` and `w = (1/4)ᵗ ∈ (0, 1]`;
+-the table holds on the closed box `|u| ≤ 1`, `0 ≤ w ≤ 1` with no parity split (the product atom
+-`u φ` needs its own bounds, as in `HK/SBI7.lean`).
+--/
+-
+-@[expose] public section
+-
+-namespace HK
+-
+-open Filter Topology
+-
+-
+-/-- The state on the box: `u = λᵗ`, `w = (1/4)ᵗ`. -/
+-noncomputable def spe_x (u w : ℝ) : Fin 8 → ℝ :=
+-  ![0, 60 + (Real.goldenRatio - 1) * (w - u), 70 + u, 100 - Real.goldenRatio * u, 110,
+-    120 + Real.goldenRatio * u, 150 - u, 220]
+-
+-theorem spe_inv : Real.goldenRatio⁻¹ = Real.goldenRatio - 1 :=
+-  inv_eq_of_mul_eq_one_right (by linear_combination Real.goldenRatio_sq)
+-
+-/-- The table on the closed box `(1 − φ)/4 ≤ u ≤ 1`, `0 ≤ w ≤ 1`. -/
+-theorem spe_table (u w : ℝ) (hu0 : (1 - Real.goldenRatio) / 4 ≤ u) (hu1 : u ≤ 1)
+-    (hw0 : 0 ≤ w) (hw1 : w ≤ 1) :
+-    neighbors .sbi sbi8_r (spe_x u w) =
+-      ![{0}, {0, 1, 2, 4}, {0, 2, 3, 4}, {2, 3, 4, 5}, {3, 4, 5}, {3, 4, 5, 6}, {4, 5, 6, 7}, {7}] := by
+-  have hφ1 := Real.one_lt_goldenRatio
+-  have hφ2 := Real.goldenRatio_lt_two
+-  have hsq := Real.goldenRatio_sq
+-  have hφ0 : 0 ≤ Real.goldenRatio := by linarith
+-  have hm0 := mul_le_mul_of_nonneg_right hu0 hφ0
+-  have hm1 := mul_le_mul_of_nonneg_right hu1 hφ0
+-  have hp0 : -1 / 4 ≤ u * Real.goldenRatio := by nlinarith
+-  have hp1 : u * Real.goldenRatio ≤ 2 := by nlinarith
+-  have hq0 : 0 ≤ w * Real.goldenRatio := mul_nonneg hw0 hφ0
+-  have hq1 : w * Real.goldenRatio ≤ 2 := by nlinarith
+-  funext i
+-  ext j
+-  fin_cases i <;> fin_cases j <;>
+-    simp [neighbors, Model.bound, sbi8_r, spe_x, abs_le] <;>
+-    (try constructor) <;> (try intro) <;> linarith
+-
+-theorem spe_step (u w : ℝ) (hu0 : (1 - Real.goldenRatio) / 4 ≤ u) (hu1 : u ≤ 1)
+-    (hw0 : 0 ≤ w) (hw1 : w ≤ 1) :
+-    step .sbi sbi8_r (spe_x u w) = spe_x (u * sbiRate) (w * (1 / 4)) := by
+-  have hsq := Real.goldenRatio_sq
+-  funext i
+-  rw [step_apply, spe_table u w hu0 hu1 hw0 hw1, sbiRate_eq]
+-  fin_cases i
+-  · simp [spe_x]
+-  · simp [Finset.sum_insert, spe_x]; linear_combination (-u / 4) * hsq
+-  · simp [Finset.sum_insert, spe_x]; ring
+-  · simp [Finset.sum_insert, spe_x]; linear_combination (-u / 4) * hsq
+-  · simp [Finset.sum_insert, spe_x]; ring
+-  · simp [Finset.sum_insert, spe_x]; linear_combination (u / 4) * hsq
+-  · simp [Finset.sum_insert, spe_x]; ring
+-  · simp [spe_x]
+-
+-theorem spe_closed (t : ℕ) :
+-    traj .sbi sbi8_r sbi8_x0 t = spe_x (sbiRate ^ t) ((1 / 4 : ℝ) ^ t) := by
+-  induction t with
+-  | zero =>
+-    funext i
+-    fin_cases i <;> simp [traj, sbi8_x0, spe_x] <;> ring
+-  | succ t ih =>
+-    have h : traj .sbi sbi8_r sbi8_x0 (t + 1) =
+-        step .sbi sbi8_r (traj .sbi sbi8_r sbi8_x0 t) := by
+-      simp only [traj]
+-      exact Function.iterate_succ_apply' _ _ _
+-    obtain ⟨h0, h1⟩ := sbiRate_pow_bounds t
+-    have hw0 : 0 ≤ (1 / 4 : ℝ) ^ t := pow_nonneg (by norm_num) t
+-    have hw1 : (1 / 4 : ℝ) ^ t ≤ 1 := pow_le_one₀ (by norm_num) (by norm_num)
+-    rw [h, ih, spe_step _ _ h0 h1 hw0 hw1, pow_succ, pow_succ]
+-
+-theorem sbi8_closed_form_internal (t : ℕ) :
+-    traj .sbi sbi8_r sbi8_x0 t =
+-      ![0, 60 + Real.goldenRatio⁻¹ * ((1 / 4 : ℝ) ^ t - sbiRate ^ t), 70 + sbiRate ^ t,
+-        100 - Real.goldenRatio * sbiRate ^ t, 110, 120 + Real.goldenRatio * sbiRate ^ t,
+-        150 - sbiRate ^ t, 220] := by
+-  rw [spe_closed, spe_inv]; rfl
+-
+-theorem sbi8_neighbors_internal (t : ℕ) :
+-    neighbors .sbi sbi8_r (traj .sbi sbi8_r sbi8_x0 t) =
+-      ![{0}, {0, 1, 2, 4}, {0, 2, 3, 4}, {2, 3, 4, 5}, {3, 4, 5}, {3, 4, 5, 6}, {4, 5, 6, 7}, {7}] := by
+-  obtain ⟨h0, h1⟩ := sbiRate_pow_bounds t
+-  have hw0 : 0 ≤ (1 / 4 : ℝ) ^ t := pow_nonneg (by norm_num) t
+-  have hw1 : (1 / 4 : ℝ) ^ t ≤ 1 := pow_le_one₀ (by norm_num) (by norm_num)
+-  rw [spe_closed, spe_table _ _ h0 h1 hw0 hw1]
+-
+-theorem spe_abs_rate : |sbiRate| < 1 / 4 := by
+-  have hφ1 := Real.one_lt_goldenRatio
+-  have hφ2 := Real.goldenRatio_lt_two
+-  rw [abs_lt, sbiRate_eq]
+-  constructor <;> linarith
+-
+-theorem sbi8_spectator_gt_internal (t : ℕ) (ht : 1 ≤ t) : 60 < traj .sbi sbi8_r sbi8_x0 t 1 := by
+-  rw [spe_closed]
+-  have h0 : spe_x (sbiRate ^ t) ((1 / 4 : ℝ) ^ t) 1 =
+-      60 + (Real.goldenRatio - 1) * ((1 / 4 : ℝ) ^ t - sbiRate ^ t) := rfl
+-  rw [h0, ← spe_inv]
+-  have h1 : |sbiRate| ^ t < (1 / 4 : ℝ) ^ t :=
+-    pow_lt_pow_left₀ spe_abs_rate (abs_nonneg _) (by omega)
+-  have h2 : sbiRate ^ t ≤ |sbiRate| ^ t := by
+-    rw [← abs_pow]; exact le_abs_self _
+-  have h3 : 0 < Real.goldenRatio⁻¹ := inv_pos.mpr Real.goldenRatio_pos
+-  have h4 : 0 < (1 / 4 : ℝ) ^ t - sbiRate ^ t := by linarith
+-  have := mul_pos h3 h4
+-  linarith
+-
+-end HK
+diff --git a/Solution.lean b/Solution.lean
+index 77d494409..84b70065f 100644
+--- a/Solution.lean
++++ b/Solution.lean
+@@ -1,14 +1,6 @@
+ module
+ 
+-public import HK
+-
+-/-!
+-# Solution
+-
+-Each statement of `Challenge.lean`, restated verbatim and closed by the internal theorem of the same
+-name with the suffix `_internal` (the modules of `HK/`; VERIFICATION.md names the module of each theorem). This module does not import `Challenge.lean`; the definitions come from
+-`HK/Defs.lean`, which restates those of the Challenge character for character.
+--/
++public import HK.Defs
+ 
+ @[expose] public section
+ 
+@@ -16,334 +8,641 @@ namespace HK
+ 
+ open Filter Topology
+ 
++set_option maxHeartbeats 0
++
++variable {n : ℕ} {m : Model} {r x₀ L v y z : Fin n → ℝ} {q c δ α β ρ : ℝ} {a u : ℕ → ℝ} {N : ℕ → Fin n → Finset (Fin n)} {x : ℕ → Fin n → ℝ} (t : ℕ) (i : Fin n)
++
++theorem traj_succ :
++    traj m r x₀ (t + 1) = step m r (traj m r x₀ t) :=
++  Function.iterate_succ_apply' _ _ _
++
++theorem adj_mulVec :
++    (adjMatrix m r y).mulVec z i = (∑ j ∈ neighbors m r y i, z j) / (neighbors m r y i).card := by
++  simp [adjMatrix, Matrix.mulVec, dotProduct, div_eq_inv_mul, Finset.mul_sum]
++
++theorem pow_bounds (h0 : -1 ≤ q) (h1 : q ≤ 0) : q ≤ q ^ t ∧ q ^ t ≤ 1 := by
++  induction t <;> simp_all [pow_succ] <;> (try constructor) <;> nlinarith
++
++def b6 t := @pow_bounds (-1 / 6) t (by norm_num) (by norm_num)
++
++theorem sign_pow (hq : q < 0) (hc : 0 < c) :
++    if Even t then 0 < q ^ t ∧ 0 < q ^ t * c else q ^ t < 0 ∧ q ^ t * c < 0 := by
++  split_ifs <;> simp_all [mul_neg_iff, Even.pow_pos, Odd.pow_neg, hq.ne]
++
++variable (x) in
++abbrev NF : Prop := (∀ τ, ¬ FixedFrom x τ) ∧ ∀ y τ, ¬ PseudoStableAfter x y τ
++
++variable (u c) in
++abbrev Osc : Prop :=
++  (∃ k, t ≤ k ∧ k ≤ t + 4 ∧ u k < c) ∧ ∃ k, t ≤ k ∧ k ≤ t + 4 ∧ c < u k
++
++theorem osc_refute (hl : Tendsto x atTop (𝓝 L))
++    (h : ∀ t, Osc (L i) (x · i) t) :
++    NF x := by
++  refine ⟨fun τ hf => ?_, fun y τ ⟨hy, F, C, _, _, _, hU, hc⟩ => ?_⟩ <;> have := h τ
++  · grind [FixedFrom]
++  have := hU ▸ Finset.mem_univ i
++  have key : ∀ t ≥ τ, (x t i < y i ↔ x τ i < y i) := Nat.le_induction Iff.rfl fun t ht ih => by
++    grind
++  grind [tendsto_nhds_unique hy hl]
++
++variable (m r x₀ L v q a N) in
++structure Mode : Prop where
++  h0 : x₀ = L + a 0 • v
++  ha : ∀ t, a (t + 1) = q * a t
++  hq : q < 0
++  hq1 : |q| < 1
++  ha0 : a 0 ≠ 0
++  hv : ∃ i, v i ≠ 0
++  nb : ∀ t, neighbors m r (L + a t • v) = N t
++  adj : ∀ t y, neighbors m r y = N t → (adjMatrix m r y).mulVec L = L ∧
++    (adjMatrix m r y).mulVec v = q • v
++
++section
++
++variable (h : Mode m r x₀ L v q a N)
++include h
++
++theorem Mode.eq : ∀ t, traj m r x₀ t = L + a t • v :=
++  Nat.rec h.h0 fun t ih => by simp [traj_succ, ih, step, Matrix.mulVec_add, Matrix.mulVec_smul, h.adj t _ (h.nb t), h.ha,
++    smul_smul, mul_comm]
++
++theorem Mode.pow : a t = q ^ t * a 0 := by
++  induction t <;> grind [h.ha, pow_succ]
++
++theorem Mode.ne : a t ≠ 0 :=
++  h.pow t ▸ mul_ne_zero (pow_ne_zero _ h.hq.ne) h.ha0
++
++theorem Mode.lim :
++    Tendsto (fun k : ℕ => L + (q ^ k * c) • v) atTop (𝓝 L) := by
++  simpa using (((tendsto_pow_atTop_nhds_zero_of_abs_lt_one
++    h.hq1).mul_const c).smul_const v).const_add L
++
++theorem Mode.tendsto : Tendsto (traj m r x₀) atTop (𝓝 L) :=
++  h.lim.congr fun t => by rw [h.eq, h.pow t]
++
++theorem Mode.fvct : fvct m r (traj m r x₀ t) = L := by
++  have e : ∀ k, (adjMatrix m r (L + a t • v) ^ k).mulVec (L + a t • v) =
++      L + (q ^ k * a t) • v := Nat.rec (by simp) fun k ih => by
++    rw [pow_succ', ← Matrix.mulVec_mulVec, ih]
++    simp [Matrix.mulVec_add, Matrix.mulVec_smul, h.adj t _ (h.nb t), smul_smul]; ring_nf
++  simp only [HK.fvct, h.eq, e]
++  exact h.lim.limUnder_eq
++
++theorem Mode.perStepFactor (hv : v i ≠ 0) :
++    perStepFactor m r (traj m r x₀) i t = q := by
++  rw [HK.perStepFactor, h.fvct, h.eq, h.eq, h.ha]; simp [h.ne t, hv, mul_assoc]
++
++theorem Mode.nfp : NF (traj m r x₀) := by
++  obtain ⟨i, hi⟩ := h.hv
++  refine osc_refute i h.tendsto fun τ => ?_
++  simp [h.eq]
++  have := mul_self_pos.2 (mul_ne_zero (h.ne τ) hi)
++  constructor <;> by_contra! hn <;>
++    nlinarith [h.hq, hn τ le_rfl le_self_add, h.ha τ ▸ hn (τ + 1) le_self_add (by omega)]
++
++end
++
++/-- Conjecture 2.3 and Theorem 6.4(iv) fail for a trajectory never fixed nor pseudo-stable. -/
++macro "pos" : tactic => `(tactic| (intro i; fin_cases i <;>
++  norm_num [sbc7_r, sbi7_r, sbc6_r, sbi7b_r, sbc5_r, sbi6_r, sbi5_r]))
++
++theorem refute (H : NF (traj m r x₀)) (hr : ∀ i, 0 < r i := by pos) :
++    ¬ Conjecture23ForAgents m n ∧
++      ((∀ t, proximityDigraph m r (traj m r x₀ t) = proximityDigraph m r x₀) →
++        ¬ Theorem64ivForAgents m n ∧ ¬ Theorem64ivLiteralForAgents m n) :=
++  ⟨fun h => by simpa [H.1, H.2] using h r x₀ hr, fun hd => by
++    constructor <;> intro h <;> simpa [H.1, H.2] using h r x₀ hr 0 fun t _ => hd t⟩
++
++theorem digraph_const {N : Fin n → Finset (Fin n)}
++    (hN : ∀ t, neighbors m r (traj m r x₀ t) = N) (t : ℕ) :
++    proximityDigraph m r (traj m r x₀ t) = proximityDigraph m r x₀ := by
++  rw [proximityDigraph, hN t, ← hN 0]; rfl
++
++open goldenRatio
++
++theorem sbi_b : 1 < φ ∧ φ < 2 ∧ sbiRate = (1 - φ) / 4 ∧
++    sbiRate ≤ sbiRate ^ t ∧ sbiRate ^ t ≤ 1 ∧ -1 / 4 ≤ sbiRate ^ t * φ ∧ sbiRate ^ t * φ ≤ 2 := by
++  have := Real.sq_sqrt (Nat.ofNat_nonneg 5)
++  have := Real.sqrt_nonneg 5
++  unfold sbiRate Real.goldenRatio
++  obtain ⟨_, _⟩ := pow_bounds (q := (1 - √5) / 8) t (by nlinarith) (by nlinarith)
++  split_ands <;> nlinarith
++
++macro "tab" : tactic => `(tactic| ((try split_ifs at *) <;> funext i <;> ext j <;>
++      fin_cases i <;> fin_cases j <;>
++      simp [neighbors, Model.bound, abs_le] <;> grind))
++
++macro "mode" b:term:max c:term:max : tactic => `(tactic| (
++  have := $b 0
++  exact ⟨by norm_num [funext_iff, Fin.forall_fin_succ] <;> grind, fun t => by ring, by linarith,
++    by grind [abs_lt], by grind, ⟨1, by simp⟩,
++    fun t => by have := $b t; have := $c t; tab, fun t y h => by
++      have := $b t; constructor <;> funext i <;> rw [adj_mulVec, h] <;>
++      (try split_ifs) <;> fin_cases i <;> simp [Finset.sum_insert] <;> grind⟩))
++
++section
++
++attribute [local simp] sbc7_r sbc7_x0 sbc7_lim sbc7_v sbc6_r sbc6_x0 sbc6_lim sbc6_v sbi7b_r sbi7b_x0 sbi7b_lim sbi_v sbi7_r sbi7_x0 sbi7_lim sbc5Family_r sbc5Family_x0 sbc5_lim sbc5_v sbi6_r sbi6_x0 sbi6_lim sbi6_v
++
++theorem sbc7 : Mode .sbc sbc7_r sbc7_x0 sbc7_lim sbc7_v (-1 / 6) (fun t => (-1 / 6 : ℝ) ^ t) fun t =>
++    ![{0}, {0, 1, 2}, {1, 2, 3, 4}, if Even t then {3} else {2, 3, 4}, {2, 3, 4, 5}, {4, 5, 6}, {6}] := by
++  mode b6 (sign_pow · (by norm_num : (-1 / 6 : ℝ) < 0) one_pos)
++theorem sbc6 : Mode .sbc sbc6_r sbc6_x0 sbc6_lim sbc6_v (-1 / 6) (fun t => (-1 / 6 : ℝ) ^ t) fun _ =>
++    ![{0}, {0, 1, 2}, {0, 1, 2, 3}, {2, 3, 4, 5}, {3, 4, 5}, {5}] := by
++  mode b6 b6
++theorem sbi7b : Mode .sbi sbi7b_r sbi7b_x0 sbi7b_lim sbi_v sbiRate (sbiRate ^ ·) fun _ =>
++    ![{0}, {0, 1, 2, 3}, {1, 2, 3, 4}, {2, 3, 4}, {2, 3, 4, 5}, {3, 4, 5, 6}, {6}] := by
++  mode sbi_b sbi_b
++theorem sbi7 : Mode .sbi sbi7_r sbi7_x0 sbi7_lim sbi_v sbiRate (sbiRate ^ · / 2) fun t =>
++    ![{0}, {0, 1, 2, 3}, {1, 2, 3, 4}, if Even t then {1, 2, 3, 4, 5} else {2, 3, 4},
++      {2, 3, 4, 5}, {3, 4, 5, 6}, {6}] := by
++  mode sbi_b (sign_pow · sbi7b.hq Real.goldenRatio_pos)
++theorem sbc5_b : 1.4 < √2 ∧ √2 < 1.5 ∧
++    sbc5Rate = (1 - √2) / 3 ∧ sbc5Rate ≤ sbc5Rate ^ t ∧ sbc5Rate ^ t ≤ 1 := by
++  have := Real.sq_sqrt zero_le_two
++  have := Real.sqrt_nonneg 2
++  unfold sbc5Rate
++  refine ⟨?_, ?_, ?_, pow_bounds t ?_ ?_⟩ <;> nlinarith
++
++section
++
++variable (h0 : 0 < δ) (h1 : δ ≤ 1)
++include h0 h1
++
++theorem fam_b : -δ ≤ sbc5Rate ^ t * δ ∧
++    sbc5Rate ^ t * δ ≤ δ ∧ -(3 / 2) * δ ≤ sbc5Rate ^ t * δ * √2 ∧ sbc5Rate ^ t * δ * √2 ≤ 3 / 2 * δ := by
++  obtain ⟨a, b, e, c, d⟩ := sbc5_b t
++  split_ands <;> nlinarith [mul_le_mul_of_nonneg_right c h0.le,
++    mul_le_mul_of_nonneg_right d h0.le]
++
++theorem fam :
++    Mode .sbc (sbc5Family_r δ) (sbc5Family_x0 δ) sbc5_lim sbc5_v sbc5Rate (sbc5Rate ^ · * δ) fun _ =>
++      ![{0}, {0, 1, 2}, {1, 2, 3}, {2, 3, 4}, {4}] :=
++  by mode sbc5_b (fam_b · h0 h1)
++end
++
++theorem sbi6_b : 15 < √249 ∧
++    sbi6Rate = (13 - √249) / 40 ∧ sbi6Rate ≤ sbi6Rate ^ t ∧ sbi6Rate ^ t ≤ 1 ∧
++    -27 / 20 ≤ sbi6Rate ^ t * √249 ∧ sbi6Rate ^ t * √249 ≤ 16 := by
++  have := Real.sq_sqrt (Nat.ofNat_nonneg 249)
++  have := Real.sqrt_nonneg 249
++  unfold sbi6Rate
++  obtain ⟨_, _⟩ := pow_bounds (q := (13 - √249) / 40) t (by nlinarith) (by nlinarith)
++  split_ands <;> nlinarith
++
++theorem sbi6 : Mode .sbi sbi6_r sbi6_x0 sbi6_lim sbi6_v sbi6Rate (sbi6Rate ^ ·) fun _ =>
++    ![{0}, {0, 1, 2, 3}, {0, 1, 2, 3, 4}, {0, 2, 3, 4, 5}, {2, 3, 4, 5}, {5}] := by
++  mode sbi6_b sbi6_b
++
++theorem sbc5_e : sbc5Family_r 1 = sbc5_r ∧ sbc5Family_x0 1 = sbc5_x0 := by
++  norm_num [funext_iff, Fin.forall_fin_succ, sbc5_r, sbc5_x0, sub_eq_add_neg]
++
++theorem sbc5 : Mode .sbc sbc5_r sbc5_x0 sbc5_lim sbc5_v sbc5Rate (sbc5Rate ^ ·) fun _ =>
++    ![{0}, {0, 1, 2}, {1, 2, 3}, {2, 3, 4}, {4}] := by
++  simpa only [sbc5_e, mul_one] using fam one_pos le_rfl
++
++theorem sbc6_perStepFactor (t : ℕ) (i : Fin 6) (hi : i ∈ ({1, 2, 3, 4} : Finset (Fin 6))) :
++    perStepFactor .sbc sbc6_r (traj .sbc sbc6_r sbc6_x0) i t = -1 / 6 :=
++  sbc6.perStepFactor t i (by fin_cases hi <;> norm_num)
++
++theorem sbi7b_perStepFactor (t : ℕ) (i : Fin 7) (hi : i ∈ ({1, 2, 4, 5} : Finset (Fin 7))) :
++    perStepFactor .sbi sbi7b_r (traj .sbi sbi7b_r sbi7b_x0) i t = sbiRate :=
++  sbi7b.perStepFactor t i (by fin_cases hi <;> simp <;> positivity)
++
++theorem sbc5_perStepFactor (t : ℕ) (i : Fin 5) (hi : i ∈ ({1, 2, 3} : Finset (Fin 5))) :
++    perStepFactor .sbc sbc5_r (traj .sbc sbc5_r sbc5_x0) i t = sbc5Rate :=
++  sbc5.perStepFactor t i (by fin_cases hi <;> norm_num)
++
++theorem sbi6_perStepFactor (t : ℕ) (i : Fin 6) (hi : i ∈ ({1, 2, 3, 4} : Finset (Fin 6))) :
++    perStepFactor .sbi sbi6_r (traj .sbi sbi6_r sbi6_x0) i t = sbi6Rate :=
++  sbi6.perStepFactor t i (by fin_cases hi <;> norm_num <;> grind [sbi6_b 0])
++
++theorem equiTopologyDistance_pos :
++    (∀ i, 0 < equiTopologyDistance sbc6_r sbc6_lim i) ∧
++    (∀ i, 0 < equiTopologyDistance sbi7b_r sbi7b_lim i) := by
++  constructor <;> intro i <;> refine mul_pos one_half_pos (four_pos.trans_le
++    (le_csInf ⟨_, i + 1, by simp, .inl rfl⟩ ?_)) <;> rintro d ⟨k, hk, rfl | rfl⟩ <;>
++    fin_cases i <;> fin_cases k <;> norm_num at *
++
++theorem equiTopologyDistance_eq_zero :
++    (∀ i ∈ ({2, 3, 4} : Finset (Fin 7)), equiTopologyDistance sbc7_r sbc7_lim i = 0) ∧
++    (∀ i ∈ ({1, 3, 5} : Finset (Fin 7)), equiTopologyDistance sbi7_r sbi7_lim i = 0) := by
++  constructor <;> intro i hi <;> fin_cases hi <;> refine mul_eq_zero_of_right _ (IsLeast.csInf_eq
++    ⟨?_, by grind [mem_lowerBounds, abs_nonneg]⟩) <;>
++    norm_num [Fin.exists_fin_succ]
++
++end
+ theorem sbc7_closed_form (t : ℕ) :
+     traj .sbc sbc7_r sbc7_x0 t = fun i => sbc7_lim i + (-1 / 6 : ℝ) ^ t * sbc7_v i :=
+-  sbc7_closed_form_internal t
++  sbc7.eq t
+ 
+ theorem sbc7_neighbors (t : ℕ) :
+     neighbors .sbc sbc7_r (traj .sbc sbc7_r sbc7_x0 t) =
+       ![{0}, {0, 1, 2}, {1, 2, 3, 4}, if Even t then {3} else {2, 3, 4}, {2, 3, 4, 5},
+         {4, 5, 6}, {6}] :=
+-  sbc7_neighbors_internal t
++  sbc7.eq t ▸ sbc7.nb t
+ 
+ theorem sbi7_closed_form (t : ℕ) :
+     traj .sbi sbi7_r sbi7_x0 t = fun i => sbi7_lim i + sbiRate ^ t / 2 * sbi_v i :=
+-  sbi7_closed_form_internal t
++  sbi7.eq t
+ 
+ theorem sbi7_neighbors (t : ℕ) :
+     neighbors .sbi sbi7_r (traj .sbi sbi7_r sbi7_x0 t) =
+       ![{0}, {0, 1, 2, 3}, {1, 2, 3, 4}, if Even t then {1, 2, 3, 4, 5} else {2, 3, 4},
+         {2, 3, 4, 5}, {3, 4, 5, 6}, {6}] :=
+-  sbi7_neighbors_internal t
++  sbi7.eq t ▸ sbi7.nb t
+ 
+ theorem sbc6_closed_form (t : ℕ) :
+     traj .sbc sbc6_r sbc6_x0 t = fun i => sbc6_lim i + (-1 / 6 : ℝ) ^ t * sbc6_v i :=
+-  sbc6_closed_form_internal t
++  sbc6.eq t
+ 
+ theorem sbc6_neighbors (t : ℕ) :
+     neighbors .sbc sbc6_r (traj .sbc sbc6_r sbc6_x0 t) =
+       ![{0}, {0, 1, 2}, {0, 1, 2, 3}, {2, 3, 4, 5}, {3, 4, 5}, {5}] :=
+-  sbc6_neighbors_internal t
++  sbc6.eq t ▸ sbc6.nb t
+ 
+ theorem sbi7b_closed_form (t : ℕ) :
+     traj .sbi sbi7b_r sbi7b_x0 t = fun i => sbi7b_lim i + sbiRate ^ t * sbi_v i :=
+-  sbi7b_closed_form_internal t
++  sbi7b.eq t
+ 
+ theorem sbi7b_neighbors (t : ℕ) :
+     neighbors .sbi sbi7b_r (traj .sbi sbi7b_r sbi7b_x0 t) =
+       ![{0}, {0, 1, 2, 3}, {1, 2, 3, 4}, {2, 3, 4}, {2, 3, 4, 5}, {3, 4, 5, 6}, {6}] :=
+-  sbi7b_neighbors_internal t
++  sbi7b.eq t ▸ sbi7b.nb t
+ 
+ theorem tendsto_limits :
+     Tendsto (traj .sbc sbc7_r sbc7_x0) atTop (𝓝 sbc7_lim) ∧
+     Tendsto (traj .sbi sbi7_r sbi7_x0) atTop (𝓝 sbi7_lim) ∧
+     Tendsto (traj .sbc sbc6_r sbc6_x0) atTop (𝓝 sbc6_lim) ∧
+     Tendsto (traj .sbi sbi7b_r sbi7b_x0) atTop (𝓝 sbi7b_lim) :=
+-  tendsto_limits_internal
++  ⟨sbc7.tendsto, sbi7.tendsto, sbc6.tendsto, sbi7b.tendsto⟩
++
++macro "ndc" nb:term:max j:term:max : term => `(⟨_ + 1, le_self_add, fun h => by
++  have := congrArg (·.Adj 3 $j) h
++  simp [proximityDigraph, $nb:term, Nat.even_add_one] at this
++  grind⟩)
+ 
+ theorem sbc7_digraph_not_eventually_constant (τ : ℕ) :
+     ∃ t, τ ≤ t ∧ proximityDigraph .sbc sbc7_r (traj .sbc sbc7_r sbc7_x0 t) ≠
+       proximityDigraph .sbc sbc7_r (traj .sbc sbc7_r sbc7_x0 τ) :=
+-  sbc7_digraph_not_eventually_constant_internal τ
++  ndc sbc7_neighbors 2
+ 
+ theorem sbi7_digraph_not_eventually_constant (τ : ℕ) :
+     ∃ t, τ ≤ t ∧ proximityDigraph .sbi sbi7_r (traj .sbi sbi7_r sbi7_x0 t) ≠
+       proximityDigraph .sbi sbi7_r (traj .sbi sbi7_r sbi7_x0 τ) :=
+-  sbi7_digraph_not_eventually_constant_internal τ
++  ndc sbi7_neighbors 1
+ 
+ theorem sbc6_digraph_constant (t : ℕ) :
+     proximityDigraph .sbc sbc6_r (traj .sbc sbc6_r sbc6_x0 t) =
+       proximityDigraph .sbc sbc6_r sbc6_x0 :=
+-  sbc6_digraph_constant_internal t
++  digraph_const sbc6_neighbors t
+ 
+ theorem sbi7b_digraph_constant (t : ℕ) :
+     proximityDigraph .sbi sbi7b_r (traj .sbi sbi7b_r sbi7b_x0 t) =
+       proximityDigraph .sbi sbi7b_r sbi7b_x0 :=
+-  sbi7b_digraph_constant_internal t
++  digraph_const sbi7b_neighbors t
+ 
+ theorem not_fixedFrom (τ : ℕ) :
+     ¬ FixedFrom (traj .sbc sbc7_r sbc7_x0) τ ∧ ¬ FixedFrom (traj .sbi sbi7_r sbi7_x0) τ ∧
+     ¬ FixedFrom (traj .sbc sbc6_r sbc6_x0) τ ∧ ¬ FixedFrom (traj .sbi sbi7b_r sbi7b_x0) τ :=
+-  not_fixedFrom_internal τ
++  ⟨sbc7.nfp.1 τ, sbi7.nfp.1 τ, sbc6.nfp.1 τ, sbi7b.nfp.1 τ⟩
+ 
+ theorem not_pseudoStableAfter (xinf : Fin 7 → ℝ) (yinf : Fin 6 → ℝ) (τ : ℕ) :
+     ¬ PseudoStableAfter (traj .sbc sbc7_r sbc7_x0) xinf τ ∧
+     ¬ PseudoStableAfter (traj .sbi sbi7_r sbi7_x0) xinf τ ∧
+     ¬ PseudoStableAfter (traj .sbc sbc6_r sbc6_x0) yinf τ ∧
+     ¬ PseudoStableAfter (traj .sbi sbi7b_r sbi7b_x0) xinf τ :=
+-  not_pseudoStableAfter_internal xinf yinf τ
++  ⟨sbc7.nfp.2 xinf τ, sbi7.nfp.2 xinf τ, sbc6.nfp.2 yinf τ, sbi7b.nfp.2 xinf τ⟩
++
++theorem not_conjecture22_sbc_seven : ¬ Conjecture22ForAgents .sbc 7 :=
++  fun h => (h sbc7_r sbc7_x0 (by pos)).elim fun τ hτ => by grind [sbc7_digraph_not_eventually_constant τ]
++
++theorem not_conjecture22_sbi_seven : ¬ Conjecture22ForAgents .sbi 7 :=
++  fun h => (h sbi7_r sbi7_x0 (by pos)).elim fun τ hτ => by grind [sbi7_digraph_not_eventually_constant τ]
+ 
+ theorem not_conjecture22_sbc : ¬ Conjecture22For .sbc :=
+-  not_conjecture22_sbc_internal
++  fun h => not_conjecture22_sbc_seven (h 7)
+ 
+ theorem not_conjecture22_sbi : ¬ Conjecture22For .sbi :=
+-  not_conjecture22_sbi_internal
++  fun h => not_conjecture22_sbi_seven (h 7)
+ 
+ theorem not_conjecture22 : ¬ Conjecture22 :=
+-  not_conjecture22_internal
++  fun h => not_conjecture22_sbc (h .sbc)
+ 
+ theorem not_conjecture23_sbc : ¬ Conjecture23For .sbc :=
+-  not_conjecture23_sbc_internal
++  fun h => (refute sbc7.nfp).1 (h 7)
+ 
+ theorem not_conjecture23_sbi : ¬ Conjecture23For .sbi :=
+-  not_conjecture23_sbi_internal
++  fun h => (refute sbi7.nfp).1 (h 7)
+ 
+ theorem not_conjecture23 : ¬ Conjecture23 :=
+-  not_conjecture23_internal
++  fun h => not_conjecture23_sbc (h .sbc)
++
++def r6 := (refute sbc6.nfp).2 sbc6_digraph_constant
++def r7 := (refute sbi7b.nfp).2 sbi7b_digraph_constant
+ 
+ theorem not_theorem64iv_sbc : ¬ Theorem64ivFor .sbc :=
+-  not_theorem64iv_sbc_internal
++  fun h => r6.1 (h 6)
+ 
+ theorem not_theorem64iv_sbi : ¬ Theorem64ivFor .sbi :=
+-  not_theorem64iv_sbi_internal
++  fun h => r7.1 (h 7)
+ 
+ theorem not_theorem64iv : ¬ Theorem64iv :=
+-  not_theorem64iv_internal
++  fun h => not_theorem64iv_sbc (h .sbc)
+ 
+ theorem not_theorem64iv_literal_sbc : ¬ Theorem64ivLiteralFor .sbc :=
+-  not_theorem64iv_literal_sbc_internal
++  fun h => r6.2 (h 6)
+ 
+ theorem not_theorem64iv_literal_sbi : ¬ Theorem64ivLiteralFor .sbi :=
+-  not_theorem64iv_literal_sbi_internal
++  fun h => r7.2 (h 7)
+ 
+ theorem not_theorem64iv_literal : ¬ Theorem64ivLiteral :=
+-  not_theorem64iv_literal_internal
++  fun h => not_theorem64iv_literal_sbc (h .sbc)
+ 
+ theorem sbc5_closed_form (t : ℕ) :
+     traj .sbc sbc5_r sbc5_x0 t = fun i => sbc5_lim i + sbc5Rate ^ t * sbc5_v i :=
+-  sbc5_closed_form_internal t
++  sbc5.eq t
+ 
+ theorem sbc5_neighbors (t : ℕ) :
+     neighbors .sbc sbc5_r (traj .sbc sbc5_r sbc5_x0 t) =
+       ![{0}, {0, 1, 2}, {1, 2, 3}, {2, 3, 4}, {4}] :=
+-  sbc5_neighbors_internal t
++  sbc5.eq t ▸ sbc5.nb t
+ 
+ theorem sbi6_closed_form (t : ℕ) :
+     traj .sbi sbi6_r sbi6_x0 t = fun i => sbi6_lim i + sbi6Rate ^ t * sbi6_v i :=
+-  sbi6_closed_form_internal t
++  sbi6.eq t
+ 
+ theorem sbi6_neighbors (t : ℕ) :
+     neighbors .sbi sbi6_r (traj .sbi sbi6_r sbi6_x0 t) =
+       ![{0}, {0, 1, 2, 3}, {0, 1, 2, 3, 4}, {0, 2, 3, 4, 5}, {2, 3, 4, 5}, {5}] :=
+-  sbi6_neighbors_internal t
++  sbi6.eq t ▸ sbi6.nb t
+ 
+ theorem small_tendsto :
+     Tendsto (traj .sbc sbc5_r sbc5_x0) atTop (𝓝 sbc5_lim) ∧
+     Tendsto (traj .sbi sbi6_r sbi6_x0) atTop (𝓝 sbi6_lim) :=
+-  small_tendsto_internal
++  ⟨sbc5.tendsto, sbi6.tendsto⟩
+ 
+ theorem small_digraph_constant (t : ℕ) :
+     proximityDigraph .sbc sbc5_r (traj .sbc sbc5_r sbc5_x0 t) =
+       proximityDigraph .sbc sbc5_r sbc5_x0 ∧
+     proximityDigraph .sbi sbi6_r (traj .sbi sbi6_r sbi6_x0 t) =
+       proximityDigraph .sbi sbi6_r sbi6_x0 :=
+-  small_digraph_constant_internal t
++  ⟨digraph_const sbc5_neighbors t, digraph_const sbi6_neighbors t⟩
+ 
+ theorem small_not_fixedFrom (τ : ℕ) :
+     ¬ FixedFrom (traj .sbc sbc5_r sbc5_x0) τ ∧ ¬ FixedFrom (traj .sbi sbi6_r sbi6_x0) τ :=
+-  small_not_fixedFrom_internal τ
++  ⟨sbc5.nfp.1 τ, sbi6.nfp.1 τ⟩
+ 
+ theorem small_not_pseudoStableAfter (xinf : Fin 5 → ℝ) (yinf : Fin 6 → ℝ) (τ : ℕ) :
+     ¬ PseudoStableAfter (traj .sbc sbc5_r sbc5_x0) xinf τ ∧
+     ¬ PseudoStableAfter (traj .sbi sbi6_r sbi6_x0) yinf τ :=
+-  small_not_pseudoStableAfter_internal xinf yinf τ
+-
+-theorem not_conjecture22_sbc_seven : ¬ Conjecture22ForAgents .sbc 7 :=
+-  not_conjecture22_sbc_seven_internal
+-
+-theorem not_conjecture22_sbi_seven : ¬ Conjecture22ForAgents .sbi 7 :=
+-  not_conjecture22_sbi_seven_internal
++  ⟨sbc5.nfp.2 xinf τ, sbi6.nfp.2 yinf τ⟩
+ 
+ theorem not_conjecture23_sbc_five : ¬ Conjecture23ForAgents .sbc 5 :=
+-  not_conjecture23_sbc_five_internal
++  (refute sbc5.nfp).1
+ 
+ theorem not_conjecture23_sbi_six : ¬ Conjecture23ForAgents .sbi 6 :=
+-  not_conjecture23_sbi_six_internal
++  (refute sbi6.nfp).1
+ 
+ theorem not_theorem64iv_sbc_five : ¬ Theorem64ivForAgents .sbc 5 :=
+-  not_theorem64iv_sbc_five_internal
++  ((refute sbc5.nfp).2 (digraph_const sbc5_neighbors)).1
+ 
+ theorem not_theorem64iv_sbi_six : ¬ Theorem64ivForAgents .sbi 6 :=
+-  not_theorem64iv_sbi_six_internal
++  ((refute sbi6.nfp).2 (digraph_const sbi6_neighbors)).1
+ 
+ theorem sbc5_fvct (t : ℕ) : fvct .sbc sbc5_r (traj .sbc sbc5_r sbc5_x0 t) = sbc5_lim :=
+-  sbc5_fvct_internal t
+-
+-theorem sbc5_perStepFactor (t : ℕ) (i : Fin 5) (hi : i ∈ ({1, 2, 3} : Finset (Fin 5))) :
+-    perStepFactor .sbc sbc5_r (traj .sbc sbc5_r sbc5_x0) i t = sbc5Rate :=
+-  sbc5_perStepFactor_internal t i hi
++  sbc5.fvct t
+ 
+ theorem sbi6_fvct (t : ℕ) : fvct .sbi sbi6_r (traj .sbi sbi6_r sbi6_x0 t) = sbi6_lim :=
+-  sbi6_fvct_internal t
++  sbi6.fvct t
+ 
+-theorem sbi6_perStepFactor (t : ℕ) (i : Fin 6) (hi : i ∈ ({1, 2, 3, 4} : Finset (Fin 6))) :
+-    perStepFactor .sbi sbi6_r (traj .sbi sbi6_r sbi6_x0) i t = sbi6Rate :=
+-  sbi6_perStepFactor_internal t i hi
+ 
++mutual
+ theorem sbc9_closed_form (t : ℕ) :
+     traj .sbc sbc9_r sbc9_x0 t =
+       ![0, 20 + 2 * (-1 / 6 : ℝ) ^ t, 40 - 3 * (-1 / 6 : ℝ) ^ t, 100 + 3 * (-1 / 6 : ℝ) ^ t,
+         120 - 2 * (-1 / 6 : ℝ) ^ t, 140, 210 + 12 / 11 * ((-1 / 6 : ℝ) ^ t - (1 / 5 : ℝ) ^ t),
+-        280, 300] :=
+-  sbc9_closed_form_internal t
++        280, 300] := by
++  cases t with
++  | zero => norm_num [traj, sbc9_x0]
++  | succ t =>
++    ext i; rw [traj_succ, step, adj_mulVec, sbc9_neighbors t, sbc9_closed_form t]
++    fin_cases i <;> simp [Finset.sum_insert, pow_succ] <;> ring
++termination_by (t, 0)
+ 
+ theorem sbc9_neighbors (t : ℕ) :
+     neighbors .sbc sbc9_r (traj .sbc sbc9_r sbc9_x0 t) =
+-      ![{0}, {0, 1, 2}, {0, 1, 2, 3}, {2, 3, 4, 5}, {3, 4, 5}, {5}, {4, 5, 6, 7, 8}, {7}, {8}] :=
+-  sbc9_neighbors_internal t
+-
+-theorem sbc9_spectator_lt (t : ℕ) (ht : 1 ≤ t) : traj .sbc sbc9_r sbc9_x0 t 6 < 210 :=
+-  sbc9_spectator_lt_internal t ht
+-
++      ![{0}, {0, 1, 2}, {0, 1, 2, 3}, {2, 3, 4, 5}, {3, 4, 5}, {5}, {4, 5, 6, 7, 8}, {7}, {8}] := by
++  have := b6 t
++  have : 0 ≤ ((5 : ℝ) ^ t)⁻¹ ∧ ((5 : ℝ) ^ t)⁻¹ ≤ 1 := by bound
++  rw [sbc9_closed_form t, sbc9_r]
++  tab
++termination_by (t, 1)
++end
++
++theorem sbc9_spectator_lt (t : ℕ) (ht : 1 ≤ t) : traj .sbc sbc9_r sbc9_x0 t 6 < 210 := by
++  have : (1 / 6 : ℝ) ^ t < (1 / 5) ^ t := by bound
++  have := le_abs_self ((-1 / 6 : ℝ) ^ t)
++  norm_num [abs_pow, sbc9_closed_form] at *
++  linarith
++
++mutual
+ theorem sbi8_closed_form (t : ℕ) :
+     traj .sbi sbi8_r sbi8_x0 t =
+       ![0, 60 + Real.goldenRatio⁻¹ * ((1 / 4 : ℝ) ^ t - sbiRate ^ t), 70 + sbiRate ^ t,
+         100 - Real.goldenRatio * sbiRate ^ t, 110, 120 + Real.goldenRatio * sbiRate ^ t,
+-        150 - sbiRate ^ t, 220] :=
+-  sbi8_closed_form_internal t
++        150 - sbiRate ^ t, 220] := by
++  cases t with
++  | zero => norm_num [traj, sbi8_x0]
++  | succ t =>
++    have := sbi_b t
++    ext i; rw [traj_succ, step, adj_mulVec, sbi8_neighbors t, sbi8_closed_form t]
++    fin_cases i <;> simp [Finset.sum_insert, pow_succ] <;> grind
++termination_by (t, 0)
+ 
+ theorem sbi8_neighbors (t : ℕ) :
+     neighbors .sbi sbi8_r (traj .sbi sbi8_r sbi8_x0 t) =
+-      ![{0}, {0, 1, 2, 4}, {0, 2, 3, 4}, {2, 3, 4, 5}, {3, 4, 5}, {3, 4, 5, 6}, {4, 5, 6, 7}, {7}] :=
+-  sbi8_neighbors_internal t
+-
+-theorem sbi8_spectator_gt (t : ℕ) (ht : 1 ≤ t) : 60 < traj .sbi sbi8_r sbi8_x0 t 1 :=
+-  sbi8_spectator_gt_internal t ht
++      ![{0}, {0, 1, 2, 4}, {0, 2, 3, 4}, {2, 3, 4, 5}, {3, 4, 5}, {3, 4, 5, 6}, {4, 5, 6, 7}, {7}] := by
++  have := sbi_b t
++  have h : 0 ≤ ((4 : ℝ) ^ t)⁻¹ ∧ ((4 : ℝ) ^ t)⁻¹ ≤ 1 := by bound
++  have := mul_le_mul_of_nonneg_right h.2 Real.goldenRatio_pos.le
++  have := mul_nonneg h.1 Real.goldenRatio_pos.le
++  rw [sbi8_closed_form t, Real.inv_goldenRatio, ← Real.one_sub_goldenConj, sbi8_r]
++  tab
++termination_by (t, 1)
++end
++
++theorem sbi8_spectator_gt (t : ℕ) (ht : 1 ≤ t) : 60 < traj .sbi sbi8_r sbi8_x0 t 1 := by
++  obtain ⟨a, b, c, -⟩ := sbi_b t
++  have := pow_lt_pow_left₀ (by grind [abs_lt] : |sbiRate| < 1 / 4) (abs_nonneg _) (Nat.one_le_iff_ne_zero.1 ht)
++  have := le_abs_self (sbiRate ^ t)
++  simp [abs_pow, sbi8_closed_form] at *
++  exact mul_pos (by positivity) (by linarith)
+ 
+ theorem alternating_fvct (t : ℕ) :
+     fvct .sbc sbc7_r (traj .sbc sbc7_r sbc7_x0 t) = sbc7_lim ∧
+     fvct .sbi sbi7_r (traj .sbi sbi7_r sbi7_x0 t) = sbi7_lim :=
+-  alternating_fvct_internal t
++  ⟨sbc7.fvct t, sbi7.fvct t⟩
+ 
+ theorem sbc6_fvct (t : ℕ) : fvct .sbc sbc6_r (traj .sbc sbc6_r sbc6_x0 t) = sbc6_lim :=
+-  sbc6_fvct_internal t
+-
+-theorem sbc6_perStepFactor (t : ℕ) (i : Fin 6) (hi : i ∈ ({1, 2, 3, 4} : Finset (Fin 6))) :
+-    perStepFactor .sbc sbc6_r (traj .sbc sbc6_r sbc6_x0) i t = -1 / 6 :=
+-  sbc6_perStepFactor_internal t i hi
++  sbc6.fvct t
+ 
+ theorem sbc6_perStepFactor_not_tendsto (i : Fin 6) (hi : i ∈ ({1, 2, 3, 4} : Finset (Fin 6)))
+     (ρ : ℝ) (hρ : 0 ≤ ρ) :
+     ¬ Tendsto (fun t => perStepFactor .sbc sbc6_r (traj .sbc sbc6_r sbc6_x0) i t) atTop (𝓝 ρ) :=
+-  sbc6_perStepFactor_not_tendsto_internal i hi ρ hρ
++  by simp [sbc6_perStepFactor _ i hi]; grind
+ 
+ theorem sbi7b_fvct (t : ℕ) : fvct .sbi sbi7b_r (traj .sbi sbi7b_r sbi7b_x0 t) = sbi7b_lim :=
+-  sbi7b_fvct_internal t
+-
+-theorem sbi7b_perStepFactor (t : ℕ) (i : Fin 7) (hi : i ∈ ({1, 2, 4, 5} : Finset (Fin 7))) :
+-    perStepFactor .sbi sbi7b_r (traj .sbi sbi7b_r sbi7b_x0) i t = sbiRate :=
+-  sbi7b_perStepFactor_internal t i hi
++  sbi7b.fvct t
+ 
+ theorem sbi7b_perStepFactor_not_tendsto (i : Fin 7) (hi : i ∈ ({1, 2, 4, 5} : Finset (Fin 7)))
+     (ρ : ℝ) (hρ : 0 ≤ ρ) :
+     ¬ Tendsto (fun t => perStepFactor .sbi sbi7b_r (traj .sbi sbi7b_r sbi7b_x0) i t) atTop (𝓝 ρ) :=
+-  sbi7b_perStepFactor_not_tendsto_internal i hi ρ hρ
++  by simp [sbi7b_perStepFactor _ i hi]; grind [sbi7b.hq]
+ 
+ theorem proximityDigraph_eq_of_equiTopologyNbhd (m : Model) {n : ℕ} (r z y : Fin n → ℝ)
+-    (h : EquiTopologyNbhd r z y) : proximityDigraph m r y = proximityDigraph m r z :=
+-  proximityDigraph_eq_of_equiTopologyNbhd_internal m r z y h
++    (h : EquiTopologyNbhd r z y) : proximityDigraph m r y = proximityDigraph m r z := by
++  have hle : ∀ i j, j ≠ i → ∀ R, R = r i ∨ R = r j →
++      equiTopologyDistance r z i ≤ 1 / 2 * |(|z i - z j|) - R| := fun i j hij R hR =>
++    mul_le_mul_of_nonneg_left (csInf_le ⟨0, by grind [mem_lowerBounds, abs_nonneg]⟩
++      ⟨j, hij, by grind⟩) one_half_pos.le
++  have h0 : ∀ i, 0 ≤ equiTopologyDistance r z i := fun i =>
++    mul_nonneg one_half_pos.le (Real.sInf_nonneg (by grind [abs_nonneg]))
++  ext i j
++  simp [proximityDigraph, neighbors]
++  rcases eq_or_ne j i with rfl | hij
++  · simp
++  have hR : m.bound r i j = r i ∨ m.bound r i j = r j := by cases m <;> simp [Model.bound]
++  grind [abs_le, hle i j hij _ hR, hle j i hij.symm _ hR.symm, h i, h j]
+ 
+ theorem eventually_constant_of_tendsto (m : Model) {n : ℕ} (r x₀ xinf : Fin n → ℝ)
+     (hconv : Tendsto (traj m r x₀) atTop (𝓝 xinf))
+     (hε : ∀ i, 0 < equiTopologyDistance r xinf i) :
+     ∃ T, ∀ t, T ≤ t → proximityDigraph m r (traj m r x₀ t) = proximityDigraph m r xinf :=
+-  eventually_constant_of_tendsto_internal m r x₀ xinf hconv hε
++  (eventually_atTop.1 (eventually_all.2 fun i =>
++    Metric.tendsto_nhds.1 (tendsto_pi_nhds.1 hconv i) _ (hε i))).imp fun _ hT t ht =>
++      proximityDigraph_eq_of_equiTopologyNbhd m r xinf _ fun i =>
++        ⟨fun _ => hT t ht i, (hε i).ne'.elim⟩
+ 
+ theorem fvct_eq_and_equilibrium_of_tendsto (m : Model) {n : ℕ} (r x₀ xinf : Fin n → ℝ)
+     (hconv : Tendsto (traj m r x₀) atTop (𝓝 xinf))
+     (hε : ∀ i, 0 < equiTopologyDistance r xinf i) :
+-    (∃ T, ∀ t, T ≤ t → fvct m r (traj m r x₀ t) = xinf) ∧ step m r xinf = xinf :=
+-  fvct_eq_and_equilibrium_of_tendsto_internal m r x₀ xinf hconv hε
+-
+-theorem equiTopologyDistance_pos :
+-    (∀ i, 0 < equiTopologyDistance sbc6_r sbc6_lim i) ∧
+-    (∀ i, 0 < equiTopologyDistance sbi7b_r sbi7b_lim i) :=
+-  equiTopologyDistance_pos_internal
+-
+-theorem equiTopologyDistance_eq_zero :
+-    (∀ i ∈ ({2, 3, 4} : Finset (Fin 7)), equiTopologyDistance sbc7_r sbc7_lim i = 0) ∧
+-    (∀ i ∈ ({1, 3, 5} : Finset (Fin 7)), equiTopologyDistance sbi7_r sbi7_lim i = 0) :=
+-  equiTopologyDistance_eq_zero_internal
++    (∃ T, ∀ t, T ≤ t → fvct m r (traj m r x₀ t) = xinf) ∧ step m r xinf = xinf := by
++  obtain ⟨T, hT⟩ := eventually_constant_of_tendsto m r x₀ xinf hconv hε
++  have hA : ∀ t ≥ T, adjMatrix m r (traj m r x₀ t) = adjMatrix m r xinf := fun t ht => by
++    simp_all [proximityDigraph, funext_iff, ← Finset.ext_iff, adjMatrix]
++  have hs : ∀ t ≥ T, (adjMatrix m r xinf).mulVec (traj m r x₀ t) = traj m r x₀ (t + 1) :=
++    fun t ht => by rw [traj_succ, step, hA t ht]
++  refine ⟨⟨T, fun t ht => ?_⟩, tendsto_nhds_unique ((((continuous_const.matrix_mulVec
++    continuous_id).tendsto xinf).comp hconv).congr' (eventually_atTop.2 ⟨T, hs⟩))
++      (hconv.comp (tendsto_add_atTop_nat 1))⟩
++  have : ∀ k, (adjMatrix m r xinf ^ k).mulVec (traj m r x₀ t) = traj m r x₀ (k + t) :=
++    Nat.rec (by simp) fun k ih => by grind [pow_succ', Matrix.mulVec_mulVec]
++  simp only [fvct, hA t ht, this]
++  exact (hconv.comp (tendsto_add_atTop_nat t)).limUnder_eq
+ 
+ theorem sbi5_root_exists : ∃ ρ : ℝ, 57 / 100 < ρ ∧ ρ < 29 / 50 ∧
+-    60 * ρ ^ 3 - 47 * ρ ^ 2 + 9 * ρ - 1 = 0 :=
+-  sbi5_root_exists_internal
+-
++    60 * ρ ^ 3 - 47 * ρ ^ 2 + 9 * ρ - 1 = 0 := by
++  simpa [and_assoc] using intermediate_value_Ioo (by norm_num : (57 / 100 : ℝ) ≤ 29 / 50)
++    (f := fun ρ => 60 * ρ ^ 3 - 47 * ρ ^ 2 + 9 * ρ - 1) (by fun_prop) (show (0 : ℝ) ∈ _ by norm_num)
++
++theorem osc (hA : α * (α ^ 2 - 2 * β) < 0) (hB : β * (β - α ^ 2) < 0)
++    (hu : ∀ t, u (t + 2) = α * u (t + 1) - β * u t)
++    (h0 : ¬ (u 0 = 0 ∧ u 1 = 0)) : Osc 0 u t := by
++  have nz : ¬ (u t = 0 ∧ u (t + 1) = 0) := by
++    induction t <;> grind [left_ne_zero_of_mul hB.ne]
++  have e : u (t + 4) = α * (α ^ 2 - 2 * β) * u (t + 1) + β * (β - α ^ 2) * u t := by grind
++  constructor <;> by_contra! hn <;> exact nz (by
++    constructor <;> nlinarith [hn t le_rfl le_self_add, hn (t + 1) le_self_add (by omega), hn (t + 4) le_self_add le_rfl])
++
++theorem sbi5_succ : sbi5Offset ρ (t + 1) = sbi5LinearStep (sbi5Offset ρ t) :=
++  Function.iterate_succ_apply' _ _ _
++
++theorem sbi5_bound (h1 : 57 / 100 < ρ) (h2 : ρ < 29 / 50) :
++    ∀ i, ‖sbi5Offset ρ t i‖ ≤ (2 / 3 : ℝ) ^ t / 3 := by
++  induction t <;> intro i <;> fin_cases i <;>
++    simp_all [Real.norm_eq_abs, sbi5Offset, Function.iterate_succ_apply', pow_succ, sbi5LinearStep, abs_le] <;> grind
++
++mutual
+ theorem sbi5_trajectory (ρ : ℝ) (hlo : 57 / 100 < ρ) (hhi : ρ < 29 / 50)
+-    (t : ℕ) : traj .sbi sbi5_r (sbi5_x0 ρ) t = sbi5_lim + sbi5Lift (sbi5Offset ρ t) :=
+-  sbi5_trajectory_internal ρ hlo hhi t
++    (t : ℕ) : traj .sbi sbi5_r (sbi5_x0 ρ) t = sbi5_lim + sbi5Lift (sbi5Offset ρ t) := by
++  cases t with
++  | zero => rfl
++  | succ t =>
++    funext i
++    rw [traj_succ, step, adj_mulVec, sbi5_neighbors ρ hlo hhi t, sbi5_trajectory ρ hlo hhi t, sbi5_succ]
++    fin_cases i <;> simp [Finset.sum_insert, sbi5_lim, sbi5Lift, sbi5LinearStep] <;> ring
++termination_by (t, 0)
+ 
+ theorem sbi5_neighbors (ρ : ℝ) (hlo : 57 / 100 < ρ) (hhi : ρ < 29 / 50)
+     (t : ℕ) : neighbors .sbi sbi5_r (traj .sbi sbi5_r (sbi5_x0 ρ) t) =
+-      ![{0}, {0, 1, 3}, {0, 1, 2, 3, 4}, {0, 2, 3, 4}, {4}] :=
+-  sbi5_neighbors_internal ρ hlo hhi t
++      ![{0}, {0, 1, 3}, {0, 1, 2, 3, 4}, {0, 2, 3, 4}, {4}] := by
++  have : (2 / 3 : ℝ) ^ t ≤ 1 := by bound
++  have := fun i => abs_le.1 (sbi5_bound t hlo hhi i)
++  rw [sbi5_trajectory ρ hlo hhi t, sbi5_r, sbi5_lim, sbi5Lift]
++  tab
++termination_by (t, 1)
++end
+ 
+ theorem sbi5_tendsto (ρ : ℝ) (hlo : 57 / 100 < ρ) (hhi : ρ < 29 / 50) :
+-    Tendsto (traj .sbi sbi5_r (sbi5_x0 ρ)) atTop (𝓝 sbi5_lim) :=
+-  sbi5_tendsto_internal ρ hlo hhi
++    Tendsto (traj .sbi sbi5_r (sbi5_x0 ρ)) atTop (𝓝 sbi5_lim) := by
++  rw [funext (sbi5_trajectory ρ hlo hhi), tendsto_pi_nhds]
++  intro i; fin_cases i <;> simpa [sbi5Lift] using tendsto_const_nhds.add (squeeze_zero_norm
++    (sbi5_bound · hlo hhi _) (by simpa using (tendsto_pow_atTop_nhds_zero_iff.2 (by norm_num : |(2 / 3 : ℝ)| < 1)).div_const 3))
+ 
+ theorem sbi5_digraph_constant (ρ : ℝ) (hlo : 57 / 100 < ρ) (hhi : ρ < 29 / 50)
+     (t : ℕ) : proximityDigraph .sbi sbi5_r (traj .sbi sbi5_r (sbi5_x0 ρ) t) =
+       proximityDigraph .sbi sbi5_r (sbi5_x0 ρ) :=
+-  sbi5_digraph_constant_internal ρ hlo hhi t
++  digraph_const (sbi5_neighbors ρ hlo hhi) t
+ 
+ theorem sbi5_oscillates_every_five (ρ : ℝ)
+     (hlo : 57 / 100 < ρ) (hhi : ρ < 29 / 50)
+     (hp : 60 * ρ ^ 3 - 47 * ρ ^ 2 + 9 * ρ - 1 = 0) (t : ℕ) (i : Fin 5)
+     (hi : i ∈ ({1, 2, 3} : Finset (Fin 5))) :
+     (∃ k, t ≤ k ∧ k ≤ t + 4 ∧ traj .sbi sbi5_r (sbi5_x0 ρ) k i < sbi5_lim i) ∧
+-    (∃ k, t ≤ k ∧ k ≤ t + 4 ∧ sbi5_lim i < traj .sbi sbi5_r (sbi5_x0 ρ) k i) :=
+-  sbi5_oscillates_every_five_internal ρ hlo hhi hp t i hi
++    (∃ k, t ≤ k ∧ k ≤ t + 4 ∧ sbi5_lim i < traj .sbi sbi5_r (sbi5_x0 ρ) k i) := by
++  have hr : ∀ t, sbi5Offset ρ (t + 2) = (47 / 60 - ρ) • sbi5Offset ρ (t + 1) -
++      (ρ ^ 2 - 47 / 60 * ρ + 3 / 20) • sbi5Offset ρ t :=
++    Nat.rec (by simp [funext_iff, Fin.forall_fin_succ, sbi5Offset, sbi5LinearStep]; grind) fun t ih => by
++      simp only [sbi5_succ] at *; conv_lhs => rw [ih]
++      simp [funext_iff, Fin.forall_fin_succ, sbi5LinearStep]; ring_nf; simp
++  fin_cases hi <;> simp [sbi5Lift, sbi5_trajectory ρ hlo hhi] <;> exact osc t (by nlinarith) (by nlinarith) (fun t => congrFun (hr t) _) (by simp [sbi5Offset, sbi5LinearStep] <;> grind)
+ 
+ theorem sbi5_not_fixedFrom (ρ : ℝ) (hlo : 57 / 100 < ρ) (hhi : ρ < 29 / 50)
+     (hp : 60 * ρ ^ 3 - 47 * ρ ^ 2 + 9 * ρ - 1 = 0) (τ : ℕ) :
+     ¬ FixedFrom (traj .sbi sbi5_r (sbi5_x0 ρ)) τ :=
+-  sbi5_not_fixedFrom_internal ρ hlo hhi hp τ
++  (osc_refute 1 (sbi5_tendsto ρ hlo hhi) (sbi5_oscillates_every_five ρ hlo hhi hp · 1 (by simp))).1 τ
+ 
+ theorem sbi5_not_pseudoStableAfter (ρ : ℝ)
+     (hlo : 57 / 100 < ρ) (hhi : ρ < 29 / 50)
+     (hp : 60 * ρ ^ 3 - 47 * ρ ^ 2 + 9 * ρ - 1 = 0) (xinf : Fin 5 → ℝ) (τ : ℕ) :
+     ¬ PseudoStableAfter (traj .sbi sbi5_r (sbi5_x0 ρ)) xinf τ :=
+-  sbi5_not_pseudoStableAfter_internal ρ hlo hhi hp xinf τ
++  (osc_refute 1 (sbi5_tendsto ρ hlo hhi) (sbi5_oscillates_every_five ρ hlo hhi hp · 1 (by simp))).2 xinf τ
++
++theorem s5 : ¬ Conjecture23ForAgents .sbi 5 ∧ ¬ Theorem64ivForAgents .sbi 5 := by
++  obtain ⟨ρ, a, b, c⟩ := sbi5_root_exists
++  have := refute ⟨sbi5_not_fixedFrom ρ a b c, sbi5_not_pseudoStableAfter ρ a b c⟩
++  exact ⟨this.1, (this.2 (sbi5_digraph_constant ρ a b)).1⟩
+ 
+ theorem not_conjecture23_sbi_five : ¬ Conjecture23ForAgents .sbi 5 :=
+-  not_conjecture23_sbi_five_internal
++  s5.1
+ 
+ theorem not_theorem64iv_sbi_five : ¬ Theorem64ivForAgents .sbi 5 :=
+-  not_theorem64iv_sbi_five_internal
++  s5.2
+ 
+ theorem sbc5Family_closed_form (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1)
+     (t : ℕ) :
+     traj .sbc (sbc5Family_r δ) (sbc5Family_x0 δ) t =
+       fun i => sbc5_lim i + (sbc5Rate ^ t * δ) * sbc5_v i :=
+-  sbc5Family_closed_form_internal δ hδ0 hδ1 t
++  (fam hδ0 hδ1).eq t
+ 
+ theorem sbc5Family_neighbors (δ : ℝ) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1)
+     (t : ℕ) :
+     neighbors .sbc (sbc5Family_r δ)
+       (traj .sbc (sbc5Family_r δ) (sbc5Family_x0 δ) t) =
+       ![{0}, {0, 1, 2}, {1, 2, 3}, {2, 3, 4}, {4}] :=
+-  sbc5Family_neighbors_internal δ hδ0 hδ1 t
++  (fam hδ0 hδ1).eq t ▸ (fam hδ0 hδ1).nb t
+ 
+ theorem sbc5_near_homogeneous (ε : ℝ) (hε : 0 < ε) :
+     ∃ r x₀ : Fin 5 → ℝ,
+@@ -354,7 +653,13 @@ theorem sbc5_near_homogeneous (ε : ℝ) (hε : 0 < ε) :
+         proximityDigraph .sbc r x₀) ∧
+       Tendsto (traj .sbc r x₀) atTop (𝓝 sbc5_lim) ∧
+       (∀ τ, ¬ FixedFrom (traj .sbc r x₀) τ) ∧
+-      (∀ xinf τ, ¬ PseudoStableAfter (traj .sbc r x₀) xinf τ) :=
+-  sbc5_near_homogeneous_internal ε hε
++      (∀ xinf τ, ¬ PseudoStableAfter (traj .sbc r x₀) xinf τ) := by
++  have h1 := min_le_left 1 (ε / 4)
++  have h0 : 0 < min 1 (ε / 4) := by positivity
++  have F := fam h0 h1
++  have := mul_le_mul_of_nonneg_left h1 hε.le
++  have := mul_pos hε h0
++  refine ⟨_, _, ?_, ?_, ?_, digraph_const (sbc5Family_neighbors _ h0 h1),
++    F.tendsto, F.nfp.1, F.nfp.2⟩ <;> simp [Fin.forall_fin_succ, sbc5Family_r] <;> grind
+ 
+ end HK
