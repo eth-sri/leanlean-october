@@ -46,7 +46,7 @@ theorem verticalIntegral_one_sub (c : ℝ) (f : ℂ → ℂ) :
 
 theorem mellinInv_eq_verticalIntegral (c : ℝ) (f : ℂ → ℂ) {x : ℝ} (hx : 0 < x) :
     mellinInv c f x = verticalIntegral c (fun s => (x : ℂ) ^ (-s) * f s) := by
-  simp [mellinInv, verticalIntegral, smul_eq_mul, Complex.ofReal_div,
+  simp [mellinInv, verticalIntegral, smul_eq_mul, 
     Complex.ofReal_mul]
 
 end DedekindZetaZeroFree.LargeSieve.Vendor

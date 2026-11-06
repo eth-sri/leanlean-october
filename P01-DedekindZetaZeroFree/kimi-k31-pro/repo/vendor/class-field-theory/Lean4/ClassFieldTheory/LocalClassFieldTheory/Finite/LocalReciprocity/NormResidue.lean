@@ -62,8 +62,7 @@ theorem abelianLocalArtinMonoidHom_ker :
   · intro ha
     apply (Abelianization.equivOfComm (H := Gal(L / K))).symm.injective
     simpa using ha
-  · intro ha
-    rw [ha, map_one]
+  · grind
 
 /-- For a finite abelian Galois extension, topological abelianization is
 canonically homeomorphic to the actual Galois group. -/

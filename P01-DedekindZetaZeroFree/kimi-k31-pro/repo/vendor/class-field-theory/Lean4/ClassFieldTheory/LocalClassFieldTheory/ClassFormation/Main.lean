@@ -116,25 +116,9 @@ theorem localFieldUnits_tate_card_of_generator
     K L g hg (localIntegerUnitsHerbrandDefined K L g hg)
       (localIntegerUnitsHerbrandQuotient_eq_one K L g hg)
 
-/-- States the theorem `localFieldUnitsTateH0FiniteOfIsCyclic`. -/
-theorem localFieldUnitsTateH0FiniteOfIsCyclic
-    [IsCyclic (Gal(L / K))] :
-    Finite (tateCohomology (Rep.ofAlgebraAutOnUnits K L) 0) := by
-  obtain ⟨g, hg⟩ := (IsCyclic.exists_generator :
-    ∃ g : Gal(L / K), ∀ sigma : Gal(L / K),
-      sigma ∈ Subgroup.zpowers g)
-  exact localFieldUnitsTateH0FiniteOfGenerator K L g hg
 
-/-- Generator-free form of the local class-field-axiom theorem.  Both Tate
-cohomology objects are canonical and independent of the generator used in the proof. -/
-theorem localFieldUnits_tate_card_of_isCyclic [IsCyclic (Gal(L / K))] :
-    letI := localFieldUnitsTateH0FiniteOfIsCyclic K L
-    Nat.card (tateCohomology (Rep.ofAlgebraAutOnUnits K L) 0) = Module.finrank K L ∧
-      Nat.card (tateCohomology (Rep.ofAlgebraAutOnUnits K L) (-1)) = 1 := by
-  rcases (IsCyclic.exists_generator :
-    ∃ g : Gal(L / K), ∀ sigma : Gal(L / K),
-      sigma ∈ Subgroup.zpowers g) with ⟨g, hg⟩
-  exact localFieldUnits_tate_card_of_generator K L g hg
+
+
 
 end
 end LocalClassFieldTheory

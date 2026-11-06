@@ -125,7 +125,7 @@ theorem coordinateTensor_fourier_zero
     (hzero : ∫ z : ℂ, f v₀ z = 0) :
     fourier F S (coordinateTensor F S f) 0 = 0 := by
   simp only [fourier, mul_zero, neg_zero, AddChar.map_zero_eq_one,
-    mul_one]
+    ]
   simp only [Circle.coe_one, mul_one]
   unfold additiveMeasure coordinateTensor
   rw [integral_prod_mul
@@ -182,8 +182,8 @@ private theorem complex_phase (v : {v : InfinitePlace F // v.IsComplex})
         (((InfiniteAdeleRing.ringEquiv_mixedSpace F x).2 v) *
           ((InfiniteAdeleRing.ringEquiv_mixedSpace F y).2 v)).re : ℝ) : ℂ) * Complex.I) := by
   rw [archTraceCharacter_of_isComplex v.val v.property, Circle.coe_exp]
-  simp only [Pi.neg_apply, Pi.mul_apply, map_neg, map_mul,
-    InfinitePlace.Completion.ringEquivComplexOfIsComplex_apply, Complex.neg_re,
+  simp only [
+    InfinitePlace.Completion.ringEquivComplexOfIsComplex_apply, 
     InfiniteAdeleRing.ringEquiv_mixedSpace_apply]
   change Complex.exp (↑(2 * Real.pi * (2 *
     ((InfinitePlace.Completion.extensionEmbedding v.val) (-(x v.val * y v.val))).re)) * Complex.I) = _
@@ -217,7 +217,7 @@ theorem archTensor_traceFourier
     rw [← Complex.exp_sum]
     congr 1
     push_cast
-    simp only [Finset.mul_sum, Finset.sum_mul]
+    simp only [Finset.mul_sum]
     apply Finset.sum_congr rfl
     intro v hv
     ring
@@ -252,7 +252,7 @@ theorem coordinateTensor_fourier
       ∏ v : S, (TateFiniteShell.annularTest F v.val (x.2 v) *
         (localFiniteCharacter F v.val (-(x.2 v * y.2 v)) : ℂ)) := by
     rw [sLocalTraceCharacter_apply]
-    simp only [Circle.coe_mul, SubmonoidClass.coe_finset_prod, coordinateTensor,
+    simp only [Circle.coe_mul, coordinateTensor,
       Prod.fst_neg, Prod.fst_mul, Prod.snd_neg, Prod.snd_mul, Pi.neg_apply, Pi.mul_apply,
       Finset.prod_mul_distrib]
     simp only [hcoe]
@@ -307,13 +307,12 @@ theorem coordinateTensor_fourier
   rw [← Complex.exp_sum]
   congr 1
   push_cast
-  simp only [Finset.mul_sum, Finset.sum_mul]
+  simp only [Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro v hv
   ring
 
-theorem modulus_nonneg (x : SLocalProduct F S) : 0 ≤ modulus F S x := by
-  exact mul_nonneg
+theorem modulus_nonneg (x : SLocalProduct F S) : 0 ≤ modulus F S x := mul_nonneg
     (by rw [InfiniteAdeleRing.norm_def]; positivity)
     (Finset.prod_nonneg (fun _ _ => norm_nonneg _))
 

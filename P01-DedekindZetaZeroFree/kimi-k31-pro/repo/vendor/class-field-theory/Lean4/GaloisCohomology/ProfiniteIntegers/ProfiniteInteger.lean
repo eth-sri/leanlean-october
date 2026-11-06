@@ -230,13 +230,7 @@ theorem zHatAddSubgroup_eq_mulNat_range_of_index_eq
   exact zHatAddSubgroup_eq_mulNat_range_of_index_ne_zero H
     (Nat.ne_of_gt hn)
 
-/-- A subgroup with finite quotient is the subgroup obtained by multiplying by
-its index. -/
-theorem zHatAddSubgroup_eq_mulNat_range_of_finite_quotient
-    (H : AddSubgroup ZHat) [Finite (ZHat ⧸ H)] :
-    H = (zHatMulNat H.index).toAddMonoidHom.range :=
-  zHatAddSubgroup_eq_mulNat_range_of_index_ne_zero H
-    H.index_ne_zero_of_finite
+
 
 /-- Multiplication by `n > 0` identifies `ℤ̂` continuously with its image. -/
 noncomputable def zHatMulNatRangeEquiv (n : ℕ) (hn : 0 < n) :

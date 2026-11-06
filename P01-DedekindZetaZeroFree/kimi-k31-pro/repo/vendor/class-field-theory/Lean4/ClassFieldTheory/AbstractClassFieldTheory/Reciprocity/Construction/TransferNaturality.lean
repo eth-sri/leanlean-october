@@ -134,154 +134,17 @@ theorem leftTransversalMapOfSurjective_apply
   change ((Subgroup.isComplement_range_left hu).leftQuotientEquiv q : Q) = u q
   exact Subgroup.IsComplement.leftQuotientEquiv_apply hu q
 
-private theorem leftQuotientEquiv_mk_of_mem
-    (H : Subgroup P) (T : H.LeftTransversal) (p : P)
-    (hp : p ∈ (T : Set P)) :
-    (T.2.leftQuotientEquiv (QuotientGroup.mk p) : P) = p := by
-  have heq : T.2.leftQuotientEquiv (QuotientGroup.mk p) =
-      (⟨p, hp⟩ : (T : Set P)) := by
-    apply T.2.leftQuotientEquiv.symm.injective
-    rw [T.2.leftQuotientEquiv.symm_apply_apply]
-    rfl
-  exact congrArg Subtype.val heq
 
-private theorem mem_leftTransversalMapOfSurjective_iff
-    (f : P →* Q) (hf : Function.Surjective f)
-    (H : Subgroup P) (hker : f.ker ≤ H)
-    (T : H.LeftTransversal) (q : Q) :
-    q ∈ (leftTransversalMapOfSurjective f hf H hker T : Set Q) ↔
-      ∃ p ∈ (T : Set P), f p = q := by
-  let e := leftCosetEquivMapOfSurjective f hf H hker
-  change q ∈ Set.range (fun r : Q ⧸ H.map f =>
-      f (T.2.leftQuotientEquiv (e.symm r) : P)) ↔ _
-  constructor
-  · rintro ⟨r, rfl⟩
-    exact ⟨T.2.leftQuotientEquiv (e.symm r),
-      (T.2.leftQuotientEquiv (e.symm r)).2, rfl⟩
-  · rintro ⟨p, hp, rfl⟩
-    refine ⟨e (QuotientGroup.mk p), ?_⟩
-    change f (T.2.leftQuotientEquiv
-      (e.symm (e (QuotientGroup.mk p))) : P) = f p
-    rw [e.symm_apply_apply, leftQuotientEquiv_mk_of_mem H T p hp]
 
-private theorem leftTransversalMapOfSurjective_smul
-    (f : P →* Q) (hf : Function.Surjective f)
-    (H : Subgroup P) (hker : f.ker ≤ H)
-    (T : H.LeftTransversal) (p : P) :
-    leftTransversalMapOfSurjective f hf H hker (p • T) =
-      f p • leftTransversalMapOfSurjective f hf H hker T := by
-  apply Subtype.ext
-  ext q
-  rw [mem_leftTransversalMapOfSurjective_iff]
-  constructor
-  · rintro ⟨x, hx, rfl⟩
-    obtain ⟨t, ht, rfl⟩ := Set.mem_smul_set.mp hx
-    have hft := (mem_leftTransversalMapOfSurjective_iff
-      f hf H hker T (f t)).2
-      ⟨t, ht, rfl⟩
-    rw [smul_eq_mul, map_mul]
-    change f p * f t ∈
-      (f p • (leftTransversalMapOfSurjective f hf H hker T : Set Q) : Set Q)
-    exact Set.smul_mem_smul_set hft
-  · intro hq
-    obtain ⟨t, ht, hpt⟩ := Set.mem_smul_set.mp hq
-    subst q
-    obtain ⟨x, hx, hfx⟩ :=
-      (mem_leftTransversalMapOfSurjective_iff
-        f hf H hker T t).1 ht
-    refine ⟨p * x, Set.smul_mem_smul_set (a := p) hx, ?_⟩
-    simp [map_mul, hfx]
 
-private theorem leftTransversals_diff_natural_of_surjective
-    (f : P →* Q) (hf : Function.Surjective f)
-    (H : Subgroup P) (hker : f.ker ≤ H) [H.FiniteIndex]
-    (S T : H.LeftTransversal) :
-    let J := H.map f
-    letI : J.FiniteIndex := by
-      rw [Subgroup.finiteIndex_iff, H.index_map_eq hf hker]
-      exact Subgroup.FiniteIndex.index_ne_zero
-    Abelianization.map (f.subgroupMap H)
-        (Subgroup.leftTransversals.diff
-          (Abelianization.of : H →* Abelianization H) S T) =
-      Subgroup.leftTransversals.diff
-        (Abelianization.of : J →* Abelianization J)
-        (leftTransversalMapOfSurjective f hf H hker S)
-        (leftTransversalMapOfSurjective f hf H hker T) := by
-  dsimp only
-  let : (H.map f).FiniteIndex := by
-    rw [Subgroup.finiteIndex_iff, H.index_map_eq hf hker]
-    exact Subgroup.FiniteIndex.index_ne_zero
-  classical
-  let : Fintype (P ⧸ H) := H.fintypeQuotientOfFiniteIndex
-  let : Fintype (Q ⧸ H.map f) :=
-    (H.map f).fintypeQuotientOfFiniteIndex
-  let e := leftCosetEquivMapOfSurjective f hf H hker
-  simp only [Subgroup.leftTransversals.diff, map_prod,
-    Abelianization.map_of, leftTransversalMapOfSurjective_apply]
-  rw [← e.prod_comp]
-  apply Finset.prod_congr rfl
-  intro q _
-  apply congrArg Abelianization.of
-  apply Subtype.ext
-  simp [e]
 
-/-- Transfer is natural for a surjective homomorphism whose kernel is
-contained in the finite-index subgroup.  Both transfer maps are Mathlib's
-actual `MonoidHom.transfer`; the proof descends an arbitrary left
-transversal and compares the defining products term by term. -/
-theorem abelianization_transfer_natural_of_surjective
-    (f : P →* Q) (hf : Function.Surjective f)
-    (H : Subgroup P) (hker : f.ker ≤ H) [H.FiniteIndex] :
-    let J := H.map f
-    letI : J.FiniteIndex := by
-      rw [Subgroup.finiteIndex_iff, H.index_map_eq hf hker]
-      exact Subgroup.FiniteIndex.index_ne_zero
-    (Abelianization.map (f.subgroupMap H)).comp
-        (Abelianization.lift
-          (MonoidHom.transfer
-            (Abelianization.of : H →* Abelianization H))) =
-      (Abelianization.lift
-          (MonoidHom.transfer
-            (Abelianization.of : J →* Abelianization J))).comp
-        (Abelianization.map f) := by
-  dsimp only
-  let : (H.map f).FiniteIndex := by
-    rw [Subgroup.finiteIndex_iff, H.index_map_eq hf hker]
-    exact Subgroup.FiniteIndex.index_ne_zero
-  apply Abelianization.hom_ext
-  apply MonoidHom.ext
-  intro p
-  simp only [MonoidHom.comp_apply, Abelianization.lift_apply_of,
-    Abelianization.map_of]
-  let T : H.LeftTransversal := default
-  rw [MonoidHom.transfer_def
-    (Abelianization.of : H →* Abelianization H) T p]
-  rw [MonoidHom.transfer_def
-    (Abelianization.of : H.map f →* Abelianization (H.map f))
-    (leftTransversalMapOfSurjective f hf H hker T) (f p)]
-  rw [← leftTransversalMapOfSurjective_smul f hf H hker T p]
-  exact leftTransversals_diff_natural_of_surjective
-    f hf H hker T (p • T)
 
-/-- Replacing a finite-index subgroup by an equal subgroup only transports
-the codomain of transfer along the corresponding canonical equivalence. -/
-theorem abelianization_transfer_congr_subgroup
-    (H J : Subgroup P) (h : H = J)
-    [H.FiniteIndex] [J.FiniteIndex] :
-    (MulEquiv.subgroupCongr h).abelianizationCongr.toMonoidHom.comp
-        (Abelianization.lift
-          (MonoidHom.transfer
-            (Abelianization.of : H →* Abelianization H))) =
-      Abelianization.lift
-        (MonoidHom.transfer
-          (Abelianization.of : J →* Abelianization J)) := by
-  subst J
-  have hc : MulEquiv.subgroupCongr (show H = H from rfl) =
-      MulEquiv.refl H := by
-    ext x
-    rfl
-  rw [hc, abelianizationCongr_refl]
-  exact MonoidHom.id_comp _
+
+
+
+
+
+
 
 end
 end ClassFormation

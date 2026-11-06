@@ -1,6 +1,7 @@
 module
 
 public import ClassFieldTheory.Definitions.HasseArf.HerbrandFunction
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -30,9 +31,7 @@ theorem herbrandFunction_nat
     ClassFieldTheory.herbrandFunction K A (n : ℝ) =
       (herbrandFunctionAtLowerIndex K A n : ℝ) := by
   unfold ClassFieldTheory.herbrandFunction
-  rw [ite_eq_left (Nat.cast_nonneg n)]
-  dsimp only
-  rw [Nat.floor_natCast, sub_self, zero_mul, add_zero]
+  norm_num
 
 end ClassFieldTheory
 

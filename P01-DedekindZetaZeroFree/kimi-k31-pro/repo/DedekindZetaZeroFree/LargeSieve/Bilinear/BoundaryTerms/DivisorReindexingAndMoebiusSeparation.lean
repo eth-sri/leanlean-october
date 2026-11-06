@@ -144,7 +144,7 @@ private lemma ideal_radical_eq (q : Ideal (𝓞 F)) (hq : q ≠ ⊥) :
       · exact ih (by intro t ht; exact hpr t (by simp [ht]))
   have hR : r.IsRadical := heq ▸ hgen P hp
   apply le_antisymm
-  · exact (hR.radical_le_iff).mpr (Ideal.dvd_iff_le.mp radical_dvd_self)
+  · exact hR.radical_le_iff.mpr (Ideal.dvd_iff_le.mp radical_dvd_self)
   · obtain ⟨n, hn⟩ := exists_dvd_radical_self_pow hq
     have hle : r ^ n ≤ q := Ideal.dvd_iff_le.mp hn
     have : r ≤ (r ^ n).radical := by

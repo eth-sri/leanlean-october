@@ -38,7 +38,7 @@ theorem rootLevelSet_eq_congruence_ideal
     have h01 := congrArg (fun g : GL (Fin 2) (LocalField F q) => g 0 1) hc
     have h11 := congrArg (fun g : GL (Fin 2) (LocalField F q) => g 1 1) hc
     simp [Matrix.GeneralLinearGroup.coe_scalar, Matrix.scalar, Matrix.diagonal_apply,
-      KubotaRankTwo.n, Matrix.mul_apply, Fin.sum_univ_two] at h01 h11
+      KubotaRankTwo.n, Matrix.mul_apply] at h01 h11
     obtain ⟨k₀, hk₀, he₀⟩ := k.property
     have hent := (KPLocalCube.mem_integerCongruence_iff F q m k₀).mp hk₀
     have h11ideal : k₀ 1 1 - 1 ∈ KPLocalCube.maximalIdeal F q ^ m := by simpa using hent 1 1
@@ -58,8 +58,7 @@ theorem rootLevelSet_eq_congruence_ideal
       Units.val_inv_eq_inv_val (Units.map (KPLocalCube.LocalIntegers F q).subtype.toMonoidHom u)
     change (k₀ 0 1 : LocalField F q) * ((↑u⁻¹ : KPLocalCube.LocalIntegers F q) : LocalField F q) = x
     rw [hui, hu, hk01, hk11]
-    have hinv : (k.val 1 1)⁻¹ = (c : LocalField F q) := by
-      exact inv_eq_of_mul_eq_one_right h11
+    have hinv : (k.val 1 1)⁻¹ = (c : LocalField F q) := inv_eq_of_mul_eq_one_right h11
     rw [hinv, h01]
   · rintro _ ⟨y, hy, rfl⟩
     let n₀ : KPLocalCube.IntegerGL2 F q :=

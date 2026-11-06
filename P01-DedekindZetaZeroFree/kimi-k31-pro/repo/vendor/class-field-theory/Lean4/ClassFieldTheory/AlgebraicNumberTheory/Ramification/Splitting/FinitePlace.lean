@@ -173,71 +173,11 @@ theorem finitePlaceSplitsCompletely_iff_localDegree_eq_one
   rw [finitePlaceSplitsCompletely_iff_card_eq_one,
     finitePlaceDecompositionGroup_card_eq_localDegree]
 
-omit [FiniteDimensional K L] in
-/-- A finite place fails to split completely exactly when its
-decomposition group contains a nonidentity automorphism. -/
-theorem finitePlace_not_splitsCompletely_iff_exists_nontrivial_stabilizer
-    (v : HeightOneSpectrum (𝓞 K)) :
-    ¬ FinitePlaceSplitsCompletely
-        (K := K) (L := L) v ↔
-      ∃ σ : L ≃ₐ[K] L,
-        absoluteValueExtensionConjugate
-            (NumberField.HeightOneSpectrum.adicAbv K v)
-            (chosenFinitePlaceExtension (L := L) v) σ =
-          chosenFinitePlaceExtension (L := L) v ∧
-        σ ≠ 1 := by
-  constructor
-  · intro hsplit
-    have hne :
-        finitePlaceDecompositionGroup
-            (K := K) (L := L) v ≠ ⊥ :=
-      hsplit
-    obtain ⟨σ, hσ⟩ :=
-      Subgroup.ne_bot_iff_exists_ne_one.mp hne
-    refine
-      ⟨σ.1,
-        (mem_finitePlaceDecompositionGroup_iff
-          (K := K) (L := L) v σ.1).mp σ.2,
-        ?_⟩
-    intro hσOne
-    apply hσ
-    apply Subtype.ext
-    exact hσOne
-  · rintro ⟨σ, hσ, hσOne⟩ hsplit
-    have hmem :
-        σ ∈ finitePlaceDecompositionGroup
-          (K := K) (L := L) v :=
-      (mem_finitePlaceDecompositionGroup_iff
-        (K := K) (L := L) v σ).mpr hσ
-    have hbot : σ ∈
-        (⊥ : Subgroup (L ≃ₐ[K] L)) := by
-      rw [← hsplit]
-      exact hmem
-    exact hσOne (Subgroup.mem_bot.mp hbot)
 
-/-- Nonsplitting is equivalently strict positivity above one of the
-decomposition-group order. -/
-theorem finitePlace_not_splitsCompletely_iff_one_lt_card
-    (v : HeightOneSpectrum (𝓞 K)) :
-    ¬ FinitePlaceSplitsCompletely
-        (K := K) (L := L) v ↔
-      1 < Nat.card
-          (finitePlaceDecompositionGroup
-            (K := K) (L := L) v) := by
-  unfold FinitePlaceSplitsCompletely
-  exact
-    (finitePlaceDecompositionGroup
-      (K := K) (L := L) v).one_lt_card_iff_ne_bot.symm
 
-/-- Nonsplitting is equivalently local degree greater than one. -/
-theorem finitePlace_not_splitsCompletely_iff_one_lt_localDegree
-    (v : HeightOneSpectrum (𝓞 K)) :
-    ¬ FinitePlaceSplitsCompletely
-        (K := K) (L := L) v ↔
-      1 < finitePlaceLocalDegree
-          (K := K) (L := L) v := by
-  rw [finitePlace_not_splitsCompletely_iff_one_lt_card,
-    finitePlaceDecompositionGroup_card_eq_localDegree]
+
+
+
 
 /-- In a nontrivial finite Galois extension, a place whose
 decomposition group is the whole Galois group cannot split
@@ -271,24 +211,7 @@ variable {M : Type}
     [Field M] [Algebra K M] [Algebra M L]
     [IsScalarTower K M L]
 
-omit [NumberField K] [FiniteDimensional K L] [IsGalois K L] in
-/-- Complete splitting of a valuation over `K` remains complete
-after enlarging the base to an intermediate field `M`.
 
-This is the subgroup-intersection criterion,
-combined with injectivity of scalar restriction. -/
-theorem absoluteValueDecompositionGroup_eq_bot_over_intermediate
-    (w : AbsoluteValue L ℝ)
-    (hsplit :
-      absoluteValueDecompositionGroup K w = ⊥) :
-    absoluteValueDecompositionGroup M w = ⊥ := by
-  apply
-    ((absoluteValueDecompositionGroup M w).map_eq_bot_iff_of_injective
-      (decompositionGroupRestriction_restrictAutomorphismScalars_injective
-        (K := K) (M := M) (L := L))).mp
-  rw [decompositionGroupRestriction_absoluteValueDecompositionGroup_range_eq_inf
-      (K := K) (M := M) w]
-  simp [hsplit]
 
 end IntermediateField
 
@@ -321,44 +244,7 @@ theorem finitePlaceDecompositionGroupInQuotient_eq_bot_iff
     Subgroup.map_eq_bot_iff,
     QuotientGroup.ker_mk']
 
-/-- In a cyclic extension of prime-power degree, every proper
-finite-place decomposition group is contained in a normal subgroup
-of index `p`; the resulting order-`p` quotient has trivial
-decomposition image.  This is the group/prime bridge used in
-the cyclic prime-power splitting argument. -/
-theorem finitePlace_exists_index_prime_quotient_of_decompositionGroup_ne_top
-    [IsCyclic (L ≃ₐ[K] L)]
-    {p exponent : ℕ}
-    (hp : p.Prime)
-    (hexponent : 0 < exponent)
-    (hcard :
-      Nat.card (L ≃ₐ[K] L) =
-        p ^ exponent)
-    (v : HeightOneSpectrum (𝓞 K))
-    (hproper :
-      finitePlaceDecompositionGroup
-          (K := K) (L := L) v ≠ ⊤) :
-    ∃ P : Subgroup (L ≃ₐ[K] L),
-      finitePlaceDecompositionGroup
-          (K := K) (L := L) v ≤ P ∧
-      P.index = p ∧
-      P.Normal ∧
-      Nat.card ((L ≃ₐ[K] L) ⧸ P) = p ∧
-      finitePlaceDecompositionGroupInQuotient
-          (K := K) (L := L) v P = ⊥ := by
-  obtain
-      ⟨P, hDP, hPindex, hPnormal, hPquotient⟩ :=
-    cyclic_exists_normal_index_prime_supergroup
-      hp hexponent hcard
-      (finitePlaceDecompositionGroup
-        (K := K) (L := L) v)
-      hproper
-  refine
-    ⟨P, hDP, hPindex, hPnormal,
-      hPquotient, ?_⟩
-  exact
-    (finitePlaceDecompositionGroupInQuotient_eq_bot_iff
-      (K := K) (L := L) v P).mpr hDP
+
 
 end Quotient
 

@@ -2,6 +2,7 @@ module
 
 public import ClassFieldTheory.AlgebraicNumberTheory.RayClass.Narrow
 public import ClassFieldTheory.GlobalClassFieldTheory.GlobalClassFields.ConductorLattice
+public import Mathlib.Tactic.Positivity
 
 @[expose] public section
 
@@ -101,7 +102,7 @@ theorem
         bigHilbertClassFieldNormSubgroup] using hH
     apply le_antisymm
     · exact H.narrowFiniteConductor_le hdef
-    · exact bot_le
+    · positivity
   · intro hconductor
     have hdef := H.narrowFiniteConductor_isDefiningModulus
     rw [hconductor] at hdef
@@ -118,7 +119,7 @@ theorem bigHilbertClassField_narrowFiniteConductor :
       (bigHilbertClassFieldConductorialSubgroup
         (K := K)).narrowFiniteConductor_le
         (bigHilbertClassFieldNormSubgroup_isDefiningModulus (K := K))
-  · exact bot_le
+  · positivity
 
 end GlobalClassFields
 end GlobalClassFieldTheory

@@ -169,8 +169,7 @@ theorem finiteDualKernel_uniform
     change 1 ≤ 8 * Real.rpow (C.M * C.N) (2 * C.δ)
     linarith
   let S := (boundedNormIdeals F C.L2).filter (fun b => b ≠ ⊥)
-  have hcard : (S.card : ℝ) ≤ I * C.L2 := by
-    exact (Nat.cast_le.mpr (Finset.card_filter_le _ _)).trans (hc C.L2 hL)
+  have hcard : (S.card : ℝ) ≤ I * C.L2 := (Nat.cast_le.mpr (Finset.card_filter_le _ _)).trans (hc C.L2 hL)
   have hterm : ∀ b ∈ S,
       ‖C.originalKernel (norm b * Real.sqrt (C.M / norm a) / norm f)‖ ≤
         A * Real.rpow (C.M * C.N) C.δ := by
@@ -230,8 +229,7 @@ theorem prefactored_finiteDualKernel_uniform
     apply Real.sqrt_le_sqrt
     exact div_le_div_of_nonneg_left hM0 hB0 hBa
   have hkernel := hbound C hCW B hM hN hδ hB a f ha0 ha hf0 hf
-  have hscale : 0 ≤ J * Real.rpow (C.M * C.N) (3 * C.δ) := by
-    exact mul_nonneg hJ.le (Real.rpow_nonneg (by positivity) _)
+  have hscale : 0 ≤ J * Real.rpow (C.M * C.N) (3 * C.δ) := mul_nonneg hJ.le (Real.rpow_nonneg (by positivity) _)
   have hleft : 0 ≤ Real.sqrt (C.M / norm a) / norm f := by positivity
   calc
     _ ≤ (Real.sqrt (C.M / norm a) / norm f) *
@@ -426,8 +424,7 @@ private lemma bin_admissible (C : Context Q) (B : ℝ)
       _ ≤ (norm c * norm C.d) * ((2*P.1)*(2*P.2)) :=
         mul_le_mul hen hab (mul_nonneg (norm_nonneg a) (norm_nonneg b))
           (mul_nonneg (norm_nonneg c) (norm_nonneg C.d))
-      _ ≤ (max 1 (norm c) * norm C.d) * ((2*P.1)*(2*P.2)) := by
-        exact mul_le_mul_of_nonneg_right
+      _ ≤ (max 1 (norm c) * norm C.d) * ((2*P.1)*(2*P.2)) := mul_le_mul_of_nonneg_right
           (mul_le_mul_of_nonneg_right (le_max_right 1 (norm c)) (norm_nonneg C.d))
           (by nlinarith [hP.1, hP.2.1])
       _ = _ := by ring
@@ -757,8 +754,7 @@ theorem middle_divisor_expansion (C : Context Q) (B : ℝ) (unit : Bool)
         by_cases hh : P.2 = 1
         · simpa [hh] using hf₂b.2.1
         · exact (by simpa [hh] using hf₂b.2.1 : P.2 < norm f₂).le
-      have hPpos : 0 < P.1 * P.2 := by
-        exact mul_pos (by linarith [hPe.1]) (by linarith [hPe.2.1])
+      have hPpos : 0 < P.1 * P.2 := mul_pos (by linarith [hPe.1]) (by linarith [hPe.2.1])
       have hprod : P.1 * P.2 ≤ norm f₁ * norm f₂ :=
         mul_le_mul hPl hPr (by linarith [hPe.2.1]) hf₁pos.le
       calc
@@ -824,12 +820,10 @@ private theorem rectangle_card_le (C : Context Q) (B : ℝ) :
     intro P hP
     exact (Finset.mem_filter.mp (Finset.mem_filter.mp hP).1).1
   have hs : (ErrorRectangles.scales (C.N / norm C.d)).card ≤
-      Vendor.dyadicLength (2 * max 1 (C.N / norm C.d)) + 1 := by
-    exact (Finset.card_insert_le _ _).trans (Nat.add_le_add_right
-      ((Finset.card_image_le).trans (by rw [Finset.card_range])) 1)
+      Vendor.dyadicLength (2 * max 1 (C.N / norm C.d)) + 1 := (Finset.card_insert_le _ _).trans (Nat.add_le_add_right
+      (Finset.card_image_le.trans (by rw [Finset.card_range])) 1)
   have hd : (middleDivisorRectangles C B).card ≤
-      (Vendor.dyadicLength (2 * max 1 (C.N / norm C.d)) + 1) ^ 2 := by
-    exact h12.trans (by
+      (Vendor.dyadicLength (2 * max 1 (C.N / norm C.d)) + 1) ^ 2 := h12.trans (by
       rw [Finset.card_product, pow_two]
       exact Nat.mul_le_mul hs hs)
   exact_mod_cast hd
@@ -990,8 +984,7 @@ theorem bilinear_error_middle_direct
         exact ⟨P, hP, rfl⟩
     rw [hf]
     exact ((Set.finite_singleton 0).union (T.finite_toSet.image _)).bddAbove
-  have hV : 0 ≤ V := by
-    exact le_csSup hsupbdd (Or.inl rfl)
+  have hV : 0 ≤ V := le_csSup hsupbdd (Or.inl rfl)
   have hscore : ∀ P ∈ T, ErrorRectangles.largeScore C B P ≤ V := by
     intro P hP
     exact le_csSup hsupbdd (Or.inr ⟨P, hP, rfl⟩)

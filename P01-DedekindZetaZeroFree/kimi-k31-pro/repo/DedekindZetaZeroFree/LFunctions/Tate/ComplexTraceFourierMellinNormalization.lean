@@ -10,7 +10,7 @@ noncomputable section
 open MeasureTheory
 open scoped ContDiff InnerProductSpace
 
-def complexTracePairing (x y : ℂ) : ℝ := 2 * (x * y).re
+
 
 def complexTraceFourier (f : ℂ → ℂ) (y : ℂ) : ℂ :=
   2 * ∫ x : ℂ, f x * Complex.exp (((-4 * Real.pi * (x * y).re : ℝ) : ℂ) * Complex.I)

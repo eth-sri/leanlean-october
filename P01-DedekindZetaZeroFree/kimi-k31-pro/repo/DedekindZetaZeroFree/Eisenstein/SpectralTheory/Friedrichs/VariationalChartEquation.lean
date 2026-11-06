@@ -209,8 +209,7 @@ private theorem reindex_direction {n m : ℕ} (e : Fin n ≃ Fin m) (j : Fin n) 
     LinearIsometryEquiv.piLpCongrLeft 2 ℝ ℝ e (EuclideanSpace.single j 1) =
       EuclideanSpace.single (e j) 1 := by
   ext k
-  simp [LinearIsometryEquiv.piLpCongrLeft_apply, EuclideanSpace.single_apply,
-    e.symm_apply_eq, Pi.single_apply]
+  simp
  def pullbackTest {n m : ℕ} (e : Fin n ≃ Fin m) (A : LocalBall n)
     (φ : TestFunction A.toOpens ℂ ⊤) : TestFunction (reindexedBall e A).toOpens ℂ ⊤ where
   toFun := fun p => φ ((LinearIsometryEquiv.piLpCongrLeft 2 ℝ ℝ e).symm p)
@@ -223,7 +222,7 @@ private theorem reindex_direction {n m : ℕ} (e : Fin n ≃ Fin m) (j : Fin n) 
     have heq : (fun p => φ ((LinearIsometryEquiv.piLpCongrLeft 2 ℝ ℝ e).symm p)) =
         φ ∘ he := by
       funext p
-      simp [he, Function.comp_def, LinearIsometryEquiv.coe_toHomeomorph]
+      simp [he]
     rw [heq, tsupport]
     rw [hs, ← he.preimage_closure]
     intro p hp
@@ -464,7 +463,7 @@ private theorem diagonal_pairing {n : ℕ} (a : Fin n → ℝ) (b c : Fin n → 
   apply Finset.sum_congr rfl
   intro i _
   simp [Matrix.diagonal_apply, apply_ite (fun t : ℝ => (t : ℂ)),
-    mul_ite, ite_mul]
+    ite_mul]
 
 private theorem weakEquation_zero_of_diagonal_pairing {n : ℕ} {A : LocalBall n}
     {cρ Cρ κ Λ : ℝ} (D : Coefficients A cρ Cρ κ Λ)

@@ -2,6 +2,7 @@ module
 
 public import Mathlib.Analysis.CStarAlgebra.Matrix
 public import Mathlib.Topology.Algebra.Star.Unitary
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -52,8 +53,7 @@ theorem isClosed_specialUnitaryGroup [T1Space 𝕜] :
     IsClosed (Matrix.specialUnitaryGroup n 𝕜 : Set (Matrix n n 𝕜)) := by
   have hinter : (Matrix.specialUnitaryGroup n 𝕜 : Set (Matrix n n 𝕜))
       = (Matrix.unitaryGroup n 𝕜 : Set (Matrix n n 𝕜)) ∩ {A | A.det = 1} := by
-    ext A
-    simpa using Matrix.mem_specialUnitaryGroup_iff
+    measurability
   rw [hinter]
   exact isClosed_unitary.inter
     (isClosed_singleton.preimage (Continuous.matrix_det continuous_id))

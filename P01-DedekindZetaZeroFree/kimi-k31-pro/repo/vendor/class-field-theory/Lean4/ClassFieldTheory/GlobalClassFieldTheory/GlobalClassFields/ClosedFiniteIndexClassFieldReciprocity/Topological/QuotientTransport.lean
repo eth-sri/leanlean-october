@@ -1,6 +1,7 @@
 module
 
 public import ClassFieldTheory.GlobalClassFieldTheory.GlobalClassFields.ClosedFiniteIndexClassFieldReciprocity.Degree
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -35,8 +36,7 @@ noncomputable def quotientContinuousMulEquivOfEq
     {N H : Subgroup G} [N.Normal] [H.Normal]
     (h : N = H) :
     G ⧸ N ≃ₜ* G ⧸ H := by
-  subst H
-  exact ContinuousMulEquiv.refl _
+  measurability
 
 /-- Forgetting topology from `quotientContinuousMulEquivOfEq` recovers the
 canonical multiplicative equivalence induced by the same equality. -/
@@ -48,10 +48,7 @@ theorem quotientContinuousMulEquivOfEq_apply
       QuotientGroup.quotientMulEquivOfEq h x := by
   subst H
   refine QuotientGroup.induction_on x ?_
-  intro g
-  exact
-    (QuotientGroup.quotientMulEquivOfEq_mk
-      (G := G) (M := N) (N := N) rfl g).symm
+  measurability
 
 end QuotientGroup
 

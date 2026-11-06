@@ -287,7 +287,7 @@ theorem compact_radial_green_defect
     rw [hstar, mul_assoc] at hf
     have hf_re := congrArg Complex.re hf
     simp only [Complex.sub_re, Complex.mul_re, Complex.mul_im, Complex.ofReal_re,
-      Complex.ofReal_im, zero_mul, mul_zero, sub_zero, add_zero] at hf_re
+      Complex.ofReal_im, zero_mul, sub_zero, add_zero] at hf_re
     change _ = -(codifferential d (radialFlux v η) x).re
     dsimp only [weightedGreenDensity, Representative.laplacian]
     simp only [Complex.mul_re]
@@ -362,7 +362,7 @@ theorem differential_half_norm_sq (d : ℕ) (g : Space d → ℂ) (x : Space d)
       ((star (g x) * ((Real.exp (x (i,2)) : ℂ) * coordinateDerivative d i j g x)).re : ℂ) := by
     rw [coordinateDerivative_half_norm_sq d g x hg]
     simp only [Complex.mul_re, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im,
-      zero_mul, mul_zero, sub_zero, add_zero, ← Complex.ofReal_mul]
+      zero_mul, sub_zero, add_zero, ← Complex.ofReal_mul]
     congr 1
     ring
   fin_cases k
@@ -420,9 +420,9 @@ theorem scalarRadialFlux_eq_realPart (v : Representative ζ hζ S ρ V T) (η : 
     rw [differential_half_norm_sq d _ x hg]
     simp only [radialFlux, cutoffUpstairs, star_mul, Complex.star_def, Complex.conj_ofReal,
       Complex.mul_re, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im,
-      zero_mul, mul_zero, sub_zero, add_zero]
+      mul_zero, sub_zero]
     dsimp only [d, t, Function.comp_def]
-    simp only [Complex.star_def, Complex.mul_re, Complex.conj_re, Complex.conj_im]
+    simp only [Complex.conj_re, Complex.conj_im]
     push_cast
     ring
 

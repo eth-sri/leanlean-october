@@ -290,18 +290,7 @@ theorem absoluteNorm_mk (a : IdeleGroup K) :
 def normOneSubgroup : Subgroup (IdeleClassGroup K) :=
   (absoluteNorm (K := K)).ker
 
-/-- Pulling the norm-one idele classes back to the idele group recovers
-exactly the norm-one ideles. -/
-theorem comap_normOneSubgroup :
-    Subgroup.comap
-      (QuotientGroup.mk' (IdeleGroup.principalSubgroup K))
-      (normOneSubgroup (K := K)) =
-        IdeleGroup.normOneSubgroup (K := K) := by
-  ext a
-  change absoluteNorm
-      (QuotientGroup.mk' (IdeleGroup.principalSubgroup K) a) = 1 ↔
-    IdeleGroup.absoluteNorm a = 1
-  rw [absoluteNorm_mk]
+
 
 @[simp]
 theorem mk_mem_normOneSubgroup_iff (a : IdeleGroup K) :

@@ -169,43 +169,9 @@ theorem equalCharacteristicCompletedFrobeniusPrimeElement_eq_equiv_generator
   rw [equalCharacteristicCompletedFrobeniusTargetLevelEquiv_generator]
   rfl
 
-/-- The minimal polynomial of the fixed-field generator is precisely the
-target primitive polynomial for `aT`. -/
-theorem equalCharacteristicCompletedFrobeniusPrimeElement_minpoly
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
-    minpoly (LaurentSeries F.residueField)
-        (equalCharacteristicCompletedFrobeniusPrimeElement F a n) =
-      equalCharacteristicChangedPrimitivePolynomial F a n := by
-  rw [equalCharacteristicCompletedFrobeniusPrimeElement_eq_equiv_generator,
-    minpoly.algEquiv_eq]
-  simpa [equalCharacteristicChangedLevelGenerator,
-    equalCharacteristicChangedLevelField,
-    IntermediateField.minpoly_gen] using
-    (equalCharacteristicChangedPrimitivePolynomial_eq_minpoly F a n).symm
 
-/-- The genuine integral minimal polynomial is Eisenstein at `(T)`.  This is
-the prime-element (uniformizer) certificate used in the proof of the completed theta-intertwining theorem. -/
-theorem equalCharacteristicCompletedFrobeniusPrimeElement_eisenstein
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
-    (equalCharacteristicChangedIntegralPrimitivePolynomial F a n).IsEisensteinAt
-        (Ideal.span ({PowerSeries.X} : Set F.residueField⟦X⟧)) ∧
-      (equalCharacteristicChangedIntegralPrimitivePolynomial F a n).map
-          (algebraMap F.residueField⟦X⟧
-            (LaurentSeries F.residueField)) =
-        minpoly (LaurentSeries F.residueField)
-          (equalCharacteristicCompletedFrobeniusPrimeElement F a n) := by
-  constructor
-  · exact
-      equalCharacteristicChangedIntegralPrimitivePolynomial_isEisensteinAt
-        F a n
-  · change equalCharacteristicChangedPrimitivePolynomial F a n =
-      minpoly (LaurentSeries F.residueField)
-        (equalCharacteristicCompletedFrobeniusPrimeElement F a n)
-    exact (equalCharacteristicCompletedFrobeniusPrimeElement_minpoly F a n).symm
+
+
 
 /-- The completed theta-intertwining theorem, with the canonical sign:
 `N_{Sigma/k((T))}(-pi_delta) = aT`. -/

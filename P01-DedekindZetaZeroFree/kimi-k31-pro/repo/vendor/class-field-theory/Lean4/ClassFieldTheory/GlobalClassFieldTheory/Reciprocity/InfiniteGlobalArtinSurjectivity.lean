@@ -56,13 +56,7 @@ theorem numberFieldPositiveArchimedeanIdele_finiteComponent
       1 :=
   IdeleGroup.positiveArchimedeanSection_finiteComponent r v
 
-/-- Compatibility form of positivity at every infinite component. -/
-theorem numberFieldPositiveArchimedeanIdele_infiniteComponent_mem_positive
-    (r : ℝ≥0ˣ) (v : InfinitePlace K) :
-    IdeleGroup.infiniteComponent v
-        (numberFieldPositiveArchimedeanIdele K r) ∈
-      RayClass.infinitePositiveSubgroup v :=
-  IdeleGroup.positiveArchimedeanSection_infiniteComponent_mem_positive r v
+
 
 /-- Compatibility form of the absolute-norm evaluation. -/
 @[simp]
@@ -267,32 +261,7 @@ theorem infiniteGlobalIdeleClassArtinContinuousMonoidHom_surjective
       K Ω σ
   exact ⟨(c : IdeleClassGroup K), hc⟩
 
-/-- The infinite global Artin homomorphism is surjective. -/
-theorem infiniteGlobalArtinMonoidHom_surjective
-    (K Ω : Type)
-    [Field K] [NumberField K]
-    [Field Ω] [Algebra K Ω] [IsAbelianGalois K Ω] :
-    Function.Surjective
-      (infiniteGlobalArtinMonoidHom K Ω) := by
-  intro σ
-  obtain ⟨c, hc⟩ :=
-    infiniteGlobalIdeleClassArtinContinuousMonoidHom_surjective
-      K Ω σ
-  obtain ⟨a, ha⟩ :=
-    QuotientGroup.mk'_surjective
-      (IdeleGroup.principalSubgroup K) c
-  refine ⟨a, ?_⟩
-  calc
-    infiniteGlobalArtinMonoidHom K Ω a =
-        infiniteGlobalIdeleClassArtinContinuousMonoidHom
-          (K := K) (Ω := Ω)
-          (QuotientGroup.mk'
-            (IdeleGroup.principalSubgroup K) a) :=
-      (infiniteGlobalIdeleClassArtinMonoidHom_mk
-        (K := K) (Ω := Ω) a).symm
-    _ = infiniteGlobalIdeleClassArtinContinuousMonoidHom
-          (K := K) (Ω := Ω) c := by rw [ha]
-    _ = σ := hc
+
 
 end Reciprocity
 end GlobalClassFieldTheory

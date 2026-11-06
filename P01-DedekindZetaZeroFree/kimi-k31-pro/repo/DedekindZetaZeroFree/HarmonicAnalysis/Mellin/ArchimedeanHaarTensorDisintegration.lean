@@ -66,10 +66,10 @@ private theorem realUnits_density_left (μ : Measure ℝ) [μ.IsAddHaarMeasure] 
   have hm := setLIntegral_map (μ := μ) (g := fun x : ℝ => (g : ℝ) * x)
     (s := Units.val '' s) (ev.measurableSet_image.mpr hs) hD (by fun_prop)
   rw [hscale, Measure.restrict_smul, lintegral_smul_measure] at hm
-  simp only [ENNReal.smul_def, smul_eq_mul] at hm
+  simp only [smul_eq_mul] at hm
   simp_rw [hmul] at hm
   rw [lintegral_const_mul _ hD] at hm
-  exact (ENNReal.mul_right_inj (by simp) (by simp [abs_pos.mpr g.ne_zero])).mp hm.symm
+  exact (ENNReal.mul_right_inj (by simp) (by simp)).mp hm.symm
 
 private theorem realUnits_density_isHaarMeasure (μ : Measure ℝ) [μ.IsAddHaarMeasure] :
     (Measure.comap Units.val
@@ -120,7 +120,7 @@ private theorem realUnits_density_integral (f : ℝ → ℂ) :
   rw [Measure.restrict_eq_self_of_ae_mem]
   · rw [integral_withDensity_eq_integral_toReal_smul (by fun_prop)
       (Filter.Eventually.of_forall fun x => ENNReal.ofReal_lt_top)]
-    simp only [Complex.real_smul, smul_eq_mul]
+    simp only [Complex.real_smul]
     apply integral_congr_ae
     filter_upwards with x
     simp [ENNReal.toReal_ofReal (by positivity : 0 ≤ |x|⁻¹), div_eq_mul_inv, mul_comm]
@@ -161,11 +161,11 @@ private theorem complexUnits_density_integral (f : ℂ → ℂ) :
   rw [Measure.restrict_eq_self_of_ae_mem]
   · rw [integral_withDensity_eq_integral_toReal_smul (by fun_prop)
       (Filter.Eventually.of_forall fun x => ENNReal.ofReal_lt_top), ← integral_const_mul]
-    simp only [Complex.real_smul, smul_eq_mul]
+    simp only [Complex.real_smul]
     apply integral_congr_ae
     filter_upwards with z
     rw [ENNReal.toReal_ofReal (by positivity)]
-    simp [div_eq_mul_inv, mul_inv, mul_comm, mul_assoc, mul_left_comm]
+    simp [div_eq_mul_inv, mul_comm, mul_left_comm]
   · simpa only [ae_iff, Set.mem_compl_iff, not_not, Set.setOf_mem_eq] using hz
 
 theorem complexUnits_haar_integral_density (ν : Measure ℂˣ) [ν.IsHaarMeasure] :
@@ -181,7 +181,7 @@ theorem complexUnits_haar_integral_density (ν : Measure ℂˣ) [ν.IsHaarMeasur
   · intro f
     conv_lhs => rw [Measure.isMulLeftInvariant_eq_smul ν μ, integral_smul_nnreal_measure]
     rw [show (∫ u : ℂˣ, f u.val ∂μ) = _ from complexUnits_density_integral f]
-    simp [NNReal.smul_def, Complex.real_smul, smul_eq_mul, div_eq_mul_inv, mul_assoc]
+    simp [NNReal.smul_def, Complex.real_smul, div_eq_mul_inv, mul_assoc]
  def rawProdUnits (M N : Type*) [Monoid M] [Monoid N]
     [TopologicalSpace M] [TopologicalSpace N] : (M × N)ˣ ≃ₜ* Mˣ × Nˣ where
   __ := MulEquiv.prodUnits
@@ -328,18 +328,8 @@ private lemma fieldUnitsBorel {K : Type*} [Field K] [TopologicalSpace K]
   change MeasurableSpace.comap Units.val ‹MeasurableSpace K› = borel Kˣ
   rw [BorelSpace.measurable_eq (α := K), Units.isEmbedding_val₀.isInducing.eq_induced,
     borel_comap]⟩
-def realCompletionUnitEquiv {F : Type} [Field F] [NumberField F]
-    (v : InfinitePlace F) (hv : v.IsReal) : v.Completionˣ ≃ₜ* ℝˣ :=
-  Units.mapContinuousMulEquiv {
-    toMulEquiv := (InfinitePlace.Completion.ringEquivRealOfIsReal hv).toMulEquiv
-    continuous_toFun := (InfinitePlace.Completion.isometryEquivRealOfIsReal hv).continuous
-    continuous_invFun := (InfinitePlace.Completion.isometryEquivRealOfIsReal hv).symm.continuous }
-def complexCompletionUnitEquiv {F : Type} [Field F] [NumberField F]
-    (v : InfinitePlace F) (hv : v.IsComplex) : v.Completionˣ ≃ₜ* ℂˣ :=
-  Units.mapContinuousMulEquiv {
-    toMulEquiv := (InfinitePlace.Completion.ringEquivComplexOfIsComplex hv).toMulEquiv
-    continuous_toFun := (InfinitePlace.Completion.isometryEquivComplexOfIsComplex hv).continuous
-    continuous_invFun := (InfinitePlace.Completion.isometryEquivComplexOfIsComplex hv).symm.continuous }
+
+
 
 local instance {F : Type} [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (𝓞 F))) : MeasurableSpace (SLocalProduct F S) := borel _

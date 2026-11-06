@@ -26,12 +26,12 @@ theorem measurable_exact_transversal {G Y : Type*} [Group G] [Countable G]
     ∃ S : Set Y, MeasurableSet S ∧ ∀ x : Y, ∃! y : Y, y ∈ S ∧ ∃ g : G, g • x = y := by
   obtain ⟨e, he⟩ := exists_measurableEmbedding_real Y
   let K := compactCovering Y
-  have hK (n) : MeasurableSet (K n) := (isCompact_compactCovering Y n).isClosed.measurableSet
+  have hK n : MeasurableSet (K n) := (isCompact_compactCovering Y n).isClosed.measurableSet
   let P (n : ℕ) (x : Y) := x ∈ K n ∧
     (∀ j < n, ∀ g : G, g • x ∉ K j) ∧
     (∀ g : G, g • x ∈ K n → e x ≤ e (g • x))
   let S := {x | ∃ n, P n x}
-  have hP (n) : MeasurableSet {x | P n x} := by
+  have hP n : MeasurableSet {x | P n x} := by
     apply (hK n).inter
     apply MeasurableSet.inter
     · change MeasurableSet {x | ∀ j < n, ∀ g : G, g • x ∉ K j}
@@ -102,7 +102,7 @@ private theorem selector_of_transversal {G Y : Type*} [Group G] [Countable G]
       intro g h _ x hx
       obtain ⟨y, hy, hu⟩ := huniq x
       exact (hu _ ⟨hx.1, g, rfl⟩).trans (hu _ ⟨hx.2, h, rfl⟩).symm)
-  have hs (x) : r x ∈ S ∧ ∃ g : G, g • x = r x := by
+  have hs x : r x ∈ S ∧ ∃ g : G, g • x = r x := by
     obtain ⟨y, hy, _⟩ := huniq x
     obtain ⟨g, hg⟩ := hy.2
     have hrx := heq g (show x ∈ (fun x => g • x) ⁻¹' S by simpa [hg] using hy.1)
@@ -238,7 +238,7 @@ theorem component_measurable_section (F : Type) [Field F] [NumberField F]
       intro x y h
       obtain ⟨γ, hγ⟩ := MulAction.mem_orbit_iff.mp (MulAction.orbitRel_apply.mp h)
       simpa [← hγ] using (hinv γ y))
-  have hsq (x) : s (KPCuspSiegel.projection F Γ x) = r x := rfl
+  have hsq x : s (KPCuspSiegel.projection F Γ x) = r x := rfl
   have hsm : Measurable s := measurable_from_quotient.mpr hr
   refine ⟨s, hsm, ?_, ?_, ?_⟩
   · intro q
@@ -314,9 +314,9 @@ theorem full_base_measurable_section (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     rw [he]
     exact MeasurableSet.iUnion fun i => Topology.IsOpenEmbedding.sigmaMk.measurableEmbedding.measurableSet_image.mpr (hm i ht)
   have hlm : Measurable l := hsm.comp A.components.symm.continuous.measurable
-  have hc (i) (q) : c (KPFiniteCuspAtlas.componentMap F ζ hζ U (A.representative i) q) = i := by
+  have hc i q : c (KPFiniteCuspAtlas.componentMap F ζ hζ U (A.representative i) q) = i := by
     simp [c, ← A.components_formula]
-  have hl (i) (q) : l (KPFiniteCuspAtlas.componentMap F ζ hζ U (A.representative i) q) = s i q := by
+  have hl i q : l (KPFiniteCuspAtlas.componentMap F ζ hζ U (A.representative i) q) = s i q := by
     change s (A.components.symm (KPFiniteCuspAtlas.componentMap F ζ hζ U (A.representative i) q)).1
       (A.components.symm (KPFiniteCuspAtlas.componentMap F ζ hζ U (A.representative i) q)).2 = _
     rw [← A.components_formula, A.components.symm_apply_apply]
@@ -353,8 +353,7 @@ theorem quotient_line_frame_injective (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U
       γ • z = z → γ = 1) :
     Function.Injective (fun a : V F ζ hζ U => (⟨i, Quotient.mk _ (z, a)⟩ : Line F ζ hζ hF U A)) := by
   intro a b h
-  have he : (Quotient.mk _ (z,a) : KPCuspGenuineMonodromy.OrbifoldLine F ζ hζ U (A.representative i) (A.line i).rho) = Quotient.mk _ (z,b) := by
-    exact eq_of_heq (Sigma.mk.inj h).2
+  have he : (Quotient.mk _ (z,a) : KPCuspGenuineMonodromy.OrbifoldLine F ζ hζ U (A.representative i) (A.line i).rho) = Quotient.mk _ (z,b) := eq_of_heq (Sigma.mk.inj h).2
   obtain ⟨γ, hg, ha⟩ := Quotient.exact he
   have hγ := hz γ hg.symm
   subst γ
@@ -480,8 +479,8 @@ theorem smooth_section_norm_continuous (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF 
       change ‖(A.scalar_realization s i).val ((γ : KPCuspArithmetic.PGL2 F) • w)‖ = _
       rw [(A.scalar_realization s i).property.2, norm_mul, (A.line i).unitary, one_mul]
       rw [A.scalar_realization_formula])
-  have hn (i) : Continuous (n i) := (hs i).continuous.norm.quotient_lift _
-  have he (x) : A.components.symm x = ⟨c x, KPCuspSiegel.projection F _ (l x)⟩ := by
+  have hn i : Continuous (n i) := (hs i).continuous.norm.quotient_lift _
+  have he x : A.components.symm x = ⟨c x, KPCuspSiegel.projection F _ (l x)⟩ := by
     apply A.components.injective
     rw [A.components.apply_symm_apply, A.components_formula, hbase]
   have hcon : Continuous (fun x => n (A.components.symm x).1 (A.components.symm x).2) :=

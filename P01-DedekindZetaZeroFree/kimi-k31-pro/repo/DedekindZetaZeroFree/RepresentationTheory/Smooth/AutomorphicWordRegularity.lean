@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.RepresentationTheory.Smooth.FiniteLevelChartRegularity
 public import DedekindZetaZeroFree.RepresentationTheory.Smooth.QuotientDescentAndHolomorphicJets
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -18,9 +19,7 @@ variable {U : Level F ζ hζ}
 private theorem finitePart_eq : KPGlobalTorusFunctionData.finitePart F ζ hζ =
     ActualQuotient.finiteSubgroup F ζ hζ := by
   unfold KPGlobalTorusFunctionData.finitePart ActualQuotient.finiteSubgroup
-  congr 1
-  ext x
-  simp [ActualQuotient.finiteTuples, Subgroup.mem_iInf, MonoidHom.mem_ker]
+  measurability
 
 private theorem word_smoothAutomorphic (v : smoothSpace F ζ hζ U)
     (w : List (KPSmoothActualFlowData.B F)) :
@@ -55,9 +54,9 @@ private theorem word_centre_covariant
                 (KPSmoothActualFlowData.flow F b t)))) := by
       funext t
       rw [mul_assoc, SmoothDescent.centreMap_mul, ← mul_assoc]
-      exact ih _
+      simp_all
     simp only [SmoothDescent.rightTranslate_quotientMap]
-    rw [he, deriv_const_mul_field]
+    simp_all
 
  theorem word_mem_smoothSpace (v : smoothSpace F ζ hζ U)
     (w : List (KPSmoothActualFlowData.B F)) :
@@ -70,7 +69,7 @@ private theorem word_centre_covariant
         obtain ⟨a, ha, he⟩ := u.property
         rw [← he]
         rw [← finitePart_eq]
-        exact a.property⟩)
+        measurability⟩)
     (fun g => v.property.2.1 g u) w g
 
 end DedekindZetaZeroFree.KPMsSameContinuationGreen.CanonicalWordRegularity

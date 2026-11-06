@@ -156,20 +156,7 @@ theorem galoisGroupIntegerRingEquivOfIsIntegralClosure_integerRingMap
   change σ (algebraMap K L (x : K)) = algebraMap K L (x : K)
   exact σ.commutes (x : K)
 
-/-- The actual `Gal(L / K)` action on `𝒪[L]` fixes the image of `𝒪[K]`. -/
-theorem galoisGroupIntegerRingMulSemiringActionOfIsIntegralClosure_integerRingMap
-    (K L : Type u) [Field K] [ValuativeRel K] [Field L] [ValuativeRel L]
-    [Algebra K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    (σ : Gal(L / K)) (x : 𝒪[K]) :
-    letI := galoisGroupIntegerRingMulSemiringActionOfIsIntegralClosure K L
-    σ • integerRingMapOfValuationExtension K L x =
-      integerRingMapOfValuationExtension K L x := by
-  change galoisGroupIntegerRingEquivOfIsIntegralClosure K L σ
-      (integerRingMapOfValuationExtension K L x) =
-    integerRingMapOfValuationExtension K L x
-  exact galoisGroupIntegerRingEquivOfIsIntegralClosure_integerRingMap K L σ x
+
 
 /-- The actual integral-closure action commutes with the canonical
 `𝒪[K]`-scalar action on `𝒪[L]`. -/
@@ -454,17 +441,7 @@ def galoisGroupMaximalIdealPowSuccQuotDistribMulActionOfIsIntegralClosure
     intro σ x y
     exact map_add (galoisGroupMaximalIdealPowSuccQuotMapEquivOfIsIntegralClosure K L n σ) x y
 
-/-- The distributive Galois action on a successive maximal-ideal quotient is computed by conjugating
-representatives. -/
-theorem galoisGroupMaximalIdealPowSuccQuotDistribMulActionOfIsIntegralClosure_smul
-    (K L : Type u) [Field K] [ValuativeRel K] [Field L] [ValuativeRel L]
-    [Algebra K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    (n : Nat) (σ : Gal(L / K)) (x : MaximalIdealPowSuccQuot L n) :
-    letI := galoisGroupMaximalIdealPowSuccQuotDistribMulActionOfIsIntegralClosure K L n
-    σ • x = galoisGroupMaximalIdealPowSuccQuotMapEquivOfIsIntegralClosure K L n σ x :=
-  rfl
+
 
 /-- Actual integral-closure real Galois action on the multiplicative form of
 maximal-ideal graded pieces. -/
@@ -512,20 +489,7 @@ def galoisGroupMaximalIdealPowSuccQuotMultiplicativeMulDistribMulActionOfIsInteg
       (maximalIdealPowSuccQuotMultiplicativeMapEquivOfIntegerRingEquiv L n
         (galoisGroupIntegerRingEquivOfIsIntegralClosure K L σ))
 
-/-- After multiplicative re-encoding, the Galois action on a maximal-ideal quotient is still induced
-by conjugation. -/
-theorem galoisGroupMaximalIdealPowSuccQuotMultiplicativeMulDistribMulActionOfIsIntegralClosure_smul
-    (K L : Type u) [Field K] [ValuativeRel K] [Field L] [ValuativeRel L]
-    [Algebra K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    (n : Nat) (σ : Gal(L / K))
-    (x : Multiplicative (MaximalIdealPowSuccQuot L n)) :
-    letI := galoisGroupMaximalIdealPowSuccQuotMultiplicativeMulDistribMulActionOfIsIntegralClosure
-      K L n
-    σ • x = maximalIdealPowSuccQuotMultiplicativeMapEquivOfIntegerRingEquiv L n
-      (galoisGroupIntegerRingEquivOfIsIntegralClosure K L σ) x :=
-  rfl
+
 
 /-- Actual integral-closure action on `U^n/U^(n+1)`. -/
 def galoisGroupPrincipalUnitsSuccQuotMapEquivOfIsIntegralClosure
@@ -538,19 +502,7 @@ def galoisGroupPrincipalUnitsSuccQuotMapEquivOfIsIntegralClosure
   principalUnitsSuccQuotMapEquivOfIntegerRingEquiv L n
     (galoisGroupIntegerRingEquivOfIsIntegralClosure K L σ)
 
-/-- The Galois equivalence on a successive principal-unit quotient maps each class to the class of
-its conjugate. -/
-theorem galoisGroupPrincipalUnitsSuccQuotMapEquivOfIsIntegralClosure_apply
-    (K L : Type u) [Field K] [ValuativeRel K] [Field L] [ValuativeRel L]
-    [Algebra K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    (n : Nat) (σ : Gal(L / K)) (u : principalUnits L n) :
-    galoisGroupPrincipalUnitsSuccQuotMapEquivOfIsIntegralClosure K L n σ
-        (QuotientGroup.mk u) =
-      QuotientGroup.mk
-        (galoisGroupPrincipalUnitsMapEquivOfIsIntegralClosure K L n σ u) :=
-  rfl
+
 
 /-- Actual integral-closure real Galois action on successive principal-unit
 quotients as a group homomorphism. -/
@@ -609,17 +561,7 @@ def galoisGroupPrincipalUnitsSuccQuotMulDistribMulActionOfIsIntegralClosure
     intro σ
     exact map_one (galoisGroupPrincipalUnitsSuccQuotMapEquivOfIsIntegralClosure K L n σ)
 
-/-- The packaged integral-closure action is the quotient map equivalence action
-pointwise. -/
-theorem galoisGroupPrincipalUnitsSuccQuotMulDistribMulActionOfIsIntegralClosure_smul
-    (K L : Type u) [Field K] [ValuativeRel K] [Field L] [ValuativeRel L]
-    [Algebra K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    (n : Nat) (σ : Gal(L / K)) (x : PrincipalUnitsSuccQuot L n) :
-    letI := galoisGroupPrincipalUnitsSuccQuotMulDistribMulActionOfIsIntegralClosure K L n
-    σ • x = galoisGroupPrincipalUnitsSuccQuotMapEquivOfIsIntegralClosure K L n σ x :=
-  rfl
+
 
 /-- Actual integral-closure real Galois action on the additive form of
 successive principal-unit quotients. -/
@@ -677,97 +619,15 @@ def galoisGroupPrincipalUnitsSuccQuotAddDistribMulActionOfIsIntegralClosure
     rw [show Additive.toMul (x + y) = Additive.toMul x * Additive.toMul y from rfl]
     rw [map_mul]
 
-/-- The additive Galois action on a successive principal-unit quotient is induced by conjugation of
-representatives. -/
-theorem galoisGroupPrincipalUnitsSuccQuotAddDistribMulActionOfIsIntegralClosure_smul
-    (K L : Type u) [Field K] [ValuativeRel K] [Field L] [ValuativeRel L]
-    [Algebra K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    (n : Nat) (σ : Gal(L / K)) (x : Additive (PrincipalUnitsSuccQuot L n)) :
-    letI := galoisGroupPrincipalUnitsSuccQuotAddDistribMulActionOfIsIntegralClosure K L n
-    σ • x = Additive.ofMul
-      (galoisGroupPrincipalUnitsSuccQuotMapEquivOfIsIntegralClosure K L n σ
-        (Additive.toMul x)) :=
-  rfl
 
-/-- The comparison from a maximal-ideal quotient to a principal-unit quotient intertwines the Galois
-actions. -/
-theorem principalUnitsSuccQuotOfMaximalIdealPowSuccQuot_galoisGroup_of_isIntegralClosure
-    (K L : Type u) [Field K] [ValuativeRel K] [Field L] [ValuativeRel L]
-    [Algebra K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    (n : Nat) (hn : 1 ≤ n) (σ : Gal(L / K))
-    (x : MaximalIdealPowSuccQuot L n) :
-    galoisGroupPrincipalUnitsSuccQuotMapEquivOfIsIntegralClosure K L n σ
-        (principalUnitsSuccQuotOfMaximalIdealPowSuccQuot L n hn x) =
-      principalUnitsSuccQuotOfMaximalIdealPowSuccQuot L n hn
-        (galoisGroupMaximalIdealPowSuccQuotMapEquivOfIsIntegralClosure K L n σ x) :=
-  principalUnitsSuccQuotOfMaximalIdealPowSuccQuot_integerRingEquiv L n hn
-    (galoisGroupIntegerRingEquivOfIsIntegralClosure K L σ) x
 
-/-- The additive comparison between maximal-ideal and principal-unit quotients is Galois
-equivariant. -/
-theorem principalUnitsSuccQuotOfMaximalIdealPowSuccQuotAdd_galoisGroup_of_isIntegralClosure
-    (K L : Type u) [Field K] [ValuativeRel K] [Field L] [ValuativeRel L]
-    [Algebra K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    (n : Nat) (hn : 1 ≤ n) (σ : Gal(L / K))
-    (x : MaximalIdealPowSuccQuot L n) :
-    Additive.ofMul
-        (galoisGroupPrincipalUnitsSuccQuotMapEquivOfIsIntegralClosure K L n σ
-          (principalUnitsSuccQuotOfMaximalIdealPowSuccQuot L n hn x)) =
-      principalUnitsSuccQuotOfMaximalIdealPowSuccQuotAdd L n hn
-        (galoisGroupMaximalIdealPowSuccQuotMapEquivOfIsIntegralClosure K L n σ x) := by
-  rw [principalUnitsSuccQuotOfMaximalIdealPowSuccQuot_galoisGroup_of_isIntegralClosure]
-  rfl
 
-/-- Real Galois equivariance of the additive associated-graded comparison,
-with both sides using the packaged additive actions. -/
-theorem maximalIdealPowSuccQuotAddEquivPrincipalUnitsSuccQuot_galoisGroup_of_isIntegralClosure
-    (K L : Type u) [Field K] [ValuativeRel K] [Field L] [ValuativeRel L]
-    [Algebra K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    (n : Nat) (hn : 1 ≤ n) (σ : Gal(L / K))
-    (x : MaximalIdealPowSuccQuot L n) :
-    letI := galoisGroupMaximalIdealPowSuccQuotDistribMulActionOfIsIntegralClosure K L n
-    letI := galoisGroupPrincipalUnitsSuccQuotAddDistribMulActionOfIsIntegralClosure K L n
-    σ • (maximalIdealPowSuccQuotAddEquivPrincipalUnitsSuccQuot L n hn x) =
-      maximalIdealPowSuccQuotAddEquivPrincipalUnitsSuccQuot L n hn (σ • x) := by
-  change principalUnitsSuccQuotAddEquivOfIntegerRingEquiv L n
-        (galoisGroupIntegerRingEquivOfIsIntegralClosure K L σ)
-        (maximalIdealPowSuccQuotAddEquivPrincipalUnitsSuccQuot L n hn x) =
-      maximalIdealPowSuccQuotAddEquivPrincipalUnitsSuccQuot L n hn
-        (galoisGroupMaximalIdealPowSuccQuotMapEquivOfIsIntegralClosure K L n σ x)
-  exact maximalIdealPowSuccQuotAddEquivPrincipalUnitsSuccQuot_integerRingEquiv L n hn
-    (galoisGroupIntegerRingEquivOfIsIntegralClosure K L σ) x
 
-/-- Real Galois equivariance of the multiplicative associated-graded
-comparison, with both sides using the multiplicative packaged actions. -/
-theorem maximalIdealPowSuccQuotMulEquivPrincipalUnitsSuccQuot_galoisGroup_of_isIntegralClosure
-    (K L : Type u) [Field K] [ValuativeRel K] [Field L] [ValuativeRel L]
-    [Algebra K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    (n : Nat) (hn : 1 ≤ n) (σ : Gal(L / K))
-    (x : Multiplicative (MaximalIdealPowSuccQuot L n)) :
-    letI :=
-      galoisGroupMaximalIdealPowSuccQuotMultiplicativeMulDistribMulActionOfIsIntegralClosure
-        K L n
-    letI := galoisGroupPrincipalUnitsSuccQuotMulDistribMulActionOfIsIntegralClosure K L n
-    σ • (maximalIdealPowSuccQuotMulEquivPrincipalUnitsSuccQuot L n hn x) =
-      maximalIdealPowSuccQuotMulEquivPrincipalUnitsSuccQuot L n hn (σ • x) := by
-  change principalUnitsSuccQuotMapEquivOfIntegerRingEquiv L n
-        (galoisGroupIntegerRingEquivOfIsIntegralClosure K L σ)
-        (maximalIdealPowSuccQuotMulEquivPrincipalUnitsSuccQuot L n hn x) =
-      maximalIdealPowSuccQuotMulEquivPrincipalUnitsSuccQuot L n hn
-        (maximalIdealPowSuccQuotMultiplicativeMapEquivOfIntegerRingEquiv L n
-          (galoisGroupIntegerRingEquivOfIsIntegralClosure K L σ) x)
-  exact maximalIdealPowSuccQuotMulEquivPrincipalUnitsSuccQuot_integerRingEquiv L n hn
-    (galoisGroupIntegerRingEquivOfIsIntegralClosure K L σ) x
+
+
+
+
+
 
 /-- Actual integral-closure first-order expansion of the real Galois product
 attached to a principal-unit representative. -/

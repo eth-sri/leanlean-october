@@ -202,8 +202,8 @@ private theorem theta_smooth (b : KPSmoothActualFlowData.B F) :
   have hc (i j : Fin 2) : ContDiffAt ℝ (⊤ : ℕ∞) (fun t => (flowMatrix F b t v).val i j) 0 :=
     (flowEntry_smooth F b v i j).contDiffAt
   have hn : (flowMatrix F b 0 v).val 1 1 ≠ 0 := by rw [flowMatrix_zero]; simp
-  fin_cases i <;> simp only [theta, KPContinuation.ChamberFlatSource.ChartMatrix.chartCoordinates, Matrix.cons_val_zero,
-    Matrix.cons_val_one, Matrix.cons_val_two]
+  fin_cases i <;> simp only [theta, KPContinuation.ChamberFlatSource.ChartMatrix.chartCoordinates, 
+    ]
   · change ContDiffAt ℝ (⊤ : ℕ∞) (fun t => (flowMatrix F b t v).val 0 1 / (flowMatrix F b t v).val 1 1) 0
     simpa only [div_eq_mul_inv] using! (hc 0 1).mul ((hc 1 1).inv hn)
   · change ContDiffAt ℝ (⊤ : ℕ∞) (fun t => (flowMatrix F b t v).val.det / (flowMatrix F b t v).val 1 1 ^ 2) 0

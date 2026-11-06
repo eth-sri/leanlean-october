@@ -85,7 +85,7 @@ def freeze (A : SArithmeticData F) (G : AllowedRecipe A)
       simp
     intro hz
     have hz' := congrArg Fin.val hz
-    simp only [rowIndex, Fin.val_zero, he, Int.natCast_mod, Int.toNat_natCast] at hz'
+    simp only [rowIndex, Fin.val_zero, he] at hz'
     exact hn hz'
   · have hle : v.c.val * v.n.val ⊔ D.d.val * b.f.val ≤ v.n.val ⊔ b.f.val :=
       sup_le_sup Ideal.mul_le_right Ideal.mul_le_right
@@ -1006,8 +1006,8 @@ private theorem coefficient_split_squarefree (A : SArithmeticData F) (G : Allowe
   have hLsplit : (L (coordinateRepresentative A G U m D b v))⁻¹ =
       (L ((U.representative v.epsilon).val * G.generator v.a * G.generator v.n ^ 3 *
         G.generator b.f ^ (-2:ℤ)))⁻¹ * L (G.generator D.d)^2 * (L (G.generator v.c))⁻¹ := by
-    simp only [coordinateRepresentative, map_div, map_mul, map_pow, map_zpow, zpow_neg,
-      zpow_ofNat, mul_inv, inv_div, inv_pow, inv_inv]
+    simp only [coordinateRepresentative, map_div, map_mul, map_pow, zpow_neg,
+      zpow_ofNat, mul_inv, inv_div]
     simp only [map_inv, map_pow, inv_inv]
     ring
   unfold exactCoefficient separatedCoefficient
@@ -1020,7 +1020,7 @@ private theorem coefficient_split_squarefree (A : SArithmeticData F) (G : Allowe
   rw [hLsplit, ← hmix]
   unfold mixedPhase idealSymbol
   simp only [Finset.prod_mul_distrib, ← Finset.prod_zpow]
-  simp only [div_eq_mul_inv, mul_inv, frozenArgument, powerfulIndex, freeze]
+  simp only [div_eq_mul_inv, mul_inv, frozenArgument]
   let H := ∏ p ∈ support D.h.val \ support b.f.val, (1 - (idealNorm p.asIdeal : ℂ)⁻¹)
   let O := ∏ p : {p // p ∈ support D.d.val}, omegaScalar A σ ψ (supportPrime A D.d p)
   let R := ∏ p : {p // p ∈ support D.d.val}, symbol A σ (supportPrime A D.d p)

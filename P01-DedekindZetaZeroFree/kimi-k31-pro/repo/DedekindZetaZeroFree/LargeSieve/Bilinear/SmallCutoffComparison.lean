@@ -151,10 +151,10 @@ theorem smallCutoff_T3_difference
     · rintro ⟨ha1, ha2, ha3⟩
       rcases lt_or_eq_of_le (one_le_s ha1) with h | h
       · exact Or.inl ⟨ha1, ha2, h⟩
-      · exact Or.inr ⟨ha1, ha2, (s_eq_one_iff).mp h.symm⟩
+      · exact Or.inr ⟨ha1, ha2, s_eq_one_iff.mp h.symm⟩
     · rintro (⟨ha1, ha2, h⟩ | ⟨ha1, ha2, h⟩)
       · exact ⟨ha1, ha2, lt_trans hK1 h⟩
-      · exact ⟨ha1, ha2, by rw [(s_eq_one_iff).mpr h]; exact hK1⟩
+      · exact ⟨ha1, ha2, by rw [s_eq_one_iff.mpr h]; exact hK1⟩
   have hA : kernelRows F c M K = kernelRows F c M 1 ∪ smallCutoffSquareRows F c M := by
     unfold kernelRows smallCutoffSquareRows
     rw [← Finset.filter_or]
@@ -166,7 +166,7 @@ theorem smallCutoff_T3_difference
     rw [smallCutoffSquareRows, Finset.mem_filter] at ha2
     have h1 : 1 < s a := ha1.2.2.2
     have h2 : squarefreeKernel a = ⊤ := ha2.2.2.2
-    rw [(s_eq_one_iff).mpr h2] at h1
+    rw [s_eq_one_iff.mpr h2] at h1
     exact lt_irrefl 1 h1
   unfold T3
   rw [← Finset.sum_sub_distrib]

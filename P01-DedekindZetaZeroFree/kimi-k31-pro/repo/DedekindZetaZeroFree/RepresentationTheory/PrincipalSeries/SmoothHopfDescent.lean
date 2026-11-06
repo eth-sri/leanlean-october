@@ -29,9 +29,9 @@ private lemma chart_formula (s : ℝ) (f : PrincipalSeries s) (g : ComplexGL2)
     intro i j
     cases north <;> fin_cases i <;> fin_cases j <;>
       simp [upperTriangular_coe_matrix, weyl, upperUnipotent, lowerUnipotent,
-        Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two,
+        Matrix.mul_apply, Fin.sum_univ_two,
         a, d, Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two]
-    all_goals simp only [Bool.false_eq_true, Bool.true_eq, if_false, if_true] at h
+    all_goals simp only [Bool.false_eq_true, if_false, if_true] at h
     all_goals field_simp [h]
     all_goals ring
   conv_lhs => rw [hg, f.property.1]
@@ -41,7 +41,7 @@ private lemma chart_formula (s : ℝ) (f : PrincipalSeries s) (g : ComplexGL2)
     unfold inductionWeight complexAbs
     have he : ‖(a : ℂ) / (d : ℂ)‖ = ‖(Matrix.GeneralLinearGroup.det g : ℂ)‖ /
         ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 (if north then 0 else 1)‖ ^ 2 := by
-      cases north <;> simp [a, d, norm_div, norm_neg, div_div, sq]
+      cases north <;> simp [a, d, norm_neg, div_div, sq]
     rw [he]
     calc
       _ = Real.rpow (‖(Matrix.GeneralLinearGroup.det g : ℂ)‖ /
@@ -134,10 +134,10 @@ def hopfChartSU2OfUnitBottomRow (a b : ℂ) (h : ‖a‖ ^ 2 + ‖b‖ ^ 2 = 1) 
     · ext i j
       fin_cases i <;> fin_cases j <;>
         simp [rowMatrix, Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply,
-          Complex.star_def, Complex.mul_conj', ← Complex.ofReal_pow,
+          Complex.mul_conj', ← Complex.ofReal_pow,
           ← Complex.ofReal_add, h, h', mul_comm]
-    · simp [rowMatrix, Matrix.det_fin_two, Complex.star_def, Complex.mul_conj',
-        mul_comm, ← Complex.ofReal_pow, ← Complex.ofReal_add, h, h']⟩
+    · simp [rowMatrix, Matrix.det_fin_two, Complex.mul_conj',
+        mul_comm, ← Complex.ofReal_pow, ← Complex.ofReal_add, h']⟩
 
 private lemma sphere_equation (x : Sphere) :
     (x : Ambient) 0 ^ 2 + (x : Ambient) 1 ^ 2 + (x : Ambient) 2 ^ 2 = 1 := by
@@ -178,12 +178,12 @@ private lemma south_lift (H : ComplexSU2 → Sphere) (hH : HasHopfCoordinates H)
   intro i
   fin_cases i
   · change 2 * ((southA x) * star (southB x)).re = (x : Ambient) 0
-    simp only [Function.comp_apply, Complex.ofRealCLM_apply, southA, southB, Complex.star_def, Complex.conj_ofReal, Complex.mul_re,
+    simp only [southA, southB, Complex.star_def, Complex.conj_ofReal, Complex.mul_re,
       Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero]
     change 2 * ((x : Ambient) 0 / (2*r) * r) = _
     field_simp [ne_of_gt hr]
   · change 2 * ((southA x) * star (southB x)).im = (x : Ambient) 1
-    simp only [Function.comp_apply, Complex.ofRealCLM_apply, southA, southB, Complex.star_def, Complex.conj_ofReal, Complex.mul_im,
+    simp only [southA, southB, Complex.star_def, Complex.conj_ofReal, Complex.mul_im,
       Complex.ofReal_re, Complex.ofReal_im, mul_zero, zero_add]
     change 2 * ((x : Ambient) 1 / (2*r) * r) = _
     field_simp [ne_of_gt hr]
@@ -261,7 +261,7 @@ private lemma south_smooth (x : Ambient) (hx : x 2 < 1) :
   · convert (Complex.ofRealCLM.contDiff.contDiffAt.comp x h0).add
       ((Complex.ofRealCLM.contDiff.contDiffAt.comp x h1).mul (contDiffAt_const (c := Complex.I))) using 1
     funext y
-    apply Complex.ext <;> simp only [Function.comp_apply, Complex.ofRealCLM_apply, southA, ← Complex.ofReal_div, ← Complex.ofReal_mul, Complex.add_re, Complex.add_im, Complex.mul_I_re, Complex.mul_I_im, Complex.ofReal_re, Complex.ofReal_im, neg_zero, add_zero, zero_add]
+    apply Complex.ext <;> simp only [Function.comp_apply, Complex.ofRealCLM_apply, southA, Complex.add_re, Complex.add_im, Complex.mul_I_re, Complex.mul_I_im, Complex.ofReal_re, Complex.ofReal_im, neg_zero, add_zero, zero_add]
   · exact Complex.ofRealCLM.contDiff.contDiffAt.comp x hr
 
 private lemma north_smooth (x : Ambient) (hx : -1 < x 2) :
@@ -286,7 +286,7 @@ private lemma north_smooth (x : Ambient) (hx : -1 < x 2) :
   · convert (Complex.ofRealCLM.contDiff.contDiffAt.comp x h0).add
       ((Complex.ofRealCLM.contDiff.contDiffAt.comp x h1).mul (contDiffAt_const (c := Complex.I))) using 1
     funext y
-    apply Complex.ext <;> simp only [Function.comp_apply, Complex.ofRealCLM_apply, northB, ← Complex.ofReal_div, ← Complex.ofReal_mul, ← Complex.ofReal_neg, Complex.add_re, Complex.add_im, Complex.mul_I_re, Complex.mul_I_im, Complex.ofReal_re, Complex.ofReal_im, neg_zero, add_zero, zero_add]
+    apply Complex.ext <;> simp only [Function.comp_apply, Complex.ofRealCLM_apply, northB, Complex.add_re, Complex.add_im, Complex.mul_I_re, Complex.mul_I_im, Complex.ofReal_re, Complex.ofReal_im, neg_zero, add_zero, zero_add]
 
 private lemma local_lifts (H : ComplexSU2 → Sphere) (hH : HasHopfCoordinates H)
     (p : Sphere) :

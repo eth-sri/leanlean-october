@@ -228,7 +228,7 @@ def liftedIsotropy : Subgroup (A.Isotropy × rootsOfUnity 3 F) where
     rw [map_inv, inv_inv]
     have he := congrArg (fun y =>
       (KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ p.1.val)⁻¹ * y * u.val⁻¹) hu
-    simp only [← mul_assoc, inv_mul_cancel, one_mul, mul_inv_cancel, mul_one] at he
+    simp only [← mul_assoc, inv_mul_cancel, one_mul] at he
     rw [mul_assoc _ u.val u.val⁻¹, mul_inv_cancel, mul_one,
       ← central_comm p.2⁻¹] at he
     rw [map_inv] at he

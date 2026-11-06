@@ -99,8 +99,7 @@ private theorem sets_finite (F : Type) [Field F] [NumberField F] (N : ℝ) :
   rintro B ⟨y, hy, rfl⟩
   exact Finset.mem_powerset.mpr (Finset.filter_subset _ _)
 private theorem sets_nonempty (F : Type) [Field F] [NumberField F] (N : ℝ) (hN : 2 ≤ N) :
-    (prefixSets F N).Nonempty := by
-  exact ⟨active F N N, N, ⟨le_rfl, by linarith⟩, rfl⟩
+    (prefixSets F N).Nonempty := ⟨active F N N, N, ⟨le_rfl, by linarith⟩, rfl⟩
 private theorem values_eq (F : Type) [Field F] [NumberField F]
     (b ω : Ideal (𝓞 F) → ℂ) (N t : ℝ) :
     {v : ℝ | ∃ y ∈ Set.Icc N (2 * N), v = ‖detectorDyadicPrefix F b ω N y t‖ ^ 2} =

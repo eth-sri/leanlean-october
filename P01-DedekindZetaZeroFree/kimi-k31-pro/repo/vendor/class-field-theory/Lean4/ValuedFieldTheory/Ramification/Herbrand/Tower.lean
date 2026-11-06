@@ -160,11 +160,7 @@ def rightCosetEquivQuotientFiber (σ : G) : H ≃ QuotientFiber H (QuotientGroup
     apply Subtype.ext
     simp
 
-/-- States the theorem `card_quotientFiber`. -/
-theorem card_quotientFiber [Finite G] (σ : G) :
-    Fintype.card (QuotientFiber H (QuotientGroup.mk' H σ)) = Fintype.card H := by
-  classical
-  exact (Fintype.card_congr (rightCosetEquivQuotientFiber H σ)).symm
+
 
 /-- Reindex a sum over a quotient fibre by multiplication with elements of
 the normal subgroup. -/
@@ -229,33 +225,9 @@ theorem sum_depth_quotientFiber_eq_sum_min_of_maximal_representative
   intro τ _
   rw [D.depth_mul_eq_min_of_maximal_representative H hmax τ]
 
-/-- Combined existence form used verbatim in the group-theoretic step of
-the Herbrand quotient theorem. -/
-theorem exists_representative_depth_mul_eq_min [Finite G]
-    {q : G ⧸ H} (hq : q ≠ 1) :
-    ∃ σ : G, QuotientGroup.mk' H σ = q ∧
-      ∀ τ : H, D.depth (σ * τ) = min (D.depth (τ : G)) (D.depth σ) := by
-  obtain ⟨σ, hσq, hmax⟩ := D.exists_maximal_depth_representative H hq
-  refine ⟨σ, hσq, ?_⟩
-  intro τ
-  apply D.depth_mul_eq_min_of_maximal_representative H
-  intro γ hγ
-  exact hmax γ (hγ.trans hσq)
 
-/-- Existence form of the fibre-sum identity for a nontrivial quotient
-element. -/
-theorem exists_representative_sum_depth_eq_sum_min [Finite G]
-    {M : Type*} [AddCommMonoid M] (f : WithTop ℕ → M)
-    {q : G ⧸ H} (hq : q ≠ 1) :
-    ∃ σ : G, QuotientGroup.mk' H σ = q ∧
-      (∑ γ : QuotientFiber H q, f (D.depth (γ : G))) =
-        ∑ τ : H, f (min (D.depth (τ : G)) (D.depth σ)) := by
-  obtain ⟨σ, hσq, hmax⟩ := D.exists_maximal_depth_representative H hq
-  refine ⟨σ, hσq, ?_⟩
-  rw [← hσq]
-  apply D.sum_depth_quotientFiber_eq_sum_min_of_maximal_representative H f
-  intro γ hγ
-  exact hmax γ (hγ.trans hσq)
+
+
 
 end NonarchimedeanDepth
 end HerbrandGroupTheory

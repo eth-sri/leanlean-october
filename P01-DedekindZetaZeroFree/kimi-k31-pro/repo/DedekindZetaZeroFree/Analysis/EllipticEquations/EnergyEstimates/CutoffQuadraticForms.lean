@@ -40,7 +40,7 @@ private theorem raw_complex_quadratic_real {n : ℕ} (a : Matrix (Fin n) (Fin n)
   intro j _
   change ((a i j : ℂ) * g j * star (g i)).re = _
   simp only [Complex.mul_re, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im,
-    zero_mul, sub_zero, zero_add, Complex.star_def, Complex.conj_re, Complex.conj_im]
+    zero_mul, sub_zero, Complex.star_def, Complex.conj_re, Complex.conj_im]
   ring
 
 theorem Raw.Coefficients.complex_ellipticity {n : ℕ} {B : LocalBall n}
@@ -93,9 +93,9 @@ theorem Raw.Coefficients.matrix_entry_bound {n : ℕ} {B : LocalBall n} {cρ Cρ
         (EuclideanSpace.single i (1 : ℝ) - EuclideanSpace.single j (1 : ℝ)) b :=
       (mul_nonneg hκ (sq_nonneg _)).trans hminus
     simp only [PiLp.add_apply, PiLp.sub_apply, EuclideanSpace.single_apply,
-      mul_add, add_mul, mul_sub, sub_mul, Finset.sum_add_distrib, Finset.sum_sub_distrib,
-      mul_ite, ite_mul, mul_zero, zero_mul, mul_one, one_mul, Finset.sum_ite_eq,
-      Finset.mem_univ, if_true] at hp hm
+      mul_add, mul_sub, Finset.sum_add_distrib, Finset.sum_sub_distrib,
+      mul_ite, mul_zero, mul_one, 
+      ] at hp hm
     simp only [Finset.sum_ite_eq', Finset.mem_univ, if_true,
       Finset.sum_add_distrib, Finset.sum_sub_distrib] at hp hm
     rw [D.symmetric x hx j i] at hp hm
@@ -260,7 +260,7 @@ theorem pointwise_cutoff_coercivity {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ :
   rw [hsplit, mul_add]
   rw [← Complex.ofReal_pow]
   simp only [Complex.add_re, Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im,
-    Complex.mul_im, zero_mul, mul_zero, sub_zero, zero_add]
+    Complex.mul_im, zero_mul, sub_zero]
   nlinarith
 
 theorem pointwise_cutoff_lower_order {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : ℝ}

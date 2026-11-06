@@ -32,7 +32,7 @@ private theorem actual_ray (b : Fin (groupDimension F)) (t : ℝ) :
   unfold KPSmoothActualFlowData.flow
   congr 1
   funext c
-  simp [actualLieIndexEquiv, Pi.single_apply, eq_comm, smul_eq_mul]
+  simp [actualLieIndexEquiv, Pi.single_apply, smul_eq_mul]
 
 theorem actualRight_right_covariance
     (f : Functions R) (hf : KPLiteralRaw.Smooth F R.A.zeta12 R.A.primitive_zeta12 f)
@@ -92,7 +92,7 @@ theorem actualRight_right_covariance
     rw [map_smul, inv_inv] at hconj
     rw [← hconj, hD, hbas, ha]
     simp only [(KPSmoothActualFlowData.archimedean_insertion_properties F R.A.zeta12 R.A.primitive_zeta12).2.1,
-      map_inv]
+      ]
     have hinv : ins x⁻¹ = (ins x)⁻¹ := by
       have hh := (KPSmoothActualFlowData.archimedean_insertion_properties F R.A.zeta12 R.A.primitive_zeta12).2.1 x x⁻¹
       rw [mul_inv_cancel, (KPSmoothActualFlowData.archimedean_insertion_properties F R.A.zeta12 R.A.primitive_zeta12).1] at hh

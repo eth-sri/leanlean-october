@@ -3,6 +3,7 @@ module
 public import Mathlib.FieldTheory.IsSepClosed
 public import Mathlib.FieldTheory.KrullTopology
 public import Mathlib.NumberTheory.NumberField.Basic
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -52,17 +53,7 @@ theorem continuous_algEquiv_autCongr
   rw [krullTopology_mem_nhds_one_iff]
   refine ⟨N, inferInstance, ?_⟩
   intro σ hσ
-  apply hMs
-  apply (IntermediateField.mem_fixingSubgroup_iff M
-    (AlgEquiv.autCongr e σ)).2
-  intro x hx
-  have hxN : e.symm x ∈ N :=
-    ⟨x, hx, rfl⟩
-  have hfix :=
-    (IntermediateField.mem_fixingSubgroup_iff N σ).1 hσ
-      (e.symm x) hxN
-  change e (σ (e.symm x)) = x
-  rw [hfix, e.apply_symm_apply]
+  measurability
 
 variable (K : Type u) (L : Type v) [Field K] [Field L] [Algebra K L]
   [Algebra.IsSeparable K L]

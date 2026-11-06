@@ -161,7 +161,7 @@ theorem tendsto_F_damped_M_F (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0)
     have hle : Real.exp (-ε * ‖x‖ ^ 2) ≤ 1 := by
       rw [Real.exp_le_one_iff, neg_mul]
       exact neg_nonpos.mpr (mul_nonneg hε.le (sq_nonneg ‖x‖))
-    simp only [norm_mul, norm_exp_damped, norm_psi, mul_one, one_mul]
+    simp only [norm_mul, norm_exp_damped, norm_psi, mul_one]
     exact mul_le_of_le_one_left (norm_nonneg _) hle
   · filter_upwards with x
     have hc0 : Tendsto (fun ε : ℝ => -(ε:ℂ) * (‖x‖:ℂ)^2)

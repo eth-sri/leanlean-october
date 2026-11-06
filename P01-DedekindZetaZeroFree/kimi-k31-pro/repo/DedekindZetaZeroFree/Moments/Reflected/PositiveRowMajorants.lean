@@ -31,9 +31,9 @@ private theorem exterior_norm_summable (cS : Ideal (𝓞 F)) (t : ℝ) (ht : 1 <
   have he : Function.Injective e := by
     intro I J h
     apply Subtype.ext
-    exact congrArg (fun I : NonzeroIdeal F => I.val) h
+    grind
   have H := (ideal_norm_rpow_summable F t ht).comp_injective he
-  exact H
+  aesop
 
 private theorem real_weight_factor (a c n b σ : ℝ)
     (ha : 0 < a) (hc : 0 < c) (hn : 0 < n) :
@@ -47,8 +47,7 @@ private theorem real_weight_factor (a c n b σ : ℝ)
     Real.mul_rpow ha.le hc.le, ← Real.rpow_natCast_mul hn.le,
     ec, en, Real.rpow_sub hc, Real.rpow_sub hn,
     Real.rpow_one, ← Real.sqrt_eq_rpow]
-  norm_num
-  ring
+  grind
 
 private theorem positiveRowWeight_factor {cS : Ideal (𝓞 F)}
     (f : ExteriorSquarefreeIdeal cS) (σ : ℝ) (x : PositiveRowIndex f) :
@@ -85,8 +84,7 @@ theorem positiveRowWeight_summable_le {cS : Ideal (𝓞 F)}
   have hW : Summable (positiveRowWeight f σ) :=
     hprod.congr (fun x => (positiveRowWeight_factor f σ x).symm)
   refine ⟨hW, ?_⟩
-  have hcol : (∑' c : ExteriorSquarefreeIdeal cS, C c.val) ≤ exteriorNormZeta cS (σ + 1 / 2) := by
-    exact Summable.tsum_subtype_le C {c | Squarefree c.val}
+  have hcol : (∑' c : ExteriorSquarefreeIdeal cS, C c.val) ≤ exteriorNormZeta cS (σ + 1 / 2) := Summable.tsum_subtype_le C {c | Squarefree c.val}
       (fun c => Real.rpow_nonneg (le_trans zero_le_one (idealNorm_ge_one _ c.property.1)) _)
       hC
   have heuler : 0 ≤ eulerIdeal f σ := by

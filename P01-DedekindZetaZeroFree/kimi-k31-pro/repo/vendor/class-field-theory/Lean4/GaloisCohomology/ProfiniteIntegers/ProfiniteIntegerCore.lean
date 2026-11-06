@@ -116,10 +116,7 @@ instance : TotallyDisconnectedSpace (Multiplicative ZHat) := by
   change TotallyDisconnectedSpace ZHat
   infer_instance
 
-/-- The multiplicative presentation of `ZHat` as Mathlib's bundled profinite
-group.  Its multiplication is addition in `ZHat`. -/
-def zHatMulProfiniteGrp : ProfiniteGrp :=
-  ProfiniteGrp.of (Multiplicative ZHat)
+
 
 /-- The canonical continuous reduction `ℤ̂ → ℤ/nℤ`. -/
 def zHatReduction (n : ℕ) (hn : 0 < n) :

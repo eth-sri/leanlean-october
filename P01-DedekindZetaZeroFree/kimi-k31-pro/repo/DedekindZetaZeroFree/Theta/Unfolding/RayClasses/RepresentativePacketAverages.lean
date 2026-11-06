@@ -107,7 +107,7 @@ theorem rayTheta_fδ_eq_affineResidueAverage
       ((J * rayIdealFractionalIdeal F m hm) : FractionalIdeal (𝓞 F)⁰ F) := by
     change ((D.coset c).b : F) - (γ : F) * x.val ∈ _
     rw [← hγy, ← map_sub]
-    simp only [Units.val_mul, rayIdealFractionalIdeal_coe, ← FractionalIdeal.coeIdeal_mul,
+    simp only [rayIdealFractionalIdeal_coe, ← FractionalIdeal.coeIdeal_mul,
       FractionalIdeal.mem_coeIdeal, J]
     refine ⟨(D.coset c).b - y, ?_, rfl⟩
     convert ((D.coset c).a * m).neg_mem hyb using 1 <;> ring
@@ -160,7 +160,7 @@ theorem rayTheta_gδDual_eq_affineResidueDualAverage
       ((J * rayIdealFractionalIdeal F m hm) : FractionalIdeal (𝓞 F)⁰ F) := by
     change ((D.coset c).b : F) - (γ : F) * x.val ∈ _
     rw [← hγy, ← map_sub]
-    simp only [Units.val_mul, rayIdealFractionalIdeal_coe, ← FractionalIdeal.coeIdeal_mul,
+    simp only [rayIdealFractionalIdeal_coe, ← FractionalIdeal.coeIdeal_mul,
       FractionalIdeal.mem_coeIdeal, J]
     refine ⟨(D.coset c).b - y, ?_, rfl⟩
     convert ((D.coset c).a * m).neg_mem hyb using 1 <;> ring

@@ -37,7 +37,7 @@ private theorem cutoff_set (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompleti
     congr 1
     simp
   have hn : ‖(a : v.adicCompletion F)^(-(n:ℤ))‖ = (Ideal.absNorm v.asIdeal : ℝ)^n := by
-    simp [norm_zpow, han]
+    simp [han]
   rw [SetLike.mem_coe, mem_finiteCompletionBall, neg_neg, ← hv,
     ← Valued.toNormedField.norm_le_iff, hn]
   rfl

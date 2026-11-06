@@ -70,11 +70,9 @@ private lemma shell_term_le (q : α → ℝ) (p K X : ℝ) (hp : 1 < p) (hX : 1 
     · by_cases h2 : X < q a
       · exfalso; apply ha
         rw [hs, Set.Finite.mem_toFinset]
-        have := (hn a h2).2
-        rw [h1] at this
-        exact le_of_lt this
-      · simp [h2]
-    · simp [h1]
+        grind
+      · simp_all
+    · simp_all
   rw [tsum_eq_sum hsupp]
   have hterm : ∀ a ∈ s, (if n a = k then (if X < q a then ENNReal.ofReal (q a ^ (-p)) else 0) else 0)
       ≤ ENNReal.ofReal (((2:ℝ)^k * X) ^ (-p)) := by
@@ -87,7 +85,7 @@ private lemma shell_term_le (q : α → ℝ) (p K X : ℝ) (hp : 1 < p) (hX : 1 
         rw [h1] at this
         apply Real.rpow_le_rpow_of_nonpos (by positivity) this (by linarith)
       · simp [h2]
-    · simp [h1]
+    · simp_all
   refine (Finset.sum_le_sum hterm).trans ?_
   rw [Finset.sum_const, nsmul_eq_mul]
   have hcard : (s.card : ℝ) ≤ max K 1 * Y := by
@@ -102,7 +100,7 @@ private lemma shell_term_le (q : α → ℝ) (p K X : ℝ) (hp : 1 < p) (hX : 1 
     have h2k : ((2:ℝ)^k) ^ (-p) * ((2:ℝ)^(k:ℕ)) = ((2:ℝ) ^ (1 - p)) ^ k := by
       rw [← Real.rpow_natCast (2:ℝ) k, ← Real.rpow_natCast ((2:ℝ)^(1-p)) k,
         ← Real.rpow_mul (by norm_num), ← Real.rpow_mul (by norm_num), ← Real.rpow_add (by norm_num)]
-      congr 1; ring
+      grind
     have hX' : X * X ^ (-p) = X ^ (1 - p) := by
       rw [sub_eq_add_neg, Real.rpow_add hX0, Real.rpow_one]
     rw [Real.mul_rpow (by positivity) hX0.le, hY, ← h2k, ← hX']
@@ -156,8 +154,7 @@ theorem tail_tsum_enn_le (q : α → ℝ) (p K : ℝ) (hp : 1 < p)
     _ = _ := by
         congr 1
         rw [tsum_mul_left, tsum_geometric_of_lt_one hr0.le hr1, hc]
-        have : 1 - r ≠ 0 := by linarith
-        field_simp
+        grind
 
 theorem tail_dominated (q : α → ℝ) (p K : ℝ) (hp : 1 < p)
     (hfin : ∀ Y : ℝ, {a | q a ≤ Y}.Finite)
@@ -182,7 +179,7 @@ theorem tail_dominated (q : α → ℝ) (p K : ℝ) (hp : 1 < p)
           by_cases ha : a ∈ S
           · rw [Set.indicator_of_mem ha, if_pos (hS a ha), ← ENNReal.ofReal_mul hB]
             exact ENNReal.ofReal_le_ofReal (hw a ha).2
-          · rw [Set.indicator_of_notMem ha]; exact bot_le
+          · simp_all
       _ = ENNReal.ofReal B * ∑' a, (if X < q a then ENNReal.ofReal (q a ^ (-p)) else 0) :=
           ENNReal.tsum_mul_left
       _ ≤ ENNReal.ofReal B * ENNReal.ofReal (C * X ^ (1 - p)) := by gcongr
@@ -191,14 +188,13 @@ theorem tail_dominated (q : α → ℝ) (p K : ℝ) (hp : 1 < p)
     ne_top_of_le_ne_top ENNReal.ofReal_ne_top hbound
   have hsm : Summable (fun a : S => w a) := by
     have := ENNReal.summable_toReal hne
-    refine this.congr (fun a => ?_)
-    exact ENNReal.toReal_ofReal (hw a a.2).1
+    simp_all
   refine ⟨hsm, ?_⟩
   have h2 : ENNReal.ofReal (∑' a : S, w a) = ∑' a : S, ENNReal.ofReal (w a) :=
     ENNReal.ofReal_tsum_of_nonneg (fun a => (hw a a.2).1) hsm
   rw [← h2] at hbound
   have := (ENNReal.ofReal_le_ofReal_iff (by positivity)).1 hbound
-  linarith [this]
+  grind
 
 end FrequencyPowerTails
 end DedekindZetaZeroFree.Quantitative

@@ -148,20 +148,7 @@ theorem principalIdele_mem_primeTo_iff_isRayCongruent
   exact ⟨fun h => ⟨hfinite.mp h.2, hinfinite.mp h.1⟩,
     fun h => ⟨hinfinite.mpr h.2, hfinite.mpr h.1⟩⟩
 
-/-- At narrow modulus zero, the older idele-theoretic prime-to condition on
-a principal idele agrees with the public generator congruence. -/
-theorem principalIdele_mem_narrowPrimeTo_iff_isRayCongruent
-    (K : Type u) [Field K] [NumberField K] (x : Kˣ) :
-    IdeleGroup.principalIdele K x ∈
-        RayClass.idelePrimeToModulusSubgroup
-          (RayClass.Modulus.narrowOfFinite (0 : RayClass.FiniteModulus K)) ↔
-      IsRayCongruent (narrowRayClassModulus K) x := by
-  change IdeleGroup.principalIdele K x ∈
-      RayClass.idelePrimeToModulusSubgroup
-        (rayClassModulusToOriginal K (narrowRayClassModulus K)) ↔
-      IsRayCongruent (narrowRayClassModulus K) x
-  exact principalIdele_mem_primeTo_iff_isRayCongruent K
-    (narrowRayClassModulus K) x
+
 
 /-- The public ray-principal subgroup equals the existing ideal-theoretic
 ray-principal subgroup for every finite and infinite modulus. -/
@@ -219,17 +206,7 @@ theorem rayPrincipalIdealSubgroup_eq
   · intro hI
     exact ⟨I, hI, rfl⟩
 
-/-- The zero-finite-part narrow case of the general principal-ideal
-comparison. -/
-theorem narrowRayPrincipalIdealSubgroup_eq
-    (K : Type u) [Field K] [NumberField K] :
-    rayPrincipalIdealSubgroupInPrimeTo (narrowRayClassModulus K) =
-      RayClass.principalRayIdealSubgroup
-        (RayClass.Modulus.narrowOfFinite (0 : RayClass.FiniteModulus K)) := by
-  change rayPrincipalIdealSubgroupInPrimeTo (narrowRayClassModulus K) =
-    RayClass.principalRayIdealSubgroup
-      (rayClassModulusToOriginal K (narrowRayClassModulus K))
-  exact rayPrincipalIdealSubgroup_eq K (narrowRayClassModulus K)
+
 
 /-- The public ideal-theoretic ray class group is the existing ideal ray
 class group for the same modulus. -/
@@ -339,29 +316,9 @@ theorem rayClassGroupEquivOriginalIdele_prime
       exact (GlobalClassFieldTheory.GlobalClassFields.rayClassGroupEquivIdealRayClassGroup_mk_primeTo
         m' a).symm
 
-/-- The public ideal-theoretic narrow ray class group agrees with the
-existing narrow class group used by global class field theory. -/
-noncomputable def narrowRayClassGroupEquivNarrowClassGroup
-    (K : Type) [Field K] [NumberField K] :
-    RayClassGroup (narrowRayClassModulus K) ≃*
-      RayClass.NarrowClassGroup K := by
-  let m : RayClass.Modulus K := RayClass.Modulus.narrowOfFinite 0
-  let e₀ : RayClassGroup (narrowRayClassModulus K) ≃*
-      RayClass.IdealRayClassGroup m := by
-    exact rayClassGroupEquivOriginal K (narrowRayClassModulus K)
-  exact e₀.trans
-    ((RayClass.rayClassGroupEquivIdealRayClassGroup m).symm.trans
-      (RayClass.rayClassGroupNarrowZeroEquivNarrowClassGroup (K := K)))
 
-/-- The norm subgroup of the selected ray class field is the ray
-congruence subgroup. -/
-theorem rayClassField_normSubgroup
-    (K : Type) [Field K] [NumberField K]
-    (m : RayClass.Modulus K) :
-    (_root_.ideleClassNorm K
-      (GlobalClassFieldTheory.GlobalClassFields.rayClassField K m)).range =
-      RayClass.Modulus.congruenceSubgroup m :=
-  GlobalClassFieldTheory.GlobalClassFields.rayClassField_ideleClassNorm_range_over_original m
+
+
 
 /-- Any finite abelian extension whose norm group contains the ray
 congruence subgroup is unramified outside that modulus. -/
@@ -419,19 +376,7 @@ theorem unramifiedOutsideModulus_of_definingModulus
       exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, hram⟩
     exact hnot (hinfinite hvcond)
 
-/-- The selected ray class field is unramified away from the finite and real
-places selected by the public modulus. -/
-theorem rayClassField_unramifiedOutsideModulus
-    (K : Type) [Field K] [NumberField K]
-    (m : RayClassModulus K) :
-    IsUnramifiedOutsideModulus K
-      (GlobalClassFieldTheory.GlobalClassFields.rayClassField K
-        (rayClassModulusToOriginal K m)) m := by
-  let m' := rayClassModulusToOriginal K m
-  let E := GlobalClassFieldTheory.GlobalClassFields.rayClassField K m'
-  have hnorm : (_root_.ideleClassNorm K E).range = m'.congruenceSubgroup :=
-    GlobalClassFieldTheory.GlobalClassFields.rayClassField_ideleClassNorm_range_over_original m'
-  exact unramifiedOutsideModulus_of_definingModulus K E m (le_of_eq hnorm.symm)
+
 
 /-- Ray class reciprocity identifies the Galois group of the selected ray
 class field with the corresponding ray class group. -/
@@ -444,15 +389,7 @@ theorem rayClassField_reciprocity
         RayClass.RayClassGroup m) :=
   ⟨GlobalClassFieldTheory.GlobalClassFields.rayClassFieldGaloisEquivRayClassGroup m⟩
 
-/-- The selected ray class field has degree equal to the order of its ray
-class group. -/
-theorem rayClassField_degree
-    (K : Type) [Field K] [NumberField K]
-    (m : RayClass.Modulus K) :
-    Module.finrank K
-        (GlobalClassFieldTheory.GlobalClassFields.rayClassField K m) =
-      Nat.card (RayClass.RayClassGroup m) :=
-  GlobalClassFieldTheory.GlobalClassFields.rayClassField_finrank_eq_rayClassGroup_card m
+
 
 /-- The full conductor is the least modulus whose ray class field contains
 the given finite abelian extension. -/

@@ -100,7 +100,7 @@ private theorem sum_derivative {T : Type*} (ts : List T) (f : T → E → ℂ)
         rw [hdecomp]
         simp only [Finset.smul_sum, smul_smul]
         simp only [expand, List.map_cons, List.sum_cons, List.map_map,
-          Function.comp_def, Finset.sum_toList, directionalWord, basisFields, coeff]
+          Function.comp_def, directionalWord, basisFields, coeff]
         rw [Finset.sum_map_toList]
         exact add_comm _ _
       rw [show ((ts.map (fun t => fderiv ℝ

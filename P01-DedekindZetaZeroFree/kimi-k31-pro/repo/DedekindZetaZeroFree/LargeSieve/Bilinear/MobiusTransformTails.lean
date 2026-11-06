@@ -323,10 +323,7 @@ private lemma power_identity (X K a : ℝ) (hX : 0 < X) (hK : 0 < K) :
 private lemma prefactor_identity (E U V M : ℝ) (hE : 0 < E) (hU : 0 < U)
     (hV : 0 < V) (hM : 0 < M) :
     (M / (E * Real.sqrt (U*V))) * (E*U*V/M) = Real.sqrt (U*V) := by
-  have hs : 0 < Real.sqrt (U*V) := Real.sqrt_pos.2 (mul_pos hU hV)
-  have hsq := Real.sq_sqrt (mul_pos hU hV).le
-  field_simp
-  nlinarith
+  grind
 private lemma absnorm_one {F : Type} [Field F] [NumberField F] (I : Ideal (𝓞 F))
     (hI : I ≠ ⊥) : 1 ≤ (Ideal.absNorm I : ℝ) := by
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)

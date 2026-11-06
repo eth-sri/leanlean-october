@@ -76,17 +76,7 @@ noncomputable def equalCharacteristicLubinTateScalarEndomorphismRingEquiv
       (equalCharacteristicLubinTateTruncatedRing F n))).trans
     (equalCharacteristicLubinTateFreeRankOneEquiv F n).conjRingEquiv
 
-/-- The orientation printed in the endomorphism-ring equivalence:
-`End_{κ⟦T⟧}(F[n+1]) ≃ κ⟦T⟧/(T^(n+1))`. -/
-noncomputable def equalCharacteristicLubinTateEndomorphismRingEquiv
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) :
-    Module.End (equalCharacteristicLubinTateTruncatedRing F n)
-        (equalCharacteristicLubinTateAmbientTorsionAddSubgroup F
-          (equalCharacteristicSeparableUniformizer F) (n + 1)) ≃+*
-      equalCharacteristicLubinTateTruncatedRing F n :=
-  (equalCharacteristicLubinTateScalarEndomorphismRingEquiv F n).symm
+
 
 /-- The scalar-endomorphism equivalence sends a truncated scalar to its action map. -/
 @[simp]
@@ -100,22 +90,7 @@ theorem equalCharacteristicLubinTateScalarEndomorphismRingEquiv_apply
   exact scalarConjRingEquiv_apply
     (equalCharacteristicLubinTateFreeRankOneEquiv F n) a x
 
-/-- On a power-series representative, the scalar endomorphism is the
-genuine finite Lubin--Tate bracket. -/
-theorem equalCharacteristicLubinTateScalarEndomorphismRingEquiv_mk_apply
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) (a : F.residueField⟦X⟧)
-    (x : equalCharacteristicLubinTateAmbientTorsionAddSubgroup F
-      (equalCharacteristicSeparableUniformizer F) (n + 1)) :
-    (equalCharacteristicLubinTateScalarEndomorphismRingEquiv F n
-        (equalCharacteristicLubinTateTruncatedRingMk F n a)
-        x).1 =
-      equalCharacteristicLubinTateAmbientBracket F
-        (equalCharacteristicSeparableCoefficientHom F)
-        (equalCharacteristicSeparableUniformizer F) (n + 1) a x.1 := by
-  rw [equalCharacteristicLubinTateScalarEndomorphismRingEquiv_apply]
-  rfl
+
 
 /-- Units of `κ⟦T⟧/(T^(n+1))` are precisely the linear automorphisms of the
 division-level `n + 1` division module. -/
@@ -279,60 +254,11 @@ theorem equalCharacteristicLubinTateUnitQuotientEquivTruncatedUnits_mk
       equalCharacteristicLubinTateUnitReduction F n u :=
   rfl
 
-/-- The canonical the endomorphism-ring equivalence map from the higher-unit quotient to linear
-automorphisms, induced by `a ↦ [a]_F`. -/
-noncomputable def equalCharacteristicLubinTateUnitQuotientAutomorphismEquiv
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) :
-    F.residueField⟦X⟧ˣ ⧸
-        equalCharacteristicLubinTateHigherUnitSubgroup F n ≃*
-      (equalCharacteristicLubinTateAmbientTorsionAddSubgroup F
-          (equalCharacteristicSeparableUniformizer F) (n + 1) ≃ₗ[
-        equalCharacteristicLubinTateTruncatedRing F n]
-        equalCharacteristicLubinTateAmbientTorsionAddSubgroup F
-          (equalCharacteristicSeparableUniformizer F) (n + 1)) :=
-  (equalCharacteristicLubinTateUnitQuotientEquivTruncatedUnits F n).trans
-    (equalCharacteristicLubinTateTruncatedUnitsAutomorphismEquiv F n)
 
-/-- The orientation printed in the endomorphism-ring equivalence:
-`Aut_{κ⟦T⟧}(F[n+1]) ≃ U_K/U_K^(n+1)`. -/
-noncomputable def equalCharacteristicLubinTateAutomorphismEquivUnitQuotient
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) :
-    (equalCharacteristicLubinTateAmbientTorsionAddSubgroup F
-          (equalCharacteristicSeparableUniformizer F) (n + 1) ≃ₗ[
-        equalCharacteristicLubinTateTruncatedRing F n]
-        equalCharacteristicLubinTateAmbientTorsionAddSubgroup F
-          (equalCharacteristicSeparableUniformizer F) (n + 1)) ≃*
-      F.residueField⟦X⟧ˣ ⧸
-        equalCharacteristicLubinTateHigherUnitSubgroup F n :=
-  (equalCharacteristicLubinTateUnitQuotientAutomorphismEquiv F n).symm
 
-/-- A representative unit acts through the actual Lubin--Tate bracket, so
-the preceding automorphism isomorphism is the canonical one. -/
-theorem equalCharacteristicLubinTateUnitQuotientAutomorphismEquiv_mk_apply
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) (u : F.residueField⟦X⟧ˣ)
-    (x : equalCharacteristicLubinTateAmbientTorsionAddSubgroup F
-      (equalCharacteristicSeparableUniformizer F) (n + 1)) :
-    (equalCharacteristicLubinTateUnitQuotientAutomorphismEquiv F n
-        (QuotientGroup.mk u) x).1 =
-      equalCharacteristicLubinTateAmbientBracket F
-        (equalCharacteristicSeparableCoefficientHom F)
-        (equalCharacteristicSeparableUniformizer F) (n + 1)
-        (u : F.residueField⟦X⟧) x.1 := by
-  rw [equalCharacteristicLubinTateUnitQuotientAutomorphismEquiv,
-    MulEquiv.trans_apply,
-    equalCharacteristicLubinTateUnitQuotientEquivTruncatedUnits_mk,
-    equalCharacteristicLubinTateTruncatedUnitsAutomorphismEquiv_apply]
-  rw [equalCharacteristicLubinTateUnitReduction_val]
-  have h := equalCharacteristicLubinTateScalarEndomorphismRingEquiv_mk_apply
-    F n (u : F.residueField⟦X⟧) x
-  rw [equalCharacteristicLubinTateScalarEndomorphismRingEquiv_apply] at h
-  exact h
+
+
+
 
 end EqualCharacteristic
 end LubinTate

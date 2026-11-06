@@ -27,7 +27,7 @@ theorem exists_pow_eq_one {m : Ideal (𝓞 F)} (η : RayClassCharacter F m)
     have hc := congrArg (fun u : ℂˣ => (u : ℂ)) h1
     simpa using hc
   rw [← RayBridge.descendedCharacter_apply_idealClass m hm η I hI hcop]
-  exact h2
+  grind
 
 theorem norm_eq_one {m : Ideal (𝓞 F)} (η : RayClassCharacter F m)
     {I : Ideal (𝓞 F)} (hI : I ≠ ⊥) (hcop : I ⊔ m = ⊤) : ‖η I‖ = 1 := by

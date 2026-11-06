@@ -91,13 +91,7 @@ noncomputable def narrowFiniteConductorBoundingModulus
     RayClass.FiniteModulus K :=
   H.chosenDefiningModulus.finitePart
 
-/-- The finite bounding modulus comes from an actual defining full modulus. -/
-theorem narrowFiniteConductorBoundingModulus_spec
-    (H : ConductorialSubgroup K) :
-    ∃ m : RayClass.Modulus K,
-      IsDefiningModulus H.1 m ∧
-        m.finitePart = H.narrowFiniteConductorBoundingModulus :=
-  ⟨H.chosenDefiningModulus, H.chosenDefiningModulus_spec, rfl⟩
+
 
 /-- The least narrow finite conductor exponent at `v` among all defining
 moduli. -/
@@ -173,21 +167,7 @@ theorem narrowFiniteConductor_le
   intro v
   exact H.narrowFiniteConductorExponent_le hm v
 
-/-- Universal gcd characterization of the narrow finite conductor. -/
-theorem le_narrowFiniteConductor_iff
-    (H : ConductorialSubgroup K)
-    (d : RayClass.FiniteModulus K) :
-    d ≤ H.narrowFiniteConductor ↔
-      ∀ m, IsDefiningModulus H.1 m → d ≤ m.finitePart := by
-  constructor
-  · intro hd m hm
-    exact hd.trans (H.narrowFiniteConductor_le hm)
-  · intro hd v
-    obtain ⟨m, hm, hmv⟩ :=
-      H.narrowFiniteConductorExponent_spec v
-    change d v ≤ H.narrowFiniteConductorExponent v
-    rw [← hmv]
-    exact hd m hm v
+
 
 /-- A conductorial subgroup is open because it contains a ray congruence
 subgroup. -/
@@ -210,18 +190,7 @@ instance finiteIndex
   obtain ⟨m, hm⟩ := H.2
   exact Subgroup.finiteIndex_of_le hm
 
-/-- The narrow finite conductor is the gcd of the finite parts of the
-defining full moduli. -/
-theorem narrowFiniteConductor_is_gcd
-    (H : ConductorialSubgroup K) :
-    (∀ m, IsDefiningModulus H.1 m → H.narrowFiniteConductor ≤ m.finitePart) ∧
-      (∀ d, (∀ m, IsDefiningModulus H.1 m → d ≤ m.finitePart) →
-        d ≤ H.narrowFiniteConductor) := by
-  constructor
-  · intro m hm
-    exact H.narrowFiniteConductor_le hm
-  · intro d hd
-    exact (H.le_narrowFiniteConductor_iff d).2 hd
+
 
 end ConductorialSubgroup
 

@@ -216,16 +216,7 @@ theorem herbrandFunction_transportEquiv
   intro n
   exact card_lower_transportEquiv F e n
 
-/-- The inverse Herbrand function is invariant under transport across a
-group equivalence. -/
-theorem inverseHerbrandFunction_transportEquiv
-    [Finite G] [Finite G']
-    (F : AntitoneNormalSubgroupFiltration G) (e : G ≃* G') (t : ℝ) :
-    (RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.inverseHerbrandFunction (transportEquiv F e)) t = (RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.inverseHerbrandFunction F) t := by
-  apply (RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.herbrandFunction_strictMono (transportEquiv F e)).injective
-  rw [RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.herbrandFunction_inverseHerbrandFunction (transportEquiv F e)]
-  rw [(RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.herbrandFunction_transportEquiv F)]
-  rw [(RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.herbrandFunction_inverseHerbrandFunction F)]
+
 
 /-- The quotient-image filtration, transported to any isomorphic model of
 the quotient group. -/
@@ -303,25 +294,9 @@ theorem card_subgroupFiltration_mul_card_quotientImageTransport
   rw [card_lower_transportEquiv (quotientImageFiltration F H) e n]
   exact card_subgroupFiltration_mul_card_quotientImageFiltration F H n
 
-/-- States the theorem `quotientImageTransport_herbrandFunction`. -/
-theorem quotientImageTransport_herbrandFunction
-    [Finite G] [Finite G']
-    (F : AntitoneNormalSubgroupFiltration G) (H : Subgroup G) [H.Normal]
-    (e : (G ⧸ H) ≃* G') (s : ℝ) :
-    (RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.herbrandFunction (quotientImageTransport F H e)) s =
-      (RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.herbrandFunction (quotientImageFiltration F H)) s :=
-  by
-    exact herbrandFunction_transportEquiv (quotientImageFiltration F H) e s
 
-/-- States the theorem `quotientImageTransport_inverseHerbrandFunction`. -/
-theorem quotientImageTransport_inverseHerbrandFunction
-    [Finite G] [Finite G']
-    (F : AntitoneNormalSubgroupFiltration G) (H : Subgroup G) [H.Normal]
-    (e : (G ⧸ H) ≃* G') (t : ℝ) :
-    (RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.inverseHerbrandFunction (quotientImageTransport F H e)) t =
-      (RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.inverseHerbrandFunction (quotientImageFiltration F H)) t :=
-  by
-    exact inverseHerbrandFunction_transportEquiv (quotientImageFiltration F H) e t
+
+
 
 end AntitoneNormalSubgroupFiltration
 end RamificationTheory.DiscreteValuationField

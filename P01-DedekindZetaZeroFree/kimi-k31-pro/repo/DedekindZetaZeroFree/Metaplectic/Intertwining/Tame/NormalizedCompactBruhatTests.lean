@@ -36,7 +36,7 @@ theorem eventual_base_minus_test_exists
       F ζ hζ q S P hP .minus π m K hK hweyl hdescent
   have heta : KPTameJacquetBruhatTests.Raw.eta F ζ hζ q π (0 : Fin 3) =
       diagonalLift F ζ hζ q π (0, 0) := by
-    simp [KPTameJacquetBruhatTests.Raw.eta, eta, diagonalLift,
+    simp [KPTameJacquetBruhatTests.Raw.eta, diagonalLift,
       KPPGLLocalCover.A, KPStandardLocalRootLifts.A]
   have h1 : (1 : ActualCover F ζ hζ q) ∈ splitCongruenceSet F ζ hζ q m := by
     refine ⟨1, ?_⟩

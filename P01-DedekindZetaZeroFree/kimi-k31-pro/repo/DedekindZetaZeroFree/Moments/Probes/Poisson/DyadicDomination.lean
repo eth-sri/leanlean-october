@@ -54,7 +54,7 @@ theorem norm_J_finset_le (C : Finset D.Row) (Z : ℝ) (hZ : 0 < Z) :
   refine (norm_sum_le _ _).trans (Finset.sum_le_sum fun u _ => ?_)
   rw [J_singleton_eq D u Z hZ, norm_mul, hn]
   exact mul_le_mul_of_nonneg_left (norm_integral_le_integral_norm _)
-    (by have := Real.pi_pos; positivity)
+    (by grind)
 
 theorem norm_J_set_le (C : Set D.Row) (hC : C.Finite) (Z : ℝ) (hZ : 0 < Z) :
     ‖J D C 4 4 2 Z‖ ≤
@@ -146,10 +146,10 @@ theorem norm_weight_scale (Z : ℝ) (hZ : 0 < Z) (ξ w z : ℂ) (hξ : ξ.re = 4
   rw [tripleMellinWeight_eq D Z hZ, tripleMellinWeight_eq D 2 h2]
   simp only [norm_mul]
   rw [Complex.norm_cpow_eq_rpow_re_of_pos hZ, Complex.norm_cpow_eq_rpow_re_of_pos h2]
-  have hre : ((((Scales.xExponent / 2 : ℝ)) : ℂ) + ξ - 1 + (Scales.smoothingExponent : ℂ) * z +
+  have hre : (((Scales.xExponent / 2 : ℝ) : ℂ) + ξ - 1 + (Scales.smoothingExponent : ℂ) * z +
       (Scales.yExponent : ℂ) * (w - 1)).re = weightExp := by
     simp only [Complex.add_re, Complex.sub_re, Complex.mul_re, Complex.ofReal_re,
-      Complex.ofReal_im, Complex.one_re, Complex.one_im, hξ, hw, hz, weightExp]
+      Complex.ofReal_im, Complex.one_re, hξ, hw, hz, weightExp]
     ring
   rw [hre, Real.div_rpow hZ.le h2.le]
   have : (2 : ℝ) ^ weightExp ≠ 0 := (Real.rpow_pos_of_pos h2 _).ne'
@@ -188,16 +188,16 @@ theorem rowNormTotal_scale (Z : ℝ) (hZ : 0 < Z) :
 theorem rowNormTotal_bdd_on_compact (Z₀ : ℝ) :
     ∃ C : ℝ, ∀ Z ∈ Set.Icc (2 : ℝ) Z₀, rowNormTotal D Z ≤ C := by
   refine ⟨(Z₀ / 2) ^ weightExp * rowNormTotal D 2, fun Z hZ => ?_⟩
-  rw [rowNormTotal_scale D Z (by linarith [hZ.1])]
+  rw [rowNormTotal_scale D Z (by grind)]
   refine mul_le_mul_of_nonneg_right ?_ ?_
-  · exact Real.rpow_le_rpow (by linarith [hZ.1]) (by linarith [hZ.2]) weightExp_nonneg
+  · exact Real.rpow_le_rpow (by grind) (by grind) weightExp_nonneg
   · exact tsum_nonneg fun u => integral_nonneg fun t => norm_nonneg _
 
 theorem Jnp_norm_tsum_bdd_on_compact (Z₀ : ℝ) :
     ∃ C : ℝ, ∀ Z ∈ Set.Icc (2 : ℝ) Z₀, ∑' k : ℕ, ‖Jnp D k Z‖ ≤ C := by
   obtain ⟨C, hC⟩ := rowNormTotal_bdd_on_compact D Z₀
   refine ⟨((2 * Real.pi) ^ 3)⁻¹ * C, fun Z hZ => ?_⟩
-  refine (Jnp_norm_tsum_le D Z (by linarith [hZ.1])).trans ?_
+  refine (Jnp_norm_tsum_le D Z (by grind)).trans ?_
   exact mul_le_mul_of_nonneg_left (hC Z hZ) (by have := Real.pi_pos; positivity)
 
 end

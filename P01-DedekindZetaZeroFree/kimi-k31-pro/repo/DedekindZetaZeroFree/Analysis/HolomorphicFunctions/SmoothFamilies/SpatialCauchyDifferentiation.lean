@@ -20,9 +20,9 @@ private lemma assemble_deriv {n : ℕ} (u : Space n → ℂ) (x : Space n) :
   intro y
   have he : y = ∑ i : Fin n, y i • EuclideanSpace.single i (1 : ℝ) := by
     ext j
-    simp [EuclideanSpace.single_apply, Pi.single_apply]
+    simp [Pi.single_apply]
   rw [he]
-  simp [assemble, coordinateDerivativeList, map_sum, EuclideanSpace.single_apply]
+  simp [assemble, coordinateDerivativeList, map_sum]
 
 private lemma list_index {n : ℕ} (l : List (Fin n)) :
     ∃ m, ∃ α : MultiIndex n m, l.Perm α.directions := by
@@ -35,7 +35,7 @@ private lemma list_index {n : ℕ} (l : List (Fin n)) :
   intro i
   rw [MultiIndex.directions, List.count_flatMap,
     ← List.sum_toFinset _ (List.nodup_finRange n)]
-  simp [α, Function.comp_def, List.count_replicate]
+  simp [α, List.count_replicate]
 
 private lemma list_sub {n : ℕ} (B : LocalBall n) (u v : Space n → ℂ)
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) u B.carrier)
@@ -230,7 +230,7 @@ theorem coefficient_smooth_and_derivatives {n : ℕ} (B : LocalBall n)
       have he := (eventuallyEq_of_mem (Metric.isOpen_ball.mem_nhds hx) ih).fderiv_eq (𝕜 := ℝ)
       simp only [coordinateDerivativeList]
       rw [he, (hJd l x hx).fderiv]
-      simp [assemble, EuclideanSpace.single_apply, Pi.single_apply]
+      simp [assemble]
   have hformula (l : List (Fin n)) (x : Space n) :
       (cauchyPowerSeries (fun z => coordinateDerivativeList l (f z) x) c ρ j) (fun _ => (1 : ℂ)) = J l x := by
     rw [cauchyPowerSeries_apply, circleIntegral_def_Icc]

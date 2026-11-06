@@ -43,8 +43,8 @@ theorem exists_sixth_unit_representatives (A : SArithmeticData F) :
     have hw6 : (Quotient.out q)⁻¹ * v = w ^ 6 := by rw [hw']; group
     have hrel : (QuotientGroup.leftRel H) (Quotient.out q) v := by
       rw [QuotientGroup.leftRel_apply]
-      exact ⟨w, by rw [powMonoidHom_apply]; exact hw6.symm⟩
+      exact ⟨w, by rw [powMonoidHom_apply]; grind⟩
     have h1 : q = Quotient.mk'' v := (Quotient.out_eq q).symm.trans (Quotient.sound hrel)
-    exact congrArg Quotient.out h1
+    grind
 
 end DedekindZetaZeroFree.PrincipalMellinGrowth

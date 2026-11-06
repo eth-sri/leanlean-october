@@ -172,7 +172,7 @@ theorem slocal_conductor_trivial_of_sprime_compatibility
     · apply Units.ext
       rw [Units.coe_map, IsUnit.unit_spec]
       simp only [b, SArithmeticData.diagonal, MonoidHom.coe_mk, OneHom.coe_mk,
-        FixedSResidue.fieldUnit, Units.val_mk0, hn]
+        FixedSResidue.fieldUnit, hn]
       simp
       change ({toCompletion := ↑(WithVal.toVal (HeightOneSpectrum.valuation F v.val)
           (algebraMap (𝓞 F) F alpha))} : v.val.adicCompletion F)

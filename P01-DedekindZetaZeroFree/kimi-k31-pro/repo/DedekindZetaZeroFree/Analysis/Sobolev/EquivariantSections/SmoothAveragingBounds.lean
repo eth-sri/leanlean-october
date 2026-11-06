@@ -381,7 +381,7 @@ private theorem norm_fderiv_average_coordinate_le {n r : ℕ} {Γ : Type*}
   apply mul_le_mul_of_nonneg_left _ (by positivity)
   refine Finset.sum_le_sum fun γ _ => ?_
   have ht := norm_fderiv_operator_term_le D γ u hu (hCchart hx) (coordinateDirection j)
-  have hz : ‖coordinateDirection j‖ = 1 := by simp [coordinateDirection, EuclideanSpace.norm_single]
+  have hz : ‖coordinateDirection j‖ = 1 := by simp [coordinateDirection]
   rw [hz, mul_one, mul_one] at ht
   refine ht.trans (add_le_add ?_ ?_)
   · calc ‖fderiv ℝ u (D.act γ x)‖ * ‖fderiv ℝ (D.act γ) x‖
@@ -557,7 +557,7 @@ private theorem averaged_energy_bound {n r : ℕ} (hn : 1 ≤ n) (hr : 1 ≤ r)
         ≤ (Fintype.card Γ : ℝ)⁻¹ * ∑ γ : Γ, L * (∫ x, ‖u x‖ ^ 2) :=
           mul_le_mul_of_nonneg_left (Finset.sum_le_sum fun γ _ => htransport γ) (by positivity)
       _ = _ := by simp [Finset.sum_const, nsmul_eq_mul, ← mul_assoc,
-          inv_mul_cancel₀ (show (Fintype.card Γ : ℝ) ≠ 0 by exact_mod_cast Fintype.card_ne_zero)]
+          ]
   have hder : ∀ j : Fin n, (∫ x, ‖fderiv ℝ v x (coordinateDirection j)‖ ^ 2) ≤
       2 * A ^ 2 * n * L * (∑ k : Fin n, ∫ x, ‖fderiv ℝ u x (coordinateDirection k)‖ ^ 2) +
       2 * K ^ 2 * L * (∫ x, ‖u x‖ ^ 2) := by

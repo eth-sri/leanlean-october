@@ -15,7 +15,7 @@ theorem weakFEPair_differentiableOn_weightOne (P : WeakFEPair ℂ) (hk : P.k = 1
     DifferentiableOn ℂ P.Λ {s : ℂ | s ≠ 0 ∧ s ≠ 1} := by
   intro s hs
   apply DifferentiableAt.differentiableWithinAt
-  exact P.differentiableAt_Λ (Or.inl hs.1) (Or.inl (by simpa [hk] using hs.2))
+  exact P.differentiableAt_Λ (Or.inl hs.1) (Or.inl (by simp_all))
 
 theorem poleCleared_differentiable (P : WeakFEPair ℂ) (hk : P.k = 1) :
     Differentiable ℂ (poleCleared P) := by
@@ -36,11 +36,10 @@ theorem weakFEPair_selfDual_reflection (P : WeakFEPair ℂ) (hk : P.k = 1)
     ∀ s : ℂ, s ≠ 0 → s ≠ 1 → P.Λ s = P.Λ (1 - s) := by
   have hsymm : P.symm.Λ = P.Λ := by
     unfold WeakFEPair.Λ WeakFEPair.Λ₀ WeakFEPair.f_modif
-    simp only [WeakFEPair.symm_f, WeakFEPair.symm_g, WeakFEPair.symm_f₀,
-      WeakFEPair.symm_g₀, WeakFEPair.symm_k, WeakFEPair.symm_ε, hg, hg₀, hε, inv_one]
+    simp_all
   intro s _ _
   have h := P.functional_equation (1 - s)
-  simpa [hk, hε, hsymm] using h
+  simp_all
 
 end
 

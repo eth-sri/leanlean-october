@@ -68,7 +68,7 @@ theorem reconstruction_section_membership
     funext t
     cases ε <;> simp only [inducingAction, inducingScalar,
       normPower, zero_mul, Complex.exp_zero, mul_one,
-      LinearMap.smul_apply, deltaHalf]
+      deltaHalf]
     · change (v ((b : ActualCover F ζ hζ q) * g)).val t =
         normPower (LocalField F q) (S.borel.coordinate (S.borel.retract b)) (1 / 2) *
           (v g).val (t * S.borel.retract b)

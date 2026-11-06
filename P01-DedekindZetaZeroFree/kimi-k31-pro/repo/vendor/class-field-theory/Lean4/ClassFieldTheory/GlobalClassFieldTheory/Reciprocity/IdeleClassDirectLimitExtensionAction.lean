@@ -30,39 +30,7 @@ open ClassFormation
 open LocalClassFieldTheory
 open CyclicCohomology
 
-/-- The fixed-part comparison intertwines an automorphism of a finite
-rational intermediate field with any lift to the rational absolute
-Galois group. -/
-theorem rationalIdeleClassEquivFixed_action_coe
-    (E : IntermediateField ℚ (SeparableClosure ℚ))
-    [FiniteDimensional ℚ E]
-    (σ : SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ)
-    (τ : E ≃ₐ[ℚ] E)
-    (hστ : ∀ x : E,
-      ((τ x : E) : SeparableClosure ℚ) =
-        σ (x : SeparableClosure ℚ))
-    (c : RelativeIdeleGroup.ClassGroup ℚ E) :
-    rationalIdeleClassRepresentation.ρ σ
-        (rationalIdeleClassEquivFixed E
-          (Additive.ofMul
-            (_root_.relativeIdeleClassBaseChangeMulEquiv
-              (K := ℚ) (L := E) c))).1 =
-      (rationalIdeleClassEquivFixed E
-        (Additive.ofMul
-          (_root_.relativeIdeleClassBaseChangeMulEquiv
-            (K := ℚ) (L := E) (τ • c)))).1 := by
-  change
-    Additive.ofMul
-        (σ • rationalIntermediateIdeleClassToDirectLimit E
-          (_root_.relativeIdeleClassBaseChangeMulEquiv
-            (K := ℚ) (L := E) c)) =
-      Additive.ofMul
-        (rationalIntermediateIdeleClassToDirectLimit E
-          (_root_.relativeIdeleClassBaseChangeMulEquiv
-            (K := ℚ) (L := E) (τ • c)))
-  exact congrArg Additive.ofMul
-    (rationalIntermediateIdeleClassToDirectLimit_conjugation
-      E σ τ hστ c)
+
 
 /-- The fixed-part idèle-class realization is natural under an
 equivalence between two finite rational intermediate fields induced by

@@ -316,7 +316,7 @@ theorem actual_fixed_locus_null
       have hi := congrArg (fun q : Cross F => q.1 i) hp
       rw [G.crossAction_formula g A hA hc, hr] at hi
       simp only [crossAffine, affine, embedding, OneMemClass.coe_one, Units.val_one,
-        map_one, one_mul] at hi
+        ] at hi
       rw [hv] at hi
       change (KPCusp.complexPlace F i).embedding 1 * p.1 i +
         (KPCusp.complexPlace F i).embedding (x.toAdd : F) = p.1 i at hi

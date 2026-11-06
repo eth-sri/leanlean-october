@@ -256,49 +256,9 @@ theorem frobeniusFixedCosetClosureEquiv_equivariant
   rw [D.transferNormNaturalityIntermediateToFrobeniusSubgroup_apply]
   rfl
 
-/-- Restriction from the infinite Frobenius quotient onto the finite
-Galois quotient is surjective. -/
-theorem transferNormNaturalityExtensionRestriction_surjective
-    (D : DegreeData G)
-    (K L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.toSubgroup)
-    [hLnormal : (extensionSubgroup K L hLK).Normal] :
-    Function.Surjective (D.extensionRestriction K L hLK) := by
-  intro q
-  refine QuotientGroup.induction_on q ?_
-  intro k
-  exact ⟨QuotientGroup.mk k, rfl⟩
 
-/-- The kernel of restriction to `G(L/K)` is contained in the subgroup
-coming from `G(\widetilde L/K')`. -/
-theorem transferNormNaturalityExtensionRestriction_ker_le_intermediate
-    (D : DegreeData G) [IsTopologicalGroup G]
-    (E : FiniteResidueAbstractExtension D) (L : ClosedSubgroup G)
-    (hL : L.toSubgroup ≤ E.field.field.toSubgroup)
-    [hLnormal :
-      (extensionSubgroup E.base.field L (hL.trans E.below)).Normal]
-    [hL'normal : (extensionSubgroup E.field.field L hL).Normal] :
-    (D.extensionRestriction E.base.field L (hL.trans E.below)).ker ≤
-      D.transferNormNaturalityFrobeniusIntermediateSubgroup E L hL := by
-  rw [D.transferNormNaturalityFrobeniusIntermediateSubgroup_eq_map
-    E L hL]
-  intro q hq
-  revert hq
-  refine QuotientGroup.induction_on q ?_
-  intro k hk
-  change D.extensionRestriction E.base.field L (hL.trans E.below)
-      (QuotientGroup.mk k) = 1 at hk
-  rw [D.extensionRestriction_mk] at hk
-  have hkL : k ∈
-      extensionSubgroup E.base.field L (hL.trans E.below) := by
-    exact QuotientGroup.eq_one_iff k |>.1 hk
-  have hkK' : k ∈
-      extensionSubgroup E.base.field E.field.field E.below := by
-    apply (mem_extensionSubgroup_iff
-      E.base.field E.field.field E.below k).2
-    exact hL ((mem_extensionSubgroup_iff E.base.field L
-      (hL.trans E.below) k).1 hkL)
-  exact ⟨k, hkK', rfl⟩
+
+
 
 /-- `H` has finite index in `G(\widetilde L/K)`, with no normality
 assumption on the intermediate extension `K'/K`. -/
@@ -460,39 +420,7 @@ theorem transferNormNaturalityTransferNormOrbitEquiv_mk
   exact (D.frobeniusFixedCosetClosureEquiv E.base L
     (hL.trans E.below) σ).symm_apply_apply (QuotientGroup.mk k⁻¹)
 
-/-- On the classical chosen transfer representative `t`, the preceding
-equivalence is literally the norm orbit represented by `t⁻¹`. -/
-theorem transferNormNaturalityTransferNormOrbitEquiv_apply
-    (D : DegreeData G) [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    (E : FiniteResidueAbstractExtension D) (L : ClosedSubgroup G)
-    (hL : L.toSubgroup ≤ E.field.field.toSubgroup)
-    [hLnormal :
-      (extensionSubgroup E.base.field L (hL.trans E.below)).Normal]
-    [hL'normal : (extensionSubgroup E.field.field L hL).Normal]
-    (σ : D.FrobeniusElements E.base L (hL.trans E.below))
-    (q : Quotient (orbitRel (Subgroup.zpowers σ.1)
-      ((E.base.field.toSubgroup ⧸ D.extensionInertiaWithin E.base.field L
-        (hL.trans E.below)) ⧸
-          D.transferNormNaturalityFrobeniusIntermediateSubgroup
-            E L hL))) :
-    D.transferNormNaturalityTransferNormOrbitEquiv E L hL σ q =
-      Quotient.mk'' (QuotientGroup.mk (Quotient.out q.out.out)⁻¹ :
-        E.base.field.toSubgroup ⧸ extensionSubgroup E.base.field
-          (D.frobeniusFixedField E.base L (hL.trans E.below) σ)
-          (D.frobeniusFixedField_le E.base L
-            (hL.trans E.below) σ)) := by
-  let orbitEquiv := D.transferNormNaturalityTransferNormOrbitEquiv E L hL σ
-  calc
-    orbitEquiv q = orbitEquiv (Quotient.mk'' q.out) :=
-      congrArg orbitEquiv (Quotient.out_eq' q).symm
-    _ = orbitEquiv (Quotient.mk'' (QuotientGroup.mk q.out.out)) :=
-      congrArg orbitEquiv (congrArg Quotient.mk'' (Quotient.out_eq' q.out).symm)
-    _ = orbitEquiv (Quotient.mk'' (QuotientGroup.mk
-        (QuotientGroup.mk (Quotient.out q.out.out)))) :=
-      congrArg orbitEquiv (congrArg Quotient.mk''
-        (congrArg QuotientGroup.mk (Quotient.out_eq' q.out.out).symm))
-    _ = _ := D.transferNormNaturalityTransferNormOrbitEquiv_mk
-      E L hL σ (Quotient.out q.out.out)
+
 
 end DegreeData
 

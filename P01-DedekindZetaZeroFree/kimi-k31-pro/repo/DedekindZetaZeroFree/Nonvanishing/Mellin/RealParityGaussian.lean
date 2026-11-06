@@ -59,7 +59,7 @@ theorem real_parityGaussian_integrableOn
     apply IntegrableOn.congr_fun h _ measurableSet_Ioi
     intro q hq
     dsimp only
-    simp only [Bool.true_eq, ↓reduceIte]
+    simp only [↓reduceIte]
     rw [parity_odd_kernel s q a hq]
     ring
 
@@ -77,7 +77,7 @@ theorem real_parityGaussian_mellin
     rw [gaussian_real_place_mellin s (a ^ 2) hs (sq_pos_of_ne_zero ha), parity_square_cpow]
     ring
   | true =>
-    simp only [Bool.true_eq, ↓reduceIte]
+    simp only [↓reduceIte]
     have hs' : 0 < (s + 1).re := by simpa using (by linarith : 0 < s.re + 1)
     have hk : (∫ q : ℝ in Set.Ioi 0,
         ((q * a : ℝ) : ℂ) * (q : ℂ) ^ (s - 1) *

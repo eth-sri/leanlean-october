@@ -72,14 +72,12 @@ private lemma row_partition (c m : Ideal (𝓞 F)) (K : ℝ) (hK : 1 ≤ K)
 lemma original_partition (C : Context Q) (hK : 1 ≤ C.K) (f : Ideal (𝓞 F) → ℂ) :
     (∑ a ∈ C.originalRows 1 true, f a) +
       (∑ B ∈ dyadicScales C, ∑ a ∈ C.originalRows B, f a) =
-        ∑ a ∈ Sieve.idealAdmissibleFinset F (c*C.d) C.K, f a := by
-  exact row_partition c (c*C.d) C.K hK f
+        ∑ a ∈ Sieve.idealAdmissibleFinset F (c*C.d) C.K, f a := row_partition c (c*C.d) C.K hK f
 
 lemma core_partition (C : Context Q) (hK : 1 ≤ C.K) (f : Ideal (𝓞 F) → ℂ) :
     (∑ a ∈ C.reflectedCoreRows 1 true, f a) +
       (∑ B ∈ dyadicScales C, ∑ a ∈ C.reflectedCoreRows B, f a) =
-        ∑ a ∈ Sieve.idealAdmissibleFinset F c C.K, f a := by
-  exact row_partition c c C.K hK f
+        ∑ a ∈ Sieve.idealAdmissibleFinset F c C.K, f a := row_partition c c C.K hK f
 private lemma sup_top_of_rel {x y : Ideal (𝓞 F)} (h : IsRelPrime x y) : x ⊔ y = ⊤ :=
   Ideal.isUnit_iff.mp (h (Ideal.dvd_iff_le.mpr le_sup_left) (Ideal.dvd_iff_le.mpr le_sup_right))
 private lemma rel_of_sup {x y : Ideal (𝓞 F)} (h : x ⊔ y = ⊤) : IsRelPrime x y := by
@@ -584,7 +582,7 @@ private lemma ideal_radical_eq (q : Ideal (𝓞 F)) (hq : q ≠ ⊥) :
       · exact ih (by intro t ht; exact hpr t (by simp [ht]))
   have hR : r.IsRadical := heq ▸ hgen P hp
   apply le_antisymm
-  · exact (hR.radical_le_iff).mpr (Ideal.dvd_iff_le.mp radical_dvd_self)
+  · exact hR.radical_le_iff.mpr (Ideal.dvd_iff_le.mp radical_dvd_self)
   · obtain ⟨n, hn⟩ := exists_dvd_radical_self_pow hq
     have hle : r ^ n ≤ q := Ideal.dvd_iff_le.mp hn
     have : r ≤ (r ^ n).radical := by
@@ -884,8 +882,7 @@ theorem bilinear_main_boundary_identity (C : Context Q)
   rw [Finset.sum_product]
   unfold Sieve.MainBoundary.cancelledMainTerms
   rw [← MainBoundary.columns_eq C]
-  have hmass : C.mass = ((∫ t in Set.Ioi (0 : ℝ), C.W (t ^ 2)) : ℂ) := by
-    rfl
+  have hmass : C.mass = ((∫ t in Set.Ioi (0 : ℝ), C.W (t ^ 2)) : ℂ) := rfl
   rw [← hmass]
   simp only [Finset.mul_sum]
   apply Finset.sum_congr rfl

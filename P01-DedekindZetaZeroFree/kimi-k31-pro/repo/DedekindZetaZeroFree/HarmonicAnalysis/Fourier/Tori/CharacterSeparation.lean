@@ -14,7 +14,7 @@ theorem unitAddTorus_characters_separate {d : Type*}
     by_contra h
     apply hxy
     funext i
-    exact not_not.mp (not_exists.mp h i)
+    simp_all
   let χ : AddChar (UnitAddTorus d) Circle :=
     { toFun := fun z => AddCircle.toCircle (z i)
       map_zero_eq_one' := AddCircle.toCircle_zero

@@ -266,56 +266,9 @@ theorem decompositionResidueAction_ker :
       (fun e : target.residueField ≃+* target.residueField => e z) h
     simpa using hz
 
-omit [base.valuation.HasExtension target.valuation] in
-/-- Ideal-theoretic inertia of the target maximal ideal, for the canonical
-decomposition-group action on the valuation ring, is the ordinary
-valuation-subring inertia group. -/
-theorem maximalIdealInertia_eq_decompositionInertia :
-    target.maximalIdeal.toAddSubgroup.inertia
-        (ValuationSubring.decompositionGroup K
-          target.valuation.valuationSubring) =
-      ValuationSubring.inertiaGroup K
-        target.valuation.valuationSubring := by
-  ext sigma
-  rw [← ValuationSubring.residueAction_ker
-    (K := K) target.valuation.valuationSubring, MonoidHom.mem_ker]
-  constructor
-  · intro hsigma
-    apply RingEquiv.ext
-    intro z
-    obtain ⟨a, rfl⟩ := IsLocalRing.residue_surjective z
-    change sigma •
-        (IsLocalRing.residue target.valuationSubring a : target.residueField) =
-      IsLocalRing.residue target.valuationSubring a
-    change
-      IsLocalRing.residue target.valuationSubring (sigma • a) =
-        IsLocalRing.residue target.valuationSubring a
-    rw [ResidueField.residue_eq_residue_iff_sub_mem_maximalIdeal]
-    exact hsigma a
-  · intro hsigma a
-    change sigma • a - a ∈ target.maximalIdeal
-    rw [← ResidueField.residue_eq_residue_iff_sub_mem_maximalIdeal]
-    have happ := congrArg
-      (fun e : target.residueField ≃+* target.residueField =>
-        e (IsLocalRing.residue target.valuationSubring a)) hsigma
-    change sigma •
-        (IsLocalRing.residue target.valuationSubring a : target.residueField) =
-      IsLocalRing.residue target.valuationSubring a at happ
-    change
-      IsLocalRing.residue target.valuationSubring (sigma • a) =
-        IsLocalRing.residue target.valuationSubring a at happ
-    exact happ
 
-/-- Exactness of inertia inclusion followed by reduction on the decomposition
-group. -/
-theorem decompositionInertia_mulExact_decompositionResidueAction :
-    Function.MulExact
-      (ValuationSubring.inertiaGroup K
-        target.valuation.valuationSubring).subtype
-      (decompositionResidueAction
-        (K := K) (base := base) (target := target)) := by
-  rw [MonoidHom.mulExact_iff, decompositionResidueAction_ker]
-  exact (Subgroup.range_subtype _).symm
+
+
 
 section FullGaloisGroup
 
@@ -369,31 +322,7 @@ theorem mem_inertiaGroup_iff
           target.valuation.valuationSubring :=
   Iff.rfl
 
-/-- Transporting full inertia through `Gal(L/K) ≃ D(L/K)` gives exactly the
-ordinary decomposition-side inertia group. -/
-theorem inertiaGroup_map_galEquivDecompositionGroup
-    [Algebra.IsSeparable K L] :
-    Subgroup.map
-        (galEquivDecompositionGroup
-          (base := base) (target := target)).toMonoidHom
-        (inertiaGroup (K := K) (base := base) (target := target)) =
-      ValuationSubring.inertiaGroup K
-        target.valuation.valuationSubring := by
-  ext tau
-  constructor
-  · rintro ⟨sigma, hsigma, rfl⟩
-    exact hsigma
-  · intro htau
-    refine ⟨(galEquivDecompositionGroup
-      (base := base) (target := target)).symm tau, ?_, ?_⟩
-    · change galEquivDecompositionGroup
-        (base := base) (target := target)
-          ((galEquivDecompositionGroup
-            (base := base) (target := target)).symm tau) ∈
-        ValuationSubring.inertiaGroup K
-          target.valuation.valuationSubring
-      simpa using htau
-    · simp
+
 
 /-- The kernel of the full residue action is the full inertia group. -/
 theorem residueAction_ker
@@ -422,14 +351,7 @@ instance inertiaGroup_normal
   rw [← residueAction_ker]
   infer_instance
 
-/-- Exactness of full inertia inclusion followed by reduction. -/
-theorem inertia_mulExact_residueAction
-    [Algebra.IsSeparable K L] :
-    Function.MulExact
-      (inertiaGroup (K := K) (base := base) (target := target)).subtype
-      (residueAction (K := K) (base := base) (target := target)) := by
-  rw [MonoidHom.mulExact_iff, residueAction_ker]
-  exact (Subgroup.range_subtype _).symm
+
 
 /-- For a finite Galois extension of complete DVFs, reduction of the full
 Galois group is onto the residue-field Galois group. -/
@@ -471,19 +393,7 @@ theorem residueAction_surjective_of_isGalois
   obtain ⟨a, rfl⟩ := Ideal.Quotient.mk_surjective z
   rfl
 
-/-- The decomposition-group residue action is also onto in the finite Galois
-case. -/
-theorem decompositionResidueAction_surjective_of_isGalois
-    [IsGalois K L] :
-    Function.Surjective
-      (decompositionResidueAction
-        (K := K) (base := base) (target := target)) := by
-  intro rho
-  obtain ⟨sigma, hsigma⟩ :=
-    residueAction_surjective_of_isGalois
-      (K := K) (base := base) (target := target) rho
-  exact ⟨galEquivDecompositionGroup
-    (base := base) (target := target) sigma, hsigma⟩
+
 
 /-- The finite-Galois residue exact sequence in quotient form. -/
 def galQuotientInertiaEquivResidueGalois

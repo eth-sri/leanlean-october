@@ -68,8 +68,7 @@ private theorem exterior_inverse_euler
   have he := h.1.congr_cofinite₀ (s := E)
     (g := fun q => if q ∈ E then 1 else 1 - (Ideal.absNorm q.asIdeal : ℂ)^(-z))
     (fun q _ => local_euler_nonzero F z hz q) (fun q hq => by simp [hq])
-  have hd : PositiveZetaResidue.exteriorEulerFactor F E z ≠ 0 := by
-    exact Finset.prod_ne_zero_iff.mpr (fun q hq => local_euler_nonzero F z hz q)
+  have hd : PositiveZetaResidue.exteriorEulerFactor F E z ≠ 0 := Finset.prod_ne_zero_iff.mpr (fun q hq => local_euler_nonzero F z hz q)
   have hone : (∏ q ∈ E, if q ∈ E then (1 : ℂ) else
       1 - (Ideal.absNorm q.asIdeal : ℂ)^(-z)) = 1 :=
     Finset.prod_eq_one (fun q hq => by simp [hq])

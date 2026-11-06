@@ -292,7 +292,7 @@ theorem compactZeroExtension_weak_identity {n : ℕ} (B : LocalBall n)
   rw [hleft, hright]
   exact heq
 theorem directions_length_h1 {n : ℕ} (α : MultiIndex n 1) : α.directions.length = α.degree := by
-  simp only [MultiIndex.directions, MultiIndex.degree, List.length_flatMap, List.map_map,
+  simp only [MultiIndex.directions, MultiIndex.degree, List.length_flatMap, 
     List.length_replicate, ← List.sum_toFinset _ (List.nodup_finRange _), List.toFinset_finRange]
 
 theorem averaged_translateL2_integrable {n : ℕ}
@@ -370,7 +370,7 @@ private theorem zero_dirs (n k : ℕ) : (zeroIndex n k).directions = [] := by
 private theorem first_dirs {n : ℕ} (i : Fin n) : (firstIndex i).directions = [i] := by
   classical
   simp only [MultiIndex.directions, firstIndex, apply_ite Fin.val, Fin.val_one,
-    Fin.val_zero, List.replicate_one, List.replicate_zero]
+    Fin.val_zero]
   have h : ∀ l : List (Fin n), l.flatMap (fun j => if j = i then [j] else []) = l.filter (· = i) := by
     intro l; induction l with
     | nil => rfl

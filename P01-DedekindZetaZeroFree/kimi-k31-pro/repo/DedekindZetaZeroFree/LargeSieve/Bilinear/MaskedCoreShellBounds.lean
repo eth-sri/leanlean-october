@@ -39,7 +39,7 @@ private lemma paperShell_subset_singleton_top (F : Type) [Field F] [NumberField 
     (mem_idealAdmissibleFinset F c (2 * T) I).mpr ⟨hsf, hcop, hle⟩
   have hne : I ≠ ⊥ := fun h => bot_not_mem_idealAdmissibleFinset F c (2 * T) (h ▸ hmem)
   have hne' : Ideal.absNorm I ≠ 0 := fun h0 =>
-    hne ((Ideal.absNorm_eq_zero_iff).mp h0)
+    hne (Ideal.absNorm_eq_zero_iff.mp h0)
   have hpos : 1 ≤ Ideal.absNorm I := Nat.one_le_iff_ne_zero.mpr hne'
   have hlt2 : Ideal.absNorm I < 2 := by
     have h : (Ideal.absNorm I : ℝ) < 2 := lt_of_le_of_lt hle (by linarith)

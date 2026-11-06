@@ -155,59 +155,11 @@ theorem isAdicComplete_map_ringEquiv
   simpa only [RingHom.algebraMap_toAlgebra] using
     (isAdicComplete_map_algebraMap_iff (R := R) (S := S) I).2 hS
 
-/-- If a module is Hausdorff for an ideal, then it is Hausdorff for every
-positive power of that ideal. -/
-theorem isHausdorff_pow_of_isHausdorff
-    (I : Ideal R) {n : ℕ} (hn : 0 < n)
-    [IsHausdorff I M] :
-    IsHausdorff (I ^ n) M := by
-  refine ⟨fun x hx => IsHausdorff.haus
-    (inferInstance : IsHausdorff I M) x ?_⟩
-  intro k
-  have hle : k ≤ n * k := by
-    simpa using Nat.mul_le_mul_right k (Nat.succ_le_of_lt hn)
-  apply SModEq.mono (Submodule.pow_smul_top_le I M hle)
-  simpa [pow_mul] using hx k
 
-/-- If a module is precomplete for an ideal, then it is precomplete for every
-positive power of that ideal. -/
-theorem isPrecomplete_pow_of_isPrecomplete
-    (I : Ideal R) {n : ℕ} (hn : 0 < n)
-    [IsPrecomplete I M] :
-    IsPrecomplete (I ^ n) M := by
-  refine ⟨fun f hf => ?_⟩
-  have hfI :
-      ∀ {m k : ℕ}, m ≤ k →
-        f m ≡ f k [SMOD (I ^ m • ⊤ : Submodule R M)] := by
-    intro m k hmk
-    have hle : m ≤ n * m := by
-      simpa using Nat.mul_le_mul_right m (Nat.succ_le_of_lt hn)
-    apply SModEq.mono (Submodule.pow_smul_top_le I M hle)
-    simpa [pow_mul] using hf hmk
-  obtain ⟨L, hL⟩ :=
-    IsPrecomplete.prec (I := I) (M := M)
-      (inferInstance : IsPrecomplete I M) hfI
-  refine ⟨L, fun m => ?_⟩
-  have hmle : m ≤ n * m := by
-    simpa using Nat.mul_le_mul_right m (Nat.succ_le_of_lt hn)
-  have hstep :
-      f m ≡ f (n * m)
-        [SMOD ((I ^ n) ^ m • ⊤ : Submodule R M)] :=
-    hf hmle
-  have hlimit :
-      f (n * m) ≡ L
-        [SMOD ((I ^ n) ^ m • ⊤ : Submodule R M)] := by
-    simpa [pow_mul] using hL (n * m)
-  exact hstep.trans hlimit
 
-/-- If a module is complete for an ideal, then it is complete for every
-positive power of that ideal. -/
-theorem isAdicComplete_pow_of_isAdicComplete
-    (I : Ideal R) {n : ℕ} (hn : 0 < n)
-    [IsAdicComplete I M] :
-    IsAdicComplete (I ^ n) M where
-  toIsHausdorff := isHausdorff_pow_of_isHausdorff (M := M) I hn
-  toIsPrecomplete := isPrecomplete_pow_of_isPrecomplete (M := M) I hn
+
+
+
 
 /-- If a module is Hausdorff for a positive power of an ideal, then it is
 Hausdorff for the ideal itself. -/
@@ -259,46 +211,7 @@ theorem isAdicComplete_of_isAdicComplete_pow
   toIsHausdorff := isHausdorff_of_isHausdorff_pow (M := M) I hn
   toIsPrecomplete := isPrecomplete_of_isPrecomplete_pow (M := M) I hn
 
-/-- Adic completeness is unchanged when two ideals define cofinal power
-filtrations.  The hypotheses `I ≤ J` and `J ^ n ≤ I`, with `n > 0`,
-are the asymmetric form convenient for finite integral extensions: the
-extended base ideal lies in the maximal ideal upstairs, while a positive
-power of that maximal ideal lies back in the extended ideal. -/
-theorem isAdicComplete_of_le_of_pow_le
-    (I J : Ideal R) {n : ℕ} (hn : 0 < n)
-    (hIJ : I ≤ J) (hJI : J ^ n ≤ I)
-    [IsAdicComplete I M] :
-    IsAdicComplete J M := by
-  have hpow : ∀ k : ℕ, J ^ (n * k) • (⊤ : Submodule R M) ≤
-      I ^ k • (⊤ : Submodule R M) := by
-    intro k
-    simpa only [pow_mul] using
-      Submodule.smul_mono (Ideal.pow_right_mono hJI k) le_rfl
-  refine
-    { toIsHausdorff := ?_
-      toIsPrecomplete := ?_ }
-  · refine ⟨fun x hx ↦ IsHausdorff.haus
-      (inferInstance : IsHausdorff I M) x (fun k ↦ ?_)⟩
-    exact SModEq.mono (hpow k) (hx (n * k))
-  · refine ⟨fun f hf ↦ ?_⟩
-    have hsubsequence :
-        ∀ {a b : ℕ}, a ≤ b →
-          f (n * a) ≡ f (n * b)
-            [SMOD (I ^ a • ⊤ : Submodule R M)] := by
-      intro a b hab
-      exact SModEq.mono (hpow a) (hf (Nat.mul_le_mul_left n hab))
-    obtain ⟨L, hL⟩ := IsPrecomplete.prec
-      (inferInstance : IsPrecomplete I M) hsubsequence
-    refine ⟨L, fun k ↦ ?_⟩
-    have hk : k ≤ n * k := by
-      simpa [Nat.mul_comm] using
-        Nat.mul_le_mul_right k (Nat.succ_le_of_lt hn)
-    have htail : f (n * k) ≡ L
-        [SMOD (J ^ k • ⊤ : Submodule R M)] :=
-      SModEq.mono
-        (Submodule.smul_mono (Ideal.pow_right_mono hIJ k) le_rfl)
-        (hL k)
-    exact (hf hk).trans htail
+
 
 end DiscreteValuationField
 

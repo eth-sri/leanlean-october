@@ -41,22 +41,9 @@ open scoped WithZero
 open ValuationTheory.DiscreteValuationField
 open LocalFieldTheory.DiscreteValuationField
 
-/-- The neighbourhood filter on `ℚ_[p]` induced by `Padic.mulValuation`.
-This keeps statements below on the valuation topology instead of the ambient
-metric topology selected by the global `ℚ_[p]` instance. -/
-noncomputable def padicMulValuationNhds
-    (p : ℕ) [Fact p.Prime] (x : ℚ_[p]) : Filter ℚ_[p] :=
-  @nhds ℚ_[p] (@UniformSpace.toTopologicalSpace ℚ_[p]
-    (Valued.mk' (Padic.mulValuation (p := p))).toUniformSpace) x
 
-/-- Characterization of the named neighbourhood filter by the topology
-transported from `Padic.mulValuation`. -/
-theorem padicMulValuationNhds_eq_valuedNhds
-    (p : ℕ) [Fact p.Prime] (x : ℚ_[p]) :
-    padicMulValuationNhds p x =
-      @nhds ℚ_[p] (@UniformSpace.toTopologicalSpace ℚ_[p]
-        (Valued.mk' (Padic.mulValuation (p := p))).toUniformSpace) x :=
-  rfl
+
+
 
 /-- The DVR valuation on `ℚ_[p]` obtained from the discrete valuation ring
 `ℤ_[p]`.  This is the chosen-valuation side of the local-field structure theory,
@@ -274,119 +261,25 @@ noncomputable def padicLocalField
     simpa [F] using padicCompleteDVF_residueField_finite p
   exact { toCompleteDVF := F }
 
-/-- mathlib's bundled p-adic multiplicative valuation has the expected value
-on nonzero natural-number denominators. -/
-theorem padic_mulValuation_natCast_of_ne_zero
-    (p n : ℕ) [Fact p.Prime] (hn : n ≠ 0) :
-    Padic.mulValuation (p := p) ((n : ℕ) : ℚ_[p]) =
-      WithZero.exp (-(padicValNat p n : ℤ)) := by
-  have hnQp : (((n : ℕ) : ℚ_[p]) ≠ 0) :=
-    Nat.cast_ne_zero.mpr hn
-  simp [Padic.mulValuation, hnQp]
 
-/-- Successor form of the natural-number denominator valuation used in the
-logarithm-series estimate. -/
-theorem padic_mulValuation_logSeries_denominator
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
-    Padic.mulValuation (p := p) ((n + 1 : ℕ) : ℚ_[p]) =
-      WithZero.exp (-(padicValNat p (n + 1) : ℤ)) := by
-  simpa using
-    padic_mulValuation_natCast_of_ne_zero
-      p (n + 1) (Nat.succ_ne_zero n)
 
-/-- Factorial-denominator form used by the exponential-series estimate. -/
-theorem padic_mulValuation_expSeries_denominator
-    (p : ℕ) [Fact p.Prime] (n : ℕ) :
-    Padic.mulValuation (p := p) ((n.factorial : ℕ) : ℚ_[p]) =
-      WithZero.exp (-(padicValNat p n.factorial : ℤ)) := by
-  simpa using
-    padic_mulValuation_natCast_of_ne_zero
-      p n.factorial (Nat.factorial_ne_zero n)
 
-/-- Standard p-adic specialization of the logarithm-term convergence estimate:
-if `v x < 1` for mathlib's `Padic.mulValuation`, then the unsigned
-logarithm-series terms tend to zero. -/
-theorem tendsto_zero_logSeriesTermField_padic_mulValuation_of_lt_one
-    (p : ℕ) [Fact p.Prime] (x : ℚ_[p])
-    (hvx : Padic.mulValuation (p := p) x <
-      (1 : WithZero (Multiplicative ℤ))) :
-    Tendsto
-      (fun n : ℕ =>
-        MultiplicativeIntegerValuation.logSeriesTermField x
-          (fun n => Nat.cast_ne_zero.mpr (Nat.succ_ne_zero n)) n)
-      atTop (padicMulValuationNhds p (0 : ℚ_[p])) := by
-  rw [padicMulValuationNhds_eq_valuedNhds]
-  exact
-    MultiplicativeIntegerValuation.tendsto_zero_logSeriesTermField_ofWithZeroValuation_of_lt_one
-      (v := Padic.mulValuation (p := p)) (p := p) x
-      (fun n => Nat.cast_ne_zero.mpr (Nat.succ_ne_zero n))
-      (padic_mulValuation_logSeries_denominator p) hvx
 
-/-- Signed version of
-`tendsto_zero_logSeriesTermField_padic_mulValuation_of_lt_one`. -/
-theorem tendsto_zero_signedLogSeriesTermField_padic_mulValuation_of_lt_one
-    (p : ℕ) [Fact p.Prime] (x : ℚ_[p])
-    (hvx : Padic.mulValuation (p := p) x <
-      (1 : WithZero (Multiplicative ℤ))) :
-    Tendsto
-      (fun n : ℕ =>
-        MultiplicativeIntegerValuation.signedLogSeriesTermField x
-          (fun n => Nat.cast_ne_zero.mpr (Nat.succ_ne_zero n)) n)
-      atTop (padicMulValuationNhds p (0 : ℚ_[p])) := by
-  rw [padicMulValuationNhds_eq_valuedNhds]
-  exact
-    MultiplicativeIntegerValuation.tendsto_zero_signedLogSeriesTermField_ofWithZeroValuation_of_lt_one
-      (v := Padic.mulValuation (p := p)) (p := p) x
-      (fun n => Nat.cast_ne_zero.mpr (Nat.succ_ne_zero n))
-      (padic_mulValuation_logSeries_denominator p) hvx
 
-/-- Standard p-adic specialization of the exponential-term convergence
-estimate on the radius `v x < exp (-1)`. -/
-theorem tendsto_zero_expSeriesTermField_padic_mulValuation_of_lt_exp_neg_one
-    (p : ℕ) [Fact p.Prime] (x : ℚ_[p])
-    (hvx : Padic.mulValuation (p := p) x < WithZero.exp (-1 : ℤ)) :
-    Tendsto
-      (fun n : ℕ =>
-        MultiplicativeIntegerValuation.expSeriesTermField x
-          (fun n => Nat.cast_ne_zero.mpr (Nat.factorial_ne_zero n)) n)
-      atTop (padicMulValuationNhds p (0 : ℚ_[p])) := by
-  rw [padicMulValuationNhds_eq_valuedNhds]
-  exact
-    MultiplicativeIntegerValuation.tendsto_zero_expSeriesTermField_ofWithZeroValuation_of_lt_exp_neg_one
-      (v := Padic.mulValuation (p := p)) (p := p) x
-      (fun n => Nat.cast_ne_zero.mpr (Nat.factorial_ne_zero n))
-      (padic_mulValuation_expSeries_denominator p) hvx
 
-/-- Membership in mathlib's `p^m`-power roots of unity inside the actual
-p-adic unit group is the usual unit equation. -/
-theorem mem_rootsOfUnity_padic_iff
-    (p m : ℕ) [Fact p.Prime] (ζ : (ℚ_[p])ˣ) :
-    ζ ∈ rootsOfUnity (p ^ m) ℚ_[p] ↔ ζ ^ (p ^ m) = 1 :=
-  mem_rootsOfUnity (p ^ m) ζ
 
-/-- The same roots-of-unity criterion after coercing the p-adic unit to
-`ℚ_[p]`. -/
-theorem mem_rootsOfUnity_padic_iff_coe_pow
-    (p m : ℕ) [Fact p.Prime] (ζ : (ℚ_[p])ˣ) :
-    ζ ∈ rootsOfUnity (p ^ m) ℚ_[p] ↔
-      ((ζ : ℚ_[p]) ^ (p ^ m) = 1) :=
-  mem_rootsOfUnity' (p ^ m) ζ
 
-/-- The identity p-adic unit lies in every finite p-power roots-of-unity
-subgroup. -/
-theorem one_mem_rootsOfUnity_padic
-    (p m : ℕ) [Fact p.Prime] :
-    (1 : (ℚ_[p])ˣ) ∈ rootsOfUnity (p ^ m) ℚ_[p] :=
-  (mem_rootsOfUnity_padic_iff p m 1).2 (by simp)
 
-/-- A primitive p-adic `p^m`-power root is a root of mathlib's corresponding
-cyclotomic polynomial over `ℚ_[p]`. -/
-theorem primitiveRoot_isRoot_cyclotomic_padic
-    (p m : ℕ) [Fact p.Prime] {ζ : ℚ_[p]}
-    (hζ : IsPrimitiveRoot ζ (p ^ m)) :
-    (Polynomial.cyclotomic (p ^ m) ℚ_[p]).IsRoot ζ := by
-  exact IsPrimitiveRoot.isRoot_cyclotomic
-    (pow_pos (Fact.out : Nat.Prime p).pos m) hζ
+
+
+
+
+
+
+
+
+
+
 
 end Qp
 end Examples

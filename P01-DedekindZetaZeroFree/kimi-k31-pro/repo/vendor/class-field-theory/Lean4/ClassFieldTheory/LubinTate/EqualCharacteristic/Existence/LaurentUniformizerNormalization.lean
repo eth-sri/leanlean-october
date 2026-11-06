@@ -3,6 +3,7 @@ module
 public import ClassFieldTheory.LubinTate.EqualCharacteristic.Existence.LaurentLocalField
 public import ValuedFieldTheory.LocalField.NonarchimedeanLocalField.IdealQuotients
 public import ValuedFieldTheory.LocalField.NonarchimedeanLocalField.ValuationExactSequence
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -120,9 +121,7 @@ theorem equalCharacteristicLaurentUniformizerUnit_inv_valuationMap
     (equalCharacteristicLaurentUniformizerInteger F)
     (equalCharacteristicLaurentUniformizerInteger_irreducible F)
     (equalCharacteristicLaurentUniformizerUnit F) (by
-      change equalCharacteristicLaurentUniformizer F =
-        equalCharacteristicLaurentUniformizer F
-      rfl)
+      norm_num)
 
 end EqualCharacteristic
 end LubinTate

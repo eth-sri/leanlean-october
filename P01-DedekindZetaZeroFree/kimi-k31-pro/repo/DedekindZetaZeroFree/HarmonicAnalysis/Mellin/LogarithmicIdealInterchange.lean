@@ -218,7 +218,7 @@ theorem idealCoefficientLSeries_eq_tsum_zeroBranch
     _ = ∑' I : Ideal (𝓞 F),
           if I = ⊥ then 0 else a I * (Ideal.absNorm I : ℂ) ^ (-s) :=
         tsum_congr fun I => by
-          by_cases h : I = ⊥ <;> simp [Set.indicator_apply, h]
+          by_cases h : I = ⊥ <;> simp [h]
 
 theorem idealLogMellin_inverseSpectrum_interchange
     (a : Ideal (𝓞 F) → ℂ) (ha : ∀ I, I ≠ ⊥ → ‖a I‖ ≤ 1)

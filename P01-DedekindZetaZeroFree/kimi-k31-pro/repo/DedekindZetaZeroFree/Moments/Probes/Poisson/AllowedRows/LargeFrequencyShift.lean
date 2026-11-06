@@ -30,8 +30,7 @@ theorem K_analytic_z (u : D.Row) (Z : ℝ) (hZ : 0 < Z) (ξ w : ℂ) (hξ : ξ.r
     show 0 < ξ.re ∧ 0 < w.re ∧ 0 < z.re ∧ 1 < 6 * z.re + w.re ∧ 1 < ξ.re + 6 * z.re ∧
       1 < ξ.re + w.re ∧ 2 < ξ.re + w.re + 6 * z.re ∧ 5 < 6 * ξ.re + 6 * z.re ∧
       1 / 2 < ξ.re ∧ 2 < 3 * ξ.re ∧ 5 / 2 < 3 * ξ.re + w.re
-    rw [hξ, hw]
-    refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> linarith
+    grind
   have hHu : DifferentiableAt ℂ (fun z : ℂ => EulerDomain.Hu D u ξ w z) z := by
     have h1 := (EulerDomain.Hu_normal_convergence D u).2.2.1
     have h2 : DifferentiableAt ℂ
@@ -47,7 +46,7 @@ theorem K_analytic_z (u : D.Row) (Z : ℝ) (hZ : 0 < Z) (ξ w : ℂ) (hξ : ξ.r
       refine ⟨?_, ?_⟩
       · show 0 < ((6 : ℂ) * z).re
         have : ((6 : ℂ) * z).re = 6 * z.re := by simp
-        rw [this]; linarith
+        grind
       · intro h
         have h' := congrArg Complex.re (show (6 : ℂ) * z = 1 from h)
         have : ((6 : ℂ) * z).re = 6 * z.re := by simp
@@ -100,9 +99,9 @@ private lemma key_ineq (A B Cc s : ℝ) (hA : 1 ≤ A) (hB : 1 ≤ B) (hC : 1 �
       _ = (Real.exp (-s ^ 2) * (1 + |s|) ^ 2) * Cc ^ 2 := by ring
       _ ≤ 2 * Cc ^ 2 := mul_le_mul_of_nonneg_right he (by positivity)
   have e1 : Real.exp (-s ^ 2) * ((Cc ^ 4)⁻¹ * (B ^ 2)⁻¹) = Real.exp (-s ^ 2) / (Cc ^ 4 * B ^ 2) := by
-    rw [div_eq_mul_inv, mul_inv]
+    grind
   have e2 : 2 * ((A ^ 2)⁻¹ * ((B ^ 2)⁻¹ * (Cc ^ 2)⁻¹)) = 2 / (A ^ 2 * (B ^ 2 * Cc ^ 2)) := by
-    rw [div_eq_mul_inv, mul_inv, mul_inv]
+    grind
   rw [e1, e2, div_le_div_iff₀ (by positivity) (by positivity)]
   calc Real.exp (-s ^ 2) * (A ^ 2 * (B ^ 2 * Cc ^ 2))
       = (Real.exp (-s ^ 2) * A ^ 2) * (B ^ 2 * Cc ^ 2) := by ring
@@ -164,9 +163,9 @@ private theorem K_bound_explicit (ε : ℝ) (hε : 0 < ε) :
       unfold rowFactor
       simp only [div_eq_mul_inv, norm_mul]
     have h6 : (6 * ((σ : ℂ) + (t3 : ℂ) * I)).re = 6 * σ := by simp
-    have hz1 := hCz (6 * ((σ : ℂ) + (t3 : ℂ) * I)) (by rw [h6]; linarith)
-    have hp1 := hCp u ((4 : ℂ) + (t2 : ℂ) * I) (by rw [hw]; norm_num)
-    have hl1 := hCl u ((4 : ℂ) + (t1 : ℂ) * I) (by rw [hre1]; norm_num)
+    have hz1 := hCz (6 * ((σ : ℂ) + (t3 : ℂ) * I)) (by grind)
+    have hp1 := hCp u ((4 : ℂ) + (t2 : ℂ) * I) (by grind)
+    have hl1 := hCl u ((4 : ℂ) + (t1 : ℂ) * I) (by grind)
     have hp : (((4 : ℂ) + (t1 : ℂ) * I, (4 : ℂ) + (t2 : ℂ) * I, (σ : ℂ) + (t3 : ℂ) * I) :
         EulerDomain.Coordinates) ∈ EulerDomain.boxes := by
       refine Or.inr ?_
@@ -186,27 +185,23 @@ private theorem K_bound_explicit (ε : ℝ) (hε : 0 < ε) :
   have hex := exp_norm_bound ((4 : ℂ) + (t1 : ℂ) * I) σ t3 ((Scales.tailShift + 3) ^ 2)
     (by rw [hre1]; nlinarith)
   rw [him1] at hex
-  have hMb := hCM ((σ : ℂ) + (t3 : ℂ) * I) (by rw [hzre]; exact hσ1) (by rw [hzre]; exact hσ2)
+  have hMb := hCM ((σ : ℂ) + (t3 : ℂ) * I) (by grind) (by grind)
   rw [hzim] at hMb
-  have hWb := hCW ((4 : ℂ) + (t2 : ℂ) * I) (by rw [hw]) (by rw [hw])
+  have hWb := hCW ((4 : ℂ) + (t2 : ℂ) * I) (by grind) (by grind)
   have hwim : ((4 : ℂ) + (t2 : ℂ) * I).im = t2 := by simp
   rw [hwim] at hWb
   have hMn : ‖D.M ((σ : ℂ) + (t3 : ℂ) * I)‖ ≤ |CM| * ((1 + |t3|) ^ 4)⁻¹ := by
     rw [← div_eq_mul_inv, le_div_iff₀ (by positivity)]
-    have := mul_comm ‖D.M ((σ : ℂ) + (t3 : ℂ) * I)‖ ((1 + |t3|) ^ 4)
-    linarith [le_abs_self CM]
+    grind
   have hWn : ‖D.W1Hat ((4 : ℂ) + (t2 : ℂ) * I)‖ ≤ |CW| * ((1 + |t2|) ^ 2)⁻¹ := by
     rw [← div_eq_mul_inv, le_div_iff₀ (by positivity)]
-    have := mul_comm ‖D.W1Hat ((4 : ℂ) + (t2 : ℂ) * I)‖ ((1 + |t2|) ^ 2)
-    linarith [le_abs_self CW]
+    grind
   have hpeet : 1 + |t1| ≤ (1 + |t1 + t3|) * (1 + |t3|) := by
     have h : |t1| ≤ |t1 + t3| + |t3| := by
-      rcases abs_cases t1 with ⟨h1, h1'⟩ | ⟨h1, h1'⟩ <;>
-      rcases abs_cases (t1 + t3) with ⟨h2, h2'⟩ | ⟨h2, h2'⟩ <;>
-      rcases abs_cases t3 with ⟨h3, h3'⟩ | ⟨h3, h3'⟩ <;> linarith
+      grind
     nlinarith [abs_nonneg (t1 + t3), abs_nonneg t3, mul_nonneg (abs_nonneg (t1 + t3)) (abs_nonneg t3)]
   have hkey := key_ineq (1 + |t1|) (1 + |t2|) (1 + |t3|) (t1 + t3)
-    (by linarith [abs_nonneg t1]) (by linarith [abs_nonneg t2]) (by linarith [abs_nonneg t3])
+    (by grind) (by grind) (by grind)
     hpeet
   have hwm : WeightConvolution.weightModulus D ((4 : ℂ) + (t1 : ℂ) * I) σ 4 (t3, t2) ≤
       (2 * Real.exp ((Scales.tailShift + 3) ^ 2) * |CM| * |CW|) *
@@ -239,22 +234,20 @@ private lemma mem_OmegaStar_line (p : EulerDomain.Coordinates) (h1 : p.1.re = 4)
     1 < p.1.re + 6 * p.2.2.re ∧ 1 < p.1.re + p.2.1.re ∧ 2 < p.1.re + p.2.1.re + 6 * p.2.2.re ∧
     5 < 6 * p.1.re + 6 * p.2.2.re ∧ 1 / 2 < p.1.re ∧ 2 < 3 * p.1.re ∧
     5 / 2 < 3 * p.1.re + p.2.1.re
-  rw [h1, h2]
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> linarith
+  grind
 
 private theorem re_facts (t : ℝ × ℝ × ℝ) :
     ((4 : ℂ) + (t.1 : ℂ) * I).re = 4 ∧ ((4 : ℂ) + (t.2.1 : ℂ) * I).re = 4 ∧
     (((Scales.tailShift : ℝ) : ℂ) + (t.2.2 : ℂ) * I).re = Scales.tailShift ∧
     (6 * (((Scales.tailShift : ℝ) : ℂ) + (t.2.2 : ℂ) * I)).re = 6 * Scales.tailShift := by
-  refine ⟨?_, ?_, ?_, ?_⟩ <;> simp
+  simp_all
 
 private theorem cont_M (u : D.Row) :
     Continuous fun t : ℝ × ℝ × ℝ => D.M (((Scales.tailShift : ℝ) : ℂ) + (t.2.2 : ℂ) * I) := by
   have hR0 : (0 : ℝ) < Scales.tailShift := by norm_num [Scales.tailShift]
   refine D.M_differentiableOn.continuousOn.comp_continuous (by fun_prop) (fun t => ?_)
   have := (re_facts t).2.2.1
-  show 0 < (((Scales.tailShift : ℝ) : ℂ) + (t.2.2 : ℂ) * I).re
-  rw [this]; exact hR0
+  grind
 
 private theorem meas_W :
     Measurable fun t : ℝ × ℝ × ℝ => D.W1Hat ((4 : ℂ) + (t.2.1 : ℂ) * I) :=
@@ -281,8 +274,7 @@ private theorem cont_Lpsi (u : D.Row) :
   refine (D.Lpsi_analyticOnNhd u).continuousOn.comp_continuous (by fun_prop) (fun t => ?_)
   have h4 := (re_facts t).2.1
   refine ⟨?_, ?_⟩
-  · show 0 < ((4 : ℂ) + (t.2.1 : ℂ) * I).re
-    rw [h4]; norm_num
+  · grind
   · intro h
     have h1 : ((4 : ℂ) + (t.2.1 : ℂ) * I) = 1 := h
     have h2 := congrArg Complex.re h1
@@ -294,8 +286,7 @@ private theorem cont_Llam (u : D.Row) :
   refine (D.Llam_analyticOnNhd u).continuousOn.comp_continuous (by fun_prop) (fun t => ?_)
   have h4 := (re_facts t).1
   refine ⟨?_, ?_⟩
-  · show 0 < ((4 : ℂ) + (t.1 : ℂ) * I).re
-    rw [h4]; norm_num
+  · grind
   · intro h
     have h1 : ((4 : ℂ) + (t.1 : ℂ) * I) = 1 := h
     have h2 := congrArg Complex.re h1
@@ -373,9 +364,7 @@ theorem K_integrable_line (u : D.Row) (Z : ℝ) (hZ : 2 ≤ Z) (ξ w : ℂ) (hξ
       (c * (((1 + |t1|) ^ 2)⁻¹ * ((1 + |t2|) ^ 2)⁻¹))))) hcont.aestronglyMeasurable ?_
   refine Filter.Eventually.of_forall (fun t => ?_)
   have := h u Z hZ σ hσ (t1, t2, t)
-  refine this.trans (le_of_eq ?_)
-  simp only []
-  ring
+  grind
 
 theorem K_horizontal_tendsto_zero (u : D.Row) (Z : ℝ) (hZ : 2 ≤ Z) (ξ w : ℂ) (hξ : ξ.re = 4)
     (hw : w.re = 4) (ε : ℝ) (hε : ε = 1 ∨ ε = -1) :
@@ -402,11 +391,11 @@ theorem K_horizontal_tendsto_zero (u : D.Row) (Z : ℝ) (hZ : 2 ≤ Z) (ξ w : �
   have h2 := tendsto_inv_atTop_zero.comp h1
   have h3 : Tendsto (fun T : ℝ => Kc * ((1 + T) ^ 2)⁻¹ * |Scales.tailShift - 2|) atTop (𝓝 0) := by
     have := (h2.const_mul Kc).mul_const |Scales.tailShift - 2|
-    simpa [Function.comp_def] using this
+    grind
   refine squeeze_zero_norm' ?_ h3
   filter_upwards [eventually_ge_atTop (0 : ℝ)] with T hT
   have habs : |ε * T| = T := by
-    rcases hε with rfl | rfl <;> simp [abs_of_nonneg hT]
+    grind
   have hle : (2 : ℝ) ≤ Scales.tailShift := by norm_num [Scales.tailShift]
   refine intervalIntegral.norm_integral_le_of_norm_le_const (fun x hx => ?_)
   rw [Set.uIoc_of_le hle] at hx
@@ -423,7 +412,7 @@ theorem K_horizontal_tendsto_zero (u : D.Row) (Z : ℝ) (hZ : 2 ≤ Z) (ξ w : �
         (c * (((1 + |t1|) ^ 2)⁻¹ * (((1 + |t2|) ^ 2)⁻¹ * ((1 + T) ^ 2)⁻¹)))
       ≤ Mx * (c * (((1 + |t1|) ^ 2)⁻¹ * (((1 + |t2|) ^ 2)⁻¹ * ((1 + T) ^ 2)⁻¹))) :=
         mul_le_mul_of_nonneg_right (hm2.trans hm) hG
-    _ = Kc * ((1 + T) ^ 2)⁻¹ := by rw [hKc]; ring
+    _ = Kc * ((1 + T) ^ 2)⁻¹ := by grind
 
 theorem large_row_z_shift (u : D.Row) (Z : ℝ) (hZ : 2 ≤ Z) (ξ w : ℂ) (hξ : ξ.re = 4)
     (hw : w.re = 4) :
@@ -446,8 +435,7 @@ theorem large_row_z_shift (u : D.Row) (Z : ℝ) (hZ : 2 ≤ Z) (ξ w : ℂ) (hξ
     intro z hz
     have hz1 : z ∈ {z : ℂ | 1 / 6 < z.re} := by
       have h1 : (2 : ℝ) ≤ z.re := hz.1.1
-      show 1 / 6 < z.re
-      linarith
+      grind
     exact ((hA z hz1).differentiableAt).differentiableWithinAt
   have hbot0 := K_horizontal_tendsto_zero D u Z hZ ξ w hξ hw (-1) (Or.inr rfl)
   have htop0 := K_horizontal_tendsto_zero D u Z hZ ξ w hξ hw 1 (Or.inl rfl)
@@ -455,11 +443,11 @@ theorem large_row_z_shift (u : D.Row) (Z : ℝ) (hZ : 2 ≤ Z) (ξ w : ℂ) (hξ
   simp only [one_mul] at htop0
   have key := DedekindZetaZeroFree.Quantitative.SimplePoleVerticalShift.verticalIntegral_sub_eq_residue
     (a := 2) (b := Scales.tailShift) (p := (3 : ℂ)) (f := fun z : ℂ => K D u ξ w z Z) (res := 0)
-    (by norm_num) (by norm_num; exact hR) hf hres
+    (by norm_num) (by norm_num; grind) hf hres
     (K_integrable_line D u Z hZ ξ w hξ hw 2 ⟨le_rfl, by linarith⟩)
     (K_integrable_line D u Z hZ ξ w hξ hw Scales.tailShift ⟨by linarith, le_rfl⟩)
     hbot0 htop0
-  linear_combination -key
+  grind
 
 theorem large_row_triple_bound (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ (u : D.Row) (Z : ℝ), 2 ≤ Z →
@@ -490,8 +478,7 @@ theorem large_row_triple_bound (ε : ℝ) (hε : 0 < ε) :
         (((Scales.tailShift : ℝ) : ℂ) + (t.2.2 : ℂ) * I) Z‖ ≤
       B * (c * (((1 + |t.1|) ^ 2)⁻¹ * (((1 + |t.2.1|) ^ 2)⁻¹ * ((1 + |t.2.2|) ^ 2)⁻¹))) := by
     intro t
-    rw [hBd]
-    exact h u Z hZ Scales.tailShift hRmem t
+    grind
   have hKint : Integrable (fun t : ℝ × ℝ × ℝ =>
       K D u ((4 : ℂ) + (t.1 : ℂ) * I) ((4 : ℂ) + (t.2.1 : ℂ) * I)
         (((Scales.tailShift : ℝ) : ℂ) + (t.2.2 : ℂ) * I) Z) :=

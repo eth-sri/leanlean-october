@@ -44,7 +44,7 @@ private theorem polynomialLaplacian_linearSubstitution (A : Matrix (Fin 3) (Fin 
   change (∑ j, MvPolynomial.pderiv j (MvPolynomial.pderiv j (linearSubstitution A p))) =
     ∑ j, linearSubstitution A (MvPolynomial.pderiv j (MvPolynomial.pderiv j p))
   simp only [pderiv_linearSubstitution, map_sum, MvPolynomial.pderiv_C_mul]
-  simp only [pderiv_linearSubstitution, Finset.mul_sum, ← mul_assoc, ← MvPolynomial.C_mul]
+  simp only [Finset.mul_sum, ← mul_assoc, ← MvPolynomial.C_mul]
   rw [Finset.sum_comm]
   apply Finset.sum_congr rfl
   intro i hi
@@ -98,7 +98,7 @@ private theorem su2_row_norm (k : ComplexSU2) :
   have hu := Matrix.mem_unitaryGroup_iff.mp (Matrix.specialUnitaryGroup_le_unitaryGroup k.property)
   have h := congrArg (fun A : Matrix (Fin 2) (Fin 2) ℂ => (A 1 1).re) hu
   simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply,
-    Complex.mul_re, Complex.star_def, Complex.normSq_apply] at h
+    Complex.mul_re] at h
   nlinarith
 
 noncomputable def hopfMatrix (a b : ℂ) : Matrix (Fin 3) (Fin 3) ℂ :=
@@ -127,7 +127,7 @@ private theorem hopfMatrix_action (l k : ComplexSU2) (i : Fin 3) :
   fin_cases i <;>
     simp [compactSphereCoordinate, hopfMatrix, Matrix.mul_apply,
       Fin.sum_univ_two, Fin.sum_univ_three, h0, h1,
-      Complex.mul_re, Complex.mul_im, Complex.star_def,
+      Complex.mul_re, Complex.mul_im, 
       ← Complex.normSq_eq_norm_sq, Complex.normSq_apply]
   all_goals ring
 
@@ -208,7 +208,7 @@ private theorem rowB_left (a d : ℂˣ) (b : ℂ) (g : ComplexGL2) :
     rowB (upperTriangular a d b * g) = ‖(d : ℂ)‖ ^ 2 * rowB g := by
   change rowB ((upperTriangular a d b : Mat) * (g : Mat)) = _
   change rowB (!![(a : ℂ), b; 0, (d : ℂ)] * (g : Mat)) = _
-  simp [rowB, Matrix.mul_apply, Fin.sum_univ_two, norm_mul, mul_pow, mul_add]
+  simp [rowB, Matrix.mul_apply, Fin.sum_univ_two, mul_pow, mul_add]
 
 private theorem rowW_left (a d : ℂˣ) (b : ℂ) (g : ComplexGL2) :
     rowW (upperTriangular a d b * g) = rowW g := by
@@ -322,7 +322,7 @@ private theorem highestWeightIsotropicPower_directionalDerivative_eq_zero (ℓ :
     MvPolynomial.pderiv 0 (highestWeightIsotropicLinearPolynomial ^ ℓ) +
       MvPolynomial.C Complex.I * MvPolynomial.pderiv 1 (highestWeightIsotropicLinearPolynomial ^ ℓ) = 0 := by
   simp only [MvPolynomial.pderiv_pow]
-  simp [highestWeightIsotropicLinearPolynomial, MvPolynomial.pderiv_C_mul, Pi.single_apply]
+  simp [highestWeightIsotropicLinearPolynomial]
   have hI : (MvPolynomial.C Complex.I : MvPolynomial (Fin 3) ℂ) ^ 2 = -1 := by
     rw [← map_pow]; norm_num
   linear_combination (ℓ : MvPolynomial (Fin 3) ℂ) *
@@ -335,8 +335,8 @@ private theorem highestWeightIsotropicPower_mem_harmonicPolynomials (ℓ : ℕ) 
     have hmul (p : MvPolynomial (Fin 3) ℂ) :
         polynomialLaplacian (highestWeightIsotropicLinearPolynomial * p) = highestWeightIsotropicLinearPolynomial * polynomialLaplacian p +
           2 * (MvPolynomial.pderiv 0 p + MvPolynomial.C Complex.I * MvPolynomial.pderiv 1 p) := by
-      simp [polynomialLaplacian, LinearMap.sum_apply, LinearMap.comp_apply,
-        Fin.sum_univ_succ, highestWeightIsotropicLinearPolynomial, MvPolynomial.pderiv_mul, MvPolynomial.pderiv_C_mul]
+      simp [polynomialLaplacian, LinearMap.comp_apply,
+        Fin.sum_univ_succ, highestWeightIsotropicLinearPolynomial]
       ring
     induction ℓ with
     | zero => simp [polynomialLaplacian, LinearMap.sum_apply, LinearMap.comp_apply]
@@ -489,7 +489,7 @@ private theorem highestWeightNullLinearPolynomial_pow_nullDirectionalDerivative_
     MvPolynomial.pderiv 0 (highestWeightNullLinearPolynomial ^ ℓ) +
       MvPolynomial.C Complex.I * MvPolynomial.pderiv 1 (highestWeightNullLinearPolynomial ^ ℓ) = 0 := by
   simp only [MvPolynomial.pderiv_pow]
-  simp [highestWeightNullLinearPolynomial, MvPolynomial.pderiv_C_mul, Pi.single_apply]
+  simp [highestWeightNullLinearPolynomial]
   have hI : (MvPolynomial.C Complex.I : MvPolynomial (Fin 3) ℂ) ^ 2 = -1 := by
     rw [← map_pow]; norm_num
   linear_combination (ℓ : MvPolynomial (Fin 3) ℂ) *
@@ -502,8 +502,8 @@ private theorem highestWeightNullLinearPolynomial_pow_mem_harmonicPolynomials (�
     have hmul (p : MvPolynomial (Fin 3) ℂ) :
         polynomialLaplacian (highestWeightNullLinearPolynomial * p) = highestWeightNullLinearPolynomial * polynomialLaplacian p +
           2 * (MvPolynomial.pderiv 0 p + MvPolynomial.C Complex.I * MvPolynomial.pderiv 1 p) := by
-      simp [polynomialLaplacian, LinearMap.sum_apply, LinearMap.comp_apply,
-        Fin.sum_univ_succ, highestWeightNullLinearPolynomial, MvPolynomial.pderiv_mul, MvPolynomial.pderiv_C_mul]
+      simp [polynomialLaplacian, LinearMap.comp_apply,
+        Fin.sum_univ_succ, highestWeightNullLinearPolynomial]
       ring
     induction ℓ with
     | zero => simp [polynomialLaplacian, LinearMap.sum_apply, LinearMap.comp_apply]
@@ -531,7 +531,7 @@ private theorem highest_ne (ℓ : ℕ) : highestWeightCompactHarmonic ℓ ≠ 0 
   have he : highestWeightCompactHarmonic ℓ k = 1 := by
     simp [highestWeightCompactHarmonic, polynomialCompactRestriction,
       compactSphereCoordinate, k, Complex.mul_re, Complex.mul_im,
-      ← Complex.ofReal_pow, hr2, ← pow_two, hrc]
+      hr2, ← pow_two, hrc]
   intro hz
   have hh := congrFun hz k
   rw [he] at hh
@@ -782,7 +782,7 @@ noncomputable def openSU2 (x : ℂ) : ComplexSU2 := by
   have hr : r ^ 2 = 1 + Complex.normSq x := Real.sq_sqrt (by linarith)
   refine ⟨!![(star x) / r, -(1 / r); 1 / r, x / r], ?_⟩
   convert su2_matrix (1 / (r : ℂ)) (x / (r : ℂ)) ?_ using 1
-  · simp [map_div₀]
+  · simp
   · simp only [Complex.normSq_div, Complex.normSq_one, Complex.normSq_ofReal]
     rw [← pow_two, hr]
     field_simp [show 1 + Complex.normSq x ≠ 0 by linarith]

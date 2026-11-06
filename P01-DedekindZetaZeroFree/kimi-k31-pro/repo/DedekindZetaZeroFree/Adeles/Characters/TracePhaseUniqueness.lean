@@ -19,7 +19,7 @@ private theorem archPhase_eq_archTraceCharacter_product (A : SArithmeticData F)
     InfinitePlace.Completion.ringEquivComplexOfIsComplex_apply]
   rw [ProbeAdditive.archPhase, ← Complex.exp_sum]
   congr 1
-  simp only [Complex.ofReal_sum, Finset.mul_sum, Complex.ofReal_mul, Complex.ofReal_ofNat]
+  simp only [Finset.mul_sum, Complex.ofReal_mul, Complex.ofReal_ofNat]
   apply Finset.sum_congr rfl
   intro w hw
   ring
@@ -85,7 +85,7 @@ theorem compatible_phase_eq_trace (A : SArithmeticData F)
     have hp := htrace r
     have hc := congrArg (fun z : Circle => (z : ℂ))
       (sLocalTraceCharacter_sIntegerDiagonal_eq_one F A.Sf r)
-    simp only [ProbeAdditive.TraceCompatible, ProbeAdditive.phase, sIntegerDiagonal_apply] at hp
+    simp only [ProbeAdditive.phase, sIntegerDiagonal_apply] at hp
     change ProbeAdditive.archPhase F (sLocalDiagonal F A.Sf (r : F)).1 *
       f (fun w => algebraMap F (w.val.adicCompletion F) (r : F)) = 1 at hp
     rw [sLocalTraceCharacter_apply] at hc

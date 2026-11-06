@@ -49,8 +49,7 @@ def assemblyCost (C : Context Q) : ℝ :=
   (C.mobiusDivisors.card : ℝ) *
     ((ErrorRectangles.scales (C.N / norm C.d)).card : ℝ) ^ 2
 
-theorem envelope_nonneg (C : Context Q) (B : ℝ) : 0 ≤ envelope C B := by
-  exact Real.sSup_nonneg' ⟨0, Or.inl rfl, le_rfl⟩
+theorem envelope_nonneg (C : Context Q) (B : ℝ) : 0 ≤ envelope C B := Real.sSup_nonneg' ⟨0, Or.inl rfl, le_rfl⟩
 
 end DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitTerms.Origin
 

@@ -61,8 +61,7 @@ theorem recipe_zero_free (s : ℂ) (hs : 31 / 32 < s.re) (hs1 : s ≠ 1) :
     (zetaSCont_analytic D) hT hN
     (fun t : ℝ => DedekindZetaZeroFree.Quantitative.MellinAxis.zetaS_mul_T_axis D t)
     (fun s hs => DedekindZetaZeroFree.Quantitative.SpectralData.numerator_ne_zero D s hs.1)
-  have hmem : s ∈ {s : ℂ | 31 / 32 < s.re ∧ s ≠ 1} := ⟨hs, hs1⟩
-  exact key s hmem
+  simp_all
 
 end
 

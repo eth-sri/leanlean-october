@@ -50,7 +50,7 @@ private theorem rawRotationVector_smooth (i : Fin 3) :
   apply (PiLp.continuousLinearEquiv 2 ℝ (fun _ : Fin 3 => ℝ)).symm.contDiff.comp
   apply contDiff_pi.mpr
   intro j
-  simp only [rawRotationVector]
+  simp only
   split_ifs
   · exact (EuclideanSpace.proj (𝕜 := ℝ) (i + 2)).contDiff.neg
   · exact (EuclideanSpace.proj (𝕜 := ℝ) (i + 1)).contDiff
@@ -122,9 +122,9 @@ noncomputable def rawRotationFlowMap (i : Fin 3) (t : ℝ) : Ambient →ₗ[ℝ]
       Real.cos t * x (i+1) - Real.sin t * x (i+2)
     else Real.sin t * x (i+1) + Real.cos t * x (i+2))
   map_add' x y := by
-    ext j; simp only [PiLp.toLp_apply, PiLp.add_apply]; split_ifs <;> ring
+    ext j; simp only [PiLp.add_apply]; split_ifs <;> ring
   map_smul' c x := by
-    ext j; simp only [PiLp.toLp_apply, PiLp.smul_apply, smul_eq_mul, RingHom.id_apply]
+    ext j; simp only [PiLp.smul_apply, smul_eq_mul, RingHom.id_apply]
     split_ifs <;> ring
 
 theorem rawRotationFlowMap_inverse (i : Fin 3) (t : ℝ) (x : Ambient) :
@@ -143,7 +143,7 @@ theorem rawRotationFlowMap_norm (i : Fin 3) (t : ℝ) (x : Ambient) :
   rw [EuclideanSpace.norm_sq_eq, EuclideanSpace.norm_sq_eq]
   have ht := Real.cos_sq_add_sin_sq t
   fin_cases i <;> simp only [Fin.sum_univ_three, rawRotationFlowMap, LinearMap.coe_mk,
-    AddHom.coe_mk, PiLp.toLp_apply, Fin.reduceAdd, Real.norm_eq_abs, sq_abs] <;>
+    AddHom.coe_mk, PiLp.toLp_apply, Real.norm_eq_abs, sq_abs] <;>
     simp <;> nlinarith [sq_nonneg (x 0), sq_nonneg (x 1), sq_nonneg (x 2)]
 
 noncomputable def rawRotationFlow (i : Fin 3) (t : ℝ) : Ambient ≃ₗᵢ[ℝ] Ambient where
@@ -188,7 +188,7 @@ theorem rawSphereOrthogonal_rawRotationFlow_hasDerivAt (i : Fin 3) {F : Sphere �
   have hn : (rawSphereOrthogonal (rawRotationFlow i t) x : Ambient) ≠ 0 := by
     intro hz
     have hs := (rawSphereOrthogonal (rawRotationFlow i t) x).property
-    simp [Metric.mem_sphere, hz] at hs
+    simp [hz] at hs
   have hd := ((hF _ hn).contDiffAt (isOpen_ne.mem_nhds hn)).differentiableAt (by simp)
   have hc := hd.hasFDerivAt.comp_hasDerivAt t (rawRotationFlow_hasDerivAt i (x : Ambient) t)
   simpa only [Function.comp_def, ← rawSphereOrthogonal_coe, rawRadialExtension_sphere,

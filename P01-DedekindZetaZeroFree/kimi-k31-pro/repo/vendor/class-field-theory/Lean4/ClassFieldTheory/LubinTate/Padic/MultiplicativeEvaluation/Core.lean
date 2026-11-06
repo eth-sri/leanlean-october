@@ -251,40 +251,7 @@ theorem padicChangedUniformizerIntertwiner_endomorphism_evaluation
         padicCompletedLevelPowerSeriesEval_subst p n x hx
           H S (padicChangedUniformizerIntertwiner_hasSubst p u) hxH
 
-/-- The changed-uniformizer intertwiner carries the actual multiplicative
-action of `u p` to the defining changed standard Lubin--Tate series. -/
-theorem padicChangedUniformizerIntertwiner_changedSeries_evaluation
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ)
-    (x : (padicCompletedLevelCompleteDVF p n).valuationSubring)
-    (hx : PowerSeries.HasEval x) :
-    padicCompletedLevelPowerSeriesEval p n
-        (padicCompletedMultiplicativeScalarEndomorphismValue p n x hx
-          (standardLubinTateChangedUniformizer
-            (padicLocalField p)
-            (padicIntEquivValuationSubring p (p : ℤ_[p])) u))
-        (padicCompletedMultiplicativeScalarEndomorphismValue_hasEval
-          p n x hx
-          (standardLubinTateChangedUniformizer
-            (padicLocalField p)
-            (padicIntEquivValuationSubring p (p : ℤ_[p])) u))
-        (padicChangedUniformizerIntertwiner p u) =
-      padicCompletedLevelPowerSeriesEval p n
-        (padicCompletedLevelPowerSeriesEval p n x hx
-          (padicChangedUniformizerIntertwiner p u))
-        (padicCompletedLevelPowerSeriesEval_hasEval p n x hx
-          (padicChangedUniformizerIntertwiner p u)
-          (padicChangedUniformizerIntertwiner_hasSubst p u))
-        (padicCompletedChangedStandardSeries p u) := by
-  simpa only [
-    padicCompletedChangedStandardScalarEndomorphismValue,
-    padicCompletedChangedStandardScalarEndomorphism_uniformizer] using
-      padicChangedUniformizerIntertwiner_endomorphism_evaluation
-        p u
-        (standardLubinTateChangedUniformizer
-          (padicLocalField p)
-          (padicIntEquivValuationSubring p (p : ℤ_[p])) u)
-        n x hx
+
 
 /-- Evaluation of the changed-uniformizer intertwiner is injective on
 topologically nilpotent completed-level integers.  Its inverse is the
@@ -698,25 +665,7 @@ theorem padicChangedUniformizerIntertwiner_frobenius_evaluation
       (padicCompletedLevelPowerSeriesEval_hasEval p n x hx U
         (padicCompletedMultiplicativeUnitEndomorphism_hasSubst p u))
 
-/-- At the completed multiplicative primitive point, coefficient Frobenius
-on theta is evaluation of theta at the corresponding unit translate. -/
-theorem
-    padicChangedUniformizerThetaValue_frobeniusCoefficients
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
-    padicCompletedLevelPowerSeriesEval p n
-        (padicCompletedMultiplicativePrimitivePoint p n)
-        (padicCompletedMultiplicativePrimitivePoint_hasEval p n)
-        (PowerSeries.map WittVector.frobenius
-          (padicChangedUniformizerIntertwiner p u)) =
-      padicCompletedLevelPowerSeriesEval p n
-        (padicCompletedMultiplicativePrimitivePointUnitAction p u n)
-        (padicCompletedMultiplicativePrimitivePointUnitAction_hasEval p u n)
-        (padicChangedUniformizerIntertwiner p u) := by
-  simpa only [padicCompletedMultiplicativePrimitivePointUnitAction] using
-    padicChangedUniformizerIntertwiner_frobenius_evaluation p u n
-      (padicCompletedMultiplicativePrimitivePoint p n)
-      (padicCompletedMultiplicativePrimitivePoint_hasEval p n)
+
 
 end LubinTate
 

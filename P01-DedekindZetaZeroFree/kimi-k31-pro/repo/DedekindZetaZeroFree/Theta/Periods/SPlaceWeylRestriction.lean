@@ -37,7 +37,7 @@ theorem sRestriction_rational (x : Fˣ) :
   intro w
   cases w with
   | inl w =>
-    simp only [sRestriction, restrictTuple_eval, Set.mem_compl_iff, exteriorPlaces_arch, if_true]
+    simp only [sRestriction, restrictTuple_eval, Set.mem_compl_iff, exteriorPlaces_arch]
     change KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inl w) _ =
       KPStandardLocalRootLifts.A F R.A.zeta12 R.A.primitive_zeta12 (Sum.inl w) _
     have hr := eval_rationalUnit F (Sum.inl w) x
@@ -69,7 +69,7 @@ theorem sRestriction_digit (m : ThetaReflectionData.Row R.A)
   intro w
   cases w with
   | inl w =>
-    simp only [sRestriction, restrictTuple_eval, Set.mem_compl_iff, exteriorPlaces_arch, if_true]
+    simp only [sRestriction, restrictTuple_eval, Set.mem_compl_iff, exteriorPlaces_arch]
     change KPStandardLocalRootLifts.N F R.A.zeta12 R.A.primitive_zeta12 (Sum.inl w) _ = 1
     rw [DigitMasks.digitParameter_arch, KPStandardLocalRootLifts.N_zero]
   | inr p =>

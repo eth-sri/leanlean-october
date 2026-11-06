@@ -32,8 +32,7 @@ private theorem value_one_fixed (B : LocalBorelData (K := K) (G := G) T)
  rw [one_mul] at hfix
  change f.val (B.torus j.val) =
    inducingScalar B 0 (B.torus j.val) • tau P (B.retract (B.torus j.val)) (f.val 1) at hcov
- rw [hs, one_smul] at hcov
- rw [B.retract_torus] at hcov
+ rw [hs, one_smul, B.retract_torus] at hcov
  exact hcov.symm.trans hfix
 
 variable {F : Type} [Field F] [NumberField F] (A : SArithmeticData F)

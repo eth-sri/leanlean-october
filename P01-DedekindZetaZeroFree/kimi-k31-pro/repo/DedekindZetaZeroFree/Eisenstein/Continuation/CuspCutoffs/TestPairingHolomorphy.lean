@@ -251,7 +251,7 @@ private theorem pairing_testLaplacian_sum {n : ℕ} (ψ : Fin n → Tests F ζ h
   simp only [← KPCuspCutoffGraph.divergence_differential_local]
   simp only [map_sum, Submodule.coe_sum]
   funext x
-  simp only [Submodule.coe_sum, Finset.sum_apply]
+  simp only [Finset.sum_apply]
 
 private theorem pairing_testScalar_sum {n : ℕ} (ψ : Fin n → Tests F ζ hζ C R P H U) :
     testScalar F ζ hζ C R P H U (∑ i, ψ i) =
@@ -260,7 +260,7 @@ private theorem pairing_testScalar_sum {n : ℕ} (ψ : Fin n → Tests F ζ hζ 
       ((KPContSectorScalarLineAlgebra.S F ζ hζ (level F ζ hζ C R P H U) R P H).symm φ.val).val := rfl
   simp only [he, Submodule.coe_sum, map_sum]
   funext x
-  simp only [Submodule.coe_sum, Finset.sum_apply]
+  simp only [Finset.sum_apply]
 
 end ActualCharts
 
@@ -469,7 +469,7 @@ private lemma covered_pairing_holomorphy
         fun x => ∑ i, coveredPair F ζ hζ C R P H U (v s) (p (τ i)) x := by
       rw [hsum]
       funext x
-      simp [coveredPair, map_sum, Finset.mul_sum]
+      simp [coveredPair, Finset.mul_sum]
     constructor
     · intro s hs
       change Integrable (coveredPair F ζ hζ C R P H U (v s) (p φ)) _

@@ -40,17 +40,17 @@ theorem W1Hat_mul_plus_decay (u : Frequency D.recipe) (hu : u ≠ principalFrequ
   have hpos : (0 : ℝ) < 1 + |t| := by positivity
   have h2t : (2 + |t|) ^ A ≤ 2 ^ A * (1 + |t|) ^ A := by
     rw [← Real.mul_rpow (by norm_num) hpos.le]
-    exact Real.rpow_le_rpow (by positivity) (by linarith [abs_nonneg t]) hA
+    exact Real.rpow_le_rpow (by positivity) (by grind) hA
   have hkA : A + B ≤ k := Nat.le_ceil _
   have hexp : (1 + |t|) ^ (A - k) ≤ (1 + |t|) ^ (-B) := by
-    apply Real.rpow_le_rpow_of_exponent_le (by linarith [abs_nonneg t]); linarith
+    apply Real.rpow_le_rpow_of_exponent_le (by grind); linarith
   have hsplit : (1 + |t|) ^ A * ((1 + |t|) ^ (-(k : ℝ))) = (1 + |t|) ^ (A - k) := by
     rw [← Real.rpow_add hpos]; ring_nf
   have hkk : ((1 + |t|) ^ k : ℝ) = (1 + |t|) ^ (k : ℝ) := (Real.rpow_natCast _ _).symm
   have ha0 : 0 ≤ ‖D.W1Hat ((y : ℂ) + (t : ℂ) * I)‖ := norm_nonneg _
   have ha : ‖D.W1Hat ((y : ℂ) + (t : ℂ) * I)‖ ≤ |CW| * (1 + |t|) ^ (-(k : ℝ)) := by
     rw [Real.rpow_neg hpos.le, ← hkk, ← div_eq_mul_inv, le_div_iff₀ (pow_pos hpos k)]
-    nlinarith [le_abs_self CW]
+    grind
   have hLn : ‖(pkg D).plus u ((y : ℂ) + (t : ℂ) * I)‖ ≤ CL * (2 ^ A * (1 + |t|) ^ A) :=
     hL'.trans (mul_le_mul_of_nonneg_left h2t hCL.le)
   have hp1 : 0 ≤ (1 + |t|) ^ A := Real.rpow_nonneg hpos.le _
@@ -58,7 +58,7 @@ theorem W1Hat_mul_plus_decay (u : Frequency D.recipe) (hu : u ≠ principalFrequ
       ≤ (|CW| * (1 + |t|) ^ (-(k : ℝ))) * (CL * (2 ^ A * (1 + |t|) ^ A)) :=
         mul_le_mul ha hLn (norm_nonneg _) (by positivity)
     _ = (CL * 2 ^ A * |CW|) * ((1 + |t|) ^ A * (1 + |t|) ^ (-(k : ℝ))) := by ring
-    _ = (CL * 2 ^ A * |CW|) * (1 + |t|) ^ (A - k) := by rw [hsplit]
+    _ = (CL * 2 ^ A * |CW|) * (1 + |t|) ^ (A - k) := by grind
     _ ≤ (CL * 2 ^ A * |CW|) * (1 + |t|) ^ (-B) :=
         mul_le_mul_of_nonneg_left hexp (by positivity)
 
@@ -86,10 +86,7 @@ private theorem comb_aux {X Q G1 G2 Mn W P L cp mi bX bG bM bWP bL bcp bmi : ℝ
   have p6 : 0 ≤ bX * Q * (bG * bM) * bWP * bL * bcp := mul_nonneg p5 hbcp
   have h7 : X * Q * (G1 * G2 * Mn) * (W * P) * L * cp * mi ≤
       bX * Q * (bG * bM) * bWP * bL * bcp * bmi := mul_le_mul h6 hmi hmi0 p6
-  calc X * Q * (G1 * G2 * Mn * W) * (L * P * cp * mi)
-      = X * Q * (G1 * G2 * Mn) * (W * P) * L * cp * mi := by ring
-    _ ≤ bX * Q * (bG * bM) * bWP * bL * bcp * bmi := h7
-    _ = bX * Q * bG * bM * bWP * bL * bcp * bmi := by ring
+  grind
 
 theorem rawKernel_w_bound (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
     (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) (hξ : ξ.re = 4) (B : ℝ) :
@@ -115,7 +112,7 @@ theorem rawKernel_w_bound (u : Frequency D.recipe) (hu : u ≠ principalFrequenc
   obtain ⟨CZ, hCZ⟩ := (isCompact_Icc (a := Scales.wLine - EulerDomain.pad / 2)
     (b := 4 + EulerDomain.pad / 2)).exists_bound_of_continuousOn hcont.continuousOn
   have hmi : ‖(pkg D).minus u ξ‖⁻¹ ≤ C4 := by
-    rw [← norm_inv]; exact (hminus u ξ hξ.ge).2.2
+    rw [← norm_inv]; grind
   refine ⟨|CZ| * frequencyNorm D.recipe u ^ (-Scales.zLine) * Real.exp ((4 + Scales.zLine - 1) ^ 2) *
     |CM| * CWL * C1 * |Hc| * C4, by positivity, ?_⟩
   intro y s t h1y h2y
@@ -132,12 +129,12 @@ theorem rawKernel_w_bound (u : Frequency D.recipe) (hu : u ≠ principalFrequenc
           ‖(pkg D).minus u ξ‖⁻¹) := by
     have e1 := RawKernelNorm.norm_rawKernel D u ξ Scales.zLine y (s, t) Z hZ
     rw [RawKernelNorm.weightModulus_eq, RawKernelNorm.norm_rawFactor] at e1
-    exact e1
+    grind
   rw [e]
   have hZb : Z ^ (Scales.kernelExponent ξ.re y Scales.zLine) ≤ |CZ| := by
     have h := hCZ y ⟨h1y, h2y⟩
     simp only [Real.norm_eq_abs] at h
-    exact (le_abs_self _).trans (h.trans (le_abs_self _))
+    grind
   have hGb : Real.exp ((ξ.re + Scales.zLine - 1) ^ 2) * Real.exp (-(ξ.im + s) ^ 2) ≤
       Real.exp ((4 + Scales.zLine - 1) ^ 2) := by
     rw [hξ]
@@ -155,7 +152,7 @@ theorem rawKernel_w_bound (u : Frequency D.recipe) (hu : u ≠ principalFrequenc
       h.trans (le_abs_self _)
     rw [Real.rpow_neg hpos.le, Real.rpow_two, ← div_eq_mul_inv, le_div_iff₀ (pow_pos hpos 2),
       mul_comm]
-    exact h'
+    grind
   have hmem : ((ξ, ((y : ℂ) + (t : ℂ) * I), ((Scales.zLine : ℂ) + (s : ℂ) * I)) :
       EulerDomain.Coordinates) ∈ EulerDomain.paddedBoxes := by
     have h1 : Scales.goodLine - EulerDomain.pad ≤ ξ.re := by
@@ -177,8 +174,7 @@ theorem rawKernel_w_bound (u : Frequency D.recipe) (hu : u ≠ principalFrequenc
     (inv_nonneg.mpr (norm_nonneg _)) (abs_nonneg _) (Real.exp_pos _).le
     (mul_nonneg (abs_nonneg _) (Real.rpow_nonneg hpos.le _))
     (mul_nonneg hCWL0 (Real.rpow_nonneg (by positivity) _)) hC1.le (abs_nonneg _)
-  refine le_trans hfin (le_of_eq ?_)
-  ring
+  grind
 
 private theorem kdiff (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
     (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) (hξ : ξ.re = 4) (w z : ℂ)
@@ -193,11 +189,11 @@ private theorem kdiff (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.
     show 0 < ξ.re ∧ 0 < w.re ∧ 0 < z.re ∧ 1 < 6 * z.re + w.re ∧ 1 < ξ.re + 6 * z.re ∧
       1 < ξ.re + w.re ∧ 2 < ξ.re + w.re + 6 * z.re ∧ 5 < 6 * ξ.re + 6 * z.re ∧
       1 / 2 < ξ.re ∧ 2 < 3 * ξ.re ∧ 5 / 2 < 3 * ξ.re + w.re
-    refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> linarith
+    grind
   obtain ⟨C4, _, hminus⟩ := RawRightHecke31.minus_right D 4 (by norm_num)
   have hne : (pkg D).minus u ξ ≠ 0 := (hminus u ξ hξ.ge).1
   exact RawKernelRegularity31.rawKernel_differentiableAt D u hu Z hZ (ξ, w, z) hmemΩ
-    (by show (1 : ℝ) / 6 < z.re; rw [hz]; unfold Scales.zLine; norm_num) hne
+    (by grind) hne
 
 theorem rawKernel_differentiableOn_w (u : Frequency D.recipe)
     (hu : u ≠ principalFrequency D.recipe) (Z : ℝ) (hZ : 0 < Z) (ξ z : ℂ) (hξ : ξ.re = 4)
@@ -264,7 +260,7 @@ theorem Iz_differentiableOn_w (u : Frequency D.recipe) (hu : u ≠ principalFreq
         rw [Complex.sub_re] at this
         exact this.trans_lt (by rw [← dist_eq_norm]; exact Metric.mem_ball.mp hw)
       have := abs_lt.mp hd
-      constructor <;> linarith [this.1, this.2]
+      grind
     refine ⟨r, hr, fun w hw => hball w hw, fun s => ‖(2 * (Real.pi : ℂ))⁻¹‖ * C *
       (1 + |s|) ^ (-(2 : ℝ)), ?_, ?_⟩
     · exact (KernelWeightIntegration.one_add_abs_rpow_integrable 2 (by norm_num)).const_mul _
@@ -294,8 +290,8 @@ theorem Iz_differentiableOn_w (u : Frequency D.recipe) (hu : u ≠ principalFreq
   obtain ⟨hw1, hw2⟩ := hw
   show lo < w.re ∧ w.re < hi
   constructor
-  · rw [hlo]; linarith
-  · rw [hhi]; linarith
+  · grind
+  · grind
 
 theorem Iz_decayOn_w (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
     (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) (hξ : ξ.re = 4) :

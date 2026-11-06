@@ -26,7 +26,7 @@ theorem four_term
       defect G M f (g * h) k l * defect G M f g h (k * l) := by
   simp only [defect, mul_assoc, ← mul_div_mul_comm]
   rw [div_eq_div_iff_mul_eq_mul]
-  simp only [mul_assoc, mul_left_comm, mul_comm]
+  simp only [mul_left_comm, mul_comm]
 
 theorem good_mul
     (G : Type*) [Monoid G] (M : Type*) [CommGroup M]
@@ -45,8 +45,7 @@ theorem defect_eq_one_iff
       KubotaElementaryLastArgument.tau K M B g h *
           KubotaElementaryLastArgument.tau K M B (g * h) k =
         KubotaElementaryLastArgument.tau K M B h k *
-          KubotaElementaryLastArgument.tau K M B g (h * k) := by
-  exact div_eq_one
+          KubotaElementaryLastArgument.tau K M B g (h * k) := div_eq_one
 
 theorem tau_cocycle
     (K : Type*) [Field K] (M : Type*) [CommGroup M]

@@ -26,11 +26,11 @@ private theorem local_norm_fourierCoeffOn_le {a b M : ℝ} (hab : a < b) (f : �
     apply intervalIntegral.norm_integral_le_of_norm_le_const
     intro u hu
     rw [norm_smul, fourier_apply, Circle.norm_coe, one_mul]
-    exact hbound u (Set.Ioc_subset_Icc_self (by simpa only [Set.uIoc_of_le hab.le] using hu))
+    grind
   calc
     (1 / (b - a)) * ‖∫ u in a..b, fourier (-j) (u : AddCircle (b - a)) • f u‖
       ≤ (1 / (b - a)) * (M * |b - a|) := mul_le_mul_of_nonneg_left hh (by positivity)
-    _ = M := by rw [abs_of_pos (sub_pos.mpr hab)]; field_simp [sub_pos.mpr hab |>.ne']
+    _ = M := by grind
 
 private theorem local_twice_integration_by_parts {a b : ℝ} (hab : a < b)
     (f f₁ f₂ : ℝ → ℂ)
@@ -67,14 +67,14 @@ theorem quadratic_coefficient_bound {Y : Type*} (f : Y → ℝ → ℂ)
     simp only [add_sub_cancel_left]
     rw [intervalIntegral.integral_of_le hab.le]
     rw [normalizedCoefficient, ← integral_Icc_eq_integral_Ioc]
-    simp only [Complex.real_smul, Complex.ofReal_div, Complex.ofReal_one, one_div,
+    simp only [Complex.real_smul, one_div,
       Complex.ofReal_inv]
     congr 1
     apply setIntegral_congr_fun measurableSet_Icc
     intro u hu
     dsimp only
     rw [fourier_coe_apply, smul_eq_mul]
-    simp only [Int.cast_neg, mul_neg, neg_mul, mul_comm, add_sub_cancel_left]
+    grind
   let D : ℝ := ‖(L : ℂ) / (2 * Real.pi * Complex.I)‖ ^ 2 * B
   refine ⟨B + 2 * D, by dsimp [D]; positivity, ?_⟩
   intro j y
@@ -120,7 +120,7 @@ theorem quadratic_coefficient_bound {Y : Type*} (f : Y → ℝ → ℂ)
       rw [norm_mul, norm_pow, norm_div, Complex.norm_intCast, div_pow, sq_abs]
       exact mul_le_mul_of_nonneg_left
         (local_norm_fourierCoeffOn_le hab (iteratedDeriv 2 (f y)) (fun u _ => hf₂ u) j)
-        (by positivity) |>.trans_eq (by dsimp [D]; ring)
+        (by positivity) |>.trans_eq (by grind)
     apply hcoef.trans
     apply (div_le_div_iff₀ (sq_pos_of_ne_zero hjR) (by positivity : 0 < 1 + (j : ℝ)^2)).mpr
     nlinarith [mul_nonneg hB (sq_nonneg (j : ℝ)), mul_nonneg hD (sub_nonneg.mpr hs)]
@@ -150,7 +150,7 @@ theorem hasSum_normalized_coefficients (f : ℝ → ℂ) (a L b0 b1 : ℝ)
     by_contra h
     have hxs : x ∈ Function.support f := by simpa [Function.mem_support] using h
     exact absurd (hsupport (subset_tsupport f hxs)) (by
-      rintro ⟨h1, h2⟩; rcases hx with h | h <;> linarith)
+      grind)
   have hfa : f a = 0 := hfzero a (Or.inl ha)
   have hfb : f (a + L) = 0 := hfzero (a + L) (Or.inr (by linarith))
   haveI : Fact (0 < L) := ⟨hL⟩
@@ -158,7 +158,7 @@ theorem hasSum_normalized_coefficients (f : ℝ → ℂ) (a L b0 b1 : ℝ)
   let g : C(AddCircle L, ℂ) :=
     ⟨AddCircle.liftIoc L a f,
       AddCircle.liftIoc_continuous (p := L) (a := a) (f := f)
-        (by rw [hfa, hfb]) hf.continuousOn⟩
+        (by grind) hf.continuousOn⟩
 
   have hcoeff : ∀ j : ℤ, fourierCoeff g j = normalizedCoefficient f a L j := by
     intro j
@@ -174,14 +174,12 @@ theorem hasSum_normalized_coefficients (f : ℝ → ℂ) (a L b0 b1 : ℝ)
         change fourier (-j) (x : AddCircle L) * AddCircle.liftIoc L a f (x : AddCircle L)
           = f x * Complex.exp (-2 * (Real.pi : ℂ) * Complex.I * (j : ℂ) * (x : ℂ) / (L : ℂ))
         rw [AddCircle.liftIoc_coe_apply hx, fourier_coe_apply, mul_comm]
-        congr 1
-        push_cast
-        ring_nf
+        grind
     have h2 : normalizedCoefficient f a L j =
         (L : ℂ)⁻¹ * ∫ x in Set.Ioc a (a + L),
           f x * Complex.exp (-2 * (Real.pi : ℂ) * Complex.I * (j : ℂ) * (x : ℂ) / (L : ℂ)) := by
       rw [normalizedCoefficient, integral_Icc_eq_integral_Ioc]
-    rw [h1, h2]
+    grind
   have hsumg : Summable (fourierCoeff g) := hsummable.congr fun j => (hcoeff j).symm
   intro u hu
   have hpt := has_pointwise_sum_fourier_series_of_summable hsumg (u : AddCircle L)
@@ -271,8 +269,7 @@ theorem row_eq_zero_outside_range (A : SArithmeticData F) (W0 : SLocalProduct F 
     (y : SLocalProduct F A.Sf) : row A W0 W1 v y = 0 := by
   have hz : W1 v = 0 := by
     apply image_eq_zero_of_notMem_tsupport
-    intro h
-    exact hv (Set.Ioo_subset_Icc_self (hsupport h))
+    grind
   simp [row, hz]
 
 theorem summable_norm_modes (A : SArithmeticData F) (c : ℤ → SLocalProduct F A.Sf →ᵇ ℂ)
@@ -344,15 +341,12 @@ theorem exists_positive_support_range (W1 : ProbeRealAnnularWeight) :
     (fun v hv => W1.support_positive hv)
   obtain ⟨M, hM⟩ := W1.compactSupport.bddAbove
   refine ⟨m / 2, max M m + 1, by linarith, ?_, ?_⟩
-  · have := le_max_right M m
-    linarith
+  · grind
   · intro v hv
     constructor
-    · have h : m ≤ v := hmin v hv
-      linarith
+    · grind
     · have h := hM hv
-      have := le_max_left M m
-      linarith
+      grind
 
 theorem exists_log_period {v0 v1 : ℝ} (hv0 : 0 < v0) (hv1 : v0 < v1) :
     ∃ a L : ℝ, 0 < L ∧ a < Real.log v0 ∧ Real.log v1 < a + L ∧
@@ -364,7 +358,7 @@ theorem exists_log_period {v0 v1 : ℝ} (hv0 : 0 < v0) (hv1 : v0 < v1) :
   have hvpos : 0 < v := hv0.trans_le hv.1
   have hleft := Real.log_le_log hv0 hv.1
   have hright := Real.log_le_log hvpos hv.2
-  constructor <;> linarith
+  grind
 
 theorem exists_compact_annulus (A : SArithmeticData F) (W0 : SLocalProduct F A.Sf → ℂ)
     (hcompact : HasCompactSupport W0) (hannular : tsupport W0 ⊆ {x | IsUnit x})
@@ -459,7 +453,7 @@ theorem summable_norm_coefficients_of_quadratic_bound (A : SArithmeticData F)
     (hbound : ∀ j : ℤ, ‖c j‖ ≤ C / (1 + (j : ℝ) ^ 2)) :
     Summable (fun j => ‖c j‖) := by
   apply (summable_quadratic_majorant.mul_left C).of_nonneg_of_le (fun j => norm_nonneg _) (fun j => ?_)
-  simpa only [mul_one_div] using hbound j
+  grind
 
 theorem continuous_weight (A : SArithmeticData F) (W0 : SLocalProduct F A.Sf → ℂ)
     (hW0 : ProbeWeight.IsAnnularTensor F A.Sf W0) : Continuous W0 := by
@@ -543,7 +537,7 @@ theorem continuous_coefficient_of_continuous (A : SArithmeticData F) (W0 : SLoca
           Complex.exp (-2 * (Real.pi : ℂ) * Complex.I * (j : ℂ) * (u : ℂ) / (L : ℂ)) ∂volume) :=
       continuous_const.mul hi
     simp only [intervalIntegral.integral_of_le hab, ← integral_Icc_eq_integral_Ioc] at hi'
-    exact hi'
+    grind
   · have hempty : Set.Icc a (a + L) = ∅ := Set.Icc_eq_empty_of_lt (by linarith)
     simpa only [coefficient, hempty, Measure.restrict_empty, integral_zero_measure, mul_zero]
       using (continuous_const : Continuous (fun _ : SLocalProduct F A.Sf => (0 : ℂ)))

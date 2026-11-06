@@ -150,7 +150,7 @@ theorem kp_cusp_lineEquivalent_iff_lineClass_eq
       have hleft : (e (s, (0 : J.val)) : K × K) = t • v := by simpa using he s (0 : J.val)
       have hright : (f (e (s, (0 : J.val))) : K × K) = (eI s : K) • v' := by
         simp only [f, LinearEquiv.trans_apply, LinearEquiv.symm_apply_apply,
-          LinearEquiv.prodCongr_apply, map_zero]
+          LinearEquiv.prodCongr_apply]
         have hz : eJ (0 : J.val) = (0 : J'.val) := map_zero eJ
         rw [hz]
         simpa using he' (eI s) (0 : J'.val)

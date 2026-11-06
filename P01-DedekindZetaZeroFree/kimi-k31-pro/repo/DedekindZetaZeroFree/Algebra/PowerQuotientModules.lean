@@ -15,7 +15,7 @@ theorem powerQuotient_pow_eq_one (G : Type*) [CommGroup G] (n : ℕ)
   induction q using QuotientGroup.induction_on with
   | H g =>
     rw [← QuotientGroup.mk_pow, QuotientGroup.eq_one_iff]
-    exact MonoidHom.mem_range.mpr ⟨g, powMonoidHom_apply n g⟩
+    simp_all
 
 noncomputable instance instPowerQuotientModule (G : Type*) [CommGroup G] (n : ℕ) :
     Module (ZMod n) (Additive (PowerQuotient G n)) :=

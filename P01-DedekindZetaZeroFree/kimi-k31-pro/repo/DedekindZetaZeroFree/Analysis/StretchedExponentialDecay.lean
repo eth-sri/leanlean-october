@@ -34,7 +34,7 @@ theorem thetaStretchedExponentialPower_bound (p B : ℝ) (hp : 0 < p) (hB : 0 < 
     filter_upwards [Filter.eventually_ge_atTop (1 : ℝ)] with t ht
     rw [one_mul, norm_mul, Real.norm_of_nonneg hA,
       Real.norm_of_nonneg (Real.exp_pos _).le]
-    exact hF t ht
+    simp_all
   have hlit : Asymptotics.IsLittleO Filter.atTop
       (fun t : ℝ => A * Real.exp (-B * Real.rpow t p))
       (fun t : ℝ => Real.rpow t r) :=

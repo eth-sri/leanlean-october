@@ -28,11 +28,11 @@ private theorem finite_matching
     (hx : ∀ a ∈ S,
       (∀ k ∈ K, KPGlobalCubicIdelePairing.beta3 F ζ hζ a k = 1) →
       KPGlobalCubicIdelePairing.beta3 F ζ hζ x a = 1)
-    (u : Finset (S)) :
+    (u : Finset S) :
     ∃ k ∈ K, ∀ a ∈ u,
       KPGlobalCubicIdelePairing.beta3 F ζ hζ k a.val =
         KPGlobalCubicIdelePairing.beta3 F ζ hζ x a.val := by
-  let H := Subgroup.closure (u : Set (S))
+  let H := Subgroup.closure (u : Set S)
   have hpow (a : H) : a ^ 3 = 1 := by
     apply Subtype.ext
     apply Subtype.ext
@@ -45,7 +45,7 @@ private theorem finite_matching
     HasEnoughRootsOfUnity.of_dvd F (Monoid.exponent_dvd_of_forall_pow_eq_one hpow)
   let r : KPGlobalCubicIdelePairing.D F →* (H →* Fˣ) :=
     MonoidHom.mk' (fun d => (pairingHom F ζ hζ d).comp
-      ((S).subtype.comp H.subtype))
+      (S.subtype.comp H.subtype))
       (fun d e => MonoidHom.ext (fun a => by
         change pairingHom F ζ hζ (d * e) a.val.val = _
         exact DFunLike.congr_fun (map_mul (pairingHom F ζ hζ) d e) a.val.val))
@@ -148,7 +148,7 @@ private theorem maximal_mem_of_annihilates {G : Type*} [CommGroup G]
     obtain ⟨n, rfl⟩ := Subgroup.mem_zpowers_iff.mp hu'
     obtain ⟨p, rfl⟩ := Subgroup.mem_zpowers_iff.mp hv'
     simp only [map_mul, MonoidHom.mul_apply, hL.1 l hl m hm,
-      hlx l hl p, hxl m hm n, hxx n p, mul_one, one_mul]
+      hlx l hl p, hxl m hm n, hxx n p, mul_one]
   have heq := hL.2 _ le_sup_left hiso
   rw [← heq]
   exact Subgroup.mem_sup_right (Subgroup.mem_zpowers x)
@@ -392,7 +392,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
     ext i j
     fin_cases i <;> fin_cases j <;>
       simp [KPGlobalCubicIdelePairing.diagonalHom, KPGlobalCubicIdelePairing.diagonalMatrix,
-        Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
+        Matrix.GeneralLinearGroup.coe_scalar,
         Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar, hu, hA.2.1, hA.2.2]
     exact hw.symm
   change QuotientGroup.mk' _ (KPGlobalCubicIdelePairing.diagonalHom F (u * w⁻¹)) = t.val
@@ -568,7 +568,7 @@ theorem right_level_lifts_force_orthogonality_and_phase
       change x * k.val = (k.val * j.val⁻¹) * (x * j.val)
       calc
         x * k.val = (x * (k.val * j.val⁻¹)) * j.val := by group
-        _ = ((k.val * j.val⁻¹) * x) * j.val := by exact congrArg (fun t => t * j.val) hc
+        _ = ((k.val * j.val⁻¹) * x) * j.val := congrArg (fun t => t * j.val) hc
         _ = (k.val * j.val⁻¹) * (x * j.val) := by group
     change ψ j = 1 at hjψ
     have hbψ : ψ b = ψ k := by

@@ -372,7 +372,7 @@ private theorem direction_smooth (X : Mat) {b} (hb : ContDiffOn ℝ ∞ b invDom
     have he' := (he.mul_const (a z)).mul hd.hasFDerivAt
     change _ = (fderiv ℝ (((fun y => Complex.exp (exponent z * phase y) * a z) * b)) h) (h * X)
     rw [he'.fderiv]
-    simp [atom, ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply,
+    simp [atom, 
       direction]
     ring
   | @add H G hf hg ihf ihg =>

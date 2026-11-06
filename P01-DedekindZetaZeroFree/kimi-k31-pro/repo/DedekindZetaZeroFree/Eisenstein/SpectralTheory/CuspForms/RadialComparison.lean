@@ -1188,9 +1188,9 @@ theorem fullPlacePair_normSquare (W : T_U F ζ hζ U R P H)
     (KPContActualCotangentMeasurableFamilies.normSquare W.val x : ℝ) := by
   obtain ⟨a, y, rfl⟩ := actual_lift_exists F ζ hζ U R P H x
   simp only [KPContActualCotangentMeasurableFamilies.normSquare_chart,
-    map_sum, KPContActualSectorFriedrichsSynthesis.placePair_chart,
+    KPContActualSectorFriedrichsSynthesis.placePair_chart,
     Complex.re_sum,
-    Complex.ofReal_re, NNReal.coe_pow, coe_nnnorm, PiLp.norm_sq_eq_of_L2,
+    NNReal.coe_pow, coe_nnnorm, PiLp.norm_sq_eq_of_L2,
     Fintype.sum_prod_type]
   simp [inner_self_eq_norm_sq_to_K, ← Complex.ofReal_pow]
 

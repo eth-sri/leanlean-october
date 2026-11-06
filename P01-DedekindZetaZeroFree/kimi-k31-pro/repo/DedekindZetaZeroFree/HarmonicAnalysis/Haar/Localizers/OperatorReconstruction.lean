@@ -69,7 +69,7 @@ open HyperbolicChart
     by_cases h2 : ik.2 = 2
     · simp [h2]
     · by_cases h0 : ik.2 = 0
-      · simp [h2, h0, mul_add]
+      · simp [h0, mul_add]
       · simp [h2, h0, mul_add]
   map_smul' := by
     intro c a
@@ -79,8 +79,8 @@ open HyperbolicChart
     by_cases h2 : ik.2 = 2
     · simp [h2]
     · by_cases h0 : ik.2 = 0
-      · simp [h2, h0, mul_comm, mul_left_comm, mul_assoc]
-      · simp [h2, h0, mul_comm, mul_left_comm, mul_assoc]
+      · simp [h0, mul_comm, mul_assoc]
+      · simp [h2, h0, mul_comm, mul_assoc]
 
  def scaleT (d : ℕ) (z : KPArch.Space d) :
     KPArch.Space d →L[ℝ] HyperbolicChart.Space d :=
@@ -183,7 +183,7 @@ private theorem metric_positive (C : Chart F ζ hζ U R P H) :
     intro x v
     rw [← gram_quadform (Sx x) (WithLp.toLp 2 v)]
     simp only [KPCoreChartLocalizers.Chart.metricMatrix, hmetric, dotProduct, Matrix.mulVec, Finset.mul_sum,
-      PiLp.toLp_apply]
+      ]
     apply Finset.sum_congr rfl
     intro j _
     apply Finset.sum_congr rfl
@@ -226,7 +226,7 @@ theorem metric_upper_bound (C : Chart F ζ hζ U R P H) : ∃ B : ℝ,
       intro i hi
       have hci := ((continuous_apply i).comp_continuousOn C.smooth_coordinates.continuousOn).snd
       have hfi := (continuous_apply i).comp_continuousOn (hf v)
-      convert ((hfi.fst.norm.div (Real.continuous_exp.comp_continuousOn hci) (fun x hx => Real.exp_ne_zero _)).pow 2).add (hfi.snd.pow 2) using 1 <;> funext x <;> simp [Function.comp_def, div_pow, div_eq_mul_inv, mul_comm, mul_pow, inv_pow]
+      convert ((hfi.fst.norm.div (Real.continuous_exp.comp_continuousOn hci) (fun x hx => Real.exp_ne_zero _)).pow 2).add (hfi.snd.pow 2) using 1 <;> funext x <;> simp [Function.comp_def, div_eq_mul_inv, mul_comm, mul_pow, inv_pow]
     exact (((hm _).sub (hm _)).sub (hm _)).div_const 2
   have he : ContinuousOn (C.energyMatrix F ζ hζ H.totallyComplex U) C.extendedDomain := by
     intro x hx
@@ -315,7 +315,7 @@ theorem smooth_cutoff_coefficient
       (C.smooth_coordinates.contDiffAt (C.open_extendedDomain.mem_nhds hxe)))
   · apply (contDiffAt_const (c := (0 : ℂ))).congr_of_eventuallyEq
     filter_upwards [notMem_tsupport_iff_eventuallyEq.mp hx] with y hy
-    simp [g, hy]
+    simp [hy]
 
 theorem average_cutoff_section
     (C : Chart F ζ hζ U R P H) (η : KPCoreChartLocalizers.E C.n → ℝ)

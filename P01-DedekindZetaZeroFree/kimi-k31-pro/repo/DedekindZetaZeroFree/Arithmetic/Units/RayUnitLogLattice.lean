@@ -94,12 +94,12 @@ private theorem sum_h (h : logHyperplane K) :
           else x ⟨v.val, hv⟩ / (InfinitePlace.mult v.val : ℝ)) = ∑ v, x v := by
       apply Finset.sum_congr rfl
       intro v _
-      simp [v.property, mul_div_cancel₀, InfinitePlace.mult_coe_ne_zero]
+      simp [v.property, mul_div_cancel₀]
     rw [hs]
     exact neg_add_cancel _
   refine ⟨⟨h, hh⟩, ?_⟩
   ext v
-  simp [coords, h, v.property, InfinitePlace.mult_coe_ne_zero, mul_div_cancel₀]
+  simp [coords, h, v.property, mul_div_cancel₀]
  def coordEquiv : logHyperplane K ≃ₗ[ℝ] logSpace K :=
   LinearEquiv.ofBijective (coords K) ⟨coords_injective K, coords_surjective K⟩
  theorem full_eq_comap : fullUnitLogLattice K =

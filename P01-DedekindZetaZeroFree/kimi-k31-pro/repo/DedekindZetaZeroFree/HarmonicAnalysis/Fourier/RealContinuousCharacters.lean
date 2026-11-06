@@ -4,6 +4,7 @@ public import Mathlib.Analysis.SpecialFunctions.Complex.Circle
 public import Mathlib.Topology.Homotopy.Lifting
 public import Mathlib.Analysis.Convex.Contractible
 public import Mathlib.Topology.Algebra.Module.LocallyConvex
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -19,7 +20,7 @@ theorem kp_real_continuous_character
 
   have hgadd (x y : ℝ) : g (x + y) = g x + g y := by
     let F : C(ℝ, ℝ) := ⟨fun t => g (x + t) - g x, by fun_prop⟩
-    have hF : F = g := hguniq F ⟨by simp [F], ?_⟩
+    have hF : F = g := hguniq F ⟨by measurability, ?_⟩
     · have := DFunLike.congr_fun hF y
       dsimp [F] at this
       linarith

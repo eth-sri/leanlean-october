@@ -54,20 +54,7 @@ namespace residueRepresentativeSystemOf
 
 variable (O : Type u) [CommRing O] [IsLocalRing O]
 
-/-- A normalized representative system exists by surjectivity of the residue
-map. -/
-noncomputable def ofChoice : residueRepresentativeSystemOf O := by
-  classical
-  refine
-    { repr := fun a =>
-        if ha : a = 0 then 0 else Classical.choose (IsLocalRing.residue_surjective a)
-      residue_repr := ?_
-      repr_zero := ?_ }
-  · intro a
-    by_cases ha : a = 0
-    · simp [ha]
-    · simp [ha, Classical.choose_spec (IsLocalRing.residue_surjective a)]
-  · simp
+
 
 end residueRepresentativeSystemOf
 
@@ -84,9 +71,7 @@ namespace residueRepresentativeSystem
 variable {K : Type u} [Field K]
 variable (F : CompleteDVF.{u, v} K)
 
-/-- A representative system exists by surjectivity of the residue map. -/
-noncomputable def ofChoice : residueRepresentativeSystem F := by
-  exact residueRepresentativeSystemOf.ofChoice F.valuationSubring
+
 
 end residueRepresentativeSystem
 
@@ -150,76 +135,9 @@ theorem remainder_step
       (exists_remainder_step F R π hπ
         (remainder F R π hπ u n))
 
-/-- Adding a multiple of the uniformizer does not change the residue class. -/
-theorem residueMap_add_uniformizer_mul
-    (π : F.valuationSubring) (hπ : F.valuation.IsUniformizer (π : K))
-    (a b : F.valuationSubring) :
-    F.residueMap (a + π * b) = F.residueMap a := by
-  have hπ_res : F.residueMap π = 0 :=
-    (F.residue_eq_zero_iff π).2 (F.uniformizer_mem_maximalIdeal hπ)
-  rw [map_add, map_mul, hπ_res, zero_mul, add_zero]
 
-/-- Recursive uniqueness of the coefficient and remainder sequences in the
-valuation-ring part of the complete-DVR expansion. -/
-theorem coeff_remainder_unique
-    (R : residueRepresentativeSystem F)
-    (π : F.valuationSubring) (hπ : F.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubring)
-    (c b : ℕ → F.valuationSubring)
-    (hb0 : b 0 = u)
-    (hstep : ∀ n : ℕ, b n = c n + π * b (n + 1))
-    (hcoeff_repr : ∀ n : ℕ, ∃ a : F.residueField, c n = R.repr a) :
-    ∀ n : ℕ,
-      b n = remainder F R π hπ u n ∧
-        c n = coeff F R π hπ u n := by
-  classical
-  have hπ_ne : π ≠ 0 := by
-    intro hzero
-    exact hπ.ne_zero (by simpa using congrArg (fun x : F.valuationSubring => (x : K)) hzero)
-  have coeff_eq_of_remainder_eq :
-      ∀ n : ℕ,
-        b n = remainder F R π hπ u n →
-          c n = coeff F R π hπ u n := by
-    intro n hb
-    rcases hcoeff_repr n with ⟨a, ha⟩
-    have hres_eq : F.residueMap (b n) = F.residueMap (c n) := by
-      rw [hstep n]
-      exact residueMap_add_uniformizer_mul F π hπ
-        (c n) (b (n + 1))
-    calc
-      c n = R.repr a := ha
-      _ = R.repr (F.residueMap (c n)) := by rw [ha, R.residue_repr]
-      _ = R.repr (F.residueMap (b n)) := by rw [hres_eq]
-      _ = coeff F R π hπ u n := by
-          simp [coeff, hb]
-  have next_remainder_eq_of :
-      ∀ n : ℕ,
-        b n = remainder F R π hπ u n →
-          c n = coeff F R π hπ u n →
-            b (n + 1) = remainder F R π hπ u (n + 1) := by
-    intro n hb hc
-    have hmul : π * b (n + 1) =
-        π * remainder F R π hπ u (n + 1) := by
-      apply add_left_cancel (a := coeff F R π hπ u n)
-      calc
-        coeff F R π hπ u n + π * b (n + 1)
-            = c n + π * b (n + 1) := by rw [hc]
-        _ = b n := (hstep n).symm
-        _ = remainder F R π hπ u n := hb
-        _ = coeff F R π hπ u n +
-              π * remainder F R π hπ u (n + 1) :=
-            remainder_step F R π hπ u n
-    exact mul_left_cancel₀ hπ_ne hmul
-  intro n
-  induction n with
-  | zero =>
-      have hb : b 0 = remainder F R π hπ u 0 := by
-        simp [remainder, hb0]
-      exact ⟨hb, coeff_eq_of_remainder_eq 0 hb⟩
-  | succ n ih =>
-      have hb_succ : b (n + 1) = remainder F R π hπ u (n + 1) :=
-        next_remainder_eq_of n ih.1 ih.2
-      exact ⟨hb_succ, coeff_eq_of_remainder_eq (n + 1) hb_succ⟩
+
+
 
 /-- Laurent-unit decomposition in a complete DVF: every nonzero field element
 is a power of the chosen uniformizer times a valuation-ring unit. -/
@@ -295,45 +213,9 @@ theorem exists_laurent_unit
         rw [huinv]
         rw [zpow_neg, zpow_natCast]
 
-/-- The uniformizer exponent in a Laurent-unit decomposition is unique. -/
-theorem laurent_exponent_unique
-    (π : F.valuationSubring) (hπ : F.valuation.IsUniformizer (π : K))
-    {m n : ℤ} {u w : F.valuationSubring}
-    (hu : IsUnit u) (hw : IsUnit w)
-    (h : (π : K) ^ m * (u : K) = (π : K) ^ n * (w : K)) :
-    m = n := by
-  have huval : F.valuation (u : K) = 1 := by
-    change F.valuation ((algebraMap F.valuationSubring K) u) = 1
-    exact
-      (Valuation.Integers.isUnit_iff_valuation_eq_one
-        (Valuation.integer.integers F.valuation) (x := u)).mp hu
-  have hwval : F.valuation (w : K) = 1 := by
-    change F.valuation ((algebraMap F.valuationSubring K) w) = 1
-    exact
-      (Valuation.Integers.isUnit_iff_valuation_eq_one
-        (Valuation.integer.integers F.valuation) (x := w)).mp hw
-  have hval :
-      F.valuation ((π : K) ^ m * (u : K)) =
-        F.valuation ((π : K) ^ n * (w : K)) :=
-    congrArg F.valuation h
-  rw [map_mul, map_mul, map_zpow₀, map_zpow₀, huval, hwval, mul_one, mul_one] at hval
-  exact zpow_right_injective₀ hπ.val_pos (ne_of_lt hπ.val_lt_one) hval
 
-/-- The Laurent-unit part of the complete-DVR expansion is unique: if two unit
-decompositions with powers of the same uniformizer represent the same field
-element, then both the exponent and the unit agree. -/
-theorem laurent_unit_unique
-    (π : F.valuationSubring) (hπ : F.valuation.IsUniformizer (π : K))
-    {m n : ℤ} {u w : F.valuationSubring}
-    (hu : IsUnit u) (hw : IsUnit w)
-    (h : (π : K) ^ m * (u : K) = (π : K) ^ n * (w : K)) :
-    m = n ∧ u = w := by
-  have hm : m = n := laurent_exponent_unique F π hπ hu hw h
-  subst n
-  have hπ_ne : (π : K) ≠ 0 := hπ.ne_zero
-  have hpow_ne : (π : K) ^ m ≠ 0 := zpow_ne_zero m hπ_ne
-  have hu_eq : (u : K) = (w : K) := mul_left_cancel₀ hpow_ne h
-  exact ⟨rfl, Subtype.ext hu_eq⟩
+
+
 
 /-- Finite partial sums of the `π`-adic representative expansion. -/
 noncomputable def partialSum
@@ -450,108 +332,15 @@ theorem partialSum_tendsto_adic
     exact Ideal.pow_le_pow_right hn hneg
   · simp [ps, sub_eq_add_neg]
 
-/-- The residue of each coefficient is the residue of the corresponding
-remainder. -/
-theorem residue_coeff
-    (R : residueRepresentativeSystem F)
-    (π : F.valuationSubring) (hπ : F.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubring) (n : ℕ) :
-      F.residueMap (coeff F R π hπ u n) =
-      F.residueMap (remainder F R π hπ u n) := by
-  simp [coeff, R.residue_repr]
 
-/-- The first digit of a unit is nonzero. -/
-theorem coeff_zero_ne_zero_of_isUnit
-    (R : residueRepresentativeSystem F)
-    (π : F.valuationSubring) (hπ : F.valuation.IsUniformizer (π : K))
-    {u : F.valuationSubring} (hu : IsUnit u) :
-    coeff F R π hπ u 0 ≠ 0 := by
-  intro hzero
-  have hres_coeff :
-      F.residueMap (coeff F R π hπ u 0) = 0 := by
-    simp [hzero]
-  have hres_u : F.residueMap u = 0 := by
-    have hcoeff :=
-      residue_coeff F R π hπ u 0
-    rw [hres_coeff] at hcoeff
-    simpa [remainder] using hcoeff.symm
-  have hne : F.residueMap u ≠ 0 :=
-    (F.residue_ne_zero_iff_isUnit u).2 hu
-  exact hne hres_u
 
-/-- The complete-DVR expansion, existence-side Laurent expansion data for a nonzero field
-element: after extracting the uniformizer power, the unit part has a
-convergent representative expansion with nonzero first digit. -/
-theorem exists_laurent_expansion_data
-    (R : residueRepresentativeSystem F)
-    (π : F.valuationSubring) (hπ : F.valuation.IsUniformizer (π : K))
-    {x : K} (hx : x ≠ 0) :
-    ∃ m : ℤ, ∃ u : F.valuationSubring,
-      IsUnit u ∧
-        x = (π : K) ^ m * (u : K) ∧
-        coeff F R π hπ u 0 ≠ 0 ∧
-        PartialSumsConvergeAdically F R π hπ u ∧
-        ∀ n : ℕ,
-          x =
-            (π : K) ^ m *
-              (((partialSum F R π hπ u n +
-                π ^ n * remainder F R π hπ u n) :
-                  F.valuationSubring) : K) := by
-  rcases exists_laurent_unit F π hπ hx with ⟨m, u, hu, hx_eq⟩
-  refine
-    ⟨m, u, hu, hx_eq, coeff_zero_ne_zero_of_isUnit F R π hπ hu,
-      partialSum_tendsto_adic F R π hπ u, ?_⟩
-  intro n
-  have hstage : (u : K) =
-      (((partialSum F R π hπ u n +
-        π ^ n * remainder F R π hπ u n) :
-          F.valuationSubring) : K) := by
-    simpa using
-      congrArg (fun y : F.valuationSubring => (y : K))
-        (partialSum_add_remainder F R π hπ u n)
-  rw [hx_eq, hstage]
 
-/-- The complete-DVR expansion, the canonical Laurent-series representation predicate.
-The element `x` is represented as
-`π^m * (a₀ + a₁π + a₂π² + ⋯)`, where the coefficients are the canonical
-representatives attached to the unit part `u`. -/
-def isLaurentExpansion
-    (R : residueRepresentativeSystem F)
-    (π : F.valuationSubring) (hπ : F.valuation.IsUniformizer (π : K))
-    (x : K) (m : ℤ) (u : F.valuationSubring) : Prop :=
-  IsUnit u ∧
-    x = (π : K) ^ m * (u : K) ∧
-      coeff F R π hπ u 0 ≠ 0 ∧
-        PartialSumsConvergeAdically F R π hπ u ∧
-        ∀ n : ℕ,
-          x =
-            (π : K) ^ m *
-              (((partialSum F R π hπ u n +
-                π ^ n * remainder F R π hπ u n) :
-                  F.valuationSubring) : K)
 
-/-- The complete-DVR expansion, public form: every nonzero element of a complete
-discretely valued field has a unique convergent Laurent expansion with respect
-to the chosen uniformizer and residue representative system. -/
-theorem exists_unique_laurent_expansion
-    (R : residueRepresentativeSystem F)
-    (π : F.valuationSubring) (hπ : F.valuation.IsUniformizer (π : K))
-    {x : K} (hx : x ≠ 0) :
-    ∃! p : ℤ × F.valuationSubring,
-      isLaurentExpansion F R π hπ x p.1 p.2 := by
-  rcases exists_laurent_expansion_data F R π hπ hx with
-    ⟨m, u, hu, hx_eq, hcoeff0, htendsto, hstage⟩
-  refine ⟨(m, u), ?_, ?_⟩
-  · exact ⟨hu, hx_eq, hcoeff0, htendsto, hstage⟩
-  · intro p hp
-    rcases p with ⟨n, w⟩
-    rcases hp with ⟨hw, hx_eq_w, _hcoeff0_w, _htendsto_w, _hstage_w⟩
-    have hsame :
-        (π : K) ^ m * (u : K) = (π : K) ^ n * (w : K) := by
-      rw [← hx_eq, ← hx_eq_w]
-    rcases laurent_unit_unique F π hπ hu hw hsame with
-      ⟨hm, huw⟩
-    exact Prod.ext hm.symm huw.symm
+
+
+
+
+
 
 end Valuations
 end LubinTate

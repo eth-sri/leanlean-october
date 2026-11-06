@@ -31,7 +31,7 @@ lemma inverse_vertical_continuous (c : ℝ) (hc : c≠0) :
   intro t h
   have he := congrArg Complex.re h
   simp at he
-  exact hc he
+  simp_all
 
 lemma inverse_vertical_truncated (c T : ℝ) (hc : c≠0) :
     (∫ t : ℝ in -T..T, ((c:ℂ)+t*I)⁻¹) = (2*Real.arctan (T/c):ℝ) := by
@@ -65,14 +65,14 @@ lemma inverse_vertical_limit_pos (c : ℝ) (hc : 0<c) :
   simp_rw [inverse_vertical_truncated c _ hc.ne']
   have ht := Real.tendsto_arctan_atTop.comp (Filter.tendsto_id.atTop_div_const hc)
   have hh := Complex.continuous_ofReal.continuousAt.tendsto.comp ((ht.mono_right inf_le_left).const_mul 2)
-  convert hh using 1 <;> simp [Function.comp_def]; ring
+  convert hh using 1 <;> aesop; ring
 
 lemma inverse_vertical_limit_neg (c : ℝ) (hc : c<0) :
     Tendsto (fun T : ℝ => ∫ t : ℝ in -T..T, ((c:ℂ)+t*I)⁻¹) atTop (𝓝 (-(Real.pi:ℂ))) := by
   simp_rw [inverse_vertical_truncated c _ hc.ne]
   have ht := Real.tendsto_arctan_atBot.comp (Filter.tendsto_id.atTop_div_const_of_neg hc)
   have hh := Complex.continuous_ofReal.continuousAt.tendsto.comp ((ht.mono_right inf_le_left).const_mul 2)
-  convert hh using 1 <;> simp [Function.comp_def]; ring
+  convert hh using 1 <;> aesop; ring
 
 lemma inverse_horizontal_limit (a b p : ℝ) (ε : ℝ) (hε : |ε| = 1) :
     Tendsto (fun T : ℝ => ∫ x : ℝ in a..b,
@@ -130,13 +130,13 @@ lemma rectangle_limits (G : ℂ → ℂ) {a b : ℝ} (hab : a≤b)
       I*(∫ t : ℝ in -T..T, G ((a:ℂ)+t*I)) = 0 := by
     have h := integral_boundary_rect_eq_zero_of_differentiableOn G
       ((a:ℂ)+(-T)*I) ((b:ℂ)+T*I) (hG.mono ?_)
-    · simpa [smul_eq_mul] using h
+    · simp_all
     · intro z hz
       simpa [uIcc_of_le hab] using hz.1
   have hlim := ((hbot.sub htop).add (hb.const_mul I)).sub (ha.const_mul I)
   have hz : (0:ℂ)-0+I*Vb-I*Va=0 := tendsto_nhds_unique hlim
-    (by simpa only [hrect] using (tendsto_const_nhds : Tendsto (fun _ : ℝ => (0:ℂ)) atTop (𝓝 0)))
-  exact (mul_left_cancel₀ I_ne_zero (show I*Vb=I*Va by simpa using sub_eq_zero.mp hz)).symm
+    (by simp_all)
+  exact (mul_left_cancel₀ I_ne_zero (show I*Vb=I*Va by grind)).symm
 
 lemma horizontal_quotient_continuousOn (A : ℂ → ℂ) {a b p y : ℝ}
     (hab : a≤b) (hy : y≠0)
@@ -145,7 +145,7 @@ lemma horizontal_quotient_continuousOn (A : ℂ → ℂ) {a b p y : ℝ}
   apply ContinuousOn.div
   · apply hA.continuousOn.comp (by fun_prop)
     intro x hx
-    simpa [uIcc_of_le hab] using hx
+    simp_all
   · fun_prop
   · intro x hx h
     have hh := congrArg Complex.im h
@@ -161,22 +161,21 @@ lemma dslope_horizontal_limit (A F : ℂ → ℂ) {a b p : ℝ} (hab : a≤b)
   simp only [mul_zero, sub_zero] at hl
   apply hl.congr'
   filter_upwards [eventually_gt_atTop 0] with T hT
-  have hy : ε*T≠0 := mul_ne_zero (by intro h; simp [h] at hε) hT.ne'
+  have hy : ε*T≠0 := mul_ne_zero (by aesop) hT.ne'
   have hn (x : ℝ) : (x:ℂ)+(ε*T)*I≠p := by
     intro h
     exact hy (by simpa using congrArg Complex.im h)
   have he (x : ℝ) (hx : x∈uIcc a b) := hF ((x:ℂ)+(ε*T)*I)
-    (by have := (uIcc_of_le hab ▸ hx).1; simpa using this)
-    (by have := (uIcc_of_le hab ▸ hx).2; simpa using this) (hn x)
+    (by simp_all)
+    (by simp_all) (hn x)
   have hfi : IntervalIntegrable (fun x : ℝ => F ((x:ℂ)+(ε*T)*I)) volume a b := by
     apply ((horizontal_quotient_continuousOn A (p:=p) hab hy hA).congr ?_).intervalIntegrable
     intro x hx
-    simpa using he x hx
+    simp_all
   have hki : IntervalIntegrable (fun x : ℝ => ((x:ℂ)+(ε*T)*I-p)⁻¹) volume a b := by
     apply Continuous.intervalIntegrable
     apply Continuous.inv₀ (by fun_prop)
-    intro x h
-    exact hn x (sub_eq_zero.mp h)
+    grind
   rw [← intervalIntegral.integral_const_mul, ← intervalIntegral.integral_sub hfi (hki.const_mul _)]
   apply intervalIntegral.integral_congr
   intro x hx
@@ -197,32 +196,31 @@ theorem simple_pole_of_boundary_control (A F : ℂ → ℂ) {a b p : ℝ}
       (((isOpen_lt continuous_const Complex.continuous_re).inter
         (isOpen_lt Complex.continuous_re continuous_const)).mem_nhds
         (show a<(p:ℂ).re ∧ (p:ℂ).re<b from ⟨hap,hpb⟩))
-    intro z hz
-    exact ⟨hz.1.le,hz.2.le⟩
+    grind
   have hG := (Complex.differentiableOn_dslope hnb).mpr hA
   have haF := intervalIntegral_tendsto_integral ha tendsto_neg_atTop_atBot tendsto_id
   have hbF := intervalIntegral_tendsto_integral hb tendsto_neg_atTop_atBot tendsto_id
   have haG : Tendsto (fun T : ℝ => ∫ t : ℝ in -T..T, dslope A (p:ℂ) ((a:ℂ)+t*I))
       atTop (𝓝 ((∫ t : ℝ, F ((a:ℂ)+t*I)) - A p * (-(Real.pi:ℂ)))) := by
     simp_rw [dslope_vertical_truncated A F p a _ hap.ne
-      (fun z hz => hF z (by simp [hz]) (by simpa [hz] using hab)
-        (by intro h; have := congrArg Complex.re h; simp [hz] at this; exact hap.ne this)) ha]
+      (fun z hz => hF z (by simp_all) (by simp_all)
+        (by aesop)) ha]
     exact haF.sub ((inverse_vertical_limit_neg (a-p) (sub_neg.mpr hap)).const_mul (A p))
   have hbG : Tendsto (fun T : ℝ => ∫ t : ℝ in -T..T, dslope A (p:ℂ) ((b:ℂ)+t*I))
       atTop (𝓝 ((∫ t : ℝ, F ((b:ℂ)+t*I)) - A p * (Real.pi:ℂ))) := by
     simp_rw [dslope_vertical_truncated A F p b _ hpb.ne'
-      (fun z hz => hF z (by simpa [hz] using hab) (by simp [hz])
-        (by intro h; have := congrArg Complex.re h; simp [hz] at this; exact hpb.ne' this)) hb]
+      (fun z hz => hF z (by simp_all) (by simp_all)
+        (by aesop)) hb]
     exact hbF.sub ((inverse_vertical_limit_pos (b-p) (sub_pos.mpr hpb)).const_mul (A p))
   have hbotG := dslope_horizontal_limit A F hab hA hF (-1) (by norm_num)
-    (by simpa using hbot)
+    (by simp_all)
   have htopG := dslope_horizontal_limit A F hab hA hF 1 (by norm_num)
-    (by simpa using htop)
+    (by simp_all)
   have he := rectangle_limits (dslope A p) hab hG haG hbG
-    (by simpa using hbotG) (by simpa using htopG)
+    (by simp_all) (by simp_all)
   have he' : (∫ t : ℝ, F ((b:ℂ)+t*I)) =
       (∫ t : ℝ, F ((a:ℂ)+t*I)) + 2*(Real.pi:ℂ)*A p := by
-    linear_combination -he
+    grind
   unfold comparisonVerticalIntegral
   rw [he']
   push_cast
@@ -244,9 +242,8 @@ lemma integrable_tail (g : ℝ → ℂ) (C : ℝ) (hg : Continuous g)
     apply hbound t
     simp only [mem_compl_iff, mem_Icc, not_and_or, not_le] at ht
     rcases ht with ht | ht
-    · rw [abs_of_neg (by linarith)]
-      linarith
-    · exact (le_abs_self t).trans' ht.le
+    · grind
+    · grind
   simpa only [union_compl_self, integrableOn_univ] using hc.union ht
 
 lemma horizontal_decay_limit (F : ℂ → ℂ) (a b C ε : ℝ) (hab : a ≤ b)
@@ -260,13 +257,13 @@ lemma horizontal_decay_limit (F : ℂ → ℂ) (a b C ε : ℝ) (hab : a ≤ b)
   apply squeeze_zero' (Eventually.of_forall (fun _ => norm_nonneg _)) _
     (by simpa using (hr.const_mul C).mul_const |b-a|)
   filter_upwards [eventually_ge_atTop (1 : ℝ)] with T hT
-  have he : |ε*T| = T := by rw [abs_mul, hε, one_mul, abs_of_nonneg (by linarith)]
+  have he : |ε*T| = T := by grind
   apply intervalIntegral.norm_integral_le_of_norm_le_const
   intro x hx
-  have hh := hbound x (by simpa [uIcc_of_le hab] using uIoc_subset_uIcc hx)
-    (ε*T) (by simpa [he] using hT)
+  have hh := hbound x (by grind)
+    (ε*T) (by grind)
   rw [he, ofReal_mul, Real.rpow_neg (by linarith : 0 ≤ 1 + T), Real.rpow_two] at hh
-  exact hh
+  simp_all
 
 end ComparisonShiftProof
 

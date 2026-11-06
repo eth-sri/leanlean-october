@@ -2,6 +2,7 @@ module
 
 public import Mathlib.Analysis.Meromorphic.NormalForm
 public import Mathlib.Analysis.Complex.Basic
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -24,7 +25,7 @@ theorem order_ge_neg_one_of_clearing {f N : ℂ → E} {c : ℂ}
       (analyticAt_id.sub (analyticAt_const (v := c))).meromorphicAt) hf,
     meromorphicOrderAt_id_sub_const] at ho
   cases h : meromorphicOrderAt f c with
-  | top => exact le_top
+  | top => norm_num
   | coe n =>
     rw [h] at ho
     have hn : (0 : ℤ) ≤ 1 + n := by exact_mod_cast ho

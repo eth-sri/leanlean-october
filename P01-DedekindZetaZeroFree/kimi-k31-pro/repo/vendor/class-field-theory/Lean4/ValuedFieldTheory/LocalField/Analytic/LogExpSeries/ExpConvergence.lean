@@ -132,92 +132,11 @@ theorem tendsto_zero_exp_term_ofWithZeroValuation_of_one_lt
   rw [Valuation.restrict_lt_iff_lt_embedding]
   exact lt_of_le_of_lt hvle (by simpa [γ'] using hNγ)
 
-/-- In a complete nonarchimedean valuation topology, the exponential-series
-terms are summable on the radius supplied by the preceding valuation estimate. -/
-theorem summable_exp_term_ofWithZeroValuation_of_one_lt
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    {p : ℕ} [Fact p.Prime] (x : Kˣ)
-    (hnK : ∀ n : ℕ, (((n.factorial : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n.factorial : ℕ) : K)) =
-        WithZero.exp (-(padicValNat p n.factorial : ℤ)))
-    (hxone : 1 < ((ofWithZeroValuation v).val x : ℝ))
-    (hcomplete :
-      letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-      CompleteSpace K) :
-    letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-    Summable
-      (fun n : ℕ =>
-        ((x ^ n /
-          Units.mk0 (((n.factorial : ℕ) : K)) (hnK n) : Kˣ) : K)) := by
-  let : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-  let : CompleteSpace K := hcomplete
-  have : NonarchimedeanRing K := nonarchimedeanRing_ofWithZeroValuation v
-  have hzero :
-      Tendsto
-        (fun n : ℕ =>
-          ((x ^ n /
-            Units.mk0 (((n.factorial : ℕ) : K)) (hnK n) : Kˣ) : K))
-        atTop (𝓝 (0 : K)) :=
-    tendsto_zero_exp_term_ofWithZeroValuation_of_one_lt
-      (v := v) (p := p) x hnK hnval hxone
-  have hcofinite :
-      Tendsto
-        (fun n : ℕ =>
-          ((x ^ n /
-            Units.mk0 (((n.factorial : ℕ) : K)) (hnK n) : Kˣ) : K))
-        cofinite (𝓝 (0 : K)) := by
-    simpa [Nat.cofinite_eq_atTop] using hzero
-  rw [NonarchimedeanAddGroup.summable_iff_tendsto_cofinite_zero]
-  exact hcofinite
 
-/-- The field-unit logarithm theorem, exponential series: the series
-`∑ x^n/n!` has the value supplied by `expSeriesOfWithZeroValuation`. -/
-theorem hasSum_expSeriesTerm_expSeries_ofWithZeroValuation_of_one_lt
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    {p : ℕ} [Fact p.Prime] (x : Kˣ)
-    (hnK : ∀ n : ℕ, (((n.factorial : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n.factorial : ℕ) : K)) =
-        WithZero.exp (-(padicValNat p n.factorial : ℤ)))
-    (hxone : 1 < ((ofWithZeroValuation v).val x : ℝ))
-    (hcomplete :
-      letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-      CompleteSpace K) :
-    letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-    HasSum (fun n : ℕ => expSeriesTerm x hnK n)
-      (expSeriesOfWithZeroValuation v x hnK) := by
-  let : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-  have hs :
-      Summable
-        (fun n : ℕ =>
-          ((x ^ n /
-            Units.mk0 (((n.factorial : ℕ) : K)) (hnK n) : Kˣ) : K)) :=
-    summable_exp_term_ofWithZeroValuation_of_one_lt
-      (v := v) (p := p) x hnK hnval hxone hcomplete
-  simpa [expSeriesOfWithZeroValuation, expSeriesTerm] using hs.hasSum
 
-/-- The finite exponential polynomials converge to the exponential-series
-value on the same radius. -/
-theorem tendsto_expSeriesPartialSum_ofWithZeroValuation_of_one_lt
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    {p : ℕ} [Fact p.Prime] (x : Kˣ)
-    (hnK : ∀ n : ℕ, (((n.factorial : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n.factorial : ℕ) : K)) =
-        WithZero.exp (-(padicValNat p n.factorial : ℤ)))
-    (hxone : 1 < ((ofWithZeroValuation v).val x : ℝ))
-    (hcomplete :
-      letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-      CompleteSpace K) :
-    letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-    Tendsto (fun N : ℕ => expSeriesPartialSum x hnK N) atTop
-      (𝓝 (expSeriesOfWithZeroValuation v x hnK)) := by
-  let : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-  have hsum :=
-    hasSum_expSeriesTerm_expSeries_ofWithZeroValuation_of_one_lt
-      (v := v) (p := p) x hnK hnval hxone hcomplete
-  simpa [expSeriesPartialSum] using hsum.tendsto_sum_nat
+
+
+
 
 /-- Sharp ramified version of the exponential-series valuation estimate:
 if `x` has integer valuation strictly bigger than `e/(p-1)`, then the
@@ -319,97 +238,11 @@ theorem tendsto_zero_exp_term_ofWithZeroValuation_scaled_of_threshold
   rw [Valuation.restrict_lt_iff_lt_embedding]
   exact lt_of_le_of_lt hvle (by simpa [γ'] using hNγ)
 
-/-- Summability of the exponential series under the sharp ramified threshold. -/
-theorem summable_exp_term_ofWithZeroValuation_scaled_of_threshold
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    {p : ℕ} [Fact p.Prime] (e : ℕ) (x : Kˣ)
-    (hnK : ∀ n : ℕ, (((n.factorial : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n.factorial : ℕ) : K)) =
-        WithZero.exp (-((e : ℤ) * (padicValNat p n.factorial : ℤ))))
-    (hxthreshold :
-      (e : ℝ) / ((p : ℝ) - 1) <
-        ((ofWithZeroValuation v).val x : ℝ))
-    (hcomplete :
-      letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-      CompleteSpace K) :
-    letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-    Summable
-      (fun n : ℕ =>
-        ((x ^ n /
-          Units.mk0 (((n.factorial : ℕ) : K)) (hnK n) : Kˣ) : K)) := by
-  let : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-  let : CompleteSpace K := hcomplete
-  have : NonarchimedeanRing K := nonarchimedeanRing_ofWithZeroValuation v
-  have hzero :
-      Tendsto
-        (fun n : ℕ =>
-          ((x ^ n /
-            Units.mk0 (((n.factorial : ℕ) : K)) (hnK n) : Kˣ) : K))
-        atTop (𝓝 (0 : K)) :=
-    tendsto_zero_exp_term_ofWithZeroValuation_scaled_of_threshold
-      (v := v) (p := p) e x hnK hnval hxthreshold
-  have hcofinite :
-      Tendsto
-        (fun n : ℕ =>
-          ((x ^ n /
-            Units.mk0 (((n.factorial : ℕ) : K)) (hnK n) : Kˣ) : K))
-        cofinite (𝓝 (0 : K)) := by
-    simpa [Nat.cofinite_eq_atTop] using hzero
-  rw [NonarchimedeanAddGroup.summable_iff_tendsto_cofinite_zero]
-  exact hcofinite
 
-/-- The exponential series has the same `tsum` value under a sharp ramified
-denominator valuation hypothesis. -/
-theorem hasSum_expSeriesTerm_expSeries_ofWithZeroValuation_scaled_of_threshold
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    {p : ℕ} [Fact p.Prime] (e : ℕ) (x : Kˣ)
-    (hnK : ∀ n : ℕ, (((n.factorial : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n.factorial : ℕ) : K)) =
-        WithZero.exp (-((e : ℤ) * (padicValNat p n.factorial : ℤ))))
-    (hxthreshold :
-      (e : ℝ) / ((p : ℝ) - 1) <
-        ((ofWithZeroValuation v).val x : ℝ))
-    (hcomplete :
-      letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-      CompleteSpace K) :
-    letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-    HasSum (fun n : ℕ => expSeriesTerm x hnK n)
-      (expSeriesOfWithZeroValuation v x hnK) := by
-  let : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-  have hs :
-      Summable
-        (fun n : ℕ =>
-          ((x ^ n /
-            Units.mk0 (((n.factorial : ℕ) : K)) (hnK n) : Kˣ) : K)) :=
-    summable_exp_term_ofWithZeroValuation_scaled_of_threshold
-      (v := v) (p := p) e x hnK hnval hxthreshold hcomplete
-  simpa [expSeriesOfWithZeroValuation, expSeriesTerm] using hs.hasSum
 
-/-- Finite exponential polynomials converge under the sharp ramified
-threshold. -/
-theorem tendsto_expSeriesPartialSum_ofWithZeroValuation_scaled_of_threshold
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    {p : ℕ} [Fact p.Prime] (e : ℕ) (x : Kˣ)
-    (hnK : ∀ n : ℕ, (((n.factorial : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n.factorial : ℕ) : K)) =
-        WithZero.exp (-((e : ℤ) * (padicValNat p n.factorial : ℤ))))
-    (hxthreshold :
-      (e : ℝ) / ((p : ℝ) - 1) <
-        ((ofWithZeroValuation v).val x : ℝ))
-    (hcomplete :
-      letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-      CompleteSpace K) :
-    letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-    Tendsto (fun N : ℕ => expSeriesPartialSum x hnK N) atTop
-      (𝓝 (expSeriesOfWithZeroValuation v x hnK)) := by
-  let : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-  have hsum :=
-    hasSum_expSeriesTerm_expSeries_ofWithZeroValuation_scaled_of_threshold
-      (v := v) (p := p) e x hnK hnval hxthreshold hcomplete
-  simpa [expSeriesPartialSum] using hsum.tendsto_sum_nat
+
+
+
 
 /-- Establishes the identity `expSeriesTermField x hnK n = 0`. -/
 theorem expSeriesTermField_eq_zero_of_eq_zero_of_ne_zero
@@ -631,65 +464,9 @@ theorem tendsto_expSeriesPartialSumField_ofWithZeroValuation_scaled_of_threshold
       (v := v) (p := p) e x hnK hnval hxthreshold hcomplete
   simpa [expSeriesPartialSumField] using hsum.tendsto_sum_nat
 
-/-- The local-field exponential series is the convergent evaluation of
-mathlib's formal exponential power series on its normalized radius. -/
-theorem hasSum_formalExpPowerSeries_eval_expSeriesField
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    {p : ℕ} [Fact p.Prime] (x : K)
-    (hnK : ∀ n : ℕ, (((n.factorial : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n.factorial : ℕ) : K)) =
-        WithZero.exp (-(padicValNat p n.factorial : ℤ)))
-    (hvx : v x < WithZero.exp (-1 : ℤ))
-    (hcomplete :
-      letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-      CompleteSpace K) :
-    letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-    HasSum
-      (fun n : ℕ =>
-        PowerSeries.coeff n (PowerSeries.exp K) * x ^ n)
-      (expSeriesFieldOfWithZeroValuation v x hnK) := by
-  let : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-  have hsum :=
-    hasSum_expSeriesTermField_expSeriesField_ofWithZeroValuation_of_lt_exp_neg_one
-      (v := v) (p := p) x hnK hnval hvx hcomplete
-  exact hsum.congr_fun fun n =>
-    formalExpPowerSeries_coeff_mul_pow_eq_expSeriesTermField
-      (K := K) x hnK n
 
-/-- The product family of two local exponential series is summable on the
-normalized exponential convergence ball.  This uses mathlib's
-nonarchimedean Cauchy-product theorem rather than an absolute-convergence
-argument. -/
-theorem summable_expSeriesTermField_mul_prod_ofWithZeroValuation_of_lt_exp_neg_one
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    {p : ℕ} [Fact p.Prime] (x y : K)
-    (hnK : ∀ n : ℕ, (((n.factorial : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n.factorial : ℕ) : K)) =
-        WithZero.exp (-(padicValNat p n.factorial : ℤ)))
-    (hvx : v x < WithZero.exp (-1 : ℤ))
-    (hvy : v y < WithZero.exp (-1 : ℤ))
-    (hcomplete :
-      letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-      CompleteSpace K) :
-    letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-    Summable
-      (fun ij : ℕ × ℕ =>
-        expSeriesTermField x hnK ij.1 *
-          expSeriesTermField y hnK ij.2) := by
-  let : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-  have : NonarchimedeanRing K := nonarchimedeanRing_ofWithZeroValuation v
-  have hxsum :
-      Summable (fun n : ℕ => expSeriesTermField x hnK n) :=
-    summable_expSeriesTermField_ofWithZeroValuation_of_lt_exp_neg_one
-      (v := v) (p := p) x hnK hnval hvx hcomplete
-  have hysum :
-      Summable (fun n : ℕ => expSeriesTermField y hnK n) :=
-    summable_expSeriesTermField_ofWithZeroValuation_of_lt_exp_neg_one
-      (v := v) (p := p) y hnK hnval hvy hcomplete
-  exact hxsum.mul_of_nonarchimedean hysum
+
+
 
 /-- The antidiagonal Cauchy product of two local exponential series sums to
 the product of their values. -/
@@ -786,40 +563,7 @@ theorem expSeriesField_add_eq_mul_ofWithZeroValuation_of_lt_exp_neg_one
       (v := v) (p := p) x y hnK hnval hvx hvy hcomplete
   exact hsumCauchyAdd.unique hsumProduct
 
-/-- The product family of two local exponential series is summable under the
-sharp ramified threshold. -/
-theorem summable_expSeriesTermField_mul_prod_ofWithZeroValuation_scaled_of_threshold
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    {p : ℕ} [Fact p.Prime] (e : ℕ) (x y : K)
-    (hnK : ∀ n : ℕ, (((n.factorial : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n.factorial : ℕ) : K)) =
-        WithZero.exp (-((e : ℤ) * (padicValNat p n.factorial : ℤ))))
-    (hxthreshold : ∀ hx : x ≠ 0,
-      (e : ℝ) / ((p : ℝ) - 1) <
-        ((ofWithZeroValuation v).val (Units.mk0 x hx) : ℝ))
-    (hythreshold : ∀ hy : y ≠ 0,
-      (e : ℝ) / ((p : ℝ) - 1) <
-        ((ofWithZeroValuation v).val (Units.mk0 y hy) : ℝ))
-    (hcomplete :
-      letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-      CompleteSpace K) :
-    letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-    Summable
-      (fun ij : ℕ × ℕ =>
-        expSeriesTermField x hnK ij.1 *
-          expSeriesTermField y hnK ij.2) := by
-  let : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-  have : NonarchimedeanRing K := nonarchimedeanRing_ofWithZeroValuation v
-  have hxsum :
-      Summable (fun n : ℕ => expSeriesTermField x hnK n) :=
-    summable_expSeriesTermField_ofWithZeroValuation_scaled_of_threshold
-      (v := v) (p := p) e x hnK hnval hxthreshold hcomplete
-  have hysum :
-      Summable (fun n : ℕ => expSeriesTermField y hnK n) :=
-    summable_expSeriesTermField_ofWithZeroValuation_scaled_of_threshold
-      (v := v) (p := p) e y hnK hnval hythreshold hcomplete
-  exact hxsum.mul_of_nonarchimedean hysum
+
 
 /-- The antidiagonal Cauchy product of two local exponential series sums to
 the product of their values under the sharp ramified threshold. -/
@@ -950,97 +694,13 @@ theorem expSeriesField_add_eq_mul_ofWithZeroValuation_scaled_of_threshold
       hcomplete
   exact hsumCauchyAdd.unique hsumProduct
 
-/-- The negative additive parameter gives a left inverse for the local
-exponential series. -/
-theorem expSeriesField_neg_mul_self_eq_one_ofWithZeroValuation_of_lt_exp_neg_one
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    {p : ℕ} [Fact p.Prime] (x : K)
-    (hnK : ∀ n : ℕ, (((n.factorial : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n.factorial : ℕ) : K)) =
-        WithZero.exp (-(padicValNat p n.factorial : ℤ)))
-    (hvx : v x < WithZero.exp (-1 : ℤ))
-    (hcomplete :
-      letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-      CompleteSpace K) :
-    expSeriesFieldOfWithZeroValuation v (-x) hnK *
-        expSeriesFieldOfWithZeroValuation v x hnK = 1 := by
-  let : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-  have hneg :
-      v (-x) < WithZero.exp (-1 : ℤ) := by
-    simpa using hvx
-  have hmul :=
-    expSeriesField_add_eq_mul_ofWithZeroValuation_of_lt_exp_neg_one
-      (v := v) (p := p) (-x) x hnK hnval hneg hvx hcomplete
-  simpa [neg_add_cancel] using hmul.symm
 
-/-- The negative additive parameter gives a right inverse for the local
-exponential series. -/
-theorem expSeriesField_mul_neg_self_eq_one_ofWithZeroValuation_of_lt_exp_neg_one
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    {p : ℕ} [Fact p.Prime] (x : K)
-    (hnK : ∀ n : ℕ, (((n.factorial : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n.factorial : ℕ) : K)) =
-        WithZero.exp (-(padicValNat p n.factorial : ℤ)))
-    (hvx : v x < WithZero.exp (-1 : ℤ))
-    (hcomplete :
-      letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-      CompleteSpace K) :
-    expSeriesFieldOfWithZeroValuation v x hnK *
-        expSeriesFieldOfWithZeroValuation v (-x) hnK = 1 := by
-  let : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-  have hneg :
-      v (-x) < WithZero.exp (-1 : ℤ) := by
-    simpa using hvx
-  have hmul :=
-    expSeriesField_add_eq_mul_ofWithZeroValuation_of_lt_exp_neg_one
-      (v := v) (p := p) x (-x) hnK hnval hvx hneg hcomplete
-  simpa [add_neg_cancel] using hmul.symm
 
-/-- Field-side inverse form of the local exponential identity:
-`exp(-x) = exp(x)⁻¹`. -/
-theorem expSeriesField_neg_eq_inv_self_ofWithZeroValuation_of_lt_exp_neg_one
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    {p : ℕ} [Fact p.Prime] (x : K)
-    (hnK : ∀ n : ℕ, (((n.factorial : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n.factorial : ℕ) : K)) =
-        WithZero.exp (-(padicValNat p n.factorial : ℤ)))
-    (hvx : v x < WithZero.exp (-1 : ℤ))
-    (hcomplete :
-      letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-      CompleteSpace K) :
-    expSeriesFieldOfWithZeroValuation v (-x) hnK =
-      (expSeriesFieldOfWithZeroValuation v x hnK)⁻¹ := by
-  exact
-    eq_inv_of_mul_eq_one_left
-      (expSeriesField_neg_mul_self_eq_one_ofWithZeroValuation_of_lt_exp_neg_one
-        (v := v) (p := p) x hnK hnval hvx hcomplete)
 
-/-- Field-side inverse form of the local exponential identity:
-`exp(x)⁻¹ = exp(-x)`. -/
-theorem expSeriesField_inv_eq_neg_self_ofWithZeroValuation_of_lt_exp_neg_one
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    {p : ℕ} [Fact p.Prime] (x : K)
-    (hnK : ∀ n : ℕ, (((n.factorial : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n.factorial : ℕ) : K)) =
-        WithZero.exp (-(padicValNat p n.factorial : ℤ)))
-    (hvx : v x < WithZero.exp (-1 : ℤ))
-    (hcomplete :
-      letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-      CompleteSpace K) :
-    (expSeriesFieldOfWithZeroValuation v x hnK)⁻¹ =
-      expSeriesFieldOfWithZeroValuation v (-x) hnK := by
-  exact
-    inv_eq_of_mul_eq_one_right
-      (expSeriesField_mul_neg_self_eq_one_ofWithZeroValuation_of_lt_exp_neg_one
-        (v := v) (p := p) x hnK hnval hvx hcomplete)
+
+
+
+
 
 /-- Field-element exponential partial sums converge to the exponential-series
 value under `v x < exp (-1)`. -/
@@ -1163,29 +823,7 @@ theorem valuation_expSeriesTailPartialSumField_lt_one_of_lt_exp_neg_one
         valuation_expSeriesTermField_lt_one_of_lt_exp_neg_one
           (v := v) (p := p) x hnK hnval hvx (Nat.succ_ne_zero n))
 
-/-- The finite exponential partial sums are principal units after subtracting
-the constant term. -/
-theorem valuation_expSeriesPartialSumField_sub_one_lt_one_of_lt_exp_neg_one
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    {p : ℕ} [Fact p.Prime] (x : K)
-    (hnK : ∀ n : ℕ, (((n.factorial : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n.factorial : ℕ) : K)) =
-        WithZero.exp (-(padicValNat p n.factorial : ℤ)))
-    (hvx : v x < WithZero.exp (-1 : ℤ)) (N : ℕ) :
-    v (expSeriesPartialSumField x hnK (N + 1) - 1) <
-      (1 : WithZero (Multiplicative ℤ)) := by
-  have hsplit :=
-    expSeriesPartialSumField_succ_eq_one_add_tail x hnK N
-  have htail :
-      expSeriesPartialSumField x hnK (N + 1) - 1 =
-        ∑ n ∈ Finset.range N, expSeriesTermField x hnK (n + 1) := by
-    rw [hsplit]
-    abel
-  rw [htail]
-  exact
-    valuation_expSeriesTailPartialSumField_lt_one_of_lt_exp_neg_one
-      (v := v) (p := p) x hnK hnval hvx N
+
 
 end MultiplicativeIntegerValuation
 end LocalFieldTheory.DiscreteValuationField

@@ -99,12 +99,12 @@ private theorem ratio_inverse_formula (A : KPGlobalTorusFunctionData.AdelicMatri
   constructor
   · exact continuous_matrix (fun i j => by
       fin_cases i <;> fin_cases j <;>
-        simp [KPGlobalCubicIdelePairing.diagonalPGL,
+        simp [
           KPGlobalCubicIdelePairing.diagonalHom,
           KPGlobalCubicIdelePairing.diagonalMatrix] <;> fun_prop)
   · exact continuous_matrix (fun i j => by
       fin_cases i <;> fin_cases j <;>
-        simp [KPGlobalCubicIdelePairing.diagonalPGL,
+        simp [
           KPGlobalCubicIdelePairing.diagonalHom,
           KPGlobalCubicIdelePairing.diagonalMatrix] <;> fun_prop)
 
@@ -114,7 +114,7 @@ private theorem diagonal_preimage (A : KPGlobalTorusFunctionData.AdelicMatrixGro
   obtain ⟨B, he, h10, h01⟩ := hA
   obtain ⟨c, hc, rfl⟩ := (QuotientGroup.mk'_eq_mk' _).mp he
   obtain ⟨u, rfl⟩ := hc
-  constructor <;> simp [Matrix.mul_apply, Fin.sum_univ_two,
+  constructor <;> simp [Matrix.mul_apply, 
     Matrix.GeneralLinearGroup.coe_scalar, Matrix.scalar, Matrix.diagonal, h10, h01]
 
  theorem ordinaryRatio_continuous : Continuous (torusRatio F) := by
@@ -184,8 +184,8 @@ private theorem diagonal_preimage (A : KPGlobalTorusFunctionData.AdelicMatrixGro
   ext i j
   fin_cases i <;> fin_cases j <;>
     simp [KPGlobalCubicIdelePairing.diagonalMatrix,
-      KPGlobalCubicIdelePairing.diagonalPGL, KPGlobalCubicIdelePairing.diagonalHom,
-      Matrix.mul_apply, Fin.sum_univ_two, Matrix.GeneralLinearGroup.coe_scalar,
+      KPGlobalCubicIdelePairing.diagonalHom,
+      Matrix.mul_apply, Matrix.GeneralLinearGroup.coe_scalar,
       Matrix.scalar, Matrix.diagonal, h10, h01, IsUnit.unit_spec]
   rw [mul_assoc]
   have hc := (diagonal_entries_units F A h10 h01).2.unit.inv_mul

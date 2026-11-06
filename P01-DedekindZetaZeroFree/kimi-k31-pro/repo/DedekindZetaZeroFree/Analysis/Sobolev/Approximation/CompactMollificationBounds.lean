@@ -127,11 +127,11 @@ private theorem coordinateDerivativeList_reflection {n : ℕ}
       have hd' := (hcomp.const_mul ((-1 : ℂ)^l.length)).fderiv
       dsimp only [Function.comp_def, Pi.sub_apply, id_eq] at hd'
       rw [hd']
-      simp [coordinateDerivativeList, pow_succ, mul_neg, mul_assoc]
+      simp [coordinateDerivativeList, pow_succ, mul_neg]
 
 private theorem multiIndex_directions_length {n k : ℕ} (α : MultiIndex n k) :
     α.directions.length = α.degree := by
-  simp only [MultiIndex.directions, MultiIndex.degree, List.length_flatMap, List.map_map,
+  simp only [MultiIndex.directions, MultiIndex.degree, List.length_flatMap, 
     List.length_replicate, ← List.sum_toFinset _ (List.nodup_finRange _), List.toFinset_finRange]
 
 theorem global_weak_coordinateDerivative_convolution {n k : ℕ}

@@ -77,7 +77,7 @@ theorem classCharacterExtension_infinity (A : SArithmeticData F) (B : Subgroup A
     simpa using h'
   have hx : A.ideleSInverseProduct D.ideleCharacter y =
       (A.ideleInfiniteComponent D.ideleCharacter w z)⁻¹ := by
-    simp only [ideleSInverseProduct, y, map_one, inv_one, Finset.prod_const_one, mul_one]
+    simp only [ideleSInverseProduct, y]
     rw [Finset.prod_eq_single w]
     · simp
     · intro u _ huw

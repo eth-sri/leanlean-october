@@ -27,15 +27,13 @@ theorem casimir_zero_of_arch_invariant (θ : G → ℂ) (hs : RawWordKFinite.Nat
       funext t
       change θ ((ins k * ins (KPSmoothActualFlowData.flow F (w,j) t))*g) = θ g
       rw [mul_assoc, hθ, hθ]
-    rw [he]
-    exact deriv_const _ _
+    simp_all
   have hdd (w : InfinitePlace F) (i j : Fin 6) :
       rightDerivative F ζ hζ w i (rightDerivative F ζ hζ w j f) 1 = 0 := by
     unfold rightDerivative
     change deriv (fun t : ℝ => rightDerivative F ζ hζ w j f
       (1 * ins (KPSmoothActualFlowData.flow F (w,i) t))) 0 = 0
-    simp only [one_mul, hd]
-    exact deriv_const _ _
+    simp_all
   have he := ResidualFullGroupTranslation.casimir_right_translate θ hs 1 g
   rw [one_mul] at he
   rw [← he]

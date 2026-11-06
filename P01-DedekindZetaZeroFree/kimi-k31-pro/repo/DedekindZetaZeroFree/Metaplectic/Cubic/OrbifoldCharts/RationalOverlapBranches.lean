@@ -334,9 +334,9 @@ private theorem comparison_delta {i : Fin (H.atlas U).componentCount}
     have hh := congrArg (fun z => z * t⁻¹) l.finite_comparison
     simpa [t, mul_assoc] using hh
   change f (l.gamma * k.gamma⁻¹) * t = c (l.root * k.root⁻¹)⁻¹ * t * _
-  simp only [Subgroup.coe_mul, Subgroup.coe_inv, map_mul, map_inv]
+  simp only [Subgroup.coe_inv, map_mul, map_inv]
   rw [hk, hl]
-  simp only [mul_inv_rev, inv_inv, map_mul, map_inv, Subgroup.coe_mul, Subgroup.coe_inv]
+  simp only [mul_inv_rev, inv_inv, map_inv]
   have hc (z : KPCuspGenuineMonodromy.FiniteCover F ζ hζ) : c k.root * z = z * c k.root := central_comm k.root z
   have hc2 : c k.root * (c l.root)⁻¹ = (c l.root)⁻¹ * c k.root := hc _
   change _ = c k.root * (c l.root)⁻¹ * t * (l.levelLift.val * k.levelLift.val⁻¹)

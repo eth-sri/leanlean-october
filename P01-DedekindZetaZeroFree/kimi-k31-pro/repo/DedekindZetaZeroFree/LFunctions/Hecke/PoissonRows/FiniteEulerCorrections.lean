@@ -35,8 +35,7 @@ def rowPrimesWithS (u : D.Row) : Finset (Ideal (NumberField.RingOfIntegers F)) :
 
 private theorem rowPrimes_eq (u : D.Row) :
     rowPrimes D u = idealPrimeSupport (DedekindZetaZeroFree.Quantitative.FixedData.Row.ideal u).val := by
-  unfold rowPrimes idealPrimeSupport
-  congr
+  aesop
 
 private theorem two_le_absNorm_of_ne (p : Ideal (NumberField.RingOfIntegers F))
     (h0 : p ≠ ⊥) (h1 : p ≠ ⊤) : 2 ≤ Ideal.absNorm p := by

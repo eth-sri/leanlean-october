@@ -28,8 +28,7 @@ def Eδ (D : RayCoset.Data K) (δ : Finset (RayCoset.RealPlaces K)) : ℂ → �
 
 theorem differentiable_Eδ (D : RayCoset.Data K)
     (δ : Finset (RayCoset.RealPlaces K)) :
-    Differentiable ℂ (Eδ D δ) := by
-  exact (RayTheta.Pδ D δ).differentiable_Λ₀
+    Differentiable ℂ (Eδ D δ) := (RayTheta.Pδ D δ).differentiable_Λ₀
 
 theorem uncompleted_eq (D : RayCoset.Data K)
     (δ : Finset (RayCoset.RealPlaces K)) (s : ℂ) (hs : 1 < s.re) :

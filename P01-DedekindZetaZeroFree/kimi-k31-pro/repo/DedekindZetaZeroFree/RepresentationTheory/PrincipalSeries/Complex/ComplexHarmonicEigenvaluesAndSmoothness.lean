@@ -205,7 +205,7 @@ private lemma complex_integral_mul (F : ℂ → ℂ) (c : ℂ) (hc : c ≠ 0) :
     (∫ x : ℂ, F (c * x)) = (‖c‖ ^ 2)⁻¹ • ∫ x : ℂ, F x := by
   let u : Circle := ⟨c / (‖c‖ : ℂ), by
     apply mem_sphere_zero_iff_norm.mpr
-    simp [norm_div, Complex.norm_real, abs_of_nonneg (norm_nonneg _), hc]⟩
+    simp [Complex.norm_real, hc]⟩
   have hcx (x : ℂ) : c * x = ‖c‖ • (rotation u x) := by
     change c * x = (‖c‖ : ℂ) * ((c / (‖c‖ : ℂ)) * x)
     field_simp [Complex.ofReal_ne_zero.mpr (norm_ne_zero_iff.mpr hc)]
@@ -233,7 +233,7 @@ private lemma positive_intertwiner_triangular_identity (a d : ℂˣ) (b x : ℂ)
   ext i j
   fin_cases i <;> fin_cases j <;>
     simp [weyl, upperUnipotent, Matrix.mul_apply, Fin.sum_univ_two, h1, h2,
-      mul_assoc, mul_comm, mul_left_comm, a.ne_zero]
+      mul_assoc, mul_comm]
   all_goals field_simp
 private lemma positive_intertwiner_weight (a d : ℂˣ) :
     inductionWeight positiveParameter d a * (‖(d : ℂ) / (a : ℂ)‖ ^ 2)⁻¹ =
@@ -450,7 +450,7 @@ noncomputable def openSU2 (x : ℂ) : ComplexSU2 := by
   have hr : r ^ 2 = 1 + Complex.normSq x := Real.sq_sqrt (by linarith)
   refine ⟨!![(star x) / r, -(1 / r); 1 / r, x / r], ?_⟩
   convert su2_matrix (1 / (r : ℂ)) (x / (r : ℂ)) ?_ using 1
-  · simp [map_div₀]
+  · simp
   · simp only [Complex.normSq_div, Complex.normSq_one, Complex.normSq_ofReal]
     rw [← pow_two, hr]
     field_simp [show 1 + Complex.normSq x ≠ 0 by linarith]

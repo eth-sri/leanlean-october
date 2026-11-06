@@ -67,7 +67,7 @@ private theorem directions_count {n k : ℕ} (α : MultiIndex n k) (i : Fin n) :
     α.directions.count i = counts α i := by
   rw [MultiIndex.directions, List.count_flatMap,
     ← List.sum_toFinset _ (List.nodup_finRange n)]
-  simp [Function.comp_def, List.count_replicate, counts]
+  simp [List.count_replicate, counts]
 
 private theorem counts_index {n k : ℕ} (γ : Counts n) (hγ : (∑ i, γ i) ≤ k) :
     counts (indexOfCounts γ hγ) = γ := rfl
@@ -200,7 +200,7 @@ private theorem counts_first {n : ℕ} (i : Fin n) :
 private theorem first_dirs {n : ℕ} (i : Fin n) : (KPContLocalEnergy.SobolevEnergyEstimates.Raw.firstIndex i).directions = [i] := by
   classical
   simp only [MultiIndex.directions, KPContLocalEnergy.SobolevEnergyEstimates.Raw.firstIndex, apply_ite Fin.val, Fin.val_one,
-    Fin.val_zero, List.replicate_one, List.replicate_zero]
+    Fin.val_zero]
   have h : ∀ l : List (Fin n), l.flatMap (fun j => if j = i then [j] else []) = l.filter (· = i) := by
     intro l; induction l with
     | nil => rfl
@@ -455,7 +455,7 @@ theorem directionCounts_cons {n : ℕ} (i : Fin n) (l : List (Fin n)) :
   simp only [directionCounts, List.count_cons, Pi.add_apply, unitCount]
   by_cases h : j = i
   · subst j; simp only [beq_self_eq_true, ite_true]; omega
-  · simp only [h, if_false, beq_iff_eq, Ne.symm h, ite_false, add_zero, zero_add]
+  · simp only [h, if_false, beq_iff_eq, Ne.symm h, add_zero, zero_add]
 
 theorem directionCounts_directions {n r : ℕ} (α : MultiIndex n r) :
     directionCounts α.directions = counts α := by
@@ -465,7 +465,7 @@ theorem directionCounts_directions {n r : ℕ} (α : MultiIndex n r) :
 private theorem coefficientDirections_counts {n : ℕ} (γ : Counts n) (i : Fin n) :
     ((List.finRange n).flatMap (fun j => List.replicate (γ j) j)).count i = γ i := by
   rw [List.count_flatMap, ← List.sum_toFinset _ (List.nodup_finRange n)]
-  simp [Function.comp_def, List.count_replicate]
+  simp [List.count_replicate]
 
 theorem coefficientJet_add_unit_on {n : ℕ} {B : LocalBall n}
     (γ : Counts n) (i : Fin n) {a : Space n → ℂ}
@@ -581,8 +581,8 @@ theorem weak_product_rule_uncollected {n k r : ℕ} {B : LocalBall n}
       (-1 : ℂ) ^ α.degree *
         (∫ x in B.carrier, productExpansion u α.directions a γ x * φ x) := by
   have hlen : α.directions.length = α.degree := by
-    simp only [MultiIndex.directions, MultiIndex.degree, List.length_flatMap, List.map_map,
-      List.length_replicate, Function.comp_def]
+    simp only [MultiIndex.directions, MultiIndex.degree, List.length_flatMap, 
+      List.length_replicate]
     simp [List.finRange, List.map_ofFn, List.sum_ofFn]
   simpa only [directionCounts_directions, hlen, coordinateDerivative] using
     weak_product_rule_list u α.directions γ (directionCounts_directions α ▸ hγ) ha φ
@@ -623,7 +623,7 @@ theorem countsChoose_add_unit {n : ℕ} (δ β : Counts n) (i : Fin n) (hi : 0 <
     have hji : j ≠ i := (Finset.mem_erase.mp hj).1
     simp [unitCount, hji]
   rw [h₁, h₂]
-  simp only [Pi.add_apply, Pi.sub_apply, unitCount, if_pos rfl, ite_true]
+  simp only [Pi.add_apply, Pi.sub_apply, unitCount, ite_true]
   rw [Nat.choose_succ_left _ _ hi, add_mul]
 
 theorem countsChoose_add_unit_zero {n : ℕ} (δ β : Counts n) (i : Fin n) (hi : β i = 0) :
@@ -641,7 +641,7 @@ def countsBox {n : ℕ} (δ : Counts n) : Finset (Counts n) :=
 
 @[simp] theorem mem_countsBox {n : ℕ} (δ β : Counts n) :
     β ∈ countsBox δ ↔ ∀ i, β i ≤ δ i := by
-  simp [countsBox, Nat.lt_succ_iff]
+  simp [countsBox]
 
 theorem sum_below_countsBox {n r : ℕ} (α : MultiIndex n r) (f : Counts n → ℂ) :
     (∑ β ∈ Finset.univ.filter (fun β : MultiIndex n r => ∀ i, counts β i ≤ counts α i),
@@ -743,7 +743,7 @@ theorem productExpansion_countsBox {n k : ℕ} {B : LocalBall n}
       simp only [mem_countsBox, Pi.zero_apply, Nat.le_zero, Finset.mem_singleton]
       exact ⟨fun h => funext h, fun h j => congrFun h j⟩
     simp only [directionCounts_nil, hz, Finset.sum_singleton, countsChoose_zero_right,
-      Nat.cast_one, one_mul, coefficientJet_zero, add_zero, sub_zero, productExpansion]
+      Nat.cast_one, one_mul, coefficientJet_zero, add_zero, productExpansion]
     have he : γ - 0 = γ := by funext j; exact Nat.sub_zero _
     rw [he]
   | cons i l ih =>

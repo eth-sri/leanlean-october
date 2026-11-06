@@ -13,7 +13,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
  def archUnit (z : KPGlobalTorusFunctionData.TorusArch F) (w : InfinitePlace F) : w.Completionˣ :=
   let e := InfinitePlace.Completion.ringEquivComplexOfIsComplex (KPHilbert.infinite_isComplex F ζ hζ w)
   if h : z w = 0 then 1 else Units.mk0 (e.symm (z w))
-    (by exact fun h0 => h (by simpa using congrArg e h0))
+    (fun h0 => h (by simpa using congrArg e h0))
  def archIdele (z : KPGlobalTorusFunctionData.TorusArch F) : KPGlobalTorusFunctionData.Ideles F where
   val := (fun w => (archUnit F ζ hζ z w).val, 1)
   inv := (fun w => (archUnit F ζ hζ z w).inv, 1)
@@ -28,9 +28,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
 private theorem arch_eval (z : KPGlobalTorusFunctionData.TorusArch F) (v : KPHilbert.Place F) :
     KPGlobalCubicIdelePairing.ideleEval F v (archIdele F ζ hζ z) =
       (match v with | Sum.inl w => archUnit F ζ hζ z w | Sum.inr q => 1) := by
-  cases v with
-  | inl w => apply Units.ext; rfl
-  | inr q => apply Units.ext; rfl
+  aesop
 private theorem arch_cube (z : KPGlobalTorusFunctionData.TorusArch F) :
     archIdele F ζ hζ z ∈ CubicCharacters.cubes (KPGlobalTorusFunctionData.Ideles F) := by
   apply (QuotientGroup.eq_one_iff _).mp

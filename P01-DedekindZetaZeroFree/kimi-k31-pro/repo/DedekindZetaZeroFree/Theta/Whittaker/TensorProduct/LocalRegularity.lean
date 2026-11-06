@@ -82,16 +82,16 @@ lemma localUniformChart (w : InfinitePlace F) (t : ℝ) :
           show (0 : Fin 3) ≠ 1 by decide, show (2 : Fin 3) ≠ 1 by decide,
           ↓reduceIte, map_zero, KPStandardLocalRootLifts.N_zero,
           KPStandardLocalRootLifts.LowerN_zero, one_mul, mul_one, dif_neg hne]
-        simp only [KPAdelicCoverRestrictedProduct.localToRestricted,
-          RestrictedProduct.mulSingleMonoidHom, RestrictedProduct.mulSingle,
+        simp only [
+          
           Pi.mulSingle_eq_same]
         congr 1
         apply Units.ext
         simp only [Units.val_mk0]
         exact (RingEquiv.eq_symm_apply _).mpr (SheetRescaling.radial_arch_value R t w) |>.symm
       · simp [localUniformCoordinates, Function.update_of_ne hv, archBase,
-          KPAdelicCoverRestrictedProduct.localToRestricted,
-          RestrictedProduct.mulSingleMonoidHom, RestrictedProduct.mulSingle,
+          
+          
           Pi.mulSingle_eq_of_ne (Sum.inl_injective.ne hv)]
 
 lemma local_diagonal_uniform (w : InfinitePlace F) (z : w.Completionˣ) (t : ℝ) :

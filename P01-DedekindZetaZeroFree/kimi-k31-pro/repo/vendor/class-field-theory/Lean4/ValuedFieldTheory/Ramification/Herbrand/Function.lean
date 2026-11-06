@@ -179,37 +179,9 @@ omit [Finite G] in
     (herbrandFunction F) (n : ℝ) = (herbrandValueNat F) n := by
   simp [herbrandFunction]
 
-/-- The first Herbrand value is the ratio of the first two lower-group orders. -/
-theorem herbrandFunction_one_eq :
-    (herbrandFunction F) 1 =
-      (Nat.card (F.lower 1) : ℝ) / Nat.card (F.lower 0) := by
-  rw [show (1 : ℝ) = ((1 : ℕ) : ℝ) by norm_num,
-    herbrandFunction_nat, show (1 : ℕ) = 0 + 1 by omega,
-    herbrandValueNat_succ]
-  simp [herbrandValueNat_zero, herbrandSlope]
 
-/-- The first Herbrand value lies strictly above zero and at most one. -/
-theorem herbrandFunction_one_pos_le_one :
-    0 < (herbrandFunction F) 1 ∧ (herbrandFunction F) 1 ≤ 1 := by
-  have hden : (0 : ℝ) < Nat.card (F.lower 0) := by
-    exact_mod_cast (show 0 < Nat.card (F.lower 0) from Finite.card_pos)
-  have hnum : (0 : ℝ) < Nat.card (F.lower 1) := by
-    exact_mod_cast (show 0 < Nat.card (F.lower 1) from Finite.card_pos)
-  have hsub : F.lower 1 ≤ F.lower 0 := F.antitone (by omega)
-  let incl : F.lower 1 → F.lower 0 := fun x => ⟨x.1, hsub x.2⟩
-  have hincl : Function.Injective incl := by
-    intro x y h
-    have hval : (x : G) = (y : G) :=
-      congrArg (fun z : F.lower 0 => (z : G)) h
-    exact Subtype.ext hval
-  have hcard : Nat.card (F.lower 1) ≤ Nat.card (F.lower 0) :=
-    Nat.card_le_card_of_injective incl hincl
-  rw [herbrandFunction_one_eq]
-  constructor
-  · exact div_pos hnum hden
-  · apply (div_le_iff₀ hden).2
-    simpa using (Nat.cast_le.mpr hcard :
-      (Nat.card (F.lower 1) : ℝ) ≤ Nat.card (F.lower 0))
+
+
 
 omit [Finite G] in
 /-- The defining affine formula on a half-open unit interval. -/
@@ -234,20 +206,7 @@ theorem herbrandFunction_eq_on_Icc (m : ℕ) {s : ℝ}
     norm_num
   · exact (herbrandFunction_eq_on_Ico F) m hms hsm
 
-/-- The displayed formula immediately preceding the Herbrand-function sum formula. -/
-theorem herbrandFunction_eq_card_sum_of_mem_Icc (m : ℕ) {s : ℝ}
-    (hms : (m : ℝ) ≤ s) (hsm : s ≤ m + 1) :
-    (herbrandFunction F) s =
-      ((∑ i ∈ Finset.range m, (Nat.card (F.lower (i + 1)) : ℝ)) +
-          (s - m) * Nat.card (F.lower (m + 1))) /
-        Nat.card (F.lower 0) := by
-  rw [(herbrandFunction_eq_on_Icc F) m hms hsm]
-  simp_rw [herbrandValueNat, herbrandSlope, div_eq_mul_inv]
-  rw [← Finset.sum_mul]
-  have h0 : (Nat.card (F.lower 0) : ℝ) ≠ 0 := by
-    exact_mod_cast
-      (ne_of_gt (show 0 < Nat.card (F.lower 0) from Finite.card_pos))
-  field_simp
+
 
 /-- States the theorem `herbrandFunction_nonneg`. -/
 theorem herbrandFunction_nonneg {s : ℝ} (hs : 0 ≤ s) :
@@ -350,10 +309,7 @@ theorem herbrandFunction_surjective : Function.Surjective (herbrandFunction F) :
   field_simp [((herbrandSlope_pos F) m).ne']
   ring
 
-/-- Continuity of the piecewise-linear Herbrand function. -/
-theorem continuous_herbrandFunction : Continuous (herbrandFunction F) :=
-  (herbrandFunction_strictMono F).monotone.continuous_of_surjective
-    (herbrandFunction_surjective F)
+
 
 /-- The inverse Herbrand function `ψ`. -/
 noncomputable def inverseHerbrandFunction (t : ℝ) : ℝ :=
@@ -369,30 +325,13 @@ noncomputable def inverseHerbrandFunction (t : ℝ) : ℝ :=
     (inverseHerbrandFunction F) ((herbrandFunction F) s) = s :=
   Function.leftInverse_invFun (herbrandFunction_strictMono F).injective s
 
-/-- States the theorem `inverseHerbrandFunction_strictMono`. -/
-theorem inverseHerbrandFunction_strictMono : StrictMono (inverseHerbrandFunction F) := by
-  intro s t hst
-  apply (herbrandFunction_strictMono F).lt_iff_lt.mp
-  simpa using hst
 
-/-- States the theorem `inverseHerbrandFunction_surjective`. -/
-theorem inverseHerbrandFunction_surjective : Function.Surjective (inverseHerbrandFunction F) := by
-  intro s
-  exact ⟨(herbrandFunction F) s, (inverseHerbrandFunction_herbrandFunction F) s⟩
 
-/-- States the theorem `continuous_inverseHerbrandFunction`. -/
-theorem continuous_inverseHerbrandFunction : Continuous (inverseHerbrandFunction F) :=
-  (inverseHerbrandFunction_strictMono F).monotone.continuous_of_surjective
-    (inverseHerbrandFunction_surjective F)
 
-/-- The mutually inverse Herbrand functions as an order isomorphism of the
-real line.  Its canonical form uses the restriction to `[-1,∞)`. -/
-noncomputable def herbrandOrderIso : ℝ ≃o ℝ where
-  toFun := (herbrandFunction F)
-  invFun := (inverseHerbrandFunction F)
-  left_inv := (inverseHerbrandFunction_herbrandFunction F)
-  right_inv := (herbrandFunction_inverseHerbrandFunction F)
-  map_rel_iff' := (herbrandFunction_strictMono F).le_iff_le
+
+
+
+
 
 /-- States the theorem `herbrandFunction_mem_Ici_neg_one_iff`. -/
 theorem herbrandFunction_mem_Ici_neg_one_iff {s : ℝ} :
@@ -402,16 +341,7 @@ theorem herbrandFunction_mem_Ici_neg_one_iff {s : ℝ} :
     ((herbrandFunction_strictMono F).le_iff_le :
       (herbrandFunction F) (-1) ≤ (herbrandFunction F) s ↔ (-1 : ℝ) ≤ s)
 
-/-- States the theorem `inverseHerbrandFunction_mem_Ici_neg_one_iff`. -/
-theorem inverseHerbrandFunction_mem_Ici_neg_one_iff {t : ℝ} :
-    (inverseHerbrandFunction F) t ∈ Set.Ici (-1) ↔ t ∈ Set.Ici (-1) := by
-  change -1 ≤ (inverseHerbrandFunction F) t ↔ -1 ≤ t
-  have hψ : (inverseHerbrandFunction F) (-1) = -1 := by
-    simpa only [(herbrandFunction_neg_one F)] using
-      (inverseHerbrandFunction_herbrandFunction F) (-1)
-  simpa only [hψ] using
-    ((inverseHerbrandFunction_strictMono F).le_iff_le :
-      (inverseHerbrandFunction F) (-1) ≤ (inverseHerbrandFunction F) t ↔ (-1 : ℝ) ≤ t)
+
 
 /-- The number of positive lower-numbered levels, truncated at `n`, through
 which an inertia element survives.  For a classical depth `i(σ)`, this is

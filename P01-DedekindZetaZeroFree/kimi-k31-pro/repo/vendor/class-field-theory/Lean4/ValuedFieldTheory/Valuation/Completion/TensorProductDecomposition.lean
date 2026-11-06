@@ -354,25 +354,7 @@ noncomputable def completionTensorDecomposition
     (completionTensorDecomposition_canonicalHom_bijective
       (K := K) (L := L) vK hvK)
 
-/-- The endpoint is exactly the canonical homomorphism, not merely an
-abstract algebra equivalence. -/
-theorem completionTensorDecomposition_toAlgHom
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [Algebra.IsSeparable K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial) :
-    letI := Algebra.TensorProduct.rightAlgebra
-      (R := K) (A := L) (B := vK.Completion)
-    letI : ∀ w : AbsoluteValueExtension vK L,
-        Algebra vK.Completion w.1.Completion :=
-      fun w ↦ AbsoluteValue.completionAlgebra vK w.1 w.2
-    (completionTensorDecomposition (K := K) (L := L) vK hvK).toAlgHom =
-      completionTensorMap_canonicalHom vK := by
-  let := Algebra.TensorProduct.rightAlgebra
-    (R := K) (A := L) (B := vK.Completion)
-  let : ∀ w : AbsoluteValueExtension vK L,
-      Algebra vK.Completion w.1.Completion :=
-    fun w ↦ AbsoluteValue.completionAlgebra vK w.1 w.2
-  rfl
+
 
 @[simp]
 theorem completionTensorDecomposition_tmul_apply

@@ -211,7 +211,7 @@ theorem exists_unit_balanced_pair
     exact_mod_cast u.ne_zero
   have hs : (fun i => (s i : F)) = ((u : RingOfIntegers F) : F) • (fun i => (r i : F)) := by
     ext i
-    simp [s, Algebra.smul_def, RingOfIntegers.coe_eq_algebraMap]
+    simp [s, RingOfIntegers.coe_eq_algebraMap]
   have hs0 : (fun i => (s i : F)) ≠ 0 := by
     rw [hs]
     exact smul_ne_zero huF hr

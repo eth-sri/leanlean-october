@@ -97,7 +97,7 @@ theorem groupArchDiagonalTransport_contDiff (a : InfinitePlace F → ℂˣ) :
   · simp only [groupArchDiagonalTransport, hi0, ↓reduceIte]
     exact ((contDiff_apply ℝ _ 0).comp (contDiff_apply ℝ _ w)).div_const _
   · by_cases hi1 : i = 1
-    · simp only [groupArchDiagonalTransport, hi0, hi1, ↓reduceIte]
+    · simp only [groupArchDiagonalTransport, hi1, ↓reduceIte]
       exact contDiff_const.mul ((contDiff_apply ℝ _ 1).comp (contDiff_apply ℝ _ w))
     · simp only [groupArchDiagonalTransport, hi0, hi1, ↓reduceIte]
       exact (contDiff_apply ℝ _ i).comp (contDiff_apply ℝ _ w)

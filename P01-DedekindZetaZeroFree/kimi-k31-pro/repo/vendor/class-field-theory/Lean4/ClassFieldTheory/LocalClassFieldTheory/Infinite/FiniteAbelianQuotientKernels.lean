@@ -83,16 +83,7 @@ theorem absoluteAbelianRestriction_mk
       AlgEquiv.restrictNormalHom E σ :=
   rfl
 
-/-- Restriction to a finite Galois subextension is onto after passing to the
-absolute topological abelianization. -/
-theorem absoluteAbelianRestriction_surjective
-    (E : IntermediateField K (SeparableClosure K))
-    [FiniteDimensional K E] [IsAbelianGalois K E] :
-    Function.Surjective (absoluteAbelianRestriction K E) := by
-  intro τ
-  rcases AlgEquiv.restrictNormalHom_surjective
-      (F := K) (K₁ := E) (E := SeparableClosure K) τ with ⟨σ, rfl⟩
-  exact ⟨QuotientGroup.mk σ, absoluteAbelianRestriction_mk K E σ⟩
+
 
 /-- The open normal kernel attached to a finite abelian subextension. -/
 noncomputable def absoluteAbelianRestrictionKernel

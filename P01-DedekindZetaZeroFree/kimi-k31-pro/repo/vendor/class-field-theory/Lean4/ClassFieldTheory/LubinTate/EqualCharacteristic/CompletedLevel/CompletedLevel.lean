@@ -279,14 +279,7 @@ theorem equalCharacteristicCompletedPrimitivePolynomial_adjoin_rootSet
   exact Polynomial.SplittingField.adjoin_rootSet
     (equalCharacteristicCompletedPrimitivePolynomial F n)
 
-/-- The completed level field is finite-dimensional over the completed
-maximal-unramified Laurent field. -/
-theorem equalCharacteristicCompletedLevelField_finiteDimensional
-    (F : LocalField.{u, v} K) (n : ℕ) :
-    FiniteDimensional
-      (equalCharacteristicCompletedUnramifiedField F.residueField)
-      (equalCharacteristicCompletedLevelField F n) := by
-  infer_instance
+
 
  theorem equalCharacteristicCompletedPrimitivePolynomial_map_degree_ne_zero
     (F : LocalField.{u, v} K) (n : ℕ) :
@@ -696,21 +689,7 @@ theorem equalCharacteristicCompletedPrimitiveRootInteger_coe
       equalCharacteristicCompletedPrimitiveRoot F n :=
   rfl
 
-/-- The integral primitive root belongs to the maximal ideal. -/
-theorem equalCharacteristicCompletedPrimitiveRootInteger_mem_maximalIdeal
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) :
-    equalCharacteristicCompletedPrimitiveRootInteger F n ∈
-      Valued.maximalIdeal (equalCharacteristicCompletedLevelField F n) := by
-  change equalCharacteristicCompletedPrimitiveRootInteger F n ∈
-    IsLocalRing.maximalIdeal
-      (Valued.integer (equalCharacteristicCompletedLevelField F n))
-  apply (Valuation.mem_maximalIdeal_iff
-    (equalCharacteristicCompletedLevelField F n)
-    (Valued.v : Valuation (equalCharacteristicCompletedLevelField F n) ℝ≥0)).2
-  change ‖equalCharacteristicCompletedPrimitiveRoot F n‖₊ < 1
-  exact_mod_cast equalCharacteristicCompletedPrimitiveRoot_norm_lt_one F n
+
 
 /-- The primitive root is a genuine analytic evaluation point for outer
 power series over the completed level integer ring. -/

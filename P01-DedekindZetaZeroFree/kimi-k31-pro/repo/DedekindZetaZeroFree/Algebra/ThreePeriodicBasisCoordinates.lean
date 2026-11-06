@@ -28,15 +28,15 @@ theorem periodic_basis_coordinate_equiv
     have hm : (i.val : ℤ) % 3 = i.val := by omega
     simp only [KPThreeShell.basis, hm, Int.toNat_natCast,
       Module.Basis.equivFun_self]
-    simp only [Fin.ext_iff, eq_comm]
+    aesop
   refine ⟨B.equivFun.symm, ?_, ?_⟩
   · intro j
     let i : Fin 3 := ⟨(j % 3).toNat, by omega⟩
-    have hi : (i.val : ℤ) = j % 3 := by dsimp [i]; omega
+    have hi : (i.val : ℤ) = j % 3 := by grind
     have hb : KPThreeShell.basis j = KPThreeShell.basis (i.val : ℤ) := by
       rw [hi]
       unfold KPThreeShell.basis
-      rw [Int.emod_emod]
+      simp_all
     have hc : c (i.val : ℤ) = c j := by
       rw [hi]
       have hp : Function.Periodic c 3 := hperiod
@@ -48,6 +48,6 @@ theorem periodic_basis_coordinate_equiv
     apply (Pi.basisFun ℂ (Fin 3)).ext
     intro i
     change E (Pi.basisFun ℂ (Fin 3) i) = B.equivFun.symm (Pi.basisFun ℂ (Fin 3) i)
-    rw [← hstd, hE, hcoord, hB]
+    grind
 end
 end DedekindZetaZeroFree.KPExteriorSpherical

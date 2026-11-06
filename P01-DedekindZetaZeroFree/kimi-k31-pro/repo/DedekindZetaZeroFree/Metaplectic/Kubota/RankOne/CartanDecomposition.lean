@@ -143,7 +143,7 @@ theorem nonzero_integer_unit_times_uniformizer_pow (π : (w.adicCompletion F)ˣ)
   have hp : v (π.val ^ n) = WithZero.exp e := by
     rw [map_pow, hπ, ← WithZero.exp_nsmul]
     congr 1
-    simp [nsmul_eq_mul, hn]
+    simp [hn]
   let t := x / π.val ^ n
   have ht : v t = 1 := by
     dsimp [t]
@@ -219,10 +219,10 @@ private theorem pivot_factor (π : (w.adicCompletion F)ˣ)
     fin_cases i <;> fin_cases j <;>
       simp [l, r, W, KPTameCompact.inclusion, KPLocalCube.integerInclusion, KPStandardLocalRootLifts.integralLowerN, KPStandardLocalRootLifts.integralN,
         KPStandardLocalRootLifts.integralA, KPStandardLocalRootLifts.integralW,
-        KPScalarSplitCentral.scalarMatrix, Matrix.GeneralLinearGroup.map_apply, map_mul,
-        Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.val_mk'',
+        KPScalarSplitCentral.scalarMatrix, map_mul,
+        Matrix.GeneralLinearGroup.val_mk'',
         Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar, KubotaRankTwo.coe_d,
-        a, b, c, Units.val_pow_eq_pow_val, ← hu]
+        a, b, c, Units.val_pow_eq_pow_val]
     all_goals dsimp [x] at *; field_simp [ha] at hu ⊢ <;> first | assumption | linear_combination hu | ring
   letI := KPPGLLocalCover.scalarSubgroup_normal F (Sum.inr w)
   have hs : KPPGLLocalCover.baseQuotient F (Sum.inr w)

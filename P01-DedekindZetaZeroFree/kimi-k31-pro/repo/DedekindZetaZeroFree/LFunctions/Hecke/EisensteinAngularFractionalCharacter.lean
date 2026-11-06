@@ -10,8 +10,7 @@ namespace DedekindZetaZeroFree.Eisenstein
 
 theorem angular_mem_circle (z : ℂˣ) :
     z.val / (‖z.val‖ : ℂ) ∈ Metric.sphere (0 : ℂ) 1 := by
-  rw [Metric.mem_sphere, dist_zero_right, norm_div,
-    Complex.norm_of_nonneg (norm_nonneg _), div_self (norm_ne_zero_iff.mpr z.ne_zero)]
+  simp_all
 
 theorem angular_unit_mul (z w : ℂˣ) :
     (z * w).val / (‖(z * w).val‖ : ℂ) =

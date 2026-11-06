@@ -105,7 +105,7 @@ include ht hgood hπ hψcont hψunitary hcond hactual hbar hφ hne in
       Int.cast_natCast]
   · have hd : e = 3 * (e / 3) + 2 := by omega
     rw [hd, KPThreeShell.shell_three_mul_add_two _ hQ _ _ hg]
-    simp [radialValue, hmod, hr]
+    simp [radialValue]
 
 end
 end DedekindZetaZeroFree.ExteriorWhittakerValues.ActualShellValues

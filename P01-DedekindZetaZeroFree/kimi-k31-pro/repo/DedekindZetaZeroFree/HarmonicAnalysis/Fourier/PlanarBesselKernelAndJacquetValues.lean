@@ -56,8 +56,8 @@ private theorem oscillatory_gaussian (c t : ℝ) (ht : 0 < t) :
     (Real.pi / t : ℂ) * Complex.exp (-(c : ℂ) ^ 2 / (4 * (t : ℂ))) := by
   have h := GaussianFourier.integral_cexp_neg_mul_sq_norm_add
     (V := ℂ) (b := (t : ℂ)) (by simpa using ht) (-Complex.I * (c : ℂ)) (1 : ℂ)
-  simp only [Complex.finrank_real_complex, Nat.cast_ofNat, norm_one, one_pow,
-    mul_one, show (2 : ℂ) / 2 = 1 by norm_num, Complex.cpow_one] at h
+  simp only [Complex.finrank_real_complex, Nat.cast_ofNat, norm_one, 
+    show (2 : ℂ) / 2 = 1 by norm_num, Complex.cpow_one] at h
   calc
     _ = ∫ x : ℂ, Complex.exp (-(t : ℂ) * (‖x‖ : ℂ) ^ 2 +
         (-Complex.I * (c : ℂ)) * (inner ℝ (1 : ℂ) x : ℂ)) := by
@@ -134,7 +134,7 @@ private theorem laplaceGaussian_integrable (c ρ : ℝ) (hρ : 0 < ρ) :
     filter_upwards [self_mem_ae_restrict measurableSet_Ioi] with t ht
     simp only [Function.uncurry, laplaceGaussian, norm_mul, phase_norm, mul_one,
       Complex.norm_real, Real.norm_eq_abs,
-      abs_of_pos (mul_pos (Real.rpow_pos_of_pos ht _) (Real.exp_pos _)),
+      
       abs_of_pos (Real.exp_pos _)]
     rw [abs_of_pos (Real.rpow_pos_of_pos ht (1 / 3 : ℝ))]
     rw [integral_const_mul, gaussian_integral t ht]

@@ -19,7 +19,7 @@ namespace ResidueCoefficientAux
 theorem integral_lift (a : Ideal (𝓞 F)) (ha : a ≠ ⊥)
     (x : {x : F // x ∈ (rayIdealFractionalIdeal F a ha : FractionalIdeal (𝓞 F)⁰ F)}) :
     ∃ α : 𝓞 F, α ∈ a ∧ (algebraMap (𝓞 F) F) α = x.val := by
-  exact (FractionalIdeal.mem_coeIdeal (𝓞 F)⁰).mp x.property
+  aesop
 
 theorem coefficient_mul (a : Ideal (𝓞 F)) (ha : a ≠ ⊥)
     (x : {x : F // x ∈ (rayIdealFractionalIdeal F a ha : FractionalIdeal (𝓞 F)⁰ F)})
@@ -304,8 +304,7 @@ def coprimeIdealResidueCoefficient (hF : NumberField.IsTotallyComplex F)
     (m a : Ideal (𝓞 F)) (hm : m ≠ ⊥) (ha : a ≠ ⊥)
     (hcop : a ⊔ m = ⊤) (hmt : m ≠ ⊤)
     (η : DedekindZetaZeroFree.RayClassCharacter F m)
-    (E : RayCharacterData F m hm η) : coprimeIdealResidue F m a hm ha → ℂ := by
-  exact fun q => η (integralElementIdeal (rayIdealFractionalIdeal F a ha)
+    (E : RayCharacterData F m hm η) : coprimeIdealResidue F m a hm ha → ℂ := fun q => η (integralElementIdeal (rayIdealFractionalIdeal F a ha)
     (Classical.choose (fractionalIdealQuotientMk_surjective
       (rayIdealFractionalIdeal F a ha : FractionalIdeal (𝓞 F)⁰ F)
       ((rayIdealFractionalIdeal F a ha * rayIdealFractionalIdeal F m hm) :

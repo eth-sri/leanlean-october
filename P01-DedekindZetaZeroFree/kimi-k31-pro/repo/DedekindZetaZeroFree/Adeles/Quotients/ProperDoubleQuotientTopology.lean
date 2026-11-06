@@ -117,7 +117,7 @@ theorem proper_rawDoubleQuotient_topology [IsTopologicalGroup G] [T2Space G]
     · intro he
       obtain ⟨γ, hγ, k, hk, he⟩ := DoubleCoset.eq.mp he.symm
       exact ⟨((⟨γ, hγ⟩, ⟨k⁻¹, K.inv_mem hk⟩), p.2), by
-        simp only [rawActionCorrespondence, Subgroup.coe_mk, inv_inv]
+        simp only [rawActionCorrespondence, inv_inv]
         exact Prod.ext he.symm rfl⟩
   have ht : T2Space (RawDoubleQuotient Γ K) :=
     (t2Space_iff_of_isOpenQuotientMap h).mpr (hr ▸ hp.isClosed_range)

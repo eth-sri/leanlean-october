@@ -14,7 +14,7 @@ private lemma hasSum_finset_sum {ι X M : Type*} [AddCommMonoid M] [TopologicalS
     HasSum (fun x => ∑ i ∈ t, f i x) (∑ i ∈ t, g i) := by
   classical
   induction t using Finset.induction with
-  | empty => simpa using hasSum_zero (α := M) (β := X)
+  | empty => simp_all
   | insert i t hi ih =>
       have h1 : HasSum (f i) (g i) := h i (Finset.mem_insert_self i t)
       have h2 : HasSum (fun x => ∑ j ∈ t, f j x) (∑ j ∈ t, g j) :=
@@ -37,11 +37,7 @@ theorem finiteCharacterEntireAssembly
           | some c => ψ c) * w a s) (f s) := by
   classical
   refine ⟨fun s => ∑ c : G, ψ c * F c s, ?_, ?_⟩
-  · convert Differentiable.sum (u := Finset.univ)
-        (A := fun c : G => fun s : ℂ => ψ c * F c s)
-        (fun c _ => (hF c).const_mul (ψ c)) using 1
-    ext s
-    simp only [Finset.sum_apply]
+  · aesop
   · intro s hs
 
     have hpt : (fun a => (match q a with
@@ -50,8 +46,8 @@ theorem finiteCharacterEntireAssembly
         = fun a => ∑ c : G, ψ c * (if q a = some c then w a s else 0) := by
       funext a
       rcases hq : q a with _ | c₀
-      · simp [hq]
-      · simp [hq]
+      · simp_all
+      · simp_all
 
     have hsum := hasSum_finset_sum Finset.univ
         (fun c a => ψ c * (if q a = some c then w a s else 0))
@@ -64,10 +60,6 @@ theorem finiteCharacterEntireAssembly
             Finset.sum_congr rfl fun c _ => mul_add _ _ _]
       rw [Finset.sum_add_distrib, ← Finset.sum_mul, sum_hom_units_eq_zero ψ hψ,
         zero_mul, add_zero]
-    rw [hpt]
-    change HasSum (fun a => ∑ c : G, ψ c * (if q a = some c then w a s else 0))
-      (∑ c : G, ψ c * F c s)
-    rw [← hval]
-    exact hsum
+    simp_all
 
 end DedekindZetaZeroFree.AbelianQuotient

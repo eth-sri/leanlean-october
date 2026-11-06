@@ -107,10 +107,10 @@ private lemma zero_formula (Q : ℝ) (hQ : 1 < Q) (g₂ g₄ : ℂ) (k : ℕ) :
     shell Q g₂ g₄ (3*k) =
     rp Q (-(k : ℝ)) • basis 0 + (rp Q (-(k : ℝ)-1/6)*g₄) • basis 2 := by
   have hf := shell_residue Q hQ g₂ g₄ k 0 (by omega)
-  simp only [add_zero, Nat.cast_mul, Nat.cast_ofNat, Nat.cast_zero, Int.cast_ofNat,
-    Int.ofNat_zero, neg_zero, zero_add] at hf
+  simp only [add_zero, Nat.cast_mul, Nat.cast_ofNat, Nat.cast_zero, 
+    neg_zero, zero_add] at hf
   have ht : tameFactor Q g₂ g₄ (3*k+1) = rp Q (-1/2) * g₄ := by
-    simp [tameFactor, rp, Nat.add_mod, Nat.mul_mod]
+    simp [tameFactor, rp, Nat.add_mod]
   rw [hf, ht, smul_add, smul_smul, smul_smul]
   rw [rp_mul Q hQ]
   congr 1
@@ -128,7 +128,7 @@ private lemma one_formula (Q : ℝ) (hQ : 1 < Q) (g₂ g₄ : ℂ) (k : ℕ) :
   have hb' : basis (1+2) = basis 0 := by apply basis_mod; norm_num
   simp only [Nat.cast_add, Nat.cast_mul, Nat.cast_ofNat, Int.ofNat_one, hb, hb'] at hf
   have ht : tameFactor Q g₂ g₄ (3*k+1+1) = rp Q (-1/2) * g₂ := by
-    simp [tameFactor, rp, Nat.add_mod, Nat.mul_mod]
+    simp [tameFactor, rp, Nat.add_mod]
   rw [hf, ht, smul_add, smul_smul, smul_smul]
   rw [rp_mul Q hQ]
   congr 1
@@ -145,7 +145,7 @@ private lemma two_formula (Q : ℝ) (hQ : 1 < Q) (g₂ g₄ : ℂ) (k : ℕ) :
   have hb' : basis (2+2) = basis 1 := by apply basis_mod; norm_num
   simp only [Nat.cast_add, Nat.cast_mul, Nat.cast_ofNat, hb, hb'] at hf
   have ht : tameFactor Q g₂ g₄ (3*k+2+1) = -(Q⁻¹ : ℝ) := by
-    simp [tameFactor, Nat.add_mod, Nat.mul_mod]
+    simp [tameFactor, Nat.add_mod]
   have hi : (Q⁻¹ : ℝ) = Real.rpow Q (-1) := by
     rw [Real.rpow_eq_pow, Real.rpow_neg (by linarith : 0 ≤ Q), Real.rpow_one]
   rw [hf, ht, hi]

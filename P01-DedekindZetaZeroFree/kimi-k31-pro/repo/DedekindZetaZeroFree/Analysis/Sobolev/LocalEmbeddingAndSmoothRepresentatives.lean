@@ -12,8 +12,7 @@ open MeasureTheory
 open scoped ContDiff
 open KPContLocalNorm
 
-def euclideanSobolevNorm {n : ℕ} (k : ℕ) (w : Space n → ℂ) : ℝ :=
-  Real.sqrt (∑ α : MultiIndex n k, ∫ x, ‖coordinateDerivative α w x‖ ^ 2)
+
 
 def closedCarrier {n : ℕ} (B : LocalBall n) : Set (Space n) :=
   Metric.closedBall B.center B.radius

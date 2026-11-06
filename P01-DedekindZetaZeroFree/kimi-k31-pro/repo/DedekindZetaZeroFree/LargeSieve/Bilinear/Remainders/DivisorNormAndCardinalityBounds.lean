@@ -29,8 +29,7 @@ lemma norm_le_of_dvd {u v : Ideal (𝓞 F)} (hv : v ≠ ⊥) (h : u ∣ v) :
     (Ideal.absNorm_dvd_absNorm_of_le (Ideal.dvd_iff_le.mp h))
 
 lemma unit_row_eq_top {m : Ideal (𝓞 F)} {K : ℝ} {r : Ideal (𝓞 F)}
-    (hr : r ∈ ReflectedSigma4.unitRows c m K) : r = ⊤ := by
-  exact Finset.mem_singleton.mp (Finset.mem_filter.mp hr).1
+    (hr : r ∈ ReflectedSigma4.unitRows c m K) : r = ⊤ := Finset.mem_singleton.mp (Finset.mem_filter.mp hr).1
 
 lemma core_row_norm (C : Context Q) (B : ℝ) (unit : Bool) (hB : 1 ≤ B)
     {r : Ideal (𝓞 F)} (hr : r ∈ C.reflectedCoreRows B unit) :
@@ -126,8 +125,7 @@ lemma mobius_divisor_norm (C : Context Q) {e : Ideal (𝓞 F)}
     (show (Ideal.absNorm e : ℝ) ≤ (Ideal.absNorm (c * C.d) : ℝ) by exact_mod_cast he'.trans hrad)
 
 lemma primitive_norm_le_one (C : Context Q) (p : Ideal (𝓞 F) × Ideal (𝓞 F))
-    (hp : C.ValidPair p) (e : Ideal (𝓞 F)) : ‖C.primitive p hp e‖ ≤ 1 := by
-  exact ((primitiveProductQuadratic Q hp.hu0 hp.hv0 hp.hu hp.hv hp.huc hp.hvc hp.huv
+    (hp : C.ValidPair p) (e : Ideal (𝓞 F)) : ‖C.primitive p hp e‖ ≤ 1 := ((primitiveProductQuadratic Q hp.hu0 hp.hv0 hp.hu hp.hv hp.huc hp.hvc hp.huv
     hp.hquotientClass (C.primitive p hp) (C.primitive_spec p hp).2.1).1 e).2.2.2
 
 lemma prefactor_norm_le (C : Context Q) (hM : 1 ≤ C.M)

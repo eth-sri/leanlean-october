@@ -25,7 +25,7 @@ theorem completion_integer_approximation (p : HeightOneSpectrum (𝓞 F))
   have hr : Valued.v r = WithZero.exp (-(n : ℤ)) := by
     change Valued.v (algebraMap F (p.adicCompletion F) π ^ n) = _
     rw [map_pow, valuation_algebraMap, hπ]
-    simp [← WithZero.exp_nsmul, nsmul_eq_mul]
+    simp [← WithZero.exp_nsmul]
   have hrz : r ≠ 0 := by
     intro h
     have h' := hr

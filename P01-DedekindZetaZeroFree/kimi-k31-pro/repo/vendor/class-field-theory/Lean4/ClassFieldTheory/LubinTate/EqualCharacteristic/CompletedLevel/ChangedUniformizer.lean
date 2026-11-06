@@ -358,14 +358,7 @@ theorem equalCharacteristicChangedPiPolynomial_eq
     equalCharacteristicChangedIntegralPiPolynomial,
     equalCharacteristicChangedLaurentUniformizer]
 
-/-- The changed Laurent `π`-polynomial has degree equal to the residue-field cardinality. -/
-theorem equalCharacteristicChangedPiPolynomial_natDegree
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) :
-    (equalCharacteristicChangedPiPolynomial F a).natDegree =
-      Nat.card F.residueField := by
-  rw [equalCharacteristicChangedPiPolynomial,
-    (equalCharacteristicChangedIntegralPiPolynomial_monic F a).natDegree_map,
-    equalCharacteristicChangedIntegralPiPolynomial_natDegree]
+
 
 /-- The compositional iterate of `P_{uT}` over `κ((T))`. -/
 noncomputable def equalCharacteristicChangedPiPolynomialIterate
@@ -373,15 +366,7 @@ noncomputable def equalCharacteristicChangedPiPolynomialIterate
     Polynomial F.residueField⸨X⸩ :=
   (equalCharacteristicChangedPiPolynomial F a).comp^[n] Polynomial.X
 
-/-- The `n`-fold changed Laurent `π`-iterate has degree `q ^ n`. -/
-theorem equalCharacteristicChangedPiPolynomialIterate_natDegree
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) (n : ℕ) :
-    (equalCharacteristicChangedPiPolynomialIterate F a n).natDegree =
-      Nat.card F.residueField ^ n := by
-  rw [equalCharacteristicChangedPiPolynomialIterate,
-    Polynomial.natDegree_iterate_comp,
-    equalCharacteristicChangedPiPolynomial_natDegree,
-      Polynomial.natDegree_X, mul_one]
+
 
 /-- A successor Laurent `π`-iterate is one further composition. -/
 theorem equalCharacteristicChangedPiPolynomialIterate_succ

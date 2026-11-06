@@ -1,6 +1,7 @@
 module
 
 public import ClassFieldTheory.LubinTate.FormalModule.Series
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -81,8 +82,8 @@ theorem existsUnique_mul_eq_of_isUnit
   intro y hy
   calc
     y = ((↑(u⁻¹) : R) * (u : R)) * y := by simp
-    _ = (↑(u⁻¹) : R) * ((u : R) * y) := by rw [mul_assoc]
-    _ = (↑(u⁻¹) : R) * b := by rw [hy]
+    _ = (↑(u⁻¹) : R) * ((u : R) * y) := by norm_num
+    _ = (↑(u⁻¹) : R) * b := by grind
 
 /-- The scalar coefficient equation in positive total degree has a
 unique solution in the valuation ring. -/

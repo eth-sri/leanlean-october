@@ -113,9 +113,9 @@ private theorem base_direction (j : Fin (3*d F)) :
         ((coefficientIndex (F:=F)).symm j).2 := by
   ext ik
   simp only [baseReindex, LinearIsometryEquiv.piLpCongrLeft_symm,
-    LinearIsometryEquiv.piLpCongrLeft_apply, Equiv.symm_symm, HyperbolicChart.coordinateVector,
+    LinearIsometryEquiv.piLpCongrLeft_apply, HyperbolicChart.coordinateVector,
     WithLp.ofLp_toLp]
-  simp [EuclideanSpace.single_apply, Pi.single_apply, ← Equiv.apply_eq_iff_eq_symm_apply]
+  simp [Pi.single_apply, ← Equiv.apply_eq_iff_eq_symm_apply]
 private theorem flat_derivative (g : M F → ℂ) (hg : ContDiff ℝ (⊤ : ℕ∞) g)
     (x : Space (3*d F)) (j : Fin (3*d F)) :
     KPCompactInteriorH1.coordinatePartial j (fun y => g ((baseReindex (F:=F)).symm y)) x =
@@ -163,7 +163,7 @@ private theorem coframe_bound (g : M F → ℂ) (hg : ContDiff ℝ (⊤ : ℕ∞
     abs_of_pos (Real.exp_pos _), mul_pow]
   have he : Real.exp (((baseReindex (F:=F)).symm x) (i,2)) ^ 2 =
       Real.exp (2 * ((baseReindex (F:=F)).symm x) (i,2)) := by rw [← Real.exp_nat_mul]; norm_num
-  simp only [Matrix.vecHead, Matrix.vecTail, Function.comp_def, Fin.succ_zero_eq_one, Matrix.cons_val_one, Matrix.cons_val_zero, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _), mul_pow]
+  simp only [Function.comp_def, Fin.succ_zero_eq_one, Matrix.cons_val_one, Matrix.cons_val_zero, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _), mul_pow]
   rw [he]
   have h0 := mul_le_mul_of_nonneg_right (hbound i) (sq_nonneg
     (‖HyperbolicChart.coordinateDerivative (d F) i 0 g ((baseReindex (F:=F)).symm x)‖))
@@ -330,7 +330,7 @@ theorem scalarZeroExtension_firstJet_bound
     have hd (k : Fin 3) : ContDiff ℝ (⊤ : ℕ∞) (HyperbolicChart.coordinateDerivative (d F) i k g) :=
       (hg.fderiv_right (m := (⊤ : ℕ∞)) (by simp)).clm_apply contDiff_const
     simp only [HyperbolicChart.differential, Matrix.cons_val_zero, Matrix.cons_val_one,
-      Matrix.vecHead, Matrix.vecTail, Function.comp_def, Fin.succ_zero_eq_one]
+      ]
     fun_prop
   have iV := compact_integrable a L hL hLω V hV
   have iJ := compact_integrable a L hL hLω J hJ

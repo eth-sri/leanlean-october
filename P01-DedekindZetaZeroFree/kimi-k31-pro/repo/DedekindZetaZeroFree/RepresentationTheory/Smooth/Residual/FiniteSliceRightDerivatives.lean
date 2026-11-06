@@ -1,6 +1,7 @@
 module
 
 public import DedekindZetaZeroFree.RepresentationTheory.Smooth.Residual.MatrixDifferentialWords
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -32,12 +33,8 @@ theorem finiteSlicePoint_flow (c : KPGlobalTorusFunctionData.finitePart F ζ hζ
   apply congrArg (archimedeanInsertion F ζ hζ)
   funext v
   by_cases hv : v=b.1
-  · subst v
-    simp only [d,Function.update_self,Pi.mul_apply]
-    rfl
-  · simp only [d,Function.update_of_ne hv,Pi.mul_apply]
-    change Matrix.ProjGenLinGroup.mk (a v) * Matrix.ProjGenLinGroup.mk 1 = _
-    simp
+  · measurability
+  · measurability
 
 theorem actualRightWord_finiteSlice (c : KPGlobalTorusFunctionData.finitePart F ζ hζ)
     (f : G F ζ hζ → ℂ) (w : List (Fin (groupDimension F)))

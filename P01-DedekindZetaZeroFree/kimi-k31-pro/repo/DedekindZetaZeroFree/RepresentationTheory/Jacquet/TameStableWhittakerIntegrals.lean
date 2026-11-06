@@ -706,7 +706,7 @@ theorem expanding_ball_compact (π : (LocalField F q)ˣ) (r : ℕ) :
       have ho : valuation (LocalField F q) (a⁻¹ * x) ≤ 1 := by
         rw [map_mul, map_inv₀]
         exact (inv_mul_le_one₀ ((valuation (LocalField F q)).pos_iff.mpr ha)).mpr hx
-      exact ⟨⟨a⁻¹ * x, ho⟩, by dsimp [a]; simp [ha]⟩
+      exact ⟨⟨a⁻¹ * x, ho⟩, by dsimp [a]; simp⟩
   rw [he]
   exact IsNonarchimedeanLocalField.isCompact_closedBall _ _
 

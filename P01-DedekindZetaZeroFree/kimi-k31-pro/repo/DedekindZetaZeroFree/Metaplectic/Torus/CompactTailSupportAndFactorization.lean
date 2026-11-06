@@ -211,7 +211,7 @@ theorem raw_scalar_support_zero_of_compact_tail_invariance
     have hn : (C.canonical r).borel.coordinate (c.t r) = 1 := by
       change (C.canonical r).borel.coordinate (a.t r * b.t r * (a.t r)⁻¹ * (b.t r)⁻¹) = 1
       simp only [map_mul, map_inv]
-      simp [mul_assoc, mul_comm, mul_left_comm]
+      simp [mul_assoc]
     rw [hn]
     simp [KPGlobalCenterRationalCharacter.localAbs]
   have hcchar : (Q.character ⟨c.g, raw_polarized_mem F ζ hζ P T C Q hQ c hcL⟩ : ℂ) ≠ 1 := by
@@ -284,7 +284,7 @@ private theorem diagonal_formula (t : KPGlobalTorusFunctionData.ordinaryTorus F)
     ext i j
     fin_cases i <;> fin_cases j <;>
       simp [KPGlobalCubicIdelePairing.diagonalHom, KPGlobalCubicIdelePairing.diagonalMatrix,
-        Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
+        Matrix.GeneralLinearGroup.coe_scalar,
         Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar, hu, hA.2.1, hA.2.2]
     exact hw.symm
   change QuotientGroup.mk' _ (KPGlobalCubicIdelePairing.diagonalHom F (u * w⁻¹)) = t.val

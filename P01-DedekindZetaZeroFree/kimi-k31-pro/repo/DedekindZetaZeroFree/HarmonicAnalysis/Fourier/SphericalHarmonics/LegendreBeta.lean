@@ -57,7 +57,7 @@ noncomputable def leg (n : ℕ) : ℝ[X] := (shiftedLegendre n).map (Int.castRin
 private lemma leg_one (n : ℕ) : (leg n).eval 1 = (-1 : ℝ)^n := by
   have h := shiftedLegendre_eval_symm n (0 : ℝ)
   have h0 : aeval (0 : ℝ) (shiftedLegendre n) = 1 := by
-    simp [aeval_def, ← coeff_zero_eq_eval_zero, coeff_shiftedLegendre]
+    simp [aeval_def, coeff_shiftedLegendre]
   rw [h0] at h
   simp only [sub_zero] at h
   have hh := congrArg (fun x : ℝ => (-1)^n * x) h

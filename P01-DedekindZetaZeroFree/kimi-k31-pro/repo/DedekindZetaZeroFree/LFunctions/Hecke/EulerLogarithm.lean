@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.LFunctions.Hecke.NonprincipalRayContinuation
 public import DedekindZetaZeroFree.LFunctions.Hecke.ExteriorIdealEulerProducts
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -22,7 +23,7 @@ private theorem primeTerm_bound {cS : Ideal (𝓞 F)}
   constructor
   · unfold primeTerm summand
     rw [norm_mul]
-    have hc : (Ideal.absNorm p.val.val : ℂ) = (idealNorm p.val.val : ℂ) := by simp [idealNorm]
+    have hc : (Ideal.absNorm p.val.val : ℂ) = (idealNorm p.val.val : ℂ) := by measurability
     rw [hc, Complex.norm_cpow_eq_rpow_re_of_pos hq0, Complex.neg_re]
     calc
       ‖a p.val‖ * (Ideal.absNorm p.val.val : ℝ) ^ (-s.re) ≤
@@ -58,14 +59,12 @@ private theorem primeToNonzero_injective {cS : Ideal (𝓞 F)} :
   exact congrArg (fun z : NonzeroIdeal F => z.val) h
 
 private theorem primeMajorant_summable {cS : Ideal (𝓞 F)} (σ : ℝ) (hσ : 1 < σ) :
-    Summable (fun p : PrimeIndex cS => (3 / 2 : ℝ) * (idealNorm p.val.val) ^ (-σ)) := by
-  exact ((ideal_norm_rpow_summable F σ hσ).comp_injective primeToNonzero_injective).mul_left _
+    Summable (fun p : PrimeIndex cS => (3 / 2 : ℝ) * (idealNorm p.val.val) ^ (-σ)) := ((ideal_norm_rpow_summable F σ hσ).comp_injective primeToNonzero_injective).mul_left _
 
 private theorem primeLog_summable_norm {cS : Ideal (𝓞 F)}
     (a : ExteriorIdeal cS → ℂ) (ha : IsCoefficient a)
     (σ : ℝ) (hσ : 1 < σ) (s : ℂ) (hs : σ ≤ s.re) :
-    Summable (fun p : PrimeIndex cS => ‖-Complex.log (1 - primeTerm a s p)‖) := by
-  exact (primeMajorant_summable σ hσ).of_nonneg_of_le (fun _ => norm_nonneg _) (primeLog_bound a ha σ hσ s hs)
+    Summable (fun p : PrimeIndex cS => ‖-Complex.log (1 - primeTerm a s p)‖) := (primeMajorant_summable σ hσ).of_nonneg_of_le (fun _ => norm_nonneg _) (primeLog_bound a ha σ hσ s hs)
 
 private theorem primeTerm_differentiable {cS : Ideal (𝓞 F)}
     (a : ExteriorIdeal cS → ℂ) (p : PrimeIndex cS) :
@@ -134,8 +133,7 @@ theorem exp_eulerLog {cS : Ideal (𝓞 F)}
     rfl
   have hp' : HasProd (factor a s) (Complex.exp (eulerLog a s)) := by
     convert hp using 1
-    · ext p
-      exact (hlocal p).symm
+    · measurability
     · rfl
   exact hp'.unique (exterior_ideal_euler a ha s hs).2.1
 

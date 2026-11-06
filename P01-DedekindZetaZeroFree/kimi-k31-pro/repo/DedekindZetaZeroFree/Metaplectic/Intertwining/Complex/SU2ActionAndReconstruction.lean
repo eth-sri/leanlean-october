@@ -50,7 +50,7 @@ lemma rowRatio_upper_mul (a d : ℂˣ) (b : ℂ) (g : ComplexGL2) :
     unfold bottomRowNormSq
     change ‖(!![(a : ℂ), b; 0, (d : ℂ)] * (g : Matrix (Fin 2) (Fin 2) ℂ)) 1 0‖ ^ 2 +
       ‖(!![(a : ℂ), b; 0, (d : ℂ)] * (g : Matrix (Fin 2) (Fin 2) ℂ)) 1 1‖ ^ 2 = _
-    simp [Matrix.mul_apply, Fin.sum_univ_two, norm_mul, mul_pow, mul_add]
+    simp [Matrix.mul_apply, Fin.sum_univ_two, mul_pow, mul_add]
   unfold rowRatio
   rw [hrow]
   simp only [map_mul, Units.val_mul, hdet, norm_mul, norm_div]

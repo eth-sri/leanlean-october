@@ -74,7 +74,7 @@ private theorem lift_coordMap (h : RayCoset.logHyperplane F) :
     refine ⟨⟨h, hm⟩, ?_⟩
     have hw : weighted F ⟨h, hm⟩ = (completeBasis F).equivFun.symm (Theta.angularLift F u) := by
       ext v
-      simp [weighted, h, mul_div_cancel₀, mult_coe_ne_zero]
+      simp [weighted, h, mul_div_cancel₀]
     ext v
     change (completeBasis F).equivFun (weighted F ⟨h, hm⟩) v = u v
     rw [hw, LinearEquiv.apply_symm_apply]

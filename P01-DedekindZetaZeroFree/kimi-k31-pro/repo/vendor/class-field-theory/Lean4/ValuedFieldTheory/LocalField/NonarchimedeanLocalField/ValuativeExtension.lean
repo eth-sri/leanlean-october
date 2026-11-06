@@ -45,7 +45,7 @@ theorem IsNontrivial.of_hasExtension
       have hm :
           vA (algebraMap R A x) =
             vA (algebraMap R A 0) := by
-        simpa using h
+        grind
       exact hx0 (by
         simpa using
           ((HasExtension.val_map_eq_iff vR vA x 0).1 hm))
@@ -53,7 +53,7 @@ theorem IsNontrivial.of_hasExtension
       have hm :
           vA (algebraMap R A x) =
             vA (algebraMap R A 1) := by
-        simpa using h
+        grind
       exact hx1 (by
         simpa using
           ((HasExtension.val_map_eq_iff vR vA x 1).1 hm)) }

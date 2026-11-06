@@ -37,7 +37,7 @@ variable (U : CompactOpenLevel (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
     by_cases h2 : ik.2 = 2
     · simp [h2]
     · by_cases h0 : ik.2 = 0
-      · simp [h2, h0, mul_add]
+      · simp [h0, mul_add]
       · simp [h2, h0, mul_add]
   map_smul' := by
     intro c a
@@ -47,8 +47,8 @@ variable (U : CompactOpenLevel (KPFiniteCuspAtlas.FiniteCover F ζ hζ))
     by_cases h2 : ik.2 = 2
     · simp [h2]
     · by_cases h0 : ik.2 = 0
-      · simp [h2, h0, mul_comm, mul_left_comm, mul_assoc]
-      · simp [h2, h0, mul_comm, mul_left_comm, mul_assoc]
+      · simp [h0, mul_comm, mul_assoc]
+      · simp [h2, h0, mul_comm, mul_assoc]
 
  def scaleT (d : ℕ) (z : KPArch.Space d) :
     KPArch.Space d →L[ℝ] HyperbolicChart.Space d :=
@@ -185,7 +185,7 @@ theorem chart_uniform_ellipticity (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     intro x v
     rw [← gram_quadform (Sx x) (WithLp.toLp 2 v)]
     simp only [Chart.metricMatrix, hmetric, dotProduct, Matrix.mulVec, Finset.mul_sum,
-      PiLp.toLp_apply]
+      ]
     apply Finset.sum_congr rfl
     intro j _
     apply Finset.sum_congr rfl
@@ -221,7 +221,7 @@ theorem chart_uniform_ellipticity (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     let w : E C.n := WithLp.toLp 2 v
     have hnorm : ‖w‖ ^ 2 = v ⬝ᵥ v := by
       rw [EuclideanSpace.real_norm_sq_eq]
-      simp only [w, PiLp.toLp_apply, dotProduct, pow_two]
+      simp only [w, dotProduct, pow_two]
     have hm : KPArch.metric d (C.coordinates x) (fderiv ℝ C.coordinates x w) ≤
         B x * ‖fderiv ℝ C.coordinates x w‖ ^ 2 := by
       unfold KPArch.metric

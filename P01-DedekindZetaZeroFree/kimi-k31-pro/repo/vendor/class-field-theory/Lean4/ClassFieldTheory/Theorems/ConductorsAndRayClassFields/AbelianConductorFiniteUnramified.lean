@@ -4,6 +4,7 @@ public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.IsAbelian
 public import ClassFieldTheory.Theorems.ConductorsAndRayClassFields.EmbedsInRayClassFieldIffConductorLe
 public import ClassFieldTheory.Theorems.ConductorsAndRayClassFields.IsAbelianConductorUnique
 public import ClassFieldTheory.GlobalClassFieldTheory.GlobalClassFields.AbelianConductorExactness
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -61,19 +62,15 @@ theorem IsAbelianConductor.finiteExponent_eq_zero_iff_unramified
     c.finitePart v = 0 ↔ v ∉ c.finitePart.support :=
       (Finsupp.notMem_support_iff).symm
     _ ↔ v ∉ _root_.ramifiedBaseFinitePlaces (K := K) (L := L) := by
-      rw [hsupport]
+      grind
     _ ↔
         ∀ W : HeightOneSpectrum (𝓞 L),
           W.asIdeal.LiesOver v.asIdeal →
             Algebra.IsUnramifiedAt (𝓞 K) W.asIdeal := by
       rw [_root_.mem_ramifiedBaseFinitePlaces_iff]
       constructor
-      · intro h W hW
-        by_contra hram
-        exact h ⟨W, hW, hram⟩
-      · intro h hram
-        obtain ⟨W, hW, hnot⟩ := hram
-        exact hnot (h W hW)
+      · grind
+      · norm_num
 
 end ClassFieldTheory
 

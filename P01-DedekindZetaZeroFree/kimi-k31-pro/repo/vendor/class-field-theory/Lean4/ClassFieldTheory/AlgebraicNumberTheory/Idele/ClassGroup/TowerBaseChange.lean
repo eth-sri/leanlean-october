@@ -735,78 +735,13 @@ theorem towerRelativeIdeleBaseChangeMulEquiv_infiniteComponent
       simp [towerActualRelativeAdeleRingEquiv_tmul,
         relativeAdeleInfiniteComponent_tmul]
 
-/-- Evaluation of the fixed-bottom relative adele ring at one exact
-finite extension of a place of `K`, as an `M`-algebra map. -/
-noncomputable def towerIntermediateFiniteComponentAlgHom
-    (w : HeightOneSpectrum (𝓞 K))
-    (uM : AbsoluteValueExtension
-      (HeightOneSpectrum.adicAbv K w) M) :
-    RelativeAdeleRing K M →ₐ[M] uM.1.Completion := by
-  let f : RelativeAdeleRing K M →+* uM.1.Completion :=
-    (finitePlaceLocalTensorDecompositionComponentRingHom
-      (K := K) (L := M) w uM).comp
-        (relativeAdeleFiniteComponent
-          (K := K) (L := M) w).toRingHom
-  exact
-    { f with
-      commutes' := by
-        intro m
-        change
-          finitePlaceLocalTensorDecompositionComponent
-              (K := K) (L := M) w uM
-              (relativeAdeleFiniteComponent
-                (K := K) (L := M) w
-                ((1 : NumberField.AdeleRing (𝓞 K) K) ⊗ₜ[K] m)) =
-            algebraMap M uM.1.Completion m
-        rw [relativeAdeleFiniteComponent_tmul,
-          finitePlaceLocalTensorDecompositionComponent_tmul]
-        have hOne :
-            ((1 : NumberField.AdeleRing (𝓞 K) K).2 w) = 1 :=
-          rfl
-        rw [hOne, map_one, map_one, one_mul]
-        rfl }
 
-/-- The local tensor component of a tower idele at an exact finite
-extension place of `M`. -/
-noncomputable def towerIntermediateFiniteComponent
-    (w : HeightOneSpectrum (𝓞 K))
-    (uM : AbsoluteValueExtension
-      (HeightOneSpectrum.adicAbv K w) M) :
-    TowerRelativeIdeleGroup K M L →*
-      (uM.1.Completion ⊗[M] L)ˣ :=
-  Units.map
-    (Algebra.TensorProduct.map
-      (towerIntermediateFiniteComponentAlgHom K M w uM)
-      (AlgHom.id M L)).toRingHom
 
-/-- Evaluation of a relative idele over `K` at the same exact finite
-extension place of `M`. -/
-noncomputable def intermediateFiniteComponent
-    (w : HeightOneSpectrum (𝓞 K))
-    (uM : AbsoluteValueExtension
-      (HeightOneSpectrum.adicAbv K w) M) :
-    RelativeIdeleGroup K M →* uM.1.Completionˣ :=
-  Units.map
-    (towerIntermediateFiniteComponentAlgHom K M w uM).toRingHom
 
-omit [NumberField M] [NumberField L] [Algebra K L] [IsScalarTower K M L] in
-/-- Determinant norm commutes with the exact finite-place component of
-the fixed-bottom tower model. -/
-theorem towerIntermediateFiniteComponent_norm
-    (w : HeightOneSpectrum (𝓞 K))
-    (uM : AbsoluteValueExtension
-      (HeightOneSpectrum.adicAbv K w) M)
-    (a : TowerRelativeIdeleGroup K M L) :
-    intermediateFiniteComponent K M w uM
-        (TowerRelativeIdeleGroup.norm K M L a) =
-      Units.map (Algebra.norm uM.1.Completion)
-        (towerIntermediateFiniteComponent K M L w uM a) := by
-  apply Units.ext
-  exact
-    map_norm_tensorProduct_baseChange
-      (K := M) (L := L)
-      (towerIntermediateFiniteComponentAlgHom K M w uM)
-      (a : TowerRelativeAdeleRing K M L)
+
+
+
+
 
 omit [NumberField L] [Algebra K L] [IsScalarTower K M L]
     [FiniteDimensional M L] in

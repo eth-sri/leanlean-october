@@ -117,8 +117,7 @@ private lemma bilinear_scale {ι : Type*} (L : Finset ι) (P : ι → ι → Pro
     ‖∑ i ∈ L, ∑ j ∈ L, if P i j then ((t : ℂ) * x i) *
       (starRingEnd ℂ) ((t : ℂ) * x j) * A i j else 0‖ =
     t ^ 2 * ‖∑ i ∈ L, ∑ j ∈ L, if P i j then x i * (starRingEnd ℂ) (x j) * A i j else 0‖ := by
-  have ht : (starRingEnd ℂ) (t : ℂ) = (t : ℂ) := by
-    exact Complex.conj_ofReal t
+  have ht : (starRingEnd ℂ) (t : ℂ) = (t : ℂ) := Complex.conj_ofReal t
   have hh : (∑ i ∈ L, ∑ j ∈ L, if P i j then ((t : ℂ) * x i) *
       (starRingEnd ℂ) ((t : ℂ) * x j) * A i j else 0) =
       (t : ℂ) ^ 2 * (∑ i ∈ L, ∑ j ∈ L, if P i j then x i * (starRingEnd ℂ) (x j) * A i j else 0) := by
@@ -162,16 +161,13 @@ variable {F : Type} [Field F] [NumberField F] {c : Ideal (𝓞 F)}
 variable (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
 
 theorem B1_nonneg (M N : ℝ) :
-    0 ≤ B1 F c Q M N := by
-  exact Real.sSup_nonneg' ⟨0, Or.inl rfl, le_rfl⟩
+    0 ≤ B1 F c Q M N := Real.sSup_nonneg' ⟨0, Or.inl rfl, le_rfl⟩
 
 theorem B2_nonneg (W : ℝ → ℝ) (M N K : ℝ) :
-    0 ≤ B2 F c Q W M N K := by
-  exact Real.sSup_nonneg' ⟨0, Or.inl rfl, le_rfl⟩
+    0 ≤ B2 F c Q W M N K := Real.sSup_nonneg' ⟨0, Or.inl rfl, le_rfl⟩
 
 theorem B3_nonneg (W : ℝ → ℝ) (M N K : ℝ) (d : Ideal (𝓞 F)) :
-    0 ≤ B3 F c Q W M N K d := by
-  exact Real.sSup_nonneg' ⟨0, Or.inl rfl, le_rfl⟩
+    0 ≤ B3 F c Q W M N K d := Real.sSup_nonneg' ⟨0, Or.inl rfl, le_rfl⟩
 
 theorem Q1_le_B1_mul_energy (M N : ℝ) (lam : Ideal (𝓞 F) → ℂ) :
     Q1 F c Q M N lam ≤ B1 F c Q M N * energy F c N lam := by
@@ -181,8 +177,7 @@ theorem Q1_le_B1_mul_energy (M N : ℝ) (lam : Ideal (𝓞 F) → ℂ) :
 
 theorem Q2_le_B2_mul_energy (W : ℝ → ℝ) (M N K : ℝ)
     (lam : Ideal (𝓞 F) → ℂ) :
-    Q2 F c Q W M N K lam ≤ B2 F c Q W M N K * energy F c N lam := by
-  exact weighted_domination (paperShell F c N) (kernelRows F c M K)
+    Q2 F c Q W M N K lam ≤ B2 F c Q W M N K * energy F c N lam := weighted_domination (paperShell F c N) (kernelRows F c M K)
     (fun a => W ((Ideal.absNorm a : ℝ) / M)) (fun a b => (Q.χ b) a) lam
 
 theorem norm_T3_le_B3_mul_energy (W : ℝ → ℝ) (M N K : ℝ)

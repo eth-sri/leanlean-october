@@ -183,7 +183,7 @@ private theorem term_bot (U β γ : ℝ) (hβ : 0 < β) {m : Ideal (𝓞 F)} (ω
     simp at this
     linarith
   unfold term
-  simp [Ideal.absNorm_bot, Complex.zero_cpow h]
+  simp [Ideal.absNorm_bot]
 
 private theorem term_unit (U β γ : ℝ) (hU : 2 ≤ U) {m : Ideal (𝓞 F)}
     (ω : RayClassCharacter F m) :
@@ -369,13 +369,13 @@ private theorem term_eq (U β γ : ℝ) {m : Ideal (𝓞 F)} (ω : RayClassChara
   rw [hcast]
   have hsplit : (Ideal.absNorm n : ℂ) ^ (-((β : ℂ) + (γ : ℂ) * Complex.I)) =
       (Ideal.absNorm n : ℂ) ^ (-((DetectorDef.σ₀ : ℂ) + (γ : ℂ) * Complex.I)) *
-        (Ideal.absNorm n : ℂ) ^ (((DetectorDef.σ₀ - β : ℝ)) : ℂ) := by
+        (Ideal.absNorm n : ℂ) ^ ((DetectorDef.σ₀ - β : ℝ) : ℂ) := by
     rw [← Complex.cpow_add _ _ hNc]
     congr 1
     push_cast
     ring
   have hc2 : (((Ideal.absNorm n : ℝ) ^ (DetectorDef.σ₀ - β) : ℝ) : ℂ) =
-      (Ideal.absNorm n : ℂ) ^ (((DetectorDef.σ₀ - β : ℝ)) : ℂ) := by
+      (Ideal.absNorm n : ℂ) ^ ((DetectorDef.σ₀ - β : ℝ) : ℂ) := by
     rw [Complex.ofReal_cpow (Nat.cast_nonneg _), Complex.ofReal_natCast]
   rw [Complex.ofReal_mul, hc2, hsplit]
   ring
@@ -449,7 +449,7 @@ theorem prefix_core (U β γ : ℝ) (ω : Detector.PrimitiveFrequencyCharacter F
       · subst hn1
         have h1 : ((Ideal.absNorm (1 : Ideal (𝓞 F)) : ℕ) : ℝ) = 1 := by simp
         have h2 : ¬ (U ^ DetectorDef.qExp < 1) := not_lt.mpr ha01
-        simp [h1, hR1, h2]
+        simp [hR1, h2]
       · by_cases hb : n = ⊥
         · subst hb
           rw [term_bot U β γ hβpos]

@@ -20,17 +20,8 @@ theorem closed_graph_limit
     refine hgclosed.mem_of_tendsto hlim (Eventually.of_forall fun n => ?_)
     obtain ⟨hn, hval⟩ := hz n
     show z n ∈ Δ.graph
-    rw [LinearPMap.mem_graph_iff]
-    exact ⟨⟨(z n).1, hn⟩, rfl, hval⟩
-  rw [LinearPMap.mem_graph_iff] at hmem
-  obtain ⟨y, hy1, hy2⟩ := hmem
-  change (↑y : H) = u at hy1
-  have hu : u ∈ Δ.domain := hy1 ▸ y.property
-  refine ⟨hu, ?_⟩
-  have hsub : (⟨u, hu⟩ : Δ.domain) = y := by
-    ext
-    exact hy1.symm
-  rw [hsub, hy2]
+    grind
+  grind
 
 end DedekindZetaZeroFree.KPCuspCutoffGraphApproximation
 

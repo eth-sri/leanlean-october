@@ -197,51 +197,9 @@ theorem normFormula_finite_normFormulaAbsoluteValue_of_henselFactorization_nonar
     normFormula_finiteExtensionNormFormulaValue_strong_triangle_of_henselFactorization
       v hnonarch hv x y
 
-/-- The closed unit ball of the bundled norm formula consists exactly of the
-elements integral over the base valuation ring. -/
-theorem normFormula_finite_normFormulaAbsoluteValue_of_henselFactorization_mem_valuationSubring_iff_isIntegral
-    {K L : Type*} [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L]
-    (v : AbsoluteValue K ℝ) (hnonarch : LubinTate.Valuations.NonarchimedeanAbsoluteValue v)
-    (hv : ValuationTheory.DiscreteValuationField.HenselFactorizationProperty
-      (absoluteValueValuationSubring v hnonarch))
-    (x : L) :
-    x ∈ absoluteValueValuationSubring
-        (normFormula_finite_normFormulaAbsoluteValue_of_henselFactorization
-          (K := K) (L := L) v hnonarch hv)
-        (normFormula_finite_normFormulaAbsoluteValue_of_henselFactorization_nonarchimedean
-          (K := K) (L := L) v hnonarch hv) ↔
-      IsIntegral
-        (absoluteValueValuationSubring v hnonarch) x := by
-  rw [mem_absoluteValueValuationSubring_iff,
-    normFormula_finite_normFormulaAbsoluteValue_of_henselFactorization_apply]
-  constructor
-  · exact
-      normFormula_finiteExtensionNormFormulaValue_isIntegral_of_le_one_of_henselFactorization
-        v hnonarch hv
-  · exact normFormula_finiteExtensionNormFormulaValue_le_one_of_isIntegral
-      v hnonarch
 
-/-- The valuation ring of the bundled finite norm formula is the actual
-integral closure of the base valuation ring in `L`. -/
-theorem normFormula_finite_normFormulaAbsoluteValue_of_henselFactorization_valuationSubring_eq_integralClosure
-    {K L : Type*} [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L]
-    (v : AbsoluteValue K ℝ) (hnonarch : LubinTate.Valuations.NonarchimedeanAbsoluteValue v)
-    (hv : ValuationTheory.DiscreteValuationField.HenselFactorizationProperty
-      (absoluteValueValuationSubring v hnonarch)) :
-    (absoluteValueValuationSubring
-        (normFormula_finite_normFormulaAbsoluteValue_of_henselFactorization
-          (K := K) (L := L) v hnonarch hv)
-        (normFormula_finite_normFormulaAbsoluteValue_of_henselFactorization_nonarchimedean
-          (K := K) (L := L) v hnonarch hv)).toSubring =
-      (integralClosure
-        (R := absoluteValueValuationSubring
-          v hnonarch) L).toSubring := by
-  ext x
-  exact
-    normFormula_finite_normFormulaAbsoluteValue_of_henselFactorization_mem_valuationSubring_iff_isIntegral
-      (K := K) (L := L) v hnonarch hv x
+
+
 
 end Valuations
 end AlgebraicNumberTheory

@@ -84,7 +84,7 @@ theorem localFourierIntegral_localCosetIndicator
     funext x
     by_cases hx : x ∈ U
     · simp [localCosetIndicator_apply, hx, Set.indicator_of_mem, χ,
-        neg_add, add_mul, AddChar.map_add_eq_mul]
+        add_mul, AddChar.map_add_eq_mul]
       exact mul_comm _ _
     · simp [localCosetIndicator_apply, hx, Set.indicator_of_notMem]
   rw [localFourierIntegral_apply]

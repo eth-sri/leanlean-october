@@ -20,13 +20,7 @@ theorem initial_ray_principal_descent_equiv {F : Type} [Field F] [NumberField F]
   have hmf : m ≤ f := Ideal.dvd_iff_le.mp hfm
 
   have hηθ : ∀ I : Ideal (𝓞 F), I ≠ ⊥ → I ⊔ m = ⊤ → η I = θ I := by
-    intro I hI hIcop
-    have hcond : ¬ (I = ⊥ ∨ I ⊔ m ≠ ⊤) := by
-      rintro (h | h)
-      · exact hI h
-      · exact h hIcop
-    rw [hind I]
-    simp only [hcond, ↓reduceIte]
+    grind
   constructor
   ·
     intro hη

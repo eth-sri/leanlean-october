@@ -3,6 +3,8 @@ module
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.NormTopology.ExtensionBehavior
 public import ClassFieldTheory.GlobalClassFieldTheory.Reciprocity.CyclotomicIdeleValue
 public import Mathlib.Analysis.SpecialFunctions.Pow.NNReal
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -55,7 +57,7 @@ theorem
     pos_iff_ne_zero.mpr r.ne_zero
   let s0 : ℝ≥0 := (r : ℝ≥0) ^ ((d : ℝ)⁻¹)
   have hs0pos : 0 < s0 := by
-    exact NNReal.rpow_pos hrpos
+    positivity
   let s : ℝ≥0ˣ := Units.mk0 s0 hs0pos.ne'
   have hs_pow : s ^ d = r := by
     apply Units.ext
@@ -84,9 +86,7 @@ theorem
       rationalCyclotomicZHatIdeleValue
           (rationalPositiveArchimedeanIdele s) =
         1 := by
-    rw [rationalCyclotomicZHatIdeleValue_apply,
-      rationalCyclotomicZHatGlobalArtin_rationalPositiveArchimedeanIdele,
-      map_one]
+    norm_num
   have hc_value :
       normalizedCyclotomicZHatIdeleValue K
           (Additive.ofMul c) =
@@ -111,7 +111,7 @@ theorem
           (Additive.ofMul a + Additive.ofMul c) =
         normalizedCyclotomicZHatIdeleValue K
           (Additive.ofMul a)
-    rw [map_add, hc_value, add_zero]
+    grind
 
 end Reciprocity
 end GlobalClassFieldTheory

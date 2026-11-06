@@ -101,7 +101,7 @@ theorem projected_finite_level_compact_open
     apply (QuotientGroup.isQuotientMap_mk
       (KPAdelicCoverRestrictedProduct.splitScalarSubgroup F ζ hζ)).continuous_iff.mpr
     exact QuotientGroup.continuous_mk.comp
-      ((continuous_snd.generalLinearGroup_map).comp
+      (continuous_snd.generalLinearGroup_map.comp
         (KPAdelicCoverRestrictedProduct.adelic_topological_cover F ζ hζ).2.2.2.continuous)
   refine ⟨U.isCompact.image (hc.comp continuous_subtype_val), ?_⟩
   obtain ⟨V, hV, hVU⟩ := isOpen_induced_iff.mp U.toOpenSubgroup.isOpen

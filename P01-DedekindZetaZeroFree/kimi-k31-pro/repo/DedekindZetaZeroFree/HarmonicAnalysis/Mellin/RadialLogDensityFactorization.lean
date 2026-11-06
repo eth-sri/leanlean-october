@@ -217,7 +217,7 @@ private lemma pol_meas (g : SchwartzMap ℂ ℂ) (σ : ℝ) (φ : ℝ → ℂ)
   · exact hφ.measurable.comp (Real.measurable_log.comp (by fun_prop))
 private lemma circle_norm (r θ : ℝ) (hr : 0 < r) :
     ‖(r : ℂ) * Complex.exp ((θ : ℂ) * Complex.I)‖ = r := by
-  simp [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hr]
+  simp [Complex.norm_real, Real.norm_eq_abs, abs_of_pos hr]
 private lemma pol_bound (g : SchwartzMap ℂ ℂ) (σ : ℝ) (φ : ℝ → ℂ)
     (C : ℝ) (hC : ∀ t, ‖φ t‖ ≤ C) (m : ℕ) (p : ℝ × ℝ) (hp : 0 < p.1) :
     ‖pol g σ φ p‖ ≤ (SchwartzMap.seminorm ℝ m 0 g * C) * p.1 ^ (2 * σ - 1 - m) := by
@@ -455,7 +455,7 @@ theorem finite_positive_weights_pushforward
       _ = _ := by
         rw [integral_withDensity_eq_integral_toReal_smul
           (hu i).ennreal_ofReal (Filter.Eventually.of_forall fun x => ENNReal.ofReal_lt_top)]
-        simp only [ENNReal.toReal_ofReal (hu0 i _), Complex.real_smul, smul_eq_mul]
+        simp only [ENNReal.toReal_ofReal (hu0 i _), Complex.real_smul]
   have huint : ∀ i, Integrable (fun x => c i * (u i x : ℂ) * φ (L x)) ν :=
     fun i => ((hui i).ofReal.const_mul (c i)).mul_bdd
       (hφ.measurable.comp hL).aestronglyMeasurable
@@ -503,9 +503,9 @@ theorem integrable_weight_pushforward_finite
     · exact hbi.im.neg.real_toNNReal
   have hdecomp : ∀ x, (∑ i, c i * (u i x : ℂ)) = b x := by
     intro x
-    simp only [Fin.sum_univ_succ, Fin.sum_univ_zero, Fin.val_zero,
-      Fin.val_succ, Matrix.cons_val_zero, Matrix.cons_val_succ,
-      u, c, zero_add, add_zero]
+    simp only [Fin.sum_univ_succ, Fin.sum_univ_zero, 
+      Matrix.cons_val_zero, Matrix.cons_val_succ,
+      u, c, add_zero]
     have hr : ((b x).re.toNNReal : ℝ) - ((-(b x).re).toNNReal : ℝ) = (b x).re := by
       simp only [Real.coe_toNNReal']
       exact max_zero_sub_max_neg_zero_eq_self _

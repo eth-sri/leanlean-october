@@ -278,7 +278,7 @@ private theorem integral_sq_bound {α : Type*} [MeasurableSpace α] {μ : Measur
     rw [← real_inner_self_eq_norm_sq, L2.inner_def]
     have hcoe := (indicatorConstLp_coeFn (p := 2) (hs := MeasurableSet.univ)
       (hμs := measure_ne_top μ _) (c := (1 : ℂ)))
-    simp only [Set.indicator_univ, Pi.one_apply] at hcoe
+    simp only [Set.indicator_univ] at hcoe
     calc
       (∫ x, inner ℝ (e x) (e x) ∂μ) = ∫ x, (1 : ℝ) ∂μ := by
         apply integral_congr_ae
@@ -358,7 +358,7 @@ theorem coordinateLine_apply {n : ℕ} (x : Space n) (j k : Fin n) (t : ℝ) :
     EuclideanSpace.basisFun_apply, EuclideanSpace.single_apply, smul_eq_mul]
   split_ifs with h
   · subst k; simp
-  · simp [h, Ne.symm h]
+  · simp
 
 noncomputable def coordinateHybrid {n : ℕ} (x y : Space n) (k : ℕ) : Space n :=
   (EuclideanSpace.equiv (Fin n) ℝ).symm (fun j => if j.val < k then y j else x j)

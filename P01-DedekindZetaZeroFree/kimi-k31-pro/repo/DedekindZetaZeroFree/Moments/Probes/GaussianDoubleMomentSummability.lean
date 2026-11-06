@@ -22,7 +22,7 @@ private theorem thetaReflectionGaussian_nonneg (x : ℝ) : 0 ≤ thetaReflection
   unfold thetaReflectionGaussian
   split
   · positivity
-  · exact le_refl 0
+  · grind
 
 private theorem gauss_pow_bound (B Z x : ℝ) (hZ : 0 < Z) (hx : 0 < x) :
     thetaReflectionGaussian (x / Z) ≤
@@ -48,7 +48,7 @@ private theorem gauss_pow_bound (B Z x : ℝ) (hZ : 0 < Z) (hx : 0 < x) :
       ring
     calc Real.exp (-(Real.log x - Real.log Z) ^ 2 / 4)
         ≤ Real.exp (B ^ 2) * Real.exp (-B * (Real.log x - Real.log Z)) := e1
-      _ = Real.exp (B ^ 2) * (Z ^ B * x ^ (-B)) := by rw [e2]
+      _ = Real.exp (B ^ 2) * (Z ^ B * x ^ (-B)) := by grind
       _ = Real.exp (B ^ 2) * Z ^ B * x ^ (-B) := by ring
   calc Real.exp (-(Real.log (x / Z)) ^ 2 / 4) / (2 * Real.sqrt Real.pi)
       ≤ (Real.exp (B ^ 2) * Z ^ B * x ^ (-B)) / (2 * Real.sqrt Real.pi) :=
@@ -91,14 +91,13 @@ private theorem summand_le (A : SArithmeticData F) (β Z B : ℝ) (hZ : 0 < Z)
     _ = Real.exp (B ^ 2) * Z ^ B / (2 * Real.sqrt Real.pi) *
           ((A.exteriorNorm i.1.val) ^ (β - 1 / 2) * (A.exteriorNorm i.1.val) ^ (-B)) *
           ((A.exteriorNorm i.2) ^ (3 * β - 1) * (A.exteriorNorm i.2) ^ (-(3 * B))) := by
-        rw [hsplit]; ring
+        grind
     _ = Real.exp (B ^ 2) * Z ^ B / (2 * Real.sqrt Real.pi) *
           (A.exteriorNorm i.1.val) ^ (β - 1 / 2 - B) *
           (A.exteriorNorm i.2) ^ (3 * β - 1 - 3 * B) := by
         rw [← Real.rpow_add hqc (β - 1 / 2) (-B),
           ← Real.rpow_add hqn (3 * β - 1) (-(3 * B))]
-        rw [show β - 1 / 2 + -B = β - 1 / 2 - B by ring,
-          show 3 * β - 1 + -(3 * B) = 3 * β - 1 - 3 * B by ring]
+        grind
 
 theorem gaussianDoubleMomentSummand_nonneg (A : SArithmeticData F)
     (β Z : ℝ) (hZ : 0 < Z)
@@ -116,8 +115,8 @@ theorem gaussian_double_moments_summable (A : SArithmeticData F)
     (β Z : ℝ) (hZ : 0 < Z) :
     Summable (gaussianDoubleMomentSummand A β Z) := by
   set B := β + 2 with hB
-  have hαc : β - 1 / 2 - B = -(5 / 2) := by rw [hB]; ring
-  have hαn : 3 * β - 1 - 3 * B = -(7) := by rw [hB]; ring
+  have hαc : β - 1 / 2 - B = -(5 / 2) := by grind
+  have hαn : 3 * β - 1 - 3 * B = -7 := by grind
   have hqc : ∀ c : ExteriorSquarefreeIdeal A.cS, 0 ≤ A.exteriorNorm c.val :=
     fun c => le_of_lt (lt_of_lt_of_le zero_lt_one (idealNorm_ge_one _ c.val.property.1))
   have hqn : ∀ n : A.Exterior, 0 ≤ A.exteriorNorm n :=
@@ -131,20 +130,20 @@ theorem gaussian_double_moments_summable (A : SArithmeticData F)
           (⟨c.val.val, c.val.property.1⟩ : NonzeroIdeal F))
         (fun c d he => by
           have h1 : c.val.val = d.val.val := by
-            simpa using congrArg (fun x : NonzeroIdeal F => x.val) he
+            grind
           exact Subtype.ext (Subtype.ext h1))
-    simpa only [hαc] using hbase
+    grind
   have hgn : Summable (fun n : A.Exterior =>
       (A.exteriorNorm n) ^ (3 * β - 1 - 3 * B)) := by
     have hbase : Summable (fun n : A.Exterior =>
-        (A.exteriorNorm n) ^ (-(7) : ℝ)) :=
+        (A.exteriorNorm n) ^ (-7 : ℝ)) :=
       (ideal_norm_rpow_summable F 7 (by norm_num)).comp_injective
         (i := fun n : A.Exterior => (⟨n.val, n.property.1⟩ : NonzeroIdeal F))
         (fun n m he => by
           have h1 : n.val = m.val := by
-            simpa using congrArg (fun x : NonzeroIdeal F => x.val) he
+            grind
           exact Subtype.ext h1)
-    simpa only [hαn] using hbase
+    grind
   have hprod : Summable (fun i : ExteriorSquarefreeIdeal A.cS × A.Exterior =>
       (A.exteriorNorm i.1.val) ^ (β - 1 / 2 - B) *
         (A.exteriorNorm i.2) ^ (3 * β - 1 - 3 * B)) :=

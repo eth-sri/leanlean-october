@@ -86,7 +86,7 @@ private theorem upperRoot_injective : Function.Injective (upperRoot F ζ hζ w) 
   obtain ⟨u, hu⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp he
   have h11 := congrArg (fun A : KPRankOneInduction.GL2 F w => A 1 1) hu
   have h01 := congrArg (fun A : KPRankOneInduction.GL2 F w => A 0 1) hu
-  simp [KPRankOneInduction.ordinaryUpperRootHom, KPRankOneInduction.upperRootElement,
+  simp [
     KPRankOneInduction.upperRootMatrix, Matrix.mul_apply, Fin.sum_univ_two,
     Matrix.GeneralLinearGroup.coe_scalar, Matrix.scalar] at h11 h01
   apply Multiplicative.toAdd.injective
@@ -215,7 +215,7 @@ private theorem upper_entry_ratio_eq (A B : KPRankOneInduction.GL2 F w)
     A 0 1 / A 0 0 = B 0 1 / B 0 0 := by
   obtain ⟨u, rfl⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp h
   simp [Units.val_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply,
-    Fin.sum_univ_two, Matrix.scalar, Matrix.diagonal_apply,
+    Matrix.scalar, Matrix.diagonal_apply,
     mul_div_mul_right _ _ (Units.ne_zero u)]
 
  def upperCoordinate (b : KPRankOneInduction.upperBorel F w) :

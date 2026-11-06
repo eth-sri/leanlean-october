@@ -78,7 +78,7 @@ theorem adjacent_raising (s : ℝ) (n : ℕ) (hcoeff : (n : ℂ)+1+2*(s : ℂ) �
       (KPCplxHarmonicPropagation.RaisingCalculation.harmonicSection_compact s n)]
     have hpartial : MvPolynomial.pderiv 2 p = 0 := by
       simp [p, KPCplxHarmonicPropagation.RaisingCalculation.transverse,
-        MvPolynomial.pderiv_pow, MvPolynomial.pderiv_C_mul, Pi.single_apply]
+        ]
     simp only [noncompactAxis, Matrix.cons_val_zero, hpartial, zero_sub,
       map_neg, map_smul, smul_neg, smul_smul]
     simp only [noncompactCoefficient, Matrix.cons_val_zero, c, neg_mul, neg_smul]

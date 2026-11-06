@@ -60,43 +60,9 @@ theorem arithmeticIdealArtinGaloisMap_ker_eq_idealNormSubgroup
   rw [arithmeticIdealArtinGaloisMap_ker,
     idealArtinKernel_eq_idealNormSubgroup]
 
-/-- An ideal prime to `m` has trivial arithmetic Artin symbol exactly
-when it belongs to `N_{L/K} J_L^m P_K^m`. -/
-theorem arithmeticIdealArtinGaloisMap_eq_one_iff_mem_idealNormSubgroup
-    (m : RayClass.Modulus K)
-    (hm :
-      RayClass.Modulus.congruenceSubgroup m ≤
-        (_root_.ideleClassNorm K L).range)
-    (a : RayClass.primeToModulusIdeals m) :
-    arithmeticIdealArtinGaloisMap
-          (K := K) (L := L) m hm a =
-        1 ↔
-      a ∈ RayClass.idealNormSubgroup
-        (K := K) (L := L) m := by
-  change
-    a ∈
-        (arithmeticIdealArtinGaloisMap
-          (K := K) (L := L) m hm).ker ↔
-      a ∈ RayClass.idealNormSubgroup
-        (K := K) (L := L) m
-  rw [arithmeticIdealArtinGaloisMap_ker_eq_idealNormSubgroup]
 
-/-- Exactness of the arithmetic ideal Artin sequence with its kernel
-written as the actual norm-defined ideal group. -/
-theorem arithmeticIdealArtin_norm_exact
-    (m : RayClass.Modulus K)
-    (hm :
-      RayClass.Modulus.congruenceSubgroup m ≤
-        (_root_.ideleClassNorm K L).range) :
-    (arithmeticIdealArtinGaloisMap
-        (K := K) (L := L) m hm).ker =
-        RayClass.idealNormSubgroup
-          (K := K) (L := L) m ∧
-      Function.Surjective
-        (arithmeticIdealArtinGaloisMap
-          (K := K) (L := L) m hm) :=
-  ⟨arithmeticIdealArtinGaloisMap_ker_eq_idealNormSubgroup m hm,
-    arithmeticIdealArtinGaloisMap_surjective m hm⟩
+
+
 
 /-- The vertical isomorphism in the ideal/idèle Artin diagram:
 
@@ -259,32 +225,7 @@ theorem arithmeticIdealNormQuotientArtinMap_surjective
   rw [arithmeticIdealNormQuotientArtinMap_mk]
   exact ha
 
-/-- The descended ideal Artin map is the arithmetic global
-norm-residue map after the vertical ideal/idèle quotient
-isomorphism.  This is the commutative square in the ideal-theoretic
-Artin reciprocity theorem. -/
-theorem arithmeticIdealNormQuotientArtinMap_eq_normResidue
-    (m : RayClass.Modulus K)
-    (hm :
-      RayClass.Modulus.congruenceSubgroup m ≤
-        (_root_.ideleClassNorm K L).range)
-    (q :
-      RayClass.primeToModulusIdeals m ⧸
-        RayClass.idealNormSubgroup
-          (K := K) (L := L) m) :
-    arithmeticIdealNormQuotientArtinMap
-        (K := K) (L := L) m hm q =
-      Reciprocity.arithmeticGlobalNormResidueContinuousMulEquiv
-        K L
-        (idealNormQuotientEquivIdeleClassNormQuotient
-          (K := K) (L := L) m hm q) := by
-  obtain ⟨a, rfl⟩ :=
-    QuotientGroup.mk'_surjective
-      (RayClass.idealNormSubgroup
-        (K := K) (L := L) m) q
-  rw [arithmeticIdealNormQuotientArtinMap_mk,
-    idealNormQuotientEquivIdeleClassNormQuotient_mk]
-  rfl
+
 
 /-- The canonical arithmetic ideal class-field isomorphism
 
@@ -325,145 +266,15 @@ theorem arithmeticIdealNormQuotientEquivGaloisGroup_mk
         (K := K) (L := L) m hm a :=
   arithmeticIdealNormQuotientArtinMap_mk m hm a
 
-/-- The canonical quotient equivalence makes the full arithmetic
-ideal/idèle reciprocity diagram commute. -/
-theorem arithmeticIdealNormQuotientEquivGaloisGroup_eq_normResidue
-    (m : RayClass.Modulus K)
-    (hm :
-      RayClass.Modulus.congruenceSubgroup m ≤
-        (_root_.ideleClassNorm K L).range)
-    (q :
-      RayClass.primeToModulusIdeals m ⧸
-        RayClass.idealNormSubgroup
-          (K := K) (L := L) m) :
-    arithmeticIdealNormQuotientEquivGaloisGroup
-        (K := K) (L := L) m hm q =
-      Reciprocity.arithmeticGlobalNormResidueContinuousMulEquiv
-        K L
-        (idealNormQuotientEquivIdeleClassNormQuotient
-          (K := K) (L := L) m hm q) :=
-  arithmeticIdealNormQuotientArtinMap_eq_normResidue
-    (K := K) (L := L) m hm q
 
-/-- For an unramified prime outside `m`, the order of its class modulo
-the norm-defined ideal group is the common residue degree upstairs. -/
-theorem
-    orderOf_arithmeticIdealNormPrimeClass_eq_inertiaDegree_of_chosenUnramified
-    (m : RayClass.Modulus K)
-    (hm :
-      RayClass.Modulus.congruenceSubgroup m ≤
-        (_root_.ideleClassNorm K L).range)
-    (v : HeightOneSpectrum (𝓞 K))
-    (hv : v ∉ m.finitePart.support)
-    (hunram :
-      _root_.ChosenFinitePlaceIsUnramified
-        (K := K) (L := L) v) :
-    orderOf
-        (QuotientGroup.mk'
-          (RayClass.idealNormSubgroup
-            (K := K) (L := L) m)
-          (RayClass.primeToModulusIdeal m v hv)) =
-      Ideal.inertiaDegIn v.asIdeal (𝓞 L) := by
-  rw [← idealArtinKernel_eq_idealNormSubgroup
-    (K := K) (L := L) m hm]
-  exact
-    orderOf_idealPrimeClass_eq_inertiaDegree_of_chosenUnramified
-      (K := K) (L := L) m hm v hv hunram
 
-/-- A power of an unramified prime lies in the norm-defined ideal
-group exactly when its common residue degree divides the exponent. -/
-theorem
-    unramifiedPrime_pow_mem_idealNormSubgroup_iff_inertiaDegree_dvd
-    (m : RayClass.Modulus K)
-    (hm :
-      RayClass.Modulus.congruenceSubgroup m ≤
-        (_root_.ideleClassNorm K L).range)
-    (v : HeightOneSpectrum (𝓞 K))
-    (hv : v ∉ m.finitePart.support)
-    (hunram :
-      _root_.ChosenFinitePlaceIsUnramified
-        (K := K) (L := L) v)
-    (n : ℕ) :
-    (RayClass.primeToModulusIdeal m v hv) ^ n ∈
-        RayClass.idealNormSubgroup
-          (K := K) (L := L) m ↔
-      Ideal.inertiaDegIn v.asIdeal (𝓞 L) ∣ n := by
-  rw [← idealArtinKernel_eq_idealNormSubgroup
-    (K := K) (L := L) m hm]
-  exact
-    unramifiedPrime_pow_mem_idealArtinKernel_iff_inertiaDegree_dvd
-      (K := K) (L := L) m hm v hv hunram n
 
-/-- The full unramified decomposition law, with `f` defined as the
-order of the prime class modulo the genuine norm-defined ideal group. -/
-theorem unramifiedPrime_idealNormDecompositionLaw
-    (m : RayClass.Modulus K)
-    (hm :
-      RayClass.Modulus.congruenceSubgroup m ≤
-        (_root_.ideleClassNorm K L).range)
-    (v : HeightOneSpectrum (𝓞 K))
-    (hv : v ∉ m.finitePart.support)
-    (hunram :
-      _root_.ChosenFinitePlaceIsUnramified
-        (K := K) (L := L) v) :
-    let f :=
-      orderOf
-        (QuotientGroup.mk'
-          (RayClass.idealNormSubgroup
-            (K := K) (L := L) m)
-          (RayClass.primeToModulusIdeal m v hv))
-    Ideal.map (algebraMap (𝓞 K) (𝓞 L)) v.asIdeal =
-        ∏ P ∈ v.asIdeal.primesOver (𝓞 L), P ∧
-      (∀ P : Ideal (𝓞 L),
-        P ∈ v.asIdeal.primesOver (𝓞 L) →
-          P.inertiaDeg (𝓞 K) = f) ∧
-      (v.asIdeal.primesOver (𝓞 L)).ncard =
-        Module.finrank K L / f := by
-  rw [← idealArtinKernel_eq_idealNormSubgroup
-    (K := K) (L := L) m hm]
-  exact
-    unramifiedPrime_idealDecompositionLaw
-      (K := K) (L := L) m hm v hv hunram
 
-/-- An unramified prime outside `m` splits completely exactly when its
-ideal class belongs to `N_{L/K} J_L^m P_K^m`. -/
-theorem
-    finitePlaceSplitsCompletely_iff_primeIdeal_mem_idealNormSubgroup
-    (m : RayClass.Modulus K)
-    (hm :
-      RayClass.Modulus.congruenceSubgroup m ≤
-        (_root_.ideleClassNorm K L).range)
-    (v : HeightOneSpectrum (𝓞 K))
-    (hv : v ∉ m.finitePart.support)
-    (hunram :
-      _root_.ChosenFinitePlaceIsUnramified
-        (K := K) (L := L) v) :
-    _root_.FinitePlaceSplitsCompletely
-          (K := K) (L := L) v ↔
-      RayClass.primeToModulusIdeal m v hv ∈
-        RayClass.idealNormSubgroup
-          (K := K) (L := L) m := by
-  calc
-    _root_.FinitePlaceSplitsCompletely
-          (K := K) (L := L) v ↔
-        GlobalClassFields.arithmeticFinitePlacePrimeArtin
-            (K := K) (L := L) v =
-          1 :=
-      (GlobalClassFields.arithmeticFinitePlacePrimeArtin_eq_one_iff_splitsCompletely_of_chosenUnramified
-          (K := K) (L := L) v hunram).symm
-    _ ↔
-        arithmeticIdealArtinGaloisMap
-            (K := K) (L := L) m hm
-            (RayClass.primeToModulusIdeal m v hv) =
-          1 := by
-      rw [
-        arithmeticIdealArtinGaloisMap_primeIdeal_eq_arithmeticFinitePlacePrimeArtin]
-    _ ↔
-        RayClass.primeToModulusIdeal m v hv ∈
-          RayClass.idealNormSubgroup
-            (K := K) (L := L) m :=
-      arithmeticIdealArtinGaloisMap_eq_one_iff_mem_idealNormSubgroup
-        m hm (RayClass.primeToModulusIdeal m v hv)
+
+
+
+
+
 
 end IdealClassFieldTheory
 end GlobalClassFieldTheory
@@ -478,43 +289,9 @@ variable
     [Field L] [NumberField L] [Algebra K L]
     [IsAbelianGalois K L]
 
-/-- The arithmetic ideal Artin kernel is the join of the genuine ideal-norm
-image with the ray-principal ideal subgroup. -/
-theorem arithmeticIdealArtin_ker_eq_norm_range_sup_ray_principal
-    (m : RayClass.Modulus K)
-    (hm :
-      RayClass.Modulus.congruenceSubgroup m ≤
-        (_root_.ideleClassNorm K L).range) :
-    (GlobalClassFieldTheory.IdealClassFieldTheory.arithmeticIdealArtinGaloisMap
-        (K := K) (L := L) m hm).ker =
-      (RayClass.primeToModulusIdealNorm
-        (K := K) (L := L) m).range ⊔
-        RayClass.principalRayIdealSubgroup m := by
-  simpa only [RayClass.idealNormSubgroup] using
-    (GlobalClassFieldTheory.IdealClassFieldTheory.arithmeticIdealArtinGaloisMap_ker_eq_idealNormSubgroup
-      (K := K) (L := L) m hm)
 
-/-- An ideal has trivial arithmetic Artin symbol precisely when it lies in
-the group generated by ideal norms and ray-principal ideals. -/
-theorem arithmeticIdealArtin_eq_one_iff_norm_range_sup_ray_principal
-    (m : RayClass.Modulus K)
-    (hm :
-      RayClass.Modulus.congruenceSubgroup m ≤
-        (_root_.ideleClassNorm K L).range)
-    (a : RayClass.primeToModulusIdeals m) :
-    GlobalClassFieldTheory.IdealClassFieldTheory.arithmeticIdealArtinGaloisMap
-          (K := K) (L := L) m hm a = 1 ↔
-      a ∈ (RayClass.primeToModulusIdealNorm
-        (K := K) (L := L) m).range ⊔
-          RayClass.principalRayIdealSubgroup m := by
-  change
-    a ∈
-        (GlobalClassFieldTheory.IdealClassFieldTheory.arithmeticIdealArtinGaloisMap
-          (K := K) (L := L) m hm).ker ↔
-      a ∈ (RayClass.primeToModulusIdealNorm
-        (K := K) (L := L) m).range ⊔
-          RayClass.principalRayIdealSubgroup m
-  rw [arithmeticIdealArtin_ker_eq_norm_range_sup_ray_principal]
+
+
 
 end ClassFieldTheory
 

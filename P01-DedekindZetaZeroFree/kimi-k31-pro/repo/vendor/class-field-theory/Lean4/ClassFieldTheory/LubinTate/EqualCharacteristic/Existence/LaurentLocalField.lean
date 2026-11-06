@@ -185,11 +185,7 @@ theorem powerSeriesEquivLaurentInteger_coe
       Valued.integer k⸨X⸩) : k⸨X⸩) = (f : k⸨X⸩) :=
   rfl
 
-/-- The image of `X` is irreducible in the Laurent valuation ring. -/
-theorem powerSeriesEquivLaurentInteger_X_irreducible :
-    Irreducible
-      (powerSeriesEquivLaurentInteger k (PowerSeries.X : k⟦X⟧)) :=
-  PowerSeries.X_irreducible.map (powerSeriesEquivLaurentInteger k)
+
 
 /-- The canonical integer ring attached to the valuative relation induced by
 the Laurent valuation is the native valued-field integer ring. -/
@@ -232,17 +228,7 @@ noncomputable def powerSeriesEquivLaurentValuativeInteger
   exact (powerSeriesEquivLaurentInteger k).trans
     (laurentValuativeIntegerEquiv k).symm
 
-/-- The image of `X` is irreducible in the valuative integer ring. -/
-theorem powerSeriesEquivLaurentValuativeInteger_X_irreducible :
-    letI : ValuativeRel k⸨X⸩ := ValuativeRel.ofValuation
-      (Valued.v : Valuation k⸨X⸩ ℤᵐ⁰)
-    Irreducible
-      (powerSeriesEquivLaurentValuativeInteger k
-        (PowerSeries.X : k⟦X⟧)) := by
-  let : ValuativeRel k⸨X⸩ := ValuativeRel.ofValuation
-    (Valued.v : Valuation k⸨X⸩ ℤᵐ⁰)
-  exact PowerSeries.X_irreducible.map
-    (powerSeriesEquivLaurentValuativeInteger k)
+
 
 /-- The native valuation ring of a Laurent series field over a finite field
 is compact. -/

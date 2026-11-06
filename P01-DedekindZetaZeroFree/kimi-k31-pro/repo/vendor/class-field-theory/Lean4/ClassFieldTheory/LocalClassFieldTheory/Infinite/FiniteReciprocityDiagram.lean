@@ -52,91 +52,10 @@ local instance finiteDiagramNormQuotientIsTopologicalGroup
   change IsTopologicalGroup (Kˣ ⧸ localNormSubgroup K L)
   infer_instance
 
-/-- The finite quotients of the absolute abelianized Galois group, carrying
-their quotient topologies and the canonical quotient transition maps. -/
-noncomputable def absoluteFiniteQuotientDiagram :
-    AbsoluteFiniteIndex K ⥤ ProfiniteGrp where
-  obj N := ProfiniteGrp.of
-    (localAbsoluteAbelianProfinite K ⧸ N.toSubgroup)
-  map f := ProfiniteGrp.ofHom <|
-    absoluteFiniteQuotientTransition (leOfHom f)
-  map_id N := by
-    apply ProfiniteGrp.hom_ext
-    apply ContinuousMonoidHom.ext
-    intro x
-    refine QuotientGroup.induction_on x ?_
-    intro x
-    rfl
-  map_comp {X Y Z} f g := by
-    apply ProfiniteGrp.hom_ext
-    apply ContinuousMonoidHom.ext
-    intro x
-    refine QuotientGroup.induction_on x ?_
-    intro x
-    rfl
-/-- The finite abelian Galois groups cut out by open normal subgroups of the
-absolute abelianized Galois group, with restriction as transition map. -/
-noncomputable def finiteAbelianGaloisDiagram :
-    AbsoluteFiniteIndex K ⥤ ProfiniteGrp where
-  obj N := ProfiniteGrp.of
-    (Gal(absoluteFiniteQuotientField K N / K))
-  map {N M} f := ProfiniteGrp.ofHom <|
-    intermediateFieldRestrictContinuous K
-      (absoluteFiniteQuotientField K M)
-      (absoluteFiniteQuotientField K N)
-      (absoluteFiniteQuotientField_antitone (leOfHom f))
-  map_id N := by
-    apply ProfiniteGrp.hom_ext
-    apply ContinuousMonoidHom.ext
-    intro sigma
-    apply AlgEquiv.ext
-    intro x
-    apply Subtype.ext
-    exact intermediateFieldRestrictNormalHom_apply_val
-      (absoluteFiniteQuotientField K N)
-      (absoluteFiniteQuotientField K N) le_rfl sigma x
-  map_comp {N M L} f g := by
-    apply ProfiniteGrp.hom_ext
-    apply ContinuousMonoidHom.ext
-    intro sigma
-    apply AlgEquiv.ext
-    intro x
-    apply Subtype.ext
-    change
-      (absoluteFiniteQuotientField K L).val
-        (intermediateFieldRestrictNormalHom
-          (absoluteFiniteQuotientField K L)
-          (absoluteFiniteQuotientField K N) _ sigma x) =
-      (absoluteFiniteQuotientField K L).val
-        (intermediateFieldRestrictNormalHom
-          (absoluteFiniteQuotientField K L)
-          (absoluteFiniteQuotientField K M) _
-          (intermediateFieldRestrictNormalHom
-            (absoluteFiniteQuotientField K M)
-            (absoluteFiniteQuotientField K N) _ sigma) x)
-    rw [intermediateFieldRestrictNormalHom_apply_val]
-    rw [intermediateFieldRestrictNormalHom_apply_val]
-    rw [intermediateFieldRestrictNormalHom_apply_val]
-    apply congrArg (fun y : absoluteFiniteQuotientField K N =>
-      (absoluteFiniteQuotientField K N).val (sigma y))
-    apply Subtype.ext
-    rfl
 
-/-- At every finite stage, the quotient of the absolute abelianized Galois
-group is canonically the Galois group of its fixed field; these
-identifications commute with all transition maps. -/
-noncomputable def absoluteFiniteQuotientNaturalIso :
-    absoluteFiniteQuotientDiagram K ≅ finiteAbelianGaloisDiagram K :=
-  NatIso.ofComponents
-    (fun N => ProfiniteGrp.ContinuousMulEquiv.toProfiniteGrpIso
-      (absoluteFiniteQuotientEquiv K N))
-    (fun {N M} f => by
-      apply ProfiniteGrp.hom_ext
-      apply ContinuousMonoidHom.ext
-      intro x
-      exact DFunLike.congr_fun
-        (absoluteFiniteQuotientEquiv_transition
-          (K := K) (leOfHom f)).symm x)
+
+
+
 
 omit [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K] in
 /-- Inclusion of open normal subgroups gives the corresponding inclusion of
@@ -228,86 +147,11 @@ theorem normQuotientTransition_mk
     (absoluteFiniteQuotientField K M)
     (absoluteFiniteNormSubgroup_mono K hNM) a
 
-/-- The finite norm quotients indexed by open normal subgroups, with the
-canonical quotient maps induced by inclusions of norm subgroups. -/
-noncomputable def normQuotientDiagram :
-    AbsoluteFiniteIndex K ⥤ ProfiniteGrp where
-  obj N := ProfiniteGrp.ofContinuousMulEquiv
-    (G := (absoluteFiniteQuotientDiagram K).obj N)
-    (absoluteFiniteArtinQuotientEquiv K N).symm
-  map f := ConcreteCategory.ofHom (C := ProfiniteGrp)
-    (normQuotientTransition K (leOfHom f))
-  map_id N := by
-    apply ProfiniteGrp.hom_ext
-    apply ContinuousMonoidHom.ext
-    intro x
-    change normQuotientTransition K (leOfHom (𝟙 N)) x = x
-    refine NormQuotient.inductionOn
-      (K := K) (L := absoluteFiniteQuotientField K N)
-      (motive := fun q =>
-        normQuotientTransition K (leOfHom (𝟙 N)) q = q) x ?_
-    intro a
-    exact normQuotientTransition_mk K (leOfHom (𝟙 N)) a
-  map_comp f g := by
-    apply ProfiniteGrp.hom_ext
-    apply ContinuousMonoidHom.ext
-    intro x
-    refine NormQuotient.inductionOn
-      (K := K)
-      (motive := fun q =>
-        normQuotientTransition K (leOfHom (f ≫ g)) q =
-          normQuotientTransition K (leOfHom g)
-            (normQuotientTransition K (leOfHom f) q)) x ?_
-    intro a
-    rw [normQuotientTransition_mk, normQuotientTransition_mk,
-      normQuotientTransition_mk]
 
-/-- The finite Artin first-isomorphism identifications form a natural
-isomorphism from norm quotients to finite absolute Galois quotients. -/
-noncomputable def finiteArtinQuotientNaturalIso :
-    normQuotientDiagram K ≅ absoluteFiniteQuotientDiagram K :=
-  NatIso.ofComponents
-    (fun N => by
-      let e :
-          ((normQuotientDiagram K).obj N : Type) ≃ₜ*
-            ((absoluteFiniteQuotientDiagram K).obj N : Type) :=
-        { (absoluteFiniteArtinQuotientEquiv K N) with
-          continuous_toFun := by
-            change Continuous (absoluteFiniteArtinQuotientEquiv K N)
-            exact (absoluteFiniteArtinQuotientEquiv K N).continuous
-          continuous_invFun := by
-            change Continuous (absoluteFiniteArtinQuotientEquiv K N).symm
-            exact (absoluteFiniteArtinQuotientEquiv K N).symm.continuous }
-      exact ProfiniteGrp.ContinuousMulEquiv.toProfiniteGrpIso e)
-    (fun {N M} f => by
-      apply ProfiniteGrp.hom_ext
-      apply ContinuousMonoidHom.ext
-      intro x
-      refine QuotientGroup.induction_on x ?_
-      intro a
-      simp only
-      change absoluteFiniteArtinQuotientEquiv K M
-          (normQuotientTransition K (leOfHom f)
-            (normClass K
-              (absoluteFiniteQuotientField K N) a)) =
-        absoluteFiniteQuotientTransition (leOfHom f)
-          (absoluteFiniteArtinQuotientEquiv K N
-            (normClass K
-              (absoluteFiniteQuotientField K N) a))
-      rw [normQuotientTransition_mk]
-      rw [absoluteFiniteArtinQuotientEquiv_mk]
-      rw [absoluteFiniteArtinQuotientEquiv_mk]
-      exact DFunLike.congr_fun
-        (absoluteFiniteArtinMap_transition
-          (K := K) (leOfHom f)).symm a)
 
-/-- Finite local reciprocity, simultaneously at every open finite quotient:
-norm quotients are naturally isomorphic to the corresponding finite abelian
-Galois groups. -/
-noncomputable def finiteReciprocityNaturalIso :
-    normQuotientDiagram K ≅ finiteAbelianGaloisDiagram K :=
-  (finiteArtinQuotientNaturalIso K).trans
-    (absoluteFiniteQuotientNaturalIso K)
+
+
+
 
 
 end LocalClassFieldTheory

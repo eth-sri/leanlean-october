@@ -321,7 +321,7 @@ private theorem exists_rational_double
     change actualDoubleCoefficient F ζ hζ q S.heisenberg S.borel P I μ J (S.openCell P) rep hrep d φ hφ hcφ r h = _ at hcval
     rw [hcval]
     with_unfolding_all simp only [targetParameter, sourceParameter, targetSign, sourceSign, id_eq,
-      show Sign.minus ≠ Sign.plus from by decide, ite_false, neg_neg]
+      ]
     have heplus : (evaluationUnit (LocalField F q) .plus a : ℂ) = (r : ℂ) := by
       simp [evaluationUnit, a, KPRankOneRootParameter.rUnit, root_parameter_additiveParameter]
     have heminus : (evaluationUnit (LocalField F q) .minus a : ℂ) = (r : ℂ)⁻¹ := by

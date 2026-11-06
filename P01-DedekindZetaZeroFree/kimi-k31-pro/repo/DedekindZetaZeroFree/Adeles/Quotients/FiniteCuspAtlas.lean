@@ -499,7 +499,7 @@ theorem finite_component_scalar_descent
       rw [hE f (x,c) i y δ ε u hp]
       apply hE f _ i y (γ * δ) ε u
       exact ⟨by change γ • x = (γ * δ) • y; rw [hp.1, mul_smul],
-        by simp only [Prod.snd]; rw [hp.2, map_mul]; simp only [mul_assoc]⟩
+        by simp only; rw [hp.2, map_mul]; simp only [mul_assoc]⟩
     · intro x c ε
       obtain ⟨i, y, δ, η, u, hp⟩ := hex (x,c)
       dsimp only [R, Prod.fst, Prod.snd] at hp

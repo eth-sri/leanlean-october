@@ -11,11 +11,7 @@ theorem product_nonvanishing_transfer (U V : Set ℂ) (fK fL g fF : ℂ → ℂ)
     (hVU : V ⊆ U) (hident : Set.EqOn fL fF U)
     (hprod : ∀ s ∈ U, fL s = g s * fK s)
     (hnz : ∀ s ∈ V, fF s ≠ 0) : ∀ s ∈ V, fK s ≠ 0 := by
-  intro s hs hzero
-  have hmem : s ∈ U := hVU hs
-  have hfFzero : fF s = 0 := by
-    rw [← hident hmem, hprod s hmem, hzero, mul_zero]
-  exact hnz s hs hfFzero
+  grind
 
 theorem dedekindZeta_zeroFree_of_abelian_extension
     (K L : Type) [Field K] [NumberField K] [Field L] [NumberField L]

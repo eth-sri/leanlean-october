@@ -18,7 +18,7 @@ noncomputable def radiusQuadratic : MvPolynomial (Fin 3) ℂ :=
 private lemma deriv_radius (i : Fin 3) :
     pderiv i radiusQuadratic = 2 * X i := by
   classical
-  simp only [radiusQuadratic, map_sum, pderiv_pow, pderiv_X, pow_one]
+  simp only [radiusQuadratic, map_sum, pderiv_pow, pderiv_X]
   rw [Finset.sum_eq_single i]
   · simp
   · intro j hj hji; simp [Pi.single_eq_of_ne hji]
@@ -44,7 +44,7 @@ private lemma lap_radius_hom {q : MvPolynomial (Fin 3) ℂ} {d : ℕ}
       radiusQuadratic * polynomialLaplacian q +
         (2 * (2 * (d : ℂ) + 3)) • q := by
   rw [lap_radius_mul, hq.sum_X_mul_pderiv]
-  simp only [nsmul_eq_mul, smul_eq_C_mul, map_mul, map_add, map_ofNat, map_one, C_eq_coe_nat]
+  simp only [nsmul_eq_mul, smul_eq_C_mul, map_mul, map_add, map_ofNat, C_eq_coe_nat]
   ring
 
 theorem laplacian_radius_pow {q : MvPolynomial (Fin 3) ℂ} {degree : ℕ}
@@ -63,7 +63,7 @@ theorem laplacian_radius_pow {q : MvPolynomial (Fin 3) ℂ} {degree : ℕ}
       Nat.add_sub_cancel, smul_eq_C_mul, map_mul, map_add, map_ofNat, map_one, C_eq_coe_nat]
     cases k with
     | zero => simp only [pow_zero, one_mul, Nat.cast_zero, mul_zero, zero_mul,
-        zero_add, add_zero, map_zero, pow_one]; ring
+        zero_add, add_zero]; ring
     | succ k =>
       simp only [Nat.add_sub_cancel, Nat.cast_add, Nat.cast_one, pow_succ]
       ring
@@ -174,7 +174,7 @@ private lemma bottom_norm (g : ComplexSU2) :
   have hg := g.property.1.2
   have hh := congrArg (fun M : Matrix (Fin 2) (Fin 2) ℂ => (M 1 1).re) hg
   simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_eq_conjTranspose,
-    Complex.mul_re, sq] at hh
+    Complex.mul_re] at hh
   nlinarith
 private lemma rows (g : ComplexSU2) (i k : Fin 3) :
     ∑ j, sphereMatrix g i j * sphereMatrix g k j = if i=k then 1 else 0 := by
@@ -232,7 +232,7 @@ private theorem polynomialLaplacian_linearSubstitution (A : Matrix (Fin 3) (Fin 
   change (∑ j, MvPolynomial.pderiv j (MvPolynomial.pderiv j (linearSubstitution A p))) =
     ∑ j, linearSubstitution A (MvPolynomial.pderiv j (MvPolynomial.pderiv j p))
   simp only [pderiv_linearSubstitution, map_sum, MvPolynomial.pderiv_C_mul]
-  simp only [pderiv_linearSubstitution, Finset.mul_sum, ← mul_assoc, ← MvPolynomial.C_mul]
+  simp only [Finset.mul_sum, ← mul_assoc, ← MvPolynomial.C_mul]
   rw [Finset.sum_comm]
   apply Finset.sum_congr rfl
   intro i hi
@@ -268,7 +268,7 @@ instance harmonicFiniteDimensional (n : ℕ) : FiniteDimensional ℂ (Harmonic n
 
 theorem coefficientAction_radius (g : ComplexSU2) :
     coefficientAction g radiusQuadratic = radiusQuadratic := by
-  simp only [radiusQuadratic, map_sum, map_pow, coefficientAction, pow_two, map_mul, aeval_X,
+  simp only [radiusQuadratic, map_sum, coefficientAction, pow_two, map_mul, aeval_X,
     Finset.sum_mul, Finset.mul_sum]
   conv_lhs =>
     arg 2
@@ -289,7 +289,7 @@ def radialLap (n : ℕ) : Homogeneous n →ₗ[ℂ] Homogeneous n where
   toFun p := ⟨polynomialLaplacian (radiusQuadratic * p.val), by
     simpa using lap_hom (radius_homogeneous.mul p.property)⟩
   map_add' p q := by apply Subtype.ext; simp [mul_add]
-  map_smul' c p := by apply Subtype.ext; simp [mul_smul_comm]
+  map_smul' c p := by apply Subtype.ext; simp
 private lemma radialLap_surj (n : ℕ) : Function.Surjective (radialLap n) := by
   intro q
   obtain ⟨h,hh,he⟩ := homogeneous_fischer q.property
@@ -336,7 +336,7 @@ theorem equivariant_fischer_split (n : ℕ) :
     { toFun hp := ⟨hp.1.val + radiusQuadratic * hp.2.val,
         hp.1.property.1.add (by simpa [Nat.add_comm] using radius_homogeneous.mul hp.2.property)⟩
       map_add' p q := by apply Subtype.ext; simp; ring
-      map_smul' c p := by apply Subtype.ext; simp [mul_smul_comm]
+      map_smul' c p := by apply Subtype.ext; simp
       isIntertwining' g := by
         apply LinearMap.ext
         intro hp

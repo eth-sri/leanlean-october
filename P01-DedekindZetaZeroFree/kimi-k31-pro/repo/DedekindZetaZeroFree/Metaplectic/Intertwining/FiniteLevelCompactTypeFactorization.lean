@@ -62,8 +62,7 @@ def scalarZero : V →ₗ[ℂ] KPMsRationalCompactCrossPairing.Source F ζ hζ 0
     (KPGlobalTorusBorelTwistCompatibility.scalarSection F ζ hζ Q)
 
 private theorem scalarZero_value (v : V) (g : KPGlobalTorusFunctionData.G F ζ hζ) :
-    (scalarZero F ζ hζ v).val g = (v.val.val g).val.val 1 := by
-  exact castScalar_apply F ζ hζ _ _ _ _ _
+    (scalarZero F ζ hζ v).val g = (v.val.val g).val.val 1 := castScalar_apply F ζ hζ _ _ _ _ _
 
 private theorem scalarZero_injective : Function.Injective (scalarZero F ζ hζ) := by
   intro v w h

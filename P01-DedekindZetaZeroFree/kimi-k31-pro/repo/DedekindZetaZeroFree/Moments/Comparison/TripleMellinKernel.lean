@@ -12,14 +12,13 @@ def comparisonA : ℝ := 9 / 10
 
 def comparisonB : ℝ := 133 / 1000
 
-def comparisonH₀ : ℝ := 1 / 10
+
 
 def comparisonX (Z : ℝ) : ℝ := Z ^ comparisonA
 
 def comparisonY (Z : ℝ) : ℝ := Z ^ comparisonB
 
-def comparisonE (x w z : ℝ) : ℝ :=
-  comparisonA / 2 + x - 1 + comparisonH₀ * z + comparisonB * (w - 1)
+
 
 def comparisonRealPower (Z : ℝ) (s : ℂ) : ℂ :=
   Complex.exp (s * (Real.log Z : ℂ))

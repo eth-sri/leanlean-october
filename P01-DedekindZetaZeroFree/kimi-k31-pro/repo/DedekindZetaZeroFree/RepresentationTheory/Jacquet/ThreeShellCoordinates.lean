@@ -43,7 +43,7 @@ theorem finite_shell_coordinate_identity
     have hle : ¬ ((e + 1 : ℕ) : ℤ) ≤ (e : ℤ) := by omega
     have heq : ((e + 1 : ℕ) : ℤ) = (e : ℤ) + 1 := by push_cast; rfl
     have hd : (3 : ℤ) ∣ ((e + 1 : ℕ) : ℤ) ↔ (e + 1) % 3 = 0 := by omega
-    simp only [shellValue, hle, ↓reduceIte, heq, ↓reduceIte]
+    simp only [shellValue, ↓reduceIte, heq, ↓reduceIte]
     simp only [← heq, hle, ↓reduceIte, hd]
     unfold KPThreeShell.tameFactor
     split_ifs with h0 h1

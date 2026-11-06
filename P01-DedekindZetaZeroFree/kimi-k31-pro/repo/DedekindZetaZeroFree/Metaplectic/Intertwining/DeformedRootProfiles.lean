@@ -23,8 +23,7 @@ private theorem scalar_deformation_value
     ((deformedTest F ζ hζ q S P hP f s).val g).val 1 =
       normPower (LocalField F q)
         (S.borel.coordinate (S.borel.retract (S.iwasawa.borelPart g)))
-        (sourceParameter .minus s) * f.val g := by
-  exact KPTameTransposeKernelUnfoldingRaw.HigherShellCubicUnitConjugation.deformedTest_scalar_value
+        (sourceParameter .minus s) * f.val g := KPTameTransposeKernelUnfoldingRaw.HigherShellCubicUnitConjugation.deformedTest_scalar_value
     F ζ hζ q S P hP (scalarCoordinateEquiv F ζ hζ q S P hP)
     (fun _ _ _ => rfl) f s g
 
@@ -131,8 +130,7 @@ theorem eventual_deformed_test_kernel_profile
       KPPGLLocalCover.W F ζ hζ (Sum.inr q) =
       KPPGLLocalCover.W F ζ hζ (Sum.inr q) *
       KPPGLLocalCover.N F ζ hζ (Sum.inr q)
-        (x + ((π ^ i.val : (LocalField F q)ˣ) : LocalField F q) / (u : LocalField F q)) := by
-    exact ((mul_inv_eq_iff_eq_mul).mp
+        (x + ((π ^ i.val : (LocalField F q)ˣ) : LocalField F q) / (u : LocalField F q)) := (mul_inv_eq_iff_eq_mul.mp
       (KPRankOneJacquetZeroCompactCoefficients.weyl_conjugates_upper F ζ hζ q _)).symm
   simp only [mul_assoc]
   rw [hw]

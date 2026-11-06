@@ -1,6 +1,7 @@
 module
 
 public import Mathlib.Algebra.Module.Equiv.Basic
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -38,9 +39,7 @@ def additiveEquivOfMulEquiv {A B : Type u} [Group A] [Group B] (e : A ≃* B) :
     intro b
     simp
   map_add' := by
-    intro a b
-    ext
-    exact e.map_mul _ _
+    norm_num
 
 end
 end LocalFieldTheory

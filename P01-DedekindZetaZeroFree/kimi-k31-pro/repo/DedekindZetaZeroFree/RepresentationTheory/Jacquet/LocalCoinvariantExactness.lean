@@ -176,11 +176,11 @@ theorem transversal_average_kills_relation
         map_mul, Units.val_mul]
     rw [← Module.End.mul_apply, ← map_mul, ← ofAdd_add,
       hrepr (r.val + n) (p r).val (hp r), hc, smul_smul]
-    simp [mul_inv_rev, mul_comm, mul_left_comm, mul_assoc]
+    simp [mul_inv_rev, mul_comm]
   simp only [LinearMap.smul_apply, LinearMap.sum_apply, map_sub, map_smul,
-    smul_sub, Finset.sum_sub_distrib]
+    ]
   rw [hsum]
-  simp [smul_smul, mul_comm, mul_left_comm, mul_assoc, Finset.smul_sum]
+  simp [smul_smul, mul_left_comm, Finset.smul_sum]
 
 end DedekindZetaZeroFree.KPCoinvariants.TransversalAverages
 

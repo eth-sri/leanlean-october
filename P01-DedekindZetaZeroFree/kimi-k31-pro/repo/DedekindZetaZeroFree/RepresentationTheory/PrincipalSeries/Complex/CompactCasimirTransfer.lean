@@ -18,7 +18,7 @@ noncomputable def compactBasis : Fin 1 → Fin 3 → Matrix (Fin 2) (Fin 2) ℂ 
 theorem compactBasis_skew (i : Fin 1) (j : Fin 3) :
     star (compactBasis i j) = -compactBasis i j := by
   fin_cases j <;> ext a b <;> fin_cases a <;> fin_cases b <;>
-    simp [compactBasis, Matrix.star_apply, Matrix.conjTranspose_apply]
+    simp [compactBasis, Matrix.star_apply]
 
 noncomputable def compactCharacterSecondDerivative (ℓ : ℕ) (j : Fin 3)
     (k : ComplexSU2) : ℂ :=
@@ -195,7 +195,7 @@ private theorem section_path (j : Fin 3) (s : ℝ) (f v : PrincipalSeries s) (hv
       (Matrix.GeneralLinearGroup.det_ne_zero q))
   have he (r : ℝ) : ((g * complexSU2Embedding (k * compactCurve j r) : ComplexGL2) :
       Matrix (Fin 2) (Fin 2) ℂ) = g.val * k.val * (basisExp compactBasis compactBasis_skew (0,j) r).val := by
-    simp [compactCurve, Matrix.GeneralLinearGroup.coe_mul, complexSU2Embedding, Matrix.mul_assoc]
+    simp [compactCurve, complexSU2Embedding, Matrix.mul_assoc]
   have hmat : HasDerivAt (fun r : ℝ => g.val * k.val * (basisExp compactBasis compactBasis_skew (0,j) r).val)
       (q.val * compactBasis 0 j) t := by
     apply hasDerivAt_pi.mpr
@@ -327,7 +327,7 @@ private theorem first_transfer
     simpa only [hcneg, mul_inv_cancel_right] using h
   rw [heq] at hleft
   have h := hleft.2.unique hn
-  simp only [hc0, mul_one, neg_smul, one_smul, neg_zero] at h
+  simp only [hc0, mul_one, neg_smul, one_smul] at h
   calc
     _ = - (-(∫ k, a k * db k ∂μ)) := (neg_neg _).symm
     _ = _ := congrArg Neg.neg h.symm
@@ -432,8 +432,8 @@ private theorem compactBasis_trace (j : Fin 1) (a : Fin 3) :
 private theorem compactBasis_orth (j : Fin 1) (a b : Fin 3) :
     -(Matrix.trace (compactBasis j a * compactBasis j b)).re = if a = b then 1 else 0 := by
   fin_cases a <;> fin_cases b <;>
-    simp [compactBasis, Matrix.trace, Matrix.mul_apply, Fin.sum_univ_two,
-      Complex.mul_re, Complex.I_mul_I]
+    simp [compactBasis, Matrix.trace, Fin.sum_univ_two,
+      Complex.mul_re]
   all_goals nlinarith [Real.sq_sqrt (show (0:ℝ) ≤ 2 by norm_num)]
 
 private theorem matrixFunction_eval_here (f : ComplexGL2 → ℂ) (g : ComplexGL2) :
@@ -612,9 +612,9 @@ private theorem matrix_path_hasDeriv_components (g : ComplexGL2)
     (f := fun t : ℝ => (t : ℂ)) 0 Complex.ofRealCLM.hasDerivAt
   have hmat := h.const_mul (g : Matrix (Fin 2) (Fin 2) ℂ)
   simp only [Complex.ofRealCLM_apply, Complex.ofReal_one,
-    ContinuousLinearMap.coe_restrictScalars,
-    ContinuousLinearMap.toSpanSingleton_apply, one_smul, zero_smul,
-    NormedSpace.exp_zero, mul_one, one_mul] at hmat
+    
+    
+    ] at hmat
   intro i j
   have hi := (ContinuousLinearMap.proj i :
     Matrix (Fin 2) (Fin 2) ℂ →L[ℝ] Fin 2 → ℂ).hasFDerivAt.comp_hasDerivAt 0 hmat

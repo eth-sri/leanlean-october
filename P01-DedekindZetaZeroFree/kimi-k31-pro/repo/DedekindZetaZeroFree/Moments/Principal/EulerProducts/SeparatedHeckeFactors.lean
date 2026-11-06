@@ -47,8 +47,8 @@ theorem correction_multipliable_initial (U : Frequency C)
   toFun p := ⟨LocalFiniteSums.primeIdeal p, p.val.prime⟩
   invFun p := ⟨⟨p.val.val, (Ideal.prime_iff_isPrime p.val.property.1).mp p.property,
     p.val.property.1⟩, p.val.property.2⟩
-  left_inv p := by rfl
-  right_inv p := by rfl
+  left_inv p := rfl
+  right_inv p := rfl
 
 private lemma normPower_eq (p : LocalFiniteSums.ExteriorPrime A) (s : ℂ) :
     (Ideal.absNorm p.val.asIdeal : ℂ) ^ s = LocalFiniteSums.qPower p s := by

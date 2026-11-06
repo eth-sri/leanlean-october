@@ -65,11 +65,7 @@ noncomputable def finiteAbelianNormSubgroupOrderIso :
         finiteAbelianNormSubgroup K L₁ ↔ L₁ ≤ L₂
     exact (finiteAbelianSubextension_le_iff_normSubgroup_le K L₁ L₂).symm
 
-/-- Underlying equivalence of the finite local existence order isomorphism. -/
-noncomputable def finiteAbelianNormSubgroupEquiv :
-    FiniteAbelianSubextension (intrinsicAbstractBase K) ≃
-      OpenFiniteIndexSubgroup K :=
-  (finiteAbelianNormSubgroupOrderIso K).toEquiv
+
 
 /-- States the theorem `finiteAbelianNormSubgroupOrderIso_apply`. -/
 @[simp]

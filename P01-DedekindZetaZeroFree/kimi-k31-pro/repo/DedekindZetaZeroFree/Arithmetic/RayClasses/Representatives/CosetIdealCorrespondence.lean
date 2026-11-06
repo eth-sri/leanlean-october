@@ -183,7 +183,7 @@ private theorem realEmbedding_exists (φ : K →+* ℝ) :
   let ψ : K →+* ℂ := Complex.ofRealHom.comp φ
   have hp : NumberField.ComplexEmbedding.IsReal ψ := by
     ext x
-    simp [ψ, NumberField.ComplexEmbedding.conjugate]
+    simp [ψ]
   let v : RealPlaces K := ⟨NumberField.InfinitePlace.mk ψ, ⟨ψ, hp, rfl⟩⟩
   refine ⟨v, ?_⟩
   ext x

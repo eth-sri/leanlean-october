@@ -6,6 +6,7 @@ public import ClassFieldTheory.LubinTate.FiniteLevel.StandardLocalField
 public import ValuedFieldTheory.LocalField.NonarchimedeanLocalField.UniformizerPrincipalQuotient
 public import ClassFieldTheory.LubinTate.FiniteLevel.FiniteParameters
 public import ClassFieldTheory.LubinTate.FiniteLevel.NormSubgroup
+public import Mathlib.Tactic.Linarith
 
 @[expose] public section
 
@@ -141,13 +142,10 @@ theorem subgroup_eq_of_le_of_index_eq_of_ne_zero
   apply le_antisymm hHN
   by_contra hNH
   have hne : H ≠ N := by
-    intro heq
-    apply hNH
-    rw [heq]
+    grind
   have hstrict : H < N := lt_of_le_of_ne hHN hne
   have hi := Subgroup.index_strictAnti hstrict
-  rw [hindex] at hi
-  exact Nat.lt_irrefl _ hi
+  linarith
 
 end LubinTate
 

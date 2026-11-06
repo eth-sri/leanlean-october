@@ -32,7 +32,7 @@ theorem principalMul_mem_ideal
     ((J * rayIdealFractionalIdeal F m hm) : FractionalIdeal (𝓞 F)⁰ F) =
       FractionalIdeal.spanSingleton (𝓞 F)⁰ (γ : F) *
         ((I * rayIdealFractionalIdeal F m hm) : FractionalIdeal (𝓞 F)⁰ F) := by
-  simp only [Units.val_mul, hJ, mul_assoc]
+  simp only [hJ, mul_assoc]
 
  theorem inverseMul_mem
     (I J : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (γ : Fˣ)
@@ -60,8 +60,8 @@ def affineResiduePrimalIndexMulEquiv
     principalMul_mem_ideal (I * rayIdealFractionalIdeal F m hm) (J * rayIdealFractionalIdeal F m hm) γ (principalMul_modulus_eq m hm I J γ hJ) l⟩
   invFun l := ⟨((γ⁻¹ : Fˣ) : F) * l.val,
     inverseMul_mem (I * rayIdealFractionalIdeal F m hm) (J * rayIdealFractionalIdeal F m hm) γ (principalMul_modulus_eq m hm I J γ hJ) l⟩
-  left_inv l := by apply Subtype.ext; simp [← mul_assoc]
-  right_inv l := by apply Subtype.ext; simp [← mul_assoc]
+  left_inv l := by apply Subtype.ext; simp
+  right_inv l := by apply Subtype.ext; simp
 
 @[simp] theorem affineResiduePrimalIndexMulEquiv_apply_val
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
@@ -138,8 +138,8 @@ def affineResidueDualIndexMulEquiv
     inverseMul_mem_dual _ _ γ (principalMul_modulus_eq m hm I J γ hJ) β⟩
   invFun β := ⟨(γ : F) * β.val,
     principalMul_mem_dual _ _ γ (principalMul_modulus_eq m hm I J γ hJ) β⟩
-  left_inv β := by apply Subtype.ext; simp [← mul_assoc]
-  right_inv β := by apply Subtype.ext; simp [← mul_assoc]
+  left_inv β := by apply Subtype.ext; simp
+  right_inv β := by apply Subtype.ext; simp
 
 @[simp] theorem affineResidueDualIndexMulEquiv_apply_val
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)

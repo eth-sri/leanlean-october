@@ -190,16 +190,7 @@ theorem exists_element_of_prime_order :
       (G := G) p hpDvd
   exact ⟨p, g, hp, hg⟩
 
-/-- Every nontrivial finite group contains an actual cyclic subgroup
-of prime cardinality. -/
-theorem exists_cyclic_subgroup_of_prime_card :
-    ∃ (p : ℕ) (P : Subgroup G),
-      p.Prime ∧ Nat.card P = p ∧ IsCyclic P := by
-  obtain ⟨p, g, hp, hg⟩ :=
-    exists_element_of_prime_order G
-  refine
-    ⟨p, Subgroup.zpowers g, hp, ?_, inferInstance⟩
-  rw [Nat.card_zpowers, hg]
+
 
 end PrimeOrder
 

@@ -248,21 +248,7 @@ theorem sigmaMinusOneHom_apply (σ : G) (a : A) :
     sigmaMinusOneHom (G := G) (A := A) σ a = sigmaMinusOne G A σ a :=
   rfl
 
-omit [Fintype G] [CommGroup B] [CommGroup C]
-    [MulDistribMulAction G B] [MulDistribMulAction G C] in
-/-- Rewriting used in the cyclic-cohomology exact sequence: changing a lift
-by `a' * a⁻¹` changes `a^(σ-1)` by an element of `I_G A`. -/
-theorem sigmaMinusOne_mul_inv_mul (σ : G) (a a' : A) :
-    sigmaMinusOne G A σ a' =
-      sigmaMinusOne G A σ (a' * a⁻¹) * sigmaMinusOne G A σ a := by
-  simp only [sigmaMinusOne, MulDistribMulAction.smul_mul, smul_inv', mul_inv_rev]
-  simp only [inv_inv]
-  symm
-  calc
-    σ • a' * (σ • a)⁻¹ * (a * a'⁻¹) * (σ • a * a⁻¹)
-        = σ • a' * (((σ • a)⁻¹ * σ • a) * ((a * a⁻¹) * a'⁻¹)) := by
-          ac_rfl
-    _ = σ • a' * a'⁻¹ := by simp
+
 
 /-- Herbrand-quotient theory: the norm image `N_G A`. -/
 def tateNormSubgroup (G : Type uG) (A : Type uA) [Group G] [Fintype G] [CommGroup A]
@@ -495,85 +481,13 @@ theorem HerbrandHMinusOne.mk_eq_one_iff (σ : G)
     apply (QuotientGroup.eq_one_iff a).2
     simpa only [Subgroup.mem_subgroupOf] using h
 
-omit [CommGroup B] [CommGroup C]
-    [MulDistribMulAction G B] [MulDistribMulAction G C] in
-/-- Two degree-zero representatives agree exactly when their quotient is a Tate norm. -/
-theorem HerbrandH0.mk_eq_mk_iff_div_mem (a b : fixedSubgroup G A) :
-    HerbrandH0.mk a = HerbrandH0.mk b ↔
-      (a : A) / b ∈ tateNormSubgroup G A := by
-  constructor
-  · intro h
-    have hraw :
-        (QuotientGroup.mk a :
-          fixedSubgroup G A ⧸
-            (tateNormSubgroup G A).subgroupOf (fixedSubgroup G A)) =
-          QuotientGroup.mk b := by
-      simpa only [HerbrandH0.equiv_mk] using
-        congrArg (HerbrandH0.equiv (G := G) (A := A)) h
-    simpa only [Subgroup.mem_subgroupOf, Subgroup.coe_div] using
-      (QuotientGroup.eq_iff_div_mem).1 hraw
-  · intro h
-    apply (HerbrandH0.equiv (G := G) (A := A)).injective
-    rw [HerbrandH0.equiv_mk, HerbrandH0.equiv_mk]
-    apply (QuotientGroup.eq_iff_div_mem).2
-    simpa only [Subgroup.mem_subgroupOf, Subgroup.coe_div] using h
 
-omit [CommGroup B] [CommGroup C]
-    [MulDistribMulAction G B] [MulDistribMulAction G C] in
-/-- Two degree-minus-one representatives agree exactly when their quotient is an augmentation. -/
-theorem HerbrandHMinusOne.mk_eq_mk_iff_div_mem (σ : G)
-    (a b : normKernelSubgroup G A) :
-    HerbrandHMinusOne.mk σ a = HerbrandHMinusOne.mk σ b ↔
-      (a : A) / b ∈ augmentationSubgroup G A σ := by
-  constructor
-  · intro h
-    have hraw :
-        (QuotientGroup.mk a :
-          normKernelSubgroup G A ⧸
-            (augmentationSubgroup G A σ).subgroupOf (normKernelSubgroup G A)) =
-          QuotientGroup.mk b := by
-      simpa only [HerbrandHMinusOne.equiv_mk] using
-        congrArg (HerbrandHMinusOne.equiv (G := G) (A := A) σ) h
-    simpa only [Subgroup.mem_subgroupOf, Subgroup.coe_div] using
-      (QuotientGroup.eq_iff_div_mem).1 hraw
-  · intro h
-    apply (HerbrandHMinusOne.equiv (G := G) (A := A) σ).injective
-    rw [HerbrandHMinusOne.equiv_mk, HerbrandHMinusOne.equiv_mk]
-    apply (QuotientGroup.eq_iff_div_mem).2
-    simpa only [Subgroup.mem_subgroupOf, Subgroup.coe_div] using h
 
-omit [CommGroup B] [CommGroup C]
-    [MulDistribMulAction G B] [MulDistribMulAction G C] in
-/-- Two degree-zero representatives agree exactly when the inverse-times-second
-ratio is a Tate norm. -/
-theorem HerbrandH0.mk_eq_mk_iff_inv_mul_mem (a b : fixedSubgroup G A) :
-    HerbrandH0.mk a = HerbrandH0.mk b ↔
-      (a : A)⁻¹ * b ∈ tateNormSubgroup G A := by
-  rw [HerbrandH0.mk_eq_mk_iff_div_mem]
-  constructor
-  · intro h
-    have hinv := (tateNormSubgroup G A).inv_mem h
-    simpa [div_eq_mul_inv, mul_comm] using hinv
-  · intro h
-    have hinv := (tateNormSubgroup G A).inv_mem h
-    simpa [div_eq_mul_inv, mul_comm] using hinv
 
-omit [CommGroup B] [CommGroup C]
-    [MulDistribMulAction G B] [MulDistribMulAction G C] in
-/-- Two degree-minus-one representatives agree exactly when the
-inverse-times-second ratio is an augmentation. -/
-theorem HerbrandHMinusOne.mk_eq_mk_iff_inv_mul_mem (σ : G)
-    (a b : normKernelSubgroup G A) :
-    HerbrandHMinusOne.mk σ a = HerbrandHMinusOne.mk σ b ↔
-      (a : A)⁻¹ * b ∈ augmentationSubgroup G A σ := by
-  rw [HerbrandHMinusOne.mk_eq_mk_iff_div_mem]
-  constructor
-  · intro h
-    have hinv := (augmentationSubgroup G A σ).inv_mem h
-    simpa [div_eq_mul_inv, mul_comm] using hinv
-  · intro h
-    have hinv := (augmentationSubgroup G A σ).inv_mem h
-    simpa [div_eq_mul_inv, mul_comm] using hinv
+
+
+
+
 
 omit [CommGroup B] [CommGroup C]
     [MulDistribMulAction G B] [MulDistribMulAction G C] in
@@ -858,17 +772,7 @@ theorem herbrandH0_subsingleton_of_fixed_le_tateNormSubgroup
     exact h a.2
   rw [hq, hr]
 
-/-- Degree-zero Herbrand cohomology is trivial exactly when every fixed
-element is a Tate norm. -/
-theorem herbrandH0_subsingleton_iff_fixed_le_tateNormSubgroup :
-    Subsingleton (HerbrandH0 G A) ↔
-      fixedSubgroup G A ≤ tateNormSubgroup G A := by
-  constructor
-  · intro h a ha
-    apply (HerbrandH0.mk_eq_one_iff (G := G) (A := A) ⟨a, ha⟩).1
-    exact h.elim _ _
-  · exact herbrandH0_subsingleton_of_fixed_le_tateNormSubgroup
-      (G := G) (A := A)
+
 
 omit [CommGroup B] [CommGroup C]
     [MulDistribMulAction G B] [MulDistribMulAction G C] in
@@ -893,18 +797,7 @@ theorem herbrandHMinusOne_subsingleton_of_normKernel_le_augmentationSubgroup
     exact h a.2
   rw [hq, hr]
 
-/-- Degree-minus-one Herbrand cohomology is trivial exactly when every
-norm-kernel element is an augmentation element. -/
-theorem herbrandHMinusOne_subsingleton_iff_normKernel_le_augmentationSubgroup
-    (σ : G) :
-    Subsingleton (HerbrandHMinusOne G A σ) ↔
-      normKernelSubgroup G A ≤ augmentationSubgroup G A σ := by
-  constructor
-  · intro h a ha
-    apply (HerbrandHMinusOne.mk_eq_one_iff (G := G) (A := A) σ ⟨a, ha⟩).1
-    exact h.elim _ _
-  · exact herbrandHMinusOne_subsingleton_of_normKernel_le_augmentationSubgroup
-      (G := G) (A := A) σ
+
 
 omit [Fintype G] [CommGroup C] [MulDistribMulAction G C] in
 /-- The inverse of an equivariant multiplicative equivalence is equivariant. -/
@@ -1051,13 +944,7 @@ induced module. -/
 def rightRegularCyclicPartialProduct (σ : G) (f : G → B) (i : ℕ) : B :=
   (Finset.range i).prod (fun k => f (σ ^ k))
 
-omit [Fintype G] [CommGroup A] [CommGroup C]
-    [MulDistribMulAction G A] [MulDistribMulAction G B]
-    [MulDistribMulAction G C] in
-/-- The partial primitive starts at `1`. -/
-theorem rightRegularCyclicPartialProduct_zero (σ : G) (f : G → B) :
-    rightRegularCyclicPartialProduct (G := G) (B := B) σ f 0 = 1 := by
-  simp [rightRegularCyclicPartialProduct]
+
 
 omit [Fintype G] [CommGroup A] [CommGroup C]
     [MulDistribMulAction G A] [MulDistribMulAction G B]
@@ -1359,19 +1246,7 @@ theorem rightRegularFunction_normKernel_le_augmentationSubgroup
   exact rightRegularCyclicPrimitive_mul_sigma_mul_inv_of_partialProduct_eq_one
     (G := G) (B := B) σ hgen f hprod x
 
-omit [CommGroup A] [CommGroup C]
-    [MulDistribMulAction G A] [MulDistribMulAction G B]
-    [MulDistribMulAction G C] in
-/-- The `H^{-1}` quotient of the right-regular multiplicative induced module
-is trivial for a cyclic group generated by `σ`. -/
-theorem rightRegularFunction_herbrandHMinusOne_subsingleton
-    (σ : G) (hgen : ∀ g : G, g ∈ Subgroup.zpowers σ) :
-    Subsingleton (rightRegularFunctionHerbrandHMinusOne (G := G) (B := B) σ) := by
-  let := rightRegularFunctionMulDistribMulAction (G := G) (B := B)
-  exact herbrandHMinusOne_subsingleton_of_normKernel_le_augmentationSubgroup
-    (G := G) (A := G → B) σ
-    (rightRegularFunction_normKernel_le_augmentationSubgroup
-      (G := G) (B := B) σ hgen)
+
 
 omit [CommGroup A] [CommGroup C]
     [MulDistribMulAction G A] [MulDistribMulAction G B]
@@ -1431,17 +1306,7 @@ theorem rightRegularFunction_fixed_le_tateNormSubgroup :
         _ = f 1 := by simp [d]
     _ = f x := hfixed_x.symm
 
-omit [CommGroup A] [CommGroup C]
-    [MulDistribMulAction G A] [MulDistribMulAction G B]
-    [MulDistribMulAction G C] in
-/-- The `H⁰` quotient of the right-regular multiplicative induced module is
-trivial. This is the degree-zero half of the low-degree Herbrand comparison. -/
-theorem rightRegularFunction_herbrandH0_subsingleton :
-    Subsingleton (rightRegularFunctionHerbrandH0 (G := G) (B := B)) := by
-  let := rightRegularFunctionMulDistribMulAction (G := G) (B := B)
-  exact herbrandH0_subsingleton_of_fixed_le_tateNormSubgroup
-    (G := G) (A := G → B) (rightRegularFunction_fixed_le_tateNormSubgroup
-      (G := G) (B := B))
+
 
 omit [CommGroup C] [MulDistribMulAction G B] [MulDistribMulAction G C] in
 /-- Transport `H⁰` vanishing from the right-regular trivial-subgroup model
@@ -1513,27 +1378,7 @@ on its `Multiplicative` wrapper. -/
     change Multiplicative.ofAdd (g • (0 : M)) = Multiplicative.ofAdd (0 : M)
     rw [smul_zero]
 
-omit [Group G] [Fintype G] [CommGroup A] [CommGroup B] [CommGroup C]
-    [MulDistribMulAction G A] [MulDistribMulAction G B]
-    [MulDistribMulAction G C] in
-/-- Pointwise conversion between a multiplicative wrapper on additive
-functions and functions into the multiplicative wrapper. -/
-def multiplicativeFunctionMulEquiv
-    (G : Type uG) (D : Type uB) [AddCommGroup D] :
-    Multiplicative (G → D) ≃* (G → Multiplicative D) where
-  toFun f := fun x => Multiplicative.ofAdd (Multiplicative.toAdd f x)
-  invFun f := Multiplicative.ofAdd (fun x => Multiplicative.toAdd (f x))
-  left_inv := by
-    intro f
-    rfl
-  right_inv := by
-    intro f
-    funext x
-    rfl
-  map_mul' := by
-    intro f h
-    funext x
-    rfl
+
 
 omit [Group G] [Fintype G] [CommGroup A] [CommGroup B] [CommGroup C]
     [MulDistribMulAction G A] [MulDistribMulAction G B]

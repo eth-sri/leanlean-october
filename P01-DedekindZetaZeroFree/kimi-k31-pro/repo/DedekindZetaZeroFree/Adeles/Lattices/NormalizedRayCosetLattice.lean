@@ -142,7 +142,7 @@ theorem covolume_normalizedLattice (D : Data K) :
   unfold modulusCovolume
   rw [Theta.covolume_traceIdealLattice]
   simp only [productIdealUnit, FractionalIdeal.coe_mk0, FractionalIdeal.coeIdeal_absNorm,
-    map_mul, Nat.cast_mul, Rat.cast_natCast, Units.val_one, map_one, Rat.cast_one, one_mul]
+    map_mul, Nat.cast_mul, Units.val_one, map_one, Rat.cast_one, one_mul]
   have ha : (Ideal.absNorm D.a : ℝ) ≠ 0 := by
     exact_mod_cast Ideal.absNorm_eq_zero_iff.not.mpr D.ideal_ne_bot
   simp only [Rat.cast_mul, Rat.cast_natCast]

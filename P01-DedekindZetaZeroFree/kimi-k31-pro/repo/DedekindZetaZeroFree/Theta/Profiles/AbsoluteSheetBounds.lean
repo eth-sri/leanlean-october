@@ -23,7 +23,7 @@ theorem complex_uniform_integrable_iff (w : InfinitePlace F) (x : PositiveAxis)
   have h (z : R.A.G1) : normSection R.A w x * z.val =
       (q * z).val * R.A.radialSection x.val x.property := by
     change _ = (normSection R.A w x / R.A.radialSection x.val x.property * z.val) * _
-    simp [div_eq_mul_inv, mul_assoc, mul_comm, mul_left_comm]
+    simp [div_eq_mul_inv, mul_comm, mul_left_comm]
   simp_rw [h]
   exact (measurePreserving_mul_left (GaussianSmoothing.probeHaar R) q).integrable_comp_emb
     (Homeomorph.mulLeft q).measurableEmbedding

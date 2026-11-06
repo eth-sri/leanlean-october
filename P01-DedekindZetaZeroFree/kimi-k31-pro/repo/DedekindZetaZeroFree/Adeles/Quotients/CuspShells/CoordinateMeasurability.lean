@@ -293,7 +293,7 @@ private theorem nativeHighTransition
     hfinite_arch (KPCuspGenuineMonodromy.central F ζ hζ ε)
   have hp := congrArg (PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ) he
   simp only [map_mul, KPMsActualCuspSource.rationalLift_archProjection,
-    PGLComplex.AdelicSlicesRaw.archProjection_archimedeanInsertion,
+    
     hfinite_arch, hlevel_arch, hcentre_arch, mul_one] at hp
   have hi (a : KPSmoothActualFlowData.GInfinity F) :
       PGLComplex.AdelicSlicesRaw.archProjection F ζ hζ

@@ -30,17 +30,14 @@ private lemma ofReal_mul_normSq_eq (w : NNReal) (z : ℂ) :
 
 private lemma ofReal_sum_eq {R : Type*} [Fintype R] (X : R → ℝ) :
     ((∑ r, X r : ℝ) : ℂ) = ∑ r, (X r : ℂ) := by
-  rw [Complex.ofReal_sum]
+  simp_all
 
 private lemma sum_mul_star_sum {L : Type*} [Fintype L] (f : L → ℂ) :
     (∑ l, f l) * star (∑ l, f l) = ∑ l, ∑ k, f l * star (f k) := by
   rw [star_sum, Finset.sum_mul]
   exact Finset.sum_congr rfl fun l _ => Finset.mul_sum ..
 
-private lemma ite_mul_star_ite (a b : ℂ) (P Q : Prop) [Decidable P] [Decidable Q] :
-    (if P then a else 0) * star (if Q then b else 0) =
-      if P ∧ Q then a * star b else 0 := by
-  by_cases hP : P <;> by_cases hQ : Q <;> simp [hP, hQ]
+
 
 private lemma sector_sum_eq {R L G : Type*} [Fintype L]
     (A : R → L → ℂ) (sector : L → G) (x : L → ℂ) (g : G) (r : R) :
@@ -50,22 +47,12 @@ private lemma sector_sum_eq {R L G : Type*} [Fintype L]
       ∑ l, ∑ k,
         (if sector l = g ∧ sector k = g then
           (A r l * x l) * star (A r k * x k) else 0) := by
-  refine Finset.sum_congr rfl fun l _ => Finset.sum_congr rfl fun k _ => ?_
-  exact ite_mul_star_ite (A r l * x l) (A r k * x k) (sector l = g) (sector k = g)
+  grind
 
 private lemma sum_pool_ite {D : Type*} (pool : Finset D) (d0 : D)
     (hd : d0 ∈ pool) (P : Prop) [Decidable P] (Y : ℂ) :
     (∑ d ∈ pool, if P ∧ d0 = d then Y else 0) = if P then Y else 0 := by
-  classical
-  by_cases hP : P
-  · rw [if_pos hP]
-    refine (Finset.sum_eq_single_of_mem d0 hd ?_).trans ?_
-    · intro d _ hne
-      rw [if_neg (show ¬(P ∧ d0 = d) from fun hc => hne hc.2.symm)]
-    · simp [hP]
-  · rw [if_neg hP]
-    refine Finset.sum_eq_zero fun d _ => ?_
-    rw [if_neg (show ¬(P ∧ d0 = d) from fun hc => hP hc.1)]
+  aesop
 
 private lemma sum_pool_sum_swap {L D : Type*} [Fintype L] (pool : Finset D)
     (F : L → L → D → ℂ) :

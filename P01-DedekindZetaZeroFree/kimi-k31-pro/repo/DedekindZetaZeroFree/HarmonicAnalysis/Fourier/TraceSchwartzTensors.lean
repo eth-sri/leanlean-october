@@ -128,7 +128,7 @@ private lemma archPhase_coordinates {F : Type} [Field F] [NumberField F]
     intro v _
     simp only [InfiniteAdeleRing.ringEquiv_mixedSpace_apply,
       ← InfinitePlace.Completion.extensionEmbeddingOfIsReal_apply v.2,
-      Complex.ofReal_re, Complex.ofReal_mul, Complex.ofReal_ofNat]
+      Complex.ofReal_re]
   · apply Fintype.prod_equiv
       (Equiv.subtypeEquivRight (fun _ => InfinitePlace.not_isReal_iff_isComplex))
     intro v
@@ -147,7 +147,7 @@ private lemma local_schwartz_transforms
       ((LinearEquiv.smulOfNeZero ℝ ℝ 2 (by norm_num)).toContinuousLinearEquiv) gR, ?_⟩
     intro y
     simp only [SchwartzMap.compCLMOfContinuousLinearEquiv_apply, Function.comp_apply,
-      LinearEquiv.coe_toContinuousLinearEquiv, LinearEquiv.smulOfNeZero_apply, smul_eq_mul,
+      
       hgR, ArchSelfDual.realFourier, ArchSelfDual.realMeasure]
     apply integral_congr_ae
     filter_upwards with x

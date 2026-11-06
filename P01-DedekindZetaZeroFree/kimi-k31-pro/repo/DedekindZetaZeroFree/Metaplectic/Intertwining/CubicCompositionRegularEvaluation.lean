@@ -31,12 +31,10 @@ private lemma regular_C {F : Type*} [Field F] (u c : F) : Regular u (RatFunc.C c
 private lemma regular_X {F : Type*} [Field F] (u : F) : Regular u (RatFunc.X : RatFunc F) := by
   simp [Regular]
 private lemma regular_add {F : Type*} [Field F] {u : F} {r s : RatFunc F}
-    (hr : Regular u r) (hs : Regular u s) : Regular u (r+s) := by
-  exact fun h => (mul_ne_zero hr hs) (by
+    (hr : Regular u r) (hs : Regular u s) : Regular u (r+s) := fun h => (mul_ne_zero hr hs) (by
     simpa using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_add_dvd r s) h)
 private lemma regular_mul_eval {F : Type*} [Field F] {u : F} {r s : RatFunc F}
-    (hr : Regular u r) (hs : Regular u s) : Regular u (r*s) := by
-  exact fun h => (mul_ne_zero hr hs) (by
+    (hr : Regular u r) (hs : Regular u s) : Regular u (r*s) := fun h => (mul_ne_zero hr hs) (by
     simpa using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_mul_dvd r s) h)
 private lemma regular_inv {F : Type*} [Field F] {u : F} {r : RatFunc F}
     (_hr : Regular u r) (hv : RatFunc.eval (RingHom.id F) u r ≠ 0) : Regular u r⁻¹ := by
@@ -136,8 +134,7 @@ private theorem residue_scalar_regular_eval
   have hb1 (ε : CubicCharacters.Mu3) : ((ε : ℂˣ) : ℂ)*w^2 ≠ 1 := by
     intro he
     have hp := congrArg (fun z : ℂ => z^3) he
-    have hε : (((ε : ℂˣ) : ℂ))^3 = 1 := by
-      exact congrArg Units.val ((mem_rootsOfUnity 3 (ε : ℂˣ)).mp ε.property)
+    have hε : (((ε : ℂˣ) : ℂ))^3 = 1 := congrArg Units.val ((mem_rootsOfUnity 3 (ε : ℂˣ)).mp ε.property)
     rw [mul_pow,hε,one_mul,← pow_mul,one_pow] at hp
     exact hw6 hp
   have hs := Evaluates.sum Finset.univ (fun ξ _ => Evaluates.sum Finset.univ (fun ε _ =>

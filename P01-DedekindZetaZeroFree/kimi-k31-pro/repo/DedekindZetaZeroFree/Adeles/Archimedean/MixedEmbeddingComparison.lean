@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.Adeles.Characters.SIntegerTraceAnnihilation
 public import DedekindZetaZeroFree.Adeles.Characters.TraceCharacterNondegeneracy
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -32,8 +33,7 @@ theorem sArchModel_comparison (F : Type*) [Field F] [NumberField F] :
   refine ⟨?_, ?_, ?_⟩
   · exact e.continuous
   · exact e.symm.continuous
-  · intro x
-    exact (NumberField.InfiniteAdeleRing.mixedEmbedding_eq_algebraMap_comp F).symm
+  · measurability
 
 end DedekindZetaZeroFree
 

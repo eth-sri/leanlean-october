@@ -153,37 +153,7 @@ section relativeNormFormulas
 -- Mathlib's `Rep ℤ G` currently fixes the acting group to universe zero.
 variable {G : IntegralRepGroupType} [Group G] [TopologicalSpace G]
 
-/-- The relative norm reindexed by arbitrary chosen representatives of the
-intermediate-subgroup orbits. -/
-theorem relativeNorm_eq_sum_chosenOrbit_of_fintype
-    (A : Rep ℤ G) (K S : ClosedSubgroup G)
-    (hSK : S.toSubgroup ≤ K.toSubgroup)
-    (M : Subgroup K.toSubgroup)
-    [Finite (K.toSubgroup ⧸ extensionSubgroup K S hSK)]
-    {φ : Quotient (orbitRel M
-      (K.toSubgroup ⧸ extensionSubgroup K S hSK)) →
-        (K.toSubgroup ⧸ extensionSubgroup K S hSK)}
-    (hφ : Function.LeftInverse Quotient.mk'' φ)
-    [Fintype (Quotient (orbitRel M
-      (K.toSubgroup ⧸ extensionSubgroup K S hSK)))]
-    [(q : Quotient (orbitRel M
-      (K.toSubgroup ⧸ extensionSubgroup K S hSK))) →
-      Fintype (M ⧸ stabilizer M (φ q))]
-    (a : ambientFixedAddSubgroup A S) :
-    ((relativeNorm A K S hSK a : ambientFixedAddSubgroup A K) : A.V) =
-      ∑ q, ∑ r, relativeCosetAction A K S hSK a
-        ((MulAction.selfEquivSigmaOrbitsQuotientStabilizer'
-          M (K.toSubgroup ⧸ extensionSubgroup K S hSK) hφ).symm ⟨q, r⟩) := by
-  let := Fintype.ofFinite
-    (K.toSubgroup ⧸ extensionSubgroup K S hSK)
-  rw [relativeNorm_apply_coe, relativeNormValue]
-  let e := MulAction.selfEquivSigmaOrbitsQuotientStabilizer'
-    M (K.toSubgroup ⧸ extensionSubgroup K S hSK) hφ
-  calc
-    ∑ q, relativeCosetAction A K S hSK a q =
-        ∑ p, relativeCosetAction A K S hSK a (e.symm p) :=
-      (e.symm.sum_comp (relativeCosetAction A K S hSK a)).symm
-    _ = _ := Fintype.sum_sigma _
+
 
 @[implicit_reducible]
  noncomputable def relativeNormDoubleCosetSigmaFintype
@@ -240,71 +210,9 @@ theorem relativeNorm_eq_sum_chosenOrbit_of_fintype
       intro r r' h
       exact eq_of_heq (Sigma.mk.inj_iff.mp h).2)
 
-/-- The double-coset norm formula with caller-supplied finite enumerations
-of the orbit set and the stabilizer cosets.  This form is convenient in
-arguments which already obtained those enumerations from a transfer
-formula; the result is independent of their ordering. -/
-theorem relativeNorm_eq_sum_doubleCoset_of_fintype
-    (A : Rep ℤ G) (K K' S : ClosedSubgroup G)
-    (hSK : S.toSubgroup ≤ K.toSubgroup)
-    (hK'K : K'.toSubgroup ≤ K.toSubgroup)
-    [Finite (K.toSubgroup ⧸ extensionSubgroup K S hSK)]
-    [Fintype (Quotient (orbitRel (extensionSubgroup K K' hK'K)
-      (K.toSubgroup ⧸ extensionSubgroup K S hSK)))]
-    [(q : Quotient (orbitRel (extensionSubgroup K K' hK'K)
-      (K.toSubgroup ⧸ extensionSubgroup K S hSK))) →
-      Fintype ((extensionSubgroup K K' hK'K) ⧸
-        MulAction.stabilizer (extensionSubgroup K K' hK'K) q.out)]
-    (a : ambientFixedAddSubgroup A S) :
-    ((relativeNorm A K S hSK a : ambientFixedAddSubgroup A K) : A.V) =
-      ∑ q, ∑ r, relativeCosetAction A K S hSK a
-        ((relativeNormDoubleCosetEquiv K K' S hSK hK'K).symm ⟨q, r⟩) := by
-  let := Fintype.ofFinite
-    (K.toSubgroup ⧸ extensionSubgroup K S hSK)
-  rw [relativeNorm_apply_coe, relativeNormValue]
-  calc
-    ∑ q, relativeCosetAction A K S hSK a q =
-        ∑ p, relativeCosetAction A K S hSK a
-          ((relativeNormDoubleCosetEquiv K K' S hSK hK'K).symm p) :=
-      ((relativeNormDoubleCosetEquiv K K' S hSK hK'K).symm.sum_comp
-        (relativeCosetAction A K S hSK a)).symm
-    _ = ∑ q, ∑ r, relativeCosetAction A K S hSK a
-        ((relativeNormDoubleCosetEquiv K K' S hSK hK'K).symm ⟨q, r⟩) :=
-      Fintype.sum_sigma _
 
-/-- The actual norm `N_{S/K}` reindexed first by intermediate-subgroup
-orbits and then by stabilizer cosets.  This is the additive form of the
-double-coset product decomposition in the proof of transfer--norm naturality. -/
-theorem relativeNorm_eq_sum_doubleCoset
-    (A : Rep ℤ G) (K K' S : ClosedSubgroup G)
-    (hSK : S.toSubgroup ≤ K.toSubgroup)
-    (hK'K : K'.toSubgroup ≤ K.toSubgroup)
-    [Finite (K.toSubgroup ⧸ extensionSubgroup K S hSK)]
-    (a : ambientFixedAddSubgroup A S) :
-    let Ω := Quotient (orbitRel (extensionSubgroup K K' hK'K)
-      (K.toSubgroup ⧸ extensionSubgroup K S hSK))
-    letI : Fintype Ω :=
-      relativeNormDoubleCosetOrbitFintype K K' S hSK hK'K
-    letI (q : Ω) : Fintype ((extensionSubgroup K K' hK'K) ⧸
-        MulAction.stabilizer (extensionSubgroup K K' hK'K) q.out) :=
-      relativeNormDoubleCosetStabilizerFintype K K' S hSK hK'K q
-    ((relativeNorm A K S hSK a : ambientFixedAddSubgroup A K) : A.V) =
-      ∑ q, ∑ r, relativeCosetAction A K S hSK a
-        ((relativeNormDoubleCosetEquiv K K' S hSK hK'K).symm ⟨q, r⟩) := by
-  dsimp only
-  let := Fintype.ofFinite
-    (K.toSubgroup ⧸ extensionSubgroup K S hSK)
-  let : Fintype (Quotient (orbitRel
-      (extensionSubgroup K K' hK'K)
-      (K.toSubgroup ⧸ extensionSubgroup K S hSK))) :=
-    relativeNormDoubleCosetOrbitFintype K K' S hSK hK'K
-  let (q : Quotient (orbitRel (extensionSubgroup K K' hK'K)
-      (K.toSubgroup ⧸ extensionSubgroup K S hSK))) :
-      Fintype ((extensionSubgroup K K' hK'K) ⧸
-        MulAction.stabilizer (extensionSubgroup K K' hK'K) q.out) :=
-    relativeNormDoubleCosetStabilizerFintype K K' S hSK hK'K q
-  exact relativeNorm_eq_sum_doubleCoset_of_fintype
-    A K K' S hSK hK'K a
+
+
 
 end relativeNormFormulas
 

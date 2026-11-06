@@ -102,46 +102,7 @@ theorem finprod_fibers_eq_sigma
     _ = ∏ᶠ x : α, f x :=
       (finprod_eq_prod f hf).symm
 
-/-- A local norm of an integral unit at a finite place is again an
-integral unit at the place below. -/
-theorem normUnits_mem_finitePlaceIntegerUnits
-    {M : Type}
-    [Field M] [NumberField M] [Algebra K M]
-    (v : HeightOneSpectrum (𝓞 K))
-    (w : AbsoluteValueExtension
-      (HeightOneSpectrum.adicAbv K v) M)
-    (x :
-      ((finitePlaceExtensionCentre
-        (K := K) (L := M) v w).adicCompletion M)ˣ)
-    (hx :
-      x ∈
-        ((finitePlaceExtensionCentre
-          (K := K) (L := M) v w).adicCompletionIntegers M).units) :
-    letI : Algebra (v.adicCompletion K)
-        ((finitePlaceExtensionCentre
-          (K := K) (L := M) v w).adicCompletion M) :=
-      (finitePlaceAdicCompletionMap K M v
-        ⟨finitePlaceExtensionCentre (K := K) (L := M) v w,
-          finitePlaceBelow_finitePlaceExtensionCentre
-            (K := K) (L := M) v w⟩).toAlgebra
-    LocalFieldTheory.normUnits
-        (v.adicCompletion K)
-        ((finitePlaceExtensionCentre
-          (K := K) (L := M) v w).adicCompletion M) x ∈
-      (v.adicCompletionIntegers K).units := by
-  let W : {W : HeightOneSpectrum (𝓞 M) //
-      _root_.finitePlaceBelow (K := K) W = v} :=
-    ⟨finitePlaceExtensionCentre (K := K) (L := M) v w,
-      finitePlaceBelow_finitePlaceExtensionCentre
-        (K := K) (L := M) v w⟩
-  let : Algebra (v.adicCompletion K)
-      ((finitePlaceExtensionCentre
-        (K := K) (L := M) v w).adicCompletion M) :=
-    (finitePlaceAdicCompletionMap K M v W).toAlgebra
-  let z : (W.1.adicCompletionIntegers M).units := ⟨x, hx⟩
-  simpa only [W, z, Subgroup.coe_subtype] using
-    IdeleGroup.finitePlace_normUnits_mem_integerUnits
-      (K := K) (L := M) v W z
+
 
 /-- The finite local Artin factors of an idele have finite multiplicative
 support.  This is the support input for applying homomorphisms to the

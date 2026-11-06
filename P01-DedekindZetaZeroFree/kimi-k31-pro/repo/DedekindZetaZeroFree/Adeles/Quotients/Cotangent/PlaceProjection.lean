@@ -65,7 +65,7 @@ private theorem H_basis_zero (n : ℕ) (p : HyperbolicChart.Space n) (i j : Fin 
       CotangentLogCoframe.H n p (EuclideanSpace.basisFun (Fin n × Fin 3) ℝ (j,l)) (i,k) = 0 := by
   intro k
   have hne : ∀ k : Fin 3, (i,k) ≠ (j,l) := fun k h => hij (congrArg Prod.fst h)
-  fin_cases k <;> simp [CotangentLogCoframe.H, CotangentLogCoframe.C, EuclideanSpace.basisFun_apply, hne, hij]
+  fin_cases k <;> simp [CotangentLogCoframe.H, CotangentLogCoframe.C, EuclideanSpace.basisFun_apply, hij]
 
 private theorem formula_deriv_zero (n : ℕ) (g : Fin n → Matrix.GeneralLinearGroup (Fin 2) ℂ)
     (p v : HyperbolicChart.Space n) (i : Fin n) (hv : ∀ k, v (i,k) = 0) : ∀ k,

@@ -272,11 +272,7 @@ theorem le_compositum_right (L₁ L₂ : FiniteAbelianSubextension K) :
       L₂.field.toSubgroup
     exact inf_le_right
 
-/-- The compositum is the least subextension containing both inputs. -/
-theorem compositum_le {L₁ L₂ P : FiniteAbelianSubextension K}
-    (h₁ : L₁ ≤ P) (h₂ : L₂ ≤ P) :
-    L₁.compositum L₂ ≤ P :=
-  fun _ hp => ⟨h₁ hp, h₂ hp⟩
+
 
 section Intersection
 
@@ -381,27 +377,11 @@ def intersection (L₁ L₂ : FiniteAbelianSubextension K) :
       extensionSubgroup K L₁.field L₁.below ⊔
         extensionSubgroup K L₂.field L₂.below from le_sup_left) hin
 
-/-- The intersection subextension lies below its left input. -/
-theorem intersection_le_left (L₁ L₂ : FiniteAbelianSubextension K) :
-    L₁.intersection L₂ ≤ L₁ := by
-  change L₁.field.toSubgroup ≤
-    L₁.field.toSubgroup ⊔ L₂.field.toSubgroup
-  exact le_sup_left
 
-/-- The intersection subextension lies below its right input. -/
-theorem intersection_le_right (L₁ L₂ : FiniteAbelianSubextension K) :
-    L₁.intersection L₂ ≤ L₂ := by
-  change L₂.field.toSubgroup ≤
-    L₁.field.toSubgroup ⊔ L₂.field.toSubgroup
-  exact le_sup_right
 
-/-- A subextension below both inputs lies below their intersection. -/
-theorem le_intersection {P L₁ L₂ : FiniteAbelianSubextension K}
-    (h₁ : P ≤ L₁) (h₂ : P ≤ L₂) :
-    P ≤ L₁.intersection L₂ := by
-  change L₁.field.toSubgroup ⊔ L₂.field.toSubgroup ≤
-    P.field.toSubgroup
-  exact sup_le h₁ h₂
+
+
+
 
 end Intersection
 
@@ -466,16 +446,7 @@ theorem normSubgroup_compositum_le_inf (A : Rep ℤ G)
   exact ⟨normSubgroup_antitone A (le_compositum_left L₁ L₂) hx,
     normSubgroup_antitone A (le_compositum_right L₁ L₂) hx⟩
 
-/-- The unconditional half of
-`N_{L₁∩L₂} = N_{L₁}N_{L₂}` in additive notation. -/
-theorem sup_normSubgroup_le_intersection
-    [IsTopologicalGroup G] [CompactSpace G]
-    (A : Rep ℤ G) (L₁ L₂ : FiniteAbelianSubextension K) :
-    normSubgroup A L₁ ⊔ normSubgroup A L₂ ≤
-      normSubgroup A (L₁.intersection L₂) := by
-  apply sup_le
-  · exact normSubgroup_antitone A (intersection_le_left L₁ L₂)
-  · exact normSubgroup_antitone A (intersection_le_right L₁ L₂)
+
 
 
 end FiniteAbelianSubextension

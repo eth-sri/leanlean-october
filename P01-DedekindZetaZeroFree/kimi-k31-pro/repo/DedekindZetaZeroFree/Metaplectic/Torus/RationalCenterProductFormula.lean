@@ -84,7 +84,7 @@ private theorem localValue_scalar (v : KPHilbert.Place F)
   have he1 : h1.unit = u := Units.ext (h1.unit_spec.trans hu)
   have he2 : h2.unit = u := Units.ext (h2.unit_spec.trans hu')
   rw [localValue, dif_pos ⟨h1, h2⟩]
-  simp [he1, he2, localAbs_one F v, KPScalarSplitCentral.scalarHom,
+  simp [localAbs_one F v, KPScalarSplitCentral.scalarHom,
     KPScalarSplitCentral.scalarLift, KPLocalCover.sectionMap]
 
 private theorem rawProduct_splitScalar (u : Ideles F) (x : rawCenter F ζ hζ)
@@ -148,14 +148,7 @@ private theorem localAbs_inl_coe (w : InfinitePlace F) (a : Fˣ) :
 private theorem localAbs_inr_coe (q : HeightOneSpectrum (𝓞 F)) (a : Fˣ) :
     ((localAbs F (Sum.inr q) (Units.map (algebraMap F (q.adicCompletion F)) a) : ℝ≥0) : ℝ) =
       (NumberField.FinitePlace.equivHeightOneSpectrum.symm q) (a:F) := by
-  have h : ((localAbs F (Sum.inr q) (Units.map (algebraMap F (q.adicCompletion F)) a) : ℝ≥0) : ℝ)
-      = ‖(algebraMap F (q.adicCompletion F) (a:F))‖ := rfl
-  rw [h]
-  have h2 : ‖(algebraMap F (q.adicCompletion F) (a:F))‖ =
-      (NumberField.FinitePlace.equivHeightOneSpectrum.symm q) (a:F) := by
-    rw [NumberField.FinitePlace.equivHeightOneSpectrum_symm_apply]
-    rfl
-  rw [h2]
+  aesop
 
 theorem rational_raw_product (a : Fˣ) (x : rawCenter F ζ hζ)
     (hx : KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ

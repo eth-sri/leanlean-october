@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Representatives.PrimeToIntegralIdealClasses
 public import ClassFieldTheory.Theorems.ConductorsAndRayClassFields.RayClassIdealModulusProjectionSurjective
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -22,8 +23,7 @@ theorem fullModulus_le_of_le (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     exact Associates.count_le_count_of_le (Associates.mk_ne_zero.mpr (by simpa using hm))
       v.associates_irreducible
       (by rw [Associates.mk_le_mk_iff_dvd]; exact Ideal.dvd_iff_le.mpr hmf)
-  · intro x hx
-    simpa using Finset.mem_univ x
+  · norm_num
 
 def modulusReduction (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     (f : Ideal (𝓞 F)) (hf : f ≠ ⊥) (hmf : m ≤ f) :
@@ -49,11 +49,11 @@ theorem modulusReduction_surjective (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
         exact sup_le_sup_left hmf I) := by
   unfold modulusReduction idealClass
   rw [ClassFieldTheory.rayClassIdealModulusProjection]
-  simp only [QuotientGroup.map_mk', QuotientGroup.mk'_apply]
+  simp only [QuotientGroup.mk'_apply]
   apply congrArg (fun z : ClassFieldTheory.rayClassPrimeToIdeals (fullModulus f hf) =>
     (z : ClassFieldTheory.RayClassGroup (fullModulus f hf)))
   apply Subtype.ext
-  simp only [Subgroup.coe_inclusion, idealToPrimeTo_coe]
+  norm_num
 
 end DedekindZetaZeroFree.LargeSieve.RayBridge
 

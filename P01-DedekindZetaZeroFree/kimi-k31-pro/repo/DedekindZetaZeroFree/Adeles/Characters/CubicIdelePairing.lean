@@ -496,8 +496,8 @@ private theorem ideleEval_supported (q : HeightOneSpectrum (𝓞 F)) (a : (q.adi
     change RestrictedProduct.mulSingle (fun w => w.adicCompletionIntegers F) q (a : q.adicCompletion F) r = _
     by_cases h : r = q
     · subst r
-      simp [RestrictedProduct.mulSingle_eq_same]
-    · simp [RestrictedProduct.mulSingle_eq_of_ne, h]
+      simp
+    · simp [h]
 
 theorem beta3_radical_zero (x : D F) :
     (∀ y : D F, beta3 F ζ hζ x y = 1) ↔ x = 1 := by

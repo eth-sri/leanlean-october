@@ -50,7 +50,7 @@ private theorem norm_mul (A : SArithmeticData F) (x y : A.G) :
 
 private theorem norm_div (A : SArithmeticData F) (x y : A.G) :
     A.norm (x / y) = A.norm x / A.norm y := by
-  simp [SArithmeticData.norm, norm_div, div_pow, Finset.prod_div_distrib,
+  simp [SArithmeticData.norm, div_pow, Finset.prod_div_distrib,
     mul_div_mul_comm]
 
 private theorem norm_pos (A : SArithmeticData F) (x : A.G) : 0 < A.norm x := by
@@ -116,7 +116,7 @@ theorem probe_sheet_shape_translation (F : Type) [Field F] [NumberField F]
       (ProbeSheet.localUnits A).symm (ProbeSheet.ell A T), by
     change A.norm _ = 1
     rw [ProbeSheetTranslation.norm_div, hx, ProbeSheetTranslation.norm_ell A T hT]
-    exact div_self hT.ne'⟩
+    grind⟩
   have hshift (t : A.G1) :
       ProbeSheetTranslation.translatedFourier A e μ W0 x t =
       ProbeSheetTranslation.translatedFourier A e μ W0 (ProbeSheet.ell A T) (k * t) := by
@@ -129,7 +129,7 @@ theorem probe_sheet_shape_translation (F : Type) [Field F] [NumberField F]
         _ = (ProbeSheet.localUnits A t.val * (x / ProbeSheet.ell A T)) *
             ProbeSheet.ell A T := by
           rw [mul_assoc, div_mul_cancel]
-        _ = _ := by rw [mul_comm (ProbeSheet.localUnits A t.val)]
+        _ = _ := by grind
     exact congrArg (ProbeWeight.fourier F A.Sf e μ W0 ∘ Units.val) hg
   have hflow (y : SLocalProduct F A.Sf) : ProbeSheet.complexNormFlow A w 0 y = y := by
     dsimp [ProbeSheet.complexNormFlow, SLocalProduct, InfiniteAdeleRing] at y ⊢
@@ -138,8 +138,8 @@ theorem probe_sheet_shape_translation (F : Type) [Field F] [NumberField F]
       intro v
       by_cases hv : v = w
       · subst v
-        simp [ProbeSheet.complexNormFlow, Function.update_self]
-      · simp [ProbeSheet.complexNormFlow, hv, Function.update_self]
+        simp [Function.update_self]
+      · grind
     · rfl
   have hb := hbound T hT
   simp only [ProbeSheet.logDerivative, iteratedDeriv_zero, hflow] at hb
@@ -221,9 +221,8 @@ theorem probe_sheet_shape_translation_fraction (F : Type) [Field F] [NumberField
     rw [ProbeSheetTranslation.norm_ell A _ (mul_pos hspos hX)]
     change (ProbeSheetTranslation.q A s hs * X * ProbeSheetTranslation.q A h hh) /
       (ProbeSheetTranslation.q A s hs * ProbeSheetTranslation.q A a ha) = T
-    dsimp [T]
-    field_simp
-  exact ⟨hT, hx, hbound x T hT hx⟩
+    grind
+  grind
 
 end
 end DedekindZetaZeroFree

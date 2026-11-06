@@ -251,7 +251,7 @@ private theorem denominator_diff (K : Type*) [Field K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K] (ε : Sign) :
     Differentiable ℂ (denominator K ε) := by
   cases ε with
-  | plus => unfold denominator t r; simp only [if_pos rfl, if_true]; fun_prop
+  | plus => unfold denominator t r; simp only [if_true]; fun_prop
   | minus =>
     unfold denominator
     simp only [reduceCtorEq, if_false]
@@ -338,7 +338,7 @@ private theorem translated_continued_compact_regular (ε : Sign) (g : ActualCove
         map_smul' := by intros; rfl }
     change l (actualContinued F ζ hζ q S P μ hμ π hπ ε s
       (∑ n ∈ N, (evaluationUnit (LocalField F q) ε s : ℂ) ^ n • (v n).val)) = _
-    simp only [Finsupp.sum, map_sum, map_smul, smul_eq_mul]
+    simp only [map_sum, map_smul, smul_eq_mul]
     rfl
   simp_rw [he]
   constructor

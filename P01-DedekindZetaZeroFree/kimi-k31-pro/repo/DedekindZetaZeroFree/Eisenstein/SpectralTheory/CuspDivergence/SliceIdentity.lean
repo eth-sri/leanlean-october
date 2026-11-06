@@ -42,7 +42,7 @@ private theorem realL_tauVec (d : ℕ) :
     realL d (tauVec d) = ∑ j : Fin d, coordinateVector d j 2 := by
   ext ⟨i,k⟩
   fin_cases k <;> simp [realL, real, tauVec, coordinateVector, PiLp.toLp_apply,
-    Finset.sum_apply, Finset.sum_ite, Finset.mem_univ, PiLp.proj_apply]
+    Finset.sum_apply, Finset.mem_univ]
 
 private theorem hasDerivAt_gamma {F : Type} [Field F] [NumberField F]
     (c : KPCuspCharts.Cross F) (t : ℝ) :
@@ -318,7 +318,7 @@ private theorem radialCoefficientRealification_heightVector (d : ℕ) :
     radialCoefficientRealification d (radialCoefficientHeightVector d) = ∑ j : Fin d, coordinateVector d j 2 := by
   ext ⟨i,k⟩
   fin_cases k <;> simp [radialCoefficientRealification, real, radialCoefficientHeightVector, coordinateVector, PiLp.toLp_apply,
-    Finset.sum_apply, Finset.sum_ite, Finset.mem_univ, PiLp.proj_apply]
+    Finset.sum_apply, Finset.mem_univ]
 
 private theorem hasDerivAt_realChart_for_radialCoefficient {F : Type} [Field F] [NumberField F]
     (c : KPCuspCharts.Cross F) (t : ℝ) :
@@ -552,7 +552,7 @@ theorem cutoff_tangentialDivergence_integrable_integral_zero
     _ _ (Filter.Eventually.of_forall (rectangle_orbit_multiplicity G A hA B hB))
     f hfi hi ((hhorInt.add hshapeInt).congr_fun (fun c _ => by
       exact (tangentialDivergence_eq_horizontal_add_shape W c t).symm) (hAm.prod hBm)) hz
-  · simp only [ENat.card_eq_coe_natCard, ENNReal.coe_natCast]
+  · simp only [ENat.card_eq_coe_natCard]
     exact_mod_cast Nat.card_pos.ne'
   · rw [ENat.card_eq_coe_natCard]
     exact ENNReal.coe_ne_top
@@ -778,7 +778,7 @@ open KPMeanZeroWeightedEnergy HyperbolicChart
  def archL (d : ℕ) : Space d →L[ℝ] KPArch.Space d :=
   LinearMap.toContinuousLinearMap {
     toFun := arch d
-    map_add' := by intro x y; ext i <;> simp [arch, Complex.add_re, Complex.add_im]; rfl
+    map_add' := by intro x y; ext i <;> simp [arch]; rfl
     map_smul' := by intro a x; ext i : 1; apply Prod.ext <;> simp [arch, Complex.real_smul]; apply Complex.ext <;> simp }
 
 private lemma arch_real' (d : ℕ) (z : KPArch.Space d) : arch d (real d z) = z := by
@@ -815,7 +815,7 @@ private lemma radialCoefficient_scalarDifferential_eq
   let x := real d (KPCuspCharts.toArch F (c,t))
   let v : Space d := ∑ i : Fin d, coordinateVector d i 2
   have hv (j : Fin d × Fin 3) : v j = if j.2 = 2 then 1 else 0 := by
-    simp only [v, map_sum, coordinateVector, WithLp.ofLp_toLp]
+    simp only [v, coordinateVector]
     by_cases h : j.2 = 2
     · simp [Prod.ext_iff, h, eq_comm]
     · simp [Prod.ext_iff, h]

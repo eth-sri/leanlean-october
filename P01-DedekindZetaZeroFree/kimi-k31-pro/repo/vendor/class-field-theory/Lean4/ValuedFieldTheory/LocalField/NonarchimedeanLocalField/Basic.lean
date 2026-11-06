@@ -141,42 +141,15 @@ theorem v_zpow (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
         (-(((n + 1 : Nat) : Int))) * v K (Additive.ofMul x)
       ring
 
-/-- The valuation of a unit times an integral power is the valuation of the unit plus the scaled
-valuation of the powered factor. -/
-theorem v_mul_zpow (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] (x ϖ : Kˣ) (n : Int) :
-    v K (Additive.ofMul (x * ϖ ^ n)) =
-      v K (Additive.ofMul x) + n * v K (Additive.ofMul ϖ) := by
-  rw [v_mul, v_zpow]
 
-/-- An integral power of a normalized uniformizer has valuation equal to its exponent. -/
-theorem v_zpow_of_uniformizer (K : Type u) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] (ϖ : Kˣ)
-    (hϖ : v K (Additive.ofMul ϖ) = 1) (n : Int) :
-    v K (Additive.ofMul (ϖ ^ n)) = n := by
-  rw [v_zpow, hϖ, mul_one]
 
-/-- Multiplying by the `n`-th power of a normalized uniformizer shifts valuation by `n`. -/
-theorem v_mul_zpow_of_uniformizer (K : Type u) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] (x ϖ : Kˣ)
-    (hϖ : v K (Additive.ofMul ϖ) = 1) (n : Int) :
-    v K (Additive.ofMul (x * ϖ ^ n)) = v K (Additive.ofMul x) + n := by
-  rw [v_mul_zpow, hϖ, mul_one]
 
-/-- A quotient has valuation zero exactly when its numerator and denominator have equal valuation.
-A quotient has valuation zero exactly when its numerator and denominator have equal valuation. -/
-theorem v_div_eq_zero_iff (K : Type u) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] (x y : Kˣ) :
-    v K (Additive.ofMul (x / y)) = 0 ↔
-      v K (Additive.ofMul x) = v K (Additive.ofMul y) := by
-  rw [v_div, sub_eq_zero]
 
-/-- Two field units have equal valuation exactly when their quotient has valuation zero. -/
-theorem v_eq_iff_v_div_eq_zero (K : Type u) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] (x y : Kˣ) :
-    v K (Additive.ofMul x) = v K (Additive.ofMul y) ↔
-      v K (Additive.ofMul (x / y)) = 0 :=
-  (v_div_eq_zero_iff K x y).symm
+
+
+
+
+
 
 /-- A nonarchimedean local field contains a unit representative of normalized valuation one. -/
 theorem v_uniformiser (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]

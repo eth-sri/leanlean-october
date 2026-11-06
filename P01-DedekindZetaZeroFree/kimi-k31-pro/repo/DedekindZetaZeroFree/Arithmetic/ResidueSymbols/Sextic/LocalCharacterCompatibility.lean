@@ -38,7 +38,7 @@ theorem maskedPower_eq_reduction (C : A.GeneralArithmeticContext σ η hS)
   unfold maskedPower
   rw [dif_neg hn, ← sexticPower_eq_chi_pow]
   by_cases hx : IsUnit x
-  · exact if_pos hx
+  · grind
   · rw [if_neg hx]
     exact (A.sexticResiduePowerChar_nonunit σ (primeIdeal p) a _
       (fun h => hx ((reduction_isUnit C p n hn x).mp h))).symm
@@ -51,7 +51,7 @@ theorem maskedPower_nonunit (C : A.GeneralArithmeticContext σ η hS)
 theorem maskedPower_zero_depth (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (a : ℤ) (x : Residue C p 0) :
     maskedPower C p 0 a x = 1 := by
-  simp [maskedPower]
+  aesop
 
 end DedekindZetaZeroFree.LocalFiniteSumCompatibility
 

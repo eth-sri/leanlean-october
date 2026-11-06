@@ -3,6 +3,7 @@ module
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Representatives.PrimeClassFactorization
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Representatives.PositivePrimeProducts
 public import ClassFieldTheory.Theorems.ConductorsAndRayClassFields.RayClassGroupFinite
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -30,9 +31,9 @@ theorem exists_integral_inverse_rayIdealClass
     have hmem : (ClassFieldTheory.rayClassOfFinitePrime μ v.val v.property) ^ e v ∈
         Submonoid.powers (ClassFieldTheory.rayClassOfFinitePrime μ v.val v.property) := by
       rw [mem_powers_iff_mem_zpowers]
-      exact ⟨e v, rfl⟩
+      norm_num
     obtain ⟨n, hn⟩ := hmem
-    exact ⟨n, hn⟩
+    grind
   choose n hn using key
   obtain ⟨hne, hcop, hcls⟩ := rayPositivePrimeProduct K m hm s n
   refine ⟨∏ v ∈ s, v.val.asIdeal ^ n v, hne, hcop, ?_⟩
@@ -46,7 +47,7 @@ theorem exists_ray_congruence_basepoint
     ∃ b : 𝓞 K, b ∈ a ∧ b - 1 ∈ m := by
   obtain ⟨b, hb, d, hd, hbd⟩ := (Ideal.isCoprime_iff_sup_eq.mpr hcoprime).exists
   refine ⟨b, hb, ?_⟩
-  have h : b - 1 = -d := by rw [← hbd]; ring
+  have h : b - 1 = -d := by grind
   rw [h]
   exact m.neg_mem hd
 

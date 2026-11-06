@@ -16,16 +16,15 @@ theorem fd_ae_unique {G X : Type*} [Group G] [Countable G]
     (s : Set X) (hs : IsFundamentalDomain G s μ) :
     ∀ᵐ x ∂μ, ∃! g : G, g • x ∈ s := by
   have hd : ∀ᵐ x ∂μ, ∀ a b : G, a ≠ b → ¬ (a • x ∈ s ∧ b • x ∈ s) := by
-    apply (ae_all_iff).2
+    apply ae_all_iff.2
     intro a
-    apply (ae_all_iff).2
+    apply ae_all_iff.2
     intro b
     by_cases hab : a = b
     · exact Filter.Eventually.of_forall (by simp [hab])
     · have h := hs.aedisjoint (i := a⁻¹) (j := b⁻¹) (by simpa only [ne_eq, inv_inj] using hab)
       have he : μ ((a⁻¹ • s) ∩ (b⁻¹ • s)) = 0 := h
-      have hz : ∀ᵐ x ∂μ, x ∉ ((a⁻¹ • s) ∩ (b⁻¹ • s)) := by
-        exact ae_iff.mpr (by simpa using he)
+      have hz : ∀ᵐ x ∂μ, x ∉ ((a⁻¹ • s) ∩ (b⁻¹ • s)) := ae_iff.mpr (by simpa using he)
       filter_upwards [hz] with x hx
       intro _
       simpa only [Set.mem_inter_iff, Set.mem_smul_set_iff_inv_smul_mem, inv_inv,
@@ -62,8 +61,7 @@ theorem glue_partial_fd {G X : Type*} [Group G] [Countable G]
     rw [hinv]
   refine IsFundamentalDomain.mk'' (hB.union (hA.diff hE)).nullMeasurableSet ?_ ?_
     (fun g => (measurePreserving_smul g μ).quasiMeasurePreserving)
-  · have hc : ∀ᵐ x ∂μ, x ∈ E → ∃ g : G, g • x ∈ B := by
-      exact (ae_restrict_iff' hE).mp hlocal.ae_covers
+  · have hc : ∀ᵐ x ∂μ, x ∈ E → ∃ g : G, g • x ∈ B := (ae_restrict_iff' hE).mp hlocal.ae_covers
     filter_upwards [hFD.ae_covers, hc] with x hx hc
     by_cases hxE : x ∈ E
     · obtain ⟨g, hg⟩ := hc hxE
@@ -177,7 +175,7 @@ theorem partial_fd_of_local_unique {G X : Type*} [Group G] [Countable G]
     have hp := (measurePreserving_smul g μ).restrict_preimage hE
     rw [hi] at hp
     rw [← Measure.map_apply hp.measurable hs, hp.map_eq]
-  refine IsFundamentalDomain.mk'' (hB.nullMeasurableSet) (heuniq.mono (fun _ h => h.exists))
+  refine IsFundamentalDomain.mk'' hB.nullMeasurableSet (heuniq.mono (fun _ h => h.exists))
     ?_ (fun g => (measurePreserving_smul g (μ.restrict E)).quasiMeasurePreserving)
   intro g hg
   change (μ.restrict E) ((g • B) ∩ B) = 0
@@ -420,8 +418,7 @@ theorem embedded_cusp_end_volume
     rw [KPCuspSiegel.highCusp]
     constructor
     · rintro ⟨z, hz, hez⟩
-      have hz' : z = KPCuspCharts.toArch F p := by
-        exact (MulAction.injective σ) hez
+      have hz' : z = KPCuspCharts.toArch F p := (MulAction.injective σ) hez
       rw [hz'] at hz
       change T < KPCuspLogShape.meanHeight _ (KPCuspCharts.toArch F p) at hz
       rwa [KPCuspCharts.toArch_meanHeight F G.positive_dimension] at hz
@@ -457,7 +454,7 @@ theorem embedded_cusp_end_volume
         rw [hf, hf]
         change KPCuspSiegel.projection F Γ (e r) = KPCuspSiegel.projection F Γ (e p)
         rw [hrg, hpx]
-        exact Quotient.sound (by exact ⟨g, rfl⟩)
+        exact Quotient.sound (⟨g, rfl⟩)
       have hrel := Quotient.exact (he.injective hfr)
       obtain ⟨a, ha⟩ := hrel
       have hae : j a • e p = e r := by
@@ -496,7 +493,7 @@ theorem embedded_cusp_end_volume
       obtain ⟨g, hg⟩ := Set.mem_iUnion.mp hx
       obtain ⟨y, hy, rfl⟩ := hg
       refine ⟨y, hy, ?_⟩
-      exact Quotient.sound (by exact ⟨g⁻¹, inv_smul_smul g y⟩)
+      exact Quotient.sound (⟨g⁻¹, inv_smul_smul g y⟩)
     · exact Set.image_mono hUE
   rw [cusp_end_arch_volume F hF Γ S σ T D G f hf]
   change Measure.map (KPCuspSiegel.projection F Γ)

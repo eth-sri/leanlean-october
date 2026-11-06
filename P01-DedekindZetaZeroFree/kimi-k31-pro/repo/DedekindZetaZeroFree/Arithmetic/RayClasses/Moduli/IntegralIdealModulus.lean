@@ -92,7 +92,7 @@ theorem integralUnit_mem_primeTo_iff
     (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) :
     integralUnit F I hI ∈ ClassFieldTheory.rayClassPrimeToIdeals
       (narrowIdealModulus F 𝔪 h𝔪) ↔ I ⊔ 𝔪 = ⊤ := by
-  simp only [ClassFieldTheory.rayClassPrimeToIdeals, Subgroup.mem_mk, Set.mem_setOf_eq]
+  simp only [ClassFieldTheory.rayClassPrimeToIdeals, Subgroup.mem_mk]
   constructor
   · intro h
     by_contra hne

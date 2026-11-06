@@ -545,15 +545,7 @@ private theorem exists_valueGroup_generators_scaled_by_ramificationIdx
     exponentialValueSubgroup_eq_zmultiples w hwvalues hPival,
     hscale⟩
 
-/-- Exact extension embeds the base value group in the target value group. -/
-theorem exponentialValueSubgroup_le_of_extends
-    {K L : Type*} [Field K] [Field L] [Algebra K L]
-    (v : LubinTate.Valuations.ExponentialValuation K) (w : LubinTate.Valuations.ExponentialValuation L)
-    (hExt : ∀ a : K, w (algebraMap K L a) = v a) :
-    exponentialValueSubgroup v ≤ exponentialValueSubgroup w := by
-  rintro r ⟨a, ha, hval⟩
-  refine ⟨algebraMap K L a, (map_ne_zero (algebraMap K L)).mpr ha, ?_⟩
-  rw [hExt, hval]
+
 
 /-- The actual quotient `w(Lˣ) / v(Kˣ)` of value groups.  The `comap`
 is the base subgroup viewed inside the target subgroup. -/
@@ -689,63 +681,7 @@ def exponentialResidueDegree
   exact Module.finrank (IsLocalRing.ResidueField V)
     (IsLocalRing.ResidueField W)
 
-/-- The residue finrank is exactly mathlib's local inertia degree. -/
-theorem exponentialResidueDegree_eq_ideal_inertiaDeg
-    {K L : Type*} [Field K] [Field L] [Algebra K L]
-    (v : LubinTate.Valuations.ExponentialValuation K) (w : LubinTate.Valuations.ExponentialValuation L)
-    (hExt : ∀ a : K, w (algebraMap K L a) = v a) :
-    let V := LubinTate.Valuations.exponentialValuationSubring v
-    let W := LubinTate.Valuations.exponentialValuationSubring w
-    let i := exponentialValuationRingMap v w hExt
-    letI : IsLocalHom i :=
-      exponentialValuationRingMap_isLocalHom v w hExt
-    letI : Algebra V W := i.toAlgebra
-    exponentialResidueDegree v w hExt =
-      (IsLocalRing.maximalIdeal W).inertiaDeg V := by
-  let V := LubinTate.Valuations.exponentialValuationSubring v
-  let W := LubinTate.Valuations.exponentialValuationSubring w
-  let i := exponentialValuationRingMap v w hExt
-  let : IsLocalHom i :=
-    exponentialValuationRingMap_isLocalHom v w hExt
-  let : Algebra V W := i.toAlgebra
-  let Amap : Algebra (IsLocalRing.ResidueField V)
-      (IsLocalRing.ResidueField W) :=
-    (IsLocalRing.ResidueField.map i).toAlgebra
-  let : Algebra (IsLocalRing.ResidueField V)
-      (IsLocalRing.ResidueField W) := Amap
-  let : (IsLocalRing.maximalIdeal W).LiesOver
-      (IsLocalRing.maximalIdeal V) :=
-    ⟨(ValuationTheory.DiscreteValuationField.ResidueField.comap_maximalIdeal_eq i).symm⟩
-  change Module.finrank (IsLocalRing.ResidueField V)
-      (IsLocalRing.ResidueField W) =
-    (IsLocalRing.maximalIdeal W).inertiaDeg V
-  let Astd : Algebra (IsLocalRing.ResidueField V)
-      (IsLocalRing.ResidueField W) :=
-    Ideal.Quotient.algebraOfLiesOver
-      (IsLocalRing.maximalIdeal W) (IsLocalRing.maximalIdeal V)
-  have hmap :
-      @algebraMap (IsLocalRing.ResidueField V)
-          (IsLocalRing.ResidueField W) _ _ Amap =
-        @algebraMap (IsLocalRing.ResidueField V)
-          (IsLocalRing.ResidueField W) _ _ Astd := by
-    ext x
-    obtain ⟨a, rfl⟩ := IsLocalRing.residue_surjective x
-    rfl
-  have hAlg : Amap = Astd := by
-    apply Algebra.algebra_ext
-    intro r
-    exact DFunLike.congr_fun hmap r
-  have hfin :
-      @Module.finrank (IsLocalRing.ResidueField V)
-          (IsLocalRing.ResidueField W) _ _
-          (@Algebra.toModule _ _ _ _ Amap) =
-        @Module.finrank (IsLocalRing.ResidueField V)
-          (IsLocalRing.ResidueField W) _ _
-          (@Algebra.toModule _ _ _ _ Astd) := by
-    rw [hAlg]
-  have h := (Ideal.inertiaDeg_eq_of_isMaximal
-    (IsLocalRing.maximalIdeal V) (IsLocalRing.maximalIdeal W)).symm
-  exact h
+
 
 /-- The canonical multiplicative presentation `exp (-v(x))` of an exponential
 exponential valuation. -/
@@ -916,29 +852,7 @@ theorem associatedAbsoluteValue_extends
       exact WithTop.coe_eq_coe.mp hws
     rw [havr, haws, hrs]
 
-/-- A literal equality with the integral-closure subring produces the
-corresponding `IsIntegralClosure` instance. -/
-private theorem isIntegralClosure_of_subring_eq
-    {K L : Type*} [Field K] [Field L] [Algebra K L]
-    (V : Subring K) (W : Subring L)
-    [Algebra V L]
-    (h : W = (integralClosure V L).toSubring) :
-    IsIntegralClosure W V L := by
-  refine
-    { algebraMap_injective := by
-        exact W.subtype_injective
-      isIntegral_iff := ?_ }
-  intro x
-  constructor
-  · intro hx
-    have hxW : x ∈ W := by
-      rw [h]
-      exact hx
-    exact ⟨⟨x, hxW⟩, rfl⟩
-  · rintro ⟨y, rfl⟩
-    change (y : L) ∈ (integralClosure V L).toSubring
-    rw [← h]
-    exact y.property
+
 
 /-- the finite norm-formula theorem applied directly to the exponential presentation: a chosen
 extension of a Henselian valuation has valuation ring equal to the actual
@@ -1456,130 +1370,7 @@ theorem ramificationInvariants_fundamental_inequality
   exact ramificationInvariants_fundamental_inequality_of_representatives
     v w hExt pi hpi0 hpiBij omega beta homega
 
-/-- the fundamental inequality, equality case.  For a finite separable extension of a
-Henselian discretely valued field, the chosen extension valuation ring is
-first identified with the actual integral closure by the norm-formula and
-unique-extension theorems.
-Its DVR structure and module-finiteness are then derived, so the local
-Dedekind identity gives `[L : K] = e f` for the actual value-group and residue
-invariants.  No completeness hypothesis is used. -/
-theorem ramificationInvariants_fundamental_identity_of_discrete_of_separable
-    {K L : Type*} [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [Algebra.IsSeparable K L]
-    (v : LubinTate.Valuations.ExponentialValuation K) (w : LubinTate.Valuations.ExponentialValuation L)
-    (hExt : ∀ a : K, w (algebraMap K L a) = v a)
-    (hvdisc : LubinTate.Valuations.DiscreteExponentialValuation v)
-    (hhens : ValuationTheory.DiscreteValuationField.HenselianValuationByFactorization
-      (LubinTate.Valuations.exponentialValuationSubringAsValuationSubring v).valuation) :
-    Module.finrank K L =
-      exponentialRamificationIndex v w * exponentialResidueDegree v w hExt := by
-  let : Algebra.IsAlgebraic K L := Algebra.IsAlgebraic.of_finite K L
-  let Vv := LubinTate.Valuations.exponentialValuationSubringAsValuationSubring v
-  let Wv := LubinTate.Valuations.exponentialValuationSubringAsValuationSubring w
-  let V := LubinTate.Valuations.exponentialValuationSubring v
-  let W := LubinTate.Valuations.exponentialValuationSubring w
-  let i := exponentialValuationRingMap v w hExt
-  let : IsLocalHom i :=
-    exponentialValuationRingMap_isLocalHom v w hExt
-  let algVW : Algebra V W := i.toAlgebra
-  let : Algebra V W := algVW
-  let : SMul V W := algVW.toSMul
-  let algVL : Algebra V L := ((algebraMap K L).comp V.subtype).toAlgebra
-  let : Algebra V L := algVL
-  let : SMul V L := algVL.toSMul
-  let : SMul W L := (inferInstance : Algebra W L).toSMul
-  let : SMul V K := (inferInstance : Algebra V K).toSMul
-  let : IsScalarTower V W L := IsScalarTower.of_algebraMap_eq
-    (R := V) (S := W) (A := L) (by
-      intro x
-      rfl)
-  let : IsScalarTower V K L := IsScalarTower.of_algebraMap_eq
-    (R := V) (S := K) (A := L) (by
-      intro x
-      rfl)
-  have hclosure : Wv.toSubring = (integralClosure Vv L).toSubring :=
-    exponentialValuationSubring_eq_integralClosure_of_henselian
-      v w hExt hhens
-  have hclosureSubring : W = (integralClosure V L).toSubring := by
-    change W = (integralClosure V L).toSubring at hclosure
-    exact hclosure
-  let : IsIntegralClosure W V L :=
-    isIntegralClosure_of_subring_eq V W hclosureSubring
-  let : IsDiscreteValuationRing V :=
-    LubinTate.Valuations.discreteExponentialValuationSubring_isDiscreteValuationRing hvdisc
-  let : IsFractionRing V K := by
-    change IsFractionRing Vv K
-    have hfr : IsFractionRing Vv.valuation.valuationSubring K :=
-      (Valuation.valuationSubring.integers
-        (v := Vv.valuation)).isFractionRing
-    rw [Vv.valuationSubring_valuation] at hfr
-    exact hfr
-  let : IsFractionRing W L := by
-    change IsFractionRing Wv L
-    have hfr : IsFractionRing Wv.valuation.valuationSubring L :=
-      (Valuation.valuationSubring.integers
-        (v := Wv.valuation)).isFractionRing
-    rw [Wv.valuationSubring_valuation] at hfr
-    exact hfr
-  let : IsDedekindDomain V := inferInstance
-  let : Module.Finite V W := IsIntegralClosure.finite V K L W
-  let : IsDedekindDomain W :=
-    IsIntegralClosure.isDedekindDomain V K L W
-  have hWnotField : ¬ IsField W := by
-    intro hfield
-    let : Field W := hfield.toField
-    obtain ⟨s, hs, _hvalues, pi, hpival⟩ := hvdisc
-    have hpi0 : pi ≠ 0 :=
-      LubinTate.Valuations.discretePrimeElement_ne_zero_of_value v hpival
-    let piV : V :=
-      LubinTate.Valuations.discretePrimeElementInValuationSubring v hs.le hpival
-    have hpiV0 : piV ≠ 0 := by
-      intro hzero
-      exact hpi0 (congrArg Subtype.val hzero)
-    have hi : Function.Injective i := by
-      intro a b hab
-      apply Subtype.ext
-      exact (algebraMap K L).injective (congrArg Subtype.val hab)
-    have hiPi0 : i piV ≠ 0 := by
-      simpa using hi.ne hpiV0
-    have hiPiUnit : IsUnit (i piV) := isUnit_iff_ne_zero.mpr hiPi0
-    have hzero :=
-      LubinTate.Valuations.exponentialValuation_eq_zero_of_isUnit w hiPiUnit
-    have hvalue : w ((((i piV : W)) : L)) = (s : WithTop ℝ) := by
-      change w (algebraMap K L pi) = (s : WithTop ℝ)
-      rw [hExt, hpival]
-    rw [hvalue] at hzero
-    have hs0 : s = 0 :=
-      WithTop.coe_eq_coe.mp (by simpa using hzero)
-    exact (ne_of_gt hs) hs0
-  let : IsNoetherianRing W := inferInstance
-  let : IsDiscreteValuationRing W :=
-    ((IsDiscreteValuationRing.TFAE W hWnotField).out 3 1).mp
-      (show IsDedekindDomain W from inferInstance)
-  have hideal :
-      Ideal.ramificationIdx'
-          (IsLocalRing.maximalIdeal V) (IsLocalRing.maximalIdeal W) *
-        (IsLocalRing.maximalIdeal W).inertiaDeg V = Module.finrank K L := by
-    classical
-    have := FaithfulSMul.of_field_isFractionRing V W K L
-    have hp := IsDiscreteValuationRing.not_a_field V
-    have hprimes := IsLocalRing.primesOver_eq (A := W) hp
-    have hq (q : (IsLocalRing.maximalIdeal V).primesOver W) :
-        (q : Ideal W) = IsLocalRing.maximalIdeal W :=
-      Set.mem_singleton_iff.mp (hprimes ▸ q.property)
-    let : Unique ((IsLocalRing.maximalIdeal V).primesOver W) :=
-      { default :=
-          ⟨IsLocalRing.maximalIdeal W, hprimes ▸ Set.mem_singleton _⟩
-        uniq := fun q =>
-          Subtype.ext (Set.mem_singleton_iff.mp (hprimes ▸ q.property)) }
-    rw [Ideal.ramificationIdx'_eq_ramificationIdx _ _ hp,
-      IsFractionRing.finrank_eq V K W L]
-    simpa only [show algebraMap V W = i from rfl, Fintype.sum_unique, hq] using
-      (Ideal.sum_ramification_inertia_eq_finrank
-        (IsLocalRing.maximalIdeal V) W)
-  rw [exponentialRamificationIndex_eq_ideal_ramificationIdx v w hExt hvdisc,
-    exponentialResidueDegree_eq_ideal_inertiaDeg v w hExt]
-  exact hideal.symm
+
 
 end Valuations
 end AlgebraicNumberTheory

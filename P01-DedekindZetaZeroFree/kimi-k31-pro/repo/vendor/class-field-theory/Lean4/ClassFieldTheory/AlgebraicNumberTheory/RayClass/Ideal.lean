@@ -283,15 +283,7 @@ theorem primeToIdealMap_ker (m : Modulus K) :
     intro v
     exact localHigherUnitGroup_le_integralUnits v (m.finitePart v) (ha.2 v)
 
-/-- The quotient of ideles prime to a modulus by the congruence subgroup,
-identified with fractional ideals prime to the modulus. -/
-def quotientCongruenceEquivPrimeToIdeals (m : Modulus K) :
-    idelePrimeToModulusSubgroup m ⧸
-        congruenceSubgroupInPrimeTo m ≃*
-      primeToModulusIdeals m := by
-  rw [← primeToIdealMap_ker m]
-  exact QuotientGroup.quotientKerEquivOfSurjective
-    (primeToIdealMap m) (primeToIdealMap_surjective m)
+
 
 /-- Principal ideles satisfying the modulus conditions, considered inside
 `I_K^(m)`. -/

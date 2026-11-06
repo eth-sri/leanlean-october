@@ -57,7 +57,7 @@ theorem finiteSet_nonempty (A : SArithmeticData F) : A.Sf.Nonempty := by
   have h2 : (2 : 𝓞 F) ∈ v.asIdeal := by
     change (2 : 𝓞 F) ∈ P
     simpa using (Ideal.mem_of_liesOver P p (2 : ℤ)).mp
-      (Ideal.subset_span (by simp [p]))
+      (Ideal.subset_span (by simp))
   refine ⟨v, A.above_six v ?_⟩
   convert P.mul_mem_left (3 : 𝓞 F) h2 using 1 <;> norm_num [v]
 

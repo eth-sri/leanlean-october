@@ -15,7 +15,7 @@ namespace DedekindZetaZeroFree.TraceBaseChange
 variable (F : Type) [Field F] [NumberField F]
 
  def placeAboveRaw (v : HeightOneSpectrum (𝓞 F)) : PlacesAbove F (PlaceTraceAdapter.prime F v) :=
- ⟨v, by simp [PlacesAbove, PlaceTraceAdapter.prime, PlaceTraceAdapter.rationalPlace]⟩
+ ⟨v, by simp [PlaceTraceAdapter.prime, PlaceTraceAdapter.rationalPlace]⟩
 theorem fieldScalarMap_eq_padicMap (v : HeightOneSpectrum (𝓞 F)) : fieldScalarMap F (PlaceTraceAdapter.prime F v) (placeAboveRaw F v) = PlaceTraceAdapter.padicMap F v := by
   apply DFunLike.coe_injective
   apply DenseRange.equalizer (Padic.denseRange_ratCast (PlaceTraceAdapter.prime F v))

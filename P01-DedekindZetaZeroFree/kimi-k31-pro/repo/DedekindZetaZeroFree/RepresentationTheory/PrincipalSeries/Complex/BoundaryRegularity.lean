@@ -73,7 +73,7 @@ theorem boundary_product_bound (s : ℝ) (f : PrincipalSeries s) (g : PrincipalS
       simp only [inv_inv, norm_mul, Complex.norm_real, Real.norm_eq_abs,
         abs_of_nonneg (Real.rpow_nonneg (norm_nonneg _) _), norm_inv,
         Real.inv_rpow (norm_nonneg z), Real.rpow_neg (norm_nonneg z),
-        inv_inv, Real.rpow_natCast] at he
+        inv_inv] at he
       have hfour : ‖star (openCoordinate f z) * openCoordinate g z‖ * ‖z‖^4 ≤ p*q := by
         simp only [norm_mul] at hi ⊢
         rw [he] at hi

@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.Adeles.Quotients.Additive.CompactOpenBasis
 public import DedekindZetaZeroFree.Adeles.Quotients.CompactOpenLevelTori
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -28,15 +29,12 @@ theorem nonzero_survives_finiteLevel
   let U := f ⁻¹' ({q}ᶜ)
   have hU : U ∈ nhds (0 : FiniteAdeleRing (𝓞 F) F) := by
     apply (isClosed_singleton.isOpen_compl.preimage hf).mem_nhds
-    change f 0 ≠ q
-    simpa using hq.symm
+    measurability
   obtain ⟨K, hKc, hKo, hKU⟩ := finiteAdeles_compactOpen_basis_zero F U hU
   refine ⟨K, hKc, hKo, ?_⟩
   intro hzero
   have hmem : q ∈ finiteLevelImage K := (QuotientAddGroup.eq_zero_iff q).mp hzero
   obtain ⟨a, ha, heq⟩ := hmem
-  have hne := hKU ha
-  change f a ≠ q at hne
-  exact hne heq
+  measurability
 
 end DedekindZetaZeroFree.AdelicSeparation

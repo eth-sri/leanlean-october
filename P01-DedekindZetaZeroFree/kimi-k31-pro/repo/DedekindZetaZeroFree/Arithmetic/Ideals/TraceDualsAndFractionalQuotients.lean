@@ -1,6 +1,7 @@
 module
 
 public import DedekindZetaZeroFree.Arithmetic.Ideals.TraceDualIdeal
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -38,19 +39,19 @@ def fractionalIdealQuotientMk
 @[simp] theorem fractionalIdealQuotientMk_zero
     (I J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) :
     fractionalIdealQuotientMk I J 0 = 0 := by
-  simp [fractionalIdealQuotientMk]
+  norm_num
 
 @[simp] theorem fractionalIdealQuotientMk_add
     (I J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) (x y : I.coeToSubmodule) :
     fractionalIdealQuotientMk I J (x + y) =
       fractionalIdealQuotientMk I J x + fractionalIdealQuotientMk I J y := by
-  simp [fractionalIdealQuotientMk]
+  norm_num
 
 @[simp] theorem fractionalIdealQuotientMk_smul
     (I J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)
     (a : NumberField.RingOfIntegers F) (x : I.coeToSubmodule) :
     fractionalIdealQuotientMk I J (a • x) = a • fractionalIdealQuotientMk I J x := by
-  simp [fractionalIdealQuotientMk]
+  norm_num
 
 theorem fractionalIdealQuotientMk_surjective
     (I J : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) :

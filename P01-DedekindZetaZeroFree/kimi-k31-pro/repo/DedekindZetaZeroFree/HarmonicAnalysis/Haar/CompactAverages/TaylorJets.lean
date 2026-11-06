@@ -174,7 +174,7 @@ private theorem matrixClass_continuousAt (M : Mat F) (hM : M ∈ matrixDomain F)
   apply (Units.isOpenEmbedding_val (R := Matrix (Fin 2) (Fin 2) ℂ)).isEmbedding.isInducing.continuousAt_iff.mpr
   apply ContinuousAt.congr_of_eventuallyEq (continuous_apply w).continuousAt
   filter_upwards [(matrixDomain_open F).mem_nhds hM] with N hN
-  simp [matrixClass, hN w, Matrix.GeneralLinearGroup.mkOfDetNeZero, Function.comp_def]
+  simp [hN w, Matrix.GeneralLinearGroup.mkOfDetNeZero]
 
  def translatedMatrix (p : (Mat F × Mat F) × Y F) : Mat F := fun w =>
   p.1.1 w * PGLComplex.affineMatrix (p.2 w) * p.1.2 w

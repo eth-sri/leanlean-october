@@ -47,7 +47,7 @@ def scaledIntegralRows (A : SArithmeticData F) (T : ℝ) (K : Set A.G) : Set A.R
 
 private theorem localPoint_mul (A : SArithmeticData F) (x y : A.G) :
     asLocalPoint A (x * y) = asLocalPoint A x * asLocalPoint A y := by
-  ext <;> rfl
+  aesop
 
 private theorem localPoint_continuous (A : SArithmeticData F) :
     Continuous (asLocalPoint A) := by
@@ -91,8 +91,7 @@ theorem common_finite_row_support (A : SArithmeticData F)
   let C : Set A.G := (asLocalPoint A) ⁻¹' tsupport W0
   have hCimage : asLocalPoint A '' C = tsupport W0 := by
     apply Set.Subset.antisymm
-    · rintro x ⟨y, hy, rfl⟩
-      exact hy
+    · grind
     · intro x hx
       let u := (hUnits hx).unit
       refine ⟨(ProbeSheet.localUnits A).symm u, ?_, ?_⟩
@@ -102,7 +101,7 @@ theorem common_finite_row_support (A : SArithmeticData F)
             (SLocalProduct F A.Sf)ˣ) : SLocalProduct F A.Sf) = x
           rw [MulEquiv.apply_symm_apply]
           exact (hUnits hx).unit_spec
-        exact hu ▸ hx
+        grind
       · change (((ProbeSheet.localUnits A) ((ProbeSheet.localUnits A).symm u) :
           (SLocalProduct F A.Sf)ˣ) : SLocalProduct F A.Sf) = x
         rw [MulEquiv.apply_symm_apply]
@@ -113,8 +112,7 @@ theorem common_finite_row_support (A : SArithmeticData F)
     (p.1.val : A.G) * radialSection A p.2.1.val * p.2.2.val)
   have hK : IsCompact K := by
     have hc : Continuous (fun p : (closure Ω) × L × C =>
-        (p.1.val : A.G) * radialSection A p.2.1.val * p.2.2.val) := by
-      exact ((continuous_subtype_val.comp (continuous_subtype_val.comp continuous_fst)).mul
+        (p.1.val : A.G) * radialSection A p.2.1.val * p.2.2.val) := ((continuous_subtype_val.comp (continuous_subtype_val.comp continuous_fst)).mul
         ((continuousOn_iff_continuous_restrict.mp (radial_continuousOn A L hLpos)).comp
           (continuous_fst.comp continuous_snd))).mul
         (continuous_subtype_val.comp (continuous_snd.comp continuous_snd))
@@ -152,9 +150,7 @@ theorem common_finite_row_support (A : SArithmeticData F)
     rw [MulEquiv.apply_symm_apply]
     exact (hUnits hx).unit_spec
   have hcC : c ∈ C := by
-    change asLocalPoint A c ∈ tsupport W0
-    rw [hc]
-    exact hx
+    grind
   refine ⟨(t : A.G) * radialSection A r * c, ?_, ?_⟩
   · exact ⟨(⟨t, subset_closure ht⟩, ⟨r, hr⟩, ⟨c, hcC⟩), rfl⟩
   · have hscale : radialSection A (X * Y) * radialSection A r =
@@ -162,23 +158,17 @@ theorem common_finite_row_support (A : SArithmeticData F)
       simp only [radialSection, dif_pos (mul_pos hX hY), dif_pos hrpos,
         dif_pos (mul_pos (A.exteriorNorm_pos s) hX)]
       rw [← A.radialSection_mul]
-      congr 1
-      dsimp [r]
-      field_simp
+      grind
     have he : radialSection A (X * Y) * ((t : A.G) * radialSection A r * c) =
         ((t : A.G) * radialSection A (A.exteriorNorm s * X)) * c := by
-      calc
-        _ = (t : A.G) * (radialSection A (X * Y) * radialSection A r) * c := by ac_rfl
-        _ = _ := by rw [hscale]
+      grind
     rw [he, localPoint_mul, hc]
     dsimp [x]
     have hinv : asLocalPoint A ((t : A.G) * radialSection A (A.exteriorNorm s * X)) *
         asLocalPoint A (((t : A.G) * radialSection A (A.exteriorNorm s * X))⁻¹) = 1 := by
       rw [← localPoint_mul, mul_inv_cancel]
       rfl
-    calc
-      _ = sLocalDiagonal F A.Sf (m : F) * 1 := (mul_one _).symm
-      _ = _ := by rw [← hinv]; ac_rfl
+    grind
 
 theorem original_zero_row (A : SArithmeticData F)
     (W0 : SLocalProduct F A.Sf → ℂ) (hUnits : tsupport W0 ⊆ {x | IsUnit x})
@@ -190,9 +180,7 @@ theorem original_zero_row (A : SArithmeticData F)
     have hu := hUnits (subset_tsupport W0 (show (0 : SLocalProduct F A.Sf) ∈
       Function.support W0 from h))
     exact not_isUnit_zero hu
-  have hd : sLocalDiagonal F A.Sf (0 : F) = 0 := by
-    ext <;> simp [sLocalDiagonal]
-  rw [hd, zero_mul, hz]
+  grind
 
 set_option maxHeartbeats 800000
 
@@ -321,10 +309,8 @@ theorem principal_inserted_absolutely_convergent (A : SArithmeticData F)
         P.W0 (sLocalDiagonal F A.Sf (m : F) *
           asLocalPoint A (((t : A.G) * radialSection A (A.exteriorNorm s * X))⁻¹)) = 0 := by
       rcases h with h | h
-      · exact Or.inl h
-      · by_cases hs : P.W1 (A.exteriorNorm s / Y) = 0
-        · exact Or.inl hs
-        · exact Or.inr (by by_contra hn; exact h (hsupport t (by simp) s m hs hn))
+      · grind
+      · grind
     rcases hw with hw | hw <;>
       simp only [f, expandedProbeSummand, hw, Complex.ofReal_zero, mul_zero,
         zero_mul, dite_eq_ite, ite_self, norm_zero]
@@ -385,7 +371,7 @@ theorem principal_integrated_absolutely_convergent (A : SArithmeticData F)
       · exact Or.inl (not_ne_iff.mp (fun hn => h
           ((exterior_weight_finite A P.W1 Y hY).mem_toFinset.mpr hn)))
       · by_cases hs : P.W1 (A.exteriorNorm s / Y) = 0
-        · exact Or.inl hs
+        · grind
         · apply Or.inr
           by_contra hn
           exact h (hM.mem_toFinset.mpr (hsupp t ht s m hs hn))
@@ -417,13 +403,12 @@ theorem principal_integrated_absolutely_convergent (A : SArithmeticData F)
             simp only [expandedProbeSummand, dif_neg hm, norm_mul]
             simp only [C, norm_mul]
             gcongr
-            exact hbound _
+            grind
           _ = _ := by simp
       calc
         (∑' i, f s m i) ≤ ∑' i : ExteriorSquarefreeIdeal A.cS × A.Exterior, ENNReal.ofReal
             (C * ‖ThetaReflectionData.forwardSummand A P.coefficients ⟨m, hm⟩ Z i.1 i.2‖) *
-              P.domain.measure P.domain.domain := by
-                exact ENNReal.tsum_le_tsum (f := fun i => f s m i) hd
+              P.domain.measure P.domain.domain := ENNReal.tsum_le_tsum (f := fun i => f s m i) hd
         _ = (∑' i : ExteriorSquarefreeIdeal A.cS × A.Exterior, ENNReal.ofReal
             (C * ‖ThetaReflectionData.forwardSummand A P.coefficients ⟨m, hm⟩ Z i.1 i.2‖)) *
               P.domain.measure P.domain.domain := ENNReal.tsum_mul_right
@@ -520,8 +505,7 @@ theorem principal_expansion_valid (A : SArithmeticData F)
     · simp only [f, expandedProbeSummand, dif_neg hm, rowB,
         ThetaReflectionData.forwardB]
       simp only [← tsum_mul_left]
-      congr 1
-      ring
+      grind
   refine ⟨hi, heq, ?_⟩
   unfold probe
   simp only [heq]

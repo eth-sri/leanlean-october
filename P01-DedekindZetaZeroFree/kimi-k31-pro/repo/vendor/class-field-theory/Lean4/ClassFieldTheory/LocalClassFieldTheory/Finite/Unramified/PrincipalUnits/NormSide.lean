@@ -222,32 +222,7 @@ theorem principalUnitsSuccQuotNormExtensionSideOfIsIntegralClosure_mk
         (principalUnitsNormExtensionSideOfIsIntegralClosure K L n u) :=
   rfl
 
-/-- Actual integral-closure version: on `U_L^n/U_L^(n+1)`, the base-extended
-norm is the product of the induced actual real Galois actions. -/
-theorem principalUnitsSuccQuotNormExtensionSideOfIsIntegralClosure_eq_galoisGroup_prod
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] [LocalFieldTheory.ValuativeExtension K L]
-    (n : Nat) (x : PrincipalUnitsSuccQuot L n) :
-    principalUnitsSuccQuotNormExtensionSideOfIsIntegralClosure K L n x =
-      Finset.univ.prod (fun σ : Gal(L / K) =>
-        galoisGroupPrincipalUnitsSuccQuotMapEquivOfIsIntegralClosure K L n σ x) := by
-  refine QuotientGroup.induction_on x ?_
-  intro u
-  rw [principalUnitsSuccQuotNormExtensionSideOfIsIntegralClosure_mk,
-    principalUnitsNormExtensionSideOfIsIntegralClosure_eq_galoisGroup_prod]
-  change (principalUnitsSuccQuotMk L n)
-      (Finset.univ.prod (fun σ : Gal(L / K) =>
-        galoisGroupPrincipalUnitsMapEquivOfIsIntegralClosure K L n σ u)) =
-    Finset.univ.prod (fun σ : Gal(L / K) =>
-      (principalUnitsSuccQuotMk L n)
-        (galoisGroupPrincipalUnitsMapEquivOfIsIntegralClosure K L n σ u))
-  exact map_prod (principalUnitsSuccQuotMk L n)
-    (fun σ : Gal(L / K) =>
-      galoisGroupPrincipalUnitsMapEquivOfIsIntegralClosure K L n σ u) Finset.univ
+
 
 end LocalClassFieldTheory
 

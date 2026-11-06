@@ -140,13 +140,13 @@ private lemma reflected_unit (C : Context Q) (hK : 1 ≤ C.K) :
       rw [hk, ← Ideal.one_eq_top, UniqueFactorizationMonoid.normalizedFactors_one]
       simp
     simp [ReflectedSigma4.unitRows, hsc, hK,
-      show Squarefree (⊤ : Ideal (𝓞 F)) from by simpa only [← Ideal.one_eq_top] using squarefree_one]
+      ]
   have hsf : ∀ a ∈ squarefreeBadPool c, a ≠ ⊥ ∧ Squarefree a := by
     intro a ha
     exact ((mem_squarefreeBadPool C.D.original_ne_bot).mp ha).imp_right (fun h => h.1)
   ext a
   simp only [Context.reflectedRows, Context.reflectedRowIndices, Context.reflectedCoreRows,
-    Bool.true_eq, ↓reduceIte, hunit, Finset.mem_image, Finset.mem_filter, Finset.mem_product,
+    ↓reduceIte, hunit, Finset.mem_image, Finset.mem_filter, Finset.mem_product,
     Finset.mem_singleton]
   constructor
   · rintro ⟨⟨t,r⟩, ⟨⟨ht, hr⟩, hrest⟩, he⟩

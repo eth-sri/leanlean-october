@@ -109,7 +109,7 @@ private lemma char_sum (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
             (c (((ζ : ℂˣ) : ℂ))*u / (1-c (((ζ : ℂˣ) : ℂ))*u)^2) else 0 := by
     by_cases he : ξ = 1
     · subst ξ
-      simp only [betaFactor, if_pos rfl, hcond, pow_zero, ↓reduceIte]
+      simp only [betaFactor, hcond, pow_zero, ↓reduceIte]
       rw [unr _ _ (mul_ne_zero (hz0 ζ) hu) (hz1 ζ)]
       ring
     · simp [betaFactor, he]

@@ -100,7 +100,7 @@ theorem tensor_slots_recovery (s : RestrictedTensorSimple.Level D.bad)
       funext p
       by_cases hp : p = ⟨Sum.inr q,hqmem⟩
       · subst p; simp
-      · simp [u,hp,Function.update_of_ne hp]
+      · simp [u,hp]
     rw [he]
     exact tensor_slot_recovery R D T' s u q hqmem hj0 hu _
 end DedekindZetaZeroFree.FiniteWhittakerProjectors

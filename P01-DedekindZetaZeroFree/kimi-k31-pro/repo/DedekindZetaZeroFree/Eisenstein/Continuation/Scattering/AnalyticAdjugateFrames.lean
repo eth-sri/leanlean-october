@@ -74,7 +74,7 @@ theorem scatteringSlotOutput_frame (q : KPFinitePlace F)
   have hzero : A 0 = 1 := by
     ext i j
     simp only [A, htests, LinearEquiv.apply_symm_apply, Matrix.one_apply]
-    simp [Pi.single_apply, eq_comm]
+    simp [Pi.single_apply]
   have hdet : AnalyticOnNhd ℂ (fun z => (A z).det) KPContinuation.spectralDomain := by
     intro z hz
     simp_rw [Matrix.det_apply]

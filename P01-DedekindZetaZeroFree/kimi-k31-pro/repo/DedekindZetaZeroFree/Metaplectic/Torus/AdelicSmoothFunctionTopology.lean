@@ -92,13 +92,13 @@ theorem diagonal_entries_units (A : AdelicMatrixGroup F) (h10 : A 1 0 = 0) (h01 
       (A * Matrix.GeneralLinearGroup.scalar (Fin 2) u) k).1.unit =
       (KPGlobalTorusMatrixCertificates.diagonal_units A h).1.unit * u := by
     apply Units.ext
-    simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.GeneralLinearGroup.coe_scalar,
+    simp [Matrix.mul_apply, Matrix.GeneralLinearGroup.coe_scalar,
       Matrix.scalar, Matrix.diagonal]
   have h1 : (KPGlobalTorusMatrixCertificates.diagonal_units
       (A * Matrix.GeneralLinearGroup.scalar (Fin 2) u) k).2.unit =
       (KPGlobalTorusMatrixCertificates.diagonal_units A h).2.unit * u := by
     apply Units.ext
-    simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.GeneralLinearGroup.coe_scalar,
+    simp [Matrix.mul_apply, Matrix.GeneralLinearGroup.coe_scalar,
       Matrix.scalar, Matrix.diagonal]
   unfold rawRatio
   rw [h0, h1]

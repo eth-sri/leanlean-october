@@ -50,7 +50,7 @@ theorem integrable_log_density_of_radial_section
   have hκ : Integrable κ := by
     exact (integrableOn_const (by simp : volume (Set.Ioc (0 : ℝ) 1) ≠ ⊤)).integrable_indicator measurableSet_Ioc
   have hiκ : (∫ s, κ s) = 1 := by
-    simp [κ, integral_indicator measurableSet_Ioc, integral_const, Real.volume_Ioc]
+    simp [κ, integral_indicator measurableSet_Ioc, integral_const]
   let K : ℝ × G → ℂ := fun p => κ (p.1 - L p.2) * w (a (p.1 - L p.2) * p.2)
   have hK : Integrable K (volume.prod ν) := by
     exact hU.integrable_comp_of_integrable (hT.integrable_comp_of_integrable (hκ.mul_prod hw))

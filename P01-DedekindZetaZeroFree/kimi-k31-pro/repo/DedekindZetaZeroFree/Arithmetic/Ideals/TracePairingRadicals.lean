@@ -57,15 +57,7 @@ theorem traceQuotientPairing_right_radical
   · rintro rfl x
     exact traceQuotientPairing_zero_right I J hI hJ hJI x
 
-theorem traceQuotientPairing_injective :
-    Function.Injective (traceQuotientPairing I J hI hJ hJI) := by
-  apply (traceQuotientPairing I J hI hJ hJI).ker_eq_bot_iff.mp
-  apply bot_unique
-  intro x hx
-  apply (traceQuotientPairing_left_radical I J hI hJ hJI x).mp
-  intro y
-  have h : traceQuotientPairing I J hI hJ hJI x = 0 := hx
-  simpa only [h, AddChar.zero_apply]
+
 
 def traceQuotientPairingTranspose :
     fractionalIdealQuotient

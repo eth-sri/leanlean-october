@@ -35,10 +35,7 @@ theorem rank_le_of_surjective_zero_composition
   have hrn := LinearMap.finrank_range_add_finrank_ker p
   have hfinV : Module.finrank k V ≤ a + b := Module.finrank_le_of_rank_le hV
   have hW : Module.finrank k W ≤ a := by
-    have h1 : Module.finrank k W + Module.finrank k (LinearMap.ker p) = Module.finrank k V := by
-      rw [← hrange]; exact hrn
-    have h2 : b ≤ Module.finrank k (LinearMap.ker p) := hb.trans hker
-    omega
+    grind
   have hcast : (Module.finrank k W : Cardinal) ≤ (a : Cardinal) := by exact_mod_cast hW
   rwa [Module.finrank_eq_rank k W] at hcast
 

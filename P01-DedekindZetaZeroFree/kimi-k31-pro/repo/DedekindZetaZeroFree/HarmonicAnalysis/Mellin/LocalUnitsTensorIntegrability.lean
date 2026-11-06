@@ -41,7 +41,7 @@ private lemma measure_shell (ν : Measure ℝˣ) [ν.IsHaarMeasure]
   have he : (fun x : ℝˣ => u * x) ⁻¹' shell a n = shell a 0 := by
     ext x
     simp only [shell, mem_preimage, mem_setOf_eq, Units.val_mul, u, Units.val_mk0,
-      norm_mul, Real.norm_eq_abs, abs_mul, abs_of_pos (pow_pos ha n), pow_zero, mul_one]
+      Real.norm_eq_abs, abs_mul, abs_of_pos (pow_pos ha n), pow_zero, mul_one]
     constructor
     · intro h
       exact ⟨(le_mul_iff_one_le_right (pow_pos ha n)).mp h.1,
@@ -515,10 +515,10 @@ private theorem complexUnits_density_left (μ : Measure ℂ) [μ.IsAddHaarMeasur
   have hm := setLIntegral_map (μ := μ) (g := fun x : ℂ => (g : ℂ) * x)
     (s := Units.val '' s) (ev.measurableSet_image.mpr hs) hD (by fun_prop)
   rw [hscale, Measure.restrict_smul, lintegral_smul_measure] at hm
-  simp only [ENNReal.smul_def, smul_eq_mul] at hm
+  simp only [smul_eq_mul] at hm
   simp_rw [hmul] at hm
   rw [lintegral_const_mul _ hD] at hm
-  exact (ENNReal.mul_right_inj (by simp) (by simp [norm_pos_iff.mpr g.ne_zero])).mp hm.symm
+  exact (ENNReal.mul_right_inj (by simp) (by simp)).mp hm.symm
 
 theorem complexUnits_density_isHaarMeasure (μ : Measure ℂ) [μ.IsAddHaarMeasure] :
     (Measure.comap Units.val

@@ -313,30 +313,9 @@ omit [IsGalois K L] in
       IsLocalRing.residue A (sigma • x) :=
   rfl
 
-/-- The canonical embedding of the literal residue field of `Z_w` into the
-selected residue field `λ`; it is the usual residue map, expressed through
-the canonical fixed-subring comparison. -/
-def decompositionFieldResidueMapToSelected
-    (A : _root_.ValuationSubring L) :
-    IsLocalRing.ResidueField (decompositionFieldValuationSubring K A) →+*
-      selectedResidueField A :=
-  (algebraMap (decompositionResidueField K A)
-      (selectedResidueField A)).comp
-    (decompositionFieldResidueEquiv (K := K) A).toRingHom
 
-/-- The residue action in the exact sequence fixes the actual residue field of the
-decomposition field.  This is the action-compatibility part of the bridge
-from the intrinsic quotient presentation to the classical `λ/κ`. -/
-theorem decompositionGroupResidueAction_commutes_decompositionFieldResidue
-    (A : _root_.ValuationSubring L)
-    (sigma : decompositionGroup K A)
-    (x : IsLocalRing.ResidueField
-      (decompositionFieldValuationSubring K A)) :
-    decompositionGroupResidueAction (K := K) A sigma
-        (decompositionFieldResidueMapToSelected (K := K) A x) =
-      decompositionFieldResidueMapToSelected (K := K) A x := by
-  exact (decompositionGroupResidueAction (K := K) A sigma).commutes
-    (decompositionFieldResidueEquiv (K := K) A x)
+
+
 
 omit [IsGalois K L] in
 /-- The residue-action homomorphism has the ordinary inertia group as kernel. -/
@@ -419,26 +398,9 @@ instance decompositionResidueExtension_normal
     (decompositionFixedMaximalIdeal K A)
     (IsLocalRing.maximalIdeal A)
 
-omit [IsGalois K L] in
-/-- Exactness at `G_w` in the residue-action exact sequence. -/
-theorem inertiaGroup_mulExact_decompositionGroupResidueAction
-    (A : _root_.ValuationSubring L) :
-    Function.MulExact (inertiaGroup K A).subtype
-      (decompositionGroupResidueAction (K := K) A) := by
-  rw [MonoidHom.mulExact_iff, decompositionGroupResidueAction_ker]
-  exact (Subgroup.range_subtype _).symm
 
-/-- The residue-action exact sequence, arbitrary Galois form:
-`1 → I_w → G_w → Gal(λ/κ) → 1`. -/
-theorem decompositionGroupResidueAction_shortExact
-    (A : _root_.ValuationSubring L) :
-    Function.Injective (inertiaGroup K A).subtype ∧
-      Function.MulExact (inertiaGroup K A).subtype
-        (decompositionGroupResidueAction (K := K) A) ∧
-      Function.Surjective (decompositionGroupResidueAction (K := K) A) := by
-  exact ⟨Subtype.coe_injective,
-    inertiaGroup_mulExact_decompositionGroupResidueAction (K := K) A,
-    decompositionGroupResidueAction_surjective (K := K) A⟩
+
+
 
 /-- Quotient form of the residue-action exact sequence. -/
 def decompositionQuotientEquivResidueGalois

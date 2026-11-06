@@ -426,24 +426,7 @@ theorem absoluteValueDecompositionGroup_eq_bot_of_splitsCompletelyInIntermediate
       (absoluteValueDecompositionGroup K w.1)
       hcore).mp hcard
 
-/-- Fixed-field spelling of the preceding source theorem.  This is the
-literal `L = M^H` formulation used in the normal-closure reduction. -/
-theorem absoluteValueDecompositionGroup_eq_bot_of_splitsCompletelyInFixedField
-    (hvK : vK.IsNontrivial)
-    (H : Subgroup G)
-    (hcore : H.normalCore = ⊥)
-    (hsplit :
-      AbsoluteValueSplitsCompletelyInExtension
-        (E := IntermediateField.fixedField H) vK) :
-    absoluteValueDecompositionGroup K w.1 = ⊥ := by
-  apply
-    absoluteValueDecompositionGroup_eq_bot_of_splitsCompletelyInIntermediate
-      vK w (IntermediateField.fixedField H)
-      hvK
-  · simpa only
-      [IntermediateField.fixingSubgroup_fixedField H]
-      using hcore
-  · exact hsplit
+
 
 end DoubleCosetCount
 
@@ -487,17 +470,7 @@ theorem fixingSubgroup_normalCore_eq_bot_of_normalClosure_eq_top
   rw [← IntermediateField.fixingSubgroup_fixedField N,
     htop, IntermediateField.fixingSubgroup_top]
 
-/-- Class-valued normal-closure form of the preceding theorem. -/
-theorem fixingSubgroup_normalCore_eq_bot_of_isNormalClosure
-    (L : IntermediateField K M)
-    [IsNormalClosure K L M] :
-    L.fixingSubgroup.normalCore = ⊥ := by
-  apply
-    fixingSubgroup_normalCore_eq_bot_of_normalClosure_eq_top
-      L
-  exact
-    (Algebra.IsAlgebraic.isNormalClosure_iff.mp
-      (show IsNormalClosure K L M from inferInstance)).2
+
 
 end NormalClosure
 
@@ -534,24 +507,7 @@ theorem finitePlaceSplitsCompletelyInExtension_iff_doubleCoset_card_eq
       L
       (RayClass.adicAbv_isNontrivial v)
 
-/-- Literal fixed-field form: if `H` is core-free and the finite place
-splits completely in `M^H`, then it splits completely in `M`. -/
-theorem finitePlaceSplitsCompletely_in_ambient_of_fixedField
-    (H : Subgroup G)
-    (hcore : H.normalCore = ⊥)
-    (v : HeightOneSpectrum (𝓞 K))
-    (hsplit :
-      FinitePlaceSplitsCompletelyInExtension
-        (K := K)
-        (E := IntermediateField.fixedField H) v) :
-    FinitePlaceSplitsCompletely
-      (K := K) (L := M) v := by
-  exact
-    absoluteValueDecompositionGroup_eq_bot_of_splitsCompletelyInFixedField
-      (NumberField.HeightOneSpectrum.adicAbv K v)
-      (chosenFinitePlaceExtension (L := M) v)
-      (RayClass.adicAbv_isNontrivial v)
-      H hcore hsplit
+
 
 /-- Source-producing normal-closure reduction for a finite place.
 
@@ -580,52 +536,9 @@ theorem finitePlaceSplitsCompletely_in_normalClosure
         L hclosure)
   exact hsplit
 
-/-- Complete splitting ascends to an ambient field carrying the actual
-`IsNormalClosure` instance. -/
-theorem finitePlaceSplitsCompletely_in_isNormalClosure
-    (L : IntermediateField K M)
-    [IsNormalClosure K L M]
-    (v : HeightOneSpectrum (𝓞 K))
-    (hsplit :
-      FinitePlaceSplitsCompletelyInExtension
-        (K := K) (E := L) v) :
-    FinitePlaceSplitsCompletely
-      (K := K) (L := M) v := by
-  apply
-    finitePlaceSplitsCompletely_in_normalClosure
-      L
-      ((Algebra.IsAlgebraic.isNormalClosure_iff.mp
-        (show IsNormalClosure K L M from
-          inferInstance)).2)
-      v
-  exact hsplit
 
-/-- The same result displayed together with the intermediate
-double-coset equality that drives the proof. -/
-theorem finitePlace_normalClosure_doubleCoset_source
-    (L : IntermediateField K M)
-    (hclosure :
-      IntermediateField.normalClosure K L M = ⊤)
-    (v : HeightOneSpectrum (𝓞 K))
-    (hsplit :
-      FinitePlaceSplitsCompletelyInExtension
-        (K := K) (E := L) v) :
-    (Nat.card
-          (DoubleCoset.Quotient
-            (L.fixingSubgroup : Set G)
-            (finitePlaceDecompositionGroup
-              (K := K) (L := M) v)) =
-        Nat.card
-          (DoubleCoset.Quotient
-            (L.fixingSubgroup : Set G)
-            (⊥ : Subgroup G))) ∧
-      FinitePlaceSplitsCompletely
-        (K := K) (L := M) v := by
-  exact
-    ⟨(finitePlaceSplitsCompletelyInExtension_iff_doubleCoset_card_eq
-        L v).mp hsplit,
-      finitePlaceSplitsCompletely_in_normalClosure
-        L hclosure v hsplit⟩
+
+
 
 end FinitePlaces
 
@@ -885,15 +798,7 @@ variable
     [Field K] [NumberField K]
     [Field L] [NumberField L] [Algebra K L]
 
-/-- The fixing subgroup of the distinguished copy of `L` is
-core-free in the Galois group of its finite normal closure. -/
-theorem finiteNormalClosureOriginalField_fixingSubgroup_normalCore :
-    (finiteNormalClosureOriginalField K L).fixingSubgroup.normalCore =
-      ⊥ := by
-  exact
-    fixingSubgroup_normalCore_eq_bot_of_normalClosure_eq_top
-      (finiteNormalClosureOriginalField K L)
-      (finiteNormalClosureOriginalField_normalClosure_eq_top K L)
+
 
 /-- Complete splitting in the original extension forces complete
 splitting in its finite normal closure. -/

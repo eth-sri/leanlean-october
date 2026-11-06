@@ -2,6 +2,7 @@ module
 
 public import ValuedFieldTheory.LocalField.Unramified.HenselianAlgebraicExtension
 public import ValuedFieldTheory.Valuation.Henselian.ValuationExtensionCriterion
+public import Mathlib.Tactic.Linarith
 
 @[expose] public section
 
@@ -60,19 +61,18 @@ theorem irreducible_residue_of_irreducible_of_separable_of_henselian
       rw [← hf.natDegree_map (IsLocalRing.residue V), show
         f.map (IsLocalRing.residue V) = qbar from rfl, hq]
       simp
-    exact (Nat.ne_of_gt hfpos) hfzero
+    linarith
   rw [Polynomial.irreducible_of_monic hqmonic hqne]
   intro gbar hbar hgmonic hhmonic hfactor
   have hprodSep : (gbar * hbar).Separable := by
-    rw [hfactor]
-    exact hsep
+    grind
   have hcoprime : IsCoprime gbar hbar := hprodSep.isCoprime
   have hlift : DiscreteValuationField.MonicResidualCoprimeFactorLifting V :=
     DiscreteValuationField.monicResidualCoprimeFactorLifting_of_henselFactorization
       hhens
   have hdegree :=
     hlift.irreducible_monic_reduction_coprime_factor_degree_zero
-      hf hirr hgmonic hhmonic (by simpa [qbar] using hfactor.symm) hcoprime
+      hf hirr hgmonic hhmonic (by grind) hcoprime
   exact hdegree.imp hgmonic.natDegree_eq_zero.mp
     hhmonic.natDegree_eq_zero.mp
 

@@ -156,12 +156,7 @@ theorem compositumWith_le_right
     (M.compositumWith S).toSubgroup ≤ S.toSubgroup :=
   inf_le_right
 
-/-- Any common refinement above both inputs lies below their constructed compositum. -/
-theorem above_le_compositumWith
-    {E K : ClosedSubgroup G} (M : FiniteIntermediateField E K)
-    (S : ClosedSubgroup G) (hES : E.toSubgroup ≤ S.toSubgroup) :
-    E.toSubgroup ≤ (M.compositumWith S).toSubgroup :=
-  fun _ h => ⟨M.above h, hES h⟩
+
 
 /-- The compositum of the two finite refinements has finite relative quotient. -/
 theorem compositumWith_finite

@@ -126,8 +126,8 @@ lemma inversions_sheared (P : PrincipalData A σ η hS)
   rw [show (-5 - ((heightShear t) 0 : ℂ) * Complex.I) =
       -(5 + ((heightShear t) 0 : ℂ) * Complex.I) by ring, heightShear_line]
   simp only [heightShear, MeasurableEquiv.coe_mk, Equiv.coe_fn_mk,
-    Matrix.cons_val_one, Matrix.cons_val_fin_one, Matrix.cons_val_zero,
-    Fin.reduceFinMk]
+    Matrix.cons_val_one, Matrix.cons_val_zero,
+    ]
   congr 3 <;> simp <;> ring
 
 lemma frequencySection_frequency (P : PrincipalData A σ η hS) (j : FrequencyIndex P) :

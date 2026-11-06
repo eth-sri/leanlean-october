@@ -48,13 +48,13 @@ theorem sector_gcd_bound
         Q.cls b1 = g ∧ Q.cls b2 = g
     · have hc' : Q.cls b1 = g ∧ Q.cls b2 = g ∧
           (b1 : Ideal (𝓞 F)) ⊔ (b2 : Ideal (𝓞 F)) = d := ⟨hc.2.1, hc.2.2, hc.1⟩
-      simp only [hc', hc, if_true, true_and]
+      simp only [hc', if_true, true_and]
       simp only [NNReal.coe_mk]
       rw [← Finset.sum_coe_sort (kernelRows F c M K)]
       rw [Finset.mul_sum]
       apply Finset.sum_congr rfl
       intro a ha
-      simp only [map_mul, starRingEnd_apply, star_mul]
+      simp only [starRingEnd_apply, star_mul]
       ring
     · have hc' : ¬(Q.cls b1 = g ∧ Q.cls b2 = g ∧
           (b1 : Ideal (𝓞 F)) ⊔ (b2 : Ideal (𝓞 F)) = d) :=

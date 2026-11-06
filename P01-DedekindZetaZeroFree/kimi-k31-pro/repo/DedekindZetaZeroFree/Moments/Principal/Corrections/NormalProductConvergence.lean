@@ -88,8 +88,7 @@ theorem multipliable_localFactor
     (C : A.GeneralArithmeticContext σ η hS) (U : Frequency C)
     (x : Coordinates) (hx : x ∈ Omega) :
     Multipliable (fun p : ExteriorPrime A =>
-      localFactor C U p x.1 x.2.1 x.2.2) := by
-  exact ((hasProdUniformlyOn_localFactor C U {x}
+      localFactor C U p x.1 x.2.1 x.2.2) := ((hasProdUniformlyOn_localFactor C U {x}
     isCompact_singleton (Set.singleton_subset_iff.mpr hx)).hasProd (Set.mem_singleton x)).multipliable
 
 end DedekindZetaZeroFree.CorrectionFactors

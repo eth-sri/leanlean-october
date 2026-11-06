@@ -681,7 +681,7 @@ private theorem exp_mean_laplacian {V : Type*} [NormedAddCommGroup V] [NormedSpa
   simp only [ite_true, show ¬ ((0 : Fin 3) = 2) from by decide,
     show ¬ ((1 : Fin 3) = 2) from by decide, ite_false,
     Complex.ofReal_zero, mul_zero, zero_mul, zero_pow (by decide : 2 ≠ 0), zero_smul,
-    add_zero, sub_zero]
+    add_zero]
   simp only [smul_zero, sub_zero, ← neg_smul, smul_smul, ← add_smul]
   simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, ← Nat.cast_smul_eq_nsmul ℂ]
   simp only [smul_smul, Complex.ofReal_inv, Complex.ofReal_natCast]
@@ -1060,7 +1060,7 @@ private theorem frame_expansion
   rw [← (hpull u hu).2 (r j) (Ψ x) (hΨO hxD)]
   have hrex : ℓ (Ψ x) = frameGroup F ζ hζ C R P H U a x := hrec (Lmap x) hxW
   rw [hrex]
-  simp only [smul_eq_mul, Complex.real_smul]
+  simp only [Complex.real_smul]
   ring
 
 private theorem coordinateWord_frame_tsum (hι : Function.Injective ι)
@@ -1215,8 +1215,8 @@ private theorem lapOperator (u : M F → ℂ) (x : M F) :
   apply Finset.sum_congr rfl
   intro i hi
   simp only [add_mul, Finset.sum_add_distrib, ite_mul, zero_mul]
-  simp only [Finset.sum_ite_eq', hm, hs, if_true, neg_one_mul, neg_mul,
-    coordinateWord, List.foldr_cons, List.foldr_nil, HyperbolicChart.laplacian]
+  simp only [Finset.sum_ite_eq', hm, hs, if_true, neg_mul,
+    coordinateWord, List.foldr_cons, List.foldr_nil]
   ring
 private theorem rational_pullback (γ : KPCuspArithmetic.PGL2 F)
     (u : KPArch.Space (KPCuspLogShape.dimension F) → ℂ) (hu : ContDiff ℝ (⊤ : ℕ∞) u)

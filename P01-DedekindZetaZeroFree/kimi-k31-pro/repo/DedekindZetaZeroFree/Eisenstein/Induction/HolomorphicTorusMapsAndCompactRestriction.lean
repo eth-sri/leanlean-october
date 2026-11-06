@@ -39,24 +39,9 @@ private theorem induced_smooth (P : Polarization F ζ hζ)
       (groupArchDomain F)) (fun J => InducedLevel F ζ hζ P J) hf
       (fun J x hx => hx.1 g) contDiffOn_const (fun x y hx hy => hx.add hy)
 
- theorem induced_mem_level (P : Polarization F ζ hζ)
-    (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ) (f : Induced F ζ hζ P)
-    (hf : ∀ (g : G F ζ hζ) (j : KPGlobalTorusFunctionData.globalLevel F ζ hζ J),
-      f.val.val (g * j.val) = f.val.val g) :
-    f.val ∈ InducedLevel F ζ hζ P J :=
-  ⟨induced_smooth F ζ hζ P f, hf⟩
+ 
 
- def inducedLevelMap (P Q : Polarization F ζ hζ)
-    (J : KPGlobalTorusFunctionData.FiniteLevel F ζ hζ)
-    (m : Induced F ζ hζ P →ₗ[ℂ] Induced F ζ hζ Q)
-    (hm : ∀ f : InducedLevel F ζ hζ P J, ∀ (g : G F ζ hζ)
-      (j : KPGlobalTorusFunctionData.globalLevel F ζ hζ J),
-      (m (inducedStageInclusion F ζ hζ P J f)).val.val (g * j.val) =
-      (m (inducedStageInclusion F ζ hζ P J f)).val.val g) :
-    InducedLevel F ζ hζ P J →ₗ[ℂ] InducedLevel F ζ hζ Q J :=
-  ((Induced F ζ hζ Q).subtype.comp (m.comp (inducedStageInclusion F ζ hζ P J))).codRestrict
-    (InducedLevel F ζ hζ Q J) (fun f =>
-      induced_mem_level F ζ hζ Q J (m (inducedStageInclusion F ζ hζ P J f)) (hm f))
+ 
 
 local instance inducedFunctionsAddGroup4 (P : Polarization F ζ hζ) :
     AddCommGroup (InducedFunctions F ζ hζ P) := @Submodule.addCommGroup ℂ (G F ζ hζ → Smooth F ζ hζ P)

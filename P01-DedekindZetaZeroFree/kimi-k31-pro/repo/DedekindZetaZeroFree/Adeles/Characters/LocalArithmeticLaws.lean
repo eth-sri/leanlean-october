@@ -97,7 +97,7 @@ private lemma pi_character_trivial {ι : Type*} {K : ι → Type*}
       funext i
       by_cases hij : i = j
       · subst i; simp
-      · simp [Pi.mulSingle_eq_of_ne' hij, hij]
+      · simp [hij]
     rw [heq]
     exact hasProd_ite_eq j (z j)
   have hm := hp.map χ hc

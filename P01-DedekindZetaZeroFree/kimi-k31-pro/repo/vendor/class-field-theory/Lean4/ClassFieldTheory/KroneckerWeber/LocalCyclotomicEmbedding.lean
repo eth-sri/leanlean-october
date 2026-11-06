@@ -55,56 +55,7 @@ open LocalFieldTheory RamificationTheory CyclicCohomology KummerTheory
 open ClassFormation LocalClassFieldTheory
 open LocalFieldTheory.Padic
 
-/-- The ramified cyclotomic branch of local Kronecker–Weber.  When the chosen
-prime element `p` is already a norm from `L`, the ramified realization theorem realizes the
-principal-unit depth furnished by openness as an actual `p`-power
-cyclotomic extension.  Order reversal then embeds `L` into that extension.
 
-The extra norm condition is exactly what excludes the nontrivial unramified
-part; the general construction also adjoins roots of
-unity of order `p ^ f - 1`. -/
-theorem exists_pPowerCyclotomicEmbedding_of_padicPrime_mem_normSubgroup
-    (p : ℕ) [Fact p.Prime]
-    (L : Type) [Field L] [Algebra ℚ_[p] L]
-    [FiniteDimensional ℚ_[p] L] [IsAbelianGalois ℚ_[p] L]
-    (hpNorm : padicPrimeUnit p ∈ localNormSubgroup ℚ_[p] L) :
-    ∃ n : ℕ, 1 ≤ n ∧
-      ∃ ζ : CyclotomicField (p ^ n) ℚ_[p],
-        IsPrimitiveRoot ζ (p ^ n) ∧
-          Algebra.adjoin ℚ_[p] ({ζ} : Set _) = ⊤ ∧
-          Nonempty (L →ₐ[ℚ_[p]] CyclotomicField (p ^ n) ℚ_[p]) := by
-  let : IsNonarchimedeanLocalField ℚ_[p] :=
-    { toIsValuativeTopology := padicIsValuativeTopology p
-      toLocallyCompactSpace := inferInstance
-      toIsNontrivial := inferInstance }
-  obtain ⟨n, hn, hprincipal⟩ :=
-    exists_uniformizerPrincipalSubgroup_one_le_normSubgroup
-      ℚ_[p] L (padicPrimeUnit p) hpNorm
-  have hpnpos : 0 < p ^ n := pow_pos (Fact.out : Nat.Prime p).pos n
-  let : NeZero (p ^ n) := ⟨Nat.ne_of_gt hpnpos⟩
-  let C := CyclotomicField (p ^ n) ℚ_[p]
-  let : IsCyclotomicExtension {p ^ n} ℚ_[p] C :=
-    CyclotomicField.isCyclotomicExtension (p ^ n) ℚ_[p]
-  let : FiniteDimensional ℚ_[p] C :=
-    IsCyclotomicExtension.finiteDimensional {p ^ n} ℚ_[p] C
-  let : IsAbelianGalois ℚ_[p] C :=
-    IsCyclotomicExtension.isAbelianGalois {p ^ n} ℚ_[p] C
-  obtain ⟨ζ, hζ, hgen⟩ :=
-    exists_primitiveRoot_adjoin_eq_top_cyclotomicField ℚ_[p] (p ^ n) hpnpos
-  have hnsub : n - 1 + 1 = n := Nat.sub_add_cancel hn
-  have hζ' : IsPrimitiveRoot ζ (p ^ (n - 1 + 1)) := by
-    simpa [hnsub] using hζ
-  have hnorm : localNormSubgroup ℚ_[p] C =
-      LocalFieldTheory.uniformizerPrincipalSubgroup ℚ_[p]
-        (padicPrimeUnit p) 1 n := by
-    simpa [C, hnsub] using
-      (localNormSubgroup_eq_uniformizerPrincipalSubgroup_cyclotomicPrimePower
-        p (k := n - 1) ζ hζ' hgen)
-  have hnorm_le : localNormSubgroup ℚ_[p] C ≤ localNormSubgroup ℚ_[p] L := by
-    rw [hnorm]
-    exact hprincipal
-  exact ⟨n, hn, ζ, hζ, hgen,
-    nonempty_algHom_of_normSubgroup_le ℚ_[p] L C hnorm_le⟩
 
 /-- Structured form of local Kronecker--Weber.  The construction uses the
 cyclotomic order
@@ -215,25 +166,7 @@ theorem exists_structuredLocalCyclotomicEmbedding
   exact ⟨f, n, hf, hn, ζD, hζD, hgenD,
     nonempty_algHom_of_normSubgroup_le ℚ_[p] L D hnormD_L⟩
 
-/-- Local Kronecker--Weber: every finite abelian
-extension of `ℚ_p` embeds in a cyclotomic extension. -/
-theorem exists_localCyclotomicEmbedding
-    (p : ℕ) [Fact p.Prime]
-    (L : Type) [Field L] [Algebra ℚ_[p] L]
-    [FiniteDimensional ℚ_[p] L] [IsAbelianGalois ℚ_[p] L] :
-    ∃ m : ℕ, 0 < m ∧
-      ∃ ζ : CyclotomicField m ℚ_[p],
-        IsPrimitiveRoot ζ m ∧
-          Algebra.adjoin ℚ_[p] ({ζ} : Set _) = ⊤ ∧
-          Nonempty (L →ₐ[ℚ_[p]] CyclotomicField m ℚ_[p]) := by
-  obtain ⟨f, n, hf, _hn, ζ, hζ, hgen, hi⟩ :=
-    exists_structuredLocalCyclotomicEmbedding p L
-  have hpf : 1 < p ^ f :=
-    one_lt_pow₀ (Fact.out : Nat.Prime p).one_lt hf.ne'
-  have huPos : 0 < p ^ f - 1 := Nat.sub_pos_of_lt hpf
-  have hpPowPos : 0 < p ^ n := pow_pos (Fact.out : Nat.Prime p).pos n
-  exact ⟨(p ^ f - 1) * p ^ n, mul_pos huPos hpPowPos,
-    ζ, hζ, hgen, hi⟩
+
 
 end KroneckerWeber
 
@@ -250,25 +183,7 @@ variable (p : ℕ) [Fact p.Prime]
 variable (L : Type) [Field L] [Algebra ℚ L]
   [FiniteDimensional ℚ L] [IsAbelianGalois ℚ L]
 
-/-- The type of actual embeddings of the localization at `w`
-into the `m`-th cyclotomic extension of `ℚ_p`.  Naming this type exposes an
-embedding as a genuine theorem input while keeping all transported algebra
-instances internal. -/
-noncomputable def globalPadicLocalizationCyclotomicAlgHom
-    (w : AbsoluteValueExtension (Rat.AbsoluteValue.padic p) L)
-    (m : ℕ) : Type := by
-  let vK := Rat.AbsoluteValue.padic p
-  letI hK := AbsoluteValue.extensionCompletionAlgebra (K := ℚ) w.1
-  letI : SMul ℚ w.1.Completion := hK.toSMul
-  letI := AbsoluteValue.completionAlgebra vK w.1 w.2
-  let E := AbsoluteValue.algebraicLocalization vK w.1 w.2
-  letI hE : Field E := inferInstance
-  letI hBaseE : Algebra vK.Completion E := inferInstance
-  let e := padicAbsoluteValueCompletionRingEquiv p
-  letI : Algebra ℚ_[p] E :=
-    @transportedAlgebraAlongRingEquiv vK.Completion ℚ_[p] E _ _
-      (@CommRing.toCommSemiring E hE.toCommRing) hBaseE e
-  exact E →ₐ[ℚ_[p]] CyclotomicField m ℚ_[p]
+
 
 /-- Structured version of the local cyclotomic-embedding assertion.  It
 retains the prime-to-`p` unramified order `p ^ f - 1` and the ramified order

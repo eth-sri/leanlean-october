@@ -65,8 +65,7 @@ theorem exists_arithmetic_binding (A : SArithmeticData F) (σ : F →+* ℂ)
     { D0 with gammaTwo := ThetaReflectionData.gammaTwoRecipe A D0 }
   refine ⟨G, D, rfl, har, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · exact Inputs.rowCharacter_apply A σ
-  · intro m
-    exact dif_pos m.property
+  · grind
   · intro c
     rfl
   · intro c n u
@@ -89,12 +88,7 @@ theorem exists_enlarged_principal_context
   obtain ⟨A, hbad, hroot, hmod, hS, ⟨C⟩⟩ := exists_generalArithmeticContext
      F (S.Sf ∪ T) S.modulus S.modulus_ne_zero S.zeta12 S.primitive_zeta12 σ η
   have hηA : (hmod.symm ▸ η).IsPrincipal := by
-    have transport : ∀ (m n : Ideal (𝓞 F)) (h : m = n)
-        (η : RayClassCharacter F n), η.IsPrincipal → (h.symm ▸ η).IsPrincipal := by
-      intro m n h
-      subst n
-      exact fun _ hη => hη
-    exact transport _ _ hmod η hη
+    grind
   refine ⟨A, ?_, hroot, hmod, hS, ?_, Inputs.principalContext A σ _ hS C hηA, rfl⟩
   · intro v hv
     exact A.bad_subset (hbad ▸ Finset.mem_union_left T hv)

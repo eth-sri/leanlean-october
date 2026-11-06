@@ -23,7 +23,7 @@ theorem tendsto_submodule_of_chartSeminorm
   intro n ε hε
   have := h n
   rw [tendsto_order] at this
-  exact this.2 ε hε
+  simp_all
 
 end DedekindZetaZeroFree.ThetaArchAngularChartSeminorms
 

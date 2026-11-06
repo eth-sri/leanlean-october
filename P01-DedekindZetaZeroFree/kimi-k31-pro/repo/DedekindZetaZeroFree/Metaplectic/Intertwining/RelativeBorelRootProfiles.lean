@@ -40,7 +40,7 @@ theorem relative_borel_coordinate
   have h11 := congrArg (fun g : GL (Fin 2) (LocalField F q) => g 1 1) hc
   have h00 := congrArg (fun g : GL (Fin 2) (LocalField F q) => g 0 0) hc
   simp [Matrix.mul_apply, Fin.sum_univ_two, KubotaRankTwo.d, KubotaRankTwo.n,
-    KPStandardLocalRootLifts.N, KPStandardLocalRootLifts.A,
+    
     Matrix.GeneralLinearGroup.coe_scalar, Matrix.scalar, Matrix.diagonal_apply] at h11 h00
   apply Units.ext
   simpa [h11] using h00

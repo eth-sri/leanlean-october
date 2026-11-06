@@ -45,7 +45,6 @@ theorem conductor_character
       RayBridge.idealClass_prime (finiteModulusIdeal c)
         (finiteModulusIdeal_ne_bot c) p hcop]
   simp only [MonoidHom.comp_apply]
-  rw [hA p (RayBridge.prime_not_mem_fullModulus_support (finiteModulusIdeal c)
-        (finiteModulusIdeal_ne_bot c) p hcop) Q hQ]
+  grind
 
 end DedekindZetaZeroFree.LargeSieve.RootNumber

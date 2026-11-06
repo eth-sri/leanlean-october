@@ -70,7 +70,7 @@ theorem conductor_shell_haar_substitution
       rw [← e.map_one]
       exact e.toOrderIso.le_iff_le.symm
     rw [hle, hle']
-    simp only [a, Valuation.map_mul, Valuation.map_neg, map_mul, hπK]
+    simp only [a, Valuation.map_neg, map_mul, hπK]
     by_cases hy : e (valuation K x) = 0
     · simp [hy]
     · rw [← WithZero.exp_log hy]

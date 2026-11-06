@@ -51,7 +51,7 @@ theorem masked_orbit_product_integrable {N : TraceHaarTransport R} (C : JointUpp
     (Filter.Eventually.of_forall (fun p => sheetMultiplier_norm_le R C.packet v _))
   convert h using 1
   funext p
-  simp only [orbitSheet, Function.comp_apply, sheetMultiplier, Pi.mul_apply,
+  simp only [orbitSheet, Function.comp_apply, sheetMultiplier, 
     Finset.mul_sum, Finset.sum_mul]
   apply Finset.sum_congr rfl
   intro d hd

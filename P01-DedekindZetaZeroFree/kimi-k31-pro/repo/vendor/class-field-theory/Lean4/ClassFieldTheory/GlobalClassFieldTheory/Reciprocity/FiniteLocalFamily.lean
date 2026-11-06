@@ -2,6 +2,7 @@ module
 
 public import ClassFieldTheory.GlobalClassFieldTheory.Reciprocity.NormQuotient
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.SinglePlace
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -86,12 +87,8 @@ theorem prod_finitePlaceIdele_eq_ideleOfFiniteLocalFamily
               S a vw).symm
       · intro b _ hbw
         apply finitePlaceIdele_finiteComponent_of_ne
-        intro h
-        apply hbw
-        apply Subtype.ext
-        exact h.symm
-      · intro hvw
-        exact (hvw (Finset.mem_univ vw)).elim
+        grind
+      · norm_num
     · calc
         ∏ v : ↥S,
             IdeleGroup.finiteComponent w
@@ -100,25 +97,12 @@ theorem prod_finitePlaceIdele_eq_ideleOfFiniteLocalFamily
               apply Finset.prod_eq_one
               intro v _
               apply finitePlaceIdele_finiteComponent_of_ne
-              intro h
-              apply hw
-              rw [h]
-              exact v.2
+              grind
         _ = (IdeleGroup.ideleOfFiniteLocalFamily S a).2 w :=
           (IdeleGroup.finiteIdeleOfFinset_apply_notMem
             S a w hw).symm
 
-/-- Applying any multiplicative global symbol to a finite local family
-gives the product of the one-place symbols. -/
-theorem map_ideleOfFiniteLocalFamily_eq_prod_local
-    {A : Type*} [CommGroup A]
-    (f : IdeleGroup K →* A)
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
-    (a : ∀ v : ↥S, (v.1.adicCompletion K)ˣ) :
-    f (IdeleGroup.ideleOfFiniteLocalFamily S a) =
-      ∏ v : ↥S, f (finitePlaceIdele v.1 (a v)) := by
-  rw [← map_prod,
-    prod_finitePlaceIdele_eq_ideleOfFiniteLocalFamily]
+
 
 section NormQuotient
 
@@ -135,19 +119,7 @@ local instance finiteLocalFamilyIdeleClassGroupCommGroup :
   open scoped IsMulCommutative in
   inferInstance
 
-omit [FiniteDimensional K L] in
-/-- The finite-support product formula for the global
-norm-quotient symbol. -/
-theorem globalNormClass_finiteLocalFamily
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
-    (a : ∀ v : ↥S, (v.1.adicCompletion K)ˣ) :
-    globalNormClassFromIdele K L
-        (IdeleGroup.ideleOfFiniteLocalFamily S a) =
-      ∏ v : ↥S,
-        globalNormClassFromIdele K L
-          (finitePlaceIdele v.1 (a v)) :=
-  map_ideleOfFiniteLocalFamily_eq_prod_local
-    (globalNormClassFromIdele K L) S a
+
 
 end NormQuotient
 

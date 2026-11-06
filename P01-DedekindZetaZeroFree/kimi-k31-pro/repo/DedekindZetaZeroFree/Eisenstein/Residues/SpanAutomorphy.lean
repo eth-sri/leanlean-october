@@ -25,8 +25,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
   refine ⟨continuous_const, ?_, U, ?_⟩
   · intro g
     exact contDiffOn_const
-  · intro g u hu
-    rfl
+  · simp_all
 
  theorem smooth_add (v w : Functions F ζ hζ)
     (hv : Smooth F ζ hζ v) (hw : Smooth F ζ hζ w) :
@@ -43,7 +42,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
     ⟨a, ha.1, rfl⟩
   have haV : (a : G F ζ hζ) ∈ KPGlobalTorusFunctionData.globalLevel F ζ hζ V :=
     ⟨a, ha.2, rfl⟩
-  exact congrArg₂ (· + ·) (hU g a haU) (hV g a haV)
+  simp_all
 
  theorem smooth_smul (c : ℂ) (v : Functions F ζ hζ)
     (hv : Smooth F ζ hζ v) : Smooth F ζ hζ (c • v) := by
@@ -51,9 +50,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
   refine ⟨continuous_const.mul hvc, ?_, U, ?_⟩
   · intro g
     exact contDiffOn_const.mul (hvd g)
-  · intro g u hu
-    change c * v (g * u) = c * v g
-    rw [hU g u hu]
+  · simp_all
 
 end DedekindZetaZeroFree.KPLiteralPeriod.SpanAutomorphy
 

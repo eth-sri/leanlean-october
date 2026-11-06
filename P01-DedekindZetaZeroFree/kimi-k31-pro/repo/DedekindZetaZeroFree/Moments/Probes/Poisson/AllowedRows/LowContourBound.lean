@@ -66,8 +66,8 @@ theorem JCont_bound (Ccount β : ℝ) (hCcount : 0 < Ccount) (ε : ℝ) (hε : 0
       _ = Ccount * C₀ * Z ^ (Scales.kernelExponent Scales.rightLine Scales.wLine Scales.zLine) *
           U ^ (β + 1 / 25 + ε) := by
           have e : U ^ (β + 1 / 25 + ε) = U ^ β * U ^ (1 / 25 + ε) := by
-            rw [← Real.rpow_add hU0]; congr 1; ring
-          rw [e]; ring
+            rw [← Real.rpow_add hU0]; grind
+          grind
 
 end
 

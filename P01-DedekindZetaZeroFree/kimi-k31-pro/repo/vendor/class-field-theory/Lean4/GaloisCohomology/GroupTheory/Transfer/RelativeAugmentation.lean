@@ -62,17 +62,7 @@ theorem abelianizedTransfer_of
       transferToAbelianization H g :=
   rfl
 
-/-- The explicit transversal formula for the top horizontal map in
-the relative augmentation construction. -/
-theorem abelianizedTransfer_of_eq_diff
-    (H : Subgroup G) [H.FiniteIndex]
-    (T : H.LeftTransversal) (g : G) :
-    abelianizedTransfer H (Abelianization.of g) =
-      Subgroup.leftTransversals.diff
-        (Abelianization.of : H →* Abelianization H)
-        T (g • T) := by
-  exact MonoidHom.transfer_def
-    (Abelianization.of : H →* Abelianization H) T g
+
 
 /-- The inclusion of the subgroup ring `ℤ[H]` into `ℤ[G]`. -/
 def subgroupRingMap (H : Subgroup G) :
@@ -86,10 +76,7 @@ theorem subgroupRingMap_single
       MonoidAlgebra.single (h : G) n := by
   simp [subgroupRingMap]
 
-theorem subgroupRingMap_injective
-    (H : Subgroup G) :
-    Function.Injective (subgroupRingMap H) :=
-  MonoidAlgebra.mapDomain_injective H.subtype_injective
+
 
 /-- The additive embedding `I_H → ℤ[G]`. -/
 def subgroupIdealEmbedding (H : Subgroup G) :
@@ -98,12 +85,7 @@ def subgroupIdealEmbedding (H : Subgroup G) :
   map_zero' := (subgroupRingMap H).map_zero
   map_add' x y := (subgroupRingMap H).map_add x y
 
-theorem subgroupIdealEmbedding_injective
-    (H : Subgroup G) :
-    Function.Injective (subgroupIdealEmbedding H) := by
-  intro x y hxy
-  apply Subtype.ext
-  exact subgroupRingMap_injective H hxy
+
 
 /-- Evaluation of the subgroup-ideal embedding in the ambient group ring. -/
 @[simp]
@@ -644,392 +626,47 @@ theorem augmentationTransfer_deltaClass
   exact augmentationTransfer_deltaAbelianization H
     (Abelianization.of g)
 
-/-- The representative of a left coset selected by `T`. -/
-def leftRepresentative
-    (H : Subgroup G) (T : H.LeftTransversal)
-    (q : G ⧸ H) : G :=
-  T.2.leftQuotientEquiv q
 
-/-- The `H`-factor comparing `T` with its translate by `g`. -/
-def transferComponent
-    (H : Subgroup G) (T : H.LeftTransversal)
-    (g : G) (q : G ⧸ H) : H :=
-  ⟨(leftRepresentative H T q)⁻¹ *
-      leftRepresentative H (g • T) q,
-    QuotientGroup.leftRel_apply.mp <|
-      Quotient.exact' <|
-        (T.2.leftQuotientEquiv.symm_apply_apply q).trans
-          ((g • T).2.leftQuotientEquiv.symm_apply_apply q).symm⟩
 
-theorem leftRepresentative_mul_transferComponent
-    (H : Subgroup G) (T : H.LeftTransversal)
-    (g : G) (q : G ⧸ H) :
-    leftRepresentative H T q *
-        (transferComponent H T g q : G) =
-      leftRepresentative H (g • T) q := by
-  simp [transferComponent, leftRepresentative]
 
-/-- The transfer is the product of the transversal components. -/
-theorem abelianizedTransfer_of_eq_prod_transferComponent
-    (H : Subgroup G) [H.FiniteIndex]
-    (T : H.LeftTransversal) (g : G) :
-    abelianizedTransfer H (Abelianization.of g) =
-      letI := H.fintypeQuotientOfFiniteIndex
-      ∏ q : G ⧸ H,
-        Abelianization.of (transferComponent H T g q) := by
-  let := H.fintypeQuotientOfFiniteIndex
-  rw [abelianizedTransfer_of_eq_diff H T g]
-  rfl
 
-/-- The group-ring norm element attached to a left transversal. -/
-def transversalNormElement
-    (H : Subgroup G) [H.FiniteIndex]
-    (T : H.LeftTransversal) :
-    IntegralGroupRing G :=
-  letI := H.fintypeQuotientOfFiniteIndex
-  ∑ q : G ⧸ H,
-    MonoidAlgebra.single (leftRepresentative H T q) 1
 
-/-- Translating a transversal translates its group-ring sum. -/
-theorem sum_shifted_leftRepresentatives
-    (H : Subgroup G) [H.FiniteIndex]
-    (T : H.LeftTransversal) (g : G) :
-    letI := H.fintypeQuotientOfFiniteIndex
-    ∑ q : G ⧸ H,
-        MonoidAlgebra.single
-          (leftRepresentative H (g • T) q) (1 : ℤ) =
-      MonoidAlgebra.single g 1 *
-        transversalNormElement H T := by
-  let := H.fintypeQuotientOfFiniteIndex
-  calc
-    ∑ q : G ⧸ H,
-        MonoidAlgebra.single
-          (leftRepresentative H (g • T) q) (1 : ℤ) =
-        ∑ q : G ⧸ H,
-          MonoidAlgebra.single
-            (leftRepresentative H (g • T) (g • q)) 1 := by
-              exact
-                (Equiv.sum_comp (MulAction.toPerm g)
-                  (fun q : G ⧸ H =>
-                    MonoidAlgebra.single
-                      (leftRepresentative H (g • T) q)
-                      (1 : ℤ))).symm
-    _ = ∑ q : G ⧸ H,
-          MonoidAlgebra.single
-            (g * leftRepresentative H T q) 1 := by
-              apply Finset.sum_congr rfl
-              intro q _
-              congr 2
-              exact
-                (Subgroup.smul_leftQuotientEquiv
-                  g T q).symm
-    _ = MonoidAlgebra.single g 1 *
-        transversalNormElement H T := by
-          simp [transversalNormElement,
-            Finset.mul_sum]
 
-/-- Multiplying an embedded augmentation difference by a transversal
-representative stays in `I_H + I_G I_H`. -/
-theorem single_mul_embeddedDelta_mem_numerator
-    (H : Subgroup G) (r : G) (h : H) :
-    MonoidAlgebra.single r 1 * embeddedDelta H h ∈
-      relativeAugmentationNumerator H := by
-  have hmixed :
-      (deltaElement G r : IntegralGroupRing G) *
-          embeddedDelta H h ∈
-        mixedAugmentationProduct H :=
-    AddSubgroup.subset_closure
-      ⟨(deltaElement G r : IntegralGroupRing G),
-        (deltaElement G r).property,
-        embeddedDelta H h,
-        embeddedDelta_mem_embeddedSubgroupIdeal H h,
-        rfl⟩
-  have hsum :
-      embeddedDelta H h +
-          (deltaElement G r : IntegralGroupRing G) *
-            embeddedDelta H h ∈
-        relativeAugmentationNumerator H :=
-    (relativeAugmentationNumerator H).add_mem
-      (AddSubgroup.mem_sup_left
-        (embeddedDelta_mem_embeddedSubgroupIdeal H h))
-      (AddSubgroup.mem_sup_right hmixed)
-  convert hsum using 1
-  simp only [deltaElement_val]
-  rw [← MonoidAlgebra.one_def]
-  noncomm_ring
 
-/-- The group-ring element `δg · ∑ρ` belongs to the relative
-augmentation numerator. -/
-theorem delta_mul_transversalNormElement_mem_numerator
-    (H : Subgroup G) [H.FiniteIndex]
-    (T : H.LeftTransversal) (g : G) :
-    (deltaElement G g : IntegralGroupRing G) *
-        transversalNormElement H T ∈
-      relativeAugmentationNumerator H := by
-  let := H.fintypeQuotientOfFiniteIndex
-  have hsum :
-      ∑ q : G ⧸ H,
-          MonoidAlgebra.single
-              (leftRepresentative H T q) 1 *
-            embeddedDelta H (transferComponent H T g q) ∈
-        relativeAugmentationNumerator H := by
-    apply AddSubgroup.sum_mem
-    intro q _
-    exact single_mul_embeddedDelta_mem_numerator H
-      (leftRepresentative H T q)
-      (transferComponent H T g q)
-  convert hsum using 1
-  simp only [embeddedDelta_eq, deltaElement_val]
-  simp_rw [mul_sub]
-  rw [Finset.sum_sub_distrib]
-  simp_rw [MonoidAlgebra.single_mul_single]
-  simp only [mul_one]
-  simp_rw [leftRepresentative_mul_transferComponent H T g]
-  rw [sum_shifted_leftRepresentatives H T g]
-  simp [transversalNormElement, sub_mul, Finset.mul_sum]
 
-/-- The group-ring identity underlying the norm-element formula. -/
-theorem delta_mul_transversalNormElement_eq_sum
-    (H : Subgroup G) [H.FiniteIndex]
-    (T : H.LeftTransversal) (g : G) :
-    letI := H.fintypeQuotientOfFiniteIndex
-    (deltaElement G g : IntegralGroupRing G) *
-        transversalNormElement H T =
-      ∑ q : G ⧸ H,
-        MonoidAlgebra.single
-            (leftRepresentative H T q) 1 *
-          embeddedDelta H (transferComponent H T g q) := by
-  let := H.fintypeQuotientOfFiniteIndex
-  simp only [embeddedDelta_eq, deltaElement_val]
-  simp_rw [mul_sub]
-  rw [Finset.sum_sub_distrib]
-  simp_rw [MonoidAlgebra.single_mul_single]
-  simp only [mul_one]
-  simp_rw [leftRepresentative_mul_transferComponent H T g]
-  rw [sum_shifted_leftRepresentatives H T g]
-  simp [transversalNormElement, sub_mul, Finset.mul_sum]
 
-/-- A single summand in the norm formula, intrinsically valued in the
-relative numerator. -/
-def singleMulEmbeddedDeltaElement
-    (H : Subgroup G) (r : G) (h : H) :
-    relativeAugmentationNumerator H :=
-  ⟨MonoidAlgebra.single r 1 * embeddedDelta H h,
-    single_mul_embeddedDelta_mem_numerator H r h⟩
 
-/-- Multiplying by a representative does not change an embedded
-augmentation class modulo `I_G I_H`. -/
-theorem mk_singleMulEmbeddedDeltaElement_eq_relativeDeltaClass
-    (H : Subgroup G) (r : G) (h : H) :
-    QuotientAddGroup.mk' (mixedProductInNumerator H)
-        (singleMulEmbeddedDeltaElement H r h) =
-      relativeDeltaClass H h := by
-  apply (QuotientAddGroup.eq_iff_sub_mem).2
-  rw [mem_mixedProductInNumerator_iff]
-  show
-    MonoidAlgebra.single r 1 * embeddedDelta H h -
-        embeddedDelta H h ∈
-      mixedAugmentationProduct H
-  have hmixed :
-      (deltaElement G r : IntegralGroupRing G) *
-          embeddedDelta H h ∈
-        mixedAugmentationProduct H :=
-    AddSubgroup.subset_closure
-      ⟨(deltaElement G r : IntegralGroupRing G),
-        (deltaElement G r).property,
-        embeddedDelta H h,
-        embeddedDelta_mem_embeddedSubgroupIdeal H h,
-        rfl⟩
-  convert hmixed using 1
-  simp only [deltaElement_val]
-  rw [← MonoidAlgebra.one_def]
-  noncomm_ring
 
-/-- The element `δg · ∑ρ`, intrinsically in the relative numerator. -/
-def deltaNormElement
-    (H : Subgroup G) [H.FiniteIndex]
-    (T : H.LeftTransversal) (g : G) :
-    relativeAugmentationNumerator H :=
-  ⟨(deltaElement G g : IntegralGroupRing G) *
-      transversalNormElement H T,
-    delta_mul_transversalNormElement_mem_numerator H T g⟩
 
-/-- Its class in the lower-right quotient. -/
-def deltaNormClass
-    (H : Subgroup G) [H.FiniteIndex]
-    (T : H.LeftTransversal) (g : G) :
-    RelativeAugmentationQuotient H :=
-  QuotientAddGroup.mk' (mixedProductInNumerator H)
-    (deltaNormElement H T g)
 
-/-- Evaluation of vanishing for the norm class in the concrete mixed
-augmentation product. -/
-theorem deltaNormClass_eq_zero_iff
-    (H : Subgroup G) [H.FiniteIndex]
-    (T : H.LeftTransversal) (g : G) :
-    deltaNormClass H T g = 0 ↔
-      (deltaElement G g : IntegralGroupRing G) *
-          transversalNormElement H T ∈
-        mixedAugmentationProduct H :=
-  QuotientAddGroup.eq_zero_iff _
 
-/-- The sum of transfer-component augmentation classes is the class of
-`δg · ∑ρ`. -/
-theorem sum_relativeDeltaClass_transferComponent_eq_deltaNormClass
-    (H : Subgroup G) [H.FiniteIndex]
-    (T : H.LeftTransversal) (g : G) :
-    letI := H.fintypeQuotientOfFiniteIndex
-    ∑ q : G ⧸ H,
-        relativeDeltaClass H (transferComponent H T g q) =
-      deltaNormClass H T g := by
-  let := H.fintypeQuotientOfFiniteIndex
-  calc
-    ∑ q : G ⧸ H,
-        relativeDeltaClass H (transferComponent H T g q) =
-        ∑ q : G ⧸ H,
-          QuotientAddGroup.mk' (mixedProductInNumerator H)
-            (singleMulEmbeddedDeltaElement H
-              (leftRepresentative H T q)
-              (transferComponent H T g q)) := by
-                apply Finset.sum_congr rfl
-                intro q _
-                exact
-                  (mk_singleMulEmbeddedDeltaElement_eq_relativeDeltaClass
-                    H (leftRepresentative H T q)
-                    (transferComponent H T g q)).symm
-    _ = QuotientAddGroup.mk' (mixedProductInNumerator H)
-          (∑ q : G ⧸ H,
-            singleMulEmbeddedDeltaElement H
-              (leftRepresentative H T q)
-              (transferComponent H T g q)) := by
-            rw [map_sum]
-    _ = deltaNormClass H T g := by
-      apply congrArg
-        (QuotientAddGroup.mk' (mixedProductInNumerator H))
-      apply Subtype.ext
-      simpa [singleMulEmbeddedDeltaElement,
-        deltaNormElement] using
-          (delta_mul_transversalNormElement_eq_sum
-            H T g).symm
 
-/-- **The norm-element formula.**
-On the class of `g-1`, the lower horizontal map is multiplication by
-the sum of a left transversal. -/
-theorem augmentationTransfer_deltaClass_eq_deltaNorm
-    (H : Subgroup G) [H.FiniteIndex]
-    (T : H.LeftTransversal) (g : G) :
-    augmentationTransfer H
-        (Multiplicative.ofAdd (deltaClass G g)) =
-      Multiplicative.ofAdd (deltaNormClass H T g) := by
-  rw [augmentationTransfer_deltaClass]
-  rw [← abelianizedTransfer_of H g,
-    abelianizedTransfer_of_eq_prod_transferComponent H T g,
-    map_prod]
-  let := H.fintypeQuotientOfFiniteIndex
-  exact congrArg Multiplicative.ofAdd
-    (sum_relativeDeltaClass_transferComponent_eq_deltaNormClass H T g)
 
-/-- Multiplication of an arbitrary augmentation-zero group-ring element
-by the transversal norm stays in the relative numerator. -/
-theorem ideal_mul_transversalNormElement_mem_numerator
-    (H : Subgroup G) [H.FiniteIndex]
-    (T : H.LeftTransversal)
-    (x : IntegralGroupRing G) (hx : x ∈ ideal G) :
-    x * transversalNormElement H T ∈
-      relativeAugmentationNumerator H := by
-  rw [← deltaCombination_eq_of_mem_ideal G x hx]
-  unfold deltaCombination
-  rw [Finset.sum_mul]
-  apply AddSubgroup.sum_mem
-  intro g hg
-  rw [smul_mul_assoc]
-  exact
-    (relativeAugmentationNumerator H).zsmul_mem
-      (delta_mul_transversalNormElement_mem_numerator
-        H T g) (x.coeff g)
 
-/-- The group-ring norm multiple of `x`, intrinsically in the relative
-numerator. -/
-def idealNormElement
-    (H : Subgroup G) [H.FiniteIndex]
-    (T : H.LeftTransversal)
-    (x : IntegralGroupRing G) (hx : x ∈ ideal G) :
-    relativeAugmentationNumerator H :=
-  ⟨x * transversalNormElement H T,
-    ideal_mul_transversalNormElement_mem_numerator
-      H T x hx⟩
 
-/-- The class of `x · ∑ρ` in the relative augmentation quotient. -/
-def idealNormClass
-    (H : Subgroup G) [H.FiniteIndex]
-    (T : H.LeftTransversal)
-    (x : IntegralGroupRing G) (hx : x ∈ ideal G) :
-    RelativeAugmentationQuotient H :=
-  QuotientAddGroup.mk' (mixedProductInNumerator H)
-    (idealNormElement H T x hx)
 
-/-- The coefficient decomposition of the general norm-element class. -/
-theorem sum_deltaNormClass_eq_idealNormClass
-    (H : Subgroup G) [H.FiniteIndex]
-    (T : H.LeftTransversal)
-    (x : IntegralGroupRing G) (hx : x ∈ ideal G) :
-    ∑ g ∈ x.coeff.support,
-        x.coeff g • deltaNormClass H T g =
-      idealNormClass H T x hx := by
-  calc
-    ∑ g ∈ x.coeff.support,
-        x.coeff g • deltaNormClass H T g =
-        QuotientAddGroup.mk' (mixedProductInNumerator H)
-          (∑ g ∈ x.coeff.support,
-            x.coeff g • deltaNormElement H T g) := by
-              simp_rw [deltaNormClass, ← map_zsmul]
-              rw [← map_sum]
-    _ = idealNormClass H T x hx := by
-      apply congrArg
-        (QuotientAddGroup.mk' (mixedProductInNumerator H))
-      apply Subtype.ext
-      calc
-        (↑(∑ g ∈ x.coeff.support,
-              x.coeff g • deltaNormElement H T g) :
-            IntegralGroupRing G) =
-            ∑ g ∈ x.coeff.support,
-              x.coeff g •
-                ((deltaElement G g : IntegralGroupRing G) *
-                  transversalNormElement H T) := by
-                    simp [deltaNormElement]
-        _ = deltaCombination G x *
-              transversalNormElement H T := by
-                simp_rw [← smul_mul_assoc]
-                rw [← Finset.sum_mul]
-                rfl
-        _ = x * transversalNormElement H T := by
-          rw [deltaCombination_eq_of_mem_ideal G x hx]
-        _ = (idealNormElement H T x hx :
-            IntegralGroupRing G) :=
-          rfl
 
-/-- **The full transfer/augmentation formula.**
-For every `x ∈ I_G`,
 
-`S(x mod I_G²) = x · (∑ρ) mod I_G I_H`.
--/
-theorem augmentationTransfer_apply_quotientMk
-    (H : Subgroup G) [H.FiniteIndex]
-    (T : H.LeftTransversal)
-    (x : IntegralGroupRing G) (hx : x ∈ ideal G) :
-    augmentationTransfer H
-        (Multiplicative.ofAdd
-          (QuotientAddGroup.mk' (squareInIdeal G) ⟨x, hx⟩)) =
-      Multiplicative.ofAdd (idealNormClass H T x hx) := by
-  rw [← deltaAbelianization_deltaPreimage G x hx]
-  unfold deltaPreimage
-  rw [map_prod, map_prod]
-  simp_rw [map_zpow, deltaAbelianization_of]
-  simp_rw [
-    augmentationTransfer_deltaClass_eq_deltaNorm H T]
-  apply Multiplicative.toAdd.injective
-  exact sum_deltaNormClass_eq_idealNormClass
-    H T x hx
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end RelativeAugmentation
 end Transfer

@@ -45,7 +45,7 @@ theorem adelicRationalFrequencyQuotientCharacter_mk (t : F)
     adelicRationalFrequencyQuotientCharacter F t
       (QuotientAddGroup.mk' (AdeleRing.principalSubgroup (𝓞 F) F) x) =
         adelicTraceCharacter F (algebraMap F (AdeleRing (𝓞 F) F) t * x) := by
-  rfl
+  aesop
 
 theorem continuous_adelicRationalFrequencyQuotientCharacter (t : F) :
     Continuous (adelicRationalFrequencyQuotientCharacter F t :

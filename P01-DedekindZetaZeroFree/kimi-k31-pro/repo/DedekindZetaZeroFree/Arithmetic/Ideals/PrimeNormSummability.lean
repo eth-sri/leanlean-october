@@ -33,7 +33,7 @@ theorem summable_exterior_prime_norm_rpow
     intro p q h
     apply Subtype.ext
     apply HeightOneSpectrum.asIdeal_injective
-    exact hmap (congrArg Subtype.val h)
+    grind
   have hn (p : {p : HeightOneSpectrum (RingOfIntegers F) // p ∉ S}) :
       Ideal.absNorm (f p).val = Ideal.absNorm p.val.asIdeal := by
     simp only [Ideal.absNorm_apply, Submodule.cardQuot]

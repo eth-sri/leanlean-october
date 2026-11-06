@@ -182,7 +182,7 @@ theorem additive_quotient_character_sum
   have hf (q : KPRootAverage.LevelQuotient B J) :
       f (Multiplicative.ofAdd q) =
         e (z * (KPRootAverage.representative B J q : k)) := by
-    simp [f, χq, KPRootAverage.quotientCharacter, χ, mul_comm]
+    simp [f, χq, KPRootAverage.quotientCharacter, χ]
   have hiff : f = 1 ↔ ∀ t ∈ B, e (z * t) = 1 := by
     constructor
     · intro h t ht
@@ -196,7 +196,7 @@ theorem additive_quotient_character_sum
           e (z * t) by
             change (χq _ : ℂ) = _
             rw [hu]
-            simp [χ, mul_comm]] at hv
+            simp [χ]] at hv
       exact hv
     · intro h
       apply MonoidHom.ext

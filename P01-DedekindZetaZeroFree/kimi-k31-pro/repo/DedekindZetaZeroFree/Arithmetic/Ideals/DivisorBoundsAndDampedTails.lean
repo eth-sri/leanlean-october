@@ -63,7 +63,7 @@ private theorem divisor_card (F : Type) [Field F] [NumberField F] (n : Ideal (�
       ← Ideal.prod_normalizedFactors_eq_self b.property.1, he]
   have hc := Fintype.card_le_of_injective f hf
   rw [Fintype.card_pi] at hc
-  simp only [Fintype.card_fin, Finset.prod_coe_sort] at hc
+  simp only [Fintype.card_fin] at hc
   change Fintype.card D ≤ ∏ p : s, ((normalizedFactors n).count p.val + 1) at hc
   rw [Finset.prod_coe_sort s (fun p => (normalizedFactors n).count p + 1)] at hc
   simpa only [idealDivisorCount, D, ← Nat.card_eq_fintype_card, Nat.card_coe_set_eq, s] using hc

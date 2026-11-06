@@ -551,29 +551,7 @@ theorem
       (numberFieldCyclotomicZHatFiniteLayer_principalSubgroup_le_ker K E)
       a
 
-/-- Restriction of the descended Artin map of the full cyclotomic
-compositum to a finite cyclotomic layer is the descended finite-layer
-chosen-local-factor Artin map. -/
-theorem
-    numberFieldCyclotomicZHatCompositumIdeleClassArtinMonoidHom_restrict
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
-    (AlgEquiv.restrictNormalHom
-        (numberFieldCyclotomicZHatFiniteLayerInCompositum K E)).comp
-        (numberFieldCyclotomicZHatCompositumIdeleClassArtinMonoidHom K) =
-      numberFieldCyclotomicZHatFiniteLayerIdeleClassArtinMonoidHom K E := by
-  apply MonoidHom.ext
-  intro c
-  obtain ⟨a, rfl⟩ :=
-    QuotientGroup.mk'_surjective
-      (IdeleGroup.principalSubgroup K) c
-  rw [
-    MonoidHom.comp_apply,
-    numberFieldCyclotomicZHatCompositumIdeleClassArtinMonoidHom_mk,
-    numberFieldCyclotomicZHatFiniteLayerIdeleClassArtinMonoidHom_mk]
-  exact
-    (numberFieldCyclotomicZHatFiniteLayerArtinData K E).restriction a
+
 
 /-- The descended rational class value has dense image already on the
 compact norm-one idele class group. -/
@@ -803,101 +781,15 @@ theorem rationalCyclotomicZHatIdeleClassNormComposite_range :
         rw [hc]
       _ = z := hx
 
-/-- Restriction of the normalized class value to the compact norm-one
-idele class group. -/
-noncomputable def normalizedCyclotomicZHatNormOneIdeleClassValue :
-    Additive (IdeleClassGroup.normOneSubgroup (K := K)) →+ ZHat :=
-  ((normalizedCyclotomicZHatIdeleClassValueContinuous K).toAddMonoidHom).comp
-      (MonoidHom.toAdditive
-        (IdeleClassGroup.normOneSubgroup (K := K)).subtype)
 
-/-- The normalized norm-one class value remains surjective. -/
-theorem normalizedCyclotomicZHatNormOneIdeleClassValue_surjective :
-    Function.Surjective
-      (normalizedCyclotomicZHatNormOneIdeleClassValue K) := by
-  intro z
-  obtain ⟨c, hc⟩ :=
-    normalizedCyclotomicZHatIdeleClassValue_normOne_surjective K z
-  refine ⟨Additive.ofMul c, ?_⟩
-  change
-    normalizedCyclotomicZHatIdeleClassValueContinuous K
-        (Additive.ofMul (c : IdeleClassGroup K)) =
-      z
-  exact hc
 
-/-- The rational class value composed with the actual class norm,
-restricted to norm-one idele classes.  The codomain restriction in
-`normOneNorm` is supplied by preservation of the absolute idele norm. -/
-noncomputable def rationalCyclotomicZHatNormOneIdeleClassNormComposite :
-    Additive (IdeleClassGroup.normOneSubgroup (K := K)) →+ ZHat :=
-  (rationalCyclotomicZHatIdeleClassValueContinuous.toAddMonoidHom).comp
-      (MonoidHom.toAdditive
-        ((IdeleClassGroup.normOneSubgroup (K := ℚ)).subtype.comp
-          (IdeleClassGroup.normOneNorm ℚ K)))
 
-/-- The normalized identity restricted to the actual norm-one class
-norm. -/
-theorem
-    cyclotomicZHatIntersectionDegree_nsmul_normalizedNormOneIdeleClassValue
-    (c : Additive
-      (IdeleClassGroup.normOneSubgroup (K := K))) :
-    cyclotomicZHatIntersectionDegree K •
-        normalizedCyclotomicZHatNormOneIdeleClassValue K c =
-      rationalCyclotomicZHatNormOneIdeleClassNormComposite K c := by
-  change
-    cyclotomicZHatIntersectionDegree K •
-        normalizedCyclotomicZHatIdeleClassValueContinuous K
-          (Additive.ofMul
-            ((Additive.toMul c :
-                IdeleClassGroup.normOneSubgroup (K := K)) :
-              IdeleClassGroup K)) =
-      rationalCyclotomicZHatIdeleClassValueContinuous
-        (Additive.ofMul
-          ((IdeleClassGroup.normOneNorm ℚ K
-              (Additive.toMul c) :
-            IdeleClassGroup.normOneSubgroup (K := ℚ)) :
-            IdeleClassGroup ℚ))
-  rw [IdeleClassGroup.normOneNorm_apply]
-  exact
-    cyclotomicZHatIntersectionDegree_nsmul_normalizedIdeleClassValue
-      K
-      (Additive.ofMul
-        ((Additive.toMul c :
-            IdeleClassGroup.normOneSubgroup (K := K)) :
-          IdeleClassGroup K))
 
-/-- The exact cyclotomic image of the actual class norm is already
-attained on norm-one idele classes. -/
-theorem
-    rationalCyclotomicZHatNormOneIdeleClassNormComposite_range :
-    (rationalCyclotomicZHatNormOneIdeleClassNormComposite K).range =
-      nsmulImage (⊤ : AddSubgroup ZHat)
-        (cyclotomicZHatIntersectionDegree K) := by
-  ext z
-  constructor
-  · rintro ⟨c, rfl⟩
-    rw [mem_nsmulImage_iff]
-    refine
-      ⟨normalizedCyclotomicZHatNormOneIdeleClassValue K c,
-        AddSubgroup.mem_top _, ?_⟩
-    exact
-      cyclotomicZHatIntersectionDegree_nsmul_normalizedNormOneIdeleClassValue
-        K c
-  · rw [mem_nsmulImage_iff]
-    rintro ⟨x, _hx, hx⟩
-    obtain ⟨c, hc⟩ :=
-      normalizedCyclotomicZHatNormOneIdeleClassValue_surjective K x
-    refine ⟨c, ?_⟩
-    calc
-      rationalCyclotomicZHatNormOneIdeleClassNormComposite K c =
-          cyclotomicZHatIntersectionDegree K •
-            normalizedCyclotomicZHatNormOneIdeleClassValue K c :=
-        (cyclotomicZHatIntersectionDegree_nsmul_normalizedNormOneIdeleClassValue
-          K c).symm
-      _ =
-          cyclotomicZHatIntersectionDegree K • x := by
-        rw [hc]
-      _ = z := hx
+
+
+
+
+
 
 /-- The rational cyclotomic class valuation transported to the
 distinguished base fixed part of the absolute idele-class

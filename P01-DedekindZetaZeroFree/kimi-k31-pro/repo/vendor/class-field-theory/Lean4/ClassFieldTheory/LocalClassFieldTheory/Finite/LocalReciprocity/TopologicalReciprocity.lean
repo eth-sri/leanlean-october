@@ -445,19 +445,7 @@ theorem localArtinMap_toMonoidHom :
     rfl]
   exact (topologicalAbelianization_finite_equiv K L).symm_apply_apply _
 
-/-- The continuous local Artin map is canonical: after forgetting topology,
-it agrees with the reciprocity symbol computed from any realization of the
-extension in the fixed separable closure. -/
-theorem localArtinMap_embedding_independent
-    (i : L →ₐ[K] SeparableClosure K) :
-    (topologicalAbelianization_finite_equiv K L).symm.toMonoidHom.comp
-        (localArtinMap K L).toMonoidHom =
-      concreteNormResidueSymbolOfEmbedding K L i
-        (localResidueDatum K)
-        (localHenselianValuation K)
-        (separableClosureUnits_isClassFormation K) := by
-  rw [localArtinMap_toMonoidHom,
-    localArtinMonoidHom_eq_of_embedding K L i]
+
 
 /-- The continuous finite local Artin map is surjective. -/
 theorem localArtinMap_surjective :

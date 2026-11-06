@@ -1,6 +1,8 @@
 module
 
 public import Mathlib
+public import Mathlib.Tactic.Measurability
+public import Mathlib.Tactic.Linarith
 
 @[expose] public section
 
@@ -23,8 +25,7 @@ theorem nonzero_integral_detected_by_uniform_approximation
   have hIpos : 0 < ‖I‖ := norm_pos_iff.mpr hne
   set ε : ℝ := ‖I‖ / (2 * μ.real Set.univ) with hεdef
   have hεpos : 0 < ε := by
-    rw [hεdef]
-    exact div_pos hIpos (by positivity)
+    simp_all
   obtain ⟨i, hi⟩ := happrox ε hεpos
   refine ⟨i, ?_⟩
   set J : ℂ := ∫ x, v i x * χ x ∂μ with hJ
@@ -36,17 +37,15 @@ theorem nonzero_integral_detected_by_uniform_approximation
   have hle : ∀ x, ‖(v i x - u x) * χ x‖ ≤ ε := by
     intro x
     rw [norm_mul, hχ x, mul_one]
-    exact le_of_lt (hi x)
+    grind
   have hbound : ‖J - I‖ ≤ ε * μ.real Set.univ := by
     rw [hsub]
     exact norm_integral_le_of_norm_le_const (Filter.Eventually.of_forall hle)
   have hεm : ε * μ.real Set.univ = ‖I‖ / 2 := by
-    rw [hεdef]
-    field_simp
+    grind
   rw [hεm] at hbound
   intro hzero
-  have hEq : ‖J - I‖ = ‖I‖ := by rw [hzero, zero_sub, norm_neg]
-  rw [hEq] at hbound
+  have hEq : ‖J - I‖ = ‖I‖ := by measurability
   linarith
 
 end DedekindZetaZeroFree.KPLiteralPeriod

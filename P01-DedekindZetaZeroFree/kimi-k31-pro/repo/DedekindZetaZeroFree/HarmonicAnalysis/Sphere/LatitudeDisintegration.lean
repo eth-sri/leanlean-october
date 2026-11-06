@@ -32,8 +32,8 @@ theorem latitudeAmbient_norm (g : Ambient ≃ₗᵢ[ℝ] Ambient) (u θ : ℝ)
   have ht := Real.cos_sq_add_sin_sq θ
   have hn : ‖latitudeAmbient g u θ‖ ^ 2 = 1 := by
     rw [latitudeAmbient, g.norm_map, EuclideanSpace.real_norm_sq_eq]
-    simp only [Fin.sum_univ_succ, Fin.val_zero, Matrix.cons_val_zero,
-      Fin.val_succ, Matrix.cons_val_succ, Fin.sum_univ_zero, add_zero]
+    simp only [Fin.sum_univ_succ, Matrix.cons_val_zero,
+      Matrix.cons_val_succ, Fin.sum_univ_zero, add_zero]
     nlinarith [sq_nonneg (Real.sqrt (4*u*(1-u)))]
   nlinarith [norm_nonneg (latitudeAmbient g u θ)]
 

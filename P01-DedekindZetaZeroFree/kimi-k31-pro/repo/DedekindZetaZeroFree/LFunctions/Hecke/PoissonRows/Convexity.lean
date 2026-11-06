@@ -134,8 +134,7 @@ theorem convexity :
     have hnorm_eq : ‖g s‖ = ‖Detector.finiteEulerDeletionMask F (RowHeckeBridge.deletionSet D u)
         (fun v => (D.inducers u).plus.character v.asIdeal) s‖ *
         ‖nonprincipalHeckeEntireContinuation F (D.inducers u).plus.conductor
-          (D.inducers u).plus.character (RowHeckeBridge.hecke D.recipe.A (D.inducers u).plus hnpP) s‖ := by
-      exact (congrArg norm hg_eq).trans ((norm_mul _ _).trans
+          (D.inducers u).plus.character (RowHeckeBridge.hecke D.recipe.A (D.inducers u).plus hnpP) s‖ := (congrArg norm hg_eq).trans ((norm_mul _ _).trans
         (congrArg (fun x => _ * ‖x‖) hN_eq.symm))
     rw [hnorm_eq]
     have hY : (0 : ℝ) ≤ (2 + |t|) ^ A_F := by positivity

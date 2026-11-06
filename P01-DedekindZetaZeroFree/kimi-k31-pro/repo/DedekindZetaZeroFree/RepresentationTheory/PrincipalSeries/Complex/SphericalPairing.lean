@@ -34,7 +34,7 @@ private theorem spherical_open (s : ℝ) (z : ℂ) :
     openCoordinate (sphericalSection s) z = ((1+‖z‖^2)^(-(1+2*s) : ℝ) : ℝ) := by
   change openCoordinate (sphericalFunction s) z = _
   simp [openCoordinate,sphericalFunction,bottomRowNormSq,weyl,upperUnipotent,
-    Matrix.GeneralLinearGroup.val_det_apply,Matrix.det_mul,Matrix.det_fin_two,
+    Matrix.GeneralLinearGroup.val_det_apply,Matrix.det_fin_two,
     Matrix.mul_apply,Fin.sum_univ_two,Real.rpow_eq_pow]
   rw [Real.inv_rpow (by positivity),← Real.rpow_neg (by positivity)]
   congr 1 <;> ring

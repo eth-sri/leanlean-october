@@ -211,7 +211,7 @@ def J (P : CompatibleLocalData F ζ hζ) : Subgroup (D F) :=
 private theorem single_cont (v : KPHilbert.Place F) : Continuous (RestrictedProduct.mulSingle (KPGlobalCubicIdelePairing.U F) v) := by
   let S : Set (KPHilbert.Place F) := {v}ᶜ
   let t : LocalD F v → RestrictedProduct (LocalD F) (fun w => (KPGlobalCubicIdelePairing.U F w : Set (LocalD F w))) (Filter.principal S) :=
-    fun l => ⟨Pi.mulSingle v l, by intro w hw; simp only [S, Set.mem_compl_iff, Set.mem_singleton_iff] at hw; simp [Pi.mulSingle_eq_of_ne hw, Subgroup.one_mem]⟩
+    fun l => ⟨Pi.mulSingle v l, by intro w hw; simp only [S, Set.mem_compl_iff, Set.mem_singleton_iff] at hw; simp [Pi.mulSingle_eq_of_ne hw]⟩
   have ht : Continuous t := by
     apply RestrictedProduct.continuous_rng_of_principal.mpr
     apply continuous_pi
@@ -362,7 +362,7 @@ private theorem maximal_mem_of_annihilates {G : Type*} [CommGroup G]
     obtain ⟨n, rfl⟩ := Subgroup.mem_zpowers_iff.mp hu'
     obtain ⟨p, rfl⟩ := Subgroup.mem_zpowers_iff.mp hv'
     simp only [map_mul, MonoidHom.mul_apply, hL.1 l hl m hm,
-      hlx l hl p, hxl m hm n, hxx n p, mul_one, one_mul]
+      hlx l hl p, hxl m hm n, hxx n p, mul_one]
   have heq := hL.2 _ le_sup_left hiso
   rw [← heq]
   exact Subgroup.mem_sup_right (Subgroup.mem_zpowers x)

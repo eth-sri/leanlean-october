@@ -20,8 +20,8 @@ private lemma norm_exp_ofReal_mul_sq_le (ε : ℝ) (hε : 0 ≤ ε) (c t : ℝ) 
   have hre : (((c : ℂ) + (t : ℂ) * Complex.I) ^ 2).re = c ^ 2 - t ^ 2 := by
     rw [pow_two, Complex.mul_re]
     simp only [Complex.add_re, Complex.add_im, Complex.ofReal_re, Complex.ofReal_im,
-      Complex.mul_I_re, Complex.mul_I_im, Complex.I_re, Complex.I_im, mul_zero, sub_zero,
-      zero_add, zero_sub, neg_zero]
+      Complex.mul_I_re, Complex.mul_I_im, 
+      zero_add, neg_zero]
     ring
   rw [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, zero_mul, sub_zero, hre]
   nlinarith [sq_nonneg t]

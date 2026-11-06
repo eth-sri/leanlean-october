@@ -179,8 +179,7 @@ include hCl σ η hS G hD Iu hu hu_allowed hsixthfree hξ hw hz in
 theorem weightedSummand_summable :
     Summable (fun i : ExteriorIndex A =>
       ‖comparisonEulerPoissonSummand F A D u ξ w z
-        i.1 i.2.1 i.2.2.1 i.2.2.2‖) := by
-  exact (fixedMajorant_summable A ξ w z hξ hw hz).of_nonneg_of_le
+        i.1 i.2.1 i.2.2.1 i.2.2.2‖) := (fixedMajorant_summable A ξ w z hξ hw hz).of_nonneg_of_le
     (fun i => norm_nonneg _) (summand_bound A D σ η hS G hD u ξ w z)
 
 end FixedFrequency

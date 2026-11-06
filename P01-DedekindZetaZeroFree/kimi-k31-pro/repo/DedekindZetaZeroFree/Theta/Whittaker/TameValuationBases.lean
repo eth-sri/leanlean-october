@@ -108,7 +108,7 @@ private theorem modulus_binding (h : Torus F ζ hζ v) :
    (KPLocalInductionJacquetReciprocity.torusToBorel F ζ hζ v m hm h)
    (KubotaRankTwo.d (KPRankOneInduction.LocalField F v) (S.borel.coordinate h) 1) hp (by simp [KubotaRankTwo.coe_d])
  simp only [KubotaRankTwo.coe_d, Matrix.of_apply, Matrix.cons_val_zero, Matrix.cons_val_one,
-  Matrix.head_cons, Matrix.head_fin_const, div_one] at hd
+  ] at hd
  change (((KPRankOneInduction.halfModulus (deltaB F ζ hζ v)
   (KPLocalInductionJacquetReciprocity.torusToBorel F ζ hζ v m hm h) : ℝ≥0) : ℝ) : ℂ) = _
  rw [KPRankOneInduction.halfModulus_eq, hd]
@@ -676,7 +676,7 @@ theorem actual_whittaker_dual_bases
   let b := Module.Basis.ofEquivFun e
   refine ⟨b, b.dualBasis, ?_, ?_⟩
   · intro i j
-    simp [Module.Basis.dualBasis_apply, Finsupp.single_apply, eq_comm]
+    simp [Finsupp.single_apply, eq_comm]
   · intro φ j
     rw [Module.Basis.dualBasis_apply, Module.Basis.ofEquivFun_repr_apply]
     change c (a (q.symm (openCellClass F ζ hζ v S P m hm ε ψ φ))) j = _

@@ -46,8 +46,7 @@ theorem exists_unitPart (C : A.GeneralArithmeticContext σ η hS)
   obtain ⟨v, hv, hvUnit⟩ := V.exists_unitPart p
   change r = generator C p ^ (U.j p).val * v at hv
   refine ⟨(eps : A.R) * v, ?_, ?_⟩
-  · rw [← heps, hv]
-    ring
+  · grind
   · rw [map_mul]
     exact (eps.isUnit.map _).mul hvUnit
 
@@ -142,7 +141,7 @@ private theorem realPower_norm (q : ℝ) (hq : 0 < q) (s : ℂ) :
     ‖comparisonRealPower q s‖ = q ^ s.re := by
   rw [comparisonRealPower, Complex.norm_exp, Real.rpow_def_of_pos hq]
   simp only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero]
-  rw [mul_comm]
+  grind
 
  def fixedMajorant (A : SArithmeticData F) (ξ w z : ℂ)
     (i : CRTAbsoluteSeries.ExteriorIndex A) : ℝ :=
@@ -206,26 +205,22 @@ private theorem fixedMajorant_summable
       A.exteriorNorm c.val ^ (-(ξ.re - 1 / 2))) at H
     convert H using 1
     ext c
-    congr 1
-    ring
+    grind
   have hn : Summable (fun n : A.Exterior => A.exteriorNorm n ^ (2 - 3 * ξ.re)) := by
     convert ProbeExteriorIdealCount.ideal_norm_summable F A.cS (3 * ξ.re - 2)
       (by linarith) using 1
     ext n
-    congr 1
-    ring
+    grind
   have hs : Summable (fun s : A.Exterior => A.exteriorNorm s ^ (1 - w.re)) := by
     convert ProbeExteriorIdealCount.ideal_norm_summable F A.cS (w.re - 1)
       (by linarith) using 1
     ext s
-    congr 1
-    ring
+    grind
   have hr : Summable (fun r : A.Exterior => A.exteriorNorm r ^ (-6 * z.re)) := by
     convert ProbeExteriorIdealCount.ideal_norm_summable F A.cS (6 * z.re)
       (by linarith) using 1
     ext r
-    congr 1
-    ring
+    grind
   have hnonneg : ∀ (I : A.Exterior) (t : ℝ), 0 ≤ A.exteriorNorm I ^ t :=
     fun I t => (Real.rpow_pos_of_pos (A.exteriorNorm_pos I) t).le
   have Hsr := hs.mul_of_nonneg hr (fun s => hnonneg s _) (fun r => hnonneg r _)
@@ -279,7 +274,7 @@ private lemma plus_ext_norm_raw (U : RawFrequency A) (I : A.Exterior) :
     exact (Complex.norm_eq_one_of_pow_eq_one hp' (by decide)).le
   · change ‖σ (MulChar.ofUnitHom (A.sexticResidueFamily I) _)‖ ≤ 1
     rw [MulChar.map_nonunit _ hx, map_zero, norm_zero]
-    exact zero_le_one
+    grind
 
 private lemma plus_ext_pow_raw (U : RawFrequency A) (I : A.Exterior) (k : ℕ) :
     plusExteriorCoefficient σ U (ExteriorIdealEuler.pow I k) =
@@ -339,7 +334,7 @@ private theorem raw_good_unit (C : A.GeneralArithmeticContext σ η hS)
     IsUnit (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) U.u) := by
   have hs := U.unitPart_spec C p
   rw [hs.1, hp, pow_zero, one_mul]
-  exact hs.2
+  grind
 
 private theorem raw_correction_majorant_summable (M : ℝ) :
     Summable (fun p : ExteriorPrime A =>
@@ -352,8 +347,7 @@ private theorem raw_correction_majorant_summable (M : ℝ) :
       exact p.val.isPrime.ne_top he⟩
   have hi : Function.Injective i := by
     intro p q h
-    apply Subtype.ext
-    exact congrArg (fun r : {p : IsDedekindDomain.HeightOneSpectrum (𝓞 F) // p ∉ A.Sf} => r.val) h
+    grind
   have hs := (summable_exterior_prime_norm_rpow F A.Sf (1 + 1 / 4000) (by norm_num)).comp_injective hi
   simpa [Function.comp_def, i, Q, SArithmeticData.exteriorNorm, idealNorm, primeIdeal]
     using hs.mul_left M
@@ -432,10 +426,7 @@ private theorem raw_global_pair_cancel
   have hReplace := GaussProductCancellation.prime_product_replacement
     A hCl σ η hS G D (hD.compatible A σ hS G.B D) hD.1 c n s r u
     P p hp π hπ aπ haπ hπAllowed (by
-      intro I hI
-      apply hSupport I
-      simp only [Finset.mem_insert, Finset.mem_singleton] at hI ⊢
-      rcases hI with hI | hI | hI | hI <;> simp [hI])
+      grind)
   have hRaw := GaussProductCancellation.masked_product_assembly A σ η hS G D
     hD.2.1 hD.2.2.1 c.val n s r Iu u hu P p hp π hπ aπ haπ hπAllowed
     hSupport uPrimeFree hPrimeFree hPrimeUnit
@@ -481,8 +472,7 @@ private theorem raw_global_pair_cancel
     apply Finset.prod_congr
     · ext w
       simp only [Finset.mem_compl, Finset.mem_singleton]
-    · intro w _
-      rfl
+    · grind
   rw [hCancel', mul_one, ← Finset.prod_mul_distrib]
   simp only [mul_assoc]
 
@@ -531,8 +521,7 @@ private theorem prime_sum_eq (D : ComparisonPoissonCoefficientData F A)
     (p : ExteriorPrime A) (t k J : ℕ) :
     GlobalPairCancel.primePowerSum A D (generator C p) (generator_generates C p).1 t k J =
       Ctk C p t k J := by
-  have hrec : GlobalPairCancel.HasArithmeticRecipes A σ hS C.correction.B D := by
-    exact ⟨fun I => ⟨WeightedFiniteCoefficient.fieldUnit A _ (D.generates I).1,
+  have hrec : GlobalPairCancel.HasArithmeticRecipes A σ hS C.correction.B D := ⟨fun I => ⟨WeightedFiniteCoefficient.fieldUnit A _ (D.generates I).1,
       rfl, hD.generator_allowed I⟩, hD.character_recipe, hD.additive_recipe, hD.gammaTwo_recipe⟩
   have hc := hrec.coefficient_prime_power_crt A σ η hS C.correction.B D C
     (powerIdeal p k) (powerIdeal p t) (powerIdeal p J)
@@ -542,15 +531,15 @@ private theorem prime_sum_eq (D : ComparisonPoissonCoefficientData F A)
     (fun q hq => by
       simp only [MaskedQuotientCRT.primeExponent, exponent_power, ne_eq,
         Finset.mem_singleton] at hq ⊢
-      split_ifs at hq with h <;> simp_all)
+      grind)
     (fun q hq => by
       simp only [MaskedQuotientCRT.primeExponent, exponent_power, ne_eq,
         Finset.mem_singleton] at hq ⊢
-      split_ifs at hq with h <;> simp_all)
+      grind)
     (fun q hq => by
       simp only [MaskedQuotientCRT.primeExponent, exponent_power, ne_eq,
         Finset.mem_singleton] at hq ⊢
-      split_ifs at hq with h <;> simp_all)
+      grind)
   simpa [GlobalPairCancel.primePowerSum, MaskedQuotientCRT.primeExponent,
     exponent_power, local_unit_one, CompatiblePrimeRawLocal.R_one_eq_Ctk] using hc
 private theorem theta_prime (D : ComparisonPoissonCoefficientData F A)
@@ -587,7 +576,7 @@ private theorem theta_split (D : ComparisonPoissonCoefficientData F A)
         WeightedFiniteCoefficient.fieldUnit A (D.generator n) (D.generates _).1 ^ 3 := by
       apply Units.ext
       simp [WeightedFiniteCoefficient.fieldUnit]
-    rw [he, map_pow]
+    grind
   rw [ht, WeightedFiniteCoefficient.Proof.theta_factor A D σ η hS C.correction hD c P
     (WeightedFiniteCoefficient.Proof.support_factor A c P hc),
     WeightedFiniteCoefficient.Proof.theta_factor A D σ η hS C.correction hD n P
@@ -600,8 +589,7 @@ private theorem theta_split (D : ComparisonPoissonCoefficientData F A)
   rw [theta_prime D hD p, ← pow_mul, ← pow_add, Nat.mul_comm]
 
 private theorem phase_eq (U : RawFrequency A) (p : ExteriorPrime A) :
-    (U.theta C p).val = GlobalPairCancel.frequencyTheta A σ (primeIdeal p) (U.unitPart C p) := by
-  exact UnitCovariance.residueCoefficient_eq _ _
+    (U.theta C p).val = GlobalPairCancel.frequencyTheta A σ (primeIdeal p) (U.unitPart C p) := UnitCovariance.residueCoefficient_eq _ _
 
 theorem finite_coefficient_factorization (U : RawFrequency A)
     (D : ComparisonPoissonCoefficientData F A)
@@ -629,8 +617,7 @@ theorem finite_coefficient_factorization (U : RawFrequency A)
   have hep : ∀ v : Q, (ep v).val = v.val := by
     intro v
     exact congrArg Subtype.val (E.apply_symm_apply v)
-  have hrec : GlobalPairCancel.HasArithmeticRecipes A σ hS C.correction.B D := by
-    exact ⟨fun I => ⟨WeightedFiniteCoefficient.fieldUnit A _ (D.generates I).1,
+  have hrec : GlobalPairCancel.HasArithmeticRecipes A σ hS C.correction.B D := ⟨fun I => ⟨WeightedFiniteCoefficient.fieldUnit A _ (D.generates I).1,
       rfl, hD.generator_allowed I⟩, hD.character_recipe, hD.additive_recipe, hD.gammaTwo_recipe⟩
   have hfac : ∀ I ∈ ({c.val, n, s, r, U.ideal} : Finset A.Exterior),
       I.val = ∏ v : Q, v.val.asIdeal ^ idealPrimeExponent v.val.asIdeal I.val := by
@@ -654,7 +641,7 @@ theorem finite_coefficient_factorization (U : RawFrequency A)
   have hsix : ∀ v : HeightOneSpectrum (𝓞 F), idealPrimeExponent v.asIdeal U.ideal.val ≤ 5 := by
     intro v
     by_cases hz : idealPrimeExponent v.asIdeal U.ideal.val = 0
-    · simp [hz]
+    · grind
     · have hd : v.asIdeal ∣ U.ideal.val := UniqueFactorizationMonoid.dvd_of_mem_normalizedFactors
         (Multiset.count_ne_zero.mp hz)
       have hv : v.asIdeal ⊔ A.cS = ⊤ := by
@@ -743,8 +730,7 @@ theorem norm_weights_factorization
   simp only [qPower, LocalFiniteSums.Q, comparisonRealPower, LocalFiniteSums.primeIdeal,
     WeightedFiniteCoefficient.primeIdeal]
   rw [← Complex.exp_add, ← Complex.exp_add, ← Complex.exp_add]
-  congr 1
-  ring
+  grind
 
 theorem weighted_summand_factorization (U : RawFrequency A)
     (D : ComparisonPoissonCoefficientData F A)
@@ -814,10 +800,7 @@ theorem coefficient_index (U : RawFrequency A)
     have hz := Finsupp.notMem_support_iff.mp h.2
     rw [idealEquiv_apply] at hz
     change (_, _, _, _) = (0, 0, 0, 0) at hd
-    rcases Prod.mk.inj hd with ⟨h1, hrest⟩
-    rcases Prod.mk.inj hrest with ⟨h2, hrest⟩
-    rcases Prod.mk.inj hrest with ⟨h3, h4⟩
-    exact ⟨h1, h2, h3, h4, hz⟩
+    grind
   rw [weighted_summand_factorization U D hD i.1 i.2.1 i.2.2.1 i.2.2.2 P hs]
   have he : ∀ p, digit (C := C) U ξ w z p (d p) = localCoefficient C U p
       (idealPrimeExponent p.val.asIdeal i.1.val.val)
@@ -835,7 +818,7 @@ theorem coefficient_index (U : RawFrequency A)
     rw [show d p = _ from indexEquiv_apply A i p]
   change (∏ p ∈ d.support, digit (C := C) U ξ w z p (d p)) = _
   rw [Finset.prod_subset (Finset.subset_union_left : d.support ⊆ P) (fun p hp hpd => ?_)]
-  · exact Finset.prod_congr rfl (fun p hp => he p)
+  · grind
   · rw [Finsupp.notMem_support_iff.mp hpd, digit_zero]
 
 theorem coefficient_invalid (U : RawFrequency A) (ξ w z : ℂ)
@@ -939,32 +922,22 @@ private theorem raw_primitive_variables_zero
   have hmul : chi (σ := σ) p (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) U.u) =
       chi (σ := σ) p (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) r) *
         chi (σ := σ) p (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) (eps : A.R)) := by
-    rw [← heps, map_mul, map_mul]
+    grind
   change CorrectionFactors.W (σ := σ) p r w = 0 at hW
   change CorrectionFactors.D (σ := σ) (η := η) p r ξ = 0 at hD
   constructor
   · unfold CorrectionFactors.W at *
-    rw [hmul]
-    calc
-      _ = (chi (σ := σ) p (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) r) *
-        qPower p (-w)) * chi (σ := σ) p
-          (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) (eps : A.R)) := by ring
-      _ = 0 := by rw [hW, zero_mul]
+    grind
   · unfold CorrectionFactors.D at *
     rw [hmul, star_mul]
-    calc
-      _ = (η p.val.asIdeal * star (chi (σ := σ) p
-        (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) r)) * qPower p (-ξ)) *
-        star (chi (σ := σ) p
-          (Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) (eps : A.R))) := by ring
-      _ = 0 := by rw [hD, zero_mul]
+    grind
 
  def rawPrimeEquiv : ExteriorPrime A ≃ ExteriorIdealEuler.PrimeIndex A.cS where
   toFun p := ⟨primeIdeal p, p.val.prime⟩
   invFun p := ⟨⟨p.val.val, (Ideal.prime_iff_isPrime p.val.property.1).mp p.property,
     p.val.property.1⟩, p.val.property.2⟩
-  left_inv p := by rfl
-  right_inv p := by rfl
+  left_inv p := rfl
+  right_inv p := rfl
 
 private lemma raw_normPower_eq (p : ExteriorPrime A) (s : ℂ) :
     (Ideal.absNorm p.val.asIdeal : ℂ) ^ s = qPower p s := by
@@ -1022,19 +995,18 @@ theorem initial_absolute_euler
     comparisonEulerPoissonSeries F A D U.u ξ w z * minusL σ η U ξ =
       InitialSeparatedEuler.zetaS A (6 * z) * plusL σ U w *
         correctionProduct C U ξ w z := by
-  have hξ' : 3 / 2 < ξ.re := by rw [hξ]; norm_num
-  have hw' : 2 < w.re := by rw [hw]; norm_num
-  have hz' : 1 / 6 < z.re := by rw [hz]; norm_num
+  have hξ' : 3 / 2 < ξ.re := by grind
+  have hw' : 2 < w.re := by grind
+  have hz' : 1 / 6 < z.re := by grind
   have hx : (ξ, w, z) ∈ CorrectionFactors.Omega := by
     apply Or.inl
     change _ ∧ _ ∧ _
-    rw [hξ, hw, hz]
-    norm_num
+    grind
   refine ⟨comparisonSeries_summable A D σ η hS C.correction hD U.u ξ w z
     hξ' hw' hz', raw_correction_multipliable C U (ξ, w, z) hx,
-    raw_minusL_ne_zero U ξ (by rw [hξ]; norm_num), ?_⟩
-  have hξ1 : 1 < ξ.re := by rw [hξ]; norm_num
-  have hw1 : 1 < w.re := by rw [hw]; norm_num
+    raw_minusL_ne_zero U ξ (by grind), ?_⟩
+  have hξ1 : 1 < ξ.re := by grind
+  have hw1 : 1 < w.re := by grind
   have hz1 : 1 < (6 * z).re := by norm_num [hz]
   have hm := ExteriorIdealEuler.exterior_ideal_euler _ (raw_minus_isCoefficient (σ := σ) (η := η) U) ξ hξ1
   have hp := ExteriorIdealEuler.exterior_ideal_euler _ (raw_plus_isCoefficient (σ := σ) U) w hw1
@@ -1092,7 +1064,7 @@ theorem initial_absolute_euler
       have hf : f C p (U.j p) (U.theta C p) ξ w z =
           CorrectionFactors.goodRational C p U.u ξ w z := by
         have hformula := (good_euler_series_initial_boundary C p U.u hunit
-          (U.theta C p) hθ ξ w z (by rw [hξ]) (by rw [hw]) (by rw [hz])).2
+          (U.theta C p) hθ ξ w z (by grind) (by grind) (by grind)).2
         have hj0 : U.j p = 0 := Fin.ext hj
         rw [hj0]
         simpa [CorrectionFactors.goodRational, CorrectionFactors.V,
@@ -1123,7 +1095,7 @@ theorem initial_euler_quotient
       InitialSeparatedEuler.zetaS A (6 * z) * plusL σ U w *
         correctionProduct C U ξ w z / minusL σ η U ξ := by
   obtain ⟨_, _, hn, he⟩ := initial_absolute_euler C D hD U ξ w z hξ hw hz
-  exact (eq_div_iff hn).mpr he
+  grind
 
 end DedekindZetaZeroFree.AllRowEuler.InitialSeparation
 

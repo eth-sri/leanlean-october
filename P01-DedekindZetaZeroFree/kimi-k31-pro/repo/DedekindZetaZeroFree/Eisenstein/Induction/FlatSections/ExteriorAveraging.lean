@@ -112,7 +112,7 @@ local instance : IsTopologicalGroup (Group R) :=
     change _ • (c * C.numerator 0 g) = _
     rw [← Nat.cast_smul_eq_nsmul ℂ]
     dsimp [c]
-    simp [smul_eq_mul,← mul_assoc,hn']
+    simp
 
 end DedekindZetaZeroFree.RootDerivatives
 

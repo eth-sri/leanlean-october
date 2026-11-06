@@ -409,7 +409,7 @@ private theorem openSmooth : ContDiff ℝ ∞ (fun p : Matrix (Fin 2) (Fin 2) �
   rw [contDiff_pi]
   intro j
   fin_cases i <;> fin_cases j <;>
-    simp [weyl, upperUnipotent, Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two] <;> fun_prop
+    simp [weyl, upperUnipotent, Matrix.mul_apply, Fin.sum_univ_two] <;> fun_prop
 private theorem lowerMaps (p : Matrix (Fin 2) (Fin 2) ℂ × ℂ)
     (hp : p.1.det ≠ 0) :
     (((lowerUnipotent p.2 : ComplexGL2) : Matrix (Fin 2) (Fin 2) ℂ) * p.1).det ≠ 0 := by

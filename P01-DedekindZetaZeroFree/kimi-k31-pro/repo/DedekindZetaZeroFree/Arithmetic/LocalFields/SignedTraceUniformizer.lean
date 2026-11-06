@@ -79,7 +79,7 @@ variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
     change Valued.v (((t - 1 : 𝓞 F) : F) : p.val.adicCompletion F) < 1
     rw [HeightOneSpectrum.adicCompletion.valued_coe]
     exact (p.val.valuation_lt_one_iff_mem (K := F) (t - 1)).mpr hm
-  signed_shift _ := by ext x; simp [AddChar.mulShift_apply]
+  signed_shift _ := by ext x; simp
 end DedekindZetaZeroFree.TraceHaarTransport
 
 end

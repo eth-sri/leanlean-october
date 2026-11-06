@@ -58,7 +58,7 @@ theorem initial_primitive_sqrt_bound (F : Type) [Field F] [NumberField F]
     intro I
     by_cases hI : I = ⊥
     · simp [DedekindZetaZeroFree.LargeSieve.idealMellinWeight, hI]
-    · simp only [hI, ↓reduceIte, DedekindZetaZeroFree.LargeSieve.idealMellinWeight, if_false, hh]
+    · simp only [hI, ↓reduceIte, DedekindZetaZeroFree.LargeSieve.idealMellinWeight, hh]
       ring
   have harg : ∀ I : Ideal (𝓞 F),
       X * (Ideal.absNorm I : ℝ) / (Ideal.absNorm f : ℝ)
@@ -96,7 +96,7 @@ theorem initial_primitive_sqrt_bound (F : Type) [Field F] [NumberField F]
   have hcoef : ‖W * (X : ℂ) / (Real.sqrt (Ideal.absNorm f : ℝ) : ℂ)‖
       = X / Real.sqrt (Ideal.absNorm f : ℝ) := by
     rw [norm_div, norm_mul, hW, one_mul]
-    simp [RCLike.norm_ofReal, abs_of_nonneg hX.le, abs_of_nonneg (Real.sqrt_nonneg _)]
+    simp [abs_of_nonneg hX.le, abs_of_nonneg (Real.sqrt_nonneg _)]
   calc ‖initialTheta F (fun I => η I) X‖
       = ‖(W * (X : ℂ) / (Real.sqrt (Ideal.absNorm f : ℝ) : ℂ)) *
           ∑' I : Ideal (𝓞 F), (if I = ⊥ then 0

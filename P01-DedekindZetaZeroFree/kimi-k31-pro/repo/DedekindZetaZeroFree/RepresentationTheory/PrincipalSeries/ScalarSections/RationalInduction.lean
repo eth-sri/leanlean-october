@@ -130,8 +130,8 @@ private theorem rational_contraction_torus (r : KPGlobalCenterRationalCharacter.
     push_cast
     ring
   rw [hc, hchar, hd]
-  simp only [map_one, Units.val_one, NNReal.coe_one, Complex.ofReal_one, smul_eq_mul,
-    Submodule.coe_smul_of_tower, Pi.smul_apply]
+  simp only [map_one, Units.val_one, NNReal.coe_one, Complex.ofReal_one, 
+    ]
   field_simp
 
 theorem quotientCoreEvaluator_rational_torus

@@ -167,12 +167,7 @@ theorem equalCharacteristicDirectBracket_constantCoeff
     PowerSeries.constantCoeff (equalCharacteristicDirectBracket u) = 0 := by
   exact equalCharacteristicQAdditiveSeries_constantCoeff k _
 
-/-- The direct bracket is valid as a substitution series. -/
-theorem equalCharacteristicDirectBracket_hasSubst
-    (u : k⟦X⟧) :
-    PowerSeries.HasSubst (equalCharacteristicDirectBracket u) :=
-  PowerSeries.HasSubst.of_constantCoeff_zero'
-    (equalCharacteristicDirectBracket_constantCoeff u)
+
 
 /-- Coefficients after extension to the completed maximal unramified integer
 ring. -/

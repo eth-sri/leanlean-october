@@ -63,14 +63,7 @@ theorem equalCharacteristicAdditiveExponentIndex_spec
     Nat.card k ^ equalCharacteristicAdditiveExponentIndex k n hn = n :=
   Nat.find_spec hn
 
-omit [Field k] [Finite k] in
-/-- The selected additive-exponent index is no larger than any index
-realizing the same exponent. -/
-theorem equalCharacteristicAdditiveExponentIndex_min
-    (n : ℕ) (hn : IsEqualCharacteristicAdditiveExponent k n)
-    (j : ℕ) (hj : Nat.card k ^ j = n) :
-    equalCharacteristicAdditiveExponentIndex k n hn ≤ j :=
-  Nat.find_min' hn hj
+
 
 /-- The selected additive-exponent index equals every index representing
 the same power.  In particular it is independent of the existence proof
@@ -385,13 +378,7 @@ theorem equalCharacteristicThetaSeries_constantCoeff
     PowerSeries.constantCoeff (equalCharacteristicThetaSeries u) = 0 := by
   exact equalCharacteristicQAdditiveSeries_constantCoeff k _
 
-/-- The zero constant coefficient makes theta a valid formal substitution.
--/
-theorem equalCharacteristicThetaSeries_hasSubst
-    (u : k⟦X⟧ˣ) :
-    PowerSeries.HasSubst (equalCharacteristicThetaSeries u) :=
-  PowerSeries.HasSubst.of_constantCoeff_zero'
-    (equalCharacteristicThetaSeries_constantCoeff u)
+
 
 /-- Frobenius acts on the completed-unramified coefficients of theta. -/
 noncomputable def equalCharacteristicThetaSeriesFrobenius
@@ -668,70 +655,9 @@ theorem equalCharacteristicCompletedLubinTateSeries_subst_qAdditiveSeries
     simp [equalCharacteristicQAdditiveShift,
       equalCharacteristicLubinTatePostcompositionCoefficient]
 
-/-- The completed theta-intertwining theorem, the second theta identity
-`theta^phi o e_bar_pi = e_T o theta`.
 
-Both sides are genuine formal substitutions.  At the linear coefficient the
-claim is the semilinear unit equation `phi(b_0) = u b_0`; at every higher
-`q`-power coefficient it is exactly the contracting recursion defining
-`b_(j+1)`. -/
-theorem equalCharacteristicThetaSeries_intertwines
-    (u : k⟦X⟧ˣ) :
-    PowerSeries.subst
-        (equalCharacteristicCompletedLubinTateSeries (k := k)
-          (equalCharacteristicCompletedSourceUniformizer u))
-        (equalCharacteristicThetaSeriesFrobenius u) =
-      PowerSeries.subst (equalCharacteristicThetaSeries u)
-        (equalCharacteristicCompletedLubinTateSeries (k := k) PowerSeries.X) := by
-  rw [equalCharacteristicThetaSeriesFrobenius_eq_qAdditiveSeries,
-    equalCharacteristicQAdditiveSeries_subst_completedLubinTateSeries,
-    equalCharacteristicThetaSeries,
-    equalCharacteristicCompletedLubinTateSeries_subst_qAdditiveSeries]
-  congr 1
-  funext j
-  cases j with
-  | zero =>
-      rw [equalCharacteristicLubinTateSubstitutionCoefficient,
-        equalCharacteristicLubinTatePostcompositionCoefficient,
-        equalCharacteristicThetaCoefficient_zero,
-        equalCharacteristicPowerSeriesFrobenius_semilinearUnit,
-        equalCharacteristicCompletedSourceUniformizer]
-      have huinv :
-          PowerSeries.map (algebraMap k (AlgebraicClosure k)) (u : k⟦X⟧) *
-              PowerSeries.map (algebraMap k (AlgebraicClosure k))
-                ((u⁻¹ : k⟦X⟧ˣ) : k⟦X⟧) = 1 := by
-        rw [← map_mul]
-        simp
-      calc
-        _ = (PowerSeries.map (algebraMap k (AlgebraicClosure k)) (u : k⟦X⟧) *
-              PowerSeries.map (algebraMap k (AlgebraicClosure k))
-                ((u⁻¹ : k⟦X⟧ˣ) : k⟦X⟧)) *
-              (equalCharacteristicSemilinearUnit (u : k⟦X⟧) _ * PowerSeries.X) := by
-            ring
-        _ = _ := by rw [huinv]; simp [mul_comm]
-  | succ j =>
-      rw [equalCharacteristicLubinTateSubstitutionCoefficient,
-        equalCharacteristicLubinTatePostcompositionCoefficient]
-      have h := equalCharacteristicThetaCoefficient_succ_comparison u j
-      rw [equalCharacteristicThetaBetaNumerator] at h
-      linear_combination -h
 
-/-- The linear coefficient of theta is the semilinear unit constructed from
-`phi(epsilon) = u * epsilon`. -/
-theorem equalCharacteristicThetaSeries_coeff_one
-    (u : k⟦X⟧ˣ) :
-    PowerSeries.coeff 1 (equalCharacteristicThetaSeries u) =
-      equalCharacteristicSemilinearUnit (u : k⟦X⟧)
-        (by
-          intro hzero
-          have hunit := PowerSeries.isUnit_constantCoeff (u : k⟦X⟧) u.isUnit
-          apply hunit.ne_zero
-          simpa [PowerSeries.coeff_zero_eq_constantCoeff_apply] using hzero) := by
-  calc
-    PowerSeries.coeff 1 (equalCharacteristicThetaSeries u) =
-        equalCharacteristicThetaCoefficient u 0 := by
-      simpa only [pow_zero] using equalCharacteristicThetaSeries_coeff_pow u 0
-    _ = _ := equalCharacteristicThetaCoefficient_zero u
+
 
 end EqualCharacteristic
 end LubinTate

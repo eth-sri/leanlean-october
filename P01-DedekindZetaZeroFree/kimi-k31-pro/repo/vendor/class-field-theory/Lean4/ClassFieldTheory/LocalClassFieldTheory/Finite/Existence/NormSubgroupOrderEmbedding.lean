@@ -131,25 +131,7 @@ theorem finiteAbelianSubextension_fixedField_isAbelianGalois
     simpa only [map_mul] using
       mul_comm (e.symm σ) (e.symm τ))
 
-/-- The concrete fixed field of an abstract compositum is the compositum of
-the two concrete fixed fields inside the chosen separable closure. -/
-theorem finiteAbelianSubextension_compositum_fixedField
-    (U T : FiniteAbelianSubextension (intrinsicAbstractBase K)) :
-    abstractFixedField K (SeparableClosure K) (U.compositum T).field =
-      abstractFixedField K (SeparableClosure K) U.field ⊔
-        abstractFixedField K (SeparableClosure K) T.field := by
-  let EU := abstractFixedField K (SeparableClosure K) U.field
-  let ET := abstractFixedField K (SeparableClosure K) T.field
-  rw [← InfiniteGalois.fixedField_fixingSubgroup (EU ⊔ ET)]
-  apply congrArg IntermediateField.fixedField
-  change
-    (U.field.toSubgroup ⊓ T.field.toSubgroup) =
-      (EU ⊔ ET).fixingSubgroup
-  rw [IntermediateField.fixingSubgroup_sup]
-  rw [show EU.fixingSubgroup = U.field.toSubgroup by
-      exact InfiniteGalois.fixingSubgroup_fixedField U.field,
-    show ET.fixingSubgroup = T.field.toSubgroup by
-      exact InfiniteGalois.fixingSubgroup_fixedField T.field]
+
 
 /-- The relative class-formation norm of a unit in an arbitrary abstract fixed
 field is the ordinary field norm, before identifying the base fixed units
@@ -308,33 +290,7 @@ theorem map_finiteAbelianNormSubgroup_eq_additiveNormSubgroup
       rw [(baseUnitsEquivGaloisAmbientFixed K (SeparableClosure K)).symm_apply_apply]
       exact congrArg Additive.ofMul hu
 
-/-- An abstract fixed-coefficient norm containment transports back to the
-corresponding containment of ordinary norm subgroups in `Kˣ`. -/
-theorem finiteAbelianNormSubgroup_le_of_abstractNormSubgroup_le_map
-    (L : FiniteAbelianSubextension (intrinsicAbstractBase K))
-    (H : Subgroup Kˣ)
-    (h :
-      L.normSubgroup (intrinsicAbsoluteUnits K) ≤
-        H.toAddSubgroup.map
-          (baseUnitsEquivGaloisAmbientFixed K (SeparableClosure K)).toAddMonoidHom) :
-    finiteAbelianNormSubgroup K L ≤ H := by
-  let e := baseUnitsEquivGaloisAmbientFixed K (SeparableClosure K)
-  intro x hx
-  have hxAdd :
-      Additive.ofMul x ∈
-        additiveNormSubgroup K
-          (abstractFixedField K (SeparableClosure K) L.field) := by
-    exact hx
-  rw [← map_finiteAbelianNormSubgroup_eq_additiveNormSubgroup K L] at hxAdd
-  rcases hxAdd with ⟨y, hy, hyx⟩
-  rcases h hy with ⟨z, hz, hzy⟩
-  have hzEq : z = Additive.ofMul x := by
-    calc
-      z = e.symm (e z) := (e.symm_apply_apply z).symm
-      _ = e.symm y := congrArg e.symm hzy
-      _ = Additive.ofMul x := hyx
-  change Additive.ofMul x ∈ H.toAddSubgroup
-  simpa [hzEq] using hz
+
 
 section LocalField
 
@@ -438,18 +394,7 @@ theorem finiteAbelianSubextension_le_iff_normSubgroup_le
     map_finiteAbelianNormSubgroup_eq_additiveNormSubgroup]
   rfl
 
-/-- The ordinary norm-subgroup assignment is an order embedding into the
-opposite poset of native open finite-index subgroups. -/
-noncomputable def finiteAbelianNormSubgroupOrderEmbedding :
-    FiniteAbelianSubextension (intrinsicAbstractBase K) ↪o
-      (OpenFiniteIndexSubgroup K)ᵒᵈ where
-  toFun := finiteAbelianNormSubgroupMap K
-  inj' := finiteAbelianNormSubgroupMap_injective K
-  map_rel_iff' := by
-    intro L₁ L₂
-    change finiteAbelianNormSubgroup K L₂ ≤
-        finiteAbelianNormSubgroup K L₁ ↔ L₁ ≤ L₂
-    exact (finiteAbelianSubextension_le_iff_normSubgroup_le K L₁ L₂).symm
+
 
 end LocalField
 

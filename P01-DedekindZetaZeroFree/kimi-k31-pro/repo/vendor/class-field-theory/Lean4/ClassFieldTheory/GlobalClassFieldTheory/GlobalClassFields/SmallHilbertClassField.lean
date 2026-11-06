@@ -120,17 +120,7 @@ instance smallHilbertClassFieldNormSubgroupFiniteIndex :
         (K := K)).symm.toEquiv
   exact Subgroup.finiteIndex_of_finite_quotient
 
-/-- The order of the small-Hilbert reciprocity quotient is the class
-number of `K`. -/
-theorem smallHilbertClassFieldQuotient_card_eq_classNumber :
-    Nat.card
-        (IdeleClassGroup K ⧸
-          smallHilbertClassFieldNormSubgroup (K := K)) =
-      NumberField.classNumber K := by
-  rw [NumberField.classNumber]
-  rw [← Nat.card_eq_fintype_card]
-  exact Nat.card_congr
-    (smallHilbertClassFieldQuotientEquivClassGroup (K := K)).toEquiv
+
 
 /-- The big-Hilbert norm subgroup is contained in the small-Hilbert
 norm subgroup.  Under class-field duality this is the inclusion of the
@@ -208,128 +198,17 @@ theorem bigHilbertClassFieldQuotientToSmallHilbertClassFieldQuotient_mk
         (smallHilbertClassFieldNormSubgroup (K := K)) x :=
   rfl
 
-/-- The canonical transition from the big-Hilbert quotient to the
-small-Hilbert quotient is surjective. -/
-theorem
-    bigHilbertClassFieldQuotientToSmallHilbertClassFieldQuotient_surjective :
-    Function.Surjective
-      (bigHilbertClassFieldQuotientToSmallHilbertClassFieldQuotient
-        (K := K)) := by
-  intro q
-  obtain ⟨x, rfl⟩ :=
-    QuotientGroup.mk'_surjective
-      (smallHilbertClassFieldNormSubgroup (K := K)) q
-  exact
-    ⟨QuotientGroup.mk'
-        (bigHilbertClassFieldNormSubgroup (K := K)) x, rfl⟩
 
-/-- The kernel of the canonical big-to-small Hilbert quotient transition
-is the image of the small-Hilbert norm subgroup modulo the big-Hilbert
-norm subgroup. -/
-theorem
-    bigHilbertClassFieldQuotientToSmallHilbertClassFieldQuotient_ker :
-    MonoidHom.ker
-        (bigHilbertClassFieldQuotientToSmallHilbertClassFieldQuotient
-          (K := K)) =
-      Subgroup.map
-        (QuotientGroup.mk'
-          (bigHilbertClassFieldNormSubgroup (K := K)))
-        (smallHilbertClassFieldNormSubgroup (K := K)) := by
-  unfold bigHilbertClassFieldQuotientToSmallHilbertClassFieldQuotient
-  rw [QuotientGroup.ker_map, Subgroup.comap_id]
 
-/-- The order of the small-Hilbert reciprocity quotient divides the
-order of the big-Hilbert reciprocity quotient. -/
-theorem smallHilbertClassFieldQuotient_card_dvd_bigHilbertClassFieldQuotient_card :
-    Nat.card
-        (IdeleClassGroup K ⧸
-          smallHilbertClassFieldNormSubgroup (K := K)) ∣
-      Nat.card
-        (IdeleClassGroup K ⧸
-          bigHilbertClassFieldNormSubgroup (K := K)) := by
-  simpa only [Subgroup.index_eq_card] using
-    Subgroup.index_dvd_of_le
-      (bigHilbertClassFieldNormSubgroup_le_smallHilbertClassFieldNormSubgroup
-        (K := K))
 
-/-- The class number divides the order of the narrow class group. -/
-theorem classNumber_dvd_narrowClassGroup_card :
-    NumberField.classNumber K ∣
-      Nat.card (RayClass.NarrowClassGroup K) := by
-  calc
-    NumberField.classNumber K =
-        Nat.card
-          (IdeleClassGroup K ⧸
-            smallHilbertClassFieldNormSubgroup (K := K)) :=
-      (smallHilbertClassFieldQuotient_card_eq_classNumber
-        (K := K)).symm
-    _ ∣
-        Nat.card
-          (IdeleClassGroup K ⧸
-            bigHilbertClassFieldNormSubgroup (K := K)) :=
-      smallHilbertClassFieldQuotient_card_dvd_bigHilbertClassFieldQuotient_card
-        (K := K)
-    _ = Nat.card (RayClass.NarrowClassGroup K) :=
-      Nat.card_congr
-        (bigHilbertClassFieldQuotientEquivNarrowClassGroup
-          (K := K)).toEquiv
 
-/-- The kernel of the big-to-small Hilbert quotient transition measures
-the exact difference between the narrow and ordinary class numbers. -/
-theorem narrowClassGroup_card_eq_bigToSmallKernel_card_mul_classNumber :
-    Nat.card (RayClass.NarrowClassGroup K) =
-      Nat.card
-          (MonoidHom.ker
-            (bigHilbertClassFieldQuotientToSmallHilbertClassFieldQuotient
-              (K := K))) *
-        NumberField.classNumber K := by
-  let f :=
-    bigHilbertClassFieldQuotientToSmallHilbertClassFieldQuotient
-      (K := K)
-  change
-    Nat.card (RayClass.NarrowClassGroup K) =
-      Nat.card (MonoidHom.ker f) *
-        NumberField.classNumber K
-  have hf : Function.Surjective f :=
-    bigHilbertClassFieldQuotientToSmallHilbertClassFieldQuotient_surjective
-      (K := K)
-  calc
-    Nat.card (RayClass.NarrowClassGroup K) =
-        Nat.card
-          (IdeleClassGroup K ⧸
-            bigHilbertClassFieldNormSubgroup (K := K)) :=
-      (Nat.card_congr
-        (bigHilbertClassFieldQuotientEquivNarrowClassGroup
-          (K := K)).toEquiv).symm
-    _ = Nat.card (MonoidHom.ker f) *
-        (MonoidHom.ker f).index :=
-      (Subgroup.card_mul_index (MonoidHom.ker f)).symm
-    _ = Nat.card (MonoidHom.ker f) *
-        Nat.card f.range := by
-      rw [Subgroup.index_ker f]
-    _ = Nat.card (MonoidHom.ker f) *
-        Nat.card
-          (IdeleClassGroup K ⧸
-            smallHilbertClassFieldNormSubgroup (K := K)) := by
-      rw [f.range_eq_top_of_surjective hf, Subgroup.card_top]
-    _ = Nat.card (MonoidHom.ker f) *
-        NumberField.classNumber K := by
-      rw [smallHilbertClassFieldQuotient_card_eq_classNumber]
 
-/-- The exact difference between the narrow and ordinary class numbers
-is the order of the image of the small-Hilbert norm subgroup in the
-big-Hilbert reciprocity quotient. -/
-theorem
-    narrowClassGroup_card_eq_smallHilbertNormImage_card_mul_classNumber :
-    Nat.card (RayClass.NarrowClassGroup K) =
-      Nat.card
-          (Subgroup.map
-            (QuotientGroup.mk'
-              (bigHilbertClassFieldNormSubgroup (K := K)))
-            (smallHilbertClassFieldNormSubgroup (K := K))) *
-        NumberField.classNumber K := by
-  rw [narrowClassGroup_card_eq_bigToSmallKernel_card_mul_classNumber,
-    bigHilbertClassFieldQuotientToSmallHilbertClassFieldQuotient_ker]
+
+
+
+
+
+
 
 /-- The narrow finite conductor of the small-Hilbert norm subgroup is zero. -/
 @[simp]

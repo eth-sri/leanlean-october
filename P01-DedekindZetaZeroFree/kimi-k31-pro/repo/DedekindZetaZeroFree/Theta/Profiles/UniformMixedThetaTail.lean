@@ -110,7 +110,7 @@ private theorem shape_radial (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ)
     · congr 1
       funext v
       by_cases hv : v = NumberField.Units.dirichletUnitTheorem.w₀
-      · simp [angularLift, radialLift, hv]
+      · simp [angularLift, hv]
       · simp [angularLift, radialLift, hv]
   rw [hshape t, hshape 1, smul_smul, Real.rpow_def_of_pos ht, ← Real.exp_add]
   congr 2

@@ -111,25 +111,7 @@ theorem smallHilbertClassFieldBase_finrank_over_original :
     (LinearEquiv.finrank_eq
       (smallHilbertClassFieldBaseEquivOverOriginal K).toLinearEquiv).symm
 
-/-- The degree of the selected small Hilbert class field over the
-original number field is its ordinary class number. -/
-theorem smallHilbertClassField_finrank_over_original_eq_classNumber :
-    Module.finrank K (smallHilbertClassField K) =
-      NumberField.classNumber K := by
-  calc
-    Module.finrank K (smallHilbertClassField K) =
-        (smallHilbertClassFieldNormSubgroup (K := K)).index :=
-      closedFiniteIndexClassField_finrank_eq_index
-        (smallHilbertClassFieldNormSubgroup (K := K))
-        (smallHilbertClassFieldNormSubgroup_isClosed (K := K))
-    _ = Nat.card
-          (IdeleClassGroup K ⧸
-            smallHilbertClassFieldNormSubgroup (K := K)) :=
-      Subgroup.index_eq_card
-        (smallHilbertClassFieldNormSubgroup (K := K))
-    _ = NumberField.classNumber K :=
-      smallHilbertClassFieldQuotient_card_eq_classNumber
-        (K := K)
+
 
 /-- The selected small Hilbert class field is Galois over the original
 number field, not only over its canonically equivalent fixed-field

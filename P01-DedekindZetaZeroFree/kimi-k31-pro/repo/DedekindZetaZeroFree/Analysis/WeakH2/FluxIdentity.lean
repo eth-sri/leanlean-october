@@ -142,7 +142,7 @@ private theorem flux_matrix_bound {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : �
   classical
   have hd (k : Fin n) : 0 ≤ D.matrix x k k := by
     have h := D.ellipticity x hx (EuclideanSpace.single k 1)
-    simp [EuclideanSpace.norm_single, EuclideanSpace.single_apply] at h
+    simp at h
     linarith
   have hu (k : Fin n) : D.matrix x k k ≤ Λ := by
     have h := D.upper_bound x hx (EuclideanSpace.single k 1)
@@ -153,8 +153,8 @@ private theorem flux_matrix_bound {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : �
     exact (hu i).trans (le_abs_self Λ)
   have hnorm (t : ℝ) :
       ‖(EuclideanSpace.single i 1 + EuclideanSpace.single j t : Space n)‖ ^ 2 = 1 + t ^ 2 := by
-    simp [EuclideanSpace.norm_sq_eq, PiLp.add_apply, EuclideanSpace.single_apply,
-      add_sq, Finset.sum_add_distrib, hij, Ne.symm hij]
+    simp [EuclideanSpace.norm_sq_eq, PiLp.add_apply, 
+      add_sq, Finset.sum_add_distrib, Ne.symm hij]
   have hquad (t : ℝ) := D.upper_bound x hx
     (EuclideanSpace.single i 1 + EuclideanSpace.single j t)
   simp only [hnorm] at hquad
@@ -162,7 +162,7 @@ private theorem flux_matrix_bound {n : ℕ} {B : LocalBall n} {cρ Cρ κ Λ : �
       D.matrix x i i + 2 * D.matrix x i j * t + D.matrix x j j * t ^ 2 ≤ Λ * (1 + t ^ 2) := by
     have h := hquad t
     simp [PiLp.add_apply, mul_add, add_mul, Finset.sum_add_distrib,
-      EuclideanSpace.single_apply, D.symmetric x hx j i] at h
+      D.symmetric x hx j i] at h
     nlinarith [h]
   apply abs_le.mpr
   constructor <;> nlinarith [hq 1, hq (-1), hd i, hd j, le_abs_self Λ]

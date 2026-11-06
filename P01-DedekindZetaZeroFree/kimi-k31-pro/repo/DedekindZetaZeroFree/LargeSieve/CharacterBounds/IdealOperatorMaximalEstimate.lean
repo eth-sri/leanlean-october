@@ -45,8 +45,7 @@ lemma enumeration_monotone (F : Type) [Field F] [NumberField F] (N : ℝ) :
 lemma sum_enumeration (F : Type) [Field F] [NumberField F] (N : ℝ)
     {M : Type*} [AddCommMonoid M] (f : Ideal (𝓞 F) → M) :
     (∑ k : Fin (dyad F N).card, f (enumeration F N k).val) =
-      ∑ J ∈ dyad F N, f J := by
-  exact ((enumeration F N).sum_comp (fun J : dyad F N => f J.val)).trans
+      ∑ J ∈ dyad F N, f J := ((enumeration F N).sum_comp (fun J : dyad F N => f J.val)).trans
     (Finset.sum_coe_sort _ _)
 
 lemma coefficientMass_eq (F : Type) [Field F] [NumberField F]

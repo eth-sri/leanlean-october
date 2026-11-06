@@ -285,28 +285,7 @@ theorem exists_roots_principalUnit_uniformizer_zpow
           ϖ ^ n := by
       rw [map_mul]
 
-/-- Field-unit form with the standard subgroup equality hypothesis
-`V.zeroSubgroup = O^*`. -/
-theorem exists_roots_principalUnit_uniformizer_zpow_of_zeroSubgroup_eq_unitGroup
-    [Finite F.residueField]
-    (V : MultiplicativeIntegerValuation Kˣ)
-    (hzero : V.zeroSubgroup = F.valuation.valuationSubring.unitGroup)
-    {ϖ : Kˣ} (hϖ : V.IsUniformizer ϖ) (x : Kˣ) :
-    ∃ ζ : higherPrincipalUnitGroup.residueRootsOfUnityGroup F,
-    ∃ p : higherPrincipalUnitGroup F 1,
-    ∃ n : ℤ,
-      x =
-        higherPrincipalUnitGroup.valuationSubringUnitFieldUnitHom F
-            (ζ : F.valuationSubringˣ) *
-          higherPrincipalUnitGroup.valuationSubringUnitFieldUnitHom F
-            (p : F.valuationSubringˣ) *
-          ϖ ^ n :=
-  higherPrincipalUnitGroup.exists_roots_principalUnit_uniformizer_zpow
-    (F := F) V
-    (fun y =>
-      higherPrincipalUnitGroup.mem_zeroSubgroup_iff_exists_valuationSubringUnitFieldUnitHom_eq
-          (F := F) V hzero y)
-    hϖ x
+
 
 /-- Uniqueness of the field-unit form of the multiplicative unit decomposition:
 with a fixed uniformizer, the Teichmuller representative, the first principal
@@ -374,32 +353,7 @@ theorem roots_principalUnit_uniformizer_zpow_eq_iff
   · rintro ⟨rfl, rfl, rfl⟩
     rfl
 
-/-- Uniqueness form under the standard subgroup equality hypothesis
-`V.zeroSubgroup = O^*`. -/
-theorem roots_principalUnit_uniformizer_zpow_eq_iff_of_zeroSubgroup_eq_unitGroup
-    [Finite F.residueField]
-    (V : MultiplicativeIntegerValuation Kˣ)
-    (hzero : V.zeroSubgroup = F.valuation.valuationSubring.unitGroup)
-    {ϖ : Kˣ} (hϖ : V.IsUniformizer ϖ)
-    (ζ η : higherPrincipalUnitGroup.residueRootsOfUnityGroup F)
-    (p q : higherPrincipalUnitGroup F 1) (m n : ℤ) :
-    higherPrincipalUnitGroup.valuationSubringUnitFieldUnitHom F
-          (ζ : F.valuationSubringˣ) *
-        higherPrincipalUnitGroup.valuationSubringUnitFieldUnitHom F
-          (p : F.valuationSubringˣ) *
-        ϖ ^ m =
-      higherPrincipalUnitGroup.valuationSubringUnitFieldUnitHom F
-          (η : F.valuationSubringˣ) *
-        higherPrincipalUnitGroup.valuationSubringUnitFieldUnitHom F
-          (q : F.valuationSubringˣ) *
-        ϖ ^ n ↔
-      ζ = η ∧ p = q ∧ m = n :=
-  higherPrincipalUnitGroup.roots_principalUnit_uniformizer_zpow_eq_iff
-    (F := F) V
-    (fun y =>
-      higherPrincipalUnitGroup.mem_zeroSubgroup_iff_exists_valuationSubringUnitFieldUnitHom_eq
-        (F := F) V hzero y)
-    hϖ ζ η p q m n
+
 
 /-- The three factors in the multiplicative field-unit decomposition: Teichmuller roots,
 first principal units, and an integral power of a fixed uniformizer. -/

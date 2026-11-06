@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.LFunctions.Dedekind.WeightedIdealEulerProducts
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Characters.FiniteOrderAndNormBounds
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -26,22 +27,20 @@ theorem eulerCorrectionFactor_ne_zero
     rw [show ‖(Ideal.absNorm P.asIdeal : ℂ) ^ (-s)‖ =
         (Ideal.absNorm P.asIdeal : ℝ) ^ (-s.re) from
       Odlyzko.norm_inverseNormPower _ (by omega) s]
-    exact Real.rpow_lt_one_of_one_lt_of_neg (by exact_mod_cast hq) (neg_neg_of_pos hs)
+    exact Real.rpow_lt_one_of_one_lt_of_neg (by simp_all) (neg_neg_of_pos hs)
   have hlt : ‖w P.asIdeal * (Ideal.absNorm P.asIdeal : ℂ) ^ (-s)‖ < 1 := by
     rw [norm_mul]
     exact (mul_le_mul_of_nonneg_right (hnorm P.asIdeal) (norm_nonneg _)).trans_lt
-      (by simpa using hpow)
+      (by simp_all)
   intro heq
   have hval := (sub_eq_zero.mp heq).symm
-  rw [hval, norm_one] at hlt
-  exact (lt_irrefl 1 hlt)
+  simp_all
 
 theorem finiteEulerCorrection_ne_zero
     (K : Type) [Field K] [NumberField K]
     (w : Ideal (𝓞 K) → ℂ) (hnorm : ∀ I, ‖w I‖ ≤ 1)
     (S : Finset (HeightOneSpectrum (𝓞 K))) (s : ℂ) (hs : 0 < s.re) :
-    finiteEulerCorrection K w S s ≠ 0 := by
-  exact Finset.prod_ne_zero_iff.mpr (fun P _ ↦ eulerCorrectionFactor_ne_zero K w hnorm P s hs)
+    finiteEulerCorrection K w S s ≠ 0 := Finset.prod_ne_zero_iff.mpr (fun P _ ↦ eulerCorrectionFactor_ne_zero K w hnorm P s hs)
 
 theorem finiteEulerCorrection_differentiable
     (K : Type) [Field K] [NumberField K]
@@ -51,9 +50,9 @@ theorem finiteEulerCorrection_differentiable
   intro P _
   have hq : (Ideal.absNorm P.asIdeal : ℂ) ≠ 0 := by
     have h : 1 < Ideal.absNorm P.asIdeal := Odlyzko.one_lt_primeIdealNorm K P
-    exact_mod_cast (show Ideal.absNorm P.asIdeal ≠ 0 by omega)
+    measurability
   exact (differentiable_const 1).sub
-    (((differentiable_id.neg).const_cpow (Or.inl hq)).const_mul _)
+    ((differentiable_id.neg.const_cpow (Or.inl hq)).const_mul _)
 
 theorem rayCharacter_eulerCorrection
     (K : Type) [Field K] [NumberField K]
@@ -75,8 +74,8 @@ theorem rayCharacter_eulerCorrection
     if P ∈ S then 1 - χ₀ P.asIdeal * (Ideal.absNorm P.asIdeal : ℂ) ^ (-s) else 1
   have hc : HasProd c (finiteEulerCorrection K χ₀ S s) := by
     have hc' : HasProd c (∏ P ∈ S, c P) :=
-      hasProd_prod_of_ne_finset_one (fun P hP ↦ by simp [c, hP])
-    simpa [finiteEulerCorrection, c] using hc'
+      hasProd_prod_of_ne_finset_one (fun P hP ↦ by measurability)
+    measurability
   apply hχ.unique
   convert hχ₀.mul hc using 1
   funext P
@@ -84,6 +83,6 @@ theorem rayCharacter_eulerCorrection
   · simp only [hzero P hP, zero_mul, sub_zero, inv_one, c, ite_eq_left hP]
     exact (inv_mul_cancel₀ (eulerCorrectionFactor_ne_zero K χ₀
       (rayCharacter_norm_le_one K m₀ hm₀ χ₀) P s (by linarith))).symm
-  · simp [c, hP, hagree P hP]
+  · measurability
 
 end DedekindZetaZeroFree.HeckeCorollary

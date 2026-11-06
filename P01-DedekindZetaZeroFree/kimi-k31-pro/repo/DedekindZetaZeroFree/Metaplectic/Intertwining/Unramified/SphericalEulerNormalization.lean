@@ -12,7 +12,7 @@ open scoped Valued
 
 noncomputable section
 
-def convergenceChamber : Set ℂ := {s | -(1 / 6 : ℝ) < s.re}
+
 
 def sphericalCoefficient (q m : ℝ) (s : ℂ) : ℂ :=
   (m : ℂ) *

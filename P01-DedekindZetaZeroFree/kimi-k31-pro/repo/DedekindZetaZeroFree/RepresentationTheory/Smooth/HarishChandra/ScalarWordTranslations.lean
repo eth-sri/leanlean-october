@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.RepresentationTheory.Smooth.HarishChandra.ScalarWordSpan
 public import DedekindZetaZeroFree.RepresentationTheory.Smooth.FiniteTranslationLieCommutation
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -23,12 +24,11 @@ theorem hcHeckeSpan_right (T : Realization R Q) {f : Functions R}
     obtain ⟨v, b, w, rfl⟩ := hf
     apply Submodule.subset_span
     refine ⟨v, a * b, w, ?_⟩
-    funext g
-    simp [KPLiteralRaw.rightAction, mul_assoc]
-  | zero => simpa only [map_zero] using (hcHeckeSpan T).zero_mem
+    simp_all
+  | zero => simp_all
   | add f g hf hg ihf ihg =>
-    simpa only [map_add] using (hcHeckeSpan T).add_mem ihf ihg
-  | smul c f hf ihf => simpa only [map_smul] using (hcHeckeSpan T).smul_mem c ihf
+    measurability
+  | smul c f hf ihf => measurability
 
 end DedekindZetaZeroFree.FourierContinuation.HCGeneration
 

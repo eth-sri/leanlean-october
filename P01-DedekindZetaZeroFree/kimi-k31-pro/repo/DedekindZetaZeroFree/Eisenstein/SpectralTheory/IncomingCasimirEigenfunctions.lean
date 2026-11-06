@@ -4,6 +4,7 @@ public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.SpectralCoordinateA
 public import DedekindZetaZeroFree.Geometry.HyperbolicActionMetricAndVolume
 public import DedekindZetaZeroFree.Eisenstein.Induction.HolomorphicSectionsAndResidueGerms
 public import DedekindZetaZeroFree.Analysis.QuadraticForms.TestDifferentialFriedrichsLaplacian
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -43,7 +44,7 @@ theorem heightFactor_eigenfunction (d : ℕ) (hd : 0 < d) (s : ℂ) (b : ℂ) :
   intro t
   unfold radialLaplacian
   rw [hfirst, hsecond]
-  have hd' : (d : ℂ) ≠ 0 := by exact_mod_cast (Nat.ne_of_gt hd)
+  have hd' : (d : ℂ) ≠ 0 := by measurability
   simp only [KPContinuation.spectralCoordinate, Int.cast_natCast]
   dsimp [c]
   field_simp

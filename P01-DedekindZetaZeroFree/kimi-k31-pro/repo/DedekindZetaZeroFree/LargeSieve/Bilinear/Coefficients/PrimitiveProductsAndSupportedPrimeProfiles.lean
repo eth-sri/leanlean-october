@@ -57,7 +57,7 @@ private lemma primitive_core (C : Context Q)
     C.primitive p hp a = (Q.χ p.1) a * star ((Q.χ p.2) a) := by
   by_cases ha0 : a = ⊥
   · subst a
-    simp [RayOperations.map_bot]
+    simp
   have hupper : ∀ u, Squarefree u → u ⊔ c = ⊤ → a ⊔ u = ⊤ →
       a ⊔ Q.cond u = ⊤ := by
     intro u hu huc hau

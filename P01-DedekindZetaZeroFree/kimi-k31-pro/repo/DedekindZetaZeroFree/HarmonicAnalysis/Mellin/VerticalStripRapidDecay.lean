@@ -48,7 +48,7 @@ theorem uniform_oscillatory_integral_rapid_decay
         apply le_of_eq
         congr 1
         funext t
-        simp [norm_mul, Complex.norm_exp, Complex.mul_re, Complex.mul_im]
+        simp [Complex.norm_exp, Complex.mul_re, Complex.mul_im]
       _ ≤ D₀ := by simpa using h₀ i hi
   have hderiv := congrFun (Real.fourier_iteratedDeriv (hsmooth i hi)
     (fun k _ => hintegrable i hi k) (n := n) (by simp)) w
@@ -62,7 +62,7 @@ theorem uniform_oscillatory_integral_rapid_decay
         field_simp
         <;> ring
       rw [hid]
-      simp [norm_mul]
+      simp
     calc
       |τ| ^ n * ‖F‖ = ‖FourierTransform.fourier (iteratedDeriv n (p i)) w‖ := by
         rw [hderiv, norm_smul, norm_pow, hnorm]
@@ -72,7 +72,7 @@ theorem uniform_oscillatory_integral_rapid_decay
         apply le_of_eq
         congr 1
         funext t
-        simp [norm_smul, Complex.norm_exp, Complex.mul_re]
+        simp [Complex.norm_exp, Complex.mul_re]
       _ ≤ Dₙ := hₙ i hi
   have hpoly : (1 + |τ|) ^ n * ‖F‖ ≤ 2 ^ n * (D₀ + Dₙ) := by
     by_cases ht : |τ| ≤ 1

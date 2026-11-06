@@ -4,6 +4,7 @@ public import Mathlib.SetTheory.Cardinal.Finite
 public import ClassFieldTheory.LubinTate.EqualCharacteristic.NormSubgroup.StandardSubgroupNorm
 public import ClassFieldTheory.LubinTate.EqualCharacteristic.NormSubgroup.UnitQuotientCard
 public import ClassFieldTheory.LocalClassFieldTheory.LubinTateApplication.NormIndex
+public import Mathlib.Tactic.Linarith
 
 @[expose] public section
 
@@ -76,8 +77,7 @@ theorem equalCharacteristicLubinTateNormSubgroup_eq_uniformizerPrincipalSubgroup
         (Finite.one_lt_card : 1 < Nat.card F.residueField))
       (Nat.pow_pos Nat.card_pos)
   let _ : H.FiniteIndex := ⟨by
-    rw [hindexH]
-    exact Nat.ne_of_gt hdpos⟩
+    linarith⟩
   have hHN : H ≤ N := by
     exact
       equalCharacteristicLubinTate_uniformizerPrincipalSubgroup_le_normSubgroup
@@ -86,13 +86,10 @@ theorem equalCharacteristicLubinTateNormSubgroup_eq_uniformizerPrincipalSubgroup
   apply le_antisymm hHN
   by_contra hNH
   have hne : H ≠ N := by
-    intro heq
-    apply hNH
-    rw [heq]
+    grind
   have hstrict : H < N := lt_of_le_of_ne hHN hne
   have hi := Subgroup.index_strictAnti hstrict
-  rw [hindexH, hindexN] at hi
-  exact Nat.lt_irrefl _ hi
+  linarith
 
 end EqualCharacteristic
 end LubinTate

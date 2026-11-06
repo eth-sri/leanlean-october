@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.Eisenstein.Sections.LiteralSeries
 public import DedekindZetaZeroFree.Eisenstein.Residues.FiniteLevelActionsAndDensity
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -36,8 +37,7 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
     obtain ⟨b, hb, rfl⟩ := hu
     have hb' : e b ∈ U.toOpenSubgroup := hb.2
     have hb'' : a⁻¹ * b * a ∈ U.toOpenSubgroup := by
-      change a⁻¹ * b * (a⁻¹)⁻¹ ∈ U.toOpenSubgroup at hb'
-      simpa only [inv_inv] using hb'
+      measurability
     have hbU : (a⁻¹ * b * a).val ∈ KPGlobalTorusFunctionData.globalLevel F ζ hζ U :=
       ⟨a⁻¹ * b * a, hb'', rfl⟩
     have h := hU (g * a.val) _ hbU

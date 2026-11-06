@@ -20,9 +20,7 @@ structure SmoothCuspCutoff (T : ℝ) where
 def radialCutoff (d : ℕ) (χ : ℝ → ℝ) (s b : ℂ) (t : ℝ) : ℂ :=
   (χ t : ℂ) * KPIncomingCasimir.heightFactor d s t * b
 
-def radialCommutator (d : ℕ) (χ : ℝ → ℝ) (w : ℝ → ℂ) (t : ℝ) : ℂ :=
-  (-((d : ℂ)⁻¹) * ((deriv (deriv χ) t : ℝ) : ℂ) + 2 * ((deriv χ t : ℝ) : ℂ)) * w t -
-    2 * (d : ℂ)⁻¹ * ((deriv χ t : ℝ) : ℂ) * deriv w t
+
 
 def incomingCommutatorMultiplier (d : ℕ) (χ : ℝ → ℝ)
     (s : ℂ) (t : ℝ) : ℂ :=

@@ -93,7 +93,7 @@ theorem actual_upper_local_injection (q : KPFinitePlace F) (z : q.adicCompletion
       RestrictedProduct.mulSingle _ (Sum.inr q) _ (Sum.inr p)
     by_cases hp : p = q
     · subst p; simp
-    · simp [hp,Ne.symm hp]
+    · simp [hp]
 
 theorem actualCoreFourier_stage_finite (t : RestrictedTensorSimple.Level (bad R.A P C))
     (q : KPFinitePlace F) (hq : Sum.inr q ∈ t.val)

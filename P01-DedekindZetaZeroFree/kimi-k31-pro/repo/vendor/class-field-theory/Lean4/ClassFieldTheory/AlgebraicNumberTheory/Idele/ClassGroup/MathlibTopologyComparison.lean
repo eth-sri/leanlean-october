@@ -3,6 +3,7 @@ module
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.ClassGroup.MathlibComparison
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.FiniteMathlibTopologyComparison
 public import Mathlib.Topology.Algebra.Group.Quotient
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -43,7 +44,7 @@ theorem continuous_ideleClassGroupEquivMathlib :
       QuotientGroup.mk' (NumberField.IdeleGroup.principalSubgroup (𝓞 K) K)
         (equivAdeleRingUnits a)) :=
     QuotientGroup.continuous_mk.comp (continuous_equivAdeleRingUnits K)
-  exact h.congr (fun _ => rfl)
+  measurability
 
 /-- The restricted-product and adele-unit presentations of the idèle class
 group are canonically isomorphic as topological groups. -/
@@ -60,7 +61,7 @@ noncomputable def ideleClassGroupContinuousMulEquivMathlib :
         ((equivAdeleRingUnitsContinuousMulEquiv K).symm a)) :=
     QuotientGroup.continuous_mk.comp
       (equivAdeleRingUnitsContinuousMulEquiv K).symm.continuous
-  exact h.congr (fun _ => rfl)
+  measurability
 
 end IdeleGroup
 

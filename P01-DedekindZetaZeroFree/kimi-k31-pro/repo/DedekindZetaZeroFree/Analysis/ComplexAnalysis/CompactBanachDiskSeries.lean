@@ -49,7 +49,7 @@ theorem disk_series_holomorphic (f : ℂ → E) (a : ℕ → E)
     have ht' : 0 < t := lt_of_le_of_lt ht hzt
     have hs : Tendsto (fun n => F n (c + t)) atTop (𝓝 (f (c+t))) :=
       (hu t ht'.le htr').tendsto_at
-        (by simp [Complex.dist_eq,Complex.norm_real,abs_of_pos ht'])
+        (by simp [Complex.norm_real,abs_of_pos ht'])
     have hterm : Tendsto (fun n => (t : ℂ)^n • a n) atTop (𝓝 0) := by
       have hh := (hs.comp (tendsto_add_atTop_nat 1)).sub hs
       simpa [F,Finset.sum_range_succ] using hh

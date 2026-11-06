@@ -29,7 +29,7 @@ theorem finiteCharacter_product_continuous :
     rw [Set.Finite.mem_toFinset]
     by_contra h
     have ha := a.2
-    have hav : a v ∈ v.adicCompletionIntegers F := (Filter.eventually_principal.mp ha) v (by simpa using h)
+    have hav : a v ∈ v.adicCompletionIntegers F := (Filter.eventually_principal.mp ha) v (by simp_all)
     exact hv (localFiniteCharacter_eq_one_of_mem_integers F v (a v) hav)
   change Continuous (fun a => ∏ᶠ v, localFiniteCharacter F v (RestrictedProduct.inclusion _ _ hS a v))
   rw [heq]

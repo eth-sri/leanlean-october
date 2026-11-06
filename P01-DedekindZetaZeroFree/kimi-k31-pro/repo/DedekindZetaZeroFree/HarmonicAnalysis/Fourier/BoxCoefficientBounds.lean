@@ -88,14 +88,14 @@ private lemma fourier_dx (f : 𝓢(P,ℂ)) (t s : ℝ) : 𝓕 (dx f) (e.symm (t,
   have hh : (inner ℝ · ax).HasTemperateGrowth := by fun_prop
   change (2 * Real.pi * Complex.I) • (SchwartzMap.smulLeftCLM ℂ (inner ℝ · ax) (𝓕 f) (e.symm (t,s))) = _
   rw [SchwartzMap.smulLeftCLM_apply_apply hh]
-  simp [ax, e, WithLp.prod_inner_apply, Real.inner_apply, smul_eq_mul]
+  simp [ax, e, WithLp.prod_inner_apply, smul_eq_mul]
   ring
 private lemma fourier_dy (f : 𝓢(P,ℂ)) (t s : ℝ) : 𝓕 (dy f) (e.symm (t,s)) = (2 * Real.pi * Complex.I * (s : ℂ)) * 𝓕 f (e.symm (t,s)) := by
   rw [dy, SchwartzMap.fourier_lineDerivOp_eq]
   have hh : (inner ℝ · ay).HasTemperateGrowth := by fun_prop
   change (2 * Real.pi * Complex.I) • (SchwartzMap.smulLeftCLM ℂ (inner ℝ · ay) (𝓕 f) (e.symm (t,s))) = _
   rw [SchwartzMap.smulLeftCLM_apply_apply hh]
-  simp [ay, e, WithLp.prod_inner_apply, Real.inner_apply, smul_eq_mul]
+  simp [ay, e, WithLp.prod_inner_apply, smul_eq_mul]
   ring
 private lemma fourier_dxn (i : ℕ) (f : 𝓢(P,ℂ)) (t s : ℝ) : 𝓕 (dx^[i] f) (e.symm (t,s)) = (2 * Real.pi * Complex.I * (t : ℂ))^i * 𝓕 f (e.symm (t,s)) := by
   induction i with
@@ -172,7 +172,7 @@ private lemma weighted_sup_bound (R : ℝ) (hR : 0 < R) (f : 𝓢(P,ℂ))
     |t|^i * |s|^j * ‖𝓕 f (e.symm (t,s))‖ ≤ supjet R i j f * (2 * R)^2 := by
   have ha : 1 ≤ 2 * Real.pi := by have := Real.two_le_pi; linarith
   have hnorm (u : ℝ) : ‖(2 * Real.pi * Complex.I * (u : ℂ))‖ = (2 * Real.pi) * |u| := by
-    simp [norm_mul, Complex.norm_real, abs_of_pos Real.pi_pos]
+    simp [Complex.norm_real, abs_of_pos Real.pi_pos]
   have hn := fourier_sup_bound R hR f hs i j t s
   rw [fourier_md, norm_mul, norm_mul, norm_pow, norm_pow, hnorm, hnorm] at hn
   calc

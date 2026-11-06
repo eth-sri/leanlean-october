@@ -28,7 +28,7 @@ private lemma count_bound (ε : ℝ) (hε : 0 < ε) (Z : ℝ) (hZ : 2 ≤ Z) :
   have hpow : (0:ℝ) < Z ^ Scales.smallCutoffExponent := Real.rpow_pos_of_pos hZ0 _
   have hL0 : 0 ≤ Real.logb 2 (Z ^ Scales.smallCutoffExponent) := by
     apply Real.logb_nonneg (by norm_num)
-    exact Real.one_le_rpow hZ1 (by unfold Scales.smallCutoffExponent; norm_num)
+    exact Real.one_le_rpow hZ1 (by grind)
   have hfl : ((⌊Real.logb 2 (Z ^ Scales.smallCutoffExponent)⌋₊ : ℕ) : ℝ) ≤ Real.logb 2 (Z ^ Scales.smallCutoffExponent) :=
     Nat.floor_le hL0
   have hLeq : Real.logb 2 (Z ^ Scales.smallCutoffExponent) = Scales.smallCutoffExponent * Real.log Z / Real.log 2 := by
@@ -41,9 +41,7 @@ private lemma count_bound (ε : ℝ) (hε : 0 < ε) (Z : ℝ) (hZ : 2 ≤ Z) :
     div_nonneg hκ.le (mul_nonneg hl2.le hs.le)
   have key : Scales.smallCutoffExponent * Real.log Z / Real.log 2
       = (Scales.smallCutoffExponent / (Real.log 2 * (ε / 2))) * (Real.log Z * (ε / 2)) := by
-    have hl2' : Real.log 2 ≠ 0 := hl2.ne'
-    have hε' : ε ≠ 0 := hε.ne'
-    field_simp <;> ring
+    grind
   have hLle : Real.logb 2 (Z ^ Scales.smallCutoffExponent)
       ≤ (Scales.smallCutoffExponent / (Real.log 2 * (ε / 2))) * Z ^ (ε / 2) := by
     rw [hLeq, key]
@@ -51,8 +49,7 @@ private lemma count_bound (ε : ℝ) (hε : 0 < ε) (Z : ℝ) (hZ : 2 ≤ Z) :
   push_cast
   calc ((⌊Real.logb 2 (Z ^ Scales.smallCutoffExponent)⌋₊ : ℕ) : ℝ) + 1
       ≤ (Scales.smallCutoffExponent / (Real.log 2 * (ε / 2))) * Z ^ (ε / 2) + 1 * 1 := by
-        have : (1:ℝ) ≤ Z ^ (ε / 2) := Real.one_le_rpow hZ1 hs.le
-        linarith
+        grind
     _ ≤ (Scales.smallCutoffExponent / (Real.log 2 * (ε / 2))) * Z ^ (ε / 2) + Z ^ (ε / 2) := by
         have : (1:ℝ) ≤ Z ^ (ε / 2) := Real.one_le_rpow hZ1 hs.le
         linarith
@@ -80,7 +77,7 @@ theorem rows_small (ε : ℝ) (hε : 0 < ε) :
   have hpow : (0:ℝ) < Z ^ Scales.smallCutoffExponent := Real.rpow_pos_of_pos hZ0 _
   have hL0 : 0 ≤ Real.logb 2 (Z ^ Scales.smallCutoffExponent) := by
     apply Real.logb_nonneg (by norm_num)
-    exact Real.one_le_rpow hZ1 (by unfold Scales.smallCutoffExponent; norm_num)
+    exact Real.one_le_rpow hZ1 (by grind)
   have hfl : ((⌊Real.logb 2 (Z ^ Scales.smallCutoffExponent)⌋₊ : ℕ) : ℝ) ≤ Real.logb 2 (Z ^ Scales.smallCutoffExponent) :=
     Nat.floor_le hL0
   have hZθ : 0 ≤ Z ^ (Scales.mainExponent - 471999 / 10000000 + ε / 2) := Real.rpow_nonneg hZ0.le _
@@ -103,7 +100,7 @@ theorem rows_small (ε : ℝ) (hε : 0 < ε) :
         have h2 : (2:ℝ) ^ (k:ℝ) ≤ (2:ℝ) ^ (Real.logb 2 (Z ^ Scales.smallCutoffExponent)) :=
           Real.rpow_le_rpow_of_exponent_le (by norm_num) hk'
         rw [Real.rpow_natCast, Real.rpow_logb (by norm_num) (by norm_num) hpow] at h2
-        exact h2
+        grind
       have hUs : ((2:ℝ) ^ k) ^ (1 + 1 / 25 + ε / 2) ≤ (Z ^ Scales.smallCutoffExponent) ^ (1 + 1 / 25 + ε / 2) :=
         Real.rpow_le_rpow (by positivity) hUZ (by linarith)
       have hZs : (Z ^ Scales.smallCutoffExponent) ^ (1 + 1 / 25 + ε / 2)

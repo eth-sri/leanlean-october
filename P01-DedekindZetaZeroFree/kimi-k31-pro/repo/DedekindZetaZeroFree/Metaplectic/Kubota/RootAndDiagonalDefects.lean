@@ -121,12 +121,10 @@ private lemma neg_mul_div (K : Type*) [Field K] (A d u v : Kˣ) :
   field_simp
 
 private lemma div_inv_eq (K : Type*) [Field K] (u v : Kˣ) : v / u = (u / v)⁻¹ := by
-  rw [div_eq_mul_inv, div_eq_mul_inv, mul_inv_rev, inv_inv]
+  simp_all
 
 private lemma cancel_div (K : Type*) [Field K] (a b c : Kˣ) : a * b / (a * c) = b / c := by
-  apply Units.ext
-  simp only [Units.val_div_eq_div_val, Units.val_mul]
-  field_simp
+  simp_all
 
 private lemma B_inv_neg (K : Type*) [Field K] (M : Type*) [CommGroup M]
     (B : Kˣ → Kˣ → M)

@@ -45,7 +45,7 @@ theorem residue_integrable (C : JointForwardIdentitySources R N) (v : R.A.UnitQu
       (adelicTraceQuotientCharacter F q : ℂ) = 1 := by
     rw [Complex.star_def, ← Circle.coe_inv_eq_conj, ← Circle.coe_mul]
     simp
-  rw [hunit, mul_one]
+  simp_all
 
 theorem selected_compact_period_germ (C : JointForwardIdentitySources R N) :
     (∀ v s, s ∈ Metric.ball (0 : ℂ) C.realization.radius → ∀ g,

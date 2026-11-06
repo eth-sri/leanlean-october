@@ -236,33 +236,9 @@ theorem globalIdeleClassArtinMonoidHom_mk
   rw [globalIdeleClassArtinMonoidHom]
   exact QuotientGroup.lift_mk _ _ _
 
-/-- The descended global Artin homomorphism is continuous for the
-ordinary quotient topology on the idele class group. -/
-theorem globalIdeleClassArtinMonoidHom_continuous :
-    Continuous
-      (globalIdeleClassArtinMonoidHom
-        (K := K) (L := L)) := by
-  refine
-    (QuotientGroup.isQuotientMap_mk
-      (G := IdeleGroup K)
-      (N := IdeleGroup.principalSubgroup K)).continuous_iff.2 ?_
-  convert
-    (globalArtinMonoidHom_continuous
-      (K := K) (L := L)) using 1
-  funext a
-  exact globalIdeleClassArtinMonoidHom_mk
-    (K := K) (L := L) a
 
-/-- The descended global Artin map, retaining its ordinary topological
-group structure. -/
-noncomputable def globalIdeleClassArtinContinuousMonoidHom :
-    IdeleClassGroup K →ₜ* (L ≃ₐ[K] L) where
-  toMonoidHom :=
-    globalIdeleClassArtinMonoidHom
-      (K := K) (L := L)
-  continuous_toFun :=
-    globalIdeleClassArtinMonoidHom_continuous
-      (K := K) (L := L)
+
+
 
 /-- The descended local-product Artin homomorphism is the canonical
 global norm-residue homomorphism. -/
@@ -289,32 +265,9 @@ theorem
       (globalNormResidueMonoidHom_comp_ideleClassQuotient_eq_globalArtin
         (K := K) (L := L)) a).symm
 
-/-- The independently descended continuous local-product Artin map is
-the canonical topological global norm-residue map. -/
-theorem
-    globalIdeleClassArtinContinuousMonoidHom_eq_globalNormResidueContinuousMonoidHom :
-    globalIdeleClassArtinContinuousMonoidHom
-        (K := K) (L := L) =
-      globalNormResidueContinuousMonoidHom K L := by
-  apply ContinuousMonoidHom.ext
-  intro c
-  change
-    globalIdeleClassArtinMonoidHom
-        (K := K) (L := L) c =
-      globalNormResidueMonoidHom K L c
-  exact
-    DFunLike.congr_fun
-      (globalIdeleClassArtinMonoidHom_eq_globalNormResidueMonoidHom
-        (K := K) (L := L)) c
 
-/-- The descended global Artin homomorphism is surjective. -/
-theorem globalIdeleClassArtinMonoidHom_surjective :
-    Function.Surjective
-      (globalIdeleClassArtinMonoidHom
-        (K := K) (L := L)) := by
-  rw [
-    globalIdeleClassArtinMonoidHom_eq_globalNormResidueMonoidHom]
-  exact globalNormResidueMonoidHom_surjective K L
+
+
 
 /-- The kernel of the descended global Artin homomorphism is exactly
 the genuine idele-class norm range. -/

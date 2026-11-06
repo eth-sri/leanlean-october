@@ -156,8 +156,7 @@ theorem principal_regularization_ne_zero
   · exact_mod_cast NumberField.dedekindZeta_residue_ne_zero F
   · apply Finset.prod_ne_zero_iff.mpr
     intro p hp
-    have hnorm : (1 : ℝ) < Ideal.absNorm p.val.val := by
-      exact lt_of_lt_of_le (by norm_num : (1 : ℝ) < 2)
+    have hnorm : (1 : ℝ) < Ideal.absNorm p.val.val := lt_of_lt_of_le (by norm_num : (1 : ℝ) < 2)
         (idealNorm_prime_ge_two p.val.val p.property)
     have hn : (Ideal.absNorm p.val.val : ℂ) ≠ 1 := by
       exact_mod_cast hnorm.ne'

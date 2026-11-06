@@ -11,7 +11,7 @@ open scoped NumberField BigOperators
 open UniqueFactorizationMonoid
 
 private lemma rpow_two_inv_mul_self (ε : ℝ) (hε : ε ≠ 0) : ((2 : ℝ) ^ (1 / ε)) ^ ε = 2 := by
-  rw [← Real.rpow_mul (by norm_num : (0 : ℝ) ≤ 2), div_mul_cancel₀ 1 hε, Real.rpow_one]
+  simp_all
 
 private lemma threshold_bound (σ₀ ε : ℝ) (hσ₀ : 0 < σ₀) (hε : 0 < ε) (x : ℝ)
     (hx : (2 : ℝ) ^ (1 / ε) + (2 : ℝ) ^ (1 / σ₀) ≤ x) :

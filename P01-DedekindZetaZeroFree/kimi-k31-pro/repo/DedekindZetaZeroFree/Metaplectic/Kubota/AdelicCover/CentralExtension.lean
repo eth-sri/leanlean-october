@@ -101,7 +101,7 @@ theorem centralTupleMap_single (v : KPHilbert.Place F) (ε : rootsOfUnity 3 F) :
   · subst w
     simp [centralTupleMap, centralSingle, localToRestricted, RestrictedProduct.mulSingleMonoidHom]
   · simp [centralTupleMap, centralSingle, localToRestricted, RestrictedProduct.mulSingleMonoidHom,
-      RestrictedProduct.mulSingle_eq_of_ne, hw]
+      hw]
 
 theorem localInjection_injective (v : KPHilbert.Place F) :
     Function.Injective (localInjection F ζ hζ v) := by

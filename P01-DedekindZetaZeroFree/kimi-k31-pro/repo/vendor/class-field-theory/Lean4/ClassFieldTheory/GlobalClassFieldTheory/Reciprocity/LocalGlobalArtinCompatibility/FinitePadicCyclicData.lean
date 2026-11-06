@@ -124,78 +124,7 @@ noncomputable def rationalSeparableClosurePadicCyclotomicDegree
   (rationalCyclotomicPadicCoordinate p).comp
     rationalAbsoluteGaloisRestrictionToCyclotomicZHat
 
-/-- The kernel of the absolute `p`-adic cyclotomic degree is exactly
-the fixing subgroup of the actual `p`-primary cyclotomic field in the
-rational separable closure. -/
-theorem rationalSeparableClosurePadicCyclotomicDegree_ker
-    (p : Nat.Primes) :
-    (rationalSeparableClosurePadicCyclotomicDegree
-        p).toMonoidHom.ker =
-      (rationalCyclotomicPadicField p).fixingSubgroup := by
-  let : Algebra ℚ rationalCyclotomicZHatField :=
-    rationalCyclotomicZHatField.algebra'
-  let : @Normal ℚ rationalCyclotomicZHatField _ _
-      rationalCyclotomicZHatField.algebra' :=
-    rationalCyclotomicZHatField_normal
-  let E :=
-    rationalCyclotomicPadicFieldWithinZHat p
-  ext σ
-  change
-    rationalCyclotomicPadicCoordinate p
-        (rationalAbsoluteGaloisRestrictionToCyclotomicZHat σ) =
-      1 ↔
-    σ ∈ (IntermediateField.lift E).fixingSubgroup
-  constructor
-  · intro hσ
-    have hr :
-        rationalAbsoluteGaloisRestrictionToCyclotomicZHat σ ∈
-          E.fixingSubgroup := by
-      rw [
-        rationalCyclotomicPadicFieldWithinZHat_fixingSubgroup]
-      exact hσ
-    refine (IntermediateField.mem_fixingSubgroup_iff
-      (IntermediateField.lift E) σ).2 ?_
-    intro x hx
-    let xC : rationalCyclotomicZHatField :=
-      ⟨x, IntermediateField.lift_le E hx⟩
-    have hxE : xC ∈ E :=
-      (IntermediateField.mem_lift xC).1 hx
-    have hfix :
-        (rationalAbsoluteGaloisRestrictionToCyclotomicZHat σ) xC =
-          xC :=
-      (IntermediateField.mem_fixingSubgroup_iff
-        E
-          (rationalAbsoluteGaloisRestrictionToCyclotomicZHat σ)).1 hr xC hxE
-    calc
-      σ x =
-          algebraMap rationalCyclotomicZHatField (SeparableClosure ℚ)
-            ((rationalAbsoluteGaloisRestrictionToCyclotomicZHat σ) xC) := by
-              exact
-                (AlgEquiv.restrictNormal_commutes
-                  σ rationalCyclotomicZHatField xC).symm
-      _ = algebraMap rationalCyclotomicZHatField
-            (SeparableClosure ℚ) xC := by
-            rw [hfix]
-      _ = x := rfl
-  · intro hσ
-    have hr :
-        rationalAbsoluteGaloisRestrictionToCyclotomicZHat σ ∈
-          E.fixingSubgroup := by
-      rw [IntermediateField.mem_fixingSubgroup_iff]
-      intro x hx
-      apply Subtype.ext
-      have hfix :
-          σ x.1 = x.1 :=
-        (IntermediateField.mem_fixingSubgroup_iff
-          (IntermediateField.lift E) σ).1 hσ x.1
-            ((IntermediateField.mem_lift x).2 hx)
-      exact
-        (AlgEquiv.restrictNormal_commutes
-          σ rationalCyclotomicZHatField x).trans hfix
-    rw [
-      rationalCyclotomicPadicFieldWithinZHat_fixingSubgroup]
-      at hr
-    exact hr
+
 
 /-- The genuine rational cyclotomic `p`-adic degree restricted to the
 compatible embedded copy of the absolute Galois group of `K`. -/

@@ -125,27 +125,7 @@ noncomputable def
       cases i <;> rfl
     · rfl
 
-omit [NumberField L] [IsGalois K L] in
-/-- The reassociation of supported local factors is Galois
-equivariant. -/
-theorem
-    relativeIdeleSPlaceFactorsEquivUnrestrictedProdOutside_smul
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
-    (σ : L ≃ₐ[K] L)
-    (z : RelativeIdeleSPlaceFactors
-      (K := K) (L := L) S) :
-    relativeIdeleSPlaceFactorsEquivUnrestrictedProdOutside
-        (K := K) (L := L) S
-        ((relativeIdeleSPlaceFactorsAction
-          (K := K) (L := L) S).smul σ z) =
-      (relativeUnrestrictedProdOutsideAction
-        (K := K) (L := L) S).smul σ
-        (relativeIdeleSPlaceFactorsEquivUnrestrictedProdOutside
-          (K := K) (L := L) S z) := by
-  apply Prod.ext
-  · funext i
-    cases i <;> rfl
-  · rfl
+
 
 /-- The complete supported relative-idele group, with its restricted-product
 condition already built into the subtype, is the product of the unrestricted

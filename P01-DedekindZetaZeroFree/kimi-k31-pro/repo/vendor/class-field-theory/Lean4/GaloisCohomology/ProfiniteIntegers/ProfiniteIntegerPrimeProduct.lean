@@ -343,14 +343,7 @@ theorem zHatRingEquivProfiniteIntegerPrimeProduct_apply
       zHatToProfiniteIntegerPrimeProduct z :=
   rfl
 
-/-- The Chinese-remainder ring equivalence is a homeomorphism. -/
-theorem isHomeomorph_zHatRingEquivProfiniteIntegerPrimeProduct :
-    IsHomeomorph zHatRingEquivProfiniteIntegerPrimeProduct := by
-  rw [isHomeomorph_iff_continuous_bijective]
-  exact
-    ⟨continuous_zHatToProfiniteIntegerPrimeProduct,
-      (zHatRingEquivProfiniteIntegerPrimeProduct :
-        ZHat ≃ ProfiniteIntegerPrimeProduct).bijective⟩
+
 
 end ClassFormation
 

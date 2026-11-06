@@ -113,13 +113,7 @@ theorem arithmeticGlobalNormResidueAbelianizationMonoidHom_ker :
     inv_eq_one]
   exact globalNormResidueAbelianizationMonoidHom_eq_one_iff K L c
 
-/-- The arithmetic global norm-residue homomorphism is surjective. -/
-theorem arithmeticGlobalNormResidueAbelianizationMonoidHom_surjective :
-    Function.Surjective
-      (arithmeticGlobalNormResidueAbelianizationMonoidHom K L) :=
-  (MulEquiv.inv
-      (Abelianization (Gal(L / K)))).surjective.comp
-    (globalNormResidueAbelianizationMonoidHom_surjective K L)
+
 
 /-- The arithmetic finite-Galois norm-residue isomorphism, with the
 native idèle-class quotient topology and the finite Krull quotient
@@ -234,19 +228,9 @@ theorem arithmeticGlobalNormResidueMonoidHom_ker :
     arithmeticGlobalNormResidueMonoidHom_apply, inv_eq_one]
   exact globalNormResidueMonoidHom_eq_one_iff K L c
 
-/-- The arithmetic global norm-residue homomorphism is surjective. -/
-theorem arithmeticGlobalNormResidueMonoidHom_surjective :
-    Function.Surjective
-      (arithmeticGlobalNormResidueMonoidHom K L) :=
-  (MulEquiv.inv (Gal(L / K))).surjective.comp
-    (globalNormResidueMonoidHom_surjective K L)
 
-/-- The arithmetic global norm-residue map is continuous for the
-ordinary idèle-class topology and the finite Krull topology. -/
-theorem arithmeticGlobalNormResidueMonoidHom_continuous :
-    Continuous (arithmeticGlobalNormResidueMonoidHom K L) := by
-  exact continuous_inv.comp
-    (globalNormResidueMonoidHom_continuous K L)
+
+
 
 /-- Arithmetic global norm-residue as a homeomorphic multiplicative
 equivalence of the native norm quotient with the finite Krull Galois
@@ -376,26 +360,7 @@ theorem arithmeticChosenInfinitePlaceArtinMonoidHom_apply
         (K := K) (L := L) v x)⁻¹ := by
   rfl
 
-/-- Infinite-place local-global compatibility in arithmetic
-normalization. -/
-theorem
-    arithmeticGlobalNormResidueMonoidHom_comp_infinitePlaceIdeleClass
-    (v : InfinitePlace K) :
-    (arithmeticGlobalNormResidueMonoidHom K L).comp
-        (IdeleGroup.infinitePlaceIdeleClass v) =
-      arithmeticChosenInfinitePlaceArtinMonoidHom K L v := by
-  apply MonoidHom.ext
-  intro x
-  change
-    (globalNormResidueMonoidHom K L
-      (IdeleGroup.infinitePlaceIdeleClass v x))⁻¹ =
-      (chosenInfinitePlaceArtinMonoidHom
-        (K := K) (L := L) v x)⁻¹
-  simpa only [MonoidHom.comp_apply] using
-    congrArg (fun σ : Gal(L / K) => σ⁻¹)
-      (DFunLike.congr_fun
-        (globalNormResidueMonoidHom_comp_infinitePlaceIdeleClass
-          (K := K) (L := L) v) x)
+
 
 /-- The idèle-level global Artin product in arithmetic normalization. -/
 noncomputable def arithmeticGlobalArtinMonoidHom :

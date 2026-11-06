@@ -23,7 +23,7 @@ private theorem principal_of_class_top
       FractionalIdeal.spanSingleton (𝓞 F)⁰ (a : F) * (I : FractionalIdeal (𝓞 F)⁰ F) := by
   have hq := congrArg (ClassGroup.equiv F) hclass
   simp only [ClassGroup.equiv_mk, FractionalIdeal.canonicalEquiv_self,
-    RingEquiv.toMulEquiv_eq_coe, RingEquiv.coe_monoidHom_refl] at hq
+    ] at hq
   have hq' : QuotientGroup.mk' (toPrincipalIdeal (𝓞 F) F).range I =
       QuotientGroup.mk' (toPrincipalIdeal (𝓞 F) F).range J := hq
   rw [QuotientGroup.mk'_eq_mk'] at hq'

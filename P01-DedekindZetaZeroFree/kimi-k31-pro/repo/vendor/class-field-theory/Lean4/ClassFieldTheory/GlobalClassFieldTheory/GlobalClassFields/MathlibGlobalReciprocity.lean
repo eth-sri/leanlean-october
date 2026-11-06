@@ -67,52 +67,7 @@ theorem ideleClassGroupIsMulCommutative
 
 attribute [local instance 2000] ideleClassGroupIsMulCommutative
 
-/-- The ramified finite primes form a finite set.  Adding every real place
-produces a public modulus outside which a number-field extension is
-unramified, independently of any Artin-map construction. -/
-theorem exists_unramifiedOutsideModulus
-    (K L : Type)
-    [Field K] [NumberField K]
-    [Field L] [NumberField L] [Algebra K L] :
-    ∃ m : RayClassModulus K, IsUnramifiedOutsideModulus K L m := by
-  classical
-  let T : Set (IsDedekindDomain.HeightOneSpectrum (𝓞 K)) :=
-    {v | ∃ w : IsDedekindDomain.HeightOneSpectrum (𝓞 L),
-      w.asIdeal.LiesOver v.asIdeal ∧
-        ¬ Algebra.IsUnramifiedAt (𝓞 K) w.asIdeal}
-  have hT : T.Finite :=
-    AlgebraicNumberTheory.Ramification.finite_ramified_base_heightOne_primes
-      (𝓞 K) (𝓞 L)
-  let S := hT.toFinset
-  let f : IsDedekindDomain.HeightOneSpectrum (𝓞 K) → ℕ :=
-    fun v => if v ∈ S then 1 else 0
-  have hf : ∀ v, f v ≠ 0 → v ∈ S := by
-    intro v hv
-    by_contra hnot
-    exact hv (by simp [f, hnot])
-  let m : RayClassModulus K :=
-    { finitePart := Finsupp.onFinset S f hf
-      infinitePart := Finset.univ }
-  refine ⟨m, ?_⟩
-  constructor
-  · intro v hv Q hQ hlie
-    by_contra hram
-    have hQne : Q ≠ ⊥ := by
-      intro hbot
-      have hunder := hlie.over
-      rw [hbot, Ideal.under_bot] at hunder
-      exact v.ne_bot hunder
-    let w : IsDedekindDomain.HeightOneSpectrum (𝓞 L) :=
-      ⟨Q, hQ, hQne⟩
-    have hvT : v ∈ T := ⟨w, hlie, hram⟩
-    have hvS : v ∈ S := hT.mem_toFinset.mpr hvT
-    apply hv
-    apply Finsupp.mem_support_iff.mpr
-    change (Finsupp.onFinset S f hf) v ≠ 0
-    rw [Finsupp.onFinset_apply]
-    simpa only [f, hvS, ite_true] using (one_ne_zero : (1 : ℕ) ≠ 0)
-  · intro v hv hnot
-    exact (hnot (Finset.mem_univ _)).elim
+
 
 /-- The public narrow modulus whose finite part is the actual norm conductor. -/
 noncomputable def normConductorRayClassModulus
@@ -177,21 +132,7 @@ theorem normConductorRayClassModulus_unramifiedOutside
     change (⟨v, hv⟩ : RayClassRealPlace K) ∉ Finset.univ at hnot
     exact (hnot (Finset.mem_univ _)).elim
 
-/-- The norm conductor yields a public modulus outside which the extension
-is unramified. -/
-theorem unramifiedOutside_normConductorModulus
-    (K L : Type)
-    [Field K] [NumberField K]
-    [Field L] [NumberField L] [Algebra K L]
-    [IsAbelianGalois K L] :
-    ∃ m : RayClassModulus K,
-      m.finitePart =
-        GlobalClassFieldTheory.GlobalClassFields.ideleClassNormNarrowFiniteConductor
-          (K := K) (L := L) ∧
-        IsUnramifiedOutsideModulus K L m := by
-  refine ⟨normConductorRayClassModulus K L, ?_,
-    normConductorRayClassModulus_unramifiedOutside K L⟩
-  rfl
+
 
 /-- The public norm-conductor modulus is a defining modulus for the actual
 idèle-class norm subgroup. -/
@@ -273,54 +214,13 @@ theorem normConductorArtin_prime
   exact GlobalClassFieldTheory.IdealClassFieldTheory.arithmeticIdealArtinGaloisMap_primeIdeal_eq_arithmeticFinitePlacePrimeArtin
     (K := K) (L := L) m' hm v hv'
 
-/-- The class field selected from a closed finite-index idèle-class subgroup
-has exactly that subgroup as its norm group. -/
-theorem classFieldExistence_normSubgroup
-    (K : Type) [Field K] [NumberField K]
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex] :
-    (_root_.ideleClassNorm K
-        (GlobalClassFieldTheory.GlobalClassFields.closedFiniteIndexClassField
-          (K := K) H hclosed)).range = H :=
-  GlobalClassFieldTheory.GlobalClassFields.closedFiniteIndexClassField_ideleClassNorm_range
-    H hclosed
 
-/-- The degree of the selected class field is the index of its defining
-idèle-class subgroup. -/
-theorem classFieldExistence_degree
-    (K : Type) [Field K] [NumberField K]
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex] :
-    Module.finrank K
-        (GlobalClassFieldTheory.GlobalClassFields.closedFiniteIndexClassField
-          (K := K) H hclosed) = H.index :=
-  GlobalClassFieldTheory.GlobalClassFields.closedFiniteIndexClassField_finrank_eq_index
-    H hclosed
 
-/-- The implemented arithmetic norm-residue isomorphism proves finite
-abelian global reciprocity in quotient form. -/
-theorem finiteAbelianGlobalReciprocity
-    (K L : Type)
-    [Field K] [NumberField K]
-    [Field L] [NumberField L] [Algebra K L]
-    [FiniteDimensional K L] [IsAbelianGalois K L] :
-    Nonempty
-      ((IdeleClassGroup K ⧸ (_root_.ideleClassNorm K L).range) ≃ₜ*
-        (L ≃ₐ[K] L)) := by
-  exact
-    ⟨GlobalClassFieldTheory.Reciprocity.arithmeticGlobalNormResidueContinuousMulEquiv K L⟩
 
-/-- Maximal abelian reciprocity after quotienting by the identity
-component. -/
-theorem maximalAbelianGlobalReciprocity
-    (K : Type) [Field K] [NumberField K] :
-    Nonempty
-      (ideleClassComponentQuotient K ≃ₜ*
-        (maximalAbelianExtension K ≃ₐ[K] maximalAbelianExtension K)) := by
-  exact
-    ⟨GlobalClassFieldTheory.Reciprocity.ideleClassComponentQuotientEquivMaximalAbelianGalois K⟩
+
+
+
+
 
 end ClassFieldTheory.GlobalClassFieldComparison
 

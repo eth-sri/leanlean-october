@@ -593,7 +593,7 @@ private theorem complex_taylor_bound
     (fun z hz => (hd z (hseg hz)).hasFDerivAt.hasFDerivWithinAt)
     (fun z hz => by
       have he : ContinuousLinearMap.toSpanSingleton ℂ (H₁ z) - ContinuousLinearMap.toSpanSingleton ℂ (H₁ s) =
-          ContinuousLinearMap.toSpanSingleton ℂ (H₁ z - H₁ s) := by ext c; simp [smul_sub]
+          ContinuousLinearMap.toSpanSingleton ℂ (H₁ z - H₁ s) := by ext c; simp
       rw [he, ContinuousLinearMap.norm_toSpanSingleton]
       exact hdiff z hz)
     (left_mem_segment ℝ s t) (right_mem_segment ℝ s t)

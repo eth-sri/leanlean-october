@@ -115,7 +115,7 @@ lemma rationalTail_mem (a : Fˣ) (L : List (ThetaBranch.ExteriorPrime R.A))
     · have hn : ¬ ∃ q ∈ L, (Sum.inr p : KPHilbert.Place F) = Sum.inr q.val := by
         rintro ⟨q, hq, he⟩
         exact q.property (Sum.inr.inj he ▸ hp)
-      simp [if_pos hp, if_neg hn, DigitMasks.exteriorFactor, hp]
+      simp [DigitMasks.exteriorFactor, hp]
     · by_cases hl : (⟨p, hp⟩ : ThetaBranch.ExteriorPrime R.A) ∈ L
       · have he : ∃ q ∈ L, (Sum.inr p : KPHilbert.Place F) = Sum.inr q.val := ⟨⟨p, hp⟩, hl, rfl⟩
         rw [if_neg hp, if_pos he]

@@ -4,6 +4,7 @@ public import ClassFieldTheory.AlgebraicNumberTheory.Idele.ClassGroup.AlgEquivAd
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.FiniteMathlibTopologyComparison
 public import Mathlib.Topology.Algebra.Group.Quotient
 public import Mathlib.Topology.Algebra.Group.Units
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -86,7 +87,7 @@ noncomputable def ideleClassCongrContinuousMulEquiv
           (ideleCongr e a)) :=
       QuotientGroup.continuous_mk.comp
         (ideleCongrContinuousMulEquiv e).continuous
-    exact h.congr (fun a => (ideleClassCongr_mk e a).symm)
+    measurability
   · apply (QuotientGroup.isQuotientMap_mk
       (IdeleGroup.principalSubgroup M)).continuous_iff.mpr
     have h : Continuous (fun a : IdeleGroup M =>
@@ -94,7 +95,7 @@ noncomputable def ideleClassCongrContinuousMulEquiv
           ((ideleCongr e).symm a)) :=
       QuotientGroup.continuous_mk.comp
         (ideleCongrContinuousMulEquiv e).symm.continuous
-    exact h.congr (fun _ => rfl)
+    measurability
 
 /-- The topological and algebraic transports of idèle classes agree. -/
 @[simp]

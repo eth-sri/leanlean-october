@@ -230,13 +230,12 @@ theorem A_local (v : KPHilbert.Place F) (y : (KPHilbert.Completion F v)ˣ) :
 
 private theorem eval_algebraMap (v : KPHilbert.Place F) (x : F) :
     adeleEval F v (algebraMap F (Adeles F) x) = algebraMap F (KPHilbert.Completion F v) x := by
-  cases v <;> rfl
+  aesop
 
 theorem eval_rationalUnit (v : KPHilbert.Place F) (y : Fˣ) :
     Units.map (adeleEval F v).toMonoidHom (Units.map (algebraMap F (Adeles F)).toMonoidHom y) =
       Units.map (algebraMap F (KPHilbert.Completion F v)).toMonoidHom y := by
-  apply Units.ext
-  exact eval_algebraMap F v y
+  aesop
 
 theorem N_rational (x : F) :
     N F ζ hζ (algebraMap F (Adeles F) x) =
@@ -272,14 +271,12 @@ theorem W_rational :
 theorem projection_N (x : Adeles F) (v : KPHilbert.Place F) :
     matrixEval F v (projection F ζ hζ (N F ζ hζ x)) =
       KubotaRankTwo.n (KPHilbert.Completion F v) (adeleEval F v x) := by
-  rw [N, projection_amalgamation, restrictedProjection_eval]
-  rfl
+  aesop
 
 theorem projection_A (y : Ideles F) (v : KPHilbert.Place F) :
     matrixEval F v (projection F ζ hζ (A F ζ hζ y)) =
       KubotaRankTwo.d (KPHilbert.Completion F v) (Units.map (adeleEval F v) y) 1 := by
-  rw [A, projection_amalgamation, restrictedProjection_eval]
-  rfl
+  aesop
 
 @[simp] theorem N_zero : N F ζ hζ 0 = 1 := by
   change amalgamation F ζ hζ (NTuple F ζ hζ 0) = 1
@@ -412,8 +409,7 @@ private theorem rationalBase_scalar (g : KubotaRankTwo.GL2 F)
   obtain ⟨y, hy⟩ := hg
   have hinj := NumberField.AdeleRing.algebraMap_injective (𝓞 F) F
   have hentry (i j : Fin 2) : algebraMap F (Adeles F) (g i j) =
-      (Matrix.GeneralLinearGroup.scalar (Fin 2) y) i j := by
-    exact congrArg (fun m : AdelicGL2 F => m i j) hy.symm
+      (Matrix.GeneralLinearGroup.scalar (Fin 2) y) i j := congrArg (fun m : AdelicGL2 F => m i j) hy.symm
   have he : algebraMap F (Adeles F) (g 0 0) = (y : Adeles F) := by
     simpa using hentry 0 0
   have hn : g 0 0 ≠ 0 := by

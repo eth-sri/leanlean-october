@@ -474,27 +474,7 @@ theorem principalLocalQuotientMap_apply
       QuotientGroup.mk' (U v) ((principalIdele K x).2 v.1) :=
   rfl
 
-/-- Multiplicative weak approximation is equivalently surjectivity of the
-diagonal map to every finite product of quotients by open local subgroups. -/
-theorem principalLocalQuotientMap_surjective
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
-    (U : ∀ v : ↥S, Subgroup (v.1.adicCompletion K)ˣ)
-    (hU : ∀ v, IsOpen (U v : Set (v.1.adicCompletion K)ˣ)) :
-    Function.Surjective (principalLocalQuotientMap S U) := by
-  intro q
-  choose a ha using fun v : ↥S =>
-    QuotientGroup.mk_surjective (q v)
-  let α : IdeleGroup K :=
-    ideleOfFiniteLocalFamily S a
-  obtain ⟨x, hx⟩ :=
-    exists_principal_quotient_mem_openLocalSubgroups_finset
-      S α U hU
-  refine ⟨x, ?_⟩
-  funext v
-  rw [principalLocalQuotientMap_apply, ← ha v]
-  apply Eq.symm
-  apply (QuotientGroup.eq_iff_div_mem).2
-  simpa [α, div_eq_mul_inv] using hx v
+
 
 end IdeleGroup
 

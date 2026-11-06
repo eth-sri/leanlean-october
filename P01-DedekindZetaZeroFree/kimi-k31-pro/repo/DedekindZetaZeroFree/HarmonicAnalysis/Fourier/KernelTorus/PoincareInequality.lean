@@ -176,9 +176,9 @@ theorem coefficient_fderiv
       (fun y : KPCuspCharts.Horizontal F => f (QuotientAddGroup.mk y))) (Quotient.out z)) w = _
     rw [fderiv_mul (hms.differentiable (by simp)).differentiableAt
       (hf.differentiable (by simp)).differentiableAt]
-    simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smulRight_apply,
-      fderiv_star, ContinuousLinearMap.comp_apply, starL'_apply, hd,
-      ContinuousLinearMap.smul_apply, smul_eq_mul, star_mul, hLc, hsc]
+    simp only [ContinuousLinearMap.add_apply, 
+      fderiv_star, ContinuousLinearMap.comp_apply, hd,
+      ContinuousLinearMap.smul_apply, smul_eq_mul, hLc]
     simp only [Quotient.out_eq]
     change star (m z) * df z + f z * star (m z * c) = _
     rw [star_mul, hsc]
@@ -341,10 +341,10 @@ private theorem coefficient_energy_eq
         ‖coefficient S D ρ μ (horizontalDeriv S D ρ f (Pi.single i Complex.I)) ξ‖ ^ 2)) =
       ‖coefficient S D ρ μ f ξ‖ ^ 2 * KPCuspFrequencyGap.horizontalEnergy t b ξ := by
   simp_rw [coefficient_horizontalDeriv S D ρ μ hμ hprob f hf, pairing_single]
-  simp only [norm_mul, Complex.mul_re, Complex.one_re, Complex.one_im,
-    Complex.I_re, Complex.I_im, mul_one, mul_zero, sub_zero, sub_neg_eq_add,
-    zero_add, Complex.conj_re, Complex.conj_im, neg_neg, Complex.norm_I,
-    Complex.norm_real, one_mul, mul_one]
+  simp only [norm_mul, Complex.mul_re, 
+    Complex.I_re, Complex.I_im, mul_one, mul_zero, 
+    Complex.norm_I,
+    Complex.norm_real, mul_one]
   unfold KPCuspFrequencyGap.horizontalEnergy KPCuspFrequencyGap.shapeEnergy
   rw [Finset.mul_sum, Finset.mul_sum]
   apply Finset.sum_congr rfl
@@ -354,7 +354,7 @@ private theorem coefficient_energy_eq
   simp only [mul_pow]
   simp_rw [Complex.sq_norm]
   simp only [Real.norm_eq_abs, sq_abs, RCLike.star_def,
-    Complex.conj_re, Complex.conj_im, neg_neg, neg_sq, Complex.normSq_apply]
+    Complex.conj_re, Complex.conj_im, Complex.normSq_apply]
   norm_num
   ring
 

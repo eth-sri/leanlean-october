@@ -78,7 +78,7 @@ private lemma density_interval (a : Ideal (𝓞 F)) :
       1 - 1 / (Ideal.absNorm p : ℝ) ≤ 1
     constructor
     · have := one_div_le_one_div_of_le (by norm_num : (0 : ℝ) < 1) hp1
-      simp only [one_div_one, ← one_div] at this
+      simp only [one_div_one] at this
       linarith
     · have : 0 ≤ 1 / (Ideal.absNorm p : ℝ) := by positivity
       linarith
@@ -129,9 +129,9 @@ private lemma coprime_rows_bound (Q : DedekindZetaZeroFree.QuadraticHeckeFamily 
     hS hS U U hU hU hm hm z z
   simp only [DivisorSeparation.idealDivisorRectangle, Finset.sum_singleton,
     Finset.card_singleton, Nat.cast_one, one_mul, ← Ideal.one_eq_top, one_dvd,
-    and_true, Finset.filter_true_of_mem, mul_one] at h
-  simp only [Finset.filter_singleton, one_dvd, if_true, Finset.card_singleton,
-    Nat.cast_one, mul_one, Ideal.one_eq_top] at h
+    and_true, mul_one] at h
+  simp only [Finset.filter_singleton, 
+    Ideal.one_eq_top] at h
   have htopdvd : ∀ u : Ideal (𝓞 F), (⊤ : Ideal (𝓞 F)) ∣ u := by
     intro u
     exact Ideal.dvd_iff_le.mpr le_top
@@ -184,9 +184,9 @@ private lemma nonunit_rows_bound (Q : DedekindZetaZeroFree.QuadraticHeckeFamily 
     by_cases hu1 : u = ⊤ <;> by_cases hv1 : v = ⊤
     · subst u; subst v
       simp [z0, star_mul, mul_assoc, mul_left_comm, mul_comm]
-    · simp [z0, hu1, hv1, ht, star_mul]
-    · simp [z0, hu1, hv1, ht, star_mul]
-    · simp [z0, hu1, hv1, ht, star_mul]
+    · simp [z0, hu1, hv1]
+    · simp [z0, hu1, hv1, star_mul]
+    · simp [z0, hu1, hv1, ht]
   have henergy : (∑ u ∈ S, ‖z0 u‖ ^ 2) ≤
       ∑ u ∈ S, GcdTail.primeSupportCost u * ‖z u‖ ^ 2 := by
     apply Finset.sum_le_sum
@@ -278,9 +278,9 @@ theorem density_rows_of_operator
         density_mul D.bad u D.bad_ne_bot (hSne u hu) hqu]
     change lam (d * u) * star (lam (d * v)) * (rho (D.bad * u * v) : ℂ) *
       ((Q.χ u) (a * t ^ 2) * star ((Q.χ v) (a * t ^ 2))) = _
-    simp only [hf, MainBoundaryBound.pairCharacter, MonoidHom.coe_mk,
-      MonoidHom.coe_coe, (Q.χ u).map_mul', (Q.χ v).map_mul', beta,
-      star_mul, Complex.star_def, map_mul, Complex.conj_ofReal, Complex.ofReal_mul]
+    simp only [hf, 
+      (Q.χ u).map_mul', (Q.χ v).map_mul', beta,
+      star_mul, Complex.star_def, Complex.conj_ofReal, Complex.ofReal_mul]
     ring
   have hrow : ∀ t a,
       MainBoundaryBound.densityRow Q D.bad d N g lam (a * t ^ 2) =

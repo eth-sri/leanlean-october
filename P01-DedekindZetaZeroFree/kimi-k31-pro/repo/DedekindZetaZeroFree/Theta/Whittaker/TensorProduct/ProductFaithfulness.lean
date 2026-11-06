@@ -61,7 +61,7 @@ theorem product_eq_of_compact_slices {I : Type*} [Fintype I] [DecidableEq I]
         funext u
         by_cases hu : u = w
         · subst u; simp
-        · simp [Function.update_of_ne hu,Finset.mem_insert,hu,a]
+        · simp [Finset.mem_insert,hu,a]
       have hx := congrFun heval (g w)
       rw [hf,hh] at hx
       dsimp only at hx

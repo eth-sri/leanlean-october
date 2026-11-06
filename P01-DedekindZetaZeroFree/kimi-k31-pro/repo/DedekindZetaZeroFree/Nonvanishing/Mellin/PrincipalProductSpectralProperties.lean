@@ -317,8 +317,7 @@ private theorem spectral_strip_bound (R : ActualRecipe S η) (a b : ℝ) (ha : 1
  have hhs := hH ((r : ℂ) + t * Complex.I) (by simpa [hre] using hr.1)
  have hls := hL ((r : ℂ) + t * Complex.I) (by simpa [hre] using hr.1)
  calc
-  _ ≤ (Real.exp ((b - 5 / 6) ^ 2) / (1 + t ^ 2)) * M * B := by
-   exact mul_le_mul (mul_le_mul hg hhs (norm_nonneg _) (by positivity)) hls
+  _ ≤ (Real.exp ((b - 5 / 6) ^ 2) / (1 + t ^ 2)) * M * B := mul_le_mul (mul_le_mul hg hhs (norm_nonneg _) (by positivity)) hls
     (norm_nonneg _) (by positivity)
   _ = C / (1 + t ^ 2) := by dsimp [C]; ring
 
@@ -372,7 +371,7 @@ theorem actual_principal_spectral_properties
       apply hP.mul
       apply DifferentiableOn.fun_finset_prod
       intro v hv
-      exact ((((differentiable_id.neg).mul_const
+      exact (((differentiable_id.neg.mul_const
         (Real.log (idealNorm v.asIdeal) : ℂ)).cexp).const_mul
           (R.target v.asIdeal)).differentiableOn.const_sub 1
     exact hNr.div hL (fun s hs => hLzero s hs)

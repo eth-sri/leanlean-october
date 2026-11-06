@@ -358,14 +358,7 @@ theorem fractionalIdeal_ker :
       exact (localOrder_eq_zero_iff v (a v)).2 (ha v)
     simp [fractionalIdeal, hv]
 
-/-- The ideal group as the quotient of finite ideles by the everywhere
-integral finite ideles. -/
-def quotientIntegralEquiv :
-    FiniteIdeleGroup K ⧸ integralSubgroup ≃*
-      FractionalIdealGroup K := by
-  rw [← fractionalIdeal_ker]
-  exact QuotientGroup.quotientKerEquivOfSurjective
-    fractionalIdeal fractionalIdeal_surjective
+
 
 end FiniteIdeleGroup
 
@@ -399,14 +392,7 @@ theorem fractionalIdeal_ker :
   rw [← MonoidHom.mem_ker,
     FiniteIdeleGroup.fractionalIdeal_ker]
 
-/-- The ideal group as the quotient of all ideles by those integral at
-every finite place. -/
-def quotientIntegralEquiv :
-    IdeleGroup K ⧸ integralAtFinitePlaces ≃*
-      FractionalIdealGroup K := by
-  rw [← fractionalIdeal_ker]
-  exact QuotientGroup.quotientKerEquivOfSurjective
-    fractionalIdeal fractionalIdeal_surjective
+
 
 /-- The canonical surjection from ideles to the ordinary ideal class
 group. -/

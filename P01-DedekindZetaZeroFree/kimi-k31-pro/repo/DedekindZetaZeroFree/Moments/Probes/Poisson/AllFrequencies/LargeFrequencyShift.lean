@@ -28,7 +28,7 @@ private lemma cvi_congr {σ : ℝ} {f g : ℂ → ℂ}
     (h : ∀ t : ℝ, f ((σ : ℂ) + (t : ℂ) * Complex.I) = g ((σ : ℂ) + (t : ℂ) * Complex.I)) :
     comparisonVerticalIntegral σ f = comparisonVerticalIntegral σ g := by
   unfold comparisonVerticalIntegral
-  simp only [h]
+  grind
 
 theorem raw_Iwz_shift (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
     (Z : ℝ) (hZ : 2 ≤ Z) (ξ : ℂ) (hξ : ξ.re = 4) :
@@ -119,7 +119,7 @@ theorem raw_large_row_bound (ε : ℝ) (hε : 0 < ε) :
           (((Scales.tailShift : ℝ) : ℂ) + (t.2.2 : ℂ) * Complex.I) Z‖))
       = A * ‖∫ t : ℝ × ℝ × ℝ, rawKernel D u ((4 : ℂ) + (t.1 : ℂ) * Complex.I)
           ((4 : ℂ) + (t.2.1 : ℂ) * Complex.I)
-          (((Scales.tailShift : ℝ) : ℂ) + (t.2.2 : ℂ) * Complex.I) Z‖ := by rw [hA]; ring
+          (((Scales.tailShift : ℝ) : ℂ) + (t.2.2 : ℂ) * Complex.I) Z‖ := by grind
     _ ≤ A * (C0 * Z ^ ((44675 / 10000 : ℝ) + 33 / 100 * Scales.tailShift) *
           frequencyNorm D.recipe u ^ (-Scales.tailShift + ε)) := mul_le_mul_of_nonneg_left h1 hA0
     _ ≤ (A + 1) * (C0 * Z ^ ((44675 / 10000 : ℝ) + 33 / 100 * Scales.tailShift) *

@@ -62,8 +62,8 @@ private theorem build :
     by_contra hnz
     have hz1 : z ∉ ball (0 : W) 1 := fun h => hnz (ball_subset_closedBall h)
     have hz2 : -z ∉ ball (0 : W) 1 := by simpa [mem_ball, dist_zero_right] using hz1
-    have h1 : f z = 0 := not_ne_iff.mp (fun h => hz1 (hf (subset_tsupport f (by exact h))))
-    have h2 : f (-z) = 0 := not_ne_iff.mp (fun h => hz2 (hf (subset_tsupport f (by exact h))))
+    have h1 : f z = 0 := not_ne_iff.mp (fun h => hz1 (hf (subset_tsupport f h)))
+    have h2 : f (-z) = 0 := not_ne_iff.mp (fun h => hz2 (hf (subset_tsupport f h)))
     simpa [Function.mem_support, hb, g, h1, h2] using hz
   · intro z; simp [hb]
   · intro z; simp [hb, g, add_comm]
@@ -365,10 +365,10 @@ private theorem scale_fourier {W : Type*} [NormedAddCommGroup W] [InnerProductSp
     𝓕 (fun x => φ (t⁻¹ • x)) w = t ^ Module.finrank ℝ W • (𝓕 φ : SchwartzMap W ℂ) (t • w) := by
   rw [Real.fourier_eq', SchwartzMap.fourier_coe, Real.fourier_eq']
   have hp (x : W) : inner ℝ (t⁻¹ • x) (t • w) = inner ℝ x w := by
-    simp [inner_smul_left, inner_smul_right, ht.ne', mul_assoc]
+    simp [inner_smul_left, inner_smul_right, ht.ne']
   have h := Measure.integral_comp_smul (volume : Measure W)
     (fun x => Complex.exp (-(↑(2 * Real.pi * inner ℝ x (t • w)) * Complex.I)) • φ x) t⁻¹
-  simp only [hp, inv_inv, abs_of_pos ht, abs_pow] at h
+  simp only [hp] at h
   simpa only [inv_pow, inv_inv, abs_pow, abs_of_pos ht, neg_mul, Complex.ofReal_neg, neg_mul] using h
 
 theorem balanced_bandlimited_majorant

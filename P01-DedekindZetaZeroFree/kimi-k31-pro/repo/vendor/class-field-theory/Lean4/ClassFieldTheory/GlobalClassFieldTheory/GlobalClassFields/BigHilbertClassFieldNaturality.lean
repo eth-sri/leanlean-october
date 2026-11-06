@@ -539,23 +539,7 @@ theorem bigHilbertClassFieldQuotientEquivNarrowClassGroup_naturality
   simp only [bigHilbertNarrowClassGroupCongr,
     MulEquiv.trans_apply, MulEquiv.symm_apply_apply]
 
-/-- Homomorphism form of naturality for the big-Hilbert
-quotient--narrow-class-group identification. -/
-theorem
-    bigHilbertClassFieldQuotientEquivNarrowClassGroup_naturality_hom
-    (e : K ≃ₐ[ℚ] M) :
-    (bigHilbertClassFieldQuotientEquivNarrowClassGroup
-        (K := M)).toMonoidHom.comp
-        (bigHilbertClassFieldQuotientCongr
-          (K := K) (M := M) e).toMonoidHom =
-      (bigHilbertNarrowClassGroupCongr
-        (K := K) (M := M) e).toMonoidHom.comp
-        (bigHilbertClassFieldQuotientEquivNarrowClassGroup
-          (K := K)).toMonoidHom := by
-  ext q
-  exact
-    bigHilbertClassFieldQuotientEquivNarrowClassGroup_naturality
-      (K := K) (M := M) e q
+
 
 /-- On an idele representative, canonical transport of narrow ideal
 classes is represented by the transported idele itself. -/
@@ -599,18 +583,7 @@ theorem bigHilbertNarrowClassGroupCongr_mk
         ideleClassCongr_mk,
         bigHilbertClassFieldQuotientEquivNarrowClassGroup_mk]
 
-/-- Homomorphism form of naturality for narrow ideal classes under the
-big-Hilbert narrow-class-group transport. -/
-theorem bigHilbertNarrowClassGroupCongr_naturality
-    (e : K ≃ₐ[ℚ] M) :
-    (bigHilbertNarrowClassGroupCongr e).toMonoidHom.comp
-        (QuotientGroup.mk'
-          (RayClass.narrowDenominator (K := K))) =
-      (QuotientGroup.mk'
-        (RayClass.narrowDenominator (K := M))).comp
-          (ideleCongr e).toMonoidHom := by
-  ext a
-  exact bigHilbertNarrowClassGroupCongr_mk e a
+
 
 end GlobalClassFields
 end GlobalClassFieldTheory

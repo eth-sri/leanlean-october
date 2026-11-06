@@ -267,18 +267,7 @@ theorem equalCharacteristicChangedCompletedLevelBaseHom_sourceUniformizer
   rw [equalCharacteristicChangedCompletedLevelBaseHom, RingHom.comp_apply]
   rfl
 
-/-- The chosen changed completed primitive point is nonzero. -/
-theorem equalCharacteristicChangedCompletedPrimitiveRoot_ne_zero
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
-    equalCharacteristicChangedCompletedPrimitiveRoot F u n ≠ 0 := by
-  intro hzero
-  apply equalCharacteristicChangedCompletedPrimitiveRoot_not_torsion_pred F u n
-  change equalCharacteristicLubinTateAmbientPiIterate F
-      (equalCharacteristicChangedCompletedLevelUniformizer F u n) n
-      (equalCharacteristicChangedCompletedPrimitiveRoot F u n) = 0
-  rw [hzero, map_zero]
+
 
 /-- The source LT bracket image attached to a bracket unit `a`.  The theta
 unit is the separate parameter `u`. -/
@@ -427,46 +416,7 @@ theorem equalCharacteristicChangedCompletedUnitRoot_isRoot
   rw [ht]
   exact hzEquation
 
-/-- A source LT bracket is a polynomial expression in its input over the
-completed-unramified base. -/
-theorem equalCharacteristicChangedCompletedAmbientBracket_mem_adjoin
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n m : ℕ)
-    (a : F.residueField⟦X⟧)
-    (z : equalCharacteristicChangedCompletedLevelField F u n) :
-    equalCharacteristicLubinTateAmbientBracket F
-        (equalCharacteristicChangedCompletedLevelResidueHom F u n)
-        (equalCharacteristicChangedCompletedLevelUniformizer F u n) m a z ∈
-      Algebra.adjoin
-        (equalCharacteristicCompletedUnramifiedField F.residueField)
-        ({z} : Set (equalCharacteristicChangedCompletedLevelField F u n)) := by
-  let A := equalCharacteristicCompletedUnramifiedField F.residueField
-  let E := equalCharacteristicChangedCompletedLevelField F u n
-  let t : E := equalCharacteristicChangedCompletedLevelUniformizer F u n
-  let S : Subalgebra A E := Algebra.adjoin A ({z} : Set E)
-  have hz : z ∈ S := Algebra.subset_adjoin (Set.mem_singleton z)
-  have ht : t ∈ S := by
-    change algebraMap A E
-      (equalCharacteristicChangedCompletedBaseUniformizer F u) ∈ S
-    exact S.algebraMap_mem _
-  have hcoeff (c : F.residueField) :
-      equalCharacteristicChangedCompletedLevelResidueHom F u n c ∈ S := by
-    rw [equalCharacteristicChangedCompletedLevelResidueHom, RingHom.comp_apply,
-      equalCharacteristicChangedCompletedLevelBaseHom, RingHom.comp_apply]
-    exact S.algebraMap_mem _
-  have hiterate (i : ℕ) :
-      equalCharacteristicLubinTateAmbientPiIterate F t i z ∈ S := by
-    induction i with
-    | zero =>
-        simpa [equalCharacteristicLubinTateAmbientPiIterate_zero] using hz
-    | succ i ih =>
-        rw [equalCharacteristicLubinTateAmbientPiIterate_succ,
-          ← equalCharacteristicLubinTateAmbientPiEnd_iterate,
-          equalCharacteristicLubinTateAmbientPiEnd_apply]
-        exact S.add_mem (S.pow_mem ih _) (S.mul_mem ht ih)
-  rw [equalCharacteristicLubinTateAmbientBracket_apply]
-  exact S.sum_mem fun i _ ↦ S.mul_mem (hcoeff _) (hiterate i)
+
 
 /-- The visible source unit parameter root. -/
 noncomputable def equalCharacteristicChangedCompletedUnitParameterRoot
@@ -665,64 +615,7 @@ theorem equalCharacteristicChangedCompletedPrimitiveRoot_adjoin_eq_top
   rw [equalCharacteristicChangedCompletedPrimitivePolynomial_adjoin_rootSet] at hall
   exact top_unique hall
 
-/-- Every source LT unit bracket of the primitive point is itself a
-primitive generator of the completed level field. -/
-theorem equalCharacteristicChangedCompletedUnitRoot_adjoin_eq_top
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n : ℕ)
-    (a : F.residueField⟦X⟧ˣ) :
-    Algebra.adjoin
-        (equalCharacteristicCompletedUnramifiedField F.residueField)
-        ({equalCharacteristicChangedCompletedUnitRoot F u n a} :
-          Set (equalCharacteristicChangedCompletedLevelField F u n)) = ⊤ := by
-  let x := equalCharacteristicChangedCompletedPrimitiveRoot F u n
-  let y := equalCharacteristicChangedCompletedUnitRoot F u n a
-  let ι := equalCharacteristicChangedCompletedLevelResidueHom F u n
-  let t := equalCharacteristicChangedCompletedLevelUniformizer F u n
-  have hrecover :
-      equalCharacteristicLubinTateAmbientBracket F ι t (n + 1)
-          ((a⁻¹ : F.residueField⟦X⟧ˣ) : F.residueField⟦X⟧) y = x := by
-    change equalCharacteristicLubinTateAmbientBracket F ι t (n + 1)
-        ((a⁻¹ : F.residueField⟦X⟧ˣ) : F.residueField⟦X⟧)
-        (equalCharacteristicLubinTateAmbientBracket F ι t (n + 1)
-          (a : F.residueField⟦X⟧) x) = x
-    rw [← equalCharacteristicLubinTateAmbientBracket_mul_apply_of_torsion
-      F ι t (n + 1)
-      ((a⁻¹ : F.residueField⟦X⟧ˣ) : F.residueField⟦X⟧)
-      (a : F.residueField⟦X⟧) x
-      (equalCharacteristicChangedCompletedPrimitiveRoot_torsion F u n)]
-    have hmul :
-        ((a⁻¹ : F.residueField⟦X⟧ˣ) : F.residueField⟦X⟧) *
-            (a : F.residueField⟦X⟧) = 1 := by
-      exact Units.inv_mul a
-    rw [hmul]
-    simp [equalCharacteristicLubinTateAmbientBracket_apply]
-  have hxmem :
-      x ∈ Algebra.adjoin
-        (equalCharacteristicCompletedUnramifiedField F.residueField)
-        ({y} : Set (equalCharacteristicChangedCompletedLevelField F u n)) := by
-    rw [← hrecover]
-    exact equalCharacteristicChangedCompletedAmbientBracket_mem_adjoin
-      F u n (n + 1)
-      ((a⁻¹ : F.residueField⟦X⟧ˣ) : F.residueField⟦X⟧) y
-  have hle :
-      Algebra.adjoin
-          (equalCharacteristicCompletedUnramifiedField F.residueField)
-          ({x} : Set (equalCharacteristicChangedCompletedLevelField F u n)) ≤
-        Algebra.adjoin
-          (equalCharacteristicCompletedUnramifiedField F.residueField)
-          ({y} : Set (equalCharacteristicChangedCompletedLevelField F u n)) := by
-    apply Algebra.adjoin_le
-    intro z hz
-    simpa only [Set.mem_singleton_iff] using hz ▸ hxmem
-  rw [show Algebra.adjoin
-      (equalCharacteristicCompletedUnramifiedField F.residueField)
-      ({x} : Set (equalCharacteristicChangedCompletedLevelField F u n)) = ⊤ by
-        simpa [x] using
-          equalCharacteristicChangedCompletedPrimitiveRoot_adjoin_eq_top F u n]
-      at hle
-  exact top_unique hle
+
 
 /-- The chosen changed primitive point is integral over the completed
 maximal-unramified base. -/
@@ -736,24 +629,7 @@ theorem equalCharacteristicChangedCompletedPrimitiveRoot_isIntegral
   rw [← Polynomial.eval_map]
   exact equalCharacteristicChangedCompletedPrimitiveRoot_isRoot F u n
 
-/-- The completed source primitive polynomial is the minimal polynomial of
-the chosen primitive point. -/
-theorem equalCharacteristicChangedCompletedPrimitiveRoot_minpoly
-    (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
-    minpoly (equalCharacteristicCompletedUnramifiedField F.residueField)
-        (equalCharacteristicChangedCompletedPrimitiveRoot F u n) =
-      equalCharacteristicChangedCompletedPrimitivePolynomial F u n := by
-  have hroot :
-      Polynomial.aeval (equalCharacteristicChangedCompletedPrimitiveRoot F u n)
-          (equalCharacteristicChangedCompletedPrimitivePolynomial F u n) = 0 := by
-    rw [Polynomial.aeval_def, ← Polynomial.eval_map]
-    exact equalCharacteristicChangedCompletedPrimitiveRoot_isRoot F u n
-  have hmin := minpoly.eq_of_irreducible
-    (equalCharacteristicChangedCompletedPrimitivePolynomial_irreducible F u n)
-    hroot
-  rw [(equalCharacteristicChangedCompletedPrimitivePolynomial_monic F u n).leadingCoeff,
-    inv_one, Polynomial.C_1, mul_one] at hmin
-  exact hmin.symm
+
 
 /-- The power basis generated by the completed primitive source point. -/
 noncomputable def equalCharacteristicChangedCompletedPrimitivePowerBasis

@@ -33,7 +33,7 @@ theorem diagonal_formula (t : KPGlobalTorusFunctionData.ordinaryTorus F) :
     ext i j
     fin_cases i <;> fin_cases j <;>
       simp [KPGlobalCubicIdelePairing.diagonalHom, KPGlobalCubicIdelePairing.diagonalMatrix,
-        Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
+        Matrix.GeneralLinearGroup.coe_scalar,
         Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar, hu, hA.2.1, hA.2.2]
     exact hw.symm
   change QuotientGroup.mk' _ (KPGlobalCubicIdelePairing.diagonalHom F (u * w⁻¹)) = t.val

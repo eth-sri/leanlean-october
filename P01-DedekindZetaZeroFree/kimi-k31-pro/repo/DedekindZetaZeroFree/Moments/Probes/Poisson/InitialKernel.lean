@@ -190,7 +190,7 @@ theorem twisted_ne_principal (f : TwistedProbeRowDefinitions.TwistedRow D) :
   apply Subtype.ext
   apply Subtype.ext
   have h1 : (principalFrequency D.recipe).val.val = 1 := rfl
-  have h2 : (f.val).val.val = 1 := by rw [h]; exact h1
+  have h2 : f.val.val.val = 1 := by grind
   rw [h2]
   exact ActualRowCount.principalRow_u D
 
@@ -199,7 +199,7 @@ def omitEquiv : TwistedProbeRowDefinitions.TwistedRow D × AIdx D ≃
   toFun p := ⟨(p.1.val, p.2), by
     intro h
     obtain ⟨u, hu⟩ := h
-    exact p.1.property ⟨u, hu⟩⟩
+    grind⟩
   invFun i := (⟨i.1.1, by
     intro h
     obtain ⟨u, hu⟩ := h

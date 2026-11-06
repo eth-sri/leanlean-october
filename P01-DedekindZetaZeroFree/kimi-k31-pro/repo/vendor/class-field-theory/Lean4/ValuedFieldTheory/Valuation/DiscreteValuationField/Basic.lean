@@ -390,11 +390,7 @@ theorem maximalIdealPowSuccQuotConcreteLinearEquiv_mk
       Submodule.Quotient.mk a :=
   rfl
 
-/-- The canonical map onto a successive maximal-ideal quotient is surjective. -/
-theorem maximalIdealPowSuccQuotMk_surjective
-    (F : DVF.{u, v} K) (n : ℕ) :
-    Function.Surjective (F.maximalIdealPowSuccQuotMk n) :=
-  Submodule.mkQ_surjective (F.maximalIdealPowSuccSubmodule n)
+
 
 /-- Eliminate an ideal-power quotient class through its canonical map. -/
 protected theorem MaximalIdealPowSuccQuot.inductionOn

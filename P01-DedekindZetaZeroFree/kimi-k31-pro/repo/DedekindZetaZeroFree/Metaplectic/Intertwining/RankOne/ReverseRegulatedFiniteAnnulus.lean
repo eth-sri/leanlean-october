@@ -43,7 +43,7 @@ theorem evaluate_integratedShellNumerator (ν : Measure X) (S : Finset (ℤ × �
   | @insert a S ha ih =>
     rw [Finset.sum_insert ha, Finset.sum_insert ha]
     rw [evaluateNumerator, Finsupp.sum_add_index]
-    · simp only [Finsupp.sum_single_index, mul_zero, zero_mul, add_zero]
+    · simp only [Finsupp.sum_single_index, zero_mul]
       exact congrArg (_ + ·) ih
     · intro ij; simp
     · intro ij hij b d; ring

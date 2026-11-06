@@ -67,7 +67,7 @@ private lemma quadratic_smul {n r : ℕ} {Ω : Opens (E n)} (Q : InverseMetric �
       Complex.ofReal_re, Complex.mul_re, Complex.ofReal_im, zero_mul, sub_zero]
   have him : ∀ j, ((c • v) j a).im = c * (v j a).im := fun j => by
     simp only [Pi.smul_apply, WithLp.ofLp_smul, Pi.smul_apply, Complex.real_smul,
-      Complex.ofReal_im, Complex.mul_im, Complex.ofReal_re, mul_zero, zero_mul, add_zero]
+      Complex.ofReal_im, Complex.mul_im, Complex.ofReal_re, zero_mul, add_zero]
   simp only [hre, him, Finset.mul_sum]
   rw [mul_add]
   congr 1
@@ -212,7 +212,7 @@ private lemma exists_ellipticity {n r : ℕ} (Ω : Opens (E n))
     have husum : ∑ j, ‖u j‖ ^ (2:ℕ) = 1 := by
       have hterm : ∀ j, ‖u j‖ ^ (2:ℕ) = (s⁻¹) ^ 2 * ‖v j‖ ^ (2:ℕ) := by
         intro j
-        simp only [hu, Pi.smul_apply, norm_smul, Real.norm_eq_abs,
+        simp only [hu, norm_smul, Real.norm_eq_abs,
           abs_of_pos (inv_pos.mpr hspos), mul_pow]
       simp only [hterm, ← Finset.mul_sum]
       rw [← hs2, ← mul_pow, inv_mul_cancel₀ (ne_of_gt hspos), one_pow]

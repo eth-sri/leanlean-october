@@ -160,7 +160,7 @@ def reindex : KPChamberBruhatTwoCells.RationalQuotient F ≃
     intro q
     refine Quotient.inductionOn q ?_
     intro γ
-    simp [mul_inv_cancel_left]
+    simp
 
 theorem reindex_mk (γ : KPCuspArithmetic.PGL2 F) :
     reindex F ζ hζ C R P H U a (KPChamberBruhatTwoCells.rationalCoset F γ) =

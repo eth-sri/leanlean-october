@@ -75,27 +75,9 @@ theorem relativeAbelianizationMulEquiv_mk (sigma : Gal(M / F)) :
       AlgEquiv.restrictNormalHom (relativeMaximalAbelianSubextension F M) sigma :=
   rfl
 
-/-- The algebraic relative-abelianization equivalence is continuous. -/
-theorem relativeAbelianizationMulEquiv_continuous :
-    Continuous (relativeAbelianizationMulEquiv F M) := by
-  apply (QuotientGroup.isQuotientMap_mk
-    (relativeCommutatorClosure F M).toSubgroup).continuous_iff.2
-  refine (InfiniteGalois.restrictNormalHom_continuous
-    (relativeMaximalAbelianSubextension F M)).congr ?_
-  intro sigma
-  exact (relativeAbelianizationMulEquiv_mk F M sigma).symm
 
-/-- The topological abelianization is the Galois group of the maximal
-relative abelian subfield. -/
-noncomputable def relativeTopologicalAbelianizationEquiv :
-    TopologicalAbelianization Gal(M / F) ≃ₜ*
-      Gal(relativeMaximalAbelianSubextension F M / F) := by
-  let h := Continuous.homeoOfEquivCompactToT2
-    (relativeAbelianizationMulEquiv_continuous F M)
-  exact
-    { toMulEquiv := relativeAbelianizationMulEquiv F M
-      continuous_toFun := h.continuous
-      continuous_invFun := h.symm.continuous }
+
+
 
 end ClassFieldTower.Martinet
 

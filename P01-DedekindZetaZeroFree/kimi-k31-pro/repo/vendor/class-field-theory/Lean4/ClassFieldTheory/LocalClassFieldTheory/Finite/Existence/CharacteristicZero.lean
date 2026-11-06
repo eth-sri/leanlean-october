@@ -3,6 +3,7 @@ module
 public import ClassFieldTheory.LocalClassFieldTheory.Finite.Existence.CyclotomicKummerDescent
 public import ClassFieldTheory.LocalClassFieldTheory.Finite.Existence.NormSubgroupSurjectivity
 public import ClassFieldTheory.LocalClassFieldTheory.Finite.LocalReciprocity.IntrinsicAbsoluteData
+public import Mathlib.Tactic.Positivity
 
 @[expose] public section
 
@@ -46,7 +47,7 @@ theorem finiteAbelianNormSubgroupMap_surjective_of_charZero :
   have hindex : H.index ≠ 0 := Subgroup.FiniteIndex.index_ne_zero
   let n : ℕ+ := ⟨H.index, Nat.pos_of_ne_zero hindex⟩
   have hnK : ((n : ℕ) : K) ≠ 0 := by
-    exact_mod_cast n.ne_zero
+    positivity
   obtain ⟨F, hnormF⟩ :=
     exists_finiteGalois_normSubgroup_le_powMonoidHom_range K n hnK
   let E : IntermediateField K (SeparableClosure K) := F
@@ -75,12 +76,7 @@ noncomputable def finiteAbelianNormSubgroupOrderIso_of_charZero :
         finiteAbelianNormSubgroup K L₁ ↔ L₁ ≤ L₂
     exact (finiteAbelianSubextension_le_iff_normSubgroup_le K L₁ L₂).symm
 
-/-- Underlying equivalence of the characteristic-zero local existence
-order isomorphism. -/
-noncomputable def finiteAbelianNormSubgroupEquiv_of_charZero :
-    FiniteAbelianSubextension (intrinsicAbstractBase K) ≃
-      OpenFiniteIndexSubgroup K :=
-  (finiteAbelianNormSubgroupOrderIso_of_charZero K).toEquiv
+
 
 /-- States the theorem `finiteAbelianNormSubgroupOrderIso_of_charZero_apply`. -/
 @[simp]

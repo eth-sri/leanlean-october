@@ -25,8 +25,8 @@ theorem basis_of_delta_tests
     refine (Fintype.linearIndependent_iff (v := L)).mpr ?_
     intro g hg j
     have h := congrArg (fun w : W => (LinearMap.applyₗ (test j)) w.val) hg
-    simp only [map_sum, map_smul, map_zero, Submodule.coe_sum, Submodule.coe_smul,
-      LinearMap.smul_apply, LinearMap.zero_apply, LinearMap.applyₗ_apply_apply] at h
+    simp only [map_sum, map_smul, Submodule.coe_sum, Submodule.coe_smul,
+      LinearMap.applyₗ_apply_apply] at h
     rw [Finset.sum_eq_single j] at h
     · rw [hpair, if_pos rfl, mul_one, smul_eq_mul] at h
       exact (mul_eq_zero.mp h).resolve_right hv
@@ -387,7 +387,7 @@ theorem eventually_matrixChartDepth :
     (integrable_indicator_iff hs).mpr (integrableOn_const hfinite)
   refine ⟨hi.integrableOn, ?_⟩
   rw [integral_indicator hs, Measure.restrict_restrict_of_subset (hr₀ r hr)]
-  simp [rootMass, integral_const, smul_eq_mul, Measure.real]
+  simp [rootMass, integral_const, Measure.real]
 theorem conductor_trivial_on_integers
     (ψ : Multiplicative (LocalField F q) →* ℂˣ)
     (hc : HasConductorIntegers F q ψ)
@@ -509,7 +509,7 @@ private theorem pgl_diagonal_injective (K : Type*) [Field K] (u v : Kˣ)
   obtain ⟨c, hc⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp huv
   have h11 := congrArg (fun g : GL (Fin 2) K => (g : Matrix (Fin 2) (Fin 2) K) 1 1) hc
   have h00 := congrArg (fun g : GL (Fin 2) K => (g : Matrix (Fin 2) (Fin 2) K) 0 0) hc
-  simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.GeneralLinearGroup.coe_scalar,
+  simp [Matrix.mul_apply, Matrix.GeneralLinearGroup.coe_scalar,
     Matrix.scalar, Matrix.diagonal_apply] at h11 h00
   apply Units.ext
   calc

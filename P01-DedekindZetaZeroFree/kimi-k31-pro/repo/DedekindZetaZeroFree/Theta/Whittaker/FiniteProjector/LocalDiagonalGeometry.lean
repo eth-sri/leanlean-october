@@ -225,7 +225,7 @@ theorem diagonal_arch_finite (y : R.A.G) :
     · let p : R.A.Sf := ⟨q, hq⟩
       rw [selected_localIdele_finite R y p, selected_localIdele_finite R (y.1, 1) p,
         finiteDiagonalTuple_finite R y.2 p]
-      simp only [Prod.snd, Pi.one_apply, KPStandardLocalRootLifts.A_one, one_mul]
+      simp only [Pi.one_apply, KPStandardLocalRootLifts.A_one, one_mul]
       rfl
     · rw [selected_localIdele_exterior R y q hq, selected_localIdele_exterior R (y.1, 1) q hq,
         finiteDiagonalTuple_exterior R y.2 q hq, KPStandardLocalRootLifts.A_one, one_mul]

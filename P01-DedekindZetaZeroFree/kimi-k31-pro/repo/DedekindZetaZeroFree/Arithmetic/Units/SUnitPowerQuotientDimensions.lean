@@ -16,7 +16,7 @@ theorem finrank_torsionPowerQuotient (ℓ : ℕ) (hℓ : ℓ = 2 ∨ ℓ = 3)
     [Fact (Nat.Prime ℓ)] :
     Module.finrank (ZMod ℓ)
       (Additive (PowerQuotient (NumberField.Units.torsion F) ℓ)) = 1 := by
-  have hpos : 0 < ℓ := by rcases hℓ with h | h <;> simp [h]
+  have hpos : 0 < ℓ := by grind
   have hdvd : ℓ ∣ 12 := by rcases hℓ with h | h <;> simp [h]
   let n : ℕ+ := ⟨ℓ, hpos⟩
   have em : PowerQuotient (NumberField.Units.torsion F) ℓ ≃*

@@ -79,7 +79,7 @@ theorem hyperbolicGLSection_action (z : KPArch.H3) :
   ext
   · simp [KPArch.action, KPArch.actionDenominator, KPArch.height, hyperbolicGLSection]
   · simp [KPArch.action, KPArch.actionDenominator, KPArch.height, hyperbolicGLSection,
-      Matrix.det_fin_two, abs_of_pos (Real.exp_pos _)]
+      Matrix.det_fin_two]
 
 theorem hyperbolicGLAction_continuous :
     Continuous (fun p : GL (Fin 2) ℂ × KPArch.H3 => KPArch.action p.1 p.2) := by
@@ -154,8 +154,8 @@ private theorem row_det_identity (a b c d : ℂ) :
     have hx := KPArch.action_height g (0, 0)
     change KPArch.height (KPArch.action g (0, 0)) = Real.exp 0 at hh
     rw [hx, Real.exp_zero] at hh
-    simp only [KPArch.height, Real.exp_zero, mul_one, mul_zero, zero_add, norm_zero,
-      zero_pow (by decide : 2 ≠ 0), zero_mul, add_zero] at hh
+    simp only [KPArch.height, Real.exp_zero, mul_one, mul_zero, zero_add, 
+      ] at hh
     have he := (div_eq_one_iff_eq (by nlinarith : ‖g 1 1‖ ^ 2 + ‖g 1 0‖ ^ 2 * 1 ^ 2 ≠ 0)).mp hh
     nlinarith
   have hn := congrArg Prod.fst h
@@ -260,7 +260,7 @@ theorem product_origin_stabilizer_compact (d : ℕ) :
       {g | ∀ i : Fin d, g i ∈
         (MulAction.stabilizer PGL(2, ℂ) ((0, 0) : KPArch.H3) : Set PGL(2, ℂ))} := by
     ext g
-    simp only [MulAction.mem_stabilizer_iff, Set.mem_setOf_eq]
+    simp only [Set.mem_setOf_eq]
     exact funext_iff
   rw [he]
   exact isCompact_pi_infinite fun _ : Fin d => hyperbolic_origin_stabilizer_compact

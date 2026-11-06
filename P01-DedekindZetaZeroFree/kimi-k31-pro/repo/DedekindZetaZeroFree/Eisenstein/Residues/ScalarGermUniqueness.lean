@@ -1,2 +1,3 @@
 module
+
 public import DedekindZetaZeroFree.Eisenstein.Continuation.ScalarAndSmoothGerms

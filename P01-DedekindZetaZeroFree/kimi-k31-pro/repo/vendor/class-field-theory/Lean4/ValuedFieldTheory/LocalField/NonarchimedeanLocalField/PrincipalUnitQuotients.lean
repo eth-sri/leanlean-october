@@ -549,30 +549,11 @@ def principalUnitsSuccIncl (K : Type u) [Field K] [ValuativeRel K] (n : Nat) :
     intro a b
     rfl
 
-/-- The inclusion `U^(n+1) → U^n` retains the underlying unit and its stronger filtration witness. -/
-theorem principalUnitsSuccIncl_apply
-    (K : Type u) [Field K] [ValuativeRel K] (n : Nat)
-    (u : principalUnits K (n + 1)) :
-    principalUnitsSuccIncl K n u =
-      ⟨u.1, principalUnits_succ_le K n u.2⟩ :=
-  rfl
 
-/-- The inclusion `U^(n+1) → U^n` does not change the underlying valuation-ring unit. -/
-theorem principalUnitsSuccIncl_val
-    (K : Type u) [Field K] [ValuativeRel K] (n : Nat)
-    (u : principalUnits K (n + 1)) :
-    ((principalUnitsSuccIncl K n u : principalUnits K n) : 𝒪[K]ˣ) =
-      (u : 𝒪[K]ˣ) :=
-  rfl
 
-/-- The inclusion `U^(n+1) → U^n` is injective. -/
-theorem principalUnitsSuccIncl_injective
-    (K : Type u) [Field K] [ValuativeRel K] (n : Nat) :
-    Function.Injective (principalUnitsSuccIncl K n) := by
-  intro a b h
-  have hval : (a : 𝒪[K]ˣ) = (b : 𝒪[K]ˣ) :=
-    congrArg (fun x : principalUnits K n => (x : 𝒪[K]ˣ)) h
-  exact Subtype.ext hval
+
+
+
 
 /-- The range of `U^(n+1) → U^n` is the subgroup used to form
 `U^n/U^(n+1)`. -/
@@ -589,14 +570,7 @@ theorem principalUnitsSuccIncl_range
   · intro hu
     exact ⟨⟨u.1, hu⟩, by ext; rfl⟩
 
-/-- A principal unit lies in the range of `U^(n+1) → U^n` exactly when it belongs to the next
-filtration subgroup. -/
-theorem principalUnitsSuccIncl_mem_range_iff
-    (K : Type u) [Field K] [ValuativeRel K] (n : Nat)
-    (u : principalUnits K n) :
-    u ∈ MonoidHom.range (principalUnitsSuccIncl K n) ↔
-      u ∈ (principalUnits K (n + 1)).subgroupOf (principalUnits K n) := by
-  rw [principalUnitsSuccIncl_range]
+
 
 /-- Every class in `U^n/U^(n+1)` has a representative in `U^n`. -/
 theorem principalUnitsSuccQuotMk_surjective
@@ -611,53 +585,13 @@ theorem principalUnitsSuccQuotMk_ker (K : Type u) [Field K] [ValuativeRel K] (n 
   QuotientGroup.ker_mk'
     (N := (principalUnits K (n + 1)).subgroupOf (principalUnits K n))
 
-/-- A principal unit is killed by the canonical quotient map exactly when it lies in `U^(n+1)`. -/
-theorem principalUnitsSuccQuotMk_mem_ker_iff
-    (K : Type u) [Field K] [ValuativeRel K] (n : Nat)
-    (u : principalUnits K n) :
-    u ∈ MonoidHom.ker (principalUnitsSuccQuotMk K n) ↔
-      u ∈ (principalUnits K (n + 1)).subgroupOf (principalUnits K n) := by
-  rw [principalUnitsSuccQuotMk_ker]
 
-/-- The canonical map from `U^n` has the whole successive quotient as its range. -/
-theorem principalUnitsSuccQuotMk_range
-    (K : Type u) [Field K] [ValuativeRel K] (n : Nat) :
-    MonoidHom.range (principalUnitsSuccQuotMk K n) = ⊤ := by
-  ext x
-  constructor
-  · intro _
-    exact Subgroup.mem_top x
-  · intro _
-    rcases principalUnitsSuccQuotMk_surjective K n x with ⟨u, hu⟩
-    exact ⟨u, hu⟩
 
-/-- Every element of `U^n/U^(n+1)` belongs to the range of the canonical quotient map. -/
-theorem principalUnitsSuccQuotMk_mem_range
-    (K : Type u) [Field K] [ValuativeRel K] (n : Nat)
-    (x : PrincipalUnitsSuccQuot K n) :
-    x ∈ MonoidHom.range (principalUnitsSuccQuotMk K n) := by
-  rw [principalUnitsSuccQuotMk_range]
-  exact Subgroup.mem_top x
 
-/-- The range of the canonical quotient map has the same finite cardinality as `U^n/U^(n+1)`. -/
-theorem principalUnitsSuccQuotMk_range_card_eq
-    (K : Type u) [Field K] [ValuativeRel K] (n : Nat)
-    [Finite (PrincipalUnitsSuccQuot K n)] :
-    Nat.card (MonoidHom.range (principalUnitsSuccQuotMk K n)) =
-      Nat.card (PrincipalUnitsSuccQuot K n) := by
-  refine Nat.card_congr ?_
-  exact
-    { toFun := fun x => x.1
-      invFun := fun x =>
-        ⟨x, by
-          rcases principalUnitsSuccQuotMk_surjective K n x with ⟨u, hu⟩
-          exact ⟨u, hu⟩⟩
-      left_inv := by
-        intro x
-        rfl
-      right_inv := by
-        intro x
-        rfl }
+
+
+
+
 
 /-- The class of a principal unit is trivial exactly when the unit belongs to `U^(n+1)`. -/
 theorem principalUnitsSuccQuotMk_eq_one_iff
@@ -677,23 +611,7 @@ theorem principalUnitsSuccQuotMk_eq_one_iff
       (QuotientGroup.eq_one_iff
         (N := (principalUnits K (n + 1)).subgroupOf (principalUnits K n)) u).mpr h
 
-/-- Two principal units define the same successive-quotient class exactly when one differs by a
-factor in `U^(n+1)`. -/
-theorem principalUnitsSuccQuotMk_mk_eq_mk_iff
-    (K : Type u) [Field K] [ValuativeRel K] (n : Nat)
-    (u v : principalUnits K n) :
-    principalUnitsSuccQuotMk K n u = principalUnitsSuccQuotMk K n v ↔
-      ∃ z ∈ (principalUnits K (n + 1)).subgroupOf (principalUnits K n),
-        u * z = v := by
-  constructor
-  · intro h
-    have h' := congrArg (principalUnitsSuccQuotConcreteEquiv K n) h
-    exact (QuotientGroup.mk'_eq_mk'
-      (N := (principalUnits K (n + 1)).subgroupOf (principalUnits K n))).mp h'
-  · intro h
-    apply (principalUnitsSuccQuotConcreteEquiv K n).injective
-    exact (QuotientGroup.mk'_eq_mk'
-      (N := (principalUnits K (n + 1)).subgroupOf (principalUnits K n))).mpr h
+
 
 /-- Two principal units define the same successive-quotient class exactly when their quotient lies
 in `U^(n+1)`. -/
@@ -735,12 +653,7 @@ theorem principalUnitsSuccQuotMk_comp_incl_apply
     principalUnitsSuccQuotMk K n (principalUnitsSuccIncl K n u) = 1 := by
   exact principalUnitsSuccIncl_mem_ker K n u
 
-/-- The composite `U^(n+1) → U^n → U^n/U^(n+1)` is the trivial homomorphism. -/
-theorem principalUnitsSuccQuotMk_comp_incl
-    (K : Type u) [Field K] [ValuativeRel K] (n : Nat) :
-    (principalUnitsSuccQuotMk K n).comp (principalUnitsSuccIncl K n) = 1 := by
-  ext u
-  exact principalUnitsSuccQuotMk_comp_incl_apply K n u
+
 
 /-- Membership in the embedded subgroup `U^(n+1)` is equivalent to congruence to one modulo
 `𝓂^(n+1)`. -/
@@ -816,11 +729,7 @@ theorem maximalIdealPowSuccQuotConcreteLinearEquiv_mk
       Submodule.Quotient.mk a :=
   rfl
 
-/-- Every class in `𝓂^n/𝓂^(n+1)` has a representative in `𝓂^n`. -/
-theorem maximalIdealPowSuccQuotMk_surjective
-    (K : Type u) [Field K] [ValuativeRel K] (n : Nat) :
-    Function.Surjective (maximalIdealPowSuccQuotMk K n) :=
-  Submodule.mkQ_surjective (maximalIdealPowSuccSubmodule K n)
+
 
 /-- Eliminate an ideal-power quotient class through its canonical class map. -/
 protected theorem MaximalIdealPowSuccQuot.inductionOn
@@ -1083,15 +992,7 @@ theorem principalUnitsSuccQuotOfIdealPow_eq_one_of_mem_succ
   rw [mem_principalUnits_succ_subgroupOf_iff]
   simp [principalUnitOneAddOfMemPowSubgroup, principalUnitOneAddOfMemPow_val, ha]
 
-/-- A representative of the zero class in `𝓂^n/𝓂^(n+1)` maps to the identity class in `U^n/U^(n+1)`.
-A representative of the zero class in `𝓂^n/𝓂^(n+1)` maps to the identity class in `U^n/U^(n+1)`. -/
-theorem principalUnitsSuccQuotOfIdealPow_eq_one_of_idealQuot_mk_eq_zero
-    (K : Type u) [Field K] [ValuativeRel K] (n : Nat) (hn : 1 ≤ n)
-    (a : (𝓂[K] ^ n : Ideal 𝒪[K]))
-    (ha : maximalIdealPowSuccQuotMk K n a = 0) :
-    principalUnitsSuccQuotOfIdealPow K n hn a = 1 :=
-  principalUnitsSuccQuotOfIdealPow_eq_one_of_mem_succ K n hn a
-    ((maximalIdealPowSuccQuotMk_eq_zero_iff K n a).1 ha)
+
 
 /-- The map `a ↦ 1 + a` is insensitive to changing `a` modulo `𝓂^(n+1)`. -/
 theorem principalUnitsSuccQuotOfIdealPow_eq_of_sub_mem_succ
@@ -1130,18 +1031,7 @@ theorem principalUnitsSuccQuotOfIdealPow_eq_of_sub_mem_succ
         ring]
   exact (𝓂[K] ^ (n + 1) : Ideal 𝒪[K]).mul_mem_right _ hab
 
-/-- Representatives of the same class in `𝓂^n/𝓂^(n+1)` yield the same class of `1 + a` in
-`U^n/U^(n+1)`. -/
-theorem principalUnitsSuccQuotOfIdealPow_eq_of_idealQuot_mk_eq
-    (K : Type u) [Field K] [ValuativeRel K] (n : Nat) (hn : 1 ≤ n)
-    (a b : (𝓂[K] ^ n : Ideal 𝒪[K]))
-    (hab : maximalIdealPowSuccQuotMk K n a = maximalIdealPowSuccQuotMk K n b) :
-    principalUnitsSuccQuotOfIdealPow K n hn a =
-      principalUnitsSuccQuotOfIdealPow K n hn b := by
-  have hsub : a - b ∈ maximalIdealPowSuccSubmodule K n :=
-    (maximalIdealPowSuccQuotMk_eq_iff K n a b).1 hab
-  exact principalUnitsSuccQuotOfIdealPow_eq_of_sub_mem_succ K n hn a b (by
-    simpa using (mem_maximalIdealPowSuccSubmodule_iff K n (a - b)).1 hsub)
+
 
 /-- The descent of `a ↦ [1 + a]` to `𝓂^n/𝓂^(n+1)`. -/
 noncomputable def principalUnitsSuccQuotOfMaximalIdealPowSuccQuot

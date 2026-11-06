@@ -275,7 +275,7 @@ theorem lambda_eq_one_of_local_square (x : Fˣ) (v : HeightOneSpectrum (𝓞 F))
   let c : Kˣ := Units.mk0 y hyne
   have hb : Units.map (algebraMap F K).toMonoidHom x = c * c := by
     apply Units.ext
-    simp only [Units.val_mul, Units.coe_map, MonoidHom.coe_coe, Units.val_mk0]
+    simp only [Units.val_mul, Units.coe_map]
     exact hy
   have h1 : ClassFieldTheory.localHilbertSymbol K (2 : ℕ+) h2 hmu t
       (Units.map (algebraMap F K).toMonoidHom x) = 1 := by

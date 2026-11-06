@@ -256,13 +256,7 @@ theorem lowerInclusionHom_mk (L : FiniteGaloisSubextension K)
           ⟨m.1, L.intermediateField_le_base S m.property⟩ := by
   exact L.lowerQuotientEquiv_mk_coe S m
 
-/-- The lower inclusion is injective. -/
-theorem lowerInclusionHom_injective (L : FiniteGaloisSubextension K)
-    (S : Subgroup L.extensionQuotient) :
-    Function.Injective (L.lowerInclusionHom S) := by
-  intro x y hxy
-  apply (L.lowerQuotientEquiv S).injective
-  exact Subtype.ext hxy
+
 
 /-- Every lower quotient of a cyclic extension is cyclic. -/
 theorem lowerQuotient_isCyclic (L : FiniteGaloisSubextension K)
@@ -292,12 +286,7 @@ theorem upperRestrictionHom_mk (L : FiniteGaloisSubextension K)
       QuotientGroup.mk k := by
   exact L.upperQuotientEquiv_mk_mk S k
 
-/-- Restriction to a normal intermediate field is surjective. -/
-theorem upperRestrictionHom_surjective (L : FiniteGaloisSubextension K)
-    (S : Subgroup L.extensionQuotient) [S.Normal] :
-    Function.Surjective (L.upperRestrictionHom S) :=
-  (L.upperQuotientEquiv S).surjective.comp
-    (QuotientGroup.mk'_surjective S)
+
 
 /-- Every upper quotient of a cyclic extension is cyclic. -/
 theorem upperQuotient_isCyclic (L : FiniteGaloisSubextension K)
@@ -331,34 +320,7 @@ theorem upperRestrictionHom_eq_one_iff (L : FiniteGaloisSubextension K)
     exact (congrArg (L.upperQuotientEquiv S) hmk).trans
       (L.upperQuotientEquiv S).map_one
 
-/-- Exactness of the actual upper row for an intermediate field, in
-additive form for direct use with the reciprocity homomorphisms. -/
-theorem intermediateGalois_exact (L : FiniteGaloisSubextension K)
-    (S : Subgroup L.extensionQuotient) [S.Normal] :
-    Function.Exact
-      (MonoidHom.toAdditive (L.lowerInclusionHom S))
-      (MonoidHom.toAdditive (L.upperRestrictionHom S)) := by
-  intro q
-  constructor
-  · intro hq
-    have hres : L.upperRestrictionHom S q.toMul = 1 := by
-      exact Additive.ofMul.injective (by simpa using hq)
-    have hmem : q.toMul ∈ S :=
-      (L.upperRestrictionHom_eq_one_iff S q.toMul).1 hres
-    let s : S := ⟨q.toMul, hmem⟩
-    refine ⟨Additive.ofMul ((L.lowerQuotientEquiv S).symm s), ?_⟩
-    apply Additive.toMul.injective
-    change
-      ↑(L.lowerQuotientEquiv S ((L.lowerQuotientEquiv S).symm s)) = q.toMul
-    exact congrArg Subtype.val
-      ((L.lowerQuotientEquiv S).apply_symm_apply s)
-  · rintro ⟨x, rfl⟩
-    apply Additive.toMul.injective
-    change L.upperRestrictionHom S (L.lowerInclusionHom S x.toMul) = 1
-    apply (L.upperRestrictionHom_eq_one_iff S _).2
-    change (((L.lowerQuotientEquiv S) x.toMul : S) :
-      L.extensionQuotient) ∈ S
-    exact Subtype.property _
+
 
 /-- The maximal abelian intermediate field in the first reduction is the
 actual field cut out by the commutator subgroup of `G(L/K)`. -/
@@ -419,14 +381,7 @@ theorem upperRestrictionHom_jointlyFaithful
     intro i
     exact map_one _
 
-/-- For a coordinate homomorphism, the actual restriction map has exactly
-the same kernel. -/
-theorem upperRestrictionHom_ker_factor
-    (L : FiniteGaloisSubextension K) {C : Type*} [Group C]
-    (f : L.extensionQuotient →* C) (q : L.extensionQuotient) :
-    L.upperRestrictionHom (MonoidHom.ker f) q = 1 ↔ f q = 1 := by
-  rw [L.upperRestrictionHom_eq_one_iff (MonoidHom.ker f) q]
-  exact MonoidHom.mem_ker
+
 
 /-- A finite abelian `G(L/K)` supplies the actual cyclic intermediate
 extensions used in the second reduction.  The coordinate kernels have
@@ -496,11 +451,7 @@ def maximalUnramifiedSubextension (D : DegreeData G)
     (L : FiniteGaloisSubextension K) : ClosedSubgroup G :=
   L.intermediateField (L.inertiaImage D)
 
-/-- `M/K` as an actual finite Galois extension. -/
-def maximalUnramifiedFiniteGalois (D : DegreeData G)
-    (L : FiniteGaloisSubextension K) : FiniteGaloisSubextension K :=
-  L.intermediateFiniteGalois (L.inertiaImage D)
-    (L.inertiaImage_normal D)
+
 
 /-- The constructed `M/K` is unramified. -/
 theorem maximalUnramifiedSubextension_isUnramified
@@ -562,40 +513,7 @@ theorem maximalUnramifiedSubextension_isTotallyRamified
     (D.mem_fieldInertiaWithin_iff K i).1 hiI
   simp [hdegree]
 
-/-- Maximality: every unramified intermediate extension of `L/K` is
-contained in the field cut out by the inertia image.  In subgroup order this
-is the displayed inclusion. -/
-theorem maximalUnramifiedSubextension_le_of_isUnramified
-    (D : DegreeData G) (L : FiniteGaloisSubextension K)
-    (N : ClosedSubgroup G)
-    (hLN : L.field.toSubgroup ≤ N.toSubgroup)
-    (hNK : N.toSubgroup ≤ K.toSubgroup)
-    (hNunramified : (DegreeData.AbstractExtension.mk N K hNK).IsUnramified D) :
-    (L.maximalUnramifiedSubextension D).toSubgroup ≤ N.toSubgroup := by
-  change (L.intermediateField (L.inertiaImage D)).toSubgroup ≤
-    N.toSubgroup
-  intro x hxM
-  obtain ⟨k, hkP, rfl⟩ := hxM
-  change (QuotientGroup.mk'
-    (extensionSubgroup K L.field L.below)) k ∈
-      (D.fieldInertiaWithin K).map
-        (QuotientGroup.mk'
-          (extensionSubgroup K L.field L.below)) at hkP
-  obtain ⟨i, hiI, hi⟩ := hkP
-  have hiH : i⁻¹ * k ∈ extensionSubgroup K L.field L.below :=
-    QuotientGroup.eq.mp hi
-  have hikL : i.1⁻¹ * k.1 ∈ L.field.toSubgroup :=
-    (mem_extensionSubgroup_iff K L.field L.below (i⁻¹ * k)).1 hiH
-  have hiDegree : D.degree i.1 = 1 :=
-    (D.mem_fieldInertiaWithin_iff K i).1 hiI
-  have hiKN : i.1 ∈ N.toSubgroup := by
-    apply ((DegreeData.AbstractExtension.mk N K hNK).isUnramified_iff_inertia_le D).1
-      hNunramified
-    exact ⟨i.property, hiDegree⟩
-  have hikN : i.1⁻¹ * k.1 ∈ N.toSubgroup := hLN hikL
-  have hmul : i.1 * (i.1⁻¹ * k.1) ∈ N.toSubgroup :=
-    N.toSubgroup.mul_mem hiKN hikN
-  simpa [mul_assoc] using hmul
+
 
 end FiniteGaloisSubextension
 
@@ -805,49 +723,7 @@ theorem abstractReciprocity_abelianReduction_kernel
     exact (L.abelianRestrictionHom_eq_one_iff q).1 hres
   · exact abstractReciprocity_commutator_mem_kernel r q
 
-/-- The kernel argument in the second reduction.  Injectivity of
-the reciprocity arrows for a jointly faithful family of cyclic quotients
-forces injectivity of the original arrow.  All horizontal maps are the
-actual restrictions to the intermediate fields cut out by the coordinate
-kernels. -/
-theorem abstractReciprocity_cyclicFactors_injective
-    {K : ClosedSubgroup G} {I : Type*} {C : I → Type*}
-    [∀ i, Group (C i)]
-    (L : FiniteGaloisSubextension K)
-    (f : ∀ i, L.extensionQuotient →* C i)
-    (hfaithful : (⨅ i, MonoidHom.ker (f i)) = ⊥)
-    {B : Type*} [AddCommGroup B]
-    {D : I → Type*} [∀ i, AddCommGroup (D i)]
-    (p : ∀ i, B →+ D i)
-    (r : Additive L.extensionQuotient →+ B)
-    (rFactor : ∀ i,
-      Additive
-        (K.toSubgroup ⧸ extensionSubgroup K
-          (L.intermediateField (MonoidHom.ker (f i)))
-          (L.intermediateField_le_base (MonoidHom.ker (f i)))) →+ D i)
-    (hright : ∀ i q,
-      p i (r (Additive.ofMul q)) =
-        rFactor i (Additive.ofMul
-          (L.upperRestrictionHom (MonoidHom.ker (f i)) q)))
-    (hinjective : ∀ i, Function.Injective (rFactor i)) :
-    Function.Injective r := by
-  rw [injective_iff_map_eq_zero]
-  intro q hq
-  have hres (i : I) :
-      L.upperRestrictionHom (MonoidHom.ker (f i)) q.toMul = 1 := by
-    have hrq : r (Additive.ofMul q.toMul) = 0 := by
-      simpa using hq
-    have hzero : rFactor i (Additive.ofMul
-        (L.upperRestrictionHom (MonoidHom.ker (f i)) q.toMul)) = 0 := by
-      rw [← hright i q.toMul, hrq, map_zero]
-    have hadd : Additive.ofMul
-        (L.upperRestrictionHom (MonoidHom.ker (f i)) q.toMul) = 0 := by
-      apply hinjective i
-      simpa using hzero
-    exact Additive.ofMul.injective (by simpa using hadd)
-  have hqone : q.toMul = 1 :=
-    (L.upperRestrictionHom_jointlyFaithful f hfaithful q.toMul).1 hres
-  exact Additive.toMul.injective (by simpa using hqone)
+
 
 end Representation
 

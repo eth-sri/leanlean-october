@@ -29,14 +29,14 @@ private theorem smooth_arch (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (arch d) := 
   (d : ℝ)⁻¹ • ∑ i : Fin d, EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))
 private theorem height_eq (d : ℕ) (x : HyperbolicChart.Space d) :
     KPCuspLogShape.meanHeight d (arch d x) = heightCLM d x := by
-  simp [KPCuspLogShape.meanHeight, arch, heightCLM, Finset.sum_apply, div_eq_mul_inv, mul_comm]
+  simp [KPCuspLogShape.meanHeight, arch, heightCLM, div_eq_mul_inv, mul_comm]
 private theorem height_vector (d : ℕ) (i : Fin d) (k : Fin 3) :
     heightCLM d (HyperbolicChart.coordinateVector d i k) =
       if k = 2 then (d : ℝ)⁻¹ else 0 := by
   by_cases hk : k = 2
   · subst k
-    simp [heightCLM, HyperbolicChart.coordinateVector, Finset.sum_apply]
-  · simp [heightCLM, HyperbolicChart.coordinateVector, Finset.sum_apply, hk, Ne.symm hk]
+    simp [heightCLM, HyperbolicChart.coordinateVector]
+  · simp [heightCLM, HyperbolicChart.coordinateVector, hk, Ne.symm hk]
 private theorem radial_derivative (d : ℕ) (η : ℝ → ℝ) (hη : Differentiable ℝ η)
     (x : HyperbolicChart.Space d) (i : Fin d) (k : Fin 3) :
     HyperbolicChart.coordinateDerivative d i k
@@ -208,7 +208,7 @@ private theorem contDiff_arch_for_compactEnergy (d : ℕ) : ContDiff ℝ (⊤ : 
       ((Complex.ofRealCLM.contDiff.comp h1).mul contDiff_const (g := fun _ => Complex.I))
     convert hh using 1
     funext x
-    apply Complex.ext <;> simp [arch, PiLp.proj_apply]
+    apply Complex.ext <;> simp
   · exact (EuclideanSpace.proj (𝕜 := ℝ) (i, (2 : Fin 3))).contDiff
 private theorem smooth_mean (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (KPCuspLogShape.meanHeight d) := by
   unfold KPCuspLogShape.meanHeight

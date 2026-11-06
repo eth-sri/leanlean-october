@@ -152,7 +152,7 @@ theorem additive_haar_shell_integral [Fintype 𝓀[K]]
       integral_fintype Integrable.of_finite]
     change (∑ x : k, ρ.real {x} • f x) = _
     simp only [hreal, Complex.real_smul, Complex.ofReal_div, Complex.ofReal_one, Complex.ofReal_natCast]
-    simp only [one_div, ← Finset.mul_sum, ← div_eq_inv_mul]
+    simp only [one_div, ← div_eq_inv_mul]
     rw [← Finset.sum_div]
     rfl
   have hzero : f 0 = 0 := by simp [f, MulChar.map_zero]

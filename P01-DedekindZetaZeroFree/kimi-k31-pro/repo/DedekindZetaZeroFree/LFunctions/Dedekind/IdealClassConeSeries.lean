@@ -49,7 +49,7 @@ def fundamentalConeNormCount (J : (Ideal (𝓞 K))⁰) (n : ℕ) : ℕ :=
 
 theorem idealSetIntNorm_eq_norm
     (J : (Ideal (𝓞 K))⁰) (a : idealSet K J) :
-    ((idealSetIntNorm K J a : ℝ)) = mixedEmbedding.norm (a : mixedSpace K) :=
+    (idealSetIntNorm K J a : ℝ) = mixedEmbedding.norm (a : mixedSpace K) :=
   intNorm_idealSetEquiv_apply a
 
 noncomputable def idealSetIntNormFiberEquiv

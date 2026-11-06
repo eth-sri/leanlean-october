@@ -66,11 +66,7 @@ noncomputable def numberFieldEmbeddedAbelianSubextension
         exact
           { is_comm.comm := fun x y => by
               apply e.injective
-              simpa only [map_mul] using
-                (inferInstance :
-                  IsMulCommutative
-                    (Gal(E / K))).is_comm.comm
-                  (e x) (e y) } }
+              grind } }
 
 /-- The top subgroup of the embedded abelian subextension is the fixing
 subgroup of the embedded top field. -/

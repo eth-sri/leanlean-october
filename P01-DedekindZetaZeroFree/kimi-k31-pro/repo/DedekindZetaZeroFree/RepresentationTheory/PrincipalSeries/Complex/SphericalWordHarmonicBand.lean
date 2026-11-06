@@ -63,8 +63,8 @@ def projectorDirection (X P : KPContHolomorphicKGeneration.Mat) :
 
 theorem bottomRowMass_eq (g : KPContHolomorphicKGeneration.Mat) :
     bottomRowMass g = ((‖g 1 0‖ ^ 2 + ‖g 1 1‖ ^ 2 : ℝ) : ℂ) := by
-  simp [bottomRowMass, KPCplxPrincipalSeriesCharts.bottomRowNormSq,
-    Complex.star_def, Complex.mul_conj', Complex.ofReal_add]
+  simp [bottomRowMass, 
+    Complex.mul_conj', Complex.ofReal_add]
 
 private theorem mass_ne_zero (g : ComplexGL2) : bottomRowMass g ≠ 0 := by
   rw [bottomRowMass_eq]
@@ -187,7 +187,7 @@ theorem bottomRowProjector_compact (k : ComplexSU2) (i j : Fin 2) :
     star ((k : KPContHolomorphicKGeneration.Mat) 1 1))
   fin_cases i <;> fin_cases j <;>
     simp [bottomRowProjector, hm, projectorSpherePolynomial, compactSphereCoordinate,
-      Complex.star_def, Complex.mul_conj'] at *
+      ] at *
   all_goals apply Complex.ext <;>
     simp [Complex.mul_re, Complex.mul_im, ← Complex.ofReal_pow, Complex.sq_norm, Complex.normSq_apply] at * <;> nlinarith
 
@@ -228,7 +228,7 @@ theorem determinant_right_hasDerivAt
   simp only [Matrix.det_fin_two]
   apply he.congr_deriv
   simp only [Matrix.mul_apply, Fin.sum_univ_two, Matrix.trace, Matrix.diag,
-    Matrix.det_fin_two]
+    ]
   ring
 
 section NormalizedCalculus
@@ -245,8 +245,8 @@ theorem projectorMassDirection_real (X g : LM) :
       projectorMassDirection X (bottomRowProjector g) := by
     simp only [projectorMassDirection, Matrix.trace, Matrix.diag, Matrix.add_apply,
       Matrix.mul_apply, Fin.sum_univ_two, Matrix.conjTranspose_apply, bottomRowProjector]
-    simp only [star_add, star_mul, star_div, star_inv₀, star_star, hm]
-    simp only [Complex.star_def, map_add, map_mul, map_div₀, map_inv₀, Complex.conj_conj]
+    simp only [star_add, star_mul, star_star]
+    simp only [Complex.star_def, map_mul, map_div₀, Complex.conj_conj]
     have hm' : star (bottomRowMass g) = bottomRowMass g := hm
     simp only [Complex.star_def] at hm'
     rw [hm']
@@ -262,7 +262,7 @@ private theorem logNormDeriv {f : ℝ → ℂ} {d : ℂ} (hf : HasDerivAt f d 0)
   change HasDerivAt (fun t => (f t * star (f t)).re) _ 0 at h
   have he : (fun t => (f t * star (f t)).re) = (fun t => ‖f t‖ ^ 2) := by
     funext t
-    simp [Complex.star_def, Complex.mul_conj', ← Complex.ofReal_pow]
+    simp [Complex.mul_conj', ← Complex.ofReal_pow]
   rw [he] at h
   have hl := (h.log (pow_ne_zero 2 (norm_ne_zero_iff.mpr h0))).div_const 2
   have hl' : (fun t => Real.log (‖f t‖ ^ 2) / 2) = (fun t => Real.log ‖f t‖) := by
@@ -468,7 +468,7 @@ private theorem projectorSeparated_derivative {H} (hH : ProjectorSeparated H) (X
     have hphase : fderiv ℝ bPhase (a : BM) ((a : BM) * X) = peval (bLog X) a := phase_direction X a
     have hpoly : fderiv ℝ (peval q) (a : BM) ((a : BM) * X) = peval u a := hu a
     simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply,
-      ContinuousLinearMap.comp_apply, ContinuousLinearMap.mul_apply, smul_eq_mul,
+      smul_eq_mul,
       hphase, hpoly, bAtom, Polynomial.eval_mul, peval, map_mul]
     ring
   | @add H G hH hG ihH ihG =>
@@ -490,7 +490,7 @@ private theorem projectorSeparated_finite {H} (hH : ProjectorSeparated H) :
   | atom p q =>
     refine ⟨1, fun _ => p, fun _ => q, ?_⟩
     intro s g
-    simp [Fin.sum_univ_one, bAtom, mul_assoc]
+    simp [bAtom, mul_assoc]
   | @add H G hH hG ihH ihG =>
     obtain ⟨n,p,q,he⟩ := ihH
     obtain ⟨m,r,u,ge⟩ := ihG

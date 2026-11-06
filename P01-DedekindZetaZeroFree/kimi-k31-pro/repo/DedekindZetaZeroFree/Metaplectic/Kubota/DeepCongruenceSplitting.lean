@@ -65,8 +65,7 @@ private lemma tau_chart (K : Type*) [Field K] (M : Type*) [CommGroup M]
     simp [Matrix.mul_apply, Fin.sum_univ_two]
   have hXval (q : KubotaRankTwo.GL2 K) :
       ((KubotaRankTwo.X K q : Kˣ) : K) =
-        if q 1 0 = 0 then q 1 1 else q 1 0 := by
-    rfl
+        if q 1 0 = 0 then q 1 1 else q 1 0 := rfl
   have hXcube (q : KubotaRankTwo.GL2 K)
       (hq : q ∈ ({g, h, g * h} : Set (KubotaRankTwo.GL2 K))) (hz : q 1 0 = 0) :
       ∃ t : Kˣ, t ^ 3 = KubotaRankTwo.X K q := by
@@ -179,7 +178,7 @@ theorem raw_section_splitting (r : ℕ)
   let s : KPLocalCube.Gamma F v r →*
       KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr v) := {
     toFun := fun g => KPLocalCover.sectionMap F ζ hζ (Sum.inr v) g.val
-    map_one' := by rfl
+    map_one' := rfl
     map_mul' := by
       intro g h
       change (⟨g.val * h.val, (1 : rootsOfUnity 3 F)⟩ :

@@ -1,6 +1,7 @@
 module
 
 public import DedekindZetaZeroFree.LFunctions.Hecke.PrimeArtinValues
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -34,6 +35,6 @@ theorem inertiaRestrictIntermediate
     apply NumberField.RingOfIntegers.ext
     change algebraMap E L ((g.restrictNormal E) (x : E)) =
       g (algebraMap E L (x : E))
-    exact AlgEquiv.restrictNormal_commutes g E (x : E)
+    norm_num
 
 end DedekindZetaZeroFree.AbelianQuotient

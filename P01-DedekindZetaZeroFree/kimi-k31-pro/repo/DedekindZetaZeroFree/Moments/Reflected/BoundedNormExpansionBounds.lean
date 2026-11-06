@@ -19,7 +19,7 @@ private theorem idealSymbol_norm_le_one (A : SArithmeticData F) (σ : F →+* �
   unfold ThetaPhaseSeparation.idealSymbol
   rw [norm_prod]
   apply Finset.prod_le_one₀
-  · intro p _; exact norm_nonneg _
+  · grind
   · intro p _
     unfold symbol
     let q := supportPrime A I p
@@ -58,9 +58,9 @@ private theorem separatedCoefficient_norm_bound
     calc
       _ ≤ betaIdeal (activeSupport A T) T.a.val * 1 * 1 * 1 ^ 3 := by
         gcongr
-        · exact hf.1
-        · exact hf.2.1
-        · exact hf.2.2
+        · grind
+        · grind
+        · grind
       _ = _ := by ring
   · simp only [norm_zero]
     positivity
@@ -101,8 +101,7 @@ private theorem summand_positiveRowWeight_bound
   calc
     _ ≤ (betaIdeal (activeSupport A T) T.a.val /
         (Real.sqrt (A.exteriorNorm c.val) * A.exteriorNorm T.n)) *
-        (K / ThetaPhaseSeparation.profileArgument A T d c.val Z) := by
-      exact mul_le_mul hcoeff hprofile (norm_nonneg _) (by positivity)
+        (K / ThetaPhaseSeparation.profileArgument A T d c.val Z) := mul_le_mul hcoeff hprofile (norm_nonneg _) (by positivity)
     _ = _ := by
       unfold positiveRowWeight ThetaPhaseSeparation.profileArgument rowNorm
       change _ = (K * (A.exteriorNorm d ^ 2 * A.exteriorNorm T.f ^ 2) / Z) *
@@ -110,8 +109,7 @@ private theorem summand_positiveRowWeight_bound
           (A.exteriorNorm T.a * A.exteriorNorm c.val * A.exteriorNorm T.n ^ 3) ^ (-1 : ℝ) /
           (Real.sqrt (A.exteriorNorm c.val) * A.exteriorNorm T.n))
       rw [Real.rpow_neg_one]
-      have hsc : 0 < Real.sqrt (A.exteriorNorm c.val) := Real.sqrt_pos.mpr hc
-      field_simp
+      grind
 
  abbrev CompactMajorantIndex (A : SArithmeticData F) (h : A.Exterior) :=
   (f : {f : ExteriorSquarefreeIdeal A.cS //
@@ -151,7 +149,7 @@ private theorem compactMajorantIndexMap_injective (A : SArithmeticData F) (h : A
     cases Ti
     cases Tj
     simp_all
-  exact Prod.ext (Subtype.ext hT) hc
+  grind
 
 private theorem positiveRowWeight_nonneg {A : SArithmeticData F} (f : ExteriorSquarefreeIdeal A.cS)
     (x : PositiveRowIndex f) : 0 ≤ positiveRowWeight f 1 x := by
@@ -209,7 +207,7 @@ private theorem compactWeightedMajorant_summable (A : SArithmeticData F) (h : A.
     apply (summable_sigma_of_nonneg (f := fun k : (f : T) × (A.UnitQuotient × PositiveRowIndex f.val) => W k.1 k.2)
       (fun k => hw k.1 k.2)).2
     exact ⟨hf, (hasSum_fintype _).summable⟩
-  simpa only [T, W, CompactMajorantIndex] using he
+  grind
 
  def compactRowMajorant (A : SArithmeticData F) (h : A.Exterior) : ℝ :=
   ∑' k : CompactMajorantIndex A h,
@@ -274,8 +272,7 @@ theorem bounded_norm_expansion
   have he : Function.Injective e := by
     intro I J h
     exact Subtype.ext (congrArg (fun k : NonzeroIdeal F => k.val) h)
-  have hs : {h : A.Exterior | A.exteriorNorm h ≤ X}.Finite := by
-    exact (normBoundedIdeals_finite F X).preimage he.injOn
+  have hs : {h : A.Exterior | A.exteriorNorm h ≤ X}.Finite := (normBoundedIdeals_finite F X).preimage he.injOn
   let s : Finset A.Exterior := hs.toFinset
   let C : ℝ := ∑ h ∈ s, compactRowMajorant A h
   have hC : 0 ≤ C := Finset.sum_nonneg (fun h _ => compactRowMajorant_nonneg A h)
@@ -284,8 +281,7 @@ theorem bounded_norm_expansion
   have hZ0 : 0 < Z := lt_of_lt_of_le zero_lt_one hZ
   have hd0 : 0 ≤ A.exteriorNorm d :=
     zero_le_one.trans (idealNorm_ge_one _ d.property.1)
-  have hr : compactRowMajorant A h ≤ C := by
-    exact Finset.single_le_sum (fun k _ => compactRowMajorant_nonneg A k)
+  have hr : compactRowMajorant A h ≤ C := Finset.single_le_sum (fun k _ => compactRowMajorant_nonneg A k)
       (hs.mem_toFinset.mpr hh)
   have hc : Kprofile * A.exteriorNorm d ^ 2 / Z ≤ Kprofile * X ^ 2 := by
     calc
@@ -354,11 +350,8 @@ theorem scalar_parameter_absorption (M Cstar ε : ℝ)
       mul_nonneg ht2 (sq_nonneg (M - 1)), sq_nonneg (M - 1)]
   have htail : 2 * M * t + 4 * M - 2 - 2 * t * (B - 1) < ε := by
     have heq : 2 * t * (B - 1) = 2 * M * t + 4 * M + 1 := by
-      dsimp [B]
-      field_simp
-      ring
-    rw [heq]
-    linarith
+      grind
+    grind
   let C : ℝ := max Cstar 1
   have hC : 0 < C := lt_of_lt_of_le zero_lt_one (le_max_right _ _)
   let cL : ℝ := 8 * C ^ 2
@@ -418,7 +411,7 @@ theorem scalar_parameter_absorption (M Cstar ε : ℝ)
       _ ≤ (C * Z ^ M) ^ (2 * t) := Real.rpow_le_rpow hP0.le hPu (by positivity)
       _ = _ := by
         rw [Real.mul_rpow hC.le (Real.rpow_nonneg hZ0.le _), ← Real.rpow_mul hZ0.le]
-        dsimp [cP]; congr 2; ring
+        grind
   have hsqrt : Real.rpow P ((1 / 2 : ℝ) + 2 * t) = Real.sqrt P * P ^ (2 * t) := by
     rw [Real.sqrt_eq_rpow]
     exact Real.rpow_add hP0 _ _
@@ -438,16 +431,14 @@ theorem scalar_parameter_absorption (M Cstar ε : ℝ)
           rw [show 2 * (cL * Z ^ (2 * M + t)) = (2 * cL) * Z ^ (2 * M + t) by ring,
             Real.mul_rpow (by positivity : 0 ≤ 2 * cL) (Real.rpow_nonneg hZ0.le _),
             ← Real.rpow_mul hZ0.le]
-          dsimp [cLog]; ring
+          grind
     have hsum : D + RMTailCutoff.threshold Z P D t ≤
         8 * Z ^ t * (D + D ^ 2 * P / Z) := by
       have hzt : 1 ≤ Z ^ t := Real.one_le_rpow hZ1 ht.le
       unfold RMTailCutoff.threshold RMTailCutoff.length
       have hq : 0 ≤ D ^ 2 * P / Z := by positivity
       have hdzt := mul_le_mul_of_nonneg_left hzt hD0.le
-      have heq : Z ^ t * (8 * D ^ 2 * P / Z) = 8 * Z ^ t * (D ^ 2 * P / Z) := by ring
-      rw [heq]
-      nlinarith
+      grind
     have hdrw : (D * RMTailCutoff.threshold Z P D t) ^ t ≤
         cD ^ t * Z ^ ((3 * M + t) * t) := by
       calc
@@ -460,7 +451,7 @@ theorem scalar_parameter_absorption (M Cstar ε : ℝ)
         _ ≤ (cLog * Z ^ ((2 * M + t) * t)) ^ 4 := by gcongr
         _ = _ := by
           rw [mul_pow, ← Real.rpow_natCast (Z ^ ((2 * M + t) * t)) 4, ← Real.rpow_mul hZ0.le]
-          dsimp [t₃]; congr 2; ring
+          grind
     have he : 2 * M * t + t₃ + t + (3 * M + t) * t < ε := by
       dsimp [t₃]
       nlinarith [mul_nonneg ht.le (sq_nonneg (M - 1))]
@@ -487,17 +478,17 @@ theorem scalar_parameter_absorption (M Cstar ε : ℝ)
       calc
         _ ≤ (Z ^ t) ^ (-2 * (B - 1)) :=
           Real.rpow_le_rpow_of_nonpos (Real.rpow_pos_of_pos hZ0 _) hg (by linarith)
-        _ = _ := by rw [← Real.rpow_mul hZ0.le]; congr 1; ring
+        _ = _ := by rw [← Real.rpow_mul hZ0.le]; grind
     have hlw : (RMTailCutoff.length Z P D) ^ 2 ≤ cL ^ 2 * Z ^ (4 * M) := by
       calc
         _ ≤ (cL * Z ^ (2 * M)) ^ 2 := by gcongr
         _ = _ := by
           rw [mul_pow, ← Real.rpow_natCast (Z ^ (2 * M)) 2, ← Real.rpow_mul hZ0.le]
-          congr 2; ring
+          grind
     have he : 2 * M * t + 4 * M - 2 * t * (B - 1) < ε := by
       have heq : 2 * t * (B - 1) = 2 * M * t + 4 * M + 1 := by
-        dsimp [B]; field_simp; ring
-      rw [heq]; linarith
+        grind
+      grind
     change P ^ ((1 / 2 : ℝ) + 2 * t) * D * (RMTailCutoff.length Z P D) ^ 2 *
       (RMTailCutoff.gain Z P D t) ^ (-2 * (B - 1)) ≤
       (K₁ + K₂) * Z ^ ε * Real.sqrt P * D
@@ -562,7 +553,7 @@ theorem idealSymbol_norm_le_one (A : SArithmeticData F) (σ : F →+* ℂ)
   unfold ThetaPhaseSeparation.idealSymbol
   rw [norm_prod]
   apply Finset.prod_le_one₀
-  · intro p _; exact norm_nonneg _
+  · grind
   · intro p _
     unfold symbol
     let q := supportPrime A I p
@@ -601,9 +592,9 @@ theorem separatedCoefficient_norm_bound
     calc
       _ ≤ betaIdeal (activeSupport A T) T.a.val * 1 * 1 * 1 ^ 3 := by
         gcongr
-        · exact hf.1
-        · exact hf.2.1
-        · exact hf.2.2
+        · grind
+        · grind
+        · grind
       _ = _ := by ring
   · simp only [norm_zero]
     positivity
@@ -644,8 +635,7 @@ theorem summand_positiveRowWeight_bound
   calc
     _ ≤ (betaIdeal (activeSupport A T) T.a.val /
         (Real.sqrt (A.exteriorNorm c.val) * A.exteriorNorm T.n)) *
-        (K / ThetaPhaseSeparation.profileArgument A T d c.val Z) := by
-      exact mul_le_mul hcoeff hprofile (norm_nonneg _) (by positivity)
+        (K / ThetaPhaseSeparation.profileArgument A T d c.val Z) := mul_le_mul hcoeff hprofile (norm_nonneg _) (by positivity)
     _ = _ := by
       unfold positiveRowWeight ThetaPhaseSeparation.profileArgument rowNorm
       change _ = (K * (A.exteriorNorm d ^ 2 * A.exteriorNorm T.f ^ 2) / Z) *
@@ -653,8 +643,7 @@ theorem summand_positiveRowWeight_bound
           (A.exteriorNorm T.a * A.exteriorNorm c.val * A.exteriorNorm T.n ^ 3) ^ (-1 : ℝ) /
           (Real.sqrt (A.exteriorNorm c.val) * A.exteriorNorm T.n))
       rw [Real.rpow_neg_one]
-      have hsc : 0 < Real.sqrt (A.exteriorNorm c.val) := Real.sqrt_pos.mpr hc
-      field_simp
+      grind
 
 abbrev CompactMajorantIndex (A : SArithmeticData F) (h : A.Exterior) :=
   (f : {f : ExteriorSquarefreeIdeal A.cS //
@@ -694,7 +683,7 @@ theorem compactMajorantIndexMap_injective (A : SArithmeticData F) (h : A.Exterio
     cases Ti
     cases Tj
     simp_all
-  exact Prod.ext (Subtype.ext hT) hc
+  grind
 
 theorem positiveRowWeight_nonneg {A : SArithmeticData F} (f : ExteriorSquarefreeIdeal A.cS)
     (x : PositiveRowIndex f) : 0 ≤ positiveRowWeight f 1 x := by
@@ -752,7 +741,7 @@ theorem compactWeightedMajorant_summable (A : SArithmeticData F) (h : A.Exterior
     apply (summable_sigma_of_nonneg (f := fun k : (f : T) × (A.UnitQuotient × PositiveRowIndex f.val) => W k.1 k.2)
       (fun k => hw k.1 k.2)).2
     exact ⟨hf, (hasSum_fintype _).summable⟩
-  simpa only [T, W, CompactMajorantIndex] using he
+  grind
 
 theorem compact_expansion_square_bound
     (A : SArithmeticData F) (G : AllowedRecipe A) (U : UnitRepresentatives A)
@@ -790,11 +779,9 @@ theorem compact_expansion_square_bound
   intro h d
   apply hentry Z hZ u h.val d.val.val
   · have hh := h.property.2.2
-    change A.exteriorNorm h.val < 2 * P at hh
-    exact hh.le.trans (mul_le_mul_of_nonneg_left hPu (by norm_num))
+    grind
   · have hd := d.property.2.1
-    change A.exteriorNorm d.val.val < 2 * D at hd
-    exact hd.le.trans (mul_le_mul_of_nonneg_left hDu (by norm_num))
+    grind
 
 end
 end DedekindZetaZeroFree.RMParameterAbsorption

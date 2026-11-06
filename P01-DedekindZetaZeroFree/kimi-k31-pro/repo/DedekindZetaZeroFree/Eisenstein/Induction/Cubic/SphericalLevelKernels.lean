@@ -41,7 +41,7 @@ def CommonLevel (U : KPMsRationalCompactCrossPairing.Level F ζ hζ) :
     obtain ⟨hk1, hk2⟩ := hk g u
     constructor
     · simp only [Submodule.coe_add, Pi.add_apply, hf1, hk1]
-    · simp only [Submodule.coe_add, Pi.add_apply, hf1, hk1, mul_add, hf2, hk2, add_zero]
+    · simp only [Submodule.coe_add, Pi.add_apply, mul_add, hf2, hk2, add_zero]
   smul_mem' := by
     intro c f hf g u
     obtain ⟨hf1, hf2⟩ := hf g u

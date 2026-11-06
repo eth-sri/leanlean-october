@@ -228,7 +228,7 @@ theorem cotangent (C : ShrunkChart F ζ hζ U R P H)
       rw [hsymm]
       exact omega_subset_larger C hx
     rw [KPContActualSectorChartEquivariantInputs.cotangentCocycle, dif_pos hmem]
-    simp only [LinearIsometryEquiv.trans_apply, LinearIsometryEquiv.apply_symm_apply]
+    simp only [LinearIsometryEquiv.trans_apply]
     congr 1
     rw [T_apply' (isotropyArrow C γ) ((baseReindex (F := F)).symm (baseReindex (F := F) x)) hmem,
       T_apply' (isotropyArrow C γ) x (omega_subset_larger C hx), hsymm]

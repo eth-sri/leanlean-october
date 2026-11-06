@@ -22,9 +22,7 @@ private theorem sum_norm_sq_le_card_mul (S : Finset (Ideal (𝓞 F)))
     _ ≤ _ := h2
 
 private theorem squarefree_top_ideal : Squarefree (⊤ : Ideal (𝓞 F)) := by
-  have h : (⊤ : Ideal (𝓞 F)) = 1 := Ideal.one_eq_top.symm
-  rw [h]
-  exact squarefree_one
+  simp_all
 
 private theorem unit_row_bound (c : Ideal (𝓞 F))
     (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c) (S : Finset (Ideal (𝓞 F)))
@@ -132,7 +130,7 @@ private theorem both_unit_arith (C A δ E : ℝ) (hC : 0 ≤ C) (hA : 1 ≤ A) (
 theorem unit_block_extension_constant_nonneg
     (C A : ℝ) (hC : 0 ≤ C) (hA : 1 ≤ A) :
     0 ≤ C + 2 * A + 1 := by
-  linarith
+  grind
 
 theorem unit_block_extension
     (F : Type) [Field F] [NumberField F]

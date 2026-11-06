@@ -311,91 +311,13 @@ theorem profiniteLocalReciprocity_completionMap (a : Kˣ) :
       absoluteLocalArtinMap K a :=
   profiniteLocalReciprocityHom_map K a
 
-/-- The absolute local Artin map is injective. -/
-theorem absoluteLocalArtinMap_injective :
-    Function.Injective (absoluteLocalArtinMap K) := by
-  intro x y hxy
-  apply topologicalProfiniteCompletionMap_injective_localField K
-  apply (profiniteLocalReciprocity K).injective
-  rw [profiniteLocalReciprocity_completionMap,
-    profiniteLocalReciprocity_completionMap]
-  exact hxy
 
-/-- Every finite quotient projection of profinite reciprocity is the finite
-projection canonically induced by the absolute local Artin map. -/
-theorem profiniteLocalReciprocity_finiteProjection
-    (N : OpenNormalSubgroup (standardLocalAbsoluteAbelianProfinite K))
-    (x : TopologicalProfiniteCompletion Kˣ) :
-    QuotientGroup.mk' N.toSubgroup (profiniteLocalReciprocity K x) =
-      topologicalProfiniteCompletionFiniteProjection
-        (standardLocalAbsoluteAbelianProfinite K) (absoluteLocalArtinMap K) N x := by
-  let lhs : TopologicalProfiniteCompletion Kˣ →
-      (((standardLocalAbsoluteAbelianProfinite K).toFiniteQuotientFunctor ⋙
-        forget₂ FiniteGrp ProfiniteGrp).obj N : Type) :=
-    fun y => QuotientGroup.mk' N.toSubgroup (profiniteLocalReciprocity K y)
-  let rhs : TopologicalProfiniteCompletion Kˣ →
-      (((standardLocalAbsoluteAbelianProfinite K).toFiniteQuotientFunctor ⋙
-        forget₂ FiniteGrp ProfiniteGrp).obj N : Type) :=
-    fun y => topologicalProfiniteCompletionFiniteProjection
-      (standardLocalAbsoluteAbelianProfinite K) (absoluteLocalArtinMap K) N y
-  have hlhs : Continuous lhs := by
-    let : DiscreteTopology
-        (standardLocalAbsoluteAbelianProfinite K ⧸ N.toSubgroup) :=
-      QuotientGroup.discreteTopology N.isOpen'
-    let q :
-        (standardLocalAbsoluteAbelianProfinite K ⧸ N.toSubgroup) →ₜ*
-          (((standardLocalAbsoluteAbelianProfinite K).toFiniteQuotientFunctor ⋙
-            forget₂ FiniteGrp ProfiniteGrp).obj N : Type) :=
-      { toFun := id
-        map_one' := rfl
-        map_mul' := by intro a b; rfl
-        continuous_toFun := continuous_of_discreteTopology }
-    exact q.continuous_toFun.comp
-      (QuotientGroup.continuous_mk.comp
-        (profiniteLocalReciprocity K).continuous)
-  have hrhs : Continuous rhs :=
-    (topologicalProfiniteCompletionFiniteProjection
-      (standardLocalAbsoluteAbelianProfinite K)
-      (absoluteLocalArtinMap K) N).continuous_toFun
-  have heq : lhs = rhs :=
-    (topologicalProfiniteCompletionMap_denseRange Kˣ).equalizer
-      hlhs hrhs <| by
-        funext a
-        change
-          QuotientGroup.mk' N.toSubgroup
-              (profiniteLocalReciprocity K
-                (topologicalProfiniteCompletionMap Kˣ a)) =
-            topologicalProfiniteCompletionFiniteProjection
-              (standardLocalAbsoluteAbelianProfinite K)
-              (absoluteLocalArtinMap K) N
-              (topologicalProfiniteCompletionMap Kˣ a)
-        rw [profiniteLocalReciprocity_completionMap,
-          profiniteLocalReciprocityHom_finiteProjection_map]
-  exact congrFun heq x
 
-/-- Profinite local reciprocity is the unique continuous multiplicative
-equivalence whose composite with the completion map is the absolute Artin
-map. -/
-theorem profiniteLocalReciprocity_unique
-    (e : TopologicalProfiniteCompletion Kˣ ≃ₜ*
-      standardLocalAbsoluteAbelianProfinite K)
-    (he : (ContinuousMonoidHom.toContinuousMonoidHom e).comp
-        (topologicalProfiniteCompletionMap Kˣ) =
-      absoluteLocalArtinMap K) :
-    e = profiniteLocalReciprocity K := by
-  apply ContinuousMulEquiv.ext
-  intro x
-  have hhom := profiniteLocalReciprocityHom_unique K
-    (ContinuousMonoidHom.toContinuousMonoidHom e) he
-  exact DFunLike.congr_fun hhom x
 
-/-- Mathlib's absolute Galois abelianization is canonically the inverse limit
-of its finite quotients, after transport from the fixed separable closure. -/
-noncomputable def standardAbsoluteGaloisAbelianizationLimitEquiv :
-    ContinuousMulEquiv (standardLocalAbsoluteAbelianProfinite K)
-      (absoluteFiniteArtinLimit K) :=
-  (separableToStandardAbsoluteAbelianizationEquiv K).symm.trans
-    (absoluteGaloisAbelianizationLimitEquiv K)
+
+
+
+
 
 /-- Every finite projection of the absolute Artin map is its corresponding
 finite local Artin coordinate after canonical transport to the separable

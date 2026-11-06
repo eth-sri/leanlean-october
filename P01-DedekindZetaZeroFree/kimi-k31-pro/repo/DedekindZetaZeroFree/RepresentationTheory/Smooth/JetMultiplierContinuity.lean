@@ -69,7 +69,7 @@ theorem linearMap_jet_bound (ψ : H →* ℂˣ)
           jetBound H χ chart U J g (n - i) K f := by
         apply Finset.sum_le_sum
         intro i hi
-        simp only [NNReal.coe_mul, NNReal.coe_natCast]
+        simp only [NNReal.coe_natCast]
         exact mul_le_mul
           (mul_le_mul_of_nonneg_left (hC i z hz) (by positivity))
           (norm_jet_le H χ chart U hU J g (n - i) K f z hz)

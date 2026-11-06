@@ -334,53 +334,9 @@ end SeparableIdealNormRelNorm
 
 attribute [local instance] FractionRing.liftAlgebra
 
-/-- The image of the base maximal ideal in a finite local-field extension is
-the power of the upstairs maximal ideal given by the actual Dedekind
-ramification index. -/
-theorem maximalIdeal_map_eq_maximalIdeal_pow_ramificationIdx
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L]
-    [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K)
-      (ValuativeRel.valuation L)]
-    [Module.Finite 𝒪[K] 𝒪[L]] :
-    Ideal.map (algebraMap 𝒪[K] 𝒪[L]) (𝓂[K] : Ideal 𝒪[K]) =
-      (𝓂[L] : Ideal 𝒪[L]) ^
-        (𝓂[L] : Ideal 𝒪[L]).ramificationIdx 𝒪[K] := by
-  have hp : (𝓂[K] : Ideal 𝒪[K]) ≠ ⊥ :=
-    Ring.ne_bot_of_isMaximal_of_not_isField
-      (IsLocalRing.maximalIdeal.isMaximal 𝒪[K])
-      (IsDiscreteValuationRing.not_isField 𝒪[K])
-  have hfactor := Ideal.map_algebraMap_eq_finsetProd_pow
-    (R := 𝒪[L]) (S := 𝒪[K]) (p := (𝓂[K] : Ideal 𝒪[K])) hp
-  have hsingleton : ((𝓂[K] : Ideal 𝒪[K]).primesOver 𝒪[L]).toFinset =
-      ({(𝓂[L] : Ideal 𝒪[L])} : Finset (Ideal 𝒪[L])) := by
-    ext P
-    simp [IsLocalRing.primesOver_eq 𝒪[L] hp]
-  rw [hsingleton] at hfactor
-  simpa using hfactor
 
-/-- Integral closure and separability produce the finite valuation-ring
-module needed by the preceding ideal factorization. -/
-theorem maximalIdeal_map_eq_maximalIdeal_pow_ramificationIdx_of_isIntegralClosure
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L]
-    [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [Algebra.IsSeparable K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K)
-      (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] :
-    Ideal.map (algebraMap 𝒪[K] 𝒪[L]) (𝓂[K] : Ideal 𝒪[K]) =
-      (𝓂[L] : Ideal 𝒪[L]) ^
-        (𝓂[L] : Ideal 𝒪[L]).ramificationIdx 𝒪[K] := by
-  let : Module.Finite 𝒪[K] 𝒪[L] :=
-    integerRing_moduleFinite_of_isIntegralClosure K L
-  exact maximalIdeal_map_eq_maximalIdeal_pow_ramificationIdx K L
+
+
 
 /-- Separability of an actual field extension transfers to the canonical
 fraction fields of its valuation integer rings. -/
@@ -550,167 +506,15 @@ theorem v_normUnits_eq_residue_finrank_mul_of_isSeparable
   simp only [n]
   ring
 
-/-- The image of the chosen base prime element has upstairs normalized value
-the negative of the actual ramification index. -/
-theorem v_mapBaseUnitsToExtensionUnits_integerRingUniformizerFieldUnit
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L]
-    [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K)
-      (ValuativeRel.valuation L)]
-    [Module.Finite 𝒪[K] 𝒪[L]] :
-    v L (Additive.ofMul
-        (mapBaseUnitsToExtensionUnits K L
-          (integerRingUniformizerFieldUnit K))) =
-      -((𝓂[L] : Ideal 𝒪[L]).ramificationIdx 𝒪[K] : Int) := by
-  let e := (𝓂[L] : Ideal 𝒪[L]).ramificationIdx 𝒪[K]
-  have hspan :
-      Ideal.span
-          (Set.singleton (integerRingMapOfValuationExtension K L
-            (chosenIntegerRingUniformizer K))) =
-        Ideal.span (Set.singleton (chosenIntegerRingUniformizer L ^ e)) := by
-    calc
-      Ideal.span
-          (Set.singleton (integerRingMapOfValuationExtension K L
-            (chosenIntegerRingUniformizer K))) =
-          Ideal.map (algebraMap 𝒪[K] 𝒪[L])
-            (𝓂[K] : Ideal 𝒪[K]) := by
-        rw [chosenIntegerRingUniformizer_maximalIdeal_eq K,
-          Ideal.map_span, Set.image_singleton]
-        rfl
-      _ = (𝓂[L] : Ideal 𝒪[L]) ^ e := by
-        exact maximalIdeal_map_eq_maximalIdeal_pow_ramificationIdx K L
-      _ = Ideal.span (Set.singleton (chosenIntegerRingUniformizer L ^ e)) :=
-        maximalIdeal_pow_eq_span_uniformizer_pow L e
-  obtain ⟨u, hu⟩ := Ideal.span_singleton_eq_span_singleton.mp hspan
-  have hfieldUnits :
-      mapBaseUnitsToExtensionUnits K L
-          (integerRingUniformizerFieldUnit K) *
-        integerUnitsToFieldUnits L u =
-      integerRingUniformizerFieldUnit L ^ e := by
-    apply Units.ext
-    have huField := congrArg (fun z : 𝒪[L] => (z : L)) hu
-    simpa [integerRingMapOfValuationExtension] using huField
-  have hvalue := congrArg
-    (fun z : Lˣ => v L (Additive.ofMul z)) hfieldUnits
-  change v L (Additive.ofMul
-      (mapBaseUnitsToExtensionUnits K L
-          (integerRingUniformizerFieldUnit K) *
-        integerUnitsToFieldUnits L u)) =
-    v L (Additive.ofMul (integerRingUniformizerFieldUnit L ^ e)) at hvalue
-  rw [v_mul, v_integerUnitsToFieldUnits, add_zero, v_pow,
-    v_integerRingUniformizerFieldUnit] at hvalue
-  simpa [e] using hvalue
 
-/-- Integral closure and separability produce the module-finiteness used in
-the uniformizer scaling calculation. -/
-theorem v_mapBaseUnitsToExtensionUnits_integerRingUniformizerFieldUnit_of_isIntegralClosure
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L]
-    [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [Algebra.IsSeparable K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K)
-      (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] :
-    v L (Additive.ofMul
-        (mapBaseUnitsToExtensionUnits K L
-          (integerRingUniformizerFieldUnit K))) =
-      -((𝓂[L] : Ideal 𝒪[L]).ramificationIdx 𝒪[K] : Int) := by
-  let : Module.Finite 𝒪[K] 𝒪[L] :=
-    integerRing_moduleFinite_of_isIntegralClosure K L
-  exact
-    v_mapBaseUnitsToExtensionUnits_integerRingUniformizerFieldUnit K L
 
-/-- Base extension commutes with the two canonical inclusions of valuation
-integer units into field units. -/
-theorem mapBaseUnitsToExtensionUnits_integerUnitsToFieldUnits
-    (K L : Type u)
-    [Field K] [ValuativeRel K]
-    [Field L] [ValuativeRel L]
-    [Algebra K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K)
-      (ValuativeRel.valuation L)]
-    (x : 𝒪[K]ˣ) :
-    mapBaseUnitsToExtensionUnits K L (integerUnitsToFieldUnits K x) =
-      integerUnitsToFieldUnits L
-        (Units.map (algebraMap 𝒪[K] 𝒪[L]).toMonoidHom x) := by
-  apply Units.ext
-  rfl
 
-/-- The positive generator (the inverse chosen prime element) scales by the
-actual ramification index under base extension. -/
-theorem v_mapBaseUnitsToExtensionUnits_inverseIntegerRingUniformizerFieldUnit_of_isIntegralClosure
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L]
-    [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [Algebra.IsSeparable K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K)
-      (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] :
-    v L (Additive.ofMul
-        (mapBaseUnitsToExtensionUnits K L
-          (inverseIntegerRingUniformizerFieldUnit K))) =
-      ((𝓂[L] : Ideal 𝒪[L]).ramificationIdx 𝒪[K] : Int) := by
-  rw [inverseIntegerRingUniformizerFieldUnit,
-    (mapBaseUnitsToExtensionUnits K L).map_inv, v_inv,
-    v_mapBaseUnitsToExtensionUnits_integerRingUniformizerFieldUnit_of_isIntegralClosure]
-  simp only [neg_neg]
 
-/-- Normalized valuations in a finite separable local-field extension scale
-under the base embedding by the actual ramification index. -/
-theorem v_mapBaseUnitsToExtensionUnits_eq_ramificationIdx_mul
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L]
-    [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [Algebra.IsSeparable K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K)
-      (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    (x : Kˣ) :
-    v L (Additive.ofMul (mapBaseUnitsToExtensionUnits K L x)) =
-      ((𝓂[L] : Ideal 𝒪[L]).ramificationIdx 𝒪[K] : Int) *
-        v K (Additive.ofMul x) := by
-  let ϖ : Kˣ := inverseIntegerRingUniformizerFieldUnit K
-  have hϖ : v K (Additive.ofMul ϖ) = 1 :=
-    v_inverseIntegerRingUniformizerFieldUnit K
-  let n : Int := v K (Additive.ofMul x)
-  let a : 𝒪[K]ˣ := uniformizerUnitFactor K ϖ hϖ x
-  let aL : 𝒪[L]ˣ := Units.map
-    (algebraMap 𝒪[K] 𝒪[L]).toMonoidHom a
-  have haMap :
-      mapBaseUnitsToExtensionUnits K L (integerUnitsToFieldUnits K a) =
-        integerUnitsToFieldUnits L aL := by
-    exact mapBaseUnitsToExtensionUnits_integerUnitsToFieldUnits K L a
-  have hx : integerUnitsToFieldUnits K a * ϖ ^ n = x := by
-    exact uniformizerUnitFactor_mul_uniformizer_zpow K ϖ hϖ x
-  have hxMap :
-      mapBaseUnitsToExtensionUnits K L x =
-        integerUnitsToFieldUnits L aL *
-          (mapBaseUnitsToExtensionUnits K L ϖ) ^ n := by
-    calc
-      mapBaseUnitsToExtensionUnits K L x =
-          mapBaseUnitsToExtensionUnits K L
-            (integerUnitsToFieldUnits K a * ϖ ^ n) :=
-        congrArg (mapBaseUnitsToExtensionUnits K L) hx.symm
-      _ = mapBaseUnitsToExtensionUnits K L
-            (integerUnitsToFieldUnits K a) *
-          (mapBaseUnitsToExtensionUnits K L ϖ) ^ n := by
-        simp only [map_mul, map_zpow]
-      _ = integerUnitsToFieldUnits L aL *
-          (mapBaseUnitsToExtensionUnits K L ϖ) ^ n := by rw [haMap]
-  rw [hxMap, v_mul, v_integerUnitsToFieldUnits, zero_add, v_zpow,
-    v_mapBaseUnitsToExtensionUnits_inverseIntegerRingUniformizerFieldUnit_of_isIntegralClosure]
-  simp only [n]
-  ring
+
+
+
+
+
 
 /-- The Galois specialization of the finite-separable normalized norm
 calculation in the finite local reciprocity construction. -/
@@ -730,67 +534,9 @@ theorem v_normUnits_eq_residue_finrank_mul_of_isGalois
         v L (Additive.ofMul x) :=
   v_normUnits_eq_residue_finrank_mul_of_isSeparable K L x
 
-/-- Finite local reciprocity, normalized norm range for every finite separable
-local-field extension.  Surjectivity of the upstairs normalized valuation
-turns the pointwise norm formula into the exact subgroup `fℤ`. -/
-theorem valuationMap_comp_normUnits_range_eq_zmultiples_of_isSeparable
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L]
-    [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [Algebra.IsSeparable K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K)
-      (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] :
-    ((valuationMap K).comp
-      (MonoidHom.toAdditive (normUnits K L))).range =
-        AddSubgroup.zmultiples (Module.finrank 𝓀[K] 𝓀[L] : Int) := by
-  ext z
-  constructor
-  · rintro ⟨x, rfl⟩
-    rw [AddSubgroup.mem_zmultiples_iff]
-    refine ⟨valuationMap L x, ?_⟩
-    change valuationMap L x • (Module.finrank 𝓀[K] 𝓀[L] : Int) =
-      valuationMap K
-        (Additive.ofMul (normUnits K L (Additive.toMul x)))
-    have hnorm :=
-      v_normUnits_eq_residue_finrank_mul_of_isSeparable K L (Additive.toMul x)
-    simpa [valuationMap_apply, zsmul_eq_mul, mul_comm] using hnorm.symm
-  · intro hz
-    rw [AddSubgroup.mem_zmultiples_iff] at hz
-    obtain ⟨m, hm⟩ := hz
-    obtain ⟨x, hx⟩ := valuationMap_surjective L m
-    refine ⟨x, ?_⟩
-    change valuationMap K
-      (Additive.ofMul (normUnits K L (Additive.toMul x))) = z
-    have hnorm :=
-      v_normUnits_eq_residue_finrank_mul_of_isSeparable K L (Additive.toMul x)
-    calc
-      valuationMap K
-          (Additive.ofMul (normUnits K L (Additive.toMul x))) =
-          (Module.finrank 𝓀[K] 𝓀[L] : Int) * valuationMap L x := by
-        simpa [valuationMap_apply] using hnorm
-      _ = z := by
-        rw [hx]
-        simpa [zsmul_eq_mul, mul_comm] using hm
 
-/-- The Galois specialization of the finite-separable norm-range theorem in
-the finite local reciprocity construction. -/
-theorem valuationMap_comp_normUnits_range_eq_zmultiples_of_isGalois
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L]
-    [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K)
-      (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] :
-    ((valuationMap K).comp
-      (MonoidHom.toAdditive (normUnits K L))).range =
-        AddSubgroup.zmultiples (Module.finrank 𝓀[K] 𝓀[L] : Int) :=
-  valuationMap_comp_normUnits_range_eq_zmultiples_of_isSeparable K L
+
+
 
 end
 end LocalClassFieldTheory

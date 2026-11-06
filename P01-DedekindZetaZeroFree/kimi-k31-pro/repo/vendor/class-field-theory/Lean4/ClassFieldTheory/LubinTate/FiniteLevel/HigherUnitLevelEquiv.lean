@@ -502,32 +502,7 @@ theorem
         standardLubinTatePrimitivePolynomial_derivative_eval₂_addVal
           hπ n
 
-/-- Arithmetic form of the derivative exponent used by the
-root-product comparison. -/
-theorem standardLubinTatePrimitivePolynomial_derivativeExponent_eq
-    (F : LocalField.{u, v} K) (n : ℕ) :
-    n * ((Nat.card F.residueField - 1) *
-          Nat.card F.residueField ^ n) +
-        (Nat.card F.residueField - 2) *
-          Nat.card F.residueField ^ n =
-      (n + 1) * ((Nat.card F.residueField - 1) *
-          Nat.card F.residueField ^ n) -
-        Nat.card F.residueField ^ n := by
-  let q := Nat.card F.residueField
-  have hq : 2 ≤ q :=
-    (Finite.one_lt_card : 1 < Nat.card F.residueField)
-  have hqsub : q - 1 = (q - 2) + 1 := by
-    omega
-  have hsum :
-      (n + 1) * ((q - 1) * q ^ n) =
-        q ^ n +
-          (n * ((q - 1) * q ^ n) + (q - 2) * q ^ n) := by
-    rw [hqsub]
-    ring
-  change
-    n * ((q - 1) * q ^ n) + (q - 2) * q ^ n =
-      (n + 1) * ((q - 1) * q ^ n) - q ^ n
-  rw [hsum, Nat.add_sub_cancel_left]
+
 
 /-- The changed primitive polynomial after passing through the changed
 level and then into the common compositum valuation ring. -/
@@ -557,19 +532,7 @@ noncomputable def
   standardLubinTateLevelToChangedLevelCompositumIntegerMap hπ u n
     (standardLubinTatePrimitivePointInteger hπ n)
 
-/-- The distinguished changed primitive point in the common compositum
-valuation ring. -/
-noncomputable def
-    standardLubinTateChangedPrimitivePointInCompositum
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ) :
-    (standardLubinTateChangedLevelCompositumCompleteDVF
-      hπ u n).valuationSubring :=
-  let hπ' :=
-    standardLubinTateChangedUniformizer_isUniformizer hπ u
-  standardLubinTateChangedLevelToCompositumIntegerMap hπ u n
-    (standardLubinTatePrimitivePointInteger hπ' n)
+
 
 /-- The two routes from base coefficients into the common compositum
 valuation ring agree. -/

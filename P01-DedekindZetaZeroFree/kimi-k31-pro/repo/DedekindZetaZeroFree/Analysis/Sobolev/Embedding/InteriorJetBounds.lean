@@ -257,7 +257,7 @@ open scoped ContDiff
   | nil => simpa [coordinateDerivativeList] using hf
   | cons i l ih =>
     have ht : ContDiffOn ℝ ((q + 1) + l.length) f U := by
-      convert hf using 1 <;> simp [add_assoc, add_comm, add_left_comm]
+      convert hf using 1 <;> simp [add_comm, add_left_comm]
     have hd := (ih (q + 1) ht).fderiv_of_isOpen hU (m := (q : ℕ∞ω)) (by simp)
     exact hd.clm_apply contDiffOn_const
 
@@ -307,22 +307,7 @@ theorem coordinateDerivativeList_eventuallyEq {n : ℕ} (l : List (Fin n))
     filter_upwards [ih.fderiv (𝕜 := ℝ)] with y hy
     exact congrArg (fun L => L (EuclideanSpace.single i 1)) hy
 
-theorem coordinateDerivative_eqOn_of_ae_representatives {n k m : ℕ}
-    (B : LocalBall n) (u : IntegerSobolev B k) (f g : Space n → ℂ)
-    (hf : ContinuousOn f B.carrier) (hg : ContinuousOn g B.carrier)
-    (hfu : f =ᵐ[volume.restrict B.carrier]
-      (fun x => u.derivatives (⟨fun _ => 0, by simp⟩ : MultiIndex n k) x))
-    (hgu : g =ᵐ[volume.restrict B.carrier]
-      (fun x => u.derivatives (⟨fun _ => 0, by simp⟩ : MultiIndex n k) x))
-    (α : MultiIndex n m) :
-    Set.EqOn (coordinateDerivative α f) (coordinateDerivative α g) B.carrier := by
-  have hfg := Measure.eqOn_open_of_ae_eq (hfu.trans hgu.symm)
-    (show IsOpen B.carrier from Metric.isOpen_ball) hf hg
-  intro x hx
-  have hnear : f =ᶠ[nhds x] g := by
-    filter_upwards [(show IsOpen B.carrier from Metric.isOpen_ball).mem_nhds hx] with y hy
-    exact hfg hy
-  exact (coordinateDerivativeList_eventuallyEq α.directions hnear).eq_of_nhds
+
 
 theorem exists_smooth_interior_cutoff {n : ℕ} (A B : LocalBall n)
     (hAB : Metric.closedBall A.center A.radius ⊆ B.carrier) :
@@ -413,45 +398,11 @@ theorem finite_order_jet_bound_of_smooth_approximation {n : ℕ}
     (hbound (w t) (hw t) (hs t) (hsub t) α x).trans
       (mul_le_mul_of_nonneg_left (hnorm t) hC.le))
 
-theorem coordinateDerivativeList_zero {n : ℕ} (l : List (Fin n)) :
-    coordinateDerivativeList l (fun _ : Space n => (0 : ℂ)) = fun _ => 0 := by
-  induction l with
-  | nil => rfl
-  | cons i l ih => simp [coordinateDerivativeList, ih]
 
-theorem sobolevNorm_zero_derivative {n k : ℕ} {B : LocalBall n}
-    (u : IntegerSobolev B k) (hu : u.sobolevNorm = 0) (α : MultiIndex n k) :
-    u.derivatives α = 0 := by
-  have hs : u.normSq = 0 := by rw [← u.sobolevNorm_sq, hu]; simp
-  have hα : ‖u.derivatives α‖ ^ 2 = 0 :=
-    (Finset.sum_eq_zero_iff_of_nonneg (fun β _ => sq_nonneg ‖u.derivatives β‖)).mp hs α
-      (Finset.mem_univ α)
-  exact norm_eq_zero.mp (by nlinarith [norm_nonneg (u.derivatives α)])
 
-theorem finite_order_representative_zero_norm {n : ℕ}
-    (A B : LocalBall n)
-    (hAB : Metric.closedBall A.center A.radius ⊆ B.carrier) (m : ℕ)
-    (u : IntegerSobolev B (m + n)) (hu : u.sobolevNorm = 0)
-    (f : Space n → ℂ) (hf : ContDiffOn ℝ m f B.carrier)
-    (hfu : f =ᵐ[volume.restrict B.carrier]
-      (fun x => u.derivatives (⟨fun _ => 0, by simp⟩ : MultiIndex n (m+n)) x)) :
-    ∃ j : CompactJets (Metric.closedBall A.center A.radius) m,
-      (∀ α : MultiIndex n m, ∀ x : Metric.closedBall A.center A.radius,
-        j α x = coordinateDerivative α f x) ∧
-      jetMaxNorm (isCompact_closedBall A.center A.radius) j = 0 := by
-  have hzero : (fun _ : Space n => (0 : ℂ)) =ᵐ[volume.restrict B.carrier]
-      (fun x => u.derivatives (⟨fun _ => 0, by simp⟩ : MultiIndex n (m+n)) x) := by
-    rw [sobolevNorm_zero_derivative u hu]
-    exact (Lp.coeFn_zero ℂ 2 (volume.restrict B.carrier)).symm
-  have hd := coordinateDerivative_eqOn_of_ae_representatives (m := m) B u f (fun _ => 0)
-    hf.continuousOn continuousOn_const hfu hzero
-  refine ⟨finiteCompactJet B _ hAB f hf, (fun _ _ => rfl), ?_⟩
-  apply le_antisymm
-  · apply (jetMaxNorm_le_iff (isCompact_closedBall A.center A.radius) _ le_rfl).mpr
-    intro α x
-    rw [finiteCompactJet_apply, hd α (hAB x.property)]
-    simp [coordinateDerivative, coordinateDerivativeList_zero]
-  · exact norm_nonneg _
+
+
+
 
 theorem finite_order_representative_interior_jet_bound {n : ℕ}
     (A B : LocalBall n)

@@ -50,11 +50,8 @@ private theorem tail_partial_sum_le
   | zero =>
       intro s hs hu
       have he : s = ∅ := Finset.eq_empty_iff_forall_notMem.mpr (by
-        intro i hi
-        have := hu i hi
-        simp only [pow_zero, one_mul] at this
-        exact (not_le_of_gt (hs i hi)) this)
-      simp [he]
+        grind)
+      simp_all
   | succ n ih =>
       intro s hs hu
       let t := s.filter (fun i => w i ≤ (2 : ℝ) ^ n * X)
@@ -62,18 +59,15 @@ private theorem tail_partial_sum_le
       have ht : ∑ i ∈ t, (w i) ^ (-p) ≤
           (2 * C * X ^ (1 - p)) * ∑ k ∈ Finset.range n, ((2 : ℝ) ^ (1 - p)) ^ k := by
         apply ih t
-        · intro i hi
-          exact hs i (Finset.mem_filter.mp hi).1
-        · intro i hi
-          exact (Finset.mem_filter.mp hi).2
+        · aesop
+        · aesop
       have hA : 1 ≤ (2 : ℝ) ^ n * X := by
         have hn : (1 : ℝ) ≤ 2 ^ n := one_le_pow₀ (by norm_num)
         nlinarith
       have hu' : ∑ i ∈ u, (w i) ^ (-p) ≤
           2 * C * ((2 : ℝ) ^ n * X) ^ (1 - p) := by
         apply tail_shell_sum_le w C hcount p hp _ hA u
-        · intro i hi
-          exact lt_of_not_ge (Finset.mem_filter.mp hi).2
+        · aesop
         · intro i hi
           have := hu i (Finset.mem_filter.mp hi).1
           simpa [pow_succ, mul_assoc, mul_left_comm, mul_comm] using this
@@ -82,7 +76,7 @@ private theorem tail_partial_sum_le
         (Finset.sum_filter_add_sum_filter_not s (fun i => w i ≤ (2 : ℝ) ^ n * X) _).symm
       rw [tail_scale_rpow X p (by linarith) n] at hu'
       rw [hsplit, Finset.sum_range_succ, mul_add]
-      exact add_le_add ht (by simpa [mul_assoc] using hu')
+      grind
 
 theorem inversePower_tail_sum_le
     {ι : Type*} (w : ι → ℝ) (hw : ∀ i, 1 ≤ w i)
@@ -101,7 +95,7 @@ theorem inversePower_tail_sum_le
     intro i hi
     calc
       w i ≤ ∑ j ∈ s, w j :=
-        Finset.single_le_sum (fun j _ => by linarith [hw j]) hi
+        Finset.single_le_sum (fun j _ => by grind) hi
       _ ≤ (2 : ℝ) ^ n * X := ((div_lt_iff₀ hX0).mp hn).le
   have hr0 : 0 ≤ (2 : ℝ) ^ (1 - p) := Real.rpow_nonneg (by norm_num) _
   have hr1 : (2 : ℝ) ^ (1 - p) < 1 :=
@@ -110,8 +104,7 @@ theorem inversePower_tail_sum_le
       1 / (1 - (2 : ℝ) ^ (1 - p)) := by
     apply (le_div_iff₀ (sub_pos.mpr hr1)).mpr
     rw [geom_sum_mul_neg]
-    have := pow_nonneg hr0 n
-    linarith
+    simp_all
   calc
     ∑ i ∈ s, (w i) ^ (-p) ≤
         (2 * C * X ^ (1 - p)) * ∑ k ∈ Finset.range n, ((2 : ℝ) ^ (1 - p)) ^ k :=

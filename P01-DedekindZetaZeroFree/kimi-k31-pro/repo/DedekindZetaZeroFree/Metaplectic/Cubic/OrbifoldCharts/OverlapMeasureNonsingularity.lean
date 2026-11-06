@@ -131,7 +131,7 @@ private theorem branch_quasi (e : Branch a b) :
           (targetChart a b e.component_eq).kind.representative) •
             labeledA (targetChart a b e.component_eq).places x) = _
       rw [ht.1, ht.2]
-      simp only [inv_one, one_mul, mul_one, Subgroup.coe_inv]
+      simp only [inv_one, one_mul, mul_one]
 
 private theorem ambient_quasi (e : Branch a b) (he : e.Properties) :
     Measure.QuasiMeasurePreserving e.psi

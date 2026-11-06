@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.Theta.Whittaker.Complex.FlowDerivative
 public import DedekindZetaZeroFree.Theta.Whittaker.Evaluation.FlowIntegration
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -49,7 +50,7 @@ theorem canonicalOutput_flow_action (i : Fin 6)
     dsimp [q]
     rw [(flow_properties F _).1,(archimedean_insertion_properties F R.A.zeta12 R.A.primitive_zeta12).1,mul_one]
   rw [hq0] at H
-  exact H
+  measurability
 end DedekindZetaZeroFree.FourierContinuation.CurrentOutputExtension
 
 end

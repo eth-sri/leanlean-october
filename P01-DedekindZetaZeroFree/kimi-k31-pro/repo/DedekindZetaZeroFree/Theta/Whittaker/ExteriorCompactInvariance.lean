@@ -28,7 +28,7 @@ lemma raw_commute_single (a : RestrictedCover F R.A.zeta12 R.A.primitive_zeta12)
   · subst w
     simp [RestrictedProduct.mul_apply, hp, localToRestricted]
   · simp [RestrictedProduct.mul_apply, localToRestricted,
-      RestrictedProduct.mulSingle_eq_of_ne, hw]
+      hw]
 
 lemma group_commute_single (a : RestrictedCover F R.A.zeta12 R.A.primitive_zeta12)
     (p : KPFinitePlace F) (hp : a (Sum.inr p) = 1)

@@ -36,7 +36,7 @@ private lemma mem_center_of_eq (g : GL (Fin 2) ℂ) (h10 : g 1 0 = 0) (h01 : g 0
   refine ⟨g 0 0, ?_⟩
   ext i j
   fin_cases i <;> fin_cases j <;>
-    simp [Matrix.scalar_apply, Matrix.diagonal_apply, h10, h01, h11]
+    simp [Matrix.scalar_apply, h10, h01, h11]
 
 private lemma fixed_first_coordinate (g : GL (Fin 2) ℂ) (hc : g 1 0 = 0) (z : KPArch.H3)
     (h : KPArch.action g z = z) :
@@ -163,21 +163,21 @@ private lemma map_not_mem_center {F : Type} [Field F] (e : F →+* ℂ) (he : Fu
     rw [← Matrix.GeneralLinearGroup.map_apply, hz]
   have h01 : A 0 1 = 0 := by
     have h := hentry 0 1
-    simp [Matrix.scalar_apply, Matrix.diagonal_apply] at h
+    simp [Matrix.scalar_apply] at h
     exact he (by simpa using h)
   have h10 : A 1 0 = 0 := by
     have h := hentry 1 0
-    simp [Matrix.scalar_apply, Matrix.diagonal_apply] at h
+    simp [Matrix.scalar_apply] at h
     exact he (by simpa using h)
   have hdiag : A 0 0 = A 1 1 := by
     have h1 := hentry 0 0
     have h2 := hentry 1 1
-    simp [Matrix.scalar_apply, Matrix.diagonal_apply] at h1 h2
+    simp [Matrix.scalar_apply] at h1 h2
     exact he (h1.trans h2.symm)
   refine ⟨A 0 0, ?_⟩
   ext i j
   fin_cases i <;> fin_cases j <;>
-    simp [Matrix.scalar_apply, Matrix.diagonal_apply, h01, h10, hdiag]
+    simp [Matrix.scalar_apply, h01, h10, hdiag]
 
 theorem rationalProjective_fixed_locus_volume_zero
     (F : Type) [Field F] [NumberField F]

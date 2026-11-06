@@ -101,7 +101,7 @@ private theorem gradientSq_continuousOn (G : KPCuspCharts.ChartOutput F hF S D)
  def archL (d : ℕ) : Space d →L[ℝ] KPArch.Space d :=
   LinearMap.toContinuousLinearMap {
     toFun := arch d
-    map_add' := by intro x y; ext i <;> simp [arch, Complex.add_re, Complex.add_im]; rfl
+    map_add' := by intro x y; ext i <;> simp [arch]; rfl
     map_smul' := by intro a x; ext i : 1; apply Prod.ext <;> simp [arch, Complex.real_smul]; apply Complex.ext <;> simp }
  def realL (d : ℕ) : KPArch.Space d →L[ℝ] Space d :=
   LinearMap.toContinuousLinearMap {
@@ -127,7 +127,7 @@ private lemma scaleL_apply (d : ℕ) (w : Fin d × Fin 3 → ℝ) (z : Space d) 
 private lemma frame_unframe (d : ℕ) (x z : Space d) : frame d x (unframe d x z) = z := by
   ext j
   simp only [frame, unframe, scaleL_apply]
-  split_ifs <;> simp [Real.exp_ne_zero, ← mul_assoc]
+  split_ifs <;> simp [Real.exp_ne_zero]
 private lemma metric_frame (d : ℕ) (x z : Space d) :
     KPArch.metric d (arch d x) (arch d (frame d x z)) = ‖z‖ ^ 2 := by
   rw [EuclideanSpace.real_norm_sq_eq, Fintype.sum_prod_type]
@@ -175,10 +175,10 @@ private lemma frame_basis (d : ℕ) (x : Space d) (i : Fin d) (k : Fin 3) :
   ext j
   simp only [frame, scaleL_apply, EuclideanSpace.basisFun_apply,
     EuclideanSpace.single_apply, coordinateVector, PiLp.smul_apply,
-    WithLp.ofLp_toLp, smul_eq_mul]
+    smul_eq_mul]
   by_cases h : j = (i,k)
   · subst j; simp
-  · simp [h, Ne.symm h]
+  · simp [h]
 private lemma differential_sum (d : ℕ) (g : Space d → ℂ) (x : Space d) :
     (∑ i, ∑ k, ‖differential d g x i k‖ ^ 2) =
       ∑ j, ‖fderiv ℝ g x (frame d x (EuclideanSpace.basisFun (Fin d × Fin 3) ℝ j))‖ ^ 2 := by
@@ -186,7 +186,7 @@ private lemma differential_sum (d : ℕ) (g : Space d → ℂ) (x : Space d) :
   apply Finset.sum_congr rfl
   intro i hi
   simp only [Fin.sum_univ_three, differential, frame_basis, Fin.reduceEq,
-    ite_true, ite_false, one_smul, Matrix.cons_val_zero, Matrix.cons_val_one,
+    ite_true, ite_false, Matrix.cons_val_zero, Matrix.cons_val_one,
     Matrix.cons_val_two, Matrix.vecHead, Matrix.vecTail, coordinateDerivative, map_smul,
     Complex.real_smul, Complex.ofReal_one, one_mul]
   simp

@@ -1,6 +1,7 @@
 module
 
 public import DedekindZetaZeroFree.RepresentationTheory.Smooth.RightInvariantDifferentialWords
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -64,7 +65,7 @@ theorem actualRightWord_eq_wordDerivative
     apply congrArg (fun q : ℝ → ℂ => deriv q 0)
     funext t
     rw [matrixExp_eq_flow]
-    exact ih _
+    measurability
 
 end DedekindZetaZeroFree.KPMsClearedTruncationL2.NativeWordBridge
 

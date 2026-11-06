@@ -244,7 +244,7 @@ theorem constant_kernel_cube_translate (B : Binding F ζ hζ q A P)
     normPower (LocalField F q) (v * y ^ 3) lam = _
   rw [center_cube_scalar, map_smul]
   simp only [Submodule.coe_smul, Pi.smul_apply, smul_eq_mul]
-  simp only [mul_pow, norm_mul, norm_pow, inv_pow, norm_inv]
+  simp only [mul_pow, norm_mul, norm_pow, norm_inv]
   have hn (x : (LocalField F q)ˣ) (z : ℂ) :
       (normPower (LocalField F q) x z)⁻¹ = normPower (LocalField F q) x (-z) := by
     simp [normPower, neg_mul, Complex.exp_neg]

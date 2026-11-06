@@ -105,8 +105,7 @@ theorem HasRecursiveEnvelope.improve_of_band {B : ℝ → ℝ → ℝ}
       calc
         (R * N) ^ η ≤ (K * T ^ (3 + δ)) ^ η := Real.rpow_le_rpow (by positivity) hRN hη.le
         _ = _ := by rw [Real.mul_rpow hK.le (Real.rpow_nonneg hT0.le _), ← Real.rpow_mul hT0.le]
-    have hRsum : R ≤ K * (M + N ^ β) * T ^ δ := by
-      exact hRup.trans (by gcongr)
+    have hRsum : R ≤ K * (M + N ^ β) * T ^ δ := hRup.trans (by gcongr)
     calc
       B R N ≤ C * (R * N) ^ η * (R + N + N ^ (2 * α - 1) * R ^ (1 - α)) := henv R N hR1 hN
       _ ≤ C * (K ^ η * T ^ ((3 + δ) * η)) * (3 * (K * (M + N ^ β) * T ^ δ)) := by

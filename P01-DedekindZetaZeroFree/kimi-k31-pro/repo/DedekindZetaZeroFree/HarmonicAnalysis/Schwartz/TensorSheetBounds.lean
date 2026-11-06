@@ -45,7 +45,7 @@ theorem complex_product_modulus (A : SArithmeticData F)
   intro v
   change ‖y.val.1 v‖ ^ 2 = ‖InfinitePlace.Completion.extensionEmbedding v (y.val.1 v)‖ ^ 2
   have hn := (InfinitePlace.Completion.isometry_extensionEmbedding v).dist_eq (y.val.1 v) 0
-  simpa only [map_zero, dist_zero_right] using congrArg (fun r : ℝ => r ^ 2) hn.symm
+  simp_all
 
 end
 end DedekindZetaZeroFree.SchwartzNormSheetEnvelope

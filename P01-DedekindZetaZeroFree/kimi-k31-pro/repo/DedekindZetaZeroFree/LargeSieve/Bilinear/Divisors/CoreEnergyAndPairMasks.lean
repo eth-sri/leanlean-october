@@ -58,7 +58,7 @@ theorem pair_mask_split (C : Context Q) (f g : Ideal (𝓞 F))
   rw [← Finset.sum_add_distrib]
   apply Finset.sum_congr rfl
   intro u hu
-  rw [show (0 : ℂ) = ∑ _v ∈ C.columns, (0 : ℂ) from (Finset.sum_const_zero).symm,
+  rw [show (0 : ℂ) = ∑ _v ∈ C.columns, (0 : ℂ) from Finset.sum_const_zero.symm,
     ← Finset.sum_ite_irrel, ← Finset.sum_ite_irrel]
   rw [← Finset.sum_add_distrib]
   apply Finset.sum_congr rfl

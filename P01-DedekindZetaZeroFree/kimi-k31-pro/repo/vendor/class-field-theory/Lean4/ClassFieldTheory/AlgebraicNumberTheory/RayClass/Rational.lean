@@ -256,13 +256,7 @@ theorem positiveRationalIdealGeneratorUnit_one :
   apply Units.ext
   exact positiveRationalIdealGenerator_one
 
-theorem positiveRationalIdealGeneratorUnit_mul
-    (I J : FractionalIdealGroup ℚ) :
-    positiveRationalIdealGeneratorUnit (I * J) =
-      positiveRationalIdealGeneratorUnit I *
-        positiveRationalIdealGeneratorUnit J := by
-  apply Units.ext
-  exact positiveRationalIdealGenerator_mul I J
+
 
 /-- An element of `WithZero (Multiplicative ℤ)` with logarithm zero is
 one. -/

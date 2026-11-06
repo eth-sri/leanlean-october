@@ -79,15 +79,7 @@ theorem formalLogOnePlusProductArgument_eq_mul_sub_one
   change X0 + X1 + X0 * X1 = (1 + X0) * (1 + X1) - 1
   ring
 
-/-- Adding one to the product argument recovers
-`(1 + X) * (1 + Y)`. -/
-theorem formalLogOnePlusProductArgument_one_add
-    (A : Type*) [CommRing A] :
-    1 + formalLogOnePlusProductArgument A =
-      (1 + MvPowerSeries.X (0 : Fin 2)) *
-        (1 + MvPowerSeries.X (1 : Fin 2)) := by
-  rw [formalLogOnePlusProductArgument_eq_mul_sub_one]
-  ring
+
 
 /--
 Establishes the identity `MvPowerSeries.constantCoeff (formalLogOnePlusProductArgument A) = 0`.
@@ -368,27 +360,7 @@ theorem formalLogOnePlusProductArgument_coeff_ne_zero_eq_basic
     · exact Or.inr <| Or.inr <|
         finsupp_fin_two_eq_mixed_of_coords_eq_one e hleft1 hright1
 
-/--
-Establishes the identity `l i = Finsupp.single (0 : Fin 2) 1 ∨ l i = Finsupp.single (1 : Fin 2) 1
-∨ l i = Finsupp.single (0 : Fin 2) 1 + Finsupp.single (1 : Fin 2) 1`.
--/
-theorem formalLogOnePlusProductArgument_pow_term_factor_eq_basic_of_prod_ne_zero
-    (A : Type*) [CommRing A] {q : ℕ}
-    {l : ℕ →₀ (Fin 2 →₀ ℕ)}
-    (hprod :
-      (∏ i ∈ Finset.range q,
-        MvPowerSeries.coeff (l i) (formalLogOnePlusProductArgument A)) ≠ 0)
-    {i : ℕ} (hi : i ∈ Finset.range q) :
-    l i = Finsupp.single (0 : Fin 2) 1 ∨
-      l i = Finsupp.single (1 : Fin 2) 1 ∨
-        l i =
-          Finsupp.single (0 : Fin 2) 1 +
-            Finsupp.single (1 : Fin 2) 1 := by
-  have hfactor :
-      MvPowerSeries.coeff (l i) (formalLogOnePlusProductArgument A) ≠ 0 := by
-    intro hzero
-    exact hprod (Finset.prod_eq_zero hi hzero)
-  exact formalLogOnePlusProductArgument_coeff_ne_zero_eq_basic A (l i) hfactor
+
 
 
 end MultiplicativeIntegerValuation

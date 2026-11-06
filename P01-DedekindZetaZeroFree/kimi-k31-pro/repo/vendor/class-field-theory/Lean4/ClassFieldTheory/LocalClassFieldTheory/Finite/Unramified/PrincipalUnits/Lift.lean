@@ -71,64 +71,7 @@ theorem principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure_div_lift_mem_
   exact (principalUnitsSuccQuotMk_eq_iff_div_mem K n y
     (principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure K L n x)).1 hx.symm
 
-/-- Actual integral-closure finite-depth iteration of the one-step
-principal-unit norm correction.  For every `d`, a target in `U_K^n` can be
-matched by the norm of an element of `U_L^n` up to an error in `U_K^(n+d)`.
 
-This is the finite approximation stage of principal-unit norm surjectivity. -/
-theorem principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure_approx_mem_add
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [LocalFieldTheory.ValuativeExtension K L] [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L]
-    (n d : Nat) (hn : 1 ≤ n) (y : principalUnits K n) :
-    ∃ x : principalUnits L n,
-      ((y : 𝒪[K]ˣ) / normIntegerUnits K L (x : 𝒪[L]ˣ)) ∈
-        principalUnits K (n + d) := by
-  induction d with
-  | zero =>
-      refine ⟨1, ?_⟩
-      change (y : 𝒪[K]ˣ) / normIntegerUnits K L (1 : 𝒪[L]ˣ) ∈
-        principalUnits K (n + 0)
-      rw [(normIntegerUnits K L).map_one, div_one, Nat.add_zero]
-      exact y.2
-  | succ d ih =>
-      obtain ⟨x, hx⟩ := ih
-      let r : principalUnits K (n + d) :=
-        ⟨(y : 𝒪[K]ˣ) / normIntegerUnits K L (x : 𝒪[L]ˣ), hx⟩
-      have hnd : 1 ≤ n + d := le_trans hn (Nat.le_add_right n d)
-      obtain ⟨z, hz⟩ :=
-        principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure_div_lift_mem_succ
-          K L (n + d) hnd r
-      let x' : principalUnits L n :=
-        ⟨(x : 𝒪[L]ˣ) * (z : 𝒪[L]ˣ),
-          (principalUnits L n).mul_mem x.2
-            (principalUnits_antitone L (Nat.le_add_right n d) z.2)⟩
-      refine ⟨x', ?_⟩
-      have hzUnit :
-          (((r / principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure K L
-              (n + d) z : principalUnits K (n + d)) : 𝒪[K]ˣ) ∈
-            principalUnits K ((n + d) + 1)) := hz
-      have hresEq :
-          (y : 𝒪[K]ˣ) / normIntegerUnits K L ((x' : principalUnits L n) :
-              𝒪[L]ˣ) =
-            ((r / principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure K L
-                (n + d) z : principalUnits K (n + d)) : 𝒪[K]ˣ) := by
-        change
-          (y : 𝒪[K]ˣ) / normIntegerUnits K L ((x' : principalUnits L n) :
-              𝒪[L]ˣ) =
-            (r : 𝒪[K]ˣ) /
-              ((principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure K L
-                  (n + d) z : principalUnits K (n + d)) : 𝒪[K]ˣ)
-        simp only [x', r, principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure_apply,
-          (normIntegerUnits K L).map_mul]
-        simp [div_eq_mul_inv, mul_assoc, mul_comm]
-      rw [hresEq]
-      simpa [Nat.add_assoc] using hzUnit
 
 /-- Actual integral-closure correction term selected from the current finite
 approximation error. -/

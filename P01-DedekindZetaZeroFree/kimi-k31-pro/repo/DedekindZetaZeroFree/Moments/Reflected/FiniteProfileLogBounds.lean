@@ -25,16 +25,13 @@ theorem finiteProfileFamily_of_uniform_log_bounds
   refine ⟨Finset.univ, fun i => H i.val.1 i.val.2, ?_, ?_, ?_⟩
   · intro u v
     exact ⟨⟨(u, v), Finset.mem_univ _⟩, rfl⟩
-  · intro i
-    exact hsmooth i.val.1 i.val.2
+  · grind
   · intro B hB
     obtain ⟨K0, hK0, hb0⟩ := hbound B hB 0 (by norm_num)
     obtain ⟨K1, hK1, hb1⟩ := hbound B hB 1 (by norm_num)
     obtain ⟨K2, hK2, hb2⟩ := hbound B hB 2 (by norm_num)
     refine ⟨max (max K0 K1) K2 + 1, by
-      have h0 : (0 : ℝ) ≤ max (max K0 K1) K2 :=
-        le_trans hK0 (le_trans (le_max_left K0 K1) (le_max_left _ K2))
-      linarith, ?_⟩
+      grind, ?_⟩
     intro i j hj x hx
     have hmin : 0 ≤ min (Real.rpow x (1 / 8)) (Real.rpow x (-B)) :=
       le_min (Real.rpow_nonneg hx.le _) (Real.rpow_nonneg hx.le _)
@@ -47,9 +44,9 @@ theorem finiteProfileFamily_of_uniform_log_bounds
       intro K hK h
       exact h.trans (mul_le_mul_of_nonneg_right (by linarith) hmin)
     interval_cases j
-    · exact hle K0 (le_trans (le_max_left K0 K1) (le_max_left _ K2)) (hb0 _ _ x hx)
-    · exact hle K1 (le_trans (le_max_right K0 K1) (le_max_left _ K2)) (hb1 _ _ x hx)
-    · exact hle K2 (le_max_right _ K2) (hb2 _ _ x hx)
+    · grind
+    · grind
+    · grind
 
 end
 end DedekindZetaZeroFree.PrincipalMellinSource

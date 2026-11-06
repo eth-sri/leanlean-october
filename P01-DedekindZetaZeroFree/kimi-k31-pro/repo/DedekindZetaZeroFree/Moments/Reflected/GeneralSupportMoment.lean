@@ -20,7 +20,7 @@ private theorem actual_allowed_section
     exact R.probe.sameGenerator I
   have h := R.probe.allowed.allowed I
   rw [R.probe.sameComplement, he] at h
-  exact h
+  aesop
 
 noncomputable section
 open scoped Classical NumberField
@@ -58,11 +58,8 @@ private theorem mask_reindex (A : SArithmeticData F) (P Q : ℝ)
     · rw [Set.indicator_of_mem hd]
       have hhh : Powerful h.val ∧ P ≤ A.exteriorNorm h ∧
           A.exteriorNorm h < 2 * P := hh
-      simp only [hhh.1, hhh.2.1, hhh.2.2, hd, true_and, and_true]
-      congr 1
-      simp [sup_comm, and_comm, and_left_comm, and_assoc]
-    · rw [Set.indicator_of_notMem hd]
-      simp [hd]
+      grind
+    · simp_all
   · rw [Set.indicator_of_notMem hh]
     have hz : ∀ d : A.Exterior,
         (if Powerful h.val ∧ Squarefree d.val ∧ h.val ⊔ d.val = ⊤ ∧
@@ -72,9 +69,9 @@ private theorem mask_reindex (A : SArithmeticData F) (P Q : ℝ)
       have hhh : ¬ (Powerful h.val ∧ P ≤ A.exteriorNorm h ∧
           A.exteriorNorm h < 2 * P) := hh
       split_ifs with hm
-      · exact False.elim (hhh ⟨hm.1, hm.2.2.2.1, hm.2.2.2.2.1⟩)
+      · simp_all
       · rfl
-    simp only [hz, tsum_zero]
+    simp_all
 
 private theorem dyadicBound_general
     {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
@@ -124,8 +121,7 @@ private theorem dyadicBound_general
           Finset.sum_congr rfl (fun _ _ => Finset.sum_comm)
         _ = _ := Finset.sum_comm
     _ ≤ ∑ _v : R.A.UnitQuotient,
-        K * Z ^ δ * Real.sqrt P * (Q + Q ^ 2 * P / Z) := by
-      exact Finset.sum_le_sum (fun v _ => hb v Z P Q hZ hP hQ hPQ)
+        K * Z ^ δ * Real.sqrt P * (Q + Q ^ 2 * P / Z) := Finset.sum_le_sum (fun v _ => hb v Z P Q hZ hP hQ hPQ)
     _ ≤ _ := by
       simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
       have hscale : 0 ≤ K * Z ^ δ * Real.sqrt P * (Q + Q ^ 2 * P / Z) := by
@@ -158,9 +154,7 @@ theorem FixedData.moment {F : Type} [Field F] [NumberField F]
     (MomentSources.actual_allowed_section S η D.recipe) D.recipe.probe.sixthUnitCharacters
     D.source.Ur D.source.units B hB m Cstar ε hm hCstar hε
     (MomentSources.dyadicBound_general D.recipe D.source m hm Cstar hCstar)
-  refine ⟨K, hK, ?_⟩
-  intro Z hZ rows hrows
-  exact hbound Z (by linarith) rows hrows
+  grind
 
 theorem FixedData.moment_m₀ {F : Type} [Field F] [NumberField F]
     {S : SArithmeticData F} {η : RayClassCharacter F S.modulus} (D : FixedData S η)

@@ -30,8 +30,7 @@ theorem f_growth (ε : ℝ) (hε : 0 < ε) :
   have hM := h1 Z hZ
   have key := norm_sub_le (D.Iscale Z) (D.Iscale Z - c₀ D * f D Z)
   have e : D.Iscale Z - (D.Iscale Z - c₀ D * f D Z) = c₀ D * f D Z := by ring
-  rw [e] at key
-  rw [norm_mul] at key
+  rw [e, norm_mul] at key
   have hC1' : C1 * Z ^ (717 / 2000 : ℝ) ≤ C1 * Z ^ ((287 / 800 : ℝ) + ε) :=
     mul_le_mul_of_nonneg_left hpow hC1.le
   rw [div_mul_eq_mul_div, le_div_iff₀ hc]
@@ -39,7 +38,7 @@ theorem f_growth (ε : ℝ) (hε : 0 < ε) :
 
 theorem g_growth (ε : ℝ) (hε : 0 < ε) :
     ∃ Cε : ℝ, 0 < Cε ∧ ∀ Z : ℝ, 2 ≤ Z →
-      ‖((Z : ℂ) ^ (((61 / 100 : ℝ)) : ℂ)) * f D Z‖ ≤ Cε * Z ^ (31 / 32 + ε) := by
+      ‖((Z : ℂ) ^ ((61 / 100 : ℝ) : ℂ)) * f D Z‖ ≤ Cε * Z ^ (31 / 32 + ε) := by
   obtain ⟨C, hC, h⟩ := f_growth D ε hε
   refine ⟨C, hC, fun Z hZ => ?_⟩
   have hZ0 : 0 < Z := by linarith

@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.Eisenstein.Residues.CuspidalCenterVanishing
 public import DedekindZetaZeroFree.Eisenstein.Continuation.SphericalScalarPoleClearing
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -34,8 +35,7 @@ theorem center_memLp_original
   obtain ⟨hm, he⟩ := hz
   have hs : (KPContSectorLineL2Isometry.scalarRepresentative F ζ hζ level R P H Z.val).val =
       KPContActualCutoffSmoothDescent.scalar F ζ hζ C R P H U Z := by
-    rw [KPContSectorLineL2Isometry.scalarRepresentative_eq_symm]
-    rfl
+    measurability
   rw [hs] at hm
   have hp : MeasurePreserving (KPContSectorQuotientRelationsComparison.piTilde F ζ hζ level)
       R.quotientHaar (KPContSectorFixedPushforwardSupport.coveredMeasure F ζ hζ R level) :=

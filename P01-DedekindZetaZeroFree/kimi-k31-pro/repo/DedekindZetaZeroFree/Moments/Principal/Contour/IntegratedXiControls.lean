@@ -49,7 +49,7 @@ private lemma nested_norm_le (K : ℝ → ℝ → ℂ) (f : ℝ × ℝ → ℝ) 
   calc ‖(2 * (Real.pi : ℂ))⁻¹ * ∫ t : ℝ, (2 * (Real.pi : ℂ))⁻¹ * ∫ s : ℝ, K s t‖
       = a * ‖∫ t : ℝ, (2 * (Real.pi : ℂ))⁻¹ * ∫ s : ℝ, K s t‖ := norm_mul _ _
     _ ≤ a * ∫ t : ℝ, a * (c * ∫ s : ℝ, f (s, t)) :=
-        mul_le_mul_of_nonneg_left (h1) (norm_nonneg _)
+        mul_le_mul_of_nonneg_left h1 (norm_nonneg _)
     _ = a * (a * c) * ∫ p, f p := by
         rw [integral_const_mul, integral_const_mul, hsym]
         ring

@@ -106,8 +106,7 @@ private theorem positive_representative (F : Type) [Field F] [NumberField F]
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (a : 𝓞 F) :
     ∃ b : 𝓞 F, b - a ∈ m ∧ ∀ φ : F →+* ℝ, 0 < φ (b : F) := by
   have hn : 0 < Ideal.absNorm m := Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hm)
-  have hb : ∃ B : ℝ, ∀ φ : F →+* ℝ, -φ (a : F) < B := by
-    exact ⟨∑ φ : F →+* ℝ, |φ (a : F)| + 1, fun φ => by
+  have hb : ∃ B : ℝ, ∀ φ : F →+* ℝ, -φ (a : F) < B := ⟨∑ φ : F →+* ℝ, |φ (a : F)| + 1, fun φ => by
       have ht := Finset.single_le_sum (fun i (_ : i ∈ Finset.univ) =>
         abs_nonneg ((i : F →+* ℝ) (a : F))) (Finset.mem_univ φ)
       linarith [neg_le_abs (φ (a : F))]⟩

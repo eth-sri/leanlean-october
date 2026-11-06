@@ -1,6 +1,7 @@
 module
 
 public import DedekindZetaZeroFree.Eisenstein.ConstantTerms.FiniteLevelFlowJets
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -26,7 +27,7 @@ variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     intro a b hab
     have hm := QuotientGroup.rightRel_apply.mp hab
     have he := hr ⟨b * a⁻¹, hm⟩ a
-    simpa using he.symm)
+    simp_all)
   have hp : IntrinsicAveraging.pullback f₀ = f := rfl
   refine ⟨f₀, ⟨?_, ?_⟩, hp⟩
   · letI := QuotientGroup.rightRel (KPSmoothLocalQuotientCharts.rationalSubgroup F ζ hζ)
@@ -39,9 +40,7 @@ variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
  theorem finitePart_eq_chart : KPGlobalTorusFunctionData.finitePart F ζ hζ =
     KPSmoothLocalQuotientCharts.finiteSubgroup F ζ hζ := by
   unfold KPGlobalTorusFunctionData.finitePart KPSmoothLocalQuotientCharts.finiteSubgroup
-  congr 1
-  ext x
-  simp [KPSmoothLocalQuotientCharts.finiteTuples, Subgroup.mem_iInf, MonoidHom.mem_ker]
+  measurability
 
 end DedekindZetaZeroFree.KPMsGreenFlux.IntrinsicFrameSpectral
 

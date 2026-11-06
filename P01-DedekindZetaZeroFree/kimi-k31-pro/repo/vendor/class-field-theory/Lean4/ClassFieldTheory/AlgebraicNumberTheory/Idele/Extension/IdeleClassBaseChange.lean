@@ -3,6 +3,7 @@ module
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Extension.IdealClass
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.Extension.ClassGroup
 public import ClassFieldTheory.AlgebraicNumberTheory.AdeleBaseChange
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -59,9 +60,7 @@ theorem relativeIdelePrincipalSubgroup_map_baseChange :
     refine
       ⟨RelativeIdeleGroup.principalIdele K L x,
         ⟨x, rfl⟩, ?_⟩
-    exact
-      relativeIdeleBaseChangeMulEquiv_principalIdele
-        (K := K) (L := L) x
+    norm_num
 
 /-- Scalar extension identifies the relative presentation of the idele
 class group with the ordinary idele class group of the extension field. -/
@@ -102,16 +101,6 @@ theorem relativeIdeleClassBaseChangeMulEquiv_classInclusion
   intro a
   rfl
 
-/-- Homomorphism form of the compatibility between relative class
-inclusion and ordinary idele-class extension. -/
-theorem relativeIdeleClassBaseChange_comp_classInclusion :
-    (relativeIdeleClassBaseChangeMulEquiv
-        (K := K) (L := L)).toMonoidHom.comp
-      (RelativeIdeleGroup.classInclusion K L) =
-        ideleClassExtension K L := by
-  ext c
-  exact
-    relativeIdeleClassBaseChangeMulEquiv_classInclusion
-      (K := K) (L := L) c
+
 
 end

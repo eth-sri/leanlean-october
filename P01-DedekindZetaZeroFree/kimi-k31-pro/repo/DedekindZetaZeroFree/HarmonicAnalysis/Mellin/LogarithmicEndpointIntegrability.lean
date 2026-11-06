@@ -297,7 +297,7 @@ theorem high_euler_uniform_mellin_norm (h : LogMellinPhysical f δ P) (j : ℕ)
       ‖(x : ℂ) ^ (s - 1) * EulerIter j f x‖ ≤ G x := by
     intro x hx
     have hx0 : 0 < x := hx
-    rw [hG]; simp only [Pi.add_apply]
+    rw [hG]; simp only
     rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hx0, Complex.sub_re, Complex.one_re]
     rcases le_or_gt x 1 with hle | hgt
     · rw [Set.indicator_of_mem (show x ∈ Set.Ioc (0 : ℝ) 1 from ⟨hx0, hle⟩),
@@ -333,7 +333,7 @@ theorem high_euler_uniform_mellin_norm (h : LogMellinPhysical f δ P) (j : ℕ)
       ≤ ∫ x in Set.Ioi (0 : ℝ), G x :=
         setIntegral_mono_on hfin hGint measurableSet_Ioi hpt
     _ = C₁ / (u + δ) + C₂ / ((n : ℝ) - v) := by
-        rw [hG]; simp only [Pi.add_apply]
+        rw [hG]; simp only
         rw [integral_add hintG₁ hintG₂]
         congr 1
         · rw [integral_indicator measurableSet_Ioc, hh₁,

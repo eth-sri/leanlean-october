@@ -20,7 +20,7 @@ private lemma dyadicScale_nonneg (i : ℕ) : 0 ≤ dyadicScale i :=
   le_trans zero_le_one (one_le_dyadicScale i)
 
 private lemma rpow_one_eq_one (η : ℝ) : Real.rpow (1 : ℝ) η = 1 := by
-  rw [Real.rpow_eq_pow, Real.one_rpow]
+  simp_all
 
 private lemma rpow_nonneg' (x : ℝ) (hx : 0 ≤ x) (y : ℝ) : 0 ≤ Real.rpow x y := by
   rw [Real.rpow_eq_pow]; exact Real.rpow_nonneg hx y
@@ -231,7 +231,7 @@ theorem bilinear_endpoint_exponent_extension
       simpa [idealDyadicBlock, dyadicScale] using hS
     have hfilt : (paperShell F c (dyadicScale (j' + 1))).filter (fun b => b ∈ S) = S := by
       rw [Finset.filter_mem_eq_inter]
-      exact (Finset.inter_eq_right).2 hS'
+      exact Finset.inter_eq_right.2 hS'
     have hrow : ∀ a : Ideal (𝓞 F),
         (∑ b ∈ S, lam b * (Q.χ b) a) =
           rowSum Q (dyadicScale (j' + 1)) (fun b => if b ∈ S then lam b else 0) a := by

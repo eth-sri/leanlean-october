@@ -160,7 +160,7 @@ theorem colored_euclidean_power_packing
   rw [hcard, Nat.cast_sum]
   calc
     _ ≤ ∑ k : Fin n, K * (1 + ρ ^ d * W) := Finset.sum_le_sum (fun k _ => hcolor k)
-    _ = _ := by simp [d, mul_comm, mul_left_comm, mul_assoc]
+    _ = _ := by simp [d, mul_comm, mul_left_comm]
 
 end
 end DedekindZetaZeroFree.ProbeAdditiveGramBounds.ArithmeticGramPacking
@@ -288,8 +288,7 @@ theorem same_color_alias_power_separation
       have hVs : 1 ≤ V ^ 2 := by nlinarith
       exact le_trans hp (le_mul_of_one_le_right (by linarith) hVs)
     · have hp := probe_reduced_fraction_separation F S p V hV P hP β γ hβ hγ hbg q
-      rw [← ht] at hp
-      rw [Real.rpow_neg (by linarith : 0 ≤ V), Real.rpow_two] at hp
+      rw [← ht, Real.rpow_neg (by linarith : 0 ≤ V), Real.rpow_two] at hp
       exact (inv_le_iff_one_le_mul₀ (by positivity : 0 < V ^ 2)).mp hp
   have harch : (∏ v : InfinitePlace F, v t ^ v.mult) ≤
       M ^ Module.finrank ℚ F * ‖aliasTrace F S t‖ ^ Module.finrank ℚ F := by
@@ -315,8 +314,7 @@ theorem same_color_alias_power_separation
   have hup : ProbeSeparation.productNorm F S t ≤
       (M ^ Module.finrank ℚ F * C) * ‖aliasTrace F S t‖ ^ Module.finrank ℚ F := by
     rw [ProbeSeparation.productNorm]
-    have heq : (∏ v ∈ S, FinitePlace.mk v t) = ∏ v : S, FinitePlace.mk v.val t := by
-      exact (Finset.prod_coe_sort S (fun v => FinitePlace.mk v t)).symm
+    have heq : (∏ v ∈ S, FinitePlace.mk v t) = ∏ v : S, FinitePlace.mk v.val t := (Finset.prod_coe_sort S (fun v => FinitePlace.mk v t)).symm
     rw [heq]
     calc
       _ ≤ (M ^ Module.finrank ℚ F * ‖aliasTrace F S t‖ ^ Module.finrank ℚ F) * C :=
@@ -389,8 +387,7 @@ private theorem dual_le (F : Type) [Field F] [NumberField F]
     apply Finset.one_le_prod
     intro v _
     exact one_le_zpow_of_nonpos₀ (bot_lt_iff_ne_bot.mpr (FractionalIdeal.coeIdeal_ne_zero.mpr v.val.ne_bot)) FractionalIdeal.coeIdeal_le_one (hk v)
-  have hi : (PoissonS.ballFractionalIdeal F S k)⁻¹ ≤ 1 := by
-    exact inv_le_one_of_one_le₀ h
+  have hi : (PoissonS.ballFractionalIdeal F S k)⁻¹ ≤ 1 := inv_le_one_of_one_le₀ h
   simpa using mul_le_mul_of_nonneg_left hi (show 0 ≤ (PoissonArch.codifferentIdeal F : FractionalIdeal (𝓞 F)⁰ F) from bot_le)
 private theorem finite_bound (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (𝓞 F)))
@@ -507,11 +504,9 @@ theorem trace_coordinates_and_finite_annihilator
     let P : PoissonFinite.Space F S → ℂ := fun x => ∏ v : S, (e v (x v) : ℂ)
     let Q : PoissonFinite.Space F S → ℂ := fun x =>
       ∏ v : S, (localFiniteCharacter F v.val (x v) : ℂ)
-    have hP : Continuous P := by
-      exact continuous_finset_prod _ (fun v _ => continuous_subtype_val.comp
+    have hP : Continuous P := continuous_finset_prod _ (fun v _ => continuous_subtype_val.comp
         ((he v).comp (continuous_apply v)))
-    have hQ : Continuous Q := by
-      exact continuous_finset_prod _ (fun v _ => continuous_subtype_val.comp
+    have hQ : Continuous Q := continuous_finset_prod _ (fun v _ => continuous_subtype_val.comp
         ((continuous_localFiniteCharacter F v.val).comp (continuous_apply v)))
     have hPQ : P = Q := by
       apply (PoissonSFiniteDensity.diagonal_denseRange F S).equalizer hP hQ

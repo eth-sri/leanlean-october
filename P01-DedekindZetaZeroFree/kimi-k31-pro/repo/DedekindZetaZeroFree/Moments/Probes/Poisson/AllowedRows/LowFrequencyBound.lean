@@ -38,7 +38,7 @@ theorem lowNorm_row_bound_exists (u : D.Row) :
   by_cases hu : u ∈ lowNormRows D
   · have hne : u.u ≠ 1 := fun h => hu.2 h
     obtain ⟨Cu, hC, h⟩ := FixedLowRowContour.fixedRow_low_bound D u hne
-    exact ⟨Cu, hC, fun _ => h⟩
+    grind
   · exact ⟨1, one_pos, fun h => absurd h hu⟩
 
 theorem lowNorm_bound :
@@ -60,9 +60,9 @@ theorem lowNorm_bound :
   have hsum : ∑ u ∈ hfin.toFinset, c u * Z ^ (Scales.kernelExponent Scales.rightLine Scales.wLine Scales.zLine) ≤
       (1 + ∑ u ∈ hfin.toFinset, c u) * Z ^ (Scales.kernelExponent Scales.rightLine Scales.wLine Scales.zLine) := by
     rw [← Finset.sum_mul]
-    exact mul_le_mul_of_nonneg_right (by linarith) hZE
+    grind
   refine le_trans (Finset.sum_le_sum (fun u hu => ?_)) hsum
-  exact (hc u) ((hfin.mem_toFinset).mp hu) Z hZ
+  exact (hc u) (hfin.mem_toFinset.mp hu) Z hZ
 
 theorem lowNorm_rows_small_k0 (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ Z : ℝ, 2 ≤ Z →

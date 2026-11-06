@@ -48,7 +48,7 @@ lemma packet_branch_gamma {Q : AdmissibleFlatSources R} (P : Packet R Q)
       (R.A.diagonal γ.val) = 1 := by
     rw [← R.A.H_S6_on_representatives, rational_gamma_class, map_one]
   simp only [SArithmeticData.correctionLS, hθ, hH, OneMemClass.coe_one,
-    Units.val_one, map_one, Circle.coe_one, mul_one]
+    Units.val_one, map_one, mul_one]
 
 lemma packet_branch_ne_zero {Q : AdmissibleFlatSources R} (P : Packet R Q)
     (v : R.A.UnitQuotient) (y : R.A.G) : P.branch v y ≠ 0 := by

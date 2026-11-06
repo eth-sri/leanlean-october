@@ -4,6 +4,7 @@ public import ClassFieldTheory.Definitions.HasseArf.HerbrandFunction
 public import ClassFieldTheory.Definitions.HasseArf.InverseHerbrandFunction
 public import ClassFieldTheory.HasseArf
 public import Mathlib.NumberTheory.LocalField.Basic
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -62,10 +63,7 @@ theorem inverseHerbrandFunction_herbrandFunction
       (base := (localCompleteDVF K).toDVF)
       (target := (chosenLocalExtensionCompleteDVF K L).toDVF)
       (chosenLocalExtensionCompleteDVF_hasUniqueDVFValuationExtension.{0} K L) s) = s
-  exact inverseHerbrandFunctionOfUniqueExtension_eta
-    (base := (localCompleteDVF K).toDVF)
-    (target := (chosenLocalExtensionCompleteDVF K L).toDVF)
-    (chosenLocalExtensionCompleteDVF_hasUniqueDVFValuationExtension.{0} K L) s
+  norm_num
 
 end ClassFieldTheory
 

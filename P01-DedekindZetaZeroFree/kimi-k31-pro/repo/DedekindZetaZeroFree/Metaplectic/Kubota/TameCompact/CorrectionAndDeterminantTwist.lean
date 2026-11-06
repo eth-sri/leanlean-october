@@ -264,7 +264,7 @@ theorem diagonal_reduction (g : K0 F v) (hc : ‖c F v g‖ < 1) :
       rfl
     rw [hd, hD]
   · change (((Units.map (O F v).subtype.toMonoidHom au)⁻¹ : (K F v)ˣ) : K F v) = _
-    simp only [Units.val_inv_eq_inv_val, Units.coe_map, MonoidHom.coe_coe]
+    simp only [Units.val_inv_eq_inv_val, Units.coe_map]
     congr 1
   · let q := Ideal.Quotient.mk (p F v)
     have hcz : q (g 1 0) = 0 := by
@@ -277,7 +277,7 @@ theorem diagonal_reduction (g : K0 F v) (hc : ‖c F v g‖ < 1) :
       exact hdet
     have hu : Units.map q.toMonoidHom (du / D) = Units.map q.toMonoidHom (au⁻¹) := by
       rw [map_div, map_inv, he]
-      simp [div_eq_mul_inv, mul_comm]
+      simp [div_eq_mul_inv]
     exact congrArg Units.val hu
 
 include hv

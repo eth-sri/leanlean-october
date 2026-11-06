@@ -44,7 +44,7 @@ private theorem pgl_diagonal_injective (L : Type*) [Field L] (u v : Lˣ)
   obtain ⟨c, hc⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp huv
   have h11 := congrArg (fun g : GL (Fin 2) L => (g : Matrix (Fin 2) (Fin 2) L) 1 1) hc
   have h00 := congrArg (fun g : GL (Fin 2) L => (g : Matrix (Fin 2) (Fin 2) L) 0 0) hc
-  simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.GeneralLinearGroup.coe_scalar,
+  simp [Matrix.mul_apply, Matrix.GeneralLinearGroup.coe_scalar,
     Matrix.scalar, Matrix.diagonal_apply] at h11 h00
   apply Units.ext
   calc

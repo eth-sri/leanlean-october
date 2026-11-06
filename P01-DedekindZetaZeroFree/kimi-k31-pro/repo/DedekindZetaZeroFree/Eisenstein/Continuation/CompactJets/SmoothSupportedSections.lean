@@ -275,7 +275,7 @@ theorem finite_chart_smooth_sections (K : Set (KPFiniteCuspAtlas.rawXU F ζ hζ 
     intro z
     change (v (charts j).component).val z = c⁻¹ * (v (charts j).component).val ((γ : KPCuspArithmetic.PGL2 F) • z)
     rw [(v (charts j).component).property.2 γ z]
-    simp [c, ← mul_assoc, hc]
+    simp [c, hc]
   · have hbase : Continuous (fun z : KPCuspGenuineMonodromy.SymmetricSpace F =>
         (H.atlas U).components ⟨i, Quotient.mk _ z⟩) :=
       (H.atlas U).components.continuous.comp (continuous_sigmaMk.comp continuous_quotient_mk')

@@ -66,7 +66,7 @@ private theorem haar_left : haar.IsMulLeftInvariant := by
   have hm := setLIntegral_map (μ := volume) (g := fun x : ℝ => (g : ℝ) * x)
     (s := Subtype.val '' s) (ev.measurableSet_image.mpr hs) hD (by fun_prop)
   rw [hscale, Measure.restrict_smul, lintegral_smul_measure] at hm
-  simp only [ENNReal.smul_def, smul_eq_mul] at hm
+  simp only [smul_eq_mul] at hm
   simp_rw [hmul] at hm
   rw [lintegral_const_mul _ hD] at hm
   exact (ENNReal.mul_right_inj (by simp) (by simp [g.property])).mp hm.symm

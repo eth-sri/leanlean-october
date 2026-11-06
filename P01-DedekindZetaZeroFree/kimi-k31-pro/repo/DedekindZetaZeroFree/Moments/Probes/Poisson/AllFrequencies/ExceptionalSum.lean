@@ -27,7 +27,7 @@ private theorem dyad_geom (β : ℝ) (hβ : 0 < β) :
   refine ⟨(2:ℝ)^β / ((2:ℝ)^β - 1), div_pos (by linarith) (by linarith), ?_⟩
   intro X hX K hK
   set N := Nat.log 2 ⌊X⌋₊ with hN
-  have hfl : 1 ≤ ⌊X⌋₊ := Nat.le_floor (by simpa using hX)
+  have hfl : 1 ≤ ⌊X⌋₊ := Nat.le_floor (by grind)
   have hpowN : (2:ℝ)^N ≤ X := by
     have h1 : 2^N ≤ ⌊X⌋₊ := Nat.pow_log_le_self 2 (by omega)
     have h2 : ((2^N : ℕ) : ℝ) ≤ (⌊X⌋₊ : ℝ) := by exact_mod_cast h1
@@ -37,7 +37,7 @@ private theorem dyad_geom (β : ℝ) (hβ : 0 < β) :
     intro k hk
     rw [Finset.mem_range]
     have h1 : (2:ℝ)^k ≤ X := hK k hk
-    have h2 : 2^k ≤ ⌊X⌋₊ := Nat.le_floor (by exact_mod_cast h1)
+    have h2 : 2^k ≤ ⌊X⌋₊ := Nat.le_floor (by grind)
     have h3 : k ≤ Nat.log 2 ⌊X⌋₊ := Nat.le_log_of_pow_le (by norm_num) h2
     omega
   calc ∑ k ∈ K, ((2:ℝ)^k)^β ≤ ∑ k ∈ Finset.range (N+1), ((2:ℝ)^k)^β :=
@@ -47,18 +47,18 @@ private theorem dyad_geom (β : ℝ) (hβ : 0 < β) :
     _ ≤ (((2:ℝ)^β)^(N+1)) / ((2:ℝ)^β - 1) := by
         have : (0:ℝ) < (2:ℝ)^β - 1 := by linarith
         gcongr
-        linarith [pow_pos (show (0:ℝ) < (2:ℝ)^β by positivity) (N+1)]
+        grind
     _ = (2:ℝ)^β / ((2:ℝ)^β - 1) * (((2:ℝ)^N)^β) := by
-        rw [hid N, pow_succ]; ring
+        grind
     _ ≤ (2:ℝ)^β / ((2:ℝ)^β - 1) * X^β := by
         apply mul_le_mul_of_nonneg_left _ (by apply div_nonneg <;> linarith)
         exact Real.rpow_le_rpow (by positivity) hpowN (by linarith)
 
 private theorem kappa_s_ge (U₀ Z : ℝ) (hU : 0 ≤ U₀) (hZ : (2*U₀)^5 ≤ Z) :
     2 * U₀ ≤ Z ^ DedekindZetaZeroFree.Quantitative.Scales.smallCutoffExponent := by
-  have h1 : ((2*U₀)^(5:ℕ) : ℝ) ^ (DedekindZetaZeroFree.Quantitative.Scales.smallCutoffExponent) ≤ Z ^ (DedekindZetaZeroFree.Quantitative.Scales.smallCutoffExponent) :=
+  have h1 : ((2*U₀)^(5:ℕ) : ℝ) ^ DedekindZetaZeroFree.Quantitative.Scales.smallCutoffExponent ≤ Z ^ DedekindZetaZeroFree.Quantitative.Scales.smallCutoffExponent :=
     Real.rpow_le_rpow (by positivity) hZ (by unfold DedekindZetaZeroFree.Quantitative.Scales.smallCutoffExponent; norm_num)
-  have h2 : ((2*U₀)^(5:ℕ) : ℝ) ^ (DedekindZetaZeroFree.Quantitative.Scales.smallCutoffExponent) = 2*U₀ := by
+  have h2 : ((2*U₀)^(5:ℕ) : ℝ) ^ DedekindZetaZeroFree.Quantitative.Scales.smallCutoffExponent = 2*U₀ := by
     have : DedekindZetaZeroFree.Quantitative.Scales.smallCutoffExponent = ((5:ℕ):ℝ)⁻¹ := by
       unfold DedekindZetaZeroFree.Quantitative.Scales.smallCutoffExponent; norm_num
     rw [this]
@@ -103,8 +103,8 @@ theorem finset_norm_sum_le (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExpo
     have hs : Z ^ DedekindZetaZeroFree.Quantitative.Scales.smallCutoffExponent < q D u := hm.1.2.1
     have hl : q D u ≤ Z ^ DedekindZetaZeroFree.Quantitative.Scales.largeCutoffExponent := hm.1.2.2
     constructor
-    · linarith [hd.2]
-    · linarith [hd.1]
+    · grind
+    · grind
   have hrowb : ∀ u ∈ G, ‖initialRowIntegral D u Z‖ ≤
       C1 * Z ^ (DedekindZetaZeroFree.Quantitative.Scales.kernelExponent DedekindZetaZeroFree.Quantitative.Scales.rightLine DedekindZetaZeroFree.Quantitative.Scales.wLine DedekindZetaZeroFree.Quantitative.Scales.zLine)
         * ((2:ℝ) ^ dyadIndex D u) ^ ((1:ℝ)/25 + (1:ℝ)/4000) := by
@@ -118,13 +118,9 @@ theorem finset_norm_sum_le (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExpo
 
   set K : Finset ℕ := G.image (fun u => dyadIndex D u) with hK
   have hKmem : ∀ k ∈ K, ∃ u ∈ G, dyadIndex D u = k := by
-    intro k hk
-    obtain ⟨u, hu, rfl⟩ := Finset.mem_image.mp hk
-    exact ⟨u, hu, rfl⟩
+    grind
   have hKlow : ∀ k ∈ K, U₀ ≤ (2:ℝ)^k ∧ (2:ℝ)^k ≤ Z ^ DedekindZetaZeroFree.Quantitative.Scales.largeCutoffExponent := by
-    intro k hk
-    obtain ⟨u, hu, rfl⟩ := hKmem k hk
-    exact hlow u hu
+    grind
   have hcount : ∀ k ∈ K, ((G.filter (fun u => dyadIndex D u = k)).card : ℝ) ≤
       C2 * ((2:ℝ)^k) ^ DedekindZetaZeroFree.Quantitative.DetectorDef.α := by
     intro k hk
@@ -136,12 +132,12 @@ theorem finset_norm_sum_le (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExpo
       have hm := hG (Finset.mem_coe.mpr hu.1)
       have hex := (exceptionalMedium_mem_dyad D hm).1
       rw [hu.2] at hex
-      exact hex
+      grind
     have := Set.ncard_le_ncard hsub hcb.1
     rw [Set.ncard_coe_finset] at this
     have h3 : ((G.filter (fun u => dyadIndex D u = k)).card : ℝ) ≤
         ((rawExceptionalSet D ρ ((2:ℝ)^k)).ncard : ℝ) := by exact_mod_cast this
-    exact h3.trans hcb.2
+    grind
   have hfinal : Z ^ (DedekindZetaZeroFree.Quantitative.Scales.kernelExponent DedekindZetaZeroFree.Quantitative.Scales.rightLine DedekindZetaZeroFree.Quantitative.Scales.wLine DedekindZetaZeroFree.Quantitative.Scales.zLine)
       * (Z ^ DedekindZetaZeroFree.Quantitative.Scales.largeCutoffExponent) ^ ((317:ℝ)/500 + ((1:ℝ)/25 + (1:ℝ)/4000))
       ≤ Z ^ ((717 : ℝ) / 2000) := by
@@ -170,8 +166,7 @@ theorem finset_norm_sum_le (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExpo
         apply Finset.sum_congr rfl
         intro k _
         apply Finset.sum_congr rfl
-        intro u hu
-        rw [(Finset.mem_filter.mp hu).2]
+        grind
     _ = ∑ k ∈ K, ((G.filter (fun u => dyadIndex D u = k)).card : ℝ) *
           (C1 * Z ^ (DedekindZetaZeroFree.Quantitative.Scales.kernelExponent DedekindZetaZeroFree.Quantitative.Scales.rightLine DedekindZetaZeroFree.Quantitative.Scales.wLine DedekindZetaZeroFree.Quantitative.Scales.zLine)
           * ((2:ℝ) ^ k) ^ ((1:ℝ)/25 + (1:ℝ)/4000)) := by

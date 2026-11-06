@@ -1,6 +1,7 @@
 module
 
 public import DedekindZetaZeroFree.Eisenstein.Induction.FlatSectionContinuityAndExponentialJets
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -34,7 +35,7 @@ theorem chamber_locally_uniform (K : Subgroup (G F ζ hζ))
   intro P hPc hP
   obtain ⟨b, hb, hbound⟩ := chamber_scalar_compact_majorants F ζ hζ K hK f
     P hP hPc {g} isCompact_singleton
-  exact ⟨b, hb, fun c s hs => hbound c s hs g (Set.mem_singleton g)⟩
+  measurability
 
 theorem raw_chamber_analytic (K : Subgroup (G F ζ hζ))
     (hK : IwasawaCompact F ζ hζ K) (f : Flat F ζ hζ K) (s : ℂ)

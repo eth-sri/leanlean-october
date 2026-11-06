@@ -235,7 +235,7 @@ private theorem directions_count {n k : ℕ} (α : MultiIndex n k) (i : Fin n) :
     α.directions.count i = counts α i := by
   rw [MultiIndex.directions, List.count_flatMap,
     ← List.sum_toFinset _ (List.nodup_finRange n)]
-  simp [Function.comp_def, List.count_replicate, counts]
+  simp [List.count_replicate, counts]
 
 private theorem counts_index {n k : ℕ} (γ : Counts n) (hγ : (∑ i, γ i) ≤ k) :
     counts (indexOfCounts γ hγ) = γ := rfl

@@ -25,8 +25,7 @@ set_option maxHeartbeats 1600000
 private theorem raw_projected (raw : Raw R.A) :
     pglProjection F ζ hζ (scalarQuotient F ζ hζ (amalgamation F ζ hζ raw)) =
       QuotientGroup.mk' (scalarSubgroup F) (restrictedProjection F ζ hζ raw) := by
-  simp only [pglProjection, scalarQuotient, projection_amalgamation,
-    QuotientGroup.mk'_apply, QuotientGroup.lift_mk', MonoidHom.comp_apply]
+  aesop
 
 theorem raw_borel_upper (raw : Raw R.A)
     (hb : scalarQuotient F ζ hζ (amalgamation F ζ hζ raw) ∈ KPGlobalTorusFunctionData.borel F ζ hζ) :

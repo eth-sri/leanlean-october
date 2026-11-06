@@ -84,7 +84,7 @@ private theorem ordinaryTorus_isClosed :
       obtain ⟨z, hz, he⟩ := hB
       obtain ⟨u, rfl⟩ := hz
       rw [← he]
-      simp [Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
+      simp [Matrix.GeneralLinearGroup.coe_scalar,
         Matrix.mul_apply, Matrix.scalar, Fin.sum_univ_two, h01, h10]
     · intro h
       exact ⟨A, rfl, h⟩

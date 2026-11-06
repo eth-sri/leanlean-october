@@ -53,7 +53,7 @@ private theorem fourier_c2_majorant (g : ℝ → ℂ) (hg : ContDiff ℝ 2 g)
   have hcoef : 1 ≤ (2 * Real.pi) ^ 2 := by
     nlinarith [Real.pi_gt_three]
   have hsq : (2 * Real.pi * |t|) ^ 2 = (2 * Real.pi) ^ 2 * t ^ 2 := by
-    rw [mul_pow, sq_abs]
+    grind
   rw [hsq] at hdecay
   have hlarge : t ^ 2 * ‖FourierTransform.fourier g t‖ ≤
       ∫ x : ℝ, ‖iteratedDeriv 2 g x‖ := by
@@ -61,7 +61,7 @@ private theorem fourier_c2_majorant (g : ℝ → ℂ) (hg : ContDiff ℝ 2 g)
       t ^ 2 * ‖FourierTransform.fourier g t‖ ≤
           (2 * Real.pi) ^ 2 * (t ^ 2 * ‖FourierTransform.fourier g t‖) :=
         le_mul_of_one_le_left (by positivity) hcoef
-      _ ≤ _ := by simpa only [mul_assoc] using hdecay
+      _ ≤ _ := by grind
   have hsum : (1 + t ^ 2) * ‖FourierTransform.fourier g t‖ ≤
       (∫ x : ℝ, ‖g x‖) + (∫ x : ℝ, ‖iteratedDeriv 2 g x‖) := by nlinarith
   rw [← div_eq_mul_inv]
@@ -79,7 +79,7 @@ theorem fourier_c2_l1_bound (g : ℝ → ℂ) (hg : ContDiff ℝ 2 g)
     integrable_inv_one_add_sq.const_mul M
   have hf : Integrable (FourierTransform.fourier g) :=
     hint.mono' (VectorFourier.fourierIntegral_continuous Real.continuous_fourierChar
-      (by exact continuous_fst.inner continuous_snd)
+      (continuous_fst.inner continuous_snd)
       (by simpa using hgi 0 (by omega))).aestronglyMeasurable
       (Filter.Eventually.of_forall (fourier_c2_majorant g hg hgi))
   refine ⟨hf, ?_⟩
@@ -185,7 +185,7 @@ theorem uniform_fourier_l1 {I : Type*} [Fintype I]
     calc
       _ = ‖a x‖ * ‖f x‖ := norm_mul _ _
       _ ≤ ‖a x‖ * (L * E x * m) := mul_le_mul_of_nonneg_left h (norm_nonneg _)
-      _ = _ := by dsimp [W0]; ring
+      _ = _ := by grind
   have hb2 (x : ℝ) : ‖iteratedDeriv 2 (a * f) x‖ ≤ W2 x * (L * m) := by
     rw [second_product a f ha hf x]
     have h0 := hfb 0 (by omega) x
@@ -196,10 +196,9 @@ theorem uniform_fourier_l1 {I : Type*} [Fintype I]
       _ ≤ ‖iteratedDeriv 2 a x * f x‖ + ‖2 * deriv a x * deriv f x‖ +
           ‖a x * iteratedDeriv 2 f x‖ := norm_add₃_le
       _ = ‖iteratedDeriv 2 a x‖ * ‖f x‖ + 2 * ‖deriv a x‖ * ‖deriv f x‖ +
-          ‖a x‖ * ‖iteratedDeriv 2 f x‖ := by simp [norm_mul]
+          ‖a x‖ * ‖iteratedDeriv 2 f x‖ := by simp
       _ ≤ ‖iteratedDeriv 2 a x‖ * (L * E x * m) +
-          2 * ‖deriv a x‖ * (L * E x * m) + ‖a x‖ * (L * E x * m) := by
-        exact add_le_add (add_le_add (mul_le_mul_of_nonneg_left h0 (norm_nonneg _))
+          2 * ‖deriv a x‖ * (L * E x * m) + ‖a x‖ * (L * E x * m) := add_le_add (add_le_add (mul_le_mul_of_nonneg_left h0 (norm_nonneg _))
           (mul_le_mul_of_nonneg_left h1 (by positivity)))
           (mul_le_mul_of_nonneg_left h2 (norm_nonneg _))
       _ = _ := by dsimp [W2]; simp only [iteratedDeriv_one]; ring
@@ -245,8 +244,8 @@ theorem dyadic_log_mem (C D qc qd : ℝ) (hC : 0 < C) (hD : 0 < D)
       Set.Icc (-2 * Real.log 2) (Real.log 2) := by
   have hqc : 0 < qc := lt_of_lt_of_le hC hc.1
   have hqd : 0 < qd := lt_of_lt_of_le hD hd.1
-  have hc1 : 1 ≤ qc / C := (le_div_iff₀ hC).2 (by simpa using hc.1)
-  have hd1 : 1 ≤ qd / D := (le_div_iff₀ hD).2 (by simpa using hd.1)
+  have hc1 : 1 ≤ qc / C := (le_div_iff₀ hC).2 (by grind)
+  have hd1 : 1 ≤ qd / D := (le_div_iff₀ hD).2 (by grind)
   have hc2 : qc / C ≤ 2 := (div_le_iff₀ hC).2 hc.2.le
   have hd2 : qd / D ≤ 2 := (div_le_iff₀ hD).2 hd.2.le
   have hlc0 : 0 ≤ Real.log (qc / C) := Real.log_nonneg hc1
@@ -255,7 +254,7 @@ theorem dyadic_log_mem (C D qc qd : ℝ) (hC : 0 < C) (hD : 0 < D)
     Real.log_le_log (div_pos hqc hC) hc2
   have hld2 : Real.log (qd / D) ≤ Real.log 2 :=
     Real.log_le_log (div_pos hqd hD) hd2
-  constructor <;> linarith
+  grind
 
 theorem dyadic_separation {I : Type*} [Fintype I]
     (ξ : ℝ → ℝ) (hξ : IsCutoff ξ) (P : I → ℝ → ℂ)
@@ -304,14 +303,12 @@ theorem dyadic_separation {I : Type*} [Fintype I]
   have hinv := fourier_inversion ξ hξ P hP i v hv x
   rw [localizedProfile, hcut, Complex.ofReal_one, one_mul, hexp] at hinv
   convert hinv using 1
-  · congr 1
-    ring
+  · grind
   · rw [Real.fourierInv_eq']
     apply integral_congr_ae
     filter_upwards [] with t
     simp only [real_inner_comm, RCLike.inner_apply, conj_trivial, smul_eq_mul]
-    rw [mul_comm x t, hphase]
-    ring
+    grind
 
 end
 end DedekindZetaZeroFree.RMFourierProfile

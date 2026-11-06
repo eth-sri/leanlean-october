@@ -19,7 +19,7 @@ def trivialTop : RayClassCharacter F ⊤ where
   map_top' := by simp
   eq_zero_iff' I := by simp
   map_span' α hα _ _ := by
-    simp [Ideal.span_singleton_eq_bot, hα]
+    simp [hα]
 
 @[simp] theorem trivialTop_apply (I : Ideal (𝓞 F)) :
     (trivialTop (F := F)) I = if I = ⊥ then 0 else 1 := rfl

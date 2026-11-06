@@ -83,7 +83,7 @@ theorem sourceC_valuation_units
         (KPHilbert.residueSixCharacter F v ζ hζ hgood t) : ℂ) ^ (-2 * e) := by
   rw [sourceC_eq_actualC_inv,
     KPEffectiveDiagonalMultiplier.C_valuation_units F ζ hζ v hgood π hπ]
-  simp [mul_inv, ← zpow_neg, mul_comm]
+  simp [← zpow_neg, mul_comm]
 
 end Tame
 
@@ -92,7 +92,7 @@ theorem prod_sourceC_arithmetic (A : SArithmeticData F) (x y : A.G) :
       sourceC F A.zeta12 A.primitive_zeta12 (Sum.inr v.val) (x.2 v) (y.2 v)) =
       (KPLocalCover.coefficientEmbedding F A.zeta12 A.primitive_zeta12 (A.H_S x y) : ℂ) ^
         (-2 : ℤ) := by
-  simp only [sourceC_eq_actualB6_neg_two, ← Finset.prod_zpow]
+  simp only [sourceC_eq_actualB6_neg_two]
   have hp := KPHilbert.B6_S_product F A x y
   have he := congrArg (KPLocalCover.coefficientEmbedding F A.zeta12 A.primitive_zeta12) hp
   rw [map_prod] at he

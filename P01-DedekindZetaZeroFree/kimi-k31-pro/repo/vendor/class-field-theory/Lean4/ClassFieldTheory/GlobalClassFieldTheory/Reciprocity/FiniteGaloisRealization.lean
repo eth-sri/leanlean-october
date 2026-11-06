@@ -121,25 +121,9 @@ omit [FiniteDimensional K L] [IsGalois K L] in
   let := numberFieldTowerAbstractTopFiniteDimensional K L
   exact NumberField.of_module_finite ℚ _
 
-private theorem numberFieldTowerRestrictedTopFiniteDimensional :
-    FiniteDimensional ℚ
-      ((abstractRelativeFixedField ℚ (SeparableClosure ℚ)
-        (numberFieldTowerTopSubgroup_le_baseSubgroup K L)).restrictScalars ℚ) := by
-  let := numberFieldTowerAbstractTopFiniteDimensional K L
-  change FiniteDimensional ℚ
-    (abstractFixedField ℚ (SeparableClosure ℚ)
-      (numberFieldTowerTopSubgroup L))
-  change FiniteDimensional ℚ
-    (abstractRelativeFixedField ℚ (SeparableClosure ℚ)
-      (numberFieldTowerTopSubgroup_le_baseSubgroup K L))
-  exact numberFieldTowerAbstractTopFiniteDimensional K L
 
-private theorem numberFieldTowerRestrictedTopNumberField :
-    NumberField
-      ((abstractRelativeFixedField ℚ (SeparableClosure ℚ)
-        (numberFieldTowerTopSubgroup_le_baseSubgroup K L)).restrictScalars ℚ) := by
-  let := numberFieldTowerRestrictedTopFiniteDimensional K L
-  exact NumberField.of_module_finite ℚ _
+
+
 
 @[reducible]  noncomputable def numberFieldTowerRestrictedTopAlgebra :
     Algebra
@@ -151,18 +135,7 @@ private theorem numberFieldTowerRestrictedTopNumberField :
     (abstractFixedField_le ℚ (SeparableClosure ℚ)
       (numberFieldTowerTopSubgroup_le_baseSubgroup K L))).toRingHom.toAlgebra
 
-private theorem numberFieldTowerAbstractRelativeIsGalois :
-    IsGalois
-      (abstractFixedField ℚ (SeparableClosure ℚ)
-        (numberFieldTowerBaseSubgroup K L))
-      (abstractRelativeFixedField ℚ (SeparableClosure ℚ)
-        (numberFieldTowerTopSubgroup_le_baseSubgroup K L)) :=
-  abstractRelativeFixedField_isGalois
-    ℚ (SeparableClosure ℚ)
-    (numberFieldTowerBaseSubgroup K L)
-    (numberFieldTowerTopSubgroup L)
-    (numberFieldTowerTopSubgroup_le_baseSubgroup K L)
-    (numberFieldTowerExtensionSubgroupNormal K L)
+
 
 private theorem ordinaryIdeleClassNormQuotientCongrOfAlgEquiv_symm_mk
     {K₀ L₀ K₁ L₁ : Type}

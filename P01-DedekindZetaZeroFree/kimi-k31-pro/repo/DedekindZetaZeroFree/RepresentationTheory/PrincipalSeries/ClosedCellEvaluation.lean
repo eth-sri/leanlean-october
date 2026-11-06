@@ -133,7 +133,7 @@ private theorem exists_compact_open_in (U : Set (FiniteCover F ζ hζ w))
   let Lgroup := (q.comp t).range
   have hLrange : (Lgroup : Set (FiniteCover F ζ hζ w)) = q '' Set.range t := by
     ext x
-    simp [Lgroup, MonoidHom.mem_range, Set.mem_image, Function.comp_def]
+    simp [Lgroup, Set.mem_image, Function.comp_def]
   have hLo : IsOpen (Lgroup : Set (FiniteCover F ζ hζ w)) := by
     rw [hLrange]
     exact QuotientGroup.isOpenMap_coe _ hto

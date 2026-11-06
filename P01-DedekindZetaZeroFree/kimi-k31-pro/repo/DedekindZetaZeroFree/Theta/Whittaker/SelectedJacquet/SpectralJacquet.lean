@@ -76,7 +76,7 @@ theorem spectralJacquet_zero (f : PrincipalSeries positiveParameter) (g : Comple
     spectralJacquet f 0 g = KPCplxJacquetFunctional.jacquetIntegral standardComplexParameter
       (KPCplxPrincipalSeriesCharts.pi positiveParameter (Matrix.ProjGenLinGroup.mk g) f) := by
   unfold spectralJacquet KPCplxJacquetFunctional.jacquetIntegral
-  simp only [plusValue_zero, pi_mk, rightTranslate]
+  simp only [plusValue_zero, pi_mk]
   apply integral_congr_ae
   filter_upwards with x
   rw [AddChar.map_neg_eq_inv, Circle.coe_inv_eq_conj]
@@ -96,7 +96,7 @@ def spectralJacquetMap (s : ℂ) : PrincipalSeries positiveParameter →ₗ[ℂ]
             plusValue h s (weyl * upperUnipotent x * g) *
             star (character (standardComplexParameter : ℂ) x : ℂ)) := by
           funext x
-          simp only [plusValue, Pi.add_apply, twist]
+          simp only [plusValue, twist]
           change _ * (f _ + h _) * _ = _
           ring
         rw [he]

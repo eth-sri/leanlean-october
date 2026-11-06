@@ -23,7 +23,7 @@ variable {N : TraceHaarTransport R} (C : JointUpperVanishingSources R N)
     (d : ThetaDigitAverage.Dig (ThetaDigitAverage.rowPrimes R.A m.val m.property))
     (p : KPFinitePlace F) (hp : p ∉ ThetaDigitAverage.rowPrimes R.A m.val m.property) :
     KPAdelicCoverRestrictedProduct.adeleEval F (Sum.inr p) (digitParameter R m d) = 0 := by
-  simp only [digitParameter, map_sum, eval_localAdele]
+  simp only [digitParameter, map_sum]
   apply Finset.sum_eq_zero
   intro q _
   apply Pi.single_eq_of_ne

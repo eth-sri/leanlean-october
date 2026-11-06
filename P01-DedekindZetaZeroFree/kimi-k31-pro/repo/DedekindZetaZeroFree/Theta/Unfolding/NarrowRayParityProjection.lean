@@ -41,7 +41,7 @@ theorem sign_projection (D : RayCoset.Data K) (x : RayCoset.X D) :
       let ψ : K →+* ℂ := Complex.ofRealHom.comp φ
       have hψ : NumberField.ComplexEmbedding.IsReal ψ := by
         ext y
-        simp [ψ, NumberField.ComplexEmbedding.conjugate]
+        simp [ψ]
       let v : RayCoset.RealPlaces K :=
         ⟨NumberField.InfinitePlace.mk ψ, ⟨ψ, hψ, rfl⟩⟩
       have hv : RayCoset.realEmbedding K v = φ := by
@@ -97,7 +97,7 @@ theorem rayParityProjection {K : Type} [Field K] [NumberField K]
     rw [← Finset.sum_mul, ← mul_assoc]
     rw [RayParity.Projection.sign_projection D x]
     by_cases hx : x ∈ RayCoset.positiveOrbits D <;>
-      simp [Set.indicator_apply, hx]
+      simp [hx]
   have hpos : HasSum (fun x : RayCoset.Xpos D => W x.val)
       (A * ∑ δ ∈ S, RayCoset.Zδ D δ s) :=
     hasSum_subtype_iff_indicator.mpr hind

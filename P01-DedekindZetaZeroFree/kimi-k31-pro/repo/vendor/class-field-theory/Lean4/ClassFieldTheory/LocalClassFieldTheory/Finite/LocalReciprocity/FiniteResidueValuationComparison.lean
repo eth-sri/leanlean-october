@@ -63,7 +63,7 @@ theorem ValuationSubring.restrictIntermediateField_eq_of_finite_separable
   have hC : target.valuation.valuationSubring = C :=
     DiscreteValuationField.ValuedExtension.target_valuationSubring_eq_of_finite_separable
       base target C
-  exact hB.symm.trans hC
+  grind
 
 end
 end LocalClassFieldTheory

@@ -3,6 +3,7 @@ module
 public import ClassFieldTheory.AlgebraicNumberTheory.RayClass.Topology
 public import ClassFieldTheory.AlgebraicNumberTheory.RayClass.Rational
 public import Mathlib.NumberTheory.Cyclotomic.Gal
+public import Mathlib.Tactic.Positivity
 
 @[expose] public section
 
@@ -43,7 +44,7 @@ noncomputable def rationalRayClassGroupEquivCyclotomicAut
     RayClass.RayClassGroup (RayClass.rationalModulus m) ≃*
       (CyclotomicField m ℚ ≃ₐ[ℚ] CyclotomicField m ℚ) := by
   letI : NeZero m := ⟨hm⟩
-  letI : NeZero (m : ℚ) := ⟨by exact_mod_cast hm⟩
+  letI : NeZero (m : ℚ) := ⟨by positivity⟩
   letI : IsCyclotomicExtension {m} ℚ
       (CyclotomicField m ℚ) :=
     CyclotomicField.isCyclotomicExtension m ℚ
@@ -74,7 +75,7 @@ theorem rationalRayClassFieldQuotient_card_eq_cyclotomicDegree
             (RayClass.rationalModulus m)) =
       Module.finrank ℚ (CyclotomicField m ℚ) := by
   let : NeZero m := ⟨hm⟩
-  let : NeZero (m : ℚ) := ⟨by exact_mod_cast hm⟩
+  let : NeZero (m : ℚ) := ⟨by positivity⟩
   let : IsCyclotomicExtension {m} ℚ
       (CyclotomicField m ℚ) :=
     CyclotomicField.isCyclotomicExtension m ℚ
@@ -105,7 +106,7 @@ theorem rationalRayClassFieldQuotient_card_eq_totient
             (RayClass.rationalModulus m)) =
       m.totient := by
   let : NeZero m := ⟨hm⟩
-  let : NeZero (m : ℚ) := ⟨by exact_mod_cast hm⟩
+  let : NeZero (m : ℚ) := ⟨by positivity⟩
   let : IsCyclotomicExtension {m} ℚ
       (CyclotomicField m ℚ) :=
     CyclotomicField.isCyclotomicExtension m ℚ

@@ -61,41 +61,11 @@ def maximalUnramifiedSubextension
     IntermediateField K L :=
   sSup (finiteUnramifiedSubextensions v w hExt)
 
-/-- Every finite unramified subextension is contained in `T`. -/
-theorem finiteUnramifiedSubextension_le_maximal
-    (v : LubinTate.Valuations.ExponentialValuation K) (w : LubinTate.Valuations.ExponentialValuation L)
-    (hExt : ∀ a : K, w (algebraMap K L a) = v a)
-    {E : IntermediateField K L}
-    (hE : FiniteUnramifiedSubextension v w hExt E) :
-    E ≤ maximalUnramifiedSubextension v w hExt := by
-  apply le_sSup
-  exact hE
 
-/-- `T` is the least intermediate field containing every finite unramified
-subextension. -/
-theorem maximalUnramifiedSubextension_le
-    (v : LubinTate.Valuations.ExponentialValuation K) (w : LubinTate.Valuations.ExponentialValuation L)
-    (hExt : ∀ a : K, w (algebraMap K L a) = v a)
-    {M : IntermediateField K L}
-    (hM : ∀ E : IntermediateField K L,
-      FiniteUnramifiedSubextension v w hExt E → E ≤ M) :
-    maximalUnramifiedSubextension v w hExt ≤ M := by
-  apply sSup_le
-  intro E hE
-  exact hM E hE
 
-/-- The least-upper-bound characterization of the maximal-unramified-subextension definition. -/
-theorem maximalUnramifiedSubextension_le_iff
-    (v : LubinTate.Valuations.ExponentialValuation K) (w : LubinTate.Valuations.ExponentialValuation L)
-    (hExt : ∀ a : K, w (algebraMap K L a) = v a)
-    {M : IntermediateField K L} :
-    maximalUnramifiedSubextension v w hExt ≤ M ↔
-      ∀ E : IntermediateField K L,
-        FiniteUnramifiedSubextension v w hExt E → E ≤ M := by
-  constructor
-  · intro h E hE
-    exact (finiteUnramifiedSubextension_le_maximal v w hExt hE).trans h
-  · exact maximalUnramifiedSubextension_le v w hExt
+
+
+
 
 end MaximalUnramifiedSubextension
 

@@ -1,6 +1,7 @@
 module
 
 public import DedekindZetaZeroFree.LFunctions.Hecke.PoissonRows.Reciprocals.LogarithmicDiskBounds
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -18,14 +19,14 @@ theorem idealLSeries_ne_zero_of_one_lt (ω : Detector.PrimitiveFrequencyCharacte
   obtain ⟨_, -, hf⟩ := ReciprocalLogDiskAux.euler_log_facts F
   obtain ⟨-, hexp, -⟩ := hf ω
   rw [← hexp s hs]
-  exact Complex.exp_ne_zero _
+  norm_num
 
 theorem IsLZero.re_le_one {ω : Detector.PrimitiveFrequencyCharacter F} {s : ℂ}
     (h : IsLZero ω s) : s.re ≤ 1 := by
   by_contra hlt
   push_neg at hlt
   obtain ⟨-, g, -, hg, hgs⟩ := h
-  exact idealLSeries_ne_zero_of_one_lt ω s hlt (by rw [← hg s hlt]; exact hgs)
+  exact idealLSeries_ne_zero_of_one_lt ω s hlt (by grind)
 
 end
 

@@ -219,19 +219,7 @@ theorem maximalUnramifiedDegreeEquiv_frobenius (D : DegreeData G)
       Multiplicative.ofAdd (1 : ZHat) := by
   exact (D.maximalUnramifiedDegreeEquiv K).apply_symm_apply _
 
-/-- Uniqueness clause in the normalized Frobenius definition. -/
-theorem eq_frobenius_iff (D : DegreeData G)
-    (K : FiniteResidueAbstractField D)
-    (σ : K.field.toSubgroup ⧸ D.fieldInertiaWithin K.field) :
-    σ = D.frobenius K ↔
-      D.maximalUnramifiedDegreeEquiv K σ =
-        Multiplicative.ofAdd (1 : ZHat) := by
-  constructor
-  · rintro rfl
-    exact D.maximalUnramifiedDegreeEquiv_frobenius K
-  · intro h
-    exact (D.maximalUnramifiedDegreeEquiv K).injective
-      (h.trans (D.maximalUnramifiedDegreeEquiv_frobenius K).symm)
+
 
 /-- For a finite extension, its positive residue degree times the absolute
 residue degree of the base is the absolute residue degree of the field. -/
@@ -250,15 +238,7 @@ theorem FiniteResidueAbstractExtension.residueDegree_mul_absoluteResidueDegree
     E.field.residueDegreeCardinal_eq_coe] at h
   exact_mod_cast h
 
-/-- **Frobenius residue-degree compatibility (residue degrees).** If `f_K` and `f_L` are finite,
-then `f_{L|K} = f_L / f_K`. -/
-theorem frobeniusRestrictionNaturality_residueDegree (D : DegreeData G)
-    (E : FiniteResidueAbstractExtension D) :
-    (E.residueDegree : ℕ) =
-      (E.field.residueDegree : ℕ) / (E.base.residueDegree : ℕ) := by
-  rw [← E.residueDegree_mul_absoluteResidueDegree D]
-  rw [Nat.mul_comm (E.residueDegree : ℕ) (E.base.residueDegree : ℕ)]
-  exact (Nat.mul_div_cancel_left _ E.base.residueDegree.property).symm
+
 
 /-- **Frobenius residue-degree compatibility (commutative square).** On `G_L`, the normalized
 degree maps satisfy `d_K = f_{L|K} d_L`. -/
@@ -306,36 +286,9 @@ theorem maximalUnramifiedRestriction_mk (D : DegreeData G)
       QuotientGroup.mk (Subgroup.inclusion hLK l) := by
   rfl
 
-/-- The quotient form of the commutative square in Frobenius residue-degree compatibility. -/
-theorem frobeniusRestrictionNaturality_quotient_square (D : DegreeData G)
-    (E : FiniteResidueAbstractExtension D)
-    (σ : E.field.field.toSubgroup ⧸ D.fieldInertiaWithin E.field.field) :
-    (D.maximalUnramifiedDegreeEquiv E.base
-      (D.maximalUnramifiedRestriction E.below σ)).toAdd =
-      (E.residueDegree : ℕ) •
-        (D.maximalUnramifiedDegreeEquiv E.field σ).toAdd := by
-  refine Quotient.inductionOn' σ ?_
-  intro l
-  simpa using D.frobeniusRestrictionNaturality_normalizedDegree E l
 
-/-- The final assertion of Frobenius residue-degree compatibility:
-`φ_L|_{\widetilde K} = φ_K ^ f_{L|K}`. -/
-theorem frobenius_restriction_eq_power (D : DegreeData G)
-    (E : FiniteResidueAbstractExtension D) :
-    D.maximalUnramifiedRestriction E.below (D.frobenius E.field) =
-      (D.frobenius E.base) ^ (E.residueDegree : ℕ) := by
-  apply (D.maximalUnramifiedDegreeEquiv E.base).injective
-  apply Multiplicative.ext
-  rw [map_pow]
-  change (D.maximalUnramifiedDegreeEquiv E.base
-      (D.maximalUnramifiedRestriction E.below
-        (D.frobenius E.field))).toAdd =
-    (E.residueDegree : ℕ) •
-      (D.maximalUnramifiedDegreeEquiv E.base
-        (D.frobenius E.base)).toAdd
-  rw [D.frobeniusRestrictionNaturality_quotient_square E,
-    D.maximalUnramifiedDegreeEquiv_frobenius,
-    D.maximalUnramifiedDegreeEquiv_frobenius]
+
+
 
 end DegreeData
 

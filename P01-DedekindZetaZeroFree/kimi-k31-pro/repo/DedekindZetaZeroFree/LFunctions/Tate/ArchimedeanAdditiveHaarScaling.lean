@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.Adeles.Characters.ArchimedeanAdditiveCharacters
 public import DedekindZetaZeroFree.Adeles.Lattices.ArchimedeanIdealCovolume
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -97,9 +98,7 @@ private theorem localArchEquiv_abs_det (F : Type) [Field F] [NumberField F]
       LinearMap.comp_apply, ContinuousLinearEquiv.apply_symm_apply]
     have hx := PoissonArch.infiniteAdeleToSpace_coordinates F
       ((PoissonArch.infiniteAdeleToSpace F).symm x)
-    rw [ContinuousLinearEquiv.apply_symm_apply] at hx
-    rw [← hx]
-    ext v <;> simp [R, C, z, mul_comm]
+    measurability
   rw [he, ContinuousLinearEquiv.toLinearEquiv_symm]
   have hd := LinearMap.det_conj
     ((LinearMap.pi fun v => (R v).comp (LinearMap.proj v)).prodMap
@@ -147,19 +146,17 @@ theorem archimedean_map_mul (g : (InfiniteAdeleRing F)ˣ) :
       rw [InfiniteAdeleRing.norm_def]
       refine Finset.prod_pos fun v _ => pow_pos ?_ _
       exact norm_pos_iff.mpr (Pi.isUnit_iff.mp g.isUnit v).ne_zero
-    have hcoe : Measure.map (A : PoissonArch.Space F → PoissonArch.Space F) μ =
-        Measure.map (A.toLinearMap) μ := rfl
-    rw [hcoe, h, abs_inv, hdetabs, ENNReal.ofReal_inv_of_pos hpos]
+    simp_all
   calc
     Measure.map (fun x : InfiniteAdeleRing F => g.val * x)
         (Measure.map e.symm μ)
       = Measure.map ((fun x : InfiniteAdeleRing F => g.val * x) ∘ e.symm) μ := by
           rw [Measure.map_map hmm hes]
-    _ = Measure.map (e.symm ∘ A) μ := by rw [hA]
+    _ = Measure.map (e.symm ∘ A) μ := by simp_all
     _ = Measure.map e.symm (Measure.map A μ) := by rw [Measure.map_map hes hAmeas]
-    _ = Measure.map e.symm ((ENNReal.ofReal ‖g.val‖)⁻¹ • μ) := by rw [hmap]
+    _ = Measure.map e.symm ((ENNReal.ofReal ‖g.val‖)⁻¹ • μ) := by simp_all
     _ = (ENNReal.ofReal ‖g.val‖)⁻¹ • Measure.map e.symm μ := by
-          rw [Measure.map_smul _ hes.aemeasurable]
+          measurability
 
 end
 end DedekindZetaZeroFree.TateSLocalMeasurability

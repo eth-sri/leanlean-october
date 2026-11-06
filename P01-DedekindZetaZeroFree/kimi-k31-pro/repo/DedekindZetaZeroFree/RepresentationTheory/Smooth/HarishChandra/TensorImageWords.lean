@@ -1,6 +1,7 @@
 module
 
 public import DedekindZetaZeroFree.RepresentationTheory.Smooth.TensorWords.CyclicSlotDescent
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -25,10 +26,8 @@ open KPContActualSphericalRightFieldIdentification
   congr 1
   funext j
   by_cases hj : j = i
-  · subst j
-    simp only [Function.update_self]
-    exact LinearMap.ext h
-  · simp only [Function.update_of_ne hj, LinearMap.comp_id, LinearMap.id_comp]
+  · measurability
+  · simp_all
 
 end DedekindZetaZeroFree.FourierContinuation.HCGeneration
 

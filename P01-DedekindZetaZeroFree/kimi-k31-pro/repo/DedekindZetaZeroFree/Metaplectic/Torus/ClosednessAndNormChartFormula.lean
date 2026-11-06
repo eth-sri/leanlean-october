@@ -146,7 +146,7 @@ private theorem diagonal_preimage :
     have hA : A = B * Matrix.GeneralLinearGroup.scalar (Fin 2) u := by
       rw [hu]; simp
     rw [hA]
-    simp [Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
+    simp [Matrix.GeneralLinearGroup.coe_scalar,
       Matrix.mul_apply, Matrix.scalar_apply, h10, h01]
   · rintro ⟨h10, h01⟩
     exact ⟨A, rfl, h10, h01⟩

@@ -41,7 +41,7 @@ theorem finite_row_modulus
   have he : KPChamberHeight.finiteFactor F ![0, 1] A v =
       ‖Av 1 1‖ / Real.sqrt ‖(GeneralLinearGroup.det Av : v.adicCompletion F)‖ := by
     simp [KPChamberHeight.finiteFactor, KPChamberHeight.rowAction,
-      Fin.sum_univ_two, hv, Av, h10]
+      Fin.sum_univ_two, Av, h10]
   rw [he]
   exact upper_local Av hv
 
@@ -66,7 +66,7 @@ theorem infinite_row_modulus
       ‖KPChamberHeight.rowAction
       (fun i => algebraMap F v.Completion (![0, 1] i)) Av 1‖ ^ 2) / _) ^ _ = _
     simp only [KPChamberHeight.rowAction, Fin.sum_univ_two,
-      Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons,
+      Matrix.cons_val_zero, Matrix.cons_val_one, 
       map_zero, map_one, zero_mul, one_mul, zero_add, hv, norm_zero,
       zero_pow (by decide : 2 ≠ 0), zero_add, Real.sqrt_sq (norm_nonneg _)]
     rfl

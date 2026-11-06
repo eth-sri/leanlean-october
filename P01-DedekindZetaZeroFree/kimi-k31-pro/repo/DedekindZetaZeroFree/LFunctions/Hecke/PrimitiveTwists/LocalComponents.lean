@@ -56,8 +56,7 @@ private theorem idelic_hom_ext_at_modulus
   let gl := QuotientGroup.lift m.congruenceSubgroup g hg
   have hl : fl = gl := by
     apply GlobalClassFieldTheory.GlobalClassFields.rayClassGroup_hom_ext_finitePrime m
-    intro v hv
-    exact hp v hv
+    exact hp
   apply MonoidHom.ext
   intro c
   exact DFunLike.congr_fun hl (QuotientGroup.mk' m.congruenceSubgroup c)

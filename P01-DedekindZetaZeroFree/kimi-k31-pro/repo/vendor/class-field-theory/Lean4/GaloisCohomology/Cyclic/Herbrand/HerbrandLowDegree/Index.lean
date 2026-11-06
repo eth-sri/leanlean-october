@@ -1,6 +1,7 @@
 module
 
 public import GaloisCohomology.Cyclic.Herbrand.HerbrandFiniteness
+public import Mathlib.Tactic.Linarith
 
 @[expose] public section
 
@@ -109,24 +110,10 @@ theorem lowDegree_card_eq_of_herbrandQuotient_eq_nat_of_le
     Nat.le_antisymm hle hnle
   refine ⟨ha, ?_⟩
   have hcancel : n * b = n * 1 := by
-    rw [← hmul, ha, mul_one]
+    linarith
   exact Nat.eq_of_mul_eq_mul_left hn hcancel
 
-/-- Subsingleton form of the negative-first conclusion. -/
-theorem herbrandHMinusOne_subsingleton_of_herbrandQuotient_eq_nat_of_le
-    (σ : G) (n : ℕ) (hn : 0 < n)
-    [Finite (HerbrandH0 G A)]
-    [Finite (HerbrandHMinusOne G A σ)]
-    (hquotient :
-      herbrandQuotient (G := G) (A := A) σ = n)
-    (hle : Nat.card (HerbrandH0 G A) ≤ n) :
-    Subsingleton (HerbrandHMinusOne G A σ) := by
-  have hcard :
-      Nat.card (HerbrandHMinusOne G A σ) = 1 := by
-    exact
-      (lowDegree_card_eq_of_herbrandQuotient_eq_nat_of_le
-        σ n hn hquotient hle).2
-  exact (Nat.card_eq_one_iff_unique.mp hcard).1
+
 
 end CyclicCohomology
 

@@ -114,22 +114,7 @@ theorem smallHilbertClassFieldQuotientEquivClassGroup_naturality
           (K := K) q) := by
   simp [smallHilbertClassGroupCongr]
 
-/-- Homomorphism form of naturality for the small-Hilbert
-quotient--class-group identification. -/
-theorem smallHilbertClassFieldQuotientEquivClassGroup_naturality_hom
-    (e : K ≃ₐ[ℚ] M) :
-    (smallHilbertClassFieldQuotientEquivClassGroup
-        (K := M)).toMonoidHom.comp
-        (smallHilbertClassFieldQuotientCongr
-          (K := K) (M := M) e).toMonoidHom =
-      (smallHilbertClassGroupCongr
-        (K := K) (M := M) e).toMonoidHom.comp
-        (smallHilbertClassFieldQuotientEquivClassGroup
-          (K := K)).toMonoidHom := by
-  ext q
-  exact
-    smallHilbertClassFieldQuotientEquivClassGroup_naturality
-      (K := K) (M := M) e q
+
 
 /-- On an idele representative, the induced transport of ordinary ideal
 classes is the ideal class of the transported idele.  Thus the class-group
@@ -168,16 +153,7 @@ theorem smallHilbertClassGroupCongr_idealClass
         ideleClassCongr_mk,
         smallHilbertClassFieldQuotientEquivClassGroup_mk]
 
-/-- Homomorphism form of naturality for ordinary ideal classes under the
-small-Hilbert class-group transport. -/
-theorem smallHilbertClassGroupCongr_naturality
-    (e : K ≃ₐ[ℚ] M) :
-    (smallHilbertClassGroupCongr e).toMonoidHom.comp
-        (IdeleGroup.idealClass (K := K)) =
-      (IdeleGroup.idealClass (K := M)).comp
-        (ideleCongr e).toMonoidHom := by
-  ext a
-  exact smallHilbertClassGroupCongr_idealClass e a
+
 
 end GlobalClassFields
 end GlobalClassFieldTheory

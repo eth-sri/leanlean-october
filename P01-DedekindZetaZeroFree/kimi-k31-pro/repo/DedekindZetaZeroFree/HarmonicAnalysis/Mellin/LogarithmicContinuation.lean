@@ -64,7 +64,7 @@ private lemma logMellinRemainder_isBigO_origin {f : ℝ → ℂ} {δ : ℝ} {P :
     nhdsWithin_le_nhds (Iio_mem_nhds (by norm_num : (0 : ℝ) < 1))
   filter_upwards [self_mem_nhdsWithin, hlt] with x hx0 hx1
   have hx : logMellinRemainder f P x = f x - Polynomial.eval (Real.log x : ℂ) P := by
-    simp only [logMellinRemainder, truncatedLogPolynomial, Set.mem_Ioo]
+    simp only [logMellinRemainder, truncatedLogPolynomial]
     rw [if_pos ⟨hx0, hx1⟩]
   rw [hx, Real.norm_of_nonneg (Real.rpow_nonneg hx0.le δ)]
   exact hC x hx0 hx1.le
@@ -76,7 +76,7 @@ private lemma logMellinRemainder_isBigO_top {f : ℝ → ℂ} {δ : ℝ} {P : Po
   refine Asymptotics.IsBigO.of_bound C ?_
   filter_upwards [eventually_ge_atTop (1 : ℝ)] with x hx
   have hzero : truncatedLogPolynomial P x = 0 := by
-    simp only [truncatedLogPolynomial, Set.mem_Ioo]
+    simp only [truncatedLogPolynomial]
     rw [if_neg (by push Not; intro h1; linarith)]
   rw [logMellinRemainder, hzero, sub_zero,
     Real.norm_of_nonneg (Real.rpow_nonneg (by linarith : (0 : ℝ) ≤ x) _)]

@@ -132,7 +132,7 @@ theorem glue_on_idele_classes (A : SArithmeticData F) (χ : A.G →* Circle)
       (_root_.IdeleGroup.fractionalIdeal (_root_.IdeleGroup.principalIdele F a)) = _
     rw [_root_.IdeleGroup.fractionalIdeal_principalIdele]
     apply Units.ext
-    simp only [Units.coe_map, MonoidHom.coe_coe, coe_toPrincipalIdeal]
+    simp only [Units.coe_map, coe_toPrincipalIdeal]
     change (FractionalIdeal.extendedHom F A.R)
       (FractionalIdeal.spanSingleton (𝓞 F)⁰ (a : F)) =
         FractionalIdeal.spanSingleton A.R⁰ (a : F)
@@ -373,7 +373,7 @@ private theorem sr_product (A : SArithmeticData F) (y : A.G) :
     sRestriction A ((∏ w : InfinitePlace F, NumberField.IdeleGroup.ofCompletion (𝓞 F) F w (y.1 w)) *
       (∏ v : {v // v ∈ A.Sf}, NumberField.IdeleGroup.ofAdicCompletion (𝓞 F) F v.val (y.2 v))) = y := by
   simp only [map_mul, map_prod, sr_inf, sr_fin]
-  apply Prod.ext <;> simp only [Prod.fst_mul, Prod.snd_mul, Prod.fst_prod, Prod.snd_prod, Finset.attach_eq_univ,
+  apply Prod.ext <;> simp only [Prod.fst_mul, Prod.snd_mul, Prod.fst_prod, Prod.snd_prod, 
     Finset.prod_const_one, mul_one, one_mul, Finset.univ_prod_mulSingle]
 private theorem sr_outside (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F)) (hv : v ∉ A.Sf)
     (z : (v.adicCompletion F)ˣ) : sRestriction A (NumberField.IdeleGroup.ofAdicCompletion (𝓞 F) F v z) = 1 := by

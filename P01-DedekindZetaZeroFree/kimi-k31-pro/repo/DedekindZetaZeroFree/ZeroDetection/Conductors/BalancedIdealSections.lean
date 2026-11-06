@@ -85,12 +85,12 @@ private theorem continuous_localToAdditive {F : Type} [Field F] [NumberField F]
 private theorem localToAdditive_mul {F : Type} [Field F] [NumberField F]
     (A : SArithmeticData F) (x y : A.G) :
     A.localToAdditive (x * y) = A.localToAdditive x * A.localToAdditive y := by
-  ext w <;> rfl
+  aesop
 
 private theorem localToAdditive_diagonal {F : Type} [Field F] [NumberField F]
     (A : SArithmeticData F) (a : Fˣ) :
     A.localToAdditive (A.diagonal a) = sLocalDiagonal F A.Sf (a : F) := by
-  ext w <;> rfl
+  aesop
 
 private theorem balancedDyadicBox_compact {F : Type} [Field F] [NumberField F]
     (A : SArithmeticData F) (K_bal : Set A.G) (hK : IsCompact K_bal) :

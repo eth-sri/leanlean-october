@@ -199,7 +199,7 @@ private theorem stableIntegral_of_higher_shell_cancellation
   have hzero : expandingBall F q π 0 = lowShell F q := by
     ext x
     simp only [expandingBall, lowShell, pow_zero, Units.val_one, inv_one, one_mul,
-      Set.mem_setOf_eq, Valuation.mem_integer_iff]
+      Set.mem_setOf_eq]
     constructor
     · rintro ⟨o, rfl⟩
       exact (Valuation.mem_integer_iff _ _).mp o.property

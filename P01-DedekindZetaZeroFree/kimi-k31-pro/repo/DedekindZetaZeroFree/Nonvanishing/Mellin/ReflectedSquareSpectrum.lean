@@ -53,7 +53,7 @@ theorem reflectedSquareSpectrum_eq_of_im_ne_zero
     HasCompactSupport.of_support_subset_isCompact isCompact_Icc hsupp
   have harg : 1 - (1 - s) / 2 = (1 + s) / 2 := by ring
   have hq := Vendor.originMellinQ_eq_mellin_div_Gammaℂ W hW hc ((1 + s) / 2)
-    (by simp [Complex.div_re, Complex.add_re]; linarith)
+    (by simp [Complex.add_re]; linarith)
   have hdup := Vendor.reflected_square_gamma_duplication s hsi
   have hDne : (D : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (ne_of_gt hD)
   have hcp : (D : ℂ) ^ (s - 1 / 2) * (D : ℂ) ^ ((1 - s) / 2 - 1 / 2) =

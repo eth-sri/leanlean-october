@@ -354,60 +354,9 @@ theorem cyclic_prime_power_infinite_fullDecompositionPlaces
       hp hexponent hcard
   simpa [M, hDegree] using hLowerM
 
-/-- Finset-avoidance form of the conditional full-decomposition
-infinitude result, convenient for recursively choosing new places. -/
-theorem
-    exists_fullDecompositionPlace_outside_finset_of_primeSubextension_normIndex
-    {p exponent : ℕ}
-    (hp : p.Prime)
-    (hexponent : 0 < exponent)
-    (hcard : Nat.card (L ≃ₐ[K] L) = p ^ exponent)
-    (hLower :
-      p ≤
-        (RelativeIdeleGroup.Cohomology.ideleClassNorm K
-          (cyclicPrimeSubextension
-            (K := K) (L := L)
-            hp hexponent hcard)).range.index)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
-    ∃ v : HeightOneSpectrum (𝓞 K),
-      v ∉ S ∧
-      finitePlaceDecompositionGroup
-          (K := K) (L := L) v = ⊤ := by
-  have hinfinite :=
-    cyclic_prime_power_fullDecompositionPlaces_infinite_of_primeSubextension_normIndex
-      (K := K) (L := L)
-      hp hexponent hcard hLower
-  by_contra hexists
-  push Not at hexists
-  apply hinfinite
-  apply S.finite_toSet.subset
-  intro v hv
-  by_contra hvS
-  exact (hexists v hvS) hv
 
-/-- Finset-avoidance form of the unconditional full-decomposition
-infinitude theorem. -/
-theorem exists_fullDecompositionPlace_outside_finset
-    {p exponent : ℕ}
-    (hp : p.Prime)
-    (hexponent : 0 < exponent)
-    (hcard : Nat.card (L ≃ₐ[K] L) = p ^ exponent)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
-    ∃ v : HeightOneSpectrum (𝓞 K),
-      v ∉ S ∧
-      finitePlaceDecompositionGroup
-          (K := K) (L := L) v = ⊤ := by
-  have hinfinite :=
-    cyclic_prime_power_infinite_fullDecompositionPlaces
-      (K := K) (L := L)
-      hp hexponent hcard
-  by_contra hexists
-  push Not at hexists
-  apply hinfinite
-  apply S.finite_toSet.subset
-  intro v hv
-  by_contra hvS
-  exact (hexists v hvS) hv
+
+
 
 end Cohomology
 end GlobalClassFieldTheory

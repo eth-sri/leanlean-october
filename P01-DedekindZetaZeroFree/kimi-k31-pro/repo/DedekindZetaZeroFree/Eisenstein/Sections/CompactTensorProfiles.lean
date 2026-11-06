@@ -66,10 +66,10 @@ private theorem finiteProjection_finite (x : RestrictedCover F ζ hζ)
     (KPLocalCover.CubicGL2Raw F ζ hζ) (Sum.inl w)) _ = _
   rw [archProjection, map_list_prod, List.map_map]
   simp only [Function.comp_def, localToRestricted, RestrictedProduct.mulSingleMonoidHom_apply,
-    RestrictedProduct.coe_mulSingle_apply]
+    ]
   rw [List.prod_map_eq_pow_single w _ (by
     intro w' hw' _
-    simp [Pi.mulSingle_apply, hw', Ne.symm hw'])]
+    simp [Ne.symm hw'])]
   rw [List.count_eq_one_of_mem (Finset.nodup_toList _) (by simp)]
   simp
 
@@ -80,7 +80,7 @@ private theorem finiteProjection_finite (x : RestrictedCover F ζ hζ)
     (KPLocalCover.CubicGL2Raw F ζ hζ) (Sum.inr q)) _ = _
   rw [archProjection, map_list_prod, List.map_map]
   simp [Function.comp_def, localToRestricted, RestrictedProduct.mulSingleMonoidHom_apply,
-    RestrictedProduct.coe_mulSingle_apply, Pi.mulSingle_apply]
+    RestrictedProduct.coe_mulSingle_apply]
 
  theorem tuple_factorization (x : RestrictedCover F ζ hζ) :
     x = archProjection F ζ hζ x * finiteProjection F ζ hζ x := by

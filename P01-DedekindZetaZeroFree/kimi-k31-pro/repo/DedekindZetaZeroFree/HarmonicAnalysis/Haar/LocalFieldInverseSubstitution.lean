@@ -78,7 +78,7 @@ theorem inverse_substitution
     filter_upwards [μ.ae_ne 0] with x hx
     have hp := KPCubicHaar.abs_pos K hx
     simp [D, f, ENNReal.toReal_ofReal (inv_nonneg.mpr hp.le),
-      Complex.real_smul, ← mul_assoc, hp.ne']
+      Complex.real_smul, hp.ne']
   have hf : Integrable f (μ.withDensity D) := by
     apply (integrable_withDensity_iff_integrable_smul' hD (by simp [D])).mpr
     exact hg.congr hc.symm

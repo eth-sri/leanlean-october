@@ -230,9 +230,9 @@ theorem separatedSquareMass_le (A : SArithmeticData F) (G : AllowedRecipe A)
             (RMRetainedAggregation.cutoff Z P D θ)‖ ^ 2 +
             2 * ‖RMTailCutoff.tail A G U σ ψ L H h.val d.val.val Z P D θ‖ ^ 2) :=
         Summable.tsum_le_tsum (fun d => expansion_square_le A G U σ ψ L H
-          h.val d.val.val Z P D θ) (Summable.of_finite) (Summable.of_finite)
+          h.val d.val.val Z P D θ) Summable.of_finite Summable.of_finite
       _ = _ := by
-        rw [Summable.tsum_add (Summable.of_finite) (Summable.of_finite),
+        rw [Summable.tsum_add Summable.of_finite Summable.of_finite,
           tsum_mul_left, tsum_mul_left]
         simp only [RMRetainedAggregation.rowSquareMass, finsum_eq_sum_of_fintype, tsum_fintype]
   calc
@@ -241,9 +241,9 @@ theorem separatedSquareMass_le (A : SArithmeticData F) (G : AllowedRecipe A)
           (RMRetainedAggregation.cutoff Z P D θ) +
         2 * (∑' d : RMRetainedAggregation.rowDyad A h.val D,
           ‖RMTailCutoff.tail A G U σ ψ L H h.val d.val.val Z P D θ‖ ^ 2)) :=
-      Summable.tsum_le_tsum hrow (Summable.of_finite) (Summable.of_finite)
+      Summable.tsum_le_tsum hrow Summable.of_finite Summable.of_finite
     _ = _ := by
-      rw [Summable.tsum_add (Summable.of_finite) (Summable.of_finite),
+      rw [Summable.tsum_add Summable.of_finite Summable.of_finite,
         tsum_mul_left, tsum_mul_left]
       simp only [RMRetainedAggregation.totalSquareMass, finsum_eq_sum_of_fintype, tsum_fintype]
 

@@ -72,7 +72,7 @@ theorem verticalIntegral_sub_eq_sum_residues_of_finite_order
     verticalIntegral b F - verticalIntegral a F =
       ∑ p : S, if n p = 0 then 0 else C p 1 := by
   classical
-  have hcard : Fintype.card ↥S = S.card := by simp [Finset.card_attach]
+  have hcard : Fintype.card ↥S = S.card := by simp
   let e : ↥S ≃ Fin S.card := Fintype.equivFinOfCardEq hcard
   let p : Fin S.card → ℝ := fun j => (e.symm j).val
   let R : Fin S.card → ℂ := fun j => if n (e.symm j) = 0 then 0 else C (e.symm j) 1

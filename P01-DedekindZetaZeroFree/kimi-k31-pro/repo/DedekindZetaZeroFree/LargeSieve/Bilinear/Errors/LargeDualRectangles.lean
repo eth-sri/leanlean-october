@@ -157,7 +157,7 @@ private lemma bucket_eq (C : Context Q) (B : ℝ) (unit : Bool) (e : Ideal (𝓞
     apply Finset.sum_congr rfl
     intro f₁ hf₁
     by_cases hd₁ : f₁ ∣ p.1
-    · simp only [if_pos hd₁, Finset.mul_sum, true_and]
+    · simp only [if_pos hd₁, Finset.mul_sum]
       apply Finset.sum_congr rfl
       intro f₂ hf₂
       by_cases hd₂ : f₂ ∣ p.2
@@ -207,7 +207,7 @@ private lemma norm_row_sum (C : Context Q) (B : ℝ) (unit : Bool) (e f₁ f₂ 
   apply (norm_sum_le _ _).trans_eq
   apply Finset.sum_congr rfl
   intro a ha
-  simp [norm_mul, Complex.norm_real, abs_of_nonneg (Real.sqrt_nonneg _)]
+  simp [Complex.norm_real, abs_of_nonneg (Real.sqrt_nonneg _)]
 
 theorem rectangle_bucket_bound :
     ∃ J : ℝ, 0 < J ∧
@@ -258,8 +258,8 @@ theorem rectangle_bucket_bound :
       _ = _ := by ring
   let U := Real.sqrt (ErrorRectangles.U Q B (C.N / (norm C.d * P.1)) *
                ErrorRectangles.U Q B (C.N / (norm C.d * P.2)))
-  have hterm (f₁) (hf₁ : f₁ ∈ divisorBin (F := F) P.1)
-      (f₂) (hf₂ : f₂ ∈ divisorBin (F := F) P.2) :
+  have hterm f₁ (hf₁ : f₁ ∈ divisorBin (F := F) P.1)
+      f₂ (hf₂ : f₂ ∈ divisorBin (F := F) P.2) :
       ‖weight C B e f₁ f₂ * ∑ a ∈ C.reflectedRows B unit,
         (Real.sqrt (B / norm a) : ℂ) * rowDivisorBlock C e f₁ f₂ a‖ ≤
         (1 / (P.1 * P.2)) * (H * U) * Real.sqrt (divisorEnergy C f₁ * divisorEnergy C f₂) := by
@@ -407,8 +407,7 @@ private theorem scales_card_le (X : ℝ) :
 
 private theorem scales_card_small_power (η : ℝ) (hη : 0 < η) (X : ℝ) :
     ((ErrorRectangles.scales X).card : ℝ) ≤
-      (2 + 1 / (η * Real.log 2)) * Real.rpow (2 * max 1 X) η := by
-  exact (scales_card_le X).trans
+      (2 + 1 / (η * Real.log 2)) * Real.rpow (2 * max 1 X) η := (scales_card_le X).trans
     (Vendor.dyadicLength_small_power hη (by have := le_max_left (1 : ℝ) X; linarith))
 
 private lemma column_energy_le (C : Context Q) :
@@ -487,8 +486,7 @@ private lemma mobius_card_le (η A : ℝ) (hη : 0 < η)
 
 private lemma score_le_envelope (C : Context Q) (B : ℝ) (P : ℝ × ℝ)
     (hP : P ∈ admissibleRectangles C B) :
-    ErrorRectangles.largeScore C B P ≤ envelope C B := by
-  exact le_csSup (finite_values_bddAbove _ _) (Or.inr ⟨P, hP, rfl⟩)
+    ErrorRectangles.largeScore C B P ≤ envelope C B := le_csSup (finite_values_bddAbove _ _) (Or.inr ⟨P, hP, rfl⟩)
 
 private lemma rectangle_card_le (C : Context Q) (B : ℝ) :
     ((admissibleRectangles C B).card : ℝ) ≤
@@ -518,8 +516,7 @@ private lemma scale_card_bound (η : ℝ) (hη : 0 < η) (C : Context Q)
     · exact hN.trans hT
     · exact (div_le_self (by linarith) hn).trans hT
   have hh := scales_card_small_power η hη (C.N / norm C.d)
-  have hL : 0 ≤ 2 + 1 / (η * Real.log 2) := by
-    exact (Vendor.dyadicLength_small_power_constant_pos hη).le
+  have hL : 0 ≤ 2 + 1 / (η * Real.log 2) := (Vendor.dyadicLength_small_power_constant_pos hη).le
   calc
     _ ≤ _ := hh
     _ ≤ (2 + 1 / (η * Real.log 2)) * (2 * (C.M * C.N * norm C.d)) ^ η := by

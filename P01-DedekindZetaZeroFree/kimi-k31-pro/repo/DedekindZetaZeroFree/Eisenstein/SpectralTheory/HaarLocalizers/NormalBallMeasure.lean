@@ -125,7 +125,7 @@ theorem actual_chart_measure
       ← Measure.map_smul _ hjm.aemeasurable,
       ← Measure.map_smul _ hπm.aemeasurable, hlocal]
   have hO : C.O F ζ hζ H.totallyComplex U = j '' (π '' S) := by
-    simp only [KPCoreChartLocalizers.Chart.O, hb, S, Set.image_image, Function.comp_assoc]
+    simp only [KPCoreChartLocalizers.Chart.O, hb, S, Set.image_image]
     rfl
   have hpre : j ⁻¹' C.O F ζ hζ H.totallyComplex U = π '' S := by
     rw [hO, Set.preimage_image_eq _ hj.injective]

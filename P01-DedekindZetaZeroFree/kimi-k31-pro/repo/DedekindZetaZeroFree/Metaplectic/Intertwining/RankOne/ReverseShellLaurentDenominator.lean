@@ -74,7 +74,7 @@ theorem combine_laurent_shell_numerators (p₀ pA pInf : ShellNumerator) :
       evaluateNumerator (mSmall s) r Q = evaluateNumerator s r Q * smallFactor F q r Q := by
     dsimp [mSmall]
     rw [evaluate_add, evaluate_neg, evaluate_shift s (-6) 3 b r Q hr hQ]
-    simp only [smallFactor, t, mul_inv_rev, inv_inv, zpow_neg, zpow_natCast, inv_pow]
+    simp only [smallFactor, t, mul_inv_rev, inv_inv, zpow_neg]
     dsimp [b]
     norm_num only [zpow_neg, zpow_natCast]
     ring_nf

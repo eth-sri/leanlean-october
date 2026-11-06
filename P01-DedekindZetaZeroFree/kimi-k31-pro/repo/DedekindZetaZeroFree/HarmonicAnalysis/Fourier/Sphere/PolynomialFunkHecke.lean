@@ -47,8 +47,8 @@ theorem latitudeAmbient_norm (g : Ambient ≃ₗᵢ[ℝ] Ambient) (u θ : ℝ)
   have ht := Real.cos_sq_add_sin_sq θ
   have hn : ‖latitudeAmbient g u θ‖ ^ 2 = 1 := by
     rw [latitudeAmbient, g.norm_map, EuclideanSpace.real_norm_sq_eq]
-    simp only [Fin.sum_univ_succ, Fin.val_zero, Matrix.cons_val_zero,
-      Fin.val_succ, Matrix.cons_val_succ, Fin.sum_univ_zero, add_zero]
+    simp only [Fin.sum_univ_succ, Matrix.cons_val_zero,
+      Matrix.cons_val_succ, Fin.sum_univ_zero, add_zero]
     nlinarith [sq_nonneg (Real.sqrt (4*u*(1-u)))]
   nlinarith [norm_nonneg (latitudeAmbient g u θ)]
 
@@ -297,8 +297,8 @@ noncomputable def rotationFlowMap (i : Fin 3) (t : ℝ) : Ambient →ₗ[ℝ] Am
     if j = i then x i else if j = i + 1 then
       Real.cos t * x (i+1) - Real.sin t * x (i+2)
     else Real.sin t * x (i+1) + Real.cos t * x (i+2))
-  map_add' x y := by ext j; simp only [PiLp.toLp_apply, PiLp.add_apply]; split_ifs <;> ring
-  map_smul' c x := by ext j; simp only [PiLp.toLp_apply, PiLp.smul_apply, smul_eq_mul, RingHom.id_apply]; split_ifs <;> ring
+  map_add' x y := by ext j; simp only [PiLp.add_apply]; split_ifs <;> ring
+  map_smul' c x := by ext j; simp only [PiLp.smul_apply, smul_eq_mul, RingHom.id_apply]; split_ifs <;> ring
 
 theorem rotationFlowMap_inverse (i : Fin 3) (t : ℝ) (x : Ambient) :
     rotationFlowMap i (-t) (rotationFlowMap i t x) = x := by
@@ -316,7 +316,7 @@ theorem rotationFlowMap_norm (i : Fin 3) (t : ℝ) (x : Ambient) :
   rw [EuclideanSpace.norm_sq_eq, EuclideanSpace.norm_sq_eq]
   have ht := Real.cos_sq_add_sin_sq t
   fin_cases i <;> simp only [Fin.sum_univ_three, rotationFlowMap, LinearMap.coe_mk,
-    AddHom.coe_mk, PiLp.toLp_apply, Fin.reduceAdd, Real.norm_eq_abs, sq_abs] <;>
+    AddHom.coe_mk, PiLp.toLp_apply, Real.norm_eq_abs, sq_abs] <;>
     simp <;> nlinarith [sq_nonneg (x 0), sq_nonneg (x 1), sq_nonneg (x 2)]
 
 noncomputable def rotationFlow (i : Fin 3) (t : ℝ) : Ambient ≃ₗᵢ[ℝ] Ambient where
@@ -411,7 +411,7 @@ private lemma poly_integrable (p : MvPolynomial (Fin 3) ℂ) (u : ℝ)
     intro i
     fin_cases i <;> change Continuous _ <;> dsimp [latitudeAmbient]
     all_goals fun_prop
-  exact (hc.integrableOn_Icc).smul_measure (by simp [ENNReal.inv_ne_top]; positivity)
+  exact (hc.integrableOn_Icc).smul_measure (by simp; positivity)
 private lemma exists_profile (p : MvPolynomial (Fin 3) ℂ) :
     ∃ Q : Polynomial ℂ, ∀ u : ℝ, u ∈ Set.Icc (0:ℝ) 1 →
       (∫ θ : ℝ, polynomialSphere p (latitudePoint (.refl ℝ Ambient) u θ) ∂angleMeasure) = Q.eval (u:ℂ) := by
@@ -466,7 +466,7 @@ theorem latitude_average_polynomial (p : MvPolynomial (Fin 3) ℂ) :
     apply Subtype.ext
     rw [latitudePoint_val _ _ _ (by constructor <;> norm_num)]
     ext i
-    fin_cases i <;> simp [latitudeAmbient, north, PiLp.single_apply]
+    fin_cases i <;> simp [latitudeAmbient, north]
   have he := hQ 0 (by constructor <;> norm_num)
   simp only [hz, Complex.ofReal_zero, integral_const, Measure.real, hm,
     ENNReal.toReal_one, one_smul] at he
@@ -506,7 +506,7 @@ private theorem casOp_eigen (ℓ : ℕ) (p : MvPolynomial (Fin 3) ℂ)
 private theorem rot_X (i j : Fin 3) (x : Ambient) :
     eval (fun k => (x k : ℂ)) (rot i (X j)) = ((rotationVector i x) j : ℂ) := by
   fin_cases i <;> fin_cases j <;>
-    simp [rot, pderiv_X, Pi.single_apply, rotationVector, Fin.reduceAdd]
+    simp [rot, pderiv_X, rotationVector, Fin.reduceAdd]
 private theorem rot_eval_flow (i : Fin 3) (p : MvPolynomial (Fin 3) ℂ)
     (x : Ambient) (t : ℝ) :
     HasDerivAt (fun t => eval (fun j => ((rotationFlow i t x) j : ℂ)) p)
@@ -560,15 +560,15 @@ private theorem pderiv_heightLift (i : Fin 3) (Q : Polynomial ℂ) :
       heightLift Q.derivative := by
   induction Q using Polynomial.induction_on' with
   | add p q hp hq =>
-    simp only [map_add, Polynomial.derivative_add, hp, hq, mul_add]
+    simp only [map_add, hp, hq, mul_add]
   | monomial n a =>
     simp only [heightLift, Polynomial.aeval_monomial, Polynomial.derivative_monomial,
-      Polynomial.aeval_C, Polynomial.aeval_mul, map_pow, Polynomial.aeval_X, algebraMap_eq]
+      algebraMap_eq]
     rw [pderiv_C_mul, pderiv_pow]
     have hx : pderiv i ((1 - X 0) * C (1 / 2 : ℂ)) = if i = 0 then C (-1 / 2 : ℂ) else 0 := by
       by_cases hi : i = 0
       · subst i; simp [div_eq_mul_inv]
-      · simp [pderiv_mul, pderiv_X, Pi.single_apply, hi, Ne.symm hi]
+      · simp [pderiv_X, hi, Ne.symm hi]
     simp only [hx, map_mul, map_natCast]
     by_cases hi : i = 0 <;> simp [hi] <;> ring
 private theorem casOp_heightLift (Q : Polynomial ℂ) :
@@ -576,7 +576,7 @@ private theorem casOp_heightLift (Q : Polynomial ℂ) :
       -(X 1 ^ 2 + X 2 ^ 2) * C (1 / 4) * heightLift Q.derivative.derivative -
         X 0 * heightLift Q.derivative := by
   simp only [casOp, rot, Fin.sum_univ_three, Fin.reduceAdd, pderiv_heightLift,
-    pderiv_mul, map_sub, pderiv_X, Pi.single_apply, pderiv_C]
+    pderiv_mul, map_sub, pderiv_X, Pi.single_apply]
   norm_num
   have hc : C (1 / 2 : ℂ) ^ 2 = (C (1 / 4 : ℂ) : MvPolynomial (Fin 3) ℂ) := by
     rw [← map_pow]; congr 1; norm_num
@@ -675,7 +675,7 @@ private theorem polynomialLaplacian_spinSubst (A : Matrix (Fin 3) (Fin 3) ℂ)
   change (∑ j, MvPolynomial.pderiv j (MvPolynomial.pderiv j (spinSubst A p))) =
     ∑ j, spinSubst A (MvPolynomial.pderiv j (MvPolynomial.pderiv j p))
   simp only [pderiv_spinSubst, map_sum, MvPolynomial.pderiv_C_mul]
-  simp only [pderiv_spinSubst, Finset.mul_sum, ← mul_assoc, ← MvPolynomial.C_mul]
+  simp only [Finset.mul_sum, ← mul_assoc, ← MvPolynomial.C_mul]
   rw [Finset.sum_comm]
   apply Finset.sum_congr rfl
   intro i hi
@@ -719,7 +719,7 @@ private theorem spinSubst_eval (t : ℝ) (p : MvPolynomial (Fin 3) ℂ) (x : Amb
   | C a => simp [spinSubst]
   | add p q hp hq => simp only [map_add, hp, hq]
   | mul_X p i hp =>
-    simp only [map_mul, hp, spinSubst, aeval_X, map_sum, eval_C, eval_X]
+    simp only [map_mul, spinSubst, aeval_X, map_sum, eval_C, eval_X]
     congr 1
     fin_cases i <;> simp [spinMatrix, Fin.sum_univ_three, rotationFlowMap,
       Complex.ofReal_add, Complex.ofReal_sub, Complex.ofReal_mul] <;> ring
@@ -743,7 +743,7 @@ private theorem spinCM_continuous (p : MvPolynomial (Fin 3) ℂ) : Continuous (s
 private theorem spinCM_integrable (p : MvPolynomial (Fin 3) ℂ) :
     Integrable (spinCM p) angleMeasure :=
   (spinCM_continuous p).integrableOn_Icc.smul_measure (by
-    simp [ENNReal.inv_ne_top]; positivity)
+    simp; positivity)
 private theorem average_harmonic (ℓ : ℕ) (p : MvPolynomial (Fin 3) ℂ)
     (hp : p ∈ harmonicPolynomials ℓ) :
     ∃ q ∈ harmonicPolynomials ℓ, ∀ x : Sphere,
@@ -828,7 +828,7 @@ private theorem latitude_flow (u θ t : ℝ) :
     fin_cases i <;> simp [Real.cos_add, Real.sin_add] <;> ring
   · simp only [sphereOrthogonal_coe, latitudePoint, dif_neg hu]
     ext i
-    fin_cases i <;> simp [rotationFlowMap, north, PiLp.single_apply]
+    fin_cases i <;> simp [rotationFlowMap, north]
 private theorem latitude_periodic_aux (u : ℝ) :
     Function.Periodic (latitudePoint (.refl ℝ Ambient) u) (2 * Real.pi) := by
   intro θ
@@ -900,7 +900,7 @@ theorem polynomialLaplacian_linearSubstitution (A : Matrix (Fin 3) (Fin 3) ℂ)
   change (∑ j, MvPolynomial.pderiv j (MvPolynomial.pderiv j (linearSubstitution A p))) =
     ∑ j, linearSubstitution A (MvPolynomial.pderiv j (MvPolynomial.pderiv j p))
   simp only [pderiv_linearSubstitution, map_sum, MvPolynomial.pderiv_C_mul]
-  simp only [pderiv_linearSubstitution, Finset.mul_sum, ← mul_assoc, ← MvPolynomial.C_mul]
+  simp only [Finset.mul_sum, ← mul_assoc, ← MvPolynomial.C_mul]
   rw [Finset.sum_comm]
   apply Finset.sum_congr rfl
   intro i hi
@@ -942,15 +942,15 @@ theorem orthogonalSubstitutionMatrix_orthogonal (g : Ambient ≃ₗᵢ[ℝ] Ambi
       simpa [mul_comm] using hh]
   by_cases h : i = k
   · subst k
-    simp [EuclideanSpace.inner_single_left, PiLp.single_apply]
-  · simp [EuclideanSpace.inner_single_left, PiLp.single_apply, h, Ne.symm h]
+    simp
+  · simp [EuclideanSpace.inner_single_left, h]
 
 theorem orthogonalSubstitutionMatrix_eval (g : Ambient ≃ₗᵢ[ℝ] Ambient) (v : Ambient) (i : Fin 3) :
     ∑ j, orthogonalSubstitutionMatrix g i j * (v j : ℂ) = ((g v) i : ℂ) := by
   simp only [orthogonalSubstitutionMatrix, ← Complex.ofReal_mul, ← Complex.ofReal_sum]
   congr 1
   have hh := g.symm.inner_map_map (EuclideanSpace.single i 1) (g v)
-  simp only [g.symm_apply_apply, EuclideanSpace.inner_single_left, mul_one] at hh
+  simp only [g.symm_apply_apply, EuclideanSpace.inner_single_left] at hh
   rw [PiLp.inner_apply] at hh
   simp only [RCLike.inner_apply, conj_trivial] at hh
   simpa [mul_comm] using hh

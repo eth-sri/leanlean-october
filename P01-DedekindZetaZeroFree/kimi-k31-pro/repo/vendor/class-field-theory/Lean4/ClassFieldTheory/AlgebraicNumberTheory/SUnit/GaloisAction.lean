@@ -303,15 +303,7 @@ theorem IsGaloisStableFinitePlaces.smul_mem
     σ • v ∈ S :=
   (hS σ v).mp hv
 
-omit [NumberField K] [NumberField L] in
-theorem IsGaloisStableFinitePlaces.smul_not_mem
-    {S : Finset (HeightOneSpectrum (𝓞 L))}
-    (hS : IsGaloisStableFinitePlaces K L S)
-    (σ : L ≃ₐ[K] L) {v : HeightOneSpectrum (𝓞 L)}
-    (hv : v ∉ S) :
-    σ • v ∉ S := by
-  intro hmem
-  exact hv ((hS σ v).mpr hmem)
+
 
 omit [NumberField K] in
 /-- Galois automorphisms preserve the concrete `S`-unit subgroup when
@@ -904,51 +896,9 @@ theorem fullLog_smul
   apply Subtype.ext
   exact fullLogAmbient_smul K L hS σ x
 
-/-- The kernel of `fullLog`, stated as an equality of additive
-subgroups. -/
-theorem fullLog_ker_eq_torsion
-    (S : Finset (HeightOneSpectrum (𝓞 L))) :
-    (SUnitGroup.fullLog (K := L) S).ker =
-      AddCommGroup.torsion
-        (Additive (SUnitGroup (K := L) S)) := by
-  ext x
-  change
-    SUnitGroup.fullLog (K := L) S x = 0 ↔
-      x ∈ AddCommGroup.torsion
-        (Additive (SUnitGroup (K := L) S))
-  exact SUnitGroup.fullLog_eq_zero_iff (K := L) S x
 
-/-- The first-isomorphism identification of `S`-units modulo torsion
-with the actual logarithmic lattice. -/
-noncomputable def
-    additiveSUnitQuotientTorsionEquivFullLogLattice
-    (S : Finset (HeightOneSpectrum (𝓞 L))) :
-    (Additive (SUnitGroup (K := L) S) ⧸
-        AddCommGroup.torsion
-          (Additive (SUnitGroup (K := L) S))) ≃+
-      SUnitGroup.fullLogLattice (K := L) S := by
-  let f :=
-    SUnitGroup.fullLog (K := L) S
-  have hker :
-      f.ker =
-        AddCommGroup.torsion
-          (Additive (SUnitGroup (K := L) S)) :=
-    fullLog_ker_eq_torsion L S
-  have hrange :
-      f.range =
-        (SUnitGroup.fullLogLattice
-          (K := L) S).toAddSubgroup := by
-    rw [SUnitGroup.fullLogLattice_eq_range]
-    ext z
-    constructor
-    · rintro ⟨x, rfl⟩
-      exact ⟨x, rfl⟩
-    · rintro ⟨x, rfl⟩
-      exact ⟨x, rfl⟩
-  exact
-    (QuotientAddGroup.quotientAddEquivOfEq hker.symm).trans
-      ((QuotientAddGroup.quotientKerEquivRange f).trans
-        (AddEquiv.addSubgroupCongr hrange))
+
+
 
 omit [NumberField K] in
 /-- The complete logarithmic lattice is stable under the concrete
@@ -1095,22 +1045,7 @@ theorem extendedFullLogLattice_permutation_stable
         fullLogSpaceSplit_snd_smul K L hS] using
         hzrepr (Sum.inr j)
 
-/-- The canonical complete permutation sublattice of the extended
-logarithmic lattice has finite index. -/
-theorem extendedFullLogPermutationSublattice_finite_quotient
-    {S : Finset (HeightOneSpectrum (𝓞 L))}
-    (hS : IsGaloisStableFinitePlaces K L S) :
-    Finite
-      (extendedFullLogLattice L S ⧸
-        (permutationSublattice
-          (logPlacePermutationHom K L S hS)
-          (extendedFullLogLattice L S)
-          (extendedFullLogLattice_permutation_stable K L hS)).comap
-            (extendedFullLogLattice L S).subtype) :=
-  permutationSublattice_finite_quotient
-    (logPlacePermutationHom K L S hS)
-    (extendedFullLogLattice L S)
-    (extendedFullLogLattice_permutation_stable K L hS)
+
 
 /-- For the actual full logarithmic `S`-unit
 lattice.  The Herbrand quotient is the product of the orders of the

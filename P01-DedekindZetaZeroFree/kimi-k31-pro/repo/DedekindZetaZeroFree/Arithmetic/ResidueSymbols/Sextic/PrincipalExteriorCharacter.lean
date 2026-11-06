@@ -202,7 +202,7 @@ theorem exteriorSexticRowCharacter_eq_sexticResiduePowerChar
       A.sexticResiduePowerChar σ I 1 (Ideal.Quotient.mk (A.extendIdeal I) t) := by
   by_cases ht : t = 0
   · subst t
-    simp only [exteriorSexticRowCharacter, dif_pos rfl]
+    simp only [exteriorSexticRowCharacter]
     by_cases hI : I.val = ⊤
     · rw [if_pos hI, char_one,
         show A.sexticResidue I 0 = 1 from A.residueValue_top _ I hI 0, map_one]

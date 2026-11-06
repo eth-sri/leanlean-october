@@ -2,6 +2,8 @@ module
 
 public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.Cusps.AngularShellLaw
 public import DedekindZetaZeroFree.Adeles.Quotients.Cusps.HighHoroballOverlap
+public import Mathlib.Tactic.FunProp
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -32,7 +34,7 @@ theorem continuous_archBasepoint :
     obtain ⟨b,rfl⟩ := Matrix.ProjGenLinGroup.mk_surjective g
     exact KPMsActualCuspSource.projective_action_mk b (0,0)
   rw [he]
-  exact (continuous_apply _).smul continuous_const
+  fun_prop
 
 theorem product_splitting :
     ∃ e : (KPSmoothActualFlowData.GInfinity F × KPFiniteCuspAtlas.FiniteCover F ζ hζ) ≃ₜ*
@@ -62,12 +64,10 @@ theorem product_splitting :
       apply MonoidHom.mem_ker.mpr
       funext v
       rw [KPMsActualCuspSource.projection_compare]
-      have h : KPCuspGenuineMonodromy.archProjection F ζ hζ g = 1 := hg
-      rw [h]
-      exact map_one _
+      simp_all
   change ∃ e : (PGLComplex.AdelicSlicesRaw.ArchGroup F × KPFiniteCuspAtlas.FiniteCover F ζ hζ) ≃ₜ* _, _
   rw [← hf]
-  exact ⟨e,he⟩
+  measurability
 
 end DedekindZetaZeroFree.KPMsActualAngularDomainSource
 

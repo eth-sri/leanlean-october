@@ -26,7 +26,7 @@ theorem x_ne_zero (K : Type u) [Field K] (g : GL2 K) : x K g ≠ 0 := by
   split_ifs with hc
   · intro hd
     have hdet := Matrix.GeneralLinearGroup.det_ne_zero g
-    simp only [Matrix.det_fin_two, hc, hd, mul_zero, zero_mul, sub_self] at hdet
+    simp only [Matrix.det_fin_two, hc, hd, mul_zero, sub_self] at hdet
     exact hdet rfl
   · exact hc
 
@@ -138,7 +138,7 @@ theorem bottomRight_ne_zero (K : Type u) [Field K] (g : GL2 K)
     (g : Matrix (Fin 2) (Fin 2) K) 1 1 ≠ 0 := by
   intro hd
   have hdet := Matrix.GeneralLinearGroup.det_ne_zero g
-  simp only [Matrix.det_fin_two, hc, hd, mul_zero, zero_mul, sub_self] at hdet
+  simp only [Matrix.det_fin_two, hc, hd, mul_zero, sub_self] at hdet
   exact hdet rfl
 
 theorem bruhat_closed (K : Type u) [Field K] (g : GL2 K)

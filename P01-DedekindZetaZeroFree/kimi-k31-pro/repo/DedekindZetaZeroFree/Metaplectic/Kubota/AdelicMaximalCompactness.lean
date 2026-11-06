@@ -148,7 +148,7 @@ theorem full_product_compact_is_compact (R : PrincipalMellin.ActualRecipe S η) 
     IsCompact (fullProductCompact R : Set (Group R)) := by
   rw [fullProductCompact, Subgroup.coe_map]
   exact (full_product_compact_preimage_is_compact R).image
-    ((QuotientGroup.continuous_mk).comp QuotientGroup.continuous_mk)
+    (QuotientGroup.continuous_mk.comp QuotientGroup.continuous_mk)
 
 end DedekindZetaZeroFree.ThetaExpansion
 

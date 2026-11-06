@@ -49,7 +49,7 @@ theorem raw_tracePhase_eq (A : SArithmeticData F)
         (Equiv.subtypeEquivRight fun w : InfinitePlace F =>
           InfinitePlace.not_isReal_iff_isComplex).symm
       intro w
-      simp only [InfinitePlace.Completion.ringEquivComplexOfIsComplex_apply,
+      simp only [
         map_mul]
       rfl
   unfold PoissonS.tracePhase ProbeAdditive.phase ProbeAdditive.archPhase

@@ -121,8 +121,7 @@ private theorem relative_borel_cubic_radial_value
   have hn := hnormalized (weylHL F ζ hζ q S P hP (retractL F ζ hζ q S P b)) 1 (v^2) (y^2) he
   simp only [map_one, Units.val_one, one_mul] at hn
   rw [chi, chiH, hn]
-  have hc : S.borel.coordinate (retractL F ζ hζ q S P b).val = u⁻¹ ^ (2 : ℕ) := by
-    exact S.coordinate_lift _ _ (relative_borel_retract_actual F ζ hζ q S P u b hb)
+  have hc : S.borel.coordinate (retractL F ζ hζ q S P b).val = u⁻¹ ^ (2 : ℕ) := S.coordinate_lift _ _ (relative_borel_retract_actual F ζ hζ q S P u b hb)
   rw [hc]
   have hv : localAbs (LocalField F q) (KPTameCompact.unitInclusion F q v) = 1 := by
     have hv' : valuation (LocalField F q) (KPTameCompact.unitInclusion F q v : LocalField F q) = 1 :=

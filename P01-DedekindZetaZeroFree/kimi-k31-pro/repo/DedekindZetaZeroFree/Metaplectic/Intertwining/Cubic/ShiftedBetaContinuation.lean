@@ -225,19 +225,19 @@ private theorem characterR_one (m : ℂ) (ξ : CubicUnitCharacters.Character K) 
   · have he := rationalR_evaluates_one (RatFunc.C a) (RatFunc.C m) b ha hb0 hb false
       (CubicUnitCharacters.conductor K ξ)
     convert he using 1
-    · simp only [characterR,hξ,ite_true,rationalR,ite_false]
+    · simp only [characterR,hξ,ite_true,rationalR]
       rfl
     · simp only [KPRankoneCubicScalarSum.betaFactor,hξ,ite_true,
-        KPRankoneCubicScalarSum.unramifiedFactor, map_natCast,map_inv₀,map_div,map_sub,map_one]
-      simp [a,b, map_div, map_sub, map_natCast, map_inv₀]
+        KPRankoneCubicScalarSum.unramifiedFactor]
+      simp [a,b, map_sub, map_natCast, map_inv₀]
   · have he := rationalR_evaluates_one (RatFunc.C a) (RatFunc.C m) b ha hb0 hb true
       (CubicUnitCharacters.conductor K ξ)
     convert he using 1
     · simp only [characterR,hξ,ite_false,rationalR,ite_true]
       rfl
-    · simp only [KPRankoneCubicScalarSum.betaFactor,hξ,ite_false,map_natCast,map_inv₀,
-        map_div,map_sub,map_one]
-      simp [a,b, map_div, map_sub, map_natCast, map_inv₀]
+    · simp only [KPRankoneCubicScalarSum.betaFactor,hξ,ite_false,
+        ]
+      simp [a,map_sub, map_natCast, map_inv₀]
  def shiftedModel (m : ℂ) (j : ℤ) (u : (ValuativeRel.valuation K).integerˣ) : RatFunc (RatFunc ℂ) :=
   (RatFunc.X : RatFunc (RatFunc ℂ)) ^ (-j) * (1-RatFunc.X) / 3 *
     ∑ᶠ ξ : CubicUnitCharacters.Character K, ∑ᶠ ε : CubicCharacters.Mu3,
@@ -494,7 +494,7 @@ private theorem shiftedTest_mul (c : Kˣ) (ρ : ℂ) (y : Kˣ) :
       intro e; apply hy; exact Units.ext e.symm)
     have hs : 0 < KPCubicHaar.abs K (1-(y : K)) := KPCubicHaar.abs_pos K hy0
     simp only [shiftedTest,he,mul_eq_zero, c.ne_zero,hy0,or_self,ite_false,
-      KPCubicExpansion.betaFunction,ite_eq_right_iff]
+      KPCubicExpansion.betaFunction]
     rw [if_neg hy,KPCubicHaar.abs_mul,Real.log_mul hc.ne' hs.ne',Complex.ofReal_add,
       mul_add,Complex.exp_add]
     congr 1

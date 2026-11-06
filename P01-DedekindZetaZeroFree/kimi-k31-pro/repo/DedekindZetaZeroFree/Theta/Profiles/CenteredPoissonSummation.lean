@@ -98,8 +98,8 @@ theorem mixedRadialTheta_poisson
     covolume_shapeIdealLattice_mixedThetaShape K I (1 / t) (one_div_pos.mpr ht) u]
   have hq := centeredShape_inverse K I t u
   simp_rw [hq]
-  simp [NNReal.smul_def, Real.toNNReal_of_nonneg (le_of_lt (one_div_pos.mpr ht)),
-    max_eq_left (le_of_lt (inv_pos.mpr ht)), ht.ne']
+  simp [NNReal.smul_def, 
+    max_eq_left (le_of_lt (inv_pos.mpr ht))]
 
 theorem mixedAngularAverage_poisson
     (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) (t : ℝ) (ht : 0 < t) :

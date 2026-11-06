@@ -1147,32 +1147,7 @@ theorem finiteReciprocityNaturalityFrobeniusConjugationEquiv_mem_closure_iff
     simpa [DegreeData.frobeniusClosure,
       D.finiteReciprocityNaturalityFrobeniusConjugationLift_coe, e] using hmap
 
-/-- Conjugation of a Frobenius lift commutes with restriction to the finite
-Galois quotient. -/
-theorem finiteReciprocityNaturalityConjugation_frobeniusRestriction
-    (D : DegreeData G) [IsTopologicalGroup G]
-    (K : FiniteResidueAbstractField D) (L : ClosedSubgroup G)
-    (hLK : L.toSubgroup ≤ K.field.toSubgroup) (s : G)
-    [hLnormal : (extensionSubgroup K.field L hLK).Normal]
-    (σ : D.FrobeniusElements K L hLK) :
-    finiteReciprocityNaturalityConjugation K.field L hLK s
-        (D.frobeniusRestriction K L hLK σ) =
-      D.frobeniusRestriction
-        (K.conjugate s : D.FiniteResidueAbstractField)
-        (conjugateClosedSubgroup L s)
-        (conjugateClosedSubgroup_mono hLK s)
-        (D.finiteReciprocityNaturalityFrobeniusConjugationLift K L hLK s σ) := by
-  change finiteReciprocityNaturalityConjugation K.field L hLK s
-      (D.extensionRestriction K.field L hLK σ.1) =
-    D.extensionRestriction
-      (K.conjugate s : D.FiniteResidueAbstractField).field
-      (conjugateClosedSubgroup L s)
-      (conjugateClosedSubgroup_mono hLK s)
-      (D.finiteReciprocityNaturalityFrobeniusConjugationLift K L hLK s σ).1
-  rw [D.finiteReciprocityNaturalityFrobeniusConjugationLift_coe]
-  refine Quotient.inductionOn' σ.1 ?_
-  intro k
-  rfl
+
 
 /-- The fixed field of the conjugated Frobenius lift is the conjugate of
 the original fixed field. -/

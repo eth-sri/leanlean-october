@@ -1,6 +1,7 @@
 module
 
 public import Mathlib.GroupTheory.Index
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -46,16 +47,10 @@ def quotientSubgroupOfEquiv {H K M : Subgroup G} (hHK : H ≤ K) :
     exact hxy)
   left_inv q := by
     refine Quotient.inductionOn' q ?_
-    intro x
-    change Quotient.map' _ _ (Quotient.map' _ _ (Quotient.mk'' x)) = Quotient.mk'' x
-    simpa only [Quotient.map'_mk''] using
-      congrArg Quotient.mk'' ((subgroupOfEquivOfLe hHK).symm_apply_apply x)
+    norm_num
   right_inv q := by
     refine Quotient.inductionOn' q ?_
-    intro x
-    change Quotient.map' _ _ (Quotient.map' _ _ (Quotient.mk'' x)) = Quotient.mk'' x
-    simpa only [Quotient.map'_mk''] using
-      congrArg Quotient.mk'' ((subgroupOfEquivOfLe hHK).apply_symm_apply x)
+    norm_num
 
 /-- A quotient by the bottom of a subgroup tower is equivalent to the product
 of the two successive quotient types. -/

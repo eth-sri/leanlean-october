@@ -36,18 +36,18 @@ theorem compact_root_evaluation_representatives :
       QuotientAddGroup.mk' (NumberField.AdeleRing.principalSubgroup (𝓞 F) F) '' S := by
     rw [show QuotientAddGroup.mk' (NumberField.AdeleRing.principalSubgroup (𝓞 F) F) '' S =
         KPAdelicQuotient.quotientMap F '' S from rfl, hcover]
-    exact Set.mem_univ _
+    simp_all
   obtain ⟨p, hpS, hpeq⟩ := hx
   have hpq : (p : KPAdditiveQuotient F) =
       ((Quotient.out x : KPAdeles F) : KPAdditiveQuotient F) := by
-    simpa only [QuotientAddGroup.mk'_apply] using hpeq
+    simp_all
   have hsub : p - (Quotient.out x : KPAdeles F) ∈
       NumberField.AdeleRing.principalSubgroup (𝓞 F) F :=
     QuotientAddGroup.eq_iff_sub_mem.mp hpq
   obtain ⟨t, ht⟩ := hsub
 
   have hout : (Quotient.out x : KPAdeles F) = p + algebraMap F (KPAdeles F) (-t) := by
-    rw [map_neg, ht]; abel
+    simp_all
   refine ⟨KPGlobalTorusFunctionData.N F ζ hζ p, ⟨p, hpS, rfl⟩, ?_⟩
   intro f hf
   have hN : KPGlobalTorusFunctionData.N F ζ hζ (Quotient.out x : KPAdeles F) =

@@ -56,7 +56,7 @@ private theorem part_codifferential (d : ℕ) (f : ℂ →L[ℝ] ℝ)
     have hcoord : HasFDerivAt (fun y : HyperbolicChart.Space d => y (i,2)) (EuclideanSpace.proj (𝕜 := ℝ) (i,2)) x :=
       (EuclideanSpace.proj (𝕜 := ℝ) (i,2)).hasFDerivAt
     rw [hcoord.exp.fderiv]
-    simp [HyperbolicChart.coordinateVector, hk, Ne.symm hk]
+    simp [HyperbolicChart.coordinateVector, Ne.symm hk]
   have hprod (i : Fin d) (k l : Fin 3) (hk : k ≠ 2) :
       fderiv ℝ (fun y : HyperbolicChart.Space d => Real.exp (y (i,2)) * f (V y (i,l))) x
         (HyperbolicChart.coordinateVector d i k) =

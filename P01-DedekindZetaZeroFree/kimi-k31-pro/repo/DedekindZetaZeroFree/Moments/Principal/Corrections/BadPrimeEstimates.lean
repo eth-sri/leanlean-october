@@ -171,7 +171,7 @@ private lemma decay_split (p : ExteriorPrime A) (l m : ℕ) :
         rw [ratio, ← Real.rpow_natCast, ← Real.rpow_mul (by norm_num : (0 : ℝ) ≤ 2)]
         congr 1
         ring
-  simp only [sub_eq_add_neg, Real.rpow_add hq, neg_div]
+  simp only [sub_eq_add_neg, Real.rpow_add hq]
   exact mul_le_mul (mul_le_mul_of_nonneg_left (by simpa only [neg_div] using hpow l) (Real.rpow_nonneg hq.le _))
     (by simpa only [neg_div] using hpow m) (Real.rpow_nonneg hq.le _) (by have := ratio_pos; positivity)
 
@@ -220,8 +220,8 @@ private lemma zero_term (C : A.GeneralArithmeticContext σ η hS)
   by_cases hk : k = 0
   · subst k
     simp only [seriesTerm, Fin.val_zero, pow_zero, Nat.mul_zero, Nat.add_zero,
-      Int.ofNat_zero, sub_zero, zero_sub, zpow_zero, one_mul, Ctk_zero_zero, zero_mul,
-      sub_self, sub_zero, if_true]
+      Int.ofNat_zero, zero_sub, one_mul, Ctk_zero_zero, 
+      sub_self, if_true]
     rw [V, qPower, qPower, ← Complex.exp_nat_mul]
     norm_num only [mul_zero, neg_zero, zpow_zero, one_mul, mul_one, Nat.cast_zero,
       zero_mul, sub_zero, zero_sub]
@@ -250,7 +250,7 @@ private lemma term_bound (C : A.GeneralArithmeticContext σ η hS)
     split_ifs with hk
     · rw [norm_pow]
       have h := pow_le_pow_left₀ (norm_nonneg _) (norm_V_bound p x hx) i.2.2.2
-      simp only [weight, he, hl, hk, pow_zero, mul_one]
+      simp only [weight, hl, hk, pow_zero, mul_one]
       nlinarith [pow_nonneg hr.le i.2.2.2]
     · simp only [norm_zero]
       exact div_nonneg (weight_nonneg _) (by norm_num)

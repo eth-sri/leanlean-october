@@ -21,7 +21,7 @@ private theorem cauchy_map {E F : Type*}
     L ((cauchyPowerSeries g c r j) (fun _ => (1 : ℂ))) =
       (cauchyPowerSeries (fun z => L (g z)) c r j) (fun _ => (1 : ℂ)) := by
   have hne : c ∉ Metric.sphere c |r| := by
-    simp [Metric.mem_sphere, abs_of_pos hr, (ne_of_gt hr).symm]
+    simp [abs_of_pos hr, (ne_of_gt hr).symm]
   have hi := hg.sub_zpow_smul (-(j : ℤ) - 1) hne
   have hi' : CircleIntegrable (fun z => (z - c)⁻¹ ^ j • (z - c)⁻¹ • g z) c r := by
     convert hi using 1
@@ -340,7 +340,7 @@ theorem spatial_jets_differentiableOn {n : ℕ} (B : LocalBall n)
         nlinarith [norm_nonneg (z - w)]
       dsimp [a]
       rw [max_eq_left ht', Complex.inv_def]
-      simp only [Complex.star_def, Complex.ofReal_inv]
+      simp only [Complex.ofReal_inv]
       ring
     have hkernel : ∀ z ∈ Metric.sphere c ρ, (z - c)⁻¹ * a z = (z - w)⁻¹ := by
       intro z hz

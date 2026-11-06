@@ -14,7 +14,7 @@ variable {c q : Ideal (𝓞 F)}
 
 private lemma absNorm_mul_cast (a b : Ideal (𝓞 F)) :
     (Ideal.absNorm (a * b) : ℝ) = (Ideal.absNorm a : ℝ) * (Ideal.absNorm b : ℝ) := by
-  rw [map_mul, Nat.cast_mul]
+  simp_all
 
 private lemma lt_mul_of_div_lt {A B X : ℝ} (hA : 0 < A) (h : X / A < B) : X < A * B :=
   (div_lt_iff₀' hA).mp h
@@ -36,8 +36,7 @@ private lemma le_div_of_mul_le {A B X : ℝ} (hA : 0 < A) (h : A * B ≤ 2 * X) 
 
 theorem exceptionalShell_norm_pos (hq : q ≠ ⊥)
     {t : Ideal (𝓞 F)} (ht : t ∈ exceptionalDivisors F c q) :
-    0 < (Ideal.absNorm t : ℝ) := by
-  exact lt_of_lt_of_le zero_lt_one (exceptionalDivisors_properties hq ht).2.2.2.2
+    0 < (Ideal.absNorm t : ℝ) := lt_of_lt_of_le zero_lt_one (exceptionalDivisors_properties hq ht).2.2.2.2
 
 theorem mem_shellMul (hq : q ≠ ⊥) (hcq : c ∣ q) (X : ℝ) (hX : 0 < X)
     {t u : Ideal (𝓞 F)} (ht : t ∈ exceptionalDivisors F c q)
@@ -127,7 +126,6 @@ theorem exceptional_shell_energy (hq : q ≠ ⊥) (hcq : c ∣ q)
     (X : ℝ) (hX : 0 < X) (lam : Ideal (𝓞 F) → ℂ) :
     (∑ t ∈ exceptionalDivisors F c q,
       ∑ u ∈ paperShell F q (X / (Ideal.absNorm t : ℝ)), ‖lam (t * u)‖ ^ 2) =
-      ∑ b ∈ paperShell F c X, ‖lam b‖ ^ 2 := by
-  exact (exceptional_shell_sum hq hcq X hX (fun b => ‖lam b‖ ^ 2)).symm
+      ∑ b ∈ paperShell F c X, ‖lam b‖ ^ 2 := (exceptional_shell_sum hq hcq X hX (fun b => ‖lam b‖ ^ 2)).symm
 
 end DedekindZetaZeroFree.LargeSieve.Sieve

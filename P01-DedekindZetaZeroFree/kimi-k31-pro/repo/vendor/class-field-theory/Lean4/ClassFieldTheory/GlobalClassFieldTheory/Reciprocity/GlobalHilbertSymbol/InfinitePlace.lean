@@ -77,22 +77,7 @@ theorem infinitePlaceHilbertSymbol_eq_one_of_ne_two
     infinitePlaceHilbertSymbol K n v a b = 1 := by
   simp [infinitePlaceHilbertSymbol, hn]
 
-omit [NumberField K] in
-/-- Explicit real-place evaluation of the quadratic Hilbert symbol. -/
-theorem infinitePlaceHilbertSymbol_real_apply
-    (n : ℕ+) (v : InfinitePlace K) (a b : Kˣ)
-    (hn : (n : ℕ) = 2) (hv : v.IsReal) :
-    (infinitePlaceHilbertSymbol K n v a b).1 =
-      if InfinitePlace.embedding_of_isReal hv (a : K) < 0 ∧
-          InfinitePlace.embedding_of_isReal hv (b : K) < 0 then
-        (-1 : Kˣ)
-      else
-        1 := by
-  by_cases ha : InfinitePlace.embedding_of_isReal hv (a : K) < 0
-  · by_cases hb : InfinitePlace.embedding_of_isReal hv (b : K) < 0
-    · simp [infinitePlaceHilbertSymbol, hn, hv, ha, hb]
-    · simp [infinitePlaceHilbertSymbol, hn, hv, ha, hb]
-  · simp [infinitePlaceHilbertSymbol, hn, hv, ha]
+
 
 end Reciprocity
 end GlobalClassFieldTheory

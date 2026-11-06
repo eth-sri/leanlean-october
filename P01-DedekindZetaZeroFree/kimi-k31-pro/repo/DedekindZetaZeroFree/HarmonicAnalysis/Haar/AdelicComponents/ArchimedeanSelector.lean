@@ -124,7 +124,7 @@ theorem actual_component_arch_group_selector
   letI : BorelSpace (KPSmoothActualFlowData.GInfinity F) := ⟨rfl⟩
   haveI : ProperlyDiscontinuousSMul Γ (KPSmoothActualFlowData.GInfinity F) := by
     have hstab : MulAction.stabilizer (KPSmoothActualFlowData.GInfinity F) (1 : KPSmoothActualFlowData.GInfinity F) = ⊥ := by
-      ext g; simp [MulAction.mem_stabilizer_iff]
+      ext g; simp
     apply KPArithmeticAction.properlyDiscontinuous_of_section (1 : KPSmoothActualFlowData.GInfinity F) id
       continuous_id (fun x => by simp)
     rw [hstab]

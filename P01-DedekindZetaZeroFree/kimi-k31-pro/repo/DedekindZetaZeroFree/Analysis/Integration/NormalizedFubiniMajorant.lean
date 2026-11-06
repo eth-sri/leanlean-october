@@ -48,7 +48,7 @@ namespace NormalizedFubiniMajorant
 noncomputable def c : ℂ := (2 * (Real.pi : ℂ))⁻¹
 
 lemma norm_c : ‖c‖ = (2 * Real.pi)⁻¹ := by
-  simp [c, Real.pi_pos.le, abs_of_pos Real.pi_pos]
+  simp [c, abs_of_pos Real.pi_pos]
 
 theorem integrable_of_majorant2 (Fn : ℝ × ℝ → ℂ) (hF : AEStronglyMeasurable Fn volume)
     (g : ℝ × ℝ → ℝ) (hg : Integrable g volume) (A : ℝ)

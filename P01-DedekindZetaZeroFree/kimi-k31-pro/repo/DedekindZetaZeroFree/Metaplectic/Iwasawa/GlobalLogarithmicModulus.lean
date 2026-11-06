@@ -29,8 +29,7 @@ private theorem projected_raw (raw : Raw R) :
         (amalgamation F R.A.zeta12 R.A.primitive_zeta12 raw)) =
     QuotientGroup.mk' (scalarSubgroup F)
       (restrictedProjection F R.A.zeta12 R.A.primitive_zeta12 raw) := by
-  simp only [pglProjection, scalarQuotient, projection_amalgamation,
-    QuotientGroup.mk'_apply, QuotientGroup.lift_mk', MonoidHom.comp_apply]
+  aesop
 
  theorem raw_borel_upper (raw : Raw R)
     (hb : scalarQuotient F R.A.zeta12 R.A.primitive_zeta12
@@ -335,8 +334,7 @@ theorem height_raw_local_logs (raw : Raw R) :
       obtain ⟨A, hA, h10, h01⟩ := t.property
       exact ⟨A, hA, h10⟩
     have hx : KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 x ∈
-        KPGlobalTorusFunctionData.borel F R.A.zeta12 R.A.primitive_zeta12 := by
-      exact borel_root F R.A.zeta12 R.A.primitive_zeta12 x
+        KPGlobalTorusFunctionData.borel F R.A.zeta12 R.A.primitive_zeta12 := borel_root F R.A.zeta12 R.A.primitive_zeta12 x
     exact Subgroup.mul_mem _ ht hx
   rw [he, map_mul, map_mul, hr, height_compact R _ k]
   refine (raw_borel_height_local_logs R P C b hb).trans ?_

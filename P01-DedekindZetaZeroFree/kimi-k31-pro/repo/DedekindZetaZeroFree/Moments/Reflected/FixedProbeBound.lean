@@ -19,8 +19,7 @@ private theorem norm_continuous (A : SArithmeticData F) : Continuous A.norm := b
   fun_prop
 
 private theorem normalizeShape_continuous (A : SArithmeticData F) :
-    Continuous (normalizeShape A) := by
-  exact continuous_id.div' (A.continuous_radialSection.comp
+    Continuous (normalizeShape A) := continuous_id.div' (A.continuous_radialSection.comp
     ((norm_continuous A).subtype_mk (norm_pos A)))
 
 private theorem localPoint_injective (A : SArithmeticData F) :
@@ -51,7 +50,7 @@ private theorem scaled_row_shape (A : SArithmeticData F) (T : ℝ) (hT : 0 < T)
   have hn : A.exteriorNorm (ActualRowTransfer.rowIdeal A m) = T * A.norm k := by
     rw [← A.generator_norm (ActualRowTransfer.rowIdeal A m) m.val
       ⟨m.property, ActualRowTransfer.span_rowIdeal A m⟩
-      (ThetaReflectionData.rowUnit A m) (by rfl), hg]
+      (ThetaReflectionData.rowUnit A m) rfl, hg]
     have hmul (x y : A.G) : A.norm (x * y) = A.norm x * A.norm y := by
       simp [SArithmeticData.norm, norm_mul, mul_pow, Finset.prod_mul_distrib,
         mul_mul_mul_comm]
@@ -179,8 +178,7 @@ private theorem general_bound (A : SArithmeticData F) (σ : F →+* ℂ)
       KB * Z ^ (2 * Scales.supportExponent - 1 + 2 * ε) := by
     apply hmomentB Z hZ rows
     intro m hm
-    have hmem : m.val ∈ NormalizedProbe.scaledIntegralRows A (X * Y) Kbox := by
-      exact hf.mem_toFinset.mp (Finset.mem_subtype.mp hm)
+    have hmem : m.val ∈ NormalizedProbe.scaledIntegralRows A (X * Y) Kbox := hf.mem_toFinset.mp (Finset.mem_subtype.mp hm)
     obtain ⟨k, hk, hshape, hn⟩ := scaled_row_shape A (X * Y) (mul_pos hXpos hYpos)
       Kbox m hmem
     constructor

@@ -27,12 +27,11 @@ theorem dyadNP_eq_union (ρ U : ℝ) :
   constructor
   · intro hu
     by_cases he : u ∈ exceptionalSet D ρ U
-    · exact Or.inl he
+    · grind
     · exact Or.inr ⟨hu.1, hu.2, he⟩
   · rintro (he | hg)
     · refine ⟨⟨he.2.1, he.2.2.1⟩, ?_⟩
-      intro h1
-      exact he.1 h1
+      exact he.1
     · exact ⟨hg.1, hg.2.1⟩
 
 theorem exceptional_disjoint_good (ρ U : ℝ) :
@@ -97,7 +96,7 @@ private theorem mem_intermediate_iff {Z : ℝ} (hZ : 1 ≤ Z) (k : ℕ) :
   have h1 : (1 : ℝ) ≤ Z ^ Scales.largeCutoffExponent := Real.one_le_rpow hZ (by unfold Scales.largeCutoffExponent; norm_num)
   unfold intermediateDyads
   rw [Finset.mem_filter, Finset.mem_range, lt_floor_iff h1]
-  exact and_comm
+  grind
 
 private theorem dyad_disjoint (k l : ℕ) (hkl : k ≠ l) :
     Disjoint (dyadRows D ((2 : ℝ) ^ k)) (dyadRows D ((2 : ℝ) ^ l)) := by
@@ -162,9 +161,9 @@ theorem J_eq_JCont (C : Set D.Row) (x y v Z : ℝ) :
       kernelWith D (RowLowContour.rowCont D) u ξ w z Z := by
     intro u ξ w z
     unfold K kernelWith RowLowContour.rowCont rowFactor
-    rw [mul_div_right_comm (D.zetaSCont (6 * z) * D.Lpsi u w)]
+    grind
   unfold J RowLowContour.JCont wzIntegral
-  simp only [h]
+  grind
 
 theorem good_dyad_split (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExponent D A_F)
     (hρ : HeightSpec D A_F ρ) :
@@ -214,20 +213,17 @@ theorem dyad_five_piece (ρ Z : ℝ) (hZ : 2 ≤ Z) :
     by_cases h1 : (2 : ℝ) ^ k ≤ Z ^ Scales.smallCutoffExponent
     · have h2 : k ∉ intermediateDyads Z := by
         rw [mem_intermediate_iff hZ1]
-        exact fun h => absurd h.1 (not_lt.mpr h1)
-      have h3 : ¬ Z ^ Scales.largeCutoffExponent < (2 : ℝ) ^ k := by
-        rw [not_lt]; linarith
-      rw [if_pos h1, if_neg h2, if_neg h3, add_zero, add_zero]
+        grind
+      grind
     · have h1' : Z ^ Scales.smallCutoffExponent < (2 : ℝ) ^ k := not_le.mp h1
       by_cases h4 : (2 : ℝ) ^ k ≤ Z ^ Scales.largeCutoffExponent
       · have h2 : k ∈ intermediateDyads Z := (mem_intermediate_iff hZ1 k).mpr ⟨h1', h4⟩
-        have h3 : ¬ Z ^ Scales.largeCutoffExponent < (2 : ℝ) ^ k := not_lt.mpr h4
-        rw [if_neg h1, if_pos h2, if_neg h3, zero_add, add_zero]
+        grind
       · have h4' : Z ^ Scales.largeCutoffExponent < (2 : ℝ) ^ k := not_le.mp h4
         have h2 : k ∉ intermediateDyads Z := by
           rw [mem_intermediate_iff hZ1]
-          exact fun h => h4 h.2
-        rw [if_neg h1, if_neg h2, if_pos h4', zero_add, zero_add]
+          grind
+        grind
   have hite : ∀ (p : ℕ → Prop) [DecidablePred p], Summable (fun k : ℕ => if p k then T k else 0) := by
     intro p
     refine Summable.of_norm_bounded
@@ -245,10 +241,10 @@ theorem dyad_five_piece (ρ Z : ℝ) (hZ : 2 ≤ Z) :
     · unfold smallDyadSum
       refine Finset.sum_congr rfl fun k hk => ?_
       rw [Finset.mem_range, lt_floor_iff hs0] at hk
-      rw [if_pos hk, hT k]
+      grind
     · intro k hk
       rw [Finset.mem_range, lt_floor_iff hs0] at hk
-      exact if_neg hk
+      grind
   have hE : ∑' k : ℕ, (if k ∈ intermediateDyads Z then T k else 0) =
       exceptionalDyadSum D ρ Z +
         ∑ k ∈ intermediateDyads Z, J D (goodRows D ρ ((2 : ℝ) ^ k)) 4 4 2 Z := by

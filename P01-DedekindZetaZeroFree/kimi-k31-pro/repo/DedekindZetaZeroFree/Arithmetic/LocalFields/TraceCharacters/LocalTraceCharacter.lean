@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.Arithmetic.LocalFields.TraceBaseChange.CompletionTraceComparison
 public import DedekindZetaZeroFree.Adeles.Characters.RationalPadicCharacter
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -35,7 +36,7 @@ private theorem continuous_rationalCompletionEquiv_symm
   have hfun : (PlaceTraceAdapter.rationalCompletionEquiv F v).symm =
       (Rat.HeightOneSpectrum.adicCompletion.padicEquiv
         (PlaceTraceAdapter.rationalPlace F v)).symm.toAlgEquiv.toRingEquiv := by
-    ext x; rfl
+    measurability
   rw [hfun]
   exact (Rat.HeightOneSpectrum.adicCompletion.padicEquiv
     (PlaceTraceAdapter.rationalPlace F v)).symm.continuous_toFun

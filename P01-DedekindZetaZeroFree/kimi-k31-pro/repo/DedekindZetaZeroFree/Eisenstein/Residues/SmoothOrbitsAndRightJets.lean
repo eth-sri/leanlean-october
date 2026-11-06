@@ -58,20 +58,7 @@ def flip (a : C(X, E →L[ℝ] F)) : E →L[ℝ] C(X, F) :=
 
 @[simp] theorem flip_apply (a : C(X, E →L[ℝ] F)) (v : E) (y : X) : flip a v y = a y v := rfl
 
-def flipL : C(X, E →L[ℝ] F) →L[ℝ] (E →L[ℝ] C(X, F)) :=
-  LinearMap.mkContinuous
-    { toFun := fun a : C(X, E →L[ℝ] F) => flip a
-      map_add' := by intro a b; ext v y; exact add_apply (a y) (b y) v
-      map_smul' := by intro c a; ext v y; rfl }
-    1 (by
-      intro a
-      rw [one_mul]
-      change ‖flip a‖ ≤ ‖a‖
-      apply ContinuousLinearMap.opNorm_le_bound _ (norm_nonneg a)
-      intro v
-      apply (ContinuousMap.norm_le (C := ‖a‖ * ‖v‖) _ (mul_nonneg (norm_nonneg a) (norm_nonneg v))).mpr
-      intro y
-      exact (a y).le_opNorm v |>.trans (mul_le_mul_of_nonneg_right (a.norm_coe_le_norm y) (norm_nonneg v)))
+
 
 end DedekindZetaZeroFree.KPGlobalResidualConstruction.ActualNativeActionGeometry.CompactParameter
 

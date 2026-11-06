@@ -1,6 +1,7 @@
 module
 
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.FiniteAverages.AnchorIntegrability
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -35,8 +36,7 @@ theorem anchorAverage_integrable_of_slices (φ : G F ζ hζ → ℂ) (hφ : ∀j
       (KPBoundedCuspFrames.actualFiniteRepresentative A z.1).val)
   have hc : Continuous H := by
     apply continuous_prod_of_discrete_left.mpr
-    intro j
-    exact hφ j
+    measurability
   obtain ⟨b,hb⟩ := (isCompact_univ : IsCompact (Set.univ : Set (J × KPMsGreenFlux.K F))).bddAbove_image hc.norm.continuousOn
   have hp : Continuous (fun ω : KPMsFixedHaarDisintegration.Omega A => (ω.1 : J)) :=
     continuous_sigma (fun _ => continuous_const)

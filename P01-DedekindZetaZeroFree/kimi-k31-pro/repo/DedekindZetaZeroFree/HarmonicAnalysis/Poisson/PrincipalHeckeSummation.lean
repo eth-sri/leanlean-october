@@ -476,7 +476,7 @@ theorem principalPoisson
       hnorm.congr fun I => by simp [I.property]
     have hi := (summable_subtype_iff_indicator).mp hn
     exact hi.congr fun I => by
-      by_cases hI : I = ⊥ <;> simp [Set.indicator_apply, hI]
+      by_cases hI : I = ⊥ <;> simp [hI]
   have hsum' : Summable (fun I : Ideal (𝓞 F) =>
       if I = ⊥ then (0 : ℂ) else T₀ (X * (Ideal.absNorm I : ℝ))) := by
     have hn : Summable ((fun I : Ideal (𝓞 F) => T₀ (X * (Ideal.absNorm I : ℝ))) ∘
@@ -484,7 +484,7 @@ theorem principalPoisson
       hsum.congr fun I => by simp [I.property]
     have hi := (summable_subtype_iff_indicator).mp hn
     exact hi.congr fun I => by
-      by_cases hI : I = ⊥ <;> simp [Set.indicator_apply, hI]
+      by_cases hI : I = ⊥ <;> simp [hI]
   have htsum : (∑' I : {I : Ideal (𝓞 F) // I ≠ ⊥},
       principalCharacter F I.val * T₀ (X * (Ideal.absNorm I.val : ℝ))) =
       ∑' I : Ideal (𝓞 F), if I = ⊥ then 0 else T₀ (X * (Ideal.absNorm I : ℝ)) := by

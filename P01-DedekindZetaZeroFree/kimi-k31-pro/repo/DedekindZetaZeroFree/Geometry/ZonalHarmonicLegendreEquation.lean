@@ -21,8 +21,7 @@ private theorem casimir (p : MvPolynomial (Fin 3) ℂ) :
   simp only [casOp, rot, euler, polynomialLaplacian, Fin.sum_univ_three,
     LinearMap.add_apply, LinearMap.comp_apply, Derivation.coeFn_coe,
     map_add, map_sub, pderiv_mul, Fin.reduceAdd, pderiv_X, Pi.single_apply]
-  norm_num
-  ring
+  grind
 private theorem casOp_eigen (ℓ : ℕ) (p : MvPolynomial (Fin 3) ℂ)
     (hp : p ∈ harmonicPolynomials ℓ) :
     casOp p = ((ℓ : ℂ) * ((ℓ : ℂ) + 1)) • p := by
@@ -30,12 +29,11 @@ private theorem casOp_eigen (ℓ : ℕ) (p : MvPolynomial (Fin 3) ℂ)
     (MvPolynomial.mem_homogeneousSubmodule ℓ p).mp hp.1 |>.sum_X_mul_pderiv
   have hee : euler (euler p) = ℓ • (ℓ • p) := by
     calc
-      euler (euler p) = euler (ℓ • p) := by rw [he]
+      euler (euler p) = euler (ℓ • p) := by grind
       _ = ℓ • euler p := by
         simp only [euler, Fin.sum_univ_three, map_nsmul]
-        simp only [nsmul_eq_mul]
-        ring
-      _ = ℓ • (ℓ • p) := by rw [he]
+        grind
+      _ = ℓ • (ℓ • p) := by grind
   have hl : polynomialLaplacian p = 0 := hp.2
   rw [casimir, hee, he, hl, mul_zero, sub_zero]
   simp only [nsmul_eq_mul, smul_eq_C_mul, map_mul, map_add, map_natCast, map_one]
@@ -54,7 +52,7 @@ private theorem rot_eval_flow (i : Fin 3) (p : MvPolynomial (Fin 3) ℂ)
     have hd := hp.add hq
     change HasDerivAt (fun t => eval _ p + eval _ q) _ t at hd
     convert hd using 1
-    · simp only [map_add]
+    · grind
     · simp only [rot, map_add, map_sub, map_mul, eval_X]
       ring
   | mul_X p j hp =>
@@ -97,7 +95,7 @@ private theorem pderiv_heightLift (i : Fin 3) (Q : Polynomial ℂ) :
       heightLift Q.derivative := by
   induction Q using Polynomial.induction_on' with
   | add p q hp hq =>
-    simp only [map_add, Polynomial.derivative_add, hp, hq, mul_add]
+    grind
   | monomial n a =>
     simp only [heightLift, Polynomial.aeval_monomial, Polynomial.derivative_monomial,
       Polynomial.aeval_C, Polynomial.aeval_mul, map_pow, Polynomial.aeval_X, algebraMap_eq]
@@ -107,7 +105,7 @@ private theorem pderiv_heightLift (i : Fin 3) (Q : Polynomial ℂ) :
       · subst i; simp [div_eq_mul_inv]
       · simp [pderiv_mul, pderiv_X, Pi.single_apply, hi, Ne.symm hi]
     simp only [hx, map_mul, map_natCast]
-    by_cases hi : i = 0 <;> simp [hi] <;> ring
+    grind
 private theorem casOp_heightLift (Q : Polynomial ℂ) :
     casOp (heightLift Q) =
       -(X 1 ^ 2 + X 2 ^ 2) * C (1 / 4) * heightLift Q.derivative.derivative -
@@ -116,11 +114,10 @@ private theorem casOp_heightLift (Q : Polynomial ℂ) :
     pderiv_mul, map_sub, pderiv_X, Pi.single_apply, pderiv_C]
   norm_num
   have hc : C (1 / 2 : ℂ) ^ 2 = (C (1 / 4 : ℂ) : MvPolynomial (Fin 3) ℂ) := by
-    rw [← map_pow]; congr 1; norm_num
+    rw [← map_pow]; grind
   have ht : C (1 / 2 : ℂ) * 2 = (1 : MvPolynomial (Fin 3) ℂ) := by
     rw [show (2 : MvPolynomial (Fin 3) ℂ) = C (2 : ℂ) by exact (map_ofNat C 2).symm, ← map_mul]; norm_num
-  linear_combination -(X 0 * heightLift Q.derivative) * ht -
-    ((X 1 ^ 2 + X 2 ^ 2) * heightLift Q.derivative.derivative) * hc
+  grind
 private theorem casOp_sub (p q : MvPolynomial (Fin 3) ℂ) :
     casOp (p - q) = casOp p - casOp q := by
   simp only [casOp, rot, map_sub, mul_sub, Fin.sum_univ_three]
@@ -162,9 +159,7 @@ theorem zonal_harmonic_legendre_ode (ℓ : ℕ) (p : MvPolynomial (Fin 3) ℂ)
       eval_C, eval_X, smul_eq_C_mul, eval_heightLift] at hx
     rw [show eval (fun i => ((x : Ambient) i : ℂ)) p = _ from hQ x] at hx
     have hr := sphere_radius x
-    dsimp
-    linear_combination hx - (Q.derivative.derivative.eval
-      ((1 - ((x : Ambient) 0 : ℂ)) / 2) / 4) * hr
+    grind
   apply Polynomial.eq_zero_of_infinite_isRoot
   apply Set.Infinite.mono (s := Complex.ofReal '' Set.Icc (0 : ℝ) 1)
   · intro z hz
@@ -237,7 +232,7 @@ private theorem spinSubst_harmonic (A : Matrix (Fin 3) (Fin 3) ℂ)
   change polynomialLaplacian (spinSubst A p) = 0
   rw [polynomialLaplacian_spinSubst A hA]
   have hh : polynomialLaplacian p = 0 := hp.2
-  rw [hh, map_zero]
+  grind
 
 noncomputable def spinMatrix (t : ℝ) : Matrix (Fin 3) (Fin 3) ℂ :=
   ![![1,0,0], ![0,(Real.cos t : ℂ),-(Real.sin t : ℂ)],
@@ -248,13 +243,13 @@ private theorem spinMatrix_orthogonal (t : ℝ) (i k : Fin 3) :
     exact_mod_cast Real.cos_sq_add_sin_sq t
   simp only [Complex.ofReal_cos, Complex.ofReal_sin] at h
   fin_cases i <;> fin_cases k <;> simp [spinMatrix, Fin.sum_univ_three] <;>
-    (first | (solve | ring) | (linear_combination h))
+    grind
 private theorem spinSubst_eval (t : ℝ) (p : MvPolynomial (Fin 3) ℂ) (x : Ambient) :
     eval (fun j => (x j : ℂ)) (spinSubst (spinMatrix t) p) =
       eval (fun j => ((rotationFlow 0 t x) j : ℂ)) p := by
   induction p using MvPolynomial.induction_on with
   | C a => simp [spinSubst]
-  | add p q hp hq => simp only [map_add, hp, hq]
+  | add p q hp hq => grind
   | mul_X p i hp =>
     simp only [map_mul, hp, spinSubst, aeval_X, map_sum, eval_C, eval_X]
     congr 1
@@ -318,7 +313,7 @@ private lemma latitude_surjective_aux (y : Sphere) :
   let u := (1 - (y : Ambient) 0) / 2
   have hu : u ∈ Set.Icc (0 : ℝ) 1 := by
     obtain ⟨hlo, hhi⟩ := RawSphereProjection.coordinate_bound y 0
-    constructor <;> dsimp [u] <;> linarith
+    grind
   let z : ℂ := ⟨(y : Ambient) 1, (y : Ambient) 2⟩
   have hn : ‖z‖ = Real.sqrt (4*u*(1-u)) := by
     have hy := mem_sphere_zero_iff_norm.mp y.property
@@ -330,8 +325,7 @@ private lemma latitude_surjective_aux (y : Sphere) :
     congr 1
     simp only [Complex.normSq, z]
     dsimp [u]
-    ring_nf at hs ⊢
-    nlinarith
+    grind
   refine ⟨z.arg, ?_⟩
   apply Subtype.ext
   rw [latitudePoint_val _ _ _ hu]
@@ -390,7 +384,7 @@ theorem latitude_average_legendre_ode (ℓ : ℕ) (p : MvPolynomial (Fin 3) ℂ)
   let u : ℝ := (1 - (x : Ambient) 0) / 2
   have hu : u ∈ Set.Icc (0 : ℝ) 1 := by
     obtain ⟨hlo, hhi⟩ := RawSphereProjection.coordinate_bound x 0
-    constructor <;> dsimp [u] <;> linarith
+    grind
   rw [havg x]
   have hflow (t : ℝ) : sphereOrthogonal (rotationFlow 0 t) x =
       latitudePoint (.refl ℝ Ambient) u (θ + t) := by

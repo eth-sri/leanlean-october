@@ -15,12 +15,11 @@ private theorem support_prod (s : Finset (Ideal (𝓞 F)))
     (hs : ∀ p ∈ s, Prime p) : idealPrimeSupport (∏ p ∈ s, p) = s := by
   unfold idealPrimeSupport
   have H : normalizedFactors s.val.prod = s.val :=
-    normalizedFactors_prod_of_prime (by simpa using hs)
-  simpa using congrArg Multiset.toFinset H
+    normalizedFactors_prod_of_prime (by simp_all)
+  simp_all
 
 private theorem prod_ne_bot (s : Finset (Ideal (𝓞 F)))
-    (hs : ∀ p ∈ s, Prime p) : (∏ p ∈ s, p) ≠ ⊥ := by
-  exact Finset.prod_ne_zero_iff.mpr (fun p hp => (hs p hp).ne_zero)
+    (hs : ∀ p ∈ s, Prime p) : (∏ p ∈ s, p) ≠ ⊥ := Finset.prod_ne_zero_iff.mpr (fun p hp => (hs p hp).ne_zero)
 
 private theorem prime_of_support (h : Ideal (𝓞 F)) {p : Ideal (𝓞 F)}
     (hp : p ∈ idealPrimeSupport h) : Prime p :=
@@ -48,20 +47,19 @@ theorem mem_activeSquarefreeDivisors_iff (h : Ideal (𝓞 F)) (hh : h ≠ ⊥)
     refine ⟨hn, ?_, ?_⟩
     · apply (squarefree_iff_nodup_normalizedFactors hn).mpr
       have H : normalizedFactors s.val.prod = s.val :=
-        normalizedFactors_prod_of_prime (by simpa using hp')
+        normalizedFactors_prod_of_prime (by simp_all)
       simpa only [Finset.prod_eq_multiset_prod, Multiset.map_id', H] using s.nodup
     · apply (dvd_iff_normalizedFactors_le_normalizedFactors hn hr).mpr
       rw [hrad]
       have H : normalizedFactors s.val.prod = s.val :=
-        normalizedFactors_prod_of_prime (by simpa using hp')
-      simpa only [Finset.prod_eq_multiset_prod, Multiset.map_id', H] using
-        (Finset.val_le_iff.mpr hs')
+        normalizedFactors_prod_of_prime (by simp_all)
+      simp_all
   · rintro ⟨hf, hsf, hdiv⟩
     have hle := (dvd_iff_normalizedFactors_le_normalizedFactors hf hr).mp hdiv
     have hsub : idealPrimeSupport f ⊆ idealPrimeSupport h := by
       intro p hp
       have := Multiset.mem_of_le hle (Multiset.mem_toFinset.mp hp)
-      simpa [hrad] using this
+      simp_all
     apply Finset.mem_image.mpr
     refine ⟨idealPrimeSupport f, Finset.mem_powerset.mpr hsub, ?_⟩
     have hn := (squarefree_iff_nodup_normalizedFactors hf).mp hsf
@@ -79,7 +77,7 @@ def activeEulerSum (h : Ideal (𝓞 F)) (σ : ℝ) : ℝ :=
 theorem activeEulerFactor_eq_eulerIdeal {cS : Ideal (𝓞 F)}
     (f : ExteriorSquarefreeIdeal cS) (σ : ℝ) :
     activeEulerFactor f.val.val σ = eulerIdeal f σ := by
-  rfl
+  aesop
 
 theorem activeEulerSum_eq_prod (h : Ideal (𝓞 F)) (hh : h ≠ ⊥) (σ : ℝ) :
     activeEulerSum h σ =
@@ -94,7 +92,7 @@ theorem activeEulerSum_eq_prod (h : Ideal (𝓞 F)) (hh : h ≠ ⊥) (σ : ℝ) 
   · intro s hs t ht hst
     have Hs := support_prod s (fun p hp => prime_of_support h (Finset.mem_powerset.mp hs hp))
     have Ht := support_prod t (fun p hp => prime_of_support h (Finset.mem_powerset.mp ht hp))
-    exact Hs.symm.trans ((congrArg idealPrimeSupport hst).trans Ht)
+    simp_all
 
 theorem activeEulerFactor_nonneg (f : Ideal (𝓞 F)) (hf : f ≠ ⊥)
     (σ : ℝ) (hσ : 0 ≤ σ) :
@@ -154,7 +152,7 @@ theorem active_subpower (b : ℝ) (hb : 0 < b) :
     intro p hps
     have hbound : 1 + eulerLocal (idealNorm p) σ ≤ C := by
       have H := (eulerLocal_bounds _ σ (idealNorm_prime_ge_two p (hp p hps)) hσ).2
-      dsimp [C]; linarith
+      grind
     split_ifs with hpe
     · exact hbound.trans (le_mul_of_one_le_right (le_trans zero_le_one hC) (hpow p hps))
     · have hX : X ≤ idealNorm p := by
@@ -163,19 +161,17 @@ theorem active_subpower (b : ℝ) (hb : 0 < b) :
           apply hefin.mem_toFinset.mpr
           refine ⟨⟨p, (hp p hps).ne_zero⟩, ?_, rfl⟩
           exact le_of_lt (lt_of_not_ge H)
-        exact hpe hmem
+        simp_all
       have HC : Real.rpow X b = C := Real.rpow_inv_rpow (le_trans zero_le_one hC) hb.ne'
       have hx0 : 0 ≤ X := Real.rpow_nonneg (le_trans zero_le_one hC) _
       have H := Real.rpow_le_rpow hx0 hX hb.le
       change Real.rpow X b ≤ Real.rpow (idealNorm p) b at H
-      rw [HC] at H
-      simpa only [one_mul] using hbound.trans H
+      grind
   have hconst : (∏ p ∈ idealPrimeSupport h, (if p ∈ e then C else 1)) ≤ C ^ e.card := by
     rw [Finset.prod_ite, Finset.prod_const_one, mul_one, Finset.prod_const]
     apply pow_le_pow_right₀ hC
     apply Finset.card_le_card
-    intro p hps
-    exact (Finset.mem_filter.mp hps).2
+    grind
   have hprod : activeEulerSum h σ ≤ C ^ e.card * Real.rpow (idealNorm h) b := by
     rw [activeEulerSum_eq_prod h hh σ]
     calc

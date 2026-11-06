@@ -122,7 +122,7 @@ private theorem chosen_residue_eq
     refine ⟨?_, hallow⟩
     rw [← hgen.2, FractionalIdeal.coeIdeal_span_singleton]
     change FractionalIdeal.spanSingleton R.A.R⁰ (r : F) = _
-    rw [← hr]
+    grind
   obtain ⟨u, hu, he⟩ := C.allowed_unique _ _ _ a.isAllowedGenerator hG
   change u ^ 6 = a.radical / R.probe.allowed.generator c at he
   have heq : a.integral = r * (R.A.unitEquiv ⟨u, hu⟩ : R.A.R) ^ 6 := by

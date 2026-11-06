@@ -16,8 +16,8 @@ variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 theorem localAbs_mul (v : KPHilbert.Place F) (u u' : (KPHilbert.Completion F v)ˣ) :
     localAbs F v (u * u') = localAbs F v u * localAbs F v u' := by
   cases v with
-  | inl w => simp [localAbs, Units.val_mul, norm_mul, mul_pow]
-  | inr q => simp [localAbs, Units.val_mul, norm_mul]
+  | inl w => simp [localAbs, Units.val_mul, mul_pow]
+  | inr q => simp [localAbs, Units.val_mul]
 
 theorem localAbs_inv (v : KPHilbert.Place F) (u : (KPHilbert.Completion F v)ˣ) :
     localAbs F v u⁻¹ = (localAbs F v u)⁻¹ := by
@@ -58,22 +58,22 @@ theorem localValue_mul_diagonal (v : KPHilbert.Place F)
     isUnit_diag_entries F ζ hζ v u hu10 hu01
   have hm10 : (g * h).g 1 0 = 0 := by
     simp only [KPLocalCover.mul_g, Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply,
-      Fin.sum_univ_two, hg10, hg01, hh10, hh01, mul_zero, zero_mul, add_zero, zero_add]
+      Fin.sum_univ_two, hg10, hh10, mul_zero, zero_mul, add_zero]
   have hm01 : (g * h).g 0 1 = 0 := by
     simp only [KPLocalCover.mul_g, Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply,
-      Fin.sum_univ_two, hg10, hg01, hh10, hh01, mul_zero, zero_mul, add_zero, zero_add]
+      Fin.sum_univ_two, hg01, hh01, mul_zero, zero_mul, add_zero]
   have hu00 : (hdiag (g * h) hm10 hm01).1.unit = (hdiag g hg10 hg01).1.unit *
       (hdiag h hh10 hh01).1.unit := by
     apply Units.ext
     simp only [IsUnit.unit_spec, Units.val_mul]
     simp only [KPLocalCover.mul_g, Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply,
-      Fin.sum_univ_two, hg10, hg01, hh10, hh01, mul_zero, zero_mul, add_zero, zero_add]
+      Fin.sum_univ_two, hg01, hh10, mul_zero, add_zero]
   have hu11 : (hdiag (g * h) hm10 hm01).2.unit = (hdiag g hg10 hg01).2.unit *
       (hdiag h hh10 hh01).2.unit := by
     apply Units.ext
     simp only [IsUnit.unit_spec, Units.val_mul]
     simp only [KPLocalCover.mul_g, Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply,
-      Fin.sum_univ_two, hg10, hg01, hh10, hh01, mul_zero, zero_mul, add_zero, zero_add]
+      Fin.sum_univ_two, hg10, hh01, mul_zero, zero_add]
   have hratio_eq : (hdiag (g * h) hm10 hm01).1.unit *
         ((hdiag (g * h) hm10 hm01).2.unit)⁻¹ =
       ((hdiag g hg10 hg01).1.unit * ((hdiag g hg10 hg01).2.unit)⁻¹) *
@@ -117,7 +117,7 @@ theorem rawCenter_local_diagonal (x : rawCenter F ζ hζ) (v : KPHilbert.Place F
   have hd : (KPAdelicCoverRestrictedProduct.restrictedProjection F ζ hζ x.val) 1 0 = 0 ∧
       (KPAdelicCoverRestrictedProduct.restrictedProjection F ζ hζ x.val) 0 1 = 0 := by
     rw [← he]
-    simp [Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
+    simp [Matrix.GeneralLinearGroup.coe_scalar,
       Matrix.mul_apply, Matrix.scalar, Fin.sum_univ_two, h01, h10]
   have hev := KPAdelicCoverRestrictedProduct.restrictedProjection_eval F ζ hζ x.val v
   have h10v := congrArg (fun A : Matrix (Fin 2) (Fin 2)
@@ -191,7 +191,7 @@ private theorem sigmaTwo_diag_cubes (v : KPHilbert.Place F)
       (KubotaRankTwo.X K h.g * KubotaRankTwo.det K g.g)) *
     B (KubotaRankTwo.det K g.g) (KubotaRankTwo.det K h.g) ^ 2 = 1
   rw [hXg, hXh, hXgh, hdg, hdh]
-  rw [show u * w / u = w from by simp [mul_comm], hquot]
+  rw [show u * w / u = w from by simp, hquot]
   change B w ((a ^ 3)⁻¹ * u⁻¹) * B (a ^ 3 * u ^ 2) (b ^ 3 * w ^ 2) ^ 2 = 1
   rw [hR, hInv, (hc w a).2, inv_one, one_mul, hInv, hL,
     (hc a (b ^ 3 * w ^ 2)).1, one_mul, hR, (hc (u ^ 2) b).2, one_mul]
@@ -202,7 +202,7 @@ private theorem sigmaTwo_diag_cubes (v : KPHilbert.Place F)
     apply Subtype.ext
     change (B u w : Fˣ) ^ 9 = 1
     rw [show (9 : ℕ) = 3 * 3 from rfl, pow_mul, (B u w).property, one_pow]
-  convert h9 using 1 <;> simp [pow_succ, pow_two, mul_assoc]
+  convert h9 using 1 <;> simp [pow_succ, mul_assoc]
 
 theorem rawCenter_cocycle_twist (x y : rawCenter F ζ hζ) :
     (∏ᶠ v, KPGlobalTorusFunctionData.iota F ζ hζ
@@ -263,7 +263,7 @@ private theorem integral_diagonal_value (q : HeightOneSpectrum (𝓞 F))
       (ne_of_gt (localAbs_pos F (Sum.inr q) _)) = 1 := by
     apply Units.ext
     apply NNReal.coe_injective
-    simp [localAbs, norm_mul, norm_inv, hn0, hn1]
+    simp [localAbs, hn0, hn1]
   rw [localValue_diag F ζ hζ (Sum.inr q) g h10 h01, he, hr]
   simp
 
@@ -364,14 +364,14 @@ private theorem complex_raw_value_continuous (w : InfinitePlace F) :
       have hh : ∀ x, (r x : w.Completion) =
           (x.val (Sum.inl w)).g 0 0 / (x.val (Sum.inl w)).g 1 1 := by
         intro x
-        simp [r, d, div_eq_mul_inv]
+        simp [r, div_eq_mul_inv]
       simp_rw [hh]
       exact (hent 0 0).div (hent 1 1) (fun x => (d x).2.ne_zero)
     · change Continuous (fun x => ((r x)⁻¹ : (w.Completion)ˣ).val)
       have hh : ∀ x, ((r x)⁻¹ : (w.Completion)ˣ).val =
           (x.val (Sum.inl w)).g 1 1 / (x.val (Sum.inl w)).g 0 0 := by
         intro x
-        simp [r, d, div_eq_mul_inv]
+        simp [r, div_eq_mul_inv]
       simp_rw [hh]
       exact (hent 1 1).div (hent 0 0) (fun x => (d x).1.ne_zero)
   let a := fun x : rawCenter F ζ hζ => Units.mk0 (localAbs F (Sum.inl w) (r x))

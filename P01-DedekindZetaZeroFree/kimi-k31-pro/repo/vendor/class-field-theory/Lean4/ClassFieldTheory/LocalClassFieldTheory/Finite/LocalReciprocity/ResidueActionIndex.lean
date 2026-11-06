@@ -2,6 +2,7 @@ module
 
 public import ClassFieldTheory.LocalClassFieldTheory.Finite.LocalReciprocity.ResidueDatum
 public import ValuedFieldTheory.Ramification.HilbertRamification.ResidueExactSequence
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -52,9 +53,9 @@ noncomputable def toDecompositionGroupOfEqTop
     (A : _root_.ValuationSubring L)
     (hA : decompositionGroup K A = ⊤) :
     (L ≃ₐ[K] L) →* decompositionGroup K A where
-  toFun sigma := ⟨sigma, by rw [hA]; exact Subgroup.mem_top sigma⟩
-  map_one' := by ext; rfl
-  map_mul' _ _ := by ext; rfl
+  toFun sigma := ⟨sigma, by rw [hA]; norm_num⟩
+  map_one' := by norm_num
+  map_mul' _ _ := by norm_num
 
 omit [IsGalois K L] in
 /-- States the theorem `toDecompositionGroupOfEqTop_coe`. -/

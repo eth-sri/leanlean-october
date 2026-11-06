@@ -84,7 +84,7 @@ theorem sigmaTwo_scalar_scalar (z z' : (KPHilbert.Completion F v)ˣ) :
   simp only [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau,
     ← map_mul, X_scalar, KubotaRankTwo.det, Matrix.GeneralLinearGroup.det_scalar,
     Fintype.card_fin]
-  rw [show z * z' / z = z' from by simp [mul_comm],
+  rw [show z * z' / z = z' from by simp,
     show z * z' / (z' * z ^ 2) = z⁻¹ from by
       apply Units.ext
       simp only [Units.val_div_eq_div_val, Units.val_mul, Units.val_pow_eq_pow_val,
@@ -116,7 +116,7 @@ theorem sigmaTwo_scalar_commutator (z : (KPHilbert.Completion F v)ˣ)
   simp only [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau,
     X_scalar_mul, X_mul_scalar, X_scalar, KubotaRankTwo.det,
     Matrix.GeneralLinearGroup.det_scalar, Fintype.card_fin]
-  rw [show z * KubotaRankTwo.X K g / z = KubotaRankTwo.X K g from by simp [mul_comm],
+  rw [show z * KubotaRankTwo.X K g / z = KubotaRankTwo.X K g from by simp,
     show z * KubotaRankTwo.X K g / (KubotaRankTwo.X K g * z ^ 2) = z⁻¹ from by
       apply Units.ext
       simp only [Units.val_div_eq_div_val, Units.val_mul, Units.val_pow_eq_pow_val,
@@ -151,9 +151,7 @@ theorem sigmaTwo_scalar_commutator_eq_one (z : (KPHilbert.Completion F v)ˣ)
   exact B3_ninth F ζ hζ v z _
 
 theorem scalarLift_one : scalarLift F ζ hζ v 1 = 1 := by
-  change KPLocalCover.CubicGL2Raw.mk (scalarMatrix F v 1) 1 = _
-  rw [map_one]
-  rfl
+  aesop
 
 theorem scalarLift_mul (z z' : (KPHilbert.Completion F v)ˣ) :
     scalarLift F ζ hζ v (z * z') = scalarLift F ζ hζ v z * scalarLift F ζ hζ v z' := by
@@ -170,7 +168,7 @@ def scalarHom : (KPHilbert.Completion F v)ˣ →* KPLocalCover.CubicGL2Raw F ζ 
 
 theorem projection_scalarHom (z : (KPHilbert.Completion F v)ˣ) :
     KPLocalCover.projection F ζ hζ v (scalarHom F ζ hζ v z) = scalarMatrix F v z := by
-  rfl
+  aesop
 
 theorem scalarHom_range_le_center :
     (scalarHom F ζ hζ v).range ≤ Subgroup.center (KPLocalCover.CubicGL2Raw F ζ hζ v) := by
@@ -262,7 +260,7 @@ theorem finite_continuous_closed (w : HeightOneSpectrum (𝓞 F)) (m : ℕ)
   have hcont : Continuous (scalarHom F ζ hζ (Sum.inr w)) := by
     apply continuous_of_continuousAt_one
     apply ContinuousWithinAt.continuousAt _ (hU.mem_nhds h1)
-    exact (continuousWithinAt_iff_continuousAt_domRestrict _ h1).mpr (hres.continuousAt)
+    exact (continuousWithinAt_iff_continuousAt_domRestrict _ h1).mpr hres.continuousAt
   refine ⟨hcont, ?_⟩
   have hh := KPLocalChartTopology.translatedChart_homeomorphism F ζ hζ w m hm 1
   obtain ⟨e, he⟩ := hh.2

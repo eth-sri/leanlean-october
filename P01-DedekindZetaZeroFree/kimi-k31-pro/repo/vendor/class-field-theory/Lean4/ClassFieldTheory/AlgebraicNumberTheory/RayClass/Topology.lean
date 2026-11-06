@@ -238,28 +238,9 @@ theorem isOpen_infinitePositiveSubgroup (v : InfinitePlace K) :
     rw [htop]
     exact isOpen_univ
 
-/-- The positivity subgroup in the product of all infinite local groups is
-open. -/
-theorem isOpen_infinitePositivePiSubgroup :
-    IsOpen
-      ((Subgroup.pi Set.univ (fun v : InfinitePlace K ↦
-          infinitePositiveSubgroup v) :
-        Subgroup ((v : InfinitePlace K) → v.Completionˣ)) :
-          Set ((v : InfinitePlace K) → v.Completionˣ)) := by
-  change IsOpen
-    (Set.univ.pi fun v : InfinitePlace K ↦
-      (infinitePositiveSubgroup v : Set v.Completionˣ))
-  exact isOpen_set_pi Set.finite_univ fun v _ ↦
-    isOpen_infinitePositiveSubgroup v
 
-/-- The narrow archimedean congruence subgroup is open. -/
-theorem isOpen_narrowInfiniteCongruenceSubgroup :
-    IsOpen
-      ((narrowInfiniteCongruenceSubgroup (K := K) :
-        Subgroup (InfiniteIdeleGroup K)) :
-          Set (InfiniteIdeleGroup K)) :=
-  isOpen_infinitePositivePiSubgroup.preimage
-    ContinuousMulEquiv.piUnits.continuous
+
+
 
 /-- The archimedean congruence subgroup selected by a full modulus is open. -/
 theorem isOpen_infiniteCongruenceSubgroup (m : Modulus K) :
@@ -1087,23 +1068,7 @@ theorem modulusInsideClosedFiniteIndex_spec
   chosenModulusInside_spec H
     (H.isOpen_of_isClosed_of_finiteIndex hclosed)
 
-/-- A subgroup of the idele class group is closed of
-finite index exactly when it contains a ray congruence subgroup. -/
-theorem isClosed_and_finiteIndex_iff_exists_congruenceSubgroup_le
-    (H : Subgroup (IdeleClassGroup K)) :
-    (IsClosed (H : Set (IdeleClassGroup K)) ∧ H.FiniteIndex) ↔
-      ∃ m : Modulus K, m.congruenceSubgroup ≤ H := by
-  constructor
-  · rintro ⟨hHclosed, hHfinite⟩
-    let : H.FiniteIndex := hHfinite
-    exact exists_congruenceSubgroup_le_of_isOpen H
-      (H.isOpen_of_isClosed_of_finiteIndex hHclosed)
-  · rintro ⟨m, hm⟩
-    have hHopen : IsOpen (H : Set (IdeleClassGroup K)) :=
-      Subgroup.isOpen_mono hm (isOpen_congruenceSubgroup m)
-    have : H.FiniteIndex :=
-      Subgroup.finiteIndex_of_le hm
-    exact ⟨H.isClosed_of_isOpen hHopen, inferInstance⟩
+
 
 end RayClass
 

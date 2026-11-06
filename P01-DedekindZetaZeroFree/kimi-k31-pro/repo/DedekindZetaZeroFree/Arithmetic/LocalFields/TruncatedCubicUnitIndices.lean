@@ -191,7 +191,7 @@ private lemma depth_identify (a : DedekindZetaZeroFree.CubicUnitBalls.Ring (av K
     | coe b => norm_cast
   have hi : Irreducible π := (IsDiscreteValuationRing.irreducible_iff_uniformizer π).mpr hm
   by_cases ha : a = 0
-  · simp [ha, IsDiscreteValuationRing.addVal_zero]
+  · simp [ha]
   obtain ⟨n, u, hu⟩ := IsDiscreteValuationRing.eq_unit_mul_pow_irreducible ha hi
   rw [hu, IsDiscreteValuationRing.addVal_def' u hi]
   change n = ((v (((u : O) : K) * p ^ n)).untopD 0).toNat

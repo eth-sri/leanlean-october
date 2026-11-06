@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.Adeles.Quotients.Additive.FiniteLevelDetection
 public import DedekindZetaZeroFree.HarmonicAnalysis.Fourier.Tori.CharacterSeparation
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -19,10 +20,7 @@ theorem additiveAdeleQuotient_characters_separate
     (sub_ne_zero.mpr hxy)
   let p := QuotientAddGroup.mk' (finiteLevelImage K)
   have hp : p x ≠ p y := by
-    intro h
-    apply hKxy
-    change p (x - y) = 0
-    rw [map_sub, h, sub_self]
+    measurability
   obtain ⟨e⟩ := (finiteLevel_single_torus K hKc hKo).2.2.2
   obtain ⟨ψ, hψ, hψxy⟩ := unitAddTorus_characters_separate (e (p x)) (e (p y))
     (fun h => hp (e.injective h))

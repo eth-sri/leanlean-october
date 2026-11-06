@@ -88,16 +88,16 @@ private theorem scalar_intersection (F : Type*) [Field F] [NumberField F]
     rw [Matrix.diagonal_mul_diagonal]
     ext i j
     by_cases hij : i = j
-    · subst j; simp only [Matrix.diagonal_apply_eq, Pi.mul_apply]
+    · subst j; simp only [Matrix.diagonal_apply_eq]
       split_ifs <;> simp
-    · simp [Matrix.diagonal_apply_ne _ hij, hij]
+    · simp [hij]
   inv_val := by
     rw [Matrix.diagonal_mul_diagonal]
     ext i j
     by_cases hij : i = j
-    · subst j; simp only [Matrix.diagonal_apply_eq, Pi.mul_apply]
+    · subst j; simp only [Matrix.diagonal_apply_eq]
       split_ifs <;> simp
-    · simp [Matrix.diagonal_apply_ne _ hij, hij]
+    · simp [hij]
 
 private theorem coordinate_realization (F : Type*) [Field F] [NumberField F]
     (I : FractionalIdeal (RingOfIntegers F)⁰ F) (hI : I ≠ 0) :
@@ -120,7 +120,7 @@ private theorem coordinate_realization (F : Type*) [Field F] [NumberField F]
     fin_cases i
     · simp only [Fin.zero_eta, Fin.isValue, ite_true, one_mul, diagonalVector]
       rfl
-    · simp only [Fin.isValue, Fin.reduceEq, ite_false, diagonalVector]
+    · simp only [Fin.isValue, diagonalVector]
       change u.inv v * algebraMap F (v.adicCompletion F) x.2 = _
       rfl
   have hfirst : x.1 ∈ (1 : FractionalIdeal (RingOfIntegers F)⁰ F) ↔
@@ -159,8 +159,8 @@ private theorem diagonal_action (F : Type*) [Field F] [NumberField F]
   ext i j
   fin_cases i <;> fin_cases j <;>
     simp [diagonalVector, rationalAction, diagonalGL,
-      Matrix.GeneralLinearGroup.smul_def, Matrix.GeneralLinearGroup.toLin_apply,
-      Matrix.mul_apply, Matrix.mulVecLin_apply, Matrix.mulVec, dotProduct,
+      Matrix.GeneralLinearGroup.smul_def, 
+      Matrix.mul_apply, 
       Fin.sum_univ_two, LinearEquiv.finTwoArrow, finTwoArrowEquiv]
 
 private theorem rationalAction_surjective (F : Type*) [Field F]

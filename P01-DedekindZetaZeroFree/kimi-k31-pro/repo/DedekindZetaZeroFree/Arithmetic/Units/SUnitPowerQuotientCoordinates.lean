@@ -92,7 +92,7 @@ private theorem coordinates_inc (n : ℕ+) (hn : (n : ℕ) ∣ 12)
     LocalFieldTheory.nthPowerProductQuotientHom,
     QuotientGroup.quotientKerEquivOfSurjective,
     QuotientGroup.quotientKerEquivOfRightInverse,
-    QuotientGroup.quotientMulEquivOfEq_mk, MulEquiv.trans_apply]
+    ]
   change (A.torsionPowerQuotientEquiv n hn (QuotientGroup.mk u),
     KummerTheory.multiplicativeFinsuppNthPowerQuotientEquivPiZMod A.sunitRank n
       (QuotientGroup.mk (1 : Multiplicative (Fin A.sunitRank →₀ ℤ)))) = _

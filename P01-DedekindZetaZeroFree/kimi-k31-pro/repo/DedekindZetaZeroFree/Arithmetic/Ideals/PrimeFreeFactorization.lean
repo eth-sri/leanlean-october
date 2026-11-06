@@ -20,7 +20,7 @@ theorem exists_primeFree (I : A.Exterior) (p : ExteriorPrime A) :
   have hJ : J ≠ 0 := by
     intro h
     simp [h] at heq
-    exact I.property.1 heq
+    grind
   have hnf : (normalizedFactors J).count p.val.asIdeal = 0 := by
     apply Multiset.count_eq_zero.mpr
     intro hmem

@@ -93,7 +93,7 @@ theorem weightedShellIntegral_nonnegative [MeasurableSpace K] [BorelSpace K]
       integral_fintype Integrable.of_finite]
     change (∑ x : k, ρ.real {x} • F x) = _
     simp only [hreal, Complex.real_smul, Complex.ofReal_div, Complex.ofReal_one, Complex.ofReal_natCast]
-    simp only [one_div, ← Finset.mul_sum, ← div_eq_inv_mul]
+    simp only [one_div, ← div_eq_inv_mul]
     rw [← Finset.sum_div]
   have hzero : F 0 = 0 := by simp [F, hf]
   have hs : KPTameGauss.integerUnitShell K = R.subtype '' {u : R | IsUnit u} := by
@@ -285,7 +285,7 @@ theorem weightedShellIntegral_terminal [MeasurableSpace K] [BorelSpace K]
       integral_fintype Integrable.of_finite]
     change (∑ x : k, ρ.real {x} • F x) = _
     simp only [hreal, Complex.real_smul, Complex.ofReal_div, Complex.ofReal_one, Complex.ofReal_natCast]
-    simp only [one_div, ← Finset.mul_sum, ← div_eq_inv_mul]
+    simp only [one_div, ← div_eq_inv_mul]
     rw [← Finset.sum_div]
   have hzero : F 0 = 0 := by simp [F, hf]
   have hs : KPTameGauss.integerUnitShell K = R.subtype '' {u : R | IsUnit u} := by

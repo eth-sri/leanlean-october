@@ -56,7 +56,7 @@ private theorem radialSection_exponential_insertion
     funext v
     by_cases hv : v = w
     · subst v
-      simp only [KPMsFixedHaarDisintegration.positiveSlots, if_pos rfl, radialSlotLog]
+      simp only [KPMsFixedHaarDisintegration.positiveSlots, radialSlotLog]
       rw [show 2*(KPCuspLogShape.dimension F : ℝ)*t =
         2*((KPCuspLogShape.dimension F : ℝ)*t) by ring, sqrt_exp_double]
       rfl
@@ -88,7 +88,7 @@ private theorem section_diagonal_inverse (q : ℝ) (z : ℂ) (t : ℝ) :
     ext i j
     fin_cases i <;> fin_cases j <;>
       simp [KubotaRankTwo.d, Matrix.mul_apply, Fin.sum_univ_two, Real.exp_neg,
-        Complex.ofReal_inv, Real.exp_ne_zero]
+        Complex.ofReal_inv]
 
  def radialShapeCorrection (w : NumberField.InfinitePlace F) (t : ℝ) :
     KPCuspCharts.Shape F :=
@@ -136,8 +136,8 @@ private theorem section_diagonal_inverse (q : ℝ) (z : ℂ) (t : ℝ) :
   change _ * (KPArithmeticAction.hyperbolicProjectiveSection (p.1 i,t+p.2.val i) * _) = _
   simp only [Pi.inv_apply]
   rw [← mul_assoc, section_diagonal_inverse]
-  simp only [Pi.mul_apply, KPCuspCharts.toArch, radialShapeCorrection,
-    AddSubgroup.coe_add, Pi.add_apply, Pi.zero_apply, Equiv.apply_symm_apply]
+  simp only [Pi.mul_apply, radialShapeCorrection,
+    Equiv.apply_symm_apply]
   change (Matrix.ProjGenLinGroup.mk (KubotaRankTwo.n ℂ
     ((Real.exp (-radialSlotLog w t (KPCusp.complexPlace F i)) : ℂ) * p.1 i)) *
       KPArithmeticAction.hyperbolicProjectiveSection

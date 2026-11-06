@@ -21,7 +21,7 @@ theorem integral_generator_of_spanSingleton_eq_coeIdeal
     (FractionalIdeal.mem_coeIdeal (nonZeroDivisors (𝓞 F))).mp hxmem
   refine ⟨α, ?_, hαx, ?_⟩
   · intro hα0
-    have : (0 : F) = (x : F) := by rw [← hαx, hα0, map_zero]
+    have : (0 : F) = (x : F) := by grind
     exact Units.ne_zero x this.symm
   · apply FractionalIdeal.coeIdeal_injective (K := F)
     show ((Ideal.span {α} : Ideal (𝓞 F)) : FractionalIdeal (nonZeroDivisors (𝓞 F)) F)

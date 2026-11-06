@@ -30,7 +30,7 @@ private lemma g_top (ε : ℝ) (hε : 0 < ε) :
   obtain ⟨C, _, h⟩ := Spectral.g_growth D ε hε
   refine ⟨C, eventually_atTop.2 ⟨2, fun Z hZ => ?_⟩⟩
   have hZ0 : (0 : ℝ) < Z := by linarith
-  have e : MellinTransform.g D Z = (Z : ℂ) ^ (((61 / 100 : ℝ)) : ℂ) * Spectral.f D Z := by
+  have e : MellinTransform.g D Z = (Z : ℂ) ^ ((61 / 100 : ℝ) : ℂ) * Spectral.f D Z := by
     simp only [MellinTransform.g, if_pos hZ0]
     norm_num
   rw [e]

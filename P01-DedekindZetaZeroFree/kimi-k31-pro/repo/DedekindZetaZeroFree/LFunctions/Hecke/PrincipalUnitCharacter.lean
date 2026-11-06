@@ -15,7 +15,7 @@ def principalUnitRayCharacter (F : Type) [Field F] [NumberField F] :
   map_mul' := by
     intro I J
     by_cases hI : I = ⊥ <;> by_cases hJ : J = ⊥ <;>
-      simp [hI, hJ, Ideal.mul_eq_bot]
+      simp [hI, hJ]
   map_top' := by
     have h : (⊤ : Ideal (𝓞 F)) ≠ ⊥ := bot_lt_top.ne'
     simp [h]
@@ -24,12 +24,12 @@ def principalUnitRayCharacter (F : Type) [Field F] [NumberField F] :
     by_cases hI : I = ⊥ <;> simp [hI]
   map_span' := by
     intro α hα _ _
-    simp [Ideal.span_singleton_eq_bot, hα]
+    simp [hα]
 
 theorem principalUnitRayCharacter_apply (F : Type) [Field F] [NumberField F]
     (I : Ideal (𝓞 F)) :
     principalUnitRayCharacter F I = if I = ⊥ then 0 else 1 := by
-  rfl
+  aesop
 
 @[simp] theorem principalUnitRayCharacter_bot (F : Type) [Field F] [NumberField F] :
     principalUnitRayCharacter F ⊥ = 0 := by

@@ -139,7 +139,7 @@ theorem raw_good_rows_sum_abs (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityE
         have hexc : u ∉ DedekindZetaZeroFree.Quantitative.RawFixed.FixedData.rawExceptionalSet D ρ ((2 : ℝ) ^ k) := by
           have h := huG.2
           rw [huk] at h
-          exact h
+          grind
         exact hrow ((2 : ℝ) ^ k) (le_trans hXU hXk) u huG.1.1 hspec.1 hspec.2 hexc Z hZ1
       have hcard : ((hfin.toFinset.filter (fun u => dyadIndex D u = k)).card : ℝ) ≤
           K * (2 : ℝ) ^ k := by
@@ -180,8 +180,7 @@ theorem raw_good_rows_sum_abs (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityE
       have hspec := dyadIndex_spec' D u
       rw [huk] at hspec
       have hq : Z ^ Scales.smallCutoffExponent < q D u := huG.1.2.1
-      have hlt := not_le.mp hXk
-      linarith [hspec.2]
+      grind
   have h1 := hCaB (Z ^ Scales.smallCutoffExponent / 2) (Z ^ Scales.largeCutoffExponent) hY
   have h2 := hCnB (Z ^ Scales.smallCutoffExponent / 2) (Z ^ Scales.largeCutoffExponent) hX1
   rw [Finset.sum_filter] at h1 h2
@@ -209,7 +208,7 @@ theorem raw_good_rows_sum_abs (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityE
         (2 : ℝ) ^ k * ((2 : ℝ) ^ k) ^ (-(10 : ℝ)) := by
       rw [Real.rpow_add hp (1 : ℝ) (-10), Real.rpow_one]
     split_ifs
-    · rw [e1, e2]; ring
+    · grind
     · ring
   have hA1 : Z ^ (Scales.kernelExponent Scales.goodLine Scales.wLine Scales.zLine) *
       (Z ^ Scales.largeCutoffExponent) ^ ((1 : ℝ) + (1 / 25 + 1 / 10000)) ≤ Z ^ (717 / 2000 : ℝ) := by
@@ -238,7 +237,7 @@ theorem raw_good_rows_sum_abs (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityE
           (Cn * (Z ^ Scales.smallCutoffExponent / 2) ^ ((1 : ℝ) + -10)) :=
         add_le_add (mul_le_mul_of_nonneg_left h1 (by positivity))
           (mul_le_mul_of_nonneg_left h2 (by positivity))
-    _ ≤ (K * C * Ca + K * C * Cn) * Z ^ (717 / 2000 : ℝ) := by nlinarith [t1, t2]
+    _ ≤ (K * C * Ca + K * C * Cn) * Z ^ (717 / 2000 : ℝ) := by grind
 
 end
 

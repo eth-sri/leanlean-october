@@ -32,7 +32,7 @@ private lemma divisor_bin (X : ℝ) (hX : 1 ≤ 2 * X)
   cases hj0 : j with
   | zero =>
     refine ⟨1, Finset.mem_insert_self _ _, le_refl _, hf1, hf, ?_, ?_⟩
-    · simp only [if_pos rfl]; exact hf1
+    · simp only; exact hf1
     · have hle : norm f ≤ 1 := by simpa only [hj0, pow_zero] using hj
       linarith
   | succ k =>
@@ -96,8 +96,7 @@ theorem short_divisor_geometry (C : Context Q) (B : ℝ)
   have hf₁0 : f₁ ≠ ⊥ := by intro hh; simp [hh] at hff; exact hf0 hff
   have hf₂0 : f₂ ≠ ⊥ := by intro hh; simp [hh] at hff; exact hf0 hff
   have hpn (u : Ideal (𝓞 F)) (hu : u ∈ C.columns) :
-      norm u ≤ 2 * C.N / norm C.d := by
-    exact ((Sieve.mem_idealAdmissibleFinset _ _ _ _).mp
+      norm u ≤ 2 * C.N / norm C.d := ((Sieve.mem_idealAdmissibleFinset _ _ _ _).mp
       (Finset.mem_filter.mp hu).1).2.2
   have hfn₁ : norm f₁ ≤ norm p.1 := by
     unfold norm

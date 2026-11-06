@@ -5,6 +5,7 @@ public import Mathlib.GroupTheory.QuotientGroup.Defs
 public import Mathlib.Topology.Algebra.ContinuousMonoidHom
 public import Mathlib.Topology.Algebra.Group.Quotient
 public import Mathlib.Topology.Algebra.Group.Subgroup
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -51,14 +52,12 @@ theorem connectedComponentOfOne_map_equiv (e : G ≃ₜ* H) :
   · rintro ⟨x, hx, rfl⟩
     change e x ∈ connectedComponent (1 : H)
     have h := e.continuous.mapsTo_connectedComponent (1 : G) hx
-    change e x ∈ connectedComponent (e 1) at h
-    simpa only [map_one] using h
+    measurability
   · intro hy
     refine ⟨e.symm y, ?_, e.apply_symm_apply y⟩
     change e.symm y ∈ connectedComponent (1 : G)
     have h := e.symm.continuous.mapsTo_connectedComponent (1 : H) hy
-    change e.symm y ∈ connectedComponent (e.symm 1) at h
-    simpa only [map_one] using h
+    measurability
 
 /-- An equivalence of topological groups descends to a
 topological group equivalence modulo the identity components. -/
@@ -75,19 +74,12 @@ noncomputable def connectedComponentQuotientCongr (e : G ≃ₜ* H) :
     apply (QuotientGroup.isQuotientMap_mk G₀).continuous_iff.mpr
     have hcomp : Continuous (fun g : G => QuotientGroup.mk' H₀ (e g)) :=
       QuotientGroup.continuous_mk.comp e.continuous
-    refine hcomp.congr ?_
-    intro g
-    exact (QuotientGroup.congr_mk' G₀ H₀ e.toMulEquiv he g).symm
+    measurability
   have hinv : Continuous eQ.symm := by
     apply (QuotientGroup.isQuotientMap_mk H₀).continuous_iff.mpr
     have hcomp : Continuous (fun h : H => QuotientGroup.mk' G₀ (e.symm h)) :=
       QuotientGroup.continuous_mk.comp e.symm.continuous
-    refine hcomp.congr ?_
-    intro h
-    change QuotientGroup.mk' G₀ (e.symm h) =
-      (QuotientGroup.congr G₀ H₀ e.toMulEquiv he).symm
-        (QuotientGroup.mk' H₀ h)
-    rfl
+    measurability
   exact
     { toMulEquiv := eQ
       continuous_toFun := hcont

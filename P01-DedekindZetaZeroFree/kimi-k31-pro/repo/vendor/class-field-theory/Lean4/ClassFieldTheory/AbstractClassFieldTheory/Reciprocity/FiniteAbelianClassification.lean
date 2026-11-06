@@ -83,20 +83,7 @@ theorem normSubgroupMap_val
     (L.normSubgroupMap A).1 = L.normSubgroup A :=
   rfl
 
-/-- The subgroup product `N_{L₁}N_{L₂}` (a supremum in additive
-notation) is open in the norm topology.  It contains the defining norm
-neighbourhood attached to `L₁`. -/
-theorem sup_normSubgroup_isOpen (A : Rep ℤ G)
-    (L₁ L₂ : FiniteAbelianSubextension K) :
-    IsNormOpen A K
-      ((L₁.normSubgroup A ⊔ L₂.normSubgroup A :
-        AddSubgroup (ambientFixedAddSubgroup A K)) :
-        Set (ambientFixedAddSubgroup A K)) := by
-  apply (normTopology_addSubgroup_isOpen_iff A K
-    (L₁.normSubgroup A ⊔ L₂.normSubgroup A)).2
-  refine ⟨L₁.toFiniteGaloisExtension, ?_⟩
-  change L₁.normSubgroup A ≤ L₁.normSubgroup A ⊔ L₂.normSubgroup A
-  exact le_sup_left
+
 
 /-- The finite classification compositum argument, isolated as a private diagram chase.
 The final public theorem supplies the three bijectivity facts directly from
@@ -307,77 +294,9 @@ theorem compositumRestrictionRight_mk
       L₂.extensionQuotientMk k := by
   exact restriction_mk (L₁.le_compositum_right L₂) k
 
-/-- The two restriction maps from the Galois group of a compositum are
-jointly injective.  This is proved on the literal quotient representatives:
-an element trivial modulo both field subgroups lies in their intersection,
-which is the subgroup representing the compositum. -/
-theorem compositumRestriction_joint_injective
-    {G : Type*} [Group G] [TopologicalSpace G] {K : ClosedSubgroup G}
-    (L₁ L₂ : FiniteAbelianSubextension K) :
-    Function.Injective (fun q : (L₁.compositum L₂).extensionQuotient ↦
-      (compositumRestrictionLeft L₁ L₂ q,
-        compositumRestrictionRight L₁ L₂ q)) := by
-  intro x y
-  revert y
-  refine (L₁.compositum L₂).extensionQuotient_inductionOn
-    (motive := fun x ↦ ∀ y,
-      (compositumRestrictionLeft L₁ L₂ x,
-        compositumRestrictionRight L₁ L₂ x) =
-          (compositumRestrictionLeft L₁ L₂ y,
-            compositumRestrictionRight L₁ L₂ y) → x = y) x ?_
-  intro a y
-  refine (L₁.compositum L₂).extensionQuotient_inductionOn
-    (motive := fun y ↦
-      (compositumRestrictionLeft L₁ L₂
-          ((L₁.compositum L₂).extensionQuotientMk a),
-        compositumRestrictionRight L₁ L₂
-          ((L₁.compositum L₂).extensionQuotientMk a)) =
-        (compositumRestrictionLeft L₁ L₂ y,
-          compositumRestrictionRight L₁ L₂ y) →
-        (L₁.compositum L₂).extensionQuotientMk a = y) y ?_
-  intro b hab
-  have hleft :
-      L₁.extensionQuotientMk a = L₁.extensionQuotientMk b :=
-    congrArg Prod.fst hab
-  have hright :
-      L₂.extensionQuotientMk a = L₂.extensionQuotientMk b :=
-    congrArg Prod.snd hab
-  have hleftRaw := congrArg L₁.extensionQuotientMulEquiv hleft
-  have hrightRaw := congrArg L₂.extensionQuotientMulEquiv hright
-  simp only [L₁.extensionQuotientMk_apply] at hleftRaw
-  simp only [L₂.extensionQuotientMk_apply] at hrightRaw
-  apply (L₁.compositum L₂).extensionQuotientMulEquiv.injective
-  simp only [FiniteAbelianSubextension.extensionQuotientMk_apply]
-  apply QuotientGroup.eq.mpr
-  apply (mem_extensionSubgroup_iff K (L₁.compositum L₂).field
-    (L₁.compositum L₂).below _).2
-  exact ⟨
-    (mem_extensionSubgroup_iff K L₁.field L₁.below _).1
-      (QuotientGroup.eq.mp hleftRaw),
-    (mem_extensionSubgroup_iff K L₂.field L₂.below _).1
-      (QuotientGroup.eq.mp hrightRaw)⟩
 
-/-- Equivalently, the kernels of the two restrictions have trivial
-intersection.  This is the literal group statement used in the first
-paragraph of the proof of the finite abelian classification theorem. -/
-theorem ker_compositumRestrictionLeft_inf_ker_compositumRestrictionRight
-    {G : Type*} [Group G] [TopologicalSpace G] {K : ClosedSubgroup G}
-    (L₁ L₂ : FiniteAbelianSubextension K) :
-    (compositumRestrictionLeft L₁ L₂).ker ⊓
-        (compositumRestrictionRight L₁ L₂).ker = ⊥ := by
-  ext q
-  constructor
-  · intro hq
-    rw [Subgroup.mem_inf] at hq
-    rw [Subgroup.mem_bot]
-    apply compositumRestriction_joint_injective L₁ L₂
-    apply Prod.ext
-    · simpa using hq.1
-    · simpa using hq.2
-  · intro hq
-    rw [Subgroup.mem_bot] at hq
-    subst q
-    simp
+
+
 
 /-! ## Recovering a field from the order of its finite quotient -/
 
@@ -489,36 +408,7 @@ private theorem le_iff_normSubgroup_le_of_compositum_and_reciprocity
     rw [hL₂P]
     exact le_compositum_left L₁ L₂
 
-/-- The final surjectivity step: surjectivity and order reversal turn
-the unconditional inclusion for an intersection field into equality. -/
-private theorem normSubgroup_intersection_eq_sup_of_surjective_and_order
-    [IsTopologicalGroup G] [CompactSpace G]
-    (A : Rep ℤ G) (K : ClosedSubgroup G)
-    (L₁ L₂ : FiniteAbelianSubextension K)
-    (hsurjective : ∀ H : AddSubgroup (ambientFixedAddSubgroup A K),
-      IsNormOpen A K (H : Set (ambientFixedAddSubgroup A K)) →
-        ∃ L : FiniteAbelianSubextension K, L.normSubgroup A = H)
-    (horder : ∀ X Y : FiniteAbelianSubextension K,
-      X ≤ Y ↔ Y.normSubgroup A ≤ X.normSubgroup A) :
-    (L₁.intersection L₂).normSubgroup A =
-      L₁.normSubgroup A ⊔ L₂.normSubgroup A := by
-  apply le_antisymm
-  · let H := L₁.normSubgroup A ⊔ L₂.normSubgroup A
-    obtain ⟨L, hL⟩ := hsurjective H (sup_normSubgroup_isOpen A L₁ L₂)
-    have hLL₁ : L ≤ L₁ := by
-      apply (horder L L₁).2
-      rw [hL]
-      exact le_sup_left
-    have hLL₂ : L ≤ L₂ := by
-      apply (horder L L₂).2
-      rw [hL]
-      exact le_sup_right
-    have hLintersection : L ≤ L₁.intersection L₂ :=
-      le_intersection hLL₁ hLL₂
-    have hnorm := normSubgroup_antitone A hLintersection
-    rw [hL] at hnorm
-    exact hnorm
-  · exact sup_normSubgroup_le_intersection A L₁ L₂
+
 
 end FiniteAbelianSubextension
 
@@ -715,30 +605,7 @@ private theorem classFieldCandidate_normSubgroup_eq_of_reciprocity
         _ = 0 := map_zero _
     exact (finiteNormClass_eq_zero_iff A K.field M.field M.below a).1 hzM
 
-/-- The third-isomorphism quotient by `S` is literally restriction from
-`E / K` to the intermediate field fixed by `S`.  This representative-level
-identity connects the candidate quotient in the surjectivity construction
-of the finite abelian classification theorem to restriction compatibility's restriction map. -/
-theorem upperQuotientEquiv_quotientMk_eq_restriction
-    {G : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
-    {K : ClosedSubgroup G}
-    (E : FiniteGaloisSubextension K) (S : Subgroup E.extensionQuotient)
-    [hS : S.Normal] (q : E.extensionQuotient) :
-    letI : (extensionSubgroup K E.field E.below).Normal := E.normal
-    letI : (extensionSubgroup K (E.intermediateField S)
-      (E.intermediateField_le_base S)).Normal :=
-      E.intermediateField_normal S hS
-    E.upperQuotientEquiv S (QuotientGroup.mk q) =
-      abstractReciprocityRestriction K (E.intermediateField S) E.field
-        (E.field_le_intermediateField S)
-        (E.intermediateField_le_base S) q := by
-  let : (extensionSubgroup K E.field E.below).Normal := E.normal
-  let : (extensionSubgroup K (E.intermediateField S)
-      (E.intermediateField_le_base S)).Normal :=
-    E.intermediateField_normal S hS
-  refine QuotientGroup.induction_on q ?_
-  intro k
-  exact E.upperQuotientEquiv_mk_mk S k
+
 
 end FiniteGaloisSubextension
 end ClassFormation
@@ -939,26 +806,7 @@ theorem normSubgroupOrderIso_apply
       L.normSubgroup A :=
   rfl
 
-/-- The second displayed formula in the finite abelian classification theorem: the norm subgroup of the
-intersection field is the product of the two norm subgroups (their supremum
-in additive notation). -/
-theorem normSubgroup_intersection
-    (v : ValuationData D A) (hcf : SatisfiesClassFieldAxiom A)
-    [IsTopologicalGroup G] [CompactSpace G] [T2Space G]
-    [TotallyDisconnectedSpace G]
-    (K : FiniteAbstractField G)
-    (L₁ L₂ : FiniteAbelianSubextension K.field) :
-    (L₁.intersection L₂).normSubgroup A =
-      L₁.normSubgroup A ⊔ L₂.normSubgroup A := by
-  apply normSubgroup_intersection_eq_sup_of_surjective_and_order
-    A K.field L₁ L₂
-  · intro H hH
-    let Hopen : NormOpenAddSubgroup A K.field := ⟨H, hH⟩
-    obtain ⟨L, hL⟩ :=
-      normSubgroupMap_surjective v hcf K Hopen
-    refine ⟨L, ?_⟩
-    exact congrArg Subtype.val hL
-  · exact le_iff_normSubgroup_le v hcf K
+
 
 end FiniteAbelianSubextension
 end ClassFormation

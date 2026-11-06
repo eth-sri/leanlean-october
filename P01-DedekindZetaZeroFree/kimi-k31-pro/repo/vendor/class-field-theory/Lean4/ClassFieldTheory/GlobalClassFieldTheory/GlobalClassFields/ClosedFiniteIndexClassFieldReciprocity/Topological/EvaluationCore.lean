@@ -1,6 +1,7 @@
 module
 
 public import ClassFieldTheory.GlobalClassFieldTheory.GlobalClassFields.ClosedFiniteIndexClassFieldReciprocity.Topological.EvaluationValue
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -56,16 +57,7 @@ theorem globalReciprocityContinuousMulEquiv_trans_quotientOfEq_apply
         (Additive.toMul
           ((globalNormResidueEquiv K L).symm
             (Additive.ofMul σ))) := by
-  calc
-    _ = QuotientGroup.quotientContinuousMulEquivOfEq hNorm
-        (globalReciprocityContinuousMulEquiv K L σ) := rfl
-    _ = QuotientGroup.quotientMulEquivOfEq hNorm
-        (globalReciprocityContinuousMulEquiv K L σ) :=
-      QuotientGroup.quotientContinuousMulEquivOfEq_apply _ _
-    _ = _ :=
-      congrArg
-        (QuotientGroup.quotientMulEquivOfEq hNorm)
-        (globalReciprocityContinuousMulEquiv_apply K L σ)
+  norm_num
 
 end GlobalClassFields
 end GlobalClassFieldTheory

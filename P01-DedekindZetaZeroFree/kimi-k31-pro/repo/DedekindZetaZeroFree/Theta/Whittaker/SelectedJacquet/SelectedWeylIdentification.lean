@@ -58,14 +58,14 @@ theorem archMatrixInsertion_local_diagonal (w : InfinitePlace F) (y : ℂˣ) :
   | inl u =>
     by_cases hu : u = w
     · subst u
-      simp only [Function.update_self, Pi.mulSingle_eq_same]
+      simp only [Pi.mulSingle_eq_same]
       change KPLocalCover.sectionMap F R.A.zeta12 R.A.primitive_zeta12 (Sum.inl w) _ =
         KPLocalCover.sectionMap F R.A.zeta12 R.A.primitive_zeta12 (Sum.inl w) _
       congr 1
       apply Matrix.GeneralLinearGroup.ext
       intro i j
       fin_cases i <;> fin_cases j <;>
-        simp [KPCplxCharacterHaar.diagonal, KPStandardLocalRootLifts.A, KubotaRankTwo.d,
+        simp [KPCplxCharacterHaar.diagonal, KubotaRankTwo.d,
           Matrix.GeneralLinearGroup.map]
     · rw [Pi.mulSingle_eq_of_ne (Sum.inl_injective.ne hu), KPStandardLocalRootLifts.A_one]
       change KPLocalCover.sectionMap F R.A.zeta12 R.A.primitive_zeta12 (Sum.inl u)

@@ -460,7 +460,7 @@ theorem coefficient_arguments_units (A : SArithmeticData F) (G : AllowedRecipe A
     have hd := exponent_zero _ _ hnot.1
     have hf := exponent_zero _ _ hnot.2
     have hc := exponent_one _ v.c.property.1 v.c_squarefree p.val hp
-    simp only [cArgument, mul_order, div_order, zpow_order, pow_order, unit_order,
+    simp only [cArgument, mul_order, div_order, zpow_order, unit_order,
       generator_order, prime_exp, ha, hd, hf, hc]
     ring
 
@@ -658,7 +658,7 @@ private theorem order_coordinateRepresentative_of_mem_d (A : SArithmeticData F)
     (coprime_parts_aux A G m D b v p.val (Or.inl hp)).1
   have hn : p.val ∉ support v.n.val :=
     (coprime_parts_aux A G m D b v p.val (Or.inl hp)).2
-  simp only [coordinateRepresentative, ord_div, ord_mul, ord_zpow, ord_pow,
+  simp only [coordinateRepresentative, ord_div, ord_mul, ord_pow,
     unit_ord_aux, generator_order, exponent_zero_aux _ _ ha, exponent_zero_aux _ _ hc,
     exponent_zero_aux _ _ hn, exponent_one_aux _ D.d.property.1 D.squarefree p.val hp,
     exponent_zero_aux _ _ hf]
@@ -675,7 +675,7 @@ private theorem order_coordinateRepresentative_of_mem_f (A : SArithmeticData F)
     (coprime_parts_aux A G m D b v p.val (Or.inr hp)).1
   have hn : p.val ∉ support v.n.val :=
     (coprime_parts_aux A G m D b v p.val (Or.inr hp)).2
-  simp only [coordinateRepresentative, ord_div, ord_mul, ord_zpow, ord_pow,
+  simp only [coordinateRepresentative, ord_div, ord_mul, ord_pow,
     unit_ord_aux, generator_order, exponent_zero_aux _ _ hd, exponent_zero_aux _ _ hc,
     exponent_zero_aux _ _ hn, exponent_one_aux _ b.f.property.1 b.squarefree p.val hp]
   ring
@@ -688,7 +688,7 @@ private theorem order_coordinateRepresentative_of_not_mem (A : SArithmeticData F
       idealPrimeExponent p.val.asIdeal v.c.val +
         3 * idealPrimeExponent p.val.asIdeal v.n.val := by
   have ha : p.val ∉ support v.a.val := supported_a_aux A G m D b v p.val hf
-  simp only [coordinateRepresentative, ord_div, ord_mul, ord_zpow, ord_pow,
+  simp only [coordinateRepresentative, ord_div, ord_mul, ord_pow,
     unit_ord_aux, generator_order, exponent_zero_aux _ _ ha, exponent_zero_aux _ _ hd,
     exponent_zero_aux _ _ hf]
   ring
@@ -701,11 +701,11 @@ private theorem localUnit_coordinateRepresentative_of_mem_d (A : SArithmeticData
       dArgument A G U m D b v p := by
   rw [localUnit, order_coordinateRepresentative_of_mem_d A G U m D b v p hp]
   simp only [coordinateRepresentative, dArgument]
-  simp only [zpow_sub, zpow_add, zpow_neg, zpow_ofNat, zpow_natCast,
-    div_pow, mul_pow, div_eq_mul_inv, mul_inv_rev, inv_inv, inv_pow]
+  simp only [zpow_neg, zpow_ofNat, 
+    mul_pow, div_eq_mul_inv, mul_inv_rev, inv_inv, inv_pow]
   apply Units.ext
   simp only [Units.val_mul, Units.val_inv_eq_inv_val, Units.val_pow_eq_pow_val,
-    Units.val_zpow_eq_zpow_val, zpow_natCast, pow_one, ← Nat.cast_mul, ← pow_mul]
+    ]
   field_simp
   <;> ring
 
@@ -720,11 +720,11 @@ private theorem localUnit_coordinateRepresentative_of_mem_f (A : SArithmeticData
       (idealPrimeExponent p.val.asIdeal v.a.val : ℤ) - 2 := by omega
   rw [localUnit, ho']
   simp only [coordinateRepresentative, fArgument]
-  simp only [zpow_sub, zpow_add, zpow_neg, zpow_ofNat, zpow_natCast,
-    div_pow, mul_pow, div_eq_mul_inv, mul_inv_rev, inv_inv, inv_pow]
+  simp only [zpow_sub, zpow_neg, zpow_ofNat, zpow_natCast,
+    mul_pow, div_eq_mul_inv, mul_inv_rev, inv_inv, inv_pow]
   apply Units.ext
   simp only [Units.val_mul, Units.val_inv_eq_inv_val, Units.val_pow_eq_pow_val,
-    Units.val_zpow_eq_zpow_val, zpow_natCast, pow_one, ← Nat.cast_mul, ← pow_mul]
+    ]
   field_simp
   <;> ring
 
@@ -741,11 +741,11 @@ private theorem localUnit_coordinateRepresentative_of_mem_c (A : SArithmeticData
   rw [localUnit, order_coordinateRepresentative_of_not_mem A G U m D b v p hd hf,
     exponent_one_aux _ v.c.property.1 v.c_squarefree p.val hp]
   simp only [coordinateRepresentative, cArgument, localUnit, generator_order, Nat.cast_one]
-  simp only [zpow_sub, zpow_add, zpow_neg, zpow_ofNat, zpow_natCast,
-    div_pow, mul_pow, div_eq_mul_inv, mul_inv_rev, inv_inv, inv_pow]
+  simp only [zpow_add, zpow_neg, zpow_ofNat, zpow_natCast,
+    mul_pow, div_eq_mul_inv, mul_inv_rev, inv_pow]
   apply Units.ext
   simp only [Units.val_mul, Units.val_inv_eq_inv_val, Units.val_pow_eq_pow_val,
-    Units.val_zpow_eq_zpow_val, zpow_natCast, pow_one, ← Nat.cast_mul, ← pow_mul]
+    Units.val_zpow_eq_zpow_val, pow_one, ← pow_mul]
   field_simp
   ring_nf
   change (_ : F) ^ (idealPrimeExponent p.val.asIdeal v.n.val * 3) =
@@ -1142,7 +1142,7 @@ lemma mem_extSupport (A : SArithmeticData F) (I : A.Exterior) (p : ExteriorPrime
 private lemma ext_prod (A : SArithmeticData F) (I : A.Exterior)
     {M : Type*} [CommMonoid M] (f : ExteriorPrime A → M) :
     (∏ p ∈ extSupport A I, f p) = ∏ p : {p // p ∈ support I.val}, f (supportPrime A I p) := by
-  simp only [extSupport, Finset.prod_map, ← Finset.prod_attach (support I.val)]
+  simp only [extSupport, Finset.prod_map]
   rfl
 
 lemma ext_prod_val (A : SArithmeticData F) (I : A.Exterior)
@@ -2028,7 +2028,7 @@ private lemma ord_mul (p : HeightOneSpectrum (𝓞 F)) (x y : Fˣ) :
     ((Valuation.ne_zero_iff _).mpr y.ne_zero), neg_add]
 private lemma ord_pow (p : HeightOneSpectrum (𝓞 F)) (x : Fˣ) (n : ℕ) :
     order p (x ^ n) = (n : ℤ) * order p x := by
-  simp only [order, Units.val_pow_eq_pow_val, map_pow, WithZero.log_pow, smul_eq_mul]
+  simp only [order, Units.val_pow_eq_pow_val, map_pow, WithZero.log_pow]
   ring
 private lemma ord_div (p : HeightOneSpectrum (𝓞 F)) (x y : Fˣ) :
     order p (x / y) = order p x - order p y := by

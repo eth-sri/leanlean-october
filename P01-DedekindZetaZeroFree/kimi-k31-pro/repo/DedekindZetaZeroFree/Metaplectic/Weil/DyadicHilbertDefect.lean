@@ -71,8 +71,7 @@ private lemma phase_product (A : SArithmeticData F) (x : Fˣ) :
   have hprod := sum_prod (A.globalQuadraticWeilPhase x) hs
   have heq (v : HeightOneSpectrum (𝓞 F)) :
       A.globalQuadraticWeilPhase x (Sum.inr v) =
-        A.finiteWeilPhase v (Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom x) := by
-    rfl
+        A.finiteWeilPhase v (Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom x) := rfl
   constructor
   · have hp2 := hprod.symm.trans hp.2
     simpa only [heq] using hp2

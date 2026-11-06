@@ -64,7 +64,7 @@ theorem exists_tame_cubic_unit_detecting_exponent
     intro x
     obtain ⟨u, hx⟩ := exists_integerUnit_mul_uniformizer_zpow K π⁻¹ hvπinv x
     rw [← hx]
-    simp only [map_mul, map_zpow, map_inv, MonoidHom.zpow_apply, MonoidHom.inv_apply]
+    simp only [map_mul, map_zpow, map_inv, MonoidHom.zpow_apply]
     have huu := hu u
     simp only [map_zpow, MonoidHom.zpow_apply] at huu
     change B (p π) (p ((integerUnitsToFieldUnits K) u)) ^ e = 1 at huu

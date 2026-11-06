@@ -54,7 +54,7 @@ theorem full_mass_cross_cancel (φ : G F ζ hζ → ℂ) (hφ : Continuous φ)
         (nativeAtlas F ζ hζ R P (nativeRecipe F ζ hζ R P) V) ω.1).val) ∂dk
       ∂(nativeDisintegration F ζ hζ R P (nativeRecipe F ζ hζ R P) V).beta := by
   rw [cross_full_integral M V φ hφ dk,normalizedShapeBeta,integral_smul_measure]
-  simp only [ENNReal.toReal_inv,RCLike.real_smul_eq_coe_mul,Complex.ofReal_inv,← mul_assoc]
+  simp only [ENNReal.toReal_inv,RCLike.real_smul_eq_coe_mul,← mul_assoc]
   have hm : ((fullMass M).toReal:ℂ) * (((fullMass M).toReal)⁻¹:ℝ) = 1 := by
     exact_mod_cast mul_inv_cancel₀ (ENNReal.toReal_pos (fullMass_pos M).ne' (fullMass_ne_top M)).ne'
   change (((fullMass M).toReal:ℂ) * (((fullMass M).toReal)⁻¹:ℝ)) * _ = _

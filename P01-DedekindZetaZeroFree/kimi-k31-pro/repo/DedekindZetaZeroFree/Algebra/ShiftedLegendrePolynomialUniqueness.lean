@@ -27,36 +27,20 @@ private lemma Lc_rec (ℓ k : ℕ) :
       exact_mod_cast h.symm
     have hkey : (k : ℤ) * ((k + 1 : ℕ) : ℤ) - (ℓ : ℤ) * ((ℓ : ℤ) + 1)
         = -(((ℓ - k : ℕ) : ℤ) * ((ℓ + (k + 1) : ℕ) : ℤ)) := by
-      rw [Nat.cast_sub (le_of_lt hk)]
-      push_cast
-      ring
+      grind
     have hXY : ((k + 1 : ℤ) ^ 2) * ((ℓ.choose (k + 1) : ℤ) * ((ℓ + (k + 1)).choose ℓ : ℤ))
         = (ℓ.choose k : ℤ) * ((ℓ + k).choose ℓ : ℤ)
           * (((ℓ - k : ℕ) : ℤ) * ((ℓ + (k + 1) : ℕ) : ℤ)) := by
-      rw [show ((k + 1 : ℤ) ^ 2) * ((ℓ.choose (k + 1) : ℤ) * ((ℓ + (k + 1)).choose ℓ : ℤ))
-            = ((ℓ.choose (k + 1) : ℤ) * ((k + 1 : ℕ) : ℤ))
-              * (((ℓ + (k + 1)).choose ℓ : ℤ) * ((k + 1 : ℕ) : ℤ)) by push_cast; ring,
-        h1, h2]
-      ring
-    have hp : (-1 : ℤ) ^ (k + 1) = -((-1 : ℤ) ^ k) := by rw [pow_succ]; ring
+      grind
+    have hp : (-1 : ℤ) ^ (k + 1) = -((-1 : ℤ) ^ k) := by grind
     simp only [Lc]
-    rw [show ((k + 1 : ℤ) ^ 2)
-            * ((-1) ^ (k + 1) * (ℓ.choose (k + 1) : ℤ) * ((ℓ + (k + 1)).choose ℓ : ℤ))
-          = (-1) ^ (k + 1)
-            * (((k + 1 : ℤ) ^ 2) * ((ℓ.choose (k + 1) : ℤ) * ((ℓ + (k + 1)).choose ℓ : ℤ)))
-          by ring,
-      hXY, hp, hkey]
-    ring
+    grind
   · have hA1 : Lc ℓ (k + 1) = 0 := by
       simp only [Lc]
-      have : ℓ.choose (k + 1) = 0 := Nat.choose_eq_zero_of_lt (by omega)
-      simp [this]
+      grind
     rw [hA1, mul_zero]
     rcases eq_or_lt_of_le (not_lt.mp hk) with h | h
-    · subst h
-      simp only [Lc]
-      push_cast
-      ring
+    · simp_all
     · have : ℓ.choose k = 0 := Nat.choose_eq_zero_of_lt h
       simp [Lc, this]
 
@@ -101,7 +85,7 @@ theorem polynomial_shiftedLegendre_ode_unique {K : Type*} [Field K] [CharZero K]
     rw [hop] at h
     simp only [coeff_zero] at h
     rw [coeff_op] at h
-    exact sub_eq_zero.mp h
+    grind
   have hPcoeff : ∀ j, P.coeff j = (Lc ℓ j : K) := by
     intro j
     rw [hP, Polynomial.coeff_map, Polynomial.coeff_shiftedLegendre]
@@ -119,20 +103,13 @@ theorem polynomial_shiftedLegendre_ode_unique {K : Type*} [Field K] [CharZero K]
       have h1 := hQrec n
       have h2 := hPrec n
       rw [ih] at h1
-      have hne : (((n + 1 : ℕ)) : K) ^ 2 ≠ 0 := by
+      have hne : ((n + 1 : ℕ) : K) ^ 2 ≠ 0 := by
         have : ((n + 1 : ℕ) : K) ≠ 0 := by exact_mod_cast Nat.succ_ne_zero n
         positivity
-      have key : (((n + 1 : ℕ)) : K) ^ 2 * Q.coeff (n + 1)
-          = (((n + 1 : ℕ)) : K) ^ 2 * (Q.coeff 0 * P.coeff (n + 1)) := by
-        have e1 : (((n + 1 : ℕ)) : K) ^ 2 * (Q.coeff 0 * P.coeff (n + 1))
-            = Q.coeff 0 * ((((n + 1 : ℕ)) : K) ^ 2 * P.coeff (n + 1)) := by ring
-        rw [e1, h2, h1]
-        ring
-      exact mul_left_cancel₀ hne key
+      grind
   have hQeq : Q = Polynomial.C (Q.coeff 0) * P := by
     ext k
-    rw [hcoeff k]
-    simp [Polynomial.coeff_C_mul]
+    grind
   exact hQeq.trans (by rw [Polynomial.coeff_zero_eq_eval_zero])
 
 end DedekindZetaZeroFree.ComplexFractionalInverse.FunkHecke.CircleAverage

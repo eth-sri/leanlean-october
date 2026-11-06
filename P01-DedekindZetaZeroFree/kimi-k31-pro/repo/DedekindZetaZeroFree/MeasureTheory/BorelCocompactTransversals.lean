@@ -51,8 +51,7 @@ theorem exists_measurable_relativelyCompact_exact_transversal_of_finite_slices
     have hex : ∃ i : Fin n, (QuotientGroup.mk : G → G ⧸ Γ) y ∈
         (QuotientGroup.mk : G → G ⧸ Γ) '' V i := by
       have h : (QuotientGroup.mk y) ∈ ⋃ i : Fin n, (QuotientGroup.mk : G → G ⧸ Γ) '' V i := by
-        rw [hcover]
-        exact Set.mem_univ _
+        grind
       exact Set.mem_iUnion.mp h
 
     obtain ⟨i₀, hi₀mem, hi₀min⟩ :
@@ -93,7 +92,7 @@ theorem exists_measurable_relativelyCompact_exact_transversal_of_finite_slices
           have hprod : (((⟨v * y⁻¹, hmemΓ⟩ : Γ) * γ'⁻¹ : Γ) : G) * ((γ' : G) * y) = v := by
             simp only [Subgroup.coe_mul, Subgroup.coe_inv, Subtype.coe_mk, mul_assoc,
               inv_mul_cancel_left, inv_mul_cancel, mul_one]
-          rwa [hprod]
+          grind
       rw [hii] at hi'V
       have hEq : (γ' : G) * y = v := by
         refine (hinj i₀) hi'V hv ?_

@@ -31,8 +31,7 @@ theorem norm_le_exterior_prime_product
     obtain ⟨v, hv, hvJ⟩ := Multiset.mem_bind.mp hJ
     have heq := Multiset.eq_of_mem_replicate hvJ
     exact v.ne_bot heq.symm
-  have hnormM : 0 < Ideal.absNorm M.prod := by
-    exact Nat.pos_of_ne_zero (mt Ideal.absNorm_eq_zero_iff.mp hM)
+  have hnormM : 0 < Ideal.absNorm M.prod := Nat.pos_of_ne_zero (mt Ideal.absNorm_eq_zero_iff.mp hM)
   refine ⟨(Ideal.absNorm M.prod : ℝ), by exact_mod_cast hnormM, ?_⟩
   intro I hI T hin hout hT
   let N : Multiset (Ideal (𝓞 F)) := T.val.map HeightOneSpectrum.asIdeal

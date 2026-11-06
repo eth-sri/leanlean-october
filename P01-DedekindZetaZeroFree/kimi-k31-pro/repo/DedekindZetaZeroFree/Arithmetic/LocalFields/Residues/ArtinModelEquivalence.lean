@@ -16,7 +16,7 @@ local instance cftResidueValuativeRel (p : ExteriorPrime A) : ValuativeRel (Loca
 def integerRingEquiv (p : ExteriorPrime A) : LocalIntegers p ≃+* (ValuativeRel.valuation (LocalField p)).integer := by
   letI : (Valued.v : Valuation (LocalField p) (WithZero (Multiplicative ℤ))).Compatible := Valuation.Compatible.ofValuation _
   have he := (Valuation.isEquiv_iff_valuationSubring _ _).mp (ValuativeRel.isEquiv (Valued.v : Valuation (LocalField p) (WithZero (Multiplicative ℤ))) (ValuativeRel.valuation (LocalField p)))
-  exact RingEquiv.restrict (RingEquiv.refl _) _ _ (fun x => by change x ∈ (Valued.v : Valuation (LocalField p) (WithZero (Multiplicative ℤ))).valuationSubring ↔ x ∈ (ValuativeRel.valuation (LocalField p)).valuationSubring; rw [he])
+  exact RingEquiv.restrict (RingEquiv.refl _) _ _ (fun x => by change x ∈ (Valued.v : Valuation (LocalField p) (WithZero (Multiplicative ℤ))).valuationSubring ↔ x ∈ (ValuativeRel.valuation (LocalField p)).valuationSubring; grind)
 
 local instance cftResidueLocalField (p : ExteriorPrime A) : IsNonarchimedeanLocalField (LocalField p) := ClassFieldTheory.finitePlaceCompletionIsNonarchimedeanLocalField F p.val
 

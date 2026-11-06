@@ -639,38 +639,9 @@ theorem finrank :
     _ = (NumberField.Units.rank K : Cardinal) +
         (S.card : Cardinal) := by rw [add_comm]
 
-/-- The `S`-unit rank in quotient-by-torsion form. -/
-theorem finrank_modTorsion :
-    Module.finrank ℤ
-        (Additive
-          (SUnitGroup (K := K) S ⧸
-            CommGroup.torsion (SUnitGroup (K := K) S))) =
-      NumberField.Units.rank K + S.card := by
-  calc
-    Module.finrank ℤ
-        (Additive
-          (SUnitGroup (K := K) S ⧸
-            CommGroup.torsion (SUnitGroup (K := K) S))) =
-        Module.finrank ℤ (Additive (SUnitGroup (K := K) S)) := by
-      simpa using!
-        (finrank_quotient_torsion_eq
-          (M := Additive (SUnitGroup (K := K) S)))
-    _ = NumberField.Units.rank K + S.card :=
-      finrank (K := K) S
 
-/-- Cardinality form of the `S`-unit rank:
-`#S_infinite + #S_finite - 1`. -/
-theorem finrank_modTorsion_eq_card_infinitePlaces_add_card_sub_one :
-    Module.finrank ℤ
-        (Additive
-          (SUnitGroup (K := K) S ⧸
-            CommGroup.torsion (SUnitGroup (K := K) S))) =
-      Fintype.card (NumberField.InfinitePlace K) + S.card - 1 := by
-  rw [finrank_modTorsion (K := K) S, NumberField.Units.rank]
-  have hpos :
-      0 < Fintype.card (NumberField.InfinitePlace K) :=
-    Fintype.card_pos
-  omega
+
+
 
 end Rank
 

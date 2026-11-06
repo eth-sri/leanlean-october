@@ -3,6 +3,7 @@ module
 public import Mathlib.Algebra.Group.Int.TypeTags
 public import Mathlib.Data.ZMod.QuotientGroup
 public import Mathlib.Tactic
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -39,8 +40,7 @@ integer is divisible by `d`. -/
 def integerMultipleSubgroup (d : ℤ) : Subgroup (Multiplicative ℤ) where
   carrier := {n | d ∣ Multiplicative.toAdd n}
   one_mem' := by
-    change d ∣ (0 : ℤ)
-    exact dvd_zero d
+    norm_num
   mul_mem' := by
     intro x y hx hy
     change d ∣ Multiplicative.toAdd (x * y)
@@ -62,33 +62,19 @@ def integerMultipleSubgroup (d : ℤ) : Subgroup (Multiplicative ℤ) where
 its additive value. -/
 @[simp] theorem ofAdd_mem_integerMultipleSubgroup_iff (d n : ℤ) :
     Multiplicative.ofAdd n ∈ integerMultipleSubgroup d ↔ d ∣ n := by
-  rw [mem_integerMultipleSubgroup_iff, toAdd_ofAdd]
+  norm_num
 
-/-- Multiplying two multiplicative integers from the multiple subgroup remains in that subgroup. -/
-theorem ofAdd_mul_mem_integerMultipleSubgroup (d n : ℤ) :
-    Multiplicative.ofAdd (d * n) ∈ integerMultipleSubgroup d := by
-  rw [ofAdd_mem_integerMultipleSubgroup_iff]
-  exact dvd_mul_right d n
 
-/-- The multiple subgroup is closed under multiplication in either order. -/
-theorem ofAdd_mul_comm_mem_integerMultipleSubgroup (d n : ℤ) :
-    Multiplicative.ofAdd (n * d) ∈ integerMultipleSubgroup d := by
-  rw [mul_comm]
-  exact ofAdd_mul_mem_integerMultipleSubgroup d n
 
-/-- Divisibility of generators reverses inclusion between their integer-multiple subgroups. -/
-theorem integerMultipleSubgroup_le_of_dvd {a b : ℤ} (hab : a ∣ b) :
-    integerMultipleSubgroup b ≤ integerMultipleSubgroup a := by
-  intro n hn
-  rw [mem_integerMultipleSubgroup_iff] at hn ⊢
-  exact dvd_trans hab hn
+
+
+
 
 /-- Every multiplicative integer belongs to the subgroup of multiples of one. -/
 @[simp] theorem integerMultipleSubgroup_one_eq_top :
     integerMultipleSubgroup (1 : ℤ) = ⊤ := by
   ext n
-  rw [mem_integerMultipleSubgroup_iff]
-  simp
+  norm_num
 
 /-- Reduction of multiplicative integers modulo the subgroup of multiples of
 `d`, written as a homomorphism to `Multiplicative (ZMod |d|)`. -/
@@ -110,7 +96,7 @@ theorem multiplicativeIntToZModHom_ker_eq_integerMultipleSubgroup (d : ℤ) :
   ext n
   change ((n.toAdd : ZMod d.natAbs) = 0) ↔ d ∣ n.toAdd
   rw [ZMod.intCast_zmod_eq_zero_iff_dvd]
-  exact Int.natAbs_dvd
+  norm_num
 
 /-- Every residue class modulo `n` is represented by a multiplicative integer. -/
 theorem multiplicativeIntToZModHom_surjective (d : ℤ) :

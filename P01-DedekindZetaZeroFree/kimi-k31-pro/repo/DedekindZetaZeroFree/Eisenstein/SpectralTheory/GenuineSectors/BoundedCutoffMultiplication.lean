@@ -151,7 +151,7 @@ private theorem coveredFields (g : GenuineCoveredScalars F ζ hζ U)
     (a : ActualChart (U := U) (H := H)) (y : omega a) :
     sectionFields (S F ζ hζ U R P H g) a y = g.val (chartCovered a y) := by
   rw [sectionFields, LiftedChart.coefficient]
-  simp only [isotropyChart, ChartKind.representative, one_smul, map_one, Complex.ofReal_one, Units.val_one, one_mul]
+  simp only [isotropyChart, ChartKind.representative, one_smul, map_one, Units.val_one, one_mul]
   exact S_apply F ζ hζ U R P H g a.component _
 private theorem scalarCovered_chart (f : S_U F ζ hζ U R P H)
     (a : ActualChart (U := U) (H := H)) (y : omega a) :

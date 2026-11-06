@@ -305,7 +305,7 @@ private theorem finite_saturation_closed
           (continuous_subtype_val.comp (continuous_snd.comp continuous_snd))))
   convert isClosedMap_fst_of_compactSpace T hT using 1
   ext p
-  simp only [Set.mem_image, T, Set.mem_setOf_eq, Prod.exists, Prod.mk.injEq]
+  simp only [Set.mem_image, T, Set.mem_setOf_eq, Prod.exists]
   constructor
   · rintro ⟨ε,u,h⟩
     exact ⟨p.1,p.2,ε,u,h,rfl⟩

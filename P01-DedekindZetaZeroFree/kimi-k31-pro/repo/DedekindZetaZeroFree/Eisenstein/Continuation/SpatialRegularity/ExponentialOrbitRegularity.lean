@@ -73,7 +73,7 @@ theorem exponential_native_local_transition
     have hd : ContDiffOn ℝ (⊤ : ℕ∞) (fun a => (m a v).val.det) O := by
       simp only [Matrix.det_fin_two]
       exact ((hc 0 0).mul (hc 1 1)).sub ((hc 0 1).mul (hc 1 0))
-    fin_cases i <;> simp only [q,rightCoordinates,Matrix.cons_val_zero,Matrix.cons_val_one,Matrix.cons_val_two]
+    fin_cases i <;> simp only [q,rightCoordinates]
     · simpa only [div_eq_mul_inv] using! (hc 0 1).mul ((hc 1 1).inv hn)
     · simpa only [div_eq_mul_inv] using! hd.mul
         (((hc 1 1).pow 2).inv (fun a ha => pow_ne_zero _ (hn a ha)))

@@ -161,7 +161,7 @@ private theorem series_integral (F : Type) [Field F] [NumberField F]
     by_cases h : ν = η
     · subst ν
       simp only [neg_add_cancel, freq_zero_scalar, integral_const, probReal_univ,
-        one_smul, mul_one, if_pos rfl, ↓reduceIte]
+        one_smul, mul_one, ↓reduceIte]
     · rw [freq_integral_zero F ψ hψ μ _ (by
         intro hh
         exact h (sub_eq_zero.mp (by simpa only [neg_add_eq_sub] using hh)).symm)]

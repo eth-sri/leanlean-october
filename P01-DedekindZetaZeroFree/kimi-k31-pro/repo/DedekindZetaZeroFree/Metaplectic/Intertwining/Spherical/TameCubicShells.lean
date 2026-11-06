@@ -63,13 +63,13 @@ private theorem tame_phase (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact
   simp only [KPHilbert.B3_canonical] at hwB ha ⊢
   simp only [map_pow, MonoidHom.pow_apply]
   conv_lhs => rw [← hw]
-  simp only [map_mul, MonoidHom.mul_apply, map_zpow, MonoidHom.zpow_apply,
-    map_inv, MonoidHom.inv_apply]
+  simp only [map_mul, map_zpow, 
+    map_inv]
   change KPHilbert.finiteThreePairing F ζ hζ q
     (ClassFieldTheory.powerClass (LocalField F q) 3 (KPTameCompact.unitInclusion F q u))
     (ClassFieldTheory.powerClass (LocalField F q) 3 ((integerUnitsToFieldUnits (LocalField F q)) w)) = 1 at hwB
   rw [hwB, one_mul, ← ha]
-  simp only [inv_zpow, inv_inv, ← zpow_natCast, ← zpow_mul]
+  simp only [← zpow_natCast, ← zpow_mul]
   congr 1
   ring
 

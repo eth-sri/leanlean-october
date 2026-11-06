@@ -19,7 +19,7 @@ variable (F : Type) [Field F] [NumberField F] (A : SArithmeticData F)
 private lemma map_id : IsFractionRing.map (FaithfulSMul.algebraMap_injective (𝓞 F) A.R) = RingHom.id F := by
   apply IsLocalization.ringHom_ext (𝓞 F)⁰
   ext a
-  simp [IsFractionRing.map, IsLocalization.map_eq, IsScalarTower.algebraMap_apply]
+  simp [IsFractionRing.map]
 private lemma ext_coe (I : FractionalIdeal (𝓞 F)⁰ F) :
     (extHom F A I : Submodule A.R F) = Submodule.span A.R (I : Set F) := by
   simp only [extHom, FractionalIdeal.extendedHom, FractionalIdeal.extendedHom'_apply,

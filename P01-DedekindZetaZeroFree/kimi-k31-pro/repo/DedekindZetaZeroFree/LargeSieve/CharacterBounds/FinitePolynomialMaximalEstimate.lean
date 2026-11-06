@@ -19,8 +19,7 @@ lemma maxSq_continuous {κ : Type*} [Fintype κ] [Nonempty κ]
   exact (hP k).norm.pow 2
 
 lemma le_maxSq {κ : Type*} [Fintype κ] [Nonempty κ]
-    (P : κ → ℝ → ℂ) (t : ℝ) (k : κ) : ‖P k t‖ ^ 2 ≤ maxSq P t := by
-  exact Finset.le_sup' (f := fun k => ‖P k t‖ ^ 2) (Finset.mem_univ k)
+    (P : κ → ℝ → ℂ) (t : ℝ) (k : κ) : ‖P k t‖ ^ 2 ≤ maxSq P t := Finset.le_sup' (f := fun k => ‖P k t‖ ^ 2) (Finset.mem_univ k)
 
 lemma maxSq_nonneg {κ : Type*} [Fintype κ] [Nonempty κ]
     (P : κ → ℝ → ℂ) (t : ℝ) : 0 ≤ maxSq P t :=
@@ -114,8 +113,7 @@ def phase (q t : ℝ) : ℂ :=
 lemma phase_norm (q t : ℝ) : ‖phase q t‖ = 1 := by
   simp [phase, Complex.norm_exp]
 
-lemma phase_contDiff (q : ℝ) : ContDiff ℝ 1 (phase q) := by
-  exact Complex.contDiff_exp.comp
+lemma phase_contDiff (q : ℝ) : ContDiff ℝ 1 (phase q) := Complex.contDiff_exp.comp
     ((contDiff_const.mul Complex.ofRealCLM.contDiff).mul contDiff_const)
 
 lemma phase_hasDerivAt (q t : ℝ) :

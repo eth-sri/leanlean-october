@@ -105,7 +105,7 @@ local notation "G" => ActualCover F ζ hζ
     fin_cases i <;> fin_cases j <;>
       simp [KPLiteralChamber.rightMatrix, diagonalUnit, q,
         KubotaRankTwo.n, KubotaRankTwo.d, KPStandardLocalRootLifts.lowerN,
-        Matrix.mul_apply, Fin.sum_univ_two, Real.exp_ne_zero]
+        Matrix.mul_apply, Fin.sum_univ_two]
   change f (productEquiv F ζ hζ (_,c)) = f ((c : G) * KPGlobalResidualConstruction.archChart F ζ hζ (q x))
   rw [hpin]
   have he := (productEquiv F ζ hζ).map_mul

@@ -10,8 +10,7 @@ noncomputable section
 
 abbrev P1 (F : Type) [Field F] := Projectivization F (Fin 2 → F)
 
-def compactExponent (T : Set ℂ) : ℝ :=
-  2 / 3 + sInf (Complex.re '' T)
+
 
 def term {F : Type} [Field F] (H : P1 F → ℝ) (a : ℝ) (ℓ : P1 F) : ℝ :=
   (H ℓ) ^ (-2 * a)

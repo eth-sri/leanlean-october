@@ -37,7 +37,7 @@ theorem fixed_pairing_average
       apply integral_congr_ae
       filter_upwards [] with k
       have hh := (hm k).integral_comp (he k) (fun x => star (c x) * f x)
-      simpa only [hc] using hh
+      simp_all
     _ = _ := by simp
 
 end DedekindZetaZeroFree.FourierContinuation.ResidualAveragePairing

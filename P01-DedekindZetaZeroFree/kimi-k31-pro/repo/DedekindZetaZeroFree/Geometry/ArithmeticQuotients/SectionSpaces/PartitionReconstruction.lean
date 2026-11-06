@@ -82,7 +82,7 @@ theorem average_local_lift (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
 
   have hsub : Metric.ball (0 : E (C.chart i).n) (C.chart i).radius ⊆
       cube (C.chart i).n (C.chart i).a :=
-    (subset_closure).trans ((C.chart i).closed_ball_in_cube.trans interior_subset)
+    subset_closure.trans ((C.chart i).closed_ball_in_cube.trans interior_subset)
   have hle : volume.restrict (Metric.ball 0 (C.chart i).radius) ≤
       volume.restrict (cube (C.chart i).n (C.chart i).a) :=
     Measure.restrict_mono hsub le_rfl

@@ -245,7 +245,7 @@ theorem right_frame_product_hasFDerivAt_zero (D : Data G V B)
       have hp : (w.map (fun b => D.exponential (c b 0 • D.basis b))).prod = 1 := by
         induction w with
         | nil => rfl
-        | cons b w ih => simp [ih, D.exponential_zero]
+        | cons b w ih => simp [D.exponential_zero]
       rw [hp, mul_one]
     have H := right_frame_insertion_hasFDerivAt_zero D f h hh hderiv b A
       hA.continuousAt _ (c b) ih
@@ -304,7 +304,7 @@ theorem continuous_right_frame_contMDiff_one
     apply ContinuousLinearMap.coe_injective
     apply D.basis.ext
     intro b
-    simp [L, A, Module.Basis.constr_basis, hF, X]
+    simp [L, A, hF, X]
   have hc (a : V) (ha : a ∈ P.source) : DifferentiableAt ℝ φ a := by
     let c : B → V →L[ℝ] ℝ := fun b =>
       (ContinuousLinearMap.proj b).comp D.basis.equivFun.toContinuousLinearEquiv.toContinuousLinearMap
@@ -316,7 +316,7 @@ theorem continuous_right_frame_contMDiff_one
         intro l
         induction l with
         | nil => rfl
-        | cons b l ih => simp [ih, D.exponential_zero]
+        | cons b l ih => simp [D.exponential_zero]
       dsimp [R]
       rw [hz, mul_one]
     have hR : ContMDiff (𝓘(ℝ, V)) (𝓘(ℝ, V)) (⊤ : ℕ∞) R := by
@@ -499,7 +499,7 @@ theorem right_frame_contMDiff_succ
     apply ContinuousLinearMap.coe_injective
     apply D.basis.ext
     intro b
-    simp [L, A, Module.Basis.constr_basis, hF, X]
+    simp [L, A, hF, X]
   have hrel (a : V) (ha : a ∈ P.source) :
       (fderiv ℝ φ a).comp (A a) = H a := by
     apply ContinuousLinearMap.coe_injective

@@ -61,17 +61,17 @@ theorem WL_bound (u : D.Row) (hu : u.u ≠ 1) (B : ℝ) :
   have hpos : (0 : ℝ) < 1 + |t| := by positivity
   have h2t : (2 + |t|) ^ A ≤ 2 ^ A * (1 + |t|) ^ A := by
     rw [← Real.mul_rpow (by norm_num) hpos.le]
-    exact Real.rpow_le_rpow (by positivity) (by linarith [abs_nonneg t]) hA
+    exact Real.rpow_le_rpow (by positivity) (by grind) hA
   have hkA : A + B ≤ k := Nat.le_ceil _
   have hexp : (1 + |t|) ^ (A - k) ≤ (1 + |t|) ^ (-B) := by
-    apply Real.rpow_le_rpow_of_exponent_le (by linarith [abs_nonneg t]); linarith
+    apply Real.rpow_le_rpow_of_exponent_le (by grind); linarith
   have hsplit : (1 + |t|) ^ A * ((1 + |t|) ^ (-(k : ℝ))) = (1 + |t|) ^ (A - k) := by
     rw [← Real.rpow_add hpos]; ring_nf
   have hkk : ((1 + |t|) ^ k : ℝ) = (1 + |t|) ^ (k : ℝ) := (Real.rpow_natCast _ _).symm
   have ha0 : 0 ≤ ‖D.W1Hat ((y : ℂ) + (t : ℂ) * I)‖ := norm_nonneg _
   have ha : ‖D.W1Hat ((y : ℂ) + (t : ℂ) * I)‖ ≤ |CW| * (1 + |t|) ^ (-(k : ℝ)) := by
     rw [Real.rpow_neg hpos.le, ← hkk, ← div_eq_mul_inv, le_div_iff₀ (pow_pos hpos k)]
-    nlinarith [le_abs_self CW]
+    grind
   have hLn : ‖D.Lpsi u ((y : ℂ) + (t : ℂ) * I)‖ ≤ CL * (2 ^ A * (1 + |t|) ^ A) :=
     hL'.trans (mul_le_mul_of_nonneg_left h2t hCL.le)
   have hp1 : 0 ≤ (1 + |t|) ^ A := Real.rpow_nonneg hpos.le _
@@ -79,7 +79,7 @@ theorem WL_bound (u : D.Row) (hu : u.u ≠ 1) (B : ℝ) :
       ≤ (|CW| * (1 + |t|) ^ (-(k : ℝ))) * (CL * (2 ^ A * (1 + |t|) ^ A)) :=
         mul_le_mul ha hLn (norm_nonneg _) (by positivity)
     _ = (CL * 2 ^ A * |CW|) * ((1 + |t|) ^ A * (1 + |t|) ^ (-(k : ℝ))) := by ring
-    _ = (CL * 2 ^ A * |CW|) * (1 + |t|) ^ (A - k) := by rw [hsplit]
+    _ = (CL * 2 ^ A * |CW|) * (1 + |t|) ^ (A - k) := by grind
     _ ≤ (CL * 2 ^ A * |CW|) * (1 + |t|) ^ (-B) :=
         mul_le_mul_of_nonneg_left hexp (by positivity)
 
@@ -126,7 +126,7 @@ theorem K_bound (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) (
   have hZb : Z ^ (Scales.xExponent / 2 + ξ.re - 1 + Scales.smoothingExponent * Scales.zLine + Scales.yExponent * (y - 1)) ≤ |CZ| := by
     have := hCZ y ⟨h1y, h2y⟩
     simp only [Real.norm_eq_abs] at this
-    exact (le_abs_self _).trans (this.trans (le_abs_self _))
+    grind
   have hEb : ‖Complex.exp ((ξ + ((Scales.zLine : ℂ) + (s : ℂ) * I) - 1) ^ 2)‖ ≤
       Real.exp ((4 + Scales.zLine - 1) ^ 2) := by
     rw [Complex.norm_exp]
@@ -138,14 +138,14 @@ theorem K_bound (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) (
     linarith [sq_nonneg (ξ.im + s)]
   have hpos : (0 : ℝ) < 1 + |s| := by positivity
   have hMb : ‖D.M ((Scales.zLine : ℂ) + (s : ℂ) * I)‖ ≤ |CM| * (1 + |s|) ^ (-(2 : ℝ)) := by
-    have h := hCM ((Scales.zLine : ℂ) + (s : ℂ) * I) (by rw [hzre]) (by rw [hzre])
+    have h := hCM ((Scales.zLine : ℂ) + (s : ℂ) * I) (by grind) (by grind)
     have him : (((Scales.zLine : ℂ) + (s : ℂ) * I)).im = s := by simp
     rw [him] at h
     have h' : (1 + |s|) ^ 2 * ‖D.M ((Scales.zLine : ℂ) + (s : ℂ) * I)‖ ≤ |CM| :=
       h.trans (le_abs_self _)
     rw [Real.rpow_neg hpos.le, Real.rpow_two, ← div_eq_mul_inv, le_div_iff₀ (pow_pos hpos 2),
       mul_comm]
-    exact h'
+    grind
   have hmem : ((ξ, ((y : ℂ) + (t : ℂ) * I), ((Scales.zLine : ℂ) + (s : ℂ) * I)) :
       EulerDomain.Coordinates) ∈ EulerDomain.paddedBoxes := by
     have h1 : Scales.goodLine - EulerDomain.pad ≤ ξ.re := by
@@ -168,8 +168,7 @@ theorem K_bound (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) (
     (mul_nonneg hCH.le (Real.rpow_nonneg hq.le _))
     (mul_nonneg (abs_nonneg _) (Real.rpow_nonneg hpos.le _))
     (mul_nonneg hCWL0 (Real.rpow_nonneg (by positivity) _))
-  calc _ ≤ _ := hfin
-    _ = _ := by ring
+  grind
 
 def DecayOn (f : ℂ → ℂ) (a b : ℝ) : Prop :=
   ∀ B : ℝ, 0 < B → ∃ C T0 : ℝ, ∀ x ∈ Icc a b, ∀ y : ℝ, T0 ≤ |y| →
@@ -180,8 +179,8 @@ theorem verticalIntegral_eq_of_decayOn {a b : ℝ} {f : ℂ → ℂ} (hab : a < 
     comparisonVerticalIntegral b f = comparisonVerticalIntegral a f := by
   obtain ⟨C, T0, hbound⟩ := hdec 2 (by norm_num)
   set m : ℝ := (a + b) / 2 with hm
-  have ham : a < ((m : ℂ)).re := by simp [hm]; linarith
-  have hmb : ((m : ℂ)).re < b := by simp [hm]; linarith
+  have ham : a < (m : ℂ).re := by simp [hm]; linarith
+  have hmb : (m : ℂ).re < b := by simp [hm]; linarith
   have hnb : comparisonClosedStrip a b ∈ 𝓝 (m : ℂ) := by
     apply Filter.mem_of_superset
       (((isOpen_lt continuous_const Complex.continuous_re).inter
@@ -196,8 +195,8 @@ theorem verticalIntegral_eq_of_decayOn {a b : ℝ} {f : ℂ → ℂ} (hab : a < 
     simpa using h.mono_left nhdsWithin_le_nhds
   have := SimplePoleVerticalShift.verticalIntegral_sub_eq_residue_of_decay ham hmb
     (hf.mono diff_subset) hres C T0
-    (fun x hx y hy => by simpa [Real.rpow_neg_natCast] using hbound x hx y hy)
-  linear_combination this
+    (fun x hx y hy => by grind)
+  grind
 
 theorem K_diffAt (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) (hξ : ξ.re = 4)
     (w z : ℂ) (hw : Scales.wLine - EulerDomain.pad / 2 ≤ w.re) (hz : z.re = Scales.zLine) :
@@ -208,19 +207,19 @@ theorem K_diffAt (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) 
   have hqc : (D.q u : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hq.ne'
   have hw' : (1 / 10 : ℝ) ≤ w.re := by
     unfold Scales.wLine EulerDomain.pad at hw; linarith
-  have hz' : z.re = 2 / 5 := by unfold Scales.zLine at hz; exact hz
+  have hz' : z.re = 2 / 5 := by unfold Scales.zLine at hz; grind
   have hmem : ((ξ, w, z) : EulerDomain.Coordinates) ∈ EulerDomain.OmegaStar := by
     show 0 < ξ.re ∧ 0 < w.re ∧ 0 < z.re ∧ 1 < 6 * z.re + w.re ∧ 1 < ξ.re + 6 * z.re ∧
       1 < ξ.re + w.re ∧ 2 < ξ.re + w.re + 6 * z.re ∧ 5 < 6 * ξ.re + 6 * z.re ∧ 1 / 2 < ξ.re ∧
       2 < 3 * ξ.re ∧ 5 / 2 < 3 * ξ.re + w.re
-    refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> linarith
+    grind
   have hz6 : 6 * z ≠ 1 := by
     intro h
     have := congrArg Complex.re h
     simp [Complex.mul_re] at this
     linarith
   have hLlam : D.Llam u ξ ≠ 0 :=
-    RightHeckeBounds.Llam_ne_zero_of_one_lt D u ξ (by rw [hξ]; norm_num)
+    RightHeckeBounds.Llam_ne_zero_of_one_lt D u ξ (by grind)
   have hRF := RowAnalyticContinuation.rowFactor_differentiableAt D u hu ξ w z hmem hz6 hLlam
   have hRFw : DifferentiableAt ℂ (fun w' : ℂ => PoissonKernel.rowFactor D u ξ w' z) w := by
     have h2 : DifferentiableAt ℂ (fun w' : ℂ => ((ξ, w', z) : ℂ × ℂ × ℂ)) w :=
@@ -237,7 +236,7 @@ theorem K_diffAt (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) 
   have hW : Differentiable ℂ D.W1Hat := RowAnalyticContinuation.W1Hat_differentiable D
   have hMopen : IsOpen {z : ℂ | 0 < z.re} := isOpen_lt continuous_const Complex.continuous_re
   have hM : DifferentiableAt ℂ D.M z :=
-    D.M_differentiableOn.differentiableAt (hMopen.mem_nhds (by show 0 < z.re; linarith))
+    D.M_differentiableOn.differentiableAt (hMopen.mem_nhds (by grind))
   constructor
   · have hpow : DifferentiableAt ℂ (fun w' : ℂ => (Z : ℂ) ^ ((Scales.xExponent / 2 : ℝ) + ξ - 1 +
         (Scales.smoothingExponent : ℂ) * z + (Scales.yExponent : ℂ) * (w' - 1))) w :=
@@ -305,7 +304,7 @@ theorem Iz_w_holo (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ)
         rw [Complex.sub_re] at this
         exact this.trans_lt (by rw [← dist_eq_norm]; exact Metric.mem_ball.mp hw)
       have := abs_lt.mp hd
-      constructor <;> linarith [this.1, this.2]
+      grind
     refine ⟨r, hr, fun w hw => hball w hw, fun s => ‖(2 * (Real.pi : ℂ))⁻¹‖ * C *
       (1 + |s|) ^ (-(2 : ℝ)), ?_, ?_⟩
     · exact (KernelWeightIntegration.one_add_abs_rpow_integrable 2 (by norm_num)).const_mul _
@@ -335,8 +334,8 @@ theorem Iz_w_holo (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ)
   obtain ⟨hw1, hw2⟩ := hw
   show lo < w.re ∧ w.re < hi
   constructor
-  · rw [hlo]; linarith
-  · rw [hhi]; linarith
+  · grind
+  · grind
 
 theorem Iz_w_decay (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 0 < Z) (ξ : ℂ) (hξ : ξ.re = 4) :
     DecayOn (fun w => Iz D u ξ w Scales.zLine Z) Scales.wLine 4 := by

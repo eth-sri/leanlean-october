@@ -65,7 +65,7 @@ theorem spectralCoordinate_avoids_thresholdRay (d : ℤ) (hd : 0 < d) :
     have h := hμ.1
     simp only [pow_two, Complex.mul_im, Complex.mul_re, Complex.sub_im,
       Complex.sub_re, Complex.one_im, Complex.one_re, Complex.intCast_re,
-      Complex.intCast_im, zero_mul, zero_add, mul_zero, add_zero] at h
+      Complex.intCast_im, zero_mul, add_zero] at h
     nlinarith [h]
   have hui : u.im = 0 := by
     have hz := (mul_eq_zero.mp hi).resolve_left (ne_of_gt hdR)
@@ -90,7 +90,7 @@ theorem spectralCoordinate_hasDerivAt (d : ℤ) (s : ℂ) :
   convert ((h.pow 2).const_sub (1 : ℂ)).const_mul (d : ℂ) using 1
   · ext z
     simp
-  · simp only [id_eq, Nat.cast_ofNat, pow_one, mul_one]
+  · simp only [id_eq, Nat.cast_ofNat, mul_one]
     ring
 
 theorem spectralCoordinate_deriv_zero (d : ℤ) (hd : 0 < d) :

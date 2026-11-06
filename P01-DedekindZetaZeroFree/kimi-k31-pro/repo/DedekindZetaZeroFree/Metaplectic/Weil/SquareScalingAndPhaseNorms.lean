@@ -84,7 +84,7 @@ theorem finiteGamma_mul_sq (A : SArithmeticData F)
   have hq : 0 < (v.asIdeal.absNorm : ℝ) := by
     exact_mod_cast (Nat.zero_lt_one.trans (HeightOneSpectrum.one_lt_absNorm v))
   have ht : Valued.v t.val ≠ (0 : WithZero (Multiplicative ℤ)) :=
-    (Valued.v.map_eq_zero_iff).not.mpr t.ne_zero
+    Valued.v.map_eq_zero_iff.not.mpr t.ne_zero
   let k : ℤ := WithZero.log (Valued.v t.val)
   have hk : ‖t.val‖ = (v.asIdeal.absNorm : ℝ)^k := by
     rw [FinitePlace.norm_def, WithZeroMulInt.toNNReal_neg_apply _ ht]
@@ -105,8 +105,7 @@ theorem finiteGamma_mul_sq (A : SArithmeticData F)
 
 theorem finiteGamma_norm (A : SArithmeticData F)
     (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ) :
-    ‖A.finiteGamma v a‖ = 1 := by
-  exact A.norm_finiteGamma v a
+    ‖A.finiteGamma v a‖ = 1 := A.norm_finiteGamma v a
 
 theorem finiteWeilPhase_mul_sq (A : SArithmeticData F)
     (v : HeightOneSpectrum (𝓞 F)) (a t : (v.adicCompletion F)ˣ) :
@@ -135,7 +134,7 @@ theorem finiteWeilPhase_norm (A : SArithmeticData F)
 theorem complexWeilPhase_mul_sq (A : SArithmeticData F)
     (w : InfinitePlace F) (a t : w.Completionˣ) :
     A.complexWeilPhase w (a * t ^ 2) = A.complexWeilPhase w a := by
-  simp [complexWeilPhase, complexGamma]
+  aesop
 
 theorem complexWeilPhase_one (A : SArithmeticData F)
     (w : InfinitePlace F) : A.complexWeilPhase w 1 = 1 := by

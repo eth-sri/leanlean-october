@@ -413,18 +413,7 @@ theorem chosenFinitePlaceNormQuotientEquiv_normClass
     AbsoluteValue.completionAlgebra vK w.1 w.2
   rfl
 
-/-- Product comparison over a finite set of places. -/
-noncomputable def chosenFinitePlaceNormQuotientFamilyEquiv
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
-    (∀ v : ↥S,
-        ChosenFinitePlaceIntrinsicNormQuotient
-          (K := K) (L := L) v.1) ≃*
-      (∀ v : ↥S,
-        ChosenFinitePlaceNormQuotient
-          (K := K) (L := L) v.1) :=
-  MulEquiv.piCongrRight fun v ↦
-    chosenFinitePlaceNormQuotientEquiv
-      (K := K) (L := L) v.1
+
 
 /-- The diagonal map from global units to the chosen finite family of
 actual local norm quotients. -/
@@ -451,94 +440,14 @@ theorem principalLocalNormQuotientMap_apply
         ((IdeleGroup.principalIdele K x).2 v.1) :=
   rfl
 
-/-- Actual multiplicative local norm approximation: every prescribed
-finite family of classes modulo `N(L_wˣ)` is represented by one global
-element of `Kˣ`. -/
-theorem principalLocalNormQuotientMap_surjective
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
-    Function.Surjective
-      (principalLocalNormQuotientMap
-        (K := K) (L := L) S) :=
-  IdeleGroup.principalLocalQuotientMap_surjective
-    S
-    (fun v ↦ chosenFinitePlaceLocalNormSubgroup
-      (K := K) (L := L) v.1)
-    (fun v ↦
-      chosenFinitePlaceLocalNormSubgroup_isOpen
-        (K := K) (L := L) v.1)
 
-/-- The same diagonal approximation map with target written directly as
-a product of `LocalFieldTheory.NormQuotient`s. -/
-noncomputable def principalIntrinsicLocalNormQuotientMap
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
-    Kˣ →*
-      (∀ v : ↥S,
-        ChosenFinitePlaceIntrinsicNormQuotient
-          (K := K) (L := L) v.1) :=
-  (chosenFinitePlaceNormQuotientFamilyEquiv
-    (K := K) (L := L) S).symm.toMonoidHom.comp
-      (principalLocalNormQuotientMap
-        (K := K) (L := L) S)
 
-/-- Surjectivity in the intrinsic `NormQuotient` model. -/
-theorem principalIntrinsicLocalNormQuotientMap_surjective
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
-    Function.Surjective
-      (principalIntrinsicLocalNormQuotientMap
-        (K := K) (L := L) S) := by
-  intro q
-  let E :=
-    chosenFinitePlaceNormQuotientFamilyEquiv
-      (K := K) (L := L) S
-  obtain ⟨x, hx⟩ :=
-    principalLocalNormQuotientMap_surjective
-      (K := K) (L := L) S (E q)
-  refine ⟨x, ?_⟩
-  change E.symm
-      (principalLocalNormQuotientMap
-        (K := K) (L := L) S x) = q
-  rw [hx, E.symm_apply_apply]
 
-omit [FiniteDimensional K L] in
-/-- Kernel membership has the expected simultaneous local-norm
-description. -/
-theorem mem_ker_principalLocalNormQuotientMap_iff
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
-    (x : Kˣ) :
-    x ∈
-        (principalLocalNormQuotientMap
-          (K := K) (L := L) S).ker ↔
-      ∀ v : ↥S,
-        (IdeleGroup.principalIdele K x).2 v.1 ∈
-          chosenFinitePlaceLocalNormSubgroup
-            (K := K) (L := L) v.1 := by
-  rw [MonoidHom.mem_ker]
-  constructor
-  · intro hx v
-    exact
-      (QuotientGroup.eq_one_iff _).mp
-        (congrFun hx v)
-  · intro hx
-    funext v
-    exact
-      (QuotientGroup.eq_one_iff _).mpr
-        (hx v)
 
-omit [FiniteDimensional K L] in
-/-- The kernel is the intersection of the pullbacks of the actual local
-norm subgroups. -/
-theorem principalLocalNormQuotientMap_ker
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
-    (principalLocalNormQuotientMap
-      (K := K) (L := L) S).ker =
-      ⨅ v : ↥S,
-        (chosenFinitePlaceLocalNormSubgroup
-          (K := K) (L := L) v.1).comap
-          ((IdeleGroup.finiteComponent v.1).comp
-            (IdeleGroup.principalIdele K)) := by
-  ext x
-  rw [mem_ker_principalLocalNormQuotientMap_iff]
-  simp only [Subgroup.mem_iInf, Subgroup.mem_comap]
-  rfl
+
+
+
+
+
 
 end

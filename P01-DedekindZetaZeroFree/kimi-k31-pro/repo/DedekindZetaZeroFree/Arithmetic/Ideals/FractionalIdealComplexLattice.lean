@@ -1,6 +1,7 @@
 module
 
 public import DedekindZetaZeroFree.Geometry.Cusps.AffineTorusBundles.QuotientCoordinates
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -21,8 +22,8 @@ namespace DedekindZetaZeroFree.FiniteAdelicParabolicExtension
         intro x
         apply Prod.ext
         · ext w; exact isEmptyElim w
-        · ext w; simp
-      right_inv := by intro x; ext i; simp
+        · norm_num
+      right_inv := by grind
       map_add' := by intro x y; rfl
       map_smul' := by intro r x; rfl }
 

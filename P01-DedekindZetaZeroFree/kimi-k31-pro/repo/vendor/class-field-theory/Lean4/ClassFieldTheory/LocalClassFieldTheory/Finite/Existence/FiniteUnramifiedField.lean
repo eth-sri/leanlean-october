@@ -220,18 +220,7 @@ noncomputable instance localFiniteUnramifiedField_isUnramifiedValuedExtension
     apply Nat.eq_of_mul_eq_mul_right hd
     simpa only [one_mul] using hfund
 
-/-- On the standard degree-`d` fixed field, the existing arithmetic
-Frobenius has order exactly `d`. -/
-theorem localFiniteUnramifiedField_arithmeticFrobenius_order
-    (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    (d : ℕ) (hd : 0 < d) :
-    orderOf
-        (arithmeticFrobeniusOfUnramifiedValuation K
-          (localFiniteUnramifiedField K d hd)) =
-      d := by
-  rw [orderOf_arithmeticFrobeniusOfUnramifiedValuation,
-    localFiniteUnramifiedField_finrank K d hd]
+
 
 end LocalClassFieldTheory
 

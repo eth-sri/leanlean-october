@@ -259,13 +259,7 @@ def herbrandH0EquivTateCohomologyZero [Fintype (Gal(L / K))] :
       (herbrandH0MulEquivInvariantsNormQuotient K L)).trans
     (tateUnitsH0IsoInvariantsQuotient K L).symm.toLinearEquiv.toEquiv
 
-/-- Cardinality transport from the concrete Herbrand quotient to mathlib's
-degree-zero Tate cohomology. -/
-theorem cardinalMk_herbrandH0_fieldUnits_eq_tateCohomology_zero
-    [Fintype (Gal(L / K))] :
-    Cardinal.mk (HerbrandH0 (Gal(L / K)) Lˣ) =
-      Cardinal.mk (tateCohomology (Rep.ofAlgebraAutOnUnits K L) 0) :=
-  Cardinal.mk_congr (herbrandH0EquivTateCohomologyZero K L)
+
 
 /-- Subtraction by the identity in the actual unit representation is the
 multiplicative coboundary `x ↦ g•x/x`. -/
@@ -489,15 +483,7 @@ noncomputable def herbrandHminusOneEquivUnitsTateHminusOne
   (herbrandHminusOneEquivUnitsBoundaryQuotient K L g).trans
     (unitsTateHminusOneIsoBoundaryQuotient K L g hg).symm.toLinearEquiv.toEquiv
 
-/-- Cardinality transport from the concrete Herbrand `H⁻¹` quotient to
-the actual Tate `H⁻¹` object.  The statement is valid without introducing an
-extraneous finiteness hypothesis. -/
-theorem cardinalMk_herbrandHminusOne_fieldUnits_eq_unitsTateHminusOne
-    [FiniteDimensional K L] (g : Gal(L / K))
-    (hg : ∀ x : Gal(L / K), x ∈ Subgroup.zpowers g) :
-    Cardinal.mk (HerbrandHMinusOne (Gal(L / K)) Lˣ g) =
-      Cardinal.mk (tateCohomology (Rep.ofAlgebraAutOnUnits K L) (-1)) :=
-  Cardinal.mk_congr (herbrandHminusOneEquivUnitsTateHminusOne K L g hg)
+
 
 end
 end LocalClassFieldTheory

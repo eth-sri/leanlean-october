@@ -43,8 +43,7 @@ additive valuation. -/
 @[simp] theorem addVal_ringEquiv (e : R ≃+* R) (a : R) :
     addVal R (e a) = addVal R a := by
   by_cases ha : a = 0
-  · subst a
-    simp
+  · grind
   obtain ⟨ϖ, hϖ⟩ := exists_irreducible R
   obtain ⟨n, u, ha_decomp⟩ := eq_unit_mul_pow_irreducible ha hϖ
   have hmapϖ : Irreducible (e ϖ) := hϖ.map e

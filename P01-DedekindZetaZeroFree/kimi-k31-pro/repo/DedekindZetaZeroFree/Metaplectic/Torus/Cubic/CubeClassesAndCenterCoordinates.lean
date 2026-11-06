@@ -120,7 +120,7 @@ private lemma normalWord_exists (h : H F ζ hζ q) :
     ext i j
     fin_cases i <;> fin_cases j <;>
       simp [KubotaRankTwo.d, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply,
-        Fin.sum_univ_two, Matrix.scalar_apply, Matrix.diagonal_apply, h10, h01, hy, h11]
+        Matrix.scalar_apply, Matrix.diagonal_apply, h10, h01, hy, h11]
   have hp : KPLocalSmoothRepresentation.projection F ζ hζ q
       (KPPGLLocalCover.A F ζ hζ (Sum.inr q) (coordinate F ζ hζ q h)) =
       KPLocalSmoothRepresentation.projection F ζ hζ q h := by

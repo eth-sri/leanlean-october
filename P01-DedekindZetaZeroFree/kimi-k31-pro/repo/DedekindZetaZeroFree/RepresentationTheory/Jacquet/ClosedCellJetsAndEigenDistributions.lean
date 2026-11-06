@@ -230,27 +230,13 @@ theorem supportedAtInfinity_factors_finite_jet (s : ℝ)
   exact KPCplxClosedCellCutoffApproximation.seminorm_bound_annihilates_approximable
     s T F C hC hbound hT f (hn f hflat)
 
-private theorem upperTriangular_one_one (t : ℂ) :
-    upperTriangular 1 1 t = upperUnipotent t := by
-  apply Matrix.GeneralLinearGroup.ext
-  simp [upperTriangular, upperUnipotent]
 
-private theorem lowerUnipotent_zero : lowerUnipotent 0 = 1 := by
-  apply Matrix.GeneralLinearGroup.ext
-  simp [lowerUnipotent]
 
-private theorem inductionWeight_one_one (s : ℝ) : inductionWeight s 1 1 = 1 := by
-  simp [inductionWeight, complexAbs]
 
-theorem infinityCoordinate_zero_unipotent_fixed (s : ℝ) (t : ℂ) (f : PrincipalSeries s) :
-    infinityCoordinate (pi s (Matrix.ProjGenLinGroup.mk (upperUnipotent t)) f) 0 =
-      infinityCoordinate f 0 := by
-  rw [pi_mk]
-  change f (lowerUnipotent 0 * upperUnipotent t) = f (lowerUnipotent 0)
-  rw [lowerUnipotent_zero, one_mul, ← upperTriangular_one_one]
-  conv_lhs => rw [← mul_one (upperTriangular (1 : ℂˣ) 1 t)]
-  rw [f.2.1 1 1 t 1]
-  simp [inductionWeight_one_one]
+
+
+
+
 
 private theorem closedCell_matrix_factor (u t : ℂ) (h : 1 + u * t ≠ 0) :
     lowerUnipotent u * upperUnipotent t =
@@ -279,20 +265,7 @@ private theorem weight_eq (s : ℝ) (u t : ℂ) (h : 1 + u * t ≠ 0) :
     (inductionWeight s (Units.mk0 (1 + u * t) h)⁻¹
         (Units.mk0 (1 + u * t) h) : ℂ) = weight s t u := by
   simp [inductionWeight, complexAbs, weight, Complex.normSq_eq_norm_sq, div_pow]
-private theorem weight_diff (s : ℝ) (t : ℂ) :
-    DifferentiableAt ℝ (weight s t) 0 := by
-  unfold weight
-  have h : DifferentiableAt ℝ (fun u : ℂ =>
-      Real.rpow (Complex.normSq ((1 + u * t)⁻¹ / (1 + u * t))) (1 / 2 + s)) 0 := by
-    apply DifferentiableAt.rpow_const
-    · have hd : DifferentiableAt ℝ (fun x : ℂ => (1 + x * t)⁻¹ / (1 + x * t)) 0 := by
-        have ha : DifferentiableAt ℂ (fun x : ℂ => 1 + x * t) 0 := by fun_prop
-        exact ((ha.inv (by simp)).div ha (by simp)).restrictScalars ℝ
-      have hr := Complex.reCLM.differentiableAt.comp 0 hd
-      have hi := Complex.imCLM.differentiableAt.comp 0 hd
-      exact (hr.mul hr).add (hi.mul hi)
-    · simp
-  exact Complex.ofRealCLM.differentiableAt.comp 0 h
+
 private theorem coord_deriv (t : ℂ) : HasFDerivAt (fun u : ℂ => u / (1 + u * t))
     (ContinuousLinearMap.id ℝ ℂ) 0 := by
   have h : HasDerivAt (fun u : ℂ => u / (1 + u * t)) 1 0 := by
@@ -314,37 +287,10 @@ private theorem coord_formula_eventually (s : ℝ) (t : ℂ) (f : PrincipalSerie
   filter_upwards [h] with u hu
   rw [infinityCoordinate_unipotent_formula s u t hu f, weight_eq]
 
-theorem infinityCoordinate_fderiv_unipotent_fixed_of_zero (s : ℝ) (t : ℂ) (f : PrincipalSeries s) (hf : infinityCoordinate f 0 = 0) :
-    fderiv ℝ (infinityCoordinate (pi s (Matrix.ProjGenLinGroup.mk (upperUnipotent t)) f)) 0 =
-      fderiv ℝ (infinityCoordinate f) 0 := by
-  have hF : DifferentiableAt ℝ (infinityCoordinate f) 0 :=
-    f.2.2.2.differentiable (by simp) 0
-  have hg : HasFDerivAt (fun u => infinityCoordinate f (u / (1 + u * t)))
-      (fderiv ℝ (infinityCoordinate f) 0) 0 := by
-    have ho : HasFDerivAt (infinityCoordinate f) (fderiv ℝ (infinityCoordinate f) 0)
-        ((fun u : ℂ => u / (1 + u * t)) 0) := by simpa using hF.hasFDerivAt
-    simpa [Function.comp_def] using ho.comp 0 (coord_deriv t)
-  have hw := (weight_diff s t).hasFDerivAt
-  have hh := hw.mul hg
-  have hh' : HasFDerivAt (fun u => weight s t u * infinityCoordinate f (u / (1 + u * t)))
-      (fderiv ℝ (infinityCoordinate f) 0) 0 := by
-    simpa [hf, weight_zero, Pi.mul_def] using hh
-  exact (hh'.congr_of_eventuallyEq (coord_formula_eventually s t f)).fderiv
 
-theorem sectionJet_one_unipotent_fixed_of_zero (s : ℝ) (t : ℂ) (f : PrincipalSeries s) (hf : infinityCoordinate f 0 = 0) :
-    sectionJet s 1 (pi s (Matrix.ProjGenLinGroup.mk (upperUnipotent t)) f) = sectionJet s 1 f := by
-  apply Subtype.ext
-  funext k v
-  fin_cases k
-  · simp [sectionJet, jetAtInfinity, iteratedFDeriv_zero_apply,
-      infinityCoordinate_zero_unipotent_fixed]
-  · simp only [sectionJet, jetAtInfinity, Fin.val_one,
-      iteratedFDeriv_one_apply]
-    rw [infinityCoordinate_fderiv_unipotent_fixed_of_zero s t f hf]
-theorem sectionJet_one_zero_value (s : ℝ) (f : PrincipalSeries s) (hf : sectionJet s 1 f = 0) :
-    infinityCoordinate f 0 = 0 := by
-  have h := congrArg (fun j : JetSpace s 1 => j.val ⟨0, by omega⟩ (fun i => Fin.elim0 i)) hf
-  simpa [sectionJet, jetAtInfinity, iteratedFDeriv_zero_apply] using h
+
+
+
 noncomputable def closedCell_action (s : ℝ) (t : ℂ) : PrincipalSeries s →ₗ[ℂ] PrincipalSeries s where
   toFun := pi s (Matrix.ProjGenLinGroup.mk (upperUnipotent t))
   map_add' := by
@@ -357,16 +303,7 @@ noncomputable def closedCell_action (s : ℝ) (t : ℂ) : PrincipalSeries s →�
     apply Subtype.ext
     funext h
     rfl
-noncomputable def rhoOne (s : ℝ) (t : ℂ) : Module.End ℂ (JetSpace s 1) :=
-  let J := sectionJetLinear s 1
-  let A := J.comp (closedCell_action s t)
-  let hker : J.ker ≤ A.ker := by
-    intro f hf
-    have hf' : sectionJet s 1 f = 0 := LinearMap.mem_ker.mp hf
-    apply LinearMap.mem_ker.mpr
-    change sectionJet s 1 (pi s (Matrix.ProjGenLinGroup.mk (upperUnipotent t)) f) = 0
-    rw [sectionJet_one_unipotent_fixed_of_zero s t f (sectionJet_one_zero_value s f hf'), hf']
-  (J.ker.liftQ A hker).comp (J.quotKerEquivOfSurjective (sectionJet_surjective s 1)).symm.toLinearMap
+
 
 private theorem closedCell_upper_zero : upperUnipotent 0 = 1 := by
   apply Matrix.GeneralLinearGroup.ext

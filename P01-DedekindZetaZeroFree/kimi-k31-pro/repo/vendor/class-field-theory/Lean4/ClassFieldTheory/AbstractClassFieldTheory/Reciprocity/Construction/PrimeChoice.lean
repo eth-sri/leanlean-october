@@ -1,6 +1,7 @@
 module
 
 public import ClassFieldTheory.AbstractClassFieldTheory.Degree.PrimeElements
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -62,7 +63,7 @@ theorem sub_mem_unitAddSubgroup_of_prime
     (hπ : v.IsPrimeElement K π) (hπ' : v.IsPrimeElement K π') :
     π' - π ∈ v.unitAddSubgroup K := by
   rw [v.mem_unitAddSubgroup_iff, map_sub, hπ, hπ']
-  exact sub_self _
+  norm_num
 
 /-- Establishes the membership statement `π - v.chosenPrimeElement K ∈ v.unitAddSubgroup K`. -/
 theorem sub_chosenPrimeElement_mem_unitAddSubgroup

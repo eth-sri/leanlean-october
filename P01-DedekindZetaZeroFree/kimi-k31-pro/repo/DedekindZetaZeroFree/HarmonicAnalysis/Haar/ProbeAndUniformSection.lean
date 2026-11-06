@@ -91,7 +91,7 @@ theorem integrable_uniform_iff (N : TraceHaarTransport R) (w : InfinitePlace F)
   have h (z : R.A.G1) : normSection R.A w x * z.val =
       (q * z).val * R.A.radialSection x.val x.property := by
     change _ = (normSection R.A w x / R.A.radialSection x.val x.property * z.val) * _
-    simp [div_eq_mul_inv, mul_assoc, mul_comm, mul_left_comm]
+    simp [div_eq_mul_inv, mul_comm, mul_left_comm]
   simp_rw [h]
   exact (measurePreserving_mul_left (probeHaar R) q).integrable_comp_emb
     (Homeomorph.mulLeft q).measurableEmbedding
@@ -107,7 +107,7 @@ theorem integral_uniform_eq (N : TraceHaarTransport R) (w : InfinitePlace F)
   have h (z : R.A.G1) : normSection R.A w x * z.val =
       (q * z).val * R.A.radialSection x.val x.property := by
     change _ = (normSection R.A w x / R.A.radialSection x.val x.property * z.val) * _
-    simp [div_eq_mul_inv, mul_assoc, mul_comm, mul_left_comm]
+    simp [div_eq_mul_inv, mul_comm, mul_left_comm]
   simp_rw [h]
   exact integral_mul_left_eq_self (μ := probeHaar R)
     (fun z : R.A.G1 => f (z.val * R.A.radialSection x.val x.property)) q

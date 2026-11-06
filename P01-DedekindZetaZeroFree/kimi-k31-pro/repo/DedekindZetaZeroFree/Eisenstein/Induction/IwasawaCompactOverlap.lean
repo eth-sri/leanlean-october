@@ -47,13 +47,13 @@ open scoped Matrix NNReal
       (A * Matrix.GeneralLinearGroup.scalar (Fin 2) u) k).1.unit =
       (KPGlobalTorusMatrixCertificates.diagonal_units A h).1.unit * u := by
     apply Units.ext
-    simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.GeneralLinearGroup.coe_scalar,
+    simp [Matrix.mul_apply, Matrix.GeneralLinearGroup.coe_scalar,
       Matrix.scalar, Matrix.diagonal]
   have h1 : (KPGlobalTorusMatrixCertificates.diagonal_units
       (A * Matrix.GeneralLinearGroup.scalar (Fin 2) u) k).2.unit =
       (KPGlobalTorusMatrixCertificates.diagonal_units A h).2.unit * u := by
     apply Units.ext
-    simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.GeneralLinearGroup.coe_scalar,
+    simp [Matrix.mul_apply, Matrix.GeneralLinearGroup.coe_scalar,
       Matrix.scalar, Matrix.diagonal]
   unfold upperRatio
   rw [h0, h1]
@@ -104,7 +104,7 @@ private lemma preimage_upper (A : AdelicMatrixGroup F)
   obtain ⟨z, hz, he⟩ := hB
   obtain ⟨u, rfl⟩ := hz
   rw [← he]
-  simp [Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
+  simp [Matrix.GeneralLinearGroup.coe_scalar,
     Matrix.mul_apply, Matrix.scalar, Fin.sum_univ_two, h10]
 
 private lemma ordinaryBorel_closed : IsClosed (ordinaryBorel F :
@@ -124,23 +124,23 @@ private lemma upper_inverse00 (A : AdelicMatrixGroup F) (h10 : A 1 0 = 0) :
     (KPGlobalTorusMatrixCertificates.diagonal_units A h10).1.unit⁻¹.val = A⁻¹ 0 0 := by
   have h := congrArg (fun B : Matrix (Fin 2) (Fin 2) (KPGlobalTorusFunctionData.Adeles F) => B 0 0) A.inv_mul
   have hi := KPGlobalTorusMatrixCertificates.inv10 A h10
-  simp only [Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two,
-    Matrix.GeneralLinearGroup.coe_one, Matrix.one_apply, h10, mul_zero, add_zero,
-    if_pos rfl] at h
+  simp only [Matrix.mul_apply, Fin.sum_univ_two,
+    Matrix.one_apply, h10, mul_zero, add_zero,
+    ] at h
   change A⁻¹ 0 0 * A 0 0 = 1 at h
   let u := (KPGlobalTorusMatrixCertificates.diagonal_units A h10).1.unit
   have hu : (u : KPGlobalTorusFunctionData.Adeles F) = A 0 0 := IsUnit.unit_spec _
   calc
     _ = (u⁻¹ : Ideles F).val * 1 := (mul_one _).symm
     _ = (u⁻¹ : Ideles F).val * (A⁻¹ 0 0 * A 0 0) := by rw [h]
-    _ = A⁻¹ 0 0 := by rw [← hu]; simp [← mul_assoc, mul_comm]
+    _ = A⁻¹ 0 0 := by rw [← hu]; simp [mul_comm]
 
 private lemma upper_inverse11 (A : AdelicMatrixGroup F) (h10 : A 1 0 = 0) :
     (KPGlobalTorusMatrixCertificates.diagonal_units A h10).2.unit⁻¹.val = A⁻¹ 1 1 := by
   have h := congrArg (fun B : Matrix (Fin 2) (Fin 2) (KPGlobalTorusFunctionData.Adeles F) => B 1 1) A.mul_inv
-  simp only [Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two,
-    Matrix.GeneralLinearGroup.coe_one, Matrix.one_apply, h10, zero_mul, zero_add,
-    if_pos rfl] at h
+  simp only [Matrix.mul_apply, Fin.sum_univ_two,
+    Matrix.one_apply, h10, zero_mul, zero_add,
+    ] at h
   change A 1 1 * A⁻¹ 1 1 = 1 at h
   let u := (KPGlobalTorusMatrixCertificates.diagonal_units A h10).2.unit
   have hu : (u : KPGlobalTorusFunctionData.Adeles F) = A 1 1 := IsUnit.unit_spec _

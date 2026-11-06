@@ -78,7 +78,7 @@ theorem distinctNormalizedFactors_pairwise_coprime
     rw [← hnorm]
     exact Multiset.mem_toFinset.mp j.2
   rcases (prime_of_normalized_factor i.1 hi).irreducible.isCoprime_or_dvd j.1 with h | h
-  · exact h
+  · grind
   · exfalso
     apply hij
     apply Subtype.ext

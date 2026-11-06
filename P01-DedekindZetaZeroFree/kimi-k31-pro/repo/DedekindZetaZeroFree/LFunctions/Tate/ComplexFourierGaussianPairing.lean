@@ -1,6 +1,8 @@
 module
 
 public import DedekindZetaZeroFree.LFunctions.Tate.ComplexTraceFourierMellinNormalization
+public import Mathlib.Tactic.FunProp
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -14,8 +16,7 @@ private theorem gaussInt (t : ℝ) (ht : 0 < t) :
     Integrable (fun y : ℂ => (Real.exp (-2 * Real.pi * t * ‖y‖ ^ 2) : ℂ)) volume := by
   have h := GaussianFourier.integrable_cexp_neg_mul_sq_norm_add
     (V := ℂ) (b := (2 * Real.pi * t : ℝ)) (by simp; positivity) 0 0
-  simpa only [zero_mul, add_zero, Complex.ofReal_exp, Complex.ofReal_mul,
-    Complex.ofReal_neg, Complex.ofReal_pow, neg_mul] using h
+  simp_all
 private theorem kernelInt (f : ℂ → ℂ) (hf : IsComplexAnnular f) (t : ℝ) (ht : 0 < t) :
     Integrable (fun p : ℂ × ℂ => f p.1 *
       Complex.exp (((-4 * Real.pi * (p.1 * p.2).re : ℝ) : ℂ) * Complex.I) *
@@ -23,12 +24,10 @@ private theorem kernelInt (f : ℂ → ℂ) (hf : IsComplexAnnular f) (t : ℝ) 
   have hfc : Continuous f := hf.1.continuous
   have hfi : Integrable f volume := hfc.integrable_of_hasCompactSupport hf.2.1
   apply (hfi.norm.mul_prod (gaussInt t ht).norm).mono
-  · exact (by fun_prop : Continuous (fun p : ℂ × ℂ => f p.1 *
-      Complex.exp (((-4 * Real.pi * (p.1 * p.2).re : ℝ) : ℂ) * Complex.I) *
-      (Real.exp (-2 * Real.pi * t * ‖p.2‖ ^ 2) : ℂ))).aestronglyMeasurable
+  · fun_prop
   · filter_upwards with p
     simp only [norm_mul, Complex.norm_exp_ofReal_mul_I, mul_one, norm_norm]
-    exact le_rfl
+    simp_all
 private theorem kernelEval (t : ℝ) (ht : 0 < t) (x : ℂ) :
     (∫ y : ℂ, Complex.exp (((-4 * Real.pi * (x * y).re : ℝ) : ℂ) * Complex.I) *
       (Real.exp (-2 * Real.pi * t * ‖y‖ ^ 2) : ℂ)) =
@@ -40,11 +39,7 @@ private theorem kernelEval (t : ℝ) (ht : 0 < t) (x : ℂ) :
     ring
   have hid : (fun y : ℂ => (Real.exp (-2 * Real.pi * t * ‖y‖ ^ 2) : ℂ)) =
     (fun y : ℂ => Complex.exp (-(2 * Real.pi * t : ℂ) * (‖y‖ : ℂ) ^ 2)) := by
-    ext y
-    rw [Complex.ofReal_exp]
-    congr 1
-    push_cast
-    ring
+    simp_all
   have hFour : (∫ y : ℂ, Complex.exp (((-4 * Real.pi * (x * y).re : ℝ) : ℂ) * Complex.I) *
       (Real.exp (-2 * Real.pi * t * ‖y‖ ^ 2) : ℂ)) =
     FourierTransform.fourier (fun y : ℂ => (Real.exp (-2 * Real.pi * t * ‖y‖ ^ 2) : ℂ))
@@ -59,18 +54,18 @@ private theorem kernelEval (t : ℝ) (ht : 0 < t) (x : ℂ) :
     ring
   rw [hFour, hid, fourier_gaussian_innerProductSpace (by simp; positivity)]
   have hn : ‖(2 : ℂ) * (starRingEnd ℂ) x‖ = 2 * ‖x‖ := by
-    simp [norm_mul, Complex.norm_conj]
+    simp_all
   rw [hn]
   simp only [Complex.finrank_real_complex]
   norm_num
   congr 1
-  · have hp : (Real.pi : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
-    have ht' : (t : ℂ) ≠ 0 := by exact_mod_cast ht.ne'
+  · have hp : (Real.pi : ℂ) ≠ 0 := by simp_all
+    have ht' : (t : ℂ) ≠ 0 := by measurability
     field_simp
   · congr 1
     push_cast
-    have hp : (Real.pi : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
-    have ht' : (t : ℂ) ≠ 0 := by exact_mod_cast ht.ne'
+    have hp : (Real.pi : ℂ) ≠ 0 := by simp_all
+    have ht' : (t : ℂ) ≠ 0 := by measurability
     field_simp
 
 theorem complexTraceFourier_gaussian_pairing (f : ℂ → ℂ) (hf : IsComplexAnnular f)

@@ -30,14 +30,7 @@ private lemma cube_apply {m : Ideal (𝓞 F)} (ψ : RayClassCharacter F m)
 
 private lemma cube_eq_self_mem {z : ℂ} (h : z ^ 3 = z) :
     z ∈ ({0, 1, -1} : Set ℂ) := by
-  have hfac : z * (z - 1) * (z + 1) = z ^ 3 - z := by ring
-  have hzero : z * (z - 1) * (z + 1) = 0 := by rw [hfac, sub_eq_zero.mpr h]
-  simp only [Set.mem_insert_iff, Set.mem_singleton_iff]
-  rcases mul_eq_zero.mp hzero with h' | h'
-  · rcases mul_eq_zero.mp h' with h' | h'
-    · exact Or.inl h'
-    · exact Or.inr (Or.inl (sub_eq_zero.mp h'))
-  · exact Or.inr (Or.inr (add_eq_zero_iff_eq_neg.mp h'))
+  grind
 
 theorem primitiveProductQuadratic
     (Q : QuadraticHeckeFamily F c)

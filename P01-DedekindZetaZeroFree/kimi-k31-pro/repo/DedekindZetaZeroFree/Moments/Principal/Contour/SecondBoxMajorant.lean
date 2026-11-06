@@ -40,9 +40,9 @@ private lemma gaussShear_nonneg (p : ℝ × ℝ) : 0 ≤ gaussShear p :=
   mul_nonneg (Real.exp_pos _).le (hh_pos _).le
 
 private lemma gaussShear_integrable : Integrable gaussShear := by
-  have hg : Integrable (fun x : ℝ => Real.exp (-(x) ^ 2)) := by
+  have hg : Integrable (fun x : ℝ => Real.exp (-x ^ 2)) := by
     simpa using integrable_exp_neg_mul_sq (b := 1) one_pos
-  have h1 : Integrable (fun p : ℝ × ℝ => hh p.1 * Real.exp (-(p.2) ^ 2)) :=
+  have h1 : Integrable (fun p : ℝ × ℝ => hh p.1 * Real.exp (-p.2 ^ 2)) :=
     hh_integrable.mul_prod hg
   have h2 := (measurePreserving_prod_add_swap (volume : Measure ℝ)
     (volume : Measure ℝ)).integrable_comp_of_integrable h1

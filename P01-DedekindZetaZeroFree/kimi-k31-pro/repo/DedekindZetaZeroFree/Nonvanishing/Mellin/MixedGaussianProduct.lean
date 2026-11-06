@@ -114,8 +114,7 @@ theorem integral_mixedMellinGaussian (x : K) (hx : x ≠ 0)
     rw [hc, Rat.cast_abs]
     norm_cast
     ring
-  · intro v hv
-    exact pow_nonneg (AbsoluteValue.nonneg _ _) _
+  · simp_all
 
 theorem norm_mixedMellinGaussian_eq_realPart (x : K) (s : ℂ)
     (q : InfinitePlace K → ℝ) (hq : ∀ v, 0 < q v) :
@@ -137,8 +136,7 @@ private theorem kernel_real_norm (x : K) (σ : ℝ) (q : InfinitePlace K → ℝ
   apply Finset.prod_congr rfl
   intro v hv
   rw [Complex.ofReal_cpow (hq v).le]
-  push_cast
-  ring_nf
+  simp_all
 
 private theorem positive_coordinates_ae :
     ∀ᵐ q : InfinitePlace K → ℝ ∂Measure.pi (fun _v : InfinitePlace K ↦
@@ -178,12 +176,10 @@ theorem integral_norm_mixedMellinGaussian (x : K) (hx : x ≠ 0)
   change ‖∫ q, mixedMellinGaussian K x (s.re : ℂ) q
     ∂Measure.pi (fun _v : InfinitePlace K ↦
       (volume : Measure ℝ).restrict (Set.Ioi 0))‖ = _
-  rw [integral_mixedMellinGaussian K x hx (s.re : ℂ) (by simpa using hs)]
+  rw [integral_mixedMellinGaussian K x hx (s.re : ℂ) (by simp_all)]
   simp only [norm_mul, norm_pow]
   have hnorm : 0 < ((|Algebra.norm ℚ x| : ℚ) : ℝ) := by
-    have hprod : 0 < ∏ v : InfinitePlace K, v x ^ v.mult :=
-      Finset.prod_pos fun v hv ↦ pow_pos (pos_iff.mpr hx) _
-    rwa [prod_eq_abs_norm] at hprod
+    simp_all
   rw [show (-(s.re : ℂ)) = ((-s.re : ℝ) : ℂ) by simp,
     ← Complex.ofReal_ratCast, Complex.norm_cpow_eq_rpow_re_of_pos hnorm]
   norm_num

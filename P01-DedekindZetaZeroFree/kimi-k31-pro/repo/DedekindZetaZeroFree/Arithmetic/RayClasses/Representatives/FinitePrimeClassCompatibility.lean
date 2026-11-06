@@ -1,6 +1,7 @@
 module
 
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Characters.CharacterDescentUniqueness
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -48,7 +49,7 @@ theorem idealClass_eq_rayClassOfFinitePrime
         ((prime_not_mem_fullModulus_support_iff f hf p).2 hp)) : ℂ) =
       η p.asIdeal := by
   rw [← idealClass_eq_rayClassOfFinitePrime f hf p hp]
-  exact descendedCharacter_apply_idealClass f hf η p.asIdeal p.ne_bot hp
+  norm_num
 
 end DedekindZetaZeroFree.LargeSieve.RayBridge
 

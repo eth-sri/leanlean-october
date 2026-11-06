@@ -65,7 +65,7 @@ theorem primeToSquarefreeKernel_eq_of_coprime (c I : Ideal (𝓞 F)) (hI : I ≠
       omega
   have hrad : radical (DedekindZetaZeroFree.LargeSieve.Sieve.squarefreeKernel I) =
       DedekindZetaZeroFree.LargeSieve.Sieve.squarefreeKernel I := by
-    have hass := radical_associated (hsq.isRadical) hkerne
+    have hass := radical_associated hsq.isRadical hkerne
     exact le_antisymm (Ideal.dvd_iff_le.mp hass.symm.dvd) (Ideal.dvd_iff_le.mp hass.dvd)
   have hfilter : ∀ p ∈ (normalizedFactors (DedekindZetaZeroFree.LargeSieve.Sieve.squarefreeKernel I)).toFinset,
       ¬ p ∣ c := by

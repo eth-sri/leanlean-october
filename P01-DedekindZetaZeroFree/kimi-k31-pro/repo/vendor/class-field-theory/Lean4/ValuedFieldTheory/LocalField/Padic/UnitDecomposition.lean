@@ -386,53 +386,9 @@ theorem padicPrincipalUnitDirectTopology_eq_standard
     (congrArg (fun U : UniformSpace ℚ_[p] => U.toTopologicalSpace)
       (padicDVRValued_uniformSpace_eq_standard p))
 
-/-- The mixed-characteristic structure data for the first principal units,
-using the valuation-induced topology directly. -/
-noncomputable def padicPrincipalDataDirect
-    (p : ℕ) [Fact p.Prime] :
-    let v := padicDVRValuation p
-    let F := LocalField.ofWithZeroValuation v
-    letI : LocalField.MixedWithZeroValuationContext v :=
-      LocalField.mixedWithZeroValuationContext v
-    letI : Valued ℚ_[p] (WithZero (Multiplicative ℤ)) :=
-      Valued.mk' v
-    let d := Module.finrank ℚ_[F.residueCharacteristic] ℚ_[p]
-    Σ a : ℕ,
-      Multiplicative
-          (ZMod (F.residueCharacteristic ^ a) ×
-            (Fin d → ℤ_[F.residueCharacteristic])) ≃ₜ*
-        CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF 1 := by
-  let v := padicDVRValuation p
-  let F := LocalField.ofWithZeroValuation v
-  letI : LocalField.MixedWithZeroValuationContext v :=
-    LocalField.mixedWithZeroValuationContext v
-  letI : Valued ℚ_[p] (WithZero (Multiplicative ℤ)) :=
-    Valued.mk' v
-  exact LocalField.chosenMixed_firstPrincipalUnitStructure_ofWithZeroValuation
-    v (padicDVRValuation_surjective p)
 
-/-- The multiplicative equivalence underlying the first-principal-unit
-structure data for `ℚ_[p]`. -/
-noncomputable def padicPrincipalMulData
-    (p : ℕ) [Fact p.Prime] :
-    let v := padicDVRValuation p
-    let F := LocalField.ofWithZeroValuation v
-    letI : LocalField.MixedWithZeroValuationContext v :=
-      LocalField.mixedWithZeroValuationContext v
-    let d := Module.finrank ℚ_[F.residueCharacteristic] ℚ_[p]
-    Σ a : ℕ,
-      Multiplicative
-          (ZMod (F.residueCharacteristic ^ a) ×
-            (Fin d → ℤ_[F.residueCharacteristic])) ≃*
-        CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF 1 := by
-  let v := padicDVRValuation p
-  let F := LocalField.ofWithZeroValuation v
-  letI : LocalField.MixedWithZeroValuationContext v :=
-    LocalField.mixedWithZeroValuationContext v
-  letI : Valued ℚ_[p] (WithZero (Multiplicative ℤ)) :=
-    Valued.mk' v
-  exact ⟨(padicPrincipalDataDirect p).1,
-    (padicPrincipalDataDirect p).2.toMulEquiv⟩
+
+
 
 /-- The first-principal-unit structure data transported to the standard
 `p`-adic topology. -/

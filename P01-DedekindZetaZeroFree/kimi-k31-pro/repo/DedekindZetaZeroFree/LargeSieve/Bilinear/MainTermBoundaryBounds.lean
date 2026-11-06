@@ -421,8 +421,7 @@ theorem cancelledMainTerms_le_envelope
             gcongr
     _ ≤ A * Real.sqrt (M / K) *
         (C₀ * (X * N * n) ^ η * shellPrefixEnvelope F c Q X N *
-          energy F c N lam) := by
-            exact mul_le_mul_of_nonneg_left hprefix' (by positivity)
+          energy F c N lam) := mul_le_mul_of_nonneg_left hprefix' (by positivity)
     _ ≤ A * Real.sqrt (M / K) *
         (C₀ * p ^ ε * shellPrefixEnvelope F c Q X N * energy F c N lam) := by
           gcongr

@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.RepresentationTheory.Smooth.FiniteCompactOrbits
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.CompactPicture.HarmonicCoreFiniteness
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -14,9 +15,9 @@ variable {X : Type*}
 def functionProduct (U V : Submodule ℂ (X → ℂ)) : Submodule ℂ (X → ℂ) :=
   LinearMap.range (TensorProduct.lift (LinearMap.mk₂ ℂ
     (fun (f : U) (g : V) => f.val * g.val)
-    (by intros; ext x; simp [add_mul])
+    (by measurability)
     (by intros; ext x; simp [mul_assoc])
-    (by intros; ext x; simp [mul_add])
+    (by measurability)
     (by intros; ext x; simp [mul_left_comm])))
 
 theorem functionProduct_finite (U V : Submodule ℂ (X → ℂ))
@@ -36,8 +37,7 @@ theorem finite_product_space {ι : Type*} (s : Finset ι)
   induction s using Finset.induction_on with
   | empty =>
     refine ⟨Submodule.span ℂ {1}, Module.Finite.of_fg (Submodule.fg_span (Set.finite_singleton _)), ?_⟩
-    intro f hf
-    simpa using (Submodule.subset_span (by simp : (1 : X → ℂ) ∈ ({1} : Set (X → ℂ))))
+    simp_all
   | @insert i s hi ih =>
     obtain ⟨V, hV, hv⟩ := ih (fun j hj => hU j (Finset.mem_insert_of_mem hj))
     letI := hV

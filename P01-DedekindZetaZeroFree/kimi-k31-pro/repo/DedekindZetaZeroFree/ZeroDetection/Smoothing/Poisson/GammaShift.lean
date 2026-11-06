@@ -73,7 +73,7 @@ theorem detector_shift :
         (((2 : ℝ) : ℂ) + (t : ℂ) * Complex.I) := hid
 
   have hcp : ∀ v : ℂ, (U : ℂ) ^ ((DetectorDef.r : ℂ) * v) =
-      (((U ^ DetectorDef.r : ℝ)) : ℂ) ^ v := by
+      ((U ^ DetectorDef.r : ℝ) : ℂ) ^ v := by
     intro v
     rw [Complex.ofReal_cpow hU0.le, ← Complex.cpow_mul]
     all_goals
@@ -83,7 +83,7 @@ theorem detector_shift :
       DetectorMellin.mellinIntegrand F U (D.omega u) β γ v =
         Complex.Gamma v * (G ((β : ℂ) + (γ : ℂ) * Complex.I + v) *
           DetectorDef.D F U (D.omega u).character ((β : ℂ) + (γ : ℂ) * Complex.I + v)) *
-          (((U ^ DetectorDef.r : ℝ)) : ℂ) ^ v := by
+          ((U ^ DetectorDef.r : ℝ) : ℂ) ^ v := by
     intro v hv
     unfold DetectorMellin.mellinIntegrand
     rw [hGs _ hv, hcp v]
@@ -94,12 +94,12 @@ theorem detector_shift :
         (G ((β : ℂ) + (γ : ℂ) * Complex.I + (((2 : ℝ) : ℂ) + (t : ℂ) * Complex.I)) *
           DetectorDef.D F U (D.omega u).character
             ((β : ℂ) + (γ : ℂ) * Complex.I + (((2 : ℝ) : ℂ) + (t : ℂ) * Complex.I))) *
-        (((U ^ DetectorDef.r : ℝ)) : ℂ) ^ (((2 : ℝ) : ℂ) + (t : ℂ) * Complex.I) := by
+        ((U ^ DetectorDef.r : ℝ) : ℂ) ^ (((2 : ℝ) : ℂ) + (t : ℂ) * Complex.I) := by
     congr 1
     funext t
     apply hpt
     simp only [Complex.add_re, Complex.ofReal_re, Complex.mul_re, Complex.I_re,
-      Complex.ofReal_im, Complex.I_im, Complex.mul_im]
+      Complex.ofReal_im, Complex.I_im]
     linarith
 
   have hE : DetectorDef.qExp * (1 - DetectorDef.c) + (1 - DetectorDef.c) / 2 +

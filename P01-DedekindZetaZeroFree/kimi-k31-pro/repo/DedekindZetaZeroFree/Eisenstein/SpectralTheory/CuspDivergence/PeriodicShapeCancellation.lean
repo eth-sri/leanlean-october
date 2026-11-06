@@ -49,7 +49,7 @@ def projectedShapeDirection (d : ℕ) (hd : 0 < d) (i : Fin d) : KPCuspLogShape.
     simp only [Finset.sum_sub_distrib, Finset.sum_const, Finset.card_univ,
       Fintype.card_fin, nsmul_eq_mul]
     rw [Finset.sum_ite_eq']
-    simp [ne_of_gt hd, Nat.cast_ne_zero, mul_div_cancel₀]⟩
+    simp [ne_of_gt hd]⟩
 
  def shapeEmbedding (d : ℕ) : KPCuspLogShape.hyperplane d →L[ℝ] Space d :=
   LinearMap.toContinuousLinearMap {
@@ -98,7 +98,7 @@ theorem restricted_verticalFlux_fderiv {F : Type} [Field F] [NumberField F]
   change (fderiv ℝ (fun q => W q i 0) (real d (KPCuspCharts.toArch F (c,t))))
       (shapeEmbedding d (projectedShapeDirection d hd i)) = _
   rw [shapeEmbedding_direction d hd i]
-  simp only [map_sub, map_smul, map_sum, coordinateDerivative, one_div, smul_eq_mul, div_eq_mul_inv]
+  simp only [map_sub, map_smul, map_sum, coordinateDerivative, div_eq_mul_inv]
   simp only [d, Complex.real_smul, Complex.ofReal_mul, Complex.ofReal_inv, Complex.ofReal_one]
   ring
 
@@ -680,7 +680,7 @@ private theorem horizontalRealLinear_coord (d : ℕ) (i : Fin d) (k : Fin 2) :
   by_cases hj : j = i
   all_goals fin_cases k <;> fin_cases l <;>
     simp [horizontalRealLinear, real, coordinateVector, PiLp.toLp_apply, Pi.single_apply,
-      PiLp.proj_apply, ← ite_and, and_comm, hj]
+      and_comm, hj]
 private theorem slice_coordinateDerivative_eq
     {F : Type} [Field F] [NumberField F]
     (f : Space (KPCuspLogShape.dimension F) → ℂ) (hf : Differentiable ℝ f)

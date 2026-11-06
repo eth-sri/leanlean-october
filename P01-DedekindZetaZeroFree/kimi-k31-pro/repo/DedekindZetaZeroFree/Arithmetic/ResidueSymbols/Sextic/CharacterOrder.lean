@@ -28,7 +28,7 @@ theorem intrinsic_chi_order (p : ExteriorPrime A) : orderOf (chi (σ := σ) p) =
   have hchi (u : (A.R ⧸ A.extendIdeal (primeIdeal p))ˣ) :
       chi (σ := σ) p u = σ (A.sexticResidueFamily (primeIdeal p) u : F) := by
     simp [chi, SArithmeticData.sexticResiduePowerChar, SArithmeticData.sexticExponent,
-      MulChar.ofUnitHom_coe]
+      ]
   have h6 : chi (σ := σ) p ^ 6 = 1 := by
     apply MulChar.ext
     intro u

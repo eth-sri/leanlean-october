@@ -381,7 +381,7 @@ private theorem local_div_integral (A : SArithmeticData F) (I : A.Exterior)
    Ideal.Quotient.eq_zero_iff_mem.mp hd
  have hnu : ¬ IsUnit d := (IsLocalRing.mem_maximalIdeal d).mp hmem
  have hlt : Valued.v (d : v.adicCompletion F) < 1 :=
-   (Valuation.Integer.not_isUnit_iff_valuation_lt_one).mp hnu
+   Valuation.Integer.not_isUnit_iff_valuation_lt_one.mp hnu
  rw [HeightOneSpectrum.mem_adicCompletionIntegers, map_div₀, hval]
  apply (div_le_one₀ (by simp)).mpr
  by_cases hz : Valued.v (d : v.adicCompletion F) = 0
@@ -420,8 +420,7 @@ theorem exteriorTheta_local_apply (A : SArithmeticData F)
    change ResidueTrace.localTraceCharacter v
      (((x : v.adicCompletion F) - algebraMap F (v.adicCompletion F) (r : F)) /
        algebraMap F (v.adicCompletion F) (a : F)) = 1 at htr
-   rw [sub_div, hap, ← map_div₀] at htr
-   rw [AddChar.map_sub_eq_div] at htr
+   rw [sub_div, hap, ← map_div₀, AddChar.map_sub_eq_div] at htr
    rw [hap]
    exact div_eq_one.mp htr
  rw [← hq]
@@ -771,8 +770,7 @@ theorem exteriorRawQuadraticCutoff_unit_eventually (A : SArithmeticData F)
     (u : (v.adicCompletionIntegers F)ˣ) :
     ∀ᶠ n : ℕ in Filter.atTop,
       exteriorRawQuadraticCutoff v μ
-        (Units.map (v.adicCompletionIntegers F).subtype.toMonoidHom u) n = 1 := by
-  exact ExteriorGauss.unit_cutoff_eventually v hgood hzero μ hμ u
+        (Units.map (v.adicCompletionIntegers F).subtype.toMonoidHom u) n = 1 := ExteriorGauss.unit_cutoff_eventually v hgood hzero μ hμ u
 
 theorem exterior_raw_quadratic_ratio_unit_eventually (A : SArithmeticData F)
     (I : A.Exterior) (v : HeightOneSpectrum (𝓞 F)) (hIv : I.val = v.asIdeal)

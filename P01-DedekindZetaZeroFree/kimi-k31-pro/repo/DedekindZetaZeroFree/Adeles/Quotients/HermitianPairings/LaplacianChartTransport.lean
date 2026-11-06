@@ -70,7 +70,7 @@ private theorem fromArch_reindex (x : M F) :
   ext j
   rcases j with ⟨i,k⟩
   fin_cases k <;> simp [KPCuspCutoffGraph.fromArch, LaplacianReindex.reindex, labeledA,
-    CotangentLogCoframe.A, Complex.ext_iff]
+    CotangentLogCoframe.A]
 private theorem coefficient_eq (s : KPContSectorSmoothFramesSupport.Sections F ζ hζ
     (level F ζ hζ C R P H U) R P H)
     (a : ShrunkChart F ζ hζ (level F ζ hζ C R P H U) R P H) (x : omega a) :

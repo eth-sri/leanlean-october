@@ -96,8 +96,7 @@ theorem neg_one_right
     rw [pow_two, ← hR a (-1) (-1), show (-1 : Kˣ) * (-1) = 1 by simp]
     exact one_right K M B hR a
   have h3 : (B a (-1)) ^ 3 = 1 := hCub a (-1)
-  rw [show (3:ℕ) = 2 + 1 from rfl, pow_succ] at h3
-  rw [h2, one_mul] at h3
+  rw [show (3:ℕ) = 2 + 1 from rfl, pow_succ, h2, one_mul] at h3
   exact h3
 
 theorem neg_one_left
@@ -110,8 +109,7 @@ theorem neg_one_left
     rw [pow_two, ← hL (-1) (-1) a, show (-1 : Kˣ) * (-1) = 1 by simp]
     exact one_left K M B hL a
   have h3 : (B (-1) a) ^ 3 = 1 := hCub (-1) a
-  rw [show (3:ℕ) = 2 + 1 from rfl, pow_succ] at h3
-  rw [h2, one_mul] at h3
+  rw [show (3:ℕ) = 2 + 1 from rfl, pow_succ, h2, one_mul] at h3
   exact h3
 
 theorem neg_self

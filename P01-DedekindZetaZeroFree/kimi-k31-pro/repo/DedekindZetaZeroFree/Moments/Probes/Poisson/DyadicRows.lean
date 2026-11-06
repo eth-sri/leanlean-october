@@ -28,15 +28,14 @@ theorem dyadIndex_spec (u : Frequency D.recipe) :
     (2 : ℝ) ^ dyadIndex D u ≤ q D u ∧ q D u < (2 : ℝ) ^ (dyadIndex D u + 1) := by
   have h1 := one_le_q D u
   have hn : ⌊q D u⌋₊ ≠ 0 := by
-    have : 1 ≤ ⌊q D u⌋₊ := Nat.le_floor (by simpa using h1)
+    have : 1 ≤ ⌊q D u⌋₊ := Nat.le_floor (by grind)
     omega
   constructor
   · have h := Nat.pow_log_le_self 2 hn
     have h2 : ((2 ^ Nat.log 2 ⌊q D u⌋₊ : ℕ) : ℝ) ≤ (⌊q D u⌋₊ : ℝ) := by exact_mod_cast h
     have h3 : (⌊q D u⌋₊ : ℝ) ≤ q D u := Nat.floor_le (by linarith)
     unfold dyadIndex
-    push_cast at h2
-    linarith
+    grind
   · have h := Nat.lt_pow_succ_log_self (b := 2) (by norm_num) ⌊q D u⌋₊
     have h2 : ((⌊q D u⌋₊ : ℕ) : ℝ) < ((2 ^ (Nat.log 2 ⌊q D u⌋₊ + 1) : ℕ) : ℝ) := by
       exact_mod_cast h
@@ -45,23 +44,22 @@ theorem dyadIndex_spec (u : Frequency D.recipe) :
       have : ⌊q D u⌋₊ + 1 ≤ 2 ^ (Nat.log 2 ⌊q D u⌋₊ + 1) := h
       exact_mod_cast this
     unfold dyadIndex
-    push_cast at h4
-    linarith
+    grind
 
 theorem dyadIndex_spec' (u : Frequency D.recipe) :
     (2 : ℝ) ^ dyadIndex D u ≤ q D u ∧ q D u < 2 * (2 : ℝ) ^ dyadIndex D u := by
   have h := dyadIndex_spec D u
   rw [pow_succ] at h
-  exact ⟨h.1, by linarith [h.2]⟩
+  grind
 
 theorem dyadIndex_eq_of_bounds (u : Frequency D.recipe) (k : ℕ)
     (h1 : (2 : ℝ) ^ k ≤ q D u) (h2 : q D u < (2 : ℝ) ^ (k + 1)) : dyadIndex D u = k := by
   have a1 : 2 ^ k ≤ ⌊q D u⌋₊ := by
     apply Nat.le_floor
-    exact_mod_cast h1
+    grind
   have a2 : ⌊q D u⌋₊ < 2 ^ (k + 1) := by
     apply Nat.floor_lt (by linarith [one_le_q D u]) |>.mpr
-    exact_mod_cast h2
+    grind
   exact Nat.log_eq_of_pow_le_of_lt_pow a1 a2
 
 theorem dyadIndex_unique (u : Frequency D.recipe) (k : ℕ) :
@@ -79,7 +77,7 @@ theorem rawDyad_eq (k : ℕ) :
   ext u
   simp only [rawDyad, Set.mem_setOf_eq, dyadIndex_unique, pow_succ]
   change _ ≤ q D u ∧ q D u < _ ↔ _ ≤ q D u ∧ q D u < _
-  constructor <;> rintro ⟨a, b⟩ <;> exact ⟨a, by linarith⟩
+  grind
 
 theorem rawDyad_finite_card :
     ∃ K : ℝ, 0 < K ∧ ∀ k : ℕ, (rawDyad D k).Finite ∧
@@ -120,14 +118,9 @@ theorem nonprincipal_cover (Z : ℝ) :
   constructor
   · intro h
     by_cases h1 : q D u ≤ Z ^ Scales.smallCutoffExponent
-    · exact Or.inl (Or.inl ⟨h, h1⟩)
-    · by_cases h2 : q D u ≤ Z ^ Scales.largeCutoffExponent
-      · exact Or.inl (Or.inr ⟨h, not_le.mp h1, h2⟩)
-      · exact Or.inr ⟨h, not_le.mp h2⟩
-  · rintro ((h | h) | h)
-    · exact h.1
-    · exact h.1
-    · exact h.1
+    · grind
+    · grind
+  · grind
 
 theorem mem_small_iff (Z : ℝ) (u : Frequency D.recipe) :
     u ∈ smallSet D Z ↔ u ≠ principalFrequency D.recipe ∧ q D u ≤ Z ^ Scales.smallCutoffExponent := Iff.rfl
@@ -149,11 +142,8 @@ theorem exceptional_good_union (ρ Z : ℝ) :
   ext u
   simp only [exceptionalMedium, goodMedium, Set.mem_union, Set.mem_setOf_eq]
   constructor
-  · rintro (h | h) <;> exact h.1
-  · intro h
-    by_cases h' : u ∈ RawFixed.FixedData.rawExceptionalSet D ρ ((2 : ℝ) ^ dyadIndex D u)
-    · exact Or.inl ⟨h, h'⟩
-    · exact Or.inr ⟨h, h'⟩
+  · grind
+  · grind
 
 theorem goodMedium_finite (ρ Z : ℝ) : (goodMedium D ρ Z).Finite :=
   (mediumSet_finite D Z).subset (goodMedium_subset D ρ Z)

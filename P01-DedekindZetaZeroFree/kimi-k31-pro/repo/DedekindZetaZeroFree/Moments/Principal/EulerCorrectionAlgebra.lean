@@ -18,13 +18,12 @@ theorem principalCorrection_identity (r D E : ℂ) (hr : 1 - r ≠ 0)
     (hD : 1 - D ≠ 0) (hE : 1 - E ≠ 0) :
     (1 - r) ^ 2 * principalFactor r D E / (1 - D) = principalCorrection r D E := by
   unfold principalFactor principalCorrection
-  field_simp
-  <;> ring
+  grind
 
 theorem principalCorrection_numerator_subtraction (r D E : ℂ) :
     (1 - r ^ 2) * (1 - (1 - r) * D - r * E) - (1 - E) * (1 - D) =
       -r ^ 2 + (r + r ^ 2 - r ^ 3) * D + (1 - r + r ^ 3) * E - E * D := by
-  ring
+  grind
 
 theorem principalCorrection_ne_zero (r : ℝ) (D E : ℂ)
     (hr0 : 0 < r) (hr1 : r < 1) (hD : ‖D‖ < 1) (hE : ‖E‖ < 1) :
@@ -45,9 +44,9 @@ theorem principalCorrection_ne_zero (r : ℝ) (D E : ℂ)
   have hnum : 1 - (1 - (r : ℂ)) * D - (r : ℂ) * E ≠ 0 := by
     intro hz
     have heq : (1 - (r : ℂ)) * D + (r : ℂ) * E = 1 := by
-      linear_combination -hz
+      grind
     rw [heq, norm_one] at hweight
-    exact (lt_irrefl 1) hweight
+    grind
   have hDne : 1 - D ≠ 0 := by
     intro hz
     have : D = 1 := (sub_eq_zero.mp hz).symm

@@ -187,26 +187,9 @@ section Pullback
 variable (base : CompleteDVF.{u, v} K) (target : CompleteDVF.{w, x} L)
 variable [base.valuation.HasExtension target.valuation]
 
-/-- The target valuation subring pulls back to the base valuation subring. -/
-theorem comap_valuationSubring_eq_base :
-    target.valuation.valuationSubring.comap (algebraMap K L) =
-      base.valuation.valuationSubring := by
-  ext a
-  simp [Valuation.mem_valuationSubring_iff,
-    _root_.Valuation.HasExtension.val_map_le_one_iff
-      (vR := base.valuation) (vA := target.valuation)]
 
-/-- Any valuation extending the base valuation has valuation subring pulling
-back to the base valuation subring. -/
-theorem comap_valuationSubring_eq_base_of_hasExtension
-    {Gamma' : Type y} [LinearOrderedCommGroupWithZero Gamma']
-    (v' : _root_.Valuation L Gamma') [base.valuation.HasExtension v'] :
-    v'.valuationSubring.comap (algebraMap K L) =
-      base.valuation.valuationSubring := by
-  ext a
-  simp [Valuation.mem_valuationSubring_iff,
-    _root_.Valuation.HasExtension.val_map_le_one_iff
-      (vR := base.valuation) (vA := v')]
+
+
 
 end Pullback
 
@@ -230,46 +213,13 @@ theorem valuationSubring_eq_of_valuation_isEquiv
     target.valuation.valuationSubring = v'.valuationSubring :=
   (_root_.Valuation.isEquiv_iff_valuationSubring target.valuation v').1 h
 
-/-- Valuation equivalence is exactly equality of valuation subrings. -/
-theorem valuation_isEquiv_iff_valuationSubring_eq
-    {Gamma' : Type y} [LinearOrderedCommGroupWithZero Gamma']
-    (v' : _root_.Valuation L Gamma') :
-    target.valuation.IsEquiv v' ↔
-      target.valuation.valuationSubring = v'.valuationSubring :=
-  _root_.Valuation.isEquiv_iff_valuationSubring target.valuation v'
 
-/-- Equality of valuation subrings is pointwise equality of membership. -/
-theorem valuationSubring_eq_iff_mem_valuationSubring
-    {Gamma' : Type y} [LinearOrderedCommGroupWithZero Gamma']
-    (v' : _root_.Valuation L Gamma') :
-    target.valuation.valuationSubring = v'.valuationSubring ↔
-      ∀ z : L, z ∈ target.valuation.valuationSubring ↔
-        z ∈ v'.valuationSubring := by
-  constructor
-  · intro h z
-    rw [h]
-  · exact fun h => SetLike.ext h
 
-/-- Valuation equivalence can be checked pointwise on valuation-ring
-membership. -/
-theorem valuation_isEquiv_iff_mem_valuationSubring
-    {Gamma' : Type y} [LinearOrderedCommGroupWithZero Gamma']
-    (v' : _root_.Valuation L Gamma') :
-    target.valuation.IsEquiv v' ↔
-      ∀ z : L, z ∈ target.valuation.valuationSubring ↔
-        z ∈ v'.valuationSubring := by
-  rw [valuation_isEquiv_iff_valuationSubring_eq target v',
-    valuationSubring_eq_iff_mem_valuationSubring target v']
 
-/-- A pointwise valuation-ring membership criterion gives valuation
-equivalence. -/
-theorem valuation_isEquiv_of_mem_valuationSubring_iff
-    {Gamma' : Type y} [LinearOrderedCommGroupWithZero Gamma']
-    (v' : _root_.Valuation L Gamma')
-    (hmem : ∀ z : L,
-      z ∈ target.valuation.valuationSubring ↔ z ∈ v'.valuationSubring) :
-    target.valuation.IsEquiv v' :=
-  valuation_isEquiv_of_valuationSubring_eq target v' (SetLike.ext hmem)
+
+
+
+
 
 end Comparison
 end ValuedExtension

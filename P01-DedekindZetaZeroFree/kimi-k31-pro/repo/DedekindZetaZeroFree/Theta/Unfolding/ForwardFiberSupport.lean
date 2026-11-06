@@ -97,8 +97,8 @@ lemma forwardMask_gamma (m : ThetaReflectionData.Row R.A) (a : Fˣ)
       reduction_pow p.val u (unit_ord R.A p' u')]
     have hn := ThetaBranch.unitResidue_ne_zero p.val a ha
     have hun := ThetaBranch.unitResidue_ne_zero p.val u (unit_ord R.A p' u')
-    simp only [sexticUnitPower, isUnit_iff_ne_zero, hn, hun, pow_ne_zero,
-      mul_ne_zero, ↓reduceIte, map_mul, map_pow]
+    simp only [sexticUnitPower, isUnit_iff_ne_zero, 
+      map_mul, map_pow]
     rw [ThetaBranch.char_pow_six _ (char_order R.A R.σ p') _ hun, mul_one]
     rw [if_pos (mul_ne_zero hn (pow_ne_zero 6 hun)), if_pos hn]
   · have haa : ThetaBranch.order p.val (a * u ^ 6) ≠ 0 := by

@@ -76,12 +76,12 @@ private theorem matrix_six_real_decomposition (X : Matrix (Fin 2) (Fin 2) ℂ) :
     exact Complex.re_add_im z
   ext a b
   fin_cases a <;> fin_cases b <;>
-    simp [Fin.sum_univ_succ, Matrix.add_apply, Matrix.smul_apply, Matrix.one_apply,
+    simp [Fin.sum_univ_succ, Matrix.add_apply, Matrix.smul_apply, 
       slotLieMatrix, tracelessCoordinates, Complex.real_smul] <;>
     try simp only [hz]
   all_goals apply Complex.ext <;>
     simp [Complex.add_re, Complex.add_im, Complex.sub_re, Complex.sub_im,
-      Complex.div_re, Complex.div_im, Complex.mul_re, Complex.mul_im] <;> ring
+      Complex.mul_re, Complex.mul_im] <;> ring
 
  abbrev Mat := Matrix (Fin 2) (Fin 2) ℂ
  abbrev CGL := KPCplxCharacterHaar.ComplexGL2
@@ -103,7 +103,7 @@ private theorem ambient_scalar (f : CGL → ℂ)
   · let a := Matrix.GeneralLinearGroup.mkOfDetNeZero g hg
     have he : ((Matrix.GeneralLinearGroup.scalar (Fin 2) c * a : CGL) : Mat) = (c : ℂ) • g := by
       ext i j
-      simp [Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
+      simp [Matrix.GeneralLinearGroup.coe_scalar,
         Matrix.scalar_apply, Matrix.diagonal_mul, a]
     rw [← he, ambient_gl, hf]
     exact (ambient_gl f a).symm
@@ -137,7 +137,7 @@ private theorem right_scalar (f : CGL → ℂ) (X : Mat)
   unfold KPContHolomorphicKGeneration.rightLieFunction
   have hmat : ((Matrix.GeneralLinearGroup.scalar (Fin 2) c * g : CGL) : Mat) = L (g : Mat) := by
     ext i j
-    simp [L, Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
+    simp [L, Matrix.GeneralLinearGroup.coe_scalar,
       Matrix.scalar_apply, Matrix.diagonal_mul]
   rw [hmat]
   change fderiv ℝ (ambient f) (L (g : Mat)) (L (g : Mat) * X) = _
@@ -201,7 +201,7 @@ private theorem right_six (X : Mat) (W : KPContHolomorphicKGeneration.RealLieWor
   apply Finset.sum_congr rfl
   intro j hj
   rw [map_smul]
-  simp only [Complex.real_smul, smul_eq_mul, apply_ite, Complex.ofReal_re, Complex.ofReal_im]
+  simp only [Complex.real_smul, apply_ite]
   rfl
 
 private theorem word_differentiable (W : KPContHolomorphicKGeneration.RealLieWord) (s : ℂ) (g : CGL) :

@@ -36,7 +36,7 @@ theorem isOpenEmbedding (s : H →* G) (hs : Function.Injective s) (g : G) :
     · obtain ⟨k₀, u₀, hu₀, he⟩ := hex
       have htr : ∀ k, t * s k = g * s (u₀ * k₀⁻¹ * k) := by
         intro k
-        have ht : t = g * s u₀ * (s k₀)⁻¹ := (eq_mul_inv_iff_mul_eq).mpr he
+        have ht : t = g * s u₀ * (s k₀)⁻¹ := eq_mul_inv_iff_mul_eq.mpr he
         rw [ht]
         simp only [map_mul, map_inv]
         simp only [mul_assoc]

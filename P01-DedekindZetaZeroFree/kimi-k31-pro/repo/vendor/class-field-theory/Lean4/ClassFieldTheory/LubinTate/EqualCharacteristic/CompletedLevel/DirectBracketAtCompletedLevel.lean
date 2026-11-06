@@ -418,19 +418,7 @@ theorem equalCharacteristicCompletedDirectBracketAtPrimitiveRoot_eq_ambient
         (equalCharacteristicCompletedPrimitiveRoot F n) at h
   exact h
 
-/-- Unit specialization: the formal standard `[a]` at the primitive point
-is the completed unit root used by the prescribed Frobenius lift. -/
-theorem equalCharacteristicCompletedDirectBracketAtPrimitiveRoot_eq_unitRoot
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) (a : F.residueField⟦X⟧ˣ) :
-    ((equalCharacteristicCompletedDirectBracketAtSourceIterate F n 0
-        (a : F.residueField⟦X⟧) :
-      Valued.integer (equalCharacteristicCompletedLevelField F n)) :
-        equalCharacteristicCompletedLevelField F n) =
-      equalCharacteristicCompletedUnitRoot F n a := by
-  exact equalCharacteristicCompletedDirectBracketAtPrimitiveRoot_eq_ambient
-    F n (a : F.residueField⟦X⟧)
+
 
 end EqualCharacteristic
 end LubinTate

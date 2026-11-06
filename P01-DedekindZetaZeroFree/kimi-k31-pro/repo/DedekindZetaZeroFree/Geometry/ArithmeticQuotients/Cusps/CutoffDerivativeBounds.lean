@@ -37,8 +37,7 @@ private theorem theta_deriv_zero {t : ℝ} (ht : t ∉ Set.Icc (0 : ℝ) 1) :
   rw [h.deriv_eq]
   simp
 
-theorem theta_deriv_compact : HasCompactSupport (deriv theta) := by
-  exact HasCompactSupport.intro (isCompact_Icc (a := (0 : ℝ)) (b := 1))
+theorem theta_deriv_compact : HasCompactSupport (deriv theta) := HasCompactSupport.intro (isCompact_Icc (a := (0 : ℝ)) (b := 1))
     (fun t ht => theta_deriv_zero ht)
 
 theorem theta_derivatives_bounded : ∃ B : ℝ, 0 ≤ B ∧ ∀ t : ℝ,
@@ -294,8 +293,7 @@ private theorem end_unique (c d : Cusp a) (x : X (F := F) (ζ := ζ) (hζ := hζ
   rfl
 
 private theorem eta_zero_off (n : ℕ) (c : Cusp a) {x : X (F := F) (ζ := ζ) (hζ := hζ) (U := U)}
-    (hx : x ∉ endRegion a a.threshold c) : eta a n c x = 0 := by
-  exact Set.indicator_of_notMem hx _
+    (hx : x ∉ endRegion a a.threshold c) : eta a n c x = 0 := Set.indicator_of_notMem hx _
 
 private theorem eta_bounds (n : ℕ) (c : Cusp a) (x : X (F := F) (ζ := ζ) (hζ := hζ) (U := U)) :
     0 ≤ eta a n c x ∧ eta a n c x ≤ 1 := by
@@ -461,8 +459,7 @@ theorem eta_local_model (n : ℕ) (c : Cusp a) (i : Fin a.componentCount)
       ∃ γ : KPCuspArithmetic.PGL2 F,
         (fun y => eta a n c (Q y)) =ᶠ[𝓝 x]
           (fun y => smoothTransition
-            (KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) (γ • y) - shift a n)) := by
-  exact GenericZeroExtension.scalar_zeroExtension_local_model a a.threshold
+            (KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) (γ • y) - shift a n)) := GenericZeroExtension.scalar_zeroExtension_local_model a a.threshold
     (a.threshold + 1) le_rfl (by linarith) c
     (fun t => smoothTransition (t - shift a n)) (fun t ht => profile_zero a n ht) i x
 
@@ -613,8 +610,7 @@ private theorem smooth_differential (d : ℕ) (f : HyperbolicChart.Space d → �
       (HyperbolicChart.coordinateDerivative d i j f) := by
     have hh : ContDiff ℝ (⊤ : ℕ∞) (fderiv ℝ f) := hf.fderiv_right (by simp)
     exact hh.clm_apply contDiff_const
-  have hE : ContDiff ℝ (⊤ : ℕ∞) (fun p : HyperbolicChart.Space d => (Real.exp (p (i,2)) : ℂ)) := by
-    exact Complex.ofRealCLM.contDiff.comp (Real.contDiff_exp.comp (by fun_prop))
+  have hE : ContDiff ℝ (⊤ : ℕ∞) (fun p : HyperbolicChart.Space d => (Real.exp (p (i,2)) : ℂ)) := Complex.ofRealCLM.contDiff.comp (Real.contDiff_exp.comp (by fun_prop))
   fin_cases k
   · exact hD 2
   · exact hE.mul (hD 0)
@@ -825,7 +821,7 @@ private theorem eta_bound : ∃ B : ℝ, 0 ≤ B ∧ ∀ n c i (p : Coordinates 
       intro q hq
       simpa only [etaLift, basePoint, action_mean, Function.comp_apply] using
         congrArg (fun t : ℝ => (t : ℂ)) hq
-    have hd (j) (k) := differential_congr _ he j k
+    have hd j k := differential_congr _ he j k
     simp_rw [hd]
     rw [laplacian_congr_nhds _ he]
     exact hbound (CutoffScalars.shift a n) γ p
@@ -914,7 +910,7 @@ theorem rho_derivative_bound : ∃ B : ℝ, 0 ≤ B ∧ ∀ n i x,
         ∑ c, ‖laplacian _ (f c) (fromArch F x)‖ :=
       add_le_add (norm_sum_le _ _) (norm_sum_le _ _)
     _ = ∑ c, (‖diffVec _ (f c) (fromArch F x)‖ +
-        ‖laplacian _ (f c) (fromArch F x)‖) := (Finset.sum_add_distrib).symm
+        ‖laplacian _ (f c) (fromArch F x)‖) := Finset.sum_add_distrib.symm
     _ ≤ ∑ _c : CutoffScalars.Cusp a, B := by
       apply Finset.sum_le_sum
       intro c _

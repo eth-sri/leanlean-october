@@ -122,7 +122,7 @@ private theorem rational_arch_character (z : KPGlobalTorusFunctionData.TorusArch
     exact_mod_cast (pos_iff_ne_zero.mpr (Units.ne_zero (KPGlobalTorusFunctionData.delta F ζ hζ h.val)))
   rw [Real.rpow_def_of_pos hd, Complex.ofReal_exp]
   simp only [KPGlobalTorusBorelNormTwistTransport.normPower, Complex.ofReal_mul,
-    Complex.ofReal_div, Complex.ofReal_one, Complex.ofReal_natCast]
+    Complex.ofReal_div, Complex.ofReal_one]
   congr 1
   change _ = (1/6 : ℂ) * (Real.log (((KPGlobalTorusFunctionData.delta F ζ hζ h.val : ℝ≥0) : ℝ)) : ℂ)
   push_cast

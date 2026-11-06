@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.Residual.GradientSquareIntegrability
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.Residual.SectionGradientAndEnergy
+public import Mathlib.Tactic.FunProp
 
 @[expose] public section
 
@@ -35,10 +36,7 @@ theorem squareFinite_of_first_derivatives (Z : smoothSections F ζ hζ U R P H)
   have hi (b) : Integrable (fun x => ‖KPSmoothActualFlowData.flowDerivative F ζ hζ b f x‖^2)
       R.quotientHaar := (memLp_two_iff_integrable_sq_norm (h2 b).aestronglyMeasurable).mp (h2 b)
   have hE : Integrable E R.quotientHaar := by
-    apply integrable_finset_sum
-    intro w _
-    exact (((hi (w,0)).add (hi (w,1))).div_const 4).add
-      (((((hi (w,2)).add (hi (w,3))).add (hi (w,4))).add (hi (w,5))).div_const 2)
+    fun_prop
   apply ResidualGradientMeasure.squareFinite_of_original_integrable F ζ hζ U R P H
   apply hE.congr
   filter_upwards [] with x

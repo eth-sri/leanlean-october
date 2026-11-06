@@ -33,7 +33,7 @@ theorem hasDerivAt_complexNormFlow (g : SchwartzMap ℂ ℂ) (z : ℂ) (u : ℝ)
   · rfl
   · rw [complexEuler_apply, ← map_smul]
     congr 1
-    simp [smul_eq_mul]
+    simp
     ring
 
 theorem iteratedDeriv_complexNormFlow (g : SchwartzMap ℂ ℂ) (k : ℕ) (z : ℂ) (u : ℝ) :

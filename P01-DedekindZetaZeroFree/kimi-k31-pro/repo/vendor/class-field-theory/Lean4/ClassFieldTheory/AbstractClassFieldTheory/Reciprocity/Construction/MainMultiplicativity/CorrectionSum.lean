@@ -1,6 +1,7 @@
 module
 
 public import ClassFieldTheory.AbstractClassFieldTheory.Reciprocity.Construction.MainMultiplicativity.FrobeniusActionRemainder
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -100,8 +101,7 @@ theorem frobeniusMultiplicativity_actionDifference_eq_correctionSum
           (frobeniusMultiplicativityCorrectionTerm B τ₁ p₁ p₃ p₄ i) -
           frobeniusMultiplicativityCorrectionTerm B τ₁ p₁ p₃ p₄ i) := by
   have hmul : B.ρ (τ₄ * τ₁) p₃ = B.ρ τ₄ (B.ρ τ₁ p₃) := by
-    rw [map_mul]
-    rfl
+    norm_num
   rw [hmul]
   simp [frobeniusMultiplicativityCorrectionAction,
     frobeniusMultiplicativityCorrectionTerm, Fin.sum_univ_succ, map_sub]

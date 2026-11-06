@@ -70,7 +70,7 @@ private theorem Q_smul (q : InfinitePlace K → ℝ) (r : ℝ)
     RayParity.Q K q (r • x) = r • RayParity.Q K q x := by
   apply (Theta.traceToMixed K).injective
   simp only [RayParity.Q, ContinuousLinearEquiv.apply_symm_apply, map_smul]
-  ext v <;> simp [NumberField.mixedEmbedding.mixedSpaceOfRealSpace, mul_smul_comm]
+  ext v <;> simp [NumberField.mixedEmbedding.mixedSpaceOfRealSpace]
 
 private theorem Q_realCoordinate (q : InfinitePlace K → ℝ)
     (x : NumberField.mixedEmbedding.euclidean.mixedSpace K) (v : RealPlaces K) :

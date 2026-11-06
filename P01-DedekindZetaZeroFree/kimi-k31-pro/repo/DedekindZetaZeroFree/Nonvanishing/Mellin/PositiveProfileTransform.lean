@@ -22,7 +22,7 @@ theorem compact_subgroup_norm_one {K : Type*} [NormedField K]
     (U : Subgroup Kˣ) (hU : IsCompact (U : Set Kˣ)) (z : Kˣ) (hz : z ∈ U) :
     ‖(z : K)‖ = 1 := by
   obtain ⟨a, ha, hmax⟩ := hU.exists_isMaxOn ⟨1, U.one_mem⟩
-    (Units.continuous_val.norm.continuousOn)
+    Units.continuous_val.norm.continuousOn
   have hle (u : Kˣ) (hu : u ∈ U) : ‖(u : K)‖ ≤ 1 := by
     have h := hmax (U.mul_mem hu ha)
     change ‖((u * a : Kˣ) : K)‖ ≤ ‖(a : K)‖ at h
@@ -105,7 +105,7 @@ lemma axis_radial_integrable (c : ℝ) (hc : 0 < c) (s : ℂ) (hs : -(5/6 : ℝ)
   apply hi.congr
   filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
   simp [g, ENNReal.toReal_ofReal (inv_nonneg.mpr ht.le),
-    Complex.real_smul, div_eq_mul_inv, mul_comm, mul_left_comm]
+    Complex.real_smul, div_eq_mul_inv, mul_comm]
 
 lemma axis_radial_mellin (c : ℝ) (hc : 0 < c) (s : ℂ) (hs : -(5/6 : ℝ) < s.re) :
     (∫ t : PositiveAxis, (thirdBesselRadialProfile c t.val : ℂ) * (t.val : ℂ)^s ∂positiveHaar) =
@@ -119,7 +119,7 @@ lemma axis_radial_mellin (c : ℝ) (hc : 0 < c) (s : ℂ) (hs : -(5/6 : ℝ) < s
   convert thirdBesselRadialProfile_mellin c hc s hs using 1
   apply integral_congr_ae
   filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
-  simp [ENNReal.toReal_ofReal (inv_nonneg.mpr ht.le), smul_eq_mul, Complex.real_smul]
+  simp [ENNReal.toReal_ofReal (inv_nonneg.mpr ht.le), Complex.real_smul]
   ring
 
 lemma norm_sq_sqrtUnit (A : SArithmeticData F) (w : InfinitePlace F) (x : PositiveAxis) :
@@ -188,7 +188,7 @@ lemma arch_mellin (A : SArithmeticData F) (w : InfinitePlace F)
   rw [integral_fun_fst (μ := positiveHaar) (ν := ν)
     (fun t : PA => (thirdBesselRadialProfile c t.val : ℂ) * (t.val : ℂ)^s),
     axis_radial_mellin c hc s hs]
-  simp only [smul_eq_mul, Complex.real_smul, measureReal_def]
+  simp only [Complex.real_smul, measureReal_def]
   ring
 
 private lemma ofReal_prod_cpow {ι : Type*} (t : Finset ι) (a : ι → ℝ)

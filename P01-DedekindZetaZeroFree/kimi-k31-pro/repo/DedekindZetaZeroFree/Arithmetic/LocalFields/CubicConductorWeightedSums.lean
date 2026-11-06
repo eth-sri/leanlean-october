@@ -16,7 +16,7 @@ theorem kp_cubic_conductor_geometric_sum (q r : ℕ) (hq : 2 ≤ q) :
   | zero => simp
   | succ r ih =>
     rw [Finset.sum_range_succ]
-    simp only [Nat.succ_eq_add_one, pow_add, pow_one] at *
+    simp only [pow_add, pow_one] at *
     field_simp at *
     nlinarith
 

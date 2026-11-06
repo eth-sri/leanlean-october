@@ -1,6 +1,7 @@
 module
 
 public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.SIntegers.FundamentalDomainScaling
+public import Mathlib.Tactic.Positivity
 
 @[expose] public section
 
@@ -45,10 +46,9 @@ theorem prod_sqrt_absNorm_pow_differentExponent (F : Type) [Field F] [NumberFiel
     Rat.cast_prod, Rat.cast_zpow, Rat.cast_natCast] at hnorm
   rw [NumberField.absNorm_differentIdeal F, Nat.cast_natAbs, Int.cast_abs] at hnorm
   rw [← Real.sqrt_prod (s := Finset.univ)]
-  · exact congrArg Real.sqrt hnorm
+  · grind
   · intro v hv
-    exact le_of_lt (zpow_pos (by exact_mod_cast
-      (lt_trans Nat.zero_lt_one (NumberField.RingOfIntegers.HeightOneSpectrum.one_lt_absNorm v.val))) _)
+    positivity
 
 end DedekindZetaZeroFree.PoissonS.BallMeasureBalance
 

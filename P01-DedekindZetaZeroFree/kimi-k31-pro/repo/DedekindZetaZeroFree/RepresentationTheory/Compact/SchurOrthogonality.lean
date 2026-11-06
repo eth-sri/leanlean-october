@@ -87,7 +87,7 @@ theorem schur_orthogonality_basis (hunitary : IsUnitary π)
   rw [schur_orthogonality_self π hπ hunitary hirr]
   rw [Module.finrank_eq_card_basis e.toBasis, Fintype.card_fin]
   simp only [orthonormal_iff_ite.mp e.orthonormal]
-  split_ifs <;> simp_all
+  simp_all
 
 end Orthogonality
 

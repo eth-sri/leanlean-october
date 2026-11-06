@@ -51,43 +51,9 @@ open ValuationTheory.DiscreteValuationField.DVF
 
 variable (F : ValuationTheory.DiscreteValuationField.CompleteDVF.{u, v} K)
 
-/--
-Characterizes `QuotientGroup.mk' (higherPrincipalUnitGroup F 1) u = QuotientGroup.mk'
-(higherPrincipalUnitGroup F 1) v` by the equivalent condition
-`higherPrincipalUnitGroup.residueUnitHom F u = higherPrincipalUnitGroup.residueUnitHom F v`.
--/
-theorem unitsModOne_mk_eq_iff_residueUnitHom_eq
-    (u v : F.valuationSubringˣ) :
-    QuotientGroup.mk' (higherPrincipalUnitGroup F 1) u =
-        QuotientGroup.mk' (higherPrincipalUnitGroup F 1) v ↔
-      higherPrincipalUnitGroup.residueUnitHom F u =
-        higherPrincipalUnitGroup.residueUnitHom F v := by
-  constructor
-  · intro h
-    have h' := congrArg
-      (higherPrincipalUnitGroup.unitsModOneEquivResidueFieldUnits F) h
-    rw [higherPrincipalUnitGroup.unitsModOneEquivResidueFieldUnits_mk,
-      higherPrincipalUnitGroup.unitsModOneEquivResidueFieldUnits_mk] at h'
-    exact h'
-  · intro h
-    apply (higherPrincipalUnitGroup.unitsModOneEquivResidueFieldUnits F).injective
-    rw [higherPrincipalUnitGroup.unitsModOneEquivResidueFieldUnits_mk,
-      higherPrincipalUnitGroup.unitsModOneEquivResidueFieldUnits_mk]
-    exact h
 
-/--
-Characterizes `QuotientGroup.mk' (higherPrincipalUnitGroup F 1) u = QuotientGroup.mk'
-(higherPrincipalUnitGroup F 1) v` by the equivalent condition `F.residueMap (u :
-F.valuationSubring) = F.residueMap (v : F.valuationSubring)`.
--/
-theorem unitsModOne_mk_eq_iff_residue_eq
-    (u v : F.valuationSubringˣ) :
-    QuotientGroup.mk' (higherPrincipalUnitGroup F 1) u =
-        QuotientGroup.mk' (higherPrincipalUnitGroup F 1) v ↔
-      F.residueMap (u : F.valuationSubring) =
-        F.residueMap (v : F.valuationSubring) := by
-  rw [higherPrincipalUnitGroup.unitsModOne_mk_eq_iff_residueUnitHom_eq F u v,
-    higherPrincipalUnitGroup.residueUnitHom_eq_iff_residue_eq F u v]
+
+
 
 /-- A valuation-ring-preserving field automorphism induces a ring automorphism
 on every quotient `O/m^n`. -/
@@ -166,23 +132,7 @@ F.valuationSubring)`.
       Ideal.Quotient.mk (F.maximalIdeal ^ n) (u : F.valuationSubring) :=
   rfl
 
-/-- Compatibility between the induced action on `O^*`, the induced action on
-`O/m^n`, and reduction of units modulo `m^n`. -/
-theorem quotientUnitHom_valuationSubringUnitEquivOfPreserves
-    (e : K ≃+* K)
-    (hmem :
-      ∀ x : K,
-        x ∈ F.valuation.valuationSubring ↔
-          e x ∈ F.valuation.valuationSubring)
-    (n : ℕ) (u : F.valuationSubringˣ) :
-    Units.map
-        (quotientMaximalIdealPowRingEquivOfPreserves F e hmem n).toMonoidHom
-        (higherPrincipalUnitGroup.quotientUnitHom F n u) =
-      higherPrincipalUnitGroup.quotientUnitHom F n
-        (valuationSubringUnitEquivOfPreserves F e hmem u) := by
-  apply Units.ext
-  simp [higherPrincipalUnitGroup.quotientUnitHom_apply,
-    valuationSubringUnitEquivOfPreserves_apply]
+
 
 /-- The kernel of unit reduction modulo `m^n` is exactly the concrete
 principal-unit subgroup `U^n`. -/
@@ -1270,102 +1220,11 @@ by the principal unit `1 + r * pi^n`. -/
   rw [← hcoord]
   exact E.apply_symm_apply (F.residueMap r)
 
-/-- The induced action on `O^*/U^n` preserves the image of `U^m` in that
-quotient.  This is the finite-stage principal-unit class compatibility needed
-before applying prime-to-`p` quotient invisibility. -/
-theorem unitsModPrincipalUnitEquivOfPreserves_mem_principalUnitClassInQuotient_iff
-    (e : K ≃+* K)
-    (hmem :
-      ∀ x : K,
-        x ∈ F.valuation.valuationSubring ↔
-          e x ∈ F.valuation.valuationSubring)
-    {m n : ℕ} (hmn : m ≤ n)
-    (q : F.valuationSubringˣ ⧸ higherPrincipalUnitGroup F n) :
-    unitsModPrincipalUnitEquivOfPreserves F e hmem n q ∈
-        (higherPrincipalUnitGroup.toPrincipalUnitFiltration F).principalUnitSubgroupClassInQuotient
-          m n ↔
-      q ∈
-        (higherPrincipalUnitGroup.toPrincipalUnitFiltration F).principalUnitSubgroupClassInQuotient
-          m n := by
-  obtain ⟨u, rfl⟩ := QuotientGroup.mk'_surjective
-    (higherPrincipalUnitGroup F n) q
-  have hleft' :
-      QuotientGroup.mk' (higherPrincipalUnitGroup F n)
-          (valuationSubringUnitEquivOfPreserves F e hmem u) ∈
-        (higherPrincipalUnitGroup.toPrincipalUnitFiltration F).principalUnitSubgroupClassInQuotient
-          m n ↔
-      valuationSubringUnitEquivOfPreserves F e hmem u ∈
-        higherPrincipalUnitGroup F m := by
-    exact
-      AntitoneSubgroupFiltration.quotient_principalUnitSubgroup_mk_mem_classInQuotient_iff
-        (higherPrincipalUnitGroup.toPrincipalUnitFiltration F) hmn
-          (valuationSubringUnitEquivOfPreserves F e hmem u)
-  have hright' :
-      QuotientGroup.mk' (higherPrincipalUnitGroup F n) u ∈
-        (higherPrincipalUnitGroup.toPrincipalUnitFiltration F).principalUnitSubgroupClassInQuotient
-          m n ↔
-      u ∈ higherPrincipalUnitGroup F m := by
-    exact
-      AntitoneSubgroupFiltration.quotient_principalUnitSubgroup_mk_mem_classInQuotient_iff
-        (higherPrincipalUnitGroup.toPrincipalUnitFiltration F) hmn u
-  rw [unitsModPrincipalUnitEquivOfPreserves_mk]
-  rw [hleft', hright']
-  exact valuationSubringUnitEquivOfPreserves_mem_principalUnit_iff F e hmem m u
 
-/-- If the induced residue-field automorphism is pointwise trivial, then the
-displacement of the induced action on `O^*/U^n` lies in the image of
-`U^1/U^n`. -/
-theorem unitsModPrincipalUnitEquivOfPreserves_div_mem_principalUnitClass_one
-    (e : K ≃+* K)
-    (hmem :
-      ∀ x : K,
-        x ∈ F.valuation.valuationSubring ↔
-          e x ∈ F.valuation.valuationSubring)
-    (hres :
-      ∀ x : F.residueField,
-        valuationSubringResidueFieldEquivOfPreserves F e hmem x = x)
-    (n : ℕ)
-    (q : F.valuationSubringˣ ⧸ higherPrincipalUnitGroup F n) :
-    unitsModPrincipalUnitEquivOfPreserves F e hmem n q / q ∈
-      (higherPrincipalUnitGroup.toPrincipalUnitFiltration F).principalUnitSubgroupClassInQuotient
-        1 n := by
-  obtain ⟨u, rfl⟩ := QuotientGroup.mk'_surjective
-    (higherPrincipalUnitGroup F n) q
-  have hdisp :
-      valuationSubringUnitEquivOfPreserves F e hmem u / u ∈
-        higherPrincipalUnitGroup F 1 :=
-    unitEquiv_div_mem_principalUnit_one_of_residueFieldEquiv_fixed
-      F e hmem hres u
-  have hclass' :
-      QuotientGroup.mk' (higherPrincipalUnitGroup F n)
-          (valuationSubringUnitEquivOfPreserves F e hmem u / u) ∈
-        (higherPrincipalUnitGroup.toPrincipalUnitFiltration F).principalUnitSubgroupClassInQuotient
-          1 n := by
-    apply
-      AntitoneSubgroupFiltration.principalUnitSubgroupClassInQuotient_mk_mem
-        (higherPrincipalUnitGroup.toPrincipalUnitFiltration F)
-    exact hdisp
-  rw [unitsModPrincipalUnitEquivOfPreserves_mk]
-  simpa only [map_div] using hclass'
 
-/-- Therefore every adjacent concrete principal-unit class
-`U^i/U^(i+1)` is finite when the residue field is finite. -/
-theorem finite_principalUnitSubgroupClassInQuotient_of_finite_residue
-    [Finite F.residueField] (i : ℕ) :
-    Finite
-      ((higherPrincipalUnitGroup.toPrincipalUnitFiltration F).principalUnitSubgroupClassInQuotient
-        i (i + 1)) := by
-  have :
-      Finite
-        (F.valuationSubringˣ ⧸
-          (higherPrincipalUnitGroup.toPrincipalUnitFiltration F).principalUnitSubgroup
-            (i + 1)) := by
-    change Finite
-      (F.valuationSubringˣ ⧸ higherPrincipalUnitGroup F (i + 1))
-    exact
-      higherPrincipalUnitGroup.finite_unitsModHigherPrincipalUnitGroup_of_finite_residue
-        F (i + 1)
-  exact Finite.of_injective Subtype.val Subtype.val_injective
+
+
+
 
 end higherPrincipalUnitGroup
 

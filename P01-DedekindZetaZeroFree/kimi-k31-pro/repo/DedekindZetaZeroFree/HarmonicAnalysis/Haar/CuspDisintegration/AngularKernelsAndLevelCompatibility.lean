@@ -1898,15 +1898,7 @@ private theorem cusp_index_transport {G X : Type*} [Group G] [MulAction G X]
 
 open DedekindZetaZeroFree
 
- def actual_component_cusp_orbit_equiv
-    {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}
-    (V U : Level F ζ hζ) (c : KPFiniteCuspAtlas.FiniteCover F ζ hζ)
-    (q : KPCuspArithmetic.Cusp F) :
-    let Γ := KPCuspGenuineMonodromy.Component F ζ hζ V c
-    let Δ := KPCuspGenuineMonodromy.Component F ζ hζ U c
-    Quotient (orbitRel (stabilizer Δ q) (Δ ⧸ Γ.subgroupOf Δ)) ≃
-      Quotient (orbitRel (Γ.subgroupOf Δ) (orbit Δ q)) :=
-  cosetOrbitsEquivCuspOrbits _ q
+ 
 
 end CuspIndexAccounting
 

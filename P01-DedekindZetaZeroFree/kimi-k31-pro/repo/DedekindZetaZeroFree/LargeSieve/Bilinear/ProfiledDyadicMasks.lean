@@ -66,7 +66,7 @@ theorem finite_separated_sieve {I U : Type*} [Fintype I] [Fintype U]
   have hvec : WithLp.toLp 2 (g t) = W t •
       (WithLp.toLp 2 (fun d => rp t d * ∑ c, a c d * cp t c) : EuclideanSpace ℂ I) := by
     ext d
-    simp only [g, PiLp.toLp_apply, PiLp.smul_apply, smul_eq_mul, Finset.mul_sum]
+    simp only [g, PiLp.smul_apply, smul_eq_mul, Finset.mul_sum]
     apply Finset.sum_congr rfl
     intro c _
     ring
@@ -76,7 +76,7 @@ theorem finite_separated_sieve {I U : Type*} [Fintype I] [Fintype U]
         (EuclideanSpace.norm_eq (WithLp.toLp 2 (g t) : EuclideanSpace ℂ I)).symm
     _ = ‖W t‖ * Real.sqrt (∑ d, ‖∑ c, a c d * cp t c‖ ^ 2) := by
       rw [hvec, norm_smul, EuclideanSpace.norm_eq]
-      simp only [PiLp.toLp_apply, norm_mul, hrp, one_mul]
+      simp only [norm_mul, hrp, one_mul]
     _ ≤ ‖W t‖ * B := mul_le_mul_of_nonneg_left (hbound t) (norm_nonneg _)
 
  theorem finite_dyadic_harmonic_bound (F : Type) [Field F] [NumberField F] :
@@ -87,7 +87,7 @@ theorem finite_separated_sieve {I U : Type*} [Fintype I] [Fintype U]
   refine ⟨2 * K, by positivity, ?_⟩
   intro C u hC hu
   have hc0 : 0 < C := by linarith
-  have hne (c) (hc : c ∈ u) : c ≠ ⊥ := by
+  have hne c (hc : c ∈ u) : c ≠ ⊥ := by
     intro he
     have h := (hu c hc).1
     simp [he] at h
@@ -137,7 +137,7 @@ theorem finite_masked_hgl
     (by intro c hc; by_contra hn; simp [hn] at hc)
   have hz : z.support ⊆ u := Finsupp.support_onFinset_subset
   have hzc : ∀ c ∈ u, z c = a c := by intro c hc; simp [z, hc]
-  have he (d) : ∑ c ∈ z.support, z c * (𝓕.χ c) d =
+  have he d : ∑ c ∈ z.support, z c * (𝓕.χ c) d =
       ∑ c ∈ u, a c * (𝓕.χ c) d := by
     change z.sum (fun c w => w * (𝓕.χ c) d) = _
     rw [Finsupp.sum_of_support_subset z hz]

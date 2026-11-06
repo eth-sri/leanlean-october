@@ -92,7 +92,7 @@ private theorem contour_core
     (hgs : ∀ z : ℂ, 1 < z.re →
       g z = Detector.idealLSeries F ω.character z)
     (β γ : ℝ) (hβ : DetectorDef.σ₀ ≤ β) (hβ1 : β ≤ 1)
-    (hz : DetectorDef.IsLZero (ω) ((β : ℂ) + (γ : ℂ) * Complex.I)) :
+    (hz : DetectorDef.IsLZero ω ((β : ℂ) + (γ : ℂ) * Complex.I)) :
     let s : ℂ := (β : ℂ) + (γ : ℂ) * Complex.I
     let f : ℂ → ℂ := fun v =>
       g (s + v) * DetectorDef.D F U ω.character (s + v)
@@ -215,8 +215,7 @@ theorem gamma_zero_contour_raw
         (X : ℂ) ^ (((2 : ℝ) : ℂ) + (t : ℂ) * Complex.I)) =
     (∫ t : ℝ, Complex.Gamma ((a : ℂ) + (t : ℂ) * Complex.I) *
         f ((a : ℂ) + (t : ℂ) * Complex.I) *
-        (X : ℂ) ^ ((a : ℂ) + (t : ℂ) * Complex.I)) := by
-  exact contour_core D.recipe.A (RawFixed.FixedData.primMinus D u)
+        (X : ℂ) ^ ((a : ℂ) + (t : ℂ) * Complex.I)) := contour_core D.recipe.A (RawFixed.FixedData.primMinus D u)
     (RawFixed.FixedData.prim_nonprincipal D u hu).2 U hU g hg hgs β γ hβ hβ1 hz
 
 theorem shifted_gamma_norm :
@@ -353,7 +352,7 @@ theorem detector_shift :
         (((2 : ℝ) : ℂ) + (t : ℂ) * Complex.I) := hid
 
   have hcp : ∀ v : ℂ, (U : ℂ) ^ ((DetectorDef.r : ℂ) * v) =
-      (((U ^ DetectorDef.r : ℝ)) : ℂ) ^ v := by
+      ((U ^ DetectorDef.r : ℝ) : ℂ) ^ v := by
     intro v
     rw [Complex.ofReal_cpow hU0.le, ← Complex.cpow_mul]
     all_goals
@@ -363,7 +362,7 @@ theorem detector_shift :
       DetectorMellin.mellinIntegrand F U (RawFixed.FixedData.primMinus D u) β γ v =
         Complex.Gamma v * (G ((β : ℂ) + (γ : ℂ) * Complex.I + v) *
           DetectorDef.D F U (RawFixed.FixedData.primMinus D u).character ((β : ℂ) + (γ : ℂ) * Complex.I + v)) *
-          (((U ^ DetectorDef.r : ℝ)) : ℂ) ^ v := by
+          ((U ^ DetectorDef.r : ℝ) : ℂ) ^ v := by
     intro v hv
     unfold DetectorMellin.mellinIntegrand
     rw [hGs _ hv, hcp v]
@@ -374,7 +373,7 @@ theorem detector_shift :
         (G ((β : ℂ) + (γ : ℂ) * Complex.I + (((2 : ℝ) : ℂ) + (t : ℂ) * Complex.I)) *
           DetectorDef.D F U (RawFixed.FixedData.primMinus D u).character
             ((β : ℂ) + (γ : ℂ) * Complex.I + (((2 : ℝ) : ℂ) + (t : ℂ) * Complex.I))) *
-        (((U ^ DetectorDef.r : ℝ)) : ℂ) ^ (((2 : ℝ) : ℂ) + (t : ℂ) * Complex.I) := by
+        ((U ^ DetectorDef.r : ℝ) : ℂ) ^ (((2 : ℝ) : ℂ) + (t : ℂ) * Complex.I) := by
     congr 1
     funext t
     apply hpt

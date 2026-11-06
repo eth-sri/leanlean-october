@@ -678,7 +678,7 @@ private theorem partition_products_reconstruct {n : ℕ}
   filter_upwards [heall,hz] with y hy hz
   have hsum : sectionFields (∑ i, ti i).val a (coordinates a y) =
       ∑ i, sectionFields (ti i).val a (coordinates a y) := by
-    simp [fields_apply, Submodule.coe_sum, Finset.sum_apply]
+    simp [fields_apply, Finset.sum_apply]
   rw [hsum]
   simp_rw [hy, hη]
   rw [← Finset.sum_mul]

@@ -146,8 +146,8 @@ theorem raw_bruhat_identity (v : (LocalField F q)ˣ) (s : LocalField F q) :
   have hg : (bruhatLeft F ζ hζ q v s).g = (bruhatRight F ζ hζ q v s).g := by
     simp only [bruhatLeft, bruhatRight, KPLocalCover.mul_g, KPLocalCover.inv_g,
       KPStandardLocalRootLifts.N, KPStandardLocalRootLifts.A,
-      KPStandardLocalRootLifts.W, KPScalarSplitCentral.scalarHom,
-      KPScalarSplitCentral.scalarLift, KPLocalCover.sectionMap_g]
+      KPScalarSplitCentral.scalarHom,
+      KPLocalCover.sectionMap_g]
     rw [signedWeyl_matrix F ζ hζ q]
     exact signed_bruhat_matrix_aux v s
   have he : (bruhatLeft F ζ hζ q v s).epsilon =

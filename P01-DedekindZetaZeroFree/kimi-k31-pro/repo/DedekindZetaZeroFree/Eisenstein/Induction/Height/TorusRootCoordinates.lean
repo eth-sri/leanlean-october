@@ -20,7 +20,7 @@ private theorem row_map (A : KPChamberHeight.RatGL F) (B : KPChamberHeight.AdelG
       (GeneralLinearGroup.map f (GeneralLinearGroup.map (algebraMap F (KPChamberHeight.Adele F)) A * B)) j =
     KPChamberHeight.rowAction (fun i => (f.comp (algebraMap F (KPChamberHeight.Adele F))) (A 1 i))
       (GeneralLinearGroup.map f B) j := by
-  simp [KPChamberHeight.rowAction, Fin.sum_univ_two, Matrix.mul_apply, map_add, map_mul]
+  simp [KPChamberHeight.rowAction, Fin.sum_univ_two, Matrix.mul_apply, map_mul]
 
 private theorem finite_rational_mul (A : RatGL F) (B : AdelGL F)
     (v : HeightOneSpectrum (RingOfIntegers F)) :

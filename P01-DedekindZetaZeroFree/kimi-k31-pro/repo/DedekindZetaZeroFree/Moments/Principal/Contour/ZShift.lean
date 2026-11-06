@@ -24,7 +24,7 @@ theorem Jwres_eq (Z : ℝ) (hZ : 2 ≤ Z) :
   have h1 := PrincipalZShiftAux.Jwres_sub_Rz D Z hZ
   rw [PrincipalZShiftAux.zResidue_sum_eq D Z hZ] at h1
   unfold Rz
-  linear_combination h1
+  grind
 
 theorem Rz_bound :
     ∃ C : ℝ, 0 < C ∧ ∀ Z : ℝ, 2 ≤ Z →

@@ -55,7 +55,7 @@ private lemma symbol_congr_right (x y z : (K F v)ˣ)
  exact (vlt_norm F v _).mp he
 omit hv
 private lemma c_mul (g h : K0 F v) : c F v (g*h) = c F v g * a F v h + d F v g * c F v h := by
- simp [c, a, d, Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two]
+ simp [c, a, d, Matrix.mul_apply, Fin.sum_univ_two]
 private lemma X_c (g : K0 F v) (hc : c F v g ≠ 0) :
  KubotaRankTwo.X (K F v) (inclusion F v g) = Units.mk0 (c F v g) hc := by
  apply Units.ext

@@ -409,8 +409,7 @@ theorem Lpsi_eq_mask_mul (u : D.Row) (hnp : ¬ (D.inducers u).plus.character.IsP
     (deletionSet_finite D u) s hs]
   have hL : D.Lpsi u s = ∑' I : Ideal (𝓞 F),
       MaskedHeckeMeromorphic.coefficient u.toFrequency MaskedHeckeMeromorphic.Row.plus I *
-        (Ideal.absNorm I : ℂ) ^ (-s) := by
-    exact (D.Lpsi_eq_raw u s hs).trans rfl
+        (Ideal.absNorm I : ℂ) ^ (-s) := (D.Lpsi_eq_raw u s hs).trans rfl
   rw [hL]
   refine tsum_congr fun I => ?_
   simp only [MaskedHeckeMeromorphic.coefficient]
@@ -426,8 +425,7 @@ theorem Llam_eq_mask_mul (u : D.Row) (hnp : ¬ (D.omega u).character.IsPrincipal
     (deletionSet_finite D u) s hs]
   have hL : D.Llam u s = ∑' I : Ideal (𝓞 F),
       MaskedHeckeMeromorphic.coefficient u.toFrequency MaskedHeckeMeromorphic.Row.minus I *
-        (Ideal.absNorm I : ℂ) ^ (-s) := by
-    exact (D.Llam_eq_raw u s hs).trans rfl
+        (Ideal.absNorm I : ℂ) ^ (-s) := (D.Llam_eq_raw u s hs).trans rfl
   rw [hL]
   refine tsum_congr fun I => ?_
   simp only [MaskedHeckeMeromorphic.coefficient]

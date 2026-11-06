@@ -332,25 +332,7 @@ theorem isUnramifiedValuedExtension_iff_localConductorExponent_eq_zero
       K L).trans
     (localConductorIdeal_eq_one_iff_exponent_eq_zero K L)
 
-/-- Equivalently, a concrete finite abelian local extension is ramified
-exactly when its local conductor exponent is nonzero. -/
-theorem
-    not_isUnramifiedValuedExtension_iff_localConductorExponent_ne_zero
-    (K L : Type)
-    [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L]
-    [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsAbelianGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K)
-      (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    [Module.Finite 𝒪[K] 𝒪[L]] :
-    ¬ IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L ↔
-      localConductorExponent K L ≠ 0 :=
-  not_congr
-    (isUnramifiedValuedExtension_iff_localConductorExponent_eq_zero
-      K L)
+
 
 end LocalClassFieldTheory
 

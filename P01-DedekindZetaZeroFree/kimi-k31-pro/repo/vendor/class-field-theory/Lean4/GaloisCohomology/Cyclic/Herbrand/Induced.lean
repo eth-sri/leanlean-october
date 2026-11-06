@@ -1152,15 +1152,7 @@ theorem subgroupGeneratorOfGenerator_generates (σ : G)
   rw [hτ]
   exact subgroupGenerator_generates H σ hgen
 
-/-- Cyclic-transversal coordinates for an ordinary finite cyclic group. -/
-noncomputable def inducedCoordinatesOfFiniteCyclic
-    (σ : G)
-    (hgen : ∀ x : G, x ∈ Subgroup.zpowers σ) :
-    InducedModule (B := B) H ≃*
-      (Fin H.index → B) := by
-  letI : IsCyclic G := ⟨⟨σ, hgen⟩⟩
-  letI : CommGroup G := IsCyclic.commGroup
-  exact inducedCoordinates H σ hgen
+
 
 /-- Tate-degree-zero Shapiro equivalence for an ordinary finite cyclic
 group. -/

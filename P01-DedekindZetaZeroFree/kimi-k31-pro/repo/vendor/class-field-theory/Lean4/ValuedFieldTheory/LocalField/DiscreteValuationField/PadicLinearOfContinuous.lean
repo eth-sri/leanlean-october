@@ -115,20 +115,7 @@ theorem continuous_padicInt_finPi_linearMap
   rw [hfun]
   fun_prop
 
-/-- Finite generation across a short exact sequence, phrased for a
-surjective linear map.  This avoids unfolding a large ambient module when a
-finite kernel and finite quotient are already available. -/
-theorem moduleFinite_of_surjective_of_ker
-    {R M N : Type*} [Ring R]
-    [AddCommGroup M] [AddCommGroup N] [Module R M] [Module R N]
-    (f : M →ₗ[R] N) (hf : Function.Surjective f)
-    [Module.Finite R N] [Module.Finite R (LinearMap.ker f)] :
-    Module.Finite R M := by
-  let e : (M ⧸ LinearMap.ker f) ≃ₗ[R] N :=
-    f.quotKerEquivOfSurjective hf
-  let : Module.Finite R (M ⧸ LinearMap.ker f) :=
-    Module.Finite.equiv e.symm
-  exact Module.Finite.of_submodule_quotient (LinearMap.ker f)
+
 
 end LocalFieldTheory.DiscreteValuationField
 

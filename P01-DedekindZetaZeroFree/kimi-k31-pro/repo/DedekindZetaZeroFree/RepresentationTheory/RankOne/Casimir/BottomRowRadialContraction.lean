@@ -26,7 +26,7 @@ section JetCalculus
   have h := (hre.mul hre).add (him.mul him)
   convert h using 1
   · ext s; simp [Complex.normSq_apply]
-  · simp [Complex.mul_re, Complex.star_def]; ring
+  · simp [Complex.mul_re]; ring
 
 open scoped Matrix.Norms.Operator in
  theorem matrix_path_components (g X : Matrix (Fin 2) (Fin 2) ℂ) :
@@ -34,7 +34,7 @@ open scoped Matrix.Norms.Operator in
       ((g * X) i j) 0 := by
   have h := ((hasDerivAt_exp_smul_const (𝕂 := ℂ) X ((0 : ℝ) : ℂ)).hasFDerivAt.restrictScalars ℝ).comp_hasDerivAt (f := fun t : ℝ => (t : ℂ)) 0 Complex.ofRealCLM.hasDerivAt
   have hmat := h.const_mul g
-  simp only [Complex.ofRealCLM_apply, Complex.ofReal_one, ContinuousLinearMap.coe_restrictScalars, ContinuousLinearMap.toSpanSingleton_apply, one_smul, zero_smul, NormedSpace.exp_zero, mul_one, one_mul] at hmat
+  simp only [Complex.ofRealCLM_apply, Complex.ofReal_one] at hmat
   intro i j
   have hi := (ContinuousLinearMap.proj i : Matrix (Fin 2) (Fin 2) ℂ →L[ℝ] Fin 2 → ℂ).hasFDerivAt.comp_hasDerivAt 0 hmat
   have hj := (ContinuousLinearMap.proj j : (Fin 2 → ℂ) →L[ℝ] ℂ).hasFDerivAt.comp_hasDerivAt 0 hi
@@ -73,7 +73,7 @@ open scoped Matrix.Norms.Operator in
   convert hd using 1
   fin_cases j <;> simp [KPSmoothActualFlowData.basisMatrix,
     KPSmoothActualFlowData.sl2Matrix, Matrix.mul_apply, Fin.sum_univ_two,
-    Complex.normSq_apply, Complex.mul_re, Complex.mul_im, Complex.star_def] <;> ring
+    Complex.normSq_apply, Complex.mul_re, Complex.mul_im] <;> ring
 
 open scoped Matrix.Norms.Operator in
  theorem matrix_height_squared_basis_jet (g : Matrix (Fin 2) (Fin 2) ℂ)
@@ -156,7 +156,7 @@ open scoped Matrix.Norms.Operator in
     ext a b
     fin_cases a <;> fin_cases b <;> fin_cases j <;>
       simp [KPSmoothActualFlowData.sl2Matrix, KPSmoothActualFlowData.basisMatrix,
-        Matrix.smul_apply, smul_eq_mul, Complex.ofReal_mul] <;> ring
+        Matrix.smul_apply, smul_eq_mul] <;> ring
   · simp only [hv, ↓reduceIte]
     have hz : KPSmoothActualFlowData.sl2Matrix (fun i => if (v,i) = (w,j) then t else 0) = 0 := by
       ext a b

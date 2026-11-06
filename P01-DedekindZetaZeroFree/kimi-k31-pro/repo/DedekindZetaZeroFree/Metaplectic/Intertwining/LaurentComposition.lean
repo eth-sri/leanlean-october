@@ -89,7 +89,7 @@ private theorem rational_sum_scalar {ι V : Type*} [AddCommMonoid V] [Module ℂ
     (e ((c • LinearMap.id) (1 ⊗ₜ[ℂ] v))) j
   simp only [LinearMap.sum_apply, LinearMap.smul_apply, LinearMap.baseChange_tmul,
     TensorProduct.smul_tmul', smul_eq_mul,mul_one, map_sum, LinearMap.id_apply,
-    Finsupp.finsetSum_apply,TensorProduct.equivFinsuppOfBasisRight_apply_tmul_apply]
+    Finsupp.finsetSum_apply]
   dsimp only [e]
   simp only [TensorProduct.equivFinsuppOfBasisRight_apply_tmul_apply]
   apply rational_eq_of_regular_infinite _ _ U hU

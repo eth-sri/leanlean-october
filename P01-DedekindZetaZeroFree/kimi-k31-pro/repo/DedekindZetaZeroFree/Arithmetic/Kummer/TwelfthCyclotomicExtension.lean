@@ -23,10 +23,9 @@ theorem cyclotomic12_context (K : Type) [Field K] [NumberField K] :
       (Set.mem_singleton 12) (by norm_num)
   refine ⟨IsCyclotomicExtension.isGalois (S := {12}) (K := K) (L := CyclotomicField 12 K),
     ?_, primitive12_totallyComplex (CyclotomicField 12 K) ζ hζ, ⟨ζ, hζ, ?_⟩⟩
-  · intro σ τ
-    exact mul_comm' σ τ
+  · grind
   · intro x hx
     obtain ⟨j, hj, hjx⟩ := hζ.eq_pow_of_pow_eq_one hx
-    exact ⟨j, hj, hjx.symm⟩
+    grind
 
 end DedekindZetaZeroFree

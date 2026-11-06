@@ -26,11 +26,11 @@ theorem matrixExp_single_slot
     · subst v
       ext a b
       fin_cases i <;> fin_cases j <;> fin_cases a <;> fin_cases b <;>
-        simp [KPSmoothLocalQuotientCharts.lieMatrix, slotLieMatrix, Pi.single_apply,
+        simp [KPSmoothLocalQuotientCharts.lieMatrix, slotLieMatrix, 
           Complex.ext_iff]
     · ext a b
       fin_cases a <;> fin_cases b <;>
-        simp [KPSmoothLocalQuotientCharts.lieMatrix, slotLieMatrix, Pi.single_apply, hv,
+        simp [KPSmoothLocalQuotientCharts.lieMatrix, hv,
           Complex.ext_iff]
   simp only [KPSmoothLocalQuotientCharts.matrixExp, he]
   by_cases hv : v = w

@@ -14,15 +14,14 @@ def heightEquiv : (Fin 3 → ℝ) ≃ᵐ ℝ × ℝ × ℝ :=
     ((MeasurableEquiv.refl ℝ).prodCongr (MeasurableEquiv.piFinTwo (fun _ => ℝ)))
 
 theorem heightEquiv_apply (t : Fin 3 → ℝ) : heightEquiv t = (t 0, t 1, t 2) := by
-  rfl
+  aesop
 
 theorem heightEquiv_symm_apply (t : ℝ × ℝ × ℝ) :
     heightEquiv.symm t = ![t.1, t.2.1, t.2.2] := by
   ext i
   fin_cases i <;> rfl
 
-theorem heightEquiv_preserving : MeasurePreserving heightEquiv volume volume := by
-  exact ((MeasurePreserving.id volume).prod
+theorem heightEquiv_preserving : MeasurePreserving heightEquiv volume volume := ((MeasurePreserving.id volume).prod
     (volume_preserving_piFinTwo (fun _ : Fin 2 => ℝ))).comp
       (volume_preserving_piFinSuccAbove (fun _ : Fin 3 => ℝ) 0)
 

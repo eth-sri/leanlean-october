@@ -80,7 +80,7 @@ theorem mem_unitShell_iff (v : HeightOneSpectrum (𝓞 F)) (x : v.adicCompletion
   induction g using WithZero.expRecOn with
   | zero => simp
   | exp i =>
-    simp only [neg_zero, WithZero.exp_zero, ← WithZero.exp_zero,
+    simp only [neg_zero, ← WithZero.exp_zero,
       WithZero.exp_le_exp, WithZero.exp_inj]
     omega
 
@@ -100,8 +100,7 @@ theorem annularTest_mem_localSchwartz (v : HeightOneSpectrum (𝓞 F)) :
 
 theorem rescaledCharacter_continuous (v : HeightOneSpectrum (𝓞 F))
     (ψ : AddChar (v.adicCompletion F) Circle) (hψ : Continuous ψ)
-    (a : v.adicCompletion F) : Continuous (rescaledCharacter F v ψ a) := by
-  exact hψ.comp (continuous_const.mul continuous_id)
+    (a : v.adicCompletion F) : Continuous (rescaledCharacter F v ψ a) := hψ.comp (continuous_const.mul continuous_id)
 
 theorem rescaledCharacter_conductorZero (v : HeightOneSpectrum (𝓞 F))
     (ψ : AddChar (v.adicCompletion F) Circle) (m : ℤ)
@@ -350,8 +349,7 @@ theorem multiplicativeHaar_map_mul (v : HeightOneSpectrum (𝓞 F))
   have hD : Measurable D := by
     apply Measurable.indicator _ (MeasurableSet.singleton 0).compl
     exact ENNReal.measurable_ofReal.comp ((measurable_const.mul measurable_norm).inv)
-  have hν : multiplicativeHaar F v μ = μ.withDensity D := by
-    exact (withDensity_indicator (MeasurableSet.singleton 0).compl _).symm
+  have hν : multiplicativeHaar F v μ = μ.withDensity D := (withDensity_indicator (MeasurableSet.singleton 0).compl _).symm
   have hq : 1 < (q F v : ℝ) := by exact_mod_cast finiteCompletion_residueCard_gt_one F v
   have hp : 0 < ‖a‖ := norm_pos_iff.mpr ha
   have hh : 0 < 1 - (q F v : ℝ)⁻¹ := sub_pos.mpr (inv_lt_one_of_one_lt₀ hq)

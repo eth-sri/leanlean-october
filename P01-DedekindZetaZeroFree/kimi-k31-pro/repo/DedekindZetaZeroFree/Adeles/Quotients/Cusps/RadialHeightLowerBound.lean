@@ -49,8 +49,8 @@ private lemma radial_local_lower {K : Type*} [NormedField K]
   have hrow (j : Fin 2) : KPChamberHeight.rowAction r (A * KubotaRankTwo.d K y 1) j =
       if j = 0 then KPChamberHeight.rowAction r A 0 * (y : K) else KPChamberHeight.rowAction r A 1 := by
     fin_cases j <;>
-      simp [KPChamberHeight.rowAction, GeneralLinearGroup.coe_mul, Matrix.mul_apply,
-        Fin.sum_univ_two, KubotaRankTwo.d, mul_add, add_mul, mul_assoc]
+      simp [KPChamberHeight.rowAction, Matrix.mul_apply,
+        Fin.sum_univ_two, KubotaRankTwo.d, add_mul, mul_assoc]
   have hdet : ‖(GeneralLinearGroup.det (A * KubotaRankTwo.d K y 1) : K)‖ =
       ‖(GeneralLinearGroup.det A : K)‖ * Real.exp t := by
     rw [map_mul, Units.val_mul, norm_mul]
@@ -138,7 +138,7 @@ private lemma section_radial (xb : KPCuspCharts.Cross F) (t : ℝ) :
     KPContSectorArchSphericalFibers.sectionMatrix_formula]
   ext i j
   fin_cases i <;> fin_cases j <;>
-    simp [KPCuspCharts.toArch, radialSection, KubotaRankTwo.d, Matrix.mul_apply,
+    simp [KPCuspCharts.toArch, KubotaRankTwo.d, Matrix.mul_apply,
       Fin.sum_univ_two, Real.exp_add, mul_comm]
 
 private lemma height_radial_lower (ℓ : KPChamberHeight.Line F) (g : KPChamberHeight.AdelPGL F)

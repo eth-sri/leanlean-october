@@ -17,7 +17,7 @@ namespace DedekindZetaZeroFree.FiniteAdelicParabolicExtension
 private theorem ratioIdealModule_mem (F : Type*) [Field F] [NumberField F]
     (I : FractionalIdeal (nonZeroDivisors (NumberField.RingOfIntegers F)) F) (v : Fin 2 → F) :
     v ∈ ratioIdealModule F I ↔ (∃ r : NumberField.RingOfIntegers F, algebraMap _ F r = v 0) ∧ v 1 ∈ I := by
-  simp [ratioIdealModule, FractionalIdeal.mem_one_iff]
+  simp [ratioIdealModule]
  def pairVec (F : Type*) [Field F] [NumberField F] :
     (F × F) ≃ₗ[NumberField.RingOfIntegers F] (Fin 2 → F) where
   toFun x := ![x.1,x.2]
@@ -51,7 +51,7 @@ private theorem ratioIdealModule_full (F : Type*) [Field F] [NumberField F]
     (Submodule.smul_mem _ (x 1 / b) (Submodule.subset_span h2))
   convert hh using 1
   ext i
-  fin_cases i <;> simp [div_mul_cancel₀, hb0]
+  fin_cases i <;> simp [hb0]
 private theorem ideal_stabilizer_iff (F : Type*) [Field F] [NumberField F]
     (I : FractionalIdeal (nonZeroDivisors (NumberField.RingOfIntegers F)) F)
     (A : Matrix.GeneralLinearGroup (Fin 2) F) :

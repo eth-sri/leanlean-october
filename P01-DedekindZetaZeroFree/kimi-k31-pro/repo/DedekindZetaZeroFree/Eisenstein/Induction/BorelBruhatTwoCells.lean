@@ -62,15 +62,15 @@ private theorem open_cell_eq (t u : F) :
   change rationalCoset F (Matrix.ProjGenLinGroup.mk (cellW F * cellN F t)) =
     rationalCoset F (Matrix.ProjGenLinGroup.mk (cellW F * cellN F u)) ↔ _
   rw [cell_coset_eq]
-  simp [cellN, cellW, Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_inv,
-    Matrix.inv_def, Matrix.adjugate_fin_two, Matrix.det_fin_two,
+  simp [cellN, cellW, 
+    Matrix.inv_def, Matrix.det_fin_two,
     Matrix.mul_apply, Fin.sum_univ_two, add_neg_eq_zero]
 
 private theorem closed_ne_open (t : F) : cellIndex F none ≠ cellIndex F (some t) := by
   change rationalCoset F (Matrix.ProjGenLinGroup.mk 1) ≠
     rationalCoset F (Matrix.ProjGenLinGroup.mk (cellW F * cellN F t))
   rw [ne_eq, cell_coset_eq]
-  simp [cellN, cellW, Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two]
+  simp [cellN, cellW, Matrix.mul_apply, Fin.sum_univ_two]
 
 private theorem cell_surjective (q : RationalQuotient F) :
     ∃ i, cellIndex F i = q := by
@@ -89,8 +89,8 @@ private theorem cell_surjective (q : RationalQuotient F) :
     change rationalCoset F (Matrix.ProjGenLinGroup.mk
       (cellW F * cellN F (A 1 1 / A 1 0))) = _
     rw [cell_coset_eq]
-    simp [cellN, cellW, Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_inv,
-      Matrix.inv_def, Matrix.adjugate_fin_two, Matrix.det_fin_two,
+    simp [cellN, cellW, 
+      Matrix.inv_def, Matrix.det_fin_two,
       Matrix.mul_apply, Fin.sum_univ_two]
     field_simp
     ring

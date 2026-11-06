@@ -46,13 +46,13 @@ theorem cartan_basis_normalization :
       fin_cases j <;> constructor
       all_goals first
       | (ext i k; fin_cases i <;> fin_cases k <;>
-          simp [noncompactMatrix, Matrix.star_apply, Matrix.conjTranspose_apply])
+          simp [noncompactMatrix, Matrix.star_apply])
       | simp [noncompactMatrix, Matrix.trace, Fin.sum_univ_two]
     · intro j
       fin_cases j <;> constructor
       all_goals try (simp [compactMatrix, noncompactMatrix, Matrix.trace, Fin.sum_univ_two])
       all_goals ext i k; fin_cases i <;> fin_cases k
-      all_goals simp [Matrix.star_apply, Matrix.conjTranspose_apply]
+      all_goals simp [Matrix.star_apply]
   have h2 : (∀ i j, (Matrix.trace (noncompactMatrix i * noncompactMatrix j)).re =
       if i = j then 1 else 0) ∧
     (∀ i j, -(Matrix.trace (compactMatrix i * compactMatrix j)).re =
@@ -82,9 +82,9 @@ theorem cartan_basis_normalization :
   ext i j
   fin_cases i <;> fin_cases j
   all_goals apply Complex.ext
-  all_goals simp [Fintype.sum_prod_type, Fintype.sum_bool, Fin.sum_univ_three,
+  all_goals simp [Fintype.sum_prod_type, Fin.sum_univ_three,
     cartanMatrix, compactMatrix, noncompactMatrix, Complex.mul_re, Complex.mul_im,
-    Complex.inv_re, Complex.inv_im, Complex.normSq, hs]
+    Complex.inv_re, Complex.inv_im, Complex.normSq]
   all_goals field_simp
   all_goals ring_nf
   all_goals simp only [Real.sq_sqrt (show (0 : ℝ) ≤ 2 by norm_num)]
@@ -137,7 +137,7 @@ open scoped Matrix.Norms.Operator in
     ∀ i j, HasDerivAt (fun t : ℝ => ((g : Matrix (Fin 2) (Fin 2) ℂ) * NormedSpace.exp ((t : ℂ) • M)) i j) (((g : Matrix (Fin 2) (Fin 2) ℂ) * M) i j) 0 := by
   have h := ((hasDerivAt_exp_smul_const (𝕂 := ℂ) M ((0 : ℝ) : ℂ)).hasFDerivAt.restrictScalars ℝ).comp_hasDerivAt (f := fun t : ℝ => (t : ℂ)) 0 Complex.ofRealCLM.hasDerivAt
   have hmat := h.const_mul (g : Matrix (Fin 2) (Fin 2) ℂ)
-  simp only [Complex.ofRealCLM_apply, Complex.ofReal_one, ContinuousLinearMap.coe_restrictScalars, ContinuousLinearMap.toSpanSingleton_apply, one_smul, zero_smul, NormedSpace.exp_zero, mul_one, one_mul] at hmat
+  simp only [Complex.ofRealCLM_apply, Complex.ofReal_one] at hmat
   intro i j
   have hi := (ContinuousLinearMap.proj i : Matrix (Fin 2) (Fin 2) ℂ →L[ℝ] Fin 2 → ℂ).hasFDerivAt.comp_hasDerivAt 0 hmat
   have hj := (ContinuousLinearMap.proj j : (Fin 2 → ℂ) →L[ℝ] ℂ).hasFDerivAt.comp_hasDerivAt 0 hi

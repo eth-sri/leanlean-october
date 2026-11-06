@@ -41,7 +41,7 @@ theorem selected_stage_with_exterior (v : R.A.UnitQuotient)
   obtain ⟨s, x, hs, hx⟩ := D.selected_frozen_stage v
   have hn : Sum.inr p ∉ s.val := by
     rw [hs, D.bad_exact]
-    simp only [Sum.inr_ne_inl, false_and, exists_false, Sum.inr.injEq, false_or]
+    simp only [Sum.inr_ne_inl, exists_false, Sum.inr.injEq, false_or]
     rintro ⟨q, hq, hmem⟩
     subst q
     exact hp hmem
@@ -79,7 +79,7 @@ theorem fourier_exterior_single (v : R.A.UnitQuotient) (p : KPFinitePlace F)
   obtain ⟨s, hq, x, hx, href⟩ := selected_stage_with_exterior R D v p hp
   have hn : Sum.inr p ∉ D.bad := by
     rw [D.bad_exact]
-    simp only [Sum.inr_ne_inl, false_and, exists_false, Sum.inr.injEq, false_or]
+    simp only [Sum.inr_ne_inl, exists_false, Sum.inr.injEq, false_or]
     rintro ⟨q, hq, hmem⟩
     subst q
     exact hp hmem

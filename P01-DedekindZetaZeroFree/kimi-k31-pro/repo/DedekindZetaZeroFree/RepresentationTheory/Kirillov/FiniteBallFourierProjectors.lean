@@ -432,7 +432,7 @@ theorem projector_eq_self (u : ℤ) (t : w.adicCompletion F) (v : V)
     simp
   simp only [levelAverage, levelAverageWithRepresentatives, LinearMap.smul_apply,
     LinearMap.sum_apply, ht, Finset.sum_const, Finset.card_univ,
-    nsmul_eq_mul, Nat.card_eq_fintype_card]
+    Nat.card_eq_fintype_card]
   rw [← Nat.card_eq_fintype_card, ← Nat.cast_smul_eq_nsmul ℂ, smul_smul, inv_mul_cancel₀, one_smul]
   exact_mod_cast Nat.card_pos.ne'
 

@@ -30,20 +30,7 @@ attribute [local instance] Classical.propDecidable
 
 namespace PowerSeries
 
-/-- The alternating geometric series is the formal inverse of `1 + X`. -/
-theorem alternating_mul_one_add_X
-    (A : Type*) [CommRing A] :
-    (PowerSeries.mk fun n : ℕ => (-1 : A) ^ n) *
-        (1 + PowerSeries.X : PowerSeries A) = 1 := by
-  have h :=
-    congrArg (PowerSeries.evalNegHom (A := A))
-      (PowerSeries.mk_one_mul_one_sub_eq_one A)
-  have hmk' :
-      PowerSeries.evalNegHom (PowerSeries.mk (1 : ℕ → A)) =
-        PowerSeries.mk fun n : ℕ => (-1 : A) ^ n := by
-    ext n
-    simp [PowerSeries.evalNegHom, PowerSeries.rescale_mk]
-  simpa [hmk', sub_eq_add_neg] using h
+
 
 /-- A torsion-free power series with zero constant coefficient satisfying
 `f' * (1 + X) = f` is zero. -/

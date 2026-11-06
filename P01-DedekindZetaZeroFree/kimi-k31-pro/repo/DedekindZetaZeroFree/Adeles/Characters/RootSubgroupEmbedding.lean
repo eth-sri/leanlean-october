@@ -41,7 +41,7 @@ theorem actualMatrixSlot_root (w : InfinitePlace F) (z : ℂ) :
     funext u
     by_cases h:u=w
     · subst u;simp
-    · simp [h,Ne.symm h,upperUnipotent]
+    · simp [h,upperUnipotent]
       apply Matrix.GeneralLinearGroup.ext
       intro i j
       fin_cases i <;> fin_cases j <;> rfl
@@ -59,7 +59,7 @@ theorem actualRootAdele_character (w : InfinitePlace F) (z : ℂ) :
     · funext u
       by_cases h:u=w
       · subst u;simp [actualRootAdele,archRootAdele]
-      · simp [actualRootAdele,archRootAdele,h,Ne.symm h]
+      · simp [actualRootAdele,archRootAdele,h]
     · rfl
   change adelicTraceCharacter F (actualRootAdele R w z)=_
   rw [he,adelicTraceCharacter_arch_single,archTraceCharacter_of_isComplex w

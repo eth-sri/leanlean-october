@@ -70,8 +70,7 @@ private lemma antilipschitzWith_freqMap {β : ℂ} (hβ : β ≠ 0) :
   have h : nndist (freqMap β x) (freqMap β y) = ‖β‖₊ * nndist x y := by
     rw [freqMap_apply, freqMap_apply, nndist_eq_nnnorm, nndist_eq_nnnorm]
     rw [← map_sub, ← mul_sub, RCLike.nnnorm_conj, nnnorm_mul]
-  rw [h, inv_mul_cancel_left₀]
-  exact nnnorm_ne_zero_iff.mpr hβ
+  simp_all
 
 theorem integrable_F_schwartz_mu (β : ℂ) (f : SchwartzMap ℂ ℂ) :
     Integrable (F β (⇑f)) (mu β) := by

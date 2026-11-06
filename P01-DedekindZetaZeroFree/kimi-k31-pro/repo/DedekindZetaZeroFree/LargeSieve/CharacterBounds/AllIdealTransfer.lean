@@ -94,8 +94,7 @@ private theorem primitive_sieve_finset_transfer_of_property
     (fun i => hcond _ (e i).property) (fun i => hP _ (e i).property) c
     (fun I hI => (hB I.val ((hD I).mp (hc hI))).2)
   simp only [sumChar, sumEnergy] at h
-  rw [e.sum_comp (fun i : J => ‖∑ I ∈ B, b I * (ω i.val).character I‖ ^ 2)] at h
-  rw [Finset.sum_coe_sort J (fun i => ‖∑ I ∈ B, b I * (ω i).character I‖ ^ 2)] at h
+  rw [e.sum_comp (fun i : J => ‖∑ I ∈ B, b I * (ω i.val).character I‖ ^ 2), Finset.sum_coe_sort J (fun i => ‖∑ I ∈ B, b I * (ω i).character I‖ ^ 2)] at h
   exact h
 
 set_option backward.isDefEq.respectTransparency false in

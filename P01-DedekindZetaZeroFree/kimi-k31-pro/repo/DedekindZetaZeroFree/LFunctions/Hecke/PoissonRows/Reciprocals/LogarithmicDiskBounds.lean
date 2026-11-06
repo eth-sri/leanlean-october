@@ -16,8 +16,8 @@ theorem exists_analytic_log_ball {g : ℂ → ℂ} {c : ℂ} {R : ℝ}
     ∃ ℓ : ℂ → ℂ, AnalyticOnNhd ℂ ℓ (Metric.ball c R) ∧
       (∀ s ∈ Metric.ball c R, g s = Complex.exp (ℓ s)) ∧ ℓ c = w := by
   have hq : AnalyticOnNhd ℂ (fun s => deriv g s / g s) (Metric.ball c R) :=
-    fun s hs => ((hg.deriv) s hs).div (hg s hs) (h0 s hs)
-  obtain ⟨F, hF⟩ := (hq.differentiableOn).isExactOn_ball (c := c) (r := R)
+    fun s hs => (hg.deriv s hs).div (hg s hs) (h0 s hs)
+  obtain ⟨F, hF⟩ := hq.differentiableOn.isExactOn_ball (c := c) (r := R)
   have hFd : DifferentiableOn ℂ F (Metric.ball c R) := fun s hs => (hF s hs).differentiableAt.differentiableWithinAt
   set ℓ : ℂ → ℂ := fun s => F s - F c + w with hℓ
   have hdiff : DifferentiableOn ℂ ℓ (Metric.ball c R) := by
@@ -40,7 +40,7 @@ theorem exists_analytic_log_ball {g : ℂ → ℂ} {c : ℂ} {R : ℝ}
       have := hF s hs
       simpa [hℓ] using this.sub_const (F c) |>.add_const w
     have hexp : HasDerivAt (fun s => Complex.exp (-ℓ s)) (Complex.exp (-ℓ s) * (-(deriv g s / g s))) s := by
-      have := (hlin.neg).cexp
+      have := hlin.neg.cexp
       simpa using this
     have hkd' : HasDerivAt k (deriv g s * Complex.exp (-ℓ s) + g s * (Complex.exp (-ℓ s) * -(deriv g s / g s))) s :=
       hgs.mul hexp
@@ -79,7 +79,7 @@ theorem analytic_log_unique_ball {ℓ₁ ℓ₂ : ℂ → ℂ} {c : ℂ} {R : �
     intro s hs
     have hfs : DifferentiableAt ℂ f s := hfd.differentiableAt (isOpen_ball.mem_nhds hs)
     have hcomp : HasDerivAt (fun z => Complex.exp (f z)) (Complex.exp (f s) * deriv f s) s :=
-      (hfs.hasDerivAt).cexp
+      hfs.hasDerivAt.cexp
     have hEq : (fun z => Complex.exp (f z)) =ᶠ[nhds s] fun _ => (1 : ℂ) :=
       Filter.eventually_of_mem (isOpen_ball.mem_nhds hs) (fun z hz => hexp z hz)
     have h1 : HasDerivAt (fun z => Complex.exp (f z)) 0 s :=

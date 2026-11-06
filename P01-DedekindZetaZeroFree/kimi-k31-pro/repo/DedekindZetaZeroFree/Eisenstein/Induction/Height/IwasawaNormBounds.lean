@@ -56,8 +56,8 @@ private theorem torus_projection_diagonal (t : E F ζ hζ) :
   ext i j
   fin_cases i <;> fin_cases j <;>
     simp [KPGlobalCubicIdelePairing.diagonalMatrix,
-      KPGlobalCubicIdelePairing.diagonalPGL, KPGlobalCubicIdelePairing.diagonalHom,
-      Matrix.mul_apply, Fin.sum_univ_two, Matrix.GeneralLinearGroup.coe_scalar,
+      KPGlobalCubicIdelePairing.diagonalHom,
+      Matrix.mul_apply, Matrix.GeneralLinearGroup.coe_scalar,
       Matrix.scalar, Matrix.diagonal, h10, h01, IsUnit.unit_spec]
   rw [mul_assoc]
   have hc := (diagonal_entries_units F A h10 h01).2.unit.inv_mul

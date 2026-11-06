@@ -15,53 +15,9 @@ noncomputable section
 namespace DedekindZetaZeroFree.FrequencyCharacterMasks.KummerConductors
 set_option autoImplicit false
 
-theorem kummer_norm_conductor_prime_absent {F : Type} [Field F] [NumberField F]
-    (n : ℕ+) (hn : (n : F) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) F).Nonempty) (u : Fˣ)
-    (v : HeightOneSpectrum (𝓞 F))
-    (hu : v.valuation F (u : F) = 1) (hv : v.valuation F (n : F) = 1) :
-    let E := KummerTheory.chosenSimpleKummerExtension F n hn u
-    letI := KummerTheory.chosenSimpleKummerExtension_finiteDimensional F n hn u
-    letI := KummerTheory.chosenSimpleKummerExtension_isAbelianGalois F n hn hmu u
-    letI := NumberField.of_module_finite F E
-    v ∉ (ClassFieldTheory.GlobalClassFieldComparison.normConductorRayClassModulus F E).finitePart.support := by
-  let E := KummerTheory.chosenSimpleKummerExtension F n hn u
-  letI := KummerTheory.chosenSimpleKummerExtension_finiteDimensional F n hn u
-  letI := KummerTheory.chosenSimpleKummerExtension_isAbelianGalois F n hn hmu u
-  letI := NumberField.of_module_finite F E
-  dsimp only
-  intro h
-  exact GlobalClassFieldTheory.GlobalClassFields.mem_ideleClassNorm_narrowFiniteConductor_support_imp_chosenFinitePlace_ramified v h
-    (KummerTheory.chosenSimpleKummerExtension_chosenFinitePlaceIsUnramified_of_valuation_eq_one n hn hmu u v hu hv)
 
-theorem sextic_norm_conductor_support {F : Type} [Field F] [NumberField F]
-    (A : SArithmeticData F) (I : A.Exterior) (u : A.R) (hu : A.Generates I u) :
-    let hn : (6 : F) ≠ 0 := by norm_num
-    let a := Units.mk0 (u : F) (by exact_mod_cast hu.1)
-    let E := KummerTheory.chosenSimpleKummerExtension F (6 : ℕ+) hn a
-    letI := KummerTheory.chosenSimpleKummerExtension_finiteDimensional F (6 : ℕ+) hn a
-    letI := KummerTheory.chosenSimpleKummerExtension_isAbelianGalois F (6 : ℕ+) hn
-      A.primitive_sixth_root a
-    letI := NumberField.of_module_finite F E
-    ↑(ClassFieldTheory.GlobalClassFieldComparison.normConductorRayClassModulus F E).finitePart.support ⊆
-      ((A.Sf : Set (HeightOneSpectrum (𝓞 F))) ∪ {v | I.val ≤ v.asIdeal}) := by
-  let hn : (6 : F) ≠ 0 := by norm_num
-  let a := Units.mk0 (u : F) (by exact_mod_cast hu.1)
-  let E := KummerTheory.chosenSimpleKummerExtension F (6 : ℕ+) hn a
-  letI := KummerTheory.chosenSimpleKummerExtension_finiteDimensional F (6 : ℕ+) hn a
-  letI := KummerTheory.chosenSimpleKummerExtension_isAbelianGalois F (6 : ℕ+) hn A.primitive_sixth_root a
-  letI := NumberField.of_module_finite F E
-  dsimp only
-  intro v hv
-  by_cases hvS : v ∈ A.Sf
-  · exact Or.inl hvS
-  · right
-    by_contra hI
-    have hval := ArithmeticContext.actual_generator_valuation_unit A I u a hu rfl v hvS hI
-    have hsix : v.valuation F (6 : F) = 1 := by
-      convert (v.valuation_eq_one_iff_notMem (K := F) (r := (6 : 𝓞 F))).2
-        (fun h => hvS (A.above_six v h)) using 1 <;> norm_cast
-    exact kummer_norm_conductor_prime_absent (6 : ℕ+) hn A.primitive_sixth_root a v hval hsix hv
+
+
 
 private theorem kummer_conductor_support {F : Type} [Field F] [NumberField F]
     (A : SArithmeticData F) (σ : F →+* ℂ) (I : A.Exterior)

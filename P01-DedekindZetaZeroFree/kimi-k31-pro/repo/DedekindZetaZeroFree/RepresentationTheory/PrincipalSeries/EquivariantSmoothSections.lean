@@ -161,7 +161,7 @@ def CompactSmoothInd : Submodule ℂ (SmoothInd H τ d) where
       intro g hg
       simp only [Function.mem_support]
       intro h
-      exact hg (by simp [Submodule.coe_smul, h])
+      exact hg (by simp [h])
     change IsCompact (closure (Quotient.mk (QuotientGroup.rightRel H) ''
       Function.support ((c • f).val : G → E)))
     change IsCompact (closure (Quotient.mk (QuotientGroup.rightRel H) ''

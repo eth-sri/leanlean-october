@@ -178,7 +178,7 @@ theorem unit_unit (g h : K0 F v)
           d F v h * c F v (g * h) - c F v g * Δ F v h := by
         simp only [d, c, Δ, inclusion, KPLocalCube.integerInclusion,
           Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two,
-          map_add, map_mul, Matrix.GeneralLinearGroup.val_det_apply,
+          Matrix.GeneralLinearGroup.val_det_apply,
           Matrix.det_fin_two, Matrix.GeneralLinearGroup.map_apply]
         simp only [Subring.coe_add, Subring.coe_mul, Subring.subtype_apply]
         ring

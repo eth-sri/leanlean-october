@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.HopfMatrixCoordinates
 public import DedekindZetaZeroFree.RepresentationTheory.RankOne.PGLComplex.BruhatHopfCoordinates
+public import Mathlib.Tactic.FunProp
 
 @[expose] public section
 
@@ -21,7 +22,6 @@ theorem haar_fractionalIntegral_of_stereographic_pushforward (β : ℂˣ) (p : �
   let d : ℂ → ℝ := fun z => (1 + ‖z‖ ^ 2) ^ (-2 : ℝ) / Real.pi
   let K : Sphere → ℂ := fun y => (fractionalKernel (1 / 3) x y : ℂ) * F y
   have hd : Measurable (fun z => ENNReal.ofReal (d z)) := by
-    dsimp [d]
     fun_prop
   have hdpos (z : ℂ) : 0 ≤ d z := by
     dsimp [d]

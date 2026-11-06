@@ -1,6 +1,7 @@
 module
 
 public import DedekindZetaZeroFree.LargeSieve.Exponents.ExponentOneByApproximation
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -18,8 +19,7 @@ theorem bootstrapExponent_bounds (n : ℕ) :
     1 < bootstrapExponent n ∧ bootstrapExponent n ≤ 2 := by
   have hpos : (0 : ℝ) < (n : ℝ) + 1 := by positivity
   have hle : (1 : ℝ) ≤ (n : ℝ) + 1 := by
-    have : (0 : ℝ) ≤ n := Nat.cast_nonneg n
-    linarith
+    norm_num
   constructor
   · rw [bootstrapExponent]
     have : 0 < 1 / ((n : ℝ) + 1) := one_div_pos.mpr hpos
@@ -37,9 +37,7 @@ theorem bootstrapExponent_succ (n : ℕ) :
   have hn : ((n : ℝ) + 1) ≠ 0 := by positivity
   have hn1 : ((n : ℝ) + 1) + 1 ≠ 0 := by positivity
   rw [bootstrapExponent, bootstrapExponent]
-  push_cast
-  field_simp
-  ring
+  grind
 
 theorem hasExponent_one_of_improvement (B : ℝ → ℝ → ℝ)
     (hTwo : HasExponent B 2)

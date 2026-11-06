@@ -1061,20 +1061,7 @@ noncomputable def
   isGalois :=
     (abstractFixedFieldCyclotomicFiniteLayer_isAbelianGalois H E).toIsGalois
 
-/-- The explicit base algebra on a finite cyclotomic layer is the canonical
-intermediate-field inclusion used by the finite Galois inverse system. -/
-theorem abstractFixedFieldCyclotomicFiniteLayer_baseAlgebra_eq_algebra'
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
-    abstractFixedFieldCyclotomicFiniteLayer_baseAlgebra H E =
-      (abstractFixedFieldCyclotomicFiniteGaloisLayer H E).algebra' := by
-  apply Algebra.algebra_ext
-  intro x
-  apply Subtype.ext
-  rfl
+
 
 /-- The finite Galois layer uses its canonical inclusion into the full
 relative fixed field for the upper scalar action. -/
@@ -1984,33 +1971,9 @@ then mapped to the corresponding rational coordinate. -/
     Gal(E / ℚ) :=
   (cyclotomicAbstractFixedFieldArtinCoordinateBridgeData H a E).1.2.1
 
-/-- The finite rational Artin coordinate of the idele norm. -/
- noncomputable def
-    cyclotomicAbstractFixedFieldArtinRationalCoordinate
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (a : IdeleGroup
-      (cyclotomicAbstractFixedFieldArtinCoordinateBase H))
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
-    Gal(E / ℚ) :=
-  (cyclotomicAbstractFixedFieldArtinCoordinateBridgeData H a E).1.2.1
 
-/-- Naturality of the finite global Artin map at the concrete cyclotomic
-coordinate. -/
-private theorem
-    cyclotomicAbstractFixedFieldArtinCoordinateNaturality
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (a : IdeleGroup
-      (cyclotomicAbstractFixedFieldArtinCoordinateBase H))
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
-    cyclotomicAbstractFixedFieldArtinFiniteCoordinate H a E =
-      cyclotomicAbstractFixedFieldArtinRationalCoordinate H a E := by
-  rfl
+
+
 
 /-- The rational endpoint after projection to one finite coordinate. -/
  noncomputable def
@@ -2617,134 +2580,7 @@ theorem
   apply Multiplicative.ext
   exact hleft.trans (hvaluation.symm.trans hright)
 
-/-- A prime idele class has genuine maximal-unramified Artin symbol
-equal to the arithmetic Frobenius of its abstract fixed field. -/
-theorem
-    abstractFixedFieldCyclotomicIdeleClassArtinMonoidHom_prime
-    (H : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (π :
-      ambientFixedAddSubgroup
-        rationalIdeleClassRepresentation H.field)
-    (hπ :
-      rationalCyclotomicIdeleClassValuationData.IsPrimeElement H π) :
-    let hI :=
-      rationalCyclotomicFieldInertia_le H.field
-    let hnormal :
-        (CyclicCohomology.extensionSubgroup H.field
-          (rationalCyclotomicDegreeData.fieldInertia H.field)
-          hI).Normal := by
-      rw [extensionSubgroup_rationalCyclotomicFieldInertia]
-      infer_instance
-    let qInertia :
-        H.field.toSubgroup ⧸
-            CyclicCohomology.extensionSubgroup H.field
-              (rationalCyclotomicDegreeData.fieldInertia H.field)
-              hI ≃*
-          H.field.toSubgroup ⧸
-            rationalCyclotomicDegreeData.fieldInertiaWithin H.field :=
-      QuotientGroup.quotientMulEquivOfEq
-        (extensionSubgroup_rationalCyclotomicFieldInertia H.field)
-    abstractFixedFieldCyclotomicIdeleClassArtinMonoidHom H
-        (Additive.toMul
-          ((rationalAbstractFixedFieldIdeleClassEquivFixed H.field
-              (hfinite := H.finite)).symm
-            π)) =
-      LocalClassFieldTheory.abstractExtensionQuotientEquivGaloisGroup
-        ℚ (SeparableClosure ℚ) H.field
-        (rationalCyclotomicDegreeData.fieldInertia H.field)
-        hI hnormal
-        (qInertia.symm
-          (rationalCyclotomicDegreeData.frobenius
-            (H.toFiniteResidueAbstractField
-              rationalCyclotomicDegreeData))) := by
-  let F :=
-    LocalClassFieldTheory.abstractFixedField
-      ℚ (SeparableClosure ℚ) H.field
-  let : FiniteDimensional ℚ F :=
-    LocalClassFieldTheory.abstractFixedField_finiteDimensional
-      ℚ (SeparableClosure ℚ) H.field H.finite
-  let : NumberField F :=
-    NumberField.of_module_finite ℚ F
-  let hI :=
-    rationalCyclotomicFieldInertia_le H.field
-  let hnormal :
-      (CyclicCohomology.extensionSubgroup H.field
-        (rationalCyclotomicDegreeData.fieldInertia H.field)
-        hI).Normal := by
-    rw [extensionSubgroup_rationalCyclotomicFieldInertia]
-    infer_instance
-  let qInertia :
-      H.field.toSubgroup ⧸
-          CyclicCohomology.extensionSubgroup H.field
-            (rationalCyclotomicDegreeData.fieldInertia H.field)
-            hI ≃*
-        H.field.toSubgroup ⧸
-          rationalCyclotomicDegreeData.fieldInertiaWithin H.field :=
-    QuotientGroup.quotientMulEquivOfEq
-      (extensionSubgroup_rationalCyclotomicFieldInertia H.field)
-  let c :
-      IdeleClassGroup F :=
-    Additive.toMul
-      ((rationalAbstractFixedFieldIdeleClassEquivFixed H.field
-          (hfinite := H.finite)).symm π)
-  have hvalue :
-      normalizedCyclotomicZHatIdeleClassValueContinuous F
-          ((rationalAbstractFixedFieldIdeleClassEquivFixed H.field
-              (hfinite := H.finite)).symm
-            π) =
-        1 := by
-    calc
-      normalizedCyclotomicZHatIdeleClassValueContinuous F
-          ((rationalAbstractFixedFieldIdeleClassEquivFixed H.field
-              (hfinite := H.finite)).symm
-            π) =
-          ((rationalCyclotomicIdeleClassValuationData.valuationAt H
-              (rationalAbstractFixedFieldIdeleClassEquivFixed H.field
-                (hfinite := H.finite)
-                ((rationalAbstractFixedFieldIdeleClassEquivFixed H.field
-                    (hfinite := H.finite)).symm
-                  π)) :
-              rationalCyclotomicIdeleClassValuationData.valueGroup) :
-            ZHat) := by
-        exact
-          (rationalCyclotomicIdeleClassValuationData_valuationAt_fixed_apply
-            H
-            ((rationalAbstractFixedFieldIdeleClassEquivFixed H.field
-                (hfinite := H.finite)).symm
-              π)).symm
-      _ =
-          ((rationalCyclotomicIdeleClassValuationData.oneValue :
-              rationalCyclotomicIdeleClassValuationData.valueGroup) :
-            ZHat) := by
-        rw [(rationalAbstractFixedFieldIdeleClassEquivFixed H.field
-          (hfinite := H.finite)).apply_symm_apply]
-        exact congrArg Subtype.val hπ
-      _ = 1 :=
-        rationalCyclotomicIdeleClassValuationData.oneValue_coe
-  apply (abstractFixedFieldCyclotomicGalEquivZHat H).injective
-  calc
-    abstractFixedFieldCyclotomicGalEquivZHat H
-        (abstractFixedFieldCyclotomicIdeleClassArtinMonoidHom H c) =
-        normalizedCyclotomicZHatIdeleClassValueContinuousMul F c :=
-      abstractFixedFieldCyclotomicGalEquivZHat_ideleClassArtinMonoidHom
-        H c
-    _ = Multiplicative.ofAdd (1 : ZHat) := by
-      apply Multiplicative.ext
-      exact hvalue
-    _ =
-        abstractFixedFieldCyclotomicGalEquivZHat H
-          (LocalClassFieldTheory.abstractExtensionQuotientEquivGaloisGroup
-            ℚ (SeparableClosure ℚ) H.field
-            (rationalCyclotomicDegreeData.fieldInertia H.field)
-            hI hnormal
-            (qInertia.symm
-              (rationalCyclotomicDegreeData.frobenius
-                (H.toFiniteResidueAbstractField
-                  rationalCyclotomicDegreeData)))) := by
-      rw [
-        abstractFixedFieldCyclotomicGalEquivZHat_quotientClass,
-        rationalCyclotomicDegreeData.maximalUnramifiedDegreeEquiv_frobenius]
+
 
 end Reciprocity
 end GlobalClassFieldTheory

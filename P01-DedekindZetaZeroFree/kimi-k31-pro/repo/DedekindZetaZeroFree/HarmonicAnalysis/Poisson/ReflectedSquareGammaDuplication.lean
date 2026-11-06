@@ -47,15 +47,15 @@ theorem reflected_square_gamma_duplication (s : ℂ) (hs : s.im ≠ 0) :
       (2 : ℂ) ^ (2 * s - 1) * Complex.Gammaℂ (s / 2) /
         Complex.Gammaℂ (1 - s / 2) := by
   have hGs2 : Complex.Gamma (s / 2) ≠ 0 :=
-    gamma_ne_zero_of_im_ne _ (by simp [Complex.div_im, hs])
+    gamma_ne_zero_of_im_ne _ (by simp [hs])
   have hG1ps2 : Complex.Gamma ((1 + s) / 2) ≠ 0 :=
-    gamma_ne_zero_of_im_ne _ (by simp [Complex.div_im, Complex.add_im, hs])
+    gamma_ne_zero_of_im_ne _ (by simp [Complex.add_im, hs])
   have hG1s2 : Complex.Gamma ((1 - s) / 2) ≠ 0 :=
-    gamma_ne_zero_of_im_ne _ (by simp [Complex.div_im, Complex.sub_im, hs])
+    gamma_ne_zero_of_im_ne _ (by simp [Complex.sub_im, hs])
   have hG1ms2 : Complex.Gamma (1 - s / 2) ≠ 0 :=
-    gamma_ne_zero_of_im_ne _ (by simp [Complex.div_im, Complex.sub_im, hs])
+    gamma_ne_zero_of_im_ne _ (by simp [Complex.sub_im, hs])
   have hG2ms2 : Complex.Gamma ((2 - s) / 2) ≠ 0 :=
-    gamma_ne_zero_of_im_ne _ (by simp [Complex.div_im, Complex.sub_im, hs])
+    gamma_ne_zero_of_im_ne _ (by simp [Complex.sub_im, hs])
   have hGs_eq : Complex.Gamma s = Complex.Gamma (s / 2) * Complex.Gamma ((1 + s) / 2) /
       ((2 : ℂ) ^ (1 - s) * ↑(Real.sqrt Real.pi)) := by
     rw [eq_div_iff (mul_ne_zero (Complex.cpow_ne_zero_iff.mpr (Or.inl two_ne_zero)) sqrt_pi_ne_zero)]
@@ -84,7 +84,7 @@ private lemma gamma_half_differentiableAt (s : ℂ) (hs : 0 < s.re) :
     (differentiableAt_id.div_const (2 : ℂ))
   intro m h
   have hpos : 0 < (s / 2).re := by
-    rw [show (s / 2).re = s.re / 2 by simp [Complex.div_re]]
+    rw [show (s / 2).re = s.re / 2 by simp]
     linarith
   rw [h] at hpos
   simp at hpos

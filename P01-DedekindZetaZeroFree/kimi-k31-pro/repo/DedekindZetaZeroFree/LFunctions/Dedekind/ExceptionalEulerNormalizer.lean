@@ -93,8 +93,7 @@ theorem actual_principal_continuation
     intro z hz hz1
     change R z / (z - 1) = P.L z
     rw [hbridge z hz, P.regularized z hz hz1, mul_div_cancel_left₀ _ (sub_ne_zero.mpr hz1)]
-  have hZ : MeromorphicOn (zeta  F ζ hζ) Set.univ := by
-    exact (hR.differentiableOn.analyticOnNhd isOpen_univ).meromorphicOn.div
+  have hZ : MeromorphicOn (zeta  F ζ hζ) Set.univ := (hR.differentiableOn.analyticOnNhd isOpen_univ).meromorphicOn.div
       ((analyticOnNhd_id.sub analyticOnNhd_const).meromorphicOn)
   refine ⟨hZ, ?_, hR, ?_, hbridge, hL, ?_, ?_⟩
   · intro z hz

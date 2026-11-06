@@ -145,7 +145,7 @@ private theorem integral_scalar_mem (z : Ideles F) (q : HeightOneSpectrum (𝓞 
       by apply Subtype.ext; exact congrArg (fun a : Adeles F => a.2 q) z.val_inv,
       by apply Subtype.ext; exact congrArg (fun a : Adeles F => a.2 q) z.inv_val⟩
   have hu : KPTameCompact.unitInclusion F q u = Units.map (adeleEval F (Sum.inr q)) z := Units.ext rfl
-  simp only [compact, finiteCompact, dif_neg hb, SetLike.mem_coe]
+  simp only [compact, finiteCompact, dif_neg hb]
   refine ⟨Matrix.GeneralLinearGroup.scalar (Fin 2) u, ?_⟩
   change KPGoodCompactSplitting.kStar F ζ hζ q _ _ = _
   rw [show scalarCoordinates F ζ hζ z (Sum.inr q) =

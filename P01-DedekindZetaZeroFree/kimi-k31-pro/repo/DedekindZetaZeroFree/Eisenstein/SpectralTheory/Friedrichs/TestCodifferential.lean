@@ -119,7 +119,7 @@ private theorem divergence_flat {A : LocalBall (KPCuspLogShape.dimension F * 3)}
       (fun y => ((KPArch.volumeDensity (KPCuspLogShape.dimension F) y *
         KPContFlatCuspCasimirSpecialization.inverseMetricWeight (KPCuspLogShape.dimension F) y i k : ℝ) : ℂ) *
         fderiv ℝ f y (KPContFlatCuspCasimirSpecialization.coordinateDirection (KPCuspLogShape.dimension F) i k)) ∘ coordinates F := by
-    funext q; simp [density, coordinates, KPArchRealCoordinates.density, Function.comp_def, Complex.ofReal_mul, mul_assoc]
+    funext q; simp [density, coordinates, KPArchRealCoordinates.density, Complex.ofReal_mul, mul_assoc]
   rw [show (fun q => (density F q : ℂ) *
       ((KPContFlatCuspCasimirSpecialization.inverseMetricWeight (KPCuspLogShape.dimension F)
         (coordinates F q) i k : ℂ) *

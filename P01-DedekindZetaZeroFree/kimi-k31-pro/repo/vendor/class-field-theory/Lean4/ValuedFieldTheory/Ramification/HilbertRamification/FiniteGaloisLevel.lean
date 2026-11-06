@@ -79,24 +79,9 @@ noncomputable instance instChosenIntegralClosureTargetHasExtension
     base.valuation.HasExtension (chosenIntegralClosureTarget base E).valuation :=
   chosenIntegralClosureTargetHasExtension base E
 
-/-- The valuation ring of the chosen finite-level target is the integral
-closure of the base valuation ring. -/
-theorem chosenIntegralClosureTarget_isIntegralClosure
-    (base : CompleteDVF.{u, v} K)
-    (E : FiniteGaloisIntermediateField K (AlgebraicClosure K)) :
-    IsIntegralClosure (chosenIntegralClosureTarget base E).valuationSubring
-      base.valuationSubring E :=
-  (Classical.choose_spec
-    (Classical.choose_spec (chosenIntegralClosureData_exists base E))).1
 
-/-- The chosen target satisfies the fundamental equality; no auxiliary
-extension marker is selected. -/
-theorem chosenIntegralClosureTarget_isDefectless
-    (base : CompleteDVF.{u, v} K)
-    (E : FiniteGaloisIntermediateField K (AlgebraicClosure K)) :
-    IsDefectless base.toDVF (chosenIntegralClosureTarget base E).toDVF :=
-  (Classical.choose_spec
-    (Classical.choose_spec (chosenIntegralClosureData_exists base E))).2
+
+
 
 /-- Uniqueness of the extended valuation at a finite Galois level, in the
 complete-DVF formulation. -/
@@ -117,16 +102,7 @@ theorem chosenIntegralClosureTarget_hasUniqueDVFValuationExtension
       base.toDVF (chosenIntegralClosureTarget base E).toDVF :=
   chosenIntegralClosureTarget_hasUniqueValuationExtension base E
 
-/-- The finite-level lower ramification filtration attached to the chosen
-integral-closure valuation. -/
-noncomputable def chosenLowerRamificationFiltration
-    (base : CompleteDVF.{u, v} K)
-    (E : FiniteGaloisIntermediateField K (AlgebraicClosure K)) :
-    RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration
-      Gal(E / K) :=
-  Higher.lowerRamificationFiltrationOfUniqueExtension
-    (base := base.toDVF) (target := (chosenIntegralClosureTarget base E).toDVF)
-    (chosenIntegralClosureTarget_hasUniqueDVFValuationExtension base E)
+
 
 /-- The finite-level real upper ramification filtration attached to the chosen
 integral-closure valuation. -/
@@ -138,12 +114,7 @@ noncomputable def chosenUpperRamificationFiltration
     (base := base.toDVF) (target := (chosenIntegralClosureTarget base E).toDVF)
     (chosenIntegralClosureTarget_hasUniqueDVFValuationExtension base E) t
 
-/-- The chosen upper ramification group at a real index. -/
-noncomputable abbrev chosenUpperRamificationGroup
-    (base : CompleteDVF.{u, v} K)
-    (E : FiniteGaloisIntermediateField K (AlgebraicClosure K))
-    (t : ℝ) : Subgroup Gal(E / K) :=
-  chosenUpperRamificationFiltration base E t
+
 
 /-- States the theorem `chosenUpperRamificationFiltration_apply`. -/
 @[simp]
@@ -157,43 +128,13 @@ theorem chosenUpperRamificationFiltration_apply
         (chosenIntegralClosureTarget_hasUniqueDVFValuationExtension base E) t :=
   rfl
 
-/-- States the theorem `chosenLowerRamificationGroup_normal`. -/
-theorem chosenLowerRamificationGroup_normal
-    (base : CompleteDVF.{u, v} K)
-    (E : FiniteGaloisIntermediateField K (AlgebraicClosure K))
-    (n : ℕ) :
-    ((chosenLowerRamificationFiltration base E).lower n).Normal :=
-  (chosenLowerRamificationFiltration base E).lower_normal n
 
-/-- Every chosen finite-level integral lower ramification group is closed. -/
-theorem chosenLowerRamificationGroup_isClosed
-    (base : CompleteDVF.{u, v} K)
-    (E : FiniteGaloisIntermediateField K (AlgebraicClosure K))
-    (n : ℕ) :
-    IsClosed
-      ((chosenLowerRamificationFiltration base E).lower n : Set Gal(E / K)) :=
-  ((chosenLowerRamificationFiltration base E).lower n : Set Gal(E / K)).toFinite.isClosed
 
-/-- States the theorem `chosenUpperRamificationGroup_normal`. -/
-theorem chosenUpperRamificationGroup_normal
-    (base : CompleteDVF.{u, v} K)
-    (E : FiniteGaloisIntermediateField K (AlgebraicClosure K))
-    (t : ℝ) :
-    (chosenUpperRamificationGroup base E t).Normal := by
-  exact Higher.lowerRamificationGroup_normal
-    (base := base.toDVF) (target := (chosenIntegralClosureTarget base E).toDVF)
-    (chosenIntegralClosureTarget_hasUniqueDVFValuationExtension base E)
-    (Higher.inverseHerbrandFunctionOfUniqueExtension
-      (base := base.toDVF) (target := (chosenIntegralClosureTarget base E).toDVF)
-      (chosenIntegralClosureTarget_hasUniqueDVFValuationExtension base E) t)
 
-/-- Every chosen finite-level upper ramification group is closed. -/
-theorem chosenUpperRamificationGroup_isClosed
-    (base : CompleteDVF.{u, v} K)
-    (E : FiniteGaloisIntermediateField K (AlgebraicClosure K))
-    (t : ℝ) :
-    IsClosed (chosenUpperRamificationGroup base E t : Set Gal(E / K)) :=
-  (chosenUpperRamificationGroup base E t : Set Gal(E / K)).toFinite.isClosed
+
+
+
+
 
 end RamificationTheory.HilbertRamification.FiniteGaloisLevel
 

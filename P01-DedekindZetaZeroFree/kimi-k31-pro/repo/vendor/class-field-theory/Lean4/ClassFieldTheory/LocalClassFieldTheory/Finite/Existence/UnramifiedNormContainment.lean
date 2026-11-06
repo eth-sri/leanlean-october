@@ -258,47 +258,9 @@ noncomputable def localFiniteUnramifiedAbelianSubextension
   let Bresidue := Bfinite.toFiniteResidueAbstractField D
   exact D.finiteUnramifiedAbelianExtension Bresidue d hd
 
-/-- The named finite unramified abelian factor satisfies the expected
-valuation-divisibility norm containment. -/
-theorem localFiniteUnramifiedAbelianSubextension_normSubgroup_map_le
-    (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    (d : ℕ) (hd : 0 < d) :
-    let U := localFiniteUnramifiedAbelianSubextension K d hd
-    (U.normSubgroup (intrinsicAbsoluteUnits K)).map
-          (baseUnitsEquivGaloisAmbientFixed K (SeparableClosure K)).symm.toAddMonoidHom ≤
-        (unramifiedNormSubgroup K d).toAddSubgroup := by
-  let A := intrinsicAbsoluteUnits K
-  let B := intrinsicAbstractBase K
-  let e := baseUnitsEquivGaloisAmbientFixed K (SeparableClosure K)
-  let D := localResidueDatum K
-  let Bfinite : FiniteAbstractField (intrinsicAbsoluteGalois K) :=
-    intrinsicFiniteAbstractBase K
-  let Bresidue := Bfinite.toFiniteResidueAbstractField D
-  let U := localFiniteUnramifiedAbelianSubextension K d hd
-  simpa [A, B, e, D, Bfinite, Bresidue, U,
-    localFiniteUnramifiedAbelianSubextension,
-    FiniteAbstractField.toFiniteResidueAbstractField,
-    DegreeData.finiteUnramifiedAbelianExtension,
-    FiniteAbelianSubextension.normSubgroup,
-    FiniteGaloisSubextension.normSubgroup] using
-    (finiteUnramifiedNormSubgroup_map_le_unramifiedNormSubgroup
-      K d hd)
 
-/-- The canonical unramified extension can be retained as a finite abelian
-subextension, with the same norm-subgroup containment. -/
-theorem exists_unramifiedFiniteAbelianExtension_normSubgroup_map_le
-    (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    (d : ℕ) (hd : 0 < d) :
-    ∃ U : FiniteAbelianSubextension (intrinsicAbstractBase K),
-      (U.normSubgroup (intrinsicAbsoluteUnits K)).map
-          (baseUnitsEquivGaloisAmbientFixed K (SeparableClosure K)).symm.toAddMonoidHom ≤
-        (unramifiedNormSubgroup K d).toAddSubgroup := by
-  exact
-    ⟨localFiniteUnramifiedAbelianSubextension K d hd,
-      localFiniteUnramifiedAbelianSubextension_normSubgroup_map_le
-        K d hd⟩
+
+
 
 end LocalClassFieldTheory
 

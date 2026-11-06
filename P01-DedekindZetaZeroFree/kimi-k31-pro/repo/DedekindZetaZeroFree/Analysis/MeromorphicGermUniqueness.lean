@@ -17,7 +17,7 @@ theorem meromorphic_germ_unique {f g : ℂ → ℂ} {O V : Set ℂ}
   obtain ⟨a, ha⟩ := hVne
   have hzero : (fun z => f z - g z) =ᶠ[𝓝[≠] a] 0 := by
     filter_upwards [nhdsWithin_le_nhds (hV.mem_nhds ha)] with z hz
-    simpa using sub_eq_zero.mpr (hfg hz)
+    aesop
   have hord : meromorphicOrderAt (fun z => f z - g z) a = ⊤ :=
     meromorphicOrderAt_eq_top_iff.mpr hzero
   have hprop := (hf.sub hg).meromorphicOrderAt_eq_top_of_isPreconnected hO

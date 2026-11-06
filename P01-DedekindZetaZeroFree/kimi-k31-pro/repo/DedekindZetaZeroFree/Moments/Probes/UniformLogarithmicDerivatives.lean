@@ -86,7 +86,7 @@ private lemma arch_compact {I : Type*} [Fintype I] (W : ProbeRealAnnularWeight)
   have hz : ∀ i, f i (p.2 i * (Real.exp (-p.1 / c) : ℂ)) ≠ 0 := by
     have hp' : (∏ i, f i (p.2 i * (Real.exp (-p.1 / c) : ℂ))) ≠ 0 := by
       intro he
-      exact hn (by unfold archRow; rw [he, mul_zero])
+      exact hn (by unfold archRow; grind)
     exact fun i => (Finset.prod_ne_zero_iff.mp hp') i (Finset.mem_univ i)
   refine ⟨(p.1, fun i => p.2 i * (Real.exp (-p.1 / c) : ℂ)), ?_, ?_⟩
   · exact ⟨⟨Real.exp p.1, subset_tsupport _ hw, Real.log_exp _⟩,
@@ -111,14 +111,13 @@ private theorem row_coordinate {F : Type} [Field F] [NumberField F] (A : SArithm
   have hh : (A.radialSection (Real.exp u) (Real.exp_pos u)).1 w.1 =
       Units.map (InfinitePlace.Completion.ringEquivComplexOfIsComplex w.2).symm.toMonoidHom
         (Units.mk0 ((Real.exp u ^ (1 / (2 * (InfinitePlace.nrComplexPlaces F : ℝ))) : ℝ) : ℂ)
-          (Complex.ofReal_ne_zero.mpr (Real.rpow_pos_of_pos (Real.exp_pos u) _).ne')) := by rfl
+          (Complex.ofReal_ne_zero.mpr (Real.rpow_pos_of_pos (Real.exp_pos u) _).ne')) := rfl
   rw [hh]
   change (InfinitePlace.Completion.ringEquivComplexOfIsComplex w.2)
     ((InfinitePlace.Completion.ringEquivComplexOfIsComplex w.2).symm
       (((Real.exp u ^ (1 / (2 * (InfinitePlace.nrComplexPlaces F : ℝ))) : ℝ) : ℂ)⁻¹)) = _
   rw [RingEquiv.apply_symm_apply, ← Complex.ofReal_inv, ← Real.exp_mul, ← Real.exp_neg]
-  congr 2
-  ring
+  grind
 
 theorem uniform_log_derivatives {F : Type} [Field F] [NumberField F]
     (A : SArithmeticData F) (W0 : SLocalProduct F A.Sf → ℂ)

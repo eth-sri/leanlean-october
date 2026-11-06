@@ -42,7 +42,7 @@ theorem eta_sq_add_eta_add_one (E : Type) [Field E] [NumberField E]
     [IsCyclotomicExtension {3} ℚ E] (ω : E) (hω : IsPrimitiveRoot ω 3) :
     η E ω hω ^ 2 + η E ω hω + 1 = 0 := by
   have h := IsCyclotomicExtension.Rat.Three.eta_sq hω
-  simp only [Units.val_pow_eq_pow_val, IsUnit.unit_spec] at h
+  simp only [IsUnit.unit_spec] at h
   linear_combination h
 
 theorem norm_int_coordinates (E : Type) [Field E] [NumberField E]
@@ -107,7 +107,7 @@ theorem normSq_int_coordinates (E : Type) [Field E] [NumberField E]
   push_cast
   simp only [Complex.normSq_apply, Complex.add_re, Complex.add_im,
     Complex.mul_re, Complex.mul_im, Complex.intCast_re, Complex.intCast_im,
-    zero_mul, mul_zero, sub_zero, zero_add]
+    zero_mul, sub_zero, zero_add]
   nlinarith [sq_nonneg ((b : ℝ) * z.im)]
 
 theorem absNorm_span_eq_normSq (E : Type) [Field E] [NumberField E]

@@ -553,20 +553,7 @@ theorem chosenFinitePlaceLocalizedResidueEquiv_equivariant
         (chosenFinitePlaceLocalizedResidueEquiv_apply_mk
           (K := K) (L := L) v x).symm
 
-/-- The residue cardinality of the chosen localized extension is the norm
-of its centre ideal. -/
-theorem chosenFinitePlaceLocalized_residueField_card
-    {K L : Type}
-    [Field K] [NumberField K]
-    [Field L] [NumberField L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    (v : HeightOneSpectrum (𝓞 K)) :
-    let W := finitePlaceExtensionCentre
-      (K := K) (L := L) v (chosenFinitePlaceExtension (L := L) v)
-    Nat.card 𝓀[ChosenFinitePlaceLocalizedCompletion (K := K) (L := L) v] =
-      Nat.card (𝓞 L ⧸ W.asIdeal) := by
-  exact Nat.card_congr (chosenFinitePlaceLocalizedResidueEquiv
-    (K := K) (L := L) v).symm.toEquiv
+
 
 /-- The residue field of the absolute-value completion at a rational finite
 place has cardinality equal to the natural prime represented by that place. -/

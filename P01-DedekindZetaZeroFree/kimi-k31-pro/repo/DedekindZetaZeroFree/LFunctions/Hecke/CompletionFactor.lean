@@ -19,7 +19,7 @@ private lemma differentiableAt_Gammaℂ {s : ℂ} (hs : 0 < s.re) :
   change DifferentiableAt ℂ (fun z => 2 * (2 * (Real.pi : ℂ)) ^ (-z) * Complex.Gamma z) s
   refine DifferentiableAt.mul (DifferentiableAt.mul (differentiableAt_const (2 : ℂ)) ?_)
     (Complex.differentiableAt_Gamma s ?_)
-  · exact (differentiableAt_id.neg).const_cpow
+  · exact differentiableAt_id.neg.const_cpow
       (Or.inl (mul_ne_zero two_ne_zero (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero)))
   · intro m h
     have hsre : 0 < s.re := hs
@@ -65,8 +65,7 @@ theorem differentiableOn_heckeCompletionFactor (F : Type*) [Field F] [NumberFiel
 theorem differentiableOn_inv_heckeCompletionFactor (F : Type*) [Field F] [NumberField F]
     (𝔪 : Ideal (𝓞 F)) (h𝔪 : 𝔪 ≠ ⊥) :
     DifferentiableOn ℂ (fun s => (heckeCompletionFactor F 𝔪 s)⁻¹)
-      {s : ℂ | 0 < s.re} := by
-  exact (differentiableOn_heckeCompletionFactor F 𝔪 h𝔪).inv
+      {s : ℂ | 0 < s.re} := (differentiableOn_heckeCompletionFactor F 𝔪 h𝔪).inv
     (fun s hs => heckeCompletionFactor_ne_zero F 𝔪 h𝔪 s hs)
 
 theorem hasSum_div_heckeCompletionFactor (F : Type*) [Field F] [NumberField F]

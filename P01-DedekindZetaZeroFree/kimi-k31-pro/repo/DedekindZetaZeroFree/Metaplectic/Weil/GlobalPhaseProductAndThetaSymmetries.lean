@@ -60,11 +60,7 @@ private theorem valued_algebraMap_adicCompletion
 private theorem mem_sIntegerRing_of_val (T : Finset (HeightOneSpectrum (𝓞 F))) {t : F}
     (h : ∀ v : HeightOneSpectrum (𝓞 F), v ∉ T → v.valuation F t ≤ 1) :
     t ∈ sIntegerRing F T := by
-  rw [mem_sIntegerRing_iff]
-  intro v hv
-  rw [IsDedekindDomain.HeightOneSpectrum.mem_adicCompletionIntegers,
-    valued_algebraMap_adicCompletion]
-  exact h v hv
+  aesop
 
 private theorem chirp_diagonal_eq_one
     (T : Finset (HeightOneSpectrum (𝓞 F))) (hT : PoissonS.ContainsDifferent F T)
@@ -409,7 +405,7 @@ private theorem globalGamma_odd (v : HeightOneSpectrum (𝓞 F))
     haveI : CharP (OddLocalResidue v) 2 := ringChar.of_eq hc
     exact CharP.cast_eq_zero _ 2
   have hq : (2 : 𝓞 F ⧸ v.asIdeal) = 0 := e.injective (by simpa only [map_ofNat, map_zero] using hz)
-  exact hv ((Ideal.Quotient.eq_zero_iff_mem).mp hq)
+  exact hv (Ideal.Quotient.eq_zero_iff_mem.mp hq)
 
 theorem finiteGamma_diagonal_eq_one_of_good (A : SArithmeticData F) (v : HeightOneSpectrum (𝓞 F))
     (hodd : (2 : 𝓞 F) ∉ v.asIdeal) (hself : ResidueTrace.IsSelfDual v)
@@ -442,8 +438,7 @@ theorem finiteGamma_diagonal_cofinite (A : SArithmeticData F) (a : Fˣ) :
 theorem globalQuadraticGamma_hasFiniteMulSupport (A : SArithmeticData F) (a : Fˣ) :
     Function.HasFiniteMulSupport (A.globalQuadraticGamma a) := by
   have hf : Function.HasFiniteMulSupport (fun v : HeightOneSpectrum (𝓞 F) =>
-      A.finiteGamma v (Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom a)) := by
-    exact Filter.eventually_cofinite.mp (finiteGamma_diagonal_cofinite A a)
+      A.finiteGamma v (Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom a)) := Filter.eventually_cofinite.mp (finiteGamma_diagonal_cofinite A a)
   change (Function.mulSupport (A.globalQuadraticGamma a)).Finite
   apply (hf.image (Sum.inr : HeightOneSpectrum (𝓞 F) → QuadraticGlobalPlace F)).subset
   intro v hv

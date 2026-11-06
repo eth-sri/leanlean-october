@@ -26,21 +26,20 @@ private lemma energy_gram_identity {α β : Type*} (R : Finset α) (S : Finset �
       ∑ b ∈ S, ∑ d ∈ S, (starRingEnd ℂ) (lam b) * lam d *
         (∑ a ∈ R, (w a : ℂ) * k d a * (starRingEnd ℂ) (k b a)) := by
   rw [Complex.ofReal_sum]
-  trans ∑ a ∈ R, (w a : ℂ) * ((‖∑ b ∈ S, lam b * k b a‖ : ℂ)) ^ 2
-  · exact Finset.sum_congr rfl (fun a _ => by rw [Complex.ofReal_mul, Complex.ofReal_pow])
+  trans ∑ a ∈ R, (w a : ℂ) * (‖∑ b ∈ S, lam b * k b a‖ : ℂ) ^ 2
+  · simp_all
   trans ∑ a ∈ R, ∑ b ∈ S, ∑ d ∈ S,
       (w a : ℂ) * ((starRingEnd ℂ) (lam b) * (starRingEnd ℂ) (k b a)) * (lam d * k d a)
   · refine Finset.sum_congr rfl (fun a _ => ?_)
     have hconj : (starRingEnd ℂ) (∑ b ∈ S, lam b * k b a) =
         ∑ b ∈ S, (starRingEnd ℂ) (lam b) * (starRingEnd ℂ) (k b a) := by
-      rw [map_sum]
-      exact Finset.sum_congr rfl (fun b _ => map_mul _ _ _)
-    calc (w a : ℂ) * ((‖∑ b ∈ S, lam b * k b a‖ : ℂ)) ^ 2
+      simp_all
+    calc (w a : ℂ) * (‖∑ b ∈ S, lam b * k b a‖ : ℂ) ^ 2
         = (w a : ℂ) * (starRingEnd ℂ) (∑ b ∈ S, lam b * k b a) * (∑ b ∈ S, lam b * k b a) := by
           rw [← Complex.ofReal_pow, ← Complex.normSq_eq_norm_sq, Complex.normSq_eq_conj_mul_self]
           ring
       _ = (w a : ℂ) * (∑ b ∈ S, (starRingEnd ℂ) (lam b) * (starRingEnd ℂ) (k b a)) *
-            (∑ d ∈ S, lam d * k d a) := by rw [hconj]
+            (∑ d ∈ S, lam d * k d a) := by simp_all
       _ = ∑ b ∈ S, ∑ d ∈ S,
             (w a : ℂ) * ((starRingEnd ℂ) (lam b) * (starRingEnd ℂ) (k b a)) * (lam d * k d a) :=
           mul_sum_sum_eq _ _ _ _
@@ -52,7 +51,7 @@ private lemma energy_gram_identity {α β : Type*} (R : Finset α) (S : Finset �
     · refine Finset.sum_congr rfl (fun b _ => Finset.sum_congr rfl (fun d _ => ?_))
       trans ∑ a ∈ R, ((starRingEnd ℂ) (lam b) * lam d) *
             ((w a : ℂ) * k d a * (starRingEnd ℂ) (k b a))
-      · exact Finset.sum_congr rfl (fun a _ => by ring)
+      · grind
       · rw [← Finset.mul_sum]
 
 private lemma gram_form_bound {β : Type*} (S : Finset β) (M : β → β → ℂ) (v : β → ℂ)
@@ -65,14 +64,14 @@ private lemma gram_form_bound {β : Type*} (S : Finset β) (M : β → β → �
       ≤ ∑ b ∈ S, ∑ d ∈ S, ‖v b‖ * ‖v d‖ * ‖M d b‖ := by
     refine (norm_sum_le _ _).trans (Finset.sum_le_sum (fun b hb => ?_))
     refine (norm_sum_le _ _).trans (Finset.sum_le_sum (fun d hd => ?_))
-    rw [norm_mul, norm_mul, Complex.norm_conj]
+    simp_all
   have h2 : ∑ b ∈ S, ∑ d ∈ S, ‖v b‖ * ‖v d‖ * ‖M d b‖
       ≤ ∑ b ∈ S, ∑ d ∈ S, ‖v b‖ * ‖v d‖ * (if d = b then D else H) := by
     refine Finset.sum_le_sum (fun b hb => Finset.sum_le_sum (fun d hd => ?_))
     refine mul_le_mul_of_nonneg_left ?_ (by positivity)
     by_cases h : d = b
-    · rw [h, if_pos rfl]; exact hdiag b hb
-    · rw [if_neg h]; exact hoff d hd b hb h
+    · simp_all
+    · simp_all
   have hErase : ∑ b ∈ S, ∑ d ∈ S.erase b, ‖v b‖ * ‖v d‖ ≤ (∑ b ∈ S, ‖v b‖) ^ 2 := by
     have hsub : ∀ b ∈ S, ∑ d ∈ S.erase b, ‖v b‖ * ‖v d‖ ≤ ∑ d ∈ S, ‖v b‖ * ‖v d‖ := by
       intro b hb
@@ -85,7 +84,7 @@ private lemma gram_form_bound {β : Type*} (S : Finset β) (M : β → β → �
   have hCS : (∑ b ∈ S, ‖v b‖) ^ 2 ≤ (S.card : ℝ) * ∑ b ∈ S, ‖v b‖ ^ 2 := by
     have h := Finset.sum_mul_sq_le_sq_mul_sq S (fun b => ‖v b‖) (fun _ => (1:ℝ))
     simp only [mul_one, one_pow, Finset.sum_const, nsmul_eq_mul] at h
-    linarith [h]
+    grind
   have hsplit : ∀ b ∈ S, ∑ d ∈ S, ‖v b‖ * ‖v d‖ * (if d = b then D else H)
       = ‖v b‖ * ‖v b‖ * D + ∑ d ∈ S.erase b, ‖v b‖ * ‖v d‖ * H := by
     intro b hb
@@ -93,18 +92,14 @@ private lemma gram_form_bound {β : Type*} (S : Finset β) (M : β → β → �
     have hs : ∑ x ∈ S.erase b, ‖v b‖ * ‖v x‖ * (if x = b then D else H)
         = ∑ x ∈ S.erase b, ‖v b‖ * ‖v x‖ * H :=
       Finset.sum_congr rfl (fun d hd => by
-        have hdb : d ≠ b := (Finset.mem_erase.mp hd).1
-        simp [hdb])
-    rw [hs, if_pos rfl]
-    ring
+        simp_all)
+    grind
   have hsum : ∑ b ∈ S, ∑ d ∈ S, ‖v b‖ * ‖v d‖ * (if d = b then D else H)
       = D * ∑ b ∈ S, ‖v b‖ ^ 2 + H * ∑ b ∈ S, ∑ d ∈ S.erase b, ‖v b‖ * ‖v d‖ := by
     rw [Finset.sum_congr rfl hsplit, Finset.sum_add_distrib]
     congr 1
     · rw [← Finset.sum_mul]
-      have : ∑ b ∈ S, ‖v b‖ * ‖v b‖ = ∑ b ∈ S, ‖v b‖ ^ 2 :=
-        Finset.sum_congr rfl (fun b _ => by ring)
-      rw [this]; ring
+      grind
     · have h : ∀ b ∈ S, ∑ d ∈ S.erase b, ‖v b‖ * ‖v d‖ * H
           = (∑ d ∈ S.erase b, ‖v b‖ * ‖v d‖) * H :=
         fun b _ => (Finset.sum_mul (S.erase b) (fun d => ‖v b‖ * ‖v d‖) H).symm
@@ -118,10 +113,7 @@ private lemma gram_form_bound {β : Type*} (S : Finset β) (M : β → β → �
       _ ≤ D * ∑ b ∈ S, ‖v b‖ ^ 2 + H * ((S.card : ℝ) * ∑ b ∈ S, ‖v b‖ ^ 2) :=
             add_le_add le_rfl (mul_le_mul_of_nonneg_left hCS hH)
       _ = (D + H * (S.card : ℝ)) * ∑ b ∈ S, ‖v b‖ ^ 2 := by ring
-  calc ‖∑ b ∈ S, ∑ d ∈ S, (starRingEnd ℂ) (v b) * v d * M d b‖
-      ≤ ∑ b ∈ S, ∑ d ∈ S, ‖v b‖ * ‖v d‖ * ‖M d b‖ := h1
-    _ ≤ ∑ b ∈ S, ∑ d ∈ S, ‖v b‖ * ‖v d‖ * (if d = b then D else H) := h2
-    _ ≤ (D + H * (S.card : ℝ)) * ∑ b ∈ S, ‖v b‖ ^ 2 := h3
+  grind
 
 theorem finite_weighted_gram_bound {α β : Type*}
     (R : Finset α) (S : Finset β) (w : α → ℝ) (k : β → α → ℂ) (lam : β → ℂ)

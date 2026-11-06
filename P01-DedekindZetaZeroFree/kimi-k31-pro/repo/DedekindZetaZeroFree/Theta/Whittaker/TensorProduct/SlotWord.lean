@@ -26,7 +26,7 @@ theorem independent_slot_word {I : Type*} [DecidableEq I] {V : I → Type*}
       funext j
       by_cases hj : j = i
       · subst j; simp [y,hi]
-      · simp [List.mem_cons, hj, y, Function.update_of_ne hj]
+      · simp [List.mem_cons, hj, y]
     rw [he, ih hl' y]
     change T (Function.update x i (L i (x i))) _ = _
     rw [h]

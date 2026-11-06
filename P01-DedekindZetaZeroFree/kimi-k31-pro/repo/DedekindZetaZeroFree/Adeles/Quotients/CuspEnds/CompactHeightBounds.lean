@@ -15,7 +15,7 @@ theorem compact_embedding_height_bounds
     ∃ a b : ℝ, T < a ∧
       ∀ z, e z ∈ K → a ≤ z.2.val ∧ z.2.val ≤ b := by
   have himage : e '' (e ⁻¹' K) = K := Set.image_preimage_eq_of_subset hKr
-  have hc : IsCompact (e ⁻¹' K) := he.isCompact_iff.mpr (by rw [himage]; exact hK)
+  have hc : IsCompact (e ⁻¹' K) := he.isCompact_iff.mpr (by simp_all)
   have hcont : Continuous (fun z : Y × Set.Ioi T => z.2.val) :=
     continuous_subtype_val.comp continuous_snd
   by_cases hn : (e ⁻¹' K).Nonempty

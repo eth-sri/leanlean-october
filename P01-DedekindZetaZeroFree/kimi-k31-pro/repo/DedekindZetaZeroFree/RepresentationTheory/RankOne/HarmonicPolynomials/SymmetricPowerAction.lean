@@ -32,12 +32,12 @@ def S (g : ComplexSU2) (x : Fin 3 → ℂ) : Fin 3 → ℂ := (sphereMatrix g).m
 private theorem hopf_top00 (g : ComplexSU2) : (g : Matrix (Fin 2) (Fin 2) ℂ) 0 0 = star ((g : Matrix (Fin 2) (Fin 2) ℂ) 1 1) := by
   have h := congrArg (fun M : Matrix (Fin 2) (Fin 2) ℂ => M 1 1) (Matrix.specialUnitaryGroup.star_eq_adjugate g)
   simp only [Matrix.adjugate_fin_two, Matrix.star_eq_conjTranspose, Matrix.conjTranspose_apply,
-    Matrix.of_apply, Matrix.cons_val_one, Matrix.cons_val_zero, Matrix.head_cons] at h
+    Matrix.of_apply, Matrix.cons_val_one, Matrix.cons_val_zero] at h
   exact h.symm
 private theorem hopf_top01 (g : ComplexSU2) : (g : Matrix (Fin 2) (Fin 2) ℂ) 0 1 = -star ((g : Matrix (Fin 2) (Fin 2) ℂ) 1 0) := by
   have h := congrArg (fun M : Matrix (Fin 2) (Fin 2) ℂ => M 0 1) (Matrix.specialUnitaryGroup.star_eq_adjugate g)
   simp only [Matrix.adjugate_fin_two, Matrix.star_eq_conjTranspose, Matrix.conjTranspose_apply,
-    Matrix.of_apply, Matrix.cons_val_one, Matrix.cons_val_zero, Matrix.head_cons] at h
+    Matrix.of_apply, Matrix.cons_val_one, Matrix.cons_val_zero] at h
   simpa only [neg_neg] using congrArg Neg.neg h.symm
 
 private theorem hopf_Q_injective : Function.Injective Q := by
@@ -62,7 +62,7 @@ theorem Q_S (g : ComplexSU2) (x : Fin 3 → ℂ) :
   ext i j : 2
   fin_cases i <;> fin_cases j <;>
     simp [Q, S, sphereMatrix, Matrix.mul_apply, Matrix.mulVec, dotProduct,
-      Fin.sum_univ_two, Fin.sum_univ_succ, Matrix.star_eq_conjTranspose,
+      Fin.sum_univ_succ, Matrix.star_eq_conjTranspose,
       hopf_top00, hopf_top01] <;>
     apply Complex.ext <;>
     simp [Complex.add_re, Complex.add_im, Complex.sub_re, Complex.sub_im,
@@ -79,7 +79,7 @@ theorem compactSphereCoordinate_mul (k g : ComplexSU2) :
   funext i
   fin_cases i <;>
     simp [compactSphereCoordinate, S, sphereMatrix, hmul, Matrix.mul_apply,
-      Matrix.mulVec, dotProduct, Fin.sum_univ_two, Fin.sum_univ_succ,
+      Matrix.mulVec, dotProduct, Fin.sum_univ_succ,
       hopf_top00, hopf_top01, ← Complex.normSq_eq_norm_sq, Complex.normSq_apply] <;>
     apply Complex.ext <;>
     simp [Complex.add_re, Complex.add_im, Complex.sub_re, Complex.sub_im,
@@ -128,7 +128,7 @@ theorem coefficientAction_mul (g h : ComplexSU2) (p : Polynomial) :
     intro i
     simp only [coefficientAction, AlgHom.comp_apply, MvPolynomial.aeval_X, map_sum,
       map_mul, MvPolynomial.aeval_C, sphereMatrix_mul, Matrix.mul_apply]
-    simp only [Finset.mul_sum, Finset.sum_mul, ← mul_assoc, ← MvPolynomial.C_mul,
+    simp only [Finset.mul_sum, ← mul_assoc, ← MvPolynomial.C_mul,
       ← map_sum]
     simp only [MvPolynomial.algebraMap_eq, map_sum, Finset.sum_mul, ← MvPolynomial.C_mul]
     rw [Finset.sum_comm]
@@ -163,7 +163,7 @@ private theorem polynomialLaplacian_coefficientAction (g : ComplexSU2)
   change (∑ j, MvPolynomial.pderiv j (MvPolynomial.pderiv j (coefficientAction g p))) =
     ∑ j, coefficientAction g (MvPolynomial.pderiv j (MvPolynomial.pderiv j p))
   simp only [pderiv_coefficientAction, map_sum, MvPolynomial.pderiv_C_mul]
-  simp only [pderiv_coefficientAction, Finset.mul_sum, ← mul_assoc, ← MvPolynomial.C_mul]
+  simp only [Finset.mul_sum, ← mul_assoc, ← MvPolynomial.C_mul]
   rw [Finset.sum_comm]
   apply Finset.sum_congr rfl
   intro i hi
@@ -188,7 +188,7 @@ private theorem su2_row_norm (k : ComplexSU2) :
   have hu := Matrix.mem_unitaryGroup_iff.mp (Matrix.specialUnitaryGroup_le_unitaryGroup k.property)
   have h := congrArg (fun A : Matrix (Fin 2) (Fin 2) ℂ => (A 1 1).re) hu
   simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply,
-    Complex.mul_re, Complex.star_def, Complex.normSq_apply] at h
+    Complex.mul_re] at h
   nlinarith
 
 private theorem sphereMatrix_orthogonal (g : ComplexSU2) (i k : Fin 3) :
@@ -328,7 +328,7 @@ private theorem triangle_border (n : ℕ) (f : ℤ → ℂ) :
         f (a + 1) + ∑ b ∈ Finset.range (n + 1 - a), f ((a : ℤ) - b) := by
     have ha' := Finset.mem_range.mp ha
     rw [show n + 2 - (a + 1) + 1 = (n + 1 - a) + 1 by omega, Finset.sum_range_succ']
-    simp only [Nat.cast_add, Nat.cast_one, sub_zero]
+    simp only [Nat.cast_add, Nat.cast_one]
     simp_rw [show ∀ b : ℕ, ((a : ℤ) + 1 - (b + 1)) = (a : ℤ) - b by intro b; push_cast; ring]
     simp [add_comm]
   rw [Finset.sum_congr rfl h, Finset.sum_add_distrib]

@@ -69,7 +69,7 @@ theorem exists_common_compositum {E K : ClosedSubgroup G} {ι : Type v}
   classical
   induction s using Finset.induction_on with
   | empty =>
-      exact ⟨M, le_rfl, by simp⟩
+      grind
   | @insert i s hi ih =>
       rcases ih with ⟨P, hPM, hPF⟩
       let Q := P.compositum (F i)

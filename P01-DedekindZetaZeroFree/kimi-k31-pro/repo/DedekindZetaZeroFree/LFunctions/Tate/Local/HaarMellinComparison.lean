@@ -24,12 +24,10 @@ local instance completionBorel (v : HeightOneSpectrum (𝓞 F)) :
 theorem units_val_isEmbedding : Topology.IsEmbedding (Units.val : (SLocalProduct F S)ˣ → SLocalProduct F S) := by
   let e : (SLocalProduct F S)ˣ ≃ₜ
       ((InfiniteAdeleRing F)ˣ × ((v : S) → v.val.adicCompletion F)ˣ) := Homeomorph.prodUnits
-  have ha : Topology.IsEmbedding (Units.val : (InfiniteAdeleRing F)ˣ → InfiniteAdeleRing F) := by
-    exact (Topology.IsEmbedding.piMap (fun _ => Units.isEmbedding_val₀)).comp
+  have ha : Topology.IsEmbedding (Units.val : (InfiniteAdeleRing F)ˣ → InfiniteAdeleRing F) := (Topology.IsEmbedding.piMap (fun _ => Units.isEmbedding_val₀)).comp
       ContinuousMulEquiv.piUnits.toHomeomorph.isEmbedding
   have hb : Topology.IsEmbedding
-      (Units.val : ((v : S) → v.val.adicCompletion F)ˣ → ((v : S) → v.val.adicCompletion F)) := by
-    exact (Topology.IsEmbedding.piMap (fun _ => Units.isEmbedding_val₀)).comp
+      (Units.val : ((v : S) → v.val.adicCompletion F)ˣ → ((v : S) → v.val.adicCompletion F)) := (Topology.IsEmbedding.piMap (fun _ => Units.isEmbedding_val₀)).comp
       ContinuousMulEquiv.piUnits.toHomeomorph.isEmbedding
   exact (ha.prodMap hb).comp e.isEmbedding
 local instance unitsBorel : BorelSpace (SLocalProduct F S)ˣ := by
@@ -159,7 +157,7 @@ theorem canonicalUnitsMeasure_left (S : Finset (HeightOneSpectrum (𝓞 F)))
       · change (g⁻¹ * u).val = x
         simp only [Units.val_mul]
         rw [he]; simp
-  rw [hpre, withDensity_apply _ (by exact (ev.measurableSet_image.mpr hs).preimage (by fun_prop)),
+  rw [hpre, withDensity_apply _ ((ev.measurableSet_image.mpr hs).preimage (by fun_prop)),
     withDensity_apply _ (ev.measurableSet_image.mpr hs)]
   have hmul (x : SLocalProduct F S) : D (g.val * x) =
       (ENNReal.ofReal (TateTensorProfile.modulus F S g.val))⁻¹ * D x := by

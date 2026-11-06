@@ -139,7 +139,7 @@ def ChartFactorization (A : Localizers F ζ hζ U R P H K hK) : Prop :=
       KPCubeGraphRellich.smoothJet n a f hf + KPCubeGraphRellich.smoothJet n a g hg := by
   open KPCubeGraphRellich KPCubeAverage in
     rw [smoothJet, smoothJet, smoothJet, WithLp.ext_iff]
-    simp only [WithLp.ofLp_toLp, WithLp.ofLp_add, Prod.mk_add_mk]
+    simp only [WithLp.ofLp_add, Prod.mk_add_mk]
     refine Prod.ext ?_ ?_
     · rw [← MemLp.toLp_add (smooth_memLp n a f hf) (smooth_memLp n a g hg)]
     · rw [← WithLp.toLp_add, WithLp.ext_iff, WithLp.ofLp_toLp]
@@ -160,7 +160,7 @@ def ChartFactorization (A : Localizers F ζ hζ U R P H K hK) : Prop :=
       c • KPCubeGraphRellich.smoothJet n a f hf := by
   open KPCubeGraphRellich KPCubeAverage in
     rw [smoothJet, smoothJet, WithLp.ext_iff]
-    simp only [WithLp.ofLp_toLp, WithLp.ofLp_smul, Prod.smul_mk]
+    simp only [WithLp.ofLp_smul, Prod.smul_mk]
     refine Prod.ext ?_ ?_
     · rw [← MemLp.toLp_const_smul c (smooth_memLp n a f hf)]
     · rw [← WithLp.toLp_smul, WithLp.ext_iff, WithLp.ofLp_toLp]

@@ -233,7 +233,7 @@ theorem shifted_kernel_contDiffOn
   intro z hz
   simp only [Function.comp_apply]
   rw [affineEll_toAffine F z hz]
-  simp only [Complex.real_smul, Complex.ofReal_mul]
+  simp only [Complex.real_smul]
 
 end DedekindZetaZeroFree.KPSpatialSmoothing.ArchKernel.RightConvolution
 

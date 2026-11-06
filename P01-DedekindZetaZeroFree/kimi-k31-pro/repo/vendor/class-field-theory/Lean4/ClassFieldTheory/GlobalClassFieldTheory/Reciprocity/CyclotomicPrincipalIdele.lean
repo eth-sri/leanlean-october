@@ -87,124 +87,9 @@ noncomputable local instance
         simp only [map_mul]
         exact mul_comm _ _ }
 
-/-- Every finite subextension of the rational cyclotomic closure is
-contained in one of its internal finite cyclotomic levels.  The proof
-uses finite generation of the intermediate field together with the
-divisibility-directed presentation of `ℚ(μ∞)`. -/
-theorem finiteSubfieldOfRationalCyclotomicField_le_level
-    (E :
-      IntermediateField ℚ
-        KummerTheory.rationalCyclotomicField)
-    [FiniteDimensional ℚ E] :
-    ∃ n : ℕ+,
-      E ≤ KummerTheory.rationalCyclotomicLevel n := by
-  classical
-  have hdirected :
-      Directed (· ≤ ·)
-        (KummerTheory.rationalCyclotomicLevel :
-          ℕ+ →
-            IntermediateField ℚ
-              KummerTheory.rationalCyclotomicField) := by
-    intro m n
-    refine ⟨m * n, ?_, ?_⟩
-    · apply KummerTheory.rationalCyclotomicLevel_mono
-      exact ⟨(n : ℕ), rfl⟩
-    · apply KummerTheory.rationalCyclotomicLevel_mono
-      exact ⟨(m : ℕ), by simp [Nat.mul_comm]⟩
-  have helement :
-      ∀ x : KummerTheory.rationalCyclotomicField,
-        ∃ n : ℕ+,
-          x ∈ KummerTheory.rationalCyclotomicLevel n := by
-    intro x
-    have hx :
-        x ∈
-          ⋃ n : ℕ+,
-            (KummerTheory.rationalCyclotomicLevel n :
-              Set KummerTheory.rationalCyclotomicField) := by
-      rw [← IntermediateField.coe_iSup_of_directed hdirected,
-        KummerTheory.iSup_rationalCyclotomicLevel]
-      exact Set.mem_univ x
-    rcases Set.mem_iUnion.mp hx with ⟨n, hn⟩
-    exact ⟨n, hn⟩
-  let levelIndex :
-      KummerTheory.rationalCyclotomicField → ℕ+ :=
-    fun x => Classical.choose (helement x)
-  have hlevelIndex
-      (x : KummerTheory.rationalCyclotomicField) :
-      x ∈
-        KummerTheory.rationalCyclotomicLevel
-          (levelIndex x) :=
-    Classical.choose_spec (helement x)
-  have hmoduleFinite : E.toSubmodule.FG :=
-    Submodule.FG.of_finite
-  have hfg : E.FG :=
-    E.fg_of_fg_toSubalgebra
-      (Subalgebra.fg_of_fg_toSubmodule hmoduleFinite)
-  obtain ⟨s, hsFinite, hsE⟩ :=
-    IntermediateField.fg_def.mp hfg
-  let t : Finset KummerTheory.rationalCyclotomicField :=
-    hsFinite.toFinset
-  let N : ℕ :=
-    ∏ x ∈ t, (levelIndex x : ℕ)
-  have hNpos : 0 < N := by
-    dsimp only [N]
-    exact Finset.prod_pos fun x _ => (levelIndex x).property
-  let n : ℕ+ := ⟨N, hNpos⟩
-  refine ⟨n, ?_⟩
-  rw [← hsE, IntermediateField.adjoin_le_iff]
-  intro x hx
-  have hxt : x ∈ t := by
-    simpa only [t, Set.Finite.mem_toFinset] using hx
-  have hdiv :
-      (levelIndex x : ℕ) ∣ (n : ℕ) := by
-    change
-      (levelIndex x : ℕ) ∣
-        ∏ y ∈ t, (levelIndex y : ℕ)
-    exact
-      Finset.dvd_prod_of_mem
-        (fun y => (levelIndex y : ℕ)) hxt
-  exact
-    KummerTheory.rationalCyclotomicLevel_mono hdiv
-      (hlevelIndex x)
 
-/-- Every finite Galois coordinate of the rational cyclotomic
-`ZHat`-extension has a canonical image inside a finite internal
-cyclotomic level.  The image field is retained explicitly so that
-restriction of actual global Artin automorphisms can be applied in a
-scalar tower. -/
-theorem finiteSubfieldOfRationalCyclotomicZHatField_mapsIntoLevel
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
-    ∃ (n : ℕ+)
-        (F :
-          IntermediateField ℚ
-            KummerTheory.rationalCyclotomicField)
-        (_e : E ≃ₐ[ℚ] F),
-      F ≤ KummerTheory.rationalCyclotomicLevel n := by
-  let hfull :
-      rationalCyclotomicZHatField ≤
-        KummerTheory.rationalCyclotomicField :=
-    IntermediateField.lift_le
-      KummerTheory.rationalCyclotomicTorsionFixedField
-  let i :
-      rationalCyclotomicZHatField →ₐ[ℚ]
-        KummerTheory.rationalCyclotomicField :=
-    IntermediateField.inclusion hfull
-  let F :
-      IntermediateField ℚ
-        KummerTheory.rationalCyclotomicField :=
-    (E : IntermediateField ℚ
-      rationalCyclotomicZHatField).map i
-  let e : E ≃ₐ[ℚ] F :=
-    IntermediateField.equivMap
-      (E : IntermediateField ℚ
-        rationalCyclotomicZHatField) i
-  let _ : FiniteDimensional ℚ F :=
-    e.toLinearEquiv.finiteDimensional
-  obtain ⟨n, hn⟩ :=
-    finiteSubfieldOfRationalCyclotomicField_le_level F
-  exact ⟨n, F, e, hn⟩
+
+
 
 /-- Restriction to the lifted torsion-free cyclotomic field commutes with its
 canonical inclusion into the full rational cyclotomic field.  Keeping this
@@ -820,37 +705,7 @@ theorem
   rationalCyclotomicZHatIdeleValue_eq_finitePart
     (IdeleGroup.principalIdele ℚ x)
 
-/-- At a finite cyclotomic layer, the Artin image of the finite part
-of a rational idele is exactly the finite product of the chosen local
-Artin symbols. -/
-theorem
-    restrictNormalHom_rationalCyclotomicZHatGlobalArtin_finitePart
-    (a : IdeleGroup ℚ)
-    (E :
-      FiniteGaloisIntermediateField
-        ℚ rationalCyclotomicZHatField) :
-    letI : NumberField E :=
-      NumberField.of_module_finite ℚ E
-    letI : IsAbelianGalois ℚ E :=
-      IsAbelianGalois.of_algHom E.toIntermediateField.val
-    AlgEquiv.restrictNormalHom E
-        (rationalCyclotomicZHatGlobalArtin
-          (rationalIdeleFinitePart a)) =
-      ∏ᶠ v : HeightOneSpectrum (𝓞 ℚ),
-        chosenFinitePlaceArtinMonoidHom
-          (K := ℚ) (L := E) v
-          (IdeleGroup.finiteComponent v a) := by
-  let hE : NumberField E :=
-    NumberField.of_module_finite ℚ E
-  let hAbelian : IsAbelianGalois ℚ E :=
-    IsAbelianGalois.of_algHom E.toIntermediateField.val
-  let _ : NumberField E := hE
-  let _ : IsAbelianGalois ℚ E := hAbelian
-  exact
-    (restrictNormalHom_rationalCyclotomicZHatGlobalArtin_of_structures
-      (rationalIdeleFinitePart a) E hE hAbelian).trans
-      (globalArtinMonoidHom_rationalIdeleFinitePart
-        (L := E) a)
+
 
 /-- The unnormalized value on a principal idele over a number field
 is the rational cyclotomic value of the finite part of its field-norm

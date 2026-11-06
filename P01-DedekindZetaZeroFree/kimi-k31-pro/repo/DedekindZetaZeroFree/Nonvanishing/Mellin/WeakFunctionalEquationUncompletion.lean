@@ -1,6 +1,7 @@
 module
 
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
+public import Mathlib.Tactic.FunProp
 
 @[expose] public section
 
@@ -15,8 +16,8 @@ theorem weakFE_uncompletion (P : WeakFEPair ℂ) (hk : P.k = 1)
       ∀ s : ℂ, s ≠ 0 → s ≠ 1 → f s = q s * P.Λ s := by
   have hd : DifferentiableOn ℂ (fun s : ℂ => P.ε / (1 - s)) ({1}ᶜ : Set ℂ) := by
     refine DifferentiableOn.div ?_ ?_ ?_
-    · exact differentiableOn_const P.ε
-    · exact (differentiableOn_const 1).sub differentiableOn_id
+    · simp_all
+    · fun_prop
     · intro x hx
       simp only [Set.mem_compl_iff, Set.mem_singleton_iff] at hx
       exact fun h => hx (sub_eq_zero.mp h).symm
@@ -28,7 +29,7 @@ theorem weakFE_uncompletion (P : WeakFEPair ℂ) (hk : P.k = 1)
   have h3 : DifferentiableOn ℂ (fun s => q s * (P.ε / (1 - s)) * P.g₀) ({1}ᶜ : Set ℂ) :=
     ((hq.differentiableOn.mono (Set.subset_univ _)).mul hd).mul_const _
   constructor
-  · exact (h1.sub h2).sub h3
+  · simp_all
   · intro s hs0 hs1
     dsimp only
     rw [WeakFEPair.Λ, hk]
@@ -39,6 +40,6 @@ theorem weakFE_uncompletion (P : WeakFEPair ℂ) (hk : P.k = 1)
     have e2 : q s * (1 / s * P.f₀) = u s * P.f₀ := by rw [← mul_assoc, hqs]
     have e3 : q s * (P.ε / (1 - s) * P.g₀) = q s * (P.ε / (1 - s)) * P.g₀ := by
       rw [mul_assoc]
-    rw [e2, e3]
+    simp_all
 
 end DedekindZetaZeroFree.AbelianQuotient

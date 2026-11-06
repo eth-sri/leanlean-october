@@ -36,13 +36,11 @@ theorem sigmaTwo_cocycle (v : KPHilbert.Place F) (g h k : LocalGL2 F v) :
     (fun a ha => hSt a _ (by simp)) g h k
 
 @[simp] theorem sigmaTwo_one_left (v : KPHilbert.Place F) (g : LocalGL2 F v) :
-    sigmaTwo F ζ hζ v 1 g = 1 := by
-  exact KubotaCocycleAlgebra.sigmaTwo_one_left _ _ _
+    sigmaTwo F ζ hζ v 1 g = 1 := KubotaCocycleAlgebra.sigmaTwo_one_left _ _ _
     (KPHilbert.B3_laws F ζ hζ v).1 (KPHilbert.B3_laws F ζ hζ v).2.1 g
 
 @[simp] theorem sigmaTwo_one_right (v : KPHilbert.Place F) (g : LocalGL2 F v) :
-    sigmaTwo F ζ hζ v g 1 = 1 := by
-  exact KubotaCocycleAlgebra.sigmaTwo_one_right _ _ _
+    sigmaTwo F ζ hζ v g 1 = 1 := KubotaCocycleAlgebra.sigmaTwo_one_right _ _ _
     (KPHilbert.B3_laws F ζ hζ v).1 (KPHilbert.B3_laws F ζ hζ v).2.1 g
 
 structure CubicGL2Raw (F : Type) [Field F] [NumberField F] (ζ : F)
@@ -194,8 +192,7 @@ private theorem sixthExponent_spec (z : rootsOfUnity 6 F) :
 
 private theorem complexSixthGenerator_primitive :
     IsPrimitiveRoot (complexSixthGenerator : ℂˣ) 6 :=
-  IsPrimitiveRoot.coe_units_iff.mp (by
-    exact Complex.isPrimitiveRoot_exp 6 (by decide))
+  IsPrimitiveRoot.coe_units_iff.mp (Complex.isPrimitiveRoot_exp 6 (by decide))
 
 theorem coefficientValue_one : coefficientValue F ζ hζ 1 = 1 := by
   have he : sixthExponent F ζ hζ 1 = 0 :=

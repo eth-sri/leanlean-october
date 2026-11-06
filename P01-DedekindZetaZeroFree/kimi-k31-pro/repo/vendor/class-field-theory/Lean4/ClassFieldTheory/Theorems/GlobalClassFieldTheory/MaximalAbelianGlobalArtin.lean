@@ -2,6 +2,7 @@ module
 
 public import ClassFieldTheory.Definitions.GlobalClassFieldTheory.IsMaximalAbelianGlobalArtin
 public import ClassFieldTheory.Theorems.GlobalClassFieldTheory.TopologicalGlobalReciprocity
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -57,9 +58,7 @@ theorem maximalAbelianGlobalArtin
     exact ⟨x, rfl⟩
   · change artin.toMonoidHom.ker = H
     change (e.toMonoidHom.comp (QuotientGroup.mk' H)).ker = H
-    rw [MonoidHom.ker_comp_of_injective (QuotientGroup.mk' H) e.toMonoidHom
-      e.injective]
-    exact QuotientGroup.ker_mk' H
+    norm_num
 
 end ClassFieldTheory
 

@@ -117,7 +117,7 @@ private lemma hemisphere_compact (north : Bool) :
     IsCompact {x : Ambient | ‖x‖ = 1 ∧ 0 ≤ hemisphereSign north * x 2} := by
   have hs : {x : Ambient | ‖x‖ = 1} = Metric.sphere (0 : Ambient) 1 := by
     ext x
-    simp [Metric.mem_sphere, dist_zero_right]
+    simp
   rw [show {x : Ambient | ‖x‖ = 1 ∧ 0 ≤ hemisphereSign north * x 2} =
     {x | ‖x‖ = 1} ∩ {x | 0 ≤ hemisphereSign north * x 2} from rfl, hs]
   exact (isCompact_sphere (0 : Ambient) 1).inter_right
@@ -351,7 +351,7 @@ private lemma rt_radial_rotation (F : Sphere → ℂ) (hF : IsSphereSmooth F)
   have hs : rotationVector i (t • x) = t • rotationVector i x := by
     apply PiLp.ext
     intro j
-    simp only [rotationVector, PiLp.smul_apply, WithLp.toLp]
+    simp only [rotationVector, PiLp.smul_apply]
     split_ifs <;> simp
   simp only [radialExtension, dif_pos hx, rotationDeriv]
   rw [hs]

@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.Complex.ComplexHarmonicEigenvaluesAndSmoothness
 public import DedekindZetaZeroFree.RepresentationTheory.Smooth.CompactCasimirHarmonicTruncation
+public import Mathlib.Tactic.FunProp
 
 @[expose] public section
 
@@ -32,11 +33,9 @@ theorem exists_su2_probability_haar :
     ∃ μ : Measure ComplexSU2, μ.IsHaarMeasure ∧ IsProbabilityMeasure μ := by
   letI : CompactSpace ComplexSU2 := isCompact_iff_compactSpace.mp (by
     convert complexSU2_isCompact using 1
-    exact Subtype.range_coe.symm)
+    simp_all)
   letI : ContinuousInv ComplexSU2 := ⟨by
-    apply continuous_induced_rng.mpr
-    change Continuous (fun k : ComplexSU2 => star (k : Matrix (Fin 2) (Fin 2) ℂ))
-    exact continuous_star.comp continuous_subtype_val⟩
+    fun_prop⟩
   letI : IsTopologicalGroup ComplexSU2 := {}
   let K : TopologicalSpace.PositiveCompacts ComplexSU2 := ⊤
   refine ⟨Measure.haarMeasure K, inferInstance, ?_⟩

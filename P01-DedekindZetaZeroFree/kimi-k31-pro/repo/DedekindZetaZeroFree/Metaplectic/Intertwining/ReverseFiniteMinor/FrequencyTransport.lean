@@ -65,8 +65,8 @@ variable (F : Type) [Field F] [NumberField F]
     Multiplicative (LocalField F q) ≃* Multiplicative (LocalField F q) where
   toFun x := Multiplicative.ofAdd ((y : LocalField F q) * Multiplicative.toAdd x)
   invFun x := Multiplicative.ofAdd (((y⁻¹ : (LocalField F q)ˣ) : LocalField F q) * Multiplicative.toAdd x)
-  left_inv := by intro x; simp [← mul_assoc]
-  right_inv := by intro x; simp [← mul_assoc]
+  left_inv := by intro x; simp
+  right_inv := by intro x; simp
   map_mul' := by intro x z; simp [mul_add]
 
  local instance sectionAdd (ε : Sign) : AddCommGroup (sectionSpace S.borel P ε 0) :=

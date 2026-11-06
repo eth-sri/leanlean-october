@@ -83,20 +83,7 @@ theorem narrowFiniteLocalConductorExponent_le
   exact Nat.find_min'
     (exists_localDefiningExponent H.1 H.2 v) hn
 
-/-- The finite local conductor exponent vanishes exactly when the full
-finite-place integral-unit class subgroup lies in the subgroup. -/
-theorem narrowFiniteLocalConductorExponent_eq_zero_iff
-    (H : ConductorialSubgroup K)
-    (v : HeightOneSpectrum (𝓞 K)) :
-    H.narrowFiniteLocalConductorExponent v = 0 ↔
-      RayClass.localHigherUnitClassSubgroup v 0 ≤ H.1 := by
-  constructor
-  · intro hzero
-    simpa only [hzero] using
-      H.narrowFiniteLocalConductorExponent_spec v
-  · intro hlocal
-    exact Nat.eq_zero_of_le_zero
-      (H.narrowFiniteLocalConductorExponent_le v hlocal)
+
 
 end ConductorialSubgroup
 
@@ -321,17 +308,7 @@ theorem exists_definingModulus_finitePart_eq_narrowFiniteConductor
       Nat.eq_zero_of_le_zero hfinite_le
     exact hmzero.trans hfinite_zero.symm
 
-/-- The narrow finite conductor reverses inclusions of conductorial
-subgroups. -/
-theorem narrowFiniteConductor_antitone
-    (H J : ConductorialSubgroup K)
-    (hHJ : H.1 ≤ J.1) :
-    J.narrowFiniteConductor ≤ H.narrowFiniteConductor := by
-  intro v
-  rw [J.narrowFiniteConductor_apply_eq_narrowFiniteLocalConductorExponent v,
-    H.narrowFiniteConductor_apply_eq_narrowFiniteLocalConductorExponent v]
-  apply J.narrowFiniteLocalConductorExponent_le v
-  exact (H.narrowFiniteLocalConductorExponent_spec v).trans hHJ
+
 
 end ConductorialSubgroup
 

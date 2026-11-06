@@ -60,14 +60,7 @@ variable (F : Type) [Field F] [NumberField F]
   simpa only [smul_eq_mul] using
     Λ.property x (scalarCoordinateEquiv F ζ hζ q S P hP .plus v)
 
- def actual_scalar_reverse
-    (μ : Measure (LocalField F q)) [μ.IsAddHaarMeasure]
-    (hμ : μ ((valuation (LocalField F q)).integer : Set (LocalField F q)) = 1) :
-    scalarSections F ζ hζ q S P hP .minus →ₗ[ℂ]
-      scalarSections F ζ hζ q S P hP .plus :=
-  (scalarCoordinateEquiv F ζ hζ q S P hP .plus).toLinearMap.comp
-    ((actualCanonicalReverseMap F ζ hζ q S P μ hμ).toLinearMap.comp
-      (scalarCoordinateEquiv F ζ hζ q S P hP .minus).symm.toLinearMap)
+ 
 
 def full_jacquet_dual
     (ψ : Multiplicative (LocalField F q) →* ℂˣ)

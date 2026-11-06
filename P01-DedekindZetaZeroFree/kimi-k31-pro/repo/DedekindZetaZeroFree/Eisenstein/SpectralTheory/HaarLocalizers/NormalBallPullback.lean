@@ -195,7 +195,7 @@ private theorem chartCoefficient_memLp_bound (s : BorelL2Sections F ζ hζ U R P
     (f := chartCoefficient F ζ hζ U R P H C s) (p := 2) (chart_volume_le F ζ hζ U R P H C)
   have hnormeq := eLpNorm_congr_norm_ae (p := 2) hr.aestronglyMeasurable hν.aestronglyMeasurable hnorm
   have hmapnorm := eLpNorm_map_measure (p := 2) hmap.aestronglyMeasurable hb
-  simp only [ENNReal.toReal_div, ENNReal.toReal_one, ENNReal.toReal_ofNat, ENNReal.smul_def, smul_eq_mul] at he
+  simp only [ENNReal.toReal_div, ENNReal.toReal_one, ENNReal.toReal_ofNat, smul_eq_mul] at he
   change eLpNorm _ 2 (volume.restrict (Metric.ball 0 C.radius)) ≤
     (chartConstant F ζ hζ U R P H C) ^ (1/2 : ℝ) * eLpNorm _ 2 ν at he
   rw [← hnormeq, ← hmapnorm, show Measure.map (C.toBase F ζ hζ H.totallyComplex U) ν = _ from hchart] at he
@@ -267,7 +267,7 @@ include hchart hη hηs hηM in
     dsimp only [Pi.smul_apply, smul_eq_mul] at hc
     simp only [RingHom.id_apply]
     rw [hcs, hc, hs]
-    simp [cutoffCoefficient, chartCoefficient, mul_left_comm, mul_comm, mul_assoc]
+    simp [cutoffCoefficient, chartCoefficient, mul_left_comm]
 
 include hchart hη hηs hηM hM in
 private theorem cutoffLinear_bound (s : BorelL2Sections F ζ hζ U R P H) :

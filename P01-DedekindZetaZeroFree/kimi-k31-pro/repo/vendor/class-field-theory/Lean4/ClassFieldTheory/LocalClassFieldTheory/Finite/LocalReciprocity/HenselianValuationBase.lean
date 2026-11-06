@@ -161,16 +161,7 @@ theorem localValueGroupReduction_ker (n : ℕ) (hn : 0 < n) :
     rw [map_nsmul]
     simp [nsmul_eq_mul]
 
-/-- The cyclic quotient condition in the Henselian valuation condition, for the actual local value
-group. -/
-def localValueGroupQuotientEquivZMod (n : ℕ) (hn : 0 < n) :
-    ((localBaseValuation K).range ⧸
-        nsmulWithin (localBaseValuation K).range n) ≃+ ZMod n :=
-  (QuotientAddGroup.quotientAddEquivOfEq
-      (localValueGroupReduction_ker K n hn).symm).trans
-    (QuotientAddGroup.quotientKerEquivOfSurjective
-      (localValueGroupReduction K n hn)
-      (localValueGroupReduction_surjective K n hn))
+
 
 /-- The inclusion-and-reduction quotient map of the Henselian valuation condition is
 bijective for the actual local value group. -/

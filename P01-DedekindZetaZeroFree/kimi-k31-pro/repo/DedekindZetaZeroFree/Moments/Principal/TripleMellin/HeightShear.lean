@@ -18,13 +18,13 @@ def heightShear : (Fin 3 → ℝ) ≃ᵐ (Fin 3 → ℝ) where
     change Measurable (fun t : Fin 3 → ℝ => ![t 0 + t 2, t 1, t 2])
     apply measurable_pi_lambda
     intro i
-    fin_cases i <;> simp only [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_fin_one]
+    fin_cases i <;> simp only
     all_goals fun_prop
   measurable_invFun := by
     change Measurable (fun t : Fin 3 → ℝ => ![t 0 - t 2, t 1, t 2])
     apply measurable_pi_lambda
     intro i
-    fin_cases i <;> simp only [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_fin_one]
+    fin_cases i <;> simp only
     all_goals fun_prop
 
 theorem heightShear_preserving : MeasurePreserving heightShear volume volume := by

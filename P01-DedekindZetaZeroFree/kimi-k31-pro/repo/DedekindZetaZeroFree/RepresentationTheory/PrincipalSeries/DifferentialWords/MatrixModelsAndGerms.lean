@@ -1,6 +1,7 @@
 module
 
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.Complex.BoundaryOperatorWords
+public import Mathlib.Tactic.FunProp
 
 @[expose] public section
 
@@ -18,10 +19,10 @@ set_option maxHeartbeats 1200000
     Continuous (fun t : ℝ => KPSmoothActualFlowData.matrixExponential ((t : ℂ) • X)) := by
   apply Units.continuous_iff.mpr
   constructor
-  · exact NormedSpace.exp_continuous.comp (Complex.continuous_ofReal.smul continuous_const)
+  · fun_prop
   · change Continuous (fun t : ℝ => ((NormedSpace.isUnit_exp ((t : ℂ) • X)).unit⁻¹).val)
     simp only [← Ring.inverse_of_isUnit, Ring.inverse_exp]
-    exact NormedSpace.exp_continuous.comp ((Complex.continuous_ofReal.smul continuous_const).neg)
+    fun_prop
  theorem exponential_zero : KPSmoothActualFlowData.matrixExponential
     (0 : Matrix (Fin 2) (Fin 2) ℂ) = 1 := by
   apply Units.ext

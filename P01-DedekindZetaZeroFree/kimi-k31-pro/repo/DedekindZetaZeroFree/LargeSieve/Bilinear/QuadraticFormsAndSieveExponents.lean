@@ -31,16 +31,9 @@ def Q1 (F : Type) [Field F] [NumberField F] (c : Ideal (𝓞 F))
     (M N : ℝ) (lam : Ideal (𝓞 F) → ℂ) : ℝ :=
   ∑ a ∈ paperShell F c M, ‖rowSum Q N lam a‖ ^ 2
 
-def smoothedRows (F : Type) [Field F] [NumberField F]
-    (c : Ideal (𝓞 F)) (M : ℝ) : Finset (Ideal (𝓞 F)) :=
-  (boundedNormIdeals F ((5 / 2) * M)).filter
-    (fun a => a ≠ ⊥ ∧ Squarefree a ∧ a ⊔ c = ⊤)
 
-def Q1w (F : Type) [Field F] [NumberField F] (c : Ideal (𝓞 F))
-    (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c)
-    (W : ℝ → ℝ) (M N : ℝ) (lam : Ideal (𝓞 F) → ℂ) : ℝ :=
-  ∑ a ∈ smoothedRows F c M,
-    W ((Ideal.absNorm a : ℝ) / M) * ‖rowSum Q N lam a‖ ^ 2
+
+
 
 def B1 (F : Type) [Field F] [NumberField F] (c : Ideal (𝓞 F))
     (Q : DedekindZetaZeroFree.QuadraticHeckeFamily F c) (M N : ℝ) : ℝ :=

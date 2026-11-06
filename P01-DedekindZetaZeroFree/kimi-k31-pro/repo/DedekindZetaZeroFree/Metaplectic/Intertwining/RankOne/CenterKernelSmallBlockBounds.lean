@@ -147,7 +147,7 @@ private theorem center_root_norm (B : Binding F ζ hζ q A P)
     rw [hv, localAbs_mul, localAbs_pow]
   rw [localAbs_pow, localAbs_pow, hx]
   norm_num
-  simp only [Real.rpow_eq_pow, Real.rpow_def_of_pos (mul_pos hu (pow_pos hp _)),
+  simp only [Real.rpow_def_of_pos (mul_pos hu (pow_pos hp _)),
     Real.rpow_def_of_pos (pow_pos (pow_pos hp 2) 3), Real.rpow_def_of_pos hu,
     Real.log_mul (ne_of_gt hu) (ne_of_gt (pow_pos hp 3)), Real.log_pow]
   rw [← mul_assoc (Real.exp _) (Real.exp _) _, ← Real.exp_add]

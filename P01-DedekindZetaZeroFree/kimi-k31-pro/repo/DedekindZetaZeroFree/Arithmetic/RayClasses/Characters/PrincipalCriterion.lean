@@ -42,9 +42,7 @@ theorem rayCharacterPrincipalCriterion
         exact hnot (heq ▸ le_sup_right)
       have hval : χ v.asIdeal = 1 := hχ v.asIdeal v.ne_bot hcoprime
       have hs := rayIdealClass_of_finitePrime K m hm v hv'
-      have hd := h v.asIdeal
-      rw [hval, hs] at hd
-      simpa using hd.symm
+      grind
     apply MonoidHom.ext
     intro c
     have h1 : ψ.toHomUnits c = 1 := by simp [key]

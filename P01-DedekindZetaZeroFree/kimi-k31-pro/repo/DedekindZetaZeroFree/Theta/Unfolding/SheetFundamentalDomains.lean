@@ -161,7 +161,7 @@ def sheetMul (A : SArithmeticData F) (a : Fˣ) (x : PositiveAxis) :
   invFun v := ⟨(A.diagonal a)⁻¹ * v.val, by
     rw [norm_mul', norm_inv', v.property]
     change (A.norm (A.diagonal a))⁻¹ * (A.norm (A.diagonal a) * x.val) = x.val
-    simp [← mul_assoc, ne_of_gt (norm_positive A (A.diagonal a))]⟩
+    simp [ne_of_gt (norm_positive A (A.diagonal a))]⟩
   left_inv := by
     intro y
     exact Subtype.ext (inv_mul_cancel_left _ _)

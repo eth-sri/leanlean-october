@@ -128,8 +128,8 @@ private theorem polynomialSeparated_derivative {H} (hH : PolynomialSeparated H) 
     have he := (((hp.hasFDerivAt.const_mul (wordExponent.eval s)).cexp).mul_const (p.eval s)).mul hd.hasFDerivAt
     change _ = fderiv ℝ (((fun a => Complex.exp (wordExponent.eval s * wordPhase a) * p.eval s) * h)) g (g * X)
     rw [he.fderiv]
-    simp [wordAtom, Polynomial.eval_mul, ContinuousLinearMap.add_apply,
-      ContinuousLinearMap.smul_apply, wordDirection]
+    simp [wordAtom, Polynomial.eval_mul, 
+      wordDirection]
     ring
   | @add H G hf hG ihf ihg =>
     obtain ⟨H', hH', eH⟩ := ihf
@@ -151,7 +151,7 @@ private theorem polynomialSeparated_finite {H} (hH : PolynomialSeparated H) :
   | atom p h hh =>
     exact ⟨1, fun _ => p, fun _ => h, fun _ => hh, by
       intro s g
-      simp [Fin.sum_univ_one, wordAtom, mul_assoc]⟩
+      simp [wordAtom, mul_assoc]⟩
   | @add H G hf hg ihf ihg =>
     obtain ⟨n, p, h, hh, he⟩ := ihf
     obtain ⟨m, q, k, hk, ke⟩ := ihg

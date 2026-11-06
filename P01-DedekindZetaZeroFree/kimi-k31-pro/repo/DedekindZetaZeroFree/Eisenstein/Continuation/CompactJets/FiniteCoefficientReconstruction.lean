@@ -326,7 +326,7 @@ theorem finite_compact_coefficient_reconstruction_source
       apply image_eq_zero_of_notMem_tsupport
       intro hmem
       exact hx (hcov (hs hmem))
-    simp [hx, hz]
+    simp [hz]
 
 end DedekindZetaZeroFree.KPContActualCompactSectionL2Jets
 

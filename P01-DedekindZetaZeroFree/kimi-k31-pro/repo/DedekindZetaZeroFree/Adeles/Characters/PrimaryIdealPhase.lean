@@ -690,7 +690,7 @@ theorem continuous_glue (A : SArithmeticData F) (χ : A.G →* Circle)
       (_root_.IdeleGroup.fractionalIdeal (_root_.IdeleGroup.principalIdele F a)) = _
     rw [_root_.IdeleGroup.fractionalIdeal_principalIdele]
     apply Units.ext
-    simp only [Units.coe_map, MonoidHom.coe_coe, coe_toPrincipalIdeal]
+    simp only [Units.coe_map, coe_toPrincipalIdeal]
     change (FractionalIdeal.extendedHom F A.R)
       (FractionalIdeal.spanSingleton (𝓞 F)⁰ (a : F)) =
         FractionalIdeal.spanSingleton A.R⁰ (a : F)
@@ -728,8 +728,7 @@ theorem glued_infinity (A : SArithmeticData F) (χ : A.G →* Circle)
     A.ideleInfiniteComponent Φ w z = (χ (Pi.mulSingle w z, 1))⁻¹ := by
   have h := (ClassCharacterSteps.glued_character_local_components A χ κ Φ heval).1
     (Pi.mulSingle w z, 1)
-  simp only [Pi.mulSingle_apply, map_one, inv_one, Finset.prod_const_one,
-    mul_one] at h
+  simp only at h
   have hp : (∏ x : InfinitePlace F,
       Φ (NumberField.IdeleClassGroup.ofCompletion (𝓞 F) F x (Pi.mulSingle (M := fun u : InfinitePlace F => u.Completionˣ) w z x))) =
         A.ideleInfiniteComponent Φ w z := by

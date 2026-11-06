@@ -279,7 +279,7 @@ theorem spherical_scalar_of_cubic_shell_integrals
     have hi := DedekindZetaZeroFree.KPRankOneActualShellCaller.integral_integrable_at_level
       F ζ hζ q S P μ hμ S.iwasawa.compact le_rfl .plus s hs
       ⟨φ, spherical_vector_mem_level (LocalField F q) S.borel P S.iwasawa .plus φ hφ⟩ (1 : ActualCover F ζ hζ q) (1 : actualTorus F ζ hζ q)
-    simp only [sourceSign, id_eq, sourceParameter, if_pos rfl, kernelW, mul_one] at hi
+    simp only [sourceSign, id_eq, sourceParameter, kernelW, mul_one] at hi
     exact hi
   have hr : ‖t (LocalField F q) s‖ < 1 := by
     simpa using (convergence_iff_geometric (LocalField F q) .plus s).mp hs
@@ -288,7 +288,7 @@ theorem spherical_scalar_of_cubic_shell_integrals
       rw [hShell s hs n]
       split_ifs <;> ring)
   change (∫ x, _ ∂μ) = _
-  simp only [sourceSign, sourceParameter, if_pos rfl, kernelW, mul_one]
+  simp only [sourceSign, sourceParameter, kernelW, mul_one]
   change (∫ x, integrand x ∂μ) = _
   rw [he]
   unfold forwardFactor forwardFactorInRoot t

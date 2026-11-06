@@ -101,8 +101,7 @@ theorem chosen_primitive_on_core (C : Context Q)
   obtain ⟨φ, -, hφ⟩ := hnorm.2.2 p.1 p.2 hp.hu huc hp.hv hvc hp.huv
     hp.hquotientClass
   have hmod : p.1 * p.2 ≠ ⊥ := mul_ne_zero hp.hu0 hp.hv0
-  have hq : c * (Q.cond p.1 * Q.cond p.2) ≠ ⊥ := by
-    exact mul_ne_zero C.D.original_ne_bot
+  have hq : c * (Q.cond p.1 * Q.cond p.2) ≠ ⊥ := mul_ne_zero C.D.original_ne_bot
       (mul_ne_zero (Q.primitive p.1 hp.hu hp.huc).1
         (Q.primitive p.2 hp.hv hp.hvc).1)
   have heq : ∀ I, C.primitive p hp I = φ I := by
@@ -158,8 +157,7 @@ theorem mobius_divisor_coprime_columns (C : Context Q)
   have hrad : (c * C.d).radical ≠ ⊥ := by
     intro hh
     exact hcd (bot_unique (hh ▸ Ideal.le_radical))
-  have hediv : e ∣ c * C.d := by
-    exact Ideal.dvd_iff_le.mpr (le_trans Ideal.le_radical
+  have hediv : e ∣ c * C.d := Ideal.dvd_iff_le.mpr (le_trans Ideal.le_radical
       (Ideal.dvd_iff_le.mp ((mem_idealDivisors hrad).mp he)))
   refine ⟨ne_bot_of_mem_idealDivisors he, ?_⟩
   intro u hu

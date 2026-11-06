@@ -19,8 +19,8 @@ theorem verticalIntegral_eq_of_decay {a b : ℝ} {f : ℂ → ℂ} (hab : a < b)
       ‖f ((x : ℂ) + (y : ℂ) * I)‖ ≤ C * (1 + |y|) ^ (-2 : ℝ)) :
     comparisonVerticalIntegral b f = comparisonVerticalIntegral a f := by
   set m : ℝ := (a + b) / 2 with hm
-  have ham : a < ((m : ℂ)).re := by simp [hm]; linarith
-  have hmb : ((m : ℂ)).re < b := by simp [hm]; linarith
+  have ham : a < (m : ℂ).re := by simp [hm]; linarith
+  have hmb : (m : ℂ).re < b := by simp [hm]; linarith
   have hnb : comparisonClosedStrip a b ∈ 𝓝 (m : ℂ) := by
     apply Filter.mem_of_superset
       (((isOpen_lt continuous_const Complex.continuous_re).inter
@@ -43,7 +43,8 @@ private theorem decay_two {f : ℂ → ℂ} {a b : ℝ}
       ‖f ((x : ℂ) + (y : ℂ) * I)‖ ≤ C * (1 + |y|) ^ (-2 : ℝ) :=
   h 2 (by norm_num)
 
-private theorem re_eq (x s : ℝ) : ((x : ℂ) + (s : ℂ) * I).re = x := by simp
+private theorem re_eq (x s : ℝ) : ((x : ℂ) + (s : ℂ) * I).re = x := by
+  simp_all
 
 private theorem gauss_le (y : ℝ) : Real.exp (-(y ^ 2) / 2) ≤ 4 * (1 + |y|) ^ (-2 : ℝ) := by
   have h1 : (1 : ℝ) + y ^ 2 / 2 ≤ Real.exp (y ^ 2 / 2) := by
@@ -172,7 +173,7 @@ theorem zResidue_xi_shift (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) :
       _ = 4 * |C| * (1 + |y|) ^ (-2 : ℝ) := by ring
   rw [← hshift]
   have hfun : ∀ t : ℝ, zResidueLocal D u (((2 : ℝ) : ℂ) + (t : ℂ) * I) Z =
-      Spectral.c₀ D * (((Z : ℂ)) ^ ((((2 : ℝ) : ℂ) + (t : ℂ) * I) - 61 / 100) *
+      Spectral.c₀ D * ((Z : ℂ) ^ ((((2 : ℝ) : ℂ) + (t : ℂ) * I) - 61 / 100) *
         Spectral.G D (((2 : ℝ) : ℂ) + (t : ℂ) * I)) := by
     intro t
     rw [PrincipalResidueFormulas.zResidue_eq D u hu (((2 : ℝ) : ℂ) + (t : ℂ) * I) (by simp) Z hZ0]

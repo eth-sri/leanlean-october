@@ -47,7 +47,7 @@ private lemma numerator_bound (r : ℝ) (hr : 0 ≤ r) (hr' : r ≤ 1/2)
         ‖(1-(r : ℂ)+(r : ℂ)^3)*E‖) + ‖E*D‖ := by gcongr; exact norm_add_le _ _
     _ = r^2 + ‖(r : ℂ)+(r : ℂ)^2-(r : ℂ)^3‖*‖D‖ +
         ‖1-(r : ℂ)+(r : ℂ)^3‖*‖E‖ + ‖E‖*‖D‖ := by
-      simp [norm_mul, norm_neg, norm_pow, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hr]
+      simp [norm_neg, norm_pow, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hr]
     _ ≤ r^2 + (2*r)*‖D‖ + 2*‖E‖ + ‖E‖*1 := by gcongr
     _ = _ := by ring
 
@@ -152,6 +152,6 @@ theorem principal_majorant_summable
   have h₃ := summable_exterior_prime_norm_rpow F S (6 * σ₀ - 3) (by linarith)
   have he : -(1 + σ₀) = -1 - σ₀ := by ring
   convert (h₂.add h₁).add h₃ using 1 <;>
-    simp only [idealNorm, he, neg_sub, neg_neg, Real.rpow_eq_pow]
+    simp only [idealNorm, he, neg_sub, Real.rpow_eq_pow]
 
 end DedekindZetaZeroFree

@@ -52,21 +52,9 @@ def rayClassOfFinitePrime
   QuotientGroup.mk' (rayPrincipalIdealSubgroupInPrimeTo m)
     ⟨finitePrimeFractionalIdeal v, finitePrimeFractionalIdeal_mem_primeTo m v hv⟩
 
-/-- The ordinary ideal class represented by a finite prime. -/
-def ordinaryRayClassOfFinitePrime
-    {K : Type u} [Field K] [NumberField K]
-    (v : HeightOneSpectrum (𝓞 K)) :
-    RayClassGroup (ordinaryRayClassModulus K) :=
-  rayClassOfFinitePrime (ordinaryRayClassModulus K) v (by
-    simp [ordinaryRayClassModulus])
 
-/-- The narrow ideal class represented by a finite prime. -/
-def narrowRayClassOfFinitePrime
-    {K : Type u} [Field K] [NumberField K]
-    (v : HeightOneSpectrum (𝓞 K)) :
-    RayClassGroup (narrowRayClassModulus K) :=
-  rayClassOfFinitePrime (narrowRayClassModulus K) v (by
-    simp [narrowRayClassModulus])
+
+
 
 end ClassFieldTheory
 

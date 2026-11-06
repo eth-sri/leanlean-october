@@ -59,7 +59,7 @@ lemma complex_integrable_uniform_iff (N : TraceHaarTransport R) (w : InfinitePla
   have h (z : R.A.G1) : normSection R.A w x * z.val =
       (q * z).val * R.A.radialSection x.val x.property := by
     change _ = (normSection R.A w x / R.A.radialSection x.val x.property * z.val) * _
-    simp [div_eq_mul_inv, mul_assoc, mul_comm, mul_left_comm]
+    simp [div_eq_mul_inv, mul_comm, mul_left_comm]
   simp_rw [h]
   exact (measurePreserving_mul_left (GaussianSmoothing.probeHaar R) q).integrable_comp_emb
     (Homeomorph.mulLeft q).measurableEmbedding
@@ -74,7 +74,7 @@ lemma complex_integral_uniform_eq (N : TraceHaarTransport R) (w : InfinitePlace 
   have he (z : R.A.G1) : normSection R.A w x * z.val =
       z.val * (GaussianSmoothing.sectionRatio R.A w x).val * R.A.radialSection x.val x.property := by
     change _ = z.val * (normSection R.A w x / R.A.radialSection x.val x.property) * _
-    simp [div_eq_mul_inv, mul_assoc, mul_comm, mul_left_comm]
+    simp [div_eq_mul_inv, mul_comm, mul_left_comm]
   simp_rw [he]
   rw [GaussianSmoothing.probeHaar_integral, GaussianSmoothing.probeHaar_integral]
   exact N.section_independent x (GaussianSmoothing.sectionRatio R.A w x) f

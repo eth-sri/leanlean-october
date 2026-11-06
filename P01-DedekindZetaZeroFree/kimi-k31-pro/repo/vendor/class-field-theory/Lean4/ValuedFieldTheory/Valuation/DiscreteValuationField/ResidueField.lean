@@ -44,13 +44,7 @@ theorem residue_eq_residue_iff_sub_mem_maximalIdeal (x y : R) :
       x - y ∈ IsLocalRing.maximalIdeal R := by
   rw [← sub_eq_zero, ← map_sub, IsLocalRing.residue_eq_zero_iff]
 
-/-- The residue of a difference is zero exactly when the two residues are
-equal. -/
-theorem residue_sub_eq_zero_iff (x y : R) :
-    IsLocalRing.residue R (x - y) = 0 ↔
-      IsLocalRing.residue R x = IsLocalRing.residue R y := by
-  rw [IsLocalRing.residue_eq_zero_iff,
-    residue_eq_residue_iff_sub_mem_maximalIdeal]
+
 
 end LocalRing
 
@@ -59,16 +53,7 @@ section FieldLift
 variable [CommRing R] [IsLocalRing R] [Field S]
 variable (f : R →+* S) [IsLocalHom f]
 
-/-- The map from the residue field induced by a local homomorphism to a field is
-uniquely characterized by its composite with the residue map. -/
-theorem lift_eq_of_comp_residue_eq
-    (g : IsLocalRing.ResidueField R →+* S)
-    (hg : g.comp (IsLocalRing.residue R) = f) :
-    g = IsLocalRing.ResidueField.lift f := by
-  ext x
-  obtain ⟨r, rfl⟩ := IsLocalRing.residue_surjective x
-  have hr := congr_arg (fun h : R →+* S => h r) hg
-  simpa [RingHom.comp_apply, IsLocalRing.ResidueField.lift_residue_apply] using hr
+
 
 end FieldLift
 
@@ -109,16 +94,7 @@ theorem map_eq_zero_iff (x : IsLocalRing.ResidueField R) :
   · intro hx
     rw [hx, map_zero]
 
-/-- Equality can be checked after applying the residue-field map induced by a
-local homomorphism. -/
-theorem map_eq_map_iff (x y : IsLocalRing.ResidueField R) :
-    IsLocalRing.ResidueField.map f x = IsLocalRing.ResidueField.map f y ↔
-      x = y := by
-  constructor
-  · intro hxy
-    exact map_injective f hxy
-  · intro h
-    rw [h]
+
 
 /-- The residue-field isomorphism induced by a surjective residue-field map
 coming from a local homomorphism. -/
@@ -137,36 +113,13 @@ theorem ringEquivOfSurjective_apply
       IsLocalRing.ResidueField.map f x :=
   rfl
 
-/-- A local homomorphism preserves and reflects zero residues. -/
-theorem residue_map_eq_zero_iff (x : R) :
-    IsLocalRing.residue S (f x) = 0 ↔ IsLocalRing.residue R x = 0 := by
-  rw [← IsLocalRing.ResidueField.map_residue f x]
-  exact map_eq_zero_iff f (IsLocalRing.residue R x)
 
-/-- A local homomorphism preserves and reflects equality of residues. -/
-theorem residue_map_eq_iff (x y : R) :
-    IsLocalRing.residue S (f x) = IsLocalRing.residue S (f y) ↔
-      IsLocalRing.residue R x = IsLocalRing.residue R y := by
-  simpa [IsLocalRing.ResidueField.map_residue f] using
-    map_eq_map_iff f (IsLocalRing.residue R x) (IsLocalRing.residue R y)
 
-/-- A mapped residue class equals a target residue class exactly when their
-chosen representatives are congruent modulo the target maximal ideal. -/
-theorem map_residue_eq_residue_iff_sub_mem_maximalIdeal (x : R) (y : S) :
-    IsLocalRing.ResidueField.map f (IsLocalRing.residue R x) =
-        IsLocalRing.residue S y ↔
-      f x - y ∈ IsLocalRing.maximalIdeal S := by
-  simpa [IsLocalRing.ResidueField.map_residue f x] using
-    residue_eq_residue_iff_sub_mem_maximalIdeal (R := S) (f x) y
 
-/-- Target residue equality with a mapped residue class, in the opposite
-orientation, is also equality modulo the target maximal ideal. -/
-theorem residue_eq_map_residue_iff_sub_mem_maximalIdeal (y : S) (x : R) :
-    IsLocalRing.residue S y =
-        IsLocalRing.ResidueField.map f (IsLocalRing.residue R x) ↔
-      y - f x ∈ IsLocalRing.maximalIdeal S := by
-  simpa [IsLocalRing.ResidueField.map_residue f x] using
-    residue_eq_residue_iff_sub_mem_maximalIdeal (R := S) y (f x)
+
+
+
+
 
 end LocalHom
 
@@ -192,35 +145,13 @@ theorem map_algebraMap_injective :
       (IsLocalRing.ResidueField.map (algebraMap R S)) :=
   map_injective (algebraMap R S)
 
-/-- The residue-field map induced by a local algebra map has trivial
-kernel. -/
-theorem map_algebraMap_eq_zero_iff (x : IsLocalRing.ResidueField R) :
-    IsLocalRing.ResidueField.map (algebraMap R S) x = 0 ↔ x = 0 :=
-  map_eq_zero_iff (algebraMap R S) x
 
-/-- A local algebra map preserves and reflects zero residues. -/
-theorem residue_algebraMap_eq_zero_iff (x : R) :
-    IsLocalRing.residue S (algebraMap R S x) = 0 ↔
-      IsLocalRing.residue R x = 0 :=
-  residue_map_eq_zero_iff (algebraMap R S) x
 
-/-- A local algebra map preserves and reflects equality of residues. -/
-theorem residue_algebraMap_eq_iff (x y : R) :
-    IsLocalRing.residue S (algebraMap R S x) =
-        IsLocalRing.residue S (algebraMap R S y) ↔
-      IsLocalRing.residue R x = IsLocalRing.residue R y :=
-  residue_map_eq_iff (algebraMap R S) x y
 
-/-- The residue-field algebra map sends the residue of `x` to the residue of
-`y` exactly when `algebraMap R S x` and `y` are congruent modulo the target
-maximal ideal. -/
-theorem algebraMap_residue_eq_residue_iff_sub_mem_maximalIdeal
-    (x : R) (y : S) :
-    algebraMap (IsLocalRing.ResidueField R) (IsLocalRing.ResidueField S)
-        (IsLocalRing.residue R x) = IsLocalRing.residue S y ↔
-      algebraMap R S x - y ∈ IsLocalRing.maximalIdeal S := by
-  rw [algebraMap_eq_map_algebraMap]
-  exact map_residue_eq_residue_iff_sub_mem_maximalIdeal (algebraMap R S) x y
+
+
+
+
 
 end Algebra
 
@@ -259,13 +190,7 @@ theorem algEquivOfAlgEquiv_apply
       IsLocalRing.ResidueField.map e.toRingEquiv x :=
   rfl
 
-/-- The induced residue algebra equivalence agrees with the canonical quotient-map equivalence. -/
-theorem algEquivOfAlgEquiv_apply_eq_mapEquiv
-    (e : R ≃ₐ[T] S)
-    (x : IsLocalRing.ResidueField R) :
-    algEquivOfAlgEquiv e x =
-      IsLocalRing.ResidueField.mapEquiv e.toRingEquiv x :=
-  rfl
+
 
 /-- The inverse induced residue equivalence agrees with the inverse quotient-map equivalence. -/
 theorem algEquivOfAlgEquiv_symm_apply_eq_mapEquiv

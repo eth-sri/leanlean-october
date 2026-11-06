@@ -174,18 +174,7 @@ theorem mem_formalLogOnePlusProductArgumentBasicFactorProductChoices
         mem_formalLogOnePlusProductArgumentBasicFactorFinset.2
           (h.2 i hi)⟩
 
-/--
-Establishes the identity `(formalLogOnePlusProductArgumentBasicFactorProductChoices q).card = 3 ^
-q`.
--/
-theorem formalLogOnePlusProductArgumentBasicFactorProductChoices_card
-    (q : ℕ) :
-    (formalLogOnePlusProductArgumentBasicFactorProductChoices q).card =
-      3 ^ q := by
-  classical
-  rw [formalLogOnePlusProductArgumentBasicFactorProductChoices,
-    Finset.card_finsupp]
-  simp
+
 
 /-- Sequences of `q` basic factors whose exponent-vector sum is `e`. -/
 noncomputable def formalLogOnePlusProductArgumentBasicFactorChoices
@@ -212,21 +201,7 @@ theorem mem_formalLogOnePlusProductArgumentBasicFactorChoices
   classical
   simp [formalLogOnePlusProductArgumentBasicFactorChoices]
 
-/-- Proves the bound `(formalLogOnePlusProductArgumentBasicFactorChoices q e).card ≤ 3 ^ q`. -/
-theorem formalLogOnePlusProductArgumentBasicFactorChoices_card_le_three_pow
-    (q : ℕ) (e : Fin 2 →₀ ℕ) :
-    (formalLogOnePlusProductArgumentBasicFactorChoices q e).card ≤ 3 ^ q := by
-  classical
-  calc
-    (formalLogOnePlusProductArgumentBasicFactorChoices q e).card ≤
-        (formalLogOnePlusProductArgumentBasicFactorProductChoices q).card := by
-      apply Finset.card_le_card
-      intro l hl
-      rw [mem_formalLogOnePlusProductArgumentBasicFactorProductChoices]
-      rw [mem_formalLogOnePlusProductArgumentBasicFactorChoices] at hl
-      exact ⟨(Finset.mem_finsuppAntidiag.mp hl.1).2, hl.2⟩
-    _ = 3 ^ q :=
-      formalLogOnePlusProductArgumentBasicFactorProductChoices_card q
+
 
 /-- The number of left factors among the first `q` entries of `l`. -/
 def formalLogOnePlusProductArgumentLeftChoiceCount

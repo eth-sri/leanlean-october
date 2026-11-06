@@ -104,8 +104,8 @@ theorem raw_affine_haar_density (F : Type) [Field F] [NumberField F]
   have hchart : rawAffineChart F g =
       R.toHomeomorph.toOpenPartialHomeomorph.trans E.symm := by
     simp [rawAffineChart, R, E, PGLComplex.productAffineChart, PGLComplex.translatedAffineChart,
-      OpenPartialHomeomorph.trans_symm_eq_symm_trans_symm, OpenPartialHomeomorph.trans_assoc,
-      ContinuousLinearEquiv.toHomeomorph_symm]
+      OpenPartialHomeomorph.trans_symm_eq_symm_trans_symm, 
+      ]
     have hr : ((coordinateReindex F).trans
         (PGLComplex.productCoordinatesFlatten (NumberField.InfinitePlace F)).symm).toHomeomorph =
         (coordinateReindex F).toHomeomorph.trans
@@ -118,7 +118,7 @@ theorem raw_affine_haar_density (F : Type) [Field F] [NumberField F]
     simp [E, S, PGLComplex.translatedAffineChart_target]
   have hsource : (rawAffineChart F g).source = R ⁻¹' S := by
     rw [hchart]
-    simp [OpenPartialHomeomorph.trans_source, htarget]
+    simp [htarget]
   let w : (NumberField.InfinitePlace F → PGLComplex.Coordinates) → ℝ :=
     fun x => ∏ i, c / ‖PGLComplex.delta (x i)‖ ^ 4
   have hprod : Measure.map E (ν.restrict E.source) =

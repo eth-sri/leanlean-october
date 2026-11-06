@@ -1498,7 +1498,7 @@ private theorem diagonal_matrix_normalize (q : HeightOneSpectrum (𝓞 F))
     intro i j
     fin_cases i <;> fin_cases j <;>
       simp [KPGlobalProductPolarizationCharacter.diagonalHom, KubotaRankTwo.d,
-        Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two,
+        Matrix.mul_apply, 
         Matrix.GeneralLinearGroup.coe_scalar, Matrix.scalar_apply, Matrix.diagonal_apply,
         a, d, h10, h01, h11]
   rw [he, map_mul]

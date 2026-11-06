@@ -63,7 +63,7 @@ theorem exponentProduct_bijective : Function.Bijective (@exponentProduct R _ _) 
     let m := (normalizedFactors I.val).attach.map
       (fun p => HeightOneSpectrum.ofPrime (prime_of_normalized_factor p.val p.property))
     have hm : m.map HeightOneSpectrum.asIdeal = normalizedFactors I.val := by
-      simp [m, Multiset.map_map, Function.comp_def]
+      simp [m, Multiset.map_map]
     refine ⟨m.toFinsupp, Subtype.ext ?_⟩
     change (m.toFinsupp.prod (fun p n => p.asIdeal ^ n)) = I.val
     rw [product_eq, Multiset.toFinsupp_toMultiset, hm]
@@ -78,7 +78,7 @@ noncomputable def primeExponentEquiv (R : Type u) [CommRing R] [IsDedekindDomain
 theorem primeExponentEquiv_apply (R : Type u) [CommRing R] [IsDedekindDomain R]
     (e : HeightOneSpectrum R →₀ ℕ) :
     (primeExponentEquiv R e).val = e.prod (fun p n => p.asIdeal ^ n) := by
-  rfl
+  aesop
 
 theorem primeExponentEquiv_zero (R : Type u) [CommRing R] [IsDedekindDomain R] :
     (primeExponentEquiv R 0).val = ⊤ := by

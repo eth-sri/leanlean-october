@@ -82,7 +82,7 @@ theorem quotientMap_bijective (C : A.GeneralArithmeticContext σ η hS)
       WithZero.exp (-(n : ℤ)) := by
     change Valued.v (uniformizer C p ^ n) = _
     rw [map_pow, uniformizer_valuation]
-    simp [← WithZero.exp_nsmul, nsmul_eq_mul]
+    simp [← WithZero.exp_nsmul]
   have hnz : ((localUniformizer C p ^ n : LocalIntegers p) : LocalField p) ≠ 0 := by
     intro h
     rw [h, map_zero] at hval

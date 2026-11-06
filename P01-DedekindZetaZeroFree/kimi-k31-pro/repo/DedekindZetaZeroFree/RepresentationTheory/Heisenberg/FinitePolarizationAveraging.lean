@@ -59,7 +59,7 @@ theorem orthogonal_eq_of_isMaximalIsotropic {V : Type*} [CommGroup V]
       obtain ⟨n, rfl⟩ := hu'
       obtain ⟨p, rfl⟩ := hv'
       simp only [map_mul, MonoidHom.mul_apply, hL.1 l hl m hm, hxiso l hl p, h1 m hm n, h2 n p,
-        mul_one, one_mul]
+        mul_one]
     have hLM : L ⊔ Subgroup.zpowers x = L := hL.2 _ le_sup_left hiso
     exact hxL (hLM ▸ Subgroup.mem_sup_right (Subgroup.mem_zpowers x))
   · intro x hx
@@ -382,7 +382,7 @@ private lemma maximal_card_square {H V : Type*} [Group H] [CommGroup V] [Fintype
       (Fintype.card A : ℂ) ^ 2 := by
     simp_rw [restricted_sum D A hA]
     rw [Finset.sum_ite]
-    simp only [Finset.sum_const, Finset.sum_const_zero, add_zero, nsmul_eq_mul]
+    simp only [Finset.sum_const, nsmul_eq_mul]
     have hc : (Finset.univ.filter fun v : V => v ∈ A).card = Fintype.card A := by
       exact (Fintype.card_subtype _).symm
     rw [hc]

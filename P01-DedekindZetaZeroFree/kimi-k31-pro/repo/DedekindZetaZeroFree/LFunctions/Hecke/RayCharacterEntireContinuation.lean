@@ -30,7 +30,7 @@ theorem rayCharacterEntire
   obtain ⟨f, hfdiff, hfsum⟩ := finiteCharacterEntireAssembly (rayIdealClass K m hm)
     (fun I s => (Ideal.absNorm I : ℂ) ^ (-s)) ψ hψ ρ F hF (fun c s hs =>
       (hpartial c s hs).congr_fun fun a => by
-        by_cases hp : rayIdealClass K m hm a = some c <;> simp [hp])
+        simp_all)
   refine ⟨f, hfdiff, fun s hs => ?_⟩
 
   refine (hfsum s hs).congr_fun fun I => ?_

@@ -30,16 +30,13 @@ theorem log_square_le_rpow (η : ℝ) (hη : 0 < η) :
       pow_le_pow_left₀ (by positivity) hhalf 2
     have hexp : (Real.exp (u / 2)) ^ 2 = Real.exp u := by
       rw [pow_two, ← Real.exp_add]; ring_nf
-    rw [hexp] at hpow
-    nlinarith [hpow]
+    grind
   have hquad : (1 + u) ^ 2 ≤ 7 * Real.exp u := by
-    have : (1 + u) ^ 2 = 1 + 2 * u + u ^ 2 := by ring
-    rw [this]
-    nlinarith [h1le, hule, hsq, hexppos.le]
+    grind
 
   have hlin : 1 + t ≤ (1 + η⁻¹) * (1 + u) := by
     have h : (1 + η⁻¹) * (1 + u) - (1 + t) = η * t + η⁻¹ := by
-      rw [hu]; field_simp; ring
+      grind
     nlinarith [h, hη.le, inv_pos.mpr hη, ht0]
   have hstep : (1 + t) ^ 2 ≤ (1 + η⁻¹) ^ 2 * (1 + u) ^ 2 := by
     calc (1 + t) ^ 2 ≤ ((1 + η⁻¹) * (1 + u)) ^ 2 :=
@@ -48,11 +45,9 @@ theorem log_square_le_rpow (η : ℝ) (hη : 0 < η) :
   have hmain : (1 + t) ^ 2 ≤ 7 * (1 + η⁻¹) ^ 2 * Real.exp u := by
     have hfac : (1 + η⁻¹) ^ 2 * (1 + u) ^ 2 ≤ (1 + η⁻¹) ^ 2 * (7 * Real.exp u) :=
       mul_le_mul_of_nonneg_left hquad (by positivity)
-    nlinarith [hstep, hfac]
+    grind
   have hZeta : Real.exp u = Z ^ η := by
     rw [hu, ht, Real.rpow_def_of_pos hZpos]; ring_nf
-  rw [hZeta] at hmain
-  calc (1 + Real.log Z) ^ 2 = (1 + t) ^ 2 := by rw [ht]
-    _ ≤ 7 * (1 + η⁻¹) ^ 2 * Z ^ η := hmain
+  simp_all
 
 end DedekindZetaZeroFree.RepresentationTheory.ActualRowTransfer

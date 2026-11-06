@@ -444,12 +444,12 @@ private theorem reindex (m : Ideal (𝓞 F)) {f : Ideal (𝓞 F)}
       simp
     have he : η (a.val * b.val ^ 2) = η a.val * (η b.val) ^ 2 := by
       simp only [pow_two, η.map_mul']
-    simp only [T, squareMap, h0, true_and, sup_square, hP _ _ a.property.1 b.property,
+    simp only [T, squareMap, sup_square, hP _ _ a.property.1 b.property,
       hn, he, sup_product]
     by_cases ha : a.val ⊔ m = ⊤ ∧ P a.val
     · by_cases hbm : b.val ⊔ m = ⊤
       · by_cases hbf : b.val ⊔ f = ⊤
-        · simp [a.property.1, b.property, hb2, ha.1, ha.2, hbm, hbf, mul_assoc, mul_comm, mul_left_comm]
+        · simp [a.property.1, hb2, ha.1, ha.2, hbm, hbf, mul_assoc, mul_comm]
         · have hz : η b.val = 0 := (η.eq_zero_iff' b.val).mpr (Or.inr hbf)
           simp [ha.1, ha.2, hbm, hbf, hz]
       · simp [ha.1, ha.2, hbm]
@@ -484,7 +484,7 @@ private theorem reindex (m : Ideal (𝓞 F)) {f : Ideal (𝓞 F)}
       apply tsum_congr
       intro b
       by_cases hb : b ≠ ⊥ <;>
-        simp [Set.indicator, hb, weightedSquareSeries]
+        simp [Set.indicator, hb]
     · simp [ha]
   simp_rw [hi]
   refine (tsum_subtype {a : Ideal (𝓞 F) | a ≠ ⊥ ∧ Squarefree a}
@@ -493,7 +493,7 @@ private theorem reindex (m : Ideal (𝓞 F)) {f : Ideal (𝓞 F)}
   apply tsum_congr
   intro a
   by_cases ha : a ≠ ⊥ ∧ Squarefree a
-  · simp [Set.indicator, ha.1, ha.2, and_assoc]
+  · simp [Set.indicator, ha.1, ha.2]
   · have hx : ¬ (a ≠ ⊥ ∧ Squarefree a ∧ a ⊔ m = ⊤ ∧ P a) := by tauto
     simp [Set.indicator, ha, hx]
 
@@ -837,12 +837,10 @@ def squareWeightSeries (m f : Ideal (𝓞 F)) (h : ℝ → ℂ) (X : ℝ)
 theorem finite_support_S4allTerm {m f : Ideal (𝓞 F)}
     (h : ℝ → ℂ) (hh : HasCompactSupport h) {X : ℝ} (hX : 0 < X)
     (η : DedekindZetaZeroFree.RayClassCharacter F f) :
-    (Function.support (S4allTerm m h X η)).Finite := by
-  exact (DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4.compact_support_api (F := F)).2.1 h hh hX η
+    (Function.support (S4allTerm m h X η)).Finite := (DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4.compact_support_api (F := F)).2.1 h hh hX η
 
 theorem rapidDecay_of_compactSupport (h : ℝ → ℂ) (hh : HasCompactSupport h) :
-    HasRapidDecayAtInfinity h := by
-  exact (DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4.compact_support_api (F := ℚ)).2.2.2 h hh
+    HasRapidDecayAtInfinity h := (DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4.compact_support_api (F := ℚ)).2.2.2 h hh
 
 theorem S4_reindex_quadratic_of_radical_dvd {c m f : Ideal (𝓞 F)}
     (hc : c ≠ ⊥) (hm : m ≠ ⊥) (hf : f ≠ ⊥) (hcm : c.radical ∣ m)
@@ -851,8 +849,7 @@ theorem S4_reindex_quadratic_of_radical_dvd {c m f : Ideal (𝓞 F)}
     (η : DedekindZetaZeroFree.RayClassCharacter F f) (hprim : η.IsPrimitive)
     (hquad : ∀ I : Ideal (𝓞 F), (η I) ^ 3 = η I) :
     S4 c m K h X η = ∑ a ∈ DedekindZetaZeroFree.LargeSieve.Sieve.idealAdmissibleFinset F m K,
-      η a * squareWeightSeries m f h X a := by
-  exact (DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4.radical_reindex_api (F := F)).2 hc hm hf hcm hK hX h hh η hprim hquad
+      η a * squareWeightSeries m f h X a := (DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4.radical_reindex_api (F := F)).2 hc hm hf hcm hK hX h hh η hprim hquad
 
 theorem S4_reindex_fixed_primes_quadratic {c m f : Ideal (𝓞 F)}
     (hc : c ≠ ⊥) (hm : m ≠ ⊥) (hf : f ≠ ⊥)
@@ -862,8 +859,7 @@ theorem S4_reindex_fixed_primes_quadratic {c m f : Ideal (𝓞 F)}
     (hquad : ∀ I : Ideal (𝓞 F), (η I) ^ 3 = η I) :
     S4 c m K h X η = ∑ e ∈ squarefreeBadPool c, if e ⊔ m = ⊤ then
       η e * (∑ z ∈ DedekindZetaZeroFree.LargeSieve.Sieve.idealAdmissibleFinset F (m * c) K,
-        η z * squareWeightSeries m f h X (e * z)) else 0 := by
-  exact (DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4.fixed_primes_reindex_api (F := F)).2 hc hm hf hK hX h hh η hprim hquad
+        η z * squareWeightSeries m f h X (e * z)) else 0 := (DedekindZetaZeroFree.LargeSieve.WeightedSeries.Sigma4.fixed_primes_reindex_api (F := F)).2 hc hm hf hK hX h hh η hprim hquad
 
 end DedekindZetaZeroFree.LargeSieve.Bilinear
 

@@ -196,71 +196,7 @@ theorem fullSUnitKummerExtension_finiteDimensional
       (K := K) (Omega := Omega) n hn hmu S
   exact IsGalois.finiteDimensional_of_finite K E
 
-/-- A finite set of the actual Kummer roots generates the full `S`-unit
-Kummer extension.  Finiteness is obtained from Kummer duality, and the
-finite root set is extracted from a primitive element of the resulting
-finite separable extension. -/
-theorem exists_finset_fullSUnitKummerRootSet_adjoin_eq
-    {Omega : Type*} [Field Omega] [Algebra K Omega]
-    [IsSepClosure K Omega]
-    (n : ℕ+) (hn : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty)
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
-    ∃ T : Finset Omega,
-      (T : Set Omega) ⊆
-          KummerTheory.kummerRootSet
-            (K := K) (Omega := Omega) n
-            (fullSUnitKummerSubgroup (K := K) n S).1 ∧
-        IntermediateField.adjoin K (T : Set Omega) =
-          fullSUnitKummerExtension
-            (K := K) (Omega := Omega) n S := by
-  let E :=
-    fullSUnitKummerExtension
-      (K := K) (Omega := Omega) n S
-  let _ : IsGalois K E :=
-    fullSUnitKummerExtension_isGalois
-      (K := K) (Omega := Omega) n S
-  let _ : FiniteDimensional K E :=
-    fullSUnitKummerExtension_finiteDimensional
-      (K := K) (Omega := Omega) n hn hmu S
-  obtain ⟨theta, htheta⟩ :=
-    Field.exists_primitive_element K E
-  obtain ⟨T, hT, hthetaT⟩ :=
-    KummerTheory.exists_finset_kummerRootSet_of_mem_kummerRadicalExtension
-      n (fullSUnitKummerSubgroup (K := K) n S).1 theta.property
-  refine ⟨T, hT, ?_⟩
-  let R := IntermediateField.adjoin K (T : Set Omega)
-  have hRE : R ≤ E := by
-    apply IntermediateField.adjoin_le_iff.mpr
-    intro x hx
-    apply IntermediateField.subset_adjoin K
-      (KummerTheory.kummerRootSet
-        (K := K) (Omega := Omega) n
-        (fullSUnitKummerSubgroup (K := K) n S).1)
-    exact hT hx
-  have hall : ∀ x : E, (x : Omega) ∈ R := by
-    intro x
-    have hx :
-        x ∈ (⊤ : IntermediateField K E) :=
-      trivial
-    rw [← htheta] at hx
-    induction hx using IntermediateField.adjoin_induction with
-    | mem y hy =>
-        have hy' : y = theta :=
-          Set.mem_singleton_iff.mp hy
-        subst y
-        exact hthetaT
-    | algebraMap a =>
-        exact R.algebraMap_mem a
-    | add x y hx hy ihx ihy =>
-        exact R.add_mem ihx ihy
-    | inv x hx ihx =>
-        exact R.inv_mem ihx
-    | mul x y hx hy ihx ihy =>
-        exact R.mul_mem ihx ihy
-  apply le_antisymm hRE
-  intro x hx
-  exact hall ⟨x, hx⟩
+
 
 /-- The finite generating roots may be regarded as elements of the full
 Kummer extension itself; internally they adjoin to the top field.  This is

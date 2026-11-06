@@ -291,7 +291,7 @@ theorem compactOpenAverage_fixed (ρ : Representation ℂ G V)
   have hf : ∀ x : U.toOpenSubgroup ⧸ K.subgroup,
       ρ ((Quotient.out x : U.toOpenSubgroup) : G) v = v :=
     fun x => hv (Quotient.out x)
-  simp only [hf, Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
+  simp only [hf, Finset.sum_const, Finset.card_univ]
   rw [← Nat.card_eq_fintype_card, ← Nat.cast_smul_eq_nsmul ℂ, smul_smul]
   have hn : (Nat.card (U.toOpenSubgroup ⧸ K.subgroup) : ℂ) ≠ 0 := by
     exact_mod_cast Nat.card_pos.ne'

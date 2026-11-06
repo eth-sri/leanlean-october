@@ -324,47 +324,7 @@ theorem chosenNormalBasisPrincipalUnitCorrectionProduct_mem
         (K := K) (L := L) (chosenNormalBasisIntegerLattice K L)
         (Nat.le_add_right n d) (hz d)
 
-omit [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)] in
 
-/-- The quotient of two partial products is controlled by the filtration
-level at the earlier index.  This is the exact tail recurrence used in both
-`H⁰` and `H⁻¹` correction arguments. -/
-theorem chosenNormalBasisPrincipalUnitCorrectionProduct_div_mem
-    {n : Nat}
-    (hmul : ∀ k : Nat, n ≤ k →
-      ∀ u : 𝒪[L]ˣ, u ∈ chosenNormalBasisPrincipalUnitSet K L k →
-        ∀ v : 𝒪[L]ˣ, v ∈ chosenNormalBasisPrincipalUnitSet K L k →
-          u * v ∈ chosenNormalBasisPrincipalUnitSet K L k)
-    (z : Nat → 𝒪[L]ˣ)
-    (hz : ∀ i : Nat, z i ∈ chosenNormalBasisPrincipalUnitSet K L (n + i))
-    (m d : Nat) :
-    chosenNormalBasisPrincipalUnitCorrectionProduct (L := L) z (m + d) /
-        chosenNormalBasisPrincipalUnitCorrectionProduct (L := L) z m ∈
-      chosenNormalBasisPrincipalUnitSet K L (n + m) := by
-  induction d with
-  | zero => simp
-  | succ d ih =>
-      have hprod :
-          chosenNormalBasisPrincipalUnitCorrectionProduct (L := L) z (m + (d + 1)) =
-            chosenNormalBasisPrincipalUnitCorrectionProduct (L := L) z (m + d) *
-              z (m + d) := by
-        rw [Nat.add_succ]
-        rfl
-      rw [hprod]
-      have hzlevel : z (m + d) ∈ chosenNormalBasisPrincipalUnitSet K L (n + m) :=
-        chosenBaseUniformizerPowSubmodule_antitone
-          (K := K) (L := L) (chosenNormalBasisIntegerLattice K L)
-          (Nat.add_le_add_left (Nat.le_add_right m d) n) (hz (m + d))
-      have hEq :
-          chosenNormalBasisPrincipalUnitCorrectionProduct (L := L) z (m + d) *
-                z (m + d) /
-              chosenNormalBasisPrincipalUnitCorrectionProduct (L := L) z m =
-            (chosenNormalBasisPrincipalUnitCorrectionProduct (L := L) z (m + d) /
-                chosenNormalBasisPrincipalUnitCorrectionProduct (L := L) z m) *
-              z (m + d) := by
-        simp [div_eq_mul_inv, mul_assoc, mul_comm]
-      rw [hEq]
-      exact hmul (n + m) (Nat.le_add_right n m) _ ih _ hzlevel
 
 /-- Completeness of `𝒪_L` gives a unit-valued limit for the normal-basis
 partial products once the lattice sequence has been embedded in

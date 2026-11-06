@@ -370,7 +370,7 @@ def euclideanData : KPMeasurableLocalL2.Data a.domain
   tensor_one := by
     intro y
     ext v
-    simp [LinearIsometryEquiv.trans_apply, tensor_one a y]
+    simp [tensor_one a y]
   tensor_mul := by
     intro γ δ y v
     simp only [LinearIsometryEquiv.trans_apply, LinearIsometryEquiv.symm_apply_apply]

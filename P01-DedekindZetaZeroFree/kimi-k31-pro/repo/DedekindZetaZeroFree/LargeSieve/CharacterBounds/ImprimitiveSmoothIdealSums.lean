@@ -28,7 +28,7 @@ private lemma thetaWeight_bot {F : Type*} [Field F] [NumberField F] (X : ℝ) :
     thetaWeight F X (⊥ : Ideal (𝓞 F)) = 0 := by
   unfold thetaWeight
   have hb : (Ideal.absNorm (⊥ : Ideal (𝓞 F)) : ℝ) = 0 := by
-    simp [Ideal.absNorm_eq_zero_iff]
+    simp
   rw [hb, zero_div, DedekindZetaZeroFree.LargeSieve.Vendor.annularWeight_eq_zero_of_le (by norm_num : (0:ℝ) ≤ 1/2)]
   simp
 

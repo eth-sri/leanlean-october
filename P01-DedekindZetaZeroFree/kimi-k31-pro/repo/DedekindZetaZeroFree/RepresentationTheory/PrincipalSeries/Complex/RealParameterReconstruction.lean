@@ -14,7 +14,7 @@ open scoped ContDiff Matrix.Norms.Elementwise
 private lemma line_open (x : ℂ) :
     bottomRowLine (weyl * upperUnipotent x) = projectiveOpen x := by
   unfold bottomRowLine weyl upperUnipotent
-  simp [Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two]
+  simp [Matrix.mul_apply, Fin.sum_univ_two]
 
 private lemma line_infinity (u : ℂ) :
     bottomRowLine (lowerUnipotent u) = projectiveInfinity u := by

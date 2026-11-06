@@ -14,8 +14,7 @@ private theorem rayChar_transport_apply
     {F : Type} [Field F] [NumberField F] {𝔪 𝔪' : Ideal (𝓞 F)} (h : 𝔪 = 𝔪')
     (η : RayClassCharacter F 𝔪) :
     ((h ▸ η : RayClassCharacter F 𝔪') : Ideal (𝓞 F) → ℂ) = η := by
-  cases h
-  rfl
+  aesop
 
 theorem incomplete_nonzero_of_enlargement
     (F : Type) [Field F] [NumberField F]
@@ -31,7 +30,7 @@ theorem incomplete_nonzero_of_enlargement
   classical
   have hchar : ∀ I : Ideal (𝓞 F), (hmod.symm ▸ η) I = η I := by
     intro I
-    rw [rayChar_transport_apply (hmod.symm) η]
+    rw [rayChar_transport_apply hmod.symm η]
 
   have hright : ∀ z : ℂ, 1 < z.re → P.L z = Q.L z := by
     intro z hz

@@ -82,9 +82,9 @@ theorem finiteValues_locallyConstant : IsLocallyConstant (finiteValues R N P C s
     intro j
     have h := hl j
     rw [IsLocallyConstant.iff_eventually_eq] at h
-    exact h a
+    grind
   filter_upwards [Filter.eventually_all.mpr he] with b hb
-  exact funext hb
+  grind
 
 theorem finiteScalar_continuous : Continuous (finiteScalar R N P C s x) :=
   ((finiteValues_locallyConstant R N P C s x).comp (observation R P C s)).continuous
@@ -154,7 +154,7 @@ theorem smoothSlot_compact_bound (w : InfinitePlace F) (hw : Sum.inl w ∈ s.val
   simp only [NNReal.coe_mul, NNReal.coe_add, NNReal.coe_one]
   exact hh.trans (by
     have hp := mul_nonneg B.coe_nonneg (apply_nonneg (orders.sup (chartSeminorm negativeParameter)) f)
-    nlinarith only [hp])
+    grind)
 
 theorem finiteValues_update (w : InfinitePlace F) (hw : Sum.inl w ∈ s.val)
     (v : complexCore) (a : Raw R) :
@@ -166,7 +166,7 @@ theorem finiteValues_update (w : InfinitePlace F) (hw : Sum.inl w ∈ s.val)
   | inl u => rfl
   | inr q =>
     simp only [finiteValues, Function.update_of_ne
-      (show (⟨Sum.inr q,hj⟩ : s.val) ≠ ⟨Sum.inl w,hw⟩ from by intro h; cases congrArg Subtype.val h)]
+      (show (⟨Sum.inr q,hj⟩ : s.val) ≠ ⟨Sum.inl w,hw⟩ from by grind)]
 
 theorem reflected_update (w : InfinitePlace F) (hw : Sum.inl w ∈ s.val)
     (v : complexCore) (a : Raw R) :
@@ -202,7 +202,7 @@ theorem reflected_update_compact_bound (w : InfinitePlace F) (hw : Sum.inl w ∈
           (PiTensorProduct.tprod ℂ (Function.update x ⟨.inl w,hw⟩ v))).val.val 1‖ ≤
           B * (orders.sup (chartSeminorm negativeParameter)) v.val := by
   obtain ⟨orders,B,hB,hb⟩ := smoothSlot_compact_bound R N P C s x w hw K hK
-  exact ⟨orders,B,hB,fun v a ha => by rw [reflected_update]; exact hb v.val a ha⟩
+  exact ⟨orders,B,hB,fun v a ha => by rw [reflected_update]; grind⟩
 
 end DedekindZetaZeroFree.FourierContinuation.CurrentMinusSlot
 

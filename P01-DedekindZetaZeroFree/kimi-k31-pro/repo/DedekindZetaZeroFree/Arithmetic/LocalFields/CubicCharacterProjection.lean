@@ -10,31 +10,9 @@ section
 namespace DedekindZetaZeroFree.KPRankOneCubicCharacterProducts
 
 open CubicCharacters
- lemma mu_cube (z : Mu3) : z ^ 3 = 1 := by
-  apply Subtype.ext
-  exact (mem_rootsOfUnity 3 _).mp z.property
+ 
 
- noncomputable def quotientChars (A : Type*) [CommGroup A]
-    [TopologicalSpace A] [IsTopologicalGroup A] :
-    ((A ⧸ cubes A) →ₜ* Mu3) ≃* (A →ₜ* Mu3) := by
-  let mk : A →ₜ* (A ⧸ cubes A) :=
-    ⟨QuotientGroup.mk' (cubes A), QuotientGroup.continuous_mk⟩
-  have kills (f : A →ₜ* Mu3) : cubes A ≤ f.toMonoidHom.ker := by
-    rintro x ⟨y, rfl⟩
-    change f (y ^ 3) = 1
-    rw [map_pow, mu_cube]
-  let lift (f : A →ₜ* Mu3) : (A ⧸ cubes A) →ₜ* Mu3 :=
-    ⟨QuotientGroup.lift (cubes A) f.toMonoidHom (kills f),
-      (QuotientGroup.isQuotientMap_mk (cubes A)).continuous_iff.mpr f.continuous⟩
-  exact
-    { toFun := fun f => f.comp mk
-      invFun := lift
-      left_inv := fun f => by
-        ext q
-        obtain ⟨x, rfl⟩ := QuotientGroup.mk'_surjective (cubes A) q
-        rfl
-      right_inv := fun f => by ext x; rfl
-      map_mul' := fun f g => by ext x; rfl }
+ 
 
 end DedekindZetaZeroFree.KPRankOneCubicCharacterProducts
 

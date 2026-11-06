@@ -254,15 +254,7 @@ def permutationLatticeScale
   ((Fintype.card ι : ℝ) + 1) *
       latticeApproximationRadius L + 1
 
-omit [DecidableEq ι] in
-theorem permutationLatticeScale_pos
-    (L : Submodule ℤ (ι → ℝ)) [DiscreteTopology L]
-    [IsZLattice ℝ L] :
-    0 < permutationLatticeScale L := by
-  have hB := latticeApproximationRadius_nonneg L
-  have hs : 0 ≤ (Fintype.card ι : ℝ) := by positivity
-  unfold permutationLatticeScale
-  nlinarith
+
 
 @[simp]
 theorem averagedLatticeVector_apply
@@ -677,30 +669,7 @@ theorem permutationSublatticeBasis_permuted
   simpa only [coe_permutationLatticeEquiv,
     permutationSublatticeBasis_apply_coe] using h
 
-/-- An invariant complete lattice in a real
-permutation representation contains a complete sublattice with a basis
-permuted in exactly the prescribed way. -/
-theorem exists_complete_permutationSublattice
-    (ρ : G →* Equiv.Perm ι)
-    (L : Submodule ℤ (ι → ℝ)) [DiscreteTopology L]
-    [IsZLattice ℝ L]
-    (hL : ∀ (g : G) (x : ι → ℝ), x ∈ L →
-      permutationRepresentation ρ g x ∈ L) :
-    ∃ L' : Submodule ℤ (ι → ℝ),
-      L' ≤ L ∧
-      DiscreteTopology L' ∧
-      Submodule.span ℝ (L' : Set (ι → ℝ)) = ⊤ ∧
-      ∃ b : Basis ι ℤ L',
-        ∀ (g : G) (i : ι),
-          permutationRepresentation ρ g
-              (b i : ι → ℝ) =
-            (b (ρ g i) : ι → ℝ) := by
-  refine ⟨permutationSublattice ρ L hL,
-    permutationSublattice_le ρ L hL,
-    inferInstance,
-    permutationSublattice_span_eq_top ρ L hL,
-    permutationSublatticeBasis ρ L hL, ?_⟩
-  exact permutationSublatticeBasis_permuted ρ L hL
+
 
 end Averaging
 
@@ -709,136 +678,9 @@ section GeneralPermutationBasis
 variable [Fintype G] [Group G] [Fintype ι] [DecidableEq ι]
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
 
-omit [Fintype G] in
-theorem basisEquivFunL_symm_coordinatePermutation
-    (b : Basis ι ℝ E)
-    (ρ : G →* Equiv.Perm ι)
-    (α : G →* (E ≃ₗ[ℝ] E))
-    (hb : ∀ (g : G) (i : ι),
-      α g (b i) = b (ρ g i))
-    (g : G) (x : ι → ℝ) :
-    b.equivFunL.symm
-        (coordinatePermutation (ρ g) x) =
-      α g (b.equivFunL.symm x) := by
-  have hmaps :
-      b.equivFunL.symm.toLinearMap.comp
-          (coordinatePermutation (ρ g)).toLinearMap =
-        (α g).toLinearMap.comp
-          b.equivFunL.symm.toLinearMap := by
-    apply (Pi.basisFun ℝ ι).ext
-    intro i
-    simp only [LinearMap.comp_apply, Pi.basisFun_apply]
-    have hsingle (j : ι) :
-        b.equivFunL.symm (Pi.single j 1) = b j := by
-      exact _root_.Basis.equivFun_symm_single b j
-    calc
-      b.equivFunL.symm
-          (coordinatePermutation (ρ g)
-            (Pi.single i 1)) =
-          b.equivFunL.symm
-            (Pi.single (ρ g i) 1) :=
-        congrArg b.equivFunL.symm
-          (coordinatePermutation_single (ρ g) i)
-      _ = b (ρ g i) := hsingle (ρ g i)
-      _ = α g (b i) := (hb g i).symm
-      _ = α g
-          (b.equivFunL.symm (Pi.single i 1)) := by
-        rw [hsingle i]
-  exact LinearMap.congr_fun hmaps x
 
-/-- Invariant formulation: if a finite group acts on a
-finite-dimensional real vector space by permuting a specified basis, every
-invariant complete lattice contains a complete sublattice with a basis
-permuted in the same way. -/
-theorem exists_complete_permutationSublattice_of_basis
-    (b : Basis ι ℝ E)
-    (ρ : G →* Equiv.Perm ι)
-    (α : G →* (E ≃ₗ[ℝ] E))
-    (hb : ∀ (g : G) (i : ι),
-      α g (b i) = b (ρ g i))
-    (L : Submodule ℤ E) [DiscreteTopology L]
-    [IsZLattice ℝ L]
-    (hL : ∀ (g : G) (x : E), x ∈ L →
-      α g x ∈ L) :
-    ∃ L' : Submodule ℤ E,
-      L' ≤ L ∧
-      DiscreteTopology L' ∧
-      Submodule.span ℝ (L' : Set E) = ⊤ ∧
-      ∃ b' : Basis ι ℤ L',
-        ∀ (g : G) (i : ι),
-          α g (b' i : E) =
-            (b' (ρ g i) : E) := by
-  let e : E ≃L[ℝ] (ι → ℝ) := b.equivFunL
-  let Lc : Submodule ℤ (ι → ℝ) :=
-    ZLattice.comap ℝ L e.symm.toLinearMap
-  let : DiscreteTopology Lc := by
-    dsimp only [Lc]
-    infer_instance
-  let : IsZLattice ℝ Lc := by
-    dsimp only [Lc]
-    infer_instance
-  have hLc :
-      ∀ (g : G) (x : ι → ℝ), x ∈ Lc →
-        permutationRepresentation ρ g x ∈ Lc := by
-    intro g x hx
-    change b.equivFunL.symm
-      (coordinatePermutation (ρ g) x) ∈ L
-    rw [basisEquivFunL_symm_coordinatePermutation
-      b ρ α hb]
-    apply hL g
-    exact hx
-  let Lc' : Submodule ℤ (ι → ℝ) :=
-    permutationSublattice ρ Lc hLc
-  let : DiscreteTopology Lc' := by
-    dsimp only [Lc']
-    infer_instance
-  let : IsZLattice ℝ Lc' := by
-    dsimp only [Lc']
-    infer_instance
-  let L' : Submodule ℤ E :=
-    ZLattice.comap ℝ Lc' e.toLinearMap
-  let : DiscreteTopology L' := by
-    dsimp only [L']
-    infer_instance
-  let : IsZLattice ℝ L' := by
-    dsimp only [L']
-    infer_instance
-  let bc : Basis ι ℤ Lc' :=
-    permutationSublatticeBasis ρ Lc hLc
-  let b' : Basis ι ℤ L' :=
-    bc.ofZLatticeComap ℝ Lc' e.toLinearEquiv
-  have hle : L' ≤ L := by
-    intro x hx
-    have hxc' : e x ∈ Lc' := hx
-    have hxc : e x ∈ Lc :=
-      permutationSublattice_le ρ Lc hLc hxc'
-    change e.symm (e x) ∈ L at hxc
-    simpa using hxc
-  refine ⟨L', hle, inferInstance,
-    IsZLattice.span_top, b', ?_⟩
-  intro g i
-  have hcoord :=
-    permutationSublatticeBasis_permuted
-      ρ Lc hLc g i
-  have hintertwine :=
-    basisEquivFunL_symm_coordinatePermutation
-      b ρ α hb g (bc i : ι → ℝ)
-  have hcoord' :
-      coordinatePermutation (ρ g) (bc i : ι → ℝ) =
-        (bc (ρ g i) : ι → ℝ) := by
-    simpa only [permutationRepresentation, bc] using hcoord
-  change
-    α g (e.symm (bc i : ι → ℝ)) =
-      e.symm (bc (ρ g i) : ι → ℝ)
-  calc
-    α g (e.symm (bc i : ι → ℝ)) =
-        b.equivFunL.symm
-          (coordinatePermutation (ρ g)
-            (bc i : ι → ℝ)) := hintertwine.symm
-    _ = b.equivFunL.symm
-        (bc (ρ g i) : ι → ℝ) :=
-      congrArg b.equivFunL.symm hcoord'
-    _ = e.symm (bc (ρ g i) : ι → ℝ) := rfl
+
+
 
 end GeneralPermutationBasis
 

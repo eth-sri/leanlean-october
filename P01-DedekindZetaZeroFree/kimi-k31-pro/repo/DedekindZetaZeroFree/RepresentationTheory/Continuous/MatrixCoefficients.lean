@@ -46,13 +46,11 @@ variable (π : ContRepresentation 𝕜 G V) (hπ : Continuous π)
 
 @[simp]
 theorem matrixCoeff_zero_left (w : V) : matrixCoeff π hπ 0 w = 0 := by
-  ext g
-  simp
+  aesop
 
 @[simp]
 theorem matrixCoeff_zero_right (v : V) : matrixCoeff π hπ v 0 = 0 := by
-  ext g
-  simp
+  aesop
 
 @[simp]
 theorem matrixCoeff_add_left (v₁ v₂ w : V) :
@@ -93,22 +91,19 @@ theorem matrixCoeffₛₗ_apply_apply (v w : V) :
 
 theorem matrixCoeff_apply_mul_right (v w : V) (g g₀ : G) :
     matrixCoeff π hπ v w (g * g₀) = matrixCoeff π hπ (π g₀ v) w g := by
-  simp [map_mul]
+  simp_all
 
 @[simp]
 theorem matrixCoeff_trivial (v w : V) :
     matrixCoeff (ContRepresentation.trivial 𝕜 G V) continuous_const v w =
       ContinuousMap.const G ⟪v, w⟫_𝕜 := by
-  ext g
-  simp
-  rfl
+  aesop
 
 @[simp]
 theorem matrixCoeff_restrict {H : Type*} [Monoid H] [TopologicalSpace H] (φ : H →* G)
     (hφ : Continuous φ) (v w : V) :
     matrixCoeff (π.restrict φ) (hπ.comp hφ) v w = (matrixCoeff π hπ v w).comp ⟨φ, hφ⟩ := by
-  ext h
-  simp
+  aesop
 
 end Coefficients
 

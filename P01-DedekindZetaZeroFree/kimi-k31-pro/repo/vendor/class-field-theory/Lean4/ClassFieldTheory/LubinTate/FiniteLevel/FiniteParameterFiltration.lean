@@ -87,7 +87,7 @@ theorem standardLubinTateUnitParameterSubgroup_natCard
           (U.principalUnitSubquotientEquivClassInQuotientOfLe hkn).toEquiv).symm
     _ = Nat.card
           (U.principalUnitSubquotient k (k + (n + 1 - k))) := by
-      rw [hend]
+      grind
     _ =
         ∏ i ∈ Finset.range (n + 1 - k),
           Nat.card (U.principalUnitGradedPiece (k + i)) := by

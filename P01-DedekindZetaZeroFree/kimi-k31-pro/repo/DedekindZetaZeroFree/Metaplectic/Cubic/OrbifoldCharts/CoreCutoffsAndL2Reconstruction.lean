@@ -254,7 +254,7 @@ theorem Chart.average_eq_self (f : E C.n → ℂ)
   have hs : (∑ g : C.G F ζ hζ hF U,
       (((C.rho F ζ hζ hF U g)⁻¹ : ℂˣ) : ℂ) * f (C.orthogonal g x)) =
       (Fintype.card (C.G F ζ hζ hF U) : ℂ) * f x := by
-    simp [heq _ _ hx, ← mul_assoc]
+    simp [heq _ _ hx]
   rw [hs, ← mul_assoc, inv_mul_cancel₀ (Nat.cast_ne_zero.mpr Fintype.card_ne_zero), one_mul]
 theorem Chart.average_zero_outside (f : E C.n → ℂ)
     {x : E C.n} (hx : x ∉ Metric.ball 0 C.radius) :

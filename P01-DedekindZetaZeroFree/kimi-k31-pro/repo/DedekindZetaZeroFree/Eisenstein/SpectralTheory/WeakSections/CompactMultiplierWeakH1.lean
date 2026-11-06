@@ -411,9 +411,9 @@ private theorem base_direction (j : Fin (3*d F)) :
         ((coefficientIndex (F:=F)).symm j).2 := by
   ext ik
   simp only [baseReindex, LinearIsometryEquiv.piLpCongrLeft_symm,
-    LinearIsometryEquiv.piLpCongrLeft_apply, Equiv.symm_symm, HyperbolicChart.coordinateVector,
+    LinearIsometryEquiv.piLpCongrLeft_apply, HyperbolicChart.coordinateVector,
     WithLp.ofLp_toLp]
-  simp [EuclideanSpace.single_apply, Pi.single_apply, ← Equiv.apply_eq_iff_eq_symm_apply]
+  simp [Pi.single_apply, ← Equiv.apply_eq_iff_eq_symm_apply]
 private theorem decoder_differential (a : ActualChart (U:=U) (H:=H)) (f : omega a → ℂ)
     (x : Space (3*d F)) (hx : x ∈ coordinateDomain a) (j : Fin (3*d F)) :
     (let p := (baseReindex (F:=F)).symm x
@@ -426,7 +426,7 @@ private theorem decoder_differential (a : ActualChart (U:=U) (H:=H)) (f : omega 
   generalize hi : (coefficientIndex (F:=F)).symm j = ik
   obtain ⟨i,k⟩ := ik
   fin_cases k <;> simp [chartDifferential, CotangentLogCoframe.j_apply,
-    HyperbolicChart.differential, ← mul_assoc, ← Complex.ofReal_mul, ← Real.exp_add,
+    HyperbolicChart.differential, ← mul_assoc, 
     ← Complex.exp_add]
 
 private theorem flattened_differential (a : ActualChart (U := U) (H := H))
@@ -601,7 +601,7 @@ open WeakJets.Raw
       rw [← counts_first, jet_index]
     have hw := weak_product_rule_first u 0 j hcount (hb.mono (subset_closure.trans hB.2)) φ
     simp only [zero_add, jet_zero, hjet] at hw
-    simp only [IsWeakDerivative, coordinateDerivative,
+    simp only [coordinateDerivative,
       KPContLocalEnergy.SobolevEnergyEstimates.firstIndex_directions]
     have hdegree : (KPContLocalEnergy.SobolevEnergyEstimates.Raw.firstIndex j).degree = 1 := by
       simp only [MultiIndex.degree, KPContLocalEnergy.SobolevEnergyEstimates.Raw.firstIndex,

@@ -345,17 +345,7 @@ theorem absoluteValueExtension_extension_eq_pullback_embeddingOfExtension
           (AbsoluteValue.toAlgebraicLocalization vK w.1 w.2 x)
       exact h
 
-/-- Clause (i) of the valuation-extension theorem: every exact extension of `v` to an algebraic extension
-`L / K` is the pullback of `\bar v` along a `K`-embedding into `\bar K_v`. -/
-theorem absoluteValueExtension_extension_exists_embedding
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    [Algebra.IsAlgebraic K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    (w : AbsoluteValueExtension vK L) :
-    ∃ tau : L →ₐ[K] absoluteValueExtension_algebraicCompletionClosure vK,
-      w.1 = absoluteValueExtension_pullback vK hvK tau := by
-  exact ⟨absoluteValueExtension_embeddingOfExtension vK w,
-    absoluteValueExtension_extension_eq_pullback_embeddingOfExtension vK hvK w⟩
+
 
 /-- Conjugacy of two `K`-embeddings over the completion `K_v`. -/
 def AbsoluteValueExtensionConjugateOverCompletion
@@ -838,22 +828,7 @@ theorem absoluteValueExtension_pullback_eq_iff_conjugate
   · exact absoluteValueExtension_conjugate_of_pullback_eq vK hvK
   · exact absoluteValueExtension_pullback_eq_of_conjugate vK hvK
 
-/-- The valuation-extension theorem, with its two clauses packaged together.
-The only global side condition is that the base absolute value is
-nontrivial. -/
-theorem absoluteValueExtension_extension_theorem
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    [Algebra.IsAlgebraic K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial) :
-    (∀ w : AbsoluteValueExtension vK L,
-      ∃ tau : L →ₐ[K] absoluteValueExtension_algebraicCompletionClosure vK,
-        w.1 = absoluteValueExtension_pullback vK hvK tau) ∧
-    (∀ tau tau' : L →ₐ[K] absoluteValueExtension_algebraicCompletionClosure vK,
-      absoluteValueExtension_pullback vK hvK tau =
-          absoluteValueExtension_pullback vK hvK tau' ↔
-        AbsoluteValueExtensionConjugateOverCompletion vK tau tau') := by
-  exact ⟨absoluteValueExtension_extension_exists_embedding vK hvK,
-    absoluteValueExtension_pullback_eq_iff_conjugate vK hvK⟩
+
 
 end Valuations
 end AlgebraicNumberTheory

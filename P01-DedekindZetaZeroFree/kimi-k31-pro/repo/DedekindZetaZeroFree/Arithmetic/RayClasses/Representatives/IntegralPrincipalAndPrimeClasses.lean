@@ -40,7 +40,7 @@ theorem idealClass_integral_principal (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
       ⟨_, integral_isRayCongruent m hm a ha hcong hpos, rfl⟩
   unfold idealClass
   rw [QuotientGroup.mk'_apply, QuotientGroup.eq_one_iff]
-  exact hmem
+  grind
 
 theorem prime_not_mem_fullModulus_support (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     (p : IsDedekindDomain.HeightOneSpectrum (𝓞 F))

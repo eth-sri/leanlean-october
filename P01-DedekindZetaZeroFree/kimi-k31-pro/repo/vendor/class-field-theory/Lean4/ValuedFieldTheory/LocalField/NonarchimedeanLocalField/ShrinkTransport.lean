@@ -215,52 +215,9 @@ section ValuationExtension
 
 universe v w x y
 
-/-- A valuation-extension relation survives transport along compatible field
-equivalences.  This applies in particular to the two `Shrink` equivalences. -/
-theorem hasExtension_comap_ringEquivs
-    {F : Type v} {G : Type w} {F₀ : Type x} {G₀ : Type y}
-    [Field F] [Field G] [Field F₀] [Field G₀]
-    [Algebra F G] [Algebra F₀ G₀]
-    {ΓF ΓG : Type*}
-    [LinearOrderedCommGroupWithZero ΓF]
-    [LinearOrderedCommGroupWithZero ΓG]
-    (eF : F₀ ≃+* F) (eG : G₀ ≃+* G)
-    (h : ∀ a : F₀, eG (algebraMap F₀ G₀ a) =
-      algebraMap F G (eF a))
-    (vF : Valuation F ΓF) (vG : Valuation G ΓG)
-    [vF.HasExtension vG] :
-    (vF.comap eF.toRingHom).HasExtension
-      (vG.comap eG.toRingHom) := by
-  constructor
-  rw [Valuation.isEquiv_iff_val_le_one]
-  intro a
-  change vF (eF a) ≤ 1 ↔ vG (eG (algebraMap F₀ G₀ a)) ≤ 1
-  rw [h]
-  exact (Valuation.HasExtension.val_map_le_one_iff vF vG (eF a)).symm
 
-/-- Equivalent valuations may replace both valuations in an extension
-relation.  This is useful when a transported valuation is equivalent, but
-not definitionally equal, to the canonical valuation on `Shrink`. -/
-theorem hasExtension_of_isEquiv
-    {F : Type v} {G : Type w}
-    [CommRing F] [Ring G] [Algebra F G]
-    {ΓF ΓF' ΓG ΓG' : Type*}
-    [LinearOrderedCommMonoidWithZero ΓF]
-    [LinearOrderedCommMonoidWithZero ΓF']
-    [LinearOrderedCommMonoidWithZero ΓG]
-    [LinearOrderedCommMonoidWithZero ΓG']
-    (vF : Valuation F ΓF) (vF' : Valuation F ΓF')
-    (vG : Valuation G ΓG) (vG' : Valuation G ΓG')
-    [vF.HasExtension vG]
-    (hF : vF.IsEquiv vF') (hG : vG.IsEquiv vG') :
-    vF'.HasExtension vG' := by
-  constructor
-  intro x y
-  have hext : vF.IsEquiv (vG.comap (algebraMap F G)) :=
-    Valuation.HasExtension.val_isEquiv_comap
-  exact (hF.symm x y).trans
-    ((hext x y).trans
-      (hG (algebraMap F G x) (algebraMap F G y)))
+
+
 
 end ValuationExtension
 

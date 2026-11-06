@@ -67,10 +67,7 @@ def gradedPiece (n : ℕ) : Type u :=
 abbrev inertiaSubgroup : Subgroup G :=
   F.lower 0
 
-/-- States the theorem `lower_zero_eq_inertiaSubgroup`. -/
-theorem lower_zero_eq_inertiaSubgroup :
-    F.lower 0 = F.inertiaSubgroup :=
-  rfl
+
 
 /-- The wild inertia subgroup `G_1` of a lower ramification filtration. -/
 abbrev wildInertiaSubgroup : Subgroup G :=
@@ -90,10 +87,7 @@ instance wildInertiaSubgroup_normal : F.wildInertiaSubgroup.Normal := by
   change (F.lower 1).Normal
   infer_instance
 
-/-- States the theorem `wildInertiaSubgroup_le_inertiaSubgroup`. -/
-theorem wildInertiaSubgroup_le_inertiaSubgroup :
-    F.wildInertiaSubgroup ≤ F.inertiaSubgroup :=
-  F.antitone (Nat.zero_le 1)
+
 
 /-- Provides the instance `wildInertiaSubgroup_subgroupOf_inertiaSubgroup_normal`. -/
 instance wildInertiaSubgroup_subgroupOf_inertiaSubgroup_normal :

@@ -45,8 +45,7 @@ private theorem normal_holomorphic {ι : Type*} (g : ι → Coordinates → ℂ)
   obtain ⟨r, hr, hsub⟩ := Metric.nhds_basis_closedBall.mem_iff.mp (hU.mem_nhds hx)
   obtain ⟨M, hMs, hMb⟩ := hM (closedBall x r) hsub (isCompact_closedBall x r)
   have hhalf : 0 < r / 2 := by positivity
-  have hinside {y : Coordinates} (hy : y ∈ Metric.ball x (r / 2)) : y ∈ closedBall x r := by
-    exact ball_subset_closedBall (ball_subset_ball (by linarith) hy)
+  have hinside {y : Coordinates} (hy : y ∈ Metric.ball x (r / 2)) : y ∈ closedBall x r := ball_subset_closedBall (ball_subset_ball (by linarith) hy)
   have hderiv : ∀ i y, y ∈ Metric.ball x (r / 2) → ‖fderiv ℂ (g i) y‖ ≤ (4 / r) * M i := by
     intro i y hy
     have hball : Metric.ball y (r / 2) ⊆ closedBall x r := by

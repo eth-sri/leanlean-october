@@ -28,7 +28,7 @@ theorem Iscale_sub_main_le :
   obtain ⟨Co, hCo, ho⟩ := OmittedProbeBound.omittedSum_bound D
   have hrep : ∀ u : D.Row, u ∈ PoissonIdentity.repRows D := fun u => by
     rw [PoissonIdentity.repRows_eq_univ D]
-    exact Set.mem_univ u
+    grind
   have hset : ∀ k : ℕ, (PoissonKernel.dyadRows D ((2 : ℝ) ^ k) ∩ PoissonIdentity.repRows D) \
       PoissonKernel.principalRows D = Rows.nonprincipalDyad D k := by
     intro k
@@ -36,7 +36,7 @@ theorem Iscale_sub_main_le :
     simp [Rows.nonprincipalDyad, PoissonKernel.principalRows, hrep u] <;> tauto
   have hprin : PoissonKernel.principalRows D ∩ PoissonIdentity.repRows D =
       PoissonKernel.principalRows D := by
-    ext u; simp [hrep u]
+    grind
   have hid : ∀ Z : ℝ, 2 ≤ Z → D.Iscale Z = PoissonKernel.Jpr D Z + Rows.nonprincipalSum D Z +
       PoissonFrequencyDecomposition.omittedSum D Z := by
     intro Z hZ
@@ -45,7 +45,7 @@ theorem Iscale_sub_main_le :
         PoissonKernel.J D ((PoissonKernel.dyadRows D ((2 : ℝ) ^ k) ∩ PoissonIdentity.repRows D) \
           PoissonKernel.principalRows D) 4 4 2 Z := by
       unfold Rows.nonprincipalSum Rows.dyadIntegral
-      exact tsum_congr (fun k => by rw [hset k])
+      grind
     rw [PoissonIdentity.Iscale_eq_principal_add_nonprincipal D Z hZ0,
       (PoissonIdentity.nonprincipal_eq_sum_dyads D Z hZ0).2, hprin, h2]
     try rfl
@@ -61,7 +61,7 @@ theorem Iscale_sub_main_le :
   have h1 : D.Iscale Z - Spectral.c₀ D * Spectral.f D Z =
       PrincipalWShift.Rw D Z + PrincipalZShift.Rz D Z + Rows.nonprincipalSum D Z +
         PoissonFrequencyDecomposition.omittedSum D Z := by
-    rw [hid Z hZ, hJ Z hZ]; ring
+    grind
   rw [h1]
   have hp : 0 ≤ Z ^ (717 / 2000 : ℝ) := Real.rpow_nonneg (by linarith) _
   have a1 := (hw Z hZ).trans (mul_le_mul_of_nonneg_left (hexp1 Z hZ) hCw.le)
@@ -71,7 +71,7 @@ theorem Iscale_sub_main_le :
   calc _ ≤ ‖PrincipalWShift.Rw D Z‖ + ‖PrincipalZShift.Rz D Z‖ + ‖Rows.nonprincipalSum D Z‖ +
         ‖PoissonFrequencyDecomposition.omittedSum D Z‖ :=
         (norm_add_le _ _).trans (add_le_add norm_add₃_le le_rfl)
-    _ ≤ _ := by nlinarith [a1, a2, a3, a4]
+    _ ≤ _ := by grind
 
 end
 

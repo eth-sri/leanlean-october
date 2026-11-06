@@ -58,16 +58,16 @@ abbrev PA := ThetaProfileHaarSheets.PositiveAxis
   (⟨‖(z : ℂ)‖ ^ 2, sq_pos_of_pos (norm_pos_iff.mpr z.ne_zero)⟩,
     ⟨(z : ℂ) / (‖(z : ℂ)‖ : ℂ), by
       apply mem_sphere_zero_iff_norm.mpr
-      simp [norm_div, norm_pos_iff.mpr z.ne_zero, z.ne_zero]⟩)
+      simp [z.ne_zero]⟩)
  theorem complexPolar_left_inv (p : PA × Circle) :
     polarInverse (complexPolar p) = p := by
   rcases p with ⟨⟨t, ht⟩, w⟩
   have hs := Real.sqrt_pos.mpr ht
   apply Prod.ext
   · apply Subtype.ext
-    simp [polarInverse, complexPolar, norm_mul, abs_of_pos hs, Real.sq_sqrt ht.le]
+    simp [polarInverse, complexPolar, abs_of_pos hs, Real.sq_sqrt ht.le]
   · apply Circle.ext
-    simp [polarInverse, complexPolar, norm_mul, abs_of_pos hs]
+    simp [polarInverse, complexPolar, abs_of_pos hs]
     field_simp [Complex.ofReal_ne_zero.mpr hs.ne']
  theorem complexPolar_right_inv (z : ℂˣ) :
     complexPolar (polarInverse z) = z := by

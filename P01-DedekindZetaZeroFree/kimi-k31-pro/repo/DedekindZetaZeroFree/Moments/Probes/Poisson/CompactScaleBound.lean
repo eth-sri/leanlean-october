@@ -33,8 +33,7 @@ theorem norm_rawKernel_scale (u : Frequency D.recipe) (ξ w z : ℂ)
   have hK : ∀ Y : ℝ, RawFixed.FixedData.rawKernel D u ξ w z Y = (Y : ℂ) ^ s * Rst := by
     intro Y
     unfold RawFixed.FixedData.rawKernel
-    rw [hs, hR]
-    ring
+    grind
   have hre : s.re = Einit := by
     rw [hs]
     simp [Einit, Scales.kernelExponent, hξ, hw, hz]
@@ -92,8 +91,7 @@ theorem omittedSum_norm_le_scale :
   refine (norm_tsum_le_tsum_norm (hmaj.of_nonneg_of_le (fun _ => norm_nonneg _) hle)).trans ?_
   refine ((hmaj.of_nonneg_of_le (fun _ => norm_nonneg _) hle).tsum_le_tsum hle hmaj).trans ?_
   rw [tsum_mul_left, tsum_mul_left]
-  apply le_of_eq
-  ring
+  grind
 
 theorem omittedSum_norm_le :
     ∃ C : ℝ, 0 < C ∧ ∀ Z : ℝ, 2 ≤ Z →

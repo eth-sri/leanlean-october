@@ -259,7 +259,7 @@ lemma normalizedRow_mem (x : ℂ) : normalizedRow x ∈ unitRows := by
   have hd2 := Real.sq_sqrt ht.le
   change ‖normalizedRow x 0‖ ^ 2 + ‖normalizedRow x 1‖ ^ 2 = 1
   simp only [normalizedRow, Pi.smul_apply, smul_eq_mul, Matrix.cons_val_zero,
-    Matrix.cons_val_one, Matrix.head_cons, mul_one, norm_mul, norm_inv,
+    Matrix.cons_val_one, mul_one, norm_mul, norm_inv,
     Complex.norm_real, Real.norm_eq_abs, abs_of_pos hd]
   field_simp
   nlinarith
@@ -275,19 +275,19 @@ lemma normalizedRow_log {n : ℕ} (g : (Fin n → ℝ) → ComplexGL2)
       ((Real.sqrt (1 + ‖x‖ ^ 2) : ℂ)⁻¹) *
         (weyl * upperUnipotent x * g u : Matrix (Fin 2) (Fin 2) ℂ) 1 i := by
     simp [SourceJets.actedRow, normalizedRow, weyl, upperUnipotent,
-      Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two]
+      Matrix.mul_apply, Fin.sum_univ_two]
     ring
   have hb : rowSquare g (normalizedRow x,u) =
       bottomRowNormSq (weyl * upperUnipotent x * g u) / (1 + ‖x‖ ^ 2) := by
     unfold rowSquare bottomRowNormSq
     rw [he 0, he 1]
-    simp only [norm_mul, norm_div, norm_inv, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hd,
-      mul_pow, inv_pow, div_pow, Matrix.GeneralLinearGroup.coe_mul, hd2]
+    simp only [norm_mul, norm_inv, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hd,
+      mul_pow, inv_pow, Matrix.GeneralLinearGroup.coe_mul, hd2]
     ring
   have hdet : ‖((Matrix.GeneralLinearGroup.det (weyl * upperUnipotent x * g u) : ℂˣ) : ℂ)‖ =
       ‖(g u : Matrix (Fin 2) (Fin 2) ℂ).det‖ := by
     change ‖(weyl * upperUnipotent x * g u : Matrix (Fin 2) (Fin 2) ℂ).det‖ = _
-    simp only [Matrix.GeneralLinearGroup.coe_mul, Matrix.det_mul]
+    simp only [Matrix.det_mul]
     have hw : (weyl : Matrix (Fin 2) (Fin 2) ℂ).det = -1 := by
       simp [weyl, Matrix.det_fin_two]
     have hx : (upperUnipotent x : Matrix (Fin 2) (Fin 2) ℂ).det = 1 := by

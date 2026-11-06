@@ -227,46 +227,9 @@ theorem
         GlobalClassFields.finitePrimeIdele_mem_idelePrimeToModulusSubgroup
             m v hv⟩
 
-/-- Direct local form: a prime ideal outside the modulus maps to the
-arithmetic chosen local Artin value of normalized order one. -/
-theorem
-    arithmeticIdealArtinGaloisMap_primeIdeal_eq_arithmeticChosenFinitePlaceArtin
-    (m : RayClass.Modulus K)
-    (hm :
-      RayClass.Modulus.congruenceSubgroup m ≤
-        (_root_.ideleClassNorm K L).range)
-    (v : HeightOneSpectrum (𝓞 K))
-    (hv : v ∉ m.finitePart.support) :
-    arithmeticIdealArtinGaloisMap
-        (K := K) (L := L) m hm
-        (RayClass.primeToModulusIdeal m v hv) =
-      Reciprocity.arithmeticChosenFinitePlaceArtinMonoidHom
-        K L v (FiniteIdeleGroup.chosenLocalOrderSection v 1) := by
-  rw [
-    arithmeticIdealArtinGaloisMap_primeIdeal_eq_arithmeticFinitePlacePrimeArtin,
-    GlobalClassFields.arithmeticFinitePlacePrimeArtin_eq_arithmeticChosenFinitePlaceArtin]
 
-/-- The arithmetic ideal class-field equivalence sends the class of a
-prime ideal to its arithmetic Frobenius automorphism. -/
-theorem
-    arithmeticIdealClassQuotientEquivGaloisGroup_primeIdeal
-    (m : RayClass.Modulus K)
-    (hm :
-      RayClass.Modulus.congruenceSubgroup m ≤
-        (_root_.ideleClassNorm K L).range)
-    (v : HeightOneSpectrum (𝓞 K))
-    (hv : v ∉ m.finitePart.support) :
-    arithmeticIdealClassQuotientEquivGaloisGroup
-        (K := K) (L := L) m hm
-        (QuotientGroup.mk'
-          (idealArtinKernel m
-            ((_root_.ideleClassNorm K L).range) hm)
-          (RayClass.primeToModulusIdeal m v hv)) =
-      GlobalClassFields.arithmeticFinitePlacePrimeArtin
-        (K := K) (L := L) v := by
-  rw [
-    arithmeticIdealClassQuotientEquivGaloisGroup_mk,
-    arithmeticIdealArtinGaloisMap_primeIdeal_eq_arithmeticFinitePlacePrimeArtin]
+
+
 
 end IdealClassFieldTheory
 end GlobalClassFieldTheory

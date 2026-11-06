@@ -26,12 +26,12 @@ theorem archDiagonalIdele_lift (u : InfinitePlace F → ℝ) :
         (fun w => (Real.exp (u w) : ℂ)) v
   cases v with
   | inr q =>
-    simp only [KPRationalAdelicSplitting.ATuple, KPRationalAdelicSplitting.ACoordinates,
+    simp only [
       archDiagonalIdele, KPAdelicCoverRestrictedProduct.adeleEval,
       KPGlobalTorusFunctionData.archDiagonalTuple]
     exact KPStandardLocalRootLifts.A_one F ζ hζ (Sum.inr q)
   | inl w =>
-    simp only [KPRationalAdelicSplitting.ATuple, KPRationalAdelicSplitting.ACoordinates,
+    simp only [
       archDiagonalIdele, KPAdelicCoverRestrictedProduct.adeleEval,
       KPGlobalTorusFunctionData.archDiagonalTuple]
     congr 1

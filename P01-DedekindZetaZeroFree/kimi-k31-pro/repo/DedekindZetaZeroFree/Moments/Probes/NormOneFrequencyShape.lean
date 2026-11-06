@@ -40,14 +40,14 @@ theorem principalNorm_eq_modulus (A : SArithmeticData F) (h : A.R) (hh : h ≠ 0
   let I : A.Exterior := A.exteriorIdealEquiv.symm J
   have hI : A.extendIdeal I = Ideal.span {h} := by
     rw [← A.exteriorIdealEquiv_apply I]
-    exact congrArg Subtype.val (A.exteriorIdealEquiv.apply_symm_apply J)
+    grind
   have hgen : A.Generates I h := ⟨hh, hI.symm⟩
   have hnorm : principalNorm A h = A.exteriorNorm I := by
     unfold principalNorm
     rw [← hI, A.exteriorResidue_card]
     rfl
   rw [hnorm]
-  exact ⟨(A.generator_norm I h hgen (fieldUnit A h hh) (by rfl)).symm,
+  exact ⟨(A.generator_norm I h hgen (fieldUnit A h hh) rfl).symm,
     A.exteriorNorm_pos I⟩
 
 end ProbePoissonSheet

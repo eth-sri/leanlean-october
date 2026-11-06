@@ -44,7 +44,7 @@ private theorem hasDerivAt_logFlow (g : SchwartzMap ℝ ℂ) (t : ℝ) :
   convert g.differentiableAt.hasFDerivAt.comp_hasDerivAt t he using 1
   · rfl
   · rw [euler_apply, fderiv_eq_smul_deriv]
-    simp [smul_eq_mul]
+    simp
     ring
 
 private theorem iteratedDeriv_logFlow (g : SchwartzMap ℝ ℂ) (n : ℕ) :

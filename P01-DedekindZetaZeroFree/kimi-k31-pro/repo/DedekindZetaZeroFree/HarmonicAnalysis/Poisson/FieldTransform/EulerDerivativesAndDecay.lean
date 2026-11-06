@@ -54,7 +54,7 @@ theorem B_euler_inverse_integrable (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
       exact pow_le_pow_left₀ (norm_nonneg _) hs_bound j
     have hB_bound : ‖B D r h s‖ ≤ C * (1 + |t|) ^ (-((j + 3 : ℕ) : ℝ)) := by
       have ha : 0 < (1 + |t|) ^ (j + 3) := by positivity
-      have hh' := hC c (by simp [hc.le]) t
+      have hh' := hC c (by simp) t
       have hpow : (1 + |t|) ^ (-((j + 3 : ℕ) : ℝ)) = ((1 + |t|) ^ (j + 3))⁻¹ := by
         rw [Real.rpow_neg (by positivity : (0 : ℝ) ≤ 1 + |t|), Real.rpow_natCast]
       rw [hpow, ← div_eq_mul_inv, le_div_iff₀ ha]

@@ -45,25 +45,24 @@ theorem henselFactorization_of_complete
     henselFactorization_complete_exists_factorization
       v hcomplete hnonarch hprimitive hfactor hcoprime
   have hproduct : gbar * hbar ≠ 0 := by
-    rw [← hfactor]
-    exact hprimitive
+    grind
   have hgbar : gbar ≠ 0 := left_ne_zero_of_mul hproduct
   have hhbar : hbar ≠ 0 := right_ne_zero_of_mul hproduct
   have hG : G ≠ 0 := by
     intro hzero
     subst G
     simp at hGresidue
-    exact hgbar hGresidue.symm
+    grind
   have hH : H ≠ 0 := by
     intro hzero
     subst H
     simp at hHresidue
-    exact hhbar hHresidue.symm
+    grind
   have hdegree :
       H.natDegree = f.natDegree - gbar.natDegree := by
     rw [hGH, Polynomial.natDegree_mul hG hH, hGdegree,
       Nat.add_sub_cancel_left]
-  exact ⟨G, H, hGdegree, hdegree.le, hGH, hGresidue, hHresidue⟩
+  grind
 
 /-- A complete nonarchimedean absolute value is Henselian in the exact sense
 of the primitive factorization definition. -/

@@ -102,7 +102,7 @@ theorem archComplement_continuous (w : InfinitePlace F) : Continuous
   | inr q => exact continuous_const
   | inl u =>
     by_cases hu : u = w
-    · simp only [archComplement, hu, if_true]
+    · simp only [hu, if_true]
       exact continuous_const
     · simp only [if_neg hu]
       exact ((phase_continuous A u).comp (RestrictedProduct.continuous_eval _)).mul

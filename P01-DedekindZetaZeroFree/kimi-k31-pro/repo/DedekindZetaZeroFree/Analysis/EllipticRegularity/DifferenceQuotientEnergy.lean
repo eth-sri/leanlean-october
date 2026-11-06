@@ -674,7 +674,7 @@ theorem uniform_difference_energy_inequality (n : ℕ) (hn : 0 < n)
     simp only [FluxRaw.cutoffGradient, Set.indicator_of_mem hm]
     rw [← hx j]
     dsimp [a, b, F, H, S, U, d]
-    simp only [map_add, map_mul, map_pow, Complex.star_def, Complex.conj_ofReal]
+    simp only [map_add, map_mul, map_pow, Complex.conj_ofReal]
     ring
   rw [hiEq] at hib
   have hlower := difference_lower_order_bound mid outer hsub η q hη G M hG.le hM hd

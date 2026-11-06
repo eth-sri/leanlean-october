@@ -56,26 +56,7 @@ theorem topologicalClosure_torsion_zHatMul_prod
   ext x
   simp [Subgroup.mem_prod]
 
-/-- Algebraic quotient form of the cyclotomic torsion decomposition: after a cyclotomic decomposition
-with dense torsion factor, quotienting by the closure of torsion leaves
-the `ℤ̂` factor. -/
-noncomputable def torsionQuotientZHatMulProdEquiv
-    (T : Type*) [CommGroup T] [TopologicalSpace T] [IsTopologicalGroup T]
-    (hT : Dense (CommGroup.torsion T : Set T)) :
-    (Multiplicative ZHat × T) ⧸
-        (CommGroup.torsion (Multiplicative ZHat × T)).topologicalClosure ≃*
-      Multiplicative ZHat := by
-  rw [topologicalClosure_torsion_zHatMul_prod T hT]
-  let fstHom : Multiplicative ZHat × T →* Multiplicative ZHat :=
-    MonoidHom.fst _ _
-  have hker :
-      fstHom.ker =
-        (⊥ : Subgroup (Multiplicative ZHat)).prod (⊤ : Subgroup T) := by
-    ext x
-    simp [fstHom, Subgroup.mem_prod]
-  rw [← hker]
-  exact QuotientGroup.quotientKerEquivOfSurjective
-    fstHom Prod.fst_surjective
+
 
 end ClassFormation
 

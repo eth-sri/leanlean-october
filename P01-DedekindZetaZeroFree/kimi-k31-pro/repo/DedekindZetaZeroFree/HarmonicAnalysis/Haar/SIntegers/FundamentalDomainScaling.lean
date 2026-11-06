@@ -50,7 +50,7 @@ def fieldDilation (F : Type) [Field F] [NumberField F]
         ContinuousLinearEquiv.symm_apply_apply]
     · funext v
       simp only [← mul_assoc, ← map_mul, Units.inv_mul, map_one, one_mul,
-        ContinuousLinearEquiv.symm_apply_apply]
+        ]
   right_inv x := by
     apply Prod.ext
     · simp only [PoissonArch.fieldMul, ContinuousLinearEquiv.apply_symm_apply,
@@ -58,7 +58,7 @@ def fieldDilation (F : Type) [Field F] [NumberField F]
         ContinuousLinearEquiv.symm_apply_apply]
     · funext v
       simp only [← mul_assoc, ← map_mul, Units.mul_inv, map_one, one_mul,
-        ContinuousLinearEquiv.symm_apply_apply]
+        ]
   map_add' x y := by
     apply Prod.ext
     · simp [PoissonArch.fieldMul, mul_add]

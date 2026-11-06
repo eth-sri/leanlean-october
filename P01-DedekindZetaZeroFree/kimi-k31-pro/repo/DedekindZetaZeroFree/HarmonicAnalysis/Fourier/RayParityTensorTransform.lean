@@ -21,7 +21,7 @@ private theorem fourier_tensor {ι : Type*} [Fintype ι] (f : ι → ℝ → ℂ
   rw [← (PiLp.volume_preserving_toLp ι).integral_comp
     (MeasurableEquiv.toLp 2 (ι → ℝ)).measurableEmbedding]
   simp only [EuclideanSpace.inner_eq_star_dotProduct, dotProduct,
-    RCLike.star_def, conj_trivial]
+    ]
   simp only [Pi.star_apply, star_trivial, RCLike.inner_apply, conj_trivial]
   simp_rw [Finset.mul_sum, Complex.ofReal_sum, Finset.sum_mul, Complex.exp_sum]
   simp_rw [← Finset.prod_mul_distrib]
@@ -48,7 +48,7 @@ private theorem parity_tensor_fourier {ι : Type*} [Fintype ι] [DecidableEq ι]
   simp_rw [localParity_fourier]
   rw [Finset.prod_mul_distrib]
   congr 1
-  simp [Finset.prod_ite_mem_eq]
+  simp
 
 private theorem parity_tensor_eq {ι : Type*} [Fintype ι]
     (D : Finset ι) (x : EuclideanSpace ℝ ι) :
@@ -61,8 +61,8 @@ private theorem parity_tensor_eq {ι : Type*} [Fintype ι]
   rw [← Complex.exp_sum]
   congr 1
   rw [← Complex.ofReal_pow, EuclideanSpace.real_norm_sq_eq]
-  simp only [Complex.ofReal_sum, Complex.ofReal_neg, Complex.ofReal_mul,
-    Complex.ofReal_pow, Finset.mul_sum, ← Finset.sum_neg_distrib, neg_mul]
+  simp only [Complex.ofReal_sum, Complex.ofReal_mul,
+    Complex.ofReal_pow, Finset.mul_sum, neg_mul]
 
 private theorem gδ_tensor (K : Type) [Field K] [NumberField K]
     (δ : Finset (RayCoset.RealPlaces K)) (x : NumberField.mixedEmbedding.euclidean.mixedSpace K) :

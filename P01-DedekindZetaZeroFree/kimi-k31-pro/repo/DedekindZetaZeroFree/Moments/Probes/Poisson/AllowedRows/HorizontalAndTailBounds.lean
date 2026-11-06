@@ -72,7 +72,7 @@ lemma Jtail_norm_le (G : Set D.Row) (hG : G.Finite) (x y v T Z K B : ℝ) (hB : 
           have ht' : T < |t| := ht
           refine (hK u hu' t ht').trans ?_
           have h1 : (1 + |t|) ^ (-B) = (1 + |t|) ^ (-(B - 2)) * (1 + |t|) ^ (-(2 : ℝ)) := by
-            rw [← Real.rpow_add (by positivity)]; congr 1; ring
+            rw [← Real.rpow_add (by positivity)]; grind
           have h2 : (1 + |t|) ^ (-(B - 2)) ≤ (1 + T) ^ (-(B - 2)) :=
             Real.rpow_le_rpow_of_nonpos (by linarith) (by linarith) (by linarith)
           rw [h1, ← mul_assoc]
@@ -128,7 +128,7 @@ theorem wz_height_bound (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExpone
   have hT : 0 ≤ U ^ ρ := Real.rpow_nonneg hUpos.le _
   have hT1 : 1 ≤ U ^ ρ := Real.one_le_rpow (by linarith) hρpos.le
   rcases hξ with him | ⟨hre, him⟩
-  · have hle : |ξ.im| ≤ 2 * U ^ ρ := by rw [him]; linarith
+  · have hle : |ξ.im| ≤ 2 * U ^ ρ := by grind
     have h := h₁ U hU1 u hu1 hent hq1 hq2 hexc ξ Z hZpos hξ1 hξ2 hle
     have hZe : Z ^ (Scales.xExponent / 2 + ξ.re - 1 + Scales.smoothingExponent * Scales.zLine + Scales.yExponent * (Scales.wLine - 1))
         ≤ Z ^ Scales.kernelExponent Scales.rightLine Scales.wLine Scales.zLine := by
@@ -137,7 +137,7 @@ theorem wz_height_bound (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExpone
     rw [hUe] at h
     refine h.trans ?_
     gcongr
-    exact le_max_left _ _
+    grind
   · have hξeq : ξ = (Scales.rightLine : ℂ) + (ξ.im : ℂ) * Complex.I := by
       apply Complex.ext <;> simp [hre]
     have h := h₂ U hU2 u hu1 hent hq1 hq2 ξ.im Z hZpos
@@ -148,7 +148,7 @@ theorem wz_height_bound (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExpone
       unfold Scales.kernelExponent; linarith
     refine h.trans ?_
     gcongr
-    exact le_max_right _ _
+    grind
 
 end helpers
 
@@ -197,22 +197,14 @@ theorem rows_height_errors_dyad (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : Convexi
     have him : ((σ : ℂ) + ((s * U ^ ρ : ℝ) : ℂ) * Complex.I).im = s * U ^ ρ := by simp
     have habs : |s * U ^ ρ| = U ^ ρ := by
       rw [abs_mul, hs, one_mul, abs_of_nonneg (by linarith)]
-    have := hw Z (by linarith) U hUU u hu ((σ : ℂ) + ((s * U ^ ρ : ℝ) : ℂ) * Complex.I)
-      (by rw [hre]; exact hσ.1) (by rw [hre]; exact hσ.2)
-      (Or.inl (by rw [him, habs]))
-    rw [him, habs] at this
-    rw [hKd]; exact this
+    grind
   have htail : ∀ u ∈ goodRows D ρ U, ∀ t : ℝ, U ^ ρ < |t| →
       ‖wzIntegral D u ((Scales.rightLine : ℂ) + (t : ℂ) * Complex.I) Scales.wLine Scales.zLine Z‖ ≤
         K * (1 + |t|) ^ (-(A₁ + 2)) := by
     intro u hu t ht
     have hre : ((Scales.rightLine : ℂ) + (t : ℂ) * Complex.I).re = Scales.rightLine := by simp
     have him : ((Scales.rightLine : ℂ) + (t : ℂ) * Complex.I).im = t := by simp
-    have := hw Z (by linarith) U hUU u hu ((Scales.rightLine : ℂ) + (t : ℂ) * Complex.I)
-      (by rw [hre]; exact hxle) (by rw [hre])
-      (Or.inr ⟨hre, by rw [him]; exact ht.le⟩)
-    rw [him] at this
-    rw [hKd]; exact this
+    grind
   have hh1 := Jhoriz_norm_le D (goodRows D ρ U) hGfin 1 Scales.goodLine Scales.rightLine Scales.wLine
     Scales.zLine (U ^ ρ) Z _ (hside 1 (by simp))
   have hh2 := Jhoriz_norm_le D (goodRows D ρ U) hGfin (-1) Scales.rightLine Scales.goodLine Scales.wLine
@@ -228,7 +220,7 @@ theorem rows_height_errors_dyad (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : Convexi
     calc (1 + U ^ ρ) ^ (-A₁) ≤ (U ^ ρ) ^ (-A₁) :=
           Real.rpow_le_rpow_of_nonpos (by linarith) (by linarith) (by linarith)
       _ = U ^ (-(ρ * A₁)) := by
-          rw [← Real.rpow_mul (by linarith)]; congr 1; ring
+          rw [← Real.rpow_mul (by linarith)]; grind
   have hν' : (1 + U ^ ρ) ^ (-(A₁ + 2)) ≤ U ^ (-(ρ * A₁)) :=
     (Real.rpow_le_rpow_of_exponent_le (by linarith) (by linarith)).trans hν
   have hν0 : 0 ≤ U ^ (-(ρ * A₁)) := Real.rpow_nonneg (by linarith) _
@@ -263,9 +255,9 @@ theorem rows_height_errors_dyad (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : Convexi
         Cr * U * ((2 * Real.pi)⁻¹ * (K * U ^ (-(ρ * A₁)) * I2)) := by linarith
     _ = c₀ * (Cr * Cw * Z ^ Scales.kernelExponent Scales.rightLine Scales.wLine Scales.zLine *
           (U * U ^ (1 / 25 + ε) * U ^ (-(ρ * A₁)))) := by
-        rw [hc₀, hKd]; ring
+        grind
     _ = c₀ * (Cr * Cw * Z ^ Scales.kernelExponent Scales.rightLine Scales.wLine Scales.zLine *
-          U ^ (26 / 25 + ε - ρ * A₁)) := by rw [hX]
+          U ^ (26 / 25 + ε - ρ * A₁)) := by grind
     _ ≤ (c₀ + 1) * (Cr * Cw * Z ^ Scales.kernelExponent Scales.rightLine Scales.wLine Scales.zLine *
           U ^ (26 / 25 + ε - ρ * A₁)) :=
         mul_le_mul_of_nonneg_right (by linarith) hM
@@ -296,7 +288,7 @@ theorem rows_height_errors (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExp
       unfold Scales.smallCutoffExponent; norm_num, Real.rpow_one] at this
 
   obtain ⟨e, he⟩ : ∃ e : ℝ, e = 26 / 25 + 1 / 100 - ρ * A₁ := ⟨_, rfl⟩
-  have he0 : e < 0 := by rw [he]; linarith
+  have he0 : e < 0 := by grind
   obtain ⟨B₁, hB₁⟩ : ∃ B₁ : ℝ, B₁ = Cd * Z ^ Scales.kernelExponent Scales.rightLine Scales.wLine Scales.zLine *
       Z ^ (Scales.smallCutoffExponent * e) := ⟨_, rfl⟩
   have hB₁0 : 0 ≤ B₁ := by rw [hB₁]; positivity
@@ -345,8 +337,7 @@ theorem rows_height_errors (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExp
       nlinarith
     have hfl : (⌊Real.logb 2 (Z ^ Scales.largeCutoffExponent)⌋₊ : ℝ) ≤ 2 * Z :=
       (Nat.floor_le (Real.logb_nonneg (by norm_num) hy1)).trans hlog
-    push_cast
-    linarith
+    grind
   calc ‖∑ k ∈ intermediateDyads Z, heightErrors D ρ ((2 : ℝ) ^ k) Z‖
       ≤ ∑ k ∈ intermediateDyads Z, ‖heightErrors D ρ ((2 : ℝ) ^ k) Z‖ := norm_sum_le _ _
     _ ≤ ∑ k ∈ intermediateDyads Z, B₁ := Finset.sum_le_sum hterm

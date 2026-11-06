@@ -2,6 +2,7 @@ module
 
 public import Mathlib.FieldTheory.Galois.Abelian
 public import Mathlib.NumberTheory.Cyclotomic.Basic
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -62,17 +63,14 @@ theorem nonempty_algHom_cyclotomicField_of_dvd
       (Set.mem_singleton b) hb.ne'
   obtain ⟨c, hbc⟩ := hab
   have hc : c ≠ 0 := by
-    intro hc0
-    subst c
-    simp at hbc
-    omega
+    grind
   have hζa : IsPrimitiveRoot (ζ ^ c) a := by
     have hpow := hζ.pow_of_dvd hc (by
       rw [hbc]
-      exact dvd_mul_left c a)
+      norm_num)
     have hdiv : b / c = a := by
       rw [hbc, Nat.mul_div_left a (Nat.pos_of_ne_zero hc)]
-    simpa only [hdiv] using hpow
+    grind
   let E : IntermediateField K B := IntermediateField.adjoin K {ζ ^ c}
   let : IsCyclotomicExtension {a} K E :=
     hζa.intermediateField_adjoin_isCyclotomicExtension K

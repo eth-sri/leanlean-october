@@ -31,7 +31,7 @@ theorem localIdele_arch (y : R.A.G) (w : InfinitePlace F) :
         (Sum.inl v) (y.1 v) (Sum.inl w)) = y.1 w := by
     rw [Finset.prod_eq_single w]
     · simp
-    · intro v _ hv; simp [Pi.mulSingle_apply, Sum.inl_injective.ne hv]
+    · intro v _ hv; simp [Sum.inl_injective.ne hv]
     · simp
   have hfin : (∏ p : R.A.Sf,
       Pi.mulSingle (M := fun v : KPHilbert.Place F => (KPHilbert.Completion F v)ˣ)

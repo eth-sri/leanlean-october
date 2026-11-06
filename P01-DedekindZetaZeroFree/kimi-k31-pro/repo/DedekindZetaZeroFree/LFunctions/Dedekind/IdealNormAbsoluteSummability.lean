@@ -41,10 +41,10 @@ theorem idealAbsoluteSum_converges (F : Type) [Field F] [NumberField F]
       show Finset.Icc 1 n = Finset.Ioc 0 n from Finset.Icc_succ_left_eq_Ioc _ _,
       show 1 = Nat.card {I : Ideal (𝓞 F) // Ideal.absNorm I = 0} by
         simp [Ideal.absNorm_eq_zero_iff],
-      Finset.sum_Ioc_add_eq_sum_Icc (n.zero_le),
+      Finset.sum_Ioc_add_eq_sum_Icc n.zero_le,
       ← Finset.card_preimage_eq_sum_card_image_eq
         (fun k _ ↦ Ideal.finite_setOfPred_absNorm_eq k)]
-    simp [a, Set.coe_eq_subtype]
+    simp [Set.coe_eq_subtype]
   have hL : LSeriesSummable (fun n => (a n : ℂ)) (σ : ℂ) := by
     apply LSeriesSummable_of_sum_norm_bigO_and_nonneg (r := 1)
     · exact Asymptotics.isBigO_atTop_natCast_rpow_of_tendsto_div_rpow
@@ -60,7 +60,7 @@ theorem idealAbsoluteSum_converges (F : Type) [Field F] [NumberField F]
     rw [LSeries.norm_term_eq]
     by_cases hn : n = 0
     · subst n
-      simp only [if_pos rfl]
+      simp only
       have hz (I : {I : Ideal (𝓞 F) // Ideal.absNorm I = 0}) :
           idealAbsoluteWeight F σ I.val = 0 := by
         simp [idealAbsoluteWeight, Ideal.absNorm_eq_zero_iff.mp I.property]

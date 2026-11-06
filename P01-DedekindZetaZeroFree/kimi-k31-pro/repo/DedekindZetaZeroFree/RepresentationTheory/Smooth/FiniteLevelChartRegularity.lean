@@ -3,6 +3,7 @@ module
 public import DedekindZetaZeroFree.RepresentationTheory.Smooth.ArchimedeanMatrixParametrization
 public import DedekindZetaZeroFree.Eisenstein.Residues.MetaplecticRealizations
 public import DedekindZetaZeroFree.RepresentationTheory.RankOne.TranslatedBigCellCoordinates
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -28,7 +29,7 @@ private theorem native_chart_contDiffOn
   have hdet : ∀ w, (rightPolynomial x w).det ≠ 0 := by
     intro w
     rw [rightPolynomial_det]
-    exact hx w
+    measurability
   have hd := smooth_matrix_parametrization u hu g rightPolynomial x
     rightPolynomial_smooth.contDiffAt hdet
   apply hd.contDiffWithinAt.congr_of_eventuallyEq_of_mem
@@ -39,7 +40,7 @@ private theorem native_chart_contDiffOn
     funext w
     have hyw : (rightPolynomial y w).det ≠ 0 := by
       rw [rightPolynomial_det]
-      exact hy w
+      measurability
     simp only [matrixClass, dite_eq_left hyw]
     congr 1
     apply Matrix.GeneralLinearGroup.ext
@@ -47,7 +48,7 @@ private theorem native_chart_contDiffOn
     change (KPLiteralChamber.rightMatrix (y w)).val i j = rightPolynomial y w i j
     rw [KPLiteralChamber.rightMatrix_val _ (hy w)]
     rfl
-  · exact hx
+  · simp_all
 
  theorem upstairs_smooth_finiteLevel_rawSmooth
     (u : Cover F ζ hζ → ℂ) (hu : Smooth F ζ hζ u)

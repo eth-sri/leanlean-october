@@ -74,15 +74,7 @@ theorem absoluteValueDecompositionGroup_isClosed
     · exact E.fixingSubgroup_isOpen.smul σ
     · exact ⟨1, E.fixingSubgroup.one_mem, by simp⟩
 
-/-- For a finite or infinite Galois extension, the decomposition group is the
-subgroup fixing its decomposition field. -/
-theorem absoluteValueDecompositionField_fixingSubgroup_eq
-    [IsGalois K L] (w : AbsoluteValue L ℝ) :
-    (absoluteValueDecompositionField K w).fixingSubgroup =
-      absoluteValueDecompositionGroup K w := by
-  let H : ClosedSubgroup (L ≃ₐ[K] L) :=
-    ⟨absoluteValueDecompositionGroup K w, absoluteValueDecompositionGroup_isClosed K w⟩
-  exact InfiniteGalois.fixingSubgroup_fixedField H
+
 
 end HilbertRamification
 

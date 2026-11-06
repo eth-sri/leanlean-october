@@ -83,7 +83,7 @@ theorem nativeStageEquiv_pure (hT : C.exceptional ⊆ T)
       (PiTensorProduct.tprod ℂ (stageComponents A P C T hT x)) =
         PiTensorProduct.tprod ℂ x := by
   simp only [nativeStageEquiv, LinearEquiv.trans_apply, PiTensorProduct.reindex_tprod,
-    PiTensorProduct.congr_tprod, Equiv.apply_symm_apply]
+    PiTensorProduct.congr_tprod]
   congr 1
   funext j
   cases j <;> rfl

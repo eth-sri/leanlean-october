@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.LargeSieve.Exponents.ExponentAndRecursiveEnvelope
 public import DedekindZetaZeroFree.LargeSieve.CharacterBounds.InitialQuadraticHeckeEstimate
+public import Mathlib.Tactic.Linarith
 
 @[expose] public section
 
@@ -32,6 +33,6 @@ theorem exponent_initial
     have : (0 : ℝ) ≤ Real.rpow N 2 := Real.rpow_nonneg (by linarith) 2
     linarith
   apply mul_le_mul_of_nonneg_right _ hY
-  exact mul_le_mul_of_nonneg_right (by linarith) hX
+  linarith
 
 end DedekindZetaZeroFree.LargeSieve

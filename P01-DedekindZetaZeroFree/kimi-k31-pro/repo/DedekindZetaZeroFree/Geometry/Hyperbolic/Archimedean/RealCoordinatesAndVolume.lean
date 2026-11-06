@@ -52,7 +52,7 @@ def coordinates : EuclideanSpace ℝ (Fin (d * 3)) ≃ₜ KPArch.Space d where
     · exact continuous_snd.comp (continuous_apply _)
 
 def density (p : EuclideanSpace ℝ (Fin (d * 3))) : ℝ :=
-  KPArch.volumeDensity (d) (coordinates d p)
+  KPArch.volumeDensity d (coordinates d p)
 
 theorem coordinate_volume : Measure.map (coordinates d) volume =
     (volume : Measure (KPArch.Space d)) := by
@@ -65,7 +65,7 @@ theorem coordinate_volume : Measure.map (coordinates d) volume =
     intro s hs
     rw [MeasurableEquiv.map_apply]
     have hpre : e ⁻¹' Set.pi Set.univ s = Set.pi Set.univ
-        (fun i : Fin (d) =>
+        (fun i : Fin d =>
           (Complex.measurableEquivRealProd ⁻¹'
             (s (finProdFinEquiv (i, 0)) ×ˢ s (finProdFinEquiv (i, 1)))) ×ˢ
             s (finProdFinEquiv (i, 2))) := by
@@ -113,14 +113,14 @@ theorem density_positive (p : EuclideanSpace ℝ (Fin (d * 3))) :
 
 theorem metric_volume : Measure.map (coordinates d)
     (volume.withDensity (fun p => ENNReal.ofReal (density d p))) =
-      KPArch.hyperbolicVolume (d) := by
+      KPArch.hyperbolicVolume d := by
   ext s hs
   rw [Measure.map_apply (coordinates d).continuous.measurable hs,
     withDensity_apply _ ((coordinates d).continuous.measurable hs),
     KPArch.hyperbolicVolume, withDensity_apply _ hs]
   have hm := coordinate_volume d
   have hg : Measurable (fun z : KPArch.Space d =>
-      s.indicator (fun z => ENNReal.ofReal (KPArch.volumeDensity (d) z)) z) := by
+      s.indicator (fun z => ENNReal.ofReal (KPArch.volumeDensity d z)) z) := by
     apply Measurable.indicator _ hs
     apply ENNReal.measurable_ofReal.comp
     unfold KPArch.volumeDensity KPArch.height

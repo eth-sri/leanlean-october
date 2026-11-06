@@ -107,8 +107,7 @@ theorem rows_good_central_dyad (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : Convexit
         ≤ 1 * ((C1 * Z ^ E0 * P) * K) :=
           mul_le_mul hpi (h2.trans (h3.trans e3.le)) (norm_nonneg _) zero_le_one
       _ ≤ (C1 * (K + 1)) * Z ^ E0 * P := by
-          have : 0 ≤ C1 * Z ^ E0 * P := hB
-          nlinarith [mul_nonneg this hK0]
+          grind
 
   unfold Jcentral
   rw [finsum_mem_eq_finite_toFinset_sum _ hfin]
@@ -126,7 +125,7 @@ theorem rows_good_central_dyad (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : Convexit
   calc ((goodRows D ρ U).ncard : ℝ) * ((C1 * (K + 1)) * Z ^ E0 * P)
       ≤ (C2 * U) * ((C1 * (K + 1)) * Z ^ E0 * P) := mul_le_mul_of_nonneg_right hcardG hB
     _ = (C2 * (C1 * (K + 1))) * Z ^ E0 * (U * P) := by ring
-    _ = (C2 * (C1 * (K + 1))) * Z ^ E0 * U ^ (26 / 25 + ε) := by rw [hUp]
+    _ = (C2 * (C1 * (K + 1))) * Z ^ E0 * U ^ (26 / 25 + ε) := by grind
     _ ≤ ((C2 * (C1 * (K + 1))) + 1) * Z ^ E0 * U ^ (26 / 25 + ε) := by
         have : 0 ≤ Z ^ E0 * U ^ (26 / 25 + ε) := by positivity
         nlinarith
@@ -161,8 +160,7 @@ theorem card_intermediateDyads_le {Z : ℝ} (hZ : 1 ≤ Z) :
   have hnn : 0 ≤ Real.logb 2 (Z ^ Scales.largeCutoffExponent) := Real.logb_nonneg (by norm_num) h1
   have hc : ((Finset.range (⌊Real.logb 2 (Z ^ Scales.largeCutoffExponent)⌋₊ + 1)).filter
       (fun k => Z ^ Scales.smallCutoffExponent < (2 : ℝ) ^ k)).card ≤ ⌊Real.logb 2 (Z ^ Scales.largeCutoffExponent)⌋₊ + 1 := by
-    refine (Finset.card_filter_le _ _).trans ?_
-    simp
+    grind
   have hc' : (((Finset.range (⌊Real.logb 2 (Z ^ Scales.largeCutoffExponent)⌋₊ + 1)).filter
       (fun k => Z ^ Scales.smallCutoffExponent < (2 : ℝ) ^ k)).card : ℝ) ≤
       Real.logb 2 (Z ^ Scales.largeCutoffExponent) + 1 := by
@@ -213,7 +211,7 @@ theorem rows_good_central (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExpo
               unfold Scales.smallCutoffExponent; norm_num
           _ ≤ Z ^ Scales.smallCutoffExponent :=
               Real.rpow_le_rpow (pow_nonneg hU0nn 5) hZU (by unfold Scales.smallCutoffExponent; norm_num)
-      exact this.trans h1.le
+      grind
     have := hdy Z hZ2 _ hU h1 h2
     refine this.trans ?_
     have hUpow : ((2 : ℝ) ^ k) ^ (26 / 25 + ε / 2) ≤ Z ^ (Scales.largeCutoffExponent * (26 / 25 + ε / 2)) := by
@@ -243,8 +241,7 @@ theorem rows_good_central (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExpo
           rw [div_le_iff₀ hlog2]
           calc Real.log Z ≤ Z ^ (ε / 2) / (ε / 2) := hl
             _ = 2 / (ε * Real.log 2) * Z ^ (ε / 2) * Real.log 2 := by
-              have : ε ≠ 0 := hε.ne'
-              field_simp
+              grind
         nlinarith
     _ ≤ (C * (2 / (ε * Real.log 2) + 1)) * Z ^ ((Scales.mainExponent - 7949 / 250000) + ε) := by
         have h3 : Z ^ (ε / 2) * Z ^ ((Scales.mainExponent - 7949 / 250000) + ε / 2 * Scales.largeCutoffExponent) ≤ Z ^ ((Scales.mainExponent - 7949 / 250000) + ε) := by

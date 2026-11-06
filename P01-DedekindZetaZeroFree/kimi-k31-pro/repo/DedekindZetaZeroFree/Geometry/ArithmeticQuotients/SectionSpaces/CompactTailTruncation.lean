@@ -497,7 +497,7 @@ private theorem tendsto_setIntegral_compl {α : Type*} [MeasurableSpace α]
 
 private theorem norm_eq_sqrt_of_sq_eq {E : Type*} [NormedAddCommGroup E] {x : E} {A : ℝ}
     (h : ‖x‖ ^ 2 = A) : ‖x‖ = Real.sqrt A := by
-  rw [← h, Real.sqrt_sq (norm_nonneg x)]
+  aesop
 
 private theorem toSector_norm_sq (s : BorelL2Sections F ζ hζ U R P H) :
     ‖toSector F ζ hζ U R P H s‖ ^ 2 =
@@ -517,10 +517,7 @@ private theorem coe_indicator (s : Set (KPFiniteCuspAtlas.rawXU F ζ hζ U))
     (f : KPFiniteCuspAtlas.rawXU F ζ hζ U → NNReal)
     (x : KPFiniteCuspAtlas.rawXU F ζ hζ U) :
     ((s.indicator f x : NNReal) : ℝ) = s.indicator (fun y => (f y : ℝ)) x := by
-  by_cases h : x ∈ s
-  · rw [Set.indicator_of_mem h, Set.indicator_of_mem h]
-  · rw [Set.indicator_of_notMem h, Set.indicator_of_notMem h]
-    simp
+  simp_all
 
 theorem compact_indicator_norm_tendsto :
     (∀ s : BorelL2Sections F ζ hζ U R P H,

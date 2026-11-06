@@ -287,7 +287,7 @@ theorem collected_jet_split_zero {n k r : ℕ} {B : LocalBall n}
   simp_rw [sum_below_split_zero α]
   simp only [multiChoose, counts_zero, Pi.zero_apply,
     Nat.choose_zero_right, Finset.prod_const_one, Nat.cast_one, one_mul,
-    coefficientJet_zero, sub_zero]
+    coefficientJet_zero]
   simp only [add_mul]
   exact integral_add (smooth_jet_test_integrable u _ ha φ)
     (collected_jet_integrable u α γ _ ha φ)

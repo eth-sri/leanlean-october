@@ -188,73 +188,9 @@ theorem chosenFinitePlaceLocalNormSubgroup_le_globalNormResidueKernel
       ((chosenFinitePlaceArtinMonoidHom_eq_one_iff_chosenLocalNorm
         (K := K) (L := L) v x).2 hx)
 
-/-- The restriction of the global norm-residue homomorphism to one
-finite-place idele class depends only on the corresponding local Artin
-symbol.
 
-This is the exact quotient step used in the prime-primary reduction:
-the already proved inclusion of the local norm subgroup in the global
-norm kernel makes the value independent of the chosen local preimage. -/
-theorem globalNormResidue_finitePlaceIdeleClass_eq_of_localArtin_eq
-    (v : IsDedekindDomain.HeightOneSpectrum (𝓞 K))
-    (x y : (v.adicCompletion K)ˣ)
-    (hxy :
-      chosenFinitePlaceArtinMonoidHom
-          (K := K) (L := L) v x =
-        chosenFinitePlaceArtinMonoidHom
-          (K := K) (L := L) v y) :
-    globalNormResidueMonoidHom K L
-        (IdeleGroup.finitePlaceIdeleClass v x) =
-      globalNormResidueMonoidHom K L
-        (IdeleGroup.finitePlaceIdeleClass v y) := by
-  let f :
-      (v.adicCompletion K)ˣ →* (L ≃ₐ[K] L) :=
-    (globalNormResidueMonoidHom K L).comp
-      (IdeleGroup.finitePlaceIdeleClass v)
-  let g :
-      (v.adicCompletion K)ˣ →* (L ≃ₐ[K] L) :=
-    chosenFinitePlaceArtinMonoidHom
-      (K := K) (L := L) v
-  have hlocal :
-      g (x * y⁻¹) = 1 := by
-    rw [map_mul, map_inv, hxy, mul_inv_cancel]
-  have hglobal :
-      f (x * y⁻¹) = 1 := by
-    exact
-      globalNormResidueMonoidHom_finitePlaceIdeleClass_eq_one_of_localArtin_eq_one
-        (K := K) (L := L) v (x * y⁻¹) hlocal
-  have hquotient :
-      f x * (f y)⁻¹ = 1 := by
-    simpa only [map_mul, map_inv] using hglobal
-  exact mul_inv_eq_one.mp hquotient
 
-/-- Finite-place local--global compatibility for a `p`-primary
-decomposition automorphism which generates the whole relative Galois
-group.  The auxiliary-field construction is isolated in an opaque
-representative lemma, so consumers only see this short quotient step. -/
-theorem
-    globalNormResidueMonoidHom_finitePlaceIdeleClass_eq_of_primary_generator
-    (v : IsDedekindDomain.HeightOneSpectrum (𝓞 K))
-    (p : Nat.Primes)
-    (σ :
-      absoluteValueDecompositionGroup K
-        (chosenFinitePlaceExtension (L := L) v).1)
-    (hgenerate :
-      Subgroup.closure ({σ.1} : Set (Gal(L / K))) = ⊤)
-    (hprimary :
-      σ.1 ∈ CommGroup.primaryComponent (Gal(L / K)) p.1)
-    (x : (v.adicCompletion K)ˣ)
-    (hx :
-      chosenFinitePlaceArtinMonoidHom
-          (K := K) (L := L) v x = σ.1) :
-    globalNormResidueMonoidHom K L
-        (IdeleGroup.finitePlaceIdeleClass v x) = σ.1 := by
-  obtain ⟨z, hlocal, hglobal⟩ :=
-    exists_finitePlacePrimary_localGlobalRepresentative
-      (K := K) (L := L) v p σ hgenerate hprimary
-  exact
-    (globalNormResidue_finitePlaceIdeleClass_eq_of_localArtin_eq
-      (K := K) (L := L) v x z (hx.trans hlocal.symm)).trans hglobal
+
 
 /-- The global norm-residue symbol at one finite place, factored
 through the actual image of the chosen local Artin homomorphism.

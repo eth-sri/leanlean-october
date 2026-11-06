@@ -15,7 +15,7 @@ noncomputable def radiusQuadratic : MvPolynomial (Fin 3) ℂ :=
 private lemma deriv_radius (i : Fin 3) :
     pderiv i radiusQuadratic = 2 * X i := by
   classical
-  simp only [radiusQuadratic, map_sum, pderiv_pow, pderiv_X, pow_one]
+  simp only [radiusQuadratic, map_sum, pderiv_pow, pderiv_X]
   rw [Finset.sum_eq_single i]
   · simp
   · intro j hj hji; simp [Pi.single_eq_of_ne hji]
@@ -41,7 +41,7 @@ private lemma lap_radius_hom {q : MvPolynomial (Fin 3) ℂ} {d : ℕ}
       radiusQuadratic * polynomialLaplacian q +
         (2 * (2 * (d : ℂ) + 3)) • q := by
   rw [lap_radius_mul, hq.sum_X_mul_pderiv]
-  simp only [nsmul_eq_mul, smul_eq_C_mul, map_mul, map_add, map_ofNat, map_one, C_eq_coe_nat]
+  simp only [nsmul_eq_mul, smul_eq_C_mul, map_mul, map_add, map_ofNat, C_eq_coe_nat]
   ring
 
 theorem laplacian_radius_pow {q : MvPolynomial (Fin 3) ℂ} {degree : ℕ}
@@ -60,7 +60,7 @@ theorem laplacian_radius_pow {q : MvPolynomial (Fin 3) ℂ} {degree : ℕ}
       Nat.add_sub_cancel, smul_eq_C_mul, map_mul, map_add, map_ofNat, map_one, C_eq_coe_nat]
     cases k with
     | zero => simp only [pow_zero, one_mul, Nat.cast_zero, mul_zero, zero_mul,
-        zero_add, add_zero, map_zero, pow_one]; ring
+        zero_add, add_zero]; ring
     | succ k =>
       simp only [Nat.add_sub_cancel, Nat.cast_add, Nat.cast_one, pow_succ]
       ring

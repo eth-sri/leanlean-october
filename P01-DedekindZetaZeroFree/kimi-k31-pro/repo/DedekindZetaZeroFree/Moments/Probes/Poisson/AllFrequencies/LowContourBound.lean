@@ -41,11 +41,10 @@ private theorem minus_ne_x1 (u : Frequency D.recipe)
     (hu : u ≠ principalFrequency D.recipe) (ξ : ℂ) (hξ : ξ.re = Scales.rightLine) :
     (pkg D).minus u ξ ≠ 0 := by
   have hx1 : (1 : ℝ) < Scales.rightLine := by rw [Scales.rightLine_eq]; norm_num
-  refine RawKernelRegularity31.minus_ne_zero_of_not_isLZero D u hu ξ (by rw [hξ]; linarith) ?_
+  refine RawKernelRegularity31.minus_ne_zero_of_not_isLZero D u hu ξ (by grind) ?_
   intro h
   have := DedekindZetaZeroFree.Quantitative.DetectEuler.IsLZero.re_le_one h
-  rw [hξ] at this
-  linarith
+  grind
 
 private theorem hmem_omega : (((Scales.rightLine : ℝ) : ℂ), ((Scales.wLine : ℝ) : ℂ),
     ((Scales.zLine : ℝ) : ℂ)) ∈ EulerDomain.OmegaStar := by
@@ -104,15 +103,12 @@ private theorem triple_bound_of_majorant (k : ℝ) (hk : 0 ≤ k) :
     rw [him] at hle
     have : Iwz D u ξ Scales.wLine Scales.zLine Z = comparisonVerticalIntegral Scales.wLine
         (fun w => comparisonVerticalIntegral Scales.zLine (fun z => rawKernel D u ξ w z Z)) := rfl
-    rw [this]
-    calc _ ≤ _ := hle
-      _ = _ := by ring
+    grind
   have hv := vertical_norm_le'
     (fun ξ => Iwz D u ξ Scales.wLine Scales.zLine Z) Scales.rightLine (((2 * Real.pi)⁻¹) ^ 2 * Cw * Cc) 2
     (by norm_num) hdec
   unfold DedekindZetaZeroFree.Quantitative.RawFixed.FixedData.triple
-  calc _ ≤ _ := hv
-    _ = _ := by ring
+  grind
 
 theorem raw_low_dyad_bound (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ (u : Frequency D.recipe), u ≠ principalFrequency D.recipe →
@@ -134,7 +130,7 @@ theorem raw_low_dyad_bound (ε : ℝ) (hε : 0 < ε) :
     have h1 := hmaj U hU u hu hUq hUq2 ξ Z p hZ0 hξ
     have hw : 0 ≤ WeightConvolution.weightModulus D ξ Scales.zLine Scales.wLine p := norm_nonneg _
     have hP : (2 + |p.2|) ^ A ≤ (2 + |p.1| + |p.2| + |ξ.im|) ^ A :=
-      Real.rpow_le_rpow (by positivity) (by linarith [abs_nonneg p.1, abs_nonneg ξ.im]) hA
+      Real.rpow_le_rpow (by positivity) (by grind) hA
     calc _ ≤ _ := h1
       _ = (C0 * Z ^ (Scales.kernelExponent Scales.rightLine Scales.wLine Scales.zLine) * U ^ ((1 : ℝ) / 25 + ε)) *
           WeightConvolution.weightModulus D ξ Scales.zLine Scales.wLine p * (2 + |p.2|) ^ A := by ring
@@ -175,16 +171,12 @@ theorem raw_low_fixed_row_bound (u : Frequency D.recipe) (hu : u ≠ principalFr
           ((Scales.zLine : ℂ) + (p.1 : ℂ) * Complex.I) Z‖ = Z ^ E * ((2 : ℝ) ^ E)⁻¹ *
         ‖rawKernel D u ξ ((Scales.wLine : ℂ) + (p.2 : ℂ) * Complex.I)
           ((Scales.zLine : ℂ) + (p.1 : ℂ) * Complex.I) 2‖ := by
-      rw [n1, n2]
-      have key : ∀ a b c d e : ℝ, e ≠ 0 → a * b * c * d = a * e⁻¹ * (e * b * c * d) := by
-        intro a b c d e he; field_simp
-      exact key _ _ _ _ _ h2p.ne'
+      grind
     rw [hrat]
     have hnn : 0 ≤ Z ^ E * ((2 : ℝ) ^ E)⁻¹ := by positivity
     calc _ ≤ _ := mul_le_mul_of_nonneg_left h1 hnn
       _ = _ := by ring)
-  calc _ ≤ _ := this
-    _ = _ := by ring
+  grind
 
 end
 

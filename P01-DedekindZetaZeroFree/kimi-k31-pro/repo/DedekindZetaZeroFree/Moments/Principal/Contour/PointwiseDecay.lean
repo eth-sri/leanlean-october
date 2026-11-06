@@ -53,7 +53,7 @@ theorem decay_main (f h ζ : ℂ → ℂ) (a b T K C' k : ℝ) (hk : 0 ≤ k) (h
     have e1 : (1 + |y|) ^ M * ‖f z‖ ≤ (1 + |y|) ^ M * (K * (‖h z‖ * (C' * (1 + |y|) ^ N))) := by
       apply mul_le_mul_of_nonneg_left _ (by positivity)
       refine h1.trans (mul_le_mul_of_nonneg_left ?_ hK)
-      exact mul_le_mul_of_nonneg_left (h2.trans (mul_le_mul_of_nonneg_left (hkN) hC')) (norm_nonneg _)
+      exact mul_le_mul_of_nonneg_left (h2.trans (mul_le_mul_of_nonneg_left hkN hC')) (norm_nonneg _)
     refine e1.trans ?_
     have : (1 + |y|) ^ M * (K * (‖h z‖ * (C' * (1 + |y|) ^ N))) =
         K * C' * ((1 + |y|) ^ (M + N) * ‖h z‖) := by ring
@@ -89,7 +89,7 @@ theorem kern_norm_eq (u : D.Row) (hu : u.u = 1) (Z : ℝ) (ξ w z : ℂ) :
         (‖D.zetaSCont (6 * z)‖ * ‖D.Lpsi u w‖ * ‖EulerDomain.Hu D u ξ w z‖ / ‖D.Llam u ξ‖) := by
   have hq := PrincipalResidueFormulas.q_principal D u hu
   simp only [kern, kernelWith, rowContLocal, norm_mul, norm_div, hq, Complex.ofReal_one,
-    Complex.one_cpow, norm_one, mul_one, Complex.norm_exp] <;> ring
+    Complex.one_cpow, mul_one, Complex.norm_exp] <;> ring
 
 theorem rem_norm_eq (u : D.Row) (hu : u.u = 1) (Z : ℝ) (ξ z : ℂ) :
     ‖PrincipalResidueFormulas.remainingKernel D u ξ z Z‖ =
@@ -302,7 +302,7 @@ theorem wResidue_z_decay (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) (s 
     have hHu := hCH ξ 1 z (Or.inr ⟨hξre.ge, by simp, h1⟩)
     have hc : (((Scales.xExponent / 2 : ℝ) + ξ - 1 + (Scales.smoothingExponent : ℂ) * z)).re ≤ 12 := by
       simp only [Complex.add_re, Complex.sub_re, Complex.mul_re, Complex.ofReal_re,
-        Complex.ofReal_im, Complex.one_re, Complex.one_im, Complex.sub_im]
+        Complex.ofReal_im, Complex.one_re]
       simp only [Scales.xExponent, Scales.smoothingExponent]
       linarith
     have hP := zpow_norm_le Z hZ _ hc

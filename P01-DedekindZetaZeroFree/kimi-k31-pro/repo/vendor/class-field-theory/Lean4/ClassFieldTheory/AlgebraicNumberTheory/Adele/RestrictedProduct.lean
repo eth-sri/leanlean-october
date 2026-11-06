@@ -261,21 +261,7 @@ theorem relativeAdeleToLocalData_ofLocalData
     rw [relativeAdeleOfLocalData_finiteComponent
       (K := K) (L := L)]
 
-/-- Coordinatewise restricted local tensor families are exactly
-relative adeles. -/
-noncomputable def relativeAdeleEquivLocalData :
-    RelativeAdeleRing K L ≃
-      RelativeLocalAdeleData (K := K) (L := L) where
-  toFun :=
-    relativeAdeleToLocalData (K := K) (L := L)
-  invFun :=
-    relativeAdeleOfLocalData (K := K) (L := L)
-  left_inv :=
-    relativeAdeleOfLocalData_toLocalData
-      (K := K) (L := L)
-  right_inv :=
-    relativeAdeleToLocalData_ofLocalData
-      (K := K) (L := L)
+
 
 /-- A restricted family of local tensor units.  Restrictedness is
 required both for the family and for its pointwise inverse. -/

@@ -409,32 +409,7 @@ theorem numberFieldTowerSeparableClosureRestriction_apply
       AlgEquiv.restrictNormalHom L σ
   rfl
 
-/-- Restriction from the compatible separable closure onto the finite
-Galois top field is surjective. -/
-theorem numberFieldTowerSeparableClosureRestriction_surjective :
-    letI : Algebra K (SeparableClosure ℚ) :=
-      numberFieldTowerSeparableClosureBaseAlgebra K L
-    letI : Algebra L (SeparableClosure ℚ) :=
-      numberFieldTowerSeparableClosureTopAlgebra L
-    letI : IsScalarTower K L (SeparableClosure ℚ) :=
-      numberFieldTowerSeparableClosureScalarTower K L
-    Function.Surjective
-      (numberFieldTowerSeparableClosureRestriction K L) := by
-  let : Algebra K (SeparableClosure ℚ) :=
-    numberFieldTowerSeparableClosureBaseAlgebra K L
-  let : Algebra L (SeparableClosure ℚ) :=
-    numberFieldTowerSeparableClosureTopAlgebra L
-  let : IsScalarTower K L (SeparableClosure ℚ) :=
-    numberFieldTowerSeparableClosureScalarTower K L
-  let _ : IsGalois K (SeparableClosure ℚ) :=
-    numberFieldTowerSeparableClosure_isGalois K L
-  intro τ
-  obtain ⟨σ, hσ⟩ :=
-    AlgEquiv.restrictNormalHom_surjective
-      (F := K) (K₁ := L) (E := SeparableClosure ℚ) τ
-  refine ⟨σ, ?_⟩
-  rw [numberFieldTowerSeparableClosureRestriction_apply]
-  exact hσ
+
 
 /-- A `K`-automorphism of the common rational separable closure,
 viewed as the corresponding rational automorphism fixing the embedded

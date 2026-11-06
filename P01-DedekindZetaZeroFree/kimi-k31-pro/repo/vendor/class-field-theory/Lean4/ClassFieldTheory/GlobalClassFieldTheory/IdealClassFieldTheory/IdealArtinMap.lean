@@ -711,17 +711,7 @@ theorem idealArtinMap_surjective
       (QuotientGroup.mk'_surjective
         (RayClass.principalRayIdealSubgroup m))
 
-/-- Exactness of
-`1 → H_m → J_K^m → C_K/N → 1`. -/
-theorem idealArtin_exact
-    (m : RayClass.Modulus K)
-    (N : Subgroup (IdeleClassGroup K))
-    (hm : RayClass.Modulus.congruenceSubgroup m ≤ N) :
-    (∀ a : RayClass.primeToModulusIdeals m,
-      idealArtinMap m N hm a = 1 ↔
-        a ∈ idealArtinKernel m N hm) ∧
-      Function.Surjective (idealArtinMap m N hm) := by
-  exact ⟨fun _ => Iff.rfl, idealArtinMap_surjective m N hm⟩
+
 
 section ActualGaloisArtin
 
@@ -765,19 +755,7 @@ theorem idealArtinGaloisMap_apply
               ((_root_.ideleClassNorm K L).range) hm a))) :=
   rfl
 
-/-- The actual Galois-valued ideal Artin map is surjective. -/
-theorem idealArtinGaloisMap_surjective
-    (m : RayClass.Modulus K)
-    (hm :
-      RayClass.Modulus.congruenceSubgroup m ≤
-        (_root_.ideleClassNorm K L).range) :
-    Function.Surjective
-      (idealArtinGaloisMap (K := K) (L := L) m hm) := by
-  exact
-    (AddEquiv.toMultiplicative
-      (Reciprocity.globalNormResidueEquiv K L)).surjective.comp
-      (idealArtinMap_surjective m
-        ((_root_.ideleClassNorm K L).range) hm)
+
 
 /-- Passing from the genuine norm quotient to the actual Galois group
 does not change the ideal Artin kernel. -/
@@ -805,29 +783,7 @@ theorem idealArtinGaloisMap_ker
         1
   exact e.map_eq_one_iff
 
-/-- Exactness of the actual ideal Artin sequence
-`1 → H_m → J_K^m → Gal(L/K) → 1`. -/
-theorem idealArtinGalois_exact
-    (m : RayClass.Modulus K)
-    (hm :
-      RayClass.Modulus.congruenceSubgroup m ≤
-        (_root_.ideleClassNorm K L).range) :
-    (∀ a : RayClass.primeToModulusIdeals m,
-      idealArtinGaloisMap (K := K) (L := L) m hm a = 1 ↔
-        a ∈ idealArtinKernel m
-          ((_root_.ideleClassNorm K L).range) hm) ∧
-      Function.Surjective
-        (idealArtinGaloisMap (K := K) (L := L) m hm) := by
-  constructor
-  · intro a
-    change
-      a ∈
-          (idealArtinGaloisMap
-            (K := K) (L := L) m hm).ker ↔
-        a ∈ idealArtinKernel m
-          ((_root_.ideleClassNorm K L).range) hm
-    rw [idealArtinGaloisMap_ker]
-  · exact idealArtinGaloisMap_surjective m hm
+
 
 end ActualGaloisArtin
 

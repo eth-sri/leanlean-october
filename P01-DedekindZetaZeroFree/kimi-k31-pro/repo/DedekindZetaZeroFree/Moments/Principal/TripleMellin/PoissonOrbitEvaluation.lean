@@ -50,7 +50,7 @@ theorem probe_eq_orbit_sum (P : PrincipalData A σ η hS)
   have h := ProbePoissonOrbitFormula.exact_orbit_formula A σ η hS P
     (poissonNormalization P N) (finiteTrace_nontrivial P N) N.disintegration
     ρ hρ X.val Y.val Z.val X.property Y.property Z.property
-  exact ⟨h.1, h.2.2⟩
+  grind
 
 end
 end DedekindZetaZeroFree.NormalizedProbe.TripleMellin

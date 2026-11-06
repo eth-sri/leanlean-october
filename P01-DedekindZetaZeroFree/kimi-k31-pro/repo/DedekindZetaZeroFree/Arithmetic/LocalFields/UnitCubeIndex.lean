@@ -144,7 +144,7 @@ private theorem log_integer (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
     (((u : Integers K) : K) * p^n))) = -(n : ℤ)
   rw [map_mul, map_pow, hvu, map_mul, map_pow, map_one, one_mul, hep]
   rw [← WithZero.exp_nsmul, WithZero.log_exp]
-  simp [nsmul_eq_mul]
+  simp
 
 private theorem depth_three (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K]

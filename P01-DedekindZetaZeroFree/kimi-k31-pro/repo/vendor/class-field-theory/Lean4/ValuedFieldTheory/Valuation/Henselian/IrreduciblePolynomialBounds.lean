@@ -33,15 +33,7 @@ open scoped Polynomial
 namespace AlgebraicNumberTheory
 namespace Valuations
 
-/-- The coefficient norm `|f|` used in irreducible-polynomial lifting: the maximum absolute
-value of the coefficients of `f`. -/
-noncomputable def polynomialCoeffAbsMax
-    {K : Type*} [Field K] (v : AbsoluteValue K ℝ) (f : K[X]) : ℝ :=
-  let T : Finset ℝ :=
-    (Finset.range (f.natDegree + 1)).image fun i => v (f.coeff i)
-  T.max' (by
-    refine ⟨v (f.coeff 0), ?_⟩
-    exact Finset.mem_image.mpr ⟨0, by simp, rfl⟩)
+
 
 /-- reduction input: a coefficient of absolute value `< 1`
 reduces to the zero coefficient of the residue polynomial. -/
@@ -212,87 +204,13 @@ theorem irreduciblePolynomial_abs_eq_one_index_lt_natDegree_of_leading_abs_lt_on
     exact (lt_irrefl (1 : ℝ)) hlt
   exact lt_of_le_of_ne hle hne
 
-/-- finite support input: a coefficient of absolute value `1`
-can only occur at an index bounded by the natural degree. -/
-theorem irreduciblePolynomial_abs_eq_one_index_le_natDegree
-    {K : Type*} [Field K] (v : AbsoluteValue K ℝ)
-    (hnonarch : LubinTate.Valuations.NonarchimedeanAbsoluteValue v)
-    (F : (absoluteValueValuationSubring v hnonarch)[X])
-    {i : ℕ} (hi : v (F.coeff i : K) = 1) :
-    i ≤ F.natDegree := by
-  exact Polynomial.le_natDegree_of_ne_zero
-    (irreduciblePolynomial_coeff_ne_zero_of_abs_eq_one v hnonarch F hi)
 
-/-- reduction input: from any coefficient of value `1`, choose
-the last such coefficient. -/
-theorem irreduciblePolynomial_exists_last_abs_eq_one_coeff
-    {K : Type*} [Field K] (v : AbsoluteValue K ℝ)
-    (hnonarch : LubinTate.Valuations.NonarchimedeanAbsoluteValue v)
-    (F : (absoluteValueValuationSubring v hnonarch)[X])
-    {n : ℕ} (hn : v (F.coeff n : K) = 1) :
-    ∃ s : ℕ,
-      v (F.coeff s : K) = 1 ∧
-        ∀ i : ℕ, v (F.coeff i : K) = 1 → i ≤ s := by
-  classical
-  let S : Finset ℕ :=
-    (Finset.range (F.natDegree + 1)).filter
-      (fun i => v (F.coeff i : K) = 1)
-  have hnle : n ≤ F.natDegree :=
-    irreduciblePolynomial_abs_eq_one_index_le_natDegree v hnonarch F hn
-  have hnmem : n ∈ S := by
-    simp [S, Finset.mem_range, Nat.lt_succ_of_le hnle, hn]
-  have hS : S.Nonempty := ⟨n, hnmem⟩
-  refine ⟨S.max' hS, ?_, ?_⟩
-  · have hmaxmem : S.max' hS ∈ S := S.max'_mem hS
-    have hmaxfilter :
-        S.max' hS ∈ (Finset.range (F.natDegree + 1)).filter
-          (fun i => v (F.coeff i : K) = 1) := by
-      simpa [S] using hmaxmem
-    exact (Finset.mem_filter.1 hmaxfilter).2
-  · intro i hi
-    have hile : i ≤ F.natDegree :=
-      irreduciblePolynomial_abs_eq_one_index_le_natDegree v hnonarch F hi
-    have himem : i ∈ S := by
-      simp [S, Finset.mem_range, Nat.lt_succ_of_le hile, hi]
-    exact S.le_max' i himem
 
-/-- reduction input: if the leading coefficient has absolute
-value `< 1`, then the last coefficient of value `1` occurs strictly before the
-natural degree. -/
-theorem irreduciblePolynomial_last_abs_eq_one_index_lt_natDegree_of_leading_abs_lt_one
-    {K : Type*} [Field K] (v : AbsoluteValue K ℝ)
-    (hnonarch : LubinTate.Valuations.NonarchimedeanAbsoluteValue v)
-    (F : (absoluteValueValuationSubring v hnonarch)[X])
-    {s : ℕ} (hlead : v (F.leadingCoeff : K) < 1)
-    (hs : v (F.coeff s : K) = 1) :
-    s < F.natDegree :=
-  irreduciblePolynomial_abs_eq_one_index_lt_natDegree_of_leading_abs_lt_one
-    v hnonarch F hlead hs
 
-/-- reduction input: the last coefficient of value `1` is the
-natural degree of the reduced polynomial. -/
-theorem irreduciblePolynomial_reduction_natDegree_eq_last_abs_eq_one
-    {K : Type*} [Field K] (v : AbsoluteValue K ℝ)
-    (hnonarch : LubinTate.Valuations.NonarchimedeanAbsoluteValue v)
-    (F : (absoluteValueValuationSubring v hnonarch)[X])
-    {s : ℕ} (hs : v (F.coeff s : K) = 1)
-    (hlast : ∀ i : ℕ, v (F.coeff i : K) = 1 → i ≤ s) :
-    (F.map (IsLocalRing.residue
-      (absoluteValueValuationSubring v hnonarch))).natDegree =
-      s := by
-  refine Polynomial.natDegree_eq_of_le_of_coeff_ne_zero ?_ ?_
-  · rw [Polynomial.natDegree_le_iff_coeff_eq_zero]
-    intro N hN
-    have hle : v (F.coeff N : K) ≤ 1 :=
-      (mem_absoluteValueValuationSubring_iff
-        v hnonarch (F.coeff N : K)).1 (F.coeff N).property
-    have hne : v (F.coeff N : K) ≠ 1 := by
-      intro hNvalue
-      exact (not_lt_of_ge (hlast N hNvalue)) hN
-    exact irreduciblePolynomial_reduction_coeff_eq_zero_of_abs_lt_one
-      v hnonarch F (lt_of_le_of_ne hle hne)
-  · exact irreduciblePolynomial_reduction_coeff_ne_zero_of_abs_eq_one
-      v hnonarch F hs
+
+
+
+
 
 /-- reduction input: exact `X^r` divisibility rewrites the
 reduced polynomial as `X^r` times its monic quotient. -/
@@ -424,25 +342,7 @@ theorem irreduciblePolynomial_reduction_X_pow_isCoprime_divByMonic_of_exact
       (irreduciblePolynomial_reduction_divByMonic_X_pow_coeff_zero_ne_zero
         v hnonarch F hdiv hnotdiv)
 
-/-- reduction input: after dividing the reduced polynomial by
-`X^r`, the monic quotient has natural degree `s - r`. -/
-theorem irreduciblePolynomial_reduction_divByMonic_X_pow_natDegree
-    {K : Type*} [Field K] (v : AbsoluteValue K ℝ)
-    (hnonarch : LubinTate.Valuations.NonarchimedeanAbsoluteValue v)
-    (F : (absoluteValueValuationSubring v hnonarch)[X])
-    {r s : ℕ}
-    (hnatDegree :
-      (F.map (IsLocalRing.residue
-        (absoluteValueValuationSubring v hnonarch))).natDegree =
-        s) :
-    (F.map (IsLocalRing.residue
-        (absoluteValueValuationSubring v hnonarch)) /ₘ
-          Polynomial.X ^ r).natDegree =
-      s - r := by
-  rw [Polynomial.natDegree_divByMonic]
-  · rw [hnatDegree]
-    simp
-  · exact Polynomial.monic_X_pow r
+
 
 /-- reduction input: under the endpoint inequalities used in
 the proof, the first coefficient of value `1` gives a nontrivial exact
@@ -666,31 +566,7 @@ theorem irreduciblePolynomial_scale_by_max_coeff_abs_data
     rw [hcoeff_abs n, hnmax, inv_mul_cancel₀ hmne]
   exact ⟨hdegree, hcoeff_abs, hcoeff_le, hn_one⟩
 
-/-- normalization source: every nonzero field polynomial has a
-scaled polynomial with coefficient maximum `1`, obtained by dividing by a
-coefficient that attains the original positive maximum. -/
-theorem irreduciblePolynomial_exists_normalized_scale_of_ne_zero
-    {K : Type*} [Field K] (v : AbsoluteValue K ℝ)
-    {f : K[X]} (hf : f ≠ 0) :
-    ∃ m : ℝ, ∃ n : ℕ, ∃ g : K[X],
-      0 < m ∧ n ≤ f.natDegree ∧
-        v (f.coeff n) = m ∧
-          (∀ i : ℕ, v (f.coeff i) ≤ m) ∧
-            g = Polynomial.C (f.coeff n)⁻¹ * f ∧
-              g.natDegree = f.natDegree ∧
-                (∀ i : ℕ, v (g.coeff i) = m⁻¹ * v (f.coeff i)) ∧
-                  (∀ i : ℕ, v (g.coeff i) ≤ 1) ∧
-                    v (g.coeff n) = 1 := by
-  rcases irreduciblePolynomial_exists_coeff_abs_max_of_ne_zero
-      v hf with
-    ⟨m, n, hmpos, hnle, hnmax, hbound⟩
-  let g : K[X] := Polynomial.C (f.coeff n)⁻¹ * f
-  rcases irreduciblePolynomial_scale_by_max_coeff_abs_data
-      v hmpos hnmax hbound with
-    ⟨hdegree, hcoeff_abs, hcoeff_le, hn_one⟩
-  exact
-    ⟨m, n, g, hmpos, hnle, hnmax, hbound, rfl, hdegree,
-      hcoeff_abs, hcoeff_le, hn_one⟩
+
 
 /-- normalization source: if the original constant and
 leading coefficients are strictly smaller than the coefficient maximum, then
@@ -771,49 +647,7 @@ theorem irreduciblePolynomial_normalized_scale_hensel_reduction_factor_input
     irreduciblePolynomial_exists_hensel_reduction_factor_input_of_field_coeffs
       v hnonarch g hcoeff_le hconstg hleadg hn_one
 
-/-- reduction input: under the endpoint inequalities, choose
-the first and last coefficients of value `1`; the first gives the exact
-initial `X^r` divisor and the last lies before the natural degree. -/
-theorem irreduciblePolynomial_exists_first_last_abs_eq_one_coeff
-    {K : Type*} [Field K] (v : AbsoluteValue K ℝ)
-    (hnonarch : LubinTate.Valuations.NonarchimedeanAbsoluteValue v)
-    (F : (absoluteValueValuationSubring v hnonarch)[X])
-    (hconst : v (F.coeff 0 : K) < 1)
-    (hlead : v (F.leadingCoeff : K) < 1)
-    {n : ℕ} (hn : v (F.coeff n : K) = 1) :
-    ∃ r s : ℕ,
-      0 < r ∧ r ≤ s ∧ s < F.natDegree ∧
-        v (F.coeff r : K) = 1 ∧
-          v (F.coeff s : K) = 1 ∧
-            (∀ i : ℕ, i < r → v (F.coeff i : K) < 1) ∧
-              (∀ i : ℕ, v (F.coeff i : K) = 1 → i ≤ s) ∧
-                Polynomial.X ^ r ∣
-                    F.map (IsLocalRing.residue
-                      (absoluteValueValuationSubring
-                        v hnonarch)) ∧
-                  ¬ Polynomial.X ^ (r + 1) ∣
-                      F.map (IsLocalRing.residue
-                        (absoluteValueValuationSubring
-                          v hnonarch)) ∧
-                    (F.map (IsLocalRing.residue
-                      (absoluteValueValuationSubring
-                        v hnonarch))).natDegree = s := by
-  rcases irreduciblePolynomial_exists_first_abs_eq_one_coeff v hnonarch F hn with
-    ⟨r, hr, hinit⟩
-  rcases irreduciblePolynomial_exists_last_abs_eq_one_coeff v hnonarch F hn with
-    ⟨s, hs, hlast⟩
-  rcases irreduciblePolynomial_reduction_exact_X_pow_of_first_abs_eq_one
-      v hnonarch F hinit hr with
-    ⟨hdiv, hnotdiv⟩
-  exact ⟨r, s,
-    irreduciblePolynomial_first_abs_eq_one_index_pos_of_const_abs_lt_one
-      v hnonarch F hconst hr,
-    hlast r hr,
-    irreduciblePolynomial_last_abs_eq_one_index_lt_natDegree_of_leading_abs_lt_one
-      v hnonarch F hlead hs,
-    hr, hs, hinit, hlast, hdiv, hnotdiv,
-    irreduciblePolynomial_reduction_natDegree_eq_last_abs_eq_one
-      v hnonarch F hs hlast⟩
+
 
 end Valuations
 end AlgebraicNumberTheory

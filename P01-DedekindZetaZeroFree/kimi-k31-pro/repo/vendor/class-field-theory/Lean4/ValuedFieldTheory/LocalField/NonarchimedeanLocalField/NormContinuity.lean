@@ -4,6 +4,7 @@ public import ValuedFieldTheory.LocalField.NormUnits
 public import ValuedFieldTheory.LocalField.NonarchimedeanLocalField.Basic
 public import Mathlib.Analysis.Normed.Module.FiniteDimension
 public import Mathlib.Topology.Instances.Matrix
+public import Mathlib.Tactic.FunProp
 
 @[expose] public section
 
@@ -72,8 +73,7 @@ theorem integerUnitsToFieldUnits_continuous
     (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K] :
     Continuous (integerUnitsToFieldUnits K) := by
   unfold IsNonarchimedeanLocalField.integerUnitsToFieldUnits
-  exact Continuous.units_map
-    ((algebraMap 𝒪[K] K).toMonoidHom) continuous_subtype_val
+  fun_prop
 
 end LocalFieldTheory
 

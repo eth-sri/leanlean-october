@@ -414,7 +414,7 @@ private lemma denominator_one_ne_zero :
   have hq3 : (residueCardinality (LocalField F q) : ℂ)^3 ≠ 1 := by
     exact_mod_cast (one_lt_pow₀ hq (by decide : (3 : ℕ) ≠ 0)).ne'
   have hn : shellDenominator F q 1 1 ≠ 0 := by
-    simp only [shellDenominator, t, one_pow, one_zpow, mul_one, inv_inv, zpow_neg,
+    simp only [shellDenominator, t, one_pow, mul_one, inv_inv, zpow_neg,
       zpow_ofNat]
     apply mul_ne_zero
     · apply mul_ne_zero

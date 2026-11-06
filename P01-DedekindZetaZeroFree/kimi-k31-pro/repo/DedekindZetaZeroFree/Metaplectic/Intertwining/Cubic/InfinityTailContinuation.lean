@@ -93,7 +93,7 @@ private theorem weight_formula (v : (LocalField F q)ˣ) (lam : ℂ) :
   rw [hn, mul_zpow]
   congr 1
   simp only [localAbs, Real.rpow_intCast, Complex.ofReal_zpow,
-    valuationIndex, zpow_neg, zpow_natCast]
+    valuationIndex, zpow_neg]
   simp only [Complex.ofReal_natCast]
 
 private theorem coefficient_expansion
@@ -130,7 +130,7 @@ private theorem coefficient_expansion
     have hb : I.borelPart 1 = 1 := by simpa using I.borelPart_compact 1
     have hk : I.compactPart 1 = 1 := by simpa using I.compactPart_compact 1
     rw [hb, hk, map_one]
-    simp [Finsupp.sum, a, div_eq_mul_inv, Finset.sum_mul, mul_comm]
+    simp [Finsupp.sum, a, div_eq_mul_inv, mul_comm]
   obtain ⟨N₁, hscalar⟩ := actual_infinity_eventual_scalar F ζ hζ q S P I μ J
     rep hrep d φ hφ hcφ
   let cutoff := max N₀ N₁
@@ -155,7 +155,7 @@ private theorem coefficient_expansion
         -valuationIndex F q v + (-3) * (n : ℤ) := by ring
     have htest : - (3 * (n : ℤ) + valuationIndex F q v) + 3 * (n : ℤ) =
         -valuationIndex F q v := by ring
-    simp only [htest, Nat.cast_zero, mul_zero, add_zero]
+    simp only [htest, add_zero]
     split_ifs
     · rw [hexp, zpow_add₀ hq, zpow_mul, zpow_natCast]
       ring
@@ -261,7 +261,7 @@ private theorem evaluate_integratedShellNumerator (ν : Measure X) (S : Finset (
   | @insert a S ha ih =>
     rw [Finset.sum_insert ha, Finset.sum_insert ha]
     rw [evaluateNumerator, Finsupp.sum_add_index]
-    · simp only [Finsupp.sum_single_index, mul_zero, zero_mul, add_zero]
+    · simp only [Finsupp.sum_single_index, zero_mul]
       exact congrArg (_ + ·) ih
     · intro ij; simp
     · intro ij hij b d; ring

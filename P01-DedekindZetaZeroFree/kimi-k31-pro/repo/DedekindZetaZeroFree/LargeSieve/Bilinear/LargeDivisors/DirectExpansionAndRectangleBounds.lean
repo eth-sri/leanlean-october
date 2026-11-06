@@ -111,7 +111,7 @@ theorem assembly (C : Context Q) (B : ℝ) (unit : Bool)
     unfold Context.pairSum
     apply Finset.sum_congr rfl
     intro p hp
-    split_ifs <;> simp [v, mul_assoc] <;> ring
+    split_ifs <;> simp [mul_assoc] <;> ring
   rw [heq]
   apply le_trans (norm_sum_le _ _)
   calc
@@ -200,8 +200,7 @@ private lemma bin_exists (X : ℝ) (hX : 1 ≤ 2 * X) (f : Ideal (𝓞 F))
     · have hh : norm f ≤ 1 := by simpa [hj0] using hj
       linarith
   · have hk : k < Vendor.dyadicLength (2 * max 1 X) := by omega
-    have hlow : (2 : ℝ) ^ k < norm f := by
-      exact lt_of_not_ge (Nat.find_min hcover (by omega))
+    have hlow : (2 : ℝ) ^ k < norm f := lt_of_not_ge (Nat.find_min hcover (by omega))
     refine ⟨(2 : ℝ) ^ k, ?_, one_le_pow₀ (by norm_num), hlow.le.trans hf, hf0, ?_, ?_⟩
     · apply Finset.mem_insert_of_mem
       exact Finset.mem_image.mpr ⟨k, Finset.mem_range.mpr hk, rfl⟩
@@ -266,8 +265,7 @@ private lemma bin_admissible (C : Context Q) (B : ℝ)
       _ ≤ (norm c * norm C.d) * ((2*P.1)*(2*P.2)) :=
         mul_le_mul hen hab (mul_nonneg (norm_nonneg a) (norm_nonneg b))
           (mul_nonneg (norm_nonneg c) (norm_nonneg C.d))
-      _ ≤ (max 1 (norm c) * norm C.d) * ((2*P.1)*(2*P.2)) := by
-        exact mul_le_mul_of_nonneg_right
+      _ ≤ (max 1 (norm c) * norm C.d) * ((2*P.1)*(2*P.2)) := mul_le_mul_of_nonneg_right
           (mul_le_mul_of_nonneg_right (le_max_right 1 (norm c)) (norm_nonneg C.d))
           (by nlinarith [hP.1, hP.2.1])
       _ = _ := by ring

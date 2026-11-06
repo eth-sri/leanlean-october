@@ -41,7 +41,7 @@ theorem fourier_residue_tendsto (T : Realization R Q) (v : R.A.UnitQuotient) (g 
       nhdsWithin_le_nhds (Metric.ball_mem_nhds (0 : ℂ) T.radius_pos)
     have hn : ∀ᶠ s : ℂ in nhdsWithin 0 {0}ᶜ, s ∈ ({0}ᶜ : Set ℂ) := self_mem_nhdsWithin
     filter_upwards [hb, hn] with s hs hn
-    exact (fourier_clearing T v s hs (by simpa using hn) g).symm
+    exact (fourier_clearing T v s hs (by simp_all) g).symm
   exact ((fourier_cleared_tendsto_zero T v g).mono_left nhdsWithin_le_nhds).congr' he.symm
 
 end DedekindZetaZeroFree.FourierContinuation

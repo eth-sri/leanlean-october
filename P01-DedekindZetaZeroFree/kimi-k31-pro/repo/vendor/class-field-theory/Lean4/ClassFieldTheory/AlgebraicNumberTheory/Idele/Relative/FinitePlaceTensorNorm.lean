@@ -257,20 +257,7 @@ theorem finitePlaceTensorNormClass_eq_one_iff
       (K := K) (L := L) v]
     exact hx
 
-omit [NumberField L] in
-/-- The kernel of the concrete quotient projection is precisely the
-finite-place determinant norm image. -/
-theorem finitePlaceTensorNormClass_ker
-    (v : HeightOneSpectrum (𝓞 K)) :
-    (finitePlaceTensorNormClass
-      (K := K) (L := L) v).ker =
-      (_root_.localTensorNorm
-        (K := K) (L := L) v).range := by
-  ext x
-  rw [MonoidHom.mem_ker,
-    finitePlaceTensorNormClass_eq_one_iff
-      (K := K) (L := L) v]
-  rfl
+
 
 omit [NumberField L] in
 /-- Every finite component of a global relative-idele norm lies in the

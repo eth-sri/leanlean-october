@@ -48,7 +48,7 @@ theorem additive_digit (p : ThetaBranch.ExteriorPrime R.A) (x V : Fˣ)
       -(algebraMap F (p.val.adicCompletion F) a.val) /
         algebraMap F (p.val.adicCompletion F) g.val := by
     simp only [a, Units.val_mul, Units.val_div_eq_div_val, Units.val_neg, Units.val_pow_eq_pow_val,
-      map_neg, map_div₀, map_mul, map_pow]
+      map_div₀, map_mul, map_pow]
     simp only [map_inv₀, map_div₀, map_neg]
     field_simp
   rw [harg, hp]

@@ -277,7 +277,7 @@ private theorem scalar_enorm (s : BorelL2Sections F ζ hζ U R P H) :
     congr 1
     apply lintegral_congr
     intro b
-    simp only [Real.norm_eq_abs, sq_abs, squaredNorm, normIntegral]
+    simp only [Real.norm_eq_abs, sq_abs, squaredNorm]
   have hn : ‖toSector F ζ hζ U R P H s‖ ^ 2 =
       (normIntegral F ζ hζ U R P H s.val).toReal := by
     rw [← KPContSectorLineL2Isometry.norm_sq F ζ hζ U R P H s]
@@ -585,7 +585,7 @@ theorem cotangent
       apply Subtype.ext
       funext a x
       simp only [Submodule.coe_sub, Submodule.coe_add, Submodule.coe_smul,
-        Pi.sub_apply, Pi.add_apply, Pi.smul_apply, neg_one_smul, sub_eq_add_neg]
+        Pi.add_apply, neg_one_smul, sub_eq_add_neg]
     rw [hsub, map_add, map_smul]
     simp only [neg_one_smul, sub_eq_add_neg]
     rfl

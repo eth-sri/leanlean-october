@@ -443,7 +443,7 @@ def patchedSections (Ω : Set ℂ)
         (show _ from he.trans (congrArg (fun z : ℂ => z *
           patchedCoefficient F ζ hζ U R P H Ω u locals i (phaseClass F ζ hζ U 1) s
             (overlapCoordinate F ζ hζ U R P H i γ ((coordinates F).symm x)))
-          (by simp only [overlapTransition, map_one, Circle.coe_mul, Circle.coe_one, one_mul,
+          (by simp only [overlapTransition, map_one, one_mul,
             map_inv, Circle.coe_inv]; rw [chi_coe])))
     calc
       _ = a * (a⁻¹ * patchedCoefficient F ζ hζ U R P H Ω u locals i

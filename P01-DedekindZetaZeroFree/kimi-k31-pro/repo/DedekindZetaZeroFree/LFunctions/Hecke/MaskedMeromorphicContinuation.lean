@@ -161,8 +161,7 @@ theorem masked_hecke_meromorphic
   obtain ⟨J, hJ, hJne, hseries⟩ := primitive_regularizer
     (primitive12_totallyComplex F A.zeta12 A.primitive_zeta12) ν
   have hm : MeromorphicOn (fun s : ℂ => J s / (s - 1) ^ poleIndicator ν)
-      {s : ℂ | 0 < s.re} := by
-    exact hJ.meromorphicOn.div
+      {s : ℂ | 0 < s.re} := hJ.meromorphicOn.div
       ((analyticOnNhd_id.sub analyticOnNhd_const).pow (poleIndicator ν)).meromorphicOn
   obtain ⟨hBdiff, hBmero, hBs⟩ := Detector.deleted_primitive_L_continuation F ν
     (deletionSet U i) hD {s : ℂ | 0 < s.re}

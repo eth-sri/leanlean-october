@@ -33,9 +33,7 @@ theorem average_memLp (a : K → X → X)
         funext k
         simp only [norm_pow, norm_norm]
         exact (hm k).integral_comp (he k) (fun x => ‖f x‖ ^ 2)
-      simp only [Pi.pow_apply]
-      rw [he]
-      exact integrable_const _
+      simp_all
   have havg : Continuous (fun x => ∫ k, f (a k x) ∂ν) := by
     rw [← continuousOn_univ]
     exact continuousOn_integral_of_compact_support (μ := ν) isCompact_univ

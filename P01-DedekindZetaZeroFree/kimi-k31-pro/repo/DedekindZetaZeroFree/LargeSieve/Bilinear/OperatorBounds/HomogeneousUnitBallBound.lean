@@ -1,6 +1,8 @@
 module
 
 public import DedekindZetaZeroFree.LargeSieve.Bilinear.QuadraticFormsAndSieveExponents
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -17,9 +19,9 @@ theorem unit_ball_lift
     B2 F c Q W M N K ≤ A := by
   rw [B2]
   apply csSup_le
-  · exact ⟨0, Or.inl rfl⟩
+  · norm_num
   · rintro x (rfl | ⟨lam, hlam, rfl⟩)
-    · exact hA
+    · positivity
     · calc Q2 F c Q W M N K lam ≤ A * energy F c N lam := hform lam
         _ ≤ A * 1 := mul_le_mul_of_nonneg_left hlam hA
         _ = A := mul_one A

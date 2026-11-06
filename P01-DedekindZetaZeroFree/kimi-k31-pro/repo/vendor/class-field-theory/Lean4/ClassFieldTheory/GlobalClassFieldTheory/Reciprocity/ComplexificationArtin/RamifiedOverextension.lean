@@ -251,18 +251,7 @@ noncomputable instance ramifiedInfinitePlaceRealFixedField_numberField
         (ramifiedInfinitePlaceRealFixedField
           (K := K) (L := L) v hRamified)
 
-omit [FiniteDimensional K L] in
-theorem
-    ramifiedInfinitePlaceRealFixedField_finiteDimensional_over_base
-    (v : InfinitePlace K)
-    (hRamified :
-      (chosenInfinitePlaceAbove (L := L) v).IsRamified K) :
-    FiniteDimensional K
-      (ramifiedInfinitePlaceRealFixedField
-        (K := K) (L := L) v hRamified) :=
-  FiniteDimensional.right ℚ K
-    (ramifiedInfinitePlaceRealFixedField
-      (K := K) (L := L) v hRamified)
+
 
 noncomputable instance
     ramifiedInfinitePlaceRealFixedField_isAbelianGalois_over_base
@@ -278,22 +267,7 @@ noncomputable instance
     (infinitePlaceComplexificationOverfield
       (K := K) (L := L) v)
 
-omit [NumberField K] [FiniteDimensional K L] in
-theorem
-    ramifiedInfinitePlaceOverfield_finiteDimensional_over_fixed
-    (v : InfinitePlace K)
-    (hRamified :
-      (chosenInfinitePlaceAbove (L := L) v).IsRamified K) :
-    FiniteDimensional
-      (ramifiedInfinitePlaceRealFixedField
-        (K := K) (L := L) v hRamified)
-      (infinitePlaceComplexificationOverfield
-        (K := K) (L := L) v) :=
-  FiniteDimensional.right ℚ
-    (ramifiedInfinitePlaceRealFixedField
-      (K := K) (L := L) v hRamified)
-    (infinitePlaceComplexificationOverfield
-      (K := K) (L := L) v)
+
 
 omit [NumberField K] [FiniteDimensional K L] in
 theorem ramifiedInfinitePlaceOverextension_isGalois

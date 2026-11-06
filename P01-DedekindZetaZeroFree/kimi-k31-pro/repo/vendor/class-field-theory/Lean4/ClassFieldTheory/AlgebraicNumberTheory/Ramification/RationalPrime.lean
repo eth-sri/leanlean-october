@@ -2,6 +2,7 @@ module
 
 public import Mathlib.NumberTheory.Padics.HeightOneSpectrum
 public import Mathlib.NumberTheory.NumberField.Ideal.Basic
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -55,7 +56,7 @@ theorem rationalPrimeIdeal_eq_span (p : Nat.Primes) :
     _ = v.asIdeal := by
       rw [he]
       change v.asIdeal.map (RingHom.id ℤ) = v.asIdeal
-      exact Ideal.map_id _
+      norm_num
 
 end AlgebraicNumberTheory.Ramification
 

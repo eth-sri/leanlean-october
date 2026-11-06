@@ -44,7 +44,7 @@ theorem mem_omega_strip (ξ w z : ℂ) (hξ : ξ.re = 4) (hw : Scales.wLine ≤ 
   rw [y₀_eq'] at hw1
   rw [z₀_eq', pad_eq'] at hz1
   simp only [EulerDomain.OmegaStar, Set.mem_setOf_eq]
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> linarith
+  grind
 
 theorem rawKernel_differentiableOn_z (u : Frequency D.recipe)
     (hu : u ≠ principalFrequency D.recipe) (Z : ℝ) (hZ : 0 < Z) (ξ w : ℂ) (hξ : ξ.re = 4)
@@ -62,8 +62,7 @@ theorem rawKernel_differentiableOn_z (u : Frequency D.recipe)
     have hz6 : 1 / 6 < (ξ, w, z).2.2.re := by
       have h1 : Scales.zLine - EulerDomain.pad / 2 < z.re := hz.1
       rw [z₀_eq', pad_eq'] at h1
-      show 1 / 6 < z.re
-      linarith
+      grind
     have h := RawKernelRegularity31.rawKernel_differentiableAt D u hu Z hZ (ξ, w, z) hmem hz6 hm
     have hc : DifferentiableAt ℂ (fun z : ℂ => ((ξ, w, z) : ℂ × ℂ × ℂ)) z := by fun_prop
     exact (h.comp z hc).differentiableWithinAt
@@ -88,7 +87,7 @@ theorem norm_exp_sq_le (ξ z : ℂ) (hξ : ξ.re = 4) (hz : 2 / 5 ≤ z.re ∧ z
       Complex.sub_im, Complex.one_re, Complex.one_im] <;> ring
   rw [e, hξ]
   nlinarith [mul_self_nonneg (ξ.im + z.im), mul_nonneg (sub_nonneg.2 hz.2)
-    (by linarith [hz.1] : (0 : ℝ) ≤ 8 + z.re)]
+    (by grind : (0 : ℝ) ≤ 8 + z.re)]
 
 theorem kernel_norm_le_M (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
     (Z : ℝ) (hZ : 0 < Z) (ξ w : ℂ) (hξ : ξ.re = 4) (hw : Scales.wLine ≤ w.re ∧ w.re ≤ 4) :
@@ -117,12 +116,12 @@ theorem kernel_norm_le_M (u : Frequency D.recipe) (hu : u ≠ principalFrequency
     rw [hre]
     have hhz : |Scales.smoothingExponent * z.re| ≤ |Scales.smoothingExponent| * 2 := by
       rw [abs_mul]
-      exact mul_le_mul_of_nonneg_left (by rw [abs_le]; constructor <;> linarith) (abs_nonneg _)
+      exact mul_le_mul_of_nonneg_left (by grind) (abs_nonneg _)
     have hk := abs_le.mp hhz
     rw [abs_le]
     constructor
-    · linarith [neg_abs_le (Scales.xExponent / 2 + ξ.re - 1 + Scales.yExponent * (w.re - 1))]
-    · linarith [le_abs_self (Scales.xExponent / 2 + ξ.re - 1 + Scales.yExponent * (w.re - 1))]
+    · grind
+    · grind
   have hqb : ∀ z : ℂ, 0 ≤ z.re → ‖((frequencyNorm D.recipe u : ℝ) : ℂ) ^ (-z)‖ ≤ 1 := by
     intro z hz
     rw [Complex.norm_cpow_eq_rpow_re_of_pos
@@ -147,8 +146,7 @@ theorem kernel_norm_le_M (u : Frequency D.recipe) (hu : u ≠ principalFrequency
       unfold rawKernel rawFactor
       simp only [norm_mul, norm_div]
       gcongr
-    calc _ ≤ _ := hmain
-      _ = _ := by ring
+    grind
 
 theorem M_decay_all (B : ℝ) (hB : 0 < B) :
     ∃ CM : ℝ, ∀ x : ℝ, 2 / 5 ≤ x → x ≤ 2 → ∀ y : ℝ,
@@ -158,15 +156,15 @@ theorem M_decay_all (B : ℝ) (hB : 0 < B) :
   refine ⟨|CM|, fun x hx1 hx2 y => ?_⟩
   have hre : ((x : ℂ) + (y : ℂ) * I).re = x := by simp
   have him : ((x : ℂ) + (y : ℂ) * I).im = y := by simp
-  have hM := hCM ((x : ℂ) + (y : ℂ) * I) (by rw [hre]; exact hx1) (by rw [hre]; exact hx2)
+  have hM := hCM ((x : ℂ) + (y : ℂ) * I) (by grind) (by grind)
   rw [him] at hM
   set t : ℝ := 1 + |y| with ht
-  have ht1 : 1 ≤ t := by rw [ht]; linarith [abs_nonneg y]
+  have ht1 : 1 ≤ t := by grind
   have ht0 : 0 < t := by linarith
   have htn : 0 < t ^ n := pow_pos ht0 n
   have h1 : ‖D.M ((x : ℂ) + (y : ℂ) * I)‖ ≤ |CM| * (t ^ n)⁻¹ := by
     rw [← div_eq_mul_inv, le_div_iff₀ htn]
-    nlinarith [le_abs_self CM]
+    grind
   have h2 : (t ^ n)⁻¹ ≤ t ^ (-B) := by
     rw [Real.rpow_neg ht0.le]
     apply inv_anti₀ (Real.rpow_pos_of_pos ht0 B)
@@ -184,7 +182,7 @@ theorem kernel_decay_all (u : Frequency D.recipe) (hu : u ≠ principalFrequency
   obtain ⟨CM, hCM⟩ := M_decay_all D B hB
   refine ⟨K * CM, fun x hx1 hx2 y => ?_⟩
   have hre : ((x : ℂ) + (y : ℂ) * I).re = x := by simp
-  have h1 := hK ((x : ℂ) + (y : ℂ) * I) (by rw [hre]; exact hx1) (by rw [hre]; exact hx2)
+  have h1 := hK ((x : ℂ) + (y : ℂ) * I) (by grind) (by grind)
   calc _ ≤ K * ‖D.M ((x : ℂ) + (y : ℂ) * I)‖ := h1
     _ ≤ K * (CM * (1 + |y|) ^ (-B)) := mul_le_mul_of_nonneg_left (hCM x hx1 hx2 y) hK0
     _ = _ := by ring
@@ -198,8 +196,8 @@ theorem rawKernel_decayOn_z (u : Frequency D.recipe) (hu : u ≠ principalFreque
   have hx1 : 2 / 5 ≤ x := by
     have := hx.1
     rw [z₀_eq'] at this
-    exact this
-  exact hC x hx1 hx.2 y
+    grind
+  grind
 
 theorem Iz_z_shift (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
     (Z : ℝ) (hZ : 0 < Z) (ξ w : ℂ) (hξ : ξ.re = 4) (hw : Scales.wLine ≤ w.re ∧ w.re ≤ 4) :

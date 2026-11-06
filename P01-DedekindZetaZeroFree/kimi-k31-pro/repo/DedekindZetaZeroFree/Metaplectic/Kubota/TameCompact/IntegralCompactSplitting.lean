@@ -44,7 +44,7 @@ theorem kappa_mul (g h : KPTameCompact.K0 F v) :
 theorem kappa_one :
     KPTameCompact.kappa F v ζ hζ (1 : KPTameCompact.K0 F v) = 1 := by
   apply KPTameCompact.kappa_zero F v ζ hζ
-  simp [KPTameCompact.c, Matrix.one_apply]
+  simp [KPTameCompact.c]
 
 def kStar : KPTameCompact.K0 F v →*
     KPLocalCover.CubicGL2Raw F ζ hζ (Sum.inr v) where

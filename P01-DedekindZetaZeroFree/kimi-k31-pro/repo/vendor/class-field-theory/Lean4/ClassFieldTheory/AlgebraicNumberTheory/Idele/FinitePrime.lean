@@ -9,6 +9,7 @@ public import ClassFieldTheory.AlgebraicNumberTheory.Idele.ClassGroup.Tower
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.ClassGroup.TowerAlgEquivNaturality
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.ClassGroup.TowerBaseChange
 public import ClassFieldTheory.AlgebraicNumberTheory.Idele.SinglePlace
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -118,7 +119,7 @@ theorem idealClass_finitePrimeIdele
   change
     ClassGroup.mk K (fractionalIdeal (finitePrimeIdele v)) =
       ClassGroup.mk K (FractionalIdealGroup.prime v)
-  rw [fractionalIdeal_finitePrimeIdele]
+  norm_num
 
 end IdeleGroup
 

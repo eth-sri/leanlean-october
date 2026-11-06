@@ -328,27 +328,7 @@ private theorem rationalTowerRelativeClass_norm
         rw [e.symm_apply_apply]
       map_add' := f.map_add }
 
-private theorem quotientAddEquivOfEquivMapEq_mk
-    {A B : Type*} [AddCommGroup A] [AddCommGroup B]
-    (S : AddSubgroup A) (T : AddSubgroup B)
-    (e : B ≃+ A)
-    (hmap : S.map e.symm.toAddMonoidHom = T)
-    (x : A) :
-    quotientAddEquivOfEquivMapEq S T e hmap
-        (QuotientAddGroup.mk' S x) =
-      QuotientAddGroup.mk' T (e.symm x) := by
-  have hforward :
-      S ≤ AddSubgroup.comap e.symm.toAddMonoidHom T := by
-    intro y hy
-    change e.symm y ∈ T
-    rw [← hmap]
-    exact ⟨y, hy, rfl⟩
-  change
-    QuotientAddGroup.map S T e.symm.toAddMonoidHom hforward
-        (QuotientAddGroup.mk' S x) =
-      QuotientAddGroup.mk' T (e.symm x)
-  rw [QuotientAddGroup.map_mk']
-  rfl
+
 
  noncomputable def additiveQuotientEquiv
     {G : Type*} [CommGroup G] (H : Subgroup G) :

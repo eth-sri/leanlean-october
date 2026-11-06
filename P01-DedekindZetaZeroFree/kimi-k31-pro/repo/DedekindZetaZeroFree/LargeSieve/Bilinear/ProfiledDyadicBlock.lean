@@ -261,14 +261,14 @@ theorem frozen_sliced_dyadic_bound
     fun c d => K c * Complex.ofReal ((A.exteriorNorm c.val) ^ (-(1 / 2 : ℝ))) *
       (𝓕.χ c.val.val) d.val.val *
       P j (v * (A.exteriorNorm c.val / C) * (A.exteriorNorm d.val / D) ^ (-2 : ℤ))
-  have he (d) (hd : d ∈ rs) (c) (hc : c ∈ cs) :
+  have he d (hd : d ∈ rs) c (hc : c ∈ cs) :
       RMSeparatedExpansion.summand A G U σ ψ (L u) (H u) T d.val c Z =
         W * R d * k c d := by
     rw [frozen_summand_sieve_form A G U σ ψ (L u) (H u) 𝓕 h𝓕 T d c sd sc
       (hrs d hd).1 (hcs c hc).1 (P j) hj Z C D hCp hDp]
     dsimp [W, R, K, k, v]
     split_ifs <;> simp_all
-  have hes (d) (hd : d ∈ rs) :
+  have hes d (hd : d ∈ rs) :
       (∑ c ∈ cs, RMSeparatedExpansion.summand A G U σ ψ (L u) (H u) T d.val c Z) =
         W * (R d * ∑ c ∈ cs, k c d) := by
     rw [Finset.mul_sum, Finset.mul_sum]
@@ -347,13 +347,12 @@ theorem frozen_dyadic_block_bound
     apply Finset.sum_congr rfl
     intro i hi
     simp only [f, (hs i hi).1]
-  have hcs (c) (hc : c ∈ cs) :
+  have hcs c (hc : c ∈ cs) :
       C ≤ A.exteriorNorm c.val ∧ A.exteriorNorm c.val < 2 * C := by
     obtain ⟨i, hi, rfl⟩ := Finset.mem_image.mp hc
     exact (hs i hi).2
-  have hrs (d) (hd : d ∈ rs) :
-      D ≤ A.exteriorNorm d.val ∧ A.exteriorNorm d.val < 2 * D := by
-    exact ⟨((frozen_row_window_finite A h D).mem_toFinset.mp hd).1,
+  have hrs d (hd : d ∈ rs) :
+      D ≤ A.exteriorNorm d.val ∧ A.exteriorNorm d.val < 2 * D := ⟨((frozen_row_window_finite A h D).mem_toFinset.mp hd).1,
       ((frozen_row_window_finite A h D).mem_toFinset.mp hd).2.1⟩
   letI : Fintype rs := inferInstance
   let a : G.B × G.B → ExteriorSquarefreeIdeal A.cS → ℂ := fun q d =>

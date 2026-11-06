@@ -106,7 +106,7 @@ theorem tensor_slots_word_recovery
       funext p
       by_cases hp : p = j
       · subst p; simp
-      · simp [u,hp,Function.update_of_ne hp]
+      · simp [u,hp]
     rw [he]
     obtain ⟨j,hjmem⟩ := j
     cases j with

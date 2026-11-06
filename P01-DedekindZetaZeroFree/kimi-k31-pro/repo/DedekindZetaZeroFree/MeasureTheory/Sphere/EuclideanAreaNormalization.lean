@@ -262,7 +262,7 @@ lemma north_cone_volume {t : ℝ} (ht : 0 < t) (ht1 : t ≤ 1) :
     intervalIntegral.integral_const_mul, intervalIntegral.integral_sub
       intervalIntegrable_const (intervalIntegral.intervalIntegrable_pow 2),
     intervalIntegral.integral_const, integral_pow]
-  simp only [Nat.reduceAdd, Nat.cast_ofNat, zero_pow, sub_zero, one_pow, one_mul]
+  simp only [Nat.reduceAdd, Nat.cast_ofNat, one_pow]
   field_simp
   <;> ring
 

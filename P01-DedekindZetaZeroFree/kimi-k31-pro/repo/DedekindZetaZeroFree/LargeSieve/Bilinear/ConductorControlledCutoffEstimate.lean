@@ -32,7 +32,7 @@ theorem T3_eq_normalizedMasked_core
   refine Finset.sum_congr rfl fun v hv => ?_
   by_cases h0 : u ⊔ v = d ∧ Q.cls u = g ∧ Q.cls v = g
   · rw [if_pos h0, if_pos h0, if_pos hu, if_pos hv, hrows]
-    simp only [one_mul, map_one, map_mul]
+    simp only [one_mul]
   · rw [if_neg h0, if_neg h0]
 
 theorem B3_eq_normalizedMasked_core

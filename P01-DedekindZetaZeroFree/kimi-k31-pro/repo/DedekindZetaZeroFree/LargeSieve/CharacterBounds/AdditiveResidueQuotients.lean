@@ -181,8 +181,7 @@ theorem row_energy {F : Type} [Field F] [NumberField F]
     (∑ m ∈ rows, ‖A.balancedTransportCoeff B K_bal s T
       (fun a => c a * FixedSResidue.localInverseProduct A sigma
         ⟨s.generator a, (s.generates a).1⟩) m‖ ^ 2) =
-      ∑ a ∈ T, ‖c a‖ ^ 2 := by
-  exact (A.balanced_ideal_section_energy B K_bal hK s X hX T hT _).2.trans
+      ∑ a ∈ T, ‖c a‖ ^ 2 := (A.balanced_ideal_section_energy B K_bal hK s X hX T hT _).2.trans
     (local_twist_energy A B K_bal s sigma hSigma T c)
 
 theorem row_sum {F : Type} [Field F] [NumberField F]

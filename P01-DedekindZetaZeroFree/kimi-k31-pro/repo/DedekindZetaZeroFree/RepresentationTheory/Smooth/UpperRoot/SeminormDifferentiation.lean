@@ -95,7 +95,7 @@ lemma extSlope_ne (F : ℝ × E → V) (hF : ContDiff ℝ (⊤ : ℕ∞) F)
       (partialT_deriv F hF (s*t) x).scomp s ((hasDerivAt_id s).mul_const t))
     (((partialT_smooth F hF).continuous.comp
       ((continuous_id.mul continuous_const).prodMk continuous_const)).const_smul t |>.intervalIntegrable 0 1)
-  simp only [one_mul, zero_mul, intervalIntegral.integral_smul_const] at h
+  simp only [one_mul, zero_mul] at h
   change extSlope F (t,x) = _
   rw [← h, intervalIntegral.integral_smul, smul_smul, inv_mul_cancel₀ ht, one_smul]
   rfl

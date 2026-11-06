@@ -199,7 +199,7 @@ private lemma principal_left_bound (F : Type) [Field F] [NumberField F]
         rw [abs_of_nonpos (by linarith : -δ-1 ≤ 0)]
         linarith
   calc
-    _ ≤ ((2+|s.im|)*(_))*idealAbsoluteSum F (1+δ) :=
+    _ ≤ ((2+|s.im|)*_)*idealAbsoluteSum F (1+δ) :=
       mul_le_mul (mul_le_mul hn hx (norm_nonneg _) (by positivity)) hd (norm_nonneg _) (by positivity)
     _ = _ := by rw [pow_succ]; ring
 
@@ -240,8 +240,7 @@ theorem heckeEntireRegularizations_uniform_boundaries
   have hHpow (s : ℂ) : 1 ≤ (2+|s.im|)^(2*NumberField.InfinitePlace.nrComplexPlaces F+1) :=
     one_le_pow₀ (hH s)
   have hHinc (s : ℂ) : (2+|s.im|)^(2*NumberField.InfinitePlace.nrComplexPlaces F) ≤
-      (2+|s.im|)^(2*NumberField.InfinitePlace.nrComplexPlaces F+1) := by
-    exact pow_le_pow_right₀ (hH s) (Nat.le_succ _)
+      (2+|s.im|)^(2*NumberField.InfinitePlace.nrComplexPlaces F+1) := pow_le_pow_right₀ (hH s) (Nat.le_succ _)
   have hHbase (s : ℂ) : 2+|s.im| ≤ (2+|s.im|)^(2*NumberField.InfinitePlace.nrComplexPlaces F+1) := by
     simpa using pow_le_pow_right₀ (hH s) (by omega : 1 ≤ 2*NumberField.InfinitePlace.nrComplexPlaces F+1)
   refine ⟨C, hC, ?_, ?_⟩

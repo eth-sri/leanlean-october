@@ -64,9 +64,7 @@ private lemma card_intermediateDyads_le (δ : ℝ) (hδ : 0 < δ) (Z : ℝ) (hZ 
       have := hlogZ
       rw [le_div_iff₀ hδ] at this
       nlinarith
-    have e2 : Z ^ δ / (δ * Real.log 2) = (1 / (δ * Real.log 2)) * Z ^ δ := by ring
-    have hpos : 0 ≤ 1 / (δ * Real.log 2) := by positivity
-    nlinarith
+    grind
   linarith
 
 theorem rows_exceptional (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExponent D A_F)
@@ -115,7 +113,7 @@ theorem rows_exceptional (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExpon
       have := Real.rpow_le_rpow_of_exponent_le (by norm_num : (1 : ℝ) ≤ 2) hkR
       rw [Real.rpow_logb (by norm_num) (by norm_num) (Real.rpow_pos_of_pos hZpos _),
         Real.rpow_natCast] at this
-      exact this
+      grind
     obtain ⟨hfin, _⟩ := hcard _ hUU₀
     have hsub := exceptionalSet_sub D ρ ((2 : ℝ) ^ k)
     have hcardb : ((exceptionalSet D ρ ((2 : ℝ) ^ k)).ncard : ℝ) ≤ Cc * ((2 : ℝ) ^ k) ^ (317 / 500 : ℝ) :=
@@ -134,8 +132,7 @@ theorem rows_exceptional (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExpon
       have e : Scales.largeCutoffExponent * (317 / 500 + 1 / 25 + ε / 4) =
           Scales.largeCutoffExponent * (337 / 500) + Scales.largeCutoffExponent * (ε / 4) := by ring
       have h2 : Scales.largeCutoffExponent * (ε / 4) ≤ ε / 4 := mul_le_of_le_one_left (by linarith) hκ1
-      rw [e, hT]
-      linarith
+      grind
     have hEpos : 0 ≤ Cj := hCj.le
     calc ‖RowLowContour.JCont D (exceptionalSet D ρ ((2 : ℝ) ^ k)) Scales.rightLine Scales.wLine Scales.zLine Z‖
         ≤ Cj * Z ^ (Scales.kernelExponent Scales.rightLine Scales.wLine Scales.zLine) * ((2 : ℝ) ^ k) ^ (317 / 500 + 1 / 25 + ε / 4) := hJc
@@ -158,14 +155,14 @@ theorem rows_exceptional (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExpon
       ((1 / (ε / 4 * Real.log 2) + 1) * Z ^ (ε / 4)) * (Cj * Z ^ T) :=
     mul_le_mul_of_nonneg_right hcnt hTpos
   have hsum : Z ^ (ε / 4) * Z ^ T = Z ^ (Scales.mainExponent - 2617 / 80000 + ε / 2) := by
-    rw [← Real.rpow_add hZpos, hT]; congr 1; ring
+    rw [← Real.rpow_add hZpos, hT]; grind
   have hfinal : Z ^ (Scales.mainExponent - 2617 / 80000 + ε / 2) ≤ Z ^ (Scales.mainExponent - 2617 / 80000 + ε) :=
     Real.rpow_le_rpow_of_exponent_le (by linarith) (by linarith)
   calc ‖exceptionalDyadSum D ρ Z‖ ≤ _ := hsum_le
     _ ≤ _ := hfin2
     _ = (1 / (ε / 4 * Real.log 2) + 1) * Cj * (Z ^ (ε / 4) * Z ^ T) := by ring
     _ = (1 / (ε / 4 * Real.log 2) + 1) * Cj * Z ^ (Scales.mainExponent - 2617 / 80000 + ε / 2) := by
-        rw [hsum]
+        grind
     _ ≤ (1 / (ε / 4 * Real.log 2) + 1) * Cj * Z ^ (Scales.mainExponent - 2617 / 80000 + ε) := by
         apply mul_le_mul_of_nonneg_left hfinal
         positivity

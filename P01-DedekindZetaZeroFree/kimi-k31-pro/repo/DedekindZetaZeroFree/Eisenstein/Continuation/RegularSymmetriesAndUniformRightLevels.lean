@@ -35,7 +35,7 @@ private theorem invariant_level {G : Type*} [Group G] [TopologicalSpace G]
     have he : (U : Set N) = (Prod.snd '' ((fun p : K × N => c p.1 p.2) ⁻¹'
         (U₀.toOpenSubgroup : Set N)ᶜ))ᶜ := by
       ext n
-      simp [U, Subgroup.mem_iInf, Subgroup.mem_comap, Set.mem_image]
+      simp [U, Set.mem_image]
     rw [he]
     exact (isClosedMap_snd_of_compactSpace _
       (U₀.toOpenSubgroup.isOpen.isClosed_compl.preimage hUc)).isOpen_compl

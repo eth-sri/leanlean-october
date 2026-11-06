@@ -24,11 +24,11 @@ theorem rayDenominatorIdealCoprime
   let v : HeightOneSpectrum (𝓞 K) := ⟨P, hPprime, hPne⟩
   have hv : v ∈ (narrowIdealModulus K m hm).finitePart.support := by
     rw [narrowModulus_support_iff K m hm v]
-    exact hmP
+    grind
   obtain ⟨n, d, hnd⟩ :=
     v.exists_primeCompl_mul_eq_of_integer (x : K)
       (narrowRayCongruent_valuation_le_one K m hm x hx v hv)
-  exact d.property (hDP ((hD (d : 𝓞 K)).mpr ⟨n, by simpa [mul_comm] using hnd.symm⟩))
+  exact d.property (hDP ((hD (d : 𝓞 K)).mpr ⟨n, by grind⟩))
 
 end DedekindZetaZeroFree.AbelianQuotient
 

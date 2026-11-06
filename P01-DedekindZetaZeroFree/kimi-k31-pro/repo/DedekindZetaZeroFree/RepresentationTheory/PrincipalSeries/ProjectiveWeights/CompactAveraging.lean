@@ -243,7 +243,7 @@ lemma projectiveRowWeight_mk (B : LocalGL) :
       (‖B 1 0‖ ^ 2 + ‖B 1 1‖ ^ 2) /
         ‖((Matrix.GeneralLinearGroup.det B : ℂˣ) : ℂ)‖ := by
   simp only [projectiveRowWeight, projectiveGram_mk, normalizedGram, Fin.sum_univ_two,
-    Complex.mul_conj, Complex.normSq_eq_norm_sq, ← Complex.ofReal_pow,
+    Complex.mul_conj, Complex.normSq_eq_norm_sq, 
     ← Complex.ofReal_add, ← Complex.ofReal_div, Complex.ofReal_re]
 
 @[simp] lemma projectiveRowWeight_one :

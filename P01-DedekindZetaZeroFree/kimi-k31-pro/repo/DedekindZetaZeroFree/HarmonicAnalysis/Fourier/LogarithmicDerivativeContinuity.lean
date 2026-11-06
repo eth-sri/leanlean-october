@@ -55,7 +55,7 @@ private lemma archPhase_coordinates {F : Type} [Field F] [NumberField F]
     intro v _
     simp only [InfiniteAdeleRing.ringEquiv_mixedSpace_apply,
       ← InfinitePlace.Completion.extensionEmbeddingOfIsReal_apply v.2,
-      Complex.ofReal_re, Complex.ofReal_mul, Complex.ofReal_ofNat]
+      Complex.ofReal_re]
   · apply Fintype.prod_equiv
       (Equiv.subtypeEquivRight (fun _ => InfinitePlace.not_isReal_iff_isComplex))
     intro v
@@ -74,7 +74,7 @@ private lemma local_schwartz_transforms
       ((LinearEquiv.smulOfNeZero ℝ ℝ 2 (by norm_num)).toContinuousLinearEquiv) gR, ?_⟩
     intro y
     simp only [SchwartzMap.compCLMOfContinuousLinearEquiv_apply, Function.comp_apply,
-      LinearEquiv.coe_toContinuousLinearEquiv, LinearEquiv.smulOfNeZero_apply, smul_eq_mul,
+      
       hgR, ArchSelfDual.realFourier, ArchSelfDual.realMeasure]
     apply integral_congr_ae
     filter_upwards with x
@@ -157,7 +157,7 @@ private theorem fourier_tensor
         (continuous_subtype_val.comp ((he v).comp
           (continuous_neg.mul continuous_const)))).aestronglyMeasurable
     · intro y
-      exact Filter.Eventually.of_forall fun x => by simp [norm_mul]
+      exact Filter.Eventually.of_forall fun x => by simp
     · exact ((hF v).1.continuous.integrable_of_hasCompactSupport (hF v).2.1).norm
     · exact Filter.Eventually.of_forall fun x =>
         continuous_const.mul (continuous_subtype_val.comp
@@ -242,7 +242,7 @@ private theorem hasDerivAt_complexNormFlow (g : SchwartzMap ℂ ℂ) (z : ℂ) (
   · rfl
   · rw [complexEuler_apply, ← map_smul]
     congr 1
-    simp [smul_eq_mul]
+    simp
     ring
 
 private theorem iteratedDeriv_complexNormFlow (g : SchwartzMap ℂ ℂ) (k : ℕ) (z : ℂ) (u : ℝ) :

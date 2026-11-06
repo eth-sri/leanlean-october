@@ -44,7 +44,7 @@ private theorem generates_valuation (p : ExteriorPrime A)
   have hdvd (k : ℕ) : p.val.asIdeal ^ k ∣ I.val ↔ k ≤ n := by
     rw [pow_dvd_iff_le_emultiplicity,
       UniqueFactorizationMonoid.emultiplicity_eq_count_normalizedFactors p.val.irreducible I.property.1]
-    simp [n, exponent, idealPrimeExponent]
+    simp [n, idealPrimeExponent]
   have hIn : I.val ≤ p.val.asIdeal ^ n := Ideal.dvd_iff_le.mp ((hdvd n).mpr le_rfl)
   have hnot : ¬ I.val ≤ p.val.asIdeal ^ (n + 1) := by
     rw [← Ideal.dvd_iff_le, hdvd]; omega
@@ -175,7 +175,7 @@ private lemma congruent_of_residueMap_eq_generator (C : A.GeneralArithmeticConte
   obtain ⟨r, hr⟩ := Ideal.mem_span_singleton.mp hmem
   refine ⟨⟨algebraMap F (LocalField p) (r : F),
     CompatiblePrimeRawLocal.sInteger_local_integral p r⟩, ?_⟩
-  simp only [Subtype.coe_mk]
+  simp only
   rw [← map_sub, ← Subalgebra.coe_sub, hr, Subalgebra.coe_mul, Subalgebra.coe_pow,
     map_mul, map_pow, uniformizer]
 

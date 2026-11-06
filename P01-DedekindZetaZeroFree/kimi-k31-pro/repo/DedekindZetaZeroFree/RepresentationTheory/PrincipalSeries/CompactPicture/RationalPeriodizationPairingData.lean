@@ -190,10 +190,10 @@ theorem torusRatio_weylConjugation_inv_rationalPeriodizationPairingData (t : E F
     rw [hA]
   have h10' : (W * A * W) 1 0 = 0 := by
     simp [W, KPAdelicCoverRestrictedProduct.rationalBase, KPStandardLocalRootLifts.weylSwap,
-      Matrix.mul_apply, Fin.sum_univ_two, h10, h01]
+      Matrix.mul_apply, Fin.sum_univ_two, h01]
   have h01' : (W * A * W) 0 1 = 0 := by
     simp [W, KPAdelicCoverRestrictedProduct.rationalBase, KPStandardLocalRootLifts.weylSwap,
-      Matrix.mul_apply, Fin.sum_univ_two, h10, h01]
+      Matrix.mul_apply, Fin.sum_univ_two, h10]
   have h1 := KPGlobalTorusFunctionData.ratio_formula F
     ⟨_, (weylTorusConjugation F ζ hζ t).property⟩ (W * A * W) hW.symm h10' h01'
   have h0 := KPGlobalTorusFunctionData.ratio_formula F ⟨_, t.property⟩ A hA h10 h01
@@ -533,10 +533,10 @@ set_option backward.isDefEq.respectTransparency false
     rw [hA]
   have h10' : (W * A * W) 1 0 = 0 := by
     simp [W, KPAdelicCoverRestrictedProduct.rationalBase, KPStandardLocalRootLifts.weylSwap,
-      Matrix.mul_apply, Fin.sum_univ_two, h10, h01]
+      Matrix.mul_apply, Fin.sum_univ_two, h01]
   have h01' : (W * A * W) 0 1 = 0 := by
     simp [W, KPAdelicCoverRestrictedProduct.rationalBase, KPStandardLocalRootLifts.weylSwap,
-      Matrix.mul_apply, Fin.sum_univ_two, h10, h01]
+      Matrix.mul_apply, Fin.sum_univ_two, h10]
   have h1 := KPGlobalTorusFunctionData.ratio_formula F
     ⟨_, (weylTorusConjugation F ζ hζ t).property⟩ (W * A * W) hW.symm h10' h01'
   have h0 := KPGlobalTorusFunctionData.ratio_formula F ⟨_, t.property⟩ A hA h10 h01

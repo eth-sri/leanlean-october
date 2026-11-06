@@ -255,213 +255,23 @@ theorem smallHilbertClassFieldQuotientToIdeleClassNormQuotient_mk
         ((_root_.ideleClassNorm K L).range) x :=
   rfl
 
-/-- The transition from the small-Hilbert quotient to an
-everywhere-unramified actual norm quotient is surjective. -/
-theorem
-    smallHilbertClassFieldQuotientToIdeleClassNormQuotient_surjective
-    [_root_.IsUnramifiedAtInfinitePlaces K L]
-    (hunramifiedFinite :
-      _root_.ramifiedBaseFinitePlaces
-          (K := K) (L := L) = ∅) :
-    Function.Surjective
-      (smallHilbertClassFieldQuotientToIdeleClassNormQuotient
-        (K := K) (L := L) hunramifiedFinite) := by
-  intro q
-  obtain ⟨x, rfl⟩ :=
-    QuotientGroup.mk'_surjective
-      ((_root_.ideleClassNorm K L).range) q
-  exact
-    ⟨QuotientGroup.mk'
-        (smallHilbertClassFieldNormSubgroup (K := K)) x,
-      rfl⟩
 
-/-- The kernel of the small-Hilbert quotient transition is the image
-of the actual norm subgroup modulo the small-Hilbert norm subgroup. -/
-theorem
-    smallHilbertClassFieldQuotientToIdeleClassNormQuotient_ker
-    [_root_.IsUnramifiedAtInfinitePlaces K L]
-    (hunramifiedFinite :
-      _root_.ramifiedBaseFinitePlaces
-          (K := K) (L := L) = ∅) :
-    MonoidHom.ker
-        (smallHilbertClassFieldQuotientToIdeleClassNormQuotient
-          (K := K) (L := L) hunramifiedFinite) =
-      Subgroup.map
-        (QuotientGroup.mk'
-          (smallHilbertClassFieldNormSubgroup (K := K)))
-        ((_root_.ideleClassNorm K L).range) := by
-  unfold smallHilbertClassFieldQuotientToIdeleClassNormQuotient
-  exact
-    (QuotientGroup.ker_map
-      (N := smallHilbertClassFieldNormSubgroup (K := K))
-      ((_root_.ideleClassNorm K L).range)
-      (MonoidHom.id (IdeleClassGroup K))
-      (fun _ hx =>
-        smallHilbertClassFieldNormSubgroup_le_ideleClassNorm_range_of_everywhereUnramified
-          (K := K) (L := L) hunramifiedFinite hx)).trans
-      (congrArg
-        (Subgroup.map
-          (QuotientGroup.mk' (smallHilbertClassFieldNormSubgroup (K := K))))
-        (Subgroup.comap_id ((_root_.ideleClassNorm K L).range)))
 
-/-- Quotienting the small-Hilbert reciprocity quotient by the image of
-the actual norm subgroup recovers the actual norm quotient. -/
-def smallHilbertNormImageQuotientEquivIdeleClassNormQuotient
-    [_root_.IsUnramifiedAtInfinitePlaces K L]
-    (hunramifiedFinite :
-      _root_.ramifiedBaseFinitePlaces
-          (K := K) (L := L) = ∅) :
-    ((IdeleClassGroup K ⧸
-          smallHilbertClassFieldNormSubgroup (K := K)) ⧸
-        Subgroup.map
-          (QuotientGroup.mk'
-            (smallHilbertClassFieldNormSubgroup (K := K)))
-          ((_root_.ideleClassNorm K L).range)) ≃*
-      (IdeleClassGroup K ⧸
-        (_root_.ideleClassNorm K L).range) :=
-  (QuotientGroup.quotientMulEquivOfEq
-      (smallHilbertClassFieldQuotientToIdeleClassNormQuotient_ker
-        (K := K) (L := L) hunramifiedFinite).symm).trans
-    (QuotientGroup.quotientKerEquivOfSurjective
-      (smallHilbertClassFieldQuotientToIdeleClassNormQuotient
-        (K := K) (L := L) hunramifiedFinite)
-      (smallHilbertClassFieldQuotientToIdeleClassNormQuotient_surjective
-        (K := K) (L := L) hunramifiedFinite))
 
-/-- The ordinary class group maps canonically onto the actual norm
-quotient of every everywhere-unramified finite Galois extension. -/
-def classGroupToIdeleClassNormQuotient
-    [_root_.IsUnramifiedAtInfinitePlaces K L]
-    (hunramifiedFinite :
-      _root_.ramifiedBaseFinitePlaces
-          (K := K) (L := L) = ∅) :
-    ClassGroup (𝓞 K) →*
-      (IdeleClassGroup K ⧸
-        (_root_.ideleClassNorm K L).range) :=
-  (smallHilbertClassFieldQuotientToIdeleClassNormQuotient
-      (K := K) (L := L) hunramifiedFinite).comp
-    (smallHilbertClassFieldQuotientEquivClassGroup
-      (K := K)).symm.toMonoidHom
 
-/-- The canonical map from the ordinary class group to the actual norm
-quotient of an everywhere-unramified extension is surjective. -/
-theorem classGroupToIdeleClassNormQuotient_surjective
-    [_root_.IsUnramifiedAtInfinitePlaces K L]
-    (hunramifiedFinite :
-      _root_.ramifiedBaseFinitePlaces
-          (K := K) (L := L) = ∅) :
-    Function.Surjective
-      (classGroupToIdeleClassNormQuotient
-        (K := K) (L := L) hunramifiedFinite) :=
-  (smallHilbertClassFieldQuotientToIdeleClassNormQuotient_surjective
-      (K := K) (L := L) hunramifiedFinite).comp
-    (smallHilbertClassFieldQuotientEquivClassGroup
-      (K := K)).symm.surjective
 
-/-- The actual norm quotient of an everywhere-unramified finite Galois
-extension has order dividing the class number. -/
-theorem
-    ideleClassNormQuotient_card_dvd_classNumber_of_everywhereUnramified
-    [_root_.IsUnramifiedAtInfinitePlaces K L]
-    (hunramifiedFinite :
-      _root_.ramifiedBaseFinitePlaces
-          (K := K) (L := L) = ∅) :
-    Nat.card
-        (IdeleClassGroup K ⧸
-          (_root_.ideleClassNorm K L).range) ∣
-      NumberField.classNumber K := by
-  calc
-    Nat.card
-        (IdeleClassGroup K ⧸
-          (_root_.ideleClassNorm K L).range) ∣
-        Nat.card
-          (IdeleClassGroup K ⧸
-            smallHilbertClassFieldNormSubgroup (K := K)) := by
-      simpa only [Subgroup.index_eq_card] using
-        Subgroup.index_dvd_of_le
-          (smallHilbertClassFieldNormSubgroup_le_ideleClassNorm_range_of_everywhereUnramified
-            (K := K) (L := L) hunramifiedFinite)
-    _ = NumberField.classNumber K :=
-      smallHilbertClassFieldQuotient_card_eq_classNumber
-        (K := K)
 
-/-- The class number factors as the kernel order of the canonical class
-group map times the order of an everywhere-unramified actual norm
-quotient. -/
-theorem
-    classNumber_eq_unramifiedNormKernel_card_mul_normQuotient_card
-    [_root_.IsUnramifiedAtInfinitePlaces K L]
-    (hunramifiedFinite :
-      _root_.ramifiedBaseFinitePlaces
-          (K := K) (L := L) = ∅) :
-    NumberField.classNumber K =
-      Nat.card
-          (MonoidHom.ker
-            (classGroupToIdeleClassNormQuotient
-              (K := K) (L := L) hunramifiedFinite)) *
-        Nat.card
-          (IdeleClassGroup K ⧸
-            (_root_.ideleClassNorm K L).range) := by
-  let f :=
-    classGroupToIdeleClassNormQuotient
-      (K := K) (L := L) hunramifiedFinite
-  have hf : Function.Surjective f :=
-    classGroupToIdeleClassNormQuotient_surjective
-      (K := K) (L := L) hunramifiedFinite
-  calc
-    NumberField.classNumber K =
-        Nat.card (ClassGroup (𝓞 K)) := by
-      rw [NumberField.classNumber, ← Nat.card_eq_fintype_card]
-    _ =
-        Nat.card (MonoidHom.ker f) *
-          (MonoidHom.ker f).index :=
-      (Subgroup.card_mul_index (MonoidHom.ker f)).symm
-    _ = Nat.card (MonoidHom.ker f) *
-        Nat.card f.range := by
-      rw [Subgroup.index_ker f]
-    _ = Nat.card (MonoidHom.ker f) *
-        Nat.card
-          (IdeleClassGroup K ⧸
-            (_root_.ideleClassNorm K L).range) := by
-      rw [f.range_eq_top_of_surjective hf, Subgroup.card_top]
 
-/-- The degree of every finite cyclic extension unramified at all finite
-and infinite places divides the class number. -/
-theorem cyclicEverywhereUnramifiedExtensionDegree_dvd_classNumber
-    [_root_.IsUnramifiedAtInfinitePlaces K L]
-    [IsCyclic (L ≃ₐ[K] L)]
-    (hunramifiedFinite :
-      _root_.ramifiedBaseFinitePlaces
-          (K := K) (L := L) = ∅) :
-    Module.finrank K L ∣
-      NumberField.classNumber K := by
-  simpa only [
-    ← Subgroup.index_eq_card,
-    ClassFieldAxiom.ideleClassNorm_index_eq_finrank_cyclic K L] using
-      ideleClassNormQuotient_card_dvd_classNumber_of_everywhereUnramified
-        (K := K) (L := L) hunramifiedFinite
 
-/-- For a finite cyclic extension unramified at all finite and infinite
-places, the class number is the kernel order of the canonical class
-group reciprocity map times the extension degree. -/
-theorem
-    classNumber_eq_unramifiedCyclicNormKernel_card_mul_extensionDegree
-    [_root_.IsUnramifiedAtInfinitePlaces K L]
-    [IsCyclic (L ≃ₐ[K] L)]
-    (hunramifiedFinite :
-      _root_.ramifiedBaseFinitePlaces
-          (K := K) (L := L) = ∅) :
-    NumberField.classNumber K =
-      Nat.card
-          (MonoidHom.ker
-            (classGroupToIdeleClassNormQuotient
-              (K := K) (L := L) hunramifiedFinite)) *
-        Module.finrank K L := by
-  simpa only [
-    ← Subgroup.index_eq_card,
-    ClassFieldAxiom.ideleClassNorm_index_eq_finrank_cyclic K L] using
-      classNumber_eq_unramifiedNormKernel_card_mul_normQuotient_card
-        (K := K) (L := L) hunramifiedFinite
+
+
+
+
+
+
+
+
+
 
 end GlobalClassFields
 end GlobalClassFieldTheory

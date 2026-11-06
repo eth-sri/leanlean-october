@@ -65,7 +65,7 @@ private lemma ball_units_iff (π y : Kˣ)
       rw [hv]
       omega
     refine ⟨⟨_, hm⟩, ?_⟩
-    simp [Units.val_mul, mul_assoc, mul_comm, mul_left_comm]
+    simp [Units.val_mul, mul_left_comm]
     exact mul_inv_cancel₀ (zpow_ne_zero n π.ne_zero)
 
 private lemma exponent_value (y : Kˣ) :

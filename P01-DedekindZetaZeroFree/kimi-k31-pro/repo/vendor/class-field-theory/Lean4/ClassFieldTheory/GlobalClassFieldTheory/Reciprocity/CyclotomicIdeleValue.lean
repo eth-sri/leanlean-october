@@ -67,18 +67,7 @@ theorem rationalCyclotomicZHatIdeleValue_apply
         (rationalCyclotomicZHatGlobalArtin a) :=
   rfl
 
-/-- The rational cyclotomic value has dense image in `ZHat`. -/
-theorem rationalCyclotomicZHatIdeleValue_denseRange :
-    DenseRange rationalCyclotomicZHatIdeleValue := by
-  change
-    DenseRange
-      (fun a =>
-        rationalCyclotomicZHatFieldGalEquivZHat
-          (rationalCyclotomicZHatGlobalArtin a))
-  exact
-    rationalCyclotomicZHatFieldGalEquivZHat.surjective.denseRange.comp
-      rationalCyclotomicZHatGlobalArtin_denseRange
-      rationalCyclotomicZHatFieldGalEquivZHat.continuous
+
 
 /-- The norm-one rational ideles already have dense image in the actual
 cyclotomic `ZHat` coordinate.  This is the compact source used for
@@ -268,30 +257,7 @@ theorem cyclotomicZHatNormComposite_baseIdeleInclusion
     RelativeIdeleGroup.norm_inclusion, map_pow,
     toAdd_pow]
 
-/-- The image of the unnormalized value contains the absolute-degree
-multiple of the rational cyclotomic value group. -/
-theorem
-    nsmulImage_rationalCyclotomicZHatIdeleValue_range_le_normComposite_range :
-    nsmulImage
-        ((AddEquiv.additiveMultiplicative ZHat).toAddMonoidHom.comp
-          (MonoidHom.toAdditive
-            rationalCyclotomicZHatIdeleValue.toMonoidHom)).range
-        (Module.finrank ℚ K) ≤
-      (cyclotomicZHatNormComposite K).range := by
-  intro z hz
-  rw [mem_nsmulImage_iff] at hz
-  obtain ⟨x, hx, rfl⟩ := hz
-  obtain ⟨a, rfl⟩ := hx
-  refine
-    ⟨Additive.ofMul
-        (relativeIdeleBaseChangeMulEquiv
-          (K := ℚ) (L := K)
-          (RelativeIdeleGroup.inclusion ℚ K
-            (Additive.toMul a))),
-      ?_⟩
-  exact
-    cyclotomicZHatNormComposite_baseIdeleInclusion
-      K (Additive.toMul a)
+
 
 /-- At every finite cyclotomic layer, the Artin image of norms from
 `K` is exactly the image of restriction from the actual finite
@@ -784,14 +750,7 @@ theorem cyclotomicZHatNormComposite_mem_mulNat_range
         (cyclotomicZHatIntersectionDegree K)).toAddMonoidHom.range
   exact hadd
 
-/-- Subgroup form of the upper image bound:
-`v_ℚ(N_{K/ℚ}(I_K)) ⊆ f_K ZHat`. -/
-theorem cyclotomicZHatNormComposite_range_le_mulNat_range :
-    (cyclotomicZHatNormComposite K).range ≤
-      (zHatMulNat
-        (cyclotomicZHatIntersectionDegree K)).toAddMonoidHom.range := by
-  rintro _ ⟨a, rfl⟩
-  exact cyclotomicZHatNormComposite_mem_mulNat_range K a
+
 
 /-- The unnormalized composite, with codomain restricted to the actual
 multiple subgroup `f_K ZHat`. -/

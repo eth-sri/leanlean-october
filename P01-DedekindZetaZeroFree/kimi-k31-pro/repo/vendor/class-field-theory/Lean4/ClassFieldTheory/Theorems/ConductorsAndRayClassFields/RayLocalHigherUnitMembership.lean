@@ -58,8 +58,7 @@ theorem mem_rayLocalHigherUnitGroup_iff
     · have hback :
           (v.adicCompletionIntegers K).toSubmonoid.unitsEquivUnitsType.symm z = y := by
         exact Equiv.symm_apply_apply _ _
-      rw [hback]
-      exact hxy
+      grind
     · have hq : Ideal.Quotient.mk
           ((IsLocalRing.maximalIdeal (v.adicCompletionIntegers K)) ^ n)
           (z : v.adicCompletionIntegers K) = 1 := by
@@ -67,7 +66,7 @@ theorem mem_rayLocalHigherUnitGroup_iff
         change Ideal.Quotient.mk
           ((IsLocalRing.maximalIdeal (v.adicCompletionIntegers K)) ^ n)
           (z : v.adicCompletionIntegers K) = 1 at hv
-        exact hv
+        grind
       exact (Ideal.Quotient.mk_eq_one_iff_sub_mem
         (I := (IsLocalRing.maximalIdeal (v.adicCompletionIntegers K)) ^ n)
         (z : v.adicCompletionIntegers K)).mp hq

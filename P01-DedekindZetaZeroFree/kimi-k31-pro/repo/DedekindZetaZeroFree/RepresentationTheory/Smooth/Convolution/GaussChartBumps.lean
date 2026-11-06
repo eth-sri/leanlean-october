@@ -123,7 +123,7 @@ private theorem affinePoint_toAffine (z : X F) (hz : z ∈ D0 F)
   rw [KPLiteralChamber.leftMatrix_val _ hw]
   intro i j
   fin_cases i <;> fin_cases j <;>
-    simp [Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
+    simp [Matrix.GeneralLinearGroup.coe_scalar,
       Matrix.GeneralLinearGroup.mkOfDetNeZero, PGLComplex.affineMatrix,
       complex_toAffine, Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar]
   all_goals first | ring | skip

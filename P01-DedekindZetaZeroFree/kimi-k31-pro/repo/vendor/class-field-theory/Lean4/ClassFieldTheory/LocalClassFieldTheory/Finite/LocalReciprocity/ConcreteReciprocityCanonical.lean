@@ -1087,17 +1087,7 @@ theorem concreteReciprocityEquivOfEmbedding_eq
     (Additive.ofMul x)
   exact congrArg Additive.toMul h
 
-/-- Consequently the norm-residue symbol is also independent of the chosen
-embedding. -/
-theorem concreteNormResidueSymbolOfEmbedding_eq
-    (i j : L →ₐ[K] SeparableClosure K)
-    (D : DegreeData (canonicalReciprocityAbsoluteGalois K)) (v : ValuationData D (AG K))
-    (hcf : SatisfiesClassFieldAxiom (AG K)) :
-    concreteNormResidueSymbolOfEmbedding K L i D v hcf =
-      concreteNormResidueSymbolOfEmbedding K L j D v hcf := by
-  rw [concreteNormResidueSymbolOfEmbedding,
-    concreteNormResidueSymbolOfEmbedding,
-    concreteReciprocityEquivOfEmbedding_eq K L i j D v hcf]
+
 
 end
 end LocalClassFieldTheory

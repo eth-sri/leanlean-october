@@ -365,7 +365,7 @@ private theorem compact_mixed_pullback (hι : Function.Injective ι)
       (KPContActualChamberNormalSeries.compactMixedJet_holomorphic F ζ hζ U ι f hι hf k w A hA), ?_⟩
   intro z hz x
   simp only [ContinuousMap.comp_apply, g, KPContActualChamberNormalSeries.compactMixedJet,
-    dite_eq_ite, hz, ↓reduceDIte]
+    hz, ↓reduceDIte]
   rfl
 
 private theorem iwasawa_compact_jet

@@ -102,8 +102,7 @@ theorem oneStepWeightedDescent_core
       (∑ d ∈ s, B3 F c Q W M N K d) ≤ ∑ d ∈ s, Cp * H ^ 4 * p * E :=
         Finset.sum_le_sum hd
       _ = (s.card : ℝ) * (Cp * H ^ 4 * p * E) := by simp
-      _ ≤ (Ci * H) * (Cp * H ^ 4 * p * E) := by
-        exact mul_le_mul_of_nonneg_right hcard (by positivity)
+      _ ≤ (Ci * H) * (Cp * H ^ 4 * p * E) := mul_le_mul_of_nonneg_right hcard (by positivity)
       _ = Cp * Ci * H ^ 5 * p * E := by ring
   have hres : M ≤ H ^ 5 * p * E := by
     calc

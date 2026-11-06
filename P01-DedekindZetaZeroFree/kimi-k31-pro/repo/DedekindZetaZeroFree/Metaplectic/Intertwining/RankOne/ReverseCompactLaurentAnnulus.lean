@@ -195,7 +195,7 @@ private theorem iwasawa_abs_right_invariant
       (I.compactPart g : Cover F ζ hζ q) * j * (I.compactPart (g * j) : Cover F ζ hζ q)⁻¹ := by
     have h1 := I.decomposition g
     have h2 := I.decomposition (g * j)
-    simp only [Subgroup.coe_mul, Subgroup.coe_inv]
+    simp only [Subgroup.coe_inv]
     apply eq_mul_inv_iff_mul_eq.mpr
     rw [mul_assoc, ← h2]
     calc

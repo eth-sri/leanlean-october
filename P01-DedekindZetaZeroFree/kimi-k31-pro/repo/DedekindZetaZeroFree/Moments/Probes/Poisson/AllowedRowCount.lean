@@ -19,11 +19,7 @@ theorem frequency_ext (f g : CorrectionFactors.Frequency D.context) (hu : f.u = 
     (hI : f.ideal = g.ideal) : f = g := by
   obtain ⟨u, I, a, b, c⟩ := f
   obtain ⟨u', I', a', b', c'⟩ := g
-  have hu' : u = u' := hu
-  have hI' : I = I' := hI
-  subst hu'
-  subst hI'
-  rfl
+  grind
 
 theorem ideal_eq_of_u_eq {r r' : D.Row} (h : r.u = r'.u) :
     r.toFrequency.ideal = r'.toFrequency.ideal := by
@@ -31,7 +27,7 @@ theorem ideal_eq_of_u_eq {r r' : D.Row} (h : r.u = r'.u) :
   apply Subtype.ext
   rw [D.recipe.A.exteriorIdealEquiv_apply, D.recipe.A.exteriorIdealEquiv_apply,
     ← r.toFrequency.generates.2, ← r'.toFrequency.generates.2]
-  exact congrArg (fun x : D.recipe.A.R => Ideal.span {x}) h
+  grind
 
 theorem row_u_injective : Function.Injective (FixedData.Row.u (D := D)) := by
   intro r r' h
@@ -111,12 +107,12 @@ theorem count_nonprincipal_lt : ∃ K : ℝ, 0 < K ∧ ∀ X : ℝ, 1 ≤ X →
   refine ⟨2 * K, by positivity, fun X hX => ?_⟩
   have hex : ∃ n : ℕ, X ≤ (2 : ℝ) ^ n := by
     obtain ⟨n, hn⟩ := pow_unbounded_of_one_lt X (one_lt_two : (1 : ℝ) < 2)
-    exact ⟨n, hn.le⟩
+    grind
   obtain ⟨M, hM, hmin⟩ : ∃ M : ℕ, X ≤ (2 : ℝ) ^ M ∧ ∀ m < M, ¬ X ≤ (2 : ℝ) ^ m :=
     ⟨Nat.find hex, Nat.find_spec hex, fun m hm => Nat.find_min hex hm⟩
   have hM2 : (2 : ℝ) ^ M < 2 * X := by
     rcases M with _ | m
-    · rw [pow_zero]; linarith
+    · grind
     · have h := hmin m (Nat.lt_succ_self m)
       push_neg at h
       rw [pow_succ]; linarith
@@ -134,11 +130,11 @@ theorem count_nonprincipal_lt : ∃ K : ℝ, 0 < K ∧ ∀ X : ℝ, 1 ≤ X →
           apply Finset.sum_le_sum
           intro j _
           obtain ⟨_, h2⟩ := hdy j
-          exact h2
+          grind
       _ = K * ∑ j ∈ Finset.range M, (2 : ℝ) ^ j := by rw [Finset.mul_sum]
       _ ≤ K * (2 : ℝ) ^ M := by
           apply mul_le_mul_of_nonneg_left _ hK.le
-          rw [hgeom]; linarith
+          grind
   have hmaps : Set.MapsTo (toProbeFrequency D) {r : D.Row | r.u ≠ 1 ∧ D.q r < X}
       (↑T : Set (PrincipalMellinComparison.Frequency D.recipe)) := by
     intro r hr
@@ -159,7 +155,7 @@ theorem count_nonprincipal_lt : ∃ K : ℝ, 0 < K ∧ ∀ X : ℝ, 1 ≤ X →
       have h5 : PrincipalMellinComparison.frequencyNorm D.recipe (toProbeFrequency D r) =
           D.q r := frequencyNorm_toProbeFrequency D r
       linarith
-    exact Finset.mem_coe.mpr (Finset.mem_biUnion.mpr ⟨j, Finset.mem_range.mpr hjM, hj⟩)
+    grind
   have hinj : Set.InjOn (toProbeFrequency D) {r : D.Row | r.u ≠ 1 ∧ D.q r < X} :=
     (toProbeFrequency_injective D).injOn
   refine ⟨Set.Finite.of_injOn hmaps hinj T.finite_toSet, ?_⟩
@@ -179,8 +175,8 @@ theorem count_lt : ∃ C : ℝ, 0 < C ∧ ∀ X : ℝ, 1 ≤ X →
       insert (principalRow D) {r : D.Row | r.u ≠ 1 ∧ D.q r < X} := by
     intro r hr
     by_cases h : r.u = 1
-    · rw [eq_principalRow D h]; exact Set.mem_insert _ _
-    · exact Set.mem_insert_of_mem _ ⟨h, hr⟩
+    · rw [eq_principalRow D h]; grind
+    · grind
   have hfin' := hfin.insert (principalRow D)
   refine ⟨hfin'.subset hsub, ?_⟩
   have h1 := Set.ncard_le_ncard hsub hfin'

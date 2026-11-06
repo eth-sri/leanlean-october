@@ -3,6 +3,7 @@ module
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.RayClassModulus
 public import ClassFieldTheory.Definitions.FrobeniusAndHilbertClassFields.NumberFieldFractionalIdealGroup
 public import Mathlib.RingTheory.ClassGroup.Basic
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -41,8 +42,7 @@ def totallyPositiveFieldUnits
   carrier := {x | ∀ v : RayClassRealPlace K,
     0 < v.1.embedding_of_isReal v.2 (x : K)}
   one_mem' := by
-    intro v
-    simp
+    norm_num
   mul_mem' := by
     intro x y hx hy v
     simpa only [Units.val_mul, map_mul] using mul_pos (hx v) (hy v)

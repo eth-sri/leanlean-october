@@ -7,7 +7,7 @@ public import Mathlib
 namespace DedekindZetaZeroFree.LargeSieve
 
 private lemma rpow_exp_congr {a x y : ℝ} (h : x = y) : Real.rpow a x = Real.rpow a y := by
-  rw [h]
+  simp_all
 
 private lemma rpow_mul' {x : ℝ} (hx : 0 ≤ x) (y z : ℝ) :
     Real.rpow (Real.rpow x y) z = Real.rpow x (y * z) :=
@@ -52,7 +52,7 @@ private lemma sqrt_eq_rpow' (x : ℝ) : Real.sqrt x = Real.rpow x (1 / 2) :=
   Real.sqrt_eq_rpow x
 
 private lemma nat_le_of_one_le {r : ℕ} (hr : 1 ≤ r) : (0 : ℝ) < (r : ℝ) := by
-  exact_mod_cast (lt_of_lt_of_le Nat.zero_lt_one hr)
+  aesop
 
 private lemma rpow_H5_le {M N η : ℝ} {r : ℕ} (hM : 1 ≤ M) (hN : 1 ≤ N) (hη : 0 < η)
     (hr : 1 ≤ r) (hrη : 20 / η ≤ (r : ℝ)) :
@@ -89,7 +89,7 @@ theorem recursion_parameter_basic (α M N η : ℝ) (r : ℕ)
     let H := Real.rpow N (1 / (r : ℝ))
     0 < δ ∧
     1 ≤ H ∧
-    Real.rpow (H) 5 ≤ Real.rpow (T) (η / 4) := by
+    Real.rpow H 5 ≤ Real.rpow T (η / 4) := by
   dsimp only []
   refine ⟨?_, ?_, ?_⟩
   · rw [div_pos_iff]
@@ -263,13 +263,13 @@ theorem recursion_parameter_far (α M N η : ℝ) (r : ℕ)
     let R := M + N + Real.rpow N (2 * α - 1) * Real.rpow M (1 - α)
     0 < K ∧ K < M / 2 ∧
     (∀ n : ℝ, 1 ≤ n → n ≤ N →
-      n ^ 2 / M * Real.rpow (M * n) (δ) ≤
+      n ^ 2 / M * Real.rpow (M * n) δ ≤
         K ∧
       K ≤
         M * Real.rpow (M * n) (-δ) ∧
-      M + n + Real.sqrt M * Real.rpow (K) (α - 1 / 2) +
+      M + n + Real.sqrt M * Real.rpow K (α - 1 / 2) +
           Real.sqrt (M / K) * n ≤
-        2 * Real.rpow (T)
+        2 * Real.rpow T
           (δ * (α + 1)) * R) := by
   dsimp only []
   exact far_aux α M N η (M * N) (η / (8 * (r : ℝ) * (α + 1)))
@@ -351,10 +351,10 @@ theorem recursion_parameter_near (α M N η : ℝ) (r : ℕ)
     let T := M * N
     let δ := η / (8 * (r : ℝ) * (α + 1))
     Real.rpow N α ≤ Real.rpow 2 (α - 1) *
-      Real.rpow (T) (δ * (α - 1)) *
+      Real.rpow T (δ * (α - 1)) *
         Real.rpow N (2 * α - 1) * Real.rpow M (1 - α) ∧
-    Real.rpow (T) (η / 4 + δ * (α - 1)) ≤
-      Real.rpow (T) η := by
+    Real.rpow T (η / 4 + δ * (α - 1)) ≤
+      Real.rpow T η := by
   dsimp only []
   exact near_aux α M N η (η / (8 * (r : ℝ) * (α + 1))) r
     hα hM hN hη hr hrη rfl hnear

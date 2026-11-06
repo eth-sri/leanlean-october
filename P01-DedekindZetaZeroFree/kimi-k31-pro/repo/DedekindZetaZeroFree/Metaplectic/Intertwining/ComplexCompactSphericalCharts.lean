@@ -440,8 +440,7 @@ noncomputable def rawSphereSection (s : ℝ) (F : Sphere → ℂ) (hF : IsSphere
     · intro a d b g
       have hs : HasCovariance s (normalizedSection s) := (normalizedSection s).property.1
       dsimp only
-      rw [hs, bottomHopf_upper, radialExtension_pos_smul F _ _ (by
-        exact sq_pos_of_pos (norm_pos_iff.mpr d.ne_zero))]
+      rw [hs, bottomHopf_upper, radialExtension_pos_smul F _ _ (sq_pos_of_pos (norm_pos_iff.mpr d.ne_zero))]
       ring
     · have hs : ContDiff ℝ (⊤ : ℕ∞) (openCoordinate (normalizedSection s)) :=
         (normalizedSection s).property.2.1

@@ -184,13 +184,7 @@ namespace FiniteResidueAbstractField
 
 variable {D : DegreeData G}
 
-/-- Bundle a field at the boundary where its actual residue quotient is known
-to be finite. -/
-def ofField (D : DegreeData G) (K : ClosedSubgroup G)
-    [hfinite : Finite (D.residueQuotient K)] :
-    FiniteResidueAbstractField D where
-  field := K
-  finiteResidueQuotient := hfinite
+
 
 /-- The underlying subgroup. -/
 @[implicit_reducible]
@@ -353,29 +347,9 @@ theorem degreeCardinal_mul :
       T.totalExtension.degreeCardinal := by
   exact relativeIndexCardinal_mul T.top_le_middle T.middle_le_base
 
-/-- Cardinal residue degrees multiply in an arbitrary abstract-extension
-tower. -/
-theorem relativeResidueDegreeCardinal_mul (D : DegreeData G) :
-    T.topExtension.relativeResidueDegreeCardinal D *
-        T.baseExtension.relativeResidueDegreeCardinal D =
-      T.totalExtension.relativeResidueDegreeCardinal D := by
-  exact relativeIndexCardinal_mul
-    (Subgroup.map_mono (f := D.degree.toMonoidHom) T.top_le_middle)
-    (Subgroup.map_mono (f := D.degree.toMonoidHom) T.middle_le_base)
 
-/-- Cardinal ramification indices multiply in an arbitrary
-abstract-extension tower. -/
-theorem relativeRamificationIndexCardinal_mul (D : DegreeData G) :
-    T.topExtension.relativeRamificationIndexCardinal D *
-        T.baseExtension.relativeRamificationIndexCardinal D =
-      T.totalExtension.relativeRamificationIndexCardinal D := by
-  exact relativeIndexCardinal_mul
-    (show T.top.toSubgroup ⊓ D.degree.toMonoidHom.ker ≤
-      T.middle.toSubgroup ⊓ D.degree.toMonoidHom.ker from
-        inf_le_inf T.top_le_middle le_rfl)
-    (show T.middle.toSubgroup ⊓ D.degree.toMonoidHom.ker ≤
-      T.base.toSubgroup ⊓ D.degree.toMonoidHom.ker from
-        inf_le_inf T.middle_le_base le_rfl)
+
+
 
 end Tower
 
@@ -408,58 +382,13 @@ theorem isTotallyRamified_iff_image_le (E : AbstractExtension G) (D : DegreeData
         E.field.toSubgroup.map D.degree.toMonoidHom :=
   Iff.rfl
 
-/-- An unramified extension has cardinal ramification index one. -/
-theorem relativeRamificationIndexCardinal_eq_one_of_isUnramified
-    (E : AbstractExtension G) (D : DegreeData G) (hE : E.IsUnramified D) :
-    E.relativeRamificationIndexCardinal D = 1 := by
-  have heq :
-      E.field.toSubgroup ⊓ D.degree.toMonoidHom.ker =
-        E.base.toSubgroup ⊓ D.degree.toMonoidHom.ker := by
-    apply le_antisymm
-    · exact inf_le_inf E.below le_rfl
-    · intro x hx
-      exact ⟨hE hx, hx.2⟩
-  change
-    intersectionIndexCardinal
-      (E.field.toSubgroup ⊓ D.degree.toMonoidHom.ker)
-      (E.base.toSubgroup ⊓ D.degree.toMonoidHom.ker) = 1
-  rw [heq]
-  exact relativeIndexCardinal_self _
 
-/-- A totally ramified extension has cardinal residue degree one. -/
-theorem relativeResidueDegreeCardinal_eq_one_of_isTotallyRamified
-    (E : AbstractExtension G) (D : DegreeData G)
-    (hE : E.IsTotallyRamified D) :
-    E.relativeResidueDegreeCardinal D = 1 := by
-  have heq :
-      E.field.toSubgroup.map D.degree.toMonoidHom =
-        E.base.toSubgroup.map D.degree.toMonoidHom :=
-    le_antisymm (Subgroup.map_mono (f := D.degree.toMonoidHom) E.below) hE
-  change
-    intersectionIndexCardinal
-      (E.field.toSubgroup.map D.degree.toMonoidHom)
-      (E.base.toSubgroup.map D.degree.toMonoidHom) = 1
-  rw [heq]
-  exact relativeIndexCardinal_self _
 
-/-- For an unramified extension, its cardinal degree is its lifted residue
-degree. -/
-theorem degreeCardinal_eq_lift_relativeResidueDegreeCardinal_of_isUnramified
-    (E : AbstractExtension G) (D : DegreeData G) (hE : E.IsUnramified D) :
-    E.degreeCardinal =
-      Cardinal.lift.{u} (E.relativeResidueDegreeCardinal D) := by
-  rw [E.degreeCardinal_eq_relativeResidueDegreeCardinal_mul_relativeRamificationIndexCardinal D,
-    E.relativeRamificationIndexCardinal_eq_one_of_isUnramified D hE, mul_one]
 
-/-- For a totally ramified extension, its cardinal degree is its
-ramification cardinal. -/
-theorem degreeCardinal_eq_relativeRamificationIndexCardinal_of_isTotallyRamified
-    (E : AbstractExtension G) (D : DegreeData G)
-    (hE : E.IsTotallyRamified D) :
-    E.degreeCardinal = E.relativeRamificationIndexCardinal D := by
-  rw [E.degreeCardinal_eq_relativeResidueDegreeCardinal_mul_relativeRamificationIndexCardinal D,
-    E.relativeResidueDegreeCardinal_eq_one_of_isTotallyRamified D hE]
-  simp
+
+
+
+
 
 end AbstractExtension
 
@@ -862,13 +791,7 @@ theorem residueDegree_eq_degree_of_isUnramified (D : DegreeData G)
   rw [E.degree_eq_residueDegree_mul_ramificationIndex D,
     E.ramificationIndex_eq_one_of_isUnramified D hE, mul_one]
 
-/-- In a totally ramified finite extension, ramification index equals
-extension degree. -/
-theorem ramificationIndex_eq_degree_of_isTotallyRamified (D : DegreeData G)
-    (hE : E.IsTotallyRamified D) :
-    (E.ramificationIndex D : ℕ) = (E.degree : ℕ) := by
-  rw [E.degree_eq_residueDegree_mul_ramificationIndex D,
-    E.residueDegree_eq_one_of_isTotallyRamified D hE, one_mul]
+
 
 /-- For a finite extension, its cardinal-valued degree is the cardinal cast
 of its positive natural degree. -/

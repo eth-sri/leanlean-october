@@ -26,7 +26,7 @@ private theorem norm_annulus_isCompact {K : Type*} [NormedField K] [ProperSpace 
       {y : Kˣ | l ≤ ‖(y : K)‖ ∧ ‖(y : K)‖ ≤ u} := by
     ext y
     simp only [Set.mem_preimage, Set.mem_prod, Metric.mem_closedBall, dist_zero_right,
-      Units.embedProduct, MulOpposite.unop_op]
+      Units.embedProduct]
     change (‖(y : K)‖ ≤ u ∧ ‖(↑y⁻¹ : K)‖ ≤ l⁻¹) ↔ (l ≤ ‖(y : K)‖ ∧ ‖(y : K)‖ ≤ u)
     rw [show ‖(↑y⁻¹ : K)‖ = ‖(y : K)‖⁻¹ by simp]
     have hy : 0 < ‖(y : K)‖ := norm_pos_iff.mpr y.ne_zero

@@ -4,6 +4,7 @@ public import ClassFieldTheory.GlobalClassFieldTheory.GlobalClassFields.Conducto
 public import ClassFieldTheory.GlobalClassFieldTheory.GlobalClassFields.FinitePlaceArtinQuotient
 public import ClassFieldTheory.GlobalClassFieldTheory.GlobalClassFields.UnramifiedPrimeArtin
 public import ClassFieldTheory.GlobalClassFieldTheory.Reciprocity.ProductFormula
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -130,128 +131,15 @@ theorem
         (K := K) (L := L) v
         (FiniteIdeleGroup.chosenLocalOrderSection v 1) =
       finitePlacePrimeArtin (K := K) (L := L) v
-  exact
-    (finitePlacePrimeArtin_eq_chosenFinitePlaceArtin
-      (K := K) (L := L) v).symm
+  norm_num
 
-/-- The order of the local prime norm class always divides the local
-extension degree. -/
-theorem orderOf_finitePlacePrimeNormClass_dvd_finitePlaceLocalDegree
-    (v : HeightOneSpectrum (𝓞 K)) :
-    orderOf
-        (finitePlacePrimeNormClass
-          (K := K) (L := L) v) ∣
-      _root_.finitePlaceLocalDegree
-        (K := K) (L := L) v := by
-  rw [
-    ←
-      chosenFinitePlaceNormQuotient_card_eq_finitePlaceLocalDegree
-        (K := K) (L := L) v]
-  exact
-    orderOf_dvd_natCard
-      (finitePlacePrimeNormClass
-        (K := K) (L := L) v)
 
-/-- At a chosen unramified finite place, the order of the local prime
-norm class is the local extension degree. -/
-theorem
-    orderOf_finitePlacePrimeNormClass_eq_finitePlaceLocalDegree_of_chosenUnramified
-    (v : HeightOneSpectrum (𝓞 K))
-    (hunram :
-      _root_.ChosenFinitePlaceIsUnramified
-        (K := K) (L := L) v) :
-    orderOf
-        (finitePlacePrimeNormClass
-          (K := K) (L := L) v) =
-      _root_.finitePlaceLocalDegree
-        (K := K) (L := L) v := by
-  let e :
-      _root_.ChosenFinitePlaceNormQuotient
-          (K := K) (L := L) v ≃*
-        _root_.finitePlaceDecompositionGroup
-          (K := K) (L := L) v :=
-    chosenFinitePlaceNormQuotientEquivDecompositionGroup
-      (K := K) (L := L) v
-  let f :
-      _root_.ChosenFinitePlaceNormQuotient
-          (K := K) (L := L) v →*
-        (L ≃ₐ[K] L) :=
-    (_root_.finitePlaceDecompositionGroup
-        (K := K) (L := L) v).subtype.comp
-      e.toMonoidHom
-  have hf : Function.Injective f := by
-    intro x y hxy
-    apply e.injective
-    apply Subtype.ext
-    change
-      (e x : L ≃ₐ[K] L) =
-        (e y : L ≃ₐ[K] L) at hxy
-    exact hxy
-  have hprime :
-      f
-          (finitePlacePrimeNormClass
-            (K := K) (L := L) v) =
-        finitePlacePrimeArtin
-          (K := K) (L := L) v := by
-    change
-      (e (finitePlacePrimeNormClass
-          (K := K) (L := L) v) : L ≃ₐ[K] L) =
-        finitePlacePrimeArtin
-          (K := K) (L := L) v
-    exact
-      coe_chosenFinitePlaceNormQuotientEquivDecompositionGroup_finitePlacePrimeNormClass
-        (K := K) (L := L) v
-  have horder :=
-    orderOf_injective f hf
-      (finitePlacePrimeNormClass
-        (K := K) (L := L) v)
-  rw [hprime] at horder
-  exact
-    horder.symm.trans
-      (orderOf_finitePlacePrimeArtin_eq_finitePlaceLocalDegree_of_chosenUnramified
-        (K := K) (L := L) v hunram)
 
-/-- At a chosen unramified finite place, the local prime norm class is
-trivial exactly when the place splits completely. -/
-theorem
-    finitePlacePrimeNormClass_eq_one_iff_splitsCompletely_of_chosenUnramified
-    (v : HeightOneSpectrum (𝓞 K))
-    (hunram :
-      _root_.ChosenFinitePlaceIsUnramified
-        (K := K) (L := L) v) :
-    finitePlacePrimeNormClass
-          (K := K) (L := L) v =
-        1 ↔
-      _root_.FinitePlaceSplitsCompletely
-        (K := K) (L := L) v := by
-  rw [
-    _root_.finitePlaceSplitsCompletely_iff_localDegree_eq_one,
-    ←
-      orderOf_finitePlacePrimeNormClass_eq_finitePlaceLocalDegree_of_chosenUnramified
-        (K := K) (L := L) v hunram]
-  exact orderOf_eq_one_iff.symm
 
-/-- The order of the global idèle-class norm prime class always
-divides the local extension degree. -/
-theorem orderOf_ideleClassNormFrobeniusClass_dvd_finitePlaceLocalDegree
-    (v : HeightOneSpectrum (𝓞 K)) :
-    orderOf
-        (ideleClassNormFrobeniusClass
-          (K := K) (L := L) v) ∣
-      _root_.finitePlaceLocalDegree
-        (K := K) (L := L) v := by
-  rw [
-    ←
-      finitePlaceNormQuotientToGlobalClass_finitePlacePrimeNormClass
-        (K := K) (L := L) v]
-  exact
-    (orderOf_map_dvd
-        (Reciprocity.finitePlaceNormQuotientToGlobalClass
-          (K := K) (L := L) v)
-        (finitePlacePrimeNormClass
-          (K := K) (L := L) v)).trans
-      (orderOf_finitePlacePrimeNormClass_dvd_finitePlaceLocalDegree
-        (K := K) (L := L) v)
+
+
+
+
 
 end GlobalClassFields
 end GlobalClassFieldTheory

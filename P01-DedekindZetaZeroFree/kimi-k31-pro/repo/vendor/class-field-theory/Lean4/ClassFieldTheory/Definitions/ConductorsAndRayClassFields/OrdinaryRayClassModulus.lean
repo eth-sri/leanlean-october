@@ -1,6 +1,7 @@
 module
 
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.RayClassModulus
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -36,7 +37,7 @@ theorem ordinaryRayClassModulus_le
     ordinaryRayClassModulus K ≤ m := by
   constructor
   · change ∀ v, 0 ≤ m.finitePart v
-    exact fun _ => Nat.zero_le _
+    norm_num
   · exact Finset.empty_subset _
 
 end ClassFieldTheory

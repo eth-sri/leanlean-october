@@ -27,7 +27,7 @@ private lemma suMatrix_mem (a b : ℂ) (h : ‖a‖ ^ 2 + ‖b‖ ^ 2 = 1) :
   · rw [Matrix.mem_unitaryGroup_iff]
     ext i j
     fin_cases i <;> fin_cases j <;>
-      simp [suMatrix, Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply, star_star]
+      simp [suMatrix, Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply]
     · change star b * b + star a * a = 1
       calc star b * b + star a * a = a * star a + b * star b := by ring
            _ = 1 := h'
@@ -43,7 +43,7 @@ private lemma rep_open (z : ℂ) : ∃ k : ComplexSU2,
   let r : ℝ := Real.sqrt (1 + ‖z‖ ^ 2)
   have hr : 0 < r := Real.sqrt_pos.mpr (by positivity)
   have hr2 : r ^ 2 = 1 + ‖z‖ ^ 2 := Real.sq_sqrt (by positivity)
-  let a : ℂ := ((r : ℂ))⁻¹
+  let a : ℂ := (r : ℂ)⁻¹
   let b : ℂ := z / (r : ℂ)
   have hn : ‖a‖ ^ 2 + ‖b‖ ^ 2 = 1 := by
     dsimp [a, b]
@@ -182,13 +182,11 @@ private lemma p_bounds (j : ℕ) (φ : CompactPicture) (q : ℕ) (hq : q ≤ j)
 private lemma deriv_add (q : ℕ) (φ ψ : CompactPicture) (chart : ℂ → ComplexProjectiveLine)
     (hφ : ContDiff ℝ ∞ (φ ∘ chart)) (hψ : ContDiff ℝ ∞ (ψ ∘ chart)) (z : ℂ) :
     iteratedFDeriv ℝ q ((φ + ψ) ∘ chart) z =
-      iteratedFDeriv ℝ q (φ ∘ chart) z + iteratedFDeriv ℝ q (ψ ∘ chart) z := by
-  exact iteratedFDeriv_add_apply ((hφ.of_le (by simp)).contDiffAt)
+      iteratedFDeriv ℝ q (φ ∘ chart) z + iteratedFDeriv ℝ q (ψ ∘ chart) z := iteratedFDeriv_add_apply ((hφ.of_le (by simp)).contDiffAt)
     ((hψ.of_le (by simp)).contDiffAt)
 private lemma deriv_smul (q : ℕ) (c : ℂ) (φ : CompactPicture) (chart : ℂ → ComplexProjectiveLine)
     (hφ : ContDiff ℝ ∞ (φ ∘ chart)) (z : ℂ) :
-    iteratedFDeriv ℝ q ((c • φ) ∘ chart) z = c • iteratedFDeriv ℝ q (φ ∘ chart) z := by
-  exact iteratedFDeriv_const_smul_apply ((hφ.of_le (by simp)).contDiffAt)
+    iteratedFDeriv ℝ q ((c • φ) ∘ chart) z = c • iteratedFDeriv ℝ q (φ ∘ chart) z := iteratedFDeriv_const_smul_apply ((hφ.of_le (by simp)).contDiffAt)
 private lemma p_zero (j : ℕ) : sourceSeminorm j 0 = 0 := by
   apply le_antisymm _ (p_nonneg j 0)
   apply p_le le_rfl
@@ -232,8 +230,7 @@ theorem sourceSeminorm_laws (j : ℕ) :
       sourceSeminorm j φ + sourceSeminorm j ψ) ∧
     (∀ φ : CompactPicture, sourceSeminorm j (-φ) = sourceSeminorm j φ) ∧
     (∀ (c : ℂ) (φ : CompactPicture), sourceSeminorm j (c • φ) =
-      ‖c‖ * sourceSeminorm j φ) := by
-  exact ⟨p_zero j, p_add j, p_neg j, p_smul j⟩
+      ‖c‖ * sourceSeminorm j φ) := ⟨p_zero j, p_add j, p_neg j, p_smul j⟩
 
 noncomputable def compactSeminorm (j : ℕ) : Seminorm ℂ CompactPicture where
   toFun := sourceSeminorm j
@@ -321,8 +318,7 @@ private lemma wn_forward_continuous (s : ℂ) (φ : CompactPicture) (g : Complex
     apply Units.ext
     rfl
   have hr := wn_ratio_continuous g
-  have hl : Continuous (fun x : ℂ => (Real.log (rowRatio (weyl * upperUnipotent x * g)) : ℂ)) := by
-    exact Complex.continuous_ofReal.comp (hr.log (fun x => (rowRatio_pos _).ne'))
+  have hl : Continuous (fun x : ℂ => (Real.log (rowRatio (weyl * upperUnipotent x * g)) : ℂ)) := Complex.continuous_ofReal.comp (hr.log (fun x => (rowRatio_pos _).ne'))
   have heq : (fun x : ℂ => forwardSection s φ (weyl * upperUnipotent x * g)) =
       fun x => Complex.exp ((2 * s) * (Real.log (rowRatio (weyl * upperUnipotent x * g)) : ℂ)) *
         forwardSection 0 φ (weyl * upperUnipotent x * g) := by

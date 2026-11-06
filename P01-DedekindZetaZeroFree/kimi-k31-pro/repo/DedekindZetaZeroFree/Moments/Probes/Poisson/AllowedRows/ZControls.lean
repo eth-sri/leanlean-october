@@ -26,8 +26,8 @@ theorem verticalIntegral_eq_of_decayOn {a b : ℝ} {f : ℂ → ℂ} (hab : a < 
     comparisonVerticalIntegral b f = comparisonVerticalIntegral a f := by
   obtain ⟨C, T0, hbound⟩ := hdec 2 (by norm_num)
   set m : ℝ := (a + b) / 2 with hm
-  have ham : a < ((m : ℂ)).re := by simp [hm]; linarith
-  have hmb : ((m : ℂ)).re < b := by simp [hm]; linarith
+  have ham : a < (m : ℂ).re := by simp [hm]; linarith
+  have hmb : (m : ℂ).re < b := by simp [hm]; linarith
   have hnb : comparisonClosedStrip a b ∈ 𝓝 (m : ℂ) := by
     apply Filter.mem_of_superset
       (((isOpen_lt continuous_const Complex.continuous_re).inter

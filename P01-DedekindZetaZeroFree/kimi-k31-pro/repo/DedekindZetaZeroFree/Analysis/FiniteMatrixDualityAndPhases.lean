@@ -24,7 +24,7 @@ theorem operator_conjTranspose_norm (A : Matrix r s ℂ) :
       ‖A.toEuclideanLin.toContinuousLinearMap‖ := by
   rw [Matrix.toEuclideanLin_conjTranspose_eq_adjoint,
     LinearMap.adjoint_toContinuousLinearMap]
-  exact ContinuousLinearMap.adjoint.norm_map _
+  simp_all
 
 private theorem operator_conj_norm_le (A : Matrix r s ℂ) :
     ‖(Matrix.toEuclideanLin (fun i j => star (A i j) : Matrix r s ℂ)).toContinuousLinearMap‖ ≤
@@ -39,7 +39,7 @@ private theorem operator_conj_norm_le (A : Matrix r s ℂ) :
       (Matrix.toEuclideanLin (fun i j => star (A i j) : Matrix r s ℂ)).toContinuousLinearMap x i =
         star (A.toEuclideanLin.toContinuousLinearMap y i) := by
     change (∑ j, star (A i j) * x j) = star (∑ j, A i j * y j)
-    simp [y]
+    aesop
   have hz :
       ‖(Matrix.toEuclideanLin (fun i j => star (A i j) : Matrix r s ℂ)).toContinuousLinearMap x‖ =
         ‖A.toEuclideanLin.toContinuousLinearMap y‖ := by
@@ -57,17 +57,13 @@ theorem operator_transpose_norm (A : Matrix r s ℂ) :
     calc
       _ ≤ ‖B.conjTranspose.toEuclideanLin.toContinuousLinearMap‖ := by
         have h := operator_conj_norm_le B.conjTranspose
-        have heq : (fun i j => star (B.conjTranspose i j) : Matrix s r ℂ) = B.transpose := by
-          ext i j
-          simp
-        rw [heq] at h
-        exact h
+        aesop
       _ = _ := operator_conjTranspose_norm B
   apply le_antisymm (h A)
   have h' := operator_conj_norm_le A.transpose.conjTranspose
   calc
     _ ≤ ‖A.transpose.conjTranspose.toEuclideanLin.toContinuousLinearMap‖ := by
-      simpa [Matrix.transpose, Matrix.conjTranspose] using h'
+      simp_all
     _ = _ := operator_conjTranspose_norm A.transpose
 
 namespace Auxiliary
@@ -82,26 +78,20 @@ omit [DecidableEq m] in
 
 omit [DecidableEq m] in
 theorem operator_zero : operator (0 : Matrix m n ℂ) = 0 := by
-  ext x i
-  simp
+  simp_all
 
 omit [DecidableEq m] in
 theorem operator_add (A B : Matrix m n ℂ) : operator (A + B) = operator A + operator B := by
-  ext x i
-  simp [add_mul, Finset.sum_add_distrib]
+  aesop
 
 omit [DecidableEq m] in
 theorem operator_smul (c : ℂ) (A : Matrix m n ℂ) : operator (c • A) = c • operator A := by
-  ext x i
-  simp [Finset.mul_sum, mul_assoc]
+  aesop
 
 omit [DecidableEq m] in
 theorem operator_sum {κ : Type*} (S : Finset κ) (A : κ → Matrix m n ℂ) :
     operator (∑ k ∈ S, A k) = ∑ k ∈ S, operator (A k) := by
-  classical
-  induction S using Finset.induction_on with
-  | empty => simp [operator_zero]
-  | @insert a S ha ih => simp only [Finset.sum_insert ha, operator_add, ih]
+  aesop
 
 omit [DecidableEq m] in
 theorem diagonal_twist_norm_le (A : Matrix m n ℂ) (l : m → ℂ) (r : n → ℂ)
@@ -146,7 +136,7 @@ theorem separated_decomposition_norm_le {κ : Type*} [Fintype κ]
   have hA : A = ∑ k, c k • T k := by
     ext i j
     rw [Matrix.sum_apply]
-    exact heq i j
+    aesop
   have hOp : operator A = ∑ k, c k • operator (T k) := by
     calc
       _ = operator (∑ k, c k • T k) := congrArg operator hA
@@ -175,7 +165,7 @@ theorem separated_phase_norm_le [Fintype k]
   classical
   have h := Auxiliary.separated_decomposition_norm_le A A'.transpose (fun _ : k => 1)
     (fun a i => if κ i = a then 1 else 0) (fun a j => φ a (ν j))
-    (by intro a i; split_ifs <;> simp) (by intro a j; exact hφ a (ν j))
+    (by aesop) (by simp_all)
     (by
       intro i j
       simp only [one_mul, Matrix.transpose_apply]

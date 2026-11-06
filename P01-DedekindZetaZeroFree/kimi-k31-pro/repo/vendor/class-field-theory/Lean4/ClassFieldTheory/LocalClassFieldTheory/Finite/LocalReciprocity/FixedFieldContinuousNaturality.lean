@@ -675,77 +675,7 @@ noncomputable def abelianizedRestrictionMap
     (abelianizedRestrictionMap T).toMonoidHom =
       MonoidHom.toAdditive.symm (abelianizedRestriction T) := rfl
 
-/-- Norm--restriction naturality as a commuting square of continuous
-homomorphisms. -/
-theorem norm_restriction_commutes_continuous
-    (T : LocalFixedFieldNormRestrictionSquare k) :
-    letI : FiniteDimensional k
-        (abstractFixedField k (SeparableClosure k) T.lowerBase) :=
-      abstractFixedField_finiteDimensional
-        k (SeparableClosure k) T.lowerBase T.lowerAbsoluteFinite
-    letI : FiniteDimensional k
-        (abstractFixedField k (SeparableClosure k) T.upperBase) :=
-      abstractFixedField_finiteDimensional
-        k (SeparableClosure k) T.upperBase (upperAbsoluteFinite T)
-    letI : FiniteDimensional k
-        (abstractRelativeFixedField k (SeparableClosure k)
-          T.upperBase_le_lowerBase) :=
-      abstractFixedField_finiteDimensional
-        k (SeparableClosure k) T.upperBase (upperAbsoluteFinite T)
-    letI : NontriviallyNormedField
-        (abstractFixedField k (SeparableClosure k) T.lowerBase) :=
-      finiteExtensionSpectralNormedField k
-        (abstractFixedField k (SeparableClosure k) T.lowerBase)
-    letI : NontriviallyNormedField
-        (abstractFixedField k (SeparableClosure k) T.upperBase) :=
-      finiteExtensionSpectralNormedField k
-        (abstractFixedField k (SeparableClosure k) T.upperBase)
-    letI : NontriviallyNormedField
-        (abstractRelativeFixedField k (SeparableClosure k)
-          T.upperBase_le_lowerBase) :=
-      finiteExtensionSpectralNormedField k
-        (abstractRelativeFixedField k (SeparableClosure k)
-          T.upperBase_le_lowerBase)
-    (abelianizedRestrictionMap T).comp (upperNormResidueMap T) =
-      (lowerNormResidueMap T).comp (normUnitsMap T) := by
-  let : FiniteDimensional k
-      (abstractFixedField k (SeparableClosure k) T.lowerBase) :=
-    abstractFixedField_finiteDimensional
-      k (SeparableClosure k) T.lowerBase T.lowerAbsoluteFinite
-  let : FiniteDimensional k
-      (abstractFixedField k (SeparableClosure k) T.upperBase) :=
-    abstractFixedField_finiteDimensional
-      k (SeparableClosure k) T.upperBase (upperAbsoluteFinite T)
-  let : FiniteDimensional k
-      (abstractRelativeFixedField k (SeparableClosure k)
-        T.upperBase_le_lowerBase) :=
-    abstractFixedField_finiteDimensional
-      k (SeparableClosure k) T.upperBase (upperAbsoluteFinite T)
-  let : NontriviallyNormedField
-      (abstractFixedField k (SeparableClosure k) T.lowerBase) :=
-    finiteExtensionSpectralNormedField k
-      (abstractFixedField k (SeparableClosure k) T.lowerBase)
-  let : NontriviallyNormedField
-      (abstractFixedField k (SeparableClosure k) T.upperBase) :=
-    finiteExtensionSpectralNormedField k
-      (abstractFixedField k (SeparableClosure k) T.upperBase)
-  let : NontriviallyNormedField
-      (abstractRelativeFixedField k (SeparableClosure k)
-        T.upperBase_le_lowerBase) :=
-    finiteExtensionSpectralNormedField k
-      (abstractRelativeFixedField k (SeparableClosure k)
-        T.upperBase_le_lowerBase)
-  apply ContinuousMonoidHom.ext
-  intro x
-  change Additive.toMul
-      (abelianizedRestriction T
-        (upperNormResidueSymbol T (Additive.ofMul x))) =
-    Additive.toMul
-      (lowerNormResidueSymbol T
-        (normUnits T (Additive.ofMul x)))
-  exact congrArg Additive.toMul
-    (DFunLike.congr_fun (norm_restriction_commutes T)
-      (Additive.ofMul x))
+
 
 end LocalFixedFieldNormRestrictionSquare
 
@@ -907,57 +837,7 @@ noncomputable def abelianizedTransferMap
     (abelianizedTransferMap T).toMonoidHom =
       MonoidHom.toAdditive.symm (abelianizedTransfer T) := rfl
 
-/-- Transfer--inclusion naturality as a commuting square of continuous
-homomorphisms. -/
-theorem transfer_inclusion_commutes_continuous
-    (T : LocalFixedFieldTransferTower k) :
-    letI : FiniteDimensional k
-        (abstractFixedField k (SeparableClosure k) T.base) :=
-      abstractFixedField_finiteDimensional
-        k (SeparableClosure k) T.base T.baseAbsoluteFinite
-    letI : FiniteDimensional k
-        (abstractFixedField k (SeparableClosure k) T.intermediate) :=
-      abstractFixedField_finiteDimensional
-        k (SeparableClosure k) T.intermediate
-          (intermediateAbsoluteFinite T)
-    letI : NontriviallyNormedField
-        (abstractFixedField k (SeparableClosure k) T.base) :=
-      finiteExtensionSpectralNormedField k
-        (abstractFixedField k (SeparableClosure k) T.base)
-    letI : NontriviallyNormedField
-        (abstractFixedField k (SeparableClosure k) T.intermediate) :=
-      finiteExtensionSpectralNormedField k
-        (abstractFixedField k (SeparableClosure k) T.intermediate)
-    (abelianizedTransferMap T).comp (baseNormResidueMap T) =
-      (intermediateNormResidueMap T).comp (unitsInclusionMap T) := by
-  let : FiniteDimensional k
-      (abstractFixedField k (SeparableClosure k) T.base) :=
-    abstractFixedField_finiteDimensional
-      k (SeparableClosure k) T.base T.baseAbsoluteFinite
-  let : FiniteDimensional k
-      (abstractFixedField k (SeparableClosure k) T.intermediate) :=
-    abstractFixedField_finiteDimensional
-      k (SeparableClosure k) T.intermediate
-        (intermediateAbsoluteFinite T)
-  let : NontriviallyNormedField
-      (abstractFixedField k (SeparableClosure k) T.base) :=
-    finiteExtensionSpectralNormedField k
-      (abstractFixedField k (SeparableClosure k) T.base)
-  let : NontriviallyNormedField
-      (abstractFixedField k (SeparableClosure k) T.intermediate) :=
-    finiteExtensionSpectralNormedField k
-      (abstractFixedField k (SeparableClosure k) T.intermediate)
-  apply ContinuousMonoidHom.ext
-  intro x
-  change Additive.toMul
-      (abelianizedTransfer T
-        (baseNormResidueSymbol T (Additive.ofMul x))) =
-    Additive.toMul
-      (intermediateNormResidueSymbol T
-        (unitsInclusion T (Additive.ofMul x)))
-  exact congrArg Additive.toMul
-    (DFunLike.congr_fun (transfer_inclusion_commutes T)
-      (Additive.ofMul x))
+
 
 end LocalFixedFieldTransferTower
 

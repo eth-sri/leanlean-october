@@ -23,10 +23,7 @@ private theorem diag_eval (v : KPHilbert.Place F) (a : Ideles F) :
 
 private theorem d_mul (K : Type*) [Field K] (a b : Kˣ) :
     KubotaRankTwo.d K a 1 * KubotaRankTwo.d K b 1 = KubotaRankTwo.d K (a*b) 1 := by
-  apply Matrix.GeneralLinearGroup.ext
-  intro i j
-  fin_cases i <;> fin_cases j <;>
-    simp [Matrix.mul_apply, Fin.sum_univ_two]
+  aesop
 
 private theorem local_sigma (v : KPHilbert.Place F) (a b : (KPHilbert.Completion F v)ˣ) :
     KPLocalCover.sigmaTwo F ζ hζ v
@@ -116,7 +113,7 @@ private theorem restricted_twist (a b : Ideles F)
     pairing_finiteSupport F ζ hζ (restrictedClassMap F a) (restrictedClassMap F b)
   let ε : KPAdelicCoverRestrictedProduct.CentralTuples F :=
     ⟨fun v => f v ^ 4, by
-      have h := (hf.compl_mem_cofinite)
+      have h := hf.compl_mem_cofinite
       filter_upwards [h] with v hv
       change f v ^ 4 = 1
       have hv' : f v = 1 := by simpa [Function.mulSupport] using hv

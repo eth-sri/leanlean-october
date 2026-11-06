@@ -40,8 +40,7 @@ private lemma good_series_Ctk_bound (C : A.GeneralArithmeticContext σ η hS) (p
     · rw [Ctk_eq_zero_of_two_le C p (t+1) (k+2) J (by omega) (by omega)]
       simp only [norm_zero]
       positivity
-private lemma good_series_vartheta_norm (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) : ‖vartheta C p‖ = 1 := by
-  exact Circle.norm_coe _
+private lemma good_series_vartheta_norm (C : A.GeneralArithmeticContext σ η hS) (p : ExteriorPrime A) : ‖vartheta C p‖ = 1 := Circle.norm_coe _
 private lemma good_series_qPower_norm (p : ExteriorPrime A) (s : ℂ) :
     ‖qPower p s‖ = Real.exp (s.re * Real.log (Q p)) := by
   simp [qPower, Complex.norm_exp]
@@ -135,7 +134,7 @@ private lemma good_strict_shell_six_kzero (C : A.GeneralArithmeticContext σ η 
     Ctk C p (6*d) 0 (6*m) =
       if d ≤ m then (Q p : ℂ)^(6*d-1)*((Q p : ℂ)-1) else 0 := by
   rw [Ctk_pos_zero C p _ _ (by omega), T_generator_power]
-  have hdvd : (6 : ℤ) ∣ (6*d : ℕ) := by exact ⟨(d : ℤ), by push_cast; ring⟩
+  have hdvd : (6 : ℤ) ∣ (6*d : ℕ) := ⟨(d : ℤ), by push_cast; ring⟩
   simp only [hdvd, if_true]
   have hle : 6*d-1 ≤ 6*m ↔ d ≤ m := by omega
   by_cases hdm : d ≤ m
@@ -182,8 +181,7 @@ private lemma good_strict_shell_one_kone (C : A.GeneralArithmeticContext σ η h
     Ctk C p (6*d+1) 1 (6*m) =
       if d < m then tau C p 1 * (Q p : ℂ)^(6*d)*((Q p : ℂ)-1) else 0 := by
   rw [Ctk_one C p _ _ (by omega), T_generator_power]
-  have hdvd : (6 : ℤ) ∣ (6*d+1 : ℕ)-1 := by
-    exact ⟨(d : ℤ), by push_cast; ring⟩
+  have hdvd : (6 : ℤ) ∣ (6*d+1 : ℕ)-1 := ⟨(d : ℤ), by push_cast; ring⟩
   have hle : 6*d+1 ≤ 6*m ↔ d < m := by omega
   simp only [Nat.add_sub_cancel, hdvd, if_true, hle]
   by_cases hdm : d < m
@@ -359,8 +357,7 @@ private lemma good_strict_even_shell_sum_origin (C : A.GeneralArithmeticContext 
     · simp [hk, tsum_geometric_of_norm_lt_one hV, div_eq_mul_inv]
     · simp [hk]
   simp_rw [hinner]
-  have hs : Summable (fun k : ℕ => if k=0 then 1/(1-V) else W^k) := by
-    exact (summable_geometric_of_norm_lt_one hW).congr_cofinite (by
+  have hs : Summable (fun k : ℕ => if k=0 then 1/(1-V) else W^k) := (summable_geometric_of_norm_lt_one hW).congr_cofinite (by
       filter_upwards [Filter.eventually_cofinite_ne 0] with k hk
       simp [hk])
   rw [hs.tsum_eq_zero_add]

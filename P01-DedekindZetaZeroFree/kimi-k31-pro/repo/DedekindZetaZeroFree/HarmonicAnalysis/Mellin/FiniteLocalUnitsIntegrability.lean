@@ -50,7 +50,7 @@ private theorem finite_generic [MeasurableSpace K] [BorelSpace K]
       simp only [s, mem_preimage, mem_setOf_eq, Units.val_mul, Units.val_pow_eq_pow_val, norm_mul, norm_pow]
       change (r^(n+1)*R ≤ r^n*‖x.val‖ ∧ r^n*‖x.val‖ ≤ r^n*R) ↔ _
       rw [pow_succ]
-      simp only [pow_zero, pow_one, one_mul]
+      simp only [pow_zero, one_mul]
       rw [mul_assoc, mul_le_mul_iff_right₀ (pow_pos hr n), mul_le_mul_iff_right₀ (pow_pos hr n)]
       simp
     rw [← measure_preimage_mul ν (u ^ n) (s n), he]

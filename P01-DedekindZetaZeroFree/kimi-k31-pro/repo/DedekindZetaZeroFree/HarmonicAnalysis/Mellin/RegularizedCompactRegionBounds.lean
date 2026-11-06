@@ -168,7 +168,7 @@ private theorem originMellinQ_bound_of_re_bounds (b : ℝ) (hb : 0 < b) (K : Set
     rw [norm_div, norm_pow, norm_pow, norm_neg, norm_one, one_pow]
     have h2pi : (1 : ℝ) ≤ ‖(2 * (Real.pi : ℂ))‖ := by
       have hsq : ‖(2 * (Real.pi : ℂ))‖ ^ 2 = (2 * Real.pi) ^ 2 := by
-        simp [Complex.sq_norm, Complex.normSq_ofReal, Complex.ofReal_mul]
+        simp
       nlinarith [norm_nonneg (2 * (Real.pi : ℂ)), Real.pi_gt_three]
     exact div_le_one_of_le₀ (one_le_pow₀ h2pi) (by positivity)
   have h2 : ‖mellin (iteratedDeriv m h) (s + (m : ℂ))‖

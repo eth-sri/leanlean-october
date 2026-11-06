@@ -224,22 +224,7 @@ theorem formalLogOnePlusProductArgument_labelCounts_explicit
           hbasic]
       exact hmixed⟩
 
-/--
-Establishes the identity `formalLogOnePlusProductArgumentBasicFactorLabelCount q l 0 = q - e (1 :
-Fin 2) ∧ formalLogOnePlusProductArgumentBasicFactorLabelCount q l 1 = q - e (0 : Fin 2) ∧
-formalLogOnePlusProductArgumentBasicFactorLabelCount q l 2 = e (0 : Fin 2) + e (1 : Fin 2) - q`.
--/
-theorem formalLogOnePlusProductArgumentBasicFactorChoices_labelCounts_explicit
-    {q : ℕ} {e : Fin 2 →₀ ℕ} {l : ℕ →₀ (Fin 2 →₀ ℕ)}
-    (hl : l ∈ formalLogOnePlusProductArgumentBasicFactorChoices q e) :
-    formalLogOnePlusProductArgumentBasicFactorLabelCount q l 0 =
-          q - e (1 : Fin 2) ∧
-      formalLogOnePlusProductArgumentBasicFactorLabelCount q l 1 =
-          q - e (0 : Fin 2) ∧
-        formalLogOnePlusProductArgumentBasicFactorLabelCount q l 2 =
-          e (0 : Fin 2) + e (1 : Fin 2) - q := by
-  rw [mem_formalLogOnePlusProductArgumentBasicFactorChoices] at hl
-  exact formalLogOnePlusProductArgument_labelCounts_explicit hl.1 hl.2
+
 
 /-- Every basic-factor choice satisfies the corresponding three label-count constraints. -/
 theorem formalLogOnePlusProductArgumentBasicFactorChoices_subset_labelCountChoices
@@ -257,17 +242,7 @@ theorem formalLogOnePlusProductArgumentBasicFactorChoices_subset_labelCountChoic
     ⟨hprod,
       formalLogOnePlusProductArgument_labelCounts_explicit hl.1 hl.2⟩
 
-/--
-Proves the bound `(formalLogOnePlusProductArgumentBasicFactorChoices q e).card ≤
-(formalLogOnePlusProductArgumentBasicFactorLabelCountChoices q e).card`.
--/
-theorem formalLogOnePlusProductArgumentBasicFactorChoices_card_le_labelCountChoices
-    (q : ℕ) (e : Fin 2 →₀ ℕ) :
-    (formalLogOnePlusProductArgumentBasicFactorChoices q e).card ≤
-      (formalLogOnePlusProductArgumentBasicFactorLabelCountChoices q e).card :=
-  Finset.card_le_card
-    (formalLogOnePlusProductArgumentBasicFactorChoices_subset_labelCountChoices
-      q e)
+
 
 
 end MultiplicativeIntegerValuation

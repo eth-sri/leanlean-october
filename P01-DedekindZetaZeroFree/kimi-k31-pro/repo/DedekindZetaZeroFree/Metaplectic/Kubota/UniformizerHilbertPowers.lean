@@ -44,7 +44,7 @@ theorem diagonal_lift_scalar (π : (LocalField F q)ˣ) (a b : ℤ) :
     change (Matrix.scalar (Fin 2) ((π ^ b : (LocalField F q)ˣ) : LocalField F q) *
       !![((π ^ (a-b) : (LocalField F q)ˣ) : LocalField F q), 0; 0, 1]) i j = _
     fin_cases i <;> fin_cases j <;>
-      simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar, Matrix.diagonal_apply]
+      simp [Matrix.mul_apply, Matrix.scalar, Matrix.diagonal_apply]
     rw [← zpow_add₀ (Units.ne_zero π)]
     congr 1
     omega
@@ -61,7 +61,7 @@ theorem diagonal_lift_scalar (π : (LocalField F q)ˣ) (a b : ℤ) :
       change (if (Matrix.scalar (Fin 2) (x : LocalField F q)) 1 0 = 0 then
         (Matrix.scalar (Fin 2) (x : LocalField F q)) 1 1 else
         (Matrix.scalar (Fin 2) (x : LocalField F q)) 1 0) = _
-      simp [Matrix.scalar, Matrix.diagonal_apply]
+      simp [Matrix.scalar]
     have hd (x y : (LocalField F q)ˣ) : KubotaRankTwo.det (LocalField F q)
         (KubotaRankTwo.d (LocalField F q) x y) = x*y := by
       apply Units.ext

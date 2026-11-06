@@ -28,17 +28,16 @@ theorem exists_finite_relativelyCompact_quotient_slices
   have hcover : Set.univ ⊆ ⋃ g : G, (QuotientGroup.mk : G → G ⧸ Γ) '' U g := by
     intro x _
     obtain ⟨g, rfl⟩ := QuotientGroup.mk_surjective x
-    exact Set.mem_iUnion.mpr ⟨g, Set.mem_image_of_mem _ (hmem g)⟩
+    aesop
   obtain ⟨s, hs⟩ := isCompact_univ.elim_finite_subcover
     (fun g : G => (QuotientGroup.mk : G → G ⧸ Γ) '' U g)
     (fun g => QuotientGroup.isOpenMap_coe _ (hopen g)) hcover
   let e := s.equivFin
   refine ⟨s.card, fun i => U (e.symm i), ?_, ?_⟩
-  · intro i
-    exact ⟨hopen _, hcompact _, hinj _⟩
+  · simp_all
   · apply Set.Subset.antisymm (Set.subset_univ _)
     intro x hx
     obtain ⟨g, hg, hxg⟩ := Set.mem_iUnion₂.mp (hs hx)
-    exact Set.mem_iUnion.mpr ⟨e ⟨g, hg⟩, by simpa using hxg⟩
+    exact Set.mem_iUnion.mpr ⟨e ⟨g, hg⟩, by simp_all⟩
 
 end DedekindZetaZeroFree

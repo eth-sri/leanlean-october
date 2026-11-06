@@ -695,8 +695,8 @@ private theorem twistedIntegrand_eq (C : ModelData F ζ hζ) (s : ℂ)
   funext x
   simp only [twistedIntegrand, KPGlobalTorusPeriodizationInverse.averagingIntegrand,
     normTwist_inverse_formula, normPower_mul]
-  simp only [twist, ContinuousMonoidHom.mul_apply, ContinuousMonoidHom.coe_comp, Function.comp_apply,
-    Units.val_inv_eq_inv_val, Units.val_mul]
+  simp only [twist, 
+    Units.val_inv_eq_inv_val]
   change (((productModel F ζ hζ C).character (r.lift x) : ℂ) *
     normPower F ζ hζ s (r.lift x).val)⁻¹ * f.val.val ((r.lift x).val * t) = _
   have hi : (normPower F ζ hζ s (r.lift x).val)⁻¹ =

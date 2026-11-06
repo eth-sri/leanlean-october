@@ -363,11 +363,11 @@ theorem diagonal_actual_support_exponent_dvd
   have detd (v : (LocalField F q)ˣ) : Matrix.GeneralLinearGroup.det
       (KubotaRankTwo.d (LocalField F q) v 1) = v := by
     apply Units.ext
-    simp [Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two]
+    simp
   have detn (v : LocalField F q) : Matrix.GeneralLinearGroup.det
       (KubotaRankTwo.n (LocalField F q) v) = 1 := by
     apply Units.ext
-    simp [Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two]
+    simp
   have detw : Matrix.GeneralLinearGroup.det (KubotaRankTwo.w (LocalField F q)) = 1 := by
     apply Units.ext
     simp [Matrix.GeneralLinearGroup.val_det_apply, KubotaRankTwo.w, Matrix.det_fin_two]
@@ -395,7 +395,7 @@ theorem diagonal_actual_support_exponent_dvd
   obtain ⟨a, ha⟩ := RootResidualGeometry.tame_borel_coordinate_exponent_dvd
     F ζ hζ q S P hP b
   change KPCubicExpansion.valuationExponent (LocalField F q) z = 3 * a at ha
-  apply (Int.dvd_iff_emod_eq_zero).mpr
+  apply Int.dvd_iff_emod_eq_zero.mpr
   omega
 
 private theorem unitCubeClasses_of_exponent_dvd

@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.RepresentationTheory.Smooth.TensorWordDerivatives
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.DifferentialWords.MatrixModelsAndGerms
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -18,7 +19,7 @@ theorem tupleWord_germ (w : List (MatrixLetter ι))
     {f h : (ι → ComplexGL2) → ℂ} {a : ι → ComplexGL2} (he : f =ᶠ[𝓝 a] h) :
     tupleWord w f =ᶠ[𝓝 a] tupleWord w h := by
   induction w with
-  | nil => exact he
+  | nil => measurability
   | cons b w hw =>
     filter_upwards [hw.eventuallyEq_nhds] with x hx
     have hc : Continuous (fun t : ℝ => Function.update x b.1

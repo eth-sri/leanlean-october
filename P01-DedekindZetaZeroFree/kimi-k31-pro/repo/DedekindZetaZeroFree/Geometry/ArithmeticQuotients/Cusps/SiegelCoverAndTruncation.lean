@@ -60,8 +60,7 @@ theorem kp_cusp_siegel_cover_and_truncation
             KPCuspSiegel.OrbitQuotient F Γ,
             Topology.IsEmbedding e ∧
             (∀ z : KPCuspSiegel.highCusp F (σ a) T,
-              e (Quotient.mk _ z) = KPCuspSiegel.projection F Γ z)) := by
-  exact kp_cusp_siegel_cover_and_truncation_proved F hF M hM Γ hΓ hcomm
+              e (Quotient.mk _ z) = KPCuspSiegel.projection F Γ z)) := kp_cusp_siegel_cover_and_truncation_proved F hF M hM Γ hΓ hcomm
 
 end DedekindZetaZeroFree
 

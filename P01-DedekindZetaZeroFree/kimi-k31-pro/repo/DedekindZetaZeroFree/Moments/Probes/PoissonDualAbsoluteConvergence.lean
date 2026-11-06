@@ -116,7 +116,7 @@ theorem summable_sumCN (A : SArithmeticData F) (ι : F →+* ℂ)
     simp only [ProbePoissonGaussianRowBound.rowMass,
       ThetaReflectionData.forwardArithmeticWeight, norm_mul]
     ring
-  rwa [heq] at hrow
+  grind
 
 theorem term_continuous (A : SArithmeticData F) (ι : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
@@ -174,8 +174,8 @@ theorem orbit_mass_row_majorant (A : SArithmeticData F) (ι : F →+* ℂ)
   have hg : Summable g := by
     simpa only [g, rowMass_eq] using summable_sumCN A ι η hS P ρ Z hρ hZ
   have ho : Summable o := summable_sumOrbit A ρ hρ
-  have hf0 (s) : 0 ≤ f s := mul_nonneg (abs_nonneg _) (A.exteriorNorm_pos s).le
-  have hg0 (p) : 0 ≤ g p := by
+  have hf0 s : 0 ≤ f s := mul_nonneg (abs_nonneg _) (A.exteriorNorm_pos s).le
+  have hg0 p : 0 ≤ g p := by
     dsimp [g]
     rw [rowMass_eq]
     exact div_nonneg (mul_nonneg (mul_nonneg (norm_nonneg _) (abs_nonneg _))
@@ -183,7 +183,7 @@ theorem orbit_mass_row_majorant (A : SArithmeticData F) (ι : F →+* ℂ)
         (pow_pos (A.exteriorNorm_pos p.2) 3)).le _))
       (mul_pos (Real.sqrt_pos.mpr (A.exteriorNorm_pos p.1.val))
         (A.exteriorNorm_pos p.2)).le
-  have ho0 (a) : 0 ≤ o a := Real.rpow_nonneg (ProbeOrbitNormSum.orbitNorm_pos A a).le _
+  have ho0 a : 0 ≤ o a := Real.rpow_nonneg (ProbeOrbitNormSum.orbitNorm_pos A a).le _
   have hfg : Summable (fun i : A.Exterior × (ExteriorSquarefreeIdeal A.cS × A.Exterior) =>
       f i.1 * g i.2) := summable_mul_of_summable_norm (f := f) (g := g)
     (by simpa only [Real.norm_of_nonneg (hf0 _)] using hf)
@@ -218,7 +218,7 @@ theorem orbit_mass_row_majorant (A : SArithmeticData F) (ι : F →+* ℂ)
         unfold ProbeSheetTranslation.q
         rw [← ProbeOrbitNormSum.orbitNorm_eq_snorm A (r i.2.2.2)
           (ProbeSheetTranslation.fieldUnit A _ _) rfl, hr i.2.2.2]
-      simpa only [hq] using hb X Y Z hX hY i.1 i.2.1 i.2.2.1 (r i.2.2.2)
+      grind
     _ = _ := by
       have heq : (∑' i : ProbeJointAbsoluteMass.OrbitIndex A,
           f i.1 * g (i.2.1, i.2.2.1) * o i.2.2.2) =
@@ -228,8 +228,7 @@ theorem orbit_mass_row_majorant (A : SArithmeticData F) (ι : F →+* ℂ)
           ProbeOrbitNormSum.Orbit A, (f i.1.1 * g i.1.2) * o i.2) = _
         rw [← hfg.tsum_mul_tsum ho hall, ← hf.tsum_mul_tsum hg hfg]
       simp_rw [mul_assoc, tsum_mul_left]
-      simp_rw [mul_assoc] at heq
-      rw [heq]
+      grind
 
 end ProbePoissonDualAbsolute
 
@@ -324,7 +323,7 @@ theorem probe_poisson_dual_absolute (F : Type) [Field F] [NumberField F]
   obtain ⟨hs, hsum⟩ := ProbeJointNormMassTransfer.norm_mass_transfer
     P.domain.measure P.domain.domain k
     (fun i : ProbeJointAbsoluteMass.OrbitIndex A => k (i.1,i.2.1,i.2.2.1,r i.2.2.2))
-    hi (fun i => by rw [heq]; exact hiG _) (by simpa only [heq] using ho) hunfold
+    hi (fun i => by rw [heq]; grind) (by simpa only [heq] using ho) hunfold
   have hex := ProbeJointAbsoluteMass.joint_series_exchanges
     (P.domain.measure.restrict P.domain.domain) k hi hs
   have hfinite : (∫⁻ t in P.domain.domain,

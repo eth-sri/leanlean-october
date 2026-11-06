@@ -477,7 +477,7 @@ private lemma fiber_mask (C : A.GeneralArithmeticContext σ η hS)
       rw [← (generator_generates C p).2]
       exact Ideal.subset_span (by simp)
     simp only [map_add, map_mul, hg', zero_mul, add_zero]
-  simp only [maskedPower, Nat.succ_ne_zero, dif_neg, hu, hred, one_ne_zero]
+  simp only [maskedPower, Nat.succ_ne_zero, hu, hred, one_ne_zero]
 
 private lemma fiber_phase (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (n J : ℕ) (x : Residue C p 1) (y : Residue C p n) :
@@ -490,7 +490,7 @@ private lemma fiber_phase (C : A.GeneralArithmeticContext σ η hS)
   rw [fiberMap, ← map_mul, psi_residueMap]
   conv_rhs => arg 2; rw [← hl, ← map_mul, psi_residueMap]
   rw [psi_residueMap]
-  simp only [Prod.fst, Prod.snd]
+  simp only
   have heq : ((generator C p ^ J * ((lifts C p 1).val x + generator C p *
       (lifts C p n).val y) : A.R) : F) / (generator C p ^ (n+1) : A.R) =
       ((generator C p ^ J * (lifts C p 1).val x : A.R) : F) / (generator C p ^ (n+1) : A.R) +

@@ -89,55 +89,13 @@ theorem topologicalProfiniteCompletionProjection_map
       QuotientGroup.mk g :=
   rfl
 
-/-- Every defining finite quotient is reached by the canonical projection
-from the topological profinite completion. -/
-theorem topologicalProfiniteCompletionProjection_surjective
-    (H : OpenFiniteIndexNormalSubgroup G) :
-    Function.Surjective (topologicalProfiniteCompletionProjection G H) := by
-  intro x
-  obtain ⟨g, rfl⟩ := QuotientGroup.mk_surjective x
-  exact ⟨topologicalProfiniteCompletionMap G g,
-    topologicalProfiniteCompletionProjection_map G H g⟩
 
-/-- The kernel of the canonical completion map is the intersection of all
-open finite-index normal subgroups. -/
-theorem topologicalProfiniteCompletionMap_ker :
-    (topologicalProfiniteCompletionMap G).ker =
-      ⨅ H : OpenFiniteIndexNormalSubgroup G,
-        H.toOpenNormalSubgroup.toSubgroup := by
-  ext g
-  rw [Subgroup.mem_iInf]
-  constructor
-  · intro hg H
-    have hval :
-        openFiniteQuotientProductMapMonoidHom G g =
-          (1 : openFiniteQuotientProduct G) :=
-      congrArg Subtype.val hg
-    have hcoord := congrFun hval H
-    exact (QuotientGroup.eq_one_iff g).mp hcoord
-  · intro hg
-    change topologicalProfiniteCompletionMap G g = 1
-    apply Subtype.ext
-    funext H
-    exact (QuotientGroup.eq_one_iff g).mpr (hg H)
 
-/-- The canonical completion map is injective exactly when the intersection
-of all open finite-index normal subgroups is trivial. -/
-theorem topologicalProfiniteCompletionMap_injective_iff :
-    Function.Injective (topologicalProfiniteCompletionMap G) ↔
-      (⨅ H : OpenFiniteIndexNormalSubgroup G,
-        H.toOpenNormalSubgroup.toSubgroup) = ⊥ := by
-  change Function.Injective (topologicalProfiniteCompletionMap G).toMonoidHom ↔ _
-  rw [← MonoidHom.ker_eq_bot_iff, topologicalProfiniteCompletionMap_ker]
 
-/-- A separated open finite-quotient topology gives an injective canonical
-completion map. -/
-theorem topologicalProfiniteCompletionMap_injective_of_iInf_eq_bot
-    (h :
-      (⨅ H : OpenFiniteIndexNormalSubgroup G,
-        H.toOpenNormalSubgroup.toSubgroup) = ⊥) :
-    Function.Injective (topologicalProfiniteCompletionMap G) :=
-  (topologicalProfiniteCompletionMap_injective_iff G).2 h
+
+
+
+
 
 /-- The finite quotient projections commute with every transition map in the
 open finite-quotient diagram. -/
@@ -448,18 +406,7 @@ structure ProfiniteCompletionUniversalProperty
     ∀ (P : ProfiniteGrp.{v}) (f : G →ₜ* P),
       ∃! lift : C →ₜ* P, lift.comp ι = f
 
-/-- The constructed completion satisfies the bundled universal property. -/
-theorem topologicalProfiniteCompletion_universalProperty :
-    ProfiniteCompletionUniversalProperty G
-      (TopologicalProfiniteCompletion G)
-      (topologicalProfiniteCompletionMap G) where
-  denseRange := topologicalProfiniteCompletionMap_denseRange G
-  existsUniqueLift := by
-    intro P f
-    refine ⟨topologicalProfiniteCompletionLift P f,
-      topologicalProfiniteCompletionLift_comp_map P f, ?_⟩
-    intro lift hlift
-    exact topologicalProfiniteCompletionLift_unique P f lift hlift
+
 
 end LocalClassFieldTheory
 

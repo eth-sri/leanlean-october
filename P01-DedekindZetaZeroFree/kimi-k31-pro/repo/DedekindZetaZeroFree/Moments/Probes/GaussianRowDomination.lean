@@ -37,7 +37,7 @@ private theorem mulChar_bound {R : Type*} [CommRing R] [Fintype R]
 private theorem phase_norm (A : SArithmeticData F)
     (e : (v : ↥A.Sf) → AddChar (v.val.adicCompletion F) Circle)
     (x : SLocalProduct F A.Sf) : ‖ProbeAdditive.phase F A.Sf e x‖ = 1 := by
-  simp [ProbeAdditive.phase, ProbeAdditive.archPhase, norm_mul, norm_prod,
+  simp [ProbeAdditive.phase, ProbeAdditive.archPhase, norm_prod,
     Complex.norm_exp]
 private theorem gamma_bound (A : SArithmeticData F) (ι : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
@@ -72,8 +72,7 @@ private theorem gamma_bound (A : SArithmeticData F) (ι : F →+* ℂ)
     _ ≤ (Real.sqrt (A.exteriorNorm c.val))⁻¹ * A.exteriorNorm c.val :=
       mul_le_mul_of_nonneg_left hsum (inv_nonneg.mpr hsq.le)
     _ = _ := by
-      apply (inv_mul_eq_iff_eq_mul₀ hsq.ne').mpr
-      exact (Real.sq_sqrt hq.le).symm.trans (by ring)
+      grind
 private theorem numeric_bound (σ Z qc qn : ℝ) (hZ : 0 < Z)
     (hc : 1 ≤ qc) (hn : 1 ≤ qn) :
     (1 / qn) * (qc * qn ^ 3) ^ σ *
@@ -91,7 +90,7 @@ private theorem numeric_bound (σ Z qc qn : ℝ) (hZ : 0 < Z)
     apply (le_div_iff₀ (Real.rpow_pos_of_pos hq _)).mpr
     have hh := (mul_le_mul_of_nonneg_right hg (Real.rpow_pos_of_pos hZ (σ + 3)).le)
     rw [div_mul_eq_mul_div, div_mul_cancel₀ _ (Real.rpow_pos_of_pos hZ (σ + 3)).ne'] at hh
-    simpa [mul_comm] using hh
+    grind
   let C := Real.exp ((σ + 3) ^ 2) / (2 * Real.sqrt Real.pi) * Z ^ (σ + 3)
   have hC : 0 ≤ C := by dsimp [C]; positivity
   calc

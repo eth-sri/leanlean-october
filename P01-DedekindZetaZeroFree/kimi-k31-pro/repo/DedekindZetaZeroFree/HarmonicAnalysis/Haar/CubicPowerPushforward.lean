@@ -104,7 +104,7 @@ private lemma haar_left (dx : Measure K) [dx.IsAddHaarMeasure]
   have hm := setLIntegral_map (μ := dx) (g := fun x : K => (g : K) * x)
     (s := Units.val '' s) (ev.measurableSet_image.mpr hs) hD (by fun_prop)
   rw [hscale, Measure.restrict_smul, lintegral_smul_measure] at hm
-  simp only [ENNReal.smul_def, smul_eq_mul] at hm
+  simp only [smul_eq_mul] at hm
   simp_rw [hmul] at hm
   rw [lintegral_const_mul _ hD] at hm
   have hp : 0 < abs K (g : K) := abs_pos K g.ne_zero

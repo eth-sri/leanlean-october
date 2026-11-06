@@ -199,47 +199,9 @@ theorem localizedCompletion_adjoin_image_eq_top_of_adjoin_eq_top
 
 variable [IsGalois K L]
 
-/-- Every element in the canonical image of the global extension is separable
-over the completed base. -/
-theorem localizedCompletion_generator_isSeparable
-    (vK : AbsoluteValue K ℝ)
-    (w : AbsoluteValueExtension vK L) (x : L) :
-    letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
-    letI : SMul K w.1.Completion := hK.toSMul
-    letI : Algebra vK.Completion w.1.Completion :=
-      AbsoluteValue.completionAlgebra vK w.1 w.2
-    letI := localizedCompletionGlobalAlgebra vK w
-    letI := localizedCompletionIsScalarTower vK w
-    IsSeparable vK.Completion
-      (AbsoluteValue.toAlgebraicLocalization vK w.1 w.2 x) := by
-  let _ := localizedCompletionBaseAlgebra vK w
-  let _ := localizedCompletionGlobalAlgebra vK w
-  let _ := localizedCompletionIsScalarTower vK w
-  exact
-    HilbertRamification.decompositionField_toLocalization_isSeparable
-      vK w x
 
-/-- The completed-base minimal polynomial of every canonical global generator
-splits in the algebraic localization. -/
-theorem localizedCompletion_generator_minpoly_splits
-    (vK : AbsoluteValue K ℝ)
-    (w : AbsoluteValueExtension vK L) (x : L) :
-    letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
-    letI : SMul K w.1.Completion := hK.toSMul
-    letI : Algebra vK.Completion w.1.Completion :=
-      AbsoluteValue.completionAlgebra vK w.1 w.2
-    letI := localizedCompletionGlobalAlgebra vK w
-    letI := localizedCompletionIsScalarTower vK w
-    ((minpoly vK.Completion
-        (AbsoluteValue.toAlgebraicLocalization vK w.1 w.2 x)).map
-      (algebraMap vK.Completion
-        (LocalizedCompletion vK w))).Splits := by
-  let _ := localizedCompletionBaseAlgebra vK w
-  let _ := localizedCompletionGlobalAlgebra vK w
-  let _ := localizedCompletionIsScalarTower vK w
-  exact
-    HilbertRamification.decompositionField_toLocalization_minpoly_splits
-      vK w x
+
+
 
 open scoped IsMulCommutative in
 omit [IsGalois K L] in

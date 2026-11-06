@@ -124,7 +124,7 @@ private lemma prodFourier_eq (f : (ι → ℂ) → ℂ) (y : ι → ℂ) :
     f (coords z) * ∏ i, ComplexWeil.psi 2 (-z i * y i)
       ∂(prodMeasure ι).map (coords (ι := ι)).symm) = productFourier f y at hi
   rw [measure_eq, integral_smul_nnreal_measure] at hi
-  simp only [Complex.real_smul] at hi
+  simp only at hi
   rw [← hi, Real.fourier_eq]
   congr 1
   apply integral_congr_ae
@@ -140,8 +140,7 @@ private lemma chirp_growth (b : ι → ℂ) :
     have hm : (fun z : ι → ℂ => 2 * (b i * z i ^ 2)).HasTemperateGrowth := by
       convert! ((Function.HasTemperateGrowth.const (2 : ℂ)).mul
         ((Function.HasTemperateGrowth.const (b i)).mul (he.pow 2))) using 1
-    have hq : (fun z : ι → ℂ => (2 * (b i * z i ^ 2)).re).HasTemperateGrowth := by
-      exact Complex.reCLM.hasTemperateGrowth.comp hm
+    have hq : (fun z : ι → ℂ => (2 * (b i * z i ^ 2)).re).HasTemperateGrowth := Complex.reCLM.hasTemperateGrowth.comp hm
     have h := Complex.hasTemperateGrowth_exp_mul_I.comp
       ((Function.HasTemperateGrowth.const (2 * Real.pi)).mul hq)
     simpa [ComplexWeil.psi, Function.comp_def] using h
@@ -471,8 +470,7 @@ theorem archimedean_quadratic_operator (A : SArithmeticData F) (a : Fˣ)
   have hchirp (b : F) (f : PoissonArch.Space F → ℂ) (z : ι → ℂ) :
       archChirp F b f (ArchimedeanSteps.complexLift F z) =
         ArchimedeanSteps.productChirp (fun w => (mixedEmbedding F b).2 w)
-          (fun z => f (ArchimedeanSteps.complexLift F z)) z := by
-    exact archChirp_complexCoordinates b f z
+          (fun z => f (ArchimedeanSteps.complexLift F z)) z := archChirp_complexCoordinates b f z
   have hcoords (z : ι → ℂ) :
       ArchimedeanSteps.complexCoordinates F (ArchimedeanSteps.complexLift F z) = z := by
     simp [ArchimedeanSteps.complexCoordinates, ArchimedeanSteps.complexLift]
@@ -504,8 +502,7 @@ theorem archimedean_quadratic_operator (A : SArithmeticData F) (a : Fˣ)
     exact hchirp b f z
   have hD (c : F) (f : PoissonArch.Space F → ℂ) (z : ι → ℂ) :
       archDilation F c f (ArchimedeanSteps.complexLift F z) =
-        f (ArchimedeanSteps.complexLift F (fun w => (mixedEmbedding F c).2 w * z w)) := by
-    exact archDilation_complexCoordinates c f z
+        f (ArchimedeanSteps.complexLift F (fun w => (mixedEmbedding F c).2 w * z w)) := archDilation_complexCoordinates c f z
   funext y
   have hy := hlift y
   rw [← hy]

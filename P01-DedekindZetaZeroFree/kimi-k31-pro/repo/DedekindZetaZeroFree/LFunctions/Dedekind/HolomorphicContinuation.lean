@@ -4,6 +4,7 @@ public import DedekindZetaZeroFree.LFunctions.Dedekind.ReciprocalGammaFactor
 public import DedekindZetaZeroFree.Analysis.EntireDivisionAtZero
 public import DedekindZetaZeroFree.LFunctions.Dedekind.MixedThetaMellinModel
 public import DedekindZetaZeroFree.Nonvanishing.Mellin.WeakFunctionalEquationUncompletion
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -24,13 +25,13 @@ theorem zetaContinuation (K : Type) [Field K] [NumberField K] :
   · exact (weakFE_uncompletion P hk (zetaGammaReciprocal K) u hq hu hqu).1
   · intro s hs
     have hs0 : s ≠ 0 := by rintro rfl; norm_num at hs
-    have hs1 : s ≠ 1 := by rintro rfl; norm_num at hs
+    have hs1 : s ≠ 1 := by measurability
     rw [(weakFE_uncompletion P hk (zetaGammaReciprocal K) u hq hu hqu).2 s hs0 hs1]
 
     have hPm : P.Λ s = zetaGammaFactor K s * NumberField.dedekindZeta K s := by
-      have h1 := (P.hasMellin (s := s) (by rw [hk]; exact hs)).2
+      have h1 := (P.hasMellin (s := s) (by simp_all)).2
       have h2 := (hP s hs).2
-      exact h1.symm.trans h2
+      simp_all
     rw [hPm, ← mul_assoc, zetaGammaReciprocal_mul_factor K s hs, one_mul]
 
 end DedekindZetaZeroFree.AbelianQuotient

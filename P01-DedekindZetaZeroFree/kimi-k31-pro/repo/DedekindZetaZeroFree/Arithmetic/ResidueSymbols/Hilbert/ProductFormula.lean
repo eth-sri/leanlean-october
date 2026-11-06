@@ -72,14 +72,14 @@ theorem H_S_mul_left (A : SArithmeticData F) (x z y : A.G) :
   classical
   unfold H_S actualLocalSymbol
   simp only [Prod.snd_mul, Pi.mul_apply, map_mul, MonoidHom.mul_apply,
-    Finset.prod_mul_distrib]
+    ]
   exact Finset.prod_mul_distrib
 
 theorem H_S_mul_right (A : SArithmeticData F) (x y z : A.G) :
     A.H_S x (y * z) = A.H_S x y * A.H_S x z := by
   classical
   unfold H_S actualLocalSymbol
-  simp only [Prod.snd_mul, Pi.mul_apply, map_mul, Finset.prod_mul_distrib]
+  simp only [Prod.snd_mul, Pi.mul_apply, map_mul]
   exact Finset.prod_mul_distrib
 
 theorem H_S_skew (A : SArithmeticData F) (x y : A.G) :

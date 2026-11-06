@@ -114,9 +114,9 @@ private theorem list_swap {n : ℕ} (B : LocalBall n) (u : Space n → ℂ)
   have hd : DifferentiableAt ℝ (fderiv ℝ (coordinateDerivativeList l u)) x :=
     (hs.fderiv_right (m := (⊤ : ℕ∞)) (by simp)).differentiableAt (by simp)
   simp only [coordinateDerivativeList, fderiv_clm_apply hd (differentiableAt_const _),
-    fderiv_const_apply, ContinuousLinearMap.comp_zero, ContinuousLinearMap.add_apply,
+    fderiv_const_apply, ContinuousLinearMap.comp_zero, 
     ContinuousLinearMap.flip_apply,
-    ContinuousLinearMap.zero_apply, zero_add]
+    zero_add]
   exact (hs.isSymmSndFDerivAt (by simp)).eq _ _
 
 private theorem list_perm {n : ℕ} (B : LocalBall n) (u : Space n → ℂ)

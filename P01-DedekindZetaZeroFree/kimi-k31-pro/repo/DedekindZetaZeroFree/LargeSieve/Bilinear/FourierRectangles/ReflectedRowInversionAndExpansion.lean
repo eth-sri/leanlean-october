@@ -208,7 +208,7 @@ theorem coefficient_prefactor (C : Context Q) (e : Ideal (𝓞 F))
   have hs : Real.sqrt (norm (p.1 * p.2)) = Real.sqrt (norm p.1) * Real.sqrt (norm p.2) := by
     rw [norm_mul, Real.sqrt_mul hu.le]
   simp only [Context.coefficient, Context.prefactor, weightedColumn, star_div₀,
-    star_mul, star_inv₀, RCLike.star_def, Complex.conj_ofReal, hs, Complex.ofReal_mul, Complex.ofReal_div]
+    RCLike.star_def, Complex.conj_ofReal, hs, Complex.ofReal_mul]
   ring
 
 theorem row_fourier_identity (C : Context Q) (χ : ℝ → ℝ)
@@ -947,7 +947,7 @@ theorem fourier_rows_bound
         exact Finset.sum_nonneg (fun a ha => mul_nonneg hfac (hI e a f₁ f₂))
     _ = A*C.M*θ*dualNormCost C*cost := by
       dsimp only [cost]
-      simp only [Finset.mul_sum, Finset.sum_mul]
+      simp only [Finset.mul_sum]
       apply Finset.sum_congr rfl
       intro e he
       apply Finset.sum_congr rfl

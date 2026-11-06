@@ -167,95 +167,9 @@ theorem rayModulus_normSubgroup_eq_of_arithmeticPrimeArtinEquiv
     exact hx'
   · exact hle
 
-/-- Frobenius normalization away from the modulus determines the value of
-the ray Artin map on every idèle class, including classes supported at a
-ramified place.  The normalization here is arithmetic Frobenius. -/
-theorem rayArtin_comp_ideleClass_eq_arithmeticGlobalNormResidue
-    {K L : Type} [Field K] [NumberField K]
-    [Field L] [NumberField L] [Algebra K L]
-    [FiniteDimensional K L] [IsAbelianGalois K L]
-    (m : RayClass.Modulus K)
-    (artin : RayClass.RayClassGroup m →* (L ≃ₐ[K] L))
-    (hprime : ∀ (v : HeightOneSpectrum (𝓞 K))
-      (_ : v ∉ m.finitePart.support),
-        artin (QuotientGroup.mk' m.congruenceSubgroup
-          (QuotientGroup.mk' (IdeleGroup.principalSubgroup K)
-            (IdeleGroup.finitePrimeIdele v))) =
-          arithmeticFinitePlacePrimeArtin (K := K) (L := L) v)
-    (x : IdeleClassGroup K) :
-    artin (QuotientGroup.mk' m.congruenceSubgroup x) =
-      Reciprocity.arithmeticGlobalNormResidueMonoidHom K L x := by
-  let H := ideleClassNormConductorialSubgroup (K := K) (L := L)
-  let c := H.fullConductor
-  let n := c ⊔ m
-  have hcn : c ≤ n := le_sup_left
-  have hmn : m ≤ n := le_sup_right
-  have hnNorm : n.congruenceSubgroup ≤
-      (_root_.ideleClassNorm K L).range :=
-    (RayClass.Modulus.congruenceSubgroup_antitone hcn).trans
-      H.fullConductor_isDefiningModulus
-  have hnm : n.congruenceSubgroup ≤ m.congruenceSubgroup :=
-    RayClass.Modulus.congruenceSubgroup_antitone hmn
-  let qNorm : RayClass.RayClassGroup n →*
-      IdeleClassGroup K ⧸ (_root_.ideleClassNorm K L).range :=
-    QuotientGroup.map n.congruenceSubgroup
-      ((_root_.ideleClassNorm K L).range)
-      (MonoidHom.id (IdeleClassGroup K))
-      (fun _ hx => hnNorm hx)
-  let qRay : RayClass.RayClassGroup n →* RayClass.RayClassGroup m :=
-    QuotientGroup.map n.congruenceSubgroup m.congruenceSubgroup
-      (MonoidHom.id (IdeleClassGroup K))
-      (fun _ hx => hnm hx)
-  let genuine : RayClass.RayClassGroup n →* (L ≃ₐ[K] L) :=
-    (Reciprocity.arithmeticGlobalNormResidueContinuousMulEquiv K L).toMulEquiv.toMonoidHom.comp
-      qNorm
-  let proposed : RayClass.RayClassGroup n →* (L ≃ₐ[K] L) :=
-    artin.comp qRay
-  have hEq : genuine = proposed := by
-    apply rayClassGroup_hom_ext_finitePrime n
-    intro v hvn
-    have hvm : v ∉ m.finitePart.support := by
-      intro hv
-      exact hvn ((Finsupp.support_mono hmn.1) hv)
-    change Reciprocity.arithmeticGlobalNormResidueMonoidHom K L
-        (QuotientGroup.mk' (IdeleGroup.principalSubgroup K)
-          (IdeleGroup.finitePrimeIdele v)) =
-      artin (QuotientGroup.mk' m.congruenceSubgroup
-        (QuotientGroup.mk' (IdeleGroup.principalSubgroup K)
-          (IdeleGroup.finitePrimeIdele v)))
-    rw [hprime v hvm]
-    exact DFunLike.congr_fun
-      (Reciprocity.arithmeticGlobalNormResidueMonoidHom_comp_ideleClassQuotient_eq_globalArtin
-        (K := K) (L := L)) (IdeleGroup.finitePrimeIdele v)
-  have hx := DFunLike.congr_fun hEq
-    (QuotientGroup.mk' n.congruenceSubgroup x)
-  change Reciprocity.arithmeticGlobalNormResidueMonoidHom K L x =
-    artin (QuotientGroup.mk' m.congruenceSubgroup x) at hx
-  exact hx.symm
 
-/-- A Frobenius-normalized ray Artin homomorphism has kernel precisely the
-image of the genuine idèle-class norm subgroup in the ray quotient.  Unlike
-the ray-class-field case, the homomorphism need not be injective. -/
-theorem rayModulus_normSubgroup_eq_artinKer_preimage
-    {K L : Type} [Field K] [NumberField K]
-    [Field L] [NumberField L] [Algebra K L]
-    [FiniteDimensional K L] [IsAbelianGalois K L]
-    (m : RayClass.Modulus K)
-    (artin : RayClass.RayClassGroup m →* (L ≃ₐ[K] L))
-    (hprime : ∀ (v : HeightOneSpectrum (𝓞 K))
-      (_ : v ∉ m.finitePart.support),
-        artin (QuotientGroup.mk' m.congruenceSubgroup
-          (QuotientGroup.mk' (IdeleGroup.principalSubgroup K)
-            (IdeleGroup.finitePrimeIdele v))) =
-          arithmeticFinitePlacePrimeArtin (K := K) (L := L) v) :
-    (_root_.ideleClassNorm K L).range =
-      artin.ker.comap (QuotientGroup.mk' m.congruenceSubgroup) := by
-  ext x
-  rw [← Reciprocity.arithmeticGlobalNormResidueMonoidHom_ker]
-  change Reciprocity.arithmeticGlobalNormResidueMonoidHom K L x = 1 ↔
-    artin (QuotientGroup.mk' m.congruenceSubgroup x) = 1
-  rw [rayArtin_comp_ideleClass_eq_arithmeticGlobalNormResidue
-    m artin hprime x]
+
+
 
 end GlobalClassFieldTheory.GlobalClassFields
 

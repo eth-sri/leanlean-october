@@ -33,7 +33,7 @@ theorem finite_update_factorization {J : Type*} [DecidableEq J]
       funext j
       by_cases hj : j = a
       · subst j; simp [ha]
-      · simp [hj, Function.update_of_ne hj]
+      · simp [hj]
     rw [hp, he, mul_assoc]
 end DedekindZetaZeroFree.FourierContinuation.CurrentReferenceProduct
 

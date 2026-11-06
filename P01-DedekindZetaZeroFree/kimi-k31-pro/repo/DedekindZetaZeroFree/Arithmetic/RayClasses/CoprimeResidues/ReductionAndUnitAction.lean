@@ -151,7 +151,7 @@ def coprimeIdealResidueUnitsEquiv (F : Type) [Field F] [NumberField F]
     simp [e, IsUnit.unit_spec]
   · intro u
     apply Units.ext
-    simp [IsUnit.unit_spec, ← show e = coprimeIdealResidueReduction F m a hm ha hcop from rfl]
+    simp [← show e = coprimeIdealResidueReduction F m a hm ha hcop from rfl]
 
 @[simp] theorem coprimeIdealResidueUnitsEquiv_coe
     (m a : Ideal (𝓞 F)) (hm : m ≠ ⊥) (ha : a ≠ ⊥)

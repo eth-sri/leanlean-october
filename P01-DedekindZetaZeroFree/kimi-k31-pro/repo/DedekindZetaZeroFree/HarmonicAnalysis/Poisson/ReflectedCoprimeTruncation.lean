@@ -310,7 +310,7 @@ lemma originalSum_eq_truncatedMainTerm_add_remainder
   change _ = A * (∑ d ∈ idealDivisors m, q d) - A * _ + R * _ + _ +
     (ReflectedTails.primalTail F g T _ mu + ReflectedTails.smallDualTail F k T _ mu + _)
   rw [hlarge]
-  simp only [ReflectedTails.smallDualTail, Complex.ofReal_div, Complex.ofReal_natCast]
+  simp only [ReflectedTails.smallDualTail, Complex.ofReal_natCast]
   dsimp only [ReflectedTails.dualCutoffTail, ReflectedTails.dualCutoffSummand, du, q, mu, k]
   simp only [Complex.ofReal_natCast]
   ring

@@ -2,6 +2,7 @@ module
 
 public import Mathlib.RepresentationTheory.Continuous.Basic
 public import Mathlib.Topology.Algebra.Module.Spaces.ContinuousLinearMap
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -34,8 +35,8 @@ def subrepresentation (π : ContRepresentation R G V) (W : Submodule R V)
     (hW : ∀ g, ∀ v ∈ W, π g v ∈ W) : ContRepresentation R G W :=
   .ofMonoidHom
     { toFun g := (π g).restrict (hW g)
-      map_one' := by ext v; simp
-      map_mul' g h := by ext v; simp }
+      map_one' := by measurability
+      map_mul' g h := by measurability }
 
 variable {π : ContRepresentation R G V} {W : Submodule R V} {hW : ∀ g, ∀ v ∈ W, π g v ∈ W}
 

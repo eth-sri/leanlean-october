@@ -46,7 +46,7 @@ theorem finite_joint_covariant_function_expansion
     ⟨fun x => ((A i).ωL (a i x) : ℂ) * (if q i x = d i then 1 else 0), by
       intro b x
       have hb : q i (b : H i) = 1 := (QuotientGroup.eq_one_iff _).mpr b.property
-      simp [ha, map_mul, hb, mul_assoc]⟩
+      simp [ha, map_mul, hb]⟩
   have hcov (b : ∀ i, B i) (t : ∀ i, H i) :
       G (fun i => (b i : H i) * t i) = (∏ i, ((A i).ωL (b i) : ℂ)) * G t := by
     have aux (s : Finset I) :
@@ -61,7 +61,7 @@ theorem finite_joint_covariant_function_expansion
           funext j
           by_cases hj : j = i
           · subst j; simp [hi]
-          · simp [Function.update_of_ne hj, hj]
+          · simp [hj]
         rw [he, hG, ih, Finset.prod_insert hi, mul_assoc]
     simpa using aux Finset.univ
   have htransport (t : ∀ i, H i) :
@@ -82,7 +82,7 @@ theorem finite_joint_covariant_function_expansion
     rw [Fintype.prod_ite_zero]
     by_cases h : (fun i => q i (t i)) = d
     · have hh : ∀ i, q i (t i) = d i := fun i => congrFun h i
-      simp [h, hh]
+      simp [hh]
     · have hn : ¬ ∀ i, q i (t i) = d i := fun hh => h (funext hh)
       simp [h, hn]
   simp_rw [hf]

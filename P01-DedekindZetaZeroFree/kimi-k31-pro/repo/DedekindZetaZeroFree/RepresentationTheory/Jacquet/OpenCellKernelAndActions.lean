@@ -779,11 +779,11 @@ def alpha : Torus F ζ hζ w →* Torus F ζ hζ w where
           projection_weyl, hA]
       · dsimp [W]
         rw [weyl_matrix_inv]
-        simp [Units.val_mul, Matrix.mul_apply, Fin.sum_univ_two,
+        simp [Matrix.mul_apply, Fin.sum_univ_two,
           KPStandardLocalRootLifts.weylSwap, Matrix.GeneralLinearGroup.mkOfDetNeZero, hb, Matrix.vecMul, dotProduct]
       · dsimp [W]
         rw [weyl_matrix_inv]
-        simp [Units.val_mul, Matrix.mul_apply, Fin.sum_univ_two,
+        simp [Matrix.mul_apply, Fin.sum_univ_two,
           KPStandardLocalRootLifts.weylSwap, Matrix.GeneralLinearGroup.mkOfDetNeZero, hc, Matrix.vecMul, dotProduct]⟩
   map_one' := by
     apply Subtype.ext
@@ -834,7 +834,7 @@ theorem d_alpha (h : Torus F ζ hζ w) :
   have hu : (W * A * W⁻¹ : KPRankOneInduction.GL2 F w) 1 0 = 0 := by
     dsimp [W]
     rw [weyl_matrix_inv]
-    simp [Units.val_mul, Matrix.mul_apply, Fin.sum_univ_two, Matrix.vecMul, dotProduct,
+    simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.vecMul, dotProduct,
       KPStandardLocalRootLifts.weylSwap, Matrix.GeneralLinearGroup.mkOfDetNeZero, hb]
   change ((deltaB F ζ hζ w (torusInBorel F ζ hζ w m hm (alpha F ζ hζ w h)) : ℝ≥0) : ℝ) = _
   rw [KPRankOneInduction.deltaB_eq F w (projection F ζ hζ w) _ (W * A * W⁻¹) hWA hu]

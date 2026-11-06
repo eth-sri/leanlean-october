@@ -14,8 +14,8 @@ namespace ProbeSheet
 variable {F : Type} [Field F] [NumberField F]
 
 def localUnits (A : SArithmeticData F) : A.G ≃* (SLocalProduct F A.Sf)ˣ :=
-  ((MulEquiv.piUnits).symm.prodCongr (MulEquiv.piUnits).symm).trans
-    (MulEquiv.prodUnits).symm
+  (MulEquiv.piUnits.symm.prodCongr MulEquiv.piUnits.symm).trans
+    MulEquiv.prodUnits.symm
 
 def ell (A : SArithmeticData F) (T : ℝ) : (SLocalProduct F A.Sf)ˣ :=
   if hT : 0 < T then localUnits A (A.radialSection T hT) else 1
@@ -103,7 +103,7 @@ lemma norm_mul (x y : A.G) : A.norm (x * y) = A.norm x * A.norm y := by
     Units.val_mul, _root_.norm_mul, mul_pow, Finset.prod_mul_distrib]
   ring
 lemma norm_div (x y : A.G) : A.norm (x / y) = A.norm x / A.norm y := by
-  simp [SArithmeticData.norm, norm_div, div_pow, Finset.prod_div_distrib, div_mul_div_comm]
+  simp [SArithmeticData.norm, div_pow, Finset.prod_div_distrib, div_mul_div_comm]
 lemma continuous_norm : Continuous A.norm := by
   unfold SArithmeticData.norm
   fun_prop
@@ -210,8 +210,7 @@ lemma map_log_radial : Measure.map Real.log radialMeasure = volume := by
     apply Set.eq_univ_of_forall
     intro u
     exact ⟨Real.exp u, Real.exp_pos u, Real.log_exp u⟩
-  have hd (x : ℝ) : (ContinuousLinearMap.toSpanSingleton ℝ x⁻¹).det = x⁻¹ := by
-    exact ContinuousLinearMap.det_toSpanSingleton _
+  have hd (x : ℝ) : (ContinuousLinearMap.toSpanSingleton ℝ x⁻¹).det = x⁻¹ := ContinuousLinearMap.det_toSpanSingleton _
   simp only [hd, him, Measure.restrict_univ] at h
   convert h using 2
   unfold radialMeasure
@@ -235,8 +234,7 @@ instance : mulVolume.IsHaarMeasure := by
   let e : ℝ ≃ₜ Multiplicative ℝ := ⟨Multiplicative.ofAdd, continuous_ofAdd, continuous_toAdd⟩
   have hfin : IsFiniteMeasureOnCompacts mulVolume :=
     IsFiniteMeasureOnCompacts.map volume e
-  have hopen : IsOpenPosMeasure mulVolume := by
-    exact continuous_ofAdd.isOpenPosMeasure_map Multiplicative.ofAdd.surjective
+  have hopen : IsOpenPosMeasure mulVolume := continuous_ofAdd.isOpenPosMeasure_map Multiplicative.ofAdd.surjective
   refine { hfin, hopen with
     map_mul_left_eq_self := ?_ }
   intro x
@@ -349,7 +347,7 @@ lemma normalized_haar_exists
 
 lemma modulus_localUnits (A : SArithmeticData F) (x : A.G) :
     ProbeWeight.modulus F A.Sf (localUnits A x) = A.norm x := by
-  rfl
+  aesop
 lemma modulus_sheetPoint (A : SArithmeticData F) (T : ℝ) (hT : 0 < T) (t : A.G1) :
     ProbeWeight.modulus F A.Sf (sheetPoint A T t) = T := by
   unfold sheetPoint ell
@@ -819,8 +817,7 @@ theorem probe_sheet_mellin_estimates_of_disintegration (F : Type) [Field F] [Num
   let V := ProbeSheet.envelope A e μ dt W0
   have hglobal : ∀ z : ℂ, 0 < z.re → Integrable
       (fun y : (SLocalProduct F A.Sf)ˣ => ProbeWeight.fourier F A.Sf e μ W0 y.val *
-        (ProbeWeight.modulus F A.Sf y : ℂ) ^ z) ν := by
-    exact ProbeSheetFourierMellinBounds.fourier_mellin_integrable A e he hne μ ν hμ hν W0
+        (ProbeWeight.modulus F A.Sf y : ℂ) ^ z) ν := ProbeSheetFourierMellinBounds.fourier_mellin_integrable A e he hne μ ν hμ hν W0
       hW0 hcompact hannular
   have hprofile : ∀ z : ℂ, 0 < z.re →
       IntegrableOn (fun T : ℝ => V T * (T : ℂ) ^ z / (T : ℂ)) (Set.Ioi 0) ∧
@@ -830,19 +827,16 @@ theorem probe_sheet_mellin_estimates_of_disintegration (F : Type) [Field F] [Num
       (fun y => ProbeWeight.fourier F A.Sf e μ W0 y.val) z (hglobal z hz)
   have hdecay : ∀ (a b B : ℝ), 0 < a → a ≤ b → 0 ≤ B →
       ∃ C : ℝ, 0 ≤ C ∧ ∀ σ ∈ Set.Icc a b, ∀ τ : ℝ,
-        ‖M ((σ : ℂ) + (τ : ℂ) * Complex.I)‖ ≤ C * (1 + |τ|) ^ (-B) := by
-    exact ProbeSheetFourierMellinBounds.fourier_mellin_rapid_on_strip A e he hne μ ν hμ hν W0
+        ‖M ((σ : ℂ) + (τ : ℂ) * Complex.I)‖ ≤ C * (1 + |τ|) ^ (-B) := ProbeSheetFourierMellinBounds.fourier_mellin_rapid_on_strip A e he hne μ ν hμ hν W0
       hW0 hcompact hannular
-  have hcont : ContinuousOn V (Set.Ioi 0) := by
-    exact ProbeSheetFourierMellinBounds.positive_sheet_continuous A e he hne μ dt hμ hdt W0
+  have hcont : ContinuousOn V (Set.Ioi 0) := ProbeSheetFourierMellinBounds.positive_sheet_continuous A e he hne μ dt hμ hdt W0
       hW0 hcompact hannular
   have hsheet : ∀ (σ : ℝ) (k : ℕ), 0 < σ → ∃ C : ℝ, 0 ≤ C ∧
       ∀ T : ℝ, 0 < T →
         Integrable (fun t => ProbeSheet.logDerivative A w k
           (ProbeWeight.fourier F A.Sf e μ W0) (ProbeSheet.sheetPoint A T t).val) dt ∧
         (∫ t, ‖ProbeSheet.logDerivative A w k (ProbeWeight.fourier F A.Sf e μ W0)
-          (ProbeSheet.sheetPoint A T t).val‖ ∂dt) ≤ C * T ^ (-σ) := by
-    exact ProbeSheetFourierMellinBounds.sheet_log_derivative_bounds A e he hne μ dt hμ hdt w W0
+          (ProbeSheet.sheetPoint A T t).val‖ ∂dt) ≤ C * T ^ (-σ) := ProbeSheetFourierMellinBounds.sheet_log_derivative_bounds A e he hne μ dt hμ hdt w W0
       hW0 hcompact hannular
   have henvelopeBound : ∀ σ : ℝ, 0 < σ → ∃ C : ℝ, ∀ T : ℝ, 0 < T →
       ‖V T‖ ≤ C * T ^ (-σ) := by

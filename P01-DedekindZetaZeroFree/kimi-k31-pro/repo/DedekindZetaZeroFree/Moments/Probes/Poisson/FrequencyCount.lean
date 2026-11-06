@@ -47,17 +47,16 @@ theorem freqOrbit_injective (R : PrincipalMellin.ActualRecipe S η) :
     have huu := congrArg (fun x : ThetaReflectionData.Row R.A => (x.val : F)) heq
     have hδF := congrArg (fun x : R.A.U => (x.val : F)) hδ
     apply Units.ext
-    simp only [m, ThetaReflectionData.rowUnit, Units.val_mk0, map_mul, map_pow]
+    simp only [m, ThetaReflectionData.rowUnit, Units.val_mk0]
     change (u.val.val : F) * (r : F) ^ 6 = (v.val.val : F) * (r : F) ^ 6 * (δ.val : F) ^ 6
     change ((R.A.unitEquiv γ.val : R.A.R) : F) * (v.val.val : F) = (u.val.val : F) at huu
     have hcoe : ((R.A.unitEquiv γ.val : R.A.R) : F) = (γ.val.val : F) := by
       simp [SArithmeticData.unitEquiv, Set.unitEquivUnitsInteger]
     rw [hcoe, ← hδF] at huu
     change (δ.val : F) ^ 6 * (v.val.val : F) = (u.val.val : F) at huu
-    rw [← huu]
-    ring
+    grind
   have he : (u, I) = (v, I) := (hxuniq _ hu).trans (hxuniq _ hv).symm
-  exact congrArg Prod.fst he
+  grind
 
 theorem freqOrbit_norm (R : PrincipalMellin.ActualRecipe S η) (u : Frequency R) :
     frequencyNorm R u =
@@ -109,7 +108,7 @@ theorem frequency_count_le (R : PrincipalMellin.ActualRecipe S η) :
     rw [Set.mem_setOf_eq] at hu
     show ProbeOrbitNormSum.orbitNorm R.A (ProbeOrbitNormSum.orbitMk R.A u.val) ≤ X
     rw [← freqOrbit_norm R u]
-    exact hu
+    grind
   refine ⟨hfin, ?_⟩
   have hinj := Set.ncard_le_ncard_of_injOn
     (fun u : Frequency R => ProbeOrbitNormSum.orbitMk R.A u.val)
@@ -137,7 +136,7 @@ theorem frequency_count_le (R : PrincipalMellin.ActualRecipe S η) :
     _ ≤ (Nat.card R.A.UnitQuotient : ℝ) * (C * X) :=
           mul_le_mul_of_nonneg_left hBcard' (Nat.cast_nonneg _)
     _ ≤ ((Nat.card R.A.UnitQuotient : ℝ) * C + 1) * X := by
-          nlinarith [hC0, Nat.cast_nonneg (α := ℝ) (Nat.card R.A.UnitQuotient), hX]
+          grind
 
 theorem frequency_count_lt (R : PrincipalMellin.ActualRecipe S η) :
     ∃ K : ℝ, 0 < K ∧ ∀ X : ℝ, 1 ≤ X →

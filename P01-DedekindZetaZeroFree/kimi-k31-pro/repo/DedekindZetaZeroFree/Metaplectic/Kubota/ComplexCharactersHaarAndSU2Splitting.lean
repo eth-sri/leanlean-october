@@ -54,11 +54,10 @@ noncomputable def characterScale (β : ℂˣ) : ℝ := ‖(β : ℂ)‖
 noncomputable def characterRotation (β : ℂˣ) : Circle :=
   ⟨star (β : ℂ) / (characterScale β : ℂ), by
     apply mem_sphere_zero_iff_norm.mpr
-    simp [characterScale, norm_div, norm_star, Complex.norm_real,
-      abs_of_nonneg (norm_nonneg _), Units.ne_zero]⟩
+    simp [characterScale, Complex.norm_real,
+      Units.ne_zero]⟩
 
-theorem characterScale_pos (β : ℂˣ) : 0 < characterScale β := by
-  exact norm_pos_iff.mpr β.ne_zero
+theorem characterScale_pos (β : ℂˣ) : 0 < characterScale β := norm_pos_iff.mpr β.ne_zero
 
 theorem character_rotated (β : ℂˣ) (x : ℂ) :
     character (β : ℂ) ((characterRotation β : ℂ) * x) =

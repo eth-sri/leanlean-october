@@ -23,9 +23,7 @@ private theorem betaLocalTerm_one (Q σ : ℝ) (hQ : 2 ≤ Q) (k : ℕ) :
   simp only [betaLocalTerm, betaLocal_one_add_three_mul Q hQ, Real.rpow_eq_pow]
   rw [← Real.rpow_natCast, ← Real.rpow_mul hQ0.le, ← Real.rpow_add hQ0,
     ← Real.rpow_add hQ0]
-  congr 1
-  push_cast
-  ring
+  grind
 
 private theorem betaLocalTerm_three (Q σ : ℝ) (hQ : 2 ≤ Q) (k : ℕ) :
     betaLocalTerm Q σ (3 * (k + 1)) =
@@ -34,9 +32,7 @@ private theorem betaLocalTerm_three (Q σ : ℝ) (hQ : 2 ≤ Q) (k : ℕ) :
   simp only [betaLocalTerm, betaLocal_three_mul Q hQ (k + 1) (by omega), Real.rpow_eq_pow]
   rw [← Real.rpow_natCast, ← Real.rpow_mul hQ0.le, ← Real.rpow_add hQ0,
     ← Real.rpow_add hQ0]
-  congr 1
-  push_cast
-  ring
+  grind
 
 private theorem betaLocalTerm_two (Q σ : ℝ) (hQ : 2 ≤ Q) (k : ℕ) :
     betaLocalTerm Q σ (2 + 3 * k) = 0 := by
@@ -58,16 +54,16 @@ private theorem betaLocalTerm_residue_hasSum (Q σ : ℝ) (hQ : 2 ≤ Q) (hσ : 
       convert hr.mul_left (Real.rpow Q (-(1 / 2 : ℝ) - 3 * σ)) using 1
       · ext k
         exact betaLocalTerm_three Q σ hQ k
-      · exact div_eq_mul_inv _ _
+      · aesop
     have h' := (hasSum_nat_add_iff (f := fun k => betaLocalTerm Q σ (3 * k)) 1).mp h
     simpa [betaLocalTerm, betaLocal_zero, add_comm] using h'
   constructor
   · convert hr.mul_left (Real.rpow Q (-σ)) using 1
     · ext k
       exact betaLocalTerm_one Q σ hQ k
-    · exact div_eq_mul_inv _ _
+    · aesop
   · simp only [betaLocalTerm_two Q σ hQ]
-    exact hasSum_zero
+    simp_all
 
 theorem betaLocalTerm_summable (Q σ : ℝ) (hQ : 2 ≤ Q) (hσ : 0 ≤ σ) :
     Summable (betaLocalTerm Q σ) := by
@@ -133,10 +129,7 @@ theorem eulerLocal_bounds (Q σ : ℝ) (hQ : 2 ≤ Q) (hσ : 0 ≤ σ) :
       _ = Real.sqrt 2 / 2 := by
         simp only [Real.rpow_eq_pow]
         rw [Real.rpow_neg (by norm_num), ← Real.sqrt_eq_rpow]
-        have hs := Real.sq_sqrt (show (0 : ℝ) ≤ 2 by norm_num)
-        have hp := Real.sqrt_pos.2 (show (0 : ℝ) < 2 by norm_num)
-        field_simp
-        nlinarith
+        grind
   unfold eulerLocal
   constructor
   · exact le_add_of_nonneg_right (div_nonneg (add_nonneg ha0 hb0) (by linarith))
@@ -167,7 +160,7 @@ theorem betaIdealTerm_nonneg (f : ExteriorSquarefreeIdeal cS) (σ : ℝ) (hσ : 
     have hp' : Prime p := UniqueFactorizationMonoid.prime_of_normalized_factor p
       (Multiset.mem_toFinset.mp hp)
     exact betaLocal_nonneg _ (idealNorm_prime_ge_two p hp') _
-  · exact le_rfl
+  · simp_all
 
 private theorem supportedIdeal_factorization_raw (f a : Ideal (𝓞 F)) (ha : a ≠ ⊥)
     (hs : IdealSupportedOn a f) :
@@ -180,7 +173,7 @@ private theorem supportedIdeal_factorization_raw (f a : Ideal (𝓞 F)) (ha : a 
       intro p hp hpa
       have hcount : idealPrimeExponent p a = 0 :=
         Multiset.count_eq_zero.mpr (by simpa only [idealPrimeSupport, Multiset.mem_toFinset] using hpa)
-      simp [hcount]
+      simp_all
     _ = a := by
       change (∏ p ∈ (UniqueFactorizationMonoid.normalizedFactors a).toFinset,
         p ^ (UniqueFactorizationMonoid.normalizedFactors a).count p) = _
@@ -190,8 +183,7 @@ private theorem supportedIdeal_factorization_raw (f a : Ideal (𝓞 F)) (ha : a 
 
 private theorem supportedIdeal_factorization (f : ExteriorSquarefreeIdeal cS)
     (a : ↥(supportedExteriorIdeals f)) :
-    (∏ p : ↥(idealPrimeSupport f.val.val), p.val ^ idealPrimeExponent p.val a.val.val) = a.val.val := by
-  exact ((idealPrimeSupport f.val.val).prod_coe_sort
+    (∏ p : ↥(idealPrimeSupport f.val.val), p.val ^ idealPrimeExponent p.val a.val.val) = a.val.val := ((idealPrimeSupport f.val.val).prod_coe_sort
     (fun p => p ^ idealPrimeExponent p a.val.val)).trans
       (supportedIdeal_factorization_raw f.val.val a.val.val a.val.property.1 a.property)
 
@@ -219,8 +211,7 @@ private theorem betaIdealTerm_eq_prod (f : ExteriorSquarefreeIdeal cS) (σ : ℝ
   congr 1
   simp only [Real.rpow_eq_pow]
   rw [← Real.rpow_natCast, ← Real.rpow_mul (by unfold idealNorm; positivity)]
-  congr 1
-  ring
+  grind
 
 private theorem supportedExponent_injective (f : ExteriorSquarefreeIdeal cS) :
     Function.Injective (fun a : ↥(supportedExteriorIdeals f) =>
@@ -238,7 +229,7 @@ private theorem supportedExponent_injective (f : ExteriorSquarefreeIdeal cS) :
   · have ha : p ∉ idealPrimeSupport a.val.val := fun h => hp (a.property h)
     have hb : p ∉ idealPrimeSupport b.val.val := fun h => hp (b.property h)
     simp only [idealPrimeSupport, Multiset.mem_toFinset] at ha hb
-    simp [Multiset.count_eq_zero.mpr ha, Multiset.count_eq_zero.mpr hb]
+    simp_all
 
 private theorem summable_finite_products {ι : Type*} [Fintype ι]
     (g : ι → ℕ → ℝ) (hg : ∀ i n, 0 ≤ g i n) (hs : ∀ i, Summable (g i)) :
@@ -248,13 +239,11 @@ private theorem summable_finite_products {ι : Type*} [Fintype ι]
   intro s
   let t : Finset (ι → ℕ) := Fintype.piFinset (fun i => s.image (fun x => x i))
   have hst : s ⊆ t := by
-    intro x hx
-    exact Fintype.mem_piFinset.mpr (fun i => Finset.mem_image_of_mem _ hx)
+    grind
   calc
     (∑ x ∈ s, ∏ i, g i (x i)) ≤ ∑ x ∈ t, ∏ i, g i (x i) :=
       Finset.sum_le_sum_of_subset_of_nonneg hst (fun x _ _ => Finset.prod_nonneg (fun i _ => hg i _))
-    _ = ∏ i, ∑ n ∈ s.image (fun x => x i), g i n := by
-      exact (Finset.prod_univ_sum _ _).symm
+    _ = ∏ i, ∑ n ∈ s.image (fun x => x i), g i n := (Finset.prod_univ_sum _ _).symm
     _ ≤ ∏ i, ∑' n, g i n := by
       apply Finset.prod_le_prod₀
       · intro i hi
@@ -284,13 +273,11 @@ private theorem finite_products_hasSum {ι : Type*} [Fintype ι]
   have ht : Filter.Tendsto t Filter.atTop Filter.atTop := by
     apply Monotone.tendsto_atTop_atTop
     · intro s u hsu x hx
-      exact Fintype.mem_piFinset.mpr (fun i => hsu (Fintype.mem_piFinset.mp hx i))
+      aesop
     · intro s
       refine ⟨s.biUnion (fun x => Finset.univ.image x), ?_⟩
       intro x hx
-      apply Fintype.mem_piFinset.mpr
-      intro i
-      exact Finset.mem_biUnion.mpr ⟨x, hx, Finset.mem_image_of_mem x (Finset.mem_univ i)⟩
+      aesop
   refine hasSum_of_subseq_of_summable ?_ ht ?_
   · simpa only [Real.norm_eq_abs, abs_of_nonneg (Finset.prod_nonneg (fun i _ => hg i _))]
       using summable_finite_products g hg hs
@@ -316,7 +303,7 @@ private theorem primeExponent_prod (s : Finset (Ideal (𝓞 F)))
     rw [UniqueFactorizationMonoid.normalizedFactors_mul (pow_ne_zero _ hpq.ne_zero) hne,
       Multiset.count_add, hpq.irreducible.normalizedFactors_pow]
     simp only [normalize_eq, Multiset.count_replicate]
-    exact congrArg (fun n => (if q = p then e q else 0) + n) (ih hps)
+    aesop
 
 private theorem supportedExponent_surjective (f : ExteriorSquarefreeIdeal cS) :
     Function.Surjective (fun a : ↥(supportedExteriorIdeals f) =>
@@ -346,13 +333,10 @@ private theorem supportedExponent_surjective (f : ExteriorSquarefreeIdeal cS) :
   have hsup : IdealSupportedOn a f.val.val := by
     intro p h
     by_contra hn
-    have hz : idealPrimeExponent p a = 0 := by rw [hv]; simp [s, hn]
+    have hz : idealPrimeExponent p a = 0 := by aesop
     exact (Multiset.count_ne_zero.mpr (Multiset.mem_toFinset.mp h)) hz
   refine ⟨⟨⟨a, ha, hex⟩, hsup⟩, ?_⟩
-  funext p
-  change idealPrimeExponent p.val a = x p
-  rw [hv]
-  simp [e, p.property]
+  aesop
 
 theorem betaIdealTerm_tsum (f : ExteriorSquarefreeIdeal cS) (σ : ℝ) (hσ : 0 ≤ σ) :
     ∑' a : ↥(supportedExteriorIdeals f), betaIdealTerm f σ a = eulerIdeal f σ := by

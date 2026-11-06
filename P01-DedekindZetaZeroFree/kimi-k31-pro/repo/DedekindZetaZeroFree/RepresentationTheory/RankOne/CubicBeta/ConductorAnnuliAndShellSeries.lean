@@ -248,7 +248,7 @@ private lemma filtration_image_pos (n : ℕ) (hn : 1 ≤ n) :
    · change hunit.unit ∈ CubicUnitCharacters.unitFiltration K n
      rw [CubicUnitCharacters.unitFiltration_mem_iff, hunit.unit_spec]
      simpa using ha
-   · simp [hunit.unit_spec]
+   · simp
 private lemma filtration_mass_pos (μ : Measure K) [μ.IsAddHaarMeasure] (n : ℕ) (hn : 1 ≤ n) :
  ((μ.comap (fun u : (𝒪[K])ˣ => (u : K)))
    (CubicUnitCharacters.unitFiltration K n : Set (𝒪[K])ˣ)).toReal =
@@ -283,7 +283,7 @@ private theorem compact_character_integral
           have h : χ x = 1 := ht hx
           simp [h])
       _ = ((ν (U : Set G)).toReal : ℂ) := by
-        simp [setIntegral_const, Measure.real, Complex.real_smul]
+        simp [Measure.real, Complex.real_smul]
   · rw [if_neg ht]
     obtain ⟨u, hu, hne⟩ : ∃ u ∈ U, χ u ≠ 1 := by
       by_contra h
@@ -365,7 +365,7 @@ private lemma annulus_transport (μ : Measure K) [μ.IsAddHaarMeasure]
  have hu : (u : K) ≠ 0 := by
    have := unit_abs K u
    intro h; simp [h, KPCubicHaar.abs] at this
- simp only [e, dif_neg hu]
+ simp only [dif_neg hu]
  have hm0 : Units.mk0 (u : K) hu = Units.map (𝒪[K]).subtype.toMonoidHom u := by
    apply Units.ext; rfl
  rw [hm0, hχ]
@@ -410,7 +410,7 @@ theorem additive_character_annulus_integral
     push_cast
     rfl
   split_ifs with h1 h2 h3 h4 <;> try omega
-  all_goals try simp only [sub_zero, sub_self, zero_sub]
+  all_goals try simp only [sub_self, zero_sub]
   all_goals try {rw [hmass (j+1) (by omega)]; ring}
   all_goals try {rw [hmass j (by omega), hmass (j+1) (by omega), pow_succ]; ring}
 
@@ -689,7 +689,7 @@ theorem integral_complement_units_eq_zero
     · have he : e x ≠ 0 := by
         intro hh
         apply hx
-        exact e.toEquiv.injective (hh.trans (by simp [e, mulEquiv_apply]))
+        exact e.toEquiv.injective (hh.trans (by simp [e]))
       simp only [A, if_neg hx, if_neg he]
       simp only [e, mulEquiv_apply, map_mul, unit_val, one_mul]
   have heν : MeasurePreserving e.toHomeomorph.toMeasurableEquiv ν ν :=
@@ -709,7 +709,7 @@ theorem integral_complement_units_eq_zero
     have he : e x ≠ 0 := by
       intro hh
       apply hx
-      exact e.toEquiv.injective (hh.trans (by simp [e, mulEquiv_apply]))
+      exact e.toEquiv.injective (hh.trans (by simp [e]))
     have hv : ValuativeRel.valuation K (1 - e x) = ValuativeRel.valuation K (1 - x) := by
       have hval : ValuativeRel.valuation K (e x) = ValuativeRel.valuation K x := by
         simp [e, mulEquiv_apply, map_mul, unit_val]

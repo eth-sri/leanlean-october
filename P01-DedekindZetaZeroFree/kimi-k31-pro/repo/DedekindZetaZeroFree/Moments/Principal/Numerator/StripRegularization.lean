@@ -173,7 +173,7 @@ private lemma principal_left_bound (F : Type) [Field F] [NumberField F]
         rw [abs_of_nonpos (by linarith : -δ-1 ≤ 0)]
         linarith
   calc
-    _ ≤ ((2+|s.im|)*(_))*idealAbsoluteSum F (1+δ) :=
+    _ ≤ ((2+|s.im|)*_)*idealAbsoluteSum F (1+δ) :=
       mul_le_mul (mul_le_mul hn hx (norm_nonneg _) (by positivity)) hd (norm_nonneg _) (by positivity)
     _ = _ := by rw [pow_succ]; ring
 

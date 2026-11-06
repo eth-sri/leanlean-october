@@ -205,7 +205,7 @@ private lemma reflection_powers (D q X : ℝ) (hD : 0 < D) (hq : 0 < q)
     Complex.cpow_add _ _ hqne, hhalf, Complex.ofReal_div,
     Complex.div_cpow_ofReal_nonneg hX.le hq.le,
     Complex.cpow_neg (q : ℂ) s]
-  simp only [div_inv_eq_mul, div_eq_mul_inv, inv_inv]
+  simp only [div_eq_mul_inv, inv_inv]
   ring
 
 private lemma reflected_integrand_eq
@@ -235,7 +235,7 @@ private lemma reflected_integrand_eq
         apply tsum_congr
         intro I
         by_cases hI : I = ⊥
-        · simp [Set.indicator, hI, RayOperations.map_bot]
+        · simp [Set.indicator, hI]
         · simp [Set.indicator, hI]
       _ = _ := hT.symm
   rw [mellinIntegrand, w.functionalEquation,
@@ -295,7 +295,7 @@ theorem mellinIntegrand_reflection_dual
     dsimp [r]
     omega
   have hc0 : 0 < c := lt_trans zero_lt_one hc
-  have ha0 : a ⊥ = 0 := by simp [a, RayOperations.map_bot]
+  have ha0 : a ⊥ = 0 := by simp [a]
   have ha : ∀ I, ‖a I‖ ≤ 1 := by
     intro I
     simpa [a] using RayOperations.norm_le_one η I

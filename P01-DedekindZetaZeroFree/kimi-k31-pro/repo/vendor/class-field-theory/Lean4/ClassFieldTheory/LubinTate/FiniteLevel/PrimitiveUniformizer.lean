@@ -318,18 +318,7 @@ noncomputable instance
     (standardLubinTateLevelField hπ n)
     (standardLubinTateLevelCompleteDVF hπ n).valuationSubring
 
-/-- The chosen complete-DVF structure is a local-field structure: its
-residue field is finite over the finite residue field of `F`. -/
-noncomputable def standardLubinTateLevelLocalField
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) (n : ℕ) :
-    LocalField.{u, 0} (standardLubinTateLevelField hπ n) := by
-  let target := standardLubinTateLevelCompleteDVF hπ n
-  letI : FiniteDimensional F.residueField target.residueField :=
-    residueField_finiteDimensional_of_moduleFinite F.toCompleteDVF target
-  letI : Finite target.residueField :=
-    Module.finite_of_finite F.residueField
-  exact { toCompleteDVF := target }
+
 
 /-- The level generator is integral over the base valuation ring, witnessed
 by the genuine integral primitive division polynomial. -/

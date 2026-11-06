@@ -5,6 +5,7 @@ public import DedekindZetaZeroFree.Nonvanishing.Mellin.PrincipalFirstPoleContour
 public import DedekindZetaZeroFree.Nonvanishing.Mellin.PrincipalResidueKernelContourBounds
 public import DedekindZetaZeroFree.Nonvanishing.Mellin.PrincipalContourRemainderDecomposition
 public import DedekindZetaZeroFree.LFunctions.Hecke.PrincipalResidueNonvanishing
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -24,9 +25,7 @@ variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
     frequencyNorm R (principalFrequency R) = 1 := by
   simp only [frequencyNorm, principalFrequency, FiniteTransform.exteriorNorm,
     FiniteTransform.Residue, Ideal.span_singleton_one]
-  haveI : Subsingleton (R.A.R.toSubring ⧸ (⊤ : Ideal R.A.R.toSubring)) :=
-    Ideal.Quotient.subsingleton_iff.mpr rfl
-  simp
+  simp_all
 
 def principalRegularization (R : PrincipalMellin.ActualRecipe S η) (s : ℂ) : ℂ :=
   R.continuation.R s * ∏ v ∈ R.A.Sf,
@@ -91,15 +90,13 @@ theorem principal_arithmetic_compatibility (R : PrincipalMellin.ActualRecipe S �
     (C : R.A.GeneralArithmeticContext R.σ R.target R.traceBad)
     (hC : R.probe.correction = C.correction) :
     WeightedFiniteCoefficient.ArithmeticCompatibility R.A R.probe.coefficients
-      R.σ R.target R.traceBad C.correction := by
-  exact PrincipalCorrection.probe_arithmetic_compatibility C R.probe hC
+      R.σ R.target R.traceBad C.correction := PrincipalCorrection.probe_arithmetic_compatibility C R.probe hC
     (principal_arithmetic_binding R C hC)
 
 theorem principal_actual_arithmetic_compatibility
     (R : PrincipalMellin.ActualRecipe S η) :
     WeightedFiniteCoefficient.ArithmeticCompatibility R.A R.probe.coefficients
-      R.σ R.target R.traceBad (principalArithmeticContext R).correction := by
-  exact principal_arithmetic_compatibility R (principalArithmeticContext R) rfl
+      R.σ R.target R.traceBad (principalArithmeticContext R).correction := principal_arithmetic_compatibility R (principalArithmeticContext R) rfl
 
 def principalEulerFrequency (R : PrincipalMellin.ActualRecipe S η) :
     CorrectionFactors.Frequency (principalArithmeticContext R) where
@@ -107,7 +104,7 @@ def principalEulerFrequency (R : PrincipalMellin.ActualRecipe S η) :
   ideal := ⟨⊤, top_ne_bot, by simp⟩
   generates := by
     constructor
-    · exact one_ne_zero
+    · simp_all
     · simp [SArithmeticData.extendIdeal, Ideal.map_top]
   allowed := by
     convert (principalArithmeticContext R).correction.B.one_mem using 1
@@ -115,13 +112,7 @@ def principalEulerFrequency (R : PrincipalMellin.ActualRecipe S η) :
   sixthFree := by
     intro p
     simp only [idealPrimeExponent]
-    have ht : UniqueFactorizationMonoid.normalizedFactors
-        (⊤ : Ideal (NumberField.RingOfIntegers F)) = 0 :=
-      by simpa only [Ideal.one_eq_top] using
-        (UniqueFactorizationMonoid.normalizedFactors_one
-          (α := Ideal (NumberField.RingOfIntegers F)))
-    rw [ht]
-    simp
+    simp_all
 
 def principalContourCorrection (R : PrincipalMellin.ActualRecipe S η) (ξ w z : ℂ) : ℂ :=
   ∏' p : LocalFiniteSums.ExteriorPrime R.A,
@@ -135,7 +126,7 @@ theorem principalContourCorrection_principal_specialization (R : PrincipalMellin
   obtain ⟨hm, hh⟩ :=
     (PrincipalCorrection.principal_specialization (principalArithmeticContext R)
       (principalEulerFrequency R) rfl).2 ξ hξ
-  exact hh
+  measurability
 
 theorem principal_theta_at_euler_generator (R : PrincipalMellin.ActualRecipe S η)
     (p : LocalFiniteSums.ExteriorPrime R.A) :
@@ -158,8 +149,8 @@ def principalEulerPrimeEquiv (R : PrincipalMellin.ActualRecipe S η) :
   toFun p := ⟨LocalFiniteSums.primeIdeal p, p.val.prime⟩
   invFun p := ⟨⟨p.val.val, (Ideal.prime_iff_isPrime p.val.property.1).mp p.property,
     p.val.property.1⟩, p.val.property.2⟩
-  left_inv p := by rfl
-  right_inv p := by rfl
+  left_inv p := rfl
+  right_inv p := rfl
 
 theorem principal_localCorrection_eq_h_p (R : PrincipalMellin.ActualRecipe S η)
     (p : LocalFiniteSums.ExteriorPrime R.A) (s : ℂ) :

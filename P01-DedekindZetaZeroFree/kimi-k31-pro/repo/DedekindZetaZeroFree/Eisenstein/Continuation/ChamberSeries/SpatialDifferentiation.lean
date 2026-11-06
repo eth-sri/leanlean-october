@@ -1,6 +1,7 @@
 module
 
 public import DedekindZetaZeroFree.RepresentationTheory.Smooth.MovingCompactCharts
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -21,8 +22,8 @@ variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
   let ev : ContinuousMultilinearMap ℝ (fun _ : Fin n => E) ℂ →ₗ[ℝ]
       ((Fin n → ι) → ℂ) :=
     { toFun := fun L t => L (fun i => b (t i))
-      map_add' := by intros; rfl
-      map_smul' := by intros; rfl }
+      map_add' := by measurability
+      map_smul' := by measurability }
   have hi : Function.Injective ev := by
     intro L M h
     apply ContinuousMultilinearMap.toMultilinearMap_injective

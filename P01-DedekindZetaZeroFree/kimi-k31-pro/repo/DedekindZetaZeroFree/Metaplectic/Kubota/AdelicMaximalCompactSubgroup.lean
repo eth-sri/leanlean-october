@@ -78,13 +78,11 @@ theorem complex_compact_lift_mem_full_product_compact (R : PrincipalMellin.Actua
 theorem iwasawa_compact_factor_eq_arithmetic_compact_eventually (R : PrincipalMellin.ActualRecipe S η) :
     ∀ᶠ v in Filter.cofinite, iwasawaCompactFactor R v =
       KPAdelicCoverRestrictedProduct.compact F R.A.zeta12 R.A.primitive_zeta12 v := by
-  have hf : {v : KPHilbert.Place F | ∃ w : InfinitePlace F, v = Sum.inl w}.Finite := by
-    exact (Set.finite_range Sum.inl).subset (by rintro v ⟨w,rfl⟩; exact ⟨w,rfl⟩)
+  have hf : {v : KPHilbert.Place F | ∃ w : InfinitePlace F, v = Sum.inl w}.Finite := (Set.finite_range Sum.inl).subset (by rintro v ⟨w,rfl⟩; exact ⟨w,rfl⟩)
   have hb := (KPAdelicCoverRestrictedProduct.bad_finite F).image
     (Sum.inr : KPFinitePlace F → KPHilbert.Place F)
   have hfi : ∀ᶠ v : KPHilbert.Place F in Filter.cofinite,
-      ¬ (∃ w : InfinitePlace F, v = Sum.inl w) := by
-    exact Filter.eventually_cofinite.mpr (by simpa using hf)
+      ¬ (∃ w : InfinitePlace F, v = Sum.inl w) := Filter.eventually_cofinite.mpr (by simpa using hf)
   have hbi : ∀ᶠ v : KPHilbert.Place F in Filter.cofinite,
       v ∉ Sum.inr '' {q | KPAdelicCoverRestrictedProduct.Bad F q} := by
     apply Filter.eventually_cofinite.mpr

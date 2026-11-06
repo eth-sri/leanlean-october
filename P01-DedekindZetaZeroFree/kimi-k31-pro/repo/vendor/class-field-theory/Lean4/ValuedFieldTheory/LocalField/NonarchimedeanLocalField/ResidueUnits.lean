@@ -107,11 +107,7 @@ theorem integerUnitsModPrincipalUnitsConcreteEquiv_mk
       QuotientGroup.mk x :=
   rfl
 
-/-- Every class modulo first principal units has a valuation-ring unit representative. -/
-theorem integerUnitsModPrincipalUnitsMk_surjective
-    (K : Type u) [Field K] [ValuativeRel K] :
-    Function.Surjective (integerUnitsModPrincipalUnitsMk K) :=
-  QuotientGroup.mk'_surjective (principalUnits K 1)
+
 
 /-- Eliminate a quotient class through the canonical class map. -/
 protected theorem IntegerUnitsModPrincipalUnits.inductionOn
@@ -190,31 +186,9 @@ theorem integerUnitsToResidueUnits_eq_one_iff_mem_principalUnits_one
     integerUnitsToResidueUnits K x = 1 ↔ x ∈ principalUnits K 1 := by
   rw [principalUnits_one_eq_ker_integerUnitsToResidueUnits K, MonoidHom.mem_ker]
 
-/-- Two valuation-ring units have the same residue exactly when their quotient is a first principal
-unit. -/
-theorem integerUnitsToResidueUnits_eq_iff_div_mem_principalUnits_one
-    (K : Type u) [Field K] [ValuativeRel K] (x y : 𝒪[K]ˣ) :
-    integerUnitsToResidueUnits K x = integerUnitsToResidueUnits K y ↔
-      x / y ∈ principalUnits K 1 := by
-  constructor
-  · intro h
-    rw [← integerUnitsToResidueUnits_eq_one_iff_mem_principalUnits_one K]
-    simp only [div_eq_mul_inv, (integerUnitsToResidueUnits K).map_mul,
-      (integerUnitsToResidueUnits K).map_inv, h, mul_inv_cancel]
-  · intro h
-    have h1 : integerUnitsToResidueUnits K (x / y) = 1 :=
-      (integerUnitsToResidueUnits_eq_one_iff_mem_principalUnits_one K (x / y)).2 h
-    have hdiv : integerUnitsToResidueUnits K x / integerUnitsToResidueUnits K y = 1 := by
-      simpa only [div_eq_mul_inv, (integerUnitsToResidueUnits K).map_mul,
-        (integerUnitsToResidueUnits K).map_inv] using h1
-    exact div_eq_one.mp hdiv
 
-/-- Higher principal units reduce to `1` in the residue-field unit group. -/
-theorem principalUnits_le_ker_reduction
-    (K : Type u) [Field K] [ValuativeRel K] {n : Nat} (hn : 1 ≤ n) :
-    principalUnits K n ≤ (integerUnitsToResidueUnits K).ker := by
-  rw [← principalUnits_one_eq_ker_integerUnitsToResidueUnits K]
-  exact principalUnits_antitone K hn
+
+
 
 /-- Every residue-field unit lifts to a valuation-ring unit. -/
 theorem integerUnitsToResidueUnits_surjective (K : Type u) [Field K] [ValuativeRel K] :
@@ -247,27 +221,9 @@ theorem integerUnitsModPrincipalUnitsEquivResidueUnits_mk
     QuotientGroup.quotientKerEquivOfRightInverse_apply,
     QuotientGroup.kerLift_mk]
 
-/-- The residue-unit quotient equivalence sends a class to `1` exactly for first
-principal units. -/
-theorem integerUnitsModPrincipalUnitsEquivResidueUnits_mk_eq_one_iff
-    (K : Type u) [Field K] [ValuativeRel K] (x : 𝒪[K]ˣ) :
-    integerUnitsModPrincipalUnitsEquivResidueUnits K
-        (integerUnitsModPrincipalUnitsMk K x) = 1 ↔
-      x ∈ principalUnits K 1 := by
-  rw [integerUnitsModPrincipalUnitsEquivResidueUnits_mk]
-  exact integerUnitsToResidueUnits_eq_one_iff_mem_principalUnits_one K x
 
-/-- Equality of residue classes is the same as quotient by a first principal unit. -/
-theorem integerUnitsModPrincipalUnitsEquivResidueUnits_mk_eq_mk_iff
-    (K : Type u) [Field K] [ValuativeRel K] (x y : 𝒪[K]ˣ) :
-    integerUnitsModPrincipalUnitsEquivResidueUnits K
-        (integerUnitsModPrincipalUnitsMk K x) =
-      integerUnitsModPrincipalUnitsEquivResidueUnits K
-        (integerUnitsModPrincipalUnitsMk K y) ↔
-      x / y ∈ principalUnits K 1 := by
-  rw [integerUnitsModPrincipalUnitsEquivResidueUnits_mk,
-    integerUnitsModPrincipalUnitsEquivResidueUnits_mk]
-  exact integerUnitsToResidueUnits_eq_iff_div_mem_principalUnits_one K x y
+
+
 
 /-- Additive form of `𝒪[K]ˣ / U¹ ≃ 𝓀[K]ˣ`. -/
 def integerUnitsModPrincipalUnitsAddEquivResidueUnits
@@ -295,34 +251,9 @@ theorem IntegerUnitsModPrincipalUnits_mk_eq_one_iff
     change (QuotientGroup.mk x : 𝒪[K]ˣ ⧸ principalUnits K 1) = 1 ↔ _
     exact QuotientGroup.eq_one_iff (N := principalUnits K 1) x
 
-/-- Equality in `𝒪[K]ˣ / U¹` is exactly equality after reduction to residue
-units. -/
-theorem IntegerUnitsModPrincipalUnits_mk_eq_mk_iff_residue
-    (K : Type u) [Field K] [ValuativeRel K] (x y : 𝒪[K]ˣ) :
-    integerUnitsModPrincipalUnitsMk K x =
-        integerUnitsModPrincipalUnitsMk K y ↔
-      integerUnitsToResidueUnits K x = integerUnitsToResidueUnits K y := by
-  constructor
-  · intro h
-    exact (integerUnitsToResidueUnits_eq_iff_div_mem_principalUnits_one K x y).2
-      ((IntegerUnitsModPrincipalUnits_mk_eq_mk_iff K x y).1 h)
-  · intro h
-    exact (IntegerUnitsModPrincipalUnits_mk_eq_mk_iff K x y).2
-      ((integerUnitsToResidueUnits_eq_iff_div_mem_principalUnits_one K x y).1 h)
 
-/-- The class of an integer unit in `𝒪[K]ˣ / U¹` is trivial exactly when its
-residue is `1`. -/
-theorem IntegerUnitsModPrincipalUnits_mk_eq_one_iff_residue_eq_one
-    (K : Type u) [Field K] [ValuativeRel K] (x : 𝒪[K]ˣ) :
-    integerUnitsModPrincipalUnitsMk K x = 1 ↔
-      integerUnitsToResidueUnits K x = 1 := by
-  constructor
-  · intro h
-    exact (integerUnitsToResidueUnits_eq_one_iff_mem_principalUnits_one K x).2
-      ((IntegerUnitsModPrincipalUnits_mk_eq_one_iff K x).1 h)
-  · intro h
-    exact (IntegerUnitsModPrincipalUnits_mk_eq_one_iff K x).2
-      ((integerUnitsToResidueUnits_eq_one_iff_mem_principalUnits_one K x).1 h)
+
+
 
 /-- Additive version of the residue-unit quotient equivalence on quotient representatives. -/
 @[simp]
@@ -334,20 +265,9 @@ theorem integerUnitsModPrincipalUnitsAddEquivResidueUnits_mk
   exact congrArg Additive.ofMul
     (integerUnitsModPrincipalUnitsEquivResidueUnits_mk K x)
 
-/-- Module form of the residue-unit quotient equivalence. -/
-def integerUnitsModPrincipalUnitsIsoResidueUnits
-    (K : Type u) [Field K] [ValuativeRel K] :
-    CategoryTheory.Iso (ModuleCat.of ℤ (Additive (IntegerUnitsModPrincipalUnits K)))
-      (ModuleCat.of ℤ (Additive (ResidueUnits K))) :=
-  (integerUnitsModPrincipalUnitsAddEquivResidueUnits K).toIntLinearEquiv.toModuleIso
 
-/-- Cardinality statement transported from the quotient equivalence with residue units. -/
-theorem integerUnitsModPrincipalUnits_card_eq_residueUnits_card
-    (K : Type u) [Field K] [ValuativeRel K]
-    [Finite (IntegerUnitsModPrincipalUnits K)]
-    [Finite (ResidueUnits K)] :
-    Nat.card (IntegerUnitsModPrincipalUnits K) = Nat.card (ResidueUnits K) :=
-  Nat.card_congr (integerUnitsModPrincipalUnitsEquivResidueUnits K).toEquiv
+
+
 
 end
 end LocalFieldTheory

@@ -2,6 +2,7 @@ module
 
 public import ValuedFieldTheory.Ramification.HilbertRamification.RamificationDepth
 public import ValuedFieldTheory.Valuation.DiscreteValuationField.Extensions
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -66,10 +67,7 @@ theorem
           (base := base) (target := middle) hmiddle
           (σ.restrictNormal L) a) := by
   apply Subtype.ext
-  change
-    σ (algebraMap L M (a : L)) =
-      algebraMap L M ((σ.restrictNormal L) (a : L))
-  exact (AlgEquiv.restrictNormal_commutes σ L (a : L)).symm
+  norm_num
 
 end Higher
 end RamificationTheory.HilbertRamification

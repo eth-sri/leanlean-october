@@ -591,7 +591,7 @@ theorem product_mollification_uniform_derivative_approximation
         (K ⋆[lsmul ℝ ℝ] iteratedFDeriv ℝ n (f : E → ℂ)) x := by
       apply integral_congr_ae
       filter_upwards with y
-      simp [hk, Complex.real_smul]
+      simp [hk]
     rw [he]
     exact (by simpa [dist_eq_norm] using hbound : ‖_ - _‖ ≤ ε/2).trans_lt (half_lt_self hε)
 
@@ -767,7 +767,7 @@ theorem product_convolution_finite_tensor_approximation
   have ht : ∀ z, (∑ j, c j • translatedProduct ι g hgR (y j)) z =
       ∑ j, c j * k (z - y j) := by
     intro z
-    simp [k, SchwartzMap.sum_apply, SchwartzMap.smul_apply, translatedProduct_apply]
+    simp [k, translatedProduct_apply]
   rw [JetQuadrature.finite_translate_sum_jet ι k s
     (∑ j, c j • translatedProduct ι g hgR (y j)) m c y ht n x,
     JetQuadrature.convolution_jet_integral ι f k s hfcompact hk hs' n x]

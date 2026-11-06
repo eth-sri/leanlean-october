@@ -28,17 +28,13 @@ def integrand (D : RayCoset.Data K)
 
 private theorem representative_ne_zero (D : RayCoset.Data K) (α : RayCoset.Cx D) :
     (α.val : K) ≠ 0 := by
-  intro h
-  have := (RayCoset.mem_Cnonzero_iff D α.val).mp α.property
-  exact this.2 (RingOfIntegers.coe_injective h)
+  aesop
 
 private theorem normalized_real_coordinate (D : RayCoset.Data K) (α : RayCoset.Cx D)
     (v : RayCoset.RealPlaces K) :
     (Theta.traceToMixed K (RayCoset.normalizedEmbedding D α.val)).1 v =
       RayCoset.normalizationScale D * RayCoset.realEmbedding K v (α.val : K) := by
-  simp only [RayCoset.normalizedEmbedding_apply, map_smul, Theta.traceEmbedding,
-    ContinuousLinearEquiv.apply_symm_apply, Prod.smul_fst, Pi.smul_apply,
-    smul_eq_mul, mixedEmbedding_apply_isReal, RayCoset.realEmbedding]
+  aesop
 
 private theorem normalized_real_ne_zero (D : RayCoset.Data K) (α : RayCoset.Cx D) :
     ∀ v : RayCoset.RealPlaces K,
@@ -129,9 +125,7 @@ private theorem scaled_coordinate (D : RayCoset.Data K) (α : RayCoset.Cx D)
     (q : InfinitePlace K → ℝ) (v : RayCoset.RealPlaces K) :
     Theta.traceRealCoordinateCLM K v (Q K q (RayCoset.normalizedEmbedding D α.val)) =
       q v * (RayCoset.normalizationScale D * RayCoset.realEmbedding K v (α.val : K)) := by
-  rw [traceRealCoordinateCLM_eq_traceToMixed]
-  simp only [Q, ContinuousLinearEquiv.apply_symm_apply, mixedSpaceOfRealSpace_apply,
-    Prod.fst_mul, Pi.mul_apply, normalized_real_coordinate]
+  aesop
 
 private theorem sign_mul_abs (r a : ℝ) (hr : 0 < r) :
     Real.sign a * |r * a| = r * a := by

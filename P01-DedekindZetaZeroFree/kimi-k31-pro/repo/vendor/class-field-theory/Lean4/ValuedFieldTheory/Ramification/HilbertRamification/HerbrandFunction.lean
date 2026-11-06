@@ -149,15 +149,7 @@ theorem herbrandFunctionOfUniqueExtension_strictMono
     (lowerRamificationFiltrationOfUniqueExtension
       (base := base) (target := target) huniq)
 
-/-- States the theorem `inverseHerbrandFunctionOfUniqueExtension_strictMono`. -/
-theorem inverseHerbrandFunctionOfUniqueExtension_strictMono
-    (huniq : RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-      base target) :
-    StrictMono (inverseHerbrandFunctionOfUniqueExtension
-      (base := base) (target := target) huniq) :=
-  RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.inverseHerbrandFunction_strictMono
-    (lowerRamificationFiltrationOfUniqueExtension
-      (base := base) (target := target) huniq)
+
 
 /-- The upper ramification group defined through the inverse Herbrand function
 under the noncomplete standing assumptions: `G^t = G_{psi(t)}`. -/
@@ -184,15 +176,7 @@ def upperRamificationGroupOfUniqueExtension
     (inverseHerbrandFunctionOfUniqueExtension_eta
       (base := base) (target := target) huniq s)
 
-/-- States the theorem `inverseHerbrandFunctionOfUniqueExtension_ge_neg_one_iff`. -/
-theorem inverseHerbrandFunctionOfUniqueExtension_ge_neg_one_iff
-    (huniq : RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-      base target) {t : ℝ} :
-    -1 ≤ inverseHerbrandFunctionOfUniqueExtension
-        (base := base) (target := target) huniq t ↔ -1 ≤ t :=
-  RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.inverseHerbrandFunction_mem_Ici_neg_one_iff
-    (lowerRamificationFiltrationOfUniqueExtension
-      (base := base) (target := target) huniq)
+
 
 end Higher
 end RamificationTheory.HilbertRamification

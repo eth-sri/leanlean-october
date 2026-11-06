@@ -140,8 +140,7 @@ theorem quotient_reindex
     change ‖alpha u‖ ^ 2 ≤ if d * u ∈ S then ‖lam (d * u)‖ ^ 2 else 0
     by_cases h : good u
     · simp only [alpha, if_pos h, if_pos h.1, norm_mul]
-      have hn : ‖columnMask (d * u)‖ * ‖lam (d * u)‖ ≤ ‖lam (d * u)‖ := by
-        exact mul_le_of_le_one_left (norm_nonneg _) (hcol _)
+      have hn : ‖columnMask (d * u)‖ * ‖lam (d * u)‖ ≤ ‖lam (d * u)‖ := mul_le_of_le_one_left (norm_nonneg _) (hcol _)
       exact pow_le_pow_left₀ (mul_nonneg (norm_nonneg _) (norm_nonneg _)) hn 2
     · simp only [alpha, if_neg h, norm_zero, zero_pow (by decide : 2 ≠ 0)]
       split_ifs <;> positivity

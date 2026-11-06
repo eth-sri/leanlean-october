@@ -153,7 +153,7 @@ lemma numerator_norm_le (q : ℝ) (hq : 2 ≤ q) (v w d e : ℂ) (hv : ‖v‖ �
   have a2 := norm_sub_le (-v * w + d * v + d * w) ((q : ℂ) * d * w * v)
   have a3 := norm_add_le (-v * w + d * v) (d * w)
   have a4 := norm_add_le (-v * w) (d * v)
-  have a5 : ‖-v * w‖ = ‖v‖ * ‖w‖ := by simp [norm_mul]
+  have a5 : ‖-v * w‖ = ‖v‖ * ‖w‖ := by simp
   have a6 : ‖(q : ℂ) * d * w * v‖ = q * (‖d‖ * ‖w‖ * ‖v‖) := by
     simp only [norm_mul, hqn]; ring
   have a7 : ‖d * v‖ = ‖d‖ * ‖v‖ := norm_mul _ _

@@ -43,7 +43,7 @@ private theorem principalUnit_term_eq (F : Type) [Field F] [NumberField F]
     rw [principalUnitRayCharacter_bot]
     simp
   · rw [principalUnitRayCharacter_apply]
-    simp only [hI, if_false, if_neg hI, one_mul]
+    simp only [hI, if_false, one_mul]
     rw [Complex.ofReal_cpow (Nat.cast_nonneg (Ideal.absNorm I))]
     norm_num
 

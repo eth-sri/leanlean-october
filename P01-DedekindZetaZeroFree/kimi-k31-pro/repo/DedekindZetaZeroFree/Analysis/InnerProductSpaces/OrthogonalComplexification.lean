@@ -29,7 +29,7 @@ variable (I : Type*) [Fintype I] [DecidableEq I]
       = Matrix.of (fun i j => (((A (EuclideanSpace.basisFun I ℝ j)) i : ℝ) : ℂ))
         + Matrix.of (fun i j => (((B (EuclideanSpace.basisFun I ℝ j)) i : ℝ) : ℂ)) := by
     ext i j
-    simp [ContinuousLinearMap.add_apply]
+    simp
   rw [hM, map_add]
 
  lemma operatorComplexification_aux_smul
@@ -43,10 +43,10 @@ variable (I : Type*) [Fintype I] [DecidableEq I]
   have hM : (Matrix.of fun i j => ((((c • A) (EuclideanSpace.basisFun I ℝ j)) i : ℝ) : ℂ))
       = (c : ℂ) • Matrix.of (fun i j => (((A (EuclideanSpace.basisFun I ℝ j)) i : ℝ) : ℂ)) := by
     ext i j
-    simp [ContinuousLinearMap.smul_apply, Complex.ofReal_mul]
+    simp [Complex.ofReal_mul]
   rw [hM, map_smul]
   ext v i
-  simp [ContinuousLinearMap.smul_apply, RCLike.real_smul_eq_coe_smul]
+  simp
 
 def operatorComplexification :
     (EuclideanSpace ℝ I →L[ℝ] EuclideanSpace ℝ I) →L[ℝ]
@@ -117,7 +117,7 @@ theorem operatorComplexification_comp
     rw [Finset.sum_congr rfl (fun k _ => mul_comm _ _)]
   rw [hM, map_mul]
   ext v
-  simp [ContinuousLinearMap.mul_apply]
+  simp
 
 private lemma conjTranspose_mul_self_orthogonalMatrix
     (q : EuclideanSpace ℝ I ≃ₗᵢ[ℝ] EuclideanSpace ℝ I) :

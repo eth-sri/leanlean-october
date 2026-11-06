@@ -2,6 +2,7 @@ module
 
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.PrincipalUnitPadicAction.InverseLimitCore
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.PrincipalUnitPadicAction.TopologyModelTypes
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -42,17 +43,9 @@ def Internal.principalUnitQuotientCarrierTransitionAdd
   toFun x := Additive.ofMul
     (principalUnitQuotientCarrierTransition F hmn (Additive.toMul x))
   map_zero' := by
-    change Additive.ofMul
-        (principalUnitQuotientCarrierTransition F hmn 1) = Additive.ofMul 1
-    rw [map_one]
+    norm_num
   map_add' x y := by
-    change Additive.ofMul
-        (principalUnitQuotientCarrierTransition F hmn
-          (Additive.toMul x * Additive.toMul y)) =
-      Additive.ofMul
-        (principalUnitQuotientCarrierTransition F hmn (Additive.toMul x) *
-          principalUnitQuotientCarrierTransition F hmn (Additive.toMul y))
-    rw [map_mul]
+    norm_num
 
 namespace DiscretePrincipalUnitQuotient
 
@@ -65,14 +58,14 @@ def transition (F : CompleteDVF.{u, v} K) {m n : ℕ} (hmn : m ≤ n) :
   map_zero' := by
     apply (addEquiv F m).injective
     change Internal.principalUnitQuotientCarrierTransitionAdd F hmn 0 = 0
-    exact (Internal.principalUnitQuotientCarrierTransitionAdd F hmn).map_zero
+    norm_num
   map_add' x y := by
     apply (addEquiv F m).injective
     change Internal.principalUnitQuotientCarrierTransitionAdd F hmn
         (x.val + y.val) =
       Internal.principalUnitQuotientCarrierTransitionAdd F hmn x.val +
         Internal.principalUnitQuotientCarrierTransitionAdd F hmn y.val
-    exact (Internal.principalUnitQuotientCarrierTransitionAdd F hmn).map_add x.val y.val
+    norm_num
 
 /-- The wrapped transition has the original additive transition as its value. -/
 @[simp] theorem val_transition

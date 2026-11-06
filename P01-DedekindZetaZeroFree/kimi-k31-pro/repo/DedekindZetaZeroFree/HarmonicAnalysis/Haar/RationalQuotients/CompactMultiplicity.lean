@@ -41,8 +41,8 @@ theorem pushforward_le_of_orbit_multiplicity {G X Q : Type*}
       · rw [Set.indicator_of_mem (show x ∈ q ⁻¹' S from hx)]
         exact (ENNReal.tsum_le_tsum (fun γ => by
           by_cases hc : γ • x ∈ C
-          · simp [f, Set.indicator_apply, hc, hqin, hx]
-          · simp [f, Set.indicator_apply, hc])).trans (hN x)
+          · simp [f, hc, hqin, hx]
+          · simp [f, hc])).trans (hN x)
       · have hz : ∀ γ : G, f (γ • x) = 0 := by
           intro γ
           exact Set.indicator_of_notMem (by

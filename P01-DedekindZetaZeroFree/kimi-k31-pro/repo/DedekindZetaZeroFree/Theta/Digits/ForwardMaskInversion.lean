@@ -88,7 +88,7 @@ lemma forward_digit_average {N : TraceHaarTransport R} (C : JointUpperVanishingS
   have hv (g : Group R) : orbitFrequencyValue R C.sources C.realization v i g =
       OrbitFrequencies.rationalValue R C.realization v ((Quotient.out i.1) * i.2.val) g := rfl
   rw [hv, signedArgument]
-  simp only [Bool.true_eq, ↓reduceIte, one_mul]
+  simp only [↓reduceIte, one_mul]
   have hc := congrArg (fun g : Group R => OrbitFrequencies.rationalValue R C.realization v
     ((Quotient.out i.1) * i.2.val) g) (diagonal_commute_digit_root R y m d).eq
   have he := hc.trans (rationalValue_left_root R C v _ _ _)

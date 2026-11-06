@@ -309,17 +309,7 @@ theorem mulExact_of_moduleCat_exact
     change g (f x.toAdd) = 0
     exact (hexact (f x.toAdd)).2 ⟨x.toAdd, rfl⟩
 
-/-- Exactness of a short complex in `ModuleCat ℤ` gives multiplicative
-exactness of its two underlying homomorphisms. -/
-theorem mulExact_of_moduleCat_shortComplex_exact
-    {X Y Z : ModuleCat.{0} ℤ} (f : X ⟶ Y) (g : Y ⟶ Z)
-    (hzero : f ≫ g = 0)
-    (hexact : (ShortComplex.mk f g hzero).Exact) :
-    Function.MulExact
-      f.hom.toAddMonoidHom.toMultiplicative
-      g.hom.toAddMonoidHom.toMultiplicative :=
-  mulExact_of_moduleCat_exact f g
-    ((ShortComplex.ShortExact.moduleCat_exact_iff_function_exact _).1 hexact)
+
 
 /-- For an exact pair of `ModuleCat ℤ` morphisms with finite middle term,
 the cardinality of the middle term is the product of the two range

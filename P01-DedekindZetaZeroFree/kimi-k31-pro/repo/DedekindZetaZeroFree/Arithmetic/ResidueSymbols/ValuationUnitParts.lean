@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.Arithmetic.Ideals.PrimeFreeFactorization
 public import DedekindZetaZeroFree.Arithmetic.ResidueSymbols.PrimeFreeGenerators
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -29,8 +30,7 @@ theorem exists_unitPart (C : A.GeneralArithmeticContext σ η hS)
     conv_rhs => rw [hJ, Ideal.map_mul, Ideal.map_pow]
   obtain ⟨eps, heps⟩ := Ideal.span_singleton_eq_span_singleton.mp hspan
   refine ⟨(eps : A.R) * r, ?_, ?_⟩
-  · rw [← heps]
-    ring
+  · grind
   · rw [map_mul]
     exact (eps.isUnit.map _).mul (LocalAlgebra.generator_residue_unit J r hr p hnot)
 
@@ -41,7 +41,7 @@ theorem chi_eq_zero_of_decomposition (C : A.GeneralArithmeticContext σ η hS)
   have hgen : Ideal.Quotient.mk (A.extendIdeal (primeIdeal p)) (generator C p) = 0 := by
     apply Ideal.Quotient.eq_zero_iff_mem.mpr
     rw [← (generator_generates C p).2]
-    exact Ideal.mem_span_singleton_self _
+    norm_num
   rw [hu, map_mul, map_pow, hgen, zero_pow hn, zero_mul, MulChar.map_zero]
 
 end DedekindZetaZeroFree.CorrectionFactors.ValuationGenerator

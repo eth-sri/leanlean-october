@@ -97,24 +97,7 @@ theorem correctionCoefficient_spec
         (by omega : d.degree - 1 ≠ 0)
         (-normalizedDefectCoefficient hπ e ebar hH d))).1
 
-/-- The defining scalar equation determines the recursive correction
-coefficient uniquely. -/
-theorem correctionCoefficient_unique
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (e ebar : LubinTateSeries F π)
-    {H : MvPowerSeries σ F.valuationSubring}
-    {L : σ → F.valuationSubring} (hH : HasLinearTerm H L)
-    (d : σ →₀ ℕ) (hd : 2 ≤ d.degree)
-    {c : F.valuationSubring}
-    (hc :
-      (1 - π ^ (d.degree - 1)) * c =
-        -normalizedDefectCoefficient hπ e ebar hH d) :
-    c = correctionCoefficient hπ e ebar hH d hd := by
-  exact
-    (Classical.choose_spec
-      (existsUnique_one_sub_uniformizer_pow_mul_eq hπ
-        (by omega : d.degree - 1 ≠ 0)
-        (-normalizedDefectCoefficient hπ e ebar hH d))).2 c hc
+
 
 end SameUniformizer
 end LubinTate

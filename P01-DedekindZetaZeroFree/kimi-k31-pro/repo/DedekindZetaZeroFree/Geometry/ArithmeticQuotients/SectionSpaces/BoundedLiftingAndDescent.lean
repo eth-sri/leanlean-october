@@ -80,7 +80,7 @@ theorem chartMeasure_pullback_ae (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
   have hpull := ae_of_ae_map (hd.smul_measure _) hmap
   have hn : (Fintype.card ((C.chart i).G F ζ hζ hF U) : ℝ≥0∞)⁻¹ ≠ 0 := by simp
   have hh := (Measure.ae_ennreal_smul_measure_iff hn).mp hpull
-  have hpos := (ae_withDensity_iff' (hw.ennreal_ofReal)).mp hh
+  have hpos := (ae_withDensity_iff' hw.ennreal_ofReal).mp hh
   filter_upwards [hpos, ae_restrict_mem Metric.isOpen_ball.measurableSet] with x hx hball
   apply hx
   exact ne_of_gt (ENNReal.ofReal_pos.mpr
@@ -215,8 +215,7 @@ theorem chart_pullback_eLpNorm_le (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
       eLpNorm (fun x => (v (D.toBase F ζ hζ hF U x) : ℂ)) 2 ν at h
   have heq := eLpNorm_map_measure (p := 2) hm hb
   simp only [Function.comp_def] at heq
-  rw [← heq] at h
-  rw [C.chart_measure i] at h
+  rw [← heq, C.chart_measure i] at h
   refine h.trans (mul_le_mul_right ?_ _)
   refine (eLpNorm_mono_measure _ Measure.restrict_le_self).trans_eq ?_
   exact eLpNorm_congr_norm_ae hv.aestronglyMeasurable (Lp.aestronglyMeasurable v)
@@ -441,8 +440,7 @@ theorem chart_orthogonal_measurePreserving (A : KPFiniteCuspAtlas.Atlas F ζ hζ
 
 private theorem chart_rho_norm (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     (D : Chart F ζ hζ hF U A) (g : D.G F ζ hζ hF U) :
-    ‖(D.rho F ζ hζ hF U g : ℂ)‖ = 1 := by
-  exact (((Units.coeHom ℂ).comp (D.rho F ζ hζ hF U)).isOfFinOrder
+    ‖(D.rho F ζ hζ hF U g : ℂ)‖ = 1 := (((Units.coeHom ℂ).comp (D.rho F ζ hζ hF U)).isOfFinOrder
     (isOfFinOrder_of_finite g)).norm_eq_one
 
  def chartAverageBall (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
@@ -696,8 +694,7 @@ theorem untwisted_average_invariant_ae (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF 
   simp only [Units.val_inv_eq_inv_val]
   rw [hx, mul_inv_rev]
   have hc : ((C.chart i).rho F ζ hζ hF U g : ℂ)⁻¹ *
-      ((C.chart i).rho F ζ hζ hF U g : ℂ) = 1 := by
-    exact inv_mul_cancel₀ (Units.ne_zero _)
+      ((C.chart i).rho F ζ hζ hF U g : ℂ) = 1 := inv_mul_cancel₀ (Units.ne_zero _)
   rw [mul_assoc, ← mul_assoc ((↑((C.chart i).rho F ζ hζ hF U g) : ℂ)⁻¹), hc, one_mul]
 
 theorem chartMeasure_le_volume (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
@@ -797,8 +794,7 @@ theorem chart_measurable_descent (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     exact (hi g _ (hl ⟨_, hpx⟩).1).symm.trans (congrArg b hg)
   have hmeas : Measurable (Set.restrict O f) := by
     let p : B → O := fun x => ⟨D.toBase F ζ hζ hF U x, x.val, x.property, rfl⟩
-    have hp : Measurable p := by
-      exact Measurable.subtype_mk
+    have hp : Measurable p := Measurable.subtype_mk
         (chart_toBase_continuous_ball F ζ hζ hF U A D).measurable
     have hs : Function.Surjective p := by
       intro x
@@ -840,7 +836,7 @@ theorem untwisted_average_measurable_invariant (A : KPFiniteCuspAtlas.Atlas F ζ
     intro g
     have hmk : (fun x => m (D.orthogonal g x)) =ᵐ[μ] (fun x => t (D.orthogonal g x)) :=
       (chart_orthogonal_measurePreserving F ζ hζ hF U A D g).quasiMeasurePreserving.ae_eq_comp
-        (hm.ae_eq_mk.symm)
+        hm.ae_eq_mk.symm
     exact hmk.trans (untwisted_average_invariant_ae F ζ hζ hF U A M C P i f g)
   refine ⟨b, ?_, ?_, ?_⟩
   · exact measurable_const.mul (Finset.measurable_sum _ (fun g _ =>
@@ -1117,8 +1113,7 @@ private theorem descentMap_formula_global (A : KPFiniteCuspAtlas.Atlas F ζ hζ 
   have hres : descentMap F ζ hζ hF U A M C P i f =ᵐ[
       (quotientMeasure F ζ hζ hF U A).restrict K]
       ((V F ζ hζ U).orthogonalProjectionOnto.compLpL 2 (quotientMeasure F ζ hζ hF U A)
-        (scalarDescentMap F ζ hζ hF U A M C P i f)) := by
-    exact MemLp.coeFn_toLp ((Lp.memLp
+        (scalarDescentMap F ζ hζ hF U A M C P i f)) := MemLp.coeFn_toLp ((Lp.memLp
       ((V F ζ hζ U).orthogonalProjectionOnto.compLpL 2 (quotientMeasure F ζ hζ hF U A)
         (scalarDescentMap F ζ hζ hF U A M C P i f))).restrict K)
   filter_upwards [hres, ae_mono Measure.restrict_le_self hp, ae_mono Measure.restrict_le_self hs]

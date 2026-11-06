@@ -137,7 +137,7 @@ theorem idealMellin_verticalIntegrable (a : Ideal (𝓞 F) → ℂ)
     exact harg.const_cpow (Or.inl hne)
   refine Integrable.mono'
     (g := fun t : ℝ => CL * X ^ σ * ‖mellin h (σ + t * Complex.I)‖)
-    ((hint.norm).const_mul (CL * X ^ σ)) ?_ (ae_of_all _ fun t => ?_)
+    (hint.norm.const_mul (CL * X ^ σ)) ?_ (ae_of_all _ fun t => ?_)
   · exact ((hint.aestronglyMeasurable.mul hcontX.aestronglyMeasurable).mul
       hLcont.aestronglyMeasurable)
   · have hnormX : ‖(X : ℂ) ^ (σ + t * Complex.I)‖ = X ^ σ := by
@@ -248,7 +248,7 @@ theorem idealMellin_finsum_eq_verticalIntegral (a : Ideal (𝓞 F) → ℂ)
     refine Integrable.mono' (g := fun t : ℝ =>
       (X ^ σ * (‖a I.val‖ * (Ideal.absNorm I.val : ℝ) ^ (-σ))) *
         ‖mellin h (σ + t * Complex.I)‖)
-      ((hint.norm).const_mul _) hmeas (ae_of_all _ fun t => hG_le I t)
+      (hint.norm.const_mul _) hmeas (ae_of_all _ fun t => hG_le I t)
   set A : ℝ := ∫ t : ℝ, ‖mellin h (σ + t * Complex.I)‖ with hA
   have hG_sum : Summable (fun I : {I : Ideal (𝓞 F) // I ≠ ⊥} => ∫ t : ℝ, ‖G I t‖) := by
     refine Summable.of_nonneg_of_le (fun I => integral_nonneg fun t => norm_nonneg _) ?_
@@ -256,7 +256,7 @@ theorem idealMellin_finsum_eq_verticalIntegral (a : Ideal (𝓞 F) → ℂ)
     intro I
     have hmaj : Integrable (fun t : ℝ =>
         (X ^ σ * (‖a I.val‖ * (Ideal.absNorm I.val : ℝ) ^ (-σ))) *
-          ‖mellin h (σ + t * Complex.I)‖) := (hint.norm).const_mul _
+          ‖mellin h (σ + t * Complex.I)‖) := hint.norm.const_mul _
     calc ∫ t : ℝ, ‖G I t‖
         ≤ ∫ t : ℝ, (X ^ σ * (‖a I.val‖ * (Ideal.absNorm I.val : ℝ) ^ (-σ))) *
             ‖mellin h (σ + t * Complex.I)‖ :=
@@ -320,7 +320,7 @@ theorem idealMellin_finsum_eq_verticalIntegral (a : Ideal (𝓞 F) → ℂ)
         ∑ I ∈ hfs.toFinset, idealMellinWeight a h X I :=
       tsum_eq_sum fun b hb => by
         by_contra hne
-        exact hb ((hfs.mem_toFinset).2 (by simpa [Function.mem_support] using hne))
+        exact hb (hfs.mem_toFinset.2 (by simpa [Function.mem_support] using hne))
     have hsub : (∑' I : {I : Ideal (𝓞 F) // I ≠ ⊥},
           a I.val * h ((Ideal.absNorm I.val : ℝ) / X)) =
         ∑' I : Ideal (𝓞 F), idealMellinWeight a h X I := by
@@ -466,7 +466,7 @@ theorem idealMellin_dual_interchange (a : Ideal (𝓞 F) → ℂ)
       (fun s => B s * ((X / q : ℝ) : ℂ) ^ (-s) * idealCoefficientLSeries a s) c := by
     refine Integrable.mono'
       (g := fun t : ℝ => CL * (X / q) ^ (-c) * ‖B (c + t * Complex.I)‖)
-      ((hBint.norm).const_mul (CL * (X / q) ^ (-c))) ?_ (ae_of_all _ fun t => ?_)
+      (hBint.norm.const_mul (CL * (X / q) ^ (-c))) ?_ (ae_of_all _ fun t => ?_)
     · change AEStronglyMeasurable (fun t : ℝ => B (c + t * Complex.I) *
         ((X / q : ℝ) : ℂ) ^ (-(c + t * Complex.I)) *
           idealCoefficientLSeries a (c + t * Complex.I))
@@ -507,7 +507,7 @@ theorem idealMellin_dual_interchange (a : Ideal (𝓞 F) → ℂ)
         (hcoef_cont I).aestronglyMeasurable
     refine Integrable.mono' (g := fun t : ℝ =>
       ((X / q) ^ (-c) * (‖a I.val‖ * (Ideal.absNorm I.val : ℝ) ^ (-c))) *
-        ‖B (c + t * Complex.I)‖) ((hBint.norm).const_mul _) hmeas
+        ‖B (c + t * Complex.I)‖) (hBint.norm.const_mul _) hmeas
       (ae_of_all _ fun t => hH_le I t)
   set A : ℝ := ∫ t : ℝ, ‖B (c + t * Complex.I)‖ with hA
   have hH_sum : Summable (fun I : {I : Ideal (𝓞 F) // I ≠ ⊥} => ∫ t : ℝ, ‖H I t‖) := by
@@ -516,7 +516,7 @@ theorem idealMellin_dual_interchange (a : Ideal (𝓞 F) → ℂ)
     intro I
     have hmaj : Integrable (fun t : ℝ =>
         ((X / q) ^ (-c) * (‖a I.val‖ * (Ideal.absNorm I.val : ℝ) ^ (-c))) *
-          ‖B (c + t * Complex.I)‖) := (hBint.norm).const_mul _
+          ‖B (c + t * Complex.I)‖) := hBint.norm.const_mul _
     calc ∫ t : ℝ, ‖H I t‖
         ≤ ∫ t : ℝ, ((X / q) ^ (-c) *
             (‖a I.val‖ * (Ideal.absNorm I.val : ℝ) ^ (-c))) *

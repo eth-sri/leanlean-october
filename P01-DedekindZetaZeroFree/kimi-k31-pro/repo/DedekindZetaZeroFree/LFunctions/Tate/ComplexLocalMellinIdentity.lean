@@ -22,7 +22,7 @@ theorem complexAnnular_normMellin_integrable (f : ℂ → ℂ) (hf : IsComplexAn
     exact ne_of_gt (lt_of_lt_of_le (sq_pos_of_pos ha) (le_max_right _ _))
   have hi : Integrable (fun x => f x * (w x : ℂ)) (volume : Measure ℂ) :=
     (hcont.continuous.mul (Complex.continuous_ofReal.comp hw)).integrable_of_hasCompactSupport
-      (hcomp.mul_right)
+      hcomp.mul_right
   apply hi.congr
   filter_upwards with x
   by_cases hx : f x = 0
@@ -70,7 +70,7 @@ private theorem schwartz_normMellin_integrable (g : SchwartzMap ℂ ℂ)
   have hfar : IntegrableOn (complexNormMellinIntegrand g s)
       (Metric.ball 0 1)ᶜ (volume : Measure ℂ) := by
     apply (g.integrable (μ := (volume : Measure ℂ))).norm.restrict.mono' hmeas.restrict
-    filter_upwards [self_mem_ae_restrict (measurableSet_ball.compl)] with x hx
+    filter_upwards [self_mem_ae_restrict measurableSet_ball.compl] with x hx
     have hnx : 1 ≤ ‖x‖ := by simpa using hx
     have hx0 : x ≠ 0 := by intro h; norm_num [h] at hnx
     rw [hnorm x hx0]
@@ -148,7 +148,7 @@ lemma laplace_prod_integrable (g : ℂ → ℂ) (hg : AEStronglyMeasurable g vol
     · apply (hi.norm.const_mul ((2 * Real.pi) ^ (-a) * Real.Gamma a)).congr
       filter_upwards [(volume : Measure ℂ).ae_ne (0 : ℂ)] with x hx
       exact (laplace_norm g a ha x hx).symm
-  · exact (hg.comp_fst).mul
+  · exact hg.comp_fst.mul
       ((Complex.measurable_ofReal.comp
         ((measurable_snd.pow_const _).mul
           (Real.measurable_exp.comp (by fun_prop)))).aestronglyMeasurable)

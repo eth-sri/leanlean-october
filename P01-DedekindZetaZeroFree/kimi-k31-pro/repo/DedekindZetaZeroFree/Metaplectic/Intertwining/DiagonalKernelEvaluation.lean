@@ -16,8 +16,7 @@ local notation "N" => KPPGLLocalCover.N F ζ hζ (Sum.inr q)
 local notation "L" => KPPGLLocalCover.LowerN F ζ hζ (Sum.inr q)
 local notation "A" => KPPGLLocalCover.A F ζ hζ (Sum.inr q)
 
-private theorem w_upper (t : LocalField F q) : W * N t = L t * W := by
-  exact (mul_inv_eq_iff_eq_mul).mp
+private theorem w_upper (t : LocalField F q) : W * N t = L t * W := mul_inv_eq_iff_eq_mul.mp
     (KPRankOneJacquetZeroCompactCoefficients.weyl_conjugates_upper F ζ hζ q t)
 
 private theorem lower_diagonal (t : LocalField F q) (p : (LocalField F q)ˣ) :
@@ -77,8 +76,7 @@ theorem signed_double_kernel_same_diagonal
 theorem diagonalLift_index_zero_eq_eta (π : (LocalField F q)ˣ) (i : Fin 3) :
     KPTameTransposeKernelUnfolding.diagonalLift F ζ hζ q π ((i.val : ℤ), 0) =
       KPTameJacquetTestDuality.eta F ζ hζ q π i := by
-  simp [KPTameTransposeKernelUnfolding.diagonalLift, KPTameJacquetTestDuality.eta,
-    KPPGLLocalCover.A, KPStandardLocalRootLifts.A]
+  aesop
 
 theorem signed_double_kernel_diagonal_index
     (S : CanonicalFiniteInducingData F ζ hζ q)

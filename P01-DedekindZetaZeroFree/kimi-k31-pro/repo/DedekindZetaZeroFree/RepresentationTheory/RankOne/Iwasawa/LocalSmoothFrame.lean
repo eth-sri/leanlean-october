@@ -84,8 +84,8 @@ private theorem section_smooth (F : Type) [Field F] [NumberField F] (ζ : F) (h�
           (hm i j).contDiffAt.mul ((hm 0 0).contDiffAt.inv (hme x ▸ hden))
       apply contDiffAt_pi.mpr
       intro i
-      fin_cases i <;> simp only [PGLComplex.matrixRatios, Matrix.cons_val_zero,
-        Matrix.cons_val_one, Matrix.cons_val_fin_one, Matrix.cons_val,
+      fin_cases i <;> simp only [PGLComplex.matrixRatios, 
+        
         Complex.sub_re, Complex.one_re, Complex.sub_im, Complex.one_im, sub_zero]
       · exact (Complex.reCLM.contDiff.comp_contDiffAt x (hr 1 1)).sub contDiffAt_const
       · exact Complex.imCLM.contDiff.comp_contDiffAt x (hr 1 1)

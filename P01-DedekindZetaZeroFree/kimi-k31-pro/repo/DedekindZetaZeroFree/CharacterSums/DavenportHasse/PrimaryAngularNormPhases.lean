@@ -805,8 +805,8 @@ private theorem norm_primary_congruence (E F : Type) [Field E] [NumberField E]
     ext i j
     have h3 : r (3 : 𝓞 E) = 0 := Ideal.Quotient.eq_zero_iff_mem.mpr
       (Ideal.subset_span (show (3 : 𝓞 E) ∈ ({3} : Set (𝓞 E)) by simp))
-    simp only [RingHom.mapMatrix_apply, Matrix.add_apply, Matrix.smul_apply, smul_eq_mul,
-      map_add, map_mul, h3, zero_mul, add_zero]
+    simp only [RingHom.mapMatrix_apply, Matrix.add_apply, 
+      map_add]
     by_cases hij : i = j <;> simp [Matrix.one_apply, hij, h3]
   rw [hm, Matrix.det_one, sub_self]
 private theorem auxiliary_embedding_not_real (E : Type) [Field E] [NumberField E]
@@ -878,7 +878,7 @@ private theorem angular_norm_eq_infinity_product (E F : Type) [Field E] [NumberF
   split_ifs with h
   · simp [infinityComponent, h]
   · simp [infinityComponent, h, angular, ComplexEmbedding.conjugate_coe_eq,
-      map_div₀, Complex.norm_conj]
+      ]
 
 theorem lambdaF_principal_congruence (E F : Type) [Field E] [NumberField E]
     [Field F] [NumberField F] [IsCyclotomicExtension {3} ℚ E] [Algebra E F]

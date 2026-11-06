@@ -122,7 +122,7 @@ theorem localArtinMonoidHom_ker :
   · intro hx
     have hq : normClass K L x = 1 :=
       (normClass_eq_one_iff_mem K L x).2 hx
-    rw [hq, map_one]
+    grind
 
 end
 end LocalClassFieldTheory

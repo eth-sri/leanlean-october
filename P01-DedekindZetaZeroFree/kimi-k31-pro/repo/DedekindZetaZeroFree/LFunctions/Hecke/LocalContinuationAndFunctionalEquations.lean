@@ -32,12 +32,7 @@ structure NonprincipalHeckeData (F : Type) [Field F] [NumberField F]
   Lambda_growth : ∀ ε : ℝ, 0 < ε → ∃ C : ℝ, ∀ s : ℂ,
     ‖Lambda s‖ ≤ C * Real.exp (‖s‖ ^ (1 + ε))
 
-def nonprincipalL {F : Type} [Field F] [NumberField F]
-    {m : Ideal (𝓞 F)} {η : DedekindZetaZeroFree.RayClassCharacter F m}
-    (data : NonprincipalHeckeData F m η) (s : ℂ) : ℂ :=
-  data.Lambda s *
-    ((principalDiscriminant F * (Ideal.absNorm m : ℝ) : ℂ) ^ (-(s / 2))) *
-      (Complex.Gammaℂ s)⁻¹ ^ principalComplexPlaces F
+
 
 private lemma inverse_completion_entire (A : ℂ) (hA : A ≠ 0) :
     Differentiable ℂ (fun s : ℂ => A ^ (-(s / 2))) := by
@@ -104,8 +99,7 @@ theorem principalZetaContinuation_eq
 
 theorem principalZetaZeroFactor_analyticAt
     (F : Type) [Field F] [NumberField F] (hF : NumberField.IsTotallyComplex F) :
-    AnalyticAt ℂ (principalHeckeData F hF).zetaOriginFactor 0 := by
-  exact principal_originFactor_analytic (principalHeckeData F hF) 0 (by simp)
+    AnalyticAt ℂ (principalHeckeData F hF).zetaOriginFactor 0 := principal_originFactor_analytic (principalHeckeData F hF) 0 (by simp)
 
  def principal_residueNumerator {F : Type} [Field F] [NumberField F]
     (data : PrincipalHeckeData F) (s : ℂ) : ℂ :=

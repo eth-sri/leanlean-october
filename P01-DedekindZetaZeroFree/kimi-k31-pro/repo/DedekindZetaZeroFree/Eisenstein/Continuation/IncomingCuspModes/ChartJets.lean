@@ -511,8 +511,8 @@ private theorem height_of_coveredPoint {T : ℝ}
     rw [KPContSectorCoveredQuotientVocabulary.q_mk]
     apply Quotient.sound
     refine ⟨1, ε⁻¹, 1, ?_, ?_⟩
-    · simp [KPContActualCollarBuffer.chartLift, KPContSectorSmoothFramesSupport.cuspPoint]
-    · simp [KPContFlatCuspIncomingEvaluation.atlas, KPContActualCollarBuffer.chartLift]
+    · simp [KPContSectorSmoothFramesSupport.cuspPoint]
+    · simp [KPContFlatCuspIncomingEvaluation.atlas]
   unfold height
   rw [hbase]
   exact buffer.height_coordinates a z hz

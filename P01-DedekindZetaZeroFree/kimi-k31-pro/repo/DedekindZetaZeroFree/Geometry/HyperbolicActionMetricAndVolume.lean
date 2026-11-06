@@ -64,7 +64,7 @@ private lemma den_comp (a b c d C D x : ℂ) (Y : ℝ) :
     (C*num a b c d x Y+D*den c d x Y)*star (C*num a b c d x Y+D*den c d x Y)+
       C*star C*((a*d-b*c)*star (a*d-b*c)*(Y:ℂ)) =
         den (C*a+D*c) (C*b+D*d) x Y * den c d x Y := by
-  simp only [num, den, star_add, star_mul, star_sub, star_star, Complex.star_def,
+  simp only [num, den, star_add, star_mul, star_sub, Complex.star_def,
     Complex.conj_ofReal]
   simp only [Complex.conj_conj]
   ring
@@ -73,7 +73,7 @@ private lemma num_comp (a b c d A B C D x : ℂ) (Y : ℝ) :
     (A*num a b c d x Y+B*den c d x Y)*star (C*num a b c d x Y+D*den c d x Y)+
       A*star C*((a*d-b*c)*star (a*d-b*c)*(Y:ℂ)) =
         num (A*a+B*c) (A*b+B*d) (C*a+D*c) (C*b+D*d) x Y * den c d x Y := by
-  simp only [num, den, star_add, star_mul, star_sub, star_star, Complex.star_def,
+  simp only [num, den, star_add, star_mul, star_sub, Complex.star_def,
     Complex.conj_ofReal]
   simp only [Complex.conj_conj]
   ring
@@ -96,7 +96,7 @@ private lemma height_sq (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z : H3) :
       ((height z ^ 2 : ℝ) : ℂ)) / (actionDenominator g z : ℂ)^2 := by
   rw [action_height]
   change (( (‖(g : Matrix (Fin 2) (Fin 2) ℂ).det‖ * height z / actionDenominator g z)^2 : ℝ) : ℂ) = _
-  simp only [div_pow, mul_pow, Complex.ofReal_div, Complex.ofReal_mul, norm_cast,
+  simp only [div_pow, mul_pow, Complex.ofReal_div, Complex.ofReal_mul, 
     Complex.ofReal_pow]
   rw [← Complex.ofReal_pow, norm_cast]
 
@@ -105,9 +105,9 @@ private lemma den_mul (g h : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z : H3) :
       (actionDenominator (g*h) z : ℂ) := by
   have hd : (actionDenominator h z : ℂ) ≠ 0 := by exact_mod_cast ne_of_gt (actionDenominator_pos h z)
   rw [den_eq, den, fst_eq, height_sq]
-  simp only [star_add, star_mul, star_div]
+  simp only [star_add, star_mul]
   rw [← den_eq h z]
-  simp only [Complex.star_def, Complex.conj_ofReal]
+  simp only [Complex.star_def]
   rw [den_eq (g*h) z]
   simp only [Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two,
     Matrix.det_fin_two]
@@ -116,8 +116,7 @@ private lemma den_mul (g h : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z : H3) :
   simp only [map_div₀, Complex.conj_ofReal]
   simp only [star_add, star_mul, Complex.star_def] at hc
   simp only [Complex.conj_ofReal] at hc
-  field_simp
-  linear_combination hc
+  grind
 
 private lemma fst_mul (g h : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z : H3) :
     (action g (action h z)).1 = (action (g*h) z).1 := by
@@ -136,7 +135,7 @@ private lemma fst_mul (g h : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z : H3) :
   simp only [num, star_add, star_mul, star_star, Complex.star_def,
     Complex.conj_ofReal, Complex.conj_conj] at hc ⊢
   field_simp
-  linear_combination hc
+  grind
 
 theorem action_laws (g h : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z : H3) :
     action 1 z = z ∧ action (g * h) z = action g (action h z) := by
@@ -175,10 +174,7 @@ theorem scalar_action (a : ℂˣ) (z : H3) :
   · simp only [action, actionDenominator, Matrix.GeneralLinearGroup.coe_scalar,
       Matrix.scalar_apply, Matrix.diagonal_apply, Fin.reduceEq, if_true, if_false,
       zero_mul, zero_add, norm_zero, zero_pow, mul_zero, add_zero, star_zero]
-    norm_num only [OfNat.ofNat_ne_zero, zero_pow, zero_mul, add_zero]
-    rw [show (a : ℂ) * z.1 * star (a : ℂ) =
-      z.1 * ((‖(a : ℂ)‖ ^ 2 : ℝ) : ℂ) by rw [← hc]; ring]
-    exact mul_div_cancel_right₀ _ hac
+    grind
   · simp only [action, actionDenominator, Matrix.GeneralLinearGroup.coe_scalar,
       Matrix.scalar_apply, Matrix.diagonal_apply, Fin.reduceEq, if_true, if_false,
       zero_mul, zero_add, norm_zero, zero_pow, mul_zero, add_zero, star_zero,
@@ -218,7 +214,7 @@ private lemma actionDenominator_contDiff (g : Matrix.GeneralLinearGroup (Fin 2) 
     · apply ContDiff.div
       · unfold height
         fun_prop
-      · exact hd
+      · grind
       · intro z
         exact ne_of_gt (actionDenominator_pos g z)
     · intro z
@@ -292,8 +288,7 @@ private lemma metric_alg (a b c d x v : ℂ) (Y w : ℝ) :
   ring
 
 private def path (z v : H3) (t : ℝ) : H3 := z + t • v
-private lemma path_deriv (z v : H3) : HasDerivAt (path z v) v 0 := by
-  exact ((hasDerivAt_id (0:ℝ)).smul_const v).const_add z |>.congr_deriv (by simp)
+private lemma path_deriv (z v : H3) : HasDerivAt (path z v) v 0 := ((hasDerivAt_id (0:ℝ)).smul_const v).const_add z |>.congr_deriv (by simp)
 private lemma norm2_cast (a : ℂ) : norm2 a = (‖a‖^2 : ℝ) := by
   simpa [norm2, Complex.normSq_eq_norm_sq] using Complex.mul_conj a
 private lemma D_cast (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z : H3) :
@@ -377,7 +372,7 @@ private lemma action_diff (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z v : H3)
     simpa [path] using hg.hasFDerivAt
   have hcomp := hg'.comp_hasDerivAt 0 hp
   have h := (path_action g z v).deriv.symm.trans hcomp.deriv
-  simpa [Function.comp_def, path] using h.symm
+  grind
 private lemma rankOne_metric (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z v : H3) :
     (height (action g z))⁻¹ ^ 2 * ‖diffX g z v‖^2 + (diffU g z v)^2 =
       (height z)⁻¹ ^ 2 * ‖v.1‖^2 + v.2^2 := by
@@ -408,8 +403,7 @@ private lemma rankOne_metric (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) (z v : 
   simp only [norm2, star_mul, Complex.star_def] at h
   simp only [map_div₀, map_pow, Complex.conj_ofReal]
   field_simp
-  simp only [map_sub, map_mul, Complex.conj_ofReal] at h ⊢
-  linear_combination h
+  grind
 
 theorem metric_invariant (d : ℕ) (g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ)
     (z v : Space d) :
@@ -469,10 +463,10 @@ private lemma w_discr {ι : Type*} [Fintype ι] [DecidableEq ι] (w : ι → ℝ
         w i + w j + (if i = j then 2 * w i else 0) := by
       simp_rw [add_mul, mul_add, Finset.sum_add_distrib]
       simp [Pi.single_apply, Finset.sum_ite_irrel, mul_ite, ite_mul]
-      split_ifs <;> simp_all <;> ring
+      grind
     rw [hsum]
     simp [Pi.single_apply, Matrix.diagonal_apply]
-    split_ifs <;> ring
+    grind
   rw [QuadraticForm.discr', hm, Matrix.det_diagonal]
 private lemma Q_discr (d : ℕ) (z : Space d) :
     (Q d z).discr (B d) = volumeDensity d z ^ 2 := by
@@ -482,7 +476,7 @@ private lemma Q_discr (d : ℕ) (z : Space d) :
     simp [Q, QuadraticForm.toMatrix, QuadraticForm.toMatrix',
       LinearMap.toMatrix₂_apply, LinearMap.toMatrix₂'_apply,
       QuadraticMap.associated_comp]
-    congr 2 <;> ext k <;> simp [Finsupp.single_apply, Pi.single_apply, eq_comm]
+    congr 2 <;> grind <;> grind
   rw [QuadraticForm.discr, hm, ← QuadraticForm.discr', w_discr]
   simp only [Fintype.prod_sigma, Fintype.prod_sum_type, Fin.prod_univ_two,
     Fintype.prod_unique, weights, mul_one, volumeDensity, ← Finset.prod_mul_distrib]
@@ -503,8 +497,7 @@ private lemma jacobian_metric (d : ℕ) (f : Space d → Space d) (z : Space d)
   change volumeDensity d z ^ 2 =
     (fderiv ℝ f z).det * (fderiv ℝ f z).det * volumeDensity d (f z) ^ 2 at hh
   have ha : (|(fderiv ℝ f z).det| * volumeDensity d (f z)) ^ 2 = volumeDensity d z ^ 2 := by
-    rw [mul_pow, sq_abs]
-    nlinarith [hh]
+    grind
   exact (sq_eq_sq₀ (mul_nonneg (abs_nonneg _) (le_of_lt (density_pos d (f z))))
     (le_of_lt (density_pos d z))).mp ha
 private lemma action_inv (g : Matrix.GeneralLinearGroup (Fin 2) ℂ) :
@@ -557,15 +550,13 @@ theorem volumeDensity_split (d : ℕ) (p : SplitSpace d) :
     simp [shape, Fin.sum_univ_succAbove, Fin.sum_univ_castSucc]
   have he (u : ℝ) : (Real.exp u)⁻¹ ^ 2 = Real.exp (-2 * u) := by
     rw [← Real.exp_neg, ← Real.exp_nat_mul]
-    congr 1
-    ring
+    grind
   simp only [volumeDensity, height, splitCoordinates, he]
   rw [← Real.exp_sum]
   congr 1
   simp only [mul_add, Finset.sum_add_distrib, ← Finset.mul_sum, hs, mul_zero,
     add_zero, Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
-  push_cast
-  ring
+  grind
 
 private def shearB (d : ℕ) (p : ℝ × (Fin d → ℝ)) : ℝ × (Fin d → ℝ) :=
   (p.1, fun i => p.2 i + p.1)

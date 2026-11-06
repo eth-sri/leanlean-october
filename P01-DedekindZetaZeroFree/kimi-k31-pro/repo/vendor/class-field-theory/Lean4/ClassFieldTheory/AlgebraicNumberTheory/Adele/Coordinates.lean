@@ -105,47 +105,9 @@ theorem relativeAdeleOfCoefficients_coefficients
     (relativeAdeleCoefficientLinearEquiv
       (K := K) (L := L)).symm_apply_apply z
 
-omit [NumberField L] in
-/-- Finite-place evaluation of an assembled relative adele is the
-corresponding tensor sum of its coefficient components. -/
-theorem relativeAdeleOfCoefficients_finiteComponent
-    (a :
-      RelativeAdeleBasisIndex (K := K) (L := L) →
-        NumberField.AdeleRing (𝓞 K) K)
-    (w : HeightOneSpectrum (𝓞 K)) :
-    relativeAdeleFiniteComponent
-        (K := K) (L := L) w
-        (relativeAdeleOfCoefficients
-          (K := K) (L := L) a) =
-      ∑ i : RelativeAdeleBasisIndex (K := K) (L := L),
-        (a i).2 w ⊗ₜ[K]
-          relativeExtensionBasis
-            (K := K) (L := L) i := by
-  rw [relativeAdeleFiniteComponent_eq_sum_tmul_coefficients]
-  apply Finset.sum_congr rfl
-  intro i _
-  rw [relativeAdeleCoefficient_ofCoefficients]
 
-omit [NumberField L] in
-/-- Infinite-place evaluation of an assembled relative adele is the
-corresponding tensor sum of its coefficient components. -/
-theorem relativeAdeleOfCoefficients_infiniteComponent
-    (a :
-      RelativeAdeleBasisIndex (K := K) (L := L) →
-        NumberField.AdeleRing (𝓞 K) K)
-    (w : InfinitePlace K) :
-    relativeAdeleInfiniteComponent
-        (K := K) (L := L) w
-        (relativeAdeleOfCoefficients
-          (K := K) (L := L) a) =
-      ∑ i : RelativeAdeleBasisIndex (K := K) (L := L),
-        (a i).1 w ⊗ₜ[K]
-          relativeExtensionBasis
-            (K := K) (L := L) i := by
-  rw [relativeAdeleInfiniteComponent_eq_sum_tmul_coefficients]
-  apply Finset.sum_congr rfl
-  intro i _
-  rw [relativeAdeleCoefficient_ofCoefficients]
+
+
 
 /-- Assemble mutually inverse coordinate families into an actual relative
 idele.  The inverse equation is checked after global coordinate assembly,

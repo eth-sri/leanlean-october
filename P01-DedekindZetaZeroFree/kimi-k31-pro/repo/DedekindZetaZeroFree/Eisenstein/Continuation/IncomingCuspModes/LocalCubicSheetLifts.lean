@@ -31,7 +31,7 @@ namespace DedekindZetaZeroFree.KPContActualCutoffSmoothDescent
       · apply Subtype.ext
         ext i
         simp [KPCuspCharts.toArchHomeomorph, KPCuspLogShape.shapeCoordinates,
-          KPCuspLogShape.meanHeight, Finset.mul_sum]
+          KPCuspLogShape.meanHeight]
         rw [← Finset.mul_sum]
         ring
     · simp [KPCuspCharts.toArchHomeomorph, KPCuspLogShape.meanHeight]

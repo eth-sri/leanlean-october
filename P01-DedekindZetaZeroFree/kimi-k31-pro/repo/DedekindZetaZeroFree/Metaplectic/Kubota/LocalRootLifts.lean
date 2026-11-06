@@ -45,9 +45,7 @@ private theorem lower_add_matrix (K : Type*) [Field K] (t u : K) :
 
 theorem d_mul_matrix (K : Type*) [Field K] (x y : Kˣ) :
     KubotaRankTwo.d K x 1 * KubotaRankTwo.d K y 1 = KubotaRankTwo.d K (x * y) 1 := by
-  apply Matrix.GeneralLinearGroup.ext
-  intro i j
-  fin_cases i <;> fin_cases j <;> simp [Matrix.mul_apply]
+  aesop
 
 private theorem d_one_matrix (K : Type*) [Field K] : KubotaRankTwo.d K 1 1 = 1 := by
   apply Matrix.GeneralLinearGroup.ext
@@ -61,9 +59,7 @@ private theorem swap_sq_matrix (K : Type*) [Field K] : weylSwap K * weylSwap K =
 
 private theorem signed_sq_matrix (K : Type*) [Field K] :
     KubotaRankTwo.w K * KubotaRankTwo.w K = KubotaRankTwo.d K (-1) (-1) := by
-  apply Matrix.GeneralLinearGroup.ext
-  intro i j
-  fin_cases i <;> fin_cases j <;> simp [Matrix.mul_apply]
+  aesop
 
 private theorem lower_det (K : Type*) [Field K] (t : K) : KubotaRankTwo.det K (lowerN K t) = 1 := by
   apply Units.ext

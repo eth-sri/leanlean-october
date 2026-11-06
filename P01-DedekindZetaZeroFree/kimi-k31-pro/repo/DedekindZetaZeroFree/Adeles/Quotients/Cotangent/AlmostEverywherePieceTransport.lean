@@ -348,7 +348,7 @@ private theorem all_charts_ae
     have heq : {x : omega a | coefficient (G cover f) a x ≠ coefficient (G cover g) a x} =
         (fun x => (coefficient (G cover f) a x, coefficient (G cover g) a x)) ⁻¹'
           (Set.diagonal (E F))ᶜ := by
-      ext x; simp [Set.mem_diagonal]
+      ext x; simp
     rw [heq]
     exact isClosed_diagonal.isOpen_compl.measurableSet.preimage
       (Measurable.prod (f := fun x : omega a =>

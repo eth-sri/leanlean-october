@@ -557,7 +557,7 @@ theorem sexticResidue_neg_one (A : SArithmeticData F) (I : A.Exterior) :
     exact congrArg Units.val (A.sexticResidueFamily_normalized.1 I v)
   have hn : q z ^ 6 = Ideal.Quotient.mk (A.extendIdeal I) (-1) := by
     rw [← map_pow, hz]
-    simp only [RingHom.comp_apply, map_neg, map_one]
+    simp only [map_neg, map_one]
   unfold sexticResidue residueValue
   rw [← hn, map_pow, hpow]
 

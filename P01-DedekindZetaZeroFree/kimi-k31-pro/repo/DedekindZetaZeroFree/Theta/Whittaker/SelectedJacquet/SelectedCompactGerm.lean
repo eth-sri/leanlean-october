@@ -67,7 +67,7 @@ theorem localMeromorphicIntegrand_apply (T : Realization R Q) (v : R.A.UnitQuoti
       (KPGlobalTorusFunctionData.N F R.A.zeta12 R.A.primitive_zeta12 (Quotient.out q) * g) := by
   change s⁻¹ * clearedIntegrand T v s g q = _
   rw [clearedIntegrand_apply T v s hs, T.clears v s hs hn]
-  simp [← mul_assoc, hn]
+  simp [hn]
 
 theorem localMeromorphicIntegrand_meromorphic (T : Realization R Q)
     (v : R.A.UnitQuotient) (g : Group R) :

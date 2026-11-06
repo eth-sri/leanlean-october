@@ -50,8 +50,7 @@ theorem adelic_topological_covers :
       IsLocalHomeomorph (KPAdelicCoverRestrictedProduct.projection F ζ hζ)) ∧
     (T2Space (AdelicPGL2Cover F ζ hζ) ∧ LocallyCompactSpace (AdelicPGL2Cover F ζ hζ) ∧
       IsTopologicalGroup (AdelicPGL2Cover F ζ hζ) ∧
-      IsLocalHomeomorph (KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ)) := by
-  exact ⟨KPAdelicCoverRestrictedProduct.adelic_topological_cover F ζ hζ,
+      IsLocalHomeomorph (KPAdelicCoverRestrictedProduct.pglProjection F ζ hζ)) := ⟨KPAdelicCoverRestrictedProduct.adelic_topological_cover F ζ hζ,
     KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ⟩
 
 abbrev adelicW := KPRationalAdelicSplitting.W F ζ hζ

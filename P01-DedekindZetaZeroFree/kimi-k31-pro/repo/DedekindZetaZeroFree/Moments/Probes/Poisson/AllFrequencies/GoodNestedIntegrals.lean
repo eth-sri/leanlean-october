@@ -112,9 +112,9 @@ private theorem rawKernel_norm_eq (u : Frequency D.recipe) (hq : 0 < frequencyNo
   rw [Complex.norm_cpow_eq_rpow_re_of_pos hZc, Complex.norm_cpow_eq_rpow_re_of_pos hqc]
   simp only [Complex.add_re, Complex.sub_re, Complex.mul_re, Complex.ofReal_re,
     Complex.ofReal_im, Complex.I_re, Complex.I_im, Complex.add_im, Complex.sub_im,
-    Complex.mul_im, Complex.one_re, Complex.one_im, Complex.neg_re, Complex.neg_im,
-    Complex.natCast_re, Complex.natCast_im, Complex.ofReal_natCast]
-  simp only [zero_mul, mul_zero, sub_zero, add_zero, zero_add, zero_sub]
+    Complex.mul_im, Complex.one_re, Complex.one_im, Complex.neg_re, 
+    ]
+  simp only [zero_mul, mul_zero, sub_zero, add_zero, zero_add]
   unfold Scales.kernelExponent
   try ring_nf
 

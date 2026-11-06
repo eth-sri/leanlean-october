@@ -245,7 +245,7 @@ theorem scalar_ae_of_mk_eq_measure (a : ActualChart (U := U) (H := H))
   have he : scalar r a x = scalar s a x - scalar t a x := by
     simp [r, scalar, KPContActualSectorTestDifferentialDescent.liftExtension,
       sectionFields, KPContCotangentActualGenuineTwistIsotropy.isotropyChart,
-      LiftedChart.coefficient, map_sub]
+      LiftedChart.coefficient]
     split_ifs <;> simp
   exact sub_eq_zero.mp (he.symm.trans hx)
 
@@ -280,7 +280,7 @@ theorem scalarProducer_exists (a : ActualChart (U := U) (H := H)) :
       simp only [Pi.add_apply, h2, h3]
       simp [scalar, KPContActualSectorTestDifferentialDescent.liftExtension,
         sectionFields, KPContCotangentActualGenuineTwistIsotropy.isotropyChart,
-        KPContSectorSmoothFramesSupport.liftCoefficient, LiftedChart.coefficient, map_add]
+        LiftedChart.coefficient]
       split_ifs <;> simp
     map_smul' := by
       intro c s
@@ -293,7 +293,7 @@ theorem scalarProducer_exists (a : ActualChart (U := U) (H := H)) :
       simp only [Pi.smul_apply, h2]
       simp [scalar, KPContActualSectorTestDifferentialDescent.liftExtension,
         sectionFields, KPContCotangentActualGenuineTwistIsotropy.isotropyChart,
-        KPContSectorSmoothFramesSupport.liftCoefficient, LiftedChart.coefficient, map_smul] }
+        LiftedChart.coefficient] }
   have hNL : N ≤ LinearMap.ker L := by
     intro s hs
     have hm : mk F ζ hζ U R P H s = mk F ζ hζ U R P H 0 := by
@@ -306,7 +306,7 @@ theorem scalarProducer_exists (a : ActualChart (U := U) (H := H)) :
       funext x
       simp [scalar, KPContActualSectorTestDifferentialDescent.liftExtension,
         sectionFields, KPContCotangentActualGenuineTwistIsotropy.isotropyChart,
-        KPContSectorSmoothFramesSupport.liftCoefficient, LiftedChart.coefficient]
+        LiftedChart.coefficient]
     filter_upwards [(scalar_memLp a s).coeFn_toLp,
       scalar_ae_of_mk_eq_measure a s 0 hm, Lp.coeFn_zero ℂ 2 (measure a)] with x h1 h2 h3
     exact h1.trans (h2.trans (by simpa [hz] using h3.symm))

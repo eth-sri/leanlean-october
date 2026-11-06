@@ -66,19 +66,16 @@ theorem defect_w_boundary
     simp [D, c, d, f, Matrix.mul_apply]
   have hrel : C * f - D * e = c * q := by
     rw [hC, hD]
-    simp only [q, det, Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two]
+    simp only [q, Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two]
     ring
   have hq : q ≠ 0 := (det K h).ne_zero
   have hr : (r : K) = if c = 0 then d else c := rfl
   have hx : (x0 : K) = if e = 0 then f else e := rfl
-  have hy : (y : K) = if f = 0 then -e else f := by
-    exact x_w K h
+  have hy : (y : K) = if f = 0 then -e else f := x_w K h
   have hz : (z : K) = if C = 0 then D else C := rfl
-  have ht : (t : K) = if D = 0 then -C else D := by
-    exact x_w K (g * h)
+  have ht : (t : K) = if D = 0 then -C else D := x_w K (g * h)
   have hfac : KubotaElementaryLastArgument.defect K M B g h (w K) =
-      B (t * x0 / (z * y)) (z * y / (r * det K h)) := by
-    exact factor K M B hL hR hAlt g h
+      B (t * x0 / (z * y)) (z * y / (r * det K h)) := factor K M B hL hR hAlt g h
   rw [hfac]
   by_cases hc : c = 0
   · have hd : d ≠ 0 := bottomRight_ne_zero K g hc

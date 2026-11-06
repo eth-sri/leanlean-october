@@ -2,6 +2,7 @@ module
 
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.RayClassModulus
 public import ClassFieldTheory.Definitions.FrobeniusAndHilbertClassFields.NumberFieldFractionalIdealGroup
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -36,8 +37,7 @@ def fullModulus (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) :
 @[simp] theorem mem_fullModulus_infinitePart (m : Ideal (𝓞 F)) (hm : m ≠ ⊥)
     (v : ClassFieldTheory.RayClassRealPlace F) :
     v ∈ (fullModulus m hm).infinitePart := by
-  rw [fullModulus_infinitePart]
-  exact Finset.mem_univ v
+  norm_num
 
 def integralIdealUnit (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) :
     ClassFieldTheory.NumberFieldFractionalIdealGroup F :=

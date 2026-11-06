@@ -13,7 +13,7 @@ set_option autoImplicit false
 
 open LocalFiniteSums
 
-def localPrincipalRegion : Set ℂ := {s | (1 / 2 : ℝ) < s.re}
+
 
 def principalModel (Q : ℝ) (α β : ℂ) (s : ℂ) : ℂ :=
   Audit.Euler.principalCorrection (Q : ℂ)⁻¹
@@ -30,7 +30,7 @@ theorem principalGap_pos (σ₀ : ℝ) (hσ₀ : (1 / 2 : ℝ) < σ₀) :
     Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) (by linarith)
   have h₂ : Real.rpow 2 (3 - 6 * σ₀) < 1 :=
     Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) (by linarith)
-  exact sub_pos.mpr (max_lt h₁ h₂)
+  grind
 
 private lemma model_moduli (σ₀ Q : ℝ) (hσ₀ : (1 / 2 : ℝ) < σ₀)
     (hQ : 2 ≤ Q) (α β s : ℂ) (hα : ‖α‖ = 1) (hβ : ‖β‖ = 1)

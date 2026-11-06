@@ -147,22 +147,9 @@ theorem padicCompletedChangedStandardSeries_constantCoeff
     LubinTateSeries.constantCoeff_eq_zero,
     map_zero]
 
-/-- The completed multiplicative Lubin--Tate series admits formal
-substitution. -/
-theorem padicCompletedMultiplicativeSeries_hasSubst
-    (p : ℕ) [Fact p.Prime] :
-    PowerSeries.HasSubst (padicCompletedMultiplicativeSeries p) :=
-  PowerSeries.HasSubst.of_constantCoeff_zero'
-    (padicCompletedMultiplicativeSeries_constantCoeff p)
 
-/-- The completed changed standard Lubin--Tate series admits formal
-substitution. -/
-theorem padicCompletedChangedStandardSeries_hasSubst
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) :
-    PowerSeries.HasSubst (padicCompletedChangedStandardSeries p u) :=
-  PowerSeries.HasSubst.of_constantCoeff_zero'
-    (padicCompletedChangedStandardSeries_constantCoeff p u)
+
+
 
 /-- Reduction of the completed multiplicative series modulo `p` is `X ^ p`. -/
 theorem padicCompletedMultiplicativeSeries_map_constantCoeff

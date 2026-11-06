@@ -32,8 +32,7 @@ private theorem two_norm (v : HeightOneSpectrum (𝓞 F)) (hodd : ringChar (Resi
       exact hz
     exact Ring.two_ne_zero hodd hz'
   obtain ⟨u, hu⟩ := hu
-  have he : (localUnit v u : v.adicCompletion F) = 2 := by
-    exact congrArg Subtype.val hu
+  have he : (localUnit v u : v.adicCompletion F) = 2 := congrArg Subtype.val hu
   rw [← he]
   exact unit_norm v u
 private theorem scaled_annihilator (v : HeightOneSpectrum (𝓞 F))
@@ -54,7 +53,7 @@ private theorem scaled_annihilator (v : HeightOneSpectrum (𝓞 F))
       have huN := unit_norm v u
       have he : (localUnit v u : v.adicCompletion F) = z⁻¹ := congrArg Subtype.val hu
       rw [he, norm_inv] at huN
-      have hn' : ‖z‖ = 1 := by exact (inv_eq_one.mp huN)
+      have hn' : ‖z‖ = 1 := (inv_eq_one.mp huN)
       linarith
     have hmem : zi ∈ IsLocalRing.maximalIdeal _ := (IsLocalRing.mem_maximalIdeal _).mpr hzi
     rw [(IsDiscreteValuationRing.irreducible_iff_uniformizer π).mp hπ,
@@ -498,7 +497,7 @@ private theorem piLattice_admissible (v : HeightOneSpectrum (𝓞 F))
     stationary_piLattice v hodd π hπ c hc u
   let f : L →+ Residue v :=
     { toFun := fun x => IsLocalRing.residue _ ⟨x, (show (x : v.adicCompletion F) ∈ (v.adicCompletionIntegers F).toSubring.toAddSubgroup from hL ▸ x.property)⟩
-      map_zero' := by exact map_zero (IsLocalRing.residue _)
+      map_zero' := map_zero (IsLocalRing.residue _)
       map_add' := by
         intro x y
         convert map_add (IsLocalRing.residue (v.adicCompletionIntegers F)) _ _ using 1
@@ -525,9 +524,7 @@ private theorem stationary_residue_equiv_mk (v : HeightOneSpectrum (𝓞 F))
       IsLocalRing.residue _ ⟨x, (show (x : v.adicCompletion F) ∈
         (v.adicCompletionIntegers F).toSubring.toAddSubgroup from
           stationary_piLattice v hodd π hπ c hc u ▸ x.property)⟩ := by
-  unfold stationary_residue_equiv
-  rw [AddEquiv.trans_apply, QuotientAddGroup.quotientAddEquivOfEq_mk]
-  rfl
+  aesop
 
 private theorem stationary_phase_residue (v : HeightOneSpectrum (𝓞 F))
     (hodd : ringChar (Residue v) ≠ 2)
@@ -646,8 +643,7 @@ abbrev OddLocalResidue (v : HeightOneSpectrum (𝓞 F)) :=
   IsLocalRing.ResidueField (v.adicCompletionIntegers F)
 
 theorem oddLocalResidue_finite (v : HeightOneSpectrum (𝓞 F)) :
-    Finite (OddLocalResidue v) := by
-  exact exteriorLocalResidue_finite v
+    Finite (OddLocalResidue v) := exteriorLocalResidue_finite v
 
 noncomputable instance oddLocalResidueFintype (v : HeightOneSpectrum (𝓞 F)) :
     Fintype (OddLocalResidue v) := by

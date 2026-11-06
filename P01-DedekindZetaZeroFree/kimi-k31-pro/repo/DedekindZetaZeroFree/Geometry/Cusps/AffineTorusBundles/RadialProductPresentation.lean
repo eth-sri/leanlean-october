@@ -62,7 +62,7 @@ def actualCrossHomeomorph (F : Type*) [Field F] [NumberField F]
   left_inv p := by
     have he : ((coordinatesAction F (positive_dimension F hF) S g (p, 0)).1, 0) =
       coordinatesAction F (positive_dimension F hF) S g (p, 0) := by
-      refine Prod.ext (by rfl) ?_
+      refine Prod.ext rfl ?_
       exact (coordinatesAction_radial F hF S D g (p, 0)).symm
     change (coordinatesAction F (positive_dimension F hF) S g⁻¹
       ((coordinatesAction F (positive_dimension F hF) S g (p, 0)).1, 0)).1 = p
@@ -73,7 +73,7 @@ def actualCrossHomeomorph (F : Type*) [Field F] [NumberField F]
   right_inv p := by
     have he : ((coordinatesAction F (positive_dimension F hF) S g⁻¹ (p, 0)).1, 0) =
       coordinatesAction F (positive_dimension F hF) S g⁻¹ (p, 0) := by
-      refine Prod.ext (by rfl) ?_
+      refine Prod.ext rfl ?_
       exact (coordinatesAction_radial F hF S D g⁻¹ (p, 0)).symm
     change (coordinatesAction F (positive_dimension F hF) S g
       ((coordinatesAction F (positive_dimension F hF) S g⁻¹ (p, 0)).1, 0)).1 = p
@@ -105,7 +105,7 @@ def actualCrossAction (F : Type*) [Field F] [NumberField F]
         ((coordinatesAction F (positive_dimension F hF) S k (p, 0)).1, 0)).1
     have he : ((coordinatesAction F (positive_dimension F hF) S k (p, 0)).1, 0) =
       coordinatesAction F (positive_dimension F hF) S k (p, 0) := by
-      refine Prod.ext (by rfl) ?_
+      refine Prod.ext rfl ?_
       exact (coordinatesAction_radial F hF S D k (p, 0)).symm
     rw [he, map_mul]
     rfl
@@ -117,8 +117,7 @@ theorem actualCrossAction_formula (F : Type*) [Field F] [NumberField F]
     (hA : Matrix.ProjGenLinGroup.mk A = (g : KPCuspArithmetic.PGL2 F))
     (hc : A 1 0 = 0) (p : Cross F) :
     actualCrossAction F hF S D g p =
-      crossAffine F hF D.E D.integralUnits (D.ratio g) (A 0 1 / A 1 1) p := by
-  exact congrArg Prod.fst (coordinatesAction_formula F hF S D g A hA hc (p, 0))
+      crossAffine F hF D.E D.integralUnits (D.ratio g) (A 0 1 / A 1 1) p := congrArg Prod.fst (coordinatesAction_formula F hF S D g A hA hc (p, 0))
 
 theorem coordinatesAction_product (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)

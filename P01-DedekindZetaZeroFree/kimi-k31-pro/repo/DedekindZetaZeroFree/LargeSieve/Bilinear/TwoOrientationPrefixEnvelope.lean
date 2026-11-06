@@ -19,7 +19,7 @@ private lemma prefix_numeric_bound (α η Ce : ℝ) (ha : α ∈ Set.Icc (1 : �
       (DedekindZetaZeroFree.LargeSieve.Vendor.dyadicLength (2 * B) + 1 : ℝ) *
         (DedekindZetaZeroFree.LargeSieve.Vendor.dyadicLength (2 * Y) + 1 : ℝ) *
         (Ce * Real.rpow (M * N) (η / 2) *
-          (M + Real.rpow (N) α)) ≤
+          (M + Real.rpow N α)) ≤
       C * Real.rpow (B * Y) η * (B + Real.rpow Y α) := by
   let d := η / 2
   let D := 2 + 1 / (d * Real.log 2)
@@ -40,7 +40,7 @@ private lemma prefix_numeric_bound (α η Ce : ℝ) (ha : α ∈ Set.Icc (1 : �
          _ = _ := by ring
   have hp : (M * N) ^ d ≤ (4 * (B * Y)) ^ d :=
     Real.rpow_le_rpow (mul_nonneg (by linarith) (by linarith)) hprod hd.le
-  have hna : (N) ^ α ≤ 4 * Y ^ α := by
+  have hna : N ^ α ≤ 4 * Y ^ α := by
     calc _ ≤ (2 * Y) ^ α := Real.rpow_le_rpow (by linarith) hjY (by linarith [ha.1])
          _ = (2 : ℝ) ^ α * Y ^ α := Real.mul_rpow (by norm_num) hY0
          _ ≤ 4 * Y ^ α := by
@@ -48,11 +48,11 @@ private lemma prefix_numeric_bound (α η Ce : ℝ) (ha : α ∈ Set.Icc (1 : �
            have hh := Real.rpow_le_rpow_of_exponent_le (show (1 : ℝ) ≤ 2 by norm_num) ha.2
            norm_num [Real.rpow_two] at hh ⊢
            exact hh
-  have hs : M + (N) ^ α ≤ 4 * (B + Y ^ α) := by
+  have hs : M + N ^ α ≤ 4 * (B + Y ^ α) := by
     nlinarith
   have hCe0 : 0 ≤ Ce := by linarith
   have hloc : Ce * (M * N) ^ d *
-      (M + (N) ^ α) ≤
+      (M + N ^ α) ≤
       Ce * (4 * (B * Y)) ^ d * (4 * (B + Y ^ α)) :=
     mul_le_mul (mul_le_mul_of_nonneg_left hp hCe0) hs
       (by positivity) (by positivity)
@@ -179,8 +179,7 @@ theorem direct_prefix_bound
     have hp := Real.rpow_le_rpow
       (show 0 ≤ dyadicScale i * dyadicScale j by positivity) hprod (show 0 ≤ η / 2 by positivity)
     have hs' : dyadicScale i + Real.rpow (dyadicScale j) α ≤
-        2 * B + Real.rpow (2 * Y) α := by
-      exact add_le_add hi2 (Real.rpow_le_rpow (by linarith) hj2 (by linarith [hα.1]))
+        2 * B + Real.rpow (2 * Y) α := add_le_add hi2 (Real.rpow_le_rpow (by linarith) hj2 (by linarith [hα.1]))
     simp only [Real.rpow_eq_pow] at hs' ⊢
     exact mul_le_mul (mul_le_mul_of_nonneg_left hp (by linarith)) hs'
       (by positivity) (mul_nonneg (by linarith) (by rw [Real.rpow_eq_pow]; positivity))
@@ -214,15 +213,7 @@ private lemma prefix_partition {A : Type*} [DecidableEq A]
     (R : Finset A) (blocks : ℕ → Finset A) (P : Finset ℕ) (U : Finset A)
     (hU : P.biUnion blocks = U) (hR : R ⊆ U) :
     R = P.biUnion (fun i => R ∩ blocks i) := by
-  ext a
-  simp only [Finset.mem_biUnion, Finset.mem_inter]
-  constructor
-  · intro ha
-    have := hR ha
-    rw [← hU, Finset.mem_biUnion] at this
-    obtain ⟨i, hi, hai⟩ := this
-    exact ⟨i, hi, ha, hai⟩
-  · rintro ⟨i, hi, ha, _⟩; exact ha
+  grind
 
 private lemma prefix_partition_disjoint {A : Type*} [DecidableEq A]
     (R : Finset A) (blocks : ℕ → Finset A) (P : Finset ℕ)

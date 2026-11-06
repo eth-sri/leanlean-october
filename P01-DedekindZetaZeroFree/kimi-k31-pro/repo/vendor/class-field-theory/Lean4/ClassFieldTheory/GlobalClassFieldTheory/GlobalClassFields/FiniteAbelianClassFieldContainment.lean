@@ -389,42 +389,7 @@ private theorem
         (finiteAbelianClassFieldContainmentIdeleClassEquiv
           (K := K) H hclosed) hRange
 
-/-- The abstract norm subgroup of the compatibly embedded extension is
-the genuine idèle-class norm range of the original extension, expressed at
-the concrete selected base-field endpoint. -/
-theorem
-    ordinaryIdeleClassNormSubgroup_embeddedAbelianSubextension
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex]
-    (E : Type) [Field E] [NumberField E]
-    [Algebra K E] [FiniteDimensional K E]
-    [IsAbelianGalois K E] :
-    ordinaryIdeleClassNormSubgroup
-        (numberFieldTowerFiniteAbstractField K
-          (closedFiniteIndexClassFieldNormAmbient
-            (K := K) H hclosed))
-        (closedFiniteIndexClassFieldEmbeddedAbelianSubextension
-          (K := K) H hclosed E) =
-      (_root_.ideleClassNorm K E).range.toAddSubgroup.map
-        (MulEquiv.toAdditive
-          (ideleClassCongr
-            (closedFiniteIndexClassFieldBaseEquiv
-              (K := K) H hclosed))).toAddMonoidHom := by
-  change
-    ordinaryIdeleClassNormSubgroup
-        (numberFieldTowerFiniteAbstractField K
-          (closedFiniteIndexClassFieldNormAmbient
-            (K := K) H hclosed))
-        (closedFiniteIndexClassFieldEmbeddedAbelianSubextension
-          (K := K) H hclosed E) =
-      (_root_.ideleClassNorm K E).range.toAddSubgroup.map
-        (MulEquiv.toAdditive
-          (finiteAbelianClassFieldContainmentIdeleClassEquiv
-            (K := K) H hclosed)).toAddMonoidHom
-  exact
-    ordinaryIdeleClassNormSubgroup_embeddedAbelianSubextension_named
-      (K := K) H hclosed E
+
 
 private theorem
     ordinaryIdeleClassNormSubgroup_closedFiniteIndexClassFieldSubextension_named
@@ -628,24 +593,7 @@ noncomputable def
           (finiteAbelianExtensionEmbedding_ambient_algebraMap_eq_baseEquiv
             (K := K) H hclosed E x) }
 
-/-- Containment in a selected finite abelian class field, stated as
-existence of an actual algebra embedding over the original base. -/
-theorem
-    finiteAbelianExtension_nonempty_algHom_closedFiniteIndexClassField
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex]
-    (E : Type) [Field E] [NumberField E]
-    [Algebra K E] [FiniteDimensional K E]
-    [IsAbelianGalois K E]
-    (hH :
-      H ≤ (_root_.ideleClassNorm K E).range) :
-    Nonempty
-      (E →ₐ[K]
-        closedFiniteIndexClassField
-          (K := K) H hclosed) :=
-  ⟨finiteAbelianExtensionEmbeddingIntoClosedFiniteIndexClassField
-    (K := K) H hclosed E hH⟩
+
 
 /-- A finite abelian extension is isomorphic over the original base to
 the class field selected by its own genuine idèle-class norm range. -/

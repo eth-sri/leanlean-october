@@ -129,18 +129,7 @@ theorem equalCharacteristicCompletedPrimitiveRoot_not_torsion_pred
   · exact Nat.sub_ne_zero_of_lt
       (Finite.one_lt_card : 1 < Nat.card F.residueField)
 
-/-- In particular, the chosen completed primitive point is nonzero. -/
-theorem equalCharacteristicCompletedPrimitiveRoot_ne_zero
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) :
-    equalCharacteristicCompletedPrimitiveRoot F n ≠ 0 := by
-  intro hzero
-  apply equalCharacteristicCompletedPrimitiveRoot_not_torsion_pred F n
-  change equalCharacteristicLubinTateAmbientPiIterate F
-      (equalCharacteristicCompletedLevelUniformizer F n) n
-      (equalCharacteristicCompletedPrimitiveRoot F n) = 0
-  rw [hzero, map_zero]
+
 
 /-- The bracket image of the completed primitive point attached to a
 power-series unit. -/

@@ -41,7 +41,7 @@ private lemma ordinary_factor (b : upperBorel F v) :
     rw [Matrix.mul_apply, Fin.sum_univ_two]
     fin_cases i <;> fin_cases j <;>
       simp [upperRootMatrix, diagonalMatrix, Matrix.GeneralLinearGroup.mkOfDetNeZero,
-        Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar_apply, Matrix.diagonal_apply,
+        Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar_apply, 
         u, borelRatio_eq F v b A hA hu, hu, h11]
   rw [← hA]
   unfold upperRootElement diagonalElement
@@ -53,7 +53,7 @@ private lemma root_in_torus_zero (x : LocalField F v)
   obtain ⟨u, heq⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp hA
   have he := congrArg (fun B : GL2 F v => B 0 1) heq
   simp [upperRootMatrix, Matrix.GeneralLinearGroup.mkOfDetNeZero,
-    Matrix.mul_apply, Fin.sum_univ_two, Matrix.GeneralLinearGroup.coe_scalar,
+    Matrix.mul_apply, Matrix.GeneralLinearGroup.coe_scalar,
     Matrix.scalar_apply, Matrix.diagonal_apply, hv] at he
   exact he.symm
 
@@ -74,14 +74,14 @@ theorem exists_unique_lifted_factorization
   change π b = upperRootElement F v a * diagonalElement F v (borelRatio F v ⟨π b, hb⟩) at ha
   let t := n (Multiplicative.ofAdd (-a)) * b
   have hfac : b = n (Multiplicative.ofAdd a) * t := by
-    simp [t, ← mul_assoc, ← map_mul]
+    simp [t, ← mul_assoc]
   have hproj : π t = diagonalElement F v (borelRatio F v ⟨π b, hb⟩) := by
     change π (n (Multiplicative.ofAdd (-a)) * b) = _
     rw [map_mul, hn]
     conv_lhs => rw [ha]
     change ordinaryUpperRootHom F v (Multiplicative.ofAdd (-a)) *
       (ordinaryUpperRootHom F v (Multiplicative.ofAdd a) * _) = _
-    simp [← mul_assoc, ← map_mul]
+    simp [← mul_assoc]
   have ht : π t ∈ diagonalTorus F v := by
     rw [hproj]
     exact diagonal_mem F v _
@@ -93,7 +93,7 @@ theorem exists_unique_lifted_factorization
         simp [mul_assoc]
       _ = n (Multiplicative.ofAdd (-a')) * (n (Multiplicative.ofAdd a') * t') * t⁻¹ := by
         rw [← hfac, hfac']
-      _ = _ := by simp [← mul_assoc, ← map_mul]
+      _ = _ := by simp [← mul_assoc]
   have hroot : upperRootElement F v (-a' + a) ∈ diagonalTorus F v := by
     have hm := (diagonalTorus F v).mul_mem ht' ((diagonalTorus F v).inv_mem ht)
     rw [← map_inv, ← map_mul, ← heq, ← map_mul, hn] at hm

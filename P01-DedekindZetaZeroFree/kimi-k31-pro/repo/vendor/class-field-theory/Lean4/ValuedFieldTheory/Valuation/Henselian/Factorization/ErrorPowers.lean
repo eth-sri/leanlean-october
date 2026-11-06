@@ -74,25 +74,7 @@ theorem henselFactorization_span_singleton_le_ideal_of_mem
   have hxπ : x = π := by simpa using hx
   simpa [hxπ] using hπ
 
-/-- local-ring form: if `π` lies in the maximal ideal, then a
-displayed `C(π^n)` factor has every coefficient in `m^n`. -/
-theorem henselFactorization_coeff_mem_maximalIdeal_pow_of_factor_of_mem
-    {R : Type*} [CommRing R] [IsLocalRing R] {π : R} {n : ℕ} {P Q : R[X]}
-    (hπ : π ∈ IsLocalRing.maximalIdeal R)
-    (hfactor : P = Polynomial.C (π ^ n) * Q) :
-    ∀ i : ℕ, P.coeff i ∈ IsLocalRing.maximalIdeal R ^ n := by
-  intro i
-  have hspan :
-      P.coeff i ∈ Ideal.span ({π ^ n} : Set R) :=
-    henselFactorization_coeff_mem_span_singleton_pow_of_factor
-      (π := π) (n := n) hfactor i
-  have hπpow : π ^ n ∈ IsLocalRing.maximalIdeal R ^ n :=
-    Ideal.pow_mem_pow hπ n
-  have hspan_le :
-      Ideal.span ({π ^ n} : Set R) ≤ IsLocalRing.maximalIdeal R ^ n :=
-    henselFactorization_span_singleton_le_ideal_of_mem
-      (IsLocalRing.maximalIdeal R ^ n) hπpow
-  exact hspan_le hspan
+
 
 /-- multiplying a coefficient congruent to zero modulo `π`
 by `π^n` puts it in `(π^(n+1))`. -/
@@ -211,35 +193,9 @@ theorem henselFactorization_power_update_error_factor_exists
     (henselFactorization_power_update_error_coeff_mem_span_singleton
       (π := π) hn hfactor hcorr)
 
-/-- maximal-ideal correction congruence rewritten through a
-principal ideal containing the maximal ideal. -/
-theorem henselFactorization_correction_congruence_span_singleton_of_maximalIdeal_le
-    {R : Type*} [CommRing R] [IsLocalRing R] {π : R} {A B : R[X]}
-    (hπ : IsLocalRing.maximalIdeal R ≤ Ideal.span ({π} : Set R))
-    (hcong : ∀ i : ℕ, (A - B).coeff i ∈ IsLocalRing.maximalIdeal R) :
-    ∀ i : ℕ, (A - B).coeff i ∈ Ideal.span ({π} : Set R) := by
-  intro i
-  exact hπ (hcong i)
 
-/-- explicit local-ring form of the power update.  This is
-the step used in the recursive Hensel construction when the correction
-congruence modulo the maximal ideal can be read modulo `(π)`. -/
-theorem henselFactorization_power_update_error_factor_exists_of_maximalIdeal_correction_le
-    {R : Type*} [CommRing R] [IsLocalRing R] {π : R} {n : ℕ} (hn : 1 ≤ n)
-    (hπ : IsLocalRing.maximalIdeal R ≤ Ideal.span ({π} : Set R))
-    {f g h fn p q : R[X]}
-    (hfactor : f - g * h = Polynomial.C (π ^ n) * fn)
-    (hcorr :
-      ∀ i : ℕ, (g * q + h * p - fn).coeff i ∈
-        IsLocalRing.maximalIdeal R) :
-    ∃ fnNext : R[X],
-      f - (g + Polynomial.C (π ^ n) * p) *
-          (h + Polynomial.C (π ^ n) * q) =
-        Polynomial.C (π ^ (n + 1)) * fnNext :=
-  henselFactorization_power_update_error_factor_exists
-    (π := π) hn hfactor
-    (henselFactorization_correction_congruence_span_singleton_of_maximalIdeal_le
-      (π := π) hπ hcorr)
+
+
 
 
 end Valuations

@@ -174,40 +174,9 @@ theorem finiteResidueFrobeniusFromZHat_one :
   rw [finiteResidueFrobeniusFromZHat_apply]
   exact finiteResidueFrobeniusExponentHom_one k L
 
-/-- Every automorphism of a finite residue extension is induced by a
-profinite Frobenius exponent. -/
-theorem finiteResidueFrobeniusFromZHat_surjective :
-    Function.Surjective (finiteResidueFrobeniusFromZHat k L) := by
-  intro sigma
-  obtain ⟨a, ha⟩ := finiteResidueFrobeniusExponentHom_surjective k L sigma
-  obtain ⟨z, hz⟩ := zHatReduction_surjective
-    (Module.finrank k L) Module.finrank_pos a.toAdd
-  refine ⟨Multiplicative.ofAdd z, ?_⟩
-  rw [finiteResidueFrobeniusFromZHat_apply]
-  change finiteResidueFrobeniusExponentHom k L
-      (Multiplicative.ofAdd
-        (zHatReduction (Module.finrank k L) Module.finrank_pos z)) = sigma
-  rw [hz]
-  exact ha
 
-/-- A profinite exponent acts trivially on a finite residue extension exactly
-when it is zero modulo the extension degree. -/
-theorem finiteResidueFrobeniusFromZHat_eq_one_iff (z : ZHatMul) :
-    finiteResidueFrobeniusFromZHat k L z = 1 ↔
-      zHatReduction (Module.finrank k L) Module.finrank_pos z.toAdd = 0 := by
-  rw [finiteResidueFrobeniusFromZHat_apply]
-  constructor
-  · intro h
-    have h' :
-        Multiplicative.ofAdd
-            (zHatReduction (Module.finrank k L) Module.finrank_pos z.toAdd) =
-          1 := by
-      apply finiteResidueFrobeniusExponentHom_injective k L
-      simpa using h
-    exact congrArg Multiplicative.toAdd h'
-  · intro h
-    rw [h]
-    exact (finiteResidueFrobeniusExponentHom k L).map_one
+
+
 
 section Tower
 

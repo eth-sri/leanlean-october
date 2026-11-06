@@ -167,7 +167,7 @@ private theorem place_mul_norm_power
   have hlog : WithZero.log (v.valuation F a) = -((-WithZero.log (v.valuation F a)).toNat : ℤ) := by
     conv_lhs => rw [valuation_eq_exp_neg_toNat F v a ha hv, WithZero.log_exp]
   conv_lhs => lhs; rw [hlog]
-  simp only [NNReal.coe_zpow, NNReal.coe_natCast, zpow_neg, zpow_natCast]
+  simp only [zpow_neg, zpow_natCast]
   have hn : (Ideal.absNorm v.asIdeal : ℝ) ≠ 0 := by exact_mod_cast
     (ne_of_gt (zero_lt_one.trans (NumberField.HeightOneSpectrum.one_lt_absNorm_nnreal v)))
   exact inv_mul_cancel₀ (pow_ne_zero _ hn)

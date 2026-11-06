@@ -74,7 +74,7 @@ private theorem ideal_factorization (I : Ideal (𝓞 F)) (hI : I ≠ ⊥) :
     apply Finsupp.mem_support_iff.mpr
     intro hz
     have : v.maxPowDividing I = 1 := by
-      simp [HeightOneSpectrum.maxPowDividing, order_eq_count F I hI v,
+      simp [HeightOneSpectrum.maxPowDividing, 
         Int.natCast_eq_zero.mp (by simpa [order_eq_count F I hI v] using hz)]
     exact hv this
 

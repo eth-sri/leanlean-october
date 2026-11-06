@@ -103,8 +103,8 @@ private theorem rational_compact_finite (g : KubotaRankTwo.GL2 F) :
       let u : (KPTameCompact.O F q)ˣ :=
         ⟨⟨algebraMap F (q.adicCompletion F) (g 1 0), hg 1 0⟩,
           ⟨algebraMap F (q.adicCompletion F) (g 1 0)⁻¹, hc⟩,
-          by apply Subtype.ext; simp [← map_mul, hz],
-          by apply Subtype.ext; simp [← map_mul, hz]⟩
+          by apply Subtype.ext; simp [hz],
+          by apply Subtype.ext; simp [hz]⟩
       letI : ValuativeRel (q.adicCompletion F) := ClassFieldTheory.finitePlaceCompletionValuativeRel F q
       letI : (Valued.v : Valuation (q.adicCompletion F) (WithZero (Multiplicative ℤ))).Compatible :=
         Valuation.Compatible.ofValuation _

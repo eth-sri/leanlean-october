@@ -40,7 +40,7 @@ theorem rightHalfPlane_bound (R : PrincipalMellin.ActualRecipe S η)
         have hl := Real.log_pos hQ
         have hr : 0 < s.re := lt_trans zero_lt_one (ha.trans_le hs)
         nlinarith
-      exact (mul_le_mul_of_nonneg_right hn (norm_nonneg _)).trans (by simpa using hp)
+      exact (mul_le_mul_of_nonneg_right hn (norm_nonneg _)).trans (by grind)
     exact (norm_sub_le _ _).trans (by rw [norm_one]; linarith)
   change ‖R.continuation.L s * ∏ v ∈ R.A.Sf,
     (1 - R.target v.asIdeal * comparisonRealPower (idealNorm v.asIdeal) (-s))‖ ≤ _
@@ -49,7 +49,7 @@ theorem rightHalfPlane_bound (R : PrincipalMellin.ActualRecipe S η)
       ‖1 - R.target v.asIdeal * comparisonRealPower (idealNorm v.asIdeal) (-s)‖) ≤
       2 ^ R.A.Sf.card := by
     simpa using Finset.prod_le_prod₀ (fun v hv => norm_nonneg _) hlocal
-  exact mul_le_mul (hfull.trans (by dsimp [C]; linarith)) hmask
+  exact mul_le_mul (hfull.trans (by grind)) hmask
     (Finset.prod_nonneg (fun v hv => norm_nonneg _)) (by positivity)
 
 theorem rightHalfPlane_reciprocal_bound
@@ -74,7 +74,7 @@ theorem rightHalfPlane_reciprocal_bound
         refine ⟨?_, by simp⟩
         intro hzero
         have hη : R.target I = 0 := (R.target.eq_zero_iff' I).mpr (Or.inl hzero)
-        exact hI (by simpa only [hη, zero_mul])
+        grind
       exact ((hasSum_subtype_iff_of_support_subset hsupport).mpr
         (R.continuation.series s (ha.trans_le hs))).tsum_eq
     rw [← hexp, ← Complex.exp_neg, Complex.norm_exp]
@@ -123,8 +123,7 @@ theorem rightHalfPlane_reciprocal_bound
     have ht := norm_sub_norm_le (1 : ℂ)
       (R.target v.asIdeal * comparisonRealPower (idealNorm v.asIdeal) (-s))
     rw [norm_one] at ht
-    dsimp [u] at *
-    linarith
+    grind
   change ‖(R.continuation.L s * ∏ v ∈ R.A.Sf,
     (1 - R.target v.asIdeal * comparisonRealPower (idealNorm v.asIdeal) (-s)))⁻¹‖ ≤ _
   rw [mul_inv_rev, norm_mul]
@@ -133,8 +132,8 @@ theorem rightHalfPlane_reciprocal_bound
       apply mul_le_mul
       · rw [← Finset.prod_inv_distrib, norm_prod]
         exact Finset.prod_le_prod₀ (fun v hv => norm_nonneg _) (fun v hv => hlocal v)
-      · exact hfull s hs
-      · exact norm_nonneg _
+      · grind
+      · grind
       · exact (Finset.prod_pos (fun v hv => hupos v)).le
     _ = _ := mul_comm _ _
 

@@ -68,17 +68,13 @@ instance : Coe D.Row (CorrectionFactors.Frequency D.context) := ⟨Row.toFrequen
 abbrev generates (r : D.Row) := r.toFrequency.generates
 
 theorem ext {r r' : D.Row} (h : r.toFrequency = r'.toFrequency) : r = r' := by
-  cases r; cases r'; cases h; rfl
+  cases r; cases r'; grind
 
 private theorem frequency_ext_of_u_ideal {f g : CorrectionFactors.Frequency D.context}
     (hu : f.u = g.u) (hI : f.ideal = g.ideal) : f = g := by
   obtain ⟨u, I, a, b, c⟩ := f
   obtain ⟨u', I', a', b', c'⟩ := g
-  have hu' : u = u' := hu
-  have hI' : I = I' := hI
-  subst hu'
-  subst hI'
-  rfl
+  grind
 
 theorem u_injective : Function.Injective (Row.u (D := D)) := by
   intro r r' h
@@ -88,7 +84,7 @@ theorem u_injective : Function.Injective (Row.u (D := D)) := by
     apply Subtype.ext
     rw [D.recipe.A.exteriorIdealEquiv_apply, D.recipe.A.exteriorIdealEquiv_apply,
       ← r.toFrequency.generates.2, ← r'.toFrequency.generates.2]
-    exact congrArg (fun x : D.recipe.A.R => Ideal.span {x}) hu
+    grind
   exact ext (frequency_ext_of_u_ideal hu hI)
 
 theorem u_mem_reps (r : D.Row) :
@@ -209,7 +205,7 @@ theorem M_vertical_decay (a b : ℝ) (ha : 0 < a) (hab : a ≤ b) (k : ℕ) :
   calc (1 + |z.im|) ^ k * ‖D.M z‖ ≤ (1 + |z.im|) ^ k * (C * (1 + |z.im|) ^ (-(k : ℝ))) :=
         mul_le_mul_of_nonneg_left h' (by positivity)
     _ = C * ((1 + |z.im|) ^ k * (1 + |z.im|) ^ (-(k : ℝ))) := by ring
-    _ = C := by rw [hk, mul_one]
+    _ = C := by grind
 
 theorem W1Hat_vertical_decay (a b : ℝ) (hab : a ≤ b) (k : ℕ) :
     ∃ C : ℝ, ∀ z : ℂ, a ≤ z.re → z.re ≤ b →
@@ -225,7 +221,7 @@ theorem W1Hat_vertical_decay (a b : ℝ) (hab : a ≤ b) (k : ℕ) :
   calc (1 + |z.im|) ^ k * ‖D.W1Hat z‖ ≤ (1 + |z.im|) ^ k * (C * (1 + |z.im|) ^ (-(k : ℝ))) :=
         mul_le_mul_of_nonneg_left h (by positivity)
     _ = C * ((1 + |z.im|) ^ k * (1 + |z.im|) ^ (-(k : ℝ))) := by ring
-    _ = C := by rw [hk, mul_one]
+    _ = C := by grind
 
 end FixedData
 

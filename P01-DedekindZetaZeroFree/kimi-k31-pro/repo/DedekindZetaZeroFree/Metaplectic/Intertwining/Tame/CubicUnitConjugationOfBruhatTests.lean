@@ -419,7 +419,7 @@ theorem compact_weyl_lift (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.
   congr 1
   apply congrArg (KPLocalCover.sectionMap F ζ hζ (Sum.inr q))
   ext i j
-  fin_cases i <;> fin_cases j <;> simp [KPTameCompact.inclusion, KPLocalCube.integerInclusion, Matrix.GeneralLinearGroup.map_apply, hg, KPStandardLocalRootLifts.W, KPStandardLocalRootLifts.weylSwap, KubotaRankTwo.w]
+  fin_cases i <;> fin_cases j <;> simp [KPTameCompact.inclusion, KPLocalCube.integerInclusion, Matrix.GeneralLinearGroup.map_apply, hg, KPStandardLocalRootLifts.weylSwap]
 
 include S in
 theorem actual_cube_inverse (c : (LocalField F q)ˣ) :
@@ -498,7 +498,7 @@ theorem deep_diagonal_test_cubic_unit_conjugation
     change localAbs (LocalField F q) (S.borel.coordinate (retractL F ζ hζ q S P b)) = 1
     rw [CubicUnitConjugationAtoms.cubic_diagonal_retractL, S.borel.cube_coordinate]
     have h := localAbs_mul (LocalField F q)
-    simp only [pow_succ, pow_zero, h, hc, localAbs_one, one_mul]
+    simp only [pow_succ, pow_zero, h, hc, one_mul]
   exact deformedTest_unit_chart_conjugation F ζ hζ q S P hP coordinates hcoordinates
     (diagonalLift F ζ hζ q π f') t m hnormalW hnormalT (hR m hmr) b
     (CubicUnitConjugationAtoms.diagonal_test_base_cube_relation F ζ hζ q S π f' c)

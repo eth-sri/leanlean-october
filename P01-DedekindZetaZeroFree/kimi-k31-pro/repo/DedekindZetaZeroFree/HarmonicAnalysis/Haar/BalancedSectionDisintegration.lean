@@ -42,7 +42,7 @@ theorem split_ratio (A : SArithmeticData F) (v : InfinitePlace F)
     (x : ThetaProfileHaarSheets.PositiveAxis) (z : A.G1) :
     ThetaProfileHaarSheets.normSplit A v (x,z) = balancedSplit A (x,z * sectionRatio A v x) := by
   change _ * z.val = (z.val * (_ / _)) * _
-  simp [div_eq_mul_inv, mul_comm, mul_left_comm, mul_assoc]
+  simp [div_eq_mul_inv, mul_comm, mul_assoc]
 
 theorem map_balancedSplit (A : SArithmeticData F) (v : InfinitePlace F)
     (dt : Measure A.G1) [dt.IsHaarMeasure] :

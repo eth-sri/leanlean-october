@@ -169,7 +169,7 @@ private theorem second_horizontal (d : ℕ) (u : Fin d → ℂ) (h : Space d →
          second d h x (coordinateVector d i 1) (coordinateVector d i 1)) := by
   rw [lin_zero, lin_one]
   simp only [second, map_add, map_smul, ContinuousLinearMap.add_apply,
-    ContinuousLinearMap.smul_apply, smul_add, smul_smul, Complex.real_smul]
+    ContinuousLinearMap.smul_apply, smul_add, Complex.real_smul]
   rw [Complex.sq_norm, Complex.normSq_apply]
   push_cast
   ring
@@ -248,9 +248,9 @@ private theorem upper_fst (A : Matrix.GeneralLinearGroup (Fin 2) ℂ)
     intro hz
     exact A.det_ne_zero (by simp [Matrix.det_fin_two, ha, hz])
   have hn : (‖A 1 1‖ ^ 2 : ℂ) = A 1 1 * star (A 1 1) := by
-    simp [Complex.star_def, Complex.mul_conj, Complex.normSq_eq_norm_sq]
+    simp [Complex.mul_conj, Complex.normSq_eq_norm_sq]
   change _ / _ = _
-  simp only [KPArch.actionDenominator, ha, zero_mul, zero_add, norm_zero, zero_pow,
+  simp only [KPArch.actionDenominator, ha, zero_mul, zero_add, norm_zero, 
     add_zero, hr, star_zero, mul_zero, zero_mul]
   simp only [zero_pow (by decide : (2 : ℕ) ≠ 0), zero_mul, add_zero, Complex.ofReal_pow]
   rw [hn]
@@ -292,7 +292,7 @@ private lemma differential_add (d : ℕ) (f g : Space d → ℂ) (x : Space d)
     fderiv_add hf hg
   ext i k
   fin_cases k <;>
-    (simp [differential, coordinateDerivative, hfd, Pi.add_apply, ContinuousLinearMap.add_apply]
+    (simp [differential, coordinateDerivative, hfd, Pi.add_apply]
      ; try ring)
 
 private lemma two_mul_re_pairing (d : ℕ) (U W : Cotangent d) :
@@ -305,7 +305,7 @@ private lemma two_mul_re_pairing (d : ℕ) (U W : Cotangent d) :
     intro i k
     have h1 : (star (U i k) * W i k).re =
         (U i k).re * (W i k).re + (U i k).im * (W i k).im := by
-      simp [Complex.star_def, Complex.mul_re, Complex.conj_re, Complex.conj_im]
+      simp [Complex.mul_re, Complex.conj_re, Complex.conj_im]
     have h2 : ‖(U + W) i k‖ ^ 2 =
         ‖U i k‖ ^ 2 + ‖W i k‖ ^ 2 +
           2 * ((U i k).re * (W i k).re + (U i k).im * (W i k).im) := by

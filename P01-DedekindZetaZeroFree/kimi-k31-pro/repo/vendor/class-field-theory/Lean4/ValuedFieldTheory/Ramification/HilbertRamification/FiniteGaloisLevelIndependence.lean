@@ -169,25 +169,7 @@ theorem lowerRamificationFiltration_eq_of_valuationSubring_eq
     huniq huniq' hvaluationSubring (n : ℝ)
 
 
-/-- Herbrand functions are unchanged when the two target valuations have the
-same valuation ring. -/
-theorem herbrandFunction_eq_of_valuationSubring_eq
-    [FiniteDimensional K L]
-    (huniq : RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x} base target)
-    (huniq' : RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, y, y} base target')
-    (hvaluationSubring :
-      target.valuation.valuationSubring = target'.valuation.valuationSubring) :
-    herbrandFunctionOfUniqueExtension
-        (base := base) (target := target) huniq =
-      herbrandFunctionOfUniqueExtension
-        (base := base) (target := target') huniq' := by
-  have hF :=
-    lowerRamificationFiltration_eq_of_valuationSubring_eq
-      huniq huniq' hvaluationSubring
-  exact congrArg
-    (fun F =>
-      RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.herbrandFunction F)
-    hF
+
 
 /-- Inverse Herbrand functions are unchanged when the two target valuations
 have the same valuation ring. -/
@@ -242,143 +224,23 @@ open ValuationTheory.DiscreteValuationField
 
 variable {K : Type u} [Field K]
 
-/-- The valuation on the chosen integral-closure target is equivalent to the
-valuation on every other complete-DVF target extending the base valuation. -/
-theorem chosenIntegralClosureTarget_valuation_isEquiv
-    (base : CompleteDVF.{u, v} K)
-    (E : FiniteGaloisIntermediateField K (AlgebraicClosure K))
-    (target : CompleteDVF.{u, x} E)
-    [base.valuation.HasExtension target.valuation] :
-    (chosenIntegralClosureTarget base E).valuation.IsEquiv target.valuation :=
-  chosenIntegralClosureTarget_hasUniqueValuationExtension base E target.valuation
 
-/-- The chosen integral-closure valuation ring equals the valuation ring of
-every other complete-DVF target extending the base valuation. -/
-theorem chosenIntegralClosureTarget_valuationSubring_eq
-    (base : CompleteDVF.{u, v} K)
-    (E : FiniteGaloisIntermediateField K (AlgebraicClosure K))
-    (target : CompleteDVF.{u, x} E)
-    [base.valuation.HasExtension target.valuation] :
-    (chosenIntegralClosureTarget base E).valuation.valuationSubring =
-      target.valuation.valuationSubring :=
-  (_root_.Valuation.isEquiv_iff_valuationSubring
-    (chosenIntegralClosureTarget base E).valuation target.valuation).1
-      (chosenIntegralClosureTarget_valuation_isEquiv base E target)
 
-/-- Every complete-DVF target at the same finite Galois level inherits unique
-valuation extension from the chosen target. -/
-theorem hasUniqueValuationExtension_of_finiteGaloisLevel
-    (base : CompleteDVF.{u, v} K)
-    (E : FiniteGaloisIntermediateField K (AlgebraicClosure K))
-    (target : CompleteDVF.{u, x} E)
-    [base.valuation.HasExtension target.valuation] :
-    ValuedExtension.HasUniqueValuationExtension.{u, v, u, x, y}
-      (base := base) (target := target) := by
-  intro Gamma' _ valuation' _
-  exact
-    (chosenIntegralClosureTarget_valuation_isEquiv base E target).symm.trans
-      (chosenIntegralClosureTarget_hasUniqueValuationExtension base E valuation')
 
-/-- The preceding uniqueness statement after forgetting completeness. -/
-theorem hasUniqueDVFValuationExtension_of_finiteGaloisLevel
-    (base : CompleteDVF.{u, v} K)
-    (E : FiniteGaloisIntermediateField K (AlgebraicClosure K))
-    (target : CompleteDVF.{u, x} E)
-    [base.valuation.HasExtension target.valuation] :
-    RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, u, x, y}
-      base.toDVF target.toDVF :=
-  hasUniqueValuationExtension_of_finiteGaloisLevel base E target
 
-/-- The chosen real lower ramification groups agree with those formed from
-any other complete-DVF target at the same finite Galois level. -/
-theorem chosenLowerRamificationGroup_eq
-    (base : CompleteDVF.{u, v} K)
-    (E : FiniteGaloisIntermediateField K (AlgebraicClosure K))
-    (target : CompleteDVF.{u, x} E)
-    [base.valuation.HasExtension target.valuation]
-    (s : ℝ) :
-    Higher.lowerRamificationGroup
-        (base := base.toDVF)
-        (target := (chosenIntegralClosureTarget base E).toDVF)
-        (chosenIntegralClosureTarget_hasUniqueDVFValuationExtension base E) s =
-      Higher.lowerRamificationGroup
-        (base := base.toDVF) (target := target.toDVF)
-        (hasUniqueDVFValuationExtension_of_finiteGaloisLevel base E target) s :=
-  Higher.lowerRamificationGroup_eq_of_valuationSubring_eq
-    (chosenIntegralClosureTarget_hasUniqueDVFValuationExtension base E)
-    (hasUniqueDVFValuationExtension_of_finiteGaloisLevel base E target)
-    (chosenIntegralClosureTarget_valuationSubring_eq base E target) s
 
-/-- The chosen integral lower filtration agrees with that formed from any
-other complete-DVF target at the same finite Galois level. -/
-theorem chosenLowerRamificationFiltration_eq
-    (base : CompleteDVF.{u, v} K)
-    (E : FiniteGaloisIntermediateField K (AlgebraicClosure K))
-    (target : CompleteDVF.{u, x} E)
-    [base.valuation.HasExtension target.valuation] :
-    chosenLowerRamificationFiltration base E =
-      Higher.lowerRamificationFiltrationOfUniqueExtension
-        (base := base.toDVF) (target := target.toDVF)
-        (hasUniqueDVFValuationExtension_of_finiteGaloisLevel base E target) :=
-  Higher.lowerRamificationFiltration_eq_of_valuationSubring_eq
-    (chosenIntegralClosureTarget_hasUniqueDVFValuationExtension base E)
-    (hasUniqueDVFValuationExtension_of_finiteGaloisLevel base E target)
-    (chosenIntegralClosureTarget_valuationSubring_eq base E target)
 
-/-- The chosen Herbrand function agrees with that formed from any other
-complete-DVF target at the same finite Galois level. -/
-theorem chosenHerbrandFunction_eq
-    (base : CompleteDVF.{u, v} K)
-    (E : FiniteGaloisIntermediateField K (AlgebraicClosure K))
-    (target : CompleteDVF.{u, x} E)
-    [base.valuation.HasExtension target.valuation] :
-    Higher.herbrandFunctionOfUniqueExtension
-        (base := base.toDVF)
-        (target := (chosenIntegralClosureTarget base E).toDVF)
-        (chosenIntegralClosureTarget_hasUniqueDVFValuationExtension base E) =
-      Higher.herbrandFunctionOfUniqueExtension
-        (base := base.toDVF) (target := target.toDVF)
-        (hasUniqueDVFValuationExtension_of_finiteGaloisLevel base E target) :=
-  Higher.herbrandFunction_eq_of_valuationSubring_eq
-    (chosenIntegralClosureTarget_hasUniqueDVFValuationExtension base E)
-    (hasUniqueDVFValuationExtension_of_finiteGaloisLevel base E target)
-    (chosenIntegralClosureTarget_valuationSubring_eq base E target)
 
-/-- The chosen inverse Herbrand function agrees with that formed from any
-other complete-DVF target at the same finite Galois level. -/
-theorem chosenInverseHerbrandFunction_eq
-    (base : CompleteDVF.{u, v} K)
-    (E : FiniteGaloisIntermediateField K (AlgebraicClosure K))
-    (target : CompleteDVF.{u, x} E)
-    [base.valuation.HasExtension target.valuation] :
-    Higher.inverseHerbrandFunctionOfUniqueExtension
-        (base := base.toDVF)
-        (target := (chosenIntegralClosureTarget base E).toDVF)
-        (chosenIntegralClosureTarget_hasUniqueDVFValuationExtension base E) =
-      Higher.inverseHerbrandFunctionOfUniqueExtension
-        (base := base.toDVF) (target := target.toDVF)
-        (hasUniqueDVFValuationExtension_of_finiteGaloisLevel base E target) :=
-  Higher.inverseHerbrandFunction_eq_of_valuationSubring_eq
-    (chosenIntegralClosureTarget_hasUniqueDVFValuationExtension base E)
-    (hasUniqueDVFValuationExtension_of_finiteGaloisLevel base E target)
-    (chosenIntegralClosureTarget_valuationSubring_eq base E target)
 
-/-- The chosen upper ramification groups agree with those formed from any
-other complete-DVF target at the same finite Galois level. -/
-theorem chosenUpperRamificationGroup_eq
-    (base : CompleteDVF.{u, v} K)
-    (E : FiniteGaloisIntermediateField K (AlgebraicClosure K))
-    (target : CompleteDVF.{u, x} E)
-    [base.valuation.HasExtension target.valuation]
-    (t : ℝ) :
-    chosenUpperRamificationGroup base E t =
-      Higher.upperRamificationGroupOfUniqueExtension
-        (base := base.toDVF) (target := target.toDVF)
-        (hasUniqueDVFValuationExtension_of_finiteGaloisLevel base E target) t :=
-  Higher.upperRamificationGroup_eq_of_valuationSubring_eq
-    (chosenIntegralClosureTarget_hasUniqueDVFValuationExtension base E)
-    (hasUniqueDVFValuationExtension_of_finiteGaloisLevel base E target)
-    (chosenIntegralClosureTarget_valuationSubring_eq base E target) t
+
+
+
+
+
+
+
+
+
 
 
 end RamificationTheory.HilbertRamification.FiniteGaloisLevel

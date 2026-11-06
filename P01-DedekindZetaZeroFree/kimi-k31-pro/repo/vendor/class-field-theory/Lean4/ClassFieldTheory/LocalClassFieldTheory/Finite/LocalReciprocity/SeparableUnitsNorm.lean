@@ -394,22 +394,7 @@ theorem localNormSubgroup_fieldRange_eq :
       (AlgEquiv.ofInjectiveField i).toMulEquiv x, ?_⟩
     exact normUnits_embeddedExtensionAlgEquiv K Ω L i x
 
-/-- The abstract relative norm attached to an embedded finite Galois
-extension is the actual field norm on its unit group. -/
-theorem relativeNorm_embeddedExtensionUnit (x : Lˣ) :
-    relativeNorm (galoisAmbientUnitsRep K Ω)
-        (closedFixingSubgroup K Ω (⊥ : IntermediateField K Ω))
-        (closedFixingSubgroup K Ω (AlgHom.fieldRange i))
-        (fixingSubgroupLeBase K Ω (AlgHom.fieldRange i))
-        (embeddedFieldUnitsEquivGaloisFixed K Ω L i (Additive.ofMul x)) =
-      baseUnitsEquivGaloisAmbientFixed K Ω
-        (Additive.ofMul (normUnits K L x)) := by
-  let e : L ≃ₐ[K] i.fieldRange := AlgEquiv.ofInjectiveField i
-  let y : i.fieldRangeˣ := Units.mapEquiv e.toMulEquiv x
-  exact (relativeNorm_intermediateFieldUnit K Ω i.fieldRange y).trans
-    (congrArg (fun u : Kˣ =>
-      baseUnitsEquivGaloisAmbientFixed K Ω (Additive.ofMul u))
-      (normUnits_embeddedExtensionAlgEquiv K Ω L i x))
+
 
 /-- For an embedded finite Galois extension `L/K`, the finite norm quotient
 in the abstract class formation is the actual quotient `Kˣ/N_{L/K}Lˣ`. -/

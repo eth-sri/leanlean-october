@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.Eisenstein.Continuation.ScalarGerms.Coefficients
 public import DedekindZetaZeroFree.Eisenstein.Continuation.CompactJetNormBounds
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -39,11 +40,8 @@ theorem powerSeries_eval {a : ℕ → space F ζ hζ} {f : ℂ → space F ζ h�
   have he (v : space F ζ hζ) : L (compactJet (jets F ζ hζ) i v) = v.val g :=
     jets_point F ζ hζ v g
   convert ht using 1
-  · funext s; exact (he (f s)).symm
-  · funext n
-    ext v
-    simp [ContinuousLinearMap.compFormalMultilinearSeries, he,
-      ContinuousMultilinearMap.mkPiRing_apply]
+  · measurability
+  · measurability
 
 end DedekindZetaZeroFree.EisensteinSmoothGerms.SmoothSource.ArchSeries
 

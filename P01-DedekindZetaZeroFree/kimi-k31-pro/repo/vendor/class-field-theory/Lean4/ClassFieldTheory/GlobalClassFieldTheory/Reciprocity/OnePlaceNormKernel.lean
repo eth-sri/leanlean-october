@@ -50,15 +50,9 @@ def ideleNormSubgroup :
     Subgroup (IdeleGroup K) :=
   (RelativeIdeleGroup.norm K L).range
 
-/-- The raw idele norm quotient.  Passing further to principal-idèle
-classes gives the class quotient used in the global reciprocity theorem. -/
-abbrev IdeleNormQuotient :=
-  IdeleGroup K ⧸ ideleNormSubgroup (K := K) (L := L)
 
-/-- The projection to the raw global norm quotient. -/
-def ideleNormClass :
-    IdeleGroup K →* IdeleNormQuotient (K := K) (L := L) :=
-  QuotientGroup.mk' (ideleNormSubgroup (K := K) (L := L))
+
+
 
 omit [NumberField L] [IsGalois K L] in
 /-- A relative idele supported at an archimedean place has norm equal
@@ -144,26 +138,7 @@ theorem infinitePlaceIdele_mem_ideleNormSubgroup_iff
         norm_relativeInfinitePlaceIdele
           (K := K) (L := L) v z⟩
 
-omit [NumberField L] [IsGalois K L] in
-/-- Kernel-exact form of the archimedean one-place norm statement. -/
-theorem ideleNormClass_comp_infinitePlaceIdele_ker
-    (v : InfinitePlace K) :
-    ((ideleNormClass (K := K) (L := L)).comp
-        (infinitePlaceIdele v)).ker =
-      infiniteTensorNormSubgroup
-        (K := K) (L := L) v := by
-  ext x
-  change
-    QuotientGroup.mk'
-        (ideleNormSubgroup (K := K) (L := L))
-        (infinitePlaceIdele v x) = 1 ↔
-      x ∈ infiniteTensorNormSubgroup
-        (K := K) (L := L) v
-  exact
-    (QuotientGroup.eq_one_iff
-      (infinitePlaceIdele v x)).trans
-      (infinitePlaceIdele_mem_ideleNormSubgroup_iff
-        (K := K) (L := L) v x)
+
 
 omit [NumberField L] [IsGalois K L] in
 /-- A relative idele supported at `v` has norm equal to the one-place
@@ -287,45 +262,7 @@ theorem finitePlaceIdeleClass_mem_ideleClassNorm_range_of_mem_chosenLocalNorm
         (IdeleGroup.finitePlaceIdele v x)
   rw [IdeleGroup.norm_relativeIdeleBaseChangeMulEquiv, hz]
 
-omit [NumberField L] in
-/-- Kernel-exact form of the one-place norm statement. -/
-theorem ideleNormClass_comp_finitePlaceIdele_ker
-    (v : HeightOneSpectrum (𝓞 K)) :
-    ((ideleNormClass (K := K) (L := L)).comp
-        (finitePlaceIdele v)).ker =
-      chosenFinitePlaceLocalNormSubgroup
-        (K := K) (L := L) v := by
-  ext x
-  change
-    ideleNormClass (K := K) (L := L)
-        (finitePlaceIdele v x) = 1 ↔
-      x ∈ chosenFinitePlaceLocalNormSubgroup
-        (K := K) (L := L) v
-  change
-    QuotientGroup.mk'
-        (ideleNormSubgroup (K := K) (L := L))
-        (finitePlaceIdele v x) = 1 ↔
-      x ∈ chosenFinitePlaceLocalNormSubgroup
-        (K := K) (L := L) v
-  constructor
-  · intro hx
-    have hmem :
-        finitePlaceIdele v x ∈
-          ideleNormSubgroup (K := K) (L := L) :=
-      (QuotientGroup.eq_one_iff
-        (N := ideleNormSubgroup (K := K) (L := L))
-        (x := finitePlaceIdele v x)).mp hx
-    exact
-      (finitePlaceIdele_mem_ideleNormSubgroup_iff_chosenLocalNorm
-        (K := K) (L := L) v x).mp hmem
-  · intro hx
-    apply
-      (QuotientGroup.eq_one_iff
-        (N := ideleNormSubgroup (K := K) (L := L))
-        (x := finitePlaceIdele v x)).mpr
-    exact
-      (finitePlaceIdele_mem_ideleNormSubgroup_iff_chosenLocalNorm
-        (K := K) (L := L) v x).mpr hx
+
 
 end Reciprocity
 end GlobalClassFieldTheory

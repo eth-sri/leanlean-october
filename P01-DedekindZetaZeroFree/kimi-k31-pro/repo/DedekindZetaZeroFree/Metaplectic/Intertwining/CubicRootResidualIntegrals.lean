@@ -37,7 +37,7 @@ theorem exponent_dvd_of_unitCubeClasses
   obtain ⟨z, rfl⟩ := ha
   obtain ⟨t, rfl⟩ := hb
   have hdiff : (KPRamifiedBeta.unitsInclusion K z * t ^ 3) / u ∈
-      CubicCharacters.cubes Kˣ := (QuotientGroup.eq_iff_div_mem).mp he
+      CubicCharacters.cubes Kˣ := QuotientGroup.eq_iff_div_mem.mp he
   obtain ⟨r, hr⟩ := hdiff
   change r ^ 3 = _ at hr
   have hh := congrArg (KPCubicExpansion.valuationExponent K) hr
@@ -52,9 +52,7 @@ theorem exponent_dvd_of_unitCubeClasses
 
 theorem cubic_cutoffs_eq (n : ℤ) (hn : 3 ∣ n) (i : Fin 3) :
     n ≤ (i.val : ℤ) ↔ n ≤ 0 := by
-  obtain ⟨k, rfl⟩ := hn
-  have hi := i.isLt
-  omega
+  grind
 
 theorem diagonal_root_residual_mem_integer_iff
     (π : Kˣ)
@@ -117,7 +115,7 @@ theorem relative_diagonal_exponent_dvd
   obtain ⟨n, hn⟩ := hd
   have hv : KPCubicExpansion.valuationExponent (LocalField F q) u % 3 = 0 := by
     omega
-  exact (Int.dvd_iff_emod_eq_zero).mpr hv
+  exact Int.dvd_iff_emod_eq_zero.mpr hv
 end Arithmetic
 
 section Haar

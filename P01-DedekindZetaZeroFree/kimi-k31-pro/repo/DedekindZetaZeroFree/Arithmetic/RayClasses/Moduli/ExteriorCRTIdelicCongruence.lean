@@ -186,7 +186,7 @@ theorem crt_removed_ratio_mem_primeTo
         change _ ∈ ClassFieldTheory.rayLocalHigherUnitGroup v _
         rwa [ClassFieldTheory.mem_rayLocalHigherUnitGroup_iff]
       convert (RayClass.localHigherUnitGroup v (idealPrimeExponent v.asIdeal f)).inv_mem hbmem using 1
-      simp [div_eq_mul_inv, mul_comm, mul_left_comm, mul_assoc]
+      simp [div_eq_mul_inv, mul_comm, mul_left_comm]
     · rw [if_neg hvs, div_one]
       have hs0 : idealPrimeExponent v.asIdeal fS = 0 := by
         apply (exp_zero_iff F v fS hsplit.2.1).mpr
@@ -380,7 +380,7 @@ theorem primeTo_idele_evaluation (F : Type) [Field F] [NumberField F] (hc : Numb
          (QuotientGroup.mk' (IdeleGroup.principalSubgroup F) a) := by
    apply (RayClass.rayClassGroupEquivIdealRayClassGroup M').injective
    simp only [rayClassGroupEquivOriginalIdele, MulEquiv.trans_apply,
-      MulEquiv.apply_symm_apply]
+      ]
    have hI : rayClassGroupEquivOriginal F M
        (QuotientGroup.mk' (ClassFieldTheory.rayPrincipalIdealSubgroupInPrimeTo M) I) =
        RayClass.idealRayProjection M' A := by

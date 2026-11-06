@@ -6,6 +6,7 @@ public import Mathlib.RingTheory.Ideal.Operations
 public import Mathlib.RingTheory.LocalRing.Basic
 public import Mathlib.RingTheory.LocalRing.MaximalIdeal.Basic
 public import Mathlib.Tactic.Ring
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -66,8 +67,7 @@ theorem mem_rayLocalHigherUnitGroup_iff_exists_one_add
           ((y : v.adicCompletionIntegers K) : v.adicCompletion K) := hval.symm
       _ = ((1 + ((y : v.adicCompletionIntegers K) - 1) :
             v.adicCompletionIntegers K) : v.adicCompletion K) := by
-        congr 1
-        ring
+        norm_num
   · rintro ⟨t, ht, hx⟩
     have htmax : t ∈ IsLocalRing.maximalIdeal (v.adicCompletionIntegers K) :=
       (Ideal.pow_le_self (Nat.ne_of_gt hn)) ht
@@ -83,18 +83,8 @@ theorem mem_rayLocalHigherUnitGroup_iff_exists_one_add
     · apply Units.ext
       change ((y : v.adicCompletionIntegers K) : v.adicCompletion K) =
         (x : v.adicCompletion K)
-      calc
-        ((y : v.adicCompletionIntegers K) : v.adicCompletion K) =
-            ((1 + t : v.adicCompletionIntegers K) : v.adicCompletion K) :=
-          congrArg
-            (fun z : v.adicCompletionIntegers K =>
-              (z : v.adicCompletion K)) hy
-        _ = (x : v.adicCompletion K) := hx.symm
-    · have hsub : (y : v.adicCompletionIntegers K) - 1 = t := by
-        rw [hy]
-        ring
-      rw [hsub]
-      exact ht
+      grind
+    · grind
 
 end ClassFieldTheory
 

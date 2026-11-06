@@ -21,7 +21,7 @@ def idealRatioResidueEquiv
       (NumberField.RingOfIntegers F ⧸ m) := by
   exact (FractionalIdeal.quotientEquiv I J 1
     (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)
-    (by simpa using hratio) hJI (residueFractionalIdeal_le_one m)
+    (by grind) hJI (residueFractionalIdeal_le_one m)
     ((residueFractionalIdeal_ne_zero_iff m).2 hm) hI).trans
     (residueFractionalOneEquiv m).symm
 

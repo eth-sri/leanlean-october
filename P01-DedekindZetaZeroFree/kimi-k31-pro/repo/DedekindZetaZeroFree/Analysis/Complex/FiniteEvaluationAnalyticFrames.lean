@@ -172,7 +172,7 @@ theorem analytic_function_frame
       Finset.sum_apply, Pi.smul_apply, smul_eq_mul, c, LinearEquiv.apply_symm_apply,
       Finsupp.equivFunOnFinite_symm_apply_apply, Matrix.mulVec, dotProduct] at hv ⊢
     rw [← hv]
-    simp only [Finset.mul_sum, Finset.sum_mul]
+    simp only [Finset.mul_sum]
     rw [Finset.sum_comm]
     apply Finset.sum_congr rfl
     intro i _

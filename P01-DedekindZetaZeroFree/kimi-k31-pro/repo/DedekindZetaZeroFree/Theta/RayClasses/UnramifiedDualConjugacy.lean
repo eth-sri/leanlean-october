@@ -42,7 +42,7 @@ theorem normalizedRayDualTheta_eq_unramified_conjugate
   let a := conductorScale F (⊤ : Ideal (𝓞 F))
   have ha : 0 < a := conductorScale_pos hm
   have hscale : a = Real.sqrt |(NumberField.discr F : ℝ)| := by
-    simp [a, conductorScale, conductorNorm, Int.cast_abs]
+    simp [a, conductorScale, conductorNorm]
   have hψ : ∀ c, ‖χ.ψ c‖ = 1 :=
     rayCharacterDescent_norm_eq_one hm η χ.ψ χ.descent
   refine ⟨χ.ψ (d⁻¹), weightedInvolution_factor_ne_zero χ.ψ hψ d, ?_⟩

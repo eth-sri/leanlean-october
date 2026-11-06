@@ -35,8 +35,7 @@ theorem integrable_prod_restrict_of_locallyConstant_profiles
     obtain ⟨x, hxC, hx⟩ := r.property
     simpa only [hx] using hi x hxC
   have hs : Integrable (fun p : X × Y => ∑ r : R, A r p.1 * r.val p.2)
-      ((μ.restrict C).prod ν) := by
-    exact integrable_finsetSum Finset.univ (fun r _ => (hA r).mul_prod (hB r))
+      ((μ.restrict C).prod ν) := integrable_finsetSum Finset.univ (fun r _ => (hA r).mul_prod (hB r))
   apply hs.congr
   have hmem : ∀ᵐ p : X × Y ∂((μ.restrict C).prod ν), p.1 ∈ C := by
     apply (Measure.ae_prod_iff_ae_ae (hCm.preimage measurable_fst)).mpr
@@ -353,8 +352,7 @@ theorem actual_support_residual_in_ideal
   rw [hratio, ← hv]
   change ((k₀ 1 0 * (↑v⁻¹) : KPLocalCube.LocalIntegers F q) : LocalField F q) = _
   change (k₀ 1 0 : LocalField F q) * ((↑v⁻¹ : KPLocalCube.LocalIntegers F q) : LocalField F q) = _
-  have hvinv : ((↑v⁻¹ : KPLocalCube.LocalIntegers F q) : LocalField F q) = ((v : KPLocalCube.LocalIntegers F q) : LocalField F q)⁻¹ := by
-    exact Units.val_inv_eq_inv_val (Units.map (KPLocalCube.LocalIntegers F q).subtype.toMonoidHom v)
+  have hvinv : ((↑v⁻¹ : KPLocalCube.LocalIntegers F q) : LocalField F q) = ((v : KPLocalCube.LocalIntegers F q) : LocalField F q)⁻¹ := Units.val_inv_eq_inv_val (Units.map (KPLocalCube.LocalIntegers F q).subtype.toMonoidHom v)
   rw [hvinv, div_eq_mul_inv]
 
 theorem actual_support_inverse_mem_lowShell
@@ -388,7 +386,7 @@ private theorem unitCubeClasses_exponent_dvd
   obtain ⟨z, rfl⟩ := ha
   obtain ⟨t, rfl⟩ := hb
   have hdiff : (KPRamifiedBeta.unitsInclusion K z * t ^ 3) / u ∈
-      CubicCharacters.cubes Kˣ := (QuotientGroup.eq_iff_div_mem).mp he
+      CubicCharacters.cubes Kˣ := QuotientGroup.eq_iff_div_mem.mp he
   obtain ⟨r, hr⟩ := hdiff
   change r ^ 3 = _ at hr
   have hh := congrArg (KPCubicExpansion.valuationExponent K) hr
@@ -512,7 +510,7 @@ private theorem actual_base_support_exponent_dvd
   obtain ⟨a, ha⟩ := tame_base_borel_exponent_dvd
     F ζ hζ q S P hP b
   change KPCubicExpansion.valuationExponent (LocalField F q) z = 3 * a at ha
-  apply (Int.dvd_iff_emod_eq_zero).mpr
+  apply Int.dvd_iff_emod_eq_zero.mpr
   omega
 
 private theorem expanding_shell_pairwise

@@ -106,7 +106,7 @@ theorem verticalIntegral_sub_eq_residue
     intro T
     apply intervalIntegral.integral_congr
     intro x _
-    simp only [hg, Function.comp_apply, id]
+    simp only [hg, id]
     apply congrArg f
     push_cast
     ring
@@ -117,7 +117,7 @@ theorem verticalIntegral_sub_eq_residue
     intro T
     apply intervalIntegral.integral_congr
     intro x _
-    simp only [hg, Function.comp_apply, id]
+    simp only [hg, id]
     apply congrArg f
     push_cast
     ring

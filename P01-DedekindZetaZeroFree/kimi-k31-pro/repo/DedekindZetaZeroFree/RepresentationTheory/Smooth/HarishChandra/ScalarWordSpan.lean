@@ -3,6 +3,7 @@ module
 public import DedekindZetaZeroFree.RepresentationTheory.Smooth.RightWordFiniteSums
 public import DedekindZetaZeroFree.Theta.Periods.ResidualLieWordSpan
 public import DedekindZetaZeroFree.Eisenstein.Continuation.FiniteWordChamberReconstruction
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -45,10 +46,8 @@ theorem scalarWordSpan_le_hcHeckeSpan (T : Realization R Q) :
     | cons b w ih =>
       simp only [KPContActualSphericalRightFieldIdentification.actualRightWord,
         AdelicRightLieWords.actualRightWord]
-      rw [ih]
-      rfl
-  funext g
-  simp [KPLiteralRaw.rightAction, word_eq]
+      measurability
+  simp_all
 
 end DedekindZetaZeroFree.FourierContinuation.HCGeneration
 

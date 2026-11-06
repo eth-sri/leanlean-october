@@ -74,7 +74,7 @@ private theorem profileArgument_cutoff (A : SArithmeticData F) (T : Frozen A)
   have hf : A.exteriorNorm T.f ^ 2 ≤ A.exteriorNorm h := by
     have := (squarefree_radical_divisor_pow_two_le_powerful T.h.val T.h.property.1
       T.powerful T.f.val T.f_squarefree T.f_divides_radical).2
-    simpa only [hT] using this
+    grind
   have hfp : A.exteriorNorm T.f ^ 2 < 2 * P := hf.trans_lt hh.2.2
   have hdD : A.exteriorNorm d.val < 2 * D := hd.2.1
   have hnum : A.exteriorNorm d.val ^ 2 * A.exteriorNorm T.f ^ 2 ≤ 8 * D ^ 2 * P := by
@@ -84,8 +84,7 @@ private theorem profileArgument_cutoff (A : SArithmeticData F) (T : Frozen A)
     nlinarith
   let t := (A.exteriorNorm d.val ^ 2 * A.exteriorNorm T.f ^ 2) / Z
   have ht : 0 < t := by dsimp [t]; positivity
-  have htL : t ≤ length Z P D := by
-    exact div_le_div_of_nonneg_right hnum hZ0.le
+  have htL : t ≤ length Z P D := div_le_div_of_nonneg_right hnum hZ0.le
   have hx : profileArgument A T d.val c.val Z = frozenNorm A T c / t := by
     dsimp [profileArgument, frozenNorm, rowNorm, t]
     field_simp
@@ -104,7 +103,7 @@ private theorem profileArgument_cutoff (A : SArithmeticData F) (T : Frozen A)
           _ ≤ (length Z P D)⁻¹ * length Z P D :=
             mul_le_mul_of_nonneg_left htL (inv_nonneg.mpr hl.le)
           _ = 1 := inv_mul_cancel₀ hl.ne'
-      exact hi.trans hQ
+      grind
 
 private theorem profileFamily_decay (A : SArithmeticData F)
     (H : A.UnitQuotient → A.V → ℝ → ℂ) (hH : FiniteProfileFamily A H)
@@ -146,7 +145,7 @@ private theorem mulChar_norm_le_one {k : Type*} [Field k] [Fintype k]
     have hn := Complex.norm_eq_one_of_mem_rootsOfUnity (χ.apply_mem_rootsOfUnity u)
     have hn' : ‖χ x‖ = 1 := by
       simpa [MulChar.coe_equivToUnitHom, u] using hn
-    exact hn'.le
+    grind
 
 private theorem summand_norm_le (A : SArithmeticData F) (G : AllowedRecipe A)
     (U : UnitRepresentatives A) (σ : F →+* ℂ)
@@ -237,11 +236,7 @@ private theorem tail_summand_majorant (A : SArithmeticData F) (G : AllowedRecipe
             (rowNorm i.1.val.a i.2.val i.1.val.n) ^ (-1 : ℝ) /
               (Real.sqrt (A.exteriorNorm i.2.val) * A.exteriorNorm i.1.val.n))
         rw [Real.rpow_neg_one]
-        change _ = (K * length Z P D * gain Z P D θ ^ (-(B - 1))) *
-          (betaIdeal (activeSupport A i.1.val) i.1.val.a.val *
-            (rowNorm i.1.val.a i.2.val i.1.val.n)⁻¹ /
-              (Real.sqrt (A.exteriorNorm i.2.val) * A.exteriorNorm i.1.val.n))
-        ring
+        grind
   · simp only [norm_zero]
     change 0 ≤ (K * length Z P D * gain Z P D θ ^ (-(B - 1))) *
       (betaIdeal (activeSupport A i.1.val) i.1.val.a.val *
@@ -300,7 +295,7 @@ theorem numerical_tail_from_joint_majorant (A : SArithmeticData F)
     _ ≤ ∑' i : Index A h, k * W i := Summable.tsum_le_tsum ht htn hkn
     _ = k * ∑' i : Index A h, W i := tsum_mul_left
     _ ≤ k * (Kj * A.exteriorNorm h ^ b) := mul_le_mul_of_nonneg_left hsum hk
-    _ = _ := by dsimp [k]; ring
+    _ = _ := by grind
 
 namespace Reindex
 set_option maxHeartbeats 1000000
@@ -337,7 +332,7 @@ theorem encode_injective (A : SArithmeticData F) (h : A.Exterior) : Function.Inj
   have he : i.1.val.epsilon = j.1.val.epsilon := congrArg (fun x : MajorantIndex A h => x.2.2) hij
   have hh : i.1.val.h = j.1.val.h := i.1.property.trans j.1.property.symm
   have ht : i.1.val = j.1.val := frozen_ext A _ _ hh hf ha hn he
-  exact Prod.ext (Subtype.ext ht) hc
+  grind
 
 theorem active_finite (A : SArithmeticData F) (h : A.Exterior) : Finite (ActiveIndex A h) := by
   let f : ActiveIndex A h → {f // f ∈ activeSquarefreeDivisors h.val} := fun f => ⟨f.val.val.val, f.property⟩
@@ -346,7 +341,7 @@ theorem active_finite (A : SArithmeticData F) (h : A.Exterior) : Finite (ActiveI
   apply Subtype.ext
   apply Subtype.ext
   apply Subtype.ext
-  exact congrArg (fun f : {f // f ∈ activeSquarefreeDivisors h.val} => f.val) hij
+  grind
 
 def weight (A : SArithmeticData F) (h : A.Exterior) (i : MajorantIndex A h) : ℝ :=
   positiveRowWeight i.1.val 1 i.2.1
@@ -399,7 +394,7 @@ theorem weight_tsum_le (A : SArithmeticData F) (h : A.Exterior) :
   calc
     _ ≤ ∑' f : ActiveIndex A h,
       (Nat.card A.UnitQuotient : ℝ) * (eulerIdeal f.val 1 * exteriorNormZeta A.cS (3 / 2) * exteriorNormZeta A.cS 4) := by
-      apply Summable.tsum_le_tsum _ (Summable.of_finite) (Summable.of_finite)
+      apply Summable.tsum_le_tsum _ Summable.of_finite Summable.of_finite
       intro f
       apply mul_le_mul_of_nonneg_left _ (Nat.cast_nonneg _)
       convert (positiveRowWeight_summable_le f.val 1 (by norm_num)).2 using 1 <;> norm_num
@@ -418,7 +413,7 @@ theorem weight_tsum_le (A : SArithmeticData F) (h : A.Exterior) :
         apply Subtype.ext
         apply Subtype.ext
         apply Subtype.ext
-        exact congrArg (fun f : {f // f ∈ activeSquarefreeDivisors h.val} => f.val) hij
+        grind
       have hh : ∀ f : {f // f ∈ activeSquarefreeDivisors h.val}, 0 ≤ activeEulerFactor f.val 1 := by
         intro f
         apply activeEulerFactor_nonneg _ _ _ (by norm_num)

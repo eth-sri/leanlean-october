@@ -72,27 +72,27 @@ private lemma Bminus (y : Kˣ) : KPHilbert.B3 F ζ hζ v (-1) y = 1 := by
 private lemma sigma_wd (y : Kˣ) :
       KPLocalCover.sigmaTwo F ζ hζ v (KPStandardLocalRootLifts.weylSwap K) (KubotaRankTwo.d K y 1) = 1 := by
     simp [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, X_wd,
-      B1, B2, swap_X, swap_det]
+      swap_X, swap_det]
     have hn : y / (-1 : Kˣ) = -y := by
       apply Units.ext
-      simp only [Units.val_div_eq_div_val, Units.val_neg, Units.val_one, div_neg, div_one]
+      simp only [Units.val_neg, div_neg, div_one]
     rw [Bminus F ζ hζ q y, hn, ((KPHilbert.B3_laws F ζ hζ v).2.2.2.2.2 y).2.2]
     simp
 private lemma sigma_dw (y : Kˣ) :
       KPLocalCover.sigmaTwo F ζ hζ v (KubotaRankTwo.d K y 1) (KPStandardLocalRootLifts.weylSwap K) = 1 := by
     simp [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, X_dw,
-      B1, B2, swap_det, (KPHilbert.B3_laws F ζ hζ v).2.2.2.2.2]
+      B1, swap_det, (KPHilbert.B3_laws F ζ hζ v).2.2.2.2.2]
 private lemma sigma_scalar_dw (y : Kˣ) :
       KPLocalCover.sigmaTwo F ζ hζ v (KPScalarSplitCentral.scalarMatrix F v y)
         (KubotaRankTwo.d K y⁻¹ 1 * KPStandardLocalRootLifts.weylSwap K) = 1 := by
     have hx : KubotaRankTwo.X K (KPScalarSplitCentral.scalarMatrix F v y) = y := by
       apply Units.ext
       simp [KubotaRankTwo.X, KubotaRankTwo.x, KPScalarSplitCentral.scalarMatrix,
-        Matrix.scalar, Matrix.diagonal_apply]
+        Matrix.scalar]
     have hd : KubotaRankTwo.det K (KPScalarSplitCentral.scalarMatrix F v y) = y^2 := by
       apply Units.ext
       simp [KubotaRankTwo.det, KPScalarSplitCentral.scalarMatrix,
-        Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two, pow_two]
+        pow_two]
     have hb : KPHilbert.B3 F ζ hζ v (y ^ 2) y⁻¹ = 1 := by
       rw [KubotaDefectSymbolAlgebra.inv_right _ _ _ (KPHilbert.B3_laws F ζ hζ v).2.1]
       simp only [pow_two, (KPHilbert.B3_laws F ζ hζ v).1,
@@ -102,10 +102,10 @@ private lemma sigma_scalar_dw (y : Kˣ) :
         ((KPHilbert.B3_laws F ζ hζ v).2.2.2.2.2 (y ^ 2)).2.1, one_mul]
     have hn : y⁻¹ * (-1 : Kˣ) = -y⁻¹ := by
       apply Units.ext
-      simp only [Units.val_mul, Units.val_neg, Units.val_one, mul_neg, mul_one]
+      simp only [Units.val_neg, mul_neg, mul_one]
     rw [hn] at hb'
     simp [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, X_dw,
-      ← w_d F q y, X_wd, hx, hd, B1, B2, hb, hb', swap_det]
+      ← w_d F q y, X_wd, hx, hd, B1, hb', swap_det]
 private lemma W_A (y : Kˣ) :
       KPPGLLocalCover.W F ζ hζ v * KPPGLLocalCover.A F ζ hζ v y =
         KPPGLLocalCover.A F ζ hζ v y⁻¹ * KPPGLLocalCover.W F ζ hζ v := by
@@ -219,7 +219,7 @@ theorem reverse_integral_cubic_unit_change_variable
     simpa only [mul_inv_cancel, localAbs_one, hc, one_mul] using h.symm
   have hd : localAbs K d = 1 := by
     dsimp only [d]
-    simp only [pow_succ, pow_zero, localAbs_mul, localAbs_one, hci, one_mul]
+    simp only [pow_succ, pow_zero, localAbs_mul, hci, one_mul]
   have habs : KPCubicHaar.abs K (d : K) = 1 := by
     have he : localAbs K d = KPCubicHaar.abs K (d : K) := by
       simp only [localAbs, KPCubicHaar.abs, if_neg d.ne_zero, Real.rpow_intCast]
@@ -229,8 +229,8 @@ theorem reverse_integral_cubic_unit_change_variable
     { toEquiv :=
         { toFun := fun u => (d : K) * u
           invFun := fun u => (d⁻¹ : Kˣ) * u
-          left_inv := by intro u; simp [mul_assoc]
-          right_inv := by intro u; simp [mul_assoc] }
+          left_inv := by intro u; simp
+          right_inv := by intro u; simp }
       measurable_toFun := (continuous_const.mul continuous_id).measurable
       measurable_invFun := (continuous_const.mul continuous_id).measurable }
   have hmap : Measure.map e μ = μ := by

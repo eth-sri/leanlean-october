@@ -1,6 +1,7 @@
 module
 
 public import DedekindZetaZeroFree.LFunctions.Hecke.PrimeArtinValues
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -17,12 +18,11 @@ noncomputable def trivialRayCharacter : RayClassCharacter K ⊤ := by
            map_mul' := ?_, map_top' := ?_, eq_zero_iff' := ?_, map_span' := ?_ }
   · intro I J
     simp only [Ideal.mul_eq_bot]
-    split_ifs <;> simp_all
+    grind
   · simp
-  · intro I
-    simp
+  · norm_num
   · intro α hα _ _
-    simp [Ideal.span_singleton_eq_bot, hα]
+    simp [hα]
 
 theorem trivialRayCharacter_apply (I : Ideal (𝓞 K)) :
     trivialRayCharacter K I = if I = ⊥ then 0 else 1 := by

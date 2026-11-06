@@ -76,7 +76,7 @@ theorem infiniteFactor_upper_mul (B C : KPChamberHeight.AdelGL F)
     unfold KPChamberHeight.infiniteFactor
     dsimp only
     simp only [KPChamberHeight.rowAction, Fin.sum_univ_two,
-      Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons,
+      Matrix.cons_val_zero, Matrix.cons_val_one, 
       map_zero, map_one, zero_mul, one_mul, zero_add]
   rw [hrow, hrow, hrow, map_mul]
   change _ = (Real.sqrt (‖Bv 1 0‖ ^ 2 + ‖Bv 1 1‖ ^ 2) / _) ^ _ * _

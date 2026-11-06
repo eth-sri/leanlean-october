@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.GreenIdentity.CoreShellPartition
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.BoundaryFlux.AngularConormalDescent
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -36,7 +37,7 @@ variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
   rw [← D.chart_range Y hY] at he
   obtain ⟨⟨c,r⟩,hr⟩ := he
   rw [← hr, D.chart_modulus Y hY c r]
-  exact r.property
+  measurability
 
  theorem cutoff_measurable
     (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)
@@ -57,7 +58,7 @@ variable (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
   split_ifs with hx
   · norm_num
   · rw [abs_of_nonneg (le_max_left _ _)]
-    exact max_le (by norm_num) (min_le_left _ _)
+    simp_all
 
 end DedekindZetaZeroFree.KPMsGreenFlux.ActualSharpStokes.CutoffApproximation
 

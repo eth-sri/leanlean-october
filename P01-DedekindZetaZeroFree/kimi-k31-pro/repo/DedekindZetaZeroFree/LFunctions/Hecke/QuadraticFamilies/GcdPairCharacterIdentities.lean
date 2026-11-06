@@ -84,8 +84,7 @@ theorem rawGcdPairTransport
     have rbp := Q.reciprocity b p hb hbc hp.squarefree hpc (by simpa [sup_comm] using hpb)
     have rup := Q.reciprocity u p hu huc hp.squarefree hpc (by simpa [sup_comm] using hpu)
     have rvp := Q.reciprocity v p hv hvc hp.squarefree hpc (by simpa [sup_comm] using hpv)
-    have hap0 : (Q.χ a) p ≠ 0 := by
-      exact fun hz => ((Q.χ a).eq_zero_iff' p).mp hz |>.elim hp.ne_zero
+    have hap0 : (Q.χ a) p ≠ 0 := fun hz => ((Q.χ a).eq_zero_iff' p).mp hz |>.elim hp.ne_zero
         (fun h => h hpca)
     have hpd0 : (Q.χ p) (a ⊔ b) ≠ 0 := by
       intro hz

@@ -42,7 +42,7 @@ private theorem rationalUnipotent_fixes_infinity (r : F) : KPChamberBruhatTwoCel
  rw [Projectivization.PGL.mk_smul_mk]
  congr 1
  ext i
- fin_cases i <;> simp [Matrix.mulVec, dotProduct, Fin.sum_univ_two]
+ fin_cases i <;> simp
 
 variable (C : KPGlobalTorusInducingPlan.ModelData F ζ hζ)
 variable (R : KPSmoothLocalQuotientCharts.HaarRecipe F ζ hζ)

@@ -18,9 +18,9 @@ theorem initial_theta_diagonal (F : Type) [Field F] [NumberField F] :
   refine ⟨(5 / 2) * C, mul_nonneg (by norm_num) (by linarith), ?_⟩
   intro M hM v hv
   have hX : (1 : ℝ) ≤ (5 / 2) * M := by linarith
-  have hweight : ∀ t : ℝ, ‖((DedekindZetaZeroFree.LargeSieve.Vendor.annularWeight t : ℂ))‖ ≤ 1 := by
+  have hweight : ∀ t : ℝ, ‖(DedekindZetaZeroFree.LargeSieve.Vendor.annularWeight t : ℂ)‖ ≤ 1 := by
     intro t
-    have h : ‖((DedekindZetaZeroFree.LargeSieve.Vendor.annularWeight t : ℂ))‖ = DedekindZetaZeroFree.LargeSieve.Vendor.annularWeight t :=
+    have h : ‖(DedekindZetaZeroFree.LargeSieve.Vendor.annularWeight t : ℂ)‖ = DedekindZetaZeroFree.LargeSieve.Vendor.annularWeight t :=
       RCLike.norm_of_nonneg (DedekindZetaZeroFree.LargeSieve.Vendor.annularWeight_nonneg t)
     rw [h]
     exact DedekindZetaZeroFree.LargeSieve.Vendor.annularWeight_le_one t

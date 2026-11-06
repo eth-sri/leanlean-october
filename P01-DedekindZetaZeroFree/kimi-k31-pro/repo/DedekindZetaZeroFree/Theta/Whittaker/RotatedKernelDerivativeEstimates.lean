@@ -8,8 +8,7 @@ section
 
 namespace DedekindZetaZeroFree.KPCplxQuadraticKernelDerivatives
 
-noncomputable def radialOp (F : ℝ → ℂ → ℂ) : ℝ → ℂ → ℂ :=
-  fun ρ x => ((ρ / 2 : ℝ) : ℂ) * deriv (fun r : ℝ => F r x) ρ
+
 
 end DedekindZetaZeroFree.KPCplxQuadraticKernelDerivatives
 

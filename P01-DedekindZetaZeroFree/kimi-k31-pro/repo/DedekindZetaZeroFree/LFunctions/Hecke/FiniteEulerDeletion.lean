@@ -161,8 +161,7 @@ private theorem exterior_ideal_norm_le_frequencyNorm
       frequencyNorm F S u := by
   classical
   let I : Ideal (𝓞 F) := Ideal.comap (algebraMap (𝓞 F) (S.integer F)) (Ideal.span {u})
-  have hR : Finite ((S.integer F) ⧸ Ideal.span {u}) := by
-    exact (exterior_frequency_support_finite_norm_pos F S hS u hu).2.1
+  have hR : Finite ((S.integer F) ⧸ Ideal.span {u}) := (exterior_frequency_support_finite_norm_pos F S hS u hu).2.1
   have hmap : Function.Injective (Ideal.quotientMap (Ideal.span {u})
       (algebraMap (𝓞 F) (S.integer F)) le_rfl) := Ideal.quotientMap_injective
   letI : Finite ((𝓞 F) ⧸ I) := Finite.of_injective _ hmap
@@ -286,7 +285,7 @@ theorem frequency_finite_euler_masks_subpower
         exact sub_le_sub_left (Real.rpow_le_rpow_of_exponent_le
           (absNorm_prime_gt_one F v).le (neg_le_neg (min_le_left _ _))) 1
     exact ⟨hplus.trans (hbound.1.trans hnorm), hinv.trans (hbound.2.trans hnorm)⟩
-  have hExt := hmajor E (Set.subset_union_right)
+  have hExt := hmajor E Set.subset_union_right
   refine ⟨hExt.1, hExt.2, ?_⟩
   intro D hD a s ha hs
   have hDf := (hS.union hE).subset hD
@@ -316,7 +315,7 @@ private theorem finite_prime_delete_hasSum
           · have heq : v = p := HeightOneSpectrum.ext ((Ideal.IsMaximal.eq_of_le p.isMaximal (Ideal.IsMaximal.ne_top v.isMaximal) (Ideal.dvd_iff_le.mp hd)).symm)
             exact (hp (heq ▸ hv)).elim
         · rintro ⟨v, hv, h⟩
-          exact ⟨v, hv, (Ideal.mul_le_left).trans h⟩
+          exact ⟨v, hv, Ideal.mul_le_left.trans h⟩
       simp only [G, he]
       split_ifs <;> simp [Wmul]
     let H : Ideal (𝓞 F) → ℂ := fun I => if I ≤ p.asIdeal then G I else 0
@@ -454,8 +453,7 @@ private theorem positive_representative (F : Type) [Field F] [NumberField F]
     (m : Ideal (𝓞 F)) (hm : m ≠ ⊥) (a : 𝓞 F) :
     ∃ b : 𝓞 F, b - a ∈ m ∧ ∀ φ : F →+* ℝ, 0 < φ (b : F) := by
   have hn : 0 < Ideal.absNorm m := Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hm)
-  have hb : ∃ B : ℝ, ∀ φ : F →+* ℝ, -φ (a : F) < B := by
-    exact ⟨∑ φ : F →+* ℝ, |φ (a : F)| + 1, fun φ => by
+  have hb : ∃ B : ℝ, ∀ φ : F →+* ℝ, -φ (a : F) < B := ⟨∑ φ : F →+* ℝ, |φ (a : F)| + 1, fun φ => by
       have ht := Finset.single_le_sum (fun i (_ : i ∈ Finset.univ) => abs_nonneg ((i : F →+* ℝ) (a : F))) (Finset.mem_univ φ)
       linarith [neg_le_abs (φ (a : F))]⟩
   obtain ⟨B, hB⟩ := hb

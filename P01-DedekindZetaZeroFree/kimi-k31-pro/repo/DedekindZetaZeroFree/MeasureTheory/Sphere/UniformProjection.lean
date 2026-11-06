@@ -52,7 +52,7 @@ lemma sphereArea_projection_rotation (g : Ambient ≃ₗᵢ[ℝ] Ambient) (x : S
       rw [Measure.map_map hp (sphereRotation_continuous g).measurable]
       congr 1
       ext y
-      simp [Function.comp_def, sphereRotation, g.inner_map_map]
+      simp [sphereRotation, g.inner_map_map]
 lemma sphereArea_projection_independent (x z : Sphere) :
     Measure.map (fun y : Sphere => (1 - inner ℝ (x : Ambient) (y : Ambient)) / 2) sphereArea =
     Measure.map (fun y : Sphere => (1 - inner ℝ (z : Ambient) (y : Ambient)) / 2) sphereArea := by
@@ -293,7 +293,7 @@ lemma sphereProjection_north_cone_volume {t : ℝ} (ht : 0 < t) (ht1 : t ≤ 1) 
     intervalIntegral.integral_const_mul, intervalIntegral.integral_sub
       intervalIntegrable_const (intervalIntegral.intervalIntegrable_pow 2),
     intervalIntegral.integral_const, integral_pow]
-  simp only [Nat.reduceAdd, Nat.cast_ofNat, zero_pow, sub_zero, one_pow, one_mul]
+  simp only [Nat.reduceAdd, Nat.cast_ofNat, one_pow]
   field_simp
   <;> ring
 
@@ -302,7 +302,7 @@ lemma sphereArea_projection_eq_coordinate (x : Sphere) (i : Fin 3) :
       sphereArea =
     Measure.map (fun y : Sphere => (1 - (y : Ambient) i) / 2) sphereArea := by
   let z : Sphere := ⟨EuclideanSpace.single i (1 : ℝ), by
-    simp [mem_sphere_zero_iff_norm, PiLp.norm_single]⟩
+    simp [PiLp.norm_single]⟩
   simpa [z, EuclideanSpace.inner_single_left] using sphereArea_projection_independent x z
 
 lemma sphereProjection_raw_north_cap {t : ℝ} (ht : 0 < t) (ht1 : t ≤ 1) :

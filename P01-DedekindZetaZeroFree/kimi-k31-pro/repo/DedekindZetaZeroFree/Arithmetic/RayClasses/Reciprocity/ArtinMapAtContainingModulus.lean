@@ -2,6 +2,7 @@ module
 
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.EmbedsInRayClassField
 public import ClassFieldTheory.Theorems.FrobeniusAndHilbertClassFields.ArithmeticFrobeniusRestrictTower
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -47,10 +48,7 @@ theorem artin_at_containing_modulus {K : Type} [Field K] [NumberField K]
       Ideal.exists_ideal_over_prime_of_isIntegral (R := 𝓞 E) (S := 𝓞 R.extension)
         Q.asIdeal (⊥ : Ideal (𝓞 R.extension))
         (by
-          rw [Ideal.under_def,
-            ← RingHom.ker_eq_comap_bot (algebraMap (𝓞 E) (𝓞 R.extension)),
-            NumberField.RingOfIntegers.ker_algebraMap_eq_bot]
-          exact bot_le)
+          norm_num)
     have hQ'ne : Q' ≠ ⊥ := by
       intro h
       have hbot : Q.asIdeal = ⊥ := by

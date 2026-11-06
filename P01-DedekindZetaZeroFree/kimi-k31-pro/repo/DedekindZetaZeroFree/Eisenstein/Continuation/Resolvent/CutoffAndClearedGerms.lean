@@ -197,7 +197,7 @@ theorem coefficient_smul (a : ℂ) (Z : Smooth)
     KPContSectorSmoothFramesSupport.liftFrame,
     KPContSectorSmoothFramesSupport.phaseTransport,
     KPContActualChartRestrictionDensity.frameCoefficient,
-    KPContSectorLineL2Isometry.scalarRepresentative_eq_symm, smul_eq_mul]
+    smul_eq_mul]
   ring
 
  theorem numerator_sub_cutoff (cutoff W : ℂ → Smooth) (s₀ s : ℂ) :

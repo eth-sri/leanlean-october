@@ -299,7 +299,7 @@ private theorem exp_mean_laplacian {V : Type*} [NormedAddCommGroup V] [NormedSpa
   simp only [ite_true, show ¬ ((0 : Fin 3) = 2) from by decide,
     show ¬ ((1 : Fin 3) = 2) from by decide, ite_false,
     Complex.ofReal_zero, mul_zero, zero_mul, zero_pow (by decide : 2 ≠ 0), zero_smul,
-    add_zero, sub_zero]
+    add_zero]
   simp only [smul_zero, sub_zero, ← neg_smul, smul_smul, ← add_smul]
   simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, ← Nat.cast_smul_eq_nsmul ℂ]
   simp only [smul_smul, Complex.ofReal_inv, Complex.ofReal_natCast]

@@ -50,9 +50,7 @@ theorem IsAbelianConductor.mem_finiteSupport_iff_exists_ramified
     have hall : ∀ W : HeightOneSpectrum (𝓞 L),
         W.asIdeal.LiesOver v.asIdeal →
           Algebra.IsUnramifiedAt (𝓞 K) W.asIdeal := by
-      intro W hW
-      by_contra hn
-      exact hnone ⟨W, hW, hn⟩
+      grind
     exact (Finsupp.mem_support_iff.mp hv)
       ((hc.finiteExponent_eq_zero_iff_unramified v).mpr hall)
   · rintro ⟨W, hW, hn⟩

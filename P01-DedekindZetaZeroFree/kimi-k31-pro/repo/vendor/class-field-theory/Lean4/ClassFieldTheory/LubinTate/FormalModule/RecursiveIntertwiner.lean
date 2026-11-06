@@ -1021,22 +1021,7 @@ theorem eq_of_hasLinearTerm_of_intertwines
     (eq_recursiveIntertwiner_of_hasLinearTerm_of_intertwines
       hpi e ebar L hH' hI').symm
 
-/-- There is a unique same-uniformizer intertwiner with any prescribed
-linear term. -/
-theorem existsUnique_intertwiner
-    (hpi : F.toCompleteDVF.valuation.IsUniformizer (pi : K))
-    (e ebar : LubinTateSeries F pi)
-    (L : sigma → F.valuationSubring) :
-    ∃! H : MvPowerSeries sigma F.valuationSubring,
-      HasLinearTerm H L ∧ Intertwines e ebar H := by
-  refine
-    ⟨recursiveIntertwiner hpi e ebar L,
-      ⟨recursiveIntertwiner_hasLinearTerm hpi e ebar L,
-        recursiveIntertwiner_intertwines hpi e ebar L⟩, ?_⟩
-  intro H hH
-  exact
-    eq_recursiveIntertwiner_of_hasLinearTerm_of_intertwines
-      hpi e ebar L hH.1 hH.2
+
 
 end SameUniformizer
 end LubinTate

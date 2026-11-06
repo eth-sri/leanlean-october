@@ -58,19 +58,7 @@ noncomputable def padicCompletedLevelFrobeniusAlgebra
         (padicCompletedLevelField p n)).comp
       (padicCompletedUnramifiedFrobenius p).toAlgHom.toRingHom)
 
-/-- The twisted level algebra map applies completed Frobenius before scalar
-extension. -/
-theorem padicCompletedLevelFrobeniusAlgebra_algebraMap
-    (p : ℕ) [Fact p.Prime] (n : ℕ)
-    (a : padicCompletedUnramifiedField p) :
-    @algebraMap
-        (padicCompletedUnramifiedField p)
-        (padicCompletedLevelField p n)
-        _ _ (padicCompletedLevelFrobeniusAlgebra p n) a =
-      algebraMap (padicCompletedUnramifiedField p)
-        (padicCompletedLevelField p n)
-        (padicCompletedUnramifiedFrobenius p a) :=
-  rfl
+
 
 /-- Arithmetic Frobenius fixes the completed primitive polynomial because
 its coefficients descend to `ℚ_[p]`. -/

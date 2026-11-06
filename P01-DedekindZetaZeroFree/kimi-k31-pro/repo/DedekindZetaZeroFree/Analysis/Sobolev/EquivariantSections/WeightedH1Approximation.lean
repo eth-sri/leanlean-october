@@ -188,8 +188,8 @@ theorem kp_cont_compact_interior_equivariant_h1_approximation
     · simp only [Set.indicator_of_mem hx]
       rw [← smul_sub, ← Finset.sum_sub_distrib]
       refine congrArg (fun z => (Fintype.card Γ : ℂ)⁻¹ • z) ?_
-      exact Finset.sum_congr rfl (fun γ _ => by simp only [Pi.sub_apply, map_sub])
-    · simp only [Set.indicator_of_notMem hx, Pi.sub_apply]
+      exact Finset.sum_congr rfl (fun γ _ => by simp only [map_sub])
+    · simp only [Set.indicator_of_notMem hx]
       simp
   have hvm_data (m : ℕ) := (hvm m).2.2.2.2
   choose h0u h0v huμ hvμ hrest using hvm_data

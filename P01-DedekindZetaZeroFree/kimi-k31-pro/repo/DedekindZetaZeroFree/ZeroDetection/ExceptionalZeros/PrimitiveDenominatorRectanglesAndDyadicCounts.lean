@@ -46,7 +46,7 @@ private theorem freqOrbit_injective (R : PrincipalMellin.ActualRecipe S η) :
     have huu := congrArg (fun x : ThetaReflectionData.Row R.A => (x.val : F)) heq
     have hδF := congrArg (fun x : R.A.U => (x.val : F)) hδ
     apply Units.ext
-    simp only [m, ThetaReflectionData.rowUnit, Units.val_mk0, map_mul, map_pow]
+    simp only [m, ThetaReflectionData.rowUnit, Units.val_mk0]
     change (u.val.val : F) * (r : F) ^ 6 = (v.val.val : F) * (r : F) ^ 6 * (δ.val : F) ^ 6
     change ((R.A.unitEquiv γ.val : R.A.R) : F) * (v.val.val : F) = (u.val.val : F) at huu
     have hcoe : ((R.A.unitEquiv γ.val : R.A.R) : F) = (γ.val.val : F) := by
@@ -201,8 +201,7 @@ theorem actual_complete_frequency_dyads
         simp only [pow_zero] at hn
         linarith
       · exact h
-    have hle : (2 : ℝ) ^ (n - 1) ≤ frequencyNorm R u := by
-      exact not_lt.mp (hnmin (n - 1) (Nat.sub_lt hnpos (by norm_num)))
+    have hle : (2 : ℝ) ^ (n - 1) ≤ frequencyNorm R u := not_lt.mp (hnmin (n - 1) (Nat.sub_lt hnpos (by norm_num)))
     refine ⟨n - 1, (hmem (n - 1) u).mpr ⟨?_, hu, hle⟩⟩
     rw [Nat.sub_add_cancel hnpos]
     exact hn

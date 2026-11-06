@@ -125,7 +125,7 @@ theorem continuous_whittaker_sphericalCore_ne_zero (A : SArithmeticData F)
     have hd : diagonal (1 : ℂˣ) = 1 := by
       apply Units.ext
       ext i j
-      fin_cases i <;> fin_cases j <;> simp [diagonal, Matrix.one_apply]
+      fin_cases i <;> fin_cases j <;> simp [diagonal]
     rw [hd, Matrix.ProjGenLinGroup.mk_one]
     congr 1
     apply Subtype.ext

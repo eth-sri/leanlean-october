@@ -28,9 +28,9 @@ private lemma top_entries (g : ComplexSU2) :
   have hg := Matrix.specialUnitaryGroup.star_eq_adjugate g
   have h00 := congrArg (fun M : Matrix (Fin 2) (Fin 2) ℂ => M 1 1) hg
   have h01 := congrArg (fun M : Matrix (Fin 2) (Fin 2) ℂ => M 1 0) hg
-  simp [Matrix.star_eq_conjTranspose, Matrix.adjugate_fin_two, Matrix.trace_fin_two] at h00
+  simp [Matrix.trace_fin_two] at h00
   have h10 := congrArg (fun M : Matrix (Fin 2) (Fin 2) ℂ => M 0 1) hg
-  simp [Matrix.star_eq_conjTranspose, Matrix.adjugate_fin_two] at h10
+  simp at h10
   exact ⟨h00.symm, by simpa using (neg_eq_iff_eq_neg.mpr h10).symm⟩
 
 theorem sphereMatrix_mul (g h : ComplexSU2) :
@@ -62,7 +62,7 @@ theorem coefficientAction_mul (g h : ComplexSU2) (p : Polynomial) :
     intro i
     simp only [coefficientAction, AlgHom.comp_apply, MvPolynomial.aeval_X, map_sum,
       map_mul, MvPolynomial.aeval_C, sphereMatrix_mul, Matrix.mul_apply]
-    simp only [Finset.mul_sum, Finset.sum_mul, ← mul_assoc, ← MvPolynomial.C_mul,
+    simp only [Finset.mul_sum, ← mul_assoc, ← MvPolynomial.C_mul,
       ← map_sum]
     simp only [MvPolynomial.algebraMap_eq, map_sum, Finset.sum_mul, ← MvPolynomial.C_mul]
     rw [Finset.sum_comm]
@@ -87,7 +87,7 @@ theorem torus_weights (z : Circle) :
   simp only [coefficientAction, u, v, w, map_add, map_sub, map_mul,
     MvPolynomial.aeval_X, MvPolynomial.aeval_C]
   simp only [sphereMatrix, TauCeti.SU2.coe_torusHom, TauCeti.SU2.torusMatrix,
-    Fin.sum_univ_succ, Circle.coe_inv, Complex.inv_re, Complex.inv_im]
+    Fin.sum_univ_succ]
   simp
   rw [hinv]
   constructor

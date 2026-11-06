@@ -61,7 +61,7 @@ theorem principal_value_eq_one_of_sixth_power_congr
     change 0 < φ ((a : F) * (c : F) ^ (6 : ℕ))
     rw [map_mul, map_pow]
     apply mul_pos (hpos φ)
-    have hcF : (c : F) ≠ 0 := (NumberField.RingOfIntegers.coe_ne_zero_iff).mpr hc0
+    have hcF : (c : F) ≠ 0 := NumberField.RingOfIntegers.coe_ne_zero_iff.mpr hc0
     have hφ : φ (c : F) ≠ 0 := by
       intro hz
       exact hcF (φ.injective (by simpa using hz))

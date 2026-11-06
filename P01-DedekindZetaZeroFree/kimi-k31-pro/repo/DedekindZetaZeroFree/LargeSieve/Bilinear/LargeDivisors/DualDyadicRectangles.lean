@@ -64,8 +64,7 @@ private lemma bin_exists (X : ℝ) (hX : 1 ≤ 2 * X) (f : Ideal (𝓞 F))
     · have hh : norm f ≤ 1 := by simpa [hj0] using hj
       linarith
   · have hk : k < Vendor.dyadicLength (2 * max 1 X) := by omega
-    have hlow : (2 : ℝ) ^ k < norm f := by
-      exact lt_of_not_ge (Nat.find_min hcover (by omega))
+    have hlow : (2 : ℝ) ^ k < norm f := lt_of_not_ge (Nat.find_min hcover (by omega))
     refine ⟨(2 : ℝ) ^ k, ?_, one_le_pow₀ (by norm_num), hlow.le.trans hf, hf0, ?_, ?_⟩
     · apply Finset.mem_insert_of_mem
       exact Finset.mem_image.mpr ⟨k, Finset.mem_range.mpr hk, rfl⟩

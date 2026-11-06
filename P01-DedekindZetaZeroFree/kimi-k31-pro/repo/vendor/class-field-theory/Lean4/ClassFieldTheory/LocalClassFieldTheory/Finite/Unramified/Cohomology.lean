@@ -432,33 +432,7 @@ theorem unramified_units_tateCohomology_and_norm_surjective_for_generator
       (principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure_surjective
         K L n hn)
 
-/-- The unramified unit-cohomology theorem.  The arithmetic Frobenius and its generation
-property are constructed from unramifiedness, so the canonical endpoint has no
-extra chosen-generator argument. -/
-theorem unramified_units_tateCohomology_and_norm_surjective
-    (K L : Type) [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L] [IsGalois K L]
-    [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [ValuativeRel L] [UniformSpace L] [IsUniformAddGroup L]
-    [IsNonarchimedeanLocalField L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] [Module.Finite 𝒪[K] 𝒪[L]]
-    [IsUnramifiedValuedExtension K L] :
-    let phi := arithmeticFrobeniusOfUnramifiedValuation K L
-    letI := galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure K L
-    (Subsingleton (HerbrandH0 Gal(L / K) 𝒪[L]ˣ) ∧
-      Subsingleton (HerbrandHMinusOne Gal(L / K) 𝒪[L]ˣ phi)) ∧
-      (∀ n : Nat, 1 ≤ n →
-        letI := galoisGroupPrincipalUnitsMulDistribMulActionOfIsIntegralClosure K L n
-        Subsingleton (HerbrandH0 Gal(L / K) (principalUnits L n)) ∧
-          Subsingleton
-            (HerbrandHMinusOne Gal(L / K) (principalUnits L n) phi)) ∧
-      MonoidHom.range (normIntegerUnits K L) = ⊤ ∧
-      ∀ n : Nat, 1 ≤ n → MonoidHom.range
-        (principalUnitsNormOfUnramifiedValuationOfIsIntegralClosure K L n) = ⊤ := by
-  exact unramified_units_tateCohomology_and_norm_surjective_for_generator K L
-    (arithmeticFrobeniusOfUnramifiedValuation K L)
-    (arithmeticFrobeniusOfUnramifiedValuation_generates K L)
+
 
 end LocalClassFieldTheory
 

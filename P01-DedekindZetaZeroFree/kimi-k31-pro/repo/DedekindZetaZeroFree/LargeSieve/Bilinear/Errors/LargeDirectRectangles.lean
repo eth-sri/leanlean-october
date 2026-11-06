@@ -50,12 +50,10 @@ private theorem rectangle_card_le (C : Context Q) (B : ℝ) :
     intro P hP
     exact (Finset.mem_filter.mp (Finset.mem_filter.mp hP).1).1
   have hs : (ErrorRectangles.scales (C.N / norm C.d)).card ≤
-      Vendor.dyadicLength (2 * max 1 (C.N / norm C.d)) + 1 := by
-    exact (Finset.card_insert_le _ _).trans (Nat.add_le_add_right
-      ((Finset.card_image_le).trans (by rw [Finset.card_range])) 1)
+      Vendor.dyadicLength (2 * max 1 (C.N / norm C.d)) + 1 := (Finset.card_insert_le _ _).trans (Nat.add_le_add_right
+      (Finset.card_image_le.trans (by rw [Finset.card_range])) 1)
   have hd : (ErrorRectangles.directRectangles C B).card ≤
-      (Vendor.dyadicLength (2 * max 1 (C.N / norm C.d)) + 1) ^ 2 := by
-    exact h12.trans (by
+      (Vendor.dyadicLength (2 * max 1 (C.N / norm C.d)) + 1) ^ 2 := h12.trans (by
       rw [Finset.card_product, pow_two]
       exact Nat.mul_le_mul hs hs)
   exact_mod_cast hd
@@ -306,8 +304,7 @@ private lemma rectangleMass_le (C : Context Q) (B : ℝ) (unit : Bool)
   rw [he]
   exact norm_add_le _ _
 
-private lemma U_nonneg (B X : ℝ) : 0 ≤ ErrorRectangles.U Q B X := by
-  exact Real.sSup_nonneg' ⟨0, Or.inl rfl, le_rfl⟩
+private lemma U_nonneg (B X : ℝ) : 0 ≤ ErrorRectangles.U Q B X := Real.sSup_nonneg' ⟨0, Or.inl rfl, le_rfl⟩
 
 private lemma incidence_nonneg (C : Context Q) (P : ℝ) : 0 ≤ incidenceEnergy C P := by
   unfold incidenceEnergy
@@ -783,8 +780,7 @@ theorem bilinear_error_large_direct
         exact ⟨P, hP, rfl⟩
     rw [hf]
     exact ((Set.finite_singleton 0).union (T.finite_toSet.image _)).bddAbove
-  have hV : 0 ≤ V := by
-    exact le_csSup hsupbdd (Or.inl rfl)
+  have hV : 0 ≤ V := le_csSup hsupbdd (Or.inl rfl)
   have hscore : ∀ P ∈ T, ErrorRectangles.largeScore C B P ≤ V := by
     intro P hP
     exact le_csSup hsupbdd (Or.inr ⟨P, hP, rfl⟩)

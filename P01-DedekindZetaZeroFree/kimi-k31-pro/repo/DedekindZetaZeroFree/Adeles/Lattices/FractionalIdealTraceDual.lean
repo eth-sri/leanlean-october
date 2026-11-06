@@ -71,7 +71,7 @@ private theorem trace_embedding (x z : F) :
   simp only [Fintype.sum_sum_type, Fintype.sum_prod_type, Fin.sum_univ_two,
     mixedEmbedding.indexEquiv_apply_isReal, mixedEmbedding.indexEquiv_apply_isComplex_fst,
     mixedEmbedding.indexEquiv_apply_isComplex_snd, map_mul, ComplexEmbedding.conjugate_coe_eq,
-    map_sum, Complex.add_re, Complex.conj_re, Complex.ratCast_re] at ht'
+    Complex.add_re] at ht'
   have hr (w : {w : InfinitePlace F // w.IsReal}) (a : F) :
       (w.val.embedding a).re = InfinitePlace.embedding_of_isReal w.prop a ∧
       (w.val.embedding a).im = 0 := by

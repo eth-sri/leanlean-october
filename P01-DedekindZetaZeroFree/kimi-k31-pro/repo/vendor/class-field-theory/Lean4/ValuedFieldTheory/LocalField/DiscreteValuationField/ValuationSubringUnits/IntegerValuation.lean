@@ -75,28 +75,9 @@ theorem ofWithZeroValuation_val_eq_of_valuation_eq_exp_neg
   rw [ofWithZeroValuation_val, hx, WithZero.log_exp]
   ring
 
-/-- In the normalized `ℤᵐ⁰` convention, a valuation-one unit times the `n`-th
-power of an element of value `exp (-1)` has integer value `n`. -/
-theorem ofWithZeroValuation_val_unit_mul_pow
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ))) (u π : Kˣ) (n : ℕ)
-    (hu : v (u : K) = 1)
-    (hπ : v (π : K) = WithZero.exp (-1 : ℤ)) :
-    (ofWithZeroValuation v).val (u * π ^ n) = n := by
-  refine
-    ofWithZeroValuation_val_eq_of_valuation_eq_exp_neg
-      v (u * π ^ n) ?_
-  simp [map_pow, hu, hπ, ← WithZero.exp_nsmul]
 
-/-- The special case of
-`ofWithZeroValuation_val_unit_mul_pow` with the valuation-one unit equal to
-one. -/
-theorem ofWithZeroValuation_val_pow
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ))) (π : Kˣ) (n : ℕ)
-    (hπ : v (π : K) = WithZero.exp (-1 : ℤ)) :
-    (ofWithZeroValuation v).val (π ^ n) = n := by
-  simpa using
-    ofWithZeroValuation_val_unit_mul_pow
-      v 1 π n (by simp) hπ
+
+
 
 /-- Natural-number denominator form of the attached integer valuation.
 

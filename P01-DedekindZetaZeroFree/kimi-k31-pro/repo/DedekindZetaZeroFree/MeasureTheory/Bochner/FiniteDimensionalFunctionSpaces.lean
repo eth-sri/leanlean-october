@@ -2,6 +2,7 @@ module
 
 public import Mathlib.MeasureTheory.Integral.Bochner.Basic
 import DedekindZetaZeroFree.Algebra.LinearAlgebra.FunctionInterpolation
+public import Mathlib.Tactic.FunProp
 
 public section
 
@@ -32,8 +33,7 @@ private theorem integral_mem_finite_function_space
       apply Finset.sum_congr rfl
       intro i _
       exact integral_mul_const _ _
-    · intro i _
-      exact (hi (p i)).mul_const _
+    · fun_prop
   rw [hrepr]
   exact T.sum_mem (fun i _ => T.smul_mem _ (b i).property)
 

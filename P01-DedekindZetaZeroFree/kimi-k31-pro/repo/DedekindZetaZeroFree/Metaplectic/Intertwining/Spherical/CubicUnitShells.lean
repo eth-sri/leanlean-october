@@ -78,7 +78,7 @@ theorem integral_cubic_shell_of_sphere_values
     constructor
     · intro hx
       rw [hx]
-      simp only [Nat.cast_add, Nat.cast_one, le_refl, WithZero.exp_lt_exp, and_true,
+      simp only [Nat.cast_add, Nat.cast_one, le_refl, WithZero.exp_lt_exp, 
         true_and]
       omega
     · rintro ⟨hx1, hx2⟩
@@ -116,7 +116,7 @@ theorem integral_cubic_shell_of_sphere_values
     congr 1
     rw [hk]
     push_cast
-    simp [nsmul_eq_mul, mul_comm]
+    simp
   have hp : normPower K ((a ^ 3)⁻¹ ^ 2) (2 / 3) = (q : ℂ) ^ (-4 * (k : ℤ)) := by
     have hev : e (valuation K (((a ^ 3)⁻¹ ^ 2 : Kˣ) : K)) = WithZero.exp (-6 * (k : ℤ)) := by
       simp only [Units.val_pow_eq_pow_val, Units.val_inv_eq_inv_val, map_pow, map_inv₀,
@@ -270,13 +270,13 @@ private theorem phase (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F 
   simp only [KPHilbert.B3_canonical] at hwB ha ⊢
   simp only [map_pow, MonoidHom.pow_apply]
   conv_lhs => rw [← hw]
-  simp only [map_mul, MonoidHom.mul_apply, map_zpow, MonoidHom.zpow_apply,
-    map_inv, MonoidHom.inv_apply]
+  simp only [map_mul, map_zpow, 
+    map_inv]
   change KPHilbert.finiteThreePairing F ζ hζ q
     (ClassFieldTheory.powerClass (LocalField F q) 3 (KPTameCompact.unitInclusion F q u))
     (ClassFieldTheory.powerClass (LocalField F q) 3 ((integerUnitsToFieldUnits (LocalField F q)) w)) = 1 at hwB
   rw [hwB, one_mul, ← ha]
-  simp only [inv_zpow, inv_inv, ← zpow_natCast, ← zpow_mul]
+  simp only [← zpow_natCast, ← zpow_mul]
   congr 1
   ring
 
@@ -338,7 +338,7 @@ private theorem detecting
     intro x
     obtain ⟨u, hx⟩ := exists_integerUnit_mul_uniformizer_zpow K π⁻¹ hvπinv x
     rw [← hx]
-    simp only [map_mul, map_zpow, map_inv, MonoidHom.zpow_apply, MonoidHom.inv_apply]
+    simp only [map_mul, map_zpow, map_inv, MonoidHom.zpow_apply]
     have huu := hu u
     simp only [map_zpow, MonoidHom.zpow_apply] at huu
     change B (p π) (p ((integerUnitsToFieldUnits K) u)) ^ e = 1 at huu
@@ -484,8 +484,8 @@ theorem integral_shell_eq_zero_of_unit_eigenfunction
     { toEquiv :=
         { toFun := fun x => (u : K) * x
           invFun := fun x => ((u⁻¹ : Kˣ) : K) * x
-          left_inv := by intro x; simp [mul_assoc]
-          right_inv := by intro x; simp [mul_assoc] }
+          left_inv := by intro x; simp
+          right_inv := by intro x; simp }
       measurable_toFun := (continuous_const.mul continuous_id).measurable
       measurable_invFun := (continuous_const.mul continuous_id).measurable }
   have hmapφ : Measure.map φ μ = μ := hmap
@@ -581,8 +581,8 @@ private lemma sigwnw (v : (LocalField F q)ˣ) : KPLocalCover.sigmaTwo F ζ hζ (
     ((KubotaRankTwo.w (LocalField F q))⁻¹ * KubotaRankTwo.n (LocalField F q) (-((v⁻¹ : (LocalField F q)ˣ) : LocalField F q)))
     (KubotaRankTwo.w (LocalField F q))⁻¹ = 1 := by
   simp only [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, Xwnw, KubotaRankTwo.X_mul_n,
-    Xwinv, map_mul, map_inv, KubotaRankTwo.det_n, KubotaRankTwo.det_w, inv_one, one_mul,
-    mul_one, one_pow]
+    Xwinv, map_mul, map_inv, KubotaRankTwo.det_n, KubotaRankTwo.det_w, inv_one, 
+    mul_one]
   have hr : (-v⁻¹) / (-1) = v⁻¹ := by simp
   rw [hr, (KPHilbert.B3_laws F ζ hζ (Sum.inr q)).2.2.2.2.2 v⁻¹ |>.1, BoneL]
   simp
@@ -618,7 +618,7 @@ private lemma sigdnw (v : (LocalField F q)ˣ) (s : LocalField F q) :
       (KubotaRankTwo.w (LocalField F q))⁻¹ = 1 := by
   simp only [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, Xdnw, KubotaRankTwo.X_mul_n,
     KubotaRankTwo.X_d, Xwinv, map_mul, map_inv, KubotaRankTwo.det_n, KubotaRankTwo.det_w,
-    KubotaRankTwo.det_d, inv_one, mul_one, div_one, one_mul, one_pow]
+    KubotaRankTwo.det_d, inv_one, mul_one, div_one]
   rw [BnegL, BoneR]
   simp
 private lemma Xscalar (K : Type*) [Field K] (v : Kˣ) :
@@ -647,13 +647,13 @@ private lemma sigscalar (v : (LocalField F q)ˣ) (s : LocalField F q) :
   simp only [Xscalar_mul, Xscalar,
     KubotaRankTwo.X_mul_n, Xdnw,
     KubotaRankTwo.det,
-    Matrix.GeneralLinearGroup.det_scalar, Fintype.card_fin, inv_one, mul_one]
+    Matrix.GeneralLinearGroup.det_scalar, Fintype.card_fin]
   have h1 : v⁻¹ * (-1) / v⁻¹ = -1 := by simp
   rw [h1, BnegL]
   have hB : KPHilbert.B3 F ζ hζ (Sum.inr q) (v⁻¹ ^ 2) (v ^ 2) = 1 := by
     convert Bselfpow F ζ hζ q v (-2) 2 using 1 <;> simp
   simp only [map_mul, map_inv, KubotaRankTwo.det_n, KubotaRankTwo.det_w,
-    KubotaRankTwo.det_d, inv_one, mul_one, ← inv_pow, hB, one_pow]
+    KubotaRankTwo.det_d, inv_one, mul_one, hB, one_pow]
 
 theorem actual_bruhat_kappa_eq_one (v : (LocalField F q)ˣ) (s : LocalField F q) : KPRankOneOpenCellKernel.kappa F ζ hζ q v s = 1 := by
   rw [KPRankOneOpenCellKernel.kappa, bruhatLeft, bruhatRight, signedWeyl_eq_prescribed_signed]
@@ -666,7 +666,7 @@ theorem actual_bruhat_kappa_eq_one (v : (LocalField F q)ˣ) (s : LocalField F q)
     KPStandardLocalRootLifts.A, he, hg,
     KPLocalCover.sectionMap_epsilon, KPLocalCover.sectionMap_g]
   simp only [sigww F ζ hζ q, sigmanR F ζ hζ q, sigwnw F ζ hζ q,
-    sigdnw F ζ hζ q, sigscalar F ζ hζ q, one_mul, mul_one,
+    sigdnw F ζ hζ q, sigscalar F ζ hζ q, mul_one,
     inv_one, div_one]
 end BruhatPhase
 
@@ -801,7 +801,7 @@ theorem actual_compact_spherical_bruhat_coordinate
         normPower (LocalField F q) (v⁻¹ ^ 2) (1 / 2) •
           (tau P) ((B.rootTorus v)⁻¹) V := by
     simp [inducingAction, inducingScalar, deltaHalf, borelAction,
-      ← map_inv, S.borel.retract_torus, B.coordinate_eq,
+      ← map_inv, S.borel.retract_torus, 
       normPower, inv_pow]
     rw [map_inv, B.coordinate_eq]
   simp only [map_mul, Module.End.mul_apply]
@@ -997,7 +997,7 @@ theorem actual_cubic_sphere_unit_decomposition
     apply Units.ext
     exact congrArg (fun c : KPTameCompact.O F q => (c : LocalField F q)) hu
   rw [hwu]
-  simp [w, div_eq_mul_inv, mul_comm]
+  simp [w, div_eq_mul_inv]
 
 theorem actual_compact_spherical_cubic_sphere_coordinate
     (ht : ringChar (KPTameCompact.O F q ⧸ KPTameCompact.p F q) ≠ 3)

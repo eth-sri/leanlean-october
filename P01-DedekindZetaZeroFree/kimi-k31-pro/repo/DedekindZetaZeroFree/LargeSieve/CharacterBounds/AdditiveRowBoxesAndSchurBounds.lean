@@ -266,8 +266,7 @@ private lemma localSize_zero (F : Type) [Field F] [NumberField F]
   simp [this]
 private lemma diagonal_injective (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (𝓞 F))) :
-    Function.Injective (sIntegerDiagonal F S) := by
-  exact (RingHom.injective (sLocalDiagonal F S)).comp Subtype.val_injective
+    Function.Injective (sIntegerDiagonal F S) := (RingHom.injective (sLocalDiagonal F S)).comp Subtype.val_injective
 private lemma diagonal_discrete (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (𝓞 F))) :
     IsDiscrete ((sIntegerDiagonal F S).toAddMonoidHom.range : Set (SLocalProduct F S)) := by

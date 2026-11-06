@@ -32,7 +32,7 @@ private theorem weighted_period (dx : Measure (A F)) (dq : Measure (Q F))
   have hwint : Integrable w dx :=
     hint.mul_bdd hc.aestronglyMeasurable (c := 1) (Filter.Eventually.of_forall (by
       intro x
-      simp [Circle.norm_coe]))
+      simp))
   have htw := (KPChamberAdditivePeriodization.lintegral_nonnegativePeriod F dx dq hcompat
       (fun x => ENNReal.ofReal ‖w x‖) hwmeas.norm.ennreal_ofReal)
   have hfinite : ∫⁻ q : Q F, KPChamberAdditivePeriodization.normPeriod F w q ∂dq < ⊤ := by

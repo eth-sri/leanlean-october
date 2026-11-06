@@ -47,7 +47,7 @@ theorem continuous_zero_of_pairing_self_zero [TopologicalSpace X]
   have he : hf.toLp f = 0 := inner_self_eq_zero.mp hi
   have hae : f =ᵐ[μ] (0 : X → ℂ) := by
     apply (hf.toLp_eq_toLp_iff (MemLp.zero : MemLp (0 : X → ℂ) 2 μ)).mp
-    simpa using he
+    simp_all
   exact MeasureTheory.Measure.eq_of_ae_eq hae hc continuous_const
 
 variable {F : Type} [Field F] [NumberField F] {ζ : F} {hζ : IsPrimitiveRoot ζ 12}

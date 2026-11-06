@@ -61,14 +61,14 @@ private theorem conductor_exists (v : HeightOneSpectrum (𝓞 F))
       (↑↑u : v.adicCompletion F) * ↑(uniformizer v π hπ ^ c) * (((↑↑u⁻¹ : v.adicCompletion F) * ↑x) * 1)
     have huinv : (↑↑u : v.adicCompletion F) * (↑↑u⁻¹ : v.adicCompletion F) = 1 :=
       congrArg (fun z : v.adicCompletionIntegers F => (z : v.adicCompletion F)) (by simp : (u : v.adicCompletionIntegers F) * ↑u⁻¹ = 1)
-    linear_combination -(↑(uniformizer v π hπ ^ c) * ↑x) * (huinv)
+    linear_combination -(↑(uniformizer v π hπ ^ c) * ↑x) * huinv
   refine ⟨c,htriv,?_⟩
   have hpi : (π : v.adicCompletion F) ≠ 0 := by intro h; exact hπ.ne_zero (Subtype.ext h)
   have hlt : Valued.v (π : v.adicCompletion F) < 1 :=
     (Valuation.integer.integers (Valued.v : Valuation (v.adicCompletion F) ℤᵐ⁰)).valuation_irreducible_lt_one hπ
   have hinv : (π : v.adicCompletion F)⁻¹ ∉ finiteCompletionBall F v 0 := by
     change ¬ Valued.v (π : v.adicCompletion F)⁻¹ ≤ 1
-    rw [map_inv₀, inv_le_one₀ (by exact lt_of_le_of_ne zero_le (Ne.symm ((Valuation.ne_zero_iff _).mpr hpi)))]
+    rw [map_inv₀, inv_le_one₀ (lt_of_le_of_ne zero_le (Ne.symm ((Valuation.ne_zero_iff _).mpr hpi)))]
     exact not_le.mpr hlt
   have hh := mt (hc (π : v.adicCompletion F)⁻¹).mp hinv
   push Not at hh
@@ -87,7 +87,7 @@ local instance (v : HeightOneSpectrum (𝓞 F)) : IsNonarchimedeanLocalField (v.
   letI : (Valued.v : Valuation (v.adicCompletion F) ℤᵐ⁰).Compatible := Valuation.Compatible.ofValuation _
   ext x
   change ValuativeRel.valuation (v.adicCompletion F) x ≤ 1 ↔ Valued.v x ≤ 1
-  exact (ValuativeRel.isEquiv (ValuativeRel.valuation (v.adicCompletion F)) (Valued.v)).le_one_iff_le_one
+  exact (ValuativeRel.isEquiv (ValuativeRel.valuation (v.adicCompletion F)) Valued.v).le_one_iff_le_one
  def intEquiv (v : HeightOneSpectrum (𝓞 F)) :
     (ValuativeRel.valuation (v.adicCompletion F)).integer ≃+* v.adicCompletionIntegers F :=
   RingEquiv.subringCongr (ints_eq v)
@@ -179,7 +179,7 @@ private theorem sign_tame (v : HeightOneSpectrum (𝓞 F)) (hodd : ringChar (Res
   have hs := tame_symbol_one_iff v hodd hm u
   have hq := quadraticChar_dichotomy hn
   have hqi := quadraticChar_one_iff_isSquare hn
-  simp only [signHom, MonoidHom.coe_mk, OneHom.coe_mk, MulEquiv.map_eq_one_iff]
+  simp only [signHom, MonoidHom.coe_mk, OneHom.coe_mk]
   split_ifs with h
   · have h := (KummerTheory.nthRootsSubgroupEquivRootsOfUnity (v.adicCompletion F) 2).map_eq_one_iff.mp h
     have h := hs.mp h
@@ -301,7 +301,7 @@ private theorem even_zpow (x : ℂ) (hx : x^2=1) (n : ℤ) :
   have hx0 : x ≠ 0 := by intro h; simp [h] at hx
   by_cases hn : Even n
   · obtain ⟨k, hk⟩ := hn
-    rw [if_pos (by exact ⟨k,hk⟩), hk, ← two_mul, zpow_mul, zpow_ofNat, hx, one_zpow]
+    rw [if_pos (⟨k,hk⟩), hk, ← two_mul, zpow_mul, zpow_ofNat, hx, one_zpow]
   · rw [if_neg hn]
     obtain ⟨k, hk⟩ := Int.not_even_iff_odd.mp hn
     rw [hk, zpow_add₀ hx0, zpow_mul, zpow_ofNat, hx, one_zpow, zpow_one, one_mul]
@@ -316,7 +316,7 @@ private theorem signed_formula (A : SArithmeticData F) (v : HeightOneSpectrum (�
       (if Even n then 1 else quadratic v (IsLocalRing.residue _ (w : v.adicCompletionIntegers F))) := by
   let B := signedPair A v
   change B _ _ = _
-  simp only [map_mul, MonoidHom.mul_apply, map_zpow, MonoidHom.zpow_apply]
+  simp only [map_mul, MonoidHom.mul_apply, map_zpow]
   have huu : B (localUnit v u) (localUnit v w) = 1 := by
     rw [signedPair_apply,actual_integral_integral A v hodd]
     exact map_one _
@@ -354,13 +354,7 @@ private theorem parity_identity (r s e : ℂ) (hr : r^2=1) (hs : s^2=1) (he : e^
     ((if Even (m-c) then 1 else s*e) / (if Even (-c) then 1 else e)) =
     ((if Even m then 1 else r) * (if Even n then 1 else s)) *
     ((if Even (n+m-c) then 1 else (r*s)*e) / (if Even (-c) then 1 else e)) := by
-  have he0 : e ≠ 0 := by intro h; simp [h] at he
-  have hh : ∀ i : ℤ, Even i ↔ i % 2 = 0 := fun _ => Int.even_iff
-  simp only [hh]
-  split_ifs <;> try omega
-  all_goals field_simp
-  all_goals simp_all [pow_two]
-  all_goals linear_combination (r*s)*he + e*(r*s)*hr + e*r*hs
+  grind
 attribute [local instance] residueFintype
 
 theorem hilbert_defect_of_parity_evaluation (A : SArithmeticData F)

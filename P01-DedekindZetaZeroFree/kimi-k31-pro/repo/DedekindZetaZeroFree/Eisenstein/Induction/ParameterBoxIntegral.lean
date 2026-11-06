@@ -59,8 +59,8 @@ theorem parameter_box_integrable_and_integral
     have hs : (fun x => parameterStageIntegrand R N P C J (fullLevel R P C Q hQ) a t z (c • PiTensorProduct.tprod ℂ f) (fun j => rootCoordinate R x j.val)) =
         c • (fun x => parameterStageIntegrand R N P C J (fullLevel R P C Q hQ) a t z (PiTensorProduct.tprod ℂ f) (fun j => rootCoordinate R x j.val)) := by
       ext x
-      simp only [parameterStageIntegrand, map_smul, map_add, Submodule.coe_smul,
-        Submodule.coe_add, Pi.smul_apply, Pi.add_apply]
+      simp only [parameterStageIntegrand, map_smul, Submodule.coe_smul,
+        Pi.smul_apply]
     rw [hs]
     refine ⟨hi.1.smul c, ?_⟩
     refine (integral_smul c _).trans ((congrArg (fun x : ℂ => c • x) hi.2).trans ?_)
@@ -71,8 +71,8 @@ theorem parameter_box_integrable_and_integral
     have he : (fun x => parameterStageIntegrand R N P C J (fullLevel R P C Q hQ) a t z (y + v) (fun j => rootCoordinate R x j.val)) =
         (fun x => parameterStageIntegrand R N P C J (fullLevel R P C Q hQ) a t z y (fun j => rootCoordinate R x j.val)) + (fun x => parameterStageIntegrand R N P C J (fullLevel R P C Q hQ) a t z v (fun j => rootCoordinate R x j.val)) := by
       ext x
-      simp only [parameterStageIntegrand, map_smul, map_add, Submodule.coe_smul,
-        Submodule.coe_add, Pi.smul_apply, Pi.add_apply]
+      simp only [parameterStageIntegrand, map_add, 
+        Submodule.coe_add, Pi.add_apply]
     rw [he]
     refine ⟨hy.1.add hv.1, ?_⟩
     refine (integral_add hy.1 hv.1).trans ((congrArg₂ (fun x y : ℂ => x + y) hy.2 hv.2).trans ?_)

@@ -142,7 +142,7 @@ private theorem open_cell_term (s : ℂ) (v : V) (g : G) (t : F) (x : Adeles) :
  theorem actual_standard_integrable (U : KPMsRationalCompactCrossPairing.Level F ζ hζ) (μ : Measure Adeles) [μ.IsAddHaarMeasure]
     (s : ℂ) (hs : (1 : ℝ) / 3 < s.re) (v : V) (g : G) :
     KPGlobalEisensteinData.IntertwinerIntegrable μ
-      (W)
+      W
       (KPGlobalTorusFunctionData.N F ζ hζ) (A.sourceFlat s v).val g := by
   have :=  (KPAdelicCoverRestrictedProduct.adelic_pgl_topological_cover F ζ hζ).2.2.1
   let D := KPAdditiveFundamentalDomain.domain F

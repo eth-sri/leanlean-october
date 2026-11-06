@@ -21,8 +21,7 @@ def C (v : KPHilbert.Place F) (x y : (KPHilbert.Completion F v)ˣ) : ℂ :=
 theorem C_conjugate (v : KPHilbert.Place F) (x y : (KPHilbert.Completion F v)ˣ) :
     C F ζ hζ v x y =
       star (KPLocalCover.coefficientEmbedding F ζ hζ
-        (KPLocalCover.threeToSix F (KPHilbert.B3 F ζ hζ v x y ^ 2)) : ℂ) := by
-  rfl
+        (KPLocalCover.threeToSix F (KPHilbert.B3 F ζ hζ v x y ^ 2)) : ℂ) := rfl
 
 theorem C_eq_B6_square (v : KPHilbert.Place F)
     (x y : (KPHilbert.Completion F v)ˣ) :
@@ -37,7 +36,7 @@ theorem C_eq_B6_square (v : KPHilbert.Place F)
     change ((r : Fˣ) ^ 2) ^ 2 = (r : Fˣ) ^ 4
     rw [← pow_mul]
   have hp : r ^ 4 = (r ^ 2)⁻¹ := by
-    apply (eq_inv_iff_mul_eq_one).2
+    apply eq_inv_iff_mul_eq_one.2
     rw [← pow_add]
     exact hr
   rw [C_conjugate, hi]

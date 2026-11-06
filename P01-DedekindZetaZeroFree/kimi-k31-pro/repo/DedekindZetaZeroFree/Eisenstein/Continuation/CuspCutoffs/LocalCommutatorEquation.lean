@@ -97,9 +97,9 @@ private theorem radial_arch (d : ℕ) (hd : d ≠ 0) (w : ℝ → ℂ)
     have hh := (hdw (KPCuspLogShape.meanHeight d y)).hasDerivAt.hasFDerivAt.comp y hm
     change HasFDerivAt (fun y => w (KPCuspLogShape.meanHeight d y)) _ y at hh
     rw [hh.fderiv]
-    simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.smulRight_apply,
-      mean_direction, smul_eq_mul, Complex.real_smul]
-    split_ifs <;> simp [mul_comm]
+    simp only [ContinuousLinearMap.comp_apply, 
+      mean_direction]
+    split_ifs <;> simp
   have hsecond (i : Fin d) (j : Fin 3) :
       fderiv ℝ (fun y => fderiv ℝ (fun y => w (KPCuspLogShape.meanHeight d y)) y
         (KPContFlatCuspCasimirSpecialization.coordinateDirection d i j)) z
@@ -113,7 +113,7 @@ private theorem radial_arch (d : ℕ) (hd : d ≠ 0) (w : ℝ → ℂ)
       change HasFDerivAt (fun y => ((d : ℝ)⁻¹ : ℂ) * deriv w (KPCuspLogShape.meanHeight d y)) _ z at hh
       rw [hh.fderiv]
       simp only [ContinuousLinearMap.smul_apply, ContinuousLinearMap.comp_apply,
-        ContinuousLinearMap.smulRight_apply, mean_direction, hj, if_true,
+        mean_direction, hj, if_true,
         ContinuousLinearMap.toSpanSingleton_apply, smul_eq_mul, Complex.real_smul]
       push_cast
       ring
@@ -175,7 +175,7 @@ def Δloc (w : SmoothSections F ζ hζ C R P H U) :
           rw [hwzero]
           simp only [KPContActualSphericalFlatStage.localLaplacian, fderiv_zero,
             Pi.zero_apply, ContinuousLinearMap.zero_apply, mul_zero,
-            fderiv_const, Finset.sum_const_zero, neg_zero]
+            ]
           simp only [fderiv_const_apply, ContinuousLinearMap.zero_apply, Finset.sum_const_zero,
             mul_zero, neg_zero]
           exact (KPCuspGenuineMonodromy.scalarFiber F ζ hζ

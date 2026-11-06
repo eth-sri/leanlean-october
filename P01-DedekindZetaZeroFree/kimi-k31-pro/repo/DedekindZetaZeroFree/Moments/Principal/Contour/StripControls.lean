@@ -45,11 +45,11 @@ theorem strip_re_one_lt {a b : ℝ} (ha : Scales.rightLine ≤ a) {s : ℂ}
   lt_of_lt_of_le one_lt_x₁ (ha.trans hs.1)
 
 theorem re_x₁_line (s : ℝ) : (((Scales.rightLine : ℂ) + (s : ℂ) * I)).re = Scales.rightLine := by
-  simp
+  simp_all
 
 theorem re_z_line (t : ℝ) :
     ((((1 / 6 + Scales.contourOffset : ℝ) : ℂ) + (t : ℂ) * I)).re = 1 / 6 + Scales.contourOffset := by
-  simp
+  simp_all
 
 theorem six_mul_ne_one_of_re {z : ℂ} (h : z.re ≠ 1 / 6) : 6 * z ≠ 1 := by
   intro h1
@@ -123,7 +123,7 @@ theorem wResidue_tendsto (u : D.Row) (hu : u.u = 1) (ξ : ℂ) (hξ : 1 < ξ.re)
   have hne1 : ξ ≠ 1 := fun h => by rw [h] at hξ; simp at hξ
   have h16 : (1 / 6 : ℂ) = ((1 / 6 : ℝ) : ℂ) := by
     first | norm_num | simp | (push_cast; ring)
-  have h16re : ((1 / 6 : ℂ)).re = 1 / 6 := by rw [h16, Complex.ofReal_re]
+  have h16re : (1 / 6 : ℂ).re = 1 / 6 := by rw [h16, Complex.ofReal_re]
   have hmem : ((ξ, (1 : ℂ), (1 / 6 : ℂ)) : EulerDomain.Coordinates) ∈
       EulerDomain.OmegaStar := by
     simp only [EulerDomain.OmegaStar, Set.mem_setOf_eq, Complex.one_re, h16re]
@@ -142,7 +142,7 @@ theorem wResidue_tendsto (u : D.Row) (hu : u.u = 1) (ξ : ℂ) (hξ : 1 < ξ.re)
   have hMopen : IsOpen {z : ℂ | 0 < z.re} := isOpen_lt continuous_const Complex.continuous_re
   have hM : ContinuousAt D.M (1 / 6) :=
     (D.M_differentiableOn.differentiableAt
-      (hMopen.mem_nhds (by show (0 : ℝ) < ((1 / 6 : ℂ)).re; rw [h16re]; norm_num))).continuousAt
+      (hMopen.mem_nhds (by show (0 : ℝ) < (1 / 6 : ℂ).re; rw [h16re]; norm_num))).continuousAt
   have hpow : ContinuousAt (fun z : ℂ => (Z : ℂ) ^ ((Scales.xExponent / 2 : ℝ) + ξ - 1 +
       (Scales.smoothingExponent : ℂ) * z)) (1 / 6) :=
     ContinuousAt.const_cpow (by fun_prop) (Or.inl hZc)
@@ -161,7 +161,7 @@ theorem wResidue_tendsto (u : D.Row) (hu : u.u = 1) (ξ : ℂ) (hξ : 1 < ξ.re)
       isOpen_lt continuous_const Complex.continuous_re
     have hm : ∀ᶠ z in nhds (1 / 6 : ℂ), 1 / 20 - EulerDomain.pad < z.re :=
       hopen.mem_nhds (by
-        show 1 / 20 - EulerDomain.pad < ((1 / 6 : ℂ)).re
+        show 1 / 20 - EulerDomain.pad < (1 / 6 : ℂ).re
         rw [h16re]; simp only [EulerDomain.pad]; norm_num)
     exact eventually_nhdsWithin_of_eventually_nhds hm
   have hev : ∀ᶠ z in nhdsWithin (1 / 6 : ℂ) {1 / 6}ᶜ,
@@ -479,7 +479,7 @@ theorem zResidue_xi_gaussian_decay (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 
   obtain ⟨Cz, hCz, hz⟩ := RightHeckeBounds.zetaSCont_inv_norm_le_right D Scales.rightLine hx1
   have h16 : (1 / 6 : ℂ) = ((1 / 6 : ℝ) : ℂ) := by
     first | norm_num | simp | (push_cast; ring)
-  have h16re : ((1 / 6 : ℂ)).re = 1 / 6 := by rw [h16, Complex.ofReal_re]
+  have h16re : (1 / 6 : ℂ).re = 1 / 6 := by rw [h16, Complex.ofReal_re]
   refine ⟨‖Spectral.c₀ D‖ * (Z ^ (139 / 100 : ℝ) * (Real.exp 2 * (CH * Cz))), fun x hx y => ?_⟩
   have hxx1 : Scales.rightLine ≤ x := hx.1
   have hx2 : x ≤ 2 := hx.2

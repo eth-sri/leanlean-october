@@ -74,8 +74,7 @@ private theorem finiteKernel_compact_support_periods {G : Type*} [AddCommGroup G
       neg_mem' := by
         intro u hu x
         simpa using (hu (-u + x)).symm }
-  have hn : IsOpen {p : G × G | φ (p.1 + p.2) = φ p.2} := by
-    exact ((hlocal.comp_continuous (continuous_fst.add continuous_snd)).prodMk
+  have hn : IsOpen {p : G × G | φ (p.1 + p.2) = φ p.2} := ((hlocal.comp_continuous (continuous_fst.add continuous_snd)).prodMk
       (hlocal.comp_continuous continuous_snd)) {q : ℂ × ℂ | q.1 = q.2}
   obtain ⟨V, W, hVo, hWo, h0V, hKW, hVW⟩ :=
     generalized_tube_lemma (isCompact_singleton (x := (0 : G))) hsupport.isCompact hn
@@ -281,8 +280,7 @@ private lemma finiteKernel_compact_fubini (A : SArithmeticData F) (v : HeightOne
   let g : v.adicCompletion F → v.adicCompletion F → ℂ := fun x z =>
     f z * (ResidueTrace.localTraceCharacter v ((a : v.adicCompletion F)*x^2 - (y+z)*x) : ℂ)
   have hg : Integrable (Function.uncurry g) ((μ.restrict B).prod μ) := by
-    have hcont : Continuous (Function.uncurry g) := by
-      exact (hf.1.continuous.comp continuous_snd).mul
+    have hcont : Continuous (Function.uncurry g) := (hf.1.continuous.comp continuous_snd).mul
         (continuous_subtype_val.comp ((ResidueTrace.continuous_localTraceCharacter v).comp
           ((continuous_const.mul (continuous_fst.pow 2)).sub
             ((continuous_const.add continuous_snd).mul continuous_fst))))

@@ -46,7 +46,7 @@ private theorem ratio_eq {F : Type*} [Field F]
     A 0 0 / A 1 1 = B 0 0 / B 1 1 := by
   obtain ⟨u, rfl⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp h
   simp only [Units.val_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply,
-    Fin.sum_univ_two, Matrix.scalar, Matrix.diagonal_apply]
+    Fin.sum_univ_two, Matrix.scalar]
   simp
   rw [mul_div_mul_right _ _ (Units.ne_zero u)]
  def representative {F : Type*} [Field F]
@@ -292,7 +292,7 @@ def LatticeAutomorphisms (M : Submodule (IntegralOrder F) (Plane F)) :
       ∀ v : Plane F, v ∈ M ↔ (A : Matrix (Fin 2) (Fin 2) F) *ᵥ v ∈ M}
 
 def StandardCusp : Projectivization F (Plane F) :=
-  Projectivization.mk F ![1, 0] (by simp [Matrix.cons_val_zero])
+  Projectivization.mk F ![1, 0] (by simp)
 
 def CuspSubgroup (Γ : Subgroup (ProjectiveGroup F))
     (q : Projectivization F (Plane F)) (σ : ProjectiveGroup F) :

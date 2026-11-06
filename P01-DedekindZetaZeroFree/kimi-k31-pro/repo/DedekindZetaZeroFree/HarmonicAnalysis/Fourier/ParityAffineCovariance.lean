@@ -95,7 +95,7 @@ theorem gδ_zero (δ : Finset (RayCoset.RealPlaces K)) :
   · obtain ⟨v, hv⟩ := Finset.nonempty_iff_ne_empty.mpr hδ
     have hp : (∏ v ∈ δ, (Theta.traceRealCoordinateCLM K v 0 : ℂ)) = 0 :=
       Finset.prod_eq_zero hv (by simp)
-    simp [gδ, hp, hδ]
+    simp [gδ, hδ]
 
 end DedekindZetaZeroFree.AbelianQuotient.RayParity.AffineFourier
 

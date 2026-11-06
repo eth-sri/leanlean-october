@@ -119,7 +119,7 @@ theorem torus_conjugates_root (t : E F ζ hζ) (x : Adeles F) :
     apply Matrix.GeneralLinearGroup.ext
     intro i j
     fin_cases i <;> fin_cases j <;>
-      simp [Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two,
+      simp [Matrix.mul_apply, Fin.sum_univ_two,
         upper_entries, h10, h01]
     have hratio : (p F ζ hζ t : Adeles F) =
         ((diagonal_entries_units F A h10 h01).1.unit : Adeles F) *

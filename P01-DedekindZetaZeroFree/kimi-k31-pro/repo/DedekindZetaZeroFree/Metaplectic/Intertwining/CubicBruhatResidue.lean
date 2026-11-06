@@ -178,10 +178,10 @@ private lemma actualUc_neg_one
     (Pi.single d (1:ℂ))) e
   change (((centerCoordinates S.heisenberg rep hrep).symm (Pi.single d (1:ℂ))).val (rep e)) = _ at hv
   unfold UcProposal.actualUc doubleKernel
-  simp only [reverseIncrement, one_pow, mul_one, one_mul, one_smul]
+  simp only [reverseIncrement, one_pow, mul_one, one_smul]
   simp only [normPower, zero_mul, Complex.exp_zero, mul_one] at h ⊢
   simp only [one_pow, mul_one, KPCubicExpansion.omega, KPCubicExpansion.valuationExponent,
-    map_one, WithZero.log_one, neg_zero, zero_mul, Complex.exp_zero, inv_one, one_mul] at h
+    ] at h
   rw [h, hv]
   simp [Pi.single_apply]
 
@@ -266,12 +266,10 @@ private lemma regular_C {F : Type*} [Field F] (u c : F) : Regular u (RatFunc.C c
 private lemma regular_X {F : Type*} [Field F] (u : F) : Regular u (RatFunc.X : RatFunc F) := by
   simp [Regular]
 private lemma regular_add {F : Type*} [Field F] {u : F} {r s : RatFunc F}
-    (hr : Regular u r) (hs : Regular u s) : Regular u (r+s) := by
-  exact fun h => (mul_ne_zero hr hs) (by
+    (hr : Regular u r) (hs : Regular u s) : Regular u (r+s) := fun h => (mul_ne_zero hr hs) (by
     simpa using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_add_dvd r s) h)
 private lemma regular_mul_eval {F : Type*} [Field F] {u : F} {r s : RatFunc F}
-    (hr : Regular u r) (hs : Regular u s) : Regular u (r*s) := by
-  exact fun h => (mul_ne_zero hr hs) (by
+    (hr : Regular u r) (hs : Regular u s) : Regular u (r*s) := fun h => (mul_ne_zero hr hs) (by
     simpa using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_mul_dvd r s) h)
 private lemma regular_inv {F : Type*} [Field F] {u : F} {r : RatFunc F}
     (_hr : Regular u r) (hv : RatFunc.eval (RingHom.id F) u r ≠ 0) : Regular u r⁻¹ := by
@@ -546,8 +544,7 @@ private lemma exists_preferred_cube_representatives
     refine ⟨-1, ?_⟩
     change (-1 : Kˣ)^3 = -1
     norm_num
-  have hmk : QuotientGroup.mk' (CubicCharacters.cubes Kˣ) (-1) = 1 := by
-    exact (QuotientGroup.eq_one_iff _).mpr hneg
+  have hmk : QuotientGroup.mk' (CubicCharacters.cubes Kˣ) (-1) = 1 := (QuotientGroup.eq_one_iff _).mpr hneg
   have hsur : Function.Surjective (QuotientGroup.mk' (CubicCharacters.cubes Kˣ)) :=
     QuotientGroup.mk'_surjective _
   choose c hc using hsur
@@ -670,7 +667,7 @@ private lemma exists_actual_finite_mellin_models
         (if k=1 then (KPRankOneRamifiedBeta.m (LocalField F q) dx : ℂ)*
           (1-(CubicUnitCharacters.residueCard (LocalField F q) : ℂ)⁻¹)*φ 0 else 0)) := by
   classical
-  have hm (k) := actual_mellin_model F q dx π hπ (actualHilbertCharacter F ζ hζ q (cRep k))
+  have hm k := actual_mellin_model F q dx π hπ (actualHilbertCharacter F ζ hζ q (cRep k))
     (actualHilbertCharacter_cubic F ζ hζ q (cRep k)) φ hφ hcφ
   choose M hi hr using hm
   refine ⟨M,?_,?_⟩
@@ -796,9 +793,8 @@ private lemma actual_fixed_root_full_model
   have hbn (ε : CubicCharacters.Mu3) : ‖b ε‖ = ‖(z : ℂ)‖ := by
     dsimp [b]
     rw [norm_mul, Complex.norm_eq_one_of_mem_rootsOfUnity ε.property, one_mul]
-  have hb0 (ε) : b ε ≠ 0 := by
-    exact norm_pos_iff.mp (by rw [hbn]; exact norm_pos_iff.mpr z.ne_zero)
-  have hb1 (ε) : b ε ≠ 1 := by
+  have hb0 ε : b ε ≠ 0 := norm_pos_iff.mp (by rw [hbn]; exact norm_pos_iff.mpr z.ne_zero)
+  have hb1 ε : b ε ≠ 1 := by
     intro he
     have h := hz1
     rw [← hbn ε,he,norm_one] at h
@@ -820,7 +816,7 @@ private lemma actual_fixed_root_full_model
       have h := hd.2.2.1
       rw [← ht, ← hz, Units.val_pow_eq_pow_val, norm_pow] at h
       exact (pow_lt_pow_iff_left₀ (norm_nonneg _) (norm_nonneg _) (by decide : 3 ≠ 0)).mp h
-    have hbQ (ε) : b ε-Q F q ρ ≠ 0 := by
+    have hbQ ε : b ε-Q F q ρ ≠ 0 := by
       apply sub_ne_zero.mpr
       intro he
       have h := hQz

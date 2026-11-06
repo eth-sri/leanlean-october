@@ -87,8 +87,7 @@ theorem finite_nthPowerQuotient_of_natCast_ne_zero
     have hres : F.residueCharacteristic = p :=
       F.residueCharacteristic_eq_of_charP p hpne
     let : CharP K F.residueCharacteristic := by
-      rw [hres]
-      infer_instance
+      grind
     have hpn : ¬ F.residueCharacteristic ∣ n := by
       intro hdiv
       apply hnK

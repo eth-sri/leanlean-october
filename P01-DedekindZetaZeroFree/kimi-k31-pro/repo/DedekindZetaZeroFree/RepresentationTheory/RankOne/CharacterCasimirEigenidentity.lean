@@ -84,7 +84,7 @@ theorem traceless_anticommutator (M N : Matrix (Fin 2) (Fin 2) ℂ)
     linear_combination hN
   ext i j
   fin_cases i <;> fin_cases j <;>
-    simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.trace_fin_two, hm, hn, Matrix.one_apply] <;> ring
+    simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.trace_fin_two, hm, hn] <;> ring
 
 theorem skew_trace_mul_real (M N : Matrix (Fin 2) (Fin 2) ℂ)
     (hM : star M = -M) (hN : star N = -N) :
@@ -169,8 +169,8 @@ theorem basisExp_hasDerivAt_entry {d : ℕ}
   have hi := (ContinuousLinearMap.proj i : Matrix (Fin 2) (Fin 2) ℂ →L[ℝ] Fin 2 → ℂ).hasFDerivAt.comp_hasDerivAt t h
   have hj := (ContinuousLinearMap.proj j : (Fin 2 → ℂ) →L[ℝ] ℂ).hasFDerivAt.comp_hasDerivAt t hi
   simp only [Function.comp_def, ContinuousLinearMap.proj_apply,
-    ContinuousLinearMap.coe_restrictScalars, ContinuousLinearMap.toSpanSingleton_apply,
-    Complex.ofRealCLM_apply, Complex.ofReal_one, one_smul] at hj
+    
+    Complex.ofRealCLM_apply, Complex.ofReal_one] at hj
   change HasDerivAt (fun s : ℝ => NormedSpace.exp ((s : ℂ) • B b.1 b.2) i j)
     (((ContinuousLinearMap.restrictScalars ℝ
       (ContinuousLinearMap.toSpanSingleton ℂ
@@ -269,7 +269,7 @@ theorem orthonormal_trace_contraction
   have h11 := h 1 1
   have h12 := h 1 2
   have h21 := h 2 1
-  simp [C, D, Matrix.one_apply] at h00 h01 h02 h11 h12 h21
+  simp [C, D] at h00 h01 h02 h11 h12 h21
   simp only [Fin.sum_univ_three, Matrix.trace_fin_two, Matrix.mul_apply, Fin.sum_univ_two, hb]
   linear_combination
     -(M 0 0 - M 1 1) * (N 0 0 - N 1 1) / 2 * h00 -

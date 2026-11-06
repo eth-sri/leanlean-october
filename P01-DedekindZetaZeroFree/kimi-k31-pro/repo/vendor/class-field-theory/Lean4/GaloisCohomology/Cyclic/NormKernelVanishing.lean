@@ -85,28 +85,7 @@ def IsContinuousDiscreteRepresentation {G : Type} [Group G] [TopologicalSpace G]
   letI : TopologicalSpace A.V := ⊥
   Continuous fun p : G × A.V => A.ρ p.1 p.2
 
-/-- **the cyclic norm-kernel vanishing condition.**  The condition on a continuous `G`-module used by the
-construction: `H⁻¹(G(L | K), A_L)` is trivial for every finite cyclic abstract
-extension `L | K`.
 
-Profinite-ness of `G` and continuity of `A` are ambient hypotheses in the
-construction, not parts of the cyclic norm-kernel vanishing condition itself.  This predicate therefore records only
-the numbered vanishing condition.  `hLK` expresses `G_L ≤ G_K`, `hnormal`
-that the extension is Galois, `hfinite` that it is finite, and `g, hg` that
-its Galois group is cyclic. -/
-def SatisfiesCyclicNormKernelVanishing {G : Type} [Group G] [TopologicalSpace G]
-    (A : Rep.{0} ℤ G) : Prop :=
-  ∀ (K L : ClosedSubgroup G) (hLK : L.toSubgroup ≤ K.toSubgroup)
-    (hnormal : (extensionSubgroup K L hLK).Normal)
-    (hfinite : Finite (K.toSubgroup ⧸ extensionSubgroup K L hLK))
-    (g : K.toSubgroup ⧸ extensionSubgroup K L hLK)
-    (_hg : ∀ x, x ∈ Subgroup.zpowers g),
-      letI := hnormal
-      letI := hfinite
-      letI := Fintype.ofFinite
-        (K.toSubgroup ⧸ extensionSubgroup K L hLK)
-      Limits.IsZero
-        (tateCohomology (extensionFixedRepresentation A K L hLK hnormal) (-1))
 
 /-- **the finite-cyclic cohomology calculation.**  If `G` is finite cyclic, then
 `H¹(G,A) ≅ H⁻¹(G,A)`.

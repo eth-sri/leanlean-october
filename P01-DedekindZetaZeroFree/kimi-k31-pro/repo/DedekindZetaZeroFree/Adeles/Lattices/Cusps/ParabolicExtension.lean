@@ -130,7 +130,7 @@ private theorem ratio_eq {F : Type*} [Field F]
     A 0 0 / A 1 1 = B 0 0 / B 1 1 := by
   obtain ⟨u, rfl⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp h
   simp only [Units.val_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply,
-    Fin.sum_univ_two, Matrix.scalar, Matrix.diagonal_apply]
+    Fin.sum_univ_two, Matrix.scalar]
   simp
   rw [mul_div_mul_right _ _ (Units.ne_zero u)]
  def representative {F : Type*} [Field F]
@@ -397,7 +397,7 @@ def idealArithmeticModule (F : Type*) [Field F] [NumberField F]
 private theorem idealArithmeticModule_mem (F : Type*) [Field F] [NumberField F]
     (I : FractionalIdeal (nonZeroDivisors (NumberField.RingOfIntegers F)) F) (v : Fin 2 → F) :
     v ∈ idealArithmeticModule F I ↔ (∃ r : NumberField.RingOfIntegers F, algebraMap _ F r = v 0) ∧ v 1 ∈ I := by
-  simp [idealArithmeticModule, FractionalIdeal.mem_one_iff]
+  simp [idealArithmeticModule]
  def pairVec (F : Type*) [Field F] [NumberField F] :
     (F × F) ≃ₗ[NumberField.RingOfIntegers F] (Fin 2 → F) where
   toFun x := ![x.1,x.2]
@@ -431,7 +431,7 @@ theorem idealArithmeticModule_full (F : Type*) [Field F] [NumberField F]
     (Submodule.smul_mem _ (x 1 / b) (Submodule.subset_span h2))
   convert hh using 1
   ext i
-  fin_cases i <;> simp [div_mul_cancel₀, hb0]
+  fin_cases i <;> simp [hb0]
 private theorem ideal_stabilizer_iff (F : Type*) [Field F] [NumberField F]
     (I : FractionalIdeal (nonZeroDivisors (NumberField.RingOfIntegers F)) F)
     (A : Matrix.GeneralLinearGroup (Fin 2) F) :

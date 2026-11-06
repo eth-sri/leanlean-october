@@ -263,17 +263,7 @@ theorem valuationUnitsMulHom_eq_one_iff_exists_integerUnit
       (integerUnitsToFieldUnits_mem_range_iff_valuationMap_eq_zero L
         (integerUnitsToFieldUnits L y)).1 ⟨y, rfl⟩
 
-/-- Exactness of the multiplicative valuation sequence at `Lˣ`, stated as
-the equality of the actual range and kernel subgroups. -/
-theorem integerUnitsToFieldUnits_range_eq_ker_valuationUnitsMulHom
-    (L : Type u) [Field L] [ValuativeRel L] [TopologicalSpace L]
-    [IsNonarchimedeanLocalField L] :
-    MonoidHom.range (integerUnitsToFieldUnits L) =
-      MonoidHom.ker (valuationUnitsMulHom L) := by
-  ext x
-  change (∃ y : 𝒪[L]ˣ, integerUnitsToFieldUnits L y = x) ↔
-    valuationUnitsMulHom L x = 1
-  exact (valuationUnitsMulHom_eq_one_iff_exists_integerUnit L x).symm
+
 
 /-- The multiplicative normalized valuation `Lˣ → Multiplicative ℤ` is
 surjective. -/

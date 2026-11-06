@@ -131,40 +131,7 @@ theorem mem_standardLubinTateRealLowerRamificationGroup_nat_iff_primitivePoint
                 (standardLubinTateLevelCompleteDVF hπ n).valuationSubring) from
             by simp)
 
-/-- At a nonnegative real lower index, the standard lower group is already
-the group at the natural-number ceiling of that index. -/
-theorem standardLubinTateRealLowerRamificationGroup_eq_natCeil
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) (s : ℝ) (hs : 0 ≤ s) :
-    standardLubinTateRealLowerRamificationGroup hπ n s =
-      standardLubinTateRealLowerRamificationGroup
-        hπ n (⌈s⌉₊ : ℝ) := by
-  have hexponent :
-      realRamificationExponent s =
-        realRamificationExponent (⌈s⌉₊ : ℝ) := by
-    rw [realRamificationExponent_nat]
-    unfold realRamificationExponent
-    rw [Int.ceil_toNat, Nat.ceil_add_one hs]
-  have hideal :
-      realRamificationIdeal
-          (standardLubinTateLevelCompleteDVF hπ n).toDVF s =
-        realRamificationIdeal
-          (standardLubinTateLevelCompleteDVF hπ n).toDVF
-          (⌈s⌉₊ : ℝ) := by
-    unfold realRamificationIdeal
-    rw [hexponent]
-  unfold standardLubinTateRealLowerRamificationGroup
-  ext σ
-  change
-    (∀ a, _ ∈
-      realRamificationIdeal
-        (standardLubinTateLevelCompleteDVF hπ n).toDVF s) ↔
-      ∀ a, _ ∈
-        realRamificationIdeal
-          (standardLubinTateLevelCompleteDVF hπ n).toDVF
-          (⌈s⌉₊ : ℝ)
-  rw [hideal]
+
 
 end LubinTate
 

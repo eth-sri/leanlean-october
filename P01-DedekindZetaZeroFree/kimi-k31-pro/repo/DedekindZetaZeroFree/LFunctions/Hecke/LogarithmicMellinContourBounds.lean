@@ -182,7 +182,7 @@ private lemma patchPoint (R B : ℂ → ℂ) (p : ℂ) (S : Set ℂ)
   intro s hs
   by_cases hsp : s = p
   · subst s
-    exact ((hB.self_of_nhds).congr_of_eventuallyEq hGp)
+    exact (hB.self_of_nhds.congr_of_eventuallyEq hGp)
   · exact ((hR s hs hsp).congr_of_eventuallyEq (hGs s hsp))
 
 private lemma powerDiff (X : ℝ) (hX : 0 < X) (s : ℂ) :
@@ -193,8 +193,7 @@ private lemma powerDiff (X : ℝ) (hX : 0 < X) (s : ℂ) :
 private lemma productDiff {f : ℝ → ℂ} {δ : ℝ} {P : Polynomial ℂ} {H : ℂ → ℂ}
     (hf : Vendor.LogMellinAdmissible f δ P H) (L : ℂ → ℂ) (X : ℝ) (hX : 0 < X)
     (s : ℂ) (hs : -δ < s.re) (hs0 : s ≠ 0) (hL : DifferentiableAt ℂ L s) :
-    DifferentiableAt ℂ (Vendor.logMellinProduct H L X) s := by
-  exact ((hf.differentiableAt s hs hs0).mul (powerDiff X hX s)).mul hL
+    DifferentiableAt ℂ (Vendor.logMellinProduct H L X) s := ((hf.differentiableAt s hs hs0).mul (powerDiff X hX s)).mul hL
 
 private lemma partDiff (c : ℕ → ℂ) (N : ℕ) (p s : ℂ) (hs : s ≠ p) :
     DifferentiableAt ℂ (fun z : ℂ => ∑ j ∈ Finset.Icc 1 N, c j / (z - p) ^ j) s := by

@@ -20,7 +20,7 @@ theorem exists_compact_leftOrbit_lifts
       ⋃ g, Quotient.mk (MulAction.orbitRel L G) '' V g := by
     intro y _
     obtain ⟨x, rfl⟩ := MulAction.isOpenQuotientMap_quotientMk.surjective y
-    exact Set.mem_iUnion.2 ⟨x, x, hgV x, rfl⟩
+    aesop
   obtain ⟨t, ht⟩ := isCompact_univ.elim_finite_subcover _
     (fun g => hq _ (hVopen g)) hcover
   refine ⟨⋃ g ∈ t, closure (V g), t.isCompact_biUnion fun g _ => hVcomp g, ?_⟩
@@ -42,12 +42,12 @@ theorem exists_compact_subgroup_left_translates
   obtain ⟨K, hKc, hK⟩ := exists_compact_leftOrbit_lifts L
   refine ⟨K, hKc, fun g => ?_⟩
   have hmem : Quotient.mk (MulAction.orbitRel L G) g ∈
-      Quotient.mk (MulAction.orbitRel L G) '' K := by rw [hK]; exact Set.mem_univ _
+      Quotient.mk (MulAction.orbitRel L G) '' K := by simp_all
   obtain ⟨k, hkK, hkq⟩ := hmem
   have hrel : MulAction.orbitRel L G k g := Quotient.exact hkq
   rw [MulAction.orbitRel_apply, MulAction.mem_orbit_iff] at hrel
   obtain ⟨l, hl⟩ := hrel
   have : (l : G) * g = k := (show (l : G) * g = l • g from rfl).trans hl
-  exact ⟨l, this ▸ hkK⟩
+  grind
 
 end DedekindZetaZeroFree

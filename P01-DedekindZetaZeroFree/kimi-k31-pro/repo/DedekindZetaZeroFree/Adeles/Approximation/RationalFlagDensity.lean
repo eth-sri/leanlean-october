@@ -679,7 +679,7 @@ private theorem borel_eq_mirabolic_mul_scalar (R : Type*) [CommRing R] :
           Matrix (Fin 2) (Fin 2) R))) 1 1 = 1
       rw [Matrix.GeneralLinearGroup.coe_scalar]
       simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar_apply, hg, ← hu,
-        Units.val_inv u]
+        ]
     · show (g * Matrix.GeneralLinearGroup.scalar (Fin 2) u⁻¹) *
         Matrix.GeneralLinearGroup.scalar (Fin 2) u = g
       rw [map_inv (Matrix.GeneralLinearGroup.scalar (Fin 2)) u, mul_assoc,

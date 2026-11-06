@@ -364,29 +364,7 @@ theorem equalCharacteristicCompletedUnramifiedFrobenius_valuation
     rw [equalCharacteristicCompletedUnramifiedFrobenius_coeff] at hcoeff
     exact eq_zero_of_pow_eq_zero hcoeff
 
-/-- Coefficient Frobenius is continuous for the Laurent valuation topology.
--/
-theorem equalCharacteristicCompletedUnramifiedFrobenius_continuous :
-    Continuous (equalCharacteristicCompletedUnramifiedFrobenius k) := by
-  apply continuous_of_continuousAt_zero
-    (equalCharacteristicCompletedUnramifiedFrobenius k).toAddMonoidHom
-  simp_rw [ContinuousAt, map_zero,
-    (Valued.hasBasis_nhds_zero
-      (equalCharacteristicCompletedUnramifiedField k) ℤᵐ⁰).tendsto_iff
-      (Valued.hasBasis_nhds_zero
-        (equalCharacteristicCompletedUnramifiedField k) ℤᵐ⁰),
-    true_and, forall_const]
-  intro γ
-  refine ⟨γ, fun x hx ↦ ?_⟩
-  change (Valued.v :
-      Valuation (equalCharacteristicCompletedUnramifiedField k) ℤᵐ⁰).restrict
-        (equalCharacteristicCompletedUnramifiedFrobenius k x) < γ.1
-  change (Valued.v :
-      Valuation (equalCharacteristicCompletedUnramifiedField k) ℤᵐ⁰).restrict
-        x < γ.1 at hx
-  rw [Valuation.restrict_lt_iff_lt_embedding] at hx ⊢
-  rw [equalCharacteristicCompletedUnramifiedFrobenius_valuation]
-  exact hx
+
 
 /-- On the integer ring `(AlgebraicClosure k)[[T]]`, Laurent Frobenius is
 the coefficientwise power-series Frobenius constructed for theta. -/
@@ -563,22 +541,9 @@ noncomputable def equalCharacteristicCompletedIntegerEvaluation
   exact PowerSeries.eval₂Hom
     (equalCharacteristicPowerSeriesToCompletedInteger_continuous k) ha
 
-/-- The Laurent uniformizer, viewed in the completed-unramified integer
-ring. -/
-noncomputable def equalCharacteristicCompletedIntegerUniformizer :
-    Valued.integer (equalCharacteristicCompletedUnramifiedField k) :=
-  equalCharacteristicPowerSeriesToCompletedInteger k PowerSeries.X
 
-omit [Finite k] in
-/-- The completed-unramified uniformizer is topologically nilpotent. -/
-theorem equalCharacteristicCompletedIntegerUniformizer_hasEval :
-    PowerSeries.HasEval
-      (equalCharacteristicCompletedIntegerUniformizer k) := by
-  have hX : PowerSeries.HasEval
-      (PowerSeries.X : (AlgebraicClosure k)⟦X⟧) :=
-    PowerSeries.HasEval.X
-  exact hX.map
-    (equalCharacteristicPowerSeriesToCompletedInteger_continuous k)
+
+
 
 omit [Finite k] in
 /-- Completed power-series evaluation sends `X` to the chosen integral element. -/

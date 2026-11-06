@@ -45,7 +45,7 @@ noncomputable def chosenDegreeOneFrobeniusElement (D : DegreeData G)
     (Multiplicative.ofAdd (1 : ZHat))
   refine ⟨Classical.choose hsurj, 1, Nat.one_pos, ?_⟩
   rw [pow_one, ← D.extensionNormalizedDegreeContinuous_apply]
-  exact Classical.choose_spec hsurj
+  grind
 
 /--
 Establishes the identity `D.frobeniusExponent K L hLK (D.chosenDegreeOneFrobeniusElement K L hLK)
@@ -74,9 +74,7 @@ theorem frobeniusExponent_chosenDegreeOneFrobeniusElement (D : DegreeData G)
           (D.extensionNormalizedDegreeContinuous_surjective K L hLK
             (Multiplicative.ofAdd (1 : ZHat)))) =
           Multiplicative.ofAdd (1 : ZHat)
-      exact Classical.choose_spec
-        (D.extensionNormalizedDegreeContinuous_surjective K L hLK
-          (Multiplicative.ofAdd (1 : ZHat)))
+      grind
     _ = (Multiplicative.ofAdd (1 : ZHat)) ^ (1 : ℕ) := by simp
 
 end DegreeData

@@ -43,7 +43,7 @@ lemma selected_exterior_stage (v : R.A.UnitQuotient) (p : ThetaBranch.ExteriorPr
     split_ifs <;> rfl
   · have hn : Sum.inr p.val ∉ s.val := by
       rw [hs, D.bad_exact]
-      simp only [Sum.inr_ne_inl, false_and, exists_false, Sum.inr.injEq, false_or]
+      simp only [Sum.inr_ne_inl, exists_false, Sum.inr.injEq, false_or]
       rintro ⟨q, hq, hqS⟩
       subst q
       exact p.property hqS

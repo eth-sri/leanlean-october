@@ -133,7 +133,7 @@ theorem convergence_iff_geometric
     ring
   cases ε with
   | plus =>
-    simp only [convergenceHalfPlane, if_pos rfl, if_true, ht, Real.exp_lt_one_iff,
+    simp only [convergenceHalfPlane, if_true, ht, Real.exp_lt_one_iff,
       mul_neg_iff, not_lt_of_ge hl.le, and_false, false_or, hl, and_true]
     constructor <;> intro hs <;> linarith
   | minus =>
@@ -145,7 +145,7 @@ theorem denominator_ne_zero_at_zero (ε : Sign) :
     denominator K ε 0 ≠ 0 := by
   have hq : (residueCardinality K : ℂ) ≠ 1 := by
     exact_mod_cast (ne_of_gt (Finite.one_lt_card (α := 𝓀[K])))
-  cases ε <;> simp [denominator, t, r, sub_ne_zero, hq, Ne.symm hq, inv_eq_one]
+  cases ε <;> simp [denominator, t, r, sub_ne_zero, hq, Ne.symm hq]
 
 private theorem laurent_zero (p : LaurentPolynomial ℂ)
     (U : Set ℂˣ) (hU : U.Infinite)
@@ -199,11 +199,11 @@ private theorem evaluation_norm (ε : Sign) (x : ℝ) :
     change ‖r K (x : ℂ)‖ = _
     simp only [r, Complex.norm_exp, Complex.mul_re, Complex.neg_re,
       Complex.ofReal_re, Complex.neg_im, Complex.ofReal_im, mul_zero, sub_zero,
-      evaluationUnit, if_true]
+      if_true]
   | minus =>
     change ‖(r K (x : ℂ))⁻¹‖ = _
     simp only [r, norm_inv, Complex.norm_exp, Complex.mul_re, Complex.neg_re,
-      Complex.ofReal_re, Complex.neg_im, Complex.ofReal_im, mul_zero, sub_zero,
+      Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero,
       ← Real.exp_neg, neg_mul, neg_neg, reduceCtorEq, if_false]
 
 private theorem evaluation_infinite (ε : Sign) :
@@ -350,7 +350,7 @@ theorem denominator_ne_zero_of_convergence (ε : Sign) (s : ℂ)
   cases ε with
   | plus =>
     change 1 - t K s ≠ 0
-    simp only [if_pos rfl] at ht
+    simp only at ht
     intro he
     have he : t K s = 1 := (sub_eq_zero.mp he).symm
     simpa [he] using ht
@@ -496,7 +496,7 @@ private theorem r_diff : Differentiable ℂ (r K) := by
   cases ε with
   | plus =>
     unfold denominator t r
-    simp only [if_pos rfl, if_true]
+    simp only [if_true]
     fun_prop
   | minus =>
     unfold denominator

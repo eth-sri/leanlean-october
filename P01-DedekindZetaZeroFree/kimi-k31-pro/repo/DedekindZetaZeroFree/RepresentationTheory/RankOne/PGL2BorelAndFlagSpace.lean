@@ -36,7 +36,7 @@ private lemma mul_scalar_apply (A : GL2 F v) (u : (LocalField F v)ˣ) (i j : Fin
     (A * Matrix.GeneralLinearGroup.scalar (Fin 2) u) i j = A i j * (u : LocalField F v) := by
   rw [Units.val_mul, Matrix.mul_apply, Fin.sum_univ_two]
   fin_cases i <;> fin_cases j <;>
-    simp [Matrix.GeneralLinearGroup.coe_scalar, Matrix.scalar_apply, Matrix.diagonal_apply]
+    simp [Matrix.GeneralLinearGroup.coe_scalar, Matrix.scalar_apply]
 
  lemma mul_entry (A B : GL2 F v) (i j : Fin 2) :
     (A * B) i j = A i 0 * B 0 j + A i 1 * B 1 j := by
@@ -59,8 +59,8 @@ private lemma mul_scalar_apply (A : GL2 F v) (u : (LocalField F v)ˣ) (i j : Fin
       (mul_inv_cancel A)
     simpa using h
   rw [Matrix.mul_apply, Fin.sum_univ_two] at hmul
-  simp only [hu, zero_mul, zero_add, Matrix.one_apply, Fin.isValue, Fin.reduceEq,
-    reduceIte] at hmul
+  simp only [hu, zero_mul, zero_add, Fin.isValue, 
+    ] at hmul
   exact (mul_eq_zero.mp hmul).resolve_left h11
 
  lemma inv_entry_zero' {A : GL2 F v} (hu : A 1 0 = 0) (hv : A 0 1 = 0) :
@@ -73,8 +73,8 @@ private lemma mul_scalar_apply (A : GL2 F v) (u : (LocalField F v)ˣ) (i j : Fin
       (mul_inv_cancel A)
     simpa using h
   rw [Matrix.mul_apply, Fin.sum_univ_two] at hmul
-  simp only [hv, zero_mul, add_zero, Matrix.one_apply, Fin.isValue, Fin.reduceEq,
-    reduceIte] at hmul
+  simp only [hv, zero_mul, add_zero, Fin.isValue, 
+    ] at hmul
   exact (mul_eq_zero.mp hmul).resolve_left h00
 
 def upperBorel : Subgroup (PGL2 F v) where
@@ -110,7 +110,7 @@ def diagonalTorus : Subgroup (PGL2 F v) where
   have hmem : A ∈ Subgroup.center (GL2 F v) := Matrix.ProjGenLinGroup.mk_eq_one.mp hA
   rw [Matrix.GeneralLinearGroup.center_eq_range_scalar] at hmem
   obtain ⟨u, rfl⟩ := hmem
-  simp [Matrix.GeneralLinearGroup.coe_scalar, Matrix.scalar_apply, Matrix.diagonal_apply]
+  simp [Matrix.GeneralLinearGroup.coe_scalar, Matrix.scalar_apply]
 
  lemma choose_ratio_eq (b : upperBorel F v) (A : GL2 F v)
     (hA : Matrix.ProjGenLinGroup.mk A = b.val) (hu : A 1 0 = 0) :

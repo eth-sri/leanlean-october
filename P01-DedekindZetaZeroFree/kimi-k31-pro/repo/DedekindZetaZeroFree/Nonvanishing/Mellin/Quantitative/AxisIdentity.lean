@@ -24,16 +24,15 @@ theorem T_eq_G_axis (t : ℝ) :
     have hZ' : (0 : ℝ) < Z := hZ
     have h1 : ((Z ^ (61 / 100 : ℝ) : ℝ) : ℂ) = (Z : ℂ) ^ (61 / 100 : ℂ) := by
       rw [Complex.ofReal_cpow hZ'.le]
-      congr 1
-      norm_num
+      simp_all
     simp only [MellinTransform.g, TransformFlat.g, if_pos hZ']
-    rw [h1]
+    simp_all
   have hg_mellin : MellinConvergent (MellinTransform.g D) (-((2 : ℝ) : ℂ)) := by
     simpa using MellinHolomorphic.T_mellinConvergent D 2 (by norm_num)
   have hG_cont : Continuous (fun t : ℝ => Spectral.G D (((2 : ℝ) : ℂ) + (t : ℂ) * Complex.I)) := by
     apply (SpectralData.G_differentiableOn D).continuousOn.comp_continuous
     · fun_prop
-    · intro t; simp
+    · simp_all
   have hG_int : Integrable (fun t : ℝ => Spectral.G D (((2 : ℝ) : ℂ) + (t : ℂ) * Complex.I)) := by
     simpa only [Complex.ofReal_one, Complex.one_cpow, one_mul] using
       SpectralData.f_integrable D 1 one_pos
@@ -54,11 +53,7 @@ theorem T_eq_G_axis (t : ℝ) :
       push_cast
       ring_nf
     unfold mellinInv comparisonVerticalIntegral
-    beta_reduce
-    rw [hint]
-    simp only [smul_eq_mul, Complex.real_smul]
-    push_cast
-    ring
+    simp_all
   have h := mellin_converse_axis_inversion 2 (MellinTransform.g D) (Spectral.G D) (by norm_num)
     hg_cont hg_mellin hG_int hG_cont hg_inv
   simpa [MellinTransform.T] using h t

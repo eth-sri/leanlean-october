@@ -179,7 +179,7 @@ lemma finite_eigenspace_below_threshold
   have hBT : B (T v) = (v : H) := by rw [hTv]; exact hright ⟨v, hv⟩
   have hinner : (inner ℂ (v : H) (T v - (v : H))).re = μ * ‖(v : H)‖ ^ 2 := by
     rw [hTv, add_sub_cancel_right, he, inner_smul_right, Complex.mul_re]
-    simp [inner_self_eq_norm_sq, ← Complex.ofReal_pow]
+    simp [← Complex.ofReal_pow]
   have h := hest (T v)
   rw [hBT, hinner] at h
   change ε * ‖(v : H)‖ ^ 2 ≤ ‖K (T v)‖ ^ 2

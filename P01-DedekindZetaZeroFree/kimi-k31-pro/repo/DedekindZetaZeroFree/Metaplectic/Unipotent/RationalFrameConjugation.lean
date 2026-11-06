@@ -89,7 +89,7 @@ theorem root_arch_insertion (a : NumberField.InfiniteAdeleRing F) :
         intro w
         simp [p, f, localToRestricted, RestrictedProduct.mulSingleMonoidHom_apply,
           RestrictedProduct.coe_mulSingle_apply]
-      simp [hf, KPGlobalTorusFunctionData.rootTuple, adeleEval, RingHom.snd, KPStandardLocalRootLifts.N_zero]
+      simp [hf, KPGlobalTorusFunctionData.rootTuple, adeleEval, RingHom.snd]
       change KPStandardLocalRootLifts.N F ζ hζ (Sum.inr q) 0 = 1
       exact KPStandardLocalRootLifts.N_zero F ζ hζ (Sum.inr q)
   change scalarQuotient F ζ hζ (amalgamation F ζ hζ (KPGlobalTorusFunctionData.rootTuple F ζ hζ (a,0))) = _
@@ -168,8 +168,7 @@ private theorem conjugation_split {G : Type} [Group G] (i s z n : G)
   calc
     i * z * (s * n) * (s⁻¹ * i⁻¹) =
         (i * z) * (s * n) * (i⁻¹ * s⁻¹) := by rw [his.symm.inv_left.inv_right.eq]
-    _ = (i * z) * i⁻¹ * ((s * n) * s⁻¹) := by
-      exact (hsi.mul_mul_mul_comm (i * z) s⁻¹).trans (by group)
+    _ = (i * z) * i⁻¹ * ((s * n) * s⁻¹) := (hsi.mul_mul_mul_comm (i * z) s⁻¹).trans (by group)
     _ = _ := by group
 
 theorem conjugated_root_split (σ : KPCuspArithmetic.PGL2 F)

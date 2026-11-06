@@ -37,8 +37,7 @@ theorem continuous_of_finiteDimensional (f : MultilinearMap 𝕜 M N) : Continuo
       (∏ i, (b i).repr (m i) (r i)) • f fun i ↦ b i (r i) := by
     funext m
     have hm : f m = f fun i ↦ ∑ j, (b i).repr (m i) j • b i j := by
-      congr 1 with i
-      exact ((b i).sum_repr (m i)).symm
+      simp_all
     rw [hm, f.map_sum]
     exact Finset.sum_congr rfl fun r _ ↦ f.map_smul_univ _ _
   rw [key]

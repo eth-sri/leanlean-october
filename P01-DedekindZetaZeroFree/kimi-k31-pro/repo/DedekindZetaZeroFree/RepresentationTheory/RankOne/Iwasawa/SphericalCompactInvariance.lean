@@ -33,8 +33,8 @@ private lemma fixed_origin_rows (g : GL (Fin 2) ℂ)
     have hx := KPArch.action_height g (0, 0)
     change KPArch.height (KPArch.action g (0, 0)) = Real.exp 0 at hh
     rw [hx, Real.exp_zero] at hh
-    simp only [KPArch.height, Real.exp_zero, mul_one, mul_zero, zero_add, norm_zero,
-      zero_pow (by decide : 2 ≠ 0), zero_mul, add_zero] at hh
+    simp only [KPArch.height, Real.exp_zero, mul_one, mul_zero, zero_add, 
+      ] at hh
     have he := (div_eq_one_iff_eq (by nlinarith :
       ‖g 1 1‖ ^ 2 + ‖g 1 0‖ ^ 2 * 1 ^ 2 ≠ 0)).mp hh
     nlinarith

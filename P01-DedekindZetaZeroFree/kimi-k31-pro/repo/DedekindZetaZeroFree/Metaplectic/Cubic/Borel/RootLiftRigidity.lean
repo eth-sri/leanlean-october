@@ -85,7 +85,7 @@ private lemma ordinary_borel_conjugates (b : upperBorel F v) (x : LocalField F v
   change Matrix.ProjGenLinGroup.mk A * Matrix.ProjGenLinGroup.mk (upperRootMatrix F v x) *
     (Matrix.ProjGenLinGroup.mk A)⁻¹ = Matrix.ProjGenLinGroup.mk (upperRootMatrix F v _)
   have hp := congrArg (Matrix.ProjGenLinGroup.mk) heq
-  simp only [map_mul, upperRootElement] at hp
+  simp only [map_mul] at hp
   rw [hp, mul_assoc, mul_inv_cancel, mul_one]
   rfl
 

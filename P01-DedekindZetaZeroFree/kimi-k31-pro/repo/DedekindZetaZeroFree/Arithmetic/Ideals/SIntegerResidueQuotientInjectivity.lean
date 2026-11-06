@@ -24,7 +24,7 @@ variable {F : Type} [Field F] [NumberField F]
     intro a b hb
     change v.valuation F ((a : F) * (b : F)) ≤ _
     rw [map_mul]
-    exact (mul_le_mul_of_nonneg_right (a.property v hv) zero_le).trans (by simpa using hb)
+    exact (mul_le_mul_of_nonneg_right (a.property v hv) zero_le).trans (by grind)
 
 theorem exteriorQuotientMap_injective (A : SArithmeticData F) (I : A.Exterior) :
     Function.Injective

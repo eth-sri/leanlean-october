@@ -20,11 +20,11 @@ theorem under_eq_iff_liesOver (Q : HeightOneSpectrum (𝓞 E))
   · intro h
     have h' := congrArg HeightOneSpectrum.asIdeal h
     rw [HeightOneSpectrum.under_asIdeal] at h'
-    exact h'.symm
+    grind
   · intro h
     apply HeightOneSpectrum.ext
     rw [HeightOneSpectrum.under_asIdeal]
-    exact h.symm
+    grind
 
 theorem finite_prime_liesOver (p : HeightOneSpectrum (𝓞 F)) :
     Finite {Q : HeightOneSpectrum (𝓞 E) // Q.asIdeal.LiesOver p.asIdeal} := by

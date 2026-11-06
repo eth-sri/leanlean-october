@@ -193,8 +193,8 @@ private lemma transport_prefix_bound
       exact hij (((Finset.mem_filter.mp hti).2).symm.trans (Finset.mem_filter.mp htj).2))
     (fun t a => (Q.χ (f*t)) a) (ErrorRectangles.U Q B X)
     (Real.sSup_nonneg' ⟨0, Or.inl rfl, le_rfl⟩) hloc w
-  simp only [I, J, Finset.card_univ, Fintype.card_unit, Nat.cast_one,
-    one_mul, Fintype.card_prod, Fintype.card_eq_nat_card, Nat.cast_mul] at hh
+  simp only [I, J, Finset.card_univ, 
+    Fintype.card_eq_nat_card] at hh
   have hunit : Nat.card Unit = 1 := by simp
   simpa only [hunit, Nat.cast_one, one_mul, pow_two, Nat.card_prod, Nat.cast_mul] using hh
 

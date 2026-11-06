@@ -162,36 +162,9 @@ theorem compAlgEquiv_extends_apply
   change w (e (algebraMap K L x)) = v x
   rw [AlgEquiv.commutes, hw]
 
-/-- Pullback along an algebra equivalence preserves exact extension of the base value. -/
-theorem compAlgEquiv_extends
-    {K L E : Type*} [Field K] [Field L] [Field E]
-    [Algebra K L] [Algebra K E] (e : L ≃ₐ[K] E)
-    (w : AbsoluteValue E ℝ) (v : AbsoluteValue K ℝ)
-    (hw : Extends v w) :
-    Extends v (compAlgEquiv e w) :=
-  compAlgEquiv_extends_apply e w v hw
 
-/-- Completeness is preserved when an absolute value is pulled back along an
-algebra equivalence. -/
-theorem compAlgEquiv_complete
-    {K L E : Type*} [Field K] [Field L] [Field E]
-    [Algebra K L] [Algebra K E] (e : L ≃ₐ[K] E)
-    (w : AbsoluteValue E ℝ)
-    (hwcomplete : CompleteSpace (WithAbs w)) :
-    CompleteSpace (WithAbs (compAlgEquiv e w)) := by
-  let e' : WithAbs (compAlgEquiv e w) ≃ WithAbs w :=
-    (WithAbs.congr (compAlgEquiv e w) w e.toRingEquiv).toEquiv
-  have he' : Isometry e' := by
-    apply Isometry.of_dist_eq
-    intro x y
-    rw [dist_eq_norm, dist_eq_norm]
-    rw [WithAbs.norm_eq_apply_ofAbs, WithAbs.norm_eq_apply_ofAbs]
-    dsimp only [e']
-    rw [WithAbs.ofAbs_sub, WithAbs.ofAbs_sub]
-    change w (e x.ofAbs - e y.ofAbs) =
-      w (e (x.ofAbs - y.ofAbs))
-    exact congrArg w (map_sub e x.ofAbs y.ofAbs).symm
-  exact (completeSpace_congr he'.isUniformEmbedding).2 hwcomplete
+
+
 
  theorem algebraicExtension_real_algEquiv_real_unique_rpow_extension
     {L : Type*} [Field L] [Algebra ℝ L] (e : L ≃ₐ[ℝ] ℝ)
@@ -504,16 +477,7 @@ noncomputable def uniqueAlgebraicExtension
       v hcomplete hnonarch
 
 
-/-- Existence and uniqueness as a unique-existence statement. -/
-theorem existsUnique_extends_of_isAlgebraic
-    {K L : Type*} [Field K] [Field L] [Algebra K L]
-    [Algebra.IsAlgebraic K L]
-    (v : AbsoluteValue K ℝ)
-    (hcomplete : CompleteSpace (WithAbs v))
-    (hv : v.IsNontrivial) :
-    ∃! w : AbsoluteValue L ℝ, Extends v w := by
-  let R := uniqueAlgebraicExtension (K := K) (L := L) v hcomplete hv
-  exact ⟨R.extension, R.isExtension, fun w hw => R.unique w hw⟩
+
 
 end AbsoluteValue
 

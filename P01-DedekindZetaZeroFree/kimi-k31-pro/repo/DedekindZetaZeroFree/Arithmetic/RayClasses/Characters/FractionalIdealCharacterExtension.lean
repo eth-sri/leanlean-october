@@ -3,6 +3,7 @@ module
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Representatives.IntegralIdealClasses
 public import DedekindZetaZeroFree.Arithmetic.Ideals.WeightedFractionalCharacter
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Characters.PrimeDetermination
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -39,18 +40,17 @@ theorem rayFractionalCharacterExtension
   have hchi : χ I ≠ 0 := by
     intro h0
     rcases (χ.eq_zero_iff' I).mp h0 with h | h
-    · exact hI h
-    · exact h hcop
+    · grind
+    · grind
   have hred := rayCharacterIntegralPrimeReduction K m χ H hprime I hchi
     (rayIdealFractionalIdeal K I hI)
-    (by rw [rayIdealFractionalIdeal_coe])
+    (by norm_num)
   have hJeq : (J : ClassFieldTheory.NumberFieldFractionalIdealGroup K) =
       rayIdealFractionalIdeal K I hI := by
     apply Units.ext
     rw [rayIdealFractionalIdeal_coe]
-    exact hJ
+    grind
   change (H (J : ClassFieldTheory.NumberFieldFractionalIdealGroup K) : ℂ) = χ I
-  rw [hJeq]
-  exact hred
+  grind
 
 end DedekindZetaZeroFree.AbelianQuotient

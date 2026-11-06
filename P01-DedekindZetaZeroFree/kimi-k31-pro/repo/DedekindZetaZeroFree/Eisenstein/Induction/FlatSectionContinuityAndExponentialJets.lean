@@ -166,7 +166,7 @@ private theorem derivative_exp_mul (A B : E → ℂ) (x : E)
   change fderiv ℝ ((fun y => Complex.exp (s * A y)) * B) x w = _
   rw [hh]
   simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply,
-    ContinuousLinearMap.mul_apply', smul_eq_mul]
+    smul_eq_mul]
   ring
 
 theorem iteratedFDeriv_exp_mul_eq_exp_mul_polynomial

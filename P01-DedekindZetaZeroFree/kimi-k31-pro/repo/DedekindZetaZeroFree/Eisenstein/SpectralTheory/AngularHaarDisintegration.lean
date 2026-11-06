@@ -85,7 +85,7 @@ theorem fixed_haar_recipe
     have hH : IsCompact (MulAction.stabilizer (Cover F ζ hζ)
         (1 : Cover F ζ hζ) : Set (Cover F ζ hζ)) := by
       have h : MulAction.stabilizer (Cover F ζ hζ) (1 : Cover F ζ hζ) = ⊥ := by
-        ext g; simp [MulAction.mem_stabilizer_iff]
+        ext g; simp
       rw [h]; exact isCompact_singleton
     exact KPArithmeticAction.properlyDiscontinuous_of_section (1 : Cover F ζ hζ) id
       continuous_id (fun x => by simp) hH (KPSmoothLocalQuotientCharts.rationalSubgroup F ζ hζ)
@@ -470,7 +470,7 @@ def sectionShape (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
   ⟨fun i => (if KPCusp.complexPlace F i = w then Real.log r.val / 2 else 0) -
     Real.log r.val / (2 * (KPCuspLogShape.dimension F : ℝ)), by
     convert KPMsFixedHaar.single_slot_mean_zero F hF w (Real.log r.val / 2) using 1 <;>
-      simp only [div_div, mul_comm]⟩
+      simp only [div_div]⟩
 
 def radialMeasure : Measure ℝ :=
   volume.withDensity (fun r => ENNReal.ofReal (r ^ 2)⁻¹)

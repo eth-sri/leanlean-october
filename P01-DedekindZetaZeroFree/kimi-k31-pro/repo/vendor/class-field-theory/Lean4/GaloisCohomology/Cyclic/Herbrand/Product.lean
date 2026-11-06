@@ -1,6 +1,7 @@
 module
 
 public import GaloisCohomology.Cyclic.Herbrand.HerbrandLowDegree.Product
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -75,16 +76,7 @@ theorem herbrandQuotient_pi
       (herbrandHMinusOnePiEquiv
         (G := G) A σ).toEquiv,
     Nat.card_pi, Nat.card_pi]
-  simp only [Nat.cast_prod]
-  simpa only [Finset.mem_univ, Finset.prod_const_one,
-    Finset.prod_filter, true_and] using
-    (Finset.prod_div_distrib
-      (s := Finset.univ)
-      (fun i : ι ↦
-        (Nat.card (HerbrandH0 G (A i)) : ℚ))
-      (fun i : ι ↦
-        (Nat.card
-          (HerbrandHMinusOne G (A i) σ) : ℚ))).symm
+  norm_num
 
 end CyclicCohomology
 

@@ -501,7 +501,7 @@ theorem pullback_chartPowerSeries
       rw [KPContActualCutoffSmoothDescent.commutatorScalar, KPCutoffSource.commutatorSum,
         Finset.mul_sum]
       refine Finset.sum_congr rfl (fun a _ => ?_)
-      simp only [term, Set.indicator_apply, Bool.false_eq_true, ↓reduceIte]
+      simp only [term, Set.indicator_apply, ↓reduceIte]
 
 theorem compact_jets_holomorphic
     (hΩ : IsOpen Ω)

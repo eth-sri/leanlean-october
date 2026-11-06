@@ -173,7 +173,7 @@ variable {U : KPMsFixedHaarDisintegration.Level F ζ hζ}
   have hd := (Matrix.mem_specialUnitaryGroup_iff.mp k.property).2
   apply Prod.ext <;>
     simp [KPArch.action, KPArch.actionDenominator, KPArch.height,
-      KPCplxCharacterHaar.complexSU2Embedding, hd, add_comm, hn, h01]
+      KPCplxCharacterHaar.complexSU2Embedding, hd, add_comm, hn]
   exact h01
 
  theorem finite_projection (c : KPFiniteCuspAtlas.FiniteCover F ζ hζ) :
@@ -232,7 +232,7 @@ theorem normalRadial_cuspLift (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
           (balancedArch (ζ := ζ) (hζ := hζ) p k r)) =
           balancedArch (ζ := ζ) (hζ := hζ) p k r :=
       PGLComplex.AdelicSlicesRaw.archProjection_archimedeanInsertion F ζ hζ _
-    simp only [cuspLift, ← mul_assoc, map_mul, map_inv, inv_mul_cancel, one_mul,
+    simp only [cuspLift, ← mul_assoc, map_mul, inv_mul_cancel, one_mul,
       hi, finite_projection, mul_one]
   unfold normalRadial
   simp only [hp]
@@ -282,7 +282,7 @@ theorem flow_apply (w v : NumberField.InfinitePlace F) (j : Fin 6) (t : ℝ) :
     ext a b
     fin_cases a <;> fin_cases b <;> fin_cases j <;>
       simp [KPSmoothActualFlowData.sl2Matrix, KPSmoothActualFlowData.basisMatrix,
-        Matrix.smul_apply, smul_eq_mul, Complex.ofReal_mul] <;> ring
+        Matrix.smul_apply, smul_eq_mul] <;> ring
   · simp only [hv, ↓reduceIte]
     have hz : KPSmoothActualFlowData.sl2Matrix (fun i => if (v,i) = (w,j) then t else 0) = 0 := by
       ext a b

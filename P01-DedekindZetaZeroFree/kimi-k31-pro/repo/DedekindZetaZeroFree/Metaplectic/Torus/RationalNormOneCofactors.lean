@@ -71,8 +71,7 @@ private theorem rationalStageEval_central
     (y : ∀ q : E, KPGlobalTorusFiniteStages.LocalFiber F ζ hζ P C q.val) :
     ActualCofactor.rationalStageEval F ζ hζ P C E hE (c.val*t) y =
       (KPGlobalCenterRationalCharacter.omegaA F ζ hζ c : ℂ) *
-        ActualCofactor.rationalStageEval F ζ hζ P C E hE t y := by
-  exact central_scalar_covariance F ζ hζ
+        ActualCofactor.rationalStageEval F ζ hζ P C E hE t y := central_scalar_covariance F ζ hζ
     (PrincipalOfKP.ResidueCoreBridge.CanonicalBinding.productUnitaryToRational F ζ hζ P
       (KPGlobalTorusFiniteStages.finiteTensorRealization F ζ hζ P C E hE
         (PiTensorProduct.tprod ℂ y))) c t

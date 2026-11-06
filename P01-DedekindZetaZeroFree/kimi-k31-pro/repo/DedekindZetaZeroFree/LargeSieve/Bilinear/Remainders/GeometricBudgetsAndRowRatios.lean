@@ -397,8 +397,7 @@ theorem geometric_pair_budget
   have hX : 1 ≤ C.M * C.N := by nlinarith
   have hX0 : 0 < C.M * C.N := by positivity
   have hK : 1 ≤ C.K := (le_max_left _ _).trans hKlo
-  have hpowε : Real.rpow (C.M * C.N) (-ε) ≤ 1 := by
-    exact Real.rpow_le_one_of_one_le_of_nonpos hX (by linarith)
+  have hpowε : Real.rpow (C.M * C.N) (-ε) ≤ 1 := Real.rpow_le_one_of_one_le_of_nonpos hX (by linarith)
   have hKM : C.K ≤ C.M := hKhi.trans (by nlinarith)
   have hkn : (dyadicScales C).card + (1 : ℝ) ≤ J * (C.M * C.N) := by
     have hcard : ((dyadicScales C).card : ℝ) ≤ Vendor.dyadicLength C.K := by

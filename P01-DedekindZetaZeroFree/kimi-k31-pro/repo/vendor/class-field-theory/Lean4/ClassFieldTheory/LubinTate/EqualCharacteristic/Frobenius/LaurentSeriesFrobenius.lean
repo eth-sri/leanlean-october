@@ -107,13 +107,7 @@ noncomputable def laurentSeriesCoefficientAlgebra
   RingHom.toAlgebra
     (laurentSeriesCoefficientMap (algebraMap k l))
 
-/-- The induced Laurent-series algebra map is the coefficientwise scalar map. -/
-theorem laurentSeriesCoefficientAlgebra_algebraMap
-    [Field k] [Field l] [Algebra k l] :
-    letI : Algebra k⸨X⸩ l⸨X⸩ := laurentSeriesCoefficientAlgebra
-    algebraMap k⸨X⸩ l⸨X⸩ =
-      laurentSeriesCoefficientMap (algebraMap k l) :=
-  rfl
+
 
 attribute [local instance] laurentSeriesCoefficientAlgebra
 
@@ -241,17 +235,7 @@ theorem laurentSeriesCoefficient_finiteDimensional
   let b : Module.Basis (Fin (Module.finrank k l)) k l := Module.finBasis k l
   exact (laurentSeriesCoefficientBasis b).finiteDimensional_of_finite
 
-/-- Coefficient extension does not change the finite extension degree. -/
-theorem laurentSeriesCoefficient_finrank
-    [Field k] [Field l] [Algebra k l] [FiniteDimensional k l] :
-    letI : Algebra k⸨X⸩ l⸨X⸩ := laurentSeriesCoefficientAlgebra
-    Module.finrank k⸨X⸩ l⸨X⸩ = Module.finrank k l := by
-  let : Algebra k⸨X⸩ l⸨X⸩ := laurentSeriesCoefficientAlgebra
-  let b : Module.Basis (Fin (Module.finrank k l)) k l := Module.finBasis k l
-  let B := laurentSeriesCoefficientBasis b
-  let : FiniteDimensional k⸨X⸩ l⸨X⸩ :=
-    B.finiteDimensional_of_finite
-  simpa [B] using Module.finrank_eq_card_basis B
+
 
 /-- A coefficient-field ring equivalence extends coefficientwise to Laurent
 series. -/
@@ -301,19 +285,7 @@ theorem laurentSeriesCoefficientAlgEquiv_coeff
     (laurentSeriesCoefficientAlgEquiv e x).coeff m = e (x.coeff m) :=
   rfl
 
-/-- Coefficientwise extension is faithful on automorphisms. -/
-theorem laurentSeriesCoefficientAlgEquiv_injective
-    [Field k] [Field l] [Algebra k l] :
-    Function.Injective
-      (fun e : l ≃ₐ[k] l ↦
-        letI : Algebra k⸨X⸩ l⸨X⸩ := laurentSeriesCoefficientAlgebra
-        laurentSeriesCoefficientAlgEquiv e) := by
-  intro e f hef
-  apply AlgEquiv.ext
-  intro x
-  have h := DFunLike.congr_fun hef (HahnSeries.C (Γ := ℤ) x : l⸨X⸩)
-  have hc := congrArg (fun y : l⸨X⸩ ↦ y.coeff 0) h
-  simpa using hc
+
 
 /-- Coefficientwise extension as a homomorphism between the two Galois
 groups. -/
@@ -344,67 +316,15 @@ theorem laurentSeriesCoefficientGalHom_apply
     laurentSeriesCoefficientGalHom e = laurentSeriesCoefficientAlgEquiv e :=
   rfl
 
-/-- Distinct coefficient automorphisms induce distinct Laurent-series automorphisms. -/
-theorem laurentSeriesCoefficientGalHom_injective
-    [Field k] [Field l] [Algebra k l] :
-    Function.Injective
-      (letI : Algebra k⸨X⸩ l⸨X⸩ := laurentSeriesCoefficientAlgebra
-       laurentSeriesCoefficientGalHom :
-        (l ≃ₐ[k] l) → (l⸨X⸩ ≃ₐ[k⸨X⸩] l⸨X⸩)) :=
-  laurentSeriesCoefficientAlgEquiv_injective
+
 
 section FiniteFields
 
 variable [Field k] [Finite k] [Field l] [Finite l] [Algebra k l]
 
-omit [Finite k] in
-/-- For finite coefficient fields, all Laurent-series automorphisms come
-from coefficient automorphisms. -/
-theorem laurentSeriesCoefficientGalHom_surjective :
-    letI : Algebra k⸨X⸩ l⸨X⸩ := laurentSeriesCoefficientAlgebra
-    Function.Surjective (laurentSeriesCoefficientGalHom :
-      (l ≃ₐ[k] l) → (l⸨X⸩ ≃ₐ[k⸨X⸩] l⸨X⸩)) := by
-  let : Module.Finite k l := Module.Finite.of_finite
-  let : FiniteDimensional k⸨X⸩ l⸨X⸩ :=
-    laurentSeriesCoefficient_finiteDimensional
-  have hcard :
-      Nat.card (l⸨X⸩ ≃ₐ[k⸨X⸩] l⸨X⸩) ≤ Nat.card (l ≃ₐ[k] l) := by
-    calc
-      Nat.card (l⸨X⸩ ≃ₐ[k⸨X⸩] l⸨X⸩) ≤
-          Module.finrank k⸨X⸩ l⸨X⸩ := by
-        simpa only [Nat.card_eq_fintype_card] using
-          (AlgEquiv.card_le (F := k⸨X⸩) (K := l⸨X⸩))
-      _ = Module.finrank k l := laurentSeriesCoefficient_finrank
-      _ = Nat.card (l ≃ₐ[k] l) :=
-        (IsGalois.card_aut_eq_finrank k l).symm
-  have hbijective : Function.Bijective
-      (laurentSeriesCoefficientGalHom :
-        (l ≃ₐ[k] l) → (l⸨X⸩ ≃ₐ[k⸨X⸩] l⸨X⸩)) :=
-    Function.Injective.bijective_of_nat_card_le
-      laurentSeriesCoefficientGalHom_injective hcard
-  exact hbijective.2
 
-omit [Finite k] in
-/-- The coefficient Laurent-series extension is Galois. -/
-theorem laurentSeriesCoefficient_isGalois :
-    letI : Algebra k⸨X⸩ l⸨X⸩ := laurentSeriesCoefficientAlgebra
-    IsGalois k⸨X⸩ l⸨X⸩ := by
-  let : Module.Finite k l := Module.Finite.of_finite
-  let : FiniteDimensional k⸨X⸩ l⸨X⸩ :=
-    laurentSeriesCoefficient_finiteDimensional
-  apply IsGalois.of_card_aut_eq_finrank
-  apply Nat.le_antisymm
-  · simpa only [Nat.card_eq_fintype_card] using
-      (AlgEquiv.card_le (F := k⸨X⸩) (K := l⸨X⸩))
-  · calc
-      Module.finrank k⸨X⸩ l⸨X⸩ = Nat.card (l ≃ₐ[k] l) := by
-        exact laurentSeriesCoefficient_finrank.trans
-          (IsGalois.card_aut_eq_finrank k l).symm
-      _ ≤ Nat.card (l⸨X⸩ ≃ₐ[k⸨X⸩] l⸨X⸩) :=
-        Nat.card_le_card_of_injective
-          (laurentSeriesCoefficientGalHom :
-            (l ≃ₐ[k] l) → (l⸨X⸩ ≃ₐ[k⸨X⸩] l⸨X⸩))
-          laurentSeriesCoefficientGalHom_injective
+
+
 
 /-- Arithmetic Frobenius on the coefficient field, extended to Laurent
 series. -/
@@ -489,21 +409,9 @@ def equalCharacteristicFiniteUnramifiedExtensionEquivLaurentSeries :
       (FiniteField.Extension k p n)⸨X⸩ :=
   RingEquiv.refl _
 
-/-- Algebra-linear comparison with the Laurent-series presentation.  This is
-the degree-preserving bridge for the named finite unramified extension. -/
-def equalCharacteristicFiniteUnramifiedExtensionAlgEquivLaurentSeries :
-    equalCharacteristicFiniteUnramifiedExtension k p n ≃ₐ[k⸨X⸩]
-      (FiniteField.Extension k p n)⸨X⸩ := by
-  change (FiniteField.Extension k p n)⸨X⸩ ≃ₐ[k⸨X⸩]
-    (FiniteField.Extension k p n)⸨X⸩
-  exact AlgEquiv.refl
 
-/-- Construct a named finite unramified element from a Laurent series. -/
-def equalCharacteristicFiniteUnramifiedExtensionOfLaurentSeries :
-    (FiniteField.Extension k p n)⸨X⸩ →+*
-      equalCharacteristicFiniteUnramifiedExtension k p n :=
-  (equalCharacteristicFiniteUnramifiedExtensionEquivLaurentSeries
-    k p n).symm.toRingHom
+
+
 
 /-- Read a named finite unramified element as a Laurent series. -/
 def equalCharacteristicFiniteUnramifiedExtensionToLaurentSeries :
@@ -519,26 +427,9 @@ def equalCharacteristicFiniteUnramifiedExtensionCoeff
   (equalCharacteristicFiniteUnramifiedExtensionToLaurentSeries
     k p n x).coeff m
 
-/-- The chosen coefficient extension has exactly the requested Laurent
-degree. -/
-theorem equalCharacteristicFiniteUnramifiedExtension_finrank :
-    Module.finrank k⸨X⸩
-      (equalCharacteristicFiniteUnramifiedExtension k p n) = n := by
-  calc
-    Module.finrank k⸨X⸩
-        (equalCharacteristicFiniteUnramifiedExtension k p n) =
-        Module.finrank k⸨X⸩ (FiniteField.Extension k p n)⸨X⸩ :=
-      (equalCharacteristicFiniteUnramifiedExtensionAlgEquivLaurentSeries
-        k p n).toLinearEquiv.finrank_eq
-    _ = Module.finrank k (FiniteField.Extension k p n) :=
-      laurentSeriesCoefficient_finrank
-    _ = n := FiniteField.finrank_extension k p n
 
-/-- The chosen finite unramified Laurent-series extension is Galois. -/
-theorem equalCharacteristicFiniteUnramifiedExtension_isGalois :
-    IsGalois k⸨X⸩
-      (equalCharacteristicFiniteUnramifiedExtension k p n) :=
-  laurentSeriesCoefficient_isGalois
+
+
 
 /-- Its distinguished arithmetic Frobenius. -/
 noncomputable def equalCharacteristicFiniteUnramifiedFrobenius :
@@ -558,18 +449,7 @@ theorem equalCharacteristicFiniteUnramifiedFrobenius_coeff
       (equalCharacteristicFiniteUnramifiedExtensionCoeff k p n x m)) = _
     exact FiniteField.Extension.frob_apply k p n
 
-/-- Every automorphism of the chosen unramified factor is a power of its
-arithmetic Frobenius. -/
-theorem equalCharacteristicFiniteUnramifiedFrobenius_pow_surjective
-    (σ : Gal(equalCharacteristicFiniteUnramifiedExtension k p n / k⸨X⸩)) :
-    ∃ i < n, equalCharacteristicFiniteUnramifiedFrobenius k p n ^ i = σ := by
-  obtain ⟨τ, rfl⟩ := (laurentSeriesCoefficientGalHom_surjective
-    (k := k) (l := FiniteField.Extension k p n)) σ
-  obtain ⟨i, hi, hτ⟩ := FiniteField.Extension.exists_frob_pow_eq k p n τ
-  refine ⟨i, hi, ?_⟩
-  rw [← hτ]
-  exact (map_pow laurentSeriesCoefficientGalHom
-    (FiniteField.Extension.frob k p n) i).symm
+
 
 end ChosenFiniteExtension
 

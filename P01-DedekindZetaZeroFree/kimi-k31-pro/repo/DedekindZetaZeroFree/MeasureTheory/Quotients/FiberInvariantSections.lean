@@ -1,6 +1,7 @@
 module
 
 public import Mathlib.MeasureTheory.Integral.IntegrableOn
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -21,13 +22,11 @@ theorem continuousOn_section_of_fiber_invariance
   have hqro : IsOpenMap qr := (hqo.restrict hS).codRestrict _
   have hqrs : Function.Surjective qr := by
     rintro ⟨x, a, ha, rfl⟩
-    exact ⟨⟨a, ha⟩, rfl⟩
+    measurability
   rw [continuousOn_iff_continuous_restrict]
   apply (hqro.isQuotientMap hqc hqrs).continuous_iff.mpr
   have he : ((q '' S).domRestrict (f ∘ s)) ∘ qr = S.domRestrict f := by
-    funext a
-    exact hfi _ (hs (q a) (mem_image_of_mem q a.property)).1 _ a.property
-      (hs (q a) (mem_image_of_mem q a.property)).2
+    measurability
   rw [he]
   exact continuousOn_iff_continuous_restrict.mp hf
 

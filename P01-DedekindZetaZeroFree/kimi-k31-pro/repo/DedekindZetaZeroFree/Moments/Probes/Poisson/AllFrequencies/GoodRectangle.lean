@@ -66,7 +66,7 @@ theorem rawGood_rectangle_decomp (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexi
     obtain ⟨h1, h2⟩ := hre
     obtain ⟨h3, h4⟩ := him
     have him' : |ξ.im| ≤ 4 * U ^ ρ := by
-      rw [abs_le]; constructor <;> linarith
+      grind
     refine ⟨by linarith, by linarith, ?_⟩
     exact (RawKernelRegularity31.minus_ne_zero_of_not_exceptional D ρ U u hu hU1 hU2 hexc ξ
       (by linarith) (by linarith) him').2
@@ -81,7 +81,7 @@ private abbrev KK : ℝ := ∫ t : ℝ, (1 + |t|) ^ (-(2 : ℝ))
 private theorem KK_int : Integrable (fun t : ℝ => (1 + |t|) ^ (-(2 : ℝ))) := by
   have h := integrable_one_add_norm (E := ℝ) (μ := volume) (r := 2) (by norm_num)
   simp only [Real.norm_eq_abs] at h
-  exact h
+  grind
 
 private theorem KK_nonneg : 0 ≤ KK :=
   integral_nonneg fun t => by positivity
@@ -97,8 +97,7 @@ private theorem pw_bound {U ρ B : ℝ} (hU : 1 ≤ U) (hρ : 0 < ρ) :
   rw [← Real.rpow_mul hU0, ← Real.rpow_add (by linarith)]
   apply Real.rpow_le_rpow_of_exponent_le hU
   have : ρ * (-((B + 2) / ρ)) = -(B + 2) := by field_simp
-  rw [this]
-  linarith
+  grind
 
 private theorem final_mul {c C P V R W K : ℝ} (hc : 0 < c) (hC : 0 ≤ C) (hP : 0 ≤ P)
     (hK : 0 ≤ K) (hW : 0 ≤ W) (hVR : V * R ≤ W) :
@@ -107,7 +106,7 @@ private theorem final_mul {c C P V R W K : ℝ} (hc : 0 < c) (hC : 0 ≤ C) (hP 
   have h2 : (c * C * P * K) * (V * R) ≤ (c * C * P * K) * W :=
     mul_le_mul_of_nonneg_left hVR h1
   have h3 : 0 ≤ c * C * P * W := by positivity
-  nlinarith [h2, h3]
+  grind
 
 private theorem tail_int (f : ℝ → ℂ) {T M B2 : ℝ} (hT : 0 < T) (hM : 0 ≤ M) (hB2 : 0 ≤ B2)
     (hf : ∀ t : ℝ, T < |t| → ‖f t‖ ≤ M * (1 + |t|) ^ (-(2 + B2))) :
@@ -124,7 +123,7 @@ private theorem tail_int (f : ℝ → ℂ) {T M B2 : ℝ} (hT : 0 < T) (hM : 0 �
       rw [neg_add, Real.rpow_add hpos]
     have h3 : (1 + |t|) ^ (-B2) ≤ T ^ (-B2) := rpow_neg_le' hT (by linarith) hB2
     calc ‖f t‖ ≤ M * (1 + |t|) ^ (-(2 + B2)) := h1
-      _ = M * ((1 + |t|) ^ (-(2 : ℝ)) * (1 + |t|) ^ (-B2)) := by rw [h2]
+      _ = M * ((1 + |t|) ^ (-(2 : ℝ)) * (1 + |t|) ^ (-B2)) := by grind
       _ ≤ M * ((1 + |t|) ^ (-(2 : ℝ)) * T ^ (-B2)) := by gcongr
       _ = M * T ^ (-B2) * (1 + |t|) ^ (-(2 : ℝ)) := by ring
   calc ‖∫ t in {t : ℝ | T < |t|}, f t‖
@@ -137,13 +136,11 @@ private theorem tail_int (f : ℝ → ℂ) {T M B2 : ℝ} (hT : 0 < T) (hM : 0 �
     _ = M * T ^ (-B2) * KK := integral_const_mul _ _
 
 private theorem norm_inv_two_pi : ‖((2 : ℂ) * (Real.pi : ℂ))⁻¹‖ = (2 * Real.pi)⁻¹ := by
-  rw [norm_inv, norm_mul]
-  simp [abs_of_pos Real.pi_pos]
+  simp_all
 
 private theorem norm_inv_two_pi_I :
     ‖((2 : ℂ) * (Real.pi : ℂ) * Complex.I)⁻¹‖ = (2 * Real.pi)⁻¹ := by
-  rw [norm_inv, norm_mul, norm_mul]
-  simp [abs_of_pos Real.pi_pos]
+  simp_all
 
 theorem rawGood_central_bound (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExponent D A)
     (hρ : HeightSpec D A ρ) (ε : ℝ) (hε : 0 < ε) :
@@ -168,11 +165,7 @@ theorem rawGood_central_bound (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityE
     intro t ht
     have hre : ((Scales.goodLine : ℂ) + (t : ℂ) * Complex.I).re = Scales.goodLine := by simp
     have him : ((Scales.goodLine : ℂ) + (t : ℂ) * Complex.I).im = t := by simp
-    have := h U hU u hu hU1 hU2 hexc ((Scales.goodLine : ℂ) + (t : ℂ) * Complex.I) Z hZ
-      hre.symm.le (hre.le.trans hab)
-      (by rw [him, abs_le]; constructor <;> linarith [ht.1, ht.2])
-    rw [hre, him] at this
-    exact this
+    grind
   have hint : Integrable (fun t : ℝ =>
       C * Z ^ (Scales.kernelExponent Scales.goodLine Scales.wLine Scales.zLine) * U ^ ((1 / 25 : ℝ) + ε) *
           (1 + |t|) ^ (-(2 : ℝ))) := KK_int.const_mul _
@@ -198,7 +191,7 @@ theorem rawGood_central_bound (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityE
   have h1 := mul_le_mul_of_nonneg_left hbound hpi.le
   have h2 : 0 ≤ (2 * Real.pi)⁻¹ * (C * Z ^ (Scales.kernelExponent Scales.goodLine Scales.wLine Scales.zLine) *
       U ^ ((1 / 25 : ℝ) + ε)) := by positivity
-  nlinarith [h1, h2]
+  grind
 
 theorem rawGood_horiz_bound (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExponent D A)
     (hρ : HeightSpec D A ρ) (B : ℝ) (hB : 0 < B) :
@@ -231,7 +224,7 @@ theorem rawGood_horiz_bound (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExp
       rw [abs_mul, hs, one_mul, abs_of_pos hT0]
     have := h U hU u hu hU1 hU2 hexc ((σ : ℂ) + ((s * U ^ ρ : ℝ) : ℂ) * Complex.I) Z hZpos
       (h1.le.trans hre.symm.le) (hre.le.trans h2)
-      (by rw [him, habs]; linarith)
+      (by grind)
     rw [hre, him, habs] at this
     have hE : Scales.kernelExponent σ Scales.wLine Scales.zLine ≤ Scales.kernelExponent Scales.rightLine Scales.wLine Scales.zLine := by
       simp only [Scales.kernelExponent]; linarith
@@ -279,14 +272,10 @@ theorem rawGood_horiz_bound (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExp
   constructor
   · unfold rawUpper
     refine key 1 (by simp) _ _ ?_ rfl
-    intro σ hσ
-    rw [Set.uIoc_of_le hab] at hσ
-    exact hσ
+    grind
   · unfold rawLower
     refine key (-1) (by simp) _ _ ?_ (abs_sub_comm _ _)
-    intro σ hσ
-    rw [Set.uIoc_of_ge hab] at hσ
-    exact hσ
+    grind
 
 theorem rawGood_tail_bound (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExponent D A)
     (hρ : HeightSpec D A ρ) (B : ℝ) (hB : 0 < B) :
@@ -313,9 +302,7 @@ theorem rawGood_tail_bound (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityExpo
       intro t _
       have hre : ((Scales.rightLine : ℂ) + (t : ℂ) * Complex.I).re = Scales.rightLine := by simp
       have him : ((Scales.rightLine : ℂ) + (t : ℂ) * Complex.I).im = t := by simp
-      have := h U hU u hu hU1 hU2 ((Scales.rightLine : ℂ) + (t : ℂ) * Complex.I) Z hZ hre
-      rw [him] at this
-      exact this)
+      grind)
   have hpw := pw_bound (B := B) (U := U) (ρ := ρ) (by linarith) hρ0
   have hpi : 0 < (2 * Real.pi)⁻¹ := by positivity
   unfold rawRightTail

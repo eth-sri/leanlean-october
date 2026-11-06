@@ -105,18 +105,7 @@ theorem equalCharacteristicLubinTateAmbientPiIterate_mem_levelField_of_mem
         ((equalCharacteristicLubinTateLevelField F n).mul_mem
           (equalCharacteristicSeparableUniformizer_mem_lubinTateLevelField F n) hx)
 
-/-- In particular, every distinguished iterate of the chosen primitive point
-lies in its level field. -/
-theorem chosenEqualCharacteristicLubinTatePrimitiveRoot_piIterate_mem_levelField
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n i : ℕ) :
-    equalCharacteristicLubinTateAmbientPiIterate F
-        (equalCharacteristicSeparableUniformizer F) i
-        (chosenEqualCharacteristicLubinTatePrimitiveRoot F n) ∈
-      equalCharacteristicLubinTateLevelField F n :=
-  equalCharacteristicLubinTateAmbientPiIterate_mem_levelField_of_mem F n i
-    (chosenEqualCharacteristicLubinTatePrimitiveRoot_mem_levelField F n)
+
 
 /-- Every truncated Lubin--Tate bracket preserves the level field. -/
 theorem equalCharacteristicLubinTateAmbientBracket_mem_levelField_of_mem

@@ -199,18 +199,7 @@ theorem algebraicLocalizationDensity_localization_nonarchimedean
     (localizationAbsoluteValue vK w)
     (algebraicLocalizationDensity_localization_nonarchimedean vK w hw)
 
-/-- The valuation subring on `L K_v` pulls back to the valuation subring on
-`L`.  This is the concrete valuation-ring square used by the conjugation and base-change law in
-the localization specialization. -/
-theorem algebraicLocalizationDensity_localizationValuationSubring_comap
-    (hw : LubinTate.Valuations.NonarchimedeanAbsoluteValue w.1) :
-    (localizationValuationSubring vK w hw).comap (algebraicLocalizationDensityEmbedding vK w) =
-      extensionValuationSubring vK w hw := by
-  ext x
-  rw [_root_.ValuationSubring.mem_comap]
-  rw [mem_absoluteValueValuationSubring_iff,
-    mem_absoluteValueValuationSubring_iff,
-    AbsoluteValue.algebraicLocalizationAbsoluteValue_toAlgebraicLocalization]
+
 
 /-- Every automorphism of the algebraic localization over `K_v` preserves
 its unique extended absolute value.  This is the isometry source used when

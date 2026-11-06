@@ -113,8 +113,7 @@ private lemma partial_smooth (H : ℝ × ℝ → ℂ) (hH : ContDiff ℝ ∞ H) 
   | zero => simpa using hH
   | succ n ih =>
     have hh : ContDiff ℝ ∞ (Function.uncurry (fun (p : ℝ × ℝ) (t : ℝ) =>
-        iteratedDeriv n (fun u => H (p.1,u)) t)) := by
-      exact ih.comp (contDiff_fst.fst.prodMk contDiff_snd)
+        iteratedDeriv n (fun u => H (p.1,u)) t)) := ih.comp (contDiff_fst.fst.prodMk contDiff_snd)
     have hd := hh.fderiv_apply (g := fun p : ℝ × ℝ => p.2)
       (k := fun _ => (1 : ℝ)) contDiff_snd contDiff_const (by simp : (∞ : ℕ∞ω) + 1 ≤ ∞)
     simpa only [iteratedDeriv_succ, deriv] using hd
@@ -225,8 +224,7 @@ def boxJet (R : ℝ) (H : ℝ × ℝ → ℂ) : ℝ :=
   (hc.comp_homeomorph (WithLp.prodContinuousLinearEquiv 2 ℝ ℝ ℝ).toHomeomorph).toSchwartzMap
     (hH.comp (WithLp.prodContinuousLinearEquiv 2 ℝ ℝ ℝ).contDiff)
 private lemma ff (H : ℝ × ℝ → ℂ) (hH : ContDiff ℝ ∞ H)
-    (hc : HasCompactSupport H) : Integrable (𝓕 (f H)) := by
-  exact ((𝓕 (sm H hH hc) : 𝓢(P,ℂ))).integrable
+    (hc : HasCompactSupport H) : Integrable (𝓕 (f H)) := ((𝓕 (sm H hH hc) : 𝓢(P,ℂ))).integrable
 private lemma np (t x : ℝ) : ‖phase t x‖ = 1 := by
   rw [phase, Complex.norm_exp]
   simp

@@ -66,8 +66,8 @@ variable (C : KPGlobalTorusFiniteStages.LocalFiberData F ζ hζ P)
   have hn (z : w.Completion) : ‖E z‖ = ‖z‖ :=
     (InfinitePlace.Completion.isometryEquivComplexOfIsComplex
       (KPHilbert.infinite_isComplex F ζ hζ w)).isometry.norm_map_of_map_zero (map_zero E) z
-  simp only [KPCplxPrincipalSeriesCharts.complexAbs, Units.coe_map, RingHom.coe_coe,
-    ← map_div₀, KPGlobalCenterRationalCharacterExtension.localAbs, Units.val_mul,
+  simp only [KPCplxPrincipalSeriesCharts.complexAbs, Units.coe_map, 
+    KPGlobalCenterRationalCharacterExtension.localAbs, Units.val_mul,
     Units.val_inv_eq_inv_val, NNReal.coe_pow, coe_nnnorm]
   change ‖E (x : w.Completion) / E (y : w.Completion)‖ ^ 2 = _
   rw [← map_div₀, hn, div_eq_mul_inv]

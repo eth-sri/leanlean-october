@@ -147,41 +147,7 @@ def charCongr {G H : Type} [AddCommGroup G] [AddCommGroup H]
   right_inv χ := by ext x; simp
   map_add' χ ψ := by ext x; rfl
 
-def oneTraceEquiv (hm : m ≠ ⊥) :
-    fractionalIdealQuotient (1 : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)
-      (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) ≃+
-    AddChar (fractionalIdealQuotient (traceDualFractionalIdeal
-      (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F))
-      (traceDualFractionalIdeal 1)) ℂ := by
-  exact AddEquiv.ofBijective
-    (traceQuotientPairing 1 _ one_ne_zero
-      ((residueFractionalIdeal_ne_zero_iff m).mpr hm) (residueFractionalIdeal_le_one m))
-    (by
-      letI : Finite (fractionalIdealQuotient
-          (1 : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)
-          (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)) := by
-        simpa only [one_mul] using conductorIdealQuotient_finite m hm 1 one_ne_zero
-      letI : Finite (fractionalIdealQuotient (traceDualFractionalIdeal
-          (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F))
-          (traceDualFractionalIdeal 1)) := by
-        simpa only [one_mul] using conductorTraceQuotient_finite m hm 1 one_ne_zero
-      letI := Fintype.ofFinite (fractionalIdealQuotient
-        (1 : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)
-        (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F))
-      letI := Fintype.ofFinite (fractionalIdealQuotient (traceDualFractionalIdeal
-        (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)) (traceDualFractionalIdeal 1))
-      apply (Fintype.bijective_iff_injective_and_card _).mpr
-      refine ⟨traceQuotientPairing_injective _ _ _ _ _, ?_⟩
-      rw [AddChar.card_eq, ← Nat.card_eq_fintype_card, ← Nat.card_eq_fintype_card]
-      have hA : Nat.card (fractionalIdealQuotient
-          (1 : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)
-          (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F)) = Ideal.absNorm m := by
-        simpa only [one_mul] using conductorIdealQuotient_card m hm 1 one_ne_zero
-      have hT : Nat.card (fractionalIdealQuotient (traceDualFractionalIdeal
-          (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F))
-          (traceDualFractionalIdeal 1)) = Ideal.absNorm m := by
-        simpa only [one_mul] using conductorTraceQuotient_card m hm 1 one_ne_zero
-      exact hA.trans hT.symm)
+
 
 def oneTraceTransposeEquiv (hm : m ≠ ⊥) :
     fractionalIdealQuotient (traceDualFractionalIdeal

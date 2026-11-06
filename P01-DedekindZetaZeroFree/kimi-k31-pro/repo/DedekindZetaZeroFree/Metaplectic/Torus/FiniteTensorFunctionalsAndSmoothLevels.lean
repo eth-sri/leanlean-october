@@ -30,7 +30,7 @@ private theorem raw_diagonal (g : KPGlobalTorusFunctionData.E F ζ hζ)
   have hd : (restrictedProjection F ζ hζ x) 1 0 = 0 ∧
       (restrictedProjection F ζ hζ x) 0 1 = 0 := by
     rw [hm]
-    simp [Matrix.GeneralLinearGroup.coe_mul, ← map_inv,
+    simp [← map_inv,
       Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply, Matrix.scalar, h10, h01]
   intro v
   have h := congrArg (adeleEval F v) hd.1
@@ -119,7 +119,7 @@ theorem raw_product_polarization_finite_coset_cover
   have hd := raw_diagonal F ζ hζ g x hxg
   let xi : RestrictedCover F ζ hζ :=
     ⟨fun v => match v with | Sum.inl w => x (Sum.inl w) | Sum.inr _ => 1,
-      Filter.Eventually.of_forall (by intro v; cases v <;> simp [compact, Subgroup.one_mem])⟩
+      Filter.Eventually.of_forall (by intro v; cases v <;> simp [compact])⟩
   let xf : RestrictedCover F ζ hζ :=
     ⟨fun v => match v with | Sum.inl _ => 1 | Sum.inr q => x (Sum.inr q),
       x.property.mono (by
@@ -183,7 +183,7 @@ private theorem diagonal_torus_closed
     · rintro ⟨B, hB, h10, h01⟩
       obtain ⟨u, hu⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp hB
       rw [← hu]
-      simp [Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
+      simp [Matrix.GeneralLinearGroup.coe_scalar,
         Matrix.mul_apply, Matrix.scalar, Fin.sum_univ_two, h01, h10]
     · intro h
       exact ⟨A, rfl, h⟩
@@ -389,7 +389,7 @@ theorem raw_finite_level_subordinate_to_local_torus_subgroups
     have hdiag : (KPAdelicCoverRestrictedProduct.restrictedProjection F ζ hζ raw) 1 0 = 0 ∧
         (KPAdelicCoverRestrictedProduct.restrictedProjection F ζ hζ raw) 0 1 = 0 := by
       rw [hm]
-      simp [Matrix.GeneralLinearGroup.coe_mul, ← map_inv,
+      simp [← map_inv,
         Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply, Matrix.scalar, h10, h01]
     intro v
     have hv := KPAdelicCoverRestrictedProduct.restrictedProjection_eval F ζ hζ raw v

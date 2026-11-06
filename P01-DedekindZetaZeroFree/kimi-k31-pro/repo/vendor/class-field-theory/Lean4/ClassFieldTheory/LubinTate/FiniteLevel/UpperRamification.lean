@@ -72,16 +72,7 @@ noncomputable def standardLubinTateHerbrandFunction
     (standardLubinTateLevelCompleteDVF_hasUniqueDVFValuationExtension hπ n)
     s
 
-/-- The inverse Herbrand function of a standard finite Lubin--Tate level. -/
-noncomputable def standardLubinTateInverseHerbrandFunction
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) (t : ℝ) : ℝ :=
-  inverseHerbrandFunctionOfUniqueExtension
-    (base := F.toCompleteDVF.toDVF)
-    (target := (standardLubinTateLevelCompleteDVF hπ n).toDVF)
-    (standardLubinTateLevelCompleteDVF_hasUniqueDVFValuationExtension hπ n)
-    t
+
 
 /-- The genuine real upper ramification group of a standard finite
 Lubin--Tate level. -/

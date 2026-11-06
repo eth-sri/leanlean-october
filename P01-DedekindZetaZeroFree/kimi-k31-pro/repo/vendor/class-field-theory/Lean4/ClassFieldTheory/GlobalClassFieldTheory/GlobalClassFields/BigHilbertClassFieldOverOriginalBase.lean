@@ -103,26 +103,7 @@ theorem bigHilbertClassFieldBase_finrank_over_original :
     (LinearEquiv.finrank_eq
       (bigHilbertClassFieldBaseEquivOverOriginal K).toLinearEquiv).symm
 
-/-- The degree of the selected big Hilbert class field over the
-original number field is the order of the narrow class group. -/
-theorem bigHilbertClassField_finrank_over_original_eq_narrowClassGroup_card :
-    Module.finrank K (bigHilbertClassField K) =
-      Nat.card (RayClass.NarrowClassGroup K) := by
-  calc
-    Module.finrank K (bigHilbertClassField K) =
-        (bigHilbertClassFieldNormSubgroup (K := K)).index :=
-      closedFiniteIndexClassField_finrank_eq_index
-        (bigHilbertClassFieldNormSubgroup (K := K))
-        (bigHilbertClassFieldNormSubgroup_isClosed (K := K))
-    _ = Nat.card
-          (IdeleClassGroup K ⧸
-            bigHilbertClassFieldNormSubgroup (K := K)) :=
-      Subgroup.index_eq_card
-        (bigHilbertClassFieldNormSubgroup (K := K))
-    _ = Nat.card (RayClass.NarrowClassGroup K) :=
-      Nat.card_congr
-        (bigHilbertClassFieldQuotientEquivNarrowClassGroup
-          (K := K)).toEquiv
+
 
 /-- The selected big Hilbert class field is Galois over the original
 number field. -/

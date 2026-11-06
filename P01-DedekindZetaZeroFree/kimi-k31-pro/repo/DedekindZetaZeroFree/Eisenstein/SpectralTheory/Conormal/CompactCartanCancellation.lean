@@ -138,7 +138,7 @@ private theorem compact_direction_curve_coe (w : NumberField.InfinitePlace F) (j
   by_cases hv : v = w
   · subst v
     simp [compactDirectionCurve, exponential, compactDirection, sl2Matrix,
-      Pi.smul_apply, smul_eq_mul, Matrix.smul_apply, Complex.ofReal_mul]
+      Pi.smul_apply, smul_eq_mul, Complex.ofReal_mul]
     congr 2
     ext i k
     fin_cases i <;> fin_cases k <;> simp <;> ring

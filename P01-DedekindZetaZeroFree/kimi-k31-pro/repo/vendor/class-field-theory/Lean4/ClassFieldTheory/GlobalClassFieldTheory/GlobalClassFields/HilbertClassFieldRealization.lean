@@ -154,71 +154,9 @@ theorem bigHilbertClassField_ideleClassNorm_range :
       (K := K) (bigHilbertClassFieldNormSubgroup (K := K))
       (bigHilbertClassFieldNormSubgroup_isClosed (K := K)))
 
-private theorem
-    closedFiniteIndexClassField_finrank_over_base_eq_index
-    (H : Subgroup (IdeleClassGroup K))
-    (hclosed : IsClosed (H : Set (IdeleClassGroup K)))
-    [H.FiniteIndex] :
-    Module.finrank
-        (closedFiniteIndexClassFieldBase
-          (K := K) H hclosed)
-        (closedFiniteIndexClassField
-          (K := K) H hclosed) =
-      H.index := by
-  calc
-    Module.finrank
-        (closedFiniteIndexClassFieldBase
-          (K := K) H hclosed)
-        (closedFiniteIndexClassField
-          (K := K) H hclosed) =
-        (_root_.ideleClassNorm
-          (closedFiniteIndexClassFieldBase
-            (K := K) H hclosed)
-          (closedFiniteIndexClassField
-            (K := K) H hclosed)).range.index :=
-      (ideleClassNorm_index_eq_finrank_abelian
-        (closedFiniteIndexClassFieldBase
-          (K := K) H hclosed)
-        (closedFiniteIndexClassField
-          (K := K) H hclosed)).symm
-    _ = (H.map
-          (ideleClassCongr
-            (closedFiniteIndexClassFieldBaseEquiv
-              (K := K) H hclosed)).toMonoidHom).index :=
-      congrArg Subgroup.index
-        (closedFiniteIndexClassField_ideleClassNorm_range_over_base
-          (K := K) H hclosed)
-    _ = H.index :=
-      Subgroup.index_map_equiv H
-        (ideleClassCongr
-          (closedFiniteIndexClassFieldBaseEquiv
-            (K := K) H hclosed))
 
-/-- The degree of the actual big Hilbert class field is the narrow
-class number. -/
-theorem bigHilbertClassField_finrank_eq_narrowClassGroup_card :
-    Module.finrank
-        (bigHilbertClassFieldBase K)
-        (bigHilbertClassField K) =
-      Nat.card (RayClass.NarrowClassGroup K) := by
-  calc
-    Module.finrank
-        (bigHilbertClassFieldBase K)
-        (bigHilbertClassField K) =
-        (bigHilbertClassFieldNormSubgroup (K := K)).index :=
-      closedFiniteIndexClassField_finrank_over_base_eq_index
-        (bigHilbertClassFieldNormSubgroup (K := K))
-        (bigHilbertClassFieldNormSubgroup_isClosed (K := K))
-    _ =
-        Nat.card
-          (IdeleClassGroup K ⧸
-            bigHilbertClassFieldNormSubgroup (K := K)) :=
-      Subgroup.index_eq_card
-        (bigHilbertClassFieldNormSubgroup (K := K))
-    _ = Nat.card (RayClass.NarrowClassGroup K) :=
-      Nat.card_congr
-        (bigHilbertClassFieldQuotientEquivNarrowClassGroup
-          (K := K)).toEquiv
+
+
 
 /-- The compatible abstract base subgroup for the actual small Hilbert
 class-field realization. -/
@@ -284,30 +222,7 @@ theorem smallHilbertClassField_ideleClassNorm_range :
       (K := K) (smallHilbertClassFieldNormSubgroup (K := K))
       (smallHilbertClassFieldNormSubgroup_isClosed (K := K)))
 
-/-- The degree of the actual small Hilbert class field is the ordinary
-class number. -/
-theorem smallHilbertClassField_finrank_eq_classNumber :
-    Module.finrank
-        (smallHilbertClassFieldBase K)
-        (smallHilbertClassField K) =
-      NumberField.classNumber K := by
-  calc
-    Module.finrank
-        (smallHilbertClassFieldBase K)
-        (smallHilbertClassField K) =
-        (smallHilbertClassFieldNormSubgroup (K := K)).index :=
-      closedFiniteIndexClassField_finrank_over_base_eq_index
-        (smallHilbertClassFieldNormSubgroup (K := K))
-        (smallHilbertClassFieldNormSubgroup_isClosed (K := K))
-    _ =
-        Nat.card
-          (IdeleClassGroup K ⧸
-            smallHilbertClassFieldNormSubgroup (K := K)) :=
-      Subgroup.index_eq_card
-        (smallHilbertClassFieldNormSubgroup (K := K))
-    _ = NumberField.classNumber K :=
-      smallHilbertClassFieldQuotient_card_eq_classNumber
-        (K := K)
+
 
 end GlobalClassFields
 end GlobalClassFieldTheory

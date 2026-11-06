@@ -227,13 +227,7 @@ theorem
   exact Polynomial.SplittingField.adjoin_rootSet
     (equalCharacteristicChangedCompletedPrimitivePolynomial F u n)
 
-/-- Supplies finite-dimensionality of the changed completed level field explicitly. -/
-theorem equalCharacteristicChangedCompletedLevelField_finiteDimensional
-    (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
-    FiniteDimensional
-      (equalCharacteristicCompletedUnramifiedField F.residueField)
-      (equalCharacteristicChangedCompletedLevelField F u n) := by
-  infer_instance
+
 
  theorem equalCharacteristicChangedCompletedPrimitivePolynomial_map_degree_ne_zero
     (F : LocalField.{u, v} K) (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
@@ -706,40 +700,9 @@ theorem equalCharacteristicChangedCompletedPrimitiveRootInteger_coe
       equalCharacteristicChangedCompletedPrimitiveRoot F u n :=
   rfl
 
-/-- The integral primitive point lies in the maximal ideal. -/
-theorem equalCharacteristicChangedCompletedPrimitiveRootInteger_mem_maximalIdeal
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
-    equalCharacteristicChangedCompletedPrimitiveRootInteger F u n ∈
-      Valued.maximalIdeal
-        (equalCharacteristicChangedCompletedLevelField F u n) := by
-  change equalCharacteristicChangedCompletedPrimitiveRootInteger F u n ∈
-    IsLocalRing.maximalIdeal
-      (Valued.integer
-        (equalCharacteristicChangedCompletedLevelField F u n))
-  apply (Valuation.mem_maximalIdeal_iff
-    (equalCharacteristicChangedCompletedLevelField F u n)
-    (Valued.v : Valuation
-      (equalCharacteristicChangedCompletedLevelField F u n) ℝ≥0)).2
-  change ‖equalCharacteristicChangedCompletedPrimitiveRoot F u n‖₊ < 1
-  exact_mod_cast
-    equalCharacteristicChangedCompletedPrimitiveRoot_norm_lt_one F u n
 
-/-- The maximal-ideal primitive point supports convergent power-series
-evaluation. -/
-theorem equalCharacteristicChangedCompletedPrimitiveRootInteger_hasEval
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
-    PowerSeries.HasEval
-      (equalCharacteristicChangedCompletedPrimitiveRootInteger F u n) := by
-  change Tendsto
-    (fun i : ℕ ↦ equalCharacteristicChangedCompletedPrimitiveRootInteger F u n ^ i)
-    atTop (nhds 0)
-  apply tendsto_pow_atTop_nhds_zero_of_norm_lt_one
-  change ‖equalCharacteristicChangedCompletedPrimitiveRoot F u n‖ < 1
-  exact equalCharacteristicChangedCompletedPrimitiveRoot_norm_lt_one F u n
+
+
 
 end
 

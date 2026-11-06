@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.Arithmetic.Kummer.LocallyPowerSUnitExtensionDegree
 public import DedekindZetaZeroFree.Arithmetic.Kummer.DegreeOneSUnitRoots
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -21,13 +22,11 @@ theorem local_power_injection (F : Type) [Field F] [NumberField F]
         b ^ ℓ = (A.diagonal ε.val).2 v)) :
     ∃ b : A.U, b ^ ℓ = ε := by
   have hℓpos : 0 < ℓ := by
-    simp only [Finset.mem_insert, Finset.mem_singleton] at hℓ
-    omega
+    grind
   let n : ℕ+ := ⟨ℓ, hℓpos⟩
   have hn : (n : ℕ) ∈ ({2, 3, 6} : Finset ℕ) := hℓ
   have hnF : ((n : ℕ) : F) ≠ 0 := by
-    simp only [Finset.mem_insert, Finset.mem_singleton] at hℓ
-    rcases hℓ with h | h | h <;> (subst h; norm_num)
+    norm_num
   have hlocal' : ∀ v : A.Place,
       match v with
       | Sum.inl w =>

@@ -101,7 +101,7 @@ private theorem projection_fill (A : SArithmeticData F) (w : {v : InfinitePlace 
   unfold SArithmeticData.norm fill
   simp only [he]
   rw [← Finset.mul_prod_erase Finset.univ _ (Finset.mem_univ w.val)]
-  simp only [dif_pos rfl]
+  simp only
   rw [mul_assoc]
   congr 1
   congr 1

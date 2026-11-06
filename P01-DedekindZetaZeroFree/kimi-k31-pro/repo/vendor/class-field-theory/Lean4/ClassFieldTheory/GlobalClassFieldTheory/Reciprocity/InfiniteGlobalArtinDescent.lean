@@ -2,6 +2,7 @@ module
 
 public import ClassFieldTheory.GlobalClassFieldTheory.Reciprocity.InfiniteGlobalArtin
 public import ClassFieldTheory.GlobalClassFieldTheory.Reciprocity.GlobalArtinCompatibility
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -43,8 +44,7 @@ private theorem
     InfiniteGalois.continuousMulEquivToLimit K Ω
         (infiniteGlobalArtinMonoidHom K Ω a) =
       infiniteGlobalArtinToLimit K Ω a := by
-  exact
-    (InfiniteGalois.continuousMulEquivToLimit K Ω).apply_symm_apply _
+  measurability
 
 /-- The infinite global Artin homomorphism is trivial on every principal
 idele. -/
@@ -79,9 +79,7 @@ noncomputable def infiniteGlobalIdeleClassArtinMonoidHom :
       intro a ha
       change infiniteGlobalArtinMonoidHom K Ω a = 1
       rcases ha with ⟨x, rfl⟩
-      exact
-        infiniteGlobalArtinMonoidHom_principalIdele
-          (K := K) (Ω := Ω) x)
+      simp_all)
 
 /-- Evaluation of the descended infinite global Artin homomorphism on an idele
 representative recovers the original infinite Artin homomorphism. -/
@@ -93,8 +91,7 @@ theorem infiniteGlobalIdeleClassArtinMonoidHom_mk
         (QuotientGroup.mk'
           (IdeleGroup.principalSubgroup K) a) =
       infiniteGlobalArtinMonoidHom K Ω a := by
-  rw [infiniteGlobalIdeleClassArtinMonoidHom]
-  exact QuotientGroup.lift_mk _ _ _
+  measurability
 
  theorem infiniteGlobalIdeleClassArtinMonoidHom_continuous :
     Continuous
@@ -106,10 +103,7 @@ theorem infiniteGlobalIdeleClassArtinMonoidHom_mk
       (N := IdeleGroup.principalSubgroup K)).continuous_iff.2 ?_
   convert
     (infiniteGlobalArtinMonoidHom K Ω).continuous_toFun using 1
-  funext a
-  exact
-    infiniteGlobalIdeleClassArtinMonoidHom_mk
-      (K := K) (Ω := Ω) a
+  measurability
 
 /-- The descended infinite global Artin homomorphism, retaining the ordinary
 quotient topology on the idele class group. -/
@@ -134,9 +128,7 @@ theorem infiniteGlobalIdeleClassArtinContinuousMonoidHom_denseRange :
   refine
     ⟨QuotientGroup.mk'
       (IdeleGroup.principalSubgroup K) a, ?_⟩
-  exact
-    infiniteGlobalIdeleClassArtinMonoidHom_mk
-      (K := K) (Ω := Ω) a
+  measurability
 
 end Reciprocity
 end GlobalClassFieldTheory

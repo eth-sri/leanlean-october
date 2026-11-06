@@ -487,7 +487,7 @@ theorem near_one_region (dx : Measure K) [dx.IsAddHaarMeasure] (m : ℝ) (hm : 0
     funext x
     by_cases hx : KPCubicHaar.abs K x < 1
     · simp only [h, sub_sub_cancel, if_pos hx, g]
-      simp [hx, Complex.real_smul, div_eq_mul_inv, mul_comm]
+      simp [Complex.real_smul, div_eq_mul_inv, mul_comm]
     · simp [h, g, hx]
   have hs := small_region K dx m hm hvol u b hu
   have hc := coords K dx g hg

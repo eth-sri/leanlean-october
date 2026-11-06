@@ -18,7 +18,7 @@ private lemma outside_prime_good (A : SArithmeticData F) (w : HeightOneSpectrum 
   intro hd
   apply hw
   apply A.above_six
-  apply (Ideal.Quotient.eq_zero_iff_mem).mp
+  apply Ideal.Quotient.eq_zero_iff_mem.mp
   have hz := (CharP.cast_eq_zero_iff (𝓞 F ⧸ w.asIdeal)
     (ringChar (𝓞 F ⧸ w.asIdeal)) 6).mpr hd
   simpa only [map_ofNat, Nat.cast_ofNat] using hz
@@ -35,7 +35,7 @@ private lemma outside_unit_index (A : SArithmeticData F) (w : HeightOneSpectrum 
     (b : (w.adicCompletion F)ˣ) (hb : Valued.v (b : w.adicCompletion F) = 1) :
     A.finiteWeilIndex w b = 1 := by
   obtain ⟨J,hJ⟩ := outside_prime_ideal A w hw
-  have hmem := (HeightOneSpectrum.adicCompletionIntegers.mem_units_iff_valued_eq_one).mpr hb
+  have hmem := HeightOneSpectrum.adicCompletionIntegers.mem_units_iff_valued_eq_one.mpr hb
   let u : (w.adicCompletionIntegers F)ˣ :=
     ⟨⟨b, hmem.1⟩, ⟨(b⁻¹ : (w.adicCompletion F)ˣ), hmem.2⟩,
       Subtype.ext b.val_inv, Subtype.ext b.inv_val⟩

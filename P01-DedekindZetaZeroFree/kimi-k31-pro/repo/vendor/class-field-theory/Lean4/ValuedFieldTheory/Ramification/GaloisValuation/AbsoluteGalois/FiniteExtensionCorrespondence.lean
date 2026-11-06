@@ -106,19 +106,7 @@ section TwoFiniteExtensions
 
 variable {M : Type w} [Field M] [Algebra K M]
 
-/-- If the embedded copy of `L` is contained in the embedded copy of `M`,
-then the subgroup fixing `i(M)` is contained in the subgroup fixing `i(L)`. -/
-theorem fixingSubgroupOfExtension_le_of_fieldRange_le
-    (iL : L →ₐ[K] AlgebraicClosure K)
-    (iM : M →ₐ[K] AlgebraicClosure K)
-    (h : AlgHom.fieldRange iL ≤ AlgHom.fieldRange iM) :
-    fixingSubgroupOfExtension K iM ≤ fixingSubgroupOfExtension K iL := by
-  intro σ hσ x
-  rcases (AlgHom.mem_fieldRange (f := iM)).mp (h ⟨x, rfl⟩) with ⟨y, hy⟩
-  change (show Gal(AlgebraicClosure K / K) from σ) (iL.toRingHom x) =
-    iL.toRingHom x
-  rw [← hy]
-  exact hσ y
+
 
 /-- For a tower embedding `L -> M -> K^al`, the subgroup fixing `M` is
 contained in the subgroup fixing `L`. -/
@@ -186,13 +174,7 @@ theorem openSubgroupOfFiniteExtension_toSubgroup_eq_fixingSubgroupOfExtension
   rw [openSubgroupOfFiniteExtension_toSubgroup,
     fixingSubgroupOfExtension_eq_fieldRange_fixingSubgroup]
 
-/-- The subgroup fixing an embedded finite extension is open. -/
-theorem isOpen_fixingSubgroupOfExtension [FiniteDimensional K L]
-    (i : L →ₐ[K] AlgebraicClosure K) :
-    IsOpen (fixingSubgroupOfExtension K i :
-      Set (Field.absoluteGaloisGroup K)) := by
-  rw [← openSubgroupOfFiniteExtension_toSubgroup_eq_fixingSubgroupOfExtension]
-  exact (openSubgroupOfFiniteExtension K i).isOpen'
+
 
 /-- The normal-closure open subgroup attached to an embedded finite extension. -/
 def openSubgroupOfNormalClosureFiniteExtension [FiniteDimensional K L]
@@ -214,17 +196,7 @@ theorem openSubgroupOfNormalClosureFiniteExtension_toSubgroup
   let := finiteDimensional_fieldRange (K := K) i
   rfl
 
-/-- The normal-closure open subgroup lies inside the concrete open subgroup
-identified with `G_L`. -/
-theorem openSubgroupOfNormalClosureFiniteExtension_le
-    [FiniteDimensional K L]
-    (i : L →ₐ[K] AlgebraicClosure K) :
-    (openSubgroupOfNormalClosureFiniteExtension K i :
-      Subgroup (Field.absoluteGaloisGroup K)) ≤
-      openSubgroupOfFiniteExtension K i := by
-  let := finiteDimensional_fieldRange (K := K) i
-  exact openSubgroupOfNormalClosureFiniteIntermediateField_le K
-    (AlgHom.fieldRange i)
+
 
 /-- The normal-closure open subgroup attached to an embedded finite extension
 is normal in `G_K`. -/
@@ -275,28 +247,9 @@ theorem quotientNormalClosureOpenSubgroupEquivGalOfFiniteExtension_mk'
   exact quotientNormalClosureOpenSubgroupEquivGal_mk' K
     (AlgHom.fieldRange i) σ
 
-/-- The cardinality of the Galois group of the normal closure of an embedded
-finite extension.  The finite-dimensional structure on the field range is
-installed inside this definition, so the natural cardinal cannot silently use
-the infinite-type zero fallback. -/
-noncomputable def normalClosureFiniteExtensionGaloisCard
-    [FiniteDimensional K L]
-    (i : L →ₐ[K] AlgebraicClosure K) : ℕ := by
-  letI := finiteDimensional_fieldRange (K := K) i
-  exact Nat.card (Gal(IntermediateField.normalClosure K (AlgHom.fieldRange i)
-    (AlgebraicClosure K) / K))
 
-/-- The index of the normal-closure open subgroup attached to an embedded
-finite extension is the safely computed cardinality of its Galois group. -/
-theorem openSubgroupOfNormalClosureFiniteExtension_index_eq_galoisCard
-    [FiniteDimensional K L]
-    (i : L →ₐ[K] AlgebraicClosure K) :
-    (openSubgroupOfNormalClosureFiniteExtension K i :
-      Subgroup (Field.absoluteGaloisGroup K)).index =
-      normalClosureFiniteExtensionGaloisCard K i := by
-  let := finiteDimensional_fieldRange (K := K) i
-  exact openSubgroupOfNormalClosureFiniteIntermediateField_index_eq_natCard_gal K
-    (AlgHom.fieldRange i)
+
+
 
 /-- Provides the instance `instFiniteIndex`. -/
 instance openSubgroupOfFiniteExtension.instFiniteIndex [FiniteDimensional K L]
@@ -320,18 +273,7 @@ instance openSubgroupOfNormalClosureFiniteExtension.instFiniteIndex
       Subgroup (Gal(AlgebraicClosure K / K)))).FiniteIndex
   infer_instance
 
-/-- If the chosen algebraic closure is Galois over `K`, the index of the
-open subgroup fixing an embedded finite extension is `[L : K]`. -/
-theorem openSubgroupOfFiniteExtension_index_eq_finrank
-    [FiniteDimensional K L] [IsGalois K (AlgebraicClosure K)]
-    (i : L →ₐ[K] AlgebraicClosure K) :
-    (openSubgroupOfFiniteExtension K i :
-      Subgroup (Field.absoluteGaloisGroup K)).index = Module.finrank K L := by
-  rw [openSubgroupOfFiniteExtension_toSubgroup]
-  change (AlgHom.fieldRange i).fixingSubgroup.index = Module.finrank K L
-  exact (IntermediateField.finrank_eq_fixingSubgroup_index
-    (F := K) (AlgebraicClosure K) (AlgHom.fieldRange i)).symm.trans
-      (AlgEquiv.ofInjectiveField i).toLinearEquiv.finrank_eq.symm
+
 
 /-- Conjugate an embedding `i : L -> K^al` by an element of `G_K`. -/
 def conjugateEmbedding
@@ -348,95 +290,17 @@ theorem conjugateEmbedding_apply
       (show Gal(AlgebraicClosure K / K) from σ) (i x) :=
   rfl
 
-/-- The field range of the conjugated embedding is the image of the original
-embedded field range. -/
-theorem fieldRange_conjugateEmbedding
-    (i : L →ₐ[K] AlgebraicClosure K)
-    (σ : Field.absoluteGaloisGroup K) :
-    AlgHom.fieldRange (conjugateEmbedding K i σ) =
-      (AlgHom.fieldRange i).map
-        (show Gal(AlgebraicClosure K / K) from σ).toAlgHom :=
-  (AlgHom.map_fieldRange i
-    (show Gal(AlgebraicClosure K / K) from σ).toAlgHom).symm
 
-/-- Membership in the open subgroup attached to a conjugated embedding is
-membership in the original open subgroup after conjugating the automorphism
-back. -/
-theorem mem_openSubgroupOfFiniteExtension_conjugateEmbedding_iff
-    [FiniteDimensional K L]
-    (i : L →ₐ[K] AlgebraicClosure K)
-    (σ τ : Field.absoluteGaloisGroup K) :
-    τ ∈ openSubgroupOfFiniteExtension K (conjugateEmbedding K i σ) ↔
-      σ⁻¹ * τ * σ ∈ openSubgroupOfFiniteExtension K i := by
-  rw [mem_openSubgroupOfFiniteExtension_iff_forall_apply_eq,
-    mem_openSubgroupOfFiniteExtension_iff_forall_apply_eq]
-  constructor
-  · intro h x
-    have hx := h x
-    change (show Gal(AlgebraicClosure K / K) from σ⁻¹ * τ * σ) (i x) = i x
-    change (show Gal(AlgebraicClosure K / K) from σ).symm
-      ((show Gal(AlgebraicClosure K / K) from τ)
-        ((show Gal(AlgebraicClosure K / K) from σ) (i x))) = i x
-    exact (congrArg
-      (fun y => (show Gal(AlgebraicClosure K / K) from σ).symm y) hx).trans
-        ((show Gal(AlgebraicClosure K / K) from σ).symm_apply_apply (i x))
-  · intro h x
-    have hx := h x
-    change (show Gal(AlgebraicClosure K / K) from σ).symm
-      ((show Gal(AlgebraicClosure K / K) from τ)
-        ((show Gal(AlgebraicClosure K / K) from σ) (i x))) = i x at hx
-    change (show Gal(AlgebraicClosure K / K) from τ)
-        ((show Gal(AlgebraicClosure K / K) from σ) (i x)) =
-      (show Gal(AlgebraicClosure K / K) from σ) (i x)
-    have hx' := congrArg
-      (fun y => (show Gal(AlgebraicClosure K / K) from σ) y) hx
-    exact ((show Gal(AlgebraicClosure K / K) from σ).apply_symm_apply
-      ((show Gal(AlgebraicClosure K / K) from τ)
-        ((show Gal(AlgebraicClosure K / K) from σ) (i x)))).symm.trans hx'
 
-/-- Conjugating the embedding conjugates the associated concrete open subgroup
-inside `G_K`. -/
-theorem openSubgroupOfFiniteExtension_conjugateEmbedding_eq_map
-    [FiniteDimensional K L]
-    (i : L →ₐ[K] AlgebraicClosure K)
-    (σ : Field.absoluteGaloisGroup K) :
-    (openSubgroupOfFiniteExtension K (conjugateEmbedding K i σ) :
-      Subgroup (Field.absoluteGaloisGroup K)) =
-      Subgroup.map (MulAut.conj σ).toMonoidHom
-        (openSubgroupOfFiniteExtension K i :
-          Subgroup (Field.absoluteGaloisGroup K)) := by
-  ext τ
-  change τ ∈ openSubgroupOfFiniteExtension K (conjugateEmbedding K i σ) ↔
-    τ ∈ Subgroup.map (MulAut.conj σ).toMonoidHom
-      (openSubgroupOfFiniteExtension K i :
-        Subgroup (Field.absoluteGaloisGroup K))
-  rw [mem_openSubgroupOfFiniteExtension_conjugateEmbedding_iff]
-  constructor
-  · intro hτ
-    refine ⟨σ⁻¹ * τ * σ, hτ, ?_⟩
-    simp [MulAut.conj_apply, mul_assoc]
-  · rintro ⟨η, hη, rfl⟩
-    simpa [MulAut.conj_apply, mul_assoc] using
-      (mem_openSubgroupOfFiniteExtension_iff_forall_apply_eq K i η).1 hη
+
+
+
 
 section TwoFiniteExtensions
 
 variable {M : Type w} [Field M] [Algebra K M]
 
-/-- If the embedded copy of `L` is contained in the embedded copy of `M`,
-then the open subgroup identified with `G_M` is contained in the one
-identified with `G_L`. -/
-theorem openSubgroupOfFiniteExtension_le_of_fieldRange_le
-    [FiniteDimensional K L] [FiniteDimensional K M]
-    (iL : L →ₐ[K] AlgebraicClosure K)
-    (iM : M →ₐ[K] AlgebraicClosure K)
-    (h : AlgHom.fieldRange iL ≤ AlgHom.fieldRange iM) :
-    (openSubgroupOfFiniteExtension K iM :
-      Subgroup (Field.absoluteGaloisGroup K)) ≤
-      openSubgroupOfFiniteExtension K iL := by
-  rw [openSubgroupOfFiniteExtension_toSubgroup_eq_fixingSubgroupOfExtension,
-    openSubgroupOfFiniteExtension_toSubgroup_eq_fixingSubgroupOfExtension]
-  exact fixingSubgroupOfExtension_le_of_fieldRange_le K iL iM h
+
 
 /-- For a tower embedding `L -> M -> K^al`, the open subgroup identified with
 `G_M` is contained in the one identified with `G_L`. -/
@@ -490,46 +354,9 @@ theorem openSubgroupOfFiniteExtensionSup_toSubgroup
   exact openSubgroupOfFiniteIntermediateFieldSup_toSubgroup K
     (AlgHom.fieldRange iL) (AlgHom.fieldRange iM)
 
-/-- States the theorem `mem_openSubgroupOfFiniteExtensionSup`. -/
-theorem mem_openSubgroupOfFiniteExtensionSup
-    [FiniteDimensional K L] [FiniteDimensional K M]
-    (iL : L →ₐ[K] AlgebraicClosure K)
-    (iM : M →ₐ[K] AlgebraicClosure K)
-    (σ : Field.absoluteGaloisGroup K) :
-    σ ∈ openSubgroupOfFiniteExtensionSup K iL iM ↔
-      σ ∈ openSubgroupOfFiniteExtension K iL ∧
-        σ ∈ openSubgroupOfFiniteExtension K iM := by
-  let : FiniteDimensional K (AlgHom.fieldRange iL) :=
-    finiteDimensional_fieldRange (K := K) iL
-  let : FiniteDimensional K (AlgHom.fieldRange iM) :=
-    finiteDimensional_fieldRange (K := K) iM
-  change
-    (show Gal(AlgebraicClosure K / K) from σ) ∈
-      (openSubgroupOfFiniteIntermediateFieldSup K
-        (AlgHom.fieldRange iL) (AlgHom.fieldRange iM) :
-      Subgroup (Gal(AlgebraicClosure K / K))) ↔
-      (show Gal(AlgebraicClosure K / K) from σ) ∈
-        (openSubgroupOfFiniteIntermediateField K (AlgHom.fieldRange iL) :
-        Subgroup (Gal(AlgebraicClosure K / K))) ∧
-        (show Gal(AlgebraicClosure K / K) from σ) ∈
-          (openSubgroupOfFiniteIntermediateField K (AlgHom.fieldRange iM) :
-          Subgroup (Gal(AlgebraicClosure K / K)))
-  rw [openSubgroupOfFiniteIntermediateFieldSup_toSubgroup]
-  exact Iff.rfl
 
-/-- Concrete pointwise criterion for the compositum open subgroup attached to
-two embedded finite extensions. -/
-theorem mem_openSubgroupOfFiniteExtensionSup_iff_forall_apply_eq
-    [FiniteDimensional K L] [FiniteDimensional K M]
-    (iL : L →ₐ[K] AlgebraicClosure K)
-    (iM : M →ₐ[K] AlgebraicClosure K)
-    (σ : Field.absoluteGaloisGroup K) :
-    σ ∈ openSubgroupOfFiniteExtensionSup K iL iM ↔
-      (∀ x : L, (show Gal(AlgebraicClosure K / K) from σ) (iL x) = iL x) ∧
-        ∀ y : M, (show Gal(AlgebraicClosure K / K) from σ) (iM y) = iM y := by
-  rw [mem_openSubgroupOfFiniteExtensionSup,
-    mem_openSubgroupOfFiniteExtension_iff_forall_apply_eq,
-    mem_openSubgroupOfFiniteExtension_iff_forall_apply_eq]
+
+
 
 end TwoFiniteExtensions
 
@@ -559,78 +386,21 @@ theorem ofFiniteExtension_apply
     ofFiniteExtension K i σ = σ.restrictScalars K :=
   rfl
 
-/-- The natural inclusion `Gal(K^al/i(L)) → G_K` is injective. -/
-theorem ofFiniteExtension_injective
-    (i : L →ₐ[K] AlgebraicClosure K) :
-    Function.Injective (ofFiniteExtension K i) :=
-  ofIntermediateField_injective K (AlgHom.fieldRange i)
 
-/-- The inclusion `Gal(K^al / i(L)) → G_K` attached to an embedded finite
-extension is continuous for finite `L/K`. -/
-theorem ofFiniteExtension_continuous [FiniteDimensional K L]
-    (i : L →ₐ[K] AlgebraicClosure K) :
-    Continuous (ofFiniteExtension K i) := by
-  let := finiteDimensional_fieldRange (K := K) i
-  exact ofIntermediateField_continuous K (AlgHom.fieldRange i)
 
-/-- The image of `Gal(K^al / i(L))` in `G_K` is the open subgroup attached
-to the embedded finite extension `i : L → K^al`. -/
-theorem range_ofFiniteExtension [FiniteDimensional K L]
-    (i : L →ₐ[K] AlgebraicClosure K) :
-    MonoidHom.range (ofFiniteExtension K i) =
-      (openSubgroupOfFiniteExtension K i :
-        Subgroup (Field.absoluteGaloisGroup K)) := by
-  let := finiteDimensional_fieldRange (K := K) i
-  exact range_ofIntermediateField_eq_openSubgroup K (AlgHom.fieldRange i)
 
-/-- The image of `Gal(K^al/i(L)) → G_K` has finite index for finite `L/K`. -/
-theorem range_ofFiniteExtension_finiteIndex [FiniteDimensional K L]
-    (i : L →ₐ[K] AlgebraicClosure K) :
-    (MonoidHom.range (ofFiniteExtension K i)).FiniteIndex := by
-  rw [range_ofFiniteExtension]
-  infer_instance
 
-/-- If the chosen algebraic closure is Galois over `K`, the image of
-`Gal(K^al/i(L)) → G_K` has index `[L : K]`. -/
-theorem range_ofFiniteExtension_index_eq_finrank
-    [FiniteDimensional K L] [IsGalois K (AlgebraicClosure K)]
-    (i : L →ₐ[K] AlgebraicClosure K) :
-    (MonoidHom.range (ofFiniteExtension K i)).index = Module.finrank K L := by
-  rw [range_ofFiniteExtension]
-  exact openSubgroupOfFiniteExtension_index_eq_finrank K i
 
-/-- Hence the image of `Gal(K^al / i(L))` in `G_K` is open for finite
-`L/K`. -/
-theorem isOpen_range_ofFiniteExtension [FiniteDimensional K L]
-    (i : L →ₐ[K] AlgebraicClosure K) :
-    IsOpen (MonoidHom.range (ofFiniteExtension K i) :
-      Set (Field.absoluteGaloisGroup K)) := by
-  let := finiteDimensional_fieldRange (K := K) i
-  exact isOpen_range_ofIntermediateField K (AlgHom.fieldRange i)
 
-/-- States the theorem `mem_range_ofFiniteExtension_iff`. -/
-theorem mem_range_ofFiniteExtension_iff
-    (i : L →ₐ[K] AlgebraicClosure K)
-    (σ : Field.absoluteGaloisGroup K) :
-    σ ∈ MonoidHom.range (ofFiniteExtension K i) ↔
-      ∀ x ∈ AlgHom.fieldRange i,
-        (show Gal(AlgebraicClosure K / K) from σ) x = x := by
-  change
-    (show Gal(AlgebraicClosure K / K) from σ) ∈
-        MonoidHom.range (ofIntermediateField K (AlgHom.fieldRange i)) ↔
-      ∀ x ∈ AlgHom.fieldRange i,
-        (show Gal(AlgebraicClosure K / K) from σ) x = x
-  rw [mem_range_ofIntermediateField_iff]
-  exact IntermediateField.mem_fixingSubgroup_iff (AlgHom.fieldRange i) σ
 
-/-- Concrete range criterion for `Gal(K^al/i(L)) → G_K`. -/
-theorem mem_range_ofFiniteExtension_iff_forall_apply_eq
-    [FiniteDimensional K L] (i : L →ₐ[K] AlgebraicClosure K)
-    (σ : Field.absoluteGaloisGroup K) :
-    σ ∈ MonoidHom.range (ofFiniteExtension K i) ↔
-      ∀ x : L, (show Gal(AlgebraicClosure K / K) from σ) (i x) = i x := by
-  rw [range_ofFiniteExtension]
-  exact mem_openSubgroupOfFiniteExtension_iff_forall_apply_eq K i σ
+
+
+
+
+
+
+
+
 
 /-- Normality of `L/K` transports to the embedded field range `i(L)`. -/
 instance normal_fieldRangeOfExtension
@@ -1162,43 +932,13 @@ theorem ofFiniteExtensionAbsoluteContinuous_apply [FiniteDimensional K L]
       ofFiniteExtensionAbsolute K i σ :=
   rfl
 
-/-- States the theorem `ofFiniteExtensionAbsolute_continuous`. -/
-theorem ofFiniteExtensionAbsolute_continuous [FiniteDimensional K L]
-    (i : L →ₐ[K] AlgebraicClosure K) :
-    Continuous (ofFiniteExtensionAbsolute K i) :=
-  (ofFiniteExtensionAbsoluteContinuous K i).continuous_toFun
 
-/-- States the theorem `openSubgroupOfFiniteExtension_subtype_isOpenEmbedding`. -/
-theorem openSubgroupOfFiniteExtension_subtype_isOpenEmbedding
-    [FiniteDimensional K L] (i : L →ₐ[K] AlgebraicClosure K) :
-    Topology.IsOpenEmbedding (fun σ : openSubgroupOfFiniteExtension K i =>
-      (σ : Field.absoluteGaloisGroup K)) :=
-  (openSubgroupOfFiniteExtension K i :
-    TopologicalSpace.Opens (Field.absoluteGaloisGroup K)).isOpenEmbedding'
 
-/-- The inclusion `G_L -> G_K` is an open embedding onto the finite-extension
-open subgroup fixing `i(L)`. -/
-theorem ofFiniteExtensionAbsolute_isOpenEmbedding [FiniteDimensional K L]
-    (i : L →ₐ[K] AlgebraicClosure K) :
-    Topology.IsOpenEmbedding (ofFiniteExtensionAbsolute K i) := by
-  have h :=
-    (openSubgroupOfFiniteExtension_subtype_isOpenEmbedding K i).comp
-      (equivOpenSubgroupOfFiniteExtensionContinuousMulEquiv K i).toHomeomorph.isOpenEmbedding
-  change Topology.IsOpenEmbedding fun σ =>
-    ((equivOpenSubgroupOfFiniteExtension K i σ :
-      openSubgroupOfFiniteExtension K i) :
-      Field.absoluteGaloisGroup K)
-  exact h
 
-/-- The concrete map `G_L → G_K` agrees with the usual scalar-restriction
-map after identifying `G_L` with `Gal(K^al / i(L))`. -/
-theorem ofFiniteExtensionAbsolute_eq_ofFiniteExtension
-    [FiniteDimensional K L] (i : L →ₐ[K] AlgebraicClosure K)
-    (σ : Field.absoluteGaloisGroup L) :
-    ofFiniteExtensionAbsolute K i σ =
-      ofFiniteExtension K i (equivGalFieldRangeOfFiniteExtension K i σ) := by
-  rw [ofFiniteExtensionAbsolute_apply,
-    coe_equivOpenSubgroupOfFiniteExtension_apply]
+
+
+
+
 
 /-- Every element of `G_L`, viewed inside `G_K`, lies in the finite-extension
 open subgroup fixing `i(L)`. -/
@@ -1209,15 +949,7 @@ theorem ofFiniteExtensionAbsolute_mem_openSubgroup
   rw [ofFiniteExtensionAbsolute_apply]
   exact (equivOpenSubgroupOfFiniteExtension K i σ).property
 
-/-- The concrete inclusion `G_L → G_K` attached to an embedded finite extension
-is injective. -/
-theorem ofFiniteExtensionAbsolute_injective [FiniteDimensional K L]
-    (i : L →ₐ[K] AlgebraicClosure K) :
-    Function.Injective (ofFiniteExtensionAbsolute K i) := by
-  intro σ τ hστ
-  apply (equivOpenSubgroupOfFiniteExtension K i).injective
-  apply Subtype.ext
-  exact hστ
+
 
 /-- The image of `G_L → G_K` is exactly the finite-extension open subgroup
 fixing `i(L)`. -/
@@ -1235,94 +967,23 @@ theorem range_ofFiniteExtensionAbsolute [FiniteDimensional K L]
   exact Subgroup.range_subtype
     (openSubgroupOfFiniteExtension K i : Subgroup (Field.absoluteGaloisGroup K))
 
-/-- States the theorem `map_top_ofFiniteExtensionAbsolute`. -/
-theorem map_top_ofFiniteExtensionAbsolute [FiniteDimensional K L]
-    (i : L →ₐ[K] AlgebraicClosure K) :
-    Subgroup.map (ofFiniteExtensionAbsolute K i) ⊤ =
-      (openSubgroupOfFiniteExtension K i :
-        Subgroup (Field.absoluteGaloisGroup K)) := by
-  rw [← MonoidHom.range_eq_map, range_ofFiniteExtensionAbsolute]
 
-/-- The normal-closure open subgroup is contained in the actual image of
-`G_L -> G_K`. -/
-theorem openSubgroupOfNormalClosureFiniteExtension_le_range
-    [FiniteDimensional K L]
-    (i : L →ₐ[K] AlgebraicClosure K) :
-    (openSubgroupOfNormalClosureFiniteExtension K i :
-      Subgroup (Field.absoluteGaloisGroup K)) ≤
-      MonoidHom.range (ofFiniteExtensionAbsolute K i) := by
-  rw [range_ofFiniteExtensionAbsolute]
-  exact openSubgroupOfNormalClosureFiniteExtension_le K i
 
-/-- States the theorem `range_ofFiniteExtensionAbsolute_finiteIndex`. -/
-theorem range_ofFiniteExtensionAbsolute_finiteIndex [FiniteDimensional K L]
-    (i : L →ₐ[K] AlgebraicClosure K) :
-    (MonoidHom.range (ofFiniteExtensionAbsolute K i)).FiniteIndex := by
-  rw [range_ofFiniteExtensionAbsolute]
-  infer_instance
 
-/-- If the chosen algebraic closure is Galois over `K`, the concrete image of
-`G_L → G_K` has index `[L : K]`. -/
-theorem range_ofFiniteExtensionAbsolute_index_eq_finrank
-    [FiniteDimensional K L] [IsGalois K (AlgebraicClosure K)]
-    (i : L →ₐ[K] AlgebraicClosure K) :
-    (MonoidHom.range (ofFiniteExtensionAbsolute K i)).index =
-      Module.finrank K L := by
-  rw [range_ofFiniteExtensionAbsolute]
-  exact openSubgroupOfFiniteExtension_index_eq_finrank K i
 
-/-- Hence the concrete image of `G_L` in `G_K` is open for finite `L/K`. -/
-theorem isOpen_range_ofFiniteExtensionAbsolute [FiniteDimensional K L]
-    (i : L →ₐ[K] AlgebraicClosure K) :
-    IsOpen (MonoidHom.range (ofFiniteExtensionAbsolute K i) :
-      Set (Field.absoluteGaloisGroup K)) := by
-  rw [range_ofFiniteExtensionAbsolute]
-  exact (openSubgroupOfFiniteExtension K i).isOpen'
 
-/-- Conjugating the embedding conjugates the actual image of `G_L -> G_K`. -/
-theorem range_ofFiniteExtensionAbsolute_conjugateEmbedding_eq_map
-    [FiniteDimensional K L]
-    (i : L →ₐ[K] AlgebraicClosure K)
-    (σ : Field.absoluteGaloisGroup K) :
-    MonoidHom.range
-        (ofFiniteExtensionAbsolute K (conjugateEmbedding K i σ)) =
-      Subgroup.map (MulAut.conj σ).toMonoidHom
-        (MonoidHom.range (ofFiniteExtensionAbsolute K i)) := by
-  rw [range_ofFiniteExtensionAbsolute, range_ofFiniteExtensionAbsolute,
-    openSubgroupOfFiniteExtension_conjugateEmbedding_eq_map]
 
-/-- Membership in the image attached to a conjugated embedding can be tested by
-conjugating back into the original image. -/
-theorem mem_range_ofFiniteExtensionAbsolute_conjugateEmbedding_iff
-    [FiniteDimensional K L]
-    (i : L →ₐ[K] AlgebraicClosure K)
-    (σ τ : Field.absoluteGaloisGroup K) :
-    τ ∈ MonoidHom.range
-        (ofFiniteExtensionAbsolute K (conjugateEmbedding K i σ)) ↔
-      σ⁻¹ * τ * σ ∈ MonoidHom.range (ofFiniteExtensionAbsolute K i) := by
-  rw [range_ofFiniteExtensionAbsolute, range_ofFiniteExtensionAbsolute]
-  change τ ∈ openSubgroupOfFiniteExtension K (conjugateEmbedding K i σ) ↔
-    σ⁻¹ * τ * σ ∈ openSubgroupOfFiniteExtension K i
-  exact mem_openSubgroupOfFiniteExtension_conjugateEmbedding_iff K i σ τ
 
-/-- States the theorem `mem_range_ofFiniteExtensionAbsolute_iff`. -/
-theorem mem_range_ofFiniteExtensionAbsolute_iff [FiniteDimensional K L]
-    (i : L →ₐ[K] AlgebraicClosure K)
-    (σ : Field.absoluteGaloisGroup K) :
-    σ ∈ MonoidHom.range (ofFiniteExtensionAbsolute K i) ↔
-      ∀ x ∈ AlgHom.fieldRange i,
-        (show Gal(AlgebraicClosure K / K) from σ) x = x := by
-  rw [range_ofFiniteExtensionAbsolute]
-  exact mem_openSubgroupOfFiniteExtension K i σ
 
-/-- The image of `G_L → G_K` is the concrete subgroup fixing `i(L)`
-pointwise. -/
-theorem range_ofFiniteExtensionAbsolute_eq_fixingSubgroupOfExtension
-    [FiniteDimensional K L] (i : L →ₐ[K] AlgebraicClosure K) :
-    MonoidHom.range (ofFiniteExtensionAbsolute K i) =
-      fixingSubgroupOfExtension K i := by
-  rw [range_ofFiniteExtensionAbsolute,
-    openSubgroupOfFiniteExtension_toSubgroup_eq_fixingSubgroupOfExtension]
+
+
+
+
+
+
+
+
+
 
 /-- Provides the instance `instNormal`. -/
 instance range_ofFiniteExtensionAbsolute.instNormal
@@ -1394,67 +1055,17 @@ section TwoFiniteExtensions
 
 variable {M : Type w} [Field M] [Algebra K M]
 
-/-- The images of absolute Galois groups inside `G_K` are contravariant in
-embedded finite extensions. -/
-theorem range_ofFiniteExtensionAbsolute_le_of_fieldRange_le
-    [FiniteDimensional K L] [FiniteDimensional K M]
-    (iL : L →ₐ[K] AlgebraicClosure K)
-    (iM : M →ₐ[K] AlgebraicClosure K)
-    (h : AlgHom.fieldRange iL ≤ AlgHom.fieldRange iM) :
-    MonoidHom.range (ofFiniteExtensionAbsolute K iM) ≤
-      MonoidHom.range (ofFiniteExtensionAbsolute K iL) := by
-  rw [range_ofFiniteExtensionAbsolute, range_ofFiniteExtensionAbsolute]
-  exact openSubgroupOfFiniteExtension_le_of_fieldRange_le K iL iM h
 
-/-- For a tower embedding `L -> M -> K^al`, the image of `G_M` in `G_K` is
-contained in the image of `G_L` in `G_K`. -/
-theorem range_ofFiniteExtensionAbsolute_comp_le
-    [FiniteDimensional K L] [FiniteDimensional K M]
-    (i : M →ₐ[K] AlgebraicClosure K) (j : L →ₐ[K] M) :
-    MonoidHom.range (ofFiniteExtensionAbsolute K i) ≤
-      MonoidHom.range (ofFiniteExtensionAbsolute K (i.comp j)) := by
-  rw [range_ofFiniteExtensionAbsolute, range_ofFiniteExtensionAbsolute]
-  exact openSubgroupOfFiniteExtension_comp_le K i j
 
-/-- States the theorem `openSubgroupOfFiniteExtensionSup_eq_range_inf`. -/
-theorem openSubgroupOfFiniteExtensionSup_eq_range_inf
-    [FiniteDimensional K L] [FiniteDimensional K M]
-    (iL : L →ₐ[K] AlgebraicClosure K)
-    (iM : M →ₐ[K] AlgebraicClosure K) :
-    (openSubgroupOfFiniteExtensionSup K iL iM :
-      Subgroup (Field.absoluteGaloisGroup K)) =
-      MonoidHom.range (ofFiniteExtensionAbsolute K iL) ⊓
-        MonoidHom.range (ofFiniteExtensionAbsolute K iM) := by
-  rw [openSubgroupOfFiniteExtensionSup_toSubgroup,
-    range_ofFiniteExtensionAbsolute, range_ofFiniteExtensionAbsolute]
 
-/-- States the theorem `mem_range_ofFiniteExtensionAbsolute_inf_iff`. -/
-theorem mem_range_ofFiniteExtensionAbsolute_inf_iff
-    [FiniteDimensional K L] [FiniteDimensional K M]
-    (iL : L →ₐ[K] AlgebraicClosure K)
-    (iM : M →ₐ[K] AlgebraicClosure K)
-    (σ : Field.absoluteGaloisGroup K) :
-    σ ∈ MonoidHom.range (ofFiniteExtensionAbsolute K iL) ⊓
-        MonoidHom.range (ofFiniteExtensionAbsolute K iM) ↔
-      (∀ x : L, (show Gal(AlgebraicClosure K / K) from σ) (iL x) = iL x) ∧
-        ∀ y : M, (show Gal(AlgebraicClosure K / K) from σ) (iM y) = iM y := by
-  rw [← openSubgroupOfFiniteExtensionSup_eq_range_inf]
-  change
-    σ ∈ openSubgroupOfFiniteExtensionSup K iL iM ↔
-      (∀ x : L, (show Gal(AlgebraicClosure K / K) from σ) (iL x) = iL x) ∧
-        ∀ y : M, (show Gal(AlgebraicClosure K / K) from σ) (iM y) = iM y
-  exact mem_openSubgroupOfFiniteExtensionSup_iff_forall_apply_eq K iL iM σ
+
+
+
+
 
 end TwoFiniteExtensions
 
-/-- Concrete range criterion for the identified inclusion `G_L → G_K`. -/
-theorem mem_range_ofFiniteExtensionAbsolute_iff_forall_apply_eq
-    [FiniteDimensional K L] (i : L →ₐ[K] AlgebraicClosure K)
-    (σ : Field.absoluteGaloisGroup K) :
-    σ ∈ MonoidHom.range (ofFiniteExtensionAbsolute K i) ↔
-      ∀ x : L, (show Gal(AlgebraicClosure K / K) from σ) (i x) = i x := by
-  rw [range_ofFiniteExtensionAbsolute_eq_fixingSubgroupOfExtension]
-  rfl
+
 
 /-- States the theorem `ofFiniteExtensionAbsolute_apply_embedding`. -/
 @[simp]
@@ -1479,15 +1090,7 @@ theorem coe_toOpenSubgroupOfFiniteExtension_apply_embedding
   simpa [ofFiniteExtensionAbsolute_apply]
     using ofFiniteExtensionAbsolute_apply_embedding K i σ x
 
-/-- States the theorem `exists_ofFiniteExtensionAbsolute_eq_iff_mem_openSubgroup`. -/
-theorem exists_ofFiniteExtensionAbsolute_eq_iff_mem_openSubgroup
-    [FiniteDimensional K L] (i : L →ₐ[K] AlgebraicClosure K)
-    (σ : Field.absoluteGaloisGroup K) :
-    (∃ τ : Field.absoluteGaloisGroup L,
-      ofFiniteExtensionAbsolute K i τ = σ) ↔
-      σ ∈ openSubgroupOfFiniteExtension K i := by
-  rw [← MonoidHom.mem_range, range_ofFiniteExtensionAbsolute]
-  rfl
+
 
 /-- States the theorem `ofFiniteExtensionAbsolute_equivOpenSubgroupOfFiniteExtension_symm`. -/
 @[simp]
@@ -1557,70 +1160,15 @@ theorem ofFiniteExtensionAbsoluteTower_naturality
   exact ofFiniteExtensionAbsolute_equivOpenSubgroupOfFiniteExtension_symm
     K (i.comp j) s
 
-/-- The tower map `G_M -> G_L` is injective. -/
-theorem ofFiniteExtensionAbsoluteTower_injective
-    [FiniteDimensional K L] [FiniteDimensional K M]
-    (i : M →ₐ[K] AlgebraicClosure K) (j : L →ₐ[K] M) :
-    Function.Injective (ofFiniteExtensionAbsoluteTower K i j) := by
-  intro σ τ hστ
-  apply ofFiniteExtensionAbsolute_injective K i
-  rw [← ofFiniteExtensionAbsoluteTower_naturality K i j σ,
-    hστ, ofFiniteExtensionAbsoluteTower_naturality K i j τ]
 
-/-- The image of the tower map `G_M -> G_L` is the pullback, along
-`G_L -> G_K`, of the image of `G_M -> G_K`. -/
-theorem map_top_ofFiniteExtensionAbsoluteTower_eq_comap_range
-    [FiniteDimensional K L] [FiniteDimensional K M]
-    (i : M →ₐ[K] AlgebraicClosure K) (j : L →ₐ[K] M) :
-    Subgroup.map (ofFiniteExtensionAbsoluteTower K i j) ⊤ =
-      Subgroup.comap (ofFiniteExtensionAbsolute K (i.comp j))
-        (MonoidHom.range (ofFiniteExtensionAbsolute K i)) := by
-  ext σ
-  constructor
-  · rintro ⟨τ, -, rfl⟩
-    rw [Subgroup.mem_comap]
-    exact ⟨τ, (ofFiniteExtensionAbsoluteTower_naturality K i j τ).symm⟩
-  · intro hσ
-    rw [Subgroup.mem_comap] at hσ
-    rcases hσ with ⟨τ, hτ⟩
-    refine ⟨τ, trivial, ?_⟩
-    apply ofFiniteExtensionAbsolute_injective K (i.comp j)
-    rw [ofFiniteExtensionAbsoluteTower_naturality K i j τ]
-    exact hτ
+
+
 
 end TwoFiniteExtensionsTower
 
-/-- Elements of the finite-extension open subgroup of `G_K` have a unique
-preimage in the identified absolute Galois group `G_L`. -/
-theorem existsUnique_ofFiniteExtensionAbsolute_eq_of_mem_openSubgroup
-    [FiniteDimensional K L] (i : L →ₐ[K] AlgebraicClosure K)
-    (σ : Field.absoluteGaloisGroup K)
-    (hσ : σ ∈ openSubgroupOfFiniteExtension K i) :
-    ∃! τ : Field.absoluteGaloisGroup L,
-      ofFiniteExtensionAbsolute K i τ = σ := by
-  let s : openSubgroupOfFiniteExtension K i := ⟨σ, hσ⟩
-  refine ⟨(equivOpenSubgroupOfFiniteExtension K i).symm s, ?_, ?_⟩
-  · exact ofFiniteExtensionAbsolute_equivOpenSubgroupOfFiniteExtension_symm K i s
-  · intro τ hτ
-    exact ofFiniteExtensionAbsolute_injective K i (by
-      rw [hτ,
-        ofFiniteExtensionAbsolute_equivOpenSubgroupOfFiniteExtension_symm K i s])
 
-/-- Concrete unique-preimage criterion for the identified inclusion
-`G_L → G_K`. -/
-theorem existsUnique_ofFiniteExtensionAbsolute_eq_iff_forall_apply_eq
-    [FiniteDimensional K L] (i : L →ₐ[K] AlgebraicClosure K)
-    (σ : Field.absoluteGaloisGroup K) :
-    (∃! τ : Field.absoluteGaloisGroup L,
-      ofFiniteExtensionAbsolute K i τ = σ) ↔
-      ∀ x : L, (show Gal(AlgebraicClosure K / K) from σ) (i x) = i x := by
-  constructor
-  · rintro ⟨τ, hτ, _⟩ x
-    rw [← hτ]
-    exact ofFiniteExtensionAbsolute_apply_embedding K i τ x
-  · intro hσ
-    exact existsUnique_ofFiniteExtensionAbsolute_eq_of_mem_openSubgroup K i σ
-      ((mem_openSubgroupOfFiniteExtension_iff_forall_apply_eq K i σ).2 hσ)
+
+
 
 end FiniteExtension
 
@@ -1632,26 +1180,7 @@ namespace HenselianDVF
 
 variable {K : Type u} [Field K]
 
-/-- Finite-level membership preservation for the absolute valuation subring,
-exposed from the Henselian-DVF namespace.  The finite-level Henselian-DVF
-target and unique-extension proof are explicit; this is the non-dummy wrapper
-used by the absolute power route. -/
-theorem mem_absoluteValuationSubring_iff_apply_mem_of_finite_separable_intermediate
-    (F : ValuationTheory.DiscreteValuationField.HenselianDVF.{u, v} K)
-    (A : ValuationSubring (AlgebraicClosure K))
-    [_root_.Valuation.HasExtension F.valuation A.valuation]
-    (E : IntermediateField K (AlgebraicClosure K))
-    [FiniteDimensional K E] [Algebra.IsSeparable K E]
-    (target : ValuationTheory.DiscreteValuationField.HenselianDVF.{u, w} E)
-    (hA : target.valuation.valuationSubring = (RamificationTheory.ValuationSubring.restrictIntermediateField A E))
-    (huniq :
-      ValuationTheory.DiscreteValuationField.HenselianDVF.HasUniqueValuationExtension.{u, v, u, w, u}
-        F target)
-    (sigma : Field.absoluteGaloisGroup K) (x : E) :
-    ((x : AlgebraicClosure K) ∈ A) ↔
-      (show Gal(AlgebraicClosure K / K) from sigma) (x : AlgebraicClosure K) ∈ A :=
-  RamificationTheory.Field.absoluteGaloisGroup.valuationSubring_mem_preserved_on_finite_separable_intermediate
-    (K := K) F A E target hA huniq sigma x
+
 
 end HenselianDVF
 end DiscreteValuationField

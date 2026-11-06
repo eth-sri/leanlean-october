@@ -39,7 +39,7 @@ private theorem exponent_power (p q : ExteriorPrime A) (n : ℕ) :
   by_cases h : q = p
   · simp [h]
   · have h' : q.val.asIdeal ≠ p.val.asIdeal := fun hh => h (Subtype.ext (HeightOneSpectrum.asIdeal_injective hh))
-    simp [h, h', Ne.symm h']
+    simp [h, h']
 private theorem power_allowed (p : ExteriorPrime A) (n : ℕ) :
     A.IsAllowed C.correction.B
       (WeightedFiniteCoefficient.fieldUnit A (generator C p ^ n) (power_generates p n).1) := by
@@ -58,14 +58,13 @@ private theorem local_unit_one (p : ExteriorPrime A) (n : ℕ) :
   have hπ : (generator C p : F) ≠ 0 := by exact_mod_cast (generator_generates C p).1
   have hu : uniformizer C p ≠ 0 := (map_ne_zero (algebraMap F (LocalField p))).mpr hπ
   have hu' : algebraMap F (LocalField p) (generator C p : F) ≠ 0 := hu
-  simp [MaskedQuotientCRT.primeExponent, exponent_power, uniformizer, map_pow, hπ, hu']
+  simp [MaskedQuotientCRT.primeExponent, exponent_power, uniformizer, map_pow, hu']
 private theorem prime_sum_eq (D : ComparisonPoissonCoefficientData F A)
     (hD : WeightedFiniteCoefficient.ArithmeticCompatibility A D σ η hS C.correction)
     (p : ExteriorPrime A) (t k J : ℕ) :
     GlobalPairCancel.primePowerSum A D (generator C p) (generator_generates C p).1 t k J =
       Ctk C p t k J := by
-  have hrec : GlobalPairCancel.HasArithmeticRecipes A σ hS C.correction.B D := by
-    exact ⟨fun I => ⟨WeightedFiniteCoefficient.fieldUnit A _ (D.generates I).1,
+  have hrec : GlobalPairCancel.HasArithmeticRecipes A σ hS C.correction.B D := ⟨fun I => ⟨WeightedFiniteCoefficient.fieldUnit A _ (D.generates I).1,
       rfl, hD.generator_allowed I⟩, hD.character_recipe, hD.additive_recipe, hD.gammaTwo_recipe⟩
   have hc := hrec.coefficient_prime_power_crt A σ η hS C.correction.B D C
     (powerIdeal p k) (powerIdeal p t) (powerIdeal p J)
@@ -169,8 +168,7 @@ theorem finite_coefficient_factorization (U : Frequency C)
   have hep : ∀ v : Q, (ep v).val = v.val := by
     intro v
     exact congrArg Subtype.val (E.apply_symm_apply v)
-  have hrec : GlobalPairCancel.HasArithmeticRecipes A σ hS C.correction.B D := by
-    exact ⟨fun I => ⟨WeightedFiniteCoefficient.fieldUnit A _ (D.generates I).1,
+  have hrec : GlobalPairCancel.HasArithmeticRecipes A σ hS C.correction.B D := ⟨fun I => ⟨WeightedFiniteCoefficient.fieldUnit A _ (D.generates I).1,
       rfl, hD.generator_allowed I⟩, hD.character_recipe, hD.additive_recipe, hD.gammaTwo_recipe⟩
   have hfac : ∀ I ∈ ({c.val, n, s, r, U.ideal} : Finset A.Exterior),
       I.val = ∏ v : Q, v.val.asIdeal ^ idealPrimeExponent v.val.asIdeal I.val := by
@@ -328,8 +326,7 @@ theorem series_summable (U : Frequency C)
     (ξ w z : ℂ) (hξ : 4 < ξ.re) (hw : 4 < w.re) (hz : 2 < z.re) :
     Summable (fun i : CRTAbsoluteSeries.ExteriorIndex A =>
       ‖comparisonEulerPoissonSummand F A D U.u ξ w z
-        i.1 i.2.1 i.2.2.1 i.2.2.2‖) := by
-  exact CRTAbsoluteSeries.weightedSummand_summable A D C.classGroup_trivial σ η hS
+        i.1 i.2.1 i.2.2.1 i.2.2.2‖) := CRTAbsoluteSeries.weightedSummand_summable A D C.classGroup_trivial σ η hS
     C.correction hD U.ideal U.u U.generates U.allowed
     (fun p => by have h := U.sixthFree p; omega) ξ w z hξ hw hz
 
@@ -345,7 +342,7 @@ def idealEquiv : A.Exterior ≃ (LocalFiniteSums.ExteriorPrime A →₀ ℕ) :=
   (ExteriorEulerPrimeIndex.exponentEquiv A.cS).trans (Finsupp.domCongr (primeEquiv A).symm).toEquiv
 theorem idealEquiv_apply (I : A.Exterior) (p : LocalFiniteSums.ExteriorPrime A) :
     idealEquiv A I p = idealPrimeExponent p.val.asIdeal I.val := by
-  rfl
+  aesop
 
 theorem squarefree_iff (I : A.Exterior) :
     Squarefree I.val ↔ ∀ p : LocalFiniteSums.ExteriorPrime A, idealEquiv A I p ≤ 1 := by
@@ -399,7 +396,8 @@ theorem indexEquiv_apply (i : CRTAbsoluteSeries.ExteriorIndex A)
     (indexEquiv A i).val p = (idealPrimeExponent p.val.asIdeal i.1.val.val,
       idealPrimeExponent p.val.asIdeal i.2.1.val,
       idealPrimeExponent p.val.asIdeal i.2.2.1.val,
-      idealPrimeExponent p.val.asIdeal i.2.2.2.val) := by rfl
+      idealPrimeExponent p.val.asIdeal i.2.2.2.val) := by
+  aesop
 
 variable {A} {σ : F →+* ℂ} {η : RayClassCharacter F A.modulus}
   {hS : A.ContainsTraceBadPlaces} {C : A.GeneralArithmeticContext σ η hS}

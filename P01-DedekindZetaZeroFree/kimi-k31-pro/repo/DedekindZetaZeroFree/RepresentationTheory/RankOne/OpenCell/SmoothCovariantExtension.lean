@@ -96,7 +96,7 @@ theorem open_cell_decomposition_unique (B : Binding F ζ hζ q A P)
   have h11 := congrArg (fun g : KubotaRankTwo.GL2 (LocalField F q) =>
       (g : Matrix (Fin 2) (Fin 2) (LocalField F q)) 1 1) hu
 
-  simp [Matrix.GeneralLinearGroup.coe_mul, muMat, KubotaRankTwo.coe_n,
+  simp [muMat, KubotaRankTwo.coe_n,
     KubotaRankTwo.coe_d, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply,
     Fin.sum_univ_two] at h10 h11
   have hu1 : (u : LocalField F q) = 1 := by rw [h10]; simp
@@ -342,9 +342,9 @@ private theorem borel_eq (B : Binding F ζ hζ q A P) :
       apply Matrix.ext
       intro i j
       fin_cases i <;> fin_cases j <;>
-        simp [KubotaRankTwo.d, KubotaRankTwo.n, Units.val_mul, Matrix.mul_apply,
+        simp [KubotaRankTwo.d, KubotaRankTwo.n, Matrix.mul_apply,
           Fin.sum_univ_two, Matrix.GeneralLinearGroup.mkOfDetNeZero,
-          Matrix.GeneralLinearGroup.coe_scalar, Matrix.scalar, Matrix.diagonal_apply,
+          Matrix.scalar, Matrix.diagonal_apply,
           y, h10] <;> try field_simp [ha, hh]
     have hp : A.projection b = A.projection (b' : Cover F ζ hζ q) := by
       rw [projection_eq_concrete F ζ hζ q A P B] at ⊢

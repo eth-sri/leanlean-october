@@ -239,47 +239,7 @@ theorem residueFieldEquivOfUniqueExtension_algebraMap
   ext
   exact σ.commutes (a : K)
 
-/-- Conjugate integral elements have conjugate reductions over the residue
-field of the base valuation ring.  In particular, their reductions have the
-same minimal polynomial.  This is the residue-field form of the Galois
-argument used in the converse direction of the unique-extension characterization. -/
-theorem minpoly_residue_eq_of_minpoly_eq_of_unique_extension
-    {K L : Type*} [Field K] [Field L] [Algebra K L]
-    [Normal K L]
-    (V : ValuationSubring K) (W : ValuationSubring L)
-    [hW : V.valuation.HasExtension W.valuation]
-    (huniq : ∀ W' : ValuationSubring L,
-      V.valuation.HasExtension W'.valuation → W' = W)
-    {x y : L} (hxy : minpoly K x = minpoly K y)
-    (hx : x ∈ W.toSubring) (hy : y ∈ W.toSubring) :
-    letI : Algebra (IsLocalRing.ResidueField V)
-        (IsLocalRing.ResidueField W) :=
-      (residueFieldMapOfHasExtension V W hW).toAlgebra
-    minpoly (IsLocalRing.ResidueField V)
-        (IsLocalRing.residue W ⟨x, hx⟩) =
-      minpoly (IsLocalRing.ResidueField V)
-        (IsLocalRing.residue W ⟨y, hy⟩) := by
-  let : Algebra (IsLocalRing.ResidueField V)
-      (IsLocalRing.ResidueField W) :=
-    (residueFieldMapOfHasExtension V W hW).toAlgebra
-  obtain ⟨σ, hσ⟩ := (Normal.minpoly_eq_iff_mem_orbit L).1 hxy
-  let e : IsLocalRing.ResidueField W ≃ₐ[IsLocalRing.ResidueField V]
-      IsLocalRing.ResidueField W :=
-    { residueFieldEquivOfUniqueExtension V W hW huniq σ with
-      commutes' := fun z =>
-        residueFieldEquivOfUniqueExtension_algebraMap V W huniq σ z }
-  have hred :
-      e (IsLocalRing.residue W ⟨y, hy⟩) =
-        IsLocalRing.residue W ⟨x, hx⟩ := by
-    change
-      residueFieldEquivOfUniqueExtension V W hW huniq σ
-          (IsLocalRing.residue W ⟨y, hy⟩) =
-        IsLocalRing.residue W ⟨x, hx⟩
-    rw [residueFieldEquivOfUniqueExtension_residue]
-    congr 1
-    exact Subtype.ext hσ
-  rw [← hred]
-  exact minpoly.algEquiv_eq e _
+
 
 end Valuations
 end

@@ -34,8 +34,7 @@ theorem local_class_of_raw (raw : RestrictedCover F ζ hζ)
       KPPGLLocalCover.baseQuotient F v (ProductPolarization.diagonalHom F v
         (KPGlobalCubicIdelePairing.ideleEval F v (KPGlobalTorusFunctionData.p F ζ hζ e))) := by
     have h := congrArg (baseEval F v) hproj
-    rw [eval_diagonal] at h
-    rw [← he] at h
+    rw [eval_diagonal, ← he] at h
     change KPPGLLocalCover.baseQuotient F v
       (matrixEval F v (restrictedProjection F ζ hζ raw)) = _ at h
     rw [restrictedProjection_eval] at h

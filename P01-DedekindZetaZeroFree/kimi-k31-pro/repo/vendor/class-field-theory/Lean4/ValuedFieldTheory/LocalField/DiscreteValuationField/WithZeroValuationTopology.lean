@@ -117,10 +117,7 @@ theorem completeSpace_ofWithZeroValuation
           (_root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict_nontriviallyNormedField
             (completeDVF v)).toUniformSpace := by
         rfl
-  let : Valued K (WithZero (Multiplicative ℤ)) := direct
-  change @CompleteSpace K direct.toUniformSpace
-  rw [huniform]
-  exact hcomplete
+  grind
 
 end WithZeroValuationTopology
 end LocalFieldTheory.DiscreteValuationField

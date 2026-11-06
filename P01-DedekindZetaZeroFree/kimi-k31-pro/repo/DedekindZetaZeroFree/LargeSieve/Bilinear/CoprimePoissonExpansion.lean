@@ -467,8 +467,8 @@ private lemma rows_match (C : Context Q) (hM : 1 ≤ C.M)
         ((Ideal.isCoprime_iff_sup_eq.mpr hrow.2.1).mul_right (Ideal.isCoprime_iff_sup_eq.mpr had))
       have hprim := (C.primitive_spec p hp).2.2 a hcd
       have hnot : ¬sc c a ≤ C.K := by rw [hsc]; exact not_le.mpr hrow.2.2
-      simp only [S4allTerm, S4Term, hrow.1, hcd, hnot, and_self, and_false,
-        if_true, if_false, sub_zero, and_true]
+      simp only [S4allTerm, S4Term, hcd, hnot, and_false,
+        if_false, sub_zero, and_true]
       rw [if_pos hrow.1]
       change C.source _ * _ * _ = C.source _ * _
       rw [mul_assoc, hprim.1]
@@ -630,7 +630,7 @@ private theorem reflected_row_match (C : Context Q) (j a : Ideal (𝓞 F))
     Context.origin, ReflectedCoprimeTruncation.originCoefficient,
     Context.largeDensity, Context.originDivisors, Context.middle,
     Context.reflectedKernel, Context.reflectedRemainder, ExplicitTerms.norm,
-    Complex.ofReal_div, Complex.ofReal_natCast, mul_comm]
+    Complex.ofReal_natCast, mul_comm]
   rfl
 
 def reflectedBlock (C : Context Q) (B : ℝ) (unit : Bool := false) : ℂ :=
@@ -657,8 +657,7 @@ theorem reflected_block_match (C : Context Q) (B : ℝ) (unit : Bool)
       (e : Ideal (𝓞 F)) (he : e ∈ C.mobiusDivisors)
       (a : Ideal (𝓞 F)) (ha : a ∈ C.reflectedRows B unit) := by
     have he0 : e ≠ ⊥ := ne_bot_of_mem_idealDivisors he
-    have hj : p.1 * p.2 ≠ ⊥ := by
-      exact mul_ne_zero hp.hu0 hp.hv0
+    have hj : p.1 * p.2 ≠ ⊥ := mul_ne_zero hp.hu0 hp.hv0
     have ha0 : a ≠ ⊥ := by
       obtain ⟨tr, htr, rfl⟩ := Finset.mem_image.mp ha
       exact (Finset.mem_filter.mp htr).2.2.2
@@ -941,7 +940,7 @@ private lemma pair_identity (C : Context Q) (hM : 1 ≤ C.M) (hK : 1 ≤ C.K)
     ∑ e ∈ C.mobiusDivisors, C.prefactor e p hp *
       S4all ⊤ (fieldTransform (principalDiscriminant F) (principalComplexPlaces F) C.source)
         (C.dualScale e p) (C.primitive p hp) at heq
-  have hscale (e) (he : e ∈ C.mobiusDivisors) : 0 < C.dualScale e p := by
+  have hscale e (he : e ∈ C.mobiusDivisors) : 0 < C.dualScale e p := by
     have he0 := ne_bot_of_mem_idealDivisors he
     have heN : 0 < norm e := by
       unfold ExplicitTerms.norm

@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.Arithmetic.Ideals.TraceDualIdeal
 public import DedekindZetaZeroFree.LFunctions.Dedekind.IdealClassConeSeries
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -38,10 +39,10 @@ def principalTraceDualClassEquiv (F : Type) [Field F] [NumberField F] :
   invFun C := (principalTraceDualClass F)⁻¹ * C⁻¹
   left_inv := by
     intro C
-    simp [mul_inv_rev, mul_comm, mul_left_comm]
+    norm_num
   right_inv := by
     intro C
-    simp [mul_inv_rev, mul_comm, mul_left_comm]
+    norm_num
 
 @[simp] theorem principalTraceDualClassEquiv_apply (F : Type) [Field F] [NumberField F]
     (C : ClassGroup (𝓞 F)) :

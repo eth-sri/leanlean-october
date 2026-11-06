@@ -80,8 +80,7 @@ theorem rayClassGroup_hom_ext_finitePrime
     intro v hv
     change f (e.symm (q (RayClass.primeToModulusIdeal m v hv))) =
       g (e.symm (q (RayClass.primeToModulusIdeal m v hv)))
-    rw [hprimeIdeal v hv]
-    exact hprime v hv
+    grind
   apply MonoidHom.ext
   intro x
   obtain ⟨y, rfl⟩ := e.symm.surjective x

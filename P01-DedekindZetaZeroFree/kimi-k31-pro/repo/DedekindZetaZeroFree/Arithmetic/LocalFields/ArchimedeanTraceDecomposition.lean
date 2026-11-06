@@ -21,7 +21,7 @@ theorem archTrace_algebraMap {F : Type*} [Field F] [NumberField F]
     rw [show ((t : v.Completion)) =
         ((WithAbs.toAbs v.1 t : WithAbs v.1) : v.Completion) from rfl]
     rw [InfinitePlace.Completion.extensionEmbeddingOfIsReal_coe]
-    simp only [WithAbs.equiv_apply, WithAbs.ofAbs_toAbs]
+    simp only [WithAbs.equiv_apply]
     rw [hv.mult_eq_one]
     rw [← InfinitePlace.embedding_of_isReal_apply hv t]
     simp only [Complex.ofReal_re]
@@ -32,7 +32,7 @@ theorem archTrace_algebraMap {F : Type*} [Field F] [NumberField F]
     rw [show ((t : v.Completion)) =
         ((WithAbs.toAbs v.1 t : WithAbs v.1) : v.Completion) from rfl]
     rw [InfinitePlace.Completion.extensionEmbedding_coe]
-    simp only [WithAbs.equiv_apply, WithAbs.ofAbs_toAbs]
+    simp only [WithAbs.equiv_apply]
     rw [hv.mult_eq_two]
     ring
 

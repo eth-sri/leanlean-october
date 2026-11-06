@@ -339,15 +339,7 @@ noncomputable def scaledRelativeIntegerLatticeAnnihilator :
   (chosenScaledRelativeIntegerLatticeAnnihilatorData
     (K := K) (L := L) : 𝓞 K)
 
-/-- The selected annihilator element lies in the annihilator ideal. -/
-theorem scaledRelativeIntegerLatticeAnnihilator_mem :
-    scaledRelativeIntegerLatticeAnnihilator
-        (K := K) (L := L) ∈
-      (⊤ : Submodule (𝓞 K)
-        (ScaledRelativeIntegerLatticeQuotient
-          (K := K) (L := L))).annihilator :=
-  (chosenScaledRelativeIntegerLatticeAnnihilatorData
-    (K := K) (L := L)).2.1
+
 
 /-- The selected annihilator element is nonzero. -/
 theorem scaledRelativeIntegerLatticeAnnihilator_ne_zero :
@@ -357,25 +349,7 @@ theorem scaledRelativeIntegerLatticeAnnihilator_ne_zero :
     (chosenScaledRelativeIntegerLatticeAnnihilatorData
       (K := K) (L := L)).2.2
 
-/-- The chosen annihilator uniformly carries all of `𝓞 L` into the
-scaled basis lattice. -/
-theorem scaledRelativeIntegerLatticeAnnihilator_smul_mem
-    (x : 𝓞 L) :
-    scaledRelativeIntegerLatticeAnnihilator
-          (K := K) (L := L) • x ∈
-      scaledRelativeIntegerLattice
-        (K := K) (L := L) := by
-  have hkill :
-      scaledRelativeIntegerLatticeAnnihilator
-          (K := K) (L := L) •
-          Submodule.Quotient.mk x = 0 :=
-    Submodule.mem_annihilator.mp
-      (scaledRelativeIntegerLatticeAnnihilator_mem
-        (K := K) (L := L))
-      (Submodule.Quotient.mk x) Submodule.mem_top
-  rw [← Submodule.Quotient.mk_smul,
-    Submodule.Quotient.mk_eq_zero] at hkill
-  exact hkill
+
 
 /-- The original integral scaling factor, now viewed in `𝓞 K`. -/
 noncomputable def relativeBasisIntegralScaleInRingOfIntegers :
@@ -470,20 +444,7 @@ theorem integralTensorControlElement_not_mem_of_notMem
     Ideal.dvd_span_singleton]
   exact hmem
 
-/-- The annihilator alone is invertible away from the bad set. -/
-theorem scaledRelativeIntegerLatticeAnnihilator_not_mem_of_notMem
-    (w : HeightOneSpectrum (𝓞 K))
-    (hw : w ∉ integralTensorBadPlaces
-      (K := K) (L := L)) :
-    scaledRelativeIntegerLatticeAnnihilator
-        (K := K) (L := L) ∉ w.asIdeal := by
-  intro hmem
-  exact
-    integralTensorControlElement_not_mem_of_notMem
-      (K := K) (L := L) w hw
-      (w.asIdeal.mul_mem_left
-        (relativeBasisIntegralScaleInRingOfIntegers
-          (K := K) (L := L)) hmem)
+
 
 /-- The initial integer scale is also invertible away from the bad
 set. -/

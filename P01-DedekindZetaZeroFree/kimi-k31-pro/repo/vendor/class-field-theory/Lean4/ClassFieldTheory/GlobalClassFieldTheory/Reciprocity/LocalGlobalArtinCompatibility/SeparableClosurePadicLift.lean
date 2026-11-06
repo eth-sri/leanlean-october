@@ -367,27 +367,7 @@ theorem automorphismOverCyclicFixedField_mem_chosenFinitePlaceDecompositionGroup
     exact hσM_wM
   exact hσM_chosen
 
-/-- A decomposition automorphism remains a decomposition
-automorphism after the cyclic fixed-field reduction, for the actual
-chosen local Artin factor over the reduced base. -/
-theorem automorphismOverCyclicFixedField_mem_chosenFinitePlaceArtin_range
-    (v : HeightOneSpectrum (𝓞 K))
-    (σ :
-      absoluteValueDecompositionGroup K
-        (chosenFinitePlaceExtension (L := L) v).1) :
-    let M := automorphismCyclicFixedField σ.1
-    automorphismOverCyclicFixedField σ.1 ∈
-      (chosenFinitePlaceArtinMonoidHom
-        (K := M) (L := L)
-        (automorphismCyclicFixedPlace v σ.1)).range := by
-  dsimp only
-  rw [
-    chosenFinitePlaceArtinMonoidHom_range
-      (K := automorphismCyclicFixedField σ.1) (L := L)
-      (automorphismCyclicFixedPlace v σ.1)]
-  exact
-    automorphismOverCyclicFixedField_mem_chosenFinitePlaceDecompositionGroup
-      (K := K) (L := L) v σ
+
 
 /-- Restriction from the decomposition group in the common compatible
 rational separable closure to the decomposition group at the chosen

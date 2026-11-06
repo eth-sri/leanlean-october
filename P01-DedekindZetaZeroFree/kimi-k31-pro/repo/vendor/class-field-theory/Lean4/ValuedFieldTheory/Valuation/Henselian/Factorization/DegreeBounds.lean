@@ -122,19 +122,7 @@ theorem henselFactorization_error_factor_natDegree_le
     (henselFactorization_error_natDegree_le hf hg hh hmd)
     hfactor
 
-/-- residue-degree bound for the next error factor `f_n`. -/
-theorem henselFactorization_error_factor_residue_natDegree_le
-    {R : Type*} [CommRing R] [IsLocalRing R] [NoZeroDivisors R]
-    {π : R} {n : ℕ} (hπn : π ^ n ≠ 0)
-    {f g h fn : R[X]} {d m : ℕ}
-    (hf : f.natDegree ≤ d) (hg : g.natDegree ≤ m)
-    (hh : h.natDegree ≤ d - m) (hmd : m ≤ d)
-    (hfactor : f - g * h = Polynomial.C (π ^ n) * fn) :
-    (fn.map (IsLocalRing.residue R)).natDegree ≤ d :=
-  henselFactorization_map_natDegree_le_of_natDegree_le
-    (IsLocalRing.residue R)
-    (henselFactorization_error_factor_natDegree_le
-      (π := π) hπn hf hg hh hmd hfactor)
+
 
 end Valuations
 end AlgebraicNumberTheory

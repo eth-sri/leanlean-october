@@ -452,15 +452,7 @@ theorem norm_trans_apply (A : Rep ℤ G)
   exact finiteTowerNormTransApplyAux A T.base T.middle T.top
     T.top_le_middle T.middle_le_base a
 
-/-- Homomorphism form of norm transitivity along a finite tower. -/
-theorem norm_trans (A : Rep ℤ G) :
-    (relativeNorm A T.base T.middle T.middle_le_base).comp
-        (relativeNorm A T.middle T.top T.top_le_middle) =
-      relativeNorm A T.base T.top
-        (T.top_le_middle.trans T.middle_le_base) := by
-  apply AddMonoidHom.ext
-  intro a
-  exact T.norm_trans_apply A a
+
 
 end DegreeData.FiniteTower
 

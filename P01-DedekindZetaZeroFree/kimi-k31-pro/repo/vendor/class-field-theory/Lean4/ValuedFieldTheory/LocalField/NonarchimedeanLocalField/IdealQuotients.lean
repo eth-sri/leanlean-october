@@ -46,11 +46,7 @@ theorem integerRingModMaximalIdealAddEquivResidue_mk
       IsLocalRing.residue 𝒪[K] x :=
   rfl
 
-/-- An integer-ring element has zero residue exactly when it belongs to the maximal ideal. -/
-theorem residue_eq_zero_iff_mem_maximalIdeal
-    (K : Type u) [Field K] [ValuativeRel K] (x : 𝒪[K]) :
-    IsLocalRing.residue 𝒪[K] x = 0 ↔ x ∈ (𝓂[K] : Ideal 𝒪[K]) :=
-  IsLocalRing.residue_eq_zero_iff x
+
 
 /-- A chosen DVR uniformizer of the valuation ring of a nonarchimedean local
 field, viewed as an irreducible element of `𝒪[K]`. -/
@@ -250,21 +246,7 @@ theorem v_integerRingIrreducibleFieldUnit_inv
   rw [v_integerRingIrreducibleFieldUnit K ϖ hϖ u hu]
   norm_num
 
-/-- The chosen prime element of the valuation ring has
-multiplicative value `ofAdd (-1)` under the local-field normalization.
 
-This is the source-producing normalization for the later decomposition
-`x = u * π^m`; it is proved from the DVR fact `𝓂 = (π)`, not assumed as a
-separate uniformizer-value input. -/
-theorem valueGroupWithZeroIsoInt_chosenIntegerRingUniformizer
-    (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] :
-    IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
-        (ValuativeRel.valuation K ((chosenIntegerRingUniformizer K : 𝒪[K]) : K)) =
-      ((Multiplicative.ofAdd (-1 : Int) : Multiplicative Int) :
-        WithZero (Multiplicative Int)) :=
-  valueGroupWithZeroIsoInt_of_integerRing_irreducible K
-    (chosenIntegerRingUniformizer K) (chosenIntegerRingUniformizer_irreducible K)
 
 /-- The chosen valuation-ring prime element has normalized additive value `-1`
 as a field unit.  We use the inverse convention for a positive
@@ -564,13 +546,7 @@ instance maximalIdealPowSuccQuot_finite
     Finite (MaximalIdealPowSuccQuot K n) :=
   Finite.of_equiv 𝓀[K] (chosenResidueAddEquivMaximalIdealPowSuccQuot K n)
 
-/-- Every successive maximal-ideal quotient has the same cardinality as the residue field. -/
-theorem maximalIdealPowSuccQuot_card_eq_residue
-    (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] (n : Nat) :
-    Nat.card (MaximalIdealPowSuccQuot K n) = Nat.card 𝓀[K] := by
-  exact Nat.card_congr
-    (chosenResidueAddEquivMaximalIdealPowSuccQuot K n).symm.toEquiv
+
 
 /-- The unit-quotient coordinate theorem in additive form:
 `U^n/U^(n+1) ≃ 𝓀[K]`, for `n ≥ 1`. -/
@@ -705,210 +681,27 @@ theorem principalUnitsSuccQuotUniformizerCoordAddHom_apply
       Additive.ofMul (principalUnitsSuccQuotUniformizerCoord K ϖ hϖ n hn r) :=
   rfl
 
-/-- The inverse of the additive equivalence `U^n/U^(n+1) ≃ 𝓀[K]` sends the
-residue of `r` to the uniformizer coordinate class `[1 + rϖ^n]`. -/
-theorem principalUnitsSuccQuotAddEquivResidueOfIrreducible_symm_residue_coord
-    (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] (ϖ : 𝒪[K]) (hϖ : Irreducible ϖ)
-    (n : Nat) (hn : 1 ≤ n) (r : 𝒪[K]) :
-    (principalUnitsSuccQuotAddEquivResidueOfIrreducible K ϖ hϖ n hn).symm
-        (IsLocalRing.residue 𝒪[K] r) =
-      Additive.ofMul (principalUnitsSuccQuotUniformizerCoord K ϖ hϖ n hn r) := by
-  exact principalUnitsSuccQuotAddEquivResidueOfIrreducible_symm_residue
-    K ϖ hϖ n hn r
 
-/-- The additive equivalence `U^n/U^(n+1) ≃ 𝓀[K]` sends the uniformizer
-coordinate class `[1 + rϖ^n]` to the residue of `r`. -/
-theorem principalUnitsSuccQuotAddEquivResidueOfIrreducible_coord
-    (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] (ϖ : 𝒪[K]) (hϖ : Irreducible ϖ)
-    (n : Nat) (hn : 1 ≤ n) (r : 𝒪[K]) :
-    principalUnitsSuccQuotAddEquivResidueOfIrreducible K ϖ hϖ n hn
-        (Additive.ofMul (principalUnitsSuccQuotUniformizerCoord K ϖ hϖ n hn r)) =
-      IsLocalRing.residue 𝒪[K] r := by
-  let E := principalUnitsSuccQuotAddEquivResidueOfIrreducible K ϖ hϖ n hn
-  have hcoord :
-      E.symm (IsLocalRing.residue 𝒪[K] r) =
-        Additive.ofMul (principalUnitsSuccQuotUniformizerCoord K ϖ hϖ n hn r) := by
-    simpa [E] using
-      principalUnitsSuccQuotAddEquivResidueOfIrreducible_symm_residue_coord
-        K ϖ hϖ n hn r
-  change E (Additive.ofMul (principalUnitsSuccQuotUniformizerCoord K ϖ hϖ n hn r)) =
-    IsLocalRing.residue 𝒪[K] r
-  rw [← hcoord]
-  exact E.apply_symm_apply (IsLocalRing.residue 𝒪[K] r)
 
-/-- The coordinate homomorphism factors through reduction to the residue field,
-pointwise. -/
-theorem principalUnitsSuccQuotUniformizerCoordAddHom_eq_symm_residue
-    (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] (ϖ : 𝒪[K]) (hϖ : Irreducible ϖ)
-    (n : Nat) (hn : 1 ≤ n) (r : 𝒪[K]) :
-    principalUnitsSuccQuotUniformizerCoordAddHom K ϖ hϖ n hn r =
-      (principalUnitsSuccQuotAddEquivResidueOfIrreducible K ϖ hϖ n hn).symm
-        (IsLocalRing.residue 𝒪[K] r) := by
-  rw [principalUnitsSuccQuotUniformizerCoordAddHom_apply]
-  exact (principalUnitsSuccQuotAddEquivResidueOfIrreducible_symm_residue_coord
-    K ϖ hϖ n hn r).symm
 
-/-- The coordinate homomorphism is the composite of residue reduction and the
-inverse of the additive equivalence `U^n/U^(n+1) ≃ 𝓀[K]`. -/
-theorem principalUnitsSuccQuotUniformizerCoordAddHom_eq_symm_comp_residue
-    (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] (ϖ : 𝒪[K]) (hϖ : Irreducible ϖ)
-    (n : Nat) (hn : 1 ≤ n) :
-    principalUnitsSuccQuotUniformizerCoordAddHom K ϖ hϖ n hn =
-      (principalUnitsSuccQuotAddEquivResidueOfIrreducible K ϖ hϖ n hn).symm.toAddMonoidHom.comp
-        (IsLocalRing.residue 𝒪[K]).toAddMonoidHom := by
-  ext r
-  exact principalUnitsSuccQuotUniformizerCoordAddHom_eq_symm_residue K ϖ hϖ n hn r
 
-/-- Every class in `U^n/U^(n+1)` has a uniformizer-coordinate representative
-`[1 + rϖ^n]`, in additive homomorphism form. -/
-theorem principalUnitsSuccQuotUniformizerCoordAddHom_surjective
-    (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] (ϖ : 𝒪[K]) (hϖ : Irreducible ϖ)
-    (n : Nat) (hn : 1 ≤ n) :
-    Function.Surjective (principalUnitsSuccQuotUniformizerCoordAddHom K ϖ hϖ n hn) := by
-  intro y
-  let E := principalUnitsSuccQuotAddEquivResidueOfIrreducible K ϖ hϖ n hn
-  obtain ⟨r, hr⟩ := Ideal.Quotient.mk_surjective (E y)
-  refine ⟨r, ?_⟩
-  apply E.injective
-  rw [principalUnitsSuccQuotUniformizerCoordAddHom_apply,
-    principalUnitsSuccQuotAddEquivResidueOfIrreducible_coord]
-  change Ideal.Quotient.mk (𝓂[K] : Ideal 𝒪[K]) r = E y
-  exact hr
 
-/-- Every class in `U^n/U^(n+1)` has a uniformizer-coordinate representative
-`[1 + rϖ^n]`. -/
-theorem principalUnitsSuccQuotUniformizerCoord_surjective
-    (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] (ϖ : 𝒪[K]) (hϖ : Irreducible ϖ)
-    (n : Nat) (hn : 1 ≤ n) :
-    Function.Surjective (principalUnitsSuccQuotUniformizerCoord K ϖ hϖ n hn) := by
-  intro y
-  obtain ⟨r, hr⟩ :=
-    principalUnitsSuccQuotUniformizerCoordAddHom_surjective K ϖ hϖ n hn
-      (Additive.ofMul y)
-  refine ⟨r, ?_⟩
-  change Additive.ofMul (principalUnitsSuccQuotUniformizerCoord K ϖ hϖ n hn r) =
-    Additive.ofMul y at hr
-  exact Additive.ofMul.injective hr
 
-/-- In uniformizer coordinates, equality in `U^n/U^(n+1)` is exactly equality
-of residues of the coefficients. -/
-theorem principalUnitsSuccQuotUniformizerCoord_eq_iff_residue_eq
-    (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] (ϖ : 𝒪[K]) (hϖ : Irreducible ϖ)
-    (n : Nat) (hn : 1 ≤ n) (r s : 𝒪[K]) :
-    principalUnitsSuccQuotUniformizerCoord K ϖ hϖ n hn r =
-        principalUnitsSuccQuotUniformizerCoord K ϖ hϖ n hn s ↔
-      IsLocalRing.residue 𝒪[K] r = IsLocalRing.residue 𝒪[K] s := by
-  let E := principalUnitsSuccQuotAddEquivResidueOfIrreducible K ϖ hϖ n hn
-  have hr :
-      E.symm (IsLocalRing.residue 𝒪[K] r) =
-        Additive.ofMul (principalUnitsSuccQuotUniformizerCoord K ϖ hϖ n hn r) := by
-    exact principalUnitsSuccQuotAddEquivResidueOfIrreducible_symm_residue_coord
-      K ϖ hϖ n hn r
-  have hs :
-      E.symm (IsLocalRing.residue 𝒪[K] s) =
-        Additive.ofMul (principalUnitsSuccQuotUniformizerCoord K ϖ hϖ n hn s) := by
-    exact principalUnitsSuccQuotAddEquivResidueOfIrreducible_symm_residue_coord
-      K ϖ hϖ n hn s
-  constructor
-  · intro h
-    have hcoords :
-        Additive.ofMul (principalUnitsSuccQuotUniformizerCoord K ϖ hϖ n hn r) =
-          Additive.ofMul (principalUnitsSuccQuotUniformizerCoord K ϖ hϖ n hn s) :=
-      congrArg Additive.ofMul h
-    have hres :
-        E.symm (IsLocalRing.residue 𝒪[K] r) =
-          E.symm (IsLocalRing.residue 𝒪[K] s) := by
-      calc
-        E.symm (IsLocalRing.residue 𝒪[K] r) =
-            Additive.ofMul (principalUnitsSuccQuotUniformizerCoord K ϖ hϖ n hn r) := hr
-        _ = Additive.ofMul (principalUnitsSuccQuotUniformizerCoord K ϖ hϖ n hn s) :=
-            hcoords
-        _ = E.symm (IsLocalRing.residue 𝒪[K] s) := hs.symm
-    exact E.symm.injective hres
-  · intro h
-    have hres :
-        E.symm (IsLocalRing.residue 𝒪[K] r) =
-          E.symm (IsLocalRing.residue 𝒪[K] s) :=
-      congrArg E.symm h
-    have hcoords :
-        Additive.ofMul (principalUnitsSuccQuotUniformizerCoord K ϖ hϖ n hn r) =
-          Additive.ofMul (principalUnitsSuccQuotUniformizerCoord K ϖ hϖ n hn s) := by
-      calc
-        Additive.ofMul (principalUnitsSuccQuotUniformizerCoord K ϖ hϖ n hn r) =
-            E.symm (IsLocalRing.residue 𝒪[K] r) := hr.symm
-        _ = E.symm (IsLocalRing.residue 𝒪[K] s) := hres
-        _ = Additive.ofMul (principalUnitsSuccQuotUniformizerCoord K ϖ hϖ n hn s) := hs
-    simpa using congrArg Additive.toMul hcoords
 
-/-- In uniformizer coordinates, the class of `1 + rϖ^n` is trivial exactly
-when the coefficient has zero residue. -/
-theorem principalUnitsSuccQuotUniformizerCoord_eq_one_iff_residue_eq_zero
-    (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] (ϖ : 𝒪[K]) (hϖ : Irreducible ϖ)
-    (n : Nat) (hn : 1 ≤ n) (r : 𝒪[K]) :
-    principalUnitsSuccQuotUniformizerCoord K ϖ hϖ n hn r = 1 ↔
-      IsLocalRing.residue 𝒪[K] r = 0 := by
-  rw [principalUnitsSuccQuotUniformizerCoord]
-  change principalUnitsSuccQuotOfIdealPow K n hn
-      (maximalIdealPowMulUniformizerPowMap K ϖ hϖ n r) = 1 ↔
-    IsLocalRing.residue 𝒪[K] r = 0
-  rw [principalUnitsSuccQuotOfIdealPow_eq_one_iff]
-  rw [maximalIdealPowMulUniformizerPowMap_apply]
-  rw [mul_uniformizer_pow_mem_maximalIdeal_pow_succ_iff K ϖ hϖ n r]
-  exact (residue_eq_zero_iff_mem_maximalIdeal K r).symm
 
-/-- In uniformizer coordinates, the class `[1 + rϖ^n]` is trivial exactly
-when the coefficient lies in the maximal ideal. -/
-theorem principalUnitsSuccQuotUniformizerCoord_eq_one_iff_mem_maximalIdeal
-    (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] (ϖ : 𝒪[K]) (hϖ : Irreducible ϖ)
-    (n : Nat) (hn : 1 ≤ n) (r : 𝒪[K]) :
-    principalUnitsSuccQuotUniformizerCoord K ϖ hϖ n hn r = 1 ↔
-      r ∈ (𝓂[K] : Ideal 𝒪[K]) := by
-  rw [principalUnitsSuccQuotUniformizerCoord_eq_one_iff_residue_eq_zero]
-  exact residue_eq_zero_iff_mem_maximalIdeal K r
 
-/-- Kernel criterion for the additive uniformizer-coordinate homomorphism:
-`r ↦ [1 + rϖ^n]` kills exactly the maximal ideal. -/
-theorem principalUnitsSuccQuotUniformizerCoordAddHom_eq_zero_iff_mem_maximalIdeal
-    (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] (ϖ : 𝒪[K]) (hϖ : Irreducible ϖ)
-    (n : Nat) (hn : 1 ≤ n) (r : 𝒪[K]) :
-    principalUnitsSuccQuotUniformizerCoordAddHom K ϖ hϖ n hn r = 0 ↔
-      r ∈ (𝓂[K] : Ideal 𝒪[K]) := by
-  constructor
-  · intro h
-    rw [principalUnitsSuccQuotUniformizerCoordAddHom_apply] at h
-    change Additive.ofMul (principalUnitsSuccQuotUniformizerCoord K ϖ hϖ n hn r) =
-      Additive.ofMul (1 : PrincipalUnitsSuccQuot K n) at h
-    have hcoord :
-        principalUnitsSuccQuotUniformizerCoord K ϖ hϖ n hn r = 1 :=
-      Additive.ofMul.injective h
-    exact (principalUnitsSuccQuotUniformizerCoord_eq_one_iff_mem_maximalIdeal
-      K ϖ hϖ n hn r).1 hcoord
-  · intro hr
-    have hcoord :
-        principalUnitsSuccQuotUniformizerCoord K ϖ hϖ n hn r = 1 :=
-      (principalUnitsSuccQuotUniformizerCoord_eq_one_iff_mem_maximalIdeal
-        K ϖ hϖ n hn r).2 hr
-    rw [principalUnitsSuccQuotUniformizerCoordAddHom_apply, hcoord]
-    rfl
 
-/-- Every successive principal-unit quotient has cardinality equal to that of the residue field. -/
-theorem principalUnitsSuccQuot_card_eq_residue
-    (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] (n : Nat) (hn : 1 ≤ n)
-    [Finite (PrincipalUnitsSuccQuot K n)] :
-    Nat.card (PrincipalUnitsSuccQuot K n) = Nat.card 𝓀[K] := by
-  exact Nat.card_congr
-    (Additive.ofMul.trans (principalUnitsSuccQuotAddEquivResidue K n hn).toEquiv)
+
+
+
+
+
+
+
+
+
+
+
 
 /-- Successive principal-unit quotients over a local field are finite. -/
 theorem finite_principalUnitsSuccQuot

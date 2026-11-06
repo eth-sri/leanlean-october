@@ -77,7 +77,7 @@ theorem row_pointwise_integrable (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : Convex
     rw [← mul_assoc]
     refine mul_le_mul_of_nonneg_left ?_ (mul_nonneg hCf (norm_nonneg _))
     exact Real.rpow_le_rpow (by positivity)
-      (by linarith [abs_nonneg p.1, abs_nonneg ξ.im]) hA
+      (by grind) hA
   have hcont : Continuous (fun p : ℝ × ℝ => K D u ξ ((Scales.wLine : ℂ) + (p.2 : ℂ) * Complex.I)
       ((Scales.zLine : ℂ) + (p.1 : ℂ) * Complex.I) Z) := by
     have := RowAnalyticContinuation.K_continuous_heights D u hu hq0 Z hZ ξ
@@ -87,7 +87,7 @@ theorem row_pointwise_integrable (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : Convex
       ((Scales.zLine : ℂ) + (q.2 : ℂ) * Complex.I) Z) (f := Prod.swap) this hsw
   have hz0 : (0 : ℝ) < Scales.zLine := by unfold Scales.zLine; norm_num
   have hxle : Scales.goodLine ≤ Scales.rightLine := by
-    unfold Scales.goodLine Scales.rightLine Scales.contourOffset; norm_num
+    grind
   have hx1' : ξ.re ≤ Scales.rightLine := hx1
   refine ⟨fun w hw => ?_, ?_⟩
   · have hsec := KernelWeightIntegration.section_integrable D Scales.zLine Scales.zLine Scales.wLine
@@ -95,8 +95,7 @@ theorem row_pointwise_integrable (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : Convex
       Scales.wLine le_rfl le_rfl le_rfl le_rfl Cf _ hcont hbd w.im
     have hw' : w = (Scales.wLine : ℂ) + (w.im : ℂ) * Complex.I := by
       apply Complex.ext <;> simp [hw]
-    rw [hw']
-    exact hsec
+    grind
   · obtain ⟨Cw, -, hCw⟩ := KernelWeightIntegration.nested_integral_bound D Scales.zLine Scales.zLine
       Scales.wLine Scales.wLine Scales.goodLine Scales.rightLine hz0 le_rfl le_rfl hxle 2 A_F (by norm_num) hA
     exact (hCw ξ hxg hx1' Scales.zLine Scales.wLine le_rfl le_rfl le_rfl le_rfl Cf hCf
@@ -131,11 +130,9 @@ theorem rect_decomp (f : ℂ → ℂ) (a b T : ℝ) (hab : a ≤ b) (hT : 0 ≤ 
       constructor
       · intro h
         rcases lt_abs.mp h with h | h
-        · right; exact h
-        · left; linarith
-      · rintro (h | h)
-        · exact lt_of_lt_of_le (by linarith) (neg_le_abs t)
-        · exact lt_of_lt_of_le h (le_abs_self t)
+        · grind
+        · grind
+      · grind
     rw [hc]
     exact (integral_add_compl measurableSet_Icc hint).symm
   have hIcc : ∀ g : ℝ → ℂ, ∫ t in Set.Icc (-T) T, g t = ∫ t in (-T)..T, g t := by
@@ -144,20 +141,7 @@ theorem rect_decomp (f : ℂ → ℂ) (a b T : ℝ) (hab : a ≤ b) (hT : 0 ≤ 
   have hI : Complex.I ≠ 0 := Complex.I_ne_zero
   have hpi : (Real.pi : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
   rw [hsplit, hIcc, hIcc, intervalIntegral.integral_symm a b]
-  simp only [one_mul, neg_mul, Complex.ofReal_neg] at hC ⊢
-  have hRL : Complex.I * (∫ t in (-T)..T, f ((b : ℂ) + (t : ℂ) * Complex.I)) =
-      Complex.I * (∫ t in (-T)..T, f ((a : ℂ) + (t : ℂ) * Complex.I)) +
-        ((∫ σ in a..b, f ((σ : ℂ) + (T : ℂ) * Complex.I)) -
-          ∫ σ in a..b, f ((σ : ℂ) + -((T : ℂ) * Complex.I))) := by
-    linear_combination hC
-  have hR : (∫ t in (-T)..T, f ((b : ℂ) + (t : ℂ) * Complex.I)) =
-      (∫ t in (-T)..T, f ((a : ℂ) + (t : ℂ) * Complex.I)) +
-        Complex.I⁻¹ * ((∫ σ in a..b, f ((σ : ℂ) + (T : ℂ) * Complex.I)) -
-          ∫ σ in a..b, f ((σ : ℂ) + -((T : ℂ) * Complex.I))) := by
-    rw [← inv_mul_cancel_left₀ hI (∫ t in (-T)..T, f ((b : ℂ) + (t : ℂ) * Complex.I)), hRL,
-      mul_add, inv_mul_cancel_left₀ hI]
-  rw [hR]
-  ring
+  grind
 
 theorem row_rectangle_deformation_decomp (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExponent D A_F)
     (hρ : HeightSpec D A_F ρ) :

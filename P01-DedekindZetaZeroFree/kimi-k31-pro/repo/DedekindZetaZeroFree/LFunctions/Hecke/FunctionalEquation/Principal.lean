@@ -45,7 +45,6 @@ theorem heckeFunctionalEquation_principal
     refine WeakFEPair.orderOneBound_poleClear P hk
       ⟨A, B, 2 / (Module.finrank ℚ F : ℝ), hA.le, hB, hp, ?_⟩
       (poleCleared P) (fun s => rfl) ε hε
-    intro t ht
-    exact htail t ht
+    simp_all
 
 end DedekindZetaZeroFree.Hecke

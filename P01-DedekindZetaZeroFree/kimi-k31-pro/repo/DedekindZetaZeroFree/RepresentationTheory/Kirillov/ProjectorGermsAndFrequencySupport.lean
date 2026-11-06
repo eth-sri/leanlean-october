@@ -153,7 +153,7 @@ theorem quotientMap_projector (u : ℤ) (t : w.adicCompletion F) (v : V) :
     change _ • rootCoinvariantsMk ρ (KPLocalSmoothRepresentation.upperRoot F ζ hζ w)
       (frequencyCharacter F w t) (ρ _ v) = _
     rw [rootCoinvariantsMk_equivariant]
-    simp only [frequencyCharacter_apply, ← neg_mul, smul_smul]
+    simp only [frequencyCharacter_apply, smul_smul]
     rw [← Circle.coe_mul, ← AddChar.map_add_eq_mul]
     simp [neg_mul, quotientMap]
   change quotientMap F ζ hζ w ρ t

@@ -73,7 +73,7 @@ private theorem minus_inv_rect (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexity
     rw [← Real.mul_rpow (by norm_num) hU0.le]
     exact Real.rpow_le_rpow (by linarith) hq2.le (by positivity)
   have hU3 : U ^ (ε / 2) * U ^ (ε / 2) = U ^ ε := by
-    rw [← Real.rpow_add hU0]; congr 1; ring
+    rw [← Real.rpow_add hU0]; grind
   rw [norm_mul]
   calc ‖(g ξ)⁻¹‖ * ‖(Detector.finiteEulerDeletionMask F
           (RawHeckeRows.rawDeletionSet (FixedData.rawFrequency D u))
@@ -82,7 +82,7 @@ private theorem minus_inv_rect (A ρ : ℝ) (hA : 0 ≤ A) (hconv : RawConvexity
         mul_le_mul hginv (hmask.trans (mul_le_mul_of_nonneg_left hq hC2.le))
           (norm_nonneg _) (by positivity)
     _ = C1 * (C2 * 2 ^ (ε / 2)) * (U ^ (ε / 2) * U ^ (ε / 2)) := by ring
-    _ = _ := by rw [hU3]
+    _ = _ := by grind
 
 private theorem rawKernel_norm_eq (u : Frequency D.recipe) (hq : 0 < frequencyNorm D.recipe u)
     (ξ : ℂ) (v y : ℝ) (p : ℝ × ℝ) (Z : ℝ) (hZ : 0 < Z) :
@@ -96,7 +96,7 @@ private theorem rawKernel_norm_eq (u : Frequency D.recipe) (hq : 0 < frequencyNo
   have hZc : (0 : ℝ) < Z := hZ
   have hqc : (0 : ℝ) < frequencyNorm D.recipe u := hq
   have hre : ∀ A B C X E R : ℂ, A * B * C * X * E * R = A * E * (B * C * X) * R := by
-    intro A B C X E R; ring
+    grind
   have hkey : ∀ A E X R : ℂ, ‖A * E * X * R‖ = ‖A‖ * ‖E‖ * ‖X‖ * ‖R‖ := by
     intro A E X R; simp only [norm_mul]
   rw [hre, hkey]
@@ -104,11 +104,11 @@ private theorem rawKernel_norm_eq (u : Frequency D.recipe) (hq : 0 < frequencyNo
   rw [Complex.norm_cpow_eq_rpow_re_of_pos hZc, Complex.norm_cpow_eq_rpow_re_of_pos hqc]
   simp only [Complex.add_re, Complex.sub_re, Complex.mul_re, Complex.ofReal_re,
     Complex.ofReal_im, Complex.I_re, Complex.I_im, Complex.add_im, Complex.sub_im,
-    Complex.mul_im, Complex.one_re, Complex.one_im, Complex.neg_re, Complex.neg_im,
-    Complex.natCast_re, Complex.natCast_im, Complex.ofReal_natCast]
-  simp only [zero_mul, mul_zero, sub_zero, add_zero, zero_add, zero_sub]
+    Complex.mul_im, Complex.one_re, Complex.one_im, Complex.neg_re, 
+    ]
+  simp only [zero_mul, mul_zero, sub_zero, add_zero, zero_add]
   unfold Scales.kernelExponent
-  try ring_nf
+  grind
 
 private theorem rawFactor_combine (u : Frequency D.recipe) (U : ℝ) (hU : 0 < U)
     (hq : frequencyNorm D.recipe u < 2 * U) (hq0 : 0 < frequencyNorm D.recipe u) (ε : ℝ)
@@ -133,8 +133,7 @@ private theorem rawFactor_combine (u : Frequency D.recipe) (U : ℝ) (hU : 0 < U
   have hU3 : U ^ ((11 / 25 : ℝ) + ε / 3) * U ^ (ε / 3) * U ^ (ε / 3) =
       U ^ ((11 / 25 : ℝ) + ε) := by
     rw [← Real.rpow_add hU, ← Real.rpow_add hU]
-    congr 1
-    ring
+    grind
   have hcorr' : ‖AllRowEuler.InitialSeparation.correctionProduct D.context
         (FixedData.rawFrequency D u) ξ w z‖ ≤ C3 * (2 ^ (ε / 3) * U ^ (ε / 3)) :=
     hcorr.trans (mul_le_mul_of_nonneg_left hq2 hC3)
@@ -151,7 +150,7 @@ private theorem rawFactor_combine (u : Frequency D.recipe) (U : ℝ) (hU : 0 < U
           hinv (norm_nonneg _) hB
     _ = (C1 * C2 * C3 * C4 * 2 ^ (ε / 3)) *
           (U ^ ((11 / 25 : ℝ) + ε / 3) * U ^ (ε / 3) * U ^ (ε / 3)) * P := by ring
-    _ = (C1 * C2 * C3 * C4 * 2 ^ (ε / 3)) * U ^ ((11 / 25 : ℝ) + ε) * P := by rw [hU3]
+    _ = (C1 * C2 * C3 * C4 * 2 ^ (ε / 3)) * U ^ ((11 / 25 : ℝ) + ε) * P := by grind
 
 private theorem rawKernel_majorant_aux (u : Frequency D.recipe) (U : ℝ) (hU0 : 0 < U)
     (hqU : U ≤ frequencyNorm D.recipe u) (ε A C : ℝ) (hC : 0 ≤ C) (ξ : ℂ) (Z : ℝ) (hZ : 0 < Z)
@@ -176,7 +175,7 @@ private theorem rawKernel_majorant_aux (u : Frequency D.recipe) (U : ℝ) (hU0 :
   rw [hsplit]
   have hW : 0 ≤ WeightConvolution.weightModulus D ξ Scales.zLine Scales.wLine p := by
     unfold WeightConvolution.weightModulus
-    exact norm_nonneg _
+    grind
   have hZp : 0 ≤ Z ^ (Scales.xExponent / 2 + ξ.re - 1 + Scales.smoothingExponent * Scales.zLine +
       Scales.yExponent * (Scales.wLine - 1)) := Real.rpow_nonneg hZ.le _
   have hUz : 0 ≤ U ^ (-Scales.zLine) := Real.rpow_nonneg hU0.le _
@@ -261,7 +260,7 @@ theorem rawKernel_majorant_right (A : ℝ) (hA : 0 ≤ A) (hconv : RawConvexityE
     (h2 u hu U hU2 hqU hqU2 p.2)
     (h3 u ξ _ _ hxg hw.ge hz.ge) hinv
   have := rawKernel_majorant_aux D u U hU0 hqU ε A _ (by positivity) ξ Z hZ p hR
-  rwa [hξ] at this
+  grind
 
 end
 

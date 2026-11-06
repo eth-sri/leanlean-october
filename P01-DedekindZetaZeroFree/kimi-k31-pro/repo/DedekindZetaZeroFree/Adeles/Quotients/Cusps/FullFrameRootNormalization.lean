@@ -32,7 +32,7 @@ private theorem finiteProjection_local_infinite (v : NumberField.InfinitePlace F
     rw [hn, map_one] at h
     convert congrArg (fun m => m i j) h using 1
     · rfl
-    · by_cases hij : i = j <;> subst_vars <;> simp [Matrix.one_apply, *] <;> rfl
+    · by_cases hij : i = j <;> subst_vars <;> simp [*] <;> rfl
   rw [he, map_one]
 
 theorem finiteProjection_archimedeanInsertion (a : KPSmoothActualFlowData.GInfinity F) :

@@ -357,59 +357,7 @@ theorem localizedCompletion_integerRing_eq_integralClosure
     rw [← hVb]
     exact hxv
 
-omit [NumberField K] [NumberField L] [IsGalois K L] in
-/-- The norm-defined integer ring of the chosen localization is the
-actual integral closure of the norm-defined completed-base integer ring. -/
-theorem localizedCompletionIsIntegralClosure
-    (hvK : vK.IsNontrivial)
-    (hvKna : IsNonarchimedean (vK : K → ℝ)) :
-    letI hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
-    letI : SMul K w.1.Completion := hK.toSMul
-    letI := AbsoluteValue.completionAlgebra vK w.1 w.2
-    letI : Valued vK.Completion ℝ≥0 :=
-      finitePlaceCompletionValued vK hvKna
-    letI : ValuativeRel vK.Completion :=
-      finitePlaceCompletionValuativeRel vK hvKna
-    letI : Valued (LocalizedCompletion vK w) ℝ≥0 :=
-      localizedCompletionFinitePlaceValued vK w hvKna
-    letI : ValuativeRel (LocalizedCompletion vK w) :=
-      localizedCompletionFinitePlaceValuativeRel vK w hvKna
-    IsIntegralClosure
-      𝒪[LocalizedCompletion vK w]
-      𝒪[vK.Completion]
-      (LocalizedCompletion vK w) := by
-  let hK := AbsoluteValue.extensionCompletionAlgebra (K := K) w.1
-  let : SMul K w.1.Completion := hK.toSMul
-  let := AbsoluteValue.completionAlgebra vK w.1 w.2
-  let : Valued vK.Completion ℝ≥0 :=
-    finitePlaceCompletionValued vK hvKna
-  let : ValuativeRel vK.Completion :=
-    finitePlaceCompletionValuativeRel vK hvKna
-  let : Valued (LocalizedCompletion vK w) ℝ≥0 :=
-    localizedCompletionFinitePlaceValued vK w hvKna
-  let : ValuativeRel (LocalizedCompletion vK w) :=
-    localizedCompletionFinitePlaceValuativeRel vK w hvKna
-  let h :=
-    localizedCompletion_integerRing_eq_integralClosure
-      vK w hvK hvKna
-  refine
-    { algebraMap_injective :=
-        (ValuativeRel.valuation
-          (LocalizedCompletion vK w)).integer.subtype_injective
-      isIntegral_iff := ?_ }
-  intro x
-  constructor
-  · intro hx
-    have hxO : x ∈ 𝒪[LocalizedCompletion vK w] := by
-      rw [h]
-      exact hx
-    exact ⟨⟨x, hxO⟩, rfl⟩
-  · rintro ⟨y, rfl⟩
-    change (y : LocalizedCompletion vK w) ∈
-      (integralClosure 𝒪[vK.Completion]
-        (LocalizedCompletion vK w)).toSubring
-    rw [← h]
-    exact y.property
+
 
 omit [NumberField K] [NumberField L] [FiniteDimensional K L]
     [IsGalois K L] in

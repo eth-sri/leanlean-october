@@ -204,7 +204,7 @@ private theorem recombination_phase_eq_traceCharacter
   have hx2 : u.2 = x.2 := rfl
   have hy2 : v.2 = y.2 := rfl
   rw [sLocalTraceCharacter_apply]
-  simp only [Circle.coe_mul, map_prod, Prod.fst_mul, Prod.snd_mul, Pi.mul_apply]
+  simp only [Circle.coe_mul, Prod.fst_mul, Prod.snd_mul, Pi.mul_apply]
   unfold PoissonS.tracePhase
   rw [← hx, ← hy, harch]
   change _ = Circle.coeHom (∏ w : InfinitePlace F, archTraceCharacter w (u.1 w * v.1 w)) *
@@ -384,8 +384,7 @@ theorem quadratic_operator_on_tensor (A : SArithmeticData F)
   have hg : (∏ v ∈ T, A.finiteGamma v
       (Units.map (algebraMap F (v.adicCompletion F)).toMonoidHom a)) =
       ∏ v : T, A.finiteGamma v.val
-        (Units.map (algebraMap F (v.val.adicCompletion F)).toMonoidHom a) := by
-    exact (Finset.prod_attach T _).symm
+        (Units.map (algebraMap F (v.val.adicCompletion F)).toMonoidHom a) := (Finset.prod_attach T _).symm
   rw [hg]
   rw [Real.sqrt_prod Finset.univ (fun v _ => norm_nonneg _)]
   simp only [Complex.ofReal_prod, Finset.prod_inv_distrib,

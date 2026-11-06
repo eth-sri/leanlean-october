@@ -238,23 +238,7 @@ theorem residueUnitHom_eq_one_iff (u : F.valuationSubringˣ) :
     apply Units.ext
     simpa using (higherPrincipalUnitGroup.mem_one_iff_residue_eq_one F u).1 hu
 
-/--
-Characterizes `higherPrincipalUnitGroup.residueUnitHom F u =
-higherPrincipalUnitGroup.residueUnitHom F v` by the equivalent condition `F.residueMap (u :
-F.valuationSubring) = F.residueMap (v : F.valuationSubring)`.
--/
-theorem residueUnitHom_eq_iff_residue_eq
-    (u v : F.valuationSubringˣ) :
-    higherPrincipalUnitGroup.residueUnitHom F u =
-        higherPrincipalUnitGroup.residueUnitHom F v ↔
-      F.residueMap (u : F.valuationSubring) =
-        F.residueMap (v : F.valuationSubring) := by
-  constructor
-  · intro h
-    exact congrArg (fun z : F.residueFieldˣ => (z : F.residueField)) h
-  · intro h
-    apply Units.ext
-    simpa using h
+
 end higherPrincipalUnitGroup
 
 end CompleteDVF

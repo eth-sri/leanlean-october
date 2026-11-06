@@ -201,7 +201,7 @@ private lemma vector_decomp {n : ℕ} (v : Space n) :
     v = ∑ i : Fin n, (v i) • EuclideanSpace.single i 1 := by
   apply PiLp.ext
   intro j
-  simp [EuclideanSpace.single, Pi.single_apply, Finset.sum_ite_eq']
+  simp [EuclideanSpace.single, Pi.single_apply]
 
 private lemma pull_deriv {n m : ℕ} {U : Set (Space m)} {V : Set (Space n)}
     (hU : IsOpen U) (hV : IsOpen V) (π : Space m → Space n)
@@ -306,7 +306,7 @@ private theorem vector_decomp' {d : ℕ} (v : Space d) :
     v = ∑ i : Fin d, v i • EuclideanSpace.single i 1 := by
   apply PiLp.ext
   intro j
-  simp [EuclideanSpace.single, Pi.single_apply, Finset.sum_ite_eq']
+  simp [EuclideanSpace.single, Pi.single_apply]
 
 theorem euclidean_multilinear_coordinate_expansion {d n : ℕ} (L : Space d [×n]→L[ℝ] ℂ) :
     L = ∑ a : Fin n → Fin d,
@@ -316,7 +316,7 @@ theorem euclidean_multilinear_coordinate_expansion {d n : ℕ} (L : Space d [×n
   ext v
   simp only [ContinuousMultilinearMap.sum_apply, ContinuousMultilinearMap.smulRight_apply,
     ContinuousMultilinearMap.compContinuousLinearMap_apply,
-    ContinuousMultilinearMap.mkPiRing_apply, one_smul]
+    ContinuousMultilinearMap.mkPiRing_apply]
   simp only [smul_eq_mul, mul_one]
   change L v = ∑ a : Fin n → Fin d, (∏ i, v i (a i)) • L (fun i => EuclideanSpace.single (a i) 1)
   conv_lhs => arg 2; rw [show v = fun i => ∑ j : Fin d, v i j • EuclideanSpace.single j 1 by

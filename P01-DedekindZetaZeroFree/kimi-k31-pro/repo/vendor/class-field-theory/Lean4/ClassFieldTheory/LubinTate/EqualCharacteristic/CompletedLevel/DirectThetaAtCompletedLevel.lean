@@ -381,21 +381,7 @@ theorem
     (equalCharacteristicDirectThetaSourceIterateInteger_hasEval F n i)
     (equalCharacteristicDirectThetaSeriesFrobeniusIterate u i)
 
-/-- The Frobenius theta iterate admits evaluation at the matching source iterate. -/
-theorem
-    equalCharacteristicDirectThetaFrobeniusIterateAtSourceIterate_hasEval
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n i : ℕ) :
-    PowerSeries.HasEval
-      (equalCharacteristicDirectThetaFrobeniusIterateAtSourceIterate
-        F u n i) := by
-  rw [equalCharacteristicDirectThetaFrobeniusIterateAtSourceIterate]
-  exact equalCharacteristicDirectThetaEvaluation_hasEval_of_hasSubst
-    F n (equalCharacteristicDirectThetaSourceIterateInteger F n i)
-    (equalCharacteristicDirectThetaSourceIterateInteger_hasEval F n i)
-    (equalCharacteristicDirectThetaSeriesFrobeniusIterate u i)
-    (equalCharacteristicDirectThetaSeriesFrobeniusIterate_hasSubst u i)
+
 
 private theorem
     equalCharacteristicDirectThetaSeriesFrobeniusIterate_coeff_one_isUnit
@@ -564,23 +550,7 @@ noncomputable def equalCharacteristicDirectThetaAtCompletedPrimitiveRoot
     (equalCharacteristicCompletedPrimitiveRootInteger_hasEval F n)
     (equalCharacteristicDirectThetaSeries u)
 
-/-- The coefficient expansion defining the direct theta value converges. -/
-theorem equalCharacteristicDirectThetaAtCompletedPrimitiveRoot_hasSum
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
-    HasSum
-      (fun m : ℕ ↦
-        equalCharacteristicCompletedLevelCoefficientHom F n
-            (PowerSeries.coeff m (equalCharacteristicDirectThetaSeries u)) *
-          equalCharacteristicCompletedPrimitiveRootInteger F n ^ m)
-      (equalCharacteristicDirectThetaAtCompletedPrimitiveRoot F u n) := by
-  rw [equalCharacteristicDirectThetaAtCompletedPrimitiveRoot,
-    equalCharacteristicCompletedLevelEvaluation, PowerSeries.coe_eval₂Hom]
-  exact PowerSeries.hasSum_eval₂
-    (equalCharacteristicDirectThetaCoefficientHom_continuous F n)
-    (equalCharacteristicCompletedPrimitiveRootInteger_hasEval F n)
-    (equalCharacteristicDirectThetaSeries u)
+
 
 private theorem
     equalCharacteristicDirectThetaFrobeniusIterateAtSourceIterate_zero
@@ -752,23 +722,7 @@ theorem equalCharacteristicDirectThetaAtCompletedPrimitiveRoot_not_torsion_pred
   rw [← equalCharacteristicDirectThetaFrobeniusIterateAtSourceIterate_norm,
     hvalue, norm_zero]
 
-/-- Hence `theta(lambda)` is a primitive target `uT`-division point at
-division level `n + 1`. -/
-theorem equalCharacteristicDirectThetaAtCompletedPrimitiveRoot_isPrimitive
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (u : F.residueField⟦X⟧ˣ) (n : ℕ) :
-    IsEqualCharacteristicLubinTateAmbientTorsion F
-        (equalCharacteristicDirectThetaTargetUniformizer F u n) (n + 1)
-        (equalCharacteristicDirectThetaAtCompletedPrimitiveRoot F u n :
-          equalCharacteristicCompletedLevelField F n) ∧
-      ¬ IsEqualCharacteristicLubinTateAmbientTorsion F
-        (equalCharacteristicDirectThetaTargetUniformizer F u n) n
-        (equalCharacteristicDirectThetaAtCompletedPrimitiveRoot F u n :
-          equalCharacteristicCompletedLevelField F n) :=
-  ⟨equalCharacteristicDirectThetaAtCompletedPrimitiveRoot_torsion F u n,
-    equalCharacteristicDirectThetaAtCompletedPrimitiveRoot_not_torsion_pred
-      F u n⟩
+
 
 end EqualCharacteristic
 end LubinTate

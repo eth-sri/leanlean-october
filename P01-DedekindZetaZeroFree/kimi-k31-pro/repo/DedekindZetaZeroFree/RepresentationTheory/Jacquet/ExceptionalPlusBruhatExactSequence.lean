@@ -74,7 +74,7 @@ theorem raw_modulus_binding (h : Torus F ζ hζ w) :
    (KPLocalInductionJacquetReciprocity.torusToBorel F ζ hζ w m hm h)
    (KubotaRankTwo.d (KPRankOneInduction.LocalField F w) (R.borel.coordinate h) 1) hp (by simp [KubotaRankTwo.coe_d])
  simp only [KubotaRankTwo.coe_d, Matrix.of_apply, Matrix.cons_val_zero, Matrix.cons_val_one,
-  Matrix.head_cons, Matrix.head_fin_const, div_one] at hd
+  ] at hd
  change (((KPRankOneInduction.halfModulus (deltaB F ζ hζ w)
   (KPLocalInductionJacquetReciprocity.torusToBorel F ζ hζ w m hm h) : ℝ≥0) : ℝ) : ℂ) = _
  rw [KPRankOneInduction.halfModulus_eq, hd]
@@ -320,11 +320,11 @@ private theorem raw_smooth :
     rfl
   · dsimp [A]
     simp [KubotaRankTwo.w, Matrix.inv_def,
-     Matrix.adjugate_fin_two, KPStandardLocalRootLifts.weylSwap, Units.val_mul,
+     Matrix.adjugate_fin_two, KPStandardLocalRootLifts.weylSwap, 
      Matrix.mul_apply, Fin.sum_univ_two]
   · dsimp [A]
     simp [KubotaRankTwo.w, Matrix.inv_def,
-     Matrix.adjugate_fin_two, KPStandardLocalRootLifts.weylSwap, Units.val_mul,
+     Matrix.adjugate_fin_two, KPStandardLocalRootLifts.weylSwap, 
      Matrix.mul_apply, Fin.sum_univ_two]⟩
 
 theorem weyl_comparison (h : Torus F ζ hζ w) :

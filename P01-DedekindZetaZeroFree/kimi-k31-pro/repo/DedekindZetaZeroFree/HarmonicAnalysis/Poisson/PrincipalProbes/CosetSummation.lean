@@ -22,8 +22,8 @@ theorem raw_originalTerm_support_finite
     apply Prod.ext
     · funext v
       simp only [NormalizedProbe.asLocalPoint, SArithmeticData.localToAdditive,
-        Prod.fst_mul, Prod.fst_inv, Pi.inv_apply, Units.val_inv_eq_inv_val,
-        NumberField.InfiniteAdeleRing, Pi.mul_apply, Pi.one_apply]
+        Prod.fst_inv, Pi.inv_apply, Units.val_inv_eq_inv_val,
+        NumberField.InfiniteAdeleRing]
       exact inv_mul_cancel₀ (Units.ne_zero _)
     · funext v
       simp [NormalizedProbe.asLocalPoint, SArithmeticData.localToAdditive]

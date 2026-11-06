@@ -41,7 +41,7 @@ theorem genericIdealEulerProduct
     intro I hI h0
     exact hI (by rw [h0, map_zero])
   have hsumm_nz_g : Summable (fun I : Odlyzko.NonzeroIdeal K => g (I : Ideal (𝓞 K))) :=
-    (hg.of_norm).comp_injective Subtype.val_injective
+    hg.of_norm.comp_injective Subtype.val_injective
   have hts : (∑' I : Odlyzko.NonzeroIdeal K, g (I : Ideal (𝓞 K))) =
       ∑' I : Ideal (𝓞 K), g I := tsum_subtype_eq_of_support_subset hsub
   have hhasSum_nz : HasSum (fun I : Odlyzko.NonzeroIdeal K => g (I : Ideal (𝓞 K)))

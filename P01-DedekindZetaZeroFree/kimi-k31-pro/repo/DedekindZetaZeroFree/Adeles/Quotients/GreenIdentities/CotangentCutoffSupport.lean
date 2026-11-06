@@ -121,7 +121,7 @@ theorem liftExtension_cutoff_tsupport (a : ShrunkChart F ζ hζ U R P H)
       rw [show cutoffLift η a ⟨y, hyomega⟩ = ((η.val (q a y) : ℝ) : ℂ) from rfl, h]
       simp
     have hLq' := hLq ⟨y, hyomega⟩
-    simp only [Subtype.coe_mk] at hLq'
+    simp only at hLq'
     exact subset_tsupport L (Function.mem_support.mpr (by rw [hLq']; exact hη))
   refine (closure_minimal hsub ?_).trans ?_
   · exact (isClosed_tsupport L).preimage continuous_labeledA_actual

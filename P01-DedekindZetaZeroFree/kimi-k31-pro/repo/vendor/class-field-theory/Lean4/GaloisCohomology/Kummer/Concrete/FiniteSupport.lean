@@ -91,19 +91,7 @@ theorem chosenFiniteSupportCoefficient_mem_set
   apply Finset.mem_image.2
   exact ⟨beta, Finset.mem_univ beta, rfl⟩
 
-/-- The finitely generated coefficient subgroup is a subgroup of the
-original radical subgroup `Delta`. -/
-theorem chosenFiniteSupportCoefficientSubgroup_le
-    (n : ℕ+) (Delta : Subgroup Kˣ) (T : Finset Omega)
-    (hT : (T : Set Omega) ⊆ kummerRootSet (K := K) (Omega := Omega) n Delta) :
-    chosenFiniteSupportCoefficientSubgroup (K := K) (Omega := Omega) n Delta T hT ≤ Delta := by
-  classical
-  rw [chosenFiniteSupportCoefficientSubgroup, Subgroup.closure_le]
-  intro a ha
-  change a ∈ chosenFiniteSupportCoefficientSet (K := K) (Omega := Omega) n Delta T hT at ha
-  rw [chosenFiniteSupportCoefficientSet] at ha
-  obtain ⟨beta, _, rfl⟩ := Finset.mem_image.1 ha
-  exact (chosenFiniteSupportCoefficient n Delta T hT beta).property
+
 
 /-- Each chosen coefficient belongs to the generated subgroup `Delta₀`. -/
 theorem chosenFiniteSupportCoefficient_mem_subgroup
@@ -115,39 +103,9 @@ theorem chosenFiniteSupportCoefficient_mem_subgroup
   apply Subgroup.subset_closure
   exact chosenFiniteSupportCoefficient_mem_set n Delta T hT beta
 
-/-- Every selected root is an `n`-th root of an actual element of the
-finite-support subgroup `Delta₀`. -/
-theorem finiteSupportRoot_pow_from_coefficientSubgroup
-    (n : ℕ+) (Delta : Subgroup Kˣ) (T : Finset Omega)
-    (hT : (T : Set Omega) ⊆ kummerRootSet (K := K) (Omega := Omega) n Delta)
-    (beta : T) :
-    ∃ a : chosenFiniteSupportCoefficientSubgroup (K := K) (Omega := Omega) n Delta T hT,
-      (beta.1 : Omega) ^ (n : ℕ) = algebraMap K Omega (a.1 : K) := by
-  let a : chosenFiniteSupportCoefficientSubgroup (K := K) (Omega := Omega) n Delta T hT :=
-    ⟨(chosenFiniteSupportCoefficient n Delta T hT beta).1,
-      chosenFiniteSupportCoefficient_mem_subgroup n Delta T hT beta⟩
-  refine ⟨a, ?_⟩
-  exact chosenFiniteSupportCoefficient_pow n Delta T hT beta
 
-/-- Complete finite-support data extracted from one element of
-`K(√[n]{Delta})`: finite roots generating the element, a concrete finite
-coefficient set, its generated subgroup `Delta₀ ≤ Delta`, and an
-`n`-th-power equation over `Delta₀` for every selected root. -/
-theorem exists_finiteKummerSupport
-    (n : ℕ+) (Delta : Subgroup Kˣ) {beta : Omega}
-    (hbeta : beta ∈ kummerRadicalExtension (K := K) (Omega := Omega) n Delta) :
-    ∃ (T : Finset Omega)
-      (hT : (T : Set Omega) ⊆ kummerRootSet (K := K) (Omega := Omega) n Delta),
-      beta ∈ IntermediateField.adjoin K (T : Set Omega) ∧
-      chosenFiniteSupportCoefficientSubgroup (K := K) (Omega := Omega) n Delta T hT ≤ Delta ∧
-      ∀ root : T,
-        ∃ a : chosenFiniteSupportCoefficientSubgroup
-            (K := K) (Omega := Omega) n Delta T hT,
-          (root.1 : Omega) ^ (n : ℕ) = algebraMap K Omega (a.1 : K) := by
-  obtain ⟨T, hT, hbetaT⟩ :=
-    exists_finset_kummerRootSet_of_mem_kummerRadicalExtension n Delta hbeta
-  refine ⟨T, hT, hbetaT, chosenFiniteSupportCoefficientSubgroup_le n Delta T hT, ?_⟩
-  exact finiteSupportRoot_pow_from_coefficientSubgroup n Delta T hT
+
+
 
 
 /-- Add all ambient `n`-th powers to the finite coefficient subgroup.  The
@@ -161,16 +119,7 @@ def admissibleFiniteSupportSubgroup
       chosenFiniteSupportCoefficientSubgroup (K := K) (Omega := Omega) n Delta.1 T hT,
     le_sup_left⟩
 
-/-- The admissible finite-support subgroup still lies in the original
-admissible subgroup `Delta`. -/
-theorem admissibleFiniteSupportSubgroup_le
-    (n : ℕ+) (Delta : KummerSubgroup K n) (T : Finset Omega)
-    (hT : (T : Set Omega) ⊆
-      kummerRootSet (K := K) (Omega := Omega) n Delta.1) :
-    (admissibleFiniteSupportSubgroup
-      (K := K) (Omega := Omega) n Delta T hT).1 ≤ Delta.1 := by
-  apply sup_le Delta.2
-  exact chosenFiniteSupportCoefficientSubgroup_le n Delta.1 T hT
+
 
 /-- The copy of `Kˣⁿ` inside the admissible finite-support subgroup. -/
 def finiteSupportNthPowersSubgroup
@@ -277,34 +226,9 @@ theorem finiteSupportKummerQuotientMk_eq_iff
           (K := K) (Omega := Omega) n Delta T hT)) b ↔ _
   exact QuotientGroup.eq_iff_div_mem
 
-/-- Every finite-support Kummer class has a representative. -/
-theorem finiteSupportKummerQuotientMk_surjective
-    (n : ℕ+) (Delta : KummerSubgroup K n) (T : Finset Omega)
-    (hT : (T : Set Omega) ⊆
-      kummerRootSet (K := K) (Omega := Omega) n Delta.1) :
-    Function.Surjective
-      (finiteSupportKummerQuotientMk
-        (K := K) (Omega := Omega) n Delta T hT) := by
-  change Function.Surjective
-    (QuotientGroup.mk'
-      (finiteSupportNthPowersSubgroup
-        (K := K) (Omega := Omega) n Delta T hT))
-  exact QuotientGroup.mk'_surjective _
 
-/-- Eliminate a finite-support Kummer quotient through canonical
-representatives. -/
-theorem finiteSupportKummerQuotient_inductionOn
-    (n : ℕ+) (Delta : KummerSubgroup K n) (T : Finset Omega)
-    (hT : (T : Set Omega) ⊆
-      kummerRootSet (K := K) (Omega := Omega) n Delta.1)
-    {motive : FiniteSupportKummerQuotient
-      (K := K) (Omega := Omega) n Delta T hT → Prop}
-    (q : FiniteSupportKummerQuotient
-      (K := K) (Omega := Omega) n Delta T hT)
-    (mk : ∀ a, motive (finiteSupportKummerQuotientMk
-      (K := K) (Omega := Omega) n Delta T hT a)) :
-    motive q := by
-  exact QuotientGroup.induction_on' q mk
+
+
 
 /-- Descend a homomorphism through the named finite-support quotient. -/
 def finiteSupportKummerQuotientLift {M : Type*} [Group M]
@@ -358,118 +282,15 @@ theorem finiteSupportRoot_pow_from_admissibleSubgroup
       (chosenFiniteSupportCoefficient_mem_subgroup n Delta.1 T hT root)⟩
   exact ⟨a, chosenFiniteSupportCoefficient_pow n Delta.1 T hT root⟩
 
-/-- The quotient map restricted to the finitely generated coefficient
-subgroup. -/
-def chosenFiniteSupportCoefficientToQuotient
-    (n : ℕ+) (Delta : KummerSubgroup K n) (T : Finset Omega)
-    (hT : (T : Set Omega) ⊆
-      kummerRootSet (K := K) (Omega := Omega) n Delta.1) :
-    chosenFiniteSupportCoefficientSubgroup (K := K) (Omega := Omega) n Delta.1 T hT →*
-      FiniteSupportKummerQuotient (K := K) (Omega := Omega) n Delta T hT :=
-  (finiteSupportKummerQuotientMk
-    (K := K) (Omega := Omega) n Delta T hT).comp
-    (Subgroup.inclusion le_sup_right)
 
-/-- The finite coefficient subgroup generates `Delta₀ / Kˣⁿ`. -/
-theorem chosenFiniteSupportCoefficientToQuotient_surjective
-    (n : ℕ+) (Delta : KummerSubgroup K n) (T : Finset Omega)
-    (hT : (T : Set Omega) ⊆
-      kummerRootSet (K := K) (Omega := Omega) n Delta.1) :
-    Function.Surjective
-      (chosenFiniteSupportCoefficientToQuotient
-        (K := K) (Omega := Omega) n Delta T hT) := by
-  intro q
-  obtain ⟨x, rfl⟩ := finiteSupportKummerQuotientMk_surjective
-    (K := K) (Omega := Omega) n Delta T hT q
-  obtain ⟨y, hy, z, hz, hyz⟩ := Subgroup.mem_sup.1 x.property
-  let zH : chosenFiniteSupportCoefficientSubgroup
-      (K := K) (Omega := Omega) n Delta.1 T hT := ⟨z, hz⟩
-  refine ⟨zH, ?_⟩
-  change finiteSupportKummerQuotientMk
-      (K := K) (Omega := Omega) n Delta T hT
-        ⟨z, Subgroup.mem_sup_right hz⟩ =
-    finiteSupportKummerQuotientMk
-      (K := K) (Omega := Omega) n Delta T hT x
-  symm
-  apply (finiteSupportKummerQuotientMk_eq_iff
-    (K := K) (Omega := Omega) n Delta T hT _ _).2
-  change (x.1 / z) ∈ unitNthPowersSubgroup K n
-  rw [← hyz]
-  simpa using hy
 
-/-- Every element of `Delta₀ / Kˣⁿ` is killed by `n`. -/
-theorem finiteSupportKummerQuotient_pow_eq_one
-    (n : ℕ+) (Delta : KummerSubgroup K n) (T : Finset Omega)
-    (hT : (T : Set Omega) ⊆
-      kummerRootSet (K := K) (Omega := Omega) n Delta.1)
-    (q : FiniteSupportKummerQuotient
-      (K := K) (Omega := Omega) n Delta T hT) :
-    q ^ (n : ℕ) = 1 := by
-  refine finiteSupportKummerQuotient_inductionOn
-    (K := K) (Omega := Omega)
-    (motive := fun q => q ^ (n : ℕ) = 1)
-    n Delta T hT q ?_
-  intro x
-  rw [← map_pow]
-  apply (finiteSupportKummerQuotientMk_eq_one_iff
-    (K := K) (Omega := Omega) n Delta T hT (x ^ (n : ℕ))).2
-  change (x.1 ^ (n : ℕ)) ∈ unitNthPowersSubgroup K n
-  exact ⟨x.1, rfl⟩
 
-/-- The restricted radical quotient `Delta₀ / Kˣⁿ` is finite: it is a
-finitely generated commutative group, generated by the selected
-coefficients, and every element is killed by `n`. -/
-theorem finiteSupportKummerQuotient_finite
-    (n : ℕ+) (Delta : KummerSubgroup K n) (T : Finset Omega)
-    (hT : (T : Set Omega) ⊆
-      kummerRootSet (K := K) (Omega := Omega) n Delta.1) :
-    Finite (FiniteSupportKummerQuotient
-      (K := K) (Omega := Omega) n Delta T hT) := by
-  let H := chosenFiniteSupportCoefficientSubgroup
-    (K := K) (Omega := Omega) n Delta.1 T hT
-  let Q := FiniteSupportKummerQuotient
-    (K := K) (Omega := Omega) n Delta T hT
-  let : Group.FG H := by
-    dsimp only [H, chosenFiniteSupportCoefficientSubgroup]
-    exact Group.closure_finset_fg
-      (chosenFiniteSupportCoefficientSet
-        (K := K) (Omega := Omega) n Delta.1 T hT)
-  let : Group.FG Q :=
-    Group.fg_of_surjective
-      (chosenFiniteSupportCoefficientToQuotient_surjective
-        (K := K) (Omega := Omega) n Delta T hT)
-  apply CommGroup.finite_of_fg_isMulTorsion
-  intro q
-  apply isOfFinOrder_iff_pow_eq_one.2
-  exact ⟨(n : ℕ), n.pos,
-    finiteSupportKummerQuotient_pow_eq_one n Delta T hT q⟩
 
-/-- Full admissible finite-support package extracted from one element of
-`K(√[n]{Delta})`.  In addition to the finite root support, it produces the
-admissible subgroup `Delta₀ ≤ Delta`, power equations over `Delta₀`, and the
-finiteness of `Delta₀ / Kˣⁿ`. -/
-theorem exists_admissibleFiniteKummerSupport
-    (n : ℕ+) (Delta : KummerSubgroup K n) {beta : Omega}
-    (hbeta : beta ∈
-      kummerRadicalExtension (K := K) (Omega := Omega) n Delta.1) :
-    ∃ (T : Finset Omega)
-      (hT : (T : Set Omega) ⊆
-        kummerRootSet (K := K) (Omega := Omega) n Delta.1),
-      beta ∈ IntermediateField.adjoin K (T : Set Omega) ∧
-      (admissibleFiniteSupportSubgroup
-        (K := K) (Omega := Omega) n Delta T hT).1 ≤ Delta.1 ∧
-      (∀ root : T,
-        ∃ a : (admissibleFiniteSupportSubgroup
-            (K := K) (Omega := Omega) n Delta T hT).1,
-          (root.1 : Omega) ^ (n : ℕ) = algebraMap K Omega (a.1 : K)) ∧
-      Finite (FiniteSupportKummerQuotient
-        (K := K) (Omega := Omega) n Delta T hT) := by
-  obtain ⟨T, hT, hbetaT⟩ :=
-    exists_finset_kummerRootSet_of_mem_kummerRadicalExtension n Delta.1 hbeta
-  refine ⟨T, hT, hbetaT,
-    admissibleFiniteSupportSubgroup_le n Delta T hT, ?_,
-    finiteSupportKummerQuotient_finite n Delta T hT⟩
-  exact finiteSupportRoot_pow_from_admissibleSubgroup n Delta T hT
+
+
+
+
+
 
 
 end KummerTheory

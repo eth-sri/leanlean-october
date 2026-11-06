@@ -30,14 +30,14 @@ lemma weyl_diagonal (a : Kˣ) :
       apply Units.ext
       ext i j
       fin_cases i <;> fin_cases j <;>
-        simp [w, Matrix.mul_apply, Fin.sum_univ_succ]
+        simp [w]
     simpa [w] using congrArg (fun g : GL2 K => (g : Matrix (Fin 2) (Fin 2) K)) (inv_eq_of_mul_eq_one_right h)
   change (((w K)⁻¹ : GL2 K) : Matrix (Fin 2) (Fin 2) K) * (d K a 1 : Matrix (Fin 2) (Fin 2) K) *
     (w K : Matrix (Fin 2) (Fin 2) K) * (GeneralLinearGroup.scalar (Fin 2) a⁻¹ : Matrix (Fin 2) (Fin 2) K) = _
   rw [hinv]
   ext i j
   fin_cases i <;> fin_cases j <;>
-    simp [d, w, hinv, GeneralLinearGroup.scalar, Matrix.mul_apply, Fin.sum_univ_succ]
+    simp [d, w, GeneralLinearGroup.scalar, Matrix.mul_apply, Fin.sum_univ_succ]
 variable [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
 variable {G H D : Type*} [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
   [Group H] [TopologicalSpace H] [IsTopologicalGroup H] [CommGroup D] [Finite D]

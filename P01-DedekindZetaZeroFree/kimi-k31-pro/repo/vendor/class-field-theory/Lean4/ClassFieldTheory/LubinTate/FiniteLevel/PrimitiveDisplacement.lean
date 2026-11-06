@@ -884,33 +884,7 @@ theorem
       hπ n
       (standardLubinTateUnitParameterChosenRepresentative F n a) k hk
 
-/-- The power-interval form of the finite-parameter displacement criterion,
-stated using its chosen representative. -/
-theorem
-    standardLubinTateUnitParameterToGal_displacement_addVal_ge_iff_chosenRepresentative_mem_of_pow_interval
-    (F : LocalField.{u, v} K) {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) (a : standardLubinTateUnitParameter F n) (k r : ℕ)
-    (hkpos : 1 ≤ k) (hk : k ≤ n + 1)
-    (hlower : Nat.card F.residueField ^ (k - 1) ≤ r)
-    (hupper : r < Nat.card F.residueField ^ k) :
-    (((r + 1 : ℕ) : ℕ∞) ≤
-        IsDiscreteValuationRing.addVal
-          (standardLubinTateLevelCompleteDVF hπ n).valuationSubring
-          (valuationSubringAutOfUniqueExtension
-              (standardLubinTateLevelCompleteDVF_hasUniqueDVFValuationExtension
-                hπ n)
-              (standardLubinTateUnitParameterToGal F hπ n a)
-              (standardLubinTatePrimitivePointInteger hπ n) -
-            standardLubinTatePrimitivePointInteger hπ n)) ↔
-      standardLubinTateUnitParameterChosenRepresentative F n a ∈
-        CompleteDVF.higherPrincipalUnitGroup F.toCompleteDVF k := by
-  rw [standardLubinTateUnitParameterToGal_apply_primitivePointInteger]
-  exact
-    standardLubinTatePrimitivePointIntegerAction_sub_self_addVal_ge_iff_mem_of_pow_interval
-      hπ n
-      (standardLubinTateUnitParameterChosenRepresentative F n a)
-      k r hkpos hk hlower hupper
+
 
 /-- Every nontrivial displacement of the primitive point by a level Galois
 automorphism has additive valuation at most `q ^ n`.

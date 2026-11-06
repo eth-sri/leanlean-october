@@ -3,6 +3,7 @@ module
 public import DedekindZetaZeroFree.RepresentationTheory.Smooth.Convolution.GaussChartBumps
 public import DedekindZetaZeroFree.Metaplectic.Torus.PolarizationSubgroupCharacters
 public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.CompactConjugationInvariance
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -19,7 +20,7 @@ theorem pgl_t2 : T2Space PGLComplex.Group := by
         ⋂ g : Matrix.GeneralLinearGroup (Fin 2) ℂ, {x | x * g = g * x} := by
       ext x
       simp [Subgroup.mem_center_iff]
-      exact ⟨fun h g => (h g).symm, fun h g => (h g).symm⟩
+      measurability
     rw [he]
     exact isClosed_iInter fun g => isClosed_eq (continuous_mul_const g) (continuous_const_mul g)
   letI : IsClosed (Subgroup.center (Matrix.GeneralLinearGroup (Fin 2) ℂ) :

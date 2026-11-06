@@ -71,7 +71,7 @@ private theorem ext_transport (x : M) :
   have h {V : Type} [NormedAddCommGroup V] [NormedSpace ℝ V] :
       (𝓘(ℝ, V)).toPartialEquiv = PartialEquiv.refl V := by ext <;> simp
   simp only [extChartAt, OpenPartialHomeomorph.extend, h, PartialEquiv.trans_refl,
-    chartAt_reindexChartedSpace]
+    ]
   rfl
 
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
@@ -127,7 +127,7 @@ private theorem manifold_transport [IsManifold 𝓘(ℝ, PGLComplex.ProductCoord
     (IsManifold.subset_maximalAtlas (n := ∞) (I := 𝓘(ℝ, PGLComplex.ProductCoordinates (NumberField.InfinitePlace F))) he)
     (IsManifold.subset_maximalAtlas (n := ∞) (I := 𝓘(ℝ, PGLComplex.ProductCoordinates (NumberField.InfinitePlace F))) hf)
   simp only [ModelWithCorners.extendCoordChange, modelWithCornersSelf_coe, Function.id_comp,
-    Function.comp_id, Set.range_id, Set.preimage_id_eq, Set.inter_univ] at hc ⊢
+    Set.range_id, Set.inter_univ] at hc ⊢
   have h : (𝓘(ℝ, PGLComplex.ProductCoordinates (NumberField.InfinitePlace F))).toPartialEquiv = PartialEquiv.refl _ := by ext <;> simp
   simp only [OpenPartialHomeomorph.extend, h, PartialEquiv.trans_refl] at hc
   change ContDiffOn ℝ ∞ (fun a => f (e.symm a)) (e.target ∩ e.symm ⁻¹' f.source) at hc
@@ -171,7 +171,7 @@ private theorem exponential_reindex :
     ext i j
     fin_cases i <;> fin_cases j <;> apply Complex.ext <;>
       simp [lieMatrix, PGLComplex.sl2Matrix, PGLComplex.productCoordinatesFlatten,
-        coordinateReindex, ContinuousLinearEquiv.piCongrLeft, LinearEquiv.piCongrLeft,
+        coordinateReindex, ContinuousLinearEquiv.piCongrLeft, 
         Equiv.piCongrLeft, Equiv.piCongrLeft', finProdFinEquiv] <;> rfl
   change Matrix.ProjGenLinGroup.mk ((NormedSpace.isUnit_exp (PGLComplex.sl2Matrix
     ((PGLComplex.productCoordinatesFlatten (NumberField.InfinitePlace F)).symm (coordinateReindex F a) w))).unit) = _

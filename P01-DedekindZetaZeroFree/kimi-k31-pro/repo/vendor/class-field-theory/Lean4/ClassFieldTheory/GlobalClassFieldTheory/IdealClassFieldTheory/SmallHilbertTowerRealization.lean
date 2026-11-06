@@ -61,12 +61,7 @@ fixed at the canonical principal-subgroup quotient. -/
 
 attribute [local instance] smallHilbertTowerIdeleClassCommGroup
 
-private theorem addSubgroup_comap_symm_eq_map
-    {A B : Type*} [AddGroup A] [AddGroup B]
-    (H : AddSubgroup A) (e : A ≃+ B) :
-    H.comap e.symm.toAddMonoidHom =
-      H.map e.toAddMonoidHom := by
-  exact (AddSubgroup.map_equiv_eq_comap_symm e H).symm
+
 
  noncomputable abbrev
     closedFiniteIndexNormAmbientCanonicalBaseAlgebra
@@ -147,18 +142,7 @@ noncomputable def smallHilbertTowerMiddleNormSubgroup :
       L.field
       (hfinite := smallHilbertTowerMiddleAbstractQuotientFinite K L)).symm.toAddMonoidHom
 
-/-- The typed `comap` endpoint is the canonical transported `map` endpoint.
-This uses only the generic additive equivalence law. -/
-theorem smallHilbertTowerMiddleNormSubgroup_eq_map :
-    smallHilbertTowerMiddleNormSubgroup K L =
-      (smallHilbertClassFieldNormSubgroup (K := E)).toAddSubgroup.map
-        (rationalAbstractFixedFieldIdeleClassEquivFixed
-          L.field
-          (hfinite := smallHilbertTowerMiddleAbstractQuotientFinite K L)).toAddMonoidHom := by
-  exact addSubgroup_comap_symm_eq_map
-    (smallHilbertClassFieldNormSubgroup (K := E)).toAddSubgroup
-    (rationalAbstractFixedFieldIdeleClassEquivFixed L.field
-      (hfinite := smallHilbertTowerMiddleAbstractQuotientFinite K L))
+
 
 @[reducible]
  noncomputable def
@@ -308,23 +292,7 @@ private theorem smallHilbertNormNeighborhoodEmbedding_algebraMap
     (AlgHom.fieldRange
       (smallHilbertNormNeighborhoodEmbedding K L))
 
-private theorem smallHilbertNormNeighborhoodEmbeddedField_le_base :
-    (smallHilbertNormNeighborhoodEmbeddedField K L).toSubgroup ≤
-      (smallHilbertNormNeighborhoodEmbeddedBase K L).toSubgroup := by
-  change
-    (AlgHom.fieldRange
-        (smallHilbertNormNeighborhoodEmbedding K L)).fixingSubgroup ≤
-      (AlgHom.fieldRange
-        ((smallHilbertNormNeighborhoodEmbedding K L).comp
-          (smallHilbertTowerNormAmbientAlgHom K L))).fixingSubgroup
-  apply
-    (AlgHom.fieldRange
-      ((smallHilbertNormNeighborhoodEmbedding K L).comp
-        (smallHilbertTowerNormAmbientAlgHom K L))).fixingSubgroup_le
-  exact
-    AlgHom.range_comp_le_range
-      (smallHilbertTowerNormAmbientAlgHom K L)
-      (smallHilbertNormNeighborhoodEmbedding K L)
+
 
  theorem smallHilbertNormNeighborhoodEmbeddedBase_eq :
     smallHilbertNormNeighborhoodEmbeddedBase K L = L.field := by
@@ -825,19 +793,7 @@ theorem secondSmallHilbertClassFieldSubextension_ideleClassNorm_range :
       (secondSmallHilbertClassFieldSubextension_abstractNormMap_eq_smallHilbertNormSubgroup
         K L)
 
-/-- Compatibility of the typed middle endpoint with the canonical endpoint
-used by the conjugation API. -/
-theorem smallHilbertTowerMiddleNormSubgroup_eq_conjugationEndpoint :
-    smallHilbertTowerMiddleNormSubgroup K L =
-      smallHilbertNormSubgroupInRationalClassFormation
-        (L.toFiniteGaloisExtension.toFiniteAbstractFieldExtension).field := by
-  have hField :
-      (L.toFiniteGaloisExtension.toFiniteAbstractFieldExtension).field.field =
-        L.field := by
-    rfl
-  unfold smallHilbertNormSubgroupInRationalClassFormation
-  cases hField
-  exact smallHilbertTowerMiddleNormSubgroup_eq_map K L
+
 
 end RationalFixedField
 
@@ -869,21 +825,7 @@ theorem smallHilbertTowerSecondSubextension_normSubgroup :
       (smallHilbertClassFieldNormAmbient K))
     (smallHilbertClassFieldSubextension K)
 
-/-- The actual two-stage small Hilbert tower, packaged as a finite
-Galois subextension of the original selected base subgroup. -/
-noncomputable def smallHilbertTowerGaloisRealization :
-    FiniteGaloisSubextension
-      (smallHilbertClassFieldBaseSubgroup K) :=
-  smallHilbertClassFieldGaloisSubextension
-    (numberFieldTowerFiniteAbstractField K
-      (smallHilbertClassFieldNormAmbient K))
-    (smallHilbertClassFieldSubextension K)
-    (smallHilbertTowerSecondSubextension K)
-    ((smallHilbertTowerSecondSubextension_normSubgroup K).trans
-      (smallHilbertTowerMiddleNormSubgroup_eq_conjugationEndpoint
-        (numberFieldTowerFiniteAbstractField K
-          (smallHilbertClassFieldNormAmbient K))
-        (smallHilbertClassFieldSubextension K)))
+
 
 end ActualTower
 

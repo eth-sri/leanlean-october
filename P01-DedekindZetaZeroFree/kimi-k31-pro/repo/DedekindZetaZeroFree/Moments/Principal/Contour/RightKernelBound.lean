@@ -18,7 +18,8 @@ variable {F : Type} [Field F] [NumberField F]
 variable {S : SArithmeticData F} {η : RayClassCharacter F S.modulus}
 variable (D : FixedData S η)
 
-private lemma re_line (v s : ℝ) : ((v : ℂ) + (s : ℂ) * Complex.I).re = v := by simp
+private lemma re_line (v s : ℝ) : ((v : ℂ) + (s : ℂ) * Complex.I).re = v := by
+  simp_all
 
 private lemma kern_norm (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 0 < Z) (ξ w z : ℂ) :
     ‖kern D u Z ξ w z‖ =
@@ -125,7 +126,7 @@ theorem kernel_weight_bound_strip (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 �
           Cc * WeightConvolution.weightModulus D ξ (1 / 6 + Scales.contourOffset) y (s, t) := by
   obtain ⟨Cc, hCc, h⟩ := kern_bound D u hu Z hZ
   refine ⟨Cc, hCc, fun ξ h1 h2 y hy1 hy2 s t => ?_⟩
-  exact h ξ _ _ h1 h2 (by rw [re_line]; exact hy1) (by rw [re_line]; exact hy2) (by exact re_line _ _)
+  exact h ξ _ _ h1 h2 (by rw [re_line]; exact hy1) (by rw [re_line]; exact hy2) (re_line _ _)
 
 theorem kernel_weight_bound (u : D.Row) (hu : u.u = 1) (Z : ℝ) (hZ : 2 ≤ Z) :
     ∃ Cc : ℝ, 0 ≤ Cc ∧ ∃ k : ℝ, 0 ≤ k ∧

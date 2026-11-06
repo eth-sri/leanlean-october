@@ -1,6 +1,7 @@
 module
 
 public import DedekindZetaZeroFree.Arithmetic.Units.RayUnitHalfOpenDomain
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -41,7 +42,7 @@ theorem rayUnitPeriodicLogHaarIntegral_translation
     intro g h
     change f ((g : RayCoset.logHyperplane F) + h) = f h
     rw [add_comm]
-    exact hperiodic g h
+    measurability
   let e : RayCoset.logHyperplane F ≃ᵐ RayCoset.logHyperplane F :=
     MeasurableEquiv.addRight v
   have he : MeasurePreserving e μ μ :=

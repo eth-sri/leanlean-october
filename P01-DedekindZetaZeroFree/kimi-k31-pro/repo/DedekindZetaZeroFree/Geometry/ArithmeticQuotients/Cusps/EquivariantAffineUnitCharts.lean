@@ -47,8 +47,7 @@ def toArch (F : Type*) [Field F] [NumberField F] (p : Coordinates F) :
 theorem toArch_meanHeight (F : Type*) [Field F] [NumberField F]
     (hd : 0 < KPCuspLogShape.dimension F) (p : Coordinates F) :
     KPCuspLogShape.meanHeight (KPCuspLogShape.dimension F) (toArch F p) = p.2 := by
-  have hb : ∑ i, (p.1.2 : Fin (KPCuspLogShape.dimension F) → ℝ) i = 0 := by
-    exact p.1.2.property
+  have hb : ∑ i, (p.1.2 : Fin (KPCuspLogShape.dimension F) → ℝ) i = 0 := p.1.2.property
   have hn : (KPCuspLogShape.dimension F : ℝ) ≠ 0 := by exact_mod_cast (Nat.ne_of_gt hd)
   simp only [KPCuspLogShape.meanHeight, toArch, Finset.sum_add_distrib, hb,
     add_zero, Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
@@ -581,8 +580,7 @@ theorem highCuspQuotientHomeomorph_formula (F : Type*) [Field F] [NumberField F]
     (p : {p : Coordinates F // T < p.2}) :
     ∃ z : KPCuspSiegel.highCusp F σ T,
       z.val = KPCuspSiegel.action F σ (toArch F p.val) ∧
-      highCuspQuotientHomeomorph F hd Γ q σ T (Quotient.mk _ p) = Quotient.mk _ z := by
-  exact ⟨highCoordinatesHomeomorph F hd σ T p, rfl, rfl⟩
+      highCuspQuotientHomeomorph F hd Γ q σ T (Quotient.mk _ p) = Quotient.mk _ z := ⟨highCoordinatesHomeomorph F hd σ T p, rfl, rfl⟩
 
 theorem positive_dimension (F : Type*) [Field F] [NumberField F]
     (hF : NumberField.InfinitePlace.nrRealPlaces F = 0) :
@@ -601,8 +599,7 @@ theorem highCuspQuotient_presentation (F : Type*) [Field F] [NumberField F]
       ∀ p : {p : Coordinates F // T < p.2},
         ∃ z : KPCuspSiegel.highCusp F σ T,
           z.val = KPCuspSiegel.action F σ (toArch F p.val) ∧
-          e (Quotient.mk _ p) = Quotient.mk _ z := by
-  exact ⟨highCuspQuotientHomeomorph F (positive_dimension F hF) Γ q σ T,
+          e (Quotient.mk _ p) = Quotient.mk _ z := ⟨highCuspQuotientHomeomorph F (positive_dimension F hF) Γ q σ T,
     highCuspQuotientHomeomorph_formula F (positive_dimension F hF) Γ q σ T⟩
 
 end KPCuspCharts

@@ -3,6 +3,7 @@ module
 public import ClassFieldTheory.AlgebraicNumberTheory.Galois.AbsoluteAbelianization
 public import ClassFieldTheory.GlobalClassFieldTheory.Reciprocity.InfiniteGlobalArtinDescent
 public import ClassFieldTheory.GlobalClassFieldTheory.Reciprocity.InfiniteGlobalArtinSurjectivity
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -66,9 +67,7 @@ theorem maximalAbelianGlobalArtin_finiteProjection
       globalArtinMonoidHom (K := K) (L := E) a := by
   let : NumberField E := NumberField.of_module_finite K E
   rw [maximalAbelianGlobalArtin_mk]
-  exact
-    restrictNormalHom_infiniteGlobalArtinMonoidHom
-      K (maximalAbelianExtension K) a E
+  norm_num
 
 /-- The maximal abelian global Artin homomorphism is surjective. -/
 theorem maximalAbelianGlobalArtin_surjective :

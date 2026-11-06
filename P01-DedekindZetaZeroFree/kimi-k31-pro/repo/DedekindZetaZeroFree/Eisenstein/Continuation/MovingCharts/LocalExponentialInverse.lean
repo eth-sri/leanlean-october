@@ -246,7 +246,7 @@ theorem moving_inverse_local (g : G F ζ hζ) (x : ArchCoordinates F)
     change f p = Q.groupLift t * (v : G F ζ hζ)
     rw [← hepk, he]
     simp only [KPContActualSphericalRightFieldIdentification.GroupChart.groupLift,
-      Subgroup.coe_mul, mul_assoc, hOf, c]
+      mul_assoc, hOf, c]
     rfl
   refine ⟨e,he,Q,W,hW,hWgx,Set.inter_subset_left,τ,?_,hτ0,hτcont,hτmap,?_,?_,hfactor⟩
   · intro p; simp only [τ, c, hOif]

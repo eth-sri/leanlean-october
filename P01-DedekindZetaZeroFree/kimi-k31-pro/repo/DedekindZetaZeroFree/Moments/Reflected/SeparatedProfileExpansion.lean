@@ -78,7 +78,7 @@ theorem separatedCoefficient_support (A : SArithmeticData F) (G : AllowedRecipe 
             ((Real.sqrt (A.exteriorNorm c) : ℂ) * (A.exteriorNorm T.n : ℂ))
       else 0 := by
   simp only [separatedCoefficient, rowMask, columnMask, quadraticPairing]
-  split_ifs <;> simp_all
+  grind
 
 theorem coordinate_summand_exact_squarefree (A : SArithmeticData F) (G : AllowedRecipe A)
     (U : UnitRepresentatives A) (σ : F →+* ℂ)
@@ -96,16 +96,9 @@ theorem coordinate_summand_exact_squarefree (A : SArithmeticData F) (G : Allowed
   rw [exact_coefficient_separated_squarefree A G U σ ψ hψ L hL hrec m D b v]
   obtain ⟨hc, hn⟩ := coordinate_class_norm A G U m D b v
     (rowClass A G D.d) (rowClass A G v.c) rfl rfl Z
-  simp only [summand, termClass, hc, hn]
+  measurability
 
-def FiniteProfiles (A : SArithmeticData F) (H : A.V → ℝ → ℂ) : Prop :=
-  ∃ (I : Finset A.V) (P : I → ℝ → ℂ),
-    (∀ v, ∃ i : I, H v = P i) ∧
-    (∀ i, ContDiff ℝ 2 (logProfile (P i))) ∧
-    ∀ (B : ℝ), 0 < B → ∃ K : ℝ, 0 < K ∧
-      ∀ (i : I) (j : ℕ), j ≤ 2 → ∀ x : ℝ, 0 < x →
-        ‖iteratedDeriv j (logProfile (P i)) (Real.log x)‖ ≤
-          K * min (Real.rpow x (1 / 8)) (Real.rpow x (-B))
+
 
 def FiniteProfileFamily (A : SArithmeticData F)
     (H : A.UnitQuotient → A.V → ℝ → ℂ) : Prop :=

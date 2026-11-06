@@ -46,8 +46,7 @@ theorem isOpen_ker_padicIntToZModPow
     ext x
     rw [Metric.mem_closedBall, dist_zero_right]
     exact (PadicInt.norm_le_pow_iff_mem_span_pow x n).symm
-  rw [heq]
-  exact hball
+  simp_all
 
 /-- Reduction of p-adic integers modulo `p^n` is continuous for the
 discrete topology on the target. -/

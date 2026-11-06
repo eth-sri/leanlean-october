@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Moduli.FiniteModulusIdealEncoding
 public import ClassFieldTheory.GlobalClassFieldTheory.GlobalClassFields.MathlibGlobalReciprocity
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -36,12 +37,11 @@ theorem normConductorFiniteSupport
           (K := K) (L := E)) p = 0 ↔
         p ∉ (GlobalClassFieldTheory.GlobalClassFields.ideleClassNormNarrowFiniteConductor
           (K := K) (L := E)).support := by
-    rw [Finsupp.mem_support_iff]
-    exact not_not.symm
+    norm_num
   rw [hmem,
     GlobalClassFieldTheory.GlobalClassFields.ideleClassNorm_narrowFiniteConductor_support_eq_ramifiedBaseFinitePlaces,
     mem_ramifiedBaseFinitePlaces_iff]
-  simp only [not_exists, not_and, not_not]
+  norm_num
 
 theorem narrowIdealModulus_normConductor
     (K E : Type) [Field K] [NumberField K] [Field E] [NumberField E]

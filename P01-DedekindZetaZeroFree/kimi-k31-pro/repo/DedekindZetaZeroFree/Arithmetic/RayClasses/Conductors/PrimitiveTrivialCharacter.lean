@@ -1,6 +1,7 @@
 module
 
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -23,12 +24,11 @@ theorem principal_primitive_top_character_exists
     · simp [hJ]
     simp [hI, hJ, Ideal.mul_eq_bot]
   · simp
-  · intro I
-    simp
+  · norm_num
   · intro α hα _ _
-    simp [Ideal.span_singleton_eq_bot, hα]
+    simp [hα]
   · intro I hI _
-    simp [hI]
+    grind
   · intro 𝔣 h𝔣
     exact absurd h𝔣 (not_lt_of_ge le_top)
 

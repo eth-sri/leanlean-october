@@ -111,8 +111,7 @@ lemma sourceSeminorm_bddAbove (j : ℕ) (φ : CompactPicture) :
         (φ.infinity_smooth.continuous_iteratedFDeriv (by simp)).norm.continuousOn
   have hfin : BddAbove (⋃ q ∈ Finset.range (j + 1),
       ((fun z : ℂ => ‖iteratedFDeriv ℝ q (φ ∘ projectiveOpen) z‖) '' Metric.closedBall 0 1 ∪
-       (fun z : ℂ => ‖iteratedFDeriv ℝ q (φ ∘ projectiveInfinity) z‖) '' Metric.closedBall 0 1)) := by
-    exact (Finset.finite_toSet _).bddAbove_biUnion.mpr (fun q _ => hb q)
+       (fun z : ℂ => ‖iteratedFDeriv ℝ q (φ ∘ projectiveInfinity) z‖) '' Metric.closedBall 0 1)) := (Finset.finite_toSet _).bddAbove_biUnion.mpr (fun q _ => hb q)
   apply BddAbove.union bddAbove_singleton
   apply hfin.mono
   rintro r ⟨q, hq, z, hz, hr⟩

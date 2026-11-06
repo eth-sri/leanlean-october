@@ -82,7 +82,7 @@ theorem exists_rayRepresentative_affine_multiplier
   have hyray := (integralNarrowRayCongruence F m hm y hy0).mp (hyunit ▸ hu)
   let γ : Fˣ := u / Units.mk0 x.val hx0
   have hγx : (γ : F) * x.val = (u : F) := by
-    simp [γ, div_eq_mul_inv, mul_assoc, hx0]
+    simp [γ, div_eq_mul_inv, hx0]
   have hA : (rayIdealFractionalIdeal F A (D.coset c).ideal_ne_bot :
       FractionalIdeal (𝓞 F)⁰ F) =
       FractionalIdeal.spanSingleton (𝓞 F)⁰ (γ : F) *

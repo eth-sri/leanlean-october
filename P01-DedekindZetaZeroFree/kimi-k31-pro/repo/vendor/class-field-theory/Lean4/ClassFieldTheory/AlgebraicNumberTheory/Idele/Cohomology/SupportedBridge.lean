@@ -404,50 +404,7 @@ noncomputable def relativePrincipalSupportedIntersectionAction
           _ = σ • (z : RelativeIdeleGroup K L) :=
             congrArg (fun a : RelativeIdeleGroup K L => σ • a) hx)
 
-omit [IsGalois K L] in
-/-- The `S`-unit description of the principal-supported intersection
-is equivariant for the genuine Galois actions. -/
-theorem
-    sUnitEquivRelativePrincipalSupportedIntersection_smul
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
-    (σ : L ≃ₐ[K] L)
-    (x :
-      SUnitGroup (K := L)
-        (finitePlacesAbove (K := K) (L := L) S)) :
-    letI :=
-      sUnitMulDistribMulAction K L
-        (finitePlacesAbove (K := K) (L := L) S)
-        (finitePlacesAbove_isGaloisStable
-          (K := K) (L := L) S)
-    letI :=
-      relativePrincipalSupportedIntersectionAction
-        (K := K) (L := L) S
-    sUnitEquivRelativePrincipalSupportedIntersection
-        (K := K) (L := L) S (σ • x) =
-      σ •
-        sUnitEquivRelativePrincipalSupportedIntersection
-          (K := K) (L := L) S x := by
-  let :=
-    sUnitMulDistribMulAction K L
-      (finitePlacesAbove (K := K) (L := L) S)
-      (finitePlacesAbove_isGaloisStable
-        (K := K) (L := L) S)
-  let :=
-    relativePrincipalSupportedIntersectionAction
-      (K := K) (L := L) S
-  apply Subtype.ext
-  apply Subtype.ext
-  change
-    RelativeIdeleGroup.principalIdele K L
-        (((σ • x :
-          SUnitGroup (K := L)
-            (finitePlacesAbove (K := K) (L := L) S)) :
-          Lˣ)) =
-      σ • RelativeIdeleGroup.principalIdele K L (x : Lˣ)
-  rw [sUnit_smul_coe]
-  exact
-    (RelativeIdeleGroup.smul_principalIdele
-      K L σ (x : Lˣ)).symm
+
 
 /-- The finite base places at which at least one extension prime is
 ramified. -/

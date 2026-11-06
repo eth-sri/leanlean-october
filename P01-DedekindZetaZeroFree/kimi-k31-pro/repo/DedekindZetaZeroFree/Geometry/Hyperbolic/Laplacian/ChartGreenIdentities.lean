@@ -79,8 +79,7 @@ private theorem coordinateDerivative_exp_mul (d : ℕ) (i : Fin d) (k : Fin 3)
   simpa [coordinateDerivative, coordinateVector, hk, Ne.symm hk, Pi.mul_def] using hh
 
 private theorem smooth_star (d : ℕ) (f : Space d → ℂ) (hf : ContDiff ℝ ∞ f) :
- ContDiff ℝ ∞ (fun p => star (f p)) := by
- exact (starL' ℝ : ℂ ≃L[ℝ] ℂ).contDiff.comp hf
+ ContDiff ℝ ∞ (fun p => star (f p)) := (starL' ℝ : ℂ ≃L[ℝ] ℂ).contDiff.comp hf
 
 private theorem deriv_mul (d : ℕ) (i : Fin d) (k : Fin 3) (f g : Space d → ℂ)
     (hf : Differentiable ℝ f) (hg : Differentiable ℝ g) (p : Space d) :
@@ -207,11 +206,11 @@ private theorem weighted_parts (d : ℕ) (i : Fin d) (k : Fin 3)
  (∫ p, w p * star (coordinateDerivative d i k f p) * g p) =
  (∫ p, star (f p) * (-w p * coordinateDerivative d i k g p - coordinateDerivative d i k w p * g p)) := by
  have hd : ∀ h : Space d → ℂ, ContDiff ℝ ∞ h → Differentiable ℝ h := fun h hh => hh.differentiable (by simp)
- have h1 := ((hw.mul ((smooth_star d f hf))).mul (smooth_coordinateDerivative d g hg i k)).continuous.integrable_of_hasCompactSupport (μ := volume)
+ have h1 := ((hw.mul (smooth_star d f hf)).mul (smooth_coordinateDerivative d g hg i k)).continuous.integrable_of_hasCompactSupport (μ := volume)
   ((compact_star d f hfc).mul_left.mul_right)
  have h2 := (((smooth_coordinateDerivative d (fun p => w p * star (f p)) (hw.mul (smooth_star d f hf)) i k)).mul hg).continuous.integrable_of_hasCompactSupport (μ := volume)
-  (hgc.mul_left)
- have h3 := ((hw.mul (smooth_star d f hf)).mul hg).continuous.integrable_of_hasCompactSupport (μ := volume) (hgc.mul_left)
+  hgc.mul_left
+ have h3 := ((hw.mul (smooth_star d f hf)).mul hg).continuous.integrable_of_hasCompactSupport (μ := volume) hgc.mul_left
  have ibp := integral_mul_fderiv_eq_neg_fderiv_mul_of_integrable
   (μ := volume) (v := coordinateVector d i k) h2 h1 h3
   (fun p hp => hd _ (hw.mul (smooth_star d f hf)) p) (fun p hp => hd _ hg p)
@@ -221,8 +220,8 @@ private theorem weighted_parts (d : ℕ) (i : Fin d) (k : Fin 3)
   funext p
   rw [deriv_mul d i k w (fun q => star (f q)) (hd _ hw) (hd _ (smooth_star d f hf)), deriv_star]
   ring
- have ha := ((hw.mul (smooth_star d (coordinateDerivative d i k f) (smooth_coordinateDerivative d f hf i k))).mul hg).continuous.integrable_of_hasCompactSupport (μ := volume) (hgc.mul_left)
- have hb := (((smooth_star d f hf).mul (smooth_coordinateDerivative d w hw i k)).mul hg).continuous.integrable_of_hasCompactSupport (μ := volume) (hgc.mul_left)
+ have ha := ((hw.mul (smooth_star d (coordinateDerivative d i k f) (smooth_coordinateDerivative d f hf i k))).mul hg).continuous.integrable_of_hasCompactSupport (μ := volume) hgc.mul_left
+ have hb := (((smooth_star d f hf).mul (smooth_coordinateDerivative d w hw i k)).mul hg).continuous.integrable_of_hasCompactSupport (μ := volume) hgc.mul_left
  change (∫ p, w p * star (f p) * coordinateDerivative d i k g p) =
   -(∫ p, coordinateDerivative d i k (fun q => w q * star (f q)) p * g p) at ibp
  rw [eq, integral_add ha hb] at ibp

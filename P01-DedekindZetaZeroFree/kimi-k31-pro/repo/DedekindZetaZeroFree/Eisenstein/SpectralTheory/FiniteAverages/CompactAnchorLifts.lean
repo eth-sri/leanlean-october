@@ -3,6 +3,7 @@ module
 public import DedekindZetaZeroFree.Metaplectic.Kubota.Complex.SU2CompactLift
 public import DedekindZetaZeroFree.Theta.Periods.Cusps.CompactRightNormalization
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.Residual.SectionContinuity
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -44,11 +45,7 @@ theorem exists_compact_raw_anchors {ι : Type*} [Fintype ι]
   refine ⟨f (i,q), ⟨(i,q),rfl⟩, ?_⟩
   simp only [f,map_mul,sectionTuple_insertion,show scalarQuotient F ζ hζ
     (amalgamation F ζ hζ (r i)) = c i from hr i]
-  congr 1
-  change KPSmoothActualFlowData.archimedeanInsertion F ζ hζ _ =
-    KPSmoothActualFlowData.archimedeanInsertion F ζ hζ _
-  congr 1
-  exact funext hq
+  measurability
 
 end DedekindZetaZeroFree.FourierContinuation.ResidualFiniteAnchor
 

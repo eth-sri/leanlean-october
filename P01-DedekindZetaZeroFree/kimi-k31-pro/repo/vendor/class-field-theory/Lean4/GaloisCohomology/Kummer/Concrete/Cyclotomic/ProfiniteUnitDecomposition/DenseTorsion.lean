@@ -44,11 +44,7 @@ theorem dense_torsion_pi_of_finite
   let y : (i : ι) → G i :=
     fun i => if hi : i ∈ S then x i else 1
   refine ⟨y, hSu ?_, ?_⟩
-  · intro i hi
-    have hiS : i ∈ S := hi
-    change (if _ : i ∈ S then x i else 1) ∈ u i
-    simp only [hiS, ↓reduceDIte]
-    exact (hu i hi).2
+  · grind
   · change IsOfFinOrder y
     let N := ∏ i ∈ S, orderOf (x i)
     have hN : 0 < N := by

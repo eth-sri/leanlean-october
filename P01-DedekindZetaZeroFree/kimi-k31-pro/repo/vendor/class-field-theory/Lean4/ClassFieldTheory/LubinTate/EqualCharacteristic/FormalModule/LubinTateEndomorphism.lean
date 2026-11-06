@@ -129,23 +129,7 @@ theorem equalCharacteristicCoefficientEnd_apply
       algebraMap F.residueField F.residueField⸨X⸩ a * x :=
   rfl
 
-/-- The distinguished endomorphism commutes with the genuine coefficient
-action. -/
-theorem equalCharacteristicLubinTatePiEnd_coefficient_mul
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (a : F.residueField) (x : F.residueField⸨X⸩) :
-    equalCharacteristicLubinTatePiEnd F
-        (algebraMap F.residueField F.residueField⸨X⸩ a * x) =
-      algebraMap F.residueField F.residueField⸨X⸩ a *
-        equalCharacteristicLubinTatePiEnd F x := by
-  let : Fintype F.residueField := Fintype.ofFinite F.residueField
-  rw [equalCharacteristicLubinTatePiEnd_apply,
-    equalCharacteristicLubinTatePiEnd_apply, mul_pow, ← map_pow]
-  have ha : a ^ Nat.card F.residueField = a := by
-    simpa only [Nat.card_eq_fintype_card] using FiniteField.pow_card a
-  rw [ha]
-  ring
+
 
 /-- The `i`-fold iterate of the distinguished Lubin--Tate endomorphism. -/
 noncomputable def equalCharacteristicLubinTatePiIterate
@@ -179,23 +163,7 @@ theorem equalCharacteristicLubinTatePiIterate_succ
   rw [pow_succ]
   rfl
 
-/-- Every iterate of `e` commutes with multiplication by a residue-field
-coefficient. -/
-theorem equalCharacteristicLubinTatePiIterate_coefficient_mul
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (i : ℕ) (a : F.residueField) (x : F.residueField⸨X⸩) :
-    equalCharacteristicLubinTatePiIterate F i
-        (algebraMap F.residueField F.residueField⸨X⸩ a * x) =
-      algebraMap F.residueField F.residueField⸨X⸩ a *
-        equalCharacteristicLubinTatePiIterate F i x := by
-  induction i generalizing x with
-  | zero => simp
-  | succ i ih =>
-      rw [equalCharacteristicLubinTatePiIterate_succ,
-        equalCharacteristicLubinTatePiEnd_coefficient_mul,
-        ih,
-        equalCharacteristicLubinTatePiIterate_succ]
+
 
 /-- The genuine finite-level bracket
 `[a]_<n> = ∑_{i<n} a_i e^i`. -/

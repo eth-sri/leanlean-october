@@ -44,7 +44,7 @@ theorem fixedRow_initial_eq_all (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 2 �
   have e : rowIntegral D (rowFactor D) u 4 4 2 Z =
       LowRowKernelDefinitions.triple D u 4 4 2 Z := rfl
   rw [e, triple_eq_rowIntegral]
-  exact h
+  grind
 
 theorem Lpsi_line_fixed :
     ∃ A : ℝ, 0 ≤ A ∧ ∀ u : D.Row, u.u ≠ 1 →
@@ -70,24 +70,23 @@ theorem Lpsi_line_fixed :
   rw [← hs]
   have hsre : s.re = 3 / 25 := by rw [hs]; simp
   have hsim : s.im = t := by rw [hs]; simp
-  have hg_eq := ConvexBridge.entire_eq_mask_mul D u hnpP hg hgs s (by rw [hsre]; norm_num)
+  have hg_eq := ConvexBridge.entire_eq_mask_mul D u hnpP hg hgs s (by grind)
   have hN_eq := nonprincipalHeckeEntireContinuation_eq F hF (D.inducers u).plus.conductor
       (D.inducers u).plus.conductor_ne_zero (D.inducers u).plus.character
-      (RowHeckeBridge.hecke D.recipe.A (D.inducers u).plus hnpP) s (by rw [hsre]; norm_num)
+      (RowHeckeBridge.hecke D.recipe.A (D.inducers u).plus hnpP) s (by grind)
   have hmask := (RowHeckeBridge.mask_norm_le D u (D.inducers u).plus (3 / 25) (by norm_num) s
-      (by rw [hsre])).1
+      (by grind)).1
   have hprod := (heb u hq1).1
   have hNb := hnorm (D.inducers u).plus.conductor (D.inducers u).plus.conductor_ne_zero
       (D.inducers u).plus.character (D.inducers u).plus.primitive hnpP
-      (RowHeckeBridge.hecke D.recipe.A (D.inducers u).plus hnpP) s (by rw [hsre]; norm_num)
-      (by rw [hsre]; norm_num)
+      (RowHeckeBridge.hecke D.recipe.A (D.inducers u).plus hnpP) s (by grind)
+      (by grind)
   rw [hsre, hsim] at hNb
   have hnorm_eq : ‖g s‖ = ‖Detector.finiteEulerDeletionMask F (RowHeckeBridge.deletionSet D u)
         (fun v => (D.inducers u).plus.character v.asIdeal) s‖ *
         ‖nonprincipalHeckeEntireContinuation F (D.inducers u).plus.conductor
           (D.inducers u).plus.character
-          (RowHeckeBridge.hecke D.recipe.A (D.inducers u).plus hnpP) s‖ := by
-    exact (congrArg norm hg_eq).trans ((norm_mul _ _).trans
+          (RowHeckeBridge.hecke D.recipe.A (D.inducers u).plus hnpP) s‖ := (congrArg norm hg_eq).trans ((norm_mul _ _).trans
         (congrArg (fun x => _ * ‖x‖) hN_eq.symm))
   rw [hnorm_eq]
   have hY : (0 : ℝ) ≤ (2 + |t|) ^ A_F := by positivity
@@ -101,7 +100,7 @@ theorem Lpsi_line_fixed :
         (1 + (Ideal.absNorm (D.inducers u).plus.conductor : ℝ)) ^ ((1 + 1 / 10 - 3 / 25 : ℝ) / 2) *
           (2 + |t|) ^ A_F) :=
         mul_le_mul hm2 hNb (norm_nonneg _) (by positivity)
-    _ ≤ _ := by nlinarith [hY, hbig]
+    _ ≤ _ := by grind
 
 theorem rowFactor_right_fixed :
     ∃ A : ℝ, 0 ≤ A ∧ ∀ u : D.Row, u.u ≠ 1 →
@@ -119,20 +118,18 @@ theorem rowFactor_right_fixed :
   refine ⟨C1 * C2 * C4 * (C3 * D.q u ^ (1 : ℝ)), by positivity, ?_⟩
   intro ξ w z hξ hw hz
   have hy : Scales.wLine = 3 / 25 := by unfold Scales.wLine; norm_num
-  have hw0 : 0 < w.re := by rw [hw, hy]; norm_num
+  have hw0 : 0 < w.re := by grind
   have e : D.Lpsi u w = g w :=
     (RowAnalyticContinuation.entire_eq_Lpsi D u hu hg hgeq w hw0).symm
   have hwe : w = ((Scales.wLine : ℝ) : ℂ) + (w.im : ℂ) * Complex.I := by
     apply Complex.ext <;> simp [hw]
   have key := h2 g hg hgeq w.im
   have hLb : ‖D.Lpsi u w‖ ≤ C2 * (2 + |w.im|) ^ A := by
-    calc ‖D.Lpsi u w‖ = ‖g (((Scales.wLine : ℝ) : ℂ) + (w.im : ℂ) * Complex.I)‖ := by
-          rw [e, ← hwe]
-      _ ≤ C2 * (2 + |w.im|) ^ A := by rw [hy]; exact key
+    grind
   have hz' : ‖D.zetaSCont (6 * z)‖ ≤ C1 := h1 z hz
-  have hinv : ‖(D.Llam u ξ)⁻¹‖ ≤ C4 := h4 u ξ (by rw [hξ])
+  have hinv : ‖(D.Llam u ξ)⁻¹‖ ≤ C4 := h4 u ξ (by grind)
   have hHu : ‖EulerDomain.Hu D u ξ w z‖ ≤ C3 * D.q u ^ (1 : ℝ) := by
-    refine h3 u ξ w z ?_ (by rw [hw]) (by rw [hz])
+    refine h3 u ξ w z ?_ (by grind) (by grind)
     rw [hξ, Scales.rightLine_eq]
     unfold Scales.goodLine
     norm_num
@@ -151,7 +148,7 @@ private theorem weight_dom' (D : FixedData S η) (ξ : ℂ) (v y : ℝ) (Cc A : 
     x ≤ Cc * WeightConvolution.weightModulus D ξ v y p * (2 + |p.1| + |p.2| + |ξ.im|) ^ A := by
   have hW : 0 ≤ WeightConvolution.weightModulus D ξ v y p := by
     unfold WeightConvolution.weightModulus
-    exact norm_nonneg _
+    grind
   have h0 := abs_nonneg p.1
   have h0' := abs_nonneg p.2
   have h0'' := abs_nonneg ξ.im
@@ -179,7 +176,7 @@ theorem K_maj_fixed (u : D.Row) (hq0 : 0 < D.q u) (A CR : ℝ)
   rw [him2] at hRp
   have hW : 0 ≤ WeightConvolution.weightModulus D ξ Scales.zLine Scales.wLine p := by
     unfold WeightConvolution.weightModulus
-    exact norm_nonneg _
+    grind
   have hZp : 0 ≤ Z ^ (Scales.kernelExponent Scales.rightLine Scales.wLine Scales.zLine) := Real.rpow_nonneg hZ.le _
   have hqz : 0 ≤ D.q u ^ (-Scales.zLine) := (Real.rpow_pos_of_pos hq0 _).le
   have hn := RowKernelGrowth.K_norm_eq D u hq0 ξ Scales.zLine Scales.wLine p Z hZ
@@ -213,7 +210,7 @@ theorem wz_decay_fixed (B : ℝ) (hB : 0 < B) (u : D.Row) (hu : u.u ≠ 1) :
   have hre : ξ0.re = Scales.rightLine := by rw [← hξ0]; simp
   have him : ξ0.im = t := by rw [← hξ0]; simp
   have hne : D.Llam u ξ0 ≠ 0 :=
-    RightHeckeBounds.Llam_ne_zero_of_one_lt D u ξ0 (by rw [hre]; exact hx1)
+    RightHeckeBounds.Llam_ne_zero_of_one_lt D u ξ0 (by grind)
   have hxg : Scales.goodLine - EulerDomain.pad ≤
       ξ0.re := by
     rw [hre, Scales.rightLine_eq]
@@ -285,13 +282,7 @@ theorem fixedRow_low_bound_all (u : D.Row) (hu : u.u ≠ 1) :
   have hv := vertical_norm_le' (fun ξ => wzIntegral D u ξ Scales.wLine Scales.zLine Z) Scales.rightLine
     (C * Z ^ (Scales.kernelExponent Scales.rightLine Scales.wLine Scales.zLine)) 2 (by norm_num)
     (fun t => h t Z hZ0)
-  have hpi : (0 : ℝ) ≤ (2 * Real.pi)⁻¹ := by positivity
-  have hnn : 0 ≤ (2 * Real.pi)⁻¹ * (C * ∫ t : ℝ, (1 + |t|) ^ (-(2 : ℝ))) := by positivity
-  calc _ ≤ (2 * Real.pi)⁻¹ * (C * Z ^ (Scales.kernelExponent Scales.rightLine Scales.wLine Scales.zLine) *
-        ∫ t : ℝ, (1 + |t|) ^ (-(2 : ℝ))) := hv
-    _ = ((2 * Real.pi)⁻¹ * (C * ∫ t : ℝ, (1 + |t|) ^ (-(2 : ℝ)))) *
-        Z ^ (Scales.kernelExponent Scales.rightLine Scales.wLine Scales.zLine) := by ring
-    _ ≤ _ := by nlinarith [hZp, hnn]
+  grind
 
 theorem fixedRow_initial_eq (u : D.Row) (hu : u.u ≠ 1) (Z : ℝ) (hZ : 2 ≤ Z) :
     J D {u} 4 4 2 Z =

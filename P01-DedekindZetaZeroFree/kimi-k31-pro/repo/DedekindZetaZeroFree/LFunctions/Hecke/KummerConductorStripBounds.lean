@@ -78,7 +78,7 @@ theorem deleted_exterior_continuation_eq
           · subst hbot
             simp only [Detector.deletedPrimitiveIdealCoefficient]
             by_cases hex : ∃ v ∈ D, (⊥ : Ideal (𝓞 F)) ≤ v.asIdeal
-            · simp [hex]
+            · simp
             · simp only [hex, if_false]
               exact (ν.character.eq_zero_iff' ⊥).mpr (Or.inl rfl)
           · have hsup : I ⊔ A.cS ≠ ⊤ := fun h => hn ⟨hbot, h⟩

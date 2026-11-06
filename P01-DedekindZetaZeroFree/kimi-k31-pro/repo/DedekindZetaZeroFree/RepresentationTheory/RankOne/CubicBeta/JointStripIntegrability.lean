@@ -59,7 +59,7 @@ theorem normalizedAbs_continuousAt_ne_zero
     have := hy
     simp [hy0] at this
     exact hv this.symm
-  simp only [if_neg hx, if_neg hy0, hy]
+  simp only [if_neg hy0, hy]
 
 theorem normalizedAbs_measurable
     (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]
@@ -552,7 +552,7 @@ theorem integrable_in_joint_strip
     intro n x hx
     have hx0 : x ≠ 0 := by intro he; have hz := hx.1; rw [he, hA0] at hz; exact (zpow_ne_zero _ hq0.ne') hz.symm
     rw [hnorm x hx0, hchar x hx0 _ hx.1, hx.1, hx.2]
-    simp only [neg_neg, zpow_natCast, Real.one_rpow, mul_one]
+    simp only [neg_neg, zpow_natCast]
     exact le_of_eq (by simp [div_eq_mul_inv, mul_comm])
   have hiInf : IntegrableOn W (⋃ n, Sinf n) μ := by
     apply shell_geometric_integrable μ W hW Sinf hmInf
@@ -640,7 +640,7 @@ theorem integrable_in_joint_strip
     by_cases hx1 : x = 1
     · subst x
       have hsne : s ≠ 0 := by intro he; simp [he] at hs0
-      simp [W, I, A, KPCubicHaar.abs, Complex.zero_cpow (neg_ne_zero.mpr hsne), hsne]
+      simp [W, I, A, KPCubicHaar.abs, Complex.zero_cpow (neg_ne_zero.mpr hsne)]
     · exact False.elim (hx (hcover x hx0 hx1)))
   apply (integrable_withDensity_iff_integrable_smul' (multiplicative_density_measurable K)
     (Filter.Eventually.of_forall (fun x => ENNReal.ofReal_lt_top))).mpr

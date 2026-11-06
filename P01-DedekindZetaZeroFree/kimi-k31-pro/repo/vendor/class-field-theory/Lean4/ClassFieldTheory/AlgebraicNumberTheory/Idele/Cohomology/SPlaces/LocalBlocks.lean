@@ -242,27 +242,6 @@ theorem
           (K := K) (L := L) v.1 u
           σ (z (Sum.inr v))
 
-/-- Reassociate the displayed unrestricted factors of
-`RelativeIdeleSPlaceFactors` as the finite dependent family above. -/
-noncomputable def relativeUnrestrictedSPlaceFactorsEquivProd
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
-    RelativeUnrestrictedSPlaceFactors
-        (K := K) (L := L) S ≃*
-      (∀ v : InfinitePlace K,
-          (v.Completion ⊗[K] L)ˣ) ×
-        (∀ v :
-          {v : HeightOneSpectrum (𝓞 K) // v ∈ S},
-          (v.1.adicCompletion K ⊗[K] L)ˣ) where
-  toFun z :=
-    ⟨fun v => z (Sum.inl v),
-      fun v => z (Sum.inr v)⟩
-  invFun z
-    | Sum.inl v => z.1 v
-    | Sum.inr v => z.2 v
-  left_inv z := by
-    funext i
-    cases i <;> rfl
-  right_inv _ := rfl
-  map_mul' _ _ := rfl
+
 
 end

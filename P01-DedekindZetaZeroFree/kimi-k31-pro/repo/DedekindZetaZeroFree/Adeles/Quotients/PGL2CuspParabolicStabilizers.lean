@@ -242,7 +242,7 @@ theorem latticeAut_eq (M : Submodule R (Plane F)) :
       Matrix.ProjGenLinGroup.mk A = g ∧ ∀ v, v ∈ M ↔ (A : Matrix (Fin 2) (Fin 2) F) *ᵥ v ∈ M} =
       ((matrixAut M).map Matrix.ProjGenLinGroup.mk : Set (ProjectiveGroup F)) := by
     ext g
-    simp only [Set.mem_setOf_eq, Subgroup.mem_map]
+    simp only [Set.mem_setOf_eq]
     constructor
     · rintro ⟨A, rfl, hA⟩; exact ⟨A, hA, rfl⟩
     · rintro ⟨A, hA, rfl⟩; exact ⟨A, rfl, hA⟩
@@ -307,7 +307,7 @@ def conjEnd (B : Matrix.GeneralLinearGroup (Fin 2) F) : Module.End F (Plane F) :
     (rootEnd.comp (Matrix.GeneralLinearGroup.toLin B⁻¹ : Module.End F (Plane F)))
 theorem rootEnd_formula (v : Plane F) : rootEnd v = ![v 1, 0] := by
   ext i
-  fin_cases i <;> simp [rootEnd, Matrix.mulVecLin_apply, Matrix.mulVec, dotProduct, Fin.sum_univ_two]
+  fin_cases i <;> simp [rootEnd, Matrix.mulVec, dotProduct, Fin.sum_univ_two]
 theorem rootEnd_square (v : Plane F) : rootEnd (rootEnd v) = 0 := by
   simp [rootEnd_formula]
 theorem inv_mulVec (B : Matrix.GeneralLinearGroup (Fin 2) F) (v : Plane F) :
@@ -524,7 +524,7 @@ def PreservesUpToHomothety (M : Submodule (Order F) (Vec F)) (g : PGL2 F) : Prop
       Set.image (fun v : Vec F => (a : F) • v) (M : Set (Vec F))
 
 def infinity : Cusp F :=
-  Projectivization.mk F ![1, 0] (by simp [Matrix.cons_val_zero])
+  Projectivization.mk F ![1, 0] (by simp)
 
 def conjugatedStabilizer (Γ : Subgroup (PGL2 F)) (q : Cusp F) (σ : PGL2 F) :
     Subgroup (PGL2 F) :=
@@ -562,7 +562,7 @@ theorem mem_projectiveAutomorphisms_iff (M : Submodule (Order F) (Vec F)) (g : P
         ∀ v : Vec F, v ∈ M ↔ (A : Matrix (Fin 2) (Fin 2) F) *ᵥ v ∈ M} =
       ((integralMatrixAutomorphisms F M).map Matrix.ProjGenLinGroup.mk : Set (PGL2 F)) := by
     ext g
-    simp only [Set.mem_setOf_eq, Subgroup.mem_map]
+    simp only [Set.mem_setOf_eq]
     constructor
     · rintro ⟨A, rfl, hA⟩; exact ⟨A, hA, rfl⟩
     · rintro ⟨A, hA, rfl⟩; exact ⟨A, rfl, hA⟩
@@ -623,7 +623,7 @@ theorem preservesUpToHomothety_iff_mem_projectiveAutomorphisms
       refine ⟨(↑A⁻¹ : Matrix (Fin 2) (Fin 2) F) *ᵥ v, ?_, ?_⟩
       · apply (hp _).mpr
         simpa [Matrix.mulVec_mulVec, ← Units.val_mul] using hv
-      · simp [Matrix.mulVec_mulVec, ← Units.val_mul]
+      · simp [Matrix.mulVec_mulVec]
 
 theorem subgroup_le_projectiveAutomorphisms
     (M : Submodule (Order F) (Vec F)) (Γ : Subgroup (PGL2 F))

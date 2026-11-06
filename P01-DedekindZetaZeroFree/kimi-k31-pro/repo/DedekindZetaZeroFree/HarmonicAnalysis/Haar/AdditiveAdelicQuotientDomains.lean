@@ -647,7 +647,7 @@ private theorem quotientProbability_integral_compact (F : Type) [Field F] [Numbe
       (RestrictedProduct.inclusion (fun v => v.adicCompletion F) A h ∘
         RestrictedProduct.homeoTop) '' Set.univ := by
     ext x
-    simp only [Set.image_univ, Set.mem_range]
+    simp only [Set.image_univ]
     constructor
     · intro hx
       refine ⟨fun v => ⟨x v, hx v⟩, ?_⟩

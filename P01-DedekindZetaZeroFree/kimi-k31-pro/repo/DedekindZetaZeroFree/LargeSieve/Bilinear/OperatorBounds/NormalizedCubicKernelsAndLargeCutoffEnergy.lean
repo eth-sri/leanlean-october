@@ -195,8 +195,7 @@ theorem assembly_tail_uniform_small_delta
         max 1 (C.N ^ 2 / C.M * Real.rpow (C.M * C.N) ε) ≤ C.K →
         C.K ≤ C.M * Real.rpow (C.M * C.N) (-ε) →
         1 ≤ norm C.d → norm C.d ≤ 2 * C.N →
-        ‖totalRemainder C‖ ≤ A * energy F c C.N C.lam := by
-  exact DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitAssembly.uniform_remainder_small_delta
+        ‖totalRemainder C‖ ≤ A * energy F c C.N C.lam := DedekindZetaZeroFree.LargeSieve.Bilinear.ExplicitAssembly.uniform_remainder_small_delta
     D W ε hε δ hδ hδε
 
 end DedekindZetaZeroFree.LargeSieve.Sieve.CoreNormalizedEstimate

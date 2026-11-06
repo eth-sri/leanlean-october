@@ -72,12 +72,12 @@ theorem initial_annular_transform_mass
   have hb1 : ∀ x : ℝ, 0 < x → x ≤ 1 → ‖T x‖ ≤ C * x ^ (-(1 / 2 : ℝ)) := by
     intro x hx hx1
     have h := hCle x hx hx1
-    simp only [DedekindZetaZeroFree.LargeSieve.Vendor.EulerIter_zero, ← hTdef] at h
+    simp only [DedekindZetaZeroFree.LargeSieve.Vendor.EulerIter_zero] at h
     exact h
   have hb2 : ∀ x : ℝ, 1 ≤ x → ‖T x‖ ≤ C * x ^ (-(2 : ℝ)) := by
     intro x hx
     have h := hCge x hx
-    simp only [DedekindZetaZeroFree.LargeSieve.Vendor.EulerIter_zero, ← hTdef] at h
+    simp only [DedekindZetaZeroFree.LargeSieve.Vendor.EulerIter_zero] at h
     exact h
   let gfun : Ideal (𝓞 F) → ℂ := fun I =>
     if I = ⊥ then (0 : ℂ) else v I * T ((Ideal.absNorm I : ℝ) / Y)

@@ -3,6 +3,8 @@ module
 public import ValuedFieldTheory.Valuation.DiscreteValuationField.Extensions
 public import Mathlib.LinearAlgebra.Dimension.Localization
 public import Mathlib.RingTheory.RamificationInertia.Basic
+public import Mathlib.Tactic.NormNum
+public import Mathlib.Tactic.Linarith
 
 @[expose] public section
 
@@ -49,13 +51,12 @@ theorem isDefectless_of_moduleFinite
   have hprimes :=
     IsLocalRing.primesOver_eq target.valuationSubring base.maximalIdeal_ne_bot
   have hq : target.maximalIdeal ∈ base.maximalIdeal.primesOver target.valuationSubring := by
-    rw [hprimes]
-    exact Set.mem_singleton target.maximalIdeal
+    grind
   let : target.maximalIdeal.LiesOver base.maximalIdeal := hq.2
   let : Subsingleton (base.maximalIdeal.primesOver target.valuationSubring) :=
     Set.Subsingleton.coe_sort (by
       rw [hprimes]
-      exact Set.subsingleton_singleton)
+      norm_num)
   have hsum :=
     Ideal.sum_ramification_inertia_eq_finrank base.maximalIdeal target.valuationSubring
   rw [Fintype.sum_subsingleton _ ⟨target.maximalIdeal, hq⟩] at hsum
@@ -65,7 +66,7 @@ theorem isDefectless_of_moduleFinite
   rw [Ideal.ramificationIdx'_eq_ramificationIdx
       base.maximalIdeal target.maximalIdeal base.maximalIdeal_ne_bot,
     IsFractionRing.finrank_eq base.valuationSubring K target.valuationSubring L]
-  exact hsum.symm
+  linarith
 
 end ValuationTheory.DiscreteValuationField.ValuedExtension
 

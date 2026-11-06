@@ -162,21 +162,7 @@ noncomputable def spectralExtension
         (le_add_of_nonneg_right hy_nonneg)
         (le_add_of_nonneg_left hx_nonneg))
 
-/-- The absolute-value extension constructed is
-nonarchimedean. -/
-theorem spectralExtension_isNonarchimedean
-    {K L : Type*} [Field K] [Field L] [Algebra K L]
-    [Algebra.IsAlgebraic K L]
-    (v : AbsoluteValue K ℝ)
-    (hcomplete : CompleteSpace (WithAbs v))
-    (hnonarch : IsNonarchimedean (v : K → ℝ))
-    (hv : v.IsNontrivial) :
-    IsNonarchimedean
-      (spectralExtension (K := K) (L := L)
-        v hcomplete hnonarch hv : L → ℝ) := by
-  intro x y
-  simpa [spectralExtension] using
-    spectral_spectralNorm_strong_triangle v hnonarch x y
+
 
 /-- The absolute-value extension constructed restricts to
 the given base valuation. -/

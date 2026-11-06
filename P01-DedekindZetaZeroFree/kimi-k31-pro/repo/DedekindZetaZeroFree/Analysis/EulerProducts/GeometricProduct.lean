@@ -84,7 +84,7 @@ theorem hasProd_geometric {P : Type*} (r : P → ℂ)
   have he (s : Finset P) : (∑' e, g s e) = ∏ p ∈ s, (1 - r p)⁻¹ := by
     have hsame (e : P →₀ ℕ) : g s e =
         {e : P →₀ ℕ | (↑e.support : Set P) ⊆ (s : Set P)}.indicator f e := by
-      simp [g, Set.indicator, Finset.coe_subset]
+      simp [g, Set.indicator]
     simp_rw [hsame]
     rw [← tsum_subtype]
     exact (supported_hasSum r hr s).tsum_eq

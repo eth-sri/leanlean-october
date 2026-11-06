@@ -69,21 +69,7 @@ def realLowerRamificationGroup (A : ValuationSubring L) (s : ℝ) :
       (IsLocalRing.maximalIdeal A ^ (Int.ceil (s + 1)).toNat).neg_mem
         (hσ (σ⁻¹ • x))
 
-/-- At or below index `-1`, the real lower ramification group is the full
-decomposition group. -/
-theorem realLowerRamificationGroup_eq_top_of_le_neg_one
-    (A : ValuationSubring L) {s : ℝ} (hs : s ≤ -1) :
-    realLowerRamificationGroup K A s = ⊤ := by
-  have hzero : (Int.ceil (s + 1)).toNat = 0 := by
-    rw [Int.toNat_eq_zero]
-    exact Int.ceil_nonpos.mpr (by linarith)
-  apply (Subgroup.eq_top_iff' _).2
-  intro σ
-  change ∀ x : A,
-    σ • x - x ∈ (IsLocalRing.maximalIdeal A) ^ (Int.ceil (s + 1)).toNat
-  intro x
-  rw [hzero, pow_zero, Ideal.one_eq_top]
-  exact Submodule.mem_top
+
 
 end ClassFieldTheory
 

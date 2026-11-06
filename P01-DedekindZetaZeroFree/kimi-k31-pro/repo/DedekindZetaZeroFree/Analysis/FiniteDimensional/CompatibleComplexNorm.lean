@@ -2,6 +2,7 @@ module
 
 public import Mathlib.Analysis.Normed.Module.FiniteDimension
 public import Mathlib.Analysis.Complex.Basic
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -32,7 +33,7 @@ theorem exists_compatible (V : Type*) [AddCommGroup V] [Module ℂ V] [Module.Fi
     toFun := fun v => ‖E v‖
     map_zero' := by simp
     add_le' := by intro x y; simp only [map_add]; exact norm_add_le _ _
-    neg' := by intro x; simp
+    neg' := by norm_num
     eq_zero_of_map_eq_zero' := by
       intro x hx
       exact E.injective (by simpa using norm_eq_zero.mp hx)

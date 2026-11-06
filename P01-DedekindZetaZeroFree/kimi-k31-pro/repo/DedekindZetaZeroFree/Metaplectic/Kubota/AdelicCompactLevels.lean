@@ -118,8 +118,7 @@ private theorem restricted_secondCountable : SecondCountableTopology (Restricted
   letI : Countable (𝓞 F) := Function.Injective.countable RingOfIntegers.coe_injective
   letI : Countable (Ideal (𝓞 F)) := by
     have h : Function.Surjective (fun s : Finset (𝓞 F) => Ideal.span (↑s : Set (𝓞 F))) := by
-      intro I
-      exact IsNoetherian.noetherian I
+      exact IsNoetherian.noetherian
     exact h.countable
   letI : Countable (HeightOneSpectrum (𝓞 F)) :=
     Function.Injective.countable (fun _ _ h => HeightOneSpectrum.ext h)

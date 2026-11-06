@@ -48,8 +48,8 @@ theorem source_extend (E : Finset (KPFinitePlace F)) (hE : C.exceptional ⊆ E)
       apply congrArg (PiTensorProduct.tprod ℂ)
       funext j
       by_cases hj : j.val ∈ s.val
-      · simp only [y, cofactorExtendedTuple, show (cofactorSourceLevel R P C E hE).val = s.val from rfl, dite_eq_left hj]
-      · simp only [y, cofactorExtendedTuple, show (cofactorSourceLevel R P C E hE).val = s.val from rfl, dite_eq_right hj]
+      · simp only [cofactorExtendedTuple, show (cofactorSourceLevel R P C E hE).val = s.val from rfl, dite_eq_left hj]
+      · simp only [cofactorExtendedTuple, show (cofactorSourceLevel R P C E hE).val = s.val from rfl, dite_eq_right hj]
 
 theorem box_fiber_stage (E Q : Finset (KPFinitePlace F)) (hE : C.exceptional ⊆ E)
     (hEQ : E ⊆ Q)

@@ -35,13 +35,9 @@ theorem diagonalLift_slope (t : (K F w)ˣ) :
 variable (lift : (K F w)ˣ → P F ζ hζ w)
   (hslope : ∀ t, slope F ζ hζ w (lift t) = t)
 
-def gaugeCoordinate (t : (K F w)ˣ) : H F ζ hζ w :=
-  ⟨lift t * (diagonalLift F ζ hζ w t)⁻¹, by
-    change slope F ζ hζ w _ = 1
-    simp only [map_mul, map_inv, hslope, diagonalLift_slope, mul_inv_cancel]⟩
 
-def gauge (t : (K F w)ˣ) : ℂˣ :=
-  inducingCharacter F ζ hζ w ψ (gaugeCoordinate F ζ hζ w lift hslope t)
+
+
 
 end DedekindZetaZeroFree.KPKirillovFiniteTensor.ActualGauge
 

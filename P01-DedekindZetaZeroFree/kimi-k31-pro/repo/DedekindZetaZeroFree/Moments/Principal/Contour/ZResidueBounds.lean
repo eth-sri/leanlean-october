@@ -33,7 +33,7 @@ theorem principalRows_eq_single :
   ext r
   simp only [principalRows, Set.mem_setOf_eq, Set.mem_singleton_iff]
   exact ⟨fun h => ActualRowCount.eq_principalRow D h,
-    fun h => by rw [h]; exact ActualRowCount.principalRow_u D⟩
+    fun h => by simp_all⟩
 
 theorem Jwres_sub_Rz (Z : ℝ) (hZ : 2 ≤ Z) :
     Jwres D Z -
@@ -77,7 +77,7 @@ theorem zResidue_sum_eq (Z : ℝ) (hZ : 2 ≤ Z) :
     ext r
     simp only [principalRows, Set.mem_setOf_eq, Set.mem_singleton_iff]
     exact ⟨fun h => ActualRowCount.eq_principalRow D h,
-      fun h => by rw [h]; exact ActualRowCount.principalRow_u D⟩
+      fun h => by simp_all⟩
   rw [hset, finsum_mem_singleton]
   exact PrincipalContourDeformation.zResidue_xi_shift (D := D) (u := ActualRowCount.principalRow D)
     (hu := ActualRowCount.principalRow_u D) (Z := Z) (hZ := hZ)

@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
 public import ClassFieldTheory.Definitions.FrobeniusAndHilbertClassFields.NumberFieldFractionalIdealFactorization
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -34,7 +35,7 @@ theorem weightedFractionalCharacter
     apply Units.ext
     rw [ClassFieldTheory.NumberFieldFractionalIdealGroup.factorization_val]
     simp only [toAdd_ofAdd]
-    rw [Finsupp.prod_single_index (by simp only [zpow_zero])]
+    rw [Finsupp.prod_single_index (by norm_num)]
     simp [ClassFieldTheory.finitePrimeFractionalIdeal]
   have hsingle : ClassFieldTheory.NumberFieldFractionalIdealGroup.factorizationEquiv
       (Multiplicative.ofAdd (Finsupp.single v (1 : ℤ))) =
@@ -44,7 +45,7 @@ theorem weightedFractionalCharacter
   rw [← hsingle, MulEquiv.symm_apply_apply]
   show Finsupp.prod (Finsupp.single v (1 : ℤ))
     (fun v n => primeWeightHom v (Multiplicative.ofAdd n)) = w v
-  rw [Finsupp.prod_single_index (by simp [primeWeightHom])]
+  rw [Finsupp.prod_single_index (by norm_num)]
   simp [primeWeightHom]
 
 end DedekindZetaZeroFree.AbelianQuotient

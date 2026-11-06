@@ -286,99 +286,13 @@ instance mixedQPadicContextValuationSubringTower
       F.toCompleteDVF.valuationSubring K :=
   IsScalarTower.of_algebraMap_eq (by intro a; rfl)
 
-/-- The integer ring of `K` is the integral closure of the integer ring of
-the canonical `Q_p`.  This is the integral-basis input used in the mixed-characteristic field-unit proof of the mixed-characteristic field-unit structure theorem. -/
-theorem valuationSubring_isIntegralClosure_over_qpadicIntegers
-    (F : LocalField.{u, v} K) [CharZero K] :
-    let p := F.residueCharacteristic
-    letI : MixedQPadicContext F := mixedQPadicContext F
-    IsIntegralClosure F.toCompleteDVF.valuationSubring
-      (Examples.Qp.padicCompleteDVF p).valuationSubring K := by
-  let p : ℕ := F.residueCharacteristic
-  let : MixedQPadicContext F := mixedQPadicContext F
-  let : Algebra.IsSeparable ℚ_[p] K := by infer_instance
-  exact _root_.ValuationTheory.DiscreteValuationField.ValuedExtension.target_valuationSubring_isIntegralClosure_of_finite_separable
-    (Examples.Qp.padicCompleteDVF p) F.toCompleteDVF
 
-/-- Consequently the integer ring of `K` is finite over the integer ring of
-the canonical `Q_p`. -/
-theorem valuationSubring_moduleFinite_over_qpadicIntegers
-    (F : LocalField.{u, v} K) [CharZero K] :
-    let p := F.residueCharacteristic
-    letI : MixedQPadicContext F := mixedQPadicContext F
-    Module.Finite (Examples.Qp.padicCompleteDVF p).valuationSubring
-      F.toCompleteDVF.valuationSubring := by
-  let p : ℕ := F.residueCharacteristic
-  let : MixedQPadicContext F := mixedQPadicContext F
-  let : Algebra.IsSeparable ℚ_[p] K := by infer_instance
-  exact _root_.ValuationTheory.DiscreteValuationField.ValuedExtension.moduleFinite_target_valuationSubring_of_finite_separable
-    (Examples.Qp.padicCompleteDVF p) F.toCompleteDVF
 
-/-- The same integer ring is free over the canonical `Q_p` integer ring. -/
-theorem valuationSubring_moduleFree_over_qpadicIntegers
-    (F : LocalField.{u, v} K) [CharZero K] :
-    let p := F.residueCharacteristic
-    letI : MixedQPadicContext F := mixedQPadicContext F
-    Module.Free (Examples.Qp.padicCompleteDVF p).valuationSubring
-      F.toCompleteDVF.valuationSubring := by
-  let p : ℕ := F.residueCharacteristic
-  let : MixedQPadicContext F := mixedQPadicContext F
-  let : Algebra.IsSeparable ℚ_[p] K := by infer_instance
-  let : Module.Finite
-      (Examples.Qp.padicCompleteDVF p).valuationSubring
-      F.toCompleteDVF.valuationSubring :=
-    _root_.ValuationTheory.DiscreteValuationField.ValuedExtension.moduleFinite_target_valuationSubring_of_finite_separable
-      (Examples.Qp.padicCompleteDVF p) F.toCompleteDVF
-  let : IsIntegralClosure F.toCompleteDVF.valuationSubring
-      (Examples.Qp.padicCompleteDVF p).valuationSubring K :=
-    _root_.ValuationTheory.DiscreteValuationField.ValuedExtension.target_valuationSubring_isIntegralClosure_of_finite_separable
-      (Examples.Qp.padicCompleteDVF p) F.toCompleteDVF
-  let : IsFractionRing
-      (Examples.Qp.padicCompleteDVF p).valuationSubring ℚ_[p] :=
-    ValuationTheory.DiscreteValuationField.ValuedExtension.base_valuationSubring_isFractionRing
-      (K := ℚ_[p]) (Examples.Qp.padicCompleteDVF p)
-  let : FaithfulSMul
-      (Examples.Qp.padicCompleteDVF p).valuationSubring K :=
-    FaithfulSMul.of_field_isFractionRing
-      (Examples.Qp.padicCompleteDVF p).valuationSubring K ℚ_[p] K
-  let : Module.IsTorsionFree
-      (Examples.Qp.padicCompleteDVF p).valuationSubring K := inferInstance
-  let : Module.IsTorsionFree
-      (Examples.Qp.padicCompleteDVF p).valuationSubring
-      F.toCompleteDVF.valuationSubring :=
-    IsIntegralClosure.isTorsionFree
-      (Examples.Qp.padicCompleteDVF p).valuationSubring K
-  exact Module.free_of_finite_type_torsion_free'
 
-/-- Integral-basis rank formula over the canonical valuation ring. -/
-theorem valuationSubring_finrank_over_qpadicIntegers
-    (F : LocalField.{u, v} K) [CharZero K] :
-    let p := F.residueCharacteristic
-    letI : MixedQPadicContext F := mixedQPadicContext F
-    Module.finrank (Examples.Qp.padicCompleteDVF p).valuationSubring
-        F.toCompleteDVF.valuationSubring =
-      Module.finrank ℚ_[p] K := by
-  let p : ℕ := F.residueCharacteristic
-  let : MixedQPadicContext F := mixedQPadicContext F
-  let : Algebra.IsSeparable ℚ_[p] K := by infer_instance
-  let : IsIntegralClosure F.toCompleteDVF.valuationSubring
-      (Examples.Qp.padicCompleteDVF p).valuationSubring K :=
-    _root_.ValuationTheory.DiscreteValuationField.ValuedExtension.target_valuationSubring_isIntegralClosure_of_finite_separable
-      (Examples.Qp.padicCompleteDVF p) F.toCompleteDVF
-  let : IsFractionRing
-      (Examples.Qp.padicCompleteDVF p).valuationSubring ℚ_[p] :=
-    ValuationTheory.DiscreteValuationField.ValuedExtension.base_valuationSubring_isFractionRing
-      (K := ℚ_[p]) (Examples.Qp.padicCompleteDVF p)
-  let : FaithfulSMul
-      (Examples.Qp.padicCompleteDVF p).valuationSubring K :=
-    FaithfulSMul.of_field_isFractionRing
-      (Examples.Qp.padicCompleteDVF p).valuationSubring K ℚ_[p] K
-  let : Module.IsTorsionFree
-      (Examples.Qp.padicCompleteDVF p).valuationSubring K :=
-    inferInstance
-  exact IsIntegralClosure.rank
-    (Examples.Qp.padicCompleteDVF p).valuationSubring ℚ_[p] K
-      F.toCompleteDVF.valuationSubring
+
+
+
+
 
 /-! ### the canonical `Z_p` integral basis -/
 
@@ -646,19 +560,7 @@ noncomputable def mixed_integralBasis
   exact Module.finBasisOfFinrankEq ℤ_[p] F.toCompleteDVF.valuationSubring
     F.mixed_valuationSubring_finrank
 
-/-- Coordinate form of the integral basis used in the free factor of
-the mixed-characteristic field-unit structure theorem. -/
-noncomputable def mixed_valuationSubringLinearEquivPi
-    (F : LocalField.{u, v} K) [CharZero K] :
-    letI : MixedIntegralLatticeContext F :=
-      mixedIntegralLatticeContext F
-    F.toCompleteDVF.valuationSubring ≃ₗ[ℤ_[F.residueCharacteristic]]
-      (Fin (Module.finrank ℚ_[F.residueCharacteristic] K) →
-        ℤ_[F.residueCharacteristic]) := by
-  let p : ℕ := F.residueCharacteristic
-  letI : MixedIntegralLatticeContext F :=
-    mixedIntegralLatticeContext F
-  exact F.mixed_integralBasis.equivFun
+
 
 /-- Every power of the maximal ideal is a finite `Z_p`-module. -/
 theorem mixed_maximalIdealPow_moduleFinite
@@ -911,40 +813,9 @@ noncomputable def higherPrincipalUnitPadicModule
       apply F.higherPrincipalUnitAddToFirst_injective hr
       simp only [F.higherPrincipalUnitAddToFirst_smul, one_smul])
 
-/-- Natural scalars on `U^r` are the ordinary group powers. -/
-theorem higherPrincipalUnitPadic_natCast_smul
-    (F : LocalField.{u, v} K) {r : ℕ} (hr : 1 ≤ r)
-    (m : ℕ) (x : LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup (F.toCompleteDVF) r) :
-    letI : Module ℤ_[F.residueCharacteristic]
-        (Additive (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup (F.toCompleteDVF) r)) :=
-      F.higherPrincipalUnitPadicModule hr
-    (m : ℤ_[F.residueCharacteristic]) • Additive.ofMul x =
-      Additive.ofMul (x ^ m) := by
-  let : Module ℤ_[F.residueCharacteristic]
-      (Additive (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup (F.toCompleteDVF) r)) :=
-    F.higherPrincipalUnitPadicModule hr
-  apply F.higherPrincipalUnitAddToFirst_injective hr
-  rw [F.higherPrincipalUnitAddToFirst_smul]
-  exact
-    CompleteDVF.higherPrincipalUnitGroup.principalUnitPadic_natCast_smul
-      F m (F.higherPrincipalUnitToFirst hr x)
 
-/-- The inclusion `U^r \hookrightarrow U^1` is linear for the canonical
-`Z_p`-actions. -/
-noncomputable def higherPrincipalUnitLinearToFirst
-    (F : LocalField.{u, v} K) {r : ℕ} (hr : 1 ≤ r) :
-    letI : Module ℤ_[F.residueCharacteristic]
-        (Additive (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup (F.toCompleteDVF) r)) :=
-      F.higherPrincipalUnitPadicModule hr
-    Additive (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup (F.toCompleteDVF) r) →ₗ[
-        ℤ_[F.residueCharacteristic]]
-      Additive (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup (F.toCompleteDVF) 1) := by
-  letI : Module ℤ_[F.residueCharacteristic]
-      (Additive (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup (F.toCompleteDVF) r)) :=
-    F.higherPrincipalUnitPadicModule hr
-  exact
-    { F.higherPrincipalUnitAddToFirst hr with
-      map_smul' := fun a x => F.higherPrincipalUnitAddToFirst_smul hr a x }
+
+
 
 /-- The deep principal units, regarded as a `Z_p`-submodule of `U^1`. -/
 noncomputable def higherPrincipalUnitPadicSubmodule

@@ -236,7 +236,7 @@ theorem reflected_and_ideal_estimates (D : ℝ) (r : ℕ) (h : ℝ → ℂ)
       (s := {I : Ideal (𝓞 F) | I ≠ ⊥})
       (f := fun I => ‖reflectedTransform D r h (X * (Ideal.absNorm I : ℝ))‖)).mp hs'
     exact hi.congr (fun I => by
-      by_cases hI : I = ⊥ <;> simp [Set.indicator_apply, hI])
+      by_cases hI : I = ⊥ <;> simp [hI])
 end DedekindZetaZeroFree.LargeSieve.SquarePoisson
 
 end
@@ -258,7 +258,7 @@ private lemma deriv_pow_mul {V : ℂ → ℂ} {n j : ℕ} (hjn : j ≤ n)
   by_cases hj : j = n
   · subst j
     rw [if_pos rfl, Finset.sum_eq_single n]
-    · simp only [iteratedDeriv_fun_pow_zero, if_pos rfl, Nat.choose_self,
+    · simp only [iteratedDeriv_fun_pow_zero, Nat.choose_self,
         Nat.cast_one, one_mul, Nat.sub_self, iteratedDeriv_zero, ite_true]
     · intro i hi hin
       rw [iteratedDeriv_fun_pow_zero, if_neg hin]

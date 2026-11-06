@@ -166,7 +166,7 @@ theorem matrixValue_one : matrixValue F ζ hζ 1 = 1 := by
 
 theorem matrixValue_mul (x y : RestrictedCover F ζ hζ) :
     matrixValue F ζ hζ (x * y) = matrixValue F ζ hζ x * matrixValue F ζ hζ y := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.matrixValue_mul F ζ hζ x y
+  aesop
 
 def restrictedProjection : RestrictedCover F ζ hζ →* AdelicGL2 F where
   toFun x := ⟨matrixValue F ζ hζ x, matrixValue F ζ hζ x⁻¹,
@@ -177,7 +177,7 @@ def restrictedProjection : RestrictedCover F ζ hζ →* AdelicGL2 F where
 theorem restrictedProjection_eval (x : RestrictedCover F ζ hζ) (v : KPHilbert.Place F) :
     matrixEval F v (restrictedProjection F ζ hζ x) =
       KPLocalCover.projection F ζ hζ v (x v) := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.restrictedProjection_eval F ζ hζ x v
+  aesop
 
 theorem restrictedProjection_surjective : Function.Surjective (restrictedProjection F ζ hζ) := by
   exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.restrictedProjection_surjective F ζ hζ
@@ -208,7 +208,7 @@ theorem projection_localInjection (v w : KPHilbert.Place F)
     (g : KPLocalCover.CubicGL2Raw F ζ hζ v) :
     matrixEval F w (projection F ζ hζ (localInjection F ζ hζ v g)) =
       (localToRestricted F ζ hζ v g w).g := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.projection_localInjection F ζ hζ v w g
+  aesop
 
 abbrev Ideles := (Adeles F)ˣ
 
@@ -225,7 +225,7 @@ def scalarTupleValue (z : Ideles F) : RestrictedCover F ζ hζ :=
   ⟨scalarCoordinates F ζ hζ z, scalarTuple_restricted F ζ hζ z⟩
 
 theorem scalarTupleValue_one : scalarTupleValue F ζ hζ 1 = 1 := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.scalarTupleValue_one F ζ hζ
+  aesop
 
 theorem scalarTupleValue_mul (z z' : Ideles F) :
     scalarTupleValue F ζ hζ (z * z') = scalarTupleValue F ζ hζ z * scalarTupleValue F ζ hζ z' := by
@@ -324,7 +324,7 @@ def rationalSection (g : KubotaRankTwo.GL2 F) : CubicGL2Adelic F ζ hζ :=
 
 theorem projection_rationalSection (g : KubotaRankTwo.GL2 F) :
     projection F ζ hζ (rationalSection F ζ hζ g) = rationalBase F g := by
-  exact DedekindZetaZeroFree.KPAdelicCoverCertificatesRaw.projection_rationalSection F ζ hζ g
+  aesop
 
 theorem rationalSection_mul (g h : KubotaRankTwo.GL2 F) :
     rationalSection F ζ hζ (g * h) = rationalSection F ζ hζ g * rationalSection F ζ hζ h := by

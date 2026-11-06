@@ -306,7 +306,7 @@ theorem orbit_norm_rpow_summable (A : SArithmeticData F) (σ : ℝ) (hσ : 1 < �
     · intro I
       letI := idealFiber_finite A I
       exact summable_of_finite_support (Set.toFinite _)
-    · simp only [f, fiberSum]
+    · simp only [fiberSum]
       apply Summable.of_nonneg_of_le (f := fun I : A.Exterior =>
         (Nat.card A.UnitQuotient : ℝ) * A.exteriorNorm I ^ (-σ))
         (fun I => mul_nonneg (Nat.cast_nonneg _) (Real.rpow_nonneg (A.exteriorNorm_pos I).le _))

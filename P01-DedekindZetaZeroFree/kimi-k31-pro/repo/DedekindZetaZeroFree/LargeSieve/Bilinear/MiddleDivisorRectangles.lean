@@ -27,7 +27,7 @@ private lemma phase_norm (C : Context Q) (t : ℝ) (u : Ideal (𝓞 F)) : ‖pha
 private lemma phase_split (C : Context Q) (p : Ideal (𝓞 F) × Ideal (𝓞 F)) (t s : ℝ) :
     frequencyPhase C p t s = phase C t p.1 * star (phase C (-s) p.2) := by
   simp only [frequencyPhase, phase, Complex.star_def, ← Complex.exp_conj,
-    map_mul, Complex.conj_ofReal, Complex.conj_I, neg_mul, mul_neg, neg_neg]
+    map_mul, Complex.conj_ofReal, Complex.conj_I, neg_mul, mul_neg]
   rw [← Complex.exp_add]
   congr 1
   push_cast
@@ -317,13 +317,11 @@ private lemma finite_R_set (B M N n θ Cq : ℝ) :
   simp only [Set.mem_setOf_eq, Set.mem_image, Finset.mem_coe]
   constructor <;> rintro ⟨ij, hij, rfl⟩ <;> exact ⟨ij, hij, rfl⟩
 
-private lemma R_nonneg' (B M N n θ Cq : ℝ) : 0 ≤ R Q B M N n θ Cq := by
-  exact le_csSup (finite_R_set (Q := Q) B M N n θ Cq).bddAbove (Or.inl rfl)
+private lemma R_nonneg' (B M N n θ Cq : ℝ) : 0 ≤ R Q B M N n θ Cq := le_csSup (finite_R_set (Q := Q) B M N n θ Cq).bddAbove (Or.inl rfl)
 
 private lemma value_le_R (B M N n θ Cq : ℝ) (ij : ℕ × ℕ)
     (hij : ij ∈ rectangles F B M N n θ Cq) :
-    rectangleValue Q B N n ij ≤ R Q B M N n θ Cq := by
-  exact le_csSup (finite_R_set (Q := Q) B M N n θ Cq).bddAbove (Or.inr ⟨ij, hij, rfl⟩)
+    rectangleValue Q B N n ij ≤ R Q B M N n θ Cq := le_csSup (finite_R_set (Q := Q) B M N n θ Cq).bddAbove (Or.inr ⟨ij, hij, rfl⟩)
 
 private lemma frequencyWeight_integrable : Integrable frequencyWeight := by
   unfold frequencyWeight
@@ -377,8 +375,7 @@ private lemma finite_cost_epsilon (η : ℝ) (hη : 0 < η) :
       _ = (A * T ^ e) * Z ^ e := by rw [Real.mul_rpow hT.le (by linarith)]; ring
   have hX : 1 ≤ 2 * C.N / norm C.d :=
     (le_div_iff₀ (by linarith : 0 < norm C.d)).mpr (by simpa using hnN)
-  have hx : 2 * C.N / norm C.d ≤ 2 * Z := by
-    exact (div_le_self (by linarith : 0 ≤ 2 * C.N) hn).trans (by linarith)
+  have hx : 2 * C.N / norm C.d ≤ 2 * Z := (div_le_self (by linarith : 0 ≤ 2 * C.N) hn).trans (by linarith)
   have hl : (Vendor.dyadicLength (2 * C.N / norm C.d) + 1 : ℝ) ≤ H * Z ^ e := by
     calc
       _ ≤ L * (2 * C.N / norm C.d) ^ e := Vendor.dyadicLength_small_power he hX
@@ -683,7 +680,7 @@ lemma maskedE3_one (C : Context Q) (B : ℝ) (unit : Bool) :
 
 lemma top_mask_bound (a : Ideal (𝓞 F)) :
     ‖(if a = ⊤ then 1 else 0 : ℂ)‖ ≤ 1 := by
-  split_ifs <;> norm_num
+  aesop
 
 lemma conclusions_of_masked_bound (C : Context Q) (B M N n θ Cq rhs : ℝ)
     (unit : Bool) (hunit : unit = true → B = 1)

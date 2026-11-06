@@ -76,22 +76,7 @@ theorem unramifiedLocalReciprocityIsoToGaloisGroup_inverseIntegerRingUniformizer
   rw [← galoisGroupEquivZModOfUnramifiedValuationNormalized_arithmeticFrobenius K L]
   exact (galoisGroupEquivZModOfUnramifiedValuationNormalized K L).symm_apply_apply _
 
-/-- Power form of the unramified reciprocity calculation for the chosen inverse
-prime element. -/
-theorem unramifiedLocalReciprocityIsoToGaloisGroup_inverseIntegerRingUniformizerFieldUnit_zpow
-    (K L : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L]
-    [UniformSpace L] [IsUniformAddGroup L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    [Module.Finite 𝒪[K] 𝒪[L]]
-    [IsUnramifiedValuedExtension K L] (m : Int) :
-    unramifiedLocalReciprocityIsoToGaloisGroup K L
-        ((normClass K L (inverseIntegerRingUniformizerFieldUnit K)) ^ m) =
-      (arithmeticFrobeniusOfUnramifiedValuation K L) ^ m := by
-  rw [map_zpow,
-    unramifiedLocalReciprocityIsoToGaloisGroup_inverseIntegerRingUniformizerFieldUnit]
+
 
 /-- The actual reciprocity equivalence to
 `GaloisGroup` sends any field unit class to the corresponding power of arithmetic
@@ -160,22 +145,7 @@ theorem unramifiedLocalReciprocityIso_inverseIntegerRingUniformizerFieldUnit
   rw [unramifiedLocalReciprocityIsoToGaloisGroup_inverseIntegerRingUniformizerFieldUnit]
   rfl
 
-/-- Power form of the unramified reciprocity calculation with abelianized
-target. -/
-theorem unramifiedLocalReciprocityIso_inverseIntegerRingUniformizerFieldUnit_zpow
-    (K L : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L]
-    [UniformSpace L] [IsUniformAddGroup L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    [Module.Finite 𝒪[K] 𝒪[L]]
-    [IsUnramifiedValuedExtension K L] (m : Int) :
-    unramifiedLocalReciprocityIso K L
-        ((normClass K L (inverseIntegerRingUniformizerFieldUnit K)) ^ m) =
-      (Abelianization.of (arithmeticFrobeniusOfUnramifiedValuation K L)) ^ m := by
-  rw [map_zpow,
-    unramifiedLocalReciprocityIso_inverseIntegerRingUniformizerFieldUnit]
+
 
 /-- The unramified reciprocity map
 on a general field unit is the arithmetic Frobenius class raised to the

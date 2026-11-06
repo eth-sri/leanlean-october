@@ -201,23 +201,7 @@ Kummer character on the same ambient-power quotient. -/
   intro σ
   rfl
 
-/-- The continuous character map on the ambient-power quotient is injective.  This is
-the existing algebraic kernel computation with the continuity structure
-forgotten; it does not use or assert surjectivity. -/
-theorem infiniteKummerContinuousQuotientCharacter_injective
-    (n : ℕ+) (hmu : NthRootsOfUnityInBase (K := K) (L := Ω) n) :
-    Function.Injective (infiniteKummerContinuousQuotientCharacter n hmu) := by
-  let D := chosenFiniteKummerRadicalDatum (K := K) (L := Ω) n
-  let hfixed := nthRootsOfUnity_fixed (K := K) (L := Ω) n hmu
-  intro q r hqr
-  apply D.quotientKummerCharacterWithoutSection_injective hfixed
-  have hforget := congrArg
-    (fun χ : Gal(Ω/K) →ₜ* DiscreteNthRootsSubgroup Ω (n : ℕ) => χ.toMonoidHom) hqr
-  change (infiniteKummerContinuousQuotientCharacter n hmu q).toMonoidHom =
-    (infiniteKummerContinuousQuotientCharacter n hmu r).toMonoidHom at hforget
-  rw [infiniteKummerContinuousQuotientCharacter_toMonoidHom n hmu q,
-    infiniteKummerContinuousQuotientCharacter_toMonoidHom n hmu r] at hforget
-  exact hforget
+
 
 end InfiniteKummerContinuity
 

@@ -92,7 +92,7 @@ theorem integral_fderiv_eq_zero
     have he : (fun z : H ⧸ K => a + z) ∘ QuotientAddGroup.mk =
         fun x : H => QuotientAddGroup.mk (Quotient.out a + x) := by
       funext x
-      simp [Function.comp_def, QuotientAddGroup.mk_add, Quotient.out_eq]
+      simp [QuotientAddGroup.mk_add, Quotient.out_eq]
     rw [he]
     exact QuotientAddGroup.continuous_mk.comp (continuous_const.add continuous_id)
   have hAc (t : ℝ) : Continuous (A t) := hfc.comp (htc _)
@@ -104,7 +104,7 @@ theorem integral_fderiv_eq_zero
     have hh := hg.comp_hasDerivAt t hline
     have he : (fun t => A t z) = g ∘ (fun t : ℝ => t • w + Quotient.out z) := by
       funext t
-      simp [A, g, Function.comp_def, QuotientAddGroup.mk_add, Quotient.out_eq]
+      simp [A, g, QuotientAddGroup.mk_add, Quotient.out_eq]
     rw [he]
     have hde : A' t z = fderiv ℝ g (t • w + Quotient.out z) w := by
       simpa [A', QuotientAddGroup.mk_add, Quotient.out_eq] using hd (t • w + Quotient.out z)

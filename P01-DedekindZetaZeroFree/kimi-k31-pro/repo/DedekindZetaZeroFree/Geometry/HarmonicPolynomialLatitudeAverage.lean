@@ -26,7 +26,7 @@ private lemma moment_odd (i j : ℕ) (h : Odd (i+j)) : moment i j = 0 := by
   have hp : Function.Periodic f (2*Real.pi) := by
     intro θ
     dsimp only [f]
-    rw [Real.cos_add_two_pi, Real.sin_add_two_pi]
+    simp_all
   have hn (θ : ℝ) : f (Real.pi + θ) = - f θ := by
     dsimp only [f]
     rw [add_comm Real.pi, Real.cos_add_pi, Real.sin_add_pi]
@@ -35,13 +35,13 @@ private lemma moment_odd (i j : ℕ) (h : Odd (i+j)) : moment i j = 0 := by
       mul_pow, mul_pow]
     calc
       (-1 : ℂ)^i * (Real.cos θ : ℂ)^i * ((-1 : ℂ)^j * (Real.sin θ : ℂ)^j) =
-          (-1 : ℂ)^(i+j) * ((Real.cos θ : ℂ)^i * (Real.sin θ : ℂ)^j) := by rw [pow_add]; ring
-      _ = - ((Real.cos θ : ℂ)^i * (Real.sin θ : ℂ)^j) := by rw [h.neg_one_pow]; ring
+          (-1 : ℂ)^(i+j) * ((Real.cos θ : ℂ)^i * (Real.sin θ : ℂ)^j) := by grind
+      _ = - ((Real.cos θ : ℂ)^i * (Real.sin θ : ℂ)^j) := by simp_all
   have he := shift f hp Real.pi
   simp_rw [hn] at he
   rw [integral_neg] at he
   change -moment i j = moment i j at he
-  linear_combination -he / 2
+  grind
 private lemma mono_formula (d : Fin 3 →₀ ℕ) (a : ℂ) (u θ : ℝ)
     (hu : u ∈ Set.Icc (0:ℝ) 1) :
     polynomialSphere (MvPolynomial.monomial d a) (latitudePoint (.refl ℝ Ambient) u θ) =
@@ -68,7 +68,7 @@ private lemma poly_integrable (p : MvPolynomial (Fin 3) ℂ) (u : ℝ)
     intro i
     fin_cases i <;> change Continuous _ <;> dsimp [latitudeAmbient]
     all_goals fun_prop
-  exact (hc.integrableOn_Icc).smul_measure (by simp [ENNReal.inv_ne_top]; positivity)
+  exact hc.integrableOn_Icc.smul_measure (by simp [ENNReal.inv_ne_top]; positivity)
 private lemma exists_profile (p : MvPolynomial (Fin 3) ℂ) :
     ∃ Q : Polynomial ℂ, ∀ u : ℝ, u ∈ Set.Icc (0:ℝ) 1 →
       (∫ θ : ℝ, polynomialSphere p (latitudePoint (.refl ℝ Ambient) u θ) ∂angleMeasure) = Q.eval (u:ℂ) := by
@@ -103,7 +103,7 @@ private lemma exists_profile (p : MvPolynomial (Fin 3) ℂ) :
     change (∫ θ : ℝ, polynomialSphere p (latitudePoint (.refl ℝ Ambient) u θ) +
       polynomialSphere q (latitudePoint (.refl ℝ Ambient) u θ) ∂angleMeasure) = _
     rw [integral_add (poly_integrable p u hu) (poly_integrable q u hu)]
-    exact (congrArg₂ (· + ·) (hP u hu) (hQ u hu)).trans (Polynomial.eval_add).symm
+    simp_all
 
 theorem latitude_average_polynomial (p : MvPolynomial (Fin 3) ℂ) :
     ∃ Q : Polynomial ℂ,
@@ -121,12 +121,12 @@ theorem latitude_average_polynomial (p : MvPolynomial (Fin 3) ℂ) :
   have hz (θ : ℝ) : latitudePoint (.refl ℝ Ambient) 0 θ =
       ⟨north, mem_sphere_zero_iff_norm.mpr north_norm⟩ := by
     apply Subtype.ext
-    rw [latitudePoint_val _ _ _ (by constructor <;> norm_num)]
+    rw [latitudePoint_val _ _ _ (by simp_all)]
     ext i
-    fin_cases i <;> simp [latitudeAmbient, north, PiLp.single_apply]
-  have he := hQ 0 (by constructor <;> norm_num)
+    fin_cases i <;> simp [latitudeAmbient, north]
+  have he := hQ 0 (by simp_all)
   simp only [hz, Complex.ofReal_zero, integral_const, Measure.real, hm,
     ENNReal.toReal_one, one_smul] at he
-  exact he.symm
+  simp_all
 
 end DedekindZetaZeroFree.ComplexFractionalInverse.FunkHecke.CircleAverage

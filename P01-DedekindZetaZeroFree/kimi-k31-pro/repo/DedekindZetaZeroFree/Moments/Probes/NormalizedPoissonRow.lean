@@ -127,23 +127,21 @@ theorem exact_normalized_poisson_row_of_coset_dilation
       ∑' h : A.R,
         frequencyTerm A P.coefficients P.finiteTrace P.additiveMeasure P.W0
           s a hs ha X t h := by
-    have h := hsplit
-    rw [Finset.sum_singleton, hzero, zero_add] at h
-    exact h
+    grind
   have hcongr := tsum_congr_subtype (fun h : A.R =>
       frequencyTerm A P.coefficients P.finiteTrace P.additiveMeasure P.W0
         s a hs ha X t h)
     (P := fun x : A.R => x ∉ ({0} : Finset A.R)) (Q := fun x : A.R => x ≠ 0)
-    (fun x => by simp [Finset.mem_singleton])
+    (fun x => by grind)
   have heq : (∑' h : A.R,
       frequencyTerm A P.coefficients P.finiteTrace P.additiveMeasure P.W0
         s a hs ha X t h) =
       ∑' h : {h : A.R // h ≠ 0},
         frequencyTerm A P.coefficients P.finiteTrace P.additiveMeasure P.W0
           s a hs ha X t h.val := by
-    rw [← hsub, hcongr]
+    grind
   exact ⟨hsumOrig, hsumFreq, hsumFreq.subtype (fun h => h ≠ 0),
-    by rw [heq] at hrow; exact hrow⟩
+    by grind⟩
 
 theorem normalized_dilation_scalar {qs qa X : ℝ}
     (hqs : 0 < qs) (hqa : 0 < qa) (hX : 0 < X) :
@@ -156,11 +154,7 @@ theorem normalized_dilation_scalar {qs qa X : ℝ}
   rw [← mul_assoc, mul_inv_cancel₀ hc, one_mul, ← Complex.ofReal_mul]
   congr 1
   rw [Real.sqrt_mul hqs.le]
-  have hsq : Real.sqrt X * Real.sqrt X = X := Real.mul_self_sqrt hX.le
-  calc
-    X * Real.sqrt qs / qa = Real.sqrt qs * (Real.sqrt X * Real.sqrt X) / qa := by
-      rw [hsq]; ring
-    _ = Real.sqrt qs * Real.sqrt X * (Real.sqrt X / qa) := by ring
+  grind
 
 theorem exact_normalized_poisson_row_of_unnormalized_coset
     (A : SArithmeticData F) (σ : F →+* ℂ)

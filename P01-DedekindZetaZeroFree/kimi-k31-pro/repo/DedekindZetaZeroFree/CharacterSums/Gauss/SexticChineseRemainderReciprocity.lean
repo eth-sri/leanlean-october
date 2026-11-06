@@ -249,7 +249,7 @@ theorem idealGauss_squarefree_crt (A : SArithmeticData F) (σ : F →+* ℂ)
     change E (E.symm _) = E _
     rw [E.apply_symm_apply, hE]
     simp only [Equiv.prodCongr_apply, Units.mulLeft_apply, hub.unit_spec, hua.unit_spec,
-      map_add, map_mul, haz, hbz, zero_mul, mul_zero, add_zero, zero_add]
+      map_add, map_mul, haz, hbz, zero_mul, add_zero, zero_add]
     rfl
   have hphase (x y : A.R) :
       A.residueTraceCharacter hS K (a * b) hab
@@ -272,7 +272,7 @@ theorem idealGauss_squarefree_crt (A : SArithmeticData F) (σ : F →+* ℂ)
       (σ (A.sexticResidue J a) ^ sexticExponent j *
         A.sexticResiduePowerChar σ J j (Ideal.Quotient.mk (A.extendIdeal J) y)) := by
     rw [gaussCRT_char_mul_modulus A σ I J K hK _ (hu _) j]
-    simp only [map_add, map_mul, haz, hbz, zero_mul, mul_zero, add_zero, zero_add]
+    simp only [map_add, map_mul, haz, hbz, zero_mul, add_zero, zero_add]
     rw [gaussCRT_char_unit A σ I b hub j, gaussCRT_char_unit A σ J a hua j]
   letI : Finite (A.R ⧸ A.extendIdeal I) := A.exteriorResidue_finite I
   letI : Finite (A.R ⧸ A.extendIdeal J) := A.exteriorResidue_finite J

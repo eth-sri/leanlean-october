@@ -34,8 +34,7 @@ private theorem codifferential_smul_const (d : ℕ) (W : HyperbolicChart.Space d
     HyperbolicChart.codifferential d (fun y => c • W y) x =
       c * HyperbolicChart.codifferential d W x := by
   unfold HyperbolicChart.codifferential HyperbolicChart.coordinateDerivative
-  have hc (i : Fin d) (k : Fin 3) : DifferentiableAt ℝ (fun y => W y i k) x := by
-    exact (differentiableAt_pi.mp ((differentiableAt_pi.mp hW) i)) k
+  have hc (i : Fin d) (k : Fin 3) : DifferentiableAt ℝ (fun y => W y i k) x := (differentiableAt_pi.mp ((differentiableAt_pi.mp hW) i)) k
   simp only [Pi.smul_apply, smul_eq_mul]
   change (∑ i : Fin d, (-(fderiv ℝ (fun y => c * W y i 0) x) (HyperbolicChart.coordinateVector d i 2) +
       2 * (c * W x i 0) - (Real.exp (x (i, 2)) : ℂ) * (fderiv ℝ (fun y => c * W y i 1) x) (HyperbolicChart.coordinateVector d i 0) -
@@ -147,11 +146,9 @@ private theorem untwisted_codifferential {i : Fin (H.atlas U).componentCount}
         f (HyperbolicChart.codifferential (d F) ((CotangentLogCoframe.j (d F)).symm ∘ V) x) := by
     let A : M F → M F := fun y => CotangentLogCoframe.H (d F) y (part (d F) f (V y))
     let B : M F → M F := fun y => CotangentLogCoframe.H (d F) y (part (d F) f (W y))
-    have ha : ContDiffAt ℝ 1 A x := by
-      exact ((CotangentLogCoframe.contDiff_H (d F)).contDiffAt.clm_apply
+    have ha : ContDiffAt ℝ 1 A x := ((CotangentLogCoframe.contDiff_H (d F)).contDiffAt.clm_apply
         (part_contDiffAt (d F) f V x hV)).of_le (by simp)
-    have hb : ContDiffAt ℝ 1 B (e.psi x) := by
-      exact ((CotangentLogCoframe.contDiff_H (d F)).contDiffAt.clm_apply
+    have hb : ContDiffAt ℝ 1 B (e.psi x) := ((CotangentLogCoframe.contDiff_H (d F)).contDiffAt.clm_apply
         (part_contDiffAt (d F) f W (e.psi x) hW)).of_le (by simp)
     have hpush : (B ∘ e.psi) =ᶠ[𝓝 x] fun y => fderiv ℝ e.psi y (A y) := by
       filter_upwards [hVW] with y hy
@@ -181,8 +178,7 @@ theorem actual_codifferential_arrow {i : Fin (H.atlas U).componentCount}
     intro h
     simp [c, show e.phase x = 0 from h] at hn
   let W' : M F → E F := fun y => c⁻¹ • W y
-  have hW' : ContDiffAt ℝ (⊤ : ℕ∞) W' (e.psi x) := by
-    exact (contDiffAt_const (c := c⁻¹)).smul hW
+  have hW' : ContDiffAt ℝ (⊤ : ℕ∞) W' (e.psi x) := (contDiffAt_const (c := c⁻¹)).smul hW
   have hp : (fun y => W' (e.psi y)) =ᶠ[𝓝 x]
       (fun y => operatorComplexification _ (Q e y) (V y)) := by
     filter_upwards [hVW, phase_eventually_constant e x hx] with y hy hphase

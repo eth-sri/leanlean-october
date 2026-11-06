@@ -22,7 +22,7 @@ namespace DedekindZetaZeroFree.LargeSieve
 private lemma sum_pair (g : ({0, 1} : Finset ℝ) → ℂ) :
     (∑ p : ({0, 1} : Finset ℝ), g p) = g ⟨0, by simp⟩ + g ⟨1, by simp⟩ := by
   rw [show (Finset.univ : Finset ↥({0, 1} : Finset ℝ)) = {⟨0, by simp⟩, ⟨1, by simp⟩} from by
-    ext p; simp [Subtype.ext_iff, Finset.mem_insert, Finset.mem_singleton, eq_comm, or_comm]]
+    ext p; simp [Subtype.ext_iff, Finset.mem_insert, Finset.mem_singleton, eq_comm]]
   rw [Finset.sum_insert (by simp), Finset.sum_singleton]
 
 def principalLogResidue0
@@ -101,7 +101,7 @@ private lemma logarithmic_left_integral
     let s : ℂ := ((-δ / 2 : ℝ) : ℂ) + t * Complex.I
     have hs : s.re < 0 := by
       dsimp [s]
-      simp only [Complex.add_re, Complex.div_re, Complex.ofReal_re, Complex.ofReal_im,
+      simp only [Complex.ofReal_re, Complex.ofReal_im,
         Complex.mul_re, Complex.I_re, Complex.I_im, mul_zero, zero_mul, sub_zero, add_zero]
       linarith [hf.delta_pos]
     have ht : 1 < (1 - s).re := by simp only [Complex.sub_re, Complex.one_re]; linarith
@@ -220,7 +220,7 @@ theorem principal_logarithmic_contour
         ring)
       hbd_a hbd_b ⟨Cg, Ag, hCg, hAg, hgrowth⟩
     rw [hmain, sum_pair]
-    simp only [Nat.succ_ne_zero, if_false, if_true, one_ne_zero, ↓reduceIte]
+    simp only [Nat.succ_ne_zero, one_ne_zero, ↓reduceIte]
     rw [Vendor.logProductPrincipalCoeff_one]
     rfl
 

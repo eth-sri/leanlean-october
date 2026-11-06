@@ -88,7 +88,7 @@ private theorem finiteProjection_local_infinite (v : NumberField.InfinitePlace F
     rw [hn, map_one] at h
     convert congrArg (fun m => m i j) h using 1
     · rfl
-    · by_cases hij : i = j <;> subst_vars <;> simp [Matrix.one_apply, *] <;> rfl
+    · by_cases hij : i = j <;> subst_vars <;> simp [*] <;> rfl
   rw [he, map_one]
 
 private theorem finiteProjection_archimedeanInsertion (a : KPSmoothActualFlowData.GInfinity F) :
@@ -198,7 +198,7 @@ private theorem finiteProjection_archimedeanInsertion (a : KPSmoothActualFlowDat
   refine ⟨KPCuspGenuineMonodromy.finiteBase F ζ hζ (v * u⁻¹),
     ⟨v * u⁻¹, (v * u⁻¹).property, rfl⟩, ?_⟩
   rw [hu,hv] at he
-  simp only [MulAut.conj_apply, map_mul, map_inv, Subgroup.coe_mul, Subgroup.coe_inv]
+  simp only [map_mul]
   have hh := congrArg (fun x => x * (KPCuspGenuineMonodromy.finiteBase F ζ hζ u)⁻¹ *
     (KPCuspGenuineMonodromy.finiteBase F ζ hζ g)⁻¹) he
   simpa [mul_assoc] using hh.symm

@@ -1,6 +1,7 @@
 module
 
 public import DedekindZetaZeroFree.RepresentationTheory.Continuous.Characters
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -35,12 +36,9 @@ noncomputable def linHom (π : ContRepresentation 𝕜 G V) (ρ : ContRepresenta
     { toFun g := (ContinuousLinearMap.compL 𝕜 V W W (ρ g)).comp
         ((ContinuousLinearMap.compL 𝕜 V V W).flip (π g⁻¹))
       map_one' := by
-        ext T v
-        simp [ContinuousLinearMap.compL_apply, ContinuousLinearMap.one_def]
+        measurability
       map_mul' g h := by
-        ext T v
-        simp [ContinuousLinearMap.compL_apply, mul_inv_rev, map_mul π, map_mul ρ,
-          mul_apply_eq_comp] }
+        measurability }
 
 variable (π : ContRepresentation 𝕜 G V) (ρ : ContRepresentation 𝕜 G W)
 
@@ -65,7 +63,7 @@ theorem linHom_apply_eq_self_iff_isIntertwining (T : V →L[𝕜] W) :
   rw [Representation.isIntertwiningMap_iff] at key
   simp only [LinearMap.ext_iff, LinearMap.comp_apply, ContinuousLinearMap.coe_coe] at key
   simp only [ContinuousLinearMap.ext_iff, ContinuousLinearMap.comp_apply]
-  exact key
+  measurability
 
 end Invariants
 

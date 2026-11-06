@@ -44,7 +44,7 @@ theorem orbitFrequency_surjective : Function.Surjective (orbitFrequency R) := by
     QuotientGroup.eq_iff_div_mem.mp hr.symm
   refine ⟨(ξ, ⟨a / r, hm⟩), ?_⟩
   change r * (a / r) = a
-  simp [div_eq_mul_inv, mul_comm]
+  simp [div_eq_mul_inv]
 
 def orbitFrequencyEquiv : OrbitIndex R ≃ Fˣ :=
   Equiv.ofBijective (orbitFrequency R)

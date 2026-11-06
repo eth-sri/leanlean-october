@@ -2,6 +2,7 @@ module
 
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.RayClassModulus
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.RayLocalHigherUnitGroup
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -53,10 +54,8 @@ namespace IsRayCongruent
 theorem one {K : Type u} [Field K] [NumberField K]
     (m : RayClassModulus K) : IsRayCongruent m 1 := by
   constructor
-  · intro v _
-    simpa only [map_one] using (rayLocalHigherUnitGroup v (m.finitePart v)).one_mem
-  · intro v _
-    simp
+  · norm_num
+  · norm_num
 
 /-- Ray-congruent nonzero elements are closed under multiplication. -/
 theorem mul {K : Type u} [Field K] [NumberField K]

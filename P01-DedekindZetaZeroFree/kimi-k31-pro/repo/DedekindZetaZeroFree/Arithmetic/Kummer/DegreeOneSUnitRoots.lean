@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.Arithmetic.Units.SArithmeticData
 public import ClassFieldTheory.All
+public import Mathlib.Tactic.Linarith
 
 @[expose] public section
 
@@ -18,11 +19,11 @@ theorem sunit_root_of_simpleKummerExtension_finrank_one
   let E := KummerTheory.chosenSimpleKummerExtension F n hnF (a : Fˣ)
   let β := KummerTheory.chosenSimpleKummerRootUnit F n hnF (a : Fˣ)
   have hbij : Function.Bijective (algebraMap F E) :=
-    Algebra.finrank_eq_one_iff_bijective_algebraMap.mp (by simpa only [E] using hdegree)
+    Algebra.finrank_eq_one_iff_bijective_algebraMap.mp (by linarith)
   obtain ⟨x, hx⟩ := hbij.2 (β : E)
   have hx0 : x ≠ 0 := by
     intro h
-    have h0 : algebraMap F E x = 0 := by rw [h, map_zero]
+    have h0 : algebraMap F E x = 0 := by grind
     rw [hx] at h0
     exact β.ne_zero h0
   let b0 : Fˣ := Units.mk0 x hx0
@@ -30,7 +31,7 @@ theorem sunit_root_of_simpleKummerExtension_finrank_one
   have hmap : Units.map (algebraMap F E).toMonoidHom b0 = β := by
     apply Units.ext
     change algebraMap F E (b0 : F) = (β : E)
-    rw [hb0, hx]
+    grind
   have hpow : β ^ (n : ℕ) =
       Units.map (algebraMap F E).toMonoidHom (a : Fˣ) :=
     KummerTheory.chosenSimpleKummerRootUnit_pow F n hnF (a : Fˣ)
@@ -39,8 +40,7 @@ theorem sunit_root_of_simpleKummerExtension_finrank_one
     rw [map_pow, hmap, hpow]
   have hmem : b0 ∈ SUnitGroup (K := F) A.Sf := by
     apply KummerTheory.mem_sUnitGroup_of_pow_mem (K := F) A.Sf n b0
-    rw [hpow2]
-    exact a.property
+    grind
   refine ⟨⟨b0, hmem⟩, ?_⟩
   exact Subtype.ext (by simpa using hpow2)
 

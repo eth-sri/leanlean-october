@@ -52,46 +52,15 @@ variable {K : Type u} {L : Type w} [Field K] [Field L] [Algebra K L]
 variable (base : CompleteDVF.{u, v} K) (ambient : CompleteDVF.{w, x} L)
 variable [base.valuation.HasExtension ambient.valuation]
 
-/-- A finite unramified subextension of an
-ambient valued extension. -/
-def IsFiniteUnramifiedSubextension (E : IntermediateField K L) : Prop :=
-  ∃ hfin : FiniteDimensional K E,
-    ∃ hsep : Algebra.IsSeparable K E,
-      ∃ target : CompleteDVF.{w, x} E,
-        ∃ hBase : base.valuation.HasExtension target.valuation,
-          ∃ hAmbient : target.valuation.HasExtension ambient.valuation,
-            letI : FiniteDimensional K E := hfin
-            letI : Algebra.IsSeparable K E := hsep
-            letI : base.valuation.HasExtension target.valuation := hBase
-            letI : target.valuation.HasExtension ambient.valuation := hAmbient
-            IsFiniteUnramified base.toDVF target.toDVF
 
-/-- An algebraic unramified ambient extension.
 
-The ambient extension is unramified when every finite set of elements lies in
-one finite unramified intermediate extension.  This is the finite-support form
-of the phrase "a union of finite unramified subextensions" and is the
-form used in finite-support reductions for algebraic unramified extensions. -/
-def IsAlgebraicUnramifiedExtension : Prop :=
-  ∀ S : Finset L, ∃ E : IntermediateField K L,
-    (∀ x ∈ S, (x : L) ∈ E) ∧ IsFiniteUnramifiedSubextension base ambient E
+
 
 /- the finite unramified-extension definition finite-support eliminator.
 
 In an algebraic unramified ambient extension, every finitely generated
 intermediate field is contained in a finite unramified subextension. -/
-omit [base.valuation.HasExtension ambient.valuation] in
-theorem exists_isFiniteUnramifiedSubextension_of_fg
-    (h : IsAlgebraicUnramifiedExtension base ambient)
-    {E : IntermediateField K L} (hE : E.FG) :
-    ∃ U : IntermediateField K L,
-      E ≤ U ∧ IsFiniteUnramifiedSubextension base ambient U := by
-  obtain ⟨S, hS⟩ := hE
-  obtain ⟨U, hUS, hU⟩ := h S
-  refine ⟨U, ?_, hU⟩
-  rw [← hS]
-  exact IntermediateField.adjoin_le_iff.2 fun x hx =>
-    hUS x (by simpa using hx)
+
 
 end AlgebraicUnramified
 
@@ -239,67 +208,17 @@ def FiniteUnramifiedSubextension
       (exponentialValuationRestrict w E)
       (exponentialValuationRestrict_extends v w hExt E)
 
-/-- A finite unramified intermediate extension is finite-dimensional over the
-base field; this extracts the genuine finiteness datum from the finite unramified-extension definition. -/
-theorem finiteDimensional_of_finiteUnramifiedSubextension
-    (v : LubinTate.Valuations.ExponentialValuation K) (w : LubinTate.Valuations.ExponentialValuation L)
-    (hExt : ∀ a : K, w (algebraMap K L a) = v a)
-    {E : IntermediateField K L}
-    (h : FiniteUnramifiedSubextension v w hExt E) :
-    FiniteDimensional K E := by
-  rcases h with ⟨hfin, _⟩
-  exact hfin
 
-/-- The literal set-theoretic union of all finite unramified intermediate
-extensions. -/
-def finiteUnramifiedSubextensionUnion
-    (v : LubinTate.Valuations.ExponentialValuation K) (w : LubinTate.Valuations.ExponentialValuation L)
-    (hExt : ∀ a : K, w (algebraMap K L a) = v a) : Set L :=
-  {x | ∃ E : IntermediateField K L,
-    x ∈ E ∧ FiniteUnramifiedSubextension v w hExt E}
 
-/-- Arbitrary algebraic-extension form:
-the ambient field is the union of its finite unramified subextensions. -/
-def AlgebraicUnramifiedExtension
-    [Algebra.IsAlgebraic K L]
-    (v : LubinTate.Valuations.ExponentialValuation K) (w : LubinTate.Valuations.ExponentialValuation L)
-    (hExt : ∀ a : K, w (algebraMap K L a) = v a) : Prop :=
-  finiteUnramifiedSubextensionUnion v w hExt = Set.univ
 
-/-- Elementwise form of the finite-subextension union clause. -/
-theorem algebraicUnramifiedExtension_iff
-    [Algebra.IsAlgebraic K L]
-    (v : LubinTate.Valuations.ExponentialValuation K) (w : LubinTate.Valuations.ExponentialValuation L)
-    (hExt : ∀ a : K, w (algebraMap K L a) = v a) :
-    AlgebraicUnramifiedExtension v w hExt ↔
-      ∀ x : L, ∃ E : IntermediateField K L,
-        x ∈ E ∧ FiniteUnramifiedSubextension v w hExt E := by
-  rw [AlgebraicUnramifiedExtension, Set.eq_univ_iff_forall]
-  rfl
 
-/-- Finite-support form used by the later base-change proof.  It is kept
-separate from the literal union definition, so the finite unramified-extension definition itself does not
-silently assume closure of finite unramified extensions under compositum. -/
-def AlgebraicUnramifiedExtensionFiniteSupport
-    [Algebra.IsAlgebraic K L]
-    (v : LubinTate.Valuations.ExponentialValuation K) (w : LubinTate.Valuations.ExponentialValuation L)
-    (hExt : ∀ a : K, w (algebraMap K L a) = v a) : Prop :=
-  ∀ S : Finset L, ∃ E : IntermediateField K L,
-    (∀ x ∈ S, x ∈ E) ∧ FiniteUnramifiedSubextension v w hExt E
 
-/-- A finite-support presentation is, in particular, the literal union from
-the finite unramified-extension definition.  The converse belongs after the compositum theorem rather than
-being built into the definition. -/
-theorem algebraicUnramifiedExtension_of_finiteSupport
-    [Algebra.IsAlgebraic K L]
-    (v : LubinTate.Valuations.ExponentialValuation K) (w : LubinTate.Valuations.ExponentialValuation L)
-    (hExt : ∀ a : K, w (algebraMap K L a) = v a)
-    (h : AlgebraicUnramifiedExtensionFiniteSupport v w hExt) :
-    AlgebraicUnramifiedExtension v w hExt := by
-  rw [algebraicUnramifiedExtension_iff]
-  intro x
-  obtain ⟨E, hmem, hE⟩ := h {x}
-  exact ⟨E, hmem x (by simp), hE⟩
+
+
+
+
+
+
 
 end UnramifiedExtensions
 

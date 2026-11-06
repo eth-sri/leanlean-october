@@ -4,6 +4,7 @@ public import DedekindZetaZeroFree.LargeSieve.CharacterBounds.AdmissibleRangeBou
 public import DedekindZetaZeroFree.LargeSieve.CharacterBounds.ThetaDiagonalGramBound
 public import DedekindZetaZeroFree.LargeSieve.CharacterBounds.SameClassOffDiagonalGram
 public import DedekindZetaZeroFree.LargeSieve.Exponents.GramBoundsToExponentTwo
+public import Mathlib.Tactic.Linarith
 
 @[expose] public section
 
@@ -37,9 +38,9 @@ theorem initialBound (F : Type) [Field F] [NumberField F]
       simp only [Set.mem_union, Set.mem_singleton_iff, Set.mem_setOf_eq]
       constructor
       · rintro (h | ⟨lam, -, rfl⟩)
-        · exact h
-        · rw [hQ1 lam]
-      · exact Or.inl
+        · linarith
+        · grind
+      · grind
     rw [B1, hset, csSup_singleton]
     simp
   ·
@@ -48,7 +49,7 @@ theorem initialBound (F : Type) [Field F] [NumberField F]
     refine initial_gram_to_exponent F c Q ⟨D, hD, ?_⟩ ?_
     · intro M N hM hN b hb
       rw [mem_paperShell] at hb
-      exact hdiag c Q M hM b hb.1 hb.2.1
+      grind
     · intro ε hε
       exact initial_same_class_gram F hF c hc Q ε hε
 

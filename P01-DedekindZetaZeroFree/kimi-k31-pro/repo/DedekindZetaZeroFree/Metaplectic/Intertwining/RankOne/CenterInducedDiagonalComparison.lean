@@ -512,7 +512,7 @@ theorem center_quotient_dimension :
   constructor
   · rw [(centerCoordinates T rep hrep).finrank_eq]
     letI := Fintype.ofFinite D
-    simp [Module.finrank_pi, Nat.card_eq_fintype_card]
+    simp [Nat.card_eq_fintype_card]
   · rw [tau_finrank_eq_index T P, P.L.index_comap_of_surjective T.quotient_surjective]
     exact isotropic_square T.pairing T.alternating T.perfect P.L P.maximal
 
@@ -593,7 +593,7 @@ theorem centerCoefficientMap_surjective : Function.Surjective (centerCoefficient
     intro f
     have heq : f = ∑ i : D, Pi.single i (f i) := by
       funext i
-      simp [Fintype.sum_pi_single]
+      simp
     rw [heq]
     apply S.sum_mem
     intro i _
@@ -638,7 +638,7 @@ theorem centerCoefficientEquiv_natural (ε : Sign) (h : H) (v : CenterModule T) 
         (centerCoefficientEquiv T P v) := by
   apply (centerCoefficientMap_bijective T P).1
   rw [← centerCoefficientMap_natural]
-  simp [centerCoefficientEquiv, LinearEquiv.ofBijective_apply]
+  simp [centerCoefficientEquiv]
 
 set_option maxHeartbeats 800000 in
 
@@ -859,7 +859,7 @@ theorem tauDual_finite_coordinates [Fintype D] (ℓ : Multiplicity T P) :
   intro v
   have hv : (ev v : D → ℂ) = ∑ d : D, ev v d • Pi.single d (1 : ℂ) := by
     funext d
-    simp [← Pi.single_smul, Fintype.sum_pi_single]
+    simp [← Pi.single_smul]
   have he : L (ev v) = ℓ v := by
     have hh := LinearMap.congr_fun hL (e v)
     simpa [e] using hh
@@ -939,7 +939,7 @@ theorem centerTransportedOperator_integral (I : IwasawaData A) (μ : Measure (Lo
     · simp only [map_add, Submodule.coe_add, Pi.add_apply]
       rw [ht.2, hu.2]
       unfold centerIntegralCoordinate
-      simp only [map_add, Submodule.coe_add, Pi.add_apply]
+      simp only [Submodule.coe_add, Pi.add_apply]
       exact (integral_add ht.1 hu.1).symm
 
 theorem centerTransportedOperator_intertwining (I : IwasawaData A) (μ : Measure (LocalField F q))
@@ -1016,11 +1016,11 @@ private theorem center_evaluation_norm (ε : Sign) (x : ℝ) :
     change ‖KPRankOneRootParameter.r (LocalField F q) (x : ℂ)‖ = _
     simp only [KPRankOneRootParameter.r, Complex.norm_exp, Complex.mul_re, Complex.neg_re,
       Complex.ofReal_re, Complex.neg_im, Complex.ofReal_im, mul_zero, sub_zero,
-      evaluationUnit, if_true]
+      if_true]
   | minus =>
     change ‖(KPRankOneRootParameter.r (LocalField F q) (x : ℂ))⁻¹‖ = _
     simp only [KPRankOneRootParameter.r, norm_inv, Complex.norm_exp, Complex.mul_re, Complex.neg_re,
-      Complex.ofReal_re, Complex.neg_im, Complex.ofReal_im, mul_zero, sub_zero,
+      Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero,
       ← Real.exp_neg, neg_mul, neg_neg, reduceCtorEq, if_false]
 
 private theorem center_evaluation_infinite (ε : Sign) :

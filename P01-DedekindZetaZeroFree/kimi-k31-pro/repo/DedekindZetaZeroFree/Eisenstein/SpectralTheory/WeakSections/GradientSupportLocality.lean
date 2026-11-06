@@ -174,7 +174,7 @@ private theorem decode_zero (W : Family (U := U) (H := H))
   rintro ⟨i,k⟩
   have hk := h (coefficientIndex (F := F) (i, ![2, 0, 1] k))
   simp only [coordinateW, Equiv.symm_apply_apply] at hk
-  fin_cases k <;> simp_all [Real.exp_ne_zero]
+  fin_cases k <;> simp_all []
 private theorem lp_locallyIntegrable {n : ℕ} (B : LocalBall n) (u : BallL2 B) :
     LocallyIntegrableOn u B.carrier (volume.restrict B.carrier) := by
   apply (locallyIntegrableOn_iff (μ := volume.restrict B.carrier)

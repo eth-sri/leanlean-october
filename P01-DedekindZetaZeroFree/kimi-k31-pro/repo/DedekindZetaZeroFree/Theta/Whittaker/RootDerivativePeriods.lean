@@ -1,6 +1,7 @@
 module
 
 public import DedekindZetaZeroFree.Theta.Whittaker.ArchimedeanDerivativeMultipliers
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -43,9 +44,7 @@ theorem fourier_firstRootDerivatives (dq : Measure (KPAdditiveQuotient F))
       firstRootMultiplier R B y * MomentSources.fourier R dq f (diagonal R y) := by
   unfold firstRootDerivatives
   rw [fourier_firstRootList R dq hHaar hprob B _ f hf hr]
-  unfold firstRootMultiplier
-  congr 1
-  exact Finset.prod_map_toList _ _
+  measurability
 
 theorem firstRootDerivatives_period (N : TraceHaarTransport R)
     (A : FirstRootSphericalSeed R N) (B : FirstRootCutoffs R) (J : FirstRootProjected R N A B)

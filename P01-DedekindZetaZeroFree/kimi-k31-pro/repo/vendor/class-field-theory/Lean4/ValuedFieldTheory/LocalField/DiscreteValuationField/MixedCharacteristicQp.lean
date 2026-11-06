@@ -79,10 +79,7 @@ abbrev mrangeValueGroup (F : LocalField.{u, v} K) : Type v :=
 abbrev ratSubfield (_F : LocalField.{u, v} K) [CharZero K] : Subfield K :=
   (algebraMap ℚ K).fieldRange
 
-/-- Establishes the identity `F.ratSubfield = (⊥ : Subfield K)`. -/
-theorem ratSubfield_eq_bot (F : LocalField.{u, v} K) [CharZero K] :
-    F.ratSubfield = (⊥ : Subfield K) := by
-  simpa [ratSubfield] using (Subfield.bot_eq_of_charZero (K := K)).symm
+
 
 /-- Establishes the membership statement `(q : K) ∈ F.ratSubfield`. -/
 theorem ratCast_mem_ratSubfield
@@ -99,19 +96,7 @@ noncomputable def qpadicClosureSubfield
     _root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrictValued F.toCompleteDVF
   exact F.ratSubfield.topologicalClosure
 
-/--
-The underlying set of the `p`-adic closure subfield is the topological closure of the rational
-subfield.
--/
-theorem qpadicClosureSubfield_coe
-    (F : LocalField.{u, v} K) [CharZero K] :
-    letI : Valued K F.mrangeValueGroup :=
-      _root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrictValued F.toCompleteDVF
-    (F.qpadicClosureSubfield : Set K) =
-      closure (F.ratSubfield : Set K) := by
-  let : Valued K F.mrangeValueGroup :=
-    _root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrictValued F.toCompleteDVF
-  rfl
+
 
 /-- Proves the bound `F.ratSubfield ≤ F.qpadicClosureSubfield`. -/
 theorem ratSubfield_le_qpadicClosureSubfield
@@ -158,19 +143,7 @@ theorem ratSubfield_denseRange_in_qpadicClosureSubfield
   intro x hx
   exact hx
 
-/-- Proves the bound `F.qpadicClosureSubfield ≤ E`. -/
-theorem qpadicClosureSubfield_le_of_ratSubfield_le
-    (F : LocalField.{u, v} K) [CharZero K] {E : Subfield K}
-    (hEclosed :
-      letI : Valued K F.mrangeValueGroup :=
-        _root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrictValued F.toCompleteDVF
-      IsClosed (E : Set K))
-    (hRat : F.ratSubfield ≤ E) :
-    F.qpadicClosureSubfield ≤ E := by
-  let : Valued K F.mrangeValueGroup :=
-    _root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrictValued F.toCompleteDVF
-  simpa [qpadicClosureSubfield] using
-    (Subfield.topologicalClosure_minimal F.ratSubfield hRat hEclosed)
+
 
 /-- The `p`-adic closure subfield is complete for the restricted valuation topology. -/
 theorem qpadicClosureSubfield_completeSpace
@@ -243,18 +216,7 @@ theorem mrangeRestrict_valuation_ratCast_le_one_iff_padicValuation_le_one
   simpa [_root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict_apply] using
     F.valuation_ratCast_le_one_iff_padicValuation_le_one q
 
-/-- Pulling back the range-restricted valuation subring along `ℚ → K` gives
-the usual `p`-adic valuation subring of `ℚ`. -/
-theorem ratCast_preimage_mrangeRestrict_valuationSubring_eq_padicValuationSubring
-    (F : LocalField.{u, v} K) [CharZero K] :
-    (_root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict F.toCompleteDVF).valuationSubring.comap (Rat.castHom K) =
-      (Rat.padicValuation F.residueCharacteristic).valuationSubring := by
-  ext q
-  rw [ValuationSubring.mem_comap]
-  change _root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict F.toCompleteDVF ((Rat.castHom K) q) ≤ 1 ↔
-    Rat.padicValuation F.residueCharacteristic q ≤ 1
-  simpa using
-    F.mrangeRestrict_valuation_ratCast_le_one_iff_padicValuation_le_one q
+
 
 /-- The range-restricted local-field valuation, restricted along `ℚ → K`, is
 equivalent to the usual `p`-adic valuation. -/
@@ -640,25 +602,7 @@ theorem qpadicCompletionToQpadicClosureSubfield_isUniformInducing
       (f := F.ratCastWithValToQpadicClosureSubfield)
       F.ratCastWithValToQpadicClosureSubfield_isUniformInducing
 
-/-- The completion extension still has dense range in the closed `Qp`
-candidate. -/
-theorem qpadicCompletionToQpadicClosureSubfield_denseRange
-    (F : LocalField.{u, v} K) [CharZero K] :
-    letI : Valued K F.mrangeValueGroup :=
-      _root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrictValued F.toCompleteDVF
-    letI : NontriviallyNormedField K :=
-      _root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict_nontriviallyNormedField F.toCompleteDVF
-    DenseRange F.qpadicCompletionToQpadicClosureSubfield := by
-  let : Valued K F.mrangeValueGroup :=
-    _root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrictValued F.toCompleteDVF
-  let : NontriviallyNormedField K :=
-    _root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict_nontriviallyNormedField F.toCompleteDVF
-  apply DenseRange.of_comp
-    (g := fun q : WithVal (Rat.padicValuation F.residueCharacteristic) =>
-      (q : (Rat.padicValuation F.residueCharacteristic).Completion))
-  simpa [Function.comp_def,
-    F.qpadicCompletionToQpadicClosureSubfield_coe] using
-    F.ratCastWithValToQpadicClosureSubfield_denseRange
+
 
 /-- The induced map from the actual `p`-adic number field to the closed `Qp`
 candidate inside `K`. -/
@@ -827,27 +771,9 @@ noncomputable def qpadicNumbersEquivQpadicClosureSubfield
     ⟨RingHom.injective _,
       F.qpadicNumbersToQpadicClosureSubfield_surjective⟩
 
-/--
-The defining evaluation formula for `qpadicNumbersEquivQpadicClosureSubfield` is
-`F.qpadicNumbersEquivQpadicClosureSubfield x = F.qpadicNumbersToQpadicClosureSubfield x`.
--/
-theorem qpadicNumbersEquivQpadicClosureSubfield_apply
-    (F : LocalField.{u, v} K) [CharZero K]
-    (x : ℚ_[F.residueCharacteristic]) :
-    F.qpadicNumbersEquivQpadicClosureSubfield x =
-      F.qpadicNumbersToQpadicClosureSubfield x :=
-  rfl
 
-/--
-Establishes the identity `F.qpadicNumbersEquivQpadicClosureSubfield (q :
-ℚ_[F.residueCharacteristic]) = F.ratCastToQpadicClosureSubfield q`.
--/
-theorem qpadicNumbersEquivQpadicClosureSubfield_ratCast
-    (F : LocalField.{u, v} K) [CharZero K] (q : ℚ) :
-    F.qpadicNumbersEquivQpadicClosureSubfield
-        (q : ℚ_[F.residueCharacteristic]) =
-      F.ratCastToQpadicClosureSubfield q := by
-  simp
+
+
 
 /-- The closed `Qp` candidate has the induced nontrivial normed-field
 structure.  The residue characteristic itself has norm different from one. -/
@@ -963,32 +889,9 @@ noncomputable def qpadicNumbersAlgebra
       (F.qpadicNumbersEquivQpadicClosureSubfield :
         ℚ_[F.residueCharacteristic] →+* F.qpadicClosureSubfield))
 
-/--
-The `ℚ_p` algebra map into the local field is the canonical equivalence onto the closed `p`-adic
-subfield followed by inclusion.
--/
-theorem qpadicNumbersAlgebra_algebraMap
-    (F : LocalField.{u, v} K) [CharZero K] :
-    letI : Algebra ℚ_[F.residueCharacteristic] K :=
-      F.qpadicNumbersAlgebra
-    algebraMap ℚ_[F.residueCharacteristic] K =
-      F.qpadicClosureSubfield.subtype.comp
-        (F.qpadicNumbersEquivQpadicClosureSubfield :
-          ℚ_[F.residueCharacteristic] →+* F.qpadicClosureSubfield) := by
-  rfl
 
-/--
-The `ℚ_p` algebra map sends an element to the underlying field element of its image in the closed
-`p`-adic subfield.
--/
-theorem qpadicNumbersAlgebra_algebraMap_apply
-    (F : LocalField.{u, v} K) [CharZero K]
-    (x : ℚ_[F.residueCharacteristic]) :
-    letI : Algebra ℚ_[F.residueCharacteristic] K :=
-      F.qpadicNumbersAlgebra
-    algebraMap ℚ_[F.residueCharacteristic] K x =
-      (F.qpadicNumbersEquivQpadicClosureSubfield x : K) := by
-  rfl
+
+
 
 /-- Mixed-characteristic local fields are finite-dimensional over the actual
 `p`-adic number field.  This transports the finite-dimensionality already
@@ -1030,22 +933,7 @@ theorem finiteDimensional_over_qpadicNumbers
       (n := Module.finrank F.qpadicClosureSubfield K) <| by
         simpa [Module.finrank_eq_rank'] using hrank
 
-/-- The local-field structure classification, mixed-characteristic converse branch: a characteristic
-zero local field is a finite-dimensional extension of the `p`-adic field for
-its residue characteristic `p`.  The algebra structure is the canonical one
-through the closed copy of `Qp` constructed above. -/
-theorem mixedCharacteristic_exists_qpadic_finiteExtension
-    (F : LocalField.{u, v} K) [CharZero K] :
-    ∃ p : ℕ, p = F.residueCharacteristic ∧
-      ∃ hp : Nat.Prime p,
-        letI : Fact p.Prime := ⟨hp⟩
-        ∃ hAlg : Algebra ℚ_[p] K,
-          letI : Algebra ℚ_[p] K := hAlg
-          FiniteDimensional ℚ_[p] K := by
-  refine
-    ⟨F.residueCharacteristic, rfl, F.residueCharacteristic_prime, ?_⟩
-  exact
-    ⟨F.qpadicNumbersAlgebra, F.finiteDimensional_over_qpadicNumbers⟩
+
 
 end LocalField
 end LocalFieldTheory.DiscreteValuationField

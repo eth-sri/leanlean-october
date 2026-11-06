@@ -18,7 +18,7 @@ namespace FiniteAdjustmentSupport
 private theorem single_cont (v : KPHilbert.Place F) : Continuous (RestrictedProduct.mulSingle (KPGlobalCubicIdelePairing.U F) v) := by
   let S : Set (KPHilbert.Place F) := {v}ᶜ
   let t : LocalD F v → RestrictedProduct (LocalD F) (fun w => (KPGlobalCubicIdelePairing.U F w : Set (LocalD F w))) (Filter.principal S) :=
-    fun l => ⟨Pi.mulSingle v l, by intro w hw; simp only [S, Set.mem_compl_iff, Set.mem_singleton_iff] at hw; simp [Pi.mulSingle_eq_of_ne hw, Subgroup.one_mem]⟩
+    fun l => ⟨Pi.mulSingle v l, by intro w hw; simp only [S, Set.mem_compl_iff, Set.mem_singleton_iff] at hw; simp [Pi.mulSingle_eq_of_ne hw]⟩
   have ht : Continuous t := by
     apply RestrictedProduct.continuous_rng_of_principal.mpr
     apply continuous_pi
@@ -481,7 +481,7 @@ theorem diagonal_formula (t : KPGlobalTorusFunctionData.ordinaryTorus F) :
     ext i j
     fin_cases i <;> fin_cases j <;>
       simp [KPGlobalCubicIdelePairing.diagonalHom, KPGlobalCubicIdelePairing.diagonalMatrix,
-        Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
+        Matrix.GeneralLinearGroup.coe_scalar,
         Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar, hu, hA.2.1, hA.2.2]
     exact hw.symm
   change QuotientGroup.mk' _ (KPGlobalCubicIdelePairing.diagonalHom F (u * w⁻¹)) = t.val

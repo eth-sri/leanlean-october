@@ -17,15 +17,7 @@ private lemma transpose_partition {A : Type*} [DecidableEq A]
     (R : Finset A) (blocks : ℕ → Finset A) (P : Finset ℕ) (U : Finset A)
     (hU : P.biUnion blocks = U) (hR : R ⊆ U) :
     R = P.biUnion (fun i => R ∩ blocks i) := by
-  ext a
-  simp only [Finset.mem_biUnion, Finset.mem_inter]
-  constructor
-  · intro ha
-    have := hR ha
-    rw [← hU, Finset.mem_biUnion] at this
-    obtain ⟨i, hi, hai⟩ := this
-    exact ⟨i, hi, ha, hai⟩
-  · rintro ⟨i, hi, ha, _⟩; exact ha
+  grind
 
 private lemma transpose_partition_disjoint {A : Type*} [DecidableEq A]
     (R : Finset A) (blocks : ℕ → Finset A) (P : Finset ℕ)

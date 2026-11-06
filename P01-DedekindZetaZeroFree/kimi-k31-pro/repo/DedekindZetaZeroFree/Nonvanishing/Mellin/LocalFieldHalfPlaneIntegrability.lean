@@ -21,8 +21,8 @@ theorem mellin_unit_shells_cover
   have hq : (1 : ℝ) < Ideal.absNorm v.asIdeal := by
     exact_mod_cast HeightOneSpectrum.one_lt_absNorm v
   have hq0 : (0 : ℝ) < Ideal.absNorm v.asIdeal := zero_lt_one.trans hq
-  have hqi0 : (0 : ℝ) < ((Ideal.absNorm v.asIdeal : ℝ))⁻¹ := inv_pos.mpr hq0
-  have hqi1 : ((Ideal.absNorm v.asIdeal : ℝ))⁻¹ ≤ 1 := by
+  have hqi0 : (0 : ℝ) < (Ideal.absNorm v.asIdeal : ℝ)⁻¹ := inv_pos.mpr hq0
+  have hqi1 : (Ideal.absNorm v.asIdeal : ℝ)⁻¹ ≤ 1 := by
     rw [inv_le_one₀ hq0]
     exact hq.le
   constructor

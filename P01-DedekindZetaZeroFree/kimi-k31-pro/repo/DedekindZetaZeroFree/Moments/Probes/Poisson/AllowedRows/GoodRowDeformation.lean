@@ -52,9 +52,7 @@ theorem row_good_deform (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExpone
   have hU2 : U₂ ≤ U := le_trans (le_max_right _ _) hU
   have hU2' : 2 ≤ U := le_trans (le_trans (le_max_left 2 U₁) (le_max_left _ _)) hU
   refine ⟨?_, ?_, ?_⟩
-  · intro u hu ξ hξ1 hξ2 hξ3
-    obtain ⟨h1, h2, h3, h4⟩ := hCmem u hu
-    exact hpw U hU2 u h1 h2 h3 h4 Z hZ ξ hξ1 hξ2 hξ3
+  · grind
   · intro u hu
     obtain ⟨h1, h2, h3, h4⟩ := hCmem u hu
     exact DedekindZetaZeroFree.Quantitative.RowRectangleDeformation.row_right_integrable D A_F hconv U hU2' u
@@ -75,9 +73,7 @@ theorem row_good_deform (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExpone
             (2 * (Real.pi : ℂ))⁻¹ *
               (∫ t in {t : ℝ | U ^ ρ < |t|},
                 wzIntegral D u ((Scales.rightLine : ℂ) + (t : ℂ) * Complex.I) Scales.wLine Scales.zLine Z) := by
-      intro u hu
-      obtain ⟨h1, h2, h3, h4⟩ := hCmem u hu
-      exact hrect U hU1 u h1 h2 h3 h4 Z hZ
+      grind
     unfold J Jcentral Jhoriz Jtail
     rw [finsum_mem_congr rfl key]
     all_goals simp only [finsum_mem_add_distrib hC]

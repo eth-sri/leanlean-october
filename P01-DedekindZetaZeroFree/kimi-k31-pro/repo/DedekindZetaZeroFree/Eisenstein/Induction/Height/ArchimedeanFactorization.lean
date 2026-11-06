@@ -29,14 +29,14 @@ private theorem tuple_prod (a : KPAdelicCoverRestrictedProduct.RestrictedCover F
       funext x
       by_cases h : x = w
       · subst x; simp
-      · simp [Pi.mulSingle_apply, Sum.inl_injective.ne h, h]
+      · simp [Sum.inl_injective.ne h, h]
     rw [he, List.prod_map_eq_pow_single w _ (by intro x hx _; simp [hx])]
     rw [List.nodup_iff_count_le_one.mp (Finset.nodup_toList _) w |>.antisymm
       (Nat.succ_le_of_lt (List.count_pos_iff.mpr (by simp)))]
     simp
   | inr q =>
     simp [ha, KPAdelicCoverRestrictedProduct.localToRestricted, Function.comp_def,
-      RestrictedProduct.coe_mulSingle_apply, Pi.mulSingle_apply]
+      RestrictedProduct.coe_mulSingle_apply]
 
 private theorem sectionTuple_insertion
     (r : InfinitePlace F → Matrix.GeneralLinearGroup (Fin 2) ℂ) :
@@ -142,9 +142,9 @@ private lemma archK_mul_star (A : Matrix (Fin 2) (Fin 2) ℂ) (hA : A.det ≠ 0)
   ext i j
   fin_cases i <;> fin_cases j <;>
     simp [archK, Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply,
-      star_div₀, star_inv₀, star_star, Complex.conj_ofReal, Complex.mul_conj',
-      Complex.conj_mul', ← Complex.ofReal_add, ← Complex.ofReal_pow,
-      archS_sq, archDen, Complex.ofReal_inj]
+      Complex.conj_ofReal, Complex.mul_conj',
+      ← Complex.ofReal_add, ← Complex.ofReal_pow,
+      ]
   · rw [abs_of_pos hspos]; field_simp; rw [archS_sq]; unfold archDen; ring
   · ring
   · ring
@@ -156,7 +156,7 @@ private lemma archK_det (A : Matrix (Fin 2) (Fin 2) ℂ) (hA : A.det ≠ 0) :
     simp only [ne_eq, Complex.ofReal_eq_zero]; exact ne_of_gt hspos
   rw [Matrix.det_fin_two]
   simp only [archK, Matrix.of_apply, Matrix.cons_val', Matrix.cons_val_zero,
-    Matrix.cons_val_one, Matrix.head_cons, Matrix.empty_val', Matrix.cons_val_fin_one]
+    Matrix.cons_val_one, Matrix.empty_val', Matrix.cons_val_fin_one]
   field_simp
   rw [Complex.star_def, Complex.conj_mul', Complex.conj_mul']
   rw [← Complex.ofReal_pow, ← Complex.ofReal_pow, ← Complex.ofReal_pow]

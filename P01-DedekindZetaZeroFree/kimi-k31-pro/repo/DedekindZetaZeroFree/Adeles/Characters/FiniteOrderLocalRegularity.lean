@@ -1,6 +1,7 @@
 module
 
 public import DedekindZetaZeroFree.Adeles.Characters.RayCharacterCorrectionFactors
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -32,10 +33,7 @@ lemma finite_embedding_continuous (v : HeightOneSpectrum (𝓞 F)) :
   let a := fun w : HeightOneSpectrum (𝓞 F) => (w.adicCompletionIntegers F : Set (w.adicCompletion F))
   let f : v.adicCompletion F → RestrictedProduct (fun w : HeightOneSpectrum (𝓞 F) => w.adicCompletion F)
       a (Filter.principal {v}ᶜ) := fun z => ⟨Pi.mulSingle v z, by
-        rw [Filter.eventually_principal]
-        intro w hw
-        rw [Pi.mulSingle_eq_of_ne (by simpa using hw)]
-        exact one_mem _⟩
+        measurability⟩
   have hf : Continuous f := RestrictedProduct.continuous_rng_of_principal.mpr (by
     change Continuous (fun z : v.adicCompletion F => Pi.mulSingle v z)
     fun_prop)

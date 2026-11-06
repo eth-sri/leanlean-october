@@ -33,7 +33,7 @@ private theorem raw_diagonal (g : KPGlobalTorusFunctionData.E F ζ hζ)
   have hd : (restrictedProjection F ζ hζ x) 1 0 = 0 ∧
       (restrictedProjection F ζ hζ x) 0 1 = 0 := by
     rw [hm]
-    simp [Matrix.GeneralLinearGroup.coe_mul, ← map_inv,
+    simp [← map_inv,
       Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply, Matrix.scalar, h10, h01]
   intro v
   have h := congrArg (adeleEval F v) hd.1
@@ -112,7 +112,7 @@ theorem raw_unit_product_covariant_cover
   have hd := raw_diagonal F ζ hζ g x hxg
   let xi : RestrictedCover F ζ hζ :=
     ⟨fun v => match v with | Sum.inl w => x (Sum.inl w) | Sum.inr _ => 1,
-      Filter.Eventually.of_forall (by intro v; cases v <;> simp [compact, Subgroup.one_mem])⟩
+      Filter.Eventually.of_forall (by intro v; cases v <;> simp [compact])⟩
   let xf : RestrictedCover F ζ hζ :=
     ⟨fun v => match v with | Sum.inl _ => 1 | Sum.inr q => x (Sum.inr q),
       x.property.mono (by
@@ -174,13 +174,7 @@ theorem raw_formula_inserted_finprod
           (if h' : q ∈ S then f ⟨q, h'⟩ else C.reference q) else C.reference q) (t q)) =
       ∏ᶠ q : HeightOneSpectrum (𝓞 F), C.evaluation q
         (if h : q ∈ S then f ⟨q, h⟩ else C.reference q) (t q) := by
-  refine finprod_congr fun q => ?_
-  by_cases hqS : q ∈ S
-  · have hqU : q ∈ U := hSU hqS
-    simp only [dif_pos hqU, dif_pos hqS]
-  · by_cases hqU : q ∈ U
-    · simp only [dif_pos hqU, dif_neg hqS]
-    · simp only [dif_neg hqU, dif_neg hqS]
+  grind
 
 theorem raw_tensor_formula_insertion_agrees_reachable
     (C : RawLocalScalarData F ζ hζ P T)
@@ -337,8 +331,7 @@ theorem rawFiniteTensor_evaluations_separate (C : RawLocalScalarData F ζ hζ P 
     apply MultilinearMap.ext_of_span_eq_top
       (g := fun {q : S} t => rawEvaluationLinear F ζ hζ P T C q.val t)
       (fun q => rawEvaluation_span_dual F ζ hζ P T C q.val)
-    intro t
-    exact hx t
+    exact hx
   letI : Module.Free ℂ (RestrictedTensorSimple.Stage
       (fun q => KPLocalStoneVonNeumann.InducedModule (C.polarization q)) S) :=
     Module.Free.of_basis (Basis.piTensorProduct
@@ -515,8 +508,7 @@ theorem raw_tensor_formula_injective
     (R : RestrictedTensorSimple.Stage
       (fun q => KPLocalStoneVonNeumann.InducedModule (C.polarization q)) S →ₗ[ℂ]
         KPGlobalTorusFunctionData.TorusSmoothUnion F ζ hζ Q)
-    (hR : RawTensorFormula F ζ hζ P T C Q S R) : Function.Injective R := by
-  exact raw_tensor_injective_of_finite_reachability F ζ hζ P T C Q S hS R hR
+    (hR : RawTensorFormula F ζ hζ P T C Q S R) : Function.Injective R := raw_tensor_injective_of_finite_reachability F ζ hζ P T C Q S hS R hR
     (fun t ht => raw_finite_tuple_reachable F ζ hζ S t ht)
 
 theorem raw_tensor_family_identification

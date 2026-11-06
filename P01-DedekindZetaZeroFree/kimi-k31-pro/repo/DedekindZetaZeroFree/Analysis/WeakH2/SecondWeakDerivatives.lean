@@ -382,7 +382,7 @@ private theorem dirs_count {n k : ℕ} (α : MultiIndex n k) (i : Fin n) :
   classical
   rw [MultiIndex.directions, List.count_flatMap,
     ← List.sum_toFinset _ (List.nodup_finRange n), List.toFinset_finRange]
-  simp [Function.comp_def, List.count_replicate]
+  simp [List.count_replicate]
 
 private theorem dirs_injective {n k : ℕ} :
     Function.Injective (MultiIndex.directions (n := n) (k := k)) := by

@@ -17,7 +17,7 @@ variable {η : DedekindZetaZeroFree.RayClassCharacter F S.modulus}
 variable (D : FixedData S η)
 
 theorem savings_gt : (1 / 32 : ℝ) < 37749867 / 1000000000 ∧ (1 / 32 : ℝ) < 384999 / 10000000 := by
-  norm_num
+  grind
 
 theorem principal_comparison :
     Spectral.c₀ D ≠ 0 ∧

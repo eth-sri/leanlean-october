@@ -43,47 +43,9 @@ noncomputable def shrinkSeparableClosureAlgebra :
   exact ((algebraMap K (SeparableClosure K)).comp
     (Shrink.ringEquiv K).toRingHom).toAlgebra
 
-/-- `SeparableClosure K` remains a separable closure after changing the base
-field to its small representative. -/
-theorem shrinkSeparableClosure_isSepClosure :
-    letI : Small.{0} K := nonarchimedeanLocalField_small K
-    letI : Algebra (Shrink.{0} K) (SeparableClosure K) :=
-      shrinkSeparableClosureAlgebra K
-    IsSepClosure (Shrink.{0} K) (SeparableClosure K) := by
-  let : Small.{0} K := nonarchimedeanLocalField_small K
-  let : Algebra (Shrink.{0} K) (SeparableClosure K) :=
-    shrinkSeparableClosureAlgebra K
-  have hAlg (a : Shrink.{0} K) :
-      algebraMap (Shrink.{0} K) (SeparableClosure K) a =
-        algebraMap K (SeparableClosure K) (Shrink.ringEquiv K a) := by
-    rfl
-  have hcomp :
-      (algebraMap (Shrink.{0} K) (SeparableClosure K)).comp
-        (Shrink.ringEquiv K).symm.toRingHom =
-      (RingEquiv.refl (SeparableClosure K)).toRingHom.comp
-        (algebraMap K (SeparableClosure K)) := by
-    ext x
-    simp [hAlg]
-  exact ⟨IsSepClosure.sep_closed K,
-    Algebra.IsSeparable.of_equiv_equiv
-      (Shrink.ringEquiv K).symm
-      (RingEquiv.refl (SeparableClosure K)) hcomp⟩
 
-/-- An equivalence between the chosen separable closure of the small base and
-the original chosen separable closure, both viewed over the small base. -/
-noncomputable def shrinkSeparableClosureEquiv :
-    letI : Small.{0} K := nonarchimedeanLocalField_small K
-    letI : Algebra (Shrink.{0} K) (SeparableClosure K) :=
-      shrinkSeparableClosureAlgebra K
-    SeparableClosure (Shrink.{0} K) ≃ₐ[Shrink.{0} K]
-      SeparableClosure K := by
-  letI : Small.{0} K := nonarchimedeanLocalField_small K
-  letI : Algebra (Shrink.{0} K) (SeparableClosure K) :=
-    shrinkSeparableClosureAlgebra K
-  letI : IsSepClosure (Shrink.{0} K) (SeparableClosure K) :=
-    shrinkSeparableClosure_isSepClosure K
-  exact IsSepClosure.equiv (Shrink.{0} K)
-    (SeparableClosure (Shrink.{0} K)) (SeparableClosure K)
+
+
 
 end LocalFieldTheory
 

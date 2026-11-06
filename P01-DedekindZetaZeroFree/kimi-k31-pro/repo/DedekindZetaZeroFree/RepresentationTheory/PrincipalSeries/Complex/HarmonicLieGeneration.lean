@@ -197,8 +197,8 @@ private noncomputable def matrixRight (a : ComplexGL2) : RawMat ≃L[ℝ] RawMat
   LinearEquiv.toContinuousLinearEquiv
     { toFun := fun m => m * (a : RawMat)
       invFun := fun m => m * ((a⁻¹ : ComplexGL2) : RawMat)
-      left_inv := by intro m; simp [Matrix.mul_assoc, ← Units.val_mul]
-      right_inv := by intro m; simp [Matrix.mul_assoc, ← Units.val_mul]
+      left_inv := by intro m; simp [Matrix.mul_assoc]
+      right_inv := by intro m; simp [Matrix.mul_assoc]
       map_add' := by intro m n; exact Matrix.add_mul _ _ _
       map_smul' := by intro c m; exact Matrix.smul_mul _ _ _ }
 
@@ -312,13 +312,13 @@ theorem transverse_homogeneous (ℓ : ℕ) :
 theorem lap_mul_transverse (p : MvPolynomial (Fin 3) ℂ) :
     polynomialLaplacian (transverse * p) = transverse * polynomialLaplacian p +
       2 * (pderiv 0 p + C Complex.I * pderiv 1 p) := by
-  simp [polynomialLaplacian, LinearMap.sum_apply, LinearMap.comp_apply,
-    Fin.sum_univ_succ, transverse, pderiv_mul, pderiv_C_mul]
+  simp [polynomialLaplacian, LinearMap.comp_apply,
+    Fin.sum_univ_succ, transverse]
   ring
 theorem transverse_direction (ℓ : ℕ) :
     pderiv 0 (transverse ^ ℓ) + C Complex.I * pderiv 1 (transverse ^ ℓ) = 0 := by
   simp only [pderiv_pow]
-  simp [transverse, pderiv_C_mul, Pi.single_apply]
+  simp [transverse]
   have hI : (C Complex.I : MvPolynomial (Fin 3) ℂ) ^ 2 = -1 := by
     rw [← map_pow]; norm_num
   linear_combination (ℓ : MvPolynomial (Fin 3) ℂ) *
@@ -333,8 +333,8 @@ theorem transverse_harmonic (ℓ : ℕ) : transverse ^ ℓ ∈ harmonicPolynomia
     simp
 theorem lap_mul_height (p : MvPolynomial (Fin 3) ℂ) :
     polynomialLaplacian (X 2 * p) = X 2 * polynomialLaplacian p + 2 * pderiv 2 p := by
-  simp [polynomialLaplacian, LinearMap.sum_apply, LinearMap.comp_apply,
-    Fin.sum_univ_succ, pderiv_mul]
+  simp [polynomialLaplacian, LinearMap.comp_apply,
+    Fin.sum_univ_succ]
   ring
 theorem height_transverse_harmonic (ℓ : ℕ) :
     X 2 * transverse ^ ℓ ∈ harmonicPolynomials (ℓ + 1) := by
@@ -342,7 +342,7 @@ theorem height_transverse_harmonic (ℓ : ℕ) :
   · simpa [Nat.add_comm] using (isHomogeneous_X ℂ (2 : Fin 3)).mul (transverse_homogeneous ℓ)
   · change polynomialLaplacian (X 2 * transverse ^ ℓ) = 0
     rw [lap_mul_height, (transverse_harmonic ℓ).2]
-    simp [pderiv_pow, transverse, pderiv_C_mul, Pi.single_apply]
+    simp [transverse]
 
 noncomputable def rowB (m : RawMat) : ℝ := ‖m 1 0‖ ^ 2 + ‖m 1 1‖ ^ 2
 noncomputable def rowW (m : RawMat) : ℂ := 2 * m 1 0 * star (m 1 1) / (rowB m : ℂ)
@@ -365,7 +365,7 @@ theorem rowW_left (a d : ℂˣ) (b : ℂ) (g : ComplexGL2) :
   have he : rowB (upperTriangular a d b * g) = ‖(d : ℂ)‖ ^ 2 * rowB g := by
     change rowB ((upperTriangular a d b : RawMat) * (g : RawMat)) = _
     rw [hup]
-    simp [rowB, Matrix.mul_apply, Fin.sum_univ_two, norm_mul, mul_pow, mul_add]
+    simp [rowB, Matrix.mul_apply, Fin.sum_univ_two, mul_pow, mul_add]
   unfold rowW
   rw [he]
   change 2 * ((!![(a : ℂ), b; 0, (d : ℂ)] * (g : RawMat)) 1 0) *
@@ -495,13 +495,13 @@ noncomputable def boostMatrix : RawMat := !![1, 0; 0, 0]
 theorem boost_zero : boost 0 = 1 := by
   apply Units.ext
   ext i j
-  fin_cases i <;> fin_cases j <;> simp [boost, diagonal, boostUnit, Matrix.one_apply]
+  fin_cases i <;> fin_cases j <;> simp [boost, diagonal, boostUnit]
 theorem boost_bottom (g : ComplexGL2) (t : ℝ) :
     rowB (g * boost t) = ‖(g : RawMat) 1 0‖ ^ 2 * Real.exp t ^ 2 + ‖(g : RawMat) 1 1‖ ^ 2 := by
   have hb : (boost t : RawMat) = !![(Real.exp t : ℂ), 0; 0, 1] := rfl
   change rowB ((g : RawMat) * (boost t : RawMat)) = _
   rw [hb]
-  simp [rowB, Matrix.mul_apply, Fin.sum_univ_two, norm_mul, mul_pow, le_of_lt (Real.exp_pos t)]
+  simp [rowB, Matrix.mul_apply, Fin.sum_univ_two, mul_pow]
 theorem boost_transverse (g : ComplexGL2) (t : ℝ) :
     rowW (g * boost t) =
       (2 * (g : RawMat) 1 0 * star ((g : RawMat) 1 1)) * (Real.exp t : ℂ) / (rowB (g * boost t) : ℂ) := by
@@ -514,7 +514,7 @@ theorem boost_transverse (g : ComplexGL2) (t : ℝ) :
 theorem boost_det_norm (g : ComplexGL2) (t : ℝ) :
     ‖((Matrix.GeneralLinearGroup.det (g * boost t) : ℂˣ) : ℂ)‖ =
       ‖((Matrix.GeneralLinearGroup.det g : ℂˣ) : ℂ)‖ * Real.exp t := by
-  simp [map_mul, boost, diagonal, boostUnit, Matrix.det_fin_two, norm_mul, le_of_lt (Real.exp_pos t)]
+  simp [map_mul, boost, diagonal, boostUnit, Matrix.det_fin_two]
 theorem boost_bottom_hasDerivAt (g : ComplexGL2) :
     HasDerivAt (fun t : ℝ => rowB (g * boost t)) (2 * ‖(g : RawMat) 1 0‖ ^ 2) 0 := by
   simp_rw [boost_bottom]

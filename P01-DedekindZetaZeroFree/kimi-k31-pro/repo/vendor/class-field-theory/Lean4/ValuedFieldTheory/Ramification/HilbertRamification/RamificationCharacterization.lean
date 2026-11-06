@@ -68,7 +68,7 @@ theorem ramificationCondition_mem_inertiaGroup
         rw [show ((sigma • a - a : A) : L) =
             (a : L) *
               ((automorphismUnitQuotient K A sigma x : L) - 1) by
-          simpa using hfield,
+          grind,
           Valuation.map_mul]
         exact (mul_le_of_le_one_left zero_le
           (A.valuation_le_one a)).trans_lt hx

@@ -44,7 +44,7 @@ private lemma same_torus_projection (t : KPGlobalTorusFunctionData.E F ζ hζ) :
     apply Matrix.GeneralLinearGroup.ext
     intro i j
     simp only [Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two,
-      Matrix.GeneralLinearGroup.coe_scalar, Matrix.scalar, Matrix.diagonal]
+      Matrix.GeneralLinearGroup.coe_scalar, Matrix.scalar]
     simp only [projection_A_entry]
     fin_cases i <;> fin_cases j <;> simp [hy, h10, h01, ← hd, ha, mul_assoc]
   change QuotientGroup.mk' (scalarSubgroup F)

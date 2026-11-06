@@ -80,15 +80,7 @@ theorem exists_finset_supportedAt (a : FiniteIdeleGroup K) :
     rw [Set.Finite.coe_toFinset]
     exact mem_supportedAt_nonLocalUnits a⟩
 
-/-- The union of the finite-support subgroups is the full finite idele
-group. -/
-theorem iSup_finset_supportedAt :
-    ⨆ S : Finset (HeightOneSpectrum (𝓞 K)),
-      supportedAt (K := K) (S : Set _) = ⊤ := by
-  apply top_unique
-  intro a _
-  obtain ⟨S, ha⟩ := exists_finset_supportedAt a
-  exact Subgroup.mem_iSup_of_mem S ha
+
 
 /-- The everywhere-integral subgroup is the subgroup supported at the empty
 set. -/
@@ -143,13 +135,7 @@ theorem exists_finset_supportedAt (a : IdeleGroup K) :
       a ∈ supportedAt (K := K) (S : Set _) :=
   FiniteIdeleGroup.exists_finset_supportedAt a.2
 
-theorem iSup_finset_supportedAt :
-    ⨆ S : Finset (HeightOneSpectrum (𝓞 K)),
-      supportedAt (K := K) (S : Set _) = ⊤ := by
-  apply top_unique
-  intro a _
-  obtain ⟨S, ha⟩ := exists_finset_supportedAt a
-  exact Subgroup.mem_iSup_of_mem S ha
+
 
 theorem supportedAt_empty :
     supportedAt (K := K)

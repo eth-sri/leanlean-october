@@ -216,7 +216,7 @@ private theorem gaussian_scale (q : InfinitePlace F → ℝ) (hq : ∀ v, q v �
   congr 1
   apply (Theta.traceToMixed F).injective
   simp only [RayParity.Q, ContinuousLinearEquiv.apply_symm_apply, map_smul]
-  ext v <;> simp [mixedSpaceOfRealSpace, mul_assoc, mul_left_comm, smul_eq_mul]
+  ext v <;> simp [mixedSpaceOfRealSpace, mul_assoc, smul_eq_mul]
 
  def idealMulEquiv (I J : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (a : Fˣ)
     (hJ : (J : FractionalIdeal (𝓞 F)⁰ F) =
@@ -254,7 +254,7 @@ private theorem idealMulEquiv_coeff (I J : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (a
     apply Units.ext
     simpa using hJ
   rw [hJu]
-  simp only [Units.val_mul, Units.val_inv_eq_inv_val]
+  simp only [Units.val_mul]
   have h : FractionalIdeal.spanSingleton (𝓞 F)⁰ (a : F) =
     (toPrincipalIdeal (𝓞 F) F a : FractionalIdeal (𝓞 F)⁰ F) := (coe_toPrincipalIdeal a).symm
   rw [h, ← Units.val_mul, ← Units.val_inv_eq_inv_val]
@@ -265,7 +265,7 @@ private theorem idealMulEquiv_coeff (I J : (FractionalIdeal (𝓞 F)⁰ F)ˣ) (a
   calc
     _ = FractionalIdeal.spanSingleton (𝓞 F)⁰ (x : F) *
       (↑((toPrincipalIdeal (𝓞 F) F) a) * ↑((toPrincipalIdeal (𝓞 F) F) a)⁻¹) * ↑I⁻¹ := by ring
-    _ = _ := by simp [← Units.val_mul]
+    _ = _ := by simp
 
 private theorem norm_pos (I : (FractionalIdeal (𝓞 F)⁰ F)ˣ) :
     0 < (FractionalIdeal.absNorm (I : FractionalIdeal (𝓞 F)⁰ F) : ℝ) := by

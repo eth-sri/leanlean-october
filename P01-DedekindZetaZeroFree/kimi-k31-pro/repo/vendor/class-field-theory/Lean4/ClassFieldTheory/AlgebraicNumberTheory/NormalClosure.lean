@@ -140,14 +140,6 @@ theorem finrank_le_finiteNormalClosure :
       |>.finrank_le_finrank_of_injective
         (finiteNormalClosureEmbedding K L).injective
 
-/-- A degree-one finite field extension is the base field as an
-algebra. -/
-noncomputable def algEquivBaseOfFinrankEqOne
-    (hdegree : Module.finrank K L = 1) :
-    L ≃ₐ[K] K :=
-  (AlgEquiv.ofBijective
-    (Algebra.ofId K L)
-    ((Algebra.finrank_eq_one_iff_bijective_algebraMap).mp
-      hdegree)).symm
+
 
 end

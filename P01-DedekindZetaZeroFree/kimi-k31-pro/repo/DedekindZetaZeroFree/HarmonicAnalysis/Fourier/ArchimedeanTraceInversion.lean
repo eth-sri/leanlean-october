@@ -25,13 +25,13 @@ theorem complexTraceFourier_eq_integral (f : ℂ → ℂ) (y : ℂ) :
     complexTraceFourier f y =
       ∫ z : ℂ, f z * Complex.exp (((-4 * Real.pi * (z * y).re : ℝ) : ℂ) * Complex.I)
         ∂complexMeasure := by
-  simp [complexTraceFourier, complexMeasure, integral_smul_measure, smul_eq_mul]
+  simp [complexTraceFourier, complexMeasure, integral_smul_measure]
 
 private theorem realFourier_eq_fourier (f : ℝ → ℂ) :
     realFourier f = FourierTransform.fourier f := by
   funext y
   rw [Real.fourier_eq']
-  simp [realFourier, realMeasure, real_inner_comm, mul_comm]
+  simp [realFourier, realMeasure, mul_comm]
 
 theorem realFourier_schwartz (f : SchwartzMap ℝ ℂ) :
     ∃ g : SchwartzMap ℝ ℂ, ∀ y : ℝ, g y = realFourier f y := by
@@ -45,7 +45,7 @@ def complexJ : ℂ ≃L[ℝ] ℂ :=
     (LinearEquiv.smulOfNeZero ℝ ℂ 2 (by norm_num)).toContinuousLinearEquiv
 
 private theorem complexJ_apply (z : ℂ) : complexJ z = 2 * (starRingEnd ℂ) z := by
-  simp [complexJ, Complex.conjLIE_apply, Complex.real_smul]
+  simp [complexJ, Complex.real_smul]
 
 theorem complexTraceFourier_schwartz (f : SchwartzMap ℂ ℂ) :
     ∃ g : SchwartzMap ℂ ℂ, ∀ y : ℂ, g y = complexTraceFourier f y := by
@@ -79,7 +79,7 @@ public theorem pi_complexMeasure_eq_smul_volume (ι : Type*) [Fintype ι] :
   intro s hs
   simp only [Measure.smul_apply, smul_eq_mul, volume_pi, Measure.pi_pi,
     complexMeasure]
-  simp only [Measure.smul_apply, smul_eq_mul, Finset.prod_mul_distrib,
+  simp only [Finset.prod_mul_distrib,
     Finset.prod_const, Finset.card_univ]
 
 end ArchSelfDual

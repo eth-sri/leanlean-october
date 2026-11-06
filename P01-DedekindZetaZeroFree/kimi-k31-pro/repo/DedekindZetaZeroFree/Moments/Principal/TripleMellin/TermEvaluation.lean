@@ -19,8 +19,7 @@ theorem orbit_term_mellin (P : PrincipalData A σ η hS)
     ProbePoissonOrbitFormula.term A σ η hS P (frequencySection P)
       X.val Y.val Z.val (orbitIndexEquiv P i) =
       tripleMellinNormalization * ∫ t : ℝ × ℝ × ℝ,
-        initialTripleMellinSummand P X.val Y.val Z.val i t := by
-  exact TermRace.term_inversion_race P N X Y Z i
+        initialTripleMellinSummand P X.val Y.val Z.val i t := TermRace.term_inversion_race P N X Y Z i
 
 theorem probe_eq_mellin_integral (P : PrincipalData A σ η hS)
     (N : MellinNormalizationData A σ η hS P) (X Y Z : {x : ℝ // 0 < x}) :

@@ -384,7 +384,7 @@ private theorem list_as_index {n m : ℕ} (l : List (Fin n)) (hl : l.length ≤ 
     by simpa only [hsum] using hl⟩
   refine ⟨α, List.perm_iff_count.mpr (fun i => ?_)⟩
   rw [MultiIndex.directions, List.count_flatMap, ← List.sum_toFinset _ (List.nodup_finRange n)]
-  simp [α, Function.comp_def, List.count_replicate]
+  simp [α, List.count_replicate]
 
 theorem global_weak_sobolev_finite_order_representative {n : ℕ} (m : ℕ)
     (g : Interior.GlobalWeakSobolev n (m + n)) (hn : 0 < n)

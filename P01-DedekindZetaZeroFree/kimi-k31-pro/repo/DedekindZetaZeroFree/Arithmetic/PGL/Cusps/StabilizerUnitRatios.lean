@@ -41,7 +41,7 @@ private theorem genuine_representative {F : Type*} [Field F] [NumberField F]
         (A : Matrix (Fin 2) (Fin 2) F) *ᵥ v ∈ M} =
       ((preservingMatrices M).map Matrix.ProjGenLinGroup.mk : Set (ProjectiveGroup F)) := by
     ext g
-    simp only [Set.mem_setOf_eq, Subgroup.mem_map]
+    simp only [Set.mem_setOf_eq]
     constructor
     · rintro ⟨A, rfl, hA⟩; exact ⟨A, hA, rfl⟩
     · rintro ⟨A, hA, rfl⟩; exact ⟨A, rfl, hA⟩
@@ -102,7 +102,7 @@ theorem conjugated_ratio_has_lattice_representative
   have entries (i j : Fin 2) : A i j = D i j * (z : F) := by
     rw [← hz]
     simp [Units.val_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply,
-      Fin.sum_univ_two, Matrix.scalar, Matrix.diagonal_apply]
+      Matrix.scalar, Matrix.diagonal_apply]
   refine ⟨N, D, hNfull, ?_, ?_, ?_⟩
   · apply (mul_eq_zero.mp (by simpa only [entries] using h10)).resolve_right (Units.ne_zero z)
   · intro v
@@ -139,7 +139,7 @@ private theorem ratio_eq {F : Type*} [Field F]
     A 0 0 / A 1 1 = B 0 0 / B 1 1 := by
   obtain ⟨u, rfl⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp h
   simp only [Units.val_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply,
-    Fin.sum_univ_two, Matrix.scalar, Matrix.diagonal_apply]
+    Fin.sum_univ_two, Matrix.scalar]
   simp
   rw [mul_div_mul_right _ _ (Units.ne_zero u)]
  def representative {F : Type*} [Field F]
@@ -296,7 +296,7 @@ private theorem plane_splitting
   have hspan : Submodule.span F (N : Set (F × F)) = ⊤ := by
     have hc : (N : Set (F × F)) = e '' (M : Set (Plane F)) := by
       ext x
-      simp only [N, Submodule.mem_map, Set.mem_image]
+      simp only [N, Set.mem_image]
       rfl
     rw [hc]
     change Submodule.span F (e.toLinearMap '' (M : Set (Plane F))) = ⊤
@@ -334,7 +334,7 @@ theorem integral_unit_is_full_cusp_ratio
   obtain ⟨B, hB⟩ := Matrix.ProjGenLinGroup.mk_surjective σ
   let e₀ : Plane F := ![1, 0]
   let e₁ : Plane F := ![0, 1]
-  have he₀ : e₀ ≠ 0 := by simp [e₀, Matrix.cons_val_zero]
+  have he₀ : e₀ ≠ 0 := by simp [e₀]
   let v : Plane F := B • e₀
   obtain ⟨I, J, w, hd, hm⟩ := plane_splitting M hM v
     ((smul_ne_zero_iff_ne B).mpr he₀)
@@ -387,7 +387,7 @@ theorem integral_unit_is_full_cusp_ratio
         (hm _).mpr ⟨_, hii s hs, t, ht, rfl⟩
       have he' : A • (((↑u⁻¹ : F) * s) • v + t • w) = A • x := by
         rw [haf, he]
-        simp [← mul_assoc]
+        simp
       exact (MulAction.injective A he') ▸ hz
   have haq : Matrix.ProjGenLinGroup.mk A • q = q := by
     have hq : q = Projectivization.mk F v ((smul_ne_zero_iff_ne B).mpr he₀) := by
@@ -429,7 +429,7 @@ theorem integral_unit_is_full_cusp_ratio
     refine ⟨Matrix.ProjGenLinGroup.mk A, ⟨?_, haq⟩, ?_⟩
     · apply Subgroup.subset_closure
       exact ⟨A, rfl, hpres⟩
-    · simp [C, ← hB, MulAut.conj_apply]
+    · simp [C, ← hB]
   · rw [hc00, hc11, mul_one]
 
 end DedekindZetaZeroFree.KPCuspParabolicLattices.RatioUnits
@@ -450,7 +450,7 @@ private theorem upper_of_fixes_standardCusp
     (hg : g • StandardCusp F = StandardCusp F) : Upper g := by
   obtain ⟨A, rfl⟩ := Matrix.ProjGenLinGroup.mk_surjective g
   refine ⟨A, rfl, ?_⟩
-  have hv : (![1,0] : Plane F) ≠ 0 := by simp [Matrix.cons_val_zero]
+  have hv : (![1,0] : Plane F) ≠ 0 := by simp
   have hg' : (Matrix.ProjGenLinGroup.mk A : ProjectiveGroup F) •
       Projectivization.mk F (![1,0] : Plane F) hv =
       Projectivization.mk F (![1,0] : Plane F) hv := by
@@ -464,7 +464,7 @@ private theorem upper_of_fixes_standardCusp
     rw [show A • (![1,0] : Plane F) = (A : Matrix (Fin 2) (Fin 2) F) *ᵥ ![1,0] from rfl]
     simp [Matrix.mulVec, dotProduct, Fin.sum_univ_two]
   have h2 : (a • (![1,0] : Plane F)) 1 = 0 := by
-    simp [Matrix.cons_val_one, Matrix.cons_val_zero]
+    simp [Matrix.cons_val_one]
   have := congrFun ha 1
   rw [h1, h2] at this
   exact this.symm
@@ -480,7 +480,7 @@ theorem cusp_subgroup_upper
   obtain ⟨h, hh, rfl⟩ := hg
   have hq : h • q = q := hh.2
   refine upper_of_fixes_standardCusp F _ ?_
-  rw [show (MulAut.conj σ⁻¹).toMonoidHom h = σ⁻¹ * h * σ by simp [MulAut.conj_apply]]
+  rw [show (MulAut.conj σ⁻¹).toMonoidHom h = σ⁻¹ * h * σ by simp]
   rw [mul_smul, mul_smul, hσ, hq, ← hσ, ← mul_smul, inv_mul_cancel, one_smul]
 
 end DedekindZetaZeroFree.KPCuspParabolicLattices.RatioUnits

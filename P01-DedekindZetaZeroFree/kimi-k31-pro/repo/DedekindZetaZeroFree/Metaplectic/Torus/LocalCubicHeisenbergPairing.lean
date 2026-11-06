@@ -19,8 +19,7 @@ noncomputable def inverseThreeModule (K : Type*) [Field K] [ValuativeRel K]
 
 theorem finite_cubeClasses (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    (ζ : K) (hζ : IsPrimitiveRoot ζ 3) : Finite (CubeClasses Kˣ) := by
-  exact ClassFieldTheory.powerClassGroup_finite K 3 (by norm_num)
+    (ζ : K) (hζ : IsPrimitiveRoot ζ 3) : Finite (CubeClasses Kˣ) := ClassFieldTheory.powerClassGroup_finite K 3 (by norm_num)
 
 private theorem integral_root (K : Type*) [Field K] [ValuativeRel K]
     [TopologicalSpace K] [IsNonarchimedeanLocalField K]

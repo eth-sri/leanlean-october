@@ -93,11 +93,7 @@ theorem principalUnits_succ_le (K : Type u) [Field K] [ValuativeRel K] (n : Nat)
     principalUnits K (n + 1) ≤ principalUnits K n :=
   principalUnits_antitone K (Nat.le_succ n)
 
-/-- Every positive-index principal unit lies in the first principal-unit group. -/
-theorem principalUnits_le_one (K : Type u) [Field K] [ValuativeRel K]
-    {n : Nat} (hn : 1 ≤ n) :
-    principalUnits K n ≤ principalUnits K 1 :=
-  principalUnits_antitone K hn
+
 
 /-- Quotient of integer units by the actual principal-unit filtration. -/
 def IntegerUnitsPrincipalQuot (K : Type u) [Field K] [ValuativeRel K]
@@ -210,11 +206,7 @@ lemma unit_mul_sub_one_eq (K : Type u) [Field K] [ValuativeRel K] (a b : 𝒪[K]
   simp only [Units.val_mul]
   ring
 
-/-- Powers of the maximal ideal decrease as their exponent increases. -/
-lemma maximalIdeal_pow_antitone (K : Type u) [Field K] [ValuativeRel K]
-    {m n : Nat} (h : m ≤ n) :
-    (𝓂[K] ^ n : Ideal 𝒪[K]) ≤ (𝓂[K] ^ m : Ideal 𝒪[K]) :=
-  Ideal.pow_le_pow_right h
+
 
 end
 end LocalFieldTheory

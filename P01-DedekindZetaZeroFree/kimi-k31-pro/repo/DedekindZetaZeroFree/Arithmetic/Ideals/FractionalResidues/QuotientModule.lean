@@ -1,6 +1,7 @@
 module
 
 public import Mathlib.RingTheory.DedekindDomain.Factorization
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -50,8 +51,7 @@ noncomputable instance fractionalResidueModuleModule (m : Ideal R)
     Ideal.Quotient.mk m r •
         Submodule.Quotient.mk (p := fractionalResidueDenominator m I) x =
       Submodule.Quotient.mk (p := fractionalResidueDenominator m I) (r • x) := by
-  rw [(fractionalResidueModule_isTorsionBySet m I).mk_smul]
-  rfl
+  norm_num
 
 end
 

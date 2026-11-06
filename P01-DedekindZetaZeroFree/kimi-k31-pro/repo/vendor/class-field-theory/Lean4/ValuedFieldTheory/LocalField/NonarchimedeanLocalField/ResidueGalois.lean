@@ -253,63 +253,9 @@ theorem galoisGroupResidueAlgEquivHomOfIsIntegralClosure_ker_eq_maximalIdealIner
   exact galoisGroupResidueAlgEquivHomOfIsIntegralClosure_mem_ker_iff_mem_maximalIdealInertia
     K L σ
 
-/-- A Galois automorphism lies in the residue kernel exactly when every integer has the same residue
-as its conjugate. -/
-theorem galoisGroupResidueAlgEquivHomOfIsIntegralClosure_mem_ker_iff_residue_eq
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [Field L] [ValuativeRel L] [Algebra K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] (σ : Gal(L / K)) :
-    σ ∈ (galoisGroupResidueAlgEquivHomOfIsIntegralClosure K L).ker ↔
-      ∀ x : 𝒪[L],
-        IsLocalRing.residue 𝒪[L]
-            (galoisGroupIntegerRingEquivOfIsIntegralClosure K L σ x) =
-          IsLocalRing.residue 𝒪[L] x := by
-  constructor
-  · intro h x
-    have hfun := congrArg (fun e : 𝓀[L] ≃ₐ[𝓀[K]] 𝓀[L] =>
-      e (IsLocalRing.residue 𝒪[L] x)) h
-    simpa [galoisGroupResidueAlgEquivHomOfIsIntegralClosure_apply,
-      galoisGroupResidueAlgEquivOfIsIntegralClosure,
-      galoisGroupResidueFieldEquivOfIsIntegralClosure_residue] using hfun
-  · intro h
-    apply AlgEquiv.ext
-    intro y
-    obtain ⟨x, rfl⟩ := Ideal.Quotient.mk_surjective y
-    change IsLocalRing.residue 𝒪[L]
-        (galoisGroupIntegerRingEquivOfIsIntegralClosure K L σ x) =
-      IsLocalRing.residue 𝒪[L] x
-    exact h x
 
-/-- A Galois automorphism lies in residue inertia exactly when each conjugate difference belongs to
-the maximal ideal. -/
-theorem galoisGroupResidueAlgEquivHomOfIsIntegralClosure_mem_ker_iff_sub_mem_maximalIdeal
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [Field L] [ValuativeRel L] [Algebra K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] (σ : Gal(L / K)) :
-    σ ∈ (galoisGroupResidueAlgEquivHomOfIsIntegralClosure K L).ker ↔
-      ∀ x : 𝒪[L],
-        galoisGroupIntegerRingEquivOfIsIntegralClosure K L σ x - x ∈
-          (𝓂[L] : Ideal 𝒪[L]) := by
-  rw [galoisGroupResidueAlgEquivHomOfIsIntegralClosure_mem_ker_iff_residue_eq K L σ]
-  constructor
-  · intro h x
-    have hx0 : IsLocalRing.residue 𝒪[L]
-        (galoisGroupIntegerRingEquivOfIsIntegralClosure K L σ x - x) = 0 := by
-      simpa using congrArg (fun z => z - IsLocalRing.residue 𝒪[L] x) (h x)
-    exact (IsLocalRing.residue_eq_zero_iff
-      (galoisGroupIntegerRingEquivOfIsIntegralClosure K L σ x - x)).1 hx0
-  · intro h x
-    have hx0 : IsLocalRing.residue 𝒪[L]
-        (galoisGroupIntegerRingEquivOfIsIntegralClosure K L σ x - x) = 0 :=
-      (IsLocalRing.residue_eq_zero_iff
-        (galoisGroupIntegerRingEquivOfIsIntegralClosure K L σ x - x)).2 (h x)
-    have : IsLocalRing.residue 𝒪[L]
-          (galoisGroupIntegerRingEquivOfIsIntegralClosure K L σ x) -
-        IsLocalRing.residue 𝒪[L] x = 0 := by
-      simpa using hx0
-    exact sub_eq_zero.mp this
+
+
 
 /-- The actual integral-closure inertia subgroup has cardinality equal to the
 mathlib ramification index over the base maximal ideal. -/
@@ -354,33 +300,9 @@ theorem galoisGroupMaximalIdealInertiaOfIsIntegralClosure_card_eq_ramificationId
   exact Ideal.ramificationIdxIn_eq_ramificationIdx
     (𝓂[K] : Ideal 𝒪[K]) (𝓂[L] : Ideal 𝒪[L]) Gal(L / K)
 
-/-- If the valuation-integer-ring extension has ramification index one, then
-the actual integral-closure inertia subgroup has cardinality one. -/
-theorem galoisGroupMaximalIdealInertiaOfIsIntegralClosure_card_eq_one_of_ramificationIdx_eq_one
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L]
-    (h :
-      (𝓂[L] : Ideal 𝒪[L]).ramificationIdx 𝒪[K] = 1) :
-    Nat.card (galoisGroupMaximalIdealInertiaOfIsIntegralClosure K L) = 1 := by
-  rw [galoisGroupMaximalIdealInertiaOfIsIntegralClosure_card_eq_ramificationIdx K L, h]
 
-/-- The kernel cardinality of the actual integral-closure residue action is the
-ramification index over the base maximal ideal. -/
-theorem galoisGroupResidueAlgEquivHomOfIsIntegralClosure_ker_card_eq_ramificationIdxIn
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L] [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] :
-    Nat.card (galoisGroupResidueAlgEquivHomOfIsIntegralClosure K L).ker =
-      (𝓂[K] : Ideal 𝒪[K]).ramificationIdxIn 𝒪[L] := by
-  rw [galoisGroupResidueAlgEquivHomOfIsIntegralClosure_ker_eq_maximalIdealInertia K L]
-  exact galoisGroupMaximalIdealInertiaOfIsIntegralClosure_card_eq_ramificationIdxIn K L
+
+
 
 /-- The kernel cardinality of the actual integral-closure residue action,
 rewritten using the concrete ramification index. -/

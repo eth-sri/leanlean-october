@@ -121,8 +121,8 @@ theorem integralTensorMap_field_square (p : Nat.Primes) (x : IntegralTensor F p)
       (((Padic.adicCompletionEquiv (𝓞 ℚ) p) (a : ℚ_[p])) ⊗ₜ[ℚ] (b : F)) v = _
     rw [finitePlaceTensorRingEquivAboveAdic_tmul]
     simp only [integralTensorMap, Algebra.TensorProduct.lift_tmul,
-      Algebra.ofId_apply, RingHom.toIntAlgHom_apply, integralDiagonalAt, Pi.ringHom_apply,
-      Subring.coe_mul]
+      Algebra.ofId_apply, RingHom.toIntAlgHom_apply, integralDiagonalAt, 
+      ]
     change _ = (integerScalarMap F p v a : v.val.adicCompletion F) *
       algebraMap F (v.val.adicCompletion F) (b : F)
     congr 1
@@ -170,7 +170,7 @@ theorem integralTensorMap_topology_bijective (p : Nat.Primes) :
     refine ⟨1 ⊗ₜ[ℤ] a, ?_⟩
     funext v
     simp [r, DedekindZetaZeroFree.integralDiagonal, integralTensorMap, integralDiagonalAt,
-      Pi.ringHom_apply]
+      ]
     rfl
   have hi : Function.Injective (integralToFieldTensor F p) := by
     letI : TensorProduct.CompatibleSMul ℤ ℚ ℚ_[p] F :=

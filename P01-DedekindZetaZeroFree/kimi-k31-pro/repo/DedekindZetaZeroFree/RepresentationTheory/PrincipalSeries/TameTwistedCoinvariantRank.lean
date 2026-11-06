@@ -112,7 +112,7 @@ private theorem raw_smooth : SmoothRepresentation (rawAction F ζ hζ q S P) := 
         have h1 : inducingScalar S.borel 0 (1 : S.borel.B) = 1 := by
           simp [inducingScalar, deltaHalf, normPower, localAbs_one]
         exact Filter.Eventually.and (hscalar.mem_nhds h1)
-          ((J.isOpen.preimage S.borel.retract_continuous).mem_nhds (by simp [r]))
+          ((J.isOpen.preimage S.borel.retract_continuous).mem_nhds (by simp))
       have ht : ContinuousAt (fun a : S.borel.B => b⁻¹ * a) b :=
         (continuous_const.mul continuous_id).continuousAt
       have hz : (fun a : S.borel.B => b⁻¹ * a) b = 1 := inv_mul_cancel b

@@ -131,7 +131,7 @@ def coef (U : ℝ) {m : Ideal (𝓞 F)} (ω : RayClassCharacter F m) (w : ℂ)
 def profile (U : ℝ) {m : Ideal (𝓞 F)} (ω : RayClassCharacter F m) (β γ v₀ : ℝ)
     (n : Ideal (𝓞 F)) (t : ℝ) : ℂ :=
   Complex.Gamma ((v₀ : ℂ) + (t : ℂ) * Complex.I) *
-    ((((U ^ DetectorDef.r : ℝ)) : ℂ)) ^ ((v₀ : ℂ) + (t : ℂ) * Complex.I) *
+    (((U ^ DetectorDef.r : ℝ) : ℂ)) ^ ((v₀ : ℂ) + (t : ℂ) * Complex.I) *
     coef F U ω ((β : ℂ) + (γ : ℂ) * Complex.I + ((v₀ : ℂ) + (t : ℂ) * Complex.I)) n
 
 lemma coef_norm_eq (U : ℝ) {m : Ideal (𝓞 F)} (ω : RayClassCharacter F m) (z w : ℂ)
@@ -289,10 +289,10 @@ theorem detector_mellin_identity (U : ℝ) (hU : 2 ≤ U)
          DetectorDef.D F U ω.character
           ((β : ℂ) + (γ : ℂ) * Complex.I + ((v₀ : ℂ) + (t : ℂ) * Complex.I))) := hsum
     have he := (hsum'.mul_left (Complex.Gamma ((v₀ : ℂ) + (t : ℂ) * Complex.I) *
-      (((U ^ DetectorDef.r : ℝ)) : ℂ) ^ ((v₀ : ℂ) + (t : ℂ) * Complex.I))).tsum_eq
+      ((U ^ DetectorDef.r : ℝ) : ℂ) ^ ((v₀ : ℂ) + (t : ℂ) * Complex.I))).tsum_eq
     calc (∑' n : Ideal (𝓞 F), Aux.profile F U ω.character β γ v₀ n t)
         = ∑' n : Ideal (𝓞 F), (Complex.Gamma ((v₀ : ℂ) + (t : ℂ) * Complex.I) *
-          (((U ^ DetectorDef.r : ℝ)) : ℂ) ^ ((v₀ : ℂ) + (t : ℂ) * Complex.I)) *
+          ((U ^ DetectorDef.r : ℝ) : ℂ) ^ ((v₀ : ℂ) + (t : ℂ) * Complex.I)) *
           Aux.coef F U ω.character
             ((β : ℂ) + (γ : ℂ) * Complex.I + ((v₀ : ℂ) + (t : ℂ) * Complex.I)) n := rfl
       _ = _ := he
@@ -317,7 +317,7 @@ theorem detector_mellin_identity (U : ℝ) (hU : 2 ≤ U)
         rw [tsum_mul_left]
         ring
   have hk : (((1 / (2 * Real.pi) : ℝ)) : ℂ) = (2 * (Real.pi : ℂ))⁻¹ := by
-    first | (push_cast; ring) | (push_cast) | simp
+    first | (push_cast; ring) | push_cast | simp
   refine ⟨ha, ?_, ?_⟩
   · refine hint.congr ?_
     filter_upwards [] with t

@@ -59,22 +59,7 @@ theorem equalCharacteristicChangedLaurentUniformizerInteger_coe
     equalCharacteristicLaurentValuativeRel F
   rfl
 
-/-- Multiplying `T` by a power-series unit preserves primality in the
-canonical Laurent integer ring. -/
-theorem equalCharacteristicChangedLaurentUniformizerInteger_irreducible
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) :
-    letI := equalCharacteristicLaurentValuativeRel F
-    Irreducible (equalCharacteristicChangedLaurentUniformizerInteger F a) := by
-  let : ValuativeRel F.residueField⸨X⸩ :=
-    equalCharacteristicLaurentValuativeRel F
-  change Irreducible
-    (powerSeriesEquivLaurentValuativeInteger F.residueField
-      ((a : F.residueField⟦X⟧) * PowerSeries.X))
-  have hprime : Irreducible
-      ((a : F.residueField⟦X⟧) * PowerSeries.X) :=
-    (irreducible_isUnit_mul a.isUnit).2 PowerSeries.X_irreducible
-  exact hprime.map
-    (powerSeriesEquivLaurentValuativeInteger F.residueField)
+
 
 /-- The changed Laurent parameter as a nonzero field unit. -/
 noncomputable def equalCharacteristicChangedLaurentUniformizerUnit
@@ -91,26 +76,7 @@ theorem equalCharacteristicChangedLaurentUniformizerUnit_coe
       equalCharacteristicChangedLaurentUniformizer F a :=
   rfl
 
-/-- In the normalized additive convention, `(aT)⁻¹` has value one. -/
-theorem equalCharacteristicChangedLaurentUniformizerUnit_inv_valuationMap
-    (F : LocalField.{u, v} K) (a : F.residueField⟦X⟧ˣ) :
-    letI := equalCharacteristicLaurentValuativeRel F
-    letI := equalCharacteristicLaurentIsNonarchimedeanLocalField F
-    LocalFieldTheory.IsNonarchimedeanLocalField.valuationMap F.residueField⸨X⸩
-      (Additive.ofMul
-        (equalCharacteristicChangedLaurentUniformizerUnit F a)⁻¹) = 1 := by
-  let L := F.residueField⸨X⸩
-  let : ValuativeRel L := equalCharacteristicLaurentValuativeRel F
-  let : IsNonarchimedeanLocalField L :=
-    equalCharacteristicLaurentIsNonarchimedeanLocalField F
-  rw [LocalFieldTheory.IsNonarchimedeanLocalField.valuationMap_apply]
-  exact LocalFieldTheory.v_integerRingIrreducibleFieldUnit_inv L
-    (equalCharacteristicChangedLaurentUniformizerInteger F a)
-    (equalCharacteristicChangedLaurentUniformizerInteger_irreducible F a)
-    (equalCharacteristicChangedLaurentUniformizerUnit F a) (by
-      change equalCharacteristicChangedLaurentUniformizer F a =
-        equalCharacteristicChangedLaurentUniformizer F a
-      rfl)
+
 
 end EqualCharacteristic
 end LubinTate

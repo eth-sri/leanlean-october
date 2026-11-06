@@ -154,20 +154,9 @@ noncomputable def rootClassesEquivDistinctNormalizedFactors
   (Setoid.quotientKerEquivRange (rootMinpoly p)).trans
     (Set.equivOfEq (range_rootMinpoly_eq_distinctNormalizedFactors hp))
 
-/-- Two roots are equivalent precisely when they are conjugate roots. -/
-theorem rootMinpolySetoid_rel_iff_isConjRoot
-    {F : Type u} [Field F] {E : Type v} [Field E] [Algebra F E]
-    {p : F[X]} (x y : PolynomialRootsIn E p) :
-    (rootMinpolySetoid p).r x y ↔ IsConjRoot F (x : E) (y : E) :=
-  Iff.rfl
 
-/-- Minimal-polynomial equivalence of roots agrees with the Galois orbit relation. -/
-theorem rootMinpolySetoid_rel_iff_orbitRel
-    {F : Type u} [Field F] {E : Type v} [Field E] [Algebra F E]
-    [Normal F E] {p : F[X]} (x y : PolynomialRootsIn E p) :
-    (rootMinpolySetoid p).r x y ↔
-      MulAction.orbitRel Gal(E / F) E (x : E) (y : E) := by
-  exact isConjRoot_iff_orbitRel
+
+
 
 /-- For a simple finite extension `L = K(α)`, `K`-embeddings into an
 extension of `K'` are the roots, in that extension, of the minimal polynomial

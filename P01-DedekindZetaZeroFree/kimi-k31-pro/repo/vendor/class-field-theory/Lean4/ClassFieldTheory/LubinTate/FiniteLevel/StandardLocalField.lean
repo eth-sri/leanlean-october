@@ -271,26 +271,7 @@ theorem standardLocalFieldHigherPrincipalUnitGroup_map_eq_fieldPrincipalUnits
   rw [← Subgroup.map_map,
     standardLocalFieldHigherPrincipalUnitGroup_map_eq_principalUnits]
 
-/-- A packaged valuation-ring unit lies in `U^n` exactly when its field-unit
-image lies in `LocalFieldTheory.fieldPrincipalUnits K n`. -/
-theorem
-    standardLocalFieldValuationUnit_mem_fieldPrincipalUnits_iff_mem_higher
-    (n : ℕ) (u : (standardLocalField K).valuationSubringˣ) :
-    standardLocalFieldValuationUnitsToFieldUnits K u ∈
-        LocalFieldTheory.fieldPrincipalUnits K n ↔
-      u ∈ higherPrincipalUnitGroup
-        (standardLocalField K).toCompleteDVF n := by
-  let e := standardLocalFieldIntegerUnitsEquiv K
-  change
-    integerUnitsToFieldUnits K (e.symm u) ∈
-        (principalUnits K n).map (integerUnitsToFieldUnits K) ↔
-      u ∈ higherPrincipalUnitGroup
-        (standardLocalField K).toCompleteDVF n
-  rw [Subgroup.mem_map_iff_mem
-    (integerUnitsToFieldUnits_injective K)]
-  simpa only [e, MulEquiv.apply_symm_apply] using
-    (standardLocalFieldIntegerUnitsEquiv_mem_higherPrincipalUnitGroup_iff
-      K n (e.symm u)).symm
+
 
 /-- The canonical chosen uniformizer of `𝒪[K]`, transported to the
 valuation ring of the standard local-field package. -/

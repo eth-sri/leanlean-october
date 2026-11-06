@@ -1,6 +1,8 @@
 module
 
 public import DedekindZetaZeroFree.Adeles.Quotients.Cusps.PGLOrbitNeighborhoods
+public import Mathlib.Tactic.FunProp
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -29,7 +31,7 @@ theorem isCompact_box
     ext z
     constructor
     · rintro ⟨x, hx, b, hb, t, ht, rfl⟩
-      exact ⟨((x, b), t), ⟨⟨hx, hb⟩, ht⟩, rfl⟩
+      measurability
     · rintro ⟨⟨⟨x, b⟩, t⟩, ⟨⟨hx, hb⟩, ht⟩, rfl⟩
       exact ⟨x, hx, b, hb, t, ht, rfl⟩
   rw [he]
@@ -46,13 +48,13 @@ theorem continuous_arch_action (A : Matrix.GeneralLinearGroup (Fin 2) ℂ) :
     apply Continuous.div
     · unfold KPArch.height
       fun_prop
-    · exact hden
+    · simp_all
     · exact fun z => ne_of_gt (KPArch.actionDenominator_pos A z)
   apply Continuous.prodMk
   · apply Continuous.div
     · unfold KPArch.height
       fun_prop
-    · exact (Complex.continuous_ofReal.comp hden)
+    · fun_prop
     · intro z
       exact_mod_cast ne_of_gt (KPArch.actionDenominator_pos A z)
   · apply Continuous.log hq

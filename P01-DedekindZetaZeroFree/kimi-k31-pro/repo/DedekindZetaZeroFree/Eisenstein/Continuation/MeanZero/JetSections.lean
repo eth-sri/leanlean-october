@@ -474,7 +474,7 @@ private theorem wholeJet_component (z : KPArch.Space (KPCuspLogShape.dimension F
   have hc : KPCuspGenuineMonodromy.finiteRationalLift F ζ hζ
       (KPContFlatCuspIncomingEvaluation.sigma F ζ hζ C R P H U a) * KPContFlatCuspIncomingEvaluation.finiteRepresentative F ζ hζ C R P H U a 1 =
       (KPContFlatCuspIncomingEvaluation.atlas F ζ hζ C R P H U).representative a.1 := by
-    simp [KPContFlatCuspIncomingEvaluation.finiteRepresentative, mul_assoc]
+    simp [KPContFlatCuspIncomingEvaluation.finiteRepresentative]
   rw [hc] at hr
   rw [wholeJet, KPContActualChamberCasimirJets.lineJet,
     KPContSectorScalarLineAlgebra.S_apply]

@@ -1,6 +1,7 @@
 module
 
 public import DedekindZetaZeroFree.Nonvanishing.Mellin.Quantitative.SpectralFunction
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -30,13 +31,12 @@ theorem G_bound (A B : ℝ) (hA : 1 < A) (hAB : A ≤ B) :
 theorem G_line_continuous : Continuous (fun t : ℝ => G D (((2 : ℝ) : ℂ) + (t : ℂ) * Complex.I)) := by
   have hc : ContinuousOn (G D) {s : ℂ | 1 < s.re} := (G_differentiableOn D).continuousOn
   refine hc.comp_continuous (by fun_prop) (fun t => ?_)
-  show 1 < ((((2 : ℝ) : ℂ) + (t : ℂ) * Complex.I)).re
-  first | (simp; norm_num) | simp | norm_num
+  simp_all
 
 theorem G_line_bound : ∃ C : ℝ, 0 < C ∧ ∀ t : ℝ,
     ‖G D (((2 : ℝ) : ℂ) + (t : ℂ) * Complex.I)‖ ≤ C / (1 + t ^ 2) := by
   obtain ⟨C, hC, hb⟩ := G_bound D 2 2 (by norm_num) le_rfl
-  exact ⟨C, hC, fun t => hb 2 t le_rfl le_rfl⟩
+  measurability
 
 theorem norm_rpow_line (Z : ℝ) (hZ : 0 < Z) (t : ℝ) :
     ‖(Z : ℂ) ^ (((2 : ℝ) : ℂ) + (t : ℂ) * Complex.I - 61 / 100)‖ = Z ^ (139 / 100 : ℝ) := by
@@ -56,7 +56,7 @@ theorem f_integrable (Z : ℝ) (hZ : 0 < Z) :
       (Z : ℂ) ^ (((2 : ℝ) : ℂ) + (t : ℂ) * Complex.I - 61 / 100) *
         G D (((2 : ℝ) : ℂ) + (t : ℂ) * Complex.I)) := by
     refine Continuous.mul ?_ (G_line_continuous D)
-    exact Continuous.const_cpow (by fun_prop) (Or.inl (by exact_mod_cast hZ.ne'))
+    exact Continuous.const_cpow (by fun_prop) (Or.inl (by measurability))
   refine ((integrable_bound.const_mul (Z ^ (139 / 100 : ℝ) * C)).mono'
     hcont.aestronglyMeasurable (Filter.Eventually.of_forall fun t => ?_))
   rw [norm_mul, norm_rpow_line Z hZ t]
@@ -67,14 +67,13 @@ theorem f_integrable (Z : ℝ) (hZ : 0 < Z) :
 theorem rpow_mul_f (Z : ℝ) (hZ : 0 < Z) :
     (Z : ℂ) ^ (61 / 100 : ℂ) * f D Z =
       comparisonVerticalIntegral 2 (fun s => (Z : ℂ) ^ s * G D s) := by
-  have hZ' : (Z : ℂ) ≠ 0 := by exact_mod_cast hZ.ne'
+  have hZ' : (Z : ℂ) ≠ 0 := by measurability
   simp only [f, hZ, if_true, comparisonVerticalIntegral]
   rw [mul_left_comm, ← MeasureTheory.integral_const_mul]
   congr 2
   funext t
   rw [← mul_assoc, ← Complex.cpow_add _ _ hZ']
-  congr 2
-  ring
+  simp_all
 
 theorem numerator_differentiableOn :
     DifferentiableOn ℂ (fun s : ℂ => Complex.exp ((s - 5 / 6) ^ 2) * H D s)
@@ -93,7 +92,7 @@ theorem numerator_ne_zero (s : ℂ) (hs : 31 / 32 < s.re) :
     Complex.exp ((s - 5 / 6) ^ 2) * H D s ≠ 0 := by
   have h : D.recipe.H s ≠ 0 :=
     PrincipalMellin.actual_principal_H_ne_zero D.recipe s (by linarith)
-  exact mul_ne_zero (Complex.exp_ne_zero _) h
+  measurability
 
 end
 

@@ -1,6 +1,7 @@
 module
 
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Character
+public import Mathlib.Tactic.FunProp
 
 @[expose] public section
 
@@ -21,8 +22,7 @@ theorem entireDividedDifference_apply (h : ℂ → ℂ) (a s : ℂ) :
   · simp [entireDividedDifference, dslope_of_ne h hs, slope_def_field, hs]
 
 @[simp] theorem entireDividedDifference_same (h : ℂ → ℂ) (a : ℂ) :
-    entireDividedDifference h a a = deriv h a := by
-  exact dslope_same h a
+    entireDividedDifference h a a = deriv h a := dslope_same h a
 
 theorem entireDividedDifference_of_ne (h : ℂ → ℂ) (a s : ℂ) (hs : s ≠ a) :
     entireDividedDifference h a s = (h s - h a) / (s - a) := by
@@ -34,7 +34,7 @@ theorem differentiable_entireDividedDifference (h : ℂ → ℂ)
   rw [entireDividedDifference]
   rw [← differentiableOn_univ]
   exact (Complex.differentiableOn_dslope (s := Set.univ) (c := a) (f := h)
-    (by simp)).mpr (by rw [differentiableOn_univ]; exact hh)
+    (by simp)).mpr (by fun_prop)
 
 theorem entireDividedDifference_of_zero (h : ℂ → ℂ) (a s : ℂ)
     (ha : h a = 0) (hs : s ≠ a) :

@@ -87,7 +87,7 @@ private theorem matrixClass_contMDiffAt
   have hc := (matrixClass_continuousAt (M x) hx).comp hM.continuousAt
   apply contMDiffAt_iff.mpr
   refine ⟨hc, ?_⟩
-  simp only [extChartAt_model_space_eq_id, PartialEquiv.refl_coe, Function.comp_id,
+  simp only [extChartAt_model_space_eq_id, PartialEquiv.refl_coe, 
     extChartAt_coe, modelWithCornersSelf_coe, Function.id_comp]
   rw [hC]
   let g := matrixClass (M x)

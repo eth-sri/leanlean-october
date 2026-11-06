@@ -64,7 +64,7 @@ theorem globalNormClassFromIdele_principalIdele
           (IdeleGroup.principalIdele K x) = 1 :=
     (QuotientGroup.eq_one_iff
       (IdeleGroup.principalIdele K x)).2 ⟨x, rfl⟩
-  rw [hclass, map_one]
+  grind
 
 end Reciprocity
 end GlobalClassFieldTheory

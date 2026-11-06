@@ -33,7 +33,7 @@ def translationRepresentation : Representation ℂ (Multiplicative K) (CcLC K E)
   map_mul' := by
     intro x y
     ext φ z
-    simp [translation, LocallyConstant.comap, add_assoc, add_comm, add_left_comm]
+    simp [translation, LocallyConstant.comap, add_comm, add_left_comm]
 
 def translationRelations (ψ : Multiplicative K →* ℂˣ) : Submodule ℂ (CcLC K E) :=
   rootRelationSpan translationRepresentation (MonoidHom.id (Multiplicative K)) ψ
@@ -165,7 +165,7 @@ theorem characterIntegral_finite_coset_expansion
     · simp [Set.indicator_of_notMem hx]
   simp only [characterIntegral_apply, hφ, Finset.smul_sum, ht]
   rw [integral_finset_sum _ (fun i _ => integrable_coset μ H hHopen hHcompact _ _)]
-  simp only [integral_coset μ H hHopen hHcompact, Finset.smul_sum]
+  simp only [integral_coset μ H hHopen hHcompact]
 
 theorem characterIntegral_translation (ψ : Multiplicative K →* ℂˣ)
     (hψ : Continuous ψ) (μ : Measure K) [μ.IsAddHaarMeasure]
@@ -426,7 +426,7 @@ theorem ordinaryIntegral_dilateWith (μ : Measure K) [μ.IsAddHaarMeasure]
       ext x
       change (ContinuousAddEquiv.mulLeft a).symm x = (↑a : K)⁻¹ * x
       apply (ContinuousAddEquiv.mulLeft a).injective
-      simp [mul_assoc, Units.ne_zero a]
+      simp [Units.ne_zero a]
     rw [he] at hh
     have heT : ⇑T.symm = fun x : K => (↑a : K)⁻¹ * x := he
     rw [heT] at hmap

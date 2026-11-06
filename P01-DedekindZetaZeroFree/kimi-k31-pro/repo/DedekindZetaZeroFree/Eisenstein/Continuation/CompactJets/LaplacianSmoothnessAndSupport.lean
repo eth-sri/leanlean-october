@@ -151,7 +151,7 @@ private theorem coefficient_isotropyChart (a : ActualChart (U := U) (H := H))
     (s : Sections F ζ hζ U R P H) (x : M F) :
     (isotropyChart a).coefficient s x = (s a.component).val (labeledA (placeEquiv F ζ hζ) x) := by
   simp [isotropyChart, KPContCotangentActualOverlap.LiftedChart.coefficient,
-    ChartKind.representative, chi_coe]
+    ChartKind.representative]
 
 private theorem sectionFields_apply (a : ActualChart (U := U) (H := H))
     (s : Sections F ζ hζ U R P H) (x : omega a) :

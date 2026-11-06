@@ -142,7 +142,7 @@ private theorem nonfaithful :
   refine ⟨cubeLift F ζ hζ q (-1), ?_, ?_⟩
   · intro he
     have hc := (center_coords F ζ hζ q 1 (-1)).1
-    simp only [map_one, one_mul, he] at hc
+    simp only [map_one, he] at hc
     norm_num at hc
   · rw [value_cube]
     apply Units.ext

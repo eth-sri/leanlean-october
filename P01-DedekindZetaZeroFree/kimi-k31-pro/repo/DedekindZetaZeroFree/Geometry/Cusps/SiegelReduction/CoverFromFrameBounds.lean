@@ -109,7 +109,7 @@ theorem meanHeight_conjugated_parabolic
     kp_cusp_arithmetic_parabolic_stabilizers F M hM Γ hΓ hcomm q σ hσ
   let S := KPCuspArithmetic.conjugatedStabilizer F Γ q σ
   let u : S := ⟨σ⁻¹ * (g : KPCuspArithmetic.PGL2 F) * σ,
-    Subgroup.mem_map.mpr ⟨g, g.property, by simp [MulAut.conj_apply]⟩⟩
+    Subgroup.mem_map.mpr ⟨g, g.property, by simp⟩⟩
   obtain ⟨A, hA, hzero⟩ := hupper u u.property
   have hr := hratio u A hA hzero
   change KPCuspLogShape.meanHeight _ (action F (u : KPCuspArithmetic.PGL2 F) z) = _
@@ -304,7 +304,7 @@ theorem rowCusp_eq_of_flag_eq (r s : KPCusp.Row F)
       exact s.property (Prod.ext hs hd')
     refine ⟨Units.mk0 (r.val.2 / s.val.2) (div_ne_zero hd hd'), ?_⟩
     ext i
-    fin_cases i <;> simp [hc, hs, div_mul_cancel₀ _ hd', mul_neg]
+    fin_cases i <;> simp [hc, hs, div_mul_cancel₀ _ hd']
   · have hc' : s.val.1 ≠ 0 := by
       intro hs
       have hd' : s.val.2 = 0 := by simpa [hs, hc] using hv
@@ -312,7 +312,7 @@ theorem rowCusp_eq_of_flag_eq (r s : KPCusp.Row F)
     refine ⟨Units.mk0 (r.val.1 / s.val.1) (div_ne_zero hc hc'), ?_⟩
     ext i
     fin_cases i
-    · change (r.val.1 / s.val.1) * (-s.val.2) = -(r.val.2)
+    · change (r.val.1 / s.val.1) * (-s.val.2) = -r.val.2
       field_simp
       linear_combination -hv
     · simp [div_mul_cancel₀ _ hc']
@@ -342,7 +342,7 @@ theorem rowCusp_frameLowerRow (A : Matrix.GeneralLinearGroup (Fin 2) F) :
     refine ⟨Units.mk0 (-(A : Matrix (Fin 2) (Fin 2) F).det) (neg_ne_zero.mpr A.det_ne_zero), ?_⟩
     ext i
     fin_cases i <;>
-      simp [Matrix.mulVec, dotProduct, Fin.sum_univ_two, frameLowerRow, Matrix.det_fin_two] <;>
+      simp [frameLowerRow, Matrix.det_fin_two] <;>
       ring
   rw [map_inv]
   rw [← he, inv_smul_smul]
@@ -491,8 +491,7 @@ theorem uniform_high_cusp_intersection_of_frame_bound {n : ℕ}
   intro T hT a b γ z hz hγz
   have hRT : R ≤ T := (le_max_right _ _).trans hT
   have hexp : 1 ≤ c * Real.exp ((KPCuspLogShape.dimension F : ℝ) * T) := by
-    have hl : Real.log (1 / c) ≤ (KPCuspLogShape.dimension F : ℝ) * T := by
-      exact (div_le_iff₀ hd).mp hRT |>.trans_eq (mul_comm _ _)
+    have hl : Real.log (1 / c) ≤ (KPCuspLogShape.dimension F : ℝ) * T := (div_le_iff₀ hd).mp hRT |>.trans_eq (mul_comm _ _)
     have he := Real.exp_le_exp.mpr hl
     rw [Real.exp_log (div_pos zero_lt_one hc)] at he
     calc

@@ -42,7 +42,7 @@ private theorem norm_root (y : (LocalField F q)ˣ) (r : ℂˣ) :
        (Real.log (residueCardinality (LocalField F q) : ℝ) : ℂ)) =
       (-(WithZero.log (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt (LocalField F q)
         (valuation (LocalField F q) (y : LocalField F q))) : ℤ) : ℂ) * Complex.log (r : ℂ) := by
-    simp only [Complex.ofReal_intCast, Int.cast_neg]
+    simp only [Complex.ofReal_intCast]
     field_simp [hlog]
   rw [he]
   simpa only [Int.cast_neg] using (Complex.exp_int_mul (Complex.log (r : ℂ))

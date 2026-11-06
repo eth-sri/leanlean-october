@@ -47,7 +47,7 @@ theorem raw_torus_local_ratio (F : Type) [Field F] [NumberField F]
         (M : Matrix (Fin 2) (Fin 2) (KPAdelicCoverRestrictedProduct.Adeles F)) 1 0) hzA
       simp only [Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
         Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar_apply, Matrix.diagonal_apply,
-        hB10, mul_zero, add_zero, zero_add, Fin.isValue, Fin.reduceEq, ↓reduceIte] at h
+        hB10, mul_zero, add_zero, Fin.isValue, Fin.reduceEq, ↓reduceIte] at h
       simpa using h
     exact (IsUnit.mul_left_eq_zero ⟨s, rfl⟩).mp h1
   have hA01 : A 0 1 = 0 := by
@@ -57,7 +57,7 @@ theorem raw_torus_local_ratio (F : Type) [Field F] [NumberField F]
         (M : Matrix (Fin 2) (Fin 2) (KPAdelicCoverRestrictedProduct.Adeles F)) 0 1) hzA
       simp only [Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
         Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar_apply, Matrix.diagonal_apply,
-        hB01, mul_zero, add_zero, zero_add, Fin.isValue, Fin.reduceEq, ↓reduceIte] at h
+        hB01, mul_zero, zero_add, Fin.isValue, Fin.reduceEq, ↓reduceIte] at h
       simpa using h
     exact (IsUnit.mul_left_eq_zero ⟨s, rfl⟩).mp h1
 

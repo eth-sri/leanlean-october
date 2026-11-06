@@ -407,7 +407,7 @@ theorem finiteBall_diagonal_mem (F : Type) [Field F] [NumberField F]
       (m : F) ∈ ballFractionalIdeal F S k := by
   rw [fractionalIdeal_mem_iff_valuations F _ (ballFractionalIdeal_ne_zero F S k)]
   simp only [finiteBall, PoissonFinite.diagonal, Set.mem_setOf_eq,
-    norm_ball_iff_valuation, HeightOneSpectrum.adicCompletion.valued_coe]
+    norm_ball_iff_valuation]
   have hv (v : S) : (Valued.v (FinitePlace.embedding v.val (m : F)) :
       WithZero (Multiplicative ℤ)) = v.val.valuation F (m : F) :=
     HeightOneSpectrum.adicCompletion.valued_coe _ _ _
@@ -654,11 +654,11 @@ theorem local_ball_test (F : Type) [Field F] [NumberField F]
         rw [he]
         exact (IsUltrametricDist.isOpen_closedBall b (ne_of_gt hp)).mem_nhds (by simpa [dist_eq_norm] using hz)
       filter_upwards [hn] with w hw
-      simp only [hw, hz, if_true, if_false]
+      simp only [hw, hz, if_true]
     · have hn : {w : v.adicCompletion F | ¬ ‖w-b‖ ≤ (v.asIdeal.absNorm : ℝ) ^ (-k)} ∈ nhds z := by
         exact (isClosed_le (continuous_id.sub continuous_const |>.norm) continuous_const).isOpen_compl.mem_nhds hz
       filter_upwards [hn] with w hw
-      simp only [hw, hz, if_true, if_false]
+      simp only [hw, hz, if_false]
   · apply HasCompactSupport.of_support_subset_isCompact (K := Metric.closedBall b ((v.asIdeal.absNorm : ℝ) ^ (-k)))
       (isCompact_closedBall _ _)
     intro z hz

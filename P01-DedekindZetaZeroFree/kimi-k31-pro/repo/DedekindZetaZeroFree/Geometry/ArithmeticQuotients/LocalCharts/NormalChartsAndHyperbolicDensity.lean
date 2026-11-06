@@ -147,7 +147,7 @@ def stabilizerDifferential : MulAction.stabilizer Γ p →*
     (KPArch.Space (KPCuspLogShape.dimension F) →L[ℝ] KPArch.Space (KPCuspLogShape.dimension F)) where
   toFun g := fderiv ℝ (fun q => (g.val.val : KPCuspArithmetic.PGL2 F) • q) p
   map_one' := by
-    simp only [OneMemClass.coe_one, Subgroup.coe_one, one_smul]
+    simp only [OneMemClass.coe_one, one_smul]
     change fderiv ℝ id p = 1
     rw [fderiv_id]
     rfl
@@ -339,7 +339,7 @@ private lemma invariant_smooth_inverse (V : Set (KPArch.Space (KPCuspLogShape.di
       (g.val.val : KPCuspArithmetic.PGL2 F) • q ∈ e'.source := by
     rw [hsource] at hq ⊢
     exact hWsmul g hq
-  have htarget (q) (hq : q ∈ e'.target) : q ∈ e.target := by
+  have htarget q (hq : q ∈ e'.target) : q ∈ e.target := by
     have hx := e'.map_target hq
     have h := e.map_source hx.1
     have hinv : (e' : _ → _) (e'.symm q) = q := e'.right_inv hq
@@ -402,7 +402,7 @@ def tangentFrame (d : ℕ) (p : KPArch.Space d) :
       intro k
       obtain ⟨⟨i,j⟩, rfl⟩ :=
         (finProdFinEquiv.trans (finCongr (Nat.mul_comm d 3))).surjective k
-      fin_cases j <;> simp [show KPArch.height (p i) ≠ 0 from Real.exp_ne_zero _, ← mul_assoc]
+      fin_cases j <;> simp [show KPArch.height (p i) ≠ 0 from Real.exp_ne_zero _]
     right_inv := by
       intro v
       funext i
@@ -506,8 +506,7 @@ def stabilizerOrthogonal : MulAction.stabilizer Γ p →*
 lemma tangentFrame_stabilizerOrthogonal (h : MulAction.stabilizer Γ p)
     (x : E (3 * KPCuspLogShape.dimension F)) :
     tangentFrame _ p (stabilizerOrthogonal F Γ p h x) =
-      stabilizerDifferential F Γ p h (tangentFrame _ p x) := by
-  exact (tangentFrame _ p).apply_symm_apply _
+      stabilizerDifferential F Γ p h (tangentFrame _ p x) := (tangentFrame _ p).apply_symm_apply _
 
 end StabilizerLinearization
 
@@ -590,8 +589,8 @@ theorem component_orthogonal_separated_smooth_chart
     simp [c, OpenPartialHomeomorph.trans_source]
   have hctarget : c.target = e.source := by
     simp [c, OpenPartialHomeomorph.trans_target]
-  have hcapply (x) : c x = e.symm (L x) := rfl
-  have hcsymm (q) : c.symm q = L.symm (e q) := rfl
+  have hcapply x : c x = e.symm (L x) := rfl
+  have hcsymm q : c.symm q = L.symm (e q) := rfl
   refine ⟨H, c, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · rw [hcsource]
     simpa using h0
@@ -675,8 +674,7 @@ lemma weighted_jacobian_pushforward {n : ℕ} {s : Set (E n)}
 lemma smooth_det {n : ℕ} {s : Set (E n)} {L : E n → (E n →L[ℝ] E n)}
     (hL : ContDiffOn ℝ (⊤ : ℕ∞) L s) :
     ContDiffOn ℝ (⊤ : ℕ∞) (fun x => (L x).det) s := by
-  have hm (i j : Fin n) : ContDiffOn ℝ (⊤ : ℕ∞) (fun x => L x (EuclideanSpace.single j 1) i) s := by
-    exact (EuclideanSpace.proj (𝕜 := ℝ) i).contDiff.contDiffOn.comp
+  have hm (i j : Fin n) : ContDiffOn ℝ (⊤ : ℕ∞) (fun x => L x (EuclideanSpace.single j 1) i) s := (EuclideanSpace.proj (𝕜 := ℝ) i).contDiff.contDiffOn.comp
       (hL.clm_apply (contDiffOn_const (c := EuclideanSpace.single j 1))) (Set.mapsTo_univ _ _)
   have he (x : E n) : (L x).det =
       Matrix.det (fun i j : Fin n => L x (EuclideanSpace.single j 1) i) := by
@@ -835,8 +833,7 @@ lemma partial_map_injective {α β : Type*} [TopologicalSpace α] [TopologicalSp
     have hc : AEMeasurable c m :=
       (c.continuousOn.aemeasurable c.open_source.measurableSet).mono_measure
         (by rw [Measure.restrict_eq_self_of_ae_mem hm])
-    have htarget : ∀ᵐ y ∂Measure.map c m, y ∈ c.target := by
-      exact (ae_map_iff hc c.open_target.measurableSet).mpr
+    have htarget : ∀ᵐ y ∂Measure.map c m, y ∈ c.target := (ae_map_iff hc c.open_target.measurableSet).mpr
         (hm.mono fun x hx => c.map_source hx)
     have hi₀ : AEMeasurable c.symm ((Measure.map c m).restrict c.target) :=
       c.symm.continuousOn.aemeasurable c.open_target.measurableSet
@@ -863,8 +860,7 @@ lemma orthogonal_density_invariant {n : ℕ} {β : Type*}
   have hμ : ∀ᵐ x ∂μ, x ∈ c.source :=
     (ae_restrict_mem c.open_source.measurableSet).filter_mono
       (withDensity_absolutelyContinuous _ _).ae_le
-  have hAμ : ∀ᵐ x ∂Measure.map A μ, x ∈ c.source := by
-    exact (ae_map_iff A.continuous.measurable.aemeasurable c.open_source.measurableSet).mpr
+  have hAμ : ∀ᵐ x ∂Measure.map A μ, x ∈ c.source := (ae_map_iff A.continuous.measurable.aemeasurable c.open_source.measurableSet).mpr
       (hμ.mono fun x hx => hAD ▸ Set.mem_image_of_mem A hx)
   have hcm : AEMeasurable c μ := by
     have hh : AEMeasurable c (μ.restrict c.source) :=
@@ -985,8 +981,8 @@ lemma component_chart (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
   let f := L.symm ∘ c
   let e : OpenPartialHomeomorph (E (3*d)) (E (3*d)) := c.trans L.symm.toHomeomorph.toOpenPartialHomeomorph
   have hes : e.source = c.source := by simp [e, OpenPartialHomeomorph.trans_source]
-  have hef (x) : e x = f x := rfl
-  have heinv (x) : e.symm x = c.symm (L x) := rfl
+  have hef x : e x = f x := rfl
+  have heinv x : e.symm x = c.symm (L x) := rfl
   have hfs : ContDiffOn ℝ (⊤ : ℕ∞) f c.source :=
     L.symm.contDiff.contDiffOn.comp hs (Set.mapsTo_univ _ _)
   have hies : ContDiffOn ℝ (⊤ : ℕ∞) e.symm e.target := by
@@ -1000,8 +996,7 @@ lemma component_chart (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     have hh := openPartial_fderiv_invertible e (by change ContDiffOn ℝ (⊤ : ℕ∞) f e.source; rwa [hes]) hies x (hes ▸ hx)
     exact hh
   let w := fun x => |(fderiv ℝ f x).det| * KPArch.volumeDensity d (c x)
-  have hws : ContDiffOn ℝ (⊤ : ℕ∞) w c.source := by
-    exact ((smooth_det (hfs.fderiv_of_isOpen c.open_source (by simp))).abs hdet).mul
+  have hws : ContDiffOn ℝ (⊤ : ℕ∞) w c.source := ((smooth_det (hfs.fderiv_of_isOpen c.open_source (by simp))).abs hdet).mul
       ((volumeDensity_smooth d).contDiffOn.comp hs (Set.mapsTo_univ _ _))
   have hwpos : ∀ x ∈ c.source, 0 < w x := fun x hx =>
     mul_pos (abs_pos.mpr (hdet x hx)) (volumeDensity_positive d _)

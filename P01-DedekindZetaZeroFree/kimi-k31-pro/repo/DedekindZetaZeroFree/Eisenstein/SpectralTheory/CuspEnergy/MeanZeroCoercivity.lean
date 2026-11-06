@@ -116,7 +116,7 @@ private theorem derivative_rotation
     simpa only [ContinuousLinearMap.comp_apply, diagonal_single,
       ContinuousLinearMap.smul_apply, smul_eq_mul] using h
   dsimp [L] at hh
-  simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.single_apply] at hh
+  simp only [ContinuousLinearMap.single_apply] at hh
   have hz1 := hz 1
   simp only [mul_one] at hz1
   rw [hz1, hz Complex.I, norm_mul, norm_mul, hc, one_mul, one_mul] at hh
@@ -549,7 +549,7 @@ private theorem horizontalRealLinear_single_one (d : ℕ) (i : Fin d) :
   by_cases hi : j = i
   · subst i
     fin_cases k <;> simp
-  · fin_cases k <;> simp [Pi.single_eq_of_ne hi, hi, Prod.ext_iff]
+  · fin_cases k <;> simp [hi, Prod.ext_iff]
 private theorem horizontalRealLinear_single_I (d : ℕ) (i : Fin d) :
     horizontalRealLinear d (Pi.single i Complex.I) = HyperbolicChart.coordinateVector d i 1 := by
   ext ⟨j, k⟩
@@ -558,7 +558,7 @@ private theorem horizontalRealLinear_single_I (d : ℕ) (i : Fin d) :
   by_cases hi : j = i
   · subst i
     fin_cases k <;> simp
-  · fin_cases k <;> simp [Pi.single_eq_of_ne hi, hi, Prod.ext_iff]
+  · fin_cases k <;> simp [hi, Prod.ext_iff]
 
 private theorem smooth_arch (d : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (arch d) := by
   apply contDiff_pi.mpr
@@ -651,10 +651,10 @@ theorem torusHorizontalSq_le_gradientSq (G : KPCuspCharts.ChartOutput F hF S D)
     Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _), mul_pow]
   simp only [real, KPCuspCharts.toArch, PiLp.toLp_apply,
     Matrix.cons_val_two, Matrix.vecHead, Matrix.vecTail,
-    Matrix.cons_val_one, Matrix.cons_val_zero]
+    ]
   rw [← Real.exp_nat_mul]
   simp only [Function.comp_def, Matrix.cons_val_one, Matrix.cons_val_zero,
-    Matrix.vecHead, Matrix.vecTail, Matrix.cons_val_two, Nat.cast_ofNat,
+    Nat.cast_ofNat,
     Fin.succ_zero_eq_one]
   nlinarith [sq_nonneg (‖fderiv ℝ (v.val ∘ arch (KPCuspLogShape.dimension F))
       (real (KPCuspLogShape.dimension F) (KPCuspCharts.toArch F ((y,b),t.val)))

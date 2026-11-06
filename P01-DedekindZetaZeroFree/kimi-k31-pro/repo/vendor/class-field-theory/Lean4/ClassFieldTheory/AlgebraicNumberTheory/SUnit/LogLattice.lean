@@ -523,15 +523,7 @@ theorem fullLogAmbient_finite
             SUnitGroup (K := K) S) : Kˣ) : K)) :=
   rfl
 
-/-- An `S`-unit has normalized finite absolute value one outside `S`. -/
-theorem adicAbv_eq_one_of_not_mem
-    (x : SUnitGroup (K := K) S)
-    (v : HeightOneSpectrum (𝓞 K)) (hv : v ∉ S) :
-    NumberField.HeightOneSpectrum.adicAbv K v
-        (((x : Kˣ) : K)) = 1 := by
-  rw [NumberField.HeightOneSpectrum.adicAbv_def,
-    x.property v hv]
-  simp
+
 
 /-- For an `S`-unit the finite part of the global product formula is
 the product over the finite places in `S`. -/

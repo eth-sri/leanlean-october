@@ -83,8 +83,7 @@ theorem IsAbelianConductor.finiteExponent_le_iff_higherUnit_le_tensorNorm
       c.finitePart v =
         GlobalClassFieldTheory.GlobalClassFields.ideleClassNormLocalHigherUnitExponent
           (K := K) (L := L) v := by
-    rw [hcd]
-    simpa only [d] using hsource
+    grind
   have hnorm :
       (Units.map (Algebra.norm (v.adicCompletion K)) :
         (v.adicCompletion K ⊗[K] L)ˣ →*

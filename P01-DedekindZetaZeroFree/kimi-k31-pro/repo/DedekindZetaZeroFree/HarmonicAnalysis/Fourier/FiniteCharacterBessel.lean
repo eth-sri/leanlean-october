@@ -53,8 +53,8 @@ theorem detector_finite_character_bessel
   have hv : Orthonormal ℂ v := by
     rw [orthonormal_iff_ite]
     intro i j
-    simp only [v, PiLp.inner_apply, WithLp.ofLp_toLp, RCLike.inner_apply,
-      map_mul, Complex.star_def, Complex.conj_ofReal]
+    simp only [v, PiLp.inner_apply, RCLike.inner_apply,
+      map_mul, Complex.conj_ofReal]
     have hh : (∑ g : G, ((c : ℂ) * (χ j g : ℂ)) * ((c : ℂ) * conj (χ i g : ℂ))) =
         (c : ℂ)^2 * ∑ g : G, star (χ i g : ℂ) * (χ j g : ℂ) := by
       rw [Finset.mul_sum]
@@ -70,14 +70,14 @@ theorem detector_finite_character_bessel
     (s := Finset.univ)
   have hvA (j : J) : inner ℂ (v j) (WithLp.toLp 2 A) =
       (c : ℂ) * ∑ g : G, star (χ j g : ℂ) * A g := by
-    simp only [v, PiLp.inner_apply, WithLp.ofLp_toLp, RCLike.inner_apply,
+    simp only [v, PiLp.inner_apply, RCLike.inner_apply,
       map_mul, Complex.star_def, Complex.conj_ofReal]
     rw [Finset.mul_sum]
     apply Finset.sum_congr rfl
     intros
     ring
   simp only [hvA, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hc,
-    mul_pow, ← Finset.mul_sum, EuclideanSpace.norm_sq_eq, WithLp.ofLp_toLp] at hb
+    mul_pow, ← Finset.mul_sum, EuclideanSpace.norm_sq_eq] at hb
   have hb' := mul_le_mul_of_nonneg_left hb hn'.le
   rw [← mul_assoc, mul_comm n, hc2, one_mul] at hb'
   exact hb'

@@ -332,7 +332,7 @@ private theorem prof_single (A : SArithmeticData F) (w : InfinitePlace F)
   · funext j
     by_cases hj : j = w
     · subst j; simp [prof, complexNormFlowRaw, Function.update_self]
-    · simp [prof, complexNormFlowRaw, hj, Ne.symm hj, Function.update_of_ne]
+    · simp [prof, complexNormFlowRaw, hj, Function.update_of_ne]
   · rfl
 
 private theorem sheet_prof (A : SArithmeticData F) (T : ℝ) (hT : 0 < T)
@@ -740,7 +740,7 @@ theorem raw_fourier_continuous (A : SArithmeticData F)
     ProbeAdditiveGramBounds.trace_phase_norm F A.Sf e _ (fun _ => rfl)
   exact continuous_of_dominated
     (fun y => (hc.mul (hp.comp (continuous_neg.mul continuous_const))).aestronglyMeasurable)
-    (fun y => Filter.Eventually.of_forall fun x => by simp [norm_mul, hn])
+    (fun y => Filter.Eventually.of_forall fun x => by simp [hn])
     (hc.integrable_of_hasCompactSupport hcompact).norm
     (Filter.Eventually.of_forall fun x =>
       (continuous_const.mul (hp.comp (continuous_const.mul continuous_id))))

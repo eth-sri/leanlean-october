@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Reciprocity.ExtensionConductorCharacter
 public import DedekindZetaZeroFree.Arithmetic.Ideals.MultiplicativeCharacterPrimeAgreement
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -49,7 +50,7 @@ theorem conductor_frobenius_agreement
       intro hbot
       have h1 : Q.under (𝓞 F) = ⊥ := by
         rw [hbot]
-        exact Ideal.under_bot (𝓞 F) (𝓞 d.extension)
+        norm_num
       exact p.ne_bot (by rw [hQlies.over, h1])
     let Q' : HeightOneSpectrum (𝓞 d.extension) := ⟨Q, hQmax.isPrime, hQne⟩
     have hlies' : Q'.asIdeal.LiesOver p.asIdeal := hQlies

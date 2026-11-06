@@ -160,7 +160,7 @@ private theorem primeTo_idele_evaluation (F : Type) [Field F] [NumberField F] (h
          (QuotientGroup.mk' (IdeleGroup.principalSubgroup F) a) := by
    apply (RayClass.rayClassGroupEquivIdealRayClassGroup M').injective
    simp only [rayClassGroupEquivOriginalIdele, MulEquiv.trans_apply,
-      MulEquiv.apply_symm_apply]
+      ]
    have hI : rayClassGroupEquivOriginal F M
        (QuotientGroup.mk' (ClassFieldTheory.rayPrincipalIdealSubgroupInPrimeTo M) I) =
        RayClass.idealRayProjection M' A := by

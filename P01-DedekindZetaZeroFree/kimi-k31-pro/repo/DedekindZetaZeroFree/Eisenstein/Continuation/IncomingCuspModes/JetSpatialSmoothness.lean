@@ -46,7 +46,7 @@ private theorem point_holomorphic {n : ℕ} (A : LocalBall n) (Ω : Set ℂ)
   intro s hs
   have h := he s hs α ⟨x,rfl⟩
   have hd : α.directions = [] := by
-    simp only [MultiIndex.directions,α,List.replicate_zero]
+    simp only [MultiIndex.directions,α]
     induction List.finRange n with
     | nil => rfl
     | cons i l ih => simpa using ih

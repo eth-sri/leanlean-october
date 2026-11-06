@@ -37,7 +37,7 @@ theorem dilation_principal_image (t : Fˣ) :
     refine ⟨algebraMap F (AdeleRing (𝓞 F) F) ((↑t⁻¹ : F) * a),
       ⟨(↑t⁻¹ : F) * a, rfl⟩, ?_⟩
     rw [dilation_diagonal]
-    simp [← mul_assoc]
+    simp
 
 def dilationHom (t : Fˣ) : AdeleRing (𝓞 F) F →+ AdeleRing (𝓞 F) F where
   toFun := dilation F t

@@ -212,7 +212,7 @@ theorem Iscale_eq_rows_add_omitted (Z : ℝ) (hZ : 0 < Z) :
       funext t
       have h1 := split_pt D Z hZ t
       rw [allowed_pt D Z hZ t] at h1
-      linear_combination h1
+      grind
     rw [hfun]
     exact hwhole.sub hA
   have hGO : ∀ t : ℝ × ℝ × ℝ, (∑' i : NormalizedProbe.MellinSeriesIndex D.recipe.probe,
@@ -222,7 +222,7 @@ theorem Iscale_eq_rows_add_omitted (Z : ℝ) (hZ : 0 < Z) :
           (Scales.xScale Z) (Scales.yScale Z) Z i.val t := fun t => by
     have h1 := split_pt D Z hZ t
     rw [allowed_pt D Z hZ t] at h1
-    exact h1.symm
+    grind
   have hIsplit : ∫ t : ℝ × ℝ × ℝ, ∑' i : NormalizedProbe.MellinSeriesIndex D.recipe.probe,
       NormalizedProbe.initialTripleMellinSummand D.recipe.probe (Scales.xScale Z) (Scales.yScale Z) Z i t =
       (∫ t : ℝ × ℝ × ℝ, ∑' u : D.Row, initialRowIntegrand D u Z t) +
@@ -244,10 +244,7 @@ theorem Iscale_eq_rows_add_omitted (Z : ℝ) (hZ : 0 < Z) :
       refine (hnorm.mul_left ‖(2 * (Real.pi : ℂ))⁻¹ ^ 3‖).of_norm_bounded (fun u => ?_)
       rw [norm_mul]
       exact mul_le_mul_of_nonneg_left (norm_integral_le_integral_norm _) (norm_nonneg _)
-    have hfun : (fun u : D.Row => rowIntegral D u Z) = fun u : D.Row =>
-        (2 * (Real.pi : ℂ))⁻¹ ^ 3 * ∫ t : ℝ × ℝ × ℝ, initialRowIntegrand D u Z t := funext h3
-    rw [hfun]
-    exact h1
+    grind
   have hOsum : Summable (fun i : ↥(allowedIndices D)ᶜ => ∫ t : ℝ × ℝ × ℝ,
       ‖NormalizedProbe.initialTripleMellinSummand D.recipe.probe
         (Scales.xScale Z) (Scales.yScale Z) Z i.val t‖) := hmsum.subtype _

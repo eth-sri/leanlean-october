@@ -81,7 +81,7 @@ def assemble (x : Coordinates F T) : KPAdelicTopology.FiniteAdeles F :=
       by_contra h
       apply hv
       have h' : v ∉ T := h
-      simp only [Set.mem_setOf_eq]
+      simp only
       rw [dif_neg h']
       exact (x.2 ⟨v, h'⟩).2⟩
 
@@ -134,7 +134,7 @@ def chartHomeomorph : chartSubgroup F T ≃ₜ Coordinates F T where
     apply Subtype.ext
     apply RestrictedProduct.ext
     intro v
-    by_cases hv : v ∈ T <;> simp [assemble, hv]
+    by_cases hv : v ∈ T <;> simp [assemble]
   right_inv := by
     intro x
     apply Prod.ext
@@ -304,7 +304,7 @@ theorem tailMeasure_cylinder
     simp
   haveI : IsProbabilityMeasure ν := by
     constructor
-    simp [ν, Measure.pi_univ]
+    simp [ν]
   haveI : ν.IsAddHaarMeasure := by unfold ν; infer_instance
   letI : ∀ v : U, CompactSpace (v.1.1.adicCompletionIntegers F) := fun v =>
     isCompact_iff_compactSpace.mp (KPAdelicTopology.completionIntegers_isCompact F v)

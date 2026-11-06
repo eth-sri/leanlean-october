@@ -79,11 +79,9 @@ private theorem end_open (τ : ℝ) (c : I a) : IsOpen (E a τ c) := by
     simpa only [Function.comp_def, a.components_formula] using he
   exact hc _ (KPFiniteAdelicCuspEnds.component_open_end F _ _ τ)
 private theorem lift_range (τ : ℝ) (hτ : a.threshold ≤ τ) (c : I a) :
-    L a c '' {z : KPCuspCharts.Coordinates F | τ < z.2} = E a τ c := by
-  exact (KPActualCollarBuffer.actual_height_descent F ζ hζ hF U a τ hτ).1 c
+    L a c '' {z : KPCuspCharts.Coordinates F | τ < z.2} = E a τ c := (KPActualCollarBuffer.actual_height_descent F ζ hζ hF U a τ hτ).1 c
 private theorem height_coordinates (τ : ℝ) (hτ : a.threshold ≤ τ)
-    (c : I a) (z : KPCuspCharts.Coordinates F) (hz : τ < z.2) : t a τ c (L a c z) = z.2 := by
-  exact (KPActualCollarBuffer.actual_height_descent F ζ hζ hF U a τ hτ).2.1 c z hz
+    (c : I a) (z : KPCuspCharts.Coordinates F) (hz : τ < z.2) : t a τ c (L a c z) = z.2 := (KPActualCollarBuffer.actual_height_descent F ζ hζ hF U a τ hτ).2.1 c z hz
 private theorem interior_height (τ : ℝ) (hτ : a.threshold ≤ τ) (c : I a)
     (x : S (F := F)) (hx : Q a c.1 x ∈ E a τ c) :
     ∃ γ : KPCuspArithmetic.PGL2 F, τ < localHeight γ x ∧
@@ -191,8 +189,7 @@ theorem scalar_zeroExtension_smooth_continuous
     (∀ i : Fin a.componentCount, ContDiff ℝ (⊤ : ℕ∞)
       (fun x : KPFiniteCuspAtlas.SymmetricSpace F => η
         (KPFiniteCuspAtlas.componentMap F ζ hζ U (a.representative i)
-          (KPCuspSiegel.projection F _ x)))) ∧ Continuous η := by
-  exact ⟨zeroExtension_smooth a τ T hτ hT c φ hφ hzero,
+          (KPCuspSiegel.projection F _ x)))) ∧ Continuous η := ⟨zeroExtension_smooth a τ T hτ hT c φ hφ hzero,
     zeroExtension_continuous a τ T hτ hT c φ hφ.continuous hzero⟩
 
 theorem scalar_zeroExtension_local_model

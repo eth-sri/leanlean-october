@@ -58,14 +58,13 @@ theorem _root_.Matrix.exists_circle_smul_mem_specialUnitaryGroup (U : Matrix.uni
     have hdetU : (U : Matrix n n ℂ).det = Complex.exp ((θ : ℂ) * Complex.I) := by
       have := congrArg (fun z : Circle => (z : ℂ)) hθ
       rw [Circle.coe_exp] at this
-      exact this.symm
+      grind
     refine ⟨Circle.exp (-(θ / Fintype.card n)), Matrix.mem_specialUnitaryGroup_iff.mpr
       ⟨hunit _, ?_⟩⟩
     rw [Matrix.det_smul, Circle.coe_exp, hdetU, ← Complex.exp_nat_mul, ← Complex.exp_add,
       ← Complex.exp_zero]
     congr 1
     push_cast
-    field_simp
-    ring
+    grind
 
 end DedekindZetaZeroFree.TauCeti

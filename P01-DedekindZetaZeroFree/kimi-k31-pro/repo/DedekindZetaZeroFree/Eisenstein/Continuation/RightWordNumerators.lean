@@ -53,8 +53,8 @@ theorem spherical_allWord_numerator (U : KPMsRationalCompactCrossPairing.Level F
       have hz : (KPContFlatSourceRecipe.flatR F ζ hζ s
           (0 : KPContActualSphericalFlatStage.Stage F ζ hζ U).val).val = fun _ => 0 := by ext h; simp
       rw [hz]; simp only [tsum_zero, word_zero]; rfl
-    · intro a g; simp only [word_zero]; exact fun _ _ => analyticAt_const.meromorphicAt
-    · intro a g; simp only [word_zero]; exact analyticOnNhd_const
+    · intro a g; simp only; exact fun _ _ => analyticAt_const.meromorphicAt
+    · intro a g; simp only; exact analyticOnNhd_const
     · intro s hs hn; ext g; simp
   · obtain ⟨Z,hch,hlocal⟩ := scalar_line_construction F ζ hζ M μ P H U v hv
     let A := fun s => actualRightWord F ζ hζ w (groupScalar F ζ hζ M μ P H U (Z s))

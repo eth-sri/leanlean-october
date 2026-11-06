@@ -105,8 +105,8 @@ theorem seriesTerm_leading (C : A.GeneralArithmeticContext σ η hS)
   by_cases hk : k = 0
   · subst k
     simp only [seriesTerm, Fin.val_zero, pow_zero, Nat.mul_zero, Nat.add_zero,
-      Int.ofNat_zero, sub_zero, zero_sub, zpow_zero, one_mul, Ctk_zero_zero, zero_mul,
-      sub_self, sub_zero, if_true]
+      Int.ofNat_zero, zero_sub, one_mul, Ctk_zero_zero, 
+      sub_self, if_true]
     rw [CorrectionFactors.V, qPower, qPower, ← Complex.exp_nat_mul]
     norm_num only [mul_zero, neg_zero, zpow_zero, one_mul, mul_one, Nat.cast_zero,
       zero_mul, sub_zero, zero_sub]
@@ -237,7 +237,7 @@ theorem baseline_norm_le (p : ExteriorPrime A) (z : ℂ) (ρ : ℝ) (hρ : 0 ≤
   · rcases h with ⟨he, hl, hk⟩
     rw [norm_pow]
     have h := pow_le_pow_left₀ (norm_nonneg _) hV i.2.2.2
-    simp only [weight, he, hl, hk, pow_zero, mul_one]
+    simp only [weight, hl, hk, pow_zero, mul_one]
     nlinarith [pow_nonneg hρ i.2.2.2]
   · simp only [norm_zero]
     exact weight_nonneg hρ i
@@ -252,13 +252,13 @@ theorem one_sub_V_mul_tsum_baseline (p : ExteriorPrime A) (z : ℂ) (hV : ‖V p
   have hs00 := hs0.prod_factor (0 : ℕ)
   simp only [baseline]
   rw [tsum_eq_single (0 : Fin 2)]
-  · simp only [ite_true]
+  · simp only
     rw [show (∑' c : ℕ × ℕ × ℕ, if True ∧ c.1 = 0 ∧ c.2.1 = 0 then V p z ^ c.2.2 else 0) =
       ∑' l : ℕ, ∑' c : ℕ × ℕ, baseline p z (0, l, c) by
         simpa only [baseline, Fin.val_zero] using hs0.tsum_prod]
     simp only [baseline, true_and]
     rw [tsum_eq_single (0 : ℕ)]
-    · simp only [ite_true]
+    · simp only
       rw [show (∑' c : ℕ × ℕ, if True ∧ c.1 = 0 then V p z ^ c.2 else 0) =
         ∑' k : ℕ, ∑' m : ℕ, baseline p z (0, 0, k, m) by
           simpa only [baseline, true_and] using hs00.tsum_prod]

@@ -30,15 +30,13 @@ theorem dedekindZeta_hasSum_nonzeroIdeals
     HasSum
       (fun I : {I : Ideal (𝓞 K) // I ≠ ⊥} =>
         (Ideal.absNorm (I : Ideal (𝓞 K)) : ℂ) ^ (-s))
-      (NumberField.dedekindZeta K s) := by
-  exact DedekindZetaZeroFree.Odlyzko.hasSum_nonzeroIdeal_inverseNormPower K hs
+      (NumberField.dedekindZeta K s) := DedekindZetaZeroFree.Odlyzko.hasSum_nonzeroIdeal_inverseNormPower K hs
 
 theorem dedekindZeta_idealEulerProduct_hasProd
     (K : Type*) [Field K] [NumberField K] (s : ℂ) (hs : 1 < s.re) :
     HasProd
       (fun P : IsDedekindDomain.HeightOneSpectrum (𝓞 K) =>
         (1 - (Ideal.absNorm P.asIdeal : ℂ) ^ (-s))⁻¹)
-      (NumberField.dedekindZeta K s) := by
-  exact DedekindZetaZeroFree.Odlyzko.dedekindZeta_primeIdeal_eulerProduct_hasProd K hs
+      (NumberField.dedekindZeta K s) := DedekindZetaZeroFree.Odlyzko.dedekindZeta_primeIdeal_eulerProduct_hasProd K hs
 
 end DedekindZetaZeroFree.AbelianQuotient

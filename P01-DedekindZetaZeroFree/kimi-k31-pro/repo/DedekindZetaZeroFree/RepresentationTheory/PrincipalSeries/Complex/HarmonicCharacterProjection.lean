@@ -23,11 +23,11 @@ private lemma compactSphereCoordinate_continuous :
       (k : Matrix (Fin 2) (Fin 2) ℂ) 1 0 * star ((k : Matrix (Fin 2) (Fin 2) ℂ) 1 1)) :=
     (entry_continuous 1 0).mul (entry_continuous 1 1).star
   fin_cases i
-  · simp only [compactSphereCoordinate, Matrix.cons_val_zero]
+  · simp only [compactSphereCoordinate]
     exact RCLike.continuous_ofReal.comp ((Complex.continuous_re.comp h).const_mul 2)
-  · simp only [compactSphereCoordinate, Matrix.cons_val_one, Matrix.head_cons]
+  · simp only [compactSphereCoordinate]
     exact RCLike.continuous_ofReal.comp ((Complex.continuous_im.comp h).const_mul 2)
-  · simp only [compactSphereCoordinate, Matrix.cons_val_two, Matrix.tail_cons]
+  · simp only [compactSphereCoordinate]
     exact RCLike.continuous_ofReal.comp
       (((entry_continuous 1 0).norm.pow 2).sub ((entry_continuous 1 1).norm.pow 2))
 

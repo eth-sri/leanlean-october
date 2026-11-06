@@ -169,44 +169,11 @@ noncomputable instance finite_sUnitLocalPowerKernelQuotient
     (sUnitLocalPowerKernelQuotientMap_injective
       (K := K) n S T)
 
-/-- The restricted radical quotient has cardinality at most `n ^ s`. -/
-theorem card_sUnitLocalPowerKernelQuotient_le
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K)))
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) :
-    Nat.card
-        (sUnitLocalPowerKernel (K := K) n S T ⧸
-          sUnitLocalPowerKernelNthPowers (K := K) n S T) ≤
-      (n : ℕ) ^ totalPlaceCard (K := K) S := by
-  rw [← card_sUnit_nthPowerQuotient (K := K) S n hmu]
-  exact Nat.card_le_card_of_injective
-    (sUnitLocalPowerKernelQuotientMap (K := K) n S T)
-    (sUnitLocalPowerKernelQuotientMap_injective
-      (K := K) n S T)
 
-/-- The local-power kernel, regarded as an actual subgroup of `Kˣ`. -/
-def sUnitLocalPowerRadical
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K))) :
-    Subgroup Kˣ :=
-  (sUnitLocalPowerKernel (K := K) n S T).map
-    (SUnitGroup (K := K) S).subtype
 
-/-- Membership in the local-power radical is membership in the kernel
-through the canonical `S`-unit inclusion. -/
-theorem mem_sUnitLocalPowerRadical_iff
-    (n : ℕ+)
-    (S T : Finset (HeightOneSpectrum (𝓞 K)))
-    (x : Kˣ) :
-    x ∈ sUnitLocalPowerRadical (K := K) n S T ↔
-      ∃ hx : x ∈ SUnitGroup (K := K) S,
-        (⟨x, hx⟩ : SUnitGroup (K := K) S) ∈
-          sUnitLocalPowerKernel (K := K) n S T := by
-  constructor
-  · rintro ⟨y, hy, rfl⟩
-    exact ⟨y.2, hy⟩
-  · rintro ⟨hx, hlocal⟩
-    exact ⟨⟨x, hx⟩, hlocal, rfl⟩
+
+
+
 
 end KummerTheory
 

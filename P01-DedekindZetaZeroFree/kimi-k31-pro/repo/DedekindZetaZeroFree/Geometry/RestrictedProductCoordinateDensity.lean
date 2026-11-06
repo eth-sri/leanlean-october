@@ -71,7 +71,7 @@ theorem closure_closure_singleSet_eq_forall_mem (A S : ∀ i, Subgroup (R i))
   have hx' : x' ∈ inc ⁻¹' V := by
     change inc x' ∈ V
     have hinc : inc x' = x := by ext i; rfl
-    rw [hinc]; exact hxV
+    grind
   have hopen : IsOpen (inc ⁻¹' V) :=
     hVopen.preimage (RestrictedProduct.continuous_inclusion hsc)
   obtain ⟨W, hW, hWV⟩ :=
@@ -79,7 +79,7 @@ theorem closure_closure_singleSet_eq_forall_mem (A S : ∀ i, Subgroup (R i))
   have hx'W : x.1 ∈ W := by
     have h : x' ∈ (DFunLike.coe : RestrictedProduct R (fun i => (A i : Set (R i)))
         (Filter.principal ((s : Set ι)ᶜ)) → Π i, R i) ⁻¹' W := by
-      rw [hWV]; exact hx'
+      grind
     exact h
   obtain ⟨t, u, hu, huW⟩ := isOpen_pi_iff.mp hW x.1 hx'W
 
@@ -116,19 +116,18 @@ theorem closure_closure_singleSet_eq_forall_mem (A S : ∀ i, Subgroup (R i))
         · rw [hia, if_pos (Finset.mem_insert_self a t), if_neg ha,
             Pi.mulSingle_eq_same, one_mul]
         · rw [Pi.mulSingle_eq_of_ne hia, mul_one]
-          congr 1
-          simp only [Finset.mem_insert, hia, false_or]
+          grind
       rw [hstep]
       exact (Subgroup.closure (singleSet A S)).mul_mem ih
         (Subgroup.subset_closure ⟨a, x a, hx a, rfl⟩)
   have hgcoord : ∀ i ∈ t, G t i = x i := by
     intro i hi
     show (if i ∈ t then x i else 1) = x i
-    exact if_pos hi
+    grind
   have hgone : ∀ i ∉ t, G t i = 1 := by
     intro i hi
     show (if i ∈ t then x i else 1) = 1
-    exact if_neg hi
+    grind
   have hgH : G t ∈ Subgroup.closure (singleSet A S) := hGmem t
   have hgV : G t ∈ V := by
     let g' : RestrictedProduct R (fun i => (A i : Set (R i)))
@@ -145,7 +144,7 @@ theorem closure_closure_singleSet_eq_forall_mem (A S : ∀ i, Subgroup (R i))
       apply huW
       intro i hi
       show (if i ∈ t then x i else 1) ∈ u i
-      rw [if_pos (by simpa using hi)]
+      rw [if_pos (by grind)]
       exact (hu i hi).2
     have hg'V : g' ∈ inc ⁻¹' V := by
       rw [← hWV]

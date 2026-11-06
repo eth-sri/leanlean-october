@@ -25,7 +25,7 @@ theorem finite_word_pairing
   apply Finset.sum_congr rfl
   intro i hi
   have hh := smooth_ordered_word_adjoint R (f i) g (w i) []
-  simp only [List.append_nil, leftPairingWordDerivative, KPSmoothActualFlowData.wordDerivative] at hh
+  simp only [List.append_nil, KPSmoothActualFlowData.wordDerivative] at hh
   rw [hh]
   ring
 

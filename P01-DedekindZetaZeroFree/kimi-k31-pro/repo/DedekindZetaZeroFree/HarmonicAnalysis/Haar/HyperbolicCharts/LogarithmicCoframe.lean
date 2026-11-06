@@ -31,7 +31,7 @@ theorem placeReindex_eq :
           (placeEquiv F ζ hζ)).symm := by
   funext z k
   rw [placeReindex_apply]
-  simp [Equiv.piCongrLeft_apply_apply]
+  simp
 
 private lemma phi_measurePreserving :
     MeasurePreserving (fun p : Fin 3 → ℝ =>
@@ -47,9 +47,9 @@ private lemma phi_measurePreserving :
   have hcomp := hcp.comp (hs.comp hp)
   convert hcomp using 1
   · funext p
-    simp only [Function.comp_def, MeasurableEquiv.piFinSuccAbove_apply, Prod.map_apply,
-      Prod.swap_prod_mk, Prod.fst_swap, Prod.snd_swap, id_eq, Fin.removeNth_apply,
-      Fin.succAbove_last, Fin.castSucc_zero, Fin.castSucc_one, Fin.last]
+    simp only [Function.comp_def, MeasurableEquiv.piFinSuccAbove_apply, 
+      
+      Fin.last]
     congr 1 <;> rfl
 
 private lemma curry_measurePreserving (d : ℕ) :
@@ -69,7 +69,7 @@ private lemma curry_measurePreserving (d : ℕ) :
     have hpre : (MeasurableEquiv.curry (Fin d) (Fin 3) ℝ).symm ⁻¹' (Set.pi Set.univ s) =
         Set.pi Set.univ (fun i : Fin d => Set.pi Set.univ (fun j : Fin 3 => s (i, j))) := by
       ext g
-      simp [MeasurableEquiv.coe_curry_symm, Function.uncurry_apply_pair, Set.mem_univ_pi]
+      simp [MeasurableEquiv.coe_curry_symm, Function.uncurry_apply_pair]
     rw [hpre]
     simp only [Measure.pi_pi]
     rw [Fintype.prod_prod_type]

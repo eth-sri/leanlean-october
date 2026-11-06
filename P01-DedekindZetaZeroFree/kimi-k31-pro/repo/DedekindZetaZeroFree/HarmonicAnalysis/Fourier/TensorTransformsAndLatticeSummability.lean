@@ -279,7 +279,7 @@ private theorem coset_sum (F : Type) [Field F] [NumberField F]
   refine hs'.congr ?_
   intro m
   by_cases hm : (m : F)-t ∈ I <;>
-    simp [P, Set.indicator_apply, PoissonFinite.idealCosetIndicator, hm]
+    simp [P, PoissonFinite.idealCosetIndicator, hm]
 private theorem field_sum (F : Type) [Field F] [NumberField F]
     (S : Finset (HeightOneSpectrum (RingOfIntegers F)))
     (fArch : 𝓢(PoissonArch.Space F, ℂ))

@@ -56,15 +56,15 @@ theorem finite_partition_quadratic_bound
           Finset.sum_congr rfl fun i _ =>
             (Finset.mul_sum Q (fun j => ∑ b ∈ col j, ‖lam b‖ ^ 2) B).symm
       _ = (P.card : ℝ) * (B * (∑ j ∈ Q, ∑ b ∈ col j, ‖lam b‖ ^ 2)) := by
-          rw [Finset.sum_const, nsmul_eq_mul]
-      _ = (P.card : ℝ) * (B * ∑ b ∈ C, ‖lam b‖ ^ 2) := by rw [hY]
+          simp_all
+      _ = (P.card : ℝ) * (B * ∑ b ∈ C, ‖lam b‖ ^ 2) := by simp_all
   calc ∑ a ∈ R, ‖∑ b ∈ C, lam b * K b a‖ ^ 2
       = ∑ i ∈ P, ∑ a ∈ row i, ‖∑ b ∈ C, lam b * K b a‖ ^ 2 := by
         rw [hR, Finset.sum_biUnion hrow]
     _ ≤ ∑ i ∈ P, ∑ a ∈ row i,
           (Q.card : ℝ) * ∑ j ∈ Q, ‖∑ b ∈ col j, lam b * K b a‖ ^ 2 := by
         refine Finset.sum_le_sum fun i hi => Finset.sum_le_sum fun a ha => ?_
-        exact hpoint a (by rw [hR]; exact Finset.mem_biUnion.mpr ⟨i, hi, ha⟩)
+        aesop
     _ = (Q.card : ℝ) * ∑ i ∈ P, ∑ a ∈ row i,
           ∑ j ∈ Q, ‖∑ b ∈ col j, lam b * K b a‖ ^ 2 := hfactor
     _ = (Q.card : ℝ) * ∑ i ∈ P, ∑ j ∈ Q, ∑ a ∈ row i,
@@ -75,7 +75,7 @@ theorem finite_partition_quadratic_bound
         refine mul_le_mul_of_nonneg_left ?_ (by positivity)
         exact Finset.sum_le_sum fun i hi => Finset.sum_le_sum fun j hj => hblock i hi j hj
     _ = (Q.card : ℝ) * ((P.card : ℝ) * (B * ∑ b ∈ C, ‖lam b‖ ^ 2)) := by
-        rw [hcollapse]
+        simp_all
     _ = (P.card : ℝ) * (Q.card : ℝ) * B * (∑ b ∈ C, ‖lam b‖ ^ 2) := by ring
 
 end DedekindZetaZeroFree.LargeSieve.Vendor

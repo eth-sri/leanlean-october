@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.Eisenstein.Continuation.SmoothSections.CoherentSpatialSeries
 public import DedekindZetaZeroFree.Eisenstein.Residues.Automorphy.ArchimedeanSmoothness
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -31,7 +32,7 @@ theorem finite_level_arch_continuous
     Continuous f := by
   have h := rightWord_continuous_of_chart_smooth F ζ hζ V f hf
     (fun g a => hl g a.val a.property) []
-  exact h
+  measurability
 end DedekindZetaZeroFree.EisensteinSmoothGerms.SmoothSource
 
 end

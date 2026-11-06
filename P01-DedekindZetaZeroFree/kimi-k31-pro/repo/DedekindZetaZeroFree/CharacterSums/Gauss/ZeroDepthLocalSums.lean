@@ -24,7 +24,7 @@ theorem Ctk_zero_zero (C : A.GeneralArithmeticContext σ η hS)
     infer_instance
   have hz (x : Residue C p 0) : x = 0 := Subsingleton.elim _ _
   letI : Unique (Residue C p 0) := ⟨⟨0⟩, fun _ => Subsingleton.elim _ _⟩
-  simp [Ctk, maskedPower, psi, hz, Fintype.card_unique]
+  simp [Ctk, maskedPower, psi, hz]
 
 theorem Ctk_zero_pos (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (k J : ℕ) (hk : 0 < k) :
@@ -47,11 +47,11 @@ theorem Ctk_zero_pos (C : A.GeneralArithmeticContext σ η hS)
     rfl
   simp only [Ctk, pow_zero, map_one, one_mul, Nat.add_zero]
   rw [Finset.sum_ite_eq]
-  simp only [Finset.mem_univ, if_true, hphase, maskedPower, dif_pos rfl,
-    one_mul, Finset.sum_const, Finset.card_univ, Fintype.card_unique, one_smul, mul_one]
+  simp only [Finset.mem_univ, if_true, hphase, maskedPower, 
+    mul_one]
   have hk0 : k ≠ 0 := Nat.ne_of_gt hk
-  simp only [hk0, dif_neg, if_true, Finset.sum_const, Finset.card_univ,
-    Fintype.card_unique, one_smul, mul_one]
+  simp only [hk0, 
+    ]
   by_cases hJ : J = 0
   · subst J
     simp
@@ -160,7 +160,7 @@ theorem Ctk_kzero_sum (C : A.GeneralArithmeticContext σ η hS)
   have hl (v : Residue C p t) : residueMap C p t ((lifts C p t).val v) = v :=
     (lifts C p t).property v
   unfold Ctk
-  simp only [Nat.zero_add, Nat.cast_zero]
+  simp only [Nat.cast_zero]
   rw [Fintype.sum_unique]
   have hm : maskedPower C p 0 (0 : ℤ) default = 1 := by
     simp [maskedPower]
@@ -267,7 +267,7 @@ private lemma fiber_mask (C : A.GeneralArithmeticContext σ η hS)
       rw [← (generator_generates C p).2]
       exact Ideal.subset_span (by simp)
     simp only [map_add, map_mul, hg', zero_mul, add_zero]
-  simp only [maskedPower, Nat.succ_ne_zero, dif_neg, hu, hred, one_ne_zero]
+  simp only [maskedPower, Nat.succ_ne_zero, hu, hred, one_ne_zero]
 
 private lemma fiber_phase (C : A.GeneralArithmeticContext σ η hS)
     (p : ExteriorPrime A) (n J : ℕ) (x : Residue C p 1) (y : Residue C p n) :
@@ -280,7 +280,7 @@ private lemma fiber_phase (C : A.GeneralArithmeticContext σ η hS)
   rw [fiberMap, ← map_mul, psi_residueMap]
   conv_rhs => arg 2; rw [← hl, ← map_mul, psi_residueMap]
   rw [psi_residueMap]
-  simp only [Prod.fst, Prod.snd]
+  simp only
   have heq : ((generator C p ^ J * ((lifts C p 1).val x + generator C p *
       (lifts C p n).val y) : A.R) : F) / (generator C p ^ (n+1) : A.R) =
       ((generator C p ^ J * (lifts C p 1).val x : A.R) : F) / (generator C p ^ (n+1) : A.R) +

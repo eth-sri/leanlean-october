@@ -357,72 +357,9 @@ theorem quotientFiberAverage_sub_one_eq_herbrandFunction_of_maximal
     norm_num
     exact hnat
 
-/-- Natural-threshold form of the last equivalence in the proof of
-Herbrand's theorem.  The normalized average is at least `η_H(s) + 1`
-exactly when its quotient fibre contains an element of depth at least
-`s + 1`. -/
-theorem quotientFiberAverage_ge_herbrandFunction_add_one_iff_exists
-    [Fintype G] {q : G ⧸ H} (hq : q ≠ 1) {σ : G}
-    (hσq : QuotientGroup.mk' H σ = q)
-    (hmax : ∀ γ : G, QuotientGroup.mk' H γ = q →
-      D.depth γ ≤ D.depth σ)
-    (s : ℕ) :
-    D.quotientFiberAverage H hq ≥
-        (RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.herbrandFunction (D.depthLowerFiltration H)) s + 1 ↔
-      ∃ γ : QuotientFiber H q,
-        WithTop.some (s + 1) ≤ D.depth (γ : G) := by
-  let F := D.depthLowerFiltration H
-  let m := D.quotientFiberDepth H hq ⟨σ, hσq⟩
-  have hdepth : D.depth σ = WithTop.some m :=
-    (D.coe_quotientFiberDepth H hq ⟨σ, hσq⟩).symm
-  have havg := D.quotientFiberAverage_sub_one_eq_herbrandFunction_of_maximal
-    H hq hσq hmax
-  have hfiber :
-      (∃ γ : QuotientFiber H q,
-          WithTop.some (s + 1) ≤ D.depth (γ : G)) ↔
-        WithTop.some (s + 1) ≤ D.depth σ := by
-    constructor
-    · rintro ⟨γ, hγ⟩
-      exact hγ.trans (hmax γ γ.property)
-    · intro hσ
-      exact ⟨⟨σ, hσq⟩, hσ⟩
-  have hrealNat :
-      (s : ℝ) ≤ (m : ℝ) - 1 ↔ s + 1 ≤ m := by
-    constructor
-    · intro h
-      have h' : (s + 1 : ℕ) ≤ (m : ℝ) := by
-        push_cast
-        linarith
-      exact_mod_cast h'
-    · intro h
-      have h' : (s + 1 : ℝ) ≤ m := by exact_mod_cast h
-      linarith
-  have hwithTopNat :
-      WithTop.some (s + 1) ≤ D.depth σ ↔ s + 1 ≤ m := by
-    rw [hdepth]
-    exact WithTop.coe_le_coe
-  rw [hfiber, hwithTopNat, ← hrealNat]
-  change D.quotientFiberAverage H hq ≥ (RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.herbrandFunction F) s + 1 ↔ _
-  rw [show D.quotientFiberAverage H hq ≥ (RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.herbrandFunction F) s + 1 ↔
-      (RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.herbrandFunction F) s ≤ D.quotientFiberAverage H hq - 1 by
-    constructor <;> intro h <;> linarith]
-  rw [havg]
-  exact (RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.herbrandFunction_strictMono F).le_iff_le
 
-/-- Every nontrivial quotient fibre admits a maximal representative for
-which the Herbrand fibre-average identity holds. -/
-theorem exists_maximal_representative_quotientFiberAverage [Fintype G]
-    {q : G ⧸ H} (hq : q ≠ 1) :
-    ∃ σ : G, ∃ hσq : QuotientGroup.mk' H σ = q,
-      (∀ γ : G, QuotientGroup.mk' H γ = q →
-        D.depth γ ≤ D.depth σ) ∧
-      D.quotientFiberAverage H hq - 1 =
-        (RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.herbrandFunction (D.depthLowerFiltration H))
-          ((D.quotientFiberDepth H hq ⟨σ, hσq⟩ : ℝ) - 1) := by
-  obtain ⟨σ, hσq, hmax⟩ := D.exists_maximal_depth_representative H hq
-  refine ⟨σ, hσq, hmax, ?_⟩
-  exact D.quotientFiberAverage_sub_one_eq_herbrandFunction_of_maximal
-    H hq hσq hmax
+
+
 
 end NonarchimedeanDepth
 end HerbrandGroupTheory

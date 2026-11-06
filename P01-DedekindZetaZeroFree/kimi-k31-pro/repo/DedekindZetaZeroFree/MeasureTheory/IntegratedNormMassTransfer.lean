@@ -38,19 +38,16 @@ theorem norm_mass_transfer {T I O : Type*} [MeasurableSpace T]
 
   have hA : (∑' i, ENNReal.ofReal (∫ t in D, ‖f i t‖ ∂μ))
       = ENNReal.ofReal (∑' o, ∫ t, ‖g o t‖ ∂μ) := by
-    have h1 : (∑' i, ∫⁻ t in D, ENNReal.ofReal ‖f i t‖ ∂μ)
-        = ∑' i, ENNReal.ofReal (∫ t in D, ‖f i t‖ ∂μ) := by
-      simp_rw [hf_int]
-    rw [← h1, he, hgsum]
+    simp_all
 
   have hA_ne : (∑' i, ENNReal.ofReal (∫ t in D, ‖f i t‖ ∂μ)) ≠ ∞ := by
-    rw [hA]; exact ENNReal.ofReal_ne_top
+    simp_all
 
   let v : I → ℝ≥0 := fun i => (∫ t in D, ‖f i t‖ ∂μ).toNNReal
   have hv : Summable v := by
     refine ENNReal.tsum_coe_ne_top_iff_summable.1 ?_
     rw [show (∑' i, (v i : ℝ≥0∞)) = ∑' i, ENNReal.ofReal (∫ t in D, ‖f i t‖ ∂μ) from rfl]
-    exact hA_ne
+    simp_all
   have ha : Summable (fun i => ∫ t in D, ‖f i t‖ ∂μ) :=
     (NNReal.summable_coe.2 hv).congr (fun i => Real.coe_toNNReal _ (ha_nonneg i))
 

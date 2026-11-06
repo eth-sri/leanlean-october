@@ -101,7 +101,7 @@ theorem actual_scalar_numerator_coordinate (P : Polarization S.heisenberg)
         rw [Units.val_mk0]
     | minus =>
         simp only [denominator, reduceCtorEq, if_false, cc, u, evaluationUnit, rUnit, r,
-          if_false, if_true, Units.val_inv_eq_inv_val, Units.val_mk0, inv_pow]
+          if_false, Units.val_inv_eq_inv_val, Units.val_mk0, inv_pow]
   have hstd : standardIntegralCoordinate (LocalField F q) S.borel P S.iwasawa μ ε s
         (φ : compactPicture S.borel P S.iwasawa (sourceSign ε))
         (k : ActualCover F ζ hζ q) h =

@@ -109,7 +109,7 @@ theorem source_weyl_action (ε : Sign) (s : ℂ) (b : S.borel.B)
     simp [inducingAction, inducingScalar, deltaHalf, normPower, S.borel.retract_torus,
       KPRankOneReversePairGeneric.GraphTwist.coordinate_weyl_inverse,
       hn, hi, borelAction, weylConjugate, sourceSign, targetSign,
-      weyl_involutive F ζ hζ q S P]
+      ]
   · rfl
   · change (tau P) (S.borel.weyl (S.borel.weyl (S.borel.retract b))) v = _
     rw [weyl_involutive F ζ hζ q S P]

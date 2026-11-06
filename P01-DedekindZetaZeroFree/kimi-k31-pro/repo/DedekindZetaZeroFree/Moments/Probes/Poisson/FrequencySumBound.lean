@@ -32,8 +32,7 @@ theorem large_norm_le (D : DedekindZetaZeroFree.Quantitative.FixedData S η) :
         {u : Frequency D.recipe | frequencyNorm D.recipe u < Y + 1} := by
       intro u hu
       have h1 : frequencyNorm D.recipe u ≤ Y := hu
-      show frequencyNorm D.recipe u < Y + 1
-      linarith
+      grind
     have h1 := (hK (Y + 1) (by linarith)).1
     have h2 := (hK (Y + 1) (by linarith)).2
     calc ((({a : Frequency D.recipe | q D a ≤ Y}).ncard : ℕ) : ℝ)
@@ -60,8 +59,7 @@ theorem large_norm_le (D : DedekindZetaZeroFree.Quantitative.FixedData S η) :
     have h := (H a ha.1 Z hZ).2
     have hq : (-(Scales.tailShift - 1)) = -Scales.tailShift + 1 := by ring
     show _ ≤ _ * frequencyNorm D.recipe a ^ (-(Scales.tailShift - 1))
-    rw [hq]
-    exact h
+    grind
   obtain ⟨hsum, hle⟩ := ht (Z ^ Scales.largeCutoffExponent) hX _ hB (largeSet D Z)
     (fun u => ‖RawFixed.FixedData.initialRowIntegral D u Z‖)
     (fun a ha => ha.2) (fun a ha => hbound a ha)
@@ -75,8 +73,7 @@ theorem large_norm_le (D : DedekindZetaZeroFree.Quantitative.FixedData S η) :
         Scales.largeCutoffExponent * (1 - (Scales.tailShift - 1))) =
         Z ^ ((44675 / 10000 : ℝ) + 33 / 100 * Scales.tailShift) *
           Z ^ (Scales.largeCutoffExponent * (1 - (Scales.tailShift - 1))) := Real.rpow_add hZ0 _ _
-    rw [e1, e2]
-    ring
+    grind
   have hfin : Z ^ ((44675 / 10000 : ℝ) + 33 / 100 * Scales.tailShift +
       Scales.largeCutoffExponent * (1 - (Scales.tailShift - 1))) ≤ Z ^ ((717 : ℝ) / 2000) :=
     Real.rpow_le_rpow_of_exponent_le hZ1 (by unfold Scales.tailShift Scales.largeCutoffExponent; norm_num)
@@ -129,13 +126,13 @@ theorem rawOmittedSum_bound (D : DedekindZetaZeroFree.Quantitative.FixedData S �
       have h1 : u ∈ {u : Frequency D.recipe | u ≠ principalFrequency D.recipe} := hu
       rw [nonprincipal_cover D Z] at h1
       rcases h1 with (h1 | h1) | h1
-      · exact Or.inl h1
+      · grind
       · have h2 : u ∈ exceptionalMedium D ρ Z ∪ goodMedium D ρ Z := by
-          rw [exceptional_good_union D ρ Z]; exact h1
+          rw [exceptional_good_union D ρ Z]; grind
         rcases h2 with h2 | h2
-        · exact Or.inr (Or.inl h2)
-        · exact Or.inr (Or.inr (Or.inl h2))
-      · exact Or.inr (Or.inr (Or.inr h1))
+        · grind
+        · grind
+      · grind
     have hI : ∀ s : Set (Frequency D.recipe), ∀ u, 0 ≤ s.indicator G u :=
       fun s u => Set.indicator_nonneg (fun v _ => hG0 v) u
     have hcover : ∀ u, T.indicator G u ≤
@@ -144,19 +141,19 @@ theorem rawOmittedSum_bound (D : DedekindZetaZeroFree.Quantitative.FixedData S �
       by_cases hu : u ∈ T
       · rcases key u hu with h | h | h | h
         · rw [Set.indicator_of_mem hu, Set.indicator_of_mem h]
-          linarith [hI ex u, hI gd u, hI lg u]
+          grind
         · rw [Set.indicator_of_mem hu, Set.indicator_of_mem h]
-          linarith [hI sm u, hI gd u, hI lg u]
+          grind
         · rw [Set.indicator_of_mem hu, Set.indicator_of_mem h]
-          linarith [hI sm u, hI ex u, hI lg u]
+          grind
         · rw [Set.indicator_of_mem hu, Set.indicator_of_mem h]
-          linarith [hI sm u, hI ex u, hI gd u]
+          grind
       · rw [Set.indicator_of_notMem hu]
-        linarith [hI sm u, hI ex u, hI gd u, hI lg u]
-    have hsmS : Summable (sm.indicator G) := (summable_subtype_iff_indicator).mp hsS
-    have hexS : Summable (ex.indicator G) := (summable_subtype_iff_indicator).mp hsE
-    have hgdS : Summable (gd.indicator G) := (summable_subtype_iff_indicator).mp hsG
-    have hlgS : Summable (lg.indicator G) := (summable_subtype_iff_indicator).mp hsL
+        grind
+    have hsmS : Summable (sm.indicator G) := summable_subtype_iff_indicator.mp hsS
+    have hexS : Summable (ex.indicator G) := summable_subtype_iff_indicator.mp hsE
+    have hgdS : Summable (gd.indicator G) := summable_subtype_iff_indicator.mp hsG
+    have hlgS : Summable (lg.indicator G) := summable_subtype_iff_indicator.mp hsL
     have hsumFour : Summable (fun u => sm.indicator G u + ex.indicator G u + gd.indicator G u +
         lg.indicator G u) := ((hsmS.add hexS).add hgdS).add hlgS
     have hTS : Summable (T.indicator G) :=
@@ -196,18 +193,9 @@ theorem rawOmittedSum_bound (D : DedekindZetaZeroFree.Quantitative.FixedData S �
         RawFixed.FixedData.initialRowIntegral D f.val Z‖ ≤ ∑' f : TwistedProbeRowDefinitions.TwistedRow D, G f.val :=
       norm_tsum_le_tsum_norm (f := fun f : TwistedProbeRowDefinitions.TwistedRow D =>
         RawFixed.FixedData.initialRowIntegral D f.val Z) hVS
-    have hfin : ∑' u, sm.indicator G u + ∑' u, ex.indicator G u +
-        ∑' u, gd.indicator G u + ∑' u, lg.indicator G u ≤
-        (Cs + Ce + Cg + Cl) * Z ^ ((717 : ℝ) / 2000) := by
-      rw [← hT1, ← hT2, ← hT3, ← hT4]
-      have : (Cs + Ce + Cg + Cl) * Z ^ ((717 : ℝ) / 2000) =
-          Cs * Z ^ ((717 : ℝ) / 2000) + Ce * Z ^ ((717 : ℝ) / 2000) +
-          Cg * Z ^ ((717 : ℝ) / 2000) + Cl * Z ^ ((717 : ℝ) / 2000) := by ring
-      rw [this]
-      linarith
-    linarith
+    grind
   obtain ⟨C', hC', h'⟩ := RawCompactScale31.omittedSum_bound_all_of_bound_ge D
     (by norm_num : (0 : ℝ) < 717 / 2000) (le_max_of_le_left hZe) hbd
-  exact ⟨C', hC', h'⟩
+  grind
 
 end DedekindZetaZeroFree.Quantitative.RawOmittedRowsAssembly31

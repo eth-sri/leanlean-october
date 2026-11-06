@@ -62,7 +62,7 @@ theorem homogeneous_sphere_eq_zero {p : MvPolynomial (Fin 3) ℂ} {ℓ : ℕ}
         have htd : p.totalDegree = 0 := (MvPolynomial.totalDegree_zero_iff_isHomogeneous (σ := Fin 3)).mpr hp
         have hc : p = MvPolynomial.C (p.coeff 0) := MvPolynomial.totalDegree_eq_zero_iff_eq_C.mp htd
         rw [hc]
-        have hs := h (⟨WithLp.toLp 2 ![1,0,0], by simp [Metric.mem_sphere, dist_zero_right, EuclideanSpace.norm_eq, Fin.sum_univ_succ]⟩ : Sphere)
+        have hs := h (⟨WithLp.toLp 2 ![1,0,0], by simp [EuclideanSpace.norm_eq, Fin.sum_univ_succ]⟩ : Sphere)
         rw [hc] at hs
         simpa only [polynomialSphere, MvPolynomial.eval_C] using hs
       · have hs := homogeneous_eval_scale hp 0 (fun _ => 0)
@@ -108,8 +108,7 @@ theorem polynomialSphere_smooth (p : MvPolynomial (Fin 3) ℂ) :
   have hx' : x ≠ 0 := hx
   simp [radialExtension, polynomialSphere, hx']
 
-noncomputable def densityOuterBump : ContDiffBump (0 : Ambient) :=
-  ⟨3 / 2, 2, by norm_num, by norm_num⟩
+
 
 open MeasureTheory
 open scoped RealInnerProductSpace

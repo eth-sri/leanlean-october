@@ -34,10 +34,10 @@ theorem positiveRayDenominator
   have heq : du * x = au := by
     apply Units.ext
     simp only [Units.val_mul, Units.val_mk0, du, au]
-    rw [haeq]
+    grind
   have hau : ClassFieldTheory.IsRayCongruent (narrowIdealModulus K m hm) au :=
     heq ▸ hdua
   obtain ⟨ham, hapos⟩ := (integralNarrowRayCongruence K m hm a haK).mp hau
-  exact ⟨a, d, hane, hdne, haeq, ham, hdm, hapos, hdpos⟩
+  grind
 
 end DedekindZetaZeroFree.AbelianQuotient

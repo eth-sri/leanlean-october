@@ -194,7 +194,7 @@ private theorem productTrace_basis_pair (p : Nat.Primes) (i j : TraceBasisIndex 
     productTrace F p (productCodifferentFieldBasis F p i * productIntegralFieldBasis F p j) = if j = i then 1 else 0 := by
   classical
   simp only [productCodifferentFieldBasis, productIntegralFieldBasis, Module.Basis.map_apply,
-    Algebra.TensorProduct.basis_apply, LinearEquiv.coe_coe]
+    Algebra.TensorProduct.basis_apply]
   change productTrace F p ((fieldTensorEquiv F p) (1 ⊗ₜ[ℚ] ((integralBasis F).traceDual i)) *
     (fieldTensorEquiv F p) (1 ⊗ₜ[ℚ] (integralBasis F j))) = _
   rw [← map_mul]
@@ -224,7 +224,7 @@ theorem integralProductInclusion_smul (p : Nat.Primes) (a : ℤ_[p]) (y : Integr
   apply funext
   intro v
   change ((a • y v : v.val.adicCompletionIntegers F) : v.val.adicCompletion F) = a • (y v : v.val.adicCompletion F)
-  simp only [Algebra.smul_def, Subring.coe_mul]
+  simp only [Algebra.smul_def]
   change (integerScalarMap F p v a : v.val.adicCompletion F) * _ = fieldScalarMap F p v (a : ℚ_[p]) * _
   rw [integerScalarMap_completion_coe]
 
@@ -238,7 +238,7 @@ private theorem integralProductInclusion_range (p : Nat.Primes) :
     ext v
     simp [b, Algebra.TensorProduct.basis_apply, integralTensorEquiv, integralTensorMap,
       integralProductInclusion, integralDiagonalAt, productIntegralFieldBasis_apply, integralBasis_apply,
-      Pi.ringHom_apply]
+      ]
     rfl
   apply Set.Subset.antisymm
   · rintro _ ⟨y, rfl⟩

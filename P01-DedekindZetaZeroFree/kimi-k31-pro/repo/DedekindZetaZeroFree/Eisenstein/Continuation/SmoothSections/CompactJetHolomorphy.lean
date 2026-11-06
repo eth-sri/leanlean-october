@@ -53,7 +53,7 @@ theorem powerSeries_into_smooth (D : J → V →ₗ[ℂ] C(G₀, ℂ))
   have hn := hN M hM z hzR
   have heq : (∑ q ∈ Finset.range M, (z - z₀) ^ q • ι (p.coeff q)) - ι (f z) =
       ι (p.partialSum M (z - z₀) - f z) := by
-    simp [FormalMultilinearSeries.partialSum, FormalMultilinearSeries.apply_eq_pow_smul_coeff]
+    simp [FormalMultilinearSeries.partialSum]
   rw [heq]
   apply lt_of_le_of_lt (hb _)
   have hsmall : (C + 1) * ‖p.partialSum M (z - z₀) - f z‖ < ε := by

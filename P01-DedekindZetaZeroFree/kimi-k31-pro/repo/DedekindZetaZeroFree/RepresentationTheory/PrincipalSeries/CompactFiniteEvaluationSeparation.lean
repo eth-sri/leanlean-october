@@ -44,7 +44,7 @@ private theorem tuple_prod (a : KPAdelicCoverRestrictedProduct.RestrictedCover F
       funext x
       by_cases h : x = w
       · subst x; simp
-      · simp [Pi.mulSingle_apply, Sum.inl_injective.ne h, h]
+      · simp [Sum.inl_injective.ne h, h]
     rw [he]
     rw [List.prod_map_eq_pow_single w _ (by intro x hx _; simp [hx])]
     rw [List.nodup_iff_count_le_one.mp (Finset.nodup_toList _) w |>.antisymm
@@ -52,7 +52,7 @@ private theorem tuple_prod (a : KPAdelicCoverRestrictedProduct.RestrictedCover F
     simp
   | inr q =>
     simp [ha, KPAdelicCoverRestrictedProduct.localToRestricted, Function.comp_def,
-      RestrictedProduct.coe_mulSingle_apply, Pi.mulSingle_apply]
+      RestrictedProduct.coe_mulSingle_apply]
 
 private theorem sectionTuple_insertion
     (r : InfinitePlace F → Matrix.GeneralLinearGroup (Fin 2) ℂ) :
@@ -162,14 +162,14 @@ private theorem unipotent_insertion
     · subst v
       fin_cases i <;> fin_cases j <;> simp [Matrix.GeneralLinearGroup.map,
         singleAdele, KPAdelicCoverRestrictedProduct.adeleEval, r,
-        KPCplxCharacterHaar.upperUnipotent, Pi.single_apply, RingHom.comp_apply, RingHom.fst, Pi.evalRingHom_apply]
+        KPCplxCharacterHaar.upperUnipotent, RingHom.fst]
       change Pi.single w _ w = _
       simp
     · fin_cases i <;> fin_cases j <;> simp [Matrix.GeneralLinearGroup.map,
         singleAdele, KPAdelicCoverRestrictedProduct.adeleEval, r, hv,
-        KPCplxCharacterHaar.upperUnipotent, Pi.single_apply, RingHom.comp_apply, RingHom.fst, Pi.evalRingHom_apply]
+        KPCplxCharacterHaar.upperUnipotent, RingHom.fst]
       change Pi.single w _ v = 0
-      simp [Pi.single_apply, hv]
+      simp [hv]
 
 private theorem upper_projective (a d : ℂˣ) (b : ℂ) :
     Matrix.ProjGenLinGroup.mk (KPCplxPrincipalSeriesCharts.upperTriangular a d b) =

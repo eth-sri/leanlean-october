@@ -267,60 +267,11 @@ theorem residueAbsoluteDegree_frobenius :
       FiniteField.frobeniusAlgEquivOfAlgebraic k (AlgebraicClosure k))).trans
     (residueAbsoluteFrobenius_one k (AlgebraicClosure k)).symm
 
-/-- On every finite Galois residue subextension, the absolute degree of an
-automorphism is exactly its canonical Frobenius exponent.  This is the
-finite-coordinate compatibility needed when the residue degree map is pulled
-back to the absolute Galois group of a local field. -/
-theorem finiteResidueFrobeniusIntermediate_residueAbsoluteDegree
-    (sigma : Field.absoluteGaloisGroup k)
-    (E : FiniteGaloisIntermediateField k (AlgebraicClosure k)) :
-    finiteResidueFrobeniusIntermediate k (AlgebraicClosure k) E
-        (residueAbsoluteDegree k sigma) =
-      AlgEquiv.restrictNormalHom E sigma := by
-  calc
-    finiteResidueFrobeniusIntermediate k (AlgebraicClosure k) E
-        (residueAbsoluteDegree k sigma) =
-        AlgEquiv.restrictNormalHom E
-          (residueAbsoluteFrobenius k (AlgebraicClosure k)
-            (residueAbsoluteDegree k sigma)) :=
-      (restrictNormalHom_residueAbsoluteFrobenius
-        (k := k) (Omega := AlgebraicClosure k)
-        (z := residueAbsoluteDegree k sigma) E).symm
-    _ = AlgEquiv.restrictNormalHom E sigma := by
-      exact congrArg (AlgEquiv.restrictNormalHom E)
-        ((residueAbsoluteFrobeniusEquiv k).apply_symm_apply sigma)
 
-/-- Coordinate form of
-`finiteResidueFrobeniusIntermediate_residueAbsoluteDegree`: reducing the
-absolute degree modulo `[E:k]` and exponentiating arithmetic Frobenius gives
-the actual restriction of the automorphism to `E`. -/
-theorem finiteResidueFrobeniusExponentHom_degree_coordinate
-    (sigma : Field.absoluteGaloisGroup k)
-    (E : FiniteGaloisIntermediateField k (AlgebraicClosure k)) :
-    letI : Finite E := Module.finite_of_finite k
-    finiteResidueFrobeniusExponentHom k E
-        (Multiplicative.ofAdd
-          (zHatReduction (Module.finrank k E) Module.finrank_pos
-            (residueAbsoluteDegree k sigma).toAdd)) =
-      AlgEquiv.restrictNormalHom E sigma := by
-  let : Finite E := Module.finite_of_finite k
-  exact finiteResidueFrobeniusIntermediate_residueAbsoluteDegree k sigma E
 
-/-- Equivalently, the inverse finite Frobenius coordinate of a restriction
-is the reduction of the absolute degree modulo the residue extension degree. -/
-theorem finiteResidueFrobeniusExponentEquiv_symm_restrict
-    (sigma : Field.absoluteGaloisGroup k)
-    (E : FiniteGaloisIntermediateField k (AlgebraicClosure k)) :
-    letI : Finite E := Module.finite_of_finite k
-    (finiteResidueFrobeniusExponentEquiv k E).symm
-        (AlgEquiv.restrictNormalHom E sigma) =
-      Multiplicative.ofAdd
-        (zHatReduction (Module.finrank k E) Module.finrank_pos
-          (residueAbsoluteDegree k sigma).toAdd) := by
-  let : Finite E := Module.finite_of_finite k
-  apply (finiteResidueFrobeniusExponentEquiv k E).injective
-  rw [(finiteResidueFrobeniusExponentEquiv k E).apply_symm_apply]
-  exact (finiteResidueFrobeniusExponentHom_degree_coordinate k sigma E).symm
+
+
+
 
 end
 end LocalClassFieldTheory

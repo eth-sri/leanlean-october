@@ -42,8 +42,8 @@ private theorem triangularize_pivot (g : KPLocalCover.LocalGL2 F (Sum.inr q))
   let t : KPTameCompact.O F q := ⟨-(g 1 0 / g 1 1), (mem_integer F q _).mpr ht⟩
   refine ⟨KPStandardLocalRootLifts.integralLowerN F q t, ?_⟩
   simp [KPTameCompact.inclusion, KPLocalCube.integerInclusion,
-    Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two,
-    Matrix.GeneralLinearGroup.map_apply, KPStandardLocalRootLifts.integralLowerN,
+    Matrix.mul_apply, Fin.sum_univ_two,
+    KPStandardLocalRootLifts.integralLowerN,
     Matrix.GeneralLinearGroup.val_mk'', t]
   field_simp
   ring
@@ -78,7 +78,7 @@ theorem integral_ratio (b : KPRankOneInduction.upperBorel F q)
     have he10 := congrArg (fun M : KPRankOneInduction.GL2 F q => M 1 0) he
     simp only [Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two,
       Matrix.GeneralLinearGroup.coe_scalar, Matrix.scalar_apply, Matrix.diagonal_apply,
-      Fin.reduceEq, if_true, if_false, mul_zero, zero_add, add_zero, hu] at he10
+      Fin.reduceEq, if_true, if_false, mul_zero, add_zero, hu] at he10
     exact (mul_eq_zero.mp he10).resolve_right u.ne_zero
   have hki : k 1 0 = 0 := by
     apply Subtype.ext

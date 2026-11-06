@@ -196,7 +196,7 @@ theorem universal_polynomial_compact_words (p : Polynomial ℂ) :
     induction v with
     | nil => simp [compactWord]
     | cons j v ih =>
-        simp only [compactWord, List.foldr_cons, map_mul, FreeAlgebra.lift_ι_apply] at *
+        simp only [compactWord, List.foldr_cons, map_mul] at *
         rw [ih, hι]
   have hh := congrArg φ he
   rw [← Polynomial.aeval_algHom_apply] at hh

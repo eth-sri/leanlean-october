@@ -65,10 +65,7 @@ theorem localAbsoluteAbelianizationMulEquiv_mk
       AlgEquiv.restrictNormalHom (localMaximalAbelianExtension K) sigma :=
   absoluteAbelianizationMulEquivMaximalAbelianGalois_mk K sigma
 
-/-- Compatibility form of continuity of the multiplicative equivalence. -/
-theorem localAbsoluteAbelianizationMulEquiv_continuous :
-    Continuous (localAbsoluteAbelianizationMulEquiv K) :=
-  absoluteAbelianizationMulEquivMaximalAbelianGalois_continuous K
+
 
 /-- Compatibility name for the canonical topological equivalence. -/
 noncomputable abbrev localAbsoluteAbelianizationEquiv :

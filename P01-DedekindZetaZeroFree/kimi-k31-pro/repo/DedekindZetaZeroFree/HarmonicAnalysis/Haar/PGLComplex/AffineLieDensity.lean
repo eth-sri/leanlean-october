@@ -96,7 +96,7 @@ private theorem raw_point (a : AffineGL) (ha : a.val 0 0 ≠ 0) :
   change (affineMatrix (rawInverse a)) * Matrix.scalar (Fin 2) (a.val 0 0) = a.val
   rw [raw_matrix a ha]
   ext i j
-  simp [Matrix.mul_diagonal, smul_eq_mul, ha]
+  simp [Matrix.mul_diagonal, smul_eq_mul]
   field_simp
 private theorem complex_zero : complexCoordinates (0 : Coordinates) = 0 := by
   ext i
@@ -200,7 +200,7 @@ private theorem continuous_point : ContinuousOn affinePoint affineSource := by
   have hne : ∀ᶠ y in 𝓝 x, delta y ≠ 0 := open_source.mem_nhds hx
   apply ContinuousAt.congr_of_eventuallyEq continuous_affineMatrix.continuousAt
   filter_upwards [hne] with y hy
-  simp [Function.comp_def, hy, Matrix.GeneralLinearGroup.mkOfDetNeZero]
+  simp [hy, Matrix.GeneralLinearGroup.mkOfDetNeZero]
 
 private theorem smooth_complex_pair (i j : Fin 6) :
     ContDiff ℝ (⊤ : ℕ∞) (fun x : Coordinates => (⟨x i, x j⟩ : ℂ)) := by
@@ -304,8 +304,8 @@ theorem contDiffAt_matrixRatios (a : Matrix (Fin 2) (Fin 2) ℂ)
       (he i j).contDiffAt.mul ((he 0 0).contDiffAt.inv ha)
   apply contDiffAt_pi.mpr
   intro i
-  fin_cases i <;> simp only [matrixRatios, Matrix.cons_val_zero,
-    Matrix.cons_val_one, Matrix.cons_val_fin_one, Matrix.cons_val,
+  fin_cases i <;> simp only [matrixRatios, 
+    
     Complex.sub_re, Complex.one_re, Complex.sub_im, Complex.one_im, sub_zero]
   · exact (Complex.reCLM.contDiff.comp_contDiffAt a (hd 1 1)).sub contDiffAt_const
   · exact Complex.imCLM.contDiff.comp_contDiffAt a (hd 1 1)
@@ -481,13 +481,13 @@ def affineMultiply (p : Coordinates × Coordinates) : Coordinates :=
 theorem translatedAffineChart_source (g : Group) :
     (translatedAffineChart g).source = {h | g⁻¹ * h ∈ affineTarget} := by
   ext h
-  simp [translatedAffineChart, OpenPartialHomeomorph.trans_target,
+  simp [translatedAffineChart, 
     Homeomorph.mulLeft_symm]
 
 theorem translatedAffineChart_target (g : Group) :
     (translatedAffineChart g).target = affineSource := by
   ext x
-  simp [translatedAffineChart, OpenPartialHomeomorph.trans_source]
+  simp [translatedAffineChart]
 
 theorem translatedAffineChart_apply (g h : Group)
     (hh : g⁻¹ * h ∈ affineTarget) :
@@ -515,7 +515,7 @@ theorem translatedAffineChart_symm_apply (g : Group) (x : Coordinates)
       y ∈ affineSource ∧ h⁻¹ * (g * affinePoint y) ∈ affineTarget := by
     intro y hy
     simp only [OpenPartialHomeomorph.trans_source,
-      OpenPartialHomeomorph.symm_symm, OpenPartialHomeomorph.symm_source,
+      OpenPartialHomeomorph.symm_source,
       translatedAffineChart_target, Set.mem_inter_iff, Set.mem_preimage] at hy
     refine ⟨hy.1, ?_⟩
     rw [translatedAffineChart_symm_apply g y hy.1, translatedAffineChart_source] at hy
@@ -571,7 +571,7 @@ theorem affine_lie_structure : ∃ C : ChartedSpace Coordinates Group,
     refine ⟨continuous_mul.continuousAt, ?_⟩
     rw [extChartAt_prod]
     simp only [PartialEquiv.prod_coe, PartialEquiv.prod_coe_symm,
-      ModelWithCorners.range_prod, ModelWithCorners.range_eq_univ, Set.univ_prod_univ]
+      ModelWithCorners.range_eq_univ]
     simp only [extChartAt, OpenPartialHomeomorph.extend_coe,
       OpenPartialHomeomorph.extend_coe_symm, modelWithCornersSelf_coe,
       modelWithCornersSelf_coe_symm, Function.id_comp, Function.comp_id]
@@ -652,7 +652,7 @@ theorem affine_lie_structure : ∃ C : ChartedSpace Coordinates Group,
     simp only [extChartAt, OpenPartialHomeomorph.extend_coe,
       OpenPartialHomeomorph.extend_coe_symm, modelWithCornersSelf_coe,
       modelWithCornersSelf_coe_symm, Function.id_comp, Function.comp_id,
-      ModelWithCorners.range_eq_univ]
+      ]
     rw [Set.range_id]
     change ContDiffWithinAt ℝ (↑(⊤ : ℕ∞) : ℕ∞ω)
       (fun z : Coordinates => translatedAffineChart p⁻¹ (p * affineChart z)⁻¹)
@@ -759,15 +759,15 @@ theorem complexLeft_hasFDerivAt (x : Coordinates) :
   fin_cases i
   · convert hu using 1 <;> ext z <;>
       simp [complexLeft, div_eq_mul_inv, leftFrameCLM, leftFrameLinear,
-        leftFrame, Matrix.toLin'_apply, Matrix.mulVec, dotProduct,
+        leftFrame, Matrix.toLin'_apply, dotProduct,
         Fin.sum_univ_three, P, d, b, c] <;> ring
   · convert hb using 1 <;> ext z <;>
       simp [complexLeft, div_eq_mul_inv, leftFrameCLM, leftFrameLinear,
-        leftFrame, Matrix.toLin'_apply, Matrix.mulVec, dotProduct,
-        Fin.sum_univ_three, P, d, b, c] <;> ring
+        leftFrame, Matrix.toLin'_apply, dotProduct,
+        Fin.sum_univ_three, P, b] <;> ring
   · convert hc using 1 <;> ext z <;>
       simp [complexLeft, div_eq_mul_inv, leftFrameCLM, leftFrameLinear,
-        leftFrame, Matrix.toLin'_apply, Matrix.mulVec, dotProduct,
+        leftFrame, Matrix.toLin'_apply, dotProduct,
         Fin.sum_univ_three, P, d, b, c, delta] <;> ring
 
 def realFrame (x : Coordinates) : Coordinates →L[ℝ] Coordinates :=

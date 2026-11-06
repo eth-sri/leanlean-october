@@ -55,8 +55,8 @@ private theorem continuousOn_isolated_ite
     apply (continuousWithinAt_const (b := a)).congr_of_eventuallyEq _ (by simp)
     filter_upwards [mem_nhdsWithin_of_mem_nhds (Metric.ball_mem_nhds (β : ℂ) hε),
       self_mem_nhdsWithin] with z hz hzs
-    simp [hi z hzs hz]
-  · apply (hF w hw he).continuousWithinAt.congr_of_eventuallyEq _ (by simp [he])
+    simp_all
+  · apply (hF w hw he).continuousWithinAt.congr_of_eventuallyEq _ (by simp_all)
     filter_upwards [mem_nhdsWithin_of_mem_nhds (isOpen_compl_singleton.mem_nhds he)] with z hz
     simp_all
 
@@ -81,33 +81,33 @@ theorem projection_eq_cfc
       rw [← cfc_mul f f B hf hf]
       apply cfc_congr
       intro w hw
-      simp [f]
+      aesop
     · change star (cfc f B) = cfc f B
       rw [← cfc_star]
       apply cfc_congr
       intro w hw
-      simp [f]
+      aesop
   have hmul : (B - (β : ℂ) • 1) * cfc f B = 0 := by
     have hd : cfc (fun w : ℂ => w - (β : ℂ)) B = B - (β : ℂ) • 1 := by
       rw [cfc_sub (fun w : ℂ => w) (fun _ : ℂ => (β : ℂ)) B
         continuousOn_id continuousOn_const, cfc_id' ℂ B hn, cfc_const (β : ℂ) B hn]
-      simp [Algebra.algebraMap_eq_smul_one]
+      aesop
     rw [← hd, ← cfc_mul _ f B (by fun_prop) hf, ← cfc_const_zero ℂ B]
     apply cfc_congr
     intro w hw
-    by_cases he : w = (β : ℂ) <;> simp [f, he]
+    aesop
   have hinv : cfc g B * (B - (β : ℂ) • 1) = 1 - cfc f B := by
     have hd : cfc (fun w : ℂ => w - (β : ℂ)) B = B - (β : ℂ) • 1 := by
       rw [cfc_sub (fun w : ℂ => w) (fun _ : ℂ => (β : ℂ)) B
         continuousOn_id continuousOn_const, cfc_id' ℂ B hn, cfc_const (β : ℂ) B hn]
-      simp [Algebra.algebraMap_eq_smul_one]
+      aesop
     rw [← hd, ← cfc_mul g _ B hg (by fun_prop), ← cfc_const_one ℂ B,
       ← cfc_sub _ f B continuousOn_const hf]
     apply cfc_congr
     intro w hw
     by_cases he : w = (β : ℂ)
-    · simp [f, g, he]
-    · simp [f, g, he, sub_ne_zero.mpr he]
+    · aesop
+    · grind
   apply ContinuousLinearMap.IsStarProjection.ext
     (isStarProjection_starProjection (U := eigenspace B β)) hP
   change (eigenspace B β).starProjection.range = (cfc f B).range
@@ -139,7 +139,7 @@ theorem projection_spec
     ext x
     have hx := (eigenspace B β).starProjection_apply_mem x
     change B (projection B β x) - (β : ℂ) • projection B β x = 0 at hx
-    exact sub_eq_zero.mp hx
+    grind
   refine ⟨?_, hP, (eigenspace B β).isIdempotentElem_starProjection,
     Submodule.range_starProjection _, hmul, ?_⟩
   · rw [projection_eq_cfc B hB β hβ hiso]
@@ -149,7 +149,7 @@ theorem projection_spec
       continuousOn_isolated_ite B β hiso 1 (fun _ => 0) (by intros; fun_prop)
     have he := eqOn_of_cfc_eq_cfc (hz.trans (cfc_const_zero ℂ B).symm)
       hf continuousOn_const hB.isStarNormal hiso.1
-    simpa using he
+    simp_all
   · have he := congrArg star hmul
     simpa only [star_mul, hP.star_eq, hB.star_eq, star_smul, Complex.star_def,
       Complex.conj_ofReal] using he
@@ -186,13 +186,8 @@ theorem isUnit_gap_add_projection
   change 1 - (β : ℂ)⁻¹ * w + f w ≠ 0
   have hb : (β : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hβ
   by_cases he : w = (β : ℂ)
-  · simp [f, he, hb]
-  · simp only [f, if_neg he, add_zero]
-    intro hz
-    apply he
-    have hz' : (β : ℂ)⁻¹ * w = 1 := (sub_eq_zero.mp hz).symm
-    have := congrArg (fun z : ℂ => (β : ℂ) * z) hz'
-    simpa [← mul_assoc, hb] using this
+  · aesop
+  · grind
 
 end
 end DedekindZetaZeroFree.KPIsolatedProjection

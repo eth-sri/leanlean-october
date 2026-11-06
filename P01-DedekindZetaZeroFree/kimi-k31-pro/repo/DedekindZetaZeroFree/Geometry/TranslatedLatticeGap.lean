@@ -12,8 +12,8 @@ theorem thetaTranslateGap
     [FiniteDimensional ℝ E] (L : Submodule ℤ E) [DiscreteTopology L] (z : E) :
     ∃ η : ℝ, 0 < η ∧ ∀ ℓ : L, z + (ℓ : E) ≠ 0 → η ≤ ‖z + (ℓ : E)‖ := by
   haveI : ProperSpace E := FiniteDimensional.proper ℝ E
-  have hdisc : IsDiscrete ((L : Set E)) := DiscreteTopology.isDiscrete
-  have hclosed : IsClosed ((L : Set E)) :=
+  have hdisc : IsDiscrete (L : Set E) := DiscreteTopology.isDiscrete
+  have hclosed : IsClosed (L : Set E) :=
     AddSubgroup.isClosed_of_discreteTopology (U := L.toAddSubgroup)
 
   have hbdd : Bornology.IsBounded (Metric.closedBall (0 : E) (1 + ‖z‖)) :=
@@ -25,11 +25,11 @@ theorem thetaTranslateGap
     rw [Metric.mem_closedBall, dist_zero_right]
     have h1 : ‖x‖ ≤ ‖z + x‖ + ‖z‖ := by
       have := norm_sub_le (z + x) z
-      simpa using this
-    linarith [hx.2]
+      simp_all
+    grind
   have hfin : Set.Finite ({ℓ : L | ‖z + (ℓ : E)‖ ≤ 1} : Set L) :=
     (hSfin.preimage_embedding (Function.Embedding.subtype (· ∈ (L : Set E)))).subset
-      (by intro ℓ hℓ; exact ⟨ℓ.2, hℓ⟩)
+      (by simp_all)
   rcases Set.eq_empty_or_nonempty
       ({ℓ : L | z + (ℓ : E) ≠ 0 ∧ ‖z + (ℓ : E)‖ ≤ 1} : Set L) with hempty | hne
   ·
@@ -37,17 +37,14 @@ theorem thetaTranslateGap
     by_contra hcon
     have h2 : ‖z + (ℓ : E)‖ ≤ 1 := le_of_lt (not_le.mp hcon)
     have hmem : ℓ ∈ ({ℓ : L | z + (ℓ : E) ≠ 0 ∧ ‖z + (ℓ : E)‖ ≤ 1} : Set L) := ⟨hℓ, h2⟩
-    rw [hempty] at hmem
-    exact hmem
+    simp_all
   · have hfin' : ({ℓ : L | z + (ℓ : E) ≠ 0 ∧ ‖z + (ℓ : E)‖ ≤ 1} : Set L).Finite :=
-      hfin.subset (by intro ℓ hℓ; exact hℓ.2)
+      hfin.subset (by simp_all)
     obtain ⟨b, hb, hmin⟩ :=
       Set.exists_min_image _ (fun ℓ : L => ‖z + (ℓ : E)‖) hfin' hne
     refine ⟨min 1 ‖z + (b : E)‖, lt_min one_pos (norm_pos_iff.mpr hb.1), fun ℓ hℓ => ?_⟩
     by_cases h2 : ‖z + (ℓ : E)‖ ≤ 1
-    · have hmem : ℓ ∈ ({ℓ : L | z + (ℓ : E) ≠ 0 ∧ ‖z + (ℓ : E)‖ ≤ 1} : Set L) :=
-        ⟨hℓ, h2⟩
-      exact (min_le_right _ _).trans (hmin ℓ hmem)
-    · exact (min_le_left _ _).trans (le_of_lt (not_le.mp h2))
+    · simp_all
+    · grind
 
 end DedekindZetaZeroFree

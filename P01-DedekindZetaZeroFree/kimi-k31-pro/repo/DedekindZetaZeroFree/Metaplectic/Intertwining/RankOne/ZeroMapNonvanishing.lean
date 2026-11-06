@@ -35,11 +35,11 @@ private theorem denominator_entire (ε : Sign) :
   cases ε with
   | plus =>
     unfold denominator t r
-    simp only [if_pos rfl, if_true]
+    simp only [if_true]
     fun_prop
   | minus =>
     unfold denominator
-    simp only [Sign.noConfusion, reduceCtorEq, if_false]
+    simp only [reduceCtorEq, if_false]
     exact differentiable_const 1 |>.sub ((differentiable_const _).mul
       ((evaluation_entire F q .minus).pow 6))
 

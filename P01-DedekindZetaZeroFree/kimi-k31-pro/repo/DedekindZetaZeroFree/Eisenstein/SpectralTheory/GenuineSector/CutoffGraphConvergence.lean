@@ -495,14 +495,14 @@ def ThreeUniformTails {I : Type*} (w : I → GraphSection (U := U) (H := H)) : P
 private lemma labeled_apply (d n : ℕ) (p : Fin d ≃ Fin n)
     (x : HyperbolicChart.Space d) (k : Fin n) :
     labeled d n p x k = CotangentLogCoframe.A d x (p.symm k) := by
-  simp [labeled, ContinuousLinearEquiv.piCongrLeft, LinearEquiv.piCongrLeft,
-    Equiv.piCongrLeft, Equiv.piCongrLeft', Equiv.piCongrLeft'_apply]
+  simp [labeled, ContinuousLinearEquiv.piCongrLeft, 
+    Equiv.piCongrLeft, Equiv.piCongrLeft']
 private lemma labeled_vector (d n : ℕ) (p : Fin d ≃ Fin n) (i : Fin d) (k : Fin 3) :
     labeled d n p (HyperbolicChart.coordinateVector d i k) =
       KPContFlatCuspCasimirSpecialization.coordinateDirection n (p i) k := by
   funext j
   simp only [labeled_apply, CotangentLogCoframe.A_apply,
-    HyperbolicChart.coordinateVector, WithLp.toLp,
+    HyperbolicChart.coordinateVector, 
     KPContFlatCuspCasimirSpecialization.coordinateDirection]
   by_cases h : p.symm j = i
   · have hj : j = p i := by simpa using congrArg p h
@@ -537,7 +537,7 @@ private lemma differential_relabel (d n : ℕ) (p : Fin d ≃ Fin n)
       ((CotangentLogCoframe.A n).apply_symm_apply (labeled d n p x))
     simpa [CotangentLogCoframe.A_apply, labeled_apply] using h
   unfold HyperbolicChart.differential
-  fin_cases k <;> simp only [Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.cons_val_two]
+  fin_cases k <;> simp only
   all_goals rw [labeled_first d n p f hf]
   all_goals rw [← hrefl, labeled_first n n (Equiv.refl _) f hf]
   all_goals simp only [hrefl, ContinuousLinearEquiv.apply_symm_apply, Equiv.refl_apply, hheight]

@@ -21,8 +21,6 @@ theorem crossover_identity (α M N : ℝ) (hα : 1 ≤ α) (hα₂ : α ≤ 2)
   have hα0 : 0 < α := lt_of_lt_of_le zero_lt_one hα
   have hN0 : 0 < N := lt_of_lt_of_le zero_lt_one hN
   rw [← Real.rpow_mul hN0.le, ← Real.rpow_add hN0]
-  have hβ : 2 * α - 1 + (2 - 1 / α) * (1 - α) = 2 - 1 / α := by
-    field_simp; ring
-  rw [hβ]
+  grind
 
 end DedekindZetaZeroFree.LargeSieve

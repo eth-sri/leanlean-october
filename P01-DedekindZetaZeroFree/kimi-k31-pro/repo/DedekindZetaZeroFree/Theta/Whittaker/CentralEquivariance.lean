@@ -70,7 +70,7 @@ lemma rawToGroup_central_tuple (e : CentralTuples F) :
     · subst v
       simp [centralTupleMap, s, localToRestricted, RestrictedProduct.mulSingleMonoidHom]
     · simp [centralTupleMap, s, localToRestricted, RestrictedProduct.mulSingleMonoidHom,
-        RestrictedProduct.mulSingle_eq_of_ne, hv]
+        hv]
   exact (congrArg (scalarQuotient F R.A.zeta12 R.A.primitive_zeta12) he).trans
     ((congrArg (rawToGroup R) ht).trans (rawToGroup_local_center R w _))
 

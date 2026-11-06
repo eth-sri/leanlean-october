@@ -92,7 +92,7 @@ private lemma bin_filter_eq (C : Context Q) {B : ℝ} {p : Ideal (𝓞 F) × Ide
 
 private lemma sum_if_out {α : Type*} (s : Finset α) (P : Prop) [Decidable P]
     (f : α → ℂ) : (if P then ∑ i ∈ s, f i else 0) = ∑ i ∈ s, if P then f i else 0 := by
-  split_ifs <;> simp [*]
+  simp_all
 
 private lemma density_rectangles (C : Context Q) (B : ℝ)
     (hgeometry : Origin.ShortGeometry C B)
@@ -122,13 +122,13 @@ private lemma density_rectangles (C : Context Q) (B : ℝ)
       _ = ∑ f ∈ (divisorBin (F := F) P.1).filter (fun f => f ∣ p.1),
           ∑ g ∈ (divisorBin (F := F) P.2).filter (fun g => g ∣ p.2),
             if norm (f*g) ≤ C.Z1 B e then (UniqueFactorizationMonoid.moebius (f*g) : ℂ) else 0 := by
-        simp only [Finset.sum_filter, ← sum_if_out]
+        simp only [Finset.sum_filter]
         apply Finset.sum_congr rfl
         intro f hf
         by_cases h : f ∣ p.1 <;> simp [h, ite_and]
       _ = _ := by
         rw [h1, h2]
-        simp only [Finset.sum_filter, ← sum_if_out]
+        simp only [Finset.sum_filter]
         apply Finset.sum_congr rfl
         intro f hf
         by_cases h : ErrorRectangles.InBin P.1 f <;> simp [h, ite_and]
@@ -169,7 +169,7 @@ private lemma coefficient_quotient (C : Context Q) (p : Ideal (𝓞 F) × Ideal 
   have hnorm : norm (p.1*p.2) = norm p.1 * norm p.2 := by simp [norm, map_mul]
   rw [hnorm, Real.sqrt_mul (by unfold norm; positivity)]
   simp only [quotientCoefficient, Context.coefficient, star_div₀,
-    Complex.star_def, map_mul, Complex.conj_ofReal, div_mul_div_comm, Complex.ofReal_mul]
+    Complex.star_def, Complex.conj_ofReal, div_mul_div_comm, Complex.ofReal_mul]
 
 private lemma pairSum_mul (C : Context Q) (z : ℂ)
     (f : (p : Ideal (𝓞 F) × Ideal (𝓞 F)) → C.ValidPair p → ℂ) :

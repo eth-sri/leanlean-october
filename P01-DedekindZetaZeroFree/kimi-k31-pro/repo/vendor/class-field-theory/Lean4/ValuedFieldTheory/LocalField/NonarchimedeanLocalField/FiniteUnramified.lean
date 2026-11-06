@@ -140,51 +140,9 @@ theorem integerRingMap_uniformizer_irreducible_of_unramifiedValuation
           rw [Ideal.map_span, Set.image_singleton]
           rfl
 
-/-- in an actual unramified valuation extension, the base
-prime element remains a prime element upstairs and therefore has upstairs
-normalized value `-1`.
 
-This is the source-producing replacement for passing an upstairs
-uniformizer-value input to later norm-valuation arguments. -/
-theorem v_mapBaseUnitsToExtensionUnits_integerRingUniformizerFieldUnit_of_unramifiedValuation
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L] :
-    LocalFieldTheory.IsNonarchimedeanLocalField.v L
-      (Additive.ofMul
-        (mapBaseUnitsToExtensionUnits K L (integerRingUniformizerFieldUnit K))) = -1 := by
-  let πL : 𝒪[L] := integerRingMapOfValuationExtension K L (chosenIntegerRingUniformizer K)
-  have hπL : Irreducible πL := by
-    simpa [πL] using integerRingMap_uniformizer_irreducible_of_unramifiedValuation K L
-  exact v_integerRingIrreducibleFieldUnit L πL hπL
-    (mapBaseUnitsToExtensionUnits K L (integerRingUniformizerFieldUnit K)) (by
-      dsimp [πL]
-      rfl)
 
-/-- In an actual unramified valuation extension, the inverse of the base prime
-element has upstairs normalized value `1`.  This is the L-side generator needed
-before the local class-field norm-valuation calculation. -/
-theorem v_mapBaseUnitsToExtensionUnits_inverseIntegerRingUniformizerFieldUnit_of_unramifiedValuation
-    (K L : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    [Field L] [ValuativeRel L] [TopologicalSpace L] [IsNonarchimedeanLocalField L]
-    [Algebra K L] [FiniteDimensional K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L] :
-    LocalFieldTheory.IsNonarchimedeanLocalField.v L
-      (Additive.ofMul
-        (mapBaseUnitsToExtensionUnits K L (inverseIntegerRingUniformizerFieldUnit K))) =
-      1 := by
-  rw [inverseIntegerRingUniformizerFieldUnit,
-    (mapBaseUnitsToExtensionUnits K L).map_inv]
-  rw [LocalFieldTheory.IsNonarchimedeanLocalField.v_inv]
-  rw [v_mapBaseUnitsToExtensionUnits_integerRingUniformizerFieldUnit_of_unramifiedValuation]
-  norm_num
+
 
 /-- In an actual unramified valuation extension, the integer-ring map sends
 `𝓂_K^n` into `𝓂_L^n`.  The proof uses the base uniformizer as an upstairs
@@ -730,19 +688,7 @@ theorem residueAlgEquiv_card_eq_galoisGroup_card_of_unramifiedValuation
   rw [residueAlgEquiv_card_eq_finrank_of_unramifiedValuation K L,
     galoisGroup_card_eq_finrank K L]
 
-/-- In an actual unramified valuation extension, the integral-closure inertia
-subgroup has cardinality one. -/
-theorem galoisGroupMaximalIdealInertiaOfIsIntegralClosure_card_eq_one_of_unramifiedValuation
-    (K L : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L] [TopologicalSpace L]
-    [IsNonarchimedeanLocalField L] [Algebra K L] [FiniteDimensional K L]
-    [IsGalois K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    [IsIntegralClosure 𝒪[L] 𝒪[K] L] [Module.Finite 𝒪[K] 𝒪[L]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension K L] :
-    Nat.card (galoisGroupMaximalIdealInertiaOfIsIntegralClosure K L) = 1 :=
-  galoisGroupMaximalIdealInertiaOfIsIntegralClosure_card_eq_one_of_ramificationIdx_eq_one K L
-    (LocalFieldTheory.IsNonarchimedeanLocalField.unramifiedValuation_ramificationIdx_eq_one K L)
+
 
 /-- In an actual unramified valuation extension, the integral-closure residue
 action has kernel of cardinality one. -/

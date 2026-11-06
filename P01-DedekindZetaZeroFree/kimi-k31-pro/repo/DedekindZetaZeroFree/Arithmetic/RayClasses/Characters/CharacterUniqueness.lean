@@ -38,9 +38,7 @@ theorem rayCharacter_eq_of_eq_away {m q : Ideal (𝓞 F)}
       rw [← RayOperations.map_mul η I J, hIJ, hspanη]
     have eθ : θ I * θ J = 1 := by
       rw [← RayOperations.map_mul θ I J, hIJ, hspanθ]
-    have key : η I * η J = θ I * η J := by
-      rw [eη, hJ_eq, eθ]
-    exact mul_right_cancel₀ hJne key
+    grind
   ·
     rw [(η.eq_zero_iff' I).mpr (Or.inr hIm), (θ.eq_zero_iff' I).mpr (Or.inr hIm)]
 

@@ -212,8 +212,7 @@ private lemma middle_rectangle_bound (A η α B M N n θ Cq : ℝ)
   have hprod : P*S*U Q B (N/(n*P))*U Q B (N/(n*S)) ≤
       (2*A*(2*(M*N))^η*(N/n+B^α*(P*S)))^2 := by
     calc P*S*U Q B (N/(n*P))*U Q B (N/(n*S))
-        ≤ P*S*(A*(2*(M*N))^η*(2*N/(n*P)+B^α)) * (A*(2*(M*N))^η*(2*N/(n*S)+B^α)) := by
-          exact mul_le_mul (mul_le_mul_of_nonneg_left hu hps) hv hv0 (by positivity)
+        ≤ P*S*(A*(2*(M*N))^η*(2*N/(n*P)+B^α)) * (A*(2*(M*N))^η*(2*N/(n*S)+B^α)) := mul_le_mul (mul_le_mul_of_nonneg_left hu hps) hv hv0 (by positivity)
       _ ≤ _ := by
         have hq : 0 ≤ N/n := by positivity
         have hb : 0 ≤ B^α := Real.rpow_nonneg hB0.le _

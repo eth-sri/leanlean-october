@@ -20,7 +20,7 @@ private theorem rowDyad_finite (A : SArithmeticData F) (h : A.Exterior) (D : ℝ
   · intro d _ e _ he
     apply Subtype.ext
     apply Subtype.ext
-    exact congrArg (fun x : NonzeroIdeal F => x.val) he
+    grind
   · exact normBoundedIdeals_finite F (2 * D)
 
 private theorem rowDyad_count (A : SArithmeticData F) (h : A.Exterior) (D C : ℝ)
@@ -35,7 +35,7 @@ private theorem rowDyad_count (A : SArithmeticData F) (h : A.Exterior) (D C : �
     · intro d _ e _ he
       apply Subtype.ext
       apply Subtype.ext
-      exact congrArg (fun x : NonzeroIdeal F => x.val) he
+      grind
   calc
     _ ≤ ((normBoundedIdeals F (2 * D)).ncard : ℝ) := by exact_mod_cast hn
     _ ≤ C * (2 * D) := hc _ (by linarith)
@@ -72,14 +72,14 @@ theorem bounded_dyad_square_sum (A : SArithmeticData F) :
     calc
       _ ≤ ∑' d : {d : ExteriorSquarefreeIdeal A.cS //
             d ∈ RMTailCutoff.rowDyad A h.val D}, B ^ 2 :=
-        Summable.tsum_le_tsum (hterm h) (Summable.of_finite) (Summable.of_finite)
+        Summable.tsum_le_tsum (hterm h) Summable.of_finite Summable.of_finite
       _ = ((RMTailCutoff.rowDyad A h.val D).ncard : ℝ) * B ^ 2 := by
         rw [tsum_const, nsmul_eq_mul, Nat.card_coe_set_eq]
       _ ≤ _ := mul_le_mul_of_nonneg_right (rowDyad_count A h.val D Cd hc' hD) hV
   calc
     _ ≤ ∑' h : {h : A.Exterior // h ∈ exteriorPowerfulDyad A.cS P},
         (2 * Cd * D) * B ^ 2 :=
-      Summable.tsum_le_tsum hrow (Summable.of_finite) (Summable.of_finite)
+      Summable.tsum_le_tsum hrow Summable.of_finite Summable.of_finite
     _ = ((exteriorPowerfulDyad A.cS P).ncard : ℝ) * ((2 * Cd * D) * B ^ 2) := by
       rw [tsum_const, nsmul_eq_mul, Nat.card_coe_set_eq]
     _ ≤ (Cp * Real.sqrt P) * ((2 * Cd * D) * B ^ 2) :=

@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.RepresentationTheory.Smooth.TensorWords.MatrixWords
 public import DedekindZetaZeroFree.Eisenstein.ConstantTerms.Residual.DifferentialWordInterchange
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -29,11 +30,9 @@ theorem finite_section_commute (c : KPGlobalTorusFunctionData.finitePart F ζ h�
     intro v
     cases v with
     | inl w =>
-      have hw : r (.inl w)=1 := (Subgroup.mem_iInf.mp hr) w
-      change _ * r (.inl w) = r (.inl w) * _
-      rw [hw,mul_one,one_mul]
+      simp_all
     | inr q => change 1*r (.inr q)=r (.inr q)*1; simp
-  exact hc.map ((scalarQuotient F ζ hζ).comp (amalgamation F ζ hζ))
+  measurability
 
 theorem flow_matrix_update (b : B F) (t : ℝ) :
     flow F b t = fun w => Matrix.ProjGenLinGroup.mk

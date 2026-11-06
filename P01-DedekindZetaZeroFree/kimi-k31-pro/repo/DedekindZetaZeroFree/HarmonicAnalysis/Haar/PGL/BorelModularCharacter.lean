@@ -45,7 +45,7 @@ private theorem rootCoord_eq (b : upperBorel F w) (A : GL2 F w)
   rw [← heq]
   have hs (i j : Fin 2) : (A * Matrix.GeneralLinearGroup.scalar (Fin 2) u) i j =
       A i j * (u : LocalField F w) := by
-    simp [Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
+    simp [Matrix.GeneralLinearGroup.coe_scalar,
       Matrix.mul_diagonal]
   dsimp only
   rw [hs, hs]
@@ -60,7 +60,7 @@ theorem affineMatrix_entries (p : (LocalField F w)ˣ × LocalField F w) :
   ext i j
   fin_cases i <;> fin_cases j <;>
     simp [affineMatrix, diagonalMatrix, upperRootMatrix,
-      Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.mkOfDetNeZero,
+      Matrix.GeneralLinearGroup.mkOfDetNeZero,
       Matrix.mul_apply, Fin.sum_univ_two]
 
 def affine (p : (LocalField F w)ˣ × LocalField F w) : upperBorel F w :=

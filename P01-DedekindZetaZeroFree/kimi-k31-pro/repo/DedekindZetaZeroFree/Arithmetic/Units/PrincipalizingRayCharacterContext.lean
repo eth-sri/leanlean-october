@@ -24,7 +24,7 @@ def unitQuotientClass (A : SArithmeticData F) : A.UnitQuotient →* A.V :=
     intro u hu
     obtain ⟨t, rfl⟩ := hu
     apply (QuotientGroup.eq_one_iff _).mpr
-    exact ⟨A.diagonal t.val, by simp [sClass]⟩)
+    exact ⟨A.diagonal t.val, by simp⟩)
 
 structure GeneralArithmeticContext (A : SArithmeticData F) (σ : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces) where

@@ -99,13 +99,12 @@ theorem Iscale_eq_sum_rowIntegral (Z : ℝ) (hZ : 0 < Z) :
           PoissonFrequencyDecomposition.omittedSum D Z := hsplit
       _ = (2 * (Real.pi : ℂ))⁻¹ ^ 3 * (∫ t : ℝ × ℝ × ℝ, ∑' u : D.Row, rowIntegrand D u Z t) +
           (2 * (Real.pi : ℂ))⁻¹ ^ 3 * ∫ t : ℝ × ℝ × ℝ, complementKernel D Z t := by
-          exact congrArg₂ (· + ·) hsumInt homit'
+          grind
       _ = (2 * (Real.pi : ℂ))⁻¹ ^ 3 *
           (∫ t : ℝ × ℝ × ℝ, ∑' u : repRows D, rowIntegrand D u.val Z t) +
           (2 * (Real.pi : ℂ))⁻¹ ^ 3 * ∫ t : ℝ × ℝ × ℝ, complementKernel D Z t := by
           simp only [hrepI]
-  · rw [hrepR]
-    exact hsplit
+  · grind
 
 theorem Iscale_eq_principal_add_nonprincipal (Z : ℝ) (hZ : 0 < Z) :
     D.Iscale Z = J D (principalRows D ∩ repRows D) 4 4 2 Z +
@@ -133,7 +132,7 @@ theorem Iscale_eq_principal_add_nonprincipal (Z : ℝ) (hZ : 0 < Z) :
       (fun u => rowIntegral D u Z)).trans (tsum_congr fun u => ?_)
     by_cases h : u = ActualRowCount.principalRow D
     · simp [Set.indicator_apply, h]
-    · simp [Set.indicator_apply, h]
+    · simp [h]
   have hrep : ∑' u : repRows D, rowIntegral D u.val Z = ∑' u : D.Row, rowIntegral D u Z :=
     (repEquiv D).tsum_eq (fun u => rowIntegral D u Z)
   rw [h7, hrep, hJ, hnp]
@@ -171,8 +170,7 @@ theorem nonprincipal_eq_sum_dyads (Z : ℝ) (hZ : 0 < Z) :
     have h' : x = x' := h
     subst h'
     have hk : k = k' := dyad_unique hx.1.1.1 hx.1.1.2 hx'.1.1.1 hx'.1.1.2
-    subst hk
-    rfl
+    grind
   have hrange : Set.range φ = (repRows D \ principalRows D : Set D.Row) := by
     ext r
     constructor
@@ -191,7 +189,7 @@ theorem nonprincipal_eq_sum_dyads (Z : ℝ) (hZ : 0 < Z) :
     show _ = J D (Tset D k) 4 4 2 Z
     rw [hJdef, finsum_mem_def]
     refine (tsum_subtype (Tset D k) (fun u => rowIntegral D u Z)).trans ?_
-    exact tsum_eq_finsum (hf.subset (Set.support_indicator_subset))
+    exact tsum_eq_finsum (hf.subset Set.support_indicator_subset)
   have hfun : (fun k : ℕ => ∑' c : ↥(Tset D k), rowIntegral D c.val Z) =
       fun k : ℕ => J D ((dyadRows D ((2 : ℝ) ^ k) ∩ repRows D) \ principalRows D) 4 4 2 Z :=
     funext hfib

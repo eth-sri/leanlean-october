@@ -35,12 +35,12 @@ def C (d : ℕ) (p : HyperbolicChart.Space d) :
         intro a u
         ext ik
         obtain ⟨i, k⟩ := ik
-        fin_cases k <;> simp [mul_assoc, mul_comm, mul_left_comm]
+        fin_cases k <;> simp [mul_left_comm]
       left_inv := by
         intro v
         ext ik
         obtain ⟨i, k⟩ := ik
-        fin_cases k <;> simp [← mul_assoc, ← Real.exp_add, neg_add_cancel, Real.exp_zero,
+        fin_cases k <;> simp [← mul_assoc, ← Real.exp_add, Real.exp_zero,
           one_mul]
       right_inv := by
         intro u
@@ -57,14 +57,14 @@ theorem C_apply (d : ℕ) (p u : HyperbolicChart.Space d) (i : Fin d) :
     (C d p u) (i, 0) = u (i, 2) ∧
     (C d p u) (i, 1) = Real.exp (-p (i, 2)) * u (i, 0) ∧
     (C d p u) (i, 2) = Real.exp (-p (i, 2)) * u (i, 1) := by
-  refine ⟨?_, ?_, ?_⟩ <;> simp [C]
+  aesop
 
 theorem H_apply (d : ℕ) (p : HyperbolicChart.Space d)
     (v : RealCoefficients d) (i : Fin d) :
     (H d p v) (i, 0) = Real.exp (p (i, 2)) * v (i, 1) ∧
     (H d p v) (i, 1) = Real.exp (p (i, 2)) * v (i, 2) ∧
     (H d p v) (i, 2) = v (i, 0) := by
-  refine ⟨?_, ?_, ?_⟩ <;> simp [H, C]
+  aesop
 
 theorem contDiff_C (d : ℕ) :
     ContDiff ℝ ∞ (fun p : HyperbolicChart.Space d =>
@@ -142,7 +142,7 @@ def A (d : ℕ) : HyperbolicChart.Space d ≃L[ℝ] KPArch.Space d :=
 
 theorem A_apply (d : ℕ) (p : HyperbolicChart.Space d) (i : Fin d) :
     A d p i = ((p (i, 0) : ℂ) + Complex.I * (p (i, 1) : ℂ), p (i, 2)) := by
-  rfl
+  aesop
 
 theorem metric_A (d : ℕ) (p u : HyperbolicChart.Space d) :
     KPArch.metric d (A d p) (A d u) = HyperbolicChart.metric d p u u := by
@@ -182,7 +182,7 @@ def j (d : ℕ) : HyperbolicChart.Cotangent d ≃ₗ[ℂ] ComplexCoefficients d 
 theorem j_apply (d : ℕ) (W : HyperbolicChart.Cotangent d)
     (i : Fin d) (k : Fin 3) :
     j d W (i, k) = W i k := by
-  rfl
+  aesop
 
 theorem inner_j (d : ℕ) (U W : HyperbolicChart.Cotangent d) :
     inner ℂ (j d U) (j d W) = HyperbolicChart.pairing d U W := by

@@ -40,7 +40,7 @@ theorem globalDenominator_mem_iff (C : A.GeneralArithmeticContext σ η hS)
     have he := congrArg (fun z : A.R => (z : F)) hy
     change (x : F) = (generator C p : F) ^ n * (y : F) at he
     rw [he, map_mul, map_pow, hv p.val hp]
-    simp only [if_pos rfl, Nat.cast_one, ← WithZero.exp_nsmul, neg_one_mul]
+    simp only [← WithZero.exp_nsmul]
     exact (mul_le_mul_of_nonneg_left (y.property p.val hp) zero_le).trans (by simp)
   · intro hx
     let y : A.R := ⟨(x : F) / (generator C p : F) ^ n, by

@@ -36,8 +36,8 @@ private theorem localRaw_diagonal (q : HeightOneSpectrum (𝓞 F))
     (t : KPLocalExceptionalConstruction.actualTorus F ζ hζ q) :
     (localRaw F ζ hζ q t).g 1 0 = 0 ∧ (localRaw F ζ hζ q t).g 0 1 = 0 := by
   simp [localRaw, KPLocalCover.centralInjection, KPStandardLocalRootLifts.A,
-    KPLocalCover.projection, KubotaRankTwo.d, Matrix.mul_apply,
-    MonoidHom.coe_mk, OneHom.coe_mk]
+    KubotaRankTwo.d, Matrix.mul_apply,
+    MonoidHom.coe_mk]
   exact ⟨rfl, rfl⟩
  def finiteRawTuple (S : Finset (HeightOneSpectrum (𝓞 F)))
     (t : ∀ q, KPLocalExceptionalConstruction.actualTorus F ζ hζ q) : RestrictedCover F ζ hζ :=
@@ -66,8 +66,8 @@ private theorem finiteRawTuple_diagonal (S : Finset (HeightOneSpectrum (𝓞 F))
       restrictedProjection F ζ hζ (finiteRawTuple F ζ hζ S t) i j = 0 := by
     apply Prod.ext
     · funext w
-      simp [restrictedProjection, matrixValue, KPAdelicCoverCertificatesRaw.matrixValue,
-        KPAdelicCoverCertificatesRaw.matrixEntry, matrixEntry, finiteRawTuple, hij]
+      simp [restrictedProjection, matrixValue, 
+        matrixEntry, finiteRawTuple, hij]
       rfl
     · apply RestrictedProduct.ext
       intro q

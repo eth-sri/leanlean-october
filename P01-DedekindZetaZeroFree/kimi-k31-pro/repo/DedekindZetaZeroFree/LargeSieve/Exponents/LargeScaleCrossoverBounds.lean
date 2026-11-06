@@ -36,8 +36,6 @@ theorem crossover_large_scale_bound (α M N : ℝ) (hα : 1 ≤ α) (hα₂ : α
     have h6 : N ^ (3 : ℝ) ≤ (M * N) ^ (3 : ℝ) := by
       refine Real.rpow_le_rpow hN0 ?_ (by norm_num)
       nlinarith [hM, hN0]
-    calc N ^ (2 - 1 / α) * N ≤ N ^ (2 : ℝ) * N := h4
-      _ = N ^ (3 : ℝ) := h5
-      _ ≤ (M * N) ^ (3 : ℝ) := h6
+    grind
 
 end DedekindZetaZeroFree.LargeSieve

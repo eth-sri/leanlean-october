@@ -71,7 +71,7 @@ theorem cutoff_pair_decay
       let η : ∀ u v : Ideal (𝓞 F),
           DedekindZetaZeroFree.RayClassCharacter F (u * v) := fun u v =>
         if h : C.ValidPair (u, v) then C.primitive (u, v) h
-        else Sieve.Initial.liftCharacter (by simp [Ideal.dvd_iff_le]) (principalCharacter F)
+        else Sieve.Initial.liftCharacter (by simp) (principalCharacter F)
       have hθ : ∀ u ∈ L, ∀ v ∈ L, ‖θ u v‖ ≤ 1 := by
         intro u _ v _
         dsimp [θ]
@@ -98,7 +98,7 @@ theorem cutoff_pair_decay
           exact hp.offDiagonal (by simp [he, htop])
         calc
           _ = TransformTail.mobiusTail c C.d W C.M C.K p.1 p.2 (η p.1 p.2) := by
-            simp [TransformTail.blockTail, θ, L, hneq, Ne.symm hneq]
+            simp [TransformTail.blockTail, θ, L, hneq]
           _ = _ := by rw [hηp, hCW']; rfl
       rw [heq] at hbound
       calc
@@ -707,8 +707,7 @@ private lemma local_block_budget {F : Type} [Field F] [NumberField F]
       ‖C.originalRemainder ((c * C.d) * (p.1 * p.2)) (Real.sqrt (C.M / norm r))
         (C.Y2 B) (C.Z2 B) C.L2‖ ≤
       H * P * ((idealDivisors ((c * C.d) * (p.1 * p.2))).card : ℝ) *
-        LocalTailAux.tailBudget a (Real.sqrt (C.M / norm r)) (C.Y2 B) (C.Z2 B) C.L2 := by
-    exact ht _ _ P hP (fun x hx => (hcert C hW x hx).1)
+        LocalTailAux.tailBudget a (Real.sqrt (C.M / norm r)) (C.Y2 B) (C.Z2 B) C.L2 := ht _ _ P hP (fun x hx => (hcert C hW x hx).1)
       (fun x hx => (hcert C hW x hx).2.1) _ hj _ _ _ _
       (Real.sqrt_pos.mpr (div_pos (zero_lt_one.trans_le hM) (original_row_pos C B unit hr)))
       hthr.1.1 hthr.1.2.1 hthr.1.2.2

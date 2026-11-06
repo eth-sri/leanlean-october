@@ -1,6 +1,7 @@
 module
 
 public import Mathlib.Analysis.SpecialFunctions.Complex.Log
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -28,19 +29,17 @@ theorem rationalTracePhase_eq_one_iff (q : ℚ) :
     rationalTracePhase q = 1 ↔ ∃ n : ℤ, (n : ℚ) = q := by
   rw [rationalTracePhase_apply, Complex.exp_eq_one_iff]
   have hc : (2 * (Real.pi : ℂ) * Complex.I) ≠ 0 := by
-    exact mul_ne_zero (mul_ne_zero (by norm_num) (by exact_mod_cast Real.pi_ne_zero))
-      Complex.I_ne_zero
+    norm_num
   constructor
   · rintro ⟨n, hn⟩
     refine ⟨n, ?_⟩
     have h : (q : ℂ) = (n : ℂ) := by
-      apply mul_left_cancel₀ hc
-      simpa only [mul_comm] using hn
+      grind
     exact_mod_cast h.symm
   · rintro ⟨n, hn⟩
     refine ⟨n, ?_⟩
     have h : (n : ℂ) = (q : ℂ) := by exact_mod_cast hn
-    rw [← h, mul_comm]
+    grind
 
 @[simp] theorem norm_rationalTracePhase (q : ℚ) :
     ‖rationalTracePhase q‖ = 1 := by
@@ -49,7 +48,7 @@ theorem rationalTracePhase_eq_one_iff (q : ℚ) :
 
 theorem rationalTracePhase_ne_zero (q : ℚ) :
     rationalTracePhase q ≠ 0 := by
-  exact Complex.exp_ne_zero _
+  norm_num
 
 end DedekindZetaZeroFree.Hecke
 

@@ -84,7 +84,7 @@ theorem archComplement_left (s : RestrictedTensorSimple.Level (bad A P C))
             (matrix A u.val (g (Sum.inl u.val))) := by
   unfold archComplement
   rw [← (stageSplit s.val).symm.prod_comp, Fintype.prod_sum_type]
-  simp only [stageSplit, Equiv.symm_apply_apply, Equiv.coe_fn_symm_mk, Finset.prod_const_one,
+  simp only [stageSplit, Equiv.coe_fn_symm_mk, Finset.prod_const_one,
     mul_one]
 
 theorem finiteScalar_update (s : RestrictedTensorSimple.Level (bad A P C))

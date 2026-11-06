@@ -262,7 +262,7 @@ theorem localDifferent_eq_top_of_not_dvd_different
     change (LocalConductor.base F v).maximalIdeal.map (algebraMap A B) =
       (LocalConductor.target F v).maximalIdeal
     rw [LocalConductorProof.base_span F v, Ideal.map_span, Set.image_singleton, LocalConductorProof.target_span F v hv]
-    simp only [map_natCast, map_intCast, Int.cast_natCast]
+    simp only [map_natCast]
     rfl
   haveI : Algebra.FormallyUnramified A B := Algebra.FormallyUnramified.of_map_maximalIdeal hmap
   haveI : Algebra.IsUnramifiedAt A (IsLocalRing.maximalIdeal B) := inferInstance

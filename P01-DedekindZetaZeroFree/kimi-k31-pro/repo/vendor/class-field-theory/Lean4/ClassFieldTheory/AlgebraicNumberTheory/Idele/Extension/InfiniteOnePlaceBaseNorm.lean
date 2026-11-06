@@ -224,24 +224,7 @@ theorem norm_infinitePlaceIdele_infinitePlaceBaseUnitExtension_of_isUnramified
       simpa only [infinitePlaceCompletionDegree, v] using hDegree,
     pow_one]
 
-/-- A real infinite place upstairs is unramified over every lower
-number field, so the one-place norm of an extended base unit is
-unchanged. -/
-theorem norm_infinitePlaceIdele_infinitePlaceBaseUnitExtension_of_isReal
-    (W : InfinitePlace L)
-    (hWReal : W.IsReal)
-    (x :
-      ((_root_.infinitePlaceBelow (K := K) W).Completion)ˣ) :
-    norm K L
-        (infinitePlaceIdele W
-          (infinitePlaceBaseUnitExtension
-            (K := K) (L := L) W x)) =
-      infinitePlaceIdele
-        (_root_.infinitePlaceBelow (K := K) W) x := by
-  apply
-    norm_infinitePlaceIdele_infinitePlaceBaseUnitExtension_of_isUnramified
-      (K := K) (L := L) W
-  exact InfinitePlace.isUnramified_iff.mpr (Or.inl hWReal)
+
 
 /-- The degree-one one-place norm equality descends verbatim to the
 actual idele class groups. -/

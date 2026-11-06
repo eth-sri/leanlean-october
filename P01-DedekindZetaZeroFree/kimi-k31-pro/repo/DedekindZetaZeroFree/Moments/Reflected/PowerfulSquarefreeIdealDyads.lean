@@ -109,7 +109,7 @@ private theorem generator_product_B (A : SArithmeticData F)
     simp only [powMonoidHom_apply, Units.val_pow_eq_pow_val,
       Units.val_div_eq_div_val] at hh
     have heq := (eq_div_iff b.ne_zero).mp hh
-    exact heq.symm.trans (by rfl)
+    exact heq.symm.trans rfl
   have hr : (⟨(u : A.R) * D.generator I,
       mul_ne_zero u.ne_zero (D.generates I).1⟩ : ThetaReflectionData.Row A) =
       ThetaReflectionData.sixthTranslate A v
@@ -226,7 +226,7 @@ theorem canonical_mass_le_sum_dyads
     rw [generator_product_B A D hCl H L hL hgen hchar u Z
       I.val (hd I.val).1 (hd I.val).2 (hf I.val).1]
   have hbound := Summable.tsum_le_tsum_of_inj e he (fun t ht => hg0 t) hpoint
-    (Summable.of_finite) hgs
+    Summable.of_finite hgs
   change (∑' I : A.Exterior, f I) ≤ _
   rw [hleft]
   apply hbound.trans_eq

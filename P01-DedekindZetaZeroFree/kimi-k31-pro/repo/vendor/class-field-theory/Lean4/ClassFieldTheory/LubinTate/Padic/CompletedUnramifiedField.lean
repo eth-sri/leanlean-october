@@ -507,43 +507,7 @@ theorem padicCompletedUnramifiedFrobenius_valuation
         v.valuation_of_algebraMap (K := E),
         v.valuation_of_algebraMap (K := E)]
 
-/-- Witt Frobenius is continuous for the canonical valuation topology on
-the completed-unramified coefficient field. -/
-theorem padicCompletedUnramifiedFrobenius_continuous
-    (p : ℕ) [Fact p.Prime] :
-    Continuous (padicCompletedUnramifiedFrobenius p) := by
-  apply continuous_of_continuousAt_zero
-    (padicCompletedUnramifiedFrobenius p).toAddMonoidHom
-  simp_rw [ContinuousAt, map_zero,
-    (Valued.hasBasis_nhds_zero
-      (padicCompletedUnramifiedField p) ℤᵐ⁰).tendsto_iff
-      (Valued.hasBasis_nhds_zero
-        (padicCompletedUnramifiedField p) ℤᵐ⁰),
-    true_and, forall_const]
-  intro γ
-  refine ⟨γ, fun x hx ↦ ?_⟩
-  change
-    (Valued.v :
-      Valuation (padicCompletedUnramifiedField p) ℤᵐ⁰).restrict
-        (padicCompletedUnramifiedFrobenius p x) < γ.1
-  change
-    (Valued.v :
-      Valuation (padicCompletedUnramifiedField p) ℤᵐ⁰).restrict
-        x < γ.1 at hx
-  rw [Valuation.restrict_lt_iff_lt_embedding] at hx ⊢
-  change
-    padicCompletedUnramifiedValuation p
-        (padicCompletedUnramifiedFrobenius p x) <
-      MonoidWithZeroHom.ValueGroup₀.embedding
-        (f := (.ofClass
-          (padicCompletedUnramifiedValuation p))) γ.1
-  change
-    padicCompletedUnramifiedValuation p x <
-      MonoidWithZeroHom.ValueGroup₀.embedding
-        (f := (.ofClass
-          (padicCompletedUnramifiedValuation p))) γ.1 at hx
-  rw [padicCompletedUnramifiedFrobenius_valuation]
-  exact hx
+
 
 end LubinTate
 

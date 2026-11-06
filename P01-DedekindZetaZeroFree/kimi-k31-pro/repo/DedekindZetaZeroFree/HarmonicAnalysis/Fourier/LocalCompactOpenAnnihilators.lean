@@ -33,7 +33,7 @@ private theorem dual_closed (v : HeightOneSpectrum (𝓞 F))
   have he : (localFiniteAnnihilator F v U : Set (v.adicCompletion F)) =
       ⋂ u : U, {y | localFiniteCharacter F v (u.val * y) = 1} := by
     ext y
-    simp only [Set.mem_iInter, Set.mem_setOf_eq, mem_localFiniteAnnihilator]
+    simp only [Set.mem_iInter, Set.mem_setOf_eq]
     exact ⟨fun h u => h u u.property, fun h u hu => h ⟨u, hu⟩⟩
   rw [he]
   apply isClosed_iInter

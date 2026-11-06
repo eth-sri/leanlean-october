@@ -67,14 +67,7 @@ theorem valuationModDegree_eq_zero_iff_dvd (K : Type u) [Field K] [ValuativeRel 
   exact ZMod.intCast_zmod_eq_zero_iff_dvd
     (LocalFieldTheory.IsNonarchimedeanLocalField.valuationMap K x) n
 
-/-- Two reduced valuations agree exactly when `n` divides their difference. -/
-theorem valuationModDegree_eq_iff_dvd_sub (K : Type u) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] (n : Nat) (x y : Additive Kˣ) :
-    valuationModDegree K n x = valuationModDegree K n y ↔
-      (n : Int) ∣
-        LocalFieldTheory.IsNonarchimedeanLocalField.valuationMap K x -
-          LocalFieldTheory.IsNonarchimedeanLocalField.valuationMap K y := by
-  rw [← sub_eq_zero, ← map_sub, valuationModDegree_eq_zero_iff_dvd, map_sub]
+
 
 /-- Multiplicative form of the normalized valuation map modulo a degree. -/
 noncomputable def valuationModDegreeMulHom (K : Type u) [Field K] [ValuativeRel K]
@@ -111,17 +104,7 @@ theorem valuationModDegreeMulHom_eq_one_iff_dvd (K : Type u) [Field K]
   change valuationModDegree K n (Additive.ofMul x) = 0 ↔ _
   exact valuationModDegree_eq_zero_iff_dvd K n (Additive.ofMul x)
 
-/-- Two units have the same image exactly when `n` divides their valuation difference. -/
-theorem valuationModDegreeMulHom_eq_iff_dvd_sub (K : Type u) [Field K]
-    [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    (n : Nat) (x y : Kˣ) :
-    valuationModDegreeMulHom K n x = valuationModDegreeMulHom K n y ↔
-      (n : Int) ∣
-        LocalFieldTheory.IsNonarchimedeanLocalField.valuationMap K (Additive.ofMul x) -
-          LocalFieldTheory.IsNonarchimedeanLocalField.valuationMap K (Additive.ofMul y) := by
-  change valuationModDegree K n (Additive.ofMul x) =
-      valuationModDegree K n (Additive.ofMul y) ↔ _
-  exact valuationModDegree_eq_iff_dvd_sub K n (Additive.ofMul x) (Additive.ofMul y)
+
 
 /-- The unramified norm subgroup of degree `n`: field units whose normalized
 valuation lies in `nℤ`. -/
@@ -167,12 +150,7 @@ theorem unramifiedNormClass_surjective (K : Type u) [Field K] [ValuativeRel K]
     Function.Surjective (unramifiedNormClass K n) :=
   QuotientGroup.mk'_surjective (unramifiedNormSubgroup K n)
 
-/-- The kernel of the quotient map is the unramified norm subgroup. -/
-theorem unramifiedNormClass_ker (K : Type u) [Field K] [ValuativeRel K]
-    [TopologicalSpace K] [IsNonarchimedeanLocalField K] (n : Nat) :
-    MonoidHom.ker (unramifiedNormClass K n) =
-      unramifiedNormSubgroup K n :=
-  QuotientGroup.ker_mk' (N := unramifiedNormSubgroup K n)
+
 
 /-- A unit has trivial norm class exactly when its valuation is divisible by the degree. -/
 theorem unramifiedNormClass_eq_one_iff (K : Type u)
@@ -199,12 +177,7 @@ theorem unramifiedNormSubgroup_eq_ker_valuationModDegreeMulHom (K : Type u)
   rw [MonoidHom.mem_ker, mem_unramifiedNormSubgroup_iff,
     valuationModDegreeMulHom_eq_one_iff_dvd]
 
-/-- Membership in the unramified norm subgroup is detected by the reduced valuation. -/
-theorem mem_unramifiedNormSubgroup_iff_valuationModDegreeMulHom_eq_one
-    (K : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] (n : Nat) (x : Kˣ) :
-    x ∈ unramifiedNormSubgroup K n ↔ valuationModDegreeMulHom K n x = 1 := by
-  rw [mem_unramifiedNormSubgroup_iff, valuationModDegreeMulHom_eq_one_iff_dvd]
+
 
 /-- The valuation quotient model
 `Kˣ / {x | n ∣ v(x)} ≃ Z/nZ`, in multiplicative notation. -/
@@ -230,16 +203,7 @@ theorem unramifiedNormQuotientEquivZMod_mk (K : Type u)
     QuotientGroup.quotientKerEquivOfRightInverse_apply,
     QuotientGroup.kerLift_mk]
 
-/-- Cardinality of the valuation quotient for arbitrary `n`.  This statement
-remains meaningful at `n = 0`, when `ZMod 0` and the quotient are infinite. -/
-theorem unramifiedNormQuotient_cardinal_eq_zmod (K : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    (n : Nat) :
-    Cardinal.mk (Kˣ ⧸ unramifiedNormSubgroup K n) =
-      Cardinal.lift (Cardinal.mk (ZMod n)) := by
-  simpa only [Cardinal.lift_id'] using Cardinal.mk_congr_lift
-    ((unramifiedNormQuotientEquivZMod K n).toEquiv.trans
-      (Multiplicative.toAdd : Multiplicative (ZMod n) ≃ ZMod n))
+
 
 /-- A nonzero valuation modulus gives a finite norm quotient. -/
 noncomputable instance finiteUnramifiedNormQuotient (K : Type u)
@@ -260,54 +224,9 @@ theorem unramifiedNormQuotient_card_eq_degree (K : Type u)
     _ = Nat.card (ZMod n) := Nat.card_congr Multiplicative.toAdd
     _ = n := Nat.card_zmod n
 
-/-- Two units define the same norm class exactly when the degree divides their valuation difference. -/
-theorem unramifiedNormClass_eq_iff (K : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    (n : Nat) (x y : Kˣ) :
-    unramifiedNormClass K n x =
-        unramifiedNormClass K n y ↔
-      (n : Int) ∣
-        LocalFieldTheory.IsNonarchimedeanLocalField.valuationMap K (Additive.ofMul x) -
-          LocalFieldTheory.IsNonarchimedeanLocalField.valuationMap K (Additive.ofMul y) := by
-  change (QuotientGroup.mk x : Kˣ ⧸ unramifiedNormSubgroup K n) =
-      QuotientGroup.mk y ↔ _
-  constructor
-  · intro h
-    have hmap := congrArg (unramifiedNormQuotientEquivZMod K n) h
-    rw [unramifiedNormQuotientEquivZMod_mk,
-      unramifiedNormQuotientEquivZMod_mk] at hmap
-    exact (valuationModDegreeMulHom_eq_iff_dvd_sub K n x y).1 hmap
-  · intro h
-    apply (unramifiedNormQuotientEquivZMod K n).injective
-    rw [unramifiedNormQuotientEquivZMod_mk,
-      unramifiedNormQuotientEquivZMod_mk]
-    exact (valuationModDegreeMulHom_eq_iff_dvd_sub K n x y).2 h
 
-/-- The quotient images agree exactly when the reduced valuation difference vanishes. -/
-theorem unramifiedNormQuotientEquivZMod_eq_iff_valuation_sub_eq_zero (K : Type u)
-    [Field K] [ValuativeRel K] [TopologicalSpace K] [IsNonarchimedeanLocalField K]
-    (n : Nat) (x y : Kˣ) :
-    unramifiedNormQuotientEquivZMod K n
-        (unramifiedNormClass K n x) =
-        unramifiedNormQuotientEquivZMod K n
-          (unramifiedNormClass K n y) ↔
-      ((LocalFieldTheory.IsNonarchimedeanLocalField.valuationMap K (Additive.ofMul x) -
-          LocalFieldTheory.IsNonarchimedeanLocalField.valuationMap K (Additive.ofMul y) : Int) :
-        ZMod n) = 0 := by
-  change unramifiedNormQuotientEquivZMod K n
-        (QuotientGroup.mk x : Kˣ ⧸ unramifiedNormSubgroup K n) =
-        unramifiedNormQuotientEquivZMod K n
-          (QuotientGroup.mk y : Kˣ ⧸ unramifiedNormSubgroup K n) ↔ _
-  rw [unramifiedNormQuotientEquivZMod_mk,
-    unramifiedNormQuotientEquivZMod_mk, valuationModDegreeMulHom_apply,
-    valuationModDegreeMulHom_apply]
-  change
-    (LocalFieldTheory.IsNonarchimedeanLocalField.valuationMap K (Additive.ofMul x) : ZMod n) =
-      (LocalFieldTheory.IsNonarchimedeanLocalField.valuationMap K (Additive.ofMul y) : ZMod n) ↔
-    ((LocalFieldTheory.IsNonarchimedeanLocalField.valuationMap K (Additive.ofMul x) -
-        LocalFieldTheory.IsNonarchimedeanLocalField.valuationMap K (Additive.ofMul y) : Int) :
-      ZMod n) = 0
-  rw [Int.cast_sub, sub_eq_zero]
+
+
 
 
 end LocalClassFieldTheory

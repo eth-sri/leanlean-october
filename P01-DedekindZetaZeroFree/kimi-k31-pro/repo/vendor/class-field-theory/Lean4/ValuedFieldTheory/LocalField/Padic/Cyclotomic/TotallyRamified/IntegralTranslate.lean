@@ -42,27 +42,7 @@ local instance padicCyclotomicTotallyRamifiedIntegralTranslateScalarTowerPadicIn
     IsScalarTower ℤ_[p] ℚ_[p] L :=
   IsScalarTower.of_algebraMap_eq' rfl
 
-/-- Translating the generator by one does not change the explicit
-`ℤ_[p]`-algebra. -/
-theorem padicCyclotomicTotallyRamified_adjoin_sub_one_eq_adjoin
-    (ζ : L) :
-    Algebra.adjoin ℤ_[p] ({ζ - 1} : Set L) =
-      Algebra.adjoin ℤ_[p] ({ζ} : Set L) := by
-  apply le_antisymm
-  · apply Algebra.adjoin_le
-    intro x hx
-    rw [Set.mem_singleton_iff] at hx
-    subst x
-    exact Subalgebra.sub_mem _
-      (Algebra.self_mem_adjoin_singleton ℤ_[p] ζ)
-      (Subalgebra.one_mem _)
-  · apply Algebra.adjoin_le
-    intro x hx
-    rw [Set.mem_singleton_iff] at hx
-    subst x
-    simpa using Subalgebra.add_mem _
-      (Algebra.self_mem_adjoin_singleton ℤ_[p] (ζ - 1))
-      (Subalgebra.one_mem _)
+
 
 end CyclotomicExtension
 

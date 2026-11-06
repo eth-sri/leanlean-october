@@ -136,7 +136,7 @@ theorem actual_context_and_raw_frequencies
         Units.mk0 (r : F) (by exact_mod_cast hIgen.1) := Units.ext rfl
     have h6 := (R.probe.frequencies.sixthFree u.val u.property ⟨p.val, hpS⟩).2
     rw [hrow, order_eq_exponent R.A r I hIgen ⟨p.val, hpS⟩] at h6
-    simp only [Subtype.coe_mk] at h6
+    simp only at h6
     omega
   choose U hUeq using hU
   exact ⟨recipeArithmeticContext R, U, rfl, hUeq⟩
@@ -204,8 +204,7 @@ private lemma sexticResidue_one_valuation (A : SArithmeticData F)
   let q : (A.R ⧸ A.extendIdeal I)ˣ := hunit.unit
   have hq : ((A.sexticResidueFamily I) q : F) = 1 := by
     have hq' := h'
-    rw [← hunit.unit_spec] at hq'
-    rw [MulChar.ofUnitHom_coe] at hq'
+    rw [← hunit.unit_spec, MulChar.ofUnitHom_coe] at hq'
     exact hq'
   obtain ⟨j, hj, he, hr⟩ := A.sexticResidueFamily_normalized.2.1 I v hIval q
   have hz : A.zeta12 ^ (2 * j) = 1 := by rw [← he, hq]
@@ -400,7 +399,7 @@ private lemma nonprincipal_of_eventually
       ThetaReflectionData.rowUnit R.A (principalFrequency R).val *
         R.probe.allowed.generator I0 ^ 6 * γ.val ^ 6 := by
     refine ⟨x0 * gU⁻¹, ?_⟩
-    have hcoe : (((x0 * gU⁻¹ : R.A.U)) : Fˣ) = x * ((gU : R.A.U) : Fˣ)⁻¹ := by
+    have hcoe : ((x0 * gU⁻¹ : R.A.U) : Fˣ) = x * ((gU : R.A.U) : Fˣ)⁻¹ := by
       simp only [Subgroup.coe_mul, Subgroup.coe_inv]
       rfl
     rw [hpv, hcoe, hgU, hbrow.symm, ← show x ^ 6 = Units.mk0 (U.u : F) hne from hx]
@@ -410,7 +409,7 @@ private lemma nonprincipal_of_eventually
       ThetaReflectionData.rowUnit R.A u.val *
         R.probe.allowed.generator I0 ^ 6 * γ.val ^ 6 := by
     refine ⟨gU⁻¹, ?_⟩
-    have hcoe : (((gU⁻¹ : R.A.U)) : Fˣ) = ((gU : R.A.U) : Fˣ)⁻¹ := by
+    have hcoe : ((gU⁻¹ : R.A.U) : Fˣ) = ((gU : R.A.U) : Fˣ)⁻¹ := by
       simp only [Subgroup.coe_inv]
     rw [hcoe, hgU, inv_pow, mul_assoc, mul_inv_cancel, mul_one]
   have h1 := huniqw (u, I0) hB

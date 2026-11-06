@@ -134,43 +134,7 @@ def finiteGaloisAbstractQuotientEquivGaloisGroupOfEmbedding
       (AlgEquiv.autCongr
         (finiteGaloisFieldRangeEquivOfEmbedding K L i)).symm
 
-/-- The subgroup attached to an explicit finite Galois realization has
-index equal to the ordinary field degree. -/
-theorem finiteGaloisExtensionSubgroupOfEmbedding_index_eq_finrank
-    (i : L →ₐ[K] SeparableClosure K) :
-    (extensionSubgroup
-      (closedFixingSubgroup K (SeparableClosure K)
-        (⊥ : IntermediateField K (SeparableClosure K)))
-      (finiteGaloisClosedFixingSubgroupOfEmbedding K L i)
-        (fixingSubgroupLeBase K (SeparableClosure K)
-          (finiteGaloisFieldRangeOfEmbedding K L i))).index =
-      Module.finrank K L := by
-  let : Finite
-      ((closedFixingSubgroup K (SeparableClosure K)
-          (⊥ : IntermediateField K (SeparableClosure K))).toSubgroup ⧸
-        extensionSubgroup
-          (closedFixingSubgroup K (SeparableClosure K)
-            (⊥ : IntermediateField K (SeparableClosure K)))
-          (finiteGaloisClosedFixingSubgroupOfEmbedding K L i)
-          (fixingSubgroupLeBase K (SeparableClosure K)
-            (finiteGaloisFieldRangeOfEmbedding K L i))) :=
-    Finite.of_equiv (Gal(L / K))
-      (finiteGaloisAbstractQuotientEquivGaloisGroupOfEmbedding K L i).symm.toEquiv
-  calc
-    _ = Nat.card
-        ((closedFixingSubgroup K (SeparableClosure K)
-            (⊥ : IntermediateField K (SeparableClosure K))).toSubgroup ⧸
-          extensionSubgroup
-            (closedFixingSubgroup K (SeparableClosure K)
-              (⊥ : IntermediateField K (SeparableClosure K)))
-            (finiteGaloisClosedFixingSubgroupOfEmbedding K L i)
-            (fixingSubgroupLeBase K (SeparableClosure K)
-              (finiteGaloisFieldRangeOfEmbedding K L i))) :=
-      Subgroup.index_eq_card _
-    _ = Nat.card (Gal(L / K)) :=
-      Nat.card_congr
-        (finiteGaloisAbstractQuotientEquivGaloisGroupOfEmbedding K L i).toEquiv
-    _ = Module.finrank K L := IsGalois.card_aut_eq_finrank K L
+
 
 /-! ## The chosen realization -/
 
@@ -243,32 +207,9 @@ theorem finiteGaloisUnitsEquivAbstractFixed_coe (x : Lˣ) :
             x) :=
   rfl
 
-/-- For the concrete realization of `L/K`, the exact quotient used by
-the abstract class-formation framework is canonically the actual Galois group `Gal(L/K)`. -/
-def finiteGaloisAbstractQuotientEquivGaloisGroup :
-    ((closedFixingSubgroup K (SeparableClosure K)
-        (⊥ : IntermediateField K (SeparableClosure K))).toSubgroup ⧸
-      extensionSubgroup
-        (closedFixingSubgroup K (SeparableClosure K)
-          (⊥ : IntermediateField K (SeparableClosure K)))
-        (finiteGaloisClosedFixingSubgroup K L)
-        (fixingSubgroupLeBase K (SeparableClosure K)
-          (finiteGaloisFieldRange K L))) ≃*
-      Gal(L / K) :=
-  finiteGaloisAbstractQuotientEquivGaloisGroupOfEmbedding K L
-    (AlgebraicNumberTheory.separableEmbeddingIntoSeparableClosure K L)
 
-/-- The chosen realization has subgroup index equal to `[L : K]`. -/
-theorem finiteGaloisExtensionSubgroup_index_eq_finrank :
-    (extensionSubgroup
-      (closedFixingSubgroup K (SeparableClosure K)
-        (⊥ : IntermediateField K (SeparableClosure K)))
-      (finiteGaloisClosedFixingSubgroup K L)
-      (fixingSubgroupLeBase K (SeparableClosure K)
-        (finiteGaloisFieldRange K L))).index =
-      Module.finrank K L :=
-  finiteGaloisExtensionSubgroupOfEmbedding_index_eq_finrank K L
-    (AlgebraicNumberTheory.separableEmbeddingIntoSeparableClosure K L)
+
+
 
 end
 end LocalClassFieldTheory

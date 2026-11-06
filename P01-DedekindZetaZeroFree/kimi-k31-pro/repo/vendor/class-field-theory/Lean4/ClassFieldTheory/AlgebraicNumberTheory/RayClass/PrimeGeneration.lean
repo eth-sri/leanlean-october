@@ -49,7 +49,7 @@ theorem primeToModulusIdeals_hom_ext
       RayClass.primeToModulusIdeal m v hv else 1
   have hp (v : HeightOneSpectrum (𝓞 K)) : f (p v) = g (p v) := by
     by_cases hv : v ∉ m.finitePart.support
-    · simpa only [p, dite_eq_left hv] using hprime v hv
+    · grind
     · simp only [p, dite_eq_right hv, map_one]
   apply MonoidHom.ext
   intro I

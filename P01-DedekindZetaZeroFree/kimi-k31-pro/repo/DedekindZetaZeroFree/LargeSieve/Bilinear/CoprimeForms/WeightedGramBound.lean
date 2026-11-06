@@ -198,8 +198,7 @@ theorem coprime_form_bound
         rw [mul_ite]
         simp
       rw [h1]
-    rw [hL] at hb
-    rw [hR] at hb
+    rw [hL, hR] at hb
     exact hb
   have hcf : coprimeForm rows cols w A alpha
       = ∑ r ∈ rows, (w r : ℂ) * ∑ D ∈ ambient.powerset, (-1 : ℂ) ^ D.card *

@@ -46,23 +46,7 @@ section Conjugation
 
 variable [ContinuousMul G]
 
-/-- Conjugation by an element of a closed subgroup preserves that
-subgroup.  This is the subgroup form of the fact that every field
-automorphism over the base fixes the base field setwise. -/
-theorem conjugateClosedSubgroup_eq_self_of_mem
-    (K : ClosedSubgroup G) {s : G} (hs : s ∈ K) :
-    conjugateClosedSubgroup K s = K := by
-  ext x
-  change x ∈ conjugateClosedSubgroup K s ↔ x ∈ K
-  rw [conjugateClosedSubgroup_mem]
-  constructor
-  · intro hx
-    have hmem :=
-      K.mul_mem (K.mul_mem (K.inv_mem hs) hx) hs
-    change x ∈ K.toSubgroup
-    simpa [mul_assoc] using hmem
-  · intro hx
-    exact K.mul_mem (K.mul_mem hs hx) (K.inv_mem hs)
+
 
 /-- Conjugating both endpoints of a finite abelian extension produces
 the actual conjugate finite abelian extension. -/
@@ -174,61 +158,9 @@ theorem maximalAbelianSubextension_field
   FiniteGaloisSubextension.intermediateFiniteAbelianOfCommutatorLe_field
     P (commutator P.extensionQuotient) le_rfl
 
-/-- Every finite abelian intermediate extension of a finite Galois
-extension is contained in the commutator-fixed intermediate field.
 
-In subgroup order the displayed inclusion is reversed: the subgroup
-representing the maximal abelian intermediate field lies inside the
-subgroup representing the given abelian intermediate field. -/
-theorem abelianIntermediateField_le_of_finiteAbelianIntermediate
-    (P : FiniteGaloisSubextension K)
-    (L : FiniteAbelianSubextension K)
-    (hPL : P.field.toSubgroup ≤ L.field.toSubgroup) :
-    P.abelianIntermediateField.toSubgroup ≤
-      L.field.toSubgroup := by
-  let :
-      (CyclicCohomology.extensionSubgroup K P.field P.below).Normal :=
-    P.normal
-  let :
-      (CyclicCohomology.extensionSubgroup K L.field L.below).Normal :=
-    L.normal
-  let restriction :
-      P.extensionQuotient →* L.extensionQuotient :=
-    abstractReciprocityRestriction
-      K L.field P.field hPL L.below
-  intro x hx
-  change
-    x ∈
-      P.intermediateField
-        (commutator P.extensionQuotient) at hx
-  rcases hx with ⟨k, hk, rfl⟩
-  have hkcomm :
-      P.extensionQuotientMk k ∈
-        commutator P.extensionQuotient :=
-    (P.mem_intermediateSubgroup_iff
-      (commutator P.extensionQuotient) k).1 hk
-  have hrestriction :
-      restriction (P.extensionQuotientMk k) = 1 :=
-    Abelianization.commutator_subset_ker restriction hkcomm
-  change
-    (QuotientGroup.mk k :
-      K.toSubgroup ⧸
-        CyclicCohomology.extensionSubgroup K L.field L.below) = 1
-    at hrestriction
-  exact
-    (mem_extensionSubgroup_iff K L.field L.below k).1
-      ((QuotientGroup.eq_one_iff k).1 hrestriction)
 
-/-- In field order, every finite abelian intermediate extension lies below
-the maximal abelian subextension cut out by the commutator. -/
-theorem finiteAbelianIntermediate_le_maximalAbelianSubextension
-    (P : FiniteGaloisSubextension K)
-    (L : FiniteAbelianSubextension K)
-    (hPL : P.field.toSubgroup ≤ L.field.toSubgroup) :
-    L ≤ maximalAbelianSubextension P := by
-  change (maximalAbelianSubextension P).field.toSubgroup ≤ L.field.toSubgroup
-  rw [maximalAbelianSubextension_field]
-  exact abelianIntermediateField_le_of_finiteAbelianIntermediate P L hPL
+
 
 end MaximalAbelianIntermediate
 

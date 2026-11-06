@@ -54,7 +54,7 @@ private lemma cutoff_scale (v : HeightOneSpectrum (𝓞 F))
       (c.toReal : ℂ) * exteriorRawQuadraticCutoff v μ a n := by
   unfold exteriorRawQuadraticCutoff
   rw [Measure.restrict_smul, integral_smul_measure]
-  simp [smul_eq_mul]
+  simp
   ring
 
 theorem finiteWeilCutoff_stabilizes (A : SArithmeticData F)
@@ -82,7 +82,7 @@ private lemma normalizedRatio_eventually (A : SArithmeticData F)
 
 def finiteWeilIndex (A : SArithmeticData F)
     (v : HeightOneSpectrum (𝓞 F)) (a : (v.adicCompletion F)ˣ) : Circle :=
-  ⟨A.finiteWeilPhase v a, (mem_sphere_zero_iff_norm).2
+  ⟨A.finiteWeilPhase v a, mem_sphere_zero_iff_norm.2
     (A.finiteWeilPhase_norm v a)⟩
 
 def infiniteWeilIndex (A : SArithmeticData F)
@@ -95,10 +95,9 @@ private lemma quadCoeff (A : SArithmeticData F) (σ : F →+* ℂ)
       σ (((A.actualLocalSymbol v 2 (Or.inl rfl) a b : rootsOfUnity 2 F) : Fˣ) : F) := by
   let r := A.actualLocalSymbol v 2 (Or.inl rfl) a b
   have hr : (r : Fˣ) ∈ rootsOfUnity 2 F := r.property
-  have hs : ((r : Fˣ) : F)^2 = 1 := by
-    exact congrArg Units.val ((mem_rootsOfUnity 2 _).mp hr)
+  have hs : ((r : Fˣ) : F)^2 = 1 := congrArg Units.val ((mem_rootsOfUnity 2 _).mp hr)
   change (if r = 1 then (1 : ℂ) else -1) = σ ((r : Fˣ) : F)
-  rcases (sq_eq_one_iff).mp hs with h | h
+  rcases sq_eq_one_iff.mp hs with h | h
   · have he : r = 1 := rootsOfUnity.coe_injective h
     rw [if_pos he, h, map_one]
   · have he : r ≠ 1 := by
@@ -116,7 +115,7 @@ private lemma oddOfNonDyadic (v : HeightOneSpectrum (𝓞 F))
     haveI : CharP (OddLocalResidue v) 2 := ringChar.of_eq hc
     exact CharP.cast_eq_zero _ 2
   have hq : (2 : 𝓞 F ⧸ v.asIdeal) = 0 := e.injective (by simpa only [map_ofNat, map_zero] using hz)
-  exact hv ((Ideal.Quotient.eq_zero_iff_mem).mp hq)
+  exact hv (Ideal.Quotient.eq_zero_iff_mem.mp hq)
 
 theorem finiteWeilIndex_mul (A : SArithmeticData F) (σ : F →+* ℂ)
     (v : HeightOneSpectrum (𝓞 F)) (a b : (v.adicCompletion F)ˣ) :

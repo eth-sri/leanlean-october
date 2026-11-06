@@ -133,13 +133,13 @@ theorem R_one_eq_Ctk (C : A.GeneralArithmeticContext σ η hS)
     congr 1
     rw [psi_residueMap_eq_negativeTrace]
     simp only [canonicalLocalLifts, canonicalLocalRepresentative, rawPhase,
-      Units.val_one, map_one, one_mul, mul_one, uniformizer, map_mul, map_sub, map_pow]
+      Units.val_one, uniformizer]
     change _ = (negativeTrace p
       (algebraMap F (LocalField p) (A.R.subtype
         ((generator C p ^ J - generator C p ^ t * (lifts C p k).val d) *
           (lifts C p t).val v)) /
         algebraMap F (LocalField p) (generator C p : F) ^ (k + t)) : ℂ)
-    simp only [map_mul, map_sub, map_pow, OneMemClass.coe_one, one_mul]
+    simp only [map_mul, OneMemClass.coe_one, one_mul]
     change _ = (negativeTrace p
       ((algebraMap F (LocalField p) ((generator C p : F) ^ J -
         (generator C p : F) ^ t * ((lifts C p k).val d : F)) *

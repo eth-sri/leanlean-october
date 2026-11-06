@@ -53,7 +53,7 @@ theorem safe_segment_mem {n : ℕ} (inner outer : LocalBall n)
     (hx : x ∈ inner.carrier) {s : ℝ} (hs : |s| ≤ |t|) :
     x + s • EuclideanSpace.single k 1 ∈ outer.carrier := by
   have hnorm : ‖s • EuclideanSpace.single k (1 : ℝ)‖ = |s| := by
-    simp [norm_smul, EuclideanSpace.norm_single, Real.norm_eq_abs]
+    simp [norm_smul, Real.norm_eq_abs]
   have hdist : dist x outer.center < inner.radius := by
     simpa only [LocalBall.carrier, Metric.mem_ball, hcenter] using hx
   change dist (x + s • EuclideanSpace.single k 1) outer.center < outer.radius
@@ -408,7 +408,7 @@ private theorem translated_test_hasDerivAt {n : ℕ} {inner outer : LocalBall n}
 private theorem first_dirs {n : ℕ} (i : Fin n) : (firstIndex i).directions = [i] := by
   classical
   simp only [MultiIndex.directions, firstIndex, apply_ite Fin.val, Fin.val_one,
-    Fin.val_zero, List.replicate_one, List.replicate_zero]
+    Fin.val_zero]
   have h : ∀ l : List (Fin n), l.flatMap (fun j => if j = i then [j] else []) = l.filter (· = i) := by
     intro l; induction l with
     | nil => rfl

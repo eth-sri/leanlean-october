@@ -267,95 +267,11 @@ noncomputable def localBlockFamilyAction {ι : Type uι}
       (d i).base (d i).base_isNontrivial
       (d i).extension)
 
-/-- The componentwise local tensor equivalence realizes a finite (or arbitrary) family of
-actual local tensor unit groups as the corresponding family of induced
-local blocks. -/
-noncomputable def localTensorFamilyEquivLocalBlockFamily
-    {ι : Type uι} (d : ι → LocalPlaceDatum K L) :
-    LocalTensorFamily d ≃* LocalBlockFamily d := by
-  letI : ∀ i, MulDistribMulAction
-      (absoluteValueDecompositionGroup K (d i).extension.1)
-      (LocalizedCompletion
-        (d i).base (d i).extension)ˣ :=
-    fun i ↦ decompositionGroupLocalUnitsAction
-      (d i).base (d i).base_isNontrivial
-      (d i).extension
-  letI hK : ∀ i,
-      Algebra K (d i).extension.1.Completion :=
-    fun i ↦ AbsoluteValue.extensionCompletionAlgebra
-      (K := K) (d i).extension.1
-  letI : ∀ i, SMul K (d i).extension.1.Completion :=
-    fun i ↦ (hK i).toSMul
-  letI : ∀ i, Algebra (d i).base.Completion
-      (d i).extension.1.Completion :=
-    fun i ↦ AbsoluteValue.completionAlgebra
-      (d i).base (d i).extension.1 (d i).extension.2
-  exact MulEquiv.piCongrRight fun i ↦
-    localTensorUnitsEquivLocalPlaceBlock
-      (d i).base (d i).base_isNontrivial
-      (d i).extension
 
-/-- The family realization is equivariant for the full Galois action,
-not merely componentwise multiplicative. -/
-theorem localTensorFamilyEquivLocalBlockFamily_smul
-    {ι : Type uι} (d : ι → LocalPlaceDatum K L)
-    (τ : L ≃ₐ[K] L) (z : LocalTensorFamily d) :
-    localTensorFamilyEquivLocalBlockFamily d
-        ((localTensorFamilyAction d).smul τ z) =
-      (localBlockFamilyAction d).smul τ
-        (localTensorFamilyEquivLocalBlockFamily d z) := by
-  funext i
-  let _ :=
-    decompositionGroupLocalUnitsAction
-      (d i).base (d i).base_isNontrivial
-      (d i).extension
-  let hK :=
-    AbsoluteValue.extensionCompletionAlgebra
-      (K := K) (d i).extension.1
-  let _ : SMul K (d i).extension.1.Completion :=
-    hK.toSMul
-  let _ :=
-    AbsoluteValue.completionAlgebra
-      (d i).base (d i).extension.1
-      (d i).extension.2
-  let _ : ∀ w' : AbsoluteValueExtension (d i).base L,
-      Algebra (d i).base.Completion w'.1.Completion :=
-    fun w' ↦ AbsoluteValue.completionAlgebra
-      (d i).base w'.1 w'.2
-  let _ :=
-    localTensorUnitsAction (K := K) (L := L)
-      (d i).base
-  let _ : MulDistribMulAction (L ≃ₐ[K] L)
-      (LocalPlaceBlock
-        (d i).base (d i).base_isNontrivial
-        (d i).extension) :=
-    inducedMulDistribMulAction
-      (absoluteValueDecompositionGroup K (d i).extension.1)
-  change
-    localTensorUnitsEquivLocalPlaceBlock
-        (d i).base (d i).base_isNontrivial
-        (d i).extension (τ • z i) =
-      τ •
-        localTensorUnitsEquivLocalPlaceBlock
-          (d i).base (d i).base_isNontrivial
-          (d i).extension (z i)
-  exact localTensorUnitsEquivLocalPlaceBlock_smul
-    (d i).base (d i).base_isNontrivial
-    (d i).extension τ (z i)
 
-/-- Equivariance of the inverse family realization.  This is often the
-convenient direction when local induced blocks have already been
-constructed. -/
-theorem localTensorFamilyEquivLocalBlockFamily_symm_smul
-    {ι : Type uι} (d : ι → LocalPlaceDatum K L)
-    (τ : L ≃ₐ[K] L) (z : LocalBlockFamily d) :
-    (localTensorFamilyEquivLocalBlockFamily d).symm
-        ((localBlockFamilyAction d).smul τ z) =
-      (localTensorFamilyAction d).smul τ
-        ((localTensorFamilyEquivLocalBlockFamily d).symm z) := by
-  apply (localTensorFamilyEquivLocalBlockFamily d).injective
-  rw [localTensorFamilyEquivLocalBlockFamily_smul]
-  simp
+
+
+
 
 end FiniteTensorFamily
 
@@ -395,34 +311,7 @@ theorem unramifiedLocalIntegerUnitsHerbrand_subsingleton
     (unramified_units_tateCohomology_and_norm_surjective_for_generator
       k ell g hg).1
 
-/-- Canonical Frobenius form of the same outside-`S` vanishing. -/
-theorem unramifiedLocalIntegerUnitsHerbrand_subsingleton_frobenius
-    (k ell : Type)
-    [Field k] [Field ell] [Algebra k ell]
-    [FiniteDimensional k ell] [IsGalois k ell]
-    [ValuativeRel k] [TopologicalSpace k]
-    [IsNonarchimedeanLocalField k]
-    [ValuativeRel ell] [UniformSpace ell]
-    [IsUniformAddGroup ell]
-    [IsNonarchimedeanLocalField ell]
-    [Valuation.HasExtension
-      (ValuativeRel.valuation k) (ValuativeRel.valuation ell)]
-    [IsIntegralClosure 𝒪[ell] 𝒪[k] ell]
-    [Module.Finite 𝒪[k] 𝒪[ell]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension
-      k ell] :
-    let φ := arithmeticFrobeniusOfUnramifiedValuation k ell
-    letI :=
-      galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure
-        k ell
-    Subsingleton
-        (HerbrandH0 (Gal(ell / k)) 𝒪[ell]ˣ) ∧
-      Subsingleton
-        (HerbrandHMinusOne
-          (Gal(ell / k)) 𝒪[ell]ˣ φ) := by
-  exact
-    (unramified_units_tateCohomology_and_norm_surjective
-      k ell).1
+
 
 section InducedOutsideSBlock
 
@@ -430,128 +319,11 @@ universe uG
 
 variable {G : Type uG} [Group G] [Fintype G]
 
-/-- Shapiro plus change of group identifies an induced unramified
-integer-unit block with its actual local Galois cohomology in degree
-zero. -/
-noncomputable def unramifiedInducedIntegerUnitsHerbrandH0Equiv
-    (H : Subgroup G)
-    (k ell : Type)
-    [Field k] [Field ell] [Algebra k ell]
-    [FiniteDimensional k ell]
-    [ValuativeRel ell]
-    [MulDistribMulAction (Gal(ell / k)) 𝒪[ell]ˣ]
-    (e : H ≃* Gal(ell / k))
-    (σ : G)
-    (hσ : ∀ τ : G, τ ∈ Subgroup.zpowers σ) :
-    letI : MulDistribMulAction H 𝒪[ell]ˣ :=
-      MulDistribMulAction.compHom 𝒪[ell]ˣ e.toMonoidHom
-    letI : Fintype H := Fintype.ofFinite H
-    HerbrandH0 G (InducedModule (B := 𝒪[ell]ˣ) H) ≃*
-      HerbrandH0 (Gal(ell / k)) 𝒪[ell]ˣ := by
-  letI : MulDistribMulAction H 𝒪[ell]ˣ :=
-    MulDistribMulAction.compHom 𝒪[ell]ˣ e.toMonoidHom
-  letI : Fintype H := Fintype.ofFinite H
-  exact
-    (inducedHerbrandH0EquivOfFiniteCyclic H σ hσ).trans
-      (herbrandH0CompMulEquiv (A := 𝒪[ell]ˣ) e)
 
-/-- The corresponding Shapiro and change-of-group equivalence in degree
-minus one. -/
-noncomputable def unramifiedInducedIntegerUnitsHerbrandHMinusOneEquiv
-    (H : Subgroup G)
-    (k ell : Type)
-    [Field k] [Field ell] [Algebra k ell]
-    [FiniteDimensional k ell]
-    [ValuativeRel ell]
-    [MulDistribMulAction (Gal(ell / k)) 𝒪[ell]ˣ]
-    (e : H ≃* Gal(ell / k))
-    (σ : G)
-    (hσ : ∀ τ : G, τ ∈ Subgroup.zpowers σ) :
-    letI : MulDistribMulAction H 𝒪[ell]ˣ :=
-      MulDistribMulAction.compHom 𝒪[ell]ˣ e.toMonoidHom
-    letI : Fintype H := Fintype.ofFinite H
-    HerbrandHMinusOne G
-        (InducedModule (B := 𝒪[ell]ˣ) H) σ ≃*
-      HerbrandHMinusOne (Gal(ell / k)) 𝒪[ell]ˣ
-        (e (subgroupGeneratorOfGenerator H σ hσ)) := by
-  letI : MulDistribMulAction H 𝒪[ell]ˣ :=
-    MulDistribMulAction.compHom 𝒪[ell]ˣ e.toMonoidHom
-  letI : Fintype H := Fintype.ofFinite H
-  exact
-    (inducedHerbrandHMinusOneEquivOfFiniteCyclic
-      H σ hσ).trans
-      (herbrandHMinusOneCompMulEquiv
-        (A := 𝒪[ell]ˣ) e
-        (subgroupGeneratorOfGenerator H σ hσ))
 
-/-- An unramified outside-`S` induced unit block contributes neither
-degree-zero nor degree-minus-one Tate cohomology. -/
-theorem unramifiedInducedIntegerUnitsHerbrand_subsingleton
-    (H : Subgroup G)
-    (k ell : Type)
-    [Field k] [Field ell] [Algebra k ell]
-    [FiniteDimensional k ell] [IsGalois k ell]
-    [ValuativeRel k] [TopologicalSpace k]
-    [IsNonarchimedeanLocalField k]
-    [ValuativeRel ell] [UniformSpace ell]
-    [IsUniformAddGroup ell]
-    [IsNonarchimedeanLocalField ell]
-    [Valuation.HasExtension
-      (ValuativeRel.valuation k) (ValuativeRel.valuation ell)]
-    [IsIntegralClosure 𝒪[ell] 𝒪[k] ell]
-    [Module.Finite 𝒪[k] 𝒪[ell]]
-    [LocalFieldTheory.IsNonarchimedeanLocalField.IsUnramifiedValuedExtension
-      k ell]
-    (e : H ≃* Gal(ell / k))
-    (σ : G)
-    (hσ : ∀ τ : G, τ ∈ Subgroup.zpowers σ) :
-    letI : MulDistribMulAction (Gal(ell / k)) 𝒪[ell]ˣ :=
-      galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure
-        k ell
-    letI : MulDistribMulAction H 𝒪[ell]ˣ :=
-      MulDistribMulAction.compHom 𝒪[ell]ˣ e.toMonoidHom
-    letI : Fintype H := Fintype.ofFinite H
-    Subsingleton
-        (HerbrandH0 G
-          (InducedModule (B := 𝒪[ell]ˣ) H)) ∧
-      Subsingleton
-        (HerbrandHMinusOne G
-          (InducedModule (B := 𝒪[ell]ˣ) H) σ) := by
-  let _ : MulDistribMulAction (Gal(ell / k)) 𝒪[ell]ˣ :=
-    galoisGroupIntegerUnitsMulDistribMulActionOfIsIntegralClosure
-      k ell
-  let _ : MulDistribMulAction H 𝒪[ell]ˣ :=
-    MulDistribMulAction.compHom 𝒪[ell]ˣ e.toMonoidHom
-  let _ : Fintype H := Fintype.ofFinite H
-  let δ := subgroupGeneratorOfGenerator H σ hσ
-  have hδ : ∀ τ : Gal(ell / k),
-      τ ∈ Subgroup.zpowers (e δ) := by
-    intro τ
-    have hmem :
-        e.symm τ ∈ Subgroup.zpowers δ :=
-      subgroupGeneratorOfGenerator_generates H σ hσ (e.symm τ)
-    have himage :
-        e (e.symm τ) ∈
-          (Subgroup.zpowers δ).map e.toMonoidHom :=
-      ⟨e.symm τ, hmem, rfl⟩
-    rw [MonoidHom.map_zpowers] at himage
-    simpa using himage
-  have hlocal :=
-    unramifiedLocalIntegerUnitsHerbrand_subsingleton
-      k ell (e δ) hδ
-  constructor
-  · let E :=
-      unramifiedInducedIntegerUnitsHerbrandH0Equiv
-        H k ell e σ hσ
-    exact
-      ⟨fun x y ↦ E.injective
-        (by exact @Subsingleton.elim _ hlocal.1 (E x) (E y))⟩
-  · let E :=
-      unramifiedInducedIntegerUnitsHerbrandHMinusOneEquiv
-        H k ell e σ hσ
-    exact
-      ⟨fun x y ↦ E.injective
-        (by exact @Subsingleton.elim _ hlocal.2 (E x) (E y))⟩
+
+
+
 
 end InducedOutsideSBlock
 

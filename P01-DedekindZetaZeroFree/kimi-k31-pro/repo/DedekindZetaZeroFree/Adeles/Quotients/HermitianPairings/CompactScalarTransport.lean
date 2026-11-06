@@ -80,7 +80,7 @@ private theorem basePair_pullback {V : KPMsFixedHaarDisintegration.Level F ζ h�
   rw [KPContSectorPhaseComponentCharts.componentHomeomorph_forget]
   change basePair s t ((H.atlas V).components ⟨i, Quotient.mk _ x⟩) = _
   rw [basePair_component, phase_component_restriction, phase_component_restriction]
-  simp only [LinearEquiv.apply_symm_apply, phaseCoefficient_class]
+  simp only [LinearEquiv.apply_symm_apply]
   exact (unit_product _ _ _).symm
 
 private theorem basePair_zero {V : KPMsFixedHaarDisintegration.Level F ζ hζ}

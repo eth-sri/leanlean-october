@@ -337,7 +337,7 @@ theorem residueTraceCharacter_prime_ne_one (A : SArithmeticData F)
         (algebraMap F (v.adicCompletion F) (-(p : F)⁻¹) *
           algebraMap (𝓞 F) (v.adicCompletion F) r) = 1
       convert hchar r using 1
-      simp only [map_neg, map_inv₀, map_div₀, div_eq_mul_inv, map_mul]
+      simp only [map_neg, map_inv₀, div_eq_mul_inv, map_mul]
       change ResidueTrace.localTraceCharacter v
         (-(algebraMap F (v.adicCompletion F) (p : F))⁻¹ *
           algebraMap F (v.adicCompletion F) (r : F)) = _

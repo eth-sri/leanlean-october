@@ -76,8 +76,7 @@ theorem row_bound (ε : ℝ) (hε : 0 < ε) :
       have h := hdec' t Z hZ0
       rw [hE, hUe] at h
       rw [Real.norm_eq_abs]
-      calc _ ≤ _ := h
-        _ = _ := by ring
+      grind
     have hJ := MeasureTheory.norm_integral_le_of_norm_le
       (hI.const_mul (C * Z ^ (Scales.kernelExponent Scales.rightLine Scales.wLine Scales.zLine) * U ^ (1 / 25 + ε)))
       (Filter.Eventually.of_forall key)
@@ -99,16 +98,7 @@ theorem row_bound (ε : ℝ) (hε : 0 < ε) :
         (2 * Real.pi)⁻¹ * (C * Z ^ (Scales.kernelExponent Scales.rightLine Scales.wLine Scales.zLine) * U ^ (1 / 25 + ε) *
           (∫ t : ℝ, (1 + ‖t‖) ^ (-(2:ℝ)))) :=
       mul_le_mul_of_nonneg_left hJ' (by positivity)
-    have hfin : (2 * Real.pi)⁻¹ * (C * Z ^ (Scales.kernelExponent Scales.rightLine Scales.wLine Scales.zLine) *
-        U ^ (1 / 25 + ε) * (∫ t : ℝ, (1 + ‖t‖) ^ (-(2:ℝ)))) =
-        ((2 * Real.pi)⁻¹ * (∫ t : ℝ, (1 + ‖t‖) ^ (-(2:ℝ))) * C) *
-          (Z ^ (Scales.kernelExponent Scales.rightLine Scales.wLine Scales.zLine) * U ^ (1 / 25 + ε)) := by ring
-    have hlast : ((2 * Real.pi)⁻¹ * (∫ t : ℝ, (1 + ‖t‖) ^ (-(2:ℝ))) * C) *
-          (Z ^ (Scales.kernelExponent Scales.rightLine Scales.wLine Scales.zLine) * U ^ (1 / 25 + ε)) ≤
-        ((2 * Real.pi)⁻¹ * (∫ t : ℝ, (1 + ‖t‖) ^ (-(2:ℝ))) * C + 1) *
-          (Z ^ (Scales.kernelExponent Scales.rightLine Scales.wLine Scales.zLine) * U ^ (1 / 25 + ε)) := by
-      apply mul_le_mul_of_nonneg_right (by linarith) hP
-    exact le_trans h2 (le_trans (le_of_eq hfin) (le_trans hlast (le_of_eq (by ring))))
+    grind
 
 end
 

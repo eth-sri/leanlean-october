@@ -152,7 +152,7 @@ theorem sector_mass {T : ℝ} (partition : SquareEndPartition F ζ hζ U R P H T
       (fun x => inner ℂ (u.val x) (u.val x)) := by
     filter_upwards [hae] with x hx
     simp only [hx, inner_self_eq_norm_sq_to_K, norm_mul, Complex.norm_real,
-      Real.norm_eq_abs, mul_pow]
+      Real.norm_eq_abs]
     push_cast
     have hs := cutoff_square_sum F ζ hζ U R P H partition
       (KPContSectorCoveredQuotientVocabulary.q F ζ hζ U x)
@@ -313,7 +313,7 @@ theorem test_weighted_cutoff_gradient_zero {T : ℝ}
   apply PiLp.ext
   intro k
   simp only [Submodule.coe_sum, Submodule.coe_zero, Finset.sum_apply, Pi.zero_apply,
-    WithLp.ofLp_sum, Finset.sum_apply, map_zero, PiLp.zero_apply]
+    WithLp.ofLp_sum, Finset.sum_apply, PiLp.zero_apply]
   have he := congrArg
     (fun W : T_U F ζ hζ U R P H =>
       KPContActualCotangentMeasurableFamilies.coefficient W.val a y k) hds
@@ -321,8 +321,8 @@ theorem test_weighted_cutoff_gradient_zero {T : ℝ}
     (f.val a y * cutoffDifferential (η i) a y k) = 0
   simp only [KPContActualCotangentMeasurableFamilies.coefficient, Submodule.coe_sum,
     Submodule.coe_add, Finset.sum_apply, Pi.add_apply, WithLp.ofLp_sum, WithLp.ofLp_add,
-    cotangentMultiply, cutoffGradientTimes, scalarMultiply, WithLp.ofLp_smul,
-    Pi.smul_apply, smul_eq_mul] at he
+    cotangentMultiply, cutoffGradientTimes, scalarMultiply, 
+    ] at he
   have hsq : ∑ i, (cutoffLift (η i) a y) ^ 2 = (1 : ℂ) := by
     simp only [cutoffLift]
     norm_cast
@@ -744,7 +744,7 @@ private theorem continuous_weighted_l2 {α : Type*} [MeasurableSpace α] (μ : M
     have hsl : (fL • w : Lp ℂ 2 μ) =ᵐ[μ] (fL : α → ℂ) • (w : α → ℂ) :=
       Lp.coeFn_lpSMul fL w
     filter_upwards [hsl, hfL, hE0] with x hx hfx h0
-    simp only [hx, Pi.smul_apply, smul_eq_mul, Pi.mul_apply, hfx, norm_mul, Complex.norm_real,
+    simp only [hx, smul_eq_mul, Pi.mul_apply, hfx, norm_mul, Complex.norm_real,
       Real.norm_of_nonneg (Real.sqrt_nonneg _), mul_pow, Real.sq_sqrt h0]
   rw [show (fun w : Lp ℂ 2 μ => ∫ x, E x * ‖w x‖ ^ 2 ∂μ)
       = fun w => ‖(fL • w : Lp ℂ 2 μ)‖ ^ 2 from funext hkey]

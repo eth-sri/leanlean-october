@@ -142,8 +142,7 @@ theorem fourier_left_central {Q : AdmissibleFlatSources R} (T : Realization R Q)
       (KPAdelicCoverRestrictedProduct.pglCentralInjection F R.A.zeta12 R.A.primitive_zeta12 e * g) =
       (KPGlobalTorusFunctionData.iota F R.A.zeta12 R.A.primitive_zeta12 e : ℂ) * fourier R Q.dq (T.theta v) g := by
   have hc (a : Group R) : Commute a
-      (KPAdelicCoverRestrictedProduct.pglCentralInjection F R.A.zeta12 R.A.primitive_zeta12 e) := by
-    exact ((Subgroup.mem_center_iff.mp (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F R.A.zeta12 R.A.primitive_zeta12 ⟨e,rfl⟩)) a)
+      (KPAdelicCoverRestrictedProduct.pglCentralInjection F R.A.zeta12 R.A.primitive_zeta12 e) := ((Subgroup.mem_center_iff.mp (KPAdelicCoverRestrictedProduct.pglCentralInjection_central F R.A.zeta12 R.A.primitive_zeta12 ⟨e,rfl⟩)) a)
   unfold MomentSources.fourier
   rw [← integral_const_mul]
   apply integral_congr_ae

@@ -37,19 +37,7 @@ namespace Valuations
 
 open DiscreteValuationField
 
-/-- The valuation ring of a rank-one discrete valued field is a discrete
-valuation ring. -/
-theorem rankOneDiscreteValuationSubring_isDiscreteValuationRing
-    {K : Type u} [Field K] {Gamma : Type v}
-    [LinearOrderedCommGroupWithZero Gamma]
-    [Valued K Gamma]
-    [(Valued.v : Valuation K Gamma).IsRankOneDiscrete] :
-    IsDiscreteValuationRing
-      (Valued.v : Valuation K Gamma).valuationSubring := by
-  let F : DVF.{u, v} K :=
-    { ValueGroup := Gamma
-      valuation := Valued.v }
-  exact F.valuationSubring_isDiscreteValuationRing
+
 
 /-- The native subtype topology on the valuation ring of a rank-one discrete
 valued field is its maximal-ideal adic topology. -/

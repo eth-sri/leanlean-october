@@ -185,7 +185,7 @@ theorem T3_eq_maskedGcdBlock_core
         have hz : (Q.χ b1) a = 0 := ((Q.χ b1).eq_zero_iff' a).mpr (Or.inr hcondb1)
         rw [hz]; ring
     rw [hsum]
-    simp only [one_mul, map_mul, map_one, Complex.ofReal_one]
+    simp only [one_mul, Complex.ofReal_one]
   · rw [if_neg h, if_neg h]
 
 end DedekindZetaZeroFree.LargeSieve.Sieve.CoreCoefficient

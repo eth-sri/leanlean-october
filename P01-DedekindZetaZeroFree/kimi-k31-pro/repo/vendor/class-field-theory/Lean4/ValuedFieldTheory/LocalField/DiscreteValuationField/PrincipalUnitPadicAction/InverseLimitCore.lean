@@ -421,17 +421,7 @@ theorem Internal.principalUnitInverseLimitCarrierEval_apply
     principalUnitInverseLimitCarrierEval F n x = x.1 n :=
   rfl
 
-/-- Named compatibility law for a principal-unit inverse-limit family. -/
-theorem Internal.principalUnitInverseLimitCarrier_compatible
-    (F : CompleteDVF.{u, v} K)
-    (x : Internal.principalUnitInverseLimitCarrier F)
-    {m n : ℕ} (hmn : m ≤ n) :
-    principalUnitQuotientCarrierTransition F hmn
-        (principalUnitInverseLimitCarrierEval F n x) =
-      principalUnitInverseLimitCarrierEval F m x :=
-  compatibleGroupFamilies_transition
-    (Internal.principalUnitQuotientCarrier F)
-    (fun {_ _} hij => principalUnitQuotientCarrierTransition F hij) x hmn
+
 
 /-- Principal-unit inverse-limit families are determined by their
 coordinates. -/

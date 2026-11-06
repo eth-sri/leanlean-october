@@ -37,13 +37,11 @@ theorem continuous_center_of_continuous_circle
       dsimp only
       rw [show circleLift 0 t (boundary x) z = (boundary x) ⟨z, hz⟩ from
         circleLift_eq 0 t (boundary x) ⟨z, hz⟩]
-      simp only [pow_zero, one_mul, smul_eq_mul]
-      rfl
+      aesop
     rw [he, hC]
     simp only [smul_eq_mul]
     exact inv_mul_cancel_left₀ (by
-      exact mul_ne_zero (mul_ne_zero (by norm_num)
-        (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero)) Complex.I_ne_zero) _
+      simp_all) _
   exact ((circleCoeffCLM 0 t ht 0).continuous.comp hboundary).congr heq
 
 end DedekindZetaZeroFree.ResidueContinuity

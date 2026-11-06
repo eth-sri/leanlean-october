@@ -137,7 +137,7 @@ theorem raw_ratio_torus_action (F : Type*) [Field F] [NumberField F]
   have hk := raw_parabolic_torus_kernel F S D α hα
   choose σ hσ using D.surjective
   have heq (g k : S) (h : D.ratio g = D.ratio k) : α g = α k :=
-    (α.eq_iff).mpr (hk ((D.ratio.eq_iff).mp h))
+    α.eq_iff.mpr (hk (D.ratio.eq_iff.mp h))
   let β : D.E →* (Torus F D.L ≃ₜ Torus F D.L) := {
     toFun := fun u => α (σ u)
     map_one' := by
@@ -540,8 +540,7 @@ theorem rawShapeCover_exists (F : Type*) [Field F] [NumberField F]
   }⟩
   · intro i b b' u hb hb' h
     have hlog : KPCuspLogShape.logarithm F hF E hE (Additive.ofMul u) ∈
-        Λ.toAddSubgroup := by
-      exact AddMonoidHom.mem_range.mpr ⟨Additive.ofMul u, rfl⟩
+        Λ.toAddSubgroup := AddMonoidHom.mem_range.mpr ⟨Additive.ofMul u, rfl⟩
     have heq : f b = f b' := by
       rw [h]
       change (QuotientAddGroup.mk b : Base F hF E hE) = QuotientAddGroup.mk (b + _)

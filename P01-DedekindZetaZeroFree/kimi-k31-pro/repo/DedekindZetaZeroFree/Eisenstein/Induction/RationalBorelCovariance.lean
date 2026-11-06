@@ -79,7 +79,7 @@ private theorem upper_matrix_factorization (b : KPRationalFlag.borel F) :
   intro i j
   fin_cases i <;> fin_cases j <;>
     simp [KPGlobalTorusFunctionData.rationalDiagonal, y,
-      Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
+      Matrix.GeneralLinearGroup.coe_scalar,
       Matrix.mul_apply, Fin.sum_univ_two, hb] <;> field_simp <;> ring
 
 theorem val_rational_borel_invariant (K : Subgroup (G F ζ hζ))
@@ -195,7 +195,7 @@ private theorem section_rational_diagonal_invariant (s : ℂ)
     apply Matrix.GeneralLinearGroup.ext
     intro i j
     fin_cases i <;> fin_cases j <;>
-      simp [KPChamberBruhatTwoCells.rationalWeyl,
+      simp [
         KPGlobalTorusFunctionData.rationalDiagonal, KPStandardLocalRootLifts.weylSwap,
         Matrix.mul_apply, Fin.sum_univ_two]
   rw [hmatrix, map_mul, unsigned_weyl, mul_assoc]
@@ -224,7 +224,7 @@ private theorem upper_matrix_factorization
   intro i j
   fin_cases i <;> fin_cases j <;>
     simp [KPGlobalTorusFunctionData.rationalDiagonal, y,
-      Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
+      Matrix.GeneralLinearGroup.coe_scalar,
       Matrix.mul_apply, Fin.sum_univ_two, hb] <;> field_simp <;> ring
 
  theorem scalar_rational_borel_invariant (s : ℂ)

@@ -135,7 +135,7 @@ theorem ae_weighted_tail_eq (D : RayCoset.Data K)
   have hF (h : RayCoset.logHyperplane K) :
       (∑' α : RayCoset.Cx D, OrbitSlabMellin.integrand D δ α s (t,h)) =
       (t : ℂ)^s * G h := by
-    simp only [OrbitSlabMellin.integrand, OrbitSlabMellin.q, RayTheta.q, G, one_div]
+    simp only [OrbitSlabMellin.integrand, G]
     rw [tsum_mul_left]
     congr 1
     apply tsum_congr
@@ -149,7 +149,7 @@ theorem ae_weighted_tail_eq (D : RayCoset.Data K)
       simpa only [hF] using hit
     convert hii.const_mul ((t : ℂ)^s)⁻¹ using 1
     ext h
-    simp [← mul_assoc, hp]
+    simp [hp]
   have hsum : (∫ h, (∑' ℓ : RayCoset.normalizedLattice D,
       gδ K δ (Q K (RayTheta.q K t h)
         (RayCoset.normalizedBasepoint D + ℓ.val))) ∂ν) =

@@ -26,7 +26,7 @@ private lemma meromorphicAt_clm_apply' {E : Type*} [NormedAddCommGroup E] [Norme
   obtain ⟨n, hn⟩ := hA
   refine ⟨n, (analyticAt_clm_apply' hn hB).congr ?_⟩
   filter_upwards with z
-  simp [ContinuousLinearMap.smul_apply]
+  simp
 
 open Filter
 
@@ -262,7 +262,7 @@ private theorem aux
       have hs2 : -(1 : ℝ) / 6 < s.re := hs
       have hs3 : -(1 : ℝ) / 6 < s'.re := hs'
       simp only [Complex.add_re, Complex.div_ofNat_re, Complex.mul_re,
-        Complex.ofReal_re, Complex.ofReal_im, zero_mul, sub_zero] at hre
+        ] at hre
       norm_num at hre
       linarith
 

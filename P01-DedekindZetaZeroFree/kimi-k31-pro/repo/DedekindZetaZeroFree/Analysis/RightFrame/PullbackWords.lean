@@ -170,7 +170,7 @@ private lemma list_transport (U : Set E) (O : Set P) (hU : IsOpen U) (hO : IsOpe
       intro t htmem
       rw [term_derivative U O hU hO fields hfields ψ hψ hψU v a ha t.1 (hts t htmem).1 t.2 u hu x hx]
       simp only [expand, List.map_cons, List.sum_cons, List.map_map, Function.comp_def,
-        Finset.sum_toList]
+        ]
       congr 1
       exact (Finset.sum_map_toList _ _).symm
 

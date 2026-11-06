@@ -23,8 +23,8 @@ private lemma diag_inverse (A : KPGlobalTorusFunctionData.AdelicMatrixGroup F)
     (h10 : A 1 0 = 0) (h01 : A 0 1 = 0) :
     (KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).1.unit⁻¹.val = A⁻¹ 0 0 := by
   have h := congrArg (fun B : Matrix (Fin 2) (Fin 2) (KPAdelicCoverRestrictedProduct.Adeles F) => B 0 0) A.inv_mul
-  simp only [Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two,
-    Matrix.GeneralLinearGroup.coe_one, Matrix.one_apply, h10, mul_zero, add_zero, if_pos rfl] at h
+  simp only [Matrix.mul_apply, Fin.sum_univ_two,
+    Matrix.one_apply, h10, mul_zero, add_zero] at h
   have hu := (KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).1.unit_spec
   change A⁻¹ 0 0 * A 0 0 = 1 at h
   let u := (KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).1.unit
@@ -32,13 +32,13 @@ private lemma diag_inverse (A : KPGlobalTorusFunctionData.AdelicMatrixGroup F)
   calc
     _ = (u⁻¹ : KPGlobalTorusFunctionData.Ideles F).val * 1 := (mul_one _).symm
     _ = (u⁻¹ : KPGlobalTorusFunctionData.Ideles F).val * (A⁻¹ 0 0 * A 0 0) := by rw [h]
-    _ = A⁻¹ 0 0 := by rw [← hu']; simp [← mul_assoc, mul_comm]
+    _ = A⁻¹ 0 0 := by rw [← hu']; simp [mul_comm]
 private lemma diag_inverse11 (A : KPGlobalTorusFunctionData.AdelicMatrixGroup F)
     (h10 : A 1 0 = 0) (h01 : A 0 1 = 0) :
     (KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).2.unit⁻¹.val = A⁻¹ 1 1 := by
   have h := congrArg (fun B : Matrix (Fin 2) (Fin 2) (KPAdelicCoverRestrictedProduct.Adeles F) => B 1 1) A.inv_mul
-  simp only [Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two,
-    Matrix.GeneralLinearGroup.coe_one, Matrix.one_apply, h01, mul_zero, zero_add, if_pos rfl] at h
+  simp only [Matrix.mul_apply, Fin.sum_univ_two,
+    Matrix.one_apply, h01, mul_zero, zero_add] at h
   have hu := (KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).2.unit_spec
   change A⁻¹ 1 1 * A 1 1 = 1 at h
   let u := (KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).2.unit
@@ -46,7 +46,7 @@ private lemma diag_inverse11 (A : KPGlobalTorusFunctionData.AdelicMatrixGroup F)
   calc
     _ = (u⁻¹ : KPGlobalTorusFunctionData.Ideles F).val * 1 := (mul_one _).symm
     _ = (u⁻¹ : KPGlobalTorusFunctionData.Ideles F).val * (A⁻¹ 1 1 * A 1 1) := by rw [h]
-    _ = A⁻¹ 1 1 := by rw [← hu']; simp [← mul_assoc, mul_comm]
+    _ = A⁻¹ 1 1 := by rw [← hu']; simp [mul_comm]
 private lemma preimage_diag (A : KPGlobalTorusFunctionData.AdelicMatrixGroup F)
     (hA : QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) A ∈
       KPGlobalTorusFunctionData.ordinaryTorus F) : A 1 0 = 0 ∧ A 0 1 = 0 := by
@@ -55,7 +55,7 @@ private lemma preimage_diag (A : KPGlobalTorusFunctionData.AdelicMatrixGroup F)
   obtain ⟨z, hz, he⟩ := hB
   obtain ⟨u, rfl⟩ := hz
   rw [← he]
-  simp [Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
+  simp [Matrix.GeneralLinearGroup.coe_scalar,
     Matrix.mul_apply, Matrix.scalar, Fin.sum_univ_two, h01, h10]
 private lemma ratio_continuous : Continuous (KPGlobalTorusFunctionData.torusRatio F) := by
   let q := QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F)
@@ -213,8 +213,7 @@ theorem phase_trivial_class_lifts_of_open_projection
     { toFun := fun x => ⟨x.val.val, x.property⟩
       map_one' := rfl
       map_mul' := fun _ _ => rfl }
-  have hf : Continuous f := by
-    exact (continuous_subtype_val.comp continuous_subtype_val).subtype_mk _
+  have hf : Continuous f := (continuous_subtype_val.comp continuous_subtype_val).subtype_mk _
   let N : Subgroup (finiteTorusForClassLifts F ζ hζ) :=
     ((U.toOpenSubgroup ⊓ V.toOpenSubgroup).toSubgroup).comap f
   have hN : IsOpen (N : Set (finiteTorusForClassLifts F ζ hζ)) :=
@@ -296,7 +295,7 @@ theorem finiteTorusClassProjection_open_of_surjective
     inv_val := by have h := congrArg Prod.snd y.inv_val; exact Prod.ext (one_mul 1) h }
 private lemma finiteIdele_infinite (y : KPGlobalCubicIdelePairing.Ideles F) (w : InfinitePlace F) :
     KPGlobalCubicIdelePairing.ideleEval F (Sum.inl w) (finiteIdele F y) = 1 := by
-  rfl
+  aesop
 private lemma finiteIdele_class (y : KPGlobalCubicIdelePairing.Ideles F) :
     QuotientGroup.mk' (CubicCharacters.cubes (KPGlobalCubicIdelePairing.Ideles F)) (finiteIdele F y) =
     QuotientGroup.mk' _ y := by
@@ -371,10 +370,10 @@ theorem finiteTorusClassProjection_surjective : Function.Surjective (finiteTorus
     let b := (KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).2.unit
     have ha : a = u := by
       apply Units.ext
-      exact (IsUnit.unit_spec _).trans (by rfl)
+      exact (IsUnit.unit_spec _).trans rfl
     have hb : b = 1 := by
       apply Units.ext
-      exact (IsUnit.unit_spec _).trans (by rfl)
+      exact (IsUnit.unit_spec _).trans rfl
     change ↑((KPGlobalTorusFunctionData.p F ζ hζ) e) = (a : KPGlobalCubicIdelePairing.Ideles F).val * b⁻¹.val at h
     rw [ha, hb] at h
     simpa using h

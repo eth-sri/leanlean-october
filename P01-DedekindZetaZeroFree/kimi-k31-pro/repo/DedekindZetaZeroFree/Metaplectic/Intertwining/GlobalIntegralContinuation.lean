@@ -28,8 +28,7 @@ include hμ in
       ((compactTrivialization S.borel P S.iwasawa (sourceSign ε) (sourceParameter ε s)
         (φ : compactPicture S.borel P S.iwasawa (sourceSign ε))).val
         (kernelW (LocalField F q) S.borel ε *
-          (S.borel.upperRoot (Multiplicative.ofAdd x) : ActualCover F ζ hζ q) * g)).val h) μ := by
-  exact actual_integral_integrable_at_level_without_uniformizer F ζ hζ q S P μ hμ J hJ ε s hs φ g h
+          (S.borel.upperRoot (Multiplicative.ofAdd x) : ActualCover F ζ hζ q) * g)).val h) μ := actual_integral_integrable_at_level_without_uniformizer F ζ hζ q S P μ hμ J hJ ε s hs φ g h
 
 end DedekindZetaZeroFree.KPRankOneActualShellCaller
 

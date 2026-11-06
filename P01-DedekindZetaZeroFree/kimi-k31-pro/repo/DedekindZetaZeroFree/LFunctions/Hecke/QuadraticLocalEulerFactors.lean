@@ -133,8 +133,7 @@ private lemma ramified_cases {F : Type} [Field F] [NumberField F]
   have hefg := invs d p Q hQ
   have hepos := Q.asIdeal.ramificationIdx_pos (𝓞 F)
   have hfpos := Q.asIdeal.inertiaDeg_pos (𝓞 F)
-  have he1 : Q.asIdeal.ramificationIdx (𝓞 F) ≠ 1 := by
-    exact fun h => hunr (Ideal.ramificationIdx_eq_one_iff.mp h)
+  have he1 : Q.asIdeal.ramificationIdx (𝓞 F) ≠ 1 := fun h => hunr (Ideal.ramificationIdx_eq_one_iff.mp h)
   have hgb : (p.asIdeal.primesOver (𝓞 d.extension)).ncard ≠ 0 := by
     intro h
     rw [h, zero_mul] at hefg

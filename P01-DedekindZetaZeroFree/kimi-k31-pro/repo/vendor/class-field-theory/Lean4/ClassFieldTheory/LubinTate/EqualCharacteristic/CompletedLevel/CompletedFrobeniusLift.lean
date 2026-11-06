@@ -67,19 +67,7 @@ noncomputable def equalCharacteristicCompletedLevelFrobeniusAlgebra
         (equalCharacteristicCompletedLevelField F n)).comp
       (equalCharacteristicCompletedUnramifiedFrobenius F.residueField).toAlgHom.toRingHom)
 
-/-- The twisted level algebra map applies completed Frobenius before scalar extension. -/
-theorem equalCharacteristicCompletedLevelFrobeniusAlgebra_algebraMap
-    (F : LocalField.{u, v} K) (n : ℕ)
-    (a : equalCharacteristicCompletedUnramifiedField F.residueField) :
-    @algebraMap
-        (equalCharacteristicCompletedUnramifiedField F.residueField)
-        (equalCharacteristicCompletedLevelField F n)
-        _ _ (equalCharacteristicCompletedLevelFrobeniusAlgebra F n) a =
-      algebraMap
-        (equalCharacteristicCompletedUnramifiedField F.residueField)
-        (equalCharacteristicCompletedLevelField F n)
-        (equalCharacteristicCompletedUnramifiedFrobenius F.residueField a) :=
-  rfl
+
 
 /-- Arithmetic Frobenius fixes the completed primitive polynomial because
 all of its coefficients descend to `κ((T))`. -/

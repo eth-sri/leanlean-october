@@ -35,13 +35,7 @@ def kernelTranslate (K : Subgroup (G F ζ hζ)) (b : K) : C(K, ℂ) →ₗ[ℂ] 
   map_add' := by intros; rfl
   map_smul' := by intros; rfl
 
-def kernelRepresentation (K : Subgroup (G F ζ hζ)) : Representation ℂ K C(K, ℂ) where
-  toFun := kernelTranslate F ζ hζ K
-  map_one' := by ext h k; simp [kernelTranslate]
-  map_mul' b c := by
-    ext h k
-    change h ((b * c)⁻¹ * k) = h (c⁻¹ * (b⁻¹ * k))
-    rw [mul_inv_rev, mul_assoc]
+
 
 lemma alpha_right_compact (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
     (g : G F ζ hζ) (b : K) : alpha F ζ hζ K hK (g * b.val) = alpha F ζ hζ K hK g := by

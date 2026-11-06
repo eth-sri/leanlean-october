@@ -169,20 +169,7 @@ theorem equalCharacteristicLubinTateAmbientPiIterate_succ
   rw [pow_succ]
   rfl
 
-/-- Ambient iterates commute with residue-field scalar multiplication. -/
-theorem equalCharacteristicLubinTateAmbientPiIterate_coefficient_mul
-    (F : LocalField.{u, v} K)
-    {A : Type w} [Field A] [CharP A F.residueCharacteristic]
-    (ι : F.residueField →+* A) (t : A)
-    (i : ℕ) (a : F.residueField) (x : A) :
-    equalCharacteristicLubinTateAmbientPiIterate F t i (ι a * x) =
-      ι a * equalCharacteristicLubinTateAmbientPiIterate F t i x := by
-  induction i generalizing x with
-  | zero => simp
-  | succ i ih =>
-      rw [equalCharacteristicLubinTateAmbientPiIterate_succ,
-        equalCharacteristicLubinTateAmbientPiEnd_coefficient_mul,
-        ih, equalCharacteristicLubinTateAmbientPiIterate_succ]
+
 
 /-- The genuine finite bracket in the ambient field. -/
 noncomputable def equalCharacteristicLubinTateAmbientBracket
@@ -378,20 +365,7 @@ theorem equalCharacteristicLubinTateAmbientPiEnd_iterate
       exact congrArg (equalCharacteristicLubinTateAmbientPiIterate F t i)
         (equalCharacteristicLubinTateAmbientPiIterate_one F t x)
 
-/-- Ambient brackets are linear for the embedded coefficient action. -/
-theorem equalCharacteristicLubinTateAmbientBracket_coefficient_mul_apply
-    (F : LocalField.{u, v} K)
-    {A : Type w} [Field A] [CharP A F.residueCharacteristic]
-    (ι : F.residueField →+* A) (t : A)
-    (n : ℕ) (a : F.residueField⟦X⟧) (c : F.residueField) (x : A) :
-    equalCharacteristicLubinTateAmbientBracket F ι t n a (ι c * x) =
-      ι c * equalCharacteristicLubinTateAmbientBracket F ι t n a x := by
-  rw [equalCharacteristicLubinTateAmbientBracket_apply,
-    equalCharacteristicLubinTateAmbientBracket_apply, Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro i hi
-  rw [equalCharacteristicLubinTateAmbientPiIterate_coefficient_mul]
-  ring
+
 
 /-- Multiplication of coefficient series by `C(c)` scales an ambient
 bracket by `ι(c)`. -/

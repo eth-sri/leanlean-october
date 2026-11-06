@@ -55,7 +55,7 @@ private theorem tuple_prod (a : RestrictedCover F ζ hζ)
       funext x
       by_cases h : x = w
       · subst x; simp
-      · simp [Pi.mulSingle_apply, Sum.inl_injective.ne h, h]
+      · simp [Sum.inl_injective.ne h, h]
     rw [he]
     rw [List.prod_map_eq_pow_single w _ (by intro x hx _; simp [hx])]
     rw [List.nodup_iff_count_le_one.mp (Finset.nodup_toList _) w |>.antisymm
@@ -63,7 +63,7 @@ private theorem tuple_prod (a : RestrictedCover F ζ hζ)
     simp
   | inr q =>
     simp [ha, localToRestricted, Function.comp_def, RestrictedProduct.coe_mulSingle_apply,
-      Pi.mulSingle_apply]
+      ]
 
 private theorem sectionTuple_insertion
     (r : InfinitePlace F → Matrix.GeneralLinearGroup (Fin 2) ℂ) :
@@ -230,8 +230,8 @@ private theorem theta_smooth (b : KPSmoothActualFlowData.B F) :
   have hc (i j : Fin 2) : ContDiffAt ℝ (⊤ : ℕ∞) (fun t => (flowMatrix F b t v).val i j) 0 :=
     (flowEntry_smooth F b v i j).contDiffAt
   have hn : (flowMatrix F b 0 v).val 1 1 ≠ 0 := by rw [flowMatrix_zero]; simp
-  fin_cases i <;> simp only [theta, ChartMatrix.chartCoordinates, Matrix.cons_val_zero,
-    Matrix.cons_val_one, Matrix.cons_val_two]
+  fin_cases i <;> simp only [theta, ChartMatrix.chartCoordinates, 
+    ]
   · change ContDiffAt ℝ (⊤ : ℕ∞) (fun t => (flowMatrix F b t v).val 0 1 / (flowMatrix F b t v).val 1 1) 0
     simpa only [div_eq_mul_inv] using! (hc 0 1).mul ((hc 1 1).inv hn)
   · change ContDiffAt ℝ (⊤ : ℕ∞) (fun t => (flowMatrix F b t v).val.det / (flowMatrix F b t v).val 1 1 ^ 2) 0
@@ -391,8 +391,8 @@ private theorem coordWord_expansion {ι : Type*} (fields : ι → E → E) (U : 
       rw [variable_jet_derivative u t.1 t.2 x (fields b x)
         (hu.contDiffAt (hU.mem_nhds hx)) (fun i =>
           (((hts t htmem).2 i).contDiffAt (hU.mem_nhds hx)).differentiableAt (by simp))]
-      simp only [expand, directionJet, List.map_cons, List.sum_cons, List.map_map,
-        ← List.ofFn_eq_map, List.sum_ofFn]
+      simp only [expand, directionJet, List.map_cons, 
+        ← List.ofFn_eq_map]
       apply congrArg₂ (fun a b : ℂ => a + b)
       · congr 1; funext i; refine Fin.cases rfl (fun j => rfl) i
       · change _ = (List.map (fun r => iteratedFDeriv ℝ r.1 u x (fun i => r.2 i x))

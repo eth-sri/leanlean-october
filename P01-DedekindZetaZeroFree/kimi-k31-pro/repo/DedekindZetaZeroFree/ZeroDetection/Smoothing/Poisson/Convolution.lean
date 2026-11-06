@@ -32,7 +32,7 @@ theorem idealLSeries_mul_cutoffInverse (F : Type) [Field F] [NumberField F]
         ω n * (Ideal.absNorm n : ℂ) ^ (-s) else 0)
       (idealLSeries F ω s * cutoffInverse F ω V s) := by
   classical
-  let K := (ideals_bounded_norm_finite F (V)).toFinset
+  let K := (ideals_bounded_norm_finite F V).toFinset
   have hK (d : Ideal (𝓞 F)) : d ∈ K ↔ d ≠ ⊥ ∧ (Ideal.absNorm d : ℝ) ≤ V :=
     Set.Finite.mem_toFinset _
   let W : Ideal (𝓞 F) → ℂ := fun n => ω n * (Ideal.absNorm n : ℂ) ^ (-s)

@@ -47,7 +47,7 @@ open Finset
 
 lemma mem_dyadicRange_iff {X : ℝ} (hX : 1 ≤ X) (k : ℕ) :
     k ∈ Finset.range (Nat.log 2 ⌊X⌋₊ + 1) ↔ (2 : ℝ) ^ k ≤ X := by
-  have hfl : 1 ≤ ⌊X⌋₊ := Nat.le_floor (by simpa using hX)
+  have hfl : 1 ≤ ⌊X⌋₊ := Nat.le_floor (by simp_all)
   rw [Finset.mem_range, Nat.lt_succ_iff, Nat.le_log_iff_pow_le (by norm_num) (by omega),
     Nat.le_floor_iff (by linarith)]
   norm_cast
@@ -58,7 +58,7 @@ theorem sum_dyadic_pos (a : ℝ) (ha : 0 < a) :
   have hr : (1 : ℝ) < (2 : ℝ) ^ a := Real.one_lt_rpow (by norm_num) ha
   refine ⟨(2 : ℝ) ^ a / ((2 : ℝ) ^ a - 1), div_pos (by linarith) (by linarith), fun X hX => ?_⟩
   set n := Nat.log 2 ⌊X⌋₊ with hn
-  have hnX : (2 : ℝ) ^ n ≤ X := (mem_dyadicRange_iff hX n).1 (by simp [hn])
+  have hnX : (2 : ℝ) ^ n ≤ X := (mem_dyadicRange_iff hX n).1 (by simp_all)
   have hterm : ∀ k : ℕ, ((2 : ℝ) ^ k) ^ a = ((2 : ℝ) ^ a) ^ k := fun k => by
     rw [← Real.rpow_natCast, ← Real.rpow_mul (by norm_num), mul_comm, Real.rpow_mul (by norm_num),
       Real.rpow_natCast]
@@ -95,7 +95,7 @@ theorem summable_tail_dyadic_neg (a : ℝ) (ha : a < 0) (X : ℝ) :
     (summable_geometric_of_lt_one hr0.le hr1)
   · split_ifs <;> positivity
   · split_ifs
-    · rw [hterm]
+    · simp_all
     · positivity
 
 theorem tsum_tail_dyadic_neg (a : ℝ) (ha : a < 0) :
@@ -109,20 +109,18 @@ theorem tsum_tail_dyadic_neg (a : ℝ) (ha : a < 0) :
   refine ⟨1 / (1 - (2 : ℝ) ^ a), div_pos one_pos (by linarith), fun X hX => ?_⟩
   have hex : ∃ k : ℕ, X ≤ (2 : ℝ) ^ k := by
     obtain ⟨k, hk⟩ := pow_unbounded_of_one_lt X (by norm_num : (1 : ℝ) < 2)
-    exact ⟨k, hk.le⟩
+    grind
   classical
   set m := Nat.find hex with hm
   have hmX : X ≤ (2 : ℝ) ^ m := Nat.find_spec hex
   set f : ℕ → ℝ := fun k => if X ≤ (2 : ℝ) ^ k then ((2 : ℝ) ^ k) ^ a else 0 with hf
   have hsum : Summable f := summable_tail_dyadic_neg a ha X
   have hzero : ∀ k ∈ Finset.range m, f k = 0 := by
-    intro k hk
-    have := Nat.find_min hex (Finset.mem_range.1 hk)
-    simp [hf, this]
+    simp_all
   have hshift : ∀ k, f (k + m) = ((2 : ℝ) ^ a) ^ (k + m) := by
     intro k
     have : X ≤ (2 : ℝ) ^ (k + m) := hmX.trans (pow_le_pow_right₀ (by norm_num) (by omega))
-    simp only [hf, if_pos this, hterm]
+    simp_all
   have h := hsum.sum_add_tsum_nat_add m
   rw [Finset.sum_eq_zero hzero, zero_add] at h
   rw [← h]
@@ -131,9 +129,7 @@ theorem tsum_tail_dyadic_neg (a : ℝ) (ha : a < 0) :
   have h1 : ((2 : ℝ) ^ a) ^ m ≤ X ^ a := by
     rw [← hterm]
     exact Real.rpow_le_rpow_of_nonpos (by linarith) hmX ha.le
-  calc (1 - (2 : ℝ) ^ a)⁻¹ * ((2 : ℝ) ^ a) ^ m ≤ (1 - (2 : ℝ) ^ a)⁻¹ * X ^ a := by
-        gcongr
-    _ = _ := by ring
+  simp_all
 
 theorem sum_dyadic_neg_interval (a : ℝ) (ha : a < 0) :
     ∃ C : ℝ, 0 < C ∧ ∀ X Y : ℝ, 1 ≤ X →

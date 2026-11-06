@@ -69,7 +69,7 @@ theorem exists_compact_balanced_cover :
   let γ : A.Gamma1 := ⟨(l / r q : A.L).val, hd⟩
   refine ⟨γ, Set.mem_iUnion.mpr ⟨q, l.val * y, hl, ?_⟩⟩
   dsimp [γ]
-  simp only [div_eq_mul_inv, mul_comm, mul_left_comm, mul_assoc]
+  simp only [div_eq_mul_inv, mul_comm, mul_assoc]
 
 instance compactSpace_Gamma1Quotient : CompactSpace (A.G1 ⧸ A.Gamma1) := by
   obtain ⟨K, hK, hcover⟩ := A.exists_compact_balanced_cover

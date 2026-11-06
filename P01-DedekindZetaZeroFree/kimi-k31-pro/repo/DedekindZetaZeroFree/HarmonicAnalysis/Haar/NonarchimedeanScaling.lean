@@ -153,7 +153,7 @@ private lemma amul (x y : K) : KPCubicHaar.abs K (x*y) = KPCubicHaar.abs K x * K
 private lemma ale {x y : K} (hy : y ≠ 0) :
     KPCubicHaar.abs K x ≤ KPCubicHaar.abs K y ↔ ValuativeRel.valuation K x ≤ ValuativeRel.valuation K y := by
   by_cases hx : x = 0
-  · subst x; simp only [KPCubicHaar.abs, if_pos rfl, map_zero]; exact iff_of_true (le_of_lt (apos K hy)) bot_le
+  · subst x; simp only [KPCubicHaar.abs, map_zero]; exact iff_of_true (le_of_lt (apos K hy)) bot_le
   let e := IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
   have hex : e (ValuativeRel.valuation K x) ≠ 0 := by simpa [e] using hx
   have hey : e (ValuativeRel.valuation K y) ≠ 0 := by simpa [e] using hy
@@ -287,7 +287,7 @@ theorem map_mul (μ : Measure K) [μ.IsAddHaarMeasure] (c : K) (hc : c ≠ 0) :
   rw [hmap] at h
   ext s
   rw [h]
-  simp only [Measure.smul_apply, NNReal.smul_def, ENNReal.smul_def, smul_eq_mul,
+  simp only [Measure.smul_apply, ENNReal.smul_def, smul_eq_mul,
     ENNReal.coe_inv (ne_of_gt distribHaarChar_pos), hchar]
 
 theorem closedBall_measure (μ : Measure K) [μ.IsAddHaarMeasure] (k : ℤ) :

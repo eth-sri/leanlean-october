@@ -76,8 +76,7 @@ open scoped Classical FourierTransform nonZeroDivisors
     rw [map_mul]
     simpa only [sLocalDiagonal_finite, Circle.coe_one] using congrArg
       (fun z : Circle => (z : ℂ)) (hr a _ hm v)
-  have hmr : A ((m : F) * (r a : F)) * P ((m : F) * (r a : F)) = 1 := by
-    exact (hc _).symm.trans (htrace (m * r a))
+  have hmr : A ((m : F) * (r a : F)) * P ((m : F) * (r a : F)) = 1 := (hc _).symm.trans (htrace (m * r a))
   have hAr : A ((m : F) * (a + (r a : F))) = A ((m : F) * a) * P ((m : F) * a) := by
     have h := hP ((m : F) * a) ((m : F) * (r a : F))
     rw [← mul_add, hPr] at h

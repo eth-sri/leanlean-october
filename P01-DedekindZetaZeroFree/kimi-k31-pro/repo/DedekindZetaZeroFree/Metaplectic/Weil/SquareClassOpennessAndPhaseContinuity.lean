@@ -30,7 +30,7 @@ private theorem finite_square_hensel (v : HeightOneSpectrum (𝓞 F))
     (LocalFieldTheory.DiscreteValuationField.LocalField.ofWithZeroValuation ν).henselianRing
   have h4 : ν (4 : K) = ν (2 : K)^2 := by
     rw [show (4 : K) = 2^2 by norm_num, map_pow]
-  have h4n : ν (4 : K) ≠ 0 := (ν.map_eq_zero_iff).not.mpr (by norm_num)
+  have h4n : ν (4 : K) ≠ 0 := ν.map_eq_zero_iff.not.mpr (by norm_num)
   have hc : ν (((z : K)-1)/4) < 1 := by
     rw [map_div₀, div_lt_one₀ (pos_iff_ne_zero.mpr h4n), h4]
     exact hz
@@ -64,8 +64,7 @@ theorem finiteSquareSubgroup_isOpen (v : HeightOneSpectrum (𝓞 F)) :
   apply Subgroup.isOpen_of_mem_nhds _ (g := 1)
   have h : ∀ᶠ z : (v.adicCompletion F)ˣ in nhds 1,
       Valued.v ((z : v.adicCompletion F)-1) < Valued.v (2 : v.adicCompletion F)^2 := by
-    have h0 : Valued.v (2 : v.adicCompletion F)^2 ≠ 0 := by
-      exact pow_ne_zero _ ((Valued.v.map_eq_zero_iff).not.mpr (by norm_num : (2 : v.adicCompletion F) ≠ 0))
+    have h0 : Valued.v (2 : v.adicCompletion F)^2 ≠ 0 := pow_ne_zero _ (Valued.v.map_eq_zero_iff.not.mpr (by norm_num : (2 : v.adicCompletion F) ≠ 0))
     have hball : {x : v.adicCompletion F | Valued.v x < Valued.v (2 : v.adicCompletion F)^2} ∈ nhds 0 := by
       apply Valued.mem_nhds_zero.mpr
       refine ⟨Units.mk0 (Valued.v.restrict (2 : v.adicCompletion F) ^ 2) ?_, ?_⟩

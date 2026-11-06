@@ -32,7 +32,7 @@ theorem quotientCoreEvaluator_continuous
       (hVo.mem_nhds hb)
   have hbase : J (archBase F) = quotientCoreEvaluator A P C x g := by
     simp only [J, KPInterface.ResidueConstruction.Raw.archChart_base,
-      Subgroup.coe_one, mul_one]
+      mul_one]
   apply Filter.tendsto_def.mpr
   intro S hS
   have hn : J ⁻¹' S ∈ nhds (archBase F) := hJ (by rwa [hbase])

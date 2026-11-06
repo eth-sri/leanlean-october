@@ -166,17 +166,7 @@ theorem standardLubinTateChangedUniformizerUnit_eq_unit_mul
   apply Units.ext
   simp [standardLubinTateChangedUniformizer]
 
-/-- Equivalently, the unit factor is the quotient of the changed and
-original uniformizers. -/
-theorem standardLubinTateUnitFactorFieldUnit_eq_changed_mul_uniformizer_inv
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) :
-    standardLubinTateUnitFactorFieldUnit F u =
-      standardLubinTateChangedUniformizerUnit hπ u *
-        (standardLubinTateBaseUniformizerUnit hπ)⁻¹ := by
-  rw [standardLubinTateChangedUniformizerUnit_eq_unit_mul]
-  simp
+
 
 /-- The negative primitive generator at the changed level has norm `uπ`. -/
 theorem standardLubinTateChanged_norm_neg_levelGenerator
@@ -230,27 +220,7 @@ theorem
     change standardLubinTateUnitFactorFieldUnit F u * ϖ ∈ N
     exact N.mul_mem hu hϖ
 
-/-- The inverse changed uniformizer gives the same norm-membership test. -/
-theorem
-    standardLubinTateChangedUniformizerUnit_inv_mem_standardNormSubgroup_iff
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (u : F.valuationSubringˣ) (n : ℕ) :
-    (standardLubinTateChangedUniformizerUnit hπ u)⁻¹ ∈
-        standardLubinTateNormSubgroup hπ n ↔
-      standardLubinTateUnitFactorFieldUnit F u ∈
-        standardLubinTateNormSubgroup hπ n := by
-  let N := standardLubinTateNormSubgroup hπ n
-  constructor
-  · intro hinv
-    apply
-      (standardLubinTateChangedUniformizerUnit_mem_standardNormSubgroup_iff
-        hπ u n).1
-    simpa using N.inv_mem hinv
-  · intro hu
-    exact N.inv_mem
-      ((standardLubinTateChangedUniformizerUnit_mem_standardNormSubgroup_iff
-        hπ u n).2 hu)
+
 
 /-- An actual equivalence from the changed level to the original level
 transports the changed prime-element norm and therefore makes the unit

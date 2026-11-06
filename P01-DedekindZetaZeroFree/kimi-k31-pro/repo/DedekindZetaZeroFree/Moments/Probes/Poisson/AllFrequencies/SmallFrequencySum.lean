@@ -175,8 +175,7 @@ theorem finset_norm_sum_le :
           simp only [Finset.mul_sum]
       _ ≤ C1 * Z ^ (DedekindZetaZeroFree.Quantitative.Scales.kernelExponent DedekindZetaZeroFree.Quantitative.Scales.rightLine DedekindZetaZeroFree.Quantitative.Scales.wLine
             DedekindZetaZeroFree.Quantitative.Scales.zLine) * (K * (C2 * (Z ^ DedekindZetaZeroFree.Quantitative.Scales.smallCutoffExponent) ^
-              (1 + ((1:ℝ)/25 + 1/4000)))) := by
-          exact mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left
+              (1 + ((1:ℝ)/25 + 1/4000)))) := mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left
             (hsum (Z ^ DedekindZetaZeroFree.Quantitative.Scales.smallCutoffExponent) hκ1) hK.le) (mul_nonneg hC1.le hZE.le)
       _ = C1 * K * C2 * Z ^ (DedekindZetaZeroFree.Quantitative.Scales.kernelExponent DedekindZetaZeroFree.Quantitative.Scales.rightLine
             DedekindZetaZeroFree.Quantitative.Scales.wLine DedekindZetaZeroFree.Quantitative.Scales.zLine +

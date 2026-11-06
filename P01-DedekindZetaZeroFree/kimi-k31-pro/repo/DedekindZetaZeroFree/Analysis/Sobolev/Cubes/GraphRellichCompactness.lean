@@ -66,7 +66,7 @@ private theorem smoothJet_add (n : ℕ) (a : ℝ) (f g : Space n → ℂ)
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (hg : ContDiff ℝ (⊤ : ℕ∞) g) :
     smoothJet n a (f + g) (hf.add hg) = smoothJet n a f hf + smoothJet n a g hg := by
   rw [smoothJet, smoothJet, smoothJet, WithLp.ext_iff]
-  simp only [WithLp.ofLp_toLp, WithLp.ofLp_add, Prod.mk_add_mk]
+  simp only [WithLp.ofLp_add, Prod.mk_add_mk]
   refine Prod.ext ?_ ?_
   · rw [← MeasureTheory.MemLp.toLp_add (smooth_memLp n a f hf) (smooth_memLp n a g hg)]
   · rw [← WithLp.toLp_add, WithLp.ext_iff, WithLp.ofLp_toLp]
@@ -81,7 +81,7 @@ private theorem smoothJet_smul (n : ℕ) (a : ℝ) (f : Space n → ℂ)
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (c : ℂ) :
     smoothJet n a (c • f) (hf.const_smul c) = c • smoothJet n a f hf := by
   rw [smoothJet, smoothJet, WithLp.ext_iff]
-  simp only [WithLp.ofLp_toLp, WithLp.ofLp_smul, Prod.smul_mk]
+  simp only [WithLp.ofLp_smul, Prod.smul_mk]
   refine Prod.ext ?_ ?_
   · rw [← MeasureTheory.MemLp.toLp_const_smul c (smooth_memLp n a f hf)]
   · rw [← WithLp.toLp_smul, WithLp.ext_iff, WithLp.ofLp_toLp]

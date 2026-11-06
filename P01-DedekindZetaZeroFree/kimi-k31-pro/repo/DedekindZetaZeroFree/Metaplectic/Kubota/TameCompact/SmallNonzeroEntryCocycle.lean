@@ -101,10 +101,10 @@ private lemma factor_nonzero {L M : Type*} [Field L] [CommGroup M]
   simp only [div_eq_mul_inv, mul_inv_rev, hL, hR,
     KubotaDefectSymbolAlgebra.inv_left L M B hL,
     KubotaDefectSymbolAlgebra.inv_right L M B hR, hAlt,
-    sk E C, sk Z C, sk A C, sk D C, sk H C,
-    sk Z E, sk A E, sk D E, sk H E,
-    sk A Z, sk D Z, sk H Z, sk D A, sk H A, sk H D,
-    hAD, hAH, hDH, inv_one, one_mul, mul_one, inv_inv]
+    
+    sk Z E, sk H E,
+    sk H Z, sk H D,
+    hDH, inv_one, one_mul, mul_one, inv_inv]
   apply Additive.ofMul.injective
   change _ = _
   have omul : ∀ p q : M, Additive.ofMul (p*q) = Additive.ofMul p + Additive.ofMul q := fun _ _ => rfl
@@ -125,9 +125,9 @@ private lemma factor_zero {L M : Type*} [Field L] [CommGroup M]
   simp only [div_eq_mul_inv, mul_inv_rev, hL, hR,
     KubotaDefectSymbolAlgebra.inv_left L M B hL,
     KubotaDefectSymbolAlgebra.inv_right L M B hR, hAlt,
-    sk E C, sk W C, sk A C, sk D C, sk H C,
-    sk A E, sk D E, sk H E, sk D A, sk H A, sk H D,
-    hCW, hWA, hWD, hAD, hAH, hDH, inv_one, one_mul, mul_one, inv_inv]
+    
+    sk H E, sk H D,
+    hCW, hWA, hWD, hDH, inv_one, one_mul, mul_one, inv_inv]
   apply Additive.ofMul.injective
   have omul : ∀ p q : M, Additive.ofMul (p*q) = Additive.ofMul p + Additive.ofMul q := fun _ _ => rfl
   have oinv : ∀ p : M, Additive.ofMul p⁻¹ = -Additive.ofMul p := fun _ => rfl
@@ -226,7 +226,7 @@ theorem kappa_mul_small_nonzero_of_product_entry_ne_zero
     simp only [KubotaDefectSymbolAlgebra.div_right _ _ _ hR, hR]
   have hsum : B (Z/(C*H)) (Z/(D*E)) = 1 := sum_symbol B hL hR
     (KPHilbert.B3_laws F ζ hζ (Sum.inr v)).2.2.2.1 (C*H) (D*E) Z (by
-      simp only [Units.val_mul, Units.val_mk0]
+      simp only [Units.val_mul]
       simp [Z, C, E, D, H, c, a, d, Matrix.mul_apply, Fin.sum_univ_two])
   rw [hk, kappa_active F v ζ hζ hv g hc hcg, kappa_active F v ζ hζ hv h he hch, hs']
   rw [mk_inv, mk_inv]
@@ -282,7 +282,7 @@ theorem kappa_mul_small_nonzero_of_product_entry_zero
     rw [hC]
     dsimp only [B] at hm hdw hhw ⊢
     simp only [div_eq_mul_inv, hL, KubotaDefectSymbolAlgebra.inv_left _ _ _ hL,
-      hm, hdw, hhw, inv_one, one_mul, mul_one]
+      hm, hdw, hhw, inv_one, mul_one]
     exact sk E W
   have hs := sigma_formula F v ζ hζ g h C E W
     (X_small F v g hc) (X_small F v h he) (X_zero F v (g*h) hz dz.2.2.2)

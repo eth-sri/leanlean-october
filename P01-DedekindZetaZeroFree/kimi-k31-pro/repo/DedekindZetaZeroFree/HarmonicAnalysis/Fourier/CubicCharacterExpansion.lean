@@ -275,8 +275,8 @@ theorem integrate_cube_resolution
       rw [hresolution v]
       change v ∈ H ↔ c * Set.indicator (H : Set Kˣ) (fun v => (ψ v : ℂ)) v ≠ 0
       by_cases hv : v ∈ H
-      · simp [Set.indicator_of_mem hv, hv, hc, Units.ne_zero]
-      · simp [Set.indicator_of_notMem hv, hv]
+      · simp [hv, hc, Units.ne_zero]
+      · simp [hv]
     rw [he]
     exact (isClosed_singleton.preimage hcont).measurableSet.compl
   let G : Kˣ → ℂ := fun v => a * ∑ i : I, ∑ j : J, (χ i j v : ℂ) * F v
@@ -309,7 +309,7 @@ theorem integrate_cube_resolution
     filter_upwards [] with v
     by_cases hv : v ∈ H
     · simp [hv]
-    · simp [hv, hGeq v, Set.indicator_of_notMem hv]
+    · simp [hv, hGeq v]
   simp_rw [hcomp] at hsub
   rw [integral_const_mul, hrestrict] at hsub
   have hh := (mul_left_cancel₀ hc hsub)
@@ -407,7 +407,7 @@ theorem compact_test_integrability
       (hcont.comp (continuous_id.pow 3)).integrable_of_hasCompactSupport hcs2
     refine hint.congr ?_
     filter_upwards with y
-    simp only [Function.comp_apply, hΩ y]
+    simp only [hΩ y]
   · intro χ
     exact ((Units.continuous_val.comp χ.continuous).mul hF.continuous).integrable_of_hasCompactSupport
       hFc.mul_left
@@ -574,7 +574,7 @@ lemma sum_mu3_zpow (j : ℤ) :
       intro hc
       refine h ((hprim.zpow_eq_one_iff_dvd j).mp ?_)
       have hval : (((ζ₀ : ℂˣ)) : ℂ) = Complex.exp (2 * Real.pi * Complex.I / 3) := by
-        simp [ζ₀, IsPrimitiveRoot.toRootsOfUnity, rootsOfUnity.mkOfPowEq, Units.val_mk0]
+        simp [ζ₀, IsPrimitiveRoot.toRootsOfUnity, rootsOfUnity.mkOfPowEq]
       rw [← hval, ← Units.val_zpow_eq_zpow_val, hc, Units.val_one]
     set S : ℂ := ∑ ζ : CubicCharacters.Mu3, ((ζ : ℂˣ) ^ j : ℂ) with hS
     have hre : (∑ ζ : CubicCharacters.Mu3, (((ζ₀ * ζ : CubicCharacters.Mu3) : ℂˣ) ^ j : ℂ)) = S :=
@@ -660,7 +660,7 @@ theorem isOpen_unit_cubes [CharZero K] : IsOpen (KPCubicUnitIndices.cubeUnits K 
   have he : (KPCubicUnitIndices.cubeUnits K : Set (𝒪[K])ˣ) =
       (fun u : (𝒪[K])ˣ => u ^ 3) '' Set.univ := by
     ext u
-    simp [KPCubicUnitIndices.cubeUnits, MonoidHom.mem_range]
+    simp [KPCubicUnitIndices.cubeUnits]
   rw [he]
   exact (isCompact_univ.image (continuous_id.pow 3)).isClosed
 

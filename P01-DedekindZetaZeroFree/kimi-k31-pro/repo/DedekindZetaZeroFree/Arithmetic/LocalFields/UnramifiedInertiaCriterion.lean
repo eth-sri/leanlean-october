@@ -42,7 +42,7 @@ theorem unramifiedAtAllPrimesAboveIff
   haveI : IsGaloisGroup Gal(E/K) (𝓞 K) (𝓞 E) := inferInstance
   haveI : w.asIdeal.LiesOver p.asIdeal := hw
   constructor
-  · intro h; exact h w hw
+  · grind
   · intro h w' hw'
     haveI : w'.asIdeal.LiesOver p.asIdeal := hw'
 
@@ -50,6 +50,6 @@ theorem unramifiedAtAllPrimesAboveIff
       rw [← Ideal.ramificationIdxIn_eq_ramificationIdx p.asIdeal w'.asIdeal Gal(E/K),
         ← Ideal.ramificationIdxIn_eq_ramificationIdx p.asIdeal w.asIdeal Gal(E/K)]
     rw [← Ideal.ramificationIdx_eq_one_iff, key, Ideal.ramificationIdx_eq_one_iff]
-    exact h
+    grind
 
 end DedekindZetaZeroFree.AbelianQuotient

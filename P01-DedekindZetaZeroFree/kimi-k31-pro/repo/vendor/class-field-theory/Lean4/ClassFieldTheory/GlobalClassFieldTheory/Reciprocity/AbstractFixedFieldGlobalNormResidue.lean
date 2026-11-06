@@ -107,53 +107,7 @@ theorem numberFieldEmbeddingComparisonAutomorphism_apply
   Classical.choose_spec
     (exists_numberFieldEmbeddingComparisonAutomorphism i j) x
 
-/-- Conjugating the fixing subgroup of one embedded copy of a number
-field by the comparison automorphism gives the fixing subgroup of the
-other embedded copy. -/
-theorem conjugateClosedFixingSubgroup_embeddingRange
-    {F : Type} [Field F] [NumberField F]
-    (i j : F →ₐ[ℚ] SeparableClosure ℚ) :
-    conjugateClosedSubgroup
-        (RamificationTheory.closedFixingSubgroup
-          ℚ (SeparableClosure ℚ) i.fieldRange)
-        (numberFieldEmbeddingComparisonAutomorphism j i) =
-      RamificationTheory.closedFixingSubgroup
-        ℚ (SeparableClosure ℚ) j.fieldRange := by
-  let s :=
-    numberFieldEmbeddingComparisonAutomorphism j i
-  ext τ
-  change
-    τ ∈ conjugateClosedSubgroup
-        (closedFixingSubgroup ℚ (SeparableClosure ℚ) i.fieldRange) s ↔
-      τ ∈ closedFixingSubgroup ℚ (SeparableClosure ℚ) j.fieldRange
-  rw [conjugateClosedSubgroup_mem]
-  change
-    s * τ * s⁻¹ ∈ i.fieldRange.fixingSubgroup ↔
-      τ ∈ j.fieldRange.fixingSubgroup
-  rw [IntermediateField.mem_fixingSubgroup_iff,
-    IntermediateField.mem_fixingSubgroup_iff]
-  constructor
-  · intro h x hx
-    rcases hx with ⟨y, rfl⟩
-    have hi := h (i y) ⟨y, rfl⟩
-    have hs :
-        s (j y) = i y :=
-      numberFieldEmbeddingComparisonAutomorphism_apply j i y
-    change s (τ (s.symm (i y))) = i y at hi
-    have hpre : s.symm (i y) = j y := by
-      rw [← hs, s.symm_apply_apply]
-    rw [hpre, ← hs] at hi
-    exact s.injective hi
-  · intro h x hx
-    rcases hx with ⟨y, rfl⟩
-    have hj := h (j y) ⟨y, rfl⟩
-    have hs :
-        s (j y) = i y :=
-      numberFieldEmbeddingComparisonAutomorphism_apply j i y
-    change s (τ (s.symm (i y))) = i y
-    have hpre : s.symm (i y) = j y := by
-      rw [← hs, s.symm_apply_apply]
-    rw [hpre, hj, hs]
+
 
 section EmbeddedNumberFieldRealization
 
@@ -1315,44 +1269,7 @@ noncomputable def
           L.extensionQuotient ≃*
             Abelianization L.extensionQuotient).symm.trans e)
 
-/-- The actual fixed-field global norm-residue equivalence
 
-`C_F / N_{E/F} C_E ≃ Gal(E/F)`
-
-attached to an abstract finite abelian subextension in the rational
-absolute class formation. -/
-noncomputable def abstractFixedFieldGlobalNormResidueEquiv :
-    let F :=
-      abstractFixedField ℚ (SeparableClosure ℚ) K.field
-    let E :=
-      abstractRelativeFixedField
-        ℚ (SeparableClosure ℚ) L.below
-    Additive
-        (IdeleClassGroup F ⧸
-          (_root_.ideleClassNorm F E).range) ≃+
-      Additive (Gal(E / F)) := by
-  dsimp only
-  let F :=
-    abstractFixedField ℚ (SeparableClosure ℚ) K.field
-  let E :=
-    abstractRelativeFixedField
-      ℚ (SeparableClosure ℚ) L.below
-  let eNorm :
-      FiniteNormQuotient rationalIdeleClassRepresentation
-          K.field L.field L.below ≃+
-        Additive
-          (Abelianization L.toFiniteGaloisExtension.extensionQuotient) :=
-    rationalCyclotomicDegreeData.normResidueSymbol
-      rationalIdeleClassRepresentation
-      rationalCyclotomicIdeleClassValuationData
-      rationalIdeleClassRepresentation_satisfiesClassFieldAxiom
-      K L.toFiniteGaloisExtension
-  exact
-    (rationalFiniteNormQuotientEquivIdeleClassNormQuotient
-        K.field L.field L.below L.normal).symm.trans
-      (eNorm.trans
-        (abstractFixedFieldAbelianizedExtensionQuotientEquivGaloisGroup
-          K L))
 
 /-- The abstract finite norm-residue equivalence with its dependent source
 instance fixed to the public finite norm quotient. -/
@@ -1622,34 +1539,9 @@ theorem abstractFixedFieldGlobalNormResidueMonoidHom_eq_one_iff
       rationalAbstractFixedFieldIdeleClassEquivFixed_mem_finiteNormSubgroup_iff
         K L c
 
-/-- The ambient fixed-part reciprocity homomorphism is surjective. -/
-private theorem ambientFixedGlobalNormResidueAddMonoidHom_surjective :
-    Function.Surjective
-      (ambientFixedGlobalNormResidueAddMonoidHom K L) := by
-  intro y
-  obtain ⟨z, hz⟩ :=
-    (abstractFixedFieldFiniteNormResidueGaloisEquiv K L).surjective y
-  obtain ⟨a, ha⟩ :=
-    finiteNormClass_surjective rationalIdeleClassRepresentation
-      K.field L.field L.below z
-  refine ⟨a, ?_⟩
-  rw [ambientFixedGlobalNormResidueAddMonoidHom_apply, ha]
-  exact hz
 
-/-- The fixed-field global norm-residue homomorphism is surjective
-onto the actual Galois group. -/
-theorem abstractFixedFieldGlobalNormResidueMonoidHom_surjective :
-    Function.Surjective
-      (abstractFixedFieldGlobalNormResidueMonoidHom K L) := by
-  intro y
-  obtain ⟨a, ha⟩ :=
-    ambientFixedGlobalNormResidueAddMonoidHom_surjective K L
-      (Additive.ofMul y)
-  refine
-    ⟨Additive.toMul
-      ((rationalAbstractFixedFieldIdeleClassEquivFixed K.field).symm a), ?_⟩
-  rw [abstractFixedFieldGlobalNormResidueMonoidHom_fixed_apply, ha]
-  rfl
+
+
 
 /-- The kernel of the fixed-field global norm-residue homomorphism is
 the genuine ordinary idele-class norm range. -/

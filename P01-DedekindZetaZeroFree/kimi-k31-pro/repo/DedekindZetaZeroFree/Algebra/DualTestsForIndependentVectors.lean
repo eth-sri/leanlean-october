@@ -25,19 +25,19 @@ theorem exists_dual_diagonal_pairings_of_independent
     hli.subset_extend _ (Set.mem_image_of_mem ![x₁, x₂] (Set.mem_univ 0))
   have mem2 : x₂ ∈ t :=
     hli.subset_extend _ (Set.mem_image_of_mem ![x₁, x₂] (Set.mem_univ 1))
-  have hb1 : b ⟨x₁, mem1⟩ = x₁ := by simp [b]
-  have hb2 : b ⟨x₂, mem2⟩ = x₂ := by simp [b]
+  have hb1 : b ⟨x₁, mem1⟩ = x₁ := by aesop
+  have hb2 : b ⟨x₂, mem2⟩ = x₂ := by aesop
   have hne : x₁ ≠ x₂ := by
     have h' := h.injective.ne (by decide : (0 : Fin 2) ≠ 1)
-    simpa using h'
+    simp_all
 
   let f1 : t → K := fun i => if (i : X) = x₁ then c₁ else 0
   let f2 : t → K := fun i => if (i : X) = x₂ then c₂ else 0
   refine ⟨b.constr K f1, b.constr K f2, ?_, ?_, ?_, ?_⟩
-  · rw [← hb1, Basis.constr_basis]; simp [f1]
-  · rw [← hb2, Basis.constr_basis]; simp [f1, hne.symm]
-  · rw [← hb1, Basis.constr_basis]; simp [f2, hne]
-  · rw [← hb2, Basis.constr_basis]; simp [f2]
+  · rw [← hb1, Basis.constr_basis]; aesop
+  · rw [← hb2, Basis.constr_basis]; aesop
+  · rw [← hb1, Basis.constr_basis]; aesop
+  · rw [← hb2, Basis.constr_basis]; aesop
 
 end
 end DedekindZetaZeroFree.KPExceptionalRaw.FiniteSource.TameWhittakerSteps.Uniqueness.ReverseMinor

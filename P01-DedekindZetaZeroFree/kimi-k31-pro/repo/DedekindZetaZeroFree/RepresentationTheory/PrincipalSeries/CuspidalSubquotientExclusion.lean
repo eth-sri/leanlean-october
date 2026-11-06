@@ -21,18 +21,7 @@ variable (F : Type) [Field F] [NumberField F]
   (w : HeightOneSpectrum (RingOfIntegers F)) (m : ℕ)
   (hm : KPLocalChartTopology.MatrixChartDepth F w m)
 
-def dualInducedAction {E : Type*} [AddCommGroup E] [Module ℂ E]
-    (τ : Representation ℂ (Torus F ζ hζ w) E) :
-    letI := finiteCoverTopology F ζ hζ w m
-    letI : AddCommGroup (PrincipalSeries F ζ hζ w m (borelRetraction F ζ hζ w) τ) :=
-      (PrincipalSeries F ζ hζ w m (borelRetraction F ζ hζ w) τ).addCommGroup
-    Representation ℂ (FiniteCover F ζ hζ w)
-      (SmoothDual (inducedAction F ζ hζ w m hm τ)) := by
-  letI := finiteCoverTopology F ζ hζ w m
-  letI := (KPPGLLocalCover.finite_topological_cover F ζ hζ w m hm).2.2.1
-  letI : AddCommGroup (PrincipalSeries F ζ hζ w m (borelRetraction F ζ hζ w) τ) :=
-    (PrincipalSeries F ζ hζ w m (borelRetraction F ζ hζ w) τ).addCommGroup
-  exact smoothDualRepresentation (inducedAction F ζ hζ w m hm τ)
+
 
 def JacquetDetectsSubquotients {V : Type*} [AddCommGroup V] [Module ℂ V]
     (ρ : Representation ℂ (FiniteCover F ζ hζ w) V) : Prop :=

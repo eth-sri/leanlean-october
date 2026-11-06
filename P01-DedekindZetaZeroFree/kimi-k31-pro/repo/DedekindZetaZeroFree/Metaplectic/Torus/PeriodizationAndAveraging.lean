@@ -203,7 +203,7 @@ private theorem maximal_mem {G : Type*} [CommGroup G]
     obtain ⟨n, rfl⟩ := Subgroup.mem_zpowers_iff.mp hu'
     obtain ⟨p, rfl⟩ := Subgroup.mem_zpowers_iff.mp hv'
     simp only [map_mul, MonoidHom.mul_apply, hL.1 l hl m hm,
-      hlx l hl p, hxl m hm n, hxx n p, mul_one, one_mul]
+      hlx l hl p, hxl m hm n, hxx n p, mul_one]
   have heq := hL.2 _ le_sup_left hiso
   rw [← heq]
   exact Subgroup.mem_sup_right (Subgroup.mem_zpowers x)
@@ -281,7 +281,7 @@ private theorem diagonal_formula (t : KPGlobalTorusFunctionData.ordinaryTorus F)
     ext i j
     fin_cases i <;> fin_cases j <;>
       simp [KPGlobalCubicIdelePairing.diagonalHom, KPGlobalCubicIdelePairing.diagonalMatrix,
-        Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
+        Matrix.GeneralLinearGroup.coe_scalar,
         Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar, hu, hA.2.1, hA.2.2]
     exact hw.symm
   change QuotientGroup.mk' _ (KPGlobalCubicIdelePairing.diagonalHom F (u * w⁻¹)) = t.val

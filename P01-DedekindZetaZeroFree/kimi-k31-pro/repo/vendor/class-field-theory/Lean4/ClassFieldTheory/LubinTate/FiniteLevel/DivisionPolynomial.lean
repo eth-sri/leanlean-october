@@ -210,14 +210,7 @@ noncomputable def standardLubinTatePrimitivePolynomial
       (Nat.card F.residueField - 1) +
     Polynomial.C π
 
-/-- The defining formula for the primitive quotient polynomial. -/
-theorem standardLubinTatePrimitivePolynomial_formula
-    (F : LocalField.{u, v} K) (π : F.valuationSubring) (n : ℕ) :
-    standardLubinTatePrimitivePolynomial F π n =
-      standardLubinTatePolynomialIterate F π n ^
-          (Nat.card F.residueField - 1) +
-        Polynomial.C π :=
-  rfl
+
 
 /-- The primitive quotient polynomial has degree `(q - 1) * q ^ n`. -/
 theorem standardLubinTatePrimitivePolynomial_natDegree

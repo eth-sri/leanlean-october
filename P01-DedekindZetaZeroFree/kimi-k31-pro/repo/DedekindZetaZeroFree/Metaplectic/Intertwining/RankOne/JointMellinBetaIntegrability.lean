@@ -134,7 +134,7 @@ theorem mellin_integrable
     exact mul_neg_of_neg_of_pos (neg_neg_of_pos hs) (Real.log_pos hq))
   have hw (n : ℕ) : ‖w n‖ = Real.exp (s.re * ((M : ℝ) * Real.log q)) * r ^ n := by
     rw [Complex.norm_exp]
-    simp only [w, Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero,
+    simp only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero,
       Real.log_zpow, Int.cast_sub, Int.cast_natCast]
     rw [show s.re * (((M : ℝ) - (n : ℝ)) * Real.log q) =
       s.re * ((M : ℝ) * Real.log q) + (n : ℝ) * (-s.re * Real.log q) by ring,

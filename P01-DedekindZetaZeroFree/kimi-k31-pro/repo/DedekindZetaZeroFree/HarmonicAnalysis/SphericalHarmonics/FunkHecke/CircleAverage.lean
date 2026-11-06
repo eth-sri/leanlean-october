@@ -27,7 +27,7 @@ instance angleMeasure_isProbabilityMeasure : IsProbabilityMeasure angleMeasure :
   apply congrArg g
   rw [WithLp.ext_iff]
   funext i
-  fin_cases i <;> simp [latitudeAmbient, north, PiLp.single_apply]
+  fin_cases i <;> simp [north]
 
 @[simp] theorem latitudePoint_one_val (g : Ambient ≃ₗᵢ[ℝ] Ambient) (θ : ℝ) :
     (latitudePoint g 1 θ : Ambient) = -g north := by
@@ -42,13 +42,7 @@ instance angleMeasure_isProbabilityMeasure : IsProbabilityMeasure angleMeasure :
   have h := Polynomial.shiftedLegendre_eval_symm ℓ (1 : ℝ)
   simpa [Polynomial.aeval_def, Polynomial.coeff_shiftedLegendre] using h
 
-theorem harmonic_latitude_average_north (ℓ : ℕ) (p : MvPolynomial (Fin 3) ℂ)
-    (g : Ambient ≃ₗᵢ[ℝ] Ambient) :
-    (∫ θ : ℝ, polynomialSphere p (latitudePoint g 0 θ) ∂angleMeasure) =
-      ((Polynomial.shiftedLegendre ℓ).eval₂ (Int.castRingHom ℝ) 0 : ℝ) *
-        polynomialSphere p ⟨g north,
-          mem_sphere_zero_iff_norm.mpr (by rw [g.norm_map, north_norm])⟩ := by
-  simp [polynomialSphere, integral_const, Polynomial.coeff_shiftedLegendre]
+
 
 noncomputable def linearSubstitution (A : Matrix (Fin 3) (Fin 3) ℂ) :
     MvPolynomial (Fin 3) ℂ →ₐ[ℂ] MvPolynomial (Fin 3) ℂ :=

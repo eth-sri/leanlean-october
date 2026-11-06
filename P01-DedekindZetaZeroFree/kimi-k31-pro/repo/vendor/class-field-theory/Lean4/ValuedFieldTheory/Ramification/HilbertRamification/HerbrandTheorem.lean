@@ -213,38 +213,11 @@ def fixedFieldInverseHerbrandFunction
   (fixedFieldLowerRamificationFiltration
     (base := base) (target := target) huniq H).inverseHerbrandFunction_herbrandFunction s
 
-/-- States the theorem `fixedFieldHerbrandFunction_strictMono`. -/
-theorem fixedFieldHerbrandFunction_strictMono
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) [H.Normal] :
-    StrictMono (fixedFieldHerbrandFunction
-      (base := base) (target := target) huniq H) :=
-  (fixedFieldLowerRamificationFiltration
-    (base := base) (target := target) huniq H).herbrandFunction_strictMono
 
-/-- States the theorem `fixedFieldInverseHerbrandFunction_strictMono`. -/
-theorem fixedFieldInverseHerbrandFunction_strictMono
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) [H.Normal] :
-    StrictMono (fixedFieldInverseHerbrandFunction
-      (base := base) (target := target) huniq H) :=
-  (fixedFieldLowerRamificationFiltration
-    (base := base) (target := target) huniq H).inverseHerbrandFunction_strictMono
 
-/-- States the theorem `fixedFieldInverseHerbrandFunction_ge_neg_one_iff`. -/
-theorem fixedFieldInverseHerbrandFunction_ge_neg_one_iff
-    (huniq :
-      RamificationTheory.DiscreteValuationField.DVF.HasUniqueValuationExtension.{u, v, w, x, x}
-        base target)
-    (H : Subgroup Gal(L/K)) [H.Normal] {t : ℝ} :
-    -1 ≤ fixedFieldInverseHerbrandFunction
-        (base := base) (target := target) huniq H t ↔ -1 ≤ t :=
-  (fixedFieldLowerRamificationFiltration
-    (base := base) (target := target) huniq H).inverseHerbrandFunction_mem_Ici_neg_one_iff
+
+
+
 
 /-- Upper ramification groups of the actual fixed extension. -/
 def fixedFieldUpperRamificationGroup

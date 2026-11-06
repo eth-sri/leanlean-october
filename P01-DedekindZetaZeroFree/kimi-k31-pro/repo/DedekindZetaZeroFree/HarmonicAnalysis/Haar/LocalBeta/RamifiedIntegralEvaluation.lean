@@ -131,7 +131,7 @@ private lemma power_identity (q : ℝ) (hq : 0 < q) (u : ℂˣ) (s : ℂ)
   rw [← Complex.cpow_int_mul' (by simp [ha, Real.pi_pos]) (by simp [ha, Real.pi_pos.le])]
   rw [show ((-v : ℤ) : ℂ) * (-s) = (v : ℂ) * s by push_cast; ring]
   rw [Complex.cpow_int_mul, hs, mul_zpow]
-  simp [map_zpow, zpow_neg, inv_zpow, mul_comm]
+  simp [zpow_neg, mul_comm]
 private lemma parameter_power (q : ℝ) (hq : 1 < q) (u : ℂˣ) :
     (q : ℂ) ^ (1 + Complex.log (u : ℂ) / (Real.log q : ℂ)) = q * (u : ℂ) := by
   have hq0 : 0 < q := lt_trans zero_lt_one hq
@@ -185,7 +185,7 @@ private lemma integrands_agree (η : Kˣ →ₜ* ℂˣ) (u : ℂˣ) (s : ℂ) (h
   have hq : (0 : ℝ) < CubicUnitCharacters.residueCard K := by
     exact_mod_cast (Finite.card_pos (α := 𝓀[K]))
   by_cases hy : (y : K) = 1
-  · simp [Function.comp_def, KPRamifiedBeta.integrand, y.ne_zero, betaIntegrand, hy,
+  · simp [KPRamifiedBeta.integrand, betaIntegrand, hy,
       KPRamifiedBeta.normalizedAbs, show s ≠ 0 by
         intro hz; simp [hz] at hs0]
   · have hd : 1 - (y : K) ≠ 0 := sub_ne_zero.mpr (Ne.symm hy)
@@ -224,7 +224,7 @@ private lemma rational_agree (dx : Measure K) (ξ : CubicUnitCharacters.Characte
   change (m K dx : ℂ) * q⁻¹ ^ f * (q * u) ^ (f - 1) * (q * u - 1) /
     (1 - q⁻¹ * (q * u)) = (m K dx : ℂ) * u ^ (f - 1) * (u - q⁻¹) / (1 - u)
   rw [mul_pow]
-  have hd : q⁻¹ * (q * u) = u := by simp [← mul_assoc, hq]
+  have hd : q⁻¹ * (q * u) = u := by simp [hq]
   rw [hd]
   congr 1
   calc
@@ -272,7 +272,7 @@ theorem betaIntegral_eq_rationalBeta
     exact_mod_cast (Finite.one_lt_card (α := 𝓀[K]))
   let s : ℂ := 1 + Complex.log (u : ℂ) / (Real.log q : ℂ)
   have ha : ‖a K‖ = q⁻¹ := by
-    simp [a, q, norm_inv, ← Complex.ofReal_natCast, Complex.norm_of_nonneg (show 0 ≤ (CubicUnitCharacters.residueCard K : ℝ) by positivity)]
+    simp [a, q, norm_inv, ← Complex.ofReal_natCast]
   have hs := parameter_strip q ‖(b : ℂ)‖ ‖(u : ℂ)‖ hq hb1 (by simpa [ha] using hbu)
     hu1 (norm_pos_iff.mpr b.ne_zero) u rfl
   obtain ⟨hs0, hs1, hsB⟩ := hs

@@ -65,8 +65,8 @@ theorem flowChart_smooth (b : KPSmoothActualFlowData.B F) :
   have hc (i j : Fin 2) : ContDiffAt ℝ (⊤ : ℕ∞) (fun t => (flowMatrix F b t w).val i j) 0 :=
     (flowEntry_smooth F b w i j).contDiffAt
   have hn : (flowMatrix F b 0 w).val 1 1 ≠ 0 := by rw [flowMatrix_zero]; simp
-  fin_cases i <;> simp only [flowChart, ChartMatrix.chartCoordinates, Matrix.cons_val_zero,
-    Matrix.cons_val_one, Matrix.cons_val_two]
+  fin_cases i <;> simp only [flowChart, ChartMatrix.chartCoordinates, 
+    ]
   · simpa only [div_eq_mul_inv] using! (hc 0 1).mul ((hc 1 1).inv hn)
   · simp only [Matrix.det_fin_two]
     simpa only [div_eq_mul_inv] using! (((hc 0 0).mul (hc 1 1)).sub ((hc 0 1).mul (hc 1 0))).mul

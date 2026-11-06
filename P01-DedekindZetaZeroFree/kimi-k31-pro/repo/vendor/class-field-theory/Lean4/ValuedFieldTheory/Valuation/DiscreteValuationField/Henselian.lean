@@ -140,57 +140,9 @@ theorem exists_idempotent_lift_of_surjective_henselianRing_ker
         rw [map_sub, ha0, sub_eq_zero] at hsub
         exact hsub
 
-/-- Chosen-representative form of idempotent lifting for Henselian pairs. -/
-theorem exists_idempotent_lift_of_henselianRing_mk
-    {R : Type*} [CommRing R] {I : Ideal R} [HenselianRing R I]
-    (a0 : R) (ha0 : IsIdempotentElem (Ideal.Quotient.mk I a0)) :
-    ∃ e : R,
-      IsIdempotentElem e ∧
-        Ideal.Quotient.mk I e = Ideal.Quotient.mk I a0 ∧
-        e - a0 ∈ I := by
-  cases subsingleton_or_nontrivial R with
-  | inl hR =>
-      have ha0zero : a0 = 0 := Subsingleton.elim _ _
-      refine ⟨0, ?_, ?_, ?_⟩
-      · rw [IsIdempotentElem]
-        simp
-      · simp [ha0zero]
-      · simp [ha0zero]
-  | inr hR =>
-      let : Nontrivial R := hR
-      let p : Polynomial R := Polynomial.X ^ 2 - Polynomial.X
-      have hpmonic : p.Monic := by
-        dsimp [p]
-        exact idempotentPolynomial_monic
-      have hroot : p.eval a0 ∈ I := by
-        simpa [p] using
-          idempotentPolynomial_eval_mem_of_quotient_idempotent
-            (I := I) a0 ha0
-      have hsimple :
-          IsUnit
-            (Ideal.Quotient.mk I (p.derivative.eval a0)) := by
-        simpa [p] using
-          idempotentPolynomial_derivative_eval_isUnit_of_quotient_idempotent
-            (I := I) a0 ha0
-      rcases HenselianRing.is_henselian p hpmonic a0 hroot hsimple with
-        ⟨e, heroot, hecongr⟩
-      refine ⟨e, ?_, ?_, hecongr⟩
-      · change e * e = e
-        exact sub_eq_zero.mp (by simpa [p, pow_two] using heroot)
-      · rw [Ideal.Quotient.eq]
-        exact hecongr
 
-/-- Quotient form of idempotent lifting for Henselian pairs: every idempotent
-modulo the Henselian ideal has an idempotent representative. -/
-theorem exists_idempotent_lift_of_henselianRing
-    {R : Type*} [CommRing R] {I : Ideal R} [HenselianRing R I]
-    (e : R ⧸ I) (he : IsIdempotentElem e) :
-    ∃ e' : R, IsIdempotentElem e' ∧ Ideal.Quotient.mk I e' = e := by
-  rcases Ideal.Quotient.mk_surjective e with ⟨a0, rfl⟩
-  rcases exists_idempotent_lift_of_henselianRing_mk
-      (I := I) a0 he with
-    ⟨e', he', hqe', _⟩
-  exact ⟨e', he', hqe'⟩
+
+
 
 /-- A Henselian discretely valued field. -/
 structure HenselianDVF (K : Type u) [Field K] extends DVF.{u, v} K where
@@ -220,34 +172,7 @@ abbrev residueMap (F : HenselianDVF.{u, v} K) :
     RingHom F.valuationSubring F.residueField :=
   F.toDVF.residueMap
 
-/-- Every residue-field polynomial admits a coefficientwise lift to the
-valuation ring. -/
-theorem exists_polynomial_lift_residue (F : HenselianDVF.{u, v} K)
-    (fbar : Polynomial F.residueField) :
-    ∃ f : Polynomial F.valuationSubring, f.map F.residueMap = fbar := by
-  classical
-  choose c hc using fun n : ℕ => F.toDVF.residue_surjective (fbar.coeff n)
-  let f : Polynomial F.valuationSubring :=
-    fbar.support.sum fun n => Polynomial.monomial n (c n)
-  refine ⟨f, ?_⟩
-  ext n
-  by_cases hn : n ∈ fbar.support
-  · simp [f, Polynomial.coeff_map]
-    rw [Finset.sum_eq_single n]
-    · simp [hc]
-    · intro b hb hbn
-      simp [Polynomial.coeff_monomial, hbn]
-    · intro hnot
-      exact False.elim (hnot hn)
-  · have hcoeff : fbar.coeff n = 0 := by
-      simpa [Polynomial.mem_support_iff] using hn
-    simp [f, Polynomial.coeff_map, hcoeff]
-    refine Finset.sum_eq_zero ?_
-    intro b hb
-    have hbn : n ≠ b := by
-      intro h
-      exact hn (by simpa [h] using hb)
-    simp [Polynomial.coeff_monomial, hbn.symm]
+
 
 /-- The valuation subring of the henselian model is a discrete valuation ring. -/
 theorem valuationSubring_isDiscreteValuationRing (F : HenselianDVF.{u, v} K) :

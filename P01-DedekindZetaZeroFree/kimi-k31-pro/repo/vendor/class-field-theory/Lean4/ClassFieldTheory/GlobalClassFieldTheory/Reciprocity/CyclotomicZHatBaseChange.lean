@@ -293,17 +293,7 @@ theorem rationalCyclotomicDegreeData_inertia :
       MonoidHom.mem_ker.mp hker
     rw [hzero, map_one]
 
-/-- The field fixed by cyclotomic inertia is the actual cyclotomic
-`ZHat`-extension inside the chosen rational separable closure. -/
-theorem rationalCyclotomicDegreeData_fixedField_inertia :
-    LocalClassFieldTheory.abstractFixedField
-        ℚ (SeparableClosure ℚ)
-        rationalCyclotomicDegreeData.inertia =
-      rationalCyclotomicZHatField := by
-  rw [rationalCyclotomicDegreeData_inertia]
-  exact
-    InfiniteGalois.fixedField_fixingSubgroup
-      rationalCyclotomicZHatField
+
 
 /-- For every abstract rational fixed field `F`, the field fixed by
 its cyclotomic inertia is the genuine compositum `Fℚ̃` in

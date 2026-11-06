@@ -111,14 +111,7 @@ theorem compatibleGroupFamiliesEval_apply
     compatibleGroupFamiliesEval G transition i x = x.1 i :=
   rfl
 
-/-- The named compatibility law for an inverse-limit family. -/
-theorem compatibleGroupFamilies_transition
-    { ι : Type*} [Preorder ι] (G : ι → Type*) [∀ i, Group (G i)]
-    (transition : ∀ {i j : ι}, i ≤ j → G j →* G i)
-    (x : compatibleGroupFamilies G transition) {i j : ι} (hij : i ≤ j) :
-    transition hij (compatibleGroupFamiliesEval G transition j x) =
-      compatibleGroupFamiliesEval G transition i x :=
-  x.2 hij
+
 
 /-- Compatible families are equal when all named coordinate evaluations
 agree. -/

@@ -483,50 +483,11 @@ theorem equalCharacteristicLubinTateArtinUnitQuotientEquivGal_mk
     MulEquiv.trans_apply, QuotientGroup.quotientMulEquivOfEq_mk]
   rfl
 
-/-- On a representative, the quotient-to-Galois equivalence is the inverse
-orientation of the existing quotient action on the primitive torsion
-point. -/
-theorem
-    equalCharacteristicLubinTateArtinUnitQuotientEquivGal_mk_apply_gen_coe
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) (a : F.residueField⟦X⟧ˣ) :
-    ((equalCharacteristicLubinTateArtinUnitQuotientEquivGal F n
-          (QuotientGroup.mk a))
-        (equalCharacteristicLubinTateLevelPowerBasis F n).gen :
-      SeparableClosure F.residueField⸨X⸩) =
-      (equalCharacteristicLubinTateUnitQuotientAutomorphismEquiv F n
-        (QuotientGroup.mk a⁻¹)
-        (⟨chosenEqualCharacteristicLubinTatePrimitiveRoot F n,
-          chosenEqualCharacteristicLubinTatePrimitiveRoot_torsion F n⟩ :
-          equalCharacteristicLubinTateAmbientTorsionAddSubgroup F
-            (equalCharacteristicSeparableUniformizer F) (n + 1))).1 := by
-  rw [equalCharacteristicLubinTateArtinUnitQuotientEquivGal_mk,
-    equalCharacteristicLubinTateArtinUnitToGal_apply_gen]
-  rw [equalCharacteristicLubinTateUnitQuotientAutomorphismEquiv_mk_apply]
-  rfl
 
-/-- Kernel membership in pointwise form. -/
-theorem equalCharacteristicLubinTateArtinUnitToGal_eq_one_iff
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) (a : F.residueField⟦X⟧ˣ) :
-    equalCharacteristicLubinTateArtinUnitToGal F n a = 1 ↔
-      a ∈ equalCharacteristicLubinTateHigherUnitSubgroup F n := by
-  rw [← MonoidHom.mem_ker,
-    equalCharacteristicLubinTateArtinUnitToGal_ker]
 
-/-- The explicit congruence criterion for trivial finite-level action. -/
-theorem equalCharacteristicLubinTateArtinUnitToGal_eq_one_iff_sub_one_mem
-    (F : LocalField.{u, v} K)
-    [CharP K F.residueCharacteristic]
-    (n : ℕ) (a : F.residueField⟦X⟧ˣ) :
-    equalCharacteristicLubinTateArtinUnitToGal F n a = 1 ↔
-      (a : F.residueField⟦X⟧) - 1 ∈
-        Ideal.span
-          ({PowerSeries.X ^ (n + 1)} : Set F.residueField⟦X⟧) :=
-  (equalCharacteristicLubinTateArtinUnitToGal_eq_one_iff F n a).trans
-    (mem_equalCharacteristicLubinTateHigherUnitSubgroup F n a)
+
+
+
 
 end LubinTate
 

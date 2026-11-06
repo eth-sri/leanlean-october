@@ -1,6 +1,7 @@
 module
 
 public import DedekindZetaZeroFree.Arithmetic.Kummer.FrequencyClassesAndCharacterRigidity
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -18,14 +19,13 @@ noncomputable def principalRay : RayClassCharacter F ⊤ where
     by_cases hI : I = ⊥ <;> by_cases hJ : J = ⊥ <;> simp [hI, hJ]
   map_top' := by simp
   eq_zero_iff' n := by
-    classical
-    by_cases hn : n = ⊥ <;> simp [hn]
+    norm_num
   map_span' a ha hc hp := by
     have hn : Ideal.span {a} ≠ (⊥ : Ideal (𝓞 F)) := by
       intro h
       have hh : a ∈ (⊥ : Ideal (𝓞 F)) := h ▸ Ideal.subset_span (by simp)
       exact ha (by simpa using hh)
-    simp [hn]
+    grind
 
 noncomputable def principalPrimitive : PrimitiveFrequencyCharacter F where
   conductor := ⊤

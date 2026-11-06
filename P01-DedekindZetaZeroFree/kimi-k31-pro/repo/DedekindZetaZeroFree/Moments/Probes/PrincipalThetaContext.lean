@@ -15,11 +15,7 @@ variable {F : Type} [Field F] [NumberField F]
   by_contra h
   obtain ⟨p, hp, hle⟩ := Ideal.exists_le_maximal (I.val ⊔ A.modulus) h
   have hp0 : p ≠ ⊥ := by
-    intro he
-    apply I.property.1
-    apply bot_unique
-    have hh : I.val ≤ p := le_trans le_sup_left hle
-    simpa only [he] using hh
+    grind
   let v : HeightOneSpectrum (𝓞 F) := ⟨p, hp.isPrime, hp0⟩
   have hv : v ∈ A.Sf := A.modulus_support v (le_trans le_sup_right hle)
   have hi := (A.exterior_iff ⟨I.val, I.property.1⟩).mp I.property.2 v hv

@@ -69,23 +69,11 @@ theorem standardLubinTateUnitParameterToGal_mem_galoisParameterSubgroup_iff
     change a ∈
       (standardLubinTateUnitParameterSubgroup F n k :
         Set (standardLubinTateUnitParameter F n))
-    simpa only [hba'] using hb
+    grind
   · intro ha
     exact ⟨a, ha, rfl⟩
 
-/-- On a valuation-ring unit representative, membership in the transported
-Galois subgroup is exactly membership in `U_F^k`. -/
-theorem
-    standardLubinTateUnitParameterToGal_class_mem_galoisParameterSubgroup_iff
-    (F : LocalField.{u, v} K) {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n k : ℕ) (hkn : k ≤ n + 1) (u : F.valuationSubringˣ) :
-    standardLubinTateUnitParameterToGal F hπ n
-          (standardLubinTateUnitParameterClass F n u) ∈
-        standardLubinTateGaloisParameterSubgroup F hπ n k ↔
-      u ∈ higherPrincipalUnitGroup F.toCompleteDVF k := by
-  rw [standardLubinTateUnitParameterToGal_mem_galoisParameterSubgroup_iff,
-    standardLubinTateUnitParameterClass_mem_subgroup_iff F n k hkn u]
+
 
 /-- Restricting the parameter-to-Galois homomorphism gives a multiplicative
 equivalence onto the transported subgroup. -/

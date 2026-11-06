@@ -42,8 +42,8 @@ theorem digit_coordinates (p : ThetaBranch.ExteriorPrime R.A) (x V : Fˣ)
   · unfold ThetaBranch.localUnit
     rw [hz]
     apply Units.ext
-    simp only [Units.val_div_eq_div_val, Units.val_neg, Units.val_mul, Units.val_inv_eq_inv_val,
-      Units.val_pow_eq_pow_val, Units.val_zpow_eq_zpow_val, zpow_ofNat]
+    simp only [Units.val_div_eq_div_val, Units.val_neg, Units.val_inv_eq_inv_val,
+      Units.val_pow_eq_pow_val, zpow_ofNat]
     field_simp
   · unfold ThetaBranch.localUnit
     rw [hxz]

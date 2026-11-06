@@ -166,7 +166,7 @@ private theorem matrixX_same (A B : AdelicMatrixGroup F) (hA : A 1 0 = 0) (hB : 
     rw [hz]; group
   have hx : B 0 0 * matrixX F A hA = B 0 1 := by
     rw [heB]
-    simp [Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
+    simp [Matrix.GeneralLinearGroup.coe_scalar,
       Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar]
     calc A 0 0 * ↑z * matrixX F A hA = (A 0 0 * matrixX F A hA) * ↑z := by ring
          _ = A 0 1 * ↑z := by rw [matrixX_spec]
@@ -214,10 +214,10 @@ private theorem retraction_formula (b : borel F ζ hζ) :
   have hm : b.val * N F ζ hζ (-x) ∈ E F ζ hζ := by
     refine ⟨A * upper F (-x), ?_, ?_, ?_⟩
     · simp only [map_mul, projected_root, hA]
-    · simp [Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two,
+    · simp [Matrix.mul_apply, Fin.sum_univ_two,
         upper_entries, h10]
     · have hspec : A 0 0 * x = A 0 1 := by change A 0 0 * coveredX F ζ hζ b = _; rw [hx]; exact matrixX_spec F A h10
-      simp [Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two,
+      simp [Matrix.mul_apply, Fin.sum_univ_two,
         upper_entries, hspec]
   let t : E F ζ hζ := ⟨b.val * N F ζ hζ (-x), hm⟩
   have hb : b.val = t.val * N F ζ hζ x := by

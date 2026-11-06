@@ -351,87 +351,7 @@ theorem globalNormResidueMonoidHom_apply
           (_root_.ideleClassNorm K L).range c))) :=
   rfl
 
-/-- For a finite extension whose compatible abstract realization is
-unramified for the cyclotomic degree datum, the actual global
-norm-residue symbol is the finite restriction of the
-maximal-unramified valuation symbol. -/
-theorem globalNormResidueMonoidHom_eq_maximalUnramifiedRestriction
-    (hUnramified :
-      (numberFieldTowerFiniteGaloisSubextension K L).IsUnramified
-        rationalCyclotomicDegreeData)
-    (c : IdeleClassGroup K) :
-    globalNormResidueMonoidHom K L c =
-      numberFieldTowerExtensionQuotientEquivGaloisGroup K L
-        (DegreeData.finiteUnramifiedRestriction
-          rationalCyclotomicDegreeData
-          (ClassFormation.FiniteAbstractField.toFiniteResidueAbstractField
-            (numberFieldTowerReciprocityFiniteAbstractField K L)
-            rationalCyclotomicDegreeData)
-          (numberFieldTowerFiniteGaloisSubextension K L)
-          hUnramified
-          (ClassFormation.ValuationData.maximalUnramifiedNormResidueSymbol
-            rationalCyclotomicIdeleClassValuationData
-            (numberFieldTowerReciprocityFiniteAbstractField K L)
-            (numberFieldTowerIdeleClassEquivAmbientFixed K L
-              (Additive.ofMul c))).toMul) := by
-  let H :=
-    numberFieldTowerReciprocityFiniteAbstractField K L
-  let E :=
-    numberFieldTowerFiniteGaloisSubextension K L
-  let a : ambientFixedAddSubgroup rationalIdeleClassRepresentation
-      (numberFieldTowerBaseSubgroup K L) :=
-    numberFieldTowerIdeleClassEquivAmbientFixed K L
-      (Additive.ofMul c)
-  let x : FiniteNormQuotient rationalIdeleClassRepresentation
-      (numberFieldTowerBaseSubgroup K L)
-      (numberFieldTowerTopSubgroup L)
-      (numberFieldTowerTopSubgroup_le_baseSubgroup K L) :=
-    finiteNormClass rationalIdeleClassRepresentation
-      (numberFieldTowerBaseSubgroup K L)
-      (numberFieldTowerTopSubgroup L)
-      (numberFieldTowerTopSubgroup_le_baseSubgroup K L) a
-  let q : E.extensionQuotient :=
-    DegreeData.finiteUnramifiedRestriction
-      rationalCyclotomicDegreeData
-      (ClassFormation.FiniteAbstractField.toFiniteResidueAbstractField
-        H rationalCyclotomicDegreeData)
-      E hUnramified
-      (ClassFormation.ValuationData.maximalUnramifiedNormResidueSymbol
-        rationalCyclotomicIdeleClassValuationData H a).toMul
-  have hclass :=
-    numberFieldTowerFiniteNormQuotientEquivIdeleClassNormQuotient_ideleClass
-      K L c
-  rw [globalNormResidueMonoidHom_apply, ← hclass]
-  calc
-    _ = Additive.toMul
-        (numberFieldTowerAbstractNormResidueGaloisEquiv K L x) :=
-      congrArg Additive.toMul
-        (globalNormResidueEquiv_transport_apply K L x)
-    _ = Additive.toMul
-        (numberFieldTowerAbelianizedExtensionQuotientEquivGaloisGroup K L
-          (rationalCyclotomicDegreeData.normResidueSymbol
-            rationalIdeleClassRepresentation
-            rationalCyclotomicIdeleClassValuationData
-            rationalIdeleClassRepresentation_satisfiesClassFieldAxiom
-            H E x)) :=
-      congrArg Additive.toMul
-        (numberFieldTowerAbstractNormResidueGaloisEquiv_apply K L x)
-    _ =
-        Additive.toMul
-          (numberFieldTowerAbelianizedExtensionQuotientEquivGaloisGroup K L
-            (Additive.ofMul (Abelianization.of q))) :=
-      congrArg
-        (fun z =>
-          Additive.toMul
-            (numberFieldTowerAbelianizedExtensionQuotientEquivGaloisGroup
-              K L z))
-        (ClassFormation.ValuationData.normResidueSymbol_finiteNormClass_eq_maximalUnramifiedRestriction
-          rationalCyclotomicIdeleClassValuationData
-          rationalIdeleClassRepresentation_satisfiesClassFieldAxiom
-          H E hUnramified a)
-    _ = _ := by
-      rw [numberFieldTowerAbelianizedExtensionQuotientEquivGaloisGroup_of]
-      exact toMul_ofMul _
+
 
 /-- An idele class has trivial global norm-residue symbol exactly when
 it is an actual idele-class norm from `L`. -/
@@ -471,21 +391,7 @@ theorem globalNormResidueMonoidHom_eq_one_iff
         congrArg e hq
       _ = 1 := map_one e
 
-/-- The actual global norm-residue homomorphism is surjective. -/
-theorem globalNormResidueMonoidHom_surjective :
-    Function.Surjective
-      (globalNormResidueMonoidHom K L) := by
-  change
-    Function.Surjective
-      ((AddEquiv.toMultiplicative
-          (globalNormResidueEquiv K L)).toMonoidHom.comp
-        (QuotientGroup.mk'
-          (_root_.ideleClassNorm K L).range))
-  exact
-    (AddEquiv.toMultiplicative
-        (globalNormResidueEquiv K L)).surjective.comp
-      (QuotientGroup.mk'_surjective
-        (_root_.ideleClassNorm K L).range)
+
 
 /-- The index of the actual idele-class norm subgroup of a finite
 abelian extension is its field degree. -/

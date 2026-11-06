@@ -22,7 +22,7 @@ theorem finite_row_minkowski {ι κ : Type*} (M : Finset ι)
   have hgnorm_sq : ∀ j, ‖g j‖ ^ 2 = ∑ m ∈ M, ‖f j m‖ ^ 2 := by
     intro j
     rw [EuclideanSpace.norm_sq_eq]
-    simp only [g, PiLp.toLp_apply]
+    simp only [g]
     rw [← Finset.sum_subtype M (fun x => Iff.rfl) (fun a => ‖f j a‖ ^ 2)]
 
   have hgnorm : ∀ j, ‖g j‖ ≤ Real.sqrt B * u j := by
@@ -56,7 +56,7 @@ theorem finite_row_minkowski {ι κ : Type*} (M : Finset ι)
       _ = ∑' j, f j m.1 := by
             apply tsum_congr
             intro j
-            simp only [EuclideanSpace.equiv, PiLp.coe_continuousLinearEquiv, g, PiLp.toLp_apply]
+            simp only [EuclideanSpace.equiv, PiLp.coe_continuousLinearEquiv, g]
 
   have hsq : ‖∑' j, g j‖ ^ 2 = ∑ m ∈ M, ‖∑' j, f j m‖ ^ 2 := by
     rw [EuclideanSpace.norm_sq_eq, hkey]
@@ -214,7 +214,7 @@ private theorem indexed_sieve (A : SArithmeticData F)
         (sLocalDiagonal F A.Sf ((m : F) * ProbeSeparation.value F p x.val))‖ := by
     rw [← Complex.norm_conj]
     simp only [map_sum, map_mul, hphase, RingHomCompTriple.comp_apply,
-      starRingEnd_self_apply, RingHom.id_apply]
+      RingHom.id_apply]
   simp only [Complex.norm_conj] at hh
   rw [henergy] at hh
   have hrowsum : (∑ m : ↥rows, ‖∑ x : ↥P, starRingEnd ℂ (bP x) * ProbeAdditive.phase F A.Sf e
@@ -623,8 +623,7 @@ theorem gaussFrequencyEnergy_annular_bound (A : SArithmeticData F)
   intro L j T hT
   have hsub : (↑T : Set A.Exterior) ⊆
       {s : A.Exterior | v0 * Y ≤ A.exteriorNorm s ∧ A.exteriorNorm s ≤ v1 * Y} := by
-    intro s hs
-    exact hT s hs
+    exact hT
   have hc : (T.card : ℝ) ≤ C * Y := by
     have hn := Set.ncard_le_ncard hsub hfinite
     rw [Set.ncard_coe_finset] at hn
@@ -688,9 +687,11 @@ theorem additiveCoefficient_scaled_normalization (A : SArithmeticData F)
   ring
 
 private lemma asLocalPoint_mul (A : SArithmeticData F) (g h : A.G) :
-    asLocalPoint A (g * h) = asLocalPoint A g * asLocalPoint A h := by rfl
+    asLocalPoint A (g * h) = asLocalPoint A g * asLocalPoint A h := by
+  aesop
 private lemma localUnits_point (A : SArithmeticData F) (g : A.G) :
-    (ProbeSheet.localUnits A g).val = asLocalPoint A g := by rfl
+    (ProbeSheet.localUnits A g).val = asLocalPoint A g := by
+  aesop
 private lemma radialSection_mul' (A : SArithmeticData F) (T U : ℝ) (hT : 0 < T) (hU : 0 < U) :
     radialSection A (T * U) = radialSection A T * radialSection A U := by
   simp only [radialSection, dif_pos hT, dif_pos hU, dif_pos (mul_pos hT hU)]

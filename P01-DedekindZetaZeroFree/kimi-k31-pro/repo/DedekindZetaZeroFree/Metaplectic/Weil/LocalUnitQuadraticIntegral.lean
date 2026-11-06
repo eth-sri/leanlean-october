@@ -28,8 +28,7 @@ private theorem two_norm (v : HeightOneSpectrum (𝓞 F))
     have hz : (2 : 𝓞 F ⧸ v.asIdeal) = 0 := by
       convert (Ideal.Quotient.eq_zero_iff_mem.mpr h) using 1
       exact (map_ofNat (Ideal.Quotient.mk v.asIdeal) 2).symm
-    have hd : (ResidueTrace.rationalPrimeBelow v).val ∣ 2 := by
-      exact (CharP.cast_eq_zero_iff (𝓞 F ⧸ v.asIdeal)
+    have hd : (ResidueTrace.rationalPrimeBelow v).val ∣ 2 := (CharP.cast_eq_zero_iff (𝓞 F ⧸ v.asIdeal)
         (ringChar (𝓞 F ⧸ v.asIdeal)) 2).mp hz
     exact hgood (hd.trans (by decide))
   have h := (FinitePlace.norm_eq_one_iff_notMem F v (2 : 𝓞 F)).mpr hn
@@ -61,7 +60,7 @@ theorem unit_cutoff_eventually
   have ha : ‖a‖ = 1 := by
     have h1 := norm_le_one_of_mem_adicCompletionIntegers v haO
     have h2 := norm_le_one_of_mem_adicCompletionIntegers v hainv
-    have hne : a ≠ 0 := by exact Units.ne_zero (Units.map (v.adicCompletionIntegers F).subtype.toMonoidHom u)
+    have hne : a ≠ 0 := Units.ne_zero (Units.map (v.adicCompletionIntegers F).subtype.toMonoidHom u)
     rw [norm_inv] at h2
     exact le_antisymm h1 ((inv_le_one₀ (norm_pos_iff.mpr hne)).mp h2)
   have htwo := two_norm v hgood
@@ -72,8 +71,7 @@ theorem unit_cutoff_eventually
       mem_adicCompletionIntegers_of_norm_le_one v⟩
   have hμO : μ (O : Set (v.adicCompletion F)) = 1 := hμ
   have hOc : IsCompact (O : Set (v.adicCompletion F)) := hO ▸ isCompact_closedBall 0 1
-  have hq (x : v.adicCompletion F) (hx : x ∈ O) : ψ (a * x ^ 2) = 1 := by
-    exact (hzero a).mpr haO ⟨x ^ 2, (v.adicCompletionIntegers F).pow_mem hx 2⟩
+  have hq (x : v.adicCompletion F) (hx : x ∈ O) : ψ (a * x ^ 2) = 1 := (hzero a).mpr haO ⟨x ^ 2, (v.adicCompletionIntegers F).pow_mem hx 2⟩
   apply Filter.Eventually.of_forall
   intro n
   let R : ℝ := (Ideal.absNorm v.asIdeal : ℝ) ^ n

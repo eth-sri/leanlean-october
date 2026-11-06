@@ -87,54 +87,11 @@ theorem mem_relativeIdeleLocalTensorDecompositionSupportedSubgroup_iff
     Subgroup.mem_iInf, Subgroup.mem_comap,
     mem_relativeLocalTensorDecompositionIntegralUnitSubgroup_iff]
 
-omit [NumberField L] [IsGalois K L] in
-/-- Enlarging the exceptional set enlarges the supported subgroup. -/
-theorem relativeIdeleLocalTensorDecompositionSupportedSubgroup_mono
-    {S T : Finset (HeightOneSpectrum (𝓞 K))}
-    (hST : S ⊆ T) :
-    relativeIdeleLocalTensorDecompositionSupportedSubgroup
-        (K := K) (L := L) S ≤
-      relativeIdeleLocalTensorDecompositionSupportedSubgroup
-        (K := K) (L := L) T := by
-  intro z hz
-  rw [mem_relativeIdeleLocalTensorDecompositionSupportedSubgroup_iff] at hz ⊢
-  intro w hw
-  exact hz w (fun hws => hw (hST hws))
 
-omit [IsGalois K L] in
-/-- The explicit coefficient-and-lattice support of a relative idele
-is an exceptional set witnessing restricted-product integrality. -/
-theorem relativeIdele_mem_localTensorDecompositionSupportedSubgroup
-    (z : RelativeIdeleGroup K L) :
-    z ∈ relativeIdeleLocalTensorDecompositionSupportedSubgroup
-        (K := K) (L := L)
-        (relativeIdeleLocalTensorDecompositionSupport
-          (K := K) (L := L) z) := by
-  rw [mem_relativeIdeleLocalTensorDecompositionSupportedSubgroup_iff]
-  intro w hw
-  exact
-    relativeIdele_finiteComponent_localTensorDecompositionIntegralUnit_of_notMem
-      (K := K) (L := L) z w hw
 
-omit [IsGalois K L] in
-/-- The finite-support subgroups exhaust the complete relative idele
-group. -/
-theorem iSup_relativeIdeleLocalTensorDecompositionSupportedSubgroup_eq_top :
-    ⨆ S : Finset (HeightOneSpectrum (𝓞 K)),
-        relativeIdeleLocalTensorDecompositionSupportedSubgroup
-          (K := K) (L := L) S =
-      (⊤ : Subgroup (RelativeIdeleGroup K L)) := by
-  apply top_unique
-  intro z hz
-  exact
-    (le_iSup
-      (fun S : Finset (HeightOneSpectrum (𝓞 K)) =>
-        relativeIdeleLocalTensorDecompositionSupportedSubgroup
-          (K := K) (L := L) S)
-      (relativeIdeleLocalTensorDecompositionSupport
-        (K := K) (L := L) z))
-      (relativeIdele_mem_localTensorDecompositionSupportedSubgroup
-        (K := K) (L := L) z)
+
+
+
 
 /-- The finite local factors of a relative `S`-idele: unrestricted
 tensor units on `S`, and actual local tensor integral units away
@@ -153,44 +110,9 @@ abbrev RelativeIdeleSPlaceFactors
   (∀ w : InfinitePlace K, (w.Completion ⊗[K] L)ˣ) ×
     RelativeFiniteSPlaceFactors (K := K) (L := L) S
 
-/-- The same local-factor model after applying the local tensor decomposition at
-every finite place. -/
-abbrev RelativeIdeleSPlaceLocalTensorDecompositionFactors
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :=
-  (∀ w : InfinitePlace K, (w.Completion ⊗[K] L)ˣ) ×
-    ((∀ w : {w : HeightOneSpectrum (𝓞 K) // w ∈ S},
-        ∀ wL : AbsoluteValueExtension
-            (HeightOneSpectrum.adicAbv K w.1) L,
-          wL.1.Completionˣ) ×
-      (∀ w : {w : HeightOneSpectrum (𝓞 K) // w ∉ S},
-        ∀ wL : AbsoluteValueExtension
-            (HeightOneSpectrum.adicAbv K w.1) L,
-          (absoluteValueCompletionIntegers wL.1
-            (absoluteValueExtension_isNonarchimedean
-              (HeightOneSpectrum.adicAbv K w.1)
-              (HeightOneSpectrum.isNonarchimedean_adicAbv
-                K w.1) wL))ˣ))
 
-/-- The componentwise local tensor decomposition identifies the finite tensor-unit
-factors with products of the actual completion unit groups, retaining
-valuation-ring units away from `S`. -/
-noncomputable def
-    relativeIdeleSPlaceFactorsEquivLocalTensorDecomposition
-    (S : Finset (HeightOneSpectrum (𝓞 K))) :
-    RelativeIdeleSPlaceFactors (K := K) (L := L) S ≃*
-      RelativeIdeleSPlaceLocalTensorDecompositionFactors
-        (K := K) (L := L) S :=
-  (MulEquiv.refl
-    (∀ w : InfinitePlace K,
-      (w.Completion ⊗[K] L)ˣ)).prodCongr
-    ((MulEquiv.piCongrRight fun w :
-        {w : HeightOneSpectrum (𝓞 K) // w ∈ S} =>
-      finitePlaceLocalTensorDecompositionUnitsEquiv
-        (K := K) (L := L) w.1).prodCongr
-      (MulEquiv.piCongrRight fun w :
-          {w : HeightOneSpectrum (𝓞 K) // w ∉ S} =>
-        relativeLocalTensorDecompositionIntegralUnitSubgroupEquivPiUnits
-          (K := K) (L := L) w.1))
+
+
 
 omit [NumberField L] [IsGalois K L] in
 /-- Membership in the chosen basis lattice is exactly the coefficient
@@ -755,54 +677,6 @@ noncomputable def relativeIdeleSPlaceFactorsAction
             (K := K) (L := L) w.1)
   exact inferInstance
 
-omit [NumberField L] [IsGalois K L] in
-/-- The complete local-component map is equivariant. -/
-theorem relativeIdeleSupportedComponents_smul
-    (S : Finset (HeightOneSpectrum (𝓞 K)))
-    (σ : L ≃ₐ[K] L)
-    (z : relativeIdeleLocalTensorDecompositionSupportedSubgroup
-      (K := K) (L := L) S) :
-    letI :=
-      relativeIdeleLocalTensorDecompositionSupportedSubgroupAction
-        (K := K) (L := L) S
-    letI :=
-      relativeIdeleSPlaceFactorsAction
-        (K := K) (L := L) S
-    relativeIdeleSupportedComponents
-        (K := K) (L := L) S (σ • z) =
-      σ • relativeIdeleSupportedComponents
-        (K := K) (L := L) S z := by
-  let :=
-    relativeIdeleLocalTensorDecompositionSupportedSubgroupAction
-      (K := K) (L := L) S
-  let :=
-    relativeIdeleSPlaceFactorsAction
-      (K := K) (L := L) S
-  apply Prod.ext
-  · funext w
-    let :=
-      scalarTensorUnitsAction
-        (K := K) (L := L) (A := w.Completion)
-    exact
-      RelativeIdeleGroup.infiniteComponent_smul
-        (K := K) (L := L) w σ z
-  · apply Prod.ext
-    · funext w
-      let :=
-        scalarTensorUnitsAction
-          (K := K) (L := L)
-          (A := w.1.adicCompletion K)
-      exact
-        RelativeIdeleGroup.finiteComponent_smul
-          (K := K) (L := L) w.1 σ z
-    · funext w
-      apply Subtype.ext
-      let :=
-        scalarTensorUnitsAction
-          (K := K) (L := L)
-          (A := w.1.adicCompletion K)
-      exact
-        RelativeIdeleGroup.finiteComponent_smul
-          (K := K) (L := L) w.1 σ z
+
 
 end

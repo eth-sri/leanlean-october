@@ -116,20 +116,7 @@ theorem integerRing_moduleFinite_of_finite_separable
   ext x
   rfl
 
-/-- Normalizing the value group does not change the valuation ring. -/
-theorem localIntegerValuation_valuationSubring_eq :
-    (localIntegerValuation K).valuationSubring =
-      (localCompleteDVF K).valuation.valuationSubring := by
-  rw [localCompleteDVF_valuation_eq]
-  ext x
-  change
-    IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K
-          (ValuativeRel.valuation K x) ≤ 1 ↔
-      ValuativeRel.valuation K x ≤ 1
-  simpa only [map_one] using
-    (map_le_map_iff
-      (IsNonarchimedeanLocalField.valueGroupWithZeroIsoInt K)
-      (a := ValuativeRel.valuation K x) (b := 1))
+
 
 /-- The normalized integer valuation is onto. -/
 theorem localIntegerValuation_surjective :

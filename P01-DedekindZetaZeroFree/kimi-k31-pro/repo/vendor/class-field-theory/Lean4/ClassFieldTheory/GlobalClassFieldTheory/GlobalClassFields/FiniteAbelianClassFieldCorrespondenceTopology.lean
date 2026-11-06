@@ -139,78 +139,13 @@ theorem ordinaryIdeleClassNormSubgroup_eq_namedNormRange
     ordinaryIdeleClassNormExtension] using
     (ordinaryIdeleClassNormSubgroup_eq_actualNormRange K L)
 
-/-- The ordinary norm subgroup represented by a finite abelian
-subextension is open in the natural topology of the idele class group of
-the canonical actual fixed field. -/
-theorem ordinaryIdeleClassNormSubgroup_isOpen
-    (K : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (L : FiniteAbelianSubextension K.field) :
-    IsOpen
-      (ordinaryIdeleClassNormSubgroup K L :
-        Set
-          (Additive
-            (IdeleClassGroup
-              (ordinaryIdeleClassNormBase K)))) := by
-  rw [ordinaryIdeleClassNormSubgroup_eq_namedNormRange K L]
-  exact ideleClassNorm_range_isOpen
-    (K := ordinaryIdeleClassNormBase K)
-    (L := ordinaryIdeleClassNormExtension K L)
 
-/-- The ordinary norm subgroup represented by a finite abelian
-subextension is closed in the natural idele-class topology. -/
-theorem ordinaryIdeleClassNormSubgroup_isClosed
-    (K : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (L : FiniteAbelianSubextension K.field) :
-    IsClosed
-      (ordinaryIdeleClassNormSubgroup K L :
-        Set
-          (Additive
-            (IdeleClassGroup
-              (ordinaryIdeleClassNormBase K)))) := by
-  rw [ordinaryIdeleClassNormSubgroup_eq_namedNormRange K L]
-  exact ideleClassNorm_range_isClosed
-    (K := ordinaryIdeleClassNormBase K)
-    (L := ordinaryIdeleClassNormExtension K L)
 
-/-- The ordinary norm subgroup represented by a finite abelian
-subextension has finite index. -/
-theorem ordinaryIdeleClassNormSubgroup_finiteIndex
-    (K : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (L : FiniteAbelianSubextension K.field) :
-    (ordinaryIdeleClassNormSubgroup K L).FiniteIndex := by
-  rw [ordinaryIdeleClassNormSubgroup_eq_namedNormRange K L]
-  exact
-    (Subgroup.finiteIndex_toAddSubgroup_iff
-      (H := (_root_.ideleClassNorm
-        (ordinaryIdeleClassNormBase K)
-        (ordinaryIdeleClassNormExtension K L)).range)).2
-      (ideleClassNorm_rangeFiniteIndex
-        (K := ordinaryIdeleClassNormBase K)
-        (L := ordinaryIdeleClassNormExtension K L))
 
-/-- The index of the ordinary norm subgroup represented by a finite
-abelian subextension is the degree of its actual relative fixed-field
-extension. -/
-theorem ordinaryIdeleClassNormSubgroup_index_eq_finrank
-    (K : FiniteAbstractField
-      (SeparableClosure ℚ ≃ₐ[ℚ] SeparableClosure ℚ))
-    (L : FiniteAbelianSubextension K.field) :
-    (ordinaryIdeleClassNormSubgroup K L).index =
-      Module.finrank
-        (ordinaryIdeleClassNormBase K)
-        (ordinaryIdeleClassNormExtension K L) := by
-  rw [ordinaryIdeleClassNormSubgroup_eq_namedNormRange K L]
-  exact
-    (Subgroup.index_toAddSubgroup
-      (H := (_root_.ideleClassNorm
-        (ordinaryIdeleClassNormBase K)
-        (ordinaryIdeleClassNormExtension K L)).range)).trans
-      (ideleClassNorm_index_eq_finrank_abelian
-        (ordinaryIdeleClassNormBase K)
-        (ordinaryIdeleClassNormExtension K L))
+
+
+
+
 
 end GlobalClassFields
 end GlobalClassFieldTheory

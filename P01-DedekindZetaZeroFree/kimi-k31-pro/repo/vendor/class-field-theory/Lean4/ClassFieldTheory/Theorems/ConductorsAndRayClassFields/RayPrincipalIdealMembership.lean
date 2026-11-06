@@ -2,6 +2,7 @@ module
 
 public import ClassFieldTheory.Definitions.ConductorsAndRayClassFields.RayPrincipalIdealSubgroup
 public import Mathlib.Algebra.Group.Subgroup.Lattice
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -46,18 +47,18 @@ theorem mem_rayPrincipalIdealSubgroup_iff
       IsRayCongruent m x ∧ toPrincipalIdeal (𝓞 K) K x = J}
     one_mem' := by
       refine ⟨1, IsRayCongruent.one m, ?_⟩
-      simp only [map_one]
+      norm_num
     mul_mem' := by
       rintro J J' ⟨x, hx, hxJ⟩ ⟨y, hy, hyJ⟩
       refine ⟨x * y, IsRayCongruent.mul hx hy, ?_⟩
-      rw [map_mul, hxJ, hyJ]
+      grind
     inv_mem' := by
       rintro J ⟨x, hx, hxJ⟩
       refine ⟨x⁻¹, IsRayCongruent.inv hx, ?_⟩
-      rw [map_inv, hxJ] }
+      grind }
   have hP : rayPrincipalIdealSubgroup m = P := by
     change Subgroup.closure (P : Set (NumberFieldFractionalIdealGroup K)) = P
-    exact Subgroup.closure_eq P
+    norm_num
   rw [hP]
   rfl
 

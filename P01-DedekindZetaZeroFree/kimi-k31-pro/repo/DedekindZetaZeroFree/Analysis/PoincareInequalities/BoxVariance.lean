@@ -88,7 +88,7 @@ private theorem update_map (μ : I → Measure ℝ) [∀ i, IsFiniteMeasure (μ 
     rw [← Finset.prod_erase_mul _ _ (a := j) (by simp),
       ← Finset.prod_erase_mul Finset.univ (fun i => (if i = j then μ j Set.univ else 1) * μ i (s i))
         (by simp : j ∈ Finset.univ)]
-    simp only [Function.update_self, if_pos rfl]
+    simp only [Function.update_self]
     rw [mul_assoc]
     congr 1
     apply Finset.prod_congr rfl; intro i hi
@@ -158,7 +158,7 @@ private theorem axis_mix_eq (n : ℕ) (j : Fin n) (x y : Fin n → ℝ) (t : ℝ
     (EuclideanSpace.equiv (Fin n) ℝ).symm
       (Function.update (fun i => if i.val < j.val then y i else x i) j t) := by
   ext i
-  simp [axis, mix, EuclideanSpace.basisFun_apply, EuclideanSpace.single_apply,
+  simp [axis, mix, EuclideanSpace.basisFun_apply, 
     Function.update]
   split_ifs <;> simp_all
 
@@ -313,7 +313,7 @@ private theorem integral_sq_bound {α : Type*} [MeasurableSpace α] {μ : Measur
     rw [← real_inner_self_eq_norm_sq, L2.inner_def]
     have hcoe := (indicatorConstLp_coeFn (p := 2) (hs := MeasurableSet.univ)
       (hμs := measure_ne_top μ _) (c := (1 : ℂ)))
-    simp only [Set.indicator_univ, Pi.one_apply] at hcoe
+    simp only [Set.indicator_univ] at hcoe
     calc
       (∫ x, inner ℝ (e x) (e x) ∂μ) = ∫ x, (1 : ℝ) ∂μ := by
         apply integral_congr_ae
@@ -389,7 +389,7 @@ theorem box_variance_bound_of_pair_bound (n : ℕ) (l : Fin n → ℝ) (h : ℝ)
       change (μ Set.univ).toReal • f x - ∫ y, f y ∂μ = v • (f x - c)
       rw [hμ]
       dsimp only [c]
-      simp only [Complex.real_smul, smul_eq_mul, mul_sub]
+      simp only [Complex.real_smul, mul_sub]
       rw [← mul_assoc, mul_inv_cancel₀ (by exact_mod_cast hv.ne'), one_mul]
     have hb := integral_sq_bound hg
     rw [hid, hμ, norm_smul, Real.norm_of_nonneg hv.le, mul_pow] at hb

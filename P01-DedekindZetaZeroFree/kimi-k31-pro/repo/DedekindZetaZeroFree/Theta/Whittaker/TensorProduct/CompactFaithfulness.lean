@@ -43,7 +43,7 @@ theorem jacquet_compacts_separate (f : PrincipalSeries positiveParameter)
       x ∈ U ↔ ∀ k : ComplexSU2, J (KPCplxPrincipalSeriesCharts.pi positiveParameter
         (Matrix.ProjGenLinGroup.mk (complexSU2Embedding k)) x) = 0 := by
     simp only [U, Submodule.mem_iInf, LinearMap.mem_ker,
-      ContinuousLinearMap.coe_comp', Function.comp_apply]
+      ]
     rfl
   have hc : IsClosed (U : Set (PrincipalSeries positiveParameter)) := by
     letI := principalSeries_t2 positiveParameter

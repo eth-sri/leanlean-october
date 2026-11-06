@@ -155,7 +155,7 @@ private theorem tame_coordinate_unit_cube (h : HL F ζ hζ q S P) :
  obtain ⟨a, ha, b, hb, rfl⟩ := Subgroup.mem_sup.mp hz
  obtain ⟨u, rfl⟩ := ha
  obtain ⟨c, rfl⟩ := hb
- have hd := (QuotientGroup.eq_iff_div_mem).mp he
+ have hd := QuotientGroup.eq_iff_div_mem.mp he
  obtain ⟨r, hr⟩ := hd
  change r^3 = _ at hr
  refine ⟨u, c / r, ?_⟩
@@ -196,8 +196,8 @@ theorem normalized_minus_chiH_norm
    simp [localAbs, hv]
  rw [he, normPower, Complex.norm_exp]
  simp only [Complex.mul_re, Complex.div_re, Complex.one_re, Complex.ofReal_re,
-   Complex.ofReal_im, Complex.one_im, mul_zero, sub_zero, zero_div, mul_one,
-   one_pow, add_zero]
+   Complex.ofReal_im, Complex.one_im, mul_zero, sub_zero, 
+   ]
  rw [Real.rpow_def_of_pos (localAbs_pos _ _)]
  congr 1
  norm_num [Complex.normSq, Complex.ofReal_re, Complex.ofReal_im]
@@ -309,8 +309,7 @@ theorem eventual_diagonalDoubleKernel_product_integrable
  let ext : Set (LocalField F q) := {u | 1 ≤ KPCubicHaar.abs (LocalField F q) u}
  let A := ‖diagonalAnchorTwist F ζ hζ q S π i s‖
  let R : LocalField F q → ℝ := fun u => KPCubicHaar.abs (LocalField F q) u ^ (2*s.re - 2/3)
- have hmext : MeasurableSet ext := by
-   exact measurableSet_le measurable_const (exterior_abs_measurable (LocalField F q))
+ have hmext : MeasurableSet ext := measurableSet_le measurable_const (exterior_abs_measurable (LocalField F q))
  have hint : Integrable (ext.indicator R) μ := by
    apply (integrable_indicator_iff hmext).mpr
    exact (exterior_abs_rpow_integrable (LocalField F q) μ (2*s.re-2/3) (by dsimp [convergenceHalfPlane] at hs; linarith)).re
@@ -346,8 +345,7 @@ theorem eventual_diagonalDoubleKernel_product_integrable
    rw [Function.uncurry, ← hu, hp, Set.indicator_of_mem hextu]
    change _ ≤ A * R (u : LocalField F q)
    have hInd : (rootLevelSet F ζ hζ q m).indicator (fun _ => (1 : ℝ))
-     (z.1 + ((π^i.val : (LocalField F q)ˣ) : LocalField F q)/(u : LocalField F q)) ≤ 1 := by
-     exact Set.indicator_le_self' (fun _ _ => zero_le_one) _
+     (z.1 + ((π^i.val : (LocalField F q)ˣ) : LocalField F q)/(u : LocalField F q)) ≤ 1 := Set.indicator_le_self' (fun _ _ => zero_le_one) _
    dsimp [A, R]
    rw [abs_unit_eq]
    calc

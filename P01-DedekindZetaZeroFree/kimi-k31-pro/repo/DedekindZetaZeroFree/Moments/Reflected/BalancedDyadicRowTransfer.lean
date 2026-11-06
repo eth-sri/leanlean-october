@@ -27,11 +27,11 @@ theorem span_rowIdeal (A : SArithmeticData F) (m : ThetaReflectionData.Row A) :
   have h : A.exteriorIdealEquiv (rowIdeal A m) =
       ⟨Ideal.span {m.val}, fun hh => m.property (Ideal.span_singleton_eq_bot.mp hh)⟩ := by
     rw [rowIdeal]
-    exact Equiv.apply_symm_apply A.exteriorIdealEquiv _
+    grind
   have h' : A.extendIdeal (rowIdeal A m) = Ideal.span {m.val} := by
     rw [← A.exteriorIdealEquiv_apply (rowIdeal A m)]
-    exact congrArg Subtype.val h
-  exact h'.symm
+    grind
+  grind
 
 theorem exists_unit_mul_generator (A : SArithmeticData F)
     (D : ComparisonPoissonCoefficientData F A) (m : ThetaReflectionData.Row A) :
@@ -39,7 +39,7 @@ theorem exists_unit_mul_generator (A : SArithmeticData F)
   have hspan : Ideal.span {m.val} = Ideal.span {D.generator (rowIdeal A m)} := by
     rw [span_rowIdeal A m, (D.generates (rowIdeal A m)).2]
   obtain ⟨ε, hε⟩ := Ideal.span_singleton_eq_span_singleton.mp hspan
-  have hε' : (↑ε : A.R) * m.val = D.generator (rowIdeal A m) := by rw [mul_comm, hε]
+  have hε' : (↑ε : A.R) * m.val = D.generator (rowIdeal A m) := by grind
   refine ⟨ε⁻¹, ?_⟩
   rw [← hε', ← mul_assoc, ← Units.val_mul, inv_mul_cancel, Units.val_one, one_mul]
 
@@ -88,14 +88,14 @@ private theorem additive_continuous (A : SArithmeticData F) : Continuous A.local
     exact Units.continuous_val.comp ((continuous_apply v).comp continuous_snd)
 private theorem additive_diag (A : SArithmeticData F) (u : Fˣ) :
     A.localToAdditive (A.diagonal u) = sLocalDiagonal F A.Sf (u : F) := by
-  ext w <;> rfl
+  aesop
 private theorem same_ideal_unit (A : SArithmeticData F) (m n : ThetaReflectionData.Row A)
     (he : rowIdeal A m = rowIdeal A n) : ∃ v : A.Rˣ, m.val = v * n.val := by
   have hspan : Ideal.span {m.val} = Ideal.span {n.val} := by
     have h := congrArg (fun I => (A.exteriorIdealEquiv I).val) he
     simpa [rowIdeal] using h
   obtain ⟨v, hv⟩ := (Ideal.span_singleton_eq_span_singleton.mp hspan).symm
-  exact ⟨v, by simpa only [mul_comm] using hv.symm⟩
+  grind
 
 theorem compactShape_idealFiber_bound (A : SArithmeticData F)
     (K : Set A.G) (hK : IsCompact K) :
@@ -122,7 +122,7 @@ theorem compactShape_idealFiber_bound (A : SArithmeticData F)
   · obtain ⟨n, hn⟩ := hn
     have hunit (m : fs) : ∃ v : A.Rˣ, m.val.val = v * n.val := by
       apply same_ideal_unit A
-      exact (Finset.mem_filter.mp m.property).2.trans (Finset.mem_filter.mp hn).2.symm
+      grind
     let v : fs → A.Rˣ := fun m => (hunit m).choose
     have hv (m : fs) : m.val.val = v m * n.val := (hunit m).choose_spec
     have hnorm (m : fs) : rowIdeal A m.val = rowIdeal A n :=
@@ -144,7 +144,7 @@ theorem compactShape_idealFiber_bound (A : SArithmeticData F)
       have he : ThetaReflectionData.rowUnit A m.val /
           ThetaReflectionData.rowUnit A n = Units.map (algebraMap A.R F).toMonoidHom (v m) := by
         apply Units.ext
-        simp only [Units.val_div_eq_div_val, Units.coe_map, MonoidHom.coe_coe,
+        simp only [Units.val_div_eq_div_val, Units.coe_map, 
           ThetaReflectionData.rowUnit, Units.val_mk0]
         change (m.val.val : F) / (n.val : F) = (((v m : A.R) : F))
         have h := congrArg (fun r : A.R => (r : F)) (hv m)
@@ -158,14 +158,11 @@ theorem compactShape_idealFiber_bound (A : SArithmeticData F)
     let f : fs → candidates := fun m => ⟨(v m : A.R), hc m⟩
     have hinj : Function.Injective f := by
       intro m₁ m₂ he
-      have he' : (v m₁ : A.R) = (v m₂ : A.R) := congrArg Subtype.val he
-      apply Subtype.ext
-      apply Subtype.ext
-      rw [hv m₁, hv m₂, he']
+      grind
     simpa only [Fintype.card_coe] using Fintype.card_le_of_injective f hinj
   · change fs.card ≤ candidates.card
     rw [Finset.not_nonempty_iff_eq_empty.mp hn]
-    exact Nat.zero_le _
+    grind
 
 def InCanonicalFiber (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
     (u : A.Rˣ) (I : A.Exterior) (m : ThetaReflectionData.Row A) : Prop :=
@@ -212,10 +209,9 @@ private theorem exists_fiber (A : SArithmeticData F)
   ring
 
 private theorem boundedIdeals_finite (A : SArithmeticData F) (X : ℝ) :
-    {I : A.Exterior | A.exteriorNorm I ≤ X}.Finite := by
-  exact ((normBoundedIdeals_finite F X).preimage
+    {I : A.Exterior | A.exteriorNorm I ≤ X}.Finite := ((normBoundedIdeals_finite F X).preimage
     (f := fun I : A.Exterior => (⟨I.val, I.property.1⟩ : NonzeroIdeal F))
-    (by intro I _ J _ h; apply Subtype.ext; exact congrArg (fun x : NonzeroIdeal F => x.val) h)).subset
+    (by intro I _ J _ h; apply Subtype.ext; grind)).subset
     (by intro I hI; exact hI)
 
 theorem multisetMass_le_idealUnitMass
@@ -247,7 +243,7 @@ theorem multisetMass_le_idealUnitMass
       letI : DecidablePred (fun x => index x = i) := fun _ => Classical.propDecidable _
       exact Multiset.monotone_filter_right rows
         (p := fun x => index x = i) (q := InCanonicalFiber A D i.1 i.2)
-        (fun m he => by simpa [he] using (hidx m).2)) (by
+        (fun m he => by grind)) (by
       intro m _
       obtain ⟨w, hw⟩ := (hidx m).2
       exact (congrArg (fun r => ThetaReflectionData.forwardB A D r Z) hw).trans
@@ -262,11 +258,11 @@ theorem multisetMass_le_idealUnitMass
   · apply Finset.sum_congr rfl
     intro I hI
     simp only [ideals, Set.Finite.mem_toFinset, Set.mem_setOf_eq] at hI
-    simp [hI]
+    grind
   · intro I hI
     have hnot : ¬ A.exteriorNorm I ≤ X := by
       simpa [ideals] using hI
-    simp [hnot]
+    grind
 
 theorem idealUnitMass_bound_of_dyadic
     (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
@@ -333,7 +329,7 @@ theorem idealUnitMass_bound_of_dyadic
       ring
     _ ≤ ((U.card : ℝ) + 1) * B * T * C * Z ^ (2 * M - 1 + ε) := by
       gcongr
-      exact le_add_of_nonneg_right zero_le_one
+      grind
 
 theorem balancedRowMass_bound_of_dyadic
     (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
@@ -377,8 +373,7 @@ theorem balancedRowMass_bound_of_dyadic
     _ ≤ ((k₀ + 1 : ℕ) : ℝ) * idealUnitMass A D U (Cstar * Z ^ M) Z := hmass
     _ ≤ ((k₀ + 1 : ℕ) : ℝ) * (C * Z ^ (2 * M - 1 + ε)) := hmul
     _ = ((k₀ : ℝ) + 1) * C * Z ^ (2 * M - 1 + ε) := by
-      push_cast
-      ring
+      grind
 
 end ActualRowTransfer
 end

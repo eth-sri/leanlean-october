@@ -19,8 +19,7 @@ theorem finite_geometric_tail (c : ℤ → ℂ) (C r : ℂ)
         C * r ^ n₀ / (1 - r)) := by
   let d : ℕ := (n₀ - nmin).toNat
   have hd : nmin + (d : ℤ) = n₀ := by
-    dsimp [d]
-    omega
+    aesop
   have hgeom : HasSum (fun k : ℕ => C * r ^ n₀ * r ^ k)
       (C * r ^ n₀ / (1 - r)) := by
     simpa only [div_eq_mul_inv] using
@@ -32,28 +31,21 @@ theorem finite_geometric_tail (c : ℤ → ℂ) (C r : ℂ)
     apply hgeom.congr_fun
     intro k
     have he : nmin + ((k + d : ℕ) : ℤ) = n₀ + (k : ℤ) := by
-      push_cast
-      omega
+      grind
     rw [he, htail _ (by omega), zpow_add₀ hr, zpow_natCast]
     ring
   have hfinite :
       (∑ k ∈ Finset.range d, c (nmin + (k : ℤ)) * r ^ (nmin + (k : ℤ))) =
       ∑ j ∈ Finset.Ico nmin n₀, c j * r ^ j := by
     apply Finset.sum_bij (fun (k : ℕ) _ => nmin + (k : ℤ))
-    · intro k hk
-      simp only [Finset.mem_range] at hk
-      simp only [Finset.mem_Ico]
-      omega
-    · intro k hk l hl he
-      omega
+    · grind
+    · simp_all
     · intro j hj
       simp only [Finset.mem_Ico] at hj
       refine ⟨(j - nmin).toNat, ?_, ?_⟩
-      · simp only [Finset.mem_range]
-        omega
+      · aesop
       · omega
-    · intro k hk
-      rfl
+    · simp_all
   simpa only [hfinite] using
     hshift.sum_range_add (f := fun k : ℕ =>
       c (nmin + (k : ℤ)) * r ^ (nmin + (k : ℤ))) (k := d)

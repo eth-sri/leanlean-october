@@ -69,19 +69,7 @@ theorem residueExtensionArithmeticFrobeniusOfValuationExtension_apply
       x ^ Nat.card 𝓀[K]
   simp [Nat.card_eq_fintype_card]
 
-/-- Arithmetic Frobenius fixes the image of the base residue field. -/
-theorem residueExtensionArithmeticFrobeniusOfValuationExtension_preserves_base
-    (K L : Type u) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K] [Field L] [ValuativeRel L]
-    [TopologicalSpace L] [IsNonarchimedeanLocalField L] [Algebra K L]
-    [Valuation.HasExtension (ValuativeRel.valuation K) (ValuativeRel.valuation L)]
-    (x : 𝓀[K]) :
-    residueExtensionArithmeticFrobeniusOfValuationExtension K L
-        (algebraMap 𝓀[K] 𝓀[L] x) =
-      algebraMap 𝓀[K] 𝓀[L] x := by
-  let := Fintype.ofFinite 𝓀[K]
-  let : Algebra.IsAlgebraic 𝓀[K] 𝓀[L] := inferInstance
-  simp [residueExtensionArithmeticFrobeniusOfValuationExtension]
+
 
 /-- The order of residue arithmetic Frobenius is the degree of the finite residue-field extension. -/
 theorem orderOf_residueExtensionArithmeticFrobeniusOfValuationExtension

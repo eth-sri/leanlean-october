@@ -76,8 +76,8 @@ theorem spherical_table (A : SArithmeticData F) (G : ThetaBranch.AllowedRecipe A
   rw [ThetaBranch.sphericalFactor, hx]
   rcases hd with rfl | rfl
   · have he : (2 : ℤ) * (0 + 3 * (k : ℤ)) = (6 * k : ℕ) := by push_cast; ring
-    simp only [Nat.cast_add, Nat.cast_mul, Nat.cast_ofNat, Nat.cast_zero, zero_add,
-      he, zpow_natCast, pow_mul, h6, one_pow, mul_one, pow_zero]
+    simp only [Nat.cast_mul, Nat.cast_ofNat, zero_add,
+      pow_mul, mul_one, pow_zero]
     simp only [sexticSphericalCoefficient]
     rw [if_neg (by omega), if_pos (by omega), hcardC]
     rw [show (3 * (k : ℤ)) / 3 = k by omega,
@@ -85,7 +85,7 @@ theorem spherical_table (A : SArithmeticData F) (G : ThetaBranch.AllowedRecipe A
       zpow_natCast, pow_mul, h6, one_pow, mul_one]
   · have he : (2 : ℤ) * (1 + 3 * (k : ℤ)) = (2 + 6 * k : ℕ) := by push_cast; ring
     simp only [Nat.cast_add, Nat.cast_mul, Nat.cast_ofNat, Nat.cast_one, he,
-      zpow_natCast, pow_add, pow_mul, h6, one_pow, mul_one, pow_one]
+      mul_one, pow_one]
     simp only [sexticSphericalCoefficient, ThetaBranch.gaussTwo]
     rw [if_neg (by omega), if_neg (by omega), if_pos (by omega), hcard, hcardC,
       show (1 + 3 * (k : ℤ)) / 3 = k by omega]

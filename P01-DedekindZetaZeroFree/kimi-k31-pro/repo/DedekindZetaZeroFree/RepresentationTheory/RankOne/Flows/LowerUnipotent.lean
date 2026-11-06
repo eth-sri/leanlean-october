@@ -17,7 +17,7 @@ def lowerGL (z : ℂ) : ComplexGL2 :=
 
 theorem lowerGL_val (z : ℂ) : (lowerGL z : Matrix (Fin 2) (Fin 2) ℂ)=!![1,0;z,1] := by
   ext i j
-  fin_cases i <;> fin_cases j <;> simp [lowerGL,Matrix.SpecialLinearGroup.toGL,Matrix.SpecialLinearGroup.transvection_coe,Matrix.transvection]
+  fin_cases i <;> fin_cases j <;> simp [lowerGL,Matrix.SpecialLinearGroup.toGL,Matrix.SpecialLinearGroup.transvection_coe]
 
 theorem exp_lower (z : ℂ) : NormedSpace.exp (!![0,0;z,0] : Matrix (Fin 2) (Fin 2) ℂ)=!![1,0;z,1] := by
   have he : (!![0,0;z,0] : Matrix (Fin 2) (Fin 2) ℂ)=(!![0,z;0,0])ᵀ := by ext i j;fin_cases i <;> fin_cases j <;> rfl

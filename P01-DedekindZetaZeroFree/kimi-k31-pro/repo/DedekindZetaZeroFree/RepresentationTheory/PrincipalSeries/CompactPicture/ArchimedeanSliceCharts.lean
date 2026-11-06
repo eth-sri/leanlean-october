@@ -44,7 +44,7 @@ private theorem groupArchChart_slice_lower (w : InfinitePlace F) (u : ℂ) :
   funext j
   by_cases hj : j = w
   · subst j; simp [sliceCoordinates, leftMatrix_lower]
-  · simp [sliceCoordinates, hj, Function.update_of_ne hj, leftMatrix_zero]
+  · simp [sliceCoordinates, hj, leftMatrix_zero]
 
 variable (K : Subgroup (G F ζ hζ)) (hK : IwasawaCompact F ζ hζ K)
 variable (C : KPGlobalTorusBorelTwistCompatibility.ModelData F ζ hζ) (f : Flat F ζ hζ K)

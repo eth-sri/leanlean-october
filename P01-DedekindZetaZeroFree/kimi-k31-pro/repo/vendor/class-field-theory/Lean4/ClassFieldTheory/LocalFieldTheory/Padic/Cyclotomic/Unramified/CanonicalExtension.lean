@@ -149,14 +149,7 @@ theorem padicFieldAbsoluteValue_complete
   rw [huniform]
   exact @Padic.instCompleteSpace p (inferInstance : Fact p.Prime)
 
-/-- The norm absolute value on `ℚ_p` is nontrivial. -/
-theorem padicFieldAbsoluteValue_isNontrivial
-    (p : ℕ) [Fact p.Prime] :
-    (NormedField.toAbsoluteValue ℚ_[p]).IsNontrivial := by
-  refine ⟨(p : ℚ_[p]), ?_, ?_⟩
-  · exact_mod_cast (Fact.out : Nat.Prime p).ne_zero
-  · apply ne_of_lt
-    exact Padic.norm_p_lt_one
+
 
 /-- The canonical additive exponential valuation on `ℚ_p`, obtained from
 the standard norm by the conversion `v(x) = -log |x|`. -/
@@ -378,114 +371,13 @@ theorem padicFiniteExtensionAbsoluteValue_extends
     (normFormula_finite_extension_norm_formula
       (K := ℚ_[p]) (L := L) a hn hh).2.1 x
 
-/-- The canonical norm-formula absolute value on every finite extension of
-`ℚ_p` is complete. -/
-theorem padicFiniteExtensionAbsoluteValue_complete
-    (p : ℕ) [Fact p.Prime]
-    (L : Type*) [Field L] [Algebra ℚ_[p] L] [FiniteDimensional ℚ_[p] L] :
-    IsCompleteForAbsoluteValue
-      (padicFiniteExtensionAbsoluteValue p L) := by
-  let v : AbsoluteValue ℚ_[p] ℝ := NormedField.toAbsoluteValue ℚ_[p]
-  let R := finiteNormExtension_nonarchimedean_finite_extension
-    (K := ℚ_[p]) (L := L) v
-      (padicFieldAbsoluteValue_complete p)
-      (padicFieldAbsoluteValue_nonarchimedean p)
-      (padicFieldAbsoluteValue_isNontrivial p)
-  have hEq :
-      padicFiniteExtensionAbsoluteValue p L = R.extension :=
-    R.unique _ (padicFiniteExtensionAbsoluteValue_extends p L)
-  rw [hEq]
-  exact R.complete_extension
 
-/-- The canonical norm-formula absolute values on finite extensions of
-`ℚ_p` are functorial for `ℚ_p`-algebra embeddings.  This is the valued-field
-tower bridge used in the global Kronecker--Weber argument: no compatibility
-hypothesis has to be carried by the embedding. -/
-theorem padicCyclotomicUnramified_padicFiniteExtensionAbsoluteValue_comp_algHom
-    (p : ℕ) [Fact p.Prime]
-    {E D : Type*} [Field E] [Field D]
-    [Algebra ℚ_[p] E] [Algebra ℚ_[p] D]
-    [FiniteDimensional ℚ_[p] E] [FiniteDimensional ℚ_[p] D]
-    (i : E →ₐ[ℚ_[p]] D) :
-    (padicFiniteExtensionAbsoluteValue p D).comp
-        (f := i.toRingHom) i.injective =
-      padicFiniteExtensionAbsoluteValue p E := by
-  let v : AbsoluteValue ℚ_[p] ℝ := NormedField.toAbsoluteValue ℚ_[p]
-  let w : AbsoluteValue E ℝ :=
-    (padicFiniteExtensionAbsoluteValue p D).comp
-      (f := i.toRingHom) i.injective
-  let : Algebra.IsAlgebraic ℚ_[p] E :=
-    Algebra.IsAlgebraic.of_finite ℚ_[p] E
-  have hwExt : ∀ x : ℚ_[p], w (algebraMap ℚ_[p] E x) = v x := by
-    intro x
-    change padicFiniteExtensionAbsoluteValue p D
-        (i (algebraMap ℚ_[p] E x)) =
-      NormedField.toAbsoluteValue ℚ_[p] x
-    rw [i.commutes]
-    exact padicFiniteExtensionAbsoluteValue_extends p D x
-  have hvComplete : CompleteSpace (WithAbs v) :=
-    completeSpace_withAbs_of_isCompleteForAbsoluteValue v
-      (padicFieldAbsoluteValue_complete p)
-  have hvNonarch : IsNonarchimedean (v : ℚ_[p] → ℝ) :=
-    (LubinTate.Valuations.strong_triangle_iff_isNonarchimedean v).1
-      (LubinTate.Valuations.strong_triangle_of_nonarchimedean v
-        (padicFieldAbsoluteValue_nonarchimedean p))
-  have hw := AbsoluteValue.eq_spectralExtension_of_extends
-    v hvComplete hvNonarch
-      (padicFieldAbsoluteValue_isNontrivial p) w hwExt
-  have hE := AbsoluteValue.eq_spectralExtension_of_extends
-    v hvComplete hvNonarch
-      (padicFieldAbsoluteValue_isNontrivial p)
-      (padicFiniteExtensionAbsoluteValue p E)
-      (padicFiniteExtensionAbsoluteValue_extends p E)
-  exact hw.trans hE.symm
 
-/-- Pointwise form of
-`padicCyclotomicUnramified_padicFiniteExtensionAbsoluteValue_comp_algHom`. -/
-theorem padicFiniteExtensionAbsoluteValue_algHom
-    (p : ℕ) [Fact p.Prime]
-    {E D : Type*} [Field E] [Field D]
-    [Algebra ℚ_[p] E] [Algebra ℚ_[p] D]
-    [FiniteDimensional ℚ_[p] E] [FiniteDimensional ℚ_[p] D]
-    (i : E →ₐ[ℚ_[p]] D) (x : E) :
-    padicFiniteExtensionAbsoluteValue p D (i x) =
-      padicFiniteExtensionAbsoluteValue p E x := by
-  exact congrArg (fun a : AbsoluteValue E ℝ => a x)
-    (padicCyclotomicUnramified_padicFiniteExtensionAbsoluteValue_comp_algHom p i)
 
-/-- Pulling the canonical valuation ring of a finite `ℚ_p`-extension back
-along a `ℚ_p`-algebra embedding gives the canonical valuation ring of the
-source.  This is the valuation-subring form of the preceding functoriality
-theorem, suitable for inertia maps. -/
-theorem padicCyclotomicUnramified_padicFiniteExtensionValuationSubring_comap_algHom
-    (p : ℕ) [Fact p.Prime]
-    {E D : Type*} [Field E] [Field D]
-    [Algebra ℚ_[p] E] [Algebra ℚ_[p] D]
-    [FiniteDimensional ℚ_[p] E] [FiniteDimensional ℚ_[p] D]
-    (i : E →ₐ[ℚ_[p]] D) :
-    (absoluteValueUnitBallSubring
-        (padicFiniteExtensionAbsoluteValue p D)
-        (padicFiniteExtensionAbsoluteValue_nonarchimedean p D)).comap
-          i.toRingHom =
-      absoluteValueUnitBallSubring
-        (padicFiniteExtensionAbsoluteValue p E)
-        (padicFiniteExtensionAbsoluteValue_nonarchimedean p E) := by
-  let iAlg : Algebra E D := i.toRingHom.toAlgebra
-  let : Algebra E D := iAlg
-  have hExt : ∀ x : E,
-      padicFiniteExtensionAbsoluteValue p D
-          (algebraMap E D x) =
-        padicFiniteExtensionAbsoluteValue p E x := by
-    intro x
-    change padicFiniteExtensionAbsoluteValue p D (i x) =
-      padicFiniteExtensionAbsoluteValue p E x
-    exact padicFiniteExtensionAbsoluteValue_algHom p i x
-  exact comap_absoluteValueUnitBallSubring_eq_of_extends
-    (padicFiniteExtensionAbsoluteValue p E)
-    (padicFiniteExtensionAbsoluteValue p D)
-    (padicFiniteExtensionAbsoluteValue_nonarchimedean p E)
-    (padicFiniteExtensionAbsoluteValue_nonarchimedean p D)
-    hExt
+
+
+
+
 
 /-- The preceding absolute value in the additive exponential presentation
 used by the unramified cyclotomic theorem. -/
@@ -513,45 +405,9 @@ theorem padicFiniteExtensionExponentialValuation_extends
     (padicFiniteExtensionAbsoluteValue_nonarchimedean p L)
     (padicFiniteExtensionAbsoluteValue_extends p L) x
 
-/-- The canonical exponential valuations on finite extensions of `ℚ_p` are
-functorial under `ℚ_p`-algebra embeddings. -/
-theorem padicFiniteExtensionExponentialValuation_algHom
-    (p : ℕ) [Fact p.Prime]
-    {E D : Type} [Field E] [Field D]
-    [Algebra ℚ_[p] E] [Algebra ℚ_[p] D]
-    [FiniteDimensional ℚ_[p] E] [FiniteDimensional ℚ_[p] D]
-    (i : E →ₐ[ℚ_[p]] D) (x : E) :
-    padicFiniteExtensionExponentialValuation p D (i x) =
-      padicFiniteExtensionExponentialValuation p E x := by
-  by_cases hx : x = 0
-  · subst x
-    simp [padicFiniteExtensionExponentialValuation,
-      absoluteValueExponentialValuation]
-  · have hix : i x ≠ 0 := by simpa using i.injective.ne hx
-    simp [padicFiniteExtensionExponentialValuation,
-      absoluteValueExponentialValuation, hx, hix,
-      padicFiniteExtensionAbsoluteValue_algHom p i]
 
-/-- Ramification index is monotone under an embedding of finite extensions
-of `ℚ_p`.  The larger field's canonical valuation pulls back exactly to the
-smaller field's canonical valuation, and multiplicativity in the resulting
-valued-field tower gives the inequality. -/
-theorem padicFiniteExtension_exponentialRamificationIndex_le_of_algHom
-    (p : ℕ) [Fact p.Prime]
-    {E D : Type} [Field E] [Field D]
-    [Algebra ℚ_[p] E] [Algebra ℚ_[p] D]
-    [FiniteDimensional ℚ_[p] E] [FiniteDimensional ℚ_[p] D]
-    (i : E →ₐ[ℚ_[p]] D) :
-    exponentialRamificationIndex
-        (padicFieldExponentialValuation p)
-        (padicFiniteExtensionExponentialValuation p E) ≤
-      exponentialRamificationIndex
-        (padicFieldExponentialValuation p)
-        (padicFiniteExtensionExponentialValuation p D) := by
-  apply exponentialRamificationIndex_le_of_algHom i
-  · exact padicFiniteExtensionExponentialValuation_extends p E
-  · intro x
-    exact padicFiniteExtensionExponentialValuation_algHom p i x
+
+
 
 /-- The valuation ring selected by the norm-formula extension is the actual
 integral closure of the standard complete-DVF valuation ring of `ℚ_p`.
@@ -664,25 +520,7 @@ noncomputable def padicCyclotomicUnramified_padicFiniteExtensionValuationSubring
       map_mul' := fun _ _ => Subtype.ext rfl
       map_add' := fun _ _ => Subtype.ext rfl }
 
-/-- The norm-formula valuation ring on a finite extension of `ℚ_p` is the
-valuation ring of any complete-DVF model given by the integral closure. -/
-theorem padicFiniteExtensionExponentialValuationSubring_eq_completeDVF
-    (p : ℕ) [Fact p.Prime]
-    (L : Type*) [Field L] [Algebra ℚ_[p] L] [FiniteDimensional ℚ_[p] L]
-    (target : ValuationTheory.DiscreteValuationField.CompleteDVF L)
-    [IsIntegralClosure target.valuationSubring
-      (LocalFieldTheory.DiscreteValuationField.Examples.Qp.padicCompleteDVF p).valuationSubring L] :
-    LubinTate.Valuations.exponentialValuationSubringAsValuationSubring
-        (padicFiniteExtensionExponentialValuation p L) =
-      target.valuation.valuationSubring := by
-  let e :=
-    padicCyclotomicUnramified_padicFiniteExtensionValuationSubringEquiv p L target
-  ext y
-  constructor
-  · intro hy
-    exact (e ⟨y, hy⟩).property
-  · intro hy
-    exact (e.symm ⟨y, hy⟩).property
+
 
 /-- the unramified cyclotomic theorem(i), specialized to the actual `ℚ_p` valuation:
 adjoining roots of unity of any order prime to `p` is unramified in the

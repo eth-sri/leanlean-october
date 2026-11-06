@@ -284,7 +284,7 @@ lemma intertwiner_open_integrand_eq (s : ℝ) (f : PrincipalSeries s) (x z : ℂ
   congr 1
   simp only [inductionWeight, complexAbs, Units.val_mk0, norm_div, norm_neg, norm_inv]
   have hi : ‖x‖⁻¹ / ‖x‖ = (‖x‖ ^ 2)⁻¹ := by
-    simp [div_eq_mul_inv, pow_two, mul_inv]
+    simp [div_eq_mul_inv, pow_two]
   simp only [Real.rpow_eq_pow]
   rw [hi, inv_pow, Real.inv_rpow (by positivity), ← Real.rpow_neg (by positivity),
     ← Real.rpow_natCast_mul (by positivity), ← Real.rpow_natCast_mul (norm_nonneg _)]

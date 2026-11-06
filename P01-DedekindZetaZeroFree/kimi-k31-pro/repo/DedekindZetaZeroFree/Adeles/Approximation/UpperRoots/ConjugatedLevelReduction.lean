@@ -1,6 +1,7 @@
 module
 
 public import DedekindZetaZeroFree.Eisenstein.ConstantTerms.CuspCoordinatesAndTruncation
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -27,17 +28,13 @@ theorem finite_root_reduction
   have hf : Continuous f := by
     fun_prop
   have hfz : f z = 1 := by
-    dsimp [f]
-    rw [sub_self, hn0]
-    group
+    measurability
   have hopen : IsOpen (f ⁻¹' (U.toOpenSubgroup : Set _)) :=
     U.toOpenSubgroup.isOpen.preimage hf
   have hz : z ∈ f ⁻¹' (U.toOpenSubgroup : Set _) := by
-    change f z ∈ U.toOpenSubgroup
-    rw [hfz]
-    exact U.toOpenSubgroup.one_mem
+    simp_all
   obtain ⟨b, hb⟩ := (finiteAdele_dense F).exists_mem_open hopen ⟨z, hz⟩
-  exact ⟨b, hb⟩
+  measurability
 
 end DedekindZetaZeroFree.KPMsResidualTailRestoration.SharpConstantTerm.FiberStability
 

@@ -164,9 +164,9 @@ private theorem eigen_test (t : ℝ) (b : KPCuspCharts.Shape F)
       (horizontalEnergy t b ξ : ℂ) * fourierCharacter ξ y := by
   unfold horizontalLaplacian horizontalEnergy shapeEnergy
   simp_rw [fourier_second, exponent_single]
-  simp only [Complex.mul_re, Complex.conj_re, Complex.conj_im, Complex.one_re,
-    Complex.one_im, Complex.I_re, Complex.I_im, mul_one, mul_zero, zero_mul, sub_zero,
-    zero_sub, neg_neg, Complex.I_sq]
+  simp only [Complex.mul_re, 
+    Complex.I_re, Complex.I_im, mul_one, mul_zero, 
+    zero_sub]
   simp only [Complex.ofReal_mul, Complex.ofReal_sum, Complex.ofReal_pow, Complex.ofReal_ofNat]
   rw [Finset.mul_sum, Finset.sum_mul]
   rw [← Finset.sum_neg_distrib]
@@ -486,7 +486,7 @@ private theorem kernel_euclidean_full (hF : NumberField.InfinitePlace.nrRealPlac
     ext i
     change star (KPCuspCharts.embedding F (u : F) i) * (coordinates _ (a • x) i) =
       a • (star (KPCuspCharts.embedding F (u : F) i) * coordinates _ x i)
-    simp [mul_comm, mul_left_comm]
+    simp [mul_left_comm]
 private theorem scale_pair (u : Fˣ) (ξ : Euclidean (KPCuspLogShape.dimension F)) (y : KPCuspCharts.Horizontal F) :
     inner ℝ (linearScale u ξ) ((coordinates _).symm y) =
       inner ℝ ξ ((coordinates _).symm (fun i => KPCuspCharts.embedding F (u : F) i * y i)) := by
@@ -498,7 +498,7 @@ private theorem scale_pair (u : Fˣ) (ξ : Euclidean (KPCuspLogShape.dimension F
   simp_rw [real_inner_eq_re_inner ℂ, RCLike.inner_apply]
   change (y i * star (star (KPCuspCharts.embedding F (u : F) i) * coordinates _ ξ i)).re =
     ((KPCuspCharts.embedding F (u : F) i * y i) * star (coordinates _ ξ i)).re
-  simp [mul_comm, mul_left_comm, mul_assoc]
+  simp [mul_comm, mul_assoc]
  theorem scale_mul (u v : Fˣ) (ξ : Euclidean (KPCuspLogShape.dimension F)) :
     linearScale (u*v) ξ = linearScale u (linearScale v ξ) := by
   ext i
@@ -588,7 +588,7 @@ private theorem translation_conjugate (s : S) (x : D.L) :
     simp only [mul_inv_cancel, hτone] at hiinv
     rw [hτmul, hτmul]
     have hrk : D.ratio k = 1 := hker _
-    simp only [map_mul, hrk, mul_one, Units.val_mul, Subgroup.coe_mul]
+    simp only [map_mul, hrk, mul_one]
     have hk : τ k = x := hτi x
     rw [hk]
     linear_combination -hiinv

@@ -31,14 +31,14 @@ variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ
       funext x
       by_cases h : x=w
       · subst x; simp
-      · simp [Pi.mulSingle_apply, Sum.inl_injective.ne h, h]
+      · simp [Sum.inl_injective.ne h, h]
     rw [he]
     rw [List.prod_map_eq_pow_single w _ (by intro x hx _; simp [hx])]
     rw [List.nodup_iff_count_le_one.mp (Finset.nodup_toList _) w |>.antisymm
       (Nat.succ_le_of_lt (List.count_pos_iff.mpr (by simp)))]
     simp
   | inr q =>
-    simp [ha, localToRestricted, Function.comp_def, RestrictedProduct.coe_mulSingle_apply, Pi.mulSingle_apply]
+    simp [ha, localToRestricted, Function.comp_def, RestrictedProduct.coe_mulSingle_apply]
 def sectionTuple (r : InfinitePlace F → Matrix.GeneralLinearGroup (Fin 2) ℂ) :
     RestrictedCover F ζ hζ :=
   ⟨fun v => match v with

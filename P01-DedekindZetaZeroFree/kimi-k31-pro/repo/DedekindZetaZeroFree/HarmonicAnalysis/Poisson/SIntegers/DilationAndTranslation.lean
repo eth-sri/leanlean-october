@@ -20,7 +20,7 @@ private theorem scalarAction_eq (F : Type) [Field F] [NumberField F]
   · apply (mixedEmbedding.euclidean.toMixed F).injective
     simp only [scalarAction, Covolume.fieldDilation, PoissonArch.fieldMul,
       PoissonArch.infiniteAdeleToSpace_coordinates, map_mul,
-      ContinuousLinearEquiv.apply_symm_apply]
+      ]
     rw [← InfiniteAdeleRing.mixedEmbedding_eq_algebraMap_comp]
     rw [← PoissonArch.infiniteAdeleToSpace_coordinates]
     simp
@@ -99,8 +99,8 @@ private theorem archEquiv_apply (F : Type) [Field F] [NumberField F] (a : Fˣ)
     v.adicCompletion F ≃ₜ v.adicCompletion F where
   toFun x := algebraMap F (v.adicCompletion F) (a : F) * x
   invFun x := algebraMap F (v.adicCompletion F) ((a⁻¹ : Fˣ) : F) * x
-  left_inv x := by simp [← mul_assoc, ← map_mul]
-  right_inv x := by simp [← mul_assoc, ← map_mul]
+  left_inv x := by simp
+  right_inv x := by simp
   continuous_toFun := continuous_const.mul continuous_id
   continuous_invFun := continuous_const.mul continuous_id
 
@@ -136,7 +136,7 @@ private theorem local_fourier_scale (F : Type) [Field F] [NumberField F]
     calc
       _ = -(algebraMap F (v.adicCompletion F) (a : F) *
         algebraMap F (v.adicCompletion F) ((a⁻¹ : Fˣ) : F)) * (x * y) := by ring
-      _ = -x * y := by simp [← map_mul]
+      _ = -x * y := by simp
   change _ = ∫ x, φ (algebraMap F (v.adicCompletion F) (a : F) * x) *
     (e (-(algebraMap F (v.adicCompletion F) (a : F) * x) *
       (algebraMap F (v.adicCompletion F) ((a⁻¹ : Fˣ) : F) * y)) : ℂ) ∂μ at hi
@@ -212,9 +212,9 @@ theorem scalar_pullback_tensor
         ((PoissonArch.fieldModule F (a : F))⁻¹ : ℂ) *
           ∏ v : S, ((FinitePlace.mk v.val (a : F))⁻¹ : ℂ) := by
       simp only [productModule, ← Covolume.DilationArch.fieldModule_eq F,
-        mul_inv, Complex.ofReal_mul, Complex.ofReal_inv,
-        ← Finset.prod_inv_distrib, ← Complex.ofReal_prod,
-        Finset.prod_coe_sort]
+        mul_inv, Complex.ofReal_mul, 
+        
+        ]
       rw [← Finset.prod_coe_sort S (fun v => FinitePlace.mk v (a : F)),
         Complex.ofReal_prod, Finset.prod_inv_distrib]
     rw [hmodule]
@@ -684,8 +684,8 @@ private theorem localArchEquiv_abs_det (F : Type) [Field F] [NumberField F]
     change (mixedEmbedding.euclidean.toMixed F) (localArchEquiv F d x) = _
     rw [localArchEquiv_apply]
     simp only [PoissonArch.infiniteAdeleToSpace_coordinates, map_mul,
-      LinearMap.prodMap_apply, ContinuousLinearEquiv.coe_coe,
-      LinearMap.comp_apply, ContinuousLinearEquiv.apply_symm_apply]
+      LinearMap.prodMap_apply, 
+      LinearMap.comp_apply]
     have hx := PoissonArch.infiniteAdeleToSpace_coordinates F
       ((PoissonArch.infiniteAdeleToSpace F).symm x)
     rw [ContinuousLinearEquiv.apply_symm_apply] at hx
@@ -774,7 +774,7 @@ theorem traceFourier_local_unit_scale (F : Type) [Field F] [NumberField F]
   simp_rw [hp] at hi
   unfold PoissonArch.traceFourier PoissonArch.traceMeasure
   simp only [integral_smul_measure, ENNReal.toReal_ofReal (PoissonArch.haarScalar_pos F).le,
-    smul_eq_mul]
+    ]
   rw [← hi]
   simp only [g, A, localArchEquiv_apply, Complex.real_smul]
   ring

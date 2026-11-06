@@ -62,8 +62,7 @@ theorem ext {H H' : OpenFiniteIndexSubgroup K}
     (h : H.subgroup = H'.subgroup) : H = H' := by
   cases H
   cases H'
-  cases h
-  rfl
+  grind
 
 /-- Provides this instance. -/
 instance : PartialOrder (OpenFiniteIndexSubgroup K) :=
@@ -86,8 +85,7 @@ theorem abstractFixedField_isGalois_of_base_normal
   have hsub :
       extensionSubgroup B H (le_baseField H) =
         H.toSubgroup.subgroupOf B.toSubgroup := by
-    ext sigma
-    rw [mem_extensionSubgroup_iff]
+    grind
   have hrelative :
       (H.toSubgroup.subgroupOf B.toSubgroup).Normal := by
     rw [← hsub]
@@ -107,8 +105,7 @@ theorem abstractFixedField_isGalois_of_base_normal
     have hclosed := closedFixingSubgroup_abstractFixedField_eq
       K (SeparableClosure K) H
     exact congrArg ClosedSubgroup.toSubgroup hclosed
-  rw [hfix]
-  infer_instance
+  grind
 
 variable (K : Type) [Field K]
 

@@ -91,97 +91,13 @@ theorem narrowFiniteConductorRayClassGroupToQuotient_surjective
           (RayClass.Modulus.narrowOfFinite H.narrowFiniteConductor)) c,
       rfl⟩
 
-/-- The kernel of the exact narrow finite conductor ray-class map is the
-image of `H` modulo the conductor congruence subgroup. -/
-theorem narrowFiniteConductorRayClassGroupToQuotient_ker
-    (H : ConductorialSubgroup K) :
-    MonoidHom.ker H.narrowFiniteConductorRayClassGroupToQuotient =
-      Subgroup.map
-        (QuotientGroup.mk'
-          (RayClass.Modulus.congruenceSubgroup
-            (RayClass.Modulus.narrowOfFinite H.narrowFiniteConductor)))
-        H.1 := by
-  unfold narrowFiniteConductorRayClassGroupToQuotient
-  let N :=
-    RayClass.Modulus.congruenceSubgroup
-      (RayClass.Modulus.narrowOfFinite H.narrowFiniteConductor)
-  let M := H.1
-  change
-    (QuotientGroup.map N M (MonoidHom.id (IdeleClassGroup K)) _).ker =
-      Subgroup.map (QuotientGroup.mk' N) M
-  simpa only [Subgroup.comap_id] using
-    (QuotientGroup.ker_map (N := N) M
-      (MonoidHom.id (IdeleClassGroup K))
-      (show N ≤ Subgroup.comap (MonoidHom.id (IdeleClassGroup K)) M from
-        fun _ hx => H.narrowFiniteConductor_isDefiningModulus hx))
 
-/-- Quotienting the exact narrow finite conductor ray class group by the
-image of `H` recovers `C_K / H`. -/
-noncomputable def
-    narrowFiniteConductorRayClassSubgroupQuotientEquivIdeleClassQuotient
-    (H : ConductorialSubgroup K) :
-    (RayClass.RayClassGroup
-        (RayClass.Modulus.narrowOfFinite H.narrowFiniteConductor) ⧸
-        Subgroup.map
-          (QuotientGroup.mk'
-            (RayClass.Modulus.congruenceSubgroup
-              (RayClass.Modulus.narrowOfFinite H.narrowFiniteConductor)))
-          H.1) ≃*
-      IdeleClassGroup K ⧸ H.1 :=
-  (QuotientGroup.quotientMulEquivOfEq
-      H.narrowFiniteConductorRayClassGroupToQuotient_ker.symm).trans
-    (QuotientGroup.quotientKerEquivOfSurjective
-      H.narrowFiniteConductorRayClassGroupToQuotient
-      H.narrowFiniteConductorRayClassGroupToQuotient_surjective)
 
-/-- The exact narrow finite conductor ray class number factors as the
-order of the image of `H` modulo conductor congruence times the order of
-`C_K / H`. -/
-theorem
-    narrowFiniteConductorRayClassGroup_card_eq_subgroupImage_card_mul_quotient_card
-    (H : ConductorialSubgroup K) :
-    Nat.card (RayClass.RayClassGroup
-      (RayClass.Modulus.narrowOfFinite H.narrowFiniteConductor)) =
-      Nat.card
-          (Subgroup.map
-            (QuotientGroup.mk'
-              (RayClass.Modulus.congruenceSubgroup
-                (RayClass.Modulus.narrowOfFinite H.narrowFiniteConductor)))
-            H.1) *
-        Nat.card (IdeleClassGroup K ⧸ H.1) := by
-  let f := H.narrowFiniteConductorRayClassGroupToQuotient
-  have hf : Function.Surjective f :=
-    H.narrowFiniteConductorRayClassGroupToQuotient_surjective
-  calc
-    Nat.card (RayClass.RayClassGroup
-      (RayClass.Modulus.narrowOfFinite H.narrowFiniteConductor)) =
-        Nat.card (MonoidHom.ker f) *
-          (MonoidHom.ker f).index :=
-      (Subgroup.card_mul_index (MonoidHom.ker f)).symm
-    _ = Nat.card (MonoidHom.ker f) * Nat.card f.range := by
-      rw [Subgroup.index_ker f]
-    _ = Nat.card (MonoidHom.ker f) *
-        Nat.card (IdeleClassGroup K ⧸ H.1) := by
-      rw [f.range_eq_top_of_surjective hf, Subgroup.card_top]
-    _ =
-        Nat.card
-            (Subgroup.map
-              (QuotientGroup.mk'
-                (RayClass.Modulus.congruenceSubgroup
-                  (RayClass.Modulus.narrowOfFinite H.narrowFiniteConductor)))
-              H.1) *
-          Nat.card (IdeleClassGroup K ⧸ H.1) := by
-      rw [H.narrowFiniteConductorRayClassGroupToQuotient_ker]
 
-/-- The order of `C_K / H` divides the ray class number at the exact
-narrow finite conductor of `H`. -/
-theorem ideleClassQuotient_card_dvd_narrowFiniteConductorRayClassGroup_card
-    (H : ConductorialSubgroup K) :
-      Nat.card (IdeleClassGroup K ⧸ H.1) ∣
-      Nat.card (RayClass.RayClassGroup
-        (RayClass.Modulus.narrowOfFinite H.narrowFiniteConductor)) := by
-  simpa only [Subgroup.index_eq_card] using
-    Subgroup.index_dvd_of_le H.narrowFiniteConductor_isDefiningModulus
+
+
+
+
 
 /-- The exact narrow finite conductor ray-class map is injective exactly
 when its finite source and target have the same order. -/

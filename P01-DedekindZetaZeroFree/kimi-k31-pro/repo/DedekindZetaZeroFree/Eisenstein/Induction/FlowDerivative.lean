@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.Theta.Whittaker.Evaluation.CanonicalExtension
 public import DedekindZetaZeroFree.Eisenstein.Residues.RestrictedTensors.LieDerivatives
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -35,7 +36,7 @@ theorem raw_flow_derivative (u : KPLiteralRaw.G F ζ hζ → ℂ)
   change HasDerivAt (fun r=>u ((g*a t)*a (r-t)))
     (KPMsGreenFlux.rightDerivative F ζ hζ (wordIndexEquiv F b).1 (wordIndexEquiv F b).2 u (g*a t)) t at hp
   rw [he,←ResidualUpperWordInterchange.actualRight_eq] at hp
-  exact hp
+  measurability
 end DedekindZetaZeroFree.FourierContinuation.CurrentOutputExtension
 
 end

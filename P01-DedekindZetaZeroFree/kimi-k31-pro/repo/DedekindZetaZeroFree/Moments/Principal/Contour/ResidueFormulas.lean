@@ -45,7 +45,7 @@ private theorem finite_prime_delete_hasSum
           · have heq : v = p := HeightOneSpectrum.ext ((Ideal.IsMaximal.eq_of_le p.isMaximal (Ideal.IsMaximal.ne_top v.isMaximal) (Ideal.dvd_iff_le.mp hd)).symm)
             exact (hp (heq ▸ hv)).elim
         · rintro ⟨v, hv, h⟩
-          exact ⟨v, hv, (Ideal.mul_le_left).trans h⟩
+          exact ⟨v, hv, Ideal.mul_le_left.trans h⟩
       simp only [G, he]
       split_ifs <;> simp [Wmul]
     let H : Ideal (𝓞 F) → ℂ := fun I => if I ≤ p.asIdeal then G I else 0
@@ -54,7 +54,7 @@ private theorem finite_prime_delete_hasSum
       apply (hi.hasSum_iff ?_).mp
       · have heq : H ∘ (fun I : Ideal (𝓞 F) => I * p.asIdeal) = fun I => G I * W p.asIdeal := by
           funext I
-          simp [H, Function.comp_def, Ideal.mul_le_right, Gmul]
+          simp [H, Ideal.mul_le_right, Gmul]
         rw [heq]
         exact ih.mul_right _
       · intro I hI
@@ -68,7 +68,7 @@ private theorem finite_prime_delete_hasSum
         (fun I => if ∃ v ∈ insert p V, I ≤ v.asIdeal then 0 else W I) := by
       funext I
       by_cases hI : I ≤ p.asIdeal <;> by_cases hV : ∃ v ∈ V, I ≤ v.asIdeal <;>
-        simp [H, G, hI, hV, Finset.exists_mem_insert]
+        simp [H, G, hI, hV]
     rw [heq] at hh
     convert hh using 1
     rw [Finset.prod_insert hp]
@@ -406,7 +406,7 @@ theorem zResidue_eq (u : D.Row) (hu : u.u = 1) (ξ : ℂ) (hξ : 1 < ξ.re) (Z :
   have hne1 : ξ ≠ 1 := fun h => by rw [h] at hξ; simp at hξ
   have h16 : (1 / 6 : ℂ) = ((1 / 6 : ℝ) : ℂ) := by
     first | norm_num | simp | (push_cast; ring)
-  have h16re : ((1 / 6 : ℂ)).re = 1 / 6 := by rw [h16, Complex.ofReal_re]
+  have h16re : (1 / 6 : ℂ).re = 1 / 6 := by rw [h16, Complex.ofReal_re]
   have hmem : ((ξ, (1 : ℂ), (1 / 6 : ℂ)) : EulerDomain.Coordinates) ∈
       EulerDomain.OmegaStar := by
     simp only [EulerDomain.OmegaStar, Set.mem_setOf_eq, Complex.one_re, h16re]
@@ -425,7 +425,7 @@ theorem zResidue_eq (u : D.Row) (hu : u.u = 1) (ξ : ℂ) (hξ : 1 < ξ.re) (Z :
   have hMopen : IsOpen {z : ℂ | 0 < z.re} := isOpen_lt continuous_const Complex.continuous_re
   have hM : ContinuousAt D.M (1 / 6) :=
     (D.M_differentiableOn.differentiableAt
-      (hMopen.mem_nhds (by show (0 : ℝ) < ((1 / 6 : ℂ)).re; rw [h16re]; norm_num))).continuousAt
+      (hMopen.mem_nhds (by show (0 : ℝ) < (1 / 6 : ℂ).re; rw [h16re]; norm_num))).continuousAt
   have hpow : ContinuousAt (fun z : ℂ => (Z : ℂ) ^ ((Scales.xExponent / 2 : ℝ) + ξ - 1 +
       (Scales.smoothingExponent : ℂ) * z)) (1 / 6) :=
     ContinuousAt.const_cpow (by fun_prop) (Or.inl hZc)
@@ -442,7 +442,7 @@ theorem zResidue_eq (u : D.Row) (hu : u.u = 1) (ξ : ℂ) (hξ : 1 < ξ.re) (Z :
       isOpen_lt continuous_const Complex.continuous_re
     have hm : ∀ᶠ z in nhds (1 / 6 : ℂ), 1 / 20 - EulerDomain.pad < z.re :=
       hopen.mem_nhds (by
-        show 1 / 20 - EulerDomain.pad < ((1 / 6 : ℂ)).re
+        show 1 / 20 - EulerDomain.pad < (1 / 6 : ℂ).re
         rw [h16re]; simp only [EulerDomain.pad]; norm_num)
     exact eventually_nhdsWithin_of_eventually_nhds hm
   have hev : ∀ᶠ z in nhdsWithin (1 / 6 : ℂ) {1 / 6}ᶜ,

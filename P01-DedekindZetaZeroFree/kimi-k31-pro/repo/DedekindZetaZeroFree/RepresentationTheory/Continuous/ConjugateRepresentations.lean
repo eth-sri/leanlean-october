@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.Analysis.InnerProductSpaces.OperatorConjugation
 public import DedekindZetaZeroFree.RepresentationTheory.Continuous.MatrixCoefficients
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -34,7 +35,7 @@ noncomputable def conjugate (π : ContRepresentation 𝕜 G V) : ContRepresentat
   .ofMonoidHom
     { toFun g := conjCLM e (π g)
       map_one' := by simp
-      map_mul' g h := by rw [map_mul, conjCLM_mul] }
+      map_mul' g h := by simp_all }
 
 variable (π : ContRepresentation 𝕜 G V)
 
@@ -57,8 +58,7 @@ theorem star_matrixCoeff_eq_matrixCoeff_conjugate (hπ : Continuous π) (v w : V
     star (matrixCoeff π hπ v w) =
       matrixCoeff (conjugate e π) (continuous_conjugate e π hπ)
         (conjugation e v) (conjugation e w) := by
-  ext g
-  simp [inner_conjugation_conjugation, RCLike.star_def]
+  measurability
 
 end ContRepresentation
 

@@ -27,11 +27,11 @@ theorem phase_difference {K : Type*} [Field K]
     ((H * π ^ J - U * π ^ t * d) * v) / (S * U * π ^ (k + t)) -
       ((H * π ^ J - U * π ^ t * d') * v') / (S * U * π ^ (k + t)) =
       (S⁻¹ * U⁻¹) * b * q - S⁻¹ * r * v' := by
-  have hd' : d' = d - π ^ k * r := by linear_combination -hd
-  have hv' : v = v' + π ^ t * q := by linear_combination hv
+  have hd' : d' = d - π ^ k * r := by grind
+  have hv' : v = v' + π ^ t * q := by grind
   rw [hd', hv', pow_add]
   field_simp [hπ, hS, hU]
-  linear_combination π ^ t * q * hc
+  grind
 
 end DedekindZetaZeroFree.CRTRawLocalPhaseAlgebra
 

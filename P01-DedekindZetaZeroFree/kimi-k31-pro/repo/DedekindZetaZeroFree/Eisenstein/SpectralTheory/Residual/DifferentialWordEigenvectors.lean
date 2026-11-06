@@ -3,6 +3,7 @@ module
 public import DedekindZetaZeroFree.RepresentationTheory.Smooth.MatrixFlowDerivativeIdentification
 public import DedekindZetaZeroFree.RepresentationTheory.RankOne.Casimir.RightWordCommutation
 public import DedekindZetaZeroFree.Eisenstein.Continuation.SphericalScalarPoleClearing
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -32,7 +33,7 @@ theorem original_word_eigen
       eig * eigenvectorWordDerivative w f (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ g) := by
   let W := w.map (wordIndexEquiv F).symm
   let up := fun a => f (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ a)
-  have hW : W.map (wordIndexEquiv F) = w := by simp [W]
+  have hW : W.map (wordIndexEquiv F) = w := by measurability
   have hw : actualRightWord F ζ hζ W up =
       fun a => eigenvectorWordDerivative w f (KPSmoothLocalQuotientCharts.quotientMap F ζ hζ a) := by
     funext a
@@ -41,8 +42,7 @@ theorem original_word_eigen
   rw [KPGlobalResidualConstruction.CanonicalWholeCoreNative.SourceInverse.IncomingMatrixSmooth.native_casimir_commutes_word up hs W g]
   have hE : KPMsGreenFlux.casimir F ζ hζ up = eig • up := funext he
   rw [hE, word_smul]
-  change eig * actualRightWord F ζ hζ W up g = _
-  rw [hw]
+  simp_all
 
 end DedekindZetaZeroFree.FourierContinuation.ResidualWeakEnergy
 

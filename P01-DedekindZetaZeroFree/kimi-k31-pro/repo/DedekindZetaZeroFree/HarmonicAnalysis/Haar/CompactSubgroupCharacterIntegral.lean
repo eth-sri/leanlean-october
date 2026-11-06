@@ -31,7 +31,7 @@ theorem compactSubgroup_character_integral
       (∫ x in (U : Set G), (χ x : ℂ) ∂μ) = ∫ _ in (U : Set G), (1 : ℂ) ∂μ :=
         setIntegral_congr_fun hU.measurableSet (fun x hx => by simp [ht x hx])
       _ = ((μ (U : Set G)).toReal : ℂ) := by
-        simp [setIntegral_const, Measure.real, Complex.real_smul]
+        simp [Measure.real, Complex.real_smul]
   · rw [if_neg ht]
     obtain ⟨u, hu, hne⟩ : ∃ u ∈ U, χ u ≠ 1 := by simpa using ht
     have hmem (x : G) : u + x ∈ U ↔ x ∈ U :=

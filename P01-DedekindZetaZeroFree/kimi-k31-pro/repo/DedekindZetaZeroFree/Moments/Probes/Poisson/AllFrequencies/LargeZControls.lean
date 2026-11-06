@@ -33,14 +33,9 @@ theorem right_bounds :
   obtain ⟨C3, h3, H3⟩ := RawRightHecke31.recipe_L_right D 2 (by norm_num)
   refine ⟨max C1 (max C2 C3), lt_max_of_lt_left h1, fun u w hw => ?_, fun u ξ hξ => ?_,
     fun z hz => ?_⟩
-  · obtain ⟨a, b, c⟩ := H1 u w hw
-    exact ⟨a, b.trans (le_max_left _ _), c.trans (le_max_left _ _)⟩
-  · obtain ⟨a, b, c⟩ := H2 u ξ hξ
-    exact ⟨a, b.trans ((le_max_left _ _).trans (le_max_right _ _)),
-      c.trans ((le_max_left _ _).trans (le_max_right _ _))⟩
-  · obtain ⟨a, b, c⟩ := H3 z hz
-    exact ⟨a, b.trans ((le_max_right _ _).trans (le_max_right _ _)),
-      c.trans ((le_max_right _ _).trans (le_max_right _ _))⟩
+  · grind
+  · grind
+  · grind
 
 private lemma mem_OmegaStar_line (p : EulerDomain.Coordinates) (h1 : p.1.re = 4)
     (h2 : p.2.1.re = 4) (h3 : 1 / 6 < p.2.2.re) : p ∈ EulerDomain.OmegaStar := by
@@ -48,8 +43,7 @@ private lemma mem_OmegaStar_line (p : EulerDomain.Coordinates) (h1 : p.1.re = 4)
     1 < p.1.re + 6 * p.2.2.re ∧ 1 < p.1.re + p.2.1.re ∧ 2 < p.1.re + p.2.1.re + 6 * p.2.2.re ∧
     5 < 6 * p.1.re + 6 * p.2.2.re ∧ 1 / 2 < p.1.re ∧ 2 < 3 * p.1.re ∧
     5 / 2 < 3 * p.1.re + p.2.1.re
-  rw [h1, h2]
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> linarith
+  grind
 
 private lemma freq_pos (u : Frequency D.recipe) : 0 < frequencyNorm D.recipe u := by
   rw [← rawFrequency_norm D u]
@@ -119,9 +113,9 @@ private lemma key_ineq (A B Cc s : ℝ) (hA : 1 ≤ A) (hB : 1 ≤ B) (hC : 1 �
       _ = (Real.exp (-s ^ 2) * (1 + |s|) ^ 2) * Cc ^ 2 := by ring
       _ ≤ 2 * Cc ^ 2 := mul_le_mul_of_nonneg_right he (by positivity)
   have e1 : Real.exp (-s ^ 2) * ((Cc ^ 4)⁻¹ * (B ^ 2)⁻¹) = Real.exp (-s ^ 2) / (Cc ^ 4 * B ^ 2) := by
-    rw [div_eq_mul_inv, mul_inv]
+    grind
   have e2 : 2 * ((A ^ 2)⁻¹ * ((B ^ 2)⁻¹ * (Cc ^ 2)⁻¹)) = 2 / (A ^ 2 * (B ^ 2 * Cc ^ 2)) := by
-    rw [div_eq_mul_inv, mul_inv, mul_inv]
+    grind
   rw [e1, e2, div_le_div_iff₀ (by positivity) (by positivity)]
   calc Real.exp (-s ^ 2) * (A ^ 2 * (B ^ 2 * Cc ^ 2))
       = (Real.exp (-s ^ 2) * A ^ 2) * (B ^ 2 * Cc ^ 2) := by ring
@@ -148,7 +142,7 @@ private theorem rawKernel_norm_eq (u : Frequency D.recipe) (hq : 0 < frequencyNo
   have hZc : (0 : ℝ) < Z := hZ
   have hqc : (0 : ℝ) < frequencyNorm D.recipe u := hq
   have hre : ∀ A B C X E R : ℂ, A * B * C * X * E * R = A * E * (B * C * X) * R := by
-    intro A B C X E R; ring
+    grind
   have hkey : ∀ A E X R : ℂ, ‖A * E * X * R‖ = ‖A‖ * ‖E‖ * ‖X‖ * ‖R‖ := by
     intro A E X R; simp only [norm_mul]
   rw [hre, hkey]
@@ -175,7 +169,7 @@ private theorem rawFactor_norm_le (ε : ℝ) (hε : 0 < ε) :
     simp only [div_eq_mul_inv, norm_mul]
   have h6 : 2 ≤ (6 * z).re := by
     have : (6 * z).re = 6 * z.re := by simp
-    rw [this]; linarith
+    grind
   have h1 : ‖D.recipe.L (6 * z)‖ ≤ C := (hL z hz).2.1
   have h2 : ‖(pkg D).plus u w‖ ≤ C := (hp u w hw.ge).2.1
   have h4 : ‖((pkg D).minus u ξ)⁻¹‖ ≤ C := (hm u ξ hξ.ge).2.2
@@ -219,31 +213,27 @@ private theorem rawKernel_bound_explicit (ε : ℝ) (hε : 0 < ε) :
   rw [hE]
   have hrf : ‖rawFactor D u ((4 : ℂ) + (t1 : ℂ) * I) ((4 : ℂ) + (t2 : ℂ) * I)
       ((σ : ℂ) + (t3 : ℂ) * I)‖ ≤ Cf * frequencyNorm D.recipe u ^ ε :=
-    hCf u _ _ _ hre1 hw (by rw [hzre]; exact hσ1)
+    hCf u _ _ _ hre1 hw (by grind)
   have hex := exp_norm_bound ((4 : ℂ) + (t1 : ℂ) * I) σ t3 ((Scales.tailShift + 3) ^ 2)
     (by rw [hre1]; nlinarith)
   rw [him1] at hex
-  have hMb := hCM ((σ : ℂ) + (t3 : ℂ) * I) (by rw [hzre]; exact hσ1) (by rw [hzre]; exact hσ2)
+  have hMb := hCM ((σ : ℂ) + (t3 : ℂ) * I) (by grind) (by grind)
   rw [hzim] at hMb
-  have hWb := hCW ((4 : ℂ) + (t2 : ℂ) * I) (by rw [hw]) (by rw [hw])
+  have hWb := hCW ((4 : ℂ) + (t2 : ℂ) * I) (by grind) (by grind)
   have hwim : ((4 : ℂ) + (t2 : ℂ) * I).im = t2 := by simp
   rw [hwim] at hWb
   have hMn : ‖D.M ((σ : ℂ) + (t3 : ℂ) * I)‖ ≤ |CM| * ((1 + |t3|) ^ 4)⁻¹ := by
     rw [← div_eq_mul_inv, le_div_iff₀ (by positivity)]
-    have := mul_comm ‖D.M ((σ : ℂ) + (t3 : ℂ) * I)‖ ((1 + |t3|) ^ 4)
-    linarith [le_abs_self CM]
+    grind
   have hWn : ‖D.W1Hat ((4 : ℂ) + (t2 : ℂ) * I)‖ ≤ |CW| * ((1 + |t2|) ^ 2)⁻¹ := by
     rw [← div_eq_mul_inv, le_div_iff₀ (by positivity)]
-    have := mul_comm ‖D.W1Hat ((4 : ℂ) + (t2 : ℂ) * I)‖ ((1 + |t2|) ^ 2)
-    linarith [le_abs_self CW]
+    grind
   have hpeet : 1 + |t1| ≤ (1 + |t1 + t3|) * (1 + |t3|) := by
     have h : |t1| ≤ |t1 + t3| + |t3| := by
-      rcases abs_cases t1 with ⟨h1, h1'⟩ | ⟨h1, h1'⟩ <;>
-      rcases abs_cases (t1 + t3) with ⟨h2, h2'⟩ | ⟨h2, h2'⟩ <;>
-      rcases abs_cases t3 with ⟨h3, h3'⟩ | ⟨h3, h3'⟩ <;> linarith
+      grind
     nlinarith [abs_nonneg (t1 + t3), abs_nonneg t3, mul_nonneg (abs_nonneg (t1 + t3)) (abs_nonneg t3)]
   have hkey := key_ineq (1 + |t1|) (1 + |t2|) (1 + |t3|) (t1 + t3)
-    (by linarith [abs_nonneg t1]) (by linarith [abs_nonneg t2]) (by linarith [abs_nonneg t3])
+    (by grind) (by grind) (by grind)
     hpeet
   have hwm : WeightConvolution.weightModulus D ((4 : ℂ) + (t1 : ℂ) * I) σ 4 (t3, t2) ≤
       (2 * Real.exp ((Scales.tailShift + 3) ^ 2) * |CM| * |CW|) *
@@ -296,9 +286,7 @@ theorem rawKernel_integrable_line (u : Frequency D.recipe) (hu : u ≠ principal
       (c * (((1 + |t1|) ^ 2)⁻¹ * ((1 + |t2|) ^ 2)⁻¹))))) hcont.aestronglyMeasurable ?_
   refine Filter.Eventually.of_forall (fun t => ?_)
   have := h u Z hZ σ hσ (t1, t2, t)
-  refine this.trans (le_of_eq ?_)
-  simp only []
-  ring
+  grind
 
 theorem rawKernel_horizontal_tendsto_zero (u : Frequency D.recipe)
     (hu : u ≠ principalFrequency D.recipe) (Z : ℝ) (hZ : 2 ≤ Z) (ξ w : ℂ) (hξ : ξ.re = 4)
@@ -327,11 +315,11 @@ theorem rawKernel_horizontal_tendsto_zero (u : Frequency D.recipe)
   have h2 := tendsto_inv_atTop_zero.comp h1
   have h3 : Tendsto (fun T : ℝ => Kc * ((1 + T) ^ 2)⁻¹ * |Scales.tailShift - 2|) atTop (𝓝 0) := by
     have := (h2.const_mul Kc).mul_const |Scales.tailShift - 2|
-    simpa [Function.comp_def] using this
+    grind
   refine squeeze_zero_norm' ?_ h3
   filter_upwards [eventually_ge_atTop (0 : ℝ)] with T hT
   have habs : |ε * T| = T := by
-    rcases hε with rfl | rfl <;> simp [abs_of_nonneg hT]
+    grind
   have hle : (2 : ℝ) ≤ Scales.tailShift := by norm_num [Scales.tailShift]
   refine intervalIntegral.norm_integral_le_of_norm_le_const (fun x hx => ?_)
   rw [Set.uIoc_of_le hle] at hx
@@ -348,7 +336,7 @@ theorem rawKernel_horizontal_tendsto_zero (u : Frequency D.recipe)
         (c * (((1 + |t1|) ^ 2)⁻¹ * (((1 + |t2|) ^ 2)⁻¹ * ((1 + T) ^ 2)⁻¹)))
       ≤ Mx * (c * (((1 + |t1|) ^ 2)⁻¹ * (((1 + |t2|) ^ 2)⁻¹ * ((1 + T) ^ 2)⁻¹))) :=
         mul_le_mul_of_nonneg_right (hm2.trans hm) hG
-    _ = Kc * ((1 + T) ^ 2)⁻¹ := by rw [hKc]; ring
+    _ = Kc * ((1 + T) ^ 2)⁻¹ := by grind
 
 theorem Iz_shift_two_R (u : Frequency D.recipe) (hu : u ≠ principalFrequency D.recipe)
     (Z : ℝ) (hZ : 2 ≤ Z) (ξ w : ℂ) (hξ : ξ.re = 4) (hw : w.re = 4) :
@@ -371,8 +359,7 @@ theorem Iz_shift_two_R (u : Frequency D.recipe) (hu : u ≠ principalFrequency D
     intro z hz
     have hz1 : z ∈ {z : ℂ | 1 / 6 < z.re} := by
       have h1 : (2 : ℝ) ≤ z.re := hz.1.1
-      show 1 / 6 < z.re
-      linarith
+      grind
     exact ((hA z hz1).differentiableAt).differentiableWithinAt
   have hbot0 := rawKernel_horizontal_tendsto_zero D u hu Z hZ ξ w hξ hw (-1) (Or.inr rfl)
   have htop0 := rawKernel_horizontal_tendsto_zero D u hu Z hZ ξ w hξ hw 1 (Or.inl rfl)
@@ -381,11 +368,11 @@ theorem Iz_shift_two_R (u : Frequency D.recipe) (hu : u ≠ principalFrequency D
   have key := DedekindZetaZeroFree.Quantitative.SimplePoleVerticalShift.verticalIntegral_sub_eq_residue
     (a := 2) (b := Scales.tailShift) (p := (3 : ℂ)) (f := fun z : ℂ => rawKernel D u ξ w z Z)
     (res := 0)
-    (by norm_num) (by norm_num; exact hR) hf hres
+    (by norm_num) (by norm_num; grind) hf hres
     (rawKernel_integrable_line D u hu Z hZ ξ w hξ hw 2 ⟨le_rfl, by linarith⟩)
     (rawKernel_integrable_line D u hu Z hZ ξ w hξ hw Scales.tailShift ⟨by linarith, le_rfl⟩)
     hbot0 htop0
-  linear_combination -key
+  grind
 
 theorem triple_norm_le (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ (u : Frequency D.recipe), u ≠ principalFrequency D.recipe →
@@ -413,7 +400,7 @@ theorem triple_norm_le (ε : ℝ) (hε : 0 < ε) :
   have hgint : Integrable (fun t : ℝ × ℝ × ℝ => B * (c * (((1 + |t.1|) ^ 2)⁻¹ *
       (((1 + |t.2.1|) ^ 2)⁻¹ * ((1 + |t.2.2|) ^ 2)⁻¹)))) :=
     ((hI_inv_sq.mul_prod (hI_inv_sq.mul_prod hI_inv_sq)).const_mul c).const_mul B
-  have hR6 : (1 / 6 : ℝ) < Scales.tailShift := by norm_num [Scales.tailShift]
+  have hR6 : (1 / 6 : ℝ) < Scales.tailShift := by grind
   have hd : ∀ t : ℝ × ℝ × ℝ, DifferentiableAt ℂ
       (fun p : ℂ × ℂ × ℂ => rawKernel D u p.1 p.2.1 p.2.2 Z)
       (((4 : ℂ) + (t.1 : ℂ) * I, (4 : ℂ) + (t.2.1 : ℂ) * I,
@@ -423,7 +410,7 @@ theorem triple_norm_le (ε : ℝ) (hε : 0 < ε) :
     have h2 : ((4 : ℂ) + (t.2.1 : ℂ) * I).re = 4 := by simp
     have h3 : (((Scales.tailShift : ℝ) : ℂ) + (t.2.2 : ℂ) * I).re = Scales.tailShift := by simp
     have hz : (1 / 6 : ℝ) < (((Scales.tailShift : ℝ) : ℂ) + (t.2.2 : ℂ) * I).re := by
-      rw [h3]; exact hR6
+      grind
     exact RawKernelRegularity31.rawKernel_differentiableAt D u hu Z hZ0 _
       (mem_OmegaStar_line _ h1 h2 hz) hz (H2 u _ h1.ge).1
   have hmap : Continuous (fun t : ℝ × ℝ × ℝ =>
@@ -444,8 +431,7 @@ theorem triple_norm_le (ε : ℝ) (hε : 0 < ε) :
         (((Scales.tailShift : ℝ) : ℂ) + (t.2.2 : ℂ) * I) Z‖ ≤
       B * (c * (((1 + |t.1|) ^ 2)⁻¹ * (((1 + |t.2.1|) ^ 2)⁻¹ * ((1 + |t.2.2|) ^ 2)⁻¹))) := by
     intro t
-    rw [hBd]
-    exact h u Z hZ Scales.tailShift hRmem t
+    grind
   have hKint : Integrable (fun t : ℝ × ℝ × ℝ =>
       rawKernel D u ((4 : ℂ) + (t.1 : ℂ) * I) ((4 : ℂ) + (t.2.1 : ℂ) * I)
         (((Scales.tailShift : ℝ) : ℂ) + (t.2.2 : ℂ) * I) Z) :=
@@ -469,7 +455,7 @@ theorem triple_norm_le (ε : ℝ) (hε : 0 < ε) :
     _ = B * (c * I0 ^ 3) := by
         rw [integral_const_mul, integral_const_mul, e3]; ring
     _ ≤ B * (c * I0 ^ 3 + 1) := mul_le_mul_of_nonneg_left (by linarith) hB0
-    _ = _ := by rw [hBd]; ring
+    _ = _ := by grind
 
 end
 

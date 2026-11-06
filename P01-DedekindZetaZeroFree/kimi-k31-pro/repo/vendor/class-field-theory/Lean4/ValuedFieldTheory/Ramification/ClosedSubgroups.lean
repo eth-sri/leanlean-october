@@ -52,8 +52,7 @@ private theorem mem_decompositionGroup_iff_apply_mem
     rw [_root_.ValuationSubring.mem_pointwise_smul_iff_inv_smul_mem] at hmem
     change (sigma⁻¹ (sigma x) ∈ A) = (sigma x ∈ A) at hmem
     have hinv : sigma⁻¹ (sigma x) = x := by simp
-    rw [hinv] at hmem
-    exact hmem.symm.to_iff
+    grind
   · intro hsigma
     ext x
     rw [_root_.ValuationSubring.mem_pointwise_smul_iff_inv_smul_mem]
@@ -87,135 +86,13 @@ theorem decompositionGroup_isClosed
     · exact E.fixingSubgroup_isOpen.smul sigma
     · exact ⟨1, E.fixingSubgroup.one_mem, by simp⟩
 
-/-- The copy of inertia in the ambient Galois group is closed in the Krull
-topology. -/
-theorem inertiaGroupInAut_isClosed
-    (A : _root_.ValuationSubring L) :
-    IsClosed (inertiaGroupInAut K A : Set (L ≃ₐ[K] L)) where
-  isOpen_compl := isOpen_iff_mem_nhds.mpr fun sigma hsigma => by
-    rw [Set.mem_compl_iff, SetLike.mem_coe] at hsigma
-    by_cases hD : sigma ∈ decompositionGroup K A
-    · let delta : decompositionGroup K A := ⟨sigma, hD⟩
-      have hdelta : delta ∉ inertiaGroup K A := by
-        intro hI
-        exact hsigma ⟨delta, hI, rfl⟩
-      have haction : residueAction K A delta ≠ 1 := by
-        simpa [← residueAction_ker (K := K) A, MonoidHom.mem_ker] using hdelta
-      obtain ⟨y, hy⟩ := DFunLike.ne_iff.mp haction
-      obtain ⟨x, rfl⟩ := IsLocalRing.residue_surjective y
-      let E : IntermediateField K L := IntermediateField.adjoin K {(x : L)}
-      let : FiniteDimensional K E :=
-        IntermediateField.adjoin.finiteDimensional
-          (Algebra.IsIntegral.isIntegral (x : L))
-      apply mem_nhds_iff.mpr
-      refine ⟨sigma • (E.fixingSubgroup : Set (L ≃ₐ[K] L)), ?_,
-        E.fixingSubgroup_isOpen.smul sigma,
-        ⟨1, E.fixingSubgroup.one_mem, by simp⟩⟩
-      rintro tau ⟨g, hg, rfl⟩
-      rw [Set.mem_compl_iff, SetLike.mem_coe]
-      rintro ⟨i, hi, hitau⟩
-      have hgx : g (x : L) = (x : L) :=
-        (IntermediateField.mem_fixingSubgroup_iff E g).mp hg (x : L)
-          (IntermediateField.subset_adjoin (F := K) (S := {(x : L)}) (by simp))
-      have hiAction : residueAction K A (i : decompositionGroup K A) = 1 := by
-        exact MonoidHom.mem_ker.mp
-          ((residueAction_ker (K := K) A).symm ▸ hi)
-      apply hy
-      have happ := DFunLike.congr_fun hiAction (IsLocalRing.residue A x)
-      change i • IsLocalRing.residue A x = IsLocalRing.residue A x at happ
-      change delta • IsLocalRing.residue A x = IsLocalRing.residue A x
-      have heq := DFunLike.congr_fun hitau (x : L)
-      have hsmul : i • x = delta • x := by
-        apply Subtype.ext
-        change
-          (((i : decompositionGroup K A) : L ≃ₐ[K] L) (x : L)) =
-            ((delta : L ≃ₐ[K] L) (x : L))
-        simpa [AlgEquiv.mul_apply, hgx] using heq
-      change
-        IsLocalRing.residue A (delta • x) = IsLocalRing.residue A x
-      rw [← hsmul]
-      exact happ
-    · apply mem_nhds_iff.mpr
-      refine ⟨(decompositionGroup K A : Set (L ≃ₐ[K] L))ᶜ, ?_,
-        isOpen_compl_iff.mpr (decompositionGroup_isClosed K A), ?_⟩
-      · intro tau htau
-        rw [Set.mem_compl_iff, SetLike.mem_coe] at htau ⊢
-        rintro ⟨i, _hi, rfl⟩
-        exact htau (i : decompositionGroup K A).property
-      · simpa only [Set.mem_compl_iff, SetLike.mem_coe] using hD
 
-/-- The copy of the ramification group in the ambient Galois group is closed
-in the Krull topology. -/
-theorem ramificationGroupInAut_isClosed
-    (A : _root_.ValuationSubring L) :
-    IsClosed (ramificationGroupInAut K A : Set (L ≃ₐ[K] L)) where
-  isOpen_compl := isOpen_iff_mem_nhds.mpr fun sigma hsigma => by
-    rw [Set.mem_compl_iff, SetLike.mem_coe] at hsigma
-    by_cases hI : sigma ∈ inertiaGroupInAut K A
-    · rcases hI with ⟨delta, hdeltaI, hdelta⟩
-      subst sigma
-      let i : inertiaGroup K A := ⟨delta, hdeltaI⟩
-      have hiR : i ∉ ramificationGroup K A := by
-        intro hR
-        exact hsigma ⟨i, hR, rfl⟩
-      rw [mem_ramificationGroup_iff] at hiR
-      rcases Classical.not_forall.mp hiR with ⟨x, hx⟩
-      let E : IntermediateField K L := IntermediateField.adjoin K {(x : L)}
-      let : FiniteDimensional K E :=
-        IntermediateField.adjoin.finiteDimensional
-          (Algebra.IsIntegral.isIntegral (x : L))
-      apply mem_nhds_iff.mpr
-      refine ⟨((delta : L ≃ₐ[K] L) •
-          (E.fixingSubgroup : Set (L ≃ₐ[K] L))), ?_,
-        E.fixingSubgroup_isOpen.smul _,
-        ⟨1, E.fixingSubgroup.one_mem, by simp⟩⟩
-      rintro tau ⟨g, hg, rfl⟩
-      rw [Set.mem_compl_iff, SetLike.mem_coe]
-      rintro ⟨j, hjR, hjtau⟩
-      have hgx : g (x : L) = (x : L) :=
-        (IntermediateField.mem_fixingSubgroup_iff E g).mp hg (x : L)
-          (IntermediateField.subset_adjoin (F := K) (S := {(x : L)}) (by simp))
-      apply hx
-      have hjx := (mem_ramificationGroup_iff (K := K) A j).mp hjR x
-      have heq := DFunLike.congr_fun hjtau (x : L)
-      have hquot :
-          automorphismUnitQuotient K A (i : decompositionGroup K A) x =
-            automorphismUnitQuotient K A (j : decompositionGroup K A) x := by
-        have hmap :
-            Units.mapEquiv
-                (((i : decompositionGroup K A) : L ≃ₐ[K] L).toMulEquiv) x =
-              Units.mapEquiv
-                (((j : decompositionGroup K A) : L ≃ₐ[K] L).toMulEquiv) x := by
-          apply Units.ext
-          simpa [AlgEquiv.mul_apply, hgx] using heq.symm
-        unfold automorphismUnitQuotient
-        rw [hmap]
-      rw [hquot]
-      exact hjx
-    · apply mem_nhds_iff.mpr
-      refine ⟨(inertiaGroupInAut K A : Set (L ≃ₐ[K] L))ᶜ, ?_,
-        isOpen_compl_iff.mpr (inertiaGroupInAut_isClosed K A), ?_⟩
-      · intro tau htau
-        rw [Set.mem_compl_iff, SetLike.mem_coe] at htau ⊢
-        rintro ⟨i, _hi, rfl⟩
-        exact htau ⟨(i : inertiaGroup K A), i.property, rfl⟩
-      · simpa only [Set.mem_compl_iff, SetLike.mem_coe] using hI
 
-/-- Infinite Galois correspondence for the inertia field. -/
-theorem inertiaField_fixingSubgroup_eq
-    [IsGalois K L] (A : _root_.ValuationSubring L) :
-    (inertiaField K A).fixingSubgroup = inertiaGroupInAut K A := by
-  let H : ClosedSubgroup (L ≃ₐ[K] L) :=
-    ⟨inertiaGroupInAut K A, inertiaGroupInAut_isClosed K A⟩
-  exact InfiniteGalois.fixingSubgroup_fixedField H
 
-/-- Infinite Galois correspondence for the ramification field. -/
-theorem ramificationField_fixingSubgroup_eq
-    [IsGalois K L] (A : _root_.ValuationSubring L) :
-    (ramificationField K A).fixingSubgroup = ramificationGroupInAut K A := by
-  let H : ClosedSubgroup (L ≃ₐ[K] L) :=
-    ⟨ramificationGroupInAut K A, ramificationGroupInAut_isClosed K A⟩
-  exact InfiniteGalois.fixingSubgroup_fixedField H
+
+
+
+
 
 end ValuationSubring
 end HilbertRamification

@@ -50,7 +50,7 @@ private theorem rf_finite_prime_delete_hasSum
           · have heq : v = p := HeightOneSpectrum.ext ((Ideal.IsMaximal.eq_of_le p.isMaximal (Ideal.IsMaximal.ne_top v.isMaximal) (Ideal.dvd_iff_le.mp hd)).symm)
             exact (hp (heq ▸ hv)).elim
         · rintro ⟨v, hv, h⟩
-          exact ⟨v, hv, (Ideal.mul_le_left).trans h⟩
+          exact ⟨v, hv, Ideal.mul_le_left.trans h⟩
       simp only [G, he]
       split_ifs <;> simp [Wmul]
     let H : Ideal (𝓞 F) → ℂ := fun I => if I ≤ p.asIdeal then G I else 0
@@ -59,7 +59,7 @@ private theorem rf_finite_prime_delete_hasSum
       apply (hi.hasSum_iff ?_).mp
       · have heq : H ∘ (fun I : Ideal (𝓞 F) => I * p.asIdeal) = fun I => G I * W p.asIdeal := by
           funext I
-          simp [H, Function.comp_def, Ideal.mul_le_right, Gmul]
+          simp [H, Ideal.mul_le_right, Gmul]
         rw [heq]
         exact ih.mul_right _
       · intro I hI
@@ -73,7 +73,7 @@ private theorem rf_finite_prime_delete_hasSum
         (fun I => if ∃ v ∈ insert p V, I ≤ v.asIdeal then 0 else W I) := by
       funext I
       by_cases hI : I ≤ p.asIdeal <;> by_cases hV : ∃ v ∈ V, I ≤ v.asIdeal <;>
-        simp [H, G, hI, hV, Finset.exists_mem_insert]
+        simp [H, G, hI, hV]
     rw [heq] at hh
     convert hh using 1
     rw [Finset.prod_insert hp]
@@ -180,8 +180,8 @@ private lemma rf_row_matches (U : Frequency C) (s : ℂ) :
     unfold InitialSeparatedEuler.plusL InitialSeparatedEuler.dirichletSeries
     apply tsum_congr
     intro I
-    simp [coefficient, plusCoefficient, I.property.1, I.property.2, InitialSeparatedEuler.plusL,
-      InitialSeparatedEuler.dirichletSeries, ExteriorIdealEuler.summand]
+    simp [coefficient, plusCoefficient, I.property.1, I.property.2, 
+      ExteriorIdealEuler.summand]
   · change incompleteL U .minus s = _
     rw [show incompleteL U .minus s = _ from he .minus]
     unfold InitialSeparatedEuler.minusL InitialSeparatedEuler.dirichletSeries

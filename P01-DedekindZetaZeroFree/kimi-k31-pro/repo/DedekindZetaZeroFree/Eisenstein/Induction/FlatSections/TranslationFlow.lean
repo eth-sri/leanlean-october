@@ -42,7 +42,7 @@ theorem sourceDerivative_neg (s : ℝ) (X : Matrix (Fin 2) (Fin 2) ℂ) (v : Pri
   have he : (fun t : ℝ=>v (g*KPSmoothActualFlowData.matrixExponential (((-t):ℂ) • X)))=
       fun t : ℝ=>v (g*KPSmoothActualFlowData.matrixExponential ((t:ℂ) • (-X))) := by
     funext t
-    simp only [Complex.ofReal_neg,neg_smul,smul_neg]
+    simp only [neg_smul,smul_neg]
   simp only [Function.comp_def,Complex.ofReal_neg] at h
   rw [he] at h
   have H := (NativeComplexHCOperators.hasDerivAt_flow s (-X) v g).unique h

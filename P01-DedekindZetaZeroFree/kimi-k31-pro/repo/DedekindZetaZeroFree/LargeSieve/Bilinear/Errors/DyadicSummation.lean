@@ -169,7 +169,7 @@ theorem bilinear_error_dyadic_sum
       _ ≤ Vendor.dyadicLength K + 2 := by
         have hc : (dyadicScales ctx).card ≤ Vendor.dyadicLength K := by
           unfold dyadicScales
-          exact (Finset.card_image_le).trans (by simp [ctx])
+          exact Finset.card_image_le.trans (by simp [ctx])
         omega
   have hscale : ∀ b ∈ dyadicScales ctx, 1 ≤ b ∧ b ≤ K := by
     intro b hb

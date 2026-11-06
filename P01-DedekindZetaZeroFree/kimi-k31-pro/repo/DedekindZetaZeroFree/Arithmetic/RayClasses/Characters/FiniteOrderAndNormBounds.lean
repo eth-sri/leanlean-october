@@ -20,7 +20,7 @@ theorem rayCharacterFiniteOrder
   have hne : rayIdealClass K m hm I ≠ none := by
     intro h
     rw [rayIdealClass_eq_none_iff] at h
-    exact h.elim hI (fun h2 => h2 hcop)
+    grind
   obtain ⟨c, hc⟩ := Option.ne_none_iff_exists'.mp hne
   rw [hχ I, hc]
   rw [← map_pow, pow_card_eq_one', map_one]

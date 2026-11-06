@@ -37,7 +37,7 @@ private theorem entry_zero_iff (A B : KPRankOneInduction.GL2 F w)
     (i j : Fin 2) : A i j = 0 ↔ B i j = 0 := by
   obtain ⟨u, rfl⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp h
   simp only [Units.val_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply,
-    Fin.sum_univ_two, Matrix.scalar, Matrix.diagonal_apply]
+    Fin.sum_univ_two, Matrix.scalar]
   fin_cases j <;> simp [Units.ne_zero u]
 
 private theorem entry_ratio_eq (A B : KPRankOneInduction.GL2 F w)
@@ -45,7 +45,7 @@ private theorem entry_ratio_eq (A B : KPRankOneInduction.GL2 F w)
     (i j k : Fin 2) : A i j / A i k = B i j / B i k := by
   obtain ⟨u, rfl⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp h
   simp only [Units.val_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.mul_apply,
-    Fin.sum_univ_two, Matrix.scalar, Matrix.diagonal_apply]
+    Fin.sum_univ_two, Matrix.scalar]
   fin_cases j <;> fin_cases k <;> simp [mul_div_mul_right _ _ (Units.ne_zero u)]
 
 theorem mem_ordinaryOmega_iff (A : KPRankOneInduction.GL2 F w) :

@@ -3,6 +3,7 @@ module
 public import Mathlib.Topology.Algebra.ContinuousMonoidHom
 public import Mathlib.Topology.Algebra.Group.Quotient
 public import Mathlib.Topology.Algebra.Group.TopologicalAbelianization
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -87,12 +88,10 @@ private theorem topologicalAbelianizationMap_mk
   invFun := topologicalAbelianizationMap e.symm
   left_inv q := by
     refine q.inductionOn' ?_
-    intro x
-    simp
+    norm_num
   right_inv q := by
     refine q.inductionOn' ?_
-    intro x
-    simp
+    norm_num
   map_mul' x y := map_mul (topologicalAbelianizationMap e) x y
 
 /-- A continuous multiplicative equivalence induces the canonical

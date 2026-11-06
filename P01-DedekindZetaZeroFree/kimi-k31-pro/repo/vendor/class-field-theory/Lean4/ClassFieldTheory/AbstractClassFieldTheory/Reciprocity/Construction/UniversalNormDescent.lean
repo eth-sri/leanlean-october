@@ -36,44 +36,9 @@ noncomputable section
 open CategoryTheory
 open scoped BigOperators
 
-/-- The norm over a finite normal subgroup commutes with every ambient
-group action.  This is the equivariance used when the construction applies the norm
-to equation `(*)`. -/
-private theorem restricted_norm_action
-    {R : IntegralRepGroupType} [Group R] (H : Subgroup R) [H.Normal] [Fintype H]
-    (B : Rep ℤ R) (r : R) (x : B.V) :
-    (∑ h : H, B.ρ h.1 (B.ρ r x)) =
-      B.ρ r (∑ h : H, B.ρ h.1 x) := by
-  rw [map_sum]
-  let e : H ≃ H := (MulAut.conjNormal r).symm.toEquiv
-  calc
-    (∑ h : H, B.ρ h.1 (B.ρ r x)) =
-        ∑ h : H, B.ρ r (B.ρ (e h).1 x) := by
-      apply Finset.sum_congr rfl
-      intro h _
-      have he : (e h).1 = r⁻¹ * h.1 * r := by
-        exact MulAut.conjNormal_symm_apply r h
-      calc
-        B.ρ h.1 (B.ρ r x) = B.ρ (h.1 * r) x := by
-          rw [map_mul]
-          rfl
-        _ = B.ρ (r * (e h).1) x := by
-          rw [he]
-          simp [mul_assoc]
-        _ = B.ρ r (B.ρ (e h).1 x) := by
-          rw [map_mul]
-          rfl
-    _ = ∑ h : H, B.ρ r (B.ρ h.1 x) := by
-      exact e.sum_comp (fun h : H => B.ρ r (B.ρ h.1 x))
 
-private theorem restricted_rep_norm_action
-    {R : IntegralRepGroupType} [Group R] (H : Subgroup R) [H.Normal] [Fintype H]
-    (B : Rep ℤ R) (r : R) (x : B.V) :
-    let U : Rep ℤ H := Rep.res H.subtype B
-    U.norm.hom (B.ρ r x) = B.ρ r (U.norm.hom x) := by
-  let U : Rep ℤ H := Rep.res H.subtype B
-  simpa [Rep.norm, Representation.norm] using
-    restricted_norm_action H B r x
+
+
 
 /-- Transport the ordinary conjugation action back to a field stabilized
 by that conjugation. -/
@@ -155,72 +120,7 @@ theorem relativeNorm_conjugateStableAction
           ambientFixedAddSubgroup B F) : B.V) :=
       (transport_fixed_coe B _ F hF _).symm
 
-/-- The cohomological calculation in the first half of the universal norm-descent lemma.
 
-The hypothesis `hstar` is precisely equation `(*)`: it says that
-the class of `u` in coinvariants is fixed by `φ`.  The conclusion is not
-assumed: `H⁰=0` first produces the barred lifts, and `H⁻¹=0` then produces
-the correction term `y` appearing. -/
-theorem universalNormDescent_cyclic_lift_and_correction
-    {R : IntegralRepGroupType} [Group R] (H : Subgroup R) [H.Normal] [Fintype H]
-    (B : Rep ℤ R) (g : H) (hg : ∀ q, q ∈ Subgroup.zpowers g)
-    (hzero0 :
-      let U : Rep ℤ H := Rep.res H.subtype B
-      Limits.IsZero (tateCohomology U 0))
-    (hzeroMinusOne :
-      let U : Rep ℤ H := Rep.res H.subtype B
-      Limits.IsZero (tateCohomology U (-1)))
-    {ι : Type v} (s : Finset ι) (φ : R) (τ : ι → R)
-    (u : B.V) (uᵢ : ι → B.V)
-    (huFixed : ∀ q : H, B.ρ q.1 u = u)
-    (huᵢFixed : ∀ (i : ι) (q : H), B.ρ q.1 (uᵢ i) = uᵢ i)
-    (hstar : B.ρ φ u - u =
-      ∑ i ∈ s, (B.ρ (τ i) (uᵢ i) - uᵢ i)) :
-    ∃ (uBar : B.V) (uBarᵢ : ι → B.V) (y : B.V),
-      (∑ q : H, B.ρ q.1 uBar) = u ∧
-      (∀ i, (∑ q : H, B.ρ q.1 (uBarᵢ i)) = uᵢ i) ∧
-      B.ρ g.1 y - y =
-        B.ρ φ uBar - uBar -
-          ∑ i ∈ s, (B.ρ (τ i) (uBarᵢ i) - uBarᵢ i) := by
-  let U : Rep ℤ H := Rep.res H.subtype B
-  have huGenerator : U.ρ g u = u := huFixed g
-  have huLift : ∃ z : B.V, U.norm.hom z = u :=
-    exists_norm_eq_of_tateHZero_isZero U g hg hzero0 u huGenerator
-  obtain ⟨uBar, huBar⟩ := huLift
-  have huᵢGenerator (i : ι) : U.ρ g (uᵢ i) = uᵢ i := huᵢFixed i g
-  have huᵢLift (i : ι) : ∃ z : B.V, U.norm.hom z = uᵢ i :=
-    exists_norm_eq_of_tateHZero_isZero U g hg hzero0
-      (uᵢ i) (huᵢGenerator i)
-  choose uBarᵢ huBarᵢ using huᵢLift
-  let delta : B.V :=
-    B.ρ φ uBar - uBar -
-      ∑ i ∈ s, (B.ρ (τ i) (uBarᵢ i) - uBarᵢ i)
-  have hdeltaNorm : U.norm.hom delta = 0 := by
-    calc
-      U.norm.hom delta =
-          U.norm.hom (B.ρ φ uBar) - U.norm.hom uBar -
-            ∑ i ∈ s,
-              (U.norm.hom (B.ρ (τ i) (uBarᵢ i)) -
-                U.norm.hom (uBarᵢ i)) := by
-        dsimp [delta]
-        rw [map_sub, map_sub, map_sum]
-        simp_rw [map_sub]
-      _ = B.ρ φ u - u -
-          ∑ i ∈ s, (B.ρ (τ i) (uᵢ i) - uᵢ i) := by
-        rw [restricted_rep_norm_action H B φ uBar, huBar]
-        congr 1
-        apply Finset.sum_congr rfl
-        intro i _
-        rw [restricted_rep_norm_action H B (τ i) (uBarᵢ i), huBarᵢ i]
-      _ = 0 := by rw [hstar, sub_self]
-  obtain ⟨y, hy⟩ :=
-    CyclicCohomology.normKernel_le_sigmaMinusOneRange_of_tateHMinusOne_isZero
-      U g hg hzeroMinusOne delta hdeltaNorm
-  refine ⟨uBar, uBarᵢ, y, ?_, ?_, ?_⟩
-  · simpa [U, Rep.norm, Representation.norm] using huBar
-  · intro i
-    simpa [U, Rep.norm, Representation.norm] using huBarᵢ i
-  · simpa [U, delta] using hy
 
 /-- Enumerate the norm of a finite cyclic representation by the first
 n powers of a specified generator. -/

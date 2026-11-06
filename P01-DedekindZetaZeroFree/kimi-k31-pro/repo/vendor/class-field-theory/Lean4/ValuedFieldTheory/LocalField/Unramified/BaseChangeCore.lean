@@ -316,43 +316,7 @@ theorem finiteUnramifiedExtension_of_primitive_separable_integral_model
   exact (primitive_separable_integral_model_core
     v w hExt hhens a F hFmonic hFroot hFreduction haGen).1
 
-/-- the unramified base-change theorem, residue-generator endpoint for the primitive integral
-model.
 
-Under the same source hypotheses as the finite base-change criterion, the
-residue of the supplied primitive generator generates the entire target
-residue field over the base residue field. -/
-theorem unramifiedBaseChange_residue_adjoin_eq_top_of_primitive_separable_integral_model
-    {K L : Type*} [Field K] [Field L] [Algebra K L]
-    [FiniteDimensional K L]
-    (v : LubinTate.Valuations.ExponentialValuation K) (w : LubinTate.Valuations.ExponentialValuation L)
-    (hExt : ∀ a : K, w (algebraMap K L a) = v a)
-    (hhens : ValuationTheory.DiscreteValuationField.HenselianValuationByFactorization
-      (LubinTate.Valuations.exponentialValuationSubringAsValuationSubring v).valuation)
-    (a : LubinTate.Valuations.exponentialValuationSubring w)
-    (F : (LubinTate.Valuations.exponentialValuationSubring v)[X])
-    (hFmonic : F.Monic)
-    (hFroot :
-      (F.map ((algebraMap K L).comp
-        (LubinTate.Valuations.exponentialValuationSubring v).subtype)).eval (a : L) = 0)
-    (hFreduction :
-      (F.map (IsLocalRing.residue
-        (LubinTate.Valuations.exponentialValuationSubring v))).Separable)
-    (haGen : Algebra.adjoin K ({(a : L)} : Set L) = ⊤) :
-    let V := LubinTate.Valuations.exponentialValuationSubring v
-    let W := LubinTate.Valuations.exponentialValuationSubring w
-    let i := unramifiedValuationRingValuationRingMap v w hExt
-    letI : IsLocalHom i :=
-      unramifiedValuationRingValuationRingMap_isLocalHom v w hExt
-    letI : Algebra V W := i.toAlgebra
-    letI : Algebra (IsLocalRing.ResidueField V)
-        (IsLocalRing.ResidueField W) :=
-      (IsLocalRing.ResidueField.map i).toAlgebra
-    IntermediateField.adjoin (IsLocalRing.ResidueField V)
-        ({IsLocalRing.residue W a} :
-          Set (IsLocalRing.ResidueField W)) = ⊤ := by
-  exact (primitive_separable_integral_model_core
-    v w hExt hhens a F hFmonic hFroot hFreduction haGen).2
 
 end Valuations
 end AlgebraicNumberTheory

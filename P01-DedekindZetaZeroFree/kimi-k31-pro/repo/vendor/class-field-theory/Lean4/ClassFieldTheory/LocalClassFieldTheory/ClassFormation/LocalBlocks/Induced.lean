@@ -90,24 +90,7 @@ abbrev LocalPlaceBlock
     inferInstance
     (decompositionGroupLocalUnitsAction vK hvK w)
 
-/-- In cyclic coordinates, the local block is a finite product
-of conjugate copies of the chosen completion. -/
-noncomputable def localPlaceBlockEquivProduct
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    (w : AbsoluteValueExtension vK L)
-    (σ : L ≃ₐ[K] L)
-    (hgen : ∀ τ : L ≃ₐ[K] L,
-      τ ∈ Subgroup.zpowers σ) :
-    letI :=
-      decompositionGroupLocalUnitsAction vK hvK w
-    LocalPlaceBlock vK hvK w ≃*
-      (Fin (absoluteValueDecompositionGroup K w.1).index →
-        (LocalizedCompletion vK w)ˣ) :=
-  by
-    letI :=
-      decompositionGroupLocalUnitsAction vK hvK w
-    exact inducedCoordinatesOfFiniteCyclic
-      (absoluteValueDecompositionGroup K w.1) σ hgen
+
 
 /-- Degree-zero cohomology for one local block. -/
 noncomputable def localPlaceBlockHerbrandH0Equiv

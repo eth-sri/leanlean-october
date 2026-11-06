@@ -115,16 +115,7 @@ theorem standardLubinTateBaseUniformizerUnit_zpowers_le_normSubgroup
   rw [Subgroup.zpowers_le]
   exact standardLubinTateBaseUniformizerUnit_mem_normSubgroup hπ n
 
-/-- The same cyclic norm-subgroup inclusion using the inverse-uniformizer
-convention. -/
-theorem standardLubinTateBaseUniformizerUnit_inv_zpowers_le_normSubgroup
-    {F : LocalField.{u, v} K} {π : F.valuationSubring}
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (n : ℕ) :
-    Subgroup.zpowers ((standardLubinTateBaseUniformizerUnit hπ)⁻¹) ≤
-      standardLubinTateNormSubgroup hπ n := by
-  rw [Subgroup.zpowers_le]
-  exact standardLubinTateBaseUniformizerUnit_inv_mem_normSubgroup hπ n
+
 
 end LubinTate
 

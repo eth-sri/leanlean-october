@@ -22,7 +22,7 @@ theorem conductorScaledIdeal_ne_zero
     (m : Ideal (NumberField.RingOfIntegers F)) (hm : m ≠ ⊥)
     (a : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) (ha : a ≠ 0) :
     a * (m : FractionalIdeal (NumberField.RingOfIntegers F)⁰ F) ≠ 0 := by
-  exact mul_ne_zero ha (FractionalIdeal.coeIdeal_ne_zero.mpr hm)
+  simp_all
 
 theorem conductorScaledIdeal_le
     (m : Ideal (NumberField.RingOfIntegers F)) (hm : m ≠ ⊥)

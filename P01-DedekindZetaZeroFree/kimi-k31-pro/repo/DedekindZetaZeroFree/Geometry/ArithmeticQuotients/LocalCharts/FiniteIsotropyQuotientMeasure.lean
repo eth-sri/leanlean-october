@@ -151,8 +151,7 @@ theorem finite_isotropy_quotient_measure {G X : Type*} [Group G] [Countable G]
  Measure.map (Quotient.mk (MulAction.orbitRel G X))
    ((Fintype.card H : ℝ≥0∞)⁻¹ • μ.restrict S) =
  (Measure.map (Quotient.mk (MulAction.orbitRel G X)) (μ.restrict D)).restrict
-   ((Quotient.mk (MulAction.orbitRel G X)) '' S) := by
-  exact local_quotient_card μ H D S hD hS hFD hinv hsep
+   ((Quotient.mk (MulAction.orbitRel G X)) '' S) := local_quotient_card μ H D S hD hS hFD hinv hsep
 
 variable (F : Type) [Field F] [NumberField F] (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 variable (hF : NumberField.InfinitePlace.nrRealPlaces F = 0)
@@ -181,8 +180,7 @@ theorem chart_quotient_measure (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     have hj : j = A.components ∘ Sigma.mk C.component := by
       funext x; exact (A.components_formula C.component x).symm
     rw [hj]; exact A.components.isOpenEmbedding.comp IsOpenEmbedding.sigmaMk
-  letI : OpensMeasurableSpace (KPCuspSiegel.OrbitQuotient F Γ) := ⟨by
-    exact MeasurableSpace.generateFrom_le (fun s hs =>
+  letI : OpensMeasurableSpace (KPCuspSiegel.OrbitQuotient F Γ) := ⟨MeasurableSpace.generateFrom_le (fun s hs =>
       measurableSet_quotient.mpr ((hs.preimage (show Continuous π from continuous_quotient_mk')).measurableSet))⟩
   letI : BorelSpace (X F ζ hζ U) := ⟨rfl⟩
   have hjm : Measurable (j : _ → X F ζ hζ U) := hct.continuous.measurable

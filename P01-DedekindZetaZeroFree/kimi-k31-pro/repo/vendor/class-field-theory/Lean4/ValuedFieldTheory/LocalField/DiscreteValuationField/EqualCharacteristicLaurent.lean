@@ -124,15 +124,7 @@ section followed by the valuation-subring inclusion. -/
       (coeffSubringHom (F := F) p hcard a : K) := by
   rfl
 
-/-- The Teichmuller coefficient-field embedding is continuous when the finite
-residue field is given the discrete uniformity. -/
-theorem continuous_coeffHom_of_discrete [Finite F.residueField]
-    (p : ℕ) [Fact p.Prime] [CharP F.valuationSubring p]
-    {n : ℕ+} (hcard : Nat.card F.residueField = p ^ (n : ℕ))
-    [UniformSpace F.residueField] [DiscreteUniformity F.residueField]
-    [TopologicalSpace K] :
-    Continuous (coeffHom (F := F) p hcard) :=
-  continuous_of_discreteTopology
+
 
 /-- The valuation-ring Teichmuller coefficient section is continuous from the
 discrete residue-field topology to any topology on the valuation ring. -/
@@ -144,29 +136,7 @@ theorem continuous_coeffSubringHom_of_discrete [Finite F.residueField]
     Continuous (coeffSubringHom (F := F) p hcard) :=
   continuous_of_discreteTopology
 
-/-- A complete-DVF uniformizer is topologically nilpotent for the
-range-restricted valued topology. -/
-theorem uniformizer_hasEval_mrangeRestrict
-    {π : F.valuationSubring}
-    (hπ : F.valuation.IsUniformizer (π : K)) :
-    letI : Valued K
-        (MonoidHom.mrange F.valuation.toMonoidWithZeroHom) :=
-      (_root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrictValued F)
-    PowerSeries.HasEval (π : K) := by
-  let Γ : Type v :=
-    MonoidHom.mrange F.valuation.toMonoidWithZeroHom
-  let : Valued K Γ := (_root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrictValued F)
-  have : IsCyclic Γˣ := by
-    simpa [Γ] using
-      _root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict_units_isCyclic F
-  have : MulArchimedean Γ :=
-    _root_.LocalFieldTheory.DiscreteValuationField.WithZeroValuation.units_isCyclic_mulArchimedean Γ
-  have hπ_lt :
-      (Valued.v : _root_.Valuation K Γ) (π : K) < 1 := by
-    change _root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict F (π : K) < (1 : Γ)
-    rw [← Subtype.coe_lt_coe]
-    simpa [Γ, _root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict] using hπ.val_lt_one
-  exact Valued.tendsto_zero_pow_of_v_lt_one hπ_lt
+
 
 /-- The maximal-ideal adic topology on the valuation ring is linear. -/
 private theorem valuationSubring_isLinearTopology_adic :
@@ -507,30 +477,7 @@ This is the base algebra for the remaining finite-dimensionality step. -/
   RingHom.toAlgebra
     (laurentSeriesEvalHom (F := F) p hcard π hπ hcoeff hπeval)
 
-/--
-Under the Laurent-series algebra structure, the algebra map evaluates a series through
-`laurentSeriesEvalHom`.
--/
-theorem algebraMap_laurentSeriesAlgebra_apply
-    [Finite F.residueField]
-    (p : ℕ) [Fact p.Prime] [CharP F.valuationSubring p]
-    {n : ℕ+} (hcard : Nat.card F.residueField = p ^ (n : ℕ))
-    (π : F.valuationSubring)
-    (hπ : F.valuation.IsUniformizer (π : K))
-    [UniformSpace F.residueField] [IsUniformAddGroup F.residueField]
-    [IsTopologicalSemiring F.residueField]
-    [UniformSpace F.valuationSubring] [IsUniformAddGroup F.valuationSubring]
-    [T2Space F.valuationSubring] [CompleteSpace F.valuationSubring]
-    [IsTopologicalRing F.valuationSubring]
-    [IsLinearTopology F.valuationSubring F.valuationSubring]
-    (hcoeff : Continuous (coeffSubringHom (F := F) p hcard))
-    (hπeval : PowerSeries.HasEval π) (x : F.residueField⸨X⸩) :
-    letI : Algebra F.residueField⸨X⸩ K :=
-      laurentSeriesAlgebra
-        (F := F) p hcard π hπ hcoeff hπeval
-    algebraMap F.residueField⸨X⸩ K x =
-      laurentSeriesEvalHom (F := F) p hcard π hπ hcoeff hπeval x := by
-  rfl
+
 
 /-- The adic valuation-ring power-series evaluation with all topology
 instances supplied from the complete-DVF structure. -/
@@ -820,15 +767,7 @@ theorem adicLaurentSeriesEvalHom_surjective
 end EqualCharacteristicLaurent
 end CompleteDVF
 
-/-- If the structure map of an algebra over a field is onto, the algebra is
-one-dimensional as a vector space over the base. -/
-theorem finiteDimensional_of_surjective_algebraMap
-    (E L : Type u) [Field E] [Field L] [Algebra E L]
-    (hsurj : Function.Surjective (algebraMap E L)) :
-    FiniteDimensional E L := by
-  exact
-    FiniteDimensional.of_surjective (Algebra.linearMap E L) <| by
-      simpa [Algebra.coe_linearMap] using hsurj
+
 
 namespace LocalField
 
@@ -848,40 +787,9 @@ noncomputable def laurentImageSubfield
   (_root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.EqualCharacteristicLaurent.adicLaurentSeriesEvalHom
     (F := F.toCompleteDVF) p hcard π hπ).fieldRange
 
-/--
-Establishes the membership statement
-`CompleteDVF.EqualCharacteristicLaurent.adicLaurentSeriesEvalHom (F := F.toCompleteDVF) p hcard π
-hπ x ∈ F.laurentImageSubfield p hcard π hπ`.
--/
-theorem adicLaurentSeriesEval_mem_laurentImageSubfield
-    (p : ℕ) [Fact p.Prime] [CharP F.valuationSubring p]
-    {n : ℕ+} (hcard : Nat.card F.residueField = p ^ (n : ℕ))
-    (π : F.valuationSubring)
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K))
-    (x : F.residueField⸨X⸩) :
-    _root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.EqualCharacteristicLaurent.adicLaurentSeriesEvalHom
-        (F := F.toCompleteDVF) p hcard π hπ x ∈
-      F.laurentImageSubfield p hcard π hπ :=
-  RingHom.mem_fieldRange_self
-    (_root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.EqualCharacteristicLaurent.adicLaurentSeriesEvalHom
-      (F := F.toCompleteDVF) p hcard π hπ) x
 
-/-- Establishes the identity `F.laurentImageSubfield p hcard π hπ = ⊤`. -/
-theorem laurentImageSubfield_eq_top
-    (p : ℕ) [Fact p.Prime] [CharP F.valuationSubring p]
-    {n : ℕ+} (hcard : Nat.card F.residueField = p ^ (n : ℕ))
-    (π : F.valuationSubring)
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) :
-    F.laurentImageSubfield p hcard π hπ = ⊤ := by
-  ext x
-  constructor
-  · intro _hx
-    trivial
-  · intro _hx
-    rcases _root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.EqualCharacteristicLaurent.adicLaurentSeriesEvalHom_surjective
-        (F := F.toCompleteDVF) p hcard π hπ x with
-      ⟨y, hy⟩
-    exact (RingHom.mem_fieldRange).2 ⟨y, hy⟩
+
+
 
 /-- The Laurent-series field is identified with its image in `K`. -/
 noncomputable def laurentSeriesEquivLaurentImageSubfield
@@ -1039,49 +947,7 @@ noncomputable def laurentImageSubfield_normedAlgebra
         change ‖(a : K) * x‖ ≤ ‖(a : K)‖ * ‖x‖
         exact norm_mul_le (a : K) x }
 
-/-- The local field is finite-dimensional over the image of the Laurent-series
-base field. -/
-theorem finiteDimensional_over_laurentImageSubfield
-    (p : ℕ) [Fact p.Prime] [CharP F.valuationSubring p]
-    {n : ℕ+} (hcard : Nat.card F.residueField = p ^ (n : ℕ))
-    (π : F.valuationSubring)
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) :
-    letI : Valued K
-        (MonoidHom.mrange F.toCompleteDVF.valuation.toMonoidWithZeroHom) :=
-      ((_root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrictValued F.toCompleteDVF))
-    letI : NontriviallyNormedField K :=
-      _root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict_nontriviallyNormedField F.toCompleteDVF
-    letI : NontriviallyNormedField
-        (F.laurentImageSubfield p hcard π hπ) :=
-      F.laurentImageSubfield_nontriviallyNormedField p hcard π hπ
-    letI : NormedAlgebra
-        (F.laurentImageSubfield p hcard π hπ) K :=
-      F.laurentImageSubfield_normedAlgebra p hcard π hπ
-    FiniteDimensional (F.laurentImageSubfield p hcard π hπ) K := by
-  let Γ : Type v :=
-    MonoidHom.mrange F.toCompleteDVF.valuation.toMonoidWithZeroHom
-  let : Valued K Γ := ((_root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrictValued F.toCompleteDVF))
-  let : NontriviallyNormedField K :=
-    _root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict_nontriviallyNormedField F.toCompleteDVF
-  let : NontriviallyNormedField
-      (F.laurentImageSubfield p hcard π hπ) :=
-    F.laurentImageSubfield_nontriviallyNormedField p hcard π hπ
-  let : NormedAlgebra
-      (F.laurentImageSubfield p hcard π hπ) K :=
-    F.laurentImageSubfield_normedAlgebra p hcard π hπ
-  have htop : F.laurentImageSubfield p hcard π hπ = ⊤ :=
-    F.laurentImageSubfield_eq_top p hcard π hπ
-  have hsurj :
-      Function.Surjective
-        (algebraMap (F.laurentImageSubfield p hcard π hπ) K) := by
-    intro x
-    have hxmem : x ∈ F.laurentImageSubfield p hcard π hπ := by
-      rw [htop]
-      trivial
-    exact ⟨⟨x, hxmem⟩, rfl⟩
-  exact
-    finiteDimensional_of_surjective_algebraMap
-      (F.laurentImageSubfield p hcard π hπ) K hsurj
+
 
 /-- The actual Laurent-series base acts on `K` through the image subfield. -/
 @[reducible] noncomputable def laurentSeriesAlgebra
@@ -1096,87 +962,11 @@ theorem finiteDimensional_over_laurentImageSubfield
         F.residueField⸨X⸩ →+*
           F.laurentImageSubfield p hcard π hπ))
 
-/--
-The Laurent-series algebra map is the series equivalence followed by inclusion of the Laurent
-image subfield.
--/
-theorem laurentSeriesAlgebra_algebraMap
-    (p : ℕ) [Fact p.Prime] [CharP F.valuationSubring p]
-    {n : ℕ+} (hcard : Nat.card F.residueField = p ^ (n : ℕ))
-    (π : F.valuationSubring)
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) :
-    letI : Algebra F.residueField⸨X⸩ K :=
-      F.laurentSeriesAlgebra p hcard π hπ
-    algebraMap F.residueField⸨X⸩ K =
-      (F.laurentImageSubfield p hcard π hπ).subtype.comp
-        (F.laurentSeriesEquivLaurentImageSubfield p hcard π hπ :
-          F.residueField⸨X⸩ →+*
-            F.laurentImageSubfield p hcard π hπ) := by
-  rfl
 
-/-- The local field is finite-dimensional over the actual Laurent-series
-base field. -/
-theorem finiteDimensional_over_laurentSeries
-    (p : ℕ) [Fact p.Prime] [CharP F.valuationSubring p]
-    {n : ℕ+} (hcard : Nat.card F.residueField = p ^ (n : ℕ))
-    (π : F.valuationSubring)
-    (hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K)) :
-    letI : Algebra F.residueField⸨X⸩ K :=
-      F.laurentSeriesAlgebra p hcard π hπ
-    FiniteDimensional F.residueField⸨X⸩ K := by
-  let : Algebra F.residueField⸨X⸩ K :=
-    F.laurentSeriesAlgebra p hcard π hπ
-  let Γ : Type v :=
-    MonoidHom.mrange F.toCompleteDVF.valuation.toMonoidWithZeroHom
-  let : Valued K Γ := ((_root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrictValued F.toCompleteDVF))
-  let : NontriviallyNormedField K :=
-    _root_.LocalFieldTheory.DiscreteValuationField.CompleteDVF.mrangeRestrict_nontriviallyNormedField F.toCompleteDVF
-  let : NontriviallyNormedField
-      (F.laurentImageSubfield p hcard π hπ) :=
-    F.laurentImageSubfield_nontriviallyNormedField p hcard π hπ
-  let : NormedAlgebra
-      (F.laurentImageSubfield p hcard π hπ) K :=
-    F.laurentImageSubfield_normedAlgebra p hcard π hπ
-  have : FiniteDimensional
-      (F.laurentImageSubfield p hcard π hπ) K :=
-    F.finiteDimensional_over_laurentImageSubfield p hcard π hπ
-  have hcompat :
-      (algebraMap (F.laurentImageSubfield p hcard π hπ) K).comp
-          (F.laurentSeriesEquivLaurentImageSubfield p hcard π hπ :
-            F.residueField⸨X⸩ →+*
-              F.laurentImageSubfield p hcard π hπ) =
-        (RingEquiv.refl K).toRingHom.comp
-          (algebraMap F.residueField⸨X⸩ K) := by
-    ext x
-    rfl
-  have hrank :
-      Module.rank F.residueField⸨X⸩ K =
-        Module.rank (F.laurentImageSubfield p hcard π hπ) K := by
-    simpa using
-      (Algebra.rank_eq_of_equiv_equiv
-        (F.laurentSeriesEquivLaurentImageSubfield p hcard π hπ)
-        (RingEquiv.refl K) hcompat)
-  exact
-    FiniteDimensional.of_rank_eq_nat
-      (n := Module.finrank
-        (F.laurentImageSubfield p hcard π hπ) K) <| by
-        simpa [Module.finrank_eq_rank'] using hrank
 
-/-- The local-field structure classification, equal-characteristic converse branch: after choosing a
-uniformizer and the finite residue field as coefficient field, `K` is
-finite-dimensional over `κ((X))`. -/
-theorem equalCharacteristic_exists_laurent_finiteExtension
-    (p : ℕ) [Fact p.Prime] [CharP F.valuationSubring p]
-    {n : ℕ+} (hcard : Nat.card F.residueField = p ^ (n : ℕ)) :
-    ∃ π : F.valuationSubring,
-      ∃ _hπ : F.toCompleteDVF.valuation.IsUniformizer (π : K),
-        ∃ hAlg : Algebra F.residueField⸨X⸩ K,
-          letI : Algebra F.residueField⸨X⸩ K := hAlg
-          FiniteDimensional F.residueField⸨X⸩ K := by
-  rcases F.exists_uniformizer with ⟨π, hπ⟩
-  exact
-    ⟨π, hπ, F.laurentSeriesAlgebra p hcard π hπ,
-      F.finiteDimensional_over_laurentSeries p hcard π hπ⟩
+
+
+
 
 end LocalField
 end LocalFieldTheory.DiscreteValuationField

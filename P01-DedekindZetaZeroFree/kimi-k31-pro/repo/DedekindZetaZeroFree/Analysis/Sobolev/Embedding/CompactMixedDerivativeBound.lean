@@ -52,7 +52,7 @@ private theorem mixed_perm {n : ℕ} {l k : List (Fin n)} (hp : l.Perm k)
 private theorem directions_count {n k : ℕ} (α : MultiIndex n k) (i : Fin n) :
     α.directions.count i = (α.val i).val := by
   rw [MultiIndex.directions, List.count_flatMap, ← List.sum_toFinset _ (List.nodup_finRange n)]
-  simp [Function.comp_def, List.count_replicate]
+  simp [List.count_replicate]
 
 private theorem full_mixed_index {n m : ℕ} (hn : 0 < n) (α : MultiIndex n m)
     {w : Space n → ℂ} (hw : ContDiff ℝ (⊤ : ℕ∞) w) :

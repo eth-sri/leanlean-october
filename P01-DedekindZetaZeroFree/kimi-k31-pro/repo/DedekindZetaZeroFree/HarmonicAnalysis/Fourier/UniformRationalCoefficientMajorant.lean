@@ -332,7 +332,7 @@ theorem uniform_majorant_partial_matching {I J P : Type*}
         exact hh ▸ h.choose_spec
       · intro hr
         exact congrArg some (hunique i _ _ h.choose_spec hr)
-    · simp only [Option.noConfusion, false_iff]
+    · simp only [false_iff]
       exact fun hr => h ⟨j, hr⟩
   have hp := (summable_partition (show 0 ≤ b from hpos)
     (s := fun j : Option J => g ⁻¹' {j}) (by

@@ -75,7 +75,7 @@ private theorem pair_of_arithmetic_inputs
     (KPKirillovProjectorGerms.frequencyCharacter F q a) hψ hunitary hconductor κ hκ ψbar hbar
   let t : actualTorus F ζ hζ q := ActualFiniteTorus.torusLift F ζ hζ q a
   have ht : S.borel.coordinate t = a := S.coordinate_lift t a (by
-    simp [t, ActualFiniteTorus.torusLift, ActualFiniteTorus.normalWord, ActualFiniteTorus.central])
+    simp [t, ActualFiniteTorus.torusLift, ActualFiniteTorus.normalWord])
   have hfreq := actual_reverse_frequency_pair_transport F ζ hζ q S P₀
     μ hμ t a 1 (by rw [ht]; simp) v₀ v₂ hi
   obtain ⟨e⟩ := independence_of_polarization S.heisenberg P₀ P

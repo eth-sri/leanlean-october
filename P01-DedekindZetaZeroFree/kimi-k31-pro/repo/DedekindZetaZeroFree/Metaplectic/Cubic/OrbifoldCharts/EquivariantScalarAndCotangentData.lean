@@ -103,7 +103,7 @@ private theorem toActual_volume_aux :
   have h := hp.comp (hA.comp (baseReindex (F := F)).symm.measurePreserving)
   convert h using 1
   funext x k
-  simp [toActual, labeledA, Equiv.piCongrLeft_apply_apply, Function.comp_def]
+  simp [toActual, labeledA, Function.comp_def]
   rfl
 
 variable (a : ShrunkChart F ζ hζ U R P H)

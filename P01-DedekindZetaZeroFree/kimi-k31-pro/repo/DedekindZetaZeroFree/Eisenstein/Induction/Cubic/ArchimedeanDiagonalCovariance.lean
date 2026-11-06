@@ -129,7 +129,7 @@ theorem aInfinity_delta (u : InfinitePlace F → ℝ) :
       Real.exp (2 * ∑ v, u v) := by
   have hz : (fun v => (Real.exp (u v) : ℂ)) ∈ KPGlobalTorusFunctionData.torusArchDomain F := by
     intro w
-    simp only [KPGlobalTorusFunctionData.torusArchDomain, Set.mem_setOf_eq]
+    simp only
     exact_mod_cast (Real.exp_ne_zero (u w))
   have h := KPGlobalTorusBorelNormTwistTransport.AnalyticInputs.delta_chart_formula
     F ζ hζ (fun v => (Real.exp (u v) : ℂ)) hz

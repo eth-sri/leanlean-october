@@ -1,6 +1,7 @@
 module
 
 public import ValuedFieldTheory.LocalField.DiscreteValuationField.Basic
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -50,8 +51,7 @@ The defining evaluation formula for `coe_valuationSubringUnitsToFieldUnits` is
   change
     ((F.valuation.valuationSubring.unitGroupMulEquiv.symm a : Kˣ) : K) =
       (a : K)
-  exact _root_.ValuationSubring.coe_unitGroupMulEquiv_symm_apply
-    (A := F.valuation.valuationSubring) (K := K) a
+  norm_num
 
 /--
 Establishes the membership statement `(CompleteDVF.valuationSubringUnitsToFieldUnits F) a ∈
@@ -61,11 +61,7 @@ theorem valuationSubringUnitsToFieldUnits_mem_unitGroup
     (F : CompleteDVF.{u, v} K) (a : F.valuationSubringˣ) :
     (LocalFieldTheory.DiscreteValuationField.CompleteDVF.valuationSubringUnitsToFieldUnits F) a ∈
       F.valuation.valuationSubring.unitGroup := by
-  change
-    ((F.valuation.valuationSubring.unitGroupMulEquiv.symm a :
-      F.valuation.valuationSubring.unitGroup) : Kˣ) ∈
-      F.valuation.valuationSubring.unitGroup
-  exact (F.valuation.valuationSubring.unitGroupMulEquiv.symm a).2
+  norm_num
 
 
 end CompleteDVF

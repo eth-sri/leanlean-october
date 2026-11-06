@@ -74,7 +74,7 @@ theorem localScaledBallDual_map_mul_eq_annihilator
       localFiniteAnnihilator F v (finiteCompletionBall F v m) := by
   apply AddSubgroup.map_comap_eq_self
   intro x hx
-  exact ⟨(↑b⁻¹ : v.adicCompletion F) * x, by simp [mul_assoc]⟩
+  exact ⟨(↑b⁻¹ : v.adicCompletion F) * x, by simp⟩
 
 theorem localFiniteAnnihilator_map_localScaledBallDual
     (v : HeightOneSpectrum (𝓞 F)) (b : (v.adicCompletion F)ˣ) (m : ℤ) :

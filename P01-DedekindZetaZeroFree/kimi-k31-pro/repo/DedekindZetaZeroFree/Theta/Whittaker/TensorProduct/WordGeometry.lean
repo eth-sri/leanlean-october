@@ -35,11 +35,7 @@ def FrozenTensor.placeEquiv {v : R.A.UnitQuotient} (X : FrozenTensor R C v) :
   left_inv p := by cases p <;> rfl
   right_inv p := by rcases p with ⟨p,hp⟩; cases p <;> rfl
 
-def restrictedEval (p : KPHilbert.Place F) : RestrictedCover F R.A.zeta12 R.A.primitive_zeta12 →*
-    KPLocalCover.CubicGL2Raw F R.A.zeta12 R.A.primitive_zeta12 p where
-  toFun u := u p
-  map_one' := rfl
-  map_mul' _ _ := rfl
+
 
 theorem restricted_list_single_eval {I : Type*}
     (e : I → KPHilbert.Place F)

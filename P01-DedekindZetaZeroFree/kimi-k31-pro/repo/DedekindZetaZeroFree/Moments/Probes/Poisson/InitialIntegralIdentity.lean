@@ -125,10 +125,10 @@ theorem closedRegion_subset_closure : closedRegion ⊆ closure strictRegion := b
     rw [e] at h0
     exact h0.mono_left nhdsWithin_le_nhds
   refine mem_closure_of_tendsto ht ?_
-  refine Filter.eventually_of_mem (self_mem_nhdsWithin) (fun ε hε => ?_)
+  refine Filter.eventually_of_mem self_mem_nhdsWithin (fun ε hε => ?_)
   have hε' : 0 < ε := hε
   simp only [strictRegion, Set.mem_setOf_eq, Complex.add_re, Complex.ofReal_re]
-  exact ⟨by linarith, by linarith, by linarith⟩
+  grind
 
 private theorem crp_aux (q : ℝ) (z : ℂ) (s : ℂ) :
     s = comparisonRealPower q z * (comparisonRealPower q (-z) * s) := by
@@ -136,7 +136,7 @@ private theorem crp_aux (q : ℝ) (z : ℂ) (s : ℂ) :
   have : comparisonRealPower q z * comparisonRealPower q (-z) = 1 := by
     unfold comparisonRealPower
     rw [← Complex.exp_add, ← add_mul, add_neg_cancel, zero_mul, Complex.exp_zero]
-  rw [this, one_mul]
+  grind
 
 private theorem majorant_antitone' (i : NormalizedProbe.MellinSeriesIndex D.recipe.probe)
     {a b c a' b' c' : ℝ} (ha : a ≤ a') (hb : b ≤ b') (hc : c ≤ c') :
@@ -237,27 +237,27 @@ theorem rowFactor_continuousOn (u : D.Row) :
   have hZ : ContinuousAt (fun p : ℂ × ℂ × ℂ => D.zetaSCont (6 * p.2.2)) p := by
     have hg : ContinuousAt D.zetaSCont (6 * p.2.2) :=
       (RightHeckeBounds.zetaSCont_analyticOnNhd D (6 * p.2.2)
-        ⟨by simp only [Set.mem_setOf_eq]; rw [hz6]; linarith,
-         hne1 _ (by rw [hz6]; linarith)⟩).continuousAt
+        ⟨by grind,
+         hne1 _ (by grind)⟩).continuousAt
     have hf : ContinuousAt (fun p : ℂ × ℂ × ℂ => 6 * p.2.2) p := by fun_prop
     exact ContinuousAt.comp (g := D.zetaSCont) (f := fun p : ℂ × ℂ × ℂ => 6 * p.2.2) hg hf
   have hP : ContinuousAt (fun p : ℂ × ℂ × ℂ => D.Lpsi u p.2.1) p := by
     have hg : ContinuousAt (D.Lpsi u) p.2.1 :=
       (D.Lpsi_analyticOnNhd u p.2.1
-        ⟨by simp only [Set.mem_setOf_eq]; linarith, hne1 _ h2⟩).continuousAt
+        ⟨by grind, hne1 _ h2⟩).continuousAt
     have hf : ContinuousAt (fun p : ℂ × ℂ × ℂ => p.2.1) p := by fun_prop
     exact ContinuousAt.comp (g := D.Lpsi u) (f := fun p : ℂ × ℂ × ℂ => p.2.1) hg hf
   have hL : ContinuousAt (fun p : ℂ × ℂ × ℂ => D.Llam u p.1) p := by
     have hg : ContinuousAt (D.Llam u) p.1 :=
       (D.Llam_analyticOnNhd u p.1
-        ⟨by simp only [Set.mem_setOf_eq]; linarith, hne1 _ h1⟩).continuousAt
+        ⟨by grind, hne1 _ h1⟩).continuousAt
     have hf : ContinuousAt (fun p : ℂ × ℂ × ℂ => p.1) p := by fun_prop
     exact ContinuousAt.comp (g := D.Llam u) (f := fun p : ℂ × ℂ × ℂ => p.1) hg hf
   have hLne : D.Llam u p.1 ≠ 0 := RightHeckeBounds.Llam_ne_zero_of_one_lt D u p.1 (by linarith)
   have hH : ContinuousAt (fun p : ℂ × ℂ × ℂ => EulerDomain.Hu D u p.1 p.2.1 p.2.2) p := by
     have hmem : p ∈ EulerDomain.OmegaStar := by
       simp only [EulerDomain.OmegaStar, Set.mem_setOf_eq]
-      refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> linarith
+      grind
     exact (EulerContinuation.Hu_differentiableOn D u).continuousOn.continuousAt
       (EulerDomain.OmegaStar_isOpen.mem_nhds hmem)
   exact ((hZ.mul hP).div hL hLne).mul hH
@@ -270,9 +270,7 @@ theorem rowFactor_eq_raw_initial (u : D.Row) (ξ w z : ℂ) (hξ : 4 ≤ ξ.re) 
   have h := Set.EqOn.of_subset_closure hEq (rowFactor_continuousOn D u)
     (rawRowFactor_continuousOn D u) strictRegion_subset closedRegion_subset_closure
   have hmem : ((ξ, w, z) : ℂ × ℂ × ℂ) ∈ closedRegion := ⟨hξ, hw, hz⟩
-  have h2 := h hmem
-  simp only at h2
-  exact h2
+  grind
 
 private theorem exterior_countable' : Countable D.recipe.A.Exterior := by
   letI : Countable F := Finsupp.Countable.of_moduleFinite (R := ℚ)

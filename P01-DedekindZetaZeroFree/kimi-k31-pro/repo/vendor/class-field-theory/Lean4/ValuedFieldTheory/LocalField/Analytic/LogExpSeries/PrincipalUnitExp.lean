@@ -303,28 +303,7 @@ expSeriesFieldOfWithZeroValuation v x hnK - 1`.
   simp [principalUnitSubOneOfWithZeroValuation,
     principalUnitExpSeriesOfWithZeroValuation]
 
-/-- The additive parameter of the principal-unit exponential has the same
-valuation as its input. -/
-theorem principalUnitSubOne_expSeries_valuation_eq_self_ofWithZeroValuation
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
-    {p : ℕ} [Fact p.Prime] {x : K} (hx : x ≠ 0)
-    (hnK : ∀ n : ℕ, (((n.factorial : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n.factorial : ℕ) : K)) =
-        WithZero.exp (-(padicValNat p n.factorial : ℤ)))
-    (hvx : v x < WithZero.exp (-1 : ℤ))
-    (hcomplete :
-      letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-      CompleteSpace K) :
-    v (principalUnitSubOneOfWithZeroValuation v
-      (principalUnitExpSeriesOfWithZeroValuation
-        (v := v) (p := p) x hnK hnval hvx hcomplete)) =
-      v x := by
-  rw [principalUnitSubOne_expSeries_ofWithZeroValuation]
-  exact
-    valuation_expSeriesField_sub_one_eq_self_ofWithZeroValuation_of_lt_exp_neg_one
-      (v := v) (p := p) (x := x) hx hnK hnval hvx hcomplete
+
 
 /-- The principal-unit exponential has nonzero additive parameter for nonzero
 input. -/
@@ -348,71 +327,9 @@ theorem principalUnitSubOne_expSeries_ne_zero_ofWithZeroValuation
     expSeriesField_sub_one_ne_zero_ofWithZeroValuation_of_lt_exp_neg_one
       (v := v) (p := p) (x := x) hx hnK hnval hvx hcomplete
 
-/-- The additive parameter of the principal-unit exponential has the same
-integer valuation as its input. -/
-theorem principalUnitSubOne_expSeries_ofWithZeroValuation_val_eq_self
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
-    {p : ℕ} [Fact p.Prime] {x : K} (hx : x ≠ 0)
-    (hnK : ∀ n : ℕ, (((n.factorial : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n.factorial : ℕ) : K)) =
-        WithZero.exp (-(padicValNat p n.factorial : ℤ)))
-    (hvx : v x < WithZero.exp (-1 : ℤ))
-    (hcomplete :
-      letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-      CompleteSpace K)
-    (hne : principalUnitSubOneOfWithZeroValuation v
-      (principalUnitExpSeriesOfWithZeroValuation
-        (v := v) (p := p) x hnK hnval hvx hcomplete) ≠ 0) :
-    (ofWithZeroValuation v).val
-        (Units.mk0
-          (principalUnitSubOneOfWithZeroValuation v
-            (principalUnitExpSeriesOfWithZeroValuation
-              (v := v) (p := p) x hnK hnval hvx hcomplete)) hne) =
-      (ofWithZeroValuation v).val (Units.mk0 x hx) := by
-  exact
-    ofWithZeroValuation_val_eq_of_valuation_eq v
-      (principalUnitSubOne_expSeries_valuation_eq_self_ofWithZeroValuation
-        (v := v) (p := p) (x := x) hx hnK hnval hvx hcomplete)
 
-/-- The usual logarithm threshold is preserved by the additive parameter of
-the principal-unit exponential. -/
-theorem principalUnitSubOne_expSeries_threshold_ofWithZeroValuation
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
-    {p : ℕ} [Fact p.Prime] {x : K} (hx : x ≠ 0)
-    (hnK : ∀ n : ℕ, (((n.factorial : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n.factorial : ℕ) : K)) =
-        WithZero.exp (-(padicValNat p n.factorial : ℤ)))
-    (hvx : v x < WithZero.exp (-1 : ℤ))
-    (hthreshold :
-      1 / ((p : ℚ) - 1) <
-        ((ofWithZeroValuation v).val (Units.mk0 x hx) : ℚ))
-    (hcomplete :
-      letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-      CompleteSpace K)
-    (hne : principalUnitSubOneOfWithZeroValuation v
-      (principalUnitExpSeriesOfWithZeroValuation
-        (v := v) (p := p) x hnK hnval hvx hcomplete) ≠ 0) :
-    1 / ((p : ℚ) - 1) <
-      ((ofWithZeroValuation v).val
-        (Units.mk0
-          (principalUnitSubOneOfWithZeroValuation v
-            (principalUnitExpSeriesOfWithZeroValuation
-              (v := v) (p := p) x hnK hnval hvx hcomplete)) hne) : ℚ) := by
-  have hval :
-      (ofWithZeroValuation v).val
-          (Units.mk0
-            (principalUnitSubOneOfWithZeroValuation v
-              (principalUnitExpSeriesOfWithZeroValuation
-                (v := v) (p := p) x hnK hnval hvx hcomplete)) hne) =
-        (ofWithZeroValuation v).val (Units.mk0 x hx) :=
-    principalUnitSubOne_expSeries_ofWithZeroValuation_val_eq_self
-      (v := v) (p := p) (x := x) hx hnK hnval hvx hcomplete hne
-  rw [hval]
-  exact hthreshold
+
+
 
 /--
 The underlying field value of the exponential-series principal unit is the field exponential
@@ -438,34 +355,7 @@ series.
       expSeriesFieldOfWithZeroValuation v x hnK := by
   simp [principalUnitExpSeriesOfWithZeroValuation]
 
-/-- The principal-unit exponential has valuation one after forgetting back to
-the field. -/
-theorem principalUnitExpSeries_val_valuation_eq_one_ofWithZeroValuation
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
-    {p : ℕ} [Fact p.Prime] (x : K)
-    (hnK : ∀ n : ℕ, (((n.factorial : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n.factorial : ℕ) : K)) =
-        WithZero.exp (-(padicValNat p n.factorial : ℤ)))
-    (hvx : v x < WithZero.exp (-1 : ℤ))
-    (hcomplete :
-      letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-      CompleteSpace K) :
-    let F : CompleteDVF.{u, 0} K := completeDVFOfWithZeroValuation v
-    v ((((principalUnitExpSeriesOfWithZeroValuation
-        (v := v) (p := p) x hnK hnval hvx hcomplete :
-          (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup F) 1) : F.valuationSubringˣ) :
-          F.valuationSubring) : K) =
-      (1 : WithZero (Multiplicative ℤ)) := by
-  have hval :=
-    principalUnitExpSeries_val_ofWithZeroValuation
-      (v := v) (p := p) x hnK hnval hvx hcomplete
-  dsimp at hval ⊢
-  rw [hval]
-  exact
-    valuation_expSeriesField_eq_one_ofWithZeroValuation_of_lt_exp_neg_one
-      (v := v) (p := p) x hnK hnval hvx hcomplete
+
 
 /-- The principal-unit exponential sends zero to the identity. -/
 @[simp] theorem principalUnitExpSeries_zero_ofWithZeroValuation
@@ -585,109 +475,13 @@ theorem principalUnitExpSeries_add_eq_mul_ofWithZeroValuation
     expSeriesField_add_eq_mul_ofWithZeroValuation_of_lt_exp_neg_one
       (v := v) (p := p) x y hnK hnval hvx hvy hcomplete
 
-/-- The principal-unit exponential of `-x` is a left inverse to the
-principal-unit exponential of `x`. -/
-theorem principalUnitExpSeries_neg_mul_self_eq_one_ofWithZeroValuation
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
-    {p : ℕ} [Fact p.Prime] (x : K)
-    (hnK : ∀ n : ℕ, (((n.factorial : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n.factorial : ℕ) : K)) =
-        WithZero.exp (-(padicValNat p n.factorial : ℤ)))
-    (hvx : v x < WithZero.exp (-1 : ℤ))
-    (hcomplete :
-      letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-      CompleteSpace K) :
-    (principalUnitExpSeriesOfWithZeroValuation
-        (v := v) (p := p) (-x) hnK hnval
-        (by simpa using hvx) hcomplete) *
-      (principalUnitExpSeriesOfWithZeroValuation
-        (v := v) (p := p) x hnK hnval hvx hcomplete) =
-        (1 : (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup (completeDVFOfWithZeroValuation v)) 1) := by
-  have hmul :=
-    principalUnitExpSeries_add_eq_mul_ofWithZeroValuation
-      (v := v) (p := p) (-x) x hnK hnval (by simpa using hvx) hvx
-      hcomplete
-  simpa [neg_add_cancel] using hmul.symm
 
-/-- The principal-unit exponential of `-x` is a right inverse to the
-principal-unit exponential of `x`. -/
-theorem principalUnitExpSeries_mul_neg_self_eq_one_ofWithZeroValuation
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
-    {p : ℕ} [Fact p.Prime] (x : K)
-    (hnK : ∀ n : ℕ, (((n.factorial : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n.factorial : ℕ) : K)) =
-        WithZero.exp (-(padicValNat p n.factorial : ℤ)))
-    (hvx : v x < WithZero.exp (-1 : ℤ))
-    (hcomplete :
-      letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-      CompleteSpace K) :
-    (principalUnitExpSeriesOfWithZeroValuation
-        (v := v) (p := p) x hnK hnval hvx hcomplete) *
-      (principalUnitExpSeriesOfWithZeroValuation
-        (v := v) (p := p) (-x) hnK hnval
-        (by simpa using hvx) hcomplete) =
-        (1 : (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup (completeDVFOfWithZeroValuation v)) 1) := by
-  have hmul :=
-    principalUnitExpSeries_add_eq_mul_ofWithZeroValuation
-      (v := v) (p := p) x (-x) hnK hnval hvx (by simpa using hvx)
-      hcomplete
-  simpa [add_neg_cancel] using hmul.symm
 
-/-- Principal-unit inverse form of the exponential identity:
-`Exp(-x) = Exp(x)⁻¹`. -/
-theorem principalUnitExpSeries_neg_eq_inv_self_ofWithZeroValuation
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
-    {p : ℕ} [Fact p.Prime] (x : K)
-    (hnK : ∀ n : ℕ, (((n.factorial : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n.factorial : ℕ) : K)) =
-        WithZero.exp (-(padicValNat p n.factorial : ℤ)))
-    (hvx : v x < WithZero.exp (-1 : ℤ))
-    (hcomplete :
-      letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-      CompleteSpace K) :
-    principalUnitExpSeriesOfWithZeroValuation
-        (v := v) (p := p) (-x) hnK hnval
-        (by simpa using hvx) hcomplete =
-      (principalUnitExpSeriesOfWithZeroValuation
-        (v := v) (p := p) x hnK hnval hvx hcomplete)⁻¹ := by
-  exact
-    eq_inv_of_mul_eq_one_left
-      (principalUnitExpSeries_neg_mul_self_eq_one_ofWithZeroValuation
-        (v := v) (p := p) x hnK hnval hvx hcomplete)
 
-/-- Principal-unit inverse form of the exponential identity:
-`Exp(x)⁻¹ = Exp(-x)`. -/
-theorem principalUnitExpSeries_inv_eq_neg_self_ofWithZeroValuation
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
-    {p : ℕ} [Fact p.Prime] (x : K)
-    (hnK : ∀ n : ℕ, (((n.factorial : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n.factorial : ℕ) : K)) =
-        WithZero.exp (-(padicValNat p n.factorial : ℤ)))
-    (hvx : v x < WithZero.exp (-1 : ℤ))
-    (hcomplete :
-      letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-      CompleteSpace K) :
-    (principalUnitExpSeriesOfWithZeroValuation
-        (v := v) (p := p) x hnK hnval hvx hcomplete)⁻¹ =
-      principalUnitExpSeriesOfWithZeroValuation
-        (v := v) (p := p) (-x) hnK hnval
-        (by simpa using hvx) hcomplete := by
-  exact
-    inv_eq_of_mul_eq_one_right
-      (principalUnitExpSeries_mul_neg_self_eq_one_ofWithZeroValuation
-        (v := v) (p := p) x hnK hnval hvx hcomplete)
+
+
+
+
 
 /-- The principal-unit exponential as a homomorphism from the additive
 convergence ball, written multiplicatively via `Multiplicative`. -/
@@ -804,26 +598,7 @@ theorem principalUnitExpSeriesHom_injective_ofWithZeroValuation
     principalUnitExpSeriesHom_eq_one_iff_ofWithZeroValuation
       (v := v) (p := p) hnK hnval hcomplete x
 
-/-- Kernel-trivial form of injectivity for the principal-unit exponential
-homomorphism. -/
-theorem principalUnitExpSeriesHom_ker_eq_bot_ofWithZeroValuation
-    [Algebra ℚ K]
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
-    {p : ℕ} [Fact p.Prime]
-    (hnK : ∀ n : ℕ, (((n.factorial : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n.factorial : ℕ) : K)) =
-        WithZero.exp (-(padicValNat p n.factorial : ℤ)))
-    (hcomplete :
-      letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-      CompleteSpace K) :
-    (principalUnitExpSeriesHomOfWithZeroValuation
-        (v := v) (p := p) hnK hnval hcomplete).ker = ⊥ := by
-  exact
-    (MonoidHom.ker_eq_bot_iff _).2
-      (principalUnitExpSeriesHom_injective_ofWithZeroValuation
-        (v := v) (p := p) hnK hnval hcomplete)
+
 
 /-- The principal-unit exponential identifies the additive convergence ball
 with its image in the first principal-unit group. -/
@@ -963,36 +738,9 @@ theorem principalUnitSubOne_val_lt_one_ofWithZeroValuation
     F.valuationSubring) : K) < (1 : WithZero (Multiplicative ℤ)) at hlt
   simpa [principalUnitSubOneOfWithZeroValuation, F] using hlt
 
-/-- The additive parameter `u - 1` of a first principal unit is
-topologically nilpotent in the valued-field topology. -/
-theorem principalUnitSubOne_isTopologicallyNilpotent_ofWithZeroValuation
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
-    (u : (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup (completeDVFOfWithZeroValuation v)) 1) :
-    letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-    IsTopologicallyNilpotent
-      (principalUnitSubOneOfWithZeroValuation v u) := by
-  let : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-  exact
-    isTopologicallyNilpotent_ofWithZeroValuation_lt_one
-      (v := v) (principalUnitSubOne_val_lt_one_ofWithZeroValuation v u)
 
-/-- The pair of additive parameters attached to two first principal units is
-a valid two-variable power-series evaluation point. -/
-theorem principalUnitSubOne_pair_hasEval_ofWithZeroValuation
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
-    (u w : (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup (completeDVFOfWithZeroValuation v)) 1) :
-    letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-    MvPowerSeries.HasEval
-      (fun i : Fin 2 =>
-        if i = 0 then principalUnitSubOneOfWithZeroValuation v u
-        else principalUnitSubOneOfWithZeroValuation v w) := by
-  let : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-  exact
-    mvPowerSeries_hasEval_fin_two
-      (principalUnitSubOne_isTopologicallyNilpotent_ofWithZeroValuation v u)
-      (principalUnitSubOne_isTopologicallyNilpotent_ofWithZeroValuation v w)
+
+
 
 /--
 Establishes the identity `principalUnitSubOneOfWithZeroValuation v (1 :
@@ -1006,25 +754,7 @@ Establishes the identity `principalUnitSubOneOfWithZeroValuation v (1 :
       0 := by
   simp [principalUnitSubOneOfWithZeroValuation]
 
-/-- For a first principal unit, the additive parameter `u - 1` vanishes
-exactly at the identity. -/
-theorem principalUnitSubOne_eq_zero_iff_ofWithZeroValuation
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
-    (u : (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup (completeDVFOfWithZeroValuation v)) 1) :
-    principalUnitSubOneOfWithZeroValuation v u = 0 ↔
-      u = (1 : (LocalFieldTheory.DiscreteValuationField.CompleteDVF.higherPrincipalUnitGroup (completeDVFOfWithZeroValuation v)) 1) := by
-  let F : CompleteDVF.{u, 0} K := completeDVFOfWithZeroValuation v
-  constructor
-  · intro h
-    apply Subtype.ext
-    apply Units.ext
-    apply Subtype.ext
-    simpa [principalUnitSubOneOfWithZeroValuation, F] using
-      (sub_eq_zero.mp h)
-  · intro h
-    subst u
-    simp [principalUnitSubOneOfWithZeroValuation]
+
 
 /-- The additive parameter of a product of first principal units is
 `(u - 1) + (w - 1) + (u - 1)(w - 1)`.  This is the algebraic input for the
@@ -1041,32 +771,7 @@ theorem principalUnitSubOne_mul_ofWithZeroValuation
   simp [principalUnitSubOneOfWithZeroValuation]
   ring
 
-/-- Additive parameter of the product of two exponential-series principal
-units, expressed on the field side. -/
-theorem principalUnitSubOne_expSeries_mul_ofWithZeroValuation
-    (v : _root_.Valuation K (WithZero (Multiplicative ℤ)))
-    [ValuationTheory.DiscreteValuationField.Valuation.IsCompleteDiscrete v]
-    {p : ℕ} [Fact p.Prime] (x y : K)
-    (hnK : ∀ n : ℕ, (((n.factorial : ℕ) : K) ≠ 0))
-    (hnval : ∀ n : ℕ,
-      v (((n.factorial : ℕ) : K)) =
-        WithZero.exp (-(padicValNat p n.factorial : ℤ)))
-    (hvx : v x < WithZero.exp (-1 : ℤ))
-    (hvy : v y < WithZero.exp (-1 : ℤ))
-    (hcomplete :
-      letI : Valued K (WithZero (Multiplicative ℤ)) := Valued.mk' v
-      CompleteSpace K) :
-    principalUnitSubOneOfWithZeroValuation v
-      ((principalUnitExpSeriesOfWithZeroValuation
-          (v := v) (p := p) x hnK hnval hvx hcomplete) *
-        (principalUnitExpSeriesOfWithZeroValuation
-          (v := v) (p := p) y hnK hnval hvy hcomplete)) =
-      (expSeriesFieldOfWithZeroValuation v x hnK - 1) +
-        (expSeriesFieldOfWithZeroValuation v y hnK - 1) +
-          (expSeriesFieldOfWithZeroValuation v x hnK - 1) *
-            (expSeriesFieldOfWithZeroValuation v y hnK - 1) := by
-  rw [principalUnitSubOne_mul_ofWithZeroValuation]
-  simp
+
 
 end MultiplicativeIntegerValuation
 end LocalFieldTheory.DiscreteValuationField

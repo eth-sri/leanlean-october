@@ -116,7 +116,7 @@ theorem diagonal_sWeyl_geometry (z : R.A.G) :
     apply Matrix.GeneralLinearGroup.ext
     intro i j
     fin_cases i <;> fin_cases j <;>
-      simp [archWeylMatrix,KPCplxCharacterHaar.diagonal,weyl,KubotaRankTwo.d,KPStandardLocalRootLifts.weylSwap,
+      simp [KPCplxCharacterHaar.diagonal,weyl,KubotaRankTwo.d,KPStandardLocalRootLifts.weylSwap,
         Matrix.mul_apply,Fin.sum_univ_two,Matrix.GeneralLinearGroup.map]
     change (z.1 w : w.Completion) =
       (InfinitePlace.Completion.ringEquivComplexOfIsComplex (R.A.complex_place w)).symm

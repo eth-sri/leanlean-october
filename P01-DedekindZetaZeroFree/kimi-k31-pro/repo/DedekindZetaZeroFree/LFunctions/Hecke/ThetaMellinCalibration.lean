@@ -130,8 +130,8 @@ private theorem aggregate_calibration
     intro I
     rw [hdescent I]
     cases hI : rayIdealClass F m hm I with
-    | none => simp [hI]
-    | some c => simp [hI, eq_comm]
+    | none => simp
+    | some c => simp
   refine ⟨hconv, ?_⟩
   rw [hmel]
   exact hseries.mul_left _
@@ -145,8 +145,7 @@ theorem normalizedRayTheta_mellin_calibration
         (((|NumberField.discr F| : ℤ) : ℂ) * (Ideal.absNorm m : ℂ)) ^ (s / 2) *
           Complex.Gammaℂ s ^ NumberField.InfinitePlace.nrComplexPlaces F *
           (η I * (Ideal.absNorm I : ℂ) ^ (-s)))
-        (mellin (normalizedRayTheta D χ.ψ) s) := by
-  exact aggregate_calibration hF D χ.ψ η χ.descent
+        (mellin (normalizedRayTheta D χ.ψ) s) := aggregate_calibration hF D χ.ψ η χ.descent
     (normalizedRayTheta D χ.ψ)
     (normalizedRayTheta_eq_sub_zero_modes D χ hη) s hs
 

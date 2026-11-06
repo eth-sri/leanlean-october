@@ -88,7 +88,7 @@ private theorem scalar_preserves (I : FI) (v : Rˣ) :
     have he : ∀ i, (scalar w • V) i 0 = algebraMap R F (w : R) * V i 0 := by
       intro i
       simp [scalar, Matrix.GeneralLinearGroup.smul_def, Matrix.GeneralLinearGroup.coe_scalar,
-        Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar, Matrix.diagonal_apply]
+        Matrix.mul_apply, Matrix.scalar, Matrix.diagonal_apply]
     rw [he 0, he 1]
     refine ⟨⟨(w : R) * r, by rw [map_mul, hr]⟩, ?_⟩
     exact I.val.smul_mem (w : R) hV
@@ -118,7 +118,7 @@ theorem determinant_one_projective_iff (I : FI) (hI : I ≠ 0)
         ((MulAction.stabilizer _ _).inv_mem hC) V).mp hV)
     have hdC : (C : Matrix (Fin 2) (Fin 2) F).det = (u : F)^2 := by
       rw [← hu]
-      simp [Matrix.det_mul, Matrix.GeneralLinearGroup.coe_scalar, Matrix.det_fin_two, hd]
+      simp [Matrix.det_mul, Matrix.GeneralLinearGroup.coe_scalar, hd]
     have hdCi : (↑(C⁻¹) : Matrix (Fin 2) (Fin 2) F).det = ((u⁻¹ : Fˣ) : F)^2 := by
       have hh := congrArg (fun X : Matrix.GeneralLinearGroup (Fin 2) F =>
         ((Matrix.GeneralLinearGroup.det X) : F)) (congrArg Inv.inv hu)
@@ -245,14 +245,14 @@ private theorem unipotent_fixes (x : F) :
   unfold KPCuspArithmetic.infinity
   rw [Projectivization.PGL.mk_smul_mk]
   congr 1
-  simp [unipotent, Matrix.mulVec, dotProduct, Fin.sum_univ_two]
+  simp [unipotent]
 private theorem conjugated_membership (Γ : Subgroup (KPCuspArithmetic.PGL2 F))
     (q : KPCuspArithmetic.Cusp F) (σ : KPCuspArithmetic.PGL2 F)
     (hσ : σ • KPCuspArithmetic.infinity F = q) (x : F) :
     Matrix.ProjGenLinGroup.mk (unipotent F x) ∈ KPCuspArithmetic.conjugatedStabilizer F Γ q σ ↔
     σ * Matrix.ProjGenLinGroup.mk (unipotent F x) * σ⁻¹ ∈ Γ := by
   rw [KPCuspArithmetic.conjugatedStabilizer, Subgroup.mem_map_equiv]
-  simp only [MulAut.conj_symm_apply, inv_inv, MulAut.conj_apply, Subgroup.mem_inf]
+  simp only [MulAut.conj_symm_apply, inv_inv, Subgroup.mem_inf]
   have hf : σ * Matrix.ProjGenLinGroup.mk (unipotent F x) * σ⁻¹ ∈
       MulAction.stabilizer (KPCuspArithmetic.PGL2 F) q := by
     rw [MulAction.mem_stabilizer_iff]
@@ -280,7 +280,7 @@ private theorem conjugate_formula (B : Matrix.GeneralLinearGroup (Fin 2) F) (x :
     ext i j
     fin_cases i <;> fin_cases j <;> simp [unipotent, rootMatrix]
   rw [Units.val_mul, Units.val_mul, hn, Matrix.mul_add, Matrix.add_mul]
-  simp [coefficient, Matrix.mul_smul, Matrix.smul_mul]
+  simp [coefficient]
 private theorem one_add_mem (z : F) : 1 + z ∈ (1 : FI) ↔ z ∈ (1 : FI) := by
   constructor
   · intro h
@@ -297,7 +297,7 @@ private theorem conjugate_membership (I : FI) (hI : I ≠ 0)
   rw [determinant_one_projective_iff F I hI _ hd, determinant_one_stabilizer_iff_entries F I hI _ hd]
   rw [conjugate_formula]
   simp only [Matrix.add_apply, Matrix.one_apply, Matrix.smul_apply, smul_eq_mul,
-    Fin.zero_eta, Fin.isValue, ↓reduceIte, zero_add]
+    Fin.isValue, ↓reduceIte]
   rw [one_add_mem, one_add_mem]
   change _ ↔ ∀ i : Fin 4, _
   simp [Fin.forall_fin_succ]

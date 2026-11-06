@@ -13,7 +13,7 @@ private theorem zero_dirs (n k : ℕ) : (zeroIndex n k).directions = [] := by
 private theorem first_dirs {n : ℕ} (i : Fin n) : (firstIndex i).directions = [i] := by
   classical
   simp only [MultiIndex.directions, firstIndex, apply_ite Fin.val, Fin.val_one,
-    Fin.val_zero, List.replicate_one, List.replicate_zero]
+    Fin.val_zero]
   have h : ∀ l : List (Fin n), l.flatMap (fun j => if j = i then [j] else []) = l.filter (· = i) := by
     intro l; induction l with
     | nil => rfl
@@ -206,7 +206,7 @@ theorem multiply_smooth_compact {n : ℕ} (B : LocalBall n)
     rw [partialTest_eq, product_deriv] at hx
     simp only [productTest, TestFunction.coe_mk, a,
       TestFunction.postcompCLM_apply, Function.comp_apply, Complex.ofRealCLM_apply,
-      partialTest_eq, pow_two] at hx
+      partialTest_eq] at hx
     rw [hx]
     ring
 end DedekindZetaZeroFree.KPContLocalEnergy.SobolevEnergyEstimates

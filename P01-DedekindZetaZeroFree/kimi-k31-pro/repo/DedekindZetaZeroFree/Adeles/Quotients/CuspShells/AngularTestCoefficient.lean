@@ -44,7 +44,7 @@ theorem fullShell_test_coefficient
   intro j _
   rw [lintegral_smul_measure, lintegral_map' hφ.aemeasurable
     (fullCoordinate_aemeasurable F ζ hζ R P S V j Y hY)]
-  exact ha j Y hY
+  simp_all
 
 end DedekindZetaZeroFree.KPMsNativeOffsetMass
 

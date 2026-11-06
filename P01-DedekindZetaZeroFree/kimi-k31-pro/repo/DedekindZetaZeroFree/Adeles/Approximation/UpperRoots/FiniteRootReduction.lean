@@ -21,7 +21,7 @@ theorem finite_root_mem
   rw [MonoidHom.mem_ker]
   unfold KPGlobalTorusFunctionData.N KPAdelicCoverRestrictedProduct.scalarQuotient
     KPCuspGenuineMonodromy.archProjection
-  simp only [MonoidHom.comp_apply, QuotientGroup.mk'_apply]
+  simp only [QuotientGroup.mk'_apply]
   rw [QuotientGroup.lift_mk']
   simp only [MonoidHom.comp_apply, KPAdelicCoverRestrictedProduct.projection_amalgamation]
   funext w
@@ -41,7 +41,7 @@ theorem finite_root_mem
       (by simp [Matrix.det_fin_two]) = 1 := by
     apply Units.ext
     ext i j
-    fin_cases i <;> fin_cases j <;> simp [Matrix.one_apply]
+    fin_cases i <;> fin_cases j <;> simp
   change Matrix.GeneralLinearGroup.mkOfDetNeZero
       (!![1, 0; 0, 1] : Matrix (Fin 2) (Fin 2) (KPHilbert.Completion F (Sum.inl w))) _ ∈ _
   exact he.symm ▸ Subgroup.one_mem _

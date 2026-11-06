@@ -118,7 +118,7 @@ theorem joint_series_exchanges {T I : Type*} [MeasurableSpace T] [Countable I]
   · intro J e
     rw [show (fun t => ∑' j, f (e j) t) = (fun t => ∑' i, f i t) from
       funext (fun t => e.tsum_eq (fun i => f i t))]
-    exact he
+    grind
   · intro J g
     have hg := hn.of_norm.hasSum.tsum_fiberwise g
     exact ⟨summable_norm_iff.mpr hg.summable, hg.tsum_eq⟩
@@ -127,7 +127,7 @@ theorem diagonal_injective (A : SArithmeticData F) : Function.Injective A.diagon
   intro x y h
   apply Units.ext
   let w : InfinitePlace F := Classical.choice inferInstance
-  have hw := congrArg (fun g : A.G => ((g.1 w : w.Completion))) h
+  have hw := congrArg (fun g : A.G => (g.1 w : w.Completion)) h
   exact (algebraMap F w.Completion).injective hw
 
 def gamma1Hom (A : SArithmeticData F) : ProbeOrbitNormSum.Gamma A →* A.Gamma1 where
@@ -217,7 +217,7 @@ theorem orbit_regrouping {H G N O B : Type*}
     _ = _ := by
       apply tsum_congr
       intro p
-      simpa only [Function.comp_def, hE] using hrow p
+      grind
 
 set_option maxHeartbeats 1000000 in
 def blockEquiv (A : SArithmeticData F) (N : Type*) :
@@ -363,9 +363,7 @@ theorem gaussianMomentTerm_eq_doubleMomentSummand (A : SArithmeticData F)
     (σ Z : ℝ) :
     gaussianMomentTerm A σ Z =
       NormalizedProbe.gaussianDoubleMomentSummand A σ Z := by
-  funext p
-  simp only [gaussianMomentTerm, NormalizedProbe.gaussianDoubleMomentSummand,
-    modulusNorm, Real.rpow_eq_pow]
+  aesop
 
 theorem summable_gaussianMomentTerm (A : SArithmeticData F) (σ Z : ℝ)
     (hZ : 0 < Z) : Summable (gaussianMomentTerm A σ Z) := by
@@ -381,8 +379,7 @@ theorem summable_outerMoment (A : SArithmeticData F) (W1 : ProbeRealAnnularWeigh
   refine summable_of_hasFiniteSupport (hfin.subset ?_)
   intro s hs
   simp only [Function.mem_support] at hs ⊢
-  intro hW
-  exact hs (by rw [hW, abs_zero, zero_mul])
+  grind
 
 theorem absoluteMass_of_joint_norm_summability (A : SArithmeticData F) (ι : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
@@ -414,8 +411,7 @@ theorem absoluteMass_of_joint_norm_summability (A : SArithmeticData F) (ι : F �
 
 theorem q_generator (A : SArithmeticData F) (D : ComparisonPoissonCoefficientData F A)
     (s : A.Exterior) :
-    ProbeSheetTranslation.q A (D.generator s) (D.generates s).1 = A.exteriorNorm s := by
-  exact A.generator_norm s (D.generator s) (D.generates s)
+    ProbeSheetTranslation.q A (D.generator s) (D.generates s).1 = A.exteriorNorm s := A.generator_norm s (D.generator s) (D.generates s)
     (ProbeSheetTranslation.fieldUnit A (D.generator s) (D.generates s).1) rfl
 
 theorem frequency_eq_fractionPoint (A : SArithmeticData F)
@@ -536,14 +532,13 @@ private theorem numeric_mass_bound (C X Y qc qn qs qh σ w g a : ℝ)
       (C * (X * qh / (qc * qn ^ 3)) ^ (-σ)) := by
       apply mul_le_mul
       · exact mul_le_mul_of_nonneg_left hb (by positivity)
-      · exact hd
-      · exact hd0
+      · grind
+      · grind
       · positivity
     _ = _ := by
       rw [Real.div_rpow (mul_pos hX hh).le hq.le, Real.mul_rpow hX.le hh.le,
         Real.rpow_neg hq.le]
-      field_simp
-      <;> ring
+      grind
 
 theorem integrated_orbit_mass_bound (A : SArithmeticData F) (ι : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
@@ -574,8 +569,7 @@ theorem integrated_orbit_mass_bound (A : SArithmeticData F) (ι : F →+* ℂ)
   have hqh : 0 < ProbeSheetTranslation.q A h.val h.property := by
     have hn := ProbePoissonSheet.principalNorm_eq_modulus A h.val h.property
     change 0 < A.norm (A.diagonal (ProbePoissonSheet.fieldUnit A h.val h.property))
-    rw [← hn.1]
-    exact hn.2
+    grind
   have htranslate (t : A.G1) : ProbeWeight.fourier F A.Sf P.finiteTrace P.additiveMeasure P.W0
       ((ProbeSheet.localUnits A t.val).val * frequency A D X s c n h) =
       ProbeSheetTranslation.translatedFourier A P.finiteTrace P.additiveMeasure P.W0
@@ -604,7 +598,7 @@ theorem integrated_orbit_mass_bound (A : SArithmeticData F) (ι : F →+* ℂ)
     congr 1
     apply integral_congr_ae
     filter_upwards with t
-    rw [show P.coefficients = D from rfl, htranslate]
+    grind
   rw [hnorm]
   have hbd := hb'.2.2.2.2.2
   rw [q_forwardModulus A D c n] at hbd
@@ -688,7 +682,7 @@ theorem whole_group_orbit_mass_summable (A : SArithmeticData F) (ι : F →+* �
     rw [← ProbeOrbitNormSum.orbitNorm_eq_snorm A (ρ i.2.2.2)
       (ProbeSheetTranslation.fieldUnit A _ _) rfl]
     rw [hρ i.2.2.2]
-  simpa only [hq] using hb X Y Z hX hY i.1 i.2.1 i.2.2.1 (ρ i.2.2.2)
+  grind
 
 theorem orbit_integrals_absolutely_summable (A : SArithmeticData F) (ι : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
@@ -886,7 +880,7 @@ theorem orbit_mass_same_gaussian_majorant (A : SArithmeticData F) (ι : F →+* 
       simp_rw [show C * Real.sqrt X * X ^ (-σ) = C * (Real.sqrt X * X ^ (-σ)) by ring]
       rw [show Real.sqrt X * X ^ (-σ) = X ^ (1 / 2 - σ) by
         rw [Real.sqrt_eq_rpow, ← Real.rpow_add hX]
-        congr 1]
+        grind]
       simp_rw [mul_assoc, tsum_mul_left]
       have heq : (∑' i : OrbitIndex A,
           (|P.W1 (A.exteriorNorm i.1 / Y)| * A.exteriorNorm i.1) *
@@ -902,8 +896,7 @@ theorem orbit_mass_same_gaussian_majorant (A : SArithmeticData F) (ι : F →+* 
         rw [← hs.tsum_mul_tsum hr hsr]
         rfl
       simp_rw [mul_assoc] at heq
-      rw [heq]
-      ring
+      grind
 
 theorem finite_absolute_mass (A : SArithmeticData F) (ι : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)
@@ -934,8 +927,7 @@ theorem finite_absolute_mass (A : SArithmeticData F) (ι : F →+* ℂ)
   intro X Y Z hX hY hZ
   let ρ : ProbeOrbitNormSum.Orbit A → ProbeOrbitNormSum.Nonzero A := Quotient.out
   have hρ : ProbeOrbitNormSum.IsRepresentativeSection A ρ := by
-    intro o
-    exact Quotient.out_eq o
+    exact Quotient.out_eq
   have hiG := kernel_integrable A ι η hS P hne hnormalized X Y Z hX
   have hi : ∀ i : Index A, IntegrableOn (kernel A ι η hS P X Y Z i)
       P.domain.domain P.domain.measure := fun i => (hiG i).integrableOn
@@ -953,8 +945,7 @@ theorem finite_absolute_mass (A : SArithmeticData F) (ι : F →+* ℂ)
   refine ⟨hi, hs, hfinite, hmass, ?_,
     NormalizedProbe.exterior_weight_finite A P.W1 Y hY,
     summable_outerMoment A P.W1 Y hY, summable_gaussianMomentTerm A σ Z hZ⟩
-  rw [hsum]
-  exact hb X Y Z hX hY hZ ρ hρ
+  grind
 
 theorem exchanges_and_orbit_convergence (A : SArithmeticData F) (ι : F →+* ℂ)
     (η : RayClassCharacter F A.modulus) (hS : A.ContainsTraceBadPlaces)

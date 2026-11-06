@@ -3,6 +3,7 @@ module
 public import Mathlib.RepresentationTheory.Homological.GroupCohomology.FiniteCyclic
 public import Mathlib.RepresentationTheory.Homological.GroupCohomology.Hilbert90
 public import GaloisCohomology.Cyclic.TateComparison
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -42,10 +43,8 @@ private theorem zpowers_eq_top_of_forall_mem_zpowers {G : Type} [Group G] (g : G
     Subgroup.zpowers g = ⊤ := by
   ext x
   constructor
-  · intro _
-    exact Subgroup.mem_top x
-  · intro _
-    exact hg x
+  · norm_num
+  · grind
 
  theorem isCyclic_of_forall_mem_zpowers {G : Type} [Group G] (g : G)
     (hg : ∀ x : G, x ∈ Subgroup.zpowers g) :

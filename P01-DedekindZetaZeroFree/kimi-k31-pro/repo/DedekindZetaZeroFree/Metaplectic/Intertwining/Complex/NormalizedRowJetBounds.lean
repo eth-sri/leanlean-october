@@ -123,7 +123,7 @@ private lemma line_row_form (x : ℂ) (k : ComplexGL2) :
       else projectiveOpen (((k : Matrix (Fin 2) (Fin 2) ℂ) 0 1 +
         x * (k : Matrix (Fin 2) (Fin 2) ℂ) 1 1) /
         ((k : Matrix (Fin 2) (Fin 2) ℂ) 0 0 + x * (k : Matrix (Fin 2) (Fin 2) ℂ) 1 0)) := by
-  simp [line, weyl, upperUnipotent, Matrix.GeneralLinearGroup.coe_mul,
+  simp [line, weyl, upperUnipotent, 
     Matrix.mul_apply, Fin.sum_univ_two]
 
  noncomputable def rowLine {n : ℕ} (k : (Fin n → ℝ) → ComplexGL2)

@@ -55,11 +55,11 @@ def graphTestLinear : S_U F ζ hζ U R P H →ₗ[ℂ] ClosedGradientSpace D whe
   map_add' f g := by
     apply Subtype.ext
     apply WithLp.ofLp_injective
-    simp [graphTestLift, map_add, WithLp.toLp_add, WithLp.ofLp_add, WithLp.ofLp_toLp]
+    simp [graphTestLift, map_add, WithLp.ofLp_add, WithLp.ofLp_toLp]
   map_smul' c f := by
     apply Subtype.ext
     apply WithLp.ofLp_injective
-    simp [graphTestLift, map_smul, WithLp.toLp_smul, WithLp.ofLp_smul, WithLp.ofLp_toLp]
+    simp [graphTestLift, map_smul, WithLp.ofLp_smul, WithLp.ofLp_toLp]
 
 private theorem fst_embedding (w : ClosedGradientSpace D) :
     closedGradientEmbedding D w = (WithLp.ofLp (w : WithLp 2 (𝓗 × 𝓥))).1 := by

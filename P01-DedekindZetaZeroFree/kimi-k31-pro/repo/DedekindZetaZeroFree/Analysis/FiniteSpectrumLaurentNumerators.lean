@@ -37,7 +37,7 @@ private theorem chamber_evaluation_infinite
     | minus =>
       change ‖(r K (x : ℂ))⁻¹‖ = _
       simp only [r, norm_inv, Complex.norm_exp, Complex.mul_re, Complex.neg_re,
-        Complex.ofReal_re, Complex.neg_im, Complex.ofReal_im, mul_zero, sub_zero,
+        Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero,
         ← Real.exp_neg, neg_mul, neg_neg, reduceCtorEq, if_false]
   have hinj : Function.Injective (fun n => evaluationUnit K ε (a n : ℂ)) := by
     intro m n h
@@ -45,7 +45,7 @@ private theorem chamber_evaluation_infinite
     have he := congrArg (fun u : ℂˣ => ‖(u : ℂ)‖) h
     rw [hn, hn] at he
     have he' := (mul_left_inj' hl).mp (Real.exp_injective he)
-    cases ε <;> simpa using he'
+    grind
   apply (Set.infinite_range_of_injective hinj).mono
   rintro u ⟨n, rfl⟩
   refine ⟨(a n : ℂ), ?_, rfl⟩
@@ -64,10 +64,8 @@ private theorem scalarLaurent_coeff (Q : ℤ →₀ ℂ) (n : ℤ) :
     AddMonoidAlgebra.coeff_single]
   rw [Finset.sum_eq_single n]
   · simp
-  · intro b hb hbn
-    simp [hbn]
-  · intro hn
-    simp [Finsupp.notMem_support_iff.mp hn]
+  · grind
+  · grind
 
 private theorem scalarLaurent_eval (Q : ℤ →₀ ℂ) (u : ℂˣ) :
     LaurentPolynomial.eval₂ (RingHom.id ℂ) u (scalarLaurent Q) =
@@ -75,9 +73,7 @@ private theorem scalarLaurent_eval (Q : ℤ →₀ ℂ) (u : ℂˣ) :
   classical
   simp only [scalarLaurent, Finsupp.sum, map_sum,
     LaurentPolynomial.eval₂_C_mul_T, RingHom.id_apply, Units.val_zpow_eq_zpow_val]
-  apply Finset.sum_congr rfl
-  intro n hn
-  exact mul_comm _ _
+  grind
 
 theorem scalar_laurent_chamber_unique
     (K : Type*) [Field K] [CharZero K] [ValuativeRel K]
@@ -102,12 +98,12 @@ theorem scalar_laurent_chamber_unique
     have he := congrArg (LaurentPolynomial.eval₂ (RingHom.id ℂ) u) hf
     simp only [map_mul, LaurentPolynomial.eval₂_toLaurent, Polynomial.eval₂_id,
       hp u hu, zero_mul, Polynomial.eval_zero] at he ⊢
-    exact he
+    grind
   have hz := Polynomial.eq_of_infinite_eval_eq f 0 hroots
   rw [hz, map_zero] at hf
   have hpzero : p = 0 :=
     (IsUnit.mul_left_inj (LaurentPolynomial.isUnit_T (R := ℂ) (n : ℤ))).mp
-      (by simpa using hf.symm)
+      (by grind)
   have hpoly : scalarLaurent Q = scalarLaurent R := sub_eq_zero.mp hpzero
   apply Finsupp.ext
   intro n

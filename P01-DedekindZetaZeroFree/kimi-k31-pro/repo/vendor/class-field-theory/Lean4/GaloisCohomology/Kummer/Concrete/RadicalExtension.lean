@@ -118,16 +118,7 @@ theorem le_finiteKummerRadicalSubgroup_kummerRadicalExtension
   apply Subtype.ext
   exact hpow
 
-/-- In particular, for an admissible subgroup-side object, the radical
-subgroup recovered from its field still contains `Kˣ^n`. -/
-theorem unitNthPowersSubgroup_le_constructedRadical
-    [IsSepClosure K Omega]
-    (n : ℕ+) (hn : ((n : ℕ) : K) ≠ 0) (Delta : KummerSubgroup K n) :
-    unitNthPowersSubgroup K n ≤ finiteKummerRadicalSubgroup
-      (K := K)
-      (L := kummerRadicalExtension (K := K) (Omega := Omega) n Delta.1) n :=
-  Delta.2.trans
-    (le_finiteKummerRadicalSubgroup_kummerRadicalExtension n hn Delta.1)
+
 
 /-- A Kummer root is nonzero because its prescribed power is a unit. -/
 theorem kummerRootSet_ne_zero

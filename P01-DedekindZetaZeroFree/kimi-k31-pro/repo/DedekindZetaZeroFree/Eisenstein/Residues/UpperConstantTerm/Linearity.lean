@@ -31,9 +31,8 @@ theorem coreResidue_upper_integrable (x : V)
         (asLiteralFlat (coreFlatInsertion R P C x)) 0 := by
     change (ownedLiteralResidueFamily (full_product_compact_iwasawa R)).residue
       (literalZeroProfileEquiv (full_product_compact_iwasawa R) (coreFlatInsertion R P C x)) = _
-    exact LiteralResidueFamily.residue_flat _ _
-  rw [hres]
-  exact (hB 0 (Metric.mem_ball_self hr)).1
+    simp_all
+  simp_all
 
 def coreResidueUpperLinear : V →ₗ[ℂ] Functions F ζ hζ where
   toFun x g := ∫ u : KPAdditiveQuotient F, coreResidue R P C x

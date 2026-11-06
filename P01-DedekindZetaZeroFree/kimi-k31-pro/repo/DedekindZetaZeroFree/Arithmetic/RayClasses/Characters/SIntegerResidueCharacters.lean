@@ -78,7 +78,7 @@ theorem finiteComponent_norm (A : SArithmeticData F)
 theorem localInverseProduct_norm (A : SArithmeticData F)
     (σ : FullLocalCharacters A) (hσ : HasFiniteOrder A σ)
     (n : NonzeroSInteger A) : ‖localInverseProduct A σ n‖ = 1 := by
-  simp [localInverseProduct, norm_mul, norm_prod, norm_inv,
+  simp [localInverseProduct, norm_prod, norm_inv,
     infiniteComponent_norm A σ hσ, finiteComponent_norm A σ hσ]
 
 theorem conductorSplit_norm_le (A : SArithmeticData F)

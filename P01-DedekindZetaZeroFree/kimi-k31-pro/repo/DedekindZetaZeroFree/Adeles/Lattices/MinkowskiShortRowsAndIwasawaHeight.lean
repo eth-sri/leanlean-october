@@ -68,7 +68,7 @@ private def linT (d : ℕ) (T : Fin d → Matrix.SpecialLinearGroup (Fin 2) ℂ)
     simp [Pi.add_apply, add_mul, Finset.sum_add_distrib]
   map_smul' c r := by
     funext ij
-    simp [Pi.smul_apply, smul_eq_mul, Finset.mul_sum, mul_assoc]
+    simp [Pi.smul_apply, smul_eq_mul, mul_assoc]
     ring
 
 private def curT (d : ℕ) (T : Fin d → Matrix.SpecialLinearGroup (Fin 2) ℂ) :

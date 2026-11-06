@@ -70,7 +70,7 @@ theorem ideleClassNorm_mem_normOneSubgroup
     absoluteNorm (_root_.ideleClassNorm K L c) = 1
   change absoluteNorm c = 1 at hc
   rw [absoluteNorm_ideleClassNorm]
-  exact hc
+  grind
 
 /-- The ordinary idele-class norm restricted to the norm-one idele-class
 groups. -/

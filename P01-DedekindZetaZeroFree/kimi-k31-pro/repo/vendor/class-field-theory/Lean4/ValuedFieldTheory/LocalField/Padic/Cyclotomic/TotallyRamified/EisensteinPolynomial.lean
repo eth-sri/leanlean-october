@@ -49,12 +49,7 @@ open scoped Polynomial
 
 universe u
 
-theorem padicCyclotomicTotallyRamified_norm_isUnit_iff
-    {R A : Type*} [CommRing R] [CommRing A] [Algebra R A]
-    [Module.Finite R A] [Module.Free R A] (x : A) :
-    IsUnit (Algebra.norm R x) ↔ IsUnit x := by
-  rw [Algebra.norm_apply, ← LinearMap.isUnit_iff_isUnit_det,
-    Algebra.lmul_isUnit_iff]
+
 
 /-- The translated prime-power cyclotomic polynomial over the actual p-adic
 integer ring. -/
@@ -202,17 +197,7 @@ theorem padicCyclotomic_finrank_eq_prime_sub_one_mul_pow
     Nat.totient_prime_pow (Fact.out : Nat.Prime p) (Nat.succ_pos k)]
   simp [Nat.mul_comm]
 
-/-- the totally ramified cyclotomic theorem(ii): the full Galois group is the unit group modulo
-`p ^ (k + 1)`. -/
-noncomputable def padicCyclotomicTotallyRamified_galoisGroupEquivUnits
-    (ζ : L) (hζ : IsPrimitiveRoot ζ (p ^ (k + 1)))
-    (hgen : Algebra.adjoin ℚ_[p] ({ζ} : Set L) = ⊤) :
-    (L ≃ₐ[ℚ_[p]] L) ≃* (ZMod (p ^ (k + 1)))ˣ := by
-  letI : NeZero (p ^ (k + 1)) := ⟨pow_ne_zero _ (Fact.out : Nat.Prime p).ne_zero⟩
-  letI : IsCyclotomicExtension {p ^ (k + 1)} ℚ_[p] L :=
-    padic_isCyclotomicExtension_of_primitiveRoot_adjoin_eq_top ζ hζ hgen
-  exact IsCyclotomicExtension.autEquivPow L
-    (padicCyclotomicPolynomial_irreducible_prime_pow_succ p k)
+
 
 /-- the totally ramified cyclotomic theorem(iv), including the exceptional order-two case:
 the field norm of `1 - ζ` is exactly the rational prime `p`. -/
@@ -272,34 +257,9 @@ theorem padicCyclotomic_norm_one_sub_primitiveRoot_eq_prime
       show -(ζ - 1) = algebraMap ℚ_[p] L (-1) * (ζ - 1) by simp,
       map_mul, Algebra.norm_algebraMap, hsub, heven.neg_one_pow, one_mul]
 
-/-- The primitive root is integral over the actual p-adic integer ring. -/
-theorem padicCyclotomicTotallyRamified_primitiveRoot_isIntegral_padicInt
-    (ζ : L) (hζ : IsPrimitiveRoot ζ (p ^ (k + 1))) :
-    IsIntegral ℤ_[p] ζ := by
-  refine ⟨X ^ (p ^ (k + 1)) - 1,
-    monic_X_pow_sub_C 1 (pow_ne_zero _ (Fact.out : Nat.Prime p).ne_zero), ?_⟩
-  simp [hζ.pow_eq_one]
 
-/-- The p-adic-integer minimal polynomial of `ζ - 1` is the Eisenstein
-translate `Φ_{p^(k+1)}(X+1)`. -/
-theorem padicCyclotomicTotallyRamified_minpoly_sub_one_padicInt
-    (ζ : L) (hζ : IsPrimitiveRoot ζ (p ^ (k + 1)))
-    (hgen : Algebra.adjoin ℚ_[p] ({ζ} : Set L) = ⊤) :
-    minpoly ℤ_[p] (ζ - 1) =
-      padicCyclotomicTotallyRamifiedShiftedCyclotomicPadicInt p k := by
-  let n := p ^ (k + 1)
-  let : NeZero n := ⟨pow_ne_zero _ (Fact.out : Nat.Prime p).ne_zero⟩
-  let : IsCyclotomicExtension {n} ℚ_[p] L := by
-    simpa [n] using padic_isCyclotomicExtension_of_primitiveRoot_adjoin_eq_top ζ hζ hgen
-  have hirr : Irreducible (cyclotomic n ℚ_[p]) := by
-    simpa [n] using padicCyclotomicPolynomial_irreducible_prime_pow_succ p k
-  have hint : IsIntegral ℤ_[p] (ζ - 1) :=
-    (padicCyclotomicTotallyRamified_primitiveRoot_isIntegral_padicInt ζ hζ).sub isIntegral_one
-  apply Polynomial.map_injective (algebraMap ℤ_[p] ℚ_[p])
-    (FaithfulSMul.algebraMap_injective ℤ_[p] ℚ_[p])
-  rw [← minpoly.isIntegrallyClosed_eq_field_fractions' ℚ_[p] hint,
-    hζ.minpoly_sub_one_eq_cyclotomic_comp hirr]
-  simp [padicCyclotomicTotallyRamifiedShiftedCyclotomicPadicInt, Polynomial.map_comp]
+
+
 
 end CyclotomicExtension
 

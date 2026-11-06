@@ -91,7 +91,7 @@ theorem exists_conductor_one_translation
   obtain ⟨o, ho⟩ := hw
   refine ⟨-((o : LocalField F q) * (π : LocalField F q)⁻¹), ?_, ?_⟩
   · refine ⟨-o, ?_⟩
-    simp [expandingBall, mul_comm]
+    simp [mul_comm]
   · simpa only [neg_neg] using ho
 
 theorem integral_zero_of_translation

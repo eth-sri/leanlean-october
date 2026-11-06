@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.Residual.GradientSquareIntegrability
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.Residual.SectionMetricAndEigenfunctions
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -28,7 +29,7 @@ theorem original_l2_norm_finite (Z : smoothSections F ζ hζ U R P H)
     (fun i => (Z.property i).continuous.measurable)).mpr
   apply (memLp_map_measure_iff hc.aestronglyMeasurable
     (KPContSectorQuotientRelationsComparison.piTilde_continuous F ζ hζ U).measurable.aemeasurable).mpr
-  exact h2
+  measurability
 
 theorem threeL2_of_native (Z : smoothSections F ζ hζ U R P H) (a : ℂ)
     (h2 : MemLp (originalScalar F ζ hζ U R P H Z) 2 R.quotientHaar)

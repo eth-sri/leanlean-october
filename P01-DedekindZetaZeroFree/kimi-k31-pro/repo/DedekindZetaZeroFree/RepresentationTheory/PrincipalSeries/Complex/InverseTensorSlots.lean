@@ -4,6 +4,7 @@ public import DedekindZetaZeroFree.Theta.Whittaker.Complex.SmoothExtensionByHarm
 public import DedekindZetaZeroFree.RepresentationTheory.PrincipalSeries.CompactMatrixEvaluation
 public import DedekindZetaZeroFree.Metaplectic.Intertwining.ComplexPrincipalSeries.TopologicalImage
 public import DedekindZetaZeroFree.RepresentationTheory.RankOne.Casimir.FiniteDegreeEnergyEstimates
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -39,7 +40,7 @@ def inverse : PrincipalSeries negativeParameter →L[ℂ] PrincipalSeries positi
   have h := congrArg Subtype.val (sourceEquiv.apply_symm_apply
     (⟨f, by rw [imageSubmodule_eq_top]; trivial⟩ : Theta (1 : ℂˣ)))
   rw [sourceEquiv_forward] at h
-  exact h
+  measurability
 
 theorem inverse_compact_bound (K : Set KPCplxCharacterHaar.ComplexGL2) (hK : IsCompact K) :
     ∃ orders : Finset ℕ, ∃ B : ℝ≥0, B ≠ 0 ∧

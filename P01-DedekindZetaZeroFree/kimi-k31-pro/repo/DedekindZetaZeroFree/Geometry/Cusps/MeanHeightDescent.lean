@@ -197,7 +197,7 @@ theorem actual_height_descent
       have h1 : KPFiniteCuspAtlas.componentMap F ζ hζ U g = ⇑A.components ∘ (Sigma.mk a.1) := by
         funext x; rw [Function.comp_apply, A.components_formula]
       rw [h1]
-      exact A.components.isEmbedding.comp (Topology.IsEmbedding.sigmaMk)
+      exact A.components.isEmbedding.comp Topology.IsEmbedding.sigmaMk
     have hend : Topology.IsEmbedding (KPFiniteCuspAtlas.endMap F Γ (C.cusp a.2) σ τ) := by
       let eT := KPFiniteCuspAtlas.endMap F Γ (C.cusp a.2) σ τ
       let e₀ := KPFiniteCuspAtlas.endMap F Γ (C.cusp a.2) σ C.threshold

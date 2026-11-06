@@ -424,7 +424,7 @@ private theorem pgl_diagonal_injective (K : Type*) [Field K] (u v : Kˣ)
   obtain ⟨c, hc⟩ := Matrix.ProjGenLinGroup.mk_eq_mk_iff.mp huv
   have h11 := congrArg (fun g : GL (Fin 2) K => (g : Matrix (Fin 2) (Fin 2) K) 1 1) hc
   have h00 := congrArg (fun g : GL (Fin 2) K => (g : Matrix (Fin 2) (Fin 2) K) 0 0) hc
-  simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.GeneralLinearGroup.coe_scalar,
+  simp [Matrix.mul_apply, Matrix.GeneralLinearGroup.coe_scalar,
     Matrix.scalar, Matrix.diagonal_apply] at h11 h00
   apply Units.ext
   calc
@@ -478,7 +478,7 @@ private lemma compact_coordinate_unit (v : HeightOneSpectrum (𝓞 F))
   have h10 := congrArg (fun g : GL (Fin 2) (LocalField F v) => g 1 0) hc
   have h00 := congrArg (fun g : GL (Fin 2) (LocalField F v) => g 0 0) hc
   have h11 := congrArg (fun g : GL (Fin 2) (LocalField F v) => g 1 1) hc
-  simp [Matrix.mul_apply, Fin.sum_univ_two, Matrix.GeneralLinearGroup.coe_scalar,
+  simp [Matrix.mul_apply, Matrix.GeneralLinearGroup.coe_scalar,
     Matrix.scalar, Matrix.diagonal_apply] at h10 h00 h11
   have hk10 : k 1 0 = 0 := by
     apply Subtype.ext

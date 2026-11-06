@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.Arithmetic.Units.SArithmeticData
 public import DedekindZetaZeroFree.Arithmetic.Kummer.TwelfthRootsTotallyComplex
+public import Mathlib.Tactic.Positivity
 
 @[expose] public section
 
@@ -60,7 +61,7 @@ include A in
 
 theorem complexPlace_pos : 0 < InfinitePlace.nrComplexPlaces F := by
   rw [← A.infinitePlace_card]
-  exact Fintype.card_pos
+  positivity
 
 theorem sunitRank_add_one (A : SArithmeticData F) : A.sunitRank + 1 =
     InfinitePlace.nrComplexPlaces F + A.Sf.card := by

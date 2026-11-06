@@ -18,7 +18,7 @@ theorem unitMulCLE_apply (u : ℂ) (hu : ‖u‖ = 1) (z : ℂ) :
 
 theorem quadratic_radius_pos (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) :
     0 < ‖β * a‖ := by
-  exact norm_pos_iff.mpr (mul_ne_zero hβ ha)
+  simp_all
 
 theorem exists_quadratic_unit (β a : ℂ) (hβ : β ≠ 0) (ha : a ≠ 0) :
     ∃ u : ℂ, ‖u‖ = 1 ∧ β * a * u ^ 2 = (‖β * a‖ : ℂ) := by

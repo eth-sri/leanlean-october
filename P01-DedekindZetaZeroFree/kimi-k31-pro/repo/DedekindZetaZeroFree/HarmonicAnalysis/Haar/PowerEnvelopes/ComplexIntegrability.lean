@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.PowerEnvelopes.Definitions
 public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.ComplexUnits.MinimumPowerIntegrability
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -27,7 +28,7 @@ theorem weighted_archPowerMajorant_integrable (ν : Measure ℂˣ) [ν.IsHaarMea
     ((‖z.val‖ ^ 2) ^ s * (‖z.val‖ ^ 2) ^ (-B)) = _
   rw [← Real.rpow_add hz2 s (1 / 4 : ℝ), ← Real.rpow_add hz2 s (-B)]
   rw [← Real.rpow_natCast ‖z.val‖ 2, ← Real.rpow_mul hz.le, ← Real.rpow_mul hz.le]
-  congr 2 <;> ring
+  measurability
 
 end
 end DedekindZetaZeroFree.ThetaRawSheetEnvelope.WeightedWhittakerSheets

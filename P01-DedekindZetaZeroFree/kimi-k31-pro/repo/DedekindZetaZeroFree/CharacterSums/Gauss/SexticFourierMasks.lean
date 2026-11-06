@@ -69,13 +69,13 @@ theorem sexticFourierMask_sum {k : Type*} [Field k] [Fintype k]
       simpa [mul_comm] using AddChar.sum_mulShift t hψ
     rw [hs]
     by_cases ht : t = 0
-    · simp [ht, sexticUnitPower, hj, Fintype.card_ne_zero]
+    · simp [ht, sexticUnitPower, Fintype.card_ne_zero]
     · simp [ht, sexticUnitPower, hj, isUnit_iff_ne_zero]
   · have hm (v : k) : sexticFourierMask χ ψ j v =
         (χ⁻¹ ^ j.val) v / sexticMaskGaussSum χ ψ j := by
       by_cases hv : v = 0
       · subst v
-        simp only [sexticFourierMask, if_neg hj, if_pos rfl, MulChar.map_zero, zero_div, ite_true]
+        simp only [sexticFourierMask, if_neg hj, MulChar.map_zero, zero_div, ite_true]
       · simp only [sexticFourierMask, if_neg hj, if_neg hv]
     simp_rw [hm, div_mul_eq_mul_div, ← Finset.sum_div]
     by_cases ht : t = 0

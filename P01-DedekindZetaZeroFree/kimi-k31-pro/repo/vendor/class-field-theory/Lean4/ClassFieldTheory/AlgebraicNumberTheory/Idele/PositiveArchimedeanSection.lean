@@ -285,10 +285,7 @@ theorem positiveArchimedeanSectionContinuous_apply
       positiveArchimedeanSection K r :=
   rfl
 
-/-- The positive archimedean section is continuous. -/
-theorem continuous_positiveArchimedeanSection :
-    Continuous (positiveArchimedeanSection K) :=
-  (positiveArchimedeanSectionContinuous K).continuous_toFun
+
 
 @[simp]
 private theorem positiveArchimedeanSection_infiniteComponent_same

@@ -111,8 +111,7 @@ theorem primitive_twist_idelic_restriction
         (IdeleGroup.finitePlaceIdeleClass v u) /
       RayClassBridge.ideleClassCharacter F hc
         χ.conductor χ.conductor_ne_zero χ.character
-        (IdeleGroup.finitePlaceIdeleClass v u) := by
-  exact Conductor.canonical_idelic_primitive_twist F hc η χ ψ htw
+        (IdeleGroup.finitePlaceIdeleClass v u) := Conductor.canonical_idelic_primitive_twist F hc η χ ψ htw
     (IdeleGroup.finitePlaceIdeleClass v u)
 
 end DedekindZetaZeroFree.Detector.Conductor.LocalTwistSteps
@@ -158,8 +157,7 @@ theorem canonicalFrequencyLocalCharacter_pow_card
     (u : (v.adicCompletion F)ˣ) :
     canonicalFrequencyLocalCharacter F hc χ v u ^
       Nat.card (ClassFieldTheory.RayClassGroup
-        (RayClassBridge.narrowIdealModulus F χ.conductor χ.conductor_ne_zero)) = 1 := by
-  exact RayClassBridge.ideleClassCharacter_pow_card F hc χ.conductor
+        (RayClassBridge.narrowIdealModulus F χ.conductor χ.conductor_ne_zero)) = 1 := RayClassBridge.ideleClassCharacter_pow_card F hc χ.conductor
     χ.conductor_ne_zero χ.character (IdeleGroup.finitePlaceIdeleClass v u)
 
 theorem primitive_twist_local_range_finite_of_local_compatibility
@@ -583,7 +581,7 @@ theorem frequency_denominator_conductor_bound
   obtain ⟨C, hC, hbound⟩ :=
     frequency_numerator_conductor_bound F ζ12 hζ12 ι S hS hSix
   have hη : 0 < (Ideal.absNorm η.conductor : ℝ) := by
-    exact_mod_cast (Nat.pos_of_ne_zero ((Ideal.absNorm_eq_zero_iff).not.mpr η.conductor_ne_zero))
+    exact_mod_cast (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr η.conductor_ne_zero))
   refine ⟨(Ideal.absNorm η.conductor : ℝ) * C, mul_pos hη hC, ?_⟩
   intro U K T u
   have hle := primitive_twist_conductor_le F η (K.numerator u) (T.denominator u) (T.induces u)
@@ -591,7 +589,7 @@ theorem frequency_denominator_conductor_bound
       Ideal.absNorm (η.conductor * (K.numerator u).conductor) := by
     apply Nat.le_of_dvd
     · apply Nat.pos_of_ne_zero
-      apply (Ideal.absNorm_eq_zero_iff).not.mpr
+      apply Ideal.absNorm_eq_zero_iff.not.mpr
       exact mul_ne_zero η.conductor_ne_zero (K.numerator u).conductor_ne_zero
     · exact Ideal.absNorm_dvd_absNorm_of_le hle
   calc

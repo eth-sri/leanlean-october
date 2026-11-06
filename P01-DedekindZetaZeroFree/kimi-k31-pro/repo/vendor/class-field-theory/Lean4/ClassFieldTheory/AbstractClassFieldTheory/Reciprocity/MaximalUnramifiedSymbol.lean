@@ -483,16 +483,7 @@ theorem maximalUnramifiedNormResidue_degree
     (K.toFiniteResidueAbstractField D)).toAdditive.apply_symm_apply
       ((v.valueGroup).subtype (v.valuationAt K a))
 
-/-- The maximal-unramified symbol is literally the profinite power
-`φ_K ^ v_K(a)`. -/
-theorem maximalUnramifiedNormResidue_eq_frobeniusPower
-    (v : ValuationData D A)
-    (K : FiniteAbstractField G)
-    (a : ambientFixedAddSubgroup A K.field) :
-    maximalUnramifiedNormResidueSymbol v K a =
-      maximalUnramifiedFrobeniusPower D (K.toFiniteResidueAbstractField D)
-        (v.valuationAt K a : ZHat) := by
-  rfl
+
 
 /-- At every finite unramified quotient, normalized degree of the
 maximal-unramified symbol is valuation reduced modulo the extension degree. -/

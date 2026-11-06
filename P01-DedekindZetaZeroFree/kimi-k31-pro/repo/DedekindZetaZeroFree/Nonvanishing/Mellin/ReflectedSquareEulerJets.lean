@@ -201,7 +201,7 @@ open MeasureTheory
 namespace DedekindZetaZeroFree.LargeSieve.ReflectedSquareDerivatives
 
 private lemma uniform_complex_norm_ofReal (r : ℝ) : ‖(r : ℂ)‖ = |r| := by
-  rw [Complex.norm_def, Complex.normSq_ofReal, ← sq, Real.sqrt_sq_eq_abs]
+  simp_all
 
 private lemma uniform_norm_add_mul_I_le (c t v : ℝ) (hc0 : 0 ≤ c) (hcv : c ≤ v) (hv0 : 0 ≤ v) :
     ‖(c : ℂ) + (t : ℂ) * Complex.I‖ ≤ (v + 1) * (1 + |t|) := by
@@ -283,8 +283,7 @@ private lemma uniform_norm_mellinInv_le (c x A : ℝ) (g : ℂ → ℂ) (hx : 0 
     congr 1
   rw [hInv, norm_smul, hscal]
   calc (1 / (2 * Real.pi)) * ‖∫ t, F t‖
-      ≤ (1 / (2 * Real.pi)) * ∫ t, ‖F t‖ := by
-        exact mul_le_mul_of_nonneg_left (norm_integral_le_integral_norm F) (by positivity)
+      ≤ (1 / (2 * Real.pi)) * ∫ t, ‖F t‖ := mul_le_mul_of_nonneg_left (norm_integral_le_integral_norm F) (by positivity)
     _ ≤ (1 / (2 * Real.pi)) * (x ^ (-c) * A * ∫ t, (1 + |t|) ^ (-2 : ℝ)) := by
         apply mul_le_mul_of_nonneg_left _ (by positivity)
         rw [← hIeq]; exact hle

@@ -68,25 +68,7 @@ noncomputable def kroneckerWeberRamifiedPrimes : Finset Nat.Primes := by
     AlgebraicNumberTheory.Ramification.finite_ramified_base_heightOne_primes ℤ (𝓞 L)
   exact hS.toFinset.image Rat.HeightOneSpectrum.primesEquiv
 
-omit hLab in
-/-- Membership in the finite ramified-prime set, stated in
-height-one-prime language. -/
-theorem mem_kroneckerWeberRamifiedPrimes_iff
-    (p : Nat.Primes) :
-    p ∈ kroneckerWeberRamifiedPrimes (L := L) ↔
-      ∃ w : IsDedekindDomain.HeightOneSpectrum (𝓞 L),
-        (w.asIdeal : Ideal (𝓞 L)).LiesOver
-          ((Rat.HeightOneSpectrum.primesEquiv.symm p).asIdeal : Ideal ℤ) ∧
-        ¬ Algebra.IsUnramifiedAt ℤ w.asIdeal := by
-  classical
-  simp only [kroneckerWeberRamifiedPrimes, Finset.mem_image,
-    Set.Finite.mem_toFinset, Set.mem_ofPred_eq]
-  constructor
-  · rintro ⟨v, hv, rfl⟩
-    simpa using hv
-  · intro hp
-    exact ⟨Rat.HeightOneSpectrum.primesEquiv.symm p, hp,
-      Rat.HeightOneSpectrum.primesEquiv.apply_symm_apply p⟩
+
 
 include hLab in
 /-- A chosen extension to `L` of the rational `p`-adic absolute value,
@@ -195,16 +177,7 @@ theorem kroneckerWeberLocalUnramifiedDegree_pos
   (kroneckerWeberLocalCyclotomicData
     (L := L) p).unramifiedDegree_pos
 
-include L hNF in
-/-- The actual local cyclotomic embedding selected together with the two
-local exponents. -/
-theorem kroneckerWeberLocalCyclotomicEmbedding
-    (p : Nat.Primes) :
-    kroneckerWeberLocalCyclotomicEmbeddingProperty
-      (L := L) p
-      (kroneckerWeberLocalUnramifiedDegree (L := L) p)
-      (kroneckerWeberLocalRamificationExponent (L := L) p) :=
-  (kroneckerWeberLocalCyclotomicData (L := L) p).embedding
+
 
 include L hNF hLab in
 /-- The cyclotomic order `n = ∏_{p ∈ S} p^{e_p}` chosen from the ramification
@@ -220,36 +193,9 @@ noncomputable def kroneckerWeberConductorCoprimePart
   ∏ q ∈ (kroneckerWeberRamifiedPrimes (L := L)).erase p,
     q.1 ^ kroneckerWeberLocalRamificationExponent (L := L) q
 
-include L hNF in
-/-- At a ramified prime `p`, the conductor candidate splits into its chosen
-`p`-primary order and the product supported at the other ramified primes. -/
-theorem kroneckerWeberConductorCandidate_eq_primePower_mul_coprimePart
-    (p : Nat.Primes)
-    (hp : p ∈ kroneckerWeberRamifiedPrimes (L := L)) :
-    kroneckerWeberConductorCandidate (L := L) =
-      p.1 ^ kroneckerWeberLocalRamificationExponent (L := L) p *
-        kroneckerWeberConductorCoprimePart (L := L) p := by
-  classical
-  rw [kroneckerWeberConductorCandidate,
-    kroneckerWeberConductorCoprimePart]
-  exact (Finset.mul_prod_erase _ _ hp).symm
 
-include L hNF in
-/-- The complementary factor really is prime to `p`; this is the arithmetic
-input which makes it part of the unramified factor in the local cyclotomic
-field used in the global construction. -/
-theorem kroneckerWeberConductorCoprimePart_coprime
-    (p : Nat.Primes) :
-    Nat.Coprime p.1
-      (kroneckerWeberConductorCoprimePart (L := L) p) := by
-  classical
-  rw [kroneckerWeberConductorCoprimePart,
-    Nat.coprime_prod_right_iff]
-  intro q hq
-  apply Nat.Coprime.pow_right
-  exact (Nat.coprime_primes p.2 q.2).2
-    (Subtype.coe_ne_coe.mpr
-      (Ne.symm (Finset.ne_of_mem_erase hq)))
+
+
 
 include L hNF in
 /-- The constructed global cyclotomic order is nonzero. -/
@@ -320,95 +266,19 @@ noncomputable def kroneckerWeberCompositumEmbeddingLeft :
   finiteAbelianCompositumEmbeddingLeft ℚ L
     (CyclotomicField (kroneckerWeberConductorCandidate (L := L)) ℚ)
 
-include L hNF hLab in
-/-- The conductor cyclotomic field embeds into `M = L(μ_n)`. -/
-noncomputable def kroneckerWeberCompositumEmbeddingRight :
-    CyclotomicField (kroneckerWeberConductorCandidate (L := L)) ℚ →ₐ[ℚ]
-      kroneckerWeberCompositumField L :=
-  finiteAbelianCompositumEmbeddingRight ℚ L
-    (CyclotomicField (kroneckerWeberConductorCandidate (L := L)) ℚ)
 
-include L hNF hLab in
-/-- The copy of `L` inside the concrete compositum. -/
-noncomputable def kroneckerWeberCompositumLeftField :
-    IntermediateField ℚ (kroneckerWeberCompositumField L) :=
-  (kroneckerWeberCompositumEmbeddingLeft (L := L)).fieldRange
 
-include L hNF hLab in
-/-- The chosen copy of `L` in the compositum is canonically isomorphic to
-`L`. -/
-noncomputable def kroneckerWeberCompositumLeftEquiv :
-    L ≃ₐ[ℚ] kroneckerWeberCompositumLeftField (L := L) :=
-  AlgEquiv.ofInjectiveField
-    (kroneckerWeberCompositumEmbeddingLeft (L := L))
 
-include L hNF hLab in
-/-- The elementary lower degree bound for the cyclotomic factor of `M`. -/
-theorem kroneckerWeberCyclotomic_finrank_le_compositum :
-      Module.finrank ℚ
-        (CyclotomicField (kroneckerWeberConductorCandidate (L := L)) ℚ) ≤
-      Module.finrank ℚ (kroneckerWeberCompositumField L) :=
-  finiteAbelianCompositum_finrank_right_le ℚ L
-    (CyclotomicField (kroneckerWeberConductorCandidate (L := L)) ℚ)
 
-include L hNF hLab in
-/-- Once the global inertia count supplies the upper degree bound, the
-cyclotomic inclusion in `M` is an isomorphism.  This isolates the purely
-linear-algebraic final step of the global construction. -/
-noncomputable def kroneckerWeberCompositumEquivCyclotomicOfFinrankLe
-    (hupper :
-      Module.finrank ℚ (kroneckerWeberCompositumField L) ≤
-        Nat.totient (kroneckerWeberConductorCandidate (L := L))) :
-    kroneckerWeberCompositumField L ≃ₐ[ℚ]
-      CyclotomicField (kroneckerWeberConductorCandidate (L := L)) ℚ := by
-  let n := kroneckerWeberConductorCandidate (L := L)
-  let C := CyclotomicField n ℚ
-  let M := kroneckerWeberCompositumField L
-  let i : C →ₐ[ℚ] M := kroneckerWeberCompositumEmbeddingRight (L := L)
-  letI : IsCyclotomicExtension {n} ℚ C := by
-    dsimp only [C]
-    exact CyclotomicField.isCyclotomicExtension n ℚ
-  have hcyclotomic : Module.finrank ℚ C = Nat.totient n :=
-    IsCyclotomicExtension.Rat.finrank n C
-  have hCM : Module.finrank ℚ C ≤ Module.finrank ℚ M :=
-    kroneckerWeberCyclotomic_finrank_le_compositum (L := L)
-  have hMC : Module.finrank ℚ M ≤ Module.finrank ℚ C := by
-    rw [hcyclotomic]
-    exact hupper
-  have hdim : Module.finrank ℚ C = Module.finrank ℚ M :=
-    Nat.le_antisymm hCM hMC
-  have hiSurjective : Function.Surjective i.toLinearMap :=
-    (LinearMap.injective_iff_surjective_of_finrank_eq_finrank
-      (f := i.toLinearMap) hdim).mp i.injective
-  exact (AlgEquiv.ofBijective i ⟨i.injective, hiSurjective⟩).symm
 
-include L hNF hLab in
-/-- The promised embedding of `L` into the conductor cyclotomic field,
-deduced from the global upper degree bound. -/
-noncomputable def kroneckerWeberEmbeddingOfCompositumFinrankLe
-    (hupper :
-      Module.finrank ℚ (kroneckerWeberCompositumField L) ≤
-        Nat.totient (kroneckerWeberConductorCandidate (L := L))) :
-    L →ₐ[ℚ]
-      CyclotomicField (kroneckerWeberConductorCandidate (L := L)) ℚ :=
-  (kroneckerWeberCompositumEquivCyclotomicOfFinrankLe
-      (L := L) hupper).toAlgHom.comp
-    (kroneckerWeberCompositumEmbeddingLeft (L := L))
 
-include L hNF hLab in
-/-- A chosen prime of `M = L(μ_n)` over the rational prime `p`. -/
-noncomputable def kroneckerWeberCompositumPrimeAbove
-    (p : Nat.Primes) :
-    Ideal.primesOver
-      ((Rat.HeightOneSpectrum.primesEquiv.symm p).asIdeal : Ideal ℤ)
-      (𝓞 (kroneckerWeberCompositumField L)) := by
-  letI : ((Rat.HeightOneSpectrum.primesEquiv.symm p).asIdeal :
-      Ideal ℤ).IsPrime := by
-    infer_instance
-  exact Classical.choice (inferInstance : Nonempty
-    (Ideal.primesOver
-      ((Rat.HeightOneSpectrum.primesEquiv.symm p).asIdeal : Ideal ℤ)
-      (𝓞 (kroneckerWeberCompositumField L))))
+
+
+
+
+
+
+
 
 end GlobalCompositum
 

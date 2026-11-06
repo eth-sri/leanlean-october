@@ -37,9 +37,7 @@ private theorem gaussian_square_norm_bound (qc qn Z : ℝ)
         |thetaReflectionGaussian (qc * qn ^ 3 / Z)| * Z ^ 2 =
         |thetaReflectionGaussian (qc * qn ^ 3 / Z)| * (qc ^ 2 * qn ^ 6) := by
       field_simp
-    rw [he] at hh
-    norm_num at hh ⊢
-    exact hh
+    grind
   calc
     _ ≤ ((Real.exp 4 / (2 * Real.sqrt Real.pi) * Z ^ 2) /
         (qc ^ 2 * qn ^ 6)) / (Real.sqrt qc * qn) :=
@@ -97,8 +95,7 @@ theorem forwardSummand_norm_summable_of_weight
   have hmajor : Summable (fun i : ExteriorSquarefreeIdeal A.cS × A.Exterior =>
       (Real.exp 4 / (2 * Real.sqrt Real.pi) * Z ^ 2) * f i.1 * g i.2) := by
     convert hfg.mul_left (Real.exp 4 / (2 * Real.sqrt Real.pi) * Z ^ 2) using 1
-    ext i
-    ring
+    grind
   exact hmajor.of_nonneg_of_le (fun _ => norm_nonneg _) (fun i => hb i.1 i.2)
 
 end

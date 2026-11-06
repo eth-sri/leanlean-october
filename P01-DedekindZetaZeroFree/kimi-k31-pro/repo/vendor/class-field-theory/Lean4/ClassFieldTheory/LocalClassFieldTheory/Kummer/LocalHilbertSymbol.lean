@@ -110,64 +110,9 @@ theorem localHilbertSymbol_map_eq_rootQuotient
     chosenSimpleKummerRootCharacter_apply K n hnK hmu b
       (chosenSimpleKummerNormResidueAutomorphism K n hnK hmu b a)
 
-/-- The local Artin automorphism acts on the chosen radical by
-multiplication with the Hilbert symbol. -/
-theorem normResidueAutomorphism_map_rootUnit_eq_hilbertSymbol_mul
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (a b : Kˣ) :
-    let E := chosenSimpleKummerExtension K n hnK b
-    let sigma : Gal(E/K) :=
-      chosenSimpleKummerNormResidueAutomorphism K n hnK hmu b a
-    let beta : Eˣ := chosenSimpleKummerRootUnit K n hnK b
-    Units.map sigma beta =
-      Units.map (algebraMap K E).toMonoidHom
-          (localHilbertSymbol K n hnK hmu a b).1 * beta := by
-  let E := chosenSimpleKummerExtension K n hnK b
-  let sigma : Gal(E/K) :=
-    chosenSimpleKummerNormResidueAutomorphism K n hnK hmu b a
-  let beta : Eˣ := chosenSimpleKummerRootUnit K n hnK b
-  change Units.map sigma beta =
-    Units.map (algebraMap K E).toMonoidHom
-      (localHilbertSymbol K n hnK hmu a b).1 * beta
-  have hmap0 := congrArg Subtype.val
-    (localHilbertSymbol_map_eq_rootQuotient K n hnK hmu a b)
-  have hmap :
-      Units.map (algebraMap K E).toMonoidHom
-          (localHilbertSymbol K n hnK hmu a b).1 =
-        rootQuotient (K := K) (L := E) beta sigma := by
-    change
-      Units.map
-          (algebraMap K (chosenSimpleKummerExtension K n hnK b)).toMonoidHom
-          (localHilbertSymbol K n hnK hmu a b).1 =
-        rootQuotient
-          (K := K) (L := chosenSimpleKummerExtension K n hnK b)
-          (chosenSimpleKummerRootUnit K n hnK b)
-          (chosenSimpleKummerNormResidueAutomorphism K n hnK hmu b a) at hmap0
-    simpa only [E, beta, sigma] using hmap0
-  rw [hmap]
-  simpa only [AlgEquiv.smul_units_def] using
-    (rootQuotient_mul_right
-      (K := K) (L := E) beta sigma).symm
 
-/-- Element-valued form of the defining Artin action. -/
-theorem normResidueAutomorphism_apply_root_eq_hilbertSymbol_mul
-    (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (hmu : (primitiveRoots (n : ℕ) K).Nonempty) (a b : Kˣ) :
-    let E := chosenSimpleKummerExtension K n hnK b
-    let beta : E := (chosenSimpleKummerRootUnit K n hnK b : Eˣ)
-    chosenSimpleKummerNormResidueAutomorphism K n hnK hmu b a beta =
-      algebraMap K E ((localHilbertSymbol K n hnK hmu a b).1 : K) * beta := by
-  let E := chosenSimpleKummerExtension K n hnK b
-  let betaUnit : Eˣ := chosenSimpleKummerRootUnit K n hnK b
-  have hunit :
-      Units.map
-          (chosenSimpleKummerNormResidueAutomorphism K n hnK hmu b a) betaUnit =
-        Units.map (algebraMap K E).toMonoidHom
-            (localHilbertSymbol K n hnK hmu a b).1 * betaUnit := by
-    simpa only [E, betaUnit] using
-      (normResidueAutomorphism_map_rootUnit_eq_hilbertSymbol_mul
-        K n hnK hmu a b)
-  exact congrArg (fun u : Eˣ => (u : E)) hunit
+
+
 
 /-- The concrete Artin homomorphism has precisely the local norm subgroup
 as its kernel. -/

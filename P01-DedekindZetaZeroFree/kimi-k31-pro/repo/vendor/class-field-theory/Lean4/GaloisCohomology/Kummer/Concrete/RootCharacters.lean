@@ -60,24 +60,9 @@ def nthRootsSubgroup (n : ℕ) : Subgroup Lˣ where
     u ∈ nthRootsSubgroup L n ↔ u ^ n = 1 :=
   Iff.rfl
 
-/-- If two units have the same `n`-th power, then their quotient lies in `μₙ(L)`. -/
-theorem div_mem_nthRootsSubgroup_of_pow_eq_pow
-    {n : ℕ} {u v : Lˣ} (h : u ^ n = v ^ n) :
-    u / v ∈ nthRootsSubgroup L n := by
-  rw [mem_nthRootsSubgroup_iff]
-  exact div_pow_eq_one_of_pow_eq_pow (n := n) h
 
-/-- Galois automorphisms preserve the subgroup of `n`-torsion units. -/
-theorem smul_mem_nthRootsSubgroup
-    {K : Type*} [Field K] [Algebra K L]
-    (n : ℕ) (σ : Gal(L/K)) {u : Lˣ}
-    (hu : u ∈ nthRootsSubgroup L n) :
-    σ • u ∈ nthRootsSubgroup L n := by
-  rw [mem_nthRootsSubgroup_iff] at hu ⊢
-  calc
-    (σ • u) ^ n = σ • (u ^ n) := by
-      exact (map_pow (MulDistribMulAction.toMonoidHom Lˣ σ) u n).symm
-    _ = 1 := by simp [hu]
+
+
 
 end TorsionSubgroups
 
@@ -128,18 +113,9 @@ theorem rootQuotient_mul (β : Lˣ) (σ τ : Gal(L/K)) :
   rw [mul_smul]
   simp [rootQuotient, div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm]
 
-/-- Reformulation: `σ ↦ σ(β) / β` is a multiplicative `1`-cocycle. -/
-theorem isMulCocycle₁_rootQuotient (β : Lˣ) :
-    IsMulCocycle₁ (rootQuotient (K := K) (L := L) β) := by
-  intro σ τ
-  exact rootQuotient_mul (K := K) (L := L) β σ τ
 
-/-- The root-quotient at `σ⁻¹` is determined by the value at `σ`. -/
-theorem rootQuotient_inv (β : Lˣ) (σ : Gal(L/K)) :
-    σ • rootQuotient (K := K) (L := L) β σ⁻¹ =
-      (rootQuotient (K := K) (L := L) β σ)⁻¹ := by
-  exact groupCohomology.map_inv_of_isMulCocycle₁
-    (isMulCocycle₁_rootQuotient (K := K) (L := L) β) σ
+
+
 
 /-- The root-quotient of a quotient is the quotient of the root-quotients. -/
 theorem rootQuotient_div (u v : Lˣ) (σ : Gal(L/K)) :
@@ -223,10 +199,7 @@ theorem rootCocycle_mul (a : D.carrier) (σ τ : Gal(L/K)) :
       σ • D.rootCocycle a τ * D.rootCocycle a σ := by
   exact rootQuotient_mul (K := K) (L := L) (D.root a) σ τ
 
-/-- Reformulation: the chosen root-quotient is a multiplicative `1`-cocycle. -/
-theorem isMulCocycle₁_rootCocycle (a : D.carrier) :
-    IsMulCocycle₁ (D.rootCocycle a) := by
-  exact isMulCocycle₁_rootQuotient (K := K) (L := L) (D.root a)
+
 
 /-- Galois automorphisms fix units coming from the base field. -/
 @[simp] theorem smul_algebraMap_unit (σ : Gal(L/K)) (u : Kˣ) :
@@ -244,39 +217,11 @@ theorem rootCocycle_pow_eq_one (a : D.carrier) (σ : Gal(L/K)) :
   rw [D.root_pow_eq_map]
   exact smul_algebraMap_unit (K := K) (L := L) τ a.1
 
-/-- The chosen root-quotient of `a` belongs to `μₙ(L)`. -/
-theorem rootCocycle_mem_nthRootsSubgroup (a : D.carrier) (σ : Gal(L/K)) :
-    D.rootCocycle a σ ∈ nthRootsSubgroup L (n : ℕ) := by
-  rw [mem_nthRootsSubgroup_iff]
-  exact D.rootCocycle_pow_eq_one a σ
 
-/-- If two root choices are used for the same radical element, their quotient is `n`-torsion. -/
-theorem changeRoot_rootQuotient_pow_eq_one
-    {u v : Lˣ} (a : D.carrier)
-    (hu : u ^ (n : ℕ) = Units.map (algebraMap K L).toMonoidHom a.1)
-    (hv : v ^ (n : ℕ) = Units.map (algebraMap K L).toMonoidHom a.1)
-    (σ : Gal(L/K)) :
-    (rootQuotient (K := K) (L := L) u σ /
-        rootQuotient (K := K) (L := L) v σ) ^ (n : ℕ) = 1 := by
-  rw [rootQuotient_changeRoot]
-  refine rootQuotient_pow_eq_one_of_pow_fixed (K := K) (L := L)
-      (β := u / v) ?_ σ
-  intro τ
-  have hpow : (u / v) ^ (n : ℕ) = 1 :=
-    D.div_pow_eq_one_of_same_image a hu hv
-  rw [hpow]
-  simp
 
-/-- Change-of-root quotient cocycles land in `μₙ(L)`. -/
-theorem changeRoot_rootQuotient_mem_nthRootsSubgroup
-    {u v : Lˣ} (a : D.carrier)
-    (hu : u ^ (n : ℕ) = Units.map (algebraMap K L).toMonoidHom a.1)
-    (hv : v ^ (n : ℕ) = Units.map (algebraMap K L).toMonoidHom a.1)
-    (σ : Gal(L/K)) :
-    rootQuotient (K := K) (L := L) u σ /
-        rootQuotient (K := K) (L := L) v σ ∈ nthRootsSubgroup L (n : ℕ) := by
-  rw [mem_nthRootsSubgroup_iff]
-  exact D.changeRoot_rootQuotient_pow_eq_one a hu hv σ
+
+
+
 
 /-- If `μₙ(L)` is fixed by Galois, root-quotients for the same radical element agree. -/
 theorem rootQuotient_eq_rootCocycle_of_same_pow

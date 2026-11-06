@@ -46,9 +46,9 @@ private lemma chart_formula (s : ℝ) (f : ComplexGL2 → ℂ)
     intro i j
     cases north <;> fin_cases i <;> fin_cases j <;>
       simp [upperTriangular_coe_matrix, weyl, upperUnipotent, lowerUnipotent,
-        Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two,
+        Matrix.mul_apply, Fin.sum_univ_two,
         a, d, Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two]
-    all_goals simp only [Bool.false_eq_true, Bool.true_eq, if_false, if_true] at h
+    all_goals simp only [Bool.false_eq_true, if_false, if_true] at h
     all_goals field_simp [h]
     all_goals ring
   conv_lhs => rw [hg, hcov]
@@ -58,7 +58,7 @@ private lemma chart_formula (s : ℝ) (f : ComplexGL2 → ℂ)
     unfold inductionWeight
     have he : ‖(a : ℂ) / (d : ℂ)‖ = ‖(Matrix.GeneralLinearGroup.det g : ℂ)‖ /
         ‖(g : Matrix (Fin 2) (Fin 2) ℂ) 1 (if north then 0 else 1)‖ ^ 2 := by
-      cases north <;> simp [a, d, norm_div, norm_neg, div_div, sq]
+      cases north <;> simp [a, d, norm_neg, div_div, sq]
     rw [he]
     calc
       _ = Real.rpow (‖(Matrix.GeneralLinearGroup.det g : ℂ)‖ /

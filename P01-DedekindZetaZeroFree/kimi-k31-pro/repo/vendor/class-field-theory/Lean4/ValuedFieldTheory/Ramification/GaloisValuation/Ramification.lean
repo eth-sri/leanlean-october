@@ -60,60 +60,17 @@ noncomputable def herbrandFunctionNat (n : Nat) : Rat :=
     F.herbrandFunctionNat 0 = 0 := by
   simp [herbrandFunctionNat]
 
-/-- States the theorem `herbrandFunctionNat_succ`. -/
-theorem herbrandFunctionNat_succ (n : Nat) :
-    F.herbrandFunctionNat (n + 1) =
-      F.herbrandFunctionNat n + F.herbrandStep n := by
-  simp [herbrandFunctionNat, Finset.sum_range_succ]
 
-/-- States the theorem `herbrandStep_nonneg`. -/
-theorem herbrandStep_nonneg (i : Nat) :
-    0 <= F.herbrandStep i := by
-  exact div_nonneg (Nat.cast_nonneg _) (Nat.cast_nonneg _)
 
-/-- States the theorem `herbrandStep_pos`. -/
-theorem herbrandStep_pos (i : Nat)
-    [Finite (F.lower i)] [Finite (F.lower 0)] :
-    0 < F.herbrandStep i := by
-  have hi : 0 < Nat.card (F.lower i) := Finite.card_pos
-  have h0 : 0 < Nat.card (F.lower 0) := Finite.card_pos
-  exact
-    div_pos
-      (Nat.cast_pos.mpr hi)
-      (Nat.cast_pos.mpr h0)
 
-/-- States the theorem `herbrandFunctionNat_mono`. -/
-theorem herbrandFunctionNat_mono :
-    Monotone F.herbrandFunctionNat := by
-  intro m n hmn
-  refine Nat.le_induction (m := m) ?base ?step n hmn
-  · exact le_rfl
-  · intro k _hmk ih
-    exact le_trans ih (by
-      rw [F.herbrandFunctionNat_succ k]
-      exact le_add_of_nonneg_right (F.herbrandStep_nonneg k))
 
-/-- Representative equality criterion in the graded piece `G_n/G_{n+1}`,
-in left-quotient form. -/
-theorem gradedPieceMk_eq_iff_inv_mul_mem (n : ℕ) (σ τ : F.lower n) :
-    F.gradedPieceMk n σ = F.gradedPieceMk n τ ↔
-      ((τ⁻¹ * σ : F.lower n) : G) ∈ F.lower (n + 1) := by
-  rw [F.gradedPieceMk_eq_iff n σ τ]
-  simpa [div_eq_mul_inv, Subgroup.mem_subgroupOf] using
-    ((inferInstance :
-      ((F.lower (n + 1)).subgroupOf (F.lower n)).Normal).mem_comm_iff
-        (a := σ) (b := τ⁻¹))
 
-/-- Representative equality criterion in the tame quotient `G_0/G_1`, in
-left-quotient form. -/
-theorem tameQuotientMk_eq_iff_inv_mul_mem (σ τ : F.inertiaSubgroup) :
-    F.tameQuotientMk σ = F.tameQuotientMk τ ↔
-      ((τ⁻¹ * σ : F.inertiaSubgroup) : G) ∈ F.wildInertiaSubgroup := by
-  rw [F.tameQuotientMk_eq_iff σ τ]
-  simpa [div_eq_mul_inv, Subgroup.mem_subgroupOf] using
-    ((inferInstance :
-      ((F.wildInertiaSubgroup).subgroupOf F.inertiaSubgroup).Normal).mem_comm_iff
-        (a := σ) (b := τ⁻¹))
+
+
+
+
+
+
 
 /-- The natural quotient map `G/G_n → G/G_m` for `m ≤ n`. -/
 def quotientMapOfLe {m n : ℕ} (hmn : m ≤ n) :
@@ -147,19 +104,7 @@ theorem quotientMapOfLe_comp {l m n : ℕ}
   rw [F.quotientMapOfLe_apply_mk, F.quotientMapOfLe_apply_mk,
     F.quotientMapOfLe_apply_mk]
 
-/-- The level-change quotient map for `n ≤ n` is the identity. -/
-theorem quotientMapOfLe_refl (n : ℕ) :
-    F.quotientMapOfLe (le_rfl : n ≤ n) = MonoidHom.id (F.quotient n) := by
-  apply MonoidHom.ext
-  intro q
-  refine F.quotient_inductionOn n
-    (motive := fun q =>
-      F.quotientMapOfLe (le_rfl : n ≤ n) q =
-        MonoidHom.id (F.quotient n) q) q ?_
-  intro σ
-  change F.quotientMapOfLe (le_rfl : n ≤ n) (F.quotientMk n σ) =
-    F.quotientMk n σ
-  exact F.quotientMapOfLe_apply_mk (le_rfl : n ≤ n) σ
+
 
 /-- The subgroup of `G/G_n` represented by the coarser ramification group
 `G_m`, for `m ≤ n`. -/
@@ -222,39 +167,13 @@ instance quotientKernelOfLe_normal {m n : ℕ} (hmn : m ≤ n) :
   rw [← F.quotientMapOfLe_ker_eq_quotientKernelOfLe hmn]
   infer_instance
 
-/-- Representative kernel criterion for `G/G_n → G/G_m`. -/
-theorem quotientMapOfLe_mk_eq_one_iff {m n : ℕ} (hmn : m ≤ n)
-    (σ : G) :
-    F.quotientMapOfLe hmn (F.quotientMk n σ) = 1 ↔
-      σ ∈ F.lower m := by
-  rw [F.quotientMapOfLe_apply_mk, F.quotientMk_eq_one_iff]
 
-/-- Representative membership criterion for the kernel of `G/G_n → G/G_m`. -/
-theorem quotientMapOfLe_mk_mem_ker_iff {m n : ℕ} (hmn : m ≤ n)
-    (σ : G) :
-    F.quotientMk n σ ∈ (F.quotientMapOfLe hmn).ker ↔
-      σ ∈ F.lower m := by
-  rw [MonoidHom.mem_ker, F.quotientMapOfLe_mk_eq_one_iff hmn σ]
 
-/-- Equality after changing level, in right-quotient form. -/
-theorem quotientMapOfLe_mk_eq_iff_div_mem {m n : ℕ} (hmn : m ≤ n)
-    (σ τ : G) :
-    F.quotientMapOfLe hmn (F.quotientMk n σ) =
-        F.quotientMapOfLe hmn (F.quotientMk n τ) ↔
-      σ / τ ∈ F.lower m := by
-  rw [F.quotientMapOfLe_apply_mk, F.quotientMapOfLe_apply_mk,
-    F.quotientMk_eq_iff]
 
-/-- Equality after changing level, in left-quotient form. -/
-theorem quotientMapOfLe_mk_eq_iff_inv_mul_mem {m n : ℕ} (hmn : m ≤ n)
-    (σ τ : G) :
-    F.quotientMapOfLe hmn (F.quotientMk n σ) =
-        F.quotientMapOfLe hmn (F.quotientMk n τ) ↔
-      τ⁻¹ * σ ∈ F.lower m := by
-  rw [F.quotientMapOfLe_mk_eq_iff_div_mem hmn σ τ]
-  simpa [div_eq_mul_inv] using
-    ((inferInstance : (F.lower m).Normal).mem_comm_iff
-      (a := σ) (b := τ⁻¹))
+
+
+
+
 
 /-- Arbitrary class kernel criterion for `G/G_n → G/G_m`. -/
 theorem quotientMapOfLe_eq_one_iff_exists_mem_repr {m n : ℕ}
@@ -300,17 +219,7 @@ theorem mem_quotientKernelOfLe_iff_quotientMap_eq_one {m n : ℕ}
   rw [← F.quotientMapOfLe_ker_eq_quotientKernelOfLe hmn,
     MonoidHom.mem_ker]
 
-/-- Kernel subgroups are nested as the target quotient is coarsened:
-`G_m/G_n` is contained in `G_l/G_n` for `l ≤ m ≤ n`. -/
-theorem quotientKernelOfLe_le {l m n : ℕ}
-    (hlm : l ≤ m) (hmn : m ≤ n) :
-    F.quotientKernelOfLe hmn ≤
-      F.quotientKernelOfLe (le_trans hlm hmn) := by
-  intro q hq
-  rw [F.mem_quotientKernelOfLe_iff_exists_mem_repr hmn] at hq
-  rcases hq with ⟨σ, hσ, hqσ⟩
-  rw [F.mem_quotientKernelOfLe_iff_exists_mem_repr (le_trans hlm hmn)]
-  exact ⟨σ, F.antitone hlm hσ, hqσ⟩
+
 
 /-- Membership in the coarser kernel after applying a level-change map is
 equivalent to membership in the corresponding direct kernel. -/
@@ -324,47 +233,13 @@ theorem quotientMapOfLe_mem_quotientKernelOfLe_iff {l m n : ℕ}
     F.quotientMapOfLe (le_trans hlm hmn) q = 1
   rw [F.quotientMapOfLe_comp hlm hmn]
 
-/-- The preimage of the coarser kernel subgroup under a level-change map is
-the corresponding direct kernel subgroup. -/
-theorem quotientMapOfLe_comap_quotientKernelOfLe_eq {l m n : ℕ}
-    (hlm : l ≤ m) (hmn : m ≤ n) :
-    Subgroup.comap (F.quotientMapOfLe hmn) (F.quotientKernelOfLe hlm) =
-      F.quotientKernelOfLe (le_trans hlm hmn) := by
-  ext q
-  exact F.quotientMapOfLe_mem_quotientKernelOfLe_iff hlm hmn q
 
-/-- Representative version of
-`quotientMapOfLe_mem_quotientKernelOfLe_iff`. -/
-theorem quotientMapOfLe_mk_mem_quotientKernelOfLe_iff {l m n : ℕ}
-    (hlm : l ≤ m) (hmn : m ≤ n) (σ : G) :
-    F.quotientMapOfLe hmn (F.quotientMk n σ) ∈
-        F.quotientKernelOfLe hlm ↔
-      σ ∈ F.lower l := by
-  rw [F.quotientMapOfLe_mem_quotientKernelOfLe_iff hlm hmn,
-    F.mem_quotientKernelOfLe_iff_quotientMap_eq_one (le_trans hlm hmn),
-    F.quotientMapOfLe_apply_mk, F.quotientMk_eq_one_iff]
 
-/-- Equality after changing level is kernel membership of the quotient `q / r`. -/
-theorem quotientMapOfLe_eq_iff_div_mem_ker {m n : ℕ} (hmn : m ≤ n)
-    (q r : F.quotient n) :
-    F.quotientMapOfLe hmn q = F.quotientMapOfLe hmn r ↔
-      q / r ∈ (F.quotientMapOfLe hmn).ker := by
-  rw [MonoidHom.mem_ker]
-  constructor
-  · intro h
-    rw [MonoidHom.map_div, h]
-    exact div_self' ((F.quotientMapOfLe hmn) r)
-  · intro h
-    rwa [MonoidHom.map_div, div_eq_one] at h
 
-/-- Equality after changing level is membership of `q / r` in the named kernel
-subgroup of `G/G_n → G/G_m`. -/
-theorem quotientMapOfLe_eq_iff_div_mem_quotientKernelOfLe {m n : ℕ}
-    (hmn : m ≤ n) (q r : F.quotient n) :
-    F.quotientMapOfLe hmn q = F.quotientMapOfLe hmn r ↔
-      q / r ∈ F.quotientKernelOfLe hmn := by
-  rw [F.quotientMapOfLe_eq_iff_div_mem_ker hmn q r,
-    F.quotientMapOfLe_ker_eq_quotientKernelOfLe hmn]
+
+
+
+
 
 /-- Level-change maps send the larger kernel subgroup `G_l/G_n` onto the
 corresponding kernel subgroup `G_l/G_m`, for `l ≤ m ≤ n`. -/
@@ -394,22 +269,7 @@ theorem quotientMapOfLe_map_quotientKernelOfLe_eq {l m n : ℕ}
     · rw [F.quotientMapOfLe_apply_mk]
       exact hqσ
 
-/-- A level-change map kills exactly the kernel subgroup it is named by. -/
-theorem quotientMapOfLe_map_quotientKernelOfLe_eq_bot {m n : ℕ}
-    (hmn : m ≤ n) :
-    Subgroup.map (F.quotientMapOfLe hmn) (F.quotientKernelOfLe hmn) = ⊥ := by
-  ext q
-  constructor
-  · rintro ⟨x, hx, hxq⟩
-    have hx' : F.quotientMapOfLe hmn x = 1 :=
-      (F.mem_quotientKernelOfLe_iff_quotientMap_eq_one hmn x).1 hx
-    rw [← hxq, hx']
-    simp
-  · intro hq
-    have hq' : q = 1 := by
-      simpa using hq
-    subst q
-    exact ⟨1, (F.quotientKernelOfLe hmn).one_mem, by simp⟩
+
 
 /-- The level-change map restricted to kernel subgroups:
 `G_l/G_n → G_l/G_m`, for `l ≤ m ≤ n`. -/
@@ -433,36 +293,9 @@ def quotientKernelMapOfLe {l m n : ℕ} (hlm : l ≤ m) (hmn : m ≤ n) :
       F.quotientMapOfLe hmn (q : F.quotient n) :=
   rfl
 
-/-- Restricted level-change maps on ramification kernels are identities at a
-fixed quotient level. -/
-theorem quotientKernelMapOfLe_refl {l m : ℕ} (hlm : l ≤ m) :
-    F.quotientKernelMapOfLe hlm (le_rfl : m ≤ m) =
-      MonoidHom.id (F.quotientKernelOfLe hlm) := by
-  apply MonoidHom.ext
-  intro q
-  apply Subtype.ext
-  change F.quotientMapOfLe (le_rfl : m ≤ m) (q : F.quotient m) =
-    (q : F.quotient m)
-  rw [F.quotientMapOfLe_refl m]
-  rfl
 
-/-- Restricted level-change maps on ramification kernels compose
-transitively. -/
-theorem quotientKernelMapOfLe_comp {k l m n : ℕ}
-    (hkl : k ≤ l) (hlm : l ≤ m) (hmn : m ≤ n) :
-    (F.quotientKernelMapOfLe hkl hlm).comp
-        (F.quotientKernelMapOfLe (le_trans hkl hlm) hmn) =
-      F.quotientKernelMapOfLe hkl (le_trans hlm hmn) := by
-  apply MonoidHom.ext
-  intro q
-  apply Subtype.ext
-  change F.quotientMapOfLe hlm
-      (F.quotientMapOfLe hmn (q : F.quotient n)) =
-    F.quotientMapOfLe (le_trans hlm hmn) (q : F.quotient n)
-  change ((F.quotientMapOfLe hlm).comp (F.quotientMapOfLe hmn))
-      (q : F.quotient n) =
-    F.quotientMapOfLe (le_trans hlm hmn) (q : F.quotient n)
-  rw [F.quotientMapOfLe_comp hlm hmn]
+
+
 
 /-- The restricted map `G_l/G_n → G_l/G_m` has kernel `G_m/G_n`. -/
 theorem quotientKernelMapOfLe_ker_eq {l m n : ℕ}
@@ -547,27 +380,9 @@ def quotientKernelQuotientSubgroupOfEquivQuotientKernelOfLe {l m n : ℕ}
   simpa [quotientKernelQuotientSubgroupOfEquivQuotientKernelOfLe] using
     F.quotientKernelQuotientKerEquivQuotientKernelOfLe_mk' hlm hmn q
 
-/-- Cardinality form of the second-isomorphism quotient compatibility
-`(G_l/G_n)/(G_m/G_n) ≃ G_l/G_m`. -/
-theorem card_quotientKernelQuotientSubgroupOfLe {l m n : ℕ}
-    (hlm : l ≤ m) (hmn : m ≤ n) [Finite G] :
-    Nat.card
-        (F.quotientKernelOfLe (le_trans hlm hmn) ⧸
-          (F.quotientKernelOfLe hmn).subgroupOf
-            (F.quotientKernelOfLe (le_trans hlm hmn))) =
-      Nat.card (F.quotientKernelOfLe hlm) :=
-  Nat.card_congr
-    (F.quotientKernelQuotientSubgroupOfEquivQuotientKernelOfLe hlm hmn).toEquiv
 
-/-- Arbitrary class equality criterion for `G/G_n → G/G_m`, expanded as a
-representative of `q / r` from `G_m`. -/
-theorem quotientMapOfLe_eq_iff_exists_mem_div_repr {m n : ℕ}
-    (hmn : m ≤ n) (q r : F.quotient n) :
-    F.quotientMapOfLe hmn q = F.quotientMapOfLe hmn r ↔
-      ∃ σ : G, σ ∈ F.lower m ∧
-        F.quotientMk n σ = q / r := by
-  rw [F.quotientMapOfLe_eq_iff_div_mem_quotientKernelOfLe hmn q r,
-    F.mem_quotientKernelOfLe_iff_exists_mem_repr hmn]
+
+
 
 /-- The ramification subquotient `G_m/G_n` is canonically the kernel of
 `G/G_n → G/G_m`. -/
@@ -633,16 +448,7 @@ def quotientKernelByNextKernelEquivGradedPiece {n N : ℕ} (hN : n + 1 ≤ N) :
     F.quotientKernelQuotientSubgroupOfEquivQuotientKernelOfLe_mk'
       (Nat.le_succ n) hN q
 
-/-- Cardinality form of the finite-level graded-piece compatibility
-`(G_n/G_N)/(G_{n+1}/G_N) ≃ G_n/G_{n+1}`. -/
-theorem card_quotientKernelByNextKernel_eq_gradedPiece {n N : ℕ}
-    (hN : n + 1 ≤ N) [Finite G] :
-    Nat.card
-        (F.quotientKernelOfLe (le_trans (Nat.le_succ n) hN) ⧸
-          (F.quotientKernelOfLe hN).subgroupOf
-            (F.quotientKernelOfLe (le_trans (Nat.le_succ n) hN))) =
-      Nat.card (F.gradedPiece n) :=
-  Nat.card_congr (F.quotientKernelByNextKernelEquivGradedPiece hN).toEquiv
+
 
 /-- The natural level-change map `G/G_n → G/G_m` is surjective. -/
 theorem quotientMapOfLe_surjective {m n : ℕ} (hmn : m ≤ n) :
@@ -653,10 +459,7 @@ theorem quotientMapOfLe_surjective {m n : ℕ} (hmn : m ≤ n) :
   intro σ
   exact ⟨F.quotientMk n σ, F.quotientMapOfLe_apply_mk hmn σ⟩
 
-/-- States the theorem `quotientMapOfLe_range_eq_top`. -/
-theorem quotientMapOfLe_range_eq_top {m n : ℕ} (hmn : m ≤ n) :
-    (F.quotientMapOfLe hmn).range = ⊤ :=
-  MonoidHom.range_eq_top.2 (F.quotientMapOfLe_surjective hmn)
+
 
 /-- The tame quotient `G_0/G_1` as the kernel of `G/G_1 → G/G_0`. -/
 def tameQuotientEquivQuotientKernel :
@@ -698,30 +501,9 @@ def quotientInertiaByWildKernelEquivTameQuotient {n : ℕ} (hn : 1 ≤ n) :
     F.quotientKernelQuotientSubgroupOfEquivQuotientKernelOfLe_mk'
       (Nat.zero_le 1) hn q
 
-/-- Cardinality form of the finite-level tame quotient compatibility
-`(G_0/G_n)/(G_1/G_n) ≃ G_0/G_1`. -/
-theorem card_quotientInertiaByWildKernel_eq_tameQuotient {n : ℕ}
-    (hn : 1 ≤ n) [Finite G] :
-    Nat.card
-        (F.quotientKernelOfLe (le_trans (Nat.zero_le 1) hn) ⧸
-          (F.quotientKernelOfLe hn).subgroupOf
-            (F.quotientKernelOfLe (le_trans (Nat.zero_le 1) hn))) =
-      Nat.card F.tameQuotient :=
-  Nat.card_congr (F.quotientInertiaByWildKernelEquivTameQuotient hn).toEquiv
 
-/-- Kernel membership for `G/G_1 → G/G_0`, with a representative already in
-the inertia subgroup. -/
-theorem mem_tameQuotientKernel_iff_exists_inertia_repr
-    (q : F.quotient 1) :
-    q ∈ F.quotientKernelOfLe (Nat.zero_le 1) ↔
-      ∃ σ : F.inertiaSubgroup,
-        F.quotientMk 1 (σ : G) = q := by
-  rw [F.mem_quotientKernelOfLe_iff_exists_mem_repr (Nat.zero_le 1)]
-  constructor
-  · rintro ⟨σ, hσ, hq⟩
-    exact ⟨⟨σ, hσ⟩, hq⟩
-  · rintro ⟨σ, hσ⟩
-    exact ⟨(σ : G), σ.property, hσ⟩
+
+
 
 /-- First isomorphism theorem for level-change maps:
 `(G/G_n)/(G_m/G_n) ≃ G/G_m`. -/
@@ -750,12 +532,7 @@ def quotientQuotientKernelOfLeEquivQuotient {m n : ℕ} (hmn : m ≤ n) :
   rw [F.quotientQuotientKernelOfLeEquivQuotient_mk',
     F.quotientMapOfLe_apply_mk]
 
-/-- The kernel subgroup for the identity level-change map is trivial. -/
-theorem quotientKernelOfLe_refl_eq_bot (n : ℕ) :
-    F.quotientKernelOfLe (le_rfl : n ≤ n) = ⊥ := by
-  rw [← F.quotientMapOfLe_ker_eq_quotientKernelOfLe (le_rfl : n ≤ n),
-    F.quotientMapOfLe_refl n]
-  simp
+
 
 end AntitoneNormalSubgroupFiltration
 
@@ -826,11 +603,7 @@ theorem lowerRamificationGroup_antitone {m n : ℕ} (hmn : m ≤ n) :
     exact_mod_cast hmn
   exact le_trans hmn' hσ
 
-/-- States the theorem `mem_lowerRamificationGroup_of_le`. -/
-theorem mem_lowerRamificationGroup_of_le {m n : ℕ} (hmn : m ≤ n) {σ : G}
-    (hσ : σ ∈ D.lowerRamificationGroup n) :
-    σ ∈ D.lowerRamificationGroup m :=
-  D.lowerRamificationGroup_antitone hmn hσ
+
 
 /-- Package a depth function as a lower ramification filtration. -/
 def toLowerRamificationFiltration : AntitoneNormalSubgroupFiltration G where
@@ -854,25 +627,9 @@ filtration. -/
 noncomputable def herbrandFunctionNat (n : Nat) : Rat :=
   D.toLowerRamificationFiltration.herbrandFunctionNat n
 
-/-- States the theorem `herbrandStep_pos`. -/
-theorem herbrandStep_pos (i : Nat)
-    [Finite (D.lowerRamificationGroup i)]
-    [Finite (D.lowerRamificationGroup 0)] :
-    0 < D.herbrandStep i := by
-  let : Finite (D.toLowerRamificationFiltration.lower i) := by
-    simpa [toLowerRamificationFiltration_apply] using
-      (inferInstance : Finite (D.lowerRamificationGroup i))
-  let : Finite (D.toLowerRamificationFiltration.lower 0) := by
-    simpa [toLowerRamificationFiltration_apply] using
-      (inferInstance : Finite (D.lowerRamificationGroup 0))
-  simpa [herbrandStep, toLowerRamificationFiltration_apply] using
-    D.toLowerRamificationFiltration.herbrandStep_pos i
 
-/-- States the theorem `herbrandFunctionNat_mono`. -/
-theorem herbrandFunctionNat_mono :
-    Monotone D.herbrandFunctionNat := by
-  change Monotone D.toLowerRamificationFiltration.herbrandFunctionNat
-  exact D.toLowerRamificationFiltration.herbrandFunctionNat_mono
+
+
 
 end LowerRamificationDepth
 
@@ -967,13 +724,7 @@ def lowerRamificationGroup (n : ℕ) : Subgroup G where
     σ ∈ A.lowerRamificationGroup n ↔ A.actionDepthAtLeast n σ :=
   Iff.rfl
 
-/-- Membership in the action-defined lower ramification group, expanded as a
-principal-unit condition on the action quotient. -/
-theorem mem_lowerRamificationGroup_iff_actionQuotient (n : ℕ) (σ : G) :
-    σ ∈ A.lowerRamificationGroup n ↔
-      A.actionQuotient σ ∈ A.principalUnits.subgroup n :=
-  (A.mem_lowerRamificationGroup_iff n σ).trans
-    (A.actionDepthAtLeast_iff n σ)
+
 
 /-- States the theorem `lowerRamificationGroup_normal`. -/
 theorem lowerRamificationGroup_normal (n : ℕ) :
@@ -1015,34 +766,15 @@ filtration. -/
 noncomputable def herbrandFunctionNat (n : Nat) : Rat :=
   A.toLowerRamificationFiltration.herbrandFunctionNat n
 
-/-- States the theorem `herbrandStep_pos`. -/
-theorem herbrandStep_pos (i : Nat)
-    [Finite (A.lowerRamificationGroup i)]
-    [Finite (A.lowerRamificationGroup 0)] :
-    0 < A.herbrandStep i := by
-  let : Finite (A.toLowerRamificationFiltration.lower i) := by
-    simpa [toLowerRamificationFiltration_apply] using
-      (inferInstance : Finite (A.lowerRamificationGroup i))
-  let : Finite (A.toLowerRamificationFiltration.lower 0) := by
-    simpa [toLowerRamificationFiltration_apply] using
-      (inferInstance : Finite (A.lowerRamificationGroup 0))
-  simpa [herbrandStep, toLowerRamificationFiltration_apply] using
-    A.toLowerRamificationFiltration.herbrandStep_pos i
 
-/-- States the theorem `herbrandFunctionNat_mono`. -/
-theorem herbrandFunctionNat_mono :
-    Monotone A.herbrandFunctionNat := by
-  change Monotone A.toLowerRamificationFiltration.herbrandFunctionNat
-  exact A.toLowerRamificationFiltration.herbrandFunctionNat_mono
+
+
 
 /-- The inertia subgroup `G_0` for an action-defined filtration. -/
 abbrev inertiaSubgroup : Subgroup G :=
   A.lowerRamificationGroup 0
 
-/-- States the theorem `lowerRamificationGroup_zero_eq_inertiaSubgroup`. -/
-theorem lowerRamificationGroup_zero_eq_inertiaSubgroup :
-    A.lowerRamificationGroup 0 = A.inertiaSubgroup :=
-  rfl
+
 
 /-- The wild inertia subgroup `G_1` for an action-defined filtration. -/
 abbrev wildInertiaSubgroup : Subgroup G :=
@@ -1161,42 +893,17 @@ def tameCharacterOfUniformizer : A.inertiaSubgroup →* A.tameQuotient :=
       A.tameQuotientMk σ :=
   rfl
 
-/-- The kernel of the action-probe tame character is wild inertia. -/
-theorem tameCharacter_ker_eq_wildInertia :
-    MonoidHom.ker A.tameCharacterOfUniformizer =
-      (A.wildInertiaSubgroup).subgroupOf A.inertiaSubgroup := by
-  ext σ
-  rw [MonoidHom.mem_ker, Subgroup.mem_subgroupOf,
-    A.tameCharacterOfUniformizer_apply, A.tameQuotientMk_eq_one_iff]
 
-/-- States the theorem `mem_inertiaSubgroup_iff_actionDepthAtLeast`. -/
-theorem mem_inertiaSubgroup_iff_actionDepthAtLeast (σ : G) :
-    σ ∈ A.inertiaSubgroup ↔ A.actionDepthAtLeast 0 σ :=
-  A.mem_lowerRamificationGroup_iff 0 σ
 
-/-- States the theorem `mem_wildInertiaSubgroup_iff_actionDepthAtLeast`. -/
-theorem mem_wildInertiaSubgroup_iff_actionDepthAtLeast (σ : G) :
-    σ ∈ A.wildInertiaSubgroup ↔ A.actionDepthAtLeast 1 σ :=
-  A.mem_lowerRamificationGroup_iff 1 σ
 
-/-- Membership in inertia, expanded as a principal-unit condition on the action
-quotient. -/
-theorem mem_inertiaSubgroup_iff_actionQuotient (σ : G) :
-    σ ∈ A.inertiaSubgroup ↔
-      A.actionQuotient σ ∈ A.principalUnits.subgroup 0 :=
-  A.mem_lowerRamificationGroup_iff_actionQuotient 0 σ
 
-/-- Membership in wild inertia, expanded as a principal-unit condition on the
-action quotient. -/
-theorem mem_wildInertiaSubgroup_iff_actionQuotient (σ : G) :
-    σ ∈ A.wildInertiaSubgroup ↔
-      A.actionQuotient σ ∈ A.principalUnits.subgroup 1 :=
-  A.mem_lowerRamificationGroup_iff_actionQuotient 1 σ
 
-/-- States the theorem `wildInertiaSubgroup_le_inertiaSubgroup`. -/
-theorem wildInertiaSubgroup_le_inertiaSubgroup :
-    A.wildInertiaSubgroup ≤ A.inertiaSubgroup :=
-  A.lowerRamificationGroup_antitone (Nat.zero_le 1)
+
+
+
+
+
+
 
 /-- Defines `tameQuotientEquivQuotientKernel`. -/
 def tameQuotientEquivQuotientKernel :
@@ -1247,49 +954,11 @@ def quotientInertiaByWildKernelEquivTameQuotient {n : ℕ} (hn : 1 ≤ n) :
   AntitoneNormalSubgroupFiltration.tameQuotientEquivQuotientKernel_quotientInertiaByWildKernel_mk'
     A.toLowerRamificationFiltration hn q
 
-/-- Cardinality form of the action-defined finite-level tame quotient
-compatibility `(G_0/G_n)/(G_1/G_n) ≃ G_0/G_1`. -/
-theorem card_quotientInertiaByWildKernel_eq_tameQuotient {n : ℕ}
-    (hn : 1 ≤ n) [Finite G] :
-    Nat.card
-        (A.toLowerRamificationFiltration.quotientKernelOfLe
-            (le_trans (Nat.zero_le 1) hn) ⧸
-          (A.toLowerRamificationFiltration.quotientKernelOfLe hn).subgroupOf
-            (A.toLowerRamificationFiltration.quotientKernelOfLe
-              (le_trans (Nat.zero_le 1) hn))) =
-      Nat.card A.tameQuotient := by
-  calc
-    _ = Nat.card
-        A.toLowerRamificationFiltration.tameQuotient :=
-      AntitoneNormalSubgroupFiltration.card_quotientInertiaByWildKernel_eq_tameQuotient
-        A.toLowerRamificationFiltration hn
-    _ = Nat.card A.tameQuotient :=
-      Nat.card_congr A.tameQuotientEquivLowerFiltration.symm.toEquiv
 
-/-- Kernel membership for the action-defined map `G/G_1 → G/G_0`, with a
-representative already in inertia. -/
-theorem mem_tameQuotientKernel_iff_exists_inertia_repr
-    (q : A.toLowerRamificationFiltration.quotient 1) :
-    q ∈ A.toLowerRamificationFiltration.quotientKernelOfLe (Nat.zero_le 1) ↔
-      ∃ σ : A.inertiaSubgroup,
-        A.toLowerRamificationFiltration.quotientMk 1 (σ : G) = q := by
-  simpa only [toLowerRamificationFiltration_apply] using
-    A.toLowerRamificationFiltration.mem_tameQuotientKernel_iff_exists_inertia_repr q
 
-/-- Kernel membership for the action-defined map `G/G_1 → G/G_0`, expanded by
-an action-quotient representative in `U^0`. -/
-theorem mem_tameQuotientKernel_iff_exists_actionQuotient_mem_repr
-    (q : A.toLowerRamificationFiltration.quotient 1) :
-    q ∈ A.toLowerRamificationFiltration.quotientKernelOfLe (Nat.zero_le 1) ↔
-      ∃ σ : G, A.actionQuotient σ ∈ A.principalUnits.subgroup 0 ∧
-        A.toLowerRamificationFiltration.quotientMk 1 σ = q := by
-  rw [A.mem_tameQuotientKernel_iff_exists_inertia_repr]
-  constructor
-  · rintro ⟨σ, hσ⟩
-    exact ⟨(σ : G), (A.mem_inertiaSubgroup_iff_actionQuotient (σ : G)).1
-      σ.property, hσ⟩
-  · rintro ⟨σ, hσ, hq⟩
-    exact ⟨⟨σ, (A.mem_inertiaSubgroup_iff_actionQuotient σ).2 hσ⟩, hq⟩
+
+
+
 
 /-- Provides the instance `lowerRamificationGroup_subgroupOf_normal_instance`. -/
 instance lowerRamificationGroup_subgroupOf_normal_instance (n : ℕ) :
@@ -1299,197 +968,37 @@ instance lowerRamificationGroup_subgroupOf_normal_instance (n : ℕ) :
     (A.toLowerRamificationFiltration.lower n)).Normal
   infer_instance
 
-/-- Representative criterion for the identity class in the action-defined tame
-quotient `G_0/G_1`. -/
-theorem tameQuotientMk_eq_one_iff_actionDepthAtLeast
-    (σ : A.inertiaSubgroup) :
-    A.tameQuotientMk σ = 1 ↔
-      A.actionDepthAtLeast 1 (σ : G) := by
-  exact (A.tameQuotientMk_eq_one_iff σ).trans
-    (A.mem_wildInertiaSubgroup_iff_actionDepthAtLeast (σ : G))
 
-/-- Representative criterion for the identity class in the action-defined tame
-quotient `G_0/G_1`, expanded as membership of the action quotient in `U^1`. -/
-theorem tameQuotientMk_eq_one_iff_actionQuotient_mem
-    (σ : A.inertiaSubgroup) :
-    A.tameQuotientMk σ = 1 ↔
-      A.actionQuotient (σ : G) ∈ A.principalUnits.subgroup 1 :=
-  (A.tameQuotientMk_eq_one_iff_actionDepthAtLeast σ).trans
-    (A.actionDepthAtLeast_iff 1 (σ : G))
 
-/-- Representative equality criterion in the action-defined tame quotient
-`G_0/G_1`, in right-quotient form. -/
-theorem tameQuotientMk_eq_iff_actionDepthAtLeast_div
-    (σ τ : A.inertiaSubgroup) :
-    A.tameQuotientMk σ = A.tameQuotientMk τ ↔
-      A.actionDepthAtLeast 1 ((σ / τ : A.inertiaSubgroup) : G) := by
-  exact (A.tameQuotientMk_eq_iff σ τ).trans
-    (A.mem_wildInertiaSubgroup_iff_actionDepthAtLeast
-      ((σ / τ : A.inertiaSubgroup) : G))
 
-/-- Representative equality criterion in the action-defined tame quotient
-`G_0/G_1`, in right-quotient form, expanded as membership of the action quotient
-in `U^1`. -/
-theorem tameQuotientMk_eq_iff_actionQuotient_div_mem
-    (σ τ : A.inertiaSubgroup) :
-    A.tameQuotientMk σ = A.tameQuotientMk τ ↔
-      A.actionQuotient (((σ / τ : A.inertiaSubgroup) : G)) ∈
-        A.principalUnits.subgroup 1 :=
-  (A.tameQuotientMk_eq_iff_actionDepthAtLeast_div σ τ).trans
-    (A.actionDepthAtLeast_iff 1 (((σ / τ : A.inertiaSubgroup) : G)))
 
-/-- Representative equality criterion in the action-defined tame quotient
-`G_0/G_1`, in left-quotient form. -/
-theorem tameQuotientMk_eq_iff_actionDepthAtLeast_inv_mul
-    (σ τ : A.inertiaSubgroup) :
-    A.tameQuotientMk σ = A.tameQuotientMk τ ↔
-      A.actionDepthAtLeast 1 ((τ⁻¹ * σ : A.inertiaSubgroup) : G) := by
-  have hcomm :
-      (((σ / τ : A.inertiaSubgroup) : G) ∈ A.wildInertiaSubgroup ↔
-        ((τ⁻¹ * σ : A.inertiaSubgroup) : G) ∈ A.wildInertiaSubgroup) := by
-    simpa [div_eq_mul_inv, Subgroup.mem_subgroupOf] using
-      ((inferInstance :
-        ((A.wildInertiaSubgroup).subgroupOf A.inertiaSubgroup).Normal).mem_comm_iff
-          (a := σ) (b := τ⁻¹))
-  exact (A.tameQuotientMk_eq_iff σ τ).trans
-    (hcomm.trans (A.mem_wildInertiaSubgroup_iff_actionDepthAtLeast
-      ((τ⁻¹ * σ : A.inertiaSubgroup) : G)))
 
-/-- Representative equality criterion in the action-defined tame quotient
-`G_0/G_1`, in left-quotient form, expanded as membership of the action quotient
-in `U^1`. -/
-theorem tameQuotientMk_eq_iff_actionQuotient_inv_mul_mem
-    (σ τ : A.inertiaSubgroup) :
-    A.tameQuotientMk σ = A.tameQuotientMk τ ↔
-      A.actionQuotient (((τ⁻¹ * σ : A.inertiaSubgroup) : G)) ∈
-        A.principalUnits.subgroup 1 :=
-  (A.tameQuotientMk_eq_iff_actionDepthAtLeast_inv_mul σ τ).trans
-    (A.actionDepthAtLeast_iff 1 (((τ⁻¹ * σ : A.inertiaSubgroup) : G)))
 
-/-- Representative kernel criterion for the action-defined quotient map
-`G/G_n → G/G_m`, expressed by the action-depth predicate. -/
-theorem quotientMapOfLe_mk_eq_one_iff_actionDepthAtLeast {m n : ℕ}
-    (hmn : m ≤ n) (σ : G) :
-    A.toLowerRamificationFiltration.quotientMapOfLe hmn
-        (A.toLowerRamificationFiltration.quotientMk n σ) = 1 ↔
-      A.actionDepthAtLeast m σ := by
-  exact
-    (A.toLowerRamificationFiltration.quotientMapOfLe_mk_eq_one_iff hmn σ).trans
-      (A.mem_lowerRamificationGroup_iff m σ)
 
-/-- Representative kernel criterion for the action-defined quotient map
-`G/G_n → G/G_m`, expanded as membership of the action quotient in `U^m`. -/
-theorem quotientMapOfLe_mk_eq_one_iff_actionQuotient_mem {m n : ℕ}
-    (hmn : m ≤ n) (σ : G) :
-    A.toLowerRamificationFiltration.quotientMapOfLe hmn
-        (A.toLowerRamificationFiltration.quotientMk n σ) = 1 ↔
-      A.actionQuotient σ ∈ A.principalUnits.subgroup m :=
-  (A.quotientMapOfLe_mk_eq_one_iff_actionDepthAtLeast hmn σ).trans
-    (A.actionDepthAtLeast_iff m σ)
 
-/-- Representative kernel-membership criterion for the action-defined quotient
-map `G/G_n → G/G_m`, expanded as membership of the action quotient in `U^m`. -/
-theorem quotientMapOfLe_mk_mem_ker_iff_actionQuotient_mem {m n : ℕ}
-    (hmn : m ≤ n) (σ : G) :
-    A.toLowerRamificationFiltration.quotientMk n σ ∈
-        (A.toLowerRamificationFiltration.quotientMapOfLe hmn).ker ↔
-      A.actionQuotient σ ∈ A.principalUnits.subgroup m := by
-  exact
-    (A.toLowerRamificationFiltration.quotientMapOfLe_mk_mem_ker_iff hmn σ).trans
-      (A.mem_lowerRamificationGroup_iff_actionQuotient m σ)
 
-/-- Representative equality criterion for the action-defined quotient map
-`G/G_n → G/G_m`, in right-quotient form. -/
-theorem quotientMapOfLe_mk_eq_iff_actionDepthAtLeast_div {m n : ℕ}
-    (hmn : m ≤ n) (σ τ : G) :
-    A.toLowerRamificationFiltration.quotientMapOfLe hmn
-        (A.toLowerRamificationFiltration.quotientMk n σ) =
-      A.toLowerRamificationFiltration.quotientMapOfLe hmn
-        (A.toLowerRamificationFiltration.quotientMk n τ) ↔
-      A.actionDepthAtLeast m (σ / τ) := by
-  exact
-    (A.toLowerRamificationFiltration.quotientMapOfLe_mk_eq_iff_div_mem
-      hmn σ τ).trans (A.mem_lowerRamificationGroup_iff m (σ / τ))
 
-/-- Representative equality criterion for the action-defined quotient map
-`G/G_n → G/G_m`, in right-quotient form, expanded as membership of the action
-quotient in `U^m`. -/
-theorem quotientMapOfLe_mk_eq_iff_actionQuotient_div_mem {m n : ℕ}
-    (hmn : m ≤ n) (σ τ : G) :
-    A.toLowerRamificationFiltration.quotientMapOfLe hmn
-        (A.toLowerRamificationFiltration.quotientMk n σ) =
-      A.toLowerRamificationFiltration.quotientMapOfLe hmn
-        (A.toLowerRamificationFiltration.quotientMk n τ) ↔
-      A.actionQuotient (σ / τ) ∈ A.principalUnits.subgroup m :=
-  (A.quotientMapOfLe_mk_eq_iff_actionDepthAtLeast_div hmn σ τ).trans
-    (A.actionDepthAtLeast_iff m (σ / τ))
 
-/-- Representative equality criterion for the action-defined quotient map
-`G/G_n → G/G_m`, in left-quotient form. -/
-theorem quotientMapOfLe_mk_eq_iff_actionDepthAtLeast_inv_mul {m n : ℕ}
-    (hmn : m ≤ n) (σ τ : G) :
-    A.toLowerRamificationFiltration.quotientMapOfLe hmn
-        (A.toLowerRamificationFiltration.quotientMk n σ) =
-      A.toLowerRamificationFiltration.quotientMapOfLe hmn
-        (A.toLowerRamificationFiltration.quotientMk n τ) ↔
-      A.actionDepthAtLeast m (τ⁻¹ * σ) := by
-  simpa [toLowerRamificationFiltration_apply,
-    mem_lowerRamificationGroup_iff] using
-    A.toLowerRamificationFiltration.quotientMapOfLe_mk_eq_iff_inv_mul_mem
-      hmn σ τ
 
-/-- Representative equality criterion for the action-defined quotient map
-`G/G_n → G/G_m`, in left-quotient form, expanded as membership of the action
-quotient in `U^m`. -/
-theorem quotientMapOfLe_mk_eq_iff_actionQuotient_inv_mul_mem {m n : ℕ}
-    (hmn : m ≤ n) (σ τ : G) :
-    A.toLowerRamificationFiltration.quotientMapOfLe hmn
-        (A.toLowerRamificationFiltration.quotientMk n σ) =
-      A.toLowerRamificationFiltration.quotientMapOfLe hmn
-        (A.toLowerRamificationFiltration.quotientMk n τ) ↔
-      A.actionQuotient (τ⁻¹ * σ) ∈ A.principalUnits.subgroup m :=
-  (A.quotientMapOfLe_mk_eq_iff_actionDepthAtLeast_inv_mul hmn σ τ).trans
-    (A.actionDepthAtLeast_iff m (τ⁻¹ * σ))
 
-/-- Arbitrary-class kernel criterion for the action-defined quotient map
-`G/G_n → G/G_m`, expressed by an action quotient representative in `U^m`. -/
-theorem quotientMapOfLe_eq_one_iff_exists_actionQuotient_mem_repr
-    {m n : ℕ} (hmn : m ≤ n)
-    (q : A.toLowerRamificationFiltration.quotient n) :
-    A.toLowerRamificationFiltration.quotientMapOfLe hmn q = 1 ↔
-      ∃ σ : G, A.actionQuotient σ ∈ A.principalUnits.subgroup m ∧
-        A.toLowerRamificationFiltration.quotientMk n σ = q := by
-  simpa [toLowerRamificationFiltration_apply,
-    mem_lowerRamificationGroup_iff_actionQuotient] using
-    A.toLowerRamificationFiltration.quotientMapOfLe_eq_one_iff_exists_mem_repr
-      hmn q
 
-/-- Kernel-membership criterion for an arbitrary class in the action-defined
-quotient map `G/G_n → G/G_m`, expressed by an action quotient representative
-in `U^m`. -/
-theorem quotientMapOfLe_mem_ker_iff_exists_actionQuotient_mem_repr
-    {m n : ℕ} (hmn : m ≤ n)
-    (q : A.toLowerRamificationFiltration.quotient n) :
-    q ∈ (A.toLowerRamificationFiltration.quotientMapOfLe hmn).ker ↔
-      ∃ σ : G, A.actionQuotient σ ∈ A.principalUnits.subgroup m ∧
-        A.toLowerRamificationFiltration.quotientMk n σ = q := by
-  simpa [toLowerRamificationFiltration_apply,
-    mem_lowerRamificationGroup_iff_actionQuotient] using
-    A.toLowerRamificationFiltration.quotientMapOfLe_mem_ker_iff_exists_mem_repr
-      hmn q
 
-/-- Membership in the named kernel subgroup of the action-defined quotient map
-`G/G_n → G/G_m`, expressed by an action quotient representative in `U^m`. -/
-theorem mem_quotientKernelOfLe_iff_exists_actionQuotient_mem_repr
-    {m n : ℕ} (hmn : m ≤ n)
-    (q : A.toLowerRamificationFiltration.quotient n) :
-    q ∈ A.toLowerRamificationFiltration.quotientKernelOfLe hmn ↔
-      ∃ σ : G, A.actionQuotient σ ∈ A.principalUnits.subgroup m ∧
-        A.toLowerRamificationFiltration.quotientMk n σ = q := by
-  simpa [toLowerRamificationFiltration_apply,
-    mem_lowerRamificationGroup_iff_actionQuotient] using
-    A.toLowerRamificationFiltration.mem_quotientKernelOfLe_iff_exists_mem_repr
-      hmn q
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /-- First isomorphism theorem inside action-defined ramification kernels:
 `(G_l/G_n)/ker(G_l/G_n → G_l/G_m) ≃ G_l/G_m`, for `l ≤ m ≤ n`.
@@ -1545,19 +1054,7 @@ def quotientKernelQuotientSubgroupOfEquivQuotientKernelOfLe {l m n : ℕ}
   AntitoneNormalSubgroupFiltration.quotientKernelQuotientSubgroupOfEquivQuotientKernelOfLe_mk'
     A.toLowerRamificationFiltration hlm hmn q
 
-/-- Cardinality form of the action-defined second-isomorphism quotient
-compatibility `(G_l/G_n)/(G_m/G_n) ≃ G_l/G_m`. -/
-theorem card_quotientKernelQuotientSubgroupOfLe {l m n : ℕ}
-    (hlm : l ≤ m) (hmn : m ≤ n) [Finite G] :
-    Nat.card
-        (A.toLowerRamificationFiltration.quotientKernelOfLe
-            (le_trans hlm hmn) ⧸
-          (A.toLowerRamificationFiltration.quotientKernelOfLe hmn).subgroupOf
-            (A.toLowerRamificationFiltration.quotientKernelOfLe
-              (le_trans hlm hmn))) =
-      Nat.card (A.toLowerRamificationFiltration.quotientKernelOfLe hlm) :=
-  AntitoneNormalSubgroupFiltration.card_quotientKernelQuotientSubgroupOfLe
-    A.toLowerRamificationFiltration hlm hmn
+
 
 /-- First isomorphism theorem for action-defined level-change maps:
 `(G/G_n)/(G_m/G_n) ≃ G/G_m`. -/
@@ -1590,57 +1087,13 @@ def quotientQuotientKernelOfLeEquivQuotient
   A.toLowerRamificationFiltration.quotientQuotientKernelOfLeEquivQuotient_mk'_mk'
     hmn σ
 
-/-- The action-defined kernel subgroup for the identity level-change map is
-trivial. -/
-theorem quotientKernelOfLe_refl_eq_bot (n : ℕ) :
-    A.toLowerRamificationFiltration.quotientKernelOfLe
-      (le_rfl : n ≤ n) = ⊥ :=
-  A.toLowerRamificationFiltration.quotientKernelOfLe_refl_eq_bot n
 
-/-- Representative criterion for the image of an action-defined quotient class
-to lie in a coarser kernel subgroup, expanded as membership of the action
-quotient in `U^l`. -/
-theorem quotientMapOfLe_mk_mem_quotientKernelOfLe_iff_actionQuotient_mem
-    {l m n : ℕ} (hlm : l ≤ m) (hmn : m ≤ n) (σ : G) :
-    A.toLowerRamificationFiltration.quotientMapOfLe hmn
-        (A.toLowerRamificationFiltration.quotientMk n σ) ∈
-      A.toLowerRamificationFiltration.quotientKernelOfLe hlm ↔
-      A.actionQuotient σ ∈ A.principalUnits.subgroup l := by
-  simpa [toLowerRamificationFiltration_apply,
-    mem_lowerRamificationGroup_iff_actionQuotient] using
-    A.toLowerRamificationFiltration.quotientMapOfLe_mk_mem_quotientKernelOfLe_iff
-      hlm hmn σ
 
-/-- Arbitrary-class criterion for the image of an action-defined quotient class
-to lie in a coarser kernel subgroup, expressed by an action quotient
-representative in `U^l`. -/
-theorem quotientMapOfLe_mem_quotientKernelOfLe_iff_exists_actionQuotient_mem_repr
-    {l m n : ℕ} (hlm : l ≤ m) (hmn : m ≤ n)
-    (q : A.toLowerRamificationFiltration.quotient n) :
-    A.toLowerRamificationFiltration.quotientMapOfLe hmn q ∈
-        A.toLowerRamificationFiltration.quotientKernelOfLe hlm ↔
-      ∃ σ : G, A.actionQuotient σ ∈ A.principalUnits.subgroup l ∧
-        A.toLowerRamificationFiltration.quotientMk n σ = q := by
-  rw [A.toLowerRamificationFiltration.quotientMapOfLe_mem_quotientKernelOfLe_iff
-    hlm hmn q]
-  exact
-    A.mem_quotientKernelOfLe_iff_exists_actionQuotient_mem_repr
-      (le_trans hlm hmn) q
 
-/-- Arbitrary-class equality criterion for the action-defined quotient map
-`G/G_n → G/G_m`, expressed by an action quotient representative of `q / r` in
-`U^m`. -/
-theorem quotientMapOfLe_eq_iff_exists_actionQuotient_mem_div_repr
-    {m n : ℕ} (hmn : m ≤ n)
-    (q r : A.toLowerRamificationFiltration.quotient n) :
-    A.toLowerRamificationFiltration.quotientMapOfLe hmn q =
-        A.toLowerRamificationFiltration.quotientMapOfLe hmn r ↔
-      ∃ σ : G, A.actionQuotient σ ∈ A.principalUnits.subgroup m ∧
-        A.toLowerRamificationFiltration.quotientMk n σ = q / r := by
-  simpa [toLowerRamificationFiltration_apply,
-    mem_lowerRamificationGroup_iff_actionQuotient] using
-    A.toLowerRamificationFiltration.quotientMapOfLe_eq_iff_exists_mem_div_repr
-      hmn q r
+
+
+
+
 
 /-- At every finite level `N ≥ n + 1`, the action-defined `n`th graded piece
 is the quotient of finite-level kernels `(G_n/G_N)/(G_{n+1}/G_N)`. -/
@@ -1669,94 +1122,19 @@ def quotientKernelByNextKernelEquivGradedPiece {n N : ℕ} (hN : n + 1 ≤ N) :
   AntitoneNormalSubgroupFiltration.gradedPieceEquivQuotientKernel_quotientKernelByNextKernel_mk'
     A.toLowerRamificationFiltration hN q
 
-/-- Cardinality form of the action-defined finite-level graded-piece
-compatibility `(G_n/G_N)/(G_{n+1}/G_N) ≃ G_n/G_{n+1}`. -/
-theorem card_quotientKernelByNextKernel_eq_gradedPiece {n N : ℕ}
-    (hN : n + 1 ≤ N) [Finite G] :
-    Nat.card
-        (A.toLowerRamificationFiltration.quotientKernelOfLe
-            (le_trans (Nat.le_succ n) hN) ⧸
-          (A.toLowerRamificationFiltration.quotientKernelOfLe hN).subgroupOf
-            (A.toLowerRamificationFiltration.quotientKernelOfLe
-              (le_trans (Nat.le_succ n) hN))) =
-      Nat.card (A.toLowerRamificationFiltration.gradedPiece n) :=
-  AntitoneNormalSubgroupFiltration.card_quotientKernelByNextKernel_eq_gradedPiece
-    A.toLowerRamificationFiltration hN
 
-/-- Representative criterion for the identity class in the action-defined
-graded piece `G_n/G_{n+1}`. -/
-theorem gradedPieceMk_eq_one_iff_actionDepthAtLeast
-    (n : ℕ) (σ : A.lowerRamificationGroup n) :
-    A.toLowerRamificationFiltration.gradedPieceMk n σ = 1 ↔
-      A.actionDepthAtLeast (n + 1) (σ : G) := by
-  simpa [toLowerRamificationFiltration_apply,
-    mem_lowerRamificationGroup_iff] using
-    A.toLowerRamificationFiltration.gradedPieceMk_eq_one_iff n σ
 
-/-- Representative criterion for the identity class in the action-defined
-graded piece `G_n/G_{n+1}`, expanded as membership of the action quotient in
-`U^{n+1}`. -/
-theorem gradedPieceMk_eq_one_iff_actionQuotient_mem
-    (n : ℕ) (σ : A.lowerRamificationGroup n) :
-    A.toLowerRamificationFiltration.gradedPieceMk n σ = 1 ↔
-      A.actionQuotient (σ : G) ∈ A.principalUnits.subgroup (n + 1) :=
-  (A.gradedPieceMk_eq_one_iff_actionDepthAtLeast n σ).trans
-    (A.actionDepthAtLeast_iff (n + 1) (σ : G))
 
-/-- Representative equality criterion in the action-defined graded piece
-`G_n/G_{n+1}`, in right-quotient form. -/
-theorem gradedPieceMk_eq_iff_actionDepthAtLeast_div
-    (n : ℕ) (σ τ : A.lowerRamificationGroup n) :
-    A.toLowerRamificationFiltration.gradedPieceMk n σ =
-      A.toLowerRamificationFiltration.gradedPieceMk n τ ↔
-      A.actionDepthAtLeast (n + 1)
-        ((σ / τ : A.lowerRamificationGroup n) : G) := by
-  exact
-    (A.toLowerRamificationFiltration.gradedPieceMk_eq_iff n σ τ).trans
-      (A.mem_lowerRamificationGroup_iff (n + 1)
-        ((σ / τ : A.lowerRamificationGroup n) : G))
 
-/-- Representative equality criterion in the action-defined graded piece
-`G_n/G_{n+1}`, in right-quotient form, expanded as membership of the action
-quotient in `U^{n+1}`. -/
-theorem gradedPieceMk_eq_iff_actionQuotient_div_mem
-    (n : ℕ) (σ τ : A.lowerRamificationGroup n) :
-    A.toLowerRamificationFiltration.gradedPieceMk n σ =
-      A.toLowerRamificationFiltration.gradedPieceMk n τ ↔
-      A.actionQuotient
-          (((σ / τ : A.lowerRamificationGroup n) : G)) ∈
-        A.principalUnits.subgroup (n + 1) :=
-  (A.gradedPieceMk_eq_iff_actionDepthAtLeast_div n σ τ).trans
-    (A.actionDepthAtLeast_iff (n + 1)
-      (((σ / τ : A.lowerRamificationGroup n) : G)))
 
-/-- Representative equality criterion in the action-defined graded piece
-`G_n/G_{n+1}`, in left-quotient form. -/
-theorem gradedPieceMk_eq_iff_actionDepthAtLeast_inv_mul
-    (n : ℕ) (σ τ : A.lowerRamificationGroup n) :
-    A.toLowerRamificationFiltration.gradedPieceMk n σ =
-      A.toLowerRamificationFiltration.gradedPieceMk n τ ↔
-      A.actionDepthAtLeast (n + 1)
-        ((τ⁻¹ * σ : A.lowerRamificationGroup n) : G) := by
-  exact
-    (A.toLowerRamificationFiltration.gradedPieceMk_eq_iff_inv_mul_mem
-      n σ τ).trans
-      (A.mem_lowerRamificationGroup_iff (n + 1)
-        ((τ⁻¹ * σ : A.lowerRamificationGroup n) : G))
 
-/-- Representative equality criterion in the action-defined graded piece
-`G_n/G_{n+1}`, in left-quotient form, expanded as membership of the action
-quotient in `U^{n+1}`. -/
-theorem gradedPieceMk_eq_iff_actionQuotient_inv_mul_mem
-    (n : ℕ) (σ τ : A.lowerRamificationGroup n) :
-    A.toLowerRamificationFiltration.gradedPieceMk n σ =
-      A.toLowerRamificationFiltration.gradedPieceMk n τ ↔
-      A.actionQuotient
-          (((τ⁻¹ * σ : A.lowerRamificationGroup n) : G)) ∈
-        A.principalUnits.subgroup (n + 1) :=
-  (A.gradedPieceMk_eq_iff_actionDepthAtLeast_inv_mul n σ τ).trans
-    (A.actionDepthAtLeast_iff (n + 1)
-      (((τ⁻¹ * σ : A.lowerRamificationGroup n) : G)))
+
+
+
+
+
+
+
 
 end ValuationActionRamification
 

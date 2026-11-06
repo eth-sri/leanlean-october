@@ -135,7 +135,7 @@ noncomputable def contract (s t : Finset J) (hst : s ⊆ t)
         by_cases hi : (i : J) ∈ s
         · have hp' (q : V i) : p (Function.update x i q) = p x := by
             rw [hp]
-            simp [hi, p, Function.update_eq_self]
+            simp [hi, p]
           simp only [hp', restrict_update_mem V s t hst _ _ hi,
             MultilinearMap.map_update_add, smul_add]
         · simp only [hp, Finset.prod_update_of_mem (Finset.mem_univ i), if_neg hi,
@@ -144,7 +144,7 @@ noncomputable def contract (s t : Finset J) (hst : s ⊆ t)
         by_cases hi : (i : J) ∈ s
         · have hp' (q : V i) : p (Function.update x i q) = p x := by
             rw [hp]
-            simp [hi, p, Function.update_eq_self]
+            simp [hi, p]
           simp only [hp', restrict_update_mem V s t hst _ _ hi,
             MultilinearMap.map_update_smul, smul_comm c]
         · simp only [hp, Finset.prod_update_of_mem (Finset.mem_univ i), if_neg hi,
@@ -485,7 +485,7 @@ private theorem tensorMap_mem [∀ j, IsSimpleModule (A j) (V j)]
         funext k
         by_cases hk : k = i
         · subst k; simp [hi]
-        · simp [hk, Function.update_of_ne hk]
+        · simp [hk]
       rw [hmap, LinearMap.comp_apply]
       exact linearSlot_mem V A hcommutant e E N s i (f i) _ ih
   simpa using h Finset.univ

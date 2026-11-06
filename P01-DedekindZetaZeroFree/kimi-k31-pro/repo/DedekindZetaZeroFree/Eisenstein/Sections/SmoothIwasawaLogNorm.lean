@@ -232,7 +232,7 @@ private theorem tuple_prod (a : KPAdelicCoverRestrictedProduct.RestrictedCover F
       funext x
       by_cases h : x = w
       · subst x; simp
-      · simp [Pi.mulSingle_apply, Sum.inl_injective.ne h, h]
+      · simp [Sum.inl_injective.ne h, h]
     rw [he]
     rw [List.prod_map_eq_pow_single w _ (by intro x hx _; simp [hx])]
     rw [List.nodup_iff_count_le_one.mp (Finset.nodup_toList _) w |>.antisymm
@@ -240,7 +240,7 @@ private theorem tuple_prod (a : KPAdelicCoverRestrictedProduct.RestrictedCover F
     simp
   | inr q =>
     simp [ha, KPAdelicCoverRestrictedProduct.localToRestricted, Function.comp_def,
-      RestrictedProduct.coe_mulSingle_apply, Pi.mulSingle_apply]
+      RestrictedProduct.coe_mulSingle_apply]
 
  theorem sectionTuple_insertion
     (r : InfinitePlace F → Matrix.GeneralLinearGroup (Fin 2) ℂ) :
@@ -482,7 +482,7 @@ theorem alpha_groupArchChart_mul_contDiffOn
     apply contDiff_pi.mpr
     intro j
     fin_cases i <;> fin_cases j <;>
-      simp [B, Matrix.mul_apply, Matrix.vecMul, dotProduct, Fin.sum_univ_two] <;> fun_prop
+      simp [B, Matrix.vecMul, dotProduct, Fin.sum_univ_two] <;> fun_prop
   have hlocal : ∀ w, ContDiffOn ℝ ⊤ (fun z => complexMatrixLogNorm (B w z))
       (KPGlobalTorusBorelTwistCompatibility.groupArchDomain F) := by
     intro w

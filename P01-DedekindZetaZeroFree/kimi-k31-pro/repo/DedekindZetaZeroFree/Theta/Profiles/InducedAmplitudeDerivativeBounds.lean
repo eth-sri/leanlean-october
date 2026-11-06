@@ -109,7 +109,7 @@ private lemma sliceEnvelopeReal_integrable (h : ℕ) (ρ : ℝ) (hρ : 0 < ρ) :
   have hj := (hi.comp_smul (inv_ne_zero hρ.ne')).const_mul
     (ρ ^ (-(4 / 3 : ℝ) - (h : ℝ)))
   apply hj.congr (Eventually.of_forall fun t => ?_)
-  simp only [norm_smul, Real.norm_eq_abs, abs_of_pos (inv_pos.mpr hρ),
+  simp only [Real.norm_eq_abs, 
     Real.norm_eq_abs, sq_abs, smul_eq_mul]
   have he : ρ ^ 2 + t ^ 2 = ρ ^ 2 * (1 + (ρ⁻¹ * t) ^ 2) := by
     field_simp

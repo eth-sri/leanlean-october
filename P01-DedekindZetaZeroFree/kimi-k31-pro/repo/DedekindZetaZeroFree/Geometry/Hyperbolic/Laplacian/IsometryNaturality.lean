@@ -90,8 +90,7 @@ private theorem projected_laplacian (d : ℕ) (f : Space d → ℂ) (hf : ContDi
       fderiv ℝ (L ∘ f) y (coordinateVector d i k) = L (fderiv ℝ f y (coordinateVector d i k)) := by
     rw [fderiv_comp y L.differentiableAt (hfd y), L.fderiv]
     rfl
-  have hs (i : Fin d) (k : Fin 3) : DifferentiableAt ℝ (fun y => fderiv ℝ f y (coordinateVector d i k)) x := by
-    exact ((hf.fderiv_right (m := 1) (by simp)).clm_apply contDiff_const).differentiable (by norm_num) x
+  have hs (i : Fin d) (k : Fin 3) : DifferentiableAt ℝ (fun y => fderiv ℝ f y (coordinateVector d i k)) x := ((hf.fderiv_right (m := 1) (by simp)).clm_apply contDiff_const).differentiable (by norm_num) x
   have hsecond (i : Fin d) (k : Fin 3) :
       fderiv ℝ (fun y => fderiv ℝ (L ∘ f) y (coordinateVector d i k)) x (coordinateVector d i k) =
         L (fderiv ℝ (fun y => fderiv ℝ f y (coordinateVector d i k)) x (coordinateVector d i k)) := by
@@ -150,8 +149,7 @@ private theorem real_isometry_laplacian (d : ℕ) (ψ : Space d → Space d) (h�
   exact Complex.ext (hproj Complex.reCLM) (hproj Complex.imCLM)
  def act (d : ℕ) (g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ) : Space d → Space d :=
     fun x => (CotangentLogCoframe.A d).symm (KPArch.productAction d g (CotangentLogCoframe.A d x))
- theorem act_smooth (d : ℕ) (g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ) : ContDiff ℝ ∞ (act d g) := by
-  exact (CotangentLogCoframe.A d).symm.contDiff.comp
+ theorem act_smooth (d : ℕ) (g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ) : ContDiff ℝ ∞ (act d g) := (CotangentLogCoframe.A d).symm.contDiff.comp
     (((KPArch.productAction_contDiff d g).of_le (show (⊤ : ℕ∞) ≤ (⊤ : ℕ∞ω) from le_top)).comp
       (CotangentLogCoframe.A d).contDiff)
  theorem act_metric (d : ℕ) (g : Fin d → Matrix.GeneralLinearGroup (Fin 2) ℂ)

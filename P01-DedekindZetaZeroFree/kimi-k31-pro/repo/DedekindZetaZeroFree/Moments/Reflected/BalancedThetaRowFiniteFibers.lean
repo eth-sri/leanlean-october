@@ -18,18 +18,15 @@ theorem balancedRow_finiteFiber_mass_le
   classical
   let mapped := rows.map index
   have hmapped : ∀ i ∈ mapped, i ∈ indices := by
-    intro i hi
-    obtain ⟨x, hx, rfl⟩ := Multiset.mem_map.mp hi
-    exact hindex x hx
+    aesop
   have hsub : mapped.toFinset ⊆ indices := by
-    intro i hi
-    exact hmapped i (Multiset.mem_toFinset.mp hi)
+    grind
   have hcount : ∀ i ∈ indices, mapped.count i ≤ k₀ := by
     intro i hi
     simpa [mapped, Multiset.count_map, eq_comm] using hfiber i hi
   calc
     (rows.map (fun x => mass (index x))).sum = (mapped.map mass).sum := by
-      simp [mapped, Multiset.map_map, Function.comp_def]
+      aesop
     _ = ∑ i ∈ mapped.toFinset, mapped.count i • mass i :=
       Finset.sum_multiset_map_count mapped mass
     _ ≤ ∑ i ∈ mapped.toFinset, (k₀ : ℝ) * mass i := by
@@ -54,9 +51,7 @@ theorem balancedRow_finiteFiber_norm_sq_le
       (k₀ : ℝ) * ∑ i ∈ indices, ‖canonicalB i‖ ^ 2 := by
   have heq : rows.map (fun x => ‖B x‖ ^ 2) =
       rows.map (fun x => ‖canonicalB (index x)‖ ^ 2) := by
-    apply Multiset.map_congr rfl
-    intro x hx
-    rw [hdescend x hx]
+    simp_all
   rw [heq]
   exact balancedRow_finiteFiber_mass_le rows indices index
     (fun i => ‖canonicalB i‖ ^ 2) k₀ hindex hfiber (fun i _ => sq_nonneg _)

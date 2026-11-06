@@ -24,11 +24,6 @@ theorem quadraticExtension_signature
   have hmult : Module.finrank ℚ E =
       Module.finrank ℚ F * Module.finrank F E :=
     (Module.finrank_mul_finrank ℚ F E).symm
-  rw [hdeg, hF'] at hmult
-  have h2 : 2 * NumberField.InfinitePlace.nrComplexPlaces E =
-      2 * (2 * NumberField.InfinitePlace.nrComplexPlaces F) := by
-    rw [← hE, hmult]
-    ring
-  exact Nat.mul_left_cancel (by norm_num) h2
+  grind
 
 end DedekindZetaZeroFree.LargeSieve

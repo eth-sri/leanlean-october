@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Characters.FractionalIdealQuotientCharacters
 public import DedekindZetaZeroFree.Arithmetic.RayClasses.Representatives.CongruentDenominatorClearing
+public import Mathlib.Tactic.NormNum
 
 @[expose] public section
 
@@ -38,7 +39,7 @@ theorem fractionalCharacter_kills_rayPrincipal
       (Complex.ofRealHom.comp φ)
     rw [NumberField.ComplexEmbedding.isReal_iff]
     ext z
-    simp [NumberField.ComplexEmbedding.conjugate]
+    norm_num
   have hvalα : η (Ideal.span {α}) = 1 := η.map_span' α hα hcα (hpos α)
   have hvalβ : η (Ideal.span {β}) = 1 := η.map_span' β hβ hcβ (hpos β)
   have hquot : I = integralPrimeTo F 𝔪 h𝔪 (Ideal.span {α}) hA hcA *
@@ -55,8 +56,7 @@ theorem fractionalCharacter_kills_rayPrincipal
     congr 1
     have hβF : (β : F) ≠ 0 := by
       exact_mod_cast hβ
-    change (x : F) = (α : F) * (β : F)⁻¹
-    rw [hab, mul_assoc, mul_inv_cancel₀ hβF, mul_one]
+    grind
   rw [MonoidHom.mem_ker]
   apply Units.ext
   change (fractionalCharacter F 𝔪 h𝔪 η I : ℂ) = 1

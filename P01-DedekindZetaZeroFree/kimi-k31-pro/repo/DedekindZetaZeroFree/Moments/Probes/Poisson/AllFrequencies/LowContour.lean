@@ -48,7 +48,7 @@ theorem initialRowIntegral_dyad_bound (ε : ℝ) (hε : 0 < ε) :
   obtain ⟨C, hC, h⟩ := RawLowRowBound31.raw_low_dyad_bound D ε hε
   refine ⟨C, hC, fun u hu U hU h1 h2 Z hZ => ?_⟩
   rw [initialRowIntegral_eq_triple D u hu Z (by linarith)]
-  exact h u hu U hU h1 h2 Z hZ
+  grind
 
 theorem initialRowIntegral_fixed_bound (u : Frequency D.recipe)
     (hu : u ≠ principalFrequency D.recipe) :
@@ -57,7 +57,7 @@ theorem initialRowIntegral_fixed_bound (u : Frequency D.recipe)
   obtain ⟨Cu, hC, h⟩ := RawLowRowBound31.raw_low_fixed_row_bound D u hu
   refine ⟨Cu, hC, fun Z hZ => ?_⟩
   rw [initialRowIntegral_eq_triple D u hu Z (by linarith)]
-  exact h Z hZ
+  grind
 
 end
 

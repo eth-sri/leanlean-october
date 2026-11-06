@@ -105,7 +105,7 @@ private lemma differential_mul (d : ℕ) (φ ψ : HyperbolicChart.Space d → �
         ψ p * HyperbolicChart.coordinateDerivative d i k φ p := by
     intro k
     simp only [HyperbolicChart.coordinateDerivative, fderiv_mul hφ hψ,
-      ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, Pi.mul_apply, smul_eq_mul]
+      ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, smul_eq_mul]
   fin_cases k <;> simp [HyperbolicChart.differential, h1] <;> ring_nf
 
 private lemma coordinateDerivative_ofReal_im (d : ℕ) (i : Fin d) (k : Fin 3)
@@ -380,10 +380,10 @@ private lemma ZC_smul_mul (a : ActualChart (U := U) (H := H)) (η : omega a → 
     by_cases hq : q ∈ omega a
     · rw [zcot_apply a (fun y => (η y : ℂ) • W y) q hq, zcot_apply a W q hq, map_smul]
       rw [show zcplx a η q = (η ⟨q, hq⟩ : ℂ) from by simp only [zcplx, rext, dif_pos hq]]
-      rw [show star ((η ⟨q, hq⟩ : ℂ)) = (η ⟨q, hq⟩ : ℂ) from by
+      rw [show star (η ⟨q, hq⟩ : ℂ) = (η ⟨q, hq⟩ : ℂ) from by
         rw [Complex.star_def, Complex.conj_eq_iff_im]; simp]
       simp only [Pi.smul_apply, smul_eq_mul]
-    · simp only [zcot, dif_neg hq, zcplx, rext, dif_neg hq]; simp
+    · simp only [zcot, zcplx, rext, dif_neg hq]; simp
   have hpair : HyperbolicChart.pairing (d F)
       (HyperbolicChart.differential (d F) (zcplx a η) x.val)
       (zcot a W x.val) = ctr (ZD a (fun y => (η y : ℂ)) x) (W x) := by

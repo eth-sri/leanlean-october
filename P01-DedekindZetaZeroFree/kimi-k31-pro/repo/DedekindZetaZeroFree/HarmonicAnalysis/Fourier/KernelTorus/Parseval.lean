@@ -68,7 +68,7 @@ theorem exists_coordinates_and_characters
     rw [← hL, ← b.ofZLatticeBasis_span ℝ]
     rw [B.mem_span_iff_repr_mem ℤ]
     simp only [funext_iff, Pi.zero_apply, AddCircle.coe_eq_zero_iff,
-      Set.mem_range, Int.smul_one_eq_cast, Int.cast_eq, Int.cast_one]
+      Set.mem_range, Int.smul_one_eq_cast]
     rfl
   let e₀ := QuotientAddGroup.liftEquiv K hf hker
   have hcont : Continuous e₀ := by

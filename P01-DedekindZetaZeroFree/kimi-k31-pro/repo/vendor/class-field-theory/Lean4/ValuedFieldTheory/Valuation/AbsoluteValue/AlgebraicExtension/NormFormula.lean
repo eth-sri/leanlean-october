@@ -258,24 +258,7 @@ namespace Valuation
 variable {K : Type u} {L : Type w} [Field K] [Field L] [Algebra K L]
 variable {ΓK : Type v} [LinearOrderedCommGroupWithZero ΓK]
 
-/-- Restricting a valuation on the top of a field tower to the middle field
-preserves the fact that it extends the bottom valuation. -/
-theorem comap_to_middle_hasExtension_of_top_hasExtension
-    {M : Type y} [Field M] [Algebra L M] [Algebra K M]
-    [IsScalarTower K L M]
-    {ΓM : Type z} [LinearOrderedCommGroupWithZero ΓM]
-    (vK : _root_.Valuation K ΓK) (vM : _root_.Valuation M ΓM)
-    [vK.HasExtension vM] :
-    vK.HasExtension (vM.comap (algebraMap L M)) := by
-  apply _root_.Valuation.HasExtension.ofComapInteger
-  ext a
-  simp only [Subring.mem_comap]
-  change
-    vM (algebraMap L M ((algebraMap K L) a)) ≤ 1 ↔
-      vK a ≤ 1
-  rw [← IsScalarTower.algebraMap_apply K L M a]
-  exact _root_.Valuation.HasExtension.val_map_le_one_iff
-    (vR := vK) (vA := vM) a
+
 
 end Valuation
 end DiscreteValuationField

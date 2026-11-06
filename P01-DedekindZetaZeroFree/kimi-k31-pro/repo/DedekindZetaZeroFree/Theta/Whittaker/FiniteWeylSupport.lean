@@ -104,7 +104,7 @@ theorem localWeyl_small_norm (v : R.A.UnitQuotient) (p : R.A.Sf) :
           KPPGLLocalCover.W F R.A.zeta12 R.A.primitive_zeta12 (Sum.inr p.val))
           (x ⟨Sum.inr p.val, hp⟩)) := by
     simp only [finiteEll, ContinuousLinearMap.coe_mk', LinearMap.comp_apply,
-      canonicalSmoothModuleEquiv, LinearEquiv.refl_apply,
+      canonicalSmoothModuleEquiv, 
       canonicalSmoothRepresentation, φ, map_mul, Module.End.mul_apply]
     rfl
   change ‖(finiteEll R C p.val) (canonicalSmoothRepresentation ρ

@@ -54,7 +54,7 @@ theorem mellin_fieldTransform_eq_B
     have hb' : Integrable (fun t : ℝ => B D r h ((s.re : ℂ) + t * Complex.I)) := by
       simpa using hb
     convert hb'.comp_mul_right' (show 2 * Real.pi ≠ 0 by positivity) using 1 <;>
-      simp [f, Complex.ofReal_mul, mul_comm, mul_left_comm, mul_assoc]
+      simp [f, Complex.ofReal_mul, mul_comm]
   have hfc : Continuous f :=
     (B_differentiableOn D r h hD hr hh hhc).continuousOn.comp_continuous
       (by fun_prop) (fun y => by simpa using hs)
@@ -86,7 +86,7 @@ theorem mellin_fieldTransform_eq_B
     rw [Real.log_exp, neg_neg]
     rw [← Complex.ofReal_neg, ← Complex.ofReal_cpow hx.le]
     rw [Real.rpow_def_of_pos hx, Real.log_exp]
-    simp only [Complex.real_smul, smul_eq_mul]
+    simp only [smul_eq_mul]
     rw [← mul_assoc, ← Complex.ofReal_mul, ← Real.exp_add]
     rw [show -s.re * u + -u * -s.re = 0 by ring]
     simp [f]

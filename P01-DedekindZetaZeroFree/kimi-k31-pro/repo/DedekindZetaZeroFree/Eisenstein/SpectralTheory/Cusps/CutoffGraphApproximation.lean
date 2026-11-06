@@ -124,7 +124,7 @@ theorem localLaplacian_is_section (s : smoothSections F ζ hζ hF U a) :
           HyperbolicChart.coordinateDerivative (KPCuspLogShape.dimension F) j k 0 = 0 := by
         funext p
         simp [HyperbolicChart.coordinateDerivative]
-      simp [localLaplacianComplex, hz, HyperbolicChart.laplacian, hd, Fiber, h]
+      simp [localLaplacianComplex, hz, HyperbolicChart.laplacian, hd, h]
     · rw [h]; trivial
   · intro γ x
     obtain ⟨A, hA⟩ := Matrix.ProjGenLinGroup.mk_surjective (γ : KPCuspArithmetic.PGL2 F)
@@ -227,7 +227,7 @@ def cotangentTests : Submodule ℂ (∀ i : Fin a.componentCount, Arch F → Cot
  def realCLM : Arch F →L[ℝ] Coordinates F :=
   LinearMap.toContinuousLinearMap {
     toFun := fromArch F
-    map_add' := by intro x y; ext i; rcases i with ⟨i,k⟩; fin_cases k <;> simp [fromArch, Complex.real_smul]
+    map_add' := by intro x y; ext i; rcases i with ⟨i,k⟩; fin_cases k <;> simp [fromArch]
     map_smul' := by intro c x; ext i; rcases i with ⟨i,k⟩; fin_cases k <;> simp [fromArch, Complex.real_smul] }
 private lemma arch_real (x : Arch F) : toArch F (fromArch F x) = x := by
   funext j; simp [fromArch, toArch]
@@ -268,7 +268,7 @@ private lemma clm_coordinate_sum (L : Coordinates F →L[ℝ] ℂ) (p : Coordina
   simp only [map_smul, EuclideanSpace.basisFun_repr, Complex.real_smul]
   congr 2
   ext ik
-  simp [EuclideanSpace.basisFun_apply, EuclideanSpace.single_apply, HyperbolicChart.coordinateVector]
+  simp [EuclideanSpace.basisFun_apply, HyperbolicChart.coordinateVector]
 private lemma covector_gradient (s : scalarTests F ζ hζ hF U a)
     (i : Fin a.componentCount) (x v : Arch F) :
     covector F ζ hζ U (gradient F ζ hζ hF U a ⟨s.val,s.property.1⟩ ⟨i,x⟩) x v =

@@ -112,11 +112,11 @@ theorem bruhat_support_index_eq
   have detd (u : (LocalField F q)ˣ) : Matrix.GeneralLinearGroup.det
       (KubotaRankTwo.d (LocalField F q) u 1) = u := by
     apply Units.ext
-    simp [Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two]
+    simp
   have detn (z : LocalField F q) : Matrix.GeneralLinearGroup.det
       (KubotaRankTwo.n (LocalField F q) z) = 1 := by
     apply Units.ext
-    simp [Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two]
+    simp
   have detw : Matrix.GeneralLinearGroup.det
       (KPStandardLocalRootLifts.weylSwap (LocalField F q)) = -1 := by
     apply Units.ext

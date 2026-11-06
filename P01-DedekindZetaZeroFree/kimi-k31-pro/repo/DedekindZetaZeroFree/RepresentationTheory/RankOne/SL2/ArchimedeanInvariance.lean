@@ -49,14 +49,14 @@ theorem arch_invariant_of_sl2_invariant
     (fun w => KPLiteralPeriod.complexSL2 F ζ hζ w (a w))).prod * g) = θ g
   suffices H : ∀ (l : List (InfinitePlace F)) g,
       θ ((l.map (fun w => KPLiteralPeriod.complexSL2 F ζ hζ w (a w))).prod * g) = θ g by
-    exact H _ g
+    simp_all
   intro l
   induction l with
-  | nil => intro g; simp
+  | nil => simp_all
   | cons w l ih =>
     intro g
     simp only [List.map_cons, List.prod_cons, mul_assoc]
-    rw [hθ, ih]
+    simp_all
 
 end DedekindZetaZeroFree.FourierContinuation.ResidualArchSL2
 

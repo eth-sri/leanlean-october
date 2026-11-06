@@ -339,37 +339,9 @@ variable
     [Algebra A B] [Module.IsTorsionFree A B]
     [IsDedekindDomain A] [IsDedekindDomain B]
 
-/-- If extension of ideal classes is trivial, then the extension of
-each integral ideal is principal. -/
-theorem ideal_map_isPrincipal_of_extendedHom_eq_one
-    (h : extendedHom A B = 1)
-    (I : Ideal A) :
-    (I.map (algebraMap A B)).IsPrincipal := by
-  by_cases hI : I = ⊥
-  · subst I
-    refine ⟨0, ?_⟩
-    simp
-  · let I₀ : (Ideal A)⁰ :=
-      ⟨I, mem_nonZeroDivisors_iff_ne_zero.mpr hI⟩
-    have hclass :=
-      DFunLike.congr_fun h (mk0 I₀)
-    rw [extendedHom_mk0] at hclass
-    simp only [MonoidHom.one_apply] at hclass
-    have hprincipal :=
-      (mk0_eq_one_iff
-        (extendedIdeal A B I₀).2).mp hclass
-    simpa [extendedIdeal, I₀] using hprincipal
 
-/-- Triviality of the class-group extension map is exactly the
-principalization of every integral ideal. -/
-theorem extendedHom_eq_one_iff_forall_ideal_map_isPrincipal :
-    extendedHom A B = 1 ↔
-      ∀ I : Ideal A,
-        (I.map (algebraMap A B)).IsPrincipal := by
-  constructor
-  · intro h I
-    exact ideal_map_isPrincipal_of_extendedHom_eq_one A B h I
-  · exact extendedHom_eq_one_of_forall_isPrincipal A B
+
+
 
 end ExtensionPrincipality
 
@@ -703,122 +675,7 @@ theorem extension_self :
         rfl
         (_root_.finitePlaceBelow_self (K := K) W)
 
-/-- Extension of ideles is functorial in a tower of finite Galois
-extensions. -/
-theorem extension_comp
-    (M : Type w)
-    [Field M] [NumberField M]
-    [Algebra K M] [Algebra M L]
-    [IsScalarTower K M L]
-    [FiniteDimensional K M] [FiniteDimensional M L]
-    [IsGalois K M] [IsGalois M L] :
-    (extension M L).comp (extension K M) =
-      extension K L := by
-  apply MonoidHom.ext
-  intro a
-  apply Prod.ext
-  · apply ContinuousMulEquiv.piUnits.injective
-    funext W
-    change
-      infiniteComponent W
-          (extension M L (extension K M a)) =
-        infiniteComponent W (extension K L a)
-    rw [extension_infiniteComponent,
-      extension_infiniteComponent]
-    dsimp only
-    rw [extension_infiniteComponent]
-    dsimp only
-    let V := _root_.infinitePlaceBelow (K := M) W
-    let v := _root_.infinitePlaceBelow (K := K) W
-    have hmap
-        (v' : InfinitePlace K)
-        (hv' : v' = v)
-        [hVv : V.1.LiesOver v'.1]
-        [hWV : W.1.LiesOver V.1]
-        [hWv : W.1.LiesOver v.1] :
-        Units.map
-            (NumberField.LiesOver.completionMap
-              (v := V) (w := W)).toMonoidHom
-            (Units.map
-              (NumberField.LiesOver.completionMap
-                (v := v') (w := V)).toMonoidHom
-              (infiniteComponent v' a)) =
-          Units.map
-            (NumberField.LiesOver.completionMap
-              (v := v) (w := W)).toMonoidHom
-            (infiniteComponent v a) := by
-      subst v'
-      apply Units.ext
-      change
-        NumberField.LiesOver.completionMap
-            (v := V) (w := W)
-            (NumberField.LiesOver.completionMap
-              (v := v) (w := V)
-              (infiniteComponent v a : v.Completion)) =
-          NumberField.LiesOver.completionMap
-            (v := v) (w := W)
-            (infiniteComponent v a : v.Completion)
-      exact
-        _root_.infinitePlaceCompletionMap_comp_apply
-          (K := K) (L := L) (M := M) W
-          (infiniteComponent v a : v.Completion)
-    exact
-      hmap
-        (_root_.infinitePlaceBelow (K := K) V)
-        (_root_.infinitePlaceBelow_infinitePlaceBelow
-          (K := K) (M := M) (L := L) W)
-        (hVv := ⟨rfl⟩)
-        (hWV := ⟨rfl⟩)
-        (hWv := ⟨rfl⟩)
-  · apply RestrictedProduct.ext
-    intro W
-    change
-      finiteComponent W
-          (extension M L (extension K M a)) =
-        finiteComponent W (extension K L a)
-    rw [extension_finiteComponent,
-      extension_finiteComponent]
-    dsimp only
-    rw [extension_finiteComponent]
-    dsimp only
-    let V := _root_.finitePlaceBelow (K := M) W
-    let v := _root_.finitePlaceBelow (K := K) W
-    have hmap
-        (v' : HeightOneSpectrum (𝓞 K))
-        (hv' : v' = v)
-        (hV : _root_.finitePlaceBelow (K := K) V = v')
-        (hWV : _root_.finitePlaceBelow (K := M) W = V)
-        (hWv : _root_.finitePlaceBelow (K := K) W = v) :
-        Units.map
-            (finitePlaceAdicCompletionMap M L V
-              ⟨W, hWV⟩).toMonoidHom
-            (Units.map
-              (finitePlaceAdicCompletionMap K M v'
-                ⟨V, hV⟩).toMonoidHom
-              (finiteComponent v' a)) =
-          Units.map
-            (finitePlaceAdicCompletionMap K L v
-              ⟨W, hWv⟩).toMonoidHom
-            (finiteComponent v a) := by
-      subst v'
-      apply Units.ext
-      change
-        finitePlaceAdicCompletionMap M L V ⟨W, hWV⟩
-            (finitePlaceAdicCompletionMap K M v ⟨V, hV⟩
-              (finiteComponent v a : v.adicCompletion K)) =
-          finitePlaceAdicCompletionMap K L v ⟨W, hWv⟩
-            (finiteComponent v a : v.adicCompletion K)
-      exact
-        finitePlaceAdicCompletionMap_comp
-          K L (M := M) v V W
-          hV hWV hWv
-          (finiteComponent v a : v.adicCompletion K)
-    exact
-      hmap
-        (_root_.finitePlaceBelow (K := K) V)
-        (_root_.finitePlaceBelow_finitePlaceBelow
-          (K := K) (M := M) (L := L) W)
-        rfl rfl rfl
+
 
 end IdeleGroup
 
@@ -866,41 +723,6 @@ theorem ideleClassExtension_self :
     IdeleGroup.extension_self]
   rfl
 
-/-- Extension of idele classes is functorial in a tower of finite
-Galois extensions. -/
-theorem ideleClassExtension_comp
-    (M : Type w)
-    [Field M] [NumberField M]
-    [Algebra K M] [Algebra M L]
-    [IsScalarTower K M L]
-    [FiniteDimensional K M] [FiniteDimensional M L]
-    [IsGalois K M] [IsGalois M L] :
-    (ideleClassExtension M L).comp
-        (ideleClassExtension K M) =
-      ideleClassExtension K L := by
-  apply MonoidHom.ext
-  intro c
-  refine QuotientGroup.induction_on c ?_
-  intro a
-  change
-    ideleClassExtension M L
-        (ideleClassExtension K M
-          (QuotientGroup.mk'
-            (IdeleGroup.principalSubgroup K) a)) =
-      ideleClassExtension K L
-        (QuotientGroup.mk'
-          (IdeleGroup.principalSubgroup K) a)
-  rw [ideleClassExtension_mk,
-    ideleClassExtension_mk,
-    ideleClassExtension_mk]
-  change
-    QuotientGroup.mk'
-        (IdeleGroup.principalSubgroup L)
-        (((IdeleGroup.extension M L).comp
-          (IdeleGroup.extension K M)) a) =
-      QuotientGroup.mk'
-        (IdeleGroup.principalSubgroup L)
-        (IdeleGroup.extension K L a)
-  rw [IdeleGroup.extension_comp]
+
 
 end

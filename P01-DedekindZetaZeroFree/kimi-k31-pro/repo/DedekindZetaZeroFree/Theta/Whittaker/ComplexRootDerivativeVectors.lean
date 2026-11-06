@@ -33,7 +33,7 @@ local notation "Mat" => Matrix (Fin 2) (Fin 2) ℂ
 private theorem unipotent_affine (z : ℂ) (t : ℝ) :
   (upperUnipotent ((t : ℂ) * z) : Mat) = (1 : Mat) + t • !![0,z;0,0] := by
   ext i j
-  fin_cases i <;> fin_cases j <;> simp [upperUnipotent, Matrix.one_apply, Complex.real_smul, Matrix.smul_apply]
+  fin_cases i <;> fin_cases j <;> simp [upperUnipotent, Complex.real_smul]
 private theorem invertible_open : IsOpen {p : Mat × ℂ | p.1.det ≠ 0} := by
   have hc : Continuous (fun p : Mat × ℂ => p.1.det) := by
     simp only [Matrix.det_fin_two]; fun_prop
@@ -156,7 +156,7 @@ private theorem diagonal_upper (y : ℂˣ) (x : ℂ) :
   apply Units.ext
   ext i j
   fin_cases i <;> fin_cases j <;>
-    simp [diagonal, upperUnipotent, Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two]
+    simp [diagonal, upperUnipotent, Matrix.mul_apply, Fin.sum_univ_two]
 
 theorem whittakerValue_upperUnipotent (β : ℂˣ) (h : Theta β) (y : ℂˣ) (x : ℂ) :
     whittakerValue β (imageAction β (Matrix.ProjGenLinGroup.mk (upperUnipotent x)) h) y =
@@ -313,7 +313,7 @@ theorem whittaker_complexUpperRootDerivatives (c : ℝ) (hc : 0 < c)
     mul_one, mul_zero, sub_zero, zero_sub, add_zero, zero_add,
     Complex.mul_I_re]
   constructor <;> apply Complex.ext <;>
-    simp [Complex.mul_re, Complex.mul_im, Complex.div_re, Complex.div_im] <;> ring
+    simp [Complex.mul_re, Complex.mul_im] <;> ring
 
 theorem whittaker_vZero (c : ℝ) (hc : 0 < c)
     (β : ℂˣ) (hβ : (β : ℂ) = (c : ℂ)) (y : ℂˣ) :

@@ -59,12 +59,7 @@ theorem rationalCyclotomicAutomorphism_sq_eq_one_of_character_reductions
   let f : ℤ_[p.1] →* ZMod (p.1 ^ k) :=
     (PadicInt.toZModPow k).toMonoidHom
   have hk : Units.map f (u ^ 2) = 1 := by
-    change
-      Units.map (PadicInt.toZModPow k).toMonoidHom
-          (KummerTheory.rationalCyclotomicCharacterPrimeProduct σ p ^ 2) =
-        1
-    rw [map_pow]
-    exact h p k
+    grind
   simp only [Pi.pow_apply, Pi.one_apply]
   calc
     (PadicInt.toZModPow k)

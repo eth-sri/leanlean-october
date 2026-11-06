@@ -72,8 +72,7 @@ theorem ext {e e' : LubinTateSeries F π}
     (h : e.toPowerSeries = e'.toPowerSeries) : e = e' := by
   cases e
   cases e'
-  cases h
-  rfl
+  grind
 
 end LubinTateSeries
 

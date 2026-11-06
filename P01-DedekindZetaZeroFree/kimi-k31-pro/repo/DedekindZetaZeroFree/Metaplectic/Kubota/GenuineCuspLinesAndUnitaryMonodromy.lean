@@ -242,19 +242,18 @@ variable (ζ : F) (hζ : IsPrimitiveRoot ζ 12)
 
 theorem finiteProjection_continuous : Continuous (finiteProjection F ζ hζ) := by
   apply (QuotientGroup.isQuotientMap_mk (KPAdelicCoverRestrictedProduct.splitScalarSubgroup F ζ hζ)).continuous_iff.mpr
-  exact QuotientGroup.continuous_mk.comp ((continuous_snd.generalLinearGroup_map).comp
+  exact QuotientGroup.continuous_mk.comp (continuous_snd.generalLinearGroup_map.comp
     (KPAdelicCoverRestrictedProduct.adelic_topological_cover F ζ hζ).2.2.2.continuous)
 theorem finiteBase_continuous : Continuous (finiteBase F ζ hζ) :=
   (finiteProjection_continuous F ζ hζ).comp continuous_subtype_val
 theorem finiteBase_level_compact (U : CompactOpenLevel (FiniteCover F ζ hζ)) :
-    IsCompact (U.toOpenSubgroup.toSubgroup.map (finiteBase F ζ hζ) : Set (KPFiniteComponents.FinitePGL2 F)) := by
-  exact U.isCompact.image (finiteBase_continuous F ζ hζ)
+    IsCompact (U.toOpenSubgroup.toSubgroup.map (finiteBase F ζ hζ) : Set (KPFiniteComponents.FinitePGL2 F)) := U.isCompact.image (finiteBase_continuous F ζ hζ)
 
 theorem finiteRationalLift_formula (A : Matrix.GeneralLinearGroup (Fin 2) F) :
     (finiteRationalLift F ζ hζ (Matrix.ProjGenLinGroup.mk A) : Cover F ζ hζ) =
       KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
         (KPAdelicCoverRestrictedProduct.amalgamation F ζ hζ (finiteRationalTuple F ζ hζ A)) := by
-  rfl
+  aesop
 
 theorem projection_formulas (A : KPAdelicCoverRestrictedProduct.AdelicGL2 F)
     (c : KPCubicCoverConstruction.AdelicGL2Cover F ζ hζ)
@@ -267,8 +266,7 @@ theorem projection_formulas (A : KPAdelicCoverRestrictedProduct.AdelicGL2 F)
         Matrix.ProjGenLinGroup.mk
           (Matrix.GeneralLinearGroup.map
             (KPAdelicCoverRestrictedProduct.adeleEval F (Sum.inl w)) A) := by
-  subst A
-  exact ⟨rfl, fun _ => rfl⟩
+  aesop
 
 private theorem adelicMatrix_ext
     (A B : KPAdelicCoverRestrictedProduct.AdelicGL2 F)
@@ -386,8 +384,7 @@ private theorem finiteBase_kernel : (central F ζ hζ).range = (finiteBase F ζ 
       (KPAdelicCoverRestrictedProduct.scalarQuotient F ζ hζ
         (KPAdelicCoverRestrictedProduct.centralInjection F ζ hζ ε)) = 1
     have hc : KPAdelicCoverRestrictedProduct.projection F ζ hζ
-        (KPAdelicCoverRestrictedProduct.centralInjection F ζ hζ ε) = 1 := by
-      exact (KPAdelicCoverRestrictedProduct.range_centralInjection_eq_ker F ζ hζ ▸
+        (KPAdelicCoverRestrictedProduct.centralInjection F ζ hζ ε) = 1 := (KPAdelicCoverRestrictedProduct.range_centralInjection_eq_ker F ζ hζ ▸
         ⟨ε, rfl⟩ : KPAdelicCoverRestrictedProduct.centralInjection F ζ hζ ε ∈
           (KPAdelicCoverRestrictedProduct.projection F ζ hζ).ker)
     change Matrix.ProjGenLinGroup.mk
@@ -510,7 +507,7 @@ theorem finiteComparison_exists (U : CompactOpenLevel (FiniteCover F ζ hζ))
     rw [map_mul, map_inv, hp, mul_inv_cancel]
   obtain ⟨ε, hε⟩ := hk
   refine ⟨ε, ⟨u, hu⟩, ?_⟩
-  have heq := (mul_inv_eq_iff_eq_mul).mp hε.symm
+  have heq := mul_inv_eq_iff_eq_mul.mp hε.symm
   simpa [mul_assoc] using congrArg (fun c : FiniteCover F ζ hζ => c * g) heq
 
 private def Comparison (U : CompactOpenLevel (FiniteCover F ζ hζ))
@@ -985,9 +982,7 @@ theorem cuspInclusion_formula (Γ : Subgroup (KPCuspArithmetic.PGL2 F))
     (q : KPCuspArithmetic.Cusp F) (σ : KPCuspArithmetic.PGL2 F)
     (s : KPCuspArithmetic.conjugatedStabilizer F Γ q σ) :
     (cuspInclusion F Γ q σ s : KPCuspArithmetic.PGL2 F) = σ * s * σ⁻¹ := by
-  simp only [cuspInclusion, MonoidHom.codRestrict_apply, MonoidHom.comp_apply,
-    Subgroup.subtype_apply, MulEquiv.toMonoidHom_eq_coe, MonoidHom.coe_coe,
-    MulAut.conj_apply]
+  aesop
 
 section Cusp
 variable {F ζ hζ}
@@ -1128,45 +1123,11 @@ theorem kernelLattice_stable (s : S) (x : kernelLattice S D ρ) :
   intro h
   exact hr
 
-private theorem horizontal_kernel_invariant (V : Submodule ℂ ℂ)
-    (f : horizontalSections (ζ := ζ) (hζ := hζ) S D ρ V)
-    (x : kernelLattice S D ρ) (y : KPCuspCharts.Horizontal F) :
-    f.val (y + KPCuspCharts.embedding F x) = f.val y := by
-  have he := f.property.2 (⟨x.val, x.property.1⟩ : D.L) y
-  rw [x.property.2 x.property.1] at he
-  simpa using he
 
-def descendHorizontal (V : Submodule ℂ ℂ)
-    (f : horizontalSections (ζ := ζ) (hζ := hζ) S D ρ V) : KernelTorus S D ρ → ℂ :=
-  Quotient.lift f.val (by
-    intro a b hab
-    obtain ⟨x, hx, he⟩ := (QuotientAddGroup.leftRel_apply.mp hab)
-    have hb : b = a + KPCuspCharts.embedding F x := by
-      rw [he]
-      abel
-    rw [hb]
-    exact (horizontal_kernel_invariant S D ρ V f ⟨x,hx⟩ a).symm)
 
-def torusSectionEquiv (V : Submodule ℂ ℂ) :
-    torusSections (ζ := ζ) (hζ := hζ) S D ρ V ≃ₗ[ℂ]
-      horizontalSections (ζ := ζ) (hζ := hζ) S D ρ V where
-  toFun f := ⟨fun y => f.val (QuotientAddGroup.mk y),
-    ⟨fun y => f.property.1 _, f.property.2⟩⟩
-  invFun f := ⟨descendHorizontal S D ρ V f, by
-    refine ⟨?_, ?_⟩
-    · intro z
-      induction z using QuotientAddGroup.induction_on with
-      | H y => exact f.property.1 y
-    · intro x y
-      exact f.property.2 x y⟩
-  left_inv f := by
-    apply Subtype.ext
-    funext z
-    induction z using QuotientAddGroup.induction_on with
-    | H y => rfl
-  right_inv f := rfl
-  map_add' f g := rfl
-  map_smul' a f := rfl
+
+
+
 
 structure CuspOutput (V : Submodule ℂ ℂ) where
   kernel_le : kernelLattice S D ρ ≤ D.L
@@ -1273,7 +1234,7 @@ private def scalarMap (s : S) : KernelTorus S D ρ →+ KernelTorus S D ρ :=
   QuotientAddGroup.map _ _ (AddMonoidHom.mulLeft (placeRing ((D.ratio s : Fˣ) : F))) (by
     intro x hx
     obtain ⟨a, ha, rfl⟩ := hx
-    exact ⟨((D.ratio s : Fˣ) : F) * a, kernel_stable S D ρ s ⟨a, ha⟩, (placeRing).map_mul _ _⟩)
+    exact ⟨((D.ratio s : Fˣ) : F) * a, kernel_stable S D ρ s ⟨a, ha⟩, placeRing.map_mul _ _⟩)
 private theorem scalarMap_mk (s : S) (x : KPCuspCharts.Horizontal F) :
     scalarMap S D ρ s (QuotientAddGroup.mk x) =
       QuotientAddGroup.mk (placeRing ((D.ratio s : Fˣ) : F) * x) := rfl
@@ -1341,7 +1302,7 @@ private theorem horizontal_invariant (V : Submodule ℂ ℂ)
     (f : horizontalSections (ζ := ζ) (hζ := hζ) S D ρ V)
     (a b : KPCuspCharts.Horizontal F) (hab : (QuotientAddGroup.mk a : KernelTorus S D ρ) = QuotientAddGroup.mk b) : f.val a = f.val b := by
   have hx : -a + b ∈ KPCuspCharts.translationLattice F (kernelLattice S D ρ) := by
-    simpa [sub_eq_add_neg, add_comm] using (QuotientAddGroup.eq_iff_sub_mem).mp hab.symm
+    simpa [sub_eq_add_neg, add_comm] using QuotientAddGroup.eq_iff_sub_mem.mp hab.symm
   obtain ⟨x, hx, he⟩ := hx
   have hb : b = a + KPCuspCharts.embedding F x := by rw [he]; abel
   rw [hb, f.property.2 ⟨x, hx.1⟩ a, hx.2 hx.1, map_one, Units.val_one, one_mul]

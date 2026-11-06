@@ -21,8 +21,8 @@ private lemma diag_inverse (A : KPGlobalTorusFunctionData.AdelicMatrixGroup F)
     (h10 : A 1 0 = 0) (h01 : A 0 1 = 0) :
     (KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).1.unit⁻¹.val = A⁻¹ 0 0 := by
   have h := congrArg (fun B : Matrix (Fin 2) (Fin 2) (KPAdelicCoverRestrictedProduct.Adeles F) => B 0 0) A.inv_mul
-  simp only [Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two,
-    Matrix.GeneralLinearGroup.coe_one, Matrix.one_apply, h10, mul_zero, add_zero, if_pos rfl] at h
+  simp only [Matrix.mul_apply, Fin.sum_univ_two,
+    Matrix.one_apply, h10, mul_zero, add_zero] at h
   have hu := (KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).1.unit_spec
   change A⁻¹ 0 0 * A 0 0 = 1 at h
   let u := (KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).1.unit
@@ -30,14 +30,14 @@ private lemma diag_inverse (A : KPGlobalTorusFunctionData.AdelicMatrixGroup F)
   calc
     _ = (u⁻¹ : KPGlobalTorusFunctionData.Ideles F).val * 1 := (mul_one _).symm
     _ = (u⁻¹ : KPGlobalTorusFunctionData.Ideles F).val * (A⁻¹ 0 0 * A 0 0) := by rw [h]
-    _ = A⁻¹ 0 0 := by rw [← hu']; simp [← mul_assoc, mul_comm]
+    _ = A⁻¹ 0 0 := by rw [← hu']; simp [mul_comm]
 
 private lemma diag_inverse11 (A : KPGlobalTorusFunctionData.AdelicMatrixGroup F)
     (h10 : A 1 0 = 0) (h01 : A 0 1 = 0) :
     (KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).2.unit⁻¹.val = A⁻¹ 1 1 := by
   have h := congrArg (fun B : Matrix (Fin 2) (Fin 2) (KPAdelicCoverRestrictedProduct.Adeles F) => B 1 1) A.inv_mul
-  simp only [Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two,
-    Matrix.GeneralLinearGroup.coe_one, Matrix.one_apply, h01, mul_zero, zero_add, if_pos rfl] at h
+  simp only [Matrix.mul_apply, Fin.sum_univ_two,
+    Matrix.one_apply, h01, mul_zero, zero_add] at h
   have hu := (KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).2.unit_spec
   change A⁻¹ 1 1 * A 1 1 = 1 at h
   let u := (KPGlobalTorusFunctionData.diagonal_entries_units F A h10 h01).2.unit
@@ -45,7 +45,7 @@ private lemma diag_inverse11 (A : KPGlobalTorusFunctionData.AdelicMatrixGroup F)
   calc
     _ = (u⁻¹ : KPGlobalTorusFunctionData.Ideles F).val * 1 := (mul_one _).symm
     _ = (u⁻¹ : KPGlobalTorusFunctionData.Ideles F).val * (A⁻¹ 1 1 * A 1 1) := by rw [h]
-    _ = A⁻¹ 1 1 := by rw [← hu']; simp [← mul_assoc, mul_comm]
+    _ = A⁻¹ 1 1 := by rw [← hu']; simp [mul_comm]
 
 private lemma preimage_diag (A : KPGlobalTorusFunctionData.AdelicMatrixGroup F)
     (hA : QuotientGroup.mk' (KPAdelicCoverRestrictedProduct.scalarSubgroup F) A ∈
@@ -55,7 +55,7 @@ private lemma preimage_diag (A : KPGlobalTorusFunctionData.AdelicMatrixGroup F)
   obtain ⟨z, hz, he⟩ := hB
   obtain ⟨u, rfl⟩ := hz
   rw [← he]
-  simp [Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
+  simp [Matrix.GeneralLinearGroup.coe_scalar,
     Matrix.mul_apply, Matrix.scalar, Fin.sum_univ_two, h01, h10]
 
 private lemma ratio_continuous : Continuous (KPGlobalTorusFunctionData.torusRatio F) := by
@@ -108,7 +108,7 @@ private theorem p_continuous : Continuous (KPGlobalTorusFunctionData.p F ζ hζ)
     continuous_subtype_val).subtype_mk (fun t => t.property)
 
 private theorem pD_continuous : Continuous (coveredTorusDiagonalRatioCubicProjection F ζ hζ) :=
-  (QuotientGroup.isOpenQuotientMap_mk).continuous.comp (p_continuous F ζ hζ)
+  QuotientGroup.isOpenQuotientMap_mk.continuous.comp (p_continuous F ζ hζ)
 
 private theorem p_rational (a : Fˣ) :
     KPGlobalTorusFunctionData.p F ζ hζ (KPGlobalTorusFunctionData.s F ζ hζ a) =
@@ -162,7 +162,7 @@ private theorem pD_rational (a : Fˣ) :
     ext i j
     fin_cases i <;> fin_cases j <;>
       simp [KPGlobalCubicIdelePairing.diagonalHom, KPGlobalCubicIdelePairing.diagonalMatrix,
-        Matrix.GeneralLinearGroup.coe_mul, Matrix.GeneralLinearGroup.coe_scalar,
+        Matrix.GeneralLinearGroup.coe_scalar,
         Matrix.mul_apply, Fin.sum_univ_two, Matrix.scalar, hu, hA.2.1, hA.2.2]
     exact hw.symm
   change QuotientGroup.mk' _ (KPGlobalCubicIdelePairing.diagonalHom F (u * w⁻¹)) = t.val

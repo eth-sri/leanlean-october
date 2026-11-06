@@ -109,19 +109,7 @@ theorem exponentialValueGroupQuotient_finite_of_finiteDimensional
       intro q r hqr
       exact congrArg Prod.fst hqr)).finite
 
-/-- The value-group ramification index of a finite-dimensional exact valued
-extension is positive. -/
-theorem exponentialRamificationIndex_pos_of_finiteDimensional
-    [FiniteDimensional K L]
-    (v : LubinTate.Valuations.ExponentialValuation K) (w : LubinTate.Valuations.ExponentialValuation L)
-    (hExt : ∀ a : K, w (algebraMap K L a) = v a) :
-    0 < exponentialRamificationIndex v w := by
-  let : Finite (ExponentialValueGroupQuotient v w) :=
-    exponentialValueGroupQuotient_finite_of_finiteDimensional v w hExt
-  let : Nonempty (ExponentialValueGroupQuotient v w) :=
-    ⟨QuotientAddGroup.mk (0 : exponentialValueSubgroup w)⟩
-  unfold exponentialRamificationIndex
-  exact Nat.card_pos
+
 
 /-- Lifts to the target valuation ring of an arbitrary residue-field basis
 are linearly independent over the base field.
@@ -219,39 +207,9 @@ theorem residueExtension_finiteDimensional_of_finiteDimensional
   let : Finite J := hfiniteJ
   exact beta.finiteDimensional_of_finite
 
-/-- The residue degree of a finite-dimensional exact valued extension is
-positive. -/
-theorem exponentialResidueDegree_pos_of_finiteDimensional
-    [FiniteDimensional K L]
-    (v : LubinTate.Valuations.ExponentialValuation K) (w : LubinTate.Valuations.ExponentialValuation L)
-    (hExt : ∀ a : K, w (algebraMap K L a) = v a) :
-    0 < exponentialResidueDegree v w hExt := by
-  let V := LubinTate.Valuations.exponentialValuationSubring v
-  let W := LubinTate.Valuations.exponentialValuationSubring w
-  let i := unramifiedValuationRingValuationRingMap v w hExt
-  let : IsLocalHom i :=
-    unramifiedValuationRingValuationRingMap_isLocalHom v w hExt
-  let : Algebra V W := i.toAlgebra
-  let : Algebra (IsLocalRing.ResidueField V)
-      (IsLocalRing.ResidueField W) :=
-    (IsLocalRing.ResidueField.map i).toAlgebra
-  let : FiniteDimensional (IsLocalRing.ResidueField V)
-      (IsLocalRing.ResidueField W) :=
-    residueExtension_finiteDimensional_of_finiteDimensional v w hExt
-  change 0 < Module.finrank (IsLocalRing.ResidueField V)
-    (IsLocalRing.ResidueField W)
-  exact Module.finrank_pos
 
-/-- The value-group ramification index of a finite-dimensional exact valued
-extension is at most its field degree. -/
-theorem exponentialRamificationIndex_le_finrank
-    [FiniteDimensional K L]
-    (v : LubinTate.Valuations.ExponentialValuation K) (w : LubinTate.Valuations.ExponentialValuation L)
-    (hExt : ∀ a : K, w (algebraMap K L a) = v a) :
-    exponentialRamificationIndex v w ≤ Module.finrank K L := by
-  exact (Nat.le_mul_of_pos_right _
-    (exponentialResidueDegree_pos_of_finiteDimensional v w hExt)).trans
-      (ramificationInvariants_fundamental_inequality v w hExt)
+
+
 
 /-- Under the finite unramified-extension definition, every residue basis has the same cardinality as the
 field degree.  The statement uses `Nat.card`, so no finiteness assumption on
@@ -383,33 +341,7 @@ theorem exponentialRamificationIndex_eq_one_of_finiteUnramifiedExtension
     exact Nat.card_pos
   exact Nat.le_antisymm he_le_one (Nat.succ_le_of_lt hepos)
 
-/-- The value subgroup does not change in a finite unramified extension. -/
-theorem exponentialValueSubgroup_eq_of_finiteUnramifiedExtension
-    [FiniteDimensional K L]
-    (v : LubinTate.Valuations.ExponentialValuation K) (w : LubinTate.Valuations.ExponentialValuation L)
-    (hExt : ∀ a : K, w (algebraMap K L a) = v a)
-    (hUnramified : FiniteUnramifiedExtension v w hExt) :
-    exponentialValueSubgroup w = exponentialValueSubgroup v := by
-  let Gamma := exponentialValueSubgroup w
-  let H : AddSubgroup Gamma :=
-    (exponentialValueSubgroup v).comap Gamma.subtype
-  have hindex : H.index = 1 := by
-    have he :=
-      exponentialRamificationIndex_eq_one_of_finiteUnramifiedExtension
-        v w hExt hUnramified
-    rw [AddSubgroup.index_eq_card]
-    simpa only [exponentialRamificationIndex, ExponentialValueGroupQuotient, Gamma, H]
-      using he
-  have hH : H = ⊤ := AddSubgroup.index_eq_one.mp hindex
-  apply le_antisymm
-  · intro r hr
-    let gamma : Gamma := ⟨r, hr⟩
-    have hgamma : gamma ∈ H := by
-      rw [hH]
-      exact Set.mem_univ gamma
-    change r ∈ exponentialValueSubgroup v at hgamma
-    exact hgamma
-  · exact exponentialValueSubgroup_le_of_extends v w hExt
+
 
 end FiniteValuedExtensionInvariants
 

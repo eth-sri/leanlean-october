@@ -3,6 +3,8 @@ module
 public import Mathlib.NumberTheory.Padics.RingHoms
 public import Mathlib.Topology.Homeomorph.Lemmas
 public import Mathlib.Basic.Denumerable
+public import Mathlib.Tactic.NormNum
+public import Mathlib.Tactic.Linarith
 
 @[expose] public section
 
@@ -43,12 +45,12 @@ def iwasawaDegreeEmbedding (p : ℕ) (hp : 0 < p) : ℕ ↪ IwasawaDegree p wher
     ⟨1 + p * k, by
       constructor
       · omega
-      · exact (Nat.coprime_add_mul_left_left 1 p k).2 (by simp)⟩
+      · norm_num⟩
   inj' := by
     intro a b h
     have hv : 1 + p * a = 1 + p * b := congrArg Subtype.val h
     apply Nat.mul_left_cancel hp
-    exact Nat.add_left_cancel hv
+    linarith
 
 /-- The Iwasawa index is infinite as soon as the finite basis has a vector. -/
 theorem infinite_iwasawaIndex (p f : ℕ) (hp : 0 < p) (hf : 0 < f) :
@@ -57,8 +59,7 @@ theorem infinite_iwasawaIndex (p f : ℕ) (hp : 0 < p) (hf : 0 < f) :
     { toFun := fun k => (iwasawaDegreeEmbedding p hp k, ⟨0, hf⟩)
       inj' := by
         intro a b h
-        exact (iwasawaDegreeEmbedding p hp).injective
-          (congrArg (fun z : IwasawaIndex p f => z.1) h) }
+        grind }
   exact Infinite.of_injective j j.injective
 
 /-- The index used in the equal-characteristic proof is denumerable. -/

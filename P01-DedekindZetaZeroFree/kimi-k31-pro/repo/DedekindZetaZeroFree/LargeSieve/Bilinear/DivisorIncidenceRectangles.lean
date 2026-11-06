@@ -67,8 +67,7 @@ theorem divisor_block_bound
     have h := sq_sum_le_card_mul_sum_sq (s := (Finset.univ : Finset (D × E)))
       (f := fun p : D × E => V p.1 p.2)
     simp only [Finset.card_univ, Fintype.card_prod, Nat.cast_mul] at h
-    rw [Fintype.sum_prod_type] at h
-    rw [Fintype.sum_prod_type] at h
+    rw [Fintype.sum_prod_type, Fintype.sum_prod_type] at h
     exact h
 
   have hsumsq : (∑ d, ∑ e, V d e ^ 2) ≤ UA * UB *

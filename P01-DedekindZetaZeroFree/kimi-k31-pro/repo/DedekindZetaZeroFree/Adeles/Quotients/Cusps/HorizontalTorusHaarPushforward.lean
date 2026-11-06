@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.Adeles.Lattices.Cusps.ParabolicTranslations
 public import DedekindZetaZeroFree.HarmonicAnalysis.Haar.AdditiveAdelicQuotientDomains
+public import Mathlib.Tactic.FunProp
 
 @[expose] public section
 
@@ -23,7 +24,7 @@ theorem mixedToHorizontal_continuous : Continuous (mixedToHorizontal F) := by
   apply continuous_pi
   intro i
   change Continuous (fun x : mixedEmbedding.mixedSpace F => x.2 _)
-  exact (continuous_apply _).comp continuous_snd
+  fun_prop
 
 theorem mixedToHorizontal_surjective : Function.Surjective (mixedToHorizontal F) := by
   intro y

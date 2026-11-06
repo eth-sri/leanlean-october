@@ -66,7 +66,7 @@ theorem
     intro j hj
     have hz := PowerSeries.X_pow_dvd_iff.mp hdvd j hj
     rw [map_sub, sub_eq_zero] at hz
-    exact hz
+    grind
   have hbracket :
       equalCharacteristicLubinTateAmbientBracket F
           (equalCharacteristicCompletedLevelResidueHom F n)

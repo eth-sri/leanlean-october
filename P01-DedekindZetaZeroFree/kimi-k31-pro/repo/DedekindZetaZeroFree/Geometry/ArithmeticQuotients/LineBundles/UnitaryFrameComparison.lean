@@ -195,7 +195,7 @@ theorem frame_comparison (A : KPFiniteCuspAtlas.Atlas F ζ hζ hF U)
     apply Quotient.sound
     refine ⟨γ i x, (hγ i x hx).symm, ?_⟩
     change (a : ℂ) = _ * ((phase i x : ℂ) * (a : ℂ))
-    simp [phase, ← mul_assoc]
+    simp [phase]
   refine ⟨{
     phase := phase
     measurable_phase := fun i => hmeas i (fun g =>

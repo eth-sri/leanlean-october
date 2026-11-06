@@ -224,7 +224,7 @@ theorem end_section_lintegral (j : CuspIndex A) (T : ℝ) (hT : A.threshold ≤ 
       Measure.prod_restrict]
     congr 1
     ext p
-    simp [μ, Set.mem_prod, and_comm]
+    simp [Set.mem_prod, and_comm]
   rw [heq, lintegral_prod_symm' _ hf]
   rw [← lintegral_subtype_comap measurableSet_Ioi]
   apply lintegral_congr

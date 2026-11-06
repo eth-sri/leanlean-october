@@ -112,7 +112,7 @@ theorem betaFunction_eq_unramified_integrand
     have hp := beta_power_exp_coordinates K s (Units.mk0 (1 - (y : K)) hy')
     simp only [Units.val_mk0] at hp
     rw [hp]
-    simp only [Units.val_zpow_eq_zpow_val, Units.val_mk0, div_eq_mul_inv]
+    simp only [Units.val_mk0, div_eq_mul_inv]
     ring
 
 theorem uniformizer_unit_decomposition (K : Type*) [Field K] [ValuativeRel K] [TopologicalSpace K]

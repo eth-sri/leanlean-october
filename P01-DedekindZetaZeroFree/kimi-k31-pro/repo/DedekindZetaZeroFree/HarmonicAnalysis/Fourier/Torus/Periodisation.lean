@@ -39,7 +39,7 @@ def torusPeriodisation
         simp only [AddCircle.coe_equivIco_mk_apply, div_one, mul_one,
           Basis.equivFun_symm_apply, Int.fract]
         simp only [v, Submodule.coe_sum, Submodule.coe_smul_of_tower,
-          Int.cast_neg, zsmul_eq_mul]
+          ]
         simp only [B, Basis.ofZLatticeBasis_apply, sub_smul, Finset.sum_sub_distrib]
         rw [sub_eq_add_neg, ← Finset.sum_neg_distrib]
         congr 1
@@ -77,7 +77,7 @@ theorem torusPeriodisation_coe
     simp only [AddCircle.coe_equivIco_mk_apply, div_one, mul_one,
       Basis.equivFun_symm_apply, Int.fract]
     simp only [v, Submodule.coe_sum, Submodule.coe_smul_of_tower,
-      Int.cast_neg, zsmul_eq_mul]
+      ]
     simp only [B, Basis.ofZLatticeBasis_apply, sub_smul, Finset.sum_sub_distrib]
     rw [sub_eq_add_neg, ← Finset.sum_neg_distrib]
     congr 1

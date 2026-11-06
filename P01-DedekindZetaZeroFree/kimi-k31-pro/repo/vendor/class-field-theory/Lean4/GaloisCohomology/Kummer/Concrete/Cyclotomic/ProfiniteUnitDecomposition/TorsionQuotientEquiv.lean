@@ -73,7 +73,7 @@ noncomputable def torsionQuotientEquivOfZHatMulDecomposition
                 Set (Multiplicative ZHat × T))) :=
         E.toHomeomorph.preimage_closure _
       _ = closure (CommGroup.torsion G : Set G) := by
-        rw [hpreTorsion]
+        grind
   have hkerFst :
       fstHom.ker =
         (CommGroup.torsion

@@ -127,7 +127,7 @@ private theorem tj_rawMultiply_chart
     Matrix.scalar (Fin 2) ((rawMatrix x * rawMatrix y) 0 0) = rawMatrix x * rawMatrix y
   rw [rawMultiply, tj_rawMatrix_rawRatios _ hnz]
   ext i j
-  simp [Matrix.mul_diagonal, smul_eq_mul, hnz]
+  simp [Matrix.mul_diagonal, smul_eq_mul]
   field_simp
 
 private theorem tj_rawMultiply_inverse_chart
@@ -537,7 +537,7 @@ theorem translated_local_measure_extension
       (continuous_const.mul continuous_id).measurable)]
   have hfun : (fun x : G => k * x) ∘ (fun x => (k⁻¹ * g) * x) = (fun x => g * x) := by
     funext x
-    simp [Function.comp_def, mul_assoc]
+    simp [mul_assoc]
   rw [hfun, hν]
 
 theorem chart_measure_image {X Y : Type*}

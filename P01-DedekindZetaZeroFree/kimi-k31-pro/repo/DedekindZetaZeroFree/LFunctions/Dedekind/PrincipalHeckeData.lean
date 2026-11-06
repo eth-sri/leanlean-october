@@ -17,12 +17,7 @@ namespace DedekindZetaZeroFree.LargeSieve
 
  lemma top_ne_bot_ringOfIntegers (F : Type) [Field F] [NumberField F] :
     (⊤ : Ideal (𝓞 F)) ≠ ⊥ := by
-  intro h
-  have h1 : (1 : 𝓞 F) = 0 := by
-    have hm : (1 : 𝓞 F) ∈ (⊥ : Ideal (𝓞 F)) :=
-      h ▸ (show (1 : 𝓞 F) ∈ (⊤ : Ideal (𝓞 F)) from Submodule.mem_top)
-    simpa using hm
-  exact one_ne_zero h1
+  simp_all
 
 def principalCharacter (F : Type) [Field F] [NumberField F] :
     DedekindZetaZeroFree.RayClassCharacter F ⊤ where

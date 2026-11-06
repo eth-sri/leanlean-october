@@ -90,7 +90,7 @@ theorem probe_arithmetic_compatibility
     rw [hE, SArithmeticData.residueTraceCharacter_apply]
     change (A.fieldTraceCharacter ((1 : F) *
       ((FiniteTransform.canonicalLifts A.R.toSubring a).val x : F) / (a : F)) : ℂ) = _
-    rw [one_mul]
+    grind
   · intro a ha
     rw [B.theta ⟨a, ha⟩]
     have hηid : C.correction.η_id = 1 := by

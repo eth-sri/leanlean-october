@@ -21,7 +21,7 @@ private theorem norm_lt_one_iff_le_inv_absNorm (F : Type) [Field F] [NumberField
   have hq : (0 : ℝ) < (v.asIdeal.absNorm : ℝ) := by
     exact_mod_cast (Nat.zero_lt_one.trans (HeightOneSpectrum.one_lt_absNorm v))
   by_cases hx : x = 0
-  · simp [hx, (zpow_pos hq (-1)).le]
+  · simp [hx]
   · have hv : Valued.v x ≠ 0 :=
       (Valuation.ne_zero_iff (Valued.v : Valuation (v.adicCompletion F) ℤᵐ⁰)).mpr hx
     rw [FinitePlace.norm_def, WithZeroMulInt.toNNReal_neg_apply _ hv, NNReal.coe_zpow]

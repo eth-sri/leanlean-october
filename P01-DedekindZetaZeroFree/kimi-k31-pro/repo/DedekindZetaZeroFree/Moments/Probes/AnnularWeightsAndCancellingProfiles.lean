@@ -24,8 +24,7 @@ private theorem phi_annulus : tsupport phi ⊆ {z : ℂ | 1 ≤ ‖z‖ ∧ ‖z
   · intro z hz
     have hb : bump (Complex.normSq z) ≠ 0 := by simpa [Function.mem_support, phi] using hz
     have hb' := (bump.support_eq ▸ hb : Complex.normSq z ∈ Metric.ball (9 / 4 : ℝ) 1)
-    rw [Metric.mem_ball, Real.dist_eq, abs_lt] at hb'
-    rw [Complex.normSq_eq_norm_sq] at hb'
+    rw [Metric.mem_ball, Real.dist_eq, abs_lt, Complex.normSq_eq_norm_sq] at hb'
     dsimp [bump] at hb'
     have hn := norm_nonneg z
     constructor <;> nlinarith
@@ -42,9 +41,7 @@ private theorem phi_mellin_ne : complexNormMellin phi (5 / 6) ≠ 0 := by
   let w : ℂ → ℝ := fun z => (max (‖z‖ ^ 2) 1) ^ (-1 / 6 : ℝ)
   have hw : Continuous w := by
     apply Continuous.rpow_const ((continuous_norm.pow 2).max continuous_const)
-    intro z
-    left
-    exact ne_of_gt (lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1) (le_max_right _ _))
+    grind
   let g : ℂ → ℝ := fun z => (phi z).re * w z
   have hc : Continuous g := (Complex.reCLM.continuous.comp phi_smooth.continuous).mul hw
   have hk : HasCompactSupport g := phi_annular.2.1.comp_left (g := Complex.reCLM) (by simp) |>.mul_right
@@ -81,7 +78,7 @@ private theorem dil_annular : IsComplexAnnular dil := by
     · intro z hz
       have h := phi_annulus (subset_tsupport phi (by simpa [Function.mem_support, dil] using hz))
       norm_num [norm_smul, Real.norm_eq_abs] at h
-      constructor <;> linarith [h.1, h.2]
+      grind
     · exact (isClosed_le continuous_const continuous_norm).inter (isClosed_le continuous_norm continuous_const)
   refine ⟨hs, ?_, 2, 4, by norm_num, by norm_num, ha⟩
   apply IsCompact.of_isClosed_subset (isCompact_closedBall (0 : ℂ) 4) isClosed_closure
@@ -90,7 +87,7 @@ private theorem dil_annular : IsComplexAnnular dil := by
  def f (z : ℂ) : ℂ := phi z - (1 / 4 : ℂ) * dil z
 private theorem f_annular : IsComplexAnnular f := by
   refine ⟨phi_smooth.sub (contDiff_const.mul dil_annular.1),
-    phi_annular.2.1.sub (dil_annular.2.1.mul_left), 1, 4, by norm_num, by norm_num, ?_⟩
+    phi_annular.2.1.sub dil_annular.2.1.mul_left, 1, 4, by norm_num, by norm_num, ?_⟩
   apply closure_minimal
   · intro z hz
     have hn : phi z ≠ 0 ∨ dil z ≠ 0 := by
@@ -99,10 +96,10 @@ private theorem f_annular : IsComplexAnnular f := by
       simp [Function.mem_support, f, h.1, h.2] at hz
     rcases hn with h | h
     · have h := phi_annulus (subset_tsupport phi h)
-      exact ⟨h.1, h.2.trans (by norm_num)⟩
+      grind
     · have h' := phi_annulus (subset_tsupport phi h)
       norm_num [norm_smul, Real.norm_eq_abs] at h'
-      constructor <;> linarith [h'.1, h'.2]
+      grind
   · exact (isClosed_le continuous_const continuous_norm).inter (isClosed_le continuous_norm continuous_const)
 private theorem f_integral_zero : (∫ z : ℂ, f z) = 0 := by
   have hi : Integrable phi volume := phi_smooth.continuous.integrable_of_hasCompactSupport phi_annular.2.1
@@ -112,9 +109,8 @@ private theorem f_integral_zero : (∫ z : ℂ, f z) = 0 := by
   have he : (∫ z : ℂ, dil z) = (4 : ℂ) * ∫ z : ℂ, phi z := by
     have h := Measure.integral_comp_smul volume phi (1 / 2 : ℝ)
     norm_num [dil, Complex.finrank_real_complex, Complex.real_smul] at h ⊢
-    exact h
-  rw [he]
-  ring
+    grind
+  grind
 private theorem dil_mellin : complexNormMellin dil (5 / 6) =
     ((2 : ℝ) ^ (5 / 3 : ℝ) : ℝ) * complexNormMellin phi (5 / 6) := by
   have he : complexNormMellinIntegrand dil (5 / 6) = fun z =>
@@ -128,21 +124,18 @@ private theorem dil_mellin : complexNormMellin dil (5 / 6) =
     rw [mul_pow, Real.mul_rpow (by positivity) (sq_nonneg _)]
     have hp : ((1 / 2 : ℝ) ^ 2) ^ ((5 / 6 : ℝ) - 1) = 2 ^ (1 / 3 : ℝ) := by
       rw [← Real.rpow_natCast, ← Real.rpow_mul (by positivity), one_div, Real.inv_rpow (by positivity), ← Real.rpow_neg (by positivity)]
-      congr 1
-      norm_num
+      grind
     convert_to phi ((1 / 2 : ℝ) • z) * ↑((‖z‖ ^ 2) ^ (-(1 / 6 : ℝ))) =
       ↑((2 : ℝ) ^ (-1 / 3 : ℝ)) * (phi ((1 / 2 : ℝ) • z) *
         ↑(((1 / 2 : ℝ) ^ 2) ^ (-(1 / 6 : ℝ)) * ((‖z‖ ^ 2) ^ (-(1 / 6 : ℝ))))) using 1 <;> norm_num
     have hp' : (1 / 4 : ℝ) ^ (-(1 / 6 : ℝ)) = 2 ^ (1 / 3 : ℝ) := by
-      convert hp using 1 <;> norm_num
+      grind
     rw [hp']
     have hh : (2 : ℝ) ^ (-1 / 3 : ℝ) * 2 ^ (1 / 3 : ℝ) = 1 := by
       rw [← Real.rpow_add (by positivity)]
       norm_num
     have hh' : (((2 : ℝ) ^ (-1 / 3 : ℝ) : ℝ) : ℂ) * (((2 : ℝ) ^ (1 / 3 : ℝ) : ℝ) : ℂ) = 1 := by exact_mod_cast hh
-    simp only [Complex.real_smul] at *
-    norm_num at hh'
-    linear_combination -(phi ((1 / 2 : ℂ) * z) * ↑((‖z‖ ^ 2) ^ (-(1 / 6 : ℝ)))) * hh'
+    grind
   rw [complexNormMellin, he, integral_const_mul]
   have hd := Measure.integral_comp_smul volume (complexNormMellinIntegrand phi (5 / 6)) (1 / 2 : ℝ)
   simp only [Complex.finrank_real_complex] at hd
@@ -152,12 +145,11 @@ private theorem dil_mellin : complexNormMellin dil (5 / 6) =
   rw [hd]
   have hp : (2 : ℝ) ^ (-1 / 3 : ℝ) * 4 = 2 ^ (5 / 3 : ℝ) := by
     rw [show (4 : ℝ) = 2 ^ (2 : ℝ) by norm_num, ← Real.rpow_add (by positivity)]
-    congr 1
-    norm_num
+    grind
   have hp' : (((2 : ℝ) ^ (-1 / 3 : ℝ) : ℝ) : ℂ) * 4 = (((2 : ℝ) ^ (5 / 3 : ℝ) : ℝ) : ℂ) := by exact_mod_cast hp
   unfold complexNormMellin
   push_cast
-  linear_combination (Real.pi : ℂ)⁻¹ * (∫ x : ℂ, complexNormMellinIntegrand phi (5 / 6) x) * hp'
+  grind
 private theorem f_mellin_ne : complexNormMellin f (5 / 6) ≠ 0 := by
   have hi := complexAnnular_normMellin_integrable phi phi_annular (1 / 6) (by norm_num) (by norm_num)
   have hj := complexAnnular_normMellin_integrable dil dil_annular (1 / 6) (by norm_num) (by norm_num)
@@ -183,8 +175,7 @@ private theorem f_mellin_ne : complexNormMellin f (5 / 6) ≠ 0 := by
     have h : (1 : ℝ) - (1 / 4 : ℝ) * (2 : ℝ) ^ (5 / 3 : ℝ) ≠ 0 := by linarith
     have hc : ((1 - (1 / 4 : ℝ) * (2 : ℝ) ^ (5 / 3 : ℝ) : ℝ) : ℂ) ≠ 0 := by exact_mod_cast h
     push_cast at hc
-    norm_num at hc ⊢
-    exact hc
+    grind
   rw [show complexNormMellin phi (5 / 6) -
     (1 / 4 : ℂ) * (↑((2 : ℝ) ^ (5 / 3 : ℝ)) * complexNormMellin phi (5 / 6)) =
     (1 - (1 / 4 : ℂ) * ↑((2 : ℝ) ^ (5 / 3 : ℝ))) * complexNormMellin phi (5 / 6) by ring]
@@ -203,15 +194,13 @@ private theorem profile_exists : ∃ f : ℂ → ℂ, IsComplexAnnular f ∧
     convert mul_ne_zero (complexGamma_ratio_ne_zero (1 / 6) (by norm_num) (by norm_num)) f_mellin_ne using 1 <;> norm_num
 end RadialCancellingProfile
 
- def radialBumpProfile : ContDiffBump (3 / 2 : ℝ) :=
-  ⟨1 / 4, 1 / 2, by norm_num, by norm_num⟩
+ 
 
 theorem exists_radial_complex_cancelling_profile :
     ∃ f : ℂ → ℂ, IsComplexAnnular f ∧
       (∀ z w : ℂ, ‖z‖ = ‖w‖ → f z = f w) ∧
       (∫ z : ℂ, f z ∂(volume : Measure ℂ)) = 0 ∧
-      complexNormMellin (complexTraceFourier f) (1 / 6 : ℝ) ≠ 0 := by
-  exact RadialCancellingProfile.profile_exists
+      complexNormMellin (complexTraceFourier f) (1 / 6 : ℝ) ≠ 0 := RadialCancellingProfile.profile_exists
 
 end
 end DedekindZetaZeroFree
@@ -266,8 +255,7 @@ theorem complex_profile_ne_zero (f : ℂ → ℂ)
   simp [complexNormMellin, complexNormMellinIntegrand, complexTraceFourier]
 
 theorem arithmetic_complex_place (A : SArithmeticData F) :
-    Nonempty {v : InfinitePlace F // v.IsComplex} := by
-  exact ⟨⟨Classical.arbitrary (InfinitePlace F), A.infinite_isComplex _⟩⟩
+    Nonempty {v : InfinitePlace F // v.IsComplex} := ⟨⟨Classical.arbitrary (InfinitePlace F), A.infinite_isComplex _⟩⟩
 
 def shellCoordinates (A : SArithmeticData F) (f : ℂ → ℂ) (hf : IsComplexAnnular f)
     (hrad : ∀ z w : ℂ, ‖z‖ = ‖w‖ → f z = f w) : AnnularCoordinates F A.Sf where
@@ -527,7 +515,7 @@ theorem tensor_compactSupport_and_unit_support
     change IsUnit ((InfiniteAdeleRing.ringEquiv_mixedSpace F).symm
       (InfiniteAdeleRing.ringEquiv_mixedSpace F x.1)) at hu'
     rw [RingEquiv.symm_apply_apply] at hu'
-    exact hu'
+    grind
   · apply Pi.isUnit_iff.mpr
     intro v
     apply isUnit_iff_ne_zero.mpr
@@ -603,9 +591,7 @@ theorem probeBump_tsupport_subset : tsupport (probeBump : ℝ → ℝ) ⊆ Set.I
   rw [ContDiffBump.tsupport_eq] at hx
   have hr : probeBump.rOut = 1 / 2 := rfl
   rw [hr, Metric.mem_closedBall, Real.dist_eq] at hx
-  have h := (abs_le.mp hx).1
-  simp only [Set.mem_Ioi]
-  linarith
+  grind
 
 theorem probeBump_contDiff : ContDiff ℝ (⊤ : ℕ∞) (probeBump : ℝ → ℝ) :=
   probeBump.contDiff
@@ -619,8 +605,7 @@ theorem probeBump_nonzero : (probeBump : ℝ → ℝ) ≠ 0 := by
       rw [Metric.mem_closedBall, dist_self]
       exact probeBump.rIn_pos.le)
   have h2 : probeBump (1 : ℝ) = 0 := congrFun h 1
-  rw [h1] at h2
-  exact one_ne_zero h2
+  grind
 
 def probeRealBumpWeight : ProbeRealAnnularWeight where
   toFun := probeBump
@@ -711,7 +696,7 @@ theorem probe_fixed_weight_construction (F : Type) [Field F] [NumberField F]
   · exact ⟨c.fReal, c.fComplex, c.fFinite, c.real_regular, c.complex_regular,
       c.finite_regular, fun x => rfl⟩
   · rw [ProbeWeight.fourier_zero]
-    exact hmass
+    grind
   · exact hmellin
 
 end

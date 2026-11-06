@@ -37,7 +37,7 @@ private theorem ideal_fiber (F : Type) [Field F] [NumberField F]
   rw [finiteBall_eq_valuation_product]
   simp only [sGlobalBoundedIdealSet, Set.mem_setOf_eq,
     PoissonSLocalBalls.mem_ball, PoissonFinite.diagonal,
-    HeightOneSpectrum.adicCompletion.valued_coe]
+    ]
   have hv (v : S) : Valued.v (FinitePlace.embedding v.val i) = v.val.valuation F i :=
     HeightOneSpectrum.adicCompletion.valued_coe _ _ _
   simp_rw [hv]

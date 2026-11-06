@@ -136,12 +136,10 @@ private lemma cubicResidueDenomRegular_constant {F : Type*} [Field F] (u c : F) 
 private lemma cubicResidueDenomRegular_coordinate {F : Type*} [Field F] (u : F) : CubicResidueDenomRegular u (RatFunc.X : RatFunc F) := by
   simp [CubicResidueDenomRegular]
 private lemma cubicResidueDenomRegular_add {F : Type*} [Field F] {u : F} {r s : RatFunc F}
-    (hr : CubicResidueDenomRegular u r) (hs : CubicResidueDenomRegular u s) : CubicResidueDenomRegular u (r+s) := by
-  exact fun h => (mul_ne_zero hr hs) (by
+    (hr : CubicResidueDenomRegular u r) (hs : CubicResidueDenomRegular u s) : CubicResidueDenomRegular u (r+s) := fun h => (mul_ne_zero hr hs) (by
     simpa using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_add_dvd r s) h)
 private lemma cubicResidueDenomRegular_mul {F : Type*} [Field F] {u : F} {r s : RatFunc F}
-    (hr : CubicResidueDenomRegular u r) (hs : CubicResidueDenomRegular u s) : CubicResidueDenomRegular u (r*s) := by
-  exact fun h => (mul_ne_zero hr hs) (by
+    (hr : CubicResidueDenomRegular u r) (hs : CubicResidueDenomRegular u s) : CubicResidueDenomRegular u (r*s) := fun h => (mul_ne_zero hr hs) (by
     simpa using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_mul_dvd r s) h)
 private lemma cubicResidueDenomRegular_inv_of_value_ne_zero {F : Type*} [Field F] {u : F} {r : RatFunc F}
     (_hr : CubicResidueDenomRegular u r) (hv : RatFunc.eval (RingHom.id F) u r ≠ 0) : CubicResidueDenomRegular u r⁻¹ := by
@@ -241,8 +239,7 @@ private theorem residue_scalar_regular_eval
   have hb1 (ε : CubicCharacters.Mu3) : ((ε : ℂˣ) : ℂ)*w^2 ≠ 1 := by
     intro he
     have hp := congrArg (fun z : ℂ => z^3) he
-    have hε : (((ε : ℂˣ) : ℂ))^3 = 1 := by
-      exact congrArg Units.val ((mem_rootsOfUnity 3 (ε : ℂˣ)).mp ε.property)
+    have hε : (((ε : ℂˣ) : ℂ))^3 = 1 := congrArg Units.val ((mem_rootsOfUnity 3 (ε : ℂˣ)).mp ε.property)
     rw [mul_pow,hε,one_mul,← pow_mul,one_pow] at hp
     exact hw6 hp
   have hs := CubicResidueRegularValue.sum Finset.univ (fun ξ _ => CubicResidueRegularValue.sum Finset.univ (fun ε _ =>
@@ -334,16 +331,14 @@ set_option linter.style.haveILetI false
   r.denom.eval u ≠ 0
 
 private lemma cubicResidueDenominatorRegular_constant {F : Type*} [Field F] (u c : F) : CubicResidueDenominatorRegular u (RatFunc.C c) := by
-  simp [CubicResidueDenominatorRegular]
+  simp_all
 private lemma cubicResidueDenominatorRegular_indeterminate {F : Type*} [Field F] (u : F) : CubicResidueDenominatorRegular u (RatFunc.X : RatFunc F) := by
-  simp [CubicResidueDenominatorRegular]
+  simp_all
 private lemma cubicResidueDenominatorRegular_add {F : Type*} [Field F] {u : F} {r s : RatFunc F}
-    (hr : CubicResidueDenominatorRegular u r) (hs : CubicResidueDenominatorRegular u s) : CubicResidueDenominatorRegular u (r+s) := by
-  exact fun h => (mul_ne_zero hr hs) (by
+    (hr : CubicResidueDenominatorRegular u r) (hs : CubicResidueDenominatorRegular u s) : CubicResidueDenominatorRegular u (r+s) := fun h => (mul_ne_zero hr hs) (by
     simpa using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_add_dvd r s) h)
 private lemma cubicResidueDenominatorRegular_mul {F : Type*} [Field F] {u : F} {r s : RatFunc F}
-    (hr : CubicResidueDenominatorRegular u r) (hs : CubicResidueDenominatorRegular u s) : CubicResidueDenominatorRegular u (r*s) := by
-  exact fun h => (mul_ne_zero hr hs) (by
+    (hr : CubicResidueDenominatorRegular u r) (hs : CubicResidueDenominatorRegular u s) : CubicResidueDenominatorRegular u (r*s) := fun h => (mul_ne_zero hr hs) (by
     simpa using Polynomial.eval_eq_zero_of_dvd_of_eval_eq_zero (RatFunc.denom_mul_dvd r s) h)
 private lemma cubicResidueDenominatorRegular_inv_of_value_ne_zero {F : Type*} [Field F] {u : F} {r : RatFunc F}
     (_hr : CubicResidueDenominatorRegular u r) (hv : RatFunc.eval (RingHom.id F) u r ≠ 0) : CubicResidueDenominatorRegular u r⁻¹ := by
@@ -445,8 +440,7 @@ theorem residue_scalar_regular_evaluation
   have hb1 (ε : CubicCharacters.Mu3) : ((ε : ℂˣ) : ℂ)*w^2 ≠ 1 := by
     intro he
     have hp := congrArg (fun z : ℂ => z^3) he
-    have hε : (((ε : ℂˣ) : ℂ))^3 = 1 := by
-      exact congrArg Units.val ((mem_rootsOfUnity 3 (ε : ℂˣ)).mp ε.property)
+    have hε : (((ε : ℂˣ) : ℂ))^3 = 1 := congrArg Units.val ((mem_rootsOfUnity 3 (ε : ℂˣ)).mp ε.property)
     rw [mul_pow,hε,one_mul,← pow_mul,one_pow] at hp
     exact hw6 hp
   have hs := cubicResidue_regularityAtValue.finite_sum Finset.univ (fun ξ _ => cubicResidue_regularityAtValue.finite_sum Finset.univ (fun ε _ =>

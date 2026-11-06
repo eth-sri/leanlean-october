@@ -2,6 +2,7 @@ module
 
 public import DedekindZetaZeroFree.RepresentationTheory.Smooth.DerivativeWordContinuity
 public import DedekindZetaZeroFree.Eisenstein.SpectralTheory.GreenIdentity.PairingsAndFluxDefinitions
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -21,7 +22,7 @@ theorem pullback_rational (f : X F ζ hζ → ℂ)
   apply congrArg f
   apply Quotient.sound
   apply QuotientGroup.rightRel_apply.mpr
-  simpa using γ.property
+  simp_all
 
 theorem pullback_word (f : X F ζ hζ → ℂ) (word : List (B F)) :
     word.foldr (fun b v => rightDerivative F ζ hζ b.1 b.2 v) (pullback f) =
@@ -31,9 +32,7 @@ theorem pullback_word (f : X F ζ hζ → ℂ) (word : List (B F)) :
   | nil => rfl
   | cons b word ih =>
     change deriv _ 0 = deriv _ 0
-    congr 1
-    funext t
-    exact ih _
+    measurability
 
 theorem word_flow_hasDerivAt (f : X F ζ hζ → ℂ)
     (hf : SmoothAutomorphic F ζ hζ f) (word : List (B F)) (b : B F)

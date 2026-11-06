@@ -426,8 +426,8 @@ private lemma sigwnw (v : (LocalField F q)ˣ) : KPLocalCover.sigmaTwo F ζ hζ (
     ((KubotaRankTwo.w (LocalField F q))⁻¹ * KubotaRankTwo.n (LocalField F q) (-((v⁻¹ : (LocalField F q)ˣ) : LocalField F q)))
     (KubotaRankTwo.w (LocalField F q))⁻¹ = 1 := by
   simp only [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, Xwnw, KubotaRankTwo.X_mul_n,
-    Xwinv, map_mul, map_inv, KubotaRankTwo.det_n, KubotaRankTwo.det_w, inv_one, one_mul,
-    mul_one, one_pow]
+    Xwinv, map_mul, map_inv, KubotaRankTwo.det_n, KubotaRankTwo.det_w, inv_one, 
+    mul_one]
   have hr : (-v⁻¹) / (-1) = v⁻¹ := by simp
   rw [hr, (KPHilbert.B3_laws F ζ hζ (Sum.inr q)).2.2.2.2.2 v⁻¹ |>.1, BoneL]
   simp
@@ -462,7 +462,7 @@ private lemma sigdnw (v : (LocalField F q)ˣ) (s : LocalField F q) :
       (KubotaRankTwo.w (LocalField F q))⁻¹ = 1 := by
   simp only [KPLocalCover.sigmaTwo, KubotaElementaryLastArgument.tau, Xdnw, KubotaRankTwo.X_mul_n,
     KubotaRankTwo.X_d, Xwinv, map_mul, map_inv, KubotaRankTwo.det_n, KubotaRankTwo.det_w,
-    KubotaRankTwo.det_d, inv_one, mul_one, div_one, one_mul, one_pow]
+    KubotaRankTwo.det_d, inv_one, mul_one, div_one]
   rw [BnegL, BoneR]
   simp
 private lemma Xscalar (K : Type*) [Field K] (v : Kˣ) :
@@ -491,13 +491,13 @@ private lemma sigscalar (v : (LocalField F q)ˣ) (s : LocalField F q) :
   simp only [Xscalar_mul, Xscalar,
     KubotaRankTwo.X_mul_n, Xdnw,
     KubotaRankTwo.det,
-    Matrix.GeneralLinearGroup.det_scalar, Fintype.card_fin, inv_one, mul_one]
+    Matrix.GeneralLinearGroup.det_scalar, Fintype.card_fin]
   have h1 : v⁻¹ * (-1) / v⁻¹ = -1 := by simp
   rw [h1, BnegL]
   have hB : KPHilbert.B3 F ζ hζ (Sum.inr q) (v⁻¹ ^ 2) (v ^ 2) = 1 := by
     convert Bselfpow F ζ hζ q v (-2) 2 using 1 <;> simp
   simp only [map_mul, map_inv, KubotaRankTwo.det_n, KubotaRankTwo.det_w,
-    KubotaRankTwo.det_d, inv_one, mul_one, ← inv_pow, hB, one_pow]
+    KubotaRankTwo.det_d, inv_one, mul_one, hB, one_pow]
 private lemma kappa_eq_one (v : (LocalField F q)ˣ) (s : LocalField F q) : kappa F ζ hζ q v s = 1 := by
   rw [kappa, bruhatLeft, bruhatRight, signedWeyl_eq_prescribed_signed]
   have he : ∀ x : (LocalField F q)ˣ,
@@ -509,7 +509,7 @@ private lemma kappa_eq_one (v : (LocalField F q)ˣ) (s : LocalField F q) : kappa
     KPStandardLocalRootLifts.A, he, hg,
     KPLocalCover.sectionMap_epsilon, KPLocalCover.sectionMap_g]
   simp only [sigww F ζ hζ q, sigmanR F ζ hζ q, sigwnw F ζ hζ q,
-    sigdnw F ζ hζ q, sigscalar F ζ hζ q, one_mul, mul_one,
+    sigdnw F ζ hζ q, sigscalar F ζ hζ q, mul_one,
     inv_one, div_one]
 
 private lemma center_lc {H₀ D : Type} [Group H₀] [TopologicalSpace H₀] [IsTopologicalGroup H₀]

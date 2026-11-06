@@ -108,7 +108,7 @@ private theorem cube_chi (π : (LocalField F q)ˣ)
     simp [localAbs, hπ, Real.rpow_neg_one]
   have hQ : 0 < (residueCardinality (LocalField F q) : ℝ) := by exact_mod_cast Nat.card_pos
   simp only [normPower, ← zpow_neg, neg_neg, ← zpow_natCast, ← zpow_mul, abs_zpow,
-    hp, inv_zpow, Real.log_inv, Real.log_zpow, ← Complex.exp_add]
+    hp, inv_zpow, Real.log_zpow, ← Complex.exp_add]
   push_cast
   conv_lhs => arg 1; ring_nf
   rw [Complex.exp_int_mul, Complex.exp_log]

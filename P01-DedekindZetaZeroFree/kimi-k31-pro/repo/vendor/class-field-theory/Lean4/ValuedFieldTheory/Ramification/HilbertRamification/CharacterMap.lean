@@ -157,33 +157,7 @@ abbrev inertiaUnitQuotientClass
         A.principalUnitGroup :=
   QuotientGroup.eq_one_iff _
 
-/-- Multiplying the representative by a valuation-ring unit does not change
-the class of `σ x / x` modulo principal units. -/
-theorem inertiaUnitQuotientClass_mul_right_unit
-    (A : _root_.ValuationSubring L) (σ : inertiaGroup K A)
-    (x u : Lˣ) (hu : u ∈ A.unitGroup) :
-    inertiaUnitQuotientClass K A σ (x * u) =
-      inertiaUnitQuotientClass K A σ x := by
-  have hquot :
-      automorphismUnitQuotient K A (σ : decompositionGroup K A) (x * u) =
-        automorphismUnitQuotient K A (σ : decompositionGroup K A) x *
-          automorphismUnitQuotient K A (σ : decompositionGroup K A) u :=
-    automorphismUnitQuotient_mul_arg (K := K) A
-      (σ : decompositionGroup K A) x u
-  have hu' :
-      automorphismUnitQuotient K A (σ : decompositionGroup K A) u ∈
-        A.principalUnitGroup :=
-    inertia_automorphismUnitQuotient_mem_principalUnitGroup_of_mem_unitGroup
-      (K := K) A σ hu
-  show
-    (QuotientGroup.mk
-        (automorphismUnitQuotient K A (σ : decompositionGroup K A) (x * u)) :
-      Lˣ ⧸ A.principalUnitGroup) =
-      QuotientGroup.mk
-        (automorphismUnitQuotient K A (σ : decompositionGroup K A) x)
-  rw [hquot]
-  exact QuotientGroup.mk_mul_of_mem
-    (automorphismUnitQuotient K A (σ : decompositionGroup K A) x) hu'
+
 
 /-- Valuation-ring units map to the trivial raw class. -/
 theorem inertiaUnitQuotientClass_eq_one_of_mem_unitGroup
@@ -194,64 +168,11 @@ theorem inertiaUnitQuotientClass_eq_one_of_mem_unitGroup
     (inertia_automorphismUnitQuotient_mem_principalUnitGroup_of_mem_unitGroup
       (K := K) A σ hu)
 
-/-- Multiplying the representative by a base-field unit does not change the
-class of `σ x / x`. -/
-theorem inertiaUnitQuotientClass_mul_right_algebraMapUnit
-    (A : _root_.ValuationSubring L) (σ : inertiaGroup K A)
-    (x : Lˣ) (a : Kˣ) :
-    inertiaUnitQuotientClass K A σ
-        (x * Units.map (algebraMap K L).toMonoidHom a) =
-      inertiaUnitQuotientClass K A σ x := by
-  have hquot :
-      automorphismUnitQuotient K A (σ : decompositionGroup K A)
-          (x * Units.map (algebraMap K L).toMonoidHom a) =
-        automorphismUnitQuotient K A (σ : decompositionGroup K A) x *
-          automorphismUnitQuotient K A (σ : decompositionGroup K A)
-            (Units.map (algebraMap K L).toMonoidHom a) :=
-    automorphismUnitQuotient_mul_arg (K := K) A
-      (σ : decompositionGroup K A) x
-      (Units.map (algebraMap K L).toMonoidHom a)
-  have ha :
-      automorphismUnitQuotient K A (σ : decompositionGroup K A)
-          (Units.map (algebraMap K L).toMonoidHom a) = 1 :=
-    automorphismUnitQuotient_algebraMapUnit (K := K) A
-      (σ : decompositionGroup K A) a
-  show
-    (QuotientGroup.mk
-        (automorphismUnitQuotient K A (σ : decompositionGroup K A)
-          (x * Units.map (algebraMap K L).toMonoidHom a)) :
-      Lˣ ⧸ A.principalUnitGroup) =
-      QuotientGroup.mk
-        (automorphismUnitQuotient K A (σ : decompositionGroup K A) x)
-  rw [hquot, ha, mul_one]
 
-/-- Prime-decomposition statement:
-the residue-unit class is unchanged when a representative is multiplied by a
-base-field unit and then by a valuation-ring unit. -/
-theorem inertiaUnitQuotientClass_mul_right_algebraMapUnit_mul_unit
-    (A : _root_.ValuationSubring L) (σ : inertiaGroup K A)
-    (x : Lˣ) (a : Kˣ) (u : Lˣ) (hu : u ∈ A.unitGroup) :
-    inertiaUnitQuotientClass K A σ
-        ((x * Units.map (algebraMap K L).toMonoidHom a) * u) =
-      inertiaUnitQuotientClass K A σ x := by
-  rw [inertiaUnitQuotientClass_mul_right_unit
-      (K := K) A σ (x * Units.map (algebraMap K L).toMonoidHom a) u hu]
-  exact inertiaUnitQuotientClass_mul_right_algebraMapUnit
-    (K := K) A σ x a
 
-/-- Inertia-character exactness:
-`R_w` is exactly the subgroup of inertia on which all raw residue-unit classes
-`[σ x / x]` are trivial. -/
-theorem mem_ramificationGroup_iff_forall_inertiaUnitQuotientClass_eq_one
-    (A : _root_.ValuationSubring L) (σ : inertiaGroup K A) :
-    σ ∈ ramificationGroup K A ↔
-      ∀ x : Lˣ, inertiaUnitQuotientClass K A σ x = 1 := by
-  rw [mem_ramificationGroup_iff]
-  constructor
-  · intro h x
-    exact (inertiaUnitQuotientClass_eq_one_iff (K := K) A σ x).mpr (h x)
-  · intro h x
-    exact (inertiaUnitQuotientClass_eq_one_iff (K := K) A σ x).mp (h x)
+
+
+
 
 /-- The quotient map `Lˣ/U^1 -> Lˣ/Aˣ`.  It measures the remaining value
 class of a raw residue-unit quotient. -/
@@ -323,16 +244,7 @@ def valueDisplacementHom
       valueDisplacementClass K A σ x :=
   rfl
 
-/-- Prime-decomposition statement:
-every element of `R_w` has trivial value displacement.  This is the precise
-boundary between the raw quotient `Lˣ/U^1` and the residue-unit target. -/
-theorem valueDisplacementClass_eq_one_of_mem_ramificationGroup
-    (A : _root_.ValuationSubring L) (σ : inertiaGroup K A)
-    (hσ : σ ∈ ramificationGroup K A) (x : Lˣ) :
-    valueDisplacementClass K A (σ : decompositionGroup K A) x = 1 := by
-  rw [valueDisplacementClass_eq_one_iff]
-  exact A.principal_units_le_units
-    ((mem_ramificationGroup_iff (K := K) A σ).mp hσ x)
+
 
 /-- In the valuation-subring model, the inertia elements whose value
 displacement is trivial.  For the chosen-valuation decomposition group
@@ -388,13 +300,7 @@ def valueTrivialInertiaGroup
     rw [hquot]
     exact A.unitGroup.inv_mem hy
 
-/-- The ramification group is contained in the value-trivial inertia group. -/
-theorem ramificationGroup_le_valueTrivialInertiaGroup
-    (A : _root_.ValuationSubring L) :
-    ramificationGroup K A ≤ valueTrivialInertiaGroup K A := by
-  intro σ hσ x
-  exact valueDisplacementClass_eq_one_of_mem_ramificationGroup
-    (K := K) A σ hσ x
+
 
 /-- For a value-trivial inertia element, the quotient `σ x / x` is an actual
 unit of the valuation ring. -/
@@ -604,26 +510,7 @@ def valueClassToResidueUnits
       valueTrivialInertiaResidueUnitHom K A σ x :=
   rfl
 
-/-- States the theorem `valueTrivialInertiaResidueUnitHom_eq_one_of_mem_ramificationGroup`. -/
-theorem valueTrivialInertiaResidueUnitHom_eq_one_of_mem_ramificationGroup
-    (A : _root_.ValuationSubring L)
-    (σ : valueTrivialInertiaGroup K A)
-    (hσ : (σ : inertiaGroup K A) ∈ ramificationGroup K A)
-    (x : Lˣ) :
-    valueTrivialInertiaResidueUnitHom K A σ x = 1 := by
-  rw [valueTrivialInertiaResidueUnitHom_apply]
-  let uA : A.unitGroup := valueTrivialAutomorphismUnit K A σ x
-  have hprincipal :
-      automorphismUnitQuotient K A
-          ((σ : inertiaGroup K A) : decompositionGroup K A) x ∈
-        A.principalUnitGroup :=
-    (mem_ramificationGroup_iff (K := K) A (σ : inertiaGroup K A)).mp hσ x
-  have hker : uA ∈ A.unitGroupToResidueFieldUnits.ker := by
-    rw [A.ker_unitGroupToResidueFieldUnits]
-    change (uA : Lˣ) ∈ A.principalUnitGroup
-    simpa [uA, valueTrivialAutomorphismUnit] using hprincipal
-  change A.unitGroupToResidueFieldUnits uA = 1
-  exact MonoidHom.mem_ker.mp hker
+
 
 /-- Prime-decomposition statement:
 for fixed `σ ∈ I_w`, the raw unit quotient is a group homomorphism
@@ -659,15 +546,7 @@ def inertiaUnitQuotientHom
       inertiaUnitQuotientClass K A σ x :=
   rfl
 
-/-- The raw inertia quotient followed by `Lˣ/U^1 -> Lˣ/Aˣ` is exactly value
-displacement. -/
-theorem principalUnitQuotientToValueClass_comp_inertiaUnitQuotientHom
-    (A : _root_.ValuationSubring L) (σ : inertiaGroup K A) :
-    (principalUnitQuotientToValueClass A).comp
-        (inertiaUnitQuotientHom K A σ) =
-      valueDisplacementHom K A (σ : decompositionGroup K A) := by
-  ext x
-  rfl
+
 
 /-- The raw quotient homomorphism kills the valuation-ring unit group. -/
 theorem unitGroup_le_inertiaUnitQuotientHom_ker
@@ -822,24 +701,7 @@ def valueModuloBaseToResidueUnits
       valueTrivialInertiaResidueUnitHom K A σ x :=
   rfl
 
-/-- The inertia-character construction satisfies:
-an element of `R_w` gives the trivial residue-unit character on
-`Delta/Gamma`.  This is the kernel direction for the canonical map from
-inertia to `Hom(Delta/Gamma, lambda*)`. -/
-theorem valueModuloBaseToResidueUnits_eq_one_of_mem_ramificationGroup
-    (A : _root_.ValuationSubring L)
-    (σ : valueTrivialInertiaGroup K A)
-    (hσ : (σ : inertiaGroup K A) ∈ ramificationGroup K A) :
-    valueModuloBaseToResidueUnits K A σ = 1 := by
-  apply QuotientGroup.monoidHom_ext
-  apply QuotientGroup.monoidHom_ext
-  apply MonoidHom.ext
-  intro x
-  simp only [MonoidHom.comp_apply,
-    valueModuloBaseToResidueUnits_mk_mk,
-    MonoidHom.one_apply]
-  simpa using valueTrivialInertiaResidueUnitHom_eq_one_of_mem_ramificationGroup
-    (K := K) A σ hσ x
+
 
 /-- prime-decomposition theory:
 `σ ↦ χ_σ`, realized on the group-theoretic model of `Delta/Gamma`.
@@ -890,67 +752,11 @@ def valueTrivialInertiaCharacterHom
       valueModuloBaseToResidueUnits K A σ :=
   rfl
 
-/-- The ramification group is contained in the kernel of the character map. -/
-theorem valueTrivialInertiaCharacterHom_mem_ker_of_mem_ramificationGroup
-    (A : _root_.ValuationSubring L)
-    (σ : valueTrivialInertiaGroup K A)
-    (hσ : (σ : inertiaGroup K A) ∈ ramificationGroup K A) :
-    σ ∈ (valueTrivialInertiaCharacterHom K A).ker := by
-  rw [MonoidHom.mem_ker, valueTrivialInertiaCharacterHom_apply]
-  exact valueModuloBaseToResidueUnits_eq_one_of_mem_ramificationGroup
-    (K := K) A σ hσ
 
-/-- Conversely, a value-trivial inertia element with trivial character lies in
-the ramification group. -/
-theorem mem_ramificationGroup_of_valueTrivialInertiaCharacterHom_mem_ker
-    (A : _root_.ValuationSubring L)
-    (σ : valueTrivialInertiaGroup K A)
-    (hσ : σ ∈ (valueTrivialInertiaCharacterHom K A).ker) :
-    (σ : inertiaGroup K A) ∈ ramificationGroup K A := by
-  rw [mem_ramificationGroup_iff]
-  intro x
-  have hchar :
-      valueModuloBaseToResidueUnits K A σ
-          (QuotientGroup.mk' (baseUnitValueClassSubgroup K A)
-            (QuotientGroup.mk' A.unitGroup x)) = 1 := by
-    have hhom :
-        valueTrivialInertiaCharacterHom K A σ = 1 :=
-      MonoidHom.mem_ker.mp hσ
-    have happ :=
-      congrArg
-        (fun f :
-          (Lˣ ⧸ A.unitGroup) ⧸ baseUnitValueClassSubgroup K A →*
-            (IsLocalRing.ResidueField A)ˣ =>
-          f (QuotientGroup.mk' (baseUnitValueClassSubgroup K A)
-            (QuotientGroup.mk' A.unitGroup x))) hhom
-    simpa [valueTrivialInertiaCharacterHom_apply] using happ
-  have hres :
-      A.unitGroupToResidueFieldUnits
-          (valueTrivialAutomorphismUnit K A σ x) = 1 := by
-    rw [valueModuloBaseToResidueUnits_mk_mk] at hchar
-    simpa only [valueTrivialInertiaResidueUnitHom_apply] using hchar
-  have hker :
-      valueTrivialAutomorphismUnit K A σ x ∈
-        A.unitGroupToResidueFieldUnits.ker :=
-    MonoidHom.mem_ker.mpr hres
-  rw [A.ker_unitGroupToResidueFieldUnits] at hker
-  have hker' :
-      (valueTrivialAutomorphismUnit K A σ x : Lˣ) ∈
-        A.principalUnitGroup := hker
-  simpa [valueTrivialAutomorphismUnit] using hker'
 
-/-- Prime-decomposition statement:
-on value-trivial inertia, the kernel of `σ ↦ χ_σ` is exactly `R_w`. -/
-theorem valueTrivialInertiaCharacterHom_mem_ker_iff
-    (A : _root_.ValuationSubring L)
-    (σ : valueTrivialInertiaGroup K A) :
-    σ ∈ (valueTrivialInertiaCharacterHom K A).ker ↔
-      (σ : inertiaGroup K A) ∈ ramificationGroup K A := by
-  constructor
-  · exact mem_ramificationGroup_of_valueTrivialInertiaCharacterHom_mem_ker
-      (K := K) A σ
-  · exact valueTrivialInertiaCharacterHom_mem_ker_of_mem_ramificationGroup
-      (K := K) A σ
+
+
+
 
 end ValuationSubring
 end HilbertRamification

@@ -205,7 +205,7 @@ private theorem gradient_affine (d : ℕ) (a b : Fin d → ℂ) (ha : ∀ i, a i
   have h1 := congrArg (fun L : Space d →L[ℝ] ℂ => L (coordinateVector d i 1)) hd
   have h2 := congrArg (fun L : Space d →L[ℝ] ℂ => L (coordinateVector d i 2)) hd
   simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.smul_apply,
-    ContinuousLinearMap.mul_apply, linear_basis, linear_basis1, linear_basis2,
+    linear_basis, linear_basis1, linear_basis2,
     map_add, map_smul, smul_eq_mul] at h0 h1 h2
   have hz : (affine d a b x) (i,2) = x (i,2) + Real.log ‖a i‖ := rfl
   have hn : (a i).re ^ 2 + (a i).im ^ 2 = ‖a i‖ ^ 2 := by
@@ -217,7 +217,7 @@ private theorem gradient_affine (d : ℕ) (a b : Fin d → ℂ) (ha : ∀ i, a i
   simp only [Complex.real_smul, Complex.ofReal_neg] at h0 h1
   rw [h0, h1, norm_mul, norm_mul, hc, one_mul, one_mul] at hrot
   simp only [Fin.sum_univ_three, differential, Matrix.cons_val_zero,
-    Matrix.cons_val_one, Matrix.cons_val_two, Matrix.cons_val, Fin.reduceFinMk,
+    Matrix.cons_val_one, Matrix.cons_val_two, 
     Matrix.head_cons, Matrix.tail_cons, norm_mul, Complex.norm_real,
     Real.norm_eq_abs, abs_of_pos (Real.exp_pos _), hz,
     Real.exp_add, Real.exp_log (norm_pos_iff.mpr (ha i))]

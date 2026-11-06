@@ -47,16 +47,12 @@ theorem Lpsi_line_bound (A_F : ℝ) (hconv : ConvexityExponent D A_F) (ε : ℝ)
   refine ⟨C, hC, fun u hu1 hent U hU hq1 hq2 w hw => ?_⟩
   obtain ⟨g, hg, hgeq⟩ := hent
   have hy : Scales.wLine = 3 / 25 := by unfold Scales.wLine; norm_num
-  have hw0 : 0 < w.re := by rw [hw, hy]; norm_num
+  have hw0 : 0 < w.re := by grind
   have e : D.Lpsi u w = g w :=
     (RowAnalyticContinuation.entire_eq_Lpsi D u hu1 hg hgeq w hw0).symm
   have hwe : w = ((Scales.wLine : ℝ) : ℂ) + (w.im : ℂ) * Complex.I := by
     apply Complex.ext <;> simp [hw]
-  have key := h u hu1 U hU hq1 hq2 g hg hgeq w.im
-  calc ‖D.Lpsi u w‖ = ‖g (((Scales.wLine : ℝ) : ℂ) + (w.im : ℂ) * Complex.I)‖ := by
-        rw [e, ← hwe]
-    _ ≤ C * U ^ ((11 / 25 : ℝ) + ε) * (2 + |w.im|) ^ A_F := by
-        rw [hy]; exact key
+  grind
 
 theorem Llam_inv_right_line (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ u : D.Row, u.toFrequency.u ≠ 1 → ∀ U : ℝ, 2 ≤ U → U ≤ D.q u → D.q u < 2 * U →
@@ -66,7 +62,7 @@ theorem Llam_inv_right_line (ε : ℝ) (hε : 0 < ε) :
   refine ⟨C, hC, fun u _ U hU _ _ ξ hξ => ?_⟩
   have hUe : 1 ≤ U ^ ε := Real.one_le_rpow (by linarith) hε.le
   have hne : D.Llam u ξ ≠ 0 :=
-    RightHeckeBounds.Llam_ne_zero_of_one_lt D u ξ (by rw [hξ]; exact hx1)
+    RightHeckeBounds.Llam_ne_zero_of_one_lt D u ξ (by grind)
   refine ⟨hne, ?_⟩
   calc ‖(D.Llam u ξ)⁻¹‖ ≤ C := h u ξ hξ.ge
     _ ≤ C * U ^ ε := le_mul_of_one_le_right hC.le hUe
@@ -97,8 +93,7 @@ private theorem rowFactor_combine (u : D.Row) (U : ℝ) (hU : 0 < U) (hq : D.q u
   have hU3 : U ^ ((11 / 25 : ℝ) + ε / 3) * U ^ (ε / 3) * U ^ (ε / 3) =
       U ^ ((11 / 25 : ℝ) + ε) := by
     rw [← Real.rpow_add hU, ← Real.rpow_add hU]
-    congr 1
-    ring
+    grind
   have hHu' : ‖Hu D u ξ w z‖ ≤ C3 * (2 ^ (ε / 3) * U ^ (ε / 3)) :=
     hHu.trans (mul_le_mul_of_nonneg_left hq2 hC3)
   have hA : 0 ≤ C1 * (C2 * U ^ ((11 / 25 : ℝ) + ε / 3) * P) := by positivity
@@ -112,7 +107,7 @@ private theorem rowFactor_combine (u : D.Row) (U : ℝ) (hU : 0 < U) (hq : D.q u
           hHu' (norm_nonneg _) hB
     _ = (C1 * C2 * C3 * C4 * 2 ^ (ε / 3)) *
           (U ^ ((11 / 25 : ℝ) + ε / 3) * U ^ (ε / 3) * U ^ (ε / 3)) * P := by ring
-    _ = (C1 * C2 * C3 * C4 * 2 ^ (ε / 3)) * U ^ ((11 / 25 : ℝ) + ε) * P := by rw [hU3]
+    _ = (C1 * C2 * C3 * C4 * 2 ^ (ε / 3)) * U ^ ((11 / 25 : ℝ) + ε) * P := by grind
 
 theorem rowFactor_rect_bound (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : ConvexityExponent D A_F)
     (hρ : HeightSpec D A_F ρ) (ε : ℝ) (hε : 0 < ε) :
@@ -169,7 +164,7 @@ theorem K_norm_eq (u : D.Row) (hq : 0 < D.q u) (ξ : ℂ) (v y : ℝ) (p : ℝ �
   have hZc : (0 : ℝ) < Z := hZ
   have hqc : (0 : ℝ) < D.q u := hq
   have hre : ∀ A B C X E R : ℂ, A * B * C * X * E * R = A * E * (B * C * X) * R := by
-    intro A B C X E R; ring
+    grind
   have hkey : ∀ A E X R : ℂ, ‖A * E * X * R‖ = ‖A‖ * ‖E‖ * ‖X‖ * ‖R‖ := by
     intro A E X R; simp only [norm_mul]
   rw [hre, hkey]
@@ -199,12 +194,11 @@ private theorem K_majorant_aux (u : D.Row) (U : ℝ) (hU0 : 0 < U) (hqU : U ≤ 
   have hsplit : U ^ ((11 / 25 : ℝ) + ε - Scales.zLine) =
       U ^ (-Scales.zLine) * U ^ ((11 / 25 : ℝ) + ε) := by
     rw [← Real.rpow_add hU0]
-    congr 1
-    ring
+    grind
   rw [hsplit]
   have hW : 0 ≤ WeightConvolution.weightModulus D ξ Scales.zLine Scales.wLine p := by
     unfold WeightConvolution.weightModulus
-    exact norm_nonneg _
+    grind
   have hZp : 0 ≤ Z ^ (Scales.xExponent / 2 + x - 1 + Scales.smoothingExponent * Scales.zLine + Scales.yExponent * (Scales.wLine - 1)) :=
     Real.rpow_nonneg hZ.le _
   have hUz : 0 ≤ U ^ (-Scales.zLine) := Real.rpow_nonneg hU0.le _
@@ -309,7 +303,7 @@ private theorem weight_dom (ξ : ℂ) (v y : ℝ) (Cc A A' : ℝ) (hCc : 0 ≤ C
     x ≤ Cc * WeightConvolution.weightModulus D ξ v y p * (2 + |p.1| + |p.2| + |ξ.im|) ^ A' := by
   have hW : 0 ≤ WeightConvolution.weightModulus D ξ v y p := by
     unfold WeightConvolution.weightModulus
-    exact norm_nonneg _
+    grind
   have h0 := abs_nonneg p.1
   have h0' := abs_nonneg p.2
   have h0'' := abs_nonneg ξ.im
@@ -349,7 +343,7 @@ theorem wzIntegral_decay_rect (A_F ρ : ℝ) (hA : 0 ≤ A_F) (hconv : Convexity
   have hle := (hCw ξ hξ hξ1 Scales.zLine Scales.wLine le_rfl le_rfl le_rfl le_rfl _ hCc
     (fun w z => K D u ξ w z Z) hcont.aestronglyMeasurable
     (fun p => weight_dom D ξ Scales.zLine Scales.wLine _ A_F A_F hCc le_rfl hA p _
-      (by simpa only [mul_assoc] using h U hU u hu1 hent hqU hqU2 hex ξ Z p hZ hξ hξim))).2.2.2
+      (by grind))).2.2.2
   have hP : 0 ≤ Z ^ (Scales.xExponent / 2 + ξ.re - 1 + Scales.smoothingExponent * Scales.zLine +
       Scales.yExponent * (Scales.wLine - 1)) * U ^ ((11 / 25 : ℝ) + ε - Scales.zLine) *
       (1 + |ξ.im|) ^ (-B) := by positivity
@@ -396,7 +390,7 @@ theorem wzIntegral_decay_right (A_F : ℝ) (hconv : ConvexityExponent D A_F) (ε
     hcont.aestronglyMeasurable
     (fun p => weight_dom D _ Scales.zLine Scales.wLine _ A_F (max A_F 0) hCc
       (le_max_left _ _) (le_max_right _ _) p _
-      (by simpa only [mul_assoc] using h U hU2 u hu1 hent hqU hqU2 _ Z p hZ hre))).2.2.2
+      (by grind))).2.2.2
   rw [him] at hle
   have hP : 0 ≤ Z ^ (Scales.xExponent / 2 + Scales.rightLine - 1 + Scales.smoothingExponent * Scales.zLine +
       Scales.yExponent * (Scales.wLine - 1)) * U ^ ((11 / 25 : ℝ) + ε - Scales.zLine) *

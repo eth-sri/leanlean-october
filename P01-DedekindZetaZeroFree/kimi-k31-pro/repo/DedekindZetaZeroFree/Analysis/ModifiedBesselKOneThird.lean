@@ -54,21 +54,19 @@ private lemma schlafli_exponential (z u : ℝ) (hz : 0 < z) :
   have he : -(z / 2 * Real.exp u) - z ^ 2 / (4 * (z / 2 * Real.exp u)) =
       -z * Real.cosh u := by
     rw [Real.cosh_eq, Real.exp_neg]
-    field_simp
-    ring
+    grind
   rw [he]
   have hp : Real.exp u * Real.exp (u * (-(2 / 3 : ℝ))) = Real.exp (u / 3) := by
     rw [← Real.exp_add]
-    congr 1
-    ring
-  linear_combination (z / 2) ^ (-(2 / 3 : ℝ)) * Real.exp (-z * Real.cosh u) * hp
+    grind
+  grind
 
 theorem besselKThird_eq_modifiedBesselK (z : ℝ) (hz : 0 < z) :
     besselKThird z = modifiedBesselK (1 / 3 : ℝ) z := by
   let c : ℝ := z / 2
   let F : ℝ → ℝ := fun u => Real.exp (-z * Real.cosh u) * Real.exp (u / 3)
   let H : ℝ → ℝ := fun u => Real.exp (-z * Real.cosh u) * Real.cosh ((1 / 3 : ℝ) * u)
-  have hc : 0 < c := by dsimp [c]; linarith
+  have hc : 0 < c := by aesop
   have hs : IntegrableOn (fun t => schlafliKernel (-(2 / 3 : ℝ)) z (c * t)) (Ioi 0) := by
     apply (integrableOn_Ioi_comp_mul_left_iff _ 0 hc).mpr
     simpa only [mul_zero] using schlafliKernel_neg_two_thirds_integrable z hz
@@ -83,11 +81,7 @@ theorem besselKThird_eq_modifiedBesselK (z : ℝ) (hz : 0 < z) :
     funext u
     dsimp [F, H]
     rw [Real.cosh_neg, Real.cosh_eq ((1 / 3 : ℝ) * u)]
-    have he : (1 / 3 : ℝ) * u = u / 3 := by ring
-    rw [he]
-    have hn : -u / 3 = -(u / 3) := by ring
-    rw [hn]
-    ring
+    grind
   have hIF : (∫ u, F u) = ∫ u, H u := by
     have h := integral_add hF hF.comp_neg
     rw [show (fun u => F u + F (-u)) = (fun u => 2 * H u) from hsum,
@@ -98,7 +92,7 @@ theorem besselKThird_eq_modifiedBesselK (z : ℝ) (hz : 0 < z) :
     dsimp [H]
     rw [Real.cosh_abs]
     have he : (1 / 3 : ℝ) * |u| = |(1 / 3 : ℝ) * u| := by
-      rw [abs_mul, abs_of_pos (by norm_num : (0 : ℝ) < 1 / 3)]
+      simp_all
     rw [he, Real.cosh_abs]
   have hIH : (∫ u, H u) = 2 * modifiedBesselK (1 / 3 : ℝ) z := by
     rw [← hHabs]
@@ -116,16 +110,14 @@ theorem besselKThird_eq_modifiedBesselK (z : ℝ) (hz : 0 < z) :
     rw [hp] at hsub
     rw [← hsub] at hscale
     simp only [mul_zero, smul_eq_mul] at hscale
-    rw [hscale]
-    field_simp
+    grind
   have hconst : c ^ (-(1 / 3 : ℝ)) * c * c ^ (-(2 / 3 : ℝ)) = 1 := by
     calc
-      _ = c ^ (-(1 / 3 : ℝ)) * c ^ (1 : ℝ) * c ^ (-(2 / 3 : ℝ)) := by rw [Real.rpow_one]
+      _ = c ^ (-(1 / 3 : ℝ)) * c ^ (1 : ℝ) * c ^ (-(2 / 3 : ℝ)) := by simp_all
       _ = 1 := by rw [← Real.rpow_add hc, ← Real.rpow_add hc]; norm_num
   unfold besselKThird
   change (1 / 2 : ℝ) * c ^ (-(1 / 3 : ℝ)) * _ = _
-  rw [hI, hIF, hIH]
-  linear_combination modifiedBesselK (1 / 3 : ℝ) z * hconst
+  grind
 
 theorem besselKThird_pos (z : ℝ) (hz : 0 < z) : 0 < besselKThird z := by
   unfold besselKThird
@@ -139,6 +131,6 @@ theorem besselKThird_pos (z : ℝ) (hz : 0 < z) : 0 < besselKThird z := by
       intro t ht
       exact (mul_pos (Real.rpow_pos_of_pos ht _) (Real.exp_pos _)).ne'
     rw [hsupp, Real.volume_Ioi]
-    exact ENNReal.zero_lt_top
+    simp_all
 
 end DedekindZetaZeroFree.KPCplxBessel

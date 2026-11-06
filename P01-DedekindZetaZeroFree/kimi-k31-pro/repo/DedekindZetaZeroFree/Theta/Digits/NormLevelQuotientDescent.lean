@@ -60,7 +60,7 @@ theorem sexticFourierMask_mul_eq {k : Type*} [Field k] [Fintype k]
       simp only [sexticFourierMask, if_pos hj]
     rw [hmask, hmask]
     by_cases hv : v = 0
-    · subst hv; simp [sexticFourierMask, if_pos hj]
+    · subst hv; simp
     · rw [if_neg hv, if_neg (fun h => hv (hzv.mp h))]
   · have hg : (χ⁻¹ ^ j.val) γ = 1 := by
       rw [MulChar.pow_apply' χ⁻¹ hj γ, MulChar.inv_apply_eq_inv', hγ, inv_one, one_pow]
@@ -70,7 +70,7 @@ theorem sexticFourierMask_mul_eq {k : Type*} [Field k] [Fintype k]
         (χ⁻¹ ^ j.val) w / sexticMaskGaussSum χ ψ j := by
       simp only [sexticFourierMask, if_neg hj, if_neg hw]
     by_cases hv : v = 0
-    · subst hv; simp [sexticFourierMask, if_neg hj]
+    · subst hv; simp [sexticFourierMask]
     · rw [hmask (γ * v) (mul_ne_zero hγ0 hv), hmask v hv, hγv]
 
 def scale (t : F) : KPAdditiveQuotient F →+ KPAdditiveQuotient F := by

@@ -66,7 +66,7 @@ theorem tracePairing_eq_inner (x y : Space F) :
     ∑ v, inner ℝ ((NumberField.mixedEmbedding.euclidean.toMixed F x).2 v)
       ((NumberField.mixedEmbedding.euclidean.toMixed F (traceAdapter F y)).2 v)
   simp only [tracePairing, h₁, h₂, inner_smul_right, Complex.inner,
-    RCLike.inner_apply, Complex.mul_re, Complex.conj_re, Complex.conj_im,
+    Complex.mul_re, Complex.conj_re, Complex.conj_im,
     Complex.star_def, Finset.mul_sum]
   congr 1
   apply Finset.sum_congr rfl
@@ -87,7 +87,7 @@ theorem traceFourier_eq_euclidean (f : 𝓢(Space F, ℂ)) (y : Space F) :
   apply integral_congr_ae
   filter_upwards [] with x
   rw [tracePairing_eq_inner]
-  simp only [innerₗ_apply_apply, Complex.ofReal_mul, Complex.ofReal_neg,
+  simp only [Complex.ofReal_mul, Complex.ofReal_neg,
     Complex.ofReal_ofNat, smul_eq_mul]
   rw [mul_comm (f x)]
   congr 2 <;> ring
@@ -134,7 +134,7 @@ private theorem complex_mul_det (z : ℂ) :
   simp only [LinearMap.toMatrix_apply, Complex.coe_basisOneI_repr, Complex.coe_basisOneI,
     Matrix.det_fin_two, Complex.normSq_apply, LinearMap.restrictScalars_apply,
     LinearMap.mulLeft_apply, Matrix.cons_val_zero, Matrix.cons_val_one,
-    Matrix.head_cons, Matrix.head_fin_const, Complex.mul_re, Complex.mul_im,
+    Complex.mul_re, Complex.mul_im,
     Complex.one_re, Complex.one_im, Complex.I_re, Complex.I_im]
   ring
 
@@ -153,7 +153,7 @@ private theorem fieldEquiv_abs_det (a : Fˣ) :
     apply (NumberField.mixedEmbedding.euclidean.toMixed F).injective
     change (NumberField.mixedEmbedding.euclidean.toMixed F) (fieldEquiv F a x) = _
     rw [fieldEquiv_apply]
-    simp only [fieldMul, LinearMap.prodMap_apply, ContinuousLinearEquiv.coe_coe,
+    simp only [fieldMul, LinearMap.prodMap_apply, 
       LinearMap.comp_apply, ContinuousLinearEquiv.apply_symm_apply]
     ext v <;> simp [R, C, mul_comm]
   rw [he, ContinuousLinearEquiv.toLinearEquiv_symm]

@@ -22,9 +22,9 @@ private theorem norm_Gamma_le_Gamma_re (z : ℂ) (hz : 0 < z.re) :
 
 private theorem norm_sin_le_exp_im (z : ℂ) : ‖Complex.sin z‖ ≤ Real.exp |z.im| := by
   have h1 : ‖Complex.exp (-z * Complex.I)‖ = Real.exp z.im := by
-    rw [Complex.norm_exp]; simp [Complex.mul_I_re, Complex.neg_im]
+    rw [Complex.norm_exp]; simp
   have h2 : ‖Complex.exp (z * Complex.I)‖ = Real.exp (-z.im) := by
-    rw [Complex.norm_exp]; simp [Complex.mul_I_re]
+    rw [Complex.norm_exp]; simp
   rw [Complex.sin, norm_div, norm_mul, Complex.norm_I, mul_one, show ‖(2:ℂ)‖ = 2 by norm_num]
   have h6 : Real.exp z.im + Real.exp (-z.im) ≤ 2 * Real.exp |z.im| := by
     have h4 : Real.exp z.im ≤ Real.exp |z.im| := Real.exp_le_exp.mpr (le_abs_self _)
@@ -44,7 +44,7 @@ private theorem sin_ne_zero_of_im_ne_zero (z : ℂ) (hz : z.im ≠ 0) : Complex.
   obtain ⟨n, hn⟩ := Complex.exp_eq_exp_iff_exists_int.mp h1
   have hre : (-z * Complex.I).re = (z * Complex.I + (n:ℂ) * (2 * (Real.pi:ℂ) * Complex.I)).re := by
     rw [hn]
-  simp [Complex.mul_I_re, Complex.neg_re, Complex.neg_im] at hre
+  simp [Complex.neg_re] at hre
   exact hz (by linarith)
 
 private theorem Gamma_one_sub_add_nat (s : ℂ) (n : ℕ) (h : ∀ k < n, s ≠ ((k:ℂ) + 1)) :
@@ -131,13 +131,13 @@ private theorem inverse_Gamma_strip_bound (a b : ℝ) :
       have hre_pos : 0 < (1 - s + n).re := by
         have h2 : (1:ℝ) ≤ (1 - s + n).re := by
           simp only [Complex.add_re, Complex.sub_re, Complex.one_re, Complex.natCast_re,
-            Complex.ofReal_re]
+            ]
           linarith [hs.2, hbn]
         linarith
       have hle := norm_Gamma_le_Gamma_re (1 - s + n) hre_pos
       have hmem : (1 - s + n).re ∈ Set.Icc (1 - b + n) (1 - a + n) := by
         simp only [Complex.add_re, Complex.sub_re, Complex.one_re, Complex.natCast_re,
-          Complex.ofReal_re]
+          ]
         exact ⟨by linarith [hs.2], by linarith [hs.1]⟩
       have hb := hD0 _ hmem
       rw [Real.norm_eq_abs] at hb

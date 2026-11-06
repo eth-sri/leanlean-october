@@ -22,7 +22,7 @@ def rayCharacterOfGroupCharacter
   map_mul' I J := by
     rw [rayIdealClass_mul]
     cases hI : rayIdealClass K m hm I <;>
-      cases hJ : rayIdealClass K m hm J <;> simp [hI, hJ]
+      cases hJ : rayIdealClass K m hm J <;> simp
   map_top' := by simp
   eq_zero_iff' I := by
     rw [← rayIdealClass_eq_none_iff K m hm I]

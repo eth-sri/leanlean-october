@@ -43,85 +43,9 @@ section LocalField
 variable [ValuativeRel K] [TopologicalSpace K]
   [IsNonarchimedeanLocalField K]
 
-/-- The ordinary norm subgroup of a compositum is the intersection of the
-two ordinary norm subgroups. -/
-theorem finiteAbelianNormSubgroup_compositum
-    (L₁ L₂ : FiniteAbelianSubextension (intrinsicAbstractBase K)) :
-    finiteAbelianNormSubgroup K (L₁.compositum L₂) =
-      finiteAbelianNormSubgroup K L₁ ⊓
-        finiteAbelianNormSubgroup K L₂ := by
-  have habs :=
-    FiniteAbelianSubextension.normSubgroup_compositum
-      (localHenselianValuation K)
-      (separableClosureUnits_isClassFormation K)
-      (intrinsicFiniteAbstractBase K) L₁ L₂
-  have hmapped := congrArg
-    (fun S : AddSubgroup
-        (ambientFixedAddSubgroup (intrinsicAbsoluteUnits K)
-          (intrinsicAbstractBase K)) ↦
-      S.map (baseUnitsEquivGaloisAmbientFixed K (SeparableClosure K)).symm.toAddMonoidHom) habs
-  change ((L₁.compositum L₂).normSubgroup
-      (intrinsicAbsoluteUnits K)).map
-        (baseUnitsEquivGaloisAmbientFixed K (SeparableClosure K)).symm.toAddMonoidHom =
-    (L₁.normSubgroup (intrinsicAbsoluteUnits K) ⊓
-      L₂.normSubgroup (intrinsicAbsoluteUnits K)).map
-        (baseUnitsEquivGaloisAmbientFixed K (SeparableClosure K)).symm.toAddMonoidHom at hmapped
-  rw [AddSubgroup.map_inf _ _ _
-    (baseUnitsEquivGaloisAmbientFixed K (SeparableClosure K)).symm.injective] at hmapped
-  rw [map_finiteAbelianNormSubgroup_eq_additiveNormSubgroup,
-    map_finiteAbelianNormSubgroup_eq_additiveNormSubgroup,
-    map_finiteAbelianNormSubgroup_eq_additiveNormSubgroup] at hmapped
-  apply Subgroup.ext
-  intro x
-  change Additive.ofMul x ∈ additiveNormSubgroup K
-      (abstractFixedField K (SeparableClosure K)
-        (L₁.compositum L₂).field) ↔
-    Additive.ofMul x ∈
-      (additiveNormSubgroup K
-        (abstractFixedField K (SeparableClosure K) L₁.field) ⊓
-       additiveNormSubgroup K
-        (abstractFixedField K (SeparableClosure K) L₂.field))
-  exact Iff.of_eq (congrArg
-    (fun S : AddSubgroup (Additive Kˣ) => Additive.ofMul x ∈ S) hmapped)
 
-/-- The ordinary norm subgroup of an intersection field is the supremum of
-the two ordinary norm subgroups. -/
-theorem finiteAbelianNormSubgroup_intersection
-    (L₁ L₂ : FiniteAbelianSubextension (intrinsicAbstractBase K)) :
-    finiteAbelianNormSubgroup K (L₁.intersection L₂) =
-      finiteAbelianNormSubgroup K L₁ ⊔
-        finiteAbelianNormSubgroup K L₂ := by
-  have habs :=
-    FiniteAbelianSubextension.normSubgroup_intersection
-      (localHenselianValuation K)
-      (separableClosureUnits_isClassFormation K)
-      (intrinsicFiniteAbstractBase K) L₁ L₂
-  have hmapped := congrArg
-    (fun S : AddSubgroup
-        (ambientFixedAddSubgroup (intrinsicAbsoluteUnits K)
-          (intrinsicAbstractBase K)) ↦
-      S.map (baseUnitsEquivGaloisAmbientFixed K (SeparableClosure K)).symm.toAddMonoidHom) habs
-  change ((L₁.intersection L₂).normSubgroup
-      (intrinsicAbsoluteUnits K)).map
-        (baseUnitsEquivGaloisAmbientFixed K (SeparableClosure K)).symm.toAddMonoidHom =
-    (L₁.normSubgroup (intrinsicAbsoluteUnits K) ⊔
-      L₂.normSubgroup (intrinsicAbsoluteUnits K)).map
-        (baseUnitsEquivGaloisAmbientFixed K (SeparableClosure K)).symm.toAddMonoidHom at hmapped
-  rw [AddSubgroup.map_sup] at hmapped
-  rw [map_finiteAbelianNormSubgroup_eq_additiveNormSubgroup,
-    map_finiteAbelianNormSubgroup_eq_additiveNormSubgroup,
-    map_finiteAbelianNormSubgroup_eq_additiveNormSubgroup] at hmapped
-  apply (Subgroup.toAddSubgroup :
-    Subgroup Kˣ ≃o AddSubgroup (Additive Kˣ)).injective
-  change additiveNormSubgroup K
-      (abstractFixedField K (SeparableClosure K)
-        (L₁.intersection L₂).field) =
-    Subgroup.toAddSubgroup
-      (finiteAbelianNormSubgroup K L₁ ⊔
-        finiteAbelianNormSubgroup K L₂)
-  rw [(Subgroup.toAddSubgroup :
-    Subgroup Kˣ ≃o AddSubgroup (Additive Kˣ)).map_sup]
-  exact hmapped
+
+
 
 /-- A native open finite-index subgroup which is open for the abstract norm
 topology is the ordinary norm subgroup of a finite abelian subextension. -/

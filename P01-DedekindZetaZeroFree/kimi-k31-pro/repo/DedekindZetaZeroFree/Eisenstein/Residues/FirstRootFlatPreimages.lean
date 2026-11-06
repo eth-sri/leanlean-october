@@ -79,7 +79,7 @@ theorem firstRoot_local_flat (w : InfinitePlace F) (e : ℤ)
     simp_rw [hv]
     simp only [scalarWeight]
     rw [hval]
-    simp only [scalarWeight,Finset.mul_sum]
+    simp only [Finset.mul_sum]
     apply Finset.sum_congr rfl
     intro b _
     ring

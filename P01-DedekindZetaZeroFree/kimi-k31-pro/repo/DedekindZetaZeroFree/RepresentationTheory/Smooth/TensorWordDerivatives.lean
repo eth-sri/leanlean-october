@@ -23,8 +23,7 @@ theorem pure_flow_hasDerivAt (s : ℝ) (h : ι → PrincipalSeries s)
     simp only [Function.update_self]
     congr 1
     apply Finset.prod_congr rfl
-    intro j hj
-    rw [Function.update_of_ne (Finset.mem_erase.mp hj).1]
+    simp_all
   simp_rw [hp]
   exact (hasDerivAt_flow s b.2 (h b.1) (a b.1)).const_mul _
 

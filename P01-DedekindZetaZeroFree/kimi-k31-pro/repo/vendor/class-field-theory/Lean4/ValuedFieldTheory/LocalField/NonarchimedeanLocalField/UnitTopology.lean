@@ -1,6 +1,7 @@
 module
 
 public import ValuedFieldTheory.LocalField.NonarchimedeanLocalField.Basic
+public import Mathlib.Tactic.Measurability
 
 @[expose] public section
 
@@ -50,13 +51,13 @@ theorem mem_localBaseUnitSubgroup_iff_valuation_eq_one
     let a : 𝒪[K]ˣ :=
       { val := ⟨(x : K), by
           rw [Valuation.mem_integer_iff]
-          exact hx.le⟩
+          simp_all⟩
         inv := ⟨(x⁻¹ : K), by
           rw [Valuation.mem_integer_iff]
-          simp [hx]⟩
-        val_inv := by ext; simp
-        inv_val := by ext; simp }
-    exact ⟨a, by ext; rfl⟩
+          simp_all⟩
+        val_inv := by measurability
+        inv_val := by measurability }
+    exact ⟨a, by measurability⟩
 
 /-- The image of valuation-ring units is open in the native topology of a
 nonarchimedean local field. -/
@@ -74,7 +75,7 @@ theorem localBaseUnitSubgroup_isOpen
       {x : Kˣ | ValuativeRel.valuation K (x : K) = 1} by
     ext x
     exact mem_localBaseUnitSubgroup_iff_valuation_eq_one K x]
-  exact hpre
+  simp_all
 
 end LocalFieldTheory
 

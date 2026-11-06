@@ -141,49 +141,7 @@ theorem finiteGaloisCompositum_normSubgroup_le_of_standard
     exact hstandard hxStandard
   exact ⟨e.symm x, hxH, e.apply_symm_apply x⟩
 
-/-- The same standard-subgroup containment while retaining both inputs and
-their compositum as finite abelian subextensions. -/
-theorem finiteAbelianCompositum_normSubgroup_le_of_standard
-    (K : Type) [Field K] [ValuativeRel K] [TopologicalSpace K]
-    [IsNonarchimedeanLocalField K]
-    (H : Subgroup Kˣ)
-    (ϖ : Kˣ) (d n : ℕ)
-    (hϖ : valuationMap K (Additive.ofMul ϖ) = 1)
-    (hstandard : LocalFieldTheory.uniformizerPrincipalSubgroup K ϖ d n ≤ H)
-    (U T : ClassFormation.FiniteAbelianSubextension
-      (intrinsicAbstractBase K))
-    (hUle :
-      (U.normSubgroup (intrinsicAbsoluteUnits K)).map
-          (baseUnitsEquivGaloisAmbientFixed K (SeparableClosure K)).symm.toAddMonoidHom ≤
-        (unramifiedNormSubgroup K d).toAddSubgroup)
-    (hTle :
-      (T.normSubgroup (intrinsicAbsoluteUnits K)).map
-          (baseUnitsEquivGaloisAmbientFixed K (SeparableClosure K)).symm.toAddMonoidHom ≤
-        (LocalFieldTheory.uniformizerPrincipalSubgroup K ϖ 1 n).toAddSubgroup) :
-    (U.compositum T).normSubgroup (intrinsicAbsoluteUnits K) ≤
-      H.toAddSubgroup.map
-        (baseUnitsEquivGaloisAmbientFixed K (SeparableClosure K)).toAddMonoidHom := by
-  let A := intrinsicAbsoluteUnits K
-  let e := baseUnitsEquivGaloisAmbientFixed K (SeparableClosure K)
-  intro x hx
-  have hxUT :
-      x ∈ U.normSubgroup A ⊓ T.normSubgroup A :=
-    ClassFormation.FiniteAbelianSubextension.normSubgroup_compositum_le_inf
-      A U T hx
-  have hxUnramAdd : e.symm x ∈
-      (unramifiedNormSubgroup K d).toAddSubgroup :=
-    hUle ⟨x, hxUT.1, rfl⟩
-  have hxPrincipalAdd : e.symm x ∈
-      (LocalFieldTheory.uniformizerPrincipalSubgroup K ϖ 1 n).toAddSubgroup :=
-    hTle ⟨x, hxUT.2, rfl⟩
-  have hxStandard : Additive.toMul (e.symm x) ∈
-      LocalFieldTheory.uniformizerPrincipalSubgroup K ϖ d n :=
-    unramifiedNormSubgroup_inf_uniformizerPrincipalSubgroup_le
-      K ϖ d n hϖ ⟨hxUnramAdd, hxPrincipalAdd⟩
-  have hxH : e.symm x ∈ H.toAddSubgroup := by
-    change Additive.toMul (e.symm x) ∈ H
-    exact hstandard hxStandard
-  exact ⟨e.symm x, hxH, e.apply_symm_apply x⟩
+
 
 end LocalClassFieldTheory
 

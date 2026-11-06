@@ -185,20 +185,7 @@ of `x`. -/
       F a (Additive.ofMul x))
   exact h
 
-/-- The canonical identification of adic principal units with the
-prodiscrete limit respects the p-adic action. -/
-theorem adicPrincipalUnitsHomeomorphProdiscreteLimit_map_smul
-    (F : LocalField.{u, v} K)
-    (a : ℤ_[F.residueCharacteristic])
-    (x : AdicPrincipalUnits F.toCompleteDVF) :
-    adicPrincipalUnitsHomeomorphProdiscreteLimit F.toCompleteDVF (a • x) =
-      a • adicPrincipalUnitsHomeomorphProdiscreteLimit F.toCompleteDVF x := by
-  apply (PrincipalUnitProdiscreteLimit.addEquiv F.toCompleteDVF).injective
-  rw [adicPrincipalUnitsHomeomorphProdiscreteLimit_to_addEquiv,
-    PrincipalUnitProdiscreteLimit.addEquiv_map_smul,
-    adicPrincipalUnitsHomeomorphProdiscreteLimit_to_addEquiv,
-    AdicPrincipalUnits.addEquiv_map_smul,
-    Internal.principalUnitAddEquivInverseLimitCarrier_map_smul]
+
 
 /--
 Establishes the identity `adicPrincipalUnitsAddEquivProdiscreteLimit F.toCompleteDVF (a • x) = a •

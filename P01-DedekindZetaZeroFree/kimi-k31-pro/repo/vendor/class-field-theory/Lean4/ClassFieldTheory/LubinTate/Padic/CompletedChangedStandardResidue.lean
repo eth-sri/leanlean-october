@@ -285,75 +285,7 @@ theorem
       (show 𝓀[M] from x)).trans
       (congrArg (fun k : ℕ => (show 𝓀[M] from x) ^ k) hcardRaw)
 
-/-- The residue field of the completed changed-uniformizer fixed field embeds
-into the residue field of the ambient completed Lubin--Tate level. -/
-noncomputable def padicCompletedChangedFieldResidueEmbedding
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
-    let D := padicCompletedChangedUniformizerFixedField p u n
-    letI : NontriviallyNormedField D :=
-      finiteExtensionSpectralNormedField ℚ_[p] D
-    letI : ValuativeRel D :=
-      finiteExtensionSpectralValuativeRel ℚ_[p] D
-    letI : IsNonarchimedeanLocalField D :=
-      finiteExtensionSpectralIsNonarchimedeanLocalField ℚ_[p] D
-    IsLocalRing.ResidueField
-        (localCompleteDVF D).valuationSubring →+*
-      IsLocalRing.ResidueField
-        (padicCompletedLevelCompleteDVF p n).valuationSubring := by
-  let D := padicCompletedChangedUniformizerFixedField p u n
-  let E := padicCompletedLevelField p n
-  let padicBase := (padicLocalField p).toCompleteDVF
-  let canonicalBase := localCompleteDVF ℚ_[p]
-  let coefficient := padicCompletedUnramifiedCompleteDVF p
-  let ambient := padicCompletedLevelCompleteDVF p n
-  letI : NontriviallyNormedField D :=
-    finiteExtensionSpectralNormedField ℚ_[p] D
-  letI : ValuativeRel D :=
-    finiteExtensionSpectralValuativeRel ℚ_[p] D
-  let : IsNonarchimedeanLocalField D :=
-    finiteExtensionSpectralIsNonarchimedeanLocalField ℚ_[p] D
-  let :
-      Valuation.HasExtension (ValuativeRel.valuation ℚ_[p])
-        (ValuativeRel.valuation D) :=
-    finiteExtensionSpectralValuation_hasExtension ℚ_[p] D
-  let :
-      canonicalBase.valuation.HasExtension
-        (localCompleteDVF D).valuation :=
-    localCompleteDVFValuation_hasExtension ℚ_[p] D
-  let : padicBase.valuation.HasExtension coefficient.valuation :=
-    padicCompletedUnramifiedValuation_hasExtension p
-  let : coefficient.valuation.HasExtension ambient.valuation :=
-    padicCompletedLevelCompleteDVF_hasExtension p n
-  let : padicBase.valuation.HasExtension ambient.valuation :=
-    ValuationTheory.DiscreteValuationField.Valuation.hasExtension_trans
-      padicBase.valuation coefficient.valuation
-      ambient.valuation
-  let :
-      canonicalBase.valuation.HasExtension ambient.valuation :=
-    localCompleteDVFValuation_hasExtension_of_padicLocalField
-      p ambient.valuation
-  let inclusion : D →+* E := D.val.toRingHom
-  have inclusion_comp :
-      inclusion.comp (algebraMap ℚ_[p] D) =
-        algebraMap ℚ_[p] E := by
-    ext x
-    exact D.val.commutes x
-  let :
-      canonicalBase.valuation.HasExtension
-        (ambient.valuation.comap inclusion) :=
-    hasExtension_comap_of_algebraMap_compatible
-      inclusion inclusion_comp
-  have hEquiv :
-      (localCompleteDVF D).valuation.IsEquiv
-        (ambient.valuation.comap inclusion) :=
-    valuation_isEquiv_of_finite_separable
-      canonicalBase (localCompleteDVF D)
-        (ambient.valuation.comap inclusion)
-  exact
-    residueFieldMapOfIsEquivComap
-      (localCompleteDVF D).valuation ambient.valuation
-      inclusion hEquiv
+
 
 /-- The residue field of the finite standard/changed compositum embeds into
 the residue field of the ambient completed Lubin--Tate level. -/
@@ -426,17 +358,7 @@ noncomputable def
       (localCompleteDVF M).valuation ambient.valuation
       inclusion hEquiv
 
-/-- The ambient residue comparison for the finite standard/changed
-compositum is injective. -/
-theorem
-    padicCompletedStandardChangedCompositumResidueEmbedding_injective
-    (p : ℕ) [Fact p.Prime]
-    (u : (padicLocalField p).valuationSubringˣ) (n : ℕ) :
-    Function.Injective
-      (padicCompletedStandardChangedCompositumResidueEmbedding
-        p u n) :=
-  (padicCompletedStandardChangedCompositumResidueEmbedding
-    p u n).injective
+
 
 /-- The finite standard/changed compositum is finite-dimensional over its
 changed-uniformizer fixed subfield. -/

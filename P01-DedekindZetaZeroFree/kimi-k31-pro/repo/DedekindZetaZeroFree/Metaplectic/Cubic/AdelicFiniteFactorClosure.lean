@@ -107,7 +107,7 @@ private theorem truncation_tendsto (x : RestrictedCover F ζ hζ) :
   refine ⟨localToRestricted F ζ hζ (Sum.inr q) x, ?_, rfl⟩
   intro w
   simp [localToRestricted, RestrictedProduct.mulSingleMonoidHom,
-    RestrictedProduct.mulSingle_eq_of_ne]
+    ]
 
  theorem tupleFactor_le_finiteSubgroup : tupleFactor F ζ hζ ≤ finiteSubgroup F ζ hζ := by
   rintro _ ⟨x, hx, rfl⟩

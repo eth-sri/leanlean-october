@@ -579,7 +579,7 @@ theorem diagonal_isolation {ι k : Type*} [Finite ι] [DecidableEq ι] [Field k]
     funext j
     by_cases hji : j = i
     · subst j; simpa using hgi
-    · simp [Pi.single_apply, hji, hgz j (Finset.mem_univ _) hji]
+    · simp [hji, hgz j (Finset.mem_univ _) hji]
   exact he ▸ hg
 
 theorem tau_diagonal_formula {H D : Type*} [Group H] [TopologicalSpace H]
@@ -716,7 +716,7 @@ theorem tau_irreducible {H D : Type*} [Group H] [TopologicalSpace H]
     ext k
     by_cases hkj : k = j
     · subst k; simp [hgj, hfi]
-    · simp [Pi.single_apply, hkj]
+    · simp [hkj]
   apply top_unique
   intro v hv
   have heF : e v ∈ F := by
@@ -728,7 +728,7 @@ theorem tau_irreducible {H D : Type*} [Group H] [TopologicalSpace H]
     ext k
     by_cases hkj : k = j
     · subst k; simp
-    · simp [Pi.single_apply, hkj]
+    · simp [hkj]
   obtain ⟨u, hu, heuv⟩ := Submodule.mem_map.mp heF
   have : u = v := e.injective heuv
   exact this ▸ hu

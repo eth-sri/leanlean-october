@@ -165,21 +165,7 @@ theorem absoluteValueConjugacy
     ⟨σ, hσ⟩
   exact ⟨σ, Subtype.ext hσ⟩
 
-/-- Class-level form of the valuation-conjugacy theorem.  The exact-representative equality
-above in particular gives equality of the corresponding absolute value
-classes. -/
-theorem absoluteValueConjugacy_valuationClass
-    {K : Type u} {L : Type v} [Field K] [Field L] [Algebra K L]
-    [IsGalois K L]
-    (vK : AbsoluteValue K ℝ) (hvK : vK.IsNontrivial)
-    (w w' : AbsoluteValueExtension vK L) :
-    ∃ σ : L ≃ₐ[K] L,
-      LubinTate.Valuations.EquivalentAbsoluteValues w'.1
-        (absoluteValueExtensionConjugate vK w σ).1 := by
-  rcases absoluteValueConjugacy vK hvK w w' with ⟨σ, hσ⟩
-  refine ⟨σ, ?_⟩
-  rw [← hσ]
-  exact LubinTate.Valuations.equivalentAbsoluteValues_refl w'.1
+
 
 end Valuations
 end AlgebraicNumberTheory

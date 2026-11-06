@@ -130,13 +130,7 @@ theorem realRamificationExponent_mono :
     realRamificationExponent (-1) = 0 := by
   simp [realRamificationExponent]
 
-/-- States the theorem `realRamificationExponent_eq_zero_of_le_neg_one`. -/
-theorem realRamificationExponent_eq_zero_of_le_neg_one
-    {s : ℝ} (hs : s ≤ -1) :
-    realRamificationExponent s = 0 := by
-  rw [realRamificationExponent, Int.toNat_eq_zero]
-  have hs' : s + 1 ≤ 0 := by linarith
-  exact Int.ceil_le.mpr (by simpa using hs')
+
 
 /-- States the theorem `realRamificationExponent_nat`. -/
 @[simp] theorem realRamificationExponent_nat (n : ℕ) :
@@ -163,12 +157,7 @@ theorem realRamificationIdeal_antitone {s t : ℝ} (hst : s ≤ t) :
     realRamificationIdeal target (n : ℝ) = target.maximalIdeal ^ (n + 1) := by
   simp [realRamificationIdeal]
 
-/-- States the theorem `realRamificationIdeal_eq_top_of_le_neg_one`. -/
-theorem realRamificationIdeal_eq_top_of_le_neg_one
-    {s : ℝ} (hs : s ≤ -1) :
-    realRamificationIdeal target s = ⊤ := by
-  simp [realRamificationIdeal,
-    realRamificationExponent_eq_zero_of_le_neg_one hs]
+
 
 /-- The automorphism induced on the target valuation ring by uniqueness of the
 valuation extension. -/
@@ -476,17 +465,7 @@ instance lowerRamificationGroup.instNormal
   ext σ
   simp [mem_lowerRamificationGroup_iff]
 
-/-- The all-real extension is constant at the full Galois group below the
-distinguished endpoint `-1`. -/
-theorem lowerRamificationGroup_eq_top_of_le_neg_one
-    (huniq : HasUniqueValuationExtension.{u, v, w, x, x}
-      base target)
-    {s : ℝ} (hs : s ≤ -1) :
-    lowerRamificationGroup
-      (base := base) (target := target) huniq s = ⊤ := by
-  ext σ
-  simp [mem_lowerRamificationGroup_iff,
-    realRamificationIdeal_eq_top_of_le_neg_one (target := target) hs]
+
 
 /-- Restriction of scalars from `Gal(L/M)` to `Gal(L/K)`. -/
 def galRestrictScalarsToIntermediate (M : IntermediateField K L) :
@@ -501,28 +480,9 @@ def galRestrictScalarsToIntermediate (M : IntermediateField K L) :
     galRestrictScalarsToIntermediate M σ = AlgEquiv.restrictScalars K σ :=
   rfl
 
-/-- States the theorem `galRestrictScalarsToIntermediate_injective`. -/
-theorem galRestrictScalarsToIntermediate_injective
-    (M : IntermediateField K L) :
-    Function.Injective (galRestrictScalarsToIntermediate M) :=
-  AlgEquiv.restrictScalars_injective K
 
-/-- The range of restriction of scalars is precisely the subgroup fixing the
-intermediate field. -/
-theorem galRestrictScalarsToIntermediate_range
-    (M : IntermediateField K L) :
-    (galRestrictScalarsToIntermediate M).range = M.fixingSubgroup := by
-  ext σ
-  constructor
-  · rintro ⟨τ, rfl⟩
-    rw [IntermediateField.mem_fixingSubgroup_iff]
-    intro z hz
-    simpa using τ.commutes ⟨z, hz⟩
-  · intro hσ
-    let τ : Gal(L/M) := IntermediateField.fixingSubgroupEquiv M ⟨σ, hσ⟩
-    refine ⟨τ, ?_⟩
-    ext z
-    rfl
+
+
 
 /-- The lower ramification group for `L/M`, using the same normalized top
 valuation as for `L/K`.  This is the real lower-ramification definition with only the automorphism
@@ -549,34 +509,7 @@ def lowerRamificationGroupOverIntermediate
           realRamificationIdeal target s :=
   Iff.rfl
 
-/-- The lower-ramification base-change law: changing only the base field
-intersects the lower ramification group with `Gal(L/M)`.  The left side is
-transported into `Gal(L/K)` by restriction of scalars, so the statement is a
-literal subgroup equality. -/
-theorem lowerRamificationGroupOverIntermediate_map_eq_inf
-    (huniq : HasUniqueValuationExtension.{u, v, w, x, x}
-      base target)
-    (M : IntermediateField K L) (s : ℝ) :
-    Subgroup.map (galRestrictScalarsToIntermediate M)
-        (lowerRamificationGroupOverIntermediate
-          (base := base) (target := target) huniq M s) =
-      lowerRamificationGroup
-          (base := base) (target := target) huniq s ⊓ M.fixingSubgroup := by
-  ext σ
-  constructor
-  · rintro ⟨τ, hτ, rfl⟩
-    have hrange :
-        galRestrictScalarsToIntermediate M τ ∈
-          (galRestrictScalarsToIntermediate M).range :=
-      ⟨τ, rfl⟩
-    rw [galRestrictScalarsToIntermediate_range] at hrange
-    exact ⟨hτ, hrange⟩
-  · intro hσ
-    have hrange : σ ∈ (galRestrictScalarsToIntermediate M).range := by
-      rw [galRestrictScalarsToIntermediate_range]
-      exact hσ.2
-    rcases hrange with ⟨τ, rfl⟩
-    exact ⟨τ, hσ.1, rfl⟩
+
 
 end Higher
 end RamificationTheory.HilbertRamification

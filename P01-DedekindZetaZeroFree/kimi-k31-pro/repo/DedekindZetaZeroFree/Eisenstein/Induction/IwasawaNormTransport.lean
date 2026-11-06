@@ -122,10 +122,10 @@ private theorem upperRoot_ratio (x : KPGlobalTorusFunctionData.Adeles F) :
     iwasawaUpperRatio F (upperRoot F x) (upperRoot_zero F x) = 1 := by
   have h00 : (iwasawaUpperUnits F (upperRoot F x) (upperRoot_zero F x)).1.unit = 1 := by
     apply Units.ext
-    simp [IsUnit.unit_spec, upperRoot_entries]
+    simp [upperRoot_entries]
   have h11 : (iwasawaUpperUnits F (upperRoot F x) (upperRoot_zero F x)).2.unit = 1 := by
     apply Units.ext
-    simp [IsUnit.unit_spec, upperRoot_entries]
+    simp [upperRoot_entries]
   simp [iwasawaUpperRatio, h00, h11]
 
 theorem iwasawaUpperRatio_torus (t : E F ζ hζ)

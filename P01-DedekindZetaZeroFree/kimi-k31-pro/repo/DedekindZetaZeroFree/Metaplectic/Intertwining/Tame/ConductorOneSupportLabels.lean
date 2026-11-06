@@ -39,10 +39,10 @@ theorem conductor_matrix_constraints {K : Type*} [Field K]
   have hd := congrArg Matrix.GeneralLinearGroup.det hc
   have detd (r s : Kˣ) : Matrix.GeneralLinearGroup.det (KubotaRankTwo.d K r s) = r * s := by
     apply Units.ext
-    simp [Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two]
+    simp
   have detn (t : K) : Matrix.GeneralLinearGroup.det (KubotaRankTwo.n K t) = 1 := by
     apply Units.ext
-    simp [Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two]
+    simp
   have detw : Matrix.GeneralLinearGroup.det (KubotaRankTwo.w K) = 1 := by
     apply Units.ext
     simp [Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two, KubotaRankTwo.w]
@@ -246,7 +246,7 @@ private theorem conductor_one_valuation
   obtain ⟨o, ho⟩ := hx.1
   have hxu : e (valuation (LocalField F q) x) ≤ WithZero.exp (1 : ℤ) := by
     rw [ho]
-    simp only [pow_one, Units.val_inv_eq_inv_val, map_mul, map_inv₀]
+    simp only [pow_one, map_mul, map_inv₀]
     have hep : e (valuation (LocalField F q) (π : LocalField F q)) = WithZero.exp (-1 : ℤ) := hπ
     rw [hep]
     rw [← WithZero.exp_neg]

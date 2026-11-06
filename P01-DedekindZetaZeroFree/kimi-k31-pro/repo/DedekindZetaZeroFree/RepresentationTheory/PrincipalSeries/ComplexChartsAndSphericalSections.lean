@@ -240,20 +240,20 @@ theorem projective_chart_cover (p : ComplexProjectiveLine) :
       apply (Projectivization.mk_eq_mk_iff' ℂ _ _ _ _).mpr
       use v 1
       ext i
-      fin_cases i <;> simp [projectiveInfinity, h1, h0]
+      fin_cases i <;> simp [h0]
     · left
       refine ⟨v 1 / v 0, ?_⟩
       apply (Projectivization.mk_eq_mk_iff' ℂ _ _ _ _).mpr
       use v 0
       ext i
-      fin_cases i <;> simp [projectiveOpen, h0, mul_div_cancel₀]
+      fin_cases i <;> simp [h0, mul_div_cancel₀]
 
 theorem projective_chart_transition (u : ℂ) (hu : u ≠ 0) :
     projectiveInfinity u = projectiveOpen u⁻¹ := by
   apply (Projectivization.mk_eq_mk_iff' ℂ _ _ _ _).mpr
   use u
   ext i
-  fin_cases i <;> simp [projectiveInfinity, projectiveOpen, hu]
+  fin_cases i <;> simp [hu]
 
 noncomputable def chartSeminormValue (s : ℝ) (n : ℕ) (f : PrincipalSeries s) : ℝ :=
   max (sSup ((fun x : ℂ => ‖iteratedFDeriv ℝ n (openCoordinate f) x‖) ''
@@ -664,7 +664,7 @@ abbrev OrbitMat := Matrix (Fin 2) (Fin 2) ℂ
 noncomputable def orbit_mulL : OrbitMat →ₗ[ℝ] OrbitMat →L[ℝ] OrbitMat where
   toFun a := (LinearMap.mulLeft ℝ a).toContinuousLinearMap
   map_add' a b := by ext c i j; simp [Matrix.add_mul]
-  map_smul' r a := by ext c i j; simp [Matrix.smul_mul]
+  map_smul' r a := by ext c i j; simp
 noncomputable def orbit_mulCLM : OrbitMat →L[ℝ] OrbitMat →L[ℝ] OrbitMat := orbit_mulL.toContinuousLinearMap
 noncomputable def selectedCoordinate (north : Bool) (f : ComplexGL2 → ℂ) : ℂ → ℂ :=
   if north then openCoordinate f else infinityCoordinate f
@@ -715,7 +715,7 @@ private lemma rawChart_smooth (north : Bool) : ContDiff ℝ (⊤ : ℕ∞) (rawC
     apply (((Matrix.ofLinearEquiv ℝ : (Fin 2 → Fin 2 → ℂ) ≃ₗ[ℝ]
       Matrix (Fin 2) (Fin 2) ℂ).toLinearMap.toContinuousLinearMap).contDiff).comp
     rw [contDiff_pi]; intro i; rw [contDiff_pi]; intro j
-    fin_cases i <;> fin_cases j <;> simp [rawChart]
+    fin_cases i <;> fin_cases j <;> simp
     all_goals first | exact contDiff_const | exact contDiff_id
 
 private lemma rawChart_eq (north : Bool) (z : ℂ) : rawChart north z =
@@ -754,7 +754,7 @@ private theorem evaluation_continuous_rightTranslate_chart_jets (s : ℝ) (n : �
       unfold matrixFunction
       rw [dif_pos (Matrix.GeneralLinearGroup.det_ne_zero _)]
       exact congrArg f (Units.ext rfl)
-    · simp only [Bool.true_eq, if_true]
+    · simp only [if_true]
       change matrixFunction f ((weyl * upperUnipotent z * g : ComplexGL2) : OrbitMat) = f (weyl * upperUnipotent z * g)
       unfold matrixFunction
       rw [dif_pos (Matrix.GeneralLinearGroup.det_ne_zero _)]
@@ -855,11 +855,11 @@ noncomputable def sphericalSection (s : ℝ) : PrincipalSeries s :=
     refine ⟨?_, ?_, ?_⟩
     · intro a d b g
       have hb : bottomRowNormSq (upperTriangular a d b * g) = ‖(d : ℂ)‖ ^ 2 * bottomRowNormSq g := by
-        simp [bottomRowNormSq, upperTriangular, Matrix.mul_apply, Fin.sum_univ_two, norm_mul, mul_pow]
+        simp [bottomRowNormSq, upperTriangular, Matrix.mul_apply, Fin.sum_univ_two, mul_pow]
         ring
       have hd : ‖((Matrix.GeneralLinearGroup.det (upperTriangular a d b * g) : ℂˣ) : ℂ)‖ =
           ‖(a : ℂ)‖ * ‖(d : ℂ)‖ * ‖((Matrix.GeneralLinearGroup.det g : ℂˣ) : ℂ)‖ := by
-        simp [Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_mul, upperTriangular, Matrix.det_fin_two, norm_mul]
+        simp [Matrix.GeneralLinearGroup.val_det_apply, upperTriangular, Matrix.det_fin_two]
       simp only [sphericalFunction, hb, hd, inductionWeight_eq, Real.rpow_eq_pow, ← Complex.ofReal_mul]
       congr 1
       have he : ‖(a : ℂ)‖ * ‖(d : ℂ)‖ * ‖((Matrix.GeneralLinearGroup.det g : ℂˣ) : ℂ)‖ /
@@ -870,7 +870,7 @@ noncomputable def sphericalSection (s : ℝ) : PrincipalSeries s :=
     · have he : openCoordinate (sphericalFunction s) = fun z => (Real.rpow (1 + ‖z‖ ^ 2) (-(1 + 2 * s)) : ℂ) := by
         funext z
         simp [openCoordinate, sphericalFunction, bottomRowNormSq, weyl, upperUnipotent,
-          Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_mul, Matrix.det_fin_two,
+          Matrix.GeneralLinearGroup.val_det_apply, Matrix.det_fin_two,
           Matrix.mul_apply, Fin.sum_univ_two, Real.rpow_eq_pow]
         rw [Real.inv_rpow (by positivity), ← Real.rpow_neg (by positivity)]
         congr 1 <;> ring

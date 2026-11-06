@@ -53,49 +53,7 @@ private theorem norm_prod_apply
   rw [Algebra.norm_apply, hmul, LinearMap.det_prodMap,
     ← Algebra.norm_apply, ← Algebra.norm_apply]
 
-/-- If `X^n - a` is irreducible, being a norm from its canonical root algebra
-is equivalent to being a norm from the chosen simple Kummer field. -/
-theorem adjoinRoot_norm_iff_chosenSimpleKummerNorm_of_irreducible
-    (K : Type) [Field K] (n : ℕ+) (hnK : ((n : ℕ) : K) ≠ 0)
-    (a b : Kˣ)
-    (hirr : Irreducible
-      (Polynomial.X ^ (n : ℕ) - Polynomial.C (a : K))) :
-    (∃ y : (AdjoinRoot
-          (Polynomial.X ^ (n : ℕ) - Polynomial.C (a : K)))ˣ,
-        Algebra.norm K
-          (y : AdjoinRoot
-            (Polynomial.X ^ (n : ℕ) - Polynomial.C (a : K))) = (b : K)) ↔
-      ∃ y : (KummerTheory.chosenSimpleKummerExtension K n hnK a)ˣ,
-        Algebra.norm K
-          (y : KummerTheory.chosenSimpleKummerExtension K n hnK a) = (b : K) := by
-  let β : SeparableClosure K := KummerTheory.chosenSimpleKummerRoot K n hnK a
-  let p : Polynomial K := Polynomial.X ^ (n : ℕ) - Polynomial.C (a : K)
-  have hβ : Polynomial.aeval β p = 0 := by
-    simp only [p, map_sub, map_pow, Polynomial.aeval_X, Polynomial.aeval_C,
-      β, KummerTheory.chosenSimpleKummerRoot_pow, sub_self]
-  have hp : p = minpoly K β :=
-    minpoly.eq_of_irreducible_of_monic hirr hβ
-      (Polynomial.monic_X_pow_sub_C (a : K) n.pos.ne')
-  have hβint : IsIntegral K β := by
-    apply IsIntegral.of_pow n.pos
-    rw [show β ^ (n : ℕ) = algebraMap K (SeparableClosure K) (a : K) from
-      KummerTheory.chosenSimpleKummerRoot_pow K n hnK a]
-    exact isIntegral_algebraMap
-  let E := KummerTheory.chosenSimpleKummerExtension K n hnK a
-  let e : AdjoinRoot p ≃ₐ[K] E :=
-    (AdjoinRoot.algEquivOfEq K p (minpoly K β) hp).trans
-      (IntermediateField.adjoinRootEquivAdjoin K hβint)
-  change (∃ y : (AdjoinRoot p)ˣ, Algebra.norm K (y : AdjoinRoot p) = (b : K)) ↔
-    ∃ y : Eˣ, Algebra.norm K (y : E) = (b : K)
-  constructor
-  · rintro ⟨y, hy⟩
-    refine ⟨Units.map e.toMonoidHom y, ?_⟩
-    change Algebra.norm K (e (y : AdjoinRoot p)) = (b : K)
-    rw [Algebra.norm_eq_of_algEquiv e, hy]
-  · rintro ⟨y, hy⟩
-    refine ⟨Units.map e.symm.toMonoidHom y, ?_⟩
-    change Algebra.norm K (e.symm (y : E)) = (b : K)
-    rw [Algebra.norm_eq_of_algEquiv e.symm, hy]
+
 
 /-- The canonical Kummer algebra separates, by the Chinese remainder theorem,
 into the factor containing the chosen radical and a complementary factor.

@@ -91,8 +91,7 @@ private theorem continuous_cast_map {p q : Nat.Primes} {K : Type} [Field K]
     [TopologicalSpace K] (h : p = q) (j : ℚ_[q] →+* K) (hc : Continuous j) :
     Continuous ((cast (congrArg (fun p : Nat.Primes => ℚ_[p] →+* K) h.symm) j) :
       ℚ_[p] →+* K) := by
-  subst q
-  exact hc
+  aesop
 
 private theorem traceChar_cast {p q : Nat.Primes} {K : Type} [Field K]
     (h : p = q) (j : ℚ_[q] →+* K) :
@@ -102,8 +101,7 @@ private theorem traceChar_cast {p q : Nat.Primes} {K : Type} [Field K]
     (letI := j.toAlgebra
      letI : Fact q.1.Prime := ⟨q.2⟩
      (rationalPadicCharacter q).compAddMonoidHom (Algebra.trace ℚ_[q] K).toAddMonoidHom) := by
-  subst q
-  rfl
+  aesop
 
 private theorem char_eq (v : HeightOneSpectrum (𝓞 F)) :
     ResidueTrace.localTraceCharacter v = localFiniteCharacter F v := by

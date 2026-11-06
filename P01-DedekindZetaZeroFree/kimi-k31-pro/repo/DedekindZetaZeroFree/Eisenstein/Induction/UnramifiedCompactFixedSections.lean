@@ -32,7 +32,7 @@ def actual_split_compact_level
   have hq : Continuous p := QuotientGroup.continuous_mk
   have hqo : IsOpenMap p := QuotientGroup.isOpenMap_coe
   have he : Set.range (p.comp k) = p '' Set.range k := by
-    simp [MonoidHom.comp_apply, Set.range_comp]
+    simp [Set.range_comp]
   refine { toOpenSubgroup := {
     toSubgroup := (p.comp k).range
     isOpen' := ?_ }, isCompact := ?_ }
@@ -109,7 +109,7 @@ theorem actual_split_compact_retract
     have he10 := congrArg (fun C : KPRankOneInduction.GL2 F q => C 1 0) he
     simp only [Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two,
       Matrix.GeneralLinearGroup.coe_scalar, Matrix.scalar_apply, Matrix.diagonal_apply,
-      Fin.reduceEq, if_true, if_false, mul_zero, zero_add, add_zero, hA10] at he10
+      Fin.reduceEq, if_true, if_false, mul_zero, add_zero, hA10] at he10
     exact (mul_eq_zero.mp he10).resolve_right u.ne_zero
   have hki : k 1 0 = 0 := by
     apply Subtype.ext
@@ -122,9 +122,9 @@ theorem actual_split_compact_retract
   let t : KPTameCompact.O F q := - (a⁻¹ : (KPTameCompact.O F q)ˣ) * k 0 1
   let d := k * KPStandardLocalRootLifts.integralN F q t
   have hd10 : (KPTameCompact.inclusion F q d) 1 0 = 0 := by
-    simp [d, map_mul, Matrix.GeneralLinearGroup.coe_mul, Matrix.mul_apply,
+    simp [d, map_mul, Matrix.mul_apply,
       Fin.sum_univ_two, KPStandardLocalRootLifts.integralN, KPTameCompact.inclusion,
-      KPLocalCube.integerInclusion, Matrix.GeneralLinearGroup.map_apply, hki]
+      KPLocalCube.integerInclusion, hki]
   have hd01 : (KPTameCompact.inclusion F q d) 0 1 = 0 := by
     have hai : k 0 0 * ((a⁻¹ : (KPTameCompact.O F q)ˣ) : KPTameCompact.O F q) = 1 := by
       rw [← ha]; exact Units.mul_inv a
@@ -185,12 +185,12 @@ private lemma raw_split_ratio (b : S.borel.B) :
     simpa only [G, y, Subgroup.coe_mul, map_mul, S.borel.torus_projection,
       S.borel.upperRoot_projection] using hp.symm
   have h10 : G 1 0 = 0 := by
-    simp [G, KubotaRankTwo.d, KubotaRankTwo.n, Matrix.GeneralLinearGroup.coe_mul,
+    simp [G, KubotaRankTwo.d, KubotaRankTwo.n, 
       Matrix.mul_apply, Fin.sum_univ_two]
   apply Units.ext
   symm
   rw [KPRankOneInduction.borelRatio_eq F q _ G hG h10]
-  simp [G, KubotaRankTwo.d, KubotaRankTwo.n, Matrix.GeneralLinearGroup.coe_mul,
+  simp [G, KubotaRankTwo.d, KubotaRankTwo.n, 
     Matrix.mul_apply, Fin.sum_univ_two, y]
 
 private lemma raw_split_intersection_norm

@@ -63,7 +63,7 @@ private theorem dyad_count (R : ℝ) (hR : 1 ≤ R) :
   have hRp : 0 < R := lt_of_lt_of_le zero_lt_one hR
   have hlog2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
   have hfloor : ⌊R⌋₊ ≠ 0 := by
-    have : 1 ≤ ⌊R⌋₊ := Nat.le_floor (by simpa only [Nat.cast_one] using hR)
+    have : 1 ≤ ⌊R⌋₊ := Nat.le_floor (by grind)
     omega
   have hp : (2 : ℝ) ^ Nat.log 2 ⌊R⌋₊ ≤ R := by
     calc
@@ -85,9 +85,7 @@ private theorem active_sum_le (A : SArithmeticData F) (h : A.Exterior)
   apply Finset.sum_le_sum_of_injOn (fun f : Active A h => f.val.val.val)
   · intro i _ j _ hij
     exact Subtype.ext (Subtype.ext (Subtype.ext hij))
-  · intro f hf
-    obtain ⟨i, hi, rfl⟩ := Finset.mem_image.mp hf
-    exact i.property
+  · grind
   · intro f _
     exact le_of_eq (activeEulerFactor_eq_eulerIdeal f.val 0).symm
   · intro f hf _
@@ -109,7 +107,7 @@ theorem frozen_dyadic_weight_bound (A : SArithmeticData F)
   obtain ⟨K, Kn, hK, hKn, hn⟩ := ideal_counting_harmonic_bounds F
   have hl2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
   let Cu : ℝ := Nat.card A.UnitQuotient + 1
-  have hCu : 0 < Cu := by dsimp [Cu]; positivity
+  have hCu : 0 < Cu := by grind
   refine ⟨Ka * Kn * Cu / Real.log 2, by positivity, ?_⟩
   intro h R s hR hs
   letI := active_finite A h
@@ -165,13 +163,12 @@ theorem frozen_dyadic_weight_bound (A : SArithmeticData F)
         have hn' := (norm_bounds i.1.val.a i.2.val i.1.val.n (hs i hi)).2
         refine ⟨Set.mem_univ _, ?_⟩
         change idealNorm j.val.1.val.n.val ≤ R
-        simpa only [← hij] using hn'⟩,
+        grind⟩,
         j.val.1.val.epsilon, ⟨j.val.2, by
           obtain ⟨i, hi, hij⟩ := Finset.mem_image.mp j.property
           have hc' := (norm_bounds i.1.val.a i.2.val i.1.val.n (hs i hi)).1
           have hk := Nat.log_monotone (b := 2) (Nat.le_floor hc')
-          change j.val.2 < Nat.log 2 ⌊R⌋₊ + 1
-          simpa only [← hij] using Nat.lt_succ_of_le hk⟩),
+          grind⟩),
         ⟨j.val.1.val.a, j.val.1.val.a_supported⟩)⟩
   have hei : Function.Injective e := by
     intro i j hij
@@ -192,13 +189,12 @@ theorem frozen_dyadic_weight_bound (A : SArithmeticData F)
       generalize i.val.1.val = T at *
       generalize j.val.1.val = S at *
       cases T; cases S; simp_all
-    exact Subtype.ext (Prod.ext (Subtype.ext ht) hk)
+    grind
   have hew (j : t) :
       betaIdeal (RMSeparatedExpansion.activeSupport A j.val.1.val) j.val.1.val.a.val /
         A.exteriorNorm j.val.1.val.n = W (e j) := by
     simp only [W, e, g, beta_zero]
-    change _ / idealNorm _ = (idealNorm _)⁻¹ * _
-    rw [div_eq_mul_inv, mul_comm]
+    grind
   have hsum : (∑ j ∈ t,
       betaIdeal (RMSeparatedExpansion.activeSupport A j.1.val) j.1.val.a.val /
         A.exteriorNorm j.1.val.n) ≤ ∑' j, W j := by
@@ -221,8 +217,8 @@ theorem frozen_dyadic_weight_bound (A : SArithmeticData F)
       apply mul_le_mul hfbound _ (mul_nonneg (by positivity) hhb)
         (mul_nonneg hKa.le (Real.rpow_nonneg (by unfold idealNorm; positivity) _))
       apply mul_le_mul _ hnbound hhb (by positivity)
-      apply mul_le_mul (by dsimp [Cu]; linarith) hL (by positivity) hCu.le
-    _ = _ := by change _ = Ka * Kn * Cu / Real.log 2 * Real.rpow (idealNorm h.val) b * _; ring
+      apply mul_le_mul (by grind) hL (by positivity) hCu.le
+    _ = _ := by grind
 
 end
 end DedekindZetaZeroFree.RMDyadicSieveAggregation
@@ -343,7 +339,7 @@ theorem retainedIndex_finite (A : SArithmeticData F) (h : A.Exterior) (R₀ : �
     · exact Subtype.ext (Subtype.ext hc)
   · exact (Set.toFinite _).prod ((normBoundedIdeals_finite F R₀).prod
       ((normBoundedIdeals_finite F R₀).prod
-        ((normBoundedIdeals_finite F R₀).prod (Set.finite_univ))))
+        ((normBoundedIdeals_finite F R₀).prod Set.finite_univ)))
 
 theorem retainedSummand_finite_support (A : SArithmeticData F) (G : AllowedRecipe A)
     (U : UnitRepresentatives A) (σ : F →+* ℂ)
@@ -363,8 +359,7 @@ theorem retained_eq_tsum (A : SArithmeticData F) (G : AllowedRecipe A)
     (h d : A.Exterior) (Z R₀ : ℝ) :
     retained A G U σ ψ L H h d Z R₀ =
       ∑' i : RMSeparatedExpansion.Index A h,
-        retainedSummand A G U σ ψ L H h d Z R₀ i := by
-  exact (tsum_eq_finsum (retainedSummand_finite_support A G U σ ψ L H h d Z R₀)).symm
+        retainedSummand A G U σ ψ L H h d Z R₀ i := (tsum_eq_finsum (retainedSummand_finite_support A G U σ ψ L H h d Z R₀)).symm
 
 theorem retained_eq_zero_of_cutoff_lt_one (A : SArithmeticData F)
     (G : AllowedRecipe A) (U : UnitRepresentatives A) (σ : F →+* ℂ)
@@ -568,7 +563,7 @@ theorem retained_l2_bound
   let R := cutoff Z P D θ
   let s := (retainedIndex_finite A h R).toFinset
   let g := frozenDyadKey A h
-  have hs (i) (hi : i ∈ s) : i ∈ retainedIndex A h R :=
+  have hs i (hi : i ∈ s) : i ∈ retainedIndex A h R :=
     (retainedIndex_finite A h R).mem_toFinset.mp hi
   have hw := hweight h R s hR (fun i hi => hs i hi)
   have hw' : (∑ j ∈ s.image g,
@@ -580,8 +575,7 @@ theorem retained_l2_bound
     apply Finset.sum_congr
     · ext j
       simp only [Finset.mem_image, g, frozenDyadKey]
-    · intro j hj
-      rfl
+    · grind
   calc
     Real.sqrt (rowSquareMass A G U σ ψ (L u) (H u) h Z D R) ≤
         ∑ j ∈ s.image g,
@@ -651,7 +645,7 @@ private theorem bound_square (K P D R b₁ b₂ : ℝ)
   simp only [mul_pow, ← Real.rpow_mul_natCast (by positivity : 0 ≤ 2 * P),
     ← Real.rpow_mul_natCast (by positivity : 0 ≤ D * R),
     Real.sq_sqrt (by positivity : 0 ≤ D + R)]
-  convert rfl using 1 <;> ring
+  grind
 
 theorem retained_total_square_bound
     (A : SArithmeticData F) (G : AllowedRecipe A) (U : UnitRepresentatives A)
@@ -705,7 +699,7 @@ theorem retained_total_square_bound
       finsum_nonneg (fun _ => sq_nonneg _)
     have hsq := (sq_le_sq₀ (Real.sqrt_nonneg _) (by positivity)).mpr hb'
     rw [Real.sq_sqrt hmass, bound_square K P D R b₁ b₂ hPp hDp hRp] at hsq
-    exact hsq
+    grind
   letI := (exteriorPowerfulDyad_finite A.cS P).fintype
   have hcard : (Fintype.card (exteriorPowerfulDyad A.cS P) : ℝ) ≤ C * Real.sqrt P := by
     simpa only [← Nat.card_eq_fintype_card, Nat.card_coe_set_eq] using

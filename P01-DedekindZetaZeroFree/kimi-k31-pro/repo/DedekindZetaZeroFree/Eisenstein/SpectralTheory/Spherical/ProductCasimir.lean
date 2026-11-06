@@ -30,7 +30,7 @@ private theorem curve_mul_entries (i j : Fin 6) (r s : Fin 2) :
       ((basisMatrix i * basisMatrix j) r s) 0 := by
   convert ((curve_entries i r 0).mul_const (basisMatrix j 0 s)).add
       ((curve_entries i r 1).mul_const (basisMatrix j 1 s)) using 1 <;>
-    simp [Matrix.mul_apply, Fin.sum_univ_two, Pi.add_apply] <;> rfl
+    simp [Matrix.mul_apply, Fin.sum_univ_two] <;> rfl
 
  def numeratorSecond (i j : Fin 6) : ℂ :=
   (basisMatrix j 0 0) * star (basisMatrix i 1 0) +
@@ -49,7 +49,7 @@ private theorem numerator_second (i j : Fin 6) :
     (((k 0 1).mul (h 1 1).star).add ((h 0 1).mul (k 1 1).star))
   convert hd using 1
   · rfl
-  · simp [numeratorSecond, curve, Matrix.one_apply]; ring
+  · simp [numeratorSecond, curve]; ring
 
  def denominatorSecond (i j : Fin 6) : ℝ :=
   ![-4 * (basisMatrix i 1 1).re, 0,
@@ -65,10 +65,10 @@ private theorem denominator_second (i j : Fin 6) :
   have hr := (Complex.reCLM.hasFDerivAt.comp_hasDerivAt 0 hp).const_mul 2
   have hi := (Complex.imCLM.hasFDerivAt.comp_hasDerivAt 0 hp).const_mul 2
   fin_cases j
-  · convert hn using 1 <;> simp [bottomDenominatorJet, denominatorSecond, curve, Matrix.one_apply] <;> ring
+  · convert hn using 1 <;> simp [bottomDenominatorJet, denominatorSecond, curve] <;> ring
   · simpa [bottomDenominatorJet, denominatorSecond] using hasDerivAt_const (0 : ℝ) (0 : ℝ)
   · simpa [bottomDenominatorJet, denominatorSecond, curve, Matrix.one_apply] using hr
-  · convert hi.neg using 1 <;> simp [bottomDenominatorJet, denominatorSecond, curve, Matrix.one_apply, Pi.neg_apply] <;> rfl
+  · convert hi.neg using 1 <;> simp [bottomDenominatorJet, denominatorSecond, curve] <;> rfl
   · simpa [bottomDenominatorJet, denominatorSecond, curve, Matrix.one_apply] using hr
   · simpa [bottomDenominatorJet, denominatorSecond, curve, Matrix.one_apply] using hi
 
@@ -184,7 +184,7 @@ private theorem contraction
   simp only [h2, hn2, hi, map_smul, map_neg, smul_apply, neg_apply, Complex.real_smul]
   norm_num
   have hzero : ((0,0) : KPArch.H3) = 0 := rfl
-  simp only [hzero, map_zero, zero_apply]
+  simp only [hzero, map_zero]
   ring
 
  theorem basepoint_casimir (φ : KPArch.H3 → ℂ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) :
@@ -270,7 +270,7 @@ def productCasimir (d : ℕ) (f : KPArch.Space d → ℂ)
         2 * fderiv ℝ (f ∘ L) (0,0) (0,1) from basepoint_casimir (f ∘ L) (hf.comp L.contDiff)]
   rw [second_precomp f hf L, second_precomp f hf L, second_precomp f hf L, first_precomp f hf L]
   simp only [KPArch.height, Pi.zero_apply, Prod.snd_zero, Real.exp_zero, one_pow,
-    Complex.ofReal_one, one_smul, smul_eq_mul]
+    Complex.ofReal_one, smul_eq_mul]
   simp_rw [second_apply f hf]
   have h0 : L (0,0) = 0 := L.map_zero
   rw [h0]

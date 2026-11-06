@@ -39,8 +39,8 @@ private theorem diagonalVector_action (F : Type*) [Field F] [NumberField F]
   ext i j
   fin_cases i <;> fin_cases j <;>
     simp [diagonalVector, rationalVectorAction, diagonalGL,
-      Matrix.GeneralLinearGroup.smul_def, Matrix.GeneralLinearGroup.toLin_apply,
-      Matrix.mul_apply, Matrix.mulVecLin_apply, Matrix.mulVec, dotProduct,
+      Matrix.GeneralLinearGroup.smul_def, 
+      Matrix.mul_apply, 
       Fin.sum_univ_two, LinearEquiv.finTwoArrow, finTwoArrowEquiv]
 
 private theorem intersectionLattice_diagonal_map (F : Type*) [Field F] [NumberField F]

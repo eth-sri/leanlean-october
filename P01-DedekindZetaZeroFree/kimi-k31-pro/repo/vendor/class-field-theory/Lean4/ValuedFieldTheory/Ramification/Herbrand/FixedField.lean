@@ -103,43 +103,11 @@ theorem fixedFieldSubextension_herbrandFunction
   exact RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.herbrandFunction_transportEquiv (RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.subgroupFiltration F H)
     (IntermediateField.subgroupEquivAlgEquiv H) s
 
-omit [IsGalois K L] in
-/-- States the theorem `fixedFieldSubextension_inverseHerbrandFunction`. -/
-theorem fixedFieldSubextension_inverseHerbrandFunction
-    [Fintype Gal(L/K)]
-    (F : AntitoneNormalSubgroupFiltration Gal(L/K))
-    (H : Subgroup Gal(L/K)) (t : ℝ) :
-    (RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.inverseHerbrandFunction (fixedFieldSubextensionFiltration F H)) t =
-      (RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.inverseHerbrandFunction (RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.subgroupFiltration F H)) t := by
-  let : Fintype H := Fintype.ofFinite H
-  let : Fintype Gal(L/IntermediateField.fixedField H) :=
-    Fintype.ofFinite Gal(L/IntermediateField.fixedField H)
-  exact RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.inverseHerbrandFunction_transportEquiv (RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.subgroupFiltration F H)
-    (IntermediateField.subgroupEquivAlgEquiv H) t
 
-/-- States the theorem `fixedFieldQuotientImage_herbrandFunction`. -/
-theorem fixedFieldQuotientImage_herbrandFunction
-    [Fintype Gal(L/K)]
-    (F : AntitoneNormalSubgroupFiltration Gal(L/K))
-    (H : Subgroup Gal(L/K)) [H.Normal] (s : ℝ) :
-    (RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.herbrandFunction (fixedFieldQuotientImageFiltration F H)) s =
-      (RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.herbrandFunction (RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.quotientImageFiltration F H)) s := by
-  let : Fintype Gal(IntermediateField.fixedField H/K) :=
-    Fintype.ofFinite Gal(IntermediateField.fixedField H/K)
-  exact RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.quotientImageTransport_herbrandFunction F H
-    (IsGalois.normalAutEquivQuotient H) s
 
-/-- States the theorem `fixedFieldQuotientImage_inverseHerbrandFunction`. -/
-theorem fixedFieldQuotientImage_inverseHerbrandFunction
-    [Fintype Gal(L/K)]
-    (F : AntitoneNormalSubgroupFiltration Gal(L/K))
-    (H : Subgroup Gal(L/K)) [H.Normal] (t : ℝ) :
-    (RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.inverseHerbrandFunction (fixedFieldQuotientImageFiltration F H)) t =
-      (RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.inverseHerbrandFunction (RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.quotientImageFiltration F H)) t := by
-  let : Fintype Gal(IntermediateField.fixedField H/K) :=
-    Fintype.ofFinite Gal(IntermediateField.fixedField H/K)
-  exact RamificationTheory.DiscreteValuationField.AntitoneNormalSubgroupFiltration.quotientImageTransport_inverseHerbrandFunction F H
-    (IsGalois.normalAutEquivQuotient H) t
+
+
+
 
 end Higher
 end RamificationTheory.HilbertRamification
