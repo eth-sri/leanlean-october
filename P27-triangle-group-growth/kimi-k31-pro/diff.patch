@@ -1,0 +1,1749 @@
+diff --git a/CoxeterGrowth/Family.lean b/CoxeterGrowth/Family.lean
+index e569e7072..4fb03fb99 100644
+--- a/CoxeterGrowth/Family.lean
++++ b/CoxeterGrowth/Family.lean
+@@ -30,12 +30,23 @@ namespace CoxeterGrowth.Triangle
+ 
+ open Finset PowerSeries Filter Topology
+ 
++local notation "S(" m "," x ")" => ∑ i ∈ Ico 1 m, x ^ i
++local notation "F(" p "," q "," x ")" => S(p,x) * S(q,x)
++local notation "A(" W "," cs "," n ")" => Nat.card {w : W // CoxeterSystem.length cs w = n}
++local notation "D(" f "," p "," q "," n ")" =>
++  ∑ i ∈ Ico 1 p, ∑ j ∈ Ico 1 q, f (n - (i + j))
++
++theorem hyperbolic_gt {p q : ℕ} (hp : 2 ≤ p) (hq : 2 ≤ q) (hne : (p, q) ≠ (2, 2)) :
++    2 < p ∨ 2 < q := by
++  by_contra! h
++  exact hne (Prod.ext (by omega) (by omega))
++
+ /-! ## Monotonicity and symmetry of the normal-form counts -/
+ 
+ theorem VT_mono (r : List ℕ) :
+     ∀ {m₁ m₂ m₁' m₂' : ℕ}, m₁ ≤ m₁' → m₂ ≤ m₂' → VT m₁ m₂ r → VT m₁' m₂' r := by
+   induction r with
+-  | nil => intro _ _ _ _ _ _ _; exact VT_nil.2 trivial
++  | nil => intro _ _ _ _ _ _ _; trivial
+   | cons k r ih =>
+     intro m₁ m₂ m₁' m₂' h1 h2 h
+     rw [VT_cons] at h ⊢
+@@ -68,7 +79,7 @@ theorem card_NFs_swap {p q : ℕ} (hp : 1 ≤ p) (hq : 1 ≤ q) (n : ℕ) :
+ 
+ theorem VT_ones (n : ℕ) : ∀ {m₁ m₂ : ℕ}, 2 ≤ m₁ → 2 ≤ m₂ → VT m₁ m₂ (List.replicate n 1) := by
+   induction n with
+-  | zero => intro _ _ _ _; exact VT_nil.2 trivial
++  | zero => intro _ _ _ _; trivial
+   | succ n ih =>
+     intro m₁ m₂ h1 h2
+     rw [List.replicate_succ, VT_cons]
+@@ -80,8 +91,7 @@ theorem card_NFs_pos {p q : ℕ} (hp : 2 ≤ p) (hq : 2 ≤ q) (n : ℕ) : 0 < (
+   refine ⟨((0, 0), List.replicate n 1), (mem_NFs p q n _).2 ⟨?_, ?_⟩⟩
+   · rw [V_mk]
+     exact ⟨⟨by omega, by omega⟩, VT_ones n hq hp⟩
+-  · rw [len_mk]
+-    simp
++  · simp [len]
+ 
+ /-- The `(p, q, ∞)` hypotheses are met by `triM p q`. -/
+ theorem isTri_triM (p q : ℕ) (hp : 2 ≤ p) (hq : 2 ≤ q) : IsTri (triM p q hp hq) p q :=
+@@ -89,9 +99,8 @@ theorem isTri_triM (p q : ℕ) (hp : 2 ≤ p) (hq : 2 ≤ q) : IsTri (triM p q h
+ 
+ theorem card_NFs23_lower {ρ : ℝ} (h1 : 1 < ρ) (h3 : ρ ^ 3 = ρ + 1) (n : ℕ) :
+     2 * ρ ^ (n + 2) ≤ ((NFs 2 3 (n + 2)).card : ℝ) := by
+-  have h := (sphere23_growth (triM 2 3 le_rfl (by norm_num)).toCoxeterSystem rfl rfl rfl h1 h3
++  have h := (sphere23_growth (triM 2 3 le_rfl (by norm_num)).toCoxeterSystem rfl rfl rfl ρ h1 h3
+     n).1
+-  unfold sphere at h
+   rwa [sphere_eq_card _ (isTri_triM 2 3 le_rfl (by norm_num))] at h
+ 
+ /-- Every hyperbolic member dominates `(2, 3, ∞)` (if `p = 2`) or `(3, 2, ∞)` (if `p ≥ 3`). -/
+@@ -101,10 +110,7 @@ theorem card_NFs23_le {p q : ℕ} (hp : 2 ≤ p) (hq : 2 ≤ q) (hne : (p, q) 
+   · rw [card_NFs_swap (by norm_num) (by norm_num) n]
+     exact card_le_card (NFs_mono hp3 hq n)
+   · obtain rfl : p = 2 := le_antisymm hp2 hp
+-    have hq3 : 3 ≤ q := by
+-      by_contra hc
+-      have h2 : q = 2 := by omega
+-      exact hne (by rw [h2])
++    have hq3 : 3 ≤ q := (hyperbolic_gt hp hq hne).resolve_left (by omega)
+     exact card_le_card (NFs_mono le_rfl hq3 n)
+ 
+ section Family
+@@ -113,24 +119,32 @@ variable {W W' : Type*} [Group W] [Group W'] {M M' : CoxeterMatrix (Fin 3)}
+   (cs : CoxeterSystem M W) (cs' : CoxeterSystem M' W')
+ 
+ /-- **Monotonicity**: `a_{p,q}(n) ≤ a_{p',q'}(n)` for `p ≤ p'`, `q ≤ q'`. -/
+-theorem sphere_mono {p q p' q' : ℕ} (hT : IsTri M p q) (hT' : IsTri M' p' q') (hp : p ≤ p')
+-    (hq : q ≤ q') (n : ℕ) : sphere cs n ≤ sphere cs' n := by
+-  unfold sphere
++theorem sphere_mono {p q p' q' : ℕ} (hp : 2 ≤ p) (hq : 2 ≤ q) (hpp : p ≤ p')
++    (hqq : q ≤ q') (h01 : M 0 1 = 0) (h02 : M 0 2 = p) (h12 : M 1 2 = q)
++    (h01' : M' 0 1 = 0) (h02' : M' 0 2 = p') (h12' : M' 1 2 = q') (n : ℕ) :
++    A(W,cs,n) ≤ A(W',cs',n) := by
++  have hT : IsTri M p q := ⟨hp, hq, h01, h02, h12⟩
++  have hT' : IsTri M' p' q' := ⟨hp.trans hpp, hq.trans hqq, h01', h02', h12'⟩
+   rw [sphere_eq_card cs hT, sphere_eq_card cs' hT']
+-  exact card_le_card (NFs_mono hp hq n)
++  exact card_le_card (NFs_mono hpp hqq n)
+ 
+ /-- **Symmetry**: `a_{p,q}(n) = a_{q,p}(n)`. -/
+-theorem sphere_symm {p q : ℕ} (hT : IsTri M p q) (hT' : IsTri M' q p) (n : ℕ) :
+-    sphere cs n = sphere cs' n := by
+-  unfold sphere
++theorem sphere_symm {p q : ℕ} (hp : 2 ≤ p) (hq : 2 ≤ q)
++    (h01 : M 0 1 = 0) (h02 : M 0 2 = p) (h12 : M 1 2 = q)
++    (h01' : M' 0 1 = 0) (h02' : M' 0 2 = q) (h12' : M' 1 2 = p) (n : ℕ) :
++    A(W,cs,n) = A(W',cs',n) := by
++  have hT : IsTri M p q := ⟨hp, hq, h01, h02, h12⟩
++  have hT' : IsTri M' q p := ⟨hq, hp, h01', h02', h12'⟩
+   rw [sphere_eq_card cs hT, sphere_eq_card cs' hT']
+   exact card_NFs_swap (by have := hT.hp; omega) (by have := hT.hq; omega) n
+ 
+ /-- **Minimality of the plastic number in the family**: `2ρⁿ ≤ a_{p,q}(n)` for `n ≥ 2` and every
+ hyperbolic `(p, q, ∞)`. -/
+-theorem sphere_ge_plastic {p q : ℕ} (hT : IsTri M p q) (hne : (p, q) ≠ (2, 2)) {ρ : ℝ}
+-    (h1 : 1 < ρ) (h3 : ρ ^ 3 = ρ + 1) (n : ℕ) : 2 * ρ ^ (n + 2) ≤ (sphere cs (n + 2) : ℝ) := by
+-  unfold sphere
++theorem sphere_ge_plastic {p q : ℕ} (hp : 2 ≤ p) (hq : 2 ≤ q) (hne : (p, q) ≠ (2, 2))
++    (h01 : M 0 1 = 0) (h02 : M 0 2 = p) (h12 : M 1 2 = q)
++    (ρ : ℝ) (h1 : 1 < ρ) (h3 : ρ ^ 3 = ρ + 1) (n : ℕ) :
++    2 * ρ ^ (n + 2) ≤ (A(W,cs,n + 2) : ℝ) := by
++  have hT : IsTri M p q := ⟨hp, hq, h01, h02, h12⟩
+   rw [sphere_eq_card cs hT]
+   calc 2 * ρ ^ (n + 2) ≤ ((NFs 2 3 (n + 2)).card : ℝ) := card_NFs23_lower h1 h3 n
+     _ ≤ ((NFs p q (n + 2)).card : ℝ) := by
+@@ -152,7 +166,7 @@ theorem coeff_numer_eq_zero (p q n : ℕ) (hn : p + q ≤ n) :
+ 
+ theorem coeff_denom (f : ℕ → ℤ) (p q n : ℕ) (hn : p + q ≤ n) :
+     coeff n (mk f * (1 - (∑ i ∈ Ico 1 p, (X : ℤ⟦X⟧) ^ i) * (∑ i ∈ Ico 1 q, (X : ℤ⟦X⟧) ^ i))) =
+-      f n - ∑ i ∈ Ico 1 p, ∑ j ∈ Ico 1 q, f (n - (i + j)) := by
++      f n - D(f,p,q,n) := by
+   rw [mul_sub, mul_one, map_sub, coeff_mk, sum_mul_sum, mul_sum, map_sum]
+   congr 1
+   refine sum_congr rfl fun i hi => ?_
+@@ -167,10 +181,10 @@ theorem rec_of_series (f : ℕ → ℕ) (p q : ℕ)
+     (H : (PowerSeries.mk fun n => (f n : ℤ)) *
+         (1 - (∑ i ∈ Ico 1 p, (X : ℤ⟦X⟧) ^ i) * (∑ i ∈ Ico 1 q, (X : ℤ⟦X⟧) ^ i)) =
+       (1 + X) * (∑ i ∈ range p, (X : ℤ⟦X⟧) ^ i) * (∑ i ∈ range q, (X : ℤ⟦X⟧) ^ i))
+-    (n : ℕ) (hn : p + q ≤ n) : f n = ∑ i ∈ Ico 1 p, ∑ j ∈ Ico 1 q, f (n - (i + j)) := by
++    (n : ℕ) (hn : p + q ≤ n) : f n = D(f,p,q,n) := by
+   have h := congrArg (coeff n) H
+   rw [coeff_denom _ p q n hn, coeff_numer_eq_zero p q n hn] at h
+-  have h' : (f n : ℤ) = ((∑ i ∈ Ico 1 p, ∑ j ∈ Ico 1 q, f (n - (i + j)) : ℕ) : ℤ) := by
++  have h' : (f n : ℤ) = ((D(f,p,q,n) : ℕ) : ℤ) := by
+     push_cast
+     linarith
+   exact_mod_cast h'
+@@ -187,172 +201,126 @@ theorem pow_sub_eq {τ : ℝ} (hτ : τ ≠ 0) {n i j : ℕ} (h : i + j ≤ n) :
+     _ = τ ^ (m + (i + j)) * (τ⁻¹ ^ i * τ⁻¹ ^ j) := by ring
+ 
+ theorem sum_pow_sub {p q n : ℕ} (hn : p + q ≤ n) {τ : ℝ} (hτ : τ ≠ 0)
+-    (heq : (∑ i ∈ Ico 1 p, τ⁻¹ ^ i) * (∑ i ∈ Ico 1 q, τ⁻¹ ^ i) = 1) :
+-    ∑ i ∈ Ico 1 p, ∑ j ∈ Ico 1 q, τ ^ (n - (i + j)) = τ ^ n := by
+-  calc ∑ i ∈ Ico 1 p, ∑ j ∈ Ico 1 q, τ ^ (n - (i + j))
++    (heq : F(p,q,τ⁻¹) = 1) :
++    D(fun k => τ ^ k,p,q,n) = τ ^ n := by
++  calc D(fun k => τ ^ k,p,q,n)
+       = ∑ i ∈ Ico 1 p, ∑ j ∈ Ico 1 q, τ ^ n * (τ⁻¹ ^ i * τ⁻¹ ^ j) := by
+         refine sum_congr rfl fun i hi => sum_congr rfl fun j hj => ?_
+         rw [mem_Ico] at hi hj
+         exact pow_sub_eq hτ (by omega)
+-    _ = τ ^ n * ((∑ i ∈ Ico 1 p, τ⁻¹ ^ i) * (∑ i ∈ Ico 1 q, τ⁻¹ ^ i)) := by
++    _ = τ ^ n * (F(p,q,τ⁻¹)) := by
+         rw [sum_mul_sum, mul_sum]
+         refine sum_congr rfl fun i _ => ?_
+         rw [mul_sum]
+     _ = τ ^ n := by rw [heq, mul_one]
+ 
+-/-- Lower bound `τⁿ ≤ τ^{p+q} f(n)` from the recursion and positivity. -/
+-theorem lower_of_rec (f : ℕ → ℕ) {p q : ℕ} (hpos : ∀ n, 1 ≤ f n)
+-    (hrec : ∀ n, p + q ≤ n → f n = ∑ i ∈ Ico 1 p, ∑ j ∈ Ico 1 q, f (n - (i + j)))
+-    {τ : ℝ} (hτ : 1 < τ) (heq : (∑ i ∈ Ico 1 p, τ⁻¹ ^ i) * (∑ i ∈ Ico 1 q, τ⁻¹ ^ i) = 1)
+-    (n : ℕ) : τ ^ n ≤ τ ^ (p + q) * f n := by
++/-- The two exponential bounds from the recursion, proved by one induction. -/
++theorem bounds_of_rec (f : ℕ → ℕ) {p q : ℕ} (hpos : ∀ n, 1 ≤ f n)
++    (hrec : ∀ n, p + q ≤ n → f n = D(f,p,q,n))
++    {τ : ℝ} (hτ : 1 < τ) (heq : F(p,q,τ⁻¹) = 1) (n : ℕ) :
++    τ ^ n ≤ τ ^ (p + q) * f n ∧
++      (f n : ℝ) ≤ (∑ m ∈ range (p + q), (f m : ℝ)) * τ ^ n := by
+   have hτ0 : 0 < τ := by linarith
++  have hC0 : 0 ≤ ∑ m ∈ range (p + q), (f m : ℝ) := sum_nonneg fun m _ => Nat.cast_nonneg _
+   induction n using Nat.strong_induction_on with
+   | _ n ih =>
+     rcases Nat.lt_or_ge n (p + q) with hn | hn
+     · have h1 : τ ^ n ≤ τ ^ (p + q) := pow_le_pow_right₀ hτ.le hn.le
+       have h2 : (1 : ℝ) ≤ f n := by exact_mod_cast hpos n
+-      calc τ ^ n ≤ τ ^ (p + q) := h1
+-        _ = τ ^ (p + q) * 1 := (mul_one _).symm
+-        _ ≤ τ ^ (p + q) * f n := mul_le_mul_of_nonneg_left h2 (pow_nonneg hτ0.le _)
+-    · rw [hrec n hn]
+-      push_cast
+-      calc τ ^ n = ∑ i ∈ Ico 1 p, ∑ j ∈ Ico 1 q, τ ^ (n - (i + j)) :=
+-            (sum_pow_sub hn hτ0.ne' heq).symm
+-        _ ≤ ∑ i ∈ Ico 1 p, ∑ j ∈ Ico 1 q, τ ^ (p + q) * (f (n - (i + j)) : ℝ) := by
+-            refine sum_le_sum fun i hi => sum_le_sum fun j hj => ?_
+-            rw [mem_Ico] at hi hj
+-            exact ih _ (by omega)
+-        _ = τ ^ (p + q) * ∑ i ∈ Ico 1 p, ∑ j ∈ Ico 1 q, (f (n - (i + j)) : ℝ) := by
+-            simp only [mul_sum]
+-
+-/-- Upper bound `f(n) ≤ C τⁿ`, `C = f(0) + ⋯ + f(p+q−1)`, from the recursion. -/
+-theorem upper_of_rec (f : ℕ → ℕ) {p q : ℕ}
+-    (hrec : ∀ n, p + q ≤ n → f n = ∑ i ∈ Ico 1 p, ∑ j ∈ Ico 1 q, f (n - (i + j)))
+-    {τ : ℝ} (hτ : 1 < τ) (heq : (∑ i ∈ Ico 1 p, τ⁻¹ ^ i) * (∑ i ∈ Ico 1 q, τ⁻¹ ^ i) = 1)
+-    (n : ℕ) : (f n : ℝ) ≤ (∑ m ∈ range (p + q), (f m : ℝ)) * τ ^ n := by
+-  have hτ0 : 0 < τ := by linarith
+-  have hC0 : 0 ≤ ∑ m ∈ range (p + q), (f m : ℝ) := sum_nonneg fun m _ => Nat.cast_nonneg _
+-  induction n using Nat.strong_induction_on with
+-  | _ n ih =>
+-    rcases Nat.lt_or_ge n (p + q) with hn | hn
+-    · have h1 : (f n : ℝ) ≤ ∑ m ∈ range (p + q), (f m : ℝ) :=
++      have hU : (f n : ℝ) ≤ ∑ m ∈ range (p + q), (f m : ℝ) :=
+         single_le_sum (f := fun m => (f m : ℝ)) (fun m _ => Nat.cast_nonneg _) (mem_range.2 hn)
+-      have h2 : (1 : ℝ) ≤ τ ^ n := one_le_pow₀ hτ.le
+-      calc (f n : ℝ) ≤ ∑ m ∈ range (p + q), (f m : ℝ) := h1
+-        _ = (∑ m ∈ range (p + q), (f m : ℝ)) * 1 := (mul_one _).symm
+-        _ ≤ (∑ m ∈ range (p + q), (f m : ℝ)) * τ ^ n := mul_le_mul_of_nonneg_left h2 hC0
++      have hpow : (1 : ℝ) ≤ τ ^ n := one_le_pow₀ hτ.le
++      constructor
++      · calc τ ^ n ≤ τ ^ (p + q) := h1
++          _ = τ ^ (p + q) * 1 := (mul_one _).symm
++          _ ≤ τ ^ (p + q) * f n := mul_le_mul_of_nonneg_left h2 (pow_nonneg hτ0.le _)
++      · calc (f n : ℝ) ≤ ∑ m ∈ range (p + q), (f m : ℝ) := hU
++          _ = (∑ m ∈ range (p + q), (f m : ℝ)) * 1 := (mul_one _).symm
++          _ ≤ (∑ m ∈ range (p + q), (f m : ℝ)) * τ ^ n := mul_le_mul_of_nonneg_left hpow hC0
+     · rw [hrec n hn]
+       push_cast
+-      calc ∑ i ∈ Ico 1 p, ∑ j ∈ Ico 1 q, (f (n - (i + j)) : ℝ)
+-          ≤ ∑ i ∈ Ico 1 p, ∑ j ∈ Ico 1 q,
+-              (∑ m ∈ range (p + q), (f m : ℝ)) * τ ^ (n - (i + j)) := by
+-            refine sum_le_sum fun i hi => sum_le_sum fun j hj => ?_
+-            rw [mem_Ico] at hi hj
+-            exact ih _ (by omega)
+-        _ = (∑ m ∈ range (p + q), (f m : ℝ)) * τ ^ n := by
+-            rw [← sum_pow_sub hn hτ0.ne' heq]
+-            simp only [mul_sum]
+-
+-/-- `f(n)^{1/n} → τ` for any sequence with `c τⁿ ≤ f(n) ≤ C τⁿ`, `c, C > 0`. -/
+-theorem root_tendsto_of_bounds' (f : ℕ → ℕ) {τ c C : ℝ} (hτ : 0 ≤ τ) (hc : 0 < c) (hC : 0 < C)
+-    (hlo : ∀ n, c * τ ^ n ≤ f n) (hhi : ∀ n, (f n : ℝ) ≤ C * τ ^ n) :
+-    Tendsto (fun n : ℕ => (f n : ℝ) ^ ((n : ℝ)⁻¹)) atTop (𝓝 τ) := by
+-  refine tendsto_of_tendsto_of_tendsto_of_le_of_le'
+-    (const_rpow_inv_mul_tendsto (ρ := τ) hc) (const_rpow_inv_mul_tendsto (ρ := τ) hC) ?_ ?_
+-  · filter_upwards [eventually_ge_atTop 1] with n hn
+-    have hn0 : n ≠ 0 := by omega
+-    calc c ^ ((n : ℝ))⁻¹ * τ = (c * τ ^ n) ^ ((n : ℝ))⁻¹ := by
+-          rw [Real.mul_rpow hc.le (pow_nonneg hτ _), Real.pow_rpow_inv_natCast hτ hn0]
+-      _ ≤ (f n : ℝ) ^ ((n : ℝ))⁻¹ :=
+-          Real.rpow_le_rpow (mul_nonneg hc.le (pow_nonneg hτ _)) (hlo n) (by positivity)
+-  · filter_upwards [eventually_ge_atTop 1] with n hn
+-    have hn0 : n ≠ 0 := by omega
+-    calc (f n : ℝ) ^ ((n : ℝ))⁻¹ ≤ (C * τ ^ n) ^ ((n : ℝ))⁻¹ :=
+-          Real.rpow_le_rpow (Nat.cast_nonneg _) (hhi n) (by positivity)
+-      _ = C ^ ((n : ℝ))⁻¹ * τ := by
+-          rw [Real.mul_rpow hC.le (pow_nonneg hτ _), Real.pow_rpow_inv_natCast hτ hn0]
++      constructor
++      · calc τ ^ n = D(fun k => τ ^ k,p,q,n) :=
++              (sum_pow_sub hn hτ0.ne' heq).symm
++          _ ≤ ∑ i ∈ Ico 1 p, ∑ j ∈ Ico 1 q, τ ^ (p + q) * (f (n - (i + j)) : ℝ) := by
++              refine sum_le_sum fun i hi => sum_le_sum fun j hj => ?_
++              rw [mem_Ico] at hi hj
++              exact (ih _ (by omega)).1
++          _ = τ ^ (p + q) * D(fun k => (f k : ℝ),p,q,n) := by
++              simp only [mul_sum]
++      · calc D(fun k => (f k : ℝ),p,q,n)
++            ≤ ∑ i ∈ Ico 1 p, ∑ j ∈ Ico 1 q,
++                (∑ m ∈ range (p + q), (f m : ℝ)) * τ ^ (n - (i + j)) := by
++              refine sum_le_sum fun i hi => sum_le_sum fun j hj => ?_
++              rw [mem_Ico] at hi hj
++              exact (ih _ (by omega)).2
++          _ = (∑ m ∈ range (p + q), (f m : ℝ)) * τ ^ n := by
++              rw [← sum_pow_sub hn hτ0.ne' heq]
++              simp only [mul_sum]
+ 
+ /-! ## The rate equation -/
+ 
+-theorem sumIco_nonneg (m : ℕ) {x : ℝ} (hx : 0 ≤ x) : 0 ≤ ∑ i ∈ Ico 1 m, x ^ i :=
++theorem sumIco_nonneg (m : ℕ) {x : ℝ} (hx : 0 ≤ x) : 0 ≤ S(m,x) :=
+   sum_nonneg fun i _ => pow_nonneg hx i
+ 
+-theorem sumIco_pos {m : ℕ} (hm : 2 ≤ m) {x : ℝ} (hx : 0 < x) : 0 < ∑ i ∈ Ico 1 m, x ^ i := by
++theorem sumIco_pos {m : ℕ} (hm : 2 ≤ m) {x : ℝ} (hx : 0 < x) : 0 < S(m,x) := by
+   have h := single_le_sum (f := fun i => x ^ i) (fun i _ => pow_nonneg hx.le i)
+     (mem_Ico.2 ⟨le_rfl, hm⟩ : 1 ∈ Ico 1 m)
+-  simp only [pow_one] at h
+-  exact lt_of_lt_of_le hx h
++  exact lt_of_lt_of_le hx (by simpa using h)
+ 
+ theorem sumIco_lt {m : ℕ} (hm : 2 ≤ m) {x y : ℝ} (hx : 0 ≤ x) (hxy : x < y) :
+-    ∑ i ∈ Ico 1 m, x ^ i < ∑ i ∈ Ico 1 m, y ^ i :=
++    S(m,x) < S(m,y) :=
+   sum_lt_sum (fun i _ => pow_le_pow_left₀ hx hxy.le i)
+     ⟨1, mem_Ico.2 ⟨le_rfl, hm⟩, by simpa using hxy⟩
+ 
+ theorem sumIco_le_of_le {m m' : ℕ} (h : m ≤ m') {x : ℝ} (hx : 0 ≤ x) :
+-    ∑ i ∈ Ico 1 m, x ^ i ≤ ∑ i ∈ Ico 1 m', x ^ i :=
++    S(m,x) ≤ S(m',x) :=
+   sum_le_sum_of_subset_of_nonneg (Ico_subset_Ico_right h) fun i _ _ => pow_nonneg hx i
+ 
+ theorem sumIco_lt_of_lt {m m' : ℕ} (hm : 1 ≤ m) (h : m < m') {x : ℝ} (hx : 0 < x) :
+-    ∑ i ∈ Ico 1 m, x ^ i < ∑ i ∈ Ico 1 m', x ^ i :=
++    S(m,x) < S(m',x) :=
+   sum_lt_sum_of_subset (Ico_subset_Ico_right h.le) (i := m) (mem_Ico.2 ⟨hm, h⟩)
+     (by simp) (pow_pos hx m) (fun j _ _ => pow_nonneg hx.le j)
+ 
+ /-- `x ↦ S_p(x) S_q(x)` is strictly increasing on `[0, ∞)`. -/
+ theorem rateFn_lt {p q : ℕ} (hp : 2 ≤ p) (hq : 2 ≤ q) {x y : ℝ} (hx : 0 ≤ x) (hxy : x < y) :
+-    (∑ i ∈ Ico 1 p, x ^ i) * (∑ i ∈ Ico 1 q, x ^ i) <
+-      (∑ i ∈ Ico 1 p, y ^ i) * (∑ i ∈ Ico 1 q, y ^ i) :=
++    F(p,q,x) < F(p,q,y) :=
+   mul_lt_mul'' (sumIco_lt hp hx hxy) (sumIco_lt hq hx hxy) (sumIco_nonneg p hx)
+     (sumIco_nonneg q hx)
+ 
+ theorem rateFn_le {p q : ℕ} (hp : 2 ≤ p) (hq : 2 ≤ q) {x y : ℝ} (hx : 0 ≤ x) (hxy : x ≤ y) :
+-    (∑ i ∈ Ico 1 p, x ^ i) * (∑ i ∈ Ico 1 q, x ^ i) ≤
+-      (∑ i ∈ Ico 1 p, y ^ i) * (∑ i ∈ Ico 1 q, y ^ i) := by
++    F(p,q,x) ≤ F(p,q,y) := by
+   rcases hxy.lt_or_eq with h | h
+   · exact (rateFn_lt hp hq hx h).le
+   · rw [h]
+ 
+ theorem rateFn_inj {p q : ℕ} (hp : 2 ≤ p) (hq : 2 ≤ q) {x y : ℝ} (hx : 0 ≤ x) (hy : 0 ≤ y)
+-    (hgx : (∑ i ∈ Ico 1 p, x ^ i) * (∑ i ∈ Ico 1 q, x ^ i) = 1)
+-    (hgy : (∑ i ∈ Ico 1 p, y ^ i) * (∑ i ∈ Ico 1 q, y ^ i) = 1) : x = y := by
++    (hgx : F(p,q,x) = 1) (hgy : F(p,q,y) = 1) : x = y := by
+   rcases lt_trichotomy x y with h | h | h
+   · have := rateFn_lt hp hq hx h; linarith
+   · exact h
+   · have := rateFn_lt hp hq hy h; linarith
+ 
+-theorem sumIco_zero (m : ℕ) : ∑ i ∈ Ico 1 m, (0 : ℝ) ^ i = 0 :=
++theorem sumIco_zero (m : ℕ) : S(m,(0 : ℝ)) = 0 :=
+   sum_eq_zero fun i hi => zero_pow (by rw [mem_Ico] at hi; omega)
+ 
+-theorem sumIco_one (m : ℕ) : ∑ i ∈ Ico 1 m, (1 : ℝ) ^ i = ((m - 1 : ℕ) : ℝ) := by
+-  simp
++theorem sumIco_one (m : ℕ) : S(m,(1 : ℝ)) = ((m - 1 : ℕ) : ℝ) := by simp
+ 
+ /-- **Existence and uniqueness of the rate**: for `(p, q) ≠ (2, 2)` exactly one `τ > 1` solves
+ `S_p(τ⁻¹) S_q(τ⁻¹) = 1`. -/
+ theorem rate_exists_unique {p q : ℕ} (hp : 2 ≤ p) (hq : 2 ≤ q) (hne : (p, q) ≠ (2, 2)) :
+-    ∃! τ : ℝ, 1 < τ ∧ (∑ i ∈ Ico 1 p, τ⁻¹ ^ i) * (∑ i ∈ Ico 1 q, τ⁻¹ ^ i) = 1 := by
+-  have hcont : ContinuousOn
+-      (fun x : ℝ => (∑ i ∈ Ico 1 p, x ^ i) * (∑ i ∈ Ico 1 q, x ^ i)) (Set.Icc 0 1) :=
+-    ((continuous_finsetSum _ fun i _ => continuous_pow i).mul
+-      (continuous_finsetSum _ fun i _ => continuous_pow i)).continuousOn
++    ∃! τ : ℝ, 1 < τ ∧ F(p,q,τ⁻¹) = 1 := by
++  have hcont : ContinuousOn (fun x : ℝ => F(p,q,x)) (Set.Icc 0 1) := by fun_prop
+   have h2 : 2 ≤ (p - 1) * (q - 1) := by
+-    rcases Nat.lt_or_ge 2 p with hp3 | hp2
+-    · calc 2 = 2 * 1 := rfl
+-        _ ≤ (p - 1) * (q - 1) := Nat.mul_le_mul (by omega) (by omega)
+-    · obtain rfl : p = 2 := le_antisymm hp2 hp
+-      have hq3 : 3 ≤ q := by
+-        by_contra hc
+-        have h2 : q = 2 := by omega
+-        exact hne (by rw [h2])
+-      calc 2 = 1 * 2 := rfl
+-        _ ≤ (2 - 1) * (q - 1) := Nat.mul_le_mul (by omega) (by omega)
+-  have g1 : (1 : ℝ) < (∑ i ∈ Ico 1 p, (1 : ℝ) ^ i) * (∑ i ∈ Ico 1 q, (1 : ℝ) ^ i) := by
++    rcases hyperbolic_gt hp hq hne with h | h
++    · simpa using Nat.mul_le_mul (show 2 ≤ p - 1 by omega) (show 1 ≤ q - 1 by omega)
++    · simpa using Nat.mul_le_mul (show 1 ≤ p - 1 by omega) (show 2 ≤ q - 1 by omega)
++  have g1 : (1 : ℝ) < F(p,q,1) := by
+     rw [sumIco_one, sumIco_one, ← Nat.cast_mul]
+     exact_mod_cast h2
+-  have g0 : (∑ i ∈ Ico 1 p, (0 : ℝ) ^ i) * (∑ i ∈ Ico 1 q, (0 : ℝ) ^ i) = 0 := by
+-    rw [sumIco_zero, zero_mul]
++  have g0 : F(p,q,(0 : ℝ)) = 0 := by rw [sumIco_zero, zero_mul]
+   obtain ⟨x, hx, hgx⟩ := intermediate_value_Icc zero_le_one hcont
+-    (⟨by rw [g0]; exact zero_le_one, g1.le⟩ :
+-      (1 : ℝ) ∈ Set.Icc ((∑ i ∈ Ico 1 p, (0 : ℝ) ^ i) * (∑ i ∈ Ico 1 q, (0 : ℝ) ^ i))
+-        ((∑ i ∈ Ico 1 p, (1 : ℝ) ^ i) * (∑ i ∈ Ico 1 q, (1 : ℝ) ^ i)))
++    (⟨by rw [g0]; exact zero_le_one, g1.le⟩ : (1 : ℝ) ∈ Set.Icc (F(p,q,(0 : ℝ))) (F(p,q,1)))
+   simp only at hgx
+   have hx0 : 0 < x := by
+     rcases hx.1.lt_or_eq with h | h
+@@ -374,8 +342,8 @@ section Rate
+ variable {W : Type*} [Group W] {M : CoxeterMatrix (Fin 3)} (cs : CoxeterSystem M W)
+ 
+ theorem sphere_rec {p q : ℕ} (hT : IsTri M p q) (n : ℕ) (hn : p + q ≤ n) :
+-    sphere cs n = ∑ i ∈ Ico 1 p, ∑ j ∈ Ico 1 q, sphere cs (n - (i + j)) :=
+-  rec_of_series (sphere cs) p q (growth_series cs hT) n hn
++    sphere cs n = D(sphere cs,p,q,n) :=
++  rec_of_series (sphere cs) p q (growth_series cs hT.hp hT.hq hT.h01 hT.h02 hT.h12) n hn
+ 
+ theorem one_le_sphere {p q : ℕ} (hT : IsTri M p q) (n : ℕ) : 1 ≤ sphere cs n := by
+   unfold sphere
+@@ -383,22 +351,22 @@ theorem one_le_sphere {p q : ℕ} (hT : IsTri M p q) (n : ℕ) : 1 ≤ sphere cs
+   exact card_NFs_pos hT.hp hT.hq n
+ 
+ /-- **The growth rate of `(p, q, ∞)`**: `a(n)^{1/n} → τ`, the root of the rate equation. -/
+-theorem sphere_root_tendsto_rate {p q : ℕ} (hT : IsTri M p q) {τ : ℝ} (hτ : 1 < τ)
+-    (heq : (∑ i ∈ Ico 1 p, τ⁻¹ ^ i) * (∑ i ∈ Ico 1 q, τ⁻¹ ^ i) = 1) :
+-    Tendsto (fun n : ℕ => (sphere cs n : ℝ) ^ ((n : ℝ)⁻¹)) atTop (𝓝 τ) := by
++theorem sphere_root_tendsto_rate {p q : ℕ} (hp : 2 ≤ p) (hq : 2 ≤ q)
++    (h01 : M 0 1 = 0) (h02 : M 0 2 = p) (h12 : M 1 2 = q) (τ : ℝ) (hτ : 1 < τ)
++    (heq : F(p,q,τ⁻¹) = 1) :
++    Tendsto (fun n : ℕ => (A(W,cs,n) : ℝ) ^ ((n : ℝ)⁻¹)) atTop (𝓝 τ) := by
++  have hT : IsTri M p q := ⟨hp, hq, h01, h02, h12⟩
+   have hrec := sphere_rec cs hT
+   have hτ0 : 0 < τ := by linarith
+   have hK : 0 < τ ^ (p + q) := pow_pos hτ0 _
+-  have hC : (0 : ℝ) < ∑ m ∈ range (p + q), (sphere cs m : ℝ) := by
+-    have h0 : (0 : ℝ) < (sphere cs 0 : ℝ) := by exact_mod_cast one_le_sphere cs hT 0
+-    have h1 := single_le_sum (f := fun m => (sphere cs m : ℝ)) (fun m _ => Nat.cast_nonneg _)
+-      (mem_range.2 (show 0 < p + q by have := hT.hp; omega))
+-    exact lt_of_lt_of_le h0 h1
+-  refine root_tendsto_of_bounds' (sphere cs) hτ0.le (inv_pos.2 hK) hC (fun n => ?_)
+-    (fun n => upper_of_rec (sphere cs) hrec hτ heq n)
+-  have h := lower_of_rec (sphere cs) (one_le_sphere cs hT) hrec hτ heq n
++  have hC : (0 : ℝ) < ∑ m ∈ range (p + q), (sphere cs m : ℝ) :=
++    sum_pos (fun m _ => by exact_mod_cast one_le_sphere cs hT m)
++      ⟨0, mem_range.2 (by have := hT.hp; omega)⟩
++  refine root_tendsto_of_bounds (sphere cs) hτ0.le (inv_pos.2 hK) hC 0 (fun n => ?_)
++  have hb := bounds_of_rec (sphere cs) (one_le_sphere cs hT) hrec hτ heq n
++  refine ⟨?_, hb.2⟩
+   calc (τ ^ (p + q))⁻¹ * τ ^ n ≤ (τ ^ (p + q))⁻¹ * (τ ^ (p + q) * sphere cs n) :=
+-        mul_le_mul_of_nonneg_left h (inv_pos.2 hK).le
++        mul_le_mul_of_nonneg_left hb.1 (inv_pos.2 hK).le
+     _ = sphere cs n := inv_mul_cancel_left₀ hK.ne' _
+ 
+ end Rate
+@@ -407,117 +375,88 @@ end Rate
+ 
+ /-- **Strict monotonicity of the rate** in `(p, q)`. -/
+ theorem rate_lt_rate {p q p' q' : ℕ} (hp : 2 ≤ p) (hq : 2 ≤ q) (hpp : p ≤ p') (hqq : q ≤ q')
+-    (hne : (p, q) ≠ (p', q')) {τ τ' : ℝ} (hτ : 1 < τ) (hτ' : 1 < τ')
+-    (heq : (∑ i ∈ Ico 1 p, τ⁻¹ ^ i) * (∑ i ∈ Ico 1 q, τ⁻¹ ^ i) = 1)
+-    (heq' : (∑ i ∈ Ico 1 p', τ'⁻¹ ^ i) * (∑ i ∈ Ico 1 q', τ'⁻¹ ^ i) = 1) : τ < τ' := by
++    (hne : (p, q) ≠ (p', q')) (τ τ' : ℝ) (hτ : 1 < τ) (hτ' : 1 < τ')
++    (heq : F(p,q,τ⁻¹) = 1) (heq' : F(p',q',τ'⁻¹) = 1) : τ < τ' := by
+   have hx : 0 < τ⁻¹ := inv_pos.2 (by linarith)
+-  have hx' : 0 < τ'⁻¹ := inv_pos.2 (by linarith)
+   have hp' : 2 ≤ p' := le_trans hp hpp
+   have hq' : 2 ≤ q' := le_trans hq hqq
+   have A := sumIco_le_of_le hpp hx.le
+   have B := sumIco_le_of_le hqq hx.le
+-  have A0 := sumIco_pos hp hx
+   have B0 := sumIco_pos hq hx
+-  have hstep : (∑ i ∈ Ico 1 p, τ⁻¹ ^ i) * (∑ i ∈ Ico 1 q, τ⁻¹ ^ i) <
+-      (∑ i ∈ Ico 1 p', τ⁻¹ ^ i) * (∑ i ∈ Ico 1 q', τ⁻¹ ^ i) := by
++  have hstep : F(p,q,τ⁻¹) < F(p',q',τ⁻¹) := by
+     rcases Nat.lt_or_ge p p' with h | h
+     · have A' := sumIco_lt_of_lt (by omega) h hx
+-      calc _ < (∑ i ∈ Ico 1 p', τ⁻¹ ^ i) * (∑ i ∈ Ico 1 q, τ⁻¹ ^ i) :=
+-            mul_lt_mul_of_pos_right A' B0
+-        _ ≤ _ := mul_le_mul_of_nonneg_left B (by linarith)
++      calc _ < S(p',τ⁻¹) * S(q,τ⁻¹) := mul_lt_mul_of_pos_right A' B0
++        _ ≤ _ := mul_le_mul_of_nonneg_left B (by positivity)
+     · have hpe : p = p' := le_antisymm hpp h
+       have hq'' : q < q' := lt_of_le_of_ne hqq (fun h' => hne (by rw [hpe, h']))
+       have B' := sumIco_lt_of_lt (by omega) hq'' hx
+-      calc _ ≤ (∑ i ∈ Ico 1 p', τ⁻¹ ^ i) * (∑ i ∈ Ico 1 q, τ⁻¹ ^ i) :=
+-            mul_le_mul_of_nonneg_right A B0.le
+-        _ < _ := mul_lt_mul_of_pos_left B' (by linarith)
++      calc _ ≤ S(p',τ⁻¹) * S(q,τ⁻¹) := mul_le_mul_of_nonneg_right A B0.le
++        _ < _ := mul_lt_mul_of_pos_left B' (by positivity)
+   have hlt : τ'⁻¹ < τ⁻¹ := not_le.mp fun h => by
+     have := rateFn_le hp' hq' hx.le h
+     linarith
+   exact (inv_lt_inv₀ (by linarith) (by linarith)).1 hlt
+ 
+-theorem sum_Ico_1_2_real (x : ℝ) : ∑ i ∈ Ico 1 2, x ^ i = x := by
+-  simp
+-
+-theorem sum_Ico_1_3_real (x : ℝ) : ∑ i ∈ Ico 1 3, x ^ i = x + x ^ 2 := by
+-  simp [Finset.sum_Ico_eq_sum_range, Finset.sum_range_succ]
+-
+ /-- The `(2, 3)` rate equation is the plastic cubic. -/
+-theorem rate23_iff {τ : ℝ} (hτ : 0 < τ) :
+-    (∑ i ∈ Ico 1 2, τ⁻¹ ^ i) * (∑ i ∈ Ico 1 3, τ⁻¹ ^ i) = 1 ↔ τ ^ 3 = τ + 1 := by
+-  rw [sum_Ico_1_2_real, sum_Ico_1_3_real]
+-  have hi : τ⁻¹ * τ = 1 := inv_mul_cancel₀ hτ.ne'
+-  have key : τ⁻¹ * (τ⁻¹ + τ⁻¹ ^ 2) * τ ^ 3 = τ + 1 := by
+-    calc τ⁻¹ * (τ⁻¹ + τ⁻¹ ^ 2) * τ ^ 3 = (τ⁻¹ * τ) ^ 2 * τ + (τ⁻¹ * τ) ^ 3 := by ring
+-      _ = τ + 1 := by rw [hi]; ring
+-  have h3ne : τ ^ 3 ≠ 0 := pow_ne_zero _ hτ.ne'
+-  constructor
+-  · intro h
+-    rw [h, one_mul] at key
+-    exact key
+-  · intro h
+-    have h' : τ⁻¹ * (τ⁻¹ + τ⁻¹ ^ 2) * τ ^ 3 = 1 * τ ^ 3 := by rw [key, h, one_mul]
+-    exact mul_right_cancel₀ h3ne h'
++theorem rate23_iff {τ : ℝ} (hτ : 0 < τ) : F(2,3,τ⁻¹) = 1 ↔ τ ^ 3 = τ + 1 := by
++  simp only [sum_Ico_eq_sum_range, sum_range_succ]
++  norm_num
++  field_simp [hτ.ne']
++  exact eq_comm
+ 
+ /-- A rate `τ > 1` excludes the affine `(2, 2)`. -/
+ theorem ne22_of_rate {p q : ℕ} {τ : ℝ} (hτ : 1 < τ)
+-    (heq : (∑ i ∈ Ico 1 p, τ⁻¹ ^ i) * (∑ i ∈ Ico 1 q, τ⁻¹ ^ i) = 1) : (p, q) ≠ (2, 2) := by
++    (heq : F(p,q,τ⁻¹) = 1) : (p, q) ≠ (2, 2) := by
+   intro h
+   obtain ⟨rfl, rfl⟩ := Prod.mk.inj h
+-  rw [sum_Ico_1_2_real] at heq
++  norm_num [sum_Ico_eq_sum_range, sum_range_succ] at heq
+   have hx0 : 0 < τ⁻¹ := inv_pos.2 (by linarith)
+   have hx1 : τ⁻¹ < 1 := (inv_lt_one₀ (by linarith)).2 hτ
+   nlinarith
+ 
+ /-- **The plastic number is the minimal rate** of the hyperbolic `(p, q, ∞)`, attained only at
+ `(2, 3)` and `(3, 2)`. -/
+-theorem plastic_le_rate {p q : ℕ} (hp : 2 ≤ p) (hq : 2 ≤ q) {τ : ℝ} (hτ : 1 < τ)
+-    (heq : (∑ i ∈ Ico 1 p, τ⁻¹ ^ i) * (∑ i ∈ Ico 1 q, τ⁻¹ ^ i) = 1) {ρ : ℝ} (hρ : 1 < ρ)
++theorem plastic_le_rate {p q : ℕ} (hp : 2 ≤ p) (hq : 2 ≤ q) (τ : ℝ) (hτ : 1 < τ)
++    (heq : F(p,q,τ⁻¹) = 1) (ρ : ℝ) (hρ : 1 < ρ)
+     (hρ3 : ρ ^ 3 = ρ + 1) : ρ ≤ τ ∧ (τ = ρ ↔ (p = 2 ∧ q = 3) ∨ (p = 3 ∧ q = 2)) := by
+   have hne := ne22_of_rate hτ heq
+-  have hρ23 : (∑ i ∈ Ico 1 2, ρ⁻¹ ^ i) * (∑ i ∈ Ico 1 3, ρ⁻¹ ^ i) = 1 :=
+-    (rate23_iff (by linarith)).2 hρ3
+-  have hρ32 : (∑ i ∈ Ico 1 3, ρ⁻¹ ^ i) * (∑ i ∈ Ico 1 2, ρ⁻¹ ^ i) = 1 := by
+-    rw [mul_comm]; exact hρ23
++  have hρ23 : F(2,3,ρ⁻¹) = 1 := (rate23_iff (by linarith)).2 hρ3
++  have hρ32 : F(3,2,ρ⁻¹) = 1 := by rw [mul_comm]; exact hρ23
+   by_cases h23 : (p = 2 ∧ q = 3) ∨ (p = 3 ∧ q = 2)
+   · have hτρ : τ = ρ := by
+       rcases h23 with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+-      · have h3 := (rate23_iff (by linarith)).1 heq
+-        rw [plasticNumber_unique hτ h3, plasticNumber_unique hρ hρ3]
++      · exact plastic_unique hτ hρ ((rate23_iff (by linarith)).1 heq) hρ3
+       · rw [mul_comm] at heq
+-        have h3 := (rate23_iff (by linarith)).1 heq
+-        rw [plasticNumber_unique hτ h3, plasticNumber_unique hρ hρ3]
++        exact plastic_unique hτ hρ ((rate23_iff (by linarith)).1 heq) hρ3
+     exact ⟨hτρ.ge, iff_of_true hτρ h23⟩
+   · have hlt : ρ < τ := by
+       rcases Nat.lt_or_ge 2 p with hp3 | hp2
+-      · refine rate_lt_rate (by norm_num) le_rfl hp3 hq ?_ hρ hτ hρ32 heq
++      · refine rate_lt_rate (by norm_num) le_rfl hp3 hq ?_ ρ τ hρ hτ hρ32 heq
+         intro h
+         exact h23 (Or.inr ⟨(Prod.mk.inj h).1.symm, (Prod.mk.inj h).2.symm⟩)
+       · obtain rfl : p = 2 := le_antisymm hp2 hp
+-        have hq3 : 3 ≤ q := by
+-          by_contra hc
+-          have h2 : q = 2 := by omega
+-          exact hne (by rw [h2])
+-        refine rate_lt_rate le_rfl (by norm_num) le_rfl hq3 ?_ hρ hτ hρ23 heq
++        have hq3 : 3 ≤ q := (hyperbolic_gt hp hq hne).resolve_left (by omega)
++        refine rate_lt_rate le_rfl (by norm_num) le_rfl hq3 ?_ ρ τ hρ hτ hρ23 heq
+         intro h
+         exact h23 (Or.inl ⟨rfl, (Prod.mk.inj h).2.symm⟩)
+     exact ⟨hlt.le, iff_of_false hlt.ne' h23⟩
+ 
+-theorem sumIco_half_lt {m : ℕ} (hm : 1 ≤ m) : ∑ i ∈ Ico 1 m, (2⁻¹ : ℝ) ^ i < 1 := by
++theorem sumIco_half_lt {m : ℕ} (hm : 1 ≤ m) : S(m,(2⁻¹ : ℝ)) < 1 := by
+   have h := geom_sum_Ico_mul_neg (2⁻¹ : ℝ) hm
+   have hpos : 0 < (2⁻¹ : ℝ) ^ m := by positivity
+   rw [pow_one] at h
+   linarith
+ 
+ /-- **Every rate is below 2.** -/
+-theorem rate_lt_two {p q : ℕ} (hp : 2 ≤ p) (hq : 2 ≤ q) {τ : ℝ} (hτ : 1 < τ)
+-    (heq : (∑ i ∈ Ico 1 p, τ⁻¹ ^ i) * (∑ i ∈ Ico 1 q, τ⁻¹ ^ i) = 1) : τ < 2 := by
++theorem rate_lt_two {p q : ℕ} (hp : 2 ≤ p) (hq : 2 ≤ q) (τ : ℝ) (hτ : 1 < τ)
++    (heq : F(p,q,τ⁻¹) = 1) : τ < 2 := by
+   have hx : 0 < τ⁻¹ := inv_pos.2 (by linarith)
+   have hA := sumIco_half_lt (show 1 ≤ p by omega)
+   have hB := sumIco_half_lt (show 1 ≤ q by omega)
+   have hA0 := sumIco_nonneg p (by norm_num : (0 : ℝ) ≤ 2⁻¹)
+-  have hg : (∑ i ∈ Ico 1 p, (2⁻¹ : ℝ) ^ i) * (∑ i ∈ Ico 1 q, (2⁻¹ : ℝ) ^ i) < 1 :=
+-    calc _ ≤ (∑ i ∈ Ico 1 p, (2⁻¹ : ℝ) ^ i) * 1 := mul_le_mul_of_nonneg_left hB.le hA0
++  have hg : F(p,q,(2⁻¹ : ℝ)) < 1 :=
++    calc _ ≤ S(p,(2⁻¹ : ℝ)) * 1 := mul_le_mul_of_nonneg_left hB.le hA0
+       _ < 1 := by rw [mul_one]; exact hA
+   have hlt : 2⁻¹ < τ⁻¹ := not_le.mp fun h => by
+     have := rateFn_le hp hq hx.le h
+@@ -526,7 +465,7 @@ theorem rate_lt_two {p q : ℕ} (hp : 2 ≤ p) (hq : 2 ≤ q) {τ : ℝ} (hτ :
+ 
+ /-- **The rates tend to 2**: for every `σ < 2`, all `(p, q)` with `p, q ≥ N` have rate `> σ`. -/
+ theorem rate_tendsto_two (σ : ℝ) (hσ : σ < 2) : ∃ N : ℕ, ∀ p q : ℕ, N ≤ p → N ≤ q →
+-    ∀ τ : ℝ, 1 < τ → (∑ i ∈ Ico 1 p, τ⁻¹ ^ i) * (∑ i ∈ Ico 1 q, τ⁻¹ ^ i) = 1 → σ < τ := by
++    ∀ τ : ℝ, 1 < τ → F(p,q,τ⁻¹) = 1 → σ < τ := by
+   rcases le_or_gt σ 1 with h1 | h1
+   · exact ⟨0, fun p q _ _ τ hτ _ => lt_of_le_of_lt h1 hτ⟩
+   have hσ0 : 0 < σ := by linarith
+@@ -536,23 +475,23 @@ theorem rate_tendsto_two (σ : ℝ) (hσ : σ < 2) : ∃ N : ℕ, ∀ p q : ℕ,
+   have hy2 : 0 < 2 * σ⁻¹ - 1 := by linarith
+   obtain ⟨N, hN⟩ := exists_pow_lt_of_lt_one hy2 hy1
+   refine ⟨max N 2, fun p q hp hq τ hτ heq => ?_⟩
+-  have hS : ∀ m, max N 2 ≤ m → 1 < ∑ i ∈ Ico 1 m, σ⁻¹ ^ i := fun m hm => by
++  have hS : ∀ m, max N 2 ≤ m → 1 < S(m,σ⁻¹) := fun m hm => by
+     have hNm : N ≤ m := le_trans (le_max_left _ _) hm
+     have h2m : 2 ≤ m := le_trans (le_max_right _ _) hm
+     have h := geom_sum_Ico_mul_neg σ⁻¹ (show 1 ≤ m by omega)
+     have hym : σ⁻¹ ^ m ≤ σ⁻¹ ^ N := pow_le_pow_of_le_one hy0.le hy1.le hNm
+     rw [pow_one] at h
+     refine not_le.mp fun hc => ?_
+-    have h' : (∑ i ∈ Ico 1 m, σ⁻¹ ^ i) * (1 - σ⁻¹) ≤ 1 * (1 - σ⁻¹) :=
++    have h' : S(m,σ⁻¹) * (1 - σ⁻¹) ≤ 1 * (1 - σ⁻¹) :=
+       mul_le_mul_of_nonneg_right hc (by linarith)
+     linarith
+   have hp2 : 2 ≤ p := le_trans (le_max_right _ _) hp
+   have hq2 : 2 ≤ q := le_trans (le_max_right _ _) hq
+   have hSp := hS p hp
+   have hSq := hS q hq
+-  have hg : 1 < (∑ i ∈ Ico 1 p, σ⁻¹ ^ i) * (∑ i ∈ Ico 1 q, σ⁻¹ ^ i) :=
+-    calc (1 : ℝ) < ∑ i ∈ Ico 1 p, σ⁻¹ ^ i := hSp
+-      _ = (∑ i ∈ Ico 1 p, σ⁻¹ ^ i) * 1 := (mul_one _).symm
++  have hg : 1 < F(p,q,σ⁻¹) :=
++    calc (1 : ℝ) < S(p,σ⁻¹) := hSp
++      _ = S(p,σ⁻¹) * 1 := (mul_one _).symm
+       _ < _ := mul_lt_mul_of_pos_left hSq (by linarith)
+   have hx : 0 < τ⁻¹ := inv_pos.2 (by linarith)
+   have hlt : τ⁻¹ < σ⁻¹ := not_le.mp fun h => by
+diff --git a/CoxeterGrowth/Instances.lean b/CoxeterGrowth/Instances.lean
+index c0e9a3c31..639b454f2 100644
+--- a/CoxeterGrowth/Instances.lean
++++ b/CoxeterGrowth/Instances.lean
+@@ -22,9 +22,7 @@ def triM (p q : ℕ) (hp : 2 ≤ p) (hq : 2 ≤ q) : CoxeterMatrix (Fin 3) where
+   isSymm := Matrix.IsSymm.ext fun i j => by fin_cases i <;> fin_cases j <;> rfl
+   diagonal i := by fin_cases i <;> rfl
+   off_diagonal i i' h := by
+-    fin_cases i <;> fin_cases i' <;>
+-      first | exact absurd rfl h | (show (0 : ℕ) ≠ 1; omega) | (show p ≠ 1; omega) |
+-        (show q ≠ 1; omega)
++    fin_cases i <;> fin_cases i' <;> simp_all <;> omega
+ 
+ /-- Non-vacuity: the hypotheses of `growth_series` are satisfiable for all `p, q ≥ 2`. -/
+ theorem triM_exists (p q : ℕ) (hp : 2 ≤ p) (hq : 2 ≤ q) :
+@@ -38,80 +36,54 @@ variable {W : Type*} [Group W] {M : CoxeterMatrix (Fin 3)} (cs : CoxeterSystem M
+ /-- Sphere sizes `a(n) = #{w : ℓ(w) = n}`. -/
+ noncomputable def sphere (n : ℕ) : ℕ := Nat.card {w : W // cs.length w = n}
+ 
+-theorem sum_Ico_1_2 : ∑ i ∈ Ico 1 2, (X : ℤ⟦X⟧) ^ i = X := by
+-  simp [Finset.sum_Ico_eq_sum_range, Finset.sum_range_succ]
+-
+-theorem sum_Ico_1_3 : ∑ i ∈ Ico 1 3, (X : ℤ⟦X⟧) ^ i = X + X ^ 2 := by
+-  simp [Finset.sum_Ico_eq_sum_range, Finset.sum_range_succ]
+-
+-theorem sum_Ico_1_4 : ∑ i ∈ Ico 1 4, (X : ℤ⟦X⟧) ^ i = X + X ^ 2 + X ^ 3 := by
+-  simp [Finset.sum_Ico_eq_sum_range, Finset.sum_range_succ, add_assoc]
+-
+-theorem sum_range_2 : ∑ i ∈ range 2, (X : ℤ⟦X⟧) ^ i = 1 + X := by
+-  simp [Finset.sum_range_succ]
+-
+-theorem sum_range_3 : ∑ i ∈ range 3, (X : ℤ⟦X⟧) ^ i = 1 + X + X ^ 2 := by
+-  simp [Finset.sum_range_succ]
+-
+-theorem sum_range_4 : ∑ i ∈ range 4, (X : ℤ⟦X⟧) ^ i = 1 + X + X ^ 2 + X ^ 3 := by
+-  simp [Finset.sum_range_succ]
+-
+ /-- `(2,3,∞)`: `Σ a(n) tⁿ · (1 − t² − t³) = (1+t)²(1+t+t²)`. -/
+ theorem growth_series_23 (h01 : M 0 1 = 0) (h02 : M 0 2 = 2) (h12 : M 1 2 = 3) :
+     (PowerSeries.mk fun n => (Nat.card {w : W // cs.length w = n} : ℤ)) * (1 - X ^ 2 - X ^ 3) =
+       (1 + X) ^ 2 * (1 + X + X ^ 2) := by
+-  have h := growth_series cs ⟨le_refl 2, by norm_num, h01, h02, h12⟩
+-  rw [sum_Ico_1_2, sum_Ico_1_3, sum_range_2, sum_range_3] at h
+-  rw [show (1 : ℤ⟦X⟧) - X ^ 2 - X ^ 3 = 1 - X * (X + X ^ 2) by ring, h]
+-  ring
++  have h := growth_series cs le_rfl (by norm_num) h01 h02 h12
++  simp [sum_Ico_eq_sum_range, sum_range_succ] at h
++  linear_combination h
+ 
+ /-- `(2,4,∞)`: `Σ a(n) tⁿ · (1 − t² − t³ − t⁴) = (1+t)²(1+t+t²+t³)`. -/
+ theorem growth_series_24 (h01 : M 0 1 = 0) (h02 : M 0 2 = 2) (h12 : M 1 2 = 4) :
+     (PowerSeries.mk fun n => (Nat.card {w : W // cs.length w = n} : ℤ)) *
+         (1 - X ^ 2 - X ^ 3 - X ^ 4) = (1 + X) ^ 2 * (1 + X + X ^ 2 + X ^ 3) := by
+-  have h := growth_series cs ⟨le_refl 2, by norm_num, h01, h02, h12⟩
+-  rw [sum_Ico_1_2, sum_Ico_1_4, sum_range_2, sum_range_4] at h
+-  rw [show (1 : ℤ⟦X⟧) - X ^ 2 - X ^ 3 - X ^ 4 = 1 - X * (X + X ^ 2 + X ^ 3) by ring, h]
+-  ring
++  have h := growth_series cs le_rfl (by norm_num) h01 h02 h12
++  simp [sum_Ico_eq_sum_range, sum_range_succ] at h
++  linear_combination h
+ 
+ /-- `(3,3,∞)`: `Σ a(n) tⁿ · (1 − t² − 2t³ − t⁴) = (1+t)(1+t+t²)²`. -/
+ theorem growth_series_33 (h01 : M 0 1 = 0) (h02 : M 0 2 = 3) (h12 : M 1 2 = 3) :
+     (PowerSeries.mk fun n => (Nat.card {w : W // cs.length w = n} : ℤ)) *
+         (1 - X ^ 2 - 2 * X ^ 3 - X ^ 4) = (1 + X) * (1 + X + X ^ 2) ^ 2 := by
+-  have h := growth_series cs ⟨by norm_num, by norm_num, h01, h02, h12⟩
+-  rw [sum_Ico_1_3, sum_range_3] at h
+-  rw [show (1 : ℤ⟦X⟧) - X ^ 2 - 2 * X ^ 3 - X ^ 4 = 1 - (X + X ^ 2) * (X + X ^ 2) by ring, h]
+-  ring
++  have h := growth_series cs (by norm_num) (by norm_num) h01 h02 h12
++  simp [sum_Ico_eq_sum_range, sum_range_succ] at h
++  linear_combination h
+ 
+ /-- Coefficient extraction for `(2,3,∞)`. -/
+ theorem sphere23_facts (h01 : M 0 1 = 0) (h02 : M 0 2 = 2) (h12 : M 1 2 = 3) :
+-    sphere cs 0 = 1 ∧ sphere cs 1 = 3 ∧ sphere cs 2 = 5 ∧ sphere cs 3 = 7 ∧ sphere cs 4 = 9 ∧
+-      ∀ n, sphere cs (n + 5) = sphere cs (n + 3) + sphere cs (n + 2) := by
++    Nat.card {w : W // cs.length w = 0} = 1 ∧ Nat.card {w : W // cs.length w = 1} = 3 ∧
++      Nat.card {w : W // cs.length w = 2} = 5 ∧ Nat.card {w : W // cs.length w = 3} = 7 ∧
++      Nat.card {w : W // cs.length w = 4} = 9 ∧
++      ∀ n : ℕ, Nat.card {w : W // cs.length w = n + 5} =
++        Nat.card {w : W // cs.length w = n + 3} + Nat.card {w : W // cs.length w = n + 2} := by
+   have H := growth_series_23 cs h01 h02 h12
+-  have hexp : (1 + X : ℤ⟦X⟧) ^ 2 * (1 + X + X ^ 2) =
+-      1 + X + X + X + X ^ 2 + X ^ 2 + X ^ 2 + X ^ 2 + X ^ 3 + X ^ 3 + X ^ 3 + X ^ 4 := by ring
+-  rw [hexp, mul_sub, mul_sub, mul_one] at H
+-  have c : ∀ n, coeff n (PowerSeries.mk fun n => (Nat.card {w : W // cs.length w = n} : ℤ)) -
+-      coeff n ((PowerSeries.mk fun n => (Nat.card {w : W // cs.length w = n} : ℤ)) * X ^ 2) -
+-      coeff n ((PowerSeries.mk fun n => (Nat.card {w : W // cs.length w = n} : ℤ)) * X ^ 3) =
+-      coeff n (1 + X + X + X + X ^ 2 + X ^ 2 + X ^ 2 + X ^ 2 + X ^ 3 + X ^ 3 + X ^ 3 + X ^ 4 :
+-        ℤ⟦X⟧) := by
+-    intro n; rw [← map_sub, ← map_sub, H]
+-  have c0 := c 0
++  ring_nf at H
++  have c (n : ℕ) := congrArg (coeff n) H
++  simp [coeff_mul_X_pow', coeff_X_pow, coeff_one, coeff_X] at c
+   have c1 := c 1
+   have c2 := c 2
+   have c3 := c 3
+   have c4 := c 4
+-  simp [coeff_mul_X_pow', coeff_X_pow, coeff_one, coeff_X] at c0 c1 c2 c3 c4
+-  unfold sphere
+-  refine ⟨by first | exact_mod_cast c0 | simp, by exact_mod_cast c1, by omega, by omega, by omega,
+-    fun n => ?_⟩
++  norm_num at c1 c2 c3 c4
++  refine ⟨by simp, by exact_mod_cast c1, by omega, by omega, by omega, fun n => ?_⟩
+   have cn := c (n + 5)
+-  simp [coeff_mul_X_pow', coeff_X_pow, coeff_one, coeff_X] at cn
++  norm_num at cn
+   omega
+ 
+ theorem sphere23_rec_fails_at_4 (h01 : M 0 1 = 0) (h02 : M 0 2 = 2) (h12 : M 1 2 = 3) :
+-    sphere cs 4 ≠ sphere cs 2 + sphere cs 1 := by
++    Nat.card {w : W // cs.length w = 4} ≠
++      Nat.card {w : W // cs.length w = 2} + Nat.card {w : W // cs.length w = 1} := by
+   obtain ⟨-, h1, h2, -, h4, -⟩ := sphere23_facts cs h01 h02 h12
+   omega
+ 
+@@ -119,64 +91,46 @@ end Closed
+ 
+ /-! ## Padovan -/
+ 
+-/-- The Padovan sequence `1, 1, 1, 2, 2, 3, 4, 5, 7, 9, 12, …`. -/
+-def padovan : ℕ → ℕ
+-  | 0 => 1
+-  | 1 => 1
+-  | 2 => 1
+-  | n + 3 => padovan (n + 1) + padovan n
+-
+-/-- Any sequence with the Padovan initial values and recursion is the Padovan sequence. -/
+-theorem eq_padovan (pad : ℕ → ℕ) (h0 : pad 0 = 1) (h1 : pad 1 = 1) (h2 : pad 2 = 1)
+-    (hr : ∀ n, pad (n + 3) = pad (n + 1) + pad n) : ∀ n, pad n = padovan n
+-  | 0 => h0
+-  | 1 => h1
+-  | 2 => h2
+-  | n + 3 => by
+-    rw [hr, eq_padovan pad h0 h1 h2 hr (n + 1), eq_padovan pad h0 h1 h2 hr n]
+-    rfl
+-
+-/-- A sequence with values `5, 7, 9` at `2, 3, 4` and the recursion `f(n+5) = f(n+3) + f(n+2)`
+-is `Pad(n+5)` from `n = 2` on. -/
+-theorem eq_padovan_shift (f : ℕ → ℕ) (h2 : f 2 = 5) (h3 : f 3 = 7) (h4 : f 4 = 9)
+-    (hrec : ∀ n, f (n + 5) = f (n + 3) + f (n + 2)) : ∀ n, 2 ≤ n → f n = padovan (n + 5)
+-  | 0, h => absurd h (by norm_num)
+-  | 1, h => absurd h (by norm_num)
+-  | 2, _ => by rw [h2]; rfl
+-  | 3, _ => by rw [h3]; rfl
+-  | 4, _ => by rw [h4]; rfl
+-  | m + 5, _ => by
+-    rw [hrec, eq_padovan_shift f h2 h3 h4 hrec (m + 3) (by omega),
+-      eq_padovan_shift f h2 h3 h4 hrec (m + 2) (by omega)]
+-    rfl
+-
+ /-- **Padovan**: for `(2,3,∞)`, `a(n) = Pad(n+5)` for `n ≥ 2`. -/
+ theorem sphere23_padovan {W : Type*} [Group W] {M : CoxeterMatrix (Fin 3)}
+     (cs : CoxeterSystem M W) (h01 : M 0 1 = 0) (h02 : M 0 2 = 2) (h12 : M 1 2 = 3)
+-    (n : ℕ) (hn : 2 ≤ n) : sphere cs n = padovan (n + 5) := by
++    (pad : ℕ → ℕ) (hp0 : pad 0 = 1) (hp1 : pad 1 = 1) (hp2 : pad 2 = 1)
++    (hpr : ∀ n, pad (n + 3) = pad (n + 1) + pad n) (n : ℕ) (hn : 2 ≤ n) :
++    Nat.card {w : W // cs.length w = n} = pad (n + 5) := by
+   obtain ⟨-, -, h2, h3, h4, hrec⟩ := sphere23_facts cs h01 h02 h12
+-  exact eq_padovan_shift (sphere cs) h2 h3 h4 hrec n hn
++  induction n using Nat.strong_induction_on with
++  | _ n ih =>
++    rcases n with _ | _ | _ | _ | _ | m
++    · omega
++    · omega
++    · rw [h2]
++      norm_num [hpr, hp0, hp1, hp2]
++    · rw [h3]
++      norm_num [hpr, hp0, hp1, hp2]
++    · rw [h4]
++      norm_num [hpr, hp0, hp1, hp2]
++    · rw [hrec, hpr (m + 7), ih (m + 3) (by omega) (by omega),
++        ih (m + 2) (by omega) (by omega)]
+ 
+ /-! ## Exponential growth rate -/
+ 
+-theorem rho_gt {ρ : ℝ} (h1 : 1 < ρ) (h3 : ρ ^ 3 = ρ + 1) : (1.32 : ℝ) < ρ := by
+-  by_contra hle
+-  rw [not_lt] at hle
+-  have hq : (0:ℝ) ≤ ρ ^ 2 + 1.32 * ρ + 0.7424 := by nlinarith [sq_nonneg ρ]
+-  nlinarith [mul_nonneg (sub_nonneg.2 hle) hq]
+-
+-theorem rho_lt {ρ : ℝ} (h1 : 1 < ρ) (h3 : ρ ^ 3 = ρ + 1) : ρ < (1.33 : ℝ) := by
+-  by_contra hle
+-  rw [not_lt] at hle
+-  have hq : (0:ℝ) ≤ ρ ^ 2 + 1.33 * ρ + 0.7689 := by nlinarith [sq_nonneg ρ]
+-  nlinarith [mul_nonneg (sub_nonneg.2 hle) hq]
++theorem rho_bounds {ρ : ℝ} (h1 : 1 < ρ) (h3 : ρ ^ 3 = ρ + 1) :
++    (1.32 : ℝ) < ρ ∧ ρ < 1.33 := by
++  constructor
++  · by_contra hle
++    rw [not_lt] at hle
++    have hq : (0:ℝ) ≤ ρ ^ 2 + 1.32 * ρ + 0.7424 := by nlinarith [sq_nonneg ρ]
++    nlinarith [mul_nonneg (sub_nonneg.2 hle) hq]
++  · by_contra hle
++    rw [not_lt] at hle
++    have hq : (0:ℝ) ≤ ρ ^ 2 + 1.33 * ρ + 0.7689 := by nlinarith [sq_nonneg ρ]
++    nlinarith [mul_nonneg (sub_nonneg.2 hle) hq]
+ 
+ /-- Two-sided bound for any sequence with the `(2,3,∞)` values and recursion. -/
+ theorem growth_bounds_of_rec (f : ℕ → ℕ) (h2 : f 2 = 5) (h3' : f 3 = 7) (h4 : f 4 = 9)
+     (hrec : ∀ n, f (n + 5) = f (n + 3) + f (n + 2)) {ρ : ℝ} (h1 : 1 < ρ) (h3 : ρ ^ 3 = ρ + 1)
+     (n : ℕ) : 2 * ρ ^ (n + 2) ≤ (f (n + 2) : ℝ) ∧ (f (n + 2) : ℝ) ≤ 4 * ρ ^ (n + 2) := by
+-  have hlo := rho_gt h1 h3
+-  have hhi := rho_lt h1 h3
++  have hb := rho_bounds h1 h3
+   induction n using Nat.strong_induction_on with
+   | _ n ih =>
+     rcases n with _ | _ | _ | m
+@@ -200,38 +154,32 @@ theorem growth_bounds_of_rec (f : ℕ → ℕ) (h2 : f 2 = 5) (h3' : f 3 = 7) (h
+ 
+ theorem const_rpow_inv_mul_tendsto {ρ c : ℝ} (hc : 0 < c) :
+     Tendsto (fun n : ℕ => c ^ ((n : ℝ)⁻¹) * ρ) atTop (𝓝 ρ) := by
+-  have h : Tendsto (fun n : ℕ => c ^ ((n : ℝ)⁻¹)) atTop (𝓝 1) := by
+-    have hcont := Real.continuousAt_const_rpow (b := 0) hc.ne'
+-    have := hcont.tendsto.comp tendsto_inv_atTop_nhds_zero_nat
+-    simpa [Function.comp_def, Real.rpow_zero] using this
++  have h : Tendsto (fun n : ℕ => c ^ ((n : ℝ)⁻¹)) atTop (𝓝 (c ^ (0 : ℝ))) :=
++    tendsto_const_nhds.rpow tendsto_inv_atTop_nhds_zero_nat (.inl hc.ne')
+   simpa using h.mul_const ρ
+ 
+-/-- `f(n)^{1/n} → ρ` for any sequence with `2ρⁿ ≤ f(n) ≤ 4ρⁿ` eventually. -/
+-theorem root_tendsto_of_bounds (f : ℕ → ℕ) {ρ : ℝ} (h1 : 1 < ρ)
+-    (hb : ∀ n, 2 * ρ ^ (n + 2) ≤ (f (n + 2) : ℝ) ∧ (f (n + 2) : ℝ) ≤ 4 * ρ ^ (n + 2)) :
+-    Tendsto (fun n : ℕ => (f n : ℝ) ^ ((n : ℝ)⁻¹)) atTop (𝓝 ρ) := by
+-  have hρ0 : 0 ≤ ρ := by linarith
++/-- The root limit from two exponential bounds starting at `n = k`. -/
++theorem root_tendsto_of_bounds (f : ℕ → ℕ) {τ c C : ℝ} (hτ : 0 ≤ τ) (hc : 0 < c) (hC : 0 < C)
++    (k : ℕ) (hb : ∀ n, c * τ ^ (n + k) ≤ (f (n + k) : ℝ) ∧
++      (f (n + k) : ℝ) ≤ C * τ ^ (n + k)) :
++    Tendsto (fun n : ℕ => (f n : ℝ) ^ ((n : ℝ)⁻¹)) atTop (𝓝 τ) := by
+   refine tendsto_of_tendsto_of_tendsto_of_le_of_le'
+-    (const_rpow_inv_mul_tendsto (ρ := ρ) (c := 2) (by norm_num))
+-    (const_rpow_inv_mul_tendsto (ρ := ρ) (c := 4) (by norm_num)) ?_ ?_
+-  · filter_upwards [eventually_ge_atTop 2] with n hn
+-    obtain ⟨m, rfl⟩ : ∃ m, n = m + 2 := ⟨n - 2, by omega⟩
+-    have hb' := (hb m).1
+-    have hn0 : (m + 2 : ℕ) ≠ 0 := by omega
+-    calc (2:ℝ) ^ (((m + 2 : ℕ) : ℝ))⁻¹ * ρ
+-        = (2 * ρ ^ (m + 2)) ^ (((m + 2 : ℕ) : ℝ))⁻¹ := by
+-          rw [Real.mul_rpow (by norm_num) (pow_nonneg hρ0 _), Real.pow_rpow_inv_natCast hρ0 hn0]
+-      _ ≤ (f (m + 2) : ℝ) ^ (((m + 2 : ℕ) : ℝ))⁻¹ :=
+-          Real.rpow_le_rpow (by positivity) hb' (by positivity)
+-  · filter_upwards [eventually_ge_atTop 2] with n hn
+-    obtain ⟨m, rfl⟩ : ∃ m, n = m + 2 := ⟨n - 2, by omega⟩
+-    have hb' := (hb m).2
+-    have hn0 : (m + 2 : ℕ) ≠ 0 := by omega
+-    calc (f (m + 2) : ℝ) ^ (((m + 2 : ℕ) : ℝ))⁻¹
+-        ≤ (4 * ρ ^ (m + 2)) ^ (((m + 2 : ℕ) : ℝ))⁻¹ :=
+-          Real.rpow_le_rpow (by positivity) hb' (by positivity)
+-      _ = (4:ℝ) ^ (((m + 2 : ℕ) : ℝ))⁻¹ * ρ := by
+-          rw [Real.mul_rpow (by norm_num) (pow_nonneg hρ0 _), Real.pow_rpow_inv_natCast hρ0 hn0]
++    (const_rpow_inv_mul_tendsto (ρ := τ) hc) (const_rpow_inv_mul_tendsto (ρ := τ) hC) ?_ ?_
++  · filter_upwards [eventually_ge_atTop (k + 1)] with n hn
++    obtain ⟨m, rfl⟩ : ∃ m, n = m + k := ⟨n - k, by omega⟩
++    have hn0 : m + k ≠ 0 := by omega
++    calc c ^ (((m + k : ℕ) : ℝ))⁻¹ * τ = (c * τ ^ (m + k)) ^ (((m + k : ℕ) : ℝ))⁻¹ := by
++          rw [Real.mul_rpow hc.le (pow_nonneg hτ _), Real.pow_rpow_inv_natCast hτ hn0]
++      _ ≤ (f (m + k) : ℝ) ^ (((m + k : ℕ) : ℝ))⁻¹ :=
++          Real.rpow_le_rpow (by positivity) (hb m).1 (by positivity)
++  · filter_upwards [eventually_ge_atTop (k + 1)] with n hn
++    obtain ⟨m, rfl⟩ : ∃ m, n = m + k := ⟨n - k, by omega⟩
++    have hn0 : m + k ≠ 0 := by omega
++    calc (f (m + k) : ℝ) ^ (((m + k : ℕ) : ℝ))⁻¹
++        ≤ (C * τ ^ (m + k)) ^ (((m + k : ℕ) : ℝ))⁻¹ :=
++          Real.rpow_le_rpow (by positivity) (hb m).2 (by positivity)
++      _ = C ^ (((m + k : ℕ) : ℝ))⁻¹ * τ := by
++          rw [Real.mul_rpow hC.le (pow_nonneg hτ _), Real.pow_rpow_inv_natCast hτ hn0]
+ 
+ section Rate
+ 
+@@ -239,16 +187,19 @@ variable {W : Type*} [Group W] {M : CoxeterMatrix (Fin 3)} (cs : CoxeterSystem M
+ 
+ /-- `(2,3,∞)`: `2ρⁿ ≤ a(n) ≤ 4ρⁿ` for `n ≥ 2`, for every real `ρ > 1` with `ρ³ = ρ + 1`. -/
+ theorem sphere23_growth (h01 : M 0 1 = 0) (h02 : M 0 2 = 2) (h12 : M 1 2 = 3)
+-    {ρ : ℝ} (h1 : 1 < ρ) (h3 : ρ ^ 3 = ρ + 1) (n : ℕ) :
+-    2 * ρ ^ (n + 2) ≤ (sphere cs (n + 2) : ℝ) ∧ (sphere cs (n + 2) : ℝ) ≤ 4 * ρ ^ (n + 2) := by
++    (ρ : ℝ) (h1 : 1 < ρ) (h3 : ρ ^ 3 = ρ + 1) (n : ℕ) :
++    2 * ρ ^ (n + 2) ≤ (Nat.card {w : W // cs.length w = n + 2} : ℝ) ∧
++      (Nat.card {w : W // cs.length w = n + 2} : ℝ) ≤ 4 * ρ ^ (n + 2) := by
+   obtain ⟨-, -, h2, h3', h4, hrec⟩ := sphere23_facts cs h01 h02 h12
+   exact growth_bounds_of_rec (sphere cs) h2 h3' h4 hrec h1 h3 n
+ 
+ /-- `(2,3,∞)`: `a(n)^{1/n} → ρ`. -/
+ theorem sphere23_root_tendsto (h01 : M 0 1 = 0) (h02 : M 0 2 = 2) (h12 : M 1 2 = 3)
+-    {ρ : ℝ} (h1 : 1 < ρ) (h3 : ρ ^ 3 = ρ + 1) :
+-    Tendsto (fun n : ℕ => (sphere cs n : ℝ) ^ ((n : ℝ)⁻¹)) atTop (𝓝 ρ) :=
+-  root_tendsto_of_bounds (sphere cs) h1 (sphere23_growth cs h01 h02 h12 h1 h3)
++    (ρ : ℝ) (h1 : 1 < ρ) (h3 : ρ ^ 3 = ρ + 1) :
++    Tendsto (fun n : ℕ => (Nat.card {w : W // cs.length w = n} : ℝ) ^ ((n : ℝ)⁻¹)) atTop
++      (𝓝 ρ) :=
++  root_tendsto_of_bounds (sphere cs) (by linarith) (by norm_num) (by norm_num) 2
++    (sphere23_growth cs h01 h02 h12 ρ h1 h3)
+ 
+ end Rate
+ 
+diff --git a/CoxeterGrowth/Plastic.lean b/CoxeterGrowth/Plastic.lean
+index c1d9728f1..994c4663e 100644
+--- a/CoxeterGrowth/Plastic.lean
++++ b/CoxeterGrowth/Plastic.lean
+@@ -19,41 +19,26 @@ value theorem on `[1, 2]` (the cubic is `−1` at `1` and `5` at `2`); uniquenes
+ namespace CoxeterGrowth
+ 
+ theorem exists_plastic_root : ∃ x ∈ Set.Icc (1 : ℝ) 2, x ^ 3 - x - 1 = 0 := by
+-  have hcont : ContinuousOn (fun x : ℝ => x ^ 3 - x - 1) (Set.Icc 1 2) := by fun_prop
+-  have h := intermediate_value_Icc (by norm_num : (1 : ℝ) ≤ 2) hcont
+-  have h0 : (0 : ℝ) ∈ Set.Icc ((1 : ℝ) ^ 3 - 1 - 1) ((2 : ℝ) ^ 3 - 2 - 1) := by
+-    constructor <;> norm_num
+-  obtain ⟨x, hx, hfx⟩ := h h0
+-  exact ⟨x, hx, hfx⟩
+-
+-/-- The plastic number: the real root `> 1` of `x³ − x − 1`. -/
+-noncomputable def plasticNumber : ℝ := Classical.choose exists_plastic_root
+-
+-theorem plasticNumber_mem : plasticNumber ∈ Set.Icc (1 : ℝ) 2 :=
+-  (Classical.choose_spec exists_plastic_root).1
+-
+-theorem plasticNumber_cubic : plasticNumber ^ 3 = plasticNumber + 1 := by
+-  have h := (Classical.choose_spec exists_plastic_root).2
+-  have : plasticNumber ^ 3 - plasticNumber - 1 = 0 := h
+-  linarith
+-
+-theorem one_lt_plasticNumber : 1 < plasticNumber := by
+-  have h1 := plasticNumber_mem.1
+-  have h3 := plasticNumber_cubic
+-  rcases h1.lt_or_eq with h | h
+-  · exact h
+-  · rw [← h] at h3; norm_num at h3
+-
+-/-- Uniqueness among roots `> 1`. -/
+-theorem plasticNumber_unique {x : ℝ} (hx : 1 < x) (h : x ^ 3 = x + 1) : x = plasticNumber := by
+-  have hρ := one_lt_plasticNumber
+-  have h3 := plasticNumber_cubic
+-  have key : (x - plasticNumber) * (x ^ 2 + x * plasticNumber + plasticNumber ^ 2 - 1) = 0 := by
+-    have : (x - plasticNumber) * (x ^ 2 + x * plasticNumber + plasticNumber ^ 2 - 1)
+-        = (x ^ 3 - x) - (plasticNumber ^ 3 - plasticNumber) := by ring
+-    rw [this, h, h3]; ring
+-  rcases mul_eq_zero.1 key with h' | h'
++  have h := intermediate_value_Icc (by norm_num : (1 : ℝ) ≤ 2)
++    (show ContinuousOn (fun x : ℝ => x ^ 3 - x - 1) (Set.Icc 1 2) by fun_prop)
++  exact h (by constructor <;> norm_num)
++
++theorem plastic_unique {x y : ℝ} (hx : 1 < x) (hy : 1 < y)
++    (h : x ^ 3 = x + 1) (h' : y ^ 3 = y + 1) : x = y := by
++  have key : (x - y) * (x ^ 2 + x * y + y ^ 2 - 1) = 0 := by
++    calc _ = (x ^ 3 - x) - (y ^ 3 - y) := by ring
++      _ = 0 := by rw [h, h']; ring
++  rcases mul_eq_zero.1 key with h0 | h0
+   · linarith
+   · nlinarith
+ 
++theorem plastic_exists_unique : ∃! ρ : ℝ, 1 < ρ ∧ ρ ^ 3 = ρ + 1 := by
++  obtain ⟨x, hx, h3⟩ := exists_plastic_root
++  have h1 : 1 < x := by
++    rcases hx.1.lt_or_eq with h | h
++    · exact h
++    · rw [← h] at h3; norm_num at h3
++  exact ⟨x, ⟨h1, by linarith⟩, fun y hy =>
++    plastic_unique hy.1 h1 (by linarith [hy.2]) (by linarith [h3])⟩
++
+ end CoxeterGrowth
+diff --git a/CoxeterGrowth/Triangle.lean b/CoxeterGrowth/Triangle.lean
+index 3ff26f7ce..d3df97a06 100644
+--- a/CoxeterGrowth/Triangle.lean
++++ b/CoxeterGrowth/Triangle.lean
+@@ -50,12 +50,7 @@ theorem wrap {G : Type*} [Group G] {s c : G} (hs : s * s = 1) (hc : c * c = 1) {
+     rw [← mul_assoc c c, hc, one_mul]
+   rw [hL, hR]
+   congr 1
+-  rcases e' with _ | _ | e'
+-  · obtain rfl : e = 1 := by omega
+-    simp
+-  · obtain rfl : e = 0 := by omega
+-    simp [hs]
+-  · omega
++  rcases e with _ | _ | e <;> rcases e' with _ | _ | e' <;> simp_all <;> omega
+ 
+ /-! ## Evaluating normal forms in a group -/
+ 
+@@ -77,26 +72,22 @@ def tailP : Fin 3 → Fin 3 → List ℕ → G
+ /-- A normal form with an `s_i`-head, followed by blocks starting with `s_{i'}`. -/
+ def piH (i i' : Fin 3) (v : Raw) : G := headP s i v.1 * tailP s i' i v.2
+ 
+-theorem blockP_zero (i : Fin 3) : blockP s i 0 = 1 := by simp [blockP]
+-
+ theorem blockP_add_two (i : Fin 3) (j : ℕ) : blockP s i (j + 2) = s i * s 2 * blockP s i j := by
+   unfold blockP
+   rw [show (j + 2) / 2 = j / 2 + 1 by omega, show (j + 2) % 2 = j % 2 by omega, pow_succ']
+   simp only [mul_assoc]
+ 
+ theorem piH_swap (i i' : Fin 3) : ∀ v : Raw, piH s i' i (swap v) = piH s i i' v
+-  | ((e, 0), []) => by simp [swap, piH, headP, tailP, blockP_zero]
+-  | ((e, 0), k :: r) => by simp [swap, piH, headP, tailP, blockP_zero, mul_assoc]
+-  | ((e, j + 1), r) => by simp [swap, piH, headP, tailP, blockP_zero, mul_assoc]
++  | ((e, 0), []) => by simp [swap, piH, headP, tailP, blockP]
++  | ((e, 0), k :: r) => by simp [swap, piH, headP, tailP, blockP, mul_assoc]
++  | ((e, j + 1), r) => by simp [swap, piH, headP, tailP, blockP, mul_assoc]
+ 
+ /-- **Head identity**: the head action `da` is left multiplication by `s_i`. -/
+ theorem headP_da (hs : ∀ k, s k * s k = 1) (i : Fin 3) {m : ℕ} (hm : 2 ≤ m)
+     (hrel : (s i * s 2) ^ m = 1) : ∀ x : ℕ × ℕ, HV m x → headP s i (da m x) = s i * headP s i x
+-  | (0, 0), _ => by rw [da_00]; simp [headP, blockP]
+-  | (0, 1), _ => by rw [da_01]; simp [headP, blockP, hs]
+-  | (0, j + 2), _ => by
+-    rw [da_0]
+-    simp only [headP, blockP_add_two, pow_one, pow_zero, one_mul, ← mul_assoc, hs]
++  | (0, 0), _ => by simp [da, headP, blockP]
++  | (0, 1), _ => by simp [da, headP, blockP, hs]
++  | (0, j + 2), _ => by simp [da, headP, blockP_add_two, hs, ← mul_assoc]
+   | (e + 1, j), hx => by
+     rw [HV_mk] at hx
+     obtain rfl : e = 0 := by omega
+@@ -240,34 +231,26 @@ theorem piA_ev (hT : IsTri M p q) (w : W) : piA cs (ev cs hT w) = w := by
+   | mul_simple_left w i ih =>
+     rw [ev_simple_mul, piA_act cs hT i _ (ev_valid cs hT w), ih]
+ 
+-theorem length_piA_le (hT : IsTri M p q) : ∀ (n : ℕ) (v : Raw), V p q v → len v = n →
+-    cs.length (piA cs v) ≤ n
+-  | 0, v, hv, hl0 => by
+-    rw [eq_nil_of_len v hv hl0, piA_nil, cs.length_one]
+-  | n + 1, v, hv, hl0 => by
+-    obtain ⟨i, hi⟩ := descent v hv (by omega)
+-    have hv' := act_V hT.hp hT.hq i v hv
+-    have hvv : act p q i (act p q i v) = v := act_act hT.hp hT.hq i v hv
+-    have ih := length_piA_le hT n (act p q i v) hv' (by omega)
+-    calc cs.length (piA cs v) = cs.length (cs.simple i * piA cs (act p q i v)) := by
+-          rw [← piA_act cs hT i _ hv', hvv]
+-      _ ≤ cs.length (cs.simple i) + cs.length (piA cs (act p q i v)) := cs.length_mul_le _ _
+-      _ ≤ n + 1 := by rw [cs.length_simple]; omega
+-
+-/-- Distinct normal forms are distinct elements. -/
+-theorem ev_piA (hT : IsTri M p q) : ∀ (n : ℕ) (v : Raw), V p q v → len v = n →
+-    ev cs hT (piA cs v) = v
++/-- Evaluation and Coxeter length by simultaneous induction on a normal form. -/
++theorem ev_piA_and_length (hT : IsTri M p q) : ∀ (n : ℕ) (v : Raw), V p q v → len v = n →
++    ev cs hT (piA cs v) = v ∧ cs.length (piA cs v) ≤ n
+   | 0, v, hv, hl0 => by
+-    rw [eq_nil_of_len v hv hl0, piA_nil, ev_one]
++    rw [eq_nil_of_len v hv hl0, piA_nil, ev_one, cs.length_one]
++    exact ⟨rfl, le_rfl⟩
+   | n + 1, v, hv, hl0 => by
+     obtain ⟨i, hi⟩ := descent v hv (by omega)
+     have hv' := act_V hT.hp hT.hq i v hv
+     have hvv : act p q i (act p q i v) = v := act_act hT.hp hT.hq i v hv
+-    have ih := ev_piA hT n (act p q i v) hv' (by omega)
+-    calc ev cs hT (piA cs v) = ev cs hT (cs.simple i * piA cs (act p q i v)) := by
+-          rw [← piA_act cs hT i _ hv', hvv]
+-      _ = act p q i (act p q i v) := by rw [ev_simple_mul, ih]
+-      _ = v := hvv
++    have ih := ev_piA_and_length hT n (act p q i v) hv' (by omega)
++    constructor
++    · calc ev cs hT (piA cs v) = ev cs hT (cs.simple i * piA cs (act p q i v)) := by
++            rw [← piA_act cs hT i _ hv', hvv]
++        _ = act p q i (act p q i v) := by rw [ev_simple_mul, ih.1]
++        _ = v := hvv
++    · calc cs.length (piA cs v) = cs.length (cs.simple i * piA cs (act p q i v)) := by
++            rw [← piA_act cs hT i _ hv', hvv]
++        _ ≤ cs.length (cs.simple i) + cs.length (piA cs (act p q i v)) := cs.length_mul_le _ _
++        _ ≤ n + 1 := by rw [cs.length_simple]; omega
+ 
+ theorem len_ev_wordProd_le (hT : IsTri M p q) : ∀ ω : List (Fin 3),
+     len (ev cs hT (cs.wordProd ω)) ≤ ω.length
+@@ -283,7 +266,7 @@ theorem len_ev_wordProd_le (hT : IsTri M p q) : ∀ ω : List (Fin 3),
+ theorem length_eq_len_ev (hT : IsTri M p q) (w : W) : cs.length w = len (ev cs hT w) := by
+   apply le_antisymm
+   · calc cs.length w = cs.length (piA cs (ev cs hT w)) := by rw [piA_ev]
+-      _ ≤ len (ev cs hT w) := length_piA_le cs hT _ _ (ev_valid cs hT w) rfl
++      _ ≤ len (ev cs hT w) := (ev_piA_and_length cs hT _ _ (ev_valid cs hT w) rfl).2
+   · obtain ⟨ω, hω, rfl⟩ := cs.exists_isReduced w
+     rw [hω.eq]
+     exact len_ev_wordProd_le cs hT ω
+@@ -292,9 +275,10 @@ theorem length_eq_len_ev (hT : IsTri M p q) (w : W) : cs.length w = len (ev cs h
+ noncomputable def sphereEquiv (hT : IsTri M p q) (n : ℕ) :
+     {w : W // cs.length w = n} ≃ {v : Raw // V p q v ∧ len v = n} where
+   toFun w := ⟨ev cs hT w.1, ev_valid cs hT w.1, by rw [← length_eq_len_ev]; exact w.2⟩
+-  invFun v := ⟨piA cs v.1, by rw [length_eq_len_ev cs hT, ev_piA cs hT _ v.1 v.2.1 rfl]; exact v.2.2⟩
++  invFun v := ⟨piA cs v.1, by
++    rw [length_eq_len_ev cs hT, (ev_piA_and_length cs hT _ v.1 v.2.1 rfl).1]; exact v.2.2⟩
+   left_inv w := Subtype.ext (piA_ev cs hT w.1)
+-  right_inv v := Subtype.ext (ev_piA cs hT _ v.1 v.2.1 rfl)
++  right_inv v := Subtype.ext (ev_piA_and_length cs hT _ v.1 v.2.1 rfl).1
+ 
+ theorem sphere_eq_card (hT : IsTri M p q) (n : ℕ) :
+     Nat.card {w : W // cs.length w = n} = (NFs p q n).card := by
+@@ -302,10 +286,12 @@ theorem sphere_eq_card (hT : IsTri M p q) (n : ℕ) :
+   exact Nat.card_congr (Equiv.subtypeEquivRight (fun v => (mem_NFs p q n v).symm))
+ 
+ /-- **Growth series of the triangle Coxeter group `(p, q, ∞)`** (coefficient form in `ℤ⟦X⟧`). -/
+-theorem growth_series (hT : IsTri M p q) :
++theorem growth_series (hp : 2 ≤ p) (hq : 2 ≤ q) (h01 : M 0 1 = 0)
++    (h02 : M 0 2 = p) (h12 : M 1 2 = q) :
+     (PowerSeries.mk fun n => (Nat.card {w : W // cs.length w = n} : ℤ)) *
+         (1 - (∑ i ∈ Ico 1 p, (X : ℤ⟦X⟧) ^ i) * (∑ i ∈ Ico 1 q, (X : ℤ⟦X⟧) ^ i)) =
+       (1 + X) * (∑ i ∈ range p, (X : ℤ⟦X⟧) ^ i) * (∑ i ∈ range q, (X : ℤ⟦X⟧) ^ i) := by
++  have hT : IsTri M p q := ⟨hp, hq, h01, h02, h12⟩
+   have h := nf_series' p q (by have := hT.hq; omega)
+   simp only [ser] at h
+   simp only [sphere_eq_card cs hT]
+diff --git a/CoxeterGrowth/TriangleNF.lean b/CoxeterGrowth/TriangleNF.lean
+index 3eeeb26d5..638ace278 100644
+--- a/CoxeterGrowth/TriangleNF.lean
++++ b/CoxeterGrowth/TriangleNF.lean
+@@ -47,10 +47,6 @@ abbrev HV (m : ℕ) (x : ℕ × ℕ) : Prop := x.1 ≤ 1 ∧ x.2 < m
+ def hl (x : ℕ × ℕ) : ℕ := x.1 + x.2
+ 
+ theorem HV_mk {m e j : ℕ} : HV m (e, j) ↔ e ≤ 1 ∧ j < m := Iff.rfl
+-theorem hl_mk {e j : ℕ} : hl (e, j) = e + j := rfl
+-
+-theorem pair_eq {a b c d : ℕ} (h1 : a = c) (h2 : b = d) : (a, b) = (c, d) := by
+-  subst h1; subst h2; rfl
+ 
+ theorem da_00 (m : ℕ) : da m (0, 0) = (0, 1) := by simp [da]
+ theorem da_01 (m : ℕ) : da m (0, 1) = (0, 0) := by simp [da]
+@@ -63,58 +59,36 @@ theorem dc_1 (e j : ℕ) : dc (e + 1, j) = (0, j) := by
+   show (1 - (e + 1), j) = (0, j)
+   rw [show 1 - (e + 1) = 0 by omega]
+ 
+-theorem da_HV {m : ℕ} (hm : 2 ≤ m) : ∀ x : ℕ × ℕ, HV m x → HV m (da m x)
+-  | (0, 0), _ => by rw [da_00, HV_mk]; omega
+-  | (0, 1), _ => by rw [da_01, HV_mk]; omega
+-  | (0, j + 2), hx => by rw [HV_mk] at hx; rw [da_0, HV_mk]; omega
+-  | (e + 1, j), hx => by
+-    rw [HV_mk] at hx
+-    by_cases h : j + 2 < m
+-    · rw [da_1_lt h, HV_mk]; omega
+-    · rw [da_1_ge h, HV_mk]; omega
++theorem da_HV {m : ℕ} (hm : 2 ≤ m) : ∀ x : ℕ × ℕ, HV m x → HV m (da m x) := by
++  rintro ⟨e, j⟩ ⟨he, hj⟩
++  simp only [da]
++  split_ifs <;> simp_all <;> omega
+ 
+ theorem dc_HV {m : ℕ} (x : ℕ × ℕ) (hx : HV m x) : HV m (dc x) := by
+-  obtain ⟨e, j⟩ := x
+-  rw [HV_mk] at hx
+-  show 1 - e ≤ 1 ∧ j < m
++  rcases x with ⟨e, j⟩
++  simp only [dc] at *
+   omega
+ 
+-theorem da_da {m : ℕ} (hm : 2 ≤ m) : ∀ x : ℕ × ℕ, HV m x → da m (da m x) = x
+-  | (0, 0), _ => by rw [da_00, da_01]
+-  | (0, 1), _ => by rw [da_01, da_00]
+-  | (0, j + 2), hx => by
+-    rw [HV_mk] at hx
+-    have h : j + 2 < m := by omega
+-    rw [da_0, da_1_lt h]
+-  | (e + 1, j), hx => by
+-    rw [HV_mk] at hx
+-    by_cases h : j + 2 < m
+-    · rw [da_1_lt h, da_0]
+-      exact pair_eq (by omega) rfl
+-    · have h2 : ¬ (2 * m - j - 3 + 2 < m) := by omega
+-      rw [da_1_ge h, da_1_ge h2]
+-      exact pair_eq (by omega) (by omega)
++theorem da_da {m : ℕ} (hm : 2 ≤ m) : ∀ x : ℕ × ℕ, HV m x → da m (da m x) = x := by
++  rintro ⟨e, j⟩ ⟨he, hj⟩
++  simp only [da]
++  split_ifs <;> simp_all [Prod.ext_iff] <;> omega
+ 
+ theorem dc_dc (x : ℕ × ℕ) (hx : x.1 ≤ 1) : dc (dc x) = x := by
+-  obtain ⟨e, j⟩ := x
+-  exact pair_eq (show 1 - (1 - e) = e by (try simp only at hx); omega) rfl
++  rcases x with ⟨e, j⟩
++  simp only [dc] at *
++  congr 1 <;> omega
+ 
+ /-- Each head action changes the head length by exactly one. -/
+ theorem da_hl {m : ℕ} (hm : 2 ≤ m) : ∀ x : ℕ × ℕ, HV m x →
+-    (hl (da m x) + 1 = hl x ∨ hl (da m x) = hl x + 1)
+-  | (0, 0), _ => by rw [da_00]; simp only [hl_mk, or_true, true_or, false_or, or_false] <;> omega
+-  | (0, 1), _ => by rw [da_01]; simp only [hl_mk, or_true, true_or, false_or, or_false] <;> omega
+-  | (0, j + 2), _ => by rw [da_0]; simp only [hl_mk, or_true, true_or, false_or, or_false] <;> omega
+-  | (e + 1, j), hx => by
+-    rw [HV_mk] at hx
+-    by_cases h : j + 2 < m
+-    · rw [da_1_lt h]; simp only [hl_mk, or_true, true_or, false_or, or_false] <;> omega
+-    · rw [da_1_ge h]; simp only [hl_mk, or_true, true_or, false_or, or_false] <;> omega
++    (hl (da m x) + 1 = hl x ∨ hl (da m x) = hl x + 1) := by
++  rintro ⟨e, j⟩ ⟨he, hj⟩
++  simp only [da, hl]
++  split_ifs <;> simp_all <;> omega
+ 
+ theorem dc_hl (x : ℕ × ℕ) (hx : x.1 ≤ 1) : hl (dc x) + 1 = hl x ∨ hl (dc x) = hl x + 1 := by
+-  obtain ⟨e, j⟩ := x
+-  show (1 - e) + j + 1 = e + j ∨ (1 - e) + j = e + j + 1
+-  (try simp only at hx)
++  rcases x with ⟨e, j⟩
++  simp only [dc, hl] at *
+   omega
+ 
+ /-! ### The dihedral relation `(da ∘ dc)^m = id`, via an orbit coordinate -/
+@@ -129,75 +103,43 @@ def sig (m : ℕ) : ℕ × ℕ → ℕ × ℕ
+ def step (m : ℕ) : ℕ × ℕ → ℕ × ℕ
+   | (o, s) => (o, if s + 1 = m then 0 else s + 1)
+ 
+-theorem sig_0_odd {m j : ℕ} (h : j % 2 = 1) : sig m (0, j) = (1, (j - 1) / 2) := by
+-  simp [sig, h]
+-theorem sig_0_even {m j : ℕ} (h : j % 2 = 0) : sig m (0, j) = (0, j / 2) := by
+-  simp [sig, h]
+-theorem sig_1_odd {m e j : ℕ} (h : j % 2 = 1) : sig m (e + 1, j) = (0, m - (j + 1) / 2) := by
+-  simp [sig, h]
+-theorem sig_1_even {m e j : ℕ} (h : j % 2 = 0) : sig m (e + 1, j) = (1, m - 1 - j / 2) := by
+-  simp [sig, h]
+-theorem step_ne {m o s : ℕ} (h : s + 1 ≠ m) : step m (o, s) = (o, s + 1) := by
+-  simp [step, h]
+-theorem step_eq {m o s : ℕ} (h : s + 1 = m) : step m (o, s) = (o, 0) := by
+-  simp [step, h]
+-
+ theorem sig_T {m : ℕ} (hm : 2 ≤ m) : ∀ x : ℕ × ℕ, HV m x → sig m (da m (dc x)) = step m (sig m x)
+   | (0, j), hx => by
+     rw [HV_mk] at hx
+     rw [dc_0]
+     by_cases h : j + 2 < m
+     · rw [da_1_lt h]
+-      rcases Nat.mod_two_eq_zero_or_one j with hj | hj
+-      · rw [sig_0_even (show (j + 2) % 2 = 0 by omega), sig_0_even hj,
+-          step_ne (show j / 2 + 1 ≠ m by omega)]
+-        exact pair_eq rfl (by omega)
+-      · rw [sig_0_odd (show (j + 2) % 2 = 1 by omega), sig_0_odd hj,
+-          step_ne (show (j - 1) / 2 + 1 ≠ m by omega)]
+-        exact pair_eq rfl (by omega)
++      rcases Nat.mod_two_eq_zero_or_one j with hj | hj <;>
++        simp only [sig, step] <;> split_ifs <;> simp_all [Prod.ext_iff] <;> omega
+     · rw [da_1_ge h]
+-      rcases Nat.mod_two_eq_zero_or_one j with hj | hj
+-      · rw [sig_1_odd (show (2 * m - j - 3) % 2 = 1 by omega), sig_0_even hj,
+-          step_ne (show j / 2 + 1 ≠ m by omega)]
+-        exact pair_eq rfl (by omega)
+-      · rw [sig_1_even (show (2 * m - j - 3) % 2 = 0 by omega), sig_0_odd hj,
+-          step_ne (show (j - 1) / 2 + 1 ≠ m by omega)]
+-        exact pair_eq rfl (by omega)
++      rcases Nat.mod_two_eq_zero_or_one j with hj | hj <;>
++        simp only [sig, step] <;> split_ifs <;> simp_all [Prod.ext_iff] <;> omega
+   | (e + 1, 0), hx => by
+     rw [HV_mk] at hx
+-    rw [dc_1, da_00, sig_0_odd (show 1 % 2 = 1 by norm_num),
+-      sig_1_even (show 0 % 2 = 0 by norm_num), step_eq (show m - 1 - 0 / 2 + 1 = m by omega)]
+-    all_goals exact pair_eq rfl (by omega)
++    rw [dc_1, da_00]
++    simp only [sig, step]
++    split_ifs <;> simp_all [Prod.ext_iff] <;> omega
+   | (e + 1, 1), hx => by
+     rw [HV_mk] at hx
+-    rw [dc_1, da_01, sig_0_even (show 0 % 2 = 0 by norm_num),
+-      sig_1_odd (show 1 % 2 = 1 by norm_num), step_eq (show m - (1 + 1) / 2 + 1 = m by omega)]
+-    all_goals exact pair_eq rfl (by omega)
++    rw [dc_1, da_01]
++    simp only [sig, step]
++    split_ifs <;> simp_all [Prod.ext_iff] <;> omega
+   | (e + 1, j + 2), hx => by
+     rw [HV_mk] at hx
+     rw [dc_1, da_0]
+-    rcases Nat.mod_two_eq_zero_or_one j with hj | hj
+-    · rw [sig_1_even hj, sig_1_even (show (j + 2) % 2 = 0 by omega),
+-        step_ne (show m - 1 - (j + 2) / 2 + 1 ≠ m by omega)]
+-      exact pair_eq rfl (by omega)
+-    · rw [sig_1_odd hj, sig_1_odd (show (j + 2) % 2 = 1 by omega),
+-        step_ne (show m - (j + 2 + 1) / 2 + 1 ≠ m by omega)]
+-      exact pair_eq rfl (by omega)
++    rcases Nat.mod_two_eq_zero_or_one j with hj | hj <;>
++      simp only [sig, step] <;> split_ifs <;> simp_all [Prod.ext_iff] <;> omega
+ 
+ theorem sig_inj {m : ℕ} (hm : 2 ≤ m) :
+-    ∀ x y : ℕ × ℕ, HV m x → HV m y → sig m x = sig m y → x = y
+-  | (e, j), (e', j'), hx, hy, h => by
+-    rw [HV_mk] at hx hy
+-    simp only [sig] at h
+-    apply pair_eq
+-    · split_ifs at h <;> simp only [Prod.mk.injEq, true_and, and_true] at h <;> omega
+-    · split_ifs at h <;> simp only [Prod.mk.injEq, true_and, and_true] at h <;> omega
+-
+-theorem sig_lt {m : ℕ} (hm : 2 ≤ m) : ∀ x : ℕ × ℕ, HV m x → (sig m x).2 < m
+-  | (e, j), hx => by
+-    rw [HV_mk] at hx
+-    simp only [sig]
+-    (try split_ifs) <;> (try simp only) <;> omega
++    ∀ x y : ℕ × ℕ, HV m x → HV m y → sig m x = sig m y → x = y := by
++  rintro ⟨e, j⟩ ⟨e', j'⟩ ⟨he, hj⟩ ⟨he', hj'⟩ h
++  simp only [sig] at h
++  split_ifs at h <;> simp_all [Prod.ext_iff] <;> omega
++
++theorem sig_lt {m : ℕ} (hm : 2 ≤ m) : ∀ x : ℕ × ℕ, HV m x → (sig m x).2 < m := by
++  rintro ⟨e, j⟩ ⟨he, hj⟩
++  simp only [sig]
++  split_ifs <;> simp_all <;> omega
+ 
+ theorem step_iter (m o s : ℕ) : ∀ n : ℕ, s + n < m → (step m)^[n] (o, s) = (o, s + n)
+   | 0, _ => rfl
+@@ -209,11 +151,11 @@ theorem step_iter (m o s : ℕ) : ∀ n : ℕ, s + n < m → (step m)^[n] (o, s)
+ theorem step_iter_self (m o s : ℕ) (hs : s < m) : (step m)^[m] (o, s) = (o, s) := by
+   obtain ⟨k, hk⟩ : ∃ k, m = s + (1 + k) := ⟨m - 1 - s, by omega⟩
+   have h1 : (step m)^[k] (o, s) = (o, m - 1) := by
+-    rw [step_iter m o s k (by omega)]; exact pair_eq rfl (by omega)
++    rw [step_iter m o s k (by omega)]; exact Prod.ext rfl (by omega)
+   have h2 : step m (o, m - 1) = (o, 0) := by
+     simp only [step]; split_ifs <;> first | rfl | omega
+   have h3 : (step m)^[s] (o, 0) = (o, s) := by
+-    rw [step_iter m o 0 s (by omega)]; exact pair_eq rfl (by omega)
++    rw [step_iter m o 0 s (by omega)]; exact Prod.ext rfl (by omega)
+   calc (step m)^[m] (o, s) = (step m)^[s + (1 + k)] (o, s) := by rw [← hk]
+     _ = (o, s) := by
+       rw [Function.iterate_add_apply, Function.iterate_add_apply, h1, Function.iterate_one, h2, h3]
+@@ -247,7 +189,6 @@ def VT : ℕ → ℕ → List ℕ → Prop
+   | _, _, [] => True
+   | m₁, m₂, k :: r => 0 < k ∧ k < m₁ ∧ VT m₂ m₁ r
+ 
+-theorem VT_nil {m₁ m₂ : ℕ} : VT m₁ m₂ [] ↔ True := Iff.rfl
+ theorem VT_cons {m₁ m₂ k : ℕ} {r : List ℕ} : VT m₁ m₂ (k :: r) ↔ 0 < k ∧ k < m₁ ∧ VT m₂ m₁ r :=
+   Iff.rfl
+ 
+@@ -260,7 +201,6 @@ theorem V_mk {m₁ m₂ e j : ℕ} {r : List ℕ} : V m₁ m₂ ((e, j), r) ↔
+ /-- Length (number of letters) of a normal form. -/
+ def len (v : Raw) : ℕ := v.1.1 + v.1.2 + v.2.sum
+ 
+-theorem len_mk {e j : ℕ} {r : List ℕ} : len ((e, j), r) = e + j + r.sum := rfl
+ 
+ /-- Re-read a normal form with a head of the other type. -/
+ def swap : Raw → Raw
+@@ -268,22 +208,10 @@ def swap : Raw → Raw
+   | ((e, 0), k :: r) => ((e, k), r)
+   | ((e, j + 1), r) => ((e, 0), (j + 1) :: r)
+ 
+-theorem swap_V {m₁ m₂ : ℕ} (hm : 1 ≤ m₂) : ∀ v : Raw, V m₁ m₂ v → V m₂ m₁ (swap v)
+-  | ((e, 0), []), h => by
+-    rw [V_mk] at h
+-    show V m₂ m₁ ((e, 0), [])
+-    rw [V_mk]
+-    exact ⟨⟨h.1.1, by omega⟩, trivial⟩
+-  | ((e, 0), k :: r), h => by
+-    rw [V_mk, VT_cons] at h
+-    show V m₂ m₁ ((e, k), r)
+-    rw [V_mk]
+-    exact ⟨⟨h.1.1, h.2.2.1⟩, h.2.2.2⟩
+-  | ((e, j + 1), r), h => by
+-    rw [V_mk] at h
+-    show V m₂ m₁ ((e, 0), (j + 1) :: r)
+-    rw [V_mk, VT_cons]
+-    exact ⟨⟨h.1.1, by omega⟩, by omega, h.1.2, h.2⟩
++theorem swap_V {m₁ m₂ : ℕ} (hm : 1 ≤ m₂) : ∀ v : Raw, V m₁ m₂ v → V m₂ m₁ (swap v) := by
++  rintro ⟨⟨e, j⟩, r⟩ h
++  rcases j with _ | j <;> rcases r with _ | ⟨k, r⟩ <;>
++    simp_all [swap, V, VT] <;> omega
+ 
+ theorem swap_swap {m₁ m₂ : ℕ} : ∀ v : Raw, V m₁ m₂ v → swap (swap v) = v
+   | ((e, 0), []), _ => rfl
+@@ -293,10 +221,10 @@ theorem swap_swap {m₁ m₂ : ℕ} : ∀ v : Raw, V m₁ m₂ v → swap (swap
+     rfl
+   | ((e, j + 1), r), _ => rfl
+ 
+-theorem len_swap : ∀ v : Raw, len (swap v) = len v
+-  | ((e, 0), []) => rfl
+-  | ((e, 0), k :: r) => by simp only [swap, len_mk, List.sum_cons] <;> omega
+-  | ((e, j + 1), r) => by simp only [swap, len_mk, List.sum_cons] <;> omega
++theorem len_swap : ∀ v : Raw, len (swap v) = len v := by
++  rintro ⟨⟨e, j⟩, r⟩
++  rcases j with _ | j <;> rcases r with _ | ⟨k, r⟩ <;>
++    simp [swap, len] <;> omega
+ 
+ /-- `a`/`b` (head generator) acting on the head. -/
+ def actH (m : ℕ) (v : Raw) : Raw := (da m v.1, v.2)
+@@ -343,7 +271,7 @@ theorem actC_actC {m₁ m₂ : ℕ} (v : Raw) (h : V m₁ m₂ v) : actC (actC v
+   show (dc (dc x), r) = (x, r)
+   rw [dc_dc x h.1.1]
+ 
+-theorem actB_actB {p q : ℕ} (hp : 2 ≤ p) (hq : 2 ≤ q) (v : Raw) (h : V p q v) :
++theorem actB_actB {p q : ℕ} (hq : 2 ≤ q) (v : Raw) (h : V p q v) :
+     actB q (actB q v) = v := by
+   have h1 : V q p (swap v) := swap_V (by omega) v h
+   have h2 : V q p (actH q (swap v)) := actH_V hq _ h1
+@@ -354,31 +282,21 @@ theorem act_act {p q : ℕ} (hp : 2 ≤ p) (hq : 2 ≤ q) (i : Fin 3) (v : Raw)
+     act p q i (act p q i v) = v := by
+   match i with
+   | 0 => exact actH_actH hp v h
+-  | 1 => exact actB_actB hp hq v h
++  | 1 => exact actB_actB hq v h
+   | 2 => exact actC_actC v h
+ 
+ /-! ### Length changes -/
+ 
+ theorem len_actH {m₁ m₂ : ℕ} (hm : 2 ≤ m₁) (v : Raw) (h : V m₁ m₂ v) :
+     len (actH m₁ v) + 1 = len v ∨ len (actH m₁ v) = len v + 1 := by
+-  obtain ⟨⟨e, j⟩, r⟩ := v
+-  have := da_hl hm (e, j) h.1
+-  show len (da m₁ (e, j), r) + 1 = len ((e, j), r) ∨ len (da m₁ (e, j), r) = len ((e, j), r) + 1
+-  generalize da m₁ (e, j) = y at this ⊢
+-  obtain ⟨y1, y2⟩ := y
+-  simp only [hl_mk] at this
+-  simp only [len_mk]
++  have h' := da_hl hm v.1 h.1
++  simp only [actH, len, hl] at h' ⊢
+   omega
+ 
+ theorem len_actC {m₁ m₂ : ℕ} (v : Raw) (h : V m₁ m₂ v) :
+     len (actC v) + 1 = len v ∨ len (actC v) = len v + 1 := by
+-  obtain ⟨⟨e, j⟩, r⟩ := v
+-  have := dc_hl (e, j) h.1.1
+-  show len (dc (e, j), r) + 1 = len ((e, j), r) ∨ len (dc (e, j), r) = len ((e, j), r) + 1
+-  generalize dc (e, j) = y at this ⊢
+-  obtain ⟨y1, y2⟩ := y
+-  simp only [hl_mk] at this
+-  simp only [len_mk]
++  have h' := dc_hl v.1 h.1.1
++  simp only [actC, len, hl] at h' ⊢
+   omega
+ 
+ theorem len_act {p q : ℕ} (hp : 2 ≤ p) (hq : 2 ≤ q) (i : Fin 3) (v : Raw) (h : V p q v) :
+@@ -397,40 +315,27 @@ theorem len_act_le {p q : ℕ} (hp : 2 ≤ p) (hq : 2 ≤ q) (i : Fin 3) (v : Ra
+ 
+ /-- The only normal form of length `0` is the empty one. -/
+ theorem eq_nil_of_len {p q : ℕ} (v : Raw) (h : V p q v) (hl0 : len v = 0) : v = ((0, 0), []) := by
+-  obtain ⟨⟨e, j⟩, r⟩ := v
+-  rw [len_mk] at hl0
+-  cases r with
+-  | nil => exact Prod.ext (pair_eq (by omega) (by omega)) rfl
+-  | cons k r =>
+-    rw [V_mk, VT_cons] at h
+-    simp only [List.sum_cons] at hl0
+-    omega
++  rcases v with ⟨⟨e, j⟩, r⟩
++  rcases r with _ | ⟨k, r⟩ <;> simp_all [V, VT, len, Prod.ext_iff]
+ 
+ /-- **Descent**: a nonempty normal form has a generator shortening it by one. -/
+ theorem descent {p q : ℕ} :
+     ∀ v : Raw, V p q v → len v ≠ 0 → ∃ i : Fin 3, len (act p q i v) + 1 = len v
+   | ((0, 0), []), _, hl0 => (hl0 rfl).elim
+-  | ((0, 0), 0 :: r), h, _ => by rw [V_mk, VT_cons] at h; omega
++  | ((0, 0), 0 :: r), h, _ => by simp_all [V, VT]
+   | ((0, 0), 1 :: r), _, _ => ⟨1, by
+-      show len (swap (actH q ((0, 1), r))) + 1 = len ((0, 0), 1 :: r)
+-      rw [len_swap]
+-      show len (da q (0, 1), r) + 1 = len ((0, 0), 1 :: r)
+-      rw [da_01]; simp only [len_mk, List.sum_cons] <;> omega⟩
++    show len (swap (actH q ((0, 1), r))) + 1 = len ((0, 0), 1 :: r)
++    rw [len_swap]
++    simp [actH, len, da] <;> omega⟩
+   | ((0, 0), (k + 2) :: r), _, _ => ⟨1, by
+-      show len (swap (actH q ((0, k + 2), r))) + 1 = len ((0, 0), (k + 2) :: r)
+-      rw [len_swap]
+-      show len (da q (0, k + 2), r) + 1 = len ((0, 0), (k + 2) :: r)
+-      rw [da_0]; simp only [len_mk, List.sum_cons] <;> omega⟩
+-  | ((0, 1), r), _, _ => ⟨0, by
+-      show len (da p (0, 1), r) + 1 = len ((0, 1), r)
+-      rw [da_01]; simp only [len_mk] <;> omega⟩
+-  | ((0, j + 2), r), _, _ => ⟨0, by
+-      show len (da p (0, j + 2), r) + 1 = len ((0, j + 2), r)
+-      rw [da_0]; simp only [len_mk] <;> omega⟩
+-  | ((e + 1, j), r), h, _ => ⟨2, by
+-      rw [V_mk] at h
+-      show len (dc (e + 1, j), r) + 1 = len ((e + 1, j), r)
+-      rw [dc_1]; simp only [len_mk] <;> omega⟩
++    show len (swap (actH q ((0, k + 2), r))) + 1 = len ((0, 0), (k + 2) :: r)
++    rw [len_swap]
++    simp [actH, len, da] <;> omega⟩
++  | ((0, 1), r), _, _ => ⟨0, by simp [act, actH, len, da] <;> omega⟩
++  | ((0, j + 2), r), _, _ => ⟨0, by simp [act, actH, len, da] <;> omega⟩
++  | ((e + 1, j), r), h, _ => by
++    rw [V_mk] at h
++    exact ⟨2, by simp [act, actC, dc, len] at * <;> omega⟩
+ 
+ /-! ### The Coxeter relations on raw normal forms -/
+ 
+@@ -496,19 +401,14 @@ theorem mem_tails (n : ℕ) : ∀ (m₁ m₂ : ℕ) (r : List ℕ),
+     rw [tails_eq, mem_union, mem_ite_empty, mem_biUnion]
+     constructor
+     · rintro (⟨hn, hr⟩ | ⟨k, hk, hr⟩)
+-      · rw [mem_singleton] at hr
+-        subst hr
+-        exact ⟨trivial, by simp [hn]⟩
++      · simp_all [VT]
+       · rw [mem_ite_empty, mem_image] at hr
+         obtain ⟨⟨hk0, hkn, hkm⟩, r', hr', rfl⟩ := hr
+         rw [ih (n - k) (by omega)] at hr'
+-        refine ⟨⟨hk0, hkm, hr'.1⟩, ?_⟩
+-        rw [List.sum_cons, hr'.2]; omega
++        simp_all [VT]
+     · rintro ⟨hv, hs⟩
+       cases r with
+-      | nil =>
+-        left
+-        exact ⟨by simp at hs; omega, mem_singleton_self _⟩
++      | nil => simp_all [VT]
+       | cons k r' =>
+         right
+         rw [VT_cons] at hv
+@@ -570,45 +470,20 @@ def NFs (p q n : ℕ) : Finset Raw :=
+ 
+ theorem mem_Hs (p q n j : ℕ) (r : List ℕ) :
+     (j, r) ∈ Hs p q n ↔ j < p ∧ VT q p r ∧ j + r.sum = n := by
+-  rw [Hs, mem_biUnion]
+-  constructor
+-  · rintro ⟨k, hk, hx⟩
+-    rw [mem_ite_empty, mem_image] at hx
+-    obtain ⟨hkp, r', hr', he⟩ := hx
+-    rw [Prod.mk.injEq] at he
+-    obtain ⟨rfl, rfl⟩ := he
+-    rw [mem_tails] at hr'
+-    rw [mem_range] at hk
+-    exact ⟨hkp, hr'.1, by omega⟩
+-  · rintro ⟨hj, hr, hs⟩
+-    refine ⟨j, mem_range.2 (by omega), ?_⟩
+-    rw [mem_ite_empty, mem_image]
+-    exact ⟨hj, r, (mem_tails _ _ _ _).2 ⟨hr, by omega⟩, rfl⟩
++  simp [Hs, mem_ite_empty, mem_tails]
++  aesop
+ 
+ theorem mem_NFs (p q n : ℕ) (v : Raw) : v ∈ NFs p q n ↔ V p q v ∧ len v = n := by
+   obtain ⟨⟨e, j⟩, r⟩ := v
+-  rw [NFs, mem_biUnion, V_mk, len_mk]
+-  constructor
+-  · rintro ⟨k, hk, hx⟩
+-    rw [mem_ite_empty, mem_image] at hx
+-    obtain ⟨hk1, ⟨j', r'⟩, hx, he⟩ := hx
+-    simp only [Prod.mk.injEq] at he
+-    obtain ⟨⟨rfl, rfl⟩, rfl⟩ := he
+-    rw [mem_Hs] at hx
+-    rw [mem_range] at hk
+-    exact ⟨⟨⟨hk1, hx.1⟩, hx.2.1⟩, by omega⟩
+-  · rintro ⟨⟨⟨he, hj⟩, hr⟩, hs⟩
+-    refine ⟨e, mem_range.2 (by omega), ?_⟩
+-    rw [mem_ite_empty, mem_image]
+-    exact ⟨he, (j, r), (mem_Hs _ _ _ _ _).2 ⟨hj, hr, by omega⟩, rfl⟩
++  simp [NFs, mem_ite_empty, mem_Hs, V, len]
++  aesop <;> omega
+ 
+ theorem card_Hs (p q n : ℕ) : ((Hs p q n).card : ℤ) =
+     ∑ k ∈ range (n + 1), (if k < p then (1 : ℤ) else 0) * ((tails q p (n - k)).card : ℤ) := by
+   rw [Hs, card_biUnion_ite _ (fun k => k < p) _ Prod.fst]
+   · push_cast
+     refine sum_congr rfl fun k _ => ?_
+-    have hinj : Function.Injective (fun r : List ℕ => (k, r)) := fun _ _ h => (Prod.mk.inj h).2
+-    split_ifs <;> simp [card_image_of_injective _ hinj]
++    split_ifs <;> simp [card_image_of_injective _ (fun _ _ h => (Prod.mk.inj h).2)]
+   · intro k _ x hx
+     rw [mem_image] at hx
+     obtain ⟨r, -, rfl⟩ := hx
+@@ -666,7 +541,7 @@ theorem NFs_series (p q : ℕ) :
+ 
+ theorem Rm_eq (m : ℕ) (hm : 1 ≤ m) : Rm m = 1 + Pm m := by
+   ext n
+-  simp only [Rm, Pm, map_add, coeff_one, coeff_mk]
++  simp [Rm, Pm]
+   split_ifs <;> omega
+ 
+ /-- **The series identity for normal forms**:
+@@ -680,22 +555,16 @@ theorem nf_series (p q : ℕ) (hq : 1 ≤ q) :
+ 
+ theorem sum_Ico_X_pow (m : ℕ) : ∑ i ∈ Ico 1 m, (X : ℤ⟦X⟧) ^ i = Pm m := by
+   ext n
+-  rw [map_sum]
+-  simp only [coeff_X_pow, Pm, coeff_mk]
+-  rw [sum_ite_eq]
+-  simp only [mem_Ico]
++  simp [Pm, coeff_X_pow]
+   split_ifs <;> omega
+ 
+ theorem sum_range_X_pow (m : ℕ) : ∑ i ∈ range m, (X : ℤ⟦X⟧) ^ i = Rm m := by
+   ext n
+-  rw [map_sum]
+-  simp only [coeff_X_pow, Rm, coeff_mk]
+-  rw [sum_ite_eq]
+-  simp only [mem_range]
++  simp [Rm, coeff_X_pow]
+ 
+ theorem one_add_X_eq : (1 + X : ℤ⟦X⟧) = E2 := by
+   ext n
+-  simp only [map_add, coeff_one, coeff_X, E2, coeff_mk]
++  simp [E2, coeff_one, coeff_X]
+   split_ifs <;> omega
+ 
+ /-- The normal-form series identity in closed form. -/
+diff --git a/Solution.lean b/Solution.lean
+index 06b64b1ce..55bb24b33 100644
+--- a/Solution.lean
++++ b/Solution.lean
+@@ -10,156 +10,68 @@ Solution: proofs of the challenge statements, transferred from the CoxeterGrowth
+ (12)–(20)).
+ -/
+ 
+-open PowerSeries Finset Filter Topology
+-
+ namespace TriangleGrowth
+ 
+ /-- **(1) The growth series of the triangle Coxeter group `(p, q, ∞)`.** -/
+-theorem growth_series {W : Type*} [Group W] {M : CoxeterMatrix (Fin 3)} (cs : CoxeterSystem M W)
+-    {p q : ℕ} (hp : 2 ≤ p) (hq : 2 ≤ q) (h01 : M 0 1 = 0) (h02 : M 0 2 = p) (h12 : M 1 2 = q) :
+-    (PowerSeries.mk fun n => (Nat.card {w : W // cs.length w = n} : ℤ)) *
+-        (1 - (∑ i ∈ Ico 1 p, (X : ℤ⟦X⟧) ^ i) * (∑ i ∈ Ico 1 q, (X : ℤ⟦X⟧) ^ i)) =
+-      (1 + X) * (∑ i ∈ range p, (X : ℤ⟦X⟧) ^ i) * (∑ i ∈ range q, (X : ℤ⟦X⟧) ^ i) :=
+-  CoxeterGrowth.Triangle.growth_series cs ⟨hp, hq, h01, h02, h12⟩
++alias growth_series := CoxeterGrowth.Triangle.growth_series
+ 
+ /-- **(2) Non-vacuity**: the Coxeter matrix of type `(p, q, ∞)` exists for all `p, q ≥ 2`. -/
+-theorem triangle_matrix_exists (p q : ℕ) (hp : 2 ≤ p) (hq : 2 ≤ q) :
+-    ∃ M : CoxeterMatrix (Fin 3), M 0 1 = 0 ∧ M 0 2 = p ∧ M 1 2 = q :=
+-  CoxeterGrowth.Triangle.triM_exists p q hp hq
++alias triangle_matrix_exists := CoxeterGrowth.Triangle.triM_exists
+ 
+ /-- **(3) `(2,3,∞)`.** -/
+-theorem growth_series_23 {W : Type*} [Group W] {M : CoxeterMatrix (Fin 3)}
+-    (cs : CoxeterSystem M W) (h01 : M 0 1 = 0) (h02 : M 0 2 = 2) (h12 : M 1 2 = 3) :
+-    (PowerSeries.mk fun n => (Nat.card {w : W // cs.length w = n} : ℤ)) * (1 - X ^ 2 - X ^ 3) =
+-      (1 + X) ^ 2 * (1 + X + X ^ 2) :=
+-  CoxeterGrowth.Triangle.growth_series_23 cs h01 h02 h12
++alias growth_series_23 := CoxeterGrowth.Triangle.growth_series_23
+ 
+ /-- **(4) `(2,4,∞)`.** -/
+-theorem growth_series_24 {W : Type*} [Group W] {M : CoxeterMatrix (Fin 3)}
+-    (cs : CoxeterSystem M W) (h01 : M 0 1 = 0) (h02 : M 0 2 = 2) (h12 : M 1 2 = 4) :
+-    (PowerSeries.mk fun n => (Nat.card {w : W // cs.length w = n} : ℤ)) *
+-        (1 - X ^ 2 - X ^ 3 - X ^ 4) = (1 + X) ^ 2 * (1 + X + X ^ 2 + X ^ 3) :=
+-  CoxeterGrowth.Triangle.growth_series_24 cs h01 h02 h12
++alias growth_series_24 := CoxeterGrowth.Triangle.growth_series_24
+ 
+ /-- **(5) `(3,3,∞)`.** -/
+-theorem growth_series_33 {W : Type*} [Group W] {M : CoxeterMatrix (Fin 3)}
+-    (cs : CoxeterSystem M W) (h01 : M 0 1 = 0) (h02 : M 0 2 = 3) (h12 : M 1 2 = 3) :
+-    (PowerSeries.mk fun n => (Nat.card {w : W // cs.length w = n} : ℤ)) *
+-        (1 - X ^ 2 - 2 * X ^ 3 - X ^ 4) = (1 + X) * (1 + X + X ^ 2) ^ 2 :=
+-  CoxeterGrowth.Triangle.growth_series_33 cs h01 h02 h12
++alias growth_series_33 := CoxeterGrowth.Triangle.growth_series_33
+ 
+ /-- **(6) `(2,3,∞)` sphere sizes**: `1, 3, 5, 7, 9`, then `a(n+5) = a(n+3) + a(n+2)`. -/
+-theorem sphere23_values {W : Type*} [Group W] {M : CoxeterMatrix (Fin 3)}
+-    (cs : CoxeterSystem M W) (h01 : M 0 1 = 0) (h02 : M 0 2 = 2) (h12 : M 1 2 = 3) :
+-    Nat.card {w : W // cs.length w = 0} = 1 ∧ Nat.card {w : W // cs.length w = 1} = 3 ∧
+-      Nat.card {w : W // cs.length w = 2} = 5 ∧ Nat.card {w : W // cs.length w = 3} = 7 ∧
+-      Nat.card {w : W // cs.length w = 4} = 9 ∧
+-      ∀ n : ℕ, Nat.card {w : W // cs.length w = n + 5} =
+-        Nat.card {w : W // cs.length w = n + 3} + Nat.card {w : W // cs.length w = n + 2} :=
+-  CoxeterGrowth.Triangle.sphere23_facts cs h01 h02 h12
++alias sphere23_values := CoxeterGrowth.Triangle.sphere23_facts
+ 
+ /-- **(7)** The recursion of (6) fails one step earlier: `a(4) ≠ a(2) + a(1)`. -/
+-theorem sphere23_rec_fails_at_4 {W : Type*} [Group W] {M : CoxeterMatrix (Fin 3)}
+-    (cs : CoxeterSystem M W) (h01 : M 0 1 = 0) (h02 : M 0 2 = 2) (h12 : M 1 2 = 3) :
+-    Nat.card {w : W // cs.length w = 4} ≠
+-      Nat.card {w : W // cs.length w = 2} + Nat.card {w : W // cs.length w = 1} :=
+-  CoxeterGrowth.Triangle.sphere23_rec_fails_at_4 cs h01 h02 h12
++alias sphere23_rec_fails_at_4 := CoxeterGrowth.Triangle.sphere23_rec_fails_at_4
+ 
+ /-- **(8) Padovan**: `a(n) = Pad(n + 5)` for `n ≥ 2`. -/
+-theorem sphere23_padovan {W : Type*} [Group W] {M : CoxeterMatrix (Fin 3)}
+-    (cs : CoxeterSystem M W) (h01 : M 0 1 = 0) (h02 : M 0 2 = 2) (h12 : M 1 2 = 3)
+-    (pad : ℕ → ℕ) (hp0 : pad 0 = 1) (hp1 : pad 1 = 1) (hp2 : pad 2 = 1)
+-    (hpr : ∀ n, pad (n + 3) = pad (n + 1) + pad n) (n : ℕ) (hn : 2 ≤ n) :
+-    Nat.card {w : W // cs.length w = n} = pad (n + 5) := by
+-  rw [CoxeterGrowth.Triangle.eq_padovan pad hp0 hp1 hp2 hpr]
+-  exact CoxeterGrowth.Triangle.sphere23_padovan cs h01 h02 h12 n hn
++alias sphere23_padovan := CoxeterGrowth.Triangle.sphere23_padovan
+ 
+ /-- **(9)** The plastic number exists and is unique. -/
+-theorem plastic_exists_unique : ∃! ρ : ℝ, 1 < ρ ∧ ρ ^ 3 = ρ + 1 :=
+-  ⟨CoxeterGrowth.plasticNumber,
+-    ⟨CoxeterGrowth.one_lt_plasticNumber, CoxeterGrowth.plasticNumber_cubic⟩,
+-    fun _ hy => CoxeterGrowth.plasticNumber_unique hy.1 hy.2⟩
++alias plastic_exists_unique := CoxeterGrowth.plastic_exists_unique
+ 
+ /-- **(10) Two-sided growth bound** for `(2,3,∞)`: `2ρⁿ ≤ a(n) ≤ 4ρⁿ`, `n ≥ 2`. -/
+-theorem sphere23_growth_bounds {W : Type*} [Group W] {M : CoxeterMatrix (Fin 3)}
+-    (cs : CoxeterSystem M W) (h01 : M 0 1 = 0) (h02 : M 0 2 = 2) (h12 : M 1 2 = 3)
+-    (ρ : ℝ) (hρ : 1 < ρ) (hρ3 : ρ ^ 3 = ρ + 1) (n : ℕ) :
+-    2 * ρ ^ (n + 2) ≤ (Nat.card {w : W // cs.length w = n + 2} : ℝ) ∧
+-      (Nat.card {w : W // cs.length w = n + 2} : ℝ) ≤ 4 * ρ ^ (n + 2) :=
+-  CoxeterGrowth.Triangle.sphere23_growth cs h01 h02 h12 hρ hρ3 n
++alias sphere23_growth_bounds := CoxeterGrowth.Triangle.sphere23_growth
+ 
+ /-- **(11) Growth rate** of `(2,3,∞)`: `a(n)^{1/n} → ρ`, the plastic number. -/
+-theorem sphere23_root_tendsto {W : Type*} [Group W] {M : CoxeterMatrix (Fin 3)}
+-    (cs : CoxeterSystem M W) (h01 : M 0 1 = 0) (h02 : M 0 2 = 2) (h12 : M 1 2 = 3)
+-    (ρ : ℝ) (hρ : 1 < ρ) (hρ3 : ρ ^ 3 = ρ + 1) :
+-    Tendsto (fun n : ℕ => (Nat.card {w : W // cs.length w = n} : ℝ) ^ ((n : ℝ)⁻¹)) atTop
+-      (𝓝 ρ) :=
+-  CoxeterGrowth.Triangle.sphere23_root_tendsto cs h01 h02 h12 hρ hρ3
++alias sphere23_root_tendsto := CoxeterGrowth.Triangle.sphere23_root_tendsto
+ 
+ /-- **(12) Monotonicity** in `(p, q)`: `a_{p,q}(n) ≤ a_{p',q'}(n)` for `p ≤ p'`, `q ≤ q'`. -/
+-theorem sphere_mono {W W' : Type*} [Group W] [Group W'] {M M' : CoxeterMatrix (Fin 3)}
+-    (cs : CoxeterSystem M W) (cs' : CoxeterSystem M' W') {p q p' q' : ℕ} (hp : 2 ≤ p)
+-    (hq : 2 ≤ q) (hpp : p ≤ p') (hqq : q ≤ q') (h01 : M 0 1 = 0) (h02 : M 0 2 = p)
+-    (h12 : M 1 2 = q) (h01' : M' 0 1 = 0) (h02' : M' 0 2 = p') (h12' : M' 1 2 = q') (n : ℕ) :
+-    Nat.card {w : W // cs.length w = n} ≤ Nat.card {w : W' // cs'.length w = n} :=
+-  CoxeterGrowth.Triangle.sphere_mono cs cs' ⟨hp, hq, h01, h02, h12⟩
+-    ⟨le_trans hp hpp, le_trans hq hqq, h01', h02', h12'⟩ hpp hqq n
++alias sphere_mono := CoxeterGrowth.Triangle.sphere_mono
+ 
+ /-- **(13) Symmetry**: `a_{p,q}(n) = a_{q,p}(n)`. -/
+-theorem sphere_symm {W W' : Type*} [Group W] [Group W'] {M M' : CoxeterMatrix (Fin 3)}
+-    (cs : CoxeterSystem M W) (cs' : CoxeterSystem M' W') {p q : ℕ} (hp : 2 ≤ p) (hq : 2 ≤ q)
+-    (h01 : M 0 1 = 0) (h02 : M 0 2 = p) (h12 : M 1 2 = q) (h01' : M' 0 1 = 0)
+-    (h02' : M' 0 2 = q) (h12' : M' 1 2 = p) (n : ℕ) :
+-    Nat.card {w : W // cs.length w = n} = Nat.card {w : W' // cs'.length w = n} :=
+-  CoxeterGrowth.Triangle.sphere_symm cs cs' ⟨hp, hq, h01, h02, h12⟩ ⟨hq, hp, h01', h02', h12'⟩ n
++alias sphere_symm := CoxeterGrowth.Triangle.sphere_symm
+ 
+ /-- **(14) The plastic number bounds the whole family from below**: for every hyperbolic
+ `(p, q, ∞)`, `2ρⁿ ≤ a(n)` for `n ≥ 2`. -/
+-theorem sphere_ge_plastic {W : Type*} [Group W] {M : CoxeterMatrix (Fin 3)}
+-    (cs : CoxeterSystem M W) {p q : ℕ} (hp : 2 ≤ p) (hq : 2 ≤ q) (hpq : (p, q) ≠ (2, 2))
+-    (h01 : M 0 1 = 0) (h02 : M 0 2 = p) (h12 : M 1 2 = q)
+-    (ρ : ℝ) (hρ : 1 < ρ) (hρ3 : ρ ^ 3 = ρ + 1) (n : ℕ) :
+-    2 * ρ ^ (n + 2) ≤ (Nat.card {w : W // cs.length w = n + 2} : ℝ) :=
+-  CoxeterGrowth.Triangle.sphere_ge_plastic cs ⟨hp, hq, h01, h02, h12⟩ hpq hρ hρ3 n
++alias sphere_ge_plastic := CoxeterGrowth.Triangle.sphere_ge_plastic
+ 
+ /-- **(15) The rate equation** has exactly one root `τ > 1` for every hyperbolic `(p, q)`. -/
+-theorem rate_exists_unique {p q : ℕ} (hp : 2 ≤ p) (hq : 2 ≤ q) (hpq : (p, q) ≠ (2, 2)) :
+-    ∃! τ : ℝ, 1 < τ ∧ (∑ i ∈ Ico 1 p, τ⁻¹ ^ i) * (∑ i ∈ Ico 1 q, τ⁻¹ ^ i) = 1 :=
+-  CoxeterGrowth.Triangle.rate_exists_unique hp hq hpq
++alias rate_exists_unique := CoxeterGrowth.Triangle.rate_exists_unique
+ 
+ /-- **(16) Growth rate of every member**: `a(n)^{1/n} → τ`, the root of the rate equation. -/
+-theorem sphere_root_tendsto_rate {W : Type*} [Group W] {M : CoxeterMatrix (Fin 3)}
+-    (cs : CoxeterSystem M W) {p q : ℕ} (hp : 2 ≤ p) (hq : 2 ≤ q)
+-    (h01 : M 0 1 = 0) (h02 : M 0 2 = p) (h12 : M 1 2 = q) (τ : ℝ) (hτ : 1 < τ)
+-    (hτeq : (∑ i ∈ Ico 1 p, τ⁻¹ ^ i) * (∑ i ∈ Ico 1 q, τ⁻¹ ^ i) = 1) :
+-    Tendsto (fun n : ℕ => (Nat.card {w : W // cs.length w = n} : ℝ) ^ ((n : ℝ)⁻¹)) atTop
+-      (𝓝 τ) :=
+-  CoxeterGrowth.Triangle.sphere_root_tendsto_rate cs ⟨hp, hq, h01, h02, h12⟩ hτ hτeq
++alias sphere_root_tendsto_rate := CoxeterGrowth.Triangle.sphere_root_tendsto_rate
+ 
+ /-- **(17) The rate is strictly increasing** in `(p, q)`. -/
+-theorem rate_lt_rate {p q p' q' : ℕ} (hp : 2 ≤ p) (hq : 2 ≤ q) (hpp : p ≤ p') (hqq : q ≤ q')
+-    (hne : (p, q) ≠ (p', q')) (τ τ' : ℝ) (hτ : 1 < τ) (hτ' : 1 < τ')
+-    (hτeq : (∑ i ∈ Ico 1 p, τ⁻¹ ^ i) * (∑ i ∈ Ico 1 q, τ⁻¹ ^ i) = 1)
+-    (hτeq' : (∑ i ∈ Ico 1 p', τ'⁻¹ ^ i) * (∑ i ∈ Ico 1 q', τ'⁻¹ ^ i) = 1) : τ < τ' :=
+-  CoxeterGrowth.Triangle.rate_lt_rate hp hq hpp hqq hne hτ hτ' hτeq hτeq'
++alias rate_lt_rate := CoxeterGrowth.Triangle.rate_lt_rate
+ 
+ /-- **(18) The plastic number is the minimal rate**: `ρ ≤ τ`, with equality exactly for
+ `(p, q) = (2, 3)` and `(3, 2)`. -/
+-theorem plastic_le_rate {p q : ℕ} (hp : 2 ≤ p) (hq : 2 ≤ q) (τ : ℝ) (hτ : 1 < τ)
+-    (hτeq : (∑ i ∈ Ico 1 p, τ⁻¹ ^ i) * (∑ i ∈ Ico 1 q, τ⁻¹ ^ i) = 1)
+-    (ρ : ℝ) (hρ : 1 < ρ) (hρ3 : ρ ^ 3 = ρ + 1) :
+-    ρ ≤ τ ∧ (τ = ρ ↔ (p = 2 ∧ q = 3) ∨ (p = 3 ∧ q = 2)) :=
+-  CoxeterGrowth.Triangle.plastic_le_rate hp hq hτ hτeq hρ hρ3
++alias plastic_le_rate := CoxeterGrowth.Triangle.plastic_le_rate
+ 
+ /-- **(19)** Every rate is below `2`. -/
+-theorem rate_lt_two {p q : ℕ} (hp : 2 ≤ p) (hq : 2 ≤ q) (τ : ℝ) (hτ : 1 < τ)
+-    (hτeq : (∑ i ∈ Ico 1 p, τ⁻¹ ^ i) * (∑ i ∈ Ico 1 q, τ⁻¹ ^ i) = 1) : τ < 2 :=
+-  CoxeterGrowth.Triangle.rate_lt_two hp hq hτ hτeq
++alias rate_lt_two := CoxeterGrowth.Triangle.rate_lt_two
+ 
+ /-- **(20)** The rates tend to `2` as `p, q → ∞`. -/
+-theorem rate_tendsto_two (σ : ℝ) (hσ : σ < 2) :
+-    ∃ N : ℕ, ∀ p q : ℕ, N ≤ p → N ≤ q → ∀ τ : ℝ, 1 < τ →
+-      (∑ i ∈ Ico 1 p, τ⁻¹ ^ i) * (∑ i ∈ Ico 1 q, τ⁻¹ ^ i) = 1 → σ < τ :=
+-  CoxeterGrowth.Triangle.rate_tendsto_two σ hσ
++alias rate_tendsto_two := CoxeterGrowth.Triangle.rate_tendsto_two
+ 
+ end TriangleGrowth

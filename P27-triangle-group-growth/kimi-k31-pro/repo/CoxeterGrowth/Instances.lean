@@ -22,9 +22,7 @@ def triM (p q : ℕ) (hp : 2 ≤ p) (hq : 2 ≤ q) : CoxeterMatrix (Fin 3) where
   isSymm := Matrix.IsSymm.ext fun i j => by fin_cases i <;> fin_cases j <;> rfl
   diagonal i := by fin_cases i <;> rfl
   off_diagonal i i' h := by
-    fin_cases i <;> fin_cases i' <;>
-      first | exact absurd rfl h | (show (0 : ℕ) ≠ 1; omega) | (show p ≠ 1; omega) |
-        (show q ≠ 1; omega)
+    fin_cases i <;> fin_cases i' <;> simp_all <;> omega
 
 /-- Non-vacuity: the hypotheses of `growth_series` are satisfiable for all `p, q ≥ 2`. -/
 theorem triM_exists (p q : ℕ) (hp : 2 ≤ p) (hq : 2 ≤ q) :
@@ -38,80 +36,54 @@ variable {W : Type*} [Group W] {M : CoxeterMatrix (Fin 3)} (cs : CoxeterSystem M
 /-- Sphere sizes `a(n) = #{w : ℓ(w) = n}`. -/
 noncomputable def sphere (n : ℕ) : ℕ := Nat.card {w : W // cs.length w = n}
 
-theorem sum_Ico_1_2 : ∑ i ∈ Ico 1 2, (X : ℤ⟦X⟧) ^ i = X := by
-  simp [Finset.sum_Ico_eq_sum_range, Finset.sum_range_succ]
-
-theorem sum_Ico_1_3 : ∑ i ∈ Ico 1 3, (X : ℤ⟦X⟧) ^ i = X + X ^ 2 := by
-  simp [Finset.sum_Ico_eq_sum_range, Finset.sum_range_succ]
-
-theorem sum_Ico_1_4 : ∑ i ∈ Ico 1 4, (X : ℤ⟦X⟧) ^ i = X + X ^ 2 + X ^ 3 := by
-  simp [Finset.sum_Ico_eq_sum_range, Finset.sum_range_succ, add_assoc]
-
-theorem sum_range_2 : ∑ i ∈ range 2, (X : ℤ⟦X⟧) ^ i = 1 + X := by
-  simp [Finset.sum_range_succ]
-
-theorem sum_range_3 : ∑ i ∈ range 3, (X : ℤ⟦X⟧) ^ i = 1 + X + X ^ 2 := by
-  simp [Finset.sum_range_succ]
-
-theorem sum_range_4 : ∑ i ∈ range 4, (X : ℤ⟦X⟧) ^ i = 1 + X + X ^ 2 + X ^ 3 := by
-  simp [Finset.sum_range_succ]
-
 /-- `(2,3,∞)`: `Σ a(n) tⁿ · (1 − t² − t³) = (1+t)²(1+t+t²)`. -/
 theorem growth_series_23 (h01 : M 0 1 = 0) (h02 : M 0 2 = 2) (h12 : M 1 2 = 3) :
     (PowerSeries.mk fun n => (Nat.card {w : W // cs.length w = n} : ℤ)) * (1 - X ^ 2 - X ^ 3) =
       (1 + X) ^ 2 * (1 + X + X ^ 2) := by
-  have h := growth_series cs ⟨le_refl 2, by norm_num, h01, h02, h12⟩
-  rw [sum_Ico_1_2, sum_Ico_1_3, sum_range_2, sum_range_3] at h
-  rw [show (1 : ℤ⟦X⟧) - X ^ 2 - X ^ 3 = 1 - X * (X + X ^ 2) by ring, h]
-  ring
+  have h := growth_series cs le_rfl (by norm_num) h01 h02 h12
+  simp [sum_Ico_eq_sum_range, sum_range_succ] at h
+  linear_combination h
 
 /-- `(2,4,∞)`: `Σ a(n) tⁿ · (1 − t² − t³ − t⁴) = (1+t)²(1+t+t²+t³)`. -/
 theorem growth_series_24 (h01 : M 0 1 = 0) (h02 : M 0 2 = 2) (h12 : M 1 2 = 4) :
     (PowerSeries.mk fun n => (Nat.card {w : W // cs.length w = n} : ℤ)) *
         (1 - X ^ 2 - X ^ 3 - X ^ 4) = (1 + X) ^ 2 * (1 + X + X ^ 2 + X ^ 3) := by
-  have h := growth_series cs ⟨le_refl 2, by norm_num, h01, h02, h12⟩
-  rw [sum_Ico_1_2, sum_Ico_1_4, sum_range_2, sum_range_4] at h
-  rw [show (1 : ℤ⟦X⟧) - X ^ 2 - X ^ 3 - X ^ 4 = 1 - X * (X + X ^ 2 + X ^ 3) by ring, h]
-  ring
+  have h := growth_series cs le_rfl (by norm_num) h01 h02 h12
+  simp [sum_Ico_eq_sum_range, sum_range_succ] at h
+  linear_combination h
 
 /-- `(3,3,∞)`: `Σ a(n) tⁿ · (1 − t² − 2t³ − t⁴) = (1+t)(1+t+t²)²`. -/
 theorem growth_series_33 (h01 : M 0 1 = 0) (h02 : M 0 2 = 3) (h12 : M 1 2 = 3) :
     (PowerSeries.mk fun n => (Nat.card {w : W // cs.length w = n} : ℤ)) *
         (1 - X ^ 2 - 2 * X ^ 3 - X ^ 4) = (1 + X) * (1 + X + X ^ 2) ^ 2 := by
-  have h := growth_series cs ⟨by norm_num, by norm_num, h01, h02, h12⟩
-  rw [sum_Ico_1_3, sum_range_3] at h
-  rw [show (1 : ℤ⟦X⟧) - X ^ 2 - 2 * X ^ 3 - X ^ 4 = 1 - (X + X ^ 2) * (X + X ^ 2) by ring, h]
-  ring
+  have h := growth_series cs (by norm_num) (by norm_num) h01 h02 h12
+  simp [sum_Ico_eq_sum_range, sum_range_succ] at h
+  linear_combination h
 
 /-- Coefficient extraction for `(2,3,∞)`. -/
 theorem sphere23_facts (h01 : M 0 1 = 0) (h02 : M 0 2 = 2) (h12 : M 1 2 = 3) :
-    sphere cs 0 = 1 ∧ sphere cs 1 = 3 ∧ sphere cs 2 = 5 ∧ sphere cs 3 = 7 ∧ sphere cs 4 = 9 ∧
-      ∀ n, sphere cs (n + 5) = sphere cs (n + 3) + sphere cs (n + 2) := by
+    Nat.card {w : W // cs.length w = 0} = 1 ∧ Nat.card {w : W // cs.length w = 1} = 3 ∧
+      Nat.card {w : W // cs.length w = 2} = 5 ∧ Nat.card {w : W // cs.length w = 3} = 7 ∧
+      Nat.card {w : W // cs.length w = 4} = 9 ∧
+      ∀ n : ℕ, Nat.card {w : W // cs.length w = n + 5} =
+        Nat.card {w : W // cs.length w = n + 3} + Nat.card {w : W // cs.length w = n + 2} := by
   have H := growth_series_23 cs h01 h02 h12
-  have hexp : (1 + X : ℤ⟦X⟧) ^ 2 * (1 + X + X ^ 2) =
-      1 + X + X + X + X ^ 2 + X ^ 2 + X ^ 2 + X ^ 2 + X ^ 3 + X ^ 3 + X ^ 3 + X ^ 4 := by ring
-  rw [hexp, mul_sub, mul_sub, mul_one] at H
-  have c : ∀ n, coeff n (PowerSeries.mk fun n => (Nat.card {w : W // cs.length w = n} : ℤ)) -
-      coeff n ((PowerSeries.mk fun n => (Nat.card {w : W // cs.length w = n} : ℤ)) * X ^ 2) -
-      coeff n ((PowerSeries.mk fun n => (Nat.card {w : W // cs.length w = n} : ℤ)) * X ^ 3) =
-      coeff n (1 + X + X + X + X ^ 2 + X ^ 2 + X ^ 2 + X ^ 2 + X ^ 3 + X ^ 3 + X ^ 3 + X ^ 4 :
-        ℤ⟦X⟧) := by
-    intro n; rw [← map_sub, ← map_sub, H]
-  have c0 := c 0
+  ring_nf at H
+  have c (n : ℕ) := congrArg (coeff n) H
+  simp [coeff_mul_X_pow', coeff_X_pow, coeff_one, coeff_X] at c
   have c1 := c 1
   have c2 := c 2
   have c3 := c 3
   have c4 := c 4
-  simp [coeff_mul_X_pow', coeff_X_pow, coeff_one, coeff_X] at c0 c1 c2 c3 c4
-  unfold sphere
-  refine ⟨by first | exact_mod_cast c0 | simp, by exact_mod_cast c1, by omega, by omega, by omega,
-    fun n => ?_⟩
+  norm_num at c1 c2 c3 c4
+  refine ⟨by simp, by exact_mod_cast c1, by omega, by omega, by omega, fun n => ?_⟩
   have cn := c (n + 5)
-  simp [coeff_mul_X_pow', coeff_X_pow, coeff_one, coeff_X] at cn
+  norm_num at cn
   omega
 
 theorem sphere23_rec_fails_at_4 (h01 : M 0 1 = 0) (h02 : M 0 2 = 2) (h12 : M 1 2 = 3) :
-    sphere cs 4 ≠ sphere cs 2 + sphere cs 1 := by
+    Nat.card {w : W // cs.length w = 4} ≠
+      Nat.card {w : W // cs.length w = 2} + Nat.card {w : W // cs.length w = 1} := by
   obtain ⟨-, h1, h2, -, h4, -⟩ := sphere23_facts cs h01 h02 h12
   omega
 
@@ -119,64 +91,46 @@ end Closed
 
 /-! ## Padovan -/
 
-/-- The Padovan sequence `1, 1, 1, 2, 2, 3, 4, 5, 7, 9, 12, …`. -/
-def padovan : ℕ → ℕ
-  | 0 => 1
-  | 1 => 1
-  | 2 => 1
-  | n + 3 => padovan (n + 1) + padovan n
-
-/-- Any sequence with the Padovan initial values and recursion is the Padovan sequence. -/
-theorem eq_padovan (pad : ℕ → ℕ) (h0 : pad 0 = 1) (h1 : pad 1 = 1) (h2 : pad 2 = 1)
-    (hr : ∀ n, pad (n + 3) = pad (n + 1) + pad n) : ∀ n, pad n = padovan n
-  | 0 => h0
-  | 1 => h1
-  | 2 => h2
-  | n + 3 => by
-    rw [hr, eq_padovan pad h0 h1 h2 hr (n + 1), eq_padovan pad h0 h1 h2 hr n]
-    rfl
-
-/-- A sequence with values `5, 7, 9` at `2, 3, 4` and the recursion `f(n+5) = f(n+3) + f(n+2)`
-is `Pad(n+5)` from `n = 2` on. -/
-theorem eq_padovan_shift (f : ℕ → ℕ) (h2 : f 2 = 5) (h3 : f 3 = 7) (h4 : f 4 = 9)
-    (hrec : ∀ n, f (n + 5) = f (n + 3) + f (n + 2)) : ∀ n, 2 ≤ n → f n = padovan (n + 5)
-  | 0, h => absurd h (by norm_num)
-  | 1, h => absurd h (by norm_num)
-  | 2, _ => by rw [h2]; rfl
-  | 3, _ => by rw [h3]; rfl
-  | 4, _ => by rw [h4]; rfl
-  | m + 5, _ => by
-    rw [hrec, eq_padovan_shift f h2 h3 h4 hrec (m + 3) (by omega),
-      eq_padovan_shift f h2 h3 h4 hrec (m + 2) (by omega)]
-    rfl
-
 /-- **Padovan**: for `(2,3,∞)`, `a(n) = Pad(n+5)` for `n ≥ 2`. -/
 theorem sphere23_padovan {W : Type*} [Group W] {M : CoxeterMatrix (Fin 3)}
     (cs : CoxeterSystem M W) (h01 : M 0 1 = 0) (h02 : M 0 2 = 2) (h12 : M 1 2 = 3)
-    (n : ℕ) (hn : 2 ≤ n) : sphere cs n = padovan (n + 5) := by
+    (pad : ℕ → ℕ) (hp0 : pad 0 = 1) (hp1 : pad 1 = 1) (hp2 : pad 2 = 1)
+    (hpr : ∀ n, pad (n + 3) = pad (n + 1) + pad n) (n : ℕ) (hn : 2 ≤ n) :
+    Nat.card {w : W // cs.length w = n} = pad (n + 5) := by
   obtain ⟨-, -, h2, h3, h4, hrec⟩ := sphere23_facts cs h01 h02 h12
-  exact eq_padovan_shift (sphere cs) h2 h3 h4 hrec n hn
+  induction n using Nat.strong_induction_on with
+  | _ n ih =>
+    rcases n with _ | _ | _ | _ | _ | m
+    · omega
+    · omega
+    · rw [h2]
+      norm_num [hpr, hp0, hp1, hp2]
+    · rw [h3]
+      norm_num [hpr, hp0, hp1, hp2]
+    · rw [h4]
+      norm_num [hpr, hp0, hp1, hp2]
+    · rw [hrec, hpr (m + 7), ih (m + 3) (by omega) (by omega),
+        ih (m + 2) (by omega) (by omega)]
 
 /-! ## Exponential growth rate -/
 
-theorem rho_gt {ρ : ℝ} (h1 : 1 < ρ) (h3 : ρ ^ 3 = ρ + 1) : (1.32 : ℝ) < ρ := by
-  by_contra hle
-  rw [not_lt] at hle
-  have hq : (0:ℝ) ≤ ρ ^ 2 + 1.32 * ρ + 0.7424 := by nlinarith [sq_nonneg ρ]
-  nlinarith [mul_nonneg (sub_nonneg.2 hle) hq]
-
-theorem rho_lt {ρ : ℝ} (h1 : 1 < ρ) (h3 : ρ ^ 3 = ρ + 1) : ρ < (1.33 : ℝ) := by
-  by_contra hle
-  rw [not_lt] at hle
-  have hq : (0:ℝ) ≤ ρ ^ 2 + 1.33 * ρ + 0.7689 := by nlinarith [sq_nonneg ρ]
-  nlinarith [mul_nonneg (sub_nonneg.2 hle) hq]
+theorem rho_bounds {ρ : ℝ} (h1 : 1 < ρ) (h3 : ρ ^ 3 = ρ + 1) :
+    (1.32 : ℝ) < ρ ∧ ρ < 1.33 := by
+  constructor
+  · by_contra hle
+    rw [not_lt] at hle
+    have hq : (0:ℝ) ≤ ρ ^ 2 + 1.32 * ρ + 0.7424 := by nlinarith [sq_nonneg ρ]
+    nlinarith [mul_nonneg (sub_nonneg.2 hle) hq]
+  · by_contra hle
+    rw [not_lt] at hle
+    have hq : (0:ℝ) ≤ ρ ^ 2 + 1.33 * ρ + 0.7689 := by nlinarith [sq_nonneg ρ]
+    nlinarith [mul_nonneg (sub_nonneg.2 hle) hq]
 
 /-- Two-sided bound for any sequence with the `(2,3,∞)` values and recursion. -/
 theorem growth_bounds_of_rec (f : ℕ → ℕ) (h2 : f 2 = 5) (h3' : f 3 = 7) (h4 : f 4 = 9)
     (hrec : ∀ n, f (n + 5) = f (n + 3) + f (n + 2)) {ρ : ℝ} (h1 : 1 < ρ) (h3 : ρ ^ 3 = ρ + 1)
     (n : ℕ) : 2 * ρ ^ (n + 2) ≤ (f (n + 2) : ℝ) ∧ (f (n + 2) : ℝ) ≤ 4 * ρ ^ (n + 2) := by
-  have hlo := rho_gt h1 h3
-  have hhi := rho_lt h1 h3
+  have hb := rho_bounds h1 h3
   induction n using Nat.strong_induction_on with
   | _ n ih =>
     rcases n with _ | _ | _ | m
@@ -200,38 +154,32 @@ theorem growth_bounds_of_rec (f : ℕ → ℕ) (h2 : f 2 = 5) (h3' : f 3 = 7) (h
 
 theorem const_rpow_inv_mul_tendsto {ρ c : ℝ} (hc : 0 < c) :
     Tendsto (fun n : ℕ => c ^ ((n : ℝ)⁻¹) * ρ) atTop (𝓝 ρ) := by
-  have h : Tendsto (fun n : ℕ => c ^ ((n : ℝ)⁻¹)) atTop (𝓝 1) := by
-    have hcont := Real.continuousAt_const_rpow (b := 0) hc.ne'
-    have := hcont.tendsto.comp tendsto_inv_atTop_nhds_zero_nat
-    simpa [Function.comp_def, Real.rpow_zero] using this
+  have h : Tendsto (fun n : ℕ => c ^ ((n : ℝ)⁻¹)) atTop (𝓝 (c ^ (0 : ℝ))) :=
+    tendsto_const_nhds.rpow tendsto_inv_atTop_nhds_zero_nat (.inl hc.ne')
   simpa using h.mul_const ρ
 
-/-- `f(n)^{1/n} → ρ` for any sequence with `2ρⁿ ≤ f(n) ≤ 4ρⁿ` eventually. -/
-theorem root_tendsto_of_bounds (f : ℕ → ℕ) {ρ : ℝ} (h1 : 1 < ρ)
-    (hb : ∀ n, 2 * ρ ^ (n + 2) ≤ (f (n + 2) : ℝ) ∧ (f (n + 2) : ℝ) ≤ 4 * ρ ^ (n + 2)) :
-    Tendsto (fun n : ℕ => (f n : ℝ) ^ ((n : ℝ)⁻¹)) atTop (𝓝 ρ) := by
-  have hρ0 : 0 ≤ ρ := by linarith
+/-- The root limit from two exponential bounds starting at `n = k`. -/
+theorem root_tendsto_of_bounds (f : ℕ → ℕ) {τ c C : ℝ} (hτ : 0 ≤ τ) (hc : 0 < c) (hC : 0 < C)
+    (k : ℕ) (hb : ∀ n, c * τ ^ (n + k) ≤ (f (n + k) : ℝ) ∧
+      (f (n + k) : ℝ) ≤ C * τ ^ (n + k)) :
+    Tendsto (fun n : ℕ => (f n : ℝ) ^ ((n : ℝ)⁻¹)) atTop (𝓝 τ) := by
   refine tendsto_of_tendsto_of_tendsto_of_le_of_le'
-    (const_rpow_inv_mul_tendsto (ρ := ρ) (c := 2) (by norm_num))
-    (const_rpow_inv_mul_tendsto (ρ := ρ) (c := 4) (by norm_num)) ?_ ?_
-  · filter_upwards [eventually_ge_atTop 2] with n hn
-    obtain ⟨m, rfl⟩ : ∃ m, n = m + 2 := ⟨n - 2, by omega⟩
-    have hb' := (hb m).1
-    have hn0 : (m + 2 : ℕ) ≠ 0 := by omega
-    calc (2:ℝ) ^ (((m + 2 : ℕ) : ℝ))⁻¹ * ρ
-        = (2 * ρ ^ (m + 2)) ^ (((m + 2 : ℕ) : ℝ))⁻¹ := by
-          rw [Real.mul_rpow (by norm_num) (pow_nonneg hρ0 _), Real.pow_rpow_inv_natCast hρ0 hn0]
-      _ ≤ (f (m + 2) : ℝ) ^ (((m + 2 : ℕ) : ℝ))⁻¹ :=
-          Real.rpow_le_rpow (by positivity) hb' (by positivity)
-  · filter_upwards [eventually_ge_atTop 2] with n hn
-    obtain ⟨m, rfl⟩ : ∃ m, n = m + 2 := ⟨n - 2, by omega⟩
-    have hb' := (hb m).2
-    have hn0 : (m + 2 : ℕ) ≠ 0 := by omega
-    calc (f (m + 2) : ℝ) ^ (((m + 2 : ℕ) : ℝ))⁻¹
-        ≤ (4 * ρ ^ (m + 2)) ^ (((m + 2 : ℕ) : ℝ))⁻¹ :=
-          Real.rpow_le_rpow (by positivity) hb' (by positivity)
-      _ = (4:ℝ) ^ (((m + 2 : ℕ) : ℝ))⁻¹ * ρ := by
-          rw [Real.mul_rpow (by norm_num) (pow_nonneg hρ0 _), Real.pow_rpow_inv_natCast hρ0 hn0]
+    (const_rpow_inv_mul_tendsto (ρ := τ) hc) (const_rpow_inv_mul_tendsto (ρ := τ) hC) ?_ ?_
+  · filter_upwards [eventually_ge_atTop (k + 1)] with n hn
+    obtain ⟨m, rfl⟩ : ∃ m, n = m + k := ⟨n - k, by omega⟩
+    have hn0 : m + k ≠ 0 := by omega
+    calc c ^ (((m + k : ℕ) : ℝ))⁻¹ * τ = (c * τ ^ (m + k)) ^ (((m + k : ℕ) : ℝ))⁻¹ := by
+          rw [Real.mul_rpow hc.le (pow_nonneg hτ _), Real.pow_rpow_inv_natCast hτ hn0]
+      _ ≤ (f (m + k) : ℝ) ^ (((m + k : ℕ) : ℝ))⁻¹ :=
+          Real.rpow_le_rpow (by positivity) (hb m).1 (by positivity)
+  · filter_upwards [eventually_ge_atTop (k + 1)] with n hn
+    obtain ⟨m, rfl⟩ : ∃ m, n = m + k := ⟨n - k, by omega⟩
+    have hn0 : m + k ≠ 0 := by omega
+    calc (f (m + k) : ℝ) ^ (((m + k : ℕ) : ℝ))⁻¹
+        ≤ (C * τ ^ (m + k)) ^ (((m + k : ℕ) : ℝ))⁻¹ :=
+          Real.rpow_le_rpow (by positivity) (hb m).2 (by positivity)
+      _ = C ^ (((m + k : ℕ) : ℝ))⁻¹ * τ := by
+          rw [Real.mul_rpow hC.le (pow_nonneg hτ _), Real.pow_rpow_inv_natCast hτ hn0]
 
 section Rate
 
@@ -239,16 +187,19 @@ variable {W : Type*} [Group W] {M : CoxeterMatrix (Fin 3)} (cs : CoxeterSystem M
 
 /-- `(2,3,∞)`: `2ρⁿ ≤ a(n) ≤ 4ρⁿ` for `n ≥ 2`, for every real `ρ > 1` with `ρ³ = ρ + 1`. -/
 theorem sphere23_growth (h01 : M 0 1 = 0) (h02 : M 0 2 = 2) (h12 : M 1 2 = 3)
-    {ρ : ℝ} (h1 : 1 < ρ) (h3 : ρ ^ 3 = ρ + 1) (n : ℕ) :
-    2 * ρ ^ (n + 2) ≤ (sphere cs (n + 2) : ℝ) ∧ (sphere cs (n + 2) : ℝ) ≤ 4 * ρ ^ (n + 2) := by
+    (ρ : ℝ) (h1 : 1 < ρ) (h3 : ρ ^ 3 = ρ + 1) (n : ℕ) :
+    2 * ρ ^ (n + 2) ≤ (Nat.card {w : W // cs.length w = n + 2} : ℝ) ∧
+      (Nat.card {w : W // cs.length w = n + 2} : ℝ) ≤ 4 * ρ ^ (n + 2) := by
   obtain ⟨-, -, h2, h3', h4, hrec⟩ := sphere23_facts cs h01 h02 h12
   exact growth_bounds_of_rec (sphere cs) h2 h3' h4 hrec h1 h3 n
 
 /-- `(2,3,∞)`: `a(n)^{1/n} → ρ`. -/
 theorem sphere23_root_tendsto (h01 : M 0 1 = 0) (h02 : M 0 2 = 2) (h12 : M 1 2 = 3)
-    {ρ : ℝ} (h1 : 1 < ρ) (h3 : ρ ^ 3 = ρ + 1) :
-    Tendsto (fun n : ℕ => (sphere cs n : ℝ) ^ ((n : ℝ)⁻¹)) atTop (𝓝 ρ) :=
-  root_tendsto_of_bounds (sphere cs) h1 (sphere23_growth cs h01 h02 h12 h1 h3)
+    (ρ : ℝ) (h1 : 1 < ρ) (h3 : ρ ^ 3 = ρ + 1) :
+    Tendsto (fun n : ℕ => (Nat.card {w : W // cs.length w = n} : ℝ) ^ ((n : ℝ)⁻¹)) atTop
+      (𝓝 ρ) :=
+  root_tendsto_of_bounds (sphere cs) (by linarith) (by norm_num) (by norm_num) 2
+    (sphere23_growth cs h01 h02 h12 ρ h1 h3)
 
 end Rate
 

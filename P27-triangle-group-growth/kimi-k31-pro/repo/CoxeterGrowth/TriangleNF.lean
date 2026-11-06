@@ -47,10 +47,6 @@ abbrev HV (m : ℕ) (x : ℕ × ℕ) : Prop := x.1 ≤ 1 ∧ x.2 < m
 def hl (x : ℕ × ℕ) : ℕ := x.1 + x.2
 
 theorem HV_mk {m e j : ℕ} : HV m (e, j) ↔ e ≤ 1 ∧ j < m := Iff.rfl
-theorem hl_mk {e j : ℕ} : hl (e, j) = e + j := rfl
-
-theorem pair_eq {a b c d : ℕ} (h1 : a = c) (h2 : b = d) : (a, b) = (c, d) := by
-  subst h1; subst h2; rfl
 
 theorem da_00 (m : ℕ) : da m (0, 0) = (0, 1) := by simp [da]
 theorem da_01 (m : ℕ) : da m (0, 1) = (0, 0) := by simp [da]
@@ -63,58 +59,36 @@ theorem dc_1 (e j : ℕ) : dc (e + 1, j) = (0, j) := by
   show (1 - (e + 1), j) = (0, j)
   rw [show 1 - (e + 1) = 0 by omega]
 
-theorem da_HV {m : ℕ} (hm : 2 ≤ m) : ∀ x : ℕ × ℕ, HV m x → HV m (da m x)
-  | (0, 0), _ => by rw [da_00, HV_mk]; omega
-  | (0, 1), _ => by rw [da_01, HV_mk]; omega
-  | (0, j + 2), hx => by rw [HV_mk] at hx; rw [da_0, HV_mk]; omega
-  | (e + 1, j), hx => by
-    rw [HV_mk] at hx
-    by_cases h : j + 2 < m
-    · rw [da_1_lt h, HV_mk]; omega
-    · rw [da_1_ge h, HV_mk]; omega
+theorem da_HV {m : ℕ} (hm : 2 ≤ m) : ∀ x : ℕ × ℕ, HV m x → HV m (da m x) := by
+  rintro ⟨e, j⟩ ⟨he, hj⟩
+  simp only [da]
+  split_ifs <;> simp_all <;> omega
 
 theorem dc_HV {m : ℕ} (x : ℕ × ℕ) (hx : HV m x) : HV m (dc x) := by
-  obtain ⟨e, j⟩ := x
-  rw [HV_mk] at hx
-  show 1 - e ≤ 1 ∧ j < m
+  rcases x with ⟨e, j⟩
+  simp only [dc] at *
   omega
 
-theorem da_da {m : ℕ} (hm : 2 ≤ m) : ∀ x : ℕ × ℕ, HV m x → da m (da m x) = x
-  | (0, 0), _ => by rw [da_00, da_01]
-  | (0, 1), _ => by rw [da_01, da_00]
-  | (0, j + 2), hx => by
-    rw [HV_mk] at hx
-    have h : j + 2 < m := by omega
-    rw [da_0, da_1_lt h]
-  | (e + 1, j), hx => by
-    rw [HV_mk] at hx
-    by_cases h : j + 2 < m
-    · rw [da_1_lt h, da_0]
-      exact pair_eq (by omega) rfl
-    · have h2 : ¬ (2 * m - j - 3 + 2 < m) := by omega
-      rw [da_1_ge h, da_1_ge h2]
-      exact pair_eq (by omega) (by omega)
+theorem da_da {m : ℕ} (hm : 2 ≤ m) : ∀ x : ℕ × ℕ, HV m x → da m (da m x) = x := by
+  rintro ⟨e, j⟩ ⟨he, hj⟩
+  simp only [da]
+  split_ifs <;> simp_all [Prod.ext_iff] <;> omega
 
 theorem dc_dc (x : ℕ × ℕ) (hx : x.1 ≤ 1) : dc (dc x) = x := by
-  obtain ⟨e, j⟩ := x
-  exact pair_eq (show 1 - (1 - e) = e by (try simp only at hx); omega) rfl
+  rcases x with ⟨e, j⟩
+  simp only [dc] at *
+  congr 1 <;> omega
 
 /-- Each head action changes the head length by exactly one. -/
 theorem da_hl {m : ℕ} (hm : 2 ≤ m) : ∀ x : ℕ × ℕ, HV m x →
-    (hl (da m x) + 1 = hl x ∨ hl (da m x) = hl x + 1)
-  | (0, 0), _ => by rw [da_00]; simp only [hl_mk, or_true, true_or, false_or, or_false] <;> omega
-  | (0, 1), _ => by rw [da_01]; simp only [hl_mk, or_true, true_or, false_or, or_false] <;> omega
-  | (0, j + 2), _ => by rw [da_0]; simp only [hl_mk, or_true, true_or, false_or, or_false] <;> omega
-  | (e + 1, j), hx => by
-    rw [HV_mk] at hx
-    by_cases h : j + 2 < m
-    · rw [da_1_lt h]; simp only [hl_mk, or_true, true_or, false_or, or_false] <;> omega
-    · rw [da_1_ge h]; simp only [hl_mk, or_true, true_or, false_or, or_false] <;> omega
+    (hl (da m x) + 1 = hl x ∨ hl (da m x) = hl x + 1) := by
+  rintro ⟨e, j⟩ ⟨he, hj⟩
+  simp only [da, hl]
+  split_ifs <;> simp_all <;> omega
 
 theorem dc_hl (x : ℕ × ℕ) (hx : x.1 ≤ 1) : hl (dc x) + 1 = hl x ∨ hl (dc x) = hl x + 1 := by
-  obtain ⟨e, j⟩ := x
-  show (1 - e) + j + 1 = e + j ∨ (1 - e) + j = e + j + 1
-  (try simp only at hx)
+  rcases x with ⟨e, j⟩
+  simp only [dc, hl] at *
   omega
 
 /-! ### The dihedral relation `(da ∘ dc)^m = id`, via an orbit coordinate -/
@@ -129,75 +103,43 @@ def sig (m : ℕ) : ℕ × ℕ → ℕ × ℕ
 def step (m : ℕ) : ℕ × ℕ → ℕ × ℕ
   | (o, s) => (o, if s + 1 = m then 0 else s + 1)
 
-theorem sig_0_odd {m j : ℕ} (h : j % 2 = 1) : sig m (0, j) = (1, (j - 1) / 2) := by
-  simp [sig, h]
-theorem sig_0_even {m j : ℕ} (h : j % 2 = 0) : sig m (0, j) = (0, j / 2) := by
-  simp [sig, h]
-theorem sig_1_odd {m e j : ℕ} (h : j % 2 = 1) : sig m (e + 1, j) = (0, m - (j + 1) / 2) := by
-  simp [sig, h]
-theorem sig_1_even {m e j : ℕ} (h : j % 2 = 0) : sig m (e + 1, j) = (1, m - 1 - j / 2) := by
-  simp [sig, h]
-theorem step_ne {m o s : ℕ} (h : s + 1 ≠ m) : step m (o, s) = (o, s + 1) := by
-  simp [step, h]
-theorem step_eq {m o s : ℕ} (h : s + 1 = m) : step m (o, s) = (o, 0) := by
-  simp [step, h]
-
 theorem sig_T {m : ℕ} (hm : 2 ≤ m) : ∀ x : ℕ × ℕ, HV m x → sig m (da m (dc x)) = step m (sig m x)
   | (0, j), hx => by
     rw [HV_mk] at hx
     rw [dc_0]
     by_cases h : j + 2 < m
     · rw [da_1_lt h]
-      rcases Nat.mod_two_eq_zero_or_one j with hj | hj
-      · rw [sig_0_even (show (j + 2) % 2 = 0 by omega), sig_0_even hj,
-          step_ne (show j / 2 + 1 ≠ m by omega)]
-        exact pair_eq rfl (by omega)
-      · rw [sig_0_odd (show (j + 2) % 2 = 1 by omega), sig_0_odd hj,
-          step_ne (show (j - 1) / 2 + 1 ≠ m by omega)]
-        exact pair_eq rfl (by omega)
+      rcases Nat.mod_two_eq_zero_or_one j with hj | hj <;>
+        simp only [sig, step] <;> split_ifs <;> simp_all [Prod.ext_iff] <;> omega
     · rw [da_1_ge h]
-      rcases Nat.mod_two_eq_zero_or_one j with hj | hj
-      · rw [sig_1_odd (show (2 * m - j - 3) % 2 = 1 by omega), sig_0_even hj,
-          step_ne (show j / 2 + 1 ≠ m by omega)]
-        exact pair_eq rfl (by omega)
-      · rw [sig_1_even (show (2 * m - j - 3) % 2 = 0 by omega), sig_0_odd hj,
-          step_ne (show (j - 1) / 2 + 1 ≠ m by omega)]
-        exact pair_eq rfl (by omega)
+      rcases Nat.mod_two_eq_zero_or_one j with hj | hj <;>
+        simp only [sig, step] <;> split_ifs <;> simp_all [Prod.ext_iff] <;> omega
   | (e + 1, 0), hx => by
     rw [HV_mk] at hx
-    rw [dc_1, da_00, sig_0_odd (show 1 % 2 = 1 by norm_num),
-      sig_1_even (show 0 % 2 = 0 by norm_num), step_eq (show m - 1 - 0 / 2 + 1 = m by omega)]
-    all_goals exact pair_eq rfl (by omega)
+    rw [dc_1, da_00]
+    simp only [sig, step]
+    split_ifs <;> simp_all [Prod.ext_iff] <;> omega
   | (e + 1, 1), hx => by
     rw [HV_mk] at hx
-    rw [dc_1, da_01, sig_0_even (show 0 % 2 = 0 by norm_num),
-      sig_1_odd (show 1 % 2 = 1 by norm_num), step_eq (show m - (1 + 1) / 2 + 1 = m by omega)]
-    all_goals exact pair_eq rfl (by omega)
+    rw [dc_1, da_01]
+    simp only [sig, step]
+    split_ifs <;> simp_all [Prod.ext_iff] <;> omega
   | (e + 1, j + 2), hx => by
     rw [HV_mk] at hx
     rw [dc_1, da_0]
-    rcases Nat.mod_two_eq_zero_or_one j with hj | hj
-    · rw [sig_1_even hj, sig_1_even (show (j + 2) % 2 = 0 by omega),
-        step_ne (show m - 1 - (j + 2) / 2 + 1 ≠ m by omega)]
-      exact pair_eq rfl (by omega)
-    · rw [sig_1_odd hj, sig_1_odd (show (j + 2) % 2 = 1 by omega),
-        step_ne (show m - (j + 2 + 1) / 2 + 1 ≠ m by omega)]
-      exact pair_eq rfl (by omega)
+    rcases Nat.mod_two_eq_zero_or_one j with hj | hj <;>
+      simp only [sig, step] <;> split_ifs <;> simp_all [Prod.ext_iff] <;> omega
 
 theorem sig_inj {m : ℕ} (hm : 2 ≤ m) :
-    ∀ x y : ℕ × ℕ, HV m x → HV m y → sig m x = sig m y → x = y
-  | (e, j), (e', j'), hx, hy, h => by
-    rw [HV_mk] at hx hy
-    simp only [sig] at h
-    apply pair_eq
-    · split_ifs at h <;> simp only [Prod.mk.injEq, true_and, and_true] at h <;> omega
-    · split_ifs at h <;> simp only [Prod.mk.injEq, true_and, and_true] at h <;> omega
+    ∀ x y : ℕ × ℕ, HV m x → HV m y → sig m x = sig m y → x = y := by
+  rintro ⟨e, j⟩ ⟨e', j'⟩ ⟨he, hj⟩ ⟨he', hj'⟩ h
+  simp only [sig] at h
+  split_ifs at h <;> simp_all [Prod.ext_iff] <;> omega
 
-theorem sig_lt {m : ℕ} (hm : 2 ≤ m) : ∀ x : ℕ × ℕ, HV m x → (sig m x).2 < m
-  | (e, j), hx => by
-    rw [HV_mk] at hx
-    simp only [sig]
-    (try split_ifs) <;> (try simp only) <;> omega
+theorem sig_lt {m : ℕ} (hm : 2 ≤ m) : ∀ x : ℕ × ℕ, HV m x → (sig m x).2 < m := by
+  rintro ⟨e, j⟩ ⟨he, hj⟩
+  simp only [sig]
+  split_ifs <;> simp_all <;> omega
 
 theorem step_iter (m o s : ℕ) : ∀ n : ℕ, s + n < m → (step m)^[n] (o, s) = (o, s + n)
   | 0, _ => rfl
@@ -209,11 +151,11 @@ theorem step_iter (m o s : ℕ) : ∀ n : ℕ, s + n < m → (step m)^[n] (o, s)
 theorem step_iter_self (m o s : ℕ) (hs : s < m) : (step m)^[m] (o, s) = (o, s) := by
   obtain ⟨k, hk⟩ : ∃ k, m = s + (1 + k) := ⟨m - 1 - s, by omega⟩
   have h1 : (step m)^[k] (o, s) = (o, m - 1) := by
-    rw [step_iter m o s k (by omega)]; exact pair_eq rfl (by omega)
+    rw [step_iter m o s k (by omega)]; exact Prod.ext rfl (by omega)
   have h2 : step m (o, m - 1) = (o, 0) := by
     simp only [step]; split_ifs <;> first | rfl | omega
   have h3 : (step m)^[s] (o, 0) = (o, s) := by
-    rw [step_iter m o 0 s (by omega)]; exact pair_eq rfl (by omega)
+    rw [step_iter m o 0 s (by omega)]; exact Prod.ext rfl (by omega)
   calc (step m)^[m] (o, s) = (step m)^[s + (1 + k)] (o, s) := by rw [← hk]
     _ = (o, s) := by
       rw [Function.iterate_add_apply, Function.iterate_add_apply, h1, Function.iterate_one, h2, h3]
@@ -247,7 +189,6 @@ def VT : ℕ → ℕ → List ℕ → Prop
   | _, _, [] => True
   | m₁, m₂, k :: r => 0 < k ∧ k < m₁ ∧ VT m₂ m₁ r
 
-theorem VT_nil {m₁ m₂ : ℕ} : VT m₁ m₂ [] ↔ True := Iff.rfl
 theorem VT_cons {m₁ m₂ k : ℕ} {r : List ℕ} : VT m₁ m₂ (k :: r) ↔ 0 < k ∧ k < m₁ ∧ VT m₂ m₁ r :=
   Iff.rfl
 
@@ -260,7 +201,6 @@ theorem V_mk {m₁ m₂ e j : ℕ} {r : List ℕ} : V m₁ m₂ ((e, j), r) ↔ 
 /-- Length (number of letters) of a normal form. -/
 def len (v : Raw) : ℕ := v.1.1 + v.1.2 + v.2.sum
 
-theorem len_mk {e j : ℕ} {r : List ℕ} : len ((e, j), r) = e + j + r.sum := rfl
 
 /-- Re-read a normal form with a head of the other type. -/
 def swap : Raw → Raw
@@ -268,22 +208,10 @@ def swap : Raw → Raw
   | ((e, 0), k :: r) => ((e, k), r)
   | ((e, j + 1), r) => ((e, 0), (j + 1) :: r)
 
-theorem swap_V {m₁ m₂ : ℕ} (hm : 1 ≤ m₂) : ∀ v : Raw, V m₁ m₂ v → V m₂ m₁ (swap v)
-  | ((e, 0), []), h => by
-    rw [V_mk] at h
-    show V m₂ m₁ ((e, 0), [])
-    rw [V_mk]
-    exact ⟨⟨h.1.1, by omega⟩, trivial⟩
-  | ((e, 0), k :: r), h => by
-    rw [V_mk, VT_cons] at h
-    show V m₂ m₁ ((e, k), r)
-    rw [V_mk]
-    exact ⟨⟨h.1.1, h.2.2.1⟩, h.2.2.2⟩
-  | ((e, j + 1), r), h => by
-    rw [V_mk] at h
-    show V m₂ m₁ ((e, 0), (j + 1) :: r)
-    rw [V_mk, VT_cons]
-    exact ⟨⟨h.1.1, by omega⟩, by omega, h.1.2, h.2⟩
+theorem swap_V {m₁ m₂ : ℕ} (hm : 1 ≤ m₂) : ∀ v : Raw, V m₁ m₂ v → V m₂ m₁ (swap v) := by
+  rintro ⟨⟨e, j⟩, r⟩ h
+  rcases j with _ | j <;> rcases r with _ | ⟨k, r⟩ <;>
+    simp_all [swap, V, VT] <;> omega
 
 theorem swap_swap {m₁ m₂ : ℕ} : ∀ v : Raw, V m₁ m₂ v → swap (swap v) = v
   | ((e, 0), []), _ => rfl
@@ -293,10 +221,10 @@ theorem swap_swap {m₁ m₂ : ℕ} : ∀ v : Raw, V m₁ m₂ v → swap (swap 
     rfl
   | ((e, j + 1), r), _ => rfl
 
-theorem len_swap : ∀ v : Raw, len (swap v) = len v
-  | ((e, 0), []) => rfl
-  | ((e, 0), k :: r) => by simp only [swap, len_mk, List.sum_cons] <;> omega
-  | ((e, j + 1), r) => by simp only [swap, len_mk, List.sum_cons] <;> omega
+theorem len_swap : ∀ v : Raw, len (swap v) = len v := by
+  rintro ⟨⟨e, j⟩, r⟩
+  rcases j with _ | j <;> rcases r with _ | ⟨k, r⟩ <;>
+    simp [swap, len] <;> omega
 
 /-- `a`/`b` (head generator) acting on the head. -/
 def actH (m : ℕ) (v : Raw) : Raw := (da m v.1, v.2)
@@ -343,7 +271,7 @@ theorem actC_actC {m₁ m₂ : ℕ} (v : Raw) (h : V m₁ m₂ v) : actC (actC v
   show (dc (dc x), r) = (x, r)
   rw [dc_dc x h.1.1]
 
-theorem actB_actB {p q : ℕ} (hp : 2 ≤ p) (hq : 2 ≤ q) (v : Raw) (h : V p q v) :
+theorem actB_actB {p q : ℕ} (hq : 2 ≤ q) (v : Raw) (h : V p q v) :
     actB q (actB q v) = v := by
   have h1 : V q p (swap v) := swap_V (by omega) v h
   have h2 : V q p (actH q (swap v)) := actH_V hq _ h1
@@ -354,31 +282,21 @@ theorem act_act {p q : ℕ} (hp : 2 ≤ p) (hq : 2 ≤ q) (i : Fin 3) (v : Raw) 
     act p q i (act p q i v) = v := by
   match i with
   | 0 => exact actH_actH hp v h
-  | 1 => exact actB_actB hp hq v h
+  | 1 => exact actB_actB hq v h
   | 2 => exact actC_actC v h
 
 /-! ### Length changes -/
 
 theorem len_actH {m₁ m₂ : ℕ} (hm : 2 ≤ m₁) (v : Raw) (h : V m₁ m₂ v) :
     len (actH m₁ v) + 1 = len v ∨ len (actH m₁ v) = len v + 1 := by
-  obtain ⟨⟨e, j⟩, r⟩ := v
-  have := da_hl hm (e, j) h.1
-  show len (da m₁ (e, j), r) + 1 = len ((e, j), r) ∨ len (da m₁ (e, j), r) = len ((e, j), r) + 1
-  generalize da m₁ (e, j) = y at this ⊢
-  obtain ⟨y1, y2⟩ := y
-  simp only [hl_mk] at this
-  simp only [len_mk]
+  have h' := da_hl hm v.1 h.1
+  simp only [actH, len, hl] at h' ⊢
   omega
 
 theorem len_actC {m₁ m₂ : ℕ} (v : Raw) (h : V m₁ m₂ v) :
     len (actC v) + 1 = len v ∨ len (actC v) = len v + 1 := by
-  obtain ⟨⟨e, j⟩, r⟩ := v
-  have := dc_hl (e, j) h.1.1
-  show len (dc (e, j), r) + 1 = len ((e, j), r) ∨ len (dc (e, j), r) = len ((e, j), r) + 1
-  generalize dc (e, j) = y at this ⊢
-  obtain ⟨y1, y2⟩ := y
-  simp only [hl_mk] at this
-  simp only [len_mk]
+  have h' := dc_hl v.1 h.1.1
+  simp only [actC, len, hl] at h' ⊢
   omega
 
 theorem len_act {p q : ℕ} (hp : 2 ≤ p) (hq : 2 ≤ q) (i : Fin 3) (v : Raw) (h : V p q v) :
@@ -397,40 +315,27 @@ theorem len_act_le {p q : ℕ} (hp : 2 ≤ p) (hq : 2 ≤ q) (i : Fin 3) (v : Ra
 
 /-- The only normal form of length `0` is the empty one. -/
 theorem eq_nil_of_len {p q : ℕ} (v : Raw) (h : V p q v) (hl0 : len v = 0) : v = ((0, 0), []) := by
-  obtain ⟨⟨e, j⟩, r⟩ := v
-  rw [len_mk] at hl0
-  cases r with
-  | nil => exact Prod.ext (pair_eq (by omega) (by omega)) rfl
-  | cons k r =>
-    rw [V_mk, VT_cons] at h
-    simp only [List.sum_cons] at hl0
-    omega
+  rcases v with ⟨⟨e, j⟩, r⟩
+  rcases r with _ | ⟨k, r⟩ <;> simp_all [V, VT, len, Prod.ext_iff]
 
 /-- **Descent**: a nonempty normal form has a generator shortening it by one. -/
 theorem descent {p q : ℕ} :
     ∀ v : Raw, V p q v → len v ≠ 0 → ∃ i : Fin 3, len (act p q i v) + 1 = len v
   | ((0, 0), []), _, hl0 => (hl0 rfl).elim
-  | ((0, 0), 0 :: r), h, _ => by rw [V_mk, VT_cons] at h; omega
+  | ((0, 0), 0 :: r), h, _ => by simp_all [V, VT]
   | ((0, 0), 1 :: r), _, _ => ⟨1, by
-      show len (swap (actH q ((0, 1), r))) + 1 = len ((0, 0), 1 :: r)
-      rw [len_swap]
-      show len (da q (0, 1), r) + 1 = len ((0, 0), 1 :: r)
-      rw [da_01]; simp only [len_mk, List.sum_cons] <;> omega⟩
+    show len (swap (actH q ((0, 1), r))) + 1 = len ((0, 0), 1 :: r)
+    rw [len_swap]
+    simp [actH, len, da] <;> omega⟩
   | ((0, 0), (k + 2) :: r), _, _ => ⟨1, by
-      show len (swap (actH q ((0, k + 2), r))) + 1 = len ((0, 0), (k + 2) :: r)
-      rw [len_swap]
-      show len (da q (0, k + 2), r) + 1 = len ((0, 0), (k + 2) :: r)
-      rw [da_0]; simp only [len_mk, List.sum_cons] <;> omega⟩
-  | ((0, 1), r), _, _ => ⟨0, by
-      show len (da p (0, 1), r) + 1 = len ((0, 1), r)
-      rw [da_01]; simp only [len_mk] <;> omega⟩
-  | ((0, j + 2), r), _, _ => ⟨0, by
-      show len (da p (0, j + 2), r) + 1 = len ((0, j + 2), r)
-      rw [da_0]; simp only [len_mk] <;> omega⟩
-  | ((e + 1, j), r), h, _ => ⟨2, by
-      rw [V_mk] at h
-      show len (dc (e + 1, j), r) + 1 = len ((e + 1, j), r)
-      rw [dc_1]; simp only [len_mk] <;> omega⟩
+    show len (swap (actH q ((0, k + 2), r))) + 1 = len ((0, 0), (k + 2) :: r)
+    rw [len_swap]
+    simp [actH, len, da] <;> omega⟩
+  | ((0, 1), r), _, _ => ⟨0, by simp [act, actH, len, da] <;> omega⟩
+  | ((0, j + 2), r), _, _ => ⟨0, by simp [act, actH, len, da] <;> omega⟩
+  | ((e + 1, j), r), h, _ => by
+    rw [V_mk] at h
+    exact ⟨2, by simp [act, actC, dc, len] at * <;> omega⟩
 
 /-! ### The Coxeter relations on raw normal forms -/
 
@@ -496,19 +401,14 @@ theorem mem_tails (n : ℕ) : ∀ (m₁ m₂ : ℕ) (r : List ℕ),
     rw [tails_eq, mem_union, mem_ite_empty, mem_biUnion]
     constructor
     · rintro (⟨hn, hr⟩ | ⟨k, hk, hr⟩)
-      · rw [mem_singleton] at hr
-        subst hr
-        exact ⟨trivial, by simp [hn]⟩
+      · simp_all [VT]
       · rw [mem_ite_empty, mem_image] at hr
         obtain ⟨⟨hk0, hkn, hkm⟩, r', hr', rfl⟩ := hr
         rw [ih (n - k) (by omega)] at hr'
-        refine ⟨⟨hk0, hkm, hr'.1⟩, ?_⟩
-        rw [List.sum_cons, hr'.2]; omega
+        simp_all [VT]
     · rintro ⟨hv, hs⟩
       cases r with
-      | nil =>
-        left
-        exact ⟨by simp at hs; omega, mem_singleton_self _⟩
+      | nil => simp_all [VT]
       | cons k r' =>
         right
         rw [VT_cons] at hv
@@ -570,45 +470,20 @@ def NFs (p q n : ℕ) : Finset Raw :=
 
 theorem mem_Hs (p q n j : ℕ) (r : List ℕ) :
     (j, r) ∈ Hs p q n ↔ j < p ∧ VT q p r ∧ j + r.sum = n := by
-  rw [Hs, mem_biUnion]
-  constructor
-  · rintro ⟨k, hk, hx⟩
-    rw [mem_ite_empty, mem_image] at hx
-    obtain ⟨hkp, r', hr', he⟩ := hx
-    rw [Prod.mk.injEq] at he
-    obtain ⟨rfl, rfl⟩ := he
-    rw [mem_tails] at hr'
-    rw [mem_range] at hk
-    exact ⟨hkp, hr'.1, by omega⟩
-  · rintro ⟨hj, hr, hs⟩
-    refine ⟨j, mem_range.2 (by omega), ?_⟩
-    rw [mem_ite_empty, mem_image]
-    exact ⟨hj, r, (mem_tails _ _ _ _).2 ⟨hr, by omega⟩, rfl⟩
+  simp [Hs, mem_ite_empty, mem_tails]
+  aesop
 
 theorem mem_NFs (p q n : ℕ) (v : Raw) : v ∈ NFs p q n ↔ V p q v ∧ len v = n := by
   obtain ⟨⟨e, j⟩, r⟩ := v
-  rw [NFs, mem_biUnion, V_mk, len_mk]
-  constructor
-  · rintro ⟨k, hk, hx⟩
-    rw [mem_ite_empty, mem_image] at hx
-    obtain ⟨hk1, ⟨j', r'⟩, hx, he⟩ := hx
-    simp only [Prod.mk.injEq] at he
-    obtain ⟨⟨rfl, rfl⟩, rfl⟩ := he
-    rw [mem_Hs] at hx
-    rw [mem_range] at hk
-    exact ⟨⟨⟨hk1, hx.1⟩, hx.2.1⟩, by omega⟩
-  · rintro ⟨⟨⟨he, hj⟩, hr⟩, hs⟩
-    refine ⟨e, mem_range.2 (by omega), ?_⟩
-    rw [mem_ite_empty, mem_image]
-    exact ⟨he, (j, r), (mem_Hs _ _ _ _ _).2 ⟨hj, hr, by omega⟩, rfl⟩
+  simp [NFs, mem_ite_empty, mem_Hs, V, len]
+  aesop <;> omega
 
 theorem card_Hs (p q n : ℕ) : ((Hs p q n).card : ℤ) =
     ∑ k ∈ range (n + 1), (if k < p then (1 : ℤ) else 0) * ((tails q p (n - k)).card : ℤ) := by
   rw [Hs, card_biUnion_ite _ (fun k => k < p) _ Prod.fst]
   · push_cast
     refine sum_congr rfl fun k _ => ?_
-    have hinj : Function.Injective (fun r : List ℕ => (k, r)) := fun _ _ h => (Prod.mk.inj h).2
-    split_ifs <;> simp [card_image_of_injective _ hinj]
+    split_ifs <;> simp [card_image_of_injective _ (fun _ _ h => (Prod.mk.inj h).2)]
   · intro k _ x hx
     rw [mem_image] at hx
     obtain ⟨r, -, rfl⟩ := hx
@@ -666,7 +541,7 @@ theorem NFs_series (p q : ℕ) :
 
 theorem Rm_eq (m : ℕ) (hm : 1 ≤ m) : Rm m = 1 + Pm m := by
   ext n
-  simp only [Rm, Pm, map_add, coeff_one, coeff_mk]
+  simp [Rm, Pm]
   split_ifs <;> omega
 
 /-- **The series identity for normal forms**:
@@ -680,22 +555,16 @@ theorem nf_series (p q : ℕ) (hq : 1 ≤ q) :
 
 theorem sum_Ico_X_pow (m : ℕ) : ∑ i ∈ Ico 1 m, (X : ℤ⟦X⟧) ^ i = Pm m := by
   ext n
-  rw [map_sum]
-  simp only [coeff_X_pow, Pm, coeff_mk]
-  rw [sum_ite_eq]
-  simp only [mem_Ico]
+  simp [Pm, coeff_X_pow]
   split_ifs <;> omega
 
 theorem sum_range_X_pow (m : ℕ) : ∑ i ∈ range m, (X : ℤ⟦X⟧) ^ i = Rm m := by
   ext n
-  rw [map_sum]
-  simp only [coeff_X_pow, Rm, coeff_mk]
-  rw [sum_ite_eq]
-  simp only [mem_range]
+  simp [Rm, coeff_X_pow]
 
 theorem one_add_X_eq : (1 + X : ℤ⟦X⟧) = E2 := by
   ext n
-  simp only [map_add, coeff_one, coeff_X, E2, coeff_mk]
+  simp [E2, coeff_one, coeff_X]
   split_ifs <;> omega
 
 /-- The normal-form series identity in closed form. -/

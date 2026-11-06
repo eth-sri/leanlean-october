@@ -19,41 +19,26 @@ value theorem on `[1, 2]` (the cubic is `−1` at `1` and `5` at `2`); uniquenes
 namespace CoxeterGrowth
 
 theorem exists_plastic_root : ∃ x ∈ Set.Icc (1 : ℝ) 2, x ^ 3 - x - 1 = 0 := by
-  have hcont : ContinuousOn (fun x : ℝ => x ^ 3 - x - 1) (Set.Icc 1 2) := by fun_prop
-  have h := intermediate_value_Icc (by norm_num : (1 : ℝ) ≤ 2) hcont
-  have h0 : (0 : ℝ) ∈ Set.Icc ((1 : ℝ) ^ 3 - 1 - 1) ((2 : ℝ) ^ 3 - 2 - 1) := by
-    constructor <;> norm_num
-  obtain ⟨x, hx, hfx⟩ := h h0
-  exact ⟨x, hx, hfx⟩
+  have h := intermediate_value_Icc (by norm_num : (1 : ℝ) ≤ 2)
+    (show ContinuousOn (fun x : ℝ => x ^ 3 - x - 1) (Set.Icc 1 2) by fun_prop)
+  exact h (by constructor <;> norm_num)
 
-/-- The plastic number: the real root `> 1` of `x³ − x − 1`. -/
-noncomputable def plasticNumber : ℝ := Classical.choose exists_plastic_root
-
-theorem plasticNumber_mem : plasticNumber ∈ Set.Icc (1 : ℝ) 2 :=
-  (Classical.choose_spec exists_plastic_root).1
-
-theorem plasticNumber_cubic : plasticNumber ^ 3 = plasticNumber + 1 := by
-  have h := (Classical.choose_spec exists_plastic_root).2
-  have : plasticNumber ^ 3 - plasticNumber - 1 = 0 := h
-  linarith
-
-theorem one_lt_plasticNumber : 1 < plasticNumber := by
-  have h1 := plasticNumber_mem.1
-  have h3 := plasticNumber_cubic
-  rcases h1.lt_or_eq with h | h
-  · exact h
-  · rw [← h] at h3; norm_num at h3
-
-/-- Uniqueness among roots `> 1`. -/
-theorem plasticNumber_unique {x : ℝ} (hx : 1 < x) (h : x ^ 3 = x + 1) : x = plasticNumber := by
-  have hρ := one_lt_plasticNumber
-  have h3 := plasticNumber_cubic
-  have key : (x - plasticNumber) * (x ^ 2 + x * plasticNumber + plasticNumber ^ 2 - 1) = 0 := by
-    have : (x - plasticNumber) * (x ^ 2 + x * plasticNumber + plasticNumber ^ 2 - 1)
-        = (x ^ 3 - x) - (plasticNumber ^ 3 - plasticNumber) := by ring
-    rw [this, h, h3]; ring
-  rcases mul_eq_zero.1 key with h' | h'
+theorem plastic_unique {x y : ℝ} (hx : 1 < x) (hy : 1 < y)
+    (h : x ^ 3 = x + 1) (h' : y ^ 3 = y + 1) : x = y := by
+  have key : (x - y) * (x ^ 2 + x * y + y ^ 2 - 1) = 0 := by
+    calc _ = (x ^ 3 - x) - (y ^ 3 - y) := by ring
+      _ = 0 := by rw [h, h']; ring
+  rcases mul_eq_zero.1 key with h0 | h0
   · linarith
   · nlinarith
+
+theorem plastic_exists_unique : ∃! ρ : ℝ, 1 < ρ ∧ ρ ^ 3 = ρ + 1 := by
+  obtain ⟨x, hx, h3⟩ := exists_plastic_root
+  have h1 : 1 < x := by
+    rcases hx.1.lt_or_eq with h | h
+    · exact h
+    · rw [← h] at h3; norm_num at h3
+  exact ⟨x, ⟨h1, by linarith⟩, fun y hy =>
+    plastic_unique hy.1 h1 (by linarith [hy.2]) (by linarith [h3])⟩
 
 end CoxeterGrowth
