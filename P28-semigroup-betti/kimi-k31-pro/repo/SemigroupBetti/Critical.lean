@@ -52,9 +52,8 @@ lemma isCritCand_n {i j : Fin 4} (hji : j ≠ i) : G.IsCritCand i (G.n j) := by
   have := congrFun h j
   simp [hji, (G.n_pos i).ne'] at this
 
-lemma succ_ne (i : Fin 4) : i + 1 ≠ i := by fin_cases i <;> decide
-
-lemma crit_exists (i : Fin 4) : ∃ k, G.IsCritCand i k := ⟨_, G.isCritCand_n (succ_ne i)⟩
+lemma crit_exists (i : Fin 4) : ∃ k, G.IsCritCand i k :=
+  ⟨_, G.isCritCand_n (j := i + 1) (by fin_cases i <;> decide)⟩
 
 /-- **Definition 5.** The critical exponent `cᵢ = min Tᵢ`. -/
 def crit (i : Fin 4) : ℕ := Nat.find (G.crit_exists i)
@@ -83,9 +82,7 @@ lemma alt_coord_eq_zero {i : Fin 4} {y : Fin 4 → ℕ} (hy : G.nu y = G.crit i 
   rcases hle.lt_or_eq with hlt | heq
   · -- `v = y - yᵢ eᵢ` is an alternative for `r = cᵢ - yᵢ < cᵢ`
     have hsub : Pi.single i (y i) ≤ y := by
-      intro k; by_cases hk : k = i
-      · subst hk; simp
-      · simp [hk]
+      intro k; by_cases hk : k = i <;> simp [hk]
     have hnu := G.nu_sub hsub
     rw [G.nu_single, hy] at hnu
     have hcand : G.IsCritCand i (G.crit i - y i) := by
@@ -104,7 +101,7 @@ lemma alt_coord_eq_zero {i : Fin 4} {y : Fin 4 → ℕ} (hy : G.nu y = G.crit i 
     · have h2 := G.pair_le_nu y hk
       rw [hy, heq] at h2
       have : y k * G.n k = 0 := by omega
-      simp [hk, (G.n_pos k).ne'] at this ⊢; exact this
+      simpa [hk, (G.n_pos k).ne'] using this
 
 /-- The vertex `cᵢ eᵢ` of `∇_{cᵢ nᵢ}`. -/
 def critVertex (i : Fin 4) : G.fiber (G.crit i * G.n i) :=
@@ -139,16 +136,16 @@ lemma compSupp_critVertex (i : Fin 4) :
     have := G.eq_critVertex_of_reachable i (SimpleGraph.ConnectedComponent.exact hz).symm
     subst this
     by_contra h; simp [critVertex, h] at hzk
-  · intro h
-    rw [h]
-    exact ⟨G.critVertex i, rfl, by simpa [critVertex] using Nat.lt_of_lt_of_le Nat.zero_lt_one (G.one_le_crit i)⟩
+  · intro h; subst k
+    refine ⟨G.critVertex i, rfl, ?_⟩
+    simpa [critVertex] using Nat.lt_of_lt_of_le Nat.zero_lt_one (G.one_le_crit i)
 
-/-- **Lemma 3.4 (vertex form).** At a contributing degree, every vertex of a component with
-support `{i}` is `cᵢ eᵢ`, and the degree is `cᵢ nᵢ`. -/
+/-- **Lemma 3.4.** At a contributing degree, a component with support `{i}` lives in degree
+`cᵢ nᵢ`. -/
 lemma singleton_comp_vertex {d : ℕ} (hd : G.contributes d) {i : Fin 4}
     {C : (G.nabla d).ConnectedComponent} (hC : G.compSupp C = {i}) (z : G.fiber d)
     (hz : (G.nabla d).connectedComponentMk z = C) :
-    z.1 = Pi.single i (G.crit i) ∧ d = G.crit i * G.n i := by
+    d = G.crit i * G.n i := by
   have hzd := G.mem_fiber.1 z.2
   have hdpos := G.pos_of_two_le_ncomp hd
   -- `z = k eᵢ` with `k = zᵢ`
@@ -162,10 +159,7 @@ lemma singleton_comp_vertex {d : ℕ} (hd : G.contributes d) {i : Fin 4}
       rw [hC, mem_singleton] at this; exact hj this
   set k := z.1 i with hk
   have hdk : d = k * G.n i := by rw [← hzd, hzform, G.nu_single]
-  have hkpos : 0 < k := by
-    rcases Nat.eq_zero_or_pos k with h | h
-    · rw [h, zero_mul] at hdk; omega
-    · exact h
+  have hkpos : 0 < k := Nat.pos_of_ne_zero fun h => by rw [h, zero_mul] at hdk; omega
   rcases lt_trichotomy k (G.crit i) with hlt | heq | hgt
   · -- no alternative: the fiber is a single vertex
     exfalso
@@ -179,17 +173,16 @@ lemma singleton_comp_vertex {d : ℕ} (hd : G.contributes d) {i : Fin 4}
       exact Nat.find_min (G.crit_exists i) hlt hcand
     have := G.ncomp_le_one_of_reachable (d := d) (fun y y' => by rw [hall y, hall y'])
     unfold contributes at hd; omega
-  · exact ⟨hzform.trans (by rw [heq]), by rw [hdk, heq]⟩
+  · rw [hdk, heq]
   · -- the bridge `b = (k - cᵢ) eᵢ + y` enlarges the support
     exfalso
     obtain ⟨y, hy, hyne⟩ := G.exists_alt i
     have hyi := G.alt_coord_eq_zero hy hyne
-    have hy0 : y ≠ 0 := by
-      intro h; rw [h, nu_zero] at hy
-      have := Nat.mul_pos (G.one_le_crit i) (G.n_pos i); omega
     obtain ⟨j, hj⟩ : ∃ j, 0 < y j := by
-      by_contra hc; push Not at hc
-      exact hy0 (funext fun l => Nat.le_zero.1 (hc l))
+      by_contra! hc
+      have h0 : y = 0 := funext fun l => Nat.le_zero.1 (hc l)
+      rw [h0, nu_zero] at hy
+      have := Nat.mul_pos (G.one_le_crit i) (G.n_pos i); omega
     have hji : j ≠ i := by rintro rfl; omega
     let b := Pi.single i (k - G.crit i) + y
     have hb : G.nu b = d := by
@@ -205,14 +198,6 @@ lemma singleton_comp_vertex {d : ℕ} (hd : G.contributes d) {i : Fin 4}
     have : j ∈ G.compSupp C := G.mem_compSupp.2 ⟨b', hbz, by simp [b', b, hji.symm, hj]⟩
     rw [hC, mem_singleton] at this
     exact hji this
-
-/-- **Lemma 3.4.** At a contributing degree, a component with support `{i}` lives in degree
-`cᵢ nᵢ`. -/
-lemma degree_eq_of_singleton_comp {d : ℕ} (hd : G.contributes d) {i : Fin 4}
-    {C : (G.nabla d).ConnectedComponent} (hC : G.compSupp C = {i}) :
-    d = G.crit i * G.n i := by
-  induction C using SimpleGraph.ConnectedComponent.ind with
-  | h z => exact (G.singleton_comp_vertex hd hC z rfl).2
 
 /-! ### Definition 6 and Lemma 4 -/
 
@@ -265,7 +250,9 @@ lemma ncomp_sub_one_le {d : ℕ} (hd : G.contributes d) (hS : G.HasSingletonComp
     rw [hi', mem_singleton] at hiC
     subst hiC
     simp only [critIndices, mem_filter, mem_univ, true_and]
-    exact (G.degree_eq_of_singleton_comp hd hi').symm
+    symm
+    induction C using SimpleGraph.ConnectedComponent.ind with
+    | h z => exact G.singleton_comp_vertex hd hi' z rfl
   -- at most one component with support of size `≥ 2`
   have hK2le : K2.card ≤ 1 := by
     obtain ⟨C0, hC0⟩ := hS
@@ -294,8 +281,8 @@ theorem sigma_le_four : G.sigma ≤ 4 := by
   let f : Fin 4 → ℕ := fun i => G.crit i * G.n i
   let s := univ.filter (fun i => f i ∈ G.singletonDegrees)
   have hmaps : (s : Set (Fin 4)).MapsTo f G.singletonDegrees := fun i hi => (mem_filter.1 hi).2
-  calc G.sigma = ∑ d ∈ G.singletonDegrees, (G.ncomp d - 1) := rfl
-    _ ≤ ∑ d ∈ G.singletonDegrees, (G.critIndices d).card := by
+  calc
+    G.sigma ≤ ∑ d ∈ G.singletonDegrees, (G.critIndices d).card := by
       apply sum_le_sum
       intro d hd
       obtain ⟨-, hc, hS⟩ := G.mem_singletonDegrees.1 hd

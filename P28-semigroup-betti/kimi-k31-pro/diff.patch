@@ -1,0 +1,1788 @@
+diff --git a/SemigroupBetti.lean b/SemigroupBetti.lean
+index d4a462a17..5da6041f8 100644
+--- a/SemigroupBetti.lean
++++ b/SemigroupBetti.lean
+@@ -5,7 +5,6 @@ Authors: Ben Keene
+ -/
+ module
+ 
+-public import SemigroupBetti.Basic
+ public import SemigroupBetti.Defs
+ public import SemigroupBetti.Fiber
+ public import SemigroupBetti.Critical
+@@ -13,6 +12,4 @@ public import SemigroupBetti.Bridge
+ public import SemigroupBetti.Partition
+ public import SemigroupBetti.Identities
+ public import SemigroupBetti.Antichain
+-public import SemigroupBetti.Arith
+ public import SemigroupBetti.Exceptional
+-public import SemigroupBetti.Main
+diff --git a/SemigroupBetti/Antichain.lean b/SemigroupBetti/Antichain.lean
+index 5c2cf184a..e45b2e5d3 100644
+--- a/SemigroupBetti/Antichain.lean
++++ b/SemigroupBetti/Antichain.lean
+@@ -30,16 +30,12 @@ def IsPairAntichain (T : Finset (ℕ × ℕ)) : Prop :=
+   ∀ x ∈ T, ∀ y ∈ T, x.1 ≤ y.1 → x.2 ≤ y.2 → x = y
+ 
+ lemma IsPairAntichain.fst_inj (hT : IsPairAntichain T) {x y : ℕ × ℕ} (hx : x ∈ T) (hy : y ∈ T)
+-    (h : x.1 = y.1) : x = y := by
+-  rcases le_total x.2 y.2 with h2 | h2
+-  · exact hT x hx y hy h.le h2
+-  · exact (hT y hy x hx h.ge h2).symm
++    (h : x.1 = y.1) : x = y :=
++  (le_total x.2 y.2).elim (hT x hx y hy h.le) fun h2 => (hT y hy x hx h.ge h2).symm
+ 
+ lemma IsPairAntichain.snd_inj (hT : IsPairAntichain T) {x y : ℕ × ℕ} (hx : x ∈ T) (hy : y ∈ T)
+-    (h : x.2 = y.2) : x = y := by
+-  rcases le_total x.1 y.1 with h1 | h1
+-  · exact hT x hx y hy h1 h.le
+-  · exact (hT y hy x hx h1 h.ge).symm
++    (h : x.2 = y.2) : x = y :=
++  (le_total x.1 y.1).elim (fun h1 => hT x hx y hy h1 h.le) fun h1 => (hT y hy x hx h1 h.ge).symm
+ 
+ /-- **Lemma 11 (forward bound).** The number of members whose first coordinate is at most
+ `x.1` (the rank of `x` in the sorted enumeration) is at most `x.1`. -/
+@@ -84,18 +80,16 @@ theorem IsPairAntichain.exists_rank (hT : IsPairAntichain T)
+   have hinj : ∀ x y (hx : x ∈ T) (hy : y ∈ T), rk x = rk y → x = y := by
+     intro x y hx hy h
+     by_contra hne
+-    have hne1 : x.1 ≠ y.1 := fun h1 => hne (hT.fst_inj hx hy h1)
+-    rcases Nat.lt_or_gt_of_ne hne1 with hlt | hlt
+-    · have : (T.filter (fun z => z.1 ≤ x.1)) ⊂ (T.filter (fun z => z.1 ≤ y.1)) := by
+-        refine ⟨fun z hz => ?_, fun hsub => ?_⟩
+-        · have := mem_filter.1 hz; exact mem_filter.2 ⟨this.1, by omega⟩
+-        · have := (mem_filter.1 (hsub (mem_filter.2 ⟨hy, le_rfl⟩))).2; omega
+-      have := card_lt_card this; simp only [rk] at h; omega
+-    · have : (T.filter (fun z => z.1 ≤ y.1)) ⊂ (T.filter (fun z => z.1 ≤ x.1)) := by
+-        refine ⟨fun z hz => ?_, fun hsub => ?_⟩
+-        · have := mem_filter.1 hz; exact mem_filter.2 ⟨this.1, by omega⟩
+-        · have := (mem_filter.1 (hsub (mem_filter.2 ⟨hx, le_rfl⟩))).2; omega
+-      have := card_lt_card this; simp only [rk] at h; omega
++    have aux : ∀ x y, x ∈ T → y ∈ T → x.1 < y.1 → rk x < rk y := by
++      intro x y hx hy hlt
++      apply card_lt_card
++      refine ⟨fun z hz => ?_, fun hsub => ?_⟩
++      · have := mem_filter.1 hz; exact mem_filter.2 ⟨this.1, by omega⟩
++      · have := (mem_filter.1 (hsub (mem_filter.2 ⟨hy, le_rfl⟩))).2; omega
++    rcases lt_trichotomy x.1 y.1 with hlt | heq | hlt
++    · have := aux x y hx hy hlt; omega
++    · exact hne (hT.fst_inj hx hy heq)
++    · have := aux y x hy hx hlt; omega
+   obtain ⟨x, hx, hxr⟩ := surj_on_of_inj_on_of_card_le (fun x _ => rk x) hmaps hinj
+     (by simp) r (mem_Icc.2 ⟨hr1, hrk⟩)
+   refine ⟨x, hx, ?_, ?_⟩
+@@ -125,10 +119,18 @@ namespace GenData
+ 
+ variable (G : GenData)
+ 
+-/-! ### Lemma 10 -/
++/-! ### Selected pairs -/
++
++lemma sel_le_of_coords {K : Finset (Fin 4)} {i k : Fin 4} (hKe : K = {i, k}) (hK : K.card = 2)
++    {d d' : ℕ} (hS : G.IsSplit d K) (hS' : G.IsSplit d' K)
++    (hi : G.sel d K i ≤ G.sel d' K i) (hk : G.sel d K k ≤ G.sel d' K k) :
++    G.sel d K ≤ G.sel d' K := by
++  intro j
++  by_cases hj : j ∈ K
++  · rw [hKe, mem_insert, mem_singleton] at hj
++    rcases hj with rfl | rfl <;> assumption
++  · rw [G.sel_eq_zero hS hK hj, G.sel_eq_zero hS' hK hj]
+ 
+-/-- Two selected vectors on a pair side `K = {i, k}` with equal `k`-coordinates come from the same
+-degree (Lemma 7 plus totality of `≤` on the `i`-coordinate). -/
+ lemma sel_coord_injOn {K : Finset (Fin 4)} {i k : Fin 4} (hik : i ≠ k) (hKe : K = {i, k})
+     (F : Finset ℕ) (hF : ∀ d ∈ F, G.IsSplit d K) :
+     Set.InjOn (fun d => G.sel d K k) F := by
+@@ -136,18 +138,39 @@ lemma sel_coord_injOn {K : Finset (Fin 4)} {i k : Fin 4} (hik : i ≠ k) (hKe :
+   intro d hd d' hd' h
+   simp only at h
+   by_contra hne
+-  have hle : ∀ {e e' : ℕ}, e ∈ F → e' ∈ F → G.sel e K k = G.sel e' K k →
+-      G.sel e K i ≤ G.sel e' K i → G.sel e K ≤ G.sel e' K := by
+-    intro e e' he he' hk hi j
+-    by_cases hj : j ∈ K
+-    · rw [hKe, mem_insert, mem_singleton] at hj
+-      rcases hj with rfl | rfl
+-      · exact hi
+-      · exact hk.le
+-    · rw [G.sel_eq_zero (hF e he) hK hj, G.sel_eq_zero (hF e' he') hK hj]
+   rcases le_total (G.sel d K i) (G.sel d' K i) with hi | hi
+-  · exact G.sel_antichain hK (hF d hd) (hF d' hd') hne (hle hd hd' h hi)
+-  · exact G.sel_antichain hK (hF d' hd') (hF d hd) (Ne.symm hne) (hle hd' hd h.symm hi)
++  · exact G.sel_antichain hK (hF d hd) (hF d' hd') hne
++      (G.sel_le_of_coords hKe hK (hF d hd) (hF d' hd') hi h.le)
++  · exact G.sel_antichain hK (hF d' hd') (hF d hd) (Ne.symm hne)
++      (G.sel_le_of_coords hKe hK (hF d' hd') (hF d hd) hi h.ge)
++
++noncomputable def pairsOf (F : Finset ℕ) (K : Finset (Fin 4)) (i k : Fin 4) : Finset (ℕ × ℕ) :=
++  F.image (fun d => (G.sel d K i, G.sel d K k))
++
++lemma card_pairsOf {F : Finset ℕ} {K : Finset (Fin 4)} {i k : Fin 4} (hik : i ≠ k)
++    (hKe : K = {i, k}) (hF : ∀ d ∈ F, G.IsSplit d K) : (G.pairsOf F K i k).card = F.card :=
++  card_image_of_injOn
++    (fun _ hd _ hd' h => G.sel_coord_injOn hik hKe F hF hd hd' (congrArg Prod.snd h))
++
++lemma pairsOf_antichain {F : Finset ℕ} {K : Finset (Fin 4)} {i k : Fin 4} (hik : i ≠ k)
++    (hKe : K = {i, k}) (hF : ∀ d ∈ F, G.IsSplit d K) : IsPairAntichain (G.pairsOf F K i k) := by
++  have hK : K.card = 2 := by rw [hKe]; exact card_pair hik
++  intro x hx y hy h1 h2
++  obtain ⟨d, hd, rfl⟩ := mem_image.1 hx
++  obtain ⟨d', hd', rfl⟩ := mem_image.1 hy
++  by_cases hne : d = d'
++  · rw [hne]
++  · exact absurd (G.sel_le_of_coords hKe hK (hF d hd) (hF d' hd') h1 h2)
++      (G.sel_antichain hK (hF d hd) (hF d' hd') hne)
++
++lemma pairsOf_pos {F : Finset ℕ} {K : Finset (Fin 4)} {i k : Fin 4} (hik : i ≠ k)
++    (hKe : K = {i, k}) (hF : ∀ d ∈ F, G.IsSplit d K) :
++    ∀ x ∈ G.pairsOf F K i k, 1 ≤ x.1 ∧ 1 ≤ x.2 := by
++  have hK : K.card = 2 := by rw [hKe]; exact card_pair hik
++  intro x hx
++  obtain ⟨d, hd, rfl⟩ := mem_image.1 hx
++  exact ⟨G.sel_pos (hF d hd) hK (by rw [hKe]; simp),
++    G.sel_pos (hF d hd) hK (by rw [hKe]; simp)⟩
+ 
+ /-- A family whose selected `k`-coordinates are injective with values in `[1, c]` has at most
+ `c` members. -/
+@@ -162,32 +185,36 @@ lemma card_le_of_coord {K : Finset (Fin 4)} {i k : Fin 4} (hik : i ≠ k) (hKe :
+ lemma isSplit_of_mem_fam {K : Finset (Fin 4)} {d : ℕ} (h : d ∈ G.fam K) : G.IsSplit d K :=
+   (G.mem_fam.1 h).2.2.2
+ 
++lemma sideP_split {d : ℕ} (hd : d ∈ G.famP) : G.IsSplit d {2, 3} := by
++  have hc : ({0, 1} : Finset (Fin 4))ᶜ = {2, 3} := by decide
++  exact hc ▸ (G.isSplit_of_mem_fam hd).compl
++
++lemma sideQ_split {d : ℕ} (hd : d ∈ G.famQ) : G.IsSplit d {1, 3} := by
++  have hc : ({0, 2} : Finset (Fin 4))ᶜ = {1, 3} := by decide
++  exact hc ▸ (G.isSplit_of_mem_fam hd).compl
++
+ /-- **Lemma 10.** `P ≤ R - 1`. -/
+ theorem P_le : G.P ≤ G.R - 1 := by
+-  have hc : ({0, 1} : Finset (Fin 4))ᶜ = {2, 3} := by decide
+   have h1 : G.P ≤ G.B - 1 :=
+     G.card_le_of_coord (i := 0) (k := 1) (by decide) rfl G.famP
+       (fun d hd => G.isSplit_of_mem_fam hd)
+       (fun d hd => G.sel_one_bounds (G.isSplit_of_mem_fam hd) (by decide) (by decide))
+   have h2 : G.P ≤ G.W - G.A - 1 :=
+     G.card_le_of_coord (K := {2, 3}) (i := 3) (k := 2) (by decide) (by decide) G.famP
+-      (fun d hd => hc ▸ (G.isSplit_of_mem_fam hd).compl)
+-      (fun d hd => G.sel_two_bounds (hc ▸ (G.isSplit_of_mem_fam hd).compl) (by decide)
+-        (by decide))
++      (fun d hd => G.sideP_split hd)
++      (fun d hd => G.sel_two_bounds (G.sideP_split hd) (by decide) (by decide))
+   unfold R; omega
+ 
+ /-- **Lemma 10.** `Q ≤ R - 1`. -/
+ theorem Q_le : G.Q ≤ G.R - 1 := by
+-  have hc : ({0, 2} : Finset (Fin 4))ᶜ = {1, 3} := by decide
+   have h1 : G.Q ≤ G.W - G.A - 1 :=
+     G.card_le_of_coord (i := 0) (k := 2) (by decide) rfl G.famQ
+       (fun d hd => G.isSplit_of_mem_fam hd)
+       (fun d hd => G.sel_two_bounds (G.isSplit_of_mem_fam hd) (by decide) (by decide))
+   have h2 : G.Q ≤ G.B - 1 :=
+     G.card_le_of_coord (K := {1, 3}) (i := 3) (k := 1) (by decide) (by decide) G.famQ
+-      (fun d hd => hc ▸ (G.isSplit_of_mem_fam hd).compl)
+-      (fun d hd => G.sel_one_bounds (hc ▸ (G.isSplit_of_mem_fam hd).compl) (by decide)
+-        (by decide))
++      (fun d hd => G.sideQ_split hd)
++      (fun d hd => G.sel_one_bounds (G.sideQ_split hd) (by decide) (by decide))
+   unfold R; omega
+ 
+ /-! ### Lemma 12 -/
+@@ -196,71 +223,16 @@ lemma isSplit12_of_mem_famE {d : ℕ} (h : d ∈ G.famE) : G.IsSplit d {1, 2} :=
+   have hc : ({0, 3} : Finset (Fin 4))ᶜ = {1, 2} := by decide
+   exact hc ▸ (G.isSplit_of_mem_fam h).compl
+ 
+-/-- **Lemma 12, exclusion step.** At a degree of `ℰ`, the selected interior vector `(0,u,v,0)`
+-does not satisfy `u ≥ p`, `v ≥ q`, `(u,v) ≠ (p,q)`. -/
+-theorem not_dominates_pq {d : ℕ} (hd : d ∈ G.famE) (hu : G.p ≤ G.sel d {1, 2} 1)
+-    (hv : G.q ≤ G.sel d {1, 2} 2) (hne : (G.sel d {1, 2} 1, G.sel d {1, 2} 2) ≠ (G.p, G.q)) :
+-    False := by
+-  have hS := G.isSplit12_of_mem_famE hd
+-  have hK : ({1, 2} : Finset (Fin 4)).card = 2 := by decide
+-  have hU : G.U3 ≤ G.sel d {1, 2} := by
+-    intro i; fin_cases i <;> simp [U3, hu, hv]
+-  have hp := G.p_pos
+-  by_cases h1 : G.p < G.sel d {1, 2} 1
+-  · exact G.no_replace hS hK hU G.identity3.1 (k := 1) (by simpa [U3] using h1)
+-      (j := 0) (by decide) (by simp [V3]; omega)
+-  · have h2 : G.q < G.sel d {1, 2} 2 := by
+-      by_contra h2
+-      exact hne (Prod.ext (by simp only; omega) (by simp only; omega))
+-    exact G.no_replace hS hK hU G.identity3.1 (k := 2) (by simpa [U3] using h2)
+-      (j := 0) (by decide) (by simp [V3]; omega)
+-
+-/-- The selected interior pairs `(u, v)` over `ℰ`. -/
+-noncomputable def pairsE : Finset (ℕ × ℕ) :=
+-  G.famE.image (fun d => (G.sel d {1, 2} 1, G.sel d {1, 2} 2))
++noncomputable abbrev pairsE : Finset (ℕ × ℕ) := G.pairsOf G.famE {1, 2} 1 2
+ 
+-lemma sel12_le_iff {d d' : ℕ} (hd : d ∈ G.famE) (hd' : d' ∈ G.famE) :
+-    G.sel d {1, 2} ≤ G.sel d' {1, 2} ↔
+-      G.sel d {1, 2} 1 ≤ G.sel d' {1, 2} 1 ∧ G.sel d {1, 2} 2 ≤ G.sel d' {1, 2} 2 := by
+-  have hK : ({1, 2} : Finset (Fin 4)).card = 2 := by decide
+-  have hS := G.isSplit12_of_mem_famE hd
+-  have hS' := G.isSplit12_of_mem_famE hd'
+-  constructor
+-  · intro h; exact ⟨h 1, h 2⟩
+-  · rintro ⟨h1, h2⟩ i
+-    fin_cases i
+-    · simp [G.sel_eq_zero hS hK (i := 0) (by decide)]
+-    · exact h1
+-    · exact h2
+-    · simp [G.sel_eq_zero hS hK (i := 3) (by decide)]
+-
+-lemma pairsE_injOn : Set.InjOn (fun d => (G.sel d {1, 2} 1, G.sel d {1, 2} 2)) G.famE := by
+-  intro d hd d' hd' h
+-  simp only [Prod.mk.injEq] at h
+-  have hK : ({1, 2} : Finset (Fin 4)).card = 2 := by decide
+-  have hle := (G.sel12_le_iff hd hd').2 ⟨h.1.le, h.2.le⟩
+-  have hge := (G.sel12_le_iff hd' hd).2 ⟨h.1.ge, h.2.ge⟩
+-  rw [← (G.sel_of_split (G.isSplit12_of_mem_famE hd) hK).1,
+-    ← (G.sel_of_split (G.isSplit12_of_mem_famE hd') hK).1, le_antisymm hle hge]
++lemma card_pairsE : G.pairsE.card = G.E :=
++  G.card_pairsOf (by decide) rfl fun _ => G.isSplit12_of_mem_famE
+ 
+-lemma card_pairsE : G.pairsE.card = G.E := card_image_of_injOn G.pairsE_injOn
++lemma pairsE_antichain : IsPairAntichain G.pairsE :=
++  G.pairsOf_antichain (by decide) rfl fun _ => G.isSplit12_of_mem_famE
+ 
+-lemma pairsE_antichain : IsPairAntichain G.pairsE := by
+-  intro x hx y hy h1 h2
+-  obtain ⟨d, hd, rfl⟩ := mem_image.1 hx
+-  obtain ⟨d', hd', rfl⟩ := mem_image.1 hy
+-  have hK : ({1, 2} : Finset (Fin 4)).card = 2 := by decide
+-  by_cases hne : d = d'
+-  · rw [hne]
+-  · exact absurd ((G.sel12_le_iff hd hd').2 ⟨h1, h2⟩)
+-      (G.sel_antichain hK (G.isSplit12_of_mem_famE hd) (G.isSplit12_of_mem_famE hd') hne)
+-
+-lemma pairsE_pos : ∀ x ∈ G.pairsE, 1 ≤ x.1 ∧ 1 ≤ x.2 := by
+-  intro x hx
+-  obtain ⟨d, hd, rfl⟩ := mem_image.1 hx
+-  have hK : ({1, 2} : Finset (Fin 4)).card = 2 := by decide
+-  exact ⟨G.sel_pos (G.isSplit12_of_mem_famE hd) hK (by decide),
+-    G.sel_pos (G.isSplit12_of_mem_famE hd) hK (by decide)⟩
++lemma pairsE_pos : ∀ x ∈ G.pairsE, 1 ≤ x.1 ∧ 1 ≤ x.2 :=
++  G.pairsOf_pos (by decide) rfl fun _ => G.isSplit12_of_mem_famE
+ 
+ /-- **Lemma 12.** `E ≤ p + q - 1`. -/
+ theorem E_le : G.E ≤ G.p + G.q - 1 := by
+@@ -271,8 +243,22 @@ theorem E_le : G.E ≤ G.p + G.q - 1 := by
+   obtain ⟨x, hx, hx1, hx2⟩ :=
+     G.pairsE_antichain.exists_rank G.pairsE_pos (r := G.p) hp (by omega)
+   obtain ⟨d, hd, rfl⟩ := mem_image.1 hx
+-  exact G.not_dominates_pq hd hx1 (by simp only at hx2; omega)
+-    (fun h => by simp only [Prod.mk.injEq] at h; simp only at hx2; omega)
++  set z := G.sel d {1, 2}
++  have hv : G.q ≤ z 2 := by simp only at hx2; omega
++  have hne : (z 1, z 2) ≠ (G.p, G.q) :=
++    fun h => by simp only [Prod.mk.injEq] at h; simp only at hx2; omega
++  have hS := G.isSplit12_of_mem_famE hd
++  have hK : ({1, 2} : Finset (Fin 4)).card = 2 := by decide
++  have hU : G.U3 ≤ z := by
++    intro i; fin_cases i <;> simp [U3, hx1, hv]
++  by_cases h1 : G.p < z 1
++  · exact G.no_replace hS hK hU G.identity3 (k := 1) (by simpa [U3] using h1)
++      (j := 0) (by decide) (by simp [V3]; omega)
++  · have h2 : G.q < z 2 := by
++      by_contra h2
++      exact hne (Prod.ext (by omega) (by omega))
++    exact G.no_replace hS hK hU G.identity3 (k := 2) (by simpa [U3] using h2)
++      (j := 0) (by decide) (by simp [V3]; omega)
+ 
+ end GenData
+ 
+diff --git a/SemigroupBetti/Arith.lean b/SemigroupBetti/Arith.lean
+deleted file mode 100644
+index f8ab08d68..000000000
+--- a/SemigroupBetti/Arith.lean
++++ /dev/null
+@@ -1,79 +0,0 @@
+-/-
+-Copyright (c) 2026 Ben Keene. All rights reserved.
+-Released under Apache 2.0 license as described in the file LICENSE.
+-Authors: Ben Keene
+--/
+-module
+-
+-public import SemigroupBetti.Antichain
+-
+-/-!
+-# The general arithmetic bound and the non-exceptional cases
+-
+-Write-up `PROOF_B_lean_writeup.md`: Lemma 13.
+--/
+-
+-@[expose] public section
+-
+-namespace SemigroupBetti
+-
+-namespace GenData
+-
+-variable (G : GenData)
+-
+-/-- **Lemma 13 (general bound).** `β₁ ≤ 4 + 2(R - 1) + (p + q - 1)`. -/
+-theorem beta1_le_general : G.beta1 ≤ 4 + 2 * (G.R - 1) + (G.p + G.q - 1) := by
+-  rw [G.beta1_eq]
+-  have := G.sigma_le_four
+-  have := G.P_le
+-  have := G.Q_le
+-  have := G.E_le
+-  omega
+-
+-/-- **Lemma 13 (closed form).** `4 + 2(R-1) + (p+q-1) = 2W - 2 max(s,t) + (s+t)/d + 1`. -/
+-theorem general_bound_eq :
+-    4 + 2 * (G.R - 1) + (G.p + G.q - 1) = 2 * G.W - 2 * max G.s G.t + (G.s + G.t) / G.dg + 1 := by
+-  rw [← G.p_add_q_eq, G.R_eq]
+-  have := G.two_le_R; rw [G.R_eq] at this
+-  have := G.p_pos
+-  omega
+-
+-lemma dg_eq_s_of_s_eq_t (h : G.s = G.t) : G.dg = G.s := by unfold dg; rw [← h, Nat.gcd_self]
+-
+-/-- The exceptional case `(s,t) = (1,1)` is exactly `(A, B) = (1, W - 1)`. -/
+-lemma st_eq_one_one_iff : (G.s, G.t) = (1, 1) ↔ G.A = 1 ∧ G.B = G.W - 1 := by
+-  have := G.B_lt_W
+-  simp only [Prod.mk.injEq, s, t]
+-  omega
+-
+-/-- **Lemma 13.** If `(s,t) ≠ (1,1)` then `β₁ ≤ 2W`. -/
+-theorem beta1_le_two_W_of_ne (h : (G.s, G.t) ≠ (1, 1)) : G.beta1 ≤ 2 * G.W := by
+-  have hb := G.beta1_le_general
+-  rw [G.general_bound_eq] at hb
+-  have hs := G.s_pos
+-  have ht := G.t_pos
+-  have hR := G.two_le_R
+-  rw [G.R_eq] at hR
+-  rw [← G.p_add_q_eq] at hb
+-  have hpq := G.p_add_q_le
+-  rcases lt_trichotomy G.s G.t with hlt | heq | hgt
+-  · -- Case 1: `s < t`
+-    omega
+-  · -- Cases 3–4: `s = t`, so `d = s` and `p = q = 1`
+-    have hdg : G.dg = G.s := G.dg_eq_s_of_s_eq_t heq
+-    have hp : G.p = 1 := by
+-      have := G.dg_mul_p; rw [hdg, ← heq] at this
+-      exact (Nat.mul_eq_left (by omega)).1 this
+-    have hq : G.q = 1 := by
+-      have := G.dg_mul_q; rw [hdg] at this
+-      exact (Nat.mul_eq_left (by omega)).1 this
+-    have hs2 : 2 ≤ G.s := by
+-      by_contra hc
+-      exact h (Prod.ext (by simp only; omega) (by simp only; omega))
+-    omega
+-  · -- Case 2: `s > t`
+-    omega
+-
+-end GenData
+-
+-end SemigroupBetti
+diff --git a/SemigroupBetti/Basic.lean b/SemigroupBetti/Basic.lean
+deleted file mode 100644
+index bc8394262..000000000
+--- a/SemigroupBetti/Basic.lean
++++ /dev/null
+@@ -1,2 +0,0 @@
+-module
+-public import Mathlib
+diff --git a/SemigroupBetti/Bridge.lean b/SemigroupBetti/Bridge.lean
+index befd1881d..1eb4ef197 100644
+--- a/SemigroupBetti/Bridge.lean
++++ b/SemigroupBetti/Bridge.lean
+@@ -25,8 +25,8 @@ and take the binomials `X^{rep C} - X^{rep C₀}`, `C ≠ C₀`.  There are at m
+ * every element of `I` is a `K`-combination of such binomials (coefficient sums vanish on
+   each fiber).
+ 
+-Main results: `GenData.toricKer_eq_span`, `GenData.spanRank_toricKer_le_beta1`.
+-Also `GenData.ofChallenge`: the conversion from the hypotheses of `Challenge.lean`.
++Main results: `GenData.toricKer_eq_span`, `GenData.spanRank_le_beta1_of_n_eq`.
++Also `GenData.ofChallenge`: the conversion from the arithmetic hypotheses of `Challenge.lean`.
+ -/
+ 
+ @[expose] public section
+@@ -63,13 +63,10 @@ lemma toricMap_monomial (n : Fin 4 → ℕ) (s : Fin 4 →₀ ℕ) (c : K) :
+ lemma X_mul_mono (i : Fin 4) (u : Fin 4 → ℕ) :
+     (X i : MvPolynomial (Fin 4) K) * mono K u = mono K (u + Pi.single i 1) := by
+   rw [mono, mono, X, monomial_mul_monomial, one_mul]
+-  have : Finsupp.single i 1 + Finsupp.equivFunOnFinite.symm u =
+-      Finsupp.equivFunOnFinite.symm (u + Pi.single i 1) := by
+-    refine Finsupp.ext fun j => ?_
+-    by_cases h : j = i
+-    · subst h; simp [add_comm]
+-    · simp [h]
+-  rw [this]
++  rw [show Finsupp.single i 1 + Finsupp.equivFunOnFinite.symm u =
++    Finsupp.equivFunOnFinite.symm (u + Pi.single i 1) by
++      ext j
++      by_cases h : j = i <;> simp [h, add_comm]]
+ 
+ end Mono
+ 
+@@ -88,10 +85,6 @@ noncomputable abbrev toricKer : Ideal (MvPolynomial (Fin 4) K) :=
+ lemma mem_toricKer {f : MvPolynomial (Fin 4) K} : f ∈ G.toricKer K ↔ toricMap K G.n f = 0 :=
+   RingHom.mem_ker
+ 
+-lemma mono_sub_mem_toricKer {z z' : Fin 4 → ℕ} (h : G.nu z = G.nu z') :
+-    mono K z - mono K z' ∈ G.toricKer K := by
+-  rw [mem_toricKer, map_sub, toricMap_mono, toricMap_mono, h, sub_self]
+-
+ /-! ### Representatives, base components, and the generating binomials -/
+ 
+ /-- A chosen representative factorization of a component of `∇_d`. -/
+@@ -119,53 +112,8 @@ open Classical in
+ noncomputable def binomGens : Finset (MvPolynomial (Fin 4) K) :=
+   (range (G.H + 1)).biUnion (G.genSet K)
+ 
+-lemma card_genSet_le (d : ℕ) : #(G.genSet K d) ≤ G.ncomp d - 1 := by
+-  classical
+-  unfold genSet
+-  split_ifs with h
+-  · refine (card_image_le).trans ?_
+-    rw [card_erase_of_mem (mem_univ _), card_univ, ncomp]
+-  · simp
+-
+-lemma card_binomGens_le : #(G.binomGens K) ≤ G.beta1 := by
+-  classical
+-  exact (card_biUnion_le).trans (sum_le_sum fun d _ => G.card_genSet_le K d)
+-
+-lemma binomGens_subset_toricKer : (G.binomGens K : Set (MvPolynomial (Fin 4) K)) ⊆ G.toricKer K := by
+-  classical
+-  intro p hp
+-  simp only [binomGens, coe_biUnion, coe_range, Set.mem_iUnion, mem_coe] at hp
+-  obtain ⟨d, -, hp⟩ := hp
+-  unfold genSet at hp
+-  split_ifs at hp with h
+-  · obtain ⟨C, -, rfl⟩ := mem_image.1 hp
+-    apply G.mono_sub_mem_toricKer
+-    rw [G.nu_rep, G.nu_rep]
+-  · simp at hp
+-
+ /-! ### Every equal-degree binomial lies in the span -/
+ 
+-/-- Edge step (write-up Lemma 0C): if `z, z'` of degree `d` share a variable `i`, then
+-`X^z - X^{z'} = Xᵢ (X^{z-eᵢ} - X^{z'-eᵢ})`, and the inner binomial has degree `d - nᵢ < d`. -/
+-lemma sub_mem_of_sharesVar {J : Ideal (MvPolynomial (Fin 4) K)} {d : ℕ}
+-    (IH : ∀ e < d, ∀ z z' : Fin 4 → ℕ, G.nu z = e → G.nu z' = e → mono K z - mono K z' ∈ J)
+-    {z z' : Fin 4 → ℕ} (hz : G.nu z = d) (hz' : G.nu z' = d) (h : SharesVar z z') :
+-    mono K z - mono K z' ∈ J := by
+-  obtain ⟨i, hi, hi'⟩ := h
+-  have key : ∀ y : Fin 4 → ℕ, 0 < y i → y = (y - Pi.single i 1) + Pi.single i 1 := by
+-    intro y hy; ext j
+-    by_cases hj : j = i
+-    · subst hj; simp; omega
+-    · simp [hj]
+-  have hdeg : ∀ y : Fin 4 → ℕ, 0 < y i → G.nu y = G.nu (y - Pi.single i 1) + G.n i := by
+-    intro y hy
+-    conv_lhs => rw [key y hy]
+-    rw [G.nu_add, G.nu_single, one_mul]
+-  rw [key z hi, key z' hi', ← X_mul_mono, ← X_mul_mono, ← mul_sub]
+-  refine J.mul_mem_left _ (IH (G.nu (z - Pi.single i 1)) ?_ _ _ rfl ?_)
+-  · have := hdeg z hi; have := G.n_pos i; omega
+-  · have := hdeg z hi; have := hdeg z' hi'; omega
+-
+ /-- Path step (write-up Lemma 0D). -/
+ lemma sub_mem_of_reachable {J : Ideal (MvPolynomial (Fin 4) K)} {d : ℕ}
+     (IH : ∀ e < d, ∀ z z' : Fin 4 → ℕ, G.nu z = e → G.nu z' = e → mono K z - mono K z' ∈ J)
+@@ -175,7 +123,20 @@ lemma sub_mem_of_reachable {J : Ideal (MvPolynomial (Fin 4) K)} {d : ℕ}
+   | nil => simp
+   | @cons u v w hadj _ ih =>
+     rw [← sub_add_sub_cancel _ (mono K v.1) _]
+-    exact add_mem (G.sub_mem_of_sharesVar K IH (G.mem_fiber.1 u.2) (G.mem_fiber.1 v.2) hadj.2) ih
++    apply add_mem _ ih
++    have hz := G.mem_fiber.1 u.2
++    have hz' := G.mem_fiber.1 v.2
++    obtain ⟨i, hi, hi'⟩ := hadj.2
++    have key : ∀ y : Fin 4 → ℕ, 0 < y i → y = (y - Pi.single i 1) + Pi.single i 1 := by
++      intro y hy; ext j; by_cases hj : j = i <;> simp [hj] <;> omega
++    have hdeg : ∀ y : Fin 4 → ℕ, 0 < y i → G.nu y = G.nu (y - Pi.single i 1) + G.n i := by
++      intro y hy
++      conv_lhs => rw [key y hy]
++      rw [G.nu_add, G.nu_single, one_mul]
++    rw [key u.1 hi, key v.1 hi', ← X_mul_mono, ← X_mul_mono, ← mul_sub]
++    refine J.mul_mem_left _ (IH (G.nu (u.1 - Pi.single i 1)) ?_ _ _ rfl ?_)
++    · have := hdeg u.1 hi; have := G.n_pos i; omega
++    · have := hdeg u.1 hi; have := hdeg v.1 hi'; omega
+ 
+ /-- Base-component step (write-up Lemma 0D/0F): the chosen binomials link any two
+ representatives at a degree `d ≤ H`. -/
+@@ -183,10 +144,10 @@ lemma rep_sub_rep_mem {d : ℕ} (hd : d ≤ G.H) (C C' : (G.nabla d).ConnectedCo
+     mono K (G.rep C) - mono K (G.rep C') ∈ Ideal.span (G.binomGens K : Set _) := by
+   classical
+   have h : Nonempty (G.nabla d).ConnectedComponent := ⟨C⟩
+-  have base : ∀ D : (G.nabla d).ConnectedComponent, mono K (G.rep D) - mono K (G.rep (Classical.choice h)) ∈
+-      Ideal.span (G.binomGens K : Set _) := by
+-    intro D
+-    by_cases hD : D = Classical.choice h
++  let C0 := Classical.choice h
++  have base (D : (G.nabla d).ConnectedComponent) :
++      mono K (G.rep D) - mono K (G.rep C0) ∈ Ideal.span (G.binomGens K : Set _) := by
++    by_cases hD : D = C0
+     · rw [hD, sub_self]; exact zero_mem _
+     · apply Ideal.subset_span
+       simp only [binomGens, coe_biUnion, coe_range, Set.mem_iUnion, mem_coe, Set.mem_Iio]
+@@ -194,7 +155,7 @@ lemma rep_sub_rep_mem {d : ℕ} (hd : d ≤ G.H) (C C' : (G.nabla d).ConnectedCo
+       unfold genSet
+       simp only [h, ↓reduceDIte]
+       exact mem_image.2 ⟨D, mem_erase.2 ⟨hD, mem_univ _⟩, rfl⟩
+-  rw [← sub_sub_sub_cancel_right _ _ (mono K (G.rep (Classical.choice h)))]
++  rw [← sub_sub_sub_cancel_right _ _ (mono K (G.rep C0))]
+   exact sub_mem (base C) (base C')
+ 
+ /-- **Lemma 0 (B–F), binomial form.** Every binomial `X^z - X^{z'}` with `ν z = ν z'` lies in
+@@ -204,9 +165,9 @@ lemma mono_sub_mem_span (d : ℕ) : ∀ z z' : Fin 4 → ℕ, G.nu z = d → G.n
+   induction d using Nat.strong_induction_on with
+   | _ d IH =>
+   intro z z' hz hz'
+-  obtain ⟨x, hx⟩ : ∃ x : G.fiber d, x.1 = z := ⟨⟨z, G.mem_fiber.2 hz⟩, rfl⟩
+-  obtain ⟨y, hy⟩ : ∃ y : G.fiber d, y.1 = z' := ⟨⟨z', G.mem_fiber.2 hz'⟩, rfl⟩
+-  subst hx hy
++  let x : G.fiber d := ⟨z, G.mem_fiber.2 hz⟩
++  let y : G.fiber d := ⟨z', G.mem_fiber.2 hz'⟩
++  change mono K x.1 - mono K y.1 ∈ _
+   by_cases hr : (G.nabla d).Reachable x y
+   · exact G.sub_mem_of_reachable K IH hr
+   · set Cx := (G.nabla d).connectedComponentMk x
+@@ -215,17 +176,11 @@ lemma mono_sub_mem_span (d : ℕ) : ∀ z z' : Fin 4 → ℕ, G.nu z = d → G.n
+     have hd : d ≤ G.H := G.le_H_of_contributes (by
+       unfold contributes ncomp
+       exact Fintype.one_lt_card_iff.2 ⟨Cx, Cy, hne⟩)
+-    have h1 : mono K x.1 - mono K (G.rep Cx) ∈ Ideal.span (G.binomGens K : Set _) :=
+-      G.sub_mem_of_reachable K IH (x := x) (y := ⟨G.rep Cx, (Quot.out Cx).2⟩)
+-        (SimpleGraph.ConnectedComponent.exact (G.rep_mk Cx).symm)
+-    have h2 : mono K (G.rep Cy) - mono K y.1 ∈ Ideal.span (G.binomGens K : Set _) :=
+-      G.sub_mem_of_reachable K IH (x := ⟨G.rep Cy, (Quot.out Cy).2⟩) (y := y)
+-        (SimpleGraph.ConnectedComponent.exact (G.rep_mk Cy))
+-    have h3 := G.rep_sub_rep_mem K hd Cx Cy
+-    have : mono K x.1 - mono K y.1 = (mono K x.1 - mono K (G.rep Cx)) +
+-        (mono K (G.rep Cx) - mono K (G.rep Cy)) + (mono K (G.rep Cy) - mono K y.1) := by ring
+-    rw [this]
+-    exact add_mem (add_mem h1 h3) h2
++    have h1 := G.sub_mem_of_reachable K IH (x := x) (y := ⟨G.rep Cx, (Quot.out Cx).2⟩)
++      (SimpleGraph.ConnectedComponent.exact (G.rep_mk Cx).symm)
++    have h2 := G.sub_mem_of_reachable K IH (x := ⟨G.rep Cy, (Quot.out Cy).2⟩) (y := y)
++      (SimpleGraph.ConnectedComponent.exact (G.rep_mk Cy))
++    convert add_mem (add_mem h1 (G.rep_sub_rep_mem K hd Cx Cy)) h2 using 1 <;> ring
+ 
+ /-! ### The kernel is spanned by equal-degree binomials -/
+ 
+@@ -234,11 +189,6 @@ open Classical in
+ noncomputable def root (d : ℕ) : Fin 4 → ℕ :=
+   if h : (G.fiber d).Nonempty then h.choose else 0
+ 
+-lemma nu_root (z : Fin 4 → ℕ) : G.nu (G.root (G.nu z)) = G.nu z := by
+-  have h : (G.fiber (G.nu z)).Nonempty := ⟨z, G.mem_fiber.2 rfl⟩
+-  rw [root]; simp only [h, ↓reduceDIte]
+-  exact G.mem_fiber.1 h.choose_spec
+-
+ /-- **Lemma 0B.** An element of the kernel has zero coefficient sum on every fiber. -/
+ lemma coeff_sum_eq_zero {f : MvPolynomial (Fin 4) K} (hf : f ∈ G.toricKer K) (d : ℕ) :
+     ∑ s ∈ f.support.filter (fun s : Fin 4 →₀ ℕ => G.nu ⇑s = d), f.coeff s = 0 := by
+@@ -250,54 +200,58 @@ lemma coeff_sum_eq_zero {f : MvPolynomial (Fin 4) K} (hf : f ∈ G.toricKer K) (
+   rw [Finset.sum_filter]
+   simpa [nu, eq_comm] using this
+ 
+-lemma toricKer_le_span : G.toricKer K ≤ Ideal.span (G.binomGens K : Set _) := by
+-  intro f hf
+-  set J := Ideal.span (G.binomGens K : Set (MvPolynomial (Fin 4) K))
+-  have hsplit : f = ∑ s ∈ f.support, C (f.coeff s) * (mono K s - mono K (G.root (G.nu s))) +
+-      ∑ s ∈ f.support, C (f.coeff s) * mono K (G.root (G.nu s)) := by
+-    rw [← sum_add_distrib]
+-    simp_rw [← mul_add, sub_add_cancel, mono_coe, C_mul_monomial, mul_one]
+-    exact f.as_sum
+-  have hzero : ∑ s ∈ f.support, C (f.coeff s) * mono K (G.root (G.nu s)) = 0 := by
+-    rw [← Finset.sum_fiberwise_of_maps_to (g := fun s : Fin 4 →₀ ℕ => G.nu s)
+-      (t := f.support.image (fun s : Fin 4 →₀ ℕ => G.nu s)) (fun s hs => mem_image_of_mem _ hs)]
+-    refine Finset.sum_eq_zero fun d _ => ?_
+-    have : ∀ s ∈ f.support.filter (fun s : Fin 4 →₀ ℕ => G.nu ⇑s = d),
+-        C (f.coeff s) * mono K (G.root (G.nu s)) = C (f.coeff s) * mono K (G.root d) := by
+-      intro s hs; rw [(mem_filter.1 hs).2]
+-    rw [Finset.sum_congr rfl this, ← Finset.sum_mul, ← map_sum, G.coeff_sum_eq_zero K hf d,
+-      map_zero, zero_mul]
+-  rw [hsplit, hzero, add_zero]
+-  exact J.sum_mem fun s _ => J.mul_mem_left _
+-    (G.mono_sub_mem_span K (G.nu s) s _ rfl (G.nu_root s))
+-
+-/-! ### Main theorems -/
+-
+ /-- **Lemma 0F.** The toric ideal is generated by the chosen binomials. -/
+-theorem toricKer_eq_span : G.toricKer K = Ideal.span (G.binomGens K : Set _) :=
+-  le_antisymm (G.toricKer_le_span K) (Ideal.span_le.2 (G.binomGens_subset_toricKer K))
++theorem toricKer_eq_span : G.toricKer K = Ideal.span (G.binomGens K : Set _) := by
++  apply le_antisymm
++  · intro f hf
++    set J := Ideal.span (G.binomGens K : Set (MvPolynomial (Fin 4) K))
++    have hsplit : f = ∑ s ∈ f.support, C (f.coeff s) * (mono K s - mono K (G.root (G.nu s))) +
++        ∑ s ∈ f.support, C (f.coeff s) * mono K (G.root (G.nu s)) := by
++      simpa only [← sum_add_distrib, ← mul_add, sub_add_cancel, mono_coe,
++        C_mul_monomial, mul_one] using f.as_sum
++    have hzero : ∑ s ∈ f.support, C (f.coeff s) * mono K (G.root (G.nu s)) = 0 := by
++      rw [← Finset.sum_fiberwise_of_maps_to (g := fun s : Fin 4 →₀ ℕ => G.nu s)
++        (t := f.support.image (fun s : Fin 4 →₀ ℕ => G.nu s)) (fun s hs => mem_image_of_mem _ hs)]
++      refine Finset.sum_eq_zero fun d _ => ?_
++      rw [Finset.sum_congr rfl (fun s hs => by rw [(mem_filter.1 hs).2]), ← Finset.sum_mul,
++        ← map_sum, G.coeff_sum_eq_zero K hf d, map_zero, zero_mul]
++    rw [hsplit, hzero, add_zero]
++    exact J.sum_mem fun s _ => J.mul_mem_left _ (G.mono_sub_mem_span K (G.nu s) s _ rfl (by
++      have h : (G.fiber (G.nu s)).Nonempty := ⟨s, G.mem_fiber.2 rfl⟩
++      rw [root]; simp only [h, ↓reduceDIte]
++      exact G.mem_fiber.1 h.choose_spec))
++  · classical
++    apply Ideal.span_le.2
++    intro p hp
++    simp only [binomGens, coe_biUnion, coe_range, Set.mem_iUnion, mem_coe] at hp
++    obtain ⟨d, -, hp⟩ := hp
++    unfold genSet at hp
++    split_ifs at hp with h
++    · obtain ⟨C, -, rfl⟩ := mem_image.1 hp
++      apply (G.mem_toricKer K).2
++      rw [map_sub, toricMap_mono, toricMap_mono, G.nu_rep, G.nu_rep, sub_self]
++    · simp at hp
+ 
+ /-- **Bridge (inequality half of Lemma 0).** `μ(I) ≤ β₁`, with `μ` = `Submodule.spanRank`. -/
+-theorem spanRank_toricKer_le_beta1 :
++theorem spanRank_le_beta1_of_n_eq {n : Fin 4 → ℕ} (hn : G.n = n) :
+     (RingHom.ker (MvPolynomial.aeval (R := K)
+-      (fun i => (Polynomial.X : Polynomial K) ^ G.n i)).toRingHom).spanRank ≤
++      (fun i => (Polynomial.X : Polynomial K) ^ n i)).toRingHom).spanRank ≤
+       (G.beta1 : Cardinal) := by
++  subst hn
+   change (G.toricKer K).spanRank ≤ _
+   rw [G.toricKer_eq_span K]
+   calc (Ideal.span (G.binomGens K : Set (MvPolynomial (Fin 4) K))).spanRank
+       ≤ Cardinal.mk (G.binomGens K : Set (MvPolynomial (Fin 4) K)) :=
+         Submodule.spanRank_span_le_card _
+     _ = (#(G.binomGens K) : Cardinal) := Cardinal.mk_coe_finset
+-    _ ≤ (G.beta1 : Cardinal) := Nat.cast_le.2 (G.card_binomGens_le K)
+-
+-/-- The bridge for an arbitrary generator vector `n` equal to `G.n` (avoids rewriting `G.n`
+-under the dependent `G.beta1`). With `n` and `toricIdeal` from `Challenge.lean` this reads
+-`(toricIdeal K n).spanRank ≤ G.beta1` (definitional unfolding). -/
+-theorem spanRank_le_beta1_of_n_eq {n : Fin 4 → ℕ} (hn : G.n = n) :
+-    (RingHom.ker (MvPolynomial.aeval (R := K)
+-      (fun i => (Polynomial.X : Polynomial K) ^ n i)).toRingHom).spanRank ≤
+-      (G.beta1 : Cardinal) := by
+-  subst hn; exact G.spanRank_toricKer_le_beta1 K
++    _ ≤ (G.beta1 : Cardinal) := Nat.cast_le.2 (by
++      classical
++      exact card_biUnion_le.trans (sum_le_sum fun d _ => by
++        unfold genSet
++        split_ifs with h
++        · refine card_image_le.trans ?_
++          rw [card_erase_of_mem (mem_univ _), card_univ, ncomp]
++        · simp))
+ 
+ end GenData
+ 
+@@ -305,17 +259,13 @@ end GenData
+ 
+ namespace GenData
+ 
+-/-- Build `GenData` from the hypotheses of the statements of record (`Challenge.lean`):
+-`0 < n 0`, `StrictMono n`, `Finset.univ.gcd n = 1`, and minimal generation (the body of
+-`SemigroupBetti.MinimallyGenerates n`). -/
++/-- Build `GenData` from the arithmetic hypotheses `0 < n 0`, `StrictMono n`, and
++`Finset.univ.gcd n = 1`. The combinatorial development does not use minimality. -/
+ def ofChallenge (n : Fin 4 → ℕ) (hpos : 0 < n 0) (hmono : StrictMono n)
+-    (hgcd : Finset.univ.gcd n = 1)
+-    (hmin : ∀ i : Fin 4, n i ∉ AddSubmonoid.closure (n '' {j | j ≠ i})) : GenData :=
++    (hgcd : Finset.univ.gcd n = 1) : GenData :=
+   have h01 : n 0 < n 1 := hmono (by decide)
+   have h12 : n 1 < n 2 := hmono (by decide)
+   have h23 : n 2 < n 3 := hmono (by decide)
+-  have hgens : gens (n 0) (n 1 - n 0) (n 2 - n 0) (n 3 - n 0) = n := by
+-    funext i; fin_cases i <;> simp [gens] <;> omega
+   { m := n 0
+     a := n 1 - n 0
+     b := n 2 - n 0
+@@ -336,38 +286,10 @@ def ofChallenge (n : Fin 4 → ℕ) (hpos : 0 < n 0) (hmono : StrictMono n)
+         intro i _
+         fin_cases i
+         · exact h0
+-        · have : n 1 = n 0 + (n 1 - n 0) := by omega
+-          simpa [← this] using Nat.dvd_add h0 ha
+-        · have : n 2 = n 0 + (n 2 - n 0) := by omega
+-          simpa [← this] using Nat.dvd_add h0 hb
+-        · have : n 3 = n 0 + (n 3 - n 0) := by omega
+-          simpa [← this] using Nat.dvd_add h0 hw
+-      have := Finset.dvd_gcd hall
+-      rw [hgcd] at this
+-      exact Nat.dvd_one.1 this
+-    minimal := by
+-      intro i z hzi heq
+-      rw [hgens] at heq
+-      apply hmin i
+-      rw [← heq]
+-      refine AddSubmonoid.sum_mem _ fun j _ => ?_
+-      by_cases hj : j = i
+-      · subst hj; rw [hzi, zero_mul]; exact zero_mem _
+-      · rw [← smul_eq_mul]
+-        exact AddSubmonoid.nsmul_mem _ (AddSubmonoid.subset_closure (Set.mem_image_of_mem n (show j ∈ {j | j ≠ i} from hj))) _ }
+-
+-section
+-variable (n : Fin 4 → ℕ) (hpos : 0 < n 0) (hmono : StrictMono n)
+-  (hgcd : Finset.univ.gcd n = 1)
+-  (hmin : ∀ i : Fin 4, n i ∉ AddSubmonoid.closure (n '' {j | j ≠ i}))
+-
+-lemma ofChallenge_n : (ofChallenge n hpos hmono hgcd hmin).n = n := by
+-  have h01 : n 0 < n 1 := hmono (by decide)
+-  have h12 : n 1 < n 2 := hmono (by decide)
+-  have h23 : n 2 < n 3 := hmono (by decide)
+-  funext i; fin_cases i <;> simp [GenData.n, gens, ofChallenge] <;> omega
+-
+-end
++        · convert Nat.dvd_add h0 ha using 1 <;> simp <;> omega
++        · convert Nat.dvd_add h0 hb using 1 <;> simp <;> omega
++        · convert Nat.dvd_add h0 hw using 1 <;> simp <;> omega
++      exact Nat.dvd_one.1 (hgcd ▸ Finset.dvd_gcd hall) }
+ 
+ end GenData
+ 
+diff --git a/SemigroupBetti/Critical.lean b/SemigroupBetti/Critical.lean
+index 99dba12fc..0a0eff75c 100644
+--- a/SemigroupBetti/Critical.lean
++++ b/SemigroupBetti/Critical.lean
+@@ -52,9 +52,8 @@ lemma isCritCand_n {i j : Fin 4} (hji : j ≠ i) : G.IsCritCand i (G.n j) := by
+   have := congrFun h j
+   simp [hji, (G.n_pos i).ne'] at this
+ 
+-lemma succ_ne (i : Fin 4) : i + 1 ≠ i := by fin_cases i <;> decide
+-
+-lemma crit_exists (i : Fin 4) : ∃ k, G.IsCritCand i k := ⟨_, G.isCritCand_n (succ_ne i)⟩
++lemma crit_exists (i : Fin 4) : ∃ k, G.IsCritCand i k :=
++  ⟨_, G.isCritCand_n (j := i + 1) (by fin_cases i <;> decide)⟩
+ 
+ /-- **Definition 5.** The critical exponent `cᵢ = min Tᵢ`. -/
+ def crit (i : Fin 4) : ℕ := Nat.find (G.crit_exists i)
+@@ -83,9 +82,7 @@ lemma alt_coord_eq_zero {i : Fin 4} {y : Fin 4 → ℕ} (hy : G.nu y = G.crit i
+   rcases hle.lt_or_eq with hlt | heq
+   · -- `v = y - yᵢ eᵢ` is an alternative for `r = cᵢ - yᵢ < cᵢ`
+     have hsub : Pi.single i (y i) ≤ y := by
+-      intro k; by_cases hk : k = i
+-      · subst hk; simp
+-      · simp [hk]
++      intro k; by_cases hk : k = i <;> simp [hk]
+     have hnu := G.nu_sub hsub
+     rw [G.nu_single, hy] at hnu
+     have hcand : G.IsCritCand i (G.crit i - y i) := by
+@@ -104,7 +101,7 @@ lemma alt_coord_eq_zero {i : Fin 4} {y : Fin 4 → ℕ} (hy : G.nu y = G.crit i
+     · have h2 := G.pair_le_nu y hk
+       rw [hy, heq] at h2
+       have : y k * G.n k = 0 := by omega
+-      simp [hk, (G.n_pos k).ne'] at this ⊢; exact this
++      simpa [hk, (G.n_pos k).ne'] using this
+ 
+ /-- The vertex `cᵢ eᵢ` of `∇_{cᵢ nᵢ}`. -/
+ def critVertex (i : Fin 4) : G.fiber (G.crit i * G.n i) :=
+@@ -139,16 +136,16 @@ lemma compSupp_critVertex (i : Fin 4) :
+     have := G.eq_critVertex_of_reachable i (SimpleGraph.ConnectedComponent.exact hz).symm
+     subst this
+     by_contra h; simp [critVertex, h] at hzk
+-  · intro h
+-    rw [h]
+-    exact ⟨G.critVertex i, rfl, by simpa [critVertex] using Nat.lt_of_lt_of_le Nat.zero_lt_one (G.one_le_crit i)⟩
++  · intro h; subst k
++    refine ⟨G.critVertex i, rfl, ?_⟩
++    simpa [critVertex] using Nat.lt_of_lt_of_le Nat.zero_lt_one (G.one_le_crit i)
+ 
+-/-- **Lemma 3.4 (vertex form).** At a contributing degree, every vertex of a component with
+-support `{i}` is `cᵢ eᵢ`, and the degree is `cᵢ nᵢ`. -/
++/-- **Lemma 3.4.** At a contributing degree, a component with support `{i}` lives in degree
++`cᵢ nᵢ`. -/
+ lemma singleton_comp_vertex {d : ℕ} (hd : G.contributes d) {i : Fin 4}
+     {C : (G.nabla d).ConnectedComponent} (hC : G.compSupp C = {i}) (z : G.fiber d)
+     (hz : (G.nabla d).connectedComponentMk z = C) :
+-    z.1 = Pi.single i (G.crit i) ∧ d = G.crit i * G.n i := by
++    d = G.crit i * G.n i := by
+   have hzd := G.mem_fiber.1 z.2
+   have hdpos := G.pos_of_two_le_ncomp hd
+   -- `z = k eᵢ` with `k = zᵢ`
+@@ -162,10 +159,7 @@ lemma singleton_comp_vertex {d : ℕ} (hd : G.contributes d) {i : Fin 4}
+       rw [hC, mem_singleton] at this; exact hj this
+   set k := z.1 i with hk
+   have hdk : d = k * G.n i := by rw [← hzd, hzform, G.nu_single]
+-  have hkpos : 0 < k := by
+-    rcases Nat.eq_zero_or_pos k with h | h
+-    · rw [h, zero_mul] at hdk; omega
+-    · exact h
++  have hkpos : 0 < k := Nat.pos_of_ne_zero fun h => by rw [h, zero_mul] at hdk; omega
+   rcases lt_trichotomy k (G.crit i) with hlt | heq | hgt
+   · -- no alternative: the fiber is a single vertex
+     exfalso
+@@ -179,17 +173,16 @@ lemma singleton_comp_vertex {d : ℕ} (hd : G.contributes d) {i : Fin 4}
+       exact Nat.find_min (G.crit_exists i) hlt hcand
+     have := G.ncomp_le_one_of_reachable (d := d) (fun y y' => by rw [hall y, hall y'])
+     unfold contributes at hd; omega
+-  · exact ⟨hzform.trans (by rw [heq]), by rw [hdk, heq]⟩
++  · rw [hdk, heq]
+   · -- the bridge `b = (k - cᵢ) eᵢ + y` enlarges the support
+     exfalso
+     obtain ⟨y, hy, hyne⟩ := G.exists_alt i
+     have hyi := G.alt_coord_eq_zero hy hyne
+-    have hy0 : y ≠ 0 := by
+-      intro h; rw [h, nu_zero] at hy
+-      have := Nat.mul_pos (G.one_le_crit i) (G.n_pos i); omega
+     obtain ⟨j, hj⟩ : ∃ j, 0 < y j := by
+-      by_contra hc; push Not at hc
+-      exact hy0 (funext fun l => Nat.le_zero.1 (hc l))
++      by_contra! hc
++      have h0 : y = 0 := funext fun l => Nat.le_zero.1 (hc l)
++      rw [h0, nu_zero] at hy
++      have := Nat.mul_pos (G.one_le_crit i) (G.n_pos i); omega
+     have hji : j ≠ i := by rintro rfl; omega
+     let b := Pi.single i (k - G.crit i) + y
+     have hb : G.nu b = d := by
+@@ -206,14 +199,6 @@ lemma singleton_comp_vertex {d : ℕ} (hd : G.contributes d) {i : Fin 4}
+     rw [hC, mem_singleton] at this
+     exact hji this
+ 
+-/-- **Lemma 3.4.** At a contributing degree, a component with support `{i}` lives in degree
+-`cᵢ nᵢ`. -/
+-lemma degree_eq_of_singleton_comp {d : ℕ} (hd : G.contributes d) {i : Fin 4}
+-    {C : (G.nabla d).ConnectedComponent} (hC : G.compSupp C = {i}) :
+-    d = G.crit i * G.n i := by
+-  induction C using SimpleGraph.ConnectedComponent.ind with
+-  | h z => exact (G.singleton_comp_vertex hd hC z rfl).2
+-
+ /-! ### Definition 6 and Lemma 4 -/
+ 
+ /-- Some component of `∇_d` has support of cardinality one. -/
+@@ -265,7 +250,9 @@ lemma ncomp_sub_one_le {d : ℕ} (hd : G.contributes d) (hS : G.HasSingletonComp
+     rw [hi', mem_singleton] at hiC
+     subst hiC
+     simp only [critIndices, mem_filter, mem_univ, true_and]
+-    exact (G.degree_eq_of_singleton_comp hd hi').symm
++    symm
++    induction C using SimpleGraph.ConnectedComponent.ind with
++    | h z => exact G.singleton_comp_vertex hd hi' z rfl
+   -- at most one component with support of size `≥ 2`
+   have hK2le : K2.card ≤ 1 := by
+     obtain ⟨C0, hC0⟩ := hS
+@@ -294,8 +281,8 @@ theorem sigma_le_four : G.sigma ≤ 4 := by
+   let f : Fin 4 → ℕ := fun i => G.crit i * G.n i
+   let s := univ.filter (fun i => f i ∈ G.singletonDegrees)
+   have hmaps : (s : Set (Fin 4)).MapsTo f G.singletonDegrees := fun i hi => (mem_filter.1 hi).2
+-  calc G.sigma = ∑ d ∈ G.singletonDegrees, (G.ncomp d - 1) := rfl
+-    _ ≤ ∑ d ∈ G.singletonDegrees, (G.critIndices d).card := by
++  calc
++    G.sigma ≤ ∑ d ∈ G.singletonDegrees, (G.critIndices d).card := by
+       apply sum_le_sum
+       intro d hd
+       obtain ⟨-, hc, hS⟩ := G.mem_singletonDegrees.1 hd
+diff --git a/SemigroupBetti/Defs.lean b/SemigroupBetti/Defs.lean
+index 2d2c63518..d13e12aa7 100644
+--- a/SemigroupBetti/Defs.lean
++++ b/SemigroupBetti/Defs.lean
+@@ -33,11 +33,6 @@ structure GenData where
+   a_lt_b : a < b
+   b_lt_w : b < w
+   gcd_eq_one : Nat.gcd m (Nat.gcd a (Nat.gcd b w)) = 1
+-  /-- Minimality: no generator is an `ℕ`-combination of the other three. -/
+-  minimal : ∀ i : Fin 4, ∀ z : Fin 4 → ℕ, z i = 0 → ∑ j, z j * gens m a b w j ≠ gens m a b w i
+-
+-/-- **Definition 2.** Length `|z| = ∑ zᵢ`. -/
+-def len (z : Fin 4 → ℕ) : ℕ := ∑ i, z i
+ 
+ /-- **Definition 2.** Support `{i : zᵢ > 0}`. -/
+ def supp (z : Fin 4 → ℕ) : Finset (Fin 4) := Finset.univ.filter (fun i => 0 < z i)
+@@ -51,8 +46,8 @@ instance : DecidableRel SharesVar := fun z z' =>
+ @[simp] lemma mem_supp {z : Fin 4 → ℕ} {i : Fin 4} : i ∈ supp z ↔ 0 < z i := by
+   simp [supp]
+ 
+-lemma SharesVar.symm {z z' : Fin 4 → ℕ} (h : SharesVar z z') : SharesVar z' z := by
+-  obtain ⟨i, h1, h2⟩ := h; exact ⟨i, h2, h1⟩
++lemma SharesVar.symm {z z' : Fin 4 → ℕ} (h : SharesVar z z') : SharesVar z' z :=
++  h.imp fun _ => And.symm
+ 
+ namespace GenData
+ 
+@@ -74,31 +69,20 @@ def W : ℕ := G.w / G.g
+ /-- **Definition 2.** Degree `ν(z) = ∑ zᵢ nᵢ`. -/
+ def nu (z : Fin 4 → ℕ) : ℕ := ∑ i, z i * G.n i
+ 
+-/-- **Definition 2.** Weight `ω(z) = a z₁ + b z₂ + w z₃`. -/
+-def omega (z : Fin 4 → ℕ) : ℕ := G.a * z 1 + G.b * z 2 + G.w * z 3
+-
+-@[simp] lemma n_zero : G.n 0 = G.m := rfl
+-@[simp] lemma n_one : G.n 1 = G.m + G.a := rfl
+ @[simp] lemma n_two : G.n 2 = G.m + G.b := rfl
+ @[simp] lemma n_three : G.n 3 = G.m + G.w := rfl
+ 
+ lemma nu_eq_sum (z : Fin 4 → ℕ) : G.nu z = z 0 * G.m + z 1 * (G.m + G.a) +
+     z 2 * (G.m + G.b) + z 3 * (G.m + G.w) := by
+-  simp [nu, Fin.sum_univ_four]
+-
+-lemma n_strictMono : StrictMono G.n := by
+-  have h1 := G.a_pos; have h2 := G.a_lt_b; have h3 := G.b_lt_w
+-  refine Fin.strictMono_iff_lt_succ.2 ?_
+-  intro i; fin_cases i <;> simp <;> omega
+-
+-lemma n_mono : Monotone G.n := G.n_strictMono.monotone
++  simp [nu, n, gens, Fin.sum_univ_four]
+ 
+-lemma m_le_n (i : Fin 4) : G.m ≤ G.n i := by
+-  have := G.n_mono (Fin.zero_le i); simpa using this
++lemma m_le_n (i : Fin 4) : G.m ≤ G.n i := by fin_cases i <;> simp [n, gens]
+ 
+ lemma n_pos (i : Fin 4) : 0 < G.n i := lt_of_lt_of_le G.m_pos (G.m_le_n i)
+ 
+-lemma n_le_n_three (i : Fin 4) : G.n i ≤ G.n 3 := G.n_mono (Fin.le_last i)
++lemma n_le_n_three (i : Fin 4) : G.n i ≤ G.n 3 := by
++  have := G.a_lt_b; have := G.b_lt_w
++  fin_cases i <;> simp [n, gens] <;> omega
+ 
+ /-! ### Additivity of `ν` -/
+ 
+@@ -108,70 +92,51 @@ lemma nu_add (x y : Fin 4 → ℕ) : G.nu (x + y) = G.nu x + G.nu y := by
+   simp [nu, add_mul, Finset.sum_add_distrib]
+ 
+ lemma nu_single (i : Fin 4) (k : ℕ) : G.nu (Pi.single i k) = k * G.n i := by
+-  simp only [nu]
+-  rw [Finset.sum_eq_single i]
+-  · simp
+-  · intro j _ hj; simp [hj]
+-  · simp
++  simp [nu, Pi.single_apply]
+ 
+ /-- If `x ≤ y` coordinatewise then `ν(y) = ν(x) + ν(y - x)`. -/
+ lemma nu_sub {x y : Fin 4 → ℕ} (h : x ≤ y) : G.nu y = G.nu x + G.nu (y - x) := by
+   rw [← nu_add]; congr 1; ext i; simp only [Pi.add_apply, Pi.sub_apply]
+-  have hi : x i ≤ y i := h i
+-  omega
++  exact (Nat.add_sub_of_le (h i)).symm
+ 
+-lemma single_le_nu (z : Fin 4 → ℕ) (i : Fin 4) : z i * G.n i ≤ G.nu z := by
+-  unfold nu
+-  exact Finset.single_le_sum (f := fun j => z j * G.n j) (fun _ _ => Nat.zero_le _)
++lemma single_le_nu (z : Fin 4 → ℕ) (i : Fin 4) : z i * G.n i ≤ G.nu z :=
++  Finset.single_le_sum (f := fun j => z j * G.n j) (fun _ _ => Nat.zero_le _)
+     (Finset.mem_univ i)
+ 
+-lemma m_mul_le_nu (z : Fin 4 → ℕ) (i : Fin 4) : G.m * z i ≤ G.nu z := by
+-  calc G.m * z i ≤ z i * G.n i := by rw [mul_comm]; exact Nat.mul_le_mul_left _ (G.m_le_n i)
+-    _ ≤ G.nu z := G.single_le_nu z i
+-
+-lemma nu_eq_zero_iff {z : Fin 4 → ℕ} : G.nu z = 0 ↔ z = 0 := by
+-  constructor
+-  · intro h; ext i
+-    have := G.single_le_nu z i
+-    have hp := G.n_pos i
+-    simp only [Pi.zero_apply]
+-    rw [h] at this
+-    exact (Nat.mul_eq_zero.1 (Nat.le_zero.1 this)).resolve_right hp.ne'
+-  · rintro rfl; simp
+-
+ lemma nu_pos_of_pos {z : Fin 4 → ℕ} {i : Fin 4} (h : 0 < z i) : 0 < G.nu z :=
+   lt_of_lt_of_le (Nat.mul_pos h (G.n_pos i)) (G.single_le_nu z i)
+ 
++lemma nu_eq_zero_iff {z : Fin 4 → ℕ} : G.nu z = 0 ↔ z = 0 := by
++  refine ⟨fun h => ?_, by rintro rfl; simp⟩
++  ext i; simp only [Pi.zero_apply]
++  by_contra hi
++  have := G.nu_pos_of_pos (z := z) (i := i) (Nat.pos_of_ne_zero hi)
++  omega
++
+ /-! ### Lemma 1: normalized arithmetic -/
+ 
+ lemma g_dvd_a : G.g ∣ G.a := Nat.gcd_dvd_left _ _
+ lemma g_dvd_b : G.g ∣ G.b := (Nat.gcd_dvd_right _ _).trans (Nat.gcd_dvd_left _ _)
+ lemma g_dvd_w : G.g ∣ G.w := (Nat.gcd_dvd_right _ _).trans (Nat.gcd_dvd_right _ _)
+ 
+-lemma g_pos : 0 < G.g := Nat.gcd_pos_of_pos_left _ G.a_pos
+-
+ lemma a_eq : G.a = G.g * G.A := (Nat.mul_div_cancel' G.g_dvd_a).symm
+ lemma b_eq : G.b = G.g * G.B := (Nat.mul_div_cancel' G.g_dvd_b).symm
+ lemma w_eq : G.w = G.g * G.W := (Nat.mul_div_cancel' G.g_dvd_w).symm
+ 
+-lemma A_pos : 0 < G.A := by
+-  have h := G.a_pos; rw [G.a_eq] at h; exact Nat.pos_of_mul_pos_left h
++lemma A_pos : 0 < G.A := Nat.pos_of_mul_pos_left (G.a_eq.symm ▸ G.a_pos)
+ 
+-lemma A_lt_B : G.A < G.B := by
+-  have h := G.a_lt_b; rw [G.a_eq, G.b_eq] at h; exact Nat.lt_of_mul_lt_mul_left h
++lemma A_lt_B : G.A < G.B := Nat.lt_of_mul_lt_mul_left (by
++  rw [← G.a_eq, ← G.b_eq]; exact G.a_lt_b)
+ 
+-lemma B_lt_W : G.B < G.W := by
+-  have h := G.b_lt_w; rw [G.b_eq, G.w_eq] at h; exact Nat.lt_of_mul_lt_mul_left h
++lemma B_lt_W : G.B < G.W := Nat.lt_of_mul_lt_mul_left (by
++  rw [← G.b_eq, ← G.w_eq]; exact G.b_lt_w)
+ 
+ lemma two_le_B : 2 ≤ G.B := by have := G.A_pos; have := G.A_lt_B; omega
+ lemma three_le_W : 3 ≤ G.W := by have := G.two_le_B; have := G.B_lt_W; omega
+ lemma two_le_W_sub_A : 2 ≤ G.W - G.A := by
+   have := G.A_lt_B; have := G.B_lt_W; omega
+ 
+-lemma gcd_m_g : Nat.gcd G.m G.g = 1 := G.gcd_eq_one
+-
+-lemma W_le_w : G.W ≤ G.w := by
+-  rw [G.w_eq]; exact Nat.le_mul_of_pos_left _ G.g_pos
++lemma W_le_w : G.W ≤ G.w := Nat.div_le_self _ _
+ 
+ end GenData
+ 
+diff --git a/SemigroupBetti/Exceptional.lean b/SemigroupBetti/Exceptional.lean
+index 7cb8fc636..9daa56fb0 100644
+--- a/SemigroupBetti/Exceptional.lean
++++ b/SemigroupBetti/Exceptional.lean
+@@ -5,7 +5,7 @@ Authors: Ben Keene
+ -/
+ module
+ 
+-public import SemigroupBetti.Arith
++public import SemigroupBetti.Antichain
+ 
+ /-!
+ # The exceptional case `(A, B) = (1, W - 1)`
+@@ -23,59 +23,7 @@ namespace GenData
+ 
+ variable (G : GenData)
+ 
+-/-! ### Generic helpers: selected pairs on a side, saturation -/
+-
+-/-- Two selected `K`-vectors (`K = {i,k}`) are comparable iff their `i`- and `k`-coordinates are. -/
+-lemma sel_le_of_coords {K : Finset (Fin 4)} {i k : Fin 4} (hKe : K = {i, k}) (hK : K.card = 2)
+-    {d d' : ℕ} (hS : G.IsSplit d K) (hS' : G.IsSplit d' K)
+-    (hi : G.sel d K i ≤ G.sel d' K i) (hk : G.sel d K k ≤ G.sel d' K k) :
+-    G.sel d K ≤ G.sel d' K := by
+-  intro j
+-  by_cases hj : j ∈ K
+-  · rw [hKe, mem_insert, mem_singleton] at hj
+-    rcases hj with rfl | rfl
+-    · exact hi
+-    · exact hk
+-  · rw [G.sel_eq_zero hS hK hj, G.sel_eq_zero hS' hK hj]
+-
+-/-- The selected `(i, k)`-coordinate pairs of a family on side `K = {i,k}`. -/
+-noncomputable def pairsOf (F : Finset ℕ) (K : Finset (Fin 4)) (i k : Fin 4) : Finset (ℕ × ℕ) :=
+-  F.image (fun d => (G.sel d K i, G.sel d K k))
+-
+-lemma pairsOf_injOn {F : Finset ℕ} {K : Finset (Fin 4)} {i k : Fin 4} (hik : i ≠ k)
+-    (hKe : K = {i, k}) (hF : ∀ d ∈ F, G.IsSplit d K) :
+-    Set.InjOn (fun d => (G.sel d K i, G.sel d K k)) F := by
+-  have hK : K.card = 2 := by rw [hKe]; exact card_pair hik
+-  intro d hd d' hd' h
+-  simp only [Prod.mk.injEq] at h
+-  have hle := G.sel_le_of_coords hKe hK (hF d hd) (hF d' hd') h.1.le h.2.le
+-  have hge := G.sel_le_of_coords hKe hK (hF d' hd') (hF d hd) h.1.ge h.2.ge
+-  rw [← (G.sel_of_split (hF d hd) hK).1, ← (G.sel_of_split (hF d' hd') hK).1,
+-    le_antisymm hle hge]
+-
+-lemma card_pairsOf {F : Finset ℕ} {K : Finset (Fin 4)} {i k : Fin 4} (hik : i ≠ k)
+-    (hKe : K = {i, k}) (hF : ∀ d ∈ F, G.IsSplit d K) : (G.pairsOf F K i k).card = F.card :=
+-  card_image_of_injOn (G.pairsOf_injOn hik hKe hF)
+-
+-lemma pairsOf_antichain {F : Finset ℕ} {K : Finset (Fin 4)} {i k : Fin 4} (hik : i ≠ k)
+-    (hKe : K = {i, k}) (hF : ∀ d ∈ F, G.IsSplit d K) : IsPairAntichain (G.pairsOf F K i k) := by
+-  have hK : K.card = 2 := by rw [hKe]; exact card_pair hik
+-  intro x hx y hy h1 h2
+-  obtain ⟨d, hd, rfl⟩ := mem_image.1 hx
+-  obtain ⟨d', hd', rfl⟩ := mem_image.1 hy
+-  by_cases hne : d = d'
+-  · rw [hne]
+-  · exact absurd (G.sel_le_of_coords hKe hK (hF d hd) (hF d' hd') h1 h2)
+-      (G.sel_antichain hK (hF d hd) (hF d' hd') hne)
+-
+-lemma pairsOf_pos {F : Finset ℕ} {K : Finset (Fin 4)} {i k : Fin 4} (hik : i ≠ k)
+-    (hKe : K = {i, k}) (hF : ∀ d ∈ F, G.IsSplit d K) :
+-    ∀ x ∈ G.pairsOf F K i k, 1 ≤ x.1 ∧ 1 ≤ x.2 := by
+-  have hK : K.card = 2 := by rw [hKe]; exact card_pair hik
+-  intro x hx
+-  obtain ⟨d, hd, rfl⟩ := mem_image.1 hx
+-  exact ⟨G.sel_pos (hF d hd) hK (by rw [hKe]; simp),
+-    G.sel_pos (hF d hd) hK (by rw [hKe]; simp)⟩
++/-! ### Saturation -/
+ 
+ /-- **Saturation.** If the selected `k`-coordinates of a family of size `c` take values in
+ `[1, c]`, every value in `[1, c]` is attained. -/
+@@ -101,17 +49,13 @@ set_option linter.unusedSectionVars false
+ lemma exc_R : G.R = G.W - 1 := by
+   have := G.three_le_W; unfold R; omega
+ 
++lemma exc_t : G.t = 1 := by have := G.three_le_W; unfold t; omega
++
+ lemma exc_p : G.p = 1 := by
+-  have := G.three_le_W
+-  have ht : G.t = 1 := by unfold t; omega
+-  have hs : G.s = 1 := hA
+-  unfold p dg; rw [ht, hs]; rfl
++  unfold p dg; rw [exc_t hA hB, show G.s = 1 from hA]; rfl
+ 
+ lemma exc_q : G.q = 1 := by
+-  have := G.three_le_W
+-  have ht : G.t = 1 := by unfold t; omega
+-  have hs : G.s = 1 := hA
+-  unfold q dg; rw [ht, hs]; rfl
++  unfold q dg; rw [exc_t hA hB, show G.s = 1 from hA]; rfl
+ 
+ lemma exc_U2 : G.U2 = Pi.single 2 (G.W - 1) := by
+   funext j; fin_cases j <;> simp [U2, hA]
+@@ -124,7 +68,7 @@ lemma exc_V2 : G.V2 = ![0, 1, 0, G.W - 2] := by
+ 
+ /-- `ν(0,0,W-1,0) = ν(0,1,0,W-2)`, both equal to `(W-1) n₂`. -/
+ lemma exc_nu_V2 : G.nu ![0, 1, 0, G.W - 2] = (G.W - 1) * G.n 2 := by
+-  rw [← exc_V2 hA hB, ← G.identity2.1, exc_U2 hA hB, G.nu_single]
++  rw [← exc_V2 hA hB, ← G.identity2, exc_U2 hA hB, G.nu_single]
+ 
+ /-- `gcd(n₂, n₃) = 1` in the exceptional family. -/
+ lemma exc_coprime : Nat.Coprime (G.n 3) (G.n 2) := by
+@@ -135,30 +79,13 @@ lemma exc_coprime : Nat.Coprime (G.n 3) (G.n 2) := by
+     have : G.W = (G.W - 1) + 1 := by omega
+     conv_lhs => rw [this]
+     ring
+-  set k := Nat.gcd (G.n 3) (G.n 2)
+-  have hk3 : k ∣ G.n 3 := Nat.gcd_dvd_left _ _
+-  have hk2 : k ∣ G.n 2 := Nat.gcd_dvd_right _ _
+-  have hkg : k ∣ G.g := by
+-    rw [hn3] at hk3; exact (Nat.dvd_add_right hk2).1 hk3
+-  have hkm : k ∣ G.m := by
+-    rw [hn2] at hk2
+-    exact (Nat.dvd_add_left (Dvd.dvd.mul_right hkg _)).1 hk2
+-  have := Nat.dvd_gcd hkm hkg
+-  rw [G.gcd_m_g] at this
+-  exact Nat.dvd_one.1 this
++  rw [hn3, Nat.coprime_self_add_left, hn2, Nat.coprime_add_mul_left_right]
++  exact Nat.Coprime.symm (show Nat.Coprime G.m G.g from G.gcd_eq_one)
+ 
+ end Exceptional
+ 
+ /-! ### Lemma 14 -/
+ 
+-lemma sideP_split {d : ℕ} (hd : d ∈ G.famP) : G.IsSplit d {2, 3} := by
+-  have hc : ({0, 1} : Finset (Fin 4))ᶜ = {2, 3} := by decide
+-  exact hc ▸ (G.isSplit_of_mem_fam hd).compl
+-
+-lemma sideQ_split {d : ℕ} (hd : d ∈ G.famQ) : G.IsSplit d {1, 3} := by
+-  have hc : ({0, 2} : Finset (Fin 4))ᶜ = {1, 3} := by decide
+-  exact hc ▸ (G.isSplit_of_mem_fam hd).compl
+-
+ /-- **Lemma 14.** If `A = 1`, `B = W - 1` and `P = W - 2`, then `c₂ = W - 1`. -/
+ theorem lemma14 (hA : G.A = 1) (hB : G.B = G.W - 1) (hP : G.P = G.W - 2) :
+     G.crit 2 = G.W - 1 := by
+@@ -183,7 +110,7 @@ theorem lemma14 (hA : G.A = 1) (hB : G.B = G.W - 1) (hP : G.P = G.W - 2) :
+     hP (v := G.W - 2) (by omega) le_rfl
+   have hS23 := G.sideP_split hD
+   have hS01 := G.isSplit_of_mem_fam hD
+-  set z := G.sel D {2, 3} with hz
++  set z := G.sel D {2, 3}
+   have hz0 : z 0 = 0 := G.sel_eq_zero hS23 hK (by decide)
+   have hz1 : z 1 = 0 := G.sel_eq_zero hS23 hK (by decide)
+   have hz3 : 0 < z 3 := G.sel_pos hS23 hK (by decide)
+@@ -192,8 +119,7 @@ theorem lemma14 (hA : G.A = 1) (hB : G.B = G.W - 1) (hP : G.P = G.W - 2) :
+   obtain ⟨r, hr, hrne⟩ := G.exists_alt 2
+   have hr2 := G.alt_coord_eq_zero hr hrne
+   have hr01 : 0 < r 0 ∨ 0 < r 1 := by
+-    by_contra h0
+-    push Not at h0
++    by_contra! h0
+     have hr0 : r 0 = 0 := by omega
+     have hr1 : r 1 = 0 := by omega
+     have hreq : r = Pi.single 3 (r 3) := by
+@@ -215,15 +141,15 @@ theorem lemma14 (hA : G.A = 1) (hB : G.B = G.W - 1) (hP : G.P = G.W - 2) :
+     ring
+   have hK01 : ({0, 1} : Finset (Fin 4)).card = 2 := by decide
+   have hy := G.sel_of_split hS01 hK01
+-  rcases hr01 with h | h
+-  · refine G.no_bridge hS23 hnuz hy.1 hb (i := 3) (by decide) hz3 (j := 0) (by decide)
+-      (G.sel_pos hS01 hK01 (by decide)) ⟨3, ?_, hz3⟩ ⟨0, ?_, G.sel_pos hS01 hK01 (by decide)⟩
+-    · simp [b]; omega
+-    · simp [b]; omega
+-  · refine G.no_bridge hS23 hnuz hy.1 hb (i := 3) (by decide) hz3 (j := 1) (by decide)
+-      (G.sel_pos hS01 hK01 (by decide)) ⟨3, ?_, hz3⟩ ⟨1, ?_, G.sel_pos hS01 hK01 (by decide)⟩
+-    · simp [b]; omega
+-    · simp [b]; omega
++  obtain ⟨i, hi, hri⟩ : ∃ i ∈ ({0, 1} : Finset (Fin 4)), 0 < r i := by
++    rcases hr01 with h | h
++    · exact ⟨0, by simp, h⟩
++    · exact ⟨1, by simp, h⟩
++  have hyi := G.sel_pos hS01 hK01 hi
++  refine G.no_bridge hS01 hy.1 hnuz hb hi hyi (j := 3) (by decide) hz3
++    ⟨i, ?_, hyi⟩ ⟨3, ?_, hz3⟩
++  · simp only [b, Pi.add_apply]; omega
++  · simp [b]; omega
+ 
+ /-! ### Lemma 15 -/
+ 
+@@ -240,31 +166,30 @@ theorem lemma15 (hA : G.A = 1) (hB : G.B = G.W - 1) (hQ : G.Q = G.W - 2) :
+       (fun d hd => by
+         have := G.sel_one_bounds (hF d hd) hK (by decide)
+         rw [hB] at this; exact this)
+-      (by have : G.Q = G.famQ.card := rfl; omega) (v := 1) le_rfl (by omega)
++      hQ (v := 1) le_rfl (by omega)
+   · intro D hD hu
++    set z := G.sel D {1, 3}
+     have hS := hF D hD
+-    have hz0 : G.sel D {1, 3} 0 = 0 := G.sel_eq_zero hS hK (by decide)
+-    have hz2 : G.sel D {1, 3} 2 = 0 := G.sel_eq_zero hS hK (by decide)
++    have hz0 : z 0 = 0 := G.sel_eq_zero hS hK (by decide)
++    have hz2 : z 2 = 0 := G.sel_eq_zero hS hK (by decide)
+     -- lower bound `v ≥ W - 2` from Lemma 11
+     have hT := G.pairsOf_antichain (F := G.famQ) (i := 1) (k := 3) (by decide) (by decide) hF
+     have hpos := G.pairsOf_pos (F := G.famQ) (i := 1) (k := 3) (by decide) (by decide) hF
+-    have hmem : (G.sel D {1, 3} 1, G.sel D {1, 3} 3) ∈ G.pairsOf G.famQ {1, 3} 1 3 := mem_image.2 ⟨D, hD, rfl⟩
++    have hmem : (z 1, z 3) ∈ G.pairsOf G.famQ {1, 3} 1 3 := mem_image.2 ⟨D, hD, rfl⟩
+     have hco := hT.corank_le hpos hmem
+-    have hfilt : (G.pairsOf G.famQ {1, 3} 1 3).filter (fun y => (G.sel D {1, 3} 1, G.sel D {1, 3} 3).1 ≤ y.1) =
++    have hfilt : (G.pairsOf G.famQ {1, 3} 1 3).filter (fun y => z 1 ≤ y.1) =
+         G.pairsOf G.famQ {1, 3} 1 3 := by
+       apply filter_true_of_mem
+-      intro y hy; simp only; rw [hu]; exact (hpos y hy).1
++      intro y hy; rw [hu]; exact (hpos y hy).1
+     rw [hfilt, G.card_pairsOf (by decide) (by decide) hF] at hco
+-    simp only at hco
+-    have hQ' : G.famQ.card = G.W - 2 := hQ
+-    rw [hQ'] at hco
++    rw [show G.famQ.card = G.W - 2 from hQ] at hco
+     -- upper bound `v ≤ W - 2` by the exceptional replacement
+-    have hv : G.sel D {1, 3} 3 ≤ G.W - 2 := by
++    have hv : z 3 ≤ G.W - 2 := by
+       by_contra hv
+-      have hU : G.V2 ≤ G.sel D {1, 3} := by
++      have hU : G.V2 ≤ z := by
+         rw [exc_V2 hA hB]; intro j; fin_cases j <;> simp [hz0, hz2, hu]; omega
+-      exact G.no_replace hS hK hU G.identity2.1.symm (k := 3)
+-        (by rw [exc_V2 hA hB]; simp; omega) (j := 2) (by decide)
++      exact G.no_replace hS hK hU G.identity2.symm (k := 3)
++        (by change G.V2 3 < z 3; rw [exc_V2 hA hB]; simp; omega) (j := 2) (by decide)
+         (by rw [exc_U2 hA hB]; simp; omega)
+     funext j; fin_cases j <;> simp [hz0, hz2, hu]; omega
+ 
+@@ -285,20 +210,45 @@ theorem lemma16_PQ (hA : G.A = 1) (hB : G.B = G.W - 1) : G.P + G.Q ≤ 2 * G.W -
+   have hK : ({1, 3} : Finset (Fin 4)).card = 2 := by decide
+   have hDeq : D = G.crit 2 * G.n 2 := by
+     rw [← (G.sel_of_split (G.sideQ_split hD) hK).1, hsel, exc_nu_V2 hA hB, hc2]
+-  obtain ⟨-, hcon, hS, -⟩ := G.mem_fam.1 hD
++  obtain ⟨-, -, hS, -⟩ := G.mem_fam.1 hD
+   subst hDeq
+   exact hS ⟨_, by rw [G.compSupp_critVertex 2]; rfl⟩
+ 
+-/-- **Lemma 16.** If `(A, B) = (1, W - 1)` then `β₁ ≤ 2W`. -/
+-theorem beta1_le_two_W_exceptional (hA : G.A = 1) (hB : G.B = G.W - 1) :
+-    G.beta1 ≤ 2 * G.W := by
+-  have hW := G.three_le_W
+-  have hPQ := G.lemma16_PQ hA hB
+-  have hE := G.E_le
+-  rw [exc_p hA hB, exc_q hA hB] at hE
+-  have hσ := G.sigma_le_four
++/-- **Main combinatorial theorem.** `β₁ ≤ 2W`. -/
++theorem beta1_le_two_W : G.beta1 ≤ 2 * G.W := by
+   rw [G.beta1_eq]
+-  omega
++  by_cases h : (G.s, G.t) = (1, 1)
++  · obtain ⟨hA, hB⟩ := G.st_eq_one_one_iff.1 h
++    have hW := G.three_le_W
++    have hPQ := G.lemma16_PQ hA hB
++    have hE := G.E_le
++    rw [exc_p hA hB, exc_q hA hB] at hE
++    have hσ := G.sigma_le_four
++    omega
++  · have hσ := G.sigma_le_four
++    have hP := G.P_le
++    have hQ := G.Q_le
++    have hE := G.E_le
++    have hs := G.s_pos
++    have ht := G.t_pos
++    have hR := G.two_le_R
++    rw [G.R_eq] at hP hQ hR
++    have hpq := G.p_add_q_le
++    have hp0 := G.p_pos
++    rcases lt_trichotomy G.s G.t with hlt | heq | hgt
++    · omega
++    · have hdg : G.dg = G.s := by unfold dg; rw [← heq, Nat.gcd_self]
++      have hp : G.p = 1 := by
++        have := G.dg_mul_p; rw [hdg, ← heq] at this
++        exact (Nat.mul_eq_left (by omega)).1 this
++      have hq : G.q = 1 := by
++        have := G.dg_mul_q; rw [hdg] at this
++        exact (Nat.mul_eq_left (by omega)).1 this
++      have hs2 : 2 ≤ G.s := by
++        by_contra hc
++        exact h (Prod.ext (by omega) (by omega))
++      omega
++    · omega
+ 
+ end GenData
+ 
+diff --git a/SemigroupBetti/Fiber.lean b/SemigroupBetti/Fiber.lean
+index 88c5e779f..ddd08be2f 100644
+--- a/SemigroupBetti/Fiber.lean
++++ b/SemigroupBetti/Fiber.lean
+@@ -29,14 +29,11 @@ variable (G : GenData)
+ def fiber (d : ℕ) : Finset (Fin 4 → ℕ) :=
+   (Fintype.piFinset fun _ => range (d / G.m + 1)).filter (fun z => G.nu z = d)
+ 
+-/-- Every factorization of `d` lies in the box `{0,…,d/m}⁴` (Lemma 0A, first paragraph). -/
+-lemma le_div_m_of_nu_eq {z : Fin 4 → ℕ} {d : ℕ} (h : G.nu z = d) (i : Fin 4) :
+-    z i ≤ d / G.m := by
+-  rw [Nat.le_div_iff_mul_le G.m_pos, mul_comm, ← h]; exact G.m_mul_le_nu z i
+-
+ @[simp] lemma mem_fiber {d : ℕ} {z : Fin 4 → ℕ} : z ∈ G.fiber d ↔ G.nu z = d := by
+   simp only [fiber, mem_filter, Fintype.mem_piFinset, mem_range, and_iff_right_iff_imp]
+-  intro h i; exact Nat.lt_succ_of_le (G.le_div_m_of_nu_eq h i)
++  intro h i; apply Nat.lt_succ_of_le
++  rw [Nat.le_div_iff_mul_le G.m_pos, mul_comm, ← h]
++  simpa [mul_comm] using (Nat.mul_le_mul_left (z i) (G.m_le_n i)).trans (G.single_le_nu z i)
+ 
+ lemma fiber_zero : G.fiber 0 = {0} := by
+   ext z; simp [G.nu_eq_zero_iff]
+@@ -99,8 +96,7 @@ lemma ncomp_le_one_of_reachable {d : ℕ} (h : ∀ z y : G.fiber d, (G.nabla d).
+ 
+ lemma exists_not_reachable {d : ℕ} (h : 2 ≤ G.ncomp d) :
+     ∃ z y : G.fiber d, ¬ (G.nabla d).Reachable z y := by
+-  by_contra hne
+-  push Not at hne
++  by_contra! hne
+   have := G.ncomp_le_one_of_reachable hne
+   omega
+ 
+@@ -112,10 +108,8 @@ lemma ncomp_zero : G.ncomp 0 = 1 := by
+   exact ⟨(G.nabla 0).connectedComponentMk default, SimpleGraph.ConnectedComponent.ind
+     fun v => by rw [Subsingleton.elim v default]⟩
+ 
+-lemma pos_of_two_le_ncomp {d : ℕ} (h : 2 ≤ G.ncomp d) : 0 < d := by
+-  rcases Nat.eq_zero_or_pos d with rfl | hd
+-  · rw [ncomp_zero] at h; omega
+-  · exact hd
++lemma pos_of_two_le_ncomp {d : ℕ} (h : 2 ≤ G.ncomp d) : 0 < d :=
++  Nat.pos_of_ne_zero fun hd => by subst d; rw [ncomp_zero] at h; omega
+ 
+ /-! ### Lemma 2: component supports and replacement bridges -/
+ 
+@@ -135,8 +129,7 @@ lemma compSupp_nonempty {d : ℕ} (hd : 0 < d) (C : (G.nabla d).ConnectedCompone
+   | h z =>
+     have hz0 : z.1 ≠ 0 := by
+       intro h0; have := (G.mem_fiber.1 z.2); rw [h0, nu_zero] at this; omega
+-    obtain ⟨i, hi⟩ : ∃ i, z.1 i ≠ 0 := by
+-      by_contra hc; push Not at hc; exact hz0 (funext hc)
++    obtain ⟨i, hi⟩ := Function.ne_iff.1 hz0
+     exact ⟨i, G.mem_compSupp.2 ⟨z, rfl, Nat.pos_of_ne_zero hi⟩⟩
+ 
+ /-- **Lemma 2.3.** If `u ≤ x` and `ν(u) = ν(v)` then `b = x - u + v` has `ν(b) = ν(x)`. -/
+@@ -161,7 +154,7 @@ lemma reachable_of_coord_gt {d : ℕ} (z y : G.fiber d) {i : Fin 4} (hzi : G.n 3
+   have hy := G.mem_fiber.1 y.2
+   -- some coordinate `j` of `y` is positive
+   obtain ⟨j, hj⟩ : ∃ j, 0 < y.1 j := by
+-    by_contra hc; push Not at hc
++    by_contra! hc
+     have : y.1 = 0 := funext fun k => Nat.le_zero.1 (hc k)
+     rw [this, nu_zero] at hy
+     have := G.nu_pos_of_pos (z := z.1) (i := i) (by omega)
+@@ -172,10 +165,7 @@ lemma reachable_of_coord_gt {d : ℕ} (z y : G.fiber d) {i : Fin 4} (hzi : G.n 3
+   have hnj := G.n_le_n_three j
+   -- the bridge `b = z - nⱼ eᵢ + nᵢ eⱼ`
+   have hle : Pi.single i (G.n j) ≤ z.1 := by
+-    intro k
+-    by_cases hk : k = i
+-    · subst hk; simp; omega
+-    · simp [hk]
++    intro k; by_cases hk : k = i <;> simp [hk] <;> omega
+   have heq : G.nu (Pi.single i (G.n j)) = G.nu (Pi.single j (G.n i)) := by
+     rw [G.nu_single, G.nu_single, mul_comm]
+   refine G.reachable_of_bridge (z.1 - Pi.single i (G.n j) + Pi.single j (G.n i))
+@@ -183,20 +173,13 @@ lemma reachable_of_coord_gt {d : ℕ} (z y : G.fiber d) {i : Fin 4} (hzi : G.n 3
+   · simp [hij]; omega
+   · simp [hij.symm, G.n_pos i]
+ 
+-/-- **Lemma 0A.** At a contributing degree every coordinate of every factorization is at
+-most `N = n₃`. -/
+-lemma coord_le_of_contributes {d : ℕ} (h : G.contributes d) (z : G.fiber d) (i : Fin 4) :
+-    z.1 i ≤ G.n 3 := by
+-  by_contra hc
+-  push Not at hc
+-  obtain ⟨y, y', hyy'⟩ := G.exists_not_reachable h
+-  exact hyy' (((G.reachable_of_coord_gt z y hc).symm).trans (G.reachable_of_coord_gt z y' hc))
+-
+ /-- **Lemma 0A.** Every contributing degree satisfies `d ≤ H`. -/
+ lemma le_H_of_contributes {d : ℕ} (h : G.contributes d) : d ≤ G.H := by
+-  obtain ⟨z, -, -⟩ := G.exists_not_reachable h
++  obtain ⟨z, y, hy⟩ := G.exists_not_reachable h
+   rw [← G.mem_fiber.1 z.2, nu, H, Finset.mul_sum]
+-  exact Finset.sum_le_sum fun i _ => Nat.mul_le_mul_right _ (G.coord_le_of_contributes h z i)
++  exact Finset.sum_le_sum fun i _ => Nat.mul_le_mul_right _ (by
++    by_contra! hc
++    exact hy (G.reachable_of_coord_gt z y hc))
+ 
+ end GenData
+ 
+diff --git a/SemigroupBetti/Identities.lean b/SemigroupBetti/Identities.lean
+index e06a28160..447f44f30 100644
+--- a/SemigroupBetti/Identities.lean
++++ b/SemigroupBetti/Identities.lean
+@@ -44,34 +44,25 @@ lemma t_pos : 1 ≤ G.t := by have := G.B_lt_W; unfold t; omega
+ lemma dg_pos : 1 ≤ G.dg := Nat.gcd_pos_of_pos_left _ G.s_pos
+ lemma dg_mul_p : G.dg * G.p = G.t := Nat.mul_div_cancel' (Nat.gcd_dvd_right _ _)
+ lemma dg_mul_q : G.dg * G.q = G.s := Nat.mul_div_cancel' (Nat.gcd_dvd_left _ _)
+-lemma p_pos : 1 ≤ G.p := by
+-  have h := G.dg_mul_p; have := G.t_pos
+-  rcases Nat.eq_zero_or_pos G.p with h0 | h0
+-  · rw [h0, mul_zero] at h; omega
+-  · exact h0
+-lemma q_pos : 1 ≤ G.q := by
+-  have h := G.dg_mul_q; have := G.s_pos
+-  rcases Nat.eq_zero_or_pos G.q with h0 | h0
+-  · rw [h0, mul_zero] at h; omega
+-  · exact h0
+-lemma dg_mul_p_add_q : G.dg * (G.p + G.q) = G.s + G.t := by
+-  rw [mul_add, G.dg_mul_p, G.dg_mul_q, add_comm]
+-lemma p_add_q_eq : G.p + G.q = (G.s + G.t) / G.dg := by
+-  rw [← G.dg_mul_p_add_q, Nat.mul_div_cancel_left _ G.dg_pos]
++lemma p_pos : 1 ≤ G.p := Nat.pos_of_mul_pos_left (G.dg_mul_p.symm ▸ G.t_pos)
++lemma q_pos : 1 ≤ G.q := Nat.pos_of_mul_pos_left (G.dg_mul_q.symm ▸ G.s_pos)
+ lemma p_add_q_le : G.p + G.q ≤ G.s + G.t := by
+-  rw [← G.dg_mul_p_add_q]; exact Nat.le_mul_of_pos_left _ G.dg_pos
++  rw [add_comm G.s G.t]
++  exact Nat.add_le_add (Nat.div_le_self _ _) (Nat.div_le_self _ _)
+ lemma W_eq_B_add_t : G.W = G.B + G.t := by have := G.B_lt_W; unfold t; omega
+ lemma R_eq : G.R = G.W - max G.s G.t := by
+   have := G.A_lt_B; have := G.B_lt_W; unfold R s t; omega
+ lemma two_le_R : 2 ≤ G.R := by
+   have := G.two_le_B; have := G.two_le_W_sub_A; unfold R; omega
++lemma st_eq_one_one_iff : (G.s, G.t) = (1, 1) ↔ G.A = 1 ∧ G.B = G.W - 1 := by
++  have := G.B_lt_W
++  simp only [Prod.mk.injEq, s, t]
++  omega
+ /-- `p A = q t`. -/
+ lemma p_mul_A : G.p * G.A = G.q * G.t := by
+-  have h : G.dg * (G.p * G.A) = G.dg * (G.q * G.t) := by
+-    calc G.dg * (G.p * G.A) = (G.dg * G.p) * G.A := by ring
+-      _ = G.t * (G.dg * G.q) := by rw [G.dg_mul_p, G.dg_mul_q]; rfl
+-      _ = G.dg * (G.q * G.t) := by ring
+-  exact Nat.eq_of_mul_eq_mul_left G.dg_pos h
++  apply Nat.eq_of_mul_eq_mul_left G.dg_pos
++  rw [← mul_assoc, G.dg_mul_p, ← mul_assoc, G.dg_mul_q, Nat.mul_comm]
++  rfl
+ 
+ /-! ### Lemma 8 -/
+ 
+@@ -85,36 +76,26 @@ def V2 : Fin 4 → ℕ := ![0, G.W - G.B, 0, G.B - G.A]
+ def U3 : Fin 4 → ℕ := ![0, G.p, G.q, 0]
+ def V3 : Fin 4 → ℕ := ![G.p, 0, 0, G.q]
+ 
+-lemma nu_vec (x0 x1 x2 x3 : ℕ) :
+-    G.nu ![x0, x1, x2, x3] = x0 * G.m + x1 * (G.m + G.a) + x2 * (G.m + G.b) + x3 * (G.m + G.w) := by
+-  rw [nu_eq_sum]; simp
+-
+-lemma len_vec (x0 x1 x2 x3 : ℕ) : len ![x0, x1, x2, x3] = x0 + x1 + x2 + x3 := by
+-  simp [len, Fin.sum_univ_four]
+-
+ /-- **Lemma 8, first identity.** -/
+-theorem identity1 : G.nu G.U1 = G.nu G.V1 ∧ len G.U1 = len G.V1 ∧ len G.U1 = G.B := by
++theorem identity1 : G.nu G.U1 = G.nu G.V1 := by
+   obtain ⟨k, hk⟩ := Nat.exists_eq_add_of_le G.A_lt_B.le
+   have e1 : G.B - G.A = k := by omega
+-  simp only [U1, V1, nu_vec, len_vec, e1]
+-  refine ⟨?_, by omega, by omega⟩
++  simp [U1, V1, nu_eq_sum, e1]
+   rw [G.a_eq, G.b_eq, hk]; ring
+ 
+ /-- **Lemma 8, second identity.** -/
+-theorem identity2 : G.nu G.U2 = G.nu G.V2 ∧ len G.U2 = len G.V2 ∧ len G.U2 = G.W - G.A := by
++theorem identity2 : G.nu G.U2 = G.nu G.V2 := by
+   obtain ⟨k, hk⟩ := Nat.exists_eq_add_of_le G.A_lt_B.le
+   obtain ⟨l, hl⟩ := Nat.exists_eq_add_of_le G.B_lt_W.le
+   have e1 : G.B - G.A = k := by omega
+   have e2 : G.W - G.B = l := by omega
+   have e3 : G.W - G.A = k + l := by omega
+-  simp only [U2, V2, nu_vec, len_vec, e1, e2, e3]
+-  refine ⟨?_, by omega, by omega⟩
++  simp [U2, V2, nu_eq_sum, e1, e2, e3]
+   rw [G.a_eq, G.b_eq, G.w_eq, hl, hk]; ring
+ 
+ /-- **Lemma 8, third identity.** -/
+-theorem identity3 : G.nu G.U3 = G.nu G.V3 ∧ len G.U3 = len G.V3 ∧ len G.U3 = G.p + G.q := by
+-  simp only [U3, V3, nu_vec, len_vec]
+-  refine ⟨?_, by omega, by omega⟩
++theorem identity3 : G.nu G.U3 = G.nu G.V3 := by
++  simp [U3, V3, nu_eq_sum]
+   have h := G.p_mul_A
+   rw [G.a_eq, G.b_eq, G.w_eq, G.W_eq_B_add_t]
+   linear_combination G.g * h
+@@ -139,9 +120,8 @@ theorem sel_one_bounds {d : ℕ} {K : Finset (Fin 4)} (hS : G.IsSplit d K) (hK :
+     fin_cases k <;> simp_all [U1]
+   have hAB := G.A_lt_B
+   have hA := G.A_pos
+-  rcases h02 with h0 | h2
+-  · exact G.no_replace hS hK hU G.identity1.1 hUk h0 (by simp [V1]; omega)
+-  · exact G.no_replace hS hK hU G.identity1.1 hUk h2 (by simp [V1]; omega)
++  rcases h02 with h0 | h2 <;>
++    exact G.no_replace hS hK hU G.identity1 hUk (by assumption) (by simp [V1]; omega)
+ 
+ /-- **Lemma 9 (coordinate 2).** At a degree splitting along a pair `K ∋ 2`, the selected
+ `K`-vector has `1 ≤ v ≤ W - A - 1` at coordinate `2`. -/
+@@ -161,9 +141,8 @@ theorem sel_two_bounds {d : ℕ} {K : Finset (Fin 4)} (hS : G.IsSplit d K) (hK :
+     fin_cases k <;> simp_all [U2]
+   have hAB := G.A_lt_B
+   have hBW := G.B_lt_W
+-  rcases h13 with h1 | h3
+-  · exact G.no_replace hS hK hU G.identity2.1 hUk h1 (by simp [V2]; omega)
+-  · exact G.no_replace hS hK hU G.identity2.1 hUk h3 (by simp [V2]; omega)
++  rcases h13 with h1 | h3 <;>
++    exact G.no_replace hS hK hU G.identity2 hUk (by assumption) (by simp [V2]; omega)
+ 
+ end GenData
+ 
+diff --git a/SemigroupBetti/Main.lean b/SemigroupBetti/Main.lean
+deleted file mode 100644
+index 38dc21cfb..000000000
+--- a/SemigroupBetti/Main.lean
++++ /dev/null
+@@ -1,38 +0,0 @@
+-/-
+-Copyright (c) 2026 Ben Keene. All rights reserved.
+-Released under Apache 2.0 license as described in the file LICENSE.
+-Authors: Ben Keene
+--/
+-module
+-
+-public import SemigroupBetti.Exceptional
+-
+-/-!
+-# The combinatorial theorem `β₁ ≤ 2W ≤ 2w`
+-
+-Write-up `PROOF_B_lean_writeup.md`: Lemma 13 (non-exceptional cases) and Lemma 16 (exceptional
+-case `(s,t) = (1,1)`, i.e. `(A,B) = (1, W-1)`).
+--/
+-
+-@[expose] public section
+-
+-namespace SemigroupBetti
+-
+-namespace GenData
+-
+-variable (G : GenData)
+-
+-/-- **Main combinatorial theorem.** `β₁ ≤ 2W`. -/
+-theorem beta1_le_two_W : G.beta1 ≤ 2 * G.W := by
+-  by_cases h : (G.s, G.t) = (1, 1)
+-  · obtain ⟨hA, hB⟩ := G.st_eq_one_one_iff.1 h
+-    exact G.beta1_le_two_W_exceptional hA hB
+-  · exact G.beta1_le_two_W_of_ne h
+-
+-/-- `β₁ ≤ 2w`. -/
+-theorem beta1_le_two_w : G.beta1 ≤ 2 * G.w :=
+-  G.beta1_le_two_W.trans (Nat.mul_le_mul_left 2 G.W_le_w)
+-
+-end GenData
+-
+-end SemigroupBetti
+diff --git a/SemigroupBetti/Partition.lean b/SemigroupBetti/Partition.lean
+index f02435352..a7ed83bd1 100644
+--- a/SemigroupBetti/Partition.lean
++++ b/SemigroupBetti/Partition.lean
+@@ -73,10 +73,9 @@ lemma no_bridge {d : ℕ} {K : Finset (Fin 4)} (hS : G.IsSplit d K) {z y b : Fin
+ /-- **Lemma 5 (full support).** A component with support `{i, j}` contains a factorization
+ positive at both `i` and `j`. -/
+ lemma exists_full_vertex {d : ℕ} {C : (G.nabla d).ConnectedComponent} {i j : Fin 4}
+-    (hij : i ≠ j) (hC : G.compSupp C = {i, j}) :
++    (hC : G.compSupp C = {i, j}) :
+     ∃ z : G.fiber d, (G.nabla d).connectedComponentMk z = C ∧ 0 < z.1 i ∧ 0 < z.1 j := by
+-  by_contra H
+-  push Not at H
++  by_contra! H
+   obtain ⟨z0, hz0, hz0i⟩ := G.mem_compSupp.1 (show i ∈ G.compSupp C by rw [hC]; simp)
+   obtain ⟨z1, hz1, hz1j⟩ := G.mem_compSupp.1 (show j ∈ G.compSupp C by rw [hC]; simp)
+   have hreach : (G.nabla d).Reachable z0 z1 :=
+@@ -102,8 +101,8 @@ lemma exists_full_vertex {d : ℕ} {C : (G.nabla d).ConnectedComponent} {i j : F
+ lemma exists_supp_eq {d : ℕ} {C : (G.nabla d).ConnectedComponent} {K : Finset (Fin 4)}
+     (hK : K.card = 2) (hC : G.compSupp C = K) :
+     ∃ z : G.fiber d, (G.nabla d).connectedComponentMk z = C ∧ supp z.1 = K := by
+-  obtain ⟨i, j, hij, rfl⟩ := card_eq_two.1 hK
+-  obtain ⟨z, hz, hzi, hzj⟩ := G.exists_full_vertex hij hC
++  obtain ⟨i, j, -, rfl⟩ := card_eq_two.1 hK
++  obtain ⟨z, hz, hzi, hzj⟩ := G.exists_full_vertex hC
+   refine ⟨z, hz, Finset.Subset.antisymm (hC ▸ hz ▸ G.supp_subset_compSupp z) ?_⟩
+   intro k hk
+   rw [mem_insert, mem_singleton] at hk
+@@ -120,51 +119,42 @@ theorem lemma5 {d : ℕ} (hd : G.contributes d) (hS : ¬ G.HasSingletonComp d) :
+     have h0 := (G.compSupp_nonempty hdpos C).card_pos
+     have h1 : (G.compSupp C).card ≠ 1 := fun h => hS ⟨C, h⟩
+     omega
+-  have hnt : Nontrivial (G.nabla d).ConnectedComponent := by
+-    rw [← Fintype.one_lt_card_iff_nontrivial]; exact hd
+-  obtain ⟨C1, C2, h12⟩ := exists_pair_ne (G.nabla d).ConnectedComponent
+-  have hdisj := G.compSupp_disjoint h12
+-  have hu := card_le_univ (G.compSupp C1 ∪ G.compSupp C2)
++  obtain ⟨C1, C2, h12⟩ := Fintype.one_lt_card_iff.1 hd
++  let S1 := G.compSupp C1
++  let S2 := G.compSupp C2
++  have hdisj : Disjoint S1 S2 := G.compSupp_disjoint h12
++  have hu := card_le_univ (S1 ∪ S2)
+   rw [card_union_of_disjoint hdisj, Fintype.card_fin] at hu
+-  have hc1 := hcard2 C1
+-  have hc2 := hcard2 C2
+-  have huniv : G.compSupp C1 ∪ G.compSupp C2 = univ := by
++  have hc1 : 2 ≤ S1.card := hcard2 C1
++  have hc2 : 2 ≤ S2.card := hcard2 C2
++  have huniv : S1 ∪ S2 = univ := by
+     apply eq_univ_of_card
+     rw [card_union_of_disjoint hdisj, Fintype.card_fin]; omega
+-  have hcompl : G.compSupp C2 = (G.compSupp C1)ᶜ := by
+-    ext k
+-    rw [mem_compl]
+-    constructor
+-    · intro hk hk1; exact Finset.disjoint_left.1 hdisj hk1 hk
+-    · intro hk
+-      have : k ∈ G.compSupp C1 ∪ G.compSupp C2 := huniv ▸ mem_univ k
+-      rcases mem_union.1 this with h | h
+-      · exact absurd h hk
+-      · exact h
++  have hcompl : S2 = S1ᶜ :=
++    eq_compl_iff_isCompl.2 ⟨hdisj.symm, codisjoint_iff.2 (by
++      change S2 ∪ S1 = univ
++      rwa [union_comm])⟩
+   -- every component is `C1` or `C2`
+   have hall : ∀ C, C = C1 ∨ C = C2 := by
+     intro C
+-    by_contra hC
+-    push Not at hC
++    by_contra! hC
+     obtain ⟨k, hk⟩ := G.compSupp_nonempty hdpos C
+-    have : k ∈ G.compSupp C1 ∪ G.compSupp C2 := huniv ▸ mem_univ k
++    have : k ∈ S1 ∪ S2 := huniv ▸ mem_univ k
+     rcases mem_union.1 this with h | h
+     · exact Finset.disjoint_left.1 (G.compSupp_disjoint hC.1) hk h
+     · exact Finset.disjoint_left.1 (G.compSupp_disjoint hC.2) hk h
+   refine ⟨?_, ?_⟩
+   · unfold ncomp
+-    rw [← card_univ, show (univ : Finset (G.nabla d).ConnectedComponent) = {C1, C2} by
+-      ext C; simp only [mem_univ, mem_insert, mem_singleton, true_iff]; exact hall C]
+-    exact card_pair h12
++    rw [← Nat.card_eq_fintype_card, Nat.card_eq_two_iff]
++    exact ⟨C1, C2, h12, Set.eq_univ_of_forall fun C => by simpa using hall C⟩
+   · -- the component whose support contains `0`
+-    have hsplit1 : G.IsSplit d (G.compSupp C1) := ⟨C1, C2, h12, rfl, hcompl⟩
+-    have hsplit2 : G.IsSplit d (G.compSupp C2) := by
+-      rw [hcompl]; exact hsplit1.compl
+-    have hc1' : (G.compSupp C1).card = 2 := by omega
+-    have hc2' : (G.compSupp C2).card = 2 := by omega
++    have hsplit1 : G.IsSplit d S1 := ⟨C1, C2, h12, rfl, hcompl⟩
++    have hsplit2 : G.IsSplit d S2 := by rw [hcompl]; exact hsplit1.compl
++    have hc1' : S1.card = 2 := by omega
++    have hc2' : S2.card = 2 := by omega
+     have key : ∀ K : Finset (Fin 4), K.card = 2 → 0 ∈ K → K = {0, 1} ∨ K = {0, 2} ∨ K = {0, 3} := by
+       decide
+-    have h0 : (0 : Fin 4) ∈ G.compSupp C1 ∪ G.compSupp C2 := huniv ▸ mem_univ 0
++    have h0 : (0 : Fin 4) ∈ S1 ∪ S2 := huniv ▸ mem_univ 0
+     rcases mem_union.1 h0 with h | h
+     · rcases key _ hc1' h with e | e | e <;> rw [e] at hsplit1 <;> simp [hsplit1]
+     · rcases key _ hc2' h with e | e | e <;> rw [e] at hsplit2 <;> simp [hsplit2]
+@@ -205,16 +195,13 @@ noncomputable def sel (d : ℕ) (K : Finset (Fin 4)) : Fin 4 → ℕ := by
+   classical
+   exact if h : ∃ z : Fin 4 → ℕ, G.nu z = d ∧ supp z = K then h.choose else 0
+ 
+-lemma sel_spec {d : ℕ} {K : Finset (Fin 4)} (h : ∃ z : Fin 4 → ℕ, G.nu z = d ∧ supp z = K) :
++/-- The selected vectors at a split degree: `ν = d` and support `K`. -/
++lemma sel_of_split {d : ℕ} {K : Finset (Fin 4)} (hS : G.IsSplit d K) (hK : K.card = 2) :
+     G.nu (G.sel d K) = d ∧ supp (G.sel d K) = K := by
+   classical
++  have h := G.exists_supp_eq_of_split hS hK
+   unfold sel; rw [dite_eq_left_of_eq_true (eq_true h)]; exact h.choose_spec
+ 
+-/-- The selected vectors at a split degree: `ν = d` and support `K`. -/
+-lemma sel_of_split {d : ℕ} {K : Finset (Fin 4)} (hS : G.IsSplit d K) (hK : K.card = 2) :
+-    G.nu (G.sel d K) = d ∧ supp (G.sel d K) = K :=
+-  G.sel_spec (G.exists_supp_eq_of_split hS hK)
+-
+ lemma card_compl_of_card_two {K : Finset (Fin 4)} (hK : K.card = 2) : Kᶜ.card = 2 := by
+   rw [card_compl, Fintype.card_fin, hK]
+ 
+@@ -238,9 +225,8 @@ lemma no_replace {d : ℕ} {K : Finset (Fin 4)} (hS : G.IsSplit d K) (hK : K.car
+   have hkK : k ∈ K := hz.2 ▸ mem_supp.2 (by omega)
+   have hyj : 0 < G.sel d Kᶜ j := by rw [← mem_supp, hy.2]; exact mem_compl.2 hj
+   refine G.no_bridge hS hz.1 hy.1 ((G.nu_replace hUz hUV).trans hz.1) hkK (by omega) hj hyj
+-    ⟨k, ?_, by omega⟩ ⟨j, ?_, hyj⟩
+-  · simp only [Pi.add_apply, Pi.sub_apply]; omega
+-  · simp only [Pi.add_apply, Pi.sub_apply]; omega
++    ⟨k, ?_, by omega⟩ ⟨j, ?_, hyj⟩ <;>
++    simp only [Pi.add_apply, Pi.sub_apply] <;> omega
+ 
+ /-! ### Lemma 6 -/
+ 
+@@ -271,16 +257,7 @@ theorem beta1_eq : G.beta1 = G.sigma + G.P + G.Q + G.E := by
+           absurd (G.isSplit_exclusive h.1 h.2 (i := 0) (by simp) (by simp)) (by decide)
+         have e23 : ¬ (G.IsSplit d {0, 2} ∧ G.IsSplit d {0, 3}) := fun h =>
+           absurd (G.isSplit_exclusive h.1 h.2 (i := 0) (by simp) (by simp)) (by decide)
+-        rcases hsp with h | h | h
+-        · have : ¬ G.IsSplit d {0, 2} := fun h' => e12 ⟨h, h'⟩
+-          have : ¬ G.IsSplit d {0, 3} := fun h' => e13 ⟨h, h'⟩
+-          simp [*]
+-        · have : ¬ G.IsSplit d {0, 1} := fun h' => e12 ⟨h', h⟩
+-          have : ¬ G.IsSplit d {0, 3} := fun h' => e23 ⟨h, h'⟩
+-          simp [*]
+-        · have : ¬ G.IsSplit d {0, 1} := fun h' => e13 ⟨h', h⟩
+-          have : ¬ G.IsSplit d {0, 2} := fun h' => e23 ⟨h', h⟩
+-          simp [*]
++        rcases hsp with h | h | h <;> simp_all
+     · have : G.ncomp d ≤ 1 := by unfold contributes at hc; omega
+       simp [hc]; omega
+   have hsub : ∀ s : Finset ℕ, s ⊆ range (G.H + 1) →
+@@ -316,8 +293,7 @@ theorem sel_antichain {K : Finset (Fin 4)} (hK : K.card = 2) {d d' : ℕ} (hS :
+   set y' := G.sel d' Kᶜ
+   -- `δ = z' - z ≠ 0`
+   have hδ : ∃ i, z i < z' i := by
+-    by_contra h
+-    push Not at h
++    by_contra! h
+     apply hne
+     rw [← hz.1, ← hz'.1]
+     congr 1
+@@ -330,9 +306,8 @@ theorem sel_antichain {K : Finset (Fin 4)} (hK : K.card = 2) {d d' : ℕ} (hS :
+   have hb : G.nu (z' - z + y) = d' := by
+     rw [G.nu_replace hle (hz.1.trans hy.1.symm), hz'.1]
+   refine G.no_bridge hS' hz'.1 hy'.1 hb hiK (by omega) (mem_compl.1 hj) hy'j
+-    ⟨i, ?_, by omega⟩ ⟨j, ?_, hy'j⟩
+-  · simp only [Pi.add_apply, Pi.sub_apply]; omega
+-  · simp only [Pi.add_apply, Pi.sub_apply]; omega
++    ⟨i, ?_, by omega⟩ ⟨j, ?_, hy'j⟩ <;>
++    simp only [Pi.add_apply, Pi.sub_apply] <;> omega
+ 
+ end GenData
+ 
+diff --git a/Solution.lean b/Solution.lean
+index 80b59be7b..08506a16b 100644
+--- a/Solution.lean
++++ b/Solution.lean
+@@ -51,7 +51,7 @@ Each theorem is a thin bridge:
+ * `GenData.ofChallenge` turns the hypotheses into generator data `G` with `G.n = n`;
+ * `GenData.spanRank_le_beta1_of_n_eq` (Lemma 0, `SemigroupBetti/Bridge.lean`) gives
+   `μ(I) ≤ β₁`, where `β₁` is the combinatorial first Betti number;
+-* `GenData.beta1_le_two_W` / `GenData.beta1_le_two_w` (`SemigroupBetti/Main.lean`) bound `β₁`.
++* `GenData.beta1_le_two_W` (`SemigroupBetti/Exceptional.lean`) bounds `β₁`.
+ -/
+ 
+ @[expose] public section
+@@ -80,25 +80,20 @@ theorem beta1_le_two_mul_normalizedWidth (K : Type*) [Field K] (n : Fin 4 → 
+     (hpos : 0 < n 0) (hmono : StrictMono n) (hgcd : Finset.univ.gcd n = 1)
+     (hmin : MinimallyGenerates n) :
+     (toricIdeal K n).spanRank ≤ (2 * normalizedWidth n : ℕ) := by
+-  let G := GenData.ofChallenge n hpos hmono hgcd hmin
+-  have hb : (toricIdeal K n).spanRank ≤ (G.beta1 : Cardinal) :=
+-    G.spanRank_le_beta1_of_n_eq K (GenData.ofChallenge_n n hpos hmono hgcd hmin)
+-  have hW : normalizedWidth n = G.W := rfl
+-  refine hb.trans ?_
+-  rw [hW]
+-  exact_mod_cast G.beta1_le_two_W
++  let G := GenData.ofChallenge n hpos hmono hgcd
++  exact (G.spanRank_le_beta1_of_n_eq K (by
++    have h01 : n 0 < n 1 := hmono (by decide)
++    have h12 : n 1 < n 2 := hmono (by decide)
++    have h23 : n 2 < n 3 := hmono (by decide)
++    funext i; fin_cases i <;> simp [G, GenData.n, gens, GenData.ofChallenge] <;> omega)).trans
++    (by exact_mod_cast G.beta1_le_two_W)
+ 
+ /-- The first Betti number is at most twice the width. -/
+ theorem beta1_le_two_mul_width (K : Type*) [Field K] (n : Fin 4 → ℕ)
+     (hpos : 0 < n 0) (hmono : StrictMono n) (hgcd : Finset.univ.gcd n = 1)
+     (hmin : MinimallyGenerates n) :
+     (toricIdeal K n).spanRank ≤ (2 * (n 3 - n 0) : ℕ) := by
+-  let G := GenData.ofChallenge n hpos hmono hgcd hmin
+-  have hb : (toricIdeal K n).spanRank ≤ (G.beta1 : Cardinal) :=
+-    G.spanRank_le_beta1_of_n_eq K (GenData.ofChallenge_n n hpos hmono hgcd hmin)
+-  have hw : n 3 - n 0 = G.w := rfl
+-  refine hb.trans ?_
+-  rw [hw]
+-  exact_mod_cast G.beta1_le_two_w
++  refine (beta1_le_two_mul_normalizedWidth K n hpos hmono hgcd hmin).trans ?_
++  exact_mod_cast Nat.mul_le_mul_left 2 (Nat.div_le_self (n 3 - n 0) _)
+ 
+ end SemigroupBetti

@@ -51,7 +51,7 @@ Each theorem is a thin bridge:
 * `GenData.ofChallenge` turns the hypotheses into generator data `G` with `G.n = n`;
 * `GenData.spanRank_le_beta1_of_n_eq` (Lemma 0, `SemigroupBetti/Bridge.lean`) gives
   `μ(I) ≤ β₁`, where `β₁` is the combinatorial first Betti number;
-* `GenData.beta1_le_two_W` / `GenData.beta1_le_two_w` (`SemigroupBetti/Main.lean`) bound `β₁`.
+* `GenData.beta1_le_two_W` (`SemigroupBetti/Exceptional.lean`) bounds `β₁`.
 -/
 
 @[expose] public section
@@ -80,25 +80,20 @@ theorem beta1_le_two_mul_normalizedWidth (K : Type*) [Field K] (n : Fin 4 → �
     (hpos : 0 < n 0) (hmono : StrictMono n) (hgcd : Finset.univ.gcd n = 1)
     (hmin : MinimallyGenerates n) :
     (toricIdeal K n).spanRank ≤ (2 * normalizedWidth n : ℕ) := by
-  let G := GenData.ofChallenge n hpos hmono hgcd hmin
-  have hb : (toricIdeal K n).spanRank ≤ (G.beta1 : Cardinal) :=
-    G.spanRank_le_beta1_of_n_eq K (GenData.ofChallenge_n n hpos hmono hgcd hmin)
-  have hW : normalizedWidth n = G.W := rfl
-  refine hb.trans ?_
-  rw [hW]
-  exact_mod_cast G.beta1_le_two_W
+  let G := GenData.ofChallenge n hpos hmono hgcd
+  exact (G.spanRank_le_beta1_of_n_eq K (by
+    have h01 : n 0 < n 1 := hmono (by decide)
+    have h12 : n 1 < n 2 := hmono (by decide)
+    have h23 : n 2 < n 3 := hmono (by decide)
+    funext i; fin_cases i <;> simp [G, GenData.n, gens, GenData.ofChallenge] <;> omega)).trans
+    (by exact_mod_cast G.beta1_le_two_W)
 
 /-- The first Betti number is at most twice the width. -/
 theorem beta1_le_two_mul_width (K : Type*) [Field K] (n : Fin 4 → ℕ)
     (hpos : 0 < n 0) (hmono : StrictMono n) (hgcd : Finset.univ.gcd n = 1)
     (hmin : MinimallyGenerates n) :
     (toricIdeal K n).spanRank ≤ (2 * (n 3 - n 0) : ℕ) := by
-  let G := GenData.ofChallenge n hpos hmono hgcd hmin
-  have hb : (toricIdeal K n).spanRank ≤ (G.beta1 : Cardinal) :=
-    G.spanRank_le_beta1_of_n_eq K (GenData.ofChallenge_n n hpos hmono hgcd hmin)
-  have hw : n 3 - n 0 = G.w := rfl
-  refine hb.trans ?_
-  rw [hw]
-  exact_mod_cast G.beta1_le_two_w
+  refine (beta1_le_two_mul_normalizedWidth K n hpos hmono hgcd hmin).trans ?_
+  exact_mod_cast Nat.mul_le_mul_left 2 (Nat.div_le_self (n 3 - n 0) _)
 
 end SemigroupBetti

@@ -73,10 +73,9 @@ lemma no_bridge {d : ℕ} {K : Finset (Fin 4)} (hS : G.IsSplit d K) {z y b : Fin
 /-- **Lemma 5 (full support).** A component with support `{i, j}` contains a factorization
 positive at both `i` and `j`. -/
 lemma exists_full_vertex {d : ℕ} {C : (G.nabla d).ConnectedComponent} {i j : Fin 4}
-    (hij : i ≠ j) (hC : G.compSupp C = {i, j}) :
+    (hC : G.compSupp C = {i, j}) :
     ∃ z : G.fiber d, (G.nabla d).connectedComponentMk z = C ∧ 0 < z.1 i ∧ 0 < z.1 j := by
-  by_contra H
-  push Not at H
+  by_contra! H
   obtain ⟨z0, hz0, hz0i⟩ := G.mem_compSupp.1 (show i ∈ G.compSupp C by rw [hC]; simp)
   obtain ⟨z1, hz1, hz1j⟩ := G.mem_compSupp.1 (show j ∈ G.compSupp C by rw [hC]; simp)
   have hreach : (G.nabla d).Reachable z0 z1 :=
@@ -102,8 +101,8 @@ lemma exists_full_vertex {d : ℕ} {C : (G.nabla d).ConnectedComponent} {i j : F
 lemma exists_supp_eq {d : ℕ} {C : (G.nabla d).ConnectedComponent} {K : Finset (Fin 4)}
     (hK : K.card = 2) (hC : G.compSupp C = K) :
     ∃ z : G.fiber d, (G.nabla d).connectedComponentMk z = C ∧ supp z.1 = K := by
-  obtain ⟨i, j, hij, rfl⟩ := card_eq_two.1 hK
-  obtain ⟨z, hz, hzi, hzj⟩ := G.exists_full_vertex hij hC
+  obtain ⟨i, j, -, rfl⟩ := card_eq_two.1 hK
+  obtain ⟨z, hz, hzi, hzj⟩ := G.exists_full_vertex hC
   refine ⟨z, hz, Finset.Subset.antisymm (hC ▸ hz ▸ G.supp_subset_compSupp z) ?_⟩
   intro k hk
   rw [mem_insert, mem_singleton] at hk
@@ -120,51 +119,42 @@ theorem lemma5 {d : ℕ} (hd : G.contributes d) (hS : ¬ G.HasSingletonComp d) :
     have h0 := (G.compSupp_nonempty hdpos C).card_pos
     have h1 : (G.compSupp C).card ≠ 1 := fun h => hS ⟨C, h⟩
     omega
-  have hnt : Nontrivial (G.nabla d).ConnectedComponent := by
-    rw [← Fintype.one_lt_card_iff_nontrivial]; exact hd
-  obtain ⟨C1, C2, h12⟩ := exists_pair_ne (G.nabla d).ConnectedComponent
-  have hdisj := G.compSupp_disjoint h12
-  have hu := card_le_univ (G.compSupp C1 ∪ G.compSupp C2)
+  obtain ⟨C1, C2, h12⟩ := Fintype.one_lt_card_iff.1 hd
+  let S1 := G.compSupp C1
+  let S2 := G.compSupp C2
+  have hdisj : Disjoint S1 S2 := G.compSupp_disjoint h12
+  have hu := card_le_univ (S1 ∪ S2)
   rw [card_union_of_disjoint hdisj, Fintype.card_fin] at hu
-  have hc1 := hcard2 C1
-  have hc2 := hcard2 C2
-  have huniv : G.compSupp C1 ∪ G.compSupp C2 = univ := by
+  have hc1 : 2 ≤ S1.card := hcard2 C1
+  have hc2 : 2 ≤ S2.card := hcard2 C2
+  have huniv : S1 ∪ S2 = univ := by
     apply eq_univ_of_card
     rw [card_union_of_disjoint hdisj, Fintype.card_fin]; omega
-  have hcompl : G.compSupp C2 = (G.compSupp C1)ᶜ := by
-    ext k
-    rw [mem_compl]
-    constructor
-    · intro hk hk1; exact Finset.disjoint_left.1 hdisj hk1 hk
-    · intro hk
-      have : k ∈ G.compSupp C1 ∪ G.compSupp C2 := huniv ▸ mem_univ k
-      rcases mem_union.1 this with h | h
-      · exact absurd h hk
-      · exact h
+  have hcompl : S2 = S1ᶜ :=
+    eq_compl_iff_isCompl.2 ⟨hdisj.symm, codisjoint_iff.2 (by
+      change S2 ∪ S1 = univ
+      rwa [union_comm])⟩
   -- every component is `C1` or `C2`
   have hall : ∀ C, C = C1 ∨ C = C2 := by
     intro C
-    by_contra hC
-    push Not at hC
+    by_contra! hC
     obtain ⟨k, hk⟩ := G.compSupp_nonempty hdpos C
-    have : k ∈ G.compSupp C1 ∪ G.compSupp C2 := huniv ▸ mem_univ k
+    have : k ∈ S1 ∪ S2 := huniv ▸ mem_univ k
     rcases mem_union.1 this with h | h
     · exact Finset.disjoint_left.1 (G.compSupp_disjoint hC.1) hk h
     · exact Finset.disjoint_left.1 (G.compSupp_disjoint hC.2) hk h
   refine ⟨?_, ?_⟩
   · unfold ncomp
-    rw [← card_univ, show (univ : Finset (G.nabla d).ConnectedComponent) = {C1, C2} by
-      ext C; simp only [mem_univ, mem_insert, mem_singleton, true_iff]; exact hall C]
-    exact card_pair h12
+    rw [← Nat.card_eq_fintype_card, Nat.card_eq_two_iff]
+    exact ⟨C1, C2, h12, Set.eq_univ_of_forall fun C => by simpa using hall C⟩
   · -- the component whose support contains `0`
-    have hsplit1 : G.IsSplit d (G.compSupp C1) := ⟨C1, C2, h12, rfl, hcompl⟩
-    have hsplit2 : G.IsSplit d (G.compSupp C2) := by
-      rw [hcompl]; exact hsplit1.compl
-    have hc1' : (G.compSupp C1).card = 2 := by omega
-    have hc2' : (G.compSupp C2).card = 2 := by omega
+    have hsplit1 : G.IsSplit d S1 := ⟨C1, C2, h12, rfl, hcompl⟩
+    have hsplit2 : G.IsSplit d S2 := by rw [hcompl]; exact hsplit1.compl
+    have hc1' : S1.card = 2 := by omega
+    have hc2' : S2.card = 2 := by omega
     have key : ∀ K : Finset (Fin 4), K.card = 2 → 0 ∈ K → K = {0, 1} ∨ K = {0, 2} ∨ K = {0, 3} := by
       decide
-    have h0 : (0 : Fin 4) ∈ G.compSupp C1 ∪ G.compSupp C2 := huniv ▸ mem_univ 0
+    have h0 : (0 : Fin 4) ∈ S1 ∪ S2 := huniv ▸ mem_univ 0
     rcases mem_union.1 h0 with h | h
     · rcases key _ hc1' h with e | e | e <;> rw [e] at hsplit1 <;> simp [hsplit1]
     · rcases key _ hc2' h with e | e | e <;> rw [e] at hsplit2 <;> simp [hsplit2]
@@ -205,15 +195,12 @@ noncomputable def sel (d : ℕ) (K : Finset (Fin 4)) : Fin 4 → ℕ := by
   classical
   exact if h : ∃ z : Fin 4 → ℕ, G.nu z = d ∧ supp z = K then h.choose else 0
 
-lemma sel_spec {d : ℕ} {K : Finset (Fin 4)} (h : ∃ z : Fin 4 → ℕ, G.nu z = d ∧ supp z = K) :
-    G.nu (G.sel d K) = d ∧ supp (G.sel d K) = K := by
-  classical
-  unfold sel; rw [dite_eq_left_of_eq_true (eq_true h)]; exact h.choose_spec
-
 /-- The selected vectors at a split degree: `ν = d` and support `K`. -/
 lemma sel_of_split {d : ℕ} {K : Finset (Fin 4)} (hS : G.IsSplit d K) (hK : K.card = 2) :
-    G.nu (G.sel d K) = d ∧ supp (G.sel d K) = K :=
-  G.sel_spec (G.exists_supp_eq_of_split hS hK)
+    G.nu (G.sel d K) = d ∧ supp (G.sel d K) = K := by
+  classical
+  have h := G.exists_supp_eq_of_split hS hK
+  unfold sel; rw [dite_eq_left_of_eq_true (eq_true h)]; exact h.choose_spec
 
 lemma card_compl_of_card_two {K : Finset (Fin 4)} (hK : K.card = 2) : Kᶜ.card = 2 := by
   rw [card_compl, Fintype.card_fin, hK]
@@ -238,9 +225,8 @@ lemma no_replace {d : ℕ} {K : Finset (Fin 4)} (hS : G.IsSplit d K) (hK : K.car
   have hkK : k ∈ K := hz.2 ▸ mem_supp.2 (by omega)
   have hyj : 0 < G.sel d Kᶜ j := by rw [← mem_supp, hy.2]; exact mem_compl.2 hj
   refine G.no_bridge hS hz.1 hy.1 ((G.nu_replace hUz hUV).trans hz.1) hkK (by omega) hj hyj
-    ⟨k, ?_, by omega⟩ ⟨j, ?_, hyj⟩
-  · simp only [Pi.add_apply, Pi.sub_apply]; omega
-  · simp only [Pi.add_apply, Pi.sub_apply]; omega
+    ⟨k, ?_, by omega⟩ ⟨j, ?_, hyj⟩ <;>
+    simp only [Pi.add_apply, Pi.sub_apply] <;> omega
 
 /-! ### Lemma 6 -/
 
@@ -271,16 +257,7 @@ theorem beta1_eq : G.beta1 = G.sigma + G.P + G.Q + G.E := by
           absurd (G.isSplit_exclusive h.1 h.2 (i := 0) (by simp) (by simp)) (by decide)
         have e23 : ¬ (G.IsSplit d {0, 2} ∧ G.IsSplit d {0, 3}) := fun h =>
           absurd (G.isSplit_exclusive h.1 h.2 (i := 0) (by simp) (by simp)) (by decide)
-        rcases hsp with h | h | h
-        · have : ¬ G.IsSplit d {0, 2} := fun h' => e12 ⟨h, h'⟩
-          have : ¬ G.IsSplit d {0, 3} := fun h' => e13 ⟨h, h'⟩
-          simp [*]
-        · have : ¬ G.IsSplit d {0, 1} := fun h' => e12 ⟨h', h⟩
-          have : ¬ G.IsSplit d {0, 3} := fun h' => e23 ⟨h, h'⟩
-          simp [*]
-        · have : ¬ G.IsSplit d {0, 1} := fun h' => e13 ⟨h', h⟩
-          have : ¬ G.IsSplit d {0, 2} := fun h' => e23 ⟨h', h⟩
-          simp [*]
+        rcases hsp with h | h | h <;> simp_all
     · have : G.ncomp d ≤ 1 := by unfold contributes at hc; omega
       simp [hc]; omega
   have hsub : ∀ s : Finset ℕ, s ⊆ range (G.H + 1) →
@@ -316,8 +293,7 @@ theorem sel_antichain {K : Finset (Fin 4)} (hK : K.card = 2) {d d' : ℕ} (hS : 
   set y' := G.sel d' Kᶜ
   -- `δ = z' - z ≠ 0`
   have hδ : ∃ i, z i < z' i := by
-    by_contra h
-    push Not at h
+    by_contra! h
     apply hne
     rw [← hz.1, ← hz'.1]
     congr 1
@@ -330,9 +306,8 @@ theorem sel_antichain {K : Finset (Fin 4)} (hK : K.card = 2) {d d' : ℕ} (hS : 
   have hb : G.nu (z' - z + y) = d' := by
     rw [G.nu_replace hle (hz.1.trans hy.1.symm), hz'.1]
   refine G.no_bridge hS' hz'.1 hy'.1 hb hiK (by omega) (mem_compl.1 hj) hy'j
-    ⟨i, ?_, by omega⟩ ⟨j, ?_, hy'j⟩
-  · simp only [Pi.add_apply, Pi.sub_apply]; omega
-  · simp only [Pi.add_apply, Pi.sub_apply]; omega
+    ⟨i, ?_, by omega⟩ ⟨j, ?_, hy'j⟩ <;>
+    simp only [Pi.add_apply, Pi.sub_apply] <;> omega
 
 end GenData
 

@@ -29,14 +29,11 @@ variable (G : GenData)
 def fiber (d : ℕ) : Finset (Fin 4 → ℕ) :=
   (Fintype.piFinset fun _ => range (d / G.m + 1)).filter (fun z => G.nu z = d)
 
-/-- Every factorization of `d` lies in the box `{0,…,d/m}⁴` (Lemma 0A, first paragraph). -/
-lemma le_div_m_of_nu_eq {z : Fin 4 → ℕ} {d : ℕ} (h : G.nu z = d) (i : Fin 4) :
-    z i ≤ d / G.m := by
-  rw [Nat.le_div_iff_mul_le G.m_pos, mul_comm, ← h]; exact G.m_mul_le_nu z i
-
 @[simp] lemma mem_fiber {d : ℕ} {z : Fin 4 → ℕ} : z ∈ G.fiber d ↔ G.nu z = d := by
   simp only [fiber, mem_filter, Fintype.mem_piFinset, mem_range, and_iff_right_iff_imp]
-  intro h i; exact Nat.lt_succ_of_le (G.le_div_m_of_nu_eq h i)
+  intro h i; apply Nat.lt_succ_of_le
+  rw [Nat.le_div_iff_mul_le G.m_pos, mul_comm, ← h]
+  simpa [mul_comm] using (Nat.mul_le_mul_left (z i) (G.m_le_n i)).trans (G.single_le_nu z i)
 
 lemma fiber_zero : G.fiber 0 = {0} := by
   ext z; simp [G.nu_eq_zero_iff]
@@ -99,8 +96,7 @@ lemma ncomp_le_one_of_reachable {d : ℕ} (h : ∀ z y : G.fiber d, (G.nabla d).
 
 lemma exists_not_reachable {d : ℕ} (h : 2 ≤ G.ncomp d) :
     ∃ z y : G.fiber d, ¬ (G.nabla d).Reachable z y := by
-  by_contra hne
-  push Not at hne
+  by_contra! hne
   have := G.ncomp_le_one_of_reachable hne
   omega
 
@@ -112,10 +108,8 @@ lemma ncomp_zero : G.ncomp 0 = 1 := by
   exact ⟨(G.nabla 0).connectedComponentMk default, SimpleGraph.ConnectedComponent.ind
     fun v => by rw [Subsingleton.elim v default]⟩
 
-lemma pos_of_two_le_ncomp {d : ℕ} (h : 2 ≤ G.ncomp d) : 0 < d := by
-  rcases Nat.eq_zero_or_pos d with rfl | hd
-  · rw [ncomp_zero] at h; omega
-  · exact hd
+lemma pos_of_two_le_ncomp {d : ℕ} (h : 2 ≤ G.ncomp d) : 0 < d :=
+  Nat.pos_of_ne_zero fun hd => by subst d; rw [ncomp_zero] at h; omega
 
 /-! ### Lemma 2: component supports and replacement bridges -/
 
@@ -135,8 +129,7 @@ lemma compSupp_nonempty {d : ℕ} (hd : 0 < d) (C : (G.nabla d).ConnectedCompone
   | h z =>
     have hz0 : z.1 ≠ 0 := by
       intro h0; have := (G.mem_fiber.1 z.2); rw [h0, nu_zero] at this; omega
-    obtain ⟨i, hi⟩ : ∃ i, z.1 i ≠ 0 := by
-      by_contra hc; push Not at hc; exact hz0 (funext hc)
+    obtain ⟨i, hi⟩ := Function.ne_iff.1 hz0
     exact ⟨i, G.mem_compSupp.2 ⟨z, rfl, Nat.pos_of_ne_zero hi⟩⟩
 
 /-- **Lemma 2.3.** If `u ≤ x` and `ν(u) = ν(v)` then `b = x - u + v` has `ν(b) = ν(x)`. -/
@@ -161,7 +154,7 @@ lemma reachable_of_coord_gt {d : ℕ} (z y : G.fiber d) {i : Fin 4} (hzi : G.n 3
   have hy := G.mem_fiber.1 y.2
   -- some coordinate `j` of `y` is positive
   obtain ⟨j, hj⟩ : ∃ j, 0 < y.1 j := by
-    by_contra hc; push Not at hc
+    by_contra! hc
     have : y.1 = 0 := funext fun k => Nat.le_zero.1 (hc k)
     rw [this, nu_zero] at hy
     have := G.nu_pos_of_pos (z := z.1) (i := i) (by omega)
@@ -172,10 +165,7 @@ lemma reachable_of_coord_gt {d : ℕ} (z y : G.fiber d) {i : Fin 4} (hzi : G.n 3
   have hnj := G.n_le_n_three j
   -- the bridge `b = z - nⱼ eᵢ + nᵢ eⱼ`
   have hle : Pi.single i (G.n j) ≤ z.1 := by
-    intro k
-    by_cases hk : k = i
-    · subst hk; simp; omega
-    · simp [hk]
+    intro k; by_cases hk : k = i <;> simp [hk] <;> omega
   have heq : G.nu (Pi.single i (G.n j)) = G.nu (Pi.single j (G.n i)) := by
     rw [G.nu_single, G.nu_single, mul_comm]
   refine G.reachable_of_bridge (z.1 - Pi.single i (G.n j) + Pi.single j (G.n i))
@@ -183,20 +173,13 @@ lemma reachable_of_coord_gt {d : ℕ} (z y : G.fiber d) {i : Fin 4} (hzi : G.n 3
   · simp [hij]; omega
   · simp [hij.symm, G.n_pos i]
 
-/-- **Lemma 0A.** At a contributing degree every coordinate of every factorization is at
-most `N = n₃`. -/
-lemma coord_le_of_contributes {d : ℕ} (h : G.contributes d) (z : G.fiber d) (i : Fin 4) :
-    z.1 i ≤ G.n 3 := by
-  by_contra hc
-  push Not at hc
-  obtain ⟨y, y', hyy'⟩ := G.exists_not_reachable h
-  exact hyy' (((G.reachable_of_coord_gt z y hc).symm).trans (G.reachable_of_coord_gt z y' hc))
-
 /-- **Lemma 0A.** Every contributing degree satisfies `d ≤ H`. -/
 lemma le_H_of_contributes {d : ℕ} (h : G.contributes d) : d ≤ G.H := by
-  obtain ⟨z, -, -⟩ := G.exists_not_reachable h
+  obtain ⟨z, y, hy⟩ := G.exists_not_reachable h
   rw [← G.mem_fiber.1 z.2, nu, H, Finset.mul_sum]
-  exact Finset.sum_le_sum fun i _ => Nat.mul_le_mul_right _ (G.coord_le_of_contributes h z i)
+  exact Finset.sum_le_sum fun i _ => Nat.mul_le_mul_right _ (by
+    by_contra! hc
+    exact hy (G.reachable_of_coord_gt z y hc))
 
 end GenData
 

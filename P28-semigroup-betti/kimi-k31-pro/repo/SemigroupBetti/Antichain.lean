@@ -30,16 +30,12 @@ def IsPairAntichain (T : Finset (ℕ × ℕ)) : Prop :=
   ∀ x ∈ T, ∀ y ∈ T, x.1 ≤ y.1 → x.2 ≤ y.2 → x = y
 
 lemma IsPairAntichain.fst_inj (hT : IsPairAntichain T) {x y : ℕ × ℕ} (hx : x ∈ T) (hy : y ∈ T)
-    (h : x.1 = y.1) : x = y := by
-  rcases le_total x.2 y.2 with h2 | h2
-  · exact hT x hx y hy h.le h2
-  · exact (hT y hy x hx h.ge h2).symm
+    (h : x.1 = y.1) : x = y :=
+  (le_total x.2 y.2).elim (hT x hx y hy h.le) fun h2 => (hT y hy x hx h.ge h2).symm
 
 lemma IsPairAntichain.snd_inj (hT : IsPairAntichain T) {x y : ℕ × ℕ} (hx : x ∈ T) (hy : y ∈ T)
-    (h : x.2 = y.2) : x = y := by
-  rcases le_total x.1 y.1 with h1 | h1
-  · exact hT x hx y hy h1 h.le
-  · exact (hT y hy x hx h1 h.ge).symm
+    (h : x.2 = y.2) : x = y :=
+  (le_total x.1 y.1).elim (fun h1 => hT x hx y hy h1 h.le) fun h1 => (hT y hy x hx h1 h.ge).symm
 
 /-- **Lemma 11 (forward bound).** The number of members whose first coordinate is at most
 `x.1` (the rank of `x` in the sorted enumeration) is at most `x.1`. -/
@@ -84,18 +80,16 @@ theorem IsPairAntichain.exists_rank (hT : IsPairAntichain T)
   have hinj : ∀ x y (hx : x ∈ T) (hy : y ∈ T), rk x = rk y → x = y := by
     intro x y hx hy h
     by_contra hne
-    have hne1 : x.1 ≠ y.1 := fun h1 => hne (hT.fst_inj hx hy h1)
-    rcases Nat.lt_or_gt_of_ne hne1 with hlt | hlt
-    · have : (T.filter (fun z => z.1 ≤ x.1)) ⊂ (T.filter (fun z => z.1 ≤ y.1)) := by
-        refine ⟨fun z hz => ?_, fun hsub => ?_⟩
-        · have := mem_filter.1 hz; exact mem_filter.2 ⟨this.1, by omega⟩
-        · have := (mem_filter.1 (hsub (mem_filter.2 ⟨hy, le_rfl⟩))).2; omega
-      have := card_lt_card this; simp only [rk] at h; omega
-    · have : (T.filter (fun z => z.1 ≤ y.1)) ⊂ (T.filter (fun z => z.1 ≤ x.1)) := by
-        refine ⟨fun z hz => ?_, fun hsub => ?_⟩
-        · have := mem_filter.1 hz; exact mem_filter.2 ⟨this.1, by omega⟩
-        · have := (mem_filter.1 (hsub (mem_filter.2 ⟨hx, le_rfl⟩))).2; omega
-      have := card_lt_card this; simp only [rk] at h; omega
+    have aux : ∀ x y, x ∈ T → y ∈ T → x.1 < y.1 → rk x < rk y := by
+      intro x y hx hy hlt
+      apply card_lt_card
+      refine ⟨fun z hz => ?_, fun hsub => ?_⟩
+      · have := mem_filter.1 hz; exact mem_filter.2 ⟨this.1, by omega⟩
+      · have := (mem_filter.1 (hsub (mem_filter.2 ⟨hy, le_rfl⟩))).2; omega
+    rcases lt_trichotomy x.1 y.1 with hlt | heq | hlt
+    · have := aux x y hx hy hlt; omega
+    · exact hne (hT.fst_inj hx hy heq)
+    · have := aux y x hy hx hlt; omega
   obtain ⟨x, hx, hxr⟩ := surj_on_of_inj_on_of_card_le (fun x _ => rk x) hmaps hinj
     (by simp) r (mem_Icc.2 ⟨hr1, hrk⟩)
   refine ⟨x, hx, ?_, ?_⟩
@@ -125,10 +119,18 @@ namespace GenData
 
 variable (G : GenData)
 
-/-! ### Lemma 10 -/
+/-! ### Selected pairs -/
 
-/-- Two selected vectors on a pair side `K = {i, k}` with equal `k`-coordinates come from the same
-degree (Lemma 7 plus totality of `≤` on the `i`-coordinate). -/
+lemma sel_le_of_coords {K : Finset (Fin 4)} {i k : Fin 4} (hKe : K = {i, k}) (hK : K.card = 2)
+    {d d' : ℕ} (hS : G.IsSplit d K) (hS' : G.IsSplit d' K)
+    (hi : G.sel d K i ≤ G.sel d' K i) (hk : G.sel d K k ≤ G.sel d' K k) :
+    G.sel d K ≤ G.sel d' K := by
+  intro j
+  by_cases hj : j ∈ K
+  · rw [hKe, mem_insert, mem_singleton] at hj
+    rcases hj with rfl | rfl <;> assumption
+  · rw [G.sel_eq_zero hS hK hj, G.sel_eq_zero hS' hK hj]
+
 lemma sel_coord_injOn {K : Finset (Fin 4)} {i k : Fin 4} (hik : i ≠ k) (hKe : K = {i, k})
     (F : Finset ℕ) (hF : ∀ d ∈ F, G.IsSplit d K) :
     Set.InjOn (fun d => G.sel d K k) F := by
@@ -136,18 +138,39 @@ lemma sel_coord_injOn {K : Finset (Fin 4)} {i k : Fin 4} (hik : i ≠ k) (hKe : 
   intro d hd d' hd' h
   simp only at h
   by_contra hne
-  have hle : ∀ {e e' : ℕ}, e ∈ F → e' ∈ F → G.sel e K k = G.sel e' K k →
-      G.sel e K i ≤ G.sel e' K i → G.sel e K ≤ G.sel e' K := by
-    intro e e' he he' hk hi j
-    by_cases hj : j ∈ K
-    · rw [hKe, mem_insert, mem_singleton] at hj
-      rcases hj with rfl | rfl
-      · exact hi
-      · exact hk.le
-    · rw [G.sel_eq_zero (hF e he) hK hj, G.sel_eq_zero (hF e' he') hK hj]
   rcases le_total (G.sel d K i) (G.sel d' K i) with hi | hi
-  · exact G.sel_antichain hK (hF d hd) (hF d' hd') hne (hle hd hd' h hi)
-  · exact G.sel_antichain hK (hF d' hd') (hF d hd) (Ne.symm hne) (hle hd' hd h.symm hi)
+  · exact G.sel_antichain hK (hF d hd) (hF d' hd') hne
+      (G.sel_le_of_coords hKe hK (hF d hd) (hF d' hd') hi h.le)
+  · exact G.sel_antichain hK (hF d' hd') (hF d hd) (Ne.symm hne)
+      (G.sel_le_of_coords hKe hK (hF d' hd') (hF d hd) hi h.ge)
+
+noncomputable def pairsOf (F : Finset ℕ) (K : Finset (Fin 4)) (i k : Fin 4) : Finset (ℕ × ℕ) :=
+  F.image (fun d => (G.sel d K i, G.sel d K k))
+
+lemma card_pairsOf {F : Finset ℕ} {K : Finset (Fin 4)} {i k : Fin 4} (hik : i ≠ k)
+    (hKe : K = {i, k}) (hF : ∀ d ∈ F, G.IsSplit d K) : (G.pairsOf F K i k).card = F.card :=
+  card_image_of_injOn
+    (fun _ hd _ hd' h => G.sel_coord_injOn hik hKe F hF hd hd' (congrArg Prod.snd h))
+
+lemma pairsOf_antichain {F : Finset ℕ} {K : Finset (Fin 4)} {i k : Fin 4} (hik : i ≠ k)
+    (hKe : K = {i, k}) (hF : ∀ d ∈ F, G.IsSplit d K) : IsPairAntichain (G.pairsOf F K i k) := by
+  have hK : K.card = 2 := by rw [hKe]; exact card_pair hik
+  intro x hx y hy h1 h2
+  obtain ⟨d, hd, rfl⟩ := mem_image.1 hx
+  obtain ⟨d', hd', rfl⟩ := mem_image.1 hy
+  by_cases hne : d = d'
+  · rw [hne]
+  · exact absurd (G.sel_le_of_coords hKe hK (hF d hd) (hF d' hd') h1 h2)
+      (G.sel_antichain hK (hF d hd) (hF d' hd') hne)
+
+lemma pairsOf_pos {F : Finset ℕ} {K : Finset (Fin 4)} {i k : Fin 4} (hik : i ≠ k)
+    (hKe : K = {i, k}) (hF : ∀ d ∈ F, G.IsSplit d K) :
+    ∀ x ∈ G.pairsOf F K i k, 1 ≤ x.1 ∧ 1 ≤ x.2 := by
+  have hK : K.card = 2 := by rw [hKe]; exact card_pair hik
+  intro x hx
+  obtain ⟨d, hd, rfl⟩ := mem_image.1 hx
+  exact ⟨G.sel_pos (hF d hd) hK (by rw [hKe]; simp),
+    G.sel_pos (hF d hd) hK (by rw [hKe]; simp)⟩
 
 /-- A family whose selected `k`-coordinates are injective with values in `[1, c]` has at most
 `c` members. -/
@@ -162,32 +185,36 @@ lemma card_le_of_coord {K : Finset (Fin 4)} {i k : Fin 4} (hik : i ≠ k) (hKe :
 lemma isSplit_of_mem_fam {K : Finset (Fin 4)} {d : ℕ} (h : d ∈ G.fam K) : G.IsSplit d K :=
   (G.mem_fam.1 h).2.2.2
 
+lemma sideP_split {d : ℕ} (hd : d ∈ G.famP) : G.IsSplit d {2, 3} := by
+  have hc : ({0, 1} : Finset (Fin 4))ᶜ = {2, 3} := by decide
+  exact hc ▸ (G.isSplit_of_mem_fam hd).compl
+
+lemma sideQ_split {d : ℕ} (hd : d ∈ G.famQ) : G.IsSplit d {1, 3} := by
+  have hc : ({0, 2} : Finset (Fin 4))ᶜ = {1, 3} := by decide
+  exact hc ▸ (G.isSplit_of_mem_fam hd).compl
+
 /-- **Lemma 10.** `P ≤ R - 1`. -/
 theorem P_le : G.P ≤ G.R - 1 := by
-  have hc : ({0, 1} : Finset (Fin 4))ᶜ = {2, 3} := by decide
   have h1 : G.P ≤ G.B - 1 :=
     G.card_le_of_coord (i := 0) (k := 1) (by decide) rfl G.famP
       (fun d hd => G.isSplit_of_mem_fam hd)
       (fun d hd => G.sel_one_bounds (G.isSplit_of_mem_fam hd) (by decide) (by decide))
   have h2 : G.P ≤ G.W - G.A - 1 :=
     G.card_le_of_coord (K := {2, 3}) (i := 3) (k := 2) (by decide) (by decide) G.famP
-      (fun d hd => hc ▸ (G.isSplit_of_mem_fam hd).compl)
-      (fun d hd => G.sel_two_bounds (hc ▸ (G.isSplit_of_mem_fam hd).compl) (by decide)
-        (by decide))
+      (fun d hd => G.sideP_split hd)
+      (fun d hd => G.sel_two_bounds (G.sideP_split hd) (by decide) (by decide))
   unfold R; omega
 
 /-- **Lemma 10.** `Q ≤ R - 1`. -/
 theorem Q_le : G.Q ≤ G.R - 1 := by
-  have hc : ({0, 2} : Finset (Fin 4))ᶜ = {1, 3} := by decide
   have h1 : G.Q ≤ G.W - G.A - 1 :=
     G.card_le_of_coord (i := 0) (k := 2) (by decide) rfl G.famQ
       (fun d hd => G.isSplit_of_mem_fam hd)
       (fun d hd => G.sel_two_bounds (G.isSplit_of_mem_fam hd) (by decide) (by decide))
   have h2 : G.Q ≤ G.B - 1 :=
     G.card_le_of_coord (K := {1, 3}) (i := 3) (k := 1) (by decide) (by decide) G.famQ
-      (fun d hd => hc ▸ (G.isSplit_of_mem_fam hd).compl)
-      (fun d hd => G.sel_one_bounds (hc ▸ (G.isSplit_of_mem_fam hd).compl) (by decide)
-        (by decide))
+      (fun d hd => G.sideQ_split hd)
+      (fun d hd => G.sel_one_bounds (G.sideQ_split hd) (by decide) (by decide))
   unfold R; omega
 
 /-! ### Lemma 12 -/
@@ -196,71 +223,16 @@ lemma isSplit12_of_mem_famE {d : ℕ} (h : d ∈ G.famE) : G.IsSplit d {1, 2} :=
   have hc : ({0, 3} : Finset (Fin 4))ᶜ = {1, 2} := by decide
   exact hc ▸ (G.isSplit_of_mem_fam h).compl
 
-/-- **Lemma 12, exclusion step.** At a degree of `ℰ`, the selected interior vector `(0,u,v,0)`
-does not satisfy `u ≥ p`, `v ≥ q`, `(u,v) ≠ (p,q)`. -/
-theorem not_dominates_pq {d : ℕ} (hd : d ∈ G.famE) (hu : G.p ≤ G.sel d {1, 2} 1)
-    (hv : G.q ≤ G.sel d {1, 2} 2) (hne : (G.sel d {1, 2} 1, G.sel d {1, 2} 2) ≠ (G.p, G.q)) :
-    False := by
-  have hS := G.isSplit12_of_mem_famE hd
-  have hK : ({1, 2} : Finset (Fin 4)).card = 2 := by decide
-  have hU : G.U3 ≤ G.sel d {1, 2} := by
-    intro i; fin_cases i <;> simp [U3, hu, hv]
-  have hp := G.p_pos
-  by_cases h1 : G.p < G.sel d {1, 2} 1
-  · exact G.no_replace hS hK hU G.identity3.1 (k := 1) (by simpa [U3] using h1)
-      (j := 0) (by decide) (by simp [V3]; omega)
-  · have h2 : G.q < G.sel d {1, 2} 2 := by
-      by_contra h2
-      exact hne (Prod.ext (by simp only; omega) (by simp only; omega))
-    exact G.no_replace hS hK hU G.identity3.1 (k := 2) (by simpa [U3] using h2)
-      (j := 0) (by decide) (by simp [V3]; omega)
+noncomputable abbrev pairsE : Finset (ℕ × ℕ) := G.pairsOf G.famE {1, 2} 1 2
 
-/-- The selected interior pairs `(u, v)` over `ℰ`. -/
-noncomputable def pairsE : Finset (ℕ × ℕ) :=
-  G.famE.image (fun d => (G.sel d {1, 2} 1, G.sel d {1, 2} 2))
+lemma card_pairsE : G.pairsE.card = G.E :=
+  G.card_pairsOf (by decide) rfl fun _ => G.isSplit12_of_mem_famE
 
-lemma sel12_le_iff {d d' : ℕ} (hd : d ∈ G.famE) (hd' : d' ∈ G.famE) :
-    G.sel d {1, 2} ≤ G.sel d' {1, 2} ↔
-      G.sel d {1, 2} 1 ≤ G.sel d' {1, 2} 1 ∧ G.sel d {1, 2} 2 ≤ G.sel d' {1, 2} 2 := by
-  have hK : ({1, 2} : Finset (Fin 4)).card = 2 := by decide
-  have hS := G.isSplit12_of_mem_famE hd
-  have hS' := G.isSplit12_of_mem_famE hd'
-  constructor
-  · intro h; exact ⟨h 1, h 2⟩
-  · rintro ⟨h1, h2⟩ i
-    fin_cases i
-    · simp [G.sel_eq_zero hS hK (i := 0) (by decide)]
-    · exact h1
-    · exact h2
-    · simp [G.sel_eq_zero hS hK (i := 3) (by decide)]
+lemma pairsE_antichain : IsPairAntichain G.pairsE :=
+  G.pairsOf_antichain (by decide) rfl fun _ => G.isSplit12_of_mem_famE
 
-lemma pairsE_injOn : Set.InjOn (fun d => (G.sel d {1, 2} 1, G.sel d {1, 2} 2)) G.famE := by
-  intro d hd d' hd' h
-  simp only [Prod.mk.injEq] at h
-  have hK : ({1, 2} : Finset (Fin 4)).card = 2 := by decide
-  have hle := (G.sel12_le_iff hd hd').2 ⟨h.1.le, h.2.le⟩
-  have hge := (G.sel12_le_iff hd' hd).2 ⟨h.1.ge, h.2.ge⟩
-  rw [← (G.sel_of_split (G.isSplit12_of_mem_famE hd) hK).1,
-    ← (G.sel_of_split (G.isSplit12_of_mem_famE hd') hK).1, le_antisymm hle hge]
-
-lemma card_pairsE : G.pairsE.card = G.E := card_image_of_injOn G.pairsE_injOn
-
-lemma pairsE_antichain : IsPairAntichain G.pairsE := by
-  intro x hx y hy h1 h2
-  obtain ⟨d, hd, rfl⟩ := mem_image.1 hx
-  obtain ⟨d', hd', rfl⟩ := mem_image.1 hy
-  have hK : ({1, 2} : Finset (Fin 4)).card = 2 := by decide
-  by_cases hne : d = d'
-  · rw [hne]
-  · exact absurd ((G.sel12_le_iff hd hd').2 ⟨h1, h2⟩)
-      (G.sel_antichain hK (G.isSplit12_of_mem_famE hd) (G.isSplit12_of_mem_famE hd') hne)
-
-lemma pairsE_pos : ∀ x ∈ G.pairsE, 1 ≤ x.1 ∧ 1 ≤ x.2 := by
-  intro x hx
-  obtain ⟨d, hd, rfl⟩ := mem_image.1 hx
-  have hK : ({1, 2} : Finset (Fin 4)).card = 2 := by decide
-  exact ⟨G.sel_pos (G.isSplit12_of_mem_famE hd) hK (by decide),
-    G.sel_pos (G.isSplit12_of_mem_famE hd) hK (by decide)⟩
+lemma pairsE_pos : ∀ x ∈ G.pairsE, 1 ≤ x.1 ∧ 1 ≤ x.2 :=
+  G.pairsOf_pos (by decide) rfl fun _ => G.isSplit12_of_mem_famE
 
 /-- **Lemma 12.** `E ≤ p + q - 1`. -/
 theorem E_le : G.E ≤ G.p + G.q - 1 := by
@@ -271,8 +243,22 @@ theorem E_le : G.E ≤ G.p + G.q - 1 := by
   obtain ⟨x, hx, hx1, hx2⟩ :=
     G.pairsE_antichain.exists_rank G.pairsE_pos (r := G.p) hp (by omega)
   obtain ⟨d, hd, rfl⟩ := mem_image.1 hx
-  exact G.not_dominates_pq hd hx1 (by simp only at hx2; omega)
-    (fun h => by simp only [Prod.mk.injEq] at h; simp only at hx2; omega)
+  set z := G.sel d {1, 2}
+  have hv : G.q ≤ z 2 := by simp only at hx2; omega
+  have hne : (z 1, z 2) ≠ (G.p, G.q) :=
+    fun h => by simp only [Prod.mk.injEq] at h; simp only at hx2; omega
+  have hS := G.isSplit12_of_mem_famE hd
+  have hK : ({1, 2} : Finset (Fin 4)).card = 2 := by decide
+  have hU : G.U3 ≤ z := by
+    intro i; fin_cases i <;> simp [U3, hx1, hv]
+  by_cases h1 : G.p < z 1
+  · exact G.no_replace hS hK hU G.identity3 (k := 1) (by simpa [U3] using h1)
+      (j := 0) (by decide) (by simp [V3]; omega)
+  · have h2 : G.q < z 2 := by
+      by_contra h2
+      exact hne (Prod.ext (by omega) (by omega))
+    exact G.no_replace hS hK hU G.identity3 (k := 2) (by simpa [U3] using h2)
+      (j := 0) (by decide) (by simp [V3]; omega)
 
 end GenData
 
