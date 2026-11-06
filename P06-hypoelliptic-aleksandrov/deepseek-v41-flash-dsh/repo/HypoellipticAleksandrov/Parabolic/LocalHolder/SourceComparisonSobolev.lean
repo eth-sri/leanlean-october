@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.H10OrderIdeal
 import PDEFoundation.Measure.LpDominatedConvergence
 import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.UniquenessMeasure
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Zero-boundary Sobolev certificates for continuous barriers
 
@@ -18,7 +19,7 @@ open scoped ENNReal Topology
 
 /-- A continuous nonnegative H1 representative vanishing on the frontier belongs to H10. -/
 theorem memH10_of_continuous_nonnegative_zero_frontier {d : ℕ}
-    {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (hcl : IsCompact (closure Ω))
+    {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (hcl : IsCompact (closure Ω))
     (f : PDE.H1Function Ω) (hc : Continuous f.toFun)
     (hn : ∀ x ∈ Ω, 0 ≤ f.toFun x)
     (hz : ∀ x ∈ frontier Ω, f.toFun x = 0) : PDE.MemH10 Ω f.toFun := by
@@ -34,7 +35,7 @@ theorem memH10_of_continuous_nonnegative_zero_frontier {d : ℕ}
     PDE.H1Function.exists_h1PositivePartSubConst_of_isOpen hΩ f (δ n) (hδ n).le
   have hmem : ∀ n, PDE.MemH10 Ω (F n).toFun := by
     intro n
-    let K : Set (PDE.Vec d) := closure Ω ∩ {x | δ n ≤ f.toFun x}
+    let K : HypoellipticAleksandrov.VecSet d := closure Ω ∩ {x | δ n ≤ f.toFun x}
     have hK : IsCompact K := hcl.inter_right (isClosed_le continuous_const hc)
     have hKΩ : K ⊆ Ω := by
       intro x hx
@@ -112,7 +113,7 @@ theorem memH10_of_continuous_nonnegative_zero_frontier {d : ℕ}
     exact PDE.eLpNorm_sub_swap _ _
 
 /-- A smooth nonnegative zero-frontier barrier has a smooth compact H10 realization. -/
-theorem exists_h10_smooth_barrier_eqOn {d : ℕ} {Ω : Set (PDE.Vec d)}
+theorem exists_h10_smooth_barrier_eqOn {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (hcl : IsCompact (closure Ω)) (f : PDE.Vec d → ℝ)
     (hf : ContDiff ℝ (⊤ : ℕ∞) f)
     (hn : ∀ x ∈ Ω, 0 ≤ f x) (hz : ∀ x ∈ frontier Ω, f x = 0) :

@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.EvolutionProblem
 import Mathlib.Analysis.Calculus.FDeriv.Add
 import Mathlib.Topology.Algebra.Support
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Translation of the transported coordinate: solutions (translation covariance ingredient)
@@ -59,7 +60,7 @@ def terminalDatumShift (h : PDE.Vec n) (F : BoundedBorel (EvolutionAmbientState 
   rfl
 
 /-- The transported-coordinate shift preserves smooth compactly supported terminal data. -/
-theorem IsSmoothCompactTerminalDatum.shift {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n} {τ : ℝ}
+theorem IsSmoothCompactTerminalDatum.shift {Ω : HypoellipticAleksandrov.VecSet n} {γ : ℝ → PDE.Vec n} {τ : ℝ}
     {F : BoundedBorel (EvolutionAmbientState n)} (h : PDE.Vec n)
     (hF : IsSmoothCompactTerminalDatum Ω γ τ F) :
     IsSmoothCompactTerminalDatum Ω γ τ (terminalDatumShift h F) := by
@@ -100,7 +101,7 @@ theorem transportedForwardOperator_comp_velocityShift {B : FullKineticCoefficien
 
 /-- A shifted classical terminal solution is a classical terminal solution for the shifted datum,
 provided the coefficient does not depend on the transported coordinate. -/
-theorem IsClassicalTerminalSolution.velocityShift {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
+theorem IsClassicalTerminalSolution.velocityShift {Ω : HypoellipticAleksandrov.VecSet n} {γ : ℝ → PDE.Vec n}
     {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n} {τ : ℝ}
     {F : BoundedBorel (EvolutionAmbientState n)} {u : KineticPoint n → ℝ}
     (hBz : ∀ (σ : ℝ) (y z z' : PDE.Vec n), B σ y z = B σ y z') (h : PDE.Vec n)

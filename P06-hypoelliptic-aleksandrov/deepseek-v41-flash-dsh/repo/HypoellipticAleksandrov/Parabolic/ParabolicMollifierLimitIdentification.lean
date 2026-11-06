@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.ParabolicMollifierConvergence
 public import Mathlib.MeasureTheory.Function.ConvergenceInMeasure
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Almost-everywhere identification of a parabolic mollifier limit
@@ -25,7 +26,7 @@ namespace ParabolicW12Function
 /-- A supplied pointwise limit of the parabolic mollifications agrees almost
 everywhere on a measurable carrier with the stored value representative. -/
 theorem ae_eq_limit_toFun_on_of_pointwiseLimit
-    {d : Nat} {K : Set (TimeVelocity d)}
+    {d : Nat} {K : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hKmeas : MeasurableSet K)
     (g : ParabolicW12Function d Set.univ (parabolicExponent d))
     {q : TimeVelocity d -> Real}
@@ -43,12 +44,12 @@ theorem ae_eq_limit_toFun_on_of_pointwiseLimit
       parabolicExponent d ≠ ∞)
   have hpNeZero : p ≠ 0 :=
     (zero_lt_one.trans_le hpOne).ne.symm
-  have hgMem : MemLp g.toFun p (volume : Measure (TimeVelocity d)) := by
+  have hgMem : MemLp g.toFun p (HypoellipticAleksandrov.Parabolic.TVVolume d) := by
     have h := g.memLp
     change MemLp g.toFun p
-      ((volume : Measure (TimeVelocity d)).restrict Set.univ) at h
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).restrict Set.univ) at h
     simpa only [Measure.restrict_univ] using h
-  have hInMeasure : TendstoInMeasure (volume : Measure (TimeVelocity d))
+  have hInMeasure : TendstoInMeasure (HypoellipticAleksandrov.Parabolic.TVVolume d)
       (fun n z => parabolicConvolution g.toFun (parabolicMollifier d n) z)
       atTop g.toFun :=
     tendstoInMeasure_of_tendsto_eLpNorm hpNeZero

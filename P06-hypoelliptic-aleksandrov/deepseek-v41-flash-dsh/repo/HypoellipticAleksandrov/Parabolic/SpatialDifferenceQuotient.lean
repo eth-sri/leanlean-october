@@ -5,6 +5,7 @@ public import PDEFoundation.Ambient.Basis
 public import Mathlib.Analysis.Calculus.ContDiff.Operations
 public import Mathlib.Topology.Algebra.Group.Basic
 public import Mathlib.Topology.Algebra.Support
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Raw spatial difference quotients
@@ -17,19 +18,21 @@ domain, equation, or nonzero-increment assumption.
 @[expose] public section
 
 namespace HypoellipticAleksandrov.Parabolic
+section
+variable {d : ℕ}
 
 /-- Translation by `h` in the `k`th native velocity coordinate, fixing time. -/
-def spatialShift {d : ℕ} (k : Fin d) (h : ℝ) :
+def spatialShift  (k : Fin d) (h : ℝ) :
     TimeVelocity d → TimeVelocity d :=
   fun z => z + (0, h • PDE.basisVec k)
 
 /-- Precomposition by the forward spatial translation. -/
-def spatialTranslate {d : ℕ} {α : Type*} (k : Fin d) (h : ℝ)
+def spatialTranslate  {α : Type*} (k : Fin d) (h : ℝ)
     (f : TimeVelocity d → α) : TimeVelocity d → α :=
   fun z => f (spatialShift k h z)
 
 /-- The forward spatial difference quotient, totalized at zero increment. -/
-noncomputable def spatialDifferenceQuotient {d : ℕ} (k : Fin d) (h : ℝ)
+noncomputable def spatialDifferenceQuotient  (k : Fin d) (h : ℝ)
     (f : TimeVelocity d → ℝ) : TimeVelocity d → ℝ :=
   fun z => (spatialTranslate k h f z - f z) / h
 
@@ -62,7 +65,7 @@ noncomputable def spatialDifferenceQuotient {d : ℕ} (k : Fin d) (h : ℝ)
   simp [spatialShift]
 
 /-- Successive shifts in one coordinate add their increments. -/
-theorem spatialShift_comp {d : ℕ} (k : Fin d) (h₁ h₂ : ℝ) :
+theorem spatialShift_comp  (k : Fin d) (h₁ h₂ : ℝ) :
     spatialShift k h₂ ∘ spatialShift k h₁ =
       spatialShift k (h₁ + h₂) := by
   funext z
@@ -78,14 +81,14 @@ theorem spatialShift_comp {d : ℕ} (k : Fin d) (h₁ h₂ : ℝ) :
 
 /-- Spatial translation preserves pointwise negation. -/
 theorem spatialTranslate_neg
-    {d : ℕ} {α : Type*} [Neg α] (k : Fin d) (h : ℝ)
+     {α : Type*} [Neg α] (k : Fin d) (h : ℝ)
     (f : TimeVelocity d → α) :
     spatialTranslate k h (-f) = -spatialTranslate k h f :=
   rfl
 
 /-- Spatial difference quotients preserve negation. -/
 theorem spatialDifferenceQuotient_neg
-    {d : ℕ} (k : Fin d) (h : ℝ) (f : TimeVelocity d → ℝ) :
+     (k : Fin d) (h : ℝ) (f : TimeVelocity d → ℝ) :
     spatialDifferenceQuotient k h (-f) =
       -spatialDifferenceQuotient k h f := by
   funext z
@@ -94,7 +97,7 @@ theorem spatialDifferenceQuotient_neg
 
 /-- Global continuous differentiability is preserved by spatial translation. -/
 theorem ContDiff.spatialTranslate
-    {d : ℕ} {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     {n : ℕ∞} {k : Fin d} {h : ℝ} {f : TimeVelocity d → E}
     (hf : ContDiff ℝ n f) :
     ContDiff ℝ n (spatialTranslate k h f) := by
@@ -103,7 +106,7 @@ theorem ContDiff.spatialTranslate
 
 /-- Global continuous differentiability is preserved by spatial difference quotients. -/
 theorem ContDiff.spatialDifferenceQuotient
-    {d : ℕ} {n : ℕ∞} {k : Fin d} {h : ℝ}
+     {n : ℕ∞} {k : Fin d} {h : ℝ}
     {f : TimeVelocity d → ℝ} (hf : ContDiff ℝ n f) :
     ContDiff ℝ n (spatialDifferenceQuotient k h f) := by
   change ContDiff ℝ n
@@ -112,7 +115,7 @@ theorem ContDiff.spatialDifferenceQuotient
 
 /-- Spatial translation pulls topological support back exactly by the shift. -/
 theorem tsupport_spatialTranslate
-    {d : ℕ} {α : Type*} [Zero α] (k : Fin d) (h : ℝ)
+     {α : Type*} [Zero α] (k : Fin d) (h : ℝ)
     (f : TimeVelocity d → α) :
     tsupport (spatialTranslate k h f) =
       (spatialShift k h) ⁻¹' tsupport f := by
@@ -124,11 +127,12 @@ theorem tsupport_spatialTranslate
 
 /-- Translated-support membership is support membership after shifting. -/
 theorem mem_tsupport_spatialTranslate_iff
-    {d : ℕ} {α : Type*} [Zero α] (k : Fin d) (h : ℝ)
+     {α : Type*} [Zero α] (k : Fin d) (h : ℝ)
     (f : TimeVelocity d → α) (z : TimeVelocity d) :
     z ∈ tsupport (spatialTranslate k h f) ↔
       spatialShift k h z ∈ tsupport f := by
   rw [tsupport_spatialTranslate]
   rfl
+end
 
 end HypoellipticAleksandrov.Parabolic

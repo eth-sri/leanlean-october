@@ -5,6 +5,7 @@ public import Mathlib.Analysis.Calculus.Deriv.Shift
 public import Mathlib.Analysis.Calculus.FDeriv.Equiv
 public import Mathlib.MeasureTheory.Group.Arithmetic
 public import Mathlib.MeasureTheory.Measure.Haar.Unique
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Reflection of kinetic cylinders, coefficients and slice jets -/
 
@@ -120,29 +121,28 @@ theorem measurePreserving_kineticReflection (d : ℕ) :
   let e := (KineticPoint.homeomorphProd d).toMeasurableEquiv
   have he : MeasurePreserving e volume volume := KineticPoint.measurePreserving_equivProd d
   have hp := (Measure.measurePreserving_neg (volume : Measure ℝ)).prod
-    ((Measure.measurePreserving_neg (volume : Measure (PDE.Vec d))).prod
-      (MeasurePreserving.id (volume : Measure (PDE.Vec d))))
+    ((Measure.measurePreserving_neg (HypoellipticAleksandrov.VecVolume d)).prod
+      (MeasurePreserving.id (HypoellipticAleksandrov.VecVolume d)))
   exact (he.symm e).comp (hp.comp he)
 
 private theorem coefficientTimeReflection_preserving (d : ℕ) :
     MeasurePreserving (fun z : TimeVelocity d => (-z.1,z.2)) volume volume :=
   (Measure.measurePreserving_neg (volume : Measure ℝ)).prod
-    (MeasurePreserving.id (volume : Measure (PDE.Vec d)))
+    (MeasurePreserving.id (HypoellipticAleksandrov.VecVolume d))
+section
+variable {d : ℕ} (A : CoefficientField d)
 
 /-- Source coefficient reflection preserves the Borel coefficient class. -/
-theorem isBorelCoefficient_kineticReflectedCoefficient {d : ℕ}
-    (A : CoefficientField d) (hA : IsBorelCoefficient A) :
+theorem isBorelCoefficient_kineticReflectedCoefficient  (hA : IsBorelCoefficient A) :
     IsBorelCoefficient (kineticReflectedCoefficient A) :=
   hA.comp ((continuous_fst.neg.prodMk continuous_snd).measurable)
 
 /-- Source coefficient reflection preserves pointwise symmetry. -/
-theorem isSymmetricCoefficient_kineticReflectedCoefficient {d : ℕ}
-    (A : CoefficientField d) (hA : IsSymmetricCoefficient A) :
+theorem isSymmetricCoefficient_kineticReflectedCoefficient  (hA : IsSymmetricCoefficient A) :
     IsSymmetricCoefficient (kineticReflectedCoefficient A) := fun s v => hA (-s) v
 
 /-- Source coefficient reflection preserves almost-everywhere ellipticity bounds. -/
-theorem ellipticityAE_kineticReflectedCoefficient {d : ℕ}
-    (A : CoefficientField d) (lam Lam : ℝ)
+theorem ellipticityAE_kineticReflectedCoefficient  (lam Lam : ℝ)
     (hlo : HasLowerEllipticityAE lam A) (hhi : HasUpperEllipticityAE Lam A) :
     HasLowerEllipticityAE lam (kineticReflectedCoefficient A) ∧
       HasUpperEllipticityAE Lam (kineticReflectedCoefficient A) := by
@@ -150,9 +150,10 @@ theorem ellipticityAE_kineticReflectedCoefficient {d : ℕ}
     (coefficientTimeReflection_preserving d).quasiMeasurePreserving.ae hhi⟩
 
 /-- Source time reflection preserves the existing C-infinity coefficient class. -/
-theorem isSmoothCoefficient_kineticReflectedCoefficient {d : ℕ} (A : CoefficientField d)
+theorem isSmoothCoefficient_kineticReflectedCoefficient 
     (hA : IsSmoothCoefficient A) :
     IsSmoothCoefficient (kineticReflectedCoefficient A) :=
   hA.comp (contDiff_fst.neg.prodMk contDiff_snd)
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.DuhamelWeak
 public import HypoellipticAleksandrov.KineticAleksandrov.ClassicalInputs
 import HypoellipticAleksandrov.KineticAleksandrov.Occupation.ParabolicDuhamelSmooth
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Hörmander regularity for the full kinetic Duhamel source potential -/
 
@@ -12,7 +13,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set Filter
 open Evolution Occupation
 open scoped Topology
-variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d}
 
 /-- The full kinetic Duhamel potential solves the source equation in the existing weak carrier. -/
 theorem duhamel_isKineticWeakTransportedSolution (hΩa : IsAdmissibleEvolutionDomain Ω)

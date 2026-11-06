@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Decay.UnitBlockEvolution
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.Assembly
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # The bounded-interval source setting and its supplied evolution
 
@@ -42,7 +43,7 @@ theorem exists_interval_setting_evolution
     (hLE : LiebermanEllipsoidDirichletStatement)
     (lam Lam m Lb a c : ℝ) (B : CoefficientField 1) (b : PDE.Vec 1 → PDE.Vec 1)
     (hs : SourceSetting lam Lam m Lb (PDE.oneDimensionalAxisBox a c) B b)
-    (Ω : Set (PDE.Vec 1)) (γ : ℝ → PDE.Vec 1)
+    (Ω : HypoellipticAleksandrov.VecSet 1) (γ : ℝ → PDE.Vec 1)
     (hΩ : IsAdmissibleEvolutionDomain Ω) (hγ : IsContinuousPiecewiseC1 γ) :
     ∃ (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ),
       RealizesTerminalEvolution Ω γ (measurableSet_of_isAdmissibleEvolutionDomain hΩ)

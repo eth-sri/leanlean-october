@@ -4,6 +4,7 @@ public import PDEFoundation.Sobolev.Cutoff.Basic
 public import HypoellipticAleksandrov.Measure.LpZeroExtension
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.SpatialL2Multiplier
 public import PDEFoundation.Measure.AffineVolume
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Cutoff-gradient spatial difference quotients on restricted `L²`
@@ -24,7 +25,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 /-- A cutoff gradient coordinate is measurable for restricted volume. -/
 theorem cutoffGradient_aestronglyMeasurable
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (η : PDE.QuantitativeSmoothCutoff inner outer K) (j : Fin d) :
     AEStronglyMeasurable (fun y => PDE.classicalGradient η.toFun y j)
       (PDE.volumeOn Ω) := by
@@ -35,7 +36,7 @@ theorem cutoffGradient_aestronglyMeasurable
 
 /-- A cutoff gradient coordinate obeys the cutoff bound almost everywhere. -/
 theorem cutoffGradient_norm_le
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (η : PDE.QuantitativeSmoothCutoff inner outer K) (j : Fin d) :
     ∀ᵐ y ∂PDE.volumeOn Ω, ‖PDE.classicalGradient η.toFun y j‖ ≤ K :=
   ae_of_all _ fun y => by
@@ -43,23 +44,22 @@ theorem cutoffGradient_norm_le
     exact η.abs_classicalGradient_apply_le y j
 
 private theorem cutoffGradient_eq_zero_of_not_mem_tsupport
-    {d : ℕ} {inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (η : PDE.QuantitativeSmoothCutoff inner outer K) (j : Fin d)
     {y : PDE.Vec d} (hy : y ∉ tsupport η.toFun) :
     PDE.classicalGradient η.toFun y j = 0 := by
   rw [PDE.classicalGradient_apply, fderiv_of_notMem_tsupport ℝ hy]
   exact ContinuousLinearMap.zero_apply _
+section
+variable {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ} (hΩ : MeasurableSet Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K) (j k : Fin d) (h : ℝ)
 
 /-- The cutoff-coordinate-gradient times forward spatial difference quotient
 on restricted-volume scalar `L²`, totalized at zero increment. -/
 noncomputable def cutoffGradientSpatialDifferenceQuotientL2
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (hΩ : MeasurableSet Ω)
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (j k : Fin d) (h : ℝ) :
-    PDE.ScalarLp Ω (2 : ℝ≥0∞) →L[ℝ]
-      PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
-  let μ : Measure (PDE.Vec d) := volume
+     :
+    PDE.ScalarLp Ω 2 →L[ℝ]
+      PDE.ScalarLp Ω 2 :=
+  let μ : HypoellipticAleksandrov.VecMeasure d := volume
   let z : PDE.Vec d := h • PDE.basisVec k
   let T : PDE.Vec d → PDE.Vec d := fun y => y + z
   let hT : MeasurePreserving T μ μ :=
@@ -82,10 +82,7 @@ noncomputable def cutoffGradientSpatialDifferenceQuotientL2
 
 /-- The cutoff-gradient quotient uses the canonical global zero extension. -/
 theorem cutoffGradientSpatialDifferenceQuotientL2_apply_ae
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (hΩ : MeasurableSet Ω)
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (j k : Fin d) (h : ℝ) (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+     (f : PDE.ScalarLp Ω 2) :
     ⇑(cutoffGradientSpatialDifferenceQuotientL2 hΩ η j k h f)
       =ᵐ[PDE.volumeOn Ω] fun y =>
         PDE.classicalGradient η.toFun y j *
@@ -99,25 +96,25 @@ theorem cutoffGradientSpatialDifferenceQuotientL2_apply_ae
   have hP :
       ⇑((MeasureTheory.Lp.compMeasurePreservingₗᵢ ℝ
         (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-        (measurePreserving_add_right (volume : Measure (PDE.Vec d))
+        (measurePreserving_add_right (HypoellipticAleksandrov.VecVolume d)
           (h • PDE.basisVec k)))
         ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f)) =ᵐ[volume]
         (⇑((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f) ∘
           fun y : PDE.Vec d => y + h • PDE.basisVec k) := by
     change MeasureTheory.Lp.compMeasurePreserving
       (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (measurePreserving_add_right (volume : Measure (PDE.Vec d))
+      (measurePreserving_add_right (HypoellipticAleksandrov.VecVolume d)
         (h • PDE.basisVec k)) ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f) =ᵐ[volume]
         (⇑((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f) ∘
           fun y : PDE.Vec d => y + h • PDE.basisVec k)
     exact MeasureTheory.Lp.coeFn_compMeasurePreserving
       ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f)
-      (measurePreserving_add_right (volume : Measure (PDE.Vec d))
+      (measurePreserving_add_right (HypoellipticAleksandrov.VecVolume d)
         (h • PDE.basisVec k))
   have hR := LpToLpRestrictCLM_coeFn ℝ Ω
     ((MeasureTheory.Lp.compMeasurePreservingₗᵢ ℝ
       (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (measurePreserving_add_right (volume : Measure (PDE.Vec d))
+      (measurePreserving_add_right (HypoellipticAleksandrov.VecVolume d)
         (h • PDE.basisVec k))) ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f) -
       (MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f)
   have hM := scalarL2Multiplier_apply_ae
@@ -127,13 +124,13 @@ theorem cutoffGradientSpatialDifferenceQuotientL2_apply_ae
     ((LpToLpRestrictCLM (PDE.Vec d) ℝ ℝ volume 2 Ω)
       ((MeasureTheory.Lp.compMeasurePreservingₗᵢ ℝ
         (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-        (measurePreserving_add_right (volume : Measure (PDE.Vec d))
+        (measurePreserving_add_right (HypoellipticAleksandrov.VecVolume d)
           (h • PDE.basisVec k))) ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f) -
         (MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f))
   have hsub := MeasureTheory.Lp.coeFn_sub
     ((MeasureTheory.Lp.compMeasurePreservingₗᵢ ℝ
       (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (measurePreserving_add_right (volume : Measure (PDE.Vec d))
+      (measurePreserving_add_right (HypoellipticAleksandrov.VecVolume d)
         (h • PDE.basisVec k))) ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f))
     ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f)
   have hsmul := MeasureTheory.Lp.coeFn_smul h⁻¹
@@ -143,7 +140,7 @@ theorem cutoffGradientSpatialDifferenceQuotientL2_apply_ae
       ((LpToLpRestrictCLM (PDE.Vec d) ℝ ℝ volume 2 Ω)
         ((MeasureTheory.Lp.compMeasurePreservingₗᵢ ℝ
           (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-          (measurePreserving_add_right (volume : Measure (PDE.Vec d))
+          (measurePreserving_add_right (HypoellipticAleksandrov.VecVolume d)
             (h • PDE.basisVec k))) ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f) -
           (MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f))))
   filter_upwards [hsmul, hM, hR, hsub.restrict, hP.restrict] with y hsmul hM hR hsub hP
@@ -158,10 +155,7 @@ theorem cutoffGradientSpatialDifferenceQuotientL2_apply_ae
 /-- A supplied representative gives the literal cutoff-gradient quotient
 under the forward active-support collar. -/
 theorem cutoffGradientSpatialDifferenceQuotientL2_apply_ae_of_ae_eq
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (hΩ : MeasurableSet Ω)
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (j k : Fin d) (h : ℝ) (f : PDE.ScalarLp Ω (2 : ℝ≥0∞))
+     (f : PDE.ScalarLp Ω 2)
     (g : PDE.Vec d → ℝ)
     (hfg : ⇑f =ᵐ[PDE.volumeOn Ω] g)
     (hηshift : Set.MapsTo
@@ -178,7 +172,7 @@ theorem cutoffGradientSpatialDifferenceQuotientL2_apply_ae_of_ae_eq
     filter_upwards [hzero, hfg'] with y hzero hfg hy
     rw [hzero, Set.indicator_of_mem hy]
     exact hfg hy
-  have hshifted := (measurePreserving_add_right (volume : Measure (PDE.Vec d))
+  have hshifted := (measurePreserving_add_right (HypoellipticAleksandrov.VecVolume d)
     (h • PDE.basisVec k)).quasiMeasurePreserving.ae hambient
   have hambientOn : ∀ᵐ y : PDE.Vec d ∂PDE.volumeOn Ω,
       y ∈ Ω → ⇑(MeasureTheory.Lp.zeroExtendLinearIsometry hΩ f) y = g y :=
@@ -205,10 +199,7 @@ theorem cutoffGradientSpatialDifferenceQuotientL2_apply_ae_of_ae_eq
 
 /-- The cutoff-gradient quotient has the totalized `L²` application bound. -/
 theorem norm_cutoffGradientSpatialDifferenceQuotientL2_apply_le
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (hΩ : MeasurableSet Ω)
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (j k : Fin d) (h : ℝ) (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+     (f : PDE.ScalarLp Ω 2) :
     ‖cutoffGradientSpatialDifferenceQuotientL2 hΩ η j k h f‖ ≤
       (2 * K / |h|) * ‖f‖ := by
   by_cases hh : h = 0
@@ -225,30 +216,30 @@ theorem norm_cutoffGradientSpatialDifferenceQuotientL2_apply_le
     ((LpToLpRestrictCLM (PDE.Vec d) ℝ ℝ volume 2 Ω)
       ((MeasureTheory.Lp.compMeasurePreservingₗᵢ ℝ
         (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-        (measurePreserving_add_right (volume : Measure (PDE.Vec d))
+        (measurePreserving_add_right (HypoellipticAleksandrov.VecVolume d)
           (h • PDE.basisVec k))) ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f) -
         (MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f))
   have hR : ‖(LpToLpRestrictCLM (PDE.Vec d) ℝ ℝ volume 2 Ω)
       ((MeasureTheory.Lp.compMeasurePreservingₗᵢ ℝ
         (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-        (measurePreserving_add_right (volume : Measure (PDE.Vec d))
+        (measurePreserving_add_right (HypoellipticAleksandrov.VecVolume d)
           (h • PDE.basisVec k))) ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f) -
         (MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f)‖ ≤
       ‖(MeasureTheory.Lp.compMeasurePreservingₗᵢ ℝ
         (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-        (measurePreserving_add_right (volume : Measure (PDE.Vec d))
+        (measurePreserving_add_right (HypoellipticAleksandrov.VecVolume d)
           (h • PDE.basisVec k))) ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f) -
         (MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f‖ := by
     exact norm_Lp_toLp_restrict_le Ω _
   have hD : ‖(MeasureTheory.Lp.compMeasurePreservingₗᵢ ℝ
       (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (measurePreserving_add_right (volume : Measure (PDE.Vec d))
+      (measurePreserving_add_right (HypoellipticAleksandrov.VecVolume d)
         (h • PDE.basisVec k))) ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f) -
       (MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f‖ ≤ 2 * ‖f‖ := by
     calc
       _ ≤ ‖(MeasureTheory.Lp.compMeasurePreservingₗᵢ ℝ
           (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-          (measurePreserving_add_right (volume : Measure (PDE.Vec d))
+          (measurePreserving_add_right (HypoellipticAleksandrov.VecVolume d)
             (h • PDE.basisVec k))) ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f)‖ +
           ‖(MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f‖ := norm_sub_le _ _
       _ = 2 * ‖f‖ := by
@@ -261,13 +252,13 @@ theorem norm_cutoffGradientSpatialDifferenceQuotientL2_apply_le
       ((LpToLpRestrictCLM (PDE.Vec d) ℝ ℝ volume 2 Ω)
         ((MeasureTheory.Lp.compMeasurePreservingₗᵢ ℝ
           (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-          (measurePreserving_add_right (volume : Measure (PDE.Vec d))
+          (measurePreserving_add_right (HypoellipticAleksandrov.VecVolume d)
             (h • PDE.basisVec k))) ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f) -
           (MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f)) )‖ ≤
       K * ‖(LpToLpRestrictCLM (PDE.Vec d) ℝ ℝ volume 2 Ω)
         ((MeasureTheory.Lp.compMeasurePreservingₗᵢ ℝ
           (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-          (measurePreserving_add_right (volume : Measure (PDE.Vec d))
+          (measurePreserving_add_right (HypoellipticAleksandrov.VecVolume d)
             (h • PDE.basisVec k))) ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f) -
           (MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f)‖ := by
     simpa using hM
@@ -275,7 +266,7 @@ theorem norm_cutoffGradientSpatialDifferenceQuotientL2_apply_le
   have hKR : K * ‖(LpToLpRestrictCLM (PDE.Vec d) ℝ ℝ volume 2 Ω)
       ((MeasureTheory.Lp.compMeasurePreservingₗᵢ ℝ
         (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-        (measurePreserving_add_right (volume : Measure (PDE.Vec d))
+        (measurePreserving_add_right (HypoellipticAleksandrov.VecVolume d)
           (h • PDE.basisVec k))) ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f) -
         (MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f)‖ ≤ K * (2 * ‖f‖) :=
     mul_le_mul_of_nonneg_left hR' η.gradient_bound_nonneg
@@ -283,7 +274,7 @@ theorem norm_cutoffGradientSpatialDifferenceQuotientL2_apply_le
     _ ≤ |h|⁻¹ * (K * ‖(LpToLpRestrictCLM (PDE.Vec d) ℝ ℝ volume 2 Ω)
         ((MeasureTheory.Lp.compMeasurePreservingₗᵢ ℝ
           (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-          (measurePreserving_add_right (volume : Measure (PDE.Vec d))
+          (measurePreserving_add_right (HypoellipticAleksandrov.VecVolume d)
             (h • PDE.basisVec k))) ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f) -
           (MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f)‖) :=
       mul_le_mul_of_nonneg_left hM' (inv_nonneg.mpr (abs_nonneg h))
@@ -292,5 +283,6 @@ theorem norm_cutoffGradientSpatialDifferenceQuotientL2_apply_le
     _ = (2 * K / |h|) * ‖f‖ := by
       rw [div_eq_mul_inv]
       ring
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

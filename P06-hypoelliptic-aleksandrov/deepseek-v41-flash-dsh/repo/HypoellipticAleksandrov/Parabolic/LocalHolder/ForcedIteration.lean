@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.HarnackOscillationScaling
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementForward
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Forced range contraction
 

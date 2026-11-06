@@ -6,6 +6,8 @@ public import HypoellipticAleksandrov.Parabolic.ParabolicWeakDerivativeFamilyPai
 public import HypoellipticAleksandrov.Parabolic.PrecompactCoordinateDerivativeMajorants
 public import HypoellipticAleksandrov.Parabolic.ParabolicLowOrderIndex
 public import HypoellipticAleksandrov.Parabolic.ParabolicWeakDerivativeFamilyShift
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Generic pre-lift differentiated weak equation
@@ -106,7 +108,7 @@ private def addVelocityIndex
       alpha.1 + Pi.single (velocityCoord i) 1 := rfl
 
 private theorem coordinateDerivative_contDiffOn
-    {d M : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
+    {d M : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} (hU : IsOpen U)
     (f : TimeVelocity d → ℝ) (hf : ContDiffOn ℝ (M + 1) f U)
     (i : Fin d) :
     ContDiffOn ℝ M
@@ -123,7 +125,7 @@ private theorem coordinateDerivative_contDiffOn
         hi).contDiffWithinAt
 
 private theorem coordinateDerivative_majorant
-    {d M : ℕ} {U : Set (TimeVelocity d)}
+    {d M : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     (f : TimeVelocity d → ℝ)
     (B : ParabolicDerivativeIndex d (M + 1) → ℝ)
     (hB : ∀ alpha z, z ∈ U →
@@ -149,7 +151,7 @@ private theorem splitRight_default
 
 private theorem parabolicWeakMulRepresentative_eq_zero_left_add_proper
     {d L : ℕ} (q : TimeVelocity d → ℝ)
-    {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
+    {U : HypoellipticAleksandrov.Parabolic.TVSet d} {u : TimeVelocity d → ℝ}
     (Du : ParabolicWeakDerivativeFamily d L U u)
     (beta : ParabolicDerivativeIndex d L) (z : TimeVelocity d) :
     parabolicWeakMulRepresentative q Du beta z =
@@ -190,7 +192,7 @@ private theorem parabolicWeakMulRepresentative_eq_zero_left_add_proper
 
 private def properDiffusionGradientSum
     {d M : ℕ} (q : TimeVelocity d → ℝ)
-    {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
+    {U : HypoellipticAleksandrov.Parabolic.TVSet d} {u : TimeVelocity d → ℝ}
     (D : ParabolicWeakDerivativeFamily d (M + 1) U u)
     (beta : ParabolicDerivativeIndex d M) (j : Fin d) :
     TimeVelocity d → ℝ :=
@@ -205,7 +207,7 @@ private def properDiffusionGradientSum
 
 private def properDiffusionDerivedCoefficientSum
     {d M : ℕ} (q : TimeVelocity d → ℝ)
-    {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
+    {U : HypoellipticAleksandrov.Parabolic.TVSet d} {u : TimeVelocity d → ℝ}
     (D : ParabolicWeakDerivativeFamily d (M + 1) U u)
     (beta : ParabolicDerivativeIndex d M) (j i : Fin d) :
     TimeVelocity d → ℝ :=
@@ -222,7 +224,7 @@ private def properDiffusionDerivedCoefficientSum
 /-- The proper-split diffusion Hessian contribution. -/
 def properDiffusionHessianSum
     {d M : ℕ} (q : TimeVelocity d → ℝ)
-    {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
+    {U : HypoellipticAleksandrov.Parabolic.TVSet d} {u : TimeVelocity d → ℝ}
     (D : ParabolicWeakDerivativeFamily d (M + 1) U u)
     (beta : ParabolicDerivativeIndex d M) (j i : Fin d) :
     TimeVelocity d → ℝ :=
@@ -236,7 +238,7 @@ def properDiffusionHessianSum
     else 0
 
 private theorem continuousOn_bounded_mul_memLp
-    {d : ℕ} {V : Set (TimeVelocity d)} (hV : IsOpen V)
+    {d : ℕ} {V : HypoellipticAleksandrov.Parabolic.TVSet d} (hV : IsOpen V)
     (a f : TimeVelocity d → ℝ) (C : ℝ) (hC : 0 ≤ C)
     (ha : ContinuousOn a V) (haBound : ∀ z ∈ V, |a z| ≤ C)
     (hf : ParabolicMemLpOn V 2 f) :
@@ -254,7 +256,7 @@ private theorem continuousOn_bounded_mul_memLp
     mul_le_mul hz le_rfl (abs_nonneg (f z)) hC
 
 private theorem properDiffusionSums_data
-    {d M : ℕ} {V : Set (TimeVelocity d)} (hV : IsOpen V)
+    {d M : ℕ} {V : HypoellipticAleksandrov.Parabolic.TVSet d} (hV : IsOpen V)
     (q : TimeVelocity d → ℝ) (hq : ContDiffOn ℝ (M + 1) q V)
     (B : ParabolicDerivativeIndex d (M + 1) → ℝ)
     (hB : ∀ alpha, 0 ≤ B alpha)
@@ -499,7 +501,7 @@ private theorem properDiffusionSums_data
   simpa only [hvalEq, hder] using hsum
 
 private theorem properDiffusion_compactTest_identity
-    {d M : ℕ} {V : Set (TimeVelocity d)} (hV : IsOpen V)
+    {d M : ℕ} {V : HypoellipticAleksandrov.Parabolic.TVSet d} (hV : IsOpen V)
     (q : TimeVelocity d → ℝ) (hq : ContDiffOn ℝ (M + 1) q V)
     (B : ParabolicDerivativeIndex d (M + 1) → ℝ)
     (hB : ∀ alpha, 0 ≤ B alpha)
@@ -511,11 +513,11 @@ private theorem properDiffusion_compactTest_identity
     (φ : TimeVelocity d → ℝ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
     (hφCompact : HasCompactSupport φ) (hφV : tsupport φ ⊆ V) :
     -( ∫ z in V, properDiffusionGradientSum q D beta j z *
-        velocityGradient φ z i ∂(volume : Measure (TimeVelocity d))) -
+        velocityGradient φ z i ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) -
       ∫ z in V, properDiffusionDerivedCoefficientSum q D beta j i z * φ z
-        ∂(volume : Measure (TimeVelocity d)) =
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) =
       ∫ z in V, properDiffusionHessianSum q D beta j i z * φ z
-        ∂(volume : Measure (TimeVelocity d)) := by
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   have hdata := properDiffusionSums_data hV q hq B hB hqBound D beta j i
   have hraw := hdata.2.2.2 φ hφ hφCompact hφV
   have hφLp : MemLp φ 2 (timeVelocityVolumeOn V) :=
@@ -532,7 +534,7 @@ private theorem properDiffusion_compactTest_identity
 
 /-- Pair the root time component with an iterated compactly supported test. -/
 theorem timeComponent_pairing
-    {d M : ℕ} {V : Set (TimeVelocity d)}
+    {d M : ℕ} {V : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u : TimeVelocity d → ℝ}
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
     (hM : 2 ≤ M + 1) (beta : ParabolicDerivativeIndex d M)
@@ -542,11 +544,11 @@ theorem timeComponent_pairing
         (ParabolicDerivativeIndex.castLE hM
           (ParabolicDerivativeIndex.timeOne d)) z *
         TimeVelocityMultiIndex.coordinateIteratedFDeriv beta.1 φ z
-      ∂(volume : Measure (TimeVelocity d))) =
+      ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
       ((-1 : ℝ) ^ beta.1.order) *
         (-(∫ z in V, D.representative
             (ParabolicDerivativeIndex.castLE (by omega : M ≤ M + 1) beta) z *
-            timeDerivative φ z ∂(volume : Measure (TimeVelocity d)))) := by
+            timeDerivative φ z ∂(HypoellipticAleksandrov.Parabolic.TVVolume d))) := by
   let timeIndex := ParabolicDerivativeIndex.castLE hM
     (ParabolicDerivativeIndex.timeOne d)
   let betaIndex := ParabolicDerivativeIndex.castLE (by omega : M ≤ M + 1) beta
@@ -576,10 +578,10 @@ theorem timeComponent_pairing
       (∫ z in V, u z *
         TimeVelocityMultiIndex.coordinateIteratedFDeriv
           (TimeVelocityMultiIndex.ofTimeVelocity 1 0) psi z
-        ∂(volume : Measure (TimeVelocity d))) =
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
       ∫ z in V, u z *
         TimeVelocityMultiIndex.coordinateIteratedFDeriv beta.1
-          (timeDerivative φ) z ∂(volume : Measure (TimeVelocity d)) := by
+          (timeDerivative φ) z ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
     apply MeasureTheory.integral_congr_ae
     filter_upwards [] with z
     congr 1
@@ -626,22 +628,22 @@ theorem timeComponent_pairing
 
 /-- Pair the differentiated source component with a compactly supported test. -/
 theorem sourceComponent_pairing
-    {d M : ℕ} {V : Set (TimeVelocity d)}
+    {d M : ℕ} {V : HypoellipticAleksandrov.Parabolic.TVSet d}
     {F : TimeVelocity d → ℝ}
     (E : ParabolicWeakDerivativeFamily d M V F)
     (beta : ParabolicDerivativeIndex d M)
     (φ : TimeVelocity d → ℝ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
     (hφCompact : HasCompactSupport φ) (hφV : tsupport φ ⊆ V) :
     (∫ z in V, E.representative beta z * φ z
-      ∂(volume : Measure (TimeVelocity d))) =
+      ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
       ((-1 : ℝ) ^ beta.1.order) *
         ∫ z in V, F z *
           TimeVelocityMultiIndex.coordinateIteratedFDeriv beta.1 φ z
-          ∂(volume : Measure (TimeVelocity d)) :=
+          ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) :=
   E.integral_representative_mul_test beta φ hφ hφCompact hφV
 
 private def shiftedVelocityFamily
-    {d M : ℕ} {V : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
+    {d M : ℕ} {V : HypoellipticAleksandrov.Parabolic.TVSet d} {u : TimeVelocity d → ℝ}
     (hM : 1 ≤ M) (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
     (j : Fin d) :
     ParabolicWeakDerivativeFamily d M V
@@ -660,7 +662,7 @@ private def shiftedVelocityFamily
       omega)
 
 private theorem shiftedVelocityFamily_representative
-    {d M : ℕ} {V : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
+    {d M : ℕ} {V : HypoellipticAleksandrov.Parabolic.TVSet d} {u : TimeVelocity d → ℝ}
     (hM : 1 ≤ M) (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
     (j : Fin d) (beta : ParabolicDerivativeIndex d M) :
     (shiftedVelocityFamily hM D j).representative beta =
@@ -689,13 +691,13 @@ private theorem shiftedVelocityFamily_representative
     · simp [TimeVelocityMultiIndex.ofTimeVelocity, velocityCoord, hij]
 
 private def truncatedValueFamily
-    {d M : ℕ} {V : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
+    {d M : ℕ} {V : HypoellipticAleksandrov.Parabolic.TVSet d} {u : TimeVelocity d → ℝ}
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u) :
     ParabolicWeakDerivativeFamily d M V u :=
   D.truncate (Nat.le_succ M)
 
 private theorem truncatedValueFamily_representative
-    {d M : ℕ} {V : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
+    {d M : ℕ} {V : HypoellipticAleksandrov.Parabolic.TVSet d} {u : TimeVelocity d → ℝ}
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
     (beta : ParabolicDerivativeIndex d M) :
     (truncatedValueFamily D).representative beta =
@@ -704,7 +706,7 @@ private theorem truncatedValueFamily_representative
   rfl
 
 private theorem coefficientProductComponent_pairing
-    {d M : ℕ} {V : Set (TimeVelocity d)} (hV : IsOpen V)
+    {d M : ℕ} {V : HypoellipticAleksandrov.Parabolic.TVSet d} (hV : IsOpen V)
     (q : TimeVelocity d → ℝ) (hq : ContDiffOn ℝ M q V)
     (Bq : ParabolicDerivativeIndex d M → ℝ)
     (hBq : ∀ alpha, 0 ≤ Bq alpha)
@@ -724,11 +726,11 @@ private theorem coefficientProductComponent_pairing
                 Du.representative
                   (ParabolicDerivativeIndex.splitRight beta gamma) z
             else 0) * φ z
-      ∂(volume : Measure (TimeVelocity d))) =
+      ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
       ((-1 : ℝ) ^ beta.1.order) *
         ∫ z in V, (q z * u z) *
           TimeVelocityMultiIndex.coordinateIteratedFDeriv beta.1 φ z
-          ∂(volume : Measure (TimeVelocity d)) := by
+          ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   let Dqu := ParabolicWeakDerivativeFamily.mulContDiffOn
     hV Bq hBq q hq hqBound u Du
   have hpair := Dqu.integral_representative_mul_test beta φ hφ hφCompact hφV
@@ -738,7 +740,7 @@ private theorem coefficientProductComponent_pairing
 
 /-- Pair one differentiated principal component after one velocity integration by parts. -/
 theorem principalComponent_pairing
-    {d M : ℕ} {V : Set (TimeVelocity d)} (hV : IsOpen V)
+    {d M : ℕ} {V : HypoellipticAleksandrov.Parabolic.TVSet d} (hV : IsOpen V)
     (q : TimeVelocity d → ℝ) (hq : ContDiffOn ℝ (M + 1) q V)
     (Bq : ParabolicDerivativeIndex d (M + 1) → ℝ)
     (hBq : ∀ alpha, 0 ≤ Bq alpha)
@@ -758,7 +760,7 @@ theorem principalComponent_pairing
                   change beta.1.parabolicWeight + 1 ≤ M + 1
                   omega)) z *
           velocityGradient φ z i
-        ∂(volume : Measure (TimeVelocity d))) -
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) -
       ∫ z in V,
         TimeVelocityMultiIndex.coordinateIteratedFDeriv
               (Pi.single (velocityCoord i) 1) q z *
@@ -769,7 +771,7 @@ theorem principalComponent_pairing
                   change beta.1.parabolicWeight + 1 ≤ M + 1
                   omega)) z *
           φ z
-        ∂(volume : Measure (TimeVelocity d)) =
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) =
       ((-1 : ℝ) ^ beta.1.order) *
         ∫ z in V,
           (q z *
@@ -777,9 +779,9 @@ theorem principalComponent_pairing
               (ParabolicDerivativeIndex.castLE (by omega : 2 ≤ M + 1)
                 (ParabolicDerivativeIndex.velocityTwo j i)) z) *
             TimeVelocityMultiIndex.coordinateIteratedFDeriv beta.1 φ z
-          ∂(volume : Measure (TimeVelocity d)) -
+          ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) -
       ∫ z in V, properDiffusionHessianSum q D beta j i z * φ z
-        ∂(volume : Measure (TimeVelocity d)) := by
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   let Dj := shiftedVelocityFamily hM D j
   let dq := TimeVelocityMultiIndex.coordinateIteratedFDeriv
     (Pi.single (velocityCoord i) 1) q
@@ -901,7 +903,7 @@ theorem principalComponent_pairing
                   change beta.1.parabolicWeight + 1 ≤ M + 1
                   omega)) z +
           properDiffusionDerivedCoefficientSum q D beta j i z) * φ z
-        ∂(volume : Measure (TimeVelocity d))) =
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
       (∫ z in V,
         (dq z *
             D.representative
@@ -923,7 +925,7 @@ theorem principalComponent_pairing
                       have hloss := gamma.parabolicWeight_right_add_one_le hproper
                       omega)) z
             else 0) * φ z
-        ∂(volume : Measure (TimeVelocity d))) := by
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) := by
     apply MeasureTheory.integral_congr_ae
     filter_upwards [ae_restrict_mem hV.measurableSet] with z hz
     rw [hderivedSum z hz]
@@ -1085,7 +1087,7 @@ theorem principalComponent_pairing
               change beta.1.parabolicWeight + 1 ≤ M + 1
               omega)) z * velocityGradient φ z i +
         properDiffusionGradientSum q D beta j z * velocityGradient φ z i
-        ∂(volume : Measure (TimeVelocity d))) =
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
       (∫ z in V, q z * D.representative
           (ParabolicDerivativeIndex.velocitySucc
             (ParabolicDerivativeIndex.castLE (Nat.le_succ M) beta) j
@@ -1104,7 +1106,7 @@ theorem principalComponent_pairing
               change beta.1.parabolicWeight + 1 ≤ M + 1
               omega)) z * φ z +
         properDiffusionDerivedCoefficientSum q D beta j i z * φ z
-        ∂(volume : Measure (TimeVelocity d))) =
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
       (∫ z in V, dq z * D.representative
           (ParabolicDerivativeIndex.velocitySucc
             (ParabolicDerivativeIndex.castLE (Nat.le_succ M) beta) j
@@ -1122,7 +1124,7 @@ theorem principalComponent_pairing
         velocityGradient q z i * D.representative
           (ParabolicDerivativeIndex.castLE (by omega : 2 ≤ M + 1)
             (ParabolicDerivativeIndex.velocityOne j)) z * psi z
-        ∂(volume : Measure (TimeVelocity d))) =
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
       (∫ z in V, q z * D.representative
           (ParabolicDerivativeIndex.castLE (by omega : 2 ≤ M + 1)
             (ParabolicDerivativeIndex.velocityTwo j i)) z * psi z
@@ -1155,11 +1157,11 @@ theorem principalComponent_pairing
       (∫ z in V, velocityGradient q z i * D.representative
           (ParabolicDerivativeIndex.castLE (by omega : 2 ≤ M + 1)
             (ParabolicDerivativeIndex.velocityOne j)) z * psi z
-        ∂(volume : Measure (TimeVelocity d))) =
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
       ∫ z in V, dq z * D.representative
           (ParabolicDerivativeIndex.castLE (by omega : 2 ≤ M + 1)
             (ParabolicDerivativeIndex.velocityOne j)) z * psi z
-        ∂(volume : Measure (TimeVelocity d)) := by
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
     apply MeasureTheory.integral_congr_ae
     filter_upwards [ae_restrict_mem hV.measurableSet] with z hz
     have heq := TimeVelocityMultiIndex.coordinateIteratedFDeriv_add_single_at
@@ -1183,7 +1185,7 @@ theorem principalComponent_pairing
 
 /-- Pair one differentiated drift component with a compactly supported test. -/
 theorem driftComponent_pairing
-    {d M : ℕ} {V : Set (TimeVelocity d)} (hV : IsOpen V)
+    {d M : ℕ} {V : HypoellipticAleksandrov.Parabolic.TVSet d} (hV : IsOpen V)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
     (hb : ∀ j, ContDiffOn ℝ M
       (fun z : TimeVelocity d ↦ b z.1 z.2 j) V)
@@ -1214,7 +1216,7 @@ theorem driftComponent_pairing
                   (ParabolicDerivativeIndex.properSplitRightVelocity
                     beta gamma hproper j) z
             else 0) * φ z
-      ∂(volume : Measure (TimeVelocity d))) =
+      ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
       ((-1 : ℝ) ^ beta.1.order) *
         ∫ z in V,
           (b z.1 z.2 j *
@@ -1222,7 +1224,7 @@ theorem driftComponent_pairing
               (ParabolicDerivativeIndex.castLE (by omega : 2 ≤ M + 1)
                 (ParabolicDerivativeIndex.velocityOne j)) z) *
             TimeVelocityMultiIndex.coordinateIteratedFDeriv beta.1 φ z
-          ∂(volume : Measure (TimeVelocity d)) := by
+          ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   have hpair := coefficientProductComponent_pairing hV
     (fun z : TimeVelocity d ↦ b z.1 z.2 j) (hb j) (Bb j) (hBb j)
     (hbBound j) (shiftedVelocityFamily hM D j) beta φ hφ hφCompact hφV
@@ -1267,7 +1269,7 @@ theorem driftComponent_pairing
 
 /-- Pair the differentiated zeroth-order component with a compactly supported test. -/
 theorem zerothOrderComponent_pairing
-    {d M : ℕ} {V : Set (TimeVelocity d)} (hV : IsOpen V)
+    {d M : ℕ} {V : HypoellipticAleksandrov.Parabolic.TVSet d} (hV : IsOpen V)
     (c : ℝ → PDE.Vec d → ℝ)
     (hc : ContDiffOn ℝ M (fun z : TimeVelocity d ↦ c z.1 z.2) V)
     (Bc : ParabolicDerivativeIndex d M → ℝ)
@@ -1293,11 +1295,11 @@ theorem zerothOrderComponent_pairing
                   (ParabolicDerivativeIndex.properSplitRightValue
                     beta gamma hproper) z
             else 0) * φ z
-      ∂(volume : Measure (TimeVelocity d))) =
+      ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
       ((-1 : ℝ) ^ beta.1.order) *
         ∫ z in V, (c z.1 z.2 * u z) *
           TimeVelocityMultiIndex.coordinateIteratedFDeriv beta.1 φ z
-          ∂(volume : Measure (TimeVelocity d)) := by
+          ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   have hpair := coefficientProductComponent_pairing hV
     (fun z : TimeVelocity d ↦ c z.1 z.2) hc Bc hBc hcBound
     (truncatedValueFamily D) beta φ hφ hφCompact hφV
@@ -1342,7 +1344,7 @@ theorem zerothOrderComponent_pairing
 
 /-- Select one precompact test neighborhood with majorants for all coefficients. -/
 theorem exists_precompactOpen_coefficient_majorants
-    {d M : ℕ} {U K : Set (TimeVelocity d)}
+    {d M : ℕ} {U K : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hU : IsOpen U) (hK : IsCompact K) (hKU : K ⊆ U)
     (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
@@ -1353,7 +1355,7 @@ theorem exists_precompactOpen_coefficient_majorants
       (fun z : TimeVelocity d ↦ b z.1 z.2 j) U)
     (hc : ContDiffOn ℝ M
       (fun z : TimeVelocity d ↦ c z.1 z.2) U) :
-    ∃ (V : Set (TimeVelocity d))
+    ∃ (V : HypoellipticAleksandrov.Parabolic.TVSet d)
       (Ba : Fin d → Fin d → ParabolicDerivativeIndex d (M + 1) → ℝ)
       (Bb : Fin d → ParabolicDerivativeIndex d M → ℝ)
       (Bc : ParabolicDerivativeIndex d M → ℝ),

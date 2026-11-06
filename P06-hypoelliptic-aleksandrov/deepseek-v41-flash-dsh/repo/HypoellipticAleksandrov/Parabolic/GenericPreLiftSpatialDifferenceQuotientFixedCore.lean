@@ -1,6 +1,8 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.GenericPreLiftSpatialDifferenceQuotientFixedDirection
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Fixed-cylinder generic spatial difference-quotient estimate
@@ -22,7 +24,7 @@ tested divergence-form equation. -/
 theorem exists_gradient_spatialDifferenceQuotient_estimate_of_testedEquation
     (d : ℕ) (s₀ t₁ t₂ s₁ : ℝ)
     (hs₀t₁ : s₀ < t₁) (ht₁t₂ : t₁ < t₂) (ht₂s₁ : t₂ < s₁)
-    (O₀ O₁ : Set (PDE.Vec d))
+    (O₀ O₁ : HypoellipticAleksandrov.VecSet d)
     (hO₀ : IsOpen O₀) (hO₁ : IsOpen O₁) (hO₁ne : O₁.Nonempty)
     (hO₁compact : IsCompact (closure O₁))
     (hO₁O₀ : closure O₁ ⊆ O₀)

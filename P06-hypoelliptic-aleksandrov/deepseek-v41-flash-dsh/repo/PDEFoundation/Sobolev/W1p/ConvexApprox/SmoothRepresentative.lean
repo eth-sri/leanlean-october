@@ -40,9 +40,11 @@ private theorem isProbabilityMeasure_withDensity_ofReal
   rw [← ofReal_integral_eq_lintegral_ofReal hρInt
     (ae_of_all _ hρNonneg), hρOne]
   simp
+section
+variable {d : ℕ}
 
 private theorem lintegral_comp_sub_right
-    {d : ℕ} (f : Vec d → ℝ≥0∞) (hf : Measurable f)
+     (f : Vec d → ℝ≥0∞) (hf : Measurable f)
     (t : Vec d) :
     ∫⁻ x, f (x - t) ∂(volume : Measure (Vec d)) =
       ∫⁻ x, f x ∂(volume : Measure (Vec d)) := by
@@ -62,7 +64,7 @@ private theorem lintegral_comp_sub_right
   rw [hmap]
 
 private theorem fubini_translation_key
-    {d : ℕ} (ρ : Vec d → ℝ≥0∞) (g : Vec d → ℝ)
+     (ρ : Vec d → ℝ≥0∞) (g : Vec d → ℝ)
     (p : ℝ) (hρ : Measurable ρ) (hg : Measurable g) :
     ∫⁻ x, ∫⁻ t,
         ρ t * (ENNReal.ofReal |g (x - t)|) ^ p
@@ -120,7 +122,7 @@ private theorem fubini_translation_key
   rw [lintegral_mul_const _ hρ, mul_comm]
 
 private theorem integral_withDensity_ofReal_eq_integral_mul
-    {d : ℕ} {f g : Vec d → ℝ}
+     {f g : Vec d → ℝ}
     (hfNonneg : ∀ x, 0 ≤ f x)
     (hfMeas : AEMeasurable f volume) :
     ∫ x, g x
@@ -141,7 +143,7 @@ private theorem integral_withDensity_ofReal_eq_integral_mul
     Real.coe_toNNReal _ (hfNonneg x)]
 
 private theorem young_convolution_nonneg_integral_one
-    {d : ℕ} {ρ g : Vec d → ℝ} {p : ENNReal}
+     {ρ g : Vec d → ℝ} {p : ENNReal}
     (hp : 1 ≤ p) (hpTop : p ≠ ⊤)
     (hρNonneg : ∀ x, 0 ≤ ρ x)
     (hρInt : Integrable ρ volume)
@@ -380,7 +382,7 @@ private theorem young_convolution_nonneg_integral_one
       rw [Real.enorm_eq_ofReal_abs]
 
 private theorem young_convolution_nonneg_integral_one_of_aemeasurable
-    {d : ℕ} {ρ g : Vec d → ℝ} {p : ENNReal}
+     {ρ g : Vec d → ℝ} {p : ENNReal}
     (hp : 1 ≤ p) (hpTop : p ≠ ⊤)
     (hρNonneg : ∀ x, 0 ≤ ρ x)
     (hρInt : Integrable ρ volume)
@@ -420,7 +422,7 @@ private theorem young_convolution_nonneg_integral_one_of_aemeasurable
 
 /-- A globally smooth representative of convex-domain approximation. -/
 noncomputable def convexApproxSmoothRepresentative
-    {d : ℕ} (U : Set (Vec d)) (ρ u : Vec d → ℝ)
+     (U : Set (Vec d)) (ρ u : Vec d → ℝ)
     (x0 : Vec d) (r ε : ℝ) : Vec d → ℝ :=
   fun x =>
     (scaledConvexApproxKernel ρ (ε * r) ⋆[
@@ -428,7 +430,7 @@ noncomputable def convexApproxSmoothRepresentative
       Set.indicator U u) ((1 - ε) • x + ε • x0)
 
 theorem contDiff_convexApproxSmoothRepresentative
-    {d : ℕ} {U : Set (Vec d)}
+     {U : Set (Vec d)}
     {ρ u : Vec d → ℝ} {p : ENNReal}
     (hU : MeasurableSet U)
     (hρ : IsConvexApproxKernel ρ)
@@ -473,7 +475,7 @@ theorem contDiff_convexApproxSmoothRepresentative
 
 theorem
     convexApproxSmoothRepresentative_eq_convexApproxSmoothing_of_mem
-    {d : ℕ} {U : Set (Vec d)}
+     {U : Set (Vec d)}
     {ρ u : Vec d → ℝ}
     (hU : IsOpenBoundedConvexDomain U)
     (hρ : IsConvexApproxKernel ρ)
@@ -487,7 +489,7 @@ theorem
       hU hρ hx hball hr hε hεOne).symm
 
 theorem measurableEmbedding_convexApproxSample
-    {d : ℕ} (x0 z : Vec d) (r ε : ℝ)
+     (x0 z : Vec d) (r ε : ℝ)
     (hε : ε < 1) :
     MeasurableEmbedding
       (convexApproxSample x0 z r ε) := by
@@ -512,7 +514,7 @@ theorem measurableEmbedding_convexApproxSample
   exact e.toMeasurableEquiv.measurableEmbedding
 
 theorem map_restrict_convexApproxSample
-    {d : ℕ} {U : Set (Vec d)}
+     {U : Set (Vec d)}
     (_hU : MeasurableSet U)
     (x0 z : Vec d) (r ε : ℝ) (hε : ε < 1) :
     Measure.map (convexApproxSample x0 z r ε)
@@ -626,7 +628,7 @@ theorem map_restrict_convexApproxSample
       rw [Measure.restrict_smul]
 
 theorem eLpNorm_comp_convexApproxSample_le
-    {d : ℕ} {U : Set (Vec d)}
+     {U : Set (Vec d)}
     {u : Vec d → ℝ} {p : ENNReal}
     (hp : p ≠ ⊤) (hU : MeasurableSet U)
     (x0 z : Vec d) (r ε : ℝ) (hε : ε < 1)
@@ -689,7 +691,7 @@ theorem eLpNorm_comp_convexApproxSample_le
       rw [smul_eq_mul]
 
 theorem eLpNorm_convexApproxSmoothing_le
-    {d : ℕ} {U : Set (Vec d)}
+     {U : Set (Vec d)}
     {ρ u : Vec d → ℝ} {p : ENNReal}
     (hU : IsOpenBoundedConvexDomain U)
     (hρ : IsConvexApproxKernel ρ)
@@ -782,7 +784,7 @@ theorem eLpNorm_convexApproxSmoothing_le
       rw [eLpNorm_indicator_eq_eLpNorm_restrict hUMeas]
 
 theorem convexApproxSmoothing_sub_ae_eq
-    {d : ℕ} {U : Set (Vec d)}
+     {U : Set (Vec d)}
     {ρ u v : Vec d → ℝ} {p : ENNReal}
     (hU : IsOpenBoundedConvexDomain U)
     (hρ : IsConvexApproxKernel ρ)
@@ -894,7 +896,7 @@ theorem convexApproxSmoothing_sub_ae_eq
   rw [hconvSub]
 
 theorem eLpNorm_sub_convexApproxSmoothing_le
-    {d : ℕ} {U : Set (Vec d)}
+     {U : Set (Vec d)}
     {ρ u v : Vec d → ℝ} {p : ENNReal}
     (hU : IsOpenBoundedConvexDomain U)
     (hρ : IsConvexApproxKernel ρ)
@@ -937,6 +939,7 @@ theorem eLpNorm_sub_convexApproxSmoothing_le
             p (volume.restrict U) :=
       eLpNorm_convexApproxSmoothing_le
         hU hρ hpOne hpTop huv hball hr hε hεOne
+end
 
 end
 

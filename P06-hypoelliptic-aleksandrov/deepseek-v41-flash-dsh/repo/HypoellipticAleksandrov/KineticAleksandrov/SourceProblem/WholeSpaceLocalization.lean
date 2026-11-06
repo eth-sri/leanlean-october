@@ -6,6 +6,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.LocalizedKry
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.PotentialWhole
 public import HypoellipticAleksandrov.Parabolic.ContDiffOnTwoToScalarC12
 public import HypoellipticAleksandrov.KineticAleksandrov.SourceProblem.SourceCorrection
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Localization of the whole-space occupation potential -/
 

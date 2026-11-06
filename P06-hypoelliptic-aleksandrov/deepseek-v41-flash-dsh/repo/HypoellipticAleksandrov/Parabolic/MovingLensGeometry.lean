@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.HarnackGeometry
 public import Mathlib.Tactic.FunProp
 public import Mathlib.Tactic.Linarith
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Moving-lens geometry for forward propagation
@@ -39,12 +40,12 @@ def movingLensRadiusSq {d : ℕ} (xi eps : ℝ) (y : PDE.Vec d) (z : TimeVelocit
   PDE.vecNormSq (movingLensDisplacement y z) / movingLensDenominator xi eps z.1
 
 /-- The compact closed moving lens, including its initial and lateral faces. -/
-def movingLensClosed {d : ℕ} (xi eps tau : ℝ) (y : PDE.Vec d) : Set (TimeVelocity d) :=
+def movingLensClosed {d : ℕ} (xi eps tau : ℝ) (y : PDE.Vec d) : HypoellipticAleksandrov.Parabolic.TVSet d :=
   {z | 0 ≤ z.1 ∧ z.1 ≤ tau ∧
     PDE.vecNormSq (movingLensDisplacement y z) ≤ movingLensDenominator xi eps z.1}
 
 /-- The active moving lens.  Its terminal interior face is deliberately included. -/
-def movingLensActive {d : ℕ} (xi eps tau : ℝ) (y : PDE.Vec d) : Set (TimeVelocity d) :=
+def movingLensActive {d : ℕ} (xi eps tau : ℝ) (y : PDE.Vec d) : HypoellipticAleksandrov.Parabolic.TVSet d :=
   {z | 0 < z.1 ∧ z.1 ≤ tau ∧
     PDE.vecNormSq (movingLensDisplacement y z) < movingLensDenominator xi eps z.1}
 
@@ -94,22 +95,24 @@ theorem continuous_movingLensDenominator (xi eps : ℝ) :
     Continuous (movingLensDenominator xi eps) := by
   unfold movingLensDenominator
   fun_prop
+section
+variable {d : ℕ}
 
 /-- The moving-lens displacement varies continuously with the time--velocity point. -/
-theorem continuous_movingLensDisplacement {d : ℕ} (y : PDE.Vec d) :
+theorem continuous_movingLensDisplacement  (y : PDE.Vec d) :
     Continuous (movingLensDisplacement y) := by
   unfold movingLensDisplacement
   fun_prop
 
 /-- The direct spatial gap of a moving lens is continuous. -/
-theorem continuous_movingLensSpatialGap {d : ℕ} (xi eps : ℝ) (y : PDE.Vec d) :
+theorem continuous_movingLensSpatialGap  (xi eps : ℝ) (y : PDE.Vec d) :
     Continuous (fun z : TimeVelocity d =>
       PDE.vecNormSq (movingLensDisplacement y z) - movingLensDenominator xi eps z.1) := by
   exact (PDE.continuous_vecNormSq.comp (continuous_movingLensDisplacement y)).sub
     ((continuous_movingLensDenominator xi eps).comp continuous_fst)
 
 /-- The strict spatial moving-lens inequality is open. -/
-theorem isOpen_movingLensSpatialStrict {d : ℕ} (xi eps : ℝ) (y : PDE.Vec d) :
+theorem isOpen_movingLensSpatialStrict  (xi eps : ℝ) (y : PDE.Vec d) :
     IsOpen {z : TimeVelocity d |
       PDE.vecNormSq (movingLensDisplacement y z) < movingLensDenominator xi eps z.1} := by
   rw [show {z : TimeVelocity d |
@@ -123,13 +126,13 @@ theorem isOpen_movingLensSpatialStrict {d : ℕ} (xi eps : ℝ) (y : PDE.Vec d) 
   exact isOpen_Iio.preimage (continuous_movingLensSpatialGap xi eps y)
 
 /-- The positive-time strict spatial conditions of a moving lens are open. -/
-theorem isOpen_movingLensPositiveSpatialStrict {d : ℕ} (xi eps : ℝ) (y : PDE.Vec d) :
+theorem isOpen_movingLensPositiveSpatialStrict  (xi eps : ℝ) (y : PDE.Vec d) :
     IsOpen {z : TimeVelocity d | 0 < z.1 ∧
       PDE.vecNormSq (movingLensDisplacement y z) < movingLensDenominator xi eps z.1} := by
   exact (isOpen_Ioi.preimage continuous_fst).inter (isOpen_movingLensSpatialStrict xi eps y)
 
 /-- The closed moving lens is closed. -/
-theorem isClosed_movingLensClosed {d : ℕ} (xi eps tau : ℝ) (y : PDE.Vec d) :
+theorem isClosed_movingLensClosed  (xi eps tau : ℝ) (y : PDE.Vec d) :
     IsClosed (movingLensClosed xi eps tau y) := by
   have htime : IsClosed {z : TimeVelocity d | 0 ≤ z.1 ∧ z.1 ≤ tau} :=
     (isClosed_Ici.preimage continuous_fst).inter (isClosed_Iic.preimage continuous_fst)
@@ -161,14 +164,14 @@ theorem isClosed_movingLensClosed {d : ℕ} (xi eps tau : ℝ) (y : PDE.Vec d) :
   exact htime.inter hspatial
 
 /-- Every active point lies in the corresponding closed lens. -/
-theorem movingLensActive_subset_movingLensClosed {d : ℕ} (xi eps tau : ℝ) (y : PDE.Vec d) :
+theorem movingLensActive_subset_movingLensClosed  (xi eps tau : ℝ) (y : PDE.Vec d) :
     movingLensActive xi eps tau y ⊆ movingLensClosed xi eps tau y := by
   rintro z ⟨ht, htau, hspatial⟩
   exact ⟨ht.le, htau, hspatial.le⟩
 
 /-- The closed lens minus the active lens consists exactly of its initial and lateral
 faces; there is no terminal boundary contribution. -/
-theorem mem_movingLensClosed_diff_active_iff {d : ℕ} {xi eps tau : ℝ}
+theorem mem_movingLensClosed_diff_active_iff  {xi eps tau : ℝ}
     {y : PDE.Vec d} {z : TimeVelocity d} :
     z ∈ movingLensClosed xi eps tau y \ movingLensActive xi eps tau y ↔
       (z.1 = 0 ∧ z.1 ≤ tau ∧
@@ -192,21 +195,21 @@ theorem mem_movingLensClosed_diff_active_iff {d : ℕ} {xi eps tau : ℝ}
       rintro ⟨_, _, hlt⟩
       exact (ne_of_lt hlt) heq
 
-private def movingLensTransport {d : ℕ} (y : PDE.Vec d) : TimeVelocity d → TimeVelocity d :=
+private def movingLensTransport  (y : PDE.Vec d) : TimeVelocity d → TimeVelocity d :=
   fun z => (z.1, z.2 + z.1 • y)
 
-private theorem continuous_movingLensTransport {d : ℕ} (y : PDE.Vec d) :
+private theorem continuous_movingLensTransport  (y : PDE.Vec d) :
     Continuous (movingLensTransport y) := by
   unfold movingLensTransport
   fun_prop
 
 /-- A closed moving lens is compact under the source-side nonnegative time and
 opening parameters. -/
-theorem isCompact_movingLensClosed {d : ℕ} {xi eps tau : ℝ} {y : PDE.Vec d}
+theorem isCompact_movingLensClosed  {xi eps tau : ℝ} {y : PDE.Vec d}
     (hxi : 0 ≤ xi) (heps : 0 < eps) (htau : 0 ≤ tau) :
     IsCompact (movingLensClosed xi eps tau y) := by
   let R : ℝ := Real.sqrt (xi * tau + eps ^ 2)
-  let container : Set (TimeVelocity d) := Icc 0 tau ×ˢ PDE.euclideanClosedBall 0 R
+  let container : HypoellipticAleksandrov.Parabolic.TVSet d := Icc 0 tau ×ˢ PDE.euclideanClosedBall 0 R
   have hboundPos : 0 < xi * tau + eps ^ 2 :=
     add_pos_of_nonneg_of_pos (mul_nonneg hxi htau) (sq_pos_of_pos heps)
   have hbound : 0 ≤ xi * tau + eps ^ 2 := hboundPos.le
@@ -238,11 +241,11 @@ theorem isCompact_movingLensClosed {d : ℕ} {xi eps tau : ℝ} {y : PDE.Vec d}
 
 /-- Every active point has an active relative neighborhood in its causal past,
 including when the point is on the terminal face. -/
-theorem movingLensActive_mem_nhdsWithin_past {d : ℕ} {xi eps tau : ℝ}
+theorem movingLensActive_mem_nhdsWithin_past  {xi eps tau : ℝ}
     {y : PDE.Vec d} {z : TimeVelocity d} (hz : z ∈ movingLensActive xi eps tau y) :
     movingLensActive xi eps tau y ∈ 𝓝[Iic z.1 ×ˢ Set.univ] z := by
   rcases hz with ⟨hpos, htau, hspatial⟩
-  let neighborhood : Set (TimeVelocity d) :=
+  let neighborhood : HypoellipticAleksandrov.Parabolic.TVSet d :=
     {q | 0 < q.1 ∧
       PDE.vecNormSq (movingLensDisplacement y q) < movingLensDenominator xi eps q.1}
   have hneighborhood : IsOpen neighborhood :=
@@ -251,6 +254,7 @@ theorem movingLensActive_mem_nhdsWithin_past {d : ℕ} {xi eps tau : ℝ}
   refine ⟨neighborhood, hneighborhood.mem_nhds ⟨hpos, hspatial⟩, ?_⟩
   rintro q ⟨hq, hpast⟩
   exact ⟨hq.1, hpast.1.trans htau, hq.2⟩
+end
 
 end
 

@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.OriginalTimeSpacetimeT
 public import Mathlib.Analysis.Normed.Group.Bounded
 public import Mathlib.Geometry.Manifold.PartitionOfUnity
 public import Mathlib.Topology.Separation.Regular
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Compact support geometry for separated spacetime tests
@@ -21,32 +23,33 @@ open scoped Manifold Topology
 noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
+section
+variable {d : ℕ} {τ₁ τ₂ : ℝ} {O : HypoellipticAleksandrov.VecSet d} {hO : IsOpen O} (φ : TestFunction (originalTimeOpenCylinderOpens τ₁ τ₂ O hO) ℝ (⊤ : ℕ∞))
 
 /-- The compact time projection of a spacetime test support. -/
 def spacetimeTestTimeSupportCompact
-    {d : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)} {hO : IsOpen O}
-    (φ : TestFunction (originalTimeOpenCylinderOpens τ₁ τ₂ O hO) ℝ (⊤ : ℕ∞)) :
+     :
     TopologicalSpace.Compacts ℝ :=
   ⟨Prod.fst '' tsupport (φ : TimeVelocity d → ℝ),
     φ.hasCompactSupport.isCompact.image continuous_fst⟩
 
 /-- The compact spatial projection of a spacetime test support. -/
 def spacetimeTestSpatialSupportCompact
-    {d : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)} {hO : IsOpen O}
-    (φ : TestFunction (originalTimeOpenCylinderOpens τ₁ τ₂ O hO) ℝ (⊤ : ℕ∞)) :
+     :
     TopologicalSpace.Compacts (PDE.Vec d) :=
   ⟨Prod.snd '' tsupport (φ : TimeVelocity d → ℝ),
     φ.hasCompactSupport.isCompact.image continuous_snd⟩
+end
 
 /-- A smooth compact spatial cutoff equal to one near the spatial support projection. -/
 theorem exists_spacetimeTest_spatialCutoff
-    {d : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)} (hO : IsOpen O)
+    {d : ℕ} {τ₁ τ₂ : ℝ} {O : HypoellipticAleksandrov.VecSet d} (hO : IsOpen O)
     (φ : TestFunction (originalTimeOpenCylinderOpens τ₁ τ₂ O hO) ℝ (⊤ : ℕ∞)) :
     ∃ χ : PDE.Vec d → ℝ,
       ContDiff ℝ (⊤ : ℕ∞) χ ∧
-      (∀ᶠ y in 𝓝ˢ (spacetimeTestSpatialSupportCompact φ : Set (PDE.Vec d)), χ y = 1) ∧
+      (∀ᶠ y in 𝓝ˢ (spacetimeTestSpatialSupportCompact φ : HypoellipticAleksandrov.VecSet d), χ y = 1) ∧
       IsCompact (tsupport χ) ∧ tsupport χ ⊆ O := by
-  let K : Set (PDE.Vec d) :=
+  let K : HypoellipticAleksandrov.VecSet d :=
     spacetimeTestSpatialSupportCompact φ
   have hK : IsCompact K :=
     (spacetimeTestSpatialSupportCompact φ).isCompact
@@ -69,7 +72,7 @@ theorem exists_spacetimeTest_spatialCutoff
   exact hLcompact.of_isClosed_subset (isClosed_tsupport χ) htsupportL
 
 /-- Every compact set in the coordinate-function model lies in a nondegenerate cube. -/
-theorem IsCompact.exists_subset_pi_Icc_vec {d : ℕ} {K : Set (PDE.Vec d)}
+theorem IsCompact.exists_subset_pi_Icc_vec {d : ℕ} {K : HypoellipticAleksandrov.VecSet d}
     (hK : IsCompact K) :
     ∃ R : ℝ, 0 < R ∧ K ⊆ Set.Icc (fun _ => -R) (fun _ => R) := by
   have hcoord : ∀ i : Fin d, ∃ M : ℝ, ∀ y ∈ K, |y i| ≤ M := by

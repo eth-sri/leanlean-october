@@ -9,21 +9,19 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.NestedStripI
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (H1 H2 : Interval)
 
 /-- The actual larger exit mixture restarted from the smaller internal boundary. -/
 def nestedIntervalRestartExit
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H1 H2 : Interval) (sMinus T : ℝ)
+     (sMinus T : ℝ)
     (e : StripPole H1 (T : WithTop ℝ)) : Measure Point :=
   (nestedIntervalRestartPoles hH hLE hlam hLam A H1 H2 sMinus T e).bind
     (stripExit hH hLE hlam hLam A H2 T)
 
 /-- The actual restarted exit mixture is finite. -/
 instance nestedIntervalRestartExit_isFiniteMeasure
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H1 H2 : Interval) (sMinus T : ℝ)
+     (sMinus T : ℝ)
     (e : StripPole H1 (T : WithTop ℝ)) :
     IsFiniteMeasure (nestedIntervalRestartExit hH hLE hlam hLam A H1 H2 sMinus T e) := by
   constructor
@@ -36,9 +34,7 @@ instance nestedIntervalRestartExit_isFiniteMeasure
 /-- Every compact probe satisfies the literal larger-exit equals outer-exit plus restart
   identity. -/
 theorem nestedIntervalExit_probe_identity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H1 H2 : Interval)
+    
     (hsub : H1.carrier ⊆ H2.carrier) (sMinus T : ℝ)
     (e : StripPole H1 (T : WithTop ℝ)) (he : sMinus < e.1.time)
     (f : exitProbeSubmodule) :
@@ -83,5 +79,6 @@ theorem nestedIntervalExit_probe_identity
       (nestedIntervalRestartExit hH hLE hlam hLam A H1 H2 sMinus T e))
   exact hid.trans (hsplit.trans (hsum.trans (congrArg₂ (· + ·) houter
     (hmap.trans (hvalues.trans hbind.symm)))))
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

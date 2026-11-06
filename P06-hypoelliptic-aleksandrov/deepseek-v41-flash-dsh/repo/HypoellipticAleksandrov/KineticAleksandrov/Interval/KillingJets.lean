@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Interval.KillingCalculu
 public import HypoellipticAleksandrov.Parabolic.ScalarClassical
 public import PDEFoundation.Sobolev.OneDimensional.SmoothTransport
 import Mathlib.Analysis.SpecialFunctions.ExpDeriv
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Scalar jets of the affine endpoint heat barrier -/
 

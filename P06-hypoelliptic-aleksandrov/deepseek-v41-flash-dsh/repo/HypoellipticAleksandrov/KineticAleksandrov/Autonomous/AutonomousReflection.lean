@@ -17,7 +17,7 @@ theorem autonomous_smooth_localised_of_below_four_density
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
     (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) (p : ℝ)
     (hp : criticalP ⟨Lam / lam, (le_div_iff₀ hlam).2
-      (by simpa only [one_mul] using hLam)⟩ < p) :
+      (by simpa using hLam)⟩ < p) :
     ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam)
       (P₀ : Point) (R : ℝ), 0 < R → ∀ (u f : Point → ℝ),
       ContinuousOn u (closure (backwardCylinder P₀ R)) →

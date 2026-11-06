@@ -18,11 +18,12 @@ from the return-time chain relative to its explicit preliminary P6 input.
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
 
 /-- Every canonical observed visit count is finite, with an arbitrary positive horizon. -/
 theorem visitsFromZero_isFiniteMeasure
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T : ℝ) (P : Point)
     (hbar : |c.vbar| = 2 * c.r) (hJ : closure c.active ⊆ J.carrier)
     (hT : 0 < T) (hvel : P.velocity 0 ∈ closure c.entrance) :
@@ -32,8 +33,7 @@ theorem visitsFromZero_isFiniteMeasure
 
 /-- Source position concentration, including the initial atom and the truncated final bin. -/
 theorem position_cell_count_of_start_time
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (alpha : ℝ)
+     (alpha : ℝ)
     (ha : enlargedAdmissibleAlpha lam Lam hlam hLam alpha)
     (hp6 : SmoothAutonomousP6Statement lam Lam)
     (hTime : ∃ Ct : ℝ, 0 < Ct ∧ ∀ (A : SmoothAutonomous lam Lam) (c : Clock)
@@ -117,5 +117,6 @@ theorem position_cell_count_of_start_time
       rw [← mul_assoc]
       apply mul_le_mul_of_nonneg_right _ hdecay
       nlinarith
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

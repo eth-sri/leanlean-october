@@ -55,7 +55,7 @@ theorem reconstruction_strict_transport_cone_ae
       · exact (hbd p hp).trans (le_max_right _ _))
   have hpn : ∀ p, 0 ≤ phi p := fun p => expNegInvGlue.nonneg _
   have hint : Integrable phi Ω := by
-    apply Integrable.mono' (integrable_const (1 : ℝ))
+    apply Integrable.mono' (integrable_const 1)
       ((reconstruction_smooth_physical_continuous phi
         (reconstructionConeProbe_smooth _ _ _)).measurable.aestronglyMeasurable)
     exact Filter.Eventually.of_forall (fun p => by

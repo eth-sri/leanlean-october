@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.StripMassInfinite
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.Assembly
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.Uniqueness
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Canonical full-space autonomous evolution
 
@@ -17,7 +18,7 @@ open Set MeasureTheory HypoellipticAleksandrov
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 
 /-- The literal full velocity domain. -/
-def autonomousWholeDomain : Set (PDE.Vec 1) := univ
+def autonomousWholeDomain : HypoellipticAleksandrov.VecSet 1 := univ
 
 /-- The full velocity domain is an admissible evolution domain. -/
 theorem autonomousWholeDomain_admissible : IsAdmissibleEvolutionDomain autonomousWholeDomain :=

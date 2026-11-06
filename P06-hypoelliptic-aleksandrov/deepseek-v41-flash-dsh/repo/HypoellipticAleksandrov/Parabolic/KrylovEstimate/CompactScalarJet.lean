@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.Parabolic.HarnackUnitCylinder.SpatialWeakD
 public import HypoellipticAleksandrov.Parabolic.HarnackUnitCylinder.CompactLp
 public import HypoellipticAleksandrov.Parabolic.WeakJetCutoff
 public import HypoellipticAleksandrov.Parabolic.WeakJetExtension
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Compactly supported continuous weak representatives of a scalar jet -/
 
@@ -16,7 +17,7 @@ open scoped Topology
 
 /-- Localization supplies global continuous compactly supported selected weak derivatives. -/
 theorem exists_compact_continuous_scalar_jet
-    {N : ℕ} {V K : Set (TimeVelocity N)} (hV : IsOpen V)
+    {N : ℕ} {V K : HypoellipticAleksandrov.Parabolic.TVSet N} (hV : IsOpen V)
     (hK : IsCompact K) (hKV : K ⊆ V)
     (q : TimeVelocity N → ℝ) (hq : IsScalarC12On q V) :
     ∃ w : ParabolicW12Function N univ 1,

@@ -15,28 +15,30 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
 open Set
+section
+variable {d : ℕ}
 
 /-- The source's literal cubic Hermite position polynomial. -/
-def hermitePosition {d : ℕ} (T : ℝ) (x0 v0 x1 v1 : PDE.Vec d) (s : ℝ) : PDE.Vec d :=
+def hermitePosition  (T : ℝ) (x0 v0 x1 v1 : PDE.Vec d) (s : ℝ) : PDE.Vec d :=
   let z := s / T
   (2 * z ^ 3 - 3 * z ^ 2 + 1) • x0 + ((z ^ 3 - 2 * z ^ 2 + z) * T) • v0 +
     (-2 * z ^ 3 + 3 * z ^ 2) • x1 + ((z ^ 3 - z ^ 2) * T) • v1
 
 /-- Velocity in displacement-difference coordinates. -/
-def hermiteVelocity {d : ℕ} (T : ℝ) (x0 v0 x1 v1 : PDE.Vec d) (s : ℝ) : PDE.Vec d :=
+def hermiteVelocity  (T : ℝ) (x0 v0 x1 v1 : PDE.Vec d) (s : ℝ) : PDE.Vec d :=
   let z := s / T
   v0 + ((6 * z - 6 * z ^ 2) / T) • (x1 - x0 - T • v0) +
     (3 * z ^ 2 - 2 * z) • (v1 - v0)
 
 /-- Acceleration in displacement-difference coordinates. -/
-def hermiteAcceleration {d : ℕ} (T : ℝ) (x0 v0 x1 v1 : PDE.Vec d) (s : ℝ) :
+def hermiteAcceleration  (T : ℝ) (x0 v0 x1 v1 : PDE.Vec d) (s : ℝ) :
     PDE.Vec d :=
   let z := s / T
   ((6 - 12 * z) / T ^ 2) • (x1 - x0 - T • v0) +
     ((6 * z - 2) / T) • (v1 - v0)
 
 /-- Equivalent displacement representation of the literal polynomial. -/
-theorem hermitePosition_eq {d : ℕ} {T : ℝ} (hT : T ≠ 0)
+theorem hermitePosition_eq  {T : ℝ} (hT : T ≠ 0)
     (x0 v0 x1 v1 : PDE.Vec d) (s : ℝ) :
     hermitePosition T x0 v0 x1 v1 s =
       x0 + s • v0 + (3 * (s / T) ^ 2 - 2 * (s / T) ^ 3) •
@@ -47,33 +49,33 @@ theorem hermitePosition_eq {d : ℕ} {T : ℝ} (hT : T ≠ 0)
   ring
 
 /-- Position takes the prescribed initial endpoint. -/
-theorem hermitePosition_zero {d : ℕ} (T : ℝ) (x0 v0 x1 v1 : PDE.Vec d) :
+theorem hermitePosition_zero  (T : ℝ) (x0 v0 x1 v1 : PDE.Vec d) :
     hermitePosition T x0 v0 x1 v1 0 = x0 := by
   simp [hermitePosition]
 
 /-- Position takes the prescribed terminal endpoint. -/
-theorem hermitePosition_end {d : ℕ} {T : ℝ} (hT : T ≠ 0)
+theorem hermitePosition_end  {T : ℝ} (hT : T ≠ 0)
     (x0 v0 x1 v1 : PDE.Vec d) : hermitePosition T x0 v0 x1 v1 T = x1 := by
   norm_num [hermitePosition, hT]
 
 /-- Velocity takes the prescribed initial endpoint. -/
-theorem hermiteVelocity_zero {d : ℕ} (T : ℝ) (x0 v0 x1 v1 : PDE.Vec d) :
+theorem hermiteVelocity_zero  (T : ℝ) (x0 v0 x1 v1 : PDE.Vec d) :
     hermiteVelocity T x0 v0 x1 v1 0 = v0 := by
   simp [hermiteVelocity]
 
 /-- Velocity takes the prescribed terminal endpoint. -/
-theorem hermiteVelocity_end {d : ℕ} {T : ℝ} (hT : T ≠ 0)
+theorem hermiteVelocity_end  {T : ℝ} (hT : T ≠ 0)
     (x0 v0 x1 v1 : PDE.Vec d) : hermiteVelocity T x0 v0 x1 v1 T = v1 := by
   norm_num [hermiteVelocity, hT]
 
 /-- The Hermite velocity polynomial is smooth. -/
-theorem contDiff_hermiteVelocity {d : ℕ} (T : ℝ) (x0 v0 x1 v1 : PDE.Vec d) :
+theorem contDiff_hermiteVelocity  (T : ℝ) (x0 v0 x1 v1 : PDE.Vec d) :
     ContDiff ℝ (⊤ : ℕ∞) (hermiteVelocity T x0 v0 x1 v1) := by
   unfold hermiteVelocity
   fun_prop
 
 /-- The Hermite velocity is the derivative of position. -/
-theorem hasDerivAt_hermitePosition {d : ℕ} {T : ℝ} (hT : T ≠ 0)
+theorem hasDerivAt_hermitePosition  {T : ℝ} (hT : T ≠ 0)
     (x0 v0 x1 v1 : PDE.Vec d) (s : ℝ) :
     HasDerivAt (hermitePosition T x0 v0 x1 v1)
       (hermiteVelocity T x0 v0 x1 v1 s) s := by
@@ -92,7 +94,7 @@ theorem hasDerivAt_hermitePosition {d : ℕ} {T : ℝ} (hT : T ≠ 0)
     ring
 
 /-- The displayed acceleration is the derivative of Hermite velocity. -/
-theorem hasDerivAt_hermiteVelocity {d : ℕ} {T : ℝ} (hT : T ≠ 0)
+theorem hasDerivAt_hermiteVelocity  {T : ℝ} (hT : T ≠ 0)
     (x0 v0 x1 v1 : PDE.Vec d) (s : ℝ) :
     HasDerivAt (hermiteVelocity T x0 v0 x1 v1)
       (hermiteAcceleration T x0 v0 x1 v1 s) s := by
@@ -111,7 +113,7 @@ theorem hasDerivAt_hermiteVelocity {d : ℕ} {T : ℝ} (hT : T ≠ 0)
     ring
 
 /-- Source acceleration bound, with Euclidean norms and no dimension-dependent loss. -/
-theorem hermiteAcceleration_bound {d : ℕ} {T : ℝ} (hT : 0 < T)
+theorem hermiteAcceleration_bound  {T : ℝ} (hT : 0 < T)
     (x0 v0 x1 v1 : PDE.Vec d) {s : ℝ} (hs : s ∈ Icc 0 T) :
     PDE.vecEuclideanNorm (hermiteAcceleration T x0 v0 x1 v1 s) ≤
       6 * PDE.vecEuclideanNorm (x1 - x0 - T • v0) / T ^ 2 +
@@ -134,7 +136,7 @@ theorem hermiteAcceleration_bound {d : ℕ} {T : ℝ} (hT : 0 < T)
     _ = _ := by ring
 
 /-- A continuous derivative bounded in Euclidean norm bounds increments with the same constant. -/
-theorem euclidean_lipschitz_of_derivative {d : ℕ} {v acc : ℝ → PDE.Vec d}
+theorem euclidean_lipschitz_of_derivative  {v acc : ℝ → PDE.Vec d}
     {a b H : ℝ} (ha : Continuous acc)
     (hder : ∀ s, HasDerivAt v (acc s) s)
     (hbound : ∀ s ∈ Icc a b, PDE.vecEuclideanNorm (acc s) ≤ H) :
@@ -156,7 +158,7 @@ theorem euclidean_lipschitz_of_derivative {d : ℕ} {v acc : ℝ → PDE.Vec d}
     exact hkey s hs t ht hst
 
 /-- The cubic Hermite path is an admissible skeleton with the source acceleration constant. -/
-theorem hermite_isSkeleton {d : ℕ} {T : ℝ} (hT : 0 < T)
+theorem hermite_isSkeleton  {T : ℝ} (hT : 0 < T)
     (x0 v0 x1 v1 : PDE.Vec d) :
     IsSkeleton (hermitePosition T x0 v0 x1 v1)
       (hermiteVelocity T x0 v0 x1 v1)
@@ -171,5 +173,6 @@ theorem hermite_isSkeleton {d : ℕ} {T : ℝ} (hT : 0 < T)
       fun_prop)
     (hasDerivAt_hermiteVelocity hT.ne' x0 v0 x1 v1)
   exact fun s hs => hermiteAcceleration_bound hT x0 v0 x1 v1 hs
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

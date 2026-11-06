@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.ConeSupport
 public import HypoellipticAleksandrov.KineticAleksandrov.Maximum.ComparisonGeometry
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.DomainDominationMeasure
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # The strict time and position margins of the local exit cone -/
 

@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.H10PositivePartContinuity
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeGelfandSteklov
 public import Mathlib.Analysis.Calculus.Deriv.Slope
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Positive-part reverse-time Steklov energy identities
@@ -33,15 +34,17 @@ private theorem half_sq_sub_sq_le_positivePart_mul_sub (x z : ℝ) :
   rcases le_total x 0 with hx | hx <;> rcases le_total z 0 with hz | hz <;>
     simp only [max_eq_left, max_eq_right, hx, hz] <;>
     nlinarith [sq_nonneg (x - z)]
+section
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
 
 /-- Half the squared pivot norm of the positive part. -/
 def positivePartHalfEnergy
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+     (hΩ : IsOpen Ω)
     (v : H10HilbertGraph hΩ) : ℝ :=
   (1 / 2 : ℝ) * ‖valueCLM hΩ (h10PositivePart hΩ v)‖ ^ 2
 
 private theorem scalarLp_norm_sq_eq_integral_sq
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+     (f : PDE.ScalarLp Ω 2) :
     ‖f‖ ^ 2 = ∫ a, (f a) ^ 2 ∂(PDE.volumeOn Ω) := by
   rw [← real_inner_self_eq_norm_sq, L2.inner_def]
   congr 1
@@ -49,12 +52,12 @@ private theorem scalarLp_norm_sq_eq_integral_sq
   simp only [RCLike.inner_apply, conj_trivial, pow_two]
 
 private theorem scalarLp_integrable_sq
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+     (f : PDE.ScalarLp Ω 2) :
     Integrable (fun a => (f a) ^ 2) (PDE.volumeOn Ω) := by
   exact (MeasureTheory.Lp.memLp f).integrable_sq
 
 private theorem scalarLp_positivePart_support_lower
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (f z : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+     (f z : PDE.ScalarLp Ω 2) :
     inner ℝ (MeasureTheory.Lp.posPart z) (f - z) ≤
       (1 / 2 : ℝ) * ‖MeasureTheory.Lp.posPart f‖ ^ 2 -
         (1 / 2 : ℝ) * ‖MeasureTheory.Lp.posPart z‖ ^ 2 := by
@@ -75,7 +78,7 @@ private theorem scalarLp_positivePart_support_lower
   nlinarith [positivePart_mul_sub_le_half_sq_sub_sq (f a) (z a)]
 
 private theorem scalarLp_positivePart_support_upper
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (f z : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+     (f z : PDE.ScalarLp Ω 2) :
     (1 / 2 : ℝ) * ‖MeasureTheory.Lp.posPart f‖ ^ 2 -
         (1 / 2 : ℝ) * ‖MeasureTheory.Lp.posPart z‖ ^ 2 ≤
       inner ℝ (MeasureTheory.Lp.posPart f) (f - z) := by
@@ -96,7 +99,7 @@ private theorem scalarLp_positivePart_support_upper
   nlinarith [half_sq_sub_sq_le_positivePart_mul_sub (f a) (z a)]
 
 private theorem positivePart_support_lower
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+     (hΩ : IsOpen Ω)
     (x z : H10HilbertGraph hΩ) :
     (scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ x) -
         scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ z))
@@ -109,7 +112,7 @@ private theorem positivePart_support_lower
   exact scalarLp_positivePart_support_lower (valueCLM hΩ x) (valueCLM hΩ z)
 
 private theorem positivePart_support_upper
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+     (hΩ : IsOpen Ω)
     (x z : H10HilbertGraph hΩ) :
     positivePartHalfEnergy hΩ x - positivePartHalfEnergy hΩ z ≤
       (scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ x) -
@@ -120,6 +123,7 @@ private theorem positivePart_support_upper
   simp only [positivePartHalfEnergy, valueCLM_h10PositivePart]
   rw [← inner_sub_right]
   exact scalarLp_positivePart_support_upper (valueCLM hΩ x) (valueCLM hΩ z)
+end
 
 private theorem tendsto_clm_apply
     {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
@@ -199,7 +203,7 @@ private theorem hasDerivAt_of_support_inequalities
 /-- Chain rule for the half squared `L²` norm of the positive part, derived
 from the derivative of the pivoted curve and convex support inequalities. -/
 theorem hasDerivAt_positivePartHalfEnergy_of_pivoted_curve
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     (x : ℝ → H10HilbertGraph hΩ) (hx : Continuous x)
     (y : H10HilbertGraphDual hΩ) (t : ℝ)
     (hpivot : HasDerivAt
@@ -217,7 +221,7 @@ theorem hasDerivAt_positivePartHalfEnergy_of_pivoted_curve
 /-- Fixed-window forward Steklov positive-part energy identity in the
 reverse-time Gelfand triple. -/
 theorem reverseTimeForwardSteklov_positivePart_energy_identity
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)

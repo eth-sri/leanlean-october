@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyMeanNorm
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 public import Mathlib.MeasureTheory.Function.LpSeminorm.Basic
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Restriction for normalized parabolic Morrey mean norms
@@ -58,7 +59,7 @@ private theorem parabolicMorreyBox_volume_ratio_rpow_toReal
 /-- Restricting to a smaller positive finite set costs the normalized-volume
 ratio to the power `1 / (d + 1)`. -/
 theorem parabolicELpMeanNormOn_mono_set
-    {d : Nat} {Qₛ Qᵦ : Set (TimeVelocity d)}
+    {d : Nat} {Qₛ Qᵦ : HypoellipticAleksandrov.Parabolic.TVSet d}
     (_hₛpos : 0 < volume Qₛ) (hₛtop : volume Qₛ < ∞)
     (hᵦpos : 0 < volume Qᵦ) (hᵦtop : volume Qᵦ < ∞)
     (hsub : Qₛ ⊆ Qᵦ) (f : TimeVelocity d -> Real) :

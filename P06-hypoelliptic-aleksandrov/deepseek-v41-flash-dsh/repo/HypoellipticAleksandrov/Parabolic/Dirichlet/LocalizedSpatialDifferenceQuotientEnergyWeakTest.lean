@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.LocalizedSpatialDifferenceQuotientWeakTest
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Coordinate derivative of the localized spatial energy test
@@ -16,19 +17,17 @@ noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 private theorem sq_tsupport_subset
-    {d : ℕ} {inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (η : PDE.QuantitativeSmoothCutoff inner outer K) :
     tsupport η.sq.toFun ⊆ tsupport η.toFun := by
   simpa only [PDE.QuantitativeSmoothCutoff.sq_toFun, pow_two] using
     (tsupport_mul_subset_left (f := η.toFun) (g := η.toFun))
+section
+variable {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ} (η : PDE.QuantitativeSmoothCutoff inner outer K) (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω) (hηΩ : tsupport η.toFun ⊆ Ω) (hηshift : Set.MapsTo (fun y : PDE.Vec d => y + h • PDE.basisVec k)
+      (tsupport η.toFun) Ω) (j : Fin d) (y : PDE.Vec d)
 
 private theorem energyWeakTest_partialDeriv_eq_backwardSquare
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (η : PDE.QuantitativeSmoothCutoff inner outer K) (k : Fin d) (h : ℝ)
-    (φ : PDE.WeakTestFunction Ω) (hηΩ : tsupport η.toFun ⊆ Ω)
-    (hηshift : Set.MapsTo (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (tsupport η.toFun) Ω)
-    (j : Fin d) (y : PDE.Vec d) :
+     :
     PDE.WeakTestFunction.partialDeriv
       (localizedSpatialDifferenceQuotientEnergyWeakTest η k h φ φ.contDiff hηΩ hηshift) j y =
       ((localizedSpatialDifferenceQuotientWeakTest η.sq k h φ
@@ -78,14 +77,7 @@ private theorem energyWeakTest_partialDeriv_eq_backwardSquare
 /-- The localized energy test has the literal translated coordinate product
 rule, with the totalized backward quotient at signed step `-h`. -/
 theorem localizedSpatialDifferenceQuotientEnergyWeakTest_partialDeriv
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
-    (hηΩ : tsupport η.toFun ⊆ Ω)
-    (hηshift : Set.MapsTo
-      (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (tsupport η.toFun) Ω)
-    (j : Fin d) (y : PDE.Vec d) :
+     :
     (localizedSpatialDifferenceQuotientEnergyWeakTest
       η k h φ φ.contDiff hηΩ hηshift).partialDeriv j y =
       ((2 * η (y + (-h) • PDE.basisVec k) *
@@ -108,5 +100,6 @@ theorem localizedSpatialDifferenceQuotientEnergyWeakTest_partialDeriv
       ((sq_tsupport_subset η).trans hηΩ) j y]
   simp only [PDE.QuantitativeSmoothCutoff.sq_apply,
     PDE.QuantitativeSmoothCutoff.sq_classicalGradient, Pi.smul_apply, smul_eq_mul]
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

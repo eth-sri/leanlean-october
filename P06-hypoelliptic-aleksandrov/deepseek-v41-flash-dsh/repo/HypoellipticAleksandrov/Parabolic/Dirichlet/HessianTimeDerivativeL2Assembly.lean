@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialBoun
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeBochner
 public import HypoellipticAleksandrov.Parabolic.WeakDerivativesLocal
 public import Mathlib.Topology.MetricSpace.Bounded
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Local L² assembly of the Hessian-derived time derivative
@@ -22,7 +24,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 private theorem memLp_mul_of_continuousOn_of_bound
-    {d : ℕ} {S : Set (TimeVelocity d)} {f g : TimeVelocity d → ℝ} {M : ℝ}
+    {d : ℕ} {S : HypoellipticAleksandrov.Parabolic.TVSet d} {f g : TimeVelocity d → ℝ} {M : ℝ}
     (hS : MeasurableSet S) (hf : ContinuousOn f S)
     (hbound : ∀ z ∈ S, |f z| ≤ M)
     (hg : ParabolicMemLpOn S (2 : ℝ≥0∞) g) :
@@ -36,7 +38,7 @@ private theorem memLp_mul_of_continuousOn_of_bound
 /-- The literal coefficient--Hessian, drift--gradient, zeroth-order, and source
 combination in the reverse-time equation is locally square-integrable. -/
 theorem hessianTimeDerivative_memLp
-    {d : ℕ} {Ω O : Set (PDE.Vec d)}
+    {d : ℕ} {Ω O : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ τ₁ τ₂ : ℝ)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (hO : IsOpen O) (hOΩ : O ⊆ Ω)
@@ -72,7 +74,7 @@ theorem hessianTimeDerivative_memLp
           reverseTimeVectorCoefficient r₁ b z.1 z.2 j * G j z) +
         reverseTimeScalarCoefficient r₁ c z.1 z.2 * U z -
         reverseTimeScalarCoefficient r₁ F z.1 z.2) := by
-  let Qin : Set (TimeVelocity d) := Set.Ioo τ₁ τ₂ ×ˢ O
+  let Qin : HypoellipticAleksandrov.Parabolic.TVSet d := Set.Ioo τ₁ τ₂ ×ˢ O
   have hQin : MeasurableSet Qin := measurableSet_Ioo.prod hO.measurableSet
   let rev : TimeVelocity d → TimeVelocity d := fun z => (r₁ - z.1, z.2)
   have hrev : Continuous rev :=

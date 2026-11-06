@@ -1,6 +1,8 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Interval.SlabFourierExtensionMarginal
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Occupation estimates on the zero-extension carrier
 
@@ -42,7 +44,7 @@ theorem intervalExtension_occupation
   obtain ⟨g, hgm, hg0, hchar, hb⟩ :=
     hocc m Lb hm hmLb a c hac B b hs hJ S K hr σ T hT ρj
   have hp := (interval_evolution_clauses hH hLE hac B b hs hJ S K hr).2.1
-  let U : Set (TimeVelocity 1) := Ioo 0 T ×ˢ PDE.oneDimensionalAxisBox a c
+  let U : HypoellipticAleksandrov.Parabolic.TVSet 1 := Ioo 0 T ×ˢ PDE.oneDimensionalAxisBox a c
   let gw := U.indicator g
   have hU : MeasurableSet U := measurableSet_Ioo.prod hJ
   have hUR : U ⊆ Ioo (0 : ℝ) T ×ˢ univ := prod_mono Subset.rfl (subset_univ _)

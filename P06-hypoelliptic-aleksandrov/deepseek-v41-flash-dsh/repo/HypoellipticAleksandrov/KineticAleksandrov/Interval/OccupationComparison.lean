@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Interval.KillingComparison
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.OccupationDensity
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Scalar comparison with the whole-space evolution
 

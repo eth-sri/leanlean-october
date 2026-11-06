@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.HomogeneousReconstructionSource
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.HomogeneousReconstructionJets
 public import HypoellipticAleksandrov.KineticAleksandrov.TheoremA.GreenPotentialsGeometry
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Physical C112 jets in packed evolution coordinates
 
@@ -39,23 +40,25 @@ private theorem physical_position_line (x : EvolutionVec 1) (i : Fin 1) (t : ℝ
       ⟨timeCoord 1 x, transportedCoord 1 x + t • PDE.basisVec i,
         diffusedCoord 1 x⟩ := by
   simp [reconstructionPhysicalPoint, basisZ, PDE.basisVec]
+section
+variable {phi : Point → ℝ} {D : Set Point}
 
 /-- The physical time slice supplies the packed time line derivative. -/
-theorem reconstruction_time_hasLineDerivAt {phi : Point → ℝ} {D : Set Point}
+theorem reconstruction_time_hasLineDerivAt 
     (hphi : IsKineticC112On phi D) {x : EvolutionVec 1}
     (hx : reconstructionPhysicalPoint x ∈ D) :
     HasLineDerivAt ℝ (phi ∘ reconstructionPhysicalPoint)
       (kineticTimeDerivative phi (reconstructionPhysicalPoint x)) x basisT := by
   have h := (hphi.timeSlice_hasDerivAt hx).comp_of_eq
-    (h := fun t : ℝ => timeCoord 1 x + t) (0 : ℝ)
-    ((hasDerivAt_id (0 : ℝ)).const_add (timeCoord 1 x))
+    (h := fun t : ℝ => timeCoord 1 x + t) 0
+    ((hasDerivAt_id 0).const_add (timeCoord 1 x))
     (by simp [reconstructionPhysicalPoint])
   unfold HasLineDerivAt
   simp only [Function.comp_def, physical_time_line]
   simpa only [Function.comp_def, mul_one, reconstructionPhysicalPoint] using! h
 
 /-- The physical velocity slice supplies each packed diffused line derivative. -/
-theorem reconstruction_velocity_hasLineDerivAt {phi : Point → ℝ} {D : Set Point}
+theorem reconstruction_velocity_hasLineDerivAt 
     (hphi : IsKineticC112On phi D) {x : EvolutionVec 1}
     (hx : reconstructionPhysicalPoint x ∈ D) (i : Fin 1) :
     HasLineDerivAt ℝ (phi ∘ reconstructionPhysicalPoint)
@@ -67,7 +70,7 @@ theorem reconstruction_velocity_hasLineDerivAt {phi : Point → ℝ} {D : Set Po
   exact h
 
 /-- The physical position slice supplies each packed transported line derivative. -/
-theorem reconstruction_position_hasLineDerivAt {phi : Point → ℝ} {D : Set Point}
+theorem reconstruction_position_hasLineDerivAt 
     (hphi : IsKineticC112On phi D) {x : EvolutionVec 1}
     (hx : reconstructionPhysicalPoint x ∈ D) (i : Fin 1) :
     HasLineDerivAt ℝ (phi ∘ reconstructionPhysicalPoint)
@@ -79,7 +82,7 @@ theorem reconstruction_position_hasLineDerivAt {phi : Point → ℝ} {D : Set Po
   exact h
 
 /-- Differentiating a physical velocity gradient entry gives the actual Hessian entry. -/
-theorem reconstruction_hessian_hasLineDerivAt {phi : Point → ℝ} {D : Set Point}
+theorem reconstruction_hessian_hasLineDerivAt 
     (hphi : IsKineticC112On phi D) {x : EvolutionVec 1}
     (hx : reconstructionPhysicalPoint x ∈ D) (i j : Fin 1) :
     HasLineDerivAt ℝ
@@ -98,5 +101,6 @@ theorem reconstruction_hessian_hasLineDerivAt {phi : Point → ℝ} {D : Set Poi
   unfold HasLineDerivAt
   simp only [physical_velocity_line]
   exact h
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

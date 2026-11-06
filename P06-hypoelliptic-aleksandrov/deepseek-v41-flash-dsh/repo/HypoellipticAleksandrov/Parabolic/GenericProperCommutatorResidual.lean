@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.Parabolic.ProperSplitIndexArithmetic
 public import HypoellipticAleksandrov.Parabolic.ParabolicWeakDerivativeFamilyLeibniz
 public import HypoellipticAleksandrov.Coefficients.Ellipticity
 public import HypoellipticAleksandrov.Analysis.BoundedMultiplierLp
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Generic proper commutator residual
@@ -23,7 +25,7 @@ open scoped BigOperators
 /-- The source derivative minus all proper coefficient commutators at one
 bounded parabolic multi-index. -/
 noncomputable def properDifferentiatedScalarCommutatorResidual
-    {d M : ℕ} {U : Set (TimeVelocity d)}
+    {d M : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u : TimeVelocity d → ℝ} {F : ℝ → PDE.Vec d → ℝ}
     (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
@@ -63,7 +65,7 @@ noncomputable def properDifferentiatedScalarCommutatorResidual
         else 0)
 
 private theorem coordinateIteratedFDeriv_continuousOn
-    {d M : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
+    {d M : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} (hU : IsOpen U)
     (q : TimeVelocity d → ℝ) (hq : ContDiffOn ℝ M q U)
     (alpha : TimeVelocityMultiIndex d) (halpha : alpha.order ≤ M) :
     ContinuousOn (TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha q) U := by
@@ -94,7 +96,7 @@ private theorem ae_restrict_of_forall_mem
   exact hP x hx
 
 private theorem properAtom_memLp_and_eLpNorm_toReal_le
-    {d M : ℕ} (U : Set (TimeVelocity d)) (hU : IsOpen U)
+    {d M : ℕ} (U : HypoellipticAleksandrov.Parabolic.TVSet d) (hU : IsOpen U)
     (q : TimeVelocity d → ℝ) (hq : ContDiffOn ℝ M q U)
     (B : ParabolicDerivativeIndex d M → ℝ)
     (hB : ∀ alpha, 0 ≤ B alpha)
@@ -184,7 +186,7 @@ private theorem eLpNorm_sub_toReal_le
 /-- The proper commutator residual is in restricted `L²` and obeys the literal
 componentwise convolution bound with no principal split. -/
 theorem properDifferentiatedScalarCommutatorResidual_memLp_and_eLpNorm_toReal_le
-    {d M : ℕ} (U : Set (TimeVelocity d)) (hU : IsOpen U)
+    {d M : ℕ} (U : HypoellipticAleksandrov.Parabolic.TVSet d) (hU : IsOpen U)
     (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c : ℝ → PDE.Vec d → ℝ)

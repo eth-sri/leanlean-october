@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyNorm
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Derivative-only parabolic Morrey norms
@@ -31,14 +32,14 @@ noncomputable def parabolicMorreyDerivativeLpNorm (d : Nat)
 
 /-- The raw restricted counterpart of `parabolicMorreyDerivativeLpNorm`. -/
 noncomputable def parabolicMorreyDerivativeLpNormOn (d : Nat)
-    (u : TimeVelocity d -> Real) (Q : Set (TimeVelocity d)) : Real :=
+    (u : TimeVelocity d -> Real) (Q : HypoellipticAleksandrov.Parabolic.TVSet d) : Real :=
   parabolicLpNormOn d (timeDerivative u) Q +
     ∑ i : Fin d, ∑ j : Fin d,
       parabolicLpNormOn d (fun z => velocityHessian u z i j) Q
 
 /-- A globally `L^(d + 1)` scalar has no larger raw restricted norm. -/
 theorem parabolicLpNormOn_le_parabolicLpNorm
-    {d : Nat} (f : TimeVelocity d -> Real) (Q : Set (TimeVelocity d))
+    {d : Nat} (f : TimeVelocity d -> Real) (Q : HypoellipticAleksandrov.Parabolic.TVSet d)
     (hf : MemLp f (parabolicExponent d) volume) :
     parabolicLpNormOn d f Q <= parabolicLpNorm d f := by
   unfold parabolicLpNormOn parabolicLpNorm parabolicELpNormOn parabolicELpNorm
@@ -48,7 +49,7 @@ theorem parabolicLpNormOn_le_parabolicLpNorm
 /-- Under componentwise global selected-jet integrability, restricting the
 time/Hessian Morrey right-hand side cannot increase it. -/
 theorem parabolicMorreyDerivativeLpNormOn_le
-    {d : Nat} (u : TimeVelocity d -> Real) (Q : Set (TimeVelocity d))
+    {d : Nat} (u : TimeVelocity d -> Real) (Q : HypoellipticAleksandrov.Parabolic.TVSet d)
     (hu : ParabolicSmoothJetMemLp d u) :
     parabolicMorreyDerivativeLpNormOn d u Q <=
       parabolicMorreyDerivativeLpNorm d u := by

@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.Parabolic.ScalarDirichletData
 public import Mathlib.Analysis.Calculus.Deriv.Add
 public import Mathlib.Analysis.Calculus.Deriv.Mul
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Affine scalar calculus
@@ -60,7 +62,7 @@ namespace HypoellipticAleksandrov.Parabolic
 
 /-- Scalar `C¹˒²` regularity is preserved by a constant affine transformation. -/
 theorem IsScalarC12On.const_mul_add_const
-    {d : ℕ} {ell : TimeVelocity d → ℝ} {Q : Set (TimeVelocity d)}
+    {d : ℕ} {ell : TimeVelocity d → ℝ} {Q : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hell : IsScalarC12On ell Q) (K epsilon : ℝ) :
     IsScalarC12On (fun z => K * ell z + epsilon) Q := by
   refine ⟨hell.continuousOn.const_smul K |>.add continuousOn_const, ?_, ?_, ?_, ?_, ?_⟩

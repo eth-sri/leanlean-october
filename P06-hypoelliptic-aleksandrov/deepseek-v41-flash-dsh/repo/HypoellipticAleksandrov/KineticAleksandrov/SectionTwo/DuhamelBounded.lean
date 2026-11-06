@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.Duhamel
 import Mathlib.Topology.Order.Compact
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Uniform Duhamel bounds for sources with a finite time support window -/
 
@@ -11,7 +12,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set
 
 /-- Source-time integration vanishes outside the source's time support window. -/
-theorem duhamelIntegrand_eq_zero_of_time_not_mem {d : ℕ} {Ω : Set (PDE.Vec d)}
+theorem duhamelIntegrand_eq_zero_of_time_not_mem {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (g : KineticPoint d → ℝ)
     (a b : ℝ) (hgt : ∀ p, p.time ∉ Icc a b → g p = 0)
     (p : KineticPoint d) (r : ℝ) (hr : r ∉ Icc a b) :
@@ -27,7 +28,7 @@ theorem duhamelIntegrand_eq_zero_of_time_not_mem {d : ℕ} {Ω : Set (PDE.Vec d)
   · rfl
 
 /-- A finite source time window gives a uniform bound on the entire Duhamel potential. -/
-theorem duhamelPotential_le_time_window {d : ℕ} {Ω : Set (PDE.Vec d)}
+theorem duhamelPotential_le_time_window {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (τplus : ℝ)
     (g : KineticPoint d → ℝ) (hgn : ∀ p, 0 ≤ g p)
     (C : ℝ) (hC : 0 ≤ C) (hgb : ∀ p, g p ≤ C)
@@ -80,7 +81,7 @@ theorem exists_time_window_of_hasCompactSupport {d : ℕ}
   exact ⟨(min_le_left a b).trans (ha hpt), (hb hpt).trans (le_max_right a b)⟩
 
 /-- Continuous compact nonnegative sources give a globally bounded Duhamel potential. -/
-theorem duhamelPotential_exists_bound {d : ℕ} {Ω : Set (PDE.Vec d)}
+theorem duhamelPotential_exists_bound {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (τplus : ℝ)
     (g : KineticPoint d → ℝ) (hg : Continuous g) (hgc : HasCompactSupport g)
     (hgn : ∀ p, 0 ≤ g p) :
@@ -96,7 +97,7 @@ theorem duhamelPotential_exists_bound {d : ℕ} {Ω : Set (PDE.Vec d)}
     (fun q => (hC (mem_range_self q)).trans (le_max_left C 0)) a b hab hgt p
 
 /-- The source potential is bounded Borel for continuous compact nonnegative sources. -/
-theorem duhamelPotential_boundedBorel {d : ℕ} {Ω : Set (PDE.Vec d)}
+theorem duhamelPotential_boundedBorel {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω)
     (hγ : Continuous γ) (τplus : ℝ) (g : KineticPoint d → ℝ)
     (hg : Continuous g) (hgc : HasCompactSupport g) (hgn : ∀ p, 0 ≤ g p) :

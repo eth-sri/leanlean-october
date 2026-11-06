@@ -10,13 +10,13 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open SectionTwo TheoremA Evolution Green
 open scoped ENNReal NNReal
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) (he : e.velocity 0 ∈ c.active)
 
 /-- The actual normalized infinite Green measure has finite mass, by the interval density
   estimate. -/
 instance clockNativeGreen_isFiniteMeasure
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) (he : e.velocity 0 ∈ c.active) :
+     :
     IsFiniteMeasure (clockNativeGreen hH hLE hlam hLam A c e he) := by
   obtain ⟨C, -, hc⟩ := Interval.interval_green_finite_mass hH hLE
     (3 * lam / 5) (3 * Lam) (9 / 25) 9 (3 / 2) (by positivity) (by norm_num)
@@ -34,12 +34,11 @@ instance clockNativeGreen_isFiniteMeasure
 
 /-- Finite mass survives the established physical coordinate map. -/
 instance clockGreen_isFiniteMeasure
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) (he : e.velocity 0 ∈ c.active) :
+     :
     IsFiniteMeasure (clockGreen hH hLE hlam hLam A c e he) := by
   unfold clockGreen
   infer_instance
+end
 
 /-- The physical velocity weight is Borel. -/
 theorem clock_velocity_weight_measurable :

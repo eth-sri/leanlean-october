@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.Measure.HilbertVectorLpAssembly
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.GalerkinDense
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.LocalizedSpatialDifferenceQuotientSmoothGraph
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.SpatialSobolevNorm
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Bounded localized quotients on the actual smooth `H¹₀` core
@@ -24,7 +25,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 /-- The localized difference quotient as a linear map on bundled smooth tests. -/
 noncomputable def localizedSpatialDifferenceQuotientWeakTestLinearMap
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (hηΩ : tsupport η.toFun ⊆ Ω) :
     PDE.WeakTestFunction Ω →ₗ[ℝ] PDE.WeakTestFunction Ω where
@@ -43,9 +44,9 @@ noncomputable def localizedSpatialDifferenceQuotientWeakTestLinearMap
     ring
 
 private theorem norm_hilbertVectorLpCoord_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (j : Fin d)
-    (G : PDE.HilbertVectorLp Ω (2 : ℝ≥0∞)) :
-    ‖PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j G‖ ≤ ‖G‖ := by
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (j : Fin d)
+    (G : PDE.HilbertVectorLp Ω 2) :
+    ‖PDE.hilbertVectorLpCoord Ω 2 j G‖ ≤ ‖G‖ := by
   rw [PDE.hilbertVectorLpCoord]
   calc
     ‖(PiLp.proj (𝕜 := ℝ) 2 (fun _ : Fin d => ℝ) j).compLpL
@@ -61,7 +62,7 @@ private theorem norm_hilbertVectorLpCoord_le
     _ = ‖G‖ := one_mul _
 
 private theorem norm_h10HilbertGraph_le_value_add_gradient
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     (u : H10HilbertGraph hΩ) :
     ‖u‖ ≤ ‖valueCLM hΩ u‖ + ‖gradientCLM hΩ u‖ := by
   apply (sq_le_sq₀ (norm_nonneg _)
@@ -74,14 +75,13 @@ private theorem norm_h10HilbertGraph_le_value_add_gradient
       apply le_add_of_nonneg_right
       exact mul_nonneg (by norm_num) (mul_nonneg (norm_nonneg _) (norm_nonneg _))
     _ = (‖valueCLM hΩ u‖ + ‖gradientCLM hΩ u‖) ^ 2 := by ring
+section
+variable {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ} (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K) (k : Fin d) (h : ℝ)
 
 /-- The cutoff-localized forward spatial quotient as a linear map from
 actual bundled smooth tests into the zero-boundary Sobolev graph. -/
 noncomputable def localizedSpatialDifferenceQuotientSmoothCoreLinearMap
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (hΩ : IsOpen Ω)
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (k : Fin d) (h : ℝ) (hηΩ : tsupport η.toFun ⊆ Ω) :
+     (hηΩ : tsupport η.toFun ⊆ Ω) :
     PDE.WeakTestFunction Ω →ₗ[ℝ] H10HilbertGraph hΩ :=
   (smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ).comp
     (localizedSpatialDifferenceQuotientWeakTestLinearMap η k h hηΩ)
@@ -89,10 +89,7 @@ noncomputable def localizedSpatialDifferenceQuotientSmoothCoreLinearMap
 /-- The quotient-safe vector `L²` expression for the gradient of the
 localized quotient on the actual smooth core. -/
 noncomputable def localizedSpatialDifferenceQuotientSmoothGradientCLM
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (hΩ : IsOpen Ω)
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (k : Fin d) (h : ℝ) :
+     :
     H10HilbertGraph hΩ →L[ℝ]
       PDE.HilbertVectorLp Ω (2 : ℝ≥0∞) :=
   PDE.hilbertVectorLpAssemble fun j =>
@@ -105,10 +102,7 @@ noncomputable def localizedSpatialDifferenceQuotientSmoothGradientCLM
 /-- The smooth-core value class is the quotient-level localized value
 operator applied to the exact dense-core inclusion. -/
 theorem valueCLM_localizedSpatialDifferenceQuotientSmoothCoreLinearMap_apply
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (hΩ : IsOpen Ω)
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
+     (φ : PDE.WeakTestFunction Ω)
     (hηΩ : tsupport η.toFun ⊆ Ω)
     (hηshift : Set.MapsTo
       (fun y : PDE.Vec d => y + h • PDE.basisVec k)
@@ -147,10 +141,7 @@ theorem valueCLM_localizedSpatialDifferenceQuotientSmoothCoreLinearMap_apply
 /-- The smooth-core gradient class is the assembled quotient-safe vector
 operator applied to the exact dense-core inclusion. -/
 theorem gradientCLM_localizedSpatialDifferenceQuotientSmoothCoreLinearMap_apply
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (hΩ : IsOpen Ω)
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
+     (φ : PDE.WeakTestFunction Ω)
     (hηΩ : tsupport η.toFun ⊆ Ω)
     (hηshift : Set.MapsTo
       (fun y : PDE.Vec d => y + h • PDE.basisVec k)
@@ -217,10 +208,7 @@ theorem gradientCLM_localizedSpatialDifferenceQuotientSmoothCoreLinearMap_apply
 /-- The actual smooth localized quotient is bounded relative to the exact
 dense-core inclusion, with a totalized dimension/cutoff/step witness. -/
 theorem norm_localizedSpatialDifferenceQuotientSmoothCoreLinearMap_apply_le
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (hΩ : IsOpen Ω)
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
+     (φ : PDE.WeakTestFunction Ω)
     (hηΩ : tsupport η.toFun ⊆ Ω)
     (hηshift : Set.MapsTo
       (fun y : PDE.Vec d => y + h • PDE.basisVec k)
@@ -316,5 +304,6 @@ theorem norm_localizedSpatialDifferenceQuotientSmoothCoreLinearMap_apply_le
         ((d : ℝ) * ((2 * K / |h|) + (2 / |h|))) * ‖x‖ := by
       exact add_le_add hvalueBound hgradientBound
     _ = (2 * (1 + (d : ℝ) * (K + 1)) / |h|) * ‖x‖ := by ring
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

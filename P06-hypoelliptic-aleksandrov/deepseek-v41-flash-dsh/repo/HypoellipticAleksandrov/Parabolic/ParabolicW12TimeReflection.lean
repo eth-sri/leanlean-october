@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTime
 public import HypoellipticAleksandrov.Parabolic.WeakDerivativesLocal
 public import Mathlib.MeasureTheory.Measure.Haar.NormedSpace
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Reflection of parabolic weak jets in time
@@ -58,7 +60,7 @@ def reverseTimeHomeomorph {d : ℕ} (r₁ : ℝ) :
 /-- Affine reverse time preserves time--velocity Lebesgue measure. -/
 theorem reverseTimeMap_measurePreserving {d : ℕ} (r₁ : ℝ) :
     MeasurePreserving (reverseTimeMap r₁)
-      (volume : Measure (TimeVelocity d)) volume := by
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) volume := by
   let htime : MeasurePreserving (fun r : ℝ => r₁ - r)
       (volume : Measure ℝ) volume := by
     have hneg : MeasurePreserving (fun r : ℝ => -r)
@@ -71,14 +73,14 @@ theorem reverseTimeMap_measurePreserving {d : ℕ} (r₁ : ℝ) :
     simpa only [sub_eq_add_neg, Function.comp_def] using
       (measurePreserving_add_left (volume : Measure ℝ) r₁).comp
         hneg
-  have hprod := htime.prod (MeasurePreserving.id (volume : Measure (PDE.Vec d)))
+  have hprod := htime.prod (MeasurePreserving.id (HypoellipticAleksandrov.VecVolume d))
   rw [volume_timeVelocity_eq_prod d]
   simpa only [reverseTimeMap, Function.uncurry_def, Function.comp_def, Prod.map_def, id_eq]
     using! hprod
 
 /-- Affine reverse time preserves the corresponding restricted measures. -/
 theorem reverseTimeMap_measurePreserving_restrict
-    {d : ℕ} (r₁ : ℝ) {U : Set (TimeVelocity d)}
+    {d : ℕ} (r₁ : ℝ) {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hU : MeasurableSet U) :
     MeasurePreserving (reverseTimeMap r₁)
       (timeVelocityVolumeOn (reverseTimeMap r₁ ⁻¹' U))
@@ -148,7 +150,7 @@ private theorem tsupport_comp_reverseTimeMap
 
 /-- Time reflection transports a weak time derivative with reversed sign. -/
 theorem hasWeakTimeDerivOn_timeReflect
-    {d : ℕ} {U : Set (TimeVelocity d)} {u du : TimeVelocity d → ℝ}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {u du : TimeVelocity d → ℝ}
     (hU : MeasurableSet U) (h : HasWeakTimeDerivOn U u du) (r₁ : ℝ) :
     HasWeakTimeDerivOn (reverseTimeMap r₁ ⁻¹' U)
       (u ∘ reverseTimeMap r₁) ((fun x => -x) ∘ du ∘ reverseTimeMap r₁) := by
@@ -196,7 +198,7 @@ theorem hasWeakTimeDerivOn_timeReflect
 
 /-- Time reflection transports weak velocity partial derivatives. -/
 theorem hasWeakVelocityPartialDerivOn_timeReflect
-    {d : ℕ} {U : Set (TimeVelocity d)} {u dui : TimeVelocity d → ℝ} {i : Fin d}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {u dui : TimeVelocity d → ℝ} {i : Fin d}
     (hU : MeasurableSet U) (h : HasWeakVelocityPartialDerivOn U i u dui)
     (r₁ : ℝ) :
     HasWeakVelocityPartialDerivOn (reverseTimeMap r₁ ⁻¹' U) i
@@ -233,7 +235,7 @@ theorem hasWeakVelocityPartialDerivOn_timeReflect
 
 /-- Pull a selected parabolic weak jet back by affine time reflection. -/
 def ParabolicW12Function.timeReflect
-    {d : ℕ} {U : Set (TimeVelocity d)} {p : ℝ≥0∞}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {p : ℝ≥0∞}
     (w : ParabolicW12Function d U p)
     (r₁ : ℝ) (hU : MeasurableSet U) :
     ParabolicW12Function d (reverseTimeMap r₁ ⁻¹' U) p where
@@ -260,7 +262,7 @@ def ParabolicW12Function.timeReflect
 
 /-- Evaluation of the reflected weak-jet value. -/
 @[simp] theorem ParabolicW12Function.timeReflect_toFun
-    {d : ℕ} {U : Set (TimeVelocity d)} {p : ℝ≥0∞}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {p : ℝ≥0∞}
     (w : ParabolicW12Function d U p)
     (r₁ : ℝ) (hU : MeasurableSet U) (z : TimeVelocity d) :
     (w.timeReflect r₁ hU).toFun z =
@@ -269,7 +271,7 @@ def ParabolicW12Function.timeReflect
 
 /-- Evaluation of the reflected weak-jet time derivative. -/
 @[simp] theorem ParabolicW12Function.timeReflect_timeDeriv
-    {d : ℕ} {U : Set (TimeVelocity d)} {p : ℝ≥0∞}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {p : ℝ≥0∞}
     (w : ParabolicW12Function d U p)
     (r₁ : ℝ) (hU : MeasurableSet U) (z : TimeVelocity d) :
     (w.timeReflect r₁ hU).timeDeriv z =
@@ -278,7 +280,7 @@ def ParabolicW12Function.timeReflect
 
 /-- Evaluation of the reflected weak-jet spatial gradient. -/
 @[simp] theorem ParabolicW12Function.timeReflect_velocityGrad
-    {d : ℕ} {U : Set (TimeVelocity d)} {p : ℝ≥0∞}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {p : ℝ≥0∞}
     (w : ParabolicW12Function d U p)
     (r₁ : ℝ) (hU : MeasurableSet U) (z : TimeVelocity d) :
     (w.timeReflect r₁ hU).velocityGrad z =
@@ -287,7 +289,7 @@ def ParabolicW12Function.timeReflect
 
 /-- Evaluation of the reflected weak-jet spatial Hessian. -/
 @[simp] theorem ParabolicW12Function.timeReflect_velocityHessian
-    {d : ℕ} {U : Set (TimeVelocity d)} {p : ℝ≥0∞}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {p : ℝ≥0∞}
     (w : ParabolicW12Function d U p)
     (r₁ : ℝ) (hU : MeasurableSet U) (z : TimeVelocity d) :
     (w.timeReflect r₁ hU).velocityHessian z =

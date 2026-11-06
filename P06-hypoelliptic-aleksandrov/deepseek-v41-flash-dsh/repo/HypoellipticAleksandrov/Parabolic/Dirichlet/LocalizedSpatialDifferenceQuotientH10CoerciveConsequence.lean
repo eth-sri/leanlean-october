@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.LocalizedSpatialDifferenceQuotientH10CommutatorSplit
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.LocalizedSpatialDifferenceQuotientTranslatedPrincipalCoercivity
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Fixed-slice H10 coercive commutator consequence
@@ -17,7 +19,7 @@ open scoped BigOperators ENNReal RealInnerProductSpace MatrixOrder Matrix.Norms.
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 private def rawTranslatedPrincipalValue
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ T : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ T : ℝ}
     (r₁ : ℝ) (hΩ : IsOpen Ω) (a : CoefficientField d)
     (ζ : ReverseTimeScalarTest T)
     (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
@@ -42,7 +44,7 @@ private def rawTranslatedPrincipalValue
       (ζ τ * χ y * spatialTranslate k h (α i j) (τ, y)) * E j y * H i y ∂volume
 
 private def canonicalTranslatedPrincipalValue
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ T : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ T : ℝ}
     (r₁ : ℝ) (hΩ : IsOpen Ω) (a : CoefficientField d)
     (ζ : ReverseTimeScalarTest T)
     (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
@@ -64,7 +66,7 @@ private def canonicalTranslatedPrincipalValue
         PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i Hv y ∂volume
 
 private theorem integral_eq_of_coord_sub_add
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {T : ℝ}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {T : ℝ}
     (ζ : ReverseTimeScalarTest T) (χ : PDE.Vec d → ℝ)
     (k : Fin d) (h τ : ℝ)
     (α : Fin d → Fin d → TimeVelocity d → ℝ)
@@ -108,7 +110,7 @@ private theorem integral_eq_of_coord_sub_add
   rw [hE, hH]
 
 private theorem raw_translatedPrincipal_eq_canonical_ev_hv
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ T : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ T : ℝ}
     (r₁ : ℝ) (hΩ : IsOpen Ω) (a : CoefficientField d)
     (ζ : ReverseTimeScalarTest T)
     (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
@@ -187,7 +189,7 @@ private theorem scalar_coercive_consequence
     _ ≤ z * Y := hzR
 
 private theorem translated_principal_raw_lower
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₀ r₁ lam Lam : ℝ) (hΩ : IsOpen Ω) (a : CoefficientField d)
     (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -223,7 +225,7 @@ private theorem translated_principal_raw_lower
   exact hcanonical.trans_eq hbridge.symm
 
 private def compactSplitOutput
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
@@ -259,7 +261,7 @@ private def compactSplitOutput
             r₁ hΩ a b c F η χ k h τ hηshift u
 
 private theorem compactSplitOutput_of_accepted
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
@@ -288,7 +290,7 @@ private theorem compactSplitOutput_of_accepted
   simpa only [rawTranslatedPrincipalValue] using hfixed τ hτ u
 
 private def compactRemainderOutput
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₀ r₁ : ℝ) (hΩ : IsOpen Ω) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c F : ℝ → PDE.Vec d → ℝ)
     (_ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
@@ -318,7 +320,7 @@ private def compactRemainderOutput
           ε * ‖gradientCLM hΩ (A u)‖ ^ 2 + Cε * (1 + ‖u‖ ^ 2)
 
 private theorem compactRemainderOutput_of_accepted
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₀ r₁ : ℝ) (hΩ : IsOpen Ω) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c F : ℝ → PDE.Vec d → ℝ)
     (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
@@ -343,7 +345,7 @@ private theorem compactRemainderOutput_of_accepted
   simpa only using hfixed k h hh hχshift τ hτ u
 
 private def coerciveFixedSlice
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d) (c F : ℝ → PDE.Vec d → ℝ)
     (hFSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => F z.1 z.2)
@@ -373,7 +375,7 @@ private def coerciveFixedSlice
     ζ τ * (ε * ‖Gv‖ ^ 2 + Cε * (1 + ‖u‖ ^ 2))
 
 private theorem coerciveFixedSlice_of_adapterFacts
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d) (c F : ℝ → PDE.Vec d → ℝ)
     (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
@@ -445,7 +447,7 @@ private theorem coerciveFixedSlice_of_adapterFacts
   exact scalar_coercive_consequence Q Praw R z X Y hsplit hprincipalRaw hrem hζnonneg
 
 private def coerciveConsequenceOutput
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
@@ -475,7 +477,7 @@ private def coerciveConsequenceOutput
             k h hχshift τ u
 
 private theorem coerciveConsequenceOutput_of_adapters
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
@@ -532,7 +534,7 @@ private theorem coerciveConsequenceOutput_of_adapters
     ε Cε lam Lam hLower hUpper k h hχshift τ hτ hζnonneg hηshift u hsplitEq hremBound
 
 private theorem coerciveConsequenceOutput_of_components
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
@@ -556,7 +558,7 @@ private theorem coerciveConsequenceOutput_of_components
 commutator plus its Loewner coercive term is bounded by the weighted
 nonprincipal Young remainder. -/
 theorem exists_smallStep_h10Commutator_add_coerciveTerm_le_nonprincipalYoung
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
@@ -623,7 +625,7 @@ theorem exists_smallStep_h10Commutator_add_coerciveTerm_le_nonprincipalYoung
 /-- The full fixed-slice coercive term is bounded by a nonprincipal Young
 remainder, with its constant uniform in the reverse-time scalar test. -/
 theorem exists_uniform_timeTest_h10Commutator_add_coerciveTerm_le_nonprincipalYoung_of_majorants
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω)
     (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)

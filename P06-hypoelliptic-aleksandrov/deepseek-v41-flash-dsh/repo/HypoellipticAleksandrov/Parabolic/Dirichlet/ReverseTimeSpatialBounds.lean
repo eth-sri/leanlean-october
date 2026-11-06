@@ -7,6 +7,7 @@ public import Mathlib.MeasureTheory.Function.LpSpace.Basic
 public import Mathlib.MeasureTheory.Integral.IntegrableOn
 public import Mathlib.MeasureTheory.Measure.Typeclasses.Finite
 public import PDEFoundation.Measure.RestrictedVolume
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Local reverse-time spatial bounds
@@ -28,7 +29,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 /-- A scalar parabolic closed cylinder is compact when its spatial base is bounded. -/
 theorem isCompact_scalarParabolicClosedCylinder
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (hΩbounded : Bornology.IsBounded Ω) :
     IsCompact (scalarParabolicClosedCylinder r₀ r₁ Ω) := by
   change IsCompact (Set.Icc r₀ r₁ ×ˢ closure Ω)
@@ -50,11 +51,13 @@ theorem fderiv_scalarSpatialSlice_apply
       (hasFDerivAt_prodMk_right (𝕜 := ℝ) r y)
   rw [hslice.fderiv]
   rfl
+section
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
 
 /-- Joint smoothness near the closed cylinder makes the literal fixed-time
 spatial coefficient divergence continuous there. -/
 theorem continuousOn_scalarSpatialCoefficientDivergence_of_smoothOnNeighborhood
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (r₀ r₁ : ℝ) (a : CoefficientField d)
     (ha : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => a z.1 z.2)
@@ -90,7 +93,7 @@ theorem continuousOn_scalarSpatialCoefficientDivergence_of_smoothOnNeighborhood
 /-- A smooth scalar coefficient near the closed cylinder restricts to a
 continuous reverse-time spatial slice. -/
 theorem continuousOn_reverseTimeScalarCoefficient_slice_of_smoothOnNeighborhood
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (r₀ r₁ τ : ℝ) (c : ℝ → PDE.Vec d → ℝ)
     (hc : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => c z.1 z.2)
@@ -113,7 +116,7 @@ theorem continuousOn_reverseTimeScalarCoefficient_slice_of_smoothOnNeighborhood
 /-- Smooth scalar coefficients near a bounded closed cylinder have one
 uniform bound for all reverse-time spatial slices. -/
 theorem exists_reverseTimeScalarCoefficient_bound_of_smoothOnNeighborhood
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (r₀ r₁ : ℝ) (hΩbounded : Bornology.IsBounded Ω)
     (c : ℝ → PDE.Vec d → ℝ)
     (hc : IsSmoothOnNeighborhood
@@ -139,7 +142,7 @@ theorem exists_reverseTimeScalarCoefficient_bound_of_smoothOnNeighborhood
 /-- A smooth source near the closed cylinder is a.e.-strongly measurable on
 each reverse-time slice with respect to the restricted spatial volume. -/
 theorem aestronglyMeasurable_reverseTimeSourceSlice_of_smoothOnNeighborhood
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (r₀ r₁ τ : ℝ) (hΩ : IsOpen Ω)
     (F : ℝ → PDE.Vec d → ℝ)
     (hF : IsSmoothOnNeighborhood
@@ -156,7 +159,7 @@ theorem aestronglyMeasurable_reverseTimeSourceSlice_of_smoothOnNeighborhood
 /-- A smooth source near a bounded closed cylinder belongs to `L²` on every
 reverse-time slice. -/
 theorem reverseTimeSourceSlice_memLp_of_smoothOnNeighborhood
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (r₀ r₁ : ℝ) (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω)
     (F : ℝ → PDE.Vec d → ℝ)
@@ -183,7 +186,7 @@ theorem reverseTimeSourceSlice_memLp_of_smoothOnNeighborhood
 /-- Smooth source data near a bounded closed cylinder have one uniform `L²`
 bound for all reverse-time slices. -/
 theorem exists_reverseTimeSourceSlice_L2_bound_of_smoothOnNeighborhood
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (r₀ r₁ : ℝ) (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω)
     (F : ℝ → PDE.Vec d → ℝ)
@@ -210,5 +213,6 @@ theorem exists_reverseTimeSourceSlice_L2_bound_of_smoothOnNeighborhood
   rw [hy]
   simpa only [Real.norm_eq_abs, reverseTimeScalarCoefficient_apply] using
     (hC τ hτ y hyΩ).trans (le_max_left _ _)
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

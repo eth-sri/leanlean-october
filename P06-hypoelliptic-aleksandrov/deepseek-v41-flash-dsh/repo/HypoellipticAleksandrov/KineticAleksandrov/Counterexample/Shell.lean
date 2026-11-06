@@ -11,13 +11,15 @@ import Mathlib.Tactic.Linarith
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
 open MeasureTheory Set
+section
+variable {d : ℕ} (H : XV d → ℝ)
 
 /-- The closed shell that contains the stationary source. -/
-def profileShell {d : ℕ} (H : XV d → ℝ) (alpha r : ℝ) : Set (XV d) :=
+def profileShell  (alpha r : ℝ) : Set (XV d) :=
   {q | Real.rpow r alpha ≤ H q ∧ H q ≤ 2 * Real.rpow r alpha}
 
 /-- Comparison with a positive gauge power traps any fixed upper profile sublevel. -/
-theorem profile_sublevel_subset_rho {d : ℕ} (H : XV d → ℝ) (alpha c M : ℝ)
+theorem profile_sublevel_subset_rho  (alpha c M : ℝ)
     (ha : 0 < alpha) (hc : 0 < c) (hM : 0 < M)
     (hlo : ∀ q, c * Real.rpow (rho q) alpha ≤ H q) :
     {q | H q ≤ M} ⊆ {q | rho q ≤ Real.rpow (M / c) alpha⁻¹} := by
@@ -32,7 +34,7 @@ theorem profile_sublevel_subset_rho {d : ℕ} (H : XV d → ℝ) (alpha c M : �
   exact hb
 
 /-- A continuous comparable profile has finite-volume upper sublevels. -/
-theorem profile_sublevel_volume_lt_top {d : ℕ} (H : XV d → ℝ) (alpha c M : ℝ)
+theorem profile_sublevel_volume_lt_top  (alpha c M : ℝ)
     (ha : 0 < alpha) (hc : 0 < c) (hM : 0 < M)
     (hlo : ∀ q, c * Real.rpow (rho q) alpha ≤ H q) :
     volume {q | H q ≤ M} < ⊤ := by
@@ -41,7 +43,7 @@ theorem profile_sublevel_volume_lt_top {d : ℕ} (H : XV d → ℝ) (alpha c M :
     (isCompact_rho_sublevel d (Real.rpow (M / c) alpha⁻¹)).measure_lt_top
 
 /-- Homogeneity identifies the radius-r shell as the inverse-dilation preimage. -/
-theorem profileShell_eq_preimage {d : ℕ} (H : XV d → ℝ) (alpha r : ℝ)
+theorem profileShell_eq_preimage  (alpha r : ℝ)
     (hr : 0 < r)
     (hhom : ∀ s : ℝ, 0 < s → ∀ q,
       H (dilate s q) = Real.rpow s alpha * H q) :
@@ -61,7 +63,7 @@ theorem profileShell_eq_preimage {d : ℕ} (H : XV d → ℝ) (alpha r : ℝ)
       (div_le_iff₀ hp).1 hhi⟩
 
 /-- The source shell has exactly the expected kinetic dilation factor. -/
-theorem profileShell_volume {d : ℕ} (H : XV d → ℝ) (alpha r : ℝ)
+theorem profileShell_volume  (alpha r : ℝ)
     (hH : Continuous H) (hr : 0 < r)
     (hhom : ∀ s : ℝ, 0 < s → ∀ q,
       H (dilate s q) = Real.rpow s alpha * H q) :
@@ -75,7 +77,7 @@ theorem profileShell_volume {d : ℕ} (H : XV d → ℝ) (alpha r : ℝ)
     Measure.smul_apply, smul_eq_mul]
 
 /-- A comparable homogeneous profile gives a radius-uniform shell-volume constant. -/
-theorem shell_volume_bound {d : ℕ} (H : XV d → ℝ) (alpha c : ℝ)
+theorem shell_volume_bound  (alpha c : ℝ)
     (ha : 0 < alpha) (hc : 0 < c) (hH : Continuous H)
     (hlo : ∀ q, c * Real.rpow (rho q) alpha ≤ H q)
     (hhom : ∀ s : ℝ, 0 < s → ∀ q,
@@ -94,5 +96,6 @@ theorem shell_volume_bound {d : ℕ} (H : XV d → ℝ) (alpha c : ℝ)
   exact mul_le_mul_left
     ((le_of_eq (ENNReal.ofReal_toReal hm.ne).symm).trans
       (ENNReal.ofReal_le_ofReal (le_add_of_nonneg_right zero_le_one))) _
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

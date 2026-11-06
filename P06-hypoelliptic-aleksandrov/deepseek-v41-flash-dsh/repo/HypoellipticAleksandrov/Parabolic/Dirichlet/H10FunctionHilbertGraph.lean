@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.SpatialSobolev
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Representative-level functions in the Hilbert `H¹₀` graph
@@ -18,19 +19,19 @@ open scoped ENNReal
 noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
+section
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (u : PDE.H10Function Ω)
 
 /-- The canonical Hilbert-graph point associated to a representative-level
 `H¹₀` function. -/
 noncomputable def h10HilbertGraphOfH10Function
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
-    (u : PDE.H10Function Ω) : H10HilbertGraph hΩ :=
+     : H10HilbertGraph hΩ :=
   (h10HilbertGraphContinuousLinearEquiv hΩ).symm (u.toH10Graph hΩ)
 
 /-- The selected value representative of the canonical Hilbert-graph point
 agrees almost everywhere with the original representative. -/
 theorem valueCLM_h10HilbertGraphOfH10Function
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
-    (u : PDE.H10Function Ω) :
+     :
     (valueCLM hΩ (h10HilbertGraphOfH10Function hΩ u) :
       PDE.Vec d → ℝ) =ᵐ[PDE.volumeOn Ω] u.toH1Function.toFun := by
   have hfst := PDE.W1pFunction.coeFn_toW1pGraph_fst
@@ -47,8 +48,7 @@ theorem valueCLM_h10HilbertGraphOfH10Function
 /-- Every selected weak-gradient coordinate of the canonical Hilbert-graph
 point agrees almost everywhere with the corresponding original coordinate. -/
 theorem gradientCoord_h10HilbertGraphOfH10Function
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
-    (u : PDE.H10Function Ω) (i : Fin d) :
+     (i : Fin d) :
     (fun x => PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i
       (gradientCLM hΩ (h10HilbertGraphOfH10Function hΩ u)) x)
       =ᵐ[PDE.volumeOn Ω]
@@ -77,5 +77,6 @@ theorem gradientCoord_h10HilbertGraphOfH10Function
   rw [hcoord]
   rw [hgrad]
   rfl
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

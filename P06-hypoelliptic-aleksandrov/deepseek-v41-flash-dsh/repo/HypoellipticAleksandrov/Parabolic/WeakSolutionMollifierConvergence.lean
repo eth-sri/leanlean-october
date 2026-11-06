@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.Parabolic.ParabolicMollifierUniformLimit
 public import HypoellipticAleksandrov.Parabolic.WeakRepresentativeLocalization
 public import HypoellipticAleksandrov.Parabolic.WeakJetExtension
 public import Mathlib.Topology.Compactness.SigmaCompact
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Localized jets for weak-solution mollifier convergence
@@ -26,9 +27,9 @@ open scoped ENNReal Topology
 /-- A selected local parabolic weak jet together with its concrete compactly
 supported global cutoff extension around a compact carrier. -/
 structure LocalizedParabolicJet
-    (d : Nat) (U K : Set (TimeVelocity d)) (u : TimeVelocity d → Real) where
-  V : Set (TimeVelocity d)
-  W : Set (TimeVelocity d)
+    (d : Nat) (U K : HypoellipticAleksandrov.Parabolic.TVSet d) (u : TimeVelocity d → Real) where
+  V : HypoellipticAleksandrov.Parabolic.TVSet d
+  W : HypoellipticAleksandrov.Parabolic.TVSet d
   w : ParabolicW12Function d W (parabolicExponent d)
   b : TimeVelocity d → Real
   g : ParabolicW12Function d Set.univ (parabolicExponent d)
@@ -59,9 +60,9 @@ namespace LocalizedParabolicJet
 /-- The selected cutoff jet agrees with its local jet on an open plateau that
 contains the closure of the compact carrier. -/
 theorem exists_open_plateau
-    {d : Nat} {U K : Set (TimeVelocity d)} {u : TimeVelocity d → Real}
+    {d : Nat} {U K : HypoellipticAleksandrov.Parabolic.TVSet d} {u : TimeVelocity d → Real}
     (J : LocalizedParabolicJet d U K u) :
-    ∃ O : Set (TimeVelocity d),
+    ∃ O : HypoellipticAleksandrov.Parabolic.TVSet d,
       IsOpen O ∧ closure J.V ⊆ O ∧ O ⊆ J.W ∧
       EqOn J.g.toFun J.w.toFun O ∧
       EqOn J.g.timeDeriv J.w.timeDeriv O ∧
@@ -109,7 +110,7 @@ mollifications converge uniformly on a compact carrier to any supplied
 continuous representative of its restricted-volume almost-everywhere class. -/
 theorem exists_localizedJet_mollifications_tendstoUniformlyOn
     (d : Nat) (hd : 1 ≤ d)
-    {U K : Set (TimeVelocity d)} {u q : TimeVelocity d → Real}
+    {U K : HypoellipticAleksandrov.Parabolic.TVSet d} {u q : TimeVelocity d → Real}
     (hU : IsOpen U) (hK : IsCompact K) (hKU : K ⊆ U)
     (hu : ParabolicW12Loc U (parabolicExponent d) u)
     (hq : ContinuousOn q U)

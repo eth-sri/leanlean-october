@@ -37,32 +37,34 @@ def relativePosition {d : ℕ} (P₀ P : KineticPoint d) : PDE.Vec d :=
 @[simp] theorem relativePosition_self {d : ℕ} (P₀ : KineticPoint d) :
     relativePosition P₀ P₀ = 0 := by
   simp [relativePosition]
+section
+variable {d : ℕ} (P₀ : KineticPoint d) (R : ℝ)
 
 /-- The open backward kinetic cylinder with time, velocity, and position
 radii `R²`, `R`, and `R³`, respectively. -/
-def backwardCylinder {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) :
+def backwardCylinder  :
     Set (KineticPoint d) :=
   {P | P₀.time - R ^ 2 < P.time ∧ P.time < P₀.time ∧
     P.velocity ∈ PDE.euclideanBall P₀.velocity R ∧
-    relativePosition P₀ P ∈ PDE.euclideanBall (0 : PDE.Vec d) (R ^ 3)}
+    relativePosition P₀ P ∈ PDE.euclideanBall 0 (R ^ 3)}
 
 @[simp] theorem mem_backwardCylinder_iff
     {d : ℕ} {P₀ P : KineticPoint d} {R : ℝ} :
     P ∈ backwardCylinder P₀ R ↔
       P₀.time - R ^ 2 < P.time ∧ P.time < P₀.time ∧
         P.velocity ∈ PDE.euclideanBall P₀.velocity R ∧
-        relativePosition P₀ P ∈ PDE.euclideanBall (0 : PDE.Vec d) (R ^ 3) := by
+        relativePosition P₀ P ∈ PDE.euclideanBall 0 (R ^ 3) := by
   rfl
 
 /-- The source kinetic boundary: closure intersected with the bottom face,
 velocity sphere, or the inflow part of the relative-position sphere. -/
-def kineticBoundary {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) :
+def kineticBoundary  :
     Set (KineticPoint d) :=
   closure (backwardCylinder P₀ R) ∩
     ({P | P.time = P₀.time - R ^ 2} ∪
       {P | P.velocity ∈ PDE.euclideanSphere P₀.velocity R} ∪
       {P | relativePosition P₀ P ∈
-          PDE.euclideanSphere (0 : PDE.Vec d) (R ^ 3) ∧
+          PDE.euclideanSphere 0 (R ^ 3) ∧
         PDE.vecDot (relativeVelocity P₀ P) (relativePosition P₀ P) ≤ 0})
 
 @[simp] theorem mem_kineticBoundary_iff
@@ -72,12 +74,12 @@ def kineticBoundary {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) :
         (P.time = P₀.time - R ^ 2 ∨
           P.velocity ∈ PDE.euclideanSphere P₀.velocity R ∨
           (relativePosition P₀ P ∈
-              PDE.euclideanSphere (0 : PDE.Vec d) (R ^ 3) ∧
+              PDE.euclideanSphere 0 (R ^ 3) ∧
             PDE.vecDot (relativeVelocity P₀ P) (relativePosition P₀ P) ≤ 0)) := by
   simp only [kineticBoundary, mem_inter_iff, mem_union, mem_setOf_eq, or_assoc]
 
 /-- Kinetic dilation of ratio `R` followed by Galilean translation by `P₀`. -/
-def kineticAffine {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) :
+def kineticAffine  :
     KineticPoint d → KineticPoint d :=
   fun P =>
     { time := P₀.time + R ^ 2 * P.time
@@ -114,6 +116,7 @@ def kineticAffine {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) :
   ext i
   simp [relativePosition, kineticAffine]
   ring
+end
 
 /-- The source kinetic quasi-distance, using explicit Euclidean vector norms. -/
 noncomputable def quasiDistance {d : ℕ} (P P' : KineticPoint d) : ℝ :=
@@ -134,7 +137,7 @@ def forwardStack {d : ℕ} (P₀ : KineticPoint d) (r : ℝ) (m : ℕ) :
     P.time - P₀.time ≤ (m : ℝ) * r ^ 2 ∧
     P.velocity ∈ PDE.euclideanBall P₀.velocity r ∧
     relativePosition P₀ P ∈
-      PDE.euclideanBall (0 : PDE.Vec d) (((m + 2 : ℕ) : ℝ) * r ^ 3)}
+      PDE.euclideanBall 0 (((m + 2 : ℕ) : ℝ) * r ^ 3)}
 
 @[simp] theorem mem_forwardStack_iff
     {d : ℕ} {P₀ P : KineticPoint d} {r : ℝ} {m : ℕ} :
@@ -143,7 +146,7 @@ def forwardStack {d : ℕ} (P₀ : KineticPoint d) (r : ℝ) (m : ℕ) :
         P.time - P₀.time ≤ (m : ℝ) * r ^ 2 ∧
         P.velocity ∈ PDE.euclideanBall P₀.velocity r ∧
         relativePosition P₀ P ∈
-          PDE.euclideanBall (0 : PDE.Vec d) (((m + 2 : ℕ) : ℝ) * r ^ 3) := by
+          PDE.euclideanBall 0 (((m + 2 : ℕ) : ℝ) * r ^ 3) := by
   rfl
 
 end HypoellipticAleksandrov.KineticAleksandrov

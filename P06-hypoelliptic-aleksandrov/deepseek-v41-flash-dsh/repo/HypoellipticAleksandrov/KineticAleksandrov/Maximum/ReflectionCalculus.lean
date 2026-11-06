@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Maximum.ReflectionAPI
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Slice-calculus identities for the kinetic reflection -/
 
@@ -9,17 +10,17 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open Set
 open HypoellipticAleksandrov.Parabolic
+section
+variable {d : ℕ} (u : KineticPoint d → ℝ) (P : KineticPoint d)
 
 /-- Time differentiation under reflection reverses sign, including total derivative values. -/
-theorem kineticTimeDerivative_reflection {d : ℕ} (u : KineticPoint d → ℝ)
-    (P : KineticPoint d) :
+theorem kineticTimeDerivative_reflection  :
     kineticTimeDerivative (u ∘ kineticReflection) P =
       -kineticTimeDerivative u (kineticReflection P) := by
   exact deriv_comp_neg (fun r : ℝ => u ⟨r, -P.position, P.velocity⟩) P.time
 
 /-- Position differentiation under reflection reverses sign. -/
-theorem kineticPositionGradient_reflection {d : ℕ} (u : KineticPoint d → ℝ)
-    (P : KineticPoint d) :
+theorem kineticPositionGradient_reflection  :
     kineticPositionGradient (u ∘ kineticReflection) P =
       -kineticPositionGradient u (kineticReflection P) := by
   ext i
@@ -31,10 +32,10 @@ theorem kineticPositionGradient_reflection {d : ℕ} (u : KineticPoint d → ℝ
   simp [e]
 
 /-- The unchanged velocity coordinate leaves the velocity Hessian unchanged. -/
-theorem kineticVelocityHessian_reflection {d : ℕ} (u : KineticPoint d → ℝ)
-    (P : KineticPoint d) :
+theorem kineticVelocityHessian_reflection  :
     kineticVelocityHessian (u ∘ kineticReflection) P =
       kineticVelocityHessian u (kineticReflection P) := rfl
+end
 
 /-- Reflection reverses the operator, including the total derivative evaluator convention. -/
 theorem reflectedKineticOperator_reflection {d : ℕ}

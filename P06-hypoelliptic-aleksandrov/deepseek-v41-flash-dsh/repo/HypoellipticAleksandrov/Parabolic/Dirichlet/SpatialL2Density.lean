@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.SpatialSobolev
 public import Mathlib.Analysis.Normed.Lp.SmoothApprox
 public import Mathlib.Geometry.Manifold.SmoothApprox
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Interior-supported smooth tests are dense in spatial `L²`
@@ -22,10 +23,10 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-variable {d : ℕ} {Ω : Set (PDE.Vec d)}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
 
 private theorem continuousCompact_contDiff_eLpNorm_sub_le_with_support
-    {d : ℕ} {μ : Measure (PDE.Vec d)} [IsFiniteMeasureOnCompacts μ]
+    {d : ℕ} {μ : HypoellipticAleksandrov.VecMeasure d} [IsFiniteMeasureOnCompacts μ]
     {f : PDE.Vec d → ℝ} (hfCompact : HasCompactSupport f)
     (hfCont : Continuous f) {ε : ℝ} (hε : 0 < ε) :
     ∃ g : PDE.Vec d → ℝ,
@@ -62,7 +63,7 @@ private theorem continuousCompact_contDiff_eLpNorm_sub_le_with_support
   exact (hgDist x).le
 
 private theorem cutoff_error_ae
-    {d : ℕ} {Ω K : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d : ℕ} {Ω K : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     (g : PDE.Vec d → ℝ) (χ : C(PDE.Vec d, ℝ))
     (hχone : Set.EqOn χ 1 K) :
     g - (fun x ↦ χ x * g x) =ᵐ[PDE.volumeOn Ω]
@@ -85,7 +86,7 @@ private theorem cutoff_error_ae
       simp only [mul_zero, sub_zero]
 
 private theorem cutoff_error_indicator_bound
-    {d : ℕ} {Ω K : Set (PDE.Vec d)}
+    {d : ℕ} {Ω K : HypoellipticAleksandrov.VecSet d}
     (g : PDE.Vec d → ℝ) (χ : C(PDE.Vec d, ℝ))
     (hg : AEStronglyMeasurable g (PDE.volumeOn Ω))
     {C : ℝ} (hC : ∀ x, ‖g x‖ ≤ C) (hC0 : 0 ≤ C)
@@ -114,7 +115,7 @@ private theorem cutoff_error_indicator_bound
     _ ≤ C := by nlinarith [mul_nonneg hC0 (abs_nonneg (1 - χ x))]
 
 private theorem cutoff_error_lt_of_core
-    {d : ℕ} {Ω K : Set (PDE.Vec d)}
+    {d : ℕ} {Ω K : HypoellipticAleksandrov.VecSet d}
     (g : PDE.Vec d → ℝ) (χ : C(PDE.Vec d, ℝ))
     {C r ε : ℝ} (hC0 : 0 ≤ C) (hCpos : 0 < C) (hr : 0 < r) (hε : 0 < ε)
     (hmeasure : (PDE.volumeOn Ω) ((Ω ∩ tsupport g) \ K) < ENNReal.ofReal (r ^ 2))
@@ -166,13 +167,13 @@ private theorem cutoff_hasCompactSupport
     tsupport_mul_subset_left
 
 private theorem cutoff_tsupport_subset
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (g : PDE.Vec d → ℝ) (χ : C(PDE.Vec d, ℝ))
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (g : PDE.Vec d → ℝ) (χ : C(PDE.Vec d, ℝ))
     (hχsupport : tsupport χ ⊆ Ω) :
     tsupport (fun x ↦ χ x * g x) ⊆ Ω :=
   tsupport_mul_subset_left.trans hχsupport
 
 private theorem cutoff_bundle
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (g : PDE.Vec d → ℝ) (χ : C(PDE.Vec d, ℝ))
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (g : PDE.Vec d → ℝ) (χ : C(PDE.Vec d, ℝ))
     (hgCont : Continuous g) (hχcompact : IsCompact (tsupport χ))
     (hχsupport : tsupport χ ⊆ Ω) {ε : ℝ}
     (hcutoff : eLpNorm (g - (fun x ↦ χ x * g x)) (2 : ℝ≥0∞) (PDE.volumeOn Ω) <
@@ -187,13 +188,13 @@ private theorem cutoff_bundle
   exact Exists.intro h ⟨hhcont, hhcompact, hhsupport, hcutoff⟩
 
 private theorem compactCore_cutoff_eLpNorm_sub_lt
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     {g : PDE.Vec d → ℝ} (hgSmooth : ContDiff ℝ (⊤ : ℕ∞) g)
     (hgCompact : HasCompactSupport g) {ε : ℝ} (hε : 0 < ε) :
     ∃ h : PDE.Vec d → ℝ,
       Continuous h ∧ HasCompactSupport h ∧ tsupport h ⊆ Ω ∧
       eLpNorm (g - h) (2 : ℝ≥0∞) (PDE.volumeOn Ω) < ENNReal.ofReal ε := by
-  let μ : Measure (PDE.Vec d) := PDE.volumeOn Ω
+  let μ : HypoellipticAleksandrov.VecMeasure d := PDE.volumeOn Ω
   have hmeas : MeasurableSet (Ω ∩ tsupport g) :=
     hΩ.measurableSet.inter (isClosed_tsupport g).measurableSet
   have hfinite : μ (Ω ∩ tsupport g) ≠ ∞ := by
@@ -240,13 +241,15 @@ private theorem lp_dist_toLp_toLp_le
     (eLpNorm (f - g) (2 : ℝ≥0∞) μ).toReal ≤ (ENNReal.ofReal ε).toReal :=
       ENNReal.toReal_mono ENNReal.ofReal_ne_top hfg
     _ = ε := ENNReal.toReal_ofReal hε
+section
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
 
 private theorem exists_weakTestFunction_toScalarLp_dist_lt
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+     (hΩ : IsOpen Ω)
     (u : PDE.ScalarLp Ω (2 : ℝ≥0∞)) {ε : ℝ} (hε : 0 < ε) :
     ∃ φ : PDE.WeakTestFunction Ω,
       dist u (φ.toScalarLp (2 : ℝ≥0∞)) < ε := by
-  let μ : Measure (PDE.Vec d) := PDE.volumeOn Ω
+  let μ : HypoellipticAleksandrov.VecMeasure d := PDE.volumeOn Ω
   have hquarter : 0 < ε / 4 := by positivity
   obtain ⟨g, hgCompact, hgSmooth, hug⟩ :=
     (Lp.memLp u).exist_eLpNorm_sub_le ENNReal.coe_ne_top (by norm_num) hquarter
@@ -298,7 +301,7 @@ private theorem exists_weakTestFunction_toScalarLp_dist_lt
 /-- Actual smooth compactly supported tests are dense in restricted-volume
 `L²` on every open native-vector domain. -/
 theorem weakTestFunction_toScalarLp_dense
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) :
+     (hΩ : IsOpen Ω) :
     Dense (Set.range fun φ : PDE.WeakTestFunction Ω =>
       φ.toScalarLp (2 : ℝ≥0∞)) := by
   intro u
@@ -310,7 +313,7 @@ theorem weakTestFunction_toScalarLp_dense
     exact hφ.le⟩
 
 private theorem smoothTest_valueCLM_eq_toScalarLp
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+     (hΩ : IsOpen Ω)
     (φ : PDE.WeakTestFunction Ω) :
     valueCLM hΩ
       (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ φ) =
@@ -327,12 +330,13 @@ private theorem smoothTest_valueCLM_eq_toScalarLp
 
 /-- The spatial `H¹₀` value map has dense range in restricted-volume `L²`. -/
 theorem valueCLM_denseRange
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) :
+     (hΩ : IsOpen Ω) :
     DenseRange (valueCLM hΩ) := by
   change Dense (Set.range (valueCLM hΩ))
   refine (weakTestFunction_toScalarLp_dense hΩ).mono ?_
   rintro y ⟨φ, rfl⟩
   exact ⟨smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ φ,
     smoothTest_valueCLM_eq_toScalarLp hΩ φ⟩
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

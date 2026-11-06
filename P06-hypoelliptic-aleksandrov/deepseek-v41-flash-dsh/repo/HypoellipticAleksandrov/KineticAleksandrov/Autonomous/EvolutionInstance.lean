@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.FullCoefficientAdapters
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.Assembly
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.Uniqueness
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # The unique autonomous killed evolution on a velocity interval
 
@@ -17,7 +18,7 @@ open Set MeasureTheory HypoellipticAleksandrov
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 
 /-- The literal interval in the one-dimensional diffused coordinate. -/
-def intervalDomain (H : Interval) : Set (PDE.Vec 1) :=
+def intervalDomain (H : Interval) : HypoellipticAleksandrov.VecSet 1 :=
   PDE.oneDimensionalAxisBox H.lo H.hi
 
 /-- A nonempty bounded velocity interval is an admissible evolution domain. -/

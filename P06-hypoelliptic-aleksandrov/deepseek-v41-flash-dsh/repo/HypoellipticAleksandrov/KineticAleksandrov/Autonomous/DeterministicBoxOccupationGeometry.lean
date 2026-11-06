@@ -39,8 +39,8 @@ theorem box_rho_le {A0 r Y : ℝ} (hA0 : 0 < A0) (hr : 0 < r)
   have ha : 0 ≤ A0^2+A0^6 := by positivity
   have hb := Real.rpow_le_rpow (bellmanGaugePower_nonneg (z.1-Y,z.2)) hs
     (by norm_num : 0 ≤ (1/6 : ℝ))
-  have he : (r^(6 : ℕ))^(1/6 : ℝ) = r := by
-    convert Real.pow_rpow_inv_natCast hr.le (by decide : (6 : ℕ) ≠ 0) using 1
+  have he : (r^6)^(1/6 : ℝ) = r := by
+    convert Real.pow_rpow_inv_natCast hr.le (by decide : 6 ≠ 0) using 1
     norm_num
   have hm := Real.mul_rpow (z := (1/6 : ℝ)) ha (pow_nonneg hr.le 6)
   rw [he] at hm
@@ -50,15 +50,14 @@ theorem box_rho_le {A0 r Y : ℝ} (hA0 : 0 < A0) (hr : 0 < r)
 /-- On the source box the singular weight dominates its indicator, including the origin. -/
 theorem box_indicator_le_weight {A0 r Y g : ℝ} (hA0 : 0 < A0) (hr : 0 < r)
     (hg : 0 ≤ g) (z : Z) :
-    (box A0 r Y).indicator (fun _ => (1 : ENNReal)) z ≤
+    (box A0 r Y).indicator (fun _ => 1) z ≤
       ENNReal.ofReal (((A0^2+A0^6)^(1/6 : ℝ)*r)^g)*rhoWeight g (z.1-Y,z.2) := by
   by_cases hz : z ∈ box A0 r Y
   · rw [indicator_of_mem hz]
     let D : ℝ := (A0^2+A0^6)^(1/6 : ℝ)*r
     have hD : 0 < D := by dsimp only [D]; positivity
     have hC : 0 < D^g := Real.rpow_pos_of_pos hD _
-    have hb : (ENNReal.ofReal (rho (z.1-Y,z.2)))^g ≤ ENNReal.ofReal (D^g) := by
-      exact (ENNReal.rpow_le_rpow
+    have hb : (ENNReal.ofReal (rho (z.1-Y,z.2)))^g ≤ ENNReal.ofReal (D^g) := (ENNReal.rpow_le_rpow
         (ENNReal.ofReal_le_ofReal (box_rho_le hA0 hr hz)) hg).trans_eq
           (ENNReal.ofReal_rpow_of_pos hD)
     have hi := ENNReal.inv_le_inv' hb

@@ -42,9 +42,11 @@ theorem punctured_homogeneous_velocity_jet {d : ℕ} (beta : ℝ) (F : XV d → 
   rw [hpower, div_mul_eq_mul_div]
   apply (eq_div_iff hr.ne').mpr
   simpa only [mul_comm] using heq
+section
+variable {d : ℕ} (alpha : ℝ) (H : XV d → ℝ)
 
 /-- The velocity Hessian has the exact kinetic weight alpha minus two. -/
-theorem homogeneous_dvv {d : ℕ} (alpha : ℝ) (H : XV d → ℝ)
+theorem homogeneous_dvv 
     (hsmooth : ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ))
     (hhom : ∀ r : ℝ, 0 < r → ∀ q, H (dilate r q) = Real.rpow r alpha * H q)
     (r : ℝ) (hr : 0 < r) (q : XV d) (hq : q ≠ 0) :
@@ -64,7 +66,7 @@ theorem homogeneous_dvv {d : ℕ} (alpha : ℝ) (H : XV d → ℝ)
   simpa only [dvv, dv, Matrix.smul_apply, smul_eq_mul, hexp] using hh
 
 /-- The source full position jet has the exact kinetic weight alpha minus three. -/
-theorem homogeneous_position_jet {d : ℕ} (alpha : ℝ) (H : XV d → ℝ)
+theorem homogeneous_position_jet 
     (hsmooth : ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ))
     (hhom : ∀ r : ℝ, 0 < r → ∀ q, H (dilate r q) = Real.rpow r alpha * H q)
     (r : ℝ) (hr : 0 < r) (q : XV d) (hq : q ≠ 0) (w : PDE.Vec d) :
@@ -97,7 +99,7 @@ theorem homogeneous_position_jet {d : ℕ} (alpha : ℝ) (H : XV d → ℝ)
   simpa only [mul_comm] using heq
 
 /-- The actual stationary transport has the same kinetic weight as the velocity Hessian. -/
-theorem homogeneous_transport {d : ℕ} (alpha : ℝ) (H : XV d → ℝ)
+theorem homogeneous_transport 
     (hsmooth : ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ))
     (hhom : ∀ r : ℝ, 0 < r → ∀ q, H (dilate r q) = Real.rpow r alpha * H q)
     (r : ℝ) (hr : 0 < r) (q : XV d) (hq : q ≠ 0) :
@@ -114,5 +116,6 @@ theorem homogeneous_transport {d : ℕ} (alpha : ℝ) (H : XV d → ℝ)
     congr 1
     ring
   rw [← mul_assoc, hp]
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

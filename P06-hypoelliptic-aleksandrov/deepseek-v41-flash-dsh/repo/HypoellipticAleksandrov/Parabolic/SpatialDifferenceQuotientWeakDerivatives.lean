@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.SpatialTranslationLocalIntegrability
 public import HypoellipticAleksandrov.Parabolic.WeakDerivativesAlgebra
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Weak derivatives of spatial difference quotients
@@ -21,7 +22,7 @@ open MeasureTheory
 /-- A weak velocity derivative commutes with a spatial difference quotient
 on a domain supporting both the original and translated relations. -/
 theorem HasWeakVelocityPartialDerivOn.spatialDifferenceQuotient_of_subset_mapsTo
-    {d : ℕ} {U V : Set (TimeVelocity d)} {i : Fin d}
+    {d : ℕ} {U V : HypoellipticAleksandrov.Parabolic.TVSet d} {i : Fin d}
     {u dui : TimeVelocity d → ℝ}
     (hu : HasWeakVelocityPartialDerivOn U i u dui)
     (huLoc : LocallyIntegrableOn u U volume)

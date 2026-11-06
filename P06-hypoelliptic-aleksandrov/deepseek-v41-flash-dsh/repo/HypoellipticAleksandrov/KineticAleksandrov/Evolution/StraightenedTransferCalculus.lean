@@ -4,6 +4,7 @@ public import Mathlib.Analysis.Calculus.ContDiff.FiniteDimension
 public import Mathlib.Analysis.Calculus.FDeriv.Pi
 public import PDEFoundation.Sobolev.ClassicalGradient
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.SpatialBlock
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Chain rule for the block coordinate embeddings

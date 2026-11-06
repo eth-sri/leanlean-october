@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyDerivativeNorm
 public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyDyadicPointSelector
 public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyDyadicStep
 public import Mathlib.Algebra.Order.Field.GeomSum
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Finite weighted dyadic slope tails and a root bound
@@ -207,7 +208,7 @@ private theorem parabolicLpMeanNormOn_root_le_parabolicSmoothJetLpNorm
           (volume_parabolicMorreyBox_pos 0 0 (by norm_num))
           (hu.1.mono_measure Measure.restrict_le_self)) <=
       parabolicSmoothJetLpNorm d u := by
-  let Q : Set (TimeVelocity d) := parabolicBox 1 1 0 (0 : PDE.Vec d)
+  let Q : HypoellipticAleksandrov.Parabolic.TVSet d := parabolicBox 1 1 0 (0 : PDE.Vec d)
   let hraw : MemLp u (parabolicExponent d) (volume.restrict Q) :=
     hu.1.mono_measure Measure.restrict_le_self
   let hmean : MemLp u (parabolicExponent d) (parabolicNormalizedVolumeOn Q) :=

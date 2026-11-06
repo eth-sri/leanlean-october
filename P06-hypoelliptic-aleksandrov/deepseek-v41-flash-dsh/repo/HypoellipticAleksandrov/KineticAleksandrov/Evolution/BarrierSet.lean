@@ -27,26 +27,29 @@ def barrierW (κ t : ℝ) : ℝ := (1 - Real.exp (-κ * t)) / κ
 
 /-- The constant `κ = (1 + L_γ)/λ`. -/
 def collarKappa (Lγ lam : ℝ) : ℝ := (1 + Lγ) / lam
+section
+variable {n : ℕ} (c : PDE.Vec n)
 
 /-- The squared distance of the position from the moving centre `γ(σ) + c`. -/
-def centreSq {n : ℕ} (c : PDE.Vec n) (γ : ℝ → PDE.Vec n) (p : KineticPoint n) : ℝ :=
+def centreSq  (γ : ℝ → PDE.Vec n) (p : KineticPoint n) : ℝ :=
   PDE.vecNormSq (p.position - (γ p.time + c))
 
 /-- The closed collar region of the moving ball on the time slab `[a, b]`. -/
-def collarClosed {n : ℕ} (c : PDE.Vec n) (r₀ dstar : ℝ) (γ : ℝ → PDE.Vec n) (a b : ℝ) :
+def collarClosed  (r₀ dstar : ℝ) (γ : ℝ → PDE.Vec n) (a b : ℝ) :
     Set (KineticPoint n) :=
   movingClosedSlab (PDE.euclideanBall c r₀) γ a b ∩ {p | (r₀ - dstar) ^ 2 ≤ centreSq c γ p}
 
 /-- The active part of the collar region on `[a, b)`. -/
-def collarActive {n : ℕ} (c : PDE.Vec n) (r₀ dstar : ℝ) (γ : ℝ → PDE.Vec n) (a b : ℝ) :
+def collarActive  (r₀ dstar : ℝ) (γ : ℝ → PDE.Vec n) (a b : ℝ) :
     Set (KineticPoint n) :=
   movingActiveSlab (PDE.euclideanBall c r₀) γ a b ∩ {p | (r₀ - dstar) ^ 2 < centreSq c γ p}
 
 /-- The scaled supersolution `FB * w(d)/w(d_*)`, with `d = r₀ - |y - γ(σ) - c|`. -/
-def collarSupersolution {n : ℕ} (c : PDE.Vec n) (r₀ dstar Lγ lam FB : ℝ)
+def collarSupersolution  (r₀ dstar Lγ lam FB : ℝ)
     (γ : ℝ → PDE.Vec n) (p : KineticPoint n) : ℝ :=
   FB / barrierW (collarKappa Lγ lam) dstar *
     collarBarrier (collarKappa Lγ lam) r₀ (fun t => γ t + c) p
+end
 
 /-- The profile `w` is positive on positive arguments. -/
 theorem barrierW_pos {κ t : ℝ} (hκ : 0 < κ) (ht : 0 < t) : 0 < barrierW κ t := by

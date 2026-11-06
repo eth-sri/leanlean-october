@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.ExitFourierBasic
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundaryMeasureTranslation
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.FourierKernelsComposition
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Physical Fourier tests with absolute exit time and velocity -/
 
@@ -10,23 +11,25 @@ public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.FourierKerne
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory SectionTwo Parabolic ProbabilityTheory
+section
+variable {d : ℕ} (P : KineticPoint d) (v₀ ξ : PDE.Vec d)
 
 /-- The literal physical test for a Fourier measure on an exit-data set. -/
-def exitFourierTest {d : ℕ} (P : KineticPoint d) (v₀ ξ : PDE.Vec d)
-    (E : Set (TimeVelocity d)) (Q : KineticPoint d) : ℂ :=
+def exitFourierTest 
+    (E : HypoellipticAleksandrov.Parabolic.TVSet d) (Q : KineticPoint d) : ℂ :=
   {Q : KineticPoint d | (Q.time, Q.velocity) ∈ E}.indicator
     (exitPhase ξ ∘ exitCoordinates P v₀) Q
 
 /-- Fourier tests are measurable for each Borel exit-data set. -/
-theorem measurable_exitFourierTest {d : ℕ} (P : KineticPoint d) (v₀ ξ : PDE.Vec d)
-    {E : Set (TimeVelocity d)} (hE : MeasurableSet E) :
+theorem measurable_exitFourierTest 
+    {E : HypoellipticAleksandrov.Parabolic.TVSet d} (hE : MeasurableSet E) :
     Measurable (exitFourierTest P v₀ ξ E) :=
   ((continuous_exitPhase ξ).comp (continuous_exitCoordinates P v₀)).measurable.indicator
     (hE.preimage (continuous_time.prodMk continuous_velocity).measurable)
 
 /-- Every physical Fourier test has modulus at most one. -/
-theorem norm_exitFourierTest_le_one {d : ℕ} (P : KineticPoint d) (v₀ ξ : PDE.Vec d)
-    (E : Set (TimeVelocity d)) (Q : KineticPoint d) :
+theorem norm_exitFourierTest_le_one 
+    (E : HypoellipticAleksandrov.Parabolic.TVSet d) (Q : KineticPoint d) :
     ‖exitFourierTest P v₀ ξ E Q‖ ≤ 1 := by
   unfold exitFourierTest
   by_cases hQ : (Q.time, Q.velocity) ∈ E
@@ -34,12 +37,13 @@ theorem norm_exitFourierTest_le_one {d : ℕ} (P : KineticPoint d) (v₀ ξ : PD
     exact (norm_exitPhase ξ _).le
   · rw [indicator_of_notMem (show Q ∉ {Q | (Q.time, Q.velocity) ∈ E} from hQ)]
     simp only [norm_zero, zero_le_one]
+end
 
 /-- The centered Fourier measure of any finite physical measure has the raw test formula. -/
 theorem exitFourier_map_exitCoordinates_apply {d : ℕ}
     (μ : Measure (KineticPoint d)) [IsFiniteMeasure μ]
     (P : KineticPoint d) (v₀ ξ : PDE.Vec d)
-    (E : Set (TimeVelocity d)) (hE : MeasurableSet E) :
+    (E : HypoellipticAleksandrov.Parabolic.TVSet d) (hE : MeasurableSet E) :
     exitFourier (μ.map (exitCoordinates P v₀)) ξ E =
       ∫ Q, exitFourierTest P v₀ ξ E Q ∂μ := by
   rw [exitFourier_apply _ ξ E hE, ← integral_indicator (hE.preimage measurable_snd)]

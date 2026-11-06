@@ -6,6 +6,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.CompositionTr
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TranslationCovariance
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.DomainDomination
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.EvolutionConclusion
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Clause-by-clause assembly of the terminal evolution
 
@@ -23,7 +24,7 @@ open scoped ProbabilityTheory
 section EvolutionData
 variable (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
 variable (hlam : 0 < lam) (hlamLam : lam ≤ Lam) (hm : 0 < m) (hmLb : m ≤ L_b)
-variable (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
+variable (Ω : HypoellipticAleksandrov.VecSet n) (γ : ℝ → PDE.Vec n)
 variable (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
 variable (hΩ : IsAdmissibleEvolutionDomain Ω) (hγ : IsContinuousPiecewiseC1 γ)
 variable (hB_smooth : IsSmoothFullKineticCoefficient B)

@@ -5,6 +5,7 @@ public import
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.LocalizedSpatialDifferenceQuotientEnergyWeakTest
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialBounds
 public import HypoellipticAleksandrov.Parabolic.SpatialDifferenceQuotientIntegration
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Smooth fixed-time localized commutator
@@ -28,7 +29,7 @@ private theorem cont_mul_local
   exact (tsupport_mul_subset_left (f := p) (g := q)).trans hps
 
 private theorem local_transpose
-    {d : ℕ} (Ω : Set (PDE.Vec d))
+    {d : ℕ} (Ω : HypoellipticAleksandrov.VecSet d)
     (hΩ : IsOpen Ω)
     (k : Fin d) (h : ℝ) (f g : PDE.Vec d → ℝ)
     (hf : ContinuousOn f Ω) (hg : Continuous g)
@@ -119,7 +120,7 @@ private theorem local_transpose
       ring
 
 private theorem energy_value_eq_backward
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (η : PDE.QuantitativeSmoothCutoff inner outer K) (k : Fin d) (h : ℝ)
     (φ : PDE.WeakTestFunction Ω)
     (hηΩ : tsupport η.toFun ⊆ Ω)
@@ -143,7 +144,7 @@ private theorem energy_value_eq_backward
   ring_nf
 
 private theorem energy_deriv_eq_backward
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (η : PDE.QuantitativeSmoothCutoff inner outer K) (k : Fin d) (h : ℝ)
     (φ : PDE.WeakTestFunction Ω)
     (hηΩ : tsupport η.toFun ⊆ Ω)
@@ -168,7 +169,7 @@ private theorem energy_deriv_eq_backward
     η k h φ hηΩ hηshift i y]
 
 private theorem continuousOn_reverseTimeCoefficientEntry
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ τ : ℝ) (a : CoefficientField d) (i j : Fin d)
     (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -193,7 +194,7 @@ private theorem continuousOn_reverseTimeCoefficientEntry
     (Continuous.prodMk_right _).continuousOn hmap
 
 private theorem continuousOn_reverseTimeDivergenceDriftEntry
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ τ : ℝ) (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (j : Fin d)
     (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
@@ -233,7 +234,7 @@ private theorem continuousOn_reverseTimeDivergenceDriftEntry
 /-- The fixed-time smooth localized energy test satisfies the literal
 source-minus-form spatial difference-quotient commutator identity. -/
 theorem reverseTimeSource_sub_reverseTimeSpatialForm_smooth_energyTest_eq_commutator
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (r₀ r₁ : ℝ) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)

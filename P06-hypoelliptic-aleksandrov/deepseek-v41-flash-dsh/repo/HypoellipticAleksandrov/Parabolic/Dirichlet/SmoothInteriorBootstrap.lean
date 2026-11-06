@@ -11,6 +11,8 @@ public import HypoellipticAleksandrov.Parabolic.ContDiffOnTwoToScalarC12
 public import HypoellipticAleksandrov.Parabolic.ScalarJetPointGermCongruence
 public import HypoellipticAleksandrov.Parabolic.WeakDerivativesLocal
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.OriginalTimeProductRepresentativeUnique
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Smooth interior bootstrap
@@ -35,7 +37,7 @@ noncomputable section
 that is scalar `C¹,²` in the full interior, satisfies the original-time PDE
 pointwise, and retains the selected local weak jets almost everywhere. -/
 theorem exists_smoothInteriorBootstrap
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hd : 0 < d)
     (r₀ r₁ : ℝ)
     (h₀₁ : r₀ < r₁)
@@ -90,7 +92,7 @@ theorem exists_smoothInteriorBootstrap
             (∑ j : Fin d,
               b z.1 z.2 j * scalarSpatialGradient w z j) +
           c z.1 z.2 * w z = F z.1 z.2) ∧
-      ∀ (s₀ s₁ : ℝ) (O : Set (PDE.Vec d)),
+      ∀ (s₀ s₁ : ℝ) (O : HypoellipticAleksandrov.VecSet d),
         r₀ < s₀ →
         s₀ < s₁ →
         s₁ < r₁ →
@@ -117,9 +119,9 @@ theorem exists_smoothInteriorBootstrap
     exists_originalTimeValueRepresentative_localL2StrongJets hd r₀ r₁ h₀₁
       hΩ hΩbounded lam Lam hlam hlamLam a b c F haSmooth hbSmooth hcSmooth hFSmooth
       hLower hUpper hcNonpos initial u g hdu hu
-  let Q : Set (TimeVelocity d) := Set.Ioo r₀ r₁ ×ˢ Ω
+  let Q : HypoellipticAleksandrov.Parabolic.TVSet d := Set.Ioo r₀ r₁ ×ˢ Ω
   have hQopen : IsOpen Q := isOpen_Ioo.prod hΩ
-  have hlocal : ∀ z : Q, ∃ (V : Set (TimeVelocity d)) (v : TimeVelocity d → ℝ),
+  have hlocal : ∀ z : Q, ∃ (V : HypoellipticAleksandrov.Parabolic.TVSet d) (v : TimeVelocity d → ℝ),
       IsOpen V ∧ (z : TimeVelocity d) ∈ V ∧ V ⊆ Q ∧ ContDiff ℝ 2 v ∧
       v =ᵐ[timeVelocityVolumeOn V] w₀ ∧
       ∀ x ∈ V,
@@ -142,18 +144,18 @@ theorem exists_smoothInteriorBootstrap
     have hz_s₁ : (z : TimeVelocity d).1 < s₁ := by dsimp [s₁, q₁]; linarith
     have hs₁q₁ : s₁ < q₁ := by dsimp [s₁, q₁]; linarith
     have hq₁r : q₁ < r₁ := by dsimp [q₁]; linarith
-    have hsingleton : ({(z : TimeVelocity d).2} : Set (PDE.Vec d)) ⊆ Ω := by
+    have hsingleton : ({(z : TimeVelocity d).2} : HypoellipticAleksandrov.VecSet d) ⊆ Ω := by
       intro y hy
       rw [Set.mem_singleton_iff] at hy
       simpa [hy] using hzspace
     obtain ⟨O₀, hO₀open, hzO₀, hO₀Ω, hO₀compact⟩ :=
       exists_open_between_and_isCompact_closure
-        (isCompact_singleton : IsCompact ({(z : TimeVelocity d).2} : Set (PDE.Vec d)))
+        (isCompact_singleton : IsCompact ({(z : TimeVelocity d).2} : HypoellipticAleksandrov.VecSet d))
         hΩ hsingleton
-    have hsingletonO₀ : ({(z : TimeVelocity d).2} : Set (PDE.Vec d)) ⊆ O₀ := hzO₀
+    have hsingletonO₀ : ({(z : TimeVelocity d).2} : HypoellipticAleksandrov.VecSet d) ⊆ O₀ := hzO₀
     obtain ⟨O, hOopen, hzO, hOO₀, hOcompact⟩ :=
       exists_open_between_and_isCompact_closure
-        (isCompact_singleton : IsCompact ({(z : TimeVelocity d).2} : Set (PDE.Vec d)))
+        (isCompact_singleton : IsCompact ({(z : TimeVelocity d).2} : HypoellipticAleksandrov.VecSet d))
         hO₀open hsingletonO₀
     have hO₀ne : O₀.Nonempty :=
       ⟨(z : TimeVelocity d).2, hzO₀ (Set.mem_singleton _)⟩
@@ -224,7 +226,7 @@ theorem exists_smoothInteriorBootstrap
       hs₁q₁ hq₁r hΩ hΩbounded hO₀open hO₀ne hO₀compact hO₀Ω
       hOopen hOne hOcompact hOO₀ lam Lam hlam hlamLam a b c haSmooth hbSmooth
       hcSmooth hLower hUpper hcNonpos F hFSmooth initial u g hdu hu w₀ hw₀mem hw₀slice
-  let B : Set (TimeVelocity d) := Set.Ioo s₀ s₁ ×ˢ O
+  let B : HypoellipticAleksandrov.Parabolic.TVSet d := Set.Ioo s₀ s₁ ×ˢ O
   have hBQ : B ⊆ Q := Set.prod_mono (Set.Ioo_subset_Ioo hr₀s₀.le hs₁r₁.le)
     (fun y hy => hOΩ (subset_closure hy))
   have hBS : B ⊆ Metric.thickening rho (Set.Icc s₀ s₁ ×ˢ closure O) := by

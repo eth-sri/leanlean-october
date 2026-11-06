@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeDualPairingRight
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSeparatedMultiplier
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Reverse-time Gelfand pairings
@@ -20,7 +21,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 private theorem scalarLpToH10HilbertGraphDual_apply_smul
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (u0 v0 : H10HilbertGraph hΩ) (q0 : ℝ) :
     scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ u0) (q0 • v0) =
       inner ℝ (valueCLM hΩ v0) (valueCLM hΩ u0) * q0 := by
@@ -32,7 +33,7 @@ private theorem scalarLpToH10HilbertGraphDual_apply_smul
 /-- Pairing the Gelfand image with a bounded separated multiplier is the
 literal spatial `L²` mass integral. -/
 theorem reverseTimeGelfand_pairing_multiplier_eq_integral
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {T : ℝ}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {T : ℝ}
     (hΩ : IsOpen Ω)
     (u : ReverseTimeL2V hΩ T)
     (q : ℝ → ℝ)

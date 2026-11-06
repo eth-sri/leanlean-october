@@ -11,6 +11,8 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialForm
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSourceBochner
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialRawAmplitudeMajorant
 public import HypoellipticAleksandrov.Topology.Support
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Arbitrary-`H¹₀` fixed-time localized commutators
@@ -45,8 +47,8 @@ private theorem norm_timeVelocity_slice_le {d : ℕ} (q : TimeVelocity d → ℝ
     (hqBound : ∀ z, ‖q z‖ ≤ C) (τ : ℝ) : ∀ y : PDE.Vec d, ‖q (τ, y)‖ ≤ C :=
   fun y => hqBound (τ, y)
 
-private theorem inner_scalarLp_eq_setIntegral_of_ae_eq {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (f g : PDE.ScalarLp Ω (2 : ℝ≥0∞)) (p q : PDE.Vec d → ℝ)
+private theorem inner_scalarLp_eq_setIntegral_of_ae_eq {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
+    (f g : PDE.ScalarLp Ω 2) (p q : PDE.Vec d → ℝ)
     (hf : ⇑f =ᵐ[PDE.volumeOn Ω] p) (hg : ⇑g =ᵐ[PDE.volumeOn Ω] q) :
     inner ℝ f g = ∫ y in Ω, p y * q y ∂volume := by
   rw [L2.inner_def]
@@ -56,7 +58,7 @@ private theorem inner_scalarLp_eq_setIntegral_of_ae_eq {d : ℕ} {Ω : Set (PDE.
   simp only [RCLike.inner_apply, conj_trivial]
   ring
 
-private theorem inner_add_scalarL2Multiplier_eq_setIntegral {d : ℕ} {Ω : Set (PDE.Vec d)}
+private theorem inner_add_scalarL2Multiplier_eq_setIntegral {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (p q : PDE.Vec d → ℝ)
     (hp : AEStronglyMeasurable p (PDE.volumeOn Ω))
     (hq : AEStronglyMeasurable q (PDE.volumeOn Ω)) (Cp Cq : ℝ) (hCp : 0 ≤ Cp) (hCq : 0 ≤ Cq)
@@ -78,7 +80,7 @@ private theorem inner_add_scalarL2Multiplier_eq_setIntegral {d : ℕ} {Ω : Set 
   simp only [RCLike.inner_apply, conj_trivial]
   ring
 
-private theorem continuous_reverseTimeSpatialForm_apply_energyTest {d : ℕ} {Ω : Set (PDE.Vec d)}
+private theorem continuous_reverseTimeSpatialForm_apply_energyTest {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
@@ -101,7 +103,7 @@ private abbrev continuousCompactBoundedField {d : ℕ} (C : ℝ) (q : TimeVeloci
   Continuous q ∧ HasCompactSupport q ∧ ∀ z, ‖q z‖ ≤ C
 
 private theorem continuousCompactBoundedField_reverseTimeSource_of_fixedStepRawAmplitude
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη : ℝ} (r₀ r₁ : ℝ)
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη : ℝ} (r₀ r₁ : ℝ)
     (η : PDE.QuantitativeSmoothCutoff inner Ω Kη) (ζ : ReverseTimeScalarTest (r₁ - r₀))
     (hζunit : ∀ τ : ℝ, ‖ζ τ‖ ≤ 1) (F : ℝ → PDE.Vec d → ℝ)
     (hFSmooth : IsSmoothOnNeighborhood
@@ -119,7 +121,7 @@ private theorem continuousCompactBoundedField_reverseTimeSource_of_fixedStepRawA
     continuousCompactBoundedField M (fun z : TimeVelocity d =>
       ζ z.1 * η z.2 * spatialDifferenceQuotient k h
         (fun w : TimeVelocity d => F (r₁ - w.1) w.2) z) := by
-  let S : Set (TimeVelocity d) := tsupport (ζ : ℝ → ℝ) ×ˢ tsupport η.toFun
+  let S : HypoellipticAleksandrov.Parabolic.TVSet d := tsupport (ζ : ℝ → ℝ) ×ˢ tsupport η.toFun
   let β : TimeVelocity d → ℝ := fun z => ζ z.1 * η z.2
   have hS : IsCompact S :=
     ζ.hasCompactSupport.prod η.hasCompactSupport
@@ -151,8 +153,8 @@ private theorem continuousCompactBoundedField_reverseTimeSource_of_fixedStepRawA
         mul_le_mul (hζunit z.1) hηunit (norm_nonneg _) (by norm_num)
       _ = 1 := one_mul 1
   rcases hFSmooth with ⟨V, hVopen, hCV, hV⟩
-  let U : Set (TimeVelocity d) := reverseTimeMap r₁ ⁻¹' V
-  let W : Set (TimeVelocity d) := U ∩ (spatialShift k h) ⁻¹' U
+  let U : HypoellipticAleksandrov.Parabolic.TVSet d := reverseTimeMap r₁ ⁻¹' V
+  let W : HypoellipticAleksandrov.Parabolic.TVSet d := U ∩ (spatialShift k h) ⁻¹' U
   have hU : IsOpen U :=
     (contDiff_reverseTimeMap r₁).continuous.isOpen_preimage V hVopen
   have hshiftcont : Continuous (spatialShift k h) := by
@@ -257,7 +259,7 @@ private theorem exists_common_norm_bound_of_finite_continuousOn
   exact ⟨C, fun i z hz => hC i (Finset.mem_univ _) z hz⟩
 
 private theorem twoSpatialFields_of_smoothOnNeighborhood_of_fixedStep_bounds
-    {d : ℕ} {S : Set (TimeVelocity d)}
+    {d : ℕ} {S : HypoellipticAleksandrov.Parabolic.TVSet d}
     (C : ℝ) (β q : TimeVelocity d → ℝ) (k : Fin d) (h : ℝ)
     (hC : 0 ≤ C)
     (hβcont : Continuous β) (hβcompact : HasCompactSupport β)
@@ -269,7 +271,7 @@ private theorem twoSpatialFields_of_smoothOnNeighborhood_of_fixedStep_bounds
     (hdq : ∀ z ∈ tsupport β, ‖spatialDifferenceQuotient k h q z‖ ≤ C) :
     twoSpatialFields C β q k h := by
   rcases hqsmooth with ⟨V, hVopen, hSV, hV⟩
-  let W : Set (TimeVelocity d) := V ∩ (spatialShift k h) ⁻¹' V
+  let W : HypoellipticAleksandrov.Parabolic.TVSet d := V ∩ (spatialShift k h) ⁻¹' V
   have hshiftcont : Continuous (spatialShift k h) := by
     simpa only [spatialShift] using!
       (Homeomorph.addRight ((0, h • PDE.basisVec k) : TimeVelocity d)).continuous
@@ -295,7 +297,7 @@ private theorem twoSpatialFields_of_smoothOnNeighborhood_of_fixedStep_bounds
         hβcont.continuousOn hβcompact hβW hβunit hdqW hdq)
 
 private theorem exists_fixedStep_reverseTimeCoefficientFields_of_majorants
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kχ : ℝ}
     (r₀ r₁ : ℝ)
     (χ : PDE.QuantitativeSmoothCutoff inner Ω Kχ)
     (ζ : ReverseTimeScalarTest (r₁ - r₀))
@@ -341,8 +343,8 @@ private theorem exists_fixedStep_reverseTimeCoefficientFields_of_majorants
       twoSpatialFields CA
         (fun z => ζ z.1 * χ z.2)
         (fun z => reverseTimeScalarCoefficient r₁ c z.1 z.2) k h := by
-  let Kδ : Set (PDE.Vec d) := spatialCoordinateShiftCarrier (tsupport χ.toFun) δ
-  let Sstar : Set (TimeVelocity d) :=
+  let Kδ : HypoellipticAleksandrov.VecSet d := spatialCoordinateShiftCarrier (tsupport χ.toFun) δ
+  let Sstar : HypoellipticAleksandrov.Parabolic.TVSet d :=
     tsupport (ζ : ℝ → ℝ) ×ˢ (tsupport χ.toFun ∪ Kδ)
   let β : TimeVelocity d → ℝ := fun z => ζ z.1 * χ z.2
   have hKδ : IsCompact Kδ :=
@@ -501,7 +503,7 @@ private theorem exists_fixedStep_reverseTimeCoefficientFields_of_majorants
         (hβχ (τ, y) hz)).trans (le_max_right _ _)
 
 private def h10CommutatorLhsLocal
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
@@ -522,7 +524,7 @@ private def h10CommutatorLhsLocal
       reverseTimeSpatialForm hΩ r₁ τ a b c u (B u))
 
 private def h10CommutatorRawLeafLocal
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (sourceD V : PDE.Vec d → ℝ)
     (aT aD : Fin d → Fin d → PDE.Vec d → ℝ)
     (E H U : Fin d → PDE.Vec d → ℝ)
@@ -536,7 +538,7 @@ private def h10CommutatorRawLeafLocal
     ∫ y in Ω, (γT y * V y + γD y * U₀ y) * V y ∂volume
 
 private def h10CommutatorRawRhsLocal
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
@@ -591,7 +593,7 @@ private def h10CommutatorRawRhsLocal
   h10CommutatorRawLeafLocal (Ω := Ω) sourceD V aT aD E H U driftT driftD γT γD U₀
 
 private def h10CommutatorFixedStepOutputLocal
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
@@ -618,7 +620,7 @@ private def h10CommutatorFixedStepOutputLocal
       hcSmooth F hFSmooth ζ η χ k h τ hηshift u
 
 private theorem h10CommutatorFixedStepOutputLocal_of_smoothCore
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
@@ -656,7 +658,7 @@ private theorem h10CommutatorFixedStepOutputLocal_of_smoothCore
       ζ η χ k h τ hηshift hτ φ)
 
 private theorem h10CommutatorFixedStepOutputLocal_of_denseSmoothCore
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
@@ -704,7 +706,7 @@ private theorem h10CommutatorFixedStepOutputLocal_of_denseSmoothCore
   exact (congrFun hEq u).trans (hinnerRaw u)
 
 private def h10CommutatorOutput
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
@@ -739,7 +741,7 @@ private def h10CommutatorOutput
           hcSmooth F hFSmooth ζ η χ k h τ hτ hηshift u
 
 private theorem h10CommutatorAtFixedStepFromFields
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
@@ -1113,7 +1115,7 @@ private theorem h10CommutatorAtFixedStepFromFields
     ζ η χ k h τ hτ hηshift u rightInner hleft hright hInnerRaw
 
 private theorem h10CommutatorFromFields
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
@@ -1173,7 +1175,7 @@ private theorem h10CommutatorFromFields
 localized energy test satisfies the literal reverse-time fixed-slice
 source-minus-form commutator identity. -/
 theorem exists_smallStep_reverseTimeSource_sub_reverseTimeSpatialForm_energyTest_eq_commutator
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
@@ -1280,8 +1282,8 @@ theorem exists_smallStep_reverseTimeSource_sub_reverseTimeSpatialForm_energyTest
               (γT y * V y + γD y * U₀ y) * V y ∂volume := by
   change h10CommutatorOutput r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth
     F hFSmooth ζ hζunit η χ
-  let K : Set (TimeVelocity d) := ({0} : Set ℝ) ×ˢ tsupport χ.toFun
-  let U : Set (TimeVelocity d) := Set.univ ×ˢ Ω
+  let K : HypoellipticAleksandrov.Parabolic.TVSet d := ({0} : Set ℝ) ×ˢ tsupport χ.toFun
+  let U : HypoellipticAleksandrov.Parabolic.TVSet d := Set.univ ×ˢ Ω
   have hK : IsCompact K := by
     dsimp only [K]
     exact isCompact_singleton.prod χ.hasCompactSupport.isCompact
@@ -1313,7 +1315,7 @@ theorem exists_smallStep_reverseTimeSource_sub_reverseTimeSpatialForm_energyTest
 
 /-- Fixed supplied-collar commutator identity from the raw majorants. -/
 theorem reverseTimeSource_sub_reverseTimeSpatialForm_energyTest_eq_commutator_of_majorants
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω)
     (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)

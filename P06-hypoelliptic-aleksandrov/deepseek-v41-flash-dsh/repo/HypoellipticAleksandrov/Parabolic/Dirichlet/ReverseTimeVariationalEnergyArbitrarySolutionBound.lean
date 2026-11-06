@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeVariationalEnergyExistenceBound
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Uniform radius bound for arbitrary reverse-time variational solutions
@@ -21,7 +22,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 /-- Every supplied reverse-time variational energy solution is bounded by the
 constructed Galerkin primal radius. -/
 theorem IsReverseTimeVariationalEnergySolution.norm_le_reverseTimeGalerkinPrimalRadius
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ lam Lam : ℝ) (h₀₁ : r₀ < r₁)
     (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)

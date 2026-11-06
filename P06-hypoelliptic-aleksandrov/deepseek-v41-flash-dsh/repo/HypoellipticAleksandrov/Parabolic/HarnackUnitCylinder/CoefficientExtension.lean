@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Coefficients.ParabolicRegularization
 public import HypoellipticAleksandrov.Parabolic.LocalClassical
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Borel midpoint extension of locally continuous coefficients -/
 
@@ -20,7 +21,7 @@ local instance unitCylinderMatrixMeasurableSpace (d : ℕ) : MeasurableSpace (PD
 
 /-- Local continuity suffices for a Borel midpoint extension from an open set. -/
 theorem isBorel_midpointExtension_of_continuousOn
-    {d : ℕ} {U : Set (TimeVelocity d)} {B : CoefficientField d}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {B : CoefficientField d}
     (hU : IsOpen U) (hB : IsContinuousCoefficientOn B U) (lam Lam : ℝ) :
     IsBorelCoefficient
       (extendCoefficientByMidpoint B U (ellipticityMidpoint d lam Lam)) := by

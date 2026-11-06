@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.SourceProblem.LocalizedAdmissibility
 public import HypoellipticAleksandrov.KineticAleksandrov.SourceProblem.InteriorEstimate
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # The localized bound `0 ≤ V ≤ C R^(d/(d+1)) ‖F‖_{L^{d+1}}` (companion paper, Proposition 4.2)
@@ -82,7 +83,7 @@ theorem localizedBound_cylinder_direct
 global one. -/
 theorem parabolicLpNormOn_le_parabolicLpNorm_direct
     {F : TimeVelocity d → ℝ} (hF : Continuous F)
-    (hFc : HasCompactSupport F) (S : Set (TimeVelocity d)) :
+    (hFc : HasCompactSupport F) (S : HypoellipticAleksandrov.Parabolic.TVSet d) :
     parabolicLpNormOn d F S ≤ parabolicLpNorm d F := by
   have hfin : eLpNorm F (parabolicExponent d) volume ≠ ⊤ :=
     (hF.memLp_of_hasCompactSupport (p := parabolicExponent d) (μ := volume) hFc).ne

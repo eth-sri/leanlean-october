@@ -34,7 +34,7 @@ theorem position_decay_power_sum_horizon_le (g q : ℝ)
     (∑ j ∈ Finset.range (N + 1),
       (1 + (j : ℝ)) ^ (-(1 + g * (q - 1)) / 2)) ≤
       ((1 + 1 / (1 - (1 + g * (q - 1)) / 2)) *
-        (3 : ℝ) ^ (1 - (1 + g * (q - 1)) / 2)) *
+        3 ^ (1 - (1 + g * (q - 1)) / 2)) *
           (1 + R / r) ^ (1 - g * (q - 1)) := by
   have hprod : 0 < g * (q - 1) := mul_pos (by linarith [hg.1]) (by linarith [hq.1])
   have hprod1 : g * (q - 1) < 1 := by

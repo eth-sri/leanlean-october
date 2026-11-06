@@ -5,6 +5,7 @@ public import Mathlib.MeasureTheory.Measure.Complex
 public import Mathlib.MeasureTheory.VectorMeasure.WithDensity
 public import Mathlib.MeasureTheory.VectorMeasure.Variation.Basic
 import Mathlib.Analysis.Complex.Trigonometric
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Fourier projection by its unique measure characterization -/
 
@@ -20,10 +21,10 @@ def fourierPhase {d : ℕ} (ξ z : PDE.Vec d) (q : EvolutionAmbientState d) : �
   Complex.exp (-Complex.I * (PDE.vecDot ξ (q.2 - z) : ℂ))
 
 /-- Exact source characterization of the Fourier-projected complex measure. -/
-def IsFourierProjection {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+def IsFourierProjection {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d}
     (K : MovingFiberKernel Ω γ) (q : EvolutionQuery Ω γ) (ξ : PDE.Vec d)
     (ν : ComplexMeasure (PDE.Vec d)) : Prop :=
-  ∀ E : Set (PDE.Vec d), MeasurableSet E →
+  ∀ E : HypoellipticAleksandrov.VecSet d, MeasurableSet E →
     ν E = ∫ w in E ×ˢ Set.univ, fourierPhase ξ q.1.2.2.2 w ∂K.master q
 
 /-- The phase has modulus one. -/
@@ -36,23 +37,22 @@ theorem continuous_fourierPhase {d : ℕ} (ξ z : PDE.Vec d) :
     Continuous (fourierPhase ξ z) := by
   unfold fourierPhase PDE.vecDot
   fun_prop
+section
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (q : EvolutionQuery Ω γ)
 
 /-- Master measures are finite by their sub-Markov bound. -/
-instance master_isFiniteMeasure {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (K : MovingFiberKernel Ω γ) (q : EvolutionQuery Ω γ) : IsFiniteMeasure (K.master q) :=
+instance master_isFiniteMeasure  : IsFiniteMeasure (K.master q) :=
   ⟨(K.mass_le_one q).trans_lt ENNReal.one_lt_top⟩
 
 /-- Modulus-one phases are integrable without additional hypotheses. -/
-theorem fourierPhase_integrable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (K : MovingFiberKernel Ω γ) (q : EvolutionQuery Ω γ) (ξ z : PDE.Vec d) :
+theorem fourierPhase_integrable  (ξ z : PDE.Vec d) :
     Integrable (fourierPhase ξ z) (K.master q) := by
   exact Integrable.mono' (integrable_const (1 : ℝ))
     (continuous_fourierPhase ξ z).measurable.aestronglyMeasurable
     (Filter.Eventually.of_forall (fun w => (norm_fourierPhase ξ z w).le))
 
 /-- The concrete density pushforward has the source characterization. -/
-theorem densityMap_isFourierProjection {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (q : EvolutionQuery Ω γ)
+theorem densityMap_isFourierProjection 
     (ξ : PDE.Vec d) : IsFourierProjection K q ξ
       (((K.master q).withDensityᵥ (fourierPhase ξ q.1.2.2.2)).map Prod.fst) := by
   intro E hE
@@ -64,9 +64,7 @@ theorem densityMap_isFourierProjection {d : ℕ} {Ω : Set (PDE.Vec d)}
   rw [hset]
 
 /-- Well-definedness must be proved before materializing the Fourier measure. -/
-theorem existsUnique_fourierProjection {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ)
-    (q : EvolutionQuery Ω γ) (ξ : PDE.Vec d) :
+theorem existsUnique_fourierProjection  (ξ : PDE.Vec d) :
     ∃! ν : ComplexMeasure (PDE.Vec d), IsFourierProjection K q ξ ν := by
   refine ⟨_, densityMap_isFourierProjection K q ξ, ?_⟩
   intro ν hν
@@ -76,23 +74,21 @@ theorem existsUnique_fourierProjection {d : ℕ} {Ω : Set (PDE.Vec d)}
 
 
 /-- Fourier measure selected only after existence and uniqueness are proved. -/
-def fourierProjection {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (K : MovingFiberKernel Ω γ) (q : EvolutionQuery Ω γ) (ξ : PDE.Vec d) :
+def fourierProjection  (ξ : PDE.Vec d) :
     ComplexMeasure (PDE.Vec d) := (existsUnique_fourierProjection K q ξ).exists.choose
 
 /-- The full characterization accompanies the unique-choice definition. -/
-theorem fourierProjection_spec {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (K : MovingFiberKernel Ω γ) (q : EvolutionQuery Ω γ) (ξ : PDE.Vec d) :
+theorem fourierProjection_spec  (ξ : PDE.Vec d) :
     IsFourierProjection K q ξ (fourierProjection K q ξ) :=
   (existsUnique_fourierProjection K q ξ).exists.choose_spec
 
 /-- Any characterized measure equals the integrable density pushforward. -/
-theorem fourierProjection_eq_densityMap {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (q : EvolutionQuery Ω γ)
+theorem fourierProjection_eq_densityMap 
     (ξ : PDE.Vec d) (ν : ComplexMeasure (PDE.Vec d)) (hν : IsFourierProjection K q ξ ν) :
     ν = ((K.master q).withDensityᵥ (fourierPhase ξ q.1.2.2.2)).map Prod.fst := by
   apply VectorMeasure.ext
   intro E hE
   exact (hν E hE).trans ((densityMap_isFourierProjection K q ξ E hE).symm)
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

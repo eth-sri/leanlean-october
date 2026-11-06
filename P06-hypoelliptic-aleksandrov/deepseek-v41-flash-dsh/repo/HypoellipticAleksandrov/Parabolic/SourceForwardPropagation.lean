@@ -11,6 +11,7 @@ public import Mathlib.Tactic.Linarith
 public import Mathlib.Tactic.NormNum
 public import Mathlib.Tactic.Positivity
 public import Mathlib.Tactic.Ring
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Source-aware forward propagation
@@ -42,7 +43,7 @@ private theorem parabolicELpNormOn_movingLensClosed_le_rectangle
       parabolicELpNormOn d F (parabolicRectangle tau lower upper) := by
   let L := movingLensClosed xi eps tLens y
   let V := velocityRectangle lower upper
-  let C : Set (TimeVelocity d) := Icc (0 : Real) tau ×ˢ V
+  let C : HypoellipticAleksandrov.Parabolic.TVSet d := Icc 0 tau ×ˢ V
   let Q := parabolicRectangle tau lower upper
   have hLC : L ⊆ C := by
     intro z hz
@@ -50,8 +51,8 @@ private theorem parabolicELpNormOn_movingLensClosed_le_rectangle
       ⟨hz0, hztau, _⟩
     exact ⟨⟨hz0, hztau⟩, hLensVel z hz⟩
   have hCQ : C =ᵐ[volume] Q := by
-    change (Icc (0 : Real) tau ×ˢ V : Set (TimeVelocity d)) =ᵐ[volume]
-      (Ioo 0 tau ×ˢ V : Set (TimeVelocity d))
+    change (Icc 0 tau ×ˢ V : HypoellipticAleksandrov.Parabolic.TVSet d) =ᵐ[volume]
+      (Ioo 0 tau ×ˢ V : HypoellipticAleksandrov.Parabolic.TVSet d)
     rw [volume_timeVelocity_eq_prod]
     exact Measure.set_prod_ae_eq Ioo_ae_eq_Icc.symm (EventuallyEq.rfl)
   have hLQ : L =ᵐ[volume] Set.inter L Q := by
@@ -75,7 +76,7 @@ private theorem parabolicELpNormOn_movingLensClosed_le_rectangle
 private theorem parabolicLpNormOn_movingLensClosed_le_rectangle
     {d : Nat} {xi eps tLens tau : Real}
     {y lower upper : PDE.Vec d}
-    {U : Set (TimeVelocity d)} {F : TimeVelocity d -> Real}
+    {U : HypoellipticAleksandrov.Parabolic.TVSet d} {F : TimeVelocity d -> Real}
     (hF : ContinuousOn F U)
     (hclosedU : parabolicClosedRectangle tau lower upper ⊆ U)
     (hLens :
@@ -186,7 +187,7 @@ private theorem source_seed_lower_bound_on_ball
 
 private abbrev SourceMovingLensComparison
     (d : Nat) (lam Lam kappa C : Real) : Prop :=
-  ∀ (A : CoefficientField d) (U : Set (TimeVelocity d))
+  ∀ (A : CoefficientField d) (U : HypoellipticAleksandrov.Parabolic.TVSet d)
     (F u : TimeVelocity d -> Real) (tau eps ell : Real) (y : PDE.Vec d),
     0 < tau -> tau <= kappa⁻¹ -> 0 < eps ->
     2 * eps ^ 2 < kappa ^ 2 -> 0 < ell ->
@@ -214,7 +215,7 @@ private theorem source_forward_propagation_normalized_interior
     (C : Real) (hC : 0 < C)
     (hsource : SourceMovingLensComparison d lam Lam kappa C)
     (A : CoefficientField d) (lower upper : PDE.Vec d) (tau : Real)
-    (U : Set (TimeVelocity d)) (F u : TimeVelocity d -> Real)
+    (U : HypoellipticAleksandrov.Parabolic.TVSet d) (F u : TimeVelocity d -> Real)
     (eps ell tStar : Real) (vStar : PDE.Vec d)
     (htauLower : kappa < tau) (htauUpper : tau <= kappa⁻¹)
     (hwidth : ∀ i, 2 * kappa < upper i - lower i ∧
@@ -403,7 +404,7 @@ theorem exists_forward_propagation_source_constants_normalized
     (hkappa : 0 < kappa) (hkappa_one : kappa <= 1) :
     ∃ delta : Real, 0 < delta ∧ ∃ m : Nat, 0 < m ∧ ∃ C : Real, 0 < C ∧
       ∀ (A : CoefficientField d) (lower upper : PDE.Vec d) (tau : Real)
-        (U : Set (TimeVelocity d)) (F u : TimeVelocity d -> Real)
+        (U : HypoellipticAleksandrov.Parabolic.TVSet d) (F u : TimeVelocity d -> Real)
         (eps ell tStar : Real) (vStar : PDE.Vec d),
         kappa < tau -> tau <= kappa⁻¹ ->
         (∀ i, 2 * kappa < upper i - lower i ∧
@@ -505,7 +506,7 @@ theorem exists_forward_propagation_source_constants
     ∃ delta : Real, 0 < delta ∧ ∃ m : Nat, 0 < m ∧ ∃ C : Real, 0 < C ∧
       ∀ (R : Real) (A : CoefficientField d)
         (v0 lower upper : PDE.Vec d) (tau : Real)
-        (U : Set (TimeVelocity d)) (F u : TimeVelocity d -> Real)
+        (U : HypoellipticAleksandrov.Parabolic.TVSet d) (F u : TimeVelocity d -> Real)
         (eps ell tStar : Real) (vStar : PDE.Vec d),
         0 < R -> R <= 2 ->
         kappa * R ^ 2 < tau -> tau <= kappa⁻¹ * R ^ 2 ->
@@ -544,7 +545,7 @@ theorem exists_forward_propagation_source_constants
   let lowerHat : PDE.Vec d := pullbackRectangleLower v0 lower R
   let upperHat : PDE.Vec d := pullbackRectangleUpper v0 upper R
   let vStarHat : PDE.Vec d := R⁻¹ • (vStar - v0)
-  let UHat : Set (TimeVelocity d) := parabolicAffine 0 v0 R ⁻¹' U
+  let UHat : HypoellipticAleksandrov.Parabolic.TVSet d := parabolicAffine 0 v0 R ⁻¹' U
   let AHat : CoefficientField d := pullbackCoefficient A 0 v0 R
   let uHat : TimeVelocity d -> Real := pullbackScalar u 0 v0 R
   let FHat : TimeVelocity d -> Real := fun z => R ^ 2 * F (parabolicAffine 0 v0 R z)

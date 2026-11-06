@@ -62,8 +62,7 @@ theorem scalar_borel_inner_error {lam Lam : ℝ} (hlam : 0 < lam)
       ((continuous_apply 0).comp continuous_velocity)).measurable
   have hHm : AEStronglyMeasurable H (volume.restrict K) :=
     hH.aestronglyMeasurable hK.measurableSet
-  have hm j : AEStronglyMeasurable (scalarBorelError (C j) a H) (volume.restrict K) := by
-    exact continuous_abs.comp_aestronglyMeasurable
+  have hm j : AEStronglyMeasurable (scalarBorelError (C j) a H) (volume.restrict K) := continuous_abs.comp_aestronglyMeasurable
       ((((hC j).1.continuous.measurable.comp hproj).aestronglyMeasurable.restrict.sub
         (ha.comp hproj).aestronglyMeasurable.restrict).mul hHm)
   have hbounds j := scalar_borel_error_bound hlam (hC j).2 hb H

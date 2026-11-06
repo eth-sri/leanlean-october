@@ -13,10 +13,11 @@ import Mathlib.Tactic
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
 open Set
+section
+variable {d : ℕ} (P₀ : KineticPoint d)
 
 /-- Backward-cylinder closures are compact in physical coordinates. -/
-theorem isCompact_closure_backwardCylinder {d : ℕ}
-    (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) :
+theorem isCompact_closure_backwardCylinder  (R : ℝ) (hR : 0 < R) :
     IsCompact (closure (backwardCylinder P₀ R)) := by
   have h := (isCompact_closure_forwardCylinder (kineticReflection P₀) R hR).image
     (continuous_kineticReflection d)
@@ -25,7 +26,7 @@ theorem isCompact_closure_backwardCylinder {d : ℕ}
   exact h
 
 /-- Every positive-radius source cylinder is nonempty. -/
-theorem backwardCylinder_nonempty {d : ℕ} (P₀ : KineticPoint d)
+theorem backwardCylinder_nonempty 
     {R : ℝ} (hR : 0 < R) : (backwardCylinder P₀ R).Nonempty := by
   refine ⟨⟨P₀.time - R ^ 2 / 2, P₀.position - (R ^ 2 / 2) • P₀.velocity,
     P₀.velocity⟩, ?_⟩
@@ -41,7 +42,7 @@ theorem backwardCylinder_nonempty {d : ℕ} (P₀ : KineticPoint d)
     exact PDE.center_mem_euclideanBall 0 (pow_pos hR 3)
 
 /-- The bottom centre belongs to the source kinetic boundary. -/
-theorem bottom_mem_kineticBoundary {d : ℕ} (P₀ : KineticPoint d)
+theorem bottom_mem_kineticBoundary 
     {R : ℝ} (hR : 0 < R) :
     (⟨P₀.time-R^2, P₀.position-R^2 • P₀.velocity, P₀.velocity⟩ : KineticPoint d) ∈
       kineticBoundary P₀ R := by
@@ -72,8 +73,9 @@ theorem bottom_mem_kineticBoundary {d : ℕ} (P₀ : KineticPoint d)
   exact ⟨hm, Or.inl (Or.inl rfl)⟩
 
 /-- Comparison boundaries are nonempty for every positive radius. -/
-theorem kineticBoundary_nonempty {d : ℕ} (P₀ : KineticPoint d)
+theorem kineticBoundary_nonempty 
     {R : ℝ} (hR : 0 < R) : (kineticBoundary P₀ R).Nonempty :=
   ⟨_, bottom_mem_kineticBoundary P₀ hR⟩
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

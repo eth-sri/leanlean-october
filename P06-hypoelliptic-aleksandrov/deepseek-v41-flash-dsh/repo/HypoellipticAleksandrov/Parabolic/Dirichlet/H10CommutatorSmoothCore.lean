@@ -6,6 +6,8 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialForm
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSourceBochner
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeTests
 public import HypoellipticAleksandrov.Parabolic.SpatialDifferenceQuotient
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Smooth core for the arbitrary-`H¹₀` commutator
@@ -26,7 +28,7 @@ open scoped BigOperators ENNReal RealInnerProductSpace Matrix.Norms.Elementwise
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 private theorem gradientCoord_localizedSpatialDifferenceQuotientH10CLM_eq
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (hηΩ : tsupport η.toFun ⊆ Ω)
     (hηshift : Set.MapsTo
@@ -51,7 +53,7 @@ private theorem gradientCoord_localizedSpatialDifferenceQuotientH10CLM_eq
     PDE.hilbertVectorLpCoord_hilbertVectorLpAssemble] using hgrad
 
 private theorem outerCutoff_mul_innerCutoff_eq
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
     (χ : PDE.QuantitativeSmoothCutoff (tsupport η.toFun) Ω Kχ)
     (y : PDE.Vec d) :
@@ -62,7 +64,7 @@ private theorem outerCutoff_mul_innerCutoff_eq
     rw [χ.eq_one_on_inner y hysupport, one_mul]
 
 private def h10CommutatorLhs
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη : ℝ}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
@@ -82,7 +84,7 @@ private def h10CommutatorLhs
       reverseTimeSpatialForm hΩ r₁ τ a b c u (B u))
 
 private def h10CommutatorRawLeaf
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (sourceD V : PDE.Vec d → ℝ)
     (aT aD : Fin d → Fin d → PDE.Vec d → ℝ)
     (E H U : Fin d → PDE.Vec d → ℝ)
@@ -110,20 +112,12 @@ private theorem fintype_sum_sum_const_mul
       intro i hi
       exact fintype_sum_const_mul a (f i)
     _ = _ := fintype_sum_const_mul a (fun i => ∑ j, f i j)
+section
+variable {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ} (r₀ r₁ : ℝ) (hΩ : IsOpen Ω) (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ) (F : ℝ → PDE.Vec d → ℝ) (ζ : ReverseTimeScalarTest (r₁ - r₀)) (η : PDE.QuantitativeSmoothCutoff inner Ω Kη) (χ : PDE.QuantitativeSmoothCutoff (tsupport η.toFun) Ω Kχ) (k : Fin d) (h τ : ℝ) (hηshift : Set.MapsTo
+      (fun y : PDE.Vec d => y + h • PDE.basisVec k) (tsupport η.toFun) Ω) (u : H10HilbertGraph hΩ)
 
 private def h10CommutatorRawRhs
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
-    (r₀ r₁ : ℝ) (hΩ : IsOpen Ω)
-    (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (c : ℝ → PDE.Vec d → ℝ)
-    (F : ℝ → PDE.Vec d → ℝ)
-    (ζ : ReverseTimeScalarTest (r₁ - r₀))
-    (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
-    (χ : PDE.QuantitativeSmoothCutoff (tsupport η.toFun) Ω Kχ)
-    (k : Fin d) (h τ : ℝ)
-    (hηshift : Set.MapsTo
-      (fun y : PDE.Vec d => y + h • PDE.basisVec k) (tsupport η.toFun) Ω)
-    (u : H10HilbertGraph hΩ) : ℝ :=
+     : ℝ :=
   let A : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ :=
     localizedSpatialDifferenceQuotientH10CLM hΩ η k h η.tsupport_subset hηshift
   let V : PDE.Vec d → ℝ := fun y => valueCLM hΩ (A u) y
@@ -158,18 +152,7 @@ private def h10CommutatorRawRhs
   h10CommutatorRawLeaf (Ω := Ω) sourceD V aT aD E H U driftT driftD γT γD U₀
 
 private theorem h10CommutatorRawRhs_eq_leaf
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
-    (r₀ r₁ : ℝ) (hΩ : IsOpen Ω)
-    (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (c : ℝ → PDE.Vec d → ℝ)
-    (F : ℝ → PDE.Vec d → ℝ)
-    (ζ : ReverseTimeScalarTest (r₁ - r₀))
-    (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
-    (χ : PDE.QuantitativeSmoothCutoff (tsupport η.toFun) Ω Kχ)
-    (k : Fin d) (h τ : ℝ)
-    (hηshift : Set.MapsTo (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (tsupport η.toFun) Ω)
-    (u : H10HilbertGraph hΩ) :
+     :
     h10CommutatorRawRhs r₀ r₁ hΩ a b c F ζ η χ k h τ hηshift u =
       h10CommutatorRawLeaf (Ω := Ω)
         (fun y => ζ τ * η y * spatialDifferenceQuotient k h
@@ -203,10 +186,11 @@ private theorem h10CommutatorRawRhs_eq_leaf
         (fun y => ζ τ * χ y * spatialDifferenceQuotient k h
           (fun z => reverseTimeScalarCoefficient r₁ c z.1 z.2) (τ, y))
         (fun y => η y * valueCLM hΩ u y) := rfl
+end
 
 /-- The literal fixed-step H¹₀ commutator identity. -/
 def h10CommutatorFixedStepOutput
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
@@ -301,7 +285,7 @@ def h10CommutatorFixedStepOutput
               (γT y * V y + γD y * U₀ y) * V y ∂volume
 
 private def smoothCoreFactoredExpression
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη : ℝ}
     (r₀ r₁ : ℝ) (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c F : ℝ → PDE.Vec d → ℝ) (ζ : ReverseTimeScalarTest (r₁ - r₀))
     (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
@@ -333,7 +317,7 @@ private def smoothCoreFactoredExpression
     (∑ j : Fin d, driftSmooth j) + scalarSmooth)
 
 private theorem smoothCore_rawRhs_eq_factoredExpression
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₀ r₁ : ℝ) (hΩ : IsOpen Ω) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (F : ℝ → PDE.Vec d → ℝ)
@@ -543,7 +527,7 @@ private theorem smoothCore_rawRhs_eq_factoredExpression
   ring
 
 private theorem smoothCore_lhs_eq_factoredExpression
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη : ℝ}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
@@ -591,7 +575,7 @@ private theorem smoothCore_lhs_eq_factoredExpression
 
 /-- The literal fixed-step commutator identity on the dense smooth H¹₀ core. -/
 theorem smoothCore_fixedStep_reverseTimeSource_sub_reverseTimeSpatialForm_eq_commutator
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)

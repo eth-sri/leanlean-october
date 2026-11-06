@@ -11,13 +11,12 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov Filter
 open SectionTwo TheoremA Evolution
 open scoped Topology
+section
+variable (hH : HormanderHypoellipticityStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H) (hE : IsStripEvolution A H E)
 
 /-- No velocity-face exit occurs at or before the pole time. -/
 theorem stripExitOfRealization_face_at_pole_zero
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
-    (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ)) :
+     (T : ℝ) (e : StripPole H (T : WithTop ℝ)) :
     stripExitOfRealization hH hlam hLam A H E hE T e
       {p | p.velocity 0 ∈ frontier H.carrier ∧ p.time ≤ e.1.time} = 0 := by
   let Ω := stripExitOfRealization hH hlam hLam A H E hE T e
@@ -26,7 +25,7 @@ theorem stripExitOfRealization_face_at_pole_zero
   have hd : 0 < d := lt_min (sub_pos.mpr e.2.2.1) (sub_pos.mpr e.2.2.2)
   have hc : 0 < c := div_pos (sq_pos_of_pos hd)
     (mul_pos (by norm_num) (hlam.trans_le hLam))
-  have hn (n : ℕ) : (0 : ℝ) < (n : ℝ) + 1 := by positivity
+  have hn (n : ℕ) : 0 < (n : ℝ) + 1 := by positivity
   have hb (n : ℕ) : Ω {p | p.velocity 0 ∈ frontier H.carrier ∧ p.time ≤ e.1.time} ≤
       ENNReal.ofReal (2 * Real.exp (-((n : ℝ) + 1) * c)) := by
     have h := strip_exit_early_face_of_realization hH hlam hLam A H E hE e.1.time T e
@@ -41,7 +40,7 @@ theorem stripExitOfRealization_face_at_pole_zero
       field_simp
     exact (measure_mono hsub).trans (by simpa only [← heq, d] using h)
   have htop : Tendsto (fun n : ℕ => ((n : ℝ) + 1) * c) atTop atTop :=
-    (tendsto_atTop_add_const_right atTop (1 : ℝ) tendsto_natCast_atTop_atTop).atTop_mul_const hc
+    (tendsto_atTop_add_const_right atTop 1 tendsto_natCast_atTop_atTop).atTop_mul_const hc
   have hz : Tendsto (fun n : ℕ => ENNReal.ofReal
       (2 * Real.exp (-((n : ℝ) + 1) * c))) atTop (𝓝 0) := by
     have hexp : Tendsto (fun n : ℕ => Real.exp (-((n : ℝ) + 1) * c)) atTop (𝓝 0) := by
@@ -55,10 +54,7 @@ theorem stripExitOfRealization_face_at_pole_zero
 
 /-- The actual probability measure has the prescribed exit support even at the lower time. -/
 theorem strip_exit_probability_of_realization
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
-    (hE : IsStripEvolution A H E) (sMinus T : ℝ)
+     (sMinus T : ℝ)
     (e : StripPole H (T : WithTop ℝ)) (he : sMinus ≤ e.1.time) :
     stripExitOfRealization hH hlam hLam A H E hE T e univ = 1 ∧
       stripExitOfRealization hH hlam hLam A H E hE T e
@@ -93,6 +89,7 @@ theorem strip_exit_probability_of_realization
         exact Or.inr ⟨he.trans_lt htime, lt_of_le_of_ne hp.1 ht, hp.2⟩
   rw [ae_iff] at hs
   exact hs
+end
 
 /-- Canonical probability normalization and exact terminal/lateral exit support. -/
 theorem strip_exit_probability

@@ -29,7 +29,7 @@ theorem autonomous_borel_of_below_four_density
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
     (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) (p : ℝ)
     (hp : criticalP ⟨Lam / lam, (le_div_iff₀ hlam).2
-      (by simpa only [one_mul] using hLam)⟩ < p) :
+      (by simpa using hLam)⟩ < p) :
     ∃ C : ℝ, 0 < C ∧ ∀ (a : ℝ → ℝ → ℝ),
       Measurable (Function.uncurry a) → (∀ x v, lam ≤ a x v ∧ a x v ≤ Lam) →
       ∀ (P₀ : Point) (R : ℝ), 0 < R → ∀ (u f : Point → ℝ),
@@ -47,8 +47,8 @@ theorem autonomous_borel_of_below_four_density
   obtain ⟨C, hC, hsm⟩ := autonomous_smooth_localised_of_below_four_density hdensity
     hH hLE lam Lam hlam hLam p hp
   have hcritical := (criticalP_bounds ⟨Lam / lam, (le_div_iff₀ hlam).2
-    (by simpa only [one_mul] using hLam)⟩).1
-  have hp1 : 1 ≤ p := by linarith only [hcritical, hp]
+    (by simpa using hLam)⟩).1
+  have hp1 : 1 ≤ p := by linarith
   have hsmooth : ∀ a : ℝ → ℝ → ℝ,
       ContDiff ℝ (⊤ : ℕ∞) (Function.uncurry a) →
       (∀ x v, lam ≤ a x v ∧ a x v ≤ Lam) →

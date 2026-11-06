@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.OrdinaryDerivativeIndexPredecessor
 public import HypoellipticAleksandrov.Parabolic.WeakDerivativeSpacetimeMollification
 public import HypoellipticAleksandrov.Parabolic.SpacetimeMollifierL2
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Higher weak derivatives and spacetime mollification
@@ -27,11 +28,11 @@ private theorem ordinaryRepresentative_memLp_volume
     (G : ParabolicWeakDerivativeFamily d (2 * m) Set.univ root)
     (beta : TimeVelocityDerivativeIndex d m) :
     MemLp (G.ordinaryRepresentative beta) (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d)) := by
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   have h := G.ordinaryRepresentative_memLp beta
   change MemLp (G.ordinaryRepresentative beta) (2 : ℝ≥0∞)
-    ((volume : Measure (TimeVelocity d)).restrict Set.univ) at h
-  simpa only [Measure.restrict_univ] using h
+    ((HypoellipticAleksandrov.Parabolic.TVVolume d).restrict Set.univ) at h
+  simpa using h
 
 private theorem ordinary_timeSucc_eq_add_single
     {d m : ℕ} (gamma : TimeVelocityDerivativeIndex d m)
@@ -66,12 +67,13 @@ private theorem ordinary_velocitySucc_eq_add_single
       · simp [TimeVelocityDerivativeIndex.velocitySucc,
           TimeVelocityMultiIndex.ofTimeVelocity, TimeVelocityMultiIndex.velocity,
           velocityCoord, hji]
+section
+variable {d m : ℕ} {root : TimeVelocity d → ℝ} (G : ParabolicWeakDerivativeFamily d (2 * m) Set.univ root)
 
 /-- Every selected ordinary derivative of the one mollified zero
 representative is the mollification of the corresponding selected entry. -/
 theorem coordinateIteratedFDeriv_spacetimeMollification_ordinaryRepresentative
-    {d m : ℕ} {root : TimeVelocity d → ℝ}
-    (G : ParabolicWeakDerivativeFamily d (2 * m) Set.univ root)
+    
     (ε : ℝ) (hε : 0 < ε)
     (beta : TimeVelocityDerivativeIndex d m) :
     TimeVelocityMultiIndex.coordinateIteratedFDeriv beta.1
@@ -173,8 +175,7 @@ theorem coordinateIteratedFDeriv_spacetimeMollification_ordinaryRepresentative
 
 /-- The common mollified zero representative is globally smooth. -/
 theorem contDiff_spacetimeMollification_ordinaryRepresentative_zero
-    {d m : ℕ} {root : TimeVelocity d → ℝ}
-    (G : ParabolicWeakDerivativeFamily d (2 * m) Set.univ root)
+    
     (ε : ℝ) (hε : 0 < ε) :
     ContDiff ℝ (⊤ : ℕ∞)
       (SpacetimeMollifier.spacetimeMollification ε
@@ -187,8 +188,7 @@ theorem contDiff_spacetimeMollification_ordinaryRepresentative_zero
 
 /-- Each mollified selected ordinary entry converges strongly in ambient `L²`. -/
 theorem tendsto_eLpNorm_spacetimeMollification_ordinaryRepresentative_sub
-    {d m : ℕ} {root : TimeVelocity d → ℝ}
-    (G : ParabolicWeakDerivativeFamily d (2 * m) Set.univ root)
+    
     (beta : TimeVelocityDerivativeIndex d m) :
     Filter.Tendsto
       (fun ε : ℝ ↦
@@ -197,10 +197,11 @@ theorem tendsto_eLpNorm_spacetimeMollification_ordinaryRepresentative_sub
               (G.ordinaryRepresentative beta) -
             G.ordinaryRepresentative beta)
           (2 : ℝ≥0∞)
-          (volume : Measure (TimeVelocity d)))
+          (HypoellipticAleksandrov.Parabolic.TVVolume d))
       (nhdsWithin 0 (Set.Ioi 0)) (nhds 0) := by
   exact SpacetimeMollifierL2.tendsto_eLpNorm_spacetimeMollification_sub
     (G.ordinaryRepresentative beta) (ordinaryRepresentative_memLp_volume G beta)
+end
 
 end ParabolicWeakDerivativeFamily
 

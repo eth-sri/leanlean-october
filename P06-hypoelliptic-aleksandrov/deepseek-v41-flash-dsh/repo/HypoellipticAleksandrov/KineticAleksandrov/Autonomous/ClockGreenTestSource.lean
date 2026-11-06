@@ -9,12 +9,12 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open SectionTwo TheoremA Evolution
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point)
 
 /-- The clock test is the genuine normalized killed Duhamel potential. -/
 def clockSourcePotential
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) (T : ℝ)
+     (T : ℝ)
     (f : exitProbeSubmodule) : Point → ℝ :=
   duhamelPotential (clockEvolution hH hLE hlam hLam A c e).2 T
     (exitProbePhysical f ∘ sectionTwoPoint)
@@ -22,9 +22,7 @@ def clockSourcePotential
 /-- The actual clock test is bounded, smooth on the whole normalized strip, vanishes late,
 and solves the literal extended transported equation there. -/
 theorem clockSourcePotential_regular
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) (R T : ℝ) (hRT : R < T)
+     (R T : ℝ) (hRT : R < T)
     (f : exitProbeSubmodule) (hfn : ∀ p, 0 ≤ exitProbePhysical f p)
     (hs : tsupport (exitProbePhysical f) ⊆
       {p | p.time < T ∧ p.velocity 0 ∈ clockNormalizedInterval.carrier})
@@ -70,5 +68,6 @@ theorem clockSourcePotential_regular
   · have hRp : R < p.time := hRT.trans_le (not_lt.mp ht)
     exact (clock_transport_operator_zero_after _ _ _ R hzero p hRp).trans
       (by rw [hz (sectionTwoPoint p) hRp.le]; simp)
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

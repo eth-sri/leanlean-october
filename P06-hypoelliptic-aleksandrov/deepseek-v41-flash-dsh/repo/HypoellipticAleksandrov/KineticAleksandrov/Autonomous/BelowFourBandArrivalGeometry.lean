@@ -30,7 +30,7 @@ theorem belowFour_waiting_interval (c : Clock) (H : Interval) (v : ℝ)
       intro w hw hc
       change c.vbar - c.r / 4 ≤ w ∧ w ≤ c.vbar + c.r / 4 at hc
       have hh := hw.2.trans_le (min_le_right H.hi (c.vbar - c.r / 2))
-      linarith [hc.1, c.positive]
+      linarith
     · intro w hw hwH
       rcases hw with hw | hw
       · change w = H.lo at hw
@@ -55,7 +55,7 @@ theorem belowFour_waiting_interval (c : Clock) (H : Interval) (v : ℝ)
       intro w hw hc
       change c.vbar - c.r / 4 ≤ w ∧ w ≤ c.vbar + c.r / 4 at hc
       have hh := (le_max_right H.lo (c.vbar + c.r / 2)).trans_lt hw.1
-      linarith [hc.2, c.positive]
+      linarith
     · intro w hw hwH
       rcases hw with hw | hw
       · change w = max H.lo (c.vbar + c.r / 2) at hw

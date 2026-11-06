@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonCalculus
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Locality of the viscous kinetic operator
 

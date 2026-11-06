@@ -9,11 +9,12 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.InfiniteHori
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
 
 /-- The physical exit time is integrable on its genuine finite future slab. -/
 theorem infinite_finite_exit_time_integrable
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
     (A : SmoothAutonomous lam Lam) (H : Interval) (T : ℝ)
     (e : StripPole H (T : WithTop ℝ)) :
     Integrable (fun p : Point => p.time) (stripExit hH hLE hlam hLam A H T e) := by
@@ -28,8 +29,7 @@ theorem infinite_finite_exit_time_integrable
 
 /-- The true finite-exit tail is controlled uniformly in the terminal horizon. -/
 theorem infinite_finite_exit_tail_le
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
     (A : SmoothAutonomous lam Lam) (H : Interval) (T : ℝ)
     (e : StripPole H (T : WithTop ℝ)) (R : ℝ) (hR : e.1.time < R) :
     (stripExit hH hLE hlam hLam A H T e).real {p | R ≤ p.time} ≤
@@ -68,5 +68,6 @@ theorem infinite_finite_exit_tail_le
   apply (le_div_iff₀ (sub_pos.mpr hR)).mpr
   change (μ S).toReal * (R - e.1.time) ≤ _
   linarith
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

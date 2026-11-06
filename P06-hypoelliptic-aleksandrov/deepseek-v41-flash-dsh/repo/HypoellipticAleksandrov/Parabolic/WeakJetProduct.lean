@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.Parabolic.WeakDerivativesAlgebra
 public import Mathlib.Analysis.Calculus.FDeriv.Const
 public import Mathlib.Analysis.Calculus.FDeriv.Mul
 public import Mathlib.MeasureTheory.Function.LpSeminorm.CompareExp
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Smooth compact multipliers for parabolic weak jets
@@ -25,7 +26,7 @@ open Filter MeasureTheory
 open scoped ENNReal Topology
 
 private theorem integrable_restrict_mul_of_locallyIntegrableOn
-    {d : ℕ} {U : Set (TimeVelocity d)} {f g : TimeVelocity d → ℝ}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {f g : TimeVelocity d → ℝ}
     (hf : LocallyIntegrableOn f U volume) (hg : Continuous g)
     (hgCompact : HasCompactSupport g) (hgSub : tsupport g ⊆ U) :
     Integrable (fun z => f z * g z) (timeVelocityVolumeOn U) := by
@@ -40,7 +41,7 @@ private theorem integrable_restrict_mul_of_locallyIntegrableOn
   exact (integrableOn_iff_integrable_of_support_subset hsupport).mp hfgK |>.restrict
 
 private theorem weak_product_rule
-    {d : ℕ} {U : Set (TimeVelocity d)}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u du b : TimeVelocity d → ℝ}
     {D : (TimeVelocity d → ℝ) → TimeVelocity d → ℝ}
     (hu : ∀ φ : TimeVelocity d → ℝ, ContDiff ℝ (⊤ : ℕ∞) φ →
@@ -225,7 +226,7 @@ private theorem velocityGradient_tsupport {d : ℕ} {i : Fin d} (f : TimeVelocit
 namespace HasWeakTimeDerivOn
 
 /-- Smooth scalar multiplication obeys the raw weak time-derivative product rule. -/
-theorem mul_contDiff {d : ℕ} {U : Set (TimeVelocity d)} {u du b : TimeVelocity d → ℝ}
+theorem mul_contDiff {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {u du b : TimeVelocity d → ℝ}
     (hu : HasWeakTimeDerivOn U u du) (hb : ContDiff ℝ (⊤ : ℕ∞) b)
     (huLoc : LocallyIntegrableOn u U volume)
     (hduLoc : LocallyIntegrableOn du U volume) :
@@ -240,7 +241,7 @@ end HasWeakTimeDerivOn
 namespace HasWeakVelocityPartialDerivOn
 
 /-- Smooth scalar multiplication obeys the raw weak velocity product rule. -/
-theorem mul_contDiff {d : ℕ} {U : Set (TimeVelocity d)} {i : Fin d}
+theorem mul_contDiff {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {i : Fin d}
     {u dui b : TimeVelocity d → ℝ}
     (hu : HasWeakVelocityPartialDerivOn U i u dui) (hb : ContDiff ℝ (⊤ : ℕ∞) b)
     (huLoc : LocallyIntegrableOn u U volume)
@@ -305,7 +306,7 @@ private theorem velocityGradient_velocityGradient {d : ℕ} {b : TimeVelocity d 
 namespace ParabolicW12Function
 
 /-- Multiply a raw parabolic weak jet by a globally smooth compactly supported scalar. -/
-noncomputable def mulContDiffHasCompactSupport {d : ℕ} {U : Set (TimeVelocity d)} {p : ℝ≥0∞}
+noncomputable def mulContDiffHasCompactSupport {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {p : ℝ≥0∞}
     (w : ParabolicW12Function d U p) (hp : 1 ≤ p) {b : TimeVelocity d → ℝ}
     (hb : ContDiff ℝ (⊤ : ℕ∞) b) (hbCompact : HasCompactSupport b) :
     ParabolicW12Function d U p where
@@ -439,27 +440,27 @@ noncomputable def mulContDiffHasCompactSupport {d : ℕ} {U : Set (TimeVelocity 
       simp only [dbi]
       ring
 
-@[simp] theorem mulContDiffHasCompactSupport_toFun {d : ℕ} {U : Set (TimeVelocity d)}
+@[simp] theorem mulContDiffHasCompactSupport_toFun {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     {p : ℝ≥0∞} (w : ParabolicW12Function d U p) (hp : 1 ≤ p)
     {b : TimeVelocity d → ℝ} (hb : ContDiff ℝ (⊤ : ℕ∞) b)
     (hbCompact : HasCompactSupport b) :
     (w.mulContDiffHasCompactSupport hp hb hbCompact).toFun = fun z => b z * w.toFun z := rfl
 
-@[simp] theorem mulContDiffHasCompactSupport_timeDeriv {d : ℕ} {U : Set (TimeVelocity d)}
+@[simp] theorem mulContDiffHasCompactSupport_timeDeriv {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     {p : ℝ≥0∞} (w : ParabolicW12Function d U p) (hp : 1 ≤ p)
     {b : TimeVelocity d → ℝ} (hb : ContDiff ℝ (⊤ : ℕ∞) b)
     (hbCompact : HasCompactSupport b) :
     (w.mulContDiffHasCompactSupport hp hb hbCompact).timeDeriv =
       fun z => b z * w.timeDeriv z + w.toFun z * timeDerivative b z := rfl
 
-@[simp] theorem mulContDiffHasCompactSupport_velocityGrad {d : ℕ} {U : Set (TimeVelocity d)}
+@[simp] theorem mulContDiffHasCompactSupport_velocityGrad {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     {p : ℝ≥0∞} (w : ParabolicW12Function d U p) (hp : 1 ≤ p)
     {b : TimeVelocity d → ℝ} (hb : ContDiff ℝ (⊤ : ℕ∞) b)
     (hbCompact : HasCompactSupport b) :
     (w.mulContDiffHasCompactSupport hp hb hbCompact).velocityGrad =
       fun z i => b z * w.velocityGrad z i + w.toFun z * velocityGradient b z i := rfl
 
-@[simp] theorem mulContDiffHasCompactSupport_velocityHessian {d : ℕ} {U : Set (TimeVelocity d)}
+@[simp] theorem mulContDiffHasCompactSupport_velocityHessian {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     {p : ℝ≥0∞} (w : ParabolicW12Function d U p) (hp : 1 ≤ p)
     {b : TimeVelocity d → ℝ} (hb : ContDiff ℝ (⊤ : ℕ∞) b)
     (hbCompact : HasCompactSupport b) :

@@ -2,6 +2,7 @@ module
 
 import Mathlib.Tactic.Linarith
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.BarrierFinite
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Terminal barrier on a finite slab, and the uniform operator bound
@@ -27,7 +28,7 @@ open scoped Topology MatrixOrder
 
 /-- Terminal barrier core on a finite slab: if the terminal datum vanishes on the lateral
 frontier of the slab `[a, τ]` and `|L_ε F| ≤ M` on the slab, then `|u - F| ≤ (τ - σ) M` there. -/
-theorem classical_sub_terminalDatum_le_core_of_slab {n : ℕ} {Ω : Set (PDE.Vec n)}
+theorem classical_sub_terminalDatum_le_core_of_slab {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n}
     (hΩ : IsOpen Ω) {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {lam Lam : ℝ} (hlam : 0 < lam)
     {B : FullKineticCoefficient n} (hB : HasEverywhereLoewnerBounds lam Lam B) {Lb : ℝ}
     {b : PDE.Vec n → PDE.Vec n} (hb : HasEuclideanLipschitzDrift Lb b) {ε : ℝ} (hε0 : 0 ≤ ε)
@@ -111,7 +112,7 @@ theorem classical_sub_terminalDatum_le_core_of_slab {n : ℕ} {Ω : Set (PDE.Vec
 /-- (companion paper, A.1).  For a smooth compactly supported terminal datum, the operator
 `L_ε F` is bounded uniformly in `p`, in the time, and in `ε ∈ [0, 1]`.  This uses only the
 everywhere Loewner bound on `B` and the Lipschitz drift, no derivative bound on `B`. -/
-theorem exists_uniform_terminalDatum_operator_bound {n : ℕ} {Ω : Set (PDE.Vec n)}
+theorem exists_uniform_terminalDatum_operator_bound {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n}
     {γ : ℝ → PDE.Vec n} {lam Lam : ℝ} (hlam : 0 < lam) {B : FullKineticCoefficient n}
     (hB : HasEverywhereLoewnerBounds lam Lam B) {Lb : ℝ} {b : PDE.Vec n → PDE.Vec n}
     (hb : HasEuclideanLipschitzDrift Lb b) (τ : ℝ) (F : BoundedBorel (EvolutionAmbientState n))

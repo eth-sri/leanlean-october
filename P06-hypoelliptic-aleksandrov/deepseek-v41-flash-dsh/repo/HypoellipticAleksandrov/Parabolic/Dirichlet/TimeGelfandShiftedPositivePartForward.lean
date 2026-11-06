@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ShiftedPositivePartEnergySupport
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Forward Steklov shifted-positive-part energy estimate -/
 @[expose] public section
@@ -11,7 +12,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 private theorem forward_shifted_rate_continuous
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     (hΩb : Bornology.IsBounded Ω) (T : ℝ) (M N : ℝ≥0) {h : ℝ} (hh : 0 < h)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) :
     Continuous (shiftedPositivePartEnergyRate hΩ hΩb M N
@@ -26,7 +27,7 @@ private theorem forward_shifted_rate_continuous
     ((spatialMassCLM hΩb).continuous.comp ((valueCLM hΩ).continuous.comp hp)))
 
 private theorem forward_shifted_halfEnergy_continuous
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) (M N : ℝ≥0)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (T : ℝ) (M N : ℝ≥0)
     {h : ℝ} (hh : 0 < h) (u : ReverseTimeL2V hΩ T) :
     Continuous (fun t ↦ shiftedPositivePartHalfEnergy hΩ
       (reverseTimeForwardSteklov T h u t) (reverseTimeAffineThreshold M N t)) := by
@@ -40,11 +41,11 @@ private theorem forward_shifted_halfEnergy_continuous
   funext t
   simp only [Function.comp_def, Pi.mul_def, Pi.pow_def, shiftedPositivePartHalfEnergy,
     valueCLM_h10ShiftedPositivePart]
+section
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (hΩb : Bornology.IsBounded Ω) (T : ℝ) (hT : 0 < T) (M N : ℝ≥0) (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
 
 private theorem hasDerivAt_forward_shifted_halfEnergy
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
-    (hΩb : Bornology.IsBounded Ω) (T : ℝ) (hT : 0 < T) (M N : ℝ≥0)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
+    
     (hd : HasGelfandWeakTimeDerivative hΩ T hT u g)
     {h a b t : ℝ} (hh : 0 < h) (ha : 0 ≤ a) (hb : b + h ≤ T) (ht : t ∈ Ioo a b) :
     HasDerivAt (fun s ↦ shiftedPositivePartHalfEnergy hΩ
@@ -59,9 +60,7 @@ private theorem hasDerivAt_forward_shifted_halfEnergy
 
 /-- Half-energy identity underlying the forward fixed-window formula. -/
 theorem reverseTimeForwardSteklov_shiftedPositivePart_halfEnergy_identity
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
-    (hΩb : Bornology.IsBounded Ω) (T : ℝ) (hT : 0 < T) (M N : ℝ≥0)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
+    
     (hd : HasGelfandWeakTimeDerivative hΩ T hT u g)
     {h a b : ℝ} (hh : 0 < h) (ha : 0 ≤ a) (hab : a ≤ b) (hb : b + h ≤ T) :
     shiftedPositivePartHalfEnergy hΩ (reverseTimeForwardSteklov T h u b)
@@ -77,5 +76,6 @@ theorem reverseTimeForwardSteklov_shiftedPositivePart_halfEnergy_identity
       hh ha hb ht)
     ((forward_shifted_rate_continuous hΩ hΩb T M N hh u g).intervalIntegrable a b)
   rw [← hFTC, intervalIntegral.integral_of_le hab, integral_Icc_eq_integral_Ioc]
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

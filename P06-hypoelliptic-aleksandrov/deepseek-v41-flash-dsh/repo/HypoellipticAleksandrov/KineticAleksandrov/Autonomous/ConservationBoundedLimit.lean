@@ -49,8 +49,7 @@ theorem exists_bounded_fullspace_classical_limit
       (fun x _ => (le_abs_self _).trans (boundedConservationDatum_sub F hC0 hC hNM x)) p hp
     have h2 := hCt τ (boundedConservationDatum F N) (boundedConservationDatum F M) (u N) (u M) _
       hc (hu N) (hu M)
-      (fun x _ => by
-        exact (le_abs_self _).trans (by
+      (fun x _ => (le_abs_self _).trans (by
           rw [abs_sub_comm]
           exact boundedConservationDatum_sub F hC0 hC hNM x)) p hp
     rw [abs_le]

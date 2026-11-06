@@ -4,6 +4,7 @@ import Mathlib.Tactic.Linarith
 public import Mathlib.Probability.Kernel.Defs
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.FixedFiberMeasureGeneral
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TerminalMeasure
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # The fixed-time fiber kernel
@@ -33,7 +34,7 @@ section EvolutionData
 variable (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
 variable (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
 variable (hm : 0 < m) (hmLb : m ≤ L_b)
-variable (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
+variable (Ω : HypoellipticAleksandrov.VecSet n) (γ : ℝ → PDE.Vec n)
 variable (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
 variable (hΩ : IsAdmissibleEvolutionDomain Ω)
 variable (hγ : IsContinuousPiecewiseC1 γ)
@@ -55,11 +56,13 @@ local notation "ν_" => terminalFiberRieszMeasure n hn lam Lam m L_b hlam hlamLa
   hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
 local notation "μ" => terminalMeasure n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
   hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
+section
+variable (σ τ : ℝ) (hστ : σ ≤ τ)
 
 /-- For fixed times `σ ≤ τ` the fiber measure of the terminal measure depends
 measurably on the source state. -/
 theorem measurable_terminalFiberMeasure
-    (σ τ : ℝ) (hστ : σ ≤ τ) :
+     :
     Measurable (fun p : EvolutionState Ω γ σ =>
       Measure.comap ((↑) : EvolutionState Ω γ τ → EvolutionAmbientState n)
         (μ (evolutionQueryOfState Ω γ σ τ hστ p))) := by
@@ -99,7 +102,7 @@ theorem measurable_terminalFiberMeasure
 
 /-- The fixed-time fiber kernel `κ σ τ hστ`, defined literally as the measurable
 fiber-measure function of `measurable_terminalFiberMeasure`. -/
-def terminalFiberKernel (σ τ : ℝ) (hστ : σ ≤ τ) :
+def terminalFiberKernel  :
     ProbabilityTheory.Kernel (EvolutionState Ω γ σ) (EvolutionState Ω γ τ) :=
   ⟨fun p : EvolutionState Ω γ σ =>
       Measure.comap ((↑) : EvolutionState Ω γ τ → EvolutionAmbientState n)
@@ -111,14 +114,14 @@ local notation "κ" => terminalFiberKernel n hn lam Lam m L_b hlam hlamLam hm hm
   hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
 
 /-- The value of the fiber kernel at a source state. -/
-theorem terminalFiberKernel_apply (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
+theorem terminalFiberKernel_apply  (p : EvolutionState Ω γ σ) :
     κ σ τ hστ p =
       Measure.comap ((↑) : EvolutionState Ω γ τ → EvolutionAmbientState n)
         (μ (evolutionQueryOfState Ω γ σ τ hστ p)) :=
   rfl
 
 /-- The fiber kernel has mass at most one. -/
-theorem terminalFiberKernel_univ_le_one (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
+theorem terminalFiberKernel_univ_le_one  (p : EvolutionState Ω γ σ) :
     κ σ τ hστ p univ ≤ 1 := by
   have hU := measurableSet_evolutionStateSet_of_isOpen (γ := γ) (τ := τ)
     (isOpen_of_isAdmissibleEvolutionDomain hΩ)
@@ -130,11 +133,12 @@ theorem terminalFiberKernel_univ_le_one (σ τ : ℝ) (hστ : σ ≤ τ) (p : E
       (evolutionQueryOfState Ω γ σ τ hστ p)).1
 
 /-- The fiber kernel is a finite kernel. -/
-theorem isFiniteKernel_terminalFiberKernel (σ τ : ℝ) (hστ : σ ≤ τ) :
+theorem isFiniteKernel_terminalFiberKernel  :
     ProbabilityTheory.IsFiniteKernel (κ σ τ hστ) :=
   ⟨⟨1, ENNReal.one_lt_top, fun p =>
     terminalFiberKernel_univ_le_one n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p⟩⟩
+end
 
 end EvolutionData
 

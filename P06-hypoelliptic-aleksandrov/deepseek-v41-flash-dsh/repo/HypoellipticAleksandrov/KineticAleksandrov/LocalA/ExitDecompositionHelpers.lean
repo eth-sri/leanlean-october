@@ -16,10 +16,11 @@ variable (hH : HormanderHypoellipticityStatement)
   (hlam : 0 < lam) (hLam : lam ≤ Lam)
   (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
   (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
+section
+variable (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
 
 /-- Continuous bounded closed-strip data are integrable for the actual exit measure. -/
-theorem ballExit_integrable_closed (P : LocalBallStart v₀ R)
-    (T : {t : ℝ // P.1.time < t}) (u : KineticPoint d → ℝ)
+theorem ballExit_integrable_closed  (u : KineticPoint d → ℝ)
     (hc : ContinuousOn u (localClosedStrip P.1.time T.1 v₀ R))
     (hb : ∃ M : ℝ, ∀ Q ∈ localClosedStrip P.1.time T.1 v₀ R, |u Q| ≤ M) :
     Integrable u (ballExitRaw hH hLE hd hlam hLam B hB v₀ hR P T) := by
@@ -37,8 +38,7 @@ theorem ballExit_integrable_closed (P : LocalBallStart v₀ R)
 
 /-- The complement of the open terminal velocities is exactly the lateral measure,
 including the terminal velocity corner. -/
-theorem ballExit_lateral_restrict (P : LocalBallStart v₀ R)
-    (T : {t : ℝ // P.1.time < t}) :
+theorem ballExit_lateral_restrict  :
     (ballExitRaw hH hLE hd hlam hLam B hB v₀ hR P T).restrict
       {Q | Q.velocity ∈ PDE.euclideanBall v₀ R}ᶜ =
     (ballExitRaw hH hLE hd hlam hLam B hB v₀ hR P T).restrict
@@ -56,8 +56,7 @@ theorem ballExit_lateral_restrict (P : LocalBallStart v₀ R)
   exact ⟨fun h => ⟨hcl, h⟩, fun h => h.2⟩
 
 /-- The terminal valid-state transition is finite, as established by the face identity. -/
-instance ballExit_fiber_isFinite (P : LocalBallStart v₀ R)
-    (T : {t : ℝ // P.1.time < t}) :
+instance ballExit_fiber_isFinite  :
     IsFiniteMeasure ((localBallKernel hH hLE hd hlam hLam B hB v₀ hR).fiberKernel
       (PDE.isOpen_euclideanBall v₀ R).measurableSet P.1.time T.1 T.2.le
       (ballStartState P)) := by
@@ -71,5 +70,6 @@ instance ballExit_fiber_isFinite (P : LocalBallStart v₀ R)
   change κ univ < ⊤
   rw [← h]
   exact measure_lt_top _ _
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

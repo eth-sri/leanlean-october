@@ -10,28 +10,31 @@ import Mathlib.Tactic
 noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
+section
+variable (d : ℕ) (lam Lam H T1 : ℝ)
 
 /-- Uniform damping budget on blocks no longer than `T1`. -/
-def XiStar (d : ℕ) (lam Lam H T1 : ℝ) : ℝ :=
+def XiStar  : ℝ :=
   2 * Lam * (128 * (d : ℝ) / lam) + 2 * H ^ 2 * T1 / (3 * lam)
 
 /-- Source Gaussian level, fixed before coefficients, paths, and solutions. -/
-def barrierL (d : ℕ) (lam Lam H T1 : ℝ) : ℝ :=
+def barrierL  : ℝ :=
   2 * Real.sqrt (XiStar d lam Lam H T1)
 
 /-- Source block radius multiplier. -/
-def barrierW (d : ℕ) (lam Lam H T1 : ℝ) : ℝ :=
+def barrierW  : ℝ :=
   2 + 3 / 2 * barrierL d lam Lam H T1 * Real.sqrt lam + 2 * H * Real.sqrt T1
 
 /-- Velocity tube containment coefficient. -/
-def velocityTubeConstant (d : ℕ) (lam Lam H T1 : ℝ) : ℝ :=
+def velocityTubeConstant  : ℝ :=
   let W := barrierW d lam Lam H T1
   W + H * W ^ 2 * Real.sqrt T1
 
 /-- Position tube containment coefficient. -/
-def positionTubeConstant (d : ℕ) (lam Lam H T1 : ℝ) : ℝ :=
+def positionTubeConstant  : ℝ :=
   let W := barrierW d lam Lam H T1
   W ^ 3 + H * W ^ 4 * Real.sqrt T1 / 2
+end
 
 /-- The source minimum of time, velocity, and position step restrictions. -/
 def stepSize (d : ℕ) (lam Lam H T0 T1 kx kv : ℝ) : ℝ :=

@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.WeakDerivatives
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Elementary locality for weak time--velocity derivatives
@@ -22,7 +23,7 @@ open scoped ENNReal Topology
 namespace ParabolicMemLpOn
 
 /-- Restricted `L^p` membership is monotone under domain restriction. -/
-theorem mono {d : ℕ} {U V : Set (TimeVelocity d)} {p : ℝ≥0∞}
+theorem mono {d : ℕ} {U V : HypoellipticAleksandrov.Parabolic.TVSet d} {p : ℝ≥0∞}
     {f : TimeVelocity d → ℝ} (hf : ParabolicMemLpOn U p f) (hVU : V ⊆ U) :
     ParabolicMemLpOn V p f :=
   hf.mono_measure (Measure.restrict_mono_set volume hVU)
@@ -32,7 +33,7 @@ end ParabolicMemLpOn
 namespace HasWeakTimeDerivOn
 
 /-- Change only the value representative in a weak time-derivative identity. -/
-theorem congr_value_ae {d : ℕ} {U : Set (TimeVelocity d)}
+theorem congr_value_ae {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u v du : TimeVelocity d → ℝ}
     (hu : HasWeakTimeDerivOn U u du)
     (huv : u =ᵐ[timeVelocityVolumeOn U] v) :
@@ -47,7 +48,7 @@ theorem congr_value_ae {d : ℕ} {U : Set (TimeVelocity d)}
     _ = -∫ z in U, du z * φ z ∂volume := hu φ hφSmooth hφCompact hφSupport
 
 /-- Change both representatives in a weak time-derivative identity. -/
-theorem congr_ae {d : ℕ} {U : Set (TimeVelocity d)}
+theorem congr_ae {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u v du dv : TimeVelocity d → ℝ}
     (hu : HasWeakTimeDerivOn U u du)
     (huv : u =ᵐ[timeVelocityVolumeOn U] v)
@@ -66,7 +67,7 @@ theorem congr_ae {d : ℕ} {U : Set (TimeVelocity d)}
       rw [hz]
 
 /-- Restrict a raw weak time-derivative identity to any smaller set. -/
-theorem restrict {d : ℕ} {U V : Set (TimeVelocity d)}
+theorem restrict {d : ℕ} {U V : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u du : TimeVelocity d → ℝ} (hu : HasWeakTimeDerivOn U u du)
     (hVU : V ⊆ U) : HasWeakTimeDerivOn V u du := by
   intro φ hφSmooth hφCompact hφSupport
@@ -98,7 +99,7 @@ end HasWeakTimeDerivOn
 namespace HasWeakVelocityPartialDerivOn
 
 /-- Change only the value representative in a weak velocity-derivative identity. -/
-theorem congr_value_ae {d : ℕ} {U : Set (TimeVelocity d)} {i : Fin d}
+theorem congr_value_ae {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {i : Fin d}
     {u v dui : TimeVelocity d → ℝ}
     (hu : HasWeakVelocityPartialDerivOn U i u dui)
     (huv : u =ᵐ[timeVelocityVolumeOn U] v) :
@@ -113,7 +114,7 @@ theorem congr_value_ae {d : ℕ} {U : Set (TimeVelocity d)} {i : Fin d}
     _ = -∫ z in U, dui z * φ z ∂volume := hu φ hφSmooth hφCompact hφSupport
 
 /-- Change both representatives in a weak velocity-derivative identity. -/
-theorem congr_ae {d : ℕ} {U : Set (TimeVelocity d)} {i : Fin d}
+theorem congr_ae {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {i : Fin d}
     {u v dui dvi : TimeVelocity d → ℝ}
     (hu : HasWeakVelocityPartialDerivOn U i u dui)
     (huv : u =ᵐ[timeVelocityVolumeOn U] v)
@@ -132,7 +133,7 @@ theorem congr_ae {d : ℕ} {U : Set (TimeVelocity d)} {i : Fin d}
       rw [hz]
 
 /-- Restrict a raw weak velocity-derivative identity to any smaller set. -/
-theorem restrict {d : ℕ} {U V : Set (TimeVelocity d)} {i : Fin d}
+theorem restrict {d : ℕ} {U V : HypoellipticAleksandrov.Parabolic.TVSet d} {i : Fin d}
     {u dui : TimeVelocity d → ℝ} (hu : HasWeakVelocityPartialDerivOn U i u dui)
     (hVU : V ⊆ U) : HasWeakVelocityPartialDerivOn V i u dui := by
   intro φ hφSmooth hφCompact hφSupport
@@ -164,7 +165,7 @@ end HasWeakVelocityPartialDerivOn
 namespace ParabolicW12Function
 
 /-- Keep the selected jet representatives while restricting their domain. -/
-def restrict {d : ℕ} {U V : Set (TimeVelocity d)} {p : ℝ≥0∞}
+def restrict {d : ℕ} {U V : HypoellipticAleksandrov.Parabolic.TVSet d} {p : ℝ≥0∞}
     (w : ParabolicW12Function d U p) (hVU : V ⊆ U) :
     ParabolicW12Function d V p where
   toFun := w.toFun
@@ -185,9 +186,9 @@ end ParabolicW12Function
 
 /-- Local anisotropic weak `W^{1,2,p}` membership, formulated through
 compactly-contained open representative witnesses. -/
-def ParabolicW12Loc {d : ℕ} (U : Set (TimeVelocity d)) (p : ℝ≥0∞)
+def ParabolicW12Loc {d : ℕ} (U : HypoellipticAleksandrov.Parabolic.TVSet d) (p : ℝ≥0∞)
     (u : TimeVelocity d → ℝ) : Prop :=
-  ∀ V : Set (TimeVelocity d), IsOpen V → IsCompact (closure V) → closure V ⊆ U →
+  ∀ V : HypoellipticAleksandrov.Parabolic.TVSet d, IsOpen V → IsCompact (closure V) → closure V ⊆ U →
     ∃ w : ParabolicW12Function d V p, w.toFun =ᵐ[timeVelocityVolumeOn V] u
 
 namespace ParabolicW12Function
@@ -197,7 +198,7 @@ end ParabolicW12Function
 namespace ParabolicW12Loc
 
 /-- Extract the compactly-contained jet witness in the local predicate. -/
-theorem exists_parabolicW12Function {d : ℕ} {U V : Set (TimeVelocity d)}
+theorem exists_parabolicW12Function {d : ℕ} {U V : HypoellipticAleksandrov.Parabolic.TVSet d}
     {p : ℝ≥0∞} {u : TimeVelocity d → ℝ}
     (hu : ParabolicW12Loc U p u) (hVOpen : IsOpen V)
     (hVCompact : IsCompact (closure V)) (hVU : closure V ⊆ U) :

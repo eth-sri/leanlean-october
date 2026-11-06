@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.Parabolic.ScalarDirichletData
 import HypoellipticAleksandrov.Parabolic.ScalarDirichletComparison
 import HypoellipticAleksandrov.Parabolic.C2ToScalarC12
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Signed-source comparison on bounded parabolic cylinders
 
@@ -14,31 +16,33 @@ replacement construction reflects this estimate to the forward initial/lateral p
 noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Set
+section
+variable {n : ℕ} (M T : ℝ)
 
 /-- The backward source barrier, independent of velocity. -/
-def sourceTimeBarrier {n : ℕ} (M T : ℝ) (z : TimeVelocity n) : ℝ := M * (T - z.1)
+def sourceTimeBarrier  (z : TimeVelocity n) : ℝ := M * (T - z.1)
 
 /-- The source time barrier is smooth. -/
-theorem contDiff_sourceTimeBarrier {n : ℕ} (M T : ℝ) :
+theorem contDiff_sourceTimeBarrier  :
     ContDiff ℝ (⊤ : ℕ∞) (@sourceTimeBarrier n M T) :=
   contDiff_const.mul (contDiff_const.sub contDiff_fst)
 
 /-- The barrier's scalar time derivative is minus its amplitude. -/
-theorem scalarTimeDerivative_sourceTimeBarrier {n : ℕ} (M T : ℝ) (z : TimeVelocity n) :
+theorem scalarTimeDerivative_sourceTimeBarrier  (z : TimeVelocity n) :
     scalarTimeDerivative (sourceTimeBarrier M T) z = -M := by
   change deriv (fun r : ℝ => M * (T - r)) z.1 = -M
   have h := ((hasDerivAt_const z.1 T).sub (hasDerivAt_id z.1)).const_mul M
   simpa only [Pi.sub_apply, id_eq, zero_sub, mul_neg, mul_one] using h.deriv
 
 /-- Velocity differentiation annihilates the time barrier. -/
-theorem scalarSpatialGradient_sourceTimeBarrier {n : ℕ} (M T : ℝ) (z : TimeVelocity n) :
+theorem scalarSpatialGradient_sourceTimeBarrier  (z : TimeVelocity n) :
     scalarSpatialGradient (sourceTimeBarrier M T) z = 0 := by
   ext i
   simp only [scalarSpatialGradient, sourceTimeBarrier, PDE.classicalGradient,
     fderiv_const_apply, zero_apply, Pi.zero_apply]
 
 /-- The time barrier has zero spatial Hessian. -/
-theorem scalarSpatialHessian_sourceTimeBarrier {n : ℕ} (M T : ℝ) (z : TimeVelocity n) :
+theorem scalarSpatialHessian_sourceTimeBarrier  (z : TimeVelocity n) :
     scalarSpatialHessian (sourceTimeBarrier M T) z = 0 := by
   have heq : (fun y : PDE.Vec n =>
       PDE.classicalGradient (fun w => sourceTimeBarrier M T (z.1, w)) y) =
@@ -51,6 +55,7 @@ theorem scalarSpatialHessian_sourceTimeBarrier {n : ℕ} (M T : ℝ) (z : TimeVe
       (PDE.basisVec i)) j = 0
   rw [heq, fderiv_const_apply]
   rfl
+end
 
 /-- The scalar backward operator of the barrier is the constant source minus M. -/
 theorem scalarOperator_sourceTimeBarrier {n : ℕ} (A : CoefficientField n)
@@ -64,7 +69,7 @@ theorem scalarOperator_sourceTimeBarrier {n : ℕ} (A : CoefficientField n)
 
 /-- The barrier has its literal terminal and lateral boundary data. -/
 theorem sourceTimeBarrier_isClassicalBackward {n : ℕ} (A : CoefficientField n)
-    (a T M : ℝ) (Ω : Set (PDE.Vec n)) :
+    (a T M : ℝ) (Ω : HypoellipticAleksandrov.VecSet n) :
     IsClassicalBackwardDirichletSolution a T Ω A (fun _ _ => 0) (fun _ _ => 0)
       (fun _ _ => -M) (fun _ => 0) (sourceTimeBarrier M T) (sourceTimeBarrier M T) := by
   refine ⟨(contDiff_sourceTimeBarrier M T).continuous.continuousOn,
@@ -78,7 +83,7 @@ theorem sourceTimeBarrier_isClassicalBackward {n : ℕ} (A : CoefficientField n)
     rfl
 
 /-- A signed bounded source gives the sharp finite-horizon bound for zero-boundary solutions. -/
-theorem abs_zeroBoundary_solution_le_time {n : ℕ} {Ω : Set (PDE.Vec n)} {a T : ℝ}
+theorem abs_zeroBoundary_solution_le_time {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n} {a T : ℝ}
     (hΩo : IsOpen Ω) (hΩb : Bornology.IsBounded Ω) (haT : a < T)
     (A : CoefficientField n) (hAc : IsContinuousCoefficient A)
     (hApsd : ∀ t v, (A t v).PosSemidef)

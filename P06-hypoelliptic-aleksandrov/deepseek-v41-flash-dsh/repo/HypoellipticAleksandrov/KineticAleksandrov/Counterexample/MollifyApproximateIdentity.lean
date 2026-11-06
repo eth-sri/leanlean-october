@@ -7,6 +7,7 @@ public import Mathlib.MeasureTheory.Function.LpSeminorm.Basic
 public import Mathlib.MeasureTheory.Measure.Lebesgue.EqHaar
 import Mathlib.MeasureTheory.Integral.Lebesgue.DominatedConvergence
 import Mathlib.Tactic.Positivity
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Bounded approximate identities on finite-measure regions
@@ -25,8 +26,8 @@ open scoped Topology Convolution ENNReal
 instance nativeSpatialVolume_isAddHaarMeasure (d : ℕ) :
     Measure.IsAddHaarMeasure (volume : Measure (PDE.Vec d × PDE.Vec d)) := by
   change Measure.IsAddHaarMeasure
-    ((volume : Measure (PDE.Vec d)).prod (volume : Measure (PDE.Vec d)))
-  let : Measure.IsAddHaarMeasure (volume : Measure (PDE.Vec d)) :=
+    ((HypoellipticAleksandrov.VecVolume d).prod (HypoellipticAleksandrov.VecVolume d))
+  let : Measure.IsAddHaarMeasure (HypoellipticAleksandrov.VecVolume d) :=
     isAddHaarMeasure_volume_pi (Fin d)
   exact Measure.prod.instIsAddHaarMeasure _ _
 
@@ -97,13 +98,15 @@ end Kernels
 variable {G : Type*} [NormedAddCommGroup G] [NormedSpace ℝ G]
   [MeasureSpace G] [BorelSpace G] [FiniteDimensional ℝ G]
    [Measure.IsAddHaarMeasure (volume : Measure G)]
+section
+variable (φ : ContDiffBump (0 : G)) (g : G → ℝ)
 
 /-- Spatial smoothing by an actual normalized bump kernel. -/
-def spatialMollify (φ : ContDiffBump (0 : G)) (g : G → ℝ) : G → ℝ :=
+def spatialMollify  : G → ℝ :=
   φ.normed volume ⋆[lsmul ℝ ℝ, volume] g
 
 /-- Bounded input gives the same uniform bound after normalized convolution. -/
-theorem spatialMollify_norm_le (φ : ContDiffBump (0 : G)) (g : G → ℝ)
+theorem spatialMollify_norm_le 
     (hg : AEStronglyMeasurable g volume) (C : ℝ) (hC : 0 ≤ C)
     (hbound : ∀ x, ‖g x‖ ≤ C) (x : G) : ‖spatialMollify φ g x‖ ≤ C := by
   have h := dist_convolution_le (μ := volume) (x₀ := x) (z₀ := (0 : ℝ)) hC
@@ -112,10 +115,11 @@ theorem spatialMollify_norm_le (φ : ContDiffBump (0 : G)) (g : G → ℝ)
   simpa only [spatialMollify, dist_zero_right] using! h
 
 /-- Spatial convolution is smooth; this does not assert joint time smoothness. -/
-theorem spatialMollify_contDiff (φ : ContDiffBump (0 : G)) (g : G → ℝ)
+theorem spatialMollify_contDiff 
     (hg : LocallyIntegrable g volume) :
     ContDiff ℝ (⊤ : ℕ∞) (spatialMollify φ g) :=
   φ.hasCompactSupport_normed.contDiff_convolution_left (lsmul ℝ ℝ)
     φ.contDiff_normed hg
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

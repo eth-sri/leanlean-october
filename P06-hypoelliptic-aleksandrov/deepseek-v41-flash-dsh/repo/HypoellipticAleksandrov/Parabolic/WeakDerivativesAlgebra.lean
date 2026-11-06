@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.WeakDerivatives
 public import Mathlib.MeasureTheory.Function.LocallyIntegrable
 public import Mathlib.MeasureTheory.Integral.Bochner.Set
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Raw algebra for parabolic weak derivatives
@@ -21,7 +22,7 @@ open Filter MeasureTheory
 open scoped ENNReal Topology
 
 private theorem integrable_restrict_mul_of_locallyIntegrableOn
-    {d : ℕ} {U : Set (TimeVelocity d)} {f g : TimeVelocity d → ℝ}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {f g : TimeVelocity d → ℝ}
     (hf : LocallyIntegrableOn f U volume) (hg : Continuous g)
     (hgCompact : HasCompactSupport g) (hgSub : tsupport g ⊆ U) :
     Integrable (fun z => f z * g z) (timeVelocityVolumeOn U) := by
@@ -80,13 +81,13 @@ private theorem velocityGradient_tsupport {d : ℕ} {i : Fin d} (f : TimeVelocit
 namespace HasWeakTimeDerivOn
 
 /-- Zero has zero weak time derivative. -/
-theorem zero {d : ℕ} {U : Set (TimeVelocity d)} :
-    HasWeakTimeDerivOn U (0 : TimeVelocity d → ℝ) 0 := by
+theorem zero {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} :
+    HasWeakTimeDerivOn U 0 0 := by
   intro φ hφ hφCompact hφSub
   simp only [Pi.zero_apply, zero_mul, integral_zero, neg_zero]
 
 /-- Weak time differentiation commutes with constant scalar multiplication. -/
-theorem smul {d : ℕ} {U : Set (TimeVelocity d)}
+theorem smul {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u du : TimeVelocity d → ℝ}
     (hu : HasWeakTimeDerivOn U u du) (c : ℝ) :
     HasWeakTimeDerivOn U (c • u) (c • du) := by
@@ -112,7 +113,7 @@ theorem smul {d : ℕ} {U : Set (TimeVelocity d)}
 
 /-- Raw weak time derivatives are additive when all representatives are
 locally integrable. -/
-theorem add {d : ℕ} {U : Set (TimeVelocity d)}
+theorem add {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u du v dv : TimeVelocity d → ℝ}
     (hu : HasWeakTimeDerivOn U u du)
     (hv : HasWeakTimeDerivOn U v dv)
@@ -122,7 +123,7 @@ theorem add {d : ℕ} {U : Set (TimeVelocity d)}
     (hdvLoc : LocallyIntegrableOn dv U volume) :
     HasWeakTimeDerivOn U (fun z => u z + v z) (fun z => du z + dv z) := by
   intro φ hφ hφCompact hφSub
-  let μU : Measure (TimeVelocity d) := timeVelocityVolumeOn U
+  let μU : HypoellipticAleksandrov.Parabolic.TVMeasure d := timeVelocityVolumeOn U
   let dφ : TimeVelocity d → ℝ := timeDerivative φ
   have hφCont : Continuous φ := hφ.continuous
   have hdφCont : Continuous dφ := timeDerivative_continuous hφ
@@ -163,7 +164,7 @@ theorem add {d : ℕ} {U : Set (TimeVelocity d)}
 /-- Weak time differentiation commutes with finite sums when every value and
 derivative representative is locally integrable. -/
 theorem fin_sum
-    {d n : ℕ} {U : Set (TimeVelocity d)}
+    {d n : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u du : Fin n → TimeVelocity d → ℝ}
     (hu : ∀ j, HasWeakTimeDerivOn U (u j) (du j))
     (huLoc : ∀ j, LocallyIntegrableOn (u j) U volume)
@@ -207,13 +208,13 @@ end HasWeakTimeDerivOn
 namespace HasWeakVelocityPartialDerivOn
 
 /-- Zero has zero weak velocity derivative. -/
-theorem zero {d : ℕ} {U : Set (TimeVelocity d)} {i : Fin d} :
-    HasWeakVelocityPartialDerivOn U i (0 : TimeVelocity d → ℝ) 0 := by
+theorem zero {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {i : Fin d} :
+    HasWeakVelocityPartialDerivOn U i 0 0 := by
   intro φ hφ hφCompact hφSub
   simp only [Pi.zero_apply, zero_mul, integral_zero, neg_zero]
 
 /-- Weak velocity differentiation commutes with constant scalar multiplication. -/
-theorem smul {d : ℕ} {U : Set (TimeVelocity d)} {i : Fin d}
+theorem smul {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {i : Fin d}
     {u dui : TimeVelocity d → ℝ}
     (hu : HasWeakVelocityPartialDerivOn U i u dui) (c : ℝ) :
     HasWeakVelocityPartialDerivOn U i (c • u) (c • dui) := by
@@ -239,7 +240,7 @@ theorem smul {d : ℕ} {U : Set (TimeVelocity d)} {i : Fin d}
 
 /-- Raw weak velocity derivatives are additive when all representatives are
 locally integrable. -/
-theorem add {d : ℕ} {U : Set (TimeVelocity d)} {i : Fin d}
+theorem add {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {i : Fin d}
     {u du v dv : TimeVelocity d → ℝ}
     (hu : HasWeakVelocityPartialDerivOn U i u du)
     (hv : HasWeakVelocityPartialDerivOn U i v dv)
@@ -249,7 +250,7 @@ theorem add {d : ℕ} {U : Set (TimeVelocity d)} {i : Fin d}
     (hdvLoc : LocallyIntegrableOn dv U volume) :
     HasWeakVelocityPartialDerivOn U i (fun z => u z + v z) (fun z => du z + dv z) := by
   intro φ hφ hφCompact hφSub
-  let μU : Measure (TimeVelocity d) := timeVelocityVolumeOn U
+  let μU : HypoellipticAleksandrov.Parabolic.TVMeasure d := timeVelocityVolumeOn U
   let dφ : TimeVelocity d → ℝ := fun z => velocityGradient φ z i
   have hφCont : Continuous φ := hφ.continuous
   have hdφCont : Continuous dφ := velocityGradient_continuous hφ
@@ -289,7 +290,7 @@ theorem add {d : ℕ} {U : Set (TimeVelocity d)} {i : Fin d}
 
 /-- Raw weak velocity derivatives commute with subtraction when all
 representatives are locally integrable. -/
-theorem sub {d : ℕ} {U : Set (TimeVelocity d)} {i : Fin d}
+theorem sub {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {i : Fin d}
     {u du v dv : TimeVelocity d → ℝ}
     (hu : HasWeakVelocityPartialDerivOn U i u du)
     (hv : HasWeakVelocityPartialDerivOn U i v dv)
@@ -300,7 +301,7 @@ theorem sub {d : ℕ} {U : Set (TimeVelocity d)} {i : Fin d}
     HasWeakVelocityPartialDerivOn U i
       (fun z => u z - v z) (fun z => du z - dv z) := by
   intro φ hφ hφCompact hφSub
-  let μU : Measure (TimeVelocity d) := timeVelocityVolumeOn U
+  let μU : HypoellipticAleksandrov.Parabolic.TVMeasure d := timeVelocityVolumeOn U
   let dφ : TimeVelocity d → ℝ := fun z => velocityGradient φ z i
   have hφCont : Continuous φ := hφ.continuous
   have hdφCont : Continuous dφ := velocityGradient_continuous hφ
@@ -341,7 +342,7 @@ theorem sub {d : ℕ} {U : Set (TimeVelocity d)} {i : Fin d}
 /-- Weak velocity differentiation commutes with finite sums when every value
 and derivative representative is locally integrable. -/
 theorem fin_sum
-    {d n : ℕ} {U : Set (TimeVelocity d)} {i : Fin d}
+    {d n : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {i : Fin d}
     {u du : Fin n → TimeVelocity d → ℝ}
     (hu : ∀ j, HasWeakVelocityPartialDerivOn U i (u j) (du j))
     (huLoc : ∀ j, LocallyIntegrableOn (u j) U volume)

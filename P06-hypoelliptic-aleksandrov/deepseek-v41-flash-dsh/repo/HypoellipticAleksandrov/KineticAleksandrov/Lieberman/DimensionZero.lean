@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.EllipsoidDirichlet
 public import HypoellipticAleksandrov.Parabolic.ScalarDirichletData
 import HypoellipticAleksandrov.Parabolic.C2ToScalarC12
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # The zero-dimensional ellipsoid Dirichlet solution -/
 

@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundedSourceWeakMeasure
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Support of the weak source-action measure -/
 
@@ -9,10 +10,10 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set
 open scoped ENNReal ProbabilityTheory
-variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d}
 
 /-- The past moving cylinder in product coordinates used by the source-action measure. -/
-def boundedSourcePast (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE.Vec d) (T : ℝ) :
+def boundedSourcePast (Ω : HypoellipticAleksandrov.VecSet d) (γ : ℝ → PDE.Vec d) (T : ℝ) :
     Set (ℝ × EvolutionAmbientState d) :=
   {q | q.1 < T ∧ q.2.1 ∈ movingDomain Ω γ q.1}
 

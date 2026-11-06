@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.LocalGluing
 public import HypoellipticAleksandrov.Parabolic.WeakJetProduct
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Compact cutoff localization for selected parabolic weak jets
@@ -22,7 +23,7 @@ namespace HypoellipticAleksandrov.Parabolic
 
 /-- A cutoff supported in a relatively compact set has compact support. -/
 theorem hasCompactSupport_of_tsupport_subset_of_isCompact_closure
-    {d : ℕ} {V : Set (TimeVelocity d)} {b : TimeVelocity d → ℝ}
+    {d : ℕ} {V : HypoellipticAleksandrov.Parabolic.TVSet d} {b : TimeVelocity d → ℝ}
     (hbV : tsupport b ⊆ V) (hVCompact : IsCompact (closure V)) :
     HasCompactSupport b := by
   change IsCompact (tsupport b)
@@ -32,7 +33,7 @@ theorem hasCompactSupport_of_tsupport_subset_of_isCompact_closure
 /-- A relatively compact smooth cutoff localizes a selected weak jet while
 preserving all four selected representatives near the plateau compact set. -/
 theorem exists_smooth_compact_cutoff_mul_eventuallyEq_jet
-    {d : ℕ} {K V : Set (TimeVelocity d)} {p : ℝ≥0∞}
+    {d : ℕ} {K V : HypoellipticAleksandrov.Parabolic.TVSet d} {p : ℝ≥0∞}
     (hK : IsCompact K) (hV : IsOpen V)
     (hVCompact : IsCompact (closure V)) (hKV : K ⊆ V)
     (w : ParabolicW12Function d V p) (hp : 1 ≤ p) :

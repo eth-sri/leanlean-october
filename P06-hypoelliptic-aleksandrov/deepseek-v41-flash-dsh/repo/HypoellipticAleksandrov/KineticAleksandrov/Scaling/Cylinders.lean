@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Scaling.Affine
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Moving cylinders under an affine change of variables
@@ -46,7 +47,7 @@ theorem time_inj {x y : ℝ} : Φ.time x = Φ.time y ↔ x = y := by
   · intro h
     rw [h]
 
-variable {Ω Ω' : Set (PDE.Vec d)} {γ γ' : ℝ → PDE.Vec d}
+variable {Ω Ω' : HypoellipticAleksandrov.VecSet d} {γ γ' : ℝ → PDE.Vec d}
 
 /-- Membership in a moving domain, in terms of the subtraction of the curve. -/
 theorem mem_movingDomain_iff {y : PDE.Vec d} {σ : ℝ} :
@@ -71,30 +72,33 @@ variable {Φ}
 
 variable (h : Φ.MapsDomain Ω γ Ω' γ')
 include h
+section
+variable (τ : ℝ) (p : KineticPoint d)
 
-theorem MapsDomain.mem_openCylinder_iff (τ : ℝ) (p : KineticPoint d) :
+theorem MapsDomain.mem_openCylinder_iff  :
     p ∈ evolutionPastOpenCylinder Ω' γ' τ ↔
       Φ.point p ∈ evolutionPastOpenCylinder Ω γ (Φ.time τ) := by
   simp only [evolutionPastOpenCylinder, mem_ofPred_eq, point_time, point_position,
     Φ.time_lt_iff, h.mem_iff]
 
-theorem MapsDomain.mem_closedCylinder_iff (τ : ℝ) (p : KineticPoint d) :
+theorem MapsDomain.mem_closedCylinder_iff  :
     p ∈ evolutionPastClosedCylinder Ω' γ' τ ↔
       Φ.point p ∈ evolutionPastClosedCylinder Ω γ (Φ.time τ) := by
   simp only [evolutionPastClosedCylinder, mem_ofPred_eq, point_time, point_position,
     Φ.time_le_iff, h.closure_eq, mem_preimage]
 
-theorem MapsDomain.mem_terminalClosure_iff (τ : ℝ) (p : KineticPoint d) :
+theorem MapsDomain.mem_terminalClosure_iff  :
     p ∈ evolutionTerminalClosure Ω' γ' τ ↔
       Φ.point p ∈ evolutionTerminalClosure Ω γ (Φ.time τ) := by
   simp only [evolutionTerminalClosure, mem_ofPred_eq, point_time, point_position,
     Φ.time_inj, h.closure_eq, mem_preimage]
 
-theorem MapsDomain.mem_lateralFrontier_iff (τ : ℝ) (p : KineticPoint d) :
+theorem MapsDomain.mem_lateralFrontier_iff  :
     p ∈ evolutionLateralFrontier Ω' γ' τ ↔
       Φ.point p ∈ evolutionLateralFrontier Ω γ (Φ.time τ) := by
   simp only [evolutionLateralFrontier, mem_ofPred_eq, point_time, point_position,
     Φ.time_le_iff, h.frontier_eq, mem_preimage]
+end
 
 theorem MapsDomain.mem_interiorRaw_iff (τ : ℝ) (q : ℝ × (PDE.Vec d × PDE.Vec d)) :
     q ∈ evolutionPastInteriorRaw Ω' γ' τ ↔

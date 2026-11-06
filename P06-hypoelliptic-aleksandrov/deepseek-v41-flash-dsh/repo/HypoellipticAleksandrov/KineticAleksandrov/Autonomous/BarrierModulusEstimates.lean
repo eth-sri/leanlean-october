@@ -14,9 +14,11 @@ theorem barrier_normalized_point (r : ℝ) (hr : 0 < r) (x v : ℝ) :
     bellmanPlaneDilation r (x / r ^ 3, v / r) = (x, v) := by
   simp only [bellmanPlaneDilation]
   congr 1 <;> field_simp
+section
+variable {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
 
 /-- Rescaling a uniform position increment produces its exact alpha/3 power. -/
-theorem barrier_position_increment {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
+theorem barrier_position_increment 
     (h : IsBellmanHomogeneous alpha phi) (D : ℝ)
     (hb : ∀ x y v : ℝ, |y - x| ≤ 1 →
       |bellmanOriginExtension phi (y, v) - bellmanOriginExtension phi (x, v)| ≤ D)
@@ -51,7 +53,7 @@ theorem barrier_position_increment {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
     (by rw [hpower, mul_comm])
 
 /-- Rescaling a uniform velocity increment produces its exact alpha power. -/
-theorem barrier_velocity_increment {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
+theorem barrier_velocity_increment 
     (h : IsBellmanHomogeneous alpha phi) (D : ℝ)
     (hb : ∀ x y X : ℝ, |y - x| ≤ 1 →
       |bellmanOriginExtension phi (X, y) - bellmanOriginExtension phi (X, x)| ≤ D)
@@ -76,7 +78,7 @@ theorem barrier_velocity_increment {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
   exact (mul_le_mul_of_nonneg_left hh (Real.rpow_nonneg hr.le _)).trans_eq (mul_comm _ _)
 
 /-- The actual extended Bellman witness has the source modulus without a new analytic premise. -/
-theorem barrier_coordinate_modulus {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
+theorem barrier_coordinate_modulus 
     (h : IsBellmanHomogeneous alpha phi) (ha : 0 < alpha) (ha1 : alpha < 1) :
     ∃ D : ℝ, 0 ≤ D ∧ ∀ z w : ℝ × ℝ,
       |bellmanOriginExtension phi z - bellmanOriginExtension phi w| ≤
@@ -90,5 +92,6 @@ theorem barrier_coordinate_modulus {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
   have hh := abs_sub_le (bellmanOriginExtension phi z)
     (bellmanOriginExtension phi (w.1, z.2)) (bellmanOriginExtension phi w)
   exact hh.trans (by simpa only [mul_add] using add_le_add hX hv)
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous.BarrierRegularization

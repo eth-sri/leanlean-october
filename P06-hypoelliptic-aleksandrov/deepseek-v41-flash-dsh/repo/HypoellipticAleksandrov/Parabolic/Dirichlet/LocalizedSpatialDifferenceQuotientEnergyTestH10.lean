@@ -4,6 +4,7 @@ public import Mathlib.Analysis.Normed.Operator.Extend
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.LocalizedSpatialDifferenceQuotientH10
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.LocalizedSpatialDifferenceQuotientPointwise
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.SmoothH10DenseRange
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Localized spatial difference-quotient energy-test operator on `H¹₀`
@@ -25,10 +26,10 @@ open HypoellipticAleksandrov.Parabolic.Dirichlet
 
 /-- The quotient-safe unweighted restricted scalar `L²` difference quotient. -/
 private noncomputable def unweightedSpatialDifferenceQuotientL2
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : MeasurableSet Ω) (k : Fin d) (s : ℝ) :
     PDE.ScalarLp Ω (2 : ℝ≥0∞) →L[ℝ] PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
-  let μ : Measure (PDE.Vec d) := volume
+  let μ : HypoellipticAleksandrov.VecMeasure d := volume
   let z : PDE.Vec d := s • PDE.basisVec k
   let T : PDE.Vec d → PDE.Vec d := fun y => y + z
   let hT : MeasurePreserving T μ μ := measurePreserving_add_right μ z
@@ -42,7 +43,7 @@ private noncomputable def unweightedSpatialDifferenceQuotientL2
 
 /-- The outer quotient has its canonical ambient zero-extension formula. -/
 private theorem unweightedSpatialDifferenceQuotientL2_apply_ae
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : MeasurableSet Ω) (k : Fin d) (s : ℝ)
     (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
     ⇑(unweightedSpatialDifferenceQuotientL2 hΩ k s f) =ᵐ[PDE.volumeOn Ω]
@@ -55,38 +56,38 @@ private theorem unweightedSpatialDifferenceQuotientL2_apply_ae
   have hP :
       ⇑((MeasureTheory.Lp.compMeasurePreservingₗᵢ ℝ
         (fun y : PDE.Vec d => y + s • PDE.basisVec k)
-        (measurePreserving_add_right (volume : Measure (PDE.Vec d))
+        (measurePreserving_add_right (HypoellipticAleksandrov.VecVolume d)
           (s • PDE.basisVec k)))
         ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f)) =ᵐ[volume]
         (⇑((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f) ∘
           fun y : PDE.Vec d => y + s • PDE.basisVec k) := by
     change MeasureTheory.Lp.compMeasurePreserving
       (fun y : PDE.Vec d => y + s • PDE.basisVec k)
-      (measurePreserving_add_right (volume : Measure (PDE.Vec d))
+      (measurePreserving_add_right (HypoellipticAleksandrov.VecVolume d)
         (s • PDE.basisVec k)) ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f) =ᵐ[volume]
         (⇑((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f) ∘
           fun y : PDE.Vec d => y + s • PDE.basisVec k)
     exact MeasureTheory.Lp.coeFn_compMeasurePreserving
       ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f)
-      (measurePreserving_add_right (volume : Measure (PDE.Vec d))
+      (measurePreserving_add_right (HypoellipticAleksandrov.VecVolume d)
         (s • PDE.basisVec k))
   have hR := LpToLpRestrictCLM_coeFn ℝ Ω
     ((MeasureTheory.Lp.compMeasurePreservingₗᵢ ℝ
       (fun y : PDE.Vec d => y + s • PDE.basisVec k)
-      (measurePreserving_add_right (volume : Measure (PDE.Vec d))
+      (measurePreserving_add_right (HypoellipticAleksandrov.VecVolume d)
         (s • PDE.basisVec k))) ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f) -
       (MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f)
   have hsub := MeasureTheory.Lp.coeFn_sub
     ((MeasureTheory.Lp.compMeasurePreservingₗᵢ ℝ
       (fun y : PDE.Vec d => y + s • PDE.basisVec k)
-      (measurePreserving_add_right (volume : Measure (PDE.Vec d))
+      (measurePreserving_add_right (HypoellipticAleksandrov.VecVolume d)
         (s • PDE.basisVec k))) ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f))
     ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f)
   have hsmul := MeasureTheory.Lp.coeFn_smul s⁻¹
     ((LpToLpRestrictCLM (PDE.Vec d) ℝ ℝ volume 2 Ω)
       ((MeasureTheory.Lp.compMeasurePreservingₗᵢ ℝ
         (fun y : PDE.Vec d => y + s • PDE.basisVec k)
-        (measurePreserving_add_right (volume : Measure (PDE.Vec d))
+        (measurePreserving_add_right (HypoellipticAleksandrov.VecVolume d)
           (s • PDE.basisVec k))) ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f) -
         (MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f))
   filter_upwards [hsmul, hR, hsub.restrict, hP.restrict] with y hsmul hR hsub hP
@@ -103,7 +104,7 @@ private theorem unweightedSpatialDifferenceQuotientL2_apply_ae
 /-- A representative supported in the raw domain may replace the canonical
 zero extension in the unweighted quotient, with no collar premise. -/
 private theorem unweightedSpatialDifferenceQuotientL2_apply_ae_of_ae_eq
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : MeasurableSet Ω) (k : Fin d) (s : ℝ)
     (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) (g : PDE.Vec d → ℝ)
     (hfg : ⇑f =ᵐ[PDE.volumeOn Ω] g)
@@ -123,7 +124,7 @@ private theorem unweightedSpatialDifferenceQuotientL2_apply_ae_of_ae_eq
         by_contra hgne
         exact hy (hgsupp hgne)
       exact hgzero.symm
-  have hshifted := (measurePreserving_add_right (volume : Measure (PDE.Vec d))
+  have hshifted := (measurePreserving_add_right (HypoellipticAleksandrov.VecVolume d)
     (s • PDE.basisVec k)).quasiMeasurePreserving.ae hambient
   have hambientOn : ∀ᵐ y : PDE.Vec d ∂PDE.volumeOn Ω,
       ⇑(MeasureTheory.Lp.zeroExtendLinearIsometry hΩ f) y = g y :=
@@ -137,14 +138,14 @@ private theorem unweightedSpatialDifferenceQuotientL2_apply_ae_of_ae_eq
   rw [hq, hambient, hshifted]
 
 private theorem sq_tsupport_subset
-    {d : ℕ} {inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (η : PDE.QuantitativeSmoothCutoff inner outer K) :
     tsupport η.sq.toFun ⊆ tsupport η.toFun := by
   simpa only [PDE.QuantitativeSmoothCutoff.sq_toFun, pow_two] using
     (tsupport_mul_subset_left (f := η.toFun) (g := η.toFun))
 
 private theorem energyWeakTest_partialDeriv_eq_backwardSquare
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (η : PDE.QuantitativeSmoothCutoff inner outer K) (k : Fin d) (h : ℝ)
     (φ : PDE.WeakTestFunction Ω) (hηΩ : tsupport η.toFun ⊆ Ω)
     (hηshift : Set.MapsTo (fun y : PDE.Vec d => y + h • PDE.basisVec k)
@@ -198,7 +199,7 @@ private theorem energyWeakTest_partialDeriv_eq_backwardSquare
 
 /-- The unweighted outer quotient has the totalized scalar `L²` bound. -/
 private theorem norm_unweightedSpatialDifferenceQuotientL2_apply_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : MeasurableSet Ω) (k : Fin d) (s : ℝ)
     (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
     ‖unweightedSpatialDifferenceQuotientL2 hΩ k s f‖ ≤ (2 / |s|) * ‖f‖ := by
@@ -210,24 +211,24 @@ private theorem norm_unweightedSpatialDifferenceQuotientL2_apply_le
   have hR : ‖(LpToLpRestrictCLM (PDE.Vec d) ℝ ℝ volume 2 Ω)
       ((MeasureTheory.Lp.compMeasurePreservingₗᵢ ℝ
         (fun y : PDE.Vec d => y + s • PDE.basisVec k)
-        (measurePreserving_add_right (volume : Measure (PDE.Vec d))
+        (measurePreserving_add_right (HypoellipticAleksandrov.VecVolume d)
           (s • PDE.basisVec k))) ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f) -
         (MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f)‖ ≤
       ‖(MeasureTheory.Lp.compMeasurePreservingₗᵢ ℝ
         (fun y : PDE.Vec d => y + s • PDE.basisVec k)
-        (measurePreserving_add_right (volume : Measure (PDE.Vec d))
+        (measurePreserving_add_right (HypoellipticAleksandrov.VecVolume d)
           (s • PDE.basisVec k))) ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f) -
         (MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f‖ :=
     norm_Lp_toLp_restrict_le Ω _
   have hD : ‖(MeasureTheory.Lp.compMeasurePreservingₗᵢ ℝ
       (fun y : PDE.Vec d => y + s • PDE.basisVec k)
-      (measurePreserving_add_right (volume : Measure (PDE.Vec d))
+      (measurePreserving_add_right (HypoellipticAleksandrov.VecVolume d)
         (s • PDE.basisVec k))) ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f) -
       (MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f‖ ≤ 2 * ‖f‖ := by
     calc
       _ ≤ ‖(MeasureTheory.Lp.compMeasurePreservingₗᵢ ℝ
           (fun y : PDE.Vec d => y + s • PDE.basisVec k)
-          (measurePreserving_add_right (volume : Measure (PDE.Vec d))
+          (measurePreserving_add_right (HypoellipticAleksandrov.VecVolume d)
             (s • PDE.basisVec k))) ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f)‖ +
           ‖(MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f‖ := norm_sub_le _ _
       _ = 2 * ‖f‖ := by
@@ -240,7 +241,7 @@ private theorem norm_unweightedSpatialDifferenceQuotientL2_apply_le
     _ ≤ |s|⁻¹ * ‖(LpToLpRestrictCLM (PDE.Vec d) ℝ ℝ volume 2 Ω)
         ((MeasureTheory.Lp.compMeasurePreservingₗᵢ ℝ
           (fun y : PDE.Vec d => y + s • PDE.basisVec k)
-          (measurePreserving_add_right (volume : Measure (PDE.Vec d))
+          (measurePreserving_add_right (HypoellipticAleksandrov.VecVolume d)
             (s • PDE.basisVec k))) ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f) -
           (MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f)‖ := by rfl
     _ ≤ |s|⁻¹ * (2 * ‖f‖) :=
@@ -251,7 +252,7 @@ private theorem norm_unweightedSpatialDifferenceQuotientL2_apply_le
 
 /-- The literal smooth B core is linear before any completion argument. -/
 noncomputable def energyTestSmoothCoreLinearMap
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (hηΩ : tsupport η.toFun ⊆ Ω)
     (hηshift : Set.MapsTo (fun y : PDE.Vec d => y + h • PDE.basisVec k)
@@ -280,7 +281,7 @@ noncomputable def energyTestSmoothCoreLinearMap
 
 /-- The quotient-safe scalar receiver dictated by the literal B test. -/
 private noncomputable def energyTestValueReceiver
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) :
     H10HilbertGraph hΩ →L[ℝ] PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
@@ -290,7 +291,7 @@ private noncomputable def energyTestValueReceiver
 
 /-- Each B gradient coordinate has the forced outer-quotient receiver. -/
 private noncomputable def energyTestGradientReceiver
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (j k : Fin d) (h : ℝ) :
     H10HilbertGraph hΩ →L[ℝ] PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
@@ -301,14 +302,14 @@ private noncomputable def energyTestGradientReceiver
         ((PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j).comp (gradientCLM hΩ)))
 
 private noncomputable def energyTestGradientVectorReceiver
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) :
     H10HilbertGraph hΩ →L[ℝ] PDE.HilbertVectorLp Ω (2 : ℝ≥0∞) :=
   PDE.hilbertVectorLpAssemble fun j => energyTestGradientReceiver hΩ η j k h
 
 private theorem energyTestSmoothCore_value_eq_receiver
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
     (hηΩ : tsupport η.toFun ⊆ Ω)
@@ -371,7 +372,7 @@ private theorem energyTestSmoothCore_value_eq_receiver
   ring
 
 private theorem energyTestSmoothCore_gradientCoord_eq_receiver
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (j k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
     (hηΩ : tsupport η.toFun ⊆ Ω)
@@ -451,7 +452,7 @@ private theorem energyTestSmoothCore_gradientCoord_eq_receiver
   ring
 
 private theorem energyTestSmoothCore_gradient_eq_receiver
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
     (hηΩ : tsupport η.toFun ⊆ Ω)
@@ -493,9 +494,9 @@ private theorem energyTestSmoothCore_gradient_eq_receiver
     WithLp.ofLp_toLp] using hcoords j
 
 private theorem norm_hilbertVectorLpCoord_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (j : Fin d)
-    (G : PDE.HilbertVectorLp Ω (2 : ℝ≥0∞)) :
-    ‖PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j G‖ ≤ ‖G‖ := by
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (j : Fin d)
+    (G : PDE.HilbertVectorLp Ω 2) :
+    ‖PDE.hilbertVectorLpCoord Ω 2 j G‖ ≤ ‖G‖ := by
   rw [PDE.hilbertVectorLpCoord]
   calc
     ‖(PiLp.proj (𝕜 := ℝ) 2 (fun _ : Fin d => ℝ) j).compLpL
@@ -511,7 +512,7 @@ private theorem norm_hilbertVectorLpCoord_le
     _ = ‖G‖ := one_mul _
 
 private theorem norm_energyTestValueReceiver_apply_le
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (u : H10HilbertGraph hΩ) :
     ‖energyTestValueReceiver hΩ η k h u‖ ≤ (4 / |h| ^ 2) * ‖u‖ := by
@@ -539,7 +540,7 @@ private theorem norm_energyTestValueReceiver_apply_le
     _ = (4 / |h| ^ 2) * ‖u‖ := by ring
 
 private theorem norm_energyTestGradientReceiver_apply_le
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (j k : Fin d) (h : ℝ) (u : H10HilbertGraph hΩ) :
     ‖energyTestGradientReceiver hΩ η j k h u‖ ≤
@@ -610,7 +611,7 @@ private theorem norm_energyTestGradientReceiver_apply_le
     _ = (4 * (2 * K + 1) / |h| ^ 2) * ‖u‖ := by ring
 
 private theorem norm_energyTestGradientVectorReceiver_apply_le
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (u : H10HilbertGraph hΩ) :
     ‖energyTestGradientVectorReceiver hΩ η k h u‖ ≤
@@ -629,7 +630,7 @@ private theorem norm_energyTestGradientVectorReceiver_apply_le
       ring
 
 private theorem norm_h10HilbertGraph_le_value_add_gradient
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     (u : H10HilbertGraph hΩ) :
     ‖u‖ ≤ ‖valueCLM hΩ u‖ + ‖gradientCLM hΩ u‖ := by
   apply (sq_le_sq₀ (norm_nonneg _)
@@ -644,7 +645,7 @@ private theorem norm_h10HilbertGraph_le_value_add_gradient
     _ = (‖valueCLM hΩ u‖ + ‖gradientCLM hΩ u‖) ^ 2 := by ring
 
 private theorem norm_energyTestSmoothCoreLinearMap_apply_le
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
     (hηΩ : tsupport η.toFun ⊆ Ω)
@@ -674,7 +675,7 @@ private theorem norm_energyTestSmoothCoreLinearMap_apply_le
     _ = (4 * (1 + (d : ℝ) * (2 * K + 1)) / |h| ^ 2) * ‖x‖ := by ring
 
 private theorem exists_energyTestSmoothCoreLinearMap_bound
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (hηΩ : tsupport η.toFun ⊆ Ω)
     (hηshift : Set.MapsTo (fun y : PDE.Vec d => y + h • PDE.basisVec k)
@@ -688,7 +689,7 @@ private theorem exists_energyTestSmoothCoreLinearMap_bound
 
 /-- The internal bounded extension of the smooth localized energy test. -/
 noncomputable def energyTestH10CLM
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (hηΩ : tsupport η.toFun ⊆ Ω)
     (hηshift : Set.MapsTo (fun y : PDE.Vec d => y + h • PDE.basisVec k)
@@ -698,7 +699,7 @@ noncomputable def energyTestH10CLM
     (smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ)
 
 private theorem energyTestH10CLM_apply_smooth
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
     (hηΩ : tsupport η.toFun ⊆ Ω)
@@ -713,8 +714,8 @@ private theorem energyTestH10CLM_apply_smooth
     (exists_energyTestSmoothCoreLinearMap_bound hΩ η k h hηΩ hηshift) φ
 
 private theorem inner_scalarLp_eq_integral_mul_of_ae_eq
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (F G : PDE.ScalarLp Ω (2 : ℝ≥0∞)) (f g : PDE.Vec d → ℝ)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
+    (F G : PDE.ScalarLp Ω 2) (f g : PDE.Vec d → ℝ)
     (hF : ⇑F =ᵐ[PDE.volumeOn Ω] f) (hG : ⇑G =ᵐ[PDE.volumeOn Ω] g) :
     inner ℝ F G = ∫ y, f y * g y ∂PDE.volumeOn Ω := by
   rw [L2.inner_def]
@@ -724,7 +725,7 @@ private theorem inner_scalarLp_eq_integral_mul_of_ae_eq
   simp [mul_comm]
 
 private theorem inner_value_energyTestSmoothCore_eq
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (φ ψ : PDE.WeakTestFunction Ω)
     (hηΩ : tsupport η.toFun ⊆ Ω)
@@ -784,7 +785,7 @@ private theorem inner_value_energyTestSmoothCore_eq
       (localizedSpatialDifferenceQuotient η k h ψ) hAφ hAψ).symm
 
 private theorem value_localizedSpatialDifferenceQuotientH10CLM_apply_smooth
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
     (hηΩ : tsupport η.toFun ⊆ Ω)
@@ -802,7 +803,7 @@ private theorem value_localizedSpatialDifferenceQuotientH10CLM_apply_smooth
   simpa only [ContinuousLinearMap.comp_apply] using h
 
 private noncomputable def energyTestSmoothLeftPairCLM
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
     (hηΩ : tsupport η.toFun ⊆ Ω)
@@ -814,7 +815,7 @@ private noncomputable def energyTestSmoothLeftPairCLM
       ((valueCLM hΩ).comp (energyTestH10CLM hΩ η k h hηΩ hηshift))
 
 private noncomputable def localizedSmoothLeftPairCLM
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
     (hηΩ : tsupport η.toFun ⊆ Ω)
@@ -828,7 +829,7 @@ private noncomputable def localizedSmoothLeftPairCLM
         hΩ η k h hηΩ hηshift))
 
 private theorem energyTestSmoothLeftPairCLM_apply
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
     (hηΩ : tsupport η.toFun ⊆ Ω)
@@ -841,7 +842,7 @@ private theorem energyTestSmoothLeftPairCLM_apply
   rfl
 
 private theorem localizedSmoothLeftPairCLM_apply_smooth
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (φ ψ : PDE.WeakTestFunction Ω)
     (hηΩ : tsupport η.toFun ⊆ Ω)
@@ -878,7 +879,7 @@ private theorem localizedSmoothLeftPairCLM_apply_smooth
           hΩ η k h ψ hηΩ hηshift)
 
 private theorem energyTestSmoothLeftPairCLM_eq_localizedSmoothLeftPairCLM
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
     (hηΩ : tsupport η.toFun ⊆ Ω)
@@ -902,7 +903,7 @@ private theorem energyTestSmoothLeftPairCLM_eq_localizedSmoothLeftPairCLM
       exact inner_value_energyTestSmoothCore_eq hΩ η k h φ ψ hηΩ hηshift)) w
 
 private theorem inner_value_energyTestH10CLM_eq_of_smooth_left
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω) (v : H10HilbertGraph hΩ)
     (hηΩ : tsupport η.toFun ⊆ Ω)
@@ -920,7 +921,7 @@ private theorem inner_value_energyTestH10CLM_eq_of_smooth_left
       hΩ η k h φ hηΩ hηshift)
 
 private noncomputable def energyTestFixedRightPairCLM
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (v : H10HilbertGraph hΩ)
     (hηΩ : tsupport η.toFun ⊆ Ω)
@@ -930,7 +931,7 @@ private noncomputable def energyTestFixedRightPairCLM
     (valueCLM hΩ)
 
 private noncomputable def localizedFixedRightPairCLM
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (v : H10HilbertGraph hΩ)
     (hηΩ : tsupport η.toFun ⊆ Ω)
@@ -941,7 +942,7 @@ private noncomputable def localizedFixedRightPairCLM
       ((valueCLM hΩ).comp (localizedSpatialDifferenceQuotientH10CLM hΩ η k h hηΩ hηshift))
 
 private theorem energyTestFixedRightPairCLM_apply_smooth
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (v : H10HilbertGraph hΩ) (φ : PDE.WeakTestFunction Ω)
     (hηΩ : tsupport η.toFun ⊆ Ω)
@@ -954,7 +955,7 @@ private theorem energyTestFixedRightPairCLM_apply_smooth
   rfl
 
 private theorem localizedFixedRightPairCLM_apply_smooth
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (v : H10HilbertGraph hΩ) (φ : PDE.WeakTestFunction Ω)
     (hηΩ : tsupport η.toFun ⊆ Ω)
@@ -969,7 +970,7 @@ private theorem localizedFixedRightPairCLM_apply_smooth
   rfl
 
 private theorem energyTestFixedRightPairCLM_eq_localizedFixedRightPairCLM
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (v : H10HilbertGraph hΩ)
     (hηΩ : tsupport η.toFun ⊆ Ω)
@@ -1003,7 +1004,7 @@ private theorem energyTestFixedRightPairCLM_eq_localizedFixedRightPairCLM
         _ = _ := real_inner_comm _ _)) u
 
 private theorem inner_value_energyTestH10CLM_eq
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (u v : H10HilbertGraph hΩ)
     (hηΩ : tsupport η.toFun ⊆ Ω)
@@ -1026,7 +1027,7 @@ private theorem inner_value_energyTestH10CLM_eq
 
 /-- The bounded H10 extension of the localized spatial energy test. -/
 noncomputable def localizedSpatialDifferenceQuotientEnergyTestH10CLM
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (hηΩ : tsupport η.toFun ⊆ Ω)
     (hηshift : Set.MapsTo (fun y : PDE.Vec d => y + h • PDE.basisVec k)
@@ -1035,7 +1036,7 @@ noncomputable def localizedSpatialDifferenceQuotientEnergyTestH10CLM
 
 /-- The energy-test extension agrees with the literal bundled smooth core. -/
 theorem localizedSpatialDifferenceQuotientEnergyTestH10CLM_apply_smooth
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
     (hηΩ : tsupport η.toFun ⊆ Ω)
@@ -1052,7 +1053,7 @@ theorem localizedSpatialDifferenceQuotientEnergyTestH10CLM_apply_smooth
 
 /-- The energy-test value pairing is the localized quotient inner product. -/
 theorem inner_value_localizedSpatialDifferenceQuotientEnergyTestH10CLM_eq
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (u v : H10HilbertGraph hΩ)
     (hηΩ : tsupport η.toFun ⊆ Ω)

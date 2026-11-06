@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeBochner
 public import Mathlib.MeasureTheory.Function.Holder
 public import Mathlib.MeasureTheory.Function.L1Space.Integrable
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Integrability of reverse-time dual pairings
@@ -23,7 +24,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 /-- The literal pointwise dual pairing of reverse-time `L²(V*)` and `L²(V)`
 curves is integrable on the reverse-time volume. -/
 theorem integrable_reverseTimeDualPairing
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (T : ℝ)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) :
     MeasureTheory.Integrable (fun tau => (g tau) (u tau))

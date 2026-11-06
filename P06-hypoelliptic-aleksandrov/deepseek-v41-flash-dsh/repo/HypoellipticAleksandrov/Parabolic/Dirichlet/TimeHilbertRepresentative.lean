@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeScalarEnergy
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeHilbertSteklov
 public import Mathlib.MeasureTheory.Function.ConvergenceInMeasure
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Continuous Hilbert representatives in reverse time
@@ -23,7 +24,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 /-- A continuous closed-time spatial-`L²` curve agrees almost everywhere with
 the spatial value image of the reverse-time Bochner curve. -/
 def ReverseTimeHilbertRepresentativeAgrees
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (T : ℝ) (u : ReverseTimeL2V hΩ T)
     (Ubar : C(↥(Set.Icc 0 T), PDE.ScalarLp Ω (2 : ℝ≥0∞))) : Prop :=
   ∀ᵐ tau ∂reverseTimeVolume T,
@@ -77,7 +78,7 @@ private theorem memLp_two_on_full_Icc
     restrict_Ioo_eq_restrict_Icc] using Lp.memLp f
 
 private theorem tendsto_value_sqNorm_integral_on_Icc
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     (T : ℝ) (_hT : 0 < T) (u : ReverseTimeL2V hΩ T)
     (F : ℕ → ℝ → H10HilbertGraph hΩ)
     (hF : ∀ n, Continuous (F n))
@@ -304,10 +305,11 @@ private theorem exists_continuousMap_glue_of_local_ae
       simpa only [Subsingleton.elim] using h hta⟩
   refine ⟨Ubar, ?_⟩
   simpa only [hcover] using hUnionAE
+section
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (T : ℝ)
 
 private theorem exists_reverseTimeHilbertRepresentative_agrees
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
+     (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g) :
     ∃ Ubar : C(↥(Set.Icc 0 T), PDE.ScalarLp Ω (2 : ℝ≥0∞)),
@@ -457,8 +459,7 @@ private theorem exists_reverseTimeHilbertRepresentative_agrees
     hTau ⟨le_of_lt htau.1, le_of_lt htau.2⟩
 
 private theorem reverseTimeHilbertRepresentative_energy_increment
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
+     (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
     (Ubar : C(↥(Set.Icc 0 T), PDE.ScalarLp Ω (2 : ℝ≥0∞)))
@@ -514,8 +515,7 @@ private theorem reverseTimeHilbertRepresentative_energy_increment
       heInc s t hs ht hst
 
 private theorem reverseTimeHilbertRepresentative_eq
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
+     (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T)
     (Ubar Vbar : C(↥(Set.Icc 0 T), PDE.ScalarLp Ω (2 : ℝ≥0∞)))
     (hUbar : ReverseTimeHilbertRepresentativeAgrees hΩ T u Ubar)
@@ -569,8 +569,7 @@ private theorem reverseTimeHilbertRepresentative_eq
 /-- The continuous spatial-`L²` representative of a reverse-time Gelfand
 weak derivative, with its one-curve energy increment. -/
 theorem existsUnique_reverseTimeHilbertRepresentative
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
+     (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g) :
     ∃! Ubar : C(↥(Set.Icc 0 T), PDE.ScalarLp Ω (2 : ℝ≥0∞)),
@@ -586,5 +585,6 @@ theorem existsUnique_reverseTimeHilbertRepresentative
   · exact reverseTimeHilbertRepresentative_energy_increment hΩ T hT u g hderiv Ubar hUbar
   · intro Vbar hVbar
     exact reverseTimeHilbertRepresentative_eq hΩ T hT u Vbar Ubar hVbar.1 hUbar
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

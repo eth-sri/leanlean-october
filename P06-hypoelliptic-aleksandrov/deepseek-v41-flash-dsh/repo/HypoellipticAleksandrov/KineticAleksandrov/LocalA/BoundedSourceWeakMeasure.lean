@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundedSourceApp
 public import Mathlib.Probability.Kernel.Composition.IntegralCompProd
 public import Mathlib.MeasureTheory.Measure.WithDensity
 import Mathlib.MeasureTheory.Integral.Prod
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Source measures for bounded-source weak testing
 
@@ -17,15 +18,15 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set
 open scoped ENNReal ProbabilityTheory
-variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d}
 
 /-- Starting-point/source-time pairs on which the existing master query is valid. -/
-def boundedSourcePairSet (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE.Vec d) :
+def boundedSourcePairSet (Ω : HypoellipticAleksandrov.VecSet d) (γ : ℝ → PDE.Vec d) :
     Set (KineticPoint d × ℝ) :=
   {q | q.1.time ≤ q.2 ∧ q.1.position ∈ movingDomain Ω γ q.1.time}
 
 /-- The valid-pair carrier excludes invalid kernel queries. -/
-abbrev BoundedSourcePair (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE.Vec d) :=
+abbrev BoundedSourcePair (Ω : HypoellipticAleksandrov.VecSet d) (γ : ℝ → PDE.Vec d) :=
   {q : KineticPoint d × ℝ // q ∈ boundedSourcePairSet Ω γ}
 
 /-- The valid pair set is Borel. -/

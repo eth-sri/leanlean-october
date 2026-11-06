@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonEvo
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.HormanderBridgeTransfer
 import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionLimitClassical
 import HypoellipticAleksandrov.KineticAleksandrov.Evolution.HormanderBridgeOperator
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Weak equations supplied by classical viscous terminal solutions -/
 
@@ -13,7 +14,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov Set MeasureTheory Evolution
 
 /-- The exact product-coordinate interior is the image of the kinetic interior. -/
-theorem evolutionPastInteriorRaw_eq_image {n : ℕ} (Ω : Set (PDE.Vec n))
+theorem evolutionPastInteriorRaw_eq_image {n : ℕ} (Ω : HypoellipticAleksandrov.VecSet n)
     (γ : ℝ → PDE.Vec n) (τ : ℝ) :
     evolutionPastInteriorRaw Ω γ τ =
       KineticPoint.equivProd n '' evolutionPastOpenCylinder Ω γ τ := by
@@ -25,14 +26,14 @@ theorem evolutionPastInteriorRaw_eq_image {n : ℕ} (Ω : Set (PDE.Vec n))
     exact hp
 
 /-- The past kinetic interior is open for an open domain and a continuous curve. -/
-theorem isOpen_evolutionPastOpenCylinder {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
+theorem isOpen_evolutionPastOpenCylinder {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n} (hΩ : IsOpen Ω)
     {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) (τ : ℝ) :
     IsOpen (evolutionPastOpenCylinder Ω γ τ) := by
   exact (isOpen_evolutionPastInteriorRaw hΩ hγ τ).preimage
     (KineticPoint.homeomorphProd n).continuous
 
 /-- A classical viscous terminal solution satisfies the literal weak adjoint equation. -/
-theorem classical_viscous_terminalSolution_isWeak {n : ℕ} {Ω : Set (PDE.Vec n)}
+theorem classical_viscous_terminalSolution_isWeak {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n}
     (hΩ : IsOpen Ω) {γ : ℝ → PDE.Vec n} (hγ : Continuous γ)
     {B : FullKineticCoefficient n} (hB : IsSmoothFullKineticCoefficient B)
     (hBs : IsSymmetricFullKineticCoefficient B) {b : PDE.Vec n → PDE.Vec n}

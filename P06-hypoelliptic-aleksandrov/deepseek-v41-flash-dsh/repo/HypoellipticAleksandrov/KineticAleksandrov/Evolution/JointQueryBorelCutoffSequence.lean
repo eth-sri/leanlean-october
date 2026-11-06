@@ -15,14 +15,16 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
 open Set Function
+section
+variable {E : Type*}
 
 /-- Accumulate cutoffs using the smooth union operation `a + (1-a)b`. -/
-def accumulatedCutoffs {E : Type*} (χ : ℕ → E → ℝ) : ℕ → E → ℝ
+def accumulatedCutoffs  (χ : ℕ → E → ℝ) : ℕ → E → ℝ
   | 0 => χ 0
   | j + 1 => fun x => accumulatedCutoffs χ j x + (1 - accumulatedCutoffs χ j x) * χ (j + 1) x
 
 /-- Accumulated cutoffs take values in `[0,1]` when all their inputs do. -/
-theorem accumulatedCutoffs_bounds {E : Type*} (χ : ℕ → E → ℝ)
+theorem accumulatedCutoffs_bounds  (χ : ℕ → E → ℝ)
     (hχ : ∀ j x, 0 ≤ χ j x ∧ χ j x ≤ 1) :
     ∀ j x, 0 ≤ accumulatedCutoffs χ j x ∧ accumulatedCutoffs χ j x ≤ 1 := by
   intro j
@@ -38,7 +40,7 @@ theorem accumulatedCutoffs_bounds {E : Type*} (χ : ℕ → E → ℝ)
     constructor <;> nlinarith only [ha.1, hprod, hnon]
 
 /-- Accumulated cutoffs increase pointwise. -/
-theorem monotone_accumulatedCutoffs {E : Type*} (χ : ℕ → E → ℝ)
+theorem monotone_accumulatedCutoffs  (χ : ℕ → E → ℝ)
     (hχ : ∀ j x, 0 ≤ χ j x ∧ χ j x ≤ 1) (x : E) :
     Monotone (fun j => accumulatedCutoffs χ j x) := by
   apply monotone_nat_of_le_succ
@@ -49,7 +51,7 @@ theorem monotone_accumulatedCutoffs {E : Type*} (χ : ℕ → E → ℝ)
     (sub_nonneg.mpr (accumulatedCutoffs_bounds χ hχ j x).2) (hχ (j + 1) x).1)
 
 /-- The accumulated cutoff at an index dominates that index's input cutoff. -/
-theorem le_accumulatedCutoffs {E : Type*} (χ : ℕ → E → ℝ)
+theorem le_accumulatedCutoffs  (χ : ℕ → E → ℝ)
     (hχ : ∀ j x, 0 ≤ χ j x ∧ χ j x ≤ 1) (j : ℕ) (x : E) :
     χ j x ≤ accumulatedCutoffs χ j x := by
   cases j with
@@ -62,7 +64,7 @@ theorem le_accumulatedCutoffs {E : Type*} (χ : ℕ → E → ℝ)
 
 /-- Accumulation preserves smoothness, compact support and an interior support condition. -/
 theorem accumulatedCutoffs_regular
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] {U : Set E}
+     [NormedAddCommGroup E] [NormedSpace ℝ E] {U : Set E}
     (χ : ℕ → E → ℝ)
     (hχ : ∀ j, ContDiff ℝ (⊤ : ℕ∞) (χ j) ∧ HasCompactSupport (χ j) ∧ tsupport (χ j) ⊆ U) :
     ∀ j, ContDiff ℝ (⊤ : ℕ∞) (accumulatedCutoffs χ j) ∧
@@ -79,7 +81,7 @@ theorem accumulatedCutoffs_regular
 /-- Every open finite-dimensional real set has increasing smooth compact interior cutoffs,
 eventually identically one at each of its points. -/
 theorem exists_increasing_smooth_interior_cutoffs
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
+     [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
     {U : Set E} (hU : IsOpen U) :
     ∃ χ : ℕ → E → ℝ,
       (∀ j, ContDiff ℝ (⊤ : ℕ∞) (χ j) ∧ HasCompactSupport (χ j) ∧ tsupport (χ j) ⊆ U) ∧
@@ -106,5 +108,6 @@ theorem exists_increasing_smooth_interior_cutoffs
     1 = χ N x := hχN.symm
     _ ≤ accumulatedCutoffs χ N x := le_accumulatedCutoffs χ hb N x
     _ ≤ accumulatedCutoffs χ j x := monotone_accumulatedCutoffs χ hb x hj
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

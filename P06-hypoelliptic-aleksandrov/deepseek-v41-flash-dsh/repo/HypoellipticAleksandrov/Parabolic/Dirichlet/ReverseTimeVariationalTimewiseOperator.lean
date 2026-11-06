@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.VariationalEnergy
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeFormResidual
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeDualPairing
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Timewise bounded operators for reverse-time variational solutions
@@ -19,11 +20,13 @@ open scoped BigOperators ENNReal RealInnerProductSpace Matrix.Norms.Elementwise 
 noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
+section
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
 
 /-- The declared reverse-time variational derivative is the canonical Bochner
 source-minus-form residual. -/
 theorem IsReverseTimeVariationalEnergySolution.g_eq_reverseTimeFormResidual
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
@@ -61,7 +64,7 @@ theorem IsReverseTimeVariationalEnergySolution.g_eq_reverseTimeFormResidual
   linarith
 
 private theorem ae_sub_apply_timewiseCLM
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (hΩ : IsOpen Ω) (T : ℝ)
     (source action : ReverseTimeL2VStar hΩ T)
     (u : ReverseTimeL2V hΩ T)
@@ -78,7 +81,7 @@ private theorem ae_sub_apply_timewiseCLM
 /-- The declared derivative evaluated on a timewise bounded spatial image is
 the totalized negative-source evaluation minus the totalized form action. -/
 theorem ae_reverseTimeVariationalEnergySolution_apply_timewiseCLM
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
@@ -124,7 +127,7 @@ theorem ae_reverseTimeVariationalEnergySolution_apply_timewiseCLM
 /-- Pairing a dual Bochner curve with a bounded timewise spatial image is
 integrable on the reverse-time volume. -/
 theorem integrable_reverseTimeDualPairing_timewiseCLM
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (hΩ : IsOpen Ω) (T : ℝ)
     (Q : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) :
@@ -136,5 +139,6 @@ theorem integrable_reverseTimeDualPairing_timewiseCLM
   refine (integrable_reverseTimeDualPairing hΩ T Qu g).congr ?_
   filter_upwards [hQu] with τ hQ
   rw [hQ]
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

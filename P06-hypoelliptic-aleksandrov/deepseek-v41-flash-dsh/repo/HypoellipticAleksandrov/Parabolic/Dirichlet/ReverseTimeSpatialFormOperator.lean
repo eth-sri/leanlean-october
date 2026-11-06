@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialFormOperatorContinuity
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeBochner
 public import Mathlib.Topology.Order.ProjIcc
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Clamped reverse-time spatial form operator
@@ -22,7 +23,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 section
 
-variable {d : ℕ} {Ω : Set (PDE.Vec d)}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
 variable (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
 variable (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
 variable (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)

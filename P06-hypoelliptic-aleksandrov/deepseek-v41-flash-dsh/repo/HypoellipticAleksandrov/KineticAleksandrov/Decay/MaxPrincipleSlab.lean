@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Decay.MaxPrincipleTilt
 import Mathlib.Analysis.Calculus.FDeriv.Mul
 import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Linarith
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Moving-domain comparison away from the initial time
@@ -17,12 +18,11 @@ maximum exclusion. No derivative at the initial or terminal time is assumed.
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set
+section
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d} {a b : ℝ} {B : FullKineticCoefficient d} {drift : PDE.Vec d → PDE.Vec d} {u : KineticPoint d → ℝ}
 
 /-- Moving-domain comparison at every strictly later time. -/
-theorem nonpos_at_later_time_maximumClosedTube {d : ℕ}
-    {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d} {a b : ℝ}
-    {B : FullKineticCoefficient d} {drift : PDE.Vec d → PDE.Vec d}
-    {u : KineticPoint d → ℝ}
+theorem nonpos_at_later_time_maximumClosedTube 
     (hΩ : IsOpen Ω) (hcΩ : IsCompact (closure Ω))
     (hγ : ContinuousOn γ (Icc a b))
     (hu : ContinuousOn u (maximumClosedTube Ω γ a b))
@@ -93,10 +93,7 @@ theorem nonpos_at_later_time_maximumClosedTube {d : ℕ}
 
 
 /-- Moving-domain comparison on the entire closed time slab, including its initial slice. -/
-theorem nonpos_on_maximumClosedTube {d : ℕ}
-    {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d} {a b : ℝ}
-    {B : FullKineticCoefficient d} {drift : PDE.Vec d → PDE.Vec d}
-    {u : KineticPoint d → ℝ}
+theorem nonpos_on_maximumClosedTube 
     (hab : a < b) (hΩ : IsOpen Ω) (hcΩ : IsCompact (closure Ω))
     (hγ : ContinuousOn γ (Icc a b))
     (hu : ContinuousOn u (maximumClosedTube Ω γ a b))
@@ -145,5 +142,6 @@ theorem nonpos_on_maximumClosedTube {d : ℕ}
       simp only [f, sub_add_cancel, ← hqa]
     simpa only [Function.comp_apply, hfa] using hbound
   · exact hlater hq (lt_of_le_of_ne hq.1.1 (Ne.symm hqa))
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Decay

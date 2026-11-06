@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.GenericParabolicIndexArithmetic
 public import HypoellipticAleksandrov.Parabolic.ParabolicWeakDerivativeFamilyLocality
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Ordinary weak-derivative-family view
@@ -93,21 +94,19 @@ theorem toParabolic_velocitySucc {d m : ℕ}
 end TimeVelocityDerivativeIndex
 
 namespace ParabolicWeakDerivativeFamily
+section
+variable {d m : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {u : TimeVelocity d → ℝ} (D : ParabolicWeakDerivativeFamily d (2 * m) U u)
 
 /-- The literal ordinary-order view of the selected parabolic representatives. -/
 def ordinaryRepresentative
-    {d m : ℕ} {U : Set (TimeVelocity d)}
-    {u : TimeVelocity d → ℝ}
-    (D : ParabolicWeakDerivativeFamily d (2 * m) U u)
+    
     (beta : TimeVelocityDerivativeIndex d m) :
     TimeVelocity d → ℝ :=
   D.representative beta.toParabolic
 
 /-- Every selected ordinary representative belongs locally to the supplied `L²` family. -/
 theorem ordinaryRepresentative_memLp
-    {d m : ℕ} {U : Set (TimeVelocity d)}
-    {u : TimeVelocity d → ℝ}
-    (D : ParabolicWeakDerivativeFamily d (2 * m) U u)
+    
     (beta : TimeVelocityDerivativeIndex d m) :
     ParabolicMemLpOn U (2 : ℝ≥0∞)
       (D.ordinaryRepresentative beta) :=
@@ -115,9 +114,7 @@ theorem ordinaryRepresentative_memLp
 
 /-- The zero ordinary representative agrees almost everywhere with the root function. -/
 theorem ordinaryRepresentative_zero_ae
-    {d m : ℕ} {U : Set (TimeVelocity d)}
-    {u : TimeVelocity d → ℝ}
-    (D : ParabolicWeakDerivativeFamily d (2 * m) U u) :
+     :
     D.ordinaryRepresentative (TimeVelocityDerivativeIndex.zero d m)
       =ᵐ[timeVelocityVolumeOn U] u := by
   simpa only [ordinaryRepresentative,
@@ -125,9 +122,7 @@ theorem ordinaryRepresentative_zero_ae
 
 /-- The selected time successor is the weak time derivative of an ordinary representative. -/
 theorem hasWeakTimeDerivOn_ordinaryRepresentative_timeSucc
-    {d m : ℕ} {U : Set (TimeVelocity d)}
-    {u : TimeVelocity d → ℝ}
-    (D : ParabolicWeakDerivativeFamily d (2 * m) U u)
+    
     (beta : TimeVelocityDerivativeIndex d m)
     (h : beta.1.order + 1 ≤ m) :
     HasWeakTimeDerivOn U
@@ -143,9 +138,7 @@ theorem hasWeakTimeDerivOn_ordinaryRepresentative_timeSucc
 
 /-- A selected velocity successor is the corresponding weak velocity derivative. -/
 theorem hasWeakVelocityPartialDerivOn_ordinaryRepresentative_velocitySucc
-    {d m : ℕ} {U : Set (TimeVelocity d)}
-    {u : TimeVelocity d → ℝ}
-    (D : ParabolicWeakDerivativeFamily d (2 * m) U u)
+    
     (beta : TimeVelocityDerivativeIndex d m) (i : Fin d)
     (h : beta.1.order + 1 ≤ m) :
     HasWeakVelocityPartialDerivOn U i
@@ -161,12 +154,13 @@ theorem hasWeakVelocityPartialDerivOn_ordinaryRepresentative_velocitySucc
 
 /-- Restriction preserves the selected ordinary representatives literally. -/
 @[simp] theorem ordinaryRepresentative_restrict
-    {d m : ℕ} {U V : Set (TimeVelocity d)}
+    {d m : ℕ} {U V : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u : TimeVelocity d → ℝ}
     (D : ParabolicWeakDerivativeFamily d (2 * m) U u)
     (hVU : V ⊆ U) (beta : TimeVelocityDerivativeIndex d m) :
     (D.restrict hVU).ordinaryRepresentative beta =
       D.ordinaryRepresentative beta := rfl
+end
 
 end ParabolicWeakDerivativeFamily
 

@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Lieberman.TerminalLift
 public import HypoellipticAleksandrov.KineticAleksandrov.Lieberman.DimensionZero
 public import HypoellipticAleksandrov.KineticAleksandrov.Lieberman.SourceEllipsoidBoundary
 public import HypoellipticAleksandrov.Parabolic.ScalarDirichletComparison
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Ellipsoid Dirichlet solvability assembled from the proved source correction -/
 

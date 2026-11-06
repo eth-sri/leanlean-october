@@ -9,6 +9,7 @@ public import Mathlib.Analysis.Matrix.PosDef
 public import Mathlib.LinearAlgebra.Matrix.Reindex
 public import Mathlib.Tactic.FinCases
 public import Mathlib.Tactic.Ring
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Parabolic normal-map Jacobian

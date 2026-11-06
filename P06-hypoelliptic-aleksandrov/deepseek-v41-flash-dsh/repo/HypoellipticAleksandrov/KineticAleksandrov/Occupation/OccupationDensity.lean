@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.Green
 public import HypoellipticAleksandrov.Parabolic.ScalarClassical
 public import Mathlib.MeasureTheory.Function.LpSeminorm.Basic
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Literal parabolic occupation-density characterization

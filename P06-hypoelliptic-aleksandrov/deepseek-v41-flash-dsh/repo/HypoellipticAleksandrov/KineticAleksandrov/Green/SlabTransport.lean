@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Green.SlabSetting
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Transport of the slab measure to the regrouped carrier
@@ -57,20 +58,22 @@ lemma measurePreserving_slabRegroup (d : ℕ) (T : ℝ) :
 
 /-- The preimage of a base set under the regrouping, intersected with the slab. -/
 lemma regroup_preimage_prod {d : ℕ} (T : ℝ) (E : Set (SlabBase d)) :
-    (slabRegroup d) ⁻¹' (E ×ˢ (univ : Set (PDE.Vec d))) ∩ slabSet T =
+    (slabRegroup d) ⁻¹' (E ×ˢ (univ : HypoellipticAleksandrov.VecSet d)) ∩ slabSet T =
       {p : GreenCarrier d | (p.1, p.2.1) ∈ E ∧ T < p.1.1 ∧ p.1.1 < 2 * T} := by
   ext p
   simp [slabRegroup, slabSet, slabTimeSet, MeasurableEquiv.prodAssoc, and_comm]
+section
+variable {d : ℕ} (T : ℝ) (Γ : Measure (GreenCarrier d))
 
 /-- Total mass of the regrouped slab measure. -/
-lemma slabMeasure_univ {d : ℕ} (T : ℝ) (Γ : Measure (GreenCarrier d)) :
+lemma slabMeasure_univ  :
     slabMeasure d T Γ univ = Γ (slabSet T) := by
   unfold slabMeasure
   rw [MeasurableEquiv.map_apply, preimage_univ, Measure.restrict_apply MeasurableSet.univ,
     univ_inter]
 
 /-- The marginal identity of Lemma 5.1 for the regrouped slab measure. -/
-lemma slabMeasure_fst {d : ℕ} (T : ℝ) (Γ : Measure (GreenCarrier d))
+lemma slabMeasure_fst 
     (g : SlabBase d → ℝ≥0∞)
     (hg : ∀ E : Set (SlabBase d), MeasurableSet E →
       Γ {p | (p.1, p.2.1) ∈ E ∧ T < p.1.1 ∧ p.1.1 < 2 * T} =
@@ -87,7 +90,7 @@ lemma slabMeasure_fst {d : ℕ} (T : ℝ) (Γ : Measure (GreenCarrier d))
   simp [slabRegroup, MeasurableEquiv.prodAssoc]
 
 /-- The Fourier-marginal identity of Lemma 5.1 for the regrouped slab measure. -/
-lemma slabMeasure_fourier {d : ℕ} (T : ℝ) (Γ : Measure (GreenCarrier d))
+lemma slabMeasure_fourier 
     (ξ : PDE.Vec d) (k : SlabBase d → ℂ)
     (hk : ∀ E : Set (SlabBase d), MeasurableSet E →
       ∫ y in E, k y ∂slabBase d T =
@@ -95,12 +98,13 @@ lemma slabMeasure_fourier {d : ℕ} (T : ℝ) (Γ : Measure (GreenCarrier d))
           Complex.exp (-((PDE.vecDot ξ p.2.2 : ℝ) * Complex.I)) ∂Γ)
     (E : Set (SlabBase d)) (hE : MeasurableSet E) :
     ∫ y in E, k y ∂slabBase d T =
-      ∫ p in E ×ˢ (univ : Set (PDE.Vec d)),
+      ∫ p in E ×ˢ (univ : HypoellipticAleksandrov.VecSet d),
         Complex.exp (-((PDE.vecDot ξ p.2 : ℝ) * Complex.I)) ∂slabMeasure d T Γ := by
   rw [hk E hE]
   unfold slabMeasure
   rw [MeasureTheory.setIntegral_map_equiv, Measure.restrict_restrict
     ((slabRegroup d).measurable (hE.prod MeasurableSet.univ)), regroup_preimage_prod T E]
   rfl
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Green

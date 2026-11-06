@@ -30,7 +30,7 @@ theorem scalar_local_min_curvature (f : ℝ → ℝ) (s : ℝ) (hc : ContinuousA
     filter_upwards [hmin, hmax] with t ht ht'
     exact le_antisymm ht' ht
   have hz := he.deriv.deriv_eq
-  simp only [deriv_const', deriv_const] at hz
+  simp at hz
   rw [hz] at hneg
   exact lt_irrefl _ hneg
 
@@ -45,7 +45,7 @@ theorem Fminus_no_negative_local_min (gamma : ScalarGamma) (Lam s : ℝ) (hs : s
   rw [hmin.deriv_eq_zero, mul_zero, sub_zero] at ho
   have hp : 0 < gamma.1 * s * Fminus gamma Lam s :=
     mul_pos_of_neg_of_neg (mul_neg_of_pos_of_neg gamma.2.1 hs) hneg
-  linarith only [ho, hdd, hp]
+  linarith
 
 /-- A power remainder of three lower degrees is negligible relative to the leading power. -/
 theorem scalar_tail_eventually_pos (f : ℝ → ℝ) (alpha c : ℝ) (hc : 0 < c)
@@ -53,27 +53,29 @@ theorem scalar_tail_eventually_pos (f : ℝ → ℝ) (alpha c : ℝ) (hc : 0 < c
       (fun s => Real.rpow s (alpha - 3))) : ∀ᶠ s in atTop, 0 < f s := by
   have hb := Kummer.rpow_mul_isBigO_of_add_eq
     (fun s => f s - c * Real.rpow s alpha) (-alpha) (alpha - 3) (-3)
-    (by simpa only [Real.rpow_eq_pow] using hr) (by ring)
+    (by simpa using hr) (by ring)
   have hpow : Tendsto (fun s : ℝ => Real.rpow s (-3)) atTop (𝓝 0) := by
-    simpa only [Real.rpow_eq_pow] using
+    simpa using
       tendsto_rpow_neg_atTop (by norm_num : (0 : ℝ) < 3)
   have hzero := hb.trans_tendsto hpow
   have ht : Tendsto (fun s => f s / Real.rpow s alpha) atTop (𝓝 c) := by
     have h : Tendsto (fun s => c + s ^ (-alpha) *
         (f s - c * Real.rpow s alpha)) atTop (𝓝 (c + 0)) := tendsto_const_nhds.add hzero
-    simp only [add_zero] at h
+    simp at h
     apply h.congr'
     filter_upwards [eventually_gt_atTop (0 : ℝ)] with s hs
-    simp only [Real.rpow_eq_pow]
+    simp
     rw [Real.rpow_neg hs.le]
     have hp := (Real.rpow_pos_of_pos hs alpha).ne'
     field_simp
     ring
   filter_upwards [ht.eventually (Ioi_mem_nhds hc), eventually_gt_atTop (0 : ℝ)] with s hs hs0
   exact (div_pos_iff_of_pos_right (Real.rpow_pos_of_pos hs0 alpha)).mp hs
+section
+variable (gamma : ScalarGamma) (Lam : ℝ)
 
 /-- The selected matching coefficient makes the negative scalar tail eventually positive. -/
-theorem Fminus_eventually_pos (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
+theorem Fminus_eventually_pos  (hLam : 0 < Lam)
     (hmatch : Pgamma gamma.1 - Qgamma gamma.1 * Real.rpow Lam (-(1 / 3)) =
       Real.rpow Lam (-gamma.1)) : ∀ᶠ s in atBot, 0 < Fminus gamma Lam s := by
   have hb := Fminus_negative_ray_asymptotic_of_M_expansion
@@ -81,12 +83,12 @@ theorem Fminus_eventually_pos (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
   rw [scalar_matching_trace_coefficient gamma Lam hLam hmatch] at hb
   have hp := scalar_tail_eventually_pos (fun s => Fminus gamma Lam (-s)) (3 * gamma.1)
     (Real.rpow (9 * Lam) (-gamma.1))
-    (by simpa only [Real.rpow_eq_pow] using
+    (by simpa using
       Real.rpow_pos_of_pos (mul_pos (by norm_num) hLam) (-gamma.1)) hb
-  simpa only [neg_neg] using tendsto_neg_atBot_atTop.eventually hp
+  simpa using tendsto_neg_atBot_atTop.eventually hp
 
 /-- The actual negative-s solution is nonnegative by the compact minimum principle. -/
-theorem Fminus_nonneg (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
+theorem Fminus_nonneg  (hLam : 0 < Lam)
     (hmatch : Pgamma gamma.1 - Qgamma gamma.1 * Real.rpow Lam (-(1 / 3)) =
       Real.rpow Lam (-gamma.1)) (s : ℝ) (hs : s ≤ 0) : 0 ≤ Fminus gamma Lam s := by
   by_contra hn
@@ -94,7 +96,7 @@ theorem Fminus_nonneg (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
   have hf0 : 0 < Fminus gamma Lam 0 := by
     rw [Fminus_zero]
     exact (gamma_constants_pos gamma.1 gamma.2.1 gamma.2.2).1
-  have hs0 : s < 0 := lt_of_le_of_ne hs (by intro he; rw [he] at hneg; linarith only [hf0, hneg])
+  have hs0 : s < 0 := lt_of_le_of_ne hs (by intro he; rw [he] at hneg; linarith)
   obtain ⟨a, ha, has⟩ := ((Fminus_eventually_pos gamma Lam hLam hmatch).and
     (eventually_lt_atBot s)).exists
   have ha0 := has.trans hs0
@@ -105,17 +107,17 @@ theorem Fminus_nonneg (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
   have ham : a < m := lt_of_le_of_ne hm.1 (by
     intro he
     rw [← he] at hmn
-    linarith only [ha, hmn])
+    linarith)
   have hm0 : m < 0 := lt_of_le_of_ne hm.2 (by
     intro he
     rw [he] at hmn
-    linarith only [hf0, hmn])
+    linarith)
   have hl := hmin.isLocalMin (Icc_mem_nhds ham hm0)
   have hc := Fminus_no_negative_local_min gamma Lam m hm0 hl
   exact not_lt_of_ge hc hmn
 
 /-- A zero negative-s minimum is excluded by the proved nonzero Wronskian. -/
-theorem Fminus_pos (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
+theorem Fminus_pos  (hLam : 0 < Lam)
     (hmatch : Pgamma gamma.1 - Qgamma gamma.1 * Real.rpow Lam (-(1 / 3)) =
       Real.rpow Lam (-gamma.1)) (s : ℝ) (hs : s ≤ 0) : 0 < Fminus gamma Lam s := by
   have hn := Fminus_nonneg gamma Lam hLam hmatch s hs
@@ -133,7 +135,7 @@ theorem Fminus_pos (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
   exact Fminus_no_zero_jet gamma Lam s ⟨hz', hmin.deriv_eq_zero⟩
 
 /-- The whole signed scalar profile is strictly positive for every finite s. -/
-theorem F_pos (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
+theorem F_pos  (hLam : 0 < Lam)
     (hmatch : Pgamma gamma.1 - Qgamma gamma.1 * Real.rpow Lam (-(1 / 3)) =
       Real.rpow Lam (-gamma.1)) (s : ℝ) : 0 < F gamma Lam s := by
   unfold F
@@ -143,7 +145,7 @@ theorem F_pos (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
   · exact (gamma_constants_pos gamma.1 gamma.2.1 gamma.2.2).1
 
 /-- The literal reflected scalar H is positive away from the origin. -/
-theorem scalarProfile_pos (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
+theorem scalarProfile_pos  (hLam : 0 < Lam)
     (hmatch : Pgamma gamma.1 - Qgamma gamma.1 * Real.rpow Lam (-(1 / 3)) =
       Real.rpow Lam (-gamma.1)) (q : XV 1) (hq : q ≠ 0) :
     0 < scalarProfile gamma Lam q := by
@@ -164,5 +166,6 @@ theorem scalarProfile_pos (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
         exact hv
     exact mul_pos (Real.rpow_pos_of_pos (mul_pos (by norm_num) hLam) _)
       (Real.rpow_pos_of_pos (abs_pos.mpr hv0) _)
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

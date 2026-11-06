@@ -96,10 +96,10 @@ theorem innerRetraction_image_closure {d : ℕ}
       closure (innerCylinder Z₀ R hR δ hδ0 hδlt) := by
   rw [← innerRetraction_image_forwardCylinder Z₀ R hR δ hδ0 hδlt]
   exact (innerRetractionHomeomorph Z₀ R hR δ hδ0 hδlt).image_closure _
+section
+variable {d : ℕ} (Z₀ P : KineticPoint d) (R : ℝ) (hR : 0 < R) (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2)
 
-private theorem retraction_dot {d : ℕ}
-    (Z₀ P : KineticPoint d) (R : ℝ) (hR : 0 < R)
-    (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2) :
+private theorem retraction_dot  :
     PDE.vecDot (relativeVelocity Z₀ (innerRetraction Z₀ R hR δ hδ0 hδlt P))
         (relativePosition Z₀ (innerRetraction Z₀ R hR δ hδ0 hδlt P)) =
       (innerRatio R hR δ hδ0 hδlt)^4 *
@@ -114,9 +114,7 @@ private theorem retraction_dot {d : ℕ}
   simp only [Pi.smul_apply, smul_eq_mul]
   ring
 
-private theorem retraction_mem_exit_iff {d : ℕ}
-    (Z₀ P : KineticPoint d) (R : ℝ) (hR : 0 < R)
-    (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2) :
+private theorem retraction_mem_exit_iff  :
     innerRetraction Z₀ R hR δ hδ0 hδlt P ∈ innerExitBoundary Z₀ R hR δ hδ0 hδlt ↔
       P ∈ exitBoundary Z₀ R hR := by
   obtain ⟨hρ,_,hs⟩ := innerRatio_spec R hR δ hδ0 hδlt
@@ -141,6 +139,7 @@ private theorem retraction_mem_exit_iff {d : ℕ}
   have hd := retraction_dot Z₀ P R hR δ hδ0 hδlt
   rw [hr.2.1,hr.2.2] at hd
   rw [hd, mul_nonneg_iff_of_pos_left (pow_pos hρ 4)]
+end
 
 /-- Retraction is onto on the exit boundaries, including grazing points. -/
 theorem innerRetraction_image_exitBoundary {d : ℕ}

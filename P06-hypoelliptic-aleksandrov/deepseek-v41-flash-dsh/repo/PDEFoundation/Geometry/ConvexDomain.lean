@@ -79,33 +79,35 @@ def IsOpenBoundedConvexDomain {d : ℕ}
   IsOpen U ∧ IsBoundedDomain U ∧ Convex ℝ U
 
 namespace IsOpenBoundedConvexDomain
+section
+variable {d : ℕ} {U : Set (Vec d)}
 
-theorem isOpen {d : ℕ} {U : Set (Vec d)}
+theorem isOpen 
     (hU : IsOpenBoundedConvexDomain U) :
     IsOpen U :=
   hU.1
 
-theorem isBoundedDomain {d : ℕ} {U : Set (Vec d)}
+theorem isBoundedDomain 
     (hU : IsOpenBoundedConvexDomain U) :
     IsBoundedDomain U :=
   hU.2.1
 
-theorem convex {d : ℕ} {U : Set (Vec d)}
+theorem convex 
     (hU : IsOpenBoundedConvexDomain U) :
     Convex ℝ U :=
   hU.2.2
 
-theorem measurableSet {d : ℕ} {U : Set (Vec d)}
+theorem measurableSet 
     (hU : IsOpenBoundedConvexDomain U) :
     MeasurableSet U :=
   hU.isOpen.measurableSet
 
-theorem isSobolevRegularDomain {d : ℕ} {U : Set (Vec d)}
+theorem isSobolevRegularDomain 
     (hU : IsOpenBoundedConvexDomain U) :
     IsSobolevRegularDomain U :=
   ⟨hU.measurableSet, hU.isBoundedDomain⟩
 
-theorem translateSet {d : ℕ} {U : Set (Vec d)}
+theorem translateSet 
     (hU : IsOpenBoundedConvexDomain U) (z : Vec d) :
     IsOpenBoundedConvexDomain (PDE.translateSet z U) := by
   refine ⟨?_, ?_, ?_⟩
@@ -139,7 +141,7 @@ theorem translateSet {d : ℕ} {U : Set (Vec d)}
     simpa [preimage_addNeg_eq_translateSet] using hconv
 
 /-- Positive scalar dilation preserves bounded open convex domains. -/
-theorem smul_of_pos {d : ℕ} {U : Set (Vec d)}
+theorem smul_of_pos 
     (hU : IsOpenBoundedConvexDomain U) {r : ℝ} (hr : 0 < r) :
     IsOpenBoundedConvexDomain (r • U) := by
   refine ⟨hU.isOpen.smul₀ hr.ne', ?_, hU.convex.smul r⟩
@@ -149,6 +151,7 @@ theorem smul_of_pos {d : ℕ} {U : Set (Vec d)}
   rcases Set.mem_smul_set.mp hx with ⟨y, hy, rfl⟩
   simpa only [Pi.smul_apply, smul_eq_mul, abs_mul, abs_of_pos hr] using
     mul_le_mul_of_nonneg_left (hR y hy i) hr.le
+end
 
 end IsOpenBoundedConvexDomain
 

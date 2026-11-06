@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ClockGreenTestEvolution
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.DuhamelTheorem
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Literal late-time vanishing of actual compact-source Duhamel potentials -/
 
@@ -13,7 +14,7 @@ open SectionTwo TheoremA Evolution
 open scoped Topology
 
 /-- A source vanishing after a time has an actual Duhamel potential vanishing after that time. -/
-theorem clock_duhamel_zero_after {Ω : Set (PDE.Vec 1)} {γ : ℝ → PDE.Vec 1}
+theorem clock_duhamel_zero_after {Ω : HypoellipticAleksandrov.VecSet 1} {γ : ℝ → PDE.Vec 1}
     (K : MovingFiberKernel Ω γ) (T R : ℝ) (g : Point → ℝ)
     (hg : ∀ p, R ≤ p.time → g p = 0) (p : Point) (hp : R ≤ p.time) :
     duhamelPotential K T g p = 0 := by
@@ -48,7 +49,7 @@ theorem clock_native_smooth_of_zero_after (u : Point → ℝ) (R T : ℝ) (hRT :
       exact hx
     have hD := isOpen_duhamelCylinder
       (isOpen_of_isAdmissibleEvolutionDomain (intervalDomain_admissible clockNormalizedInterval))
-      (show Continuous (fun _ : ℝ => (0 : PDE.Vec 1)) from continuous_const) T
+      (show Continuous (fun _ : ℝ => 0) from continuous_const) T
     exact ((hu x hmem).contDiffAt
       ((hD.preimage (evolutionHomeomorph 1).continuous).mem_nhds hmem)).contDiffWithinAt
   · have hRx : R < (evolutionHomeomorph 1 x).time := hRT.trans_le (not_lt.mp ht)
@@ -56,7 +57,7 @@ theorem clock_native_smooth_of_zero_after (u : Point → ℝ) (R T : ℝ) (hRT :
       (isOpen_lt continuous_const (continuous_time.comp (evolutionHomeomorph
         1).continuous)).mem_nhds
         hRx
-    have heq : (u ∘ evolutionHomeomorph 1) =ᶠ[𝓝 x] (fun _ => (0 : ℝ)) :=
+    have heq : (u ∘ evolutionHomeomorph 1) =ᶠ[𝓝 x] (fun _ => 0) :=
       hn.mono (fun y hy => hz _ hy.le)
     exact (contDiffAt_const.congr_of_eventuallyEq heq).contDiffWithinAt
 

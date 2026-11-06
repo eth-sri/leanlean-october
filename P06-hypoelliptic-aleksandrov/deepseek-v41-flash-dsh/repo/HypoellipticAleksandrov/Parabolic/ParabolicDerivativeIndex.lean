@@ -38,9 +38,11 @@ def castLE {d L M : ℕ} (hLM : L ≤ M)
 @[simp] theorem coe_castLE {d L M : ℕ} (hLM : L ≤ M)
     (beta : ParabolicDerivativeIndex d L) :
     (castLE hLM beta).1 = beta.1 := rfl
+section
+variable {d L : ℕ} (beta : ParabolicDerivativeIndex d L)
 
 /-- Add one time derivative while remaining at the fixed bound `L`. -/
-def timeSucc {d L : ℕ} (beta : ParabolicDerivativeIndex d L)
+def timeSucc 
     (h : beta.1.parabolicWeight + 2 ≤ L) :
     ParabolicDerivativeIndex d L :=
   ⟨TimeVelocityMultiIndex.ofTimeVelocity
@@ -52,7 +54,7 @@ def timeSucc {d L : ℕ} (beta : ParabolicDerivativeIndex d L)
       omega⟩
 
 /-- Add one velocity derivative while remaining at the fixed bound `L`. -/
-def velocitySucc {d L : ℕ} (beta : ParabolicDerivativeIndex d L)
+def velocitySucc 
     (i : Fin d) (h : beta.1.parabolicWeight + 1 ≤ L) :
     ParabolicDerivativeIndex d L :=
   ⟨TimeVelocityMultiIndex.ofTimeVelocity beta.1.timeOrder
@@ -134,7 +136,7 @@ def velocitySucc {d L : ℕ} (beta : ParabolicDerivativeIndex d L)
       2 * beta.1.timeOrder + (∑ j, beta.1.velocity j) + 1
   omega
 
-private theorem time_predecessor {d L : ℕ} (beta : ParabolicDerivativeIndex d L)
+private theorem time_predecessor 
     (hq : 0 < beta.1.timeOrder) :
     ∃ (gamma : ParabolicDerivativeIndex d L)
         (h : gamma.1.parabolicWeight + 2 ≤ L),
@@ -163,8 +165,7 @@ private theorem time_predecessor {d L : ℕ} (beta : ParabolicDerivativeIndex d 
     _ = TimeVelocityMultiIndex.ofTimeVelocity
         (beta.1.timeOrder - 1 + 1) beta.1.velocity := by rw [hqeq]
 
-private theorem velocity_predecessor {d L : ℕ}
-    (beta : ParabolicDerivativeIndex d L) (i : Fin d)
+private theorem velocity_predecessor  (i : Fin d)
     (hi : 0 < beta.1.velocity i) :
     ∃ (gamma : ParabolicDerivativeIndex d L)
         (h : gamma.1.parabolicWeight + 1 ≤ L),
@@ -212,7 +213,7 @@ private theorem velocity_predecessor {d L : ℕ}
 
 /-- Every bounded parabolic index is zero or a one-coordinate successor. -/
 theorem eq_zero_or_eq_timeSucc_or_eq_velocitySucc
-    {d L : ℕ} (beta : ParabolicDerivativeIndex d L) :
+     :
     beta = zero d L ∨
       (∃ (gamma : ParabolicDerivativeIndex d L)
           (h : gamma.1.parabolicWeight + 2 ≤ L),
@@ -238,6 +239,7 @@ theorem eq_zero_or_eq_timeSucc_or_eq_velocitySucc
         using htime
     · simp [zero]
       exact Nat.eq_zero_of_not_pos (fun hj => hv ⟨j, hj⟩)
+end
 
 /-- Induction by zero and the two fixed-bound successor operations. -/
 theorem inductionOn {d L : ℕ}

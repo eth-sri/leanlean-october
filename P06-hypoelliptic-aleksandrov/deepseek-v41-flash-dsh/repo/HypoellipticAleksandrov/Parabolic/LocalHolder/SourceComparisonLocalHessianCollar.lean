@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonLoca
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementApproxCoefficientBounds
 public import HypoellipticAleksandrov.Parabolic.QuantitativeSmoothCutoffExistence
 public import HypoellipticAleksandrov.Parabolic.OriginalTimePlateau
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Removing Hessian cutoff weights on smaller product collars
 
@@ -20,7 +21,7 @@ open scoped BigOperators MatrixOrder Matrix.Norms.Elementwise
 /-- A fixed inner collar has a uniform unweighted Hessian estimate for homogeneous jets. -/
 theorem exists_local_homogeneous_hessian_collar_constant {d : ℕ}
     (a t₀ t₁ T : ℝ) (hat₀ : a < t₀) (ht₀t₁ : t₀ ≤ t₁) (ht₁T : t₁ < T)
-    (O V : Set (PDE.Vec d)) (hO : IsOpen O) (hOc : IsCompact (closure O))
+    (O V : HypoellipticAleksandrov.VecSet d) (hO : IsOpen O) (hOc : IsCompact (closure O))
     (hV : IsOpen V) (hVc : IsCompact (closure V)) (hVO : closure V ⊆ O)
     (A : CoefficientField d) (hA : IsSmoothCoefficient A)
     (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)

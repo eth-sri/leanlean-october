@@ -45,16 +45,18 @@ theorem measurePreserving_kineticShear {d : ℕ} (v₀ : PDE.Vec d) :
     (by fun_prop) (Filter.Eventually.of_forall fun t =>
       map_add_right_eq_self (volume : Measure (PDE.Vec d × PDE.Vec d)) (t • v₀, 0))
   simpa only [Prod.add_def, add_zero, id_eq, Measure.volume_eq_prod] using h
+section
+variable {d : ℕ} (P₀ : KineticPoint d)
 
 /-- Coordinate formula for the source affine map. -/
-def kineticCoordinateAffine {d : ℕ} (P₀ : KineticPoint d) (R : ℝ)
+def kineticCoordinateAffine  (R : ℝ)
     (z : ℝ × (PDE.Vec d × PDE.Vec d)) : ℝ × (PDE.Vec d × PDE.Vec d) :=
   (P₀.time + R ^ 2 * z.1,
     (P₀.position + R ^ 3 • z.2.1 + (R ^ 2 * z.1) • P₀.velocity,
       P₀.velocity + R • z.2.2))
 
 /-- Pushforward volume under kinetic affine scaling has inverse homogeneous factor. -/
-theorem map_volume_kineticCoordinateAffine {d : ℕ} (P₀ : KineticPoint d)
+theorem map_volume_kineticCoordinateAffine 
     {R : ℝ} (hR : 0 < R) :
     Measure.map (kineticCoordinateAffine P₀ R) volume =
       ENNReal.ofReal ((R ^ (4 * d + 2))⁻¹) • volume := by
@@ -85,7 +87,7 @@ theorem map_volume_kineticCoordinateAffine {d : ℕ} (P₀ : KineticPoint d)
     Measure.map_smul _ hT.aemeasurable, map_add_left_eq_self]
 
 /-- Pushforward kinetic volume uses exactly the coordinate homogeneous factor. -/
-theorem map_volume_kineticAffine {d : ℕ} (P₀ : KineticPoint d)
+theorem map_volume_kineticAffine 
     {R : ℝ} (hR : 0 < R) :
     Measure.map (kineticAffine P₀ R) volume =
       ENNReal.ofReal ((R ^ (4 * d + 2))⁻¹) • volume := by
@@ -100,7 +102,7 @@ theorem map_volume_kineticAffine {d : ℕ} (P₀ : KineticPoint d)
     Measure.map_smul _ e.symm.measurable.aemeasurable, (he.symm e).map_eq]
 
 /-- Images under kinetic scaling have the direct homogeneous volume factor. -/
-theorem volume_kineticAffine_image {d : ℕ} (P₀ : KineticPoint d)
+theorem volume_kineticAffine_image 
     {R : ℝ} (hR : 0 < R) (E : Set (KineticPoint d)) :
     volume (kineticAffine P₀ R '' E) =
       ENNReal.ofReal (R ^ (4 * d + 2)) * volume E := by
@@ -120,5 +122,6 @@ theorem volume_kineticAffine_image {d : ℕ} (P₀ : KineticPoint d)
             volume (kineticAffine P₀ R '' E)) := by
       rw [← mul_assoc, ENNReal.mul_inv_cancel hc ENNReal.ofReal_ne_top, one_mul]
     _ = _ := by rw [h]
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

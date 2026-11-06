@@ -12,10 +12,11 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov.Parabolic Filter Set
 open scoped Topology
+section
+variable {d : ℕ} (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
 
 /-- The velocity of a non-exit point is strictly inside the velocity ball. -/
-theorem comparison_velocity_interior {d : ℕ}
-    (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) {P : KineticPoint d}
+theorem comparison_velocity_interior  {P : KineticPoint d}
     (hP : P ∈ closure (forwardCylinder Z₀ R hR))
     (hnot : P ∉ exitBoundary Z₀ R hR) :
     P.velocity ∈ PDE.euclideanBall Z₀.velocity R := by
@@ -30,8 +31,7 @@ theorem comparison_velocity_interior {d : ℕ}
 
 /-- At a non-exit closed-cylinder maximum, transport plus diffusion is nonpositive.
 Only the source anisotropic regularity on an open neighbourhood is used. -/
-theorem comparison_operator_nonpos_at_max {d : ℕ}
-    (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
+theorem comparison_operator_nonpos_at_max 
     {D : Set (KineticPoint d)} (hD : IsOpen D)
     (hQD : closure (forwardCylinder Z₀ R hR) ⊆ D)
     {u : KineticPoint d → ℝ} (hu : IsKineticC112On u D)
@@ -68,8 +68,7 @@ theorem comparison_operator_nonpos_at_max {d : ℕ}
   exact add_nonpos ht hdiff
 
 /-- A positive maximum of a strict subsolution is on the exit boundary. -/
-theorem comparison_inner_maximum_exclusion {d : ℕ}
-    (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
+theorem comparison_inner_maximum_exclusion 
     {D : Set (KineticPoint d)} (hD : IsOpen D)
     (hQD : closure (forwardCylinder Z₀ R hR) ⊆ D)
     {u : KineticPoint d → ℝ} (hu : IsKineticC112On u D)
@@ -82,5 +81,6 @@ theorem comparison_inner_maximum_exclusion {d : ℕ}
   by_contra hnot
   exact (not_le.mpr (hstrict P (hQD hP) hpos))
     (comparison_operator_nonpos_at_max Z₀ R hR hD hQD hu A hP hnot hmax (hA P (hQD hP)))
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

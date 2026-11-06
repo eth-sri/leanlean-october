@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonLocalSpatialSpacetime
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonLocalTimeEnergy
 import Mathlib.Tactic.Linarith
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Local value energy for homogeneous backward equations
 
@@ -18,7 +20,7 @@ open scoped BigOperators Matrix.Norms.Elementwise
 
 /-- The actual homogeneous equation identifies the localized flux integral with time energy. -/
 theorem integral_scalar_local_value_energy_eq {d : ℕ}
-    (a T : ℝ) (O : Set (PDE.Vec d)) (hO : IsOpen O)
+    (a T : ℝ) (O : HypoellipticAleksandrov.VecSet d) (hO : IsOpen O)
     (u ρ : TimeVelocity d → ℝ) (hu : IsScalarC12On u (Ioo a T ×ˢ O))
     (hρ : ContDiff ℝ (⊤ : ℕ∞) ρ) (hc : HasCompactSupport ρ)
     (hsub : tsupport ρ ⊆ Ioo a T ×ˢ O)

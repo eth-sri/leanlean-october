@@ -173,12 +173,12 @@ theorem eLpNormOn_mulContDiffMemLpTop_grad_coord_le
             (fun x => classicalGradient φ x i) *
           eLpNormOn U p u.toFun :=
       add_le_add hfirstBound hsecondBound
+section
+variable [Fact (1 ≤ p)] (u : W1pFunction U p) {φ : Vec d → ℝ} (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (hφCompact : HasCompactSupport φ)
 
 /-- Compact support supplies the required `L∞` hypotheses automatically. -/
 noncomputable def mulContDiffHasCompactSupport
-    [Fact (1 ≤ p)] (u : W1pFunction U p)
-    {φ : Vec d → ℝ} (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
-    (hφCompact : HasCompactSupport φ) :
+     :
     W1pFunction U p := by
   have hφTop : MemLpOn U ∞ φ :=
     (hφ.continuous.memLp_of_hasCompactSupport hφCompact).restrict U
@@ -203,9 +203,7 @@ noncomputable def mulContDiffHasCompactSupport
 
 @[simp]
 theorem mulContDiffHasCompactSupport_toFun
-    [Fact (1 ≤ p)] (u : W1pFunction U p)
-    {φ : Vec d → ℝ} (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
-    (hφCompact : HasCompactSupport φ) :
+     :
     (u.mulContDiffHasCompactSupport hφ hφCompact).toFun =
       fun x => φ x * u x := by
   simp only [mulContDiffHasCompactSupport,
@@ -213,14 +211,13 @@ theorem mulContDiffHasCompactSupport_toFun
 
 @[simp]
 theorem mulContDiffHasCompactSupport_grad
-    [Fact (1 ≤ p)] (u : W1pFunction U p)
-    {φ : Vec d → ℝ} (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
-    (hφCompact : HasCompactSupport φ) :
+     :
     (u.mulContDiffHasCompactSupport hφ hφCompact).grad =
       fun x =>
         φ x • u.grad x + u x • classicalGradient φ x := by
   simp only [mulContDiffHasCompactSupport,
     mulContDiffMemLpTop_grad]
+end
 
 end W1pFunction
 

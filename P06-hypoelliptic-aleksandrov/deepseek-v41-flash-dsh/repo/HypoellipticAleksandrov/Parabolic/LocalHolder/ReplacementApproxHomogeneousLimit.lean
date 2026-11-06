@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementApproxLimitRegularity
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementApproxClassicalEquation
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Classical homogeneous limits of controlled approximation families
 
@@ -17,7 +18,7 @@ open scoped Topology
 
 /-- Controlled higher families and strong root convergence give the actual classical equation. -/
 theorem scalarC12_homogeneous_of_strongL2_limit {d : ℕ}
-    (U : Set (TimeVelocity d)) (hU : IsOpen U)
+    (U : HypoellipticAleksandrov.Parabolic.TVSet d) (hU : IsOpen U)
     (A : CoefficientField d) (hA : IsSmoothCoefficient A)
     (M : ℝ) (hAb : ∀ z ∈ U, ∀ i j, |A z.1 z.2 i j| ≤ M)
     (u : ℕ → TimeVelocity d → ℝ)

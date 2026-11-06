@@ -16,9 +16,9 @@ theorem positionStartQuadratic_smooth (c : Clock) (eta : ℝ → ℝ)
     ContDiff ℝ (⊤ : ℕ∞)
       ((fun q : Point => eta (q.position 0) * visitQuadratic c (q.velocity 0)) ∘
         (KineticPoint.equivProd 1).symm) :=
-  (heta.comp ((contDiff_apply ℝ ℝ (0 : Fin 1)).comp contDiff_snd.fst)).mul
+  (heta.comp ((contDiff_apply ℝ ℝ 0).comp contDiff_snd.fst)).mul
     ((visitQuadratic_smooth c).comp
-      ((contDiff_apply ℝ ℝ (0 : Fin 1)).comp contDiff_snd.snd))
+      ((contDiff_apply ℝ ℝ 0).comp contDiff_snd.snd))
 
 /-- The actual position test satisfies the Green identity, with no analytic bridge premise. -/
 theorem positionStartQuadratic_active_identity

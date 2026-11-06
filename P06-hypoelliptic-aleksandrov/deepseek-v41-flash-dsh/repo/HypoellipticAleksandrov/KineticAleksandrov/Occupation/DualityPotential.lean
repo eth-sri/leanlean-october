@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.DualityMeasu
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.ParabolicDuhamelGreen
 public import HypoellipticAleksandrov.Measure.TimeVelocity
 import Mathlib.MeasureTheory.Function.LpSeminorm.Indicator
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Occupation integration and the parabolic potential

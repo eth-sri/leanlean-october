@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Measure.TimeVelocity
 public import Mathlib.Analysis.Calculus.BumpFunction.FiniteDimension
 public import Mathlib.Analysis.Calculus.BumpFunction.Normed
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Native-norm parabolic mollifier kernels
@@ -38,7 +39,7 @@ noncomputable def parabolicMollifierBump (d n : ℕ) :
 
 /-- The normalized native-norm mollifier against the product volume. -/
 noncomputable def parabolicMollifier (d n : ℕ) : TimeVelocity d → ℝ :=
-  (parabolicMollifierBump d n).normed (volume : Measure (TimeVelocity d))
+  (parabolicMollifierBump d n).normed (HypoellipticAleksandrov.Parabolic.TVVolume d)
 
 /-- Every native-norm mollifier scale is at most one. -/
 theorem parabolicMollifierScale_le_one (n : ℕ) :
@@ -78,7 +79,7 @@ theorem parabolicMollifier_nonneg (d n : ℕ) (z : TimeVelocity d) :
 
 /-- Each normalized native-norm mollifier integrates to one against product volume. -/
 theorem integral_parabolicMollifier (d n : ℕ) :
-    (integral (volume : Measure (TimeVelocity d)) (parabolicMollifier d n)) = 1 := by
+    (integral (HypoellipticAleksandrov.Parabolic.TVVolume d) (parabolicMollifier d n)) = 1 := by
   exact (parabolicMollifierBump d n).integral_normed
 
 /-- The function support is exactly the open native-norm ball at its scale. -/

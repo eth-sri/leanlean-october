@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.AutonomyBoundedData
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ScalarAdapters
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Physical-coordinate generator of the full-space autonomous action -/
 

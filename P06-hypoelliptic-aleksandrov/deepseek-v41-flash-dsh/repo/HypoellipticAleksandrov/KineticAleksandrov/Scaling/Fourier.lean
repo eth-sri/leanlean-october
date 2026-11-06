@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Scaling.Unique
 public import HypoellipticAleksandrov.KineticAleksandrov.Decay.EllipticityScaling
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Fourier projections under an affine change of variables (companion paper, (2.12))
@@ -32,7 +33,7 @@ theorem vecDot_smul_right {d : ℕ} (c : ℝ) (x y : PDE.Vec d) :
 
 namespace KineticAffineScaling
 
-variable {d : ℕ} {Φ : KineticAffineScaling d} {Ω Ω' : Set (PDE.Vec d)}
+variable {d : ℕ} {Φ : KineticAffineScaling d} {Ω Ω' : HypoellipticAleksandrov.VecSet d}
   {γ γ' : ℝ → PDE.Vec d}
 
 /-- The affine change of the diffused coordinate as a measurable equivalence. -/
@@ -86,12 +87,12 @@ theorem isFourierProjection_pushKernel (h : Φ.MapsDomain Ω γ Ω' γ') (K : Mo
     (q' : EvolutionQuery Ω' γ') (ξ : PDE.Vec d) (ν ν' : ComplexMeasure (PDE.Vec d))
     (hν : IsFourierProjection K (queryMap h q') ξ ν)
     (hν' : IsFourierProjection (pushKernel h K) q' (Φ.e • ξ) ν')
-    (E : Set (PDE.Vec d)) (hE : MeasurableSet E) :
+    (E : HypoellipticAleksandrov.VecSet d) (hE : MeasurableSet E) :
     ν E = Φ.fourierShiftPhase q'.1.1 q'.1.2.1 ξ * ν' (Φ.position ⁻¹' E) := by
   have hE' : MeasurableSet (Φ.position ⁻¹' E) := Φ.positionEquiv.measurable hE
   rw [hν E hE, hν' _ hE', pushKernel_master_apply, setIntegral_map_equiv]
-  have hset : (Φ.ambientEquiv q'.1.2.1).symm ⁻¹' ((Φ.position ⁻¹' E) ×ˢ (univ : Set (PDE.Vec d))) =
-      E ×ˢ (univ : Set (PDE.Vec d)) := by
+  have hset : (Φ.ambientEquiv q'.1.2.1).symm ⁻¹' ((Φ.position ⁻¹' E) ×ˢ (univ : HypoellipticAleksandrov.VecSet d)) =
+      E ×ˢ (univ : HypoellipticAleksandrov.VecSet d) := by
     ext x
     simp only [mem_preimage, mem_prod, mem_univ, and_true, ambientEquiv_symm_apply,
       Φ.position_positionInv]
@@ -139,7 +140,7 @@ theorem realizes_fourier_tv (h : Φ.MapsDomain Ω γ Ω' γ')
     (q' : EvolutionQuery Ω' γ') (ξ : PDE.Vec d) (ν ν' : ComplexMeasure (PDE.Vec d))
     (hν : IsFourierProjection K (queryMap h q') ξ ν)
     (hν' : IsFourierProjection K' q' (Φ.e • ξ) ν') :
-    (∀ E : Set (PDE.Vec d), MeasurableSet E →
+    (∀ E : HypoellipticAleksandrov.VecSet d, MeasurableSet E →
       ν E = Φ.fourierShiftPhase q'.1.1 q'.1.2.1 ξ * ν' (Φ.position ⁻¹' E)) ∧
       totalVariationNorm ν = totalVariationNorm ν' := by
   have hK := (realizes_unique_pushKernel h hΩ hγ hΩ' hreal hreal').1

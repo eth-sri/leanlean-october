@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.Parabolic.DensityPositiveConstants
 public import HypoellipticAleksandrov.Parabolic.SourceDensityPositivePropagation
 public import HypoellipticAleksandrov.Measure.InkSpots
 public import HypoellipticAleksandrov.Measure.InkSpotsSelection
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Positive source-aware density-to-point bounds
@@ -39,7 +40,7 @@ private theorem source_near_one_square_seed
     exact hseed
 
 private theorem unit_high_measurable
-    {d : Nat} {U : Set (TimeVelocity d)} {u : TimeVelocity d → Real}
+    {d : Nat} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {u : TimeVelocity d → Real}
     (hclosed : parabolicClosedBox 1 1 0 0 ⊆ U)
     (hu : ContDiffOn Real 2 u U) :
     MeasurableSet (inkSpotsUnitBox d ∩ {z | 1 ≤ u z}) := by
@@ -68,7 +69,7 @@ private theorem unit_high_measurable
   exact hbox.diff hlow
 
 private theorem inkSpots_radius_le_one_of_strictDense {d : Nat}
-    {Gamma : Set (TimeVelocity d)} {xi : Real} {q : InkSpotsBox d}
+    {Gamma : HypoellipticAleksandrov.Parabolic.TVSet d} {xi : Real} {q : InkSpotsBox d}
     (hq : inkSpotsStrictDense Gamma xi q) : q.radius ≤ 1 := by
   have hclosed := inkSpots_closedSourceBox_subset_closedUnitBox d q hq.1 hq.2.1
   have htop : (q.baseTime + q.radius ^ 2, q.center) ∈
@@ -86,7 +87,7 @@ private theorem inkSpots_radius_le_one_of_strictDense {d : Nat}
   nlinarith [sq_nonneg (q.radius - 1)]
 
 private theorem inkSpotsD3_finite
-    (d : Nat) (Gamma : Set (TimeVelocity d)) (xi eta zeta : Real)
+    (d : Nat) (Gamma : HypoellipticAleksandrov.Parabolic.TVSet d) (xi eta zeta : Real)
     (heta0 : 0 < eta) (hzeta0 : 0 < zeta) (hzeta1 : zeta < 1) :
     volume (inkSpotsD3 Gamma xi eta zeta) ≠ ∞ := by
   apply measure_ne_top_of_subset
@@ -199,7 +200,7 @@ private theorem inkSpotsD3_finite
 
 private theorem IsParabolicSupersolutionOn.const_smul_source
     {d : Nat} {B : CoefficientField d} {F u : TimeVelocity d → Real}
-    {V : Set (TimeVelocity d)} {c : Real}
+    {V : HypoellipticAleksandrov.Parabolic.TVSet d} {c : Real}
     (hc : 0 ≤ c)
     (h : IsParabolicSupersolutionOn B (fun z ↦ -F z) u V) :
     IsParabolicSupersolutionOn B (fun z ↦ -(c • F) z) (c • u) V := by
@@ -211,14 +212,14 @@ private theorem IsParabolicSupersolutionOn.const_smul_source
 
 private theorem parabolicLpNormOn_const_smul_of_nonneg
     {d : Nat} (c : Real) (hc : 0 ≤ c)
-    (F : TimeVelocity d → Real) (S : Set (TimeVelocity d)) :
+    (F : TimeVelocity d → Real) (S : HypoellipticAleksandrov.Parabolic.TVSet d) :
     parabolicLpNormOn d (c • F) S = c * parabolicLpNormOn d F S := by
   unfold parabolicLpNormOn parabolicELpNormOn
   rw [eLpNorm_const_smul, ENNReal.toReal_mul]
   simp only [Real.enorm_of_nonneg hc, ENNReal.toReal_ofReal hc]
 
 private theorem nonneg_at_terminal_half_cube
-    {d : Nat} {U : Set (TimeVelocity d)} {u : TimeVelocity d → Real}
+    {d : Nat} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {u : TimeVelocity d → Real}
     (hU : IsOpen U) (hclosed : parabolicClosedBox 1 1 0 0 ⊆ U)
     (hu : ContDiffOn Real 2 u U)
     (hnonneg : IsNonnegativeOn u (parabolicBox 1 1 0 0))
@@ -281,7 +282,7 @@ private theorem source_density_descent_step
       ((le_max_left C₂ (max C₃ Cs)).trans (le_max_right C₀ (max C₂ (max C₃ Cs))))
   refine ⟨g, C, hg0, hg1, hC, ?_⟩
   intro U B F u hU hclosed hB hu hF hnonneg hFnonneg hlower hupper hsuper hdensity v hv
-  let Gamma : Set (TimeVelocity d) := inkSpotsUnitBox d ∩ {z | 1 ≤ u z}
+  let Gamma : HypoellipticAleksandrov.Parabolic.TVSet d := inkSpotsUnitBox d ∩ {z | 1 ≤ u z}
   have hGamma : MeasurableSet Gamma := unit_high_measurable hclosed hu
   have hGammaUnit : Gamma ⊆ inkSpotsUnitBox d := fun _ hz => hz.1
   have hQmeas : MeasurableSet (inkSpotsUnitBox d) := by
@@ -307,7 +308,7 @@ private theorem source_density_descent_step
   have haggregate := volume_Gamma_le_inkSpotsD3 d Gamma a eta zeta hGamma hGammaUnit
     ⟨ha0, ha1⟩ ⟨heta0, heta1⟩ ⟨hzeta0, hzeta1⟩ hsubcritical
   rw [hfactor] at haggregate
-  let D : Set (TimeVelocity d) := inkSpotsD3 Gamma a eta zeta
+  let D : HypoellipticAleksandrov.Parabolic.TVSet d := inkSpotsD3 Gamma a eta zeta
   have hDfinite : volume D ≠ ∞ := by
     dsimp [D]
     exact inkSpotsD3_finite d Gamma a eta zeta heta0 hzeta0 hzeta1

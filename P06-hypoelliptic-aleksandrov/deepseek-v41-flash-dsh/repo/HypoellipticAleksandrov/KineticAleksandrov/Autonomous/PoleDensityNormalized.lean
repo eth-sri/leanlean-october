@@ -17,7 +17,7 @@ Only ellipticity and the exponent enter the constant; the three classical inputs
 theorem clockGreen_real_density
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (q : ℝ) (hq : 1 < q) (hq2 : q < (3 : ℝ) / 2) :
+    (q : ℝ) (hq : 1 < q) (hq2 : q < 3 / 2) :
     ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point)
       (he : e.velocity 0 ∈ c.active), ∃ F : Point → ℝ,
       Measurable F ∧ (∀ p, 0 ≤ F p) ∧

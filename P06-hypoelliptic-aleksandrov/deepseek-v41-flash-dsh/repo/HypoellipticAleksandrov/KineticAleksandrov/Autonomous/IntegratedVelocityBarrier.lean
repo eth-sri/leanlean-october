@@ -45,9 +45,9 @@ theorem velocityOccupationBarrier_regular {r Lam : ℝ} (hr : 0 < r) (hLam : 0 �
   · apply ContDiffAt.sqrt (by fun_prop)
     have hh := mul_nonneg (mul_nonneg (by norm_num : (0 : ℝ) ≤ 2) hLam)
       (sub_nonneg.mpr hp)
-    exact ne_of_gt (by nlinarith [sq_pos_of_pos hr, sq_nonneg (p.position 0)])
+    exact ne_of_gt (by nlinarith)
   · apply ContDiffAt.sqrt (by fun_prop)
-    exact ne_of_gt (by nlinarith [sq_pos_of_pos hr, sq_nonneg (p.position 0)])
+    exact ne_of_gt (by nlinarith)
 
 /-- The cancellation is nonnegative and uniformly bounded by the square-root time scale. -/
 theorem velocityOccupationBarrier_bounds {r Lam : ℝ} (_hr : 0 < r) (hLam : 0 ≤ Lam)
@@ -128,7 +128,7 @@ theorem velocityHeatProfile_operator_nonpos {R Lam T : ℝ} (p : Point)
   rw [he]
   apply div_nonpos_of_nonpos_of_nonneg
   · have hh := mul_le_mul_of_nonneg_right ha hR.le
-    nlinarith [mul_nonneg hLam (sq_nonneg (p.velocity 0))]
+    nlinarith
   · positivity
 
 /-- The bounded cancellation has a strictly negative forcing on the velocity band. -/
@@ -157,7 +157,7 @@ theorem velocityOccupationBarrier_operator {lam Lam r : ℝ} (hlam : 0 < lam)
   have hl := (A.bounds (p.velocity 0) (p.position 0)).1
   have hd : 0 ≤ r ^ 2 / Real.sqrt (r ^ 2 + (p.position 0) ^ 2) ^ 3 := by positivity
   dsimp only [terminalPhysicalPoint] at hh ⊢
-  simp only [mul_zero, zero_mul, add_zero, neg_zero, zero_div, zero_add]
+  simp
   rw [mul_div_assoc]
   have hm := mul_le_mul_of_nonneg_right hl hd
   linarith

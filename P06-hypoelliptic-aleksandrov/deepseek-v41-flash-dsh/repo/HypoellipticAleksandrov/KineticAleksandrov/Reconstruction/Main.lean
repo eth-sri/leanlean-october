@@ -48,11 +48,12 @@ lemma lintegral_rpow_mul_le {m : Measure Y} {H g : Y → ℝ≥0∞} (hH : Measu
     rw [← ENNReal.rpow_mul, hP, mul_div_cancel₀ _ hq0.ne']
   simp only [Pi.mul_apply, h2] at h
   rwa [one_div, hPinv] at h
+section
+variable {m : Measure Y} [SigmaFinite m] (Γ : Measure (Y × PDE.Vec d)) [IsFiniteMeasure Γ] {g : Y → ℝ≥0∞}
 
 
 /-- Lemma Lemma 5.2 for a Borel-measurable density `g`. -/
-theorem reconstruction_of_measurable {m : Measure Y} [SigmaFinite m]
-    (Γ : Measure (Y × PDE.Vec d)) [IsFiniteMeasure Γ] {g : Y → ℝ≥0∞} (hg : Measurable g)
+theorem reconstruction_of_measurable  (hg : Measurable g)
     (hΓ : Γ.fst = m.withDensity g) {q γ q₁ : ℝ} (hq : 1 < q) (hqγ : q < γ)
     (hq₁ : (q - 1) / γ + 1 / q₁ = 1) (hgL : eLpNorm g (ENNReal.ofReal q₁) m < ∞)
     (k : PDE.Vec d → Y → ℂ)
@@ -128,8 +129,7 @@ The paper's `Y` (a Borel subset of a Euclidean space with its Borel `σ`-algebra
 case `Y = ↥S` of an arbitrary measurable space.  Here `ℝ^d` is `PDE.Vec d = Fin d → ℝ` with
 product Lebesgue measure and `ξ·z = PDE.vecDot ξ z`.
 The hypothesis that each `k ξ` lies in `L^γ(m)` is not needed beyond `𝖧 < ∞`. -/
-theorem reconstruction {m : Measure Y} [SigmaFinite m]
-    (Γ : Measure (Y × PDE.Vec d)) [IsFiniteMeasure Γ] {g : Y → ℝ≥0∞} (hgm : AEMeasurable g m)
+theorem reconstruction  (hgm : AEMeasurable g m)
     (hΓ : Γ.fst = m.withDensity g) {q γ q₁ : ℝ} (hq : 1 < q) (hqγ : q < γ)
     (hq₁ : (q - 1) / γ + 1 / q₁ = 1) (hgL : eLpNorm g (ENNReal.ofReal q₁) m < ∞)
     (k : PDE.Vec d → Y → ℂ)
@@ -150,5 +150,6 @@ theorem reconstruction {m : Measure Y} [SigmaFinite m]
   rw [hnorm] at hgL ⊢
   exact reconstruction_of_measurable Γ hgm.measurable_mk
     (hΓ.trans (withDensity_congr_ae hae)) hq hqγ hq₁ hgL k hk hH
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Reconstruction

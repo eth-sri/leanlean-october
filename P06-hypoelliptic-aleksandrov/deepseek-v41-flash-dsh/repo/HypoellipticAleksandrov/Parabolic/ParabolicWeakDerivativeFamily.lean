@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.ParabolicDerivativeIndex
 public import HypoellipticAleksandrov.Parabolic.WeakDerivatives
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 @[expose] public section
 
@@ -13,7 +14,7 @@ open scoped ENNReal
 /-- A coherent finite family of selected original-time weak derivatives
 through parabolic weight `L`, all locally represented in `L²`. -/
 structure ParabolicWeakDerivativeFamily
-    (d L : ℕ) (U : Set (TimeVelocity d))
+    (d L : ℕ) (U : HypoellipticAleksandrov.Parabolic.TVSet d)
     (u : TimeVelocity d → ℝ) where
   /-- Selected raw representative for each bounded parabolic multi-index. -/
   representative :

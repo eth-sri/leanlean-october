@@ -87,25 +87,24 @@ def restrictLE {d L M : ℕ} (beta : ParabolicDerivativeIndex d L)
 /-- Include a source index of bound `L - 2` into the target bound `L`. -/
 def sourceCast {d L : ℕ} (beta : ParabolicDerivativeIndex d (L - 2)) :
     ParabolicDerivativeIndex d L := castLE (Nat.sub_le L 2) beta
+section
+variable {d L : ℕ} (hL : 2 ≤ L) (beta : ParabolicDerivativeIndex d (L - 2))
 
 /-- Add one time derivative to a source index. -/
-def sourceTime {d L : ℕ} (hL : 2 ≤ L)
-    (beta : ParabolicDerivativeIndex d (L - 2)) : ParabolicDerivativeIndex d L :=
+def sourceTime  : ParabolicDerivativeIndex d L :=
   timeSucc (sourceCast beta) (by
     change beta.1.parabolicWeight + 2 ≤ L
     omega)
 
 /-- Add one velocity derivative to a source index. -/
-def sourceVelocity {d L : ℕ} (hL : 2 ≤ L)
-    (beta : ParabolicDerivativeIndex d (L - 2)) (i : Fin d) :
+def sourceVelocity  (i : Fin d) :
     ParabolicDerivativeIndex d L :=
   velocitySucc (sourceCast beta) i (by
     change beta.1.parabolicWeight + 1 ≤ L
     omega)
 
 /-- Add the ordered pair of velocity derivatives `j`, then `i`, to a source index. -/
-def sourceVelocityTwo {d L : ℕ} (hL : 2 ≤ L)
-    (beta : ParabolicDerivativeIndex d (L - 2)) (j i : Fin d) :
+def sourceVelocityTwo  (j i : Fin d) :
     ParabolicDerivativeIndex d L :=
   ⟨beta.1 + Pi.single (velocityCoord j) 1 + Pi.single (velocityCoord i) 1, by
     simp only [TimeVelocityMultiIndex.parabolicWeight_add,
@@ -153,6 +152,7 @@ def sourceVelocityTwo {d L : ℕ} (hL : 2 ≤ L)
     (sourceVelocityTwo hL beta j i).1 =
       beta.1 + Pi.single (velocityCoord j) 1 +
         Pi.single (velocityCoord i) 1 := rfl
+end
 
 /-- Regard the left side of a split as a bounded parabolic derivative index. -/
 def splitLeft {d L : ℕ} (beta : ParabolicDerivativeIndex d L)

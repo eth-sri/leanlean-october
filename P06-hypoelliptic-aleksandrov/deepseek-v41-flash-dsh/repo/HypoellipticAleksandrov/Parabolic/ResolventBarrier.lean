@@ -9,6 +9,7 @@ public import Mathlib.Tactic.Linarith
 public import Mathlib.Tactic.NormNum
 public import Mathlib.Tactic.Positivity
 public import Mathlib.Tactic.Ring
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # The parabolic resolvent barrier
@@ -31,22 +32,24 @@ namespace HypoellipticAleksandrov.Parabolic
 
 open Matrix
 open scoped BigOperators MatrixOrder
+section
+variable {d : ℕ}
 
 /-- The scalar phase of the Krylov--Safonov resolvent barrier. -/
-def resolventPhase {d : ℕ} (a rho : ℝ) (z : TimeVelocity d) : ℝ :=
+def resolventPhase  (a rho : ℝ) (z : TimeVelocity d) : ℝ :=
   a * Real.sqrt rho * (PDE.vecNormSq z.2 - z.1)
 
 /-- The hyperbolic-cosine resolvent barrier. -/
-def resolventBarrier {d : ℕ} (a rho : ℝ) : TimeVelocity d → ℝ :=
+def resolventBarrier  (a rho : ℝ) : TimeVelocity d → ℝ :=
   fun z => Real.cosh (resolventPhase a rho z)
 
-private theorem fderiv_timeCoordinate_apply {d : ℕ}
+private theorem fderiv_timeCoordinate_apply 
     (z w : TimeVelocity d) :
     fderiv ℝ (fun y : TimeVelocity d => y.1) z w = w.1 := by
   rw [(hasFDerivAt_fst (𝕜 := ℝ) (p := z)).fderiv]
   rfl
 
-private theorem fderiv_velocityCoordinate_apply {d : ℕ} (i : Fin d)
+private theorem fderiv_velocityCoordinate_apply  (i : Fin d)
     (z w : TimeVelocity d) :
     fderiv ℝ (fun y : TimeVelocity d => y.2 i) z w = w.2 i := by
   have h :=
@@ -56,7 +59,7 @@ private theorem fderiv_velocityCoordinate_apply {d : ℕ} (i : Fin d)
   rw [h.fderiv]
   rfl
 
-private theorem fderiv_vecDot_snd_apply {d : ℕ} (q : PDE.Vec d)
+private theorem fderiv_vecDot_snd_apply  (q : PDE.Vec d)
     (z w : TimeVelocity d) :
     fderiv ℝ (fun y : TimeVelocity d => PDE.vecDot y.2 q) z w =
       PDE.vecDot w.2 q := by
@@ -75,7 +78,7 @@ private theorem fderiv_vecDot_snd_apply {d : ℕ} (q : PDE.Vec d)
   rw [fderiv_velocityCoordinate_apply]
   ring
 
-private theorem fderiv_vecNormSq_snd_apply {d : ℕ}
+private theorem fderiv_vecNormSq_snd_apply 
     (z w : TimeVelocity d) :
     fderiv ℝ (fun y : TimeVelocity d => PDE.vecNormSq y.2) z w =
       2 * PDE.vecDot z.2 w.2 := by
@@ -96,18 +99,18 @@ private theorem fderiv_vecNormSq_snd_apply {d : ℕ}
   rw [fderiv_velocityCoordinate_apply]
   ring
 
-private theorem contDiff_resolventPhase {d : ℕ} (a rho : ℝ) :
+private theorem contDiff_resolventPhase  (a rho : ℝ) :
     ContDiff ℝ 2 (resolventPhase (d := d) a rho) := by
   unfold resolventPhase PDE.vecNormSq PDE.vecDot
   fun_prop
 
 /-- The resolvent barrier is globally twice continuously differentiable. -/
-theorem contDiff_resolventBarrier {d : ℕ} (a rho : ℝ) :
+theorem contDiff_resolventBarrier  (a rho : ℝ) :
     ContDiff ℝ 2 (resolventBarrier (d := d) a rho) := by
   unfold resolventBarrier
   exact (contDiff_resolventPhase a rho).cosh
 
-private theorem fderiv_resolventPhase_apply {d : ℕ} (a rho : ℝ)
+private theorem fderiv_resolventPhase_apply  (a rho : ℝ)
     (z w : TimeVelocity d) :
     fderiv ℝ (resolventPhase a rho) z w =
       a * Real.sqrt rho * (2 * PDE.vecDot z.2 w.2 - w.1) := by
@@ -122,7 +125,7 @@ private theorem fderiv_resolventPhase_apply {d : ℕ} (a rho : ℝ)
   simp only [ContinuousLinearMap.sub_apply]
   rw [fderiv_vecNormSq_snd_apply, fderiv_timeCoordinate_apply]
 
-private theorem fderiv_resolventPhaseDirection_apply {d : ℕ}
+private theorem fderiv_resolventPhaseDirection_apply 
     (a rho : ℝ) (w₂ z w₁ : TimeVelocity d) :
     fderiv ℝ
         (fun y : TimeVelocity d =>
@@ -143,7 +146,7 @@ private theorem fderiv_resolventPhaseDirection_apply {d : ℕ}
   rw [fderiv_vecDot_snd_apply]
   ring
 
-private theorem fderiv_resolventBarrier_apply {d : ℕ} (a rho : ℝ)
+private theorem fderiv_resolventBarrier_apply  (a rho : ℝ)
     (z w : TimeVelocity d) :
     fderiv ℝ (resolventBarrier a rho) z w =
       Real.sinh (resolventPhase a rho z) *
@@ -155,7 +158,7 @@ private theorem fderiv_resolventBarrier_apply {d : ℕ} (a rho : ℝ)
   rw [fderiv_resolventPhase_apply]
 
 /-- The resolvent barrier has the exact negative time derivative. -/
-theorem timeDerivative_resolventBarrier {d : ℕ} (a rho : ℝ)
+theorem timeDerivative_resolventBarrier  (a rho : ℝ)
     (z : TimeVelocity d) :
     timeDerivative (resolventBarrier a rho) z =
       -(a * Real.sqrt rho) * Real.sinh (resolventPhase a rho z) := by
@@ -164,7 +167,7 @@ theorem timeDerivative_resolventBarrier {d : ℕ} (a rho : ℝ)
   simp only [Pi.zero_apply, mul_zero, Finset.sum_const_zero, PDE.vecDot]
   ring
 
-private theorem fderiv_fderiv_resolventBarrier_apply {d : ℕ}
+private theorem fderiv_fderiv_resolventBarrier_apply 
     (a rho : ℝ) (z w₁ w₂ : TimeVelocity d) :
     fderiv ℝ (fderiv ℝ (resolventBarrier a rho)) z w₁ w₂ =
       Real.cosh (resolventPhase a rho z) *
@@ -235,7 +238,7 @@ private theorem fderiv_fderiv_resolventBarrier_apply {d : ℕ}
       ring
 
 /-- The exact velocity Hessian of the resolvent barrier. -/
-theorem velocityHessian_resolventBarrier {d : ℕ} (a rho : ℝ)
+theorem velocityHessian_resolventBarrier  (a rho : ℝ)
     (z : TimeVelocity d) :
     velocityHessian (resolventBarrier a rho) z =
       (2 * (a * Real.sqrt rho) *
@@ -258,13 +261,13 @@ theorem velocityHessian_resolventBarrier {d : ℕ} (a rho : ℝ)
     ring
 
 /-- Contraction with the identity matrix is the matrix trace. -/
-theorem matrixContraction_one_eq_trace {d : ℕ} (A : PDE.Mat d) :
+theorem matrixContraction_one_eq_trace  (A : PDE.Mat d) :
     matrixContraction A 1 = A.trace := by
   classical
   simp [matrixContraction, Matrix.trace, Matrix.diag, Matrix.one_apply]
 
 /-- Contraction with `v vᵀ` is the quadratic form of the left matrix. -/
-theorem matrixContraction_vecMulVec_eq_vecDot_mulVec {d : ℕ}
+theorem matrixContraction_vecMulVec_eq_vecDot_mulVec 
     (A : PDE.Mat d) (v : PDE.Vec d) :
     matrixContraction A (Matrix.vecMulVec v v) =
       PDE.vecDot v (A *ᵥ v) := by
@@ -279,7 +282,7 @@ theorem matrixContraction_vecMulVec_eq_vecDot_mulVec {d : ℕ}
   ring
 
 /-- The exact contraction of a coefficient matrix with the barrier Hessian. -/
-theorem matrixContraction_velocityHessian_resolventBarrier {d : ℕ}
+theorem matrixContraction_velocityHessian_resolventBarrier 
     (A : PDE.Mat d) (a rho : ℝ) (z : TimeVelocity d) :
     matrixContraction A (velocityHessian (resolventBarrier a rho) z) =
       2 * (a * Real.sqrt rho) *
@@ -293,7 +296,7 @@ theorem matrixContraction_velocityHessian_resolventBarrier {d : ℕ}
     matrixContraction_vecMulVec_eq_vecDot_mulVec]
 
 /-- The exact project-sign resolvent expression for the barrier. -/
-theorem parabolicOperator_add_resolvent_resolventBarrier {d : ℕ}
+theorem parabolicOperator_add_resolvent_resolventBarrier 
     (A : CoefficientField d) (a rho : ℝ) (z : TimeVelocity d) :
     parabolicOperator A (resolventBarrier a rho) z +
         rho * resolventBarrier a rho z =
@@ -309,7 +312,7 @@ theorem parabolicOperator_add_resolvent_resolventBarrier {d : ℕ}
   ring
 
 /-- An upper Loewner bound gives the corresponding quadratic-form bound. -/
-theorem vecDot_mulVec_le_of_loewner_upper {d : ℕ}
+theorem vecDot_mulVec_le_of_loewner_upper 
     {Lam : ℝ} {A : PDE.Mat d}
     (hupper : A ≤ Lam • (1 : PDE.Mat d)) (v : PDE.Vec d) :
     PDE.vecDot v (A *ᵥ v) ≤ Lam * PDE.vecNormSq v := by
@@ -323,14 +326,14 @@ theorem vecDot_mulVec_le_of_loewner_upper {d : ℕ}
     sub_nonneg.mp hquad
 
 /-- A positive lower Loewner bound makes the matrix trace nonnegative. -/
-theorem trace_nonneg_of_loewner_lower {d : ℕ}
+theorem trace_nonneg_of_loewner_lower 
     {lam : ℝ} {A : PDE.Mat d} (hlam : 0 < lam)
     (hlower : lam • (1 : PDE.Mat d) ≤ A) :
     0 ≤ A.trace := by
   exact (HypoellipticAleksandrov.posDef_of_loewner_lower hlam hlower).posSemidef.trace_nonneg
 
 /-- An upper Loewner bound controls the matrix trace by dimension times its bound. -/
-theorem trace_le_natCast_mul_of_loewner_upper {d : ℕ}
+theorem trace_le_natCast_mul_of_loewner_upper 
     {Lam : ℝ} {A : PDE.Mat d}
     (hupper : A ≤ Lam • (1 : PDE.Mat d)) :
     A.trace ≤ (d : ℝ) * Lam := by
@@ -342,8 +345,8 @@ theorem trace_le_natCast_mul_of_loewner_upper {d : ℕ}
   nlinarith
 
 /-- The squared Euclidean norm in the open unit coordinate cube is at most the dimension. -/
-theorem vecNormSq_le_natCast_of_mem_unit_velocityCube {d : ℕ}
-    {v : PDE.Vec d} (hv : v ∈ velocityCube (0 : PDE.Vec d) 1) :
+theorem vecNormSq_le_natCast_of_mem_unit_velocityCube 
+    {v : PDE.Vec d} (hv : v ∈ velocityCube 0 1) :
     PDE.vecNormSq v ≤ (d : ℝ) := by
   rw [PDE.vecNormSq_eq_sum_sq]
   calc
@@ -357,6 +360,7 @@ theorem vecNormSq_le_natCast_of_mem_unit_velocityCube {d : ℕ}
       simpa only [sq_abs, one_pow] using hsquare
     _ = (d : ℝ) := by simp only [Finset.sum_const, Finset.card_univ,
       Fintype.card_fin, nsmul_eq_mul, mul_one]
+end
 
 private theorem resolvent_witness_pos {D Lam : ℝ}
     (hD : 0 ≤ D) (hLam : 0 ≤ Lam) :
@@ -377,10 +381,10 @@ private theorem resolvent_witness_pos {D Lam : ℝ}
     positivity
   have haC : a * C = 1 / 8 := by
     dsimp only [a]
-    field_simp [hCne]
+    field_simp
   have hXC2 : D * Lam ≤ C ^ 2 := by
     dsimp only [C]
-    nlinarith [sq_nonneg (D * Lam)]
+    nlinarith
   have hscaled : a ^ 2 * (D * Lam) ≤ a ^ 2 * C ^ 2 :=
     mul_le_mul_of_nonneg_left hXC2 (sq_nonneg a)
   have ha2C2 : a ^ 2 * C ^ 2 = 1 / 64 := by

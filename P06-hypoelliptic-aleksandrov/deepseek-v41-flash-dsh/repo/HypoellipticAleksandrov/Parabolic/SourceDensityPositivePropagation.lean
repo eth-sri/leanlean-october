@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.Parabolic.DensityPositiveGeometry
 public import HypoellipticAleksandrov.Parabolic.SourceDensityToPoint
 public import HypoellipticAleksandrov.Parabolic.SourceForwardPropagation
 public import HypoellipticAleksandrov.Measure.InkSpotsSelection
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Source-aware uniform cap propagation for positive density
@@ -138,7 +139,7 @@ private theorem parabolicBox_subset_closedBox {d : ℕ}
 /-- Continuous data on a compact collar makes restricted real `Lᵖ` norms
 monotone for nested carriers. -/
 private theorem parabolicLpNormOn_mono_of_continuousOn
-    {d : ℕ} {F : TimeVelocity d → ℝ} {U S T K : Set (TimeVelocity d)}
+    {d : ℕ} {F : TimeVelocity d → ℝ} {U S T K : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hF : ContinuousOn F U) (hKU : K ⊆ U) (hKcompact : IsCompact K)
     (hTK : T ⊆ K) (hST : S ⊆ T) :
     parabolicLpNormOn d F S ≤ parabolicLpNormOn d F T := by
@@ -175,7 +176,7 @@ theorem exists_inkSpotsQ3_source_density_cap
     (hzeta0 : 0 < zeta) (hzeta1 : zeta < 1) (hC₀ : 0 ≤ C₀)
     (hseed : SourceDensityToPoint d lam Lam (a ^ 2) (1 / 2) C₀) :
     ∃ h C : Real, 0 < h ∧ 0 ≤ C ∧
-      ∀ (U : Set (TimeVelocity d)) (B : CoefficientField d)
+      ∀ (U : HypoellipticAleksandrov.Parabolic.TVSet d) (B : CoefficientField d)
         (F u : TimeVelocity d → Real),
         IsOpen U →
         parabolicClosedBox 1 1 0 0 ⊆ U →
@@ -275,7 +276,7 @@ theorem exists_inkSpotsQ3_source_density_cap
         hzeta1 (by rfl) hR hq.2.1 hz
     let t0 : ℝ := q.baseTime + q.radius ^ 2
     let tau : ℝ := z.1 - t0
-    let V : Set (TimeVelocity d) := parabolicAffine t0 q.center 1 ⁻¹' U
+    let V : HypoellipticAleksandrov.Parabolic.TVSet d := parabolicAffine t0 q.center 1 ⁻¹' U
     have hclosedV : parabolicClosedRectangle tau lower upper ⊆ V := by
       intro y hy
       change parabolicAffine t0 q.center 1 y ∈ U
@@ -417,7 +418,7 @@ theorem exists_selected_inkSpots_source_density_cap
     (heta0 : 0 < eta) (heta1 : eta < 1) (hc : 0 < c) (hC₀ : 0 ≤ C₀)
     (hseed : SourceDensityToPoint d lam Lam (a ^ 2) (1 / 2) C₀) :
     ∃ h C : Real, 0 < h ∧ 0 ≤ C ∧
-      ∀ (U : Set (TimeVelocity d)) (B : CoefficientField d)
+      ∀ (U : HypoellipticAleksandrov.Parabolic.TVSet d) (B : CoefficientField d)
         (F u : TimeVelocity d → Real),
         IsOpen U →
         parabolicClosedBox 1 1 0 0 ⊆ U →
@@ -454,7 +455,7 @@ theorem exists_selected_inkSpots_source_density_cap
   have hR0pos : 0 < R0 := by
     dsimp [R0]
     exact Real.sqrt_pos.2 (by positivity)
-  let Admissible : Prop := ∃ (U : Set (TimeVelocity d)) (B : CoefficientField d)
+  let Admissible : Prop := ∃ (U : HypoellipticAleksandrov.Parabolic.TVSet d) (B : CoefficientField d)
     (F u : TimeVelocity d → Real),
     IsOpen U ∧ parabolicClosedBox 1 1 0 0 ⊆ U ∧
     IsContinuousCoefficientOn B U ∧ ContDiffOn Real 2 u U ∧ ContinuousOn F U ∧
@@ -623,7 +624,7 @@ theorem exists_selected_inkSpots_source_density_cap
         heta0 heta1 hc (by rfl) hR0sq hR0pos (by rfl) hR hq.2.1 hv hcross
     let t0 : ℝ := q.baseTime + alpha ^ 2 * q.radius ^ 2
     let tau : ℝ := 1 - t0
-    let V : Set (TimeVelocity d) := parabolicAffine t0 (0 : PDE.Vec d) 1 ⁻¹' U
+    let V : HypoellipticAleksandrov.Parabolic.TVSet d := parabolicAffine t0 (0 : PDE.Vec d) 1 ⁻¹' U
     have hclosedV : parabolicClosedRectangle tau (fun _ => (-1 : ℝ))
         (fun _ => (1 : ℝ)) ⊆ V := by
       intro y hy

@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.SourceLocalHarnack
 public import HypoellipticAleksandrov.Parabolic.LocalHarnackEndpoint
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Terminal endpoint for the source-aware local parabolic Harnack estimate
@@ -24,7 +25,7 @@ theorem exists_source_local_parabolic_harnack_nonnegative
     (d : Nat) (hd : 1 ≤ d) (lam : Real) (hlam : 0 < lam)
     (Lam : Real) (hlamLam : lam ≤ Lam) :
     ∃ hBox C : Real, 0 < hBox ∧ hBox ≤ 1 ∧ 0 < C ∧
-      ∀ (K U : Set (TimeVelocity d)) (B : CoefficientField d)
+      ∀ (K U : HypoellipticAleksandrov.Parabolic.TVSet d) (B : CoefficientField d)
         (q F : TimeVelocity d → Real),
         IsCompact K → K ⊆ U → IsOpen U →
         parabolicClosedBox 2 2 0 0 ⊆ K →

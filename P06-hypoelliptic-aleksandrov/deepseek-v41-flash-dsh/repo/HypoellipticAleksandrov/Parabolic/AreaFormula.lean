@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.Measure.TimeVelocity
 public import HypoellipticAleksandrov.Parabolic.Jacobian
 public import PDEFoundation.Measure.BallVolume
 public import Mathlib.MeasureTheory.Function.Jacobian
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # One-sided area formula for the parabolic normal map

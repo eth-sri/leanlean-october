@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.Green
 public import HypoellipticAleksandrov.Parabolic.Geometry
 import Mathlib.Probability.Kernel.MeasurableIntegral
 import Mathlib.MeasureTheory.Integral.Prod
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Parabolic Duhamel potentials against the marginal kernel
@@ -26,7 +28,7 @@ open MeasureTheory Set
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
 open scoped ENNReal ProbabilityTheory
 
-variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d}
 
 /-- The source integral `∫ g(r,w) P_{s,r}(y,dw)` against the parabolic marginal kernel. -/
 def parabolicSourceIntegral (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω)
@@ -50,12 +52,12 @@ def parabolicDuhamelPotential (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet
 def parabolicMasterIntegral (K : MovingFiberKernel Ω γ) (g : TimeVelocity d → ℝ)
     (q : EvolutionQuery Ω γ) : ℝ :=
   ∫ w, g (q.1.2.1, w.1) ∂K.master q
+section
+variable (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω) (g : TimeVelocity d → ℝ) (s r : ℝ) (h : s ≤ r) (y : EvolutionPosition Ω γ s)
 
 /-- If the marginal kernel at `y` is the first marginal of the fiber kernel at the state `(y, z)`,
 the marginal-kernel source integral is the master-kernel integral of the first coordinate. -/
-theorem parabolicSourceIntegral_eq_master_of_state (K : MovingFiberKernel Ω γ)
-    (hΩ : MeasurableSet Ω) (g : TimeVelocity d → ℝ) (s r : ℝ) (h : s ≤ r)
-    (y : EvolutionPosition Ω γ s) (z : PDE.Vec d)
+theorem parabolicSourceIntegral_eq_master_of_state  (z : PDE.Vec d)
     (hz : parabolicMarginalKernel K hΩ s r h y =
       K.fiberFirstMarginal hΩ s r h (evolutionStateOfPosition Ω γ s y z))
     (hg : Measurable (fun v : PDE.Vec d => g (r, v))) :
@@ -78,12 +80,12 @@ theorem parabolicSourceIntegral_eq_master_of_state (K : MovingFiberKernel Ω γ)
   rfl
 
 /-- The marginal-kernel source integral is the master-kernel integral at `z = 0`. -/
-theorem parabolicSourceIntegral_eq_master (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω)
-    (g : TimeVelocity d → ℝ) (s r : ℝ) (h : s ≤ r) (y : EvolutionPosition Ω γ s)
+theorem parabolicSourceIntegral_eq_master 
     (hg : Measurable (fun v : PDE.Vec d => g (r, v))) :
     parabolicSourceIntegral K hΩ g s r h y =
       parabolicMasterIntegral K g ⟨(s, (r, (y.1, 0))), h, y.2, mem_univ _⟩ :=
   parabolicSourceIntegral_eq_master_of_state K hΩ g s r h y 0 rfl hg
+end
 
 /-- The master-kernel source integral is Borel in the query. -/
 theorem measurable_parabolicMasterIntegral (K : MovingFiberKernel Ω γ)

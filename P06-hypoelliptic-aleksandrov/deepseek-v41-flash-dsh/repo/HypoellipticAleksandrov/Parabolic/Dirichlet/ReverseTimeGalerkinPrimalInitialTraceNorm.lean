@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeGalerkinPrimalInitialTrace
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeGalerkinPrimalResidualDerivativeNorm
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Initial trace and radius for the residual Galerkin limit
@@ -21,7 +22,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 /-- There is a common residual Galerkin limit with the prescribed initial
 trace and explicit uniform Bochner radius. -/
 theorem exists_reverseTimeGalerkinPrimal_initialTrace_norm_le_radius
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)

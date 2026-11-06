@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Scaling
 public import HypoellipticAleksandrov.Parabolic.LocalHarnackGeometry
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Endpoint continuity for the local parabolic Harnack box
@@ -26,7 +27,7 @@ theorem ContinuousOn.tendsto_localHarnackTerminalApprox
     (hv : v ∈ velocityCube (0 : PDE.Vec d) 1) :
     Tendsto (fun j : ℕ => q (localHarnackTerminalApprox j, v)) atTop
       (_root_.nhds (q (8, v))) := by
-  let K : Set (TimeVelocity d) := parabolicClosedBox 2 2 0 0
+  let K : HypoellipticAleksandrov.Parabolic.TVSet d := parabolicClosedBox 2 2 0 0
   let zj : ℕ → TimeVelocity d := fun j => (localHarnackTerminalApprox j, v)
   have hzj : Tendsto zj atTop (_root_.nhds (8, v)) := by
     exact HypoellipticAleksandrov.Parabolic.tendsto_localHarnackTerminalApprox.prodMk_nhds

@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Lieberman.Assembly
 public import HypoellipticAleksandrov.KineticAleksandrov.EllipsoidDirichlet
 public import HypoellipticAleksandrov.Parabolic.ScalarDirichletData
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Classical Dirichlet solvability (Lieberman)

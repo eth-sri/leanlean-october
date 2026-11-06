@@ -11,21 +11,19 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory ProbabilityTheory Filter
 open scoped ENNReal
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (nu : Measure Point)
 
 /-- Integrating the canonical joint density against a physical starting measure. -/
 def positionMixtureDensity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (nu : Measure Point) : Point → ℝ≥0∞ :=
+     : Point → ℝ≥0∞ :=
   fun z => ∫⁻ e, positionActiveDensity hH hLE hlam hLam A c e z ∂nu
 
 /-- The actual density of a finite starting mixture is measurable. -/
 theorem measurable_positionMixtureDensity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (nu : Measure Point) [SFinite nu] :
-    Measurable (positionMixtureDensity hH hLE hlam hLam A c nu) := by
-  exact (measurable_positionActiveDensity hH hLE hlam hLam A c).lintegral_prod_left'
+     [SFinite nu] :
+    Measurable (positionMixtureDensity hH hLE hlam hLam A c nu) := (measurable_positionActiveDensity hH hLE hlam hLam A c).lintegral_prod_left'
+end
 
 /-- Fubini identifies the actual Green mixture with its integrated joint density. -/
 theorem withDensity_positionMixtureDensity (hpush : PushforwardStatement)

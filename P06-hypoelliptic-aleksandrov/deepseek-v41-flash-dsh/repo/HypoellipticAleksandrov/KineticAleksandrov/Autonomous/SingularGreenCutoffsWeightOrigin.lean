@@ -23,7 +23,7 @@ theorem regularizedBarrierWeight_origin_lower (alpha : ℝ) (ha : 0 < alpha)
   have hbound : ∀ᵐ X : ℝ ∂volume,
       eta (0 - X) * barrierMollifierRadius n ^ ((alpha - 2) / 3) ≤
       eta (0 - X) * bellmanGauge (X, 0) ^ (alpha - 2) := by
-    filter_upwards [volume.ae_ne (0 : ℝ)] with X hX
+    filter_upwards [volume.ae_ne 0] with X hX
     by_cases hη : eta (0 - X) = 0
     · simp only [hη, zero_mul, le_refl]
     have hsupport : 0 - X ∈ Function.support ((barrierMollifierBump n).normed volume) := hη
@@ -44,7 +44,7 @@ theorem regularizedBarrierWeight_origin_lower (alpha : ℝ) (ha : 0 < alpha)
 theorem regularizedBarrierWeight_origin_atTop (alpha : ℝ) (ha : 0 < alpha)
     (ha1 : alpha < 1) :
     Tendsto (fun n => regularizedBarrierWeight alpha n (0, 0)) atTop atTop := by
-  have hr : Tendsto barrierMollifierRadius atTop (𝓝[>] (0 : ℝ)) :=
+  have hr : Tendsto barrierMollifierRadius atTop (𝓝[>] 0) :=
     tendsto_nhdsWithin_iff.mpr ⟨barrierMollifierRadius_tendsto,
       Eventually.of_forall barrierMollifierRadius_pos⟩
   have hh := (tendsto_rpow_neg_nhdsGT_zero (by linarith : (alpha - 2) / 3 < 0)).comp hr

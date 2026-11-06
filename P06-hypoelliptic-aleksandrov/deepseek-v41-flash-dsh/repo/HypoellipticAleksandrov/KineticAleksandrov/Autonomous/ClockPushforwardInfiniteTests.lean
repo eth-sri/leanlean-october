@@ -9,12 +9,12 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open SectionTwo TheoremA Evolution
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock)
 
 /-- The advancing-clock cone holds on the actual infinite physical Green measure. -/
 theorem clock_forward_cone_infinite
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (e : StripPole c.activeInterval ⊤) :
+     (e : StripPole c.activeInterval ⊤) :
     ∀ᵐ p ∂stripGreen hH hLE hlam hLam A c.activeInterval ⊤ e,
       p.time - e.1.time ≤ 2 * c.r ^ 2 * (c.map e.1 p).time := by
   apply stripGreen_infinite_ae_of_finite hH hLE hlam hLam A c.activeInterval e
@@ -24,9 +24,7 @@ theorem clock_forward_cone_infinite
 
 /-- Compact nonnegative normalized interior tests satisfy the genuine infinite weighted identity. -/
 theorem clock_weighted_test_infinite
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) (he : e.velocity 0 ∈ c.active)
+     (e : Point) (he : e.velocity 0 ∈ c.active)
     (f : exitProbeSubmodule) (hfn : ∀ p, 0 ≤ exitProbePhysical f p)
     (hs : tsupport (exitProbePhysical f) ⊆
       {p | 0 < p.time ∧ p.velocity 0 ∈ normalizedActive}) :
@@ -68,5 +66,6 @@ theorem clock_weighted_test_infinite
   exact hstab.symm.trans ((congrArg (fun μ : Measure Point =>
     ∫ p, clockWeightedProbe c e f p ∂μ) hr.symm).trans
       (hf.trans (congrArg (fun x : ℝ => (|c.vbar| * c.r ^ 2) * x) hv)))
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -42,8 +42,7 @@ theorem barrier_cutoff_green_bounds
   have hFs := barrierRectCutoff_hasCompactSupport Y R hR0 f
   have hFL := physicalSpatialOperator_continuous_compact A F hFc hFs
   have hFi := physicalSpatialOperator_occupation_integrable A F hFc hFs E z T
-  have hcut : Continuous (barrierRectCutoff Y R) := by
-    exact (barrierCutoff_contDiff.continuous.comp
+  have hcut : Continuous (barrierRectCutoff Y R) := (barrierCutoff_contDiff.continuous.comp
       ((continuous_fst.sub continuous_const).div_const _)).mul
         (barrierCutoff_contDiff.continuous.comp (continuous_snd.div_const _))
   have hGm : Measurable G := (hcut.measurable.mul hw).const_mul c

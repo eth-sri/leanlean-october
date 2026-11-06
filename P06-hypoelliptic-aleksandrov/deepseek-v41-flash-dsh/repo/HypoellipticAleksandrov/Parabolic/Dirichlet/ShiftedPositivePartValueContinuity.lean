@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.H10ShiftedPositivePart
 public import Mathlib.MeasureTheory.Function.LpSpace.Indicator
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Continuity of shifted positive parts in spatial `L²`
@@ -19,7 +20,7 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-variable {d : ℕ} {Ω : Set (PDE.Vec d)}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
 
 private theorem shiftedPositivePartValue_eq_posPart_sub_const
     [IsFiniteMeasure (PDE.volumeOn Ω)]

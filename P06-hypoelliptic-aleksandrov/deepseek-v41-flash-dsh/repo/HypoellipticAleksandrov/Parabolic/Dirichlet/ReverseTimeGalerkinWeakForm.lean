@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeGalerkinCoordinatesBase
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Reverse-time finite Galerkin weak form
@@ -19,7 +20,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 open scoped BigOperators ENNReal Matrix Matrix.Norms.Elementwise RealInnerProductSpace
 
 private theorem map_galerkinReconstruct_sum
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (N : ℕ) {Z : Type} [NormedAddCommGroup Z] [NormedSpace ℝ Z]
     (Q : H10HilbertGraph hΩ →L[ℝ] Z)
     (x : Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ) :
@@ -50,7 +51,7 @@ private theorem map_galerkinReconstruct_sum
 
 /-- Exact finite Galerkin basis rows hold against every finite Galerkin test. -/
 theorem reverseTimeGalerkin_basisRows_forall
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)

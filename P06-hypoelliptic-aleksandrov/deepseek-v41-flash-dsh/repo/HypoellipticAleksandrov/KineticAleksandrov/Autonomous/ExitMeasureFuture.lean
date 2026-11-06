@@ -24,13 +24,12 @@ theorem reconstruction_operator_zero_off_tsupport
       (fun h => hx (tsupport_fderiv_apply_subset ℝ (basisV j) h))
   simp only [transportedOperator, hd, hh, zero_apply,
     mul_zero, Finset.sum_const_zero, add_zero]
+section
+variable (hH : HormanderHypoellipticityStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H) (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ))
 
 /-- The actual unique exit measure charges no point strictly before its pole. -/
 theorem stripExitOfRealization_before_pole
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
-    (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ)) :
+     :
     stripExitOfRealization hH hlam hLam A H E hE T e {p | p.time < e.1.time} = 0 := by
   let Ω := stripExitOfRealization hH hlam hLam A H E hE T e
   let ν : Measure (EvolutionVec 1) := Ω.map reconstructionPhysicalHomeomorph.symm
@@ -83,10 +82,7 @@ theorem stripExitOfRealization_before_pole
 
 /-- Almost every actual exit point has future time and velocity in the closed interval. -/
 theorem stripExitOfRealization_ae_closed_future
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
-    (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ)) :
+     :
     ∀ᵐ p ∂stripExitOfRealization hH hlam hLam A H E hE T e,
       e.1.time ≤ p.time ∧ p.time ≤ T ∧ p.velocity 0 ∈ Icc H.lo H.hi := by
   have hb : ∀ᵐ p ∂stripExitOfRealization hH hlam hLam A H E hE T e,
@@ -106,5 +102,6 @@ theorem stripExitOfRealization_ae_closed_future
     rcases hp.2 with hv | hv <;> rw [hv]
     · exact ⟨le_rfl, H.ordered.le⟩
     · exact ⟨H.ordered.le, le_rfl⟩
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

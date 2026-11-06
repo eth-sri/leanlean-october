@@ -76,7 +76,7 @@ theorem integral_mass_eq_neg_integral_hessian_add_drift_add_scalar_sub_source
       calc
         _ = (∫ x, mass x - (∑ i : Fin d, ∑ j : Fin d, grouped i j x) ∂mu) +
             ∫ x, ∑ j : Fin d, drift j x ∂mu := by
-          simpa only [Pi.sub_apply, Pi.add_apply] using
+          simpa using
             integral_add (hmass.sub hgroupedSum) hdriftSum
         _ = _ := by rw [e₁]
     have e₃ : (∫ x, mass x - (∑ i : Fin d, ∑ j : Fin d, grouped i j x) +
@@ -86,7 +86,7 @@ theorem integral_mass_eq_neg_integral_hessian_add_drift_add_scalar_sub_source
       calc
         _ = (∫ x, mass x - (∑ i : Fin d, ∑ j : Fin d, grouped i j x) +
             (∑ j : Fin d, drift j x) ∂mu) + ∫ x, scalar x ∂mu := by
-          simpa only [Pi.sub_apply, Pi.add_apply] using
+          simpa using
             integral_add ((hmass.sub hgroupedSum).add hdriftSum) hscalar
         _ = _ := by rw [e₂]
     have e₄ : (∫ x, mass x - (∑ i : Fin d, ∑ j : Fin d, grouped i j x) +
@@ -97,7 +97,7 @@ theorem integral_mass_eq_neg_integral_hessian_add_drift_add_scalar_sub_source
       calc
         _ = (∫ x, mass x - (∑ i : Fin d, ∑ j : Fin d, grouped i j x) +
             (∑ j : Fin d, drift j x) + scalar x ∂mu) - ∫ x, source x ∂mu := by
-          simpa only [Pi.sub_apply, Pi.add_apply] using
+          simpa using
             integral_sub (((hmass.sub hgroupedSum).add hdriftSum).add hscalar) hsource
         _ = _ := by rw [e₃]
     rw [← hgroupedIntegral, ← hdriftIntegral, ← e₄]
@@ -106,7 +106,7 @@ theorem integral_mass_eq_neg_integral_hessian_add_drift_add_scalar_sub_source
       (∑ i : Fin d, ∑ j : Fin d, ∫ x, grouped i j x ∂mu) =
         -(∑ i : Fin d, ∑ j : Fin d, ∫ x, hessian i j x ∂mu) := by
     simp_rw [hweak]
-    simp only [Finset.sum_neg_distrib]
+    simp
   have hhessianIntegral :
       (∫ x, ∑ i : Fin d, ∑ j : Fin d, hessian i j x ∂mu) =
         ∑ i : Fin d, ∑ j : Fin d, ∫ x, hessian i j x ∂mu := by
@@ -122,7 +122,7 @@ theorem integral_mass_eq_neg_integral_hessian_add_drift_add_scalar_sub_source
     calc
       _ = (∫ x, (∑ i : Fin d, ∑ j : Fin d, hessian i j x) +
           (∑ j : Fin d, drift j x) + scalar x ∂mu) - ∫ x, source x ∂mu := by
-        simpa only [Pi.sub_apply, Pi.add_apply] using
+        simpa using
           integral_sub ((hhessianSum.add hdriftSum).add hscalar) hsource
       _ = (((∫ x, ∑ i : Fin d, ∑ j : Fin d, hessian i j x ∂mu) +
           ∫ x, ∑ j : Fin d, drift j x ∂mu) + ∫ x, scalar x ∂mu) -
@@ -131,12 +131,12 @@ theorem integral_mass_eq_neg_integral_hessian_add_drift_add_scalar_sub_source
             (∑ j : Fin d, drift j x) + scalar x ∂mu) =
             (∫ x, (∑ i : Fin d, ∑ j : Fin d, hessian i j x) +
               (∑ j : Fin d, drift j x) ∂mu) + ∫ x, scalar x ∂mu from by
-              simpa only [Pi.add_apply] using integral_add (hhessianSum.add hdriftSum) hscalar]
+              simpa using integral_add (hhessianSum.add hdriftSum) hscalar]
         rw [show (∫ x, (∑ i : Fin d, ∑ j : Fin d, hessian i j x) +
             (∑ j : Fin d, drift j x) ∂mu) =
             (∫ x, ∑ i : Fin d, ∑ j : Fin d, hessian i j x ∂mu) +
               ∫ x, ∑ j : Fin d, drift j x ∂mu from by
-                simpa only [Pi.add_apply] using integral_add hhessianSum hdriftSum]
+                simpa using integral_add hhessianSum hdriftSum]
       _ = _ := by rw [hhessianIntegral, hdriftIntegral]
   rw [hright]
   rw [hweakSum] at hraw'

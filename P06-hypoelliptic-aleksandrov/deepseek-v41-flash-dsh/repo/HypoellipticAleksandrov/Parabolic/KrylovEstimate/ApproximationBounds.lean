@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.Parabolic.KrylovEstimate.ResidualNorm
 public import HypoellipticAleksandrov.Parabolic.KrylovEstimate.SmoothDerivatives
 public import HypoellipticAleksandrov.Parabolic.LocalClassical
 public import Mathlib.MeasureTheory.Function.LpSeminorm.LpNorm
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Quantitative residual and restricted norm bounds -/
 
@@ -13,7 +14,7 @@ namespace HypoellipticAleksandrov.Parabolic.KrylovEstimate
 open Set MeasureTheory
 
 /-- The scalar residual is continuous wherever the coefficient and selected jet are continuous. -/
-theorem continuousOn_residual {N : ℕ} {V : Set (TimeVelocity N)}
+theorem continuousOn_residual {N : ℕ} {V : HypoellipticAleksandrov.Parabolic.TVSet N}
     (a : TimeVelocity N → PDE.Mat N) (q : TimeVelocity N → ℝ)
     (ha : ContinuousOn a V) (hq : IsScalarC12On q V) :
     ContinuousOn (residual a q) V := by
@@ -72,7 +73,7 @@ theorem residual_difference_le {N : ℕ} (a : PDE.Mat N)
 
 /-- A nonnegative source plus a constant bounds the positive residual in the restricted norm. -/
 theorem positive_norm_le_add_constant
-    {N : ℕ} {Q : Set (TimeVelocity N)} (hQ : MeasurableSet Q)
+    {N : ℕ} {Q : HypoellipticAleksandrov.Parabolic.TVSet N} (hQ : MeasurableSet Q)
     (hfinite : volume Q < ⊤) (F G : TimeVelocity N → ℝ)
     (hF : AEStronglyMeasurable F (volume.restrict Q))
     (hG : MemLp G (parabolicExponent N) (volume.restrict Q))

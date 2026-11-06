@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.TimeVelocityMultiIndexLeibniz
 public import HypoellipticAleksandrov.Parabolic.ParabolicDerivativeIndex
 public import Mathlib.Topology.Separation.Regular
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Coordinate derivative majorants on precompact neighborhoods
@@ -25,7 +26,7 @@ private theorem order_le_parabolicWeight {d : ℕ}
   omega
 
 private theorem continuousOn_coordinateIteratedFDeriv
-    {d M : ℕ} {U : Set (TimeVelocity d)}
+    {d M : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hU : IsOpen U) (f : TimeVelocity d → ℝ) (hf : ContDiffOn ℝ M f U)
     (alpha : ParabolicDerivativeIndex d M) :
     ContinuousOn
@@ -46,11 +47,11 @@ neighborhood carrying nonnegative finite-order derivative majorants for an
 arbitrary indexed scalar family. -/
 theorem exists_precompactOpen_coordinateIteratedFDeriv_majorants
     {d M : ℕ} {ι : Type*}
-    {U K : Set (TimeVelocity d)}
+    {U K : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hU : IsOpen U) (hK : IsCompact K) (hKU : K ⊆ U)
     (q : ι → TimeVelocity d → ℝ)
     (hq : ∀ i, ContDiffOn ℝ M (q i) U) :
-    ∃ (V : Set (TimeVelocity d))
+    ∃ (V : HypoellipticAleksandrov.Parabolic.TVSet d)
       (B : ι → ParabolicDerivativeIndex d M → ℝ),
       IsOpen V ∧
       K ⊆ V ∧

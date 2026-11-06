@@ -72,9 +72,11 @@ theorem contDiff_vecNormSq_sub {n : ℕ} (m : PDE.Vec n) :
     rfl
   rw [this]
   exact ContDiff.sum fun i _ => ((contDiff_apply ℝ ℝ i).sub contDiff_const).pow 2
+section
+variable {n : ℕ} (C T : ℝ) (p : KineticPoint n)
 
 /-- The growth barrier is slice regular everywhere. -/
-theorem isSliceRegularAt_growthBarrier {n : ℕ} (C T : ℝ) (p : KineticPoint n) :
+theorem isSliceRegularAt_growthBarrier  :
     IsSliceRegularAt (growthBarrier C T) p := by
   have hpos : ContDiff ℝ 2 (fun y : PDE.Vec n => PDE.vecNormSq y) := by
     simpa using contDiff_vecNormSq_sub (0 : PDE.Vec n)
@@ -92,7 +94,7 @@ theorem isSliceRegularAt_growthBarrier {n : ℕ} (C T : ℝ) (p : KineticPoint n
     exact h.contDiffAt
 
 /-- The time derivative of the growth barrier. -/
-theorem kineticTimeDerivative_growthBarrier {n : ℕ} (C T : ℝ) (p : KineticPoint n) :
+theorem kineticTimeDerivative_growthBarrier  :
     kineticTimeDerivative (growthBarrier C T) p =
       Real.exp (C * (T - p.time)) * (-C * (1 + radialSq p)) := by
   show deriv (fun r : ℝ => Real.exp (C * (T - r)) * (1 + radialSq p)) p.time = _
@@ -103,7 +105,7 @@ theorem kineticTimeDerivative_growthBarrier {n : ℕ} (C T : ℝ) (p : KineticPo
   ring
 
 /-- The `y`-slice of the growth barrier, as a function of `|y|²`. -/
-theorem growthBarrier_positionSlice {n : ℕ} (C T : ℝ) (p : KineticPoint n) :
+theorem growthBarrier_positionSlice  :
     (fun y : PDE.Vec n => growthBarrier C T ⟨p.time, y, p.velocity⟩) =
       fun y => (fun s : ℝ => Real.exp (C * (T - p.time)) *
         ((1 + PDE.vecNormSq p.velocity) + s)) (PDE.vecNormSq (y - 0)) := by
@@ -112,13 +114,14 @@ theorem growthBarrier_positionSlice {n : ℕ} (C T : ℝ) (p : KineticPoint n) :
   ring
 
 /-- The `z`-slice of the growth barrier, as a function of `|z|²`. -/
-theorem growthBarrier_velocitySlice {n : ℕ} (C T : ℝ) (p : KineticPoint n) :
+theorem growthBarrier_velocitySlice  :
     (fun z : PDE.Vec n => growthBarrier C T ⟨p.time, p.position, z⟩) =
       fun z => (fun s : ℝ => Real.exp (C * (T - p.time)) *
         ((1 + PDE.vecNormSq p.position) + s)) (PDE.vecNormSq (z - 0)) := by
   funext z
   simp only [growthBarrier, radialSq, sub_zero]
   ring
+end
 
 /-- Affine functions are smooth. -/
 theorem contDiffAt_affine_weight (c a s : ℝ) :

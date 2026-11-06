@@ -21,11 +21,12 @@ theorem finiteUnionGreenMassBound_ne_top (lam : ℝ) (H : FiniteIntervalUnion) :
     finiteUnionGreenMassBound lam H ≠ ⊤ := by
   unfold finiteUnionGreenMassBound
   exact ENNReal.sum_ne_top.mpr (fun _ _ => ENNReal.ofReal_ne_top)
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
 
 /-- Every actual union Green pole has the same uniform finite mass bound. -/
 theorem finiteUnionGreen_mass_le
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
     (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (T : WithTop ℝ)
     (e : FiniteUnionPole H T) :
     finiteUnionGreen hH hLE hlam hLam A H T e univ ≤ finiteUnionGreenMassBound lam H := by
@@ -54,8 +55,7 @@ theorem finiteUnionGreen_mass_le
 
 /-- The actual Green mixture has mass bounded linearly by source mass. -/
 theorem finiteUnionGreenMixture_mass_le
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
     (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (T : WithTop ℝ)
     (nu : Measure (FiniteUnionPole H T)) :
     finiteUnionGreenMixture hH hLE hlam hLam A H T nu univ ≤
@@ -70,8 +70,7 @@ theorem finiteUnionGreenMixture_mass_le
 
 /-- A finite source has a finite actual Green mixture, including at infinite horizon. -/
 instance finiteUnionGreenMixture_isFiniteMeasure
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
     (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (T : WithTop ℝ)
     (nu : Measure (FiniteUnionPole H T)) [IsFiniteMeasure nu] :
     IsFiniteMeasure (finiteUnionGreenMixture hH hLE hlam hLam A H T nu) := by
@@ -79,5 +78,6 @@ instance finiteUnionGreenMixture_isFiniteMeasure
   exact (finiteUnionGreenMixture_mass_le hH hLE hlam hLam A H T nu).trans_lt
     (ENNReal.mul_lt_top (lt_top_iff_ne_top.mpr (finiteUnionGreenMassBound_ne_top lam H))
       (measure_lt_top nu univ))
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

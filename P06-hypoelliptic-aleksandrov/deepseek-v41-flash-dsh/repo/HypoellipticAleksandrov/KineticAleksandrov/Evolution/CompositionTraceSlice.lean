@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.CompositionTraceCutoff
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TerminalPointValue
 public import Mathlib.Topology.Algebra.Indicator
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Intermediate slices of a classical terminal solution
@@ -23,7 +24,7 @@ open scoped Topology
 /-- A classical solution restricted to any earlier state slice is continuous on the
 closed state fiber. -/
 theorem IsClassicalTerminalSolution.continuousOn_slice
-    {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
+    {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n} {γ : ℝ → PDE.Vec n}
     {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
     {τ r : ℝ} {F : BoundedBorel (EvolutionAmbientState n)} {u : KineticPoint n → ℝ}
     (hu : IsClassicalTerminalSolution Ω γ B b τ F u) (hrτ : r ≤ τ) :
@@ -32,13 +33,13 @@ theorem IsClassicalTerminalSolution.continuousOn_slice
   refine hu.2.1.comp
     (KineticPoint.continuous_mk continuous_const continuous_fst continuous_snd).continuousOn ?_
   intro x hx
-  have hx' : x ∈ closure (movingDomain Ω γ r) ×ˢ (univ : Set (PDE.Vec n)) := by
+  have hx' : x ∈ closure (movingDomain Ω γ r) ×ˢ (univ : HypoellipticAleksandrov.VecSet n) := by
     simpa only [evolutionStateSet, closure_prod_eq, closure_univ] using hx
   exact ⟨hrτ, hx'.1⟩
 
 /-- Extending an intermediate slice by zero outside its state fiber is continuous. -/
 theorem IsClassicalTerminalSolution.continuous_zeroExtended_slice
-    {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
+    {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n} {γ : ℝ → PDE.Vec n}
     {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
     {τ r : ℝ} {F : BoundedBorel (EvolutionAmbientState n)} {u : KineticPoint n → ℝ}
     (hu : IsClassicalTerminalSolution Ω γ B b τ F u) (hrτ : r ≤ τ) :
@@ -46,13 +47,13 @@ theorem IsClassicalTerminalSolution.continuous_zeroExtended_slice
       (fun x : EvolutionAmbientState n => u ⟨r, x.1, x.2⟩)) := by
   apply continuous_indicator ?_ (hu.continuousOn_slice hrτ)
   intro x hx
-  have hx' : x ∈ frontier (movingDomain Ω γ r) ×ˢ (univ : Set (PDE.Vec n)) := by
+  have hx' : x ∈ frontier (movingDomain Ω γ r) ×ˢ (univ : HypoellipticAleksandrov.VecSet n) := by
     simpa only [evolutionStateSet, frontier_prod_univ_eq] using hx
   exact hu.2.2.2.2.2 ⟨r, x.1, x.2⟩ ⟨hrτ, hx'.1⟩
 
 /-- A strictly earlier slice is smooth on the open state fiber. -/
 theorem IsClassicalTerminalSolution.contDiffOn_slice
-    {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
+    {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n} {γ : ℝ → PDE.Vec n}
     {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
     {τ r : ℝ} {F : BoundedBorel (EvolutionAmbientState n)} {u : KineticPoint n → ℝ}
     (hu : IsClassicalTerminalSolution Ω γ B b τ F u) (hrτ : r < τ) :

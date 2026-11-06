@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.HarnackGeometry
 public import Mathlib.Analysis.Real.Sqrt
 public import Mathlib.Topology.Order.Compact
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Compact weighted peak selection
@@ -25,7 +26,7 @@ def velocitySupNorm {d : Nat} (v : PDE.Vec d) : Real :=
 
 /-- The terminal-inclusive closed backward parabolic coordinate box. -/
 def backwardParabolicClosedBox {d : Nat} (r terminalTime : Real)
-    (v0 : PDE.Vec d) : Set (TimeVelocity d) :=
+    (v0 : PDE.Vec d) : HypoellipticAleksandrov.Parabolic.TVSet d :=
   Set.Icc (terminalTime - r ^ 2) terminalTime ×ˢ velocityClosedCube v0 r
 
 /-- The backward parabolic radius relative to a terminal time and velocity. -/
@@ -195,7 +196,7 @@ theorem exists_weighted_backward_peak
       0 < u (t1, v1) ∧
       ∀ z ∈ backwardParabolicClosedBox ((1 - r0) / 2) t1 v1,
         u z ≤ (2 : Real) ^ m * u (t1, v1) := by
-  let K : Set (TimeVelocity d) := backwardParabolicClosedBox 1 4 0
+  let K : HypoellipticAleksandrov.Parabolic.TVSet d := backwardParabolicClosedBox 1 4 0
   let W : TimeVelocity d → Real := weightedBackwardPeak m 4 0 u
   have hKcompact : IsCompact K := isCompact_backwardParabolicClosedBox 1 4 0
   have hterminal : (4, (0 : PDE.Vec d)) ∈ K := terminal_zero_mem_unitClosedBox

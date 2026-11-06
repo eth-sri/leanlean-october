@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Green.SlabFourierBound
 public import HypoellipticAleksandrov.KineticAleksandrov.Interval.SlabFourierDomination
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Slab domination retaining the killing factor
 
@@ -47,7 +48,7 @@ theorem killed_slab_fourier_density_bound (hd : 0 < d)
   obtain ⟨gξ, hgξ, hnorm⟩ := hocc.2 (halfMeasure K σ₀ T hT.le μ ξ).variation (σ₀ + T / 2)
     (3 * T / 2) (by positivity)
   have hint : Integrable gξ
-      (volume.restrict (Ioo (0 : ℝ) (3 * T / 2) ×ˢ (univ : Set (PDE.Vec d)))) := by
+      (volume.restrict (Ioo 0 (3 * T / 2) ×ˢ (univ : HypoellipticAleksandrov.VecSet d))) := by
     have := (hnorm 1 le_rfl (one_le_slabGamma0 hd)).1
     rw [ENNReal.ofReal_one] at this
     exact memLp_one_iff_integrable.1 this
@@ -67,7 +68,7 @@ theorem killed_slab_fourier_density_bound (hd : 0 < d)
   set Cn : ℝ := Cocc γ * ((halfMeasure K σ₀ T hT.le μ ξ).variation univ).toReal *
     (3 * T / 2) ^ slabBeta d γ with hCn
   have hbd' : eLpNorm gξ (ENNReal.ofReal γ)
-      (volume.restrict (Ioo (0 : ℝ) (3 * T / 2) ×ˢ (univ : Set (PDE.Vec d)))) ≤
+      (volume.restrict (Ioo 0 (3 * T / 2) ×ˢ (univ : HypoellipticAleksandrov.VecSet d))) ≤
         ENNReal.ofReal Cn := by
     rw [← ENNReal.ofReal_toReal hmem.eLpNorm_ne_top]
     exact ENNReal.ofReal_le_ofReal hbd

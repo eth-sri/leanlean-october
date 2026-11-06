@@ -22,7 +22,7 @@ theorem reconstructionConeProbe_smooth (alpha beta gamma : ℝ) :
     (alpha * Evolution.timeCoord 1 x + beta * transportedCoord 1 x 0 + gamma))
   apply expNegInvGlue.contDiff.comp
   exact ((contDiff_const.mul (Evolution.timeCoord 1).contDiff).add
-    (contDiff_const.mul ((contDiff_apply ℝ ℝ (0 : Fin 1)).comp
+    (contDiff_const.mul ((contDiff_apply ℝ ℝ 0).comp
       (transportedCoord 1).contDiff))).add contDiff_const
 
 /-- A pure transport-coordinate probe has no velocity Hessian contribution. -/

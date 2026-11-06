@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.HarnackUnitCylinder.ScalarHessian
 public import HypoellipticAleksandrov.Parabolic.HarnackUnitCylinder.DirectionalIntegrationByParts
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Distributional spatial derivatives from C² time slices -/
 
@@ -11,7 +12,7 @@ namespace HypoellipticAleksandrov.Parabolic
 
 /-- The scalar spatial gradient supplies every first distributional spatial derivative. -/
 theorem IsScalarC12On.hasWeakVelocityPartialDerivOn
-    {d : ℕ} {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {u : TimeVelocity d → ℝ}
     (hU : IsOpen U) (hu : IsScalarC12On u U) (i : Fin d) :
     HasWeakVelocityPartialDerivOn U i u
       (fun z => scalarSpatialGradient u z i) := by
@@ -27,7 +28,7 @@ theorem IsScalarC12On.hasWeakVelocityPartialDerivOn
 
 /-- Scalar Hessian components supply second weak spatial derivatives in selected-jet order. -/
 theorem IsScalarC12On.hasWeakVelocitySecondPartialDerivOn
-    {d : ℕ} {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {u : TimeVelocity d → ℝ}
     (hU : IsOpen U) (hu : IsScalarC12On u U) (i j : Fin d) :
     HasWeakVelocityPartialDerivOn U j
       (fun z => scalarSpatialGradient u z i)

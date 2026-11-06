@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Measure.ParabolicDyadicOpenCover
 public import HypoellipticAleksandrov.Measure.ParabolicDyadicInkSpotsBridge
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Parabolic dyadic saturation of the first ink-spots union
@@ -22,12 +23,12 @@ namespace HypoellipticAleksandrov.Parabolic
 noncomputable section
 
 /-- The non-root dyadic cells which first enter the actual source D1 union. -/
-def parabolicDyadicD1Entry {d : Nat} (Gamma : Set (TimeVelocity d)) (xi : Real) :
+def parabolicDyadicD1Entry {d : Nat} (Gamma : HypoellipticAleksandrov.Parabolic.TVSet d) (xi : Real) :
     Set (ParabolicDyadicAddress d) :=
   parabolicDyadicFirstEntry (inkSpotsD1 Gamma xi)
 
 private theorem parabolicDyadicD1_subset_unit
-    (d : Nat) (Gamma : Set (TimeVelocity d)) (xi : Real) :
+    (d : Nat) (Gamma : HypoellipticAleksandrov.Parabolic.TVSet d) (xi : Real) :
     inkSpotsD1 Gamma xi ⊆ inkSpotsUnitBox d := by
   intro z hz
   simp only [inkSpotsD1, Set.mem_iUnion] at hz
@@ -58,10 +59,11 @@ private theorem volume_inkSpotsUnitBox_ne_top (d : Nat) :
   rw [htop] at hformula
   norm_num at hformula
   exact (ne_of_gt (pow_pos (by norm_num : (0 : Real) < 2) d)) hformula.symm
+section
+variable {d : Nat} (Gamma : HypoellipticAleksandrov.Parabolic.TVSet d) (xi : Real) (a : {a : ParabolicDyadicAddress d // a ∈ parabolicDyadicD1Entry Gamma xi})
 
 private theorem parabolicDyadicD1Entry_openCell_subset
-    {d : Nat} (Gamma : Set (TimeVelocity d)) (xi : Real)
-    (a : {a : ParabolicDyadicAddress d // a ∈ parabolicDyadicD1Entry Gamma xi}) :
+     :
     parabolicDyadicOpenCell a.1.2 ⊆ inkSpotsD1 Gamma xi := by
   rcases a with ⟨⟨n, index⟩, ha⟩
   cases n with
@@ -69,8 +71,7 @@ private theorem parabolicDyadicD1Entry_openCell_subset
   | succ n => exact ha.1
 
 private theorem parabolicDyadicD1_entry_density_le
-    {d : Nat} (Gamma : Set (TimeVelocity d)) (xi : Real)
-    (a : {a : ParabolicDyadicAddress d // a ∈ parabolicDyadicD1Entry Gamma xi}) :
+     :
     (volume (Gamma ∩ parabolicDyadicOpenCell a.1.2)).toReal ≤
       xi * (volume (parabolicDyadicOpenCell a.1.2)).toReal := by
   rcases a with ⟨⟨n, index⟩, ha⟩
@@ -85,16 +86,17 @@ private theorem parabolicDyadicD1_entry_density_le
         lt_of_not_ge hle
       exact ha.2
         (parabolicDyadicOpenCell_parent_subset_inkSpotsD1_of_density_gt Gamma xi index hstrict)
+end
 
 theorem volume_Gamma_le_xi_volume_inkSpotsD1
-    (d : Nat) (Gamma : Set (TimeVelocity d)) (xi : Real)
+    (d : Nat) (Gamma : HypoellipticAleksandrov.Parabolic.TVSet d) (xi : Real)
     (hGamma : MeasurableSet Gamma) (hGammaUnit : Gamma ⊆ inkSpotsUnitBox d)
     (hxi : xi ∈ Set.Ioo (0 : Real) 1)
     (hsubcritical : (volume Gamma).toReal <
       xi * (volume (inkSpotsUnitBox d)).toReal) :
     Gamma ≤ᵐ[volume] inkSpotsD1 Gamma xi ∧
       (volume Gamma).toReal ≤ xi * (volume (inkSpotsD1 Gamma xi)).toReal := by
-  let U : Set (TimeVelocity d) := inkSpotsD1 Gamma xi
+  let U : HypoellipticAleksandrov.Parabolic.TVSet d := inkSpotsD1 Gamma xi
   let root : ParabolicDyadicIndex d 0 := fun i => Fin.elim0 i
   have hGammaAE : Gamma ≤ᵐ[volume] U := by
     simpa only [U] using
@@ -114,8 +116,8 @@ theorem volume_Gamma_le_xi_volume_inkSpotsD1
       exact hroot
     simpa only [U, hUeq] using hsubcritical.le
   · let E := {a : ParabolicDyadicAddress d | a ∈ parabolicDyadicD1Entry Gamma xi}
-    let C : E → Set (TimeVelocity d) := fun a => parabolicDyadicOpenCell a.1.2
-    let V : Set (TimeVelocity d) := ⋃ a : E, C a
+    let C : E → HypoellipticAleksandrov.Parabolic.TVSet d := fun a => parabolicDyadicOpenCell a.1.2
+    let V : HypoellipticAleksandrov.Parabolic.TVSet d := ⋃ a : E, C a
     have hV : V = ⋃ a ∈ parabolicDyadicD1Entry Gamma xi,
         parabolicDyadicOpenCell a.2 := by
       change (⋃ a : {a : ParabolicDyadicAddress d //
@@ -163,15 +165,15 @@ theorem volume_Gamma_le_xi_volume_inkSpotsD1
         (ENNReal.mul_ne_top ENNReal.ofReal_ne_top (hC_ne_top a))).mp
       simpa only [xie, ENNReal.toReal_mul, ENNReal.toReal_ofReal hxi.1.le] using
         (parabolicDyadicD1_entry_density_le Gamma xi a)
-    have hGammaAEInter : Gamma =ᵐ[volume] (Gamma ∩ U : Set (TimeVelocity d)) := by
+    have hGammaAEInter : Gamma =ᵐ[volume] (Gamma ∩ U : HypoellipticAleksandrov.Parabolic.TVSet d) := by
       filter_upwards [hGammaAE] with z hz
       apply propext
       constructor
       · intro hzGamma
         exact ⟨hzGamma, hz hzGamma⟩
       · exact fun hzGamma => hzGamma.1
-    have hGammaInterCover : (Gamma ∩ U : Set (TimeVelocity d)) =ᵐ[volume]
-        (Gamma ∩ V : Set (TimeVelocity d)) :=
+    have hGammaInterCover : (Gamma ∩ U : HypoellipticAleksandrov.Parabolic.TVSet d) =ᵐ[volume]
+        (Gamma ∩ V : HypoellipticAleksandrov.Parabolic.TVSet d) :=
       ae_eq_set_inter (EventuallyEq.rfl) hcover
     have hGammaV : Gamma ∩ V = ⋃ a : E, Gamma ∩ C a := by
       simp only [V, inter_iUnion]

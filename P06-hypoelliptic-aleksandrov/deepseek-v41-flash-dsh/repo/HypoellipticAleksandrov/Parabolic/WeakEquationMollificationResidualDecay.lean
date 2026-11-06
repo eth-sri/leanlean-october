@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.WeakEquationMollification
 public import HypoellipticAleksandrov.Parabolic.ParabolicConvolutionCommutator
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Compact decay of weak-equation mollification residuals
@@ -34,7 +35,7 @@ weak jet converges to zero in finite parabolic norm on every compact carrier. -/
 theorem tendsto_eLpNorm_weakEquationMollificationResidual_on_compact
     (d : Nat) (lam Lam : Real) (Aext : CoefficientField d)
     (g : ParabolicW12Function d Set.univ (parabolicExponent d))
-    (K : Set (TimeVelocity d)) (hK : IsCompact K)
+    (K : HypoellipticAleksandrov.Parabolic.TVSet d) (hK : IsCompact K)
     (hExtBorel : IsBorelCoefficient Aext)
     (hExtLower : HasLowerEllipticity lam Aext)
     (hExtUpper : HasUpperEllipticity Lam Aext) :

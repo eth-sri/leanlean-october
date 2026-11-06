@@ -15,11 +15,13 @@ needed by the Dirichlet Galerkin construction.
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 noncomputable section
+section
+variable {n : ℕ} (R : NNReal)
 
-private def clip {n : ℕ} (R : NNReal) (z : Fin n → ℝ) : Fin n → ℝ :=
+private def clip  (z : Fin n → ℝ) : Fin n → ℝ :=
   fun i => (Set.projIcc (-(R : ℝ)) (R : ℝ) (neg_le_self R.2) (z i) : ℝ)
 
-private theorem lipschitzWith_clip {n : ℕ} (R : NNReal) :
+private theorem lipschitzWith_clip  :
     LipschitzWith 1 (clip (n := n) R) := by
   refine LipschitzWith.of_dist_le_mul fun z w => ?_
   rw [dist_eq_norm]
@@ -32,14 +34,14 @@ private theorem lipschitzWith_clip {n : ℕ} (R : NNReal) :
       gcongr
       simpa only [dist_eq_norm, Pi.sub_apply] using norm_le_pi_norm (z - w) i
 
-private theorem norm_clip_le_radius {n : ℕ} (R : NNReal) (z : Fin n → ℝ) :
+private theorem norm_clip_le_radius  (z : Fin n → ℝ) :
     ‖clip R z‖ ≤ R := by
   refine (pi_norm_le_iff_of_nonneg R.2).mpr fun i => ?_
   change ‖(Set.projIcc (-(R : ℝ)) (R : ℝ) (neg_le_self R.2) (z i) : ℝ)‖ ≤ R
   rw [Real.norm_eq_abs]
   exact abs_le.2 (Set.projIcc (-(R : ℝ)) (R : ℝ) (neg_le_self R.2) (z i)).property
 
-private theorem norm_clip_le {n : ℕ} (R : NNReal) (z : Fin n → ℝ) :
+private theorem norm_clip_le  (z : Fin n → ℝ) :
     ‖clip R z‖ ≤ ‖z‖ := by
   refine (pi_norm_le_iff_of_nonneg (norm_nonneg z)).mpr fun i => ?_
   have hzero : (0 : ℝ) ∈ Set.Icc (-(R : ℝ)) (R : ℝ) := by
@@ -62,6 +64,7 @@ private theorem norm_clip_le {n : ℕ} (R : NNReal) (z : Fin n → ℝ) :
     _ ≤ (1 : ℝ) * dist (z i) 0 := h
     _ = ‖z i‖ := by simp only [one_mul, dist_zero_right]
     _ ≤ ‖z‖ := norm_le_pi_norm z i
+end
 
 private theorem clip_eq_self_of_norm_lt {n : ℕ} {R : NNReal} {z : Fin n → ℝ}
     (hz : ‖z‖ < R) : clip R z = z := by

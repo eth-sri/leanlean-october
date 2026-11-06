@@ -5,6 +5,7 @@ import Mathlib.Topology.Order.Compact
 import Mathlib.Tactic.Linarith
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonCompact
 public import HypoellipticAleksandrov.KineticAleksandrov.MovingKernel
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Moving slabs and their bounded truncations
@@ -29,18 +30,18 @@ def radialSq {n : ℕ} (p : KineticPoint n) : ℝ :=
   PDE.vecNormSq p.position + PDE.vecNormSq p.velocity
 
 /-- The closed moving slab `{a ≤ σ ≤ b, y ∈ closure (γ(σ) + Ω)}` (all `z`). -/
-def movingClosedSlab {n : ℕ} (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n) (a b : ℝ) :
+def movingClosedSlab {n : ℕ} (Ω : HypoellipticAleksandrov.VecSet n) (γ : ℝ → PDE.Vec n) (a b : ℝ) :
     Set (KineticPoint n) :=
   {p | a ≤ p.time ∧ p.time ≤ b ∧ p.position ∈ closure (movingDomain Ω γ p.time)}
 
 /-- The active part `{a ≤ σ < b, y ∈ γ(σ) + Ω}` of the moving slab. -/
-def movingActiveSlab {n : ℕ} (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n) (a b : ℝ) :
+def movingActiveSlab {n : ℕ} (Ω : HypoellipticAleksandrov.VecSet n) (γ : ℝ → PDE.Vec n) (a b : ℝ) :
     Set (KineticPoint n) :=
   {p | a ≤ p.time ∧ p.time < b ∧ p.position ∈ movingDomain Ω γ p.time}
 
 /-- A point of the closed moving cylinder lies in `movingClosedSlab` exactly when its
 position is in the closure of the moving domain. -/
-theorem mem_closure_movingDomain_iff {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
+theorem mem_closure_movingDomain_iff {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n} {γ : ℝ → PDE.Vec n}
     {σ : ℝ} {y : PDE.Vec n} :
     y ∈ closure (movingDomain Ω γ σ) ↔ y - γ σ ∈ closure Ω := by
   have h : movingDomain Ω γ σ = (Homeomorph.subRight (γ σ)) ⁻¹' Ω := by
@@ -50,12 +51,12 @@ theorem mem_closure_movingDomain_iff {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ 
   rfl
 
 /-- Membership in the moving domain. -/
-theorem mem_movingDomain_iff {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
+theorem mem_movingDomain_iff {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n} {γ : ℝ → PDE.Vec n}
     {σ : ℝ} {y : PDE.Vec n} : y ∈ movingDomain Ω γ σ ↔ y - γ σ ∈ Ω :=
   PDE.mem_translateSet_iff_sub_mem
 
 /-- The set of kinetic points whose position lies in the moving domain is open. -/
-theorem isOpen_setOf_mem_movingDomain {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
+theorem isOpen_setOf_mem_movingDomain {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n} (hΩ : IsOpen Ω)
     {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) :
     IsOpen {p : KineticPoint n | p.position ∈ movingDomain Ω γ p.time} := by
   have hc : Continuous (fun p : KineticPoint n => p.position - γ p.time) :=
@@ -67,7 +68,7 @@ theorem isOpen_setOf_mem_movingDomain {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : Is
 
 /-- The set of kinetic points whose position lies in the closure of the moving domain
 is closed. -/
-theorem isClosed_setOf_mem_closure_movingDomain {n : ℕ} {Ω : Set (PDE.Vec n)}
+theorem isClosed_setOf_mem_closure_movingDomain {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n}
     {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) :
     IsClosed {p : KineticPoint n | p.position ∈ closure (movingDomain Ω γ p.time)} := by
   have hc : Continuous (fun p : KineticPoint n => p.position - γ p.time) :=
@@ -114,9 +115,11 @@ theorem isCompact_inter_radialSq {n : ℕ} {K : Set (KineticPoint n)} (hK : IsCl
   refine ⟨⟨hat, htb⟩, hbound p.position ?_, hbound p.velocity ?_⟩
   · unfold radialSq at hr'; linarith
   · unfold radialSq at hr'; linarith
+section
+variable {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n}
 
 /-- The closed moving slab is closed. -/
-theorem isClosed_movingClosedSlab {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
+theorem isClosed_movingClosedSlab  {γ : ℝ → PDE.Vec n}
     (hγ : Continuous γ) (a b : ℝ) : IsClosed (movingClosedSlab Ω γ a b) := by
   have h1 : IsClosed {p : KineticPoint n | a ≤ p.time} :=
     isClosed_le continuous_const continuous_time
@@ -130,13 +133,13 @@ theorem isClosed_movingClosedSlab {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ →
   tauto
 
 /-- Bounded truncations of the closed moving slab are compact. -/
-theorem isCompact_movingClosedSlab_inter {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
+theorem isCompact_movingClosedSlab_inter  {γ : ℝ → PDE.Vec n}
     (hγ : Continuous γ) (a b R : ℝ) :
     IsCompact (movingClosedSlab Ω γ a b ∩ {p | radialSq p ≤ R ^ 2}) :=
   isCompact_inter_radialSq (isClosed_movingClosedSlab hγ a b) (fun _ hp => ⟨hp.1, hp.2.1⟩) R
 
 /-- The active part of the moving slab has the one-sided neighbourhood property. -/
-theorem eventually_future_mem_movingClosedSlab {n : ℕ} {Ω : Set (PDE.Vec n)}
+theorem eventually_future_mem_movingClosedSlab 
     (hΩ : IsOpen Ω) {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {a b : ℝ} {p : KineticPoint n}
     (hp : p ∈ movingActiveSlab Ω γ a b) :
     ∀ᶠ q in 𝓝 p, p.time ≤ q.time → q ∈ movingClosedSlab Ω γ a b := by
@@ -150,7 +153,7 @@ theorem eventually_future_mem_movingClosedSlab {n : ℕ} {Ω : Set (PDE.Vec n)}
 
 /-- A point of the closed moving slab that is not in the active part lies on the
 terminal face or the lateral frontier. -/
-theorem mem_boundary_of_movingClosedSlab {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
+theorem mem_boundary_of_movingClosedSlab  (hΩ : IsOpen Ω)
     {γ : ℝ → PDE.Vec n} {a b : ℝ} {p : KineticPoint n}
     (hp : p ∈ movingClosedSlab Ω γ a b) (hnot : p ∉ movingActiveSlab Ω γ a b) :
     p.time = b ∨ p.position ∈ frontier (movingDomain Ω γ p.time) := by
@@ -166,7 +169,7 @@ theorem mem_boundary_of_movingClosedSlab {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ :
 
 /-- The active part of a bounded truncation has the one-sided neighbourhood property:
 every nearby point of no earlier time still lies in the truncated closed slab. -/
-theorem eventually_future_mem_truncated {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
+theorem eventually_future_mem_truncated  (hΩ : IsOpen Ω)
     {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {a b R : ℝ} {p : KineticPoint n}
     (hp : p ∈ movingActiveSlab Ω γ a b ∩ {q | radialSq q < R ^ 2}) :
     ∀ᶠ q in 𝓝 p, p.time ≤ q.time →
@@ -183,7 +186,7 @@ theorem eventually_future_mem_truncated {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : 
 
 /-- A point of the truncated closed slab that is not in the active part lies on the
 terminal face, the lateral frontier, or the artificial radial boundary. -/
-theorem mem_boundary_of_truncated {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
+theorem mem_boundary_of_truncated  (hΩ : IsOpen Ω)
     {γ : ℝ → PDE.Vec n} {a b R : ℝ} {p : KineticPoint n}
     (hp : p ∈ movingClosedSlab Ω γ a b ∩ {q | radialSq q ≤ R ^ 2})
     (hnot : p ∉ movingActiveSlab Ω γ a b ∩ {q | radialSq q < R ^ 2}) :
@@ -201,5 +204,6 @@ theorem mem_boundary_of_truncated {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen
       exact ⟨hpc, h2⟩
   · left
     exact le_antisymm htb (not_lt.mp h1)
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

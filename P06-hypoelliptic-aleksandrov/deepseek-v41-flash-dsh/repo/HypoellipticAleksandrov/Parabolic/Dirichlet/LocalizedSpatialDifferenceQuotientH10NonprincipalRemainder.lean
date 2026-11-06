@@ -8,6 +8,8 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialRawA
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSmoothness
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.SixTermYoung
 public import HypoellipticAleksandrov.Topology.Support
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 /-!
 # Raw nonprincipal localized commutator remainder
 This module isolates the six non-translated-principal fixed-time commutator
@@ -20,7 +22,7 @@ open Filter MeasureTheory Set
 open scoped BigOperators ENNReal RealInnerProductSpace Matrix.Norms.Elementwise
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 private theorem inner_scalarL2Multiplier_eq_setIntegral
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (q : PDE.Vec d → ℝ) (hq : AEStronglyMeasurable q (PDE.volumeOn Ω))
     (C : ℝ) (hC : 0 ≤ C)
     (hqBound : ∀ᵐ y ∂PDE.volumeOn Ω, ‖q y‖ ≤ C)
@@ -34,7 +36,7 @@ private theorem inner_scalarL2Multiplier_eq_setIntegral
   simp only [RCLike.inner_apply, conj_trivial]
   ring
 private theorem continuous_cutoff_spatialDifferenceQuotient_slice
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (r₀ r₁ τ : ℝ) (β : PDE.QuantitativeSmoothCutoff inner Ω K)
     (k : Fin d) (h : ℝ) (f : TimeVelocity d → ℝ)
     (hf : IsSmoothOnNeighborhood f (Set.Icc 0 (r₁ - r₀) ×ˢ closure Ω))
@@ -45,7 +47,7 @@ private theorem continuous_cutoff_spatialDifferenceQuotient_slice
   rcases hf with ⟨V, hVopen, hSV, hV⟩
   let g₀ : PDE.Vec d → TimeVelocity d := fun y => (τ, y)
   let g₁ : PDE.Vec d → TimeVelocity d := fun y => (τ, y + h • PDE.basisVec k)
-  let U : Set (PDE.Vec d) := g₀ ⁻¹' V ∩ g₁ ⁻¹' V
+  let U : HypoellipticAleksandrov.VecSet d := g₀ ⁻¹' V ∩ g₁ ⁻¹' V
   have hg₀ : Continuous g₀ := by
     exact continuous_const.prodMk continuous_id
   have hg₁ : Continuous g₁ := by
@@ -67,7 +69,7 @@ private theorem continuous_cutoff_spatialDifferenceQuotient_slice
   exact HypoellipticAleksandrov.continuous_mul_of_tsupport_subset hU
     β.smooth.continuous.continuousOn hβU hdq
 private theorem continuous_cutoff_spatialTranslate_slice
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (r₀ r₁ τ : ℝ) (β : PDE.QuantitativeSmoothCutoff inner Ω K)
     (k : Fin d) (h : ℝ) (f : TimeVelocity d → ℝ)
     (hf : IsSmoothOnNeighborhood f (Set.Icc 0 (r₁ - r₀) ×ˢ closure Ω))
@@ -77,7 +79,7 @@ private theorem continuous_cutoff_spatialTranslate_slice
     Continuous (fun y => β y * spatialTranslate k h f (τ, y)) := by
   rcases hf with ⟨V, hVopen, hSV, hV⟩
   let g : PDE.Vec d → TimeVelocity d := fun y => (τ, y + h • PDE.basisVec k)
-  let U : Set (PDE.Vec d) := g ⁻¹' V
+  let U : HypoellipticAleksandrov.VecSet d := g ⁻¹' V
   have hg : Continuous g := by
     exact continuous_const.prodMk (continuous_id.add continuous_const)
   have hU : IsOpen U := hg.isOpen_preimage V hVopen
@@ -91,7 +93,7 @@ private theorem continuous_cutoff_spatialTranslate_slice
   exact HypoellipticAleksandrov.continuous_mul_of_tsupport_subset hU
     β.smooth.continuous.continuousOn hβU htranslate
 private theorem reverseTimeMap_image_closedCylinder_subset
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ : ℝ) :
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (r₀ r₁ : ℝ) :
     reverseTimeMap r₁ '' (Set.Icc 0 (r₁ - r₀) ×ˢ closure Ω) ⊆
       scalarParabolicClosedCylinder r₀ r₁ Ω := by
   rintro w ⟨z, hz, rfl⟩
@@ -103,7 +105,7 @@ private theorem reverseTimeMap_image_closedCylinder_subset
   · simp only [reverseTimeMap_apply]
     linarith [hτ.1]
 private theorem reverseTime_source_smoothOn_closedCylinder
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ : ℝ)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (r₀ r₁ : ℝ)
     (F : ℝ → PDE.Vec d → ℝ)
     (hF : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => F z.1 z.2)
@@ -116,7 +118,7 @@ private theorem reverseTime_source_smoothOn_closedCylinder
   exact IsSmoothOnNeighborhood.reverseTime r₁
     (reverseTimeMap_image_closedCylinder_subset r₀ r₁) hF
 private theorem reverseTime_coefficient_smoothOn_closedCylinder
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ : ℝ)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (r₀ r₁ : ℝ)
     (a : CoefficientField d)
     (ha : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => a z.1 z.2)
@@ -131,7 +133,7 @@ private theorem reverseTime_coefficient_smoothOn_closedCylinder
     (reverseTimeMap_image_closedCylinder_subset r₀ r₁)
     (IsSmoothOnNeighborhood.coefficientEntry a ha i j)
 private theorem reverseTime_drift_smoothOn_closedCylinder
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ : ℝ)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (r₀ r₁ : ℝ)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (ha : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => a z.1 z.2)
@@ -150,7 +152,7 @@ private theorem reverseTime_drift_smoothOn_closedCylinder
     (reverseTimeMap_image_closedCylinder_subset r₀ r₁)
     (IsSmoothOnNeighborhood.divergenceDriftEntry a b ha hb j)
 private theorem reverseTime_scalar_smoothOn_closedCylinder
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ : ℝ)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (r₀ r₁ : ℝ)
     (c : ℝ → PDE.Vec d → ℝ)
     (hc : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => c z.1 z.2)
@@ -163,7 +165,7 @@ private theorem reverseTime_scalar_smoothOn_closedCylinder
   exact IsSmoothOnNeighborhood.reverseTime r₁
     (reverseTimeMap_image_closedCylinder_subset r₀ r₁) hc
 private theorem norm_cutoff_mul_le_of_tsupport_bound
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {K C : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {K C : ℝ}
     (β : PDE.QuantitativeSmoothCutoff inner Ω K) (q : PDE.Vec d → ℝ)
     (hC : 0 ≤ C) (hq : ∀ y ∈ tsupport β.toFun, ‖q y‖ ≤ C) :
     ∀ y, ‖β y * q y‖ ≤ C := by
@@ -180,12 +182,12 @@ private theorem norm_cutoff_mul_le_of_tsupport_bound
         (hq y hys) (norm_nonneg _) zero_le_one
       _ = C := one_mul _
 private theorem tsupport_cutoff_mul_subset
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (β : PDE.QuantitativeSmoothCutoff inner Ω K) (q : PDE.Vec d → ℝ) :
   tsupport (fun y => β y * q y) ⊆ tsupport β.toFun :=
   tsupport_mul_subset_left
 private theorem sq_norm_compactlySupportedContinuousToScalarLp_le
-    {d : ℕ} {Ω K : Set (PDE.Vec d)}
+    {d : ℕ} {Ω K : HypoellipticAleksandrov.VecSet d}
     (q : PDE.Vec d → ℝ) (hq : Continuous q) (hK : IsCompact K)
     (hqK : tsupport q ⊆ K) (C : ℝ) (hqC : ∀ y, ‖q y‖ ≤ C) :
     ‖compactlySupportedContinuousToScalarLp (Ω := Ω) q hq
@@ -199,9 +201,9 @@ private theorem sq_norm_compactlySupportedContinuousToScalarLp_le
   rw [← henergy]
   exact integral_sq_le_mul_volumeOn_of_tsupport_subset q hq hK hqK C hqC
 private theorem norm_hilbertVectorLpCoord_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (i : Fin d)
-    (G : PDE.HilbertVectorLp Ω (2 : ℝ≥0∞)) :
-    ‖PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i G‖ ≤ ‖G‖ := by
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (i : Fin d)
+    (G : PDE.HilbertVectorLp Ω 2) :
+    ‖PDE.hilbertVectorLpCoord Ω 2 i G‖ ≤ ‖G‖ := by
   rw [PDE.hilbertVectorLpCoord]
   calc
     ‖(PiLp.proj (𝕜 := ℝ) 2 (fun _ : Fin d => ℝ) i).compLpL
@@ -216,21 +218,21 @@ private theorem norm_hilbertVectorLpCoord_le
         PiLp.norm_apply_le x i
     _ = ‖G‖ := one_mul _
 private theorem norm_valueCLM_le_graph
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     (u : H10HilbertGraph hΩ) :
     ‖valueCLM hΩ u‖ ≤ ‖u‖ := by
   let z : PDE.H1HilbertAmbient Ω := (u : PDE.H1HilbertGraph Ω).1
   change ‖z.fst‖ ≤ ‖z‖
   exact WithLp.norm_fst_le _ z
 private theorem norm_gradientCLM_le_graph
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     (u : H10HilbertGraph hΩ) :
     ‖gradientCLM hΩ u‖ ≤ ‖u‖ := by
   let z : PDE.H1HilbertAmbient Ω := (u : PDE.H1HilbertGraph Ω).1
   change ‖z.snd‖ ≤ ‖z‖
   exact WithLp.norm_snd_le _ z
 private theorem abs_inner_scalarL2Multiplier_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (q : PDE.Vec d → ℝ) (hq : AEStronglyMeasurable q (PDE.volumeOn Ω))
     (C : ℝ) (hC : 0 ≤ C)
     (hqBound : ∀ᵐ y ∂PDE.volumeOn Ω, ‖q y‖ ≤ C)
@@ -245,7 +247,7 @@ private theorem abs_inner_scalarL2Multiplier_le
       exact mul_le_mul_of_nonneg_right
         (norm_scalarL2Multiplier_apply_le q hq C hC hqBound f) (norm_nonneg _)
 private theorem abs_setIntegral_mul_mul_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (q : PDE.Vec d → ℝ) (hq : AEStronglyMeasurable q (PDE.volumeOn Ω))
     (C : ℝ) (hC : 0 ≤ C)
     (hqBound : ∀ᵐ y ∂PDE.volumeOn Ω, ‖q y‖ ≤ C)
@@ -261,8 +263,8 @@ private theorem abs_setIntegral_mul_mul_le
   rw [heq]
   exact abs_inner_scalarL2Multiplier_le q hq C hC hqBound f g
 private theorem inner_scalarLp_eq_setIntegral_of_ae_eq
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (f g : PDE.ScalarLp Ω (2 : ℝ≥0∞)) (p q : PDE.Vec d → ℝ)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
+    (f g : PDE.ScalarLp Ω 2) (p q : PDE.Vec d → ℝ)
     (hf : ⇑f =ᵐ[PDE.volumeOn Ω] p) (hg : ⇑g =ᵐ[PDE.volumeOn Ω] q) :
     inner ℝ f g = ∫ y in Ω, p y * q y ∂volume := by
   rw [L2.inner_def]
@@ -272,16 +274,16 @@ private theorem inner_scalarLp_eq_setIntegral_of_ae_eq
   simp only [RCLike.inner_apply, conj_trivial]
   ring
 private theorem abs_inner_scalarLp_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (f g : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
+    (f g : PDE.ScalarLp Ω 2) :
     |Inner.inner ℝ f g| ≤ ‖f‖ * ‖g‖ :=
   abs_real_inner_le_norm f g
 private theorem mul_le_mul_left_nonneg (a b c : ℝ)
     (hbc : b ≤ c) (ha : 0 ≤ a) : a * b ≤ a * c :=
   mul_le_mul_of_nonneg_left hbc ha
 private theorem abs_source_pairing_le_sq_add
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (sourceLp V : PDE.ScalarLp Ω (2 : ℝ≥0∞))
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
+    (sourceLp V : PDE.ScalarLp Ω 2)
     (source : PDE.Vec d → ℝ) (n S : ℝ)
     (hsource : ⇑sourceLp =ᵐ[PDE.volumeOn Ω] source)
     (hV : ‖V‖ ≤ n) (hsq : ‖sourceLp‖ ^ 2 ≤ S) :
@@ -320,7 +322,7 @@ private theorem abs_sum_fin_fin_le
       exact hf i j
     _ = (Fintype.card (Fin d) : ℝ) ^ 2 * M := by simp; ring
 private theorem abs_multiplier_pairing_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (q : PDE.Vec d → ℝ) (hq : AEStronglyMeasurable q (PDE.volumeOn Ω))
     (C N M : ℝ) (hC : 0 ≤ C)
     (hqC : ∀ᵐ y ∂PDE.volumeOn Ω, ‖q y‖ ≤ C)
@@ -335,7 +337,7 @@ private theorem abs_multiplier_pairing_le
         (norm_nonneg _) (mul_nonneg hC hN)
     _ = _ := by ring
 private theorem abs_source_fixedSlice_le_sq_add
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ C : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ C : ℝ}
     (r₀ r₁ : ℝ) (hΩ : IsOpen Ω)
     (F : ℝ → PDE.Vec d → ℝ)
     (hF : IsSmoothOnNeighborhood
@@ -405,7 +407,7 @@ private theorem abs_source_fixedSlice_le_sq_add
   exact abs_source_pairing_le_sq_add sourceLp V sourceD ‖u‖
     (C ^ 2 * (PDE.volumeOn Ω).real (tsupport χ.toFun)) hsourceLpAE hVNorm hsourceSq
 private noncomputable def nonprincipalA_fixedSliceTerm
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₁ : ℝ) (hΩ : IsOpen Ω) (a : CoefficientField d)
     (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
     (χ : PDE.QuantitativeSmoothCutoff (tsupport η.toFun) Ω Kχ)
@@ -439,7 +441,7 @@ private noncomputable def nonprincipalA_fixedSliceTerm
   ∑ i : Fin d, ∑ j : Fin d, ∫ y in Ω,
     (aD i j y * U j y) * H i y ∂volume
 private theorem abs_nonprincipalA_fixedSliceTerm_le
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ C δ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ C δ : ℝ}
     (r₀ r₁ : ℝ) (hΩ : IsOpen Ω) (a : CoefficientField d)
     (ha : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => a z.1 z.2)
@@ -574,7 +576,7 @@ private theorem abs_nonprincipalA_fixedSliceTerm_le
     _ ≤ (Fintype.card (Fin d) : ℝ) ^ 2 * (C * n * (g + Kη * n)) := hsum
     _ = _ := by dsimp only [g, n, A]; ring
 private noncomputable def nonprincipalDriftT_fixedSliceTerm
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₁ : ℝ) (hΩ : IsOpen Ω) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
     (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
@@ -601,7 +603,7 @@ private noncomputable def nonprincipalDriftT_fixedSliceTerm
       (fun z : TimeVelocity d => reverseTimeDivergenceDrift r₁ a b z.1 z.2 j) (τ, y)
   ∑ j : Fin d, ∫ y in Ω, (driftT j y * E j y) * V y ∂volume
 private theorem abs_nonprincipalDriftT_fixedSliceTerm_le
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ C δ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ C δ : ℝ}
     (r₀ r₁ : ℝ) (hΩ : IsOpen Ω) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
     (ha : IsSmoothOnNeighborhood
@@ -714,7 +716,7 @@ private theorem abs_nonprincipalDriftT_fixedSliceTerm_le
     _ ≤ (Fintype.card (Fin d) : ℝ) * (C * n * (g + Kη * n)) := hsum
     _ = _ := by dsimp only [g, n, A]; ring
 private noncomputable def nonprincipalDriftD_fixedSliceTerm
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₁ : ℝ) (hΩ : IsOpen Ω) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
     (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
@@ -743,7 +745,7 @@ private noncomputable def nonprincipalDriftD_fixedSliceTerm
       (fun z : TimeVelocity d => reverseTimeDivergenceDrift r₁ a b z.1 z.2 j) (τ, y)
   ∑ j : Fin d, ∫ y in Ω, (driftD j y * U j y) * V y ∂volume
 private theorem abs_nonprincipalDriftD_fixedSliceTerm_le
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ C δ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ C δ : ℝ}
     (r₀ r₁ : ℝ) (hΩ : IsOpen Ω) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
     (ha : IsSmoothOnNeighborhood
@@ -844,7 +846,7 @@ private theorem abs_nonprincipalDriftD_fixedSliceTerm_le
     _ ≤ (Fintype.card (Fin d) : ℝ) * (C * n ^ 2) := hsum
     _ = _ := by dsimp only [n]; ring
 private noncomputable def nonprincipalGammaT_fixedSliceTerm
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₁ : ℝ) (hΩ : IsOpen Ω) (c : ℝ → PDE.Vec d → ℝ)
     (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
     (χ : PDE.QuantitativeSmoothCutoff (tsupport η.toFun) Ω Kχ)
@@ -864,7 +866,7 @@ private noncomputable def nonprincipalGammaT_fixedSliceTerm
     (fun z : TimeVelocity d => reverseTimeScalarCoefficient r₁ c z.1 z.2) (τ, y)
   ∫ y in Ω, (gammaT y * V y) * V y ∂volume
 private theorem abs_nonprincipalGammaT_fixedSliceTerm_le
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ C δ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ C δ : ℝ}
     (r₀ r₁ : ℝ) (hΩ : IsOpen Ω) (c : ℝ → PDE.Vec d → ℝ)
     (hc : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => c z.1 z.2)
@@ -917,7 +919,7 @@ private theorem abs_nonprincipalGammaT_fixedSliceTerm_le
     _ ≤ C * n * n := hpair
     _ = C * ‖u‖ ^ 2 := by dsimp only [n]; ring
 private noncomputable def nonprincipalGammaD_fixedSliceTerm
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₁ : ℝ) (hΩ : IsOpen Ω) (c : ℝ → PDE.Vec d → ℝ)
     (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
     (χ : PDE.QuantitativeSmoothCutoff (tsupport η.toFun) Ω Kχ)
@@ -944,7 +946,7 @@ private noncomputable def nonprincipalGammaD_fixedSliceTerm
     (fun z : TimeVelocity d => reverseTimeScalarCoefficient r₁ c z.1 z.2) (τ, y)
   ∫ y in Ω, (gammaD y * U₀ y) * V y ∂volume
 private theorem abs_nonprincipalGammaD_fixedSliceTerm_le
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ C δ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ C δ : ℝ}
     (r₀ r₁ : ℝ) (hΩ : IsOpen Ω) (c : ℝ → PDE.Vec d → ℝ)
     (hc : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => c z.1 z.2)
@@ -1052,7 +1054,7 @@ private theorem scalar_fixedSlice_raw_to_young
   have h₁ : 0 ≤ (1 + D ^ 2 * C * K + D * C * K + D * C + C) * n ^ 2 := by positivity
   nlinarith
 section
-variable {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+variable {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
 variable (r₁ : ℝ) (hΩ : IsOpen Ω) (a : CoefficientField d)
 variable (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
 variable (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
@@ -1171,7 +1173,7 @@ private theorem nonprincipalGammaD_fixedSliceTerm_eq_pointwise :
   filter_upwards [hU₀AE] with y hU₀; rw [hU₀]
 end
 private theorem nonprincipalRemainder_bound_of_rawAmplitude
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     {C δ : ℝ} (r₀ r₁ : ℝ) (hΩ : IsOpen Ω)
     (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
@@ -1333,7 +1335,7 @@ private theorem nonprincipalRemainder_bound_of_rawAmplitude
 /-- The six nonprincipal localized commutator terms obey a uniform raw Young
 bound before multiplication by the scalar time test. -/
 theorem exists_smallStep_localizedSpatialDifferenceQuotientH10_nonprincipalRemainder_bound
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₀ r₁ : ℝ) (hΩ : IsOpen Ω)
     (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
@@ -1403,7 +1405,7 @@ theorem exists_smallStep_localizedSpatialDifferenceQuotientH10_nonprincipalRemai
 before the coefficient data, under the literal uniform spatial majorants of
 the Caccioppoli estimate. -/
 theorem exists_uniform_nonprincipalRemainder_bound_of_majorants
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₀ r₁ : ℝ) (hΩ : IsOpen Ω)
     (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
     (χ : PDE.QuantitativeSmoothCutoff (tsupport η.toFun) Ω Kχ)

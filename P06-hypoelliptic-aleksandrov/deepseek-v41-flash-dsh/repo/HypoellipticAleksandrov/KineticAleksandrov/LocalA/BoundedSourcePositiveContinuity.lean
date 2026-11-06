@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundedSourceLin
 import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ClassicalTerminalWeak
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Interior continuity for positive bounded Borel sources
 
@@ -17,7 +18,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set Filter Evolution Metric
 open scoped Topology
-variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d}
 
 /-- The literal positive bounded Borel potential is continuous on the open past cylinder. -/
 theorem continuousOn_duhamelPotential_bounded_nonneg

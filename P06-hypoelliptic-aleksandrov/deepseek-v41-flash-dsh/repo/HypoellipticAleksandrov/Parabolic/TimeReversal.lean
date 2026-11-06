@@ -7,6 +7,7 @@ public import Mathlib.MeasureTheory.Measure.Restrict
 public import Mathlib.MeasureTheory.Measure.Haar.Unique
 public import Mathlib.MeasureTheory.Function.LpSeminorm.Basic
 public import Mathlib.Tactic.Linarith
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Reverse-time local Dirichlet estimate for the parabolic ABP theorem

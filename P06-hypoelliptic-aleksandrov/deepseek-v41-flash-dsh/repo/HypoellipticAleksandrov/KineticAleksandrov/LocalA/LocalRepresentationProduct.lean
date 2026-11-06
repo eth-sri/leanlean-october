@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.LocalRepresentationCutoff
 public import HypoellipticAleksandrov.KineticAleksandrov.Maximum.ComparisonLinear
 public import HypoellipticAleksandrov.Parabolic.ScalarClassical
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # The classical residual of a multiplier independent of velocity -/
 

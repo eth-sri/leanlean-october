@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementApproxLoc
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementApproxUniformLp
 import Mathlib.Analysis.Normed.Group.Bounded
 import Mathlib.Tactic.Linarith
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Classical interior regularity of the continuous closed-cylinder limit
 
@@ -19,7 +21,7 @@ open scoped Topology MatrixOrder Matrix.Norms.Elementwise
 
 /-- The actual uniform closed-cylinder limit of homogeneous classical functions is classical. -/
 theorem homogeneous_continuousMap_limit_is_classical {d : ℕ}
-    (a T : ℝ) (Ω : Set (PDE.Vec d)) (hΩ : IsOpen Ω) (hΩc : IsCompact (closure Ω))
+    (a T : ℝ) (Ω : HypoellipticAleksandrov.VecSet d) (hΩ : IsOpen Ω) (hΩc : IsCompact (closure Ω))
     (A : CoefficientField d) (hA : IsSmoothCoefficient A)
     (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hlo : HasLowerEllipticity lam A) (hhi : HasUpperEllipticity Lam A)
@@ -67,7 +69,7 @@ theorem homogeneous_continuousMap_limit_is_classical {d : ℕ}
     integral_square_le_measure_mul_bound_sq (u n) (hun n) B hB
       (ae_restrict_of_forall_mem hD.measurableSet (fun z hz => hub n z hz))
   have hvK := continuousOn_continuousMapZeroExtension V
-  have hlocal : ∀ z ∈ D, ∃ S : Set (TimeVelocity d), IsOpen S ∧ z ∈ S ∧
+  have hlocal : ∀ z ∈ D, ∃ S : HypoellipticAleksandrov.Parabolic.TVSet d, IsOpen S ∧ z ∈ S ∧
       IsScalarC12On (continuousMapZeroExtension V) S ∧
       (∀ y ∈ S, scalarTimeDerivative (continuousMapZeroExtension V) y +
         matrixContraction (coefficientAt A y)

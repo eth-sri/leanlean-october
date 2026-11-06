@@ -6,6 +6,7 @@ public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyDerivativeNorm
 public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyProjectionRecovery
 public import Mathlib.Topology.MetricSpace.Bounded
 public import Mathlib.Topology.MetricSpace.UniformConvergence
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Uniform Cauchy control for parabolic mollifications
@@ -27,9 +28,11 @@ open scoped BigOperators Convolution ENNReal Pointwise Topology
 private theorem parabolicExponent_one_le (d : Nat) :
     (1 : ENNReal) <= parabolicExponent d := by
   simp [parabolicExponent]
+section
+variable {d : Nat}
 
 private theorem support_parabolicConvolution_subset_common
-    {d : Nat} (g : TimeVelocity d -> Real) (n : Nat) :
+     (g : TimeVelocity d -> Real) (n : Nat) :
     Function.support (parabolicConvolution g (parabolicMollifier d n)) ⊆
       tsupport g + Metric.closedBall (0 : TimeVelocity d) 1 := by
   rw [show parabolicConvolution g (parabolicMollifier d n) =
@@ -41,7 +44,7 @@ private theorem support_parabolicConvolution_subset_common
     (Metric.closedBall_subset_closedBall (by simpa using parabolicMollifierScale_le_one n))
 
 private theorem support_parabolicConvolution_sub_subset_common
-    {d : Nat} (g : TimeVelocity d -> Real) (m n : Nat) :
+     (g : TimeVelocity d -> Real) (m n : Nat) :
     Function.support (fun z =>
       parabolicConvolution g (parabolicMollifier d m) z -
         parabolicConvolution g (parabolicMollifier d n) z) ⊆
@@ -51,7 +54,7 @@ private theorem support_parabolicConvolution_sub_subset_common
       (support_parabolicConvolution_subset_common g n))
 
 private theorem exists_point_not_mem_of_isCompact
-    {d : Nat} {S : Set (TimeVelocity d)} (hS : IsCompact S) :
+     {S : HypoellipticAleksandrov.Parabolic.TVSet d} (hS : IsCompact S) :
     ∃ z : TimeVelocity d, z ∉ S := by
   obtain ⟨R, hR⟩ := (Metric.isBounded_iff_subset_closedBall 0).mp hS.isBounded
   refine ⟨(R + 1, 0), ?_⟩
@@ -70,7 +73,7 @@ private theorem exists_point_not_mem_of_isCompact
   linarith
 
 private theorem convolution_sub_eq_zero_of_not_mem_common
-    {d : Nat} (g : TimeVelocity d -> Real)
+     (g : TimeVelocity d -> Real)
     {z : TimeVelocity d}
     (hz : z ∉ tsupport g + Metric.closedBall (0 : TimeVelocity d) 1) (m n : Nat) :
     parabolicConvolution g (parabolicMollifier d m) z -
@@ -80,14 +83,14 @@ private theorem convolution_sub_eq_zero_of_not_mem_common
   exact hz (support_parabolicConvolution_sub_subset_common g m n hsupport)
 
 private theorem open_mem_parabolicClosedBox_of_mem_parabolicBox
-    {d : Nat} {r t0 : Real} {v0 : PDE.Vec d} {z : TimeVelocity d}
+     {r t0 : Real} {v0 : PDE.Vec d} {z : TimeVelocity d}
     (hz : z ∈ parabolicBox 1 r t0 v0) :
     z ∈ parabolicClosedBox 1 r t0 v0 := by
   rcases mem_parabolicBox_iff.mp hz with ⟨hleft, hright, hvelocity⟩
   exact mem_parabolicClosedBox_iff.mpr ⟨hleft.le, hright.le, fun i => (hvelocity i).le⟩
 
 private theorem exists_forward_box_of_isCompact
-    {d : Nat} {L : Set (TimeVelocity d)} (hL : IsCompact L) (hLnonempty : L.Nonempty) :
+     {L : HypoellipticAleksandrov.Parabolic.TVSet d} (hL : IsCompact L) (hLnonempty : L.Nonempty) :
     ∃ (r t0 : Real) (v0 : PDE.Vec d), 0 < r ∧
       L ⊆ parabolicBox 1 r t0 v0 := by
   obtain ⟨R, hR⟩ := (Metric.isBounded_iff_subset_closedBall 0).mp hL.isBounded
@@ -127,7 +130,7 @@ private theorem exists_forward_box_of_isCompact
     simpa only [Pi.zero_apply, sub_zero] using hi.trans_lt (by linarith)
 
 private theorem parabolicSmoothJetLpNorm_eq_components
-    {d : Nat} {u : TimeVelocity d -> Real} (hu : ParabolicSmoothJetMemLp d u) :
+     {u : TimeVelocity d -> Real} (hu : ParabolicSmoothJetMemLp d u) :
     parabolicSmoothJetLpNorm d u =
       parabolicLpNorm d u + parabolicLpNorm d (timeDerivative u) +
         ∑ i : Fin d, parabolicLpNorm d (fun z => velocityGradient u z i) +
@@ -150,8 +153,8 @@ private theorem parabolicSmoothJetLpNorm_eq_components
   simp_rw [ENNReal.toReal_sum fun j _ => (hu.2.2.2 _ j).eLpNorm_ne_top]
 
 private theorem parabolicMorreyPhysical_rhs_le_smoothJet
-    {d : Nat} {u : TimeVelocity d -> Real} (hu : ParabolicSmoothJetMemLp d u)
-    (Q : Set (TimeVelocity d)) {r : Real} (hr : 0 < r) :
+     {u : TimeVelocity d -> Real} (hu : ParabolicSmoothJetMemLp d u)
+    (Q : HypoellipticAleksandrov.Parabolic.TVSet d) {r : Real} (hr : 0 < r) :
     (r ^ 2)⁻¹ * parabolicLpNormOn d u Q +
         parabolicLpNormOn d (timeDerivative u) Q +
         r⁻¹ * ∑ i : Fin d, parabolicLpNormOn d
@@ -221,18 +224,18 @@ private theorem parabolicMorreyPhysical_rhs_le_smoothJet
 /-- Compactly supported value mollifications are uniformly Cauchy on every
 compact time--velocity carrier. -/
 theorem uniformCauchySeqOn_parabolicConvolution
-    {d : Nat} (hd : 1 <= d)
+     (hd : 1 <= d)
     (g : ParabolicW12Function d Set.univ (parabolicExponent d))
     (hg : HasCompactSupport g.toFun)
-    (K : Set (TimeVelocity d)) (hK : IsCompact K) :
+    (K : HypoellipticAleksandrov.Parabolic.TVSet d) (hK : IsCompact K) :
     UniformCauchySeqOn
       (fun n : Nat => fun z : TimeVelocity d =>
         parabolicConvolution g.toFun (parabolicMollifier d n) z)
       atTop K := by
-  let S : Set (TimeVelocity d) := tsupport g.toFun + Metric.closedBall 0 1
+  let S : HypoellipticAleksandrov.Parabolic.TVSet d := tsupport g.toFun + Metric.closedBall 0 1
   have hScompact : IsCompact S := hg.isCompact.add (isCompact_closedBall 0 1)
   obtain ⟨zStar, hzStar⟩ := exists_point_not_mem_of_isCompact hScompact
-  let L : Set (TimeVelocity d) := K ∪ {zStar}
+  let L : HypoellipticAleksandrov.Parabolic.TVSet d := K ∪ {zStar}
   have hLcompact : IsCompact L := hK.union isCompact_singleton
   have hLnonempty : L.Nonempty := ⟨zStar, Or.inr (mem_singleton _)⟩
   obtain ⟨r, t0, v0, hr, hLbox⟩ := exists_forward_box_of_isCompact hLcompact hLnonempty
@@ -280,7 +283,7 @@ theorem uniformCauchySeqOn_parabolicConvolution
   have hcoord : parabolicCoordinateDist z zStar <= 2 * r :=
     parabolicCoordinateDist_le_two_mul_radius_of_mem_parabolicClosedBox t0 v0 hr hzClosed
       hzStarClosed
-  let Q : Set (TimeVelocity d) := parabolicBox 1 (2 * r) (t0 - r ^ 2) v0
+  let Q : HypoellipticAleksandrov.Parabolic.TVSet d := parabolicBox 1 (2 * r) (t0 - r ^ 2) v0
   have huValue : ParabolicMemLpOn Q (parabolicExponent d) u :=
     huJet.1.mono_measure Measure.restrict_le_self
   have huTime : ParabolicMemLpOn Q (parabolicExponent d) (timeDerivative u) :=
@@ -363,5 +366,6 @@ theorem uniformCauchySeqOn_parabolicConvolution
     |u z| <= B * parabolicSmoothJetLpNorm d u := hpoint
     _ < B * (eps / B) := mul_lt_mul_of_pos_left (hN m hm n hn) hBpos
     _ = eps := by field_simp [hBpos.ne']
+end
 
 end HypoellipticAleksandrov.Parabolic.ParabolicW12Function

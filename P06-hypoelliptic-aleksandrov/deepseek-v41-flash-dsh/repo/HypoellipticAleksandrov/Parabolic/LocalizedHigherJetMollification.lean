@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.Parabolic.HigherJetLocalization
 public import HypoellipticAleksandrov.Parabolic.CompactWeakDerivativeFamilyGlobalization
 public import HypoellipticAleksandrov.Parabolic.SpacetimeMollificationSupport
 public import HypoellipticAleksandrov.Parabolic.HigherWeakDerivativeMollification
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Localized higher-jet mollification
@@ -24,15 +25,15 @@ localization whose positive-radius mollifications have a common compact
 support, retain the full higher-derivative identity, and agree with the
 original mollified jet on the prescribed compact set. -/
 theorem exists_localizedHigherJetMollification
-    {d m : ℕ} {U C : Set (TimeVelocity d)}
+    {d m : ℕ} {U C : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hU : IsOpen U) (hC : IsCompact C) (hCU : C ⊆ U)
     {u : TimeVelocity d → ℝ}
     (D : ParabolicWeakDerivativeFamily d (2 * m) U u) :
     ∃ (ρ : ℝ) (_ : 0 < ρ)
-      (K : Set (TimeVelocity d))
+      (K : HypoellipticAleksandrov.Parabolic.TVSet d)
       (_ : IsCompact K)
       (_ : MeasurableSet K)
-      (_ : (volume : Measure (TimeVelocity d)) K < ∞)
+      (_ : (HypoellipticAleksandrov.Parabolic.TVVolume d) K < ∞)
       (b : TimeVelocity d → ℝ)
       (_ : ContDiff ℝ (⊤ : ℕ∞) b)
       (_ : HasCompactSupport b)
@@ -70,7 +71,7 @@ theorem exists_localizedHigherJetMollification
     apply hbSupport
     exact subset_tsupport b (fun hbz ↦ hz (by simp [hbz]))
   have hzero : Dloc.representative (ParabolicDerivativeIndex.zero d (2 * m))
-      =ᵐ[(volume : Measure (TimeVelocity d))] (fun z ↦ b z * u z) :=
+      =ᵐ[(HypoellipticAleksandrov.Parabolic.TVVolume d)] (fun z ↦ b z * u z) :=
     Dloc.zero_representative_ae_eq_of_support_subset hU.measurableSet
       (hDlocSupportU (ParabolicDerivativeIndex.zero d (2 * m))) hrootSupport
   let G : ParabolicWeakDerivativeFamily d (2 * m) Set.univ
@@ -79,19 +80,19 @@ theorem exists_localizedHigherJetMollification
       memLp := G₀.memLp
       zero_ae := by
         change Dloc.representative (ParabolicDerivativeIndex.zero d (2 * m))
-          =ᵐ[(volume : Measure (TimeVelocity d)).restrict Set.univ]
+          =ᵐ[(HypoellipticAleksandrov.Parabolic.TVVolume d).restrict Set.univ]
             (fun z ↦ b z * u z)
         simpa only [Measure.restrict_univ] using hzero
       hasWeakTimeSucc := G₀.hasWeakTimeSucc
       hasWeakVelocitySucc := G₀.hasWeakVelocitySucc }
   let ρ : ℝ := min ρloc 1
-  let K : Set (TimeVelocity d) := Metric.cthickening 1 (tsupport b)
+  let K : HypoellipticAleksandrov.Parabolic.TVSet d := Metric.cthickening 1 (tsupport b)
   have hρ : 0 < ρ := lt_min hρloc zero_lt_one
   have hρρloc : ρ ≤ ρloc := min_le_left _ _
   have hρone : ρ ≤ 1 := min_le_right _ _
   have hKCompact : IsCompact K := hbCompact.cthickening
   have hKMeasurable : MeasurableSet K := hKCompact.isClosed.measurableSet
-  have hKFinite : (volume : Measure (TimeVelocity d)) K < ∞ :=
+  have hKFinite : (HypoellipticAleksandrov.Parabolic.TVVolume d) K < ∞ :=
     hKCompact.measure_lt_top
   refine ⟨ρ, hρ, K, hKCompact, hKMeasurable, hKFinite,
     b, hbSmooth, hbCompact, hbSupport, G, ?_, ?_, ?_⟩

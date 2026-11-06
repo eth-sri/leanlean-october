@@ -8,13 +8,13 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.InfiniteHori
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (H : Interval) (e : StripPole H ⊤)
 
 /-- An almost-everywhere property of all finite Green measures holds for their actual infinite
   limit. -/
 theorem stripGreen_infinite_ae_of_finite
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (e : StripPole H ⊤)
+    
     (P : Point → Prop)
     (hP : ∀ T : ℝ, ∀ ht : e.1.time < T,
       ∀ᵐ p ∂stripGreen hH hLE hlam hLam A H T (stripPoleFinite H e T ht), P p) :
@@ -37,9 +37,7 @@ theorem stripGreen_infinite_ae_of_finite
 
 /-- Actual infinite Green measure is strictly future supported inside the velocity interval. -/
 theorem stripGreen_infinite_ae_future_carrier
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (e : StripPole H ⊤) :
+     :
     ∀ᵐ p ∂stripGreen hH hLE hlam hLam A H ⊤ e,
       e.1.time < p.time ∧ p.velocity 0 ∈ H.carrier := by
   apply stripGreen_infinite_ae_of_finite hH hLE hlam hLam A H e
@@ -49,5 +47,6 @@ theorem stripGreen_infinite_ae_future_carrier
     stripGreenOfKernel_ae_mem_stripPast H (stripEvolution hH hLE hlam hLam A H).2 T
       (stripPoleFinite H e T ht)] with p hp hq
   exact ⟨hp, hq.2⟩
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

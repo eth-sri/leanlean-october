@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.Parabolic.ScalarDirichletData
 public import Mathlib.Analysis.Calculus.Deriv.Shift
 public import Mathlib.Analysis.Calculus.FDeriv.Mul
 public import Mathlib.Tactic.Ring
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Classical reverse-time divergence rewrite

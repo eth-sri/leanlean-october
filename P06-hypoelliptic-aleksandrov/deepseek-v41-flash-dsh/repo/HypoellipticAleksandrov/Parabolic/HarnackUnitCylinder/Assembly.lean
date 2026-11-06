@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.HarnackUnitCylinder.ClassicalWeakEquation
 public import HypoellipticAleksandrov.Parabolic.HarnackUnitCylinder.LocalWeakHarnack
 public import HypoellipticAleksandrov.Parabolic.HarnackUnitCylinder.ChainGeometry
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # The classical parabolic Harnack inequality on the unit cylinder -/
 

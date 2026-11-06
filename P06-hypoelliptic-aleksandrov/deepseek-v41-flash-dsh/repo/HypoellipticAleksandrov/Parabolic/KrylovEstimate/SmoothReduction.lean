@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.KrylovEstimate.SmoothApproximation
 public import HypoellipticAleksandrov.Parabolic.KrylovEstimate.CoefficientExtension
 public import HypoellipticAleksandrov.Parabolic.KrylovEstimate.ApproximationBounds
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Interior smoothing and boundary correction for the Krylov estimate -/
 

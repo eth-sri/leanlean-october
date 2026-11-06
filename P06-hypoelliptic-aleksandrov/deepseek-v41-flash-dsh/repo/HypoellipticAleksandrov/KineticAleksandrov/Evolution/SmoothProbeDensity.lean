@@ -7,6 +7,7 @@ public import Mathlib.Topology.ContinuousMap.CompactlySupported
 public import HypoellipticAleksandrov.KineticAleksandrov.BoundedBorel
 public import HypoellipticAleksandrov.KineticAleksandrov.EvolutionProblem
 public import HypoellipticAleksandrov.KineticAleksandrov.MovingKernel
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Smooth compactly supported probes are uniformly dense in `C_c` of an open fiber
@@ -101,7 +102,7 @@ section Outside
 /-- Smooth compactly supported terminal data approximate every compactly supported continuous
 test on the open terminal fiber uniformly, for an admissible base domain.  This is the
 outside-context form of `exists_smooth_terminal_test_close`, and needs only openness. -/
-theorem exists_smooth_terminal_test_close_of_isOpen {n : ℕ} {Ω : Set (PDE.Vec n)}
+theorem exists_smooth_terminal_test_close_of_isOpen {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n}
     (hΩ : IsOpen Ω) (γ : ℝ → PDE.Vec n) (τ : ℝ) (f : C_c(EvolutionState Ω γ τ, ℝ))
     (ε : ℝ) (hε : 0 < ε) :
     ∃ F : BoundedBorel (EvolutionAmbientState n),
@@ -122,7 +123,7 @@ section EvolutionData
 variable (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
 variable (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
 variable (hm : 0 < m) (hmLb : m ≤ L_b)
-variable (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
+variable (Ω : HypoellipticAleksandrov.VecSet n) (γ : ℝ → PDE.Vec n)
 variable (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
 variable (hΩ : IsAdmissibleEvolutionDomain Ω)
 variable (hγ : IsContinuousPiecewiseC1 γ)

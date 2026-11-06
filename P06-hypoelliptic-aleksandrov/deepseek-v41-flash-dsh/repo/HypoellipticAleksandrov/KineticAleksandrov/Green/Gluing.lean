@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Green.SlabDensity
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Gluing the slab densities (Theorem 2.4)
@@ -43,7 +44,7 @@ lemma slabSet_eq_empty {d : ℕ} {T : ℝ} (hT : T ≤ 0) : slabSet (d := d) T =
   linarith
 
 /-- Slab gluing: local slab densities give one global density, equal to each of them a.e. -/
-theorem exists_global_density {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+theorem exists_global_density {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d}
     (K : MovingFiberKernel Ω γ) (σ₀ : ℝ) (μ : Measure (EvolutionState Ω γ σ₀))
     [IsFiniteMeasure μ] (Γ : Measure (GreenCarrier d)) (hΓ : IsGreenMeasure K σ₀ ⊤ μ Γ)
     (Gl : ℝ → GreenCarrier d → ℝ≥0∞)

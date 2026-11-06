@@ -63,14 +63,16 @@ theorem visitPairUnion_carrier (L R : Interval) (hd : Disjoint L.carrier R.carri
   · rintro (hv | hv)
     · exact ⟨0, hv⟩
     · exact ⟨1, hv⟩
+section
+variable (c : Clock) (J : Interval)
 
 /-- The active velocity intersection in the original physical coordinate. -/
-def visitActiveUnion (c : Clock) (J : Interval) : FiniteIntervalUnion :=
+def visitActiveUnion  : FiniteIntervalUnion :=
   visitIntervalUnion (max (c.vbar - 3 * c.r / 4) J.lo)
     (min (c.vbar + 3 * c.r / 4) J.hi)
 
 /-- Exact active-domain geometry, with emptiness handled by the existing union carrier. -/
-theorem visitActiveUnion_carrier (c : Clock) (J : Interval) :
+theorem visitActiveUnion_carrier  :
     (visitActiveUnion c J).carrier = c.active ∩ J.carrier := by
   rw [visitActiveUnion, visitIntervalUnion_carrier]
   ext v
@@ -79,7 +81,7 @@ theorem visitActiveUnion_carrier (c : Clock) (J : Interval) :
   tauto
 
 /-- The two possible waiting components are disjoint, even before clipping to the outer strip. -/
-theorem visitWaiting_components_disjoint (c : Clock) (J : Interval)
+theorem visitWaiting_components_disjoint 
     (hl : J.lo < min J.hi (c.vbar - c.r / 2))
     (hr : max J.lo (c.vbar + c.r / 2) < J.hi) :
     Disjoint (⟨J.lo, min J.hi (c.vbar - c.r / 2), hl⟩ : Interval).carrier
@@ -93,7 +95,7 @@ theorem visitWaiting_components_disjoint (c : Clock) (J : Interval)
   linarith only [hv.2, hw.1, hlow, hhigh, c.positive]
 
 /-- The waiting domain has zero, one, or two actual nonempty interval components. -/
-def visitWaitingUnion (c : Clock) (J : Interval) : FiniteIntervalUnion :=
+def visitWaitingUnion  : FiniteIntervalUnion :=
   if hl : J.lo < min J.hi (c.vbar - c.r / 2) then
     if hr : max J.lo (c.vbar + c.r / 2) < J.hi then
       visitPairUnion ⟨J.lo, min J.hi (c.vbar - c.r / 2), hl⟩
@@ -103,7 +105,7 @@ def visitWaitingUnion (c : Clock) (J : Interval) : FiniteIntervalUnion :=
   else visitIntervalUnion (max J.lo (c.vbar + c.r / 2)) J.hi
 
 /-- Literal scalar carriers of the two waiting pieces. -/
-theorem visitWaitingUnion_components (c : Clock) (J : Interval) :
+theorem visitWaitingUnion_components  :
     (visitWaitingUnion c J).carrier =
       Ioo J.lo (min J.hi (c.vbar - c.r / 2)) ∪
         Ioo (max J.lo (c.vbar + c.r / 2)) J.hi := by
@@ -119,7 +121,7 @@ theorem visitWaitingUnion_components (c : Clock) (J : Interval) :
     rw [visitIntervalUnion_carrier, Ioo_eq_empty_of_le (not_lt.mp hl), empty_union]
 
 /-- The waiting carrier is precisely the outer interval minus the closed entrance interval. -/
-theorem visitWaitingUnion_carrier (c : Clock) (J : Interval) :
+theorem visitWaitingUnion_carrier  :
     (visitWaitingUnion c J).carrier = J.carrier \ closure c.entrance := by
   have ho : c.vbar - c.r / 2 < c.vbar + c.r / 2 := by linarith [c.positive]
   rw [visitWaitingUnion_components, Clock.entrance, closure_Ioo ho.ne]
@@ -127,5 +129,6 @@ theorem visitWaitingUnion_carrier (c : Clock) (J : Interval) :
   simp only [Interval.carrier, mem_union, mem_Ioo, lt_min_iff, max_lt_iff,
     mem_sdiff, mem_Icc, not_and_or, not_le]
   tauto
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

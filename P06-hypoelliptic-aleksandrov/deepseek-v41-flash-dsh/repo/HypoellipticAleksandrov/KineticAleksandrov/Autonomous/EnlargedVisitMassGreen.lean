@@ -10,12 +10,12 @@ import Mathlib.Tactic
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
 
 /-- On poles after `s`, the enlarged Green kernel agrees with a finite clipped kernel. -/
 theorem enlargedVisitGreen_comp_eq_clipped
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (s T : ℝ)
+     (H : FiniteIntervalUnion) (s T : ℝ)
     (mu : Measure Point) (hs : ∀ᵐ p ∂mu, s ≤ p.time) :
     enlargedVisitGreenKernel hH hLE hlam hLam A H T ∘ₘ mu =
       visitUnionGreenKernel hH hLE hlam hLam A H (s - 1) T ∘ₘ mu := by
@@ -38,12 +38,12 @@ theorem enlargedVisitGreen_comp_eq_clipped
   · rw [dite_eq_left h, dite_eq_left (he.mp h)]
     rfl
   · rw [dite_eq_right h, dite_eq_right (fun hh => h (he.mpr hh))]
+section
+variable (c : Clock) (J : Interval)
 
 /-- Each actual active occupation is finite, although its unrestricted kernel is not uniform. -/
 theorem enlargedActivePiece_isFiniteMeasure
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
+      (s T : ℝ)
     (P : Point) (hs : s ≤ P.time) (hT : P.time < T) (n : ℕ) :
     IsFiniteMeasure (enlargedActivePiece hH hLE hlam hLam A c J s T P n) := by
   unfold enlargedActivePiece
@@ -54,9 +54,7 @@ theorem enlargedActivePiece_isFiniteMeasure
 
 /-- Actual enlarged exit mixtures remain in the closed active interval. -/
 theorem enlargedActiveExitMixture_ae_velocity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T : ℝ)
+      (T : ℝ)
     (mu : Measure Point) :
     ∀ᵐ q ∂(enlargedVisitExitKernel hH hLE hlam hLam A (visitActiveUnion c J) T ∘ₘ mu),
       q.velocity 0 ∈ closure c.active := by
@@ -81,9 +79,7 @@ theorem enlargedActiveExitMixture_ae_velocity
 
 /-- The quadratic is integrable against each finite enlarged active exit mixture. -/
 theorem enlargedQuadratic_integrable_exit
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T : ℝ)
+      (T : ℝ)
     (mu : Measure Point) [IsFiniteMeasure mu] :
     Integrable (fun q => visitQuadratic c (q.velocity 0))
       (enlargedVisitExitKernel hH hLE hlam hLam A (visitActiveUnion c J) T ∘ₘ mu) := by
@@ -98,9 +94,7 @@ theorem enlargedQuadratic_integrable_exit
 
 /-- Every actual entrance satisfies the integrated quadratic identity on its active domain. -/
 theorem enlargedQuadratic_entrance_green_identity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (P : Point)
+      (s T : ℝ) (P : Point)
     (hs : s ≤ P.time) (hT : P.time < T)
     (hJ : closure c.active ⊆ J.carrier) (n : ℕ) :
     (∫ p, visitQuadratic c (p.velocity 0)
@@ -155,5 +149,7 @@ theorem enlargedQuadratic_entrance_green_identity
   rw [integral_congr_ae hp, integral_add hiE hiG]
   rw [nested_integral_bind mu E E.measurable f hE,
     nested_integral_bind mu G G.measurable g hG]
+end
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

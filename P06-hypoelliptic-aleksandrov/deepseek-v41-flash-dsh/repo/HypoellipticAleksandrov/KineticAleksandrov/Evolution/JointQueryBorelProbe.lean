@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.JointQueryBor
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.JointQueryBorelGeometry
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.JointQueryBorelRational
 public import HypoellipticAleksandrov.Geometry.KineticPointMeasure
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Measurable extensions of fixed-terminal classical probes
 
@@ -23,7 +24,7 @@ open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic MeasureTheory Set
 
 /-- A measurable countable family of functions can be evaluated at a measurable mesh index
 and at the actual query point. -/
-theorem measurable_mesh_query_lookup {n : ℕ} {Ω : Set (PDE.Vec n)}
+theorem measurable_mesh_query_lookup {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n}
     {γ : ℝ → PDE.Vec n} (j : ℕ) (v : ℤ → KineticPoint n → ℝ)
     (hv : ∀ k, Measurable (v k)) :
     Measurable (fun q : EvolutionQuery Ω γ =>
@@ -48,7 +49,7 @@ section EvolutionData
 variable (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
 variable (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
 variable (hm : 0 < m) (hmLb : m ≤ L_b)
-variable (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
+variable (Ω : HypoellipticAleksandrov.VecSet n) (γ : ℝ → PDE.Vec n)
 variable (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
 variable (hΩ : IsAdmissibleEvolutionDomain Ω)
 variable (hγ : IsContinuousPiecewiseC1 γ)
@@ -70,7 +71,7 @@ local notation "P₀" => terminalOperators n hn lam Lam m L_b hlam hlamLam hm hm
 
 /-- A fixed terminal probe solution, extended by zero outside its past closed cylinder.
 For a datum not supported in the terminal fiber the auxiliary function is zero. -/
-def extendedTerminalProbe (n : ℕ) (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
+def extendedTerminalProbe (n : ℕ) (Ω : HypoellipticAleksandrov.VecSet n) (γ : ℝ → PDE.Vec n)
     (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
     (hEx : ClassicalTerminalExistence Ω γ B b)
     (τ : ℝ) (F : BoundedBorel (EvolutionAmbientState n)) : KineticPoint n → ℝ := by

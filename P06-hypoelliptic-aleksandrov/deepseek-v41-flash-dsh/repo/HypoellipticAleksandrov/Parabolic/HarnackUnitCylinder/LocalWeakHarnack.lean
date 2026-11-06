@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.SourceLocalHarnackScaling
 public import HypoellipticAleksandrov.Parabolic.HarnackStability
 public import HypoellipticAleksandrov.Parabolic.HarnackUnitCylinder.CoefficientExtension
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Local weak Harnack inequalities on closed link boxes -/
 
@@ -45,7 +46,7 @@ theorem exists_local_parabolic_harnack_weak_continuous
     (d : ℕ) (hd : 1 ≤ d) (lam : ℝ) (hlam : 0 < lam)
     (Lam : ℝ) (hlamLam : lam ≤ Lam) :
     ∃ hBox : ℝ, 0 < hBox ∧ hBox ≤ 1 ∧
-      ∀ (U : Set (TimeVelocity d)) (B : CoefficientField d)
+      ∀ (U : HypoellipticAleksandrov.Parabolic.TVSet d) (B : CoefficientField d)
         (u : TimeVelocity d → ℝ) (t0 : ℝ) (v0 : PDE.Vec d) (r : ℝ),
         IsOpen U → 0 < r →
         parabolicClosedBox 2 r (t0 - r ^ 2) v0 ⊆ U →

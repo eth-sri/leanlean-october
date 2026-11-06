@@ -27,8 +27,7 @@ theorem positionSecondBarrier_raw_smooth (Lam X0 tau : ℝ) :
 
 /-- Raw smoothness supplies global continuity on the native point carrier. -/
 theorem terminal_raw_continuous (W : Point → ℝ)
-    (hW : ContDiff ℝ (⊤ : ℕ∞) (rawLift W)) : Continuous W := by
-  exact hW.continuous.comp (KineticPoint.homeomorphProd 1).continuous_toFun
+    (hW : ContDiff ℝ (⊤ : ℕ∞) (rawLift W)) : Continuous W := hW.continuous.comp (KineticPoint.homeomorphProd 1).continuous_toFun
 
 /-- Raw smoothness supplies all comparison slices. -/
 theorem terminal_raw_regular (W : Point → ℝ)

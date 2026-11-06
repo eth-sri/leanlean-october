@@ -85,8 +85,7 @@ theorem homogeneous_weak_smooth_representative
     (hu : IsWeakTransportedSolution (evolutionCoefficient A.a) (identityDrift 1) U
       u (fun _ => 0)) :
     ∃ f : EvolutionVec 1 → ℝ, ContDiffOn ℝ (⊤ : ℕ∞) f U ∧
-      u =ᵐ[volume.restrict U] f := by
-  exact exists_smooth_representative_transported_source hH hlam
+      u =ᵐ[volume.restrict U] f := exists_smooth_representative_transported_source hH hlam
     (evolutionCoefficient_smooth A) (evolutionCoefficient_bounds A)
     (identityDrift_smooth 1) zero_lt_one (identityDrift_bounds 1).2 hU hu
     contDiffOn_const

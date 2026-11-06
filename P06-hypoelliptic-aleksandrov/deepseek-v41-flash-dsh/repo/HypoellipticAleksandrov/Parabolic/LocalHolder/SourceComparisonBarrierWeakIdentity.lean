@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonBarrierForm
 import HypoellipticAleksandrov.Parabolic.Dirichlet.LocalSmoothObstacleWeakIdentity
 import HypoellipticAleksandrov.Parabolic.C2ToScalarC12
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Classical integration by parts for stationary barriers
 
@@ -15,7 +17,7 @@ namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open MeasureTheory Set Dirichlet
 open scoped ENNReal
 
-private theorem integrableOn_mul_compact_test {d : ℕ} {Ω : Set (PDE.Vec d)}
+private theorem integrableOn_mul_compact_test {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     {f g : PDE.Vec d → ℝ} (hf : ContinuousOn f Ω) (hg : Continuous g)
     (hgc : HasCompactSupport g) (hgs : tsupport g ⊆ Ω) :
     IntegrableOn (fun y => f y * g y) Ω := by
@@ -26,7 +28,7 @@ private theorem integrableOn_mul_compact_test {d : ℕ} {Ω : Set (PDE.Vec d)}
 
 /-- The smooth stationary barrier form equals its negative classical operator integral. -/
 theorem reverseTimeSpatialForm_stationary_barrier_weakIdentity {d : ℕ}
-    {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T τ : ℝ) (A : CoefficientField d)
+    {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (T τ : ℝ) (A : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (q : PDE.H10Function Ω) (hq : ContDiff ℝ 2 q.toH1Function.toFun)
     (ha : ∀ i j, ContDiffOn ℝ 1 (fun y => A (T - τ) y i j) Ω)

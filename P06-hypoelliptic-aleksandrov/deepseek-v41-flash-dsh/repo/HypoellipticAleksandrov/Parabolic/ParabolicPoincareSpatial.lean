@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.Parabolic.ParabolicPoincareProduct
 public import PDEFoundation.Sobolev.Inequalities.ConvexPoincare
 public import PDEFoundation.Sobolev.W1p.Smooth
 public import Mathlib.MeasureTheory.Integral.Prod
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Spatial-slice transport for parabolic Poincare
@@ -108,7 +109,7 @@ private theorem velocityGradient_axisCube_subAverage_eLpNorm_le_hessian_sum
             (parabolicExponent d)
             (fun v => velocityHessian u (t, v) i j) := by
   let p : Real := (d : Real) + 1
-  let V : Set (PDE.Vec d) := PDE.axisCube (-1 : PDE.Vec d) 2
+  let V : HypoellipticAleksandrov.VecSet d := PDE.axisCube (-1 : PDE.Vec d) 2
   let g : PDE.Vec d -> Real := fun v => velocityGradient u (t, v) i
   let w : PDE.W1pFunction V (ENNReal.ofReal p) :=
     PDE.W1pFunction.ofContDiffOnIsOpenBoundedConvexDomain
@@ -248,8 +249,8 @@ private theorem velocitySlice_sub_gradientMeanAffine_eLpNorm_le
               PDE.integralAverage (velocityCube (0 : PDE.Vec d) 1)
                 (fun w => velocityGradient u (t, w) i)) := by
   let p : Real := (d : Real) + 1
-  let V : Set (PDE.Vec d) := PDE.axisCube (-1 : PDE.Vec d) 2
-  let V0 : Set (PDE.Vec d) := velocityCube (0 : PDE.Vec d) 1
+  let V : HypoellipticAleksandrov.VecSet d := PDE.axisCube (-1 : PDE.Vec d) 2
+  let V0 : HypoellipticAleksandrov.VecSet d := velocityCube (0 : PDE.Vec d) 1
   let m : Fin d -> Real := fun i => PDE.integralAverage V0
     (fun w => velocityGradient u (t, w) i)
   let a : PDE.Vec d -> Real := fun v => ∑ i : Fin d, m i * v i
@@ -286,7 +287,7 @@ private theorem velocitySlice_sub_gradientMeanAffine_eLpNorm_le
     intro i
     have hcont : Continuous (fun v : PDE.Vec d => m i * v i) :=
       continuous_const.mul (continuous_apply i)
-    let K : Set (PDE.Vec d) := velocityClosedCube (0 : PDE.Vec d) 1
+    let K : HypoellipticAleksandrov.VecSet d := velocityClosedCube (0 : PDE.Vec d) 1
     have hKcompact : IsCompact K :=
       isCompact_velocityClosedCube (0 : PDE.Vec d) 1
     have hsubset : V0 ⊆ K := by
@@ -557,7 +558,7 @@ private theorem velocitySlice_sub_canonicalMomentAffine_eq_sub_velocityMomentPro
             (fun q => u (t, q)) + ∑ i : Fin d,
               PDE.integralAverage (velocityCube (0 : PDE.Vec d) 1)
                 (fun q => velocityGradient u (t, q) i) * w i)) v := by
-  let V : Set (PDE.Vec d) := velocityCube (0 : PDE.Vec d) 1
+  let V : HypoellipticAleksandrov.VecSet d := velocityCube (0 : PDE.Vec d) 1
   let f : PDE.Vec d -> Real := fun v => u (t, v)
   let L : PDE.Vec d -> Real := fun v => PDE.integralAverage V f + ∑ i : Fin d,
     PDE.integralAverage V (fun w => velocityGradient u (t, w) i) * v i
@@ -621,7 +622,7 @@ private theorem velocitySlice_sub_canonicalMomentAffine_eLpNorm_le_hessian_sum
           ∑ i : Fin d, ∑ j : Fin d,
             PDE.eLpNormOn (velocityCube (0 : PDE.Vec d) 1) (parabolicExponent d)
               (fun v => velocityHessian u (t, v) i j) := by
-  let V : Set (PDE.Vec d) := velocityCube (0 : PDE.Vec d) 1
+  let V : HypoellipticAleksandrov.VecSet d := velocityCube (0 : PDE.Vec d) 1
   let R : PDE.Vec d -> Real := fun v => u (t, v) -
     (PDE.integralAverage V (fun w => u (t, w)) + ∑ i : Fin d,
       PDE.integralAverage V (fun w => velocityGradient u (t, w) i) * v i)
@@ -716,7 +717,7 @@ private theorem aemeasurable_spatialAffine_residual
     AEMeasurable
       (fun z => u z - parabolicMorreyUnitSpatialAffineProjection u z)
       (volume.restrict (parabolicMorreyUnitBox d)) := by
-  let V : Set (PDE.Vec d) := velocityCube (0 : PDE.Vec d) 1
+  let V : HypoellipticAleksandrov.VecSet d := velocityCube (0 : PDE.Vec d) 1
   let ν : Measure (PDE.Vec d) := volume.restrict V
   have huStrong : StronglyMeasurable
       (Function.uncurry fun t : Real => fun v : PDE.Vec d => u (t, v)) := by
@@ -765,7 +766,7 @@ private theorem parabolicMorreyUnitSpatialAffinePoincareELp
             (fun z => velocityHessian u z i j)
             (parabolicMorreyUnitBox d) := by
   let I : Set Real := Set.Ioo (0 : Real) 1
-  let V : Set (PDE.Vec d) := velocityCube (0 : PDE.Vec d) 1
+  let V : HypoellipticAleksandrov.VecSet d := velocityCube (0 : PDE.Vec d) 1
   let μ : Measure Real := volume.restrict I
   let p : ENNReal := parabolicExponent d
   let K : ENNReal := ENNReal.ofReal (((2 : Real)^d) * (Real.sqrt d * 2))

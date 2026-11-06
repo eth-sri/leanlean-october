@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.Parabolic.ParabolicMemLpSpatialDifferenceQ
 public import HypoellipticAleksandrov.Parabolic.TimeVelocityOpenSmoothTestL2Density
 public import HypoellipticAleksandrov.Parabolic.WeakDerivativeSpatialDifferenceQuotientPairing
 public import Mathlib.MeasureTheory.Function.L2Space
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Weak derivatives control signed spatial difference quotients
@@ -27,8 +28,8 @@ open scoped Convex ENNReal RealInnerProductSpace Topology
 spatial difference quotient on an arbitrary inner carrier whose full directed
 segments remain in the open outer carrier. -/
 theorem HasWeakVelocityPartialDerivOn.exists_spatialDifferenceQuotient_memLp_norm_le
-    {d : ℕ} (U : Set (TimeVelocity d)) (hU : IsOpen U)
-    (V : Set (TimeVelocity d)) (k : Fin d) (h : ℝ) (hh : h ≠ 0)
+    {d : ℕ} (U : HypoellipticAleksandrov.Parabolic.TVSet d) (hU : IsOpen U)
+    (V : HypoellipticAleksandrov.Parabolic.TVSet d) (k : Fin d) (h : ℝ) (hh : h ≠ 0)
     (f g : TimeVelocity d → ℝ)
     (hf : ParabolicMemLpOn U (2 : ℝ≥0∞) f)
     (hg : ParabolicMemLpOn U (2 : ℝ≥0∞) g)
@@ -37,7 +38,7 @@ theorem HasWeakVelocityPartialDerivOn.exists_spatialDifferenceQuotient_memLp_nor
     ∃ hq : ParabolicMemLpOn V (2 : ℝ≥0∞)
         (spatialDifferenceQuotient k h f),
       ‖hq.toLp (spatialDifferenceQuotient k h f)‖ ≤ ‖hg.toLp g‖ := by
-  let W : Set (TimeVelocity d) := spatialSegmentSafeSet U k h
+  let W : HypoellipticAleksandrov.Parabolic.TVSet d := spatialSegmentSafeSet U k h
   have hW : IsOpen W := isOpen_spatialSegmentSafeSet U hU k h
   have hVW : V ⊆ W := by
     intro z hz
@@ -57,21 +58,21 @@ theorem HasWeakVelocityPartialDerivOn.exists_spatialDifferenceQuotient_memLp_nor
       (hqW.toLp (spatialDifferenceQuotient k h f)) ‖hg.toLp g‖ (norm_nonneg _)
     intro q hq
     rcases hq with ⟨φ, hφW, hφsmooth, hφcompact, hφsupport, rfl⟩
-    let hφglobal : MemLp φ (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d)) :=
+    let hφglobal : MemLp φ (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d) :=
       hφsmooth.continuous.memLp_of_hasCompactSupport hφcompact
     have hinner : (inner ℝ (hqW.toLp (spatialDifferenceQuotient k h f))
         (hφW.toLp φ) : ℝ) =
         ∫ z in W, spatialDifferenceQuotient k h f z * φ z
-          ∂(volume : Measure (TimeVelocity d)) := by
+          ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
       rw [L2.inner_def]
       apply integral_congr_ae
       filter_upwards [hqW.coeFn_toLp, hφW.coeFn_toLp] with z hzq hzφ
       rw [hzq, hzφ]
       simp only [RCLike.inner_apply, conj_trivial, mul_comm]
     have houter : (∫ z in U, spatialDifferenceQuotient k h f z * φ z
-          ∂(volume : Measure (TimeVelocity d))) =
+          ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
         ∫ z in W, spatialDifferenceQuotient k h f z * φ z
-          ∂(volume : Measure (TimeVelocity d)) := by
+          ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
       apply setIntegral_eq_of_subset_of_forall_diff_eq_zero hU.measurableSet hWU
       intro z hz
       have hznot : z ∉ tsupport φ := fun hzφ => hz.2 (hφsupport hzφ)

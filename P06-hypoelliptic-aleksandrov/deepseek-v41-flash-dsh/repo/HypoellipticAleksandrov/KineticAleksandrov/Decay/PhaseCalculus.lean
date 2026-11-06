@@ -63,11 +63,14 @@ theorem phaseCenter_hasDerivAt {d : ℕ} (ξ : PDE.Vec d)
   exact intervalIntegral.integral_hasDerivAt_right hi
     (ContinuousOn.stronglyMeasurableAtFilter isOpen_Ioo
       (hf.mono Ioo_subset_Icc_self) t ht) hat
+section
+variable {d : ℕ} (sgn : ℝ) (ξ z0 : PDE.Vec d)
+section
+variable (b : PDE.Vec d → PDE.Vec d) (γ : ℝ → PDE.Vec d) (σ Lb ρ : ℝ) (p : KineticPoint d)
 
 /-- The transported gradient of the signed phase is its signed unit direction. -/
-theorem phase_velocity_gradient {d : ℕ} (sgn : ℝ) (ξ z0 : PDE.Vec d)
-    (b : PDE.Vec d → PDE.Vec d) (γ : ℝ → PDE.Vec d) (σ Lb ρ : ℝ)
-    (p : KineticPoint d) :
+theorem phase_velocity_gradient 
+     :
     kineticVelocityGradient (phaseBarrier sgn ξ z0 b γ σ Lb ρ) p = sgn • ξ := by
   let L : PDE.Vec d →L[ℝ] ℝ :=
     ∑ i, (sgn * ξ i) • (ContinuousLinearMap.proj i : PDE.Vec d →L[ℝ] ℝ)
@@ -89,9 +92,8 @@ theorem phase_velocity_gradient {d : ℕ} (sgn : ℝ) (ξ z0 : PDE.Vec d)
   simp [L, PDE.basisVec_apply]
 
 /-- The signed phase is independent of the diffused coordinate. -/
-theorem phase_diffused_hessian {d : ℕ} (sgn : ℝ) (ξ z0 : PDE.Vec d)
-    (b : PDE.Vec d → PDE.Vec d) (γ : ℝ → PDE.Vec d) (σ Lb ρ : ℝ)
-    (p : KineticPoint d) :
+theorem phase_diffused_hessian 
+     :
     diffusedHessian (phaseBarrier sgn ξ z0 b γ σ Lb ρ) p = 0 := by
   have hg : (fun y : PDE.Vec d => kineticPositionGradient
       (phaseBarrier sgn ξ z0 b γ σ Lb ρ) ⟨p.time, y, p.velocity⟩) = fun _ => 0 := by
@@ -105,9 +107,10 @@ theorem phase_diffused_hessian {d : ℕ} (sgn : ℝ) (ξ z0 : PDE.Vec d)
   simp only [diffusedHessian]
   rw [hg, fderiv_const_apply]
   rfl
+end
 
 /-- The signed phase barrier has its explicit time derivative at interior times. -/
-theorem phaseBarrier_hasDerivAt {d : ℕ} (sgn : ℝ) (ξ z0 : PDE.Vec d)
+theorem phaseBarrier_hasDerivAt 
     {b : PDE.Vec d → PDE.Vec d} {Lb : ℝ} (hb : HasEuclideanLipschitzDrift Lb b)
     {γ : ℝ → PDE.Vec d} {σ τ ρ : ℝ} (hγ : ContinuousOn γ (Icc σ τ))
     (p : KineticPoint d) (ht : p.time ∈ Ioo σ τ) :
@@ -121,7 +124,7 @@ theorem phaseBarrier_hasDerivAt {d : ℕ} (sgn : ℝ) (ξ z0 : PDE.Vec d)
     first | rfl | simp only [mul_one]
 
 /-- The phase barrier is slice regular; no derivative of the moving center is needed. -/
-theorem phaseBarrier_isSliceRegularAt {d : ℕ} (sgn : ℝ) (ξ z0 : PDE.Vec d)
+theorem phaseBarrier_isSliceRegularAt 
     {b : PDE.Vec d → PDE.Vec d} {Lb : ℝ} (hb : HasEuclideanLipschitzDrift Lb b)
     {γ : ℝ → PDE.Vec d} {σ τ ρ : ℝ} (hγ : ContinuousOn γ (Icc σ τ))
     (p : KineticPoint d) (ht : p.time ∈ Ioo σ τ) :
@@ -135,6 +138,7 @@ theorem phaseBarrier_isSliceRegularAt {d : ℕ} (sgn : ℝ) (ξ z0 : PDE.Vec d)
     unfold PDE.vecDot
     simp only [Pi.sub_apply]
     fun_prop
+end
 
 /-- The integral phase center is continuous on its defining closed time interval. -/
 theorem phaseCenter_continuousOn {d : ℕ} (ξ : PDE.Vec d)

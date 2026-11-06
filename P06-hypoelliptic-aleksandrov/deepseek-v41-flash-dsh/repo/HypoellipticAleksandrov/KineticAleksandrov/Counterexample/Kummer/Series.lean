@@ -78,9 +78,11 @@ private theorem parameter_ne_neg_nat (b : Pos) (k : ℕ) : (b.1 : ℂ) ≠ -k :=
   simp only [Complex.ofReal_re, Complex.neg_re, Complex.natCast_re] at hr
   have hk : (0 : ℝ) ≤ k := Nat.cast_nonneg k
   linarith [b.2]
+section
+variable (a : ℝ) (b : Pos)
 
 /-- Coefficient bridge to Mathlib's regularized confluent series. -/
-theorem coeff_eq_regularized (a : ℝ) (b : Pos) (n : ℕ) :
+theorem coeff_eq_regularized  (n : ℕ) :
     (coeff a b n : ℂ) = Complex.Gamma (b.1 : ℂ) *
       Complex.regularizedHGFunCoeff {(a : ℂ)} {(b.1 : ℂ)} n := by
   have hg := Complex.Gamma_ne_zero_of_re_pos (by exact b.2 : 0 < (b.1 : ℂ).re)
@@ -95,7 +97,7 @@ theorem coeff_eq_regularized (a : ℝ) (b : Pos) (n : ℕ) :
   field_simp
 
 /-- The literal complex series equals the Gamma-normalized regularized function. -/
-theorem Mc_eq_regularized (a : ℝ) (b : Pos) (z : ℂ) :
+theorem Mc_eq_regularized  (z : ℂ) :
     Mc a b z = Complex.Gamma (b.1 : ℂ) *
       Complex.regularizedHGFun {(a : ℂ)} {(b.1 : ℂ)} z := by
   rw [Mc, Complex.regularizedHGFun, Complex.regularizedHGFunSeries,
@@ -103,7 +105,7 @@ theorem Mc_eq_regularized (a : ℝ) (b : Pos) (z : ℂ) :
   simp only [coeff_eq_regularized, mul_assoc, tsum_mul_left, smul_eq_mul]
 
 /-- Convergence of the regularized series at every complex argument. -/
-theorem hasSum_regularized (a : ℝ) (b : Pos) (z : ℂ) :
+theorem hasSum_regularized  (z : ℂ) :
     HasSum (fun n : ℕ =>
       Complex.regularizedHGFunCoeff {(a : ℂ)} {(b.1 : ℂ)} n * z ^ n)
       (Complex.regularizedHGFun {(a : ℂ)} {(b.1 : ℂ)} z) := by
@@ -118,13 +120,13 @@ theorem hasSum_regularized (a : ℝ) (b : Pos) (z : ℂ) :
     (Complex.regularizedHGFunSeries {(a : ℂ)} {(b.1 : ℂ)}).hasSum hz
 
 /-- The complex series converges to its defined sum. -/
-theorem hasSum_Mc (a : ℝ) (b : Pos) (z : ℂ) :
+theorem hasSum_Mc  (z : ℂ) :
     HasSum (fun n : ℕ => (coeff a b n : ℂ) * z ^ n) (Mc a b z) := by
   simpa only [coeff_eq_regularized, mul_assoc, Mc_eq_regularized] using
     (hasSum_regularized a b z).mul_left (Complex.Gamma (b.1 : ℂ))
 
 /-- The real series converges to its defined sum. -/
-theorem hasSum_M (a : ℝ) (b : Pos) (z : ℝ) :
+theorem hasSum_M  (z : ℝ) :
     HasSum (fun n : ℕ => coeff a b n * z ^ n) (M a b z) := by
   apply Summable.hasSum
   apply Complex.summable_ofReal.mp
@@ -132,13 +134,13 @@ theorem hasSum_M (a : ℝ) (b : Pos) (z : ℝ) :
     (hasSum_Mc a b (z : ℂ)).summable
 
 /-- Compatibility of the real and complex power series. -/
-theorem Mc_ofReal (a : ℝ) (b : Pos) (z : ℝ) : Mc a b (z : ℂ) = (M a b z : ℂ) := by
+theorem Mc_ofReal  (z : ℝ) : Mc a b (z : ℂ) = (M a b z : ℂ) := by
   exact (hasSum_Mc a b (z : ℂ)).unique
     (by simpa only [Complex.ofReal_mul, Complex.ofReal_pow] using
       Complex.hasSum_ofReal.mpr (hasSum_M a b z))
 
 /-- The complex Kummer series is entire. -/
-theorem analyticOnNhd_Mc (a : ℝ) (b : Pos) : AnalyticOnNhd ℂ (Mc a b) Set.univ := by
+theorem analyticOnNhd_Mc  : AnalyticOnNhd ℂ (Mc a b) Set.univ := by
   have heq : Mc a b = fun z => Complex.Gamma (b.1 : ℂ) *
       Complex.regularizedHGFun {(a : ℂ)} {(b.1 : ℂ)} z :=
     funext (Mc_eq_regularized a b)
@@ -148,7 +150,7 @@ theorem analyticOnNhd_Mc (a : ℝ) (b : Pos) : AnalyticOnNhd ℂ (Mc a b) Set.un
     (Complex.analyticAt_regularizedHGFun_of_card_le (by simp) z)
 
 /-- The real Kummer function is real analytic everywhere. -/
-theorem analyticOnNhd_M (a : ℝ) (b : Pos) : AnalyticOnNhd ℝ (M a b) Set.univ := by
+theorem analyticOnNhd_M  : AnalyticOnNhd ℝ (M a b) Set.univ := by
   intro z _
   have hc := (analyticOnNhd_Mc a b (z : ℂ) (Set.mem_univ _)).restrictScalars (𝕜 := ℝ)
   have hi : AnalyticAt ℝ (fun x : ℝ => Mc a b (x : ℂ)) z :=
@@ -164,5 +166,6 @@ theorem analyticOnNhd_M (a : ℝ) (b : Pos) : AnalyticOnNhd ℝ (M a b) Set.univ
   · simp
   · intro n hn
     simp only [zero_pow hn, mul_zero]
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer

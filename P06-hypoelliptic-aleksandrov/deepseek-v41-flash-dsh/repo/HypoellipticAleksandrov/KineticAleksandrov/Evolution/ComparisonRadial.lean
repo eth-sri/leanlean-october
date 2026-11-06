@@ -12,6 +12,7 @@ import Mathlib.Analysis.Calculus.FDeriv.Pow
 import Mathlib.Analysis.Calculus.Deriv.Add
 import Mathlib.Analysis.Calculus.FDeriv.Add
 import Mathlib.Analysis.Calculus.FDeriv.Mul
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Derivatives of radial functions
@@ -57,9 +58,11 @@ theorem normSqGradCLM_apply_basisVec {n : ℕ} (m x : PDE.Vec n) (i : Fin n) :
     (∑ k, (2 * (x k - m k)) • (ContinuousLinearMap.proj k : PDE.Vec n →L[ℝ] ℝ))
       (PDE.basisVec i) = 2 * (x i - m i) := by
   simp [PDE.basisVec_apply]
+section
+variable {n : ℕ} {Ψ : ℝ → ℝ} {m x : PDE.Vec n}
 
 /-- Gradient of a function of the squared distance. -/
-theorem classicalGradient_comp_vecNormSq_sub {n : ℕ} {Ψ : ℝ → ℝ} {m x : PDE.Vec n}
+theorem classicalGradient_comp_vecNormSq_sub 
     (hΨ : DifferentiableAt ℝ Ψ (PDE.vecNormSq (x - m))) :
     PDE.classicalGradient (fun y => Ψ (PDE.vecNormSq (y - m))) x =
       fun i => 2 * deriv Ψ (PDE.vecNormSq (x - m)) * (x i - m i) := by
@@ -73,7 +76,7 @@ theorem classicalGradient_comp_vecNormSq_sub {n : ℕ} {Ψ : ℝ → ℝ} {m x :
   ring
 
 /-- Hessian of a function of the squared distance. -/
-theorem sliceHessian_comp_vecNormSq_sub {n : ℕ} {Ψ : ℝ → ℝ} {m x : PDE.Vec n}
+theorem sliceHessian_comp_vecNormSq_sub 
     (hΨ : ContDiffAt ℝ 2 Ψ (PDE.vecNormSq (x - m))) (i j : Fin n) :
     sliceHessian (fun y => Ψ (PDE.vecNormSq (y - m))) x i j =
       4 * deriv (deriv Ψ) (PDE.vecNormSq (x - m)) * (x i - m i) * (x j - m j) +
@@ -130,8 +133,7 @@ theorem sliceHessian_comp_vecNormSq_sub {n : ℕ} {Ψ : ℝ → ℝ} {m x : PDE.
   rw [(hL j).fderiv, hLe j i]
 
 /-- Contraction of a matrix with the Hessian of a function of the squared distance. -/
-theorem matrixContraction_sliceHessian_comp_vecNormSq_sub {n : ℕ} {Ψ : ℝ → ℝ}
-    {m x : PDE.Vec n} (hΨ : ContDiffAt ℝ 2 Ψ (PDE.vecNormSq (x - m))) (A : PDE.Mat n) :
+theorem matrixContraction_sliceHessian_comp_vecNormSq_sub  (hΨ : ContDiffAt ℝ 2 Ψ (PDE.vecNormSq (x - m))) (A : PDE.Mat n) :
     matrixContraction A (sliceHessian (fun y => Ψ (PDE.vecNormSq (y - m))) x) =
       4 * deriv (deriv Ψ) (PDE.vecNormSq (x - m)) * dotProduct (x - m) (A.mulVec (x - m)) +
         2 * deriv Ψ (PDE.vecNormSq (x - m)) * A.trace := by
@@ -150,7 +152,7 @@ theorem matrixContraction_sliceHessian_comp_vecNormSq_sub {n : ℕ} {Ψ : ℝ �
     rw [← Finset.mul_sum]
 
 /-- The Laplacian of a function of the squared distance. -/
-theorem sum_diag_sliceHessian_comp_vecNormSq_sub {n : ℕ} {Ψ : ℝ → ℝ} {m x : PDE.Vec n}
+theorem sum_diag_sliceHessian_comp_vecNormSq_sub 
     (hΨ : ContDiffAt ℝ 2 Ψ (PDE.vecNormSq (x - m))) :
     ∑ i, sliceHessian (fun y => Ψ (PDE.vecNormSq (y - m))) x i i =
       4 * deriv (deriv Ψ) (PDE.vecNormSq (x - m)) * PDE.vecNormSq (x - m) +
@@ -164,6 +166,7 @@ theorem sum_diag_sliceHessian_comp_vecNormSq_sub {n : ℕ} {Ψ : ℝ → ℝ} {m
     simp only [Pi.sub_apply]
     ring
   · ring
+end
 
 /-- Time derivative of a function of the squared distance to a moving centre. -/
 theorem hasDerivAt_comp_vecNormSq_sub_moving {n : ℕ} {Ψ : ℝ → ℝ} {m : ℝ → PDE.Vec n}

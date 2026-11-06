@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.SourceDensityPositive
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Source-aware parabolic level growth
@@ -55,19 +56,19 @@ private theorem center_mem_velocityClosedCube {d : ℕ} {R : ℝ}
   simp only [sub_self, abs_zero]
   linarith
 
-private theorem contDiffOn_const_sub_div {d : ℕ} {U : Set (TimeVelocity d)}
+private theorem contDiffOn_const_sub_div {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     {M D : ℝ} {u : TimeVelocity d → ℝ} (hu : ContDiffOn ℝ 2 u U) :
     ContDiffOn ℝ 2 (fun z ↦ (M - u z) / D) U :=
   (contDiffOn_const.sub hu).div_const D
 
-private theorem volume_toReal_mono_of_subset {d : ℕ} {s t : Set (TimeVelocity d)}
-    (ht : (volume : Measure (TimeVelocity d)) t ≠ ⊤) (hst : s ⊆ t) :
-    ((volume : Measure (TimeVelocity d)) s).toReal ≤
-      ((volume : Measure (TimeVelocity d)) t).toReal :=
+private theorem volume_toReal_mono_of_subset {d : ℕ} {s t : HypoellipticAleksandrov.Parabolic.TVSet d}
+    (ht : (HypoellipticAleksandrov.Parabolic.TVVolume d) t ≠ ⊤) (hst : s ⊆ t) :
+    ((HypoellipticAleksandrov.Parabolic.TVVolume d) s).toReal ≤
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d) t).toReal :=
   ENNReal.toReal_mono ht (measure_mono hst)
 
 private theorem memLp_of_continuousOn_compact_carrier
-    {d : ℕ} {F : TimeVelocity d → ℝ} {U Q K : Set (TimeVelocity d)}
+    {d : ℕ} {F : TimeVelocity d → ℝ} {U Q K : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hF : ContinuousOn F U) (hKU : K ⊆ U) (hKcompact : IsCompact K)
     (hQK : Q ⊆ K) :
     MemLp F (parabolicExponent d) (volume.restrict Q) := by
@@ -85,7 +86,7 @@ private theorem memLp_of_continuousOn_compact_carrier
   exact hKmem.mono_measure (Measure.restrict_mono_set volume hQK)
 
 private theorem parabolicLpNormOn_abs_div
-    {d : ℕ} {F : TimeVelocity d → ℝ} {Q : Set (TimeVelocity d)} {D : ℝ}
+    {d : ℕ} {F : TimeVelocity d → ℝ} {Q : HypoellipticAleksandrov.Parabolic.TVSet d} {D : ℝ}
     (hD : 0 < D) (hFmem : MemLp F (parabolicExponent d) (volume.restrict Q)) :
     parabolicLpNormOn d (fun z ↦ |F z| / D) Q =
       D⁻¹ * parabolicLpNormOn d F Q := by
@@ -117,7 +118,7 @@ private theorem parabolicLpNormOn_abs_div
 
 private theorem source_supersolution_const_sub_div
     {d : ℕ} {B : CoefficientField d} {M D : ℝ} {F u : TimeVelocity d → ℝ}
-    {Q : Set (TimeVelocity d)} (hD : 0 < D)
+    {Q : HypoellipticAleksandrov.Parabolic.TVSet d} (hD : 0 < D)
     (heq : ∀ z ∈ Q, parabolicOperator B u z = F z) :
     IsParabolicSupersolutionOn B (fun z ↦ -(|F z| / D))
       (fun z ↦ (M - u z) / D) Q := by
@@ -149,7 +150,7 @@ theorem source_level_growth_of_low_set_density
     (hdtp : SourceDensityToPoint d lam Lam beta g C)
     {R nu t0 M : Real} {v0 : PDE.Vec d}
     (hR : 0 < R) (hnu : 0 < nu) (hg : g < 1)
-    (U : Set (TimeVelocity d)) (B : CoefficientField d)
+    (U : HypoellipticAleksandrov.Parabolic.TVSet d) (B : CoefficientField d)
     (F u : TimeVelocity d → Real) (hU : IsOpen U)
     (hclosed : parabolicClosedBox 1 R t0 v0 ⊆ U)
     (hB : IsContinuousCoefficientOn B U) (hu : ContDiffOn Real 2 u U)
@@ -160,9 +161,9 @@ theorem source_level_growth_of_low_set_density
       parabolicOperator B u z = F z)
     (hM : ∀ z ∈ parabolicClosedBox 1 R t0 v0, u z ≤ M)
     (htop : nu ≤ u (t0 + R ^ 2, v0))
-    (hdensity : beta * ((volume : Measure (TimeVelocity d))
+    (hdensity : beta * ((HypoellipticAleksandrov.Parabolic.TVVolume d)
       (parabolicBox 1 R t0 v0)).toReal ≤
-      ((volume : Measure (TimeVelocity d))
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d)
         (parabolicBox 1 R t0 v0 ∩ {z | u z ≤ nu / 2})).toReal) :
     nu * ((2 - g) / (2 * (1 - g))) ≤
       M + (C / (1 - g)) * R ^ ((d : Real) / ((d : Real) + 1)) *
@@ -222,11 +223,11 @@ theorem source_level_growth_of_low_set_density
     have huz : u z ≤ nu / 2 := hz.2
     linarith
   have hsuperclosed : Q ∩ {z | 1 ≤ w z} ⊆ Qclosed := fun _ hz ↦ hQsubset hz.1
-  have hvolfin : (volume : Measure (TimeVelocity d)) (Q ∩ {z | 1 ≤ w z}) ≠ ⊤ :=
+  have hvolfin : (HypoellipticAleksandrov.Parabolic.TVVolume d) (Q ∩ {z | 1 ≤ w z}) ≠ ⊤ :=
     ne_top_of_le_ne_top (isCompact_parabolicClosedBox 1 R t0 v0).measure_ne_top
       (measure_mono hsuperclosed)
-  have hwdensity : beta * ((volume : Measure (TimeVelocity d)) Q).toReal ≤
-      ((volume : Measure (TimeVelocity d)) (Q ∩ {z | 1 ≤ w z})).toReal :=
+  have hwdensity : beta * ((HypoellipticAleksandrov.Parabolic.TVVolume d) Q).toReal ≤
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d) (Q ∩ {z | 1 ≤ w z})).toReal :=
     hdensity.trans (volume_toReal_mono_of_subset hvolfin hlow)
   have hcenter : v0 ∈ velocityClosedCube v0 (R / 2) :=
     center_mem_velocityClosedCube hR

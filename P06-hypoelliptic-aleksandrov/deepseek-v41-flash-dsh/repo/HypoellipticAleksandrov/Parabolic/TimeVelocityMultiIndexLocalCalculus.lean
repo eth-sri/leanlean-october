@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.TimeVelocityMultiIndexLeibniz
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Germ-local time--velocity multi-index calculus

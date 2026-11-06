@@ -39,9 +39,11 @@ theorem originCutoff_eventually_zero (d n : ℕ) :
     hc.continuousAt.eventually (gt_mem_nhds (by simp [PDE.vecNormSq, PDE.vecDot]))
   filter_upwards [he] with x hx
   exact Real.smoothTransition.zero_of_nonpos (by linarith)
+section
+variable {d : ℕ}
 
 /-- Away from zero, the vector cutoff tends to one. -/
-theorem originCutoff_tendsto {d : ℕ} (x : PDE.Vec d) (hx : x ≠ 0) :
+theorem originCutoff_tendsto  (x : PDE.Vec d) (hx : x ≠ 0) :
     Tendsto (fun n => originCutoff n x) atTop (nhds 1) := by
   have hp : 0 < PDE.vecNormSq x := lt_of_le_of_ne (PDE.vecNormSq_nonneg x)
     (Ne.symm (mt PDE.vecNormSq_eq_zero hx))
@@ -53,8 +55,8 @@ theorem originCutoff_tendsto {d : ℕ} (x : PDE.Vec d) (hx : x ≠ 0) :
   exact (Real.smoothTransition.one_of_one_le (by linarith)).symm
 
 /-- A velocity cutoff removes the origin from the support of any product test. -/
-theorem zero_notMem_tsupport_velocity_cutoff {d : ℕ} (test : XV d → ℝ) (n : ℕ) :
-    (0 : XV d) ∉ tsupport (fun q => test q * originCutoff n q.2) := by
+theorem zero_notMem_tsupport_velocity_cutoff  (test : XV d → ℝ) (n : ℕ) :
+    0 ∉ tsupport (fun q => test q * originCutoff n q.2) := by
   apply notMem_tsupport_iff_eventuallyEq.mpr
   have ht : Tendsto (Prod.snd : XV d → PDE.Vec d) (nhds 0) (nhds 0) :=
     continuous_snd.tendsto 0
@@ -65,8 +67,8 @@ theorem zero_notMem_tsupport_velocity_cutoff {d : ℕ} (test : XV d → ℝ) (n 
   rfl
 
 /-- A position cutoff removes the origin from the support of any product test. -/
-theorem zero_notMem_tsupport_position_cutoff {d : ℕ} (test : XV d → ℝ) (n : ℕ) :
-    (0 : XV d) ∉ tsupport (fun q => test q * originCutoff n q.1) := by
+theorem zero_notMem_tsupport_position_cutoff  (test : XV d → ℝ) (n : ℕ) :
+    0 ∉ tsupport (fun q => test q * originCutoff n q.1) := by
   apply notMem_tsupport_iff_eventuallyEq.mpr
   have ht : Tendsto (Prod.fst : XV d → PDE.Vec d) (nhds 0) (nhds 0) :=
     continuous_fst.tendsto 0
@@ -77,7 +79,7 @@ theorem zero_notMem_tsupport_position_cutoff {d : ℕ} (test : XV d → ℝ) (n 
   rfl
 
 /-- A cutoff in velocity has zero position derivative. -/
-theorem dx_velocity_cutoff {d : ℕ} (n : ℕ) (q : XV d) (i : Fin d) :
+theorem dx_velocity_cutoff  (n : ℕ) (q : XV d) (i : Fin d) :
     dx (fun z : XV d => originCutoff n z.2) q i = 0 := by
   have hc : DifferentiableAt ℝ (originCutoff (d := d) n) q.2 :=
     ((contDiff_originCutoff d n).differentiable (by simp)).differentiableAt
@@ -86,7 +88,7 @@ theorem dx_velocity_cutoff {d : ℕ} (n : ℕ) (q : XV d) (i : Fin d) :
   simp
 
 /-- A cutoff in position has zero velocity derivative. -/
-theorem dv_position_cutoff {d : ℕ} (n : ℕ) (q : XV d) (i : Fin d) :
+theorem dv_position_cutoff  (n : ℕ) (q : XV d) (i : Fin d) :
     dv (fun z : XV d => originCutoff n z.1) q i = 0 := by
   have hc : DifferentiableAt ℝ (originCutoff (d := d) n) q.1 :=
     ((contDiff_originCutoff d n).differentiable (by simp)).differentiableAt
@@ -95,7 +97,7 @@ theorem dv_position_cutoff {d : ℕ} (n : ℕ) (q : XV d) (i : Fin d) :
   simp
 
 /-- Complementary-coordinate cutoff multiplication preserves the position derivative. -/
-theorem dx_mul_velocity_cutoff {d : ℕ} (test : XV d → ℝ) (n : ℕ)
+theorem dx_mul_velocity_cutoff  (test : XV d → ℝ) (n : ℕ)
     (q : XV d) (ht : DifferentiableAt ℝ test q) (i : Fin d) :
     dx (fun z => test z * originCutoff n z.2) q i =
       dx test q i * originCutoff n q.2 := by
@@ -108,7 +110,7 @@ theorem dx_mul_velocity_cutoff {d : ℕ} (test : XV d → ℝ) (n : ℕ)
   rw [hz, mul_zero, zero_add, mul_comm]
 
 /-- Complementary-coordinate cutoff multiplication preserves the velocity derivative. -/
-theorem dv_mul_position_cutoff {d : ℕ} (test : XV d → ℝ) (n : ℕ)
+theorem dv_mul_position_cutoff  (test : XV d → ℝ) (n : ℕ)
     (q : XV d) (ht : DifferentiableAt ℝ test q) (i : Fin d) :
     dv (fun z => test z * originCutoff n z.1) q i =
       dv test q i * originCutoff n q.1 := by
@@ -121,14 +123,14 @@ theorem dv_mul_position_cutoff {d : ℕ} (test : XV d → ℝ) (n : ℕ)
   rw [hz, mul_zero, zero_add, mul_comm]
 
 /-- A C2 test has continuously differentiable velocity derivative components. -/
-theorem contDiff_dv_test {d : ℕ} (test : XV d → ℝ)
+theorem contDiff_dv_test  (test : XV d → ℝ)
     (ht : ContDiff ℝ 2 test) (k : Fin d) :
     ContDiff ℝ 1 (fun q => dv test q k) := by
   exact (ht.contDiff_fderiv_apply (m := 1) (by norm_num)).comp
     (contDiff_id.prodMk contDiff_const)
 
 /-- Complementary-coordinate cutoffs also preserve the second velocity test derivative. -/
-theorem dvv_mul_position_cutoff {d : ℕ} (test : XV d → ℝ) (n : ℕ)
+theorem dvv_mul_position_cutoff  (test : XV d → ℝ) (n : ℕ)
     (ht : ContDiff ℝ 2 test) (q : XV d) (i k : Fin d) :
     dvv (fun z => test z * originCutoff n z.1) q i k =
       dvv test q i k * originCutoff n q.1 := by
@@ -142,7 +144,7 @@ theorem dvv_mul_position_cutoff {d : ℕ} (test : XV d → ℝ) (n : ℕ)
     ((contDiff_dv_test test ht k).differentiable (by norm_num) q) i
 
 /-- Bounded scalar cutoffs tending to one preserve the integral of an integrable function. -/
-theorem integral_mul_cutoff_tendsto {d : ℕ} (f : XV d → ℝ)
+theorem integral_mul_cutoff_tendsto  (f : XV d → ℝ)
     (hf : Integrable f volume) (cutoff : ℕ → XV d → ℝ)
     (hc : ∀ n, Measurable (cutoff n))
     (hb : ∀ n q, |cutoff n q| ≤ 1)
@@ -158,5 +160,6 @@ theorem integral_mul_cutoff_tendsto {d : ℕ} (f : XV d → ℝ)
       simpa only [mul_one] using mul_le_mul_of_nonneg_left (hb n q) (norm_nonneg _))
   · filter_upwards [hlim] with q hq
     simpa only [mul_one] using tendsto_const_nhds.mul hq
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

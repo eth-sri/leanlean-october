@@ -23,9 +23,11 @@ theorem dilationLinearMap_apply {d : ℕ} (r : ℝ) (q : XV d) :
 theorem hasFDerivAt_dilate {d : ℕ} (r : ℝ) (q : XV d) :
     HasFDerivAt (dilate r : XV d → XV d) (dilationLinearMap d r) q :=
   (dilationLinearMap d r).hasFDerivAt
+section
+variable {d : ℕ} (H : XV d → ℝ) (alpha r : ℝ)
 
 /-- Differentiation of the homogeneity identity in an arbitrary native direction. -/
-theorem homogeneous_fderiv_identity {d : ℕ} (H : XV d → ℝ) (alpha r : ℝ)
+theorem homogeneous_fderiv_identity 
     (_hr : 0 < r)
     (hhom : ∀ q, H (dilate r q) = Real.rpow r alpha * H q)
     (q w : XV d) (hq : DifferentiableAt ℝ H q)
@@ -38,7 +40,7 @@ theorem homogeneous_fderiv_identity {d : ℕ} (H : XV d → ℝ) (alpha r : ℝ)
     dilationLinearMap_apply, smul_apply, smul_eq_mul] using he
 
 /-- A position derivative of a homogeneous profile has degree alpha minus three. -/
-theorem homogeneous_dx_identity {d : ℕ} (H : XV d → ℝ) (alpha r : ℝ)
+theorem homogeneous_dx_identity 
     (hr : 0 < r) (hhom : ∀ q, H (dilate r q) = Real.rpow r alpha * H q)
     (q : XV d) (hq : DifferentiableAt ℝ H q)
     (hrq : DifferentiableAt ℝ H (dilate r q)) (i : Fin d) :
@@ -56,7 +58,7 @@ theorem homogeneous_dx_identity {d : ℕ} (H : XV d → ℝ) (alpha r : ℝ)
   simpa only [mul_comm, div_mul_eq_mul_div] using he
 
 /-- A velocity derivative of a homogeneous profile has degree alpha minus one. -/
-theorem homogeneous_dv_identity {d : ℕ} (H : XV d → ℝ) (alpha r : ℝ)
+theorem homogeneous_dv_identity 
     (hr : 0 < r) (hhom : ∀ q, H (dilate r q) = Real.rpow r alpha * H q)
     (q : XV d) (hq : DifferentiableAt ℝ H q)
     (hrq : DifferentiableAt ℝ H (dilate r q)) (i : Fin d) :
@@ -71,5 +73,6 @@ theorem homogeneous_dv_identity {d : ℕ} (H : XV d → ℝ) (alpha r : ℝ)
   rw [Real.rpow_one, div_mul_eq_mul_div]
   apply (eq_div_iff hr.ne').mpr
   simpa only [mul_comm, div_mul_eq_mul_div] using he
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.Parabolic.LocalWeakTimeProduct
 public import HypoellipticAleksandrov.Parabolic.MeasurableSpatialC1WeakLeibniz
 public import HypoellipticAleksandrov.Parabolic.TimeVelocityMultiIndexLocalCalculus
 public import HypoellipticAleksandrov.Parabolic.TimeVelocityMultiIndexSplitSuccessor
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Weak derivative families from smooth scalar functions
@@ -32,7 +33,7 @@ private theorem order_le_parabolicWeight {d : ℕ}
   omega
 
 private theorem coordinateIteratedFDeriv_contDiffOn
-    {d N m : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
+    {d N m : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} (hU : IsOpen U)
     (f : TimeVelocity d → ℝ) (hf : ContDiffOn ℝ N f U)
     (alpha : TimeVelocityMultiIndex d) (horder : m + alpha.order ≤ N) :
     ContDiffOn ℝ m
@@ -48,7 +49,7 @@ private theorem coordinateIteratedFDeriv_contDiffOn
     (fun i ↦ timeVelocityBasis (alpha.coordinateList.get i)))).clm_apply hi
 
 private theorem coordinateIteratedFDeriv_continuousOn
-    {d N : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
+    {d N : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} (hU : IsOpen U)
     (f : TimeVelocity d → ℝ) (hf : ContDiffOn ℝ N f U)
     (alpha : TimeVelocityMultiIndex d) (horder : alpha.order ≤ N) :
     ContinuousOn
@@ -58,8 +59,8 @@ private theorem coordinateIteratedFDeriv_continuousOn
 
 /-- Classical coordinate derivatives satisfy the corresponding weak-family condition. -/
 theorem coordinateIteratedFDeriv_memLp
-    {d L : ℕ} {U : Set (TimeVelocity d)} (hUopen : IsOpen U)
-    (hUfinite : (volume : Measure (TimeVelocity d)) U < ∞)
+    {d L : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} (hUopen : IsOpen U)
+    (hUfinite : (HypoellipticAleksandrov.Parabolic.TVVolume d) U < ∞)
     (B : ParabolicDerivativeIndex d L → ℝ)
     (f : TimeVelocity d → ℝ) (hf : ContDiffOn ℝ L f U)
     (hbound : ∀ (alpha : ParabolicDerivativeIndex d L)
@@ -82,7 +83,7 @@ theorem coordinateIteratedFDeriv_memLp
 
 /-- Classical coordinate derivatives satisfy the corresponding weak-family condition. -/
 theorem coordinateIteratedFDeriv_timeSucc
-    {d L : ℕ} {U : Set (TimeVelocity d)} (hUopen : IsOpen U)
+    {d L : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} (hUopen : IsOpen U)
     (f : TimeVelocity d → ℝ) (hf : ContDiffOn ℝ L f U)
     (beta : ParabolicDerivativeIndex d L)
     (h : beta.1.parabolicWeight + 2 ≤ L) :
@@ -107,7 +108,7 @@ theorem coordinateIteratedFDeriv_timeSucc
 
 /-- Classical coordinate derivatives satisfy the corresponding weak-family condition. -/
 theorem coordinateIteratedFDeriv_velocitySucc
-    {d L : ℕ} {U : Set (TimeVelocity d)} (hUopen : IsOpen U)
+    {d L : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} (hUopen : IsOpen U)
     (f : TimeVelocity d → ℝ) (hf : ContDiffOn ℝ L f U)
     (beta : ParabolicDerivativeIndex d L) (i : Fin d)
     (h : beta.1.parabolicWeight + 1 ≤ L) :
@@ -134,10 +135,10 @@ theorem coordinateIteratedFDeriv_velocitySucc
 scalar function with bounded derivatives on a finite-volume open set. -/
 noncomputable def ParabolicWeakDerivativeFamily.ofContDiffOnBounded
     (d L : ℕ)
-    (U : Set (TimeVelocity d))
+    (U : HypoellipticAleksandrov.Parabolic.TVSet d)
     (hUopen : IsOpen U)
     (hUfinite :
-      (volume : Measure (TimeVelocity d)) U < ∞)
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) U < ∞)
     (B : ParabolicDerivativeIndex d L → ℝ)
     (f : TimeVelocity d → ℝ)
     (hf : ContDiffOn ℝ L f U)
@@ -158,10 +159,10 @@ noncomputable def ParabolicWeakDerivativeFamily.ofContDiffOnBounded
 @[simp] theorem
     ParabolicWeakDerivativeFamily.ofContDiffOnBounded_representative
     (d L : ℕ)
-    (U : Set (TimeVelocity d))
+    (U : HypoellipticAleksandrov.Parabolic.TVSet d)
     (hUopen : IsOpen U)
     (hUfinite :
-      (volume : Measure (TimeVelocity d)) U < ∞)
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) U < ∞)
     (B : ParabolicDerivativeIndex d L → ℝ)
     (f : TimeVelocity d → ℝ)
     (hf : ContDiffOn ℝ L f U)
@@ -177,8 +178,8 @@ noncomputable def ParabolicWeakDerivativeFamily.ofContDiffOnBounded
   rfl
 
 private theorem coordinateIteratedFDeriv_eLpNorm_sq_le
-    {d L : ℕ} {U : Set (TimeVelocity d)} (hUopen : IsOpen U)
-    (hUfinite : (volume : Measure (TimeVelocity d)) U < ∞)
+    {d L : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} (hUopen : IsOpen U)
+    (hUfinite : (HypoellipticAleksandrov.Parabolic.TVVolume d) U < ∞)
     (B : ParabolicDerivativeIndex d L → ℝ)
     (f : TimeVelocity d → ℝ)
     (hbound : ∀ (alpha : ParabolicDerivativeIndex d L)
@@ -230,10 +231,10 @@ private theorem coordinateIteratedFDeriv_eLpNorm_sq_le
 
 theorem ParabolicWeakDerivativeFamily.squaredL2Norm_ofContDiffOnBounded_le
     (d L : ℕ)
-    (U : Set (TimeVelocity d))
+    (U : HypoellipticAleksandrov.Parabolic.TVSet d)
     (hUopen : IsOpen U)
     (hUfinite :
-      (volume : Measure (TimeVelocity d)) U < ∞)
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) U < ∞)
     (B : ParabolicDerivativeIndex d L → ℝ)
     (f : TimeVelocity d → ℝ)
     (hf : ContDiffOn ℝ L f U)

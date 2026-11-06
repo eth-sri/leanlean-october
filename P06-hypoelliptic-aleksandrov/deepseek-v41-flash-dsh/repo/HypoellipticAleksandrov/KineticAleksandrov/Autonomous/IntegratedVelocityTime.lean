@@ -17,8 +17,7 @@ open scoped ENNReal
 def velocityNativeBand (r : ℝ) : Set (EvolutionAmbientState 1) := {w | |w.1 0| ≤ 3 * r}
 
 /-- Native terminal velocity bands are measurable. -/
-theorem velocityNativeBand_measurable (r : ℝ) : MeasurableSet (velocityNativeBand r) := by
-  exact measurableSet_le
+theorem velocityNativeBand_measurable (r : ℝ) : MeasurableSet (velocityNativeBand r) := measurableSet_le
     (continuous_abs.measurable.comp ((measurable_pi_apply 0).comp measurable_fst))
     measurable_const
 
@@ -86,7 +85,7 @@ theorem velocityBandProbability_toReal_integrable (E : FullSpaceEvolution)
     (r : ℝ) (z : Z) (T : ℝ) :
     Integrable (fun t => (velocityBandProbability E r z t).toReal)
       (volume.restrict (Ioc 0 T)) := by
-  apply Integrable.mono' (integrable_const (1 : ℝ))
+  apply Integrable.mono' (integrable_const 1)
     (velocityBandProbability_measurable E r z).ennreal_toReal.aestronglyMeasurable
   exact Eventually.of_forall fun t => by
     rw [Real.norm_of_nonneg ENNReal.toReal_nonneg]

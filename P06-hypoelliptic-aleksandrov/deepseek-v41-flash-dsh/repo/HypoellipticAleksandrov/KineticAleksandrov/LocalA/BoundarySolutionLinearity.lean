@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundaryFunctionalValues
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundedSourceLinearity
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Linearity of the literal boundary reconstruction -/
 
@@ -11,7 +12,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory SectionTwo Evolution TheoremA Parabolic
 
 /-- Scalar factors commute with the literal Duhamel potential. -/
-theorem boundary_duhamelPotential_const_mul {d : ℕ} {Ω : Set (PDE.Vec d)}
+theorem boundary_duhamelPotential_const_mul {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (c : ℝ)
     (g : KineticPoint d → ℝ) (T : ℝ) (P : KineticPoint d) :
     duhamelPotential K T (fun Q => c * g Q) P = c * duhamelPotential K T g P := by

@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.ParabolicWeakDerivativeFamily
 public import Mathlib.Analysis.Calculus.ContDiff.Operations
 public import Mathlib.MeasureTheory.Integral.Bochner.Basic
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Closure of finite weak derivative families under integral testing
 
@@ -30,7 +31,7 @@ private theorem test_velocity_smooth {d : ℕ} {φ : TimeVelocity d → ℝ}
 
 /-- Limits of all compact test pairings retain every weak successor relation. -/
 def weakDerivativeFamily_of_tendsto_integral_mul {d L : ℕ}
-    (U : Set (TimeVelocity d)) (u : ℕ → TimeVelocity d → ℝ)
+    (U : HypoellipticAleksandrov.Parabolic.TVSet d) (u : ℕ → TimeVelocity d → ℝ)
     (D : ∀ n, ParabolicWeakDerivativeFamily d L U (u n))
     (v : TimeVelocity d → ℝ)
     (g : ParabolicDerivativeIndex d L → TimeVelocity d → ℝ)

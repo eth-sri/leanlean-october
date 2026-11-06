@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.ScalarDirichletData
 public import HypoellipticAleksandrov.Parabolic.ScalarMaximum
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Scalar zero-order backward parabolic maximum principle
@@ -21,12 +23,12 @@ namespace HypoellipticAleksandrov.Parabolic
 open Filter Set Matrix
 open scoped MatrixOrder Topology
 
-private def insetCylinder {n : ℕ} (α r₁ : ℝ) (Ω : Set (PDE.Vec n)) :
-    Set (TimeVelocity n) :=
+private def insetCylinder {n : ℕ} (α r₁ : ℝ) (Ω : HypoellipticAleksandrov.VecSet n) :
+    HypoellipticAleksandrov.Parabolic.TVSet n :=
   Set.Icc α r₁ ×ˢ closure Ω
 
-private def insetActive {n : ℕ} (α r₁ : ℝ) (Ω : Set (PDE.Vec n)) :
-    Set (TimeVelocity n) :=
+private def insetActive {n : ℕ} (α r₁ : ℝ) (Ω : HypoellipticAleksandrov.VecSet n) :
+    HypoellipticAleksandrov.Parabolic.TVSet n :=
   Set.Ico α r₁ ×ˢ Ω
 
 private def terminalTilt {n : ℕ} (u : TimeVelocity n → ℝ) (ε r₁ : ℝ) :
@@ -34,18 +36,18 @@ private def terminalTilt {n : ℕ} (u : TimeVelocity n → ℝ) (ε r₁ : ℝ) 
   fun z => u z - ε * (r₁ - z.1)
 
 private theorem isCompact_insetCylinder {n : ℕ} {α r₁ : ℝ}
-    {Ω : Set (PDE.Vec n)} (hΩbounded : Bornology.IsBounded Ω) :
+    {Ω : HypoellipticAleksandrov.VecSet n} (hΩbounded : Bornology.IsBounded Ω) :
     IsCompact (insetCylinder α r₁ Ω) :=
   isCompact_Icc.prod hΩbounded.isCompact_closure
 
 private theorem insetActive_subset_original_open {n : ℕ} {r₀ α r₁ : ℝ}
-    {Ω : Set (PDE.Vec n)} (hr₀α : r₀ < α) :
+    {Ω : HypoellipticAleksandrov.VecSet n} (hr₀α : r₀ < α) :
     insetActive α r₁ Ω ⊆ scalarParabolicOpenCylinder r₀ r₁ Ω := by
   rintro z ⟨⟨hzα, hzr₁⟩, hzΩ⟩
   exact ⟨⟨lt_of_lt_of_le hr₀α hzα, hzr₁⟩, hzΩ⟩
 
 private theorem insetCylinder_diff_insetActive_eq {n : ℕ} {α r₁ : ℝ}
-    {Ω : Set (PDE.Vec n)} (hΩopen : IsOpen Ω) (hαr₁ : α < r₁) :
+    {Ω : HypoellipticAleksandrov.VecSet n} (hΩopen : IsOpen Ω) (hαr₁ : α < r₁) :
     insetCylinder α r₁ Ω \ insetActive α r₁ Ω =
       scalarParabolicTerminalFace r₁ Ω ∪
         (Set.Icc α r₁ ×ˢ frontier Ω) := by
@@ -318,7 +320,7 @@ private theorem terminalTilt_spatialHessian_eq {n : ℕ} (u : TimeVelocity n →
   rfl
 
 private theorem terminalTilt_timeDerivative_eq {n : ℕ} {u : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} {z : TimeVelocity n} (hu : IsScalarC12On u D)
+    {D : HypoellipticAleksandrov.Parabolic.TVSet n} {z : TimeVelocity n} (hu : IsScalarC12On u D)
     (hz : z ∈ D) (ε r₁ : ℝ) :
     scalarTimeDerivative (terminalTilt u ε r₁) z = scalarTimeDerivative u z + ε := by
   have hderiv : HasDerivAt (fun r : ℝ => terminalTilt u ε r₁ (r, z.2))
@@ -334,13 +336,13 @@ private theorem terminalTilt_timeDerivative_eq {n : ℕ} {u : TimeVelocity n →
   exact hderiv.deriv
 
 private theorem terminalTilt_continuousOn {n : ℕ} {u : TimeVelocity n → ℝ}
-    {K : Set (TimeVelocity n)} (hu : ContinuousOn u K) (ε r₁ : ℝ) :
+    {K : HypoellipticAleksandrov.Parabolic.TVSet n} (hu : ContinuousOn u K) (ε r₁ : ℝ) :
     ContinuousOn (terminalTilt u ε r₁) K := by
   apply hu.sub
   fun_prop
 
 private theorem spatial_localMax_of_inset_localMax {n : ℕ} {α r₁ : ℝ}
-    {Ω : Set (PDE.Vec n)} (hΩopen : IsOpen Ω) {w : TimeVelocity n → ℝ}
+    {Ω : HypoellipticAleksandrov.VecSet n} (hΩopen : IsOpen Ω) {w : TimeVelocity n → ℝ}
     {z : TimeVelocity n} (hz : z ∈ insetActive α r₁ Ω)
     (hmax : IsLocalMaxOn w (insetCylinder α r₁ Ω) z) :
     IsLocalMax (fun y : PDE.Vec n => w (z.1, y)) z.2 := by
@@ -352,13 +354,13 @@ private theorem spatial_localMax_of_inset_localMax {n : ℕ} {α r₁ : ℝ}
   exact hslice.isLocalMax (hΩopen.mem_nhds hz.2)
 
 private theorem terminalTilt_spatialContDiffAt {n : ℕ} {u : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} {z : TimeVelocity n} (hu : IsScalarC12On u D)
+    {D : HypoellipticAleksandrov.Parabolic.TVSet n} {z : TimeVelocity n} (hu : IsScalarC12On u D)
     (hz : z ∈ D) (ε r₁ : ℝ) :
     ContDiffAt ℝ 2 (fun y : PDE.Vec n => terminalTilt u ε r₁ (z.1, y)) z.2 := by
   simpa [terminalTilt] using (hu.spatialSlice_contDiffAt hz).sub contDiffAt_const
 
 private theorem timeDerivative_terminalTilt_nonpos_of_inset_localMax
-    {n : ℕ} {α r₁ : ℝ} {Ω : Set (PDE.Vec n)} {w : TimeVelocity n → ℝ}
+    {n : ℕ} {α r₁ : ℝ} {Ω : HypoellipticAleksandrov.VecSet n} {w : TimeVelocity n → ℝ}
     {z : TimeVelocity n} (hz : z ∈ insetActive α r₁ Ω)
     (hmax : IsLocalMaxOn w (insetCylinder α r₁ Ω) z)
     (hderiv : HasDerivAt (fun r : ℝ => w (r, z.2)) (scalarTimeDerivative w z) z.1) :
@@ -381,7 +383,7 @@ private theorem timeDerivative_terminalTilt_nonpos_of_inset_localMax
   exact nonpos_of_mul_nonpos_right hproduct hpos
 
 private theorem scalarOperator_nonpos_at_inset_tilt_max
-    {n : ℕ} {r₀ α r₁ : ℝ} {Ω : Set (PDE.Vec n)} (hΩopen : IsOpen Ω)
+    {n : ℕ} {r₀ α r₁ : ℝ} {Ω : HypoellipticAleksandrov.VecSet n} (hΩopen : IsOpen Ω)
     (hr₀α : r₀ < α) (a : CoefficientField n)
     (b : ℝ → PDE.Vec n → PDE.Vec n) (u : TimeVelocity n → ℝ)
     (huC12 : IsScalarC12On u (scalarParabolicOpenCylinder r₀ r₁ Ω))
@@ -428,7 +430,7 @@ private theorem scalarOperator_nonpos_at_inset_tilt_max
   linarith
 
 private theorem le_on_insetCylinder_of_zeroOrder_terminal_lateral_le
-    {n : ℕ} {Ω : Set (PDE.Vec n)} {r₀ α r₁ : ℝ}
+    {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n} {r₀ α r₁ : ℝ}
     (hΩopen : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (hr₀α : r₀ < α) (hαr₁ : α < r₁) (a : CoefficientField n)
     (b : ℝ → PDE.Vec n → PDE.Vec n) (c : ℝ → PDE.Vec n → ℝ)
@@ -513,7 +515,7 @@ active-set branch.
 -/
 
 private theorem le_zero_at_strictly_later_time
-    {n : ℕ} {Ω : Set (PDE.Vec n)} {r₀ r r₁ : ℝ}
+    {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n} {r₀ r r₁ : ℝ}
     (hΩopen : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (hr₀r : r₀ < r) (hrr₁ : r < r₁) (a : CoefficientField n)
     (b : ℝ → PDE.Vec n → PDE.Vec n) (c : ℝ → PDE.Vec n → ℝ)
@@ -555,7 +557,7 @@ control the whole closed cylinder.  The proof uses strictly inset cylinders
 before passing to the initial face by continuity.
 -/
 theorem scalar_le_zero_on_closedCylinder_of_zeroOrderOperator_nonneg
-    {n : ℕ} {Ω : Set (PDE.Vec n)} {r₀ r₁ : ℝ}
+    {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n} {r₀ r₁ : ℝ}
     (hΩOpen : IsOpen Ω)
     (hΩBounded : Bornology.IsBounded Ω)
     (hr : r₀ < r₁)

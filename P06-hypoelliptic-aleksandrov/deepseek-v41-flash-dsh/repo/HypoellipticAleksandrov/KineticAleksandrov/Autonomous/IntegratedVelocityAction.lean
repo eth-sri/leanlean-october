@@ -35,7 +35,7 @@ theorem velocityBandAction_eq_probability {lam Lam : ℝ} (A : SmoothAutonomous 
     fullSpaceAction_eq_zeroTime A E hE _ _ (Real.toNNReal t).property]
   have : IsFiniteMeasure (E.2.master (wholeQuery (Real.toNNReal t) z)) :=
     ⟨(E.2.mass_le_one _).trans_lt ENNReal.one_lt_top⟩
-  change (∫ w, (velocityNativeBand r).indicator (fun _ => (1 : ℝ)) w
+  change (∫ w, (velocityNativeBand r).indicator (fun _ => 1) w
     ∂E.2.master (wholeQuery (Real.toNNReal t) z)) = _
   rw [integral_indicator (velocityNativeBand_measurable r)]
   simp only [integral_const, smul_eq_mul, mul_one, Measure.real, velocityBandProbability,

@@ -77,9 +77,11 @@ theorem hasDerivAt_UIr_shift (a : Pos) (b z : ℝ) (hz : 0 < z) :
     field_simp [a.2.ne', (Real.Gamma_pos_of_pos a.2).ne']
   rw [heq]
   exact hasDerivAt_UIr a b z hz
+section
+variable (a : Pos) (b : ℝ) (N : ℕ)
 
 /-- The derivative remainder is exactly a simultaneous parameter shift. -/
-theorem hasDerivAt_UIr_remainder (a : Pos) (b : ℝ) (N : ℕ) (z : ℝ) (hz : 0 < z) :
+theorem hasDerivAt_UIr_remainder  (z : ℝ) (hz : 0 < z) :
     HasDerivAt (fun w => UIr a b w - uExpansion a.1 b N w)
       (-a.1 * (UIr ⟨a.1 + 1, add_pos a.2 zero_lt_one⟩ (b + 1) z -
         uExpansion (a.1 + 1) (b + 1) N z)) z := by
@@ -88,7 +90,7 @@ theorem hasDerivAt_UIr_remainder (a : Pos) (b : ℝ) (N : ℕ) (z : ℝ) (hz : 0
   ring
 
 /-- First derivative expansion of the integral, proved from shifted remainders. -/
-theorem UIr_expansion_deriv (a : Pos) (b : ℝ) (N : ℕ) :
+theorem UIr_expansion_deriv  :
     Asymptotics.IsBigO atTop
       (deriv (fun z => UIr a b z - uExpansion a.1 b N z))
       (fun z => Real.rpow z (-a.1 - (N : ℝ) - 1)) := by
@@ -103,7 +105,7 @@ theorem UIr_expansion_deriv (a : Pos) (b : ℝ) (N : ℕ) :
     ring
 
 /-- The second remainder derivative is another exact integral shift. -/
-theorem hasDerivAt_deriv_UIr_remainder (a : Pos) (b : ℝ) (N : ℕ) (z : ℝ) (hz : 0 < z) :
+theorem hasDerivAt_deriv_UIr_remainder  (z : ℝ) (hz : 0 < z) :
     HasDerivAt (deriv (fun w => UIr a b w - uExpansion a.1 b N w))
       (a.1 * (a.1 + 1) *
         (UIr ⟨a.1 + 1 + 1, add_pos (add_pos a.2 zero_lt_one) zero_lt_one⟩ (b + 1 + 1) z -
@@ -120,7 +122,7 @@ theorem hasDerivAt_deriv_UIr_remainder (a : Pos) (b : ℝ) (N : ℕ) (z : ℝ) (
   ring
 
 /-- Second derivative expansion of the integral, using two proved shifts. -/
-theorem UIr_expansion_deriv2 (a : Pos) (b : ℝ) (N : ℕ) :
+theorem UIr_expansion_deriv2  :
     Asymptotics.IsBigO atTop
       (deriv (deriv (fun z => UIr a b z - uExpansion a.1 b N z)))
       (fun z => Real.rpow z (-a.1 - (N : ℝ) - 2)) := by
@@ -133,5 +135,6 @@ theorem UIr_expansion_deriv2 (a : Pos) (b : ℝ) (N : ℕ) :
     congr 1
     dsimp only [d]
     ring
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer

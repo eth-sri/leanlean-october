@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.UniformC2JetLimit
 public import HypoellipticAleksandrov.Parabolic.LocalizedHigherJetMollification
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Almost-everywhere identification of the Sobolev jet
@@ -21,11 +22,11 @@ private theorem ordinaryRepresentative_memLp_volume
     (G : ParabolicWeakDerivativeFamily d (2 * m) Set.univ root)
     (beta : TimeVelocityDerivativeIndex d m) :
     MemLp (G.ordinaryRepresentative beta) (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d)) := by
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   have h := G.ordinaryRepresentative_memLp beta
   change MemLp (G.ordinaryRepresentative beta) (2 : ℝ≥0∞)
-    ((volume : Measure (TimeVelocity d)).restrict Set.univ) at h
-  simpa only [Measure.restrict_univ] using h
+    ((HypoellipticAleksandrov.Parabolic.TVVolume d).restrict Set.univ) at h
+  simpa using h
 
 /-- A uniform coordinate-jet limit agrees almost everywhere with the selected
 ambient weak representative. -/
@@ -43,7 +44,7 @@ theorem coordinateJet_aeEq_ordinaryRepresentative_of_uniformLimit
         (TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1 v) atTop) :
     ∀ alpha : TimeVelocityDerivativeIndex d 2,
       TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1 v =ᵐ[
-        (volume : Measure (TimeVelocity d))]
+        (HypoellipticAleksandrov.Parabolic.TVVolume d)]
         G.ordinaryRepresentative
           (TimeVelocityDerivativeIndex.castLE (by omega : 2 ≤ d + 4) alpha) := by
   intro alpha
@@ -62,17 +63,17 @@ theorem coordinateJet_aeEq_ordinaryRepresentative_of_uniformLimit
       (shrinkingRadius rho n) (shrinkingRadius_pos rho hrho n) beta
   have hLp : Tendsto (fun n => eLpNorm
       (f n - G.ordinaryRepresentative beta) (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d))) atTop (nhds 0) := by
+      (HypoellipticAleksandrov.Parabolic.TVVolume d)) atTop (nhds 0) := by
     exact (G.tendsto_eLpNorm_spacetimeMollification_ordinaryRepresentative_sub beta).comp
       (tendsto_shrinkingRadius_nhdsWithin rho hrho)
   have hbetaMem := ordinaryRepresentative_memLp_volume G beta
   have hfMeas : ∀ n, AEStronglyMeasurable (f n)
-      (volume : Measure (TimeVelocity d)) := by
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) := by
     intro n
     exact (SpacetimeMollifier.contDiff_spacetimeMollification
       (shrinkingRadius_pos rho hrho n) _
       (hbetaMem.locallyIntegrable (by norm_num))).continuous.aestronglyMeasurable
-  have hmeasure : TendstoInMeasure (volume : Measure (TimeVelocity d)) f atTop
+  have hmeasure : TendstoInMeasure (HypoellipticAleksandrov.Parabolic.TVVolume d) f atTop
       (G.ordinaryRepresentative beta) :=
     tendstoInMeasure_of_tendsto_eLpNorm (by norm_num) hLp
   obtain ⟨ns, hns, hnae⟩ := hmeasure.exists_seq_tendsto_ae

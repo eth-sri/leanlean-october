@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.ParabolicWeakDerivativeFamilyL2Norm
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Squared L2 energy under weak-derivative-family truncation
@@ -27,7 +28,7 @@ private def castLEEmbedding {d M L : ℕ} (hML : M ≤ L) :
 /-- Truncating the parabolic weight bound cannot increase the squared
 finite-family `L²` norm. -/
 theorem squaredL2Norm_truncate_le
-    {d M L : ℕ} {U : Set (TimeVelocity d)}
+    {d M L : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u : TimeVelocity d → ℝ}
     (F : ParabolicWeakDerivativeFamily d L U u)
     (hML : M ≤ L) :

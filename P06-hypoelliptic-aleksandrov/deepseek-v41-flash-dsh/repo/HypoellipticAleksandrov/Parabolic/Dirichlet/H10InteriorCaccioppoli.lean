@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.H10IntegratedCutoffControl
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeVariationalEnergyArbitrarySolutionBound
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! The uniform weighted interior spatial difference-quotient Caccioppoli estimate. -/
 
@@ -17,7 +18,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 namespace IsReverseTimeVariationalEnergySolution
 
 private theorem integrable_norm_sq_timewise_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (T : ℝ)
     {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
     (L : H10HilbertGraph hΩ →L[ℝ] E) (u : ReverseTimeL2V hΩ T) :
     Integrable (fun τ => ‖L (u τ)‖ ^ 2) (reverseTimeVolume T) := by
@@ -37,7 +38,7 @@ private theorem integrable_weighted
     (Filter.Eventually.of_forall hζunit)
 
 private theorem integral_norm_sq_toLp
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (T : ℝ)
     (u : ReverseTimeL2V hΩ T) :
     (∫ τ, ‖u τ‖ ^ 2 ∂reverseTimeVolume T) = ‖u‖ ^ 2 := by
   have h := integral_norm_sq_eq_norm_sq_toLp (fun τ => u τ) (Lp.memLp u)
@@ -77,7 +78,7 @@ private theorem caccioppoli_scalar_closure
     _ = (2 / lam) * (C + K + P) * (T + R) := by ring
 
 private theorem temporal_measure_radius_closure
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) {T : ℝ} (hT : 0 < T)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) {T : ℝ} (hT : 0 < T)
     (ζ : ReverseTimeScalarTest T) (Kζ lam Lam Kη C R : ℝ)
     (hlam : 0 < lam) (hKζ : 0 ≤ Kζ) (hLam : 0 ≤ Lam) (hC : 0 ≤ C)
     (u : ReverseTimeL2V hΩ T)
@@ -236,7 +237,7 @@ private theorem temporal_measure_radius_closure
 /-- Uniform weighted interior Caccioppoli control for localized spatial difference quotients
 of supplied reverse-time variational energy solutions. -/
 theorem exists_uniform_interiorSpatialDifferenceQuotient_caccioppoli
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (hd : 0 < d)
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω)

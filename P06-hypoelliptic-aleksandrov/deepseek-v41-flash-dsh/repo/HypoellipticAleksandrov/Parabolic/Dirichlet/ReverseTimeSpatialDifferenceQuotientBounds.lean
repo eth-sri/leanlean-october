@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.Parabolic.SpatialDifferenceQuotientBound
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSmoothness
 public import PDEFoundation.Sobolev.Cutoff.Basic
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Compact reverse-time coefficient difference-quotient bounds
@@ -19,7 +21,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 open scoped BigOperators Matrix.Norms.Elementwise
 
 private theorem exists_common_spatialDifferenceQuotient_bound_of_smoothOnNeighborhood
-    {d : ℕ} {S : Set (TimeVelocity d)} {ι : Type*} [Fintype ι]
+    {d : ℕ} {S : HypoellipticAleksandrov.Parabolic.TVSet d} {ι : Type*} [Fintype ι]
     (hS : IsCompact S) (f : ι → TimeVelocity d → ℝ)
     (hf : ∀ i, IsSmoothOnNeighborhood (f i) S) :
     ∃ δ C : ℝ, 0 < δ ∧ 0 ≤ C ∧
@@ -50,7 +52,7 @@ private theorem exists_common_spatialDifferenceQuotient_bound_of_smoothOnNeighbo
   simpa using hfold Finset.univ
 
 private theorem exists_common_spatialTranslate_bound_of_smoothOnNeighborhood
-    {d : ℕ} {S : Set (TimeVelocity d)} {ι : Type*} [Fintype ι]
+    {d : ℕ} {S : HypoellipticAleksandrov.Parabolic.TVSet d} {ι : Type*} [Fintype ι]
     (hS : IsCompact S) (f : ι → TimeVelocity d → ℝ)
     (hf : ∀ i, IsSmoothOnNeighborhood (f i) S) :
     ∃ δ C : ℝ, 0 < δ ∧ 0 ≤ C ∧
@@ -96,7 +98,7 @@ private theorem exists_common_spatialTranslate_bound_of_smoothOnNeighborhood
 /-- Smooth coefficient and source data on a common neighborhood have one signed
 spatial difference-quotient bound on a compact reverse-time carrier. -/
 theorem IsCompact.exists_reverseTimeSpatialDifferenceQuotient_bounds_of_smoothOnNeighborhood
-    {d : ℕ} {S K : Set (TimeVelocity d)}
+    {d : ℕ} {S K : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hS : IsCompact S) (r₁ : ℝ)
     (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
@@ -174,7 +176,7 @@ theorem IsCompact.exists_reverseTimeSpatialDifferenceQuotient_bounds_of_smoothOn
 spatial collar on the full closed reverse-time slab over a compact cutoff
 carrier. -/
 theorem exists_reverseTimeSpatialRawAmplitude_bounds_of_smoothOnNeighborhood
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kχ : ℝ}
     (r₀ r₁ : ℝ) (hΩ : IsOpen Ω)
     (χ : PDE.QuantitativeSmoothCutoff inner Ω Kχ)
     (a : CoefficientField d)
@@ -232,7 +234,7 @@ theorem exists_reverseTimeSpatialRawAmplitude_bounds_of_smoothOnNeighborhood
             |spatialDifferenceQuotient k h
               (fun z : TimeVelocity d =>
                 reverseTimeScalarCoefficient r₁ c z.1 z.2) (τ, y)| ≤ C) := by
-  let S : Set (TimeVelocity d) := Set.Icc 0 (r₁ - r₀) ×ˢ tsupport χ.toFun
+  let S : HypoellipticAleksandrov.Parabolic.TVSet d := Set.Icc 0 (r₁ - r₀) ×ˢ tsupport χ.toFun
   have hS : IsCompact S :=
     isCompact_Icc.prod χ.hasCompactSupport.isCompact
   have hSK : reverseTimeMap r₁ '' S ⊆ scalarParabolicClosedCylinder r₀ r₁ Ω := by
@@ -265,8 +267,8 @@ theorem exists_reverseTimeSpatialRawAmplitude_bounds_of_smoothOnNeighborhood
       exact IsSmoothOnNeighborhood.reverseTime r₁ hSK hc
   obtain ⟨δT, CT, hδT, _hCT, htranslate⟩ :=
     exists_common_spatialTranslate_bound_of_smoothOnNeighborhood hS q hq
-  let K : Set (TimeVelocity d) := ({0} : Set ℝ) ×ˢ tsupport χ.toFun
-  let U : Set (TimeVelocity d) := Set.univ ×ˢ Ω
+  let K : HypoellipticAleksandrov.Parabolic.TVSet d := ({0} : Set ℝ) ×ˢ tsupport χ.toFun
+  let U : HypoellipticAleksandrov.Parabolic.TVSet d := Set.univ ×ˢ Ω
   have hK : IsCompact K := by
     exact isCompact_singleton.prod χ.hasCompactSupport.isCompact
   have hU : IsOpen U := by

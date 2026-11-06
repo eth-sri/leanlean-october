@@ -31,9 +31,11 @@ def stackComparisonRegion (d m : ℕ) : Set (KineticPoint d) :=
   {P | -2 < P.time ∧ P.time < (m : ℝ)+1 ∧
     PDE.vecEuclideanNorm P.position < stackPathBound m+1 ∧
     PDE.vecEuclideanNorm P.velocity < stackPathBound m+1}
+section
+variable {d : ℕ} (P0 Z : KineticPoint d) {r : ℝ}
 
 /-- Affine-image membership is inverse-coordinate membership. -/
-theorem mem_kineticAffine_image_iff {d : ℕ} (P0 Z : KineticPoint d) {r : ℝ}
+theorem mem_kineticAffine_image_iff 
     (hr : r ≠ 0) (S : Set (KineticPoint d)) :
     Z ∈ kineticAffine P0 r '' S ↔ kineticAffineInverse P0 r Z ∈ S := by
   constructor
@@ -43,7 +45,7 @@ theorem mem_kineticAffine_image_iff {d : ℕ} (P0 Z : KineticPoint d) {r : ℝ}
     exact ⟨kineticAffineInverse P0 r Z, h, kineticAffine_apply_inverse P0 hr Z⟩
 
 /-- Native position norm in inverse affine coordinates. -/
-theorem inverse_position_norm {d : ℕ} (P0 Z : KineticPoint d) {r : ℝ} (hr : 0 < r) :
+theorem inverse_position_norm  (hr : 0 < r) :
     PDE.vecEuclideanNorm (kineticAffineInverse P0 r Z).position =
       PDE.vecEuclideanNorm (relativePosition P0 Z)/r^3 := by
   change PDE.vecEuclideanNorm ((r^3)⁻¹ • relativePosition P0 Z) = _
@@ -51,12 +53,13 @@ theorem inverse_position_norm {d : ℕ} (P0 Z : KineticPoint d) {r : ℝ} (hr : 
   ring
 
 /-- Native velocity norm in inverse affine coordinates. -/
-theorem inverse_velocity_norm {d : ℕ} (P0 Z : KineticPoint d) {r : ℝ} (hr : 0 < r) :
+theorem inverse_velocity_norm  (hr : 0 < r) :
     PDE.vecEuclideanNorm (kineticAffineInverse P0 r Z).velocity =
       PDE.vecEuclideanNorm (Z.velocity-P0.velocity)/r := by
   change PDE.vecEuclideanNorm (r⁻¹ • (Z.velocity-P0.velocity)) = _
   rw [PDE.vecEuclideanNorm_smul, abs_of_pos (inv_pos.mpr hr)]
   ring
+end
 
 /-- Travel duration and displacement mismatches supplied by a source stack endpoint. -/
 theorem stack_endpoint_data {d : ℕ} (P0 P : KineticPoint d) {r : ℝ} (hr : 0 < r)

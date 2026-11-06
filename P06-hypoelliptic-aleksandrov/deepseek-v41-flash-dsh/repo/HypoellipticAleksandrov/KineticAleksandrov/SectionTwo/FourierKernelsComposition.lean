@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.FourierKernelsTranslation
 import Mathlib.Probability.Kernel.Composition.IntegralCompProd
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Fourier phase factorization and Chapman--Kolmogorov integration -/
 
@@ -10,22 +11,21 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set
 open scoped ENNReal ProbabilityTheory
+section
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω) (σ τ : ℝ) (hστ : σ ≤ τ)
 
 /-- A derived fiber kernel is finite uniformly, by its sub-Markov mass bound. -/
-instance fiberKernel_isFiniteKernel {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω)
-    (σ τ : ℝ) (hστ : σ ≤ τ) : ProbabilityTheory.IsFiniteKernel (K.fiberKernel hΩ σ τ hστ) :=
+instance fiberKernel_isFiniteKernel  : ProbabilityTheory.IsFiniteKernel (K.fiberKernel hΩ σ τ hστ) :=
   ⟨1, ENNReal.one_lt_top, K.fiberKernel_mass_le_one hΩ σ τ hστ⟩
 
 /-- Integrals against the ambient master measure equal integrals against the derived fiber. -/
-theorem master_integral_eq_fiber {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω)
-    (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ)
+theorem master_integral_eq_fiber  (p : EvolutionState Ω γ σ)
     (f : EvolutionAmbientState d → ℂ) (hf : Measurable f) :
     (∫ w, f w ∂K.master (evolutionQueryOfState Ω γ σ τ hστ p)) =
       ∫ w, f w.1 ∂K.fiberKernel hΩ σ τ hστ p := by
   rw [← K.map_fiberKernel_eq_master hΩ σ τ hστ p]
   exact integral_map measurable_subtype_coe.aemeasurable hf.aestronglyMeasurable
+end
 
 /-- Fourier phases factor at the intermediate position, with the source sign convention. -/
 theorem fourierPhase_factor {d : ℕ} (ξ z : PDE.Vec d)
@@ -43,7 +43,7 @@ theorem fourierPhase_factor {d : ℕ} (ξ z : PDE.Vec d)
   rw [hd, Complex.ofReal_add, mul_add, Complex.exp_add]
 
 /-- Chapman--Kolmogorov gives iterated integration of every bounded Borel complex datum. -/
-theorem master_integral_composition {d : ℕ} {Ω : Set (PDE.Vec d)}
+theorem master_integral_composition {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω)
     (hcomp : K.HasComposition hΩ) (σ r τ : ℝ) (hσr : σ ≤ r) (hrτ : r ≤ τ)
     (p : EvolutionState Ω γ σ) (f : EvolutionAmbientState d → ℂ)
@@ -67,7 +67,7 @@ theorem master_integral_composition {d : ℕ} {Ω : Set (PDE.Vec d)}
 /-- Every Fourier kernel value has norm at most one, uniformly in the Borel set. -/
 theorem fourierKernel_apply_norm_le_one {d : ℕ}
     (K : MovingFiberKernel (wholeSpace d) (fun _ => 0))
-    (σ τ : ℝ) (hστ : σ ≤ τ) (ξ v : PDE.Vec d) (E : Set (PDE.Vec d)) :
+    (σ τ : ℝ) (hστ : σ ≤ τ) (ξ v : PDE.Vec d) (E : HypoellipticAleksandrov.VecSet d) :
     ‖fourierKernel K σ τ hστ ξ v E‖ ≤ 1 := by
   have he : (fourierKernel K σ τ hστ ξ v).variation E ≤ 1 :=
     (measure_mono (subset_univ E)).trans
@@ -84,7 +84,7 @@ theorem fourierKernel_composition {d : ℕ}
     (hcov : IsTranslationCovariantEvolution (wholeSpace d) (fun _ => 0)
       MeasurableSet.univ K)
     (σ r τ : ℝ) (hσr : σ ≤ r) (hrτ : r ≤ τ) (ξ v : PDE.Vec d)
-    (E : Set (PDE.Vec d)) (hE : MeasurableSet E) :
+    (E : HypoellipticAleksandrov.VecSet d) (hE : MeasurableSet E) :
     fourierKernel K σ τ (hσr.trans hrτ) ξ v E =
       ∫ᵛ v', fourierKernel K r τ hrτ ξ v' E
         ∂[ContinuousLinearMap.mul ℝ ℂ; fourierKernel K σ r hσr ξ v] := by

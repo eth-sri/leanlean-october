@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Lieberman.SourceEllipsoidBounds
 public import HypoellipticAleksandrov.KineticAleksandrov.Lieberman.SourceBoundaryExtension
 import HypoellipticAleksandrov.KineticAleksandrov.Occupation.LocalizedKrylovRegularity
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Source correction on a closed ellipsoid cylinder using an earlier time collar -/
 
@@ -45,7 +47,7 @@ theorem exists_signed_source_ellipsoid_correction_of_upstream
           ∀ z ∈ scalarParabolicOpenCylinder a T (openEllipsoid Q),
             |w z| ≤ q.toH1Function.toFun z.2)
     (hBoundary :
-      ∀ {d : ℕ} {Ω : Set (PDE.Vec d)}, IsOpen Ω →
+      ∀ {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}, IsOpen Ω →
         ∀ (a₀ a T M : ℝ), a₀ < a → 0 ≤ M →
         ∀ (q : PDE.Vec d → ℝ), Continuous q →
         (∀ y ∈ frontier Ω, q y = 0) →

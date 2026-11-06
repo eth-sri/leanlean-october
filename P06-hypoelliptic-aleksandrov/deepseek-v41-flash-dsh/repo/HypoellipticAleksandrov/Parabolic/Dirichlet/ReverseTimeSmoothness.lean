@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTime
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Reverse-time smoothness infrastructure
@@ -34,7 +35,7 @@ theorem IsSmoothOnNeighborhood.differentiableAt
 
 /-- Reverse-time pullback preserves smoothness on corresponding neighborhoods. -/
 theorem IsSmoothOnNeighborhood.reverseTime
-    {d : ℕ} {S K : Set (TimeVelocity d)} (r₁ : ℝ)
+    {d : ℕ} {S K : HypoellipticAleksandrov.Parabolic.TVSet d} (r₁ : ℝ)
     {f : TimeVelocity d → ℝ}
     (hSK : reverseTimeMap r₁ '' S ⊆ K)
     (hf : IsSmoothOnNeighborhood f K) :
@@ -50,7 +51,7 @@ theorem IsSmoothOnNeighborhood.reverseTime
 
 /-- Matrix-valued coefficient smoothness gives smoothness of each entry. -/
 theorem IsSmoothOnNeighborhood.coefficientEntry
-    {d : ℕ} {K : Set (TimeVelocity d)} (a : CoefficientField d)
+    {d : ℕ} {K : HypoellipticAleksandrov.Parabolic.TVSet d} (a : CoefficientField d)
     (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2) K)
     (i j : Fin d) :
     IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2 i j) K := by
@@ -79,7 +80,7 @@ theorem fderiv_spatialSlice_apply
 
 /-- Smooth matrix and drift fields give a smooth divergence-form drift entry. -/
 theorem IsSmoothOnNeighborhood.divergenceDriftEntry
-    {d : ℕ} {K : Set (TimeVelocity d)}
+    {d : ℕ} {K : HypoellipticAleksandrov.Parabolic.TVSet d}
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2) K)
     (hb : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2) K)

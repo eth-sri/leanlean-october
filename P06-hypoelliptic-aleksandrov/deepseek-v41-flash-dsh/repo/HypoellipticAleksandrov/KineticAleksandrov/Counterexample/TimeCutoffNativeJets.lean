@@ -9,9 +9,11 @@ import Mathlib.Analysis.Calculus.FDeriv.Prod
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open Filter
+section
+variable {d : ℕ} (f : XV d → ℝ) (q : XV d)
 
 /-- Position slice derivatives equal the product selectors at a differentiability point. -/
-theorem dx_eq_classicalGradient_at {d : ℕ} (f : XV d → ℝ) (q : XV d)
+theorem dx_eq_classicalGradient_at 
     (hf : DifferentiableAt ℝ f q) :
     dx f q = PDE.classicalGradient (fun x => f (x, q.2)) q.1 := by
   funext i
@@ -26,7 +28,7 @@ theorem dx_eq_classicalGradient_at {d : ℕ} (f : XV d → ℝ) (q : XV d)
     ContinuousLinearMap.prod_apply, ContinuousLinearMap.id_apply, zero_apply]
 
 /-- Velocity slice derivatives equal the product selectors at a differentiability point. -/
-theorem dv_eq_classicalGradient_at {d : ℕ} (f : XV d → ℝ) (q : XV d)
+theorem dv_eq_classicalGradient_at 
     (hf : DifferentiableAt ℝ f q) :
     dv f q = PDE.classicalGradient (fun v => f (q.1, v)) q.2 := by
   funext i
@@ -41,7 +43,7 @@ theorem dv_eq_classicalGradient_at {d : ℕ} (f : XV d → ℝ) (q : XV d)
     ContinuousLinearMap.prod_apply, ContinuousLinearMap.id_apply, zero_apply]
 
 /-- Second velocity slice derivatives agree with product selectors at a C2 point. -/
-theorem dvv_eq_sliceHessian_at {d : ℕ} (f : XV d → ℝ) (q : XV d)
+theorem dvv_eq_sliceHessian_at 
     (hf : ContDiffAt ℝ 2 f q) :
     dvv f q = Parabolic.kineticVelocityHessian (fun P => f (P.position, P.velocity))
       ⟨0, q.1, q.2⟩ := by
@@ -71,5 +73,6 @@ theorem dvv_eq_sliceHessian_at {d : ℕ} (f : XV d → ℝ) (q : XV d)
   simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.proj_apply,
     ContinuousLinearMap.prod_apply, fderiv_const_apply, fderiv_id,
     zero_apply, ContinuousLinearMap.id_apply]
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

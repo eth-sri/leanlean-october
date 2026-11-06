@@ -12,30 +12,26 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory ProbabilityTheory HypoellipticAleksandrov
 open scoped ENNReal
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
 
 /-- Full-space terminal measures are finite in physical spacetime. -/
 instance entranceSlab_fullSpaceTerminal_isFiniteMeasure
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (P : Point) (b : ℝ) :
+     (P : Point) (b : ℝ) :
     IsFiniteMeasure (enlargedFullSpaceTerminal hH hLE hlam hLam A P b) := by
   exact ⟨(enlargedFullSpaceTerminal_mass_le_one hH hLE hlam hLam A P b).trans_lt
     ENNReal.one_lt_top⟩
 
 /-- Full-space occupation on a finite observation window is a finite physical measure. -/
 instance entranceSlab_fullSpaceOccupation_isFiniteMeasure
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (P : Point) (T : ℝ) :
+     (P : Point) (T : ℝ) :
     IsFiniteMeasure (enlargedFullSpaceOccupation hH hLE hlam hLam A P T) := by
   unfold enlargedFullSpaceOccupation
   infer_instance
 
 /-- Reinserting physical time does not change the active-velocity terminal probability. -/
 theorem entranceSlab_fullSpaceTerminal_active
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (P : Point) (b : ℝ) :
+     (c : Clock) (P : Point) (b : ℝ) :
     enlargedFullSpaceTerminal hH hLE hlam hLam A P (P.time + b)
       {q | q.velocity 0 ∈ c.active} =
       kernelXV (fullSpaceEvolution hH hLE hlam hLam A) (Real.toNNReal b)
@@ -55,9 +51,7 @@ theorem entranceSlab_fullSpaceTerminal_active
 
 /-- Physical time-slab occupation is exactly the elapsed active-band kernel integral. -/
 theorem entranceSlab_fullSpaceOccupation_active
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (P : Point) (T a b : ℝ)
+     (c : Clock) (P : Point) (T a b : ℝ)
     (ha : 0 ≤ a) (hbT : b ≤ T) :
     enlargedFullSpaceOccupation hH hLE hlam hLam A P T
       {q | q.time ∈ Ioc (P.time + a) (P.time + b) ∧ q.velocity 0 ∈ c.active} =
@@ -78,7 +72,7 @@ theorem entranceSlab_fullSpaceOccupation_active
       (enlargedTerminalPoint (P.time + t) z) ∂K t) =
       (Ioc a b).indicator (fun t => K t V) t := by
     have ht : P.time + t ∈ Ioc (P.time + a) (P.time + b) ↔ t ∈ Ioc a b := by
-      simp only [mem_Ioc, add_lt_add_iff_left, add_le_add_iff_left]
+      simp
     by_cases h : t ∈ Ioc a b
     · have htime := ht.mpr h
       rw [indicator_of_mem h]
@@ -125,9 +119,7 @@ theorem entranceSlab_fullSpaceOccupation_active
 
 /-- The real physical slab mass is exactly the source active-velocity action integral. -/
 theorem entranceSlab_fullSpaceOccupation_active_real
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (P : Point) (T a b : ℝ)
+     (c : Clock) (P : Point) (T a b : ℝ)
     (ha : 0 ≤ a) (hbT : b ≤ T) :
     (enlargedFullSpaceOccupation hH hLE hlam hLam A P T
       {q | q.time ∈ Ioc (P.time + a) (P.time + b) ∧ q.velocity 0 ∈ c.active}).toReal =
@@ -155,9 +147,7 @@ theorem entranceSlab_fullSpaceOccupation_active_real
 
 /-- The actual source active-band action is integrable on every nonnegative finite slab. -/
 theorem entranceSlab_activeAction_integrableOn
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (z : Z) (a b : ℝ) (ha : 0 ≤ a) :
+     (c : Clock) (z : Z) (a b : ℝ) (ha : 0 ≤ a) :
     IntegrableOn (fun t => S hH hLE hlam hLam A t (activeVelocityDatum c) z) (Ioc a b) := by
   let E := fullSpaceEvolution hH hLE hlam hLam A
   let B : Set Z := {w | w.2 ∈ c.active}
@@ -168,7 +158,7 @@ theorem entranceSlab_activeAction_integrableOn
     apply Integrable.mono' (integrable_const (1 : ℝ)) hm.ennreal_toReal.aestronglyMeasurable
     exact Filter.Eventually.of_forall fun t => by
       rw [Real.norm_of_nonneg ENNReal.toReal_nonneg]
-      simpa only [ENNReal.toReal_one] using ENNReal.toReal_mono ENNReal.one_ne_top
+      simpa using ENNReal.toReal_mono ENNReal.one_ne_top
         ((measure_mono (subset_univ B)).trans (kernelXV_mass_le_one E (Real.toNNReal t) z))
   apply hi.congr
   filter_upwards [ae_restrict_mem measurableSet_Ioc] with t ht
@@ -176,9 +166,7 @@ theorem entranceSlab_activeAction_integrableOn
 
 /-- The real finite occupation sum is bounded by the literal source active-band integral. -/
 theorem entranceSlab_partial_occupation_mass_le
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T a b : ℝ)
+     (c : Clock) (J : Interval) (T a b : ℝ)
     (hT : 0 < T) (ha : 0 ≤ a) (hbT : b ≤ T) (hJ : closure c.active ⊆ J.carrier)
     (P : Point) (hv : P.velocity 0 ∈ J.carrier) (N : ℕ) :
     (∑ n ∈ Finset.range N,
@@ -202,5 +190,6 @@ theorem entranceSlab_partial_occupation_mass_le
     entranceSlab_fullSpaceOccupation_active_real hH hLE hlam hLam A c P T a b ha hbT] at hr
   rw [visit_partial_real_mass gm N univ MeasurableSet.univ] at hr
   exact hr
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

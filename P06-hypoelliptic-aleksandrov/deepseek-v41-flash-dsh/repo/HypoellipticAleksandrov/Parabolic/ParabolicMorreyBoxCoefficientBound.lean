@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyMeanNormTransport
 public import Mathlib.MeasureTheory.Function.LpSeminorm.CompareExp
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Normalized coefficients on parabolic Morrey boxes
@@ -21,7 +22,7 @@ open MeasureTheory
 open scoped BigOperators ENNReal
 
 private theorem isProbabilityMeasure_parabolicNormalizedVolumeOn
-    {d : Nat} {Q : Set (TimeVelocity d)}
+    {d : Nat} {Q : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hQpos : 0 < volume Q) (hQtop : volume Q < ∞) :
     IsProbabilityMeasure (parabolicNormalizedVolumeOn Q) := by
   refine ⟨?_⟩
@@ -42,7 +43,7 @@ private theorem parabolicMorreyUnitAverage_eq_integral_normalizedVolume
     integral_smul_measure, ENNReal.toReal_inv, smul_eq_mul]
 
 private theorem abs_integral_le_parabolicLpMeanNormOn
-    {d : Nat} {Q : Set (TimeVelocity d)} {f : TimeVelocity d -> Real}
+    {d : Nat} {Q : HypoellipticAleksandrov.Parabolic.TVSet d} {f : TimeVelocity d -> Real}
     (hQpos : 0 < volume Q) (hQtop : volume Q < ∞)
     (hf : MemLp f (parabolicExponent d) (parabolicNormalizedVolumeOn Q)) :
     |∫ z, f z ∂(parabolicNormalizedVolumeOn Q)| ≤
@@ -72,7 +73,7 @@ private theorem abs_parabolicMorreyUnitVelocityCoeff_le_parabolicLpMeanNormOn
     (i : Fin d) :
     |parabolicMorreyUnitVelocityCoeff g i| ≤
       3 * parabolicLpMeanNormOn d g (parabolicMorreyUnitBox d) hg := by
-  let U : Set (TimeVelocity d) := parabolicMorreyUnitBox d
+  let U : HypoellipticAleksandrov.Parabolic.TVSet d := parabolicMorreyUnitBox d
   let μ : Measure (TimeVelocity d) := parabolicNormalizedVolumeOn U
   let p : ENNReal := parabolicExponent d
   have hUpos : 0 < volume U := by
@@ -127,9 +128,11 @@ private theorem abs_parabolicMorreyUnitVelocityCoeff_le_parabolicLpMeanNormOn
     parabolicMorreyUnitAverage_eq_integral_normalizedVolume]
   rw [abs_mul, abs_of_nonneg (by norm_num)]
   exact mul_le_mul_of_nonneg_left (hintegral.trans hweighted_real) (by norm_num)
+section
+variable {d : Nat} (t₀ : Real) (v₀ : PDE.Vec d) {r : Real}
 
 private theorem parabolicLpMeanNormOn_parabolicBox_eq_unit
-    {d : Nat} (t₀ : Real) (v₀ : PDE.Vec d) {r : Real} (hr : 0 < r)
+     (hr : 0 < r)
     (f : TimeVelocity d -> Real)
     (hf : MemLp f (parabolicExponent d)
       (parabolicNormalizedVolumeOn (parabolicBox 1 r t₀ v₀))) :
@@ -143,8 +146,7 @@ private theorem parabolicLpMeanNormOn_parabolicBox_eq_unit
 /-- The normalized constant coefficient of the canonical affine moment
 projection is bounded by the normalized mean norm on the same forward box. -/
 theorem abs_parabolicMorreyBoxAverage_le_parabolicLpMeanNormOn
-    {d : Nat}
-    (t₀ : Real) (v₀ : PDE.Vec d) {r : Real} (hr : 0 < r)
+     (hr : 0 < r)
     (f : TimeVelocity d -> Real)
     (hf : MemLp f (parabolicExponent d)
       (parabolicNormalizedVolumeOn (parabolicBox 1 r t₀ v₀))) :
@@ -168,8 +170,7 @@ theorem abs_parabolicMorreyBoxAverage_le_parabolicLpMeanNormOn
 /-- The radius-weighted `l¹` velocity slopes of the canonical affine moment
 projection are bounded by the normalized mean norm on the same forward box. -/
 theorem radius_sum_abs_parabolicMorreyBoxVelocitySlope_le_parabolicLpMeanNormOn
-    {d : Nat}
-    (t₀ : Real) (v₀ : PDE.Vec d) {r : Real} (hr : 0 < r)
+     (hr : 0 < r)
     (f : TimeVelocity d -> Real)
     (hf : MemLp f (parabolicExponent d)
       (parabolicNormalizedVolumeOn (parabolicBox 1 r t₀ v₀))) :
@@ -206,8 +207,7 @@ theorem radius_sum_abs_parabolicMorreyBoxVelocitySlope_le_parabolicLpMeanNormOn
 /-- The combined constant and radius-weighted velocity coefficient bound for
 the canonical affine moment projection on one forward physical box. -/
 theorem parabolicMorreyBoxCoefficientBound_le_parabolicLpMeanNormOn
-    {d : Nat}
-    (t₀ : Real) (v₀ : PDE.Vec d) {r : Real} (hr : 0 < r)
+     (hr : 0 < r)
     (f : TimeVelocity d -> Real)
     (hf : MemLp f (parabolicExponent d)
       (parabolicNormalizedVolumeOn (parabolicBox 1 r t₀ v₀))) :
@@ -230,5 +230,6 @@ theorem parabolicMorreyBoxCoefficientBound_le_parabolicLpMeanNormOn
     _ = (1 + 3 * (d : Real)) *
         parabolicLpMeanNormOn d f (parabolicBox 1 r t₀ v₀) hf := by
       ring
+end
 
 end HypoellipticAleksandrov.Parabolic

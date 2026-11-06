@@ -6,6 +6,7 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeHilbertRepresentat
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSourcePositivePartOrder
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialFormPositivePart
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialFormOperatorBase
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Weak comparison for reverse-time variational energy solutions -/
 
@@ -16,7 +17,7 @@ open scoped ENNReal RealInnerProductSpace Matrix.Norms.Elementwise MatrixOrder
 noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-local instance comparisonModule {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) :
+local instance comparisonModule {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (T : ℝ) :
     Module ℝ (ReverseTimeL2VStar hΩ T) := MeasureTheory.Lp.instModule
 
 private theorem comparison_scalar_energy
@@ -28,7 +29,7 @@ private theorem comparison_scalar_energy
   linarith
 
 private theorem comparison_energy_increment
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hd : HasGelfandWeakTimeDerivative hΩ T hT u g)
     (t : ℝ) (ht : t ∈ Icc 0 T) :
@@ -40,7 +41,7 @@ private theorem comparison_energy_increment
     0 t ⟨le_rfl, hT.le⟩ ht ht.1
 
 private theorem comparison_initialTrace_sub
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (u₁ u₂ : ReverseTimeL2V hΩ T) (g₁ g₂ : ReverseTimeL2VStar hΩ T)
     (hd₁ : HasGelfandWeakTimeDerivative hΩ T hT u₁ g₁)
     (hd₂ : HasGelfandWeakTimeDerivative hΩ T hT u₂ g₂)
@@ -78,8 +79,8 @@ private theorem comparison_clamped_energy_zero
   norm_num
 
 private theorem comparison_posPart_clamped_energy_zero
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {T : ℝ} (hT : 0 < T)
-    (W : C(Icc 0 T, PDE.ScalarLp Ω (2 : ℝ≥0∞)))
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {T : ℝ} (hT : 0 < T)
+    (W : C(Icc 0 T, PDE.ScalarLp Ω 2))
     (hW0 : Lp.posPart (W ⟨0,⟨le_rfl,hT.le⟩⟩) = 0) :
     ‖Lp.posPart (W ⟨comparisonClamp T 0, comparisonClamp_mem hT 0⟩)‖^2 = 0 := by
   exact comparison_clamped_energy_zero hT
@@ -95,7 +96,7 @@ private theorem comparison_setIntegral_eq
   exact inter_eq_left.mpr (Ioc_subset_Icc_self.trans fun r hr => ⟨hr.1, hr.2.trans ht.2⟩)
 
 private theorem comparison_value_integral
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (w : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hd : HasGelfandWeakTimeDerivative hΩ T hT w g) (t : ℝ) (ht : t ∈ Icc 0 T) :
     (∫ r in Ioc 0 t, ‖valueCLM hΩ (h10PositivePart hΩ (w r))‖ ^ 2
@@ -118,7 +119,7 @@ private theorem comparison_value_integral
     _ = _ := comparison_setIntegral_eq _ ht
 
 private theorem comparison_posPart_zero
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (w : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hd : HasGelfandWeakTimeDerivative hΩ T hT w g) (K : ℝ) (hK : 0 ≤ K)
     (hrate : ∀ᵐ τ ∂reverseTimeVolume T,
@@ -188,7 +189,7 @@ private theorem comparison_posPart_zero
   nlinarith [norm_nonneg (Lp.posPart (W ⟨t,ht⟩))]
 
 private theorem comparison_ae_rate
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
@@ -267,7 +268,7 @@ private theorem comparison_ae_rate
 /-- Reverse-time variational comparison: ordered initial data and the original-source
 orientation `F₂ ≤ F₁` imply spatial almost-everywhere order at every closed time. -/
 theorem reverseTimeVariationalEnergySolution_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)

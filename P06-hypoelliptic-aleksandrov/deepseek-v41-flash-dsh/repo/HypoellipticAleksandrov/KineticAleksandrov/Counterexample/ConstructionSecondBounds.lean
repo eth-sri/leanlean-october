@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.ConstructionLocalBounds
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.TimeCutoffSecondBounds
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Local integrability of the literal second cutoff representatives -/
 
@@ -12,15 +13,16 @@ open MeasureTheory Set
 
 /-- A continuous scalar field has a nonnegative compact bound. -/
 theorem construction_continuous_compact_bound {n : ℕ} (f : PDE.Vec n → ℝ)
-    (hf : Continuous f) (K : Set (PDE.Vec n)) (hK : IsCompact K) :
+    (hf : Continuous f) (K : HypoellipticAleksandrov.VecSet n) (hK : IsCompact K) :
     ∃ M : ℝ, 0 ≤ M ∧ ∀ x ∈ K, |f x| ≤ M := by
   obtain ⟨M, hb⟩ := hK.bddAbove_image hf.abs.continuousOn
   exact ⟨max M 0, le_max_right _ _, fun x hx =>
     (hb ⟨x, hx, rfl⟩).trans (le_max_left _ _)⟩
+section
+variable {d : ℕ} {alpha : ℝ} (h : CounterProfileStatement d alpha) (r : ℝ)
 
 /-- Subtraction of a smooth barrier preserves the compact bounds of the first jets. -/
-theorem construction_gradient_difference_compact_bound {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r)
+theorem construction_gradient_difference_compact_bound  (hr : 0 < r)
     (mu R t : ℝ) (i : Fin (d + d)) (K : Set (PDE.Vec (d + d))) (hK : IsCompact K) :
     ∃ M : ℝ, 0 ≤ M ∧ ∀ x ∈ K,
       |spatialPackedGradient (flatProfilePositionJet h r) (flatProfileVelocityJet h r) x i -
@@ -35,8 +37,7 @@ theorem construction_gradient_difference_compact_bound {d : ℕ} {alpha : ℝ}
     (abs_sub _ _).trans (add_le_add (hbM x hx) (hbN x hx))⟩
 
 /-- The packed Hessian representatives of the flattening are locally integrable. -/
-theorem construction_packedHessian_locallyIntegrable {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r) (i k : Fin d) :
+theorem construction_packedHessian_locallyIntegrable  (hr : 0 < r) (i k : Fin d) :
     LocallyIntegrable (fun x => flatProfileHessian h r (spatialCoordinateCLE d x) i k)
       volume := by
   obtain ⟨_, _, hm⟩ := measurable_flatProfile_jets h r
@@ -48,8 +49,7 @@ theorem construction_packedHessian_locallyIntegrable {d : ℕ} {alpha : ℝ}
   exact ⟨M, hM, fun x hx => (hb _ ⟨x, hx, rfl⟩).2.2 i k⟩
 
 /-- The explicit second weak cutoff representative is locally integrable. -/
-theorem construction_cutoffHessian_locallyIntegrable {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r)
+theorem construction_cutoffHessian_locallyIntegrable  (hr : 0 < r)
     (mu R t : ℝ) (i k : Fin d) :
     LocallyIntegrable (fun x => spatialPackedCutoffVelocityHessian h r mu R t x i k)
       volume := by
@@ -90,5 +90,6 @@ theorem construction_cutoffHessian_locallyIntegrable {d : ℕ} {alpha : ℝ}
   have hsecond := hprod.continuous_mul ht2
   simpa only [spatialPackedCutoffVelocityHessian, B, s, g, mul_assoc] using!
     hfirst.add hsecond
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

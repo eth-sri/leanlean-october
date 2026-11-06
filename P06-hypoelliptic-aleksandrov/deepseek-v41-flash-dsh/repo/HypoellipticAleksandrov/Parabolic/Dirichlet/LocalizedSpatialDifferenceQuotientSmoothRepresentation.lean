@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialForm
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.LocalizedSpatialDifferenceQuotientEnergyTestH10
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.WeakTestFunctionSobolevJet
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Smooth localized energy-test representations
@@ -19,12 +20,13 @@ open Filter MeasureTheory
 open scoped BigOperators ENNReal RealInnerProductSpace
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
+section
+variable {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ} (hΩ : IsOpen Ω) (r₁ τ : ℝ)
 
 /-- The reverse-time spatial form on a smooth input and its localized energy
 test is the literal principal, divergence-drift, and scalar integral sum. -/
 theorem reverseTimeSpatialForm_apply_smooth_localizedSpatialDifferenceQuotientEnergyTest_eq
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (hΩ : IsOpen Ω) (r₁ τ : ℝ)
+    
     (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
@@ -137,8 +139,7 @@ theorem reverseTimeSpatialForm_apply_smooth_localizedSpatialDifferenceQuotientEn
 /-- The reverse-time source functional on a smooth localized energy test is
 the literal negative source integral. -/
 theorem reverseTimeSourceFunctional_apply_smooth_localizedSpatialDifferenceQuotientEnergyTest_eq
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (hΩ : IsOpen Ω) (r₁ τ : ℝ)
+    
     (F : ℝ → PDE.Vec d → ℝ)
     (hF : MeasureTheory.MemLp
       (fun y : PDE.Vec d => F (r₁ - τ) y)
@@ -169,6 +170,7 @@ theorem reverseTimeSourceFunctional_apply_smooth_localizedSpatialDifferenceQuoti
         (localizedSpatialDifferenceQuotientEnergyWeakTest
           η k h φ φ.contDiff hηΩ hηshift)] with y hF hψ
   rw [hψ, hF]
-  simp only [RCLike.inner_apply, conj_trivial]
+  simp
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

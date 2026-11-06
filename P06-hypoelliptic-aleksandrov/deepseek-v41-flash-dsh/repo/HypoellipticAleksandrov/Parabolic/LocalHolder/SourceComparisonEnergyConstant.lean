@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeHilbertTraces
 import Mathlib.MeasureTheory.Function.LpSpace.Indicator
 import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Stationary reverse-time Sobolev barriers
 
@@ -22,12 +23,12 @@ local instance finiteSourceTimeVolume (T : ℝ) : IsFiniteMeasure (reverseTimeVo
   infer_instance
 
 /-- The literal constant curve with one fixed zero-boundary spatial Sobolev value. -/
-def stationarySourceCurve {d : ℕ} {Ω : Set (PDE.Vec d)}
+def stationarySourceCurve {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (T : ℝ) (q : H10HilbertGraph hΩ) : ReverseTimeL2V hΩ T :=
   Lp.const 2 (reverseTimeVolume T) q
 
 /-- The selected raw stationary curve agrees almost everywhere with its constant value. -/
-theorem stationarySourceCurve_ae {d : ℕ} {Ω : Set (PDE.Vec d)}
+theorem stationarySourceCurve_ae {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (T : ℝ) (q : H10HilbertGraph hΩ) :
     stationarySourceCurve hΩ T q =ᵐ[reverseTimeVolume T] fun _ => q := by
   simpa only [stationarySourceCurve, Function.const_def] using
@@ -44,10 +45,11 @@ theorem integral_reverseTimeScalarTest_deriv_zero {T : ℝ} (hT : 0 < T)
       (fun _ _ => η.contDiff.differentiable (by simp) _)
       (η.contDiff_deriv.continuous.intervalIntegrable 0 T)]
   rw [hzero T (by simp), hzero 0 (by simp), sub_self]
+section
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T) (q : H10HilbertGraph hΩ)
 
 /-- Stationary Sobolev curves have zero Gelfand weak time derivative. -/
-theorem stationarySourceCurve_hasWeakTimeDerivative {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T) (q : H10HilbertGraph hΩ) :
+theorem stationarySourceCurve_hasWeakTimeDerivative  :
     HasGelfandWeakTimeDerivative hΩ T hT (stationarySourceCurve hΩ T q) 0 := by
   intro v η
   refine ⟨integrable_reverseTimeWeakDerivative_left hΩ T _ v η,
@@ -82,8 +84,7 @@ theorem stationarySourceCurve_hasWeakTimeDerivative {d : ℕ} {Ω : Set (PDE.Vec
   rw [hright, neg_zero]
 
 /-- Canonical closed-time values of a stationary curve equal its fixed spatial value. -/
-theorem stationarySourceCurve_hilbertRepresentative {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T) (q : H10HilbertGraph hΩ) :
+theorem stationarySourceCurve_hilbertRepresentative  :
     reverseTimeHilbertRepresentative hΩ T hT (stationarySourceCurve hΩ T q) 0
       (stationarySourceCurve_hasWeakTimeDerivative hΩ T hT q) =
         ContinuousMap.const (Icc 0 T) (valueCLM hΩ q) := by
@@ -93,5 +94,6 @@ theorem stationarySourceCurve_hilbertRepresentative {d : ℕ} {Ω : Set (PDE.Vec
   filter_upwards [stationarySourceCurve_ae hΩ T q] with t ht hti
   change valueCLM hΩ q = valueCLM hΩ (stationarySourceCurve hΩ T q t)
   rw [ht]
+end
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

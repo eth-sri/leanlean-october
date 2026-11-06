@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.SpatialSobolevNorm
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeBochnerContinuous
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Reverse-time Bochner energy bound
@@ -23,7 +24,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 gradient bounds has a reverse-time Bochner `L²(V)` representative with the
 corresponding constant-one graph-norm energy bound. -/
 theorem exists_reverseTimeL2V_of_continuousOn_energy
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) {T lam B G : ℝ}
     (hT : 0 < T) (hlam : 0 < lam)
     (w : ℝ → H10HilbertGraph hΩ)

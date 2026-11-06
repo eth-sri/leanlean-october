@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.Parabolic.ParabolicPoincareFoundation
 public import PDEFoundation.Measure.NormalizedLp
 public import Mathlib.MeasureTheory.Measure.Prod
 public import Mathlib.MeasureTheory.Integral.Prod
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Product disintegration on the parabolic Morrey unit box
@@ -38,7 +39,7 @@ theorem parabolicMorreyUnitBox_restrict_volume_eq_prod (d : Nat) :
   rw [parabolicMorreyUnitBox, volume_timeVelocity_eq_prod]
   symm
   simpa [parabolicBox] using Measure.prod_restrict (μ := (volume : Measure Real))
-    (ν := (volume : Measure (PDE.Vec d))) (Set.Ioo 0 1)
+    (ν := (HypoellipticAleksandrov.VecVolume d)) (Set.Ioo 0 1)
     (velocityCube (0 : PDE.Vec d) 1)
 
 /-- The time-indexed velocity-slice norm is a.e. measurable. -/
@@ -51,7 +52,7 @@ theorem aemeasurable_parabolicMorreyUnitVelocitySlice_eLpNorm
           (parabolicExponent d) (fun v => f (t, v)))
       (volume.restrict (Set.Ioo (0 : Real) 1)) := by
   let μ : Measure Real := volume.restrict (Set.Ioo (0 : Real) 1)
-  let ν : Measure (PDE.Vec d) :=
+  let ν : HypoellipticAleksandrov.VecMeasure d :=
     volume.restrict (velocityCube (0 : PDE.Vec d) 1)
   let p : ℝ≥0∞ := parabolicExponent d
   have hbox : volume.restrict (parabolicMorreyUnitBox d) = μ.prod ν := by
@@ -92,7 +93,7 @@ theorem parabolicELpNormOn_parabolicMorreyUnitBox_eq_time_eLpNorm_velocitySlice
         (parabolicExponent d)
         (volume.restrict (Set.Ioo (0 : Real) 1)) := by
   let μ : Measure Real := volume.restrict (Set.Ioo (0 : Real) 1)
-  let ν : Measure (PDE.Vec d) :=
+  let ν : HypoellipticAleksandrov.VecMeasure d :=
     volume.restrict (velocityCube (0 : PDE.Vec d) 1)
   let p : ℝ≥0∞ := parabolicExponent d
   have hbox : volume.restrict (parabolicMorreyUnitBox d) = μ.prod ν := by

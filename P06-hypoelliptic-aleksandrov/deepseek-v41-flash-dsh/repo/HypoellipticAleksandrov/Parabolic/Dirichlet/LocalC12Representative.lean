@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.HigherOrderLocalL2Regularity
 public import HypoellipticAleksandrov.Parabolic.FiniteOrderSobolevC12Representative
 public import Mathlib.MeasureTheory.Measure.OpenPos
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Local scalar C¹˒² representatives
@@ -105,7 +107,7 @@ private theorem velocityTwo_comm_local {d : ℕ} (i j : Fin d) :
             TimeVelocityMultiIndex.ofTimeVelocity, TimeVelocityMultiIndex.timeOrder,
             TimeVelocityMultiIndex.velocity, velocityCoord, hki, hkj]
 private theorem coordinate_jet_ae_eq_strong_jet
-    {d : ℕ} {QJ QD S : Set (TimeVelocity d)}
+    {d : ℕ} {QJ QD S : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hQJ : IsOpen QJ) (hSQJ : S ⊆ QJ)
     (J : ParabolicW12Function d QJ (2 : ℝ≥0∞))
     (Dcore : ParabolicWeakDerivativeFamily d (2 * (d + 4)) QD J.toFun)
@@ -180,7 +182,7 @@ private theorem coordinate_jet_ae_eq_strong_jet
     exact (by simpa [coe_ohess] using
       (hzJ.trans (congrFun hhessRep z)).trans hzswap)
 private theorem pointwise_scalarPDE_of_ae_jet
-    {d : ℕ} {Q S : Set (TimeVelocity d)}
+    {d : ℕ} {Q S : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hS : IsOpen S) (v : TimeVelocity d → ℝ) (hC12 : IsScalarC12On v S)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c F : ℝ → PDE.Vec d → ℝ)
@@ -264,7 +266,7 @@ private theorem pointwise_scalarPDE_of_ae_jet
 product box; its classical jet is the selected weak jet almost everywhere and
 it satisfies the original-time equation pointwise. -/
 theorem exists_localC12Representative_of_valueRepresentative
-    {d : ℕ} {Ω O₀ O : Set (PDE.Vec d)} (hd : 0 < d)
+    {d : ℕ} {Ω O₀ O : HypoellipticAleksandrov.VecSet d} (hd : 0 < d)
     (r₀ q₀ s₀ s₁ q₁ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hr₀q₀ : r₀ < q₀)
     (hq₀s₀ : q₀ < s₀) (hs₀s₁ : s₀ < s₁) (hs₁q₁ : s₁ < q₁)
     (hq₁r₁ : q₁ < r₁)
@@ -353,7 +355,7 @@ theorem exists_localC12Representative_of_valueRepresentative
           (ParabolicDerivativeIndex.castLE (by omega : 2 ≤ 2 * (d + 4)) alpha) =
         (J.toWeakDerivativeFamily (isOpen_Ioo.prod hO₀open)).representative alpha := by
     simpa [Dcore] using hlow
-  let Ctarget : Set (TimeVelocity d) := Set.Icc s₀ s₁ ×ˢ closure O
+  let Ctarget : HypoellipticAleksandrov.Parabolic.TVSet d := Set.Icc s₀ s₁ ×ˢ closure O
   have hCtargetCompact : IsCompact Ctarget :=
     isCompact_Icc.prod hOcompact
   have hCtargetCore : Ctarget ⊆ Set.Ioo coreLeft coreRight ×ˢ Ocore := by
@@ -365,7 +367,7 @@ theorem exists_localC12Representative_of_valueRepresentative
   obtain ⟨rho, hrho, v, hSCore, hv, hC12, hvJ, hjet⟩ :=
     exists_finiteOrderSobolevC12Representative
       hCoreOpen hCtargetCompact hCtargetCore Dcore
-  let S : Set (TimeVelocity d) := Metric.thickening rho Ctarget
+  let S : HypoellipticAleksandrov.Parabolic.TVSet d := Metric.thickening rho Ctarget
   have hSOpen : IsOpen S := Metric.isOpen_thickening
   have hCoreQ₀ : Set.Ioo coreLeft coreRight ×ˢ Ocore ⊆
       Set.Ioo q₀ q₁ ×ˢ O₀ := by

@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementApproxUniform
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementApproxClosedLimitRegularity
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Homogeneous backward replacement for continuous closed-ball data
 

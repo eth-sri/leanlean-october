@@ -38,11 +38,12 @@ theorem mixture_density_restrict_bound {X : Type*} [MeasurableSpace X] (m : Meas
   have ha := mixture_density_unique (m.restrict L) f g hf hg hf0 hg0 hh
   exact ⟨(eLpNorm_congr_ae ha).trans_lt (hgp.restrict L),
     (eLpNorm_congr_ae ha).le.trans (eLpNorm_restrict_le g p m L)⟩
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
 
 /-- The actual surviving terminal measure is finite. -/
 theorem activeRestartMeasure_isFiniteMeasure
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
     (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point)
     (he : e.velocity 0 ∈ c.active) (t : ℝ) (ht : 0 ≤ t) :
     IsFiniteMeasure (activeRestartMeasure hH hLE hlam hLam A c e he t ht) := by
@@ -52,9 +53,8 @@ theorem activeRestartMeasure_isFiniteMeasure
 
 /-- One fixed one-pole density has the uniform exponential Lq tail at every delay. -/
 theorem active_density_tail
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (q : ℝ) (hq : 1 < q) (hq2 : q < (3 : ℝ) / 2) :
+    
+    (q : ℝ) (hq : 1 < q) (hq2 : q < 3 / 2) :
     ∃ C c₀ : ℝ, 0 < C ∧ 0 < c₀ ∧ ∀ (A : SmoothAutonomous lam Lam)
       (c : Clock) (e : Point) (he : e.velocity 0 ∈ c.active),
       ∃ G : Point → ℝ, enlargedIsDensityOn
@@ -110,6 +110,7 @@ theorem active_density_tail
     have hb := mul_le_mul_of_nonneg_left hmass
       (mul_nonneg hC1.le (Real.rpow_nonneg c.positive.le (6 / q - 4)))
     exact hreal.trans (by simpa only [mul_assoc, mul_comm, mul_left_comm] using hb)
+end
 
 /-- The literal restarted-tail statement follows from the genuine restart and density proofs. -/
 theorem restartTailStatement_holds :

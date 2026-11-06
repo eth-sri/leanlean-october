@@ -27,11 +27,13 @@ private theorem mul_le_lambda_eighth_sq_add (lam a b : ℝ) (hlam : 0 < lam) :
       ((lam ^ 2 / 8) * b ^ 2 + 2 * a ^ 2) / lam by field_simp]
   rw [le_div_iff₀ hlam]
   nlinarith [sq_nonneg (lam * b - 4 * a)]
+section
+variable {d : ℕ}
 
 /-- A lower Loewner bound at the forward-translated point gives the weighted
 coordinate coercivity needed by the fixed-core principal term. -/
 private theorem translatedPrincipal_lower_pointwise
-    {d : ℕ} {lam w : ℝ} (A : TimeVelocity d → PDE.Mat d)
+     {lam w : ℝ} (A : TimeVelocity d → PDE.Mat d)
     (k : Fin d) (h : ℝ) (z : TimeVelocity d) (H : Fin d → ℝ)
     (hw : 0 ≤ w)
     (hAlower : lam • (1 : PDE.Mat d) ≤ A (spatialShift k h z)) :
@@ -63,7 +65,7 @@ The actual three error sums are retained, rather than first replacing the
 cutoff gradient by a uniform bound.  This is the algebraic checkpoint needed
 for an absorption that remains valid where the cutoff vanishes. -/
 private theorem fixedDirection_fluxPairing_coercive_raw
-    {d : ℕ} {lam w : ℝ}
+     {lam w : ℝ}
     (A : TimeVelocity d → PDE.Mat d)
     (G H : Fin d → ℝ) (Dw : Fin d → ℝ) (Q : ℝ)
     (k : Fin d) (h : ℝ) (z : TimeVelocity d)
@@ -120,14 +122,14 @@ private theorem fixedDirection_fluxPairing_coercive_raw
 /-- Summing an expression independent of the first of two positive-dimensional
 indices contributes the real dimension factor. -/
 private theorem sum_fin_sum_repeated_right
-    {d : ℕ} (_hd : 0 < d) (f : Fin d → ℝ) :
+     (_hd : 0 < d) (f : Fin d → ℝ) :
     ∑ _i : Fin d, ∑ j : Fin d, f j = (d : ℝ) * ∑ j : Fin d, f j := by
   simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
 
 /-- Summing an expression independent of the second of two positive-dimensional
 indices contributes the real dimension factor. -/
 private theorem sum_fin_sum_repeated_left
-    {d : ℕ} (_hd : 0 < d) (f : Fin d → ℝ) :
+     (_hd : 0 < d) (f : Fin d → ℝ) :
     ∑ i : Fin d, ∑ _j : Fin d, f i = (d : ℝ) * ∑ i : Fin d, f i := by
   simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul,
     Finset.mul_sum]
@@ -135,7 +137,7 @@ private theorem sum_fin_sum_repeated_left
 /-- The translated-coefficient cutoff error is absorbed entrywise while
 retaining the literal cutoff-gradient square bound. -/
 private theorem fixedDirection_errorOne_le
-    {d : ℕ} {lam Lam Keta w : ℝ}
+     {lam Lam Keta w : ℝ}
     (A : TimeVelocity d → PDE.Mat d) (H Dw : Fin d → ℝ) (Q : ℝ)
     (k : Fin d) (h : ℝ) (z : TimeVelocity d)
     (hd : 0 < d) (hlam : 0 < lam) (hKeta : 0 ≤ Keta)
@@ -204,7 +206,7 @@ private theorem fixedDirection_errorOne_le
 /-- The principal coefficient-quotient error is absorbed entrywise with the
 same dimension allocation as the translated-coefficient error. -/
 private theorem fixedDirection_errorTwo_le
-    {d : ℕ} {lam Ma w : ℝ}
+     {lam Ma w : ℝ}
     (A : TimeVelocity d → PDE.Mat d) (G H : Fin d → ℝ)
     (k : Fin d) (h : ℝ) (z : TimeVelocity d)
     (hd : 0 < d) (hlam : 0 < lam) (hw : 0 ≤ w) (hwLe : w ≤ 1)
@@ -274,7 +276,7 @@ private theorem fixedDirection_errorTwo_le
 
 /-- The cutoff-gradient coefficient commutator is a pure data error. -/
 private theorem fixedDirection_errorThree_le
-    {d : ℕ} {Ma Keta w : ℝ}
+     {Ma Keta w : ℝ}
     (A : TimeVelocity d → PDE.Mat d) (G Dw : Fin d → ℝ) (Q : ℝ)
     (k : Fin d) (h : ℝ) (z : TimeVelocity d)
     (hd : 0 < d) (hKeta : 0 ≤ Keta) (_hw : 0 ≤ w) (hwLe : w ≤ 1)
@@ -345,7 +347,7 @@ private theorem fixedDirection_errorThree_le
 /-- Pointwise fixed-core coercivity after absorbing the two Hessian errors and
 bounding the remaining commutator solely by quotient data. -/
 theorem fixedDirection_fluxPairing_coercive_absorbed
-    {d : ℕ} {lam Lam Ma Keta w : ℝ}
+     {lam Lam Ma Keta w : ℝ}
     (A : TimeVelocity d → PDE.Mat d)
     (G H Dw : Fin d → ℝ) (Q : ℝ)
     (k : Fin d) (h : ℝ) (z : TimeVelocity d)
@@ -407,6 +409,7 @@ theorem fixedDirection_fluxPairing_coercive_absorbed
       have hC1' := mul_le_mul_of_nonneg_left hQpart hC1
       have hC2' := mul_le_mul_of_nonneg_left hGpart hC2
       nlinarith [mul_nonneg (add_nonneg (add_nonneg hC1 hC2) hC3) hdata]
+end
 
 
 end HypoellipticAleksandrov.Parabolic

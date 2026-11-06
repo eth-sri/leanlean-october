@@ -1,6 +1,8 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.SpatialDirectionalDifferenceQuotientBound
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Spatial-slice difference-quotient bounds
@@ -18,7 +20,7 @@ open scoped Convex
 /-- Fixed-time spatial derivative bounds on a containing spatial set give
 uniform signed spatial difference-quotient bounds on a product carrier. -/
 theorem abs_spatialDifferenceQuotient_le_of_spatialSliceFDeriv_bound
-    {d : ℕ} {I : Set ℝ} {S Q : Set (PDE.Vec d)}
+    {d : ℕ} {I : Set ℝ} {S Q : HypoellipticAleksandrov.VecSet d}
     {f : TimeVelocity d → ℝ} {δ M : ℝ}
     (hseg : ∀ (k : Fin d) (h : ℝ) (y : PDE.Vec d),
       |h| ≤ δ → y ∈ S →

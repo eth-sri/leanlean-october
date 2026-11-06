@@ -41,14 +41,14 @@ private theorem exists_outer_simple_sequence
   convert hlim using 1
   funext n
   exact hS n
+section
+variable {α β : Type*} [MeasurableSpace α] [MeasurableSpace β] (μ : Measure α) (ν : Measure β) [SFinite ν] (q : Lp (Lp ℝ 2 ν) 2 μ)
 
 private theorem exists_product_simple_limit
-    {α β : Type*} [MeasurableSpace α] [MeasurableSpace β]
-    (μ : Measure α) (ν : Measure β) [SFinite ν]
-    (q : Lp (Lp ℝ (2 : ℝ≥0∞) ν) (2 : ℝ≥0∞) μ) :
-    ∃ (S : ℕ → Lp.simpleFunc (Lp ℝ (2 : ℝ≥0∞) ν) (2 : ℝ≥0∞) μ)
-      (pQ : Lp ℝ (2 : ℝ≥0∞) (μ.prod ν)),
-      Tendsto (fun n => (S n : Lp (Lp ℝ (2 : ℝ≥0∞) ν) (2 : ℝ≥0∞) μ))
+     :
+    ∃ (S : ℕ → Lp.simpleFunc (Lp ℝ 2 ν) 2 μ)
+      (pQ : Lp ℝ 2 (μ.prod ν)),
+      Tendsto (fun n => (S n : Lp (Lp ℝ 2 ν) 2 μ))
         atTop (𝓝 q) ∧
       Tendsto (fun n =>
         (memLp_simpleUncurry_two μ ν (Lp.simpleFunc.toSimpleFunc (S n))
@@ -96,9 +96,7 @@ private theorem exists_product_simple_limit
 
 /-- A nested `L²` class has a product `L²` representative with the expected slices. -/
 theorem exists_uncurry_memLp_two
-    {α β : Type*} [MeasurableSpace α] [MeasurableSpace β]
-    (μ : Measure α) (ν : Measure β) [SFinite ν]
-    (q : Lp (Lp ℝ (2 : ℝ≥0∞) ν) (2 : ℝ≥0∞) μ) :
+     :
     ∃ Q : α × β → ℝ,
       MemLp Q (2 : ℝ≥0∞) (μ.prod ν) ∧
       ∀ᵐ x ∂μ, (fun y => Q (x, y)) =ᵐ[ν] fun y => q x y := by
@@ -146,6 +144,7 @@ theorem exists_uncurry_memLp_two
     (tendstoInMeasure_of_tendsto_Lp hxinner).exists_seq_tendsto_ae
   filter_upwards [hκ, hxslice] with y hky hsy
   exact tendsto_nhds_unique (hsy.comp hκmono.tendsto_atTop) hky
+end
 
 end
 

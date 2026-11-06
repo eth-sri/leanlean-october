@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.SpatialDifferenceQuotientCollar
 public import Mathlib.Analysis.Calculus.MeanValue
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Compact-open bounds for spatial difference quotients
@@ -18,7 +19,7 @@ namespace HypoellipticAleksandrov.Parabolic
 open scoped Convex
 
 private theorem segment_subset_cthickening_of_spatialShift
-    {d : ℕ} {S : Set (TimeVelocity d)} {δ h : ℝ} {k : Fin d}
+    {d : ℕ} {S : HypoellipticAleksandrov.Parabolic.TVSet d} {δ h : ℝ} {k : Fin d}
     {z : TimeVelocity d} (hz : z ∈ S) (hh : |h| ≤ δ) :
     [z -[ℝ] spatialShift k h z] ⊆ Metric.cthickening δ S := by
   intro w hw
@@ -31,7 +32,7 @@ private theorem segment_subset_cthickening_of_spatialShift
     _ ≤ δ := hh
 
 private theorem abs_spatialDifferenceQuotient_le_of_fderiv_bound
-    {d : ℕ} {S U : Set (TimeVelocity d)} {f : TimeVelocity d → ℝ}
+    {d : ℕ} {S U : HypoellipticAleksandrov.Parabolic.TVSet d} {f : TimeVelocity d → ℝ}
     {δ C h : ℝ} {k : Fin d} {z : TimeVelocity d}
     (hU : IsOpen U)
     (hf : ContDiffOn ℝ 1 f U)
@@ -76,7 +77,7 @@ private theorem abs_spatialDifferenceQuotient_le_of_fderiv_bound
 /-- A scalar field which is continuously differentiable on an open neighborhood
 has uniformly bounded signed spatial difference quotients on a compact carrier. -/
 theorem IsCompact.exists_spatialDifferenceQuotient_bound_of_contDiffOn_one
-    {d : ℕ} {S U : Set (TimeVelocity d)} {f : TimeVelocity d → ℝ}
+    {d : ℕ} {S U : HypoellipticAleksandrov.Parabolic.TVSet d} {f : TimeVelocity d → ℝ}
     (hS : IsCompact S) (hU : IsOpen U) (hSU : S ⊆ U)
     (hf : ContDiffOn ℝ 1 f U) :
     ∃ δ C : ℝ, 0 < δ ∧ 0 ≤ C ∧

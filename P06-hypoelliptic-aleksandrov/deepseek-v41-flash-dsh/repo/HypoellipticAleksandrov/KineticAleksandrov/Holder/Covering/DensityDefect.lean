@@ -11,10 +11,11 @@ import Mathlib.Tactic
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering
 
 open Set MeasureTheory
+section
+variable {d : ℕ} {ι : Type*} (P : ι → KineticPoint d) (r : ι → ℝ) (t : Set ι) (R : ℝ)
 
 /-- A uniformly sub-full cylinder family leaves a definite fraction of its union outside E. -/
-theorem cylinder_union_density_defect {d : ℕ} {ι : Type*}
-    (P : ι → KineticPoint d) (r : ι → ℝ) (t : Set ι) (R : ℝ)
+theorem cylinder_union_density_defect 
     (hr : ∀ i ∈ t, 0 < r i) (hR : ∀ i ∈ t, r i ≤ R)
     (E : Set (KineticPoint d)) (hE : NullMeasurableSet E volume)
     {eta : ℝ} (heta : 0 ≤ eta)
@@ -36,8 +37,7 @@ theorem cylinder_union_density_defect {d : ℕ} {ι : Type*}
     heta (hdensity i hi)
 
 /-- Real-valued form of the strict density reduction inside a finite critical union. -/
-theorem cylinder_union_density_reduction {d : ℕ} {ι : Type*}
-    (P : ι → KineticPoint d) (r : ι → ℝ) (t : Set ι) (R : ℝ)
+theorem cylinder_union_density_reduction 
     (hr : ∀ i ∈ t, 0 < r i) (hR : ∀ i ∈ t, r i ≤ R)
     (E : Set (KineticPoint d)) (hE : NullMeasurableSet E volume)
     (hfinite : volume (⋃ i ∈ t, backwardCylinder (P i) (r i)) ≠ ⊤)
@@ -63,5 +63,6 @@ theorem cylinder_union_density_reduction {d : ℕ} {ι : Type*}
     (div_le_iff₀ hB).mpr (by simpa only [mul_comm] using hreal)
   rw [mul_div_right_comm] at hdiv
   nlinarith only [hsum, hdiv]
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering

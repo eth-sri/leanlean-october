@@ -8,6 +8,7 @@ public import Mathlib.MeasureTheory.Function.LocallyIntegrable
 public import Mathlib.MeasureTheory.Function.LpSeminorm.Basic
 public import Mathlib.Tactic.FieldSimp
 public import Mathlib.Tactic.Ring
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Supplied-source lower bound on a physical moving lens
@@ -110,7 +111,7 @@ private theorem measurable_movingLensSourceSignSet_of_localC2
     {u : TimeVelocity d -> Real}
     (hlocal : ∀ z ∈ movingLensActive xi eps tau y, ContDiffAt Real 2 u z) :
     MeasurableSet (movingLensSourceSignSet xi eps tau y u) := by
-  let O : Set (TimeVelocity d) := {z | 0 < z.1 /\ z.1 < tau /\
+  let O : HypoellipticAleksandrov.Parabolic.TVSet d := {z | 0 < z.1 /\ z.1 < tau /\
     PDE.vecNormSq (movingLensDisplacement y z) < movingLensDenominator xi eps z.1}
   have hO : IsOpen O := by
     rw [show O = {z | 0 < z.1 /\
@@ -477,7 +478,7 @@ theorem exists_movingLens_source_lower_bound
     (hlam : 0 < lam) (hlamLam : lam <= Lam)
     (hkappa : 0 < kappa) (hkappa_one : kappa <= 1) :
     ∃ C : Real, 0 < C ∧
-      ∀ (A : CoefficientField d) (U : Set (TimeVelocity d))
+      ∀ (A : CoefficientField d) (U : HypoellipticAleksandrov.Parabolic.TVSet d)
         (F w : TimeVelocity d -> Real) (tau eps : Real) (y : PDE.Vec d),
         0 < tau -> tau <= kappa⁻¹ -> 0 < eps ->
         2 * eps ^ 2 < kappa ^ 2 ->

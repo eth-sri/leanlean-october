@@ -7,6 +7,7 @@ public import Mathlib.Tactic.Linarith
 public import Mathlib.Tactic.NormNum
 public import Mathlib.Tactic.Positivity
 public import Mathlib.Tactic.Ring
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Source bookkeeping for the near-one density argument
@@ -25,16 +26,16 @@ open Filter MeasureTheory Set
 open scoped ENNReal Topology
 
 private theorem memLp_restrict_of_continuousOn_unit_collar
-    {d : Nat} {U : Set (TimeVelocity d)}
-    {f : TimeVelocity d → Real} {s : Set (TimeVelocity d)}
+    {d : Nat} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
+    {f : TimeVelocity d → Real} {s : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hclosed :
       parabolicClosedBox 1 1 0 (0 : PDE.Vec d) ⊆ U)
     (hf : ContinuousOn f U)
     (hs :
       s ⊆ parabolicClosedBox 1 1 0 (0 : PDE.Vec d)) :
     MemLp f (parabolicExponent d) (volume.restrict s) := by
-  let K : Set (TimeVelocity d) :=
-    parabolicClosedBox 1 1 0 (0 : PDE.Vec d)
+  let K : HypoellipticAleksandrov.Parabolic.TVSet d :=
+    parabolicClosedBox 1 1 0 0
   have hKcompact : IsCompact K :=
     isCompact_parabolicClosedBox 1 1 0 (0 : PDE.Vec d)
   have hKmeas : MeasurableSet K := hKcompact.measurableSet
@@ -57,7 +58,7 @@ the strict-low-set error. -/
 theorem
     exp_neg_quarter_mul_parabolicLpNormOn_localABP_weighted_source_add_one_sub_le
     (d : Nat) (hd : 0 < d) (rho : Real) (hrho : 0 ≤ rho)
-    (U : Set (TimeVelocity d)) (Fsrc u : TimeVelocity d → Real)
+    (U : HypoellipticAleksandrov.Parabolic.TVSet d) (Fsrc u : TimeVelocity d → Real)
     (hclosed :
       parabolicClosedBox 1 1 0 (0 : PDE.Vec d) ⊆ U)
     (hu : ContDiffOn Real 2 u U)
@@ -81,12 +82,12 @@ theorem
             (parabolicBox 1 1 0 (0 : PDE.Vec d) ∩
               {z | u z < 1})).toReal
           (1 / ((d : Real) + 1)) := by
-  let Q : Set (TimeVelocity d) :=
-    parabolicBox 1 1 0 (0 : PDE.Vec d)
-  let K : Set (TimeVelocity d) :=
-    parabolicClosedBox 1 1 0 (0 : PDE.Vec d)
-  let L : Set (TimeVelocity d) := localABPInterior v0
-  let E : Set (TimeVelocity d) := Q ∩ {z | u z < 1}
+  let Q : HypoellipticAleksandrov.Parabolic.TVSet d :=
+    parabolicBox 1 1 0 0
+  let K : HypoellipticAleksandrov.Parabolic.TVSet d :=
+    parabolicClosedBox 1 1 0 0
+  let L : HypoellipticAleksandrov.Parabolic.TVSet d := localABPInterior v0
+  let E : HypoellipticAleksandrov.Parabolic.TVSet d := Q ∩ {z | u z < 1}
   let W : TimeVelocity d → Real :=
     fun z ↦ Real.exp (rho * (z.1 - 3 / 4))
   let S : TimeVelocity d → Real := fun z ↦ W z * Fsrc z

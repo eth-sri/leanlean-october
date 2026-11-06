@@ -182,7 +182,7 @@ instance [Fact (1 ≤ p)] : AddCommGroup (W1pFunction U p) :=
       apply Prod.ext
       · funext x
         change (((n : ℝ) • u).toFun x) = (n • u.toFun) x
-        simp only [smul_toFun, Pi.smul_apply, nsmul_eq_mul]
+        simp
       · funext x
         ext i
         change (((n : ℝ) • u).grad x i) = (n • u.grad) x i
@@ -192,7 +192,7 @@ instance [Fact (1 ≤ p)] : AddCommGroup (W1pFunction U p) :=
       apply Prod.ext
       · funext x
         change (((n : ℝ) • u).toFun x) = (n • u.toFun) x
-        simp only [smul_toFun, Pi.smul_apply, zsmul_eq_mul]
+        simp
       · funext x
         ext i
         change (((n : ℝ) • u).grad x i) = (n • u.grad) x i

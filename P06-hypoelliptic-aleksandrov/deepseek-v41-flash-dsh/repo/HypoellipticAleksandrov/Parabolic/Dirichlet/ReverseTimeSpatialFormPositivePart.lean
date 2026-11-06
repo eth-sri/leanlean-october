@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.H10PositivePart
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialForm
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Positive-part locality of the reverse-time spatial form
@@ -19,9 +20,11 @@ open scoped ENNReal
 noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
+section
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
 
 private theorem h10PositivePart_gradientCoord
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    
     (u : H10HilbertGraph hΩ) (k : Fin d) : ∀ᵐ y ∂PDE.volumeOn Ω,
     (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) k
       (gradientCLM hΩ (h10PositivePart hΩ u))) y =
@@ -66,7 +69,7 @@ private theorem h10PositivePart_gradientCoord
         rfl
 
 private theorem reverseTimePrincipal_positivePart_eq
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    
     (r₁ τ : ℝ) (a : CoefficientField d) (u : H10HilbertGraph hΩ) :
       (∑ i : Fin d, ∑ j : Fin d, ∫ y in Ω,
         a (r₁ - τ) y i j *
@@ -125,7 +128,7 @@ private theorem reverseTimePrincipal_positivePart_eq
           (gradientCLM hΩ (h10PositivePart hΩ u))) y * q) hpi'.symm
 
 private theorem reverseTimeDrift_positivePart_eq
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    
     (r₁ τ : ℝ) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (u : H10HilbertGraph hΩ) :
       (∑ j : Fin d, ∫ y in Ω,
@@ -167,7 +170,7 @@ private theorem reverseTimeDrift_positivePart_eq
           (gradientCLM hΩ (h10PositivePart hΩ u))) y * q) hvzero.symm
 
 private theorem reverseTimeScalar_positivePart_eq
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    
     (r₁ τ : ℝ) (c : ℝ → PDE.Vec d → ℝ) (u : H10HilbertGraph hΩ) :
       (∫ y in Ω, reverseTimeScalarCoefficient r₁ c τ y *
         valueCLM hΩ u y * valueCLM hΩ (h10PositivePart hΩ u) y) =
@@ -199,8 +202,7 @@ private theorem reverseTimeScalar_positivePart_eq
 /-- Testing the reverse-time spatial form against `u₊` only sees `u₊` in
 the first argument as well. -/
 theorem reverseTimeSpatialForm_apply_positivePart_eq
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (r₁ τ : ℝ) (a : CoefficientField d)
+     (r₁ τ : ℝ) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (u : H10HilbertGraph hΩ) :
     reverseTimeSpatialForm hΩ r₁ τ a b c u (h10PositivePart hΩ u) =
@@ -212,4 +214,5 @@ theorem reverseTimeSpatialForm_apply_positivePart_eq
   · exact congrArg (fun q : ℝ => _ + q)
       (reverseTimeDrift_positivePart_eq hΩ r₁ τ a b u)
   · exact reverseTimeScalar_positivePart_eq hΩ r₁ τ c u
+end
 end HypoellipticAleksandrov.Parabolic.Dirichlet

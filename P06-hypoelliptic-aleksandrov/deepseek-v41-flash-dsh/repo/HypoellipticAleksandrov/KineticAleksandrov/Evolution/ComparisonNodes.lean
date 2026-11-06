@@ -2,6 +2,7 @@ module
 
 import Mathlib.Tactic.Linarith
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonEvolution
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Comparison lemmas for Proposition 2.1
@@ -31,7 +32,7 @@ open scoped Topology MatrixOrder
 truncation `{a ≤ σ ≤ T, y ∈ closure (γ(σ) + Ω), |y|² + |z|² ≤ R²}` of the moving cylinder:
 a subsolution that is nonpositive on the terminal face, the lateral frontier and the
 artificial boundary `|y|² + |z|² = R²` is nonpositive. -/
-theorem bounded_comparison {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
+theorem bounded_comparison {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n} (hΩ : IsOpen Ω)
     {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {lam Lam : ℝ} (hlam : 0 < lam)
     {B : FullKineticCoefficient n} (hB : HasEverywhereLoewnerBounds lam Lam B)
     {b : PDE.Vec n → PDE.Vec n} {ε : ℝ} (hε : 0 ≤ ε) {a T R : ℝ} {u : KineticPoint n → ℝ}
@@ -78,7 +79,7 @@ theorem exists_growthConstant {n : ℕ} {Lam Lb : ℝ} {B : FullKineticCoefficie
 `{a ≤ σ ≤ T, y ∈ closure (γ(σ) + Ω)}` (all `z`), a function that is bounded (above),
 continuous, slice regular and a subsolution of `L_ε` (`0 ≤ ε ≤ 1`) in the interior, and
 nonpositive on the terminal face and the lateral frontier, is nonpositive. -/
-theorem growth_comparison {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
+theorem growth_comparison {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n} (hΩ : IsOpen Ω)
     {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {lam Lam : ℝ} (hlam : 0 < lam)
     {B : FullKineticCoefficient n} (hB : HasEverywhereLoewnerBounds lam Lam B)
     {Lb : ℝ} {b : PDE.Vec n → PDE.Vec n} (hb : HasEuclideanLipschitzDrift Lb b)
@@ -104,7 +105,7 @@ theorem growth_comparison {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
 
 /-- Comparison of viscous classical terminal solutions: ordered terminal data give ordered
 solutions on the whole past closed cylinder. -/
-theorem classical_comparison {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
+theorem classical_comparison {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n} (hΩ : IsOpen Ω)
     {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {lam Lam : ℝ} (hlam : 0 < lam)
     {B : FullKineticCoefficient n} (hB : HasEverywhereLoewnerBounds lam Lam B)
     {Lb : ℝ} {b : PDE.Vec n → PDE.Vec n} (hb : HasEuclideanLipschitzDrift Lb b)
@@ -154,7 +155,7 @@ theorem classical_comparison {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
     simp
 
 /-- Uniqueness of viscous classical terminal solutions for equal terminal data. -/
-theorem classical_unique {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
+theorem classical_unique {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n} (hΩ : IsOpen Ω)
     {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {lam Lam : ℝ} (hlam : 0 < lam)
     {B : FullKineticCoefficient n} (hB : HasEverywhereLoewnerBounds lam Lam B)
     {Lb : ℝ} {b : PDE.Vec n → PDE.Vec n} (hb : HasEuclideanLipschitzDrift Lb b)

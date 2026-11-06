@@ -17,12 +17,12 @@ open scoped Topology
 theorem visit_restrict_finset_sum (mu : ℕ → Measure Point) (N : ℕ) (B : Set Point) :
     (∑ n ∈ Finset.range N, mu n).restrict B = ∑ n ∈ Finset.range N, (mu n).restrict B :=
   map_sum (Measure.restrictₗ B) mu (Finset.range N)
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
 
 /-- The genuine outer Green continuation tends to zero for the actual entrance recursion. -/
 theorem visitOuterGreen_remainder_tendsto_zero
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (hT : s < T)
+     (hT : s < T)
     (P : Point) (hP : s < P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier) :
     Tendsto (fun n => (visitUnionGreenKernel hH hLE hlam hLam A J.toFiniteUnion s T ∘ₘ
       visitEntrancePiece hH hLE hlam hLam A c J s T P n) univ) atTop (𝓝 0) := by
@@ -31,9 +31,7 @@ theorem visitOuterGreen_remainder_tendsto_zero
 
 /-- The actual outer core occupation is exactly the sum of its active visit occupations. -/
 theorem visitOuterGreen_core_identity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (hT : s < T)
+     (hT : s < T)
     (P : Point) (hP : s < P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier) :
     (visitUnionGreenKernel hH hLE hlam hLam A J.toFiniteUnion s T P).restrict
       {q | q.velocity 0 ∈ c.core} =
@@ -69,5 +67,6 @@ theorem visitOuterGreen_core_identity
   · have hz := visitOuterGreen_remainder_tendsto_zero hH hLE hlam hLam A c J s T hT P hP
     exact tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds hz
       (fun _ => zero_le) (fun n => Measure.restrict_le_self univ)
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

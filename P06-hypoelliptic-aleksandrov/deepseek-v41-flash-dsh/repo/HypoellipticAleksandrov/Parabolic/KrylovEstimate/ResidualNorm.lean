@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.KrylovEstimate.InnerCylinder
 public import HypoellipticAleksandrov.Parabolic.KrylovEstimate.ScalarAffine
 public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyScaling
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Restricted norms of the scalar residual and its inward compression -/
 
@@ -14,7 +15,7 @@ open scoped ENNReal
 
 /-- The positive continuous residual is dominated in norm by an a.e. source. -/
 theorem positive_residual_memLp_norm_le
-    {N : ℕ} {Q : Set (TimeVelocity N)} (hQ : MeasurableSet Q)
+    {N : ℕ} {Q : HypoellipticAleksandrov.Parabolic.TVSet N} (hQ : MeasurableSet Q)
     (a : TimeVelocity N → PDE.Mat N) (u f : TimeVelocity N → ℝ)
     (hg : AEStronglyMeasurable (residual a u) (volume.restrict Q))
     (hf : MemLp f (parabolicExponent N) (volume.restrict Q))

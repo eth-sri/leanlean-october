@@ -5,6 +5,8 @@ public import HypoellipticAleksandrov.Measure.TimeVelocity
 public import Mathlib.Topology.Constructions.SumProd
 public import Mathlib.Topology.NhdsWithin
 public import Mathlib.Topology.Order.DenselyOrdered
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Coordinate geometry for the parabolic Harnack argument
@@ -23,35 +25,35 @@ namespace HypoellipticAleksandrov.Parabolic
 noncomputable section
 
 /-- The open coordinate cube of radius `r` about `v₀`. -/
-def velocityCube {d : ℕ} (v₀ : PDE.Vec d) (r : ℝ) : Set (PDE.Vec d) :=
+def velocityCube {d : ℕ} (v₀ : PDE.Vec d) (r : ℝ) : HypoellipticAleksandrov.VecSet d :=
   {v | ∀ i : Fin d, |v i - v₀ i| < r}
 
 /-- The closed coordinate cube of radius `r` about `v₀`. -/
-def velocityClosedCube {d : ℕ} (v₀ : PDE.Vec d) (r : ℝ) : Set (PDE.Vec d) :=
+def velocityClosedCube {d : ℕ} (v₀ : PDE.Vec d) (r : ℝ) : HypoellipticAleksandrov.VecSet d :=
   {v | ∀ i : Fin d, |v i - v₀ i| ≤ r}
 
 /-- The forward parabolic coordinate box of height `vartheta * r^2`. -/
 def parabolicBox {d : ℕ} (vartheta r t₀ : ℝ) (v₀ : PDE.Vec d) :
-    Set (TimeVelocity d) :=
+    HypoellipticAleksandrov.Parabolic.TVSet d :=
   Ioo t₀ (t₀ + vartheta * r ^ 2) ×ˢ velocityCube v₀ r
 
 /-- The compact closed counterpart of `parabolicBox`. -/
 def parabolicClosedBox {d : ℕ} (vartheta r t₀ : ℝ) (v₀ : PDE.Vec d) :
-    Set (TimeVelocity d) :=
+    HypoellipticAleksandrov.Parabolic.TVSet d :=
   Icc t₀ (t₀ + vartheta * r ^ 2) ×ˢ velocityClosedCube v₀ r
 
 /-- The backward unit-height coordinate box ending at `terminalTime`. -/
 def backwardParabolicBox {d : ℕ} (r terminalTime : ℝ) (v₀ : PDE.Vec d) :
-    Set (TimeVelocity d) :=
+    HypoellipticAleksandrov.Parabolic.TVSet d :=
   Ioo (terminalTime - r ^ 2) terminalTime ×ˢ velocityCube v₀ r
 
 /-- The normalized round work domain for the public Harnack theorem. -/
-def harnackWorkDomain {d : ℕ} : Set (TimeVelocity d) :=
-  Ioo (1 / 2 : ℝ) (9 / 2 : ℝ) ×ˢ PDE.euclideanBall (0 : PDE.Vec d) 2
+def harnackWorkDomain {d : ℕ} : HypoellipticAleksandrov.Parabolic.TVSet d :=
+  Ioo (1 / 2 : ℝ) (9 / 2 : ℝ) ×ˢ PDE.euclideanBall 0 2
 
 /-- The time-four round target slice in normalized Harnack coordinates. -/
-def harnackTargetSlice {d : ℕ} : Set (TimeVelocity d) :=
-  ({4} : Set ℝ) ×ˢ PDE.euclideanBall (0 : PDE.Vec d) 1
+def harnackTargetSlice {d : ℕ} : HypoellipticAleksandrov.Parabolic.TVSet d :=
+  ({4} : Set ℝ) ×ˢ PDE.euclideanBall 0 1
 
 /-- The affine map implementing parabolic translation and scaling. -/
 def parabolicAffine {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d) (r : ℝ) :

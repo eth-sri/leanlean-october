@@ -6,6 +6,8 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSeparatedRa
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSeparatedResidual
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeProductMeasure
 public import Mathlib.MeasureTheory.Integral.Prod
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Reverse-time separated raw assembly
@@ -26,7 +28,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 /-- A reverse-time variational energy solution and joint value and gradient representatives
 satisfy the global separated-product raw distribution identity. -/
 theorem reverseTime_global_separated_product_distribution_of_reverseTimeVariationalEnergy
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)

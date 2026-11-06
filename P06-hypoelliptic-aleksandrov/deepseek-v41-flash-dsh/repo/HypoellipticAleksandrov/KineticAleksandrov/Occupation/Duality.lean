@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.DualityFromBound
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.WholeSpaceBound
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # The unit-time occupation duality

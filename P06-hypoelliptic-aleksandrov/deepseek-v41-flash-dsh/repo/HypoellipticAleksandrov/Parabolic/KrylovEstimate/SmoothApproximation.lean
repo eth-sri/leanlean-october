@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.KrylovEstimate.CompactScalarJet
 public import HypoellipticAleksandrov.Parabolic.KrylovEstimate.UniformConvolution
 public import HypoellipticAleksandrov.Parabolic.KrylovEstimate.SmoothDerivatives
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Uniform approximation of the anisotropic scalar jet -/
 
@@ -14,7 +15,7 @@ open scoped Topology
 
 /-- Smooth functions approximate all selected scalar derivatives on interior compact sets. -/
 theorem exists_smooth_scalar_jet_close
-    {N : ℕ} {V K : Set (TimeVelocity N)} (hV : IsOpen V)
+    {N : ℕ} {V K : HypoellipticAleksandrov.Parabolic.TVSet N} (hV : IsOpen V)
     (hK : IsCompact K) (hKV : K ⊆ V)
     (q : TimeVelocity N → ℝ) (hq : IsScalarC12On q V)
     {ε : ℝ} (hε : 0 < ε) :

@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Decay.MaxPrinciplePiecewise
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Maximum principle on a moving ball or bounded interval
@@ -18,7 +19,7 @@ open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set
 
 /-- The source's bounded admissible domains have compact closure. -/
 theorem isCompact_closure_of_maximumPrinciple_domain {d : ℕ}
-    {Ω : Set (PDE.Vec d)}
+    {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : (∃ c R, 0 < R ∧ Ω = PDE.euclideanBall c R) ∨
       (∃ hd : d = 1, ∃ a b, a < b ∧ hd ▸ Ω = PDE.oneDimensionalAxisBox a b)) :
     IsCompact (closure Ω) := by
@@ -34,7 +35,7 @@ theorem isCompact_closure_of_maximumPrinciple_domain {d : ℕ}
 This includes initial, terminal, lateral, and subdivision slices. The source's
 piecewise C¹ curve assumption can be weakened to continuity. -/
 theorem movingDomain_maximumPrinciple {d : ℕ}
-    {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+    {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d}
     {B : FullKineticCoefficient d} {drift : PDE.Vec d → PDE.Vec d}
     {u : KineticPoint d → ℝ}
     (hΩ : (∃ c R, 0 < R ∧ Ω = PDE.euclideanBall c R) ∨

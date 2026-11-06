@@ -24,11 +24,11 @@ theorem deterministic_box_occupation
         (kernelXV (fullSpaceEvolution hH hLE hlam hLam A) (Real.toNNReal t) z
           (box A0 r Y)).toReal) ≤ C * r ^ (gamma alpha) * (T : ℝ) ^ (alpha / 2) := by
   obtain ⟨hlo, _, _⟩ := exists_bellman_barrier lam Lam hlam hLam
-  have ha0 : 0 < alpha := lt_of_le_of_lt (sub_nonneg.mpr hlo) ha
+  have ha0 := lt_of_le_of_lt (sub_nonneg.mpr hlo) ha
   have hg : 0 < gamma alpha := by dsimp only [gamma]; linarith
   obtain ⟨c, B, hc, hB, hb⟩ :=
     deterministic_barrier_occupation_uniform hH hLE lam Lam hlam hLam alpha ha ha1 M
-  let D : ℝ := (A0 ^ 2 + A0 ^ 6) ^ (1 / 6 : ℝ)
+  let D := (A0 ^ 2 + A0 ^ 6) ^ (1 / 6 : ℝ)
   have hD : 0 < D := by dsimp only [D]; positivity
   refine ⟨D ^ (gamma alpha) * B / c, by positivity, ?_⟩
   intro A z Y r T hr hz
@@ -36,7 +36,7 @@ theorem deterministic_box_occupation
   by_cases hT : (T : ℝ) = 0
   · simp only [hT, Ioc_self, Measure.restrict_empty, integral_zero_measure]
     positivity
-  have hTp : 0 < (T : ℝ) := lt_of_le_of_ne T.property (Ne.symm hT)
+  have hTp := lt_of_le_of_ne T.property (Ne.symm hT)
   let L := ∫⁻ q, rhoWeight (gamma alpha) (q.1 - Y, q.2)
     ∂physicalOccupationMeasure E z T
   have hw : L ≤ ENNReal.ofReal (B * (T : ℝ) ^ (alpha / 2) / c) := by

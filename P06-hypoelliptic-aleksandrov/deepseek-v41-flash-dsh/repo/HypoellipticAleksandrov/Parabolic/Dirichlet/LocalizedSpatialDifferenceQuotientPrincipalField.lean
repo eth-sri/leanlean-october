@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Measure.HilbertVectorLpAssembly
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.LocalizedSpatialDifferenceQuotientH10PlateauLocality
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Principal and companion fields for localized spatial difference quotients
@@ -21,7 +22,7 @@ open scoped ENNReal
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 private theorem cutoffGradient_eq_zero_of_not_mem_tsupport
-    {d : ℕ} {inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (η : PDE.QuantitativeSmoothCutoff inner outer K) (i : Fin d)
     {y : PDE.Vec d} (hy : y ∉ tsupport η.toFun) :
     PDE.classicalGradient η.toFun y i = 0 := by
@@ -30,7 +31,7 @@ private theorem cutoffGradient_eq_zero_of_not_mem_tsupport
 
 private theorem cutoffL2Multiplier_apply_cutoffGradientSpatialDifferenceQuotientL2
     {d : ℕ}
-    {Ω innerη outerη innerχ outerχ : Set (PDE.Vec d)}
+    {Ω innerη outerη innerχ outerχ : HypoellipticAleksandrov.VecSet d}
     {Kη Kχ : ℝ}
     (η : PDE.QuantitativeSmoothCutoff innerη outerη Kη)
     (χ : PDE.QuantitativeSmoothCutoff innerχ outerχ Kχ)
@@ -53,7 +54,7 @@ private theorem cutoffL2Multiplier_apply_cutoffGradientSpatialDifferenceQuotient
 /-- Assemble the cutoff-gradient quotient coordinates as a
 Hilbert-vector-valued restricted-`L²` field on `H¹₀`. -/
 noncomputable def cutoffGradientSpatialDifferenceQuotientH10CLM
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω)
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) :
@@ -65,7 +66,7 @@ noncomputable def cutoffGradientSpatialDifferenceQuotientH10CLM
 /-- The assembled cutoff-gradient field has its literal quotient-safe scalar
 coordinate. -/
 theorem hilbertVectorLpCoord_cutoffGradientSpatialDifferenceQuotientH10CLM
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω)
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (i k : Fin d) (h : ℝ)
@@ -78,7 +79,7 @@ theorem hilbertVectorLpCoord_cutoffGradientSpatialDifferenceQuotientH10CLM
 
 /-- The principal field `E = G - W` for the localized spatial quotient. -/
 noncomputable def localizedSpatialDifferenceQuotientPrincipalFieldCLM
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω)
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ)
@@ -93,7 +94,7 @@ noncomputable def localizedSpatialDifferenceQuotientPrincipalFieldCLM
 
 /-- The companion field `H = G + W` for the localized spatial quotient. -/
 noncomputable def localizedSpatialDifferenceQuotientCompanionFieldCLM
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω)
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ)
@@ -108,7 +109,7 @@ noncomputable def localizedSpatialDifferenceQuotientCompanionFieldCLM
 
 /-- The principal-field coordinate is `Gᵢ - Wᵢ`. -/
 theorem hilbertVectorLpCoord_localizedSpatialDifferenceQuotientPrincipalFieldCLM
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω)
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (i k : Fin d) (h : ℝ)
@@ -137,7 +138,7 @@ theorem hilbertVectorLpCoord_localizedSpatialDifferenceQuotientPrincipalFieldCLM
 
 /-- The companion-field coordinate is `Gᵢ + Wᵢ`. -/
 theorem hilbertVectorLpCoord_localizedSpatialDifferenceQuotientCompanionFieldCLM
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω)
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (i k : Fin d) (h : ℝ)
@@ -168,7 +169,7 @@ theorem hilbertVectorLpCoord_localizedSpatialDifferenceQuotientCompanionFieldCLM
 restricted `L²`. -/
 theorem cutoffL2Multiplier_apply_principalFieldCoord
     {d : ℕ}
-    {Ω innerη outerη innerχ outerχ : Set (PDE.Vec d)}
+    {Ω innerη outerη innerχ outerχ : HypoellipticAleksandrov.VecSet d}
     {Kη Kχ : ℝ}
     (hΩ : IsOpen Ω)
     (η : PDE.QuantitativeSmoothCutoff innerη outerη Kη)
@@ -198,7 +199,7 @@ theorem cutoffL2Multiplier_apply_principalFieldCoord
 restricted `L²`. -/
 theorem cutoffL2Multiplier_apply_companionFieldCoord
     {d : ℕ}
-    {Ω innerη outerη innerχ outerχ : Set (PDE.Vec d)}
+    {Ω innerη outerη innerχ outerχ : HypoellipticAleksandrov.VecSet d}
     {Kη Kχ : ℝ}
     (hΩ : IsOpen Ω)
     (η : PDE.QuantitativeSmoothCutoff innerη outerη Kη)

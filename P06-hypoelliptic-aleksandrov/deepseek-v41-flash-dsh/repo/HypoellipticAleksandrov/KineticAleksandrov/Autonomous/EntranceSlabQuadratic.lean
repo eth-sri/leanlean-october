@@ -36,12 +36,12 @@ theorem entranceSlabQuadratic_mass_lower (c : Clock) (mu : Measure Point)
     (entranceSlabQuadratic_integrable c mu hmu)
     (hmu.mono fun _ hp => visitQuadratic_entrance_lower c hp)
   simpa only [integral_const, smul_eq_mul, Measure.real, mul_comm] using h
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ)
 
 /-- A visit starting at the right endpoint contributes its actual initial quadratic value. -/
 theorem entranceSlabQuadratic_terminal_at_start
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ) (p : Point)
+     (p : Point)
     (ht : p.time = b) (hv : p.velocity 0 ∈ (visitActiveUnion c J).carrier) :
     (∫ q, visitQuadratic c (q.velocity 0)
       ∂enlargedActiveTerminalFamily hH hLE hlam hLam A c J b p) =
@@ -51,9 +51,7 @@ theorem entranceSlabQuadratic_terminal_at_start
 
 /-- Before its right endpoint the slab identity is the actual active Green identity. -/
 theorem entranceSlabQuadratic_point_identity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ)
+    
     (hJ : closure c.active ⊆ J.carrier) (p : Point)
     (ht : p.time < b) (hv : p.velocity 0 ∈ (visitActiveUnion c J).carrier) :
     visitQuadratic c (p.velocity 0) =
@@ -106,9 +104,7 @@ theorem entranceSlabQuadratic_point_identity
 
 /-- The point identity includes visits starting exactly at the slab's right endpoint. -/
 theorem entranceSlabQuadratic_closed_point_identity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ)
+    
     (hJ : closure c.active ⊆ J.carrier) (p : Point)
     (ht : p.time ≤ b) (hv : p.velocity 0 ∈ (visitActiveUnion c J).carrier) :
     visitQuadratic c (p.velocity 0) =
@@ -127,5 +123,6 @@ theorem entranceSlabQuadratic_closed_point_identity
       exact dite_eq_right (fun h => (ne_of_lt h.1) heq)
     rw [hg, integral_zero_measure, add_zero,
       entranceSlabQuadratic_terminal_at_start hH hLE hlam hLam A c J b p heq hv]
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -7,6 +7,8 @@ public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonCalc
 public import HypoellipticAleksandrov.KineticAleksandrov.ClassicalInputs
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparison
 import HypoellipticAleksandrov.KineticAleksandrov.Occupation.LocalizedKrylovRegularity
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Signed smooth compact source corrections
 
@@ -22,7 +24,7 @@ open scoped MatrixOrder Matrix.Norms.Elementwise
 
 /-- Subtracting supplied classical solutions subtracts their source and boundary data. -/
 theorem isClassicalBackwardDirichletSolution_sub {n : ℕ}
-    {a T : ℝ} {Ω : Set (PDE.Vec n)} {A : CoefficientField n}
+    {a T : ℝ} {Ω : HypoellipticAleksandrov.VecSet n} {A : CoefficientField n}
     {b : ℝ → PDE.Vec n → PDE.Vec n} {c F G : ℝ → PDE.Vec n → ℝ}
     {φ χ : PDE.Vec n → ℝ} {h k u v : TimeVelocity n → ℝ}
     (hu : IsClassicalBackwardDirichletSolution a T Ω A b c F φ h u)

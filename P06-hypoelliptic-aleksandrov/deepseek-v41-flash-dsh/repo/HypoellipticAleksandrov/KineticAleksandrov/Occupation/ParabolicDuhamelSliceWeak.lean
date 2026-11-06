@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.ParabolicDuhamelCutoff
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.ParabolicDuhamelLayer
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.ParabolicDuhamelSlice
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Cut-off weak identity for one source slice
@@ -83,7 +84,7 @@ theorem lt_of_sliceCutoff_ne_zero {r h t : ℝ} (hh : 0 < h) (hne : sliceCutoff 
 theorem slice_cutoff_identity {B' : CoefficientField d}
     (hB : IsSmoothFullKineticCoefficient (zIndependentCoefficient B'))
     {b : PDE.Vec d → PDE.Vec d} (hb : IsSmoothDrift b)
-    {D : Set (TimeVelocity d)} (hD : IsOpen D) {V u : TimeVelocity d → ℝ}
+    {D : HypoellipticAleksandrov.Parabolic.TVSet d} (hD : IsOpen D) {V u : TimeVelocity d → ℝ}
     (hV : ContDiffOn ℝ (⊤ : ℕ∞) V D)
     (hVeq : ∀ p ∈ D, scalarParabolicOperator B' (fun _ _ => 0) V p = 0)
     (huV : ∀ p ∈ D, u p = V p) (hum : Measurable u) (C : ℝ) (hub : ∀ p, |u p| ≤ C)

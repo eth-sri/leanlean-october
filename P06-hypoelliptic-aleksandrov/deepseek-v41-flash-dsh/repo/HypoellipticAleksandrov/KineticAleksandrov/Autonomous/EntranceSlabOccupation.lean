@@ -10,12 +10,12 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedRecu
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory ProbabilityTheory HypoellipticAleksandrov
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
 
 /-- Restricting starts and shortening the horizon can only decrease actual occupation. -/
 theorem entranceSlab_greenMixture_le
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (b T : ℝ)
+     (H : FiniteIntervalUnion) (b T : ℝ)
     (hBT : b ≤ T) (mu : Measure Point) (D : Set Point) :
     enlargedVisitGreenKernel hH hLE hlam hLam A H b ∘ₘ mu.restrict D ≤
       enlargedVisitGreenKernel hH hLE hlam hLam A H T ∘ₘ mu := by
@@ -28,13 +28,13 @@ theorem entranceSlab_greenMixture_le
   intro p
   exact ((entranceSlab_greenKernel_horizon_le hH hLE hlam hLam A H b T hBT p).trans
     Measure.restrict_le_self) B
+section
+variable (c : Clock) (J : Interval)
 
 
 /-- An active Green kernel lives strictly between its starting time and its horizon. -/
 theorem entranceSlab_greenKernel_ae_support
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ)
+      (b : ℝ)
     (hJ : closure c.active ⊆ J.carrier) (p : Point) :
     ∀ᵐ q ∂enlargedVisitGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) b p,
       p.time < q.time ∧ q.time < b ∧ q.velocity 0 ∈ c.active := by
@@ -63,9 +63,7 @@ theorem entranceSlab_greenKernel_ae_support
 
 /-- New starts in `(a,b]` produce occupation only in that same physical slab and active band. -/
 theorem entranceSlab_greenMixture_ae_support
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (a b : ℝ)
+      (a b : ℝ)
     (hJ : closure c.active ⊆ J.carrier) (mu : Measure Point) :
     ∀ᵐ q ∂(enlargedVisitGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) b ∘ₘ
       mu.restrict {p | p.time ∈ Ioc a b}),
@@ -81,9 +79,7 @@ theorem entranceSlab_greenMixture_ae_support
 
 /-- Localized active occupation is bounded by the same slab of the actual full occupation. -/
 theorem entranceSlab_greenMixture_le_restrict
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (a b T : ℝ)
+      (a b T : ℝ)
     (hBT : b ≤ T) (hJ : closure c.active ⊆ J.carrier) (mu : Measure Point) :
     enlargedVisitGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) b ∘ₘ
       mu.restrict {p | p.time ∈ Ioc a b} ≤
@@ -104,9 +100,7 @@ theorem entranceSlab_greenMixture_le_restrict
 
 /-- Every finite canonical sum of new-start occupations inherits full-space slab domination. -/
 theorem entranceSlab_partial_occupation_le_fullspace
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T a b : ℝ)
+      (T a b : ℝ)
     (hT : 0 < T) (hbT : b ≤ T) (hJ : closure c.active ⊆ J.carrier)
     (P : Point) (hv : P.velocity 0 ∈ J.carrier) (N : ℕ) :
     (∑ n ∈ Finset.range N,
@@ -131,5 +125,7 @@ theorem entranceSlab_partial_occupation_le_fullspace
       (enlargedVisitEntrance hH hLE hlam hLam A c J P.time (P.time + T) P n))
   exact hle.trans ((he N).le.trans (Measure.restrict_mono (subset_refl S)
     (enlarged_active_occupation_le_fullspace hH hLE hlam hLam A c J T hT P hv N)))
+end
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

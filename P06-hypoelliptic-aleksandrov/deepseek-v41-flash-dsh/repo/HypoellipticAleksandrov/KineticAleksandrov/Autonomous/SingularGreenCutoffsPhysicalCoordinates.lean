@@ -15,14 +15,16 @@ def physicalStateCLE : EvolutionAmbientState 1 ≃L[ℝ] Z :=
   (PDE.scalarToVecOneContinuousLinearEquiv.symm.prodCongr
     PDE.scalarToVecOneContinuousLinearEquiv.symm).trans
       (ContinuousLinearEquiv.prodComm ℝ ℝ ℝ)
+section
+variable (a : ℝ → ℝ → ℝ) (f : Z → ℝ)
 
 /-- The physical scalar spatial generator, with the source sign and coordinate convention. -/
-def physicalSpatialOperator (a : ℝ → ℝ → ℝ) (f : Z → ℝ) (z : Z) : ℝ :=
+def physicalSpatialOperator  (z : Z) : ℝ :=
   z.2 * deriv (fun X => f (X, z.2)) z.1 +
     a z.1 z.2 * deriv (deriv (fun v => f (z.1, v))) z.2
 
 /-- The physical spatial generator agrees with the established physical operator. -/
-theorem physicalSpatialOperator_eq_forward (a : ℝ → ℝ → ℝ) (f : Z → ℝ)
+theorem physicalSpatialOperator_eq_forward 
     (p : Point) :
     physicalSpatialOperator a f (p.position 0, p.velocity 0) =
       forwardScalarOperator a (fun q => f (q.position 0, q.velocity 0)) p := by
@@ -36,13 +38,13 @@ theorem physicalSpatialOperator_eq_forward (a : ℝ → ℝ → ℝ) (f : Z → 
   ring
 
 /-- Native compact spatial tests have exactly the physical generator after coordinate exchange. -/
-theorem physicalSpatialOperator_eq_native (a : ℝ → ℝ → ℝ) (f : Z → ℝ) (p : Point) :
+theorem physicalSpatialOperator_eq_native  (p : Point) :
     transportedForwardOperator (evolutionCoefficient a) (identityDrift 1)
       (fun q => f (nativeToXV (q.position, q.velocity))) p =
-      physicalSpatialOperator a f (p.velocity 0, p.position 0) := by
-  exact (terminalPhysicalPoint_operator a
+      physicalSpatialOperator a f (p.velocity 0, p.position 0) := (terminalPhysicalPoint_operator a
     (fun q => f (q.position 0, q.velocity 0)) p).trans
       (physicalSpatialOperator_eq_forward a f (terminalPhysicalPoint p)).symm
+end
 
 /-- A physical compact C² spatial test gives a native bounded Borel terminal datum. -/
 def physicalCompactDatum (f : Z → ℝ) (hf : Continuous f) (hc : HasCompactSupport f) :

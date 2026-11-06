@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeGelfandSteklov
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.SpatialL2Mass
 public import Mathlib.Analysis.Calculus.Deriv.Slope
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Shifted-positive-part energy support
@@ -43,20 +44,20 @@ private theorem half_sq_sub_sq_le_shiftedPositivePart_mul_sub
 
 /-- Half the squared `L²` norm of an affine-threshold shifted positive part. -/
 def shiftedPositivePartHalfEnergy
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     (v : H10HilbertGraph hΩ) (k : ℝ≥0) : ℝ :=
   (1 / 2 : ℝ) * ‖shiftedPositivePartValue k (valueCLM hΩ v)‖ ^ 2
 
 /-- Squared `L²` energy of the shifted positive part at an affine threshold. -/
 def shiftedPositivePartEnergy
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     (M N : ℝ≥0) (x : ℝ → H10HilbertGraph hΩ) (t : ℝ) : ℝ :=
   ‖valueCLM hΩ (h10ShiftedPositivePart hΩ (x t)
     (reverseTimeAffineThreshold M N t))‖ ^ 2
 
 /-- Rate in the moving-threshold shifted-positive-part energy identity. -/
 def shiftedPositivePartEnergyRate
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω) (M N : ℝ≥0)
     (x : ℝ → H10HilbertGraph hΩ) (y : ℝ → H10HilbertGraphDual hΩ)
     (t : ℝ) : ℝ :=
@@ -66,7 +67,7 @@ def shiftedPositivePartEnergyRate
         (reverseTimeAffineThreshold M N t)))
 
 private theorem scalarLp_norm_sq_eq_integral_sq
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (f : PDE.ScalarLp Ω 2) :
     ‖f‖ ^ 2 = ∫ a, (f a) ^ 2 ∂(PDE.volumeOn Ω) := by
   rw [← real_inner_self_eq_norm_sq, L2.inner_def]
   congr 1
@@ -74,7 +75,7 @@ private theorem scalarLp_norm_sq_eq_integral_sq
   simp only [RCLike.inner_apply, conj_trivial, pow_two]
 
 private theorem scalarLp_integrable_sq
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (f : PDE.ScalarLp Ω 2) :
     Integrable (fun a => (f a) ^ 2) (PDE.volumeOn Ω) := by
   exact (Lp.memLp f).integrable_sq
 
@@ -83,9 +84,11 @@ private theorem correctedDual_apply
     (A Q : V →L[ℝ] ℝ) (c : ℝ) (v : V) :
     (A - c • Q) v = A v - c * Q v := by
   simp only [ContinuousLinearMap.sub_apply, ContinuousLinearMap.smul_apply, smul_eq_mul]
+section
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
 
 private theorem spatialMassComp_shiftedPositivePart_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+     (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω) (x : H10HilbertGraph hΩ) (m : ℝ≥0) :
     ((spatialMassCLM hΩbounded).comp (valueCLM hΩ))
         (h10ShiftedPositivePart hΩ x m) =
@@ -93,7 +96,7 @@ private theorem spatialMassComp_shiftedPositivePart_apply
   rw [ContinuousLinearMap.comp_apply, valueCLM_h10ShiftedPositivePart hΩ]
 
 private theorem scalarLpDual_shiftedPositivePart_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+     (hΩ : IsOpen Ω)
     (p x z : H10HilbertGraph hΩ) (m : ℝ≥0) :
     scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ x - valueCLM hΩ z)
         (h10ShiftedPositivePart hΩ p m) =
@@ -104,7 +107,7 @@ private theorem scalarLpDual_shiftedPositivePart_apply
     valueCLM_h10ShiftedPositivePart hΩ]
 
 private theorem shiftedPositivePart_integral_support_lower
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (hΩbounded : Bornology.IsBounded Ω)
     (f z : PDE.ScalarLp Ω (2 : ℝ≥0∞)) (k l : ℝ≥0) :
     @inner ℝ (PDE.ScalarLp Ω (2 : ℝ≥0∞)) _
@@ -138,7 +141,7 @@ private theorem shiftedPositivePart_integral_support_lower
     (f a) (z a) (k : ℝ) (l : ℝ)]
 
 private theorem shiftedPositivePart_integral_support_upper
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (hΩbounded : Bornology.IsBounded Ω)
     (f z : PDE.ScalarLp Ω (2 : ℝ≥0∞)) (k l : ℝ≥0) :
     (1 / 2 : ℝ) * ‖shiftedPositivePartValue k f‖ ^ 2 -
@@ -172,7 +175,7 @@ private theorem shiftedPositivePart_integral_support_upper
     (f a) (z a) (k : ℝ) (l : ℝ)]
 
 private theorem shiftedPositivePart_support_lower
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+     (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω)
     (x z : H10HilbertGraph hΩ) (k l : ℝ≥0) :
     (scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ x - valueCLM hΩ z) -
@@ -220,7 +223,7 @@ private theorem shiftedPositivePart_support_lower
       (valueCLM hΩ x) (valueCLM hΩ z) k l
 
 private theorem shiftedPositivePart_support_upper
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+     (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω)
     (x z : H10HilbertGraph hΩ) (k l : ℝ≥0) :
     shiftedPositivePartHalfEnergy hΩ x k -
@@ -266,6 +269,7 @@ private theorem shiftedPositivePart_support_upper
           ((k : ℝ) - (l : ℝ)) * q)
         (spatialMassComp_shiftedPositivePart_apply hΩ hΩbounded x k).symm
     _ = _ := (correctedDual_apply _ _ _ _).symm
+end
 
 private theorem correctedDualPair_sub
     {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V]
@@ -274,7 +278,7 @@ private theorem correctedDualPair_sub
   module
 
 private theorem scalarLpDual_value_sub
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     (x z : H10HilbertGraph hΩ) :
     scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ x) -
         scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ z) =
@@ -283,7 +287,7 @@ private theorem scalarLpDual_value_sub
   rw [map_sub]
 
 private theorem shiftedPositivePart_curve_support_lower
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω)
     (x z : H10HilbertGraph hΩ) (k l : ℝ≥0) :
     ((scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ x) -
@@ -315,7 +319,7 @@ private theorem shiftedPositivePart_curve_support_lower
   exact shiftedPositivePart_support_lower hΩ hΩbounded x z k l
 
 private theorem shiftedPositivePart_curve_support_upper
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω)
     (x z : H10HilbertGraph hΩ) (k l : ℝ≥0) :
     shiftedPositivePartHalfEnergy hΩ x k - shiftedPositivePartHalfEnergy hΩ z l ≤
@@ -439,7 +443,7 @@ private theorem hasDerivAt_correctedPivot
 
 /-- The moving-threshold half-energy derivative obtained from convex support. -/
 theorem hasDerivAt_shiftedPositivePartHalfEnergy
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω) (M N : ℝ≥0)
     (x : ℝ → H10HilbertGraph hΩ) (hx : Continuous x)
     (y : H10HilbertGraphDual hΩ) (t : ℝ) (ht0 : 0 < t)

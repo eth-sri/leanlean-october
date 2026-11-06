@@ -59,11 +59,11 @@ theorem reconstruction_green_spatial_integral_bound
     unfold reconstructionSpatialWeight
     positivity
   exact (ENNReal.ofReal_le_ofReal_iff hr).mp h
+section
+variable (H : Interval) (K : MovingFiberKernel (intervalDomain H) (fun _ => 0)) (T : ℝ) (e : StripPole H (T : WithTop ℝ)) {δ : ℝ}
 
 /-- The exponential velocity collar is integrable even though its ambient extension grows. -/
-theorem reconstruction_green_collar_integrable (H : Interval)
-    (K : MovingFiberKernel (intervalDomain H) (fun _ => 0)) (T : ℝ)
-    (e : StripPole H (T : WithTop ℝ)) {δ : ℝ} (hδ : 0 < δ) :
+theorem reconstruction_green_collar_integrable  (hδ : 0 < δ) :
     Integrable (fun p => reconstructionCollarWeight H δ (p.velocity 0))
       (stripGreenOfKernel H K T e) := by
   have hm : Continuous (fun p : Point => reconstructionCollarWeight H δ (p.velocity 0)) :=
@@ -75,9 +75,7 @@ theorem reconstruction_green_collar_integrable (H : Interval)
   exact reconstructionCollarWeight_le_two H hδ ⟨hp.2.1.le, hp.2.2.le⟩
 
 /-- The terminal time layer has actual Green mass at most its thickness. -/
-theorem reconstruction_green_terminal_layer (H : Interval)
-    (K : MovingFiberKernel (intervalDomain H) (fun _ => 0)) (T : ℝ)
-    (e : StripPole H (T : WithTop ℝ)) {δ : ℝ} (hδ : 0 < δ) :
+theorem reconstruction_green_terminal_layer  (hδ : 0 < δ) :
     ∫ p, (if T - δ < p.time then (1 : ℝ) else 0) ∂stripGreenOfKernel H K T e ≤ δ := by
   classical
   let J : Set Point := {p | p.time ∈ Ioo (T - δ) T}
@@ -97,6 +95,7 @@ theorem reconstruction_green_terminal_layer (H : Interval)
   rw [hv] at hm
   simpa only [Measure.real, ENNReal.toReal_ofReal hδ.le] using
     ENNReal.toReal_mono ENNReal.ofReal_ne_top hm
+end
 
 /-- The integrated collar error is finite for the actual Green measure. -/
 theorem reconstruction_green_error_integrable

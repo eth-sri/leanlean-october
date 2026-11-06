@@ -26,9 +26,11 @@ theorem kineticAffine_comp {d : ℕ} (P₀ P : KineticPoint d) (R r : ℝ) :
       kineticAffine (kineticAffine P₀ R P) (R * r) := by
   funext Q
   ext i <;> simp [kineticAffine] <;> ring
+section
+variable {d : ℕ} (P₀ : KineticPoint d)
 
 /-- The literal inverse cancels the affine map. -/
-theorem kineticAffineInverse_apply {d : ℕ} (P₀ : KineticPoint d) {R : ℝ}
+theorem kineticAffineInverse_apply  {R : ℝ}
     (hR : R ≠ 0) (P : KineticPoint d) :
     kineticAffineInverse P₀ R (kineticAffine P₀ R P) = P := by
   ext i
@@ -37,7 +39,7 @@ theorem kineticAffineInverse_apply {d : ℕ} (P₀ : KineticPoint d) {R : ℝ}
   all_goals ring
 
 /-- The affine map cancels its literal inverse. -/
-theorem kineticAffine_apply_inverse {d : ℕ} (P₀ : KineticPoint d) {R : ℝ}
+theorem kineticAffine_apply_inverse  {R : ℝ}
     (hR : R ≠ 0) (P : KineticPoint d) :
     kineticAffine P₀ R (kineticAffineInverse P₀ R P) = P := by
   ext i <;>
@@ -45,7 +47,7 @@ theorem kineticAffine_apply_inverse {d : ℕ} (P₀ : KineticPoint d) {R : ℝ}
     field_simp <;> ring
 
 /-- The affine coordinate map is continuous in the existing topology. -/
-theorem continuous_kineticAffine {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) :
+theorem continuous_kineticAffine  (R : ℝ) :
     Continuous (kineticAffine P₀ R) := by
   have ht : Continuous (fun P : KineticPoint d => P.time) := continuous_time
   have hx : Continuous (fun P : KineticPoint d => P.position) := continuous_position
@@ -57,7 +59,7 @@ theorem continuous_kineticAffine {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) :
   · exact continuous_const.add ((continuous_const (y := (R : ℝ))).smul hv)
 
 /-- The inverse coordinate map is continuous in the existing topology. -/
-theorem continuous_kineticAffineInverse {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) :
+theorem continuous_kineticAffineInverse  (R : ℝ) :
     Continuous (kineticAffineInverse P₀ R) := by
   have ht : Continuous (fun P : KineticPoint d => P.time) := continuous_time
   have hx : Continuous (fun P : KineticPoint d => P.position) := continuous_position
@@ -69,7 +71,7 @@ theorem continuous_kineticAffineInverse {d : ℕ} (P₀ : KineticPoint d) (R : �
   · exact (continuous_const (y := (R⁻¹ : ℝ))).smul (hv.sub continuous_const)
 
 /-- Nonzero kinetic affine maps are homeomorphisms. -/
-def kineticAffineHomeomorph {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) (hR : R ≠ 0) :
+def kineticAffineHomeomorph  (R : ℝ) (hR : R ≠ 0) :
     KineticPoint d ≃ₜ KineticPoint d where
   toFun := kineticAffine P₀ R
   invFun := kineticAffineInverse P₀ R
@@ -77,6 +79,7 @@ def kineticAffineHomeomorph {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) (hR : R 
   right_inv := kineticAffine_apply_inverse P₀ hR
   continuous_toFun := continuous_kineticAffine P₀ R
   continuous_invFun := continuous_kineticAffineInverse P₀ R
+end
 
 /-- Membership in a source cylinder is transported from the unit cylinder. -/
 theorem kineticAffine_mem_cylinder {d : ℕ} (P₀ P : KineticPoint d) {R : ℝ}

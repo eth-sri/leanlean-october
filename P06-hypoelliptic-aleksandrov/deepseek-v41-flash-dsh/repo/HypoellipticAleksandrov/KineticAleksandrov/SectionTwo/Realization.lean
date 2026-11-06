@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.EvolutionProblem
 public import Mathlib.MeasureTheory.Integral.Bochner.Basic
 import Mathlib.Probability.Kernel.Composition.IntegralCompProd
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Section 2 realization and whole-space API
@@ -21,7 +23,7 @@ open HypoellipticAleksandrov.Parabolic
 open scoped ENNReal MatrixOrder ProbabilityTheory
 
 /-- Case W is the whole diffused-coordinate space. -/
-def wholeSpace (d : ℕ) : Set (PDE.Vec d) := Set.univ
+def wholeSpace (d : ℕ) : HypoellipticAleksandrov.VecSet d := Set.univ
 
 /-- Case W has identity transport. -/
 def identityDrift (d : ℕ) : PDE.Vec d → PDE.Vec d := id
@@ -45,7 +47,7 @@ abbrev lop {d : ℕ} (B : CoefficientField d) (b : PDE.Vec d → PDE.Vec d)
 
 These are source characterizations, not additional hypotheses on the source theorem.
 -/
-def RealizesTerminalEvolution {d : ℕ} (Ω : Set (PDE.Vec d))
+def RealizesTerminalEvolution {d : ℕ} (Ω : HypoellipticAleksandrov.VecSet d)
     (γ : ℝ → PDE.Vec d) (hΩ : MeasurableSet Ω)
     (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
     (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ) : Prop :=
@@ -63,8 +65,8 @@ def RealizesTerminalEvolution {d : ℕ} (Ω : Set (PDE.Vec d))
   K.HasEndpoint hΩ ∧ K.HasComposition hΩ
 
 /-- Rescaled diffused domain, without a default outside the domain. -/
-def scaledDomain {d : ℕ} (D : Set (PDE.Vec d)) (v₀ : PDE.Vec d) (r : {r : ℝ // 0 < r}) :
-    Set (PDE.Vec d) := {Y | v₀ + r.1 • Y ∈ D}
+def scaledDomain {d : ℕ} (D : HypoellipticAleksandrov.VecSet d) (v₀ : PDE.Vec d) (r : {r : ℝ // 0 < r}) :
+    HypoellipticAleksandrov.VecSet d := {Y | v₀ + r.1 • Y ∈ D}
 
 /-- Literal rescaled coefficient. -/
 def scaledCoefficient {d : ℕ} (B : CoefficientField d) (σ₀ : ℝ)
@@ -167,17 +169,17 @@ theorem scaledCoefficient_sectionTwo {d : ℕ} (lam Lam : ℝ) (B : CoefficientF
 /-- Exact translation clause of the terminal evolution statement, after z independence.
 Only use this clause for z-independent coefficients; general coefficients do not supply it.
 -/
-def IsTranslationCovariantEvolution {d : ℕ} (Ω : Set (PDE.Vec d))
+def IsTranslationCovariantEvolution {d : ℕ} (Ω : HypoellipticAleksandrov.VecSet d)
     (γ : ℝ → PDE.Vec d) (hΩ : MeasurableSet Ω) (K : MovingFiberKernel Ω γ) : Prop :=
   ∀ (σ τ : ℝ) (hστ : σ ≤ τ) (h : PDE.Vec d) (p : EvolutionState Ω γ σ),
     Measure.map (evolutionStateShift Ω γ τ h) (K.fiberKernel hΩ σ τ hστ p) =
       K.fiberKernel hΩ σ τ hστ (evolutionStateShift Ω γ σ h p)
 
 /-- Exact domain-monotonicity implication, including its entire primed antecedent. -/
-def IsDomainMonotoneEvolution {d : ℕ} (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE.Vec d)
+def IsDomainMonotoneEvolution {d : ℕ} (Ω : HypoellipticAleksandrov.VecSet d) (γ : ℝ → PDE.Vec d)
     (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
     (K : MovingFiberKernel Ω γ) : Prop :=
-(∀ (Ω' : Set (PDE.Vec d)) (γ' : ℝ → PDE.Vec d)
+(∀ (Ω' : HypoellipticAleksandrov.VecSet d) (γ' : ℝ → PDE.Vec d)
             (hΩ' : IsAdmissibleEvolutionDomain Ω')
             (hγ' : IsContinuousPiecewiseC1 γ')
             (hsub : ∀ σ, movingDomain Ω' γ' σ ⊆
@@ -224,7 +226,7 @@ def IsDomainMonotoneEvolution {d : ℕ} (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE
 
 /-- Exact parabolic clause, retaining one shared Q and every requirement of the terminal evolution
 statement. -/
-def HasParabolicMarginalBundle {d : ℕ} (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE.Vec d)
+def HasParabolicMarginalBundle {d : ℕ} (Ω : HypoellipticAleksandrov.VecSet d) (γ : ℝ → PDE.Vec d)
     (hΩ : MeasurableSet Ω) (B : FullKineticCoefficient d)
     (K : MovingFiberKernel Ω γ) : Prop :=
 (∀ (hBz : ∀ (σ : ℝ) (y z z' : PDE.Vec d),
@@ -259,7 +261,7 @@ def HasParabolicMarginalBundle {d : ℕ} (Ω : Set (PDE.Vec d)) (γ : ℝ → PD
                 ∫ y', f y' ∂(parabolicMarginalKernel K
                   hΩ
                   σ τ hστ y)) ∧
-            (∀ (E : Set (PDE.Vec d)) (hE : MeasurableSet E),
+            (∀ (E : HypoellipticAleksandrov.VecSet d) (hE : MeasurableSet E),
               Measurable (fun q : ParabolicEvolutionQuery Ω γ =>
                 parabolicMarginalAmbientMeasure K
                   hΩ q E)) ∧
@@ -302,11 +304,11 @@ theorem boundedBorel_integrable {α : Type*} [MeasurableSpace α]
   obtain ⟨C, hC, hbound⟩ := f.exists_bound
   exact Integrable.mono' (integrable_const C) f.measurable.aestronglyMeasurable
     (Filter.Eventually.of_forall (fun x => by simpa only [Real.norm_eq_abs] using hbound x))
+section
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d} (hΩ : MeasurableSet Ω) (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d) (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ)
 
 /-- Realization implies positivity on every bounded Borel datum. -/
-theorem realizes_positive {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (hΩ : MeasurableSet Ω) (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
-    (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ)
+theorem realizes_positive 
     (h : RealizesTerminalEvolution Ω γ hΩ B b S K)
     (σ τ : ℝ) (hστ : σ ≤ τ) (f : BoundedBorel (EvolutionState Ω γ τ))
     (hf : 0 ≤ f) : 0 ≤ S σ τ hστ f := by
@@ -316,9 +318,7 @@ theorem realizes_positive {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec
   exact integral_nonneg (fun q => hf q)
 
 /-- Realization implies the source sub-Markov contraction. -/
-theorem realizes_contraction {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (hΩ : MeasurableSet Ω) (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
-    (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ)
+theorem realizes_contraction 
     (h : RealizesTerminalEvolution Ω γ hΩ B b S K) (σ τ : ℝ) (hστ : σ ≤ τ) :
     S σ τ hστ (1 : BoundedBorel (EvolutionState Ω γ τ)) ≤
       (1 : BoundedBorel (EvolutionState Ω γ σ)) := by
@@ -330,9 +330,7 @@ theorem realizes_contraction {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.
     ENNReal.toReal_mono ENNReal.one_ne_top (K.fiberKernel_mass_le_one hΩ σ τ hστ p)
 
 /-- Realization implies the same shared operator family's composition law. -/
-theorem realizes_composition {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (hΩ : MeasurableSet Ω) (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
-    (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ)
+theorem realizes_composition 
     (h : RealizesTerminalEvolution Ω γ hΩ B b S K)
     (σ r τ : ℝ) (hσr : σ ≤ r) (hrτ : r ≤ τ) :
     S σ τ (hσr.trans hrτ) = (S σ r hσr).comp (S r τ hrτ) := by
@@ -352,9 +350,7 @@ theorem realizes_composition {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.
   exact Filter.Eventually.of_forall (fun q => (h.2.1 r τ hrτ q f).symm)
 
 /-- Realization implies the endpoint operator identity needed by monotonicity. -/
-theorem realizes_endpoint {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (hΩ : MeasurableSet Ω) (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
-    (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ)
+theorem realizes_endpoint 
     (h : RealizesTerminalEvolution Ω γ hΩ B b S K) (σ : ℝ) :
     S σ σ le_rfl = (LinearMap.id : BoundedBorel (EvolutionState Ω γ σ) →ₗ[ℝ]
       BoundedBorel (EvolutionState Ω γ σ)) := by
@@ -364,12 +360,13 @@ theorem realizes_endpoint {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec
   intro p
   rw [h.2.1 σ σ le_rfl p f, h.2.2.1 σ]
   simp only [ProbabilityTheory.Kernel.id_apply, integral_dirac, LinearMap.id_apply]
+end
 
 /-- The exact monotonicity clause applies to any supplied primed realization. -/
-theorem domainMonotone_of_realizes {d : ℕ} {Ω : Set (PDE.Vec d)}
+theorem domainMonotone_of_realizes {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     {γ : ℝ → PDE.Vec d} (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
     (K : MovingFiberKernel Ω γ) (hmono : IsDomainMonotoneEvolution Ω γ B b K)
-    (Ω' : Set (PDE.Vec d)) (γ' : ℝ → PDE.Vec d)
+    (Ω' : HypoellipticAleksandrov.VecSet d) (γ' : ℝ → PDE.Vec d)
     (hΩ' : IsAdmissibleEvolutionDomain Ω') (hγ' : IsContinuousPiecewiseC1 γ')
     (hsub : ∀ σ, movingDomain Ω' γ' σ ⊆ movingDomain Ω γ σ)
     (S' : TerminalOperatorFamily Ω' γ') (K' : MovingFiberKernel Ω' γ')

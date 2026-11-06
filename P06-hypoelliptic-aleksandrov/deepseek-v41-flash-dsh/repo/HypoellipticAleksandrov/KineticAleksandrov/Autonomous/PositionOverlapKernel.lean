@@ -18,11 +18,12 @@ open scoped ENNReal Classical
 /-- The literal coordinate product makes physical spacetime second countable. -/
 instance positionPoint_secondCountableTopology : SecondCountableTopology Point :=
   (HypoellipticAleksandrov.KineticPoint.homeomorphProd 1).secondCountableTopology
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
 
 /-- The active Green kernel agrees with the canonical Green at every valid starting velocity. -/
 theorem enlargedActiveGreenKernel_apply
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
     (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) (he : e.velocity 0 ∈ c.active) :
     enlargedActiveGreenKernel hH hLE hlam hLam A c e =
       stripGreen hH hLE hlam hLam A c.activeInterval ⊤ (densityClockPole c e he) := by
@@ -32,8 +33,7 @@ theorem enlargedActiveGreenKernel_apply
 
 /-- Uniform quadratic mass makes the all-time physical active family a finite kernel. -/
 instance enlargedActiveGreenKernel_isFiniteKernel
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
     (A : SmoothAutonomous lam Lam) (c : Clock) :
     IsFiniteKernel (enlargedActiveGreenKernel hH hLE hlam hLam A c) := by
   refine ⟨ENNReal.ofReal ((3 * c.r / 2) ^ 2 / (2 * lam)), ENNReal.ofReal_lt_top, ?_⟩
@@ -51,6 +51,7 @@ instance enlargedActiveGreenKernel_isFiniteKernel
       else 0) univ ≤ _
     rw [dite_eq_right he]
     exact zero_le
+end
 
 /-- The pushforward predecessor supplies absolute continuity of every actual active pole. -/
 theorem enlargedActiveGreenKernel_absolutelyContinuous (hpush : PushforwardStatement)
@@ -70,25 +71,24 @@ theorem enlargedActiveGreenKernel_absolutelyContinuous (hpush : PushforwardState
     rw [dite_eq_right he]
     intro B _
     rfl
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock)
 
 /-- The actual joint extended density of the all-time active Green kernel. -/
 def positionActiveDensity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) : Point → Point → ℝ≥0∞ := by
+     : Point → Point → ℝ≥0∞ := by
   letI := density_volume_sigmaFinite
   exact positionKernelDensity (enlargedActiveGreenKernel hH hLE hlam hLam A c) volume
 
 /-- The active density is jointly measurable in the physical starting and observed points. -/
 theorem measurable_positionActiveDensity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) :
+     :
     Measurable (fun p : Point × Point =>
       positionActiveDensity hH hLE hlam hLam A c p.1 p.2) := by
   have : SigmaFinite (volume : Measure Point) := density_volume_sigmaFinite
   exact measurable_positionKernelDensity
     (enlargedActiveGreenKernel hH hLE hlam hLam A c) (volume : Measure Point)
+end
 
 /-- The jointly measurable density represents the same canonical active kernel. -/
 theorem withDensity_positionActiveDensity (hpush : PushforwardStatement)

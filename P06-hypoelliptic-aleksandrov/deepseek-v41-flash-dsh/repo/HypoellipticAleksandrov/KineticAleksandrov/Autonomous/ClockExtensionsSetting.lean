@@ -32,17 +32,17 @@ theorem Clock.extendedVectorDrift_smooth (c : Clock) :
     IsSmoothDrift c.extendedVectorDrift := by
   apply contDiff_pi.mpr
   intro i
-  exact c.extendedDrift_smooth.comp (contDiff_apply ℝ ℝ (0 : Fin 1))
+  exact c.extendedDrift_smooth.comp (contDiff_apply ℝ ℝ 0)
 
 private theorem lifted_fderiv (c : Clock) (y w : PDE.Vec 1) :
     fderiv ℝ c.extendedVectorDrift y w =
       fun _ => deriv c.extendedDrift (y 0) * w 0 := by
   have hd := (c.hasDerivAt_extendedDrift (y 0)).hasFDerivAt.comp y
-    (ContinuousLinearMap.proj (0 : Fin 1) : PDE.Vec 1 →L[ℝ] ℝ).hasFDerivAt
+    (ContinuousLinearMap.proj 0 : PDE.Vec 1 →L[ℝ] ℝ).hasFDerivAt
   have hd' : HasFDerivAt c.extendedVectorDrift
       (ContinuousLinearMap.pi fun _ : Fin 1 =>
         (ContinuousLinearMap.toSpanSingleton ℝ (c.extendedDriftDerivative (y 0))).comp
-          (ContinuousLinearMap.proj (0 : Fin 1) : PDE.Vec 1 →L[ℝ] ℝ)) y :=
+          (ContinuousLinearMap.proj 0 : PDE.Vec 1 →L[ℝ] ℝ)) y :=
     hasFDerivAt_pi.mpr (fun _ => hd)
   rw [hd'.fderiv, (c.hasDerivAt_extendedDrift (y 0)).deriv]
   ext i
@@ -54,10 +54,10 @@ private theorem lifted_fderiv (c : Clock) (y w : PDE.Vec 1) :
 theorem Clock.extendedVectorDrift_transportBounds (c : Clock) :
     HasTransportBounds (9 / 25 : ℝ) 9 c.extendedVectorDrift := by
   constructor
-  · have hl : LipschitzWith (9 : NNReal) c.extendedDrift :=
+  · have hl : LipschitzWith 9 c.extendedDrift :=
       lipschitzWith_of_nnnorm_deriv_le
         (fun y => (c.hasDerivAt_extendedDrift y).differentiableAt) (fun y => by
-          change |deriv c.extendedDrift y| ≤ (9 : ℝ)
+          change |deriv c.extendedDrift y| ≤ 9
           have hb := c.extendedDrift_deriv_bounds y
           rw [abs_of_nonneg (by linarith only [hb.1])]
           exact hb.2)
@@ -87,7 +87,7 @@ theorem Clock.extendedCoefficient_sectionTwo {lam Lam : ℝ} (hlam : 0 < lam)
   refine ⟨by positivity, by linarith only [hlam, hLam], ?_, ?_, ?_, ?_⟩
   · intro i j
     exact E.smooth.comp (contDiff_fst.prodMk
-      ((contDiff_apply ℝ ℝ (0 : Fin 1)).comp contDiff_snd.fst))
+      ((contDiff_apply ℝ ℝ 0).comp contDiff_snd.fst))
   · intro s y
     rfl
   · intro s y

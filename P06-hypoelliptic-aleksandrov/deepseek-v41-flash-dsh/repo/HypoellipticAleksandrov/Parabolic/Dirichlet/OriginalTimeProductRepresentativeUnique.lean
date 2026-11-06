@@ -1,6 +1,8 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.OriginalTimeProductRepresentative
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 @[expose] public section
 
@@ -13,7 +15,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 /-- Two original-time product representatives with the same almost-everywhere
 spatial slices agree almost everywhere on the time--velocity cylinder. -/
 theorem originalTimeL2V_value_product_representative_ae_eq
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (hΩ : IsOpen Ω)
     (u : ReverseTimeL2V hΩ (r₁ - r₀))
     (U V : TimeVelocity d → ℝ)

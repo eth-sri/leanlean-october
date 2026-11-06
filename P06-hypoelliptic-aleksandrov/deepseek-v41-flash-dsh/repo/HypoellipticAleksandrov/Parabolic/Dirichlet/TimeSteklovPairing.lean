@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeDualPairing
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeSteklov
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Local convergence of reverse-time Steklov dual pairings
@@ -178,18 +179,18 @@ private theorem tendsto_integral_abs_bilin_of_sqNorm
   · simpa only [add_zero] using hfirst.add hsecond
 
 private noncomputable def h10DualEvaluation
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) :
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) :
     H10HilbertGraphDual hΩ →L[ℝ] H10HilbertGraph hΩ →L[ℝ] ℝ :=
   ContinuousLinearMap.flip (ContinuousLinearMap.apply ℝ ℝ)
 
 private theorem h10DualEvaluation_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     (g : H10HilbertGraphDual hΩ) (u : H10HilbertGraph hΩ) :
     h10DualEvaluation hΩ g u = g u := by
   rfl
 
 private theorem h10DualEvaluation_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     (g : H10HilbertGraphDual hΩ) (u : H10HilbertGraph hΩ) :
     ‖h10DualEvaluation hΩ g u‖ ≤ ‖g‖ * ‖u‖ := by
   simpa only [h10DualEvaluation_apply] using g.le_opNorm u
@@ -204,7 +205,7 @@ private theorem tendsto_forwardSteklov_sqNorm_integral_on_Icc_restrict
   exact tendsto_forwardSteklov_sqNorm_integral_on_Icc T f ha hab hb
 
 private theorem tendsto_h10DualPairing_of_sqNorm
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     (μ : Measure ℝ)
     (u : ℝ → H10HilbertGraph hΩ) (g : ℝ → H10HilbertGraphDual hΩ)
     (uh : ℝ → ℝ → H10HilbertGraph hΩ)
@@ -224,27 +225,28 @@ private theorem tendsto_h10DualPairing_of_sqNorm
     tendsto_integral_abs_bilin_of_sqNorm (B := h10DualEvaluation hΩ)
       (hB := h10DualEvaluation_le hΩ)
       μ u g uh gh hu hg hraw huh hgh hU hG
+section
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (T : ℝ)
 
 private noncomputable def forwardPrimalAverage
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
+    
     (u : ReverseTimeL2V hΩ T) : ℝ → ℝ → H10HilbertGraph hΩ :=
   fun h t => reverseTimeForwardSteklov T h u t
 
 private noncomputable def forwardDualAverage
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
+    
     (g : ReverseTimeL2VStar hΩ T) : ℝ → ℝ → H10HilbertGraphDual hΩ :=
   fun h t => reverseTimeForwardSteklov T h g t
 
 private noncomputable def forwardPairingErrorIntegral
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
+    
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (a b h : ℝ) : ℝ :=
   ∫ t in Icc a b,
     |(forwardDualAverage hΩ T g h t) (forwardPrimalAverage hΩ T u h t) - (g t) (u t)|
 
 private theorem tendsto_forwardSteklov_dualPairing_integral_on_Icc_raw
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ)
+    
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     {a b : ℝ} (ha : 0 < a) (hab : a ≤ b) (hb : b < T) :
     Filter.Tendsto (forwardPairingErrorIntegral hΩ T u g a b)
@@ -292,8 +294,7 @@ private theorem tendsto_forwardSteklov_dualPairing_integral_on_Icc_raw
 /-- Forward Steklov dual pairings converge locally in `L¹` on a strict
 reverse-time interior interval. -/
 theorem tendsto_forwardSteklov_dualPairing_integral_on_Icc
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ)
+    
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     {a b : ℝ} (ha : 0 < a) (hab : a ≤ b) (hb : b < T) :
     Filter.Tendsto
@@ -305,5 +306,6 @@ theorem tendsto_forwardSteklov_dualPairing_integral_on_Icc
     have hresult := tendsto_forwardSteklov_dualPairing_integral_on_Icc_raw hΩ T u g ha hab hb
     unfold forwardPairingErrorIntegral forwardDualAverage forwardPrimalAverage at hresult
     exact hresult
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

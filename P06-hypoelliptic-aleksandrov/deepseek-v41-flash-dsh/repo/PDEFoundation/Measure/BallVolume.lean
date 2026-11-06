@@ -16,9 +16,10 @@ geometry.
 namespace PDE
 
 open MeasureTheory
+section
+variable {d : ℕ} (x : Vec d) {R : ℝ}
 
-theorem volume_euclideanBall_ne_top {d : ℕ}
-    (x : Vec d) {R : ℝ} (hR : 0 ≤ R) :
+theorem volume_euclideanBall_ne_top  (hR : 0 ≤ R) :
     volume (euclideanBall x R) ≠ ⊤ := by
   refine ne_top_of_le_ne_top
     ((isCompact_euclideanClosedBall x hR).measure_ne_top
@@ -26,26 +27,24 @@ theorem volume_euclideanBall_ne_top {d : ℕ}
   exact measure_mono
     (euclideanBall_subset_euclideanClosedBall x R)
 
-theorem volume_euclideanBall_pos {d : ℕ}
-    (x : Vec d) {R : ℝ} (hR : 0 < R) :
+theorem volume_euclideanBall_pos  (hR : 0 < R) :
     0 < volume (euclideanBall x R) :=
   (isOpen_euclideanBall x R).measure_pos volume
     (euclideanBall_nonempty x hR)
 
-theorem volume_euclideanBall_toReal_pos {d : ℕ}
-    (x : Vec d) {R : ℝ} (hR : 0 < R) :
+theorem volume_euclideanBall_toReal_pos  (hR : 0 < R) :
     0 < (volume (euclideanBall x R)).toReal := by
   exact ENNReal.toReal_pos
     (volume_euclideanBall_pos x hR).ne'
     (volume_euclideanBall_ne_top x hR.le)
 
-theorem volume_euclideanBall_eq_unit_mul_of_pos {d : ℕ}
-    (x : Vec d) {R : ℝ} (hR : 0 < R) :
+theorem volume_euclideanBall_eq_unit_mul_of_pos  (hR : 0 < R) :
     volume (euclideanBall x R) =
       ENNReal.ofReal (R ^ d) *
         volume (euclideanBall (0 : Vec d) 1) := by
   rw [euclideanBall_eq_translateSet_smul_unit_of_pos x hR,
     volume_translateSet_eq,
     volume_smul_set_of_nonneg hR.le]
+end
 
 end PDE

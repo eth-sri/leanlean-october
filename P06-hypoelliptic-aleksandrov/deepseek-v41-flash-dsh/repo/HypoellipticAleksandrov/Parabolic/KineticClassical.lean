@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.Ambient.MatrixContraction
 public import HypoellipticAleksandrov.Coefficients.Ellipticity
 public import HypoellipticAleksandrov.Geometry.KineticPoint
 public import PDEFoundation.Sobolev.ClassicalGradient
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Classical kinetic product API
@@ -24,44 +25,44 @@ noncomputable section
 namespace HypoellipticAleksandrov.Parabolic
 
 /-- The open kinetic product cylinder `(r₀, r₁) × (Ωx × Ωv)`. -/
-def kineticProductOpenCylinder {d : ℕ} (r₀ r₁ : ℝ) (Ωx Ωv : Set (PDE.Vec d)) :
+def kineticProductOpenCylinder {d : ℕ} (r₀ r₁ : ℝ) (Ωx Ωv : HypoellipticAleksandrov.VecSet d) :
     Set (KineticPoint d) :=
   (KineticPoint.homeomorphProd d) ⁻¹' (Set.Ioo r₀ r₁ ×ˢ (Ωx ×ˢ Ωv))
 
 /-- The closed kinetic product cylinder `[r₀, r₁] × (closure Ωx × closure Ωv)`. -/
-def kineticProductClosedCylinder {d : ℕ} (r₀ r₁ : ℝ) (Ωx Ωv : Set (PDE.Vec d)) :
+def kineticProductClosedCylinder {d : ℕ} (r₀ r₁ : ℝ) (Ωx Ωv : HypoellipticAleksandrov.VecSet d) :
     Set (KineticPoint d) :=
   (KineticPoint.homeomorphProd d) ⁻¹'
     (Set.Icc r₀ r₁ ×ˢ (closure Ωx ×ˢ closure Ωv))
 
 /-- The terminal face `{r₁} × (closure Ωx × closure Ωv)`. -/
-def kineticProductTerminalFace {d : ℕ} (r₁ : ℝ) (Ωx Ωv : Set (PDE.Vec d)) :
+def kineticProductTerminalFace {d : ℕ} (r₁ : ℝ) (Ωx Ωv : HypoellipticAleksandrov.VecSet d) :
     Set (KineticPoint d) :=
   (KineticPoint.homeomorphProd d) ⁻¹'
     (({r₁} : Set ℝ) ×ˢ (closure Ωx ×ˢ closure Ωv))
 
 /-- The spatial lateral face `[r₀, r₁] × (frontier Ωx × closure Ωv)`. -/
-def kineticProductSpatialLateralFace {d : ℕ} (r₀ r₁ : ℝ) (Ωx Ωv : Set (PDE.Vec d)) :
+def kineticProductSpatialLateralFace {d : ℕ} (r₀ r₁ : ℝ) (Ωx Ωv : HypoellipticAleksandrov.VecSet d) :
     Set (KineticPoint d) :=
   (KineticPoint.homeomorphProd d) ⁻¹'
     (Set.Icc r₀ r₁ ×ˢ (frontier Ωx ×ˢ closure Ωv))
 
 /-- The velocity lateral face `[r₀, r₁] × (closure Ωx × frontier Ωv)`. -/
-def kineticProductVelocityLateralFace {d : ℕ} (r₀ r₁ : ℝ) (Ωx Ωv : Set (PDE.Vec d)) :
+def kineticProductVelocityLateralFace {d : ℕ} (r₀ r₁ : ℝ) (Ωx Ωv : HypoellipticAleksandrov.VecSet d) :
     Set (KineticPoint d) :=
   (KineticPoint.homeomorphProd d) ⁻¹'
     (Set.Icc r₀ r₁ ×ˢ (closure Ωx ×ˢ frontier Ωv))
 
 /-- The terminal and spatial/velocity lateral boundary, associated as `(T ∪ X) ∪ V`. -/
 def kineticProductTerminalLateralBoundary {d : ℕ} (r₀ r₁ : ℝ)
-    (Ωx Ωv : Set (PDE.Vec d)) : Set (KineticPoint d) :=
+    (Ωx Ωv : HypoellipticAleksandrov.VecSet d) : Set (KineticPoint d) :=
   (kineticProductTerminalFace r₁ Ωx Ωv ∪
     kineticProductSpatialLateralFace r₀ r₁ Ωx Ωv) ∪
       kineticProductVelocityLateralFace r₀ r₁ Ωx Ωv
 
 /-- Membership in an open kinetic product cylinder. -/
 @[simp] theorem mem_kineticProductOpenCylinder_iff {d : ℕ} {r₀ r₁ : ℝ}
-    {Ωx Ωv : Set (PDE.Vec d)} {z : KineticPoint d} :
+    {Ωx Ωv : HypoellipticAleksandrov.VecSet d} {z : KineticPoint d} :
     z ∈ kineticProductOpenCylinder r₀ r₁ Ωx Ωv ↔
       r₀ < z.time ∧ z.time < r₁ ∧ z.position ∈ Ωx ∧ z.velocity ∈ Ωv := by
   change (z.time, (z.position, z.velocity)) ∈ Set.Ioo r₀ r₁ ×ˢ (Ωx ×ˢ Ωv) ↔ _
@@ -73,7 +74,7 @@ def kineticProductTerminalLateralBoundary {d : ℕ} (r₀ r₁ : ℝ)
 
 /-- Membership in a closed kinetic product cylinder. -/
 @[simp] theorem mem_kineticProductClosedCylinder_iff {d : ℕ} {r₀ r₁ : ℝ}
-    {Ωx Ωv : Set (PDE.Vec d)} {z : KineticPoint d} :
+    {Ωx Ωv : HypoellipticAleksandrov.VecSet d} {z : KineticPoint d} :
     z ∈ kineticProductClosedCylinder r₀ r₁ Ωx Ωv ↔
       r₀ ≤ z.time ∧ z.time ≤ r₁ ∧ z.position ∈ closure Ωx ∧ z.velocity ∈ closure Ωv := by
   change (z.time, (z.position, z.velocity)) ∈
@@ -86,7 +87,7 @@ def kineticProductTerminalLateralBoundary {d : ℕ} (r₀ r₁ : ℝ)
 
 /-- Membership in the terminal face of a kinetic product cylinder. -/
 @[simp] theorem mem_kineticProductTerminalFace_iff {d : ℕ} {r₁ : ℝ}
-    {Ωx Ωv : Set (PDE.Vec d)} {z : KineticPoint d} :
+    {Ωx Ωv : HypoellipticAleksandrov.VecSet d} {z : KineticPoint d} :
     z ∈ kineticProductTerminalFace r₁ Ωx Ωv ↔
       z.time = r₁ ∧ z.position ∈ closure Ωx ∧ z.velocity ∈ closure Ωv := by
   change (z.time, (z.position, z.velocity)) ∈
@@ -95,7 +96,7 @@ def kineticProductTerminalLateralBoundary {d : ℕ} (r₀ r₁ : ℝ)
 
 /-- Membership in the spatial lateral face of a kinetic product cylinder. -/
 @[simp] theorem mem_kineticProductSpatialLateralFace_iff {d : ℕ} {r₀ r₁ : ℝ}
-    {Ωx Ωv : Set (PDE.Vec d)} {z : KineticPoint d} :
+    {Ωx Ωv : HypoellipticAleksandrov.VecSet d} {z : KineticPoint d} :
     z ∈ kineticProductSpatialLateralFace r₀ r₁ Ωx Ωv ↔
       r₀ ≤ z.time ∧ z.time ≤ r₁ ∧ z.position ∈ frontier Ωx ∧ z.velocity ∈ closure Ωv := by
   change (z.time, (z.position, z.velocity)) ∈
@@ -108,7 +109,7 @@ def kineticProductTerminalLateralBoundary {d : ℕ} (r₀ r₁ : ℝ)
 
 /-- Membership in the velocity lateral face of a kinetic product cylinder. -/
 @[simp] theorem mem_kineticProductVelocityLateralFace_iff {d : ℕ} {r₀ r₁ : ℝ}
-    {Ωx Ωv : Set (PDE.Vec d)} {z : KineticPoint d} :
+    {Ωx Ωv : HypoellipticAleksandrov.VecSet d} {z : KineticPoint d} :
     z ∈ kineticProductVelocityLateralFace r₀ r₁ Ωx Ωv ↔
       r₀ ≤ z.time ∧ z.time ≤ r₁ ∧ z.position ∈ closure Ωx ∧ z.velocity ∈ frontier Ωv := by
   change (z.time, (z.position, z.velocity)) ∈
@@ -121,7 +122,7 @@ def kineticProductTerminalLateralBoundary {d : ℕ} (r₀ r₁ : ℝ)
 
 /-- Membership in the terminal and lateral boundary of a kinetic product cylinder. -/
 @[simp] theorem mem_kineticProductTerminalLateralBoundary_iff {d : ℕ} {r₀ r₁ : ℝ}
-    {Ωx Ωv : Set (PDE.Vec d)} {z : KineticPoint d} :
+    {Ωx Ωv : HypoellipticAleksandrov.VecSet d} {z : KineticPoint d} :
     z ∈ kineticProductTerminalLateralBoundary r₀ r₁ Ωx Ωv ↔
       (z.time = r₁ ∧ z.position ∈ closure Ωx ∧ z.velocity ∈ closure Ωv) ∨
         (r₀ ≤ z.time ∧ z.time ≤ r₁ ∧ z.position ∈ frontier Ωx ∧

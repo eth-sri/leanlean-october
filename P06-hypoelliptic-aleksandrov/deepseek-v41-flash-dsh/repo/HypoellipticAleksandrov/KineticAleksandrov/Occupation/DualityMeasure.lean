@@ -52,9 +52,11 @@ theorem unitOccupationKernel_mass_le (K : WholeKernel d)
   change K.firstMarginal (wholeSpaceQuery 0 q.2.1 q.2.2.1.le q.1 0) univ ≤ 1
   rw [K.firstMarginal_apply _ _ MeasurableSet.univ]
   simpa using K.mass_le_one (wholeSpaceQuery 0 q.2.1 q.2.2.1.le q.1 0)
+section
+variable (K : WholeKernel d) (ρ : Measure (PDE.Vec d))
 
 /-- The product-kernel measure has mass at most the initial mass. -/
-theorem unitOccupationProduct_mass_le (K : WholeKernel d) (ρ : Measure (PDE.Vec d))
+theorem unitOccupationProduct_mass_le 
     [IsFiniteMeasure ρ] :
     ((ρ.prod (elapsedVolume (ENNReal.ofReal (1 : ℝ)))).compProd
       (unitOccupationKernel K)) univ ≤ ρ univ := by
@@ -69,33 +71,33 @@ theorem unitOccupationProduct_mass_le (K : WholeKernel d) (ρ : Measure (PDE.Vec
       rw [he, mul_one]
 
 /-- The unprojected product-kernel occupation measure is finite. -/
-instance unitOccupationProduct_finite (K : WholeKernel d) (ρ : Measure (PDE.Vec d))
+instance unitOccupationProduct_finite 
     [IsFiniteMeasure ρ] :
     IsFiniteMeasure ((ρ.prod (elapsedVolume (ENNReal.ofReal (1 : ℝ)))).compProd
       (unitOccupationKernel K)) :=
   ⟨(unitOccupationProduct_mass_le K ρ).trans_lt (measure_lt_top ρ univ)⟩
 
 /-- The unit-time occupation measure, with time and velocity in source order. -/
-def unitOccupationMeasure (K : WholeKernel d) (ρ : Measure (PDE.Vec d)) :
+def unitOccupationMeasure  :
     Measure (TimeVelocity d) :=
   ((ρ.prod (elapsedVolume (ENNReal.ofReal (1 : ℝ)))).compProd (unitOccupationKernel K)).map
     (fun q => (q.1.2.1, q.2))
 
 /-- The projected occupation measure is finite for finite initial measures. -/
-instance unitOccupationMeasure_finite (K : WholeKernel d) (ρ : Measure (PDE.Vec d))
+instance unitOccupationMeasure_finite 
     [IsFiniteMeasure ρ] : IsFiniteMeasure (unitOccupationMeasure K ρ) := by
   unfold unitOccupationMeasure
   infer_instance
 
 /-- Unit-time occupation mass is at most the initial mass. -/
-theorem unitOccupationMeasure_mass_le (K : WholeKernel d) (ρ : Measure (PDE.Vec d))
+theorem unitOccupationMeasure_mass_le 
     [IsFiniteMeasure ρ] : unitOccupationMeasure K ρ univ ≤ ρ univ := by
   rw [unitOccupationMeasure, Measure.map_apply (by fun_prop) MeasurableSet.univ, preimage_univ]
   exact unitOccupationProduct_mass_le K ρ
 
 /-- Positive elapsed time puts the entire occupation measure in the open unit slab. -/
-theorem unitOccupationMeasure_compl_slab (K : WholeKernel d) (ρ : Measure (PDE.Vec d)) :
-    unitOccupationMeasure K ρ (Ioo (0 : ℝ) 1 ×ˢ univ)ᶜ = 0 := by
+theorem unitOccupationMeasure_compl_slab  :
+    unitOccupationMeasure K ρ (Ioo 0 1 ×ˢ univ)ᶜ = 0 := by
   rw [unitOccupationMeasure, Measure.map_apply (by fun_prop)
     ((measurableSet_Ioo.prod MeasurableSet.univ).compl)]
   have he : (fun q : (PDE.Vec d × ElapsedTime (ENNReal.ofReal (1 : ℝ))) × PDE.Vec d =>
@@ -108,7 +110,7 @@ theorem unitOccupationMeasure_compl_slab (K : WholeKernel d) (ρ : Measure (PDE.
   rw [he, measure_empty]
 
 /-- Projected occupation integration is the full iterated first-marginal characterization. -/
-theorem integral_unitOccupationMeasure (K : WholeKernel d) (ρ : Measure (PDE.Vec d))
+theorem integral_unitOccupationMeasure 
     [IsFiniteMeasure ρ] (φ : TimeVelocity d → ℝ) (hφ : Measurable φ)
     (hφb : ∃ M : ℝ, ∀ q, |φ q| ≤ M) :
     (∫ q, φ q ∂unitOccupationMeasure K ρ) =
@@ -123,12 +125,13 @@ theorem integral_unitOccupationMeasure (K : WholeKernel d) (ρ : Measure (PDE.Ve
   have hi : Integrable ψ ((ρ.prod (elapsedVolume (ENNReal.ofReal (1 : ℝ)))).compProd
       (unitOccupationKernel K)) :=
     (integrable_const M).mono' hψ.aestronglyMeasurable
-      (Filter.Eventually.of_forall fun q => by simpa only [Real.norm_eq_abs] using hM _)
+      (Filter.Eventually.of_forall fun q => by simpa using hM _)
   rw [unitOccupationMeasure, integral_map (by fun_prop) hφ.aestronglyMeasurable]
   change (∫ q, ψ q ∂_) = _
   rw [Measure.integral_compProd hi]
   exact (integral_prod _ hi.integral_compProd).trans (by
     simp only [ProbabilityTheory.Kernel.prodMkLeft_apply, unitOccupationKernel,
       ProbabilityTheory.Kernel.comap_apply, ψ, zero_add])
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Occupation

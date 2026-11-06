@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.ScalarClassical
 public import Mathlib.Topology.Separation.Regular
 public import Mathlib.Topology.Order.Compact
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Auxiliary compact product collars
 
@@ -16,7 +17,7 @@ open Set
 
 /-- A finite time interval and compact spatial closure give compact product closure. -/
 theorem isCompact_closure_local_product {d : ℕ} (a T : ℝ)
-    {O : Set (PDE.Vec d)} (hOc : IsCompact (closure O)) :
+    {O : HypoellipticAleksandrov.VecSet d} (hOc : IsCompact (closure O)) :
     IsCompact (closure (Ioo a T ×ˢ O)) := by
   rw [closure_prod_eq]
   exact (isCompact_Icc.of_isClosed_subset isClosed_closure
@@ -24,7 +25,7 @@ theorem isCompact_closure_local_product {d : ℕ} (a T : ℝ)
 
 /-- Strict temporal margins and spatial compact containment give product compact containment. -/
 theorem closure_local_product_subset {d : ℕ} {a b c e : ℝ}
-    (hac : a < c) (heb : e < b) {O Ω : Set (PDE.Vec d)} (hOΩ : closure O ⊆ Ω) :
+    (hac : a < c) (heb : e < b) {O Ω : HypoellipticAleksandrov.VecSet d} (hOΩ : closure O ⊆ Ω) :
     closure (Ioo c e ×ˢ O) ⊆ Ioo a b ×ˢ Ω := by
   rw [closure_prod_eq]
   intro z hz
@@ -34,8 +35,8 @@ theorem closure_local_product_subset {d : ℕ} {a b c e : ℝ}
 
 /-- Every point of an open spatial carrier has three nested compactly contained collars. -/
 theorem exists_three_nested_local_spatial_collars {d : ℕ}
-    (Ω : Set (PDE.Vec d)) (hΩ : IsOpen Ω) (x : PDE.Vec d) (hx : x ∈ Ω) :
-    ∃ O₀ O₁ O₂ : Set (PDE.Vec d),
+    (Ω : HypoellipticAleksandrov.VecSet d) (hΩ : IsOpen Ω) (x : PDE.Vec d) (hx : x ∈ Ω) :
+    ∃ O₀ O₁ O₂ : HypoellipticAleksandrov.VecSet d,
       IsOpen O₀ ∧ IsCompact (closure O₀) ∧ closure O₀ ⊆ Ω ∧
       IsOpen O₁ ∧ IsCompact (closure O₁) ∧ closure O₁ ⊆ O₀ ∧
       IsOpen O₂ ∧ IsCompact (closure O₂) ∧ closure O₂ ⊆ O₁ ∧ x ∈ O₂ := by

@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.ParabolicDuhamel
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Proposition 4.2: the parabolic source potential on the whole space

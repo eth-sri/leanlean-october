@@ -16,16 +16,18 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
 open Filter Set
 open scoped Topology
+section
+variable (gamma : ScalarGamma) (Lam : ℝ)
 
 /-- The literal common axis trace is continuous. -/
-theorem scalarTrace_continuous (gamma : ScalarGamma) (Lam : ℝ) :
+theorem scalarTrace_continuous  :
     Continuous (scalarTrace gamma Lam) := by
   unfold scalarTrace
   have hp : 0 ≤ 3 * gamma.1 := (mul_pos (by norm_num) gamma.2.1).le
   exact continuous_const.mul ((Real.continuous_rpow_const hp).comp continuous_abs)
 
 /-- The joint profile is continuous at every nonzero point of the position axis. -/
-theorem scalarProfile_continuousAt_axis (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
+theorem scalarProfile_continuousAt_axis  (hLam : 0 < Lam)
     (hmatch : Pgamma gamma.1 - Qgamma gamma.1 * Real.rpow Lam (-(1 / 3)) =
       Real.rpow Lam (-gamma.1)) (q : XV 1) (hx : q.1 0 = 0) (hv : q.2 0 ≠ 0) :
     ContinuousAt (scalarProfile gamma Lam) q := by
@@ -75,7 +77,7 @@ theorem scalarProfile_continuousAt_axis (gamma : ScalarGamma) (Lam : ℝ) (hLam 
       Function.comp_def]
 
 /-- The anisotropic growth bound proves continuity at the origin. -/
-theorem scalarProfile_continuousAt_zero (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
+theorem scalarProfile_continuousAt_zero  (hLam : 0 < Lam)
     (hmatch : Pgamma gamma.1 - Qgamma gamma.1 * Real.rpow Lam (-(1 / 3)) =
       Real.rpow Lam (-gamma.1)) : ContinuousAt (scalarProfile gamma Lam) 0 := by
   obtain ⟨K, hK, hb⟩ := scalarProfile_growth gamma Lam hLam hmatch
@@ -98,7 +100,7 @@ theorem scalarProfile_continuousAt_zero (gamma : ScalarGamma) (Lam : ℝ) (hLam 
   simpa only [ContinuousAt, scalarProfile_zero] using hh
 
 /-- The literal scalar profile is continuous on the entire native carrier. -/
-theorem scalarProfile_continuous (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
+theorem scalarProfile_continuous  (hLam : 0 < Lam)
     (hmatch : Pgamma gamma.1 - Qgamma gamma.1 * Real.rpow Lam (-(1 / 3)) =
       Real.rpow Lam (-gamma.1)) : Continuous (scalarProfile gamma Lam) := by
   apply continuous_iff_continuousAt.mpr
@@ -115,5 +117,6 @@ theorem scalarProfile_continuous (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < L
       exact scalarProfile_continuousAt_zero gamma Lam hLam hmatch
     · exact scalarProfile_continuousAt_axis gamma Lam hLam hmatch q hx hv
   · exact (scalarProfile_contDiffAt_off_axis gamma Lam hLam q hx).continuousAt
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

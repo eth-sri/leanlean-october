@@ -6,6 +6,8 @@ public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonLoca
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonLocalHessianCollar
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonLocalTimeCoercivity
 import Mathlib.Tactic.Linarith
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Uniform weight-two energy for homogeneous classical approximations
 
@@ -20,7 +22,7 @@ open Filter MeasureTheory Set
 open scoped BigOperators MatrixOrder Matrix.Norms.Elementwise
 
 private theorem square_integral_entry_le_sum {d : ℕ}
-    {S : Set (TimeVelocity d)} (G : TimeVelocity d → PDE.Vec d)
+    {S : HypoellipticAleksandrov.Parabolic.TVSet d} (G : TimeVelocity d → PDE.Vec d)
     (hG : ∀ j, MemLp (fun z => G z j) 2 (timeVelocityVolumeOn S)) (j : Fin d) :
     (∫ z in S, G z j ^ 2) ≤ ∫ z in S, ∑ k, G z k ^ 2 := by
   classical
@@ -32,7 +34,7 @@ private theorem square_integral_entry_le_sum {d : ℕ}
     Finset.single_le_sum (fun k _ => sq_nonneg _) (Finset.mem_univ j))
 
 private theorem square_integral_hessian_entry_le_sum {d : ℕ}
-    {S : Set (TimeVelocity d)} (H : TimeVelocity d → PDE.Mat d)
+    {S : HypoellipticAleksandrov.Parabolic.TVSet d} (H : TimeVelocity d → PDE.Mat d)
     (hH : ∀ i j, MemLp (fun z => H z i j) 2 (timeVelocityVolumeOn S)) (i j : Fin d) :
     (∫ z in S, H z i j ^ 2) ≤ ∫ z in S, ∑ k, ∑ l, H z k l ^ 2 := by
   classical
@@ -50,7 +52,7 @@ private theorem square_integral_hessian_entry_le_sum {d : ℕ}
 theorem exists_uniform_classical_seed_constant {d : ℕ}
     (a T q₀ s₀ s₁ q₁ : ℝ)
     (hq₀s₀ : q₀ < s₀) (hs₀s₁ : s₀ ≤ s₁) (hs₁q₁ : s₁ < q₁)
-    (Ω O₀ O : Set (PDE.Vec d)) (hΩ : IsOpen Ω)
+    (Ω O₀ O : HypoellipticAleksandrov.VecSet d) (hΩ : IsOpen Ω)
     (hDc : IsCompact (closure (Ioo a T ×ˢ Ω)))
     (hO₀ : IsOpen O₀) (hO₀c : IsCompact (closure O₀))
     (hQc : IsCompact (closure (Ioo q₀ q₁ ×ˢ O₀)))

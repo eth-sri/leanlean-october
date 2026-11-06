@@ -92,7 +92,7 @@ theorem nestedSourcePotential_regular_source
   refine ⟨⟨C, hC, fun p => hb _⟩, ?_, ?_⟩
   · have hD := isOpen_duhamelCylinder
       (isOpen_of_isAdmissibleEvolutionDomain (intervalDomain_admissible H))
-      (show Continuous (fun _ : ℝ => (0 : PDE.Vec 1)) from continuous_const) T
+      (show Continuous (fun _ : ℝ => 0) from continuous_const) T
     have hh := nested_physical_isKineticC112On hD hsm
     have hset : sectionTwoPoint ⁻¹'
         evolutionPastOpenCylinder (intervalDomain H) (fun _ => 0) T =

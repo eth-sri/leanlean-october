@@ -45,10 +45,11 @@ theorem quadratic_nonneg_of_loewner {d : ℕ} (lam : ℝ) (hlam : 0 ≤ lam)
   have h := vecDot_mulVec_lower_of_loewner hA w
   have hn := (mul_nonneg hlam (PDE.vecNormSq_nonneg w)).trans h
   simpa only [PDE.vecDot, mul_comm] using hn
+section
+variable {d : ℕ} (A : XV d → PDE.Mat d) (H : XV d → ℝ) (gv : XV d → PDE.Vec d) (alpha r : ℝ)
 
 /-- The fixed source vanishes outside the closed profile shell. -/
-theorem flatSourceWithJet_eq_zero_off_shell {d : ℕ} (A : XV d → PDE.Mat d)
-    (H : XV d → ℝ) (gv : XV d → PDE.Vec d) (alpha r : ℝ) (hr : 0 < r)
+theorem flatSourceWithJet_eq_zero_off_shell  (hr : 0 < r)
     (q : XV d) (hq : q ∉ profileShell H alpha r) :
     flatSourceWithJet A H gv alpha r q = 0 := by
   have hp := Real.rpow_pos_of_pos hr alpha
@@ -63,8 +64,7 @@ theorem flatSourceWithJet_eq_zero_off_shell {d : ℕ} (A : XV d → PDE.Mat d)
     ring
 
 /-- The selected weak source is measurable under the source's literal coefficient assumptions. -/
-theorem measurable_flatSourceWithJet {d : ℕ} (A : XV d → PDE.Mat d)
-    (H : XV d → ℝ) (gv : XV d → PDE.Vec d) (alpha r : ℝ)
+theorem measurable_flatSourceWithJet 
     (hA : ∀ i k, Measurable (fun q => A q i k)) (hH : Measurable H)
     (hgv : Measurable gv) : Measurable (flatSourceWithJet A H gv alpha r) := by
   have hpsi : Continuous (deriv (deriv flatteningPsi)) := by
@@ -76,6 +76,7 @@ theorem measurable_flatSourceWithJet {d : ℕ} (A : XV d → PDE.Mat d)
     (hpsi.measurable.comp (hH.div_const (Real.rpow r alpha)))).mul
     (Finset.measurable_sum _ (fun i _ =>
       (Finset.measurable_sum _ (fun k _ => (hA i k).mul (hg k))).mul (hg i)))
+end
 
 /-- The classical selector source equals the selected weak-jet formula almost everywhere. -/
 theorem flatSource_ae_eq_jet_of_profile {d : ℕ} {alpha : ℝ}

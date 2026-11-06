@@ -5,6 +5,7 @@ public import Mathlib.MeasureTheory.Measure.SeparableMeasure
 public import Mathlib.Data.Nat.Pairing
 public import Mathlib.Analysis.InnerProductSpace.GramMatrix
 public import Mathlib.LinearAlgebra.Dimension.Free
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Countable actual-test Galerkin spaces
@@ -24,11 +25,13 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 open Filter Set Module
 open scoped ENNReal RealInnerProductSpace Topology
 
-variable {d : ℕ} {Ω : Set (PDE.Vec d)}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
+section
+variable (hΩ : IsOpen Ω)
 
 /-- The H10 Hilbert carrier inherits a second countable topology from spatial L2. -/
 noncomputable def h10HilbertGraphSecondCountableTopology
-    (hΩ : IsOpen Ω) : SecondCountableTopology (H10HilbertGraph hΩ) := by
+     : SecondCountableTopology (H10HilbertGraph hΩ) := by
   letI : MeasureTheory.SFinite (PDE.volumeOn Ω) := by infer_instance
   letI : MeasurableSpace.CountablyGenerated (PDE.Vec d) := by infer_instance
   letI : MeasureTheory.IsSeparable (PDE.volumeOn Ω) := by infer_instance
@@ -45,14 +48,14 @@ noncomputable def h10HilbertGraphSecondCountableTopology
 
 /-- The H10 Hilbert carrier is separable. -/
 noncomputable instance instSeparableSpaceH10HilbertGraph
-    (hΩ : IsOpen Ω) : TopologicalSpace.SeparableSpace (H10HilbertGraph hΩ) := by
+     : TopologicalSpace.SeparableSpace (H10HilbertGraph hΩ) := by
   letI : SecondCountableTopology (H10HilbertGraph hΩ) :=
     h10HilbertGraphSecondCountableTopology hΩ
   exact TopologicalSpace.SecondCountableTopology.to_separableSpace
 
 /-- The actual-test map, codomain-restricted to the H10 closure. -/
 noncomputable def smoothCompactlySupportedH1HilbertGraphToH10LinearMap
-    (hΩ : IsOpen Ω) :
+     :
     PDE.WeakTestFunction Ω →ₗ[ℝ] H10HilbertGraph hΩ :=
   (smoothCompactlySupportedH1HilbertGraphLinearMap hΩ).codRestrict
     (h10HilbertGraphClosedSubmodule hΩ).toSubmodule
@@ -68,11 +71,11 @@ noncomputable def smoothCompactlySupportedH1HilbertGraphToH10LinearMap
 
 /-- Smooth approximations to the selected dense sequence in the H10 Hilbert carrier. -/
 noncomputable def smoothApproximation
-    (hΩ : IsOpen Ω) (m : ℕ) : ℕ → PDE.WeakTestFunction Ω :=
+     (m : ℕ) : ℕ → PDE.WeakTestFunction Ω :=
   Classical.choose (exists_tendsto_smooth hΩ (TopologicalSpace.denseSeq (H10HilbertGraph hΩ) m))
 
 private theorem tendsto_smoothApproximation
-    (hΩ : IsOpen Ω) (m : ℕ) :
+     (m : ℕ) :
     Tendsto
       (fun k => smoothCompactlySupportedH1HilbertGraphLinearMap hΩ
         (smoothApproximation hΩ m k))
@@ -83,17 +86,17 @@ private theorem tendsto_smoothApproximation
 
 /-- A countable sequence of genuine zero-trace smooth tests. -/
 noncomputable def galerkinTestSequence
-    (hΩ : IsOpen Ω) : ℕ → PDE.WeakTestFunction Ω :=
+     : ℕ → PDE.WeakTestFunction Ω :=
   fun n => smoothApproximation hΩ n.unpair.1 n.unpair.2
 
 /-- Its images in the internally constructed H10 Hilbert carrier. -/
 noncomputable def galerkinVector
-    (hΩ : IsOpen Ω) : ℕ → H10HilbertGraph hΩ :=
+     : ℕ → H10HilbertGraph hΩ :=
   smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ ∘
     galerkinTestSequence hΩ
 
 theorem denseRange_galerkinVector
-    (hΩ : IsOpen Ω) : DenseRange (galerkinVector hΩ) := by
+     : DenseRange (galerkinVector hΩ) := by
   let q : ℕ → H10HilbertGraph hΩ := TopologicalSpace.denseSeq (H10HilbertGraph hΩ)
   have hqDense : DenseRange q := TopologicalSpace.denseRange_denseSeq (H10HilbertGraph hΩ)
   have hqClosure : Set.range q ⊆ closure (Set.range (galerkinVector hΩ)) := by
@@ -119,7 +122,7 @@ theorem denseRange_galerkinVector
 
 /-- The span of the first `N` actual-test images; in particular `E 0 = ⊥`. -/
 noncomputable def galerkinSpace
-    (hΩ : IsOpen Ω) (N : ℕ) :
+     (N : ℕ) :
     Submodule ℝ (H10HilbertGraph hΩ) :=
   Submodule.span ℝ (Set.range fun i : Fin N => galerkinVector hΩ i)
 
@@ -128,7 +131,7 @@ noncomputable def galerkinSpace
   simp [galerkinSpace]
 
 theorem galerkinSpace_mono
-    (hΩ : IsOpen Ω) {N M : ℕ} (hNM : N ≤ M) :
+     {N M : ℕ} (hNM : N ≤ M) :
     galerkinSpace hΩ N ≤ galerkinSpace hΩ M := by
   rw [galerkinSpace, galerkinSpace]
   apply Submodule.span_le.mpr
@@ -137,15 +140,16 @@ theorem galerkinSpace_mono
   exact ⟨⟨i, lt_of_lt_of_le i.isLt hNM⟩, rfl⟩
 
 noncomputable instance galerkinSpace_finiteDimensional
-    (hΩ : IsOpen Ω) (N : ℕ) :
+     (N : ℕ) :
     FiniteDimensional ℝ (galerkinSpace hΩ N) :=
   FiniteDimensional.span_of_finite ℝ (Set.finite_range _)
 
 /-- A coordinate basis for the finite ODE on `E N`; no global basis is chosen. -/
 noncomputable def galerkinSpaceBasis
-    (hΩ : IsOpen Ω) (N : ℕ) :
+     (N : ℕ) :
     Basis (Fin (Module.finrank ℝ (galerkinSpace hΩ N))) ℝ
       (galerkinSpace hΩ N) :=
   Module.finBasis ℝ (galerkinSpace hΩ N)
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

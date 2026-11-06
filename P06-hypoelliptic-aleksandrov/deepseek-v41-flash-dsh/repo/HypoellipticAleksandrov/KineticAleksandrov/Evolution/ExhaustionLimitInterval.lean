@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionLimitBalls
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.BarrierIntervalGeometry
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # The bounded one-dimensional interval branch of the exhaustion limit -/
 
@@ -30,7 +31,7 @@ include hLE hH hn hlam hlamLam hm hmLb hBs hBsym hB hbs hb hbco hΓ
 /-- The interval branch of the exhaustion limit follows from its exact Euclidean-ball
 identification, with the source constants, operator and terminal datum preserved. -/
 theorem exists_viscous_terminalSolution_interval
-    (hN : n = 1) (Ω : Set (PDE.Vec n)) (lo hi : ℝ) (hlohi : lo < hi)
+    (hN : n = 1) (Ω : HypoellipticAleksandrov.VecSet n) (lo hi : ℝ) (hlohi : lo < hi)
     (hΩ : hN ▸ Ω = PDE.oneDimensionalAxisBox lo hi)
     (τ : ℝ) (F : BoundedBorel (EvolutionAmbientState n))
     (hF : IsSmoothCompactTerminalDatum Ω Γ τ F)

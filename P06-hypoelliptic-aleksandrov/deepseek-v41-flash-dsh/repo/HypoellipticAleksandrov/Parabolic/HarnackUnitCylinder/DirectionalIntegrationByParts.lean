@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.WeakDerivatives
 public import Mathlib.Analysis.Calculus.LineDeriv.IntegrationByParts
 public import Mathlib.MeasureTheory.Function.LocallyIntegrable
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Local directional integration by parts with compact test support -/
 
@@ -14,7 +15,7 @@ open Set MeasureTheory
 open scoped Topology
 
 private theorem integrable_mul_test
-    {d : ℕ} {U : Set (TimeVelocity d)} {f ψ : TimeVelocity d → ℝ}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {f ψ : TimeVelocity d → ℝ}
     (hf : ContinuousOn f U) (hψ : Continuous ψ) (hc : HasCompactSupport ψ)
     (hsub : tsupport ψ ⊆ U) : Integrable (fun z => f z * ψ z) := by
   have hK : IntegrableOn f (tsupport ψ) volume :=
@@ -26,7 +27,7 @@ private theorem integrable_mul_test
 
 /-- Local continuous line derivatives give integration by parts against a compact smooth test. -/
 theorem setIntegral_mul_directional_test
-    {d : ℕ} {U : Set (TimeVelocity d)} {f df φ : TimeVelocity d → ℝ}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {f df φ : TimeVelocity d → ℝ}
     (hf : ContinuousOn f U) (hdf : ContinuousOn df U) (v : TimeVelocity d)
     (hd : ∀ z ∈ U, HasLineDerivAt ℝ f (df z) z v)
     (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (hc : HasCompactSupport φ)

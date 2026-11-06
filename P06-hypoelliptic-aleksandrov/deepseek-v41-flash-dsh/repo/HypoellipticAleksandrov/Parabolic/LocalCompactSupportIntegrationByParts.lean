@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.SpatialCoordinateDerivatives
 public import Mathlib.Analysis.Calculus.LineDeriv.IntegrationByParts
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Local compact-support integration by parts
@@ -20,7 +21,7 @@ open Function MeasureTheory Set Topology
 namespace HypoellipticAleksandrov.Parabolic
 
 private theorem contDiff_mul_of_right_compactSupport
-    {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen O)
+    {d : ℕ} {O : HypoellipticAleksandrov.VecSet d} (hO : IsOpen O)
     (f g : PDE.Vec d → ℝ) (hf : ContDiffOn ℝ 1 f O) (hg : ContDiffOn ℝ 1 g O)
     (hgsupport : tsupport g ⊆ O) :
     ContDiff ℝ 1 (fun y => f y * g y) := by
@@ -35,7 +36,7 @@ private theorem contDiff_mul_of_right_compactSupport
     exact (contDiffAt_const (x := y) (n := 1) (c := (0 : ℝ))).congr_of_eventuallyEq heq
 
 private theorem continuous_mul_spatialPartial_of_right_compactSupport
-    {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen O) (i : Fin d)
+    {d : ℕ} {O : HypoellipticAleksandrov.VecSet d} (hO : IsOpen O) (i : Fin d)
     (f g : PDE.Vec d → ℝ) (hf : ContDiffOn ℝ 1 f O) (hg : ContDiffOn ℝ 1 g O)
     (hgsupport : tsupport g ⊆ O) :
     Continuous (fun y => f y * spatialPartial i g y) := by
@@ -56,7 +57,7 @@ private theorem continuous_mul_spatialPartial_of_right_compactSupport
     exact continuousAt_const.congr_of_eventuallyEq heq
 
 private theorem continuous_spatialPartial_mul_of_right_compactSupport
-    {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen O) (i : Fin d)
+    {d : ℕ} {O : HypoellipticAleksandrov.VecSet d} (hO : IsOpen O) (i : Fin d)
     (f g : PDE.Vec d → ℝ) (hf : ContDiffOn ℝ 1 f O) (hg : ContDiffOn ℝ 1 g O)
     (hgsupport : tsupport g ⊆ O) :
     Continuous (fun y => spatialPartial i f y * g y) := by
@@ -75,7 +76,7 @@ private theorem continuous_spatialPartial_mul_of_right_compactSupport
 /-- Integration by parts on an open set when the differentiated right factor
 is compactly supported in that set. -/
 theorem setIntegral_mul_spatialPartial_eq_neg_spatialPartial_mul_of_right
-    {d : ℕ} (O : Set (PDE.Vec d)) (hO : IsOpen O)
+    {d : ℕ} (O : HypoellipticAleksandrov.VecSet d) (hO : IsOpen O)
     (i : Fin d) (f g : PDE.Vec d → ℝ)
     (hf : ContDiffOn ℝ 1 f O) (hg : ContDiffOn ℝ 1 g O)
     (hgcompact : HasCompactSupport g) (hgsupport : tsupport g ⊆ O) :
@@ -135,7 +136,7 @@ theorem setIntegral_mul_spatialPartial_eq_neg_spatialPartial_mul_of_right
 /-- Integration by parts on an open set when the differentiated left factor
 is compactly supported in that set. -/
 theorem setIntegral_mul_spatialPartial_eq_neg_spatialPartial_mul_of_left
-    {d : ℕ} (O : Set (PDE.Vec d)) (hO : IsOpen O)
+    {d : ℕ} (O : HypoellipticAleksandrov.VecSet d) (hO : IsOpen O)
     (i : Fin d) (f g : PDE.Vec d → ℝ)
     (hf : ContDiffOn ℝ 1 f O) (hg : ContDiffOn ℝ 1 g O)
     (hfcompact : HasCompactSupport f) (hfsupport : tsupport f ⊆ O) :

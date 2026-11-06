@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.DualityPoten
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.DensityFromTests
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.DensityFromTestsInterpolation
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.PotentialWhole
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Deriving unit-time occupation density from the exact whole-space source estimate

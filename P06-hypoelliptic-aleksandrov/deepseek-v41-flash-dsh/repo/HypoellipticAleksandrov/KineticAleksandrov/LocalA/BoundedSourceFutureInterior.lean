@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundedSourceFut
 import Mathlib.Analysis.Normed.Module.RCLike.Real
 import Mathlib.Topology.Order.Compact
 import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ClassicalTerminalWeak
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Continuity strictly before a bounded source starts -/
 
@@ -12,7 +13,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set Filter Evolution Metric
 open scoped Topology
-variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d}
 
 /-- A positive bounded future source has a continuous literal potential at every earlier
 interior starting point. This is pointwise continuity, rather than an AE representative. -/

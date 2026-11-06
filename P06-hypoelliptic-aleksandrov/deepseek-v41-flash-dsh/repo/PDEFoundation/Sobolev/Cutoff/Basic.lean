@@ -68,13 +68,13 @@ instance :
     CoeFun (QuantitativeSmoothCutoff inner outer K)
       (fun _ => Vec d → ℝ) where
   coe η := η.toFun
+section
+variable {inner' outer' : Set (Vec d)} (η : QuantitativeSmoothCutoff inner outer K) (hinner : inner' ⊆ inner) (houter : outer ⊆ outer')
 
 /-- Restrict the plateau set and enlarge the permitted support set without
 changing the cutoff function or its gradient constant. -/
 def reindex
-    {inner' outer' : Set (Vec d)}
-    (η : QuantitativeSmoothCutoff inner outer K)
-    (hinner : inner' ⊆ inner) (houter : outer ⊆ outer') :
+     :
     QuantitativeSmoothCutoff inner' outer' K where
   toFun := η.toFun
   smooth := η.smooth
@@ -88,11 +88,10 @@ def reindex
 
 @[simp]
 theorem reindex_toFun
-    {inner' outer' : Set (Vec d)}
-    (η : QuantitativeSmoothCutoff inner outer K)
-    (hinner : inner' ⊆ inner) (houter : outer ⊆ outer') :
+     :
     (η.reindex hinner houter).toFun = η.toFun :=
   rfl
+end
 
 private theorem classicalGradient_sq_toFun
     (η : QuantitativeSmoothCutoff inner outer K) (x : Vec d) :

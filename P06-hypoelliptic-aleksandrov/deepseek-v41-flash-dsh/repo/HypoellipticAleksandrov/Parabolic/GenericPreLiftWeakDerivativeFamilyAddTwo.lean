@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.GenericParabolicWeakDerivativeFamilyAddTwo
 public import HypoellipticAleksandrov.Parabolic.GenericPreLiftTimeSuccessorRecovery
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Generic pre-lift add-two weak-derivative family
@@ -23,11 +25,11 @@ open scoped BigOperators ENNReal MatrixOrder
 /-- Exact recovered-Hessian and coherent add-two-family conclusion of one
 generic pre-lift bootstrap step. -/
 def GenericPreliftAddTwoFamilyConclusion
-    {d M : ℕ} (V : Set (TimeVelocity d))
+    {d M : ℕ} (V : HypoellipticAleksandrov.Parabolic.TVSet d)
     (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c : ℝ → PDE.Vec d → ℝ)
-    {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
+    {U : HypoellipticAleksandrov.Parabolic.TVSet d} {u : TimeVelocity d → ℝ}
     {F : ℝ → PDE.Vec d → ℝ}
     (D : ParabolicWeakDerivativeFamily d (M + 1) U u)
     (E : ParabolicWeakDerivativeFamily d M U
@@ -61,7 +63,7 @@ theorem exists_genericPrelift_addTwo_weakDerivativeFamily_estimate
     (d M : ℕ) (hM : 1 ≤ M)
     (t₀ t₁ t₂ t₃ : ℝ)
     (ht₀₁ : t₀ < t₁) (ht₁₂ : t₁ < t₂) (ht₂₃ : t₂ < t₃)
-    (O₀ O₁ : Set (PDE.Vec d))
+    (O₀ O₁ : HypoellipticAleksandrov.VecSet d)
     (hO₀ : IsOpen O₀) (hO₁ : IsOpen O₁) (hO₁ne : O₁.Nonempty)
     (hO₁compact : IsCompact (closure O₁))
     (hO₁O₀ : closure O₁ ⊆ O₀)

@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.BracketSquares
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Hörmander hypotheses for the transported operator and its regularisation
@@ -27,7 +28,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Evolution
 variable {n : ℕ}
 
 /-- Spanning on a set implies spanning on any subset. -/
-theorem lieAlgebraSpansOn_mono {k N : ℕ} {Ω Ω' : Set (PDE.Vec N)} (h : Ω' ⊆ Ω)
+theorem lieAlgebraSpansOn_mono {k N : ℕ} {Ω Ω' : HypoellipticAleksandrov.VecSet N} (h : Ω' ⊆ Ω)
     {X : Fin (k + 1) → PDE.Vec N → PDE.Vec N} (hX : LieAlgebraSpansOn Ω X) :
     LieAlgebraSpansOn Ω' X :=
   fun x hx => hX x (h hx)

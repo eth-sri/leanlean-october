@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialFormOperatorBase
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.SpatialL2MultiplierDifference
 public import Mathlib.Topology.UniformSpace.HeineCantor
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Continuity of the reverse-time spatial form operator
@@ -22,7 +24,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 private theorem continuousOn_reverseTimeCoefficientEntry_joint
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (a : CoefficientField d) (i j : Fin d)
     (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω)) :
@@ -38,7 +40,7 @@ private theorem continuousOn_reverseTimeCoefficientEntry_joint
     simp)).continuousOn.mono hKV
 
 private theorem continuousOn_reverseTimeDivergenceDriftEntry_joint
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (j : Fin d)
     (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
@@ -60,7 +62,7 @@ private theorem continuousOn_reverseTimeDivergenceDriftEntry_joint
   exact heval.comp hdiv (by intro z hz; simp) |>.sub (hbj.continuousOn.mono hKV)
 
 private theorem continuousOn_reverseTimeScalarCoefficient_joint
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (c : ℝ → PDE.Vec d → ℝ)
     (hc : IsSmoothOnNeighborhood (fun z : TimeVelocity d => c z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω)) :
@@ -70,7 +72,7 @@ private theorem continuousOn_reverseTimeScalarCoefficient_joint
   exact hV.continuousOn.mono hKV
 
 private theorem exists_delta_ae_norm_reverseTime_sub_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (q : TimeVelocity d → ℝ)
     (hq : ContinuousOn q (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -100,7 +102,7 @@ private theorem exists_delta_ae_norm_reverseTime_sub_le
   exact (hδUC _ hσK _ hτK hdist).le
 
 private theorem continuousAt_reverseTimeCoefficientEntry_multiplier
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
     (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
@@ -135,7 +137,7 @@ private theorem continuousAt_reverseTimeCoefficientEntry_multiplier
     _ < ε := half_lt_self hε
 
 private theorem continuousAt_reverseTimeDivergenceDriftEntry_multiplier
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
@@ -177,7 +179,7 @@ private theorem continuousAt_reverseTimeDivergenceDriftEntry_multiplier
     _ < ε := half_lt_self hε
 
 private theorem continuousAt_reverseTimeScalarCoefficient_multiplier
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (c : ℝ → PDE.Vec d → ℝ)
     (hc : IsSmoothOnNeighborhood (fun z : TimeVelocity d => c z.1 z.2)
@@ -214,9 +216,9 @@ private theorem continuousAt_reverseTimeScalarCoefficient_multiplier
     _ < ε := half_lt_self hε
 
 private theorem norm_hilbertVectorLpCoord_le_local
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (i : Fin d)
-    (G : PDE.HilbertVectorLp Ω (2 : ℝ≥0∞)) :
-    ‖PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i G‖ ≤ ‖G‖ := by
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (i : Fin d)
+    (G : PDE.HilbertVectorLp Ω 2) :
+    ‖PDE.hilbertVectorLpCoord Ω 2 i G‖ ≤ ‖G‖ := by
   rw [PDE.hilbertVectorLpCoord]
   calc
     ‖(PiLp.proj (𝕜 := ℝ) 2 (fun _ : Fin d => ℝ) i).compLpL
@@ -232,7 +234,7 @@ private theorem norm_hilbertVectorLpCoord_le_local
     _ = ‖G‖ := one_mul _
 
 private noncomputable def reverseTimeSpatialFormPrincipalTerm
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (r₀ r₁ : ℝ) (a : CoefficientField d)
     (Ca : Fin d → Fin d → ℝ) (hCa : ∀ i j, 0 ≤ Ca i j)
     (hAMeas : ∀ τ : Set.Icc 0 (r₁ - r₀), ∀ i j,
@@ -300,7 +302,7 @@ private noncomputable def reverseTimeSpatialFormPrincipalTerm
         _ = (Ca i j * ‖gradientCLM hΩ‖ ^ 2) * ‖u‖ * ‖v‖ := by ring)
 
 private theorem reverseTimeSpatialFormPrincipalTerm_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (r₀ r₁ : ℝ) (a : CoefficientField d)
     (Ca : Fin d → Fin d → ℝ) (hCa : ∀ i j, 0 ≤ Ca i j)
     (hAMeas : ∀ τ : Set.Icc 0 (r₁ - r₀), ∀ i j,
@@ -318,7 +320,7 @@ private theorem reverseTimeSpatialFormPrincipalTerm_apply
   rfl
 
 private theorem reverseTimeSpatialFormPrincipalTerm_sub_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (r₀ r₁ : ℝ) (a : CoefficientField d)
     (Ca : Fin d → Fin d → ℝ) (hCa : ∀ i j, 0 ≤ Ca i j)
     (hAMeas : ∀ τ : Set.Icc 0 (r₁ - r₀), ∀ i j,
@@ -371,7 +373,7 @@ private theorem reverseTimeSpatialFormPrincipalTerm_sub_apply
           (ContinuousLinearMap.sub_apply _ _ _).symm)
 
 private theorem norm_reverseTimeSpatialFormPrincipalTerm_sub_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (r₀ r₁ : ℝ) (a : CoefficientField d)
     (Ca : Fin d → Fin d → ℝ) (hCa : ∀ i j, 0 ≤ Ca i j)
     (hAMeas : ∀ τ : Set.Icc 0 (r₁ - r₀), ∀ i j,
@@ -442,7 +444,7 @@ end HypoellipticAleksandrov.Parabolic.Dirichlet
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 private noncomputable def reverseTimeSpatialFormDriftTerm
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (r₀ r₁ : ℝ) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
     (Cd : Fin d → ℝ) (hCd : ∀ j, 0 ≤ Cd j)
@@ -509,7 +511,7 @@ private noncomputable def reverseTimeSpatialFormDriftTerm
         _ = (Cd j * ‖gradientCLM hΩ‖ * ‖valueCLM hΩ‖) * ‖u‖ * ‖v‖ := by ring)
 
 private theorem reverseTimeSpatialFormDriftTerm_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (r₀ r₁ : ℝ) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
     (Cd : Fin d → ℝ) (hCd : ∀ j, 0 ≤ Cd j)
@@ -529,7 +531,7 @@ private theorem reverseTimeSpatialFormDriftTerm_apply
   rfl
 
 private theorem reverseTimeSpatialFormDriftTerm_sub_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (r₀ r₁ : ℝ) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
     (Cd : Fin d → ℝ) (hCd : ∀ j, 0 ≤ Cd j)
@@ -584,7 +586,7 @@ private theorem reverseTimeSpatialFormDriftTerm_sub_apply
           (ContinuousLinearMap.sub_apply _ _ _).symm)
 
 private theorem norm_reverseTimeSpatialFormDriftTerm_sub_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (r₀ r₁ : ℝ) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
     (Cd : Fin d → ℝ) (hCd : ∀ j, 0 ≤ Cd j)
@@ -658,7 +660,7 @@ end HypoellipticAleksandrov.Parabolic.Dirichlet
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 private noncomputable def reverseTimeSpatialFormScalarTerm
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (r₀ r₁ : ℝ) (c : ℝ → PDE.Vec d → ℝ)
     (Cc : ℝ) (hCc : 0 ≤ Cc)
     (hScalarMeas : ∀ τ : Set.Icc 0 (r₁ - r₀),
@@ -716,7 +718,7 @@ private noncomputable def reverseTimeSpatialFormScalarTerm
         _ = (Cc * ‖valueCLM hΩ‖ ^ 2) * ‖u‖ * ‖v‖ := by ring)
 
 private theorem reverseTimeSpatialFormScalarTerm_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (r₀ r₁ : ℝ) (c : ℝ → PDE.Vec d → ℝ)
     (Cc : ℝ) (hCc : 0 ≤ Cc)
     (hScalarMeas : ∀ τ : Set.Icc 0 (r₁ - r₀),
@@ -734,7 +736,7 @@ private theorem reverseTimeSpatialFormScalarTerm_apply
   rfl
 
 private theorem reverseTimeSpatialFormScalarTerm_sub_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (r₀ r₁ : ℝ) (c : ℝ → PDE.Vec d → ℝ)
     (Cc : ℝ) (hCc : 0 ≤ Cc)
     (hScalarMeas : ∀ τ : Set.Icc 0 (r₁ - r₀),
@@ -784,7 +786,7 @@ private theorem reverseTimeSpatialFormScalarTerm_sub_apply
           (ContinuousLinearMap.sub_apply _ _ _).symm)
 
 private theorem norm_reverseTimeSpatialFormScalarTerm_sub_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (r₀ r₁ : ℝ) (c : ℝ → PDE.Vec d → ℝ)
     (Cc : ℝ) (hCc : 0 ≤ Cc)
     (hScalarMeas : ∀ τ : Set.Icc 0 (r₁ - r₀),
@@ -871,7 +873,7 @@ private theorem continuousAt_of_norm_sub_le_mul
 
 section
 
-variable {d : ℕ} {Ω : Set (PDE.Vec d)}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
 variable (hΩ : IsOpen Ω) (r₀ r₁ : ℝ) (a : CoefficientField d)
 variable (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
 variable (Ca : Fin d → Fin d → ℝ) (hCa : ∀ i j, 0 ≤ Ca i j)
@@ -994,7 +996,7 @@ private noncomputable def reverseTimeSpatialFormTermCurve :
     reverseTimeSpatialFormScalarTerm hΩ r₀ r₁ c Cc hCc hScalarMeas hScalarBound τ
 
 private theorem continuousAdd_reverseTimeSpatialFormOperator
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) :
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) :
     ContinuousAdd (H10HilbertGraph hΩ →L[ℝ] H10HilbertGraphDual hΩ) := by
   let htop : IsTopologicalAddGroup
       (H10HilbertGraph hΩ →L[ℝ] H10HilbertGraphDual hΩ) := inferInstance
@@ -1086,7 +1088,7 @@ end
 
 section
 
-variable {d : ℕ} {Ω : Set (PDE.Vec d)}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
 variable (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
 variable (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
 variable (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
@@ -1137,7 +1139,7 @@ end
 
 /-- The local reverse-time spatial operator is continuous in operator norm. -/
 theorem continuous_reverseTimeSpatialFormOperator
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)

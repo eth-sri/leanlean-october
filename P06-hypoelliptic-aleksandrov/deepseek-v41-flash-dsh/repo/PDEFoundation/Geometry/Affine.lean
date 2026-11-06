@@ -28,27 +28,25 @@ theorem mem_translateSet_iff_sub_mem {d : ℕ}
     refine ⟨x - z, hx, ?_⟩
     ext i
     simp [sub_eq_add_neg, add_assoc]
+section
+variable {d : ℕ} (z : Vec d) (U : Set (Vec d))
 
-theorem preimage_subRight_eq_translateSet {d : ℕ}
-    (z : Vec d) (U : Set (Vec d)) :
+theorem preimage_subRight_eq_translateSet  :
     (fun x : Vec d => x - z) ⁻¹' U = translateSet z U := by
   ext x
   simp [mem_translateSet_iff_sub_mem]
 
-theorem preimage_addNeg_eq_translateSet {d : ℕ}
-    (z : Vec d) (U : Set (Vec d)) :
+theorem preimage_addNeg_eq_translateSet  :
     (fun x : Vec d => x + -z) ⁻¹' U = translateSet z U := by
   ext x
   simp [mem_translateSet_iff_sub_mem, sub_eq_add_neg]
 
-theorem preimage_addRight_translateSet_eq {d : ℕ}
-    (z : Vec d) (U : Set (Vec d)) :
+theorem preimage_addRight_translateSet_eq  :
     (fun x : Vec d => x + z) ⁻¹' translateSet z U = U := by
   ext x
   simp [mem_translateSet_iff_sub_mem, sub_eq_add_neg, add_assoc]
 
-theorem image_addRight_eq_translateSet {d : ℕ}
-    (z : Vec d) (U : Set (Vec d)) :
+theorem image_addRight_eq_translateSet  :
     (fun x : Vec d => x + z) '' U = translateSet z U := by
   ext x
   constructor
@@ -56,6 +54,7 @@ theorem image_addRight_eq_translateSet {d : ℕ}
     exact ⟨y, hy, rfl⟩
   · rintro ⟨y, hy, rfl⟩
     exact ⟨y, hy, rfl⟩
+end
 
 @[simp]
 theorem translateSet_zero {d : ℕ} (U : Set (Vec d)) :

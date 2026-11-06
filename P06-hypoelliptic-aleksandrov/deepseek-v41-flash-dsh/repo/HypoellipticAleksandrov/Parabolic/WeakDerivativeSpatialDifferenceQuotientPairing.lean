@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.Parabolic.SpatialSegmentSafeOpen
 public import HypoellipticAleksandrov.Parabolic.SpatialTranslationWeakDerivatives
 public import Mathlib.MeasureTheory.Integral.Prod
 public import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Weak derivatives paired with signed spatial difference quotients
@@ -120,14 +121,14 @@ private theorem integrable_joint_shifted_mul
     Integrable (Function.uncurry fun t z =>
       u z * velocityGradient φ (spatialShift k (-(t * h)) z) k)
       ((volume.restrict (uIoc (0 : ℝ) 1)).prod
-        (volume.restrict U : Measure (TimeVelocity d))) := by
+        (volume.restrict U : HypoellipticAleksandrov.Parabolic.TVMeasure d)) := by
   let μt : Measure ℝ := volume.restrict (Ioc (0 : ℝ) 1)
-  let μU : Measure (TimeVelocity d) := volume.restrict U
+  let μU : HypoellipticAleksandrov.Parabolic.TVMeasure d := volume.restrict U
   let shear : ℝ × TimeVelocity d → ℝ × TimeVelocity d :=
     fun p => (p.1, spatialShift k (-(p.1 * h)) p.2)
   have hshear : MeasurePreserving shear
-      (μt.prod (volume : Measure (TimeVelocity d)))
-      (μt.prod (volume : Measure (TimeVelocity d))) := by
+      (μt.prod (HypoellipticAleksandrov.Parabolic.TVVolume d))
+      (μt.prod (HypoellipticAleksandrov.Parabolic.TVVolume d)) := by
     refine MeasurePreserving.skew_product (g := fun t z => spatialShift k (-(t * h)) z)
       (MeasurePreserving.id _) ?_ ?_
     · dsimp [spatialShift]
@@ -135,23 +136,23 @@ private theorem integrable_joint_shifted_mul
     · filter_upwards [] with t
       exact (spatialShift_measurePreserving k (-(t * h))).map_eq
   have hgrad : MemLp (fun z : TimeVelocity d => velocityGradient φ z k)
-      (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d)) := by
+      (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d) := by
     exact ((hφ.continuous_fderiv (by simp)).clm_apply continuous_const).memLp_of_hasCompactSupport
       (hφcompact.fderiv_apply ℝ ((0, PDE.basisVec k) : TimeVelocity d))
   have hgradProd : MemLp (fun p : ℝ × TimeVelocity d =>
       velocityGradient φ p.2 k) (2 : ℝ≥0∞)
-      (μt.prod (volume : Measure (TimeVelocity d))) := hgrad.comp_snd μt
+      (μt.prod (HypoellipticAleksandrov.Parabolic.TVVolume d)) := hgrad.comp_snd μt
   have hgradShift : MemLp (fun p : ℝ × TimeVelocity d =>
       velocityGradient φ (spatialShift k (-(p.1 * h)) p.2) k)
-      (2 : ℝ≥0∞) (μt.prod (volume : Measure (TimeVelocity d))) := by
+      (2 : ℝ≥0∞) (μt.prod (HypoellipticAleksandrov.Parabolic.TVVolume d)) := by
     simpa only [Function.comp_def, shear, Function.comp_def] using
       hgradProd.comp_measurePreserving hshear
   have hprodRestrict : μt.prod μU =
-      (μt.prod (volume : Measure (TimeVelocity d))).restrict (univ ×ˢ U) := by
+      (μt.prod (HypoellipticAleksandrov.Parabolic.TVVolume d)).restrict (univ ×ˢ U) := by
     calc
       μt.prod μU = (μt.restrict univ).prod
-          ((volume : Measure (TimeVelocity d)).restrict U) := by simp [μU]
-      _ = (μt.prod (volume : Measure (TimeVelocity d))).restrict (univ ×ˢ U) :=
+          ((HypoellipticAleksandrov.Parabolic.TVVolume d).restrict U) := by simp [μU]
+      _ = (μt.prod (HypoellipticAleksandrov.Parabolic.TVVolume d)).restrict (univ ×ˢ U) :=
         Measure.prod_restrict univ U
   have hgradShiftU : MemLp (fun p : ℝ × TimeVelocity d =>
       velocityGradient φ (spatialShift k (-(p.1 * h)) p.2) k)
@@ -181,11 +182,11 @@ private theorem integrable_joint_shifted_test_mul
     {d : ℕ} (U : Set (TimeVelocity d)) (k : Fin d) (h : ℝ)
     (g φ : TimeVelocity d → ℝ)
     (hg : ParabolicMemLpOn U (2 : ℝ≥0∞) g)
-    (hφmem : MemLp φ (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d))) :
+    (hφmem : MemLp φ (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d)) :
     Integrable (Function.uncurry fun t z =>
       g z * φ (spatialShift k (-(t * h)) z))
       ((volume.restrict (uIoc (0 : ℝ) 1)).prod
-        (volume.restrict U : Measure (TimeVelocity d))) := by
+        (volume.restrict U : HypoellipticAleksandrov.Parabolic.TVMeasure d)) := by
   let μt : Measure ℝ := volume.restrict (Ioc (0 : ℝ) 1)
   let shear : ℝ × TimeVelocity d → ℝ × TimeVelocity d :=
     fun p => (p.1, spatialShift k (-(p.1 * h)) p.2)
@@ -200,10 +201,10 @@ private theorem integrable_joint_shifted_test_mul
       φ (spatialShift k (-(p.1 * h)) p.2)) (2 : ℝ≥0∞) (μt.prod volume) := by
     simpa only [Function.comp_def, shear, Function.comp_def] using
       (hφmem.comp_snd μt).comp_measurePreserving hshear
-  have hprod : μt.prod (volume.restrict U : Measure (TimeVelocity d)) =
+  have hprod : μt.prod (volume.restrict U : HypoellipticAleksandrov.Parabolic.TVMeasure d) =
       (μt.prod volume).restrict (univ ×ˢ U) := by
     calc
-      μt.prod (volume.restrict U : Measure (TimeVelocity d)) =
+      μt.prod (volume.restrict U : HypoellipticAleksandrov.Parabolic.TVMeasure d) =
           (μt.restrict univ).prod (volume.restrict U) := by simp
       _ = (μt.prod volume).restrict (univ ×ˢ U) := Measure.prod_restrict univ U
   have hφshiftU : MemLp (fun p : ℝ × TimeVelocity d =>
@@ -229,10 +230,10 @@ theorem HasWeakVelocityPartialDerivOn.setIntegral_spatialDifferenceQuotient_mul_
     (hφcompact : HasCompactSupport φ)
     (hφsafe : tsupport φ ⊆ spatialSegmentSafeSet U k h) :
     (∫ z in U, spatialDifferenceQuotient k h u z * φ z
-      ∂(volume : Measure (TimeVelocity d))) =
+      ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
       ∫ t in (0 : ℝ)..1,
         ∫ z in U, g z * φ (spatialShift k (-(t * h)) z)
-          ∂(volume : Measure (TimeVelocity d)) := by
+          ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   have hφU : tsupport φ ⊆ U := by
     intro z hz
     have hs := hφsafe hz
@@ -286,28 +287,28 @@ theorem HasWeakVelocityPartialDerivOn.abs_setIntegral_spatialDifferenceQuotient_
     (hφcompact : HasCompactSupport φ)
     (hφsafe : tsupport φ ⊆ spatialSegmentSafeSet U k h) :
     |∫ z in U, spatialDifferenceQuotient k h u z * φ z
-      ∂(volume : Measure (TimeVelocity d))| ≤
+      ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)| ≤
       ‖hg.toLp g‖ *
         ‖(hφ.continuous.memLp_of_hasCompactSupport (p := (2 : ℝ≥0∞)) (μ :=
-          (volume : Measure (TimeVelocity d))) hφcompact).toLp φ‖ := by
+          (HypoellipticAleksandrov.Parabolic.TVVolume d)) hφcompact).toLp φ‖ := by
   rw [hweak.setIntegral_spatialDifferenceQuotient_mul_eq_intervalIntegral
     U k h u g φ hh hu hg hφ hφcompact hφsafe]
   refine (intervalIntegral.abs_integral_le_integral_abs (by norm_num : (0 : ℝ) ≤ 1)).trans ?_
-  let hφmem : MemLp φ (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d)) :=
+  let hφmem : MemLp φ (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d) :=
     hφ.continuous.memLp_of_hasCompactSupport hφcompact
   have hslice : ∀ t : ℝ,
       |∫ z in U, g z * φ (spatialShift k (-(t * h)) z) ∂volume| ≤
         ‖hg.toLp g‖ * ‖hφmem.toLp φ‖ := by
     intro t
     let ψ : TimeVelocity d → ℝ := fun z => φ (spatialShift k (-(t * h)) z)
-    have hψglobal : MemLp ψ (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d)) := by
+    have hψglobal : MemLp ψ (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d) := by
       change MemLp (φ ∘ spatialShift k (-(t * h))) (2 : ℝ≥0∞) volume
       exact hφmem.comp_measurePreserving (spatialShift_measurePreserving k (-(t * h)))
     have hψU : MemLp ψ (2 : ℝ≥0∞)
-        (volume.restrict U : Measure (TimeVelocity d)) :=
+        (volume.restrict U : HypoellipticAleksandrov.Parabolic.TVMeasure d) :=
       hψglobal.mono_measure Measure.restrict_le_self
     have hg' : MemLp g (ENNReal.ofReal (2 : ℝ))
-        (volume.restrict U : Measure (TimeVelocity d)) := by
+        (volume.restrict U : HypoellipticAleksandrov.Parabolic.TVMeasure d) := by
       simpa only [ParabolicMemLpOn, ENNReal.ofReal_ofNat] using
           hg
     calc

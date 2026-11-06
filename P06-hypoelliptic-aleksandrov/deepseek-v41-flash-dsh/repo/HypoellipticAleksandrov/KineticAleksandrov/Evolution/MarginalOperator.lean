@@ -4,6 +4,7 @@ import Mathlib.Tactic.Linarith
 public import HypoellipticAleksandrov.KineticAleksandrov.EvolutionProblem
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TerminalIntegralOperator
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TranslationCovariance
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # The scalar marginal kernels and operators
@@ -33,7 +34,7 @@ open scoped ENNReal ProbabilityTheory
 
 section Outside
 
-variable {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
+variable {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n} {γ : ℝ → PDE.Vec n}
   (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω)
 
 /-- The scalar marginal kernel has mass at most one. -/
@@ -79,7 +80,7 @@ theorem exists_unique_marginalIntegralOperator (σ τ : ℝ) (hστ : σ ≤ τ)
   let T : BoundedBorel (EvolutionPosition Ω γ τ) →ₗ[ℝ] BoundedBorel (EvolutionPosition Ω γ σ) :=
     { toFun := marginalIntegralDatum K hΩ σ τ hστ
       map_add' := fun f g => BoundedBorel.ext fun y => by
-        simp only [marginalIntegralDatum_apply, BoundedBorel.add_apply]
+        simp
         have := isFiniteKernel_parabolicMarginalKernel K hΩ σ τ hστ
         exact integral_add (integrable_boundedBorel f _) (integrable_boundedBorel g _)
       map_smul' := fun c f => BoundedBorel.ext fun y => by
@@ -114,7 +115,7 @@ theorem marginalOperators_one_le (σ τ : ℝ) (hστ : σ ≤ τ) :
     marginalOperators K hΩ σ τ hστ (1 : BoundedBorel (EvolutionPosition Ω γ τ)) ≤
       (1 : BoundedBorel (EvolutionPosition Ω γ σ)) := fun y => by
   rw [marginalOperators_apply]
-  simp only [BoundedBorel.one_apply, integral_const, smul_eq_mul, mul_one]
+  simp
   have hmass := parabolicMarginalKernel_univ_le_one K hΩ σ τ hστ y
   rw [Measure.real]
   exact ENNReal.toReal_le_of_le_ofReal zero_le_one (by simpa using hmass)
@@ -140,7 +141,7 @@ theorem parabolicMarginalAmbientMeasure_eq (q : ParabolicEvolutionQuery Ω γ) :
 
 /-- Constrained joint measurability of the ambient marginal measure: the evaluation on
 a Borel set is measurable in the parabolic query (no hypothesis on `B`). -/
-theorem measurable_parabolicMarginalAmbientMeasure (E : Set (PDE.Vec n)) (hE : MeasurableSet E) :
+theorem measurable_parabolicMarginalAmbientMeasure (E : HypoellipticAleksandrov.VecSet n) (hE : MeasurableSet E) :
     Measurable (fun q : ParabolicEvolutionQuery Ω γ =>
       parabolicMarginalAmbientMeasure K hΩ q E) := by
   have h : (fun q : ParabolicEvolutionQuery Ω γ => parabolicMarginalAmbientMeasure K hΩ q E) =
@@ -157,7 +158,7 @@ section EvolutionData
 variable (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
 variable (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
 variable (hm : 0 < m) (hmLb : m ≤ L_b)
-variable (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
+variable (Ω : HypoellipticAleksandrov.VecSet n) (γ : ℝ → PDE.Vec n)
 variable (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
 variable (hΩ : IsAdmissibleEvolutionDomain Ω)
 variable (hγ : IsContinuousPiecewiseC1 γ)

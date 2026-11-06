@@ -6,6 +6,7 @@ public import PDEFoundation.Measure.LpPower
 public import Mathlib.MeasureTheory.Function.LocallyIntegrable
 public import Mathlib.Tactic.FieldSimp
 public import Mathlib.Tactic.Ring
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Smooth determinant-weighted parabolic ABP estimate
@@ -372,10 +373,10 @@ private theorem source_memLp_on_parabolicInterior {d : ℕ} {T : ℝ}
     {y₀ : PDE.Vec d} {f : TimeVelocity d → ℝ} (hf : Continuous f) :
     MemLp (fun z => max (f z) 0) (parabolicExponent d)
       (volume.restrict (parabolicInterior T y₀)) := by
-  have hmeasure : volume (parabolicInterior T y₀ : Set (TimeVelocity d)) < ∞ :=
+  have hmeasure : volume (parabolicInterior T y₀ : HypoellipticAleksandrov.Parabolic.TVSet d) < ∞ :=
     (measure_mono (parabolicInterior_subset_closedParabolicCylinder T y₀)).trans_lt
       (isCompact_closedParabolicCylinder T y₀).measure_lt_top
-  letI : Fact (volume (parabolicInterior T y₀ : Set (TimeVelocity d)) < ∞) :=
+  letI : Fact (volume (parabolicInterior T y₀ : HypoellipticAleksandrov.Parabolic.TVSet d) < ∞) :=
     ⟨hmeasure⟩
   let g : TimeVelocity d → ℝ := fun z => max (f z) 0
   have hg : Continuous g := hf.max continuous_const

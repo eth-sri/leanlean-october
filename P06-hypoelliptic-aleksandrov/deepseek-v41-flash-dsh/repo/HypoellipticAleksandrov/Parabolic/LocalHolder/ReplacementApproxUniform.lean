@@ -6,6 +6,7 @@ public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonBoun
 import HypoellipticAleksandrov.KineticAleksandrov.Occupation.LocalizedKrylovRegularity
 import Mathlib.Topology.ContinuousMap.Compact
 import Mathlib.Topology.MetricSpace.Cauchy
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Uniformly convergent smooth boundary replacements
 

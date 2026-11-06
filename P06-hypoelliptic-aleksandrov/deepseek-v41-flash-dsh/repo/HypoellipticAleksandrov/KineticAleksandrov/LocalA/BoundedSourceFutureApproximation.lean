@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundedSourceFut
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundedSourceSmoothApproximation
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundedSourceActionConvergence
 import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.DuhamelBoundary
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Actual homogeneous approximations before the forcing starts -/
 
@@ -12,10 +13,10 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set Filter Evolution
 open scoped Topology
-variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d}
 
 /-- The literal source domain strictly after a chosen separating time. -/
-def boundedSourceFutureSet (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE.Vec d) (s T : ℝ) :
+def boundedSourceFutureSet (Ω : HypoellipticAleksandrov.VecSet d) (γ : ℝ → PDE.Vec d) (s T : ℝ) :
     Set (ℝ × EvolutionAmbientState d) :=
   {q | s < q.1 ∧ q ∈ boundedSourcePast Ω γ T}
 

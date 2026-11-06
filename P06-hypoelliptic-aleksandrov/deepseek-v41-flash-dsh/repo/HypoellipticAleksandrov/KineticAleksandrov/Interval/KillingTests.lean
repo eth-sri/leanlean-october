@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Interval.KillingCompari
 public import HypoellipticAleksandrov.KineticAleksandrov.Interval.KillingJets
 import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.UniquenessMeasure
 import Mathlib.Topology.Order.Compact
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Regularized endpoint comparison and its terminal limit
 

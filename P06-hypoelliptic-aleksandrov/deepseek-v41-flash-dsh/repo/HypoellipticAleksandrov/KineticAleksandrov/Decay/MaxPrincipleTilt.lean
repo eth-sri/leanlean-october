@@ -15,14 +15,15 @@ requires no mixed or second time derivative.
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
+section
+variable {d : ℕ} (u : KineticPoint d → ℝ) (ε T : ℝ)
 
 /-- Subtract a positive affine function of remaining time. -/
-def maximumTerminalTilt {d : ℕ} (u : KineticPoint d → ℝ) (ε T : ℝ) :
+def maximumTerminalTilt  :
     KineticPoint d → ℝ := fun p => u p - ε * (T - p.time)
 
 /-- The diffused Hessian is unchanged by the terminal perturbation. -/
-theorem diffusedHessian_maximumTerminalTilt {d : ℕ} (u : KineticPoint d → ℝ)
-    (ε T : ℝ) (p : KineticPoint d) :
+theorem diffusedHessian_maximumTerminalTilt  (p : KineticPoint d) :
     diffusedHessian (maximumTerminalTilt u ε T) p = diffusedHessian u p := by
   have heq : (fun y : PDE.Vec d => kineticPositionGradient
       (maximumTerminalTilt u ε T) ⟨p.time, y, p.velocity⟩) =
@@ -36,13 +37,13 @@ theorem diffusedHessian_maximumTerminalTilt {d : ℕ} (u : KineticPoint d → �
   rw [heq]
 
 /-- The transported gradient is unchanged by the terminal perturbation. -/
-theorem kineticVelocityGradient_maximumTerminalTilt {d : ℕ} (u : KineticPoint d → ℝ)
-    (ε T : ℝ) (p : KineticPoint d) :
+theorem kineticVelocityGradient_maximumTerminalTilt  (p : KineticPoint d) :
     kineticVelocityGradient (maximumTerminalTilt u ε T) p = kineticVelocityGradient u p := by
   ext i
   exact congrArg (fun L : PDE.Vec d →L[ℝ] ℝ => L (PDE.basisVec i))
     (fderiv_sub_const (𝕜 := ℝ) (f := fun z => u ⟨p.time, p.position, z⟩)
       (x := p.velocity) (ε * (T - p.time)))
+end
 
 /-- The first time derivative gains ε under the terminal perturbation. -/
 theorem kineticTimeDerivative_maximumTerminalTilt {d : ℕ} {u : KineticPoint d → ℝ}

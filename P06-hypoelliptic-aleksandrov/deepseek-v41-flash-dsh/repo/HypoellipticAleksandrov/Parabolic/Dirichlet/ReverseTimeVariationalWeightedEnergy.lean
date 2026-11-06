@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeBoundedFormEnergy
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeVariationalTimewiseOperator
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Weighted reverse-time variational energy identity
@@ -23,7 +24,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 weighted energy identity with its source-minus-form residual. -/
 theorem
     IsReverseTimeVariationalEnergySolution.integral_value_norm_sq_mul_reverseTimeScalarTest_deriv_eq
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)

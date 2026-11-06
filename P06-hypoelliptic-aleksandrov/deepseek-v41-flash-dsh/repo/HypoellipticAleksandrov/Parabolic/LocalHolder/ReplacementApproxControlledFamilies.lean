@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementApproxWea
 public import HypoellipticAleksandrov.Parabolic.ParabolicW12WeakDerivativeFamilyEquation
 public import HypoellipticAleksandrov.Parabolic.ParabolicWeakDerivativeFamilyL2NormTruncate
 import Mathlib.Tactic.Linarith
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Common controlled higher families for homogeneous jet sequences
 
@@ -20,7 +21,7 @@ open scoped BigOperators MatrixOrder Matrix.Norms.Elementwise
 
 /-- Uniform homogeneous seed jets give a common sequence of controlled higher families. -/
 theorem exists_controlled_homogeneous_higher_families {d : ℕ}
-    {Ω O₀ O : Set (PDE.Vec d)}
+    {Ω O₀ O : HypoellipticAleksandrov.VecSet d}
     (r₀ q₀ s₀ s₁ q₁ r₁ : ℝ)
     (hr₀q₀ : r₀ < q₀) (hq₀s₀ : q₀ < s₀) (hs₀s₁ : s₀ < s₁)
     (hs₁q₁ : s₁ < q₁) (hq₁r₁ : q₁ < r₁)

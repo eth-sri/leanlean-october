@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyUniformCauchy
 public import HypoellipticAleksandrov.Parabolic.ParabolicMollifierLimitIdentification
 public import Mathlib.Topology.UniformSpace.UniformApproximation
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Continuous uniform limits of parabolic mollifications
@@ -30,7 +31,7 @@ theorem exists_continuousOn_tendstoUniformlyOn_ae_eq_toFun_parabolicConvolution
     {d : Nat} (hd : 1 <= d)
     (g : ParabolicW12Function d Set.univ (parabolicExponent d))
     (hg : HasCompactSupport g.toFun)
-    (K : Set (TimeVelocity d)) (hK : IsCompact K) :
+    (K : HypoellipticAleksandrov.Parabolic.TVSet d) (hK : IsCompact K) :
     ∃ q : TimeVelocity d → Real,
       ContinuousOn q K ∧
       TendstoUniformlyOn

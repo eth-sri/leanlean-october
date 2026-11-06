@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.ScalarClassical
 public import HypoellipticAleksandrov.Parabolic.TimeVelocityMultiIndexLocalCalculus
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Ambient `C²` regularity implies scalar parabolic `C¹˒²` regularity
@@ -141,12 +142,14 @@ private theorem coordinateIteratedFDeriv_contDiff_local
     (m := m) (i := alpha.coordinateList.length) (by simp)
   exact (contDiff_const (c := ContinuousMultilinearMap.apply ℝ _ _
     (fun i ↦ timeVelocityBasis (alpha.coordinateList.get i)))).clm_apply hi
+section
+variable {d : ℕ} {v : TimeVelocity d → ℝ}
 
 /-- An ambient `C²` function has the scalar anisotropic `C¹˒²` regularity
 required on every carrier. -/
 theorem isScalarC12On_of_contDiff_two
-    {d : ℕ} {v : TimeVelocity d → ℝ}
-    (hv : ContDiff ℝ 2 v) (D : Set (TimeVelocity d)) :
+    
+    (hv : ContDiff ℝ 2 v) (D : HypoellipticAleksandrov.Parabolic.TVSet d) :
     IsScalarC12On v D := by
   refine ⟨hv.continuous.continuousOn, ?_, ?_, ?_, ?_, ?_⟩
   · intro z hz
@@ -181,7 +184,7 @@ theorem isScalarC12On_of_contDiff_two
 
 /-- The scalar time derivative is the canonical time-coordinate derivative. -/
 theorem scalarTimeDerivative_eq_coordinateIteratedFDeriv_of_contDiff_two
-    {d : ℕ} {v : TimeVelocity d → ℝ} (hv : ContDiff ℝ 2 v)
+     (hv : ContDiff ℝ 2 v)
     (z : TimeVelocity d) :
     scalarTimeDerivative v z =
       TimeVelocityMultiIndex.coordinateIteratedFDeriv
@@ -191,7 +194,7 @@ theorem scalarTimeDerivative_eq_coordinateIteratedFDeriv_of_contDiff_two
 /-- Each scalar spatial-gradient entry is its canonical velocity-coordinate
 derivative. -/
 theorem scalarSpatialGradient_apply_eq_coordinateIteratedFDeriv_of_contDiff_two
-    {d : ℕ} {v : TimeVelocity d → ℝ} (hv : ContDiff ℝ 2 v)
+     (hv : ContDiff ℝ 2 v)
     (z : TimeVelocity d) (j : Fin d) :
     scalarSpatialGradient v z j =
       TimeVelocityMultiIndex.coordinateIteratedFDeriv
@@ -200,13 +203,14 @@ theorem scalarSpatialGradient_apply_eq_coordinateIteratedFDeriv_of_contDiff_two
 
 /-- The ordered Hessian entry `(i,j)` is `D_i(D_j v)`. -/
 theorem scalarSpatialHessian_apply_eq_coordinateIteratedFDeriv_of_contDiff_two
-    {d : ℕ} {v : TimeVelocity d → ℝ} (hv : ContDiff ℝ 2 v)
+     (hv : ContDiff ℝ 2 v)
     (z : TimeVelocity d) (i j : Fin d) :
     scalarSpatialHessian v z i j =
       TimeVelocityMultiIndex.coordinateIteratedFDeriv
         (Pi.single (velocityCoord j) 1 +
           Pi.single (velocityCoord i) 1) v z :=
   scalarSpatialHessian_eq_coordinate_local v z i j hv.contDiffAt
+end
 
 end
 

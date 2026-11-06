@@ -19,29 +19,31 @@ noncomputable section
 open scoped MatrixOrder Matrix.Norms.L2Operator
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
+section
+variable {d : ℕ} (M : PDE.Mat d)
 
 /-- Positive spectral part of a real matrix. -/
-def positiveSpectralPart {d : ℕ} (M : PDE.Mat d) : PDE.Mat d := cfc (max (0 : ℝ)) M
+def positiveSpectralPart  : PDE.Mat d := cfc (max (0 : ℝ)) M
 
 /-- Sum of the positive eigenvalues. -/
-def positiveSpectralMass {d : ℕ} (M : PDE.Mat d) : ℝ := (positiveSpectralPart M).trace
+def positiveSpectralMass  : ℝ := (positiveSpectralPart M).trace
 
 /-- Sum of the absolute values of the negative eigenvalues. -/
-def negativeSpectralMass {d : ℕ} (M : PDE.Mat d) : ℝ := positiveSpectralMass (-M)
+def negativeSpectralMass  : ℝ := positiveSpectralMass (-M)
 
 /-- The source's canonical weighted spectral matrix. -/
-def spectralTraceMatrix {d : ℕ} (M : PDE.Mat d) (b cminus : ℝ) : PDE.Mat d :=
+def spectralTraceMatrix  (b cminus : ℝ) : PDE.Mat d :=
   ((b + cminus * negativeSpectralMass M) / positiveSpectralMass M) •
       positiveSpectralProjection M +
     cminus • negativeSpectralProjection M + zeroSpectralProjection M
 
-private theorem continuousOn_matrix_spectrum {d : ℕ} (M : PDE.Mat d) (f : ℝ → ℝ) :
+private theorem continuousOn_matrix_spectrum  (f : ℝ → ℝ) :
     ContinuousOn f (spectrum ℝ M) := by
   rw [continuousOn_iff_continuous_domRestrict]
   fun_prop
 
 /-- The positive projection times the original matrix is its positive part. -/
-theorem positiveSpectralProjection_mul {d : ℕ} (M : PDE.Mat d) (hM : M.IsHermitian) :
+theorem positiveSpectralProjection_mul  (hM : M.IsHermitian) :
     positiveSpectralProjection M * M = positiveSpectralPart M := by
   unfold positiveSpectralProjection positiveSpectralPart
   conv_lhs => rhs; rw [← cfc_id (p := IsSelfAdjoint) ℝ M hM.isSelfAdjoint]
@@ -54,16 +56,14 @@ theorem positiveSpectralProjection_mul {d : ℕ} (M : PDE.Mat d) (hM : M.IsHermi
   · simp [positiveSpectralIndicator, ht, max_eq_left (le_of_not_gt ht)]
 
 /-- The positive projection has contraction equal to the positive spectral mass. -/
-theorem contraction_positiveSpectralProjection {d : ℕ}
-    (M : PDE.Mat d) (hM : M.IsHermitian) :
+theorem contraction_positiveSpectralProjection  (hM : M.IsHermitian) :
     matrixContraction (positiveSpectralProjection M) M = positiveSpectralMass M := by
   rw [matrixContraction_eq_trace_mul_of_isSymm _ _ hM.isSymm,
     positiveSpectralProjection_mul M hM]
   rfl
 
 /-- The negative projection has contraction equal to minus the negative spectral mass. -/
-theorem contraction_negativeSpectralProjection {d : ℕ}
-    (M : PDE.Mat d) (hM : M.IsHermitian) :
+theorem contraction_negativeSpectralProjection  (hM : M.IsHermitian) :
     matrixContraction (negativeSpectralProjection M) M = -negativeSpectralMass M := by
   have hh := contraction_positiveSpectralProjection (-M) hM.neg
   change matrixContraction (positiveSpectralProjection (-M)) M =
@@ -72,7 +72,7 @@ theorem contraction_negativeSpectralProjection {d : ℕ}
   linarith
 
 /-- The difference of the spectral positive parts is the original Hermitian matrix. -/
-theorem spectralParts_sub {d : ℕ} (M : PDE.Mat d) (hM : M.IsHermitian) :
+theorem spectralParts_sub  (hM : M.IsHermitian) :
     positiveSpectralPart M - positiveSpectralPart (-M) = M := by
   unfold positiveSpectralPart
   rw [← cfc_comp_neg (p := IsSelfAdjoint) (max (0 : ℝ)) M
@@ -91,13 +91,13 @@ theorem spectralParts_sub {d : ℕ} (M : PDE.Mat d) (hM : M.IsHermitian) :
     ring
 
 /-- The matrix trace is the positive spectral mass minus the negative spectral mass. -/
-theorem trace_eq_spectralMass_sub {d : ℕ} (M : PDE.Mat d) (hM : M.IsHermitian) :
+theorem trace_eq_spectralMass_sub  (hM : M.IsHermitian) :
     M.trace = positiveSpectralMass M - negativeSpectralMass M := by
   have hh := congrArg Matrix.trace (spectralParts_sub M hM)
   simpa only [Matrix.trace_sub, positiveSpectralMass, negativeSpectralMass] using hh.symm
 
 /-- The zero projection has zero contraction with the original matrix. -/
-theorem contraction_zeroSpectralProjection {d : ℕ} (M : PDE.Mat d)
+theorem contraction_zeroSpectralProjection 
     (hM : M.IsHermitian) : matrixContraction (zeroSpectralProjection M) M = 0 := by
   unfold zeroSpectralProjection
   have hsub (A B : PDE.Mat d) : matrixContraction (A - B) M =
@@ -111,7 +111,7 @@ theorem contraction_zeroSpectralProjection {d : ℕ} (M : PDE.Mat d)
   ring
 
 /-- The literal source matrix solves the exact trace equation when the positive mass is nonzero. -/
-theorem spectral_trace_solver {d : ℕ} (M : PDE.Mat d) (hM : M.IsHermitian)
+theorem spectral_trace_solver  (hM : M.IsHermitian)
     (b cminus : ℝ) (hm : positiveSpectralMass M ≠ 0) :
     matrixContraction (spectralTraceMatrix M b cminus) M = b := by
   unfold spectralTraceMatrix
@@ -121,6 +121,7 @@ theorem spectral_trace_solver {d : ℕ} (M : PDE.Mat d) (hM : M.IsHermitian)
     contraction_negativeSpectralProjection M hM, contraction_zeroSpectralProjection M hM]
   field_simp
   ring
+end
 
 /-- Scalar eigenvalue of the trace solver in each of the three spectral regions. -/
 def weightedSpectralSelector (w cminus t : ℝ) : ℝ :=

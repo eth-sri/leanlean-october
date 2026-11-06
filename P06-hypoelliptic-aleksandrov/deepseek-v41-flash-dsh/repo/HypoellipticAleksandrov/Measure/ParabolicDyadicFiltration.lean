@@ -5,6 +5,7 @@ public import Mathlib.Data.Set.Card
 public import Mathlib.Probability.Process.PartitionFiltration
 public import Mathlib.Tactic.FinCases
 public import Mathlib.Tactic.NormNum
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Finite parabolic dyadic filtration
@@ -60,7 +61,7 @@ def parabolicDyadicChildBit {d : ℕ} (child : ParabolicDyadicChild d)
 
 /-- The ambient union of all next-generation cells whose final child has the
 scheduled binary value one. -/
-noncomputable def parabolicDyadicGeneratorAmbient (d k : ℕ) : Set (TimeVelocity d) := by
+noncomputable def parabolicDyadicGeneratorAmbient (d k : ℕ) : HypoellipticAleksandrov.Parabolic.TVSet d := by
   classical
   exact ⋃ index : ParabolicDyadicIndex d (parabolicDyadicGeneratorBlock d k + 1),
     if parabolicDyadicChildBit

@@ -1,6 +1,8 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.WeakPrincipalCoercivityCore
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Weak principal coercivity
@@ -24,7 +26,7 @@ obtained from one common localized scalar mollification. -/
 theorem weakPrincipalIntegrationByParts_coercive
     {d : ℕ} (lam Lam M K : ℝ)
     (s₀ s₁ : ℝ)
-    (O : Set (PDE.Vec d)) (hO : IsOpen O)
+    (O : HypoellipticAleksandrov.VecSet d) (hO : IsOpen O)
     (A : TimeVelocity d → PDE.Mat d)
     (q : TimeVelocity d → ℝ)
     (QG : TimeVelocity d → PDE.Vec d)

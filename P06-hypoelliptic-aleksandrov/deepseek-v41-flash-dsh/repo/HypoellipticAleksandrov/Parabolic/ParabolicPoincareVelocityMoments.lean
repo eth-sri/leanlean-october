@@ -53,14 +53,14 @@ private theorem unit_interval_integral_id :
     ∫ x in Set.Ioo (-1 : ℝ) 1, x = 0 := by
   rw [← integral_Ioc_eq_integral_Ioo,
     ← intervalIntegral.integral_of_le (by norm_num : (-1 : ℝ) ≤ 1)]
-  norm_num [integral_id]
+  norm_num
 
 private theorem unit_interval_integral_sq :
     ∫ x in Set.Ioo (-1 : ℝ) 1, x * x = 2 / 3 := by
   rw [show (fun x : ℝ => x * x) = fun x => x ^ 2 by ext x; ring,
     ← integral_Ioc_eq_integral_Ioo,
     ← intervalIntegral.integral_of_le (by norm_num : (-1 : ℝ) ≤ 1)]
-  norm_num [integral_pow]
+  norm_num
 
 private theorem unit_velocity_cube_integral_eval {d : ℕ} (i : Fin d) :
     ∫ v in velocityCube (0 : PDE.Vec d) 1, v i = 0 := by

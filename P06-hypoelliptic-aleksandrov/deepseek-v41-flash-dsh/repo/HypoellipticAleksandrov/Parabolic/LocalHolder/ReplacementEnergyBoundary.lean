@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementEnergyBall
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonTracesBall
 import HypoellipticAleksandrov.KineticAleksandrov.Occupation.LocalizedKrylovRegularity
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Classical signed corrections continuous up to the ball boundary
 

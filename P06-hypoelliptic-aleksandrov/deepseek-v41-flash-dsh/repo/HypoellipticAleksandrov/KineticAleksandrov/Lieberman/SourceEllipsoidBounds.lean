@@ -8,6 +8,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Lieberman.SourceTimeDri
 public import HypoellipticAleksandrov.KineticAleksandrov.Lieberman.StationaryComparisonDrift
 import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonBarrierPointwise
 public import HypoellipticAleksandrov.Parabolic.ScalarDirichletGeometry
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Ellipsoid source bounds assembled from exact upstream theorem surfaces -/
 
@@ -30,7 +32,7 @@ theorem exists_signed_source_ellipsoidInterior_with_bounds_of_upstream
         frontier (openEllipsoid Q) = {x | PDE.vecDot x (Q *ᵥ x) = 1} ∧
         HasUniformNondegenerateExteriorCone (openEllipsoid Q))
     (hDrift :
-      ∀ {d : ℕ} {Ω : Set (PDE.Vec d)}, Bornology.IsBounded Ω →
+      ∀ {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}, Bornology.IsBounded Ω →
         ∀ (a T : ℝ) (b : ℝ → PDE.Vec d → PDE.Vec d),
         Continuous (fun z : TimeVelocity d => b z.1 z.2) →
         ∃ B : ℝ, 0 ≤ B ∧ ∀ z ∈ scalarParabolicClosedCylinder a T Ω,
@@ -53,7 +55,7 @@ theorem exists_signed_source_ellipsoidInterior_with_bounds_of_upstream
               (fun p => q.toH1Function.toFun p.2) z ≤ -M)
     (hInterior :
       ∀ {d : ℕ} (_hd : 0 < d)
-          {Ω : Set (PDE.Vec d)} (_hΩ : IsOpen Ω) (_hΩb : Bornology.IsBounded Ω)
+          {Ω : HypoellipticAleksandrov.VecSet d} (_hΩ : IsOpen Ω) (_hΩb : Bornology.IsBounded Ω)
           (a T : ℝ) (_haT : a < T) (lam Lam : ℝ) (_hlam : 0 < lam) (_hLam : lam ≤ Lam)
           (A : CoefficientField d)
           (b : ℝ → PDE.Vec d → PDE.Vec d)
@@ -77,7 +79,7 @@ theorem exists_signed_source_ellipsoidInterior_with_bounds_of_upstream
                   PDE.vecDot (b z.1 z.2) (scalarSpatialGradient w z) = F z)
     (hTime :
       ∀ {d : ℕ}
-          {Ω : Set (PDE.Vec d)} (_hΩ : IsOpen Ω) (_hΩb : Bornology.IsBounded Ω)
+          {Ω : HypoellipticAleksandrov.VecSet d} (_hΩ : IsOpen Ω) (_hΩb : Bornology.IsBounded Ω)
           (a T lam : ℝ) (_haT : a < T) (_hlam : 0 < lam)
           (A : CoefficientField d)
           (b : ℝ → PDE.Vec d → PDE.Vec d)
@@ -99,7 +101,7 @@ theorem exists_signed_source_ellipsoidInterior_with_bounds_of_upstream
          ∀ z ∈ scalarParabolicOpenCylinder a T Ω, |w z| ≤ M * (T - z.1))
     (hCompare :
       ∀ {d : ℕ}
-          {Ω : Set (PDE.Vec d)} (_hΩ : IsOpen Ω) (_hΩb : Bornology.IsBounded Ω)
+          {Ω : HypoellipticAleksandrov.VecSet d} (_hΩ : IsOpen Ω) (_hΩb : Bornology.IsBounded Ω)
           (a T : ℝ) (_haT : a < T) (lam : ℝ) (_hlam : 0 < lam)
           (A : CoefficientField d)
           (b : ℝ → PDE.Vec d → PDE.Vec d)
@@ -189,7 +191,7 @@ theorem exists_signed_source_ellipsoidInterior_with_bounds_of_geometry_barrier
         frontier (openEllipsoid Q) = {x | PDE.vecDot x (Q *ᵥ x) = 1} ∧
         HasUniformNondegenerateExteriorCone (openEllipsoid Q))
     (hDrift :
-      ∀ {d : ℕ} {Ω : Set (PDE.Vec d)}, Bornology.IsBounded Ω →
+      ∀ {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}, Bornology.IsBounded Ω →
         ∀ (a T : ℝ) (b : ℝ → PDE.Vec d → PDE.Vec d),
         Continuous (fun z : TimeVelocity d => b z.1 z.2) →
         ∃ B : ℝ, 0 ≤ B ∧ ∀ z ∈ scalarParabolicClosedCylinder a T Ω,

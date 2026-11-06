@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementSmoothResidual
 public import HypoellipticAleksandrov.Parabolic.ScalarDirichletData
 import Mathlib.Tactic.Ring
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Smooth terminal lifting for the ellipsoidal Dirichlet construction -/
 
@@ -13,14 +15,14 @@ open HypoellipticAleksandrov.Parabolic HypoellipticAleksandrov.Parabolic.LocalHo
 open scoped Topology Matrix
 
 private theorem scalarTimeDerivative_add {n : ℕ} {u v : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
+    {D : HypoellipticAleksandrov.Parabolic.TVSet n} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
     {z : TimeVelocity n} (hz : z ∈ D) :
     scalarTimeDerivative (fun q => u q + v q) z =
       scalarTimeDerivative u z + scalarTimeDerivative v z := by
   exact ((hu.timeSlice_hasDerivAt hz).add (hv.timeSlice_hasDerivAt hz)).deriv
 
 private theorem scalarSpatialGradient_add {n : ℕ} {u v : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
+    {D : HypoellipticAleksandrov.Parabolic.TVSet n} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
     {z : TimeVelocity n} (hz : z ∈ D) :
     scalarSpatialGradient (fun q => u q + v q) z =
       scalarSpatialGradient u z + scalarSpatialGradient v z := by
@@ -54,7 +56,7 @@ private theorem scalarSpatialHessian_apply_eq_sndFDeriv {n : ℕ}
   simpa [ContinuousLinearMap.flip_apply] using hjApply
 
 private theorem scalarSpatialHessian_add {n : ℕ} {u v : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
+    {D : HypoellipticAleksandrov.Parabolic.TVSet n} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
     {z : TimeVelocity n} (hz : z ∈ D) :
     scalarSpatialHessian (fun q => u q + v q) z =
       scalarSpatialHessian u z + scalarSpatialHessian v z := by
@@ -92,7 +94,7 @@ private theorem scalarSpatialHessian_add {n : ℕ} {u v : TimeVelocity n → ℝ
   rfl
 
 private theorem isScalarC12On_add {n : ℕ} {u v : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D) :
+    {D : HypoellipticAleksandrov.Parabolic.TVSet n} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D) :
     IsScalarC12On (fun q => u q + v q) D := by
   refine ⟨hu.continuousOn.add hv.continuousOn, ?_, ?_, ?_, ?_, ?_⟩
   · intro z hz
@@ -115,7 +117,7 @@ private theorem isScalarC12On_add {n : ℕ} {u v : TimeVelocity n → ℝ}
 private theorem scalarParabolicZeroOrderOperator_add {n : ℕ}
     (a : CoefficientField n) (b : ℝ → PDE.Vec n → PDE.Vec n)
     (c : ℝ → PDE.Vec n → ℝ) {u v : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
+    {D : HypoellipticAleksandrov.Parabolic.TVSet n} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
     {z : TimeVelocity n} (hz : z ∈ D) :
     scalarParabolicZeroOrderOperator a b c (fun q => u q + v q) z =
       scalarParabolicZeroOrderOperator a b c u z +
@@ -168,7 +170,7 @@ theorem contDiff_terminal_lift_source {d : ℕ}
     using hres.neg
 
 /-- Adding the smooth terminal lift cancels the correction's negative source. -/
-theorem terminal_lift_assembly {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+theorem terminal_lift_assembly {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     (a T : ℝ) (A : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (φ : PDE.Vec d → ℝ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (hs : tsupport φ ⊆ Ω)
     (W : TimeVelocity d → ℝ)

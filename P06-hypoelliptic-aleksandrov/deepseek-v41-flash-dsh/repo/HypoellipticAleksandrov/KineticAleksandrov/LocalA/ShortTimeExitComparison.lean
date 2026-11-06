@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundedSourceCan
 public import HypoellipticAleksandrov.KineticAleksandrov.Decay.MinorantScaling
 public import HypoellipticAleksandrov.KineticAleksandrov.Decay.MaxPrinciple
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonCalculus
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Scalar terminal comparison on a velocity ball
 

@@ -22,13 +22,12 @@ theorem enlarged_closedEntrance_subset_active (c : Clock) :
   rw [Clock.entrance, closure_Ioo (by linarith [c.positive])] at hv
   change c.vbar - 3 * c.r / 4 < v ∧ v < c.vbar + 3 * c.r / 4
   constructor <;> linarith [hv.1, hv.2, c.positive]
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (P : Point)
 
 /-- Every canonical entrance lies between the initial time and the horizon. -/
 theorem enlargedVisitEntrance_ae_support
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
-    (P : Point) (hs : s ≤ P.time) (hT : P.time < T) (n : ℕ) :
+     (hs : s ≤ P.time) (hT : P.time < T) (n : ℕ) :
     ∀ᵐ p ∂enlargedVisitEntrance hH hLE hlam hLam A c J s T P n,
       s ≤ p.time ∧ p.time < T ∧ p.velocity 0 ∈ closure c.entrance := by
   cases n with
@@ -52,10 +51,7 @@ theorem enlargedVisitEntrance_ae_support
 
 /-- The canonical counting measure has the same time and entrance support as its pieces. -/
 theorem enlargedVisitStarts_ae_support
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
-    (P : Point) (hs : s ≤ P.time) (hT : P.time < T) :
+     (hs : s ≤ P.time) (hT : P.time < T) :
     ∀ᵐ p ∂enlargedVisitStarts hH hLE hlam hLam A c J s T P,
       s ≤ p.time ∧ p.time < T ∧ p.velocity 0 ∈ closure c.entrance :=
   Measure.ae_sum_iff.mpr fun n =>
@@ -63,10 +59,7 @@ theorem enlargedVisitStarts_ae_support
 
 /-- The enlarged active-pole carrier includes almost every actual entrance. -/
 theorem enlargedVisitEntrance_ae_activePole
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
-    (P : Point) (hs : s ≤ P.time) (hT : P.time < T)
+     (hs : s ≤ P.time) (hT : P.time < T)
     (hJ : closure c.active ⊆ J.carrier) (n : ℕ) :
     ∀ᵐ p ∂enlargedVisitEntrance hH hLE hlam hLam A c J s T P n,
       p ∈ enlargedVisitPoleSet (visitActiveUnion c J) T := by
@@ -76,5 +69,6 @@ theorem enlargedVisitEntrance_ae_activePole
   rw [visitActiveUnion_carrier]
   have hv := enlarged_closedEntrance_subset_active c hp.2.2
   exact ⟨hv, hJ (subset_closure hv)⟩
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

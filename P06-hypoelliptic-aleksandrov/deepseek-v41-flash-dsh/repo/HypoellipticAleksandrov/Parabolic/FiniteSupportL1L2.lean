@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.TimeVelocityMultiIndexLocalCalculus
 public import Mathlib.MeasureTheory.Measure.Haar.NormedSpace
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Finite-support `L¹`--`L²` conversion
@@ -21,19 +22,19 @@ namespace HypoellipticAleksandrov.Parabolic
 the exact Cauchy--Schwarz bound determined by that support volume. -/
 theorem integral_abs_le_sqrt_volume_mul_eLpNorm
     {d : ℕ}
-    (K : Set (TimeVelocity d))
+    (K : HypoellipticAleksandrov.Parabolic.TVSet d)
     (hKmeas : MeasurableSet K)
-    (hKfinite : (volume : Measure (TimeVelocity d)) K < ∞)
+    (hKfinite : (HypoellipticAleksandrov.Parabolic.TVVolume d) K < ∞)
     (g : TimeVelocity d → ℝ)
     (hgmem : MemLp g (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d)))
+      (HypoellipticAleksandrov.Parabolic.TVVolume d))
     (hgsupp : Function.support g ⊆ K) :
     (∫ x : TimeVelocity d, |g x|
-      ∂(volume : Measure (TimeVelocity d))) ≤
+      ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) ≤
       Real.sqrt (volume.real K) *
         ENNReal.toReal (eLpNorm g (2 : ℝ≥0∞)
-          (volume : Measure (TimeVelocity d))) := by
-  let μ : Measure (TimeVelocity d) := volume
+          (HypoellipticAleksandrov.Parabolic.TVVolume d)) := by
+  let μ : HypoellipticAleksandrov.Parabolic.TVMeasure d := volume
   have hKind : K.indicator g = g := by
     funext x
     by_cases hx : x ∈ K
@@ -71,9 +72,9 @@ theorem integral_abs_le_sqrt_volume_mul_eLpNorm
         ENNReal.toReal (eLpNorm g (2 : ℝ≥0∞) μ) := by
     rw [hKind]
     change
-      (∫ x, ‖g x‖ ^ (2 : ℝ) ∂(volume : Measure (TimeVelocity d))) ^ (1 / (2 : ℝ)) =
+      (∫ x, ‖g x‖ ^ (2 : ℝ) ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) ^ (1 / (2 : ℝ)) =
         ENNReal.toReal (eLpNorm g (2 : ℝ≥0∞)
-          (volume : Measure (TimeVelocity d)))
+          (HypoellipticAleksandrov.Parabolic.TVVolume d))
     have he := hgmem.eLpNorm_eq_integral_rpow_norm
       (by norm_num : (2 : ℝ≥0∞) ≠ 0) (by norm_num : (2 : ℝ≥0∞) ≠ ∞)
     rw [he, ENNReal.toReal_ofReal]
@@ -94,7 +95,7 @@ theorem integral_abs_le_sqrt_volume_mul_eLpNorm
         _ = μ.real K := integral_indicator_one hKmeas
     rw [honeIntegral, Real.sqrt_eq_rpow]
   calc
-    (∫ x : TimeVelocity d, |g x| ∂(volume : Measure (TimeVelocity d))) =
+    (∫ x : TimeVelocity d, |g x| ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
         ∫ x, ‖K.indicator g x‖ *
           ‖K.indicator (fun _ : TimeVelocity d => (1 : ℝ)) x‖ ∂μ := by
             apply integral_congr_ae

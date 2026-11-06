@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.DuhamelEquation
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.DuhamelGreen
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.DuhamelBarrier
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # The kinetic Duhamel lemma for a supplied terminal evolution -/
 
@@ -12,7 +13,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set
 open Evolution
 open scoped ENNReal
-variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d}
 
 /-- Absolute-time source integration against the canonical, uniquely characterized Green measure. -/
 theorem duhamelPotential_eq_greenMeasure (K : MovingFiberKernel Ω γ)

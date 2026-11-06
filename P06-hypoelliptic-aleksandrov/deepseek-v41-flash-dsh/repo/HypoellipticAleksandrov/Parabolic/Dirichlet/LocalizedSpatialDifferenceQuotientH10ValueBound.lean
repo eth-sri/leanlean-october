@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.LocalizedSpatialDifferenceQuotientH10
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.LocalizedSpatialDifferenceQuotientSmoothValueBound
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Uniform value bound for localized spatial quotients
@@ -21,7 +22,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 /-- The value of the localized spatial quotient is uniformly controlled by
 the weak spatial gradient of its input. -/
 theorem norm_valueCLM_localizedSpatialDifferenceQuotientH10CLM_apply_le_gradient
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω)
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ)

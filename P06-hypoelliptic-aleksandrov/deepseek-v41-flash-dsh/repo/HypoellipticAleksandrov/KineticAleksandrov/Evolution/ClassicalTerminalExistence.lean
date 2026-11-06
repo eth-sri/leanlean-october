@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ClassicalTerminal
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TerminalPointValue
 import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionLimit
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Existence of the classical terminal solution and its downstream premise
 
@@ -22,7 +23,7 @@ cylinder, relative only to the Lieberman ellipsoid and Hörmander inputs. -/
 theorem exists_classical_terminalSolution
     (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
     (hlam : 0 < lam) (hlamLam : lam ≤ Lam) (hm : 0 < m) (hmLb : m ≤ L_b)
-    (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
+    (Ω : HypoellipticAleksandrov.VecSet n) (γ : ℝ → PDE.Vec n)
     (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
     (hΩ : IsAdmissibleEvolutionDomain Ω) (hγ : IsContinuousPiecewiseC1 γ)
     (hB_smooth : IsSmoothFullKineticCoefficient B)
@@ -57,7 +58,7 @@ by the existence theorem above, with only the same two hypotheses. -/
 theorem classicalTerminalExistence_holds
     (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
     (hlam : 0 < lam) (hlamLam : lam ≤ Lam) (hm : 0 < m) (hmLb : m ≤ L_b)
-    (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
+    (Ω : HypoellipticAleksandrov.VecSet n) (γ : ℝ → PDE.Vec n)
     (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
     (hΩ : IsAdmissibleEvolutionDomain Ω) (hγ : IsContinuousPiecewiseC1 γ)
     (hB_smooth : IsSmoothFullKineticCoefficient B)

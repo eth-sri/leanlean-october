@@ -35,12 +35,12 @@ def enlargedVisitPole (H : FiniteIntervalUnion) (T : ℝ)
 /-- The physical pole inclusion is measurable. -/
 theorem measurable_enlargedVisitPole (H : FiniteIntervalUnion) (T : ℝ) :
     Measurable (enlargedVisitPole H T) := measurable_subtype_coe.subtype_mk
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
 
 /-- Canonical exit kernel extended by zero only outside its valid pole carrier. -/
 def enlargedVisitExitKernel
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (T : ℝ) :
+     (H : FiniteIntervalUnion) (T : ℝ) :
     Kernel Point Point :=
   visitExtendKernel (enlargedVisitPoleSet H T) (measurableSet_enlargedVisitPoleSet H T)
     (fun p => finiteUnionExit hH hLE hlam hLam A H T (enlargedVisitPole H T p))
@@ -49,9 +49,7 @@ def enlargedVisitExitKernel
 
 /-- Every enlarged exit kernel has mass at most one. -/
 instance enlargedVisitExitKernel_isFiniteKernel
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (T : ℝ) :
+     (H : FiniteIntervalUnion) (T : ℝ) :
     IsFiniteKernel (enlargedVisitExitKernel hH hLE hlam hLam A H T) := by
   refine ⟨1, by simp only [ENNReal.one_lt_top], ?_⟩
   intro p
@@ -61,13 +59,12 @@ instance enlargedVisitExitKernel_isFiniteKernel
   split
   · simp only [measure_univ, le_refl]
   · exact zero_le
+section
+variable (c : Clock) (J : Interval) (s T : ℝ) (P : Point)
 
 /-- Entrance number `n+1` in the literal enlarged-strip alternating recursion. -/
 def enlargedVisitEntrance
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
-    (P : Point) (n : ℕ) : Measure Point :=
+      (n : ℕ) : Measure Point :=
   visitGamma P (visitEntranceInterval c)
     (visitBoundary s T (visitEntranceInterval c) J)
     (visitBoundary s T (visitActiveInterval c) J)
@@ -76,27 +73,20 @@ def enlargedVisitEntrance
 
 /-- The enlarged-strip counting measure, including the initial atom exactly once. -/
 def enlargedVisitStarts
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
-    (P : Point) : Measure Point :=
+      : Measure Point :=
   Measure.sum (enlargedVisitEntrance hH hLE hlam hLam A c J s T P)
 
 /-- Each individual entrance is finite; finiteness of the full sum is a separate estimate. -/
 instance enlargedVisitEntrance_isFiniteMeasure
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
-    (P : Point) (n : ℕ) :
+      (n : ℕ) :
     IsFiniteMeasure (enlargedVisitEntrance hH hLE hlam hLam A c J s T P n) := by
   unfold enlargedVisitEntrance
   infer_instance
+end
 
 /-- A canonical all-time Green kernel on the active interval. -/
 def enlargedActiveGreenKernel
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) : Kernel Point Point :=
+     (c : Clock) : Kernel Point Point :=
   visitExtendKernel {p | p.velocity 0 ∈ c.active}
     (isOpen_Ioo.measurableSet.preimage
       ((continuous_apply 0).comp continuous_velocity).measurable)
@@ -109,9 +99,8 @@ def enlargedActiveGreenKernel
 
 /-- Integrate the actual all-time active Green family against physical starting points. -/
 def enlargedActiveGreen
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (nu : Measure Point) : Measure Point :=
+     (c : Clock) (nu : Measure Point) : Measure Point :=
   enlargedActiveGreenKernel hH hLE hlam hLam A c ∘ₘ nu
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

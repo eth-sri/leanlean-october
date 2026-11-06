@@ -25,11 +25,12 @@ theorem contraction_sub_right {d : ℕ} (A B C : PDE.Mat d) :
     matrixContraction A (fun i k => B i k - C i k) =
       matrixContraction A B - matrixContraction A C := by
   simp only [matrixContraction, mul_sub, Finset.sum_sub_distrib]
+section
+variable {d : ℕ} {alpha : ℝ} (h : CounterProfileStatement d alpha)
 
 /-- The cutoff source representative uses the actual first and second weak jets.
 The time derivative of the stationary profile vanishes. -/
-def timeCutoffSourceRepresentative {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r mu R : ℝ) (P : KineticPoint d) : ℝ :=
+def timeCutoffSourceRepresentative  (r mu R : ℝ) (P : KineticPoint d) : ℝ :=
   let q := (P.position, P.velocity)
   let s := selectedFlatProfile h r q - barrier mu R P
   let w := flatProfileVelocityJet h r q - kineticVelocityGradient (barrier mu R) P
@@ -41,8 +42,7 @@ def timeCutoffSourceRepresentative {d : ℕ} {alpha : ℝ}
       deriv (deriv timeCutoffTheta) s * w i * w k)
 
 /-- The exact source identity has a nonpositive quadratic correction. -/
-theorem timeCutoff_source_identity_of_profile {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r mu R t : ℝ) :
+theorem timeCutoff_source_identity_of_profile  (r mu R t : ℝ) :
     ∀ᵐ q ∂volume,
       timeCutoffSourceRepresentative h r mu R ⟨t, q.1, q.2⟩ =
         deriv timeCutoffTheta (selectedFlatProfile h r q - barrier mu R ⟨t, q.1, q.2⟩) *
@@ -82,8 +82,7 @@ theorem timeCutoff_source_identity_of_profile {d : ℕ} {alpha : ℝ}
   ring
 
 /-- The actual selected stationary source is nonnegative almost everywhere. -/
-theorem flatSource_nonneg_ae_of_profile {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r) :
+theorem flatSource_nonneg_ae_of_profile  (r : ℝ) (hr : 0 < r) :
     ∀ᵐ q ∂volume, 0 ≤ flatSource (profileMatrix h) (profileFunction h)
       flatteningPsi alpha r q := by
   obtain ⟨hlam, _, _, _, _, hA, _⟩ := selectedProfile_spec h
@@ -93,6 +92,7 @@ theorem flatSource_nonneg_ae_of_profile {d : ℕ} {alpha : ℝ}
   exact mul_nonneg
     (mul_nonneg (Real.rpow_pos_of_pos hr _).le (flatteningPsi_deriv2_nonneg _))
     (quadratic_nonneg_of_loewner _ hlam.le _ (hA q).1 _)
+end
 
 /-- The favorable convexity term and barrier sign bound the weak source by the shell source. -/
 theorem timeCutoff_source_le_of_profile {d : ℕ} (hd : 1 ≤ d) {alpha : ℝ}

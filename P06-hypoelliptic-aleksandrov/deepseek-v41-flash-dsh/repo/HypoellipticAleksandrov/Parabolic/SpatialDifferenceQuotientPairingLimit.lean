@@ -7,6 +7,7 @@ public import HypoellipticAleksandrov.Parabolic.SpatialDifferenceQuotientTest
 public import Mathlib.Analysis.Calculus.Deriv.Slope
 public import Mathlib.MeasureTheory.Function.LocallyIntegrable
 public import Mathlib.MeasureTheory.Integral.DominatedConvergence
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Difference-quotient pairing limits
@@ -88,24 +89,24 @@ private theorem eq_zero_of_not_mem_tsupport
 /-- Pairing against a compactly supported `C¹` test has the signed backward
 spatial difference-quotient limit on every open time--velocity set. -/
 theorem tendsto_setIntegral_mul_backwardSpatialDifferenceQuotient
-    {d : ℕ} {U : Set (TimeVelocity d)}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hU : IsOpen U) (u φ : TimeVelocity d → ℝ)
     (hu : LocallyIntegrableOn u U
-      (volume : Measure (TimeVelocity d)))
+      (HypoellipticAleksandrov.Parabolic.TVVolume d))
     (hφ : ContDiff ℝ 1 φ) (hφcompact : HasCompactSupport φ)
     (hφU : tsupport φ ⊆ U) (k : Fin d) :
     Tendsto
       (fun h : ℝ =>
         ∫ z in U, u z *
           ((φ (spatialShift k (-h) z) - φ z) / h)
-          ∂(volume : Measure (TimeVelocity d)))
+          ∂(HypoellipticAleksandrov.Parabolic.TVVolume d))
       (𝓝[≠] 0)
       (𝓝 (-∫ z in U, u z * velocityGradient φ z k
-        ∂(volume : Measure (TimeVelocity d)))) := by
-  let S : Set (TimeVelocity d) := tsupport φ
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d))) := by
+  let S : HypoellipticAleksandrov.Parabolic.TVSet d := tsupport φ
   obtain ⟨δ, hδ, hδU, -⟩ :=
     IsCompact.exists_spatialShift_cthickening_collar hφcompact.isCompact hU hφU
-  let K : Set (TimeVelocity d) := Metric.cthickening (δ / 2) S
+  let K : HypoellipticAleksandrov.Parabolic.TVSet d := Metric.cthickening (δ / 2) S
   have hKcompact : IsCompact K := by
     exact hφcompact.isCompact.cthickening
   have hKmeas : MeasurableSet K := hKcompact.measurableSet
@@ -114,7 +115,7 @@ theorem tendsto_setIntegral_mul_backwardSpatialDifferenceQuotient
   obtain ⟨ε, C, hε, hC, -, -, -, hbound⟩ :=
     IsCompact.exists_spatialDifferenceQuotient_bound_of_contDiffOn_one hKcompact hU hKU
       hφ.contDiffOn
-  have hIntK : IntegrableOn u K (volume : Measure (TimeVelocity d)) :=
+  have hIntK : IntegrableOn u K (HypoellipticAleksandrov.Parabolic.TVVolume d) :=
     hu.integrableOn_compact_subset hKU hKcompact
   have hsmall : ∀ᶠ h : ℝ in 𝓝[≠] 0, |h| ≤ δ / 2 ∧ |h| ≤ ε := by
     have hpos : 0 < min (δ / 2) ε := lt_min (by linarith) hε
@@ -164,7 +165,7 @@ theorem tendsto_setIntegral_mul_backwardSpatialDifferenceQuotient
         (tendsto_backwardSpatialDifferenceQuotient φ hφ k z)
   have hsource :
       (fun h : ℝ => ∫ z, u z * q h z ∂(volume.restrict K)) =ᶠ[𝓝[≠] 0]
-        fun h : ℝ => ∫ z in U, u z * q h z ∂(volume : Measure (TimeVelocity d)) := by
+        fun h : ℝ => ∫ z in U, u z * q h z ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
     filter_upwards [hq_support] with h hsupp
     symm
     exact setIntegral_eq_of_subset_of_forall_diff_eq_zero hU.measurableSet hKU (fun z hz => by
@@ -187,16 +188,16 @@ theorem tendsto_setIntegral_mul_backwardSpatialDifferenceQuotient
     rfl
   have hlimit :
       (∫ z, u z * (-velocityGradient φ z k) ∂(volume.restrict K)) =
-        -∫ z in U, u z * velocityGradient φ z k ∂(volume : Measure (TimeVelocity d)) := by
+        -∫ z in U, u z * velocityGradient φ z k ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
     calc
       (∫ z, u z * (-velocityGradient φ z k) ∂(volume.restrict K)) =
-          ∫ z in K, u z * (-velocityGradient φ z k) ∂(volume : Measure (TimeVelocity d)) := rfl
-      _ = ∫ z in U, u z * (-velocityGradient φ z k) ∂(volume : Measure (TimeVelocity d)) := by
+          ∫ z in K, u z * (-velocityGradient φ z k) ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := rfl
+      _ = ∫ z in U, u z * (-velocityGradient φ z k) ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
         symm
         exact setIntegral_eq_of_subset_of_forall_diff_eq_zero hU.measurableSet hKU (fun z hz => by
           rw [hvelocity_zero hz.2]
           simp)
-      _ = -∫ z in U, u z * velocityGradient φ z k ∂(volume : Measure (TimeVelocity d)) := by
+      _ = -∫ z in U, u z * velocityGradient φ z k ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
         rw [← integral_neg]
         congr with z
         ring

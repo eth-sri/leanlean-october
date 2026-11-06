@@ -6,6 +6,8 @@ public import Mathlib.Topology.Order.Compact
 public import Mathlib.Topology.Order.IntermediateValue
 public import Mathlib.Tactic.Linarith
 public import Mathlib.Tactic.Ring
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # First-contact coverage for the parabolic normal map
@@ -213,7 +215,7 @@ theorem slopeInterceptWedge_subset_image_parabolicSignSet
       unfold ell affineVelocity PDE.vecDot
       fun_prop
     exact hu.continuous.sub hellDiff.continuous
-  let S : Set (TimeVelocity d) :=
+  let S : HypoellipticAleksandrov.Parabolic.TVSet d :=
     closedParabolicCylinder zStar.1 y₀ ∩ {z | 0 ≤ g z}
   have hzStarS : zStar ∈ S := by
     refine ⟨?_, hgStar.le⟩

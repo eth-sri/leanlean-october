@@ -17,10 +17,11 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
 open Set MeasureTheory Parabolic
 open scoped MatrixOrder
+section
+variable {d : ℕ} {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
 
 /-- The unit jet expression is jointly continuous in point and matrix entries. -/
-theorem continuous_unitCutoffJet {d : ℕ}
-    {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
+theorem continuous_unitCutoffJet 
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
     Continuous (fun z : KineticPoint d × PDE.Mat d =>
       fderiv ℝ f (KineticPoint.equivProd d z.1) (1, (z.1.velocity, 0)) -
@@ -41,8 +42,7 @@ theorem continuous_unitCutoffJet {d : ℕ}
     ((continuous_apply j).comp ((continuous_apply i).comp hH))
 
 /-- Compact unit geometry gives a matrix-entry-uniform bound on the cutoff jet. -/
-theorem exists_unitCutoffJet_bound {d : ℕ}
-    {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
+theorem exists_unitCutoffJet_bound 
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (Lam : ℝ) :
     ∃ C₀ : ℝ, 0 ≤ C₀ ∧ ∀ Q ∈ closure
       (backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1),
@@ -63,8 +63,7 @@ theorem exists_unitCutoffJet_bound {d : ℕ}
       simpa only [Real.norm_eq_abs] using hM (Q, B) ⟨hQ, hBS⟩).trans (le_max_left _ _)
 
 /-- Ellipticity and exact affine jets yield the source cutoff bound with uniform constants. -/
-theorem exists_scaledUnitCutoff_operator_bound {d : ℕ}
-    {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
+theorem exists_scaledUnitCutoff_operator_bound 
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (Lam : ℝ) :
     ∃ C₀ : ℝ, 0 ≤ C₀ ∧ ∀ lam : ℝ, 0 < lam →
       ∀ A : FullKineticCoefficient d, FullElliptic lam Lam A →
@@ -90,5 +89,6 @@ theorem exists_scaledUnitCutoff_operator_bound {d : ℕ}
     _ ≤ ell * (R ^ 2)⁻¹ * C₀ :=
       mul_le_mul_of_nonneg_left hb (mul_nonneg hell (inv_nonneg.mpr (sq_nonneg R)))
     _ = C₀ * ell * (R ^ 2)⁻¹ := by ring
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

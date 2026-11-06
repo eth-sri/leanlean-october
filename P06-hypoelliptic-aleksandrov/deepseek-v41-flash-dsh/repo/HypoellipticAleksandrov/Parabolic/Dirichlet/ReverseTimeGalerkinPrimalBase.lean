@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeGalerkinEnergy
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeGalerkinCompactTime
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Raw reverse-time Galerkin primal selector
@@ -20,7 +21,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 open scoped ENNReal Matrix Matrix.Norms.Elementwise MatrixOrder RealInnerProductSpace
 
-variable {d : ℕ} {Ω : Set (PDE.Vec d)}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
 variable
   (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam)
   (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
@@ -85,11 +86,13 @@ theorem reverseTimeGalerkinPrimalK_nonneg :
       haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos := by
   exact (reverseTimeGalerkinPrimalWitness r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
     haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos).choose_spec.1
+section
+variable (N : ℕ) (initial : PDE.ScalarLp Ω 2)
 
 /-- The selected raw Galerkin reconstruction is continuous on the closed
 reverse-time interval. -/
 theorem continuousOn_reverseTimeGalerkinPrimalRaw
-    (N : ℕ) (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+     :
     ContinuousOn
       (reverseTimeGalerkinPrimalRaw r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
         haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial)
@@ -115,7 +118,7 @@ theorem continuousOn_reverseTimeGalerkinPrimalRaw
 /-- At reverse time zero, the selected raw curve is the finite Galerkin
 projection of the prescribed initial datum. -/
 theorem reverseTimeGalerkinPrimalRaw_zero
-    (N : ℕ) (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+     :
     reverseTimeGalerkinPrimalRaw r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
       haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial 0 =
       (galerkinInitialProjection hΩ N initial : H10HilbertGraph hΩ) := by
@@ -141,7 +144,7 @@ theorem reverseTimeGalerkinPrimalRaw_zero
 
 /-- The selected raw curve obeys the sharp pointwise value-energy estimate. -/
 theorem reverseTimeGalerkinPrimal_value_energy
-    (N : ℕ) (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞))
+    
     (t : ℝ) (ht : t ∈ Set.Icc 0 (r₁ - r₀)) :
     ‖valueCLM hΩ
       (reverseTimeGalerkinPrimalRaw r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
@@ -164,7 +167,7 @@ theorem reverseTimeGalerkinPrimal_value_energy
 
 /-- The selected raw curve obeys the sharp integrated gradient-energy estimate. -/
 theorem reverseTimeGalerkinPrimal_gradient_energy
-    (N : ℕ) (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞))
+    
     (t : ℝ) (ht : t ∈ Set.Icc 0 (r₁ - r₀)) :
     lam * ∫ τ in Set.Ioc 0 t,
       ‖gradientCLM hΩ
@@ -195,7 +198,7 @@ theorem reverseTimeGalerkinPrimal_gradient_energy
 /-- The selected finite Galerkin curve satisfies the compactly supported
 reverse-time scalar identity against every finite-space test vector. -/
 theorem reverseTimeGalerkinPrimal_compactTime
-    (N : ℕ) (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞))
+    
     (v : galerkinSpace hΩ N) (eta : ReverseTimeScalarTest (r₁ - r₀)) :
     MeasureTheory.Integrable
       (fun τ =>
@@ -278,5 +281,6 @@ theorem reverseTimeGalerkinPrimal_compactTime
   simpa only [reverseTimeGalerkinPrimalRaw, x] using
     (reverseTimeGalerkin_compactTime_identity_of_basisRows r₀ r₁ h₀₁ hΩ hΩbounded
       a b c F haSmooth hbSmooth hcSmooth hFSmooth N x xdot hx hderiv hrows v eta)
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

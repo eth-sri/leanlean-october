@@ -56,12 +56,12 @@ theorem finiteUnion_component_family_measurable
         fun e => ∑ i : Fin H.count, g i e := funext heq
   rw [hfun]
   exact hm
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion)
 
 /-- The actual Green family of a finite union has Borel pole dependence. -/
 theorem finiteUnionGreen_measurable
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (T : WithTop ℝ) :
+     (T : WithTop ℝ) :
     Measurable (finiteUnionGreen hH hLE hlam hLam A H T) := by
   unfold finiteUnionGreen
   exact finiteUnion_component_family_measurable H T
@@ -71,13 +71,12 @@ theorem finiteUnionGreen_measurable
 
 /-- The actual finite-horizon exit family of a finite union has Borel pole dependence. -/
 theorem finiteUnionExit_measurable
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (T : ℝ) :
+     (T : ℝ) :
     Measurable (finiteUnionExit hH hLE hlam hLam A H T) := by
   unfold finiteUnionExit
   exact finiteUnion_component_family_measurable H T
     (fun i => stripExit hH hLE hlam hLam A (H.component i) T)
     (fun i => stripExit_measurable hH hLE hlam hLam A (H.component i) T)
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

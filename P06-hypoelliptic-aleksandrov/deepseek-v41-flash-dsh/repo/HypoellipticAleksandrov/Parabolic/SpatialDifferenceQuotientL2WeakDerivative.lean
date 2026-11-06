@@ -7,6 +7,7 @@ public import HypoellipticAleksandrov.Topology.WeakLimitNorm
 public import Mathlib.MeasureTheory.Function.L2Space
 public import Mathlib.MeasureTheory.Function.LpSpace.Complete
 public import Mathlib.MeasureTheory.Measure.SeparableMeasure
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Uniform spatial difference quotients and weak velocity derivatives
@@ -27,7 +28,7 @@ open scoped ENNReal Topology
 /-- A positive-step family of spatial difference quotients uniformly bounded by
 `C` has an `L²` weak velocity-partial limit whose norm is at most `C`. -/
 theorem exists_hasWeakVelocityPartialDerivOn_norm_le_of_uniform_spatialDifferenceQuotient
-    {d : ℕ} (U : Set (TimeVelocity d)) (hU : IsOpen U)
+    {d : ℕ} (U : HypoellipticAleksandrov.Parabolic.TVSet d) (hU : IsOpen U)
     (k : Fin d) (u : TimeVelocity d → ℝ)
     (hu : ParabolicMemLpOn U (2 : ℝ≥0∞) u)
     (δ C : ℝ) (hδ : 0 < δ)
@@ -41,10 +42,10 @@ theorem exists_hasWeakVelocityPartialDerivOn_norm_le_of_uniform_spatialDifferenc
       ∃ hg : ParabolicMemLpOn U (2 : ℝ≥0∞) g,
         HasWeakVelocityPartialDerivOn U k u g ∧
           ‖hg.toLp g‖ ≤ C := by
-  let μ : Measure (TimeVelocity d) := timeVelocityVolumeOn U
+  let μ : HypoellipticAleksandrov.Parabolic.TVMeasure d := timeVelocityVolumeOn U
   letI : IsLocallyFiniteMeasure μ :=
     Measure.isLocallyFiniteMeasure_of_le Measure.restrict_le_self
-  have huLoc : LocallyIntegrableOn u U (volume : Measure (TimeVelocity d)) := by
+  have huLoc : LocallyIntegrableOn u U (HypoellipticAleksandrov.Parabolic.TVVolume d) := by
     exact locallyIntegrableOn_of_locallyIntegrable_restrict
       (hu.locallyIntegrable (by norm_num))
   let a : ℕ → ℝ := fun n => δ / ((n + 2 : ℕ) : ℝ)
@@ -96,7 +97,7 @@ theorem exists_hasWeakVelocityPartialDerivOn_norm_le_of_uniform_spatialDifferenc
     exact (hφ.continuous.memLp_of_hasCompactSupport hφcompact).coeFn_toLp
   have hellq : ∀ n, ell (q (σ n)) =
       ∫ z in U, spatialDifferenceQuotient k (a (σ n)) u z * φ z
-        ∂(volume : Measure (TimeVelocity d)) := by
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
     intro n
     change inner ℝ φLp (q (σ n)) = _
     rw [L2.inner_def]
@@ -104,7 +105,7 @@ theorem exists_hasWeakVelocityPartialDerivOn_norm_le_of_uniform_spatialDifferenc
     filter_upwards [hq_ae (σ n), hφ_ae] with z hzq hzφ
     rw [hzq, hzφ]
     simp [mul_comm]
-  have hellv : ell v = ∫ z in U, v z * φ z ∂(volume : Measure (TimeVelocity d)) := by
+  have hellv : ell v = ∫ z in U, v z * φ z ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
     change inner ℝ φLp v = _
     rw [L2.inner_def]
     apply integral_congr_ae
@@ -113,8 +114,8 @@ theorem exists_hasWeakVelocityPartialDerivOn_norm_le_of_uniform_spatialDifferenc
     simp [mul_comm]
   have hpair : Tendsto
       (fun n => ∫ z in U, spatialDifferenceQuotient k (a (σ n)) u z * φ z
-        ∂(volume : Measure (TimeVelocity d))) atTop
-      (𝓝 (∫ z in U, v z * φ z ∂(volume : Measure (TimeVelocity d)))) := by
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) atTop
+      (𝓝 (∫ z in U, v z * φ z ∂(HypoellipticAleksandrov.Parabolic.TVVolume d))) := by
     rw [← hellv]
     exact (hweak ell).congr' (Filter.Eventually.of_forall hellq)
   obtain ⟨ε, hε, -, hshift⟩ :=
@@ -128,10 +129,10 @@ theorem exists_hasWeakVelocityPartialDerivOn_norm_le_of_uniform_spatialDifferenc
     simpa only [Function.comp_def, Metric.mem_ball, Real.dist_eq, sub_zero] using le_of_lt hn
   have htranspose :
       (fun n => ∫ z in U, spatialDifferenceQuotient k (a (σ n)) u z * φ z
-        ∂(volume : Measure (TimeVelocity d))) =ᶠ[atTop]
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =ᶠ[atTop]
       fun n => -∫ z in U,
         u z * spatialDifferenceQuotient k (-(a (σ n))) φ z
-          ∂(volume : Measure (TimeVelocity d)) := by
+          ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
     filter_upwards [hevent_shift] with n hn
     exact setIntegral_spatialDifferenceQuotient_mul_eq_neg_mul_spatialDifferenceQuotient_neg
       U k (a (σ n)) u φ hu hφ.continuous hφcompact hφU hn
@@ -140,10 +141,10 @@ theorem exists_hasWeakVelocityPartialDerivOn_norm_le_of_uniform_spatialDifferenc
   have hbackσ := hback.comp haσ_tendsto
   have hback_eq : (fun n => -∫ z in U,
       u z * spatialDifferenceQuotient k (-(a (σ n))) φ z
-        ∂(volume : Measure (TimeVelocity d))) =ᶠ[atTop]
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =ᶠ[atTop]
       fun n => ∫ z in U, u z *
         ((φ (spatialShift k (-(a (σ n))) z) - φ z) / (a (σ n)))
-          ∂(volume : Measure (TimeVelocity d)) := by
+          ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
     filter_upwards with n
     rw [← integral_neg]
     congr with z
@@ -151,9 +152,9 @@ theorem exists_hasWeakVelocityPartialDerivOn_norm_le_of_uniform_spatialDifferenc
     ring
   have hback_limit : Tendsto (fun n => -∫ z in U,
       u z * spatialDifferenceQuotient k (-(a (σ n))) φ z
-        ∂(volume : Measure (TimeVelocity d))) atTop
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) atTop
       (𝓝 (-∫ z in U, u z * velocityGradient φ z k
-        ∂(volume : Measure (TimeVelocity d)))) := by
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d))) := by
     exact hbackσ.congr' hback_eq.symm
   have hlimit := tendsto_nhds_unique hpair (hback_limit.congr' htranspose.symm)
   linarith

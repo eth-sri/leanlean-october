@@ -93,22 +93,24 @@ theorem one_add_positiveDensityEta_mul_sqrt_lt_one {a : ℝ}
       field_simp [hs0.ne']
       ring
     _ < 1 := by linarith
+section
+variable (d : ℕ) {a : ℝ}
 
 /-- The terminal contraction parameter is positive in every dimension. -/
-theorem positiveDensityZeta_pos (d : ℕ) {a : ℝ}
+theorem positiveDensityZeta_pos 
     (ha0 : 0 < a) : 0 < positiveDensityZeta d a := by
   rw [positiveDensityZeta]
   exact Real.rpow_pos_of_pos ha0 _
 
 /-- The terminal contraction parameter is strictly subunit when `a < 1`. -/
-theorem positiveDensityZeta_lt_one (d : ℕ) {a : ℝ}
+theorem positiveDensityZeta_lt_one 
     (ha0 : 0 < a) (ha1 : a < 1) : positiveDensityZeta d a < 1 := by
   rw [positiveDensityZeta]
   apply Real.rpow_lt_one ha0.le ha1
   positivity
 
 /-- The natural power of the terminal contraction is exactly `sqrt a`. -/
-theorem positiveDensityZeta_pow_dim_add_two (d : ℕ) {a : ℝ}
+theorem positiveDensityZeta_pow_dim_add_two 
     (ha0 : 0 < a) :
     positiveDensityZeta d a ^ (d + 2) = Real.sqrt a := by
   rw [positiveDensityZeta]
@@ -120,12 +122,13 @@ theorem positiveDensityZeta_pow_dim_add_two (d : ℕ) {a : ℝ}
     _ = Real.sqrt a := (Real.sqrt_eq_rpow a).symm
 
 /-- The inverse integer power of the contraction is exactly `(sqrt a)⁻¹`. -/
-theorem positiveDensityZeta_zpow_neg_dim_add_two (d : ℕ) {a : ℝ}
+theorem positiveDensityZeta_zpow_neg_dim_add_two 
     (ha0 : 0 < a) :
     positiveDensityZeta d a ^ (-((d : ℤ) + 2)) = (Real.sqrt a)⁻¹ := by
   have hindex : -((d : ℤ) + 2) = -((d + 2 : ℕ) : ℤ) := by
     norm_num [Nat.cast_add]
   rw [hindex, zpow_neg, zpow_natCast, positiveDensityZeta_pow_dim_add_two d ha0]
+end
 
 /-- The source aggregate factor reduces to the normalized descent ratio. -/
 theorem positiveDensityAggregateFactor_eq (d : ℕ) {a eta : ℝ}

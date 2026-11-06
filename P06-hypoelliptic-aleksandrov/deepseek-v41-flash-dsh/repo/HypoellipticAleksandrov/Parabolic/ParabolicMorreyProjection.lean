@@ -18,22 +18,21 @@ noncomputable section
 namespace HypoellipticAleksandrov.Parabolic
 
 open scoped BigOperators
+section
+variable {d : Nat} (t₀ : Real) (v₀ : PDE.Vec d)
 
 /-- The canonical average transported from the unit forward parabolic box. -/
-noncomputable def parabolicMorreyBoxAverage {d : Nat}
-    (t₀ : Real) (v₀ : PDE.Vec d) (r : Real)
+noncomputable def parabolicMorreyBoxAverage  (r : Real)
     (u : TimeVelocity d -> Real) : Real :=
   parabolicMorreyUnitAverage (pullbackScalar u t₀ v₀ r)
 
 /-- The dimensional physical velocity slope of the transported moment projection. -/
-noncomputable def parabolicMorreyBoxVelocitySlope {d : Nat}
-    (t₀ : Real) (v₀ : PDE.Vec d) (r : Real)
+noncomputable def parabolicMorreyBoxVelocitySlope  (r : Real)
     (u : TimeVelocity d -> Real) (i : Fin d) : Real :=
   r⁻¹ * parabolicMorreyUnitVelocityCoeff (pullbackScalar u t₀ v₀ r) i
 
 /-- The canonical time-independent velocity-affine projection on a forward box. -/
-noncomputable def parabolicMorreyBoxAffineProjection {d : Nat}
-    (t₀ : Real) (v₀ : PDE.Vec d) (r : Real)
+noncomputable def parabolicMorreyBoxAffineProjection  (r : Real)
     (u : TimeVelocity d -> Real) : TimeVelocity d -> Real :=
   fun z => parabolicMorreyBoxAverage t₀ v₀ r u +
     ∑ i : Fin d, parabolicMorreyBoxVelocitySlope t₀ v₀ r u i *
@@ -42,7 +41,7 @@ noncomputable def parabolicMorreyBoxAffineProjection {d : Nat}
 /-- A positive-radius affine scaling maps the unit forward box onto the
 corresponding physical forward box. -/
 theorem parabolicAffine_image_parabolicMorreyUnitBox
-    {d : Nat} (t₀ : Real) (v₀ : PDE.Vec d) {r : Real} (hr : 0 < r) :
+     {r : Real} (hr : 0 < r) :
     parabolicAffine t₀ v₀ r '' parabolicMorreyUnitBox d =
       parabolicBox 1 r t₀ v₀ := by
   simpa only [parabolicMorreyUnitBox] using
@@ -71,5 +70,6 @@ unit-box projection of the scalar pullback. -/
           z.2 i := by ring
     _ = parabolicMorreyUnitVelocityCoeff (pullbackScalar u t₀ v₀ r) i * z.2 i := by
       rw [inv_mul_cancel₀ hr.ne', one_mul]
+end
 
 end HypoellipticAleksandrov.Parabolic

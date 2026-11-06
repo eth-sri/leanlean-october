@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.EvolutionProblem
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonNodes
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonPrinciple
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.DomainDominationMeasure
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Transported cutoffs and the growth tail comparison (outside context)
@@ -108,7 +109,7 @@ def lowerDatum (F : BoundedBorel (PDE.Vec n)) : BoundedBorel (EvolutionAmbientSt
     lowerDatum F x = F x.1 := rfl
 
 /-- The cutoff data are smooth compactly supported terminal data in the open fiber. -/
-theorem cutoffDatum_isSmoothCompact {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n} {τ : ℝ}
+theorem cutoffDatum_isSmoothCompact {Ω : HypoellipticAleksandrov.VecSet n} {γ : ℝ → PDE.Vec n} {τ : ℝ}
     {F : BoundedBorel (PDE.Vec n)}
     (hF : ParabolicProbe.IsSmoothCompactScalarTerminalDatum Ω γ τ F) (N : ℕ) :
     IsSmoothCompactTerminalDatum Ω γ τ (cutoffDatum F N) := by
@@ -206,7 +207,7 @@ variable {n : ℕ}
 depending only on `Λ`, `b 0` and `L_b` such that, for classical terminal solutions `u₁, u₂` whose
 terminal data satisfy `F₁ - F₂ ≤ c (1 + |y|² + |z|²)` over the closed fiber, one has
 `u₁ - u₂ ≤ c Φ_τ` on the whole past closed cylinder, `Φ_τ = e^{C(τ-σ)}(1 + |y|² + |z|²)`. -/
-theorem classical_sub_le_growthBarrier {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
+theorem classical_sub_le_growthBarrier {Ω : HypoellipticAleksandrov.VecSet n} (hΩ : IsOpen Ω)
     {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {lam Lam : ℝ} (hlam : 0 < lam)
     {B : FullKineticCoefficient n} (hB : HasEverywhereLoewnerBounds lam Lam B) {Lb : ℝ}
     {b : PDE.Vec n → PDE.Vec n} (hb : HasEuclideanLipschitzDrift Lb b) :

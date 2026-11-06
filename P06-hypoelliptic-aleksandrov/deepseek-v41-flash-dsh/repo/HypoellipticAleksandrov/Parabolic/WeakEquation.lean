@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Ambient.MatrixContraction
 public import HypoellipticAleksandrov.Coefficients.Ellipticity
 public import HypoellipticAleksandrov.Parabolic.WeakDerivativesUnique
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Homogeneous weak parabolic equations
@@ -23,7 +24,7 @@ open scoped ENNReal MatrixOrder
 
 /-- A lower Loewner bound holding almost everywhere after restriction to `U`. -/
 def HasLowerEllipticityAEOn {d : ℕ} (lam : ℝ) (A : CoefficientField d)
-    (U : Set (TimeVelocity d)) : Prop :=
+    (U : HypoellipticAleksandrov.Parabolic.TVSet d) : Prop :=
   ∀ᵐ z ∂timeVelocityVolumeOn U, lam • (1 : PDE.Mat d) ≤ coefficientAt A z
 
 namespace HasLowerEllipticityAEOn
@@ -39,14 +40,14 @@ namespace IsSymmetricCoefficientAEOn
 end IsSymmetricCoefficientAEOn
 
 /-- The selected-jet forward parabolic operator `w_t - A : D_v^2 w`. -/
-def weakParabolicOperator {d : ℕ} {U : Set (TimeVelocity d)} {p : ℝ≥0∞}
+def weakParabolicOperator {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {p : ℝ≥0∞}
     (A : CoefficientField d) (w : ParabolicW12Function d U p)
     (z : TimeVelocity d) : ℝ :=
   w.timeDeriv z - matrixContraction (coefficientAt A z) (w.velocityHessian z)
 
 /-- Evaluation of the selected-jet forward parabolic operator. -/
 @[simp]
-theorem weakParabolicOperator_apply {d : ℕ} {U : Set (TimeVelocity d)} {p : ℝ≥0∞}
+theorem weakParabolicOperator_apply {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {p : ℝ≥0∞}
     (A : CoefficientField d) (w : ParabolicW12Function d U p)
     (z : TimeVelocity d) :
     weakParabolicOperator A w z =
@@ -54,22 +55,22 @@ theorem weakParabolicOperator_apply {d : ℕ} {U : Set (TimeVelocity d)} {p : �
   rfl
 
 /-- A selected weak jet solves the homogeneous forward equation almost everywhere. -/
-def IsWeakParabolicEquationOn {d : ℕ} {U : Set (TimeVelocity d)} {p : ℝ≥0∞}
+def IsWeakParabolicEquationOn {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {p : ℝ≥0∞}
     (A : CoefficientField d) (w : ParabolicW12Function d U p) : Prop :=
   weakParabolicOperator A w =ᵐ[timeVelocityVolumeOn U] 0
 
 /-- A value representative satisfies the homogeneous equation through selected weak
 jets on every compactly-contained open subdomain. -/
 def IsWeakParabolicEquationLoc {d : ℕ} (A : CoefficientField d)
-    (U : Set (TimeVelocity d)) (p : ℝ≥0∞) (u : TimeVelocity d → ℝ) : Prop :=
-  ∀ V : Set (TimeVelocity d), IsOpen V → IsCompact (closure V) → closure V ⊆ U →
+    (U : HypoellipticAleksandrov.Parabolic.TVSet d) (p : ℝ≥0∞) (u : TimeVelocity d → ℝ) : Prop :=
+  ∀ V : HypoellipticAleksandrov.Parabolic.TVSet d, IsOpen V → IsCompact (closure V) → closure V ⊆ U →
     ∃ w : ParabolicW12Function d V p,
       w.toFun =ᵐ[timeVelocityVolumeOn V] u ∧ IsWeakParabolicEquationOn A w
 
 /-- A.e.-equal value representatives have a.e.-equal selected-jet operators.
 No symmetry of the selected velocity Hessians is assumed. -/
 theorem weakParabolicOperator_congr_ae_of_value_ae
-    {d : ℕ} {U : Set (TimeVelocity d)} {p : ℝ≥0∞} (A : CoefficientField d)
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {p : ℝ≥0∞} (A : CoefficientField d)
     (hU : IsOpen U) (hp : 1 ≤ p) (w w' : ParabolicW12Function d U p)
     (hvalue : w.toFun =ᵐ[timeVelocityVolumeOn U] w'.toFun) :
     weakParabolicOperator A w =ᵐ[timeVelocityVolumeOn U] weakParabolicOperator A w' := by
@@ -91,7 +92,7 @@ theorem weakParabolicOperator_congr_ae_of_value_ae
 namespace IsWeakParabolicEquationOn
 
 /-- The homogeneous selected-jet equation is invariant under a.e.-equal values. -/
-theorem congr_value_ae_iff {d : ℕ} {U : Set (TimeVelocity d)} {p : ℝ≥0∞}
+theorem congr_value_ae_iff {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {p : ℝ≥0∞}
     {A : CoefficientField d} (hU : IsOpen U) (hp : 1 ≤ p)
     (w w' : ParabolicW12Function d U p)
     (hvalue : w.toFun =ᵐ[timeVelocityVolumeOn U] w'.toFun) :
@@ -109,7 +110,7 @@ namespace IsWeakParabolicEquationLoc
 
 /-- A local homogeneous equation supplies the underlying local weak Sobolev data. -/
 theorem parabolicW12Loc {d : ℕ} {A : CoefficientField d}
-    {U : Set (TimeVelocity d)} {p : ℝ≥0∞} {u : TimeVelocity d → ℝ}
+    {U : HypoellipticAleksandrov.Parabolic.TVSet d} {p : ℝ≥0∞} {u : TimeVelocity d → ℝ}
     (h : IsWeakParabolicEquationLoc A U p u) : ParabolicW12Loc U p u := by
   intro V hVOpen hVCompact hVU
   rcases h V hVOpen hVCompact hVU with ⟨w, hwu, _hweq⟩
@@ -118,7 +119,7 @@ theorem parabolicW12Loc {d : ℕ} {A : CoefficientField d}
 /-- Every compatible selected jet on a compactly-contained open subdomain obeys
 the local homogeneous equation. -/
 theorem equationOn {d : ℕ} {A : CoefficientField d}
-    {U V : Set (TimeVelocity d)} {p : ℝ≥0∞} {u : TimeVelocity d → ℝ}
+    {U V : HypoellipticAleksandrov.Parabolic.TVSet d} {p : ℝ≥0∞} {u : TimeVelocity d → ℝ}
     (h : IsWeakParabolicEquationLoc A U p u) (hVOpen : IsOpen V)
     (hVCompact : IsCompact (closure V)) (hVU : closure V ⊆ U) (hp : 1 ≤ p)
     (w : ParabolicW12Function d V p)

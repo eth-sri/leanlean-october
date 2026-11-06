@@ -43,16 +43,16 @@ theorem bellman_proper_map_finiteOnCompacts {A B : Type*}
   lt_top_of_isCompact K hK := by
     rw [Measure.map_apply hf.continuous.measurable hK.measurableSet]
     exact (hf.isCompact_preimage hK).measure_lt_top
+section
+variable {lam Lam : ℝ} (alpha : ℝ) (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam)) [IsFiniteMeasure pi]
 
 /-- The first radial measure is finite on compact subsets of the punctured plane. -/
-instance radialMu_finiteOnCompacts {lam Lam : ℝ} (alpha : ℝ)
-    (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam)) [IsFiniteMeasure pi] :
+instance radialMu_finiteOnCompacts  :
     IsFiniteMeasureOnCompacts (radialMu alpha pi) :=
   bellman_proper_map_finiteOnCompacts _ (isProperMap_sphereRadialPoint lam Lam) _
 
 /-- The coefficient-weighted product is finite on compact subsets before projection. -/
-theorem bellmanRadialEtaProduct_finiteOnCompacts {lam Lam : ℝ} (alpha : ℝ)
-    (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam)) [IsFiniteMeasure pi] :
+theorem bellmanRadialEtaProduct_finiteOnCompacts  :
     IsFiniteMeasureOnCompacts (((bellmanRadiusMeasure alpha).prod pi).withDensity
       (fun w => ENNReal.ofReal w.2.2.val)) := by
   have hf : Continuous (fun w : BellmanPositiveTime ×
@@ -60,18 +60,17 @@ theorem bellmanRadialEtaProduct_finiteOnCompacts {lam Lam : ℝ} (alpha : ℝ)
   exact bellman_withDensity_finiteOnCompacts ((bellmanRadiusMeasure alpha).prod pi) _ hf
 
 /-- The second radial measure is finite on compact subsets of the punctured plane. -/
-instance radialEta_finiteOnCompacts {lam Lam : ℝ} (alpha : ℝ)
-    (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam)) [IsFiniteMeasure pi] :
+instance radialEta_finiteOnCompacts  :
     IsFiniteMeasureOnCompacts (radialEta alpha pi) := by
   let := bellmanRadialEtaProduct_finiteOnCompacts alpha pi
   exact bellman_proper_map_finiteOnCompacts _ (isProperMap_sphereRadialPoint lam Lam) _
 
 /-- Both radial measures have the required Radon regularity on the actual punctured carrier. -/
-theorem radial_bellman_measures_radon {lam Lam : ℝ} (alpha : ℝ)
-    (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam)) [IsFiniteMeasure pi] :
+theorem radial_bellman_measures_radon  :
     IsBellmanRadon (radialMu alpha pi) ∧ IsBellmanRadon (radialEta alpha pi) := by
   let : LocallyCompactSpace BellmanPuncturedPlane :=
     isOpen_compl_singleton.locallyCompactSpace
   exact ⟨⟨inferInstance, inferInstance⟩, ⟨inferInstance, inferInstance⟩⟩
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

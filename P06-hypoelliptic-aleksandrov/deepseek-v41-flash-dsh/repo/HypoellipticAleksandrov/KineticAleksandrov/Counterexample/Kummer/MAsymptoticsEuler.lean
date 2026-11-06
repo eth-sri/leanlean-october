@@ -108,9 +108,11 @@ theorem laplaceMoment_mul_pow (a X t : ℝ) (ht : 0 < t) (n : ℕ) :
     ← Real.rpow_add ht]
   congr 2
   ring
+section
+variable (a c : ℝ) (N : ℕ)
 
 /-- The polynomial Gamma kernel is the Taylor polynomial times the zeroth kernel. -/
-theorem polynomialLaplace_eq (a c : ℝ) (N : ℕ) (X t : ℝ) (ht : 0 < t) :
+theorem polynomialLaplace_eq  (X t : ℝ) (ht : 0 < t) :
     polynomialLaplace a c N X t = laplaceMoment a X t * betaPolynomial (1 - c) N t := by
   simp only [polynomialLaplace, betaPolynomial, Finset.mul_sum]
   apply Finset.sum_congr rfl
@@ -119,7 +121,7 @@ theorem polynomialLaplace_eq (a c : ℝ) (N : ℕ) (X t : ℝ) (ht : 0 < t) :
   ring
 
 /-- Integrability of the polynomial Gamma kernel on the first half interval. -/
-theorem intervalIntegrable_polynomialLaplace (a c : ℝ) (N : ℕ) (X : ℝ)
+theorem intervalIntegrable_polynomialLaplace  (X : ℝ)
     (ha : 0 < a) (hX : 0 < X) :
     IntervalIntegrable (polynomialLaplace a c N X) volume 0 (1 / 2) := by
   have hs := IntervalIntegrable.sum (Finset.range N) (fun n _ =>
@@ -131,7 +133,7 @@ theorem intervalIntegrable_polynomialLaplace (a c : ℝ) (N : ℕ) (X : ℝ)
   simp only [polynomialLaplace, Finset.sum_apply]
 
 /-- The Taylor remainder is dominated by the next positive Gamma moment. -/
-theorem eulerLaplace_remainder_pointwise (a c : ℝ) (N : ℕ) :
+theorem eulerLaplace_remainder_pointwise  :
     ∃ C : ℝ, 0 < C ∧ ∀ X t : ℝ, 0 < t → t ≤ 1 / 2 →
       |eulerLaplace a c X t - polynomialLaplace a c N X t| ≤
         C * laplaceMoment (a + N) X t := by
@@ -153,7 +155,7 @@ theorem eulerLaplace_remainder_pointwise (a c : ℝ) (N : ℕ) :
       ring
 
 /-- The first half Taylor error has the required algebraic order. -/
-theorem eulerLaplace_near_remainder_isBigO (a c : ℝ) (N : ℕ)
+theorem eulerLaplace_near_remainder_isBigO 
     (ha : 0 < a) (hc : 0 < c) :
     IsBigO atTop
       (fun X => (∫ t in (0 : ℝ)..(1 / 2), eulerLaplace a c X t) -
@@ -195,9 +197,10 @@ theorem eulerLaplace_near_remainder_isBigO (a c : ℝ) (N : ℕ)
       ring
 
 /-- Full moments evaluate the polynomial Gamma kernel. -/
-def gammaPolynomial (a c : ℝ) (N : ℕ) (X : ℝ) : ℝ :=
+def gammaPolynomial  (X : ℝ) : ℝ :=
   ∑ n ∈ Finset.range N, poch (1 - c) n / (n.factorial : ℝ) *
     (X ^ (-(a + n)) * Real.Gamma (a + n))
+end
 
 /-- Replacing all half moments by full moments costs less than every algebraic order. -/
 theorem polynomialLaplace_half_isBigO (a c r : ℝ) (N : ℕ) (ha : 0 < a) :

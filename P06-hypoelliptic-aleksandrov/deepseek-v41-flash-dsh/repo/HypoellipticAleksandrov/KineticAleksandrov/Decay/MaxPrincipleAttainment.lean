@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Decay.MaxPrincipleGeometry
 public import Mathlib.Topology.Order.Compact
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Positive maximum attainment on a moving tube
@@ -29,7 +30,7 @@ def IsUniformlyNegAtInfinityOn {d : ℕ} (u : KineticPoint d → ℝ)
 /-- Under either spatial-infinity alternative, a positive value yields a positive
 maximum on the entire moving tube. -/
 theorem exists_positive_isMaxOn_maximumClosedTube {d : ℕ}
-    {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d} {a b : ℝ}
+    {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d} {a b : ℝ}
     {u : KineticPoint d → ℝ}
     (hΩ : IsCompact (closure Ω)) (hγ : ContinuousOn γ (Icc a b))
     (hu : ContinuousOn u (maximumClosedTube Ω γ a b))

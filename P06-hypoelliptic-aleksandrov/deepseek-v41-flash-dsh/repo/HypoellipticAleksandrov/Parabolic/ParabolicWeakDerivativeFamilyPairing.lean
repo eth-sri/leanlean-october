@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.ParabolicWeakDerivativeFamily
 public import HypoellipticAleksandrov.Parabolic.TimeVelocityMultiIndexSplitSuccessor
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Compact-test pairing for weak derivative families
@@ -18,10 +19,11 @@ namespace HypoellipticAleksandrov.Parabolic
 
 open MeasureTheory
 open scoped Topology
+section
+variable {d : ℕ} (gamma : TimeVelocityMultiIndex d) (f : TimeVelocity d → ℝ)
 
 private theorem coordinateIteratedFDeriv_contDiff
-    {d : ℕ} (gamma : TimeVelocityMultiIndex d)
-    (f : TimeVelocity d → ℝ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
+     (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
     ContDiff ℝ (⊤ : ℕ∞)
       (TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma f) := by
   rw [contDiff_infty]
@@ -33,7 +35,7 @@ private theorem coordinateIteratedFDeriv_contDiff
     (fun i ↦ timeVelocityBasis (gamma.coordinateList.get i)))).clm_apply hi
 
 private theorem coordinateIteratedFDeriv_tsupport_subset
-    {d : ℕ} (gamma : TimeVelocityMultiIndex d) (f : TimeVelocity d → ℝ) :
+     :
     tsupport (TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma f) ⊆ tsupport f := by
   apply closure_minimal _ isClosed_closure
   intro z hz
@@ -45,16 +47,14 @@ private theorem coordinateIteratedFDeriv_tsupport_subset
     exact ContinuousMultilinearMap.zero_apply _)
 
 private theorem coordinateIteratedFDeriv_hasCompactSupport
-    {d : ℕ} (gamma : TimeVelocityMultiIndex d)
-    (f : TimeVelocity d → ℝ) (hf : HasCompactSupport f) :
+     (hf : HasCompactSupport f) :
     HasCompactSupport
       (TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma f) :=
   hf.of_isClosed_subset isClosed_closure
     (coordinateIteratedFDeriv_tsupport_subset gamma f)
 
 private theorem timeDerivative_coordinateIteratedFDeriv
-    {d : ℕ} (gamma : TimeVelocityMultiIndex d)
-    (f : TimeVelocity d → ℝ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) (z : TimeVelocity d) :
+     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (z : TimeVelocity d) :
     timeDerivative (TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma f) z =
       TimeVelocityMultiIndex.coordinateIteratedFDeriv
         (gamma + Pi.single (timeCoord d) 1) f z := by
@@ -63,8 +63,7 @@ private theorem timeDerivative_coordinateIteratedFDeriv
   · exact contDiff_infty.mp hf _
 
 private theorem velocityGradient_coordinateIteratedFDeriv
-    {d : ℕ} (gamma : TimeVelocityMultiIndex d)
-    (f : TimeVelocity d → ℝ) (hf : ContDiff ℝ (⊤ : ℕ∞) f)
+     (hf : ContDiff ℝ (⊤ : ℕ∞) f)
     (i : Fin d) (z : TimeVelocity d) :
     velocityGradient (TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma f) z i =
       TimeVelocityMultiIndex.coordinateIteratedFDeriv
@@ -72,13 +71,14 @@ private theorem velocityGradient_coordinateIteratedFDeriv
   rw [TimeVelocityMultiIndex.coordinateIteratedFDeriv_add_single]
   · rfl
   · exact contDiff_infty.mp hf _
+end
 
 private theorem integral_mul_congr_ae
-    {d : ℕ} {U : Set (TimeVelocity d)}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     {f g ψ : TimeVelocity d → ℝ}
     (hfg : f =ᵐ[timeVelocityVolumeOn U] g) :
-    (∫ z in U, f z * ψ z ∂(volume : Measure (TimeVelocity d))) =
-      ∫ z in U, g z * ψ z ∂(volume : Measure (TimeVelocity d)) := by
+    (∫ z in U, f z * ψ z ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
+      ∫ z in U, g z * ψ z ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   apply integral_congr_ae
   filter_upwards [hfg] with z hz
   rw [hz]
@@ -86,7 +86,7 @@ private theorem integral_mul_congr_ae
 /-- Distributional compact-test characterization of every selected bounded
 time--velocity weak derivative. -/
 theorem ParabolicWeakDerivativeFamily.integral_representative_mul_test
-    {d L : ℕ} {U : Set (TimeVelocity d)}
+    {d L : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u : TimeVelocity d → ℝ}
     (D : ParabolicWeakDerivativeFamily d L U u)
     (alpha : ParabolicDerivativeIndex d L)
@@ -95,21 +95,21 @@ theorem ParabolicWeakDerivativeFamily.integral_representative_mul_test
     (hφCompact : HasCompactSupport φ)
     (hφSupport : tsupport φ ⊆ U) :
     (∫ z in U, D.representative alpha z * φ z
-      ∂(volume : Measure (TimeVelocity d))) =
+      ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
       ((-1 : ℝ) ^ alpha.1.order) *
         ∫ z in U, u z *
           TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1 φ z
-          ∂(volume : Measure (TimeVelocity d)) := by
+          ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   let P := fun beta : ParabolicDerivativeIndex d L =>
     ∀ (gamma : TimeVelocityMultiIndex d) (ψ : TimeVelocity d → ℝ),
       ContDiff ℝ (⊤ : ℕ∞) ψ → HasCompactSupport ψ → tsupport ψ ⊆ U →
       (∫ z in U, D.representative beta z *
           TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma ψ z
-        ∂(volume : Measure (TimeVelocity d))) =
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
         ((-1 : ℝ) ^ beta.1.order) *
           ∫ z in U, u z *
             TimeVelocityMultiIndex.coordinateIteratedFDeriv (beta.1 + gamma) ψ z
-            ∂(volume : Measure (TimeVelocity d))
+            ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)
   have hmain := ParabolicDerivativeIndex.inductionOn alpha (P := P) ?_ ?_ ?_
   simpa using hmain (0 : TimeVelocityMultiIndex d) φ
     hφSmooth hφCompact hφSupport
@@ -130,9 +130,9 @@ theorem ParabolicWeakDerivativeFamily.integral_representative_mul_test
     rw [ParabolicDerivativeIndex.coe_timeSucc_eq_add_single]
     rw [show (∫ z in U, D.representative
         (ParabolicDerivativeIndex.timeSucc beta h) z * θ z
-        ∂(volume : Measure (TimeVelocity d))) =
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
         -∫ z in U, D.representative beta z * timeDerivative θ z
-          ∂(volume : Measure (TimeVelocity d)) by linarith only [hweak]]
+          ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) by linarith only [hweak]]
     dsimp only [θ]
     simp_rw [timeDerivative_coordinateIteratedFDeriv gamma ψ hψSmooth]
     rw [hind]
@@ -151,9 +151,9 @@ theorem ParabolicWeakDerivativeFamily.integral_representative_mul_test
     rw [ParabolicDerivativeIndex.coe_velocitySucc_eq_add_single]
     rw [show (∫ z in U, D.representative
         (ParabolicDerivativeIndex.velocitySucc beta i h) z * θ z
-        ∂(volume : Measure (TimeVelocity d))) =
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
         -∫ z in U, D.representative beta z * velocityGradient θ z i
-          ∂(volume : Measure (TimeVelocity d)) by linarith only [hweak]]
+          ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) by linarith only [hweak]]
     dsimp only [θ]
     simp_rw [velocityGradient_coordinateIteratedFDeriv gamma ψ hψSmooth i]
     rw [hind]

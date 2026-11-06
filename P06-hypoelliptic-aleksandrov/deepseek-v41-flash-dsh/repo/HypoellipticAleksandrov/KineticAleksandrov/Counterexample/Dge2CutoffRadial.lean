@@ -14,9 +14,11 @@ These formulas use Euclidean dot products on the native coordinate carrier.
 noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
+section
+variable {d : ℕ} (alpha : ℝ)
 
 /-- The first radial jet at a nonzero velocity. -/
-theorem hasFDerivAt_radialProfile {d : ℕ} (alpha : ℝ) (y : PDE.Vec d) (hy : y ≠ 0) :
+theorem hasFDerivAt_radialProfile  (y : PDE.Vec d) (hy : y ≠ 0) :
     HasFDerivAt (radialProfile alpha)
       ((alpha * Real.rpow (PDE.vecNormSq y) (alpha / 2 - 1)) • seedDotLinear y) y := by
   have hb : HasFDerivAt (PDE.vecNormSq (d := d)) (2 • seedDotLinear y) y := by
@@ -30,7 +32,7 @@ theorem hasFDerivAt_radialProfile {d : ℕ} (alpha : ℝ) (y : PDE.Vec d) (hy : 
     ring
 
 /-- The exact first radial derivative applied to a native vector. -/
-theorem fderiv_radialProfile_apply {d : ℕ} (alpha : ℝ) (y w : PDE.Vec d)
+theorem fderiv_radialProfile_apply  (y w : PDE.Vec d)
     (hy : y ≠ 0) :
     fderiv ℝ (radialProfile alpha) y w =
       alpha * Real.rpow (PDE.vecNormSq y) (alpha / 2 - 1) * PDE.vecDot y w := by
@@ -38,13 +40,13 @@ theorem fderiv_radialProfile_apply {d : ℕ} (alpha : ℝ) (y w : PDE.Vec d)
   simp only [smul_apply, smul_eq_mul, seedDotLinear_apply]
 
 /-- The radial Hessian as a rank-one perturbation of the Euclidean identity. -/
-def radialHessianForm {d : ℕ} (alpha : ℝ) (y w u : PDE.Vec d) : ℝ :=
+def radialHessianForm  (y w u : PDE.Vec d) : ℝ :=
   alpha * Real.rpow (PDE.vecNormSq y) (alpha / 2 - 1) * PDE.vecDot w u +
     alpha * (alpha - 2) * Real.rpow (PDE.vecNormSq y) (alpha / 2 - 2) *
       PDE.vecDot y w * PDE.vecDot y u
 
 /-- Differentiating the first radial jet gives the exact second jet. -/
-theorem hasFDerivAt_radialProfile_first {d : ℕ} (alpha : ℝ) (y w : PDE.Vec d)
+theorem hasFDerivAt_radialProfile_first  (y w : PDE.Vec d)
     (hy : y ≠ 0) :
     HasFDerivAt (fun z => fderiv ℝ (radialProfile alpha) z w)
       ((PDE.vecDot y w *
@@ -78,13 +80,14 @@ theorem hasFDerivAt_radialProfile_first {d : ℕ} (alpha : ℝ) (y w : PDE.Vec d
   exact fderiv_radialProfile_apply alpha z w hz
 
 /-- The exterior radial Hessian evaluated on arbitrary directions. -/
-theorem radialProfile_hessian {d : ℕ} (alpha : ℝ) (y w u : PDE.Vec d)
+theorem radialProfile_hessian  (y w u : PDE.Vec d)
     (hy : y ≠ 0) :
     fderiv ℝ (fun z => fderiv ℝ (radialProfile alpha) z w) y u =
       radialHessianForm alpha y w u := by
   rw [(hasFDerivAt_radialProfile_first alpha y w hy).fderiv]
   simp only [radialHessianForm, smul_apply, smul_eq_mul, add_apply, seedDotLinear_apply]
   ring
+end
 
 /-- The radial Hessian has a positive direction in dimensions at least two. -/
 theorem radialHessian_positive_direction (d : ℕ) (hd : 2 ≤ d) (alpha : ℝ)

@@ -15,9 +15,11 @@ A proved contiguous relation raises the first parameter above zero without chang
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer
 
 open Filter Asymptotics
+section
+variable (a : ℝ) (b : Pos)
 
 /-- The second contiguous coefficient after Gamma cancellation. -/
-theorem expansionCoeff_contiguous_second (a : ℝ) (b : Pos) (hab : a < b.1) (n : ℕ) :
+theorem expansionCoeff_contiguous_second  (hab : a < b.1) (n : ℕ) :
     -((a - b.1) / (b.1 * (b.1 + 1))) *
       expansionCoeff (a + 1) (b.1 + 2) n =
       Real.Gamma b.1 / Real.Gamma (b.1 - a) *
@@ -34,14 +36,14 @@ theorem expansionCoeff_contiguous_second (a : ℝ) (b : Pos) (hab : a < b.1) (n 
   ring
 
 /-- The constant coefficient of the contiguous expansion. -/
-theorem expansionCoeff_contiguous_zero (a : ℝ) (b : Pos) (hab : a < b.1) :
+theorem expansionCoeff_contiguous_zero  (hab : a < b.1) :
     expansionCoeff a b.1 0 = -((a - b.1) / (b.1 * (b.1 + 1))) *
       expansionCoeff (a + 1) (b.1 + 2) 0 := by
   rw [expansionCoeff_contiguous_second a b hab]
   simp only [expansionCoeff, poch_zero, Nat.factorial_zero, Nat.cast_one, mul_one, div_one]
 
 /-- The higher coefficients of the contiguous expansion. -/
-theorem expansionCoeff_contiguous_succ (a : ℝ) (b : Pos) (hab : a < b.1) (n : ℕ) :
+theorem expansionCoeff_contiguous_succ  (hab : a < b.1) (n : ℕ) :
     expansionCoeff a b.1 (n + 1) = expansionCoeff (a + 1) (b.1 + 1) n +
       -((a - b.1) / (b.1 * (b.1 + 1))) *
         expansionCoeff (a + 1) (b.1 + 2) (n + 1) := by
@@ -58,7 +60,7 @@ theorem expansionCoeff_contiguous_succ (a : ℝ) (b : Pos) (hab : a < b.1) (n : 
   ring
 
 /-- The exact matching of finite contiguous expansions at adjacent truncation orders. -/
-theorem mExpansion_contiguous (a : ℝ) (b : Pos) (hab : a < b.1) (N : ℕ)
+theorem mExpansion_contiguous  (hab : a < b.1) (N : ℕ)
     (X : ℝ) (hX : 0 < X) :
     mExpansion a b.1 (N + 1) X = mExpansion (a + 1) (b.1 + 1) N X +
       (-((a - b.1) / (b.1 * (b.1 + 1))) * X) *
@@ -103,5 +105,6 @@ theorem mExpansion_contiguous (a : ℝ) (b : Pos) (hab : a < b.1) (N : ℕ)
   rw [expansionCoeff_contiguous_zero a b hab]
   change _ + k * _ * _ = _ + (_ + k * _ * _)
   linarith only [hs]
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer

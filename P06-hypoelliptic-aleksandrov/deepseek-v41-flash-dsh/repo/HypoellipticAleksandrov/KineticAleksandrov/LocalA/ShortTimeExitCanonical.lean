@@ -15,24 +15,18 @@ def ballEvolutionQuery {d : ℕ} {v₀ : PDE.Vec d} {R : ℝ}
     (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t}) :
     EvolutionQuery (PDE.euclideanBall v₀ R) (fun _ => 0) :=
   evolutionQueryOfState _ _ P.1.time T.1 T.2.le (ballStartState P)
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B) (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
 
 /-- The physical ball transition is the master measure at its literal valid query.
 Terminal states retain the evolution coordinate order (velocity, position). -/
-def ballTransition (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement) {d : ℕ} (hd : 1 ≤ d)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
+def ballTransition 
     (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t}) :
     Measure (EvolutionAmbientState d) :=
   (localBallKernel hH hLE hd hlam hLam B hB v₀ hR).master (ballEvolutionQuery P T)
 
 /-- The actual uniquely chosen ball kernel inherits the proved full marginal bundle. -/
-theorem localBallKernel_marginal (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement) {d : ℕ} (hd : 1 ≤ d)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R) :
+theorem localBallKernel_marginal  :
     HasParabolicMarginalBundle (PDE.euclideanBall v₀ R) (fun _ => 0)
       (PDE.isOpen_euclideanBall v₀ R).measurableSet (zIndependentCoefficient B)
       (localBallKernel hH hLE hd hlam hLam B hB v₀ hR) := by
@@ -52,11 +46,7 @@ theorem localBallKernel_marginal (hH : HormanderHypoellipticityStatement)
   exact hk ▸ hpar
 
 /-- First marginal mass equals joint terminal mass at every physical starting position. -/
-theorem ballTransition_mass_eq_marginal (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement) {d : ℕ} (hd : 1 ≤ d)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
+theorem ballTransition_mass_eq_marginal 
     (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t}) :
     (ballTransition hH hLE hd hlam hLam B hB v₀ hR P T).real univ =
       (parabolicMarginalKernel (localBallKernel hH hLE hd hlam hLam B hB v₀ hR)
@@ -73,5 +63,6 @@ theorem ballTransition_mass_eq_marginal (hH : HormanderHypoellipticityStatement)
   rw [Measure.map_apply measurable_subtype_coe MeasurableSet.univ,
     preimage_univ, K.firstMarginal_apply _ _ MeasurableSet.univ] at huniv
   exact congrArg ENNReal.toReal huniv.symm
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

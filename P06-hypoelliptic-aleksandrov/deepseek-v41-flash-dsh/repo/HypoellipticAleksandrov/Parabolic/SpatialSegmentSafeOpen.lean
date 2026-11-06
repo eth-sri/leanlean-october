@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.SpatialDifferenceQuotient
 public import Mathlib.Analysis.Convex.Segment
 public import Mathlib.Topology.Compactness.Compact
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Spatial-segment-safe carriers
@@ -22,21 +23,21 @@ open scoped Convex
 /-- The points whose full directed segment to the given spatial shift remains
 inside `U`. -/
 noncomputable def spatialSegmentSafeSet {d : ℕ}
-    (U : Set (TimeVelocity d)) (k : Fin d) (h : ℝ) :
-    Set (TimeVelocity d) :=
+    (U : HypoellipticAleksandrov.Parabolic.TVSet d) (k : Fin d) (h : ℝ) :
+    HypoellipticAleksandrov.Parabolic.TVSet d :=
   {z | [z -[ℝ] spatialShift k h z] ⊆ U}
 
 /-- Membership in the spatial-segment-safe carrier is its defining segment
 containment condition. -/
 @[simp] theorem mem_spatialSegmentSafeSet_iff {d : ℕ}
-    (U : Set (TimeVelocity d)) (k : Fin d) (h : ℝ)
+    (U : HypoellipticAleksandrov.Parabolic.TVSet d) (k : Fin d) (h : ℝ)
     (z : TimeVelocity d) :
     z ∈ spatialSegmentSafeSet U k h ↔
       [z -[ℝ] spatialShift k h z] ⊆ U := Iff.rfl
 
 /-- The maximal spatial-segment-safe carrier of an open set is open. -/
 theorem isOpen_spatialSegmentSafeSet {d : ℕ}
-    (U : Set (TimeVelocity d)) (hU : IsOpen U)
+    (U : HypoellipticAleksandrov.Parabolic.TVSet d) (hU : IsOpen U)
     (k : Fin d) (h : ℝ) :
     IsOpen (spatialSegmentSafeSet U k h) := by
   let F : TimeVelocity d × ℝ → TimeVelocity d := fun p =>
@@ -52,15 +53,15 @@ theorem isOpen_spatialSegmentSafeSet {d : ℕ}
   intro z hz
   have hzseg : [z -[ℝ] spatialShift k h z] ⊆ U := hz
   have hopen : IsOpen (F ⁻¹' U) := hU.preimage hF
-  have hprod : ({z} : Set (TimeVelocity d)) ×ˢ Icc (0 : ℝ) 1 ⊆ F ⁻¹' U := by
+  have hprod : ({z} : HypoellipticAleksandrov.Parabolic.TVSet d) ×ˢ Icc (0 : ℝ) 1 ⊆ F ⁻¹' U := by
     rintro ⟨z', s⟩ ⟨hz', hs⟩
     simp only [mem_singleton_iff] at hz'
     subst z'
     rw [segment_eq_image' ℝ z (spatialShift k h z)] at hzseg
     exact hzseg (mem_image_of_mem _ hs)
-  obtain ⟨(u : Set (TimeVelocity d)), (v : Set ℝ), hu, hv, hzu, hIv, huv⟩ :=
+  obtain ⟨(u : HypoellipticAleksandrov.Parabolic.TVSet d), (v : Set ℝ), hu, hv, hzu, hIv, huv⟩ :=
     generalized_tube_lemma (X := TimeVelocity d) (Y := ℝ)
-      (s := ({z} : Set (TimeVelocity d))) (t := Icc (0 : ℝ) 1)
+      (s := ({z} : HypoellipticAleksandrov.Parabolic.TVSet d)) (t := Icc (0 : ℝ) 1)
       (n := F ⁻¹' U) (isCompact_singleton (x := z)) isCompact_Icc hopen hprod
   refine Filter.mem_of_superset (hu.mem_nhds (hzu (mem_singleton z))) ?_
   intro z' hz'

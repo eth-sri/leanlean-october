@@ -9,12 +9,12 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 open scoped Classical
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ)
 
 /-- The actual terminal family is measurable even on its zero-duration face. -/
 theorem enlarged_terminal_family_measurable
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ) :
+     :
     Measurable (enlargedActiveTerminalFamily hH hLE hlam hLam A c J b) := by
   let E := enlargedVisitExitKernel hH hLE hlam hLam A (visitActiveUnion c J) b
   have hS : MeasurableSet {q : Point | q.time = b} :=
@@ -29,19 +29,16 @@ theorem enlarged_terminal_family_measurable
 
 /-- Kernel packaging of the already defined actual terminal family. -/
 def enlargedTerminalFamilyKernel
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ) : Kernel Point Point :=
+     : Kernel Point Point :=
   ⟨enlargedActiveTerminalFamily hH hLE hlam hLam A c J b,
     enlarged_terminal_family_measurable hH hLE hlam hLam A c J b⟩
 
 /-- The actual terminal kernel is uniformly finite with bound one. -/
 instance enlargedTerminalFamilyKernel_isFiniteKernel
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ) :
+     :
     IsFiniteKernel (enlargedTerminalFamilyKernel hH hLE hlam hLam A c J b) :=
   ⟨1, ENNReal.one_lt_top,
     enlarged_terminal_family_mass_le_one hH hLE hlam hLam A c J b⟩
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

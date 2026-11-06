@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.SpatialSobolev
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Extensionality of the spatial `H¹₀` value map
@@ -19,7 +20,7 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-variable {d : ℕ} {Ω : Set (PDE.Vec d)}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
 
 private theorem weakGradientGraph_snd_eq_of_fst_eq
     {p : ℝ≥0∞} [Fact (1 ≤ p)]
@@ -76,7 +77,7 @@ private theorem h1HilbertGraph_valueCLM_injective
 
 /-- Equality of scalar `L²` values determines a spatial `H¹₀` graph point. -/
 theorem valueCLM_injective
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) :
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) :
     Function.Injective (valueCLM hΩ) := by
   intro u v huv
   apply Subtype.ext

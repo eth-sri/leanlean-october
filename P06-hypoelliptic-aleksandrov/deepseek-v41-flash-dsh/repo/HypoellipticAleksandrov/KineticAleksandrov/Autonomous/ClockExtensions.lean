@@ -32,7 +32,7 @@ theorem clockCutoff_eq_one {y : ℝ} (hy : |y| ≤ 3 / 4) : clockCutoff y = 1 :=
 /-- Away from the cutoff region it vanishes on a neighborhood, not just at one point. -/
 theorem clockCutoff_eventually_zero {y : ℝ} (hy : ¬ |y| < 1) :
     ∀ᶠ t in 𝓝 y, clockCutoff t = 0 := by
-  have hh : (7 / 8 : ℝ) < |y| := by linarith only [not_lt.mp hy]
+  have hh : (7 / 8 : ℝ) < |y| := by linarith
   have hn : ∀ᶠ t in 𝓝 y, (7 / 8 : ℝ) < |t| :=
     (isOpen_lt continuous_const continuous_abs).mem_nhds hh
   filter_upwards [hn] with t ht
@@ -92,7 +92,7 @@ theorem Clock.extendedDiffusion_eq {lam : ℝ} (c : Clock) (a : ℝ → ℝ → 
     c.extendedDiffusion lam a e s y = c.diffusion a e s y := by
   have hy' : (-3 / 4 : ℝ) < y ∧ y < 3 / 4 := hy
   have hb : |y| ≤ 3 / 4 := (abs_lt.mpr
-    ⟨by linarith only [hy'.1], hy'.2⟩).le
+    ⟨by linarith, hy'.2⟩).le
   simp only [Clock.extendedDiffusion, clockCutoff_eq_one hb, one_mul, sub_self, zero_mul,
     add_zero]
 
@@ -108,18 +108,18 @@ theorem Clock.extendedDiffusion_bounds {lam Lam : ℝ} (hlam : 0 < lam)
     have ht1 : clockCutoff y ≤ 1 := clockCutoff.le_one
     have h1 := mul_nonneg ht0 (sub_nonneg.mpr hb.1)
     have h2 := mul_nonneg (sub_nonneg.mpr ht1) (sub_nonneg.mpr (by
-      linarith only [hlam] : 3 * lam / 5 ≤ lam))
+      linarith : 3 * lam / 5 ≤ lam))
     have h3 := mul_nonneg ht0 (sub_nonneg.mpr hb.2)
     have h4 := mul_nonneg (sub_nonneg.mpr ht1) (sub_nonneg.mpr (by
-      linarith only [hlam, hLam] : lam ≤ 3 * Lam))
+      linarith : lam ≤ 3 * Lam))
     simp only [Clock.extendedDiffusion]
-    constructor <;> nlinarith only [h1, h2, h3, h4]
+    constructor <;> nlinarith
   · have ht : clockCutoff y = 0 := by
       apply clockCutoff.zero_of_le_dist
-      have hh : (7 / 8 : ℝ) ≤ |y| := by linarith only [not_lt.mp hy]
+      have hh : (7 / 8 : ℝ) ≤ |y| := by linarith
       simpa only [Real.dist_eq, sub_zero, clockCutoff] using hh
     simp only [Clock.extendedDiffusion, ht, zero_mul, sub_zero, one_mul, zero_add]
-    constructor <;> linarith only [hlam, hLam]
+    constructor <;> linarith
 
 /-- The convex extension of the derivative retains the universal source bounds. -/
 theorem Clock.extendedDriftDerivative_bounds (c : Clock) (y : ℝ) :
@@ -132,10 +132,10 @@ theorem Clock.extendedDriftDerivative_bounds (c : Clock) (y : ℝ) :
     have h1 := mul_nonneg ht0 (sub_nonneg.mpr hb.1)
     have h2 := mul_nonneg ht0 (sub_nonneg.mpr hb.2)
     simp only [Clock.extendedDriftDerivative]
-    constructor <;> nlinarith only [h1, h2, ht0, ht1]
+    constructor <;> nlinarith
   · have ht : clockCutoff y = 0 := by
       apply clockCutoff.zero_of_le_dist
-      have hh : (7 / 8 : ℝ) ≤ |y| := by linarith only [not_lt.mp hy]
+      have hh : (7 / 8 : ℝ) ≤ |y| := by linarith
       simpa only [Real.dist_eq, sub_zero, clockCutoff] using hh
     simp only [Clock.extendedDriftDerivative, ht, zero_mul, zero_add, sub_zero]
     norm_num
@@ -174,12 +174,12 @@ theorem Clock.extendedDrift_eq (c : Clock) {y : ℝ} (hy : y ∈ normalizedActiv
     · rw [abs_of_nonneg ht.1]
       exact ht.2.trans hy'.2.le
     · rw [abs_of_nonpos ht.2]
-      linarith only [ht.1, hy'.1]
+      linarith
   have hh : ∀ t ∈ Set.uIcc (0 : ℝ) y,
       HasDerivAt c.drift (c.extendedDriftDerivative t) t := by
     intro t ht
     have hb := hd t ht
-    have hs : |t| < 1 := by linarith only [hb]
+    have hs : |t| < 1 := by linarith
     simpa only [Clock.extendedDriftDerivative, clockCutoff_eq_one hb, one_mul,
       add_sub_cancel_right] using! c.hasDerivAt_drift hs
   have heq := intervalIntegral.integral_eq_sub_of_hasDerivAt hh

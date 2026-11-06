@@ -67,7 +67,7 @@ theorem below_four_core_start_band (hpush : PushforwardStatement)
   intro A c H s R hR e hs he hc hr
   let J := coreStartOuterInterval H c
   let T := s + R ^ 2 - e.1.time
-  have ht : 0 < T := sub_pos.mpr (WithTop.coe_lt_coe.mp e.2.1)
+  have ht := sub_pos.mpr (WithTop.coe_lt_coe.mp e.2.1)
   have htR : T ≤ R ^ 2 := by dsimp [T]; linarith
   have hJ := coreStartOuterInterval_contains_active H c
   obtain ⟨G, hG, hG0, hGd, hGp, hGn⟩ := hd A c J R T e.1 hR ht htR hc hr hJ he

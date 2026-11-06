@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.SpacetimeMollifier
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Support of spacetime mollification

@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.ClassicalInputs
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.LocalizedKrylovGeometry
 public import HypoellipticAleksandrov.Parabolic.ScalarDirichletComparison
 public import HypoellipticAleksandrov.Parabolic.AffineScalarCalculus
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Closure regularity and nonnegativity of the localized source solution
@@ -26,7 +27,7 @@ variable {d : ℕ}
 
 section Congruence
 
-variable {V W : TimeVelocity d → ℝ} {D : Set (TimeVelocity d)}
+variable {V W : TimeVelocity d → ℝ} {D : HypoellipticAleksandrov.Parabolic.TVSet d}
 
 private theorem eventually_slice_time (hD : IsOpen D) {z : TimeVelocity d} (hz : z ∈ D) :
     ∀ᶠ r in 𝓝 z.1, (r, z.2) ∈ D := by

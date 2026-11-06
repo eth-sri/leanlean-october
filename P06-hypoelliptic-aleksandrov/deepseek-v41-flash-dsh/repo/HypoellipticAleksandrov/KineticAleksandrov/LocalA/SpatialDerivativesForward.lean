@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.SpatialDerivativesRepresentation
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.SpatialDerivativesSmooth
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Spatial derivatives of the source-local solution controlled by its raw oscillation -/
 

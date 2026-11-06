@@ -17,14 +17,14 @@ theorem closure_localStrip {d : ℕ} {a T : ℝ} (haT : a < T) (v₀ : PDE.Vec d
   have heq : localStrip a T v₀ R = H ⁻¹'
       (Ioo a T ×ˢ (univ ×ˢ PDE.euclideanBall v₀ R)) := by
     ext P
-    simp only [localStrip, H, mem_preimage, mem_prod, mem_Ioo, mem_univ, true_and]
+    simp
     change (a < P.time ∧ P.time < T ∧ P.velocity ∈ PDE.euclideanBall v₀ R) ↔
       (a < P.time ∧ P.time < T) ∧ P.velocity ∈ PDE.euclideanBall v₀ R
     tauto
   rw [heq, ← H.preimage_closure, closure_prod_eq, closure_prod_eq,
     closure_Ioo haT.ne, closure_univ]
   ext P
-  simp only [localClosedStrip, H, mem_preimage, mem_prod, mem_Icc, mem_univ, true_and]
+  simp
   change ((a ≤ P.time ∧ P.time ≤ T) ∧
     P.velocity ∈ closure (PDE.euclideanBall v₀ R)) ↔
     (a ≤ P.time ∧ P.time ≤ T ∧ P.velocity ∈ closure (PDE.euclideanBall v₀ R))

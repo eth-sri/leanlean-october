@@ -6,6 +6,7 @@ import Mathlib.MeasureTheory.Integral.Bochner.Set
 import Mathlib.MeasureTheory.Integral.Bochner.ContinuousLinearMap
 import Mathlib.MeasureTheory.Function.AEEqOfIntegral
 import all Mathlib.Basic.Complex.Basic
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Testing the inverse Fourier function against measurable exit-data sets -/
 
@@ -16,13 +17,13 @@ open Set MeasureTheory Parabolic SectionTwo Reconstruction
 open scoped ENNReal
 
 /-- Integrating an `L¹` element over any measurable exit-data set is a continuous linear map. -/
-def exitL1SetIntegral {d : ℕ} (m : Measure (TimeVelocity d)) (E : Set (TimeVelocity d)) :
+def exitL1SetIntegral {d : ℕ} (m : Measure (TimeVelocity d)) (E : HypoellipticAleksandrov.Parabolic.TVSet d) :
     Lp ℂ 1 m →L[ℂ] ℂ :=
   (L1.integralCLM' ℂ).comp (LpToLpRestrictCLM (TimeVelocity d) ℂ ℂ m 1 E)
 
 /-- The continuous linear testing map is the literal set integral of a representative. -/
 theorem exitL1SetIntegral_apply {d : ℕ} (m : Measure (TimeVelocity d))
-    (E : Set (TimeVelocity d)) (f : Lp ℂ 1 m) :
+    (E : HypoellipticAleksandrov.Parabolic.TVSet d) (f : Lp ℂ 1 m) :
     exitL1SetIntegral m E f = ∫ z in E, f z ∂m := by
   unfold exitL1SetIntegral
   rw [ContinuousLinearMap.comp_apply]
@@ -55,15 +56,12 @@ theorem exitL1Inversion_eq_integral {d : ℕ}
     dsimp only
     rw [Circle.smul_def]
     exact congrArg (fun c : ℂ => c • exitL1Fourier ν ξ) (exitInversePairing_phase ξ y))
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B) (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R) (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
 
 /-- Multiplication by an inverse phase preserves joint integrability. -/
 theorem ballExitInverseIntegrand_integrable
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
-    (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
+    
     (hv : P.1.velocity ∈ PDE.euclideanBall v₀ (3 * R / 4))
     (hT : T.1 - P.1.time = R ^ 2 / 8) (y : PDE.Vec d) :
     let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
@@ -91,15 +89,10 @@ theorem ballExitInverseIntegrand_integrable
 
 /-- The complete-space inverse agrees with the joint inverse representative on every test set. -/
 theorem ballExitL1Inversion_setIntegral
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
-    (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
+    
     (hv : P.1.velocity ∈ PDE.euclideanBall v₀ (3 * R / 4))
     (hT : T.1 - P.1.time = R ^ 2 / 8) (y : PDE.Vec d)
-    (E : Set (TimeVelocity d)) :
+    (E : HypoellipticAleksandrov.Parabolic.TVSet d) :
     let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
     (∫ z in E, (exitL1Inversion ν y : TimeVelocity d → ℂ) z ∂exitMarginal ν) =
       ((2 * Real.pi) ^ d)⁻¹ •
@@ -148,12 +141,7 @@ theorem ballExitL1Inversion_setIntegral
 
 /-- The complete-space inverse has the explicit inverse-integral representative at every y. -/
 theorem ballExitL1Inversion_coe
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
-    (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
+    
     (hv : P.1.velocity ∈ PDE.euclideanBall v₀ (3 * R / 4))
     (hT : T.1 - P.1.time = R ^ 2 / 8) (y : PDE.Vec d) :
     let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
@@ -172,5 +160,6 @@ theorem ballExitL1Inversion_coe
   intro E _hE _hfin
   rw [integral_smul]
   exact ballExitL1Inversion_setIntegral hH hLE hd hlam hLam B hB v₀ hR P T hv hT y E
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

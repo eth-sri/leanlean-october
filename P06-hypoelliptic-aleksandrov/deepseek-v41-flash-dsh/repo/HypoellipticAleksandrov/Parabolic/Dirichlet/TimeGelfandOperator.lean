@@ -2,6 +2,7 @@ module
 
 public import Mathlib.Analysis.Normed.Operator.Bilinear
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.WeakTimeDerivative
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Bounded spatial operators on Gelfand weak time derivatives
@@ -19,10 +20,12 @@ open scoped ENNReal RealInnerProductSpace
 noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
+section
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
 
 /-- Precompose an `H10` dual functional with a bounded spatial operator. -/
 noncomputable def h10HilbertGraphDualPrecompose
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (hΩ : IsOpen Ω)
     (S : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ) :
     H10HilbertGraphDual hΩ →L[ℝ] H10HilbertGraphDual hΩ :=
@@ -30,7 +33,7 @@ noncomputable def h10HilbertGraphDualPrecompose
 
 /-- Evaluation of dual precomposition. -/
 @[simp] theorem h10HilbertGraphDualPrecompose_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω)
     (S : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)
     (ell : H10HilbertGraphDual hΩ) (v : H10HilbertGraph hΩ) :
@@ -38,7 +41,7 @@ noncomputable def h10HilbertGraphDualPrecompose
   rfl
 
 private theorem ae_reverseTimeValueCLM_compLpL_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (hΩ : IsOpen Ω) (T : ℝ)
     (S : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)
     (u : ReverseTimeL2V hΩ T) :
@@ -53,7 +56,7 @@ private theorem ae_reverseTimeValueCLM_compLpL_apply
   rw [hvalue, hS]
 
 private theorem ae_h10HilbertGraphDualPrecompose_compLpL_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (hΩ : IsOpen Ω) (T : ℝ)
     (S : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)
     (g : ReverseTimeL2VStar hΩ T) :
@@ -63,7 +66,7 @@ private theorem ae_h10HilbertGraphDualPrecompose_compLpL_apply
   ContinuousLinearMap.coeFn_compLpL (h10HilbertGraphDualPrecompose hΩ S) g
 
 private theorem ae_pivot_symmetric_left_pairing
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (hΩ : IsOpen Ω) (T : ℝ)
     (u : ReverseTimeL2V hΩ T)
     (S : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)
@@ -85,7 +88,7 @@ private theorem ae_pivot_symmetric_left_pairing
   rw [hSu, hu, hS]
 
 private theorem ae_pivot_symmetric_right_pairing
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (hΩ : IsOpen Ω) (T : ℝ)
     (g : ReverseTimeL2VStar hΩ T)
     (S : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)
@@ -102,7 +105,7 @@ private theorem ae_pivot_symmetric_right_pairing
 /-- A Gelfand weak derivative is preserved by a bounded spatial operator that
 is symmetric for the scalar `L²` pivot. -/
 theorem HasGelfandWeakTimeDerivative.comp_of_pivot_symmetric
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     {hΩ : IsOpen Ω} {T : ℝ} {hT : 0 < T}
     {u : ReverseTimeL2V hΩ T} {g : ReverseTimeL2VStar hΩ T}
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
@@ -138,5 +141,6 @@ theorem HasGelfandWeakTimeDerivative.comp_of_pivot_symmetric
         ∂reverseTimeVolume T) := by
       exact congrArg Neg.neg <|
         (integral_congr_ae (ae_pivot_symmetric_right_pairing hΩ T g S v eta)).symm
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

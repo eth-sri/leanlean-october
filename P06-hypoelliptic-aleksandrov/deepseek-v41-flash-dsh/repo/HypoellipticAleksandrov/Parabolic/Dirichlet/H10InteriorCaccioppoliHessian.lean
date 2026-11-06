@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.H10InteriorCaccioppoliGradientRawTransport
 public import HypoellipticAleksandrov.Parabolic.SpatialDifferenceQuotientL2WeakDerivative
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Interior Hessian recovery from the Caccioppoli estimate
@@ -24,7 +26,7 @@ namespace IsReverseTimeVariationalEnergySolution
 /-- The interior Caccioppoli estimate supplies ordered weak spatial Hessian
 representatives, with uniform `L²` control of every matrix entry. -/
 theorem exists_gradientCoord_representatives_hessian_uniform_interior_caccioppoli
-    {d : ℕ} {Ω inner O : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner O : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (hd : 0 < d)
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω)
@@ -135,7 +137,7 @@ theorem exists_gradientCoord_representatives_hessian_uniform_interior_caccioppol
     hraw' a b c F haSmooth hbSmooth hcSmooth hFSmooth hLower hUpper hcNonpos
       hA hB hBD hq hqD hfD initial u g hdu hu
   refine ⟨G, hGmem, hGslice, ?_⟩
-  let Qin : Set (TimeVelocity d) := Set.Ioo τ₁ τ₂ ×ˢ O
+  let Qin : HypoellipticAleksandrov.Parabolic.TVSet d := Set.Ioo τ₁ τ₂ ×ˢ O
   let B : ℝ := C_cac * ((r₁ - r₀) +
     (reverseTimeGalerkinPrimalRadius r₀ r₁ lam h₀₁ hlam hΩ hΩbounded
       a b c F haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial) ^ 2)

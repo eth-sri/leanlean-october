@@ -9,6 +9,8 @@ import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 import Mathlib.Tactic.Positivity
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Retention for the original globally piecewise-C1 curve
@@ -309,7 +311,7 @@ private theorem comparison_at_center {d N : ℕ} (hN : 3 ≤ N)
   exact sub_nonpos.mp h
 
 
-private theorem master_mass_eq_marginal_mass {d : ℕ} {Ω : Set (PDE.Vec d)}
+private theorem master_mass_eq_marginal_mass {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     {γ : ℝ → PDE.Vec d} (hΩ : MeasurableSet Ω) (K : MovingFiberKernel Ω γ)
     (σ τ : ℝ) (hστ : σ ≤ τ) (v z : PDE.Vec d) (hv : v ∈ movingDomain Ω γ σ)
     (hfirst : (parabolicMarginalKernel K hΩ σ τ hστ) ⟨v, hv⟩ =
@@ -393,7 +395,7 @@ private theorem prelimit_of_partition {d N : ℕ} (hN : 3 ≤ N)
   exact hint
 
 
-private theorem endpoint_master_mass {d : ℕ} {Ω : Set (PDE.Vec d)}
+private theorem endpoint_master_mass {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     {γ : ℝ → PDE.Vec d} (hΩ : MeasurableSet Ω) (B : CoefficientField d)
     (K : MovingFiberKernel Ω γ)
     (hpar : HasParabolicMarginalBundle Ω γ hΩ (zIndependentCoefficient B) K)
@@ -417,7 +419,7 @@ private theorem barrierC_pos_of_choice {d N : ℕ} (hN : 3 ≤ N) (lam Lam : ℝ
 /-- The source prelimit retention bound for the original supplied curve. -/
 theorem moving_ball_retention_prelimit_of_curve (d : ℕ) (hd : 1 ≤ d)
     (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam) :
-      ∀ (m Lb : ℝ) (D : Set (PDE.Vec d)) (B : CoefficientField d)
+      ∀ (m Lb : ℝ) (D : HypoellipticAleksandrov.VecSet d) (B : CoefficientField d)
         (b : PDE.Vec d → PDE.Vec d), SourceSetting lam Lam m Lb D B b →
       ∀ (σ τ H ρ : ℝ) (γ : ℝ → PDE.Vec d), σ ≤ τ → 0 < ρ →
         IsContinuousPiecewiseC1 γ → HasCurveSpeedOn H γ σ τ →
@@ -457,7 +459,7 @@ theorem moving_ball_retention_prelimit_of_curve (d : ℕ) (hd : 1 ≤ d)
 /-- Passing the interior radius to the tube radius gives the exact source limiting rate. -/
 theorem moving_ball_retention_at_radius_of_curve (d : ℕ) (hd : 1 ≤ d)
     (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam) :
-      ∀ (m Lb : ℝ) (D : Set (PDE.Vec d)) (B : CoefficientField d)
+      ∀ (m Lb : ℝ) (D : HypoellipticAleksandrov.VecSet d) (B : CoefficientField d)
         (b : PDE.Vec d → PDE.Vec d), SourceSetting lam Lam m Lb D B b →
       ∀ (σ τ H ρ : ℝ) (γ : ℝ → PDE.Vec d), σ ≤ τ → 0 < ρ →
         IsContinuousPiecewiseC1 γ → HasCurveSpeedOn H γ σ τ →
@@ -491,7 +493,7 @@ theorem moving_ball_retention_at_radius_of_curve (d : ℕ) (hd : 1 ≤ d)
   exact hpre s hs hsρ
 
 
-private theorem master_mass_on_terminal_domain {d : ℕ} {Ω : Set (PDE.Vec d)}
+private theorem master_mass_on_terminal_domain {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (q : EvolutionQuery Ω γ) :
     K.master q (evolutionStateSet Ω γ q.val.2.1) = K.master q univ := by
   have h := congrArg (fun μ : Measure (EvolutionAmbientState d) => μ univ)
@@ -503,7 +505,7 @@ private theorem master_mass_on_terminal_domain {d : ℕ} {Ω : Set (PDE.Vec d)}
 theorem moving_ball_retention_of_curve (d : ℕ) (hd : 1 ≤ d)
     (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam) :
     ∃ C : ℝ, 0 < C ∧
-      ∀ (m Lb : ℝ) (D : Set (PDE.Vec d)) (B : CoefficientField d)
+      ∀ (m Lb : ℝ) (D : HypoellipticAleksandrov.VecSet d) (B : CoefficientField d)
         (b : PDE.Vec d → PDE.Vec d), SourceSetting lam Lam m Lb D B b →
       ∀ (σ τ H ρ : ℝ) (γ : ℝ → PDE.Vec d), σ ≤ τ → 0 < ρ →
         IsContinuousPiecewiseC1 γ → HasCurveSpeedOn H γ σ τ →

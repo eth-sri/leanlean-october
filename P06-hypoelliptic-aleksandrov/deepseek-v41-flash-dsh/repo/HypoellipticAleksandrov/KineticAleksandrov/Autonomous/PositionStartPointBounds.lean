@@ -16,7 +16,7 @@ theorem positionStartQuadratic_box_bound (c : Clock) (Y : ℝ) (p : Point)
       visitQuadratic c (p.velocity 0) ∧
     positionStartCutoff Y c.r c.positive (p.position 0) *
       visitQuadratic c (p.velocity 0) ≤
-      9 * c.r ^ 2 / 16 * (box 4 c.r Y).indicator (fun _ => (1 : ℝ))
+      9 * c.r ^ 2 / 16 * (box 4 c.r Y).indicator (fun _ => 1)
         (p.position 0, p.velocity 0) := by
   have hchi := (positionStartCutoff_properties Y c.r c.positive).2 (p.position 0)
   have hq := visitQuadratic_nonneg c hv

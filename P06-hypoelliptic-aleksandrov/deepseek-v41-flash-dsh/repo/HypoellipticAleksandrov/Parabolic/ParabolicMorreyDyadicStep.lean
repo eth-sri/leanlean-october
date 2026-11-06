@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.ParabolicPoincarePhysical
 public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyNestedProjection
 public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyDyadicForwardBox
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # One dyadic parabolic Morrey step
@@ -71,10 +72,10 @@ private theorem dyadic_parent_normalization_factor
     ← Real.rpow_add hr]
   unfold parabolicMorreyExponent
   congr 1
-  · field_simp [hdenom]
+  · field_simp
   · congr 1
     push_cast
-    field_simp [hdenom]
+    field_simp
     ring
 
 private theorem smooth_parent_residual_mean_bound
@@ -102,7 +103,7 @@ private theorem smooth_parent_residual_mean_bound
               (parabolicBox 1 r t v)) := by
   let f : TimeVelocity d -> Real := fun z =>
     u z - parabolicMorreyBoxAffineProjection t v r u z
-  let Q : Set (TimeVelocity d) := parabolicBox 1 r t v
+  let Q : HypoellipticAleksandrov.Parabolic.TVSet d := parabolicBox 1 r t v
   let A : Real := parabolicLpNormOn d (timeDerivative u) Q +
     ∑ i : Fin d, ∑ j : Fin d,
       parabolicLpNormOn d (fun z => velocityHessian u z i j) Q
@@ -112,9 +113,9 @@ private theorem smooth_parent_residual_mean_bound
   have hrawbound : parabolicLpNormOn d f Q <= r ^ 2 * (C * A) := by
     calc
       parabolicLpNormOn d f Q = r ^ 2 * ((r ^ 2)⁻¹ * parabolicLpNormOn d f Q) := by
-        field_simp [hr.ne']
+        field_simp
       _ <= r ^ 2 * (C * A) := mul_le_mul_of_nonneg_left (by
-        simpa only [f, Q, A] using hP) (sq_nonneg r)
+        simpa using hP) (sq_nonneg r)
   change parabolicLpMeanNormOn d f Q hres <=
     C * (2 : Real) ^ (-(d : Real) / ((d : Real) + 1)) *
       r ^ parabolicMorreyExponent d * A
@@ -122,7 +123,7 @@ private theorem smooth_parent_residual_mean_bound
     (volume_parabolicMorreyBox_pos t v hr)
     (volume_parabolicMorreyBox_lt_top t v hr) f hraw hres,
     volume_parabolicMorreyBox_toReal t v hr]
-  refine (mul_le_mul_of_nonneg_left (by simpa only [Q] using hrawbound)
+  refine (mul_le_mul_of_nonneg_left (by simpa using hrawbound)
     (Real.rpow_nonneg (inv_nonneg.mpr
       (mul_nonneg (pow_nonneg (by norm_num) _) (pow_nonneg hr.le _))) _)).trans_eq ?_
   have hp : (1 / parabolicExponent d).toReal = 1 / ((d : Real) + 1) := by
@@ -150,11 +151,11 @@ private theorem dyadic_step_factor
         r ^ parabolicMorreyExponent d := by
   have htwo : (0 : Real) < 2 := by norm_num
   have hdenom : (d : Real) + 1 ≠ 0 := by positivity
-  have hratio : r / (r / 2) = 2 := by field_simp [hr.ne']
+  have hratio : r / (r / 2) = 2 := by field_simp
   rw [hratio]
   have hexp : ((d : Real) + 2) / ((d : Real) + 1) +
       (-(d : Real) / ((d : Real) + 1)) = 2 / ((d : Real) + 1) := by
-    field_simp [hdenom]
+    field_simp
     ring
   have hpow : (2 : Real) ^ (((d : Real) + 2) / ((d : Real) + 1)) *
       2 ^ (-(d : Real) / ((d : Real) + 1)) =
@@ -218,8 +219,8 @@ private theorem dyadic_child_affine_bound
                 (parabolicDyadicSourceBox index).center)) := by
   let qP := parabolicDyadicSourceBox index
   let qC := parabolicDyadicSourceBox (parabolicDyadicChildIndex index child)
-  let QP : Set (TimeVelocity d) := parabolicBox 1 qP.radius qP.baseTime qP.center
-  let QC : Set (TimeVelocity d) := parabolicBox 1 qC.radius qC.baseTime qC.center
+  let QP : HypoellipticAleksandrov.Parabolic.TVSet d := parabolicBox 1 qP.radius qP.baseTime qP.center
+  let QC : HypoellipticAleksandrov.Parabolic.TVSet d := parabolicBox 1 qC.radius qC.baseTime qC.center
   let R : Real := parabolicLpNormOn d (timeDerivative u) QP +
     ∑ i : Fin d, ∑ j : Fin d,
       parabolicLpNormOn d (fun z => velocityHessian u z i j) QP
@@ -242,7 +243,7 @@ private theorem dyadic_child_affine_bound
         parabolicLpMeanNormOn d
           (fun z => u z - parabolicMorreyBoxAffineProjection
             qP.baseTime qP.center qP.radius u z) QP hres := by
-      simpa only [qP, qC, QP] using hnested
+      simpa using hnested
     _ <= (1 + 3 * (d : Real)) *
         (qP.radius / qC.radius) ^ (((d : Real) + 2) / ((d : Real) + 1)) *
         (C_P * (2 : Real) ^ (-(d : Real) / ((d : Real) + 1)) *
@@ -300,8 +301,8 @@ private theorem dyadic_child_projection_bound
                 (parabolicDyadicSourceBox index).center)) := by
   let qP := parabolicDyadicSourceBox index
   let qC := parabolicDyadicSourceBox (parabolicDyadicChildIndex index child)
-  let QP : Set (TimeVelocity d) := parabolicBox 1 qP.radius qP.baseTime qP.center
-  let QC : Set (TimeVelocity d) := parabolicBox 1 qC.radius qC.baseTime qC.center
+  let QP : HypoellipticAleksandrov.Parabolic.TVSet d := parabolicBox 1 qP.radius qP.baseTime qP.center
+  let QC : HypoellipticAleksandrov.Parabolic.TVSet d := parabolicBox 1 qC.radius qC.baseTime qC.center
   let R : Real := parabolicLpNormOn d (timeDerivative u) QP +
     ∑ i : Fin d, ∑ j : Fin d,
       parabolicLpNormOn d (fun w => velocityHessian u w i j) QP
@@ -316,7 +317,7 @@ private theorem dyadic_child_projection_bound
     (hC_P qP.baseTime qP.center qP.radius hqP u hu) hres
   have hnested := parabolicMorreyNestedProjection_abs_sub_le_largeResidual
     qP.baseTime qP.center hqP qC.baseTime qC.center hqC hsub u z (by
-      simpa only [qC] using hz) hres
+      simpa using hz) hres
   change _ <= ((1 + 3 * (d : Real)) * (2 : Real) ^ (2 / ((d : Real) + 1)) * C_P) *
     qP.radius ^ parabolicMorreyExponent d * R
   calc
@@ -325,7 +326,7 @@ private theorem dyadic_child_projection_bound
         parabolicLpMeanNormOn d
           (fun w => u w - parabolicMorreyBoxAffineProjection
             qP.baseTime qP.center qP.radius u w) QP hres := by
-      simpa only [qP, qC, QP] using hnested
+      simpa using hnested
     _ <= (1 + 3 * (d : Real)) *
         (qP.radius / qC.radius) ^ (((d : Real) + 2) / ((d : Real) + 1)) *
         (C_P * (2 : Real) ^ (-(d : Real) / ((d : Real) + 1)) *

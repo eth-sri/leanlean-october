@@ -22,19 +22,17 @@ def nativeStripSource (g : BoundedBorel Point) : BoundedBorel Point :=
   ⟨g ∘ sectionTwoPoint, g.measurable.comp (continuous_sectionTwoPoint 1).measurable, by
     obtain ⟨C, hC, hg⟩ := g.exists_bound
     exact ⟨C, hC, fun p => hg _⟩⟩
+section
+variable (H : Interval) (K : MovingFiberKernel (intervalDomain H) (fun _ => 0)) (T : ℝ) (g : BoundedBorel Point)
 
 /-- The physical source potential is the actual Duhamel potential in native coordinates. -/
-def stripSourcePotential (H : Interval)
-    (K : MovingFiberKernel (intervalDomain H) (fun _ => 0))
-    (T : ℝ) (g : BoundedBorel Point) (p : Point) : ℝ :=
+def stripSourcePotential  (p : Point) : ℝ :=
   duhamelPotential K T (nativeStripSource g) (sectionTwoPoint p)
 
 /-- Every valid physical pole has the actual signed bounded-source Green representation. -/
-theorem stripSourcePotential_eq_green (H : Interval)
-    (K : MovingFiberKernel (intervalDomain H) (fun _ => 0)) (T : ℝ)
-    (g : BoundedBorel Point) (e : StripPole H (T : WithTop ℝ)) :
+theorem stripSourcePotential_eq_green  (e : StripPole H (T : WithTop ℝ)) :
     stripSourcePotential H K T g e.1 = stripPotentialOfKernel H K T g e := by
-  have heT : e.1.time < T := WithTop.coe_lt_coe.mp e.2.1
+  have heT := WithTop.coe_lt_coe.mp e.2.1
   have hh := duhamelPotential_eq_green_bounded H K T (nativeStripSource g)
     e.1.time heT (stripPoleState H T e)
     (greenMeasure K e.1.time _ (stripHorizon_pos H T e) _)
@@ -44,6 +42,7 @@ theorem stripSourcePotential_eq_green (H : Interval)
       (show AEStronglyMeasurable (fun p : Point => g p) _ from
         g.measurable.aestronglyMeasurable)]
   exact hh
+end
 
 /-- Exchanging physical coordinates converts the actual source potential to native weak forcing. -/
 theorem stripSourcePotential_weak {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)

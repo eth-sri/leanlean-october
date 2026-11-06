@@ -2,6 +2,7 @@ module
 
 public import PDEFoundation.Sobolev.H1.HilbertGraph
 public import PDEFoundation.Sobolev.H1.ZeroBoundary
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Hilbert realization of spatial `H¹₀`
@@ -23,12 +24,12 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-variable {d : ℕ} {Ω : Set (PDE.Vec d)}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
 
 /-- The continuous linear equivalence from the Hilbert-norm weak-gradient
 graph to the corresponding maximum-norm graph. -/
 noncomputable def h1HilbertGraphContinuousLinearEquiv
-    (Ω : Set (PDE.Vec d)) :
+    (Ω : HypoellipticAleksandrov.VecSet d) :
     PDE.H1HilbertGraph Ω ≃L[ℝ] PDE.H1Graph Ω :=
   (PDE.h1HilbertAmbientEquiv Ω).ofSubmodule'
     (PDE.weakGradientGraph Ω (2 : ℝ≥0∞)).toSubmodule
@@ -39,11 +40,13 @@ theorem h1HilbertGraphContinuousLinearEquiv_apply
     h1HilbertGraphContinuousLinearEquiv Ω z =
       PDE.H1HilbertGraph.toH1Graph z :=
   rfl
+section
+variable (hΩ : IsOpen Ω)
 
 /-- The linear map taking an actual bundled smooth compactly supported test
 function to the Hilbert-norm weak-gradient graph. -/
 noncomputable def smoothCompactlySupportedH1HilbertGraphLinearMap
-    (hΩ : IsOpen Ω) :
+     :
     PDE.WeakTestFunction Ω →ₗ[ℝ] PDE.H1HilbertGraph Ω :=
   (h1HilbertGraphContinuousLinearEquiv Ω).symm.toLinearMap.comp
     (PDE.smoothCompactlySupportedW1pGraphLinearMap
@@ -52,74 +55,74 @@ noncomputable def smoothCompactlySupportedH1HilbertGraphLinearMap
 /-- The submodule of Hilbert-graph points coming from actual bundled smooth
 compactly supported test functions. -/
 noncomputable def smoothCompactlySupportedH1HilbertGraphSubmodule
-    (hΩ : IsOpen Ω) :
+     :
     Submodule ℝ (PDE.H1HilbertGraph Ω) :=
   LinearMap.range (smoothCompactlySupportedH1HilbertGraphLinearMap hΩ)
 
 /-- The closed Hilbert-graph submodule defining spatial `H¹₀`. -/
 noncomputable def h10HilbertGraphClosedSubmodule
-    (hΩ : IsOpen Ω) :
+     :
     ClosedSubmodule ℝ (PDE.H1HilbertGraph Ω) :=
   (smoothCompactlySupportedH1HilbertGraphSubmodule hΩ).closure
 
 /-- The complete Hilbert realization of spatial `H¹₀(Ω)`. -/
-noncomputable abbrev H10HilbertGraph (hΩ : IsOpen Ω) :=
+noncomputable abbrev H10HilbertGraph  :=
   ↥((h10HilbertGraphClosedSubmodule hΩ).toSubmodule)
 
-noncomputable instance (hΩ : IsOpen Ω) :
+noncomputable instance  :
     SeminormedAddCommGroup (H10HilbertGraph hΩ) := by
   exact inferInstanceAs
     (SeminormedAddCommGroup
       ((h10HilbertGraphClosedSubmodule hΩ).toSubmodule))
 
-noncomputable instance (hΩ : IsOpen Ω) :
+noncomputable instance  :
     NormedAddCommGroup (H10HilbertGraph hΩ) := by
   exact inferInstanceAs
     (NormedAddCommGroup ((h10HilbertGraphClosedSubmodule hΩ).toSubmodule))
 
-noncomputable instance (hΩ : IsOpen Ω) :
+noncomputable instance  :
     NormedSpace ℝ (H10HilbertGraph hΩ) := by
   exact inferInstanceAs
     (NormedSpace ℝ ((h10HilbertGraphClosedSubmodule hΩ).toSubmodule))
 
-noncomputable instance (hΩ : IsOpen Ω) :
+noncomputable instance  :
     InnerProductSpace ℝ (H10HilbertGraph hΩ) := by
   exact inferInstanceAs
     (InnerProductSpace ℝ
       ((h10HilbertGraphClosedSubmodule hΩ).toSubmodule))
 
-noncomputable instance (hΩ : IsOpen Ω) :
+noncomputable instance  :
     CompleteSpace (H10HilbertGraph hΩ) :=
   (h10HilbertGraphClosedSubmodule hΩ).isClosed.completeSpace_coe
 
 /-- The continuous scalar-value map from spatial `H¹₀` to spatial `L²`. -/
-noncomputable def valueCLM (hΩ : IsOpen Ω) :
-    H10HilbertGraph hΩ →L[ℝ] PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
+noncomputable def valueCLM  :
+    H10HilbertGraph hΩ →L[ℝ] PDE.ScalarLp Ω 2 :=
   PDE.H1HilbertGraph.valueCLM.comp
     (h10HilbertGraphClosedSubmodule hΩ).toSubmodule.subtypeL
 
 /-- The continuous weak-gradient map from spatial `H¹₀` to vector-valued
 spatial `L²`. -/
-noncomputable def gradientCLM (hΩ : IsOpen Ω) :
+noncomputable def gradientCLM  :
     H10HilbertGraph hΩ →L[ℝ]
       PDE.HilbertVectorLp Ω (2 : ℝ≥0∞) :=
   PDE.H1HilbertGraph.gradientCLM.comp
     (h10HilbertGraphClosedSubmodule hΩ).toSubmodule.subtypeL
 
 @[simp]
-theorem valueCLM_apply (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) :
+theorem valueCLM_apply  (u : H10HilbertGraph hΩ) :
     valueCLM hΩ u = PDE.H1HilbertGraph.value (u : PDE.H1HilbertGraph Ω) :=
   rfl
 
 @[simp]
-theorem gradientCLM_apply (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) :
+theorem gradientCLM_apply  (u : H10HilbertGraph hΩ) :
     gradientCLM hΩ u = PDE.H1HilbertGraph.gradient (u : PDE.H1HilbertGraph Ω) :=
   rfl
 
 /-- The canonical inclusion of an actual bundled smooth compactly supported
 test function into the Hilbert realization of spatial `H¹₀`. -/
 noncomputable def smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph
-    (hΩ : IsOpen Ω) (φ : PDE.WeakTestFunction Ω) : H10HilbertGraph hΩ :=
+     (φ : PDE.WeakTestFunction Ω) : H10HilbertGraph hΩ :=
   ⟨smoothCompactlySupportedH1HilbertGraphLinearMap hΩ φ,
     subset_closure
       (LinearMap.mem_range_self
@@ -128,7 +131,7 @@ noncomputable def smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph
 /-- Every Hilbert-graph `H¹₀` point is a sequential limit of images of actual
 bundled smooth compactly supported test functions. -/
 theorem exists_tendsto_smooth
-    (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) :
+     (u : H10HilbertGraph hΩ) :
     ∃ φ : ℕ → PDE.WeakTestFunction Ω,
       Tendsto
         (fun n => smoothCompactlySupportedH1HilbertGraphLinearMap hΩ (φ n))
@@ -159,7 +162,7 @@ theorem exists_tendsto_smooth
 /-- The direct Hilbert closure of actual tests is the pullback of the sibling
 maximum-norm zero-boundary graph through the Hilbert/max-norm equivalence. -/
 theorem h10HilbertGraphClosedSubmodule_eq_comap
-    (hΩ : IsOpen Ω) :
+     :
     h10HilbertGraphClosedSubmodule hΩ =
       (PDE.h10GraphClosedSubmodule hΩ).comap
         (h1HilbertGraphContinuousLinearEquiv Ω).toContinuousLinearMap := by
@@ -199,7 +202,7 @@ theorem h10HilbertGraphClosedSubmodule_eq_comap
 /-- The continuous linear equivalence between the direct Hilbert `H¹₀`
 closure and the sibling maximum-norm `H¹₀` graph. -/
 noncomputable def h10HilbertGraphContinuousLinearEquiv
-    (hΩ : IsOpen Ω) :
+     :
     H10HilbertGraph hΩ ≃L[ℝ] PDE.H10Graph hΩ :=
   (ContinuousLinearEquiv.ofEq
     (h10HilbertGraphClosedSubmodule hΩ).toSubmodule
@@ -209,5 +212,6 @@ noncomputable def h10HilbertGraphContinuousLinearEquiv
       (h10HilbertGraphClosedSubmodule_eq_comap hΩ))).trans
     ((h1HilbertGraphContinuousLinearEquiv Ω).ofSubmodule'
       (PDE.h10GraphClosedSubmodule hΩ).toSubmodule)
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

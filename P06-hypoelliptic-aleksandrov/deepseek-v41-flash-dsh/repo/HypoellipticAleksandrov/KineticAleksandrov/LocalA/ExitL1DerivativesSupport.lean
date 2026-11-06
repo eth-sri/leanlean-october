@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.ConeSupport
 public import Mathlib.Analysis.Normed.Module.Multilinear.Basic
 import Mathlib.MeasureTheory.Measure.OpenPos
 import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Compact position support and its raw volume for the single real inverse -/
 
@@ -13,19 +14,16 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory Parabolic SectionTwo
 open scoped ENNReal
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B) (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R) (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
 
 /-- The Euclidean cone is contained in a compact coordinate ball of radius `R³`. -/
 theorem ballExit_ae_position_bound
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
-    (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
+    
     (hT : T.1 - P.1.time = R ^ 2 / 8) :
     ∀ᵐ p ∂ballExit hH hLE hd hlam hLam B hB v₀ hR P T, ‖p.1‖ ≤ R ^ 3 := by
   filter_upwards [ballExit_cone hH hLE hd hlam hLam B hB v₀ hR P T] with p hp
-  have ht : p.2.1 - P.1.time ≤ R ^ 2 / 8 := by linarith only [hp.2.1, hT]
+  have ht : p.2.1 - P.1.time ≤ R ^ 2 / 8 := by linarith
   have hcone := (PDE.norm_le_vecEuclideanNorm p.1).trans hp.2.2
   have hs := mul_le_mul_of_nonneg_left ht hR.le
   have hpow : R * (R ^ 2 / 8) ≤ R ^ 3 := by
@@ -35,19 +33,14 @@ theorem ballExit_ae_position_bound
 
 /-- The smooth real inverse vanishes everywhere outside the compact reached-position ball. -/
 theorem ballExitL1Density_zero_outside
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
-    (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
+    
     (hv : P.1.velocity ∈ PDE.euclideanBall v₀ (3 * R / 4))
     (hT : T.1 - P.1.time = R ^ 2 / 8) :
     ∀ y : PDE.Vec d, R ^ 3 < ‖y‖ →
       exitL1Density (ballExit hH hLE hd hlam hLam B hB v₀ hR P T) y = 0 := by
   let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
   let G := exitL1Density ν
-  let U : Set (PDE.Vec d) := {y | R ^ 3 < ‖y‖}
+  let U : HypoellipticAleksandrov.VecSet d := {y | R ^ 3 < ‖y‖}
   have hU : IsOpen U := isOpen_lt continuous_const continuous_norm
   have hm := measurable_exitJointDensity ν
   have hs := ballExit_ae_position_bound hH hLE hd hlam hLam B hB v₀ hR P T hT
@@ -55,7 +48,7 @@ theorem ballExitL1Density_zero_outside
     P T hv hT, ae_withDensity_iff hm.ennreal_ofReal] at hs
   have hs' := Measure.ae_ae_of_ae_prod hs
   have hnon := ballExitPositionKernel_density hH hLE hd hlam hLam B hB v₀ hR P T hv hT
-  have hzero : ∀ᵐ y ∂(volume : Measure (PDE.Vec d)), y ∈ U → G y = 0 := by
+  have hzero : ∀ᵐ y ∂(HypoellipticAleksandrov.VecVolume d), y ∈ U → G y = 0 := by
     filter_upwards [hs'] with y hy
     intro hyU
     apply Lp.ext
@@ -76,10 +69,11 @@ theorem ballExitL1Density_zero_outside
   have hcont := (ballExitL1Density_contDiff hH hLE hd hlam hLam B hB v₀ hR
     P T hv hT).continuous
   exact fun y hy => Measure.eqOn_open_of_ae_eq hae hU hcont.continuousOn continuousOn_const hy
+end
 
 /-- The support bounding ball has the required raw `R^(3d)` volume. -/
 theorem exitPositionBoundingBall_volume {d : ℕ} {R : ℝ} (hR : 0 < R) :
-    (volume : Measure (PDE.Vec d)) (Metric.closedBall 0 (R ^ 3)) =
+    (HypoellipticAleksandrov.VecVolume d) (Metric.closedBall 0 (R ^ 3)) =
       ENNReal.ofReal ((2 : ℝ) ^ d * R ^ (3 * d)) := by
   rw [Real.volume_pi_closedBall _ (pow_pos hR 3).le, Fintype.card_fin,
     mul_pow, ← pow_mul]
@@ -115,13 +109,13 @@ theorem exitDerivative_integral_le_volume {d : ℕ} {E : Type*} [NormedAddCommGr
     setIntegral_eq_integral_of_forall_compl_eq_zero (fun y hy => by
       rw [Metric.mem_closedBall, dist_zero_right, not_le] at hy
       rw [hz y hy, norm_zero])
-  have hf : (volume : Measure (PDE.Vec d)) (Metric.closedBall 0 (R ^ 3)) < ⊤ :=
+  have hf : (HypoellipticAleksandrov.VecVolume d) (Metric.closedBall 0 (R ^ 3)) < ⊤ :=
     (isCompact_closedBall (0 : PDE.Vec d) (R ^ 3)).measure_lt_top
   have hv := exitPositionBoundingBall_volume (d := d) hR
   have hb := norm_setIntegral_le_of_norm_le_const
     (f := fun y => ‖iteratedFDeriv ℝ j G y‖) hf (fun y _hy =>
-    by simpa only [Real.norm_eq_abs, abs_of_nonneg (norm_nonneg _)] using hbound y)
-  have hvr : (volume : Measure (PDE.Vec d)).real (Metric.closedBall 0 (R ^ 3)) =
+    by simpa using hbound y)
+  have hvr : (HypoellipticAleksandrov.VecVolume d).real (Metric.closedBall 0 (R ^ 3)) =
       (2 : ℝ) ^ d * R ^ (3 * d) := by
     rw [Measure.real, hv, ENNReal.toReal_ofReal (by positivity)]
   rw [he, hvr, Real.norm_eq_abs] at hb

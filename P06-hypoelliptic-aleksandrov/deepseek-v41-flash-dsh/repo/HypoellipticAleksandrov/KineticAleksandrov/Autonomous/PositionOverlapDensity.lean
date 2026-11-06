@@ -15,26 +15,21 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory ProbabilityTheory Filter
 open scoped ENNReal
+section
+variable {X Y : Type*} [MeasurableSpace X] [MeasurableSpace Y] [MeasurableSpace.CountableOrCountablyGenerated X Y] (k : Kernel X Y)
 
 /-- The joint extended density of a finite kernel relative to a sigma-finite reference. -/
-def positionKernelDensity {X Y : Type*} [MeasurableSpace X] [MeasurableSpace Y]
-    [MeasurableSpace.CountableOrCountablyGenerated X Y]
-    (k : Kernel X Y) (m : Measure Y) [SigmaFinite m] : X → Y → ℝ≥0∞ :=
+def positionKernelDensity  (m : Measure Y) [SigmaFinite m] : X → Y → ℝ≥0∞ :=
   fun x y => m.toFinite.rnDeriv m y * k.rnDeriv (Kernel.const X m.toFinite) x y
 
 /-- This chosen kernel density is jointly measurable. -/
-theorem measurable_positionKernelDensity {X Y : Type*}
-    [MeasurableSpace X] [MeasurableSpace Y]
-    [MeasurableSpace.CountableOrCountablyGenerated X Y]
-    (k : Kernel X Y) (m : Measure Y) [SigmaFinite m] :
+theorem measurable_positionKernelDensity  (m : Measure Y) [SigmaFinite m] :
     Measurable (fun p : X × Y => positionKernelDensity k m p.1 p.2) :=
   ((Measure.measurable_rnDeriv m.toFinite m).comp measurable_snd).mul
     (Kernel.measurable_rnDeriv k (Kernel.const X m.toFinite))
 
 /-- Absolute continuity identifies the joint density with each actual kernel measure. -/
-theorem withDensity_positionKernelDensity {X Y : Type*}
-    [MeasurableSpace X] [MeasurableSpace Y] [MeasurableSpace.CountableOrCountablyGenerated X Y]
-    (k : Kernel X Y) [IsFiniteKernel k] (m : Measure Y) [SigmaFinite m]
+theorem withDensity_positionKernelDensity  [IsFiniteKernel k] (m : Measure Y) [SigmaFinite m]
     (x : X) (hx : k x ≪ m) :
     m.withDensity (positionKernelDensity k m x) = k x := by
   let eta := Kernel.const X m.toFinite
@@ -49,5 +44,6 @@ theorem withDensity_positionKernelDensity {X Y : Type*}
     (Kernel.measurable_rnDeriv_right k eta x),
     Measure.withDensity_rnDeriv_eq m.toFinite m (toFinite_absolutelyContinuous m)]
   exact hk
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

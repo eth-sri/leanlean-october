@@ -6,6 +6,7 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSourceShift
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialFormShiftedPositivePartSmooth
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialFormBounds
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.IntegralGronwall
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Sharp affine upper bound for reverse-time variational solutions -/
 
@@ -40,7 +41,7 @@ private theorem affineUpper_setIntegral_eq
   exact inter_eq_left.mpr (Ioc_subset_Icc_self.trans fun r hr => ⟨hr.1, hr.2.trans ht.2⟩)
 
 private theorem affineUpper_value_integral
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     (_hΩbounded : Bornology.IsBounded Ω) (T : ℝ) (hT : 0 < T)
     (M N : ℝ≥0) (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hd : HasGelfandWeakTimeDerivative hΩ T hT u g)
@@ -70,8 +71,8 @@ private theorem affineUpper_value_integral
     _ = _ := affineUpper_setIntegral_eq _ ht
 
 private theorem affineUpper_initial_energy_zero
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {T : ℝ} (hT : 0 < T)
-    (M N : ℝ≥0) (Ubar : C(Icc 0 T, PDE.ScalarLp Ω (2 : ℝ≥0∞)))
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {T : ℝ} (hT : 0 < T)
+    (M N : ℝ≥0) (Ubar : C(Icc 0 T, PDE.ScalarLp Ω 2))
     (hzero : shiftedPositivePartValue M (Ubar ⟨0, ⟨le_rfl, hT.le⟩⟩) = 0) :
     ‖shiftedPositivePartValue (reverseTimeAffineThreshold M N 0)
       (Ubar ⟨affineUpperClamp T 0, affineUpperClamp_mem hT 0⟩)‖ ^ 2 = 0 := by
@@ -83,7 +84,7 @@ private theorem affineUpper_initial_energy_zero
   norm_num
 
 private theorem affineUpper_shiftedPositivePart_zero
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω) (T : ℝ) (hT : 0 < T)
     (M N : ℝ≥0) (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hd : HasGelfandWeakTimeDerivative hΩ T hT u g) (K : ℝ) (hK : 0 ≤ K)
@@ -178,7 +179,7 @@ private theorem affineUpper_shiftedPositivePart_zero
   exact norm_eq_zero.mp (sq_eq_zero_iff.mp hs)
 
 private theorem affineUpper_ae_rate
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
@@ -244,7 +245,7 @@ private theorem affineUpper_ae_rate
 /-- A reverse-time variational energy solution is bounded above by the sharp
 affine envelope determined by its initial and source bounds. -/
 theorem IsReverseTimeVariationalEnergySolution.reverseTimeHilbertRepresentative_le_affine
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)

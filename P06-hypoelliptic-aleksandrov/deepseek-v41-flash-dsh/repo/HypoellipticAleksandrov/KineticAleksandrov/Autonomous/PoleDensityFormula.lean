@@ -44,23 +44,25 @@ theorem poleInverseVelocity_le (c : Clock) (p : Point) :
     apply (div_le_div_iff₀ hv hc).mpr
     nlinarith
   next => exact div_nonneg (by norm_num) hc.le
+section
+variable (c : Clock) (e : Point) (F : Point → ℝ)
 
 /-- The literal physical pole density obtained by removing the velocity weight. -/
-def polePhysicalDensity (c : Clock) (e : Point) (F : Point → ℝ) (p : Point) : ℝ :=
+def polePhysicalDensity  (p : Point) : ℝ :=
   ((|c.vbar| * c.r ^ 2) * (c.r ^ 6)⁻¹ * F (c.map e p)) * poleInverseVelocity c p
 
 /-- The physical density formula is Borel. -/
-theorem polePhysicalDensity_measurable (c : Clock) (e : Point) (F : Point → ℝ)
+theorem polePhysicalDensity_measurable 
     (hF : Measurable F) : Measurable (polePhysicalDensity c e F) :=
   (measurable_const.mul (hF.comp (c.continuous_map e).measurable)).mul
     (poleInverseVelocity_measurable c)
 
 /-- The physical density formula is nonnegative when the normalized density is nonnegative. -/
-theorem polePhysicalDensity_nonneg (c : Clock) (e : Point) (F : Point → ℝ)
-    (hF : ∀ p, 0 ≤ F p) (p : Point) : 0 ≤ polePhysicalDensity c e F p := by
-  exact mul_nonneg (mul_nonneg (mul_nonneg
+theorem polePhysicalDensity_nonneg 
+    (hF : ∀ p, 0 ≤ F p) (p : Point) : 0 ≤ polePhysicalDensity c e F p := mul_nonneg (mul_nonneg (mul_nonneg
     (mul_nonneg (abs_nonneg _) (sq_nonneg _)) (inv_nonneg.mpr (pow_nonneg c.positive.le _)))
     (hF _)) (poleInverseVelocity_nonneg c p)
+end
 
 /-- The actual physical Green has exactly the density computed from the actual normalized one. -/
 theorem clock_physical_green_density

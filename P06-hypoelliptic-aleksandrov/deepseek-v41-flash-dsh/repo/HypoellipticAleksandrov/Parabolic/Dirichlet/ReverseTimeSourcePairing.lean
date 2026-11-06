@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeDualPairingRight
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSourceBochner
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Reverse-time source pairings
@@ -22,7 +23,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 /-- Pairing the negative reverse-time source with a separated test equals its
 literal raw-source integral. -/
 theorem reverseTimeNegativeSource_pairing_eq_integral_raw
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (F : ℝ → PDE.Vec d → ℝ)

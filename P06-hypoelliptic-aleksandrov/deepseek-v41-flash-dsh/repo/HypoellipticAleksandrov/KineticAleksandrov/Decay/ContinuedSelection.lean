@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Decay.SourceNotation
 import HypoellipticAleksandrov.KineticAleksandrov.Decay.MinorantScaling
 import Mathlib.Probability.Kernel.Composition.Comp
 import Mathlib.MeasureTheory.Integral.Lebesgue.Map
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Domination of continued retained measures -/
 
@@ -15,7 +16,7 @@ open Set MeasureTheory
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 
-private theorem le_of_map_subtype_le {d : ℕ} {D : Set (PDE.Vec d)}
+private theorem le_of_map_subtype_le {d : ℕ} {D : HypoellipticAleksandrov.VecSet d}
     {γ : ℝ → PDE.Vec d} {s : ℝ} (hD : MeasurableSet D)
     (μ ν : Measure (EvolutionState D γ s))
     (h : μ.map Subtype.val ≤ ν.map Subtype.val) : μ ≤ ν := by
@@ -26,7 +27,7 @@ private theorem le_of_map_subtype_le {d : ℕ} {D : Set (PDE.Vec d)}
   have hh := h (Subtype.val '' A)
   simpa only [he.map_apply, Subtype.coe_injective.preimage_image] using hh
 
-private theorem continued_full_composition {d : ℕ} {D : Set (PDE.Vec d)}
+private theorem continued_full_composition {d : ℕ} {D : HypoellipticAleksandrov.VecSet d}
     {γ : ℝ → PDE.Vec d} (hD : MeasurableSet D) (K : MovingFiberKernel D γ)
     (hcomp : K.HasComposition hD) (σ s T : ℝ) (hσs : σ ≤ s) (hsT : s ≤ T)
     (p : EvolutionState D γ σ) :
@@ -45,7 +46,7 @@ private theorem continued_full_composition {d : ℕ} {D : Set (PDE.Vec d)}
 
 /-- Continuation in a smaller domain preserves joint domination by the full evolution. -/
 theorem continued_measures_dominated {d : ℕ}
-    (D D0 : Set (PDE.Vec d)) (hD : MeasurableSet D) (hD0 : MeasurableSet D0)
+    (D D0 : HypoellipticAleksandrov.VecSet d) (hD : MeasurableSet D) (hD0 : MeasurableSet D0)
     (B : CoefficientField d) (b : PDE.Vec d → PDE.Vec d)
     (SD : TerminalOperatorFamily D stationary) (KD : MovingFiberKernel D stationary)
     (S0 : TerminalOperatorFamily D0 stationary) (K0 : MovingFiberKernel D0 stationary)

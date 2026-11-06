@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonLocalSpatialEnergy
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonLocalCutoff
 public import HypoellipticAleksandrov.Parabolic.HarnackUnitCylinder.ScalarHessian
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Value-energy identities for classical spatial slices
 
@@ -30,7 +32,7 @@ theorem scalarSpatialHessian_eq_spatialPartial_partial {d : ℕ}
 
 /-- Each time slice obeys the exact spatial cutoff value-energy identity. -/
 theorem integral_scalar_local_spatial_value_energy_slice {d : ℕ}
-    (a T : ℝ) (O : Set (PDE.Vec d)) (hO : IsOpen O)
+    (a T : ℝ) (O : HypoellipticAleksandrov.VecSet d) (hO : IsOpen O)
     (u ρ : TimeVelocity d → ℝ)
     (hu : IsScalarC12On u (Ioo a T ×ˢ O))
     (hρ : ContDiff ℝ (⊤ : ℕ∞) ρ) (hc : HasCompactSupport ρ)

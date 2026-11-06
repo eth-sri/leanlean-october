@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.SpatialDifferenceQuotient
 public import Mathlib.Topology.MetricSpace.Thickening
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Compact-open collars for spatial shifts
@@ -35,7 +36,7 @@ theorem dist_spatialShift
 /-- A compact subset of an open time--velocity set has a positive native
 collar stable under every coordinate shift of at most the collar radius. -/
 theorem IsCompact.exists_spatialShift_cthickening_collar
-    {d : ℕ} {K U : Set (TimeVelocity d)}
+    {d : ℕ} {K U : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hK : IsCompact K) (hU : IsOpen U) (hKU : K ⊆ U) :
     ∃ δ : ℝ, 0 < δ ∧ Metric.cthickening δ K ⊆ U ∧
       ∀ (k : Fin d) (h : ℝ), |h| ≤ δ →
@@ -50,7 +51,7 @@ theorem IsCompact.exists_spatialShift_cthickening_collar
 /-- A forward translate is supported in `U` when the corresponding backward
 shift maps its original support carrier into `U`. -/
 theorem tsupport_spatialTranslate_subset_of_mapsTo_spatialShift_neg
-    {d : ℕ} {α : Type*} [Zero α] {K U : Set (TimeVelocity d)}
+    {d : ℕ} {α : Type*} [Zero α] {K U : HypoellipticAleksandrov.Parabolic.TVSet d}
     (k : Fin d) (h : ℝ) (f : TimeVelocity d → α)
     (hfK : tsupport f ⊆ K)
     (hshift : Set.MapsTo (spatialShift k (-h)) K U) :

@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Scaling
 public import HypoellipticAleksandrov.Measure.TimeVelocity
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Density-to-point relations for parabolic boxes
@@ -25,7 +26,7 @@ noncomputable section
 /-- A relative superlevel-set bound on the unit parabolic box forces a lower
 bound on its closed terminal half-cube. -/
 def DensityToPoint (d : ℕ) (lam Lam beta g : ℝ) : Prop :=
-  ∀ (U : Set (TimeVelocity d)) (B : CoefficientField d) (u : TimeVelocity d → ℝ),
+  ∀ (U : HypoellipticAleksandrov.Parabolic.TVSet d) (B : CoefficientField d) (u : TimeVelocity d → ℝ),
     IsOpen U →
     parabolicClosedBox 1 1 0 0 ⊆ U →
     IsContinuousCoefficientOn B U →
@@ -34,14 +35,14 @@ def DensityToPoint (d : ℕ) (lam Lam beta g : ℝ) : Prop :=
     HasLowerEllipticityOn lam B (parabolicBox 1 1 0 0) →
     HasUpperEllipticityOn Lam B (parabolicBox 1 1 0 0) →
     IsParabolicSupersolutionOn B (fun _ ↦ 0) u (parabolicBox 1 1 0 0) →
-    beta * ((volume : Measure (TimeVelocity d)) (parabolicBox 1 1 0 0)).toReal ≤
-      ((volume : Measure (TimeVelocity d))
+    beta * ((HypoellipticAleksandrov.Parabolic.TVVolume d) (parabolicBox 1 1 0 0)).toReal ≤
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d)
         (parabolicBox 1 1 0 0 ∩ {z | 1 ≤ u z})).toReal →
     ∀ v ∈ velocityClosedCube (0 : PDE.Vec d) (1 / 2), g ≤ u (1, v)
 
 /-- Eliminates a density-to-point relation at fixed local coefficient and solution data. -/
 theorem DensityToPoint.apply {d : ℕ} {lam Lam beta g : ℝ}
-    (h : DensityToPoint d lam Lam beta g) (U : Set (TimeVelocity d))
+    (h : DensityToPoint d lam Lam beta g) (U : HypoellipticAleksandrov.Parabolic.TVSet d)
     (B : CoefficientField d) (u : TimeVelocity d → ℝ) (hU : IsOpen U)
     (hclosed : parabolicClosedBox 1 1 0 0 ⊆ U)
     (hB : IsContinuousCoefficientOn B U) (hu : ContDiffOn ℝ 2 u U)
@@ -49,9 +50,9 @@ theorem DensityToPoint.apply {d : ℕ} {lam Lam beta g : ℝ}
     (hlower : HasLowerEllipticityOn lam B (parabolicBox 1 1 0 0))
     (hupper : HasUpperEllipticityOn Lam B (parabolicBox 1 1 0 0))
     (hsuper : IsParabolicSupersolutionOn B (fun _ ↦ 0) u (parabolicBox 1 1 0 0))
-    (hdensity : beta * ((volume : Measure (TimeVelocity d))
+    (hdensity : beta * ((HypoellipticAleksandrov.Parabolic.TVVolume d)
       (parabolicBox 1 1 0 0)).toReal ≤
-      ((volume : Measure (TimeVelocity d))
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d)
         (parabolicBox 1 1 0 0 ∩ {z | 1 ≤ u z})).toReal)
     (v : PDE.Vec d) (hv : v ∈ velocityClosedCube (0 : PDE.Vec d) (1 / 2)) :
     g ≤ u (1, v) :=
@@ -102,7 +103,7 @@ theorem parabolicOperator_const_smul {d : ℕ} (B : CoefficientField d)
 
 /-- A positive constant multiple of a local zero-source supersolution is again one. -/
 theorem IsParabolicSupersolutionOn.const_smul {d : ℕ} {B : CoefficientField d}
-    {u : TimeVelocity d → ℝ} {V : Set (TimeVelocity d)} {c : ℝ} (hc : 0 ≤ c)
+    {u : TimeVelocity d → ℝ} {V : HypoellipticAleksandrov.Parabolic.TVSet d} {c : ℝ} (hc : 0 ≤ c)
     (h : IsParabolicSupersolutionOn B (fun _ ↦ 0) u V) :
     IsParabolicSupersolutionOn B (fun _ ↦ 0) (c • u) V := by
   intro z hz
@@ -147,8 +148,8 @@ theorem parabolicAffine_surjective {d : ℕ} {t₀ r : ℝ} {v₀ : PDE.Vec d}
 
 /-- The affine image of any set has the determinant factor of its parabolic linear part. -/
 theorem volume_parabolicAffine_image {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d) (r : ℝ)
-    (s : Set (TimeVelocity d)) :
-    (volume : Measure (TimeVelocity d)) (parabolicAffine t₀ v₀ r '' s) =
+    (s : HypoellipticAleksandrov.Parabolic.TVSet d) :
+    (HypoellipticAleksandrov.Parabolic.TVVolume d) (parabolicAffine t₀ v₀ r '' s) =
       ENNReal.ofReal |LinearMap.det (parabolicLinear (d := d) r :
         TimeVelocity d →ₗ[ℝ] TimeVelocity d)| * volume s := by
   let q : TimeVelocity d := (t₀, v₀)
@@ -156,7 +157,7 @@ theorem volume_parabolicAffine_image {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d) (
     funext z
     ext <;> simp [q, parabolicAffine, parabolicLinear]
   calc
-    (volume : Measure (TimeVelocity d)) (parabolicAffine t₀ v₀ r '' s) =
+    (HypoellipticAleksandrov.Parabolic.TVVolume d) (parabolicAffine t₀ v₀ r '' s) =
         volume ((fun z ↦ q + z) '' (parabolicLinear r '' s)) := by
       rw [ha, Set.image_image]
     _ = volume ((fun z ↦ -q + z) ⁻¹' (parabolicLinear r '' s)) := by

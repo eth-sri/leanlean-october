@@ -17,16 +17,18 @@ open Filter Asymptotics Set
 /-- The source's cancelled position similarity factor. -/
 def scalarPositionFactor (gamma : ScalarGamma) (Lam s : ℝ) : ℝ :=
   gamma.1 * F gamma Lam s - s / 3 * deriv (F gamma Lam) s
+section
+variable (gamma : ScalarGamma) (Lam : ℝ)
 
 /-- The cancelled position similarity factor is continuous. -/
-theorem scalarPositionFactor_continuous (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam) :
+theorem scalarPositionFactor_continuous  (hLam : 0 < Lam) :
     Continuous (scalarPositionFactor gamma Lam) := by
   have hf := F_contDiff_two gamma Lam hLam
   exact continuous_const.mul hf.continuous |>.sub
     ((continuous_id.div_const 3).mul (hf.continuous_deriv (by norm_num)))
 
 /-- The absolute position jet equals the reflected rescaling of the cancelled factor. -/
-theorem scalarGx_abs_rescaled (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam) (q : XV 1) :
+theorem scalarGx_abs_rescaled  (hLam : 0 < Lam) (q : XV 1) :
     |scalarGx gamma Lam q 0| =
       |scalarRescaled (scalarPositionFactor gamma Lam) (3 * gamma.1 - 3) q| := by
   rcases lt_trichotomy (q.1 0) 0 with hx | hx | hx
@@ -41,7 +43,7 @@ theorem scalarGx_abs_rescaled (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
     simp only [scalarPositionFactor, show (3 * gamma.1 - 3) / 3 = gamma.1 - 1 by ring]
 
 /-- The absolute velocity jet equals the reflected first-derivative rescaling. -/
-theorem scalarGv_abs_rescaled (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam) (q : XV 1) :
+theorem scalarGv_abs_rescaled  (hLam : 0 < Lam) (q : XV 1) :
     |scalarGv gamma Lam q 0| =
       |scalarRescaled (deriv (F gamma Lam)) (3 * gamma.1 - 1) q| := by
   rcases lt_trichotomy (q.1 0) 0 with hx | hx | hx
@@ -56,7 +58,7 @@ theorem scalarGv_abs_rescaled (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
     simp only [neg_mul, abs_neg, show (3 * gamma.1 - 1) / 3 = gamma.1 - 1 / 3 by ring]
 
 /-- The absolute Hessian jet equals the reflected second-derivative rescaling. -/
-theorem scalarHess_abs_rescaled (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
+theorem scalarHess_abs_rescaled  (hLam : 0 < Lam)
     (q : XV 1) : |scalarHess gamma Lam q 0 0| =
       |scalarRescaled (deriv (deriv (F gamma Lam))) (3 * gamma.1 - 2) q| := by
   rcases lt_trichotomy (q.1 0) 0 with hx | hx | hx
@@ -70,6 +72,7 @@ theorem scalarHess_abs_rescaled (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < La
     rw [scalarProfile_dvv_positive gamma Lam hLam q hx,
       scalarAnsatz_deriv2_v_power gamma Lam _ _ hLam hx]
     simp only [show (3 * gamma.1 - 2) / 3 = gamma.1 - 2 / 3 by ring]
+end
 
 /-- Native supremum norm in dimension one is exactly the sole scalar absolute value. -/
 theorem scalar_vec_norm (v : PDE.Vec 1) : ‖v‖ = |v 0| := by

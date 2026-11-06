@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.MovingKernel
 public import Mathlib.MeasureTheory.Measure.GiryMonad
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Continued measures by kernel integration
@@ -26,33 +27,35 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
 open MeasureTheory Set
 open scoped ENNReal
 
-variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d}
 
 /-- The canonical valid query of a fiber state is the explicit source query
 `(s, T, v, z)` with `v` in the moving domain. -/
 theorem evolutionQueryOfState_eq (s T : ℝ) (hsT : s ≤ T) (p : EvolutionState Ω γ s) :
     evolutionQueryOfState Ω γ s T hsT p =
       ⟨(s, T, p.1.1, p.1.2), hsT, p.2.1, Set.mem_univ _⟩ := rfl
+section
+variable (K : MovingFiberKernel Ω γ) {s T : ℝ}
 
 /-- The kernel from fiber states at time `s` to ambient states: run the master kernel from
 `s` to `T`. -/
-noncomputable def continuationKernel (K : MovingFiberKernel Ω γ) {s T : ℝ} (hsT : s ≤ T) :
+noncomputable def continuationKernel  (hsT : s ≤ T) :
     ProbabilityTheory.Kernel (EvolutionState Ω γ s) (EvolutionAmbientState d) :=
   ProbabilityTheory.Kernel.comap K.master (evolutionQueryOfState Ω γ s T hsT)
     (measurable_evolutionQueryOfState Ω γ s T hsT)
 
 /-- The continuation kernel evaluated at a fiber state is the master measure of its query. -/
-theorem continuationKernel_apply (K : MovingFiberKernel Ω γ) {s T : ℝ} (hsT : s ≤ T)
+theorem continuationKernel_apply  (hsT : s ≤ T)
     (p : EvolutionState Ω γ s) :
     continuationKernel K hsT p = K.master (evolutionQueryOfState Ω γ s T hsT p) := rfl
 
 /-- The continued measure of `R`: the integral of the continuation kernel against `R`. -/
-noncomputable def continuedMeasure (K : MovingFiberKernel Ω γ) {s T : ℝ} (hsT : s ≤ T)
+noncomputable def continuedMeasure  (hsT : s ≤ T)
     (R : Measure (EvolutionState Ω γ s)) : Measure (EvolutionAmbientState d) :=
   R.bind (continuationKernel K hsT)
 
 /-- Set-integral formula for the continued measure on measurable sets. -/
-theorem continuedMeasure_apply (K : MovingFiberKernel Ω γ) {s T : ℝ} (hsT : s ≤ T)
+theorem continuedMeasure_apply  (hsT : s ≤ T)
     (R : Measure (EvolutionState Ω γ s)) {A : Set (EvolutionAmbientState d)}
     (hA : MeasurableSet A) :
     continuedMeasure K hsT R A =
@@ -60,7 +63,7 @@ theorem continuedMeasure_apply (K : MovingFiberKernel Ω γ) {s T : ℝ} (hsT : 
   Measure.bind_apply hA (continuationKernel K hsT).measurable.aemeasurable
 
 /-- Any measure with the displayed set integrals is the continued measure. -/
-theorem eq_continuedMeasure_of_apply (K : MovingFiberKernel Ω γ) {s T : ℝ} (hsT : s ≤ T)
+theorem eq_continuedMeasure_of_apply  (hsT : s ≤ T)
     (R : Measure (EvolutionState Ω γ s)) {E : Measure (EvolutionAmbientState d)}
     (hE : ∀ A : Set (EvolutionAmbientState d), MeasurableSet A →
       E A = ∫⁻ p, K.master (evolutionQueryOfState Ω γ s T hsT p) A ∂R) :
@@ -68,7 +71,7 @@ theorem eq_continuedMeasure_of_apply (K : MovingFiberKernel Ω γ) {s T : ℝ} (
   Measure.ext fun A hA => (hE A hA).trans (continuedMeasure_apply K hsT R hA).symm
 
 /-- The continued measure has at most the mass of the initial measure. -/
-theorem continuedMeasure_univ_le (K : MovingFiberKernel Ω γ) {s T : ℝ} (hsT : s ≤ T)
+theorem continuedMeasure_univ_le  (hsT : s ≤ T)
     (R : Measure (EvolutionState Ω γ s)) :
     continuedMeasure K hsT R Set.univ ≤ R Set.univ := by
   rw [continuedMeasure_apply K hsT R MeasurableSet.univ]
@@ -77,13 +80,13 @@ theorem continuedMeasure_univ_le (K : MovingFiberKernel Ω γ) {s T : ℝ} (hsT 
     _ = R Set.univ := by simp
 
 /-- The continued measure of a finite measure is finite. -/
-instance isFiniteMeasure_continuedMeasure (K : MovingFiberKernel Ω γ) {s T : ℝ}
+instance isFiniteMeasure_continuedMeasure 
     (hsT : s ≤ T) (R : Measure (EvolutionState Ω γ s)) [IsFiniteMeasure R] :
     IsFiniteMeasure (continuedMeasure K hsT R) :=
   ⟨(continuedMeasure_univ_le K hsT R).trans_lt (measure_lt_top R _)⟩
 
 /-- Continuation is additive in the initial measure. -/
-theorem continuedMeasure_add (K : MovingFiberKernel Ω γ) {s T : ℝ} (hsT : s ≤ T)
+theorem continuedMeasure_add  (hsT : s ≤ T)
     (R₁ R₂ : Measure (EvolutionState Ω γ s)) :
     continuedMeasure K hsT (R₁ + R₂) =
       continuedMeasure K hsT R₁ + continuedMeasure K hsT R₂ := by
@@ -93,11 +96,12 @@ theorem continuedMeasure_add (K : MovingFiberKernel Ω γ) {s T : ℝ} (hsT : s 
     lintegral_add_measure]
 
 /-- Continuation is monotone in the initial measure. -/
-theorem continuedMeasure_mono (K : MovingFiberKernel Ω γ) {s T : ℝ} (hsT : s ≤ T)
+theorem continuedMeasure_mono  (hsT : s ≤ T)
     {R R' : Measure (EvolutionState Ω γ s)} (h : R ≤ R') :
     continuedMeasure K hsT R ≤ continuedMeasure K hsT R' := by
   refine Measure.le_iff.mpr fun A hA => ?_
   rw [continuedMeasure_apply K hsT _ hA, continuedMeasure_apply K hsT _ hA]
   exact lintegral_mono' h le_rfl
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Decay

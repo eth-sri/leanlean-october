@@ -7,6 +7,8 @@ import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialFormOperato
 import HypoellipticAleksandrov.Parabolic.Dirichlet.SmoothH10DenseRange
 import HypoellipticAleksandrov.Parabolic.Dirichlet.SmoothNeighborhoodSpatialSlices
 import HypoellipticAleksandrov.Parabolic.Dirichlet.WeakTestFunctionSobolevJet
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Stationary smooth barriers as literal variational solutions
 
@@ -23,7 +25,7 @@ open scoped ENNReal RealInnerProductSpace Matrix.Norms.Elementwise
 
 /-- A smooth stationary zero-boundary barrier solves its literal variational source equation. -/
 theorem stationarySourceCurve_withDrift {d : ℕ}
-    {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (hΩb : Bornology.IsBounded Ω)
+    {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (hΩb : Bornology.IsBounded Ω)
     (a T : ℝ) (haT : a < T) (A : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
     (hb : ContDiff ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => b z.1 z.2))

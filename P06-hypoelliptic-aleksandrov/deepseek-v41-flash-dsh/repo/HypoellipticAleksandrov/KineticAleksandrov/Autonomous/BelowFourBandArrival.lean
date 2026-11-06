@@ -56,8 +56,7 @@ theorem belowFour_first_arrival
   have hep : nestedPoleInclusion W H hsub T ew = e := Subtype.ext rfl
   rw [hep] at hid
   have hr : (nestedIntervalRestartGreen hH hLE hlam hLam A W H s T ew).restrict
-      {z | z.velocity 0 ∈ c.core} = k ∘ₘ tau := by
-    exact nested_bind_restrict tau _
+      {z | z.velocity 0 ∈ c.core} = k ∘ₘ tau := nested_bind_restrict tau _
       (Measure.measurable_measure.mpr (fun B hB =>
         stripGreen_measurable_apply hH hLE hlam hLam A H T B hB)) _ hC
   have hm : (stripGreen hH hLE hlam hLam A H T e).restrict {z | z.velocity 0 ∈ c.core} =

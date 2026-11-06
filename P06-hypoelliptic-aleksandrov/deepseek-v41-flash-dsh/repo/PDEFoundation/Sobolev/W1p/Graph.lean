@@ -36,18 +36,18 @@ instance factOneLeConjExponent (p : ℝ≥0∞) [Fact (1 ≤ p)] :
   ⟨ENNReal.HolderConjugate.one_le p.conjExponent p⟩
 
 namespace WeakTestFunction
+section
+variable {d : ℕ} {U : Set (Vec d)} (φ : WeakTestFunction U)
 
 /-- A bundled test function belongs to every scalar `L^r(U)`. -/
-theorem memLp_toFun {d : ℕ} {U : Set (Vec d)}
-    (φ : WeakTestFunction U) (r : ℝ≥0∞) :
+theorem memLp_toFun  (r : ℝ≥0∞) :
     MemLp φ.toFun r (volumeOn U) :=
   (φ.contDiff.continuous.memLp_of_hasCompactSupport
     φ.hasCompactSupport).restrict U
 
 /-- A directional derivative of a bundled test function belongs to every
 scalar `L^r(U)`. -/
-theorem memLp_partialDeriv {d : ℕ} {U : Set (Vec d)}
-    (φ : WeakTestFunction U) (i : Fin d) (r : ℝ≥0∞) :
+theorem memLp_partialDeriv  (i : Fin d) (r : ℝ≥0∞) :
     MemLp (φ.partialDeriv i) r (volumeOn U) := by
   have hcontinuous :
       Continuous (φ.partialDeriv i) := by
@@ -60,28 +60,25 @@ theorem memLp_partialDeriv {d : ℕ} {U : Set (Vec d)}
   exact (hcontinuous.memLp_of_hasCompactSupport hcompact).restrict U
 
 /-- A bundled test function as an element of scalar `L^r(U)`. -/
-def toScalarLp {d : ℕ} {U : Set (Vec d)}
-    (φ : WeakTestFunction U) (r : ℝ≥0∞) :
+def toScalarLp  (r : ℝ≥0∞) :
     ScalarLp U r :=
   (φ.memLp_toFun r).toLp φ.toFun
 
 /-- A directional derivative of a bundled test function as an element of
 scalar `L^r(U)`. -/
-def partialDerivToScalarLp {d : ℕ} {U : Set (Vec d)}
-    (φ : WeakTestFunction U) (i : Fin d) (r : ℝ≥0∞) :
+def partialDerivToScalarLp  (i : Fin d) (r : ℝ≥0∞) :
     ScalarLp U r :=
   (φ.memLp_partialDeriv i r).toLp (φ.partialDeriv i)
 
-theorem coeFn_toScalarLp {d : ℕ} {U : Set (Vec d)}
-    (φ : WeakTestFunction U) (r : ℝ≥0∞) :
+theorem coeFn_toScalarLp  (r : ℝ≥0∞) :
     ⇑(φ.toScalarLp r) =ᵐ[volumeOn U] φ.toFun :=
   (φ.memLp_toFun r).coeFn_toLp
 
-theorem coeFn_partialDerivToScalarLp {d : ℕ} {U : Set (Vec d)}
-    (φ : WeakTestFunction U) (i : Fin d) (r : ℝ≥0∞) :
+theorem coeFn_partialDerivToScalarLp  (i : Fin d) (r : ℝ≥0∞) :
     ⇑(φ.partialDerivToScalarLp i r) =ᵐ[volumeOn U]
       φ.partialDeriv i :=
   (φ.memLp_partialDeriv i r).coeFn_toLp
+end
 
 end WeakTestFunction
 

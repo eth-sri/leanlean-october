@@ -1,6 +1,8 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.ParabolicDuhamelDefs
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Source slices and their classical solutions
@@ -21,26 +23,29 @@ open MeasureTheory Set
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
 open scoped ENNReal ProbabilityTheory
 
-variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d}
+section
+variable (Ω : HypoellipticAleksandrov.VecSet d) (γ : ℝ → PDE.Vec d)
 
 /-- The open starting set `U₀ = {(s,v) : s < T, v ∈ Ω_s}` of the Duhamel potential. -/
-def duhamelFiber (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE.Vec d) (T : ℝ) : Set (TimeVelocity d) :=
+def duhamelFiber  (T : ℝ) : HypoellipticAleksandrov.Parabolic.TVSet d :=
   {p | p.1 < T ∧ p.2 ∈ movingDomain Ω γ p.1}
 
 /-- The closed region `{(s,v) : s ≤ T, v ∈ closure Ω_s}` carrying the continuous extension. -/
-def duhamelClosedFiber (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE.Vec d) (T : ℝ) :
-    Set (TimeVelocity d) :=
+def duhamelClosedFiber  (T : ℝ) :
+    HypoellipticAleksandrov.Parabolic.TVSet d :=
   {p | p.1 ≤ T ∧ p.2 ∈ closure (movingDomain Ω γ p.1)}
 
 /-- The open past cylinder at the source time `r`. -/
-def sliceOpenCylinder (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE.Vec d) (r : ℝ) :
-    Set (TimeVelocity d) :=
+def sliceOpenCylinder  (r : ℝ) :
+    HypoellipticAleksandrov.Parabolic.TVSet d :=
   ParabolicProbe.scalarPastOpenCylinder Ω γ r
 
 /-- The closed past cylinder at the source time `r`. -/
-def sliceClosedCylinder (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE.Vec d) (r : ℝ) :
-    Set (TimeVelocity d) :=
+def sliceClosedCylinder  (r : ℝ) :
+    HypoellipticAleksandrov.Parabolic.TVSet d :=
   ParabolicProbe.scalarPastClosedCylinder Ω γ r
+end
 
 /-- The fiber `U₀` is open when the curve is continuous and the base domain is open. -/
 theorem isOpen_duhamelFiber (hΩ : IsOpen Ω) (hγ : Continuous γ) (T : ℝ) :

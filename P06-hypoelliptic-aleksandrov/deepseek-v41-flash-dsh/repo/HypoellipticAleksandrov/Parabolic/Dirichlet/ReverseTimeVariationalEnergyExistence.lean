@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.VariationalEnergy
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeGalerkinPrimalInitialTrace
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Reverse-time variational energy existence
@@ -23,7 +24,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 /-- The homogeneous-lateral reverse-time Dirichlet problem has a variational
 energy solution with the prescribed canonical initial trace. -/
 theorem exists_reverseTime_variational_energy_solution
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ lam Lam : ℝ) (h₀₁ : r₀ < r₁)
     (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)

@@ -29,7 +29,7 @@ theorem clockSourcePotential_pullback_bounded
     (clockSourcePotential_regular hH hLE hlam hLam A c e R T hRT f hfn hs hz).1
   obtain ⟨M, hM⟩ := exitProbePhysical_bounded_source A f
   let D := |c.vbar| * c.r ^ 2
-  have hD : 0 < D := mul_pos (abs_pos.mpr c.nonzero) (sq_pos_of_pos c.positive)
+  have hD := mul_pos (abs_pos.mpr c.nonzero) (sq_pos_of_pos c.positive)
   refine ⟨max C ((3 * |c.vbar| / 2 / D) * max M 0), ?_⟩
   intro p hp
   refine ⟨(hb _).trans (le_max_left _ _), ?_⟩

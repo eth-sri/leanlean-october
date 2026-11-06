@@ -188,11 +188,12 @@ theorem viscousTransportedOperator_collarBarrier {n : ℕ} {B : FullKineticCoeff
     (g := PDE.vecDot (p.position - m p.time) m') hρ (Real.sq_sqrt hS.le).symm rfl rfl
   simp only [mul_zero, add_zero]
   linarith
+section
+variable {n : ℕ} {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n} (ε : ℝ) {κ lam Lγ : ℝ}
 
 /-- The collar inequality `L_ε w(d) ≤ w'(d) (L_γ - λ κ)` with `w'(d) = exp (-κ d)`, where
 `L_γ` bounds the speed `|m'|` of the centre and `λ I ≤ B`. -/
-theorem viscousTransportedOperator_collarBarrier_le {n : ℕ} {B : FullKineticCoefficient n}
-    {b : PDE.Vec n → PDE.Vec n} (ε : ℝ) {κ lam Lγ : ℝ} (hκ : 0 < κ) (hlam : 0 ≤ lam)
+theorem viscousTransportedOperator_collarBarrier_le  (hκ : 0 < κ) (hlam : 0 ≤ lam)
     (r₀ : ℝ) {m : ℝ → PDE.Vec n} {m' : PDE.Vec n} {p : KineticPoint n}
     (hm : HasDerivAt m m' p.time) (hm' : PDE.vecEuclideanNorm m' ≤ Lγ)
     (hS : 0 < PDE.vecNormSq (p.position - m p.time))
@@ -235,8 +236,7 @@ theorem viscousTransportedOperator_collarBarrier_le {n : ℕ} {B : FullKineticCo
   exact mul_le_mul_of_nonneg_left hbracket hEpos.le
 
 /-- The collar barrier is a supersolution: with `κ λ = 1 + L_γ` one has `L_ε w(d) ≤ 0`. -/
-theorem viscousTransportedOperator_collarBarrier_nonpos {n : ℕ} {B : FullKineticCoefficient n}
-    {b : PDE.Vec n → PDE.Vec n} (ε : ℝ) {κ lam Lγ : ℝ} (hκ : 0 < κ) (hlam : 0 ≤ lam)
+theorem viscousTransportedOperator_collarBarrier_nonpos  (hκ : 0 < κ) (hlam : 0 ≤ lam)
     (hκlam : κ * lam = 1 + Lγ) (r₀ : ℝ) {m : ℝ → PDE.Vec n} {m' : PDE.Vec n}
     {p : KineticPoint n} (hm : HasDerivAt m m' p.time) (hm' : PDE.vecEuclideanNorm m' ≤ Lγ)
     (hS : 0 < PDE.vecNormSq (p.position - m p.time))
@@ -247,5 +247,6 @@ theorem viscousTransportedOperator_collarBarrier_nonpos {n : ℕ} {B : FullKinet
   have : Lγ - lam * κ = -1 := by linarith
   rw [this] at h
   linarith
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

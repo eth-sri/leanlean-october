@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.OrdinaryWeakDerivativeFamilyView
 public import HypoellipticAleksandrov.Parabolic.ParabolicWeakDerivativeFamilyLeibniz
 public import HypoellipticAleksandrov.Parabolic.TimeVelocitySmoothCompactPlateau
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Localization of finite higher weak-derivative families
@@ -37,7 +38,7 @@ topological support of its classical multiplier. -/
 theorem parabolicWeakMulRepresentative_tsupport_subset
     {d L : ℕ}
     (b : TimeVelocity d → ℝ)
-    {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
+    {U : HypoellipticAleksandrov.Parabolic.TVSet d} {u : TimeVelocity d → ℝ}
     (D : ParabolicWeakDerivativeFamily d L U u)
     (beta : ParabolicDerivativeIndex d L) :
     tsupport (parabolicWeakMulRepresentative b D beta) ⊆ tsupport b := by
@@ -59,7 +60,7 @@ theorem parabolicWeakMulRepresentative_tsupport_subset
 /-- On an open plateau, the ordinary representatives of the full weak
 Leibniz family agree pointwise with the original ordinary representatives. -/
 theorem ParabolicWeakDerivativeFamily.mulContDiffOn_ordinaryRepresentative_eqOn
-    {d m : ℕ} {U V : Set (TimeVelocity d)}
+    {d m : ℕ} {U V : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hU : IsOpen U) (hV : IsOpen V)
     (B : ParabolicDerivativeIndex d (2 * m) → ℝ)
     (hB : ∀ alpha, 0 ≤ B alpha)
@@ -165,7 +166,7 @@ private theorem coordinateIteratedFDeriv_hasCompactSupport
 full finite weak Leibniz family is supported in the plateau support and agrees
 with the original ordinary family on a strictly smaller closed collar. -/
 theorem exists_localizedHigherJetFamily
-    {d m : ℕ} {U C : Set (TimeVelocity d)}
+    {d m : ℕ} {U C : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hU : IsOpen U) (hC : IsCompact C) (hCU : C ⊆ U)
     {u : TimeVelocity d → ℝ}
     (D : ParabolicWeakDerivativeFamily d (2 * m) U u) :

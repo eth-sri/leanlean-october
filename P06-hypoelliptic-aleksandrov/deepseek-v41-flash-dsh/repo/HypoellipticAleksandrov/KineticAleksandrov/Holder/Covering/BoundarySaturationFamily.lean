@@ -15,37 +15,40 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering
 
 open Set MeasureTheory
+section
+variable {d : ℕ} (E : Set (KineticPoint d)) (eta : ℝ)
 
 /-- Critical cylinders have exactly the prescribed density and lie inside Q. -/
-def criticalParameters {d : ℕ} (E : Set (KineticPoint d)) (eta : ℝ) :
+def criticalParameters  :
     Set (KineticPoint d × ℝ) :=
   {z | 0 < z.2 ∧ backwardCylinder z.1 z.2 ⊆ unitCylinder d ∧
     (volume (E ∩ backwardCylinder z.1 z.2)).toReal =
       (1-eta)*(volume (backwardCylinder z.1 z.2)).toReal}
 
 /-- The open union of all critical cylinders. -/
-def criticalUnion {d : ℕ} (E : Set (KineticPoint d)) (eta : ℝ) : Set (KineticPoint d) :=
+def criticalUnion  : Set (KineticPoint d) :=
   ⋃ z ∈ criticalParameters E eta, backwardCylinder z.1 z.2
 
 /-- The critical union is open. -/
-theorem isOpen_criticalUnion {d : ℕ} (E : Set (KineticPoint d)) (eta : ℝ) :
+theorem isOpen_criticalUnion  :
     IsOpen (criticalUnion E eta) := isOpen_biUnion fun z _ => isOpen_cylinder z.1 z.2
 
 /-- The critical union lies in Q. -/
-theorem criticalUnion_subset_unit {d : ℕ} (E : Set (KineticPoint d)) (eta : ℝ) :
+theorem criticalUnion_subset_unit  :
     criticalUnion E eta ⊆ unitCylinder d := by
   intro X hX
   obtain ⟨z, hz, hmem⟩ := mem_iUnion₂.mp hX
   exact hz.2.1 hmem
 
 /-- A countable family of critical cylinders has exactly the same union. -/
-theorem exists_countable_critical_subcover {d : ℕ} (E : Set (KineticPoint d)) (eta : ℝ) :
+theorem exists_countable_critical_subcover  :
     ∃ T ⊆ criticalParameters E eta, T.Countable ∧
       (⋃ z ∈ T, backwardCylinder z.1 z.2) = criticalUnion E eta := by
   let : SecondCountableTopology (KineticPoint d) :=
     (KineticPoint.homeomorphProd d).secondCountableTopology
   exact TopologicalSpace.isOpen_biUnion_countable (criticalParameters E eta)
     (fun z => backwardCylinder z.1 z.2) (fun z _ => isOpen_cylinder z.1 z.2)
+end
 
 /-- Outside the critical union, E costs only the spatial boundary layer. -/
 theorem volume_outside_criticalUnion_le {d : ℕ} {E : Set (KineticPoint d)}

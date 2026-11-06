@@ -11,10 +11,11 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.SmoothFa
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory Set HypoellipticAleksandrov.Parabolic
+section
+variable {d : ℕ} {alpha : ℝ} (h : CounterProfileStatement d alpha) (r mu R : ℝ)
 
 /-- The explicit raw time representative is continuous jointly in time and native space. -/
-theorem construction_rawTimeJet_joint_continuous {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r mu R : ℝ) :
+theorem construction_rawTimeJet_joint_continuous  :
     Continuous (fun z : ℝ × XV d => kineticTimeDerivative
       (timeCutoffProfile (profileFunction h) alpha r mu R) ⟨z.1, z.2.1, z.2.2⟩) := by
   simp_rw [timeCutoffProfile_timeDerivative, barrier_timeDerivative]
@@ -29,8 +30,7 @@ theorem construction_rawTimeJet_joint_continuous {d : ℕ} {alpha : ℝ}
     ((continuous_const.mul he).mul (continuous_const.sub (hv.div_const _)))
 
 /-- The explicit raw source is jointly measurable, with the original selected flat jets. -/
-theorem construction_rawSource_joint_measurable {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r mu R : ℝ) :
+theorem construction_rawSource_joint_measurable  :
     Measurable (fun z : ℝ × XV d =>
       timeCutoffSourceRepresentative h r mu R ⟨z.1, z.2.1, z.2.2⟩) := by
   obtain ⟨hx, hv, hh⟩ := measurable_flatProfile_jets h r
@@ -93,17 +93,16 @@ theorem construction_rawSource_joint_measurable {d : ℕ} {alpha : ℝ}
     Pi.sub_apply, Prod.mk.eta] using! (htime.add htransport).sub hcontraction
 
 /-- A measurable representative of the full extended source, including the boundary. -/
-def constructionIndicatorSource {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r mu R : ℝ) (z : ℝ × XV d) : ℝ :=
+def constructionIndicatorSource  (z : ℝ × XV d) : ℝ :=
   {y | profileFunction h y.2 < 1}.indicator
     (fun y => timeCutoffSourceRepresentative h r mu R ⟨y.1, y.2.1, y.2.2⟩) z
 
 /-- The selected zero-extended source is jointly measurable. -/
-theorem construction_indicatorSource_measurable {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r mu R : ℝ) :
+theorem construction_indicatorSource_measurable  :
     Measurable (constructionIndicatorSource h r mu R) := by
   have hH := (selectedProfile_spec h).2.2.2.2.2.2.1
   exact (construction_rawSource_joint_measurable h r mu R).indicator
     (isOpen_lt (hH.comp continuous_snd) continuous_const).measurableSet
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

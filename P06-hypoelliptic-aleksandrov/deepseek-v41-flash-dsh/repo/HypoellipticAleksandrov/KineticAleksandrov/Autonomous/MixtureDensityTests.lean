@@ -21,7 +21,7 @@ open scoped ENNReal
 theorem mixture_density_conjugate_tests
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (q p : ℝ) (hpq : q.HolderConjugate p) (hq2 : q < (3 : ℝ) / 2) :
+    (q p : ℝ) (hpq : q.HolderConjugate p) (hq2 : q < 3 / 2) :
     ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam) (c : Clock)
       (nu : Measure Point) [IsFiniteMeasure nu] (f : BoundedBorel Point),
       MemLp f (ENNReal.ofReal p) volume → (∀ z, 0 ≤ f z) →

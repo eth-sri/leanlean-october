@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Geometry
 public import HypoellipticAleksandrov.Parabolic.SpatialCoordinateDerivatives
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Localized spatial gradient divergence

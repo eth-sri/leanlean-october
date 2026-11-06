@@ -6,6 +6,7 @@ public import Mathlib.MeasureTheory.Integral.IntegralEqImproper
 public import Mathlib.Analysis.Calculus.Deriv.Pi
 public import Mathlib.MeasureTheory.Constructions.Pi
 public import Mathlib.MeasureTheory.Integral.Bochner.Basic
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # The all-coordinate grid fundamental theorem of calculus
@@ -124,7 +125,7 @@ private theorem coordinateIteratedFDeriv_hasCompactSupport
 private theorem timeVelocityPiEquiv_measurePreserving (d : ℕ) :
     MeasurePreserving (timeVelocityPiEquiv d)
       (volume : Measure (TimeVelocityCoord d → ℝ))
-      (volume : Measure (TimeVelocity d)) := by
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   have hsum := volume_measurePreserving_sumPiEquivProdPi
     (fun _ : Unit ⊕ Fin d => ℝ)
   have hprod := (volume_preserving_funUnique Unit ℝ).prod
@@ -147,7 +148,7 @@ theorem abs_le_integral_abs_coordinateIteratedFDeriv_allOnes
       ∫ x : TimeVelocity d,
         |TimeVelocityMultiIndex.coordinateIteratedFDeriv
           (TimeVelocityMultiIndex.allOnes d) f x|
-        ∂(volume : Measure (TimeVelocity d)) := by
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   classical
   let beta : Finset (TimeVelocityCoord d) → TimeVelocityMultiIndex d :=
     fun s c => if c ∈ s then 1 else 0

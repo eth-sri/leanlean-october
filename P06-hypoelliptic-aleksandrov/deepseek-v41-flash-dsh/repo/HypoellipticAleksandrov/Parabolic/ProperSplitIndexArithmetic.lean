@@ -56,13 +56,12 @@ theorem Split.parabolicWeight_right_add_one_le
 end TimeVelocityMultiIndex
 
 namespace ParabolicDerivativeIndex
+section
+variable {d M : ℕ} (beta : ParabolicDerivativeIndex d M) (gamma : TimeVelocityMultiIndex.Split beta.1) (hproper : gamma.left ≠ 0)
 
 /-- The ordered two-velocity right factor in a proper commutator split. -/
 def properSplitRightVelocityTwo
-    {d M : ℕ}
-    (beta : ParabolicDerivativeIndex d M)
-    (gamma : TimeVelocityMultiIndex.Split beta.1)
-    (hproper : gamma.left ≠ 0)
+    
     (j i : Fin d) :
     ParabolicDerivativeIndex d (M + 1) :=
   ⟨gamma.right + Pi.single (velocityCoord j) 1 +
@@ -74,10 +73,7 @@ def properSplitRightVelocityTwo
 
 /-- The one-velocity right factor in a proper commutator split. -/
 def properSplitRightVelocity
-    {d M : ℕ}
-    (beta : ParabolicDerivativeIndex d M)
-    (gamma : TimeVelocityMultiIndex.Split beta.1)
-    (hproper : gamma.left ≠ 0)
+    
     (j : Fin d) :
     ParabolicDerivativeIndex d (M + 1) :=
   ⟨gamma.right + Pi.single (velocityCoord j) 1, by
@@ -88,10 +84,7 @@ def properSplitRightVelocity
 
 /-- The unshifted right factor in a proper zero-order commutator split. -/
 def properSplitRightValue
-    {d M : ℕ}
-    (beta : ParabolicDerivativeIndex d M)
-    (gamma : TimeVelocityMultiIndex.Split beta.1)
-    (hproper : gamma.left ≠ 0) :
+     :
     ParabolicDerivativeIndex d (M + 1) :=
   ⟨gamma.right, by
     have hloss := gamma.parabolicWeight_right_add_one_le hproper
@@ -128,6 +121,7 @@ def properSplitRightValue
     (hproper : gamma.left ≠ 0) :
     (properSplitRightValue beta gamma hproper).1 = gamma.right :=
   rfl
+end
 
 end ParabolicDerivativeIndex
 

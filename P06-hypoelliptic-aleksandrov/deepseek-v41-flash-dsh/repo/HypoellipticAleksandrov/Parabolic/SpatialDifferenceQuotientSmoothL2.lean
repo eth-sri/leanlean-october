@@ -3,6 +3,7 @@ module
 public import PDEFoundation.Sobolev.Inequalities.SmoothSegment
 public import Mathlib.MeasureTheory.Integral.Prod
 public import Mathlib.MeasureTheory.Group.Measure
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Global `L²` control of smooth spatial difference quotients
@@ -20,10 +21,10 @@ private theorem integrable_sq_classicalGradient
     (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
     (hφcompact : HasCompactSupport φ) :
     Integrable (fun y => PDE.vecEuclideanNorm (PDE.classicalGradient φ y) ^ 2)
-      (volume : Measure (PDE.Vec d)) := by
+      (HypoellipticAleksandrov.VecVolume d) := by
   have hcomponent : ∀ i : Fin d,
       Integrable (fun y => ((fderiv ℝ φ y) (PDE.basisVec i)) ^ 2)
-      (volume : Measure (PDE.Vec d)) := by
+      (HypoellipticAleksandrov.VecVolume d) := by
     intro i
     have hc : Continuous (fun y => ((fderiv ℝ φ y) (PDE.basisVec i)) ^ 2) :=
       ((hφ.continuous_fderiv (by norm_num)).clm_apply continuous_const).pow 2
@@ -89,7 +90,7 @@ private theorem integrable_sq_spatialDifferenceQuotient
     (hφcompact : HasCompactSupport φ)
     (k : Fin d) (h : ℝ) :
     Integrable (fun y => ((φ (y + h • PDE.basisVec k) - φ y) / h) ^ 2)
-      (volume : Measure (PDE.Vec d)) := by
+      (HypoellipticAleksandrov.VecVolume d) := by
   let z : PDE.Vec d := h • PDE.basisVec k
   have htranslatecontinuous : Continuous (fun y : PDE.Vec d => φ (y + z)) := by
     exact hφ.continuous.comp (Homeomorph.addRight z).continuous
@@ -109,15 +110,15 @@ private theorem integrable_sq_spatialDifferenceQuotient
 
 private theorem integrable_translate_segmentAverage
     {d : ℕ} (g : PDE.Vec d → ℝ)
-    (hg : Integrable g (volume : Measure (PDE.Vec d))) (z : PDE.Vec d) :
+    (hg : Integrable g (HypoellipticAleksandrov.VecVolume d)) (z : PDE.Vec d) :
     Integrable (fun y => ∫ t in (0 : ℝ)..1, g (y + t • z))
-      (volume : Measure (PDE.Vec d)) := by
+      (HypoellipticAleksandrov.VecVolume d) := by
   have hshear : MeasurePreserving
       (fun p : ℝ × PDE.Vec d => (p.1, p.2 + p.1 • z))
       ((volume.restrict (Set.Ioc (0 : ℝ) 1)).prod
-        (volume : Measure (PDE.Vec d)))
+        (HypoellipticAleksandrov.VecVolume d))
       ((volume.restrict (Set.Ioc (0 : ℝ) 1)).prod
-        (volume : Measure (PDE.Vec d))) := by
+        (HypoellipticAleksandrov.VecVolume d)) := by
     refine MeasurePreserving.skew_product (g := fun t y => y + t • z)
       (MeasurePreserving.id _) ?_ ?_
     · exact measurable_snd.add (measurable_fst.smul measurable_const)
@@ -125,11 +126,11 @@ private theorem integrable_translate_segmentAverage
       exact (measurePreserving_add_right volume (t • z)).map_eq
   have hproduct : Integrable (fun p : ℝ × PDE.Vec d => g p.2)
       ((volume.restrict (Set.Ioc (0 : ℝ) 1)).prod
-        (volume : Measure (PDE.Vec d))) :=
+        (HypoellipticAleksandrov.VecVolume d)) :=
     hg.comp_snd _
   have hcomposed : Integrable (fun p : ℝ × PDE.Vec d => g (p.2 + p.1 • z))
       ((volume.restrict (Set.Ioc (0 : ℝ) 1)).prod
-        (volume : Measure (PDE.Vec d))) := by
+        (HypoellipticAleksandrov.VecVolume d)) := by
     simpa only [Function.comp_def] using hshear.integrable_comp_of_integrable hproduct
   have hright := hcomposed.integral_prod_right
   simpa only [intervalIntegral.integral_of_le (by norm_num : (0 : ℝ) ≤ 1),
@@ -137,14 +138,14 @@ private theorem integrable_translate_segmentAverage
 
 private theorem integral_translate_segmentAverage
     {d : ℕ} (g : PDE.Vec d → ℝ)
-    (hg : Integrable g (volume : Measure (PDE.Vec d))) (z : PDE.Vec d) :
+    (hg : Integrable g (HypoellipticAleksandrov.VecVolume d)) (z : PDE.Vec d) :
     (∫ y, ∫ t in (0 : ℝ)..1, g (y + t • z)) = ∫ y, g y := by
   have hshear : MeasurePreserving
       (fun p : ℝ × PDE.Vec d => (p.1, p.2 + p.1 • z))
       ((volume.restrict (Set.Ioc (0 : ℝ) 1)).prod
-        (volume : Measure (PDE.Vec d)))
+        (HypoellipticAleksandrov.VecVolume d))
       ((volume.restrict (Set.Ioc (0 : ℝ) 1)).prod
-        (volume : Measure (PDE.Vec d))) := by
+        (HypoellipticAleksandrov.VecVolume d)) := by
     refine MeasurePreserving.skew_product (g := fun t y => y + t • z)
       (MeasurePreserving.id _) ?_ ?_
     · exact measurable_snd.add (measurable_fst.smul measurable_const)
@@ -152,15 +153,15 @@ private theorem integral_translate_segmentAverage
       exact (measurePreserving_add_right volume (t • z)).map_eq
   have hproduct : Integrable (fun p : ℝ × PDE.Vec d => g p.2)
       ((volume.restrict (Set.Ioc (0 : ℝ) 1)).prod
-        (volume : Measure (PDE.Vec d))) :=
+        (HypoellipticAleksandrov.VecVolume d)) :=
     hg.comp_snd _
   have hcomposed : Integrable (fun p : ℝ × PDE.Vec d => g (p.2 + p.1 • z))
       ((volume.restrict (Set.Ioc (0 : ℝ) 1)).prod
-        (volume : Measure (PDE.Vec d))) := by
+        (HypoellipticAleksandrov.VecVolume d)) := by
     simpa only [Function.comp_def] using hshear.integrable_comp_of_integrable hproduct
   have hcomposed' : Integrable (Function.uncurry fun t y => g (y + t • z))
       ((volume.restrict (Set.uIoc (0 : ℝ) 1)).prod
-        (volume : Measure (PDE.Vec d))) := by
+        (HypoellipticAleksandrov.VecVolume d)) := by
     simpa only [Set.uIoc_of_le (by norm_num : (0 : ℝ) ≤ 1), Function.uncurry_def]
       using hcomposed
   have hswap : (∫ t in (0 : ℝ)..1, ∫ y, g (y + t • z)) =
@@ -182,9 +183,9 @@ theorem integral_sq_spatialDifferenceQuotient_le_integral_sq_classicalGradient
     (hφcompact : HasCompactSupport φ)
     (k : Fin d) (h : ℝ) :
     (∫ y, ((φ (y + h • PDE.basisVec k) - φ y) / h) ^ 2
-      ∂(volume : Measure (PDE.Vec d))) ≤
+      ∂(HypoellipticAleksandrov.VecVolume d)) ≤
       ∫ y, PDE.vecEuclideanNorm (PDE.classicalGradient φ y) ^ 2
-        ∂(volume : Measure (PDE.Vec d)) := by
+        ∂(HypoellipticAleksandrov.VecVolume d) := by
   by_cases hh : h = 0
   · simp only [hh, zero_smul, add_zero, sub_self, zero_div]
     simp only [pow_two, zero_mul, integral_zero]
@@ -194,13 +195,13 @@ theorem integral_sq_spatialDifferenceQuotient_le_integral_sq_classicalGradient
       sq_nonneg (PDE.vecEuclideanNorm (PDE.classicalGradient φ y))
   let g : PDE.Vec d → ℝ :=
     fun y => PDE.vecEuclideanNorm (PDE.classicalGradient φ y) ^ 2
-  have hg : Integrable g (volume : Measure (PDE.Vec d)) :=
+  have hg : Integrable g (HypoellipticAleksandrov.VecVolume d) :=
     integrable_sq_classicalGradient φ hφ hφcompact
   have hq : Integrable (fun y => ((φ (y + h • PDE.basisVec k) - φ y) / h) ^ 2)
-      (volume : Measure (PDE.Vec d)) :=
+      (HypoellipticAleksandrov.VecVolume d) :=
     integrable_sq_spatialDifferenceQuotient φ hφ hφcompact k h
   have hr : Integrable (fun y => ∫ t in (0 : ℝ)..1,
-      g (y + t • (h • PDE.basisVec k))) (volume : Measure (PDE.Vec d)) :=
+      g (y + t • (h • PDE.basisVec k))) (HypoellipticAleksandrov.VecVolume d) :=
     integrable_translate_segmentAverage g hg _
   have hpoint : ∀ y : PDE.Vec d,
       ((φ (y + h • PDE.basisVec k) - φ y) / h) ^ 2 ≤

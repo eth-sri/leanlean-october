@@ -28,7 +28,7 @@ theorem reconstructionSpatialBarrier_smooth (B T : ℝ) :
     ContDiff ℝ (⊤ : ℕ∞) (rawLift (reconstructionSpatialBarrier B T)) :=
   (contDiff_const.mul (contDiff_const.sub contDiff_fst)).exp.mul
     (reconstructionSpatialWeight_smooth.comp
-      ((contDiff_apply ℝ ℝ (0 : Fin 1)).comp contDiff_snd.snd))
+      ((contDiff_apply ℝ ℝ 0).comp contDiff_snd.snd))
 
 /-- The spatial barrier has the required slice regularity. -/
 theorem reconstructionSpatialBarrier_regular (B T : ℝ) (p : Point) :
@@ -145,12 +145,11 @@ theorem reconstruction_green_spatial_weight_bound
     ∫⁻ p, ENNReal.ofReal (reconstructionSpatialWeight (p.position 0))
         ∂stripGreenOfKernel H E.2 T e ≤
       ENNReal.ofReal (Real.exp ((max |H.lo| |H.hi| + 1) * (T - e.1.time)) *
-        reconstructionSpatialWeight (e.1.position 0)) := by
-  exact reconstruction_green_lintegral_le_barrier hH hlam hLam A H E hE T e
+        reconstructionSpatialWeight (e.1.position 0)) := reconstruction_green_lintegral_le_barrier hH hlam hLam A H E hE T e
     (fun p => reconstructionSpatialWeight (p.velocity 0))
     (reconstructionSpatialBarrier (max |H.lo| |H.hi| + 1) T)
     (reconstructionSpatialWeight_smooth.comp
-      ((contDiff_apply ℝ ℝ (0 : Fin 1)).comp contDiff_snd.snd))
+      ((contDiff_apply ℝ ℝ 0).comp contDiff_snd.snd))
     (fun p => add_nonneg (Real.exp_pos _).le (Real.exp_pos _).le)
     (reconstructionSpatialBarrier_continuous _ _)
     (reconstructionSpatialBarrier_regular _ _)

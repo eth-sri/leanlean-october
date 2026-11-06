@@ -15,12 +15,12 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 open scoped Classical
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
 
 /-- The two active all-time families use exactly the same canonical strip and physical poles. -/
 theorem entrance_coreAllTimeGreen_eq
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (nu : Measure Point) :
+     (c : Clock) (nu : Measure Point) :
     coreAllTimeGreenMeasure hH hLE hlam hLam A c nu =
       enlargedActiveGreen hH hLE hlam hLam A c nu := by
   have hk : coreAllTimeGreenKernel hH hLE hlam hLam A c =
@@ -36,9 +36,7 @@ theorem entrance_coreAllTimeGreen_eq
 
 /-- The actual clipped cylinder entrance count retains closed-entrance velocity support. -/
 theorem entrance_visitStartsQ_ae_closedEntrance
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (Z0 : Point) (R : ℝ) (hR : 0 < R)
+     (c : Clock) (Z0 : Point) (R : ℝ) (hR : 0 < R)
     (P : Point) (hP : P ∈ forwardCylinder Z0 R hR) :
     ∀ᵐ p ∂visitStartsQ hH hLE hlam hLam A c Z0 R hR P hP,
       p.velocity 0 ∈ closure c.entrance := by
@@ -71,9 +69,7 @@ theorem entrance_visitStartsQ_ae_closedEntrance
 
 /-- The actual cylinder Green measure lies inside its literal observation strip. -/
 theorem entrance_cylinderGreen_ae_observation
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (Z0 : Point) (R : ℝ) (hR : 0 < R)
+     (Z0 : Point) (R : ℝ) (hR : 0 < R)
     (P : Point) (hP : P ∈ forwardCylinder Z0 R hR) :
     ∀ᵐ p ∂stripGreen hH hLE hlam hLam A (capacityCylinderInterval Z0 R hR)
       (Z0.time + R ^ 2) (capacityCylinderPole Z0 P R hR hP),
@@ -84,5 +80,6 @@ theorem entrance_cylinderGreen_ae_observation
   filter_upwards [reconstruction_green_ae_time_gt H K (Z0.time + R ^ 2) ep,
     stripGreenOfKernel_ae_mem_stripPast H K (Z0.time + R ^ 2) ep] with p hp hq
   exact ⟨hP.1.trans hp, hq.1, hq.2⟩
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

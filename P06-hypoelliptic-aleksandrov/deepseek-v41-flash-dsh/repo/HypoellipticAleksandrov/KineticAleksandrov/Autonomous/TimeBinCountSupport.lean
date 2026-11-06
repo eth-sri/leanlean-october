@@ -10,12 +10,12 @@ import Mathlib.Topology.Algebra.InfiniteSum.ENNReal
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval)
 
 /-- Later enlarged entrances have no mass at the lower observation endpoint. -/
 theorem timeBinCount_later_initial_slice_zero
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
+     (s T : ℝ)
     (P : Point) (n : ℕ) :
     enlargedVisitEntrance hH hLE hlam hLam A c J s T P (n + 1) {p | p.time = s} = 0 := by
   have hS : MeasurableSet {p : Point | p.time = s} :=
@@ -32,9 +32,7 @@ theorem timeBinCount_later_initial_slice_zero
 
 /-- Starting in the closed entrance interval contributes exactly one atom at its own time. -/
 theorem timeBinCount_initial_slice
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T : ℝ) (P : Point)
+     (T : ℝ) (P : Point)
     (hv : P.velocity 0 ∈ closure c.entrance) :
     visitsFromZero hH hLE hlam hLam A c J T P {p | p.time = P.time} = 1 := by
   have hS : MeasurableSet {p : Point | p.time = P.time} :=
@@ -60,9 +58,7 @@ theorem timeBinCount_initial_slice
 
 /-- A later bin entirely beyond the observation horizon contains no starts. -/
 theorem timeBinCount_mass_eq_zero_of_horizon_le
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T : ℝ) (P : Point)
+     (T : ℝ) (P : Point)
     (hT : 0 < T) (j : ℕ) (hj : j ≠ 0) (hTJ : T ≤ (j : ℝ) * c.r ^ 2) :
     enlargedTimeVisitMass (visitsFromZero hH hLE hlam hLam A c J T P) c P.time j = 0 := by
   have hs := enlargedVisitStarts_ae_support hH hLE hlam hLam A c J P.time (P.time + T)
@@ -79,6 +75,7 @@ theorem timeBinCount_mass_eq_zero_of_horizon_le
       (by linarith only [hTJ]) ht.1
     exact (not_lt_of_ge hlate.le) hp.2.1
   exact congrArg ENNReal.toReal hz
+end
 
 /-- Later bins are bounded by the literal slab truncated at the supported horizon. -/
 theorem timeBinCount_mass_le_truncated_slab (nu : Measure Point) [IsFiniteMeasure nu]

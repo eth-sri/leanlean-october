@@ -11,10 +11,11 @@ import Mathlib.Tactic
 noncomputable section
 open MeasureTheory Set
 namespace HypoellipticAleksandrov.KineticAleksandrov
+section
+variable {lam Lam : ℝ} (alpha r : ℝ) (hr : 0 < r) (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam)) [IsFiniteMeasure pi]
 
 /-- Scaling only the radius transforms the product by its literal radial factor. -/
-theorem bellman_radial_product_scale {lam Lam : ℝ} (alpha r : ℝ) (hr : 0 < r)
-    (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam)) [IsFiniteMeasure pi] :
+theorem bellman_radial_product_scale  :
     Measure.map ((bellmanRadialScale r hr).prodCongr (Homeomorph.refl
       (BellmanSphere × BellmanCoefficient lam Lam)))
       ((bellmanRadiusMeasure alpha).prod pi) =
@@ -24,8 +25,7 @@ theorem bellman_radial_product_scale {lam Lam : ℝ} (alpha r : ℝ) (hr : 0 < r
     Measure.map_id, map_bellmanRadiusMeasure_radialScale, Measure.prod_smul_left]
 
 /-- The coefficient-weighted product has the same radial scaling factor. -/
-theorem bellman_radial_weighted_product_scale {lam Lam : ℝ} (alpha r : ℝ) (hr : 0 < r)
-    (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam)) [IsFiniteMeasure pi] :
+theorem bellman_radial_weighted_product_scale  :
     Measure.map ((bellmanRadialScale r hr).prodCongr (Homeomorph.refl
       (BellmanSphere × BellmanCoefficient lam Lam)))
       (((bellmanRadiusMeasure alpha).prod pi).withDensity
@@ -39,6 +39,7 @@ theorem bellman_radial_weighted_product_scale {lam Lam : ℝ} (alpha r : ℝ) (h
   rw [bellman_map_withDensity _ _ _ hf, bellman_radial_product_scale,
     withDensity_smul_measure]
   rfl
+end
 
 /-- Dilation of the projected point equals scaling its radius before projection. -/
 theorem bellman_radial_projection_commute {lam Lam : ℝ} (r : ℝ) (hr : 0 < r) :

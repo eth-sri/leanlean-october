@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.FourierKernels
 import Mathlib.MeasureTheory.Measure.Sub
 import Mathlib.MeasureTheory.VectorMeasure.WithDensityVec
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Fourier contraction for the positive full-minus-killed defect
 
@@ -20,7 +21,7 @@ open scoped ENNReal
 variation plus the lost mass. Query coordinates, including the physical position,
 are retained exactly. -/
 theorem killedFourier_variation_le_full_add_loss {d : ℕ}
-    {D D' : Set (PDE.Vec d)} {γ γ' : ℝ → PDE.Vec d}
+    {D D' : HypoellipticAleksandrov.VecSet d} {γ γ' : ℝ → PDE.Vec d}
     (Kb : MovingFiberKernel D γ) (Kf : MovingFiberKernel D' γ')
     (qb : EvolutionQuery D γ) (qf : EvolutionQuery D' γ')
     (hq : qb.1 = qf.1) (hdom : Kb.master qb ≤ Kf.master qf) (ξ : PDE.Vec d) :

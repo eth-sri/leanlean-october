@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Geometry
 public import Mathlib.Topology.Separation.Regular
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Nested compact collars for weak representatives
@@ -19,10 +20,10 @@ namespace HypoellipticAleksandrov.Parabolic
 /-- A relatively compact open set inside an open carrier admits a second
 relatively compact open collar. -/
 theorem exists_open_compact_closure_collar
-    {d : Nat} {U V : Set (TimeVelocity d)}
+    {d : Nat} {U V : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hU : IsOpen U) (hV : IsOpen V)
     (hVcompact : IsCompact (closure V)) (hVU : closure V ⊆ U) :
-    ∃ W : Set (TimeVelocity d),
+    ∃ W : HypoellipticAleksandrov.Parabolic.TVSet d,
       IsOpen W ∧ IsCompact (closure W) ∧
       closure V ⊆ W ∧ closure W ⊆ U := by
   obtain ⟨L, hLcompact, hLclosed, hVinterior, hLU⟩ :=

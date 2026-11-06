@@ -13,31 +13,33 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov Topology
 open SectionTwo TheoremA Evolution
 open scoped CompactlySupported Topology
+section
+variable (H : Interval)
 
 /-- The infinite exit carrier consists of the two genuine physical velocity faces. -/
-def stripInfiniteFace (H : Interval) : Set Point :=
+def stripInfiniteFace  : Set Point :=
   {p | p.velocity 0 = H.lo ∨ p.velocity 0 = H.hi}
 
 /-- The infinite velocity-face carrier is closed in the physical point topology. -/
-theorem isClosed_stripInfiniteFace (H : Interval) : IsClosed (stripInfiniteFace H) :=
+theorem isClosed_stripInfiniteFace  : IsClosed (stripInfiniteFace H) :=
   (isClosed_eq ((continuous_apply 0).comp continuous_velocity) continuous_const).union
     (isClosed_eq ((continuous_apply 0).comp continuous_velocity) continuous_const)
 
 /-- The face carrier inherits local compactness from physical Euclidean coordinates. -/
-instance stripInfiniteFace_locallyCompactSpace (H : Interval) :
+instance stripInfiniteFace_locallyCompactSpace  :
     LocallyCompactSpace (stripInfiniteFace H) := by
   let : LocallyCompactSpace Point :=
     (KineticPoint.homeomorphProd 1).isClosedEmbedding.locallyCompactSpace
   exact (isClosed_stripInfiniteFace H).locallyCompactSpace
 
 /-- The face carrier inherits a countable topological basis. -/
-instance stripInfiniteFace_secondCountableTopology (H : Interval) :
+instance stripInfiniteFace_secondCountableTopology  :
     SecondCountableTopology (stripInfiniteFace H) := by
   let : SecondCountableTopology Point := (KineticPoint.homeomorphProd 1).secondCountableTopology
   infer_instance
 
 /-- Restriction of an ambient smooth probe to the closed physical exit carrier. -/
-def infiniteExitProbeCc (H : Interval) (f : exitProbeSubmodule) :
+def infiniteExitProbeCc  (f : exitProbeSubmodule) :
     C_c(stripInfiniteFace H, ℝ) where
   toFun p := exitProbePhysical f p.1
   continuous_toFun := (exitProbePhysical_continuous_compact f).1.comp continuous_subtype_val
@@ -45,14 +47,14 @@ def infiniteExitProbeCc (H : Interval) (f : exitProbeSubmodule) :
     (isClosed_stripInfiniteFace H).isClosedEmbedding_subtypeVal
 
 /-- Exit restriction is a linear map on the ambient probe vector space. -/
-def infiniteExitProbeCcLinear (H : Interval) :
+def infiniteExitProbeCcLinear  :
     exitProbeSubmodule →ₗ[ℝ] C_c(stripInfiniteFace H, ℝ) where
   toFun := infiniteExitProbeCc H
   map_add' f g := by ext p; rfl
   map_smul' c f := by ext p; rfl
 
 /-- The dense restriction family is closed under squaring. -/
-theorem infiniteExitProbeCc_sq (H : Interval) (f : exitProbeSubmodule) :
+theorem infiniteExitProbeCc_sq  (f : exitProbeSubmodule) :
     ∃ g : exitProbeSubmodule,
       infiniteExitProbeCcLinear H g = infiniteExitProbeCcLinear H f * infiniteExitProbeCcLinear H
         f := by
@@ -61,7 +63,7 @@ theorem infiniteExitProbeCc_sq (H : Interval) (f : exitProbeSubmodule) :
   rfl
 
 /-- Smooth compact ambient restrictions uniformly approximate every compact exit datum. -/
-theorem infiniteExitProbeCc_dense (H : Interval) (g : C_c(stripInfiniteFace H, ℝ))
+theorem infiniteExitProbeCc_dense  (g : C_c(stripInfiniteFace H, ℝ))
     (ε : ℝ) (hε : 0 < ε) :
     ∃ f : exitProbeSubmodule, ∀ p, |infiniteExitProbeCcLinear H f p - g p| ≤ ε := by
   let j : stripInfiniteFace H → EvolutionVec 1 :=
@@ -88,5 +90,6 @@ theorem infiniteExitProbeCc_dense (H : Interval) (g : C_c(stripInfiniteFace H, �
   have hh := hclose (j p)
   rw [hFg p] at hh
   exact hh
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

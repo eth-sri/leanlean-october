@@ -10,25 +10,27 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonGro
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set Parabolic SectionTwo TheoremA Evolution
+section
+variable {d : ℕ} (Lam T : ℝ)
 
 /-- The native growth barrier, expressed in the physical coordinate order. -/
-def massGrowthBarrier {d : ℕ} (Lam T : ℝ) (P : KineticPoint d) : ℝ :=
+def massGrowthBarrier  (P : KineticPoint d) : ℝ :=
   growthBarrier (growthConstant d Lam (PDE.vecEuclideanNorm (identityDrift d 0)) 1) T
     (sectionTwoPoint P)
 
 /-- Its physical product-coordinate representative is globally smooth. -/
-theorem massGrowthBarrier_smooth {d : ℕ} (Lam T : ℝ) :
+theorem massGrowthBarrier_smooth  :
     ContDiff ℝ (⊤ : ℕ∞) (massGrowthBarrier (d := d) Lam T ∘
       (KineticPoint.equivProd d).symm) := by
   unfold massGrowthBarrier growthBarrier radialSq sectionTwoPoint PDE.vecNormSq PDE.vecDot
   fun_prop
 
 /-- The growth barrier is strictly positive on every physical point. -/
-theorem massGrowthBarrier_pos {d : ℕ} (Lam T : ℝ) (P : KineticPoint d) :
+theorem massGrowthBarrier_pos  (P : KineticPoint d) :
     0 < massGrowthBarrier Lam T P := growthBarrier_pos _ _ _
 
 /-- The barrier dominates one and the physical position squared norm in the past. -/
-theorem massGrowthBarrier_lower {d : ℕ} (Lam T : ℝ) (P : KineticPoint d)
+theorem massGrowthBarrier_lower  (P : KineticPoint d)
     (hP : P.time ≤ T) : 1 + PDE.vecNormSq P.position ≤ massGrowthBarrier Lam T P := by
   have hC : 0 ≤ growthConstant d Lam (PDE.vecEuclideanNorm (identityDrift d 0)) 1 := by
     have hb0 := PDE.vecEuclideanNorm_nonneg (identityDrift d 0)
@@ -42,6 +44,7 @@ theorem massGrowthBarrier_lower {d : ℕ} (Lam T : ℝ) (P : KineticPoint d)
       (sectionTwoPoint P)
   dsimp only [sectionTwoPoint]
   linarith only [h, hv]
+end
 
 /-- Smooth physical scalar factors commute with the actual operator. -/
 theorem mass_forward_const_mul {d : ℕ} (B : CoefficientField d)

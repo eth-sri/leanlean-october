@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Decay.FrequencyBlocksContract
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Local supplied evolutions from the authorized evolution statement -/
 
@@ -15,9 +16,9 @@ open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 with the structural clauses on the same constructed kernel. -/
 theorem exists_unitBlock_evolution (hEvol : IterationEvolutionStatement)
     {d : ℕ} (hd : 1 ≤ d) (lam Lam m Lb : ℝ)
-    (D : Set (PDE.Vec d)) (B : CoefficientField d) (b : PDE.Vec d → PDE.Vec d)
+    (D : HypoellipticAleksandrov.VecSet d) (B : CoefficientField d) (b : PDE.Vec d → PDE.Vec d)
     (hsetting : SourceSetting lam Lam m Lb D B b)
-    (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE.Vec d)
+    (Ω : HypoellipticAleksandrov.VecSet d) (γ : ℝ → PDE.Vec d)
     (hΩ : IsAdmissibleEvolutionDomain Ω) (hγ : IsContinuousPiecewiseC1 γ) :
     ∃ (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ),
       RealizesTerminalEvolution Ω γ (measurableSet_of_isAdmissibleEvolutionDomain hΩ)

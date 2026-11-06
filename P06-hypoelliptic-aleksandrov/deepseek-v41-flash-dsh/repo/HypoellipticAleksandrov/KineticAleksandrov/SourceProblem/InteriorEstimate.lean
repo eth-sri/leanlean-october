@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.SourceProblem.InteriorReduction
 public import HypoellipticAleksandrov.Parabolic.ABP
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # The scalar parabolic Aleksandrov estimate on the Krylov cylinders -/
 

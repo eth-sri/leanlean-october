@@ -6,6 +6,7 @@ public import Mathlib.Tactic.FieldSimp
 public import Mathlib.Tactic.Linarith
 public import Mathlib.Tactic.Positivity
 public import Mathlib.Tactic.Ring
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Source-aware small-seed moving-lens comparison
@@ -121,7 +122,7 @@ theorem exists_movingLens_source_terminal_lower_bound
     (hlam : 0 < lam) (hlamLam : lam <= Lam)
     (hkappa : 0 < kappa) (hkappa_one : kappa <= 1) :
     ∃ C : Real, 0 < C ∧
-      ∀ (A : CoefficientField d) (U : Set (TimeVelocity d))
+      ∀ (A : CoefficientField d) (U : HypoellipticAleksandrov.Parabolic.TVSet d)
         (F u : TimeVelocity d -> Real) (tau eps ell : Real) (y : PDE.Vec d),
         0 < tau -> tau <= kappa⁻¹ -> 0 < eps ->
         2 * eps ^ 2 < kappa ^ 2 ->

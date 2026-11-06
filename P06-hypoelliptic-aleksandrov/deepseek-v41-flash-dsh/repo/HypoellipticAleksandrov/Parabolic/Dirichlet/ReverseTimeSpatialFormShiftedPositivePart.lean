@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.H10ShiftedPositivePart
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialForm
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Shifted positive-part inequality for the reverse-time spatial form
@@ -21,7 +22,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 private theorem h10ShiftedPositivePart_gradientCoord
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     (u : H10HilbertGraph hΩ) (k : ℝ≥0) (i : Fin d) : ∀ᵐ y ∂PDE.volumeOn Ω,
     (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i
       (gradientCLM hΩ (h10ShiftedPositivePart hΩ u k))) y =
@@ -51,10 +52,11 @@ private theorem h10ShiftedPositivePart_gradientCoord
       _ = 0 := rfl
       _ = _ := (Set.indicator_of_notMem
         (s := {z : PDE.Vec d | (k : ℝ) < valueCLM hΩ u z}) hy _).symm
+section
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (r₁ τ : ℝ)
 
 private theorem reverseTimePrincipal_shiftedPositivePart_eq
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
-    (r₁ τ : ℝ) (a : CoefficientField d) (u : H10HilbertGraph hΩ) (k : ℝ≥0) :
+     (a : CoefficientField d) (u : H10HilbertGraph hΩ) (k : ℝ≥0) :
       (∑ i : Fin d, ∑ j : Fin d, ∫ y in Ω,
         a (r₁ - τ) y i j *
           (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ u)) y *
@@ -87,8 +89,7 @@ private theorem reverseTimePrincipal_shiftedPositivePart_eq
     ring
 
 private theorem reverseTimeDrift_shiftedPositivePart_eq
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
-    (r₁ τ : ℝ) (a : CoefficientField d)
+     (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (u : H10HilbertGraph hΩ) (k : ℝ≥0) :
       (∑ j : Fin d, ∫ y in Ω,
         reverseTimeDivergenceDrift r₁ a b τ y j *
@@ -117,8 +118,7 @@ private theorem reverseTimeDrift_shiftedPositivePart_eq
     ring
 
 private theorem reverseTimeScalar_shiftedPositivePart_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (r₁ τ : ℝ) (c : ℝ → PDE.Vec d → ℝ)
+     (c : ℝ → PDE.Vec d → ℝ)
     (u : H10HilbertGraph hΩ) (k : ℝ≥0)
     (hScalarNonpos : ∀ᵐ y ∂PDE.volumeOn Ω,
       reverseTimeScalarCoefficient r₁ c τ y ≤ 0)
@@ -191,8 +191,7 @@ private theorem reverseTimeScalar_shiftedPositivePart_le
   exact hscalar
 
 private theorem reverseTimeSpatialForm_apply_shiftedPositivePart_ge_of_scalar_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (r₁ τ : ℝ) (a : CoefficientField d)
+     (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (u : H10HilbertGraph hΩ) (k : ℝ≥0)
     (hscalar :
@@ -214,8 +213,7 @@ private theorem reverseTimeSpatialForm_apply_shiftedPositivePart_ge_of_scalar_le
 form with `(u - k)₊` in both slots when the reverse-time scalar coefficient is
 nonpositive. -/
 theorem reverseTimeSpatialForm_apply_shiftedPositivePart_ge
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (r₁ τ : ℝ) (a : CoefficientField d)
+     (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (u : H10HilbertGraph hΩ) (k : ℝ≥0)
     (hScalarNonpos : ∀ᵐ y ∂PDE.volumeOn Ω,
@@ -236,5 +234,6 @@ theorem reverseTimeSpatialForm_apply_shiftedPositivePart_ge
     hScalarNonpos hScalarSquare hScalarCross
   exact reverseTimeSpatialForm_apply_shiftedPositivePart_ge_of_scalar_le
     hΩ r₁ τ a b c u k hscalar
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

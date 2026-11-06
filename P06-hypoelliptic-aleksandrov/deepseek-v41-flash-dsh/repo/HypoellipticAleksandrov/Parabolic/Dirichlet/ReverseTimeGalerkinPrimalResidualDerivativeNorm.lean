@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeGalerkinPrimalResidualDerivative
 public import HypoellipticAleksandrov.Topology.WeakLimitNorm
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Radius bound for the residual Galerkin limit
@@ -22,7 +23,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 /-- The common weak Galerkin limit with its residual derivative retains the
 explicit uniform Bochner radius. -/
 theorem exists_strictMono_tendsto_clm_reverseTimeGalerkinPrimal_residual_derivative_norm_le_radius
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)

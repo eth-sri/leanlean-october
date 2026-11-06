@@ -6,6 +6,7 @@ public import HypoellipticAleksandrov.Parabolic.WeakDerivatives
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementApproxSquareNorm
 import Mathlib.Algebra.Order.BigOperators.Ring.Finset
 import Mathlib.Tactic.Ring
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Time derivative control from the homogeneous equation
 
@@ -45,7 +46,7 @@ theorem principal_contraction_sq_le {d : ℕ} (A H : PDE.Mat d)
 
 /-- The homogeneous equation bounds time energy by the actual spatial Hessian energy. -/
 theorem integral_local_time_derivative_sq_le {d : ℕ}
-    (U : Set (TimeVelocity d)) (hU : MeasurableSet U)
+    (U : HypoellipticAleksandrov.Parabolic.TVSet d) (hU : MeasurableSet U)
     (u : TimeVelocity d → ℝ) (A : CoefficientField d)
     (L : ℝ) (hL : 0 ≤ L)
     (hA : ∀ z ∈ U, ∀ i j, |A z.1 z.2 i j| ≤ L)

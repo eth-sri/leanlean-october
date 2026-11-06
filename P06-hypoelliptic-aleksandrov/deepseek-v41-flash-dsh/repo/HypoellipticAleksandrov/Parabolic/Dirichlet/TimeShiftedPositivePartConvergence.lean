@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeBochnerContinuous
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeSteklovEndpoint
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ShiftedPositivePartEnergySupport
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimePositivePartPairingConvergence
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Continuity of affine-threshold shifted positive parts in reverse time
@@ -23,7 +24,7 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-variable {d : ℕ} {Ω : Set (PDE.Vec d)}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
 
 /-- Raw representatives of a sequence of affine-threshold shifted positive
 parts. -/
@@ -644,7 +645,7 @@ theorem tendsto_integral_abs_dualPairing_of_tendsto
 /-- Forward Steklov regularization preserves the tested affine-threshold
 shifted-positive-part energy in the zero-width limit. -/
 theorem tendsto_forwardSteklov_shiftedPositivePartEnergy_test
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (M N : ℝ≥0) (T : ℝ)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (M N : ℝ≥0) (T : ℝ)
     (u : ReverseTimeL2V hΩ T) (eta : ReverseTimeScalarTest T) {a b : ℝ}
     (ha : 0 < a) (hab : a < b) (hb : b < T) :
     Tendsto (fun h : ℝ => ∫ t in Icc a b,
@@ -788,7 +789,7 @@ private theorem integrable_shiftedPositivePartEnergyRate_forwardSteklov_on_Icc
 /-- Forward Steklov regularization preserves the tested affine-threshold
 shifted-positive-part energy rate in the zero-width limit. -/
 theorem tendsto_forwardSteklov_shiftedPositivePartEnergyRate_test
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω) (M N : ℝ≥0) (T : ℝ)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (eta : ReverseTimeScalarTest T) {a b : ℝ}

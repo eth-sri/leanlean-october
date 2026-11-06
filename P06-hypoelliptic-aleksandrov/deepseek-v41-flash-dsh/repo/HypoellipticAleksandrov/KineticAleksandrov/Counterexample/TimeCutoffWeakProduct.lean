@@ -5,6 +5,7 @@ public import PDEFoundation.Sobolev.WeakDerivative.Product
 public import Mathlib.MeasureTheory.Function.L2Space
 import Mathlib.Analysis.InnerProductSpace.Basic
 import Mathlib.Tactic.Ring
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Weak product calculus for cutoff jets
@@ -40,7 +41,7 @@ theorem integral_pairing_tendsto_of_eLpNorm_two {X : Type*} [MeasurableSpace X]
 /-- A Sobolev multiplier obeys the weak product rule with a function having only the
 specified weak partial derivative. All three products are locally integrable by `L²`.
 No smoothness of the multiplier or of the weak derivative representative is assumed. -/
-theorem weakPartial_product_sobolev {d : ℕ} {D : Set (PDE.Vec d)}
+theorem weakPartial_product_sobolev {d : ℕ} {D : HypoellipticAleksandrov.VecSet d}
     (hD : PDE.IsOpenBoundedConvexDomain D) (a : PDE.W1pFunction D 2)
     (i : Fin d) (b Db : PDE.Vec d → ℝ)
     (hb : PDE.MemLpOn D 2 b) (hDb : PDE.MemLpOn D 2 Db)

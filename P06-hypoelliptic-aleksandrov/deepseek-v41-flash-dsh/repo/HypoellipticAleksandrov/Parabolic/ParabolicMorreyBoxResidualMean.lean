@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.ParabolicPoincarePhysical
 public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyMeanNormTransport
 public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyDerivativeNorm
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Mean residual estimate on a physical parabolic Morrey box
@@ -96,7 +97,7 @@ private theorem parabolicMorreyBoxAffineResidual_mean_bound
           parabolicMorreyDerivativeLpNormOn d u (parabolicBox 1 r t v) := by
   let f : TimeVelocity d -> Real := fun z =>
     u z - parabolicMorreyBoxAffineProjection t v r u z
-  let Q : Set (TimeVelocity d) := parabolicBox 1 r t v
+  let Q : HypoellipticAleksandrov.Parabolic.TVSet d := parabolicBox 1 r t v
   let A : Real := parabolicMorreyDerivativeLpNormOn d u Q
   have hraw := memLp_restrict_of_memLp_parabolicNormalizedVolumeOn
     (volume_parabolicMorreyBox_pos t v hr)
@@ -153,7 +154,7 @@ theorem exists_parabolicMorreyBoxAffineResidualMeanConst (d : Nat)
   obtain ⟨C_P, hC_P_pos, hC_P⟩ := exists_parabolicMorreyBoxAffinePoincareConst d hd
   refine ⟨C_P, hC_P_pos, ?_⟩
   intro t₀ v₀ r hr u hu huc
-  let Q : Set (TimeVelocity d) := parabolicBox 1 r t₀ v₀
+  let Q : HypoellipticAleksandrov.Parabolic.TVSet d := parabolicBox 1 r t₀ v₀
   let f : TimeVelocity d -> Real := fun z =>
     u z - parabolicMorreyBoxAffineProjection t₀ v₀ r u z
   have hres : MemLp f (parabolicExponent d) (parabolicNormalizedVolumeOn Q) := by

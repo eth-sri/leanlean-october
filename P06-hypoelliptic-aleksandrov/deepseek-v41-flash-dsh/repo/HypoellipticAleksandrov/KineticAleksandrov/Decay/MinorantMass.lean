@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Decay.MinorantMassComparison
 import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.UniquenessMeasure
 import Mathlib.Tactic.Positivity
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Uniform lower mass for the common minorant

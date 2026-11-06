@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.Parabolic.C2ToScalarC12
 public import HypoellipticAleksandrov.Coefficients.Ellipticity
 public import HypoellipticAleksandrov.Parabolic.SpatialCoordinateDerivatives
 import Mathlib.Tactic.Ring
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Integrability of local spatial value-energy terms
 
@@ -20,7 +21,7 @@ open scoped Matrix.Norms.Elementwise
 
 /-- Both sides of the local spatial value-energy identity are globally integrable. -/
 theorem integrable_scalar_local_spatial_value_energy_terms {d : ℕ}
-    {U : Set (TimeVelocity d)} (hU : IsOpen U) (u ρ : TimeVelocity d → ℝ)
+    {U : HypoellipticAleksandrov.Parabolic.TVSet d} (hU : IsOpen U) (u ρ : TimeVelocity d → ℝ)
     (hu : IsScalarC12On u U) (hρ : ContDiff ℝ (⊤ : ℕ∞) ρ)
     (hc : HasCompactSupport ρ) (hsub : tsupport ρ ⊆ U)
     (A : CoefficientField d) (hA : IsSmoothCoefficient A) (i j : Fin d) :

@@ -27,16 +27,17 @@ private theorem gradient_sum_sq {d : ℕ} (vStar v : PDE.Vec d) :
   unfold PDE.classicalGradient
   rw [h.fderiv]
   simp [PDE.basisVec_apply]
+section
+variable {d : ℕ} (Lam : ℝ) (vStar : PDE.Vec d)
 
 /-- The quadratic numerator is smooth. -/
-theorem contDiff_occupationQuadratic {d : ℕ} (Lam : ℝ) (vStar : PDE.Vec d) :
+theorem contDiff_occupationQuadratic  :
     ContDiff ℝ (⊤ : ℕ∞) (occupationQuadratic Lam vStar) := by
   unfold occupationQuadratic
   fun_prop
 
 /-- Its time derivative has the backward supersolution sign. -/
-theorem scalarTimeDerivative_occupationQuadratic {d : ℕ} (Lam : ℝ)
-    (vStar : PDE.Vec d) (z : TimeVelocity d) :
+theorem scalarTimeDerivative_occupationQuadratic  (z : TimeVelocity d) :
     scalarTimeDerivative (occupationQuadratic Lam vStar) z = -2 * d * Lam := by
   unfold scalarTimeDerivative occupationQuadratic
   have h := ((hasDerivAt_id z.1).const_sub 1).const_mul (2 * d * Lam)
@@ -44,8 +45,7 @@ theorem scalarTimeDerivative_occupationQuadratic {d : ℕ} (Lam : ℝ)
   simpa only [mul_neg, mul_one, neg_mul, id_eq] using h'.deriv
 
 /-- Its velocity Hessian is twice the identity. -/
-theorem scalarSpatialHessian_occupationQuadratic {d : ℕ} (Lam : ℝ)
-    (vStar : PDE.Vec d) (z : TimeVelocity d) :
+theorem scalarSpatialHessian_occupationQuadratic  (z : TimeVelocity d) :
     scalarSpatialHessian (occupationQuadratic Lam vStar) z =
       (2 : ℝ) • (1 : PDE.Mat d) := by
   have hg : (fun y : PDE.Vec d =>
@@ -71,6 +71,7 @@ theorem scalarSpatialHessian_occupationQuadratic {d : ℕ} (Lam : ℝ)
   have h := (((hasFDerivAt_apply (𝕜 := ℝ) j z.2).sub_const (vStar j)).const_mul 2).fderiv
   rw [h]
   simp [PDE.basisVec_apply, Matrix.one_apply, eq_comm]
+end
 
 /-- Upper ellipticity makes the quadratic numerator a backward supersolution. -/
 theorem scalarParabolicOperator_occupationQuadratic_le {d : ℕ}

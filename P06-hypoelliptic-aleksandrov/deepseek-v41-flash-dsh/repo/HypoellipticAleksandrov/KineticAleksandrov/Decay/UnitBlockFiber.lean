@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.MovingKernel
 public import Mathlib.MeasureTheory.Measure.Comap
 import Mathlib.MeasureTheory.Measure.Real
 public import Mathlib.MeasureTheory.Measure.Typeclasses.Finite
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Recovering valid-fiber measures from supported ambient measures -/
 
@@ -12,7 +13,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
 open Set MeasureTheory
 
 /-- A supported ambient measure is exactly the pushforward of its valid-fiber comap. -/
-theorem map_comap_evolutionState_eq {d : ℕ} {D : Set (PDE.Vec d)}
+theorem map_comap_evolutionState_eq {d : ℕ} {D : HypoellipticAleksandrov.VecSet d}
     {γ : ℝ → PDE.Vec d} (hD : MeasurableSet D) (s : ℝ)
     (μ : Measure (EvolutionAmbientState d))
     (hsupport : μ (evolutionStateSet D γ s)ᶜ = 0) :
@@ -24,7 +25,7 @@ theorem map_comap_evolutionState_eq {d : ℕ} {D : Set (PDE.Vec d)}
   exact ae_iff.mpr hsupport
 
 /-- The valid-fiber comap of a finite supported ambient measure has the same real mass. -/
-theorem comap_evolutionState_real_univ {d : ℕ} {D : Set (PDE.Vec d)}
+theorem comap_evolutionState_real_univ {d : ℕ} {D : HypoellipticAleksandrov.VecSet d}
     {γ : ℝ → PDE.Vec d} (hD : MeasurableSet D) (s : ℝ)
     (μ : Measure (EvolutionAmbientState d)) [IsFiniteMeasure μ]
     (hsupport : μ (evolutionStateSet D γ s)ᶜ = 0) :

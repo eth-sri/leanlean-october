@@ -54,7 +54,7 @@ theorem position_box_probability_integrable (E : FullSpaceEvolution) (z : Z)
     Integrable (fun t => (kernelXV E (Real.toNNReal t) z (box A0 r Y)).toReal)
       (volume.restrict (Ioc a b)) := by
   have hm := (kernelXV_realTime_measurable E z _ (box_measurable A0 r Y)).ennreal_toReal
-  apply Integrable.mono' (integrable_const (1 : ℝ)) hm.aestronglyMeasurable
+  apply Integrable.mono' (integrable_const 1) hm.aestronglyMeasurable
   apply Filter.Eventually.of_forall
   intro t
   rw [Real.norm_of_nonneg ENNReal.toReal_nonneg]

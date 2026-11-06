@@ -48,12 +48,12 @@ theorem kinetic_holder_autonomous_relative_of_below_four_density
   refine ⟨alpha, C, ha, ha1, ?_⟩
   intro a hmeas hb Omega hOmega u hbounded hu heq
   have hlo : ∀ᵐ P ∂(volume : Measure (KineticPoint 1)),
-      lam • (1 : PDE.Mat 1) ≤
+      lam • 1 ≤
         fullKineticCoefficientAt (Autonomous.autonomousCoefficient a) P :=
     Filter.Eventually.of_forall (fun P => (Autonomous.autonomous_lift_elliptic hb P).1)
   have hhi : ∀ᵐ P ∂(volume : Measure (KineticPoint 1)),
       fullKineticCoefficientAt (Autonomous.autonomousCoefficient a) P ≤
-        Lam • (1 : PDE.Mat 1) :=
+        Lam • 1 :=
     Filter.Eventually.of_forall (fun P => (Autonomous.autonomous_lift_elliptic hb P).2)
   exact hholder (Autonomous.autonomousCoefficient a)
     (Autonomous.autonomous_lift_measurable hmeas) (Autonomous.autonomous_lift_symm a)

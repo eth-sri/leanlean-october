@@ -20,11 +20,12 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set Filter Metric
 open scoped Topology ContDiff
+section
+variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E] (f : ℕ → E → ℝ)
 
 /-- Compactness of all jets on a closed ball, with one common subsequence. -/
 theorem corrector_all_jets_subsequence
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
-    (f : ℕ → E → ℝ) (a : E) (r : ℝ)
+     (a : E) (r : ℝ)
     (hs : ∀ j, ∀ x ∈ closedBall a r, ContDiffAt ℝ (⊤ : ℕ∞) (f j) x)
     (M : ℕ → NNReal)
     (hb : ∀ j m, ∀ x ∈ closedBall a r, ‖iteratedFDeriv ℝ m (f j) x‖₊ ≤ M m) :
@@ -88,8 +89,7 @@ theorem corrector_all_jets_subsequence
 
 /-- Uniform convergence plus bounds at every order recover smoothness and all jets. -/
 theorem corrector_derivative_recovery
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
-    (f : ℕ → E → ℝ) (u : E → ℝ) (a : E) (r : ℝ)
+     (u : E → ℝ) (a : E) (r : ℝ)
     (hs : ∀ j, ∀ x ∈ closedBall a r, ContDiffAt ℝ (⊤ : ℕ∞) (f j) x)
     (M : ℕ → NNReal)
     (hb : ∀ j m, ∀ x ∈ closedBall a r, ‖iteratedFDeriv ℝ m (f j) x‖₊ ≤ M m)
@@ -134,8 +134,7 @@ theorem corrector_derivative_recovery
 
 /-- Derivative estimates with convergent amplitudes pass to the same smooth limit. -/
 theorem corrector_derivative_estimates
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
-    (f : ℕ → E → ℝ) (u : E → ℝ) (a : E) (r : ℝ) (hr : 0 < r)
+     (u : E → ℝ) (a : E) (r : ℝ) (hr : 0 < r)
     (hs : ∀ j, ∀ x ∈ closedBall a r, ContDiffAt ℝ (⊤ : ℕ∞) (f j) x)
     (hu : TendstoUniformlyOn f u atTop (closedBall a r))
     (hc : ContinuousOn u (closedBall a r))
@@ -184,5 +183,6 @@ theorem corrector_derivative_estimates
   have hright := ((hV.comp (tendsto_add_atTop_nat N)).comp hφ.tendsto_atTop).const_mul (b m)
   exact le_of_tendsto_of_tendsto hleft hright (Eventually.of_forall fun j =>
     hbound (φ j + N) m hm a (ball_subset_closedBall ha))
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

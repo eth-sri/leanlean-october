@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Ambient.MatrixContraction
 public import HypoellipticAleksandrov.Coefficients.Ellipticity
 public import HypoellipticAleksandrov.Parabolic.Derivatives
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # The forward parabolic operator
@@ -32,14 +33,14 @@ theorem parabolicOperator_apply {d : ℕ} (A : CoefficientField d)
 
 /-- A function is a subsolution when the forward operator is bounded by its source on a set. -/
 def IsParabolicSubsolutionOn {d : ℕ} (A : CoefficientField d)
-    (f u : TimeVelocity d → ℝ) (s : Set (TimeVelocity d)) : Prop :=
+    (f u : TimeVelocity d → ℝ) (s : HypoellipticAleksandrov.Parabolic.TVSet d) : Prop :=
   ∀ z ∈ s, parabolicOperator A u z ≤ f z
 
 namespace IsParabolicSubsolutionOn
 
 /-- A subsolution inequality holds at every point of its defining set. -/
 theorem le {d : ℕ} {A : CoefficientField d} {f u : TimeVelocity d → ℝ}
-    {s : Set (TimeVelocity d)} (h : IsParabolicSubsolutionOn A f u s)
+    {s : HypoellipticAleksandrov.Parabolic.TVSet d} (h : IsParabolicSubsolutionOn A f u s)
     {z : TimeVelocity d} (hz : z ∈ s) :
     parabolicOperator A u z ≤ f z :=
   h z hz

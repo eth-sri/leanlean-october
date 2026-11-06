@@ -4,6 +4,7 @@ import Mathlib.Tactic.Linarith
 public import HypoellipticAleksandrov.KineticAleksandrov.EvolutionProblem
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonLinear
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonNodes
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # The point value of the terminal evolution
@@ -34,7 +35,7 @@ open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set
 supported terminal datum, with the global bound by every uniform bound on the datum, and
 uniqueness on the past closed cylinder).  It supplies the existence half of the statement below and
 is discharged by that theorem. -/
-def ClassicalTerminalExistence {n : ℕ} (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
+def ClassicalTerminalExistence {n : ℕ} (Ω : HypoellipticAleksandrov.VecSet n) (γ : ℝ → PDE.Vec n)
     (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n) : Prop :=
   ∀ (τ : ℝ) (F : BoundedBorel (EvolutionAmbientState n)),
     IsSmoothCompactTerminalDatum Ω γ τ F →
@@ -48,7 +49,7 @@ def ClassicalTerminalExistence {n : ℕ} (Ω : Set (PDE.Vec n)) (γ : ℝ → PD
 
 section Outside
 
-variable {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
+variable {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n} {γ : ℝ → PDE.Vec n}
   {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n} {τ : ℝ}
 
 /-- Sums of classical terminal solutions solve the problem for the summed data. -/
@@ -129,7 +130,7 @@ section EvolutionData
 variable (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
 variable (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
 variable (hm : 0 < m) (hmLb : m ≤ L_b)
-variable (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
+variable (Ω : HypoellipticAleksandrov.VecSet n) (γ : ℝ → PDE.Vec n)
 variable (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
 variable (hΩ : IsAdmissibleEvolutionDomain Ω)
 variable (hγ : IsContinuousPiecewiseC1 γ)

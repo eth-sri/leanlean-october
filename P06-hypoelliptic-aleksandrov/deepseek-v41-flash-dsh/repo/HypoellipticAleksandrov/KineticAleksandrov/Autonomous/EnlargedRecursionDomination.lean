@@ -13,12 +13,12 @@ The lower observation endpoint is included in the canonical enlarged recursion.
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval)
 
 /-- Actual active Green mixtures are supported in the open active velocity interval. -/
 theorem enlargedGreenMixture_ae_active
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T : ℝ)
+     (T : ℝ)
     (mu : Measure Point) :
     ∀ᵐ q ∂(enlargedVisitGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) T ∘ₘ mu),
       q.velocity 0 ∈ c.active := by
@@ -39,9 +39,7 @@ theorem enlargedGreenMixture_ae_active
 
 /-- Literal finite-piece active domination in the source open physical observation strip. -/
 theorem enlarged_piece_domination
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (P : Point)
+     (s T : ℝ) (P : Point)
     (hP : s ≤ P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier) (N : ℕ) :
     let gamma := enlargedVisitEntrance hH hLE hlam hLam A c J s T P
     let GA := enlargedVisitGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) T
@@ -99,5 +97,6 @@ theorem enlarged_piece_domination
     Measure.restrict_eq_self_of_ae_mem hs
   rw [hr] at hrestrict
   exact hrestrict
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

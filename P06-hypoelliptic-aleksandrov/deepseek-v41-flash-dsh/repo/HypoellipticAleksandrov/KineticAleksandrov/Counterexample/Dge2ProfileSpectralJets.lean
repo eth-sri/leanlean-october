@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Dge2ProfileSigns
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Dge2SpectralCutoffCompact
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Spectral sign and continuity interfaces discharged by the actual profile -/
 

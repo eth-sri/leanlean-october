@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementSmoothRes
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonCalculus
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparison
 import HypoellipticAleksandrov.KineticAleksandrov.Occupation.LocalizedKrylovRegularity
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Homogeneous replacement for smooth ambient boundary extensions
 

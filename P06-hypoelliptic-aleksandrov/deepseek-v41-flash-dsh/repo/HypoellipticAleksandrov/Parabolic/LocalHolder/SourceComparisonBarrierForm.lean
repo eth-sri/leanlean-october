@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonSobolevJets
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialForm
 import HypoellipticAleksandrov.Parabolic.Dirichlet.WeakTestFunctionSobolevJet
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Literal spatial form of a smooth Sobolev barrier
 
@@ -16,7 +17,7 @@ open MeasureTheory Dirichlet
 open scoped ENNReal
 
 /-- A smooth H10 barrier evaluates against smooth tests by its classical spatial jets. -/
-theorem reverseTimeSpatialForm_smooth_barrier_test {d : ℕ} {Ω : Set (PDE.Vec d)}
+theorem reverseTimeSpatialForm_smooth_barrier_test {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (T τ : ℝ) (A : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (q : PDE.H10Function Ω) (hq : ContDiff ℝ 1 q.toH1Function.toFun)

@@ -61,7 +61,7 @@ theorem visitQuadratic_active_identity
       ((fun q : Point => visitQuadratic c (q.velocity 0)) ∘
         (KineticPoint.equivProd 1).symm) :=
     (visitQuadratic_smooth c).comp
-      ((contDiff_apply ℝ ℝ (0 : Fin 1)).comp contDiff_snd.snd)
+      ((contDiff_apply ℝ ℝ 0).comp contDiff_snd.snd)
   simpa only [visitQuadratic_operator] using
     visitUnion_identity_bounded_smooth hH hLE hlam hLam A (visitActiveUnion c J) T e
       (fun q => visitQuadratic c (q.velocity 0)) hs

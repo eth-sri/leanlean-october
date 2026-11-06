@@ -12,10 +12,11 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory Filter
 open scoped ENNReal
+section
+variable {X : Type*} [MeasurableSpace X] (m mu : Measure X) [IsFiniteMeasure mu] (F : X → ℝ≥0∞)
 
 /-- A finite measure's positive density is finite almost everywhere. -/
-theorem position_density_finite {X : Type*} [MeasurableSpace X]
-    (m mu : Measure X) [IsFiniteMeasure mu] (F : X → ℝ≥0∞) (hF : Measurable F)
+theorem position_density_finite  (hF : Measurable F)
     (hd : m.withDensity F = mu) : ∀ᵐ x ∂m, F x ≠ ⊤ := by
   have hi : (∫⁻ x, F x ∂m) ≠ ⊤ := by
     have he : (m.withDensity F) univ = ∫⁻ x, F x ∂m := by
@@ -25,8 +26,7 @@ theorem position_density_finite {X : Type*} [MeasurableSpace X]
   exact (ae_lt_top hF hi).mono (fun _ h => h.ne)
 
 /-- The real representative has exactly the original positive density and power integral. -/
-theorem position_density_real {X : Type*} [MeasurableSpace X]
-    (m mu : Measure X) [IsFiniteMeasure mu] (F : X → ℝ≥0∞) (hF : Measurable F)
+theorem position_density_real  (hF : Measurable F)
     (hd : m.withDensity F = mu) (q : ℝ) :
     Measurable (fun x => (F x).toReal) ∧ (∀ x, 0 ≤ (F x).toReal) ∧
       mu = m.withDensity (fun x => ENNReal.ofReal (F x).toReal) ∧
@@ -39,6 +39,7 @@ theorem position_density_real {X : Type*} [MeasurableSpace X]
   · apply lintegral_congr_ae
     filter_upwards [hf] with x hx
     rw [Real.enorm_toReal hx]
+end
 
 /-- The actual active mixture has a real density with precisely the source power bound. -/
 theorem position_density_sum (hpush : PushforwardStatement) (htail : RestartTailStatement)

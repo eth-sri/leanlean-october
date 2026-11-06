@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.ContDiffOnTwoToScalarC12
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Scalar jets of equal point germs

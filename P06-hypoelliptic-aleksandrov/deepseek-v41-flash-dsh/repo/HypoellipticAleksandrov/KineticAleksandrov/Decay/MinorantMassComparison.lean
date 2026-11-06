@@ -7,6 +7,8 @@ import HypoellipticAleksandrov.KineticAleksandrov.Evolution.BarrierGeometry
 import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 import Mathlib.Tactic.Positivity
 import Mathlib.Tactic.Linarith
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Scalar polynomial comparison for the minorant mass floor

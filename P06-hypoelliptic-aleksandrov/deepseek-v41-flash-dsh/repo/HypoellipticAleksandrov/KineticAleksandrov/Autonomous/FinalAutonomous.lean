@@ -36,8 +36,7 @@ theorem timeBinCountStatement_holds : TimeBinCountStatement := by
       (smoothAutonomousP6_holds hH hLE lam Lam hlam hLam))
 
 /-- All autonomous frontier steps hold relative to the source theorem. -/
-theorem autonomousRemainingFrontier_holds : AutonomousRemainingFrontier := by
-  exact ⟨timeBinCountStatement_holds,
+theorem autonomousRemainingFrontier_holds : AutonomousRemainingFrontier := ⟨timeBinCountStatement_holds,
     positionStartSlabBound_holds terminalDominationStatement_holds,
     terminalDominationStatement_holds, coreDominationStatement_holds⟩
 

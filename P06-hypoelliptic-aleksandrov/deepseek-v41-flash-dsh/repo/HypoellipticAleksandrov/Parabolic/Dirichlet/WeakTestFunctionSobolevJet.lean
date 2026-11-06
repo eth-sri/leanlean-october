@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.SpatialSobolev
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Sobolev jets of bundled spatial test functions
@@ -23,7 +24,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 function agrees almost everywhere with its literal function after canonical
 inclusion into the Hilbert `H¹₀` graph. -/
 theorem ae_valueCLM_smoothCompactlySupportedH1HilbertGraph
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     (ψ : PDE.WeakTestFunction Ω) :
     (fun y => valueCLM hΩ
       (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ ψ) y)
@@ -41,7 +42,7 @@ theorem ae_valueCLM_smoothCompactlySupportedH1HilbertGraph
 supported test function agrees almost everywhere with its literal derivative
 after canonical inclusion into the Hilbert `H¹₀` graph. -/
 theorem ae_gradientCoordCLM_smoothCompactlySupportedH1HilbertGraph
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     (ψ : PDE.WeakTestFunction Ω) (j : Fin d) :
     (fun y => gradientCLM hΩ
       (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ ψ) y j)

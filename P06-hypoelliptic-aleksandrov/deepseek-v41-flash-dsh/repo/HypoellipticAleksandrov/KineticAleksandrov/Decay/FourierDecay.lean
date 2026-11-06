@@ -16,10 +16,11 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
 open Set MeasureTheory HypoellipticAleksandrov
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open scoped ENNReal
+section
+variable (d : ℕ) (hd : 1 ≤ d) (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
 
 /-- Source case W exponential decay for every characterized Fourier projection. -/
-theorem fourier_decay_whole_space_of_unitBlock (d : ℕ) (hd : 1 ≤ d)
-    (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
+theorem fourier_decay_whole_space_of_unitBlock 
     (hEvol : IterationEvolutionStatement)
     (hblock : UnitBlockStatementW d hd lam Lam 1 1 hlam hlamLam zero_lt_one le_rfl) :
     ∃ C c : ℝ, 0 < C ∧ 0 < c ∧
@@ -54,8 +55,7 @@ theorem fourier_decay_whole_space_of_unitBlock (d : ℕ) (hd : 1 ≤ d)
 
 /-- The Green family, conditional on the unit-block estimate and the terminal evolution statement.
 -/
-theorem fourierDecayFamily_of_unitBlock (d : ℕ) (hd : 1 ≤ d)
-    (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
+theorem fourierDecayFamily_of_unitBlock 
     (hEvol : IterationEvolutionStatement)
     (hblock : UnitBlockStatementW d hd lam Lam 1 1 hlam hlamLam zero_lt_one le_rfl) :
     HypoellipticAleksandrov.KineticAleksandrov.Green.FourierDecayFamily d lam Lam := by
@@ -75,5 +75,6 @@ theorem fourierDecayFamily_of_unitBlock (d : ℕ) (hd : 1 ≤ d)
         (-c * (τ - σ) * PDE.vecEuclideanNorm ξ ^ (2 / 3 : ℝ))) :=
       ENNReal.ofReal_le_ofReal ht
     _ = _ := by congr 3; ring
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Decay

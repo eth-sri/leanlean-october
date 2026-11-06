@@ -63,7 +63,7 @@ theorem positionStartQuadratic_integrated_slab_identity
     dsimp only at hi
     have he : G p = stripGreen hH hLE hlam hLam A c.activeInterval ⊤
         (densityClockPole c p hv) := by
-      change (if h : p.velocity 0 ∈ c.active then _ else (0 : Measure Point)) = _
+      change (if h : p.velocity 0 ∈ c.active then _ else 0) = _
       rw [dite_eq_left hv]
       rfl
     rw [integral_indicator hS, he]

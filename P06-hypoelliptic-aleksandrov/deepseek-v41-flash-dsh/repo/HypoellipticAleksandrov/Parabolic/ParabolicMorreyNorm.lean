@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.Parabolic.Derivatives
 public import HypoellipticAleksandrov.Parabolic.ScalingMeasure
 public import Mathlib.Analysis.Calculus.FDeriv.Const
 public import Mathlib.MeasureTheory.Function.LpSpace.Indicator
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Selected parabolic smooth-jet norms
@@ -69,32 +70,34 @@ It is quantitative only when an actual `ParabolicSmoothJetMemLp` certificate
 ensures that the authoritative extended-real norm is finite. -/
 def parabolicSmoothJetLpNorm (d : ℕ) (u : TimeVelocity d → ℝ) : ℝ :=
   (parabolicSmoothJetELpNorm d u).toReal
+section
+variable {d : ℕ}
 
-private theorem timeDerivative_continuous {d : ℕ} {u : TimeVelocity d → ℝ}
+private theorem timeDerivative_continuous  {u : TimeVelocity d → ℝ}
     (hu : ContDiff ℝ 2 u) : Continuous (timeDerivative u) := by
   unfold timeDerivative
   exact ((hu.contDiff_fderiv_apply (m := 0) (by norm_num)).comp
     (contDiff_id.prodMk contDiff_const)).continuous
 
-private theorem timeDerivative_hasCompactSupport {d : ℕ} {u : TimeVelocity d → ℝ}
+private theorem timeDerivative_hasCompactSupport  {u : TimeVelocity d → ℝ}
     (hu : HasCompactSupport u) : HasCompactSupport (timeDerivative u) := by
   unfold timeDerivative
   simpa using hu.fderiv_apply (𝕜 := ℝ) ((1, 0) : TimeVelocity d)
 
-private theorem velocityGradient_continuous {d : ℕ} {u : TimeVelocity d → ℝ}
+private theorem velocityGradient_continuous  {u : TimeVelocity d → ℝ}
     {i : Fin d} (hu : ContDiff ℝ 2 u) :
     Continuous (fun z ↦ velocityGradient u z i) := by
   unfold velocityGradient
   exact ((hu.contDiff_fderiv_apply (m := 0) (by norm_num)).comp
     (contDiff_id.prodMk contDiff_const)).continuous
 
-private theorem velocityGradient_hasCompactSupport {d : ℕ} {u : TimeVelocity d → ℝ}
+private theorem velocityGradient_hasCompactSupport  {u : TimeVelocity d → ℝ}
     {i : Fin d} (hu : HasCompactSupport u) :
     HasCompactSupport (fun z ↦ velocityGradient u z i) := by
   unfold velocityGradient
   simpa using hu.fderiv_apply (𝕜 := ℝ) ((0, Pi.single i 1) : TimeVelocity d)
 
-private theorem velocityHessian_continuous {d : ℕ} {u : TimeVelocity d → ℝ}
+private theorem velocityHessian_continuous  {u : TimeVelocity d → ℝ}
     {i j : Fin d} (hu : ContDiff ℝ 2 u) :
     Continuous (fun z ↦ velocityHessian u z i j) := by
   unfold velocityHessian
@@ -103,7 +106,7 @@ private theorem velocityHessian_continuous {d : ℕ} {u : TimeVelocity d → ℝ
   simpa using (hfirst.continuous_fderiv (by norm_num)).clm_apply continuous_const |>.clm_apply
     continuous_const
 
-private theorem velocityHessian_hasCompactSupport {d : ℕ} {u : TimeVelocity d → ℝ}
+private theorem velocityHessian_hasCompactSupport  {u : TimeVelocity d → ℝ}
     {i j : Fin d} (hu : HasCompactSupport u) :
     HasCompactSupport (fun z ↦ velocityHessian u z i j) := by
   unfold velocityHessian
@@ -114,7 +117,7 @@ private theorem velocityHessian_hasCompactSupport {d : ℕ} {u : TimeVelocity d 
       H ((0, Pi.single i 1) : TimeVelocity d) ((0, Pi.single j 1) : TimeVelocity d)) rfl
 
 /-- Componentwise finite selected-jet membership makes the extended norm finite. -/
-theorem parabolicSmoothJetELpNorm_ne_top {d : ℕ} {u : TimeVelocity d → ℝ}
+theorem parabolicSmoothJetELpNorm_ne_top  {u : TimeVelocity d → ℝ}
     (hu : ParabolicSmoothJetMemLp d u) : parabolicSmoothJetELpNorm d u ≠ ⊤ := by
   unfold parabolicSmoothJetELpNorm
   apply ENNReal.add_ne_top.mpr
@@ -130,7 +133,7 @@ theorem parabolicSmoothJetELpNorm_ne_top {d : ℕ} {u : TimeVelocity d → ℝ}
 /-- A compactly supported `C²` function has finite selected smooth-jet
 `L^(d + 1)` norms, including every ordered velocity Hessian component. -/
 theorem parabolicSmoothJetMemLp_of_contDiff_hasCompactSupport
-    {d : ℕ} {u : TimeVelocity d → ℝ} (hu : ContDiff ℝ 2 u)
+     {u : TimeVelocity d → ℝ} (hu : ContDiff ℝ 2 u)
     (huc : HasCompactSupport u) : ParabolicSmoothJetMemLp d u := by
   refine ⟨hu.continuous.memLp_of_hasCompactSupport huc,
     (timeDerivative_continuous hu).memLp_of_hasCompactSupport
@@ -144,7 +147,7 @@ theorem parabolicSmoothJetMemLp_of_contDiff_hasCompactSupport
 
 /-- The velocity gradient of a scalar pullback has the exact first-order
 parabolic scaling factor. -/
-theorem velocityGradient_pullbackScalar {d : ℕ} {q : TimeVelocity d → ℝ}
+theorem velocityGradient_pullbackScalar  {q : TimeVelocity d → ℝ}
     {z : TimeVelocity d} {t₀ r : ℝ} {v₀ : PDE.Vec d}
     (hq : ContDiffAt ℝ 1 q (parabolicAffine t₀ v₀ r z)) :
     velocityGradient (pullbackScalar q t₀ v₀ r) z =
@@ -159,5 +162,6 @@ theorem velocityGradient_pullbackScalar {d : ℕ} {q : TimeVelocity d → ℝ}
   simpa [smul_eq_mul] using
     (fderiv ℝ q (parabolicAffine t₀ v₀ r z)).map_smul r
       ((0 : ℝ), Pi.single i (1 : ℝ))
+end
 
 end HypoellipticAleksandrov.Parabolic

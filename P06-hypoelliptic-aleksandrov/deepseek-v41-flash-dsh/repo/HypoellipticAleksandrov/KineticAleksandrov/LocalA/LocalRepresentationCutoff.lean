@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.LocalRepresentationGeometry
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.LocalRepresentationSource
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Position cutoffs for solutions defined only on a kinetic cylinder -/
 
@@ -10,31 +11,33 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set Filter Parabolic Evolution
 open scoped Topology
+section
+variable {d : ℕ}
 
 /-- The position cutoff uses the cylinder's actual free-transport frame. -/
-def localPositionCutoff {d : ℕ} (Z₀ : KineticPoint d) (χ : PDE.Vec d → ℝ)
+def localPositionCutoff  (Z₀ : KineticPoint d) (χ : PDE.Vec d → ℝ)
     (P : KineticPoint d) : ℝ := χ (relativePosition Z₀ P)
 
 /-- The local solution multiplied by a position cutoff, with no extension assumption. -/
-def localCutoffSolution {d : ℕ} (Z₀ : KineticPoint d) (χ : PDE.Vec d → ℝ)
+def localCutoffSolution  (Z₀ : KineticPoint d) (χ : PDE.Vec d → ℝ)
     (u : KineticPoint d → ℝ) (P : KineticPoint d) : ℝ := localPositionCutoff Z₀ χ P * u P
 
 /-- Free-transport relative position is smooth on the physical product carrier. -/
-theorem contDiff_relativePosition_native {d : ℕ} (Z₀ : KineticPoint d) :
+theorem contDiff_relativePosition_native  (Z₀ : KineticPoint d) :
     ContDiff ℝ (⊤ : ℕ∞)
       (relativePosition Z₀ ∘ (KineticPoint.equivProd d).symm) :=
   (contDiff_snd.fst.sub contDiff_const).sub
     ((contDiff_fst.sub contDiff_const).smul contDiff_const)
 
 /-- A smooth position cutoff is smooth in physical product coordinates. -/
-theorem contDiff_localPositionCutoff {d : ℕ} (Z₀ : KineticPoint d)
+theorem contDiff_localPositionCutoff  (Z₀ : KineticPoint d)
     {χ : PDE.Vec d → ℝ} (hχ : ContDiff ℝ (⊤ : ℕ∞) χ) :
     ContDiff ℝ (⊤ : ℕ∞)
       (localPositionCutoff Z₀ χ ∘ (KineticPoint.equivProd d).symm) :=
   hχ.comp (contDiff_relativePosition_native Z₀)
 
 /-- Strict position membership and closed velocity membership give outer closure membership. -/
-theorem local_closed_strip_mem_outer {d : ℕ} (Z₀ Q : KineticPoint d)
+theorem local_closed_strip_mem_outer  (Z₀ Q : KineticPoint d)
     {R a T : ℝ} (hR : 0 < R) (ha : Z₀.time ≤ a) (hT : T ≤ Z₀.time + R ^ 2)
     (hQ : Q ∈ localClosedStrip a T Z₀.velocity R)
     (hx : relativePosition Z₀ Q ∈ PDE.euclideanBall 0 (R ^ 3)) :
@@ -46,10 +49,10 @@ theorem local_closed_strip_mem_outer {d : ℕ} (Z₀ Q : KineticPoint d)
   have hv := (closure_minimal (PDE.euclideanBall_subset_euclideanClosedBall _ _)
     (PDE.isClosed_euclideanClosedBall Z₀.velocity R)) hQ.2.2
   change PDE.vecNormSq (Q.velocity - Z₀.velocity) ≤ R ^ 2 at hv
-  simpa only [sub_zero] using hv
+  simpa using hv
 
 /-- The cutoff solution is smooth inside the whole velocity strip. -/
-theorem localCutoffSolution_contDiffOn {d : ℕ} (Z₀ : KineticPoint d)
+theorem localCutoffSolution_contDiffOn  (Z₀ : KineticPoint d)
     {R a T : ℝ} (hR : 0 < R) (ha : Z₀.time < a) (hT : T < Z₀.time + R ^ 2)
     (u : KineticPoint d → ℝ)
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ (KineticPoint.equivProd d).symm)
@@ -81,7 +84,7 @@ theorem localCutoffSolution_contDiffOn {d : ℕ} (Z₀ : KineticPoint d)
     exact (contDiffAt_const.congr_of_eventuallyEq hz).contDiffWithinAt
 
 /-- The original closed-cylinder continuity gives closed-strip continuity after cutoff. -/
-theorem localCutoffSolution_continuousOn {d : ℕ} (Z₀ : KineticPoint d)
+theorem localCutoffSolution_continuousOn  (Z₀ : KineticPoint d)
     {R a T : ℝ} (hR : 0 < R) (ha : Z₀.time ≤ a) (hT : T ≤ Z₀.time + R ^ 2)
     (u : KineticPoint d → ℝ)
     (hu : ContinuousOn u (closure (forwardCylinder Z₀ R hR)))
@@ -114,7 +117,7 @@ theorem localCutoffSolution_continuousOn {d : ℕ} (Z₀ : KineticPoint d)
     exact (continuousAt_const.congr_of_eventuallyEq hz).continuousWithinAt
 
 /-- A cutoff with zero position germ has zero classical operator, even for arbitrary data. -/
-theorem localCutoffSolution_operator_zero {d : ℕ} (Z₀ P : KineticPoint d)
+theorem localCutoffSolution_operator_zero  (Z₀ P : KineticPoint d)
     (A : FullKineticCoefficient d) (χ : PDE.Vec d → ℝ) (u : KineticPoint d → ℝ)
     (hx : relativePosition Z₀ P ∉ tsupport χ) :
     forwardKineticOperator A (localCutoffSolution Z₀ χ u) P = 0 := by
@@ -172,5 +175,6 @@ theorem localCutoffSolution_operator_zero {d : ℕ} (Z₀ P : KineticPoint d)
   rw [forwardKineticOperator_apply, ht, hg, hh]
   simp only [PDE.vecDot, Pi.zero_apply, mul_zero, Finset.sum_const_zero,
     matrixContraction, add_zero, Matrix.zero_apply]
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

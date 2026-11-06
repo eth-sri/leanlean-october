@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Interval.OccupationTransfer
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.Occupation
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # The bounded-interval occupation theorem
 
@@ -53,7 +55,7 @@ theorem interval_occupation
   refine ⟨C, fun γ hγ1 hγ2 => hC γ hγ1 (by norm_num; exact hγ2), ?_⟩
   intro m Lb _hm _hmLb a c hac B b hs hJ S K hr σ T hT ρ _
   have hp := (interval_evolution_clauses hH hLE hac B b hs hJ S K hr).2.1
-  have hsetting : SourceSetting lam Lam 1 1 (univ : Set (PDE.Vec 1)) B (identityDrift 1) :=
+  have hsetting : SourceSetting lam Lam 1 1 (univ : HypoellipticAleksandrov.VecSet 1) B (identityDrift 1) :=
     ⟨hs.1, identityDrift_smooth 1, zero_lt_one, le_rfl, identityDrift_bounds 1,
       Or.inl ⟨rfl, rfl, rfl, rfl⟩⟩
   obtain ⟨Sw, Kw, hrw, _, hpw, _⟩ :=
@@ -67,7 +69,7 @@ theorem interval_occupation
     (isOccupationDensity_iff_slabOccupationDensity Kw σ T (ρ.map Subtype.val) gw).mp hgw
   have hdom := intervalOccupationMeasure_le_density hac B hs.1 hJ K hp Kw hpw
     σ T hT ρ gw hgwSlab hgwi
-  let U : Set (TimeVelocity 1) := Ioo 0 T ×ˢ PDE.oneDimensionalAxisBox a c
+  let U : HypoellipticAleksandrov.Parabolic.TVSet 1 := Ioo 0 T ×ˢ PDE.oneDimensionalAxisBox a c
   have hU : MeasurableSet U := measurableSet_Ioo.prod hJ
   have hνU : (intervalOccupationMeasure σ T K ρ).restrict U =
       intervalOccupationMeasure σ T K ρ :=

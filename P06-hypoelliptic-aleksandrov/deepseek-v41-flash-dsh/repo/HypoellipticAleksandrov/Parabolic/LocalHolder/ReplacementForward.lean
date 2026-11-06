@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementContinuousBoundary
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonForward
 public import HypoellipticAleksandrov.KineticAleksandrov.ClassicalInputs
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # The forward homogeneous replacement and sharp source comparison
 

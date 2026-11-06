@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyBoxCoefficientBou
 public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyGeometry
 public import Mathlib.Analysis.Calculus.ContDiff.Defs
 public import Mathlib.Tactic
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Shrinking-box recovery for parabolic Morrey affine projections
@@ -23,7 +24,7 @@ open Filter MeasureTheory Set
 open scoped BigOperators ENNReal Topology
 
 private theorem isProbabilityMeasure_parabolicNormalizedVolumeOn
-    {d : Nat} {Q : Set (TimeVelocity d)}
+    {d : Nat} {Q : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hQpos : 0 < volume Q) (hQtop : volume Q < ∞) :
     IsProbabilityMeasure (parabolicNormalizedVolumeOn Q) := by
   refine ⟨?_⟩
@@ -85,7 +86,7 @@ private theorem parabolicLpMeanNormOn_le_of_memLp_of_forall_mem_parabolicClosedB
     parabolicLpMeanNormOn d f (parabolicBox 1 r t₀ v₀) hf ≤ δ := by
   have hδ : 0 ≤ δ := by
     exact (abs_nonneg (f z)).trans (hbound z hz)
-  let Q : Set (TimeVelocity d) := parabolicBox 1 r t₀ v₀
+  let Q : HypoellipticAleksandrov.Parabolic.TVSet d := parabolicBox 1 r t₀ v₀
   let μ : Measure (TimeVelocity d) := parabolicNormalizedVolumeOn Q
   have hQpos : 0 < volume Q := by
     exact volume_parabolicMorreyBox_pos t₀ v₀ hr

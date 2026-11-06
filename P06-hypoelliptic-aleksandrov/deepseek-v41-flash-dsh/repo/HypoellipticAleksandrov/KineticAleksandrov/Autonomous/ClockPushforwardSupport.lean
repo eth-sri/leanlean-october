@@ -18,12 +18,12 @@ def clockGreenSupport : Set Point := {p | 0 < p.time ∧ p.velocity 0 ∈ normal
 theorem isOpen_clockGreenSupport : IsOpen clockGreenSupport :=
   (isOpen_lt continuous_const continuous_time).inter
     (isOpen_Ioo.preimage ((continuous_apply 0).comp continuous_velocity))
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) (he : e.velocity 0 ∈ c.active)
 
 /-- The actual normalized Green is supported inside its positive-time active strip. -/
 theorem clockGreen_ae_support
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) (he : e.velocity 0 ∈ c.active) :
+     :
     ∀ᵐ p ∂clockGreen hH hLE hlam hLam A c e he, p ∈ clockGreenSupport := by
   rw [ae_iff]
   have hh := reconstruction_green_infinite_zero_of_finite clockNormalizedInterval
@@ -45,9 +45,7 @@ theorem clockGreen_ae_support
 
 /-- The weighted physical measure, pushed through the literal clock, has the same open support. -/
 theorem clock_weighted_pushforward_ae_support
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) (he : e.velocity 0 ∈ c.active) :
+     :
     ∀ᵐ p ∂Measure.map (c.map e)
       ((stripGreen hH hLE hlam hLam A c.activeInterval ⊤
         ⟨e, WithTop.coe_lt_top _, he⟩).withDensity
@@ -61,8 +59,9 @@ theorem clock_weighted_pushforward_ae_support
   refine ⟨?_, (c.mem_active_iff (p.velocity 0)).mp hp.2⟩
   change 0 < (c.map e p).time
   have hs := sq_pos_of_pos c.positive
-  have ht : e.time < p.time := hp.1
-  have hc' : p.time - e.time ≤ 2 * c.r ^ 2 * (c.map e p).time := hc
+  have ht := hp.1
+  have hc' := hc
   nlinarith
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

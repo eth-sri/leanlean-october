@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Interval.OccupationDomination
 public import HypoellipticAleksandrov.KineticAleksandrov.Interval.OccupationDensity
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Transfer of whole-space occupation density to the interval
 
@@ -34,13 +35,13 @@ theorem intervalOccupationMeasure_le_density {a c lam Lam : ℝ}
     intervalOccupationMeasure σ T K ρ ≤
       (volume.restrict (Ioo (0 : ℝ) T ×ˢ univ)).withDensity
         (fun p => ENNReal.ofReal (g p)) := by
-  let R : Set (TimeVelocity 1) := Ioo 0 T ×ˢ univ
+  let R : HypoellipticAleksandrov.Parabolic.TVSet 1 := Ioo 0 T ×ˢ univ
   have hR : MeasurableSet R := measurableSet_Ioo.prod MeasurableSet.univ
   have hs : (intervalOccupationMeasure σ T K ρ).restrict R =
       intervalOccupationMeasure σ T K ρ :=
     Measure.restrict_eq_self_of_ae_mem (by
       rw [ae_iff]; exact intervalOccupationMeasure_compl_slab σ T hT K ρ)
-  have hsub : ∀ A : Set (TimeVelocity 1), MeasurableSet A → A ⊆ R →
+  have hsub : ∀ A : HypoellipticAleksandrov.Parabolic.TVSet 1, MeasurableSet A → A ⊆ R →
       intervalOccupationMeasure σ T K ρ A ≤
         ∫⁻ p in A, ENNReal.ofReal (g p) := by
     intro A hA hAR

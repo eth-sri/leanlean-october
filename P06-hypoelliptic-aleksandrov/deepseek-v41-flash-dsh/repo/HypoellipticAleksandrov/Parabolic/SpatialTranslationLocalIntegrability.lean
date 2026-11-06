@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.SpatialTranslationWeakDerivatives
 public import Mathlib.MeasureTheory.Function.LocallyIntegrable
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Local integrability under spatial translation
@@ -21,7 +22,7 @@ open MeasureTheory
 /-- Raw-set local integrability transports through a spatial translation on
 any domain sent into the original domain. -/
 theorem LocallyIntegrableOn.spatialTranslate_of_mapsTo
-    {d : ℕ} {U V : Set (TimeVelocity d)}
+    {d : ℕ} {U V : HypoellipticAleksandrov.Parabolic.TVSet d}
     {f : TimeVelocity d → ℝ}
     (hf : LocallyIntegrableOn f U volume) (k : Fin d) (h : ℝ)
     (hshift : Set.MapsTo (spatialShift k h) V U) :

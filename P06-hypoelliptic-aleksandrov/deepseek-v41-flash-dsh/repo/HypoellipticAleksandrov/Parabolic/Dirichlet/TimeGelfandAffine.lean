@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeVStarPrimitive
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.WeakTimeDerivative
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeDerivativeKernel
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.SpatialSobolevSeparable
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Canonical affine representative for the reverse-time Gelfand curve
@@ -26,7 +27,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 /-- The canonical Bochner-average constant in the reverse-time affine Gelfand
 identification.  The positive-time proof argument guards this normalization. -/
 noncomputable def reverseTimeGelfandAffineConstant
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (T : ℝ) (_hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) :
     H10HilbertGraphDual hΩ :=
@@ -35,7 +36,7 @@ noncomputable def reverseTimeGelfandAffineConstant
       reverseTimeVStarPrimitive hΩ T g tau) ∂reverseTimeVolume T
 
 private theorem integrable_reverseTimeGelfandAffineDifference
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (T : ℝ)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) :
     Integrable
@@ -63,9 +64,11 @@ private theorem reverseTimeVolume_real_univ (T : ℝ) (hT : 0 < T) :
   rw [MeasureTheory.measureReal_restrict_apply_univ,
     Real.volume_real_Ioo_of_le (le_of_lt hT)]
   norm_num
+section
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
 
 private theorem integral_reverseTimeGelfandAffineDifference_apply_deriv_eq_zero
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
@@ -121,7 +124,7 @@ private theorem integral_reverseTimeGelfandAffineDifference_apply_deriv_eq_zero
     _ = 0 := by rw [hIdentity, sub_self]
 
 private theorem reverseTimeGelfandAffineDifference_apply_ae_eq_affineConstant_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
@@ -163,7 +166,7 @@ private theorem reverseTimeGelfandAffineDifference_apply_ae_eq_affineConstant_ap
   rw [htau, hConstant]
 
 private theorem ae_all_h10HilbertGraphDual_apply_eq
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     {hΩ : IsOpen Ω} {T : ℝ}
     (F : ℝ → H10HilbertGraphDual hΩ) (c : H10HilbertGraphDual hΩ)
     (q : ℕ → H10HilbertGraph hΩ)
@@ -173,7 +176,7 @@ private theorem ae_all_h10HilbertGraphDual_apply_eq
   ae_all_iff.mpr hpair
 
 private theorem h10HilbertGraphDual_eq_of_dense_apply_eq
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {hΩ : IsOpen Ω}
+     {hΩ : IsOpen Ω}
     (q : ℕ → H10HilbertGraph hΩ) (hqDense : DenseRange q)
     (ell ell' : H10HilbertGraphDual hΩ)
     (hpair : ∀ n : ℕ, ell (q n) = ell' (q n)) :
@@ -184,7 +187,7 @@ private theorem h10HilbertGraphDual_eq_of_dense_apply_eq
     exact hpair n)
 
 private theorem reverseTimeGelfandAffineDifference_ae_eq_affineConstant
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
@@ -215,6 +218,7 @@ private theorem reverseTimeGelfandAffineDifference_ae_eq_affineConstant
     ae_all_h10HilbertGraphDual_apply_eq F c q hpairAE
   filter_upwards [hpairAll] with tau htau
   exact h10HilbertGraphDual_eq_of_dense_apply_eq q hqDense (F tau) c (htau)
+end
 
 private theorem ae_eq_add_of_ae_sub_eq
     {alpha E : Type _} [MeasurableSpace alpha] [AddCommGroup E]
@@ -227,7 +231,7 @@ private theorem ae_eq_add_of_ae_sub_eq
 /-- The reverse-time Gelfand curve agrees almost everywhere with its dual
 Bochner primitive plus the canonical affine Bochner-average constant. -/
 theorem reverseTimeGelfandCLM_ae_eq_reverseTimeVStarPrimitive_add_affineConstant
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g) :

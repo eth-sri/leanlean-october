@@ -24,7 +24,7 @@ theorem barrierRectCutoff_eventually_one (Y : ℝ) (z : Z) :
     tendsto_natCast_atTop_atTop.eventually (eventually_ge_atTop _)
   filter_upwards [hn] with n hn
   have hR : 1 ≤ (n : ℝ) + 1 := by
-    have hn0 : (0 : ℝ) ≤ n := by positivity
+    have hn0 : 0 ≤ n := by positivity
     linarith only [hn0]
   have hR0 : 0 < (n : ℝ) + 1 := by positivity
   have hcube : (n : ℝ) + 1 ≤ ((n : ℝ) + 1) ^ 3 := by
@@ -49,8 +49,7 @@ theorem barrierRectCutoff_integral_tendsto (mu : Measure Z) (f : Z → ℝ)
       atTop (𝓝 (∫ z, f z ∂mu)) := by
   apply tendsto_integral_of_dominated_convergence (fun z => |f z|)
   · intro n
-    have hc : Continuous (barrierRectCutoff Y ((n : ℝ) + 1)) := by
-      exact (barrierCutoff_contDiff.continuous.comp
+    have hc : Continuous (barrierRectCutoff Y ((n : ℝ) + 1)) := (barrierCutoff_contDiff.continuous.comp
         ((continuous_fst.sub continuous_const).div_const _)).mul
           (barrierCutoff_contDiff.continuous.comp (continuous_snd.div_const _))
     exact (hc.measurable.mul hf).aestronglyMeasurable

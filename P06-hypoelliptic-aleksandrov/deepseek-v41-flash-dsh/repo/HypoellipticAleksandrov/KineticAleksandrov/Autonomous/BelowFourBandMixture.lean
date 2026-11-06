@@ -60,10 +60,10 @@ theorem belowFour_density_subprobability_mixture {X : Type*} [MeasurableSpace X]
     obtain ⟨G, hG, hG0, hGd, hGp, hGn⟩ := hx
     have h := positionPositiveNorm_of_density_le volume (F x)
       (hF.comp (measurable_const.prodMk measurable_id)) univ univ MeasurableSet.univ
-      G hG hG0 (by simpa only [Measure.restrict_univ] using hdx.trans hGd)
-      q K (by linarith) hK (by simpa only [Measure.restrict_univ] using hGp)
-      (by simpa only [Measure.restrict_univ] using hGn)
-    simpa only [Measure.restrict_univ] using h
+      G hG hG0 (by simpa using hdx.trans hGd)
+      q K (by linarith) hK (by simpa using hGp)
+      (by simpa using hGn)
+    simpa using h
   let M := fun z => ∫⁻ x, F x z ∂nu
   have hM : Measurable M := hF.lintegral_prod_left'
   have hm : volume.withDensity M = k ∘ₘ nu := by

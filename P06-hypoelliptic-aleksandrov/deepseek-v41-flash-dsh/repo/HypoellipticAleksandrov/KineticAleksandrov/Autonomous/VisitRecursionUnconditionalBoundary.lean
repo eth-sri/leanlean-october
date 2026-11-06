@@ -8,12 +8,12 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.VisitRecursi
 @[expose] public section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
 
 /-- An actual supported physical exit mixture lies on its prescribed finite-union exit set. -/
 theorem visitUnionExitKernel_comp_ae_exit
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (s T : ℝ) (mu : Measure Point)
+     (H : FiniteIntervalUnion) (s T : ℝ) (mu : Measure Point)
     (hmu : ∀ᵐ p ∂mu, p ∈ visitPoleSet H s T) :
     ∀ᵐ p ∂(visitUnionExitKernel hH hLE hlam hLam A H s T ∘ₘ mu),
       p ∈ finiteUnionExitSet H s T := by
@@ -23,9 +23,7 @@ theorem visitUnionExitKernel_comp_ae_exit
 
 /-- Retaining everything except internal restarts is precisely restriction to actual outer exits. -/
 theorem visitUnionExitKernel_retained_eq_outer
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H1 H2 : FiniteIntervalUnion)
+     (H1 H2 : FiniteIntervalUnion)
     (hsub : H1.carrier ⊆ H2.carrier) (s T : ℝ) (mu : Measure Point)
     (hmu : ∀ᵐ p ∂mu, p ∈ visitPoleSet H1 s T) :
     let O := visitUnionExitKernel hH hLE hlam hLam A H1 s T ∘ₘ mu
@@ -47,9 +45,7 @@ theorem visitUnionExitKernel_retained_eq_outer
 
 /-- The retained active exit term of the counting proof is exactly the actual outer exit term. -/
 theorem visitActiveExitKernel_retained_eq_outer
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (mu : Measure Point)
+     (c : Clock) (J : Interval) (s T : ℝ) (mu : Measure Point)
     (hmu : ∀ᵐ p ∂mu, p ∈ visitPoleSet (visitActiveUnion c J) s T) :
     let O := visitUnionExitKernel hH hLE hlam hLam A (visitActiveUnion c J) s T ∘ₘ mu
     O.restrict (visitBoundary s T (visitActiveInterval c) J)ᶜ =
@@ -59,5 +55,6 @@ theorem visitActiveExitKernel_retained_eq_outer
     rw [visitActiveUnion_carrier, Interval.toFiniteUnion_carrier]
     exact inter_subset_right
   exact visitUnionExitKernel_retained_eq_outer hH hLE hlam hLam A _ _ hsub s T mu hmu
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

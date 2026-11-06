@@ -10,12 +10,12 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov MeasureTheory
 open scoped ENNReal
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (z : Z) (T : NNReal)
 
 /-- The exact deterministic second-moment conditions, with constants 2 and 4/3. -/
 theorem terminal_second_moments
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (z : Z) (T : NNReal) :
+     :
     let E := fullSpaceEvolution hH hLE hlam hLam A
     (∫⁻ w, ENNReal.ofReal ((w.2-z.2)^2) ∂kernelXV E T z) ≤
       ENNReal.ofReal (2*Lam*(T : ℝ)) ∧
@@ -33,9 +33,7 @@ theorem terminal_second_moments
 
 /-- Both actual real second moments are integrable, rather than merely total integrals. -/
 theorem terminal_second_moments_integrable
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (z : Z) (T : NNReal) :
+     :
     let E := fullSpaceEvolution hH hLE hlam hLam A
     Integrable (fun w : Z => (w.2-z.2)^2) (kernelXV E T z) ∧
       Integrable (fun w : Z => (w.1-z.1)^2) (kernelXV E T z) := by
@@ -47,5 +45,6 @@ theorem terminal_second_moments_integrable
   · apply (lintegral_ofReal_ne_top_iff_integrable (by fun_prop)
       (Filter.Eventually.of_forall (fun w : Z => sq_nonneg (w.1-z.1)))).mp
     exact ne_of_lt (h.2.trans_lt ENNReal.ofReal_lt_top)
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

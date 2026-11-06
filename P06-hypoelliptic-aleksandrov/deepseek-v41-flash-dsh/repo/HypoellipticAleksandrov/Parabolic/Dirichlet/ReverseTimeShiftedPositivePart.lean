@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.H10ShiftedPositivePart
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeDualPairing
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Shifted positive parts in reverse-time Bochner space
@@ -43,7 +44,7 @@ private theorem aestronglyMeasurable_reverseTimeAffineThreshold
   (continuous_reverseTimeAffineThreshold M N).aestronglyMeasurable
 
 private theorem aestronglyMeasurable_reverseTimeInputThresholdPair
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (T : ℝ) (M N : ℝ≥0)
     (u : ReverseTimeL2V hΩ T) : AEStronglyMeasurable
       (fun τ : ℝ => (u τ, reverseTimeAffineThreshold M N τ))
@@ -52,18 +53,18 @@ private theorem aestronglyMeasurable_reverseTimeInputThresholdPair
     (aestronglyMeasurable_reverseTimeAffineThreshold T M N)
 
 private theorem aestronglyMeasurable_h10ShiftedPositivePart_comp
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     {α : Type*} [MeasurableSpace α] {μ : Measure α}
     (p : α → H10HilbertGraph hΩ × ℝ≥0)
     (hp : AEStronglyMeasurable p μ) :
     AEStronglyMeasurable
       (fun x => h10ShiftedPositivePart hΩ (p x).1 (p x).2) μ := by
   exact (continuous_h10ShiftedPositivePart hΩ).comp_aestronglyMeasurable hp
+section
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (T : ℝ) (M N : ℝ≥0) (u : ReverseTimeL2V hΩ T)
 
 private theorem aestronglyMeasurable_reverseTimeShiftedPositivePart
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (M N : ℝ≥0)
-    (u : ReverseTimeL2V hΩ T) : AEStronglyMeasurable
+     : AEStronglyMeasurable
       (fun τ => h10ShiftedPositivePart hΩ (u τ)
         (reverseTimeAffineThreshold M N τ)) (reverseTimeVolume T) := by
   exact aestronglyMeasurable_h10ShiftedPositivePart_comp hΩ
@@ -72,9 +73,7 @@ private theorem aestronglyMeasurable_reverseTimeShiftedPositivePart
 
 /-- The affine-threshold truncation belongs to the reverse-time Bochner space. -/
 theorem reverseTimeShiftedPositivePart_memLp
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (M N : ℝ≥0)
-    (u : ReverseTimeL2V hΩ T) :
+     :
     MemLp (fun τ => h10ShiftedPositivePart hΩ (u τ)
       (reverseTimeAffineThreshold M N τ)) (2 : ℝ≥0∞)
       (reverseTimeVolume T) := by
@@ -87,9 +86,7 @@ theorem reverseTimeShiftedPositivePart_memLp
 /-- The pointwise shifted positive part with affine threshold, lifted to
 reverse-time Bochner `L²(V)`. -/
 noncomputable def reverseTimeShiftedPositivePart
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (M N : ℝ≥0)
-    (u : ReverseTimeL2V hΩ T) : ReverseTimeL2V hΩ T :=
+     : ReverseTimeL2V hΩ T :=
   (reverseTimeShiftedPositivePart_memLp hΩ T M N u).toLp
     (fun τ => h10ShiftedPositivePart hΩ (u τ)
       (reverseTimeAffineThreshold M N τ))
@@ -97,9 +94,7 @@ noncomputable def reverseTimeShiftedPositivePart
 /-- The Bochner lift agrees almost everywhere with pointwise affine-threshold
 truncation. -/
 theorem coeFn_reverseTimeShiftedPositivePart
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (M N : ℝ≥0)
-    (u : ReverseTimeL2V hΩ T) :
+     :
     reverseTimeShiftedPositivePart hΩ T M N u =ᵐ[reverseTimeVolume T]
       fun τ => h10ShiftedPositivePart hΩ (u τ)
         (reverseTimeAffineThreshold M N τ) :=
@@ -108,14 +103,13 @@ theorem coeFn_reverseTimeShiftedPositivePart
 /-- Pairing a reverse-time dual curve with the affine-threshold shifted
 positive part is integrable. -/
 theorem integrable_reverseTimeDualPairing_shiftedPositivePart
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (M N : ℝ≥0)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) :
+     (g : ReverseTimeL2VStar hΩ T) :
     Integrable (fun τ => (g τ) (h10ShiftedPositivePart hΩ (u τ)
       (reverseTimeAffineThreshold M N τ))) (reverseTimeVolume T) := by
   refine (integrable_reverseTimeDualPairing hΩ T
     (reverseTimeShiftedPositivePart hΩ T M N u) g).congr ?_
   filter_upwards [coeFn_reverseTimeShiftedPositivePart hΩ T M N u] with τ hτ
   rw [hτ]
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

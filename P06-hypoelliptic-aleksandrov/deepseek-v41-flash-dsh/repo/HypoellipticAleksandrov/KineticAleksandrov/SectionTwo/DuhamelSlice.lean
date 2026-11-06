@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.DuhamelEvolution
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.DuhamelBounded
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Classical kinetic source slices for the Duhamel formula -/
 
@@ -10,7 +11,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set
 
-variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d}
 
 /-- A continuous compactly supported kinetic source as bounded Borel data. -/
 def duhamelSourceBorel (g : KineticPoint d → ℝ) (hg : Continuous g)

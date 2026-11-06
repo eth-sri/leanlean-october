@@ -26,7 +26,7 @@ theorem exists_bellman_barrier_with_modulus (lam Lam : ℝ) (hlam : 0 < lam)
           C * (|z.1 - w.1| ^ (alpha / 3) + |z.2 - w.2| ^ alpha) := by
   obtain ⟨hlo, _, hb⟩ := exists_bellman_barrier lam Lam hlam hLam
   obtain ⟨phi, c, hhom, hc, hbound⟩ := hb alpha ha ha1
-  have ha0 : 0 < alpha := lt_of_le_of_lt (sub_nonneg.mpr hlo) ha
+  have ha0 := lt_of_le_of_lt (sub_nonneg.mpr hlo) ha
   obtain ⟨C, hC, hmod⟩ := barrier_coordinate_modulus hhom ha0 ha1
   exact ⟨phi, c, C, hhom, hc, hC, hbound, hmod⟩
 

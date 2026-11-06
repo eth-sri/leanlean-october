@@ -5,6 +5,7 @@ import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionLimitAdjoi
 import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionLimitMeasure
 import Mathlib.MeasureTheory.Function.LocallyIntegrable
 import Mathlib.Tactic.Ring
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # The weak equation in the zero-viscosity limit
@@ -87,7 +88,7 @@ private theorem weak_transport_limit {n : ℕ}
 theorem weak_transport_equation_of_vanishing_viscosity
     (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
     (hlam : 0 < lam) (hlamLam : lam ≤ Lam) (hm : 0 < m) (hmLb : m ≤ L_b)
-    (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
+    (Ω : HypoellipticAleksandrov.VecSet n) (γ : ℝ → PDE.Vec n)
     (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
     (hΩ : IsAdmissibleEvolutionDomain Ω) (hγ : IsContinuousPiecewiseC1 γ)
     (hB_smooth : IsSmoothFullKineticCoefficient B)

@@ -60,8 +60,7 @@ theorem kinetic_aleksandrov_timeVelocity_proof
           u P ≤ sSup ((fun P => max (u P) 0) '' kineticBoundary P₀ R) +
             C * R ^ (2 - (4 * (d : ℝ) + 2) / p) *
               (eLpNorm (fun P => max (f P) 0) (ENNReal.ofReal p)
-                (volume.restrict (backwardCylinder P₀ R))).toReal := by
-  exact kinetic_aleksandrov_timeVelocity_of_terminalEvolution d hd lam Lam p hlam hLam hp
+                (volume.restrict (backwardCylinder P₀ R))).toReal := kinetic_aleksandrov_timeVelocity_of_terminalEvolution d hd lam Lam p hlam hLam hp
     (exists_terminalEvolution_of_classical liebermanEllipsoidDirichletStatement_holds
       hormanderHypoellipticityStatement_holds)
     hormanderHypoellipticityStatement_holds
@@ -87,8 +86,7 @@ theorem kinetic_aleksandrov_timeVelocity_localised_proof
           u P ≤ sSup ((fun P => max (u P) 0) '' kineticBoundary P₀ R) +
             C * R ^ (2 - (4 * (d : ℝ) + 2) / p) *
               (eLpNorm ({P | 0 < u P}.indicator (fun P => max (f P) 0)) (ENNReal.ofReal p)
-                (volume.restrict (backwardCylinder P₀ R))).toReal := by
-  exact kinetic_aleksandrov_timeVelocity_localised_of_terminalEvolution
+                (volume.restrict (backwardCylinder P₀ R))).toReal := kinetic_aleksandrov_timeVelocity_localised_of_terminalEvolution
     d hd lam Lam p hlam hLam hp
     (exists_terminalEvolution_of_classical liebermanEllipsoidDirichletStatement_holds
       hormanderHypoellipticityStatement_holds)
@@ -112,8 +110,7 @@ theorem kinetic_holder_timeVelocity_proof
         (∀ P ∈ K, closure (backwardCylinder P (2 * R₀)) ⊆ Omega) →
       ∀ P ∈ K, ∀ P' ∈ K,
         |u P - u P'| ≤ C * oscillationOn u (holderNeighbourhood R₀ K) *
-          (quasiDistance P P' / R₀) ^ alpha := by
-  exact kinetic_holder_timeVelocity_relative_of_smooth
+          (quasiDistance P P' / R₀) ^ alpha := kinetic_holder_timeVelocity_relative_of_smooth
     smoothLocalRegularityStatement_holds hormanderHypoellipticityStatement_holds
     liebermanEllipsoidDirichletStatement_holds d hd lam Lam hlam hLam
 
@@ -139,8 +136,7 @@ theorem kinetic_aleksandrov_autonomous_proof
           u P ≤ sSup ((fun P => max (u P) 0) '' kineticBoundary P₀ R) +
             C * R ^ (2 - 6 / p) *
               (eLpNorm (fun P => max (f P) 0) (ENNReal.ofReal p)
-                (volume.restrict (backwardCylinder P₀ R))).toReal := by
-  exact kinetic_aleksandrov_autonomous_relative_of_frontier
+                (volume.restrict (backwardCylinder P₀ R))).toReal := kinetic_aleksandrov_autonomous_relative_of_frontier
     autonomousRemainingFrontier_holds hormanderHypoellipticityStatement_holds
     liebermanEllipsoidDirichletStatement_holds lam Lam p hlam hLam hp
 
@@ -166,8 +162,7 @@ theorem kinetic_aleksandrov_autonomous_localised_proof
           u P ≤ sSup ((fun P => max (u P) 0) '' kineticBoundary P₀ R) +
             C * R ^ (2 - 6 / p) *
               (eLpNorm ({P | 0 < u P}.indicator (fun P => max (f P) 0)) (ENNReal.ofReal p)
-                (volume.restrict (backwardCylinder P₀ R))).toReal := by
-  exact kinetic_aleksandrov_autonomous_localised_relative_of_frontier
+                (volume.restrict (backwardCylinder P₀ R))).toReal := kinetic_aleksandrov_autonomous_localised_relative_of_frontier
     autonomousRemainingFrontier_holds hormanderHypoellipticityStatement_holds
     liebermanEllipsoidDirichletStatement_holds lam Lam p hlam hLam hp
 
@@ -188,8 +183,7 @@ theorem kinetic_holder_autonomous_proof
         (∀ P ∈ K, closure (backwardCylinder P (2 * R₀)) ⊆ Omega) →
       ∀ P ∈ K, ∀ P' ∈ K,
         |u P - u P'| ≤ C * oscillationOn u (holderNeighbourhood R₀ K) *
-          (quasiDistance P P' / R₀) ^ alpha := by
-  exact kinetic_holder_autonomous_relative_of_frontier
+          (quasiDistance P P' / R₀) ^ alpha := kinetic_holder_autonomous_relative_of_frontier
     autonomousRemainingFrontier_holds hormanderHypoellipticityStatement_holds
     liebermanEllipsoidDirichletStatement_holds lam Lam hlam hLam
 

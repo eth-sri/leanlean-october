@@ -103,11 +103,12 @@ theorem infinite_probe_zero_terminal (f : exitProbeSubmodule) (T : ℝ)
   have hp := hs hx
   change p.time < T at hp
   exact (ne_of_lt hp) ht
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
 
 /-- Face bounds control the actual infinite Green probe value by contraction one. -/
 theorem infiniteExitProbeValueLinear_bound
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
     (A : SmoothAutonomous lam Lam) (H : Interval) (e : StripPole H ⊤)
     (f : exitProbeSubmodule) (c : ℝ) (hc : 0 ≤ c)
     (hbd : ∀ p, |infiniteExitProbeCcLinear H f p| ≤ c) :
@@ -125,8 +126,7 @@ theorem infiniteExitProbeValueLinear_bound
 
 /-- Nonnegative compact face data have nonnegative actual infinite Green probe values. -/
 theorem infiniteExitProbeValueLinear_nonneg
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
     (A : SmoothAutonomous lam Lam) (H : Interval) (e : StripPole H ⊤)
     (f : exitProbeSubmodule) (hbd : ∀ p, 0 ≤ infiniteExitProbeCcLinear H f p) :
     0 ≤ infiniteExitProbeValueLinear hH hLE hlam hLam A H e f := by
@@ -138,5 +138,6 @@ theorem infiniteExitProbeValueLinear_nonneg
   rcases p.2 with hp | hp
   · exact le_of_eq (infinite_probe_zero_terminal f T hs p.1 hp.1).symm
   · exact hbd ⟨p.1, hp.2⟩
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

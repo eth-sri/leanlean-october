@@ -5,6 +5,8 @@ public import HypoellipticAleksandrov.Parabolic.SmoothScalarWeakDerivativeFamily
 public import HypoellipticAleksandrov.Parabolic.PrecompactCoordinateDerivativeMajorants
 public import HypoellipticAleksandrov.Parabolic.ParabolicW12WeakDerivativeFamily
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.OriginalTimeLocalL2StrongJet
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Higher-order source weak-derivative family
@@ -27,7 +29,7 @@ family through weight `2 * d + 6`, with compact derivative majorants and the
 corresponding finite-family squared `L²` estimate. -/
 theorem exists_higherOrderSourceWeakDerivativeFamily
     (d : ℕ)
-    (K Q : Set (TimeVelocity d))
+    (K Q : HypoellipticAleksandrov.Parabolic.TVSet d)
     (F : ℝ → PDE.Vec d → ℝ)
     (hQopen : IsOpen Q)
     (hQcompact : IsCompact (closure Q))

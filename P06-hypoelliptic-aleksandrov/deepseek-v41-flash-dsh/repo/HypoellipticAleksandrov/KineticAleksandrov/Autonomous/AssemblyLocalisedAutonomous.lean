@@ -40,8 +40,7 @@ theorem kinetic_aleksandrov_autonomous_localised_relative_of_frontier
           u P ≤ sSup ((fun P => max (u P) 0) '' kineticBoundary P₀ R) +
             C * R ^ (2 - 6 / p) *
               (eLpNorm ({P | 0 < u P}.indicator (fun P => max (f P) 0)) (ENNReal.ofReal p)
-                (volume.restrict (backwardCylinder P₀ R))).toReal := by
-  exact kinetic_aleksandrov_autonomous_localised_relative_of_below_four_density
+                (volume.restrict (backwardCylinder P₀ R))).toReal := kinetic_aleksandrov_autonomous_localised_relative_of_below_four_density
     (below_four_density_of_frontier hfront hH hLE) hH hLE lam Lam p hlam hLam hp
 
 end HypoellipticAleksandrov.KineticAleksandrov

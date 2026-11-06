@@ -18,7 +18,7 @@ open scoped ENNReal
 theorem enlargedActiveGreen_density
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (q : ℝ) (hq : 1 < q) (hq2 : q < (3 : ℝ) / 2) :
+    (q : ℝ) (hq : 1 < q) (hq2 : q < 3 / 2) :
     ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam) (c : Clock)
       (nu : Measure Point) [IsFiniteMeasure nu],
       ∃ g : Point → ℝ, Measurable g ∧ (∀ x, 0 ≤ g x) ∧

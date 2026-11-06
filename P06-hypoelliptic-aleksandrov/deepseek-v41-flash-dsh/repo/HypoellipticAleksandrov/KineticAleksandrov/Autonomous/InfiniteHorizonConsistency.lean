@@ -23,12 +23,12 @@ theorem infinite_probe_operator_zero_after {lam Lam : ℝ} (A : SmoothAutonomous
   have ht := hs hx
   change p.time < R at ht
   exact (not_lt_of_ge hp) ht
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (H : Interval) (e : StripPole H ⊤)
 
 /-- The source integral of an early supported probe is independent of any later horizon. -/
 theorem infinite_probe_source_integral
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (e : StripPole H ⊤)
+    
     (T : ℝ) (hT : e.1.time < T) (R : ℝ) (hRT : R ≤ T)
     (f : exitProbeSubmodule) (hs : tsupport f.1 ⊆ {x | timeCoord 1 x < R}) :
     (∫ p, forwardScalarOperator A.a (exitProbePhysical f) p
@@ -41,9 +41,7 @@ theorem infinite_probe_source_integral
 
 /-- Finite exit measures have the same compact probe integrals before both horizons. -/
 theorem infinite_exit_probe_consistency
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (e : StripPole H ⊤)
+    
     (T1 T2 : ℝ) (hT1 : e.1.time < T1) (hT2 : e.1.time < T2)
     (R : ℝ) (hR1 : R ≤ T1) (hR2 : R ≤ T2)
     (f : exitProbeSubmodule) (hs : tsupport f.1 ⊆ {x | timeCoord 1 x < R}) :
@@ -64,9 +62,7 @@ theorem infinite_exit_probe_consistency
 
 /-- Equality of early probe integrals gives exact equality of the restricted physical exits. -/
 theorem stripExit_horizon_consistency
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (e : StripPole H ⊤)
+    
     (T1 T2 : ℝ) (hT1 : e.1.time < T1) (hT2 : e.1.time < T2)
     (R : ℝ) (hR1 : R ≤ T1) (hR2 : R ≤ T2) :
     (stripExit hH hLE hlam hLam A H T1 (stripPoleFinite H e T1 hT1)).restrict
@@ -123,5 +119,6 @@ theorem stripExit_horizon_consistency
     μ.map reconstructionPhysicalHomeomorph) heq
   rw [hmap T1 hT1, hmap T2 hT2] at hh
   exact hh
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

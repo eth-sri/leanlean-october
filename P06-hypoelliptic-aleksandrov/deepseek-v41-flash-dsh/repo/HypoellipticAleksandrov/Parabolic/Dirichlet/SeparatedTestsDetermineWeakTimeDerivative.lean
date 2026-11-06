@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.Measure.L2PairingConvergence
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.SeparatedSpacetimeTestDensity
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Separated tests determine the weak time derivative
@@ -20,7 +22,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 private theorem memLp_two_separatedProduct
-    {d : ℕ} {S : Set (TimeVelocity d)}
+    {d : ℕ} {S : HypoellipticAleksandrov.Parabolic.TVSet d}
     (a : ℝ → ℝ) (ha : Continuous a) (haK : HasCompactSupport a)
     (b : PDE.Vec d → ℝ) (hb : Continuous b) (hbK : HasCompactSupport b) :
     MemLp (fun z : TimeVelocity d => a z.1 * b z.2) 2 (timeVelocityVolumeOn S) := by
@@ -33,18 +35,20 @@ private theorem memLp_two_separatedProduct
     exact ⟨subset_tsupport a (fun h => hz (by simp [h])),
       subset_tsupport b (fun h => hz (by simp [h]))⟩
   exact (hcont.memLp_of_hasCompactSupport hcompact).restrict S
+section
+variable {d : ℕ} {τ₁ τ₂ : ℝ} {O : HypoellipticAleksandrov.VecSet d}
 
 private theorem finiteSeparated_identity
-    {d : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)}
+    
     {U W : TimeVelocity d → ℝ}
     (hU : ParabolicMemLpOn (Ioo τ₁ τ₂ ×ˢ O) 2 U)
     (hW : ParabolicMemLpOn (Ioo τ₁ τ₂ ×ˢ O) 2 W)
     (hseparated :
       ∀ (eta : OriginalTimeScalarTest τ₁ τ₂) (psi : PDE.WeakTestFunction O),
         (∫ z in Ioo τ₁ τ₂ ×ˢ O,
-            U z * (eta.deriv z.1 * psi z.2) ∂(volume : Measure (TimeVelocity d))) =
+            U z * (eta.deriv z.1 * psi z.2) ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
           -∫ z in Ioo τ₁ τ₂ ×ˢ O,
-            W z * (eta z.1 * psi z.2) ∂(volume : Measure (TimeVelocity d)))
+            W z * (eta z.1 * psi z.2) ∂(HypoellipticAleksandrov.Parabolic.TVVolume d))
     (q : FiniteSeparatedSpacetimeTest τ₁ τ₂ O) :
     (∫ z, U z * q.timeDeriv z ∂timeVelocityVolumeOn (Ioo τ₁ τ₂ ×ˢ O)) =
       -∫ z, W z * q.toFun z ∂timeVelocityVolumeOn (Ioo τ₁ τ₂ ×ˢ O) := by
@@ -90,7 +94,7 @@ private theorem finiteSeparated_identity
     hseparated (q.timeFactor m) (q.spatialFactor m)
 
 private theorem finiteSeparated_toFun_continuous
-    {d : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)}
+    
     (q : FiniteSeparatedSpacetimeTest τ₁ τ₂ O) : Continuous q.toFun := by
   unfold FiniteSeparatedSpacetimeTest.toFun
   apply continuous_finset_sum Finset.univ
@@ -99,7 +103,7 @@ private theorem finiteSeparated_toFun_continuous
     ((q.spatialFactor m).contDiff.continuous.comp continuous_snd)
 
 private theorem finiteSeparated_timeDeriv_continuous
-    {d : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)}
+    
     (q : FiniteSeparatedSpacetimeTest τ₁ τ₂ O) : Continuous q.timeDeriv := by
   unfold FiniteSeparatedSpacetimeTest.timeDeriv
   apply continuous_finset_sum Finset.univ
@@ -108,13 +112,13 @@ private theorem finiteSeparated_timeDeriv_continuous
     continuous_fst).mul ((q.spatialFactor m).contDiff.continuous.comp continuous_snd)
 
 private theorem finiteSeparated_hasCompactSupport_of_commonCompact
-    {d : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)}
+    
     (q : FiniteSeparatedSpacetimeTest τ₁ τ₂ O)
     (Kt : TopologicalSpace.Compacts ℝ) (Ky : TopologicalSpace.Compacts (PDE.Vec d))
     (hq : ∀ m, tsupport (q.timeFactor m : ℝ → ℝ) ×ˢ
-      tsupport (q.spatialFactor m : PDE.Vec d → ℝ) ⊆ (Kt : Set ℝ) ×ˢ (Ky : Set (PDE.Vec d))) :
+      tsupport (q.spatialFactor m : PDE.Vec d → ℝ) ⊆ (Kt : Set ℝ) ×ˢ (Ky : HypoellipticAleksandrov.VecSet d)) :
     HasCompactSupport q.toFun ∧ HasCompactSupport q.timeDeriv := by
-  have hvalue : support q.toFun ⊆ (Kt : Set ℝ) ×ˢ (Ky : Set (PDE.Vec d)) := by
+  have hvalue : support q.toFun ⊆ (Kt : Set ℝ) ×ˢ (Ky : HypoellipticAleksandrov.VecSet d) := by
     intro z hz
     by_contra hn
     apply hz
@@ -124,7 +128,7 @@ private theorem finiteSeparated_hasCompactSupport_of_commonCompact
     by_contra hm
     exact hn (hq m ⟨subset_tsupport _ (fun ht => hm (by simp [ht])),
       subset_tsupport _ (fun hs => hm (by simp [hs]))⟩)
-  have hderiv : support q.timeDeriv ⊆ (Kt : Set ℝ) ×ˢ (Ky : Set (PDE.Vec d)) := by
+  have hderiv : support q.timeDeriv ⊆ (Kt : Set ℝ) ×ˢ (Ky : HypoellipticAleksandrov.VecSet d) := by
     intro z hz
     by_contra hn
     apply hz
@@ -144,7 +148,7 @@ private theorem finiteSeparated_hasCompactSupport_of_commonCompact
 
 /-- An identity against every separated test determines the weak time derivative. -/
 theorem hasWeakTimeDerivOn_of_forall_separatedProduct
-    {d : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)}
+    
     (hO : IsOpen O)
     {U W : TimeVelocity d → ℝ}
     (hU : ParabolicMemLpOn (Ioo τ₁ τ₂ ×ˢ O) (2 : ℝ≥0∞) U)
@@ -152,9 +156,9 @@ theorem hasWeakTimeDerivOn_of_forall_separatedProduct
     (hseparated :
       ∀ (eta : OriginalTimeScalarTest τ₁ τ₂) (psi : PDE.WeakTestFunction O),
         (∫ z in Ioo τ₁ τ₂ ×ˢ O,
-            U z * (eta.deriv z.1 * psi z.2) ∂(volume : Measure (TimeVelocity d))) =
+            U z * (eta.deriv z.1 * psi z.2) ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
           -∫ z in Ioo τ₁ τ₂ ×ˢ O,
-            W z * (eta z.1 * psi z.2) ∂(volume : Measure (TimeVelocity d))) :
+            W z * (eta z.1 * psi z.2) ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) :
     HasWeakTimeDerivOn (Ioo τ₁ τ₂ ×ˢ O) U W := by
   intro φ hφ hφcompact hφsubset
   let Kφ : TopologicalSpace.Compacts (TimeVelocity d) := ⟨tsupport φ, hφcompact.isCompact⟩
@@ -237,5 +241,6 @@ theorem hasWeakTimeDerivOn_of_forall_separatedProduct
     filter_upwards with n
     exact (finiteSeparated_identity hU hW hseparated (q n)).symm
   simpa only [μ, timeVelocityVolumeOn] using tendsto_nhds_unique hleft hnegRight
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

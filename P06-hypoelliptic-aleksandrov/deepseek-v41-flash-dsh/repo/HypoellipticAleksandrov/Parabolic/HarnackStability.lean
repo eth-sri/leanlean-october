@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.HarnackPerturbation
 public import HypoellipticAleksandrov.Parabolic.HarnackStabilityLimit
 public import HypoellipticAleksandrov.Parabolic.WeakSolutionMollifierResidualConvergence
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Aligned approximation stability for parabolic Harnack
@@ -26,7 +27,7 @@ open scoped ENNReal Topology
 /-- Extended restricted parabolic norm convergence to zero gives convergence of the
 corresponding real restricted norm. -/
 theorem tendsto_parabolicLpNormOn_of_tendsto_parabolicELpNormOn_zero
-    {d : Nat} {K : Set (TimeVelocity d)}
+    {d : Nat} {K : HypoellipticAleksandrov.Parabolic.TVSet d}
     {R : Nat -> TimeVelocity d -> Real}
     (hR : Tendsto (fun n => parabolicELpNormOn d (R n) K)
       atTop (nhds 0)) :

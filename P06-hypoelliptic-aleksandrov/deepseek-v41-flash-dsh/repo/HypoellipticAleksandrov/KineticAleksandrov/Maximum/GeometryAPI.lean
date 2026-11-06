@@ -111,10 +111,11 @@ theorem mem_innerCylinder_iff {d : ℕ} (Z₀ P : KineticPoint d) (R : ℝ) (hR 
 /-- The inner cylinder's centre as a genuine forward kinetic cylinder. -/
 def innerCentre {d : ℕ} (Z₀ : KineticPoint d) (δ : ℝ) : KineticPoint d :=
   ⟨Z₀.time + δ, Z₀.position + δ • Z₀.velocity, Z₀.velocity⟩
+section
+variable {d : ℕ} (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2)
 
 /-- Literal affine retraction converted from relative to physical coordinates. -/
-def innerRetraction {d : ℕ} (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
-    (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2)
+def innerRetraction 
     (P : KineticPoint d) : KineticPoint d :=
   let ρ := innerRatio R hR δ hδ0 hδlt
   let s := Z₀.time + δ + ρ ^ 2 * (P.time - Z₀.time)
@@ -122,14 +123,14 @@ def innerRetraction {d : ℕ} (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
     Z₀.velocity + ρ • relativeVelocity Z₀ P⟩
 
 /-- The inner exit boundary is the exit boundary of the identified inner cylinder. -/
-def innerExitBoundary {d : ℕ} (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
-    (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2) : Set (KineticPoint d) :=
+def innerExitBoundary  : Set (KineticPoint d) :=
   let ρ := innerRatio R hR δ hδ0 hδlt
   closure (innerCylinder Z₀ R hR δ hδ0 hδlt) ∩
     ({P | P.time = Z₀.time + R ^ 2 - δ} ∪
       {P | relativeVelocity Z₀ P ∈ PDE.euclideanSphere (0 : PDE.Vec d) (ρ * R)} ∪
       {P | relativePosition Z₀ P ∈ PDE.euclideanSphere (0 : PDE.Vec d) (ρ ^ 3 * R ^ 3) ∧
         0 ≤ PDE.vecDot (relativeVelocity Z₀ P) (relativePosition Z₀ P)})
+end
 
 /-- Complete literal membership characterization of the inner exit boundary. -/
 theorem mem_innerExitBoundary_iff {d : ℕ}

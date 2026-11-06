@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.Parabolic.LocalHolder.Replacement
 public import HypoellipticAleksandrov.Parabolic.TimeReversal
 import Mathlib.Analysis.Calculus.Deriv.Comp
 import Mathlib.Analysis.Calculus.Deriv.Add
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Time reflection of anisotropic classical replacements
 
@@ -18,7 +19,7 @@ open Set
 
 /-- Time reflection reverses the scalar time derivative for the anisotropic carrier. -/
 theorem scalarTimeDerivative_timeReflectedScalar_C12 {d : ℕ}
-    {u : TimeVelocity d → ℝ} {D : Set (TimeVelocity d)} (hu : IsScalarC12On u D)
+    {u : TimeVelocity d → ℝ} {D : HypoellipticAleksandrov.Parabolic.TVSet d} (hu : IsScalarC12On u D)
     {z : TimeVelocity d} (hz : timeReflection z ∈ D) :
     scalarTimeDerivative (timeReflectedScalar u) z =
       -scalarTimeDerivative u (timeReflection z) := by
@@ -36,7 +37,7 @@ theorem scalarSpatialHessian_timeReflectedScalar_C12 {d : ℕ}
 
 /-- The anisotropic classical carrier transports through the existing time reflection. -/
 theorem isScalarC12On_timeReflectedScalar {d : ℕ} {u : TimeVelocity d → ℝ}
-    {D : Set (TimeVelocity d)} (hu : IsScalarC12On u D) :
+    {D : HypoellipticAleksandrov.Parabolic.TVSet d} (hu : IsScalarC12On u D) :
     IsScalarC12On (timeReflectedScalar u) (timeReflection ⁻¹' D) := by
   have hmaps : MapsTo timeReflection (timeReflection ⁻¹' D) D := fun _ hz => hz
   refine ⟨hu.continuousOn.comp continuous_timeReflection.continuousOn hmaps, ?_, ?_,

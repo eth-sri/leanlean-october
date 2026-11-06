@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.HigherOrderLocalL2Regularity
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Higher weak derivatives of homogeneous replacement jets
 
@@ -25,7 +26,7 @@ theorem coordinateIteratedFDeriv_zero_function {d : ℕ}
 
 /-- Homogeneous jets have uniformly controlled higher families on a common smaller collar. -/
 theorem exists_homogeneous_higher_family_constant {d : ℕ}
-    {Ω O₀ O : Set (PDE.Vec d)}
+    {Ω O₀ O : HypoellipticAleksandrov.VecSet d}
     (r₀ q₀ s₀ s₁ q₁ r₁ : ℝ)
     (hr₀q₀ : r₀ < q₀) (hq₀s₀ : q₀ < s₀) (hs₀s₁ : s₀ < s₁)
     (hs₁q₁ : s₁ < q₁) (hq₁r₁ : q₁ < r₁)

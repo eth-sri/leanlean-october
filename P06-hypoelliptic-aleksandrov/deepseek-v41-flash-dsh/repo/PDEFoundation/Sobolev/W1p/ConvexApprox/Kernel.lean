@@ -116,15 +116,17 @@ theorem tendsto_unitConvexApproxScale_zero :
       Filter.atTop (nhds 0) := by
   simpa only [unitConvexApproxScale] using!
     tendsto_one_div_add_atTop_nhds_zero_nat
+section
+variable {d : ℕ}
 
 /-- The integrand defining convex approximation at a point. -/
-def convexApproxIntegrand {d : ℕ}
+def convexApproxIntegrand 
     (ρ u : Vec d → ℝ) (x0 : Vec d) (r ε : ℝ)
     (x z : Vec d) : ℝ :=
   ρ z * u (convexApproxSample x0 z r ε x)
 
 @[simp]
-theorem convexApproxIntegrand_apply {d : ℕ}
+theorem convexApproxIntegrand_apply 
     (ρ u : Vec d → ℝ) (x0 : Vec d) (r ε : ℝ)
     (x z : Vec d) :
     convexApproxIntegrand ρ u x0 r ε x z =
@@ -132,13 +134,13 @@ theorem convexApproxIntegrand_apply {d : ℕ}
   rfl
 
 /-- The convex-domain smoothing operator attached to a kernel `ρ`. -/
-noncomputable def convexApproxSmoothing {d : ℕ}
+noncomputable def convexApproxSmoothing 
     (ρ u : Vec d → ℝ) (x0 : Vec d) (r ε : ℝ)
     (x : Vec d) : ℝ :=
   ∫ z in tsupport ρ, convexApproxIntegrand ρ u x0 r ε x z
 
 @[simp]
-theorem convexApproxSmoothing_apply {d : ℕ}
+theorem convexApproxSmoothing_apply 
     (ρ u : Vec d → ℝ) (x0 : Vec d) (r ε : ℝ)
     (x : Vec d) :
     convexApproxSmoothing ρ u x0 r ε x =
@@ -147,7 +149,7 @@ theorem convexApproxSmoothing_apply {d : ℕ}
   rfl
 
 /-- The concrete convex smoothing sequence using the unit kernel and scale. -/
-noncomputable def unitConvexApproxSequence {d : ℕ}
+noncomputable def unitConvexApproxSequence 
     (u : Vec d → ℝ) (x0 : Vec d) (r : ℝ) (n : ℕ) :
     Vec d → ℝ :=
   fun x =>
@@ -157,17 +159,17 @@ noncomputable def unitConvexApproxSequence {d : ℕ}
 
 /-- Rescale a kernel by a positive length `a`, displaying the exact
 dimension-`d` Jacobian factor. -/
-noncomputable def scaledConvexApproxKernel {d : ℕ}
+noncomputable def scaledConvexApproxKernel 
     (ρ : Vec d → ℝ) (a : ℝ) : Vec d → ℝ :=
   fun y => (a ^ d)⁻¹ * ρ (a⁻¹ • y)
 
-theorem continuous_scaledConvexApproxKernel {d : ℕ}
+theorem continuous_scaledConvexApproxKernel 
     {ρ : Vec d → ℝ} (hρ : Continuous ρ) (a : ℝ) :
     Continuous (scaledConvexApproxKernel ρ a) := by
   unfold scaledConvexApproxKernel
   fun_prop
 
-theorem contDiff_scaledConvexApproxKernel {d : ℕ}
+theorem contDiff_scaledConvexApproxKernel 
     {ρ : Vec d → ℝ} (hρ : IsConvexApproxKernel ρ)
     (a : ℝ) :
     ContDiff ℝ (⊤ : ℕ∞)
@@ -178,12 +180,12 @@ theorem contDiff_scaledConvexApproxKernel {d : ℕ}
   simpa only [scaledConvexApproxKernel] using!
     contDiff_const.mul (hρ.smooth.comp hscale)
 
-theorem measurable_scaledConvexApproxKernel {d : ℕ}
+theorem measurable_scaledConvexApproxKernel 
     {ρ : Vec d → ℝ} (hρ : Continuous ρ) (a : ℝ) :
     Measurable (scaledConvexApproxKernel ρ a) :=
   (continuous_scaledConvexApproxKernel hρ a).measurable
 
-theorem hasCompactSupport_scaledConvexApproxKernel {d : ℕ}
+theorem hasCompactSupport_scaledConvexApproxKernel 
     {ρ : Vec d → ℝ} (hρ : HasCompactSupport ρ)
     {a : ℝ} (ha : 0 < a) :
     HasCompactSupport (scaledConvexApproxKernel ρ a) := by
@@ -196,7 +198,7 @@ theorem hasCompactSupport_scaledConvexApproxKernel {d : ℕ}
       HasCompactSupport
         (fun y : Vec d => (a ^ d)⁻¹ * ρ (a⁻¹ • y)))
 
-theorem integrable_scaledConvexApproxKernel {d : ℕ}
+theorem integrable_scaledConvexApproxKernel 
     {ρ : Vec d → ℝ} (hρ : IsConvexApproxKernel ρ)
     {a : ℝ} (ha : 0 < a) :
     MeasureTheory.Integrable
@@ -206,7 +208,7 @@ theorem integrable_scaledConvexApproxKernel {d : ℕ}
       (hasCompactSupport_scaledConvexApproxKernel
         hρ.compactSupport ha)
 
-theorem scaledConvexApproxKernel_nonneg {d : ℕ}
+theorem scaledConvexApproxKernel_nonneg 
     {ρ : Vec d → ℝ} (hρ : IsConvexApproxKernel ρ)
     {a : ℝ} (_ha : 0 < a) (y : Vec d) :
     0 ≤ scaledConvexApproxKernel ρ a y := by
@@ -214,7 +216,7 @@ theorem scaledConvexApproxKernel_nonneg {d : ℕ}
     positivity
   exact mul_nonneg hpowNonneg (hρ.nonneg _)
 
-theorem integral_scaledConvexApproxKernel {d : ℕ}
+theorem integral_scaledConvexApproxKernel 
     {ρ : Vec d → ℝ} (hρ : IsConvexApproxKernel ρ)
     {a : ℝ} (ha : 0 < a) :
     ∫ y, scaledConvexApproxKernel ρ a y = 1 := by
@@ -256,7 +258,7 @@ theorem integral_scaledConvexApproxKernel {d : ℕ}
       hρ.setIntegral_one
 
 theorem translateSet_smul_subset_of_convexApproxSample_mapsTo
-    {d : ℕ} {U : Set (Vec d)}
+     {U : Set (Vec d)}
     {x0 z : Vec d} {r ε : ℝ}
     (hmap :
       Set.MapsTo (convexApproxSample x0 z r ε) U U) :
@@ -271,7 +273,7 @@ theorem translateSet_smul_subset_of_convexApproxSample_mapsTo
   simpa only [convexApproxSample] using hx'
 
 theorem setIntegral_comp_smul_add_of_pos
-    {d : ℕ} {E : Type*}
+     {E : Type*}
     [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
     {a : ℝ} (ha : 0 < a) (b : Vec d) (U : Set (Vec d))
     (f : Vec d → E) :
@@ -296,7 +298,7 @@ theorem setIntegral_comp_smul_add_of_pos
         (d := d) (E := E) b (a • U) f]
 
 theorem convolution_scaledConvexApproxKernel_indicator_eq_setIntegral
-    {d : ℕ} {ρ u : Vec d → ℝ} {U : Set (Vec d)}
+     {ρ u : Vec d → ℝ} {U : Set (Vec d)}
     {x0 x : Vec d} {r ε : ℝ}
     (hr : 0 < r) (hε0 : 0 < ε) :
     (scaledConvexApproxKernel ρ (ε * r) ⋆[
@@ -371,7 +373,7 @@ theorem convolution_scaledConvexApproxKernel_indicator_eq_setIntegral
 
 theorem
     convexApproxSmoothing_eq_convolution_scaledConvexApproxKernel_indicator
-    {d : ℕ} {ρ u : Vec d → ℝ} {U : Set (Vec d)}
+     {ρ u : Vec d → ℝ} {U : Set (Vec d)}
     (hU : IsOpenBoundedConvexDomain U)
     (hρ : IsConvexApproxKernel ρ)
     {x0 x : Vec d} {r ε : ℝ} (hx : x ∈ U)
@@ -425,5 +427,6 @@ theorem
           (((1 - ε) • x + ε • x0) -
             (ε * r) • z) := by
       rw [hsampleEq]
+end
 
 end PDE

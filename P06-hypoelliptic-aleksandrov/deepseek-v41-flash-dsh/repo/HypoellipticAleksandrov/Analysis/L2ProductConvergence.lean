@@ -80,9 +80,9 @@ theorem tendsto_integral_mul_of_tendsto_eLpNorm_two
     Filter.Tendsto
       (fun n => ∫ x, f n x * g n x ∂μ)
       l (𝓝 (∫ x, f₀ x * g₀ x ∂μ)) := by
-  let F : ι → ℝ≥0∞ := fun n =>
+  let F := fun n =>
     eLpNorm (fun x => f n x - f₀ x) (2 : ℝ≥0∞) μ
-  let G : ι → ℝ≥0∞ := fun n =>
+  let G := fun n =>
     eLpNorm (fun x => g n x - g₀ x) (2 : ℝ≥0∞) μ
   have hFt : Tendsto (fun n => (F n).toReal) l (𝓝 0) := by
     simpa only [F, Function.comp_def, ENNReal.toReal_zero] using
@@ -92,7 +92,7 @@ theorem tendsto_integral_mul_of_tendsto_eLpNorm_two
       (ENNReal.continuousAt_toReal ENNReal.zero_ne_top).tendsto.comp hgt
   let f₀Norm : ℝ := (eLpNorm f₀ (2 : ℝ≥0∞) μ).toReal
   let g₀Norm : ℝ := (eLpNorm g₀ (2 : ℝ≥0∞) μ).toReal
-  let bound : ι → ℝ := fun n =>
+  let bound := fun n =>
     (F n).toReal * ((G n).toReal + g₀Norm) + f₀Norm * (G n).toReal
   have hbound : Tendsto bound l (𝓝 0) := by
     dsimp only [bound]
@@ -164,7 +164,7 @@ theorem tendsto_eLpNorm_mul_sub_mul_of_tendsto_eLpNorm_two
         (fun x => a x * f n x - a x * f₀ x)
         (2 : ℝ≥0∞) μ)
       l (𝓝 0) := by
-  let C : ℝ≥0 := (eLpNorm a ∞ μ).toNNReal
+  let C := (eLpNorm a ∞ μ).toNNReal
   have hC : (C : ℝ≥0∞) = eLpNorm a ∞ μ := by
     exact ENNReal.coe_toNNReal ha.eLpNorm_ne_top
   have haBound : ∀ᵐ x ∂μ, ‖a x‖ₑ ≤ (C : ℝ≥0∞) := by

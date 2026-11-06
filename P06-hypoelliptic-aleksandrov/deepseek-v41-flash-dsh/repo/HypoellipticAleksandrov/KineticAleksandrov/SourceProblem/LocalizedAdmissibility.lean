@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.LocalizedKrylov
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Localized source estimate for the companion paper, Proposition 4.2

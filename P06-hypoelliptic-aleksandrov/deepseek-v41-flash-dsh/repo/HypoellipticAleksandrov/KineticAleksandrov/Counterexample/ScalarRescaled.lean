@@ -11,15 +11,17 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
 open Filter Asymptotics Set
 open scoped Topology
+section
+variable (f : ℝ → ℝ) (beta : ℝ)
 
 /-- The reflected scalar rescaling, with zero values on the position axis. -/
-def scalarRescaled (f : ℝ → ℝ) (beta : ℝ) (q : XV 1) : ℝ :=
+def scalarRescaled  (q : XV 1) : ℝ :=
   if 0 < q.1 0 then Real.rpow (q.1 0) (beta / 3) * f (scalarSimilarity (q.1 0) (q.2 0))
   else if q.1 0 < 0 then Real.rpow (-q.1 0) (beta / 3) *
     f (scalarSimilarity (-q.1 0) (-q.2 0)) else 0
 
 /-- Off-axis continuity follows from continuity of the similarity function. -/
-theorem scalarRescaled_continuousAt_off_axis (f : ℝ → ℝ) (beta : ℝ) (hf : Continuous f)
+theorem scalarRescaled_continuousAt_off_axis  (hf : Continuous f)
     (q : XV 1) (hx : q.1 0 ≠ 0) : ContinuousAt (scalarRescaled f beta) q := by
   have hX : Continuous (fun z : XV 1 => z.1 0) := by fun_prop
   have hV : Continuous (fun z : XV 1 => z.2 0) := by fun_prop
@@ -64,7 +66,7 @@ theorem scalarRescaled_continuousAt_off_axis (f : ℝ → ℝ) (beta : ℝ) (hf 
     simp only [scalarRescaled, scalarSimilarity, show 0 < z.1 0 from hz, ↓reduceIte, Pi.mul_def]
 
 /-- The reflected rescaling is bounded near nonzero position-axis points. -/
-theorem scalarRescaled_isBigO_axis (f : ℝ → ℝ) (beta : ℝ)
+theorem scalarRescaled_isBigO_axis 
     (ht : IsBigO atTop f (fun s => Real.rpow |s| beta))
     (hb : IsBigO atBot f (fun s => Real.rpow |s| beta))
     (q : XV 1) (hx : q.1 0 = 0) (hv : q.2 0 ≠ 0) :
@@ -108,7 +110,7 @@ theorem scalarRescaled_isBigO_axis (f : ℝ → ℝ) (beta : ℝ)
     simp only [scalarRescaled, show z.1 0 = 0 from hz, lt_self_iff_false, ↓reduceIte]
 
 /-- The rescaled function is locally bounded away from the origin. -/
-theorem scalarRescaled_locally_bounded (f : ℝ → ℝ) (beta : ℝ) (hf : Continuous f)
+theorem scalarRescaled_locally_bounded  (hf : Continuous f)
     (ht : IsBigO atTop f (fun s => Real.rpow |s| beta))
     (hb : IsBigO atBot f (fun s => Real.rpow |s| beta)) (q : XV 1) (hq : q ≠ 0) :
     ∃ M : ℝ, ∀ᶠ z in 𝓝 q, |scalarRescaled f beta z| ≤ M := by
@@ -130,7 +132,7 @@ theorem scalarRescaled_locally_bounded (f : ℝ → ℝ) (beta : ℝ) (hf : Cont
   simpa only [Real.norm_eq_abs, norm_one, mul_one] using hM
 
 /-- Every compact set away from the origin has a uniform rescaled-tail bound. -/
-theorem scalarRescaled_compact_bound (f : ℝ → ℝ) (beta : ℝ) (hf : Continuous f)
+theorem scalarRescaled_compact_bound  (hf : Continuous f)
     (ht : IsBigO atTop f (fun s => Real.rpow |s| beta))
     (hb : IsBigO atBot f (fun s => Real.rpow |s| beta))
     (K : Set (XV 1)) (hK : IsCompact K) (hz : 0 ∉ K) :
@@ -148,5 +150,6 @@ theorem scalarRescaled_compact_bound (f : ℝ → ℝ) (beta : ℝ) (hf : Contin
   have hh : |scalarRescaled f beta q| ≤ M p := hqp
   exact hh.trans ((le_abs_self (M p)).trans (Finset.single_le_sum
     (fun j _ => abs_nonneg (M j)) hp))
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

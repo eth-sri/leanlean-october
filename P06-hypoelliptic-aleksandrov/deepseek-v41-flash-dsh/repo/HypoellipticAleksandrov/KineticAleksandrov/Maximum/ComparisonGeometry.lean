@@ -31,10 +31,11 @@ theorem comparison_closure_euclideanBall_zero {d : ℕ} {R : ℝ} (hR : 0 < R) :
     calc r ^ 2 * PDE.vecNormSq x ≤ r ^ 2 * R ^ 2 :=
         mul_le_mul_of_nonneg_left hx (sq_nonneg r)
       _ < R ^ 2 := by nlinarith [sq_pos_of_pos hR]
+section
+variable {d : ℕ} (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
 
 /-- A forward cylinder is the open product box in its free-transport coordinates. -/
-theorem comparison_forwardCylinder_eq_preimage {d : ℕ}
-    (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) :
+theorem comparison_forwardCylinder_eq_preimage  :
     forwardCylinder Z₀ R hR = (relativeHomeomorph Z₀) ⁻¹'
       (Ioo Z₀.time (Z₀.time + R ^ 2) ×ˢ
         (PDE.euclideanBall 0 (R ^ 3) ×ˢ PDE.euclideanBall 0 R)) := by
@@ -45,8 +46,7 @@ theorem comparison_forwardCylinder_eq_preimage {d : ℕ}
   tauto
 
 /-- The closed forward cylinder is the exact closed product box, including all faces. -/
-theorem comparison_closure_forwardCylinder_eq {d : ℕ}
-    (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) :
+theorem comparison_closure_forwardCylinder_eq  :
     closure (forwardCylinder Z₀ R hR) =
       relativeClosedBox Z₀ Z₀.time (Z₀.time + R ^ 2) R (R ^ 3) := by
   rw [comparison_forwardCylinder_eq_preimage, ← (relativeHomeomorph Z₀).preimage_closure,
@@ -56,11 +56,11 @@ theorem comparison_closure_forwardCylinder_eq {d : ℕ}
   rfl
 
 /-- Forward kinetic cylinders are open in the physical topology. -/
-theorem isOpen_forwardCylinder {d : ℕ}
-    (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) :
+theorem isOpen_forwardCylinder  :
     IsOpen (forwardCylinder Z₀ R hR) := by
   rw [comparison_forwardCylinder_eq_preimage]
   exact (isOpen_Ioo.prod ((PDE.isOpen_euclideanBall _ _).prod
     (PDE.isOpen_euclideanBall _ _))).preimage (relativeHomeomorph Z₀).continuous
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

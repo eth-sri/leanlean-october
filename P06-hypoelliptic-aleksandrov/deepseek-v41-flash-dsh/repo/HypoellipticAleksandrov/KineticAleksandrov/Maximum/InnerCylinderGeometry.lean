@@ -72,11 +72,11 @@ theorem innerCentre_relative {d : ℕ} (Z₀ P : KineticPoint d) (δ : ℝ) :
     simp [innerCentre, relativePosition]
     ring
   · rfl
+section
+variable {d : ℕ} (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2)
 
 /-- Inner cylinder identification, with radius positivity supplied as part of the result. -/
-theorem innerCylinder_eq_forwardCylinder {d : ℕ}
-    (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
-    (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2) :
+theorem innerCylinder_eq_forwardCylinder  :
     ∃ hr : 0 < innerRatio R hR δ hδ0 hδlt * R,
       innerCylinder Z₀ R hR δ hδ0 hδlt =
         forwardCylinder (innerCentre Z₀ δ) (innerRatio R hR δ hδ0 hδlt * R) hr := by
@@ -95,9 +95,7 @@ theorem innerCylinder_eq_forwardCylinder {d : ℕ}
   simp only [ht, mul_pow]
 
 /-- Inner closures obey the explicit weak coordinate bounds. -/
-theorem closure_innerCylinder_bounds {d : ℕ}
-    (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
-    (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2) :
+theorem closure_innerCylinder_bounds  :
     closure (innerCylinder Z₀ R hR δ hδ0 hδlt) ⊆
       relativeClosedBox Z₀ (Z₀.time+δ) (Z₀.time+R^2-δ)
         (innerRatio R hR δ hδ0 hδlt * R)
@@ -112,9 +110,7 @@ theorem closure_innerCylinder_bounds {d : ℕ}
       (mul_nonneg (pow_nonneg hρ.le 3) (pow_nonneg hR.le 3))).isClosed
 
 /-- Inner-cylinder closure is contained in the original open cylinder. -/
-theorem closure_innerCylinder_subset {d : ℕ}
-    (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
-    (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2) :
+theorem closure_innerCylinder_subset  :
     closure (innerCylinder Z₀ R hR δ hδ0 hδlt) ⊆ forwardCylinder Z₀ R hR := by
   obtain ⟨hρ,hρ1,hs⟩ := innerRatio_spec R hR δ hδ0 hδlt
   intro P hP
@@ -134,14 +130,13 @@ theorem closure_innerCylinder_subset {d : ℕ}
     nlinarith [pow_pos hR 3]
 
 /-- Inner closures are compact in the existing finite-dimensional coordinate topology. -/
-theorem isCompact_closure_innerCylinder {d : ℕ}
-    (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
-    (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2) :
+theorem isCompact_closure_innerCylinder  :
     IsCompact (closure (innerCylinder Z₀ R hR δ hδ0 hδlt)) := by
   have hρ := (innerRatio_spec R hR δ hδ0 hδlt).1
   exact (isCompact_relativeClosedBox Z₀ _ _ _ _ (mul_pos hρ hR).le
     (mul_nonneg (pow_nonneg hρ.le 3) (pow_nonneg hR.le 3))).of_isClosed_subset
       isClosed_closure (closure_innerCylinder_bounds Z₀ R hR δ hδ0 hδlt)
+end
 
 /-- Original forward closures satisfy the weak coordinate bounds. -/
 theorem closure_forwardCylinder_bounds {d : ℕ}

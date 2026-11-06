@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.WholeSpaceLo
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.WholeSpaceAbsorption
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.OccupationDensity
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.LocalizedKrylovBound
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # The whole-space occupation source bound -/
 
@@ -92,7 +94,7 @@ theorem occupation_whole_space_bound
         dsimp [M] at hv ⊢
         linarith
     have hsup := wholeSpace_absorb
-      (show (Icc (0 : ℝ) 1 ×ˢ (univ : Set (PDE.Vec d))).Nonempty from
+      (show (Icc (0 : ℝ) 1 ×ˢ (univ : HypoellipticAleksandrov.VecSet d)).Nonempty from
         ⟨(0, 0), ⟨⟨le_rfl, zero_le_one⟩, mem_univ _⟩⟩) hpoint
     change H ≤ (2 * M) * parabolicLpNorm d F
     nlinarith [hsup]

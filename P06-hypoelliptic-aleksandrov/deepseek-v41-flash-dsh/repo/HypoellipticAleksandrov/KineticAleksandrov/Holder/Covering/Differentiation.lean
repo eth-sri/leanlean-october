@@ -50,9 +50,11 @@ theorem densityFailure_subset_error_maximal {d : ℕ} {E U : Set (KineticPoint d
   exact mem_iUnion₂.mpr ⟨(centeredTop P r, r),
     ⟨hr, (hrr.trans_le (min_le_right _ _)).le, hcharge⟩,
     self_mem_centeredCylinder P hr⟩
+section
+variable {d : ℕ} {E : Set (KineticPoint d)}
 
 /-- A measurable finite-volume set has no positive-measure density failures. -/
-theorem volume_densityFailure_eq_zero_of_measurable {d : ℕ} {E : Set (KineticPoint d)}
+theorem volume_densityFailure_eq_zero_of_measurable 
     (hE : MeasurableSet E) (hfinite : volume E ≠ ⊤) {eta : ℝ} (heta : 0 < eta) :
     volume (densityFailure E eta) = 0 := by
   let : Measure.OuterRegular (volume : Measure (KineticPoint d)) :=
@@ -78,7 +80,7 @@ theorem volume_densityFailure_eq_zero_of_measurable {d : ℕ} {E : Set (KineticP
   exact (mul_eq_zero.mp hzero).resolve_left (ENNReal.ofReal_pos.mpr heta).ne'
 
 /-- Null-measurable finite-volume sets satisfy the same density theorem. -/
-theorem volume_densityFailure_eq_zero {d : ℕ} {E : Set (KineticPoint d)}
+theorem volume_densityFailure_eq_zero 
     (hE : NullMeasurableSet E volume) (hfinite : volume E ≠ ⊤)
     {eta : ℝ} (heta : 0 < eta) : volume (densityFailure E eta) = 0 := by
   obtain ⟨M, hEM, hM, hME⟩ := hE.exists_measurable_superset_ae_eq
@@ -95,7 +97,7 @@ theorem volume_densityFailure_eq_zero {d : ℕ} {E : Set (KineticPoint d)}
 
 /-- At almost every point of a bounded null-measurable set, all sufficiently small centered
 kinetic cylinders meet any fixed near-full density threshold. -/
-theorem ae_centeredCylinder_density {d : ℕ} {E : Set (KineticPoint d)}
+theorem ae_centeredCylinder_density 
     (hE : NullMeasurableSet E volume) (hbounded : Bornology.IsBounded E)
     {eta : ℝ} (heta : 0 < eta) :
     ∀ᵐ P ∂(volume.restrict E), ∃ r0 : ℝ, 0 < r0 ∧
@@ -124,7 +126,7 @@ theorem ae_centeredCylinder_density {d : ℕ} {E : Set (KineticPoint d)}
   exact hnone ⟨r, hr, hrr, lt_of_not_ge hbad⟩
 
 /-- A single full-measure subset has near-full density at every positive threshold. -/
-theorem ae_centeredCylinder_density_all {d : ℕ} {E : Set (KineticPoint d)}
+theorem ae_centeredCylinder_density_all 
     (hE : NullMeasurableSet E volume) (hbounded : Bornology.IsBounded E) :
     ∀ᵐ P ∂(volume.restrict E), ∀ eta : ℝ, 0 < eta →
       ∃ r0 : ℝ, 0 < r0 ∧ ∀ r : ℝ, 0 < r → r < r0 →
@@ -146,5 +148,6 @@ theorem ae_centeredCylinder_density_all {d : ℕ} {E : Set (KineticPoint d)}
   have hvol := ENNReal.toReal_nonneg (a := volume (centeredCylinder P r))
   have hdiff : 1-eta ≤ 1-1/((n : ℝ)+1) := by exact sub_le_sub_left hn.le 1
   exact (mul_le_mul_of_nonneg_right hdiff hvol).trans h
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering

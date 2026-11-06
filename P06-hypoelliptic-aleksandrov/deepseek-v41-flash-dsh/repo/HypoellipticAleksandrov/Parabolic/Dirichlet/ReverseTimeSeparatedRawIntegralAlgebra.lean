@@ -1,6 +1,8 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSeparatedRawIntegrability
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Fixed-time algebra for reverse-time separated raw terms
@@ -40,7 +42,7 @@ private theorem integral_single_sum
 /-- Fixed-time integration of the literal reverse-time raw slice agrees with the three
 expanded residual scalars. -/
 theorem reverseTime_raw_slice_integral_eq_residual
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {T : ℝ}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {T : ℝ}
     (r₁ τ : ℝ)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c F : ℝ → PDE.Vec d → ℝ)

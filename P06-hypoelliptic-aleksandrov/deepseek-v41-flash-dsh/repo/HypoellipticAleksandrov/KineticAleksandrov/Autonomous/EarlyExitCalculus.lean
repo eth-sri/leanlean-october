@@ -24,7 +24,7 @@ theorem reconstructionExponentialPlane_smooth (alpha beta gamma : ℝ) :
   have ht : ContDiff ℝ (⊤ : ℕ∞) (Evolution.timeCoord 1) :=
     (Evolution.timeCoord 1).contDiff
   exact ((contDiff_const.mul ht).add
-    (contDiff_const.mul ((contDiff_apply ℝ ℝ (0 : Fin 1)).comp
+    (contDiff_const.mul ((contDiff_apply ℝ ℝ 0).comp
       (diffusedCoord 1).contDiff)) |>.add contDiff_const).exp
 
 private theorem exponentialPlane_second_deriv (c beta : ℝ) (v : ℝ) :

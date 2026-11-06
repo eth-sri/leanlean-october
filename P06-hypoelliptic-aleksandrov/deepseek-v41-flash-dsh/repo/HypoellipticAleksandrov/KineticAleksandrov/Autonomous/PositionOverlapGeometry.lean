@@ -8,10 +8,11 @@ import Mathlib.Tactic
 @[expose] public section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory
+section
+variable (c : Clock) (s x : ℝ) (j i : ℕ) (k ell : ℤ) (e z : Point)
 
 /-- Strict future support forces the source time-bin index to precede the output index. -/
-theorem positionOverlap_time_index (c : Clock) (s x : ℝ) (j i : ℕ) (k ell : ℤ)
-    (e z : Point) (he : e ∈ enlargedStartCell c s x j k)
+theorem positionOverlap_time_index  (he : e ∈ enlargedStartCell c s x j k)
     (hz : z ∈ enlargedStartCell c s x i ell) (ht : e.time < z.time) : j ≤ i := by
   by_contra hji
   have hj : i < j := lt_of_not_ge hji
@@ -21,8 +22,7 @@ theorem positionOverlap_time_index (c : Clock) (s x : ℝ) (j i : ℕ) (k ell : 
   nlinarith only [helo, hzup, hcast, sq_nonneg c.r, ht]
 
 /-- Elapsed time on a source-output pair is bounded by the index difference plus one. -/
-theorem positionOverlap_elapsed (c : Clock) (s x : ℝ) (j i : ℕ) (k ell : ℤ)
-    (e z : Point) (he : e ∈ enlargedStartCell c s x j k)
+theorem positionOverlap_elapsed  (he : e ∈ enlargedStartCell c s x j k)
     (hz : z ∈ enlargedStartCell c s x i ell) :
     z.time - e.time ≤ ((i : ℝ) - (j : ℝ) + 1) * c.r ^ 2 := by
   have helo := (enlargedTimeBin_bounds c.r s e.time j he.1).1
@@ -30,8 +30,7 @@ theorem positionOverlap_elapsed (c : Clock) (s x : ℝ) (j i : ℕ) (k ell : ℤ
   linarith only [helo, hzup]
 
 /-- Speed at most `3r` permits only linearly many position-cell differences. -/
-theorem positionOverlap_position_index (c : Clock) (s x : ℝ) (j i : ℕ) (k ell : ℤ)
-    (e z : Point) (he : e ∈ enlargedStartCell c s x j k)
+theorem positionOverlap_position_index  (he : e ∈ enlargedStartCell c s x j k)
     (hz : z ∈ enlargedStartCell c s x i ell) (ht : e.time < z.time)
     (hcone : |z.position 0 - e.position 0| ≤ 3 * c.r * (z.time - e.time)) :
     |((ell - k : ℤ) : ℝ)| ≤ 5 * ((i : ℝ) - (j : ℝ) + 1) := by
@@ -65,5 +64,6 @@ theorem positionOverlap_position_index (c : Clock) (s x : ℝ) (j i : ℕ) (k el
   have hr := (mul_le_mul_iff_left₀ hr3).mp hright
   rw [Int.cast_sub, abs_le]
   constructor <;> linarith only [hl, hr, hd]
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.WeakDerivativesLocal
 public import Mathlib.Analysis.Distribution.AEEqOfIntegralContDiff
 public import Mathlib.MeasureTheory.Function.LocallyIntegrable
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Distributional uniqueness for weak time--velocity derivatives
@@ -21,7 +22,7 @@ namespace HypoellipticAleksandrov.Parabolic
 open Filter MeasureTheory Set
 open scoped ENNReal Topology
 
-private theorem ae_eq_of_pairing_eq {d : ℕ} {U : Set (TimeVelocity d)}
+private theorem ae_eq_of_pairing_eq {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hU : IsOpen U) {du dv : TimeVelocity d → ℝ}
     (hdu : LocallyIntegrableOn du U volume)
     (hdv : LocallyIntegrableOn dv U volume)
@@ -84,7 +85,7 @@ namespace HasWeakTimeDerivOn
 
 /-- Locally integrable weak time-derivative representatives agree almost
 everywhere on an open domain. -/
-theorem ae_eq {d : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
+theorem ae_eq {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} (hU : IsOpen U)
     {u du dv : TimeVelocity d → ℝ}
     (hdu : LocallyIntegrableOn du U volume)
     (hdv : LocallyIntegrableOn dv U volume)
@@ -102,7 +103,7 @@ namespace HasWeakVelocityPartialDerivOn
 
 /-- Locally integrable weak velocity-partial representatives agree almost
 everywhere on an open domain. -/
-theorem ae_eq {d : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
+theorem ae_eq {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} (hU : IsOpen U)
     {i : Fin d} {u dui dvi : TimeVelocity d → ℝ}
     (hdui : LocallyIntegrableOn dui U volume)
     (hdvi : LocallyIntegrableOn dvi U volume)
@@ -120,7 +121,7 @@ namespace ParabolicMemLpOn
 
 /-- Restricted `L^p` membership with exponent at least one is locally
 integrable on the underlying raw set. -/
-theorem locallyIntegrableOn {d : ℕ} {U : Set (TimeVelocity d)}
+theorem locallyIntegrableOn {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     {p : ℝ≥0∞} {f : TimeVelocity d → ℝ}
     (hf : ParabolicMemLpOn U p f) (hp : 1 ≤ p) :
     LocallyIntegrableOn f U volume := by
@@ -134,7 +135,7 @@ namespace HasWeakTimeDerivOn
 
 /-- Weak time-derivative representatives in restricted `L^p`, with `p ≥ 1`,
 agree almost everywhere on an open domain. -/
-theorem ae_eq_of_memLp {d : ℕ} {U : Set (TimeVelocity d)}
+theorem ae_eq_of_memLp {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     {p : ℝ≥0∞} (hU : IsOpen U) (hp : 1 ≤ p)
     {u du dv : TimeVelocity d → ℝ}
     (hdu : ParabolicMemLpOn U p du)
@@ -150,7 +151,7 @@ namespace HasWeakVelocityPartialDerivOn
 
 /-- Weak velocity-partial representatives in restricted `L^p`, with `p ≥ 1`,
 agree almost everywhere on an open domain. -/
-theorem ae_eq_of_memLp {d : ℕ} {U : Set (TimeVelocity d)}
+theorem ae_eq_of_memLp {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     {p : ℝ≥0∞} (hU : IsOpen U) (hp : 1 ≤ p)
     {i : Fin d} {u dui dvi : TimeVelocity d → ℝ}
     (hdui : ParabolicMemLpOn U p dui)
@@ -166,7 +167,7 @@ namespace ParabolicW12Function
 
 /-- A.e.-equal values of two weak jets force a.e. equality of their selected
 time, velocity-gradient, and ordered velocity-Hessian representatives. -/
-theorem ae_eq_jet_of_value_ae {d : ℕ} {U : Set (TimeVelocity d)}
+theorem ae_eq_jet_of_value_ae {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     {p : ℝ≥0∞} (hU : IsOpen U) (hp : 1 ≤ p)
     (w w' : ParabolicW12Function d U p)
     (hvalue : w.toFun =ᵐ[timeVelocityVolumeOn U] w'.toFun) :
@@ -260,7 +261,7 @@ private theorem velocityGradient_velocityGradient_commute {d : ℕ}
 /-- Ordered weak velocity-Hessian representatives commute almost everywhere
 on an open domain. -/
 theorem velocityHessian_ae_eq_swap
-    {d : ℕ} {U : Set (TimeVelocity d)}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hU : IsOpen U)
     (w : ParabolicW12Function d U 2)
     (i j : Fin d) :

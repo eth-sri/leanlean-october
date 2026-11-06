@@ -16,9 +16,11 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
 open scoped BigOperators
+section
+variable {d : ℕ}
 
 /-- Scalar representation of the covariance quadratic form. -/
-theorem qform_eq_scalar {d : ℕ} (lam : ℝ) {h : ℝ} (hh : 0 < h)
+theorem qform_eq_scalar  (lam : ℝ) {h : ℝ} (hh : 0 < h)
     (s : ℝ) (y V : PDE.Vec d) :
     qform lam h s y V =
       (covarianceVV lam h s * PDE.vecDot y y -
@@ -31,7 +33,7 @@ theorem qform_eq_scalar {d : ℕ} (lam : ℝ) {h : ℝ} (hh : 0 < h)
   ring
 
 /-- Scalar representation of the velocity component of inverse covariance. -/
-theorem pform_eq_scalar {d : ℕ} (lam : ℝ) {h : ℝ} (hh : 0 < h)
+theorem pform_eq_scalar  (lam : ℝ) {h : ℝ} (hh : 0 < h)
     (s : ℝ) (y V : PDE.Vec d) :
     pform lam h s y V =
       (-covarianceXV lam h s / covarianceDet lam h s) • y +
@@ -41,7 +43,7 @@ theorem pform_eq_scalar {d : ℕ} (lam : ℝ) {h : ℝ} (hh : 0 < h)
   simp
 
 /-- Bilinearity of the explicit native Euclidean dot product under scalar multiplication. -/
-theorem vecDot_smul_smul {d : ℕ} (a b : ℝ) (y V : PDE.Vec d) :
+theorem vecDot_smul_smul  (a b : ℝ) (y V : PDE.Vec d) :
     PDE.vecDot (a • y) (b • V) = a * b * PDE.vecDot y V := by
   unfold PDE.vecDot
   simp only [Pi.smul_apply, smul_eq_mul]
@@ -51,7 +53,7 @@ theorem vecDot_smul_smul {d : ℕ} (a b : ℝ) (y V : PDE.Vec d) :
   ring
 
 /-- Squared Euclidean norm of the inverse velocity component. -/
-theorem vecNormSq_pform {d : ℕ} (lam : ℝ) {h : ℝ} (hh : 0 < h)
+theorem vecNormSq_pform  (lam : ℝ) {h : ℝ} (hh : 0 < h)
     (s : ℝ) (y V : PDE.Vec d) :
     PDE.vecNormSq (pform lam h s y V) =
       (covarianceXV lam h s ^ 2 * PDE.vecDot y y -
@@ -63,7 +65,7 @@ theorem vecNormSq_pform {d : ℕ} (lam : ℝ) {h : ℝ} (hh : 0 < h)
   ring
 
 /-- Derivative of a native dot product along a position line. -/
-theorem hasDerivAt_vecDot_line {d : ℕ} (y V W : PDE.Vec d) (r : ℝ) :
+theorem hasDerivAt_vecDot_line  (y V W : PDE.Vec d) (r : ℝ) :
     HasDerivAt (fun t => PDE.vecDot (y + t • V) W) (PDE.vecDot V W) r := by
   have hp := HasDerivAt.sum (u := Finset.univ) (fun i (_ : i ∈ Finset.univ) =>
     (((hasDerivAt_id r).mul_const (V i)).const_add (y i)).mul_const (W i))
@@ -73,7 +75,7 @@ theorem hasDerivAt_vecDot_line {d : ℕ} (y V W : PDE.Vec d) (r : ℝ) :
   · simp [PDE.vecDot]
 
 /-- Derivative of the squared native norm along a position line. -/
-theorem hasDerivAt_vecDot_line_self {d : ℕ} (y V : PDE.Vec d) (r : ℝ) :
+theorem hasDerivAt_vecDot_line_self  (y V : PDE.Vec d) (r : ℝ) :
     HasDerivAt (fun t => PDE.vecDot (y + t • V) (y + t • V))
       (2 * PDE.vecDot V (y + r • V)) r := by
   have hp := HasDerivAt.sum (u := Finset.univ) (fun i (_ : i ∈ Finset.univ) =>
@@ -92,7 +94,7 @@ theorem hasDerivAt_vecDot_line_self {d : ℕ} (y V : PDE.Vec d) (r : ℝ) :
     ring
 
 /-- Time derivative of the physical covariance quadratic form. -/
-theorem hasDerivAt_qform_time {d : ℕ} {lam h s : ℝ}
+theorem hasDerivAt_qform_time  {lam h s : ℝ}
     (hlam : 0 < lam) (hh : 0 < h) (hs : -(h / 128) ≤ s) (y V : PDE.Vec d) :
     HasDerivAt (fun t => qform lam h t y V)
       (((lam * PDE.vecDot y y - 2 * covarianceVV lam h s * PDE.vecDot y V +
@@ -115,7 +117,7 @@ theorem hasDerivAt_qform_time {d : ℕ} {lam h s : ℝ}
     ring
 
 /-- Position transport derivative of the covariance quadratic form. -/
-theorem hasDerivAt_qform_transport {d : ℕ} (lam : ℝ) {h : ℝ} (hh : 0 < h)
+theorem hasDerivAt_qform_transport  (lam : ℝ) {h : ℝ} (hh : 0 < h)
     (s : ℝ) (y V : PDE.Vec d) :
     HasDerivAt (fun (r : ℝ) => qform lam h s (y + r • V) V)
       ((2 * covarianceVV lam h s * PDE.vecDot V y -
@@ -133,7 +135,7 @@ theorem hasDerivAt_qform_transport {d : ℕ} (lam : ℝ) {h : ℝ} (hh : 0 < h)
     ring
 
 /-- The time and transport terms cancel, leaving exactly the velocity diffusion square. -/
-theorem quadratic_transport_identity {d : ℕ}
+theorem quadratic_transport_identity 
     (lam h sigma : ℝ) (hlam : 0 < lam) (hh : 0 < h)
     (hsigma : -(h / 128) < sigma) (y V : PDE.Vec d) :
     deriv (fun s => qform lam h s y V) sigma +
@@ -146,5 +148,6 @@ theorem quadratic_transport_identity {d : ℕ}
   field_simp
   unfold covarianceDet
   ring
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

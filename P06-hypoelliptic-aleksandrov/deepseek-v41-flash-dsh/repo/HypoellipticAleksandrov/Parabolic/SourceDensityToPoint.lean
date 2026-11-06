@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.DensityToPoint
 public import HypoellipticAleksandrov.Parabolic.ScalingMeasure
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Source-aware density-to-point relations for parabolic boxes
@@ -23,7 +24,7 @@ noncomputable section
 /-- A relative unit-box superlevel-set bound forces a lower terminal bound,
 up to the supplied nonnegative source norm. -/
 def SourceDensityToPoint (d : ℕ) (lam Lam beta g C : ℝ) : Prop :=
-  ∀ (U : Set (TimeVelocity d)) (B : CoefficientField d)
+  ∀ (U : HypoellipticAleksandrov.Parabolic.TVSet d) (B : CoefficientField d)
     (F u : TimeVelocity d → ℝ),
     IsOpen U →
     parabolicClosedBox 1 1 0 0 ⊆ U →
@@ -36,9 +37,9 @@ def SourceDensityToPoint (d : ℕ) (lam Lam beta g C : ℝ) : Prop :=
     HasUpperEllipticityOn Lam B (parabolicBox 1 1 0 0) →
     IsParabolicSupersolutionOn B (fun z ↦ -F z) u
       (parabolicBox 1 1 0 0) →
-    beta * ((volume : Measure (TimeVelocity d))
+    beta * ((HypoellipticAleksandrov.Parabolic.TVVolume d)
       (parabolicBox 1 1 0 0)).toReal ≤
-      ((volume : Measure (TimeVelocity d))
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d)
         (parabolicBox 1 1 0 0 ∩ {z | 1 ≤ u z})).toReal →
     ∀ v ∈ velocityClosedCube (0 : PDE.Vec d) (1 / 2),
       g ≤ u (1, v) + C * parabolicLpNormOn d F
@@ -46,7 +47,7 @@ def SourceDensityToPoint (d : ℕ) (lam Lam beta g C : ℝ) : Prop :=
 
 /-- Eliminates a source-aware density-to-point relation at fixed local data. -/
 theorem SourceDensityToPoint.apply {d : ℕ} {lam Lam beta g C : ℝ}
-    (h : SourceDensityToPoint d lam Lam beta g C) (U : Set (TimeVelocity d))
+    (h : SourceDensityToPoint d lam Lam beta g C) (U : HypoellipticAleksandrov.Parabolic.TVSet d)
     (B : CoefficientField d) (F u : TimeVelocity d → ℝ) (hU : IsOpen U)
     (hclosed : parabolicClosedBox 1 1 0 0 ⊆ U)
     (hB : IsContinuousCoefficientOn B U) (hu : ContDiffOn ℝ 2 u U)
@@ -57,9 +58,9 @@ theorem SourceDensityToPoint.apply {d : ℕ} {lam Lam beta g C : ℝ}
     (hupper : HasUpperEllipticityOn Lam B (parabolicBox 1 1 0 0))
     (hsuper : IsParabolicSupersolutionOn B (fun z ↦ -F z) u
       (parabolicBox 1 1 0 0))
-    (hdensity : beta * ((volume : Measure (TimeVelocity d))
+    (hdensity : beta * ((HypoellipticAleksandrov.Parabolic.TVVolume d)
       (parabolicBox 1 1 0 0)).toReal ≤
-      ((volume : Measure (TimeVelocity d))
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d)
         (parabolicBox 1 1 0 0 ∩ {z | 1 ≤ u z})).toReal)
     (v : PDE.Vec d) (hv : v ∈ velocityClosedCube (0 : PDE.Vec d) (1 / 2)) :
     g ≤ u (1, v) + C * parabolicLpNormOn d F (parabolicBox 1 1 0 0) :=
@@ -72,10 +73,10 @@ theorem SourceDensityToPoint.mono_density {d : ℕ} {lam Lam beta beta' g C : �
   intro U B F u hU hclosed hB hu hF hnonneg hFnonneg hlower hupper hsuper hdensity v hv
   refine h.apply U B F u hU hclosed hB hu hF hnonneg hFnonneg hlower hupper hsuper ?_ v hv
   calc
-    beta * ((volume : Measure (TimeVelocity d)) (parabolicBox 1 1 0 0)).toReal ≤
-        beta' * ((volume : Measure (TimeVelocity d)) (parabolicBox 1 1 0 0)).toReal := by
+    beta * ((HypoellipticAleksandrov.Parabolic.TVVolume d) (parabolicBox 1 1 0 0)).toReal ≤
+        beta' * ((HypoellipticAleksandrov.Parabolic.TVVolume d) (parabolicBox 1 1 0 0)).toReal := by
       gcongr
-    _ ≤ ((volume : Measure (TimeVelocity d))
+    _ ≤ ((HypoellipticAleksandrov.Parabolic.TVVolume d)
       (parabolicBox 1 1 0 0 ∩ {z | 1 ≤ u z})).toReal := hdensity
 
 /-- Decreasing the asserted terminal value preserves a source-aware relation. -/
@@ -101,7 +102,7 @@ theorem SourceDensityToPoint.mono_error {d : ℕ} {lam Lam beta g C C' : ℝ}
 
 private theorem IsParabolicSupersolutionOn.const_smul_source
     {d : ℕ} {B : CoefficientField d} {f u : TimeVelocity d → ℝ}
-    {V : Set (TimeVelocity d)} {c : ℝ} (hc : 0 ≤ c)
+    {V : HypoellipticAleksandrov.Parabolic.TVSet d} {c : ℝ} (hc : 0 ≤ c)
     (h : IsParabolicSupersolutionOn B f u V) :
     IsParabolicSupersolutionOn B (fun z ↦ c * f z) (c • u) V := by
   intro z hz
@@ -114,7 +115,7 @@ theorem SourceDensityToPoint.scaled {d : ℕ} {lam Lam beta g C : ℝ}
     (h : SourceDensityToPoint d lam Lam beta g C)
     {R eps t₀ : ℝ} {v₀ : PDE.Vec d}
     (hR : 0 < R) (heps : 0 < eps)
-    (U : Set (TimeVelocity d)) (B : CoefficientField d)
+    (U : HypoellipticAleksandrov.Parabolic.TVSet d) (B : CoefficientField d)
     (F u : TimeVelocity d → ℝ) (hU : IsOpen U)
     (hclosed : parabolicClosedBox 1 R t₀ v₀ ⊆ U)
     (hB : IsContinuousCoefficientOn B U)
@@ -125,9 +126,9 @@ theorem SourceDensityToPoint.scaled {d : ℕ} {lam Lam beta g C : ℝ}
     (hupper : HasUpperEllipticityOn Lam B (parabolicBox 1 R t₀ v₀))
     (hsuper : IsParabolicSupersolutionOn B (fun z ↦ -F z) u
       (parabolicBox 1 R t₀ v₀))
-    (hdensity : beta * ((volume : Measure (TimeVelocity d))
+    (hdensity : beta * ((HypoellipticAleksandrov.Parabolic.TVVolume d)
       (parabolicBox 1 R t₀ v₀)).toReal ≤
-      ((volume : Measure (TimeVelocity d))
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d)
         (parabolicBox 1 R t₀ v₀ ∩ {z | eps ≤ u z})).toReal) :
     ∀ v ∈ velocityClosedCube v₀ (R / 2),
       eps * g ≤ u (t₀ + R ^ 2, v) +
@@ -195,33 +196,33 @@ theorem SourceDensityToPoint.scaled {d : ℕ} {lam Lam beta g C : ℝ}
     rw [ENNReal.ofReal_ne_zero_iff]
     exact abs_pos.mpr (parabolicLinear_det_ne_zero hR)
   have hcpos : 0 < c.toReal := ENNReal.toReal_pos hcne ENNReal.ofReal_ne_top
-  have hbox : (volume : Measure (TimeVelocity d)) (parabolicBox 1 R t₀ v₀) =
-      c * (volume : Measure (TimeVelocity d)) (parabolicBox 1 1 0 0) := by
+  have hbox : (HypoellipticAleksandrov.Parabolic.TVVolume d) (parabolicBox 1 R t₀ v₀) =
+      c * (HypoellipticAleksandrov.Parabolic.TVVolume d) (parabolicBox 1 1 0 0) := by
     rw [← parabolicAffine_image_parabolicBox hR]
     exact volume_parabolicAffine_image t₀ v₀ R _
-  have hlevel : (volume : Measure (TimeVelocity d))
+  have hlevel : (HypoellipticAleksandrov.Parabolic.TVVolume d)
       (parabolicBox 1 R t₀ v₀ ∩ {z | eps ≤ u z}) =
-      c * (volume : Measure (TimeVelocity d)) (parabolicBox 1 1 0 0 ∩
+      c * (HypoellipticAleksandrov.Parabolic.TVVolume d) (parabolicBox 1 1 0 0 ∩
         {z | 1 ≤ uHat z}) := by
     rw [show uHat = eps⁻¹ • pullbackScalar u t₀ v₀ R by rfl,
       ← parabolicAffine_image_normalizedSuperlevel hR heps]
     exact volume_parabolicAffine_image t₀ v₀ R _
-  have hnormaldensity : beta * ((volume : Measure (TimeVelocity d))
+  have hnormaldensity : beta * ((HypoellipticAleksandrov.Parabolic.TVVolume d)
       (parabolicBox 1 1 0 0)).toReal ≤
-      ((volume : Measure (TimeVelocity d)) (parabolicBox 1 1 0 0 ∩
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d) (parabolicBox 1 1 0 0 ∩
         {z | 1 ≤ uHat z})).toReal := by
     rw [hbox, hlevel, ENNReal.toReal_mul, ENNReal.toReal_mul] at hdensity
-    suffices hscaled : c.toReal * (beta * ((volume : Measure (TimeVelocity d))
+    suffices hscaled : c.toReal * (beta * ((HypoellipticAleksandrov.Parabolic.TVVolume d)
         (parabolicBox 1 1 0 0)).toReal) ≤ c.toReal *
-        ((volume : Measure (TimeVelocity d)) (parabolicBox 1 1 0 0 ∩
+        ((HypoellipticAleksandrov.Parabolic.TVVolume d) (parabolicBox 1 1 0 0 ∩
           {z | 1 ≤ uHat z})).toReal by
       nlinarith
     calc
-      c.toReal * (beta * ((volume : Measure (TimeVelocity d))
+      c.toReal * (beta * ((HypoellipticAleksandrov.Parabolic.TVVolume d)
           (parabolicBox 1 1 0 0)).toReal) =
-          beta * (c.toReal * ((volume : Measure (TimeVelocity d))
+          beta * (c.toReal * ((HypoellipticAleksandrov.Parabolic.TVVolume d)
             (parabolicBox 1 1 0 0)).toReal) := by ring
-      _ ≤ c.toReal * ((volume : Measure (TimeVelocity d)) (parabolicBox 1 1 0 0 ∩
+      _ ≤ c.toReal * ((HypoellipticAleksandrov.Parabolic.TVVolume d) (parabolicBox 1 1 0 0 ∩
           {z | 1 ≤ uHat z})).toReal := hdensity
   have hnorm : parabolicLpNormOn d FHat (parabolicBox 1 1 0 0) =
       eps⁻¹ * (R ^ ((d : ℝ) / ((d : ℝ) + 1)) *

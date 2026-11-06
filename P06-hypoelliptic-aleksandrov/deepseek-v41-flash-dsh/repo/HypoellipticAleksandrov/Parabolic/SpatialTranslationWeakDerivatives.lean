@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.Parabolic.WeakDerivativesLocal
 public import Mathlib.Analysis.Calculus.FDeriv.Add
 public import Mathlib.MeasureTheory.Group.Measure
 public import Mathlib.MeasureTheory.Integral.Bochner.Set
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Spatial translation of raw weak derivatives
@@ -47,8 +48,8 @@ private theorem spatialShift_measurableEmbedding
 theorem spatialShift_measurePreserving
     {d : ℕ} (k : Fin d) (h : ℝ) :
     MeasurePreserving (spatialShift k h)
-      (volume : Measure (TimeVelocity d))
-      (volume : Measure (TimeVelocity d)) := by
+      (HypoellipticAleksandrov.Parabolic.TVVolume d)
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   change MeasurePreserving
     (fun z : TimeVelocity d => z + (0, h • PDE.basisVec k)) volume volume
   exact measurePreserving_add_right volume _
@@ -74,7 +75,7 @@ theorem spatialShift_measurePreserving
 /-- A weak velocity derivative transports to any subdomain whose forward shift lies
 in the original domain. -/
 theorem HasWeakVelocityPartialDerivOn.spatialTranslate_of_mapsTo
-    {d : ℕ} {U V : Set (TimeVelocity d)} {i : Fin d}
+    {d : ℕ} {U V : HypoellipticAleksandrov.Parabolic.TVSet d} {i : Fin d}
     {u dui : TimeVelocity d → ℝ}
     (hu : HasWeakVelocityPartialDerivOn U i u dui)
     (k : Fin d) (h : ℝ)

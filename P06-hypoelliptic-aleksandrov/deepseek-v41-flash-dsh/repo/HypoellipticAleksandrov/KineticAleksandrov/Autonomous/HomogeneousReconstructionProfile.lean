@@ -19,7 +19,7 @@ theorem reconstructionProfile_regular {f : ℝ → ℝ} (hf : ContDiff ℝ 2 f) 
   refine ⟨?_, ?_, ?_⟩
   · change DifferentiableAt ℝ (fun _ : ℝ => f (p.position 0)) p.time
     exact differentiableAt_const _
-  · exact (hf.comp (contDiff_apply ℝ ℝ (0 : Fin 1))).contDiffAt
+  · exact (hf.comp (contDiff_apply ℝ ℝ 0)).contDiffAt
   · change ContDiffAt ℝ 2 (fun _ : PDE.Vec 1 => f (p.position 0)) p.velocity
     exact contDiffAt_const
 

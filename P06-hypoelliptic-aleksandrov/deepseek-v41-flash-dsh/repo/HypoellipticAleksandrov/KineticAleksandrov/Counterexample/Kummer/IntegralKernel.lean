@@ -24,7 +24,7 @@ noncomputable def laplaceKernelReal (a b z t : ℝ) : ℝ :=
 theorem laplaceKernelReal_pos (a b z t : ℝ) (ht : 0 < t) :
     0 < laplaceKernelReal a b z t := by
   exact mul_pos (mul_pos (Real.exp_pos _) (Real.rpow_pos_of_pos ht _))
-    (Real.rpow_pos_of_pos (by linarith only [ht]) _)
+    (Real.rpow_pos_of_pos (by linarith) _)
 
 /-- Continuity in the integration variable away from its endpoint. -/
 theorem continuousOn_laplaceKernelReal (a b z : ℝ) :
@@ -41,20 +41,20 @@ theorem continuousOn_laplaceKernelReal (a b z : ℝ) :
 /-- A polynomial bound for the translated power on the positive half-line. -/
 theorem one_add_rpow_le_polynomial (q : ℝ) (n : ℕ) (hqn : q ≤ (n : ℝ))
     (t : ℝ) (ht : 0 ≤ t) :
-    (1 + t) ^ q ≤ (2 : ℝ) ^ n * (1 + t ^ n) := by
-  have hbase : 1 ≤ 1 + t := by linarith only [ht]
+    (1 + t) ^ q ≤ 2 ^ n * (1 + t ^ n) := by
+  have hbase : 1 ≤ 1 + t := by linarith
   have hpow : (1 + t) ^ q ≤ (1 + t) ^ n := by
-    simpa only [Real.rpow_natCast] using Real.rpow_le_rpow_of_exponent_le hbase hqn
+    simpa using Real.rpow_le_rpow_of_exponent_le hbase hqn
   apply hpow.trans
   by_cases ht1 : t ≤ 1
-  · have hsmall : (1 + t) ^ n ≤ (2 : ℝ) ^ n :=
-      pow_le_pow_left₀ (by linarith only [ht]) (by linarith only [ht1]) n
+  · have hsmall : (1 + t) ^ n ≤ 2 ^ n :=
+      pow_le_pow_left₀ (by linarith) (by linarith) n
     exact hsmall.trans (le_mul_of_one_le_right (by positivity) (by
       have := pow_nonneg ht n
-      linarith only [this]))
+      linarith))
   · have ht1' : 1 ≤ t := (lt_of_not_ge ht1).le
     have hlarge : (1 + t) ^ n ≤ (2 * t) ^ n :=
-      pow_le_pow_left₀ (by linarith only [ht]) (by linarith only [ht1']) n
+      pow_le_pow_left₀ (by linarith) (by linarith) n
     rw [mul_pow] at hlarge
     exact hlarge.trans (mul_le_mul_of_nonneg_left (by linarith) (by positivity))
 
@@ -67,7 +67,7 @@ theorem integrableOn_gammaKernel (a z : ℝ) (ha : 0 < a) (hz : 0 < z) :
       (Ioi 0) volume := by
     apply (integrableOn_Ioi_comp_mul_left_iff
       (fun t : ℝ => Real.exp (-t) * t ^ (a - 1)) 0 hz).mpr
-    simpa only [mul_zero] using Real.GammaIntegral_convergent ha
+    simpa using Real.GammaIntegral_convergent ha
   have h := hscaled.const_mul (z ^ (a - 1))⁻¹
   apply IntegrableOn.congr_fun h _ measurableSet_Ioi
   intro t ht

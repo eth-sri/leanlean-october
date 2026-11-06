@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.Parabolic.WeakGradientTimeEnergy
 public import HypoellipticAleksandrov.Parabolic.WeakPrincipalCoercivity
 public import Mathlib.Algebra.Order.Chebyshev
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Weak Hessian difference-quotient energy foundations
@@ -23,7 +25,7 @@ open scoped ENNReal BigOperators MatrixOrder
 namespace HypoellipticAleksandrov.Parabolic
 
 private theorem memLp_mul_of_ae_bound
-    {d : ℕ} {S : Set (TimeVelocity d)} {a f : TimeVelocity d → ℝ} {K : ℝ}
+    {d : ℕ} {S : HypoellipticAleksandrov.Parabolic.TVSet d} {a f : TimeVelocity d → ℝ} {K : ℝ}
     (ha : AEStronglyMeasurable a (timeVelocityVolumeOn S))
     (hK : ∀ᵐ z ∂timeVelocityVolumeOn S, |a z| ≤ K)
     (hf : ParabolicMemLpOn S (2 : ℝ≥0∞) f) :
@@ -34,7 +36,7 @@ private theorem memLp_mul_of_ae_bound
   exact mul_le_mul_of_nonneg_right hz (abs_nonneg _)
 
 private theorem lowerOrderSource_memLp
-    {d : ℕ} (s₀ s₁ : ℝ) (O : Set (PDE.Vec d)) (hO : IsOpen O)
+    {d : ℕ} (s₀ s₁ : ℝ) (O : HypoellipticAleksandrov.VecSet d) (hO : IsOpen O)
     (B : TimeVelocity d → PDE.Vec d) (C0 q R : TimeVelocity d → ℝ)
     (QG : TimeVelocity d → PDE.Vec d) (M : ℝ)
     (hBmeas : AEStronglyMeasurable B
@@ -79,7 +81,7 @@ private theorem lowerOrderSource_memLp
 and principal-coercivity pairings.  This lemma is deliberately pointwise and
 retains the ordered entry `QH z j i`. -/
 private theorem residualEquation_reoriented
-    {d : ℕ} {S : Set (TimeVelocity d)}
+    {d : ℕ} {S : HypoellipticAleksandrov.Parabolic.TVSet d}
     (A : TimeVelocity d → PDE.Mat d)
     (B QG : TimeVelocity d → PDE.Vec d)
     (C0 q QW R : TimeVelocity d → ℝ)
@@ -96,7 +98,7 @@ private theorem residualEquation_reoriented
 /-- A separated smooth compactly supported multiplier is bounded on every
 restricted spacetime carrier. -/
 private theorem separated_multiplier_memLp_top_restrict
-    {d : ℕ} (S : Set (TimeVelocity d))
+    {d : ℕ} (S : HypoellipticAleksandrov.Parabolic.TVSet d)
     (a : ℝ → ℝ) (ha : Continuous a) (haCompact : HasCompactSupport a)
     (c : PDE.Vec d → ℝ) (hc : Continuous c) (hcCompact : HasCompactSupport c) :
     MemLp (fun z : TimeVelocity d => a z.1 * c z.2) ∞
@@ -122,7 +124,7 @@ private theorem separated_multiplier_memLp_top_restrict
 restricted `L²` under precisely the coordinatewise gradient and diagonal
 Hessian hypotheses used by the time-energy identity. -/
 private theorem localizedGradientDivergence_memLp
-    {d : ℕ} (S : Set (TimeVelocity d))
+    {d : ℕ} (S : HypoellipticAleksandrov.Parabolic.TVSet d)
     (QG : TimeVelocity d → PDE.Vec d)
     (QH : TimeVelocity d → PDE.Mat d)
     (hQG : ∀ k : Fin d, ParabolicMemLpOn S 2 (fun z => QG z k))
@@ -176,7 +178,7 @@ private theorem localizedGradientDivergence_memLp
 /-- The lower-order residual is integrable against the localized gradient
 divergence by restricted `L² × L²` duality. -/
 private theorem lowerOrderSource_localizedGradientDivergence_integrable
-    {d : ℕ} {S : Set (TimeVelocity d)}
+    {d : ℕ} {S : HypoellipticAleksandrov.Parabolic.TVSet d}
     (F : TimeVelocity d → ℝ)
     (hF : ParabolicMemLpOn S 2 F)
     (QG : TimeVelocity d → PDE.Vec d) (QH : TimeVelocity d → PDE.Mat d)
@@ -200,7 +202,7 @@ private theorem lowerOrderSource_localizedGradientDivergence_integrable
 gives the exact integrated decomposition.  The two summands are supplied
 separately so that `integral_add` never relies on implicit integrability. -/
 private theorem integrated_residual_pairing
-    {d : ℕ} {S : Set (TimeVelocity d)}
+    {d : ℕ} {S : HypoellipticAleksandrov.Parabolic.TVSet d}
     (A : TimeVelocity d → PDE.Mat d)
     (QW F : TimeVelocity d → ℝ)
     (QH : TimeVelocity d → PDE.Mat d)
@@ -324,7 +326,7 @@ private theorem localizedGradientDivergence_coordinate_young
 diagonal Hessian expenditure is dominated by the full ordered Hessian energy;
 no division by the dimension occurs, so the statement includes `d = 0`. -/
 private theorem lowerOrder_localizedGradientDivergence_abs_le
-    {d : ℕ} (lam Keta s₀ s₁ : ℝ) (O : Set (PDE.Vec d)) (hO : IsOpen O)
+    {d : ℕ} (lam Keta s₀ s₁ : ℝ) (O : HypoellipticAleksandrov.VecSet d) (hO : IsOpen O)
     (F : TimeVelocity d → ℝ) (hF : ParabolicMemLpOn
       (Set.Ioo s₀ s₁ ×ˢ O) 2 F)
     (QG : TimeVelocity d → PDE.Vec d)
@@ -349,7 +351,7 @@ private theorem lowerOrder_localizedGradientDivergence_abs_le
         (timeVelocityVolumeOn (Set.Ioo s₀ s₁ ×ˢ O))).toReal ^ 2 +
       (d : ℝ) * (Keta + 1 / lam) *
         (∫ z in Set.Ioo s₀ s₁ ×ˢ O, F z ^ 2 ∂volume) := by
-  let S : Set (TimeVelocity d) := Set.Ioo s₀ s₁ ×ˢ O
+  let S : HypoellipticAleksandrov.Parabolic.TVSet d := Set.Ioo s₀ s₁ ×ˢ O
   let μ := timeVelocityVolumeOn S
   have hpair := lowerOrderSource_localizedGradientDivergence_integrable F hF
     QG QH hQG (fun i => hQH i i) η hη hηcompact ζ hζ hζcompact
@@ -490,7 +492,7 @@ private theorem fin_sum_sq_le_card_mul_sum_sq
 /-- The squared lower-order source is controlled by the prescribed restricted
 `L²` bounds, without a finite-measure assumption on the cylinder. -/
 private theorem lowerOrderSource_integral_sq_le
-    {d : ℕ} (s₀ s₁ : ℝ) (O : Set (PDE.Vec d)) (hO : IsOpen O)
+    {d : ℕ} (s₀ s₁ : ℝ) (O : HypoellipticAleksandrov.VecSet d) (hO : IsOpen O)
     (B : TimeVelocity d → PDE.Vec d) (C0 q R : TimeVelocity d → ℝ)
     (QG : TimeVelocity d → PDE.Vec d) (M N_R N_q : ℝ)
     (N_QG : Fin d → ℝ)
@@ -515,7 +517,7 @@ private theorem lowerOrderSource_integral_sq_le
       (R z - (∑ j : Fin d, B z j * QG z j) - C0 z * q z) ^ 2 ∂volume) ≤
       3 * (N_R ^ 2 + M ^ 2 * N_q ^ 2 +
         (d : ℝ) * M ^ 2 * ∑ j : Fin d, N_QG j ^ 2) := by
-  let S : Set (TimeVelocity d) := Set.Ioo s₀ s₁ ×ˢ O
+  let S : HypoellipticAleksandrov.Parabolic.TVSet d := Set.Ioo s₀ s₁ ×ˢ O
   let μ := timeVelocityVolumeOn S
   have hparts := lowerOrderSource_memLp s₀ s₁ O hO B C0 q R QG M
     hBmeas hCmeas hB hC hq hQG hR
@@ -635,7 +637,7 @@ private theorem lowerOrderSource_integral_sq_le
 /-- The literal support-indicator gradient term is bounded by the sum of the
 coordinatewise restricted `L²` energies. -/
 private theorem principalSupportIndicatorGradientIntegral_le_eLpNorm_sq_sum
-    {d : ℕ} (s₀ s₁ : ℝ) (O : Set (PDE.Vec d))
+    {d : ℕ} (s₀ s₁ : ℝ) (O : HypoellipticAleksandrov.VecSet d)
     (QG : TimeVelocity d → PDE.Vec d) (η : PDE.Vec d → ℝ)
     (ζ : ℝ → ℝ) (hζcont : Continuous ζ)
     (hζnonneg : ∀ r, 0 ≤ ζ r) (hζle : ∀ r, ζ r ≤ 1)
@@ -696,7 +698,7 @@ private theorem principalSupportIndicatorGradientIntegral_le_eLpNorm_sq_sum
 /-- A derivative bound needed only on the time interval controls the absolute
 time-cutoff error, without a global derivative premise. -/
 private theorem timeCutoffGradientIntegral_abs_div_two_le
-    {d : ℕ} (s₀ s₁ : ℝ) (O : Set (PDE.Vec d)) (hO : MeasurableSet O)
+    {d : ℕ} (s₀ s₁ : ℝ) (O : HypoellipticAleksandrov.VecSet d) (hO : MeasurableSet O)
     (QG : TimeVelocity d → PDE.Vec d) (η : PDE.Vec d → ℝ)
     (ζ : ℝ → ℝ) (hη : Continuous η) (hζ : ContDiff ℝ 2 ζ) (Kζ : ℝ)
     (hηnonneg : ∀ y, 0 ≤ η y) (hηle : ∀ y, η y ≤ 1)
@@ -765,7 +767,7 @@ private theorem timeCutoffGradientIntegral_abs_div_two_le
 through the literal residual equation, into the pre-Young Hessian estimate. -/
 private theorem weakHessian_preYoung
     {d : ℕ} (lam Lam M K : ℝ) (s₀ s₁ : ℝ)
-    (O : Set (PDE.Vec d)) (hO : IsOpen O)
+    (O : HypoellipticAleksandrov.VecSet d) (hO : IsOpen O)
     (A : TimeVelocity d → PDE.Mat d)
     (B : TimeVelocity d → PDE.Vec d) (C0 q QW R : TimeVelocity d → ℝ)
     (QG : TimeVelocity d → PDE.Vec d) (QH : TimeVelocity d → PDE.Mat d)
@@ -813,7 +815,7 @@ private theorem weakHessian_preYoung
         WeakGradientTimeEnergy.localizedGradientDivergence η QG QH z ∂volume| +
       |∫ z in Set.Ioo s₀ s₁ ×ˢ O, _root_.deriv ζ z.1 * η z.2 ^ 2 *
         ∑ i : Fin d, QG z i ^ 2 ∂volume| / 2 := by
-  let S : Set (TimeVelocity d) := Set.Ioo s₀ s₁ ×ˢ O
+  let S : HypoellipticAleksandrov.Parabolic.TVSet d := Set.Ioo s₀ s₁ ×ˢ O
   let F : TimeVelocity d → ℝ := fun z =>
     R z - (∑ j : Fin d, B z j * QG z j) - C0 z * q z
   let D : TimeVelocity d → ℝ := fun z => ζ z.1 *
@@ -882,7 +884,7 @@ theorem exists_weakHessian_energy_le_of_residual
     (hM : 0 ≤ M) (hKeta : 0 ≤ Keta) (hKzeta : 0 ≤ Kzeta) :
     ∃ Cenergy : ℝ, 0 ≤ Cenergy ∧
       ∀ (s₀ s₁ : ℝ)
-        (O : Set (PDE.Vec d)) (_hO : IsOpen O)
+        (O : HypoellipticAleksandrov.VecSet d) (_hO : IsOpen O)
         (A : TimeVelocity d → PDE.Mat d)
         (B : TimeVelocity d → PDE.Vec d)
         (C0 : TimeVelocity d → ℝ)
@@ -970,7 +972,7 @@ theorem exists_weakHessian_energy_le_of_residual
       hAlower hAupper hAderiv hB hC hq hQW hQG hQH hR hq_time hq_velocity
       hQG_velocity heq η hη hηcompact hηsupport hηnonneg hηle hηderiv ζ hζ
       hζcompact hζsupport hζnonneg hζle hζderiv
-    let S : Set (TimeVelocity d) := Set.Ioo s₀ s₁ ×ˢ O
+    let S : HypoellipticAleksandrov.Parabolic.TVSet d := Set.Ioo s₀ s₁ ×ˢ O
     let μ := timeVelocityVolumeOn S
     set E := ∫ z in S, ζ z.1 * η z.2 ^ 2 *
       ∑ k : Fin d, ∑ i : Fin d, QH z k i ^ 2 ∂volume with hE

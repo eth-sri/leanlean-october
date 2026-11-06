@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Reconstruction.FiberHeight
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Fourier inversion on a fibre
@@ -41,7 +42,7 @@ lemma vecFourier_smul_kernel (κ : Kernel Y (PDE.Vec d)) (g : Y → ℝ≥0∞) 
 density `G(y, ·)`, and `G(y, ·) ≤ H(y)`. -/
 lemma fiber_inversion_at (κ : Kernel Y (PDE.Vec d)) [IsMarkovKernel κ] (g : Y → ℝ≥0∞) (y : Y)
     (hy : g y < ∞) (hint : Integrable (fun ξ => fiberDensity g κ ξ y)) :
-    (volume : Measure (PDE.Vec d)).withDensity (fun z => fiberInversionDensity g κ (y, z)) =
+    (HypoellipticAleksandrov.VecVolume d).withDensity (fun z => fiberInversionDensity g κ (y, z)) =
         (g y) • κ y ∧
       ∀ z, fiberInversionDensity g κ (y, z) ≤ fiberHeight g κ y := by
   have : IsFiniteMeasure ((g y) • κ y) :=
@@ -54,8 +55,8 @@ lemma fiber_inversion_at (κ : Kernel Y (PDE.Vec d)) [IsMarkovKernel κ] (g : Y 
     intro z
     simp only [fiberInversionDensity, vecInvDensity, hfun]
   refine ⟨?_, fun z => ?_⟩
-  · calc (volume : Measure (PDE.Vec d)).withDensity (fun z => fiberInversionDensity g κ (y, z))
-        = (volume : Measure (PDE.Vec d)).withDensity
+  · calc (HypoellipticAleksandrov.VecVolume d).withDensity (fun z => fiberInversionDensity g κ (y, z))
+        = (HypoellipticAleksandrov.VecVolume d).withDensity
             (fun z => ENNReal.ofReal (vecInvDensity ((g y) • κ y) z)) := by
           simp only [hG]
       _ = (g y) • κ y := (eq_withDensity_vecInvDensity ((g y) • κ y) hφ).symm
@@ -87,7 +88,7 @@ lemma measurable_fiberInversionDensity {g : Y → ℝ≥0∞} (hg : Measurable g
 
 
 /-- Pointwise `L^q` bound on a fibre from `G ≤ H` and `∫ G = g`. -/
-lemma lintegral_rpow_le_of_le {μ : Measure (PDE.Vec d)} {G : PDE.Vec d → ℝ≥0∞} {H a : ℝ≥0∞}
+lemma lintegral_rpow_le_of_le {μ : HypoellipticAleksandrov.VecMeasure d} {G : PDE.Vec d → ℝ≥0∞} {H a : ℝ≥0∞}
     {q : ℝ} (hq : 1 < q) (hHT : H ≠ ∞) (hG : ∀ z, G z ≤ H) (hint : ∫⁻ z, G z ∂μ = a) :
     ∫⁻ z, G z ^ q ∂μ ≤ H ^ (q - 1) * a := by
   calc ∫⁻ z, G z ^ q ∂μ ≤ ∫⁻ z, H ^ (q - 1) * G z ∂μ := by
@@ -125,7 +126,7 @@ theorem fiber_inversion {m : Measure Y} [SigmaFinite m] (Γ : Measure (Y × PDE.
   have hgtop : ∀ᵐ y ∂m, g y < ∞ := ae_lt_top hg (lintegral_ne_top_of_fst_eq Γ hΓ)
   set κ := Γ.condKernel with hκ
   have hGm := measurable_fiberInversionDensity hg κ
-  have hfib : ∀ᵐ y ∂m, (volume : Measure (PDE.Vec d)).withDensity
+  have hfib : ∀ᵐ y ∂m, (HypoellipticAleksandrov.VecVolume d).withDensity
         (fun z => fiberInversionDensity g κ (y, z)) = (g y) • κ y ∧
       ∀ z, fiberInversionDensity g κ (y, z) ≤ fiberHeight g κ y ∧ fiberHeight g κ y < ∞ := by
     filter_upwards [hgtop, hfin] with y hy hy2
@@ -150,7 +151,7 @@ theorem fiber_inversion {m : Measure Y} [SigmaFinite m] (Γ : Measure (Y × PDE.
     rw [hL, hR]
     refine lintegral_congr_ae ?_
     filter_upwards [hfib] with y ⟨h1, _⟩
-    have := congrArg (fun μ : Measure (PDE.Vec d) => μ (Prod.mk y ⁻¹' S)) h1
+    have := congrArg (fun μ : HypoellipticAleksandrov.VecMeasure d => μ (Prod.mk y ⁻¹' S)) h1
     simp only [withDensity_apply _ (hS' y), Measure.smul_apply, smul_eq_mul] at this
     exact this.symm
   · filter_upwards [hfib] with y ⟨h1, h2⟩

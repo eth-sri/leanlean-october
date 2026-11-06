@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.SpatialSobolevExtensionality
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.SpatialL2Density
 public import Mathlib.Analysis.InnerProductSpace.Dual
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # The spatial Gelfand triple
@@ -22,7 +23,7 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-variable {d : ℕ} {Ω : Set (PDE.Vec d)}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
 
 /-- The `H⁻¹` carrier dual to the spatial Hilbert realization of `H¹₀(Ω)`. -/
 abbrev H10HilbertGraphDual (hΩ : IsOpen Ω) : Type _ :=

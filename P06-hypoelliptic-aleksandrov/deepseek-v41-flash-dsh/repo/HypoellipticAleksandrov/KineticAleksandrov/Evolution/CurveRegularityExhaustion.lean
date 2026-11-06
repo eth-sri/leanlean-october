@@ -21,16 +21,18 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 
 open Set Filter
 open scoped Topology
+section
+variable {n : ℕ} {c : PDE.Vec n}
 
 /-- Membership in the moving ball `γ(σ) + B_R(c)`. -/
-theorem mem_movingDomain_euclideanBall_iff_norm_lt {n : ℕ} {c : PDE.Vec n} {R : ℝ}
+theorem mem_movingDomain_euclideanBall_iff_norm_lt  {R : ℝ}
     (hR : 0 < R) {γ : ℝ → PDE.Vec n} {σ : ℝ} {y : PDE.Vec n} :
     y ∈ movingDomain (PDE.euclideanBall c R) γ σ ↔
       PDE.vecEuclideanNorm (y - (γ σ + c)) < R := by
   rw [mem_movingDomain_iff, PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt hR, sub_sub]
 
 /-- Perturbing the centre curve by at most `ε` moves the distance to the centre by at most `ε`. -/
-theorem vecEuclideanNorm_sub_add_le {n : ℕ} {c : PDE.Vec n} {γ γ' : ℝ → PDE.Vec n} {σ ε : ℝ}
+theorem vecEuclideanNorm_sub_add_le  {γ γ' : ℝ → PDE.Vec n} {σ ε : ℝ}
     (h : PDE.vecEuclideanNorm (γ' σ - γ σ) ≤ ε) (y : PDE.Vec n) :
     PDE.vecEuclideanNorm (y - (γ' σ + c)) ≤ PDE.vecEuclideanNorm (y - (γ σ + c)) + ε := by
   have h1 : y - (γ' σ + c) = (y - (γ σ + c)) + (γ σ - γ' σ) := by abel
@@ -42,7 +44,7 @@ theorem vecEuclideanNorm_sub_add_le {n : ℕ} {c : PDE.Vec n} {γ γ' : ℝ → 
 
 /-- A ball around a curve uniformly `ε`-close to `γ` lies in the larger ball of radius
 `r + ε` around `γ`. -/
-theorem movingDomain_euclideanBall_subset_of_close {n : ℕ} {c : PDE.Vec n} {r r' ε : ℝ}
+theorem movingDomain_euclideanBall_subset_of_close  {r r' ε : ℝ}
     (hr : 0 < r) (hrr : r + ε ≤ r') {γ γ' : ℝ → PDE.Vec n}
     (hγ : ∀ σ, PDE.vecEuclideanNorm (γ' σ - γ σ) ≤ ε) (σ : ℝ) :
     movingDomain (PDE.euclideanBall c r) γ' σ ⊆ movingDomain (PDE.euclideanBall c r') γ σ := by
@@ -59,7 +61,7 @@ theorem movingDomain_euclideanBall_subset_of_close {n : ℕ} {c : PDE.Vec n} {r 
 
 /-- The approximating moving ball `γ_k + B_{r₀ - α_k}(c)` lies inside `Ω_σ = γ + B_{r₀}(c)`
 when `‖γ_k - γ‖ ≤ α_k / 2`. -/
-theorem movingDomain_approx_subset {n : ℕ} {c : PDE.Vec n} {r₀ α : ℝ} (hα : α < r₀)
+theorem movingDomain_approx_subset  {r₀ α : ℝ} (hα : α < r₀)
     {γ γ' : ℝ → PDE.Vec n} (hγ : ∀ σ, PDE.vecEuclideanNorm (γ' σ - γ σ) ≤ α / 2)
     (hα0 : 0 ≤ α) (σ : ℝ) :
     movingDomain (PDE.euclideanBall c (r₀ - α)) γ' σ ⊆
@@ -69,7 +71,7 @@ theorem movingDomain_approx_subset {n : ℕ} {c : PDE.Vec n} {r₀ α : ℝ} (h�
 /-- Consecutive approximating balls are nested: if `‖γ_k - γ‖ ≤ α_k / 2`,
 `‖γ_{k+1} - γ‖ ≤ α_{k+1} / 2` and `α_{k+1} ≤ α_k / 4`, then
 `γ_k + B_{r₀ - α_k}(c) ⊆ γ_{k+1} + B_{r₀ - α_{k+1}}(c)`. -/
-theorem movingDomain_approx_mono {n : ℕ} {c : PDE.Vec n} {r₀ α α' : ℝ} (hα : α < r₀)
+theorem movingDomain_approx_mono  {r₀ α α' : ℝ} (hα : α < r₀)
     (hα'0 : 0 ≤ α') (hαα : α' ≤ α / 4) {γ γ₁ γ₂ : ℝ → PDE.Vec n}
     (h₁ : ∀ σ, PDE.vecEuclideanNorm (γ₁ σ - γ σ) ≤ α / 2)
     (h₂ : ∀ σ, PDE.vecEuclideanNorm (γ₂ σ - γ σ) ≤ α' / 2) (σ : ℝ) :
@@ -91,7 +93,7 @@ theorem movingDomain_approx_mono {n : ℕ} {c : PDE.Vec n} {r₀ α α' : ℝ} (
 /-- Every point of `Ω_σ = γ + B_{r₀}(c)` lies in all the approximating balls
 `γ_k + B_{r₀ - α_k}(c)` from some index on, when `α_k → 0` and
 `‖γ_k - γ‖ ≤ α_k / 2`. -/
-theorem eventually_mem_movingDomain_approx {n : ℕ} {c : PDE.Vec n} {r₀ : ℝ}
+theorem eventually_mem_movingDomain_approx  {r₀ : ℝ}
     (hr₀ : 0 < r₀) {α : ℕ → ℝ} (hαlim : Tendsto α atTop (𝓝 0))
     {γ : ℝ → PDE.Vec n} {γs : ℕ → ℝ → PDE.Vec n}
     (hγ : ∀ k σ, PDE.vecEuclideanNorm (γs k σ - γ σ) ≤ α k / 2) {σ : ℝ} {y : PDE.Vec n}
@@ -109,7 +111,7 @@ theorem eventually_mem_movingDomain_approx {n : ℕ} {c : PDE.Vec n} {r₀ : ℝ
   linarith
 
 /-- The approximating moving balls exhaust `Ω_σ`. -/
-theorem iUnion_movingDomain_approx {n : ℕ} {c : PDE.Vec n} {r₀ : ℝ}
+theorem iUnion_movingDomain_approx  {r₀ : ℝ}
     {α : ℕ → ℝ} (hαpos : ∀ k, 0 < α k) (hαr : ∀ k, α k < r₀)
     (hαlim : Tendsto α atTop (𝓝 0)) {γ : ℝ → PDE.Vec n} {γs : ℕ → ℝ → PDE.Vec n}
     (hγ : ∀ k σ, PDE.vecEuclideanNorm (γs k σ - γ σ) ≤ α k / 2) (σ : ℝ) :
@@ -120,5 +122,6 @@ theorem iUnion_movingDomain_approx {n : ℕ} {c : PDE.Vec n} {r₀ : ℝ}
   · have hr₀ : 0 < r₀ := lt_trans (hαpos 0) (hαr 0)
     obtain ⟨k, hk⟩ := (eventually_mem_movingDomain_approx hr₀ hαlim hγ hy).exists
     exact mem_iUnion.mpr ⟨k, hk⟩
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

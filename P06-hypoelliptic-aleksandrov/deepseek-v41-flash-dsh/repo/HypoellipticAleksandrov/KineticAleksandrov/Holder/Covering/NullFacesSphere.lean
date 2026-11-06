@@ -6,6 +6,7 @@ public import PDEFoundation.Geometry.EuclideanBall.Topology
 import Mathlib.MeasureTheory.Measure.Haar.InnerProductSpace
 import Mathlib.MeasureTheory.Measure.Lebesgue.EqHaar
 import Mathlib.Tactic
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Null Euclidean sphere faces in native kinetic coordinates
 
@@ -50,7 +51,7 @@ theorem volume_euclideanSphere {d : ℕ} (x : PDE.Vec d) {r : ℝ} (hr : 0 < r) 
 theorem volume_velocity_sphere_face {d : ℕ} (v : PDE.Vec d) {r : ℝ} (hr : 0 < r) :
     volume {P : KineticPoint d | P.velocity ∈ PDE.euclideanSphere v r} = 0 := by
   let s := (univ : Set ℝ) ×ˢ
-    ((univ : Set (PDE.Vec d)) ×ˢ PDE.euclideanSphere v r)
+    ((univ : HypoellipticAleksandrov.VecSet d) ×ˢ PDE.euclideanSphere v r)
   have hs : MeasurableSet s := MeasurableSet.univ.prod
     (MeasurableSet.univ.prod (PDE.isClosed_euclideanSphere v r).measurableSet)
   have heq : {P : KineticPoint d | P.velocity ∈ PDE.euclideanSphere v r} =
@@ -91,7 +92,7 @@ theorem volume_position_sphere_face {d : ℕ} (P : KineticPoint d) {R : ℝ} (hR
   rw [hv, Measure.volume_eq_prod, Measure.prod_apply hs]
   have hslice (t : ℝ) : Prod.mk t ⁻¹' s =
       PDE.euclideanSphere (P.position+(t-P.time) • P.velocity) R ×ˢ
-        (univ : Set (PDE.Vec d)) := by
+        (univ : HypoellipticAleksandrov.VecSet d) := by
     ext z
     simp only [s, mem_preimage, KineticPoint.equivProd, Equiv.coe_fn_symm_mk,
       mem_ofPred_eq, relativePosition, mem_prod, mem_univ, and_true]

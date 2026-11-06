@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.MovingKernel
 public import HypoellipticAleksandrov.Parabolic.Geometry
 public import HypoellipticAleksandrov.Geometry.KineticPointMeasure
 public import Mathlib.Analysis.Complex.Exponential
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Local velocity-ball geometry
 
@@ -72,23 +73,25 @@ def parabolicDistance {d : ℕ} (z z' : TimeVelocity d) : ℝ :=
     {P : KineticPoint d} :
     P ∈ localClosedStrip a T v₀ R ↔
       a ≤ P.time ∧ P.time ≤ T ∧ P.velocity ∈ closure (PDE.euclideanBall v₀ R) := Iff.rfl
+section
+variable {d : ℕ} (a T : ℝ) (v₀ : PDE.Vec d) (R : ℝ)
 
 /-- The open strip is open in the ordinary spacetime topology. -/
-theorem isOpen_localStrip {d : ℕ} (a T : ℝ) (v₀ : PDE.Vec d) (R : ℝ) :
+theorem isOpen_localStrip  :
     IsOpen (localStrip a T v₀ R) :=
   (isOpen_lt continuous_const continuous_time).inter
     ((isOpen_lt continuous_time continuous_const).inter
       ((PDE.isOpen_euclideanBall v₀ R).preimage continuous_velocity))
 
 /-- The closed strip is closed in the ordinary spacetime topology. -/
-theorem isClosed_localClosedStrip {d : ℕ} (a T : ℝ) (v₀ : PDE.Vec d) (R : ℝ) :
+theorem isClosed_localClosedStrip  :
     IsClosed (localClosedStrip a T v₀ R) :=
   (isClosed_le continuous_const continuous_time).inter
     ((isClosed_le continuous_time continuous_const).inter
       (isClosed_closure.preimage continuous_velocity))
 
 /-- The terminal/lateral trace is closed, including the terminal velocity corner. -/
-theorem isClosed_localTrace {d : ℕ} (a T : ℝ) (v₀ : PDE.Vec d) (R : ℝ) :
+theorem isClosed_localTrace  :
     IsClosed (localTrace a T v₀ R) :=
   ((isClosed_eq continuous_time continuous_const).inter
     (isClosed_closure.preimage continuous_velocity)).union
@@ -97,18 +100,19 @@ theorem isClosed_localTrace {d : ℕ} (a T : ℝ) (v₀ : PDE.Vec d) (R : ℝ) :
         (isClosed_frontier.preimage continuous_velocity)))
 
 /-- The source strip is a Borel set. -/
-theorem measurableSet_localStrip {d : ℕ} (a T : ℝ) (v₀ : PDE.Vec d) (R : ℝ) :
+theorem measurableSet_localStrip  :
     MeasurableSet (localStrip a T v₀ R) := (isOpen_localStrip a T v₀ R).measurableSet
 
 /-- The exit trace is a Borel set. -/
-theorem measurableSet_localTrace {d : ℕ} (a T : ℝ) (v₀ : PDE.Vec d) (R : ℝ) :
+theorem measurableSet_localTrace  :
     MeasurableSet (localTrace a T v₀ R) := (isClosed_localTrace a T v₀ R).measurableSet
 
 /-- Every open-strip point belongs to the closed strip. -/
-theorem localStrip_subset_closed {d : ℕ} (a T : ℝ) (v₀ : PDE.Vec d) (R : ℝ) :
+theorem localStrip_subset_closed  :
     localStrip a T v₀ R ⊆ localClosedStrip a T v₀ R := by
   intro P hP
   exact ⟨hP.1.le, hP.2.1.le, subset_closure hP.2.2⟩
+end
 
 /-- With ordered endpoints, both exit faces belong to the closed strip. -/
 theorem localTrace_subset_closed {d : ℕ} {a T : ℝ} (haT : a ≤ T)

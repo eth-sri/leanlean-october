@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.WeakGradientBallwiseGluing
 public import PDEFoundation.Sobolev.H1.Composition
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Weak chain rule on general open sets
@@ -20,7 +21,7 @@ open MeasureTheory Set
 /-- A `C¹` real composition with bounded derivative has the expected weak
 gradient on an arbitrary open set, provided the composition fixes zero. -/
 theorem hasWeakGradient_comp_contDiff_of_deriv_bounded_of_isOpen
-    {d : ℕ} {U : Set (PDE.Vec d)} (hU : IsOpen U)
+    {d : ℕ} {U : HypoellipticAleksandrov.VecSet d} (hU : IsOpen U)
     (u : PDE.H1Function U) {G : ℝ → ℝ}
     (hG : ContDiff ℝ 1 G) (hG0 : G 0 = 0)
     {M : ℝ} (hM : 0 ≤ M) (hderiv : ∀ t, |deriv G t| ≤ M) :

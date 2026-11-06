@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.MollifiedJetUniformCauchy
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Coordinate assembly of Fréchet derivatives

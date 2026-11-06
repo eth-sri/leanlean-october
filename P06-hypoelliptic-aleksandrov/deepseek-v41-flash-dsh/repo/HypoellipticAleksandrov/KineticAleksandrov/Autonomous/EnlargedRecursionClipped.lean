@@ -9,12 +9,12 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.VisitMassCou
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
 
 /-- On poles after `s`, the enlarged exit kernel agrees with a finite clipped kernel. -/
 theorem enlargedVisitExit_comp_eq_clipped
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (s T : ℝ)
+     (H : FiniteIntervalUnion) (s T : ℝ)
     (mu : Measure Point) (hs : ∀ᵐ p ∂mu, s ≤ p.time) :
     enlargedVisitExitKernel hH hLE hlam hLam A H T ∘ₘ mu =
       visitUnionExitKernel hH hLE hlam hLam A H (s - 1) T ∘ₘ mu := by
@@ -40,9 +40,7 @@ theorem enlargedVisitExit_comp_eq_clipped
 
 /-- Lowering the clipped cutoff strictly below the initial pole preserves every entrance. -/
 theorem enlargedVisitEntrance_eq_clipped
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
+     (c : Clock) (J : Interval) (s T : ℝ)
     (P : Point) (hs : s ≤ P.time) (hT : P.time < T) (n : ℕ) :
     enlargedVisitEntrance hH hLE hlam hLam A c J s T P n =
       visitEntrancePiece hH hLE hlam hLam A c J (s - 1) T P n := by
@@ -85,9 +83,7 @@ theorem enlargedVisitEntrance_eq_clipped
 
 /-- The actual enlarged count is finite for every valid outer-strip initial pole. -/
 theorem enlargedVisitStarts_finite_of_outer_pole
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
+     (c : Clock) (J : Interval) (s T : ℝ)
     (P : Point) (hP : s ≤ P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier) :
     IsFiniteMeasure (enlargedVisitStarts hH hLE hlam hLam A c J s T P) := by
   have he : enlargedVisitStarts hH hLE hlam hLam A c J s T P =
@@ -99,5 +95,6 @@ theorem enlargedVisitStarts_finite_of_outer_pole
   rw [he]
   exact visitCount_isFiniteMeasure hH hLE hlam hLam A c J (s - 1) T (by linarith [hP.1])
     P ⟨by linarith [hP.1], hP.2⟩
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

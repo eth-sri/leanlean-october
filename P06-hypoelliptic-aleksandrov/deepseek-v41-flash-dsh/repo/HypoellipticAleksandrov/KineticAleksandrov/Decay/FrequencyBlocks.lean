@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Decay.FrequencyBlocksEv
 public import HypoellipticAleksandrov.KineticAleksandrov.Decay.FrequencyBlocksRadius
 public import HypoellipticAleksandrov.KineticAleksandrov.Scaling.Radius
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.FourierKernels
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Nonzero-frequency blocks, conditional on the exact unit-block theorem -/
 
@@ -21,12 +22,12 @@ theorem nonzero_frequency_blocks_of_unitBlock (d : ℕ) (hd : 1 ≤ d)
     (hblock : UnitBlockStatementW d hd lam Lam 1 1 hlam hlamLam zero_lt_one le_rfl) :
     ∃ L δ : ℝ, 0 < L ∧ 0 < δ ∧ δ < 1 ∧
       ∀ (B : CoefficientField d), IsSectionTwoCoefficient lam Lam B →
-      ∀ (S : TerminalOperatorFamily (univ : Set (PDE.Vec d)) stationary)
-        (K : MovingFiberKernel (univ : Set (PDE.Vec d)) stationary),
+      ∀ (S : TerminalOperatorFamily (univ : HypoellipticAleksandrov.VecSet d) stationary)
+        (K : MovingFiberKernel (univ : HypoellipticAleksandrov.VecSet d) stationary),
         RealizesTerminalEvolution univ stationary MeasurableSet.univ
           (zIndependentCoefficient B) id S K →
       ∀ (ξ : PDE.Vec d), ξ ≠ 0 →
-      ∀ (s : ℝ) (v : PDE.Vec d) (q : EvolutionQuery (univ : Set (PDE.Vec d)) stationary),
+      ∀ (s : ℝ) (v : PDE.Vec d) (q : EvolutionQuery (univ : HypoellipticAleksandrov.VecSet d) stationary),
         q.1 = (s, s + L * (PDE.vecEuclideanNorm ξ) ^ (-(2 / 3 : ℝ)), v, 0) →
       ∀ (ν : ComplexMeasure (PDE.Vec d)), IsFourierProjection K q ξ ν → TV ν ≤ 1 - δ := by
   obtain ⟨L, δ, hL, hδ, hδ1, hunit⟩ := hblock
@@ -56,10 +57,10 @@ theorem nonzero_frequency_blocks_of_unitBlock (d : ℕ) (hd : 1 ≤ d)
   have hv' : (0 : PDE.Vec d) ∈ movingDomain univ stationary 0 := by
     change (0 : PDE.Vec d) ∈ movingDomain (wholeSpace d) (fun _ => 0) 0
     rw [movingDomain_wholeSpace]; exact mem_univ _
-  have hL0 : (0 : ℝ) ≤ 0 + L := by linarith only [hL]
+  have hL0 : (0 : ℝ) ≤ 0 + L := by linarith
   have hq' : movingQuery 0 (0 + L) hL0 0 0 hv' = q' := by
     apply Subtype.ext
-    simp only [movingQuery_val, zero_add]
+    simp
     rfl
   have hνunit : IsFourierProjection K' (movingQuery 0 (0 + L) hL0 0 0 hv')
       (r.1 ^ 3 • ξ) ν' := by
@@ -74,7 +75,7 @@ theorem nonzero_frequency_blocks_of_unitBlock (d : ℕ) (hd : 1 ≤ d)
     change (s + r.1 ^ 2 * 0, s + r.1 ^ 2 * L,
       v + r.1 • (0 : PDE.Vec d), (0 : PDE.Vec d) +
         (r.1 ^ 2 * 0) • identityDrift d v + r.1 ^ 3 • (0 : PDE.Vec d)) = _
-    simp only [mul_zero, add_zero, smul_zero, zero_smul]
+    simp
     rw [hr2, mul_comm L]
   have hνmap : IsFourierProjection K (KineticAffineScaling.queryMap hm q') ξ ν := by
     rw [hquery]; exact hν

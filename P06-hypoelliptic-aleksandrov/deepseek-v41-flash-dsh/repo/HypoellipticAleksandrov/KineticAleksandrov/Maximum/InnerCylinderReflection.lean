@@ -65,11 +65,11 @@ private theorem reflected_innerCentre {d : ℕ} (P₀ : KineticPoint d) (δ : �
     kineticReflection (innerCentre (kineticReflection P₀) δ) =
       ⟨P₀.time-δ,P₀.position-δ • P₀.velocity,P₀.velocity⟩ := by
   ext i <;> simp [kineticReflection,innerCentre] <;> ring
+section
+variable {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2)
 
 /-- Reflection identifies the inner cylinder with a genuine backward cylinder. -/
-theorem kineticReflection_image_innerCylinder {d : ℕ}
-    (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
-    (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2) :
+theorem kineticReflection_image_innerCylinder  :
     kineticReflection '' innerCylinder (kineticReflection P₀) R hR δ hδ0 hδlt =
       backwardCylinder
         ⟨P₀.time - δ, P₀.position - δ • P₀.velocity, P₀.velocity⟩
@@ -78,9 +78,7 @@ theorem kineticReflection_image_innerCylinder {d : ℕ}
   rw [h,kineticReflection_image_forwardCylinder,reflected_innerCentre]
 
 /-- Reflection of the inner exit boundary is the shifted backward kinetic boundary. -/
-theorem kineticReflection_image_innerExitBoundary {d : ℕ}
-    (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
-    (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2) :
+theorem kineticReflection_image_innerExitBoundary  :
     kineticReflection '' innerExitBoundary (kineticReflection P₀) R hR δ hδ0 hδlt =
       kineticBoundary
         ⟨P₀.time - δ, P₀.position - δ • P₀.velocity, P₀.velocity⟩
@@ -89,9 +87,7 @@ theorem kineticReflection_image_innerExitBoundary {d : ℕ}
   rw [h,kineticReflection_image_exitBoundary,reflected_innerCentre]
 
 /-- Reflected inner closures lie in the original backward open cylinder. -/
-theorem closure_reflected_innerCylinder_subset {d : ℕ}
-    (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
-    (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2) :
+theorem closure_reflected_innerCylinder_subset  :
     closure (kineticReflection ''
       innerCylinder (kineticReflection P₀) R hR δ hδ0 hδlt) ⊆ backwardCylinder P₀ R := by
   rw [← kineticReflection_image_closure]
@@ -103,13 +99,12 @@ theorem closure_reflected_innerCylinder_subset {d : ℕ}
       rw [kineticReflection_image_forwardCylinder,kineticReflection_involutive P₀]
 
 /-- Reflected inner closures are compact in the same topology. -/
-theorem isCompact_closure_reflected_innerCylinder {d : ℕ}
-    (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
-    (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2) :
+theorem isCompact_closure_reflected_innerCylinder  :
     IsCompact (closure (kineticReflection ''
       innerCylinder (kineticReflection P₀) R hR δ hδ0 hδlt)) := by
   rw [← kineticReflection_image_closure]
   exact (isCompact_closure_innerCylinder _ R hR δ hδ0 hδlt).image
     (continuous_kineticReflection d)
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

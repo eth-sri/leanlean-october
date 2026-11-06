@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Decay.MinorantMass
 public import HypoellipticAleksandrov.KineticAleksandrov.Decay.MinorantChain
 import Mathlib.Tactic.Positivity
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # The common terminal minorant
@@ -143,7 +145,7 @@ theorem scaled_minorant_comparison (d : ℕ) (hd : 1 ≤ d)
 theorem common_terminal_minorant (d : ℕ) (hd : 1 ≤ d)
     (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam) :
     ∃ h q0 : ℝ, 0 < h ∧ 0 < q0 ∧
-      ∀ (m Lb : ℝ) (D : Set (PDE.Vec d)) (B : CoefficientField d)
+      ∀ (m Lb : ℝ) (D : HypoellipticAleksandrov.VecSet d) (B : CoefficientField d)
         (b : PDE.Vec d → PDE.Vec d), SourceSetting lam Lam m Lb D B b →
       ∀ (v0 : PDE.Vec d) (ρ T : ℝ), v0 ∈ D → 0 < ρ →
         PDE.euclideanBall v0 (4 * ρ) ⊆ D →

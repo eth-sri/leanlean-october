@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.Parabolic.WeakDerivatives
 public import Mathlib.Analysis.Normed.Lp.SmoothApprox
 public import Mathlib.Geometry.Manifold.SmoothApprox
 public import Mathlib.Topology.UrysohnsLemma
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Interior-supported smooth functions are dense in time--velocity `L²`
@@ -23,7 +24,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.Parabolic
 
 private theorem continuousCompact_contDiff_eLpNorm_sub_le_with_support_timeVelocity
-    {d : ℕ} {μ : Measure (TimeVelocity d)} [IsFiniteMeasureOnCompacts μ]
+    {d : ℕ} {μ : HypoellipticAleksandrov.Parabolic.TVMeasure d} [IsFiniteMeasureOnCompacts μ]
     {f : TimeVelocity d → ℝ} (hfCompact : HasCompactSupport f)
     (hfCont : Continuous f) {ε : ℝ} (hε : 0 < ε) :
     ∃ g : TimeVelocity d → ℝ,
@@ -60,7 +61,7 @@ private theorem continuousCompact_contDiff_eLpNorm_sub_le_with_support_timeVeloc
   exact (hgDist x).le
 
 private theorem cutoff_error_ae_timeVelocity
-    {d : ℕ} {U K : Set (TimeVelocity d)} (hU : IsOpen U)
+    {d : ℕ} {U K : HypoellipticAleksandrov.Parabolic.TVSet d} (hU : IsOpen U)
     (g : TimeVelocity d → ℝ) (χ : C(TimeVelocity d, ℝ))
     (hχone : Set.EqOn χ 1 K) :
     g - (fun x ↦ χ x * g x) =ᵐ[timeVelocityVolumeOn U]
@@ -81,10 +82,11 @@ private theorem cutoff_error_ae_timeVelocity
       simp only [Pi.sub_apply]
       rw [image_eq_zero_of_notMem_tsupport hxnot]
       simp only [mul_zero, sub_zero]
+section
+variable {d : ℕ} {U K : HypoellipticAleksandrov.Parabolic.TVSet d} (g : TimeVelocity d → ℝ) (χ : C(TimeVelocity d, ℝ))
 
 private theorem cutoff_error_indicator_bound_timeVelocity
-    {d : ℕ} {U K : Set (TimeVelocity d)}
-    (g : TimeVelocity d → ℝ) (χ : C(TimeVelocity d, ℝ))
+    
     (hg : Continuous g)
     {C : ℝ} (hC : ∀ x, ‖g x‖ ≤ C) (hC0 : 0 ≤ C)
     (hχrange : ∀ x, χ x ∈ Set.Icc (0 : ℝ) 1)
@@ -113,8 +115,7 @@ private theorem cutoff_error_indicator_bound_timeVelocity
     _ ≤ C := by nlinarith [mul_nonneg hC0 (abs_nonneg (1 - χ x))]
 
 private theorem cutoff_error_lt_of_core_timeVelocity
-    {d : ℕ} {U K : Set (TimeVelocity d)}
-    (g : TimeVelocity d → ℝ) (χ : C(TimeVelocity d, ℝ))
+    
     {C r ε : ℝ} (hC0 : 0 ≤ C) (hCpos : 0 < C) (hr : 0 < r) (hε : 0 < ε)
     (hmeasure : (timeVelocityVolumeOn U) ((U ∩ tsupport g) \ K) < ENNReal.ofReal (r ^ 2))
     (herror : g - (fun x ↦ χ x * g x) =ᵐ[timeVelocityVolumeOn U]
@@ -151,15 +152,16 @@ private theorem cutoff_error_lt_of_core_timeVelocity
         _ < 1 * ε := mul_lt_mul_of_pos_right
           ((div_lt_one (by linarith : 0 < C + 1)).mpr (by linarith)) hε
         _ = ε := one_mul _
+end
 
 private theorem compactCore_cutoff_eLpNorm_sub_lt_timeVelocity
-    {d : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} (hU : IsOpen U)
     {g : TimeVelocity d → ℝ} (hgSmooth : ContDiff ℝ (⊤ : ℕ∞) g)
     (hgCompact : HasCompactSupport g) {ε : ℝ} (hε : 0 < ε) :
     ∃ h : TimeVelocity d → ℝ,
       Continuous h ∧ HasCompactSupport h ∧ tsupport h ⊆ U ∧
       eLpNorm (g - h) (2 : ℝ≥0∞) (timeVelocityVolumeOn U) < ENNReal.ofReal ε := by
-  let μ : Measure (TimeVelocity d) := timeVelocityVolumeOn U
+  let μ : HypoellipticAleksandrov.Parabolic.TVMeasure d := timeVelocityVolumeOn U
   have hmeas : MeasurableSet (U ∩ tsupport g) :=
     hU.measurableSet.inter (isClosed_tsupport g).measurableSet
   have hfinite : μ (U ∩ tsupport g) ≠ ∞ := by
@@ -213,7 +215,7 @@ private theorem lp_dist_toLp_toLp_le_timeVelocity
     _ = ε := ENNReal.toReal_ofReal hε
 
 private theorem exists_smoothCompactlySupported_toLp_timeVelocity_dist_lt
-    {d : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} (hU : IsOpen U)
     (u : Lp ℝ (2 : ℝ≥0∞) (timeVelocityVolumeOn U))
     {ε : ℝ} (hε : 0 < ε) :
     ∃ (φ : TimeVelocity d → ℝ)
@@ -222,7 +224,7 @@ private theorem exists_smoothCompactlySupported_toLp_timeVelocity_dist_lt
       HasCompactSupport φ ∧
       tsupport φ ⊆ U ∧
       dist u (hφ.toLp φ) < ε := by
-  let μ : Measure (TimeVelocity d) := timeVelocityVolumeOn U
+  let μ : HypoellipticAleksandrov.Parabolic.TVMeasure d := timeVelocityVolumeOn U
   have hquarter : 0 < ε / 4 := by positivity
   obtain ⟨g, hgCompact, hgSmooth, hug⟩ :=
     (Lp.memLp u).exist_eLpNorm_sub_le ENNReal.coe_ne_top (by norm_num) hquarter
@@ -268,7 +270,7 @@ private theorem exists_smoothCompactlySupported_toLp_timeVelocity_dist_lt
 /-- Globally smooth compactly supported functions whose topological support lies
 in an open time--velocity carrier are dense in its restricted real `L²`. -/
 theorem dense_smoothCompactlySupported_toLp_timeVelocity
-    {d : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U) :
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} (hU : IsOpen U) :
     Dense {q : Lp ℝ (2 : ℝ≥0∞) (timeVelocityVolumeOn U) |
       ∃ (φ : TimeVelocity d → ℝ)
           (hφ : ParabolicMemLpOn U (2 : ℝ≥0∞) φ),

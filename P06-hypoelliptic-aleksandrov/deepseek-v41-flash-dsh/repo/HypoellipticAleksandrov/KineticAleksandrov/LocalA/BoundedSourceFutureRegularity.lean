@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundedSourceRes
 public import HypoellipticAleksandrov.KineticAleksandrov.ClassicalInputs
 import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ClassicalTerminalWeak
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.ParabolicDuhamelSmooth
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Homogeneous regularity before a bounded source starts
 
@@ -19,7 +20,7 @@ open scoped Topology
 
 /-- A bounded potential is an actual homogeneous weak solution before its source starts. -/
 theorem duhamelPotential_weak_before_source
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d}
     (hΩa : IsAdmissibleEvolutionDomain Ω) (hΩ : MeasurableSet Ω) (hγ : Continuous γ)
     (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
     (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ)

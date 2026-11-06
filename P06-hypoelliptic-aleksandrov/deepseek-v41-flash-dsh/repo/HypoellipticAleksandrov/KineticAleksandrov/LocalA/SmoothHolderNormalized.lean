@@ -6,6 +6,7 @@ public import HypoellipticAleksandrov.Parabolic.LocalHolder.Holder
 public import HypoellipticAleksandrov.Parabolic.AffineScalarCalculus
 import Mathlib.Analysis.Calculus.MeanValue
 import Mathlib.Tactic
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Combine parabolic slice regularity with spatial control
 

@@ -40,10 +40,11 @@ theorem truncationPoint_spatial_line (g : ℝ → PDE.Vec n) (x w : EvolutionVec
   rw [show diffusedCoord n x + t • diffusedCoord n w - g (timeCoord n x) =
     (diffusedCoord n x - g (timeCoord n x)) + t • diffusedCoord n w by abel]
   rw [spatialPack_add, spatialPack_smul]
+section
+variable {g : ℝ → PDE.Vec n} {u : TimeVelocity (n + n) → ℝ} {U : Set (TimeVelocity (n + n))}
 
 /-- A scalar C1,2 function pulls back with the expected first spatial line derivative. -/
-theorem truncation_hasLineDerivAt_spatial {g : ℝ → PDE.Vec n}
-    {u : TimeVelocity (n + n) → ℝ} {U : Set (TimeVelocity (n + n))}
+theorem truncation_hasLineDerivAt_spatial 
     (hu : IsScalarC12On u U) {x w : EvolutionVec n}
     (hx : truncationPoint g x ∈ U) (hw : timeCoord n w = 0) :
     HasLineDerivAt ℝ (u ∘ truncationPoint g)
@@ -57,8 +58,7 @@ theorem truncation_hasLineDerivAt_spatial {g : ℝ → PDE.Vec n}
     scalarSpatialGradient] using! h
 
 /-- Spatial line derivatives of gradient entries are scalar Hessian entries. -/
-theorem truncation_gradient_hasLineDerivAt {g : ℝ → PDE.Vec n}
-    {u : TimeVelocity (n + n) → ℝ} {U : Set (TimeVelocity (n + n))}
+theorem truncation_gradient_hasLineDerivAt 
     (hu : IsScalarC12On u U) {x w : EvolutionVec n}
     (hx : truncationPoint g x ∈ U) (hw : timeCoord n w = 0)
     (i j : Fin (n + n))
@@ -85,6 +85,7 @@ theorem truncation_gradient_hasLineDerivAt {g : ℝ → PDE.Vec n}
   unfold HasLineDerivAt at h ⊢
   simpa only [truncationPoint_spatial_line g x w hw, hdir,
     scalarSpatialGradient, PDE.classicalGradient] using! h
+end
 
 /-- The time line derivative includes the exact moving-frame correction. -/
 theorem truncation_hasLineDerivAt_time {g : ℝ → PDE.Vec n}

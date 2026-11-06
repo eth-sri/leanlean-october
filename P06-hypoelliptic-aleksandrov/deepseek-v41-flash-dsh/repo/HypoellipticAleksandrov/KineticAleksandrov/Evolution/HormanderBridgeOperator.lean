@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Operator
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.BracketSquares
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.HormanderBridgeCoord
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # The packed operators and the project's `transportedForwardOperator`

@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.AssemblyAssem
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ClassicalTerminalExistence
 import HypoellipticAleksandrov.KineticAleksandrov.Evolution.CompositionKernel
 import HypoellipticAleksandrov.KineticAleksandrov.Evolution.JointQueryBorel
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # The terminal evolution, relative to Hörmander and Lieberman
 
@@ -28,7 +29,7 @@ theorem exists_terminalEvolution_aux
     (lam Lam m L_b : ℝ)
     (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hm : 0 < m) (hmLb : m ≤ L_b)
-    (Ω : Set (PDE.Vec n))
+    (Ω : HypoellipticAleksandrov.VecSet n)
     (γ : ℝ → PDE.Vec n)
     (B : FullKineticCoefficient n)
     (b : PDE.Vec n → PDE.Vec n)
@@ -51,7 +52,7 @@ theorem exists_terminalEvolution_aux
     (lam Lam m L_b : ℝ)
     (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hm : 0 < m) (hmLb : m ≤ L_b)
-    (Ω : Set (PDE.Vec n))
+    (Ω : HypoellipticAleksandrov.VecSet n)
     (γ : ℝ → PDE.Vec n)
     (B : FullKineticCoefficient n)
     (b : PDE.Vec n → PDE.Vec n)
@@ -74,7 +75,7 @@ theorem exists_terminalEvolution_aux
     (lam Lam m L_b : ℝ)
     (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hm : 0 < m) (hmLb : m ≤ L_b)
-    (Ω : Set (PDE.Vec n))
+    (Ω : HypoellipticAleksandrov.VecSet n)
     (γ : ℝ → PDE.Vec n)
     (B : FullKineticCoefficient n)
     (b : PDE.Vec n → PDE.Vec n)

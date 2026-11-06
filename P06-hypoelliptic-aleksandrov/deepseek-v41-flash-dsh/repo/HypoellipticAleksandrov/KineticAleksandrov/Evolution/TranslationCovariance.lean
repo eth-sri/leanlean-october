@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.FixedFiberMeasure
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TranslationCovarianceSolution
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Translation covariance of the terminal kernel
@@ -32,7 +33,7 @@ open scoped ENNReal ProbabilityTheory
 
 section Outside
 
-variable {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n} {τ : ℝ}
+variable {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n} {γ : ℝ → PDE.Vec n} {τ : ℝ}
 
 /-- The transported-coordinate shift of a fiber state is Borel. -/
 theorem measurable_evolutionStateShift' (σ : ℝ) (h : PDE.Vec n) :
@@ -78,7 +79,7 @@ section EvolutionData
 variable (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
 variable (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
 variable (hm : 0 < m) (hmLb : m ≤ L_b)
-variable (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
+variable (Ω : HypoellipticAleksandrov.VecSet n) (γ : ℝ → PDE.Vec n)
 variable (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
 variable (hΩ : IsAdmissibleEvolutionDomain Ω)
 variable (hγ : IsContinuousPiecewiseC1 γ)

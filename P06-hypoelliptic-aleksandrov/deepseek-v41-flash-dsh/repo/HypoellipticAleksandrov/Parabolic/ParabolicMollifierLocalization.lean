@@ -2,6 +2,7 @@ module
 
 public import Mathlib.Topology.MetricSpace.Thickening
 public import HypoellipticAleksandrov.Parabolic.ParabolicMollifierKernel
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Localization for native-norm parabolic mollifiers
@@ -20,7 +21,7 @@ namespace HypoellipticAleksandrov.Parabolic
 /-- A compact subset of an open set admits a positive native-metric collar
 that contains every sufficiently small mollifier scale. -/
 theorem exists_native_kernel_collar
-    (d : Nat) (K U : Set (TimeVelocity d))
+    (d : Nat) (K U : HypoellipticAleksandrov.Parabolic.TVSet d)
     (hK : IsCompact K) (hU : IsOpen U) (hKU : K ⊆ U) :
     ∃ delta : Real, 0 < delta ∧ Metric.cthickening delta K ⊆ U ∧
       ∀ᶠ n in Filter.atTop, parabolicMollifierScale n < delta := by
@@ -31,7 +32,7 @@ theorem exists_native_kernel_collar
 /-- Eventually, every point sampled by the translated right mollifier at a
 compact carrier lies in the surrounding open set. -/
 theorem eventually_translated_parabolicMollifier_support_subset
-    (d : Nat) (K U : Set (TimeVelocity d))
+    (d : Nat) (K U : HypoellipticAleksandrov.Parabolic.TVSet d)
     (hK : IsCompact K) (hU : IsOpen U) (hKU : K ⊆ U) :
     ∀ᶠ n in Filter.atTop, ∀ z ∈ K,
       {y | parabolicMollifier d n (z - y) ≠ 0} ⊆ U := by

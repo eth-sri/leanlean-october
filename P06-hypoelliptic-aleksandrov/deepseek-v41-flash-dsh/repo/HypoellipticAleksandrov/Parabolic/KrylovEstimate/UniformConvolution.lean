@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.Parabolic.WeakJetMollifier
 public import HypoellipticAleksandrov.Parabolic.ParabolicMollifierKernel
 public import Mathlib.Analysis.Calculus.BumpFunction.Convolution
 public import Mathlib.Topology.UniformSpace.HeineCantor
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Uniform approximation of compactly supported continuous representatives -/
 

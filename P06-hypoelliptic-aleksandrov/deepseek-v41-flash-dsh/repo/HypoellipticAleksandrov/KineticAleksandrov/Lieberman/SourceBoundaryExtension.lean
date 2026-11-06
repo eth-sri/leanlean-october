@@ -1,6 +1,8 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonTraces
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Continuous zero extensions of corrections on general closed cylinders
 
@@ -18,7 +20,7 @@ open scoped Topology
 
 /-- The spatial barrier gives ambient continuity of the zero extension at lateral points. -/
 private theorem continuousAt_source_zeroExtension_lateral_domain {d : ℕ}
-    {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     (a T : ℝ) (q : PDE.Vec d → ℝ) (hq : Continuous q)
     (hqf : ∀ y ∈ frontier Ω, q y = 0) (w : TimeVelocity d → ℝ)
     (hb : ∀ z ∈ scalarParabolicOpenCylinder a T Ω,
@@ -53,7 +55,7 @@ private theorem continuousAt_source_zeroExtension_lateral_domain {d : ℕ}
 
 /-- A time collar and both envelopes give continuity on the entire closed cylinder. -/
 theorem continuousOn_source_zeroExtension_closed_domain {d : ℕ}
-    {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     (a₀ a T M : ℝ) (ha : a₀ < a) (hM : 0 ≤ M)
     (q : PDE.Vec d → ℝ) (hq : Continuous q)
     (hqf : ∀ y ∈ frontier Ω, q y = 0) (w : TimeVelocity d → ℝ)

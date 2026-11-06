@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.SpatialTranslationWeakDerivatives
 public import Mathlib.MeasureTheory.Function.LpSeminorm.Basic
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Restricted Lp membership under spatial quotients
@@ -24,12 +25,13 @@ private theorem spatialShift_measurableEmbedding_for_memLp
   simpa only [Homeomorph.coe_addRight] using
     (Homeomorph.addRight
       ((0, h • PDE.basisVec k) : TimeVelocity d)).measurableEmbedding
+section
+variable {d : ℕ} {U V : HypoellipticAleksandrov.Parabolic.TVSet d} {p : ℝ≥0∞} {f : TimeVelocity d → ℝ}
 
 /-- Restricted `Lᵖ` membership transports through a spatial translation from
 a domain mapped into the original carrier. -/
 theorem ParabolicMemLpOn.spatialTranslate_of_mapsTo
-    {d : ℕ} {U V : Set (TimeVelocity d)}
-    {p : ℝ≥0∞} {f : TimeVelocity d → ℝ}
+    
     (hf : ParabolicMemLpOn U p f)
     (k : Fin d) (h : ℝ)
     (hshift : Set.MapsTo (spatialShift k h) V U) :
@@ -46,8 +48,7 @@ theorem ParabolicMemLpOn.spatialTranslate_of_mapsTo
 /-- Restricted `Lᵖ` membership transports to a totalized signed spatial
 difference quotient on a shifted subdomain. -/
 theorem ParabolicMemLpOn.spatialDifferenceQuotient_of_subset_mapsTo
-    {d : ℕ} {U V : Set (TimeVelocity d)}
-    {p : ℝ≥0∞} {f : TimeVelocity d → ℝ}
+    
     (hf : ParabolicMemLpOn U p f)
     (k : Fin d) (h : ℝ)
     (hVU : V ⊆ U)
@@ -61,5 +62,6 @@ theorem ParabolicMemLpOn.spatialDifferenceQuotient_of_subset_mapsTo
   simp only [Pi.smul_apply, smul_eq_mul, spatialDifferenceQuotient_apply,
     Pi.sub_apply, div_eq_mul_inv]
   ring_nf
+end
 
 end HypoellipticAleksandrov.Parabolic

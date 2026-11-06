@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.GalerkinDense
 public import Mathlib.Analysis.InnerProductSpace.GramMatrix
 public import Mathlib.Analysis.InnerProductSpace.Projection.FiniteDimensional
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Finite Galerkin mass spaces and initial data
@@ -21,7 +22,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 open scoped ENNReal RealInnerProductSpace
 
-variable {d : ℕ} {Ω : Set (PDE.Vec d)}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
 
 /-- The `L²` image of the finite actual-test Galerkin space. -/
 noncomputable def galerkinValueSpace
@@ -74,26 +75,25 @@ theorem isUnit_galerkinMassGram
     (hΩ : IsOpen Ω) (N : ℕ) :
     IsUnit (galerkinMassGram hΩ N) :=
   (galerkinMassGram_posDef hΩ N).isUnit
+section
+variable (hΩ : IsOpen Ω) (N : ℕ) (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞))
 
 /-- A chosen preimage of the finite Galerkin value-space projection. -/
 noncomputable def galerkinInitialProjectionPreimage
-    (hΩ : IsOpen Ω) (N : ℕ)
-    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+     :
     H10HilbertGraph hΩ :=
   Classical.choose <| Submodule.mem_map.mp
     (Submodule.starProjection_apply_mem (galerkinValueSpace hΩ N) initial)
 
 /-- The chosen projection preimage lies in the finite Galerkin space. -/
 theorem galerkinInitialProjectionPreimage_mem
-    (hΩ : IsOpen Ω) (N : ℕ)
-    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+     :
     galerkinInitialProjectionPreimage hΩ N initial ∈ galerkinSpace hΩ N := by
   exact (Classical.choose_spec <| Submodule.mem_map.mp
     (Submodule.starProjection_apply_mem (galerkinValueSpace hΩ N) initial)).1
 
 private theorem value_galerkinInitialProjectionPreimage
-    (hΩ : IsOpen Ω) (N : ℕ)
-    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+     :
     valueCLM hΩ (galerkinInitialProjectionPreimage hΩ N initial) =
       (galerkinValueSpace hΩ N).starProjection initial := by
   exact (Classical.choose_spec <| Submodule.mem_map.mp
@@ -102,8 +102,7 @@ private theorem value_galerkinInitialProjectionPreimage
 /-- The lift to the finite Galerkin space of the `L²` orthogonal projection
 of an initial datum. -/
 noncomputable def galerkinInitialProjection
-    (hΩ : IsOpen Ω) (N : ℕ)
-    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+     :
     galerkinSpace hΩ N :=
   ⟨galerkinInitialProjectionPreimage hΩ N initial,
     galerkinInitialProjectionPreimage_mem hΩ N initial⟩
@@ -111,8 +110,7 @@ noncomputable def galerkinInitialProjection
 /-- Applying the spatial value map to the lifted initial datum recovers its
 `L²` orthogonal projection onto the finite Galerkin value space. -/
 theorem value_galerkinInitialProjection
-    (hΩ : IsOpen Ω) (N : ℕ)
-    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+     :
     valueCLM hΩ (galerkinInitialProjection hΩ N initial :
       H10HilbertGraph hΩ) =
     (galerkinValueSpace hΩ N).starProjection initial :=
@@ -120,11 +118,11 @@ theorem value_galerkinInitialProjection
 
 /-- The finite Galerkin `L²` initial projection is contractive. -/
 theorem norm_value_galerkinInitialProjection_le
-    (hΩ : IsOpen Ω) (N : ℕ)
-    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+     :
     ‖valueCLM hΩ (galerkinInitialProjection hΩ N initial :
       H10HilbertGraph hΩ)‖ ≤ ‖initial‖ := by
   rw [value_galerkinInitialProjection]
   exact (galerkinValueSpace hΩ N).norm_starProjection_apply_le initial
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

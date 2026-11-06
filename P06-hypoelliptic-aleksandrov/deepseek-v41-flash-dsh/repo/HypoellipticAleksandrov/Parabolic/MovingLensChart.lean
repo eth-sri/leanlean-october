@@ -14,28 +14,30 @@ to the unit parabolic cylinder.  It is purely set-theoretic Euclidean geometry.
 namespace HypoellipticAleksandrov.Parabolic
 
 noncomputable section
+section
+variable {d : Nat} (xi eps : Real) (y : PDE.Vec d)
 
 /-- The time-preserving chart which normalizes moving-lens velocity displacement. -/
-def movingLensChart {d : Nat} (xi eps : Real) (y : PDE.Vec d) :
+def movingLensChart  :
     TimeVelocity d → TimeVelocity d :=
   fun z => (z.1,
     (Real.sqrt (movingLensDenominator xi eps z.1))⁻¹ •
       movingLensDisplacement y z)
 
 /-- The inverse time-preserving chart from the normalized velocity coordinate. -/
-def movingLensChartInv {d : Nat} (xi eps : Real) (y : PDE.Vec d) :
+def movingLensChartInv  :
     TimeVelocity d → TimeVelocity d :=
   fun z => (z.1,
     z.1 • y + Real.sqrt (movingLensDenominator xi eps z.1) • z.2)
 
-private theorem movingLensDisplacement_chartInv {d : Nat} (xi eps : Real)
-    (y : PDE.Vec d) (z : TimeVelocity d) :
+private theorem movingLensDisplacement_chartInv  (z : TimeVelocity d) :
     movingLensDisplacement y (movingLensChartInv xi eps y z) =
       Real.sqrt (movingLensDenominator xi eps z.1) • z.2 := by
   ext i
   simp only [movingLensDisplacement, movingLensChartInv,
     Pi.add_apply, Pi.sub_apply, Pi.smul_apply, smul_eq_mul]
   ring
+end
 
 private theorem movingLensChart_velocity_sq {d : Nat} {xi eps : Real} {y : PDE.Vec d}
     {z : TimeVelocity d} (hxi : 0 ≤ xi) (heps : 0 < eps) (hz : 0 ≤ z.1) :
@@ -133,7 +135,6 @@ theorem movingLensChart_image_closed
     {d : Nat} {xi eps tau : Real} {y : PDE.Vec d}
     (hxi : 0 ≤ xi) (heps : 0 < eps) (htau : 0 ≤ tau) :
     movingLensChart xi eps y (tau, tau • y) = (tau, 0) := by
-  have _ := movingLensDenominator_pos hxi heps htau
   ext <;> simp [movingLensChart, movingLensDisplacement]
 
 end

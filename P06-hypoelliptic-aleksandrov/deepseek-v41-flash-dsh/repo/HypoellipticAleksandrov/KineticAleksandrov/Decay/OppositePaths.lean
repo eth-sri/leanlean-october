@@ -9,6 +9,7 @@ import Mathlib.Analysis.Calculus.Deriv.Mul
 import Mathlib.Analysis.Calculus.Deriv.MeanValue
 import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 import Mathlib.MeasureTheory.Integral.DominatedConvergence
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Two opposite-phase paths
@@ -255,18 +256,20 @@ theorem integral_tent {L0 : ℝ} (hL0 : 2 ≤ L0) :
   rw [e1, e2, e3, e4]
   simp only [intervalIntegral.integral_const, integral_id, smul_eq_mul]
   ring
+section
+variable {d : ℕ}
 
 /-- The source drift gap `Δ(α) = ∫₀^{L₀} ξ · (b(v₀ + α 𝖿(t) ξ) - b(v₀)) dt`. -/
-noncomputable def driftGap {d : ℕ} (ξ v0 : PDE.Vec d) (b : PDE.Vec d → PDE.Vec d)
+noncomputable def driftGap  (ξ v0 : PDE.Vec d) (b : PDE.Vec d → PDE.Vec d)
     (L0 α : ℝ) : ℝ :=
   ∫ t in (0 : ℝ)..L0,
     (PDE.vecDot ξ (b (v0 + (α * tent L0 t) • ξ)) - PDE.vecDot ξ (b v0))
 
-theorem driftGap_zero {d : ℕ} (ξ v0 : PDE.Vec d) (b : PDE.Vec d → PDE.Vec d) (L0 : ℝ) :
+theorem driftGap_zero  (ξ v0 : PDE.Vec d) (b : PDE.Vec d → PDE.Vec d) (L0 : ℝ) :
     driftGap ξ v0 b L0 0 = 0 := by
   simp [driftGap]
 
-theorem continuous_driftGap {d : ℕ} (ξ v0 : PDE.Vec d) {b : PDE.Vec d → PDE.Vec d}
+theorem continuous_driftGap  (ξ v0 : PDE.Vec d) {b : PDE.Vec d → PDE.Vec d}
     (hb : Continuous b) (L0 : ℝ) : Continuous (driftGap ξ v0 b L0) := by
   unfold driftGap
   have hc := continuous_tent L0
@@ -279,7 +282,7 @@ theorem continuous_driftGap {d : ℕ} (ξ v0 : PDE.Vec d) {b : PDE.Vec d → PDE
   exact ((continuous_vecDot_right ξ).comp (hb.comp hp)).sub continuous_const
 
 /-- The pointwise coercivity increment: `ξ · (b(v₀ + a f ξ) - b(v₀)) ≥ m a f` for `a, f ≥ 0`. -/
-theorem drift_increment_ge {d : ℕ} {m : ℝ} {b : PDE.Vec d → PDE.Vec d}
+theorem drift_increment_ge  {m : ℝ} {b : PDE.Vec d → PDE.Vec d}
     (hb : IsSmoothDrift b) (hco : HasUnitDirectionDriftCoercivity m b)
     (ξ v0 : PDE.Vec d) (hξ : PDE.vecNormSq ξ = 1) {f α : ℝ} (hf : 0 ≤ f) (hα : 0 ≤ α) :
     m * α * f ≤ PDE.vecDot ξ (b (v0 + (α * f) • ξ)) - PDE.vecDot ξ (b v0) := by
@@ -312,7 +315,7 @@ theorem drift_increment_ge {d : ℕ} {m : ℝ} {b : PDE.Vec d → PDE.Vec d}
   linarith
 
 
-theorem continuous_driftGap_integrand {d : ℕ} (ξ v0 : PDE.Vec d) {b : PDE.Vec d → PDE.Vec d}
+theorem continuous_driftGap_integrand  (ξ v0 : PDE.Vec d) {b : PDE.Vec d → PDE.Vec d}
     (hb : Continuous b) (L0 α : ℝ) :
     Continuous fun t : ℝ =>
       PDE.vecDot ξ (b (v0 + (α * tent L0 t) • ξ)) - PDE.vecDot ξ (b v0) := by
@@ -320,7 +323,7 @@ theorem continuous_driftGap_integrand {d : ℕ} (ξ v0 : PDE.Vec d) {b : PDE.Vec
   have hp : Continuous fun t : ℝ => v0 + (α * tent L0 t) • ξ := by fun_prop
   exact ((continuous_vecDot_right ξ).comp (hb.comp hp)).sub continuous_const
 
-theorem driftGap_ge {d : ℕ} {m : ℝ} {b : PDE.Vec d → PDE.Vec d}
+theorem driftGap_ge  {m : ℝ} {b : PDE.Vec d → PDE.Vec d}
     (hb : IsSmoothDrift b) (hco : HasUnitDirectionDriftCoercivity m b)
     (ξ v0 : PDE.Vec d) (hξ : PDE.vecNormSq ξ = 1) {L0 : ℝ} (hL0 : 2 ≤ L0) {α : ℝ}
     (hα : 0 ≤ α) : m * α * (L0 - 1) ≤ driftGap ξ v0 b L0 α := by
@@ -335,7 +338,7 @@ theorem driftGap_ge {d : ℕ} {m : ℝ} {b : PDE.Vec d → PDE.Vec d}
   exact hmono
 
 /-- The source intermediate value step: `Δ(α) = π` for some `α ∈ (0, 1/2)`. -/
-theorem exists_driftGap_eq_pi {d : ℕ} {m : ℝ} (hm : 0 < m) {b : PDE.Vec d → PDE.Vec d}
+theorem exists_driftGap_eq_pi  {m : ℝ} (hm : 0 < m) {b : PDE.Vec d → PDE.Vec d}
     (hb : IsSmoothDrift b) (hco : HasUnitDirectionDriftCoercivity m b)
     (ξ v0 : PDE.Vec d) (hξ : PDE.vecNormSq ξ = 1) :
     ∃ α : ℝ, 0 < α ∧ α < 1 / 2 ∧ driftGap ξ v0 b (blockL0 m) α = Real.pi := by
@@ -354,14 +357,14 @@ theorem exists_driftGap_eq_pi {d : ℕ} {m : ℝ} (hm : 0 < m) {b : PDE.Vec d �
   exact ⟨α, hα.1, hα.2, hαeq⟩
 
 
-theorem vecEuclideanNorm_of_vecNormSq_eq_one {d : ℕ} {ξ : PDE.Vec d}
+theorem vecEuclideanNorm_of_vecNormSq_eq_one  {ξ : PDE.Vec d}
     (hξ : PDE.vecNormSq ξ = 1) : PDE.vecEuclideanNorm ξ = 1 := by
   unfold PDE.vecEuclideanNorm; rw [hξ, Real.sqrt_one]
 
 /-- A tube of radius `η ≤ 1/4` around a point within Euclidean distance `1/2` of `v₀` lies in
 the fitting ball `B_{R_*}(v₀)`. -/
-theorem euclideanBall_subset_of_close {d : ℕ} {m Lb : ℝ} (hLb : 0 < Lb) (hm : 0 < m)
-    {D : Set (PDE.Vec d)} {v0 c : PDE.Vec d}
+theorem euclideanBall_subset_of_close  {m Lb : ℝ} (hLb : 0 < Lb) (hm : 0 < m)
+    {D : HypoellipticAleksandrov.VecSet d} {v0 c : PDE.Vec d}
     (hfit : PDE.euclideanBall v0 (blockOuter Lb) ⊆ D)
     (hc : PDE.vecEuclideanNorm (c - v0) ≤ 1 / 2) :
     PDE.euclideanBall c (blockEta m Lb) ⊆ D := by
@@ -380,7 +383,7 @@ theorem euclideanBall_subset_of_close {d : ℕ} {m Lb : ℝ} (hLb : 0 < Lb) (hm 
   linarith
 
 
-theorem phaseCenter_sub_eq_driftGap {d : ℕ} {b : PDE.Vec d → PDE.Vec d} (hb : Continuous b)
+theorem phaseCenter_sub_eq_driftGap  {b : PDE.Vec d → PDE.Vec d} (hb : Continuous b)
     (ξ v0 : PDE.Vec d) {L0 : ℝ} (hL0 : 2 ≤ L0) (σ α : ℝ) :
     phaseCenter ξ b (fun r => v0 + (α * tent L0 (max 0 (min L0 (r - σ)))) • ξ) σ (σ + L0) -
       phaseCenter ξ b (fun _ => v0) σ (σ + L0) = driftGap ξ v0 b L0 α := by
@@ -407,8 +410,8 @@ theorem phaseCenter_sub_eq_driftGap {d : ℕ} {b : PDE.Vec d → PDE.Vec d} (hb 
 
 /-- Proposition 3.9 and (3.17): two paths from `v₀` to `v₀` of speed at
 most `1/2`, whose `ξ`-phase centers differ by exactly `π`, with tubes inside `D`. -/
-theorem exists_opposite_paths {d : ℕ} (m Lb σ : ℝ) (hm : 0 < m) (hmLb : m ≤ Lb)
-    (D : Set (PDE.Vec d)) (b : PDE.Vec d → PDE.Vec d)
+theorem exists_opposite_paths  (m Lb σ : ℝ) (hm : 0 < m) (hmLb : m ≤ Lb)
+    (D : HypoellipticAleksandrov.VecSet d) (b : PDE.Vec d → PDE.Vec d)
     (hb : IsSmoothDrift b) (hbounds : HasTransportBounds m Lb b)
     (ξ v0 : PDE.Vec d) (hξ : PDE.vecNormSq ξ = 1)
     (hfit : PDE.euclideanBall v0 (blockOuter Lb) ⊆ D) :
@@ -498,5 +501,6 @@ theorem exists_opposite_paths {d : ℕ} (m Lb σ : ℝ) (hm : 0 < m) (hmLb : m �
     · exact euclideanBall_subset_of_close hLb hm hfit ((hdev r).trans hα1.le)
   · rw [phaseCenter_sub_eq_driftGap hb.continuous ξ v0 hL0 σ α]
     exact hΔ
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Decay

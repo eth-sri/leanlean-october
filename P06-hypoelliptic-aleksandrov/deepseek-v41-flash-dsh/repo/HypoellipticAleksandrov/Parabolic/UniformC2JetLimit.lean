@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.CoordinateFrechetAssembly
 public import Mathlib.Analysis.Calculus.UniformLimitsDeriv
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Uniform limits of mollified coordinate jets
@@ -116,7 +117,7 @@ private theorem exists_uniformLimit_coordinateJet
     {d : ℕ} {root : TimeVelocity d → ℝ}
     (G : ParabolicWeakDerivativeFamily d (2 * (d + 4)) Set.univ root)
     (rho : ℝ) (hrho : 0 < rho)
-    (K : Set (TimeVelocity d)) (hK : IsCompact K)
+    (K : HypoellipticAleksandrov.Parabolic.TVSet d) (hK : IsCompact K)
     (hsupp : ∀ ε, 0 < ε → ε < rho →
       ∀ beta : TimeVelocityDerivativeIndex d (d + 4),
         tsupport (SpacetimeMollifier.spacetimeMollification ε
@@ -139,7 +140,7 @@ theorem exists_contDiff_two_uniformLimit_coordinateJet_spacetimeMollification_sh
     {d : ℕ} {root : TimeVelocity d → ℝ}
     (G : ParabolicWeakDerivativeFamily d (2 * (d + 4)) Set.univ root)
     (rho : ℝ) (hrho : 0 < rho)
-    (K : Set (TimeVelocity d)) (hK : IsCompact K)
+    (K : HypoellipticAleksandrov.Parabolic.TVSet d) (hK : IsCompact K)
     (hsupp : ∀ ε, 0 < ε → ε < rho →
       ∀ beta : TimeVelocityDerivativeIndex d (d + 4),
         tsupport (SpacetimeMollifier.spacetimeMollification ε

@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.GeneralOpenWeakChainRule
 public import PDEFoundation.Measure.LpDominatedConvergence
 public import PDEFoundation.Sobolev.W1p.Truncation
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Shifted positive parts on general open sets
@@ -62,7 +63,7 @@ private theorem tendsto_eLpNorm_two_zero_of_ae_dominated
 arbitrary open set, with the strict-superlevel representative of its weak
 gradient. -/
 theorem exists_h1PositivePartSubConst_of_isOpen
-    {d : ℕ} {U : Set (PDE.Vec d)}
+    {d : ℕ} {U : HypoellipticAleksandrov.VecSet d}
     (hU : IsOpen U) (u : PDE.H1Function U) (c : ℝ) (hc : 0 ≤ c) :
     ∃ v : PDE.H1Function U,
       v.toFun = (fun x => max (u.toFun x - c) 0) ∧

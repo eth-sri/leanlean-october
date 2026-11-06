@@ -43,12 +43,13 @@ theorem sliceHessian_comp_affine_embedding {d : ℕ} {E : Type*}
   have hc := hh.comp x (hι x)
   rw [show (fun w => fderiv ℝ f (ι w) (J (PDE.basisVec j))) =
     (fun z => fderiv ℝ f z (J (PDE.basisVec j))) ∘ ι from rfl, hc.fderiv]
-  simp only [ContinuousLinearMap.comp_apply]
+  simp
   rw [fderiv_clm_apply_const_eval hdf]
+section
+variable {d : ℕ} {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
 
 /-- Unit velocity-Hessian entries are the corresponding ambient coordinate derivatives. -/
-theorem unitCutoffVelocitySlice_hessian {d : ℕ}
-    {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
+theorem unitCutoffVelocitySlice_hessian 
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (Q : KineticPoint d) (i j : Fin d) :
     sliceHessian (unitCutoffVelocitySlice f Q) Q.velocity i j =
       fderiv ℝ (fderiv ℝ f) (KineticPoint.equivProd d Q)
@@ -69,8 +70,7 @@ theorem unitCutoffVelocitySlice_hessian {d : ℕ}
     using h
 
 /-- The unit velocity Hessian depends continuously on the physical point. -/
-theorem continuous_unitCutoffVelocityHessian {d : ℕ}
-    {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
+theorem continuous_unitCutoffVelocityHessian 
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
     Continuous (fun Q : KineticPoint d =>
       sliceHessian (unitCutoffVelocitySlice f Q) Q.velocity) := by
@@ -88,8 +88,7 @@ theorem continuous_unitCutoffVelocityHessian {d : ℕ}
   exact h1.congr (fun Q => (unitCutoffVelocitySlice_hessian hf Q i j).symm)
 
 /-- The unit transport derivative depends continuously on the physical point. -/
-theorem continuous_unitCutoffTransport {d : ℕ}
-    {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
+theorem continuous_unitCutoffTransport 
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
     Continuous (fun Q : KineticPoint d =>
       fderiv ℝ f (KineticPoint.equivProd d Q) (1, (Q.velocity, 0))) := by
@@ -97,5 +96,6 @@ theorem continuous_unitCutoffTransport {d : ℕ}
     (m := 1) (by norm_num)).continuous.comp (KineticPoint.homeomorphProd d).continuous
   exact h0.clm_apply
     (continuous_const.prodMk (continuous_velocity.prodMk continuous_const))
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

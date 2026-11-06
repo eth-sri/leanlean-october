@@ -24,13 +24,13 @@ open scoped BigOperators ENNReal
 private theorem int_id : ∫ x in Set.Ioo (-1 : ℝ) 1, x = 0 := by
   rw [← integral_Ioc_eq_integral_Ioo,
     ← intervalIntegral.integral_of_le (by norm_num : (-1 : ℝ) ≤ 1)]
-  norm_num [integral_id]
+  norm_num
 
 private theorem int_sq : ∫ x in Set.Ioo (-1 : ℝ) 1, x * x = 2 / 3 := by
   rw [show (fun x : ℝ => x * x) = fun x => x ^ 2 by ext; ring,
     ← integral_Ioc_eq_integral_Ioo,
     ← intervalIntegral.integral_of_le (by norm_num : (-1 : ℝ) ≤ 1)]
-  norm_num [integral_pow]
+  norm_num
 
 private theorem cube_measure (d : ℕ) :
     volume.restrict (velocityCube (0 : PDE.Vec d) 1) =
@@ -255,8 +255,10 @@ private theorem average_finset_sum {d ι : ℕ} (s : Finset (Fin ι))
       ∑ i ∈ s, parabolicMorreyUnitAverage (f i) := by
   simp only [parabolicMorreyUnitAverage]
   rw [integral_finset_sum s hf, Finset.mul_sum]
+section
+variable {d : ℕ} (a : ℝ) (b : Fin d → ℝ)
 
-private theorem average_velocity_affine {d : ℕ} (a : ℝ) (b : Fin d → ℝ) :
+private theorem average_velocity_affine  :
     parabolicMorreyUnitAverage
         (fun z : TimeVelocity d => a + ∑ i : Fin d, b i * z.2 i) = a := by
   let f : Fin d → TimeVelocity d → ℝ := fun i z => b i * z.2 i
@@ -291,7 +293,7 @@ private theorem average_velocity_affine {d : ℕ} (a : ℝ) (b : Fin d → ℝ) 
   simp_rw [parabolicMorreyUnitAverage_smul, parabolicMorreyUnitAverage_velocity]
   simp only [smul_eq_mul, mul_zero, Finset.sum_const_zero, add_zero]
 
-private theorem coeff_velocity_affine {d : ℕ} (a : ℝ) (b : Fin d → ℝ)
+private theorem coeff_velocity_affine 
     (j : Fin d) :
     parabolicMorreyUnitVelocityCoeff
         (fun z : TimeVelocity d => a + ∑ i : Fin d, b i * z.2 i) j = b j := by
@@ -344,12 +346,13 @@ private theorem coeff_velocity_affine {d : ℕ} (a : ℝ) (b : Fin d → ℝ)
 /-- The canonical unit-box moment projection exactly reproduces every
 time-independent velocity-affine scalar field. -/
 theorem parabolicMorreyUnitAffineProjection_reproduces_velocity_affine
-    {d : ℕ} (a : ℝ) (b : Fin d → ℝ) :
+     :
     parabolicMorreyUnitAffineProjection
         (fun z : TimeVelocity d => a + ∑ i : Fin d, b i * z.2 i) =
       fun z => a + ∑ i : Fin d, b i * z.2 i := by
   funext z
   rw [parabolicMorreyUnitAffineProjection, average_velocity_affine]
   simp_rw [coeff_velocity_affine]
+end
 
 end HypoellipticAleksandrov.Parabolic

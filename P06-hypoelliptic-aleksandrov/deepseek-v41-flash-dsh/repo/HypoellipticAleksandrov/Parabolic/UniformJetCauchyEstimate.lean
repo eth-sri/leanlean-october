@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.SobolevGridFTC
 public import HypoellipticAleksandrov.Parabolic.FiniteSupportL1L2
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 @[expose] public section
 
@@ -28,7 +29,7 @@ theorem coordinateIteratedFDeriv_tsupport_subset
 /-- The grid-FTC sup estimate with the exact common compact-support constant. -/
 theorem abs_le_sqrt_volume_mul_eLpNorm_coordinateIteratedFDeriv_allOnes
     (d : ℕ)
-    (K : Set (TimeVelocity d))
+    (K : HypoellipticAleksandrov.Parabolic.TVSet d)
     (hK : IsCompact K)
     (f : TimeVelocity d → ℝ)
     (hf : ContDiff ℝ (⊤ : ℕ∞) f)
@@ -39,7 +40,7 @@ theorem abs_le_sqrt_volume_mul_eLpNorm_coordinateIteratedFDeriv_allOnes
         (eLpNorm
           (TimeVelocityMultiIndex.coordinateIteratedFDeriv
             (TimeVelocityMultiIndex.allOnes d) f)
-          (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d))) := by
+          (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d)) := by
   let g := TimeVelocityMultiIndex.coordinateIteratedFDeriv
     (TimeVelocityMultiIndex.allOnes d) f
   have hfcompact : HasCompactSupport f :=
@@ -62,7 +63,7 @@ theorem abs_le_sqrt_volume_mul_eLpNorm_coordinateIteratedFDeriv_allOnes
   have hgcompact : HasCompactSupport g :=
     HasCompactSupport.of_support_subset_isCompact hK hgsupp
   have hgmem : MemLp g (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d)) :=
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) :=
     hgcontinuous.memLp_of_hasCompactSupport hgcompact
   exact (abs_le_integral_abs_coordinateIteratedFDeriv_allOnes d f hf hfcompact z).trans
     (integral_abs_le_sqrt_volume_mul_eLpNorm K hK.measurableSet

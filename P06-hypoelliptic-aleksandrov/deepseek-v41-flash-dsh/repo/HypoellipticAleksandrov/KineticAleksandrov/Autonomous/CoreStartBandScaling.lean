@@ -18,7 +18,7 @@ theorem coreStartBand_scaling (r R a eta : ℝ) (hr : 0 < r) (hR : 0 < R)
     (heta : 0 ≤ eta) (hscale : r ≤ 6 * R) :
     r ^ a * (1 + R / r) ^ eta ≤
       7 ^ eta * R ^ a * (r / R) ^ (a - eta) := by
-  have hu : 0 < r / R := div_pos hr hR
+  have hu := div_pos hr hR
   have hbase : 1 + R / r ≤ 7 * (R / r) := by
     have h : 1 ≤ 6 * (R / r) := by
       rw [← mul_div_assoc]

@@ -5,6 +5,8 @@ public import HypoellipticAleksandrov.Parabolic.MeasurableSpatialC1WeakLeibniz
 public import HypoellipticAleksandrov.Parabolic.ProperCommutatorSquaredAggregation
 public import HypoellipticAleksandrov.Parabolic.ParabolicWeakDerivativeFamilyL2Norm
 public import HypoellipticAleksandrov.Analysis.FiniteSumL2Norm
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Generic pre-lift time-successor recovery -/
 
@@ -16,10 +18,10 @@ open MeasureTheory Set
 open scoped BigOperators ENNReal MatrixOrder
 
 private theorem setIntegral_mul_eq_of_tsupport_subset
-    {d : ℕ} {V U : Set (TimeVelocity d)} (hU : MeasurableSet U)
+    {d : ℕ} {V U : HypoellipticAleksandrov.Parabolic.TVSet d} (hU : MeasurableSet U)
     (hVU : V ⊆ U) (f g : TimeVelocity d → ℝ) (hgV : tsupport g ⊆ V) :
-    (∫ z in U, f z * g z ∂(volume : Measure (TimeVelocity d))) =
-      ∫ z in V, f z * g z ∂(volume : Measure (TimeVelocity d)) := by
+    (∫ z in U, f z * g z ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
+      ∫ z in V, f z * g z ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   apply setIntegral_eq_of_subset_of_forall_diff_eq_zero hU hVU
   intro z hz
   have hgz : g z = 0 := by
@@ -105,7 +107,7 @@ private theorem singletonCoefficientIndex_coe
     · simp [Function.update, Ne.symm hik]
 
 private theorem residual_memLp
-    {d m n : ℕ} {V : Set (TimeVelocity d)}
+    {d m n : ℕ} {V : HypoellipticAleksandrov.Parabolic.TVSet d}
     (R : TimeVelocity d → ℝ)
     (AH : Fin m → Fin n → TimeVelocity d → ℝ)
     (BG : Fin n → TimeVelocity d → ℝ)
@@ -156,7 +158,7 @@ private theorem card_timeSuccessorAtom (d : ℕ) :
   ring
 
 private theorem timeSuccessorResidual_memLp_and_sq_le
-    {d : ℕ} {V : Set (TimeVelocity d)}
+    {d : ℕ} {V : HypoellipticAleksandrov.Parabolic.TVSet d}
     (R : TimeVelocity d → ℝ)
     (AH : Fin d → Fin d → TimeVelocity d → ℝ)
     (BG : Fin d → TimeVelocity d → ℝ)
@@ -299,7 +301,7 @@ private def timeSuccessorGradientIndex {d M : ℕ}
     omega)
 
 private theorem bounded_mul_memLp
-    {d : ℕ} {V : Set (TimeVelocity d)} (hV : IsOpen V)
+    {d : ℕ} {V : HypoellipticAleksandrov.Parabolic.TVSet d} (hV : IsOpen V)
     (q f : TimeVelocity d → ℝ) (C : ℝ) (hC : 0 ≤ C)
     (hq : ContinuousOn q V) (hqBound : ∀ z ∈ V, |q z| ≤ C)
     (hf : ParabolicMemLpOn V 2 f) :
@@ -317,7 +319,7 @@ private theorem bounded_mul_memLp
     mul_le_mul hz le_rfl (abs_nonneg (f z)) hC
 
 private theorem velocityGradient_coefficient_eq_singletonDerivative
-    {d M : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
+    {d M : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} (hU : IsOpen U)
     (hM : 1 ≤ M) (a : CoefficientField d)
     (ha : ∀ i j, ContDiffOn ℝ (M + 1)
       (fun z : TimeVelocity d => a z.1 z.2 i j) U)
@@ -344,7 +346,7 @@ private theorem velocityGradient_coefficient_eq_singletonDerivative
   rfl
 
 private theorem hasWeakTimeDerivOn_of_testedEquation_cancellation
-    {d n : ℕ} {V : Set (TimeVelocity d)}
+    {d n : ℕ} {V : HypoellipticAleksandrov.Parabolic.TVSet d}
     (q R W : TimeVelocity d → ℝ)
     (P DA AH : Fin d → Fin n → TimeVelocity d → ℝ)
     (BG : Fin n → TimeVelocity d → ℝ)
@@ -360,15 +362,15 @@ private theorem hasWeakTimeDerivOn_of_testedEquation_cancellation
       (∑ j, BG j z) - CQ z)
     (htested : ∀ φ : TimeVelocity d → ℝ,
       ContDiff ℝ (⊤ : ℕ∞) φ → HasCompactSupport φ → tsupport φ ⊆ V →
-      -(∫ z in V, q z * timeDerivative φ z ∂(volume : Measure (TimeVelocity d))) -
+      -(∫ z in V, q z * timeDerivative φ z ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) -
           (∑ i, ∑ j, ∫ z in V, P i j z *
-            velocityGradient φ z i ∂(volume : Measure (TimeVelocity d))) -
+            velocityGradient φ z i ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) -
           (∑ i, ∑ j, ∫ z in V, DA i j z * φ z
-            ∂(volume : Measure (TimeVelocity d))) +
+            ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) +
           (∑ j, ∫ z in V, BG j z * φ z
-            ∂(volume : Measure (TimeVelocity d))) +
-          (∫ z in V, CQ z * φ z ∂(volume : Measure (TimeVelocity d))) =
-        ∫ z in V, R z * φ z ∂(volume : Measure (TimeVelocity d))) :
+            ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) +
+          (∫ z in V, CQ z * φ z ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
+        ∫ z in V, R z * φ z ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) :
     HasWeakTimeDerivOn V q W := by
   classical
   intro φ hφ hφCompact hφV
@@ -376,7 +378,7 @@ private theorem hasWeakTimeDerivOn_of_testedEquation_cancellation
   have hweak (i : Fin d) (j : Fin n) :=
     hPweak i j φ hφ hφCompact hφV
   simp_rw [hweak] at hraw
-  have hφTwo : MemLp φ 2 (volume : Measure (TimeVelocity d)) :=
+  have hφTwo : MemLp φ 2 (HypoellipticAleksandrov.Parabolic.TVVolume d) :=
     hφ.continuous.memLp_of_hasCompactSupport hφCompact
   have hRint : Integrable (fun z ↦ R z * φ z) (timeVelocityVolumeOn V) :=
     hR.integrable_mul (hφTwo.restrict V)
@@ -399,17 +401,17 @@ private theorem hasWeakTimeDerivOn_of_testedEquation_cancellation
       (fun z ↦ (∑ j, BG j z) * φ z) (timeVelocityVolumeOn V) := by
     simpa only [Finset.sum_mul] using
       integrable_finset_sum Finset.univ (fun j _ ↦ hBGint j)
-  rw [show (∫ z in V, W z * φ z ∂(volume : Measure (TimeVelocity d))) =
-      (((∫ z in V, R z * φ z ∂(volume : Measure (TimeVelocity d))) -
+  rw [show (∫ z in V, W z * φ z ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
+      (((∫ z in V, R z * φ z ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) -
         ∑ i, ∑ j, ∫ z in V, AH i j z * φ z
-          ∂(volume : Measure (TimeVelocity d))) -
+          ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) -
         ∑ j, ∫ z in V, BG j z * φ z
-          ∂(volume : Measure (TimeVelocity d))) -
-        ∫ z in V, CQ z * φ z ∂(volume : Measure (TimeVelocity d)) from by
+          ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) -
+        ∫ z in V, CQ z * φ z ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) from by
     calc
       _ = ∫ z in V, (((R z * φ z - (∑ i, ∑ j, AH i j z) * φ z) -
           (∑ j, BG j z) * φ z) - CQ z * φ z)
-          ∂(volume : Measure (TimeVelocity d)) := by
+          ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
             apply integral_congr_ae
             exact Filter.Eventually.of_forall fun z ↦ by
               change W z * φ z = _
@@ -447,7 +449,7 @@ private theorem hasWeakTimeDerivOn_of_testedEquation_cancellation
           _ = _ := by
             have hAIntegral : (∫ z, fA z ∂timeVelocityVolumeOn V) =
                 ∑ i, ∑ j, ∫ z in V, AH i j z * φ z
-                  ∂(volume : Measure (TimeVelocity d)) := by
+                  ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
               dsimp only [fA]
               simp_rw [Finset.sum_mul]
               rw [integral_finset_sum Finset.univ (fun i _ ↦
@@ -457,7 +459,7 @@ private theorem hasWeakTimeDerivOn_of_testedEquation_cancellation
               exact integral_finset_sum Finset.univ (fun j _ ↦ hAHint i j)
             have hBIntegral : (∫ z, fB z ∂timeVelocityVolumeOn V) =
                 ∑ j, ∫ z in V, BG j z * φ z
-                  ∂(volume : Measure (TimeVelocity d)) := by
+                  ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
               dsimp only [fB]
               simp_rw [Finset.sum_mul]
               exact integral_finset_sum Finset.univ (fun j _ ↦ hBGint j)
@@ -473,7 +475,7 @@ def genericPreliftTimeSuccessorResidual
     {d M : ℕ} (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c : ℝ → PDE.Vec d → ℝ)
-    {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
+    {U : HypoellipticAleksandrov.Parabolic.TVSet d} {u : TimeVelocity d → ℝ}
     {F : ℝ → PDE.Vec d → ℝ}
     (D : ParabolicWeakDerivativeFamily d (M + 1) U u)
     (E : ParabolicWeakDerivativeFamily d M U
@@ -497,11 +499,11 @@ def genericPreliftTimeSuccessorResidual
 /-- Exact joint weak spatial-and-time conclusion of generic pre-lift
 time-successor recovery. -/
 def GenericPreliftTimeSuccessorConclusion
-    {d M : ℕ} (V : Set (TimeVelocity d))
+    {d M : ℕ} (V : HypoellipticAleksandrov.Parabolic.TVSet d)
     (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c : ℝ → PDE.Vec d → ℝ)
-    {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
+    {U : HypoellipticAleksandrov.Parabolic.TVSet d} {u : TimeVelocity d → ℝ}
     {F : ℝ → PDE.Vec d → ℝ}
     (D : ParabolicWeakDerivativeFamily d (M + 1) U u)
     (E : ParabolicWeakDerivativeFamily d M U
@@ -547,7 +549,7 @@ theorem exists_genericPrelift_hessian_timeSuccessor_family_estimate
     (d M : ℕ) (hM : 1 ≤ M)
     (t₀ t₁ t₂ t₃ : ℝ)
     (ht₀₁ : t₀ < t₁) (ht₁₂ : t₁ < t₂) (ht₂₃ : t₂ < t₃)
-    (O₀ O₁ : Set (PDE.Vec d))
+    (O₀ O₁ : HypoellipticAleksandrov.VecSet d)
     (hO₀ : IsOpen O₀) (hO₁ : IsOpen O₁) (hO₁ne : O₁.Nonempty)
     (hO₁compact : IsCompact (closure O₁))
     (hO₁O₀ : closure O₁ ⊆ O₀)
@@ -891,7 +893,7 @@ theorem exists_genericPrelift_hessian_timeSuccessor_family_estimate
         (fun z => a z.1 z.2 i j * H z beta j i) 2 (timeVelocityVolumeOn V))
       have hh := ENNReal.toReal_nonneg (a := eLpNorm
         (fun z => H z beta j i) 2 (timeVelocityVolumeOn V))
-      nlinarith [hp.2]
+      nlinarith
     have hBGentry (beta : ParabolicDerivativeIndex d M) (j : Fin d) :
         (ENNReal.toReal (eLpNorm (fun z => b z.1 z.2 j *
           D.representative (timeSuccessorGradientIndex beta j) z) 2

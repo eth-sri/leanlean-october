@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimePositivePartContinuity
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Positive-part dual-pairing convergence
@@ -36,19 +37,19 @@ theorem integral_mul_norm_le_sqrt_mul_sqrt
   simpa only [Real.rpow_two] using hholder
 
 private noncomputable def dualPairingFirstBound
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (μ : Measure ℝ)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (μ : Measure ℝ)
     (u : ℝ → H10HilbertGraph hΩ) (g : ℝ → H10HilbertGraphDual hΩ) : ℝ :=
   √(∫ t, ‖g t‖ ^ 2 ∂μ) * √(∫ t, ‖u t‖ ^ 2 ∂μ)
 
 private theorem dualPairing_first_integral_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (μ : Measure ℝ)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (μ : Measure ℝ)
     (u : ℝ → H10HilbertGraph hΩ) (g : ℝ → H10HilbertGraphDual hΩ)
     (hu : MemLp u 2 μ) (hg : MemLp g 2 μ) :
     (∫ t, ‖g t‖ * ‖u t‖ ∂μ) ≤ dualPairingFirstBound hΩ μ u g := by
   exact integral_mul_norm_le_sqrt_mul_sqrt g u hg hu
 
 private theorem dualPairing_pointwise_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     (u uh : ℝ → H10HilbertGraph hΩ) (g gh : ℝ → H10HilbertGraphDual hΩ)
     (t : ℝ) :
     |(gh t) (uh t) - (g t) (u t)| ≤
@@ -64,7 +65,7 @@ private theorem dualPairing_pointwise_le
       (ContinuousLinearMap.le_opNorm _ _)
 
 private theorem integrable_dualPairing
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (μ : Measure ℝ)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (μ : Measure ℝ)
     (u : ℝ → H10HilbertGraph hΩ) (g : ℝ → H10HilbertGraphDual hΩ)
     (hu : MemLp u 2 μ) (hg : MemLp g 2 μ) :
     Integrable (fun t => (g t) (u t)) μ := by
@@ -75,7 +76,7 @@ private theorem integrable_dualPairing
     memLp_one_iff_integrable.mp (pairing.memLp_of_bilin 1 hg hu)
 
 private noncomputable def dualPairingApproximationError
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (μ : Measure ℝ)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (μ : Measure ℝ)
     (u : ℝ → H10HilbertGraph hΩ) (g : ℝ → H10HilbertGraphDual hΩ)
     (uh : ℝ → ℝ → H10HilbertGraph hΩ) (gh : ℝ → ℝ → H10HilbertGraphDual hΩ) :
     ℝ → ℝ :=
@@ -131,7 +132,7 @@ private theorem eventually_sqrt_sqNorm_le_of_tendsto
       (add_le_add hboundNorm le_rfl)
 
 private theorem tendsto_dualPairing_of_sqNorm
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (μ : Measure ℝ)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (μ : Measure ℝ)
     (u : ℝ → H10HilbertGraph hΩ) (g : ℝ → H10HilbertGraphDual hΩ)
     (uh : ℝ → ℝ → H10HilbertGraph hΩ) (gh : ℝ → ℝ → H10HilbertGraphDual hΩ)
     (hu : MemLp u 2 μ) (hg : MemLp g 2 μ)
@@ -181,9 +182,9 @@ private theorem tendsto_dualPairing_of_sqNorm
   · simpa only [add_zero, dualPairingFirstBound, Pi.sub_def] using hfirst.add hsecond
 
 private theorem localPositivePart_memLp
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (μ : Measure ℝ)
-    (f : MeasureTheory.Lp (H10HilbertGraph hΩ) (2 : ℝ≥0∞) μ) :
-    MemLp (fun t => h10PositivePart hΩ (f t)) (2 : ℝ≥0∞) μ := by
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (μ : Measure ℝ)
+    (f : MeasureTheory.Lp (H10HilbertGraph hΩ) 2 μ) :
+    MemLp (fun t => h10PositivePart hΩ (f t)) 2 μ := by
   apply MemLp.of_le (Lp.memLp f)
   · exact (continuous_h10PositivePart hΩ).comp_aestronglyMeasurable
       (Lp.memLp f).aestronglyMeasurable
@@ -191,20 +192,20 @@ private theorem localPositivePart_memLp
     exact norm_h10PositivePart_le hΩ (f t)
 
 private noncomputable def localPositivePart
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (μ : Measure ℝ) :
-    MeasureTheory.Lp (H10HilbertGraph hΩ) (2 : ℝ≥0∞) μ →
-      MeasureTheory.Lp (H10HilbertGraph hΩ) (2 : ℝ≥0∞) μ :=
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (μ : Measure ℝ) :
+    MeasureTheory.Lp (H10HilbertGraph hΩ) 2 μ →
+      MeasureTheory.Lp (H10HilbertGraph hΩ) 2 μ :=
   fun f => (localPositivePart_memLp hΩ μ f).toLp
     (fun t => h10PositivePart hΩ (f t))
 
 private theorem coeFn_localPositivePart
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (μ : Measure ℝ)
-    (f : MeasureTheory.Lp (H10HilbertGraph hΩ) (2 : ℝ≥0∞) μ) :
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (μ : Measure ℝ)
+    (f : MeasureTheory.Lp (H10HilbertGraph hΩ) 2 μ) :
     localPositivePart hΩ μ f =ᵐ[μ] fun t => h10PositivePart hΩ (f t) :=
   (localPositivePart_memLp hΩ μ f).coeFn_toLp
 
 private theorem continuous_localPositivePart
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (μ : Measure ℝ)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (μ : Measure ℝ)
     [IsFiniteMeasure μ] : Continuous (localPositivePart hΩ μ) := by
   rw [continuous_iff_seqContinuous]
   intro fn f hfn
@@ -294,7 +295,7 @@ private theorem tendsto_localToLp_of_sqNorm
 
 /-- Strong \(L^2\) convergence is preserved by the pointwise positive-part map. -/
 theorem tendsto_positivePart_sqNorm_integral_of_sqNorm
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (μ : Measure ℝ)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (μ : Measure ℝ)
     [IsFiniteMeasure μ] (f : ℝ → H10HilbertGraph hΩ)
     (fh : ℝ → ℝ → H10HilbertGraph hΩ)
     (hf : MemLp f (2 : ℝ≥0∞) μ)
@@ -334,7 +335,7 @@ theorem tendsto_positivePart_sqNorm_integral_of_sqNorm
 \(L^1\) convergence of their dual pairing after applying the positive-part map
 to the primal approximation. -/
 theorem tendsto_dualPairing_positivePart_of_sqNorm
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (μ : Measure ℝ)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (μ : Measure ℝ)
     [IsFiniteMeasure μ]
     (u : ℝ → H10HilbertGraph hΩ) (g : ℝ → H10HilbertGraphDual hΩ)
     (uh : ℝ → ℝ → H10HilbertGraph hΩ) (gh : ℝ → ℝ → H10HilbertGraphDual hΩ)

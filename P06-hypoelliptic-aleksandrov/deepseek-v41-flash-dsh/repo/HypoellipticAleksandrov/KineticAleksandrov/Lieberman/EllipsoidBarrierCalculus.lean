@@ -14,15 +14,17 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Lieberman
 open HypoellipticAleksandrov Parabolic
 open scoped Matrix BigOperators
+section
+variable {d : ℕ} (Q : PDE.Mat d)
 
 /-- The scaled defining quadratic is smooth at every finite order. -/
-theorem contDiff_scaled_quadratic {d : ℕ} (Q : PDE.Mat d) (k : ℝ) :
+theorem contDiff_scaled_quadratic  (k : ℝ) :
     ContDiff ℝ (⊤ : ℕ∞) (fun x => k * PDE.vecDot x (Q *ᵥ x)) := by
   unfold PDE.vecDot Matrix.mulVec dotProduct
   fun_prop
 
 /-- The native gradient of the scaled symmetric quadratic. -/
-theorem gradient_scaled_quadratic {d : ℕ} (Q : PDE.Mat d) (hQ : Q.IsSymm)
+theorem gradient_scaled_quadratic  (hQ : Q.IsSymm)
     (k : ℝ) (x : PDE.Vec d) :
     PDE.classicalGradient (fun y => k * PDE.vecDot y (Q *ᵥ y)) x =
       (2 * k) • (Q *ᵥ x) := by
@@ -51,7 +53,7 @@ theorem gradient_scaled_quadratic {d : ℕ} (Q : PDE.Mat d) (hQ : Q.IsSymm)
   ring
 
 /-- The native Hessian of the scaled symmetric quadratic. -/
-theorem hessian_scaled_quadratic {d : ℕ} (Q : PDE.Mat d) (hQ : Q.IsSymm)
+theorem hessian_scaled_quadratic  (hQ : Q.IsSymm)
     (k : ℝ) (x : PDE.Vec d) :
     sliceHessian (fun y => k * PDE.vecDot y (Q *ᵥ y)) x = (2 * k) • Q := by
   have hg : PDE.classicalGradient (fun y => k * PDE.vecDot y (Q *ᵥ y)) =
@@ -72,7 +74,7 @@ theorem hessian_scaled_quadratic {d : ℕ} (Q : PDE.Mat d) (hQ : Q.IsSymm)
   rw [hQ.apply i j]
 
 /-- The exponential barrier's exact gradient, including its drift sign. -/
-theorem gradient_exp_quadratic {d : ℕ} (Q : PDE.Mat d) (hQ : Q.IsSymm)
+theorem gradient_exp_quadratic  (hQ : Q.IsSymm)
     (k C : ℝ) (x : PDE.Vec d) :
     PDE.classicalGradient
       (fun y => C * (Real.exp k - Real.exp (k * PDE.vecDot y (Q *ᵥ y)))) x =
@@ -100,7 +102,7 @@ theorem gradient_exp_quadratic {d : ℕ} (Q : PDE.Mat d) (hQ : Q.IsSymm)
   ring
 
 /-- The exponential barrier's exact Hessian. -/
-theorem hessian_exp_quadratic {d : ℕ} (Q : PDE.Mat d) (hQ : Q.IsSymm)
+theorem hessian_exp_quadratic  (hQ : Q.IsSymm)
     (k C : ℝ) (x : PDE.Vec d) (i j : Fin d) :
     sliceHessian
       (fun y => C * (Real.exp k - Real.exp (k * PDE.vecDot y (Q *ᵥ y)))) x i j =
@@ -131,7 +133,7 @@ theorem hessian_exp_quadratic {d : ℕ} (Q : PDE.Mat d) (hQ : Q.IsSymm)
   ring
 
 /-- Exact backward operator of the exponential ellipsoid barrier. -/
-theorem scalarOperator_exp_quadratic {d : ℕ} (Q : PDE.Mat d) (hQ : Q.IsSymm)
+theorem scalarOperator_exp_quadratic  (hQ : Q.IsSymm)
     (k C : ℝ) (A : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (z : TimeVelocity d) :
     scalarParabolicZeroOrderOperator A b (fun _ _ => 0)
@@ -168,5 +170,6 @@ theorem scalarOperator_exp_quadratic {d : ℕ} (Q : PDE.Mat d) (hQ : Q.IsSymm)
   ring_nf
   simp only [mul_assoc, mul_left_comm, mul_comm]
   ring
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Lieberman

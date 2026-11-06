@@ -106,11 +106,12 @@ theorem coeFn_toScalarLp {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
 end MemLpOn
 
 namespace GradMemLpOn
+section
+variable {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞} {Du : Vec d → Vec d} (hDu : GradMemLpOn U p Du)
 
 /-- Promote a native gradient representative to Euclidean Hilbert-vector
 `L^p(U)`. -/
-def toHilbertVectorLp {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
-    {Du : Vec d → Vec d} (hDu : GradMemLpOn U p Du) :
+def toHilbertVectorLp  :
     HilbertVectorLp U p :=
   (gradMemLpOn_iff_memLp_toHilbertVecField.mp hDu).toLp
     (toHilbertVecField Du)
@@ -118,21 +119,20 @@ def toHilbertVectorLp {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
 /-- The Hilbert-vector quotient class agrees almost everywhere with the
 lifted native gradient used to construct it. -/
 theorem coeFn_toHilbertVectorLp
-    {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
-    {Du : Vec d → Vec d} (hDu : GradMemLpOn U p Du) :
+     :
     ⇑hDu.toHilbertVectorLp =ᵐ[volumeOn U] toHilbertVecField Du :=
   (gradMemLpOn_iff_memLp_toHilbertVecField.mp hDu).coeFn_toLp
 
 /-- Coordinatewise form of
 `PDE.GradMemLpOn.coeFn_toHilbertVectorLp`. -/
 theorem coeFn_toHilbertVectorLp_apply
-    {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
-    {Du : Vec d → Vec d} (hDu : GradMemLpOn U p Du)
+    
     (i : Fin d) :
     (fun x => hDu.toHilbertVectorLp x i) =ᵐ[volumeOn U]
       fun x => Du x i := by
   filter_upwards [hDu.coeFn_toHilbertVectorLp] with x hx
   exact congrArg (fun y : HilbertVec d => y i) hx
+end
 
 end GradMemLpOn
 

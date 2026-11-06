@@ -10,6 +10,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Decay.BlockInterior
 public import HypoellipticAleksandrov.KineticAleksandrov.Decay.OppositePaths
 import HypoellipticAleksandrov.KineticAleksandrov.Evolution.BarrierGeometry
 import Mathlib.Tactic.Linarith
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # The source unit-frequency block in case W -/
 
@@ -51,7 +52,7 @@ theorem unit_frequency_block_W (hEvol : IterationEvolutionStatement)
   have hsT : s ≤ T := by
     dsimp only [s, T, blockTime]
     nlinarith only [sq_nonneg ρ]
-  have hfit : PDE.euclideanBall v (blockOuter 1) ⊆ (univ : Set (PDE.Vec d)) := subset_univ _
+  have hfit : PDE.euclideanBall v (blockOuter 1) ⊆ (univ : HypoellipticAleksandrov.VecSet d) := subset_univ _
   obtain ⟨α, -, -, hpaths⟩ := exists_opposite_paths 1 1 σ zero_lt_one le_rfl
     univ b hsetting.2.1 hsetting.2.2.2.2.1 ξ v hξ hfit
   let γ1 : ℝ → PDE.Vec d := fun _ => v

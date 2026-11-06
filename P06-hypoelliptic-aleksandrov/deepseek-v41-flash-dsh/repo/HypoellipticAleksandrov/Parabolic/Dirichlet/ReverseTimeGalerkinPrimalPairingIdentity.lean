@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeGelfandPair
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSourcePairing
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialFormPairing
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeGalerkinPrimalBochner
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Finite reverse-time Galerkin pairing identity
@@ -21,7 +22,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 private theorem integrable_reverseTimeNegativeSourceRaw_mul_test
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (F : ℝ → PDE.Vec d → ℝ)
     (hFSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => F z.1 z.2)
@@ -78,7 +79,7 @@ private theorem integral_eq_of_ae_of_integrable
     _ = ∫ x, (hg.toL1 g) x ∂μ := congrArg (fun w : α →₁[μ] ℝ => ∫ x, w x ∂μ) hL1
     _ = ∫ x, g x ∂μ := L1.integral_of_fun_eq_integral hg
 
-variable {d : ℕ} {Ω : Set (PDE.Vec d)}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
 variable (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam)
   (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d)
   (b : ℝ → PDE.Vec d → PDE.Vec d) (c F : ℝ → PDE.Vec d → ℝ)
@@ -95,7 +96,7 @@ variable (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam)
   (hcNonpos : ∀ z : TimeVelocity d, z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω → c z.1 z.2 ≤ 0)
 
 /-- The literal finite Galerkin mass/source/form pairing identity. -/
-def reverseTimeGalerkinPrimal_pairing_identity_prop {d : ℕ} {Ω : Set (PDE.Vec d)}
+def reverseTimeGalerkinPrimal_pairing_identity_prop {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam) (hΩ : IsOpen Ω) (hΩbounded :
       Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d) (c F : ℝ → PDE.Vec d → ℝ)
@@ -123,10 +124,11 @@ def reverseTimeGalerkinPrimal_pairing_identity_prop {d : ℕ} {Ω : Set (PDE.Vec
       (reverseTimeSpatialFormBochnerAction r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth
         (reverseTimeGalerkinPrimal r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F haSmooth hbSmooth
           hcSmooth hFSmooth hLower hcNonpos N initial))
+section
+variable (N : ℕ) (initial : PDE.ScalarLp Ω 2) (v : galerkinSpace hΩ N) (eta : ReverseTimeScalarTest (r₁ - r₀))
 
 private theorem reverseTimeGalerkinPrimal_pairing_identity_prop_intro
-    (N : ℕ) (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) (v : galerkinSpace hΩ N)
-    (eta : ReverseTimeScalarTest (r₁ - r₀)) (U : ReverseTimeL2V hΩ (r₁ - r₀))
+     (U : ReverseTimeL2V hΩ (r₁ - r₀))
     (hU : U = reverseTimeGalerkinPrimal r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
       haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial)
     (h : reverseTimeDualPairingRightCLM hΩ (r₁-r₀)
@@ -147,8 +149,7 @@ private theorem reverseTimeGalerkinPrimal_pairing_identity_prop_intro
 
 /-- The finite Galerkin pairing identity for canonical quotient representatives. -/
 theorem reverseTimeGalerkinPrimal_pairing_identity
-    (N : ℕ) (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) (v : galerkinSpace hΩ N)
-    (eta : ReverseTimeScalarTest (r₁ - r₀)) :
+     :
     reverseTimeGalerkinPrimal_pairing_identity_prop r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
       haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial v eta := by
   let U := reverseTimeGalerkinPrimal r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F haSmooth hbSmooth
@@ -257,5 +258,6 @@ theorem reverseTimeGalerkinPrimal_pairing_identity
   exact reverseTimeGalerkinPrimal_pairing_identity_prop_intro r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b
     c F
     haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial v eta U hU hConcrete
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

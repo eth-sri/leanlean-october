@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.Parabolic.SpatialDifferenceQuotientCutoffF
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSmoothness
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeTests
 public import PDEFoundation.Sobolev.Cutoff.Basic
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Reverse-time coefficient cutoff fields
@@ -22,7 +24,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 open scoped BigOperators Matrix.Norms.Elementwise
 
 private theorem exists_common_cutoff_mul_spatialFields_of_smoothOnNeighborhood
-    {d : ℕ} {S : Set (TimeVelocity d)} {ι : Type*} [Fintype ι]
+    {d : ℕ} {S : HypoellipticAleksandrov.Parabolic.TVSet d} {ι : Type*} [Fintype ι]
     (hS : IsCompact S) (β : TimeVelocity d → ℝ)
     (hβcont : Continuous β) (hβcompact : HasCompactSupport β)
     (hβS : tsupport β ⊆ S) (hβunit : ∀ z, ‖β z‖ ≤ 1)
@@ -80,7 +82,7 @@ private theorem exists_common_cutoff_mul_spatialFields_of_smoothOnNeighborhood
 translates and totalized forward spatial difference quotients of the
 reverse-time divergence-form coefficient fields. -/
 theorem exists_reverseTimeCoefficient_cutoff_mul_spatialFields_of_smoothOnNeighborhood
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (r₀ r₁ : ℝ)
     (χ : PDE.QuantitativeSmoothCutoff inner outer K)
     (hχΩ : tsupport χ.toFun ⊆ Ω)
@@ -121,7 +123,7 @@ theorem exists_reverseTimeCoefficient_cutoff_mul_spatialFields_of_smoothOnNeighb
         (∀ j : Fin d, fieldBound (drift j)) ∧
         fieldBound γ := by
   dsimp only
-  let S : Set (TimeVelocity d) := tsupport (ζ : ℝ → ℝ) ×ˢ tsupport χ.toFun
+  let S : HypoellipticAleksandrov.Parabolic.TVSet d := tsupport (ζ : ℝ → ℝ) ×ˢ tsupport χ.toFun
   let β : TimeVelocity d → ℝ := fun z => ζ z.1 * χ z.2
   have hS : IsCompact S :=
     ζ.hasCompactSupport.prod χ.hasCompactSupport

@@ -48,27 +48,30 @@ theorem segmentBlend_one {d : ℕ} (x y : Vec d) :
 theorem segmentBlend_self {d : ℕ} (x : Vec d) (t : ℝ) :
     segmentBlend x t x = x := by
   simp [segmentBlend]
+section
+variable {d : ℕ} (x y : Vec d) (t : ℝ)
 
 /-- The segment parametrization in basepoint-plus-displacement form. -/
-theorem segmentBlend_eq_add_smul_sub {d : ℕ} (x y : Vec d) (t : ℝ) :
+theorem segmentBlend_eq_add_smul_sub  :
     segmentBlend x t y = y + t • (x - y) := by
   simpa [segmentBlend, add_comm] using
     (AffineMap.lineMap_apply_module' y x t)
 
 /-- The segment parametrization as an affine combination of its endpoints. -/
-theorem segmentBlend_eq_smul_add {d : ℕ} (x y : Vec d) (t : ℝ) :
+theorem segmentBlend_eq_smul_add  :
     segmentBlend x t y = (1 - t) • y + t • x := by
   simpa [segmentBlend] using
     (AffineMap.lineMap_apply_module y x t)
 
-theorem segmentBlend_sub_right {d : ℕ} (x y : Vec d) (t : ℝ) :
+theorem segmentBlend_sub_right  :
     segmentBlend x t y - y = t • (x - y) := by
   ext i
   simp [segmentBlend, AffineMap.lineMap_apply_module']
 
-theorem norm_segmentBlend_sub_right {d : ℕ} (x y : Vec d) (t : ℝ) :
+theorem norm_segmentBlend_sub_right  :
     ‖segmentBlend x t y - y‖ = |t| * ‖x - y‖ := by
   rw [segmentBlend_sub_right, norm_smul, Real.norm_eq_abs]
+end
 
 /-- A segment between two points of a convex set remains in the set. -/
 theorem segmentBlend_mem {d : ℕ} {U : Set (Vec d)} (hU : Convex ℝ U)

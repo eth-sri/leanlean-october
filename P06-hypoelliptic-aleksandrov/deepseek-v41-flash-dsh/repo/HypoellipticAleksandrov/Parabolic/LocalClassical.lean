@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.Operator
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Local classical parabolic predicates
@@ -23,52 +24,52 @@ open scoped MatrixOrder
 
 /-- A coefficient field is continuous at every point of a prescribed set. -/
 def IsContinuousCoefficientOn {d : ℕ} (A : CoefficientField d)
-    (U : Set (TimeVelocity d)) : Prop :=
+    (U : HypoellipticAleksandrov.Parabolic.TVSet d) : Prop :=
   ContinuousOn (coefficientAt A) U
 
 /-- A coefficient field obeys a lower Loewner ellipticity bound on a set. -/
 def HasLowerEllipticityOn {d : ℕ} (lam : ℝ) (A : CoefficientField d)
-    (U : Set (TimeVelocity d)) : Prop :=
+    (U : HypoellipticAleksandrov.Parabolic.TVSet d) : Prop :=
   ∀ z ∈ U, lam • (1 : PDE.Mat d) ≤ coefficientAt A z
 
 /-- A coefficient field obeys an upper Loewner ellipticity bound on a set. -/
 def HasUpperEllipticityOn {d : ℕ} (Lam : ℝ) (A : CoefficientField d)
-    (U : Set (TimeVelocity d)) : Prop :=
+    (U : HypoellipticAleksandrov.Parabolic.TVSet d) : Prop :=
   ∀ z ∈ U, coefficientAt A z ≤ Lam • (1 : PDE.Mat d)
 
 /-- A scalar function is nonnegative at every point of a set. -/
 def IsNonnegativeOn {d : ℕ} (q : TimeVelocity d → ℝ)
-    (U : Set (TimeVelocity d)) : Prop :=
+    (U : HypoellipticAleksandrov.Parabolic.TVSet d) : Prop :=
   ∀ z ∈ U, 0 ≤ q z
 
 /-- A scalar function is a pointwise supersolution of the forward equation on a set. -/
 def IsParabolicSupersolutionOn {d : ℕ} (A : CoefficientField d)
-    (f u : TimeVelocity d → ℝ) (U : Set (TimeVelocity d)) : Prop :=
+    (f u : TimeVelocity d → ℝ) (U : HypoellipticAleksandrov.Parabolic.TVSet d) : Prop :=
   ∀ z ∈ U, f z ≤ parabolicOperator A u z
 
 /-- A scalar function satisfies the homogeneous forward parabolic equation on a set. -/
 def IsParabolicSolutionOn {d : ℕ} (A : CoefficientField d)
-    (u : TimeVelocity d → ℝ) (U : Set (TimeVelocity d)) : Prop :=
+    (u : TimeVelocity d → ℝ) (U : HypoellipticAleksandrov.Parabolic.TVSet d) : Prop :=
   ∀ z ∈ U, parabolicOperator A u z = 0
 
 namespace IsContinuousCoefficientOn
 
 /-- A local coefficient-continuity predicate gives continuity at each of its points. -/
 theorem continuousWithinAt {d : ℕ} {A : CoefficientField d}
-    {U : Set (TimeVelocity d)} (h : IsContinuousCoefficientOn A U)
+    {U : HypoellipticAleksandrov.Parabolic.TVSet d} (h : IsContinuousCoefficientOn A U)
     {z : TimeVelocity d} (hz : z ∈ U) :
     ContinuousWithinAt (coefficientAt A) U z :=
   h z hz
 
 /-- Coefficient continuity restricts to a smaller set. -/
-theorem mono {d : ℕ} {A : CoefficientField d} {U V : Set (TimeVelocity d)}
+theorem mono {d : ℕ} {A : CoefficientField d} {U V : HypoellipticAleksandrov.Parabolic.TVSet d}
     (h : IsContinuousCoefficientOn A U) (hVU : V ⊆ U) :
     IsContinuousCoefficientOn A V :=
   ContinuousOn.mono h hVU
 
 /-- Global coefficient continuity gives local coefficient continuity on every set. -/
 theorem of_global {d : ℕ} {A : CoefficientField d}
-    (h : IsContinuousCoefficient A) (U : Set (TimeVelocity d)) :
+    (h : IsContinuousCoefficient A) (U : HypoellipticAleksandrov.Parabolic.TVSet d) :
     IsContinuousCoefficientOn A U :=
   h.continuousOn
 
@@ -78,20 +79,20 @@ namespace HasLowerEllipticityOn
 
 /-- A local lower ellipticity bound can be evaluated at each point of its set. -/
 theorem le {d : ℕ} {lam : ℝ} {A : CoefficientField d}
-    {U : Set (TimeVelocity d)} (h : HasLowerEllipticityOn lam A U)
+    {U : HypoellipticAleksandrov.Parabolic.TVSet d} (h : HasLowerEllipticityOn lam A U)
     {z : TimeVelocity d} (hz : z ∈ U) :
     lam • (1 : PDE.Mat d) ≤ coefficientAt A z :=
   h z hz
 
 /-- A lower ellipticity bound restricts to a smaller set. -/
 theorem mono {d : ℕ} {lam : ℝ} {A : CoefficientField d}
-    {U V : Set (TimeVelocity d)} (h : HasLowerEllipticityOn lam A U)
+    {U V : HypoellipticAleksandrov.Parabolic.TVSet d} (h : HasLowerEllipticityOn lam A U)
     (hVU : V ⊆ U) : HasLowerEllipticityOn lam A V :=
   fun z hz => h z (hVU hz)
 
 /-- A global lower ellipticity bound gives the corresponding local bound. -/
 theorem of_global {d : ℕ} {lam : ℝ} {A : CoefficientField d}
-    (h : HasLowerEllipticity lam A) (U : Set (TimeVelocity d)) :
+    (h : HasLowerEllipticity lam A) (U : HypoellipticAleksandrov.Parabolic.TVSet d) :
     HasLowerEllipticityOn lam A U :=
   fun z _ => h z.1 z.2
 
@@ -101,13 +102,13 @@ namespace HasUpperEllipticityOn
 
 /-- An upper ellipticity bound restricts to a smaller set. -/
 theorem mono {d : ℕ} {Lam : ℝ} {A : CoefficientField d}
-    {U V : Set (TimeVelocity d)} (h : HasUpperEllipticityOn Lam A U)
+    {U V : HypoellipticAleksandrov.Parabolic.TVSet d} (h : HasUpperEllipticityOn Lam A U)
     (hVU : V ⊆ U) : HasUpperEllipticityOn Lam A V :=
   fun z hz => h z (hVU hz)
 
 /-- A global upper ellipticity bound gives the corresponding local bound. -/
 theorem of_global {d : ℕ} {Lam : ℝ} {A : CoefficientField d}
-    (h : HasUpperEllipticity Lam A) (U : Set (TimeVelocity d)) :
+    (h : HasUpperEllipticity Lam A) (U : HypoellipticAleksandrov.Parabolic.TVSet d) :
     HasUpperEllipticityOn Lam A U :=
   fun z _ => h z.1 z.2
 
@@ -117,7 +118,7 @@ namespace IsNonnegativeOn
 
 /-- Nonnegativity restricts to a smaller set. -/
 theorem mono {d : ℕ} {q : TimeVelocity d → ℝ}
-    {U V : Set (TimeVelocity d)} (h : IsNonnegativeOn q U)
+    {U V : HypoellipticAleksandrov.Parabolic.TVSet d} (h : IsNonnegativeOn q U)
     (hVU : V ⊆ U) : IsNonnegativeOn q V :=
   fun z hz => h z (hVU hz)
 
@@ -127,7 +128,7 @@ namespace IsParabolicSupersolutionOn
 
 /-- A supersolution inequality restricts to a smaller set. -/
 theorem mono {d : ℕ} {A : CoefficientField d} {f u : TimeVelocity d → ℝ}
-    {U V : Set (TimeVelocity d)} (h : IsParabolicSupersolutionOn A f u U)
+    {U V : HypoellipticAleksandrov.Parabolic.TVSet d} (h : IsParabolicSupersolutionOn A f u U)
     (hVU : V ⊆ U) : IsParabolicSupersolutionOn A f u V :=
   fun z hz => h z (hVU hz)
 
@@ -139,12 +140,12 @@ end IsParabolicSolutionOn
 
 /-- A globally `C²` scalar function is `C²` on every prescribed set. -/
 theorem contDiffOn_of_global {d : ℕ} {q : TimeVelocity d → ℝ}
-    (h : ContDiff ℝ 2 q) (U : Set (TimeVelocity d)) : ContDiffOn ℝ 2 q U :=
+    (h : ContDiff ℝ 2 q) (U : HypoellipticAleksandrov.Parabolic.TVSet d) : ContDiffOn ℝ 2 q U :=
   h.contDiffOn
 
 /-- On an open set, local `C²` regularity gives pointwise `C²` regularity. -/
 theorem contDiffAt_of_contDiffOn_of_isOpen {d : ℕ} {q : TimeVelocity d → ℝ}
-    {U : Set (TimeVelocity d)} (hU : IsOpen U) (hq : ContDiffOn ℝ 2 q U)
+    {U : HypoellipticAleksandrov.Parabolic.TVSet d} (hU : IsOpen U) (hq : ContDiffOn ℝ 2 q U)
     {z : TimeVelocity d} (hz : z ∈ U) : ContDiffAt ℝ 2 q z :=
   (hq z hz).contDiffAt (hU.mem_nhds hz)
 
@@ -188,7 +189,7 @@ namespace IsParabolicSolutionOn
 
 /-- Negating a homogeneous local solution preserves its homogeneous equation. -/
 theorem neg {d : ℕ} {A : CoefficientField d} {u : TimeVelocity d → ℝ}
-    {U : Set (TimeVelocity d)} (h : IsParabolicSolutionOn A u U) :
+    {U : HypoellipticAleksandrov.Parabolic.TVSet d} (h : IsParabolicSolutionOn A u U) :
     IsParabolicSolutionOn A (fun z => -u z) U :=
   fun z hz => by rw [parabolicOperator_neg, h z hz, neg_zero]
 
@@ -199,7 +200,7 @@ Harnack leaf.  Its `ContDiffOn ℝ 2` assumption deliberately selects the
 stronger smooth, isotropic local `C²` leaf relative to the source's
 `C^{1,2}` class. -/
 def IsLocalClassicalSolutionOn (d : ℕ) (B : CoefficientField d)
-    (q : TimeVelocity d → ℝ) (U : Set (TimeVelocity d)) (lam Lam : ℝ) : Prop :=
+    (q : TimeVelocity d → ℝ) (U : HypoellipticAleksandrov.Parabolic.TVSet d) (lam Lam : ℝ) : Prop :=
   IsContinuousCoefficientOn B U ∧
     ContDiffOn ℝ 2 q U ∧
     IsNonnegativeOn q U ∧
@@ -211,7 +212,7 @@ namespace IsLocalClassicalSolutionOn
 
 /-- A local classical solution is `C²` on its domain. -/
 theorem contDiffOn {d : ℕ} {B : CoefficientField d}
-    {q : TimeVelocity d → ℝ} {U : Set (TimeVelocity d)} {lam Lam : ℝ}
+    {q : TimeVelocity d → ℝ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {lam Lam : ℝ}
     (h : IsLocalClassicalSolutionOn d B q U lam Lam) : ContDiffOn ℝ 2 q U :=
   h.2.1
 

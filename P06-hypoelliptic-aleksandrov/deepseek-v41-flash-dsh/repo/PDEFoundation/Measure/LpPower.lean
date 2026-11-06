@@ -22,12 +22,13 @@ open scoped ENNReal Topology
 namespace PDE
 
 open Filter MeasureTheory
+section
+variable {α E : Type*} [MeasurableSpace α] [NormedAddCommGroup E] {μ : Measure α} {f : α → E} {p : ℝ}
 
 /-- For a positive finite real exponent, the real value of `eLpNorm` is the
 usual integral-power expression. -/
 theorem toReal_eLpNorm_ofReal_eq_integral_rpow_norm_rpow_inv
-    {α E : Type*} [MeasurableSpace α] [NormedAddCommGroup E]
-    {μ : Measure α} {f : α → E} {p : ℝ} (hp : 0 < p)
+     (hp : 0 < p)
     (hf : MemLp f (ENNReal.ofReal p) μ) :
     (eLpNorm f (ENNReal.ofReal p) μ).toReal =
       (∫ x, ‖f x‖ ^ p ∂μ) ^ (1 / p : ℝ) := by
@@ -48,8 +49,7 @@ theorem toReal_eLpNorm_ofReal_eq_integral_rpow_norm_rpow_inv
 /-- Raising the real `L^p` norm to the exponent recovers the integral of the
 `p`th power. -/
 theorem toReal_eLpNorm_ofReal_rpow_eq_integral_rpow_norm
-    {α E : Type*} [MeasurableSpace α] [NormedAddCommGroup E]
-    {μ : Measure α} {f : α → E} {p : ℝ} (hp : 0 < p)
+     (hp : 0 < p)
     (hf : MemLp f (ENNReal.ofReal p) μ) :
     (eLpNorm f (ENNReal.ofReal p) μ).toReal ^ p =
       ∫ x, ‖f x‖ ^ p ∂μ := by
@@ -64,5 +64,6 @@ theorem toReal_eLpNorm_ofReal_rpow_eq_integral_rpow_norm
     hp.ne'
   rw [show (1 / p : ℝ) * p = 1 by field_simp [hpNe]]
   simp only [Real.rpow_one]
+end
 
 end PDE

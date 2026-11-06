@@ -134,10 +134,10 @@ theorem green_density_bound_of_slabFourierBounds {d : ℕ} (hd : 1 ≤ d) (lam L
   have hP' := (mem_forwardCylinder_iff _ _ _ hR).1 hP
   have hSP : 0 < remainingTime (kineticReflection P₀) P R := by
     unfold remainingTime
-    linarith [hP'.2.1]
+    linarith
   have hSR : remainingTime (kineticReflection P₀) P R < R ^ 2 := by
     unfold remainingTime
-    linarith [hP'.1]
+    linarith
   have hset := (caseW_sourceSetting hlam hLam hsm hsymm hlo hhi).1
   let μ : Measure (EvolutionState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) P.time) :=
     Measure.dirac (kineticStartState d P)

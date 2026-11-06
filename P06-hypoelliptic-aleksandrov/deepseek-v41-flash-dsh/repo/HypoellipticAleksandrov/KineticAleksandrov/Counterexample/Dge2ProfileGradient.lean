@@ -18,9 +18,11 @@ theorem dilate_ne_zero {d : ℕ} (r : ℝ) (hr : 0 < r) (q : XV d) (hq : q ≠ 0
   have hv := congrArg Prod.snd hzero
   exact hq (Prod.ext ((smul_eq_zero_iff_right (pow_ne_zero 3 hr.ne')).mp hx)
     ((smul_eq_zero_iff_right hr.ne').mp hv))
+section
+variable {d : ℕ} (alpha : ℝ) (H : XV d → ℝ)
 
 /-- The derivative of a homogeneous smooth function has the source velocity weight. -/
-theorem homogeneous_velocity_jet {d : ℕ} (alpha : ℝ) (H : XV d → ℝ)
+theorem homogeneous_velocity_jet 
     (hsmooth : ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ))
     (hhom : ∀ r : ℝ, 0 < r → ∀ q, H (dilate r q) = Real.rpow r alpha * H q)
     (r : ℝ) (hr : 0 < r) (q : XV d) (hq : q ≠ 0) (w : PDE.Vec d) :
@@ -56,7 +58,7 @@ theorem homogeneous_velocity_jet {d : ℕ} (alpha : ℝ) (H : XV d → ℝ)
   simpa only [mul_comm] using heq
 
 /-- The native selector vector has the same exact velocity homogeneity. -/
-theorem homogeneous_dv {d : ℕ} (alpha : ℝ) (H : XV d → ℝ)
+theorem homogeneous_dv 
     (hsmooth : ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ))
     (hhom : ∀ r : ℝ, 0 < r → ∀ q, H (dilate r q) = Real.rpow r alpha * H q)
     (r : ℝ) (hr : 0 < r) (q : XV d) (hq : q ≠ 0) :
@@ -65,7 +67,7 @@ theorem homogeneous_dv {d : ℕ} (alpha : ℝ) (H : XV d → ℝ)
   exact homogeneous_velocity_jet alpha H hsmooth hhom r hr q hq (Pi.single i 1)
 
 /-- Smooth homogeneous profiles satisfy the source velocity-gradient bound. -/
-theorem homogeneous_velocity_gradient_bound {d : ℕ} (alpha : ℝ) (H : XV d → ℝ)
+theorem homogeneous_velocity_gradient_bound 
     (hsmooth : ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ))
     (hhom : ∀ r : ℝ, 0 < r → ∀ q, H (dilate r q) = Real.rpow r alpha * H q) :
     ∃ C : ℝ, 0 < C ∧ ∀ q, q ≠ 0 →
@@ -106,6 +108,7 @@ theorem homogeneous_velocity_gradient_bound {d : ℕ} (alpha : ℝ) (H : XV d �
   have hb : PDE.vecEuclideanNorm (dv H p) ≤ C :=
     (hB ⟨p, hp, rfl⟩).trans (le_max_right _ _)
   simpa only [mul_comm] using mul_le_mul_of_nonneg_left hb hpow.le
+end
 
 /-- The actual profile satisfies the required velocity-gradient estimate. -/
 theorem geometricProfile_velocity_gradient_bound {d : ℕ} (alpha C₀ sigma R : ℝ)

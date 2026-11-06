@@ -7,6 +7,7 @@ public import Mathlib.MeasureTheory.Function.LpSpace.Basic
 public import Mathlib.MeasureTheory.Function.StronglyMeasurable.Lemmas
 public import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
 public import Mathlib.MeasureTheory.SpecificCodomains.ContinuousMap
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Reverse-time source as a Bochner curve
@@ -42,7 +43,7 @@ private theorem continuous_reverseTimeSourceClamp
   exact continuous_subtype_val.comp continuous_projIcc
 
 private theorem continuousOn_reverseTimeSourceUncurried
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (F : ℝ → PDE.Vec d → ℝ)
     (hFSmooth : IsSmoothOnNeighborhood
@@ -73,7 +74,7 @@ private theorem continuousOn_reverseTimeSourceUncurried
 
 /-- Infrastructure for the clamped reverse-time source curve. -/
 noncomputable def reverseTimeSourceContinuousCurve
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (F : ℝ → PDE.Vec d → ℝ) : ℝ → C(closure Ω, ℝ) :=
   fun τ => ContinuousMap.mkD
@@ -82,7 +83,7 @@ noncomputable def reverseTimeSourceContinuousCurve
     0
 
 private theorem continuous_reverseTimeSourceContinuousCurve
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     [CompactSpace (closure Ω)]
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (F : ℝ → PDE.Vec d → ℝ)
@@ -95,14 +96,14 @@ private theorem continuous_reverseTimeSourceContinuousCurve
 
 /-- Infrastructure for the clamped reverse-time source curve. -/
 noncomputable def continuousOnClosureRaw
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (f : C(closure Ω, ℝ)) : PDE.Vec d → ℝ :=
   by
     classical
     exact fun y => if hy : y ∈ closure Ω then f ⟨y, hy⟩ else 0
 
 private theorem continuousOn_continuousOnClosureRaw
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (f : C(closure Ω, ℝ)) :
     ContinuousOn (continuousOnClosureRaw f) Ω := by
   rw [continuousOn_iff_continuous_restrict]
@@ -114,14 +115,14 @@ private theorem continuousOn_continuousOnClosureRaw
   simp [Set.restrict_apply, continuousOnClosureRaw, subset_closure y.2]
 
 private theorem aestronglyMeasurable_continuousOnClosureRaw
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (f : C(closure Ω, ℝ)) :
     AEStronglyMeasurable (continuousOnClosureRaw f) (PDE.volumeOn Ω) :=
   (continuousOn_continuousOnClosureRaw f).aestronglyMeasurable hΩ.measurableSet
 
 /-- A bound used to construct the clamped source operator. -/
 theorem memLp_continuousOnClosureRaw
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (f : C(closure Ω, ℝ)) :
     MemLp (continuousOnClosureRaw f) (2 : ℝ≥0∞) (PDE.volumeOn Ω) := by
@@ -136,7 +137,7 @@ theorem memLp_continuousOnClosureRaw
 
 /-- Infrastructure for the clamped reverse-time source curve. -/
 noncomputable def continuousOnClosureToScalarLpLinear
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     [CompactSpace (closure Ω)]
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω) :
     C(closure Ω, ℝ) →ₗ[ℝ] PDE.ScalarLp Ω (2 : ℝ≥0∞) where
@@ -193,7 +194,7 @@ noncomputable def continuousOnClosureToScalarLpLinear
 
 /-- A bound used to construct the clamped source operator. -/
 theorem norm_continuousOnClosureToScalarLpLinear_apply_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     [CompactSpace (closure Ω)]
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (f : C(closure Ω, ℝ)) :
@@ -212,7 +213,7 @@ theorem norm_continuousOnClosureToScalarLpLinear_apply_le
 
 /-- Infrastructure for the clamped reverse-time source curve. -/
 noncomputable def continuousOnClosureToScalarLp
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     [CompactSpace (closure Ω)]
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω) :
     C(closure Ω, ℝ) →L[ℝ] PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
@@ -220,20 +221,19 @@ noncomputable def continuousOnClosureToScalarLp
     _ (norm_continuousOnClosureToScalarLpLinear_apply_le hΩ hΩbounded)
 
 private theorem coeFn_continuousOnClosureToScalarLp
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     [CompactSpace (closure Ω)]
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (f : C(closure Ω, ℝ)) :
     continuousOnClosureToScalarLp hΩ hΩbounded f =ᵐ[PDE.volumeOn Ω]
       continuousOnClosureRaw f :=
   (memLp_continuousOnClosureRaw hΩ hΩbounded f).coeFn_toLp
+section
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω) (F : ℝ → PDE.Vec d → ℝ)
 
 /-- The clamped scalar source curve in spatial L². -/
 noncomputable def reverseTimeSourceScalarRaw
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
-    (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
-    (F : ℝ → PDE.Vec d → ℝ) :
+     :
     ℝ → PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
   letI : CompactSpace (closure Ω) :=
     isCompact_iff_compactSpace.mp hΩbounded.isCompact_closure
@@ -241,10 +241,7 @@ noncomputable def reverseTimeSourceScalarRaw
     (reverseTimeSourceContinuousCurve r₀ r₁ h₀₁ F τ)
 
 private theorem aestronglyMeasurable_reverseTimeSourceScalarRaw
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
-    (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
-    (F : ℝ → PDE.Vec d → ℝ)
+    
     (hFSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => F z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω)) :
@@ -258,10 +255,7 @@ private theorem aestronglyMeasurable_reverseTimeSourceScalarRaw
       hFSmooth).aestronglyMeasurable
 
 private theorem reverseTimeSourceScalarRaw_eq_sourceSlice
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
-    (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
-    (F : ℝ → PDE.Vec d → ℝ)
+    
     (hFSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => F z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -299,10 +293,7 @@ private theorem reverseTimeSourceScalarRaw_eq_sourceSlice
 /-- A clamped representative of the negative reverse-time source.  Outside
 `[0, r₁ - r₀]` it uses endpoint data only, rather than the ambient source. -/
 noncomputable def reverseTimeNegativeSourceRaw
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
-    (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
-    (F : ℝ → PDE.Vec d → ℝ)
+    
     (hFSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => F z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω)) :
@@ -311,10 +302,7 @@ noncomputable def reverseTimeNegativeSourceRaw
     (reverseTimeSourceScalarRaw r₀ r₁ h₀₁ hΩ hΩbounded F τ)
 
 private theorem aestronglyMeasurable_reverseTimeNegativeSourceRaw
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
-    (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
-    (F : ℝ → PDE.Vec d → ℝ)
+    
     (hFSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => F z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω)) :
@@ -333,10 +321,7 @@ private theorem aestronglyMeasurable_reverseTimeNegativeSourceRaw
 
 /-- The clamped negative source is square-integrable for the literal reverse-time measure. -/
 theorem memLp_reverseTimeNegativeSourceRaw
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
-    (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
-    (F : ℝ → PDE.Vec d → ℝ)
+    
     (hFSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => F z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω)) :
@@ -362,10 +347,7 @@ theorem memLp_reverseTimeNegativeSourceRaw
 
 /-- The negative reverse-time source packaged as a Bochner `L²` curve. -/
 noncomputable def reverseTimeNegativeSource
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
-    (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
-    (F : ℝ → PDE.Vec d → ℝ)
+    
     (hFSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => F z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω)) :
@@ -376,10 +358,7 @@ noncomputable def reverseTimeNegativeSource
 /-- On the literal open reverse-time interval, the Bochner source has the
 negative fixed-time source functional as its representative. -/
 theorem ae_reverseTimeNegativeSource_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
-    (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
-    (F : ℝ → PDE.Vec d → ℝ)
+    
     (hFSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => F z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω)) :
@@ -406,10 +385,7 @@ theorem ae_reverseTimeNegativeSource_apply
 /-- The clamped negative reverse-time source is continuous as a dual-valued
 curve. -/
 theorem continuous_reverseTimeNegativeSourceRaw
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
-    (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
-    (F : ℝ → PDE.Vec d → ℝ)
+    
     (hFSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => F z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω)) :
@@ -429,10 +405,7 @@ theorem continuous_reverseTimeNegativeSourceRaw
 /-- On the true closed reverse-time interval, the clamped source is the
 literal negative source functional of the corresponding source slice. -/
 theorem reverseTimeNegativeSourceRaw_eq_sourceFunctional_of_mem_Icc
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
-    (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
-    (F : ℝ → PDE.Vec d → ℝ)
+    
     (hFSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => F z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -446,5 +419,6 @@ theorem reverseTimeNegativeSourceRaw_eq_sourceFunctional_of_mem_Icc
     reverseTimeSourceScalarRaw_eq_sourceSlice r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth τ]
   simp only [reverseTimeSourceClamp,
     Set.projIcc_of_mem (le_of_lt (sub_pos.mpr h₀₁)) hτ]
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

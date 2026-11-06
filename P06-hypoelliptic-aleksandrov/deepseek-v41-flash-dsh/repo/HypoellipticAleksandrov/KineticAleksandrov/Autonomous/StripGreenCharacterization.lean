@@ -14,19 +14,18 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open scoped ENNReal
+section
+variable (H : Interval) (K : MovingFiberKernel (intervalDomain H) (fun _ => 0)) (T : WithTop ℝ) (e : StripPole H T)
 
 /-- The physical Green action, stated with positive elapsed times and absolute-time points. -/
-def IsStripGreen (H : Interval) (K : MovingFiberKernel (intervalDomain H) (fun _ => 0))
-    (T : WithTop ℝ) (e : StripPole H T) (Γ : Measure Point) : Prop :=
+def IsStripGreen  (Γ : Measure Point) : Prop :=
   ∀ F : Point → ℝ≥0∞, Measurable F →
     (∫⁻ p, F p ∂Γ) = ∫⁻ τ, ∫⁻ w, F (elapsedPhysicalPoint e.1.time (τ, w))
       ∂K.master (elapsedQuery e.1.time (stripPoleState H T e) τ)
       ∂elapsedVolume (stripHorizon T e.1.time)
 
 /-- The coordinate image of the unique Green measure has the exact Green action. -/
-theorem stripGreenOfKernel_spec (H : Interval)
-    (K : MovingFiberKernel (intervalDomain H) (fun _ => 0))
-    (T : WithTop ℝ) (e : StripPole H T) :
+theorem stripGreenOfKernel_spec  :
     IsStripGreen H K T e (stripGreenOfKernel H K T e) := by
   intro F hF
   rw [stripGreenOfKernel, lintegral_map hF (measurable_elapsedPhysicalPoint _ _)]
@@ -52,6 +51,7 @@ theorem stripGreenOfKernel_spec (H : Interval)
     exact (hi.lintegral_kernel_prod_right'
       (κ := elapsedKernel K e.1.time (stripHorizon T e.1.time))).lintegral_prod_right
   exact lintegral_dirac' _ hm
+end
 
 /-- The canonical autonomous measure has the literal killed-kernel integration formula. -/
 theorem stripGreen_lintegral

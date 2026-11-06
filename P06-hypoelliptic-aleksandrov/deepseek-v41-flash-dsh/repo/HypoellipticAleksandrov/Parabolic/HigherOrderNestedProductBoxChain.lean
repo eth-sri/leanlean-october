@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.Parabolic.SmoothScalarWeakDerivativeFamily
 public import HypoellipticAleksandrov.Parabolic.PrecompactCoordinateDerivativeMajorants
 public import HypoellipticAleksandrov.Parabolic.ParabolicW12WeakDerivativeFamily
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.OriginalTimeLocalL2StrongJet
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Higher-order nested product-box chains
@@ -25,9 +26,9 @@ nested time--velocity product boxes. -/
 def IsHigherOrderNestedProductBoxChain
     (d N : ℕ)
     (q₀ s₀ s₁ q₁ : ℝ)
-    (Ω O₀ O : Set (PDE.Vec d))
+    (Ω O₀ O : HypoellipticAleksandrov.VecSet d)
     (left right : ℕ → ℝ)
-    (spatial : ℕ → Set (PDE.Vec d)) : Prop :=
+    (spatial : ℕ → HypoellipticAleksandrov.VecSet d) : Prop :=
   left 0 = q₀ ∧
   right 0 = q₁ ∧
   spatial 0 = O₀ ∧
@@ -51,7 +52,7 @@ of precompact open intermediate product boxes. -/
 theorem exists_higherOrderNestedProductBoxChain
     (d N : ℕ)
     (q₀ s₀ s₁ q₁ : ℝ)
-    (Ω O₀ O : Set (PDE.Vec d))
+    (Ω O₀ O : HypoellipticAleksandrov.VecSet d)
     (hq₀s₀ : q₀ < s₀)
     (hs₀s₁ : s₀ < s₁)
     (hs₁q₁ : s₁ < q₁)
@@ -63,7 +64,7 @@ theorem exists_higherOrderNestedProductBoxChain
     (hOcompact : IsCompact (closure O))
     (hOO₀ : closure O ⊆ O₀) :
     ∃ (left right : ℕ → ℝ)
-      (spatial : ℕ → Set (PDE.Vec d)),
+      (spatial : ℕ → HypoellipticAleksandrov.VecSet d),
       IsHigherOrderNestedProductBoxChain
         d N q₀ s₀ s₁ q₁ Ω O₀ O left right spatial := by
   induction N generalizing q₀ q₁ O₀ with
@@ -80,7 +81,7 @@ theorem exists_higherOrderNestedProductBoxChain
         | 0 => q₁
         | 1 => (s₁ + q₁) / 2
         | _ => s₁
-      let spatial : ℕ → Set (PDE.Vec d) := fun k =>
+      let spatial : ℕ → HypoellipticAleksandrov.VecSet d := fun k =>
         match k with
         | 0 => O₀
         | 1 => V
@@ -124,7 +125,7 @@ theorem exists_higherOrderNestedProductBoxChain
         match k with
         | 0 => q₁
         | k + 1 => right' k
-      let spatial : ℕ → Set (PDE.Vec d) := fun k =>
+      let spatial : ℕ → HypoellipticAleksandrov.VecSet d := fun k =>
         match k with
         | 0 => O₀
         | k + 1 => spatial' k
@@ -160,9 +161,9 @@ theorem exists_higherOrderNestedProductBoxChain
 higher-order nested product-box chain. -/
 theorem IsHigherOrderNestedProductBoxChain.step
     {d N : ℕ} {q₀ s₀ s₁ q₁ : ℝ}
-    {Ω O₀ O : Set (PDE.Vec d)}
+    {Ω O₀ O : HypoellipticAleksandrov.VecSet d}
     {left right : ℕ → ℝ}
-    {spatial : ℕ → Set (PDE.Vec d)}
+    {spatial : ℕ → HypoellipticAleksandrov.VecSet d}
     (h : IsHigherOrderNestedProductBoxChain
       d N q₀ s₀ s₁ q₁ Ω O₀ O left right spatial)
     {k : ℕ} (hk : k < N + 2) :

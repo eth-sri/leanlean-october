@@ -10,12 +10,12 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open scoped Classical
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock)
 
 /-- The all-time active occupation has no atom on a fixed time slice. -/
 theorem positionStartGreen_ae_time_ne
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (p : Point)
+     (p : Point)
     (hv : p.velocity 0 ∈ c.active) (b : ℝ) :
     ∀ᵐ q ∂stripGreen hH hLE hlam hLam A c.activeInterval ⊤
       (densityClockPole c p hv), q.time ≠ b := by
@@ -25,9 +25,7 @@ theorem positionStartGreen_ae_time_ne
 
 /-- The cumulative identity retains a start exactly at `b` as a zero-duration terminal atom. -/
 theorem positionStartQuadratic_cumulative_identity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (Y b : ℝ)
+     (J : Interval) (Y b : ℝ)
     (hc : |c.vbar| = 2 * c.r) (hJ : closure c.active ⊆ J.carrier)
     (p : Point) (hv : p.velocity 0 ∈ c.active) :
     let f := fun q : Point => positionStartCutoff Y c.r c.positive (q.position 0) *
@@ -72,9 +70,10 @@ theorem positionStartQuadratic_cumulative_identity
       have hE : enlargedVisitExitKernel hH hLE hlam hLam A (visitActiveUnion c J) b p =
           0 := by
         change (if h : p ∈ enlargedVisitPoleSet (visitActiveUnion c J) b then _ else
-          (0 : Measure Point)) = 0
+          0) = 0
         rw [dite_eq_right hp]
       unfold enlargedActiveTerminalFamily
       rw [ite_eq_right (fun h => he h.1), hE, Measure.restrict_zero, integral_zero_measure]
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

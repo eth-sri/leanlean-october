@@ -3,6 +3,8 @@ module
 import Mathlib.Tactic.Linarith
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.MarginalCutoffLimit
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonEvolution
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Scalar versus `z`-independent kinetic classical solutions (outside context)
@@ -27,7 +29,7 @@ open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Filter Set Measur
 
 section Scalar
 
-variable {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n} {B : FullKineticCoefficient n}
+variable {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n} {γ : ℝ → PDE.Vec n} {B : FullKineticCoefficient n}
   {b : PDE.Vec n → PDE.Vec n} {τ : ℝ} {F : BoundedBorel (PDE.Vec n)}
 
 theorem classicalGradient_const_eq_zero (c : ℝ) (x : PDE.Vec n) :

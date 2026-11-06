@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.Parabolic.ScalarDirichletData
 import Mathlib.Tactic.Ring
 import Mathlib.Analysis.Calculus.Deriv.Add
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Classical subtraction for signed source corrections
 
@@ -18,15 +20,14 @@ open scoped Topology
 
 /-- Time derivatives commute with subtraction of classical functions. -/
 theorem scalarTimeDerivative_sub {n : ℕ} {u v : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
+    {D : HypoellipticAleksandrov.Parabolic.TVSet n} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
     {z : TimeVelocity n} (hz : z ∈ D) :
     scalarTimeDerivative (fun q => u q - v q) z =
-      scalarTimeDerivative u z - scalarTimeDerivative v z := by
-  exact ((hu.timeSlice_hasDerivAt hz).sub (hv.timeSlice_hasDerivAt hz)).deriv
+      scalarTimeDerivative u z - scalarTimeDerivative v z :=((hu.timeSlice_hasDerivAt hz).sub (hv.timeSlice_hasDerivAt hz)).deriv
 
 /-- Spatial gradients commute with subtraction of classical functions. -/
 theorem scalarSpatialGradient_sub {n : ℕ} {u v : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
+    {D : HypoellipticAleksandrov.Parabolic.TVSet n} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
     {z : TimeVelocity n} (hz : z ∈ D) :
     scalarSpatialGradient (fun q => u q - v q) z =
       scalarSpatialGradient u z - scalarSpatialGradient v z := by
@@ -61,7 +62,7 @@ private theorem scalarSpatialHessian_apply_eq_sndFDeriv {n : ℕ}
 
 /-- Spatial Hessians commute with subtraction of classical functions. -/
 theorem scalarSpatialHessian_sub {n : ℕ} {u v : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
+    {D : HypoellipticAleksandrov.Parabolic.TVSet n} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
     {z : TimeVelocity n} (hz : z ∈ D) :
     scalarSpatialHessian (fun q => u q - v q) z =
       scalarSpatialHessian u z - scalarSpatialHessian v z := by
@@ -100,7 +101,7 @@ theorem scalarSpatialHessian_sub {n : ℕ} {u v : TimeVelocity n → ℝ}
 
 /-- The anisotropic classical carrier is closed under subtraction. -/
 theorem isScalarC12On_sub {n : ℕ} {u v : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D) :
+    {D : HypoellipticAleksandrov.Parabolic.TVSet n} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D) :
     IsScalarC12On (fun q => u q - v q) D := by
   refine ⟨hu.continuousOn.sub hv.continuousOn, ?_, ?_, ?_, ?_, ?_⟩
   · intro z hz
@@ -124,7 +125,7 @@ theorem isScalarC12On_sub {n : ℕ} {u v : TimeVelocity n → ℝ}
 theorem scalarParabolicZeroOrderOperator_sub {n : ℕ}
     (a : CoefficientField n) (b : ℝ → PDE.Vec n → PDE.Vec n)
     (c : ℝ → PDE.Vec n → ℝ) {u v : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
+    {D : HypoellipticAleksandrov.Parabolic.TVSet n} (hu : IsScalarC12On u D) (hv : IsScalarC12On v D)
     {z : TimeVelocity n} (hz : z ∈ D) :
     scalarParabolicZeroOrderOperator a b c (fun q => u q - v q) z =
       scalarParabolicZeroOrderOperator a b c u z -

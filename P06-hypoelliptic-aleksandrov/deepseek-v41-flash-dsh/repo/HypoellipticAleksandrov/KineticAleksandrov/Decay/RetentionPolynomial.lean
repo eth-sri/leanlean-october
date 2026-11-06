@@ -99,7 +99,7 @@ theorem exists_retention_barrier_order (d : ℕ) (hd : 1 ≤ d)
   · unfold barrierC
     simp only [Nat.add_sub_cancel, Nat.cast_add, Nat.cast_one]
     have hpos : 0 < (n : ℝ) + 1 := by positivity
-    nlinarith [mul_pos hpos (show 0 < 2 * (n : ℝ) * lam - (d : ℝ) * Lam by linarith)]
+    nlinarith
 
 /-- The positive-part polynomial barrier is globally twice continuously differentiable. -/
 theorem retention_barrier_contDiff {d N : ℕ} (hN : 3 ≤ N) (s : ℝ) :
@@ -177,7 +177,7 @@ theorem retention_barrier_hessian {d N : ℕ} (hN : 3 ≤ N)
   simp only [Matrix.add_apply, Matrix.smul_apply, smul_eq_mul, Matrix.one_apply,
     positivePower, Pi.zero_apply, sub_zero, Matrix.of_apply]
   generalize max (1 - PDE.vecNormSq Y / s ^ 2) 0 = w
-  split_ifs <;> field_simp [hs0] <;> ring
+  split_ifs <;> field_simp <;> ring
 
 /-- The source retention polynomial, including its boundary jets. -/
 theorem retention_polynomial_barrier {d N : ℕ} (hN : 3 ≤ N)

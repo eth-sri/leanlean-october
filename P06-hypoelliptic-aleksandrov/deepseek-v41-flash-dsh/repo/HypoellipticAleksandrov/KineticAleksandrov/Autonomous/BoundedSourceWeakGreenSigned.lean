@@ -14,9 +14,10 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov Filter
 open SectionTwo
 open scoped ENNReal
+section
+variable (H : Interval) (K : MovingFiberKernel (intervalDomain H) (fun _ => 0))
 
-private theorem sourceSlice_integrable (H : Interval)
-    (K : MovingFiberKernel (intervalDomain H) (fun _ => 0)) (g : BoundedBorel Point)
+private theorem sourceSlice_integrable  (g : BoundedBorel Point)
     (q : EvolutionQuery (intervalDomain H) (fun _ => 0)) :
     Integrable (fun w => g ⟨q.1.2.1, w.1, w.2⟩) (K.master q) := by
   obtain ⟨C, -, hg⟩ := g.exists_bound
@@ -25,8 +26,7 @@ private theorem sourceSlice_integrable (H : Interval)
     (measurable_const.prodMk measurable_id))
 
 /-- The actual finite-horizon Duhamel potential is linear under bounded-source subtraction. -/
-theorem strip_duhamel_sub (H : Interval)
-    (K : MovingFiberKernel (intervalDomain H) (fun _ => 0)) (g f : BoundedBorel Point)
+theorem strip_duhamel_sub  (g f : BoundedBorel Point)
     (p : Point) (T : ℝ) :
     duhamelPotential K T (g - f : BoundedBorel Point) p =
       duhamelPotential K T g p - duhamelPotential K T f p := by
@@ -49,8 +49,7 @@ theorem strip_duhamel_sub (H : Interval)
       continuous_const f f.measurable Cf hCf hf p T)
 
 /-- Every bounded signed Borel source has the exact actual Green representation. -/
-theorem duhamelPotential_eq_green_bounded (H : Interval)
-    (K : MovingFiberKernel (intervalDomain H) (fun _ => 0)) (T : ℝ)
+theorem duhamelPotential_eq_green_bounded  (T : ℝ)
     (g : BoundedBorel Point) (s : ℝ) (hs : s < T)
     (p : EvolutionState (intervalDomain H) (fun _ => 0) s)
     (Γ : Measure (ElapsedTime (ENNReal.ofReal (T - s)) × EvolutionAmbientState 1))
@@ -80,5 +79,6 @@ theorem duhamelPotential_eq_green_bounded (H : Interval)
   exact Eventually.of_forall fun q => by
     change (g _ + C) - C = g _
     ring
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

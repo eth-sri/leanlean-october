@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.WeakJetCutoff
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Global extension of cutoff-selected parabolic weak jets
@@ -93,7 +94,7 @@ theorem tsupport_mul_velocityHessian_subset {d : ℕ} {i j : Fin d}
 
 /-- Support localization for extension to the full spacetime carrier. -/
 theorem parabolicMemLpOn_univ_of_support_subset
-    {d : ℕ} {U : Set (TimeVelocity d)} {p : ℝ≥0∞}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {p : ℝ≥0∞}
     {f : TimeVelocity d → ℝ}
     (hU : MeasurableSet U) (hf : ParabolicMemLpOn U p f)
     (hsupp : Function.support f ⊆ U) :
@@ -105,7 +106,7 @@ theorem parabolicMemLpOn_univ_of_support_subset
 
 /-- Support localization for extension to the full spacetime carrier. -/
 theorem HasWeakTimeDerivOn.univ_of_compact_tsupport_subset
-    {d : ℕ} {U K : Set (TimeVelocity d)} {u du : TimeVelocity d → ℝ}
+    {d : ℕ} {U K : HypoellipticAleksandrov.Parabolic.TVSet d} {u du : TimeVelocity d → ℝ}
     (hU : IsOpen U) (hK : IsCompact K) (hKU : K ⊆ U)
     (hu : HasWeakTimeDerivOn U u du)
     (huK : tsupport u ⊆ K) (hduK : tsupport du ⊆ K) :
@@ -161,7 +162,7 @@ theorem HasWeakTimeDerivOn.univ_of_compact_tsupport_subset
 
 /-- Support localization for extension to the full spacetime carrier. -/
 theorem HasWeakVelocityPartialDerivOn.univ_of_compact_tsupport_subset
-    {d : ℕ} {U K : Set (TimeVelocity d)} {i : Fin d}
+    {d : ℕ} {U K : HypoellipticAleksandrov.Parabolic.TVSet d} {i : Fin d}
     {u dui : TimeVelocity d → ℝ}
     (hU : IsOpen U) (hK : IsCompact K) (hKU : K ⊆ U)
     (hu : HasWeakVelocityPartialDerivOn U i u dui)
@@ -221,7 +222,7 @@ namespace ParabolicW12Function
 /-- A selected weak jet multiplied by an actual smooth compact cutoff supported
 in its open domain is a global selected weak jet. -/
 noncomputable def mulContDiffHasCompactSupport_univ
-    {d : ℕ} {U : Set (TimeVelocity d)} {p : ℝ≥0∞}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {p : ℝ≥0∞}
     (w : ParabolicW12Function d U p) (hp : 1 ≤ p)
     {b : TimeVelocity d → ℝ} (hb : ContDiff ℝ (⊤ : ℕ∞) b)
     (hbCompact : HasCompactSupport b) (hU : IsOpen U)
@@ -273,7 +274,7 @@ noncomputable def mulContDiffHasCompactSupport_univ
 
 /-- Value representative of the global cutoff-product jet. -/
 @[simp] theorem mulContDiffHasCompactSupport_univ_toFun
-    {d : ℕ} {U : Set (TimeVelocity d)} {p : ℝ≥0∞}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {p : ℝ≥0∞}
     (w : ParabolicW12Function d U p) (hp : 1 ≤ p)
     {b : TimeVelocity d → ℝ} (hb : ContDiff ℝ (⊤ : ℕ∞) b)
     (hbCompact : HasCompactSupport b) (hU : IsOpen U)
@@ -283,7 +284,7 @@ noncomputable def mulContDiffHasCompactSupport_univ
 
 /-- Time-derivative representative of the global cutoff-product jet. -/
 @[simp] theorem mulContDiffHasCompactSupport_univ_timeDeriv
-    {d : ℕ} {U : Set (TimeVelocity d)} {p : ℝ≥0∞}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {p : ℝ≥0∞}
     (w : ParabolicW12Function d U p) (hp : 1 ≤ p)
     {b : TimeVelocity d → ℝ} (hb : ContDiff ℝ (⊤ : ℕ∞) b)
     (hbCompact : HasCompactSupport b) (hU : IsOpen U)
@@ -293,7 +294,7 @@ noncomputable def mulContDiffHasCompactSupport_univ
 
 /-- Velocity-gradient representative of the global cutoff-product jet. -/
 @[simp] theorem mulContDiffHasCompactSupport_univ_velocityGrad
-    {d : ℕ} {U : Set (TimeVelocity d)} {p : ℝ≥0∞}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {p : ℝ≥0∞}
     (w : ParabolicW12Function d U p) (hp : 1 ≤ p)
     {b : TimeVelocity d → ℝ} (hb : ContDiff ℝ (⊤ : ℕ∞) b)
     (hbCompact : HasCompactSupport b) (hU : IsOpen U)
@@ -303,7 +304,7 @@ noncomputable def mulContDiffHasCompactSupport_univ
 
 /-- Ordered velocity-Hessian representative of the global cutoff-product jet. -/
 @[simp] theorem mulContDiffHasCompactSupport_univ_velocityHessian
-    {d : ℕ} {U : Set (TimeVelocity d)} {p : ℝ≥0∞}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {p : ℝ≥0∞}
     (w : ParabolicW12Function d U p) (hp : 1 ≤ p)
     {b : TimeVelocity d → ℝ} (hb : ContDiff ℝ (⊤ : ℕ∞) b)
     (hbCompact : HasCompactSupport b) (hU : IsOpen U)

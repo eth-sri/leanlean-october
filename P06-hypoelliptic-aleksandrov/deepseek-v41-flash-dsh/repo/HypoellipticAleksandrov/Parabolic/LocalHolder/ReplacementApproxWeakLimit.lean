@@ -6,6 +6,7 @@ public import HypoellipticAleksandrov.Parabolic.ParabolicWeakDerivativeFamilyL2N
 public import Mathlib.MeasureTheory.Function.L2Space
 public import Mathlib.MeasureTheory.Function.LpSpace.Complete
 public import Mathlib.MeasureTheory.Measure.SeparableMeasure
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Weak derivative families for strong L2 limits
 
@@ -21,7 +22,7 @@ open scoped Topology ENNReal BigOperators
 
 /-- Uniformly bounded weak derivative families survive strong L2 convergence of their roots. -/
 theorem exists_weakDerivativeFamily_testing_limit_of_tendsto_toLp {d L : ℕ}
-    (U : Set (TimeVelocity d)) (u : ℕ → TimeVelocity d → ℝ)
+    (U : HypoellipticAleksandrov.Parabolic.TVSet d) (u : ℕ → TimeVelocity d → ℝ)
     (D : ∀ n, ParabolicWeakDerivativeFamily d L U (u n))
     (hu : ∀ n, ParabolicMemLpOn U 2 (u n))
     (v : TimeVelocity d → ℝ) (hv : ParabolicMemLpOn U 2 v)

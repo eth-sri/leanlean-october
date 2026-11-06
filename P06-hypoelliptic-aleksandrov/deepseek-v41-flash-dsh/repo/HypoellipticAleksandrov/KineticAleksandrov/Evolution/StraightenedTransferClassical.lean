@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.StraightenedT
 public import HypoellipticAleksandrov.KineticAleksandrov.EvolutionProblem
 public import HypoellipticAleksandrov.Parabolic.ScalarDirichletData
 import Mathlib.Analysis.Calculus.ContDiff.FiniteDimension
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Classical solutions: straightened variables versus absolute variables
@@ -41,7 +42,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 variable {n : ℕ}
 
 /-- Membership of a point in the frontier of the moving domain. -/
-theorem mem_frontier_movingDomain_iff {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n} {σ : ℝ}
+theorem mem_frontier_movingDomain_iff {Ω : HypoellipticAleksandrov.VecSet n} {γ : ℝ → PDE.Vec n} {σ : ℝ}
     {y : PDE.Vec n} : y ∈ frontier (movingDomain Ω γ σ) ↔ y - γ σ ∈ frontier Ω := by
   have h : movingDomain Ω γ σ = (Homeomorph.subRight (γ σ)) ⁻¹' Ω := by
     rw [movingDomain, ← PDE.preimage_subRight_eq_translateSet]

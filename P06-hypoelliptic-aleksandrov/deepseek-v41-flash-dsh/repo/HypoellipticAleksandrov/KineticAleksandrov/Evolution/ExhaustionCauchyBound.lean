@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.ScalarMaximum
 public import HypoellipticAleksandrov.Parabolic.AffineScalarCalculus
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # The exhaustion-independent bound for supplied finite Dirichlet solutions
@@ -22,7 +24,7 @@ open scoped MatrixOrder
 /-- Zero-source, zero-lateral classical Dirichlet solutions inherit the terminal absolute
 bound on their entire closed finite cylinder, independently of the cylinder size. -/
 theorem abs_le_of_classicalBackwardDirichlet_zero
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {a τ : ℝ}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {a τ : ℝ}
     (hΩ : IsOpen Ω) (hΩb : Bornology.IsBounded Ω) (haτ : a < τ)
     (A : CoefficientField d) (β : ℝ → PDE.Vec d → PDE.Vec d)
     (hA : IsContinuousCoefficient A)

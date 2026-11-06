@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSeparatedPr
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSeparatedRawIntegrability
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.HessianCoefficientWeightedWeakIdentity
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.HessianCoefficientCancellationAlgebra
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Cancellation of divergence-form coefficient derivatives -/
 
@@ -19,7 +21,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 /-- The divergence derivatives of the principal coefficients cancel against the weak spatial
 Hessian identities for separated reverse-time tests. -/
 theorem reverseTime_separated_hessian_coefficient_cancellation
-    {d : ℕ} {Ω O : Set (PDE.Vec d)}
+    {d : ℕ} {Ω O : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (hO : IsOpen O) (hOΩ : O ⊆ Ω)
@@ -67,7 +69,7 @@ theorem reverseTime_separated_hessian_coefficient_cancellation
         (psi : PDE.WeakTestFunction O),
       (∫ z in Set.Ioo τ₁ τ₂ ×ˢ O,
           U z * (eta.deriv z.1 * psi z.2)
-          ∂(volume : Measure (TimeVelocity d))) =
+          ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
         -∫ z in Set.Ioo τ₁ τ₂ ×ˢ O,
           ((∑ i : Fin d, ∑ j : Fin d,
               reverseTimeCoefficient r₁ a z.1 z.2 i j * H z j i) +
@@ -76,11 +78,11 @@ theorem reverseTime_separated_hessian_coefficient_cancellation
             reverseTimeScalarCoefficient r₁ c z.1 z.2 * U z -
             reverseTimeScalarCoefficient r₁ F z.1 z.2) *
             (eta z.1 * psi z.2)
-          ∂(volume : Measure (TimeVelocity d)) := by
+          ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   intro eta psi
-  let S : Set (TimeVelocity d) := Set.Ioo τ₁ τ₂ ×ˢ O
-  let globalS : Set (TimeVelocity d) := reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω
-  let μ : Measure (TimeVelocity d) := timeVelocityVolumeOn S
+  let S : HypoellipticAleksandrov.Parabolic.TVSet d := Set.Ioo τ₁ τ₂ ×ˢ O
+  let globalS : HypoellipticAleksandrov.Parabolic.TVSet d := reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω
+  let μ : HypoellipticAleksandrov.Parabolic.TVMeasure d := timeVelocityVolumeOn S
   let mass : TimeVelocity d → ℝ := fun z => U z * (eta.deriv z.1 * psi z.2)
   let grouped : Fin d → Fin d → TimeVelocity d → ℝ := fun i j z =>
     G j z * (reverseTimeCoefficient r₁ a z.1 z.2 i j *

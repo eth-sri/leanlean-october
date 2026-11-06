@@ -69,23 +69,25 @@ theorem volume_smul_normalizedVolumeOn_eq_volumeOn
     volume U • normalizedVolumeOn U = volumeOn U := by
   rw [normalizedVolumeOn, smul_smul,
     ENNReal.mul_inv_cancel hUPos.ne' hUTop.ne, one_smul]
+section
+variable {d : ℕ} {E : Type*} [NormedAddCommGroup E]
 
 /-- The raw extended-real `L^p` norm with respect to volume restricted to `U`. -/
 noncomputable def eLpNormOn
-    {d : ℕ} {E : Type*} [NormedAddCommGroup E]
+    
     (U : Set (Vec d)) (p : ℝ≥0∞) (f : Vec d → E) : ℝ≥0∞ :=
   eLpNorm f p (volumeOn U)
 
 /-- The raw extended-real normalized `L^p` norm on `U`. -/
 noncomputable def eLpMeanNormOn
-    {d : ℕ} {E : Type*} [NormedAddCommGroup E]
+    
     (U : Set (Vec d)) (p : ℝ≥0∞) (f : Vec d → E) : ℝ≥0∞ :=
   eLpNorm f p (normalizedVolumeOn U)
 
 /-- Exact conversion from the normalized to the unnormalized extended
 `L^p` norm. -/
 theorem eLpMeanNormOn_eq_volume_inv_rpow_mul_eLpNormOn
-    {d : ℕ} {E : Type*} [NormedAddCommGroup E]
+    
     {U : Set (Vec d)} (hUTop : volume U < ∞)
     (p : ℝ≥0∞) (f : Vec d → E) :
     eLpMeanNormOn U p f =
@@ -100,7 +102,7 @@ theorem eLpMeanNormOn_eq_volume_inv_rpow_mul_eLpNormOn
 /-- Exact conversion from the unnormalized to the normalized extended
 `L^p` norm on a positive finite-volume domain. -/
 theorem eLpNormOn_eq_volume_rpow_mul_eLpMeanNormOn
-    {d : ℕ} {E : Type*} [NormedAddCommGroup E]
+    
     {U : Set (Vec d)}
     (hUPos : 0 < volume U) (hUTop : volume U < ∞)
     (p : ℝ≥0∞) (f : Vec d → E) :
@@ -119,11 +121,12 @@ theorem eLpNormOn_eq_volume_rpow_mul_eLpMeanNormOn
       rfl
 
 theorem eLpNormOn_congr_ae
-    {d : ℕ} {E : Type*} [NormedAddCommGroup E]
+    
     {U : Set (Vec d)} {p : ℝ≥0∞} {f g : Vec d → E}
     (hfg : f =ᵐ[volumeOn U] g) :
     eLpNormOn U p f = eLpNormOn U p g := by
   simpa only [eLpNormOn] using MeasureTheory.eLpNorm_congr_ae hfg
+end
 
 /-- The raw restricted `L^p` norm of the Euclidean magnitude of a vector field. -/
 noncomputable def euclideanFieldELpNormOn

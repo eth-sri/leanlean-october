@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.FourierBounds
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.DensityIntegral
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Fourier integral bridges on real and complex bounded Borel data -/
 
@@ -12,7 +13,7 @@ open MeasureTheory Set
 open scoped ENNReal
 
 /-- Complex bounded Borel integration uses the explicit complex multiplication pairing. -/
-theorem fourierProjection_integral_complex {d : ℕ} {Ω : Set (PDE.Vec d)}
+theorem fourierProjection_integral_complex {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (q : EvolutionQuery Ω γ)
     (ξ : PDE.Vec d) (ν : ComplexMeasure (PDE.Vec d)) (hν : IsFourierProjection K q ξ ν)
     (f : PDE.Vec d → ℂ) (hf : Measurable f) (hbounded : ∃ C : ℝ, ∀ v, ‖f v‖ ≤ C) :

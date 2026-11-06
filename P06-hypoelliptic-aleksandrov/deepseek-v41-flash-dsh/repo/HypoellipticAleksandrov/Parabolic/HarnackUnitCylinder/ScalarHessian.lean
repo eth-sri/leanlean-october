@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.ScalarClassical
 public import Mathlib.Analysis.Calculus.FDeriv.Symmetric
 public import Mathlib.Analysis.Calculus.FDeriv.CompCLM
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Symmetry of the scalar spatial Hessian -/
 
@@ -27,7 +28,7 @@ theorem scalarSpatialHessian_eq_secondFDeriv
 
 /-- Spatial C² slices give the exact scalar Hessian symmetry, without time regularity. -/
 theorem scalarSpatialHessian_isSymm_of_c12
-    {d : ℕ} {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {u : TimeVelocity d → ℝ}
     (hu : IsScalarC12On u U) {z : TimeVelocity d} (hz : z ∈ U) :
     (scalarSpatialHessian u z).IsSymm := by
   have hs := hu.spatialSlice_contDiffAt hz

@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.Parabolic.ABP
 public import HypoellipticAleksandrov.Parabolic.ExponentialConjugation
 public import HypoellipticAleksandrov.Parabolic.LocalGluing
 public import HypoellipticAleksandrov.Parabolic.ScalingMeasure
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # The local ABP bridge for the parabolic Harnack argument
@@ -23,38 +24,41 @@ namespace HypoellipticAleksandrov.Parabolic
 
 open Filter MeasureTheory Set
 open scoped MatrixOrder Topology
+section
+variable {d : ℕ} (v0 : PDE.Vec d)
 
 /-- The affine map from the unit cylinder to the local ABP cylinder centered
 at `v0`. -/
-def localABPAffine {d : ℕ} (v0 : PDE.Vec d) : TimeVelocity d → TimeVelocity d :=
+def localABPAffine  : TimeVelocity d → TimeVelocity d :=
   parabolicAffine (3 / 4) v0 (1 / 2)
 
 /-- The open inner cylinder `(3/4, 1) × B_(1/2)(v0)`, presented as the affine
 image of the reference parabolic interior. -/
-def localABPInterior {d : ℕ} (v0 : PDE.Vec d) : Set (TimeVelocity d) :=
+def localABPInterior  : HypoellipticAleksandrov.Parabolic.TVSet d :=
   localABPAffine v0 '' parabolicInterior 1 0
 
 /-- The compact closure of the local inner ABP cylinder. -/
-def localABPClosure {d : ℕ} (v0 : PDE.Vec d) : Set (TimeVelocity d) :=
+def localABPClosure  : HypoellipticAleksandrov.Parabolic.TVSet d :=
   localABPAffine v0 '' closedParabolicCylinder 1 0
 
 /-- The initial-plus-lateral, but not terminal, boundary of the local ABP
 cylinder. -/
-def localABPForwardBoundary {d : ℕ} (v0 : PDE.Vec d) : Set (TimeVelocity d) :=
+def localABPForwardBoundary  : HypoellipticAleksandrov.Parabolic.TVSet d :=
   localABPAffine v0 '' forwardParabolicBoundary 1 0
 
 /-- The local ABP closure is compact. -/
-theorem isCompact_localABPClosure {d : ℕ} (v0 : PDE.Vec d) :
+theorem isCompact_localABPClosure  :
     IsCompact (localABPClosure v0) := by
   unfold localABPClosure localABPAffine
   exact (isCompact_closedParabolicCylinder 1 0).image
     (contDiff_parabolicAffine (3 / 4) v0 (1 / 2)).continuous
 
 /-- The local ABP interior is contained in its compact closure. -/
-theorem localABPInterior_subset_closure {d : ℕ} (v0 : PDE.Vec d) :
+theorem localABPInterior_subset_closure  :
     localABPInterior v0 ⊆ localABPClosure v0 := by
   unfold localABPInterior localABPClosure
   exact Set.image_mono (parabolicInterior_subset_closedParabolicCylinder 1 0)
+end
 
 private theorem forwardParabolicBoundary_subset_closedParabolicCylinder_one
     {d : ℕ} :
@@ -118,7 +122,7 @@ cylinder actually used by the cutoff-and-pullback construction. -/
 private theorem exists_local_abp_inner_cylinder_core
     (d : ℕ) (hd : 0 < d) (lam : ℝ) (hlam : 0 < lam) :
     ∃ C : ℝ, 0 < C ∧
-      ∀ (U : Set (TimeVelocity d)) (B : CoefficientField d)
+      ∀ (U : HypoellipticAleksandrov.Parabolic.TVSet d) (B : CoefficientField d)
         (w F : TimeVelocity d → ℝ) (v0 : PDE.Vec d) (rho : ℝ),
         IsOpen U →
         localABPClosure v0 ⊆ U →
@@ -140,7 +144,7 @@ private theorem exists_local_abp_inner_cylinder_core
     parabolic_abp_unit_of_lower_ellipticity d hd lam hlam
   refine ⟨C, hC, ?_⟩
   intro U B w F v0 rho hU hKU hB hw hF hLow hFnonneg hineq hboundary
-  let K : Set (TimeVelocity d) := localABPClosure v0
+  let K : HypoellipticAleksandrov.Parabolic.TVSet d := localABPClosure v0
   obtain ⟨b, hbSmooth, hbOne, hbSupport⟩ :=
     exists_smooth_cutoff_tsupport_subset (isCompact_localABPClosure v0) hU hKU
   let ew : TimeVelocity d → ℝ := exponentialConjugate rho (3 / 4) w
@@ -334,7 +338,7 @@ local cylinder used by its cutoff-and-pullback proof. -/
 theorem exists_local_abp_inner_cylinder_of_lower_ellipticity_on_closure
     (d : ℕ) (hd : 0 < d) (lam : ℝ) (hlam : 0 < lam) :
     ∃ C : ℝ, 0 < C ∧
-      ∀ (U : Set (TimeVelocity d)) (B : CoefficientField d)
+      ∀ (U : HypoellipticAleksandrov.Parabolic.TVSet d) (B : CoefficientField d)
         (w F : TimeVelocity d → ℝ) (v0 : PDE.Vec d) (rho : ℝ),
         IsOpen U →
         localABPClosure v0 ⊆ U →

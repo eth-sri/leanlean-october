@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.CompactlySupportedSpatialL2
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.NestedCutoffLocality
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialDifferenceQuotientBounds
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Definition of the nonprincipal localized commutator remainder
@@ -23,7 +25,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 /-- The six nonprincipal terms in the fixed-time localized reverse-time
 commutator, with the scalar time test deliberately factored out. -/
 noncomputable def localizedSpatialDifferenceQuotientH10NonprincipalRemainder
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₁ : ℝ) (hΩ : IsOpen Ω)
     (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)

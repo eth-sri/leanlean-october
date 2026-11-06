@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.DuhamelSlice
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Continuous zero traces for the kinetic Duhamel potential -/
 
@@ -9,7 +10,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set Filter
 open scoped Topology
-variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d}
 
 /-- Dominated convergence gives continuity of the kinetic potential up to the past boundary. -/
 theorem continuousWithinAt_duhamelPotential (hΩa : IsAdmissibleEvolutionDomain Ω)

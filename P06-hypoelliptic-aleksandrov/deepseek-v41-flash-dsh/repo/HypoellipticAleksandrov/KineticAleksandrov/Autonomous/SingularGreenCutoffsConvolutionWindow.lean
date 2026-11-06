@@ -27,19 +27,19 @@ theorem barrier_kernel_uniform_bounds (κ : ℝ → ℝ) (hκ : ContDiff ℝ 2 �
   refine ⟨max K0 0, max K1 0, max K2 0, le_max_right _ _, le_max_right _ _,
     le_max_right _ _, ?_, ?_, ?_⟩
   · intro x
-    simpa only [Prod.fst_sub, Prod.snd_sub, Real.norm_eq_abs] using (hb0 x).trans (le_max_left K0 0)
+    simpa using (hb0 x).trans (le_max_left K0 0)
   · intro x
-    simpa only [Prod.fst_sub, Prod.snd_sub, Real.norm_eq_abs] using (hb1 x).trans (le_max_left K1 0)
+    simpa using (hb1 x).trans (le_max_left K1 0)
   · intro x
-    simpa only [Prod.fst_sub, Prod.snd_sub, Real.norm_eq_abs] using (hb2 x).trans (le_max_left K2 0)
+    simpa using (hb2 x).trans (le_max_left K2 0)
 
 /-- Both scalar coordinates of a parameter in the unit ball stay in their unit intervals. -/
 theorem barrier_parameter_ball_bounds {q q0 : ℝ × ℝ} (hq : q ∈ Metric.ball q0 1) :
     |q.1 - q0.1| < 1 ∧ |q.2 - q0.2| < 1 := by
   rw [Metric.mem_ball, dist_eq_norm] at hq
-  exact ⟨by simpa only [Prod.fst_sub, Prod.snd_sub, Real.norm_eq_abs] using (norm_fst_le (q -
+  exact ⟨by simpa using (norm_fst_le (q -
     q0)).trans_lt hq,
-    by simpa only [Prod.fst_sub, Prod.snd_sub, Real.norm_eq_abs] using (norm_snd_le (q -
+    by simpa using (norm_snd_le (q -
       q0)).trans_lt hq⟩
 
 /-- A compact integration window contains every nearby translated kernel support. -/
@@ -57,14 +57,14 @@ theorem barrier_convolution_support_window (κ : ℝ → ℝ) (hs : HasCompactSu
     rw [Real.norm_eq_abs] at hsmall
     have hqabs : |q.1| ≤ |q0.1| + |q.1 - q0.1| := by
       calc |q.1| = |q0.1 + (q.1 - q0.1)| := by congr 1; ring
-           _ ≤ _ := by simpa only [Real.norm_eq_abs] using norm_add_le q0.1 (q.1 - q0.1)
+           _ ≤ _ := by simpa using norm_add_le q0.1 (q.1 - q0.1)
     have hYabs : |Y| ≤ |q.1| + |Y - q.1| := by
       calc |Y| = |q.1 + (Y - q.1)| := by congr 1; ring
-           _ ≤ _ := by simpa only [Real.norm_eq_abs] using norm_add_le q.1 (Y - q.1)
+           _ ≤ _ := by simpa using norm_add_le q.1 (Y - q.1)
     have hYlarge : R < |Y| := lt_of_not_ge (fun hh => hY (abs_le.mp hh))
     rw [abs_sub_comm Y q.1] at hYabs
     dsimp only [R] at hYlarge
-    linarith only [hqabs, hqX, hYabs, hsmall, hYlarge]
+    linarith
   exact ⟨image_eq_zero_of_notMem_tsupport hn, deriv_of_notMem_tsupport hn,
     deriv_of_notMem_tsupport (fun hh => hn (tsupport_deriv_subset hh))⟩
 

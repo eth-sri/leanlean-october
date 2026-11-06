@@ -18,23 +18,19 @@ noncomputable section
 open scoped ENNReal
 
 namespace MeasureTheory.Lp
+section
+variable {α E : Type*} [MeasurableSpace α] [NormedAddCommGroup E] [NormedSpace ℝ E] {p : ℝ≥0∞} [Fact (1 ≤ p)] {μ : Measure α} {s : Set α}
 
 /-- The quotient representative for extension by zero. -/
 def zeroExtend
-    {α E : Type*} [MeasurableSpace α]
-    [NormedAddCommGroup E] [NormedSpace ℝ E]
-    {p : ℝ≥0∞} [Fact (1 ≤ p)]
-    {μ : Measure α} {s : Set α}
+    
     (hs : MeasurableSet s) (f : Lp E p (μ.restrict s)) :
     Lp E p μ :=
   ((memLp_indicator_iff_restrict hs).mpr (Lp.memLp f)).toLp
     (Set.indicator s (⇑f))
 
 private theorem coeFn_zeroExtend
-    {α E : Type*} [MeasurableSpace α]
-    [NormedAddCommGroup E] [NormedSpace ℝ E]
-    {p : ℝ≥0∞} [Fact (1 ≤ p)]
-    {μ : Measure α} {s : Set α}
+    
     (hs : MeasurableSet s) (f : Lp E p (μ.restrict s)) :
     ⇑(zeroExtend hs f) =ᵐ[μ] Set.indicator s (⇑f) := by
   change ⇑(((memLp_indicator_iff_restrict hs).mpr (Lp.memLp f)).toLp
@@ -43,10 +39,7 @@ private theorem coeFn_zeroExtend
     ((memLp_indicator_iff_restrict hs).mpr (Lp.memLp f))
 
 private theorem indicator_add_ae
-    {α E : Type*} [MeasurableSpace α]
-    [NormedAddCommGroup E] [NormedSpace ℝ E]
-    {p : ℝ≥0∞} [Fact (1 ≤ p)]
-    {μ : Measure α} {s : Set α}
+    
     (f g : Lp E p (μ.restrict s)) :
     Set.indicator s (⇑(f + g)) =ᵐ[μ]
       Set.indicator s (⇑f) + Set.indicator s (⇑g) := by
@@ -56,10 +49,7 @@ private theorem indicator_add_ae
   · simp only [Pi.add_apply, Set.indicator_of_notMem hx, zero_add]
 
 private theorem indicator_smul_ae
-    {α E : Type*} [MeasurableSpace α]
-    [NormedAddCommGroup E] [NormedSpace ℝ E]
-    {p : ℝ≥0∞} [Fact (1 ≤ p)]
-    {μ : Measure α} {s : Set α}
+    
     (c : ℝ) (f : Lp E p (μ.restrict s)) :
     Set.indicator s (⇑(c • f)) =ᵐ[μ] c • Set.indicator s (⇑f) := by
   filter_upwards [ae_imp_of_ae_restrict (Lp.coeFn_smul c f)] with x hcf
@@ -70,10 +60,7 @@ private theorem indicator_smul_ae
 /-- Extension by zero from `Lp E p (μ.restrict s)` to `Lp E p μ`, as a
 linear isometry. -/
 noncomputable def zeroExtendLinearIsometry
-    {α E : Type*} [MeasurableSpace α]
-    [NormedAddCommGroup E] [NormedSpace ℝ E]
-    {p : ℝ≥0∞} [Fact (1 ≤ p)]
-    {μ : Measure α} {s : Set α}
+    
     (hs : MeasurableSet s) :
     Lp E p (μ.restrict s) →ₗᵢ[ℝ] Lp E p μ where
   toFun f := zeroExtend hs f
@@ -100,13 +87,11 @@ noncomputable def zeroExtendLinearIsometry
 /-- The zero-extension is represented almost everywhere by the literal
 indicator of the restricted-volume representative. -/
 theorem coeFn_zeroExtendLinearIsometry
-    {α E : Type*} [MeasurableSpace α]
-    [NormedAddCommGroup E] [NormedSpace ℝ E]
-    {p : ℝ≥0∞} [Fact (1 ≤ p)]
-    {μ : Measure α} {s : Set α}
+    
     (hs : MeasurableSet s) (f : Lp E p (μ.restrict s)) :
     ⇑(zeroExtendLinearIsometry hs f) =ᵐ[μ]
       Set.indicator s (⇑f) :=
   coeFn_zeroExtend hs f
+end
 
 end MeasureTheory.Lp

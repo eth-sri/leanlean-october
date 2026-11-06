@@ -11,10 +11,11 @@ import Mathlib.Tactic
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
+section
+variable (s : ℝ) (hs : 0 < s) (φ : ℝ × ℝ → ℝ)
 
 /-- The position derivative acquires exactly the position-rescaling factor. -/
-theorem bellmanPositionEquiv_fderiv_position (s : ℝ) (hs : 0 < s)
-    (φ : ℝ × ℝ → ℝ) (hφ : Differentiable ℝ φ) (q : ℝ × ℝ) :
+theorem bellmanPositionEquiv_fderiv_position  (hφ : Differentiable ℝ φ) (q : ℝ × ℝ) :
     fderiv ℝ (fun z => φ (bellmanPositionEquiv s hs z)) q (1, 0) =
       s * fderiv ℝ φ (bellmanPositionEquiv s hs q) (1, 0) := by
   let T := bellmanPositionEquiv s hs
@@ -28,8 +29,7 @@ theorem bellmanPositionEquiv_fderiv_position (s : ℝ) (hs : 0 < s)
   rw [he, map_smul, smul_eq_mul]
 
 /-- Velocity differentiation is unchanged by position rescaling. -/
-theorem bellmanPositionEquiv_fderiv_velocity (s : ℝ) (hs : 0 < s)
-    (φ : ℝ × ℝ → ℝ) (hφ : Differentiable ℝ φ) (q : ℝ × ℝ) :
+theorem bellmanPositionEquiv_fderiv_velocity  (hφ : Differentiable ℝ φ) (q : ℝ × ℝ) :
     fderiv ℝ (fun z => φ (bellmanPositionEquiv s hs z)) q (0, 1) =
       fderiv ℝ φ (bellmanPositionEquiv s hs q) (0, 1) := by
   let T := bellmanPositionEquiv s hs
@@ -41,14 +41,14 @@ theorem bellmanPositionEquiv_fderiv_velocity (s : ℝ) (hs : 0 < s)
   rfl
 
 /-- The second velocity derivative is unchanged by position rescaling. -/
-theorem bellmanPositionEquiv_fderiv_velocity_twice (s : ℝ) (hs : 0 < s)
-    (φ : ℝ × ℝ → ℝ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (q : ℝ × ℝ) :
+theorem bellmanPositionEquiv_fderiv_velocity_twice  (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (q : ℝ × ℝ) :
     fderiv ℝ (fun z => fderiv ℝ (fun w => φ (bellmanPositionEquiv s hs w)) z (0, 1))
       q (0, 1) =
     fderiv ℝ (fun z => fderiv ℝ φ z (0, 1)) (bellmanPositionEquiv s hs q) (0, 1) := by
   simp only [bellmanPositionEquiv_fderiv_velocity s hs φ (hφ.differentiable (by simp))]
   exact bellmanPositionEquiv_fderiv_velocity s hs _
     ((bellman_contDiff_direction hφ (0, 1)).differentiable (by simp)) q
+end
 
 /-- The adjoint identity is preserved by the literal normalization of both measures. -/
 theorem IsBellmanStationaryAdjointPair.map_position {μ η : Measure BellmanPuncturedPlane}

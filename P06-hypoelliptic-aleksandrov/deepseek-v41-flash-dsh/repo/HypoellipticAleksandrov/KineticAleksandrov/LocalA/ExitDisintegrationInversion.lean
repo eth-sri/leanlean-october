@@ -33,15 +33,12 @@ theorem measurable_exitJointDensity {d : ℕ} (ν : Measure (PDE.Vec d × TimeVe
       ((measurable_exitFourierRep ν).comp
         (measurable_snd.prodMk (measurable_snd.comp measurable_fst)))
   exact hm.stronglyMeasurable.integral_prod_right.measurable
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B) (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R) (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
 
 /-- Joint integrability of the Fourier representatives follows from the actual decay. -/
 theorem ballExitFourierRep_integrable_prod
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
-    (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
+    
     (hv : P.1.velocity ∈ PDE.euclideanBall v₀ (3 * R / 4))
     (hT : T.1 - P.1.time = R ^ 2 / 8) :
     let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
@@ -61,12 +58,7 @@ theorem ballExitFourierRep_integrable_prod
 
 /-- Almost every conditional position measure has the explicit inverse-integral density. -/
 theorem ballExitPositionKernel_density
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
-    (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
+    
     (hv : P.1.velocity ∈ PDE.euclideanBall v₀ (3 * R / 4))
     (hT : T.1 - P.1.time = R ^ 2 / 8) :
     let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
@@ -86,12 +78,7 @@ theorem ballExitPositionKernel_density
 
 /-- The joint inverse density reconstructs the actual exit measure over its own marginal. -/
 theorem ballExit_eq_withDensity_exitJointDensity
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
-    (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
+    
     (hv : P.1.velocity ∈ PDE.euclideanBall v₀ (3 * R / 4))
     (hT : T.1 - P.1.time = R ^ 2 / 8) :
     let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
@@ -140,5 +127,6 @@ theorem ballExit_eq_withDensity_exitJointDensity
   · exact ((hm.comp measurable_swap).ennreal_ofReal.indicator
       (hS.preimage measurable_swap))
   · exact measurable_swap
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

@@ -5,6 +5,8 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.OriginalTimeProductRep
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeInteriorCoefficientMajorant
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.H10InteriorCaccioppoliTimeDerivative
 public import HypoellipticAleksandrov.Parabolic.ParabolicW12TimeReflection
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Original-time local L2 strong jets
@@ -25,7 +27,7 @@ open scoped BigOperators ENNReal MatrixOrder Matrix.Norms.Elementwise
 /-- A supplied global original-time value representative admits a local
 anisotropic `L²` weak jet satisfying the literal original-time equation. -/
 theorem exists_originalTimeLocalL2StrongJet_of_valueRepresentative
-    {d : ℕ} {Ω O : Set (PDE.Vec d)}
+    {d : ℕ} {Ω O : HypoellipticAleksandrov.VecSet d}
     (hd : 0 < d)
     (r₀ s₀ s₁ r₁ : ℝ)
     (h₀₁ : r₀ < r₁)
@@ -108,7 +110,7 @@ theorem exists_originalTimeLocalL2StrongJet_of_valueRepresentative
       hWmem, hWweak⟩ :=
     hrun a b c F haSmooth hbSmooth hcSmooth hFSmooth hLower hUpper hcNonpos
       hA hB hBD hq hqD hfD initial u g hdu hu
-  let Q : Set (TimeVelocity d) := Set.Ioo (r₁ - s₁) (r₁ - s₀) ×ˢ O
+  let Q : HypoellipticAleksandrov.Parabolic.TVSet d := Set.Ioo (r₁ - s₁) (r₁ - s₀) ×ˢ O
   let W : TimeVelocity d → ℝ := fun z =>
     (∑ i : Fin d, ∑ j : Fin d,
       reverseTimeCoefficient r₁ a z.1 z.2 i j * H z j i) +
@@ -226,7 +228,7 @@ theorem exists_originalTimeLocalL2StrongJet_of_valueRepresentative
 /-- A supplied reverse-time variational solution has one global original-time
 value representative admitting compatible local anisotropic `L²` weak jets. -/
 theorem exists_originalTimeValueRepresentative_localL2StrongJets
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hd : 0 < d)
     (r₀ r₁ : ℝ)
     (h₀₁ : r₀ < r₁)
@@ -273,7 +275,7 @@ theorem exists_originalTimeValueRepresentative_localL2StrongJets
       (∀ᵐ r ∂volume.restrict (Set.Ioo r₀ r₁),
         (fun y => w (r, y)) =ᵐ[PDE.volumeOn Ω]
           fun y => valueCLM hΩ (u (r₁ - r)) y) ∧
-      ∀ (s₀ s₁ : ℝ) (O : Set (PDE.Vec d)),
+      ∀ (s₀ s₁ : ℝ) (O : HypoellipticAleksandrov.VecSet d),
         r₀ < s₀ →
         s₀ < s₁ →
         s₁ < r₁ →

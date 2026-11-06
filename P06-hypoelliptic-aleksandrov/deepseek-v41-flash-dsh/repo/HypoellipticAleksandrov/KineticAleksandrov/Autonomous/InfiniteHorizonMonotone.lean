@@ -9,13 +9,12 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.InfiniteHori
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (H1 H2 : Interval) (hsub : H1.carrier ⊆ H2.carrier)
 
 /-- The actual finite Green measure increases when the velocity interval is enlarged. -/
 theorem stripGreen_domain_mono_finite
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H1 H2 : Interval)
-    (hsub : H1.carrier ⊆ H2.carrier) (T : ℝ) (e : StripPole H1 (T : WithTop ℝ)) :
+     (T : ℝ) (e : StripPole H1 (T : WithTop ℝ)) :
     stripGreen hH hLE hlam hLam A H1 T e ≤
       stripGreen hH hLE hlam hLam A H2 T (nestedPoleInclusion H1 H2 hsub T e) := by
   have h := nestedIntervalGreen_identity hH hLE hlam hLam A H1 H2 hsub
@@ -27,10 +26,7 @@ theorem stripGreen_domain_mono_finite
 
 /-- Domain monotonicity survives the genuine increasing-limit construction of infinite Green. -/
 theorem stripGreen_domain_mono_infinite
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H1 H2 : Interval)
-    (hsub : H1.carrier ⊆ H2.carrier) (e : StripPole H1 ⊤) :
+     (e : StripPole H1 ⊤) :
     stripGreen hH hLE hlam hLam A H1 ⊤ e ≤
       stripGreen hH hLE hlam hLam A H2 ⊤ (nestedPoleInclusion H1 H2 hsub ⊤ e) := by
   rw [stripGreen_infinite_eq_iSup hH hLE hlam hLam A H1 e]
@@ -48,5 +44,6 @@ theorem stripGreen_domain_mono_infinite
     (nestedPoleInclusion H1 H2 hsub ⊤ e) T ht
   have heq := congrArg (stripGreen hH hLE hlam hLam A H2 T) hfinite
   exact h.trans (heq ▸ hinc.symm ▸ Measure.restrict_le_self)
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

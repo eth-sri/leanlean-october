@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.WholeSpaceQu
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.WholeSpaceCoefficient
 public import HypoellipticAleksandrov.Parabolic.ScalarMaximum
 public import HypoellipticAleksandrov.Parabolic.ScalarDirichletData
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Maximum-principle comparison with the occupation quadratic -/
 

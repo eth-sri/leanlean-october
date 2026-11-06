@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.Duhamel
 import HypoellipticAleksandrov.KineticAleksandrov.Occupation.ParabolicDuhamelGreen
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Absolute-time Green representation of the kinetic Duhamel potential -/
 
@@ -13,7 +14,7 @@ open Occupation
 open scoped ENNReal ProbabilityTheory
 
 /-- The kinetic Duhamel potential equals the supplied Green integral in absolute time. -/
-theorem duhamelPotential_eq_green {d : ℕ} {Ω : Set (PDE.Vec d)}
+theorem duhamelPotential_eq_green {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω)
     (hγ : Continuous γ) (T : ℝ) (g : KineticPoint d → ℝ)
     (hg0 : ∀ q, 0 ≤ g q) (hgcont : Continuous g) (hgc : HasCompactSupport g)

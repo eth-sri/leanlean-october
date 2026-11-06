@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.Green
 public import HypoellipticAleksandrov.Geometry.KineticPointMeasure
 import Mathlib.Probability.Kernel.MeasurableIntegral
 import Mathlib.MeasureTheory.Integral.Prod
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Absolute-time Duhamel integrals without default evolution queries -/
 
@@ -12,16 +13,16 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set
 open scoped ENNReal ProbabilityTheory
+section
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ)
 
 /-- Integrate a source at the terminal time of a valid evolution query. -/
-def duhamelSourceIntegral {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (K : MovingFiberKernel Ω γ) (g : KineticPoint d → ℝ)
+def duhamelSourceIntegral  (g : KineticPoint d → ℝ)
     (q : EvolutionQuery Ω γ) : ℝ :=
   ∫ w, g ⟨q.1.2.1, w.1, w.2⟩ ∂K.master q
 
 /-- The source-time integrand is zero outside the valid starting fiber. -/
-def duhamelIntegrand {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (K : MovingFiberKernel Ω γ) (g : KineticPoint d → ℝ)
+def duhamelIntegrand  (g : KineticPoint d → ℝ)
     (p : KineticPoint d) (r : ℝ) : ℝ := by
   classical
   exact if h : p.time ≤ r ∧ p.position ∈ movingDomain Ω γ p.time then
@@ -30,21 +31,18 @@ def duhamelIntegrand {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
   else 0
 
 /-- The Duhamel potential is the absolute-time source integral, extended by zero off the fiber. -/
-def duhamelPotential {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (K : MovingFiberKernel Ω γ) (τplus : ℝ) (g : KineticPoint d → ℝ)
+def duhamelPotential  (τplus : ℝ) (g : KineticPoint d → ℝ)
     (p : KineticPoint d) : ℝ :=
   ∫ r in Set.Ioc p.time τplus, duhamelIntegrand K g p r
 
 /-- Nonnegative sources have nonnegative kernel integrals. -/
-theorem duhamelSourceIntegral_nonneg {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (g : KineticPoint d → ℝ)
+theorem duhamelSourceIntegral_nonneg  (g : KineticPoint d → ℝ)
     (hgn : ∀ p, 0 ≤ g p) (q : EvolutionQuery Ω γ) :
     0 ≤ duhamelSourceIntegral K g q :=
   integral_nonneg (fun w => hgn ⟨q.1.2.1, w.1, w.2⟩)
 
 /-- Contraction bounds each nonnegative source-time kernel integral. -/
-theorem duhamelSourceIntegral_le {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (g : KineticPoint d → ℝ)
+theorem duhamelSourceIntegral_le  (g : KineticPoint d → ℝ)
     (hgn : ∀ p, 0 ≤ g p) (C : ℝ) (hC : 0 ≤ C) (hgb : ∀ p, g p ≤ C)
     (q : EvolutionQuery Ω γ) : duhamelSourceIntegral K g q ≤ C := by
   have hn : ‖duhamelSourceIntegral K g q‖ ≤ C * (K.master q).real univ := by
@@ -59,8 +57,7 @@ theorem duhamelSourceIntegral_le {d : ℕ} {Ω : Set (PDE.Vec d)}
   exact (le_abs_self _).trans (hn.trans (by nlinarith))
 
 /-- The valid-branch source-time integrand is nonnegative. -/
-theorem duhamelIntegrand_nonneg {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (g : KineticPoint d → ℝ)
+theorem duhamelIntegrand_nonneg  (g : KineticPoint d → ℝ)
     (hgn : ∀ p, 0 ≤ g p) (p : KineticPoint d) (r : ℝ) :
     0 ≤ duhamelIntegrand K g p r := by
   unfold duhamelIntegrand
@@ -69,8 +66,7 @@ theorem duhamelIntegrand_nonneg {d : ℕ} {Ω : Set (PDE.Vec d)}
   · exact le_rfl
 
 /-- Contraction also bounds the integrand on its zero branch. -/
-theorem duhamelIntegrand_le {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (g : KineticPoint d → ℝ)
+theorem duhamelIntegrand_le  (g : KineticPoint d → ℝ)
     (hgn : ∀ p, 0 ≤ g p) (C : ℝ) (hC : 0 ≤ C) (hgb : ∀ p, g p ≤ C)
     (p : KineticPoint d) (r : ℝ) : duhamelIntegrand K g p r ≤ C := by
   unfold duhamelIntegrand
@@ -79,8 +75,7 @@ theorem duhamelIntegrand_le {d : ℕ} {Ω : Set (PDE.Vec d)}
   · exact hC
 
 /-- Query-dependent integration of a measurable source is Borel. -/
-theorem measurable_duhamelSourceIntegral {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (g : KineticPoint d → ℝ)
+theorem measurable_duhamelSourceIntegral  (g : KineticPoint d → ℝ)
     (hg : Measurable g) : Measurable (duhamelSourceIntegral K g) := by
   have hm : Measurable (fun q : EvolutionQuery Ω γ × EvolutionAmbientState d =>
       g ⟨q.1.1.2.1, q.2.1, q.2.2⟩) := by
@@ -92,8 +87,7 @@ theorem measurable_duhamelSourceIntegral {d : ℕ} {Ω : Set (PDE.Vec d)}
   exact (hm.stronglyMeasurable.integral_kernel_prod_right' (κ := K.master)).measurable
 
 /-- Joint Borel dependence of the source-time integrand uses no default kernel query. -/
-theorem measurable_duhamelIntegrand {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω)
+theorem measurable_duhamelIntegrand  (hΩ : MeasurableSet Ω)
     (hγ : Continuous γ) (g : KineticPoint d → ℝ) (hg : Measurable g) :
     Measurable (fun q : KineticPoint d × ℝ => duhamelIntegrand K g q.1 q.2) := by
   classical
@@ -125,8 +119,7 @@ theorem measurable_duhamelIntegrand {d : ℕ} {Ω : Set (PDE.Vec d)}
   exact ((measurable_duhamelSourceIntegral K g hg).comp hQ).dite measurable_const hD
 
 /-- The absolute-time Duhamel potential is Borel for every measurable source. -/
-theorem measurable_duhamelPotential {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω)
+theorem measurable_duhamelPotential  (hΩ : MeasurableSet Ω)
     (hγ : Continuous γ) (τplus : ℝ) (g : KineticPoint d → ℝ) (hg : Measurable g) :
     Measurable (duhamelPotential K τplus g) := by
   let D : Set (KineticPoint d × ℝ) := {q | q.1.time < q.2 ∧ q.2 ≤ τplus}
@@ -140,8 +133,7 @@ theorem measurable_duhamelPotential {d : ℕ} {Ω : Set (PDE.Vec d)}
   rfl
 
 /-- Nonnegative bounded sources satisfy the advertised finite-horizon Duhamel estimate. -/
-theorem duhamelPotential_nonneg_le {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (τplus : ℝ)
+theorem duhamelPotential_nonneg_le  (τplus : ℝ)
     (g : KineticPoint d → ℝ) (hgn : ∀ p, 0 ≤ g p)
     (C : ℝ) (hC : 0 ≤ C) (hgb : ∀ p, g p ≤ C)
     (p : KineticPoint d) (hp : p.time ≤ τplus) :
@@ -161,15 +153,13 @@ theorem duhamelPotential_nonneg_le {d : ℕ} {Ω : Set (PDE.Vec d)}
     ENNReal.toReal_ofReal (sub_nonneg.mpr hp), mul_comm] using hn
 
 /-- At and after the terminal time the zero-extended potential vanishes. -/
-theorem duhamelPotential_eq_zero_of_terminal_le {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (τplus : ℝ)
+theorem duhamelPotential_eq_zero_of_terminal_le  (τplus : ℝ)
     (g : KineticPoint d → ℝ) (p : KineticPoint d) (hp : τplus ≤ p.time) :
     duhamelPotential K τplus g p = 0 := by
   rw [duhamelPotential, Ioc_eq_empty_of_le hp, Measure.restrict_empty, integral_zero_measure]
 
 /-- Outside the open starting fiber the zero extension vanishes by definition. -/
-theorem duhamelPotential_eq_zero_of_not_mem {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (τplus : ℝ)
+theorem duhamelPotential_eq_zero_of_not_mem  (τplus : ℝ)
     (g : KineticPoint d → ℝ) (p : KineticPoint d)
     (hp : p.position ∉ movingDomain Ω γ p.time) :
     duhamelPotential K τplus g p = 0 := by
@@ -177,5 +167,6 @@ theorem duhamelPotential_eq_zero_of_not_mem {d : ℕ} {Ω : Set (PDE.Vec d)}
     funext r
     exact dite_eq_right (fun h => hp h.2)
   simp only [duhamelPotential, hz, Pi.zero_apply, integral_zero]
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

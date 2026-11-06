@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.JointQueryBorelFixedTest
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.JointQueryBorelCutoffSequence
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Compact smooth time-state probes and their terminal slices -/
 
@@ -38,7 +39,7 @@ theorem jointTerminalProbeSlice_regular {n : ℕ}
 /-- Near a fixed terminal time, all neighboring slices of a compact graph-supported
 probe are supported inside that fixed terminal fiber. -/
 theorem eventually_jointTerminalProbeSlice_admissible {n : ℕ}
-    {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω) {γ : ℝ → PDE.Vec n}
+    {Ω : HypoellipticAleksandrov.VecSet n} (hΩ : IsOpen Ω) {γ : ℝ → PDE.Vec n}
     (Φ : BoundedBorel (ℝ × EvolutionAmbientState n))
     (hΦ : ContDiff ℝ (⊤ : ℕ∞) Φ) (hc : HasCompactSupport Φ)
     (hs : tsupport Φ ⊆ {q : ℝ × EvolutionAmbientState n |

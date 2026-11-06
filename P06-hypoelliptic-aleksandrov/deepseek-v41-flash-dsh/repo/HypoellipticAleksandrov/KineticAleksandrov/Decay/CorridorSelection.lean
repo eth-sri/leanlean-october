@@ -6,6 +6,7 @@ import HypoellipticAleksandrov.KineticAleksandrov.Evolution.BarrierGeometry
 import Mathlib.MeasureTheory.Measure.Real
 import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Linarith
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Retained corridor measures and their full-domain domination -/
 
@@ -41,7 +42,7 @@ are jointly dominated by the supplied full-domain evolution. -/
 theorem corridors_retained_dominated (d : ℕ) (hd : 1 ≤ d)
     (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam) :
     ∃ Cstar : ℝ, 0 < Cstar ∧
-      ∀ (m Lb σ : ℝ) (D : Set (PDE.Vec d)) (B : CoefficientField d)
+      ∀ (m Lb σ : ℝ) (D : HypoellipticAleksandrov.VecSet d) (B : CoefficientField d)
         (b : PDE.Vec d → PDE.Vec d), SourceSetting lam Lam m Lb D B b →
       ∀ (SD : TerminalOperatorFamily D stationary) (KD : MovingFiberKernel D stationary)
         (hD : MeasurableSet D),

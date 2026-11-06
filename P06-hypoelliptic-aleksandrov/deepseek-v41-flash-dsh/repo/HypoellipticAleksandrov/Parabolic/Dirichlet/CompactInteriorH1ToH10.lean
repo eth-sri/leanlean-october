@@ -10,6 +10,7 @@ public import PDEFoundation.Geometry.ConvexDomain
 public import Mathlib.Geometry.Manifold.PartitionOfUnity
 public import Mathlib.Topology.Compactness.LocallyFinite
 public import Mathlib.Topology.Separation.Regular
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Compactly interior supported H1 representatives have zero boundary values
@@ -27,7 +28,7 @@ namespace PDE.H1Function
 open Filter Function MeasureTheory Set
 
 private theorem exists_smooth_cutoff_tsupport_subset
-    {d : ℕ} {K U : Set (PDE.Vec d)}
+    {d : ℕ} {K U : HypoellipticAleksandrov.VecSet d}
     (hK : IsCompact K) (hU : IsOpen U) (hKU : K ⊆ U) :
     ∃ b : PDE.Vec d → ℝ,
       ContDiff ℝ ∞ b ∧
@@ -48,7 +49,7 @@ private theorem exists_smooth_cutoff_tsupport_subset
   exact ⟨b, b.contMDiff.contDiff, hbOne,
     hLcompact.of_isClosed_subset isClosed_closure hbL, hbL.trans hLU⟩
 
-private noncomputable def zeroH10 {d : ℕ} {U : Set (PDE.Vec d)} :
+private noncomputable def zeroH10 {d : ℕ} {U : HypoellipticAleksandrov.VecSet d} :
     PDE.H10Function U where
   toH1Function := 0
   approx := fun _ _ => 0
@@ -66,14 +67,14 @@ private noncomputable def zeroH10 {d : ℕ} {U : Set (PDE.Vec d)} :
 /-- An `H¹` representative supported almost everywhere on a compact subset of
 an open set has a representative-level zero-boundary certificate. -/
 theorem exists_h10Function_of_ae_zero_outside_compact
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
-    (q : PDE.H1Function Ω) (K : Set (PDE.Vec d))
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
+    (q : PDE.H1Function Ω) (K : HypoellipticAleksandrov.VecSet d)
     (hK : IsCompact K) (hKΩ : K ⊆ Ω)
     (hqzero : ∀ᵐ x ∂(PDE.volumeOn Ω), x ∉ K → q.toFun x = 0) :
     ∃ w : PDE.H10Function Ω, w.toH1Function = q := by
   obtain ⟨b, hbSmooth, hbOne, hbCompact, hbΩ⟩ :=
     exists_smooth_cutoff_tsupport_subset hK hΩ hKΩ
-  let L : Set (PDE.Vec d) := tsupport b
+  let L : HypoellipticAleksandrov.VecSet d := tsupport b
   have hLCompact : IsCompact L := hbCompact.isCompact
   have hballs : ∀ x : L, ∃ R : ℝ, 0 < R ∧
       PDE.euclideanClosedBall x.1 R ⊆ Ω := by
@@ -83,7 +84,7 @@ theorem exists_h10Function_of_ae_zero_outside_compact
     exact (PDE.euclideanClosedBall_subset_supClosedBall (by positivity)).trans
       ((Metric.closedBall_subset_ball (by linarith)).trans hball)
   choose R hRpos hRsub using hballs
-  let V : L → Set (PDE.Vec d) := fun x => PDE.euclideanBall x.1 (R x)
+  let V : L → HypoellipticAleksandrov.VecSet d := fun x => PDE.euclideanBall x.1 (R x)
   have hVOpen : ∀ x, IsOpen (V x) := fun x => PDE.isOpen_euclideanBall _ _
   have hVCover : L ⊆ ⋃ x, V x := by
     intro x hx

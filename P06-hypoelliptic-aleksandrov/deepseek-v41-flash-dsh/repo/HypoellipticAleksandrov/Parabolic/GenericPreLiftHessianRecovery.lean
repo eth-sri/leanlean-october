@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.GenericPreLiftSpatialDifferenceQuotientEstimate
 public import HypoellipticAleksandrov.Parabolic.SpatialDifferenceQuotientL2WeakDerivative
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Generic pre-lift Hessian recovery
@@ -25,7 +27,7 @@ theorem exists_genericPrelift_gradient_velocityPartialDeriv_family_estimate
     (d M : ℕ) (hM : 1 ≤ M)
     (t₀ t₁ t₂ t₃ : ℝ)
     (ht₀₁ : t₀ < t₁) (ht₁₂ : t₁ < t₂) (ht₂₃ : t₂ < t₃)
-    (O₀ O₁ : Set (PDE.Vec d))
+    (O₀ O₁ : HypoellipticAleksandrov.VecSet d)
     (hO₀ : IsOpen O₀) (hO₁ : IsOpen O₁) (hO₁ne : O₁.Nonempty)
     (hO₁compact : IsCompact (closure O₁))
     (hO₁O₀ : closure O₁ ⊆ O₀)
@@ -121,7 +123,7 @@ theorem exists_genericPrelift_gradient_velocityPartialDeriv_family_estimate
     (Fintype.card (ParabolicDerivativeIndex d M) : ℝ) * (d : ℝ) ^ 2 * C_DQ
   refine ⟨C_H, mul_nonneg (mul_nonneg (by positivity) (by positivity)) hC_DQ, ?_⟩
   intro a b c F u D E hSymm hEll ha hb hc haBound hbBound hcBound hEq
-  let V : Set (TimeVelocity d) := Set.Ioo t₁ t₂ ×ˢ O₁
+  let V : HypoellipticAleksandrov.Parabolic.TVSet d := Set.Ioo t₁ t₂ ×ˢ O₁
   let Etotal : ℝ := ParabolicWeakDerivativeFamily.squaredL2Norm D +
     ParabolicWeakDerivativeFamily.squaredL2Norm E
   have hEtotal : 0 ≤ Etotal := add_nonneg

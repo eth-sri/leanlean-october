@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.OccupationSc
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.OccupationScalingTime
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.OccupationScalingPairing
 public import HypoellipticAleksandrov.KineticAleksandrov.Green.SlabFourierOccupation
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Scaling of the bounded-Borel occupation characterization -/
 
@@ -40,10 +41,11 @@ def occupation_scaledTest {d : ℕ} (T : ℝ) (φ : BoundedBorel (TimeVelocity d
     by
       obtain ⟨C, hC, hb⟩ := φ.exists_bound
       exact ⟨C, hC, fun q => hb _⟩⟩
+section
+variable {d : ℕ} (K : WholeKernel d) (σ₀ : ℝ) {T : ℝ} (hT : 0 < T) (ρ : Measure (PDE.Vec d))
 
 /-- The real-interval occupation pairing of the constructed scaled kernel. -/
-theorem occupation_rhs_scaled {d : ℕ} (K : WholeKernel d) (σ₀ : ℝ)
-    {T : ℝ} (hT : 0 < T) (ρ : Measure (PDE.Vec d))
+theorem occupation_rhs_scaled 
     (φ : TimeVelocity d → ℝ) :
     let r : {r : ℝ // 0 < r} := ⟨Real.sqrt T, Real.sqrt_pos.mpr hT⟩
     let Φ := KineticAffineScaling.ofRadius σ₀ 0 0 (identityDrift d) r
@@ -95,8 +97,7 @@ theorem occupation_rhs_scaled {d : ℕ} (K : WholeKernel d) (σ₀ : ℝ)
     rw [zero_add, smul_smul, mul_inv_cancel₀ hs, one_smul]
 
 /-- A unit-time density for the constructed pushforward yields the original slab density. -/
-theorem isOccupationDensity_scaled {d : ℕ} (K : WholeKernel d) (σ₀ : ℝ)
-    {T : ℝ} (hT : 0 < T) (ρ : Measure (PDE.Vec d)) (gt : TimeVelocity d → ℝ)
+theorem isOccupationDensity_scaled  (gt : TimeVelocity d → ℝ)
     (hgt : IsOccupationDensity
       (KineticAffineScaling.pushKernel (KineticAffineScaling.mapsDomain_wholeSpace
         (KineticAffineScaling.ofRadius σ₀ 0 0 (identityDrift d)
@@ -121,5 +122,6 @@ theorem isOccupationDensity_scaled {d : ℕ} (K : WholeKernel d) (σ₀ : ℝ)
   have hm := congrArg (fun a : ℝ => T * a) hs
   rw [← mul_assoc, mul_inv_cancel₀ hT.ne', one_mul] at hm
   exact hm.trans hp.symm
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Occupation

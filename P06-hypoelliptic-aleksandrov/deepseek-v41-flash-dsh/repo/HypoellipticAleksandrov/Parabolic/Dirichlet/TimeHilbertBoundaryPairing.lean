@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeHilbertTraces
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeGelfandAffine
 public import Mathlib.MeasureTheory.Integral.IntervalIntegral.IntegrationByParts
 public import Mathlib.Topology.ContinuousMap.Interval
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Canonical reverse-time Hilbert boundary pairing
@@ -72,7 +73,7 @@ private theorem intervalPrimitive_boundary_pairing
     _ = -(∫ s in Icc 0 T, f s * eta s) := by rw [integral_neg]
 
 private theorem reverseTimeVStarPrimitive_apply_eq_intervalPrimitive_on_Ioo
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (T : ℝ) (g : ReverseTimeL2VStar hΩ T)
     (v : H10HilbertGraph hΩ) {tau : ℝ} (ht : tau ∈ Ioo 0 T) :
     reverseTimeVStarPrimitive hΩ T g tau v =
@@ -104,10 +105,11 @@ private theorem reverseTimeVolume_affine_constant_integral
     _ = -a := by
       rw [hMeasure]
       field_simp [hT.ne']
+section
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (T : ℝ)
 
 private theorem reverseTimeHilbertRepresentative_affine_pairing_eqOn
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
+     (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
     (v : H10HilbertGraph hΩ) :
@@ -176,8 +178,7 @@ private theorem reverseTimeHilbertRepresentative_affine_pairing_eqOn
   exact hPairEqOn
 
 private theorem reverseTimeHilbertRepresentative_affine_pairing_integral
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
+     (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
     (v : H10HilbertGraph hΩ) :
@@ -196,8 +197,7 @@ private theorem reverseTimeHilbertRepresentative_affine_pairing_integral
     (hPairEqOn ⟨le_of_lt ht.1, le_of_lt ht.2⟩)
 
 private theorem reverseTimeVStarPrimitive_affine_initial_source_pairing
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
+     (hT : 0 < T)
     (g : ReverseTimeL2VStar hΩ T) (v : H10HilbertGraph hΩ) :
     (∫ tau, reverseTimeVStarPrimitive hΩ T g tau v * (-(T⁻¹))
       ∂reverseTimeVolume T) =
@@ -237,8 +237,7 @@ private theorem reverseTimeVStarPrimitive_affine_initial_source_pairing
     _ = -(∫ tau, (g tau) v * (1 - tau / T) ∂reverseTimeVolume T) := hboundary
 
 private theorem reverseTimeGelfandAffineConstant_apply_eq_initial_trace
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
+     (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
     (v : H10HilbertGraph hΩ) :
@@ -263,8 +262,7 @@ private theorem reverseTimeGelfandAffineConstant_apply_eq_initial_trace
 terminal-zero cutoff recovers the reverse-time source pairing and the canonical
 initial trace. -/
 theorem reverseTimeHilbertRepresentative_affine_initial_pairing
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
+     (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
     (v : H10HilbertGraph hΩ) :
@@ -314,5 +312,6 @@ theorem reverseTimeHilbertRepresentative_affine_initial_pairing
     _ = -(∫ tau, (g tau) v * (1 - tau / T) ∂reverseTimeVolume T) -
         inner ℝ (valueCLM hΩ v)
           (reverseTimeInitialTrace hΩ T hT u g hderiv) := by rw [hTrace]
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

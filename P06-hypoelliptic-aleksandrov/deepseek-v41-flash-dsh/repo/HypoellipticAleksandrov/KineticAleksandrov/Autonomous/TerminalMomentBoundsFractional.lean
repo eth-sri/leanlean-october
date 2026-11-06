@@ -30,7 +30,7 @@ theorem integral_subunit_rpow_le {Ω : Type*} [MeasurableSpace Ω]
     Integrable (fun x => (f x)^p) mu ∧
       (∫ x, (f x)^p ∂mu) ≤ (∫ x, f x ∂mu)^p := by
   have hpow : Integrable (fun x => (f x)^p) mu := by
-    apply Integrable.mono' ((integrable_const (1 : ℝ)).add hfi)
+    apply Integrable.mono' ((integrable_const 1).add hfi)
       ((Real.continuous_rpow_const hp0).measurable.comp hf).aestronglyMeasurable
     filter_upwards with x
     change ‖(f x)^p‖ ≤ 1+f x
@@ -55,13 +55,12 @@ theorem integral_abs_rpow_le_second {Ω : Type*} [MeasurableSpace Ω]
     ring
   simpa only [he] using integral_subunit_rpow_le mu (fun x => (f x)^2)
     (hf.pow_const 2) (fun _ => sq_nonneg _) hfi hp0 hp1
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (z : Z) (T : NNReal) {a : ℝ}
 
 /-- Actual canonical velocity fractional moments, with no moment hypothesis. -/
 theorem terminal_velocity_fractional_moment
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (z : Z) (T : NNReal)
-    {a : ℝ} (ha0 : 0 ≤ a) (ha2 : a ≤ 2) :
+     (ha0 : 0 ≤ a) (ha2 : a ≤ 2) :
     let E := fullSpaceEvolution hH hLE hlam hLam A
     Integrable (fun w : Z => |w.2-z.2|^a) (kernelXV E T z) ∧
       (∫ w, |w.2-z.2|^a ∂kernelXV E T z) ≤ (2*Lam*(T : ℝ))^(a/2) := by
@@ -82,10 +81,7 @@ theorem terminal_velocity_fractional_moment
 
 /-- Actual canonical position fractional moments, with no moment hypothesis. -/
 theorem terminal_position_fractional_moment
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (z : Z) (T : NNReal)
-    {a : ℝ} (ha0 : 0 ≤ a) (ha2 : a ≤ 2) :
+     (ha0 : 0 ≤ a) (ha2 : a ≤ 2) :
     let E := fullSpaceEvolution hH hLE hlam hLam A
     Integrable (fun w : Z => |w.1-z.1|^a) (kernelXV E T z) ∧
       (∫ w, |w.1-z.1|^a ∂kernelXV E T z) ≤
@@ -104,5 +100,6 @@ theorem terminal_position_fractional_moment
   have hL : 0 ≤ Lam := hlam.le.trans hLam
   have hT := T.property
   exact (ENNReal.ofReal_le_ofReal_iff (by positivity)).mp h
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

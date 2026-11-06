@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TerminalMeasure
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.DomainDominationMeasure
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.DomainDominationComparison
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Domination of every smaller admissible evolution by the terminal kernel
@@ -40,7 +41,7 @@ variable {n : ℕ}
 
 /-- Clause 6 of the antecedent identifies the integral of a terminal datum against the master
 measure of a query with the `P'` value of the restricted datum. -/
-theorem integral_master_eq_operator {Ω' : Set (PDE.Vec n)} {γ' : ℝ → PDE.Vec n}
+theorem integral_master_eq_operator {Ω' : HypoellipticAleksandrov.VecSet n} {γ' : ℝ → PDE.Vec n}
     (hΩ' : IsAdmissibleEvolutionDomain Ω') (K' : MovingFiberKernel Ω' γ')
     (P' : TerminalOperatorFamily Ω' γ') {τ : ℝ}
     (h6 : ∀ (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω' γ' σ)
@@ -64,7 +65,7 @@ section EvolutionData
 variable (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
 variable (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
 variable (hm : 0 < m) (hmLb : m ≤ L_b)
-variable (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
+variable (Ω : HypoellipticAleksandrov.VecSet n) (γ : ℝ → PDE.Vec n)
 variable (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
 variable (hΩ : IsAdmissibleEvolutionDomain Ω)
 variable (hγ : IsContinuousPiecewiseC1 γ)
@@ -87,7 +88,7 @@ local notation "μ" => terminalMeasure n hn lam Lam m L_b hlam hlamLam hm hmLb �
 the master measure of ANY small kernel `K'` with the clause-1 solution representation and the
 clause-6 operator integral is dominated by the terminal measure of the corresponding large query. -/
 theorem terminalMeasure_domination
-    (Ω' : Set (PDE.Vec n)) (γ' : ℝ → PDE.Vec n)
+    (Ω' : HypoellipticAleksandrov.VecSet n) (γ' : ℝ → PDE.Vec n)
     (hΩ' : IsAdmissibleEvolutionDomain Ω') (hγ' : IsContinuousPiecewiseC1 γ')
     (hsub : ∀ σ, movingDomain Ω' γ' σ ⊆ movingDomain Ω γ σ)
     (P' : TerminalOperatorFamily Ω' γ') (K' : MovingFiberKernel Ω' γ')
@@ -147,7 +148,7 @@ smaller admissible problem `(Ω', γ', P', K')` satisfying the complete eight-cl
 the fourteenth conjunct is zero-extension dominated by `K`. -/
 theorem terminalKernel_domain_domination_of_master_eq
     (K : MovingFiberKernel Ω γ) (hK : ∀ q, K.master q = μ q) :
-    ∀ (Ω' : Set (PDE.Vec n)) (γ' : ℝ → PDE.Vec n)
+    ∀ (Ω' : HypoellipticAleksandrov.VecSet n) (γ' : ℝ → PDE.Vec n)
             (hΩ' : IsAdmissibleEvolutionDomain Ω')
             (hγ' : IsContinuousPiecewiseC1 γ')
             (hsub : ∀ σ, movingDomain Ω' γ' σ ⊆

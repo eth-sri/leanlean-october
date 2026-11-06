@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementApproxL2
 public import HypoellipticAleksandrov.Parabolic.HarnackUnitCylinder.CompactLp
 public import Mathlib.Topology.ContinuousMap.Compact
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Local L2 convergence of continuous closed-cylinder limits
 
@@ -17,13 +18,13 @@ open Filter MeasureTheory Set
 open scoped Topology
 
 /-- Extend a continuous closed-carrier function by zero to name its ambient values. -/
-def continuousMapZeroExtension {d : ℕ} {K : Set (TimeVelocity d)}
+def continuousMapZeroExtension {d : ℕ} {K : HypoellipticAleksandrov.Parabolic.TVSet d}
     (V : C(K, ℝ)) (z : TimeVelocity d) : ℝ := by
   classical
   exact if hz : z ∈ K then V ⟨z, hz⟩ else 0
 
 /-- The ambient extension retains the prescribed continuous closed-carrier restriction. -/
-theorem continuousOn_continuousMapZeroExtension {d : ℕ} {K : Set (TimeVelocity d)}
+theorem continuousOn_continuousMapZeroExtension {d : ℕ} {K : HypoellipticAleksandrov.Parabolic.TVSet d}
     (V : C(K, ℝ)) : ContinuousOn (continuousMapZeroExtension V) K := by
   rw [continuousOn_iff_continuous_domRestrict]
   convert V.continuous using 1
@@ -32,7 +33,7 @@ theorem continuousOn_continuousMapZeroExtension {d : ℕ} {K : Set (TimeVelocity
 
 /-- Uniform closed-carrier convergence implies strong restricted L2 convergence. -/
 theorem tendsto_local_toLp_of_continuousMap_tendsto {d : ℕ}
-    (K S : Set (TimeVelocity d)) [CompactSpace K]
+    (K S : HypoellipticAleksandrov.Parabolic.TVSet d) [CompactSpace K]
     (hS : IsOpen S) (hSc : IsCompact (closure S)) (hSK : closure S ⊆ K)
     (U : ℕ → C(K, ℝ)) (V : C(K, ℝ)) (hlim : Tendsto U atTop (𝓝 V))
     (u : ℕ → TimeVelocity d → ℝ) (hu : ∀ n, ParabolicMemLpOn S 2 (u n))

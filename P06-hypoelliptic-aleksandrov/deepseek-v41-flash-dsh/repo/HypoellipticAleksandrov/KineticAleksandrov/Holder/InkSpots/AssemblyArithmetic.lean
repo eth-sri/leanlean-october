@@ -67,9 +67,9 @@ theorem absorb_covering_errors {e f V k n a q h s : ℝ}
     calc
       _ ≤ 2*n*V*h := mul_le_mul_of_nonneg_left hs (by positivity)
       _ ≤ (1/2)*(((32+4*k+4*n)*V-2*k*V)*h) := by
-        nlinarith only [mul_le_mul_of_nonneg_right hcoeff hh]
+        nlinarith
       _ ≤ _ := mul_le_mul_of_nonneg_right hqa (mul_nonneg hcoef hh)
-  nlinarith only [he, herr]
+  nlinarith
 
 /-- When the error height is at least 1/16 the desired upper bound is already unit volume. -/
 theorem trivial_large_height {V f C q a h : ℝ} (hV : 0 ≤ V) (hf : 0 ≤ f)

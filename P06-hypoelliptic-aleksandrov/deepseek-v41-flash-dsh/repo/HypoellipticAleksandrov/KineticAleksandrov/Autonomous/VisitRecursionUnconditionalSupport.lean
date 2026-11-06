@@ -46,12 +46,12 @@ theorem visitBeta_ae_waitingPole (P : Point) (c : Clock) (J : Interval) (s T : �
       p ∈ visitPoleSet (visitWaitingUnion c J) s T :=
   (ae_restrict_mem (measurableSet_visitBoundary s T (visitActiveInterval c) J)).mono
     (visitOutgoingFace_subset_waitingPole c J s T)
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (P : Point)
 
 /-- The actual entrance family satisfies the corrected nested theorem's source support. -/
 theorem visitEntrancePiece_ae_activePole
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (P : Point)
+    
     (hP : s < P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier) (n : ℕ) :
     ∀ᵐ p ∂visitEntrancePiece hH hLE hlam hLam A c J s T P n,
       p ∈ visitPoleSet (visitActiveUnion c J) s T :=
@@ -59,12 +59,11 @@ theorem visitEntrancePiece_ae_activePole
 
 /-- The actual outgoing family satisfies the corrected nested theorem's source support. -/
 theorem visitOutgoingPiece_ae_waitingPole
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (P : Point)
+    
     (n : ℕ) :
     ∀ᵐ p ∂visitOutgoingPiece hH hLE hlam hLam A c J s T P n,
       p ∈ visitPoleSet (visitWaitingUnion c J) s T :=
   visitBeta_ae_waitingPole P c J s T _ _ n
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

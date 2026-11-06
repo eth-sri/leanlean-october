@@ -54,7 +54,7 @@ theorem bellmanAngularFirstMoment_negative_zero (R β : ℝ) (hR : 1 ≤ R) (hβ
   have hm := mul_le_mul_of_nonneg_right hfy (Real.rpow_nonneg hyp.le (β - 4))
   have hp : y * y ^ (β - 4) = y ^ (β - 3) := by
     calc
-      y * y ^ (β - 4) = y ^ (1 : ℝ) * y ^ (β - 4) := by rw [Real.rpow_one]
+      y * y ^ (β - 4) = y ^ 1 * y ^ (β - 4) := by rw [Real.rpow_one]
       _ = y ^ (1 + (β - 4)) := (Real.rpow_add hyp _ _).symm
       _ = y ^ (β - 3) := by congr 1; ring
   calc

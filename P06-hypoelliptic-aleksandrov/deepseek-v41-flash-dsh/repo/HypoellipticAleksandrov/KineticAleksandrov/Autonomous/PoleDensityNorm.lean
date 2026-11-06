@@ -10,9 +10,11 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open scoped ENNReal NNReal
+section
+variable (c : Clock) (e : Point) (F : Point → ℝ)
 
 /-- The clock pullback changes a full physical Lebesgue norm by the exact volume factor. -/
-theorem poleDensity_clock_eLpNorm (c : Clock) (e : Point) (F : Point → ℝ)
+theorem poleDensity_clock_eLpNorm 
     (hF : Measurable F) (q : ℝ) (hq : 0 < q) :
     eLpNorm (F ∘ c.map e) (ENNReal.ofReal q) volume =
       ENNReal.ofReal (c.r ^ (6 / q : ℝ)) * eLpNorm F (ENNReal.ofReal q) volume := by
@@ -32,7 +34,7 @@ theorem poleDensity_clock_eLpNorm (c : Clock) (e : Point) (F : Point → ℝ)
 
 /-- Removing the velocity weight costs at most `2/r⁴` pointwise, independently of the clock
   centre. -/
-theorem polePhysicalDensity_pointwise_bound (c : Clock) (e : Point) (F : Point → ℝ)
+theorem polePhysicalDensity_pointwise_bound 
     (hFn : ∀ p, 0 ≤ F p) (p : Point) :
     |polePhysicalDensity c e F p| ≤ |(2 / c.r ^ 4) * F (c.map e p)| := by
   have hK : 0 ≤ (|c.vbar| * c.r ^ 2) * (c.r ^ 6)⁻¹ :=
@@ -50,7 +52,7 @@ theorem polePhysicalDensity_pointwise_bound (c : Clock) (e : Point) (F : Point �
     (mul_le_mul_of_nonneg_right hb (hFn _))
 
 /-- The exact pole density formula has the source norm bound with exponent `6/q - 4`. -/
-theorem polePhysicalDensity_eLpNorm_bound (c : Clock) (e : Point) (F : Point → ℝ)
+theorem polePhysicalDensity_eLpNorm_bound 
     (hF : Measurable F) (hFn : ∀ p, 0 ≤ F p) (q C : ℝ) (hq : 0 < q) (_hC : 0 ≤ C)
     (hn : eLpNorm F (ENNReal.ofReal q) volume ≤ ENNReal.ofReal C) :
     eLpNorm (polePhysicalDensity c e F) (ENNReal.ofReal q) volume ≤
@@ -75,5 +77,6 @@ theorem polePhysicalDensity_eLpNorm_bound (c : Clock) (e : Point) (F : Point →
   rw [Real.rpow_sub c.positive]
   rw [show c.r ^ (4 : ℝ) = c.r ^ (4 : ℕ) from Real.rpow_natCast c.r 4]
   field_simp [ne_of_gt c.positive]
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

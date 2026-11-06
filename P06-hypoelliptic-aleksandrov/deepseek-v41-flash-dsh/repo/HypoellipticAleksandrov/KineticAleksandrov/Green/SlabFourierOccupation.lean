@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Green.SlabFourierPremises
 public import HypoellipticAleksandrov.KineticAleksandrov.Green.SlabFourierEmbedding
 import Mathlib.Probability.Kernel.MeasurableIntegral
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # From bounded-Borel occupation densities to set identities
@@ -114,7 +115,7 @@ lemma lintegral_elapsed_finite (S : ℝ) (hS : 0 < S) (F : ℝ → ℝ≥0∞) :
 /-- The right-hand side of (4.2) for an indicator, as a real number. -/
 lemma occupation_rhs_indicator {d : ℕ}
     (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d))) (σ S : ℝ) (hS : 0 < S)
-    (ρ : Measure (PDE.Vec d)) [IsFiniteMeasure ρ] {A : Set (ℝ × PDE.Vec d)}
+    (ρ : HypoellipticAleksandrov.VecMeasure d) [IsFiniteMeasure ρ] {A : Set (ℝ × PDE.Vec d)}
     (hA : MeasurableSet A) :
     (∫ v, ∫ τ : ElapsedTime (ENNReal.ofReal S), ∫ w, indicatorBB hA (τ.1, w)
         ∂K.firstMarginal (wholeSpaceQuery σ (σ + τ.1)
@@ -159,7 +160,7 @@ lemma occupation_rhs_indicator {d : ℕ}
 /-- **Occupation identity for sets.**  (4.2) tested on `1_A`, as lower integrals. -/
 theorem occupation_set_identity {d : ℕ}
     (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d))) (σ S : ℝ) (hS : 0 < S)
-    (ρ : Measure (PDE.Vec d)) [IsFiniteMeasure ρ] (g : ℝ × PDE.Vec d → ℝ)
+    (ρ : HypoellipticAleksandrov.VecMeasure d) [IsFiniteMeasure ρ] (g : ℝ × PDE.Vec d → ℝ)
     (hg : SlabOccupationDensity K σ S ρ g)
     (hint : Integrable g (volume.restrict (Ioo (0 : ℝ) S ×ˢ (univ : Set (PDE.Vec d)))))
     {A : Set (ℝ × PDE.Vec d)} (hA : MeasurableSet A)
@@ -295,7 +296,7 @@ time `σ₁`) of `ρ`, then for measurable `E ⊆ SlabBase`, the `slabBase`-mass
 theorem slab_occupation_identity {d : ℕ}
     (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d))) (σ₁ s T S : ℝ)
     (hs : s ≤ T) (hT : 0 < T) (hTS : 2 * T - s ≤ S) (hS : 0 < S)
-    (ρ : Measure (PDE.Vec d)) [IsFiniteMeasure ρ] (g : ℝ × PDE.Vec d → ℝ)
+    (ρ : HypoellipticAleksandrov.VecMeasure d) [IsFiniteMeasure ρ] (g : ℝ × PDE.Vec d → ℝ)
     (hg : SlabOccupationDensity K σ₁ S ρ g)
     (hint : Integrable g (volume.restrict (Ioo (0 : ℝ) S ×ˢ (univ : Set (PDE.Vec d)))))
     {E : Set (SlabBase d)} (hE : MeasurableSet E) :

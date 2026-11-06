@@ -20,11 +20,13 @@ namespace PDE
 
 open MeasureTheory
 open scoped ENNReal
+section
+variable {d : ℕ} {U : Set (Vec d)}
 
 /-- For a fixed point, the `p`th power of the smooth pairwise oscillation is
 integrable on a bounded Sobolev-regular domain. -/
 theorem integrableOn_abs_sub_rpow_of_contDiff
-    {d : ℕ} {U : Set (Vec d)}
+    
     (hU : IsSobolevRegularDomain U)
     {u : Vec d → ℝ} (hu : ContDiff ℝ 0 u)
     {p : ℝ} (hp : 0 ≤ p) (x : Vec d) :
@@ -45,7 +47,7 @@ theorem integrableOn_abs_sub_rpow_of_contDiff
 /-- The smooth mean-subtracted `p`th power is integrable on a bounded
 Sobolev-regular domain. -/
 theorem integrableOn_abs_sub_integralAverage_rpow_of_contDiff
-    {d : ℕ} {U : Set (Vec d)}
+    
     (hU : IsSobolevRegularDomain U)
     {u : Vec d → ℝ} (hu : ContDiff ℝ 0 u)
     {p : ℝ} (hp : 0 ≤ p) :
@@ -68,7 +70,7 @@ theorem integrableOn_abs_sub_integralAverage_rpow_of_contDiff
 /-- The `p`th power of pairwise smooth oscillation is integrable on the
 product of a bounded Sobolev-regular domain with itself. -/
 theorem integrableOn_prod_abs_sub_rpow_of_contDiff
-    {d : ℕ} {U : Set (Vec d)}
+    
     (hU : IsSobolevRegularDomain U)
     {u : Vec d → ℝ} (hu : ContDiff ℝ 0 u)
     {p : ℝ} (hp : 0 ≤ p) :
@@ -103,7 +105,7 @@ theorem integrableOn_prod_abs_sub_rpow_of_contDiff
 /-- Integrated Jensen inequality comparing oscillation about the arithmetic
 mean with the normalized pairwise oscillation. -/
 theorem setIntegral_abs_sub_integralAverage_rpow_le
-    {d : ℕ} {U : Set (Vec d)}
+    
     (hU : IsOpenBoundedConvexDomain U)
     {u : Vec d → ℝ} (hu : ContDiff ℝ (⊤ : ℕ∞) u)
     {p : ℝ} (hp : 1 ≤ p)
@@ -176,7 +178,7 @@ theorem setIntegral_abs_sub_integralAverage_rpow_le
 /-- Smooth pairwise oscillation is controlled by the diameter and the
 Euclidean gradient, with a constant independent of `p`. -/
 theorem setIntegral_setIntegral_abs_sub_rpow_le
-    {d : ℕ} {U : Set (Vec d)} {D : ℝ}
+     {D : ℝ}
     (hU : IsOpenBoundedConvexDomain U)
     (hUDiameter : HasEuclideanDiameterLE U D)
     (hD : 0 ≤ D)
@@ -405,7 +407,7 @@ theorem setIntegral_setIntegral_abs_sub_rpow_le
 
 The constant `2 ^ d` is independent of the real exponent `p ≥ 1`. -/
 theorem setIntegral_abs_sub_integralAverage_rpow_le_two_pow_mul
-    {d : ℕ} {U : Set (Vec d)} {D : ℝ}
+     {D : ℝ}
     (hU : IsOpenBoundedConvexDomain U)
     (hUDiameter : HasEuclideanDiameterLE U D)
     (hD : 0 ≤ D)
@@ -447,5 +449,6 @@ theorem setIntegral_abs_sub_integralAverage_rpow_le_two_pow_mul
           vecEuclideanNorm (classicalGradient u z) ^ p
             ∂volume := by
       field_simp [hvolReal]
+end
 
 end PDE

@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.DuhamelRegularity
 import Mathlib.Analysis.Distribution.AEEqOfIntegralContDiff
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Pointwise source equation for the kinetic Duhamel potential -/
 
@@ -71,7 +72,7 @@ theorem duhamel_operator_eq_of_smooth_weak {U : Set (EvolutionVec d)} (hU : IsOp
   intro x hx
   exact sub_eq_zero.mp (heq hx)
 
-variable {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+variable {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d}
 
 /-- The full kinetic Duhamel potential satisfies `Lop W = -g` pointwise in the past cylinder. -/
 theorem duhamelPotential_source_equation (hH : HormanderHypoellipticityStatement)

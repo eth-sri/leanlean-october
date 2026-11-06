@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.SpatialSobolev
 public import PDEFoundation.Sobolev.H1.LevelSets
 public import Mathlib.Topology.Compactness.Lindelof
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Level-set locality for the Hilbert realization of spatial `H¹₀`
@@ -26,12 +27,14 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-variable {d : ℕ} {Ω : Set (PDE.Vec d)}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
+section
+variable (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ)
 
 /-- The concrete representatives selected by a Hilbert `H¹₀` graph point,
 viewed as a representative-level `H¹` function. -/
 private def h1FunctionOfH10HilbertGraph
-    (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) : PDE.H1Function Ω where
+     : PDE.H1Function Ω where
   toFun := valueCLM hΩ u
   grad := fun x => (gradientCLM hΩ u x).ofLp
   memL2 := Lp.memLp (valueCLM hΩ u)
@@ -52,13 +55,13 @@ private def h1FunctionOfH10HilbertGraph
 
 @[simp]
 private theorem h1FunctionOfH10HilbertGraph_toFun
-    (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) :
+     :
     (h1FunctionOfH10HilbertGraph hΩ u).toFun = valueCLM hΩ u :=
   rfl
 
 @[simp]
 private theorem h1FunctionOfH10HilbertGraph_grad
-    (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) :
+     :
     (h1FunctionOfH10HilbertGraph hΩ u).grad =
       fun x => (gradientCLM hΩ u x).ofLp :=
   rfl
@@ -67,7 +70,7 @@ private theorem h1FunctionOfH10HilbertGraph_grad
 `H¹₀` graph point vanishes almost everywhere on each fixed level set of
 its selected value representative. -/
 theorem gradientCLM_ae_zero_on_level_set
-    (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) (c : ℝ) :
+     (c : ℝ) :
     ∀ᵐ x ∂(PDE.volumeOn Ω),
       valueCLM hΩ u x = c → gradientCLM hΩ u x = 0 := by
   let w : PDE.H1Function Ω := h1FunctionOfH10HilbertGraph hΩ u
@@ -75,7 +78,7 @@ theorem gradientCLM_ae_zero_on_level_set
     intro x
     exact Metric.isOpen_iff.mp hΩ x x.property
   choose r hrPos hrSub using hballs
-  let B : Ω → Set (PDE.Vec d) := fun x => Metric.ball (x : PDE.Vec d) (r x)
+  let B : Ω → HypoellipticAleksandrov.VecSet d := fun x => Metric.ball (x : PDE.Vec d) (r x)
   have hBOpen : ∀ x, IsOpen (B x) := fun x => Metric.isOpen_ball
   have hcover : Ω ⊆ ⋃ x, B x := by
     intro y hy
@@ -110,5 +113,6 @@ theorem gradientCLM_ae_zero_on_level_set
   have hae : ae (PDE.volumeOn Ω) =
       ae (volume.restrict (⋃ x ∈ s, B x)) := congrArg ae hmeasure
   exact hOnUnion.filter_mono hae.le
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

@@ -133,9 +133,11 @@ theorem continuous_convexApproxSample_prod
         convexApproxSample x0 xz.2 r ε xz.1) := by
   unfold convexApproxSample
   fun_prop
+section
+variable {d : ℕ} {ρ u : Vec d → ℝ}
 
 theorem continuous_convexApproxIntegrand_right
-    {d : ℕ} {ρ u : Vec d → ℝ}
+    
     (hρ : Continuous ρ) (hu : Continuous u)
     (x0 : Vec d) (r ε : ℝ) (x : Vec d) :
     Continuous
@@ -147,7 +149,7 @@ theorem continuous_convexApproxIntegrand_right
         (continuous_convexApproxSample_right x0 r ε x))
 
 theorem continuous_convexApproxIntegrand_prod
-    {d : ℕ} {ρ u : Vec d → ℝ}
+    
     (hρ : Continuous ρ) (hu : Continuous u)
     (x0 : Vec d) (r ε : ℝ) :
     Continuous
@@ -169,7 +171,7 @@ theorem continuous_convexApproxIntegrand_prod
     hρProd.mul huProd
 
 theorem hasCompactSupport_convexApproxIntegrand
-    {d : ℕ} {ρ u : Vec d → ℝ}
+    
     (hρ : HasCompactSupport ρ)
     (x0 : Vec d) (r ε : ℝ) (x : Vec d) :
     HasCompactSupport
@@ -183,7 +185,7 @@ theorem hasCompactSupport_convexApproxIntegrand
             u (convexApproxSample x0 z r ε x)))
 
 theorem integrable_convexApproxIntegrand
-    {d : ℕ} {ρ u : Vec d → ℝ}
+    
     (hρ : Continuous ρ)
     (hρCompact : HasCompactSupport ρ)
     (hu : Continuous u)
@@ -197,7 +199,7 @@ theorem integrable_convexApproxIntegrand
       hρCompact x0 r ε x)
 
 theorem continuous_convexApproxWeightedOscillation
-    {d : ℕ} {ρ u : Vec d → ℝ}
+    
     (hρ : Continuous ρ) (hu : Continuous u)
     (x0 : Vec d) (r ε : ℝ) (x : Vec d) :
     Continuous
@@ -210,7 +212,7 @@ theorem continuous_convexApproxWeightedOscillation
         x0 r ε x)).sub continuous_const).abs)
 
 theorem hasCompactSupport_convexApproxWeightedOscillation
-    {d : ℕ} {ρ u : Vec d → ℝ}
+    
     (hρCompact : HasCompactSupport ρ)
     (x0 : Vec d) (r ε : ℝ) (x : Vec d) :
     HasCompactSupport
@@ -225,7 +227,7 @@ theorem hasCompactSupport_convexApproxWeightedOscillation
             |u (convexApproxSample x0 z r ε x) - u x|))
 
 theorem integrable_convexApproxWeightedOscillation
-    {d : ℕ} {ρ u : Vec d → ℝ}
+    
     (hρ : Continuous ρ)
     (hρCompact : HasCompactSupport ρ)
     (hu : Continuous u)
@@ -238,6 +240,7 @@ theorem integrable_convexApproxWeightedOscillation
       hρ hu x0 r ε x).integrable_of_hasCompactSupport
     (hasCompactSupport_convexApproxWeightedOscillation
       hρCompact x0 r ε x)
+end
 
 theorem integrable_convexApproxKernelMulConst
     {d : ℕ} {ρ : Vec d → ℝ}

@@ -3,6 +3,7 @@ module
 import Mathlib.Tactic.Linarith
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.BarrierChain
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.CurveLipschitz
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Finite-slab transport for the collar comparison
@@ -27,15 +28,17 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Filter Set
 open scoped Topology MatrixOrder
+section
+variable {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n} {γ γ' : ℝ → PDE.Vec n}
 
 /-- The moving domain only depends on the value of the curve at the given time. -/
-theorem movingDomain_congr_of_eq {n : ℕ} {Ω : Set (PDE.Vec n)} {γ γ' : ℝ → PDE.Vec n} {σ : ℝ}
+theorem movingDomain_congr_of_eq  {σ : ℝ}
     (h : γ' σ = γ σ) : movingDomain Ω γ' σ = movingDomain Ω γ σ := by
   unfold movingDomain
   rw [h]
 
 /-- Curves agreeing on `[a, b]` have the same closed moving slab. -/
-theorem movingClosedSlab_congr {n : ℕ} {Ω : Set (PDE.Vec n)} {γ γ' : ℝ → PDE.Vec n} {a b : ℝ}
+theorem movingClosedSlab_congr  {a b : ℝ}
     (h : ∀ σ ∈ Icc a b, γ' σ = γ σ) :
     movingClosedSlab Ω γ' a b = movingClosedSlab Ω γ a b := by
   ext p
@@ -48,7 +51,7 @@ theorem movingClosedSlab_congr {n : ℕ} {Ω : Set (PDE.Vec n)} {γ γ' : ℝ �
     rwa [movingDomain_congr_of_eq (h _ ⟨h1, h2⟩)]
 
 /-- Curves agreeing on `[a, b]` have the same active moving slab. -/
-theorem movingActiveSlab_congr {n : ℕ} {Ω : Set (PDE.Vec n)} {γ γ' : ℝ → PDE.Vec n} {a b : ℝ}
+theorem movingActiveSlab_congr  {a b : ℝ}
     (h : ∀ σ ∈ Icc a b, γ' σ = γ σ) :
     movingActiveSlab Ω γ' a b = movingActiveSlab Ω γ a b := by
   ext p
@@ -59,6 +62,7 @@ theorem movingActiveSlab_congr {n : ℕ} {Ω : Set (PDE.Vec n)} {γ γ' : ℝ �
   · rintro ⟨h1, h2, h3⟩
     refine ⟨h1, h2, ?_⟩
     rwa [movingDomain_congr_of_eq (h _ ⟨h1, h2.le⟩)]
+end
 
 /-- The squared distance to the moving centre only depends on the curve at the given time. -/
 theorem centreSq_congr_of_eq {n : ℕ} {c : PDE.Vec n} {γ γ' : ℝ → PDE.Vec n} {p : KineticPoint n}

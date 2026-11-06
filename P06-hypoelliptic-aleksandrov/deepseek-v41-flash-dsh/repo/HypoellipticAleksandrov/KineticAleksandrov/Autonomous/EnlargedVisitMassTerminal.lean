@@ -29,12 +29,12 @@ theorem enlarged_activeUnion_eq (c : Clock) (J : Interval)
   unfold visitIntervalUnion
   rw [dite_eq_left ho]
   rfl
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T : ℝ)
 
 /-- Away from terminal time, actual active exits carry zero quadratic value. -/
 theorem enlargedActiveExit_ae_quadratic_zero_or_terminal
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T : ℝ)
+    
     (hJ : closure c.active ⊆ J.carrier) (mu : Measure Point) :
     ∀ᵐ q ∂(enlargedVisitExitKernel hH hLE hlam hLam A (visitActiveUnion c J) T ∘ₘ mu),
       q.time = T ∨ visitQuadratic c (q.velocity 0) = 0 := by
@@ -72,9 +72,7 @@ theorem enlargedActiveExit_ae_quadratic_zero_or_terminal
 
 /-- At the horizon, the actual terminal mixture is precisely the restricted exit mixture. -/
 theorem enlargedActiveTerminal_bind_eq_restrict
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T : ℝ)
+    
     (mu : Measure Point) (ht : ∀ᵐ p ∂mu, p.time < T) :
     mu.bind (enlargedActiveTerminalFamily hH hLE hlam hLam A c J T) =
       (enlargedVisitExitKernel hH hLE hlam hLam A (visitActiveUnion c J) T ∘ₘ mu).restrict
@@ -102,9 +100,7 @@ theorem enlargedActiveTerminal_bind_eq_restrict
 
 /-- The integrated quadratic exit value is exactly its terminal-slice value. -/
 theorem enlargedQuadratic_exit_integral_eq_terminal
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T : ℝ)
+    
     (hJ : closure c.active ⊆ J.carrier) (mu : Measure Point) [IsFiniteMeasure mu]
     (ht : ∀ᵐ p ∂mu, p.time < T) :
     (∫ q, visitQuadratic c (q.velocity 0)
@@ -122,5 +118,6 @@ theorem enlargedQuadratic_exit_integral_eq_terminal
   · by_cases htq : q.time = T
     · simp only [Set.indicator, mem_ofPred_eq, htq, ite_true]
     · simp only [Set.indicator, mem_ofPred_eq, htq, ite_false, hq]
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

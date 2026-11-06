@@ -10,10 +10,11 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Construc
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory Set
+section
+variable {d : ℕ} {alpha : ℝ} (h : CounterProfileStatement d alpha)
 
 /-- The literal second representative obtained by differentiating the selected first jet. -/
-def constructionExtendedPackedHessian {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r mu R m t : ℝ)
+def constructionExtendedPackedHessian  (r mu R m t : ℝ)
     (x : PDE.Vec (d + d)) (i k : Fin d) : ℝ :=
   constructionPackedCutoff d m R x * spatialPackedCutoffVelocityHessian h r mu R t x i k +
     spatialPackedCutoffGradient h r mu R t x (Fin.natAdd d k) *
@@ -25,8 +26,7 @@ def constructionExtendedPackedHessian {d : ℕ} {alpha : ℝ}
         (PDE.basisVec (Fin.natAdd d k))) x (PDE.basisVec (Fin.natAdd d i))
 
 /-- The selected extended first jets are locally integrable. -/
-theorem construction_extendedGradient_locallyIntegrable {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r)
+theorem construction_extendedGradient_locallyIntegrable  (r : ℝ) (hr : 0 < r)
     (mu R m t : ℝ) (i : Fin (d + d)) :
     LocallyIntegrable (fun x => constructionExtendedPackedGradient h r mu R m t x i)
       volume := by
@@ -39,8 +39,7 @@ theorem construction_extendedGradient_locallyIntegrable {d : ℕ} {alpha : ℝ}
       |>.mul_continuous hd)
 
 /-- The selected extended Hessian components are locally integrable. -/
-theorem construction_extendedHessian_locallyIntegrable {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r)
+theorem construction_extendedHessian_locallyIntegrable  (r : ℝ) (hr : 0 < r)
     (mu R m t : ℝ) (i k : Fin d) :
     LocallyIntegrable (fun x => constructionExtendedPackedHessian h r mu R m t x i k)
       volume := by
@@ -59,6 +58,7 @@ theorem construction_extendedHessian_locallyIntegrable {d : ℕ} {alpha : ℝ}
           (Fin.natAdd d i)).continuous_mul (hd k).continuous)).add
             ((construction_cutoffValue_continuous h r mu R t).locallyIntegrable
               |>.mul_continuous hdd)
+end
 
 /-- The extended first velocity jet has precisely the selected second weak derivative. -/
 theorem construction_extended_velocityJet_weak {d : ℕ} (hd : 1 ≤ d)

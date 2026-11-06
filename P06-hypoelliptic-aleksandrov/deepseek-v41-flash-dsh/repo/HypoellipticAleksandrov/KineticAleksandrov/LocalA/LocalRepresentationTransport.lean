@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.LocalRepresentationProduct
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # The cutoff transport speed in the actual free-transport frame -/
 
@@ -9,25 +10,27 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set Filter Parabolic
 open scoped Topology
+section
+variable {d : ℕ} (Z₀ : KineticPoint d)
 
 /-- The multiplier on the literal time-position carrier. -/
-def localPositionMultiplier {d : ℕ} (Z₀ : KineticPoint d) (χ : PDE.Vec d → ℝ)
+def localPositionMultiplier  (χ : PDE.Vec d → ℝ)
     (z : TimeVelocity d) : ℝ := χ (z.2 - Z₀.position - (z.1 - Z₀.time) • Z₀.velocity)
 
 /-- The free-transport defect is the cutoff differential applied to relative velocity. -/
-def localCutoffTransport {d : ℕ} (Z₀ : KineticPoint d) (χ : PDE.Vec d → ℝ)
+def localCutoffTransport  (χ : PDE.Vec d → ℝ)
     (P : KineticPoint d) : ℝ :=
   fderiv ℝ χ (relativePosition Z₀ P) (P.velocity - Z₀.velocity)
 
 /-- The time-position multiplier is globally smooth. -/
-theorem contDiff_localPositionMultiplier {d : ℕ} (Z₀ : KineticPoint d)
+theorem contDiff_localPositionMultiplier 
     {χ : PDE.Vec d → ℝ} (hχ : ContDiff ℝ (⊤ : ℕ∞) χ) :
     ContDiff ℝ (⊤ : ℕ∞) (localPositionMultiplier Z₀ χ) :=
   hχ.comp ((contDiff_snd.sub contDiff_const).sub
     ((contDiff_fst.sub contDiff_const).smul contDiff_const))
 
 /-- The cutoff transport defect is continuous on the full physical carrier. -/
-theorem continuous_localCutoffTransport {d : ℕ} (Z₀ : KineticPoint d)
+theorem continuous_localCutoffTransport 
     {χ : PDE.Vec d → ℝ} (hχ : ContDiff ℝ (⊤ : ℕ∞) χ) :
     Continuous (localCutoffTransport Z₀ χ) := by
   have hrel : Continuous (relativePosition Z₀) :=
@@ -35,6 +38,7 @@ theorem continuous_localCutoffTransport {d : ℕ} (Z₀ : KineticPoint d)
       ((continuous_time.sub continuous_const).smul continuous_const)
   exact ((hχ.continuous_fderiv (by simp)).comp hrel).clm_apply
     (continuous_velocity.sub continuous_const)
+end
 
 /-- Outside the cutoff support there is no transport defect. -/
 theorem localCutoffTransport_zero {d : ℕ} (Z₀ P : KineticPoint d)

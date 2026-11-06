@@ -17,10 +17,11 @@ variable (hH : HormanderHypoellipticityStatement)
   (hlam : 0 < lam) (hLam : lam ≤ Lam)
   (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
   (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
+section
+variable (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
 
 /-- Smooth probe values obey the boundary supremum contraction. -/
-theorem boundaryProbeValueLinear_bound (P : LocalBallStart v₀ R)
-    (T : {t : ℝ // P.1.time < t}) (f : boundaryProbeSubmodule d) (c : ℝ)
+theorem boundaryProbeValueLinear_bound  (f : boundaryProbeSubmodule d) (c : ℝ)
     (_hc : 0 ≤ c) (hbd : ∀ Q, |boundaryProbeCcLinear P.1.time T.1 v₀ R f Q| ≤ c) :
     |boundaryProbeValueLinear hH hLE hd hlam hLam B hB v₀ hR P T f| ≤ c := by
   have hp : P.1 ∈ localClosedStrip P.1.time T.1 v₀ R :=
@@ -41,8 +42,7 @@ theorem boundaryProbeValueLinear_bound (P : LocalBallStart v₀ R)
   exact abs_le.mpr ⟨neg_le.mp hn, hu⟩
 
 /-- Nonnegative trace data have nonnegative actual homogeneous values. -/
-theorem boundaryProbeValueLinear_nonneg (P : LocalBallStart v₀ R)
-    (T : {t : ℝ // P.1.time < t}) (f : boundaryProbeSubmodule d)
+theorem boundaryProbeValueLinear_nonneg  (f : boundaryProbeSubmodule d)
     (hbd : ∀ Q, 0 ≤ boundaryProbeCcLinear P.1.time T.1 v₀ R f Q) :
     0 ≤ boundaryProbeValueLinear hH hLE hd hlam hLam B hB v₀ hR P T f := by
   have hp : P.1 ∈ localClosedStrip P.1.time T.1 v₀ R :=
@@ -58,8 +58,7 @@ theorem boundaryProbeValueLinear_nonneg (P : LocalBallStart v₀ R)
   exact neg_nonpos.mp hn
 
 /-- Existence and uniqueness of the positive contraction extending the actual probe values. -/
-theorem existsUnique_ballBoundaryFunctional (P : LocalBallStart v₀ R)
-    (T : {t : ℝ // P.1.time < t}) :
+theorem existsUnique_ballBoundaryFunctional  :
     ∃! ℓ : C_c(localTrace P.1.time T.1 v₀ R, ℝ) →ₚ[ℝ] ℝ,
       (∀ (f : C_c(localTrace P.1.time T.1 v₀ R, ℝ)) (c : ℝ), 0 ≤ c →
         (∀ Q, |f Q| ≤ c) → |ℓ f| ≤ c) ∧
@@ -76,5 +75,6 @@ theorem existsUnique_ballBoundaryFunctional (P : LocalBallStart v₀ R)
     (boundaryProbeCcLinear P.1.time T.1 v₀ R) k.toLinearMap ℓ.toLinearMap hk.1 hbd
     (fun f => (hk.2 f).trans (hagree f).symm) (boundaryProbeCc_dense P.1.time T.1 v₀ R)
   exact PositiveLinearMap.ext (fun f => LinearMap.congr_fun hlin f)
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

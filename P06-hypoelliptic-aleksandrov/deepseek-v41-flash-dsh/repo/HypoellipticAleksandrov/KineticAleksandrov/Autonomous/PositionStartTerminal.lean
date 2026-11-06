@@ -11,12 +11,12 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 open scoped Classical
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval)
 
 /-- The concrete terminal family, including its zero-duration atom, is measurable. -/
 theorem positionStartTerminalFamily_measurable
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ) :
+     (b : ℝ) :
     Measurable (enlargedActiveTerminalFamily hH hLE hlam hLam A c J b) := by
   let E := enlargedVisitExitKernel hH hLE hlam hLam A (visitActiveUnion c J) b
   have hS : MeasurableSet {q : Point | q.time = b} :=
@@ -31,9 +31,7 @@ theorem positionStartTerminalFamily_measurable
 
 /-- The position cutoff preserves the exact zero internal-exit contribution. -/
 theorem positionStartQuadratic_exit_integral_eq_terminal
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (Y T : ℝ)
+     (Y T : ℝ)
     (hJ : closure c.active ⊆ J.carrier) (mu : Measure Point)
     (ht : ∀ᵐ p ∂mu, p.time < T) :
     (∫ q, positionStartCutoff Y c.r c.positive (q.position 0) *
@@ -56,9 +54,7 @@ theorem positionStartQuadratic_exit_integral_eq_terminal
 
 /-- Before a finite observation time, the concrete terminal family obeys the Green identity. -/
 theorem positionStartQuadratic_terminal_identity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (Y b : ℝ)
+     (Y b : ℝ)
     (hc : |c.vbar| = 2 * c.r) (hJ : closure c.active ⊆ J.carrier)
     (p : Point) (hv : p.velocity 0 ∈ c.active) (ht : p.time < b) :
     let f := fun q : Point => positionStartCutoff Y c.r c.positive (q.position 0) *
@@ -94,9 +90,7 @@ theorem positionStartQuadratic_terminal_identity
 
 /-- Clipping the genuine all-time active occupation at `b` gives its finite Green kernel. -/
 theorem positionStartGreen_eq_restrict
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ)
+     (b : ℝ)
     (hJ : closure c.active ⊆ J.carrier) (p : Point)
     (hv : p.velocity 0 ∈ c.active) (ht : p.time < b) :
     enlargedVisitGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) b p =
@@ -112,5 +106,6 @@ theorem positionStartGreen_eq_restrict
   rw [dite_eq_left hp]
   exact stripGreen_finite_restrict_infinite hH hLE hlam hLam A c.activeInterval
     (densityClockPole c p hv) b ht
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

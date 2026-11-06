@@ -58,9 +58,11 @@ private theorem endpoint_sqNorm_integral_eq_norm_sq_toLp
       (integral_nonneg fun _ => sq_nonneg _) (by norm_num)).symm
   · norm_num
   · simp
+section
+variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
 
 private theorem endpoint_tendsto_sqNorm_integral_translate_add_on_of_memLp_two
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
+    
     (F : ℝ → E) (hF : MemLp F (2 : ℝ≥0∞) volume) (s : Set ℝ) :
     Tendsto (fun h : ℝ => ∫ t in s, ‖F (t + h) - F t‖ ^ 2) (𝓝 0) (𝓝 0) := by
   let f : Lp (α := ℝ) E (2 : ℝ≥0∞) volume := hF.toLp F
@@ -105,7 +107,7 @@ private theorem endpoint_tendsto_sqNorm_integral_translate_add_on_of_memLp_two
   exact pow_le_pow_left₀ (norm_nonneg _) (norm_Lp_toLp_restrict_le s q) 2
 
 private theorem endpoint_forward_window_sqNorm_integral_swap
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
+    
     (F : ℝ → E) (hF : MemLp F (2 : ℝ≥0∞) volume) (h : ℝ) (K : Set ℝ)
     [IsFiniteMeasure (volume.restrict K)] :
     (∫ s in Ioc 0 h, ∫ t in K, ‖F (s + t) - F t‖ ^ 2) =
@@ -119,7 +121,7 @@ private theorem endpoint_forward_window_sqNorm_integral_swap
   simpa only [MeasureTheory.integral] using integral_integral_swap hPhiSq
 
 private theorem endpoint_ae_memLp_forward_window_slice
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
+    
     (F : ℝ → E) (hF : MemLp F (2 : ℝ≥0∞) volume) (h : ℝ) (K : Set ℝ)
     [IsFiniteMeasure (volume.restrict K)] :
     ∀ᵐ t ∂volume.restrict K,
@@ -138,7 +140,7 @@ private theorem endpoint_ae_memLp_forward_window_slice
   exact (memLp_two_iff_integrable_sq_norm ht.aestronglyMeasurable).mpr htSq
 
 private theorem endpoint_sqNorm_smul_window_integral_le
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
+    
     (h : ℝ) (hh : 0 < h) (φ : ℝ → E)
     (hφ : MemLp φ (2 : ℝ≥0∞) (volume.restrict (Ioc 0 h))) :
     ‖h⁻¹ • ∫ s, φ s ∂volume.restrict (Ioc 0 h)‖ ^ 2 ≤
@@ -189,7 +191,7 @@ private theorem endpoint_sqNorm_smul_window_integral_le
     _ = h⁻¹ * ∫ s, ‖φ s‖ ^ 2 ∂μ := hcalc
 
 private theorem endpoint_sqNorm_forward_window_average_le
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
+    
     (F : ℝ → E) (hF : MemLp F (2 : ℝ≥0∞) volume) (h : ℝ) (hh : 0 < h) (K : Set ℝ)
     [IsFiniteMeasure (volume.restrict K)] :
     (∫ t in K, ‖h⁻¹ • ∫ s in Ioc 0 h, (F (s + t) - F t)‖ ^ 2) ≤
@@ -226,7 +228,7 @@ private theorem endpoint_sqNorm_forward_window_average_le
       rw [← endpoint_forward_window_sqNorm_integral_swap F hF h K]
 
 private theorem endpoint_backward_window_product_memLp
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
+    
     (F : ℝ → E) (hF : MemLp F (2 : ℝ≥0∞) volume) (h : ℝ) (K : Set ℝ) :
     MemLp (fun z : ℝ × ℝ => F (z.2 - z.1) - F z.2) (2 : ℝ≥0∞)
       ((volume.restrict (Ioc 0 h)).prod (volume.restrict K)) := by
@@ -253,7 +255,7 @@ private theorem endpoint_backward_window_product_memLp
   exact hminusK.sub hzeroK
 
 private theorem endpoint_backward_window_sqNorm_integral_swap
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
+    
     (F : ℝ → E) (hF : MemLp F (2 : ℝ≥0∞) volume) (h : ℝ) (K : Set ℝ)
     [IsFiniteMeasure (volume.restrict K)] :
     (∫ s in Ioc 0 h, ∫ t in K, ‖F (t - s) - F t‖ ^ 2) =
@@ -267,7 +269,7 @@ private theorem endpoint_backward_window_sqNorm_integral_swap
   simpa only [MeasureTheory.integral] using integral_integral_swap hPhiSq
 
 private theorem endpoint_ae_memLp_backward_window_slice
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
+    
     (F : ℝ → E) (hF : MemLp F (2 : ℝ≥0∞) volume) (h : ℝ) (K : Set ℝ)
     [IsFiniteMeasure (volume.restrict K)] :
     ∀ᵐ t ∂volume.restrict K,
@@ -286,7 +288,7 @@ private theorem endpoint_ae_memLp_backward_window_slice
   exact (memLp_two_iff_integrable_sq_norm ht.aestronglyMeasurable).mpr htSq
 
 private theorem endpoint_sqNorm_backward_window_average_le
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
+    
     (F : ℝ → E) (hF : MemLp F (2 : ℝ≥0∞) volume) (h : ℝ) (hh : 0 < h) (K : Set ℝ)
     [IsFiniteMeasure (volume.restrict K)] :
     (∫ t in K, ‖h⁻¹ • ∫ s in Ioc 0 h, (F (t - s) - F t)‖ ^ 2) ≤
@@ -321,6 +323,7 @@ private theorem endpoint_sqNorm_backward_window_average_le
       rw [integral_const_mul]
     _ = h⁻¹ * ∫ s in Ioc 0 h, ∫ t in K, ‖F (t - s) - F t‖ ^ 2 := by
       rw [← endpoint_backward_window_sqNorm_integral_swap F hF h K]
+end
 
 private theorem endpoint_tendsto_inv_mul_setIntegral_Ioc_zero
     (q : ℝ → ℝ) (hq : Tendsto q (𝓝[>] 0) (𝓝 0))

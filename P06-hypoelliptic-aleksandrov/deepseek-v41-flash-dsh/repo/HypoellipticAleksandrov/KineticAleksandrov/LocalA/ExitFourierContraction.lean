@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.ExitFourierComposition
 import Mathlib.MeasureTheory.VectorMeasure.Variation.Basic
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Total variation contraction through the actual later boundary operator -/
 
@@ -30,7 +31,7 @@ theorem ballExitRestart_fourier_variation_le
     (ballEvolutionQuery P ⟨H.1, H.2.1⟩) ξ
   let η := exitFourier ((ballExitRestart hH hLE hd hlam hLam B hB v₀ hR P T H).map
     (exitCoordinates P.1 v₀)) ξ
-  let f (E : Set (TimeVelocity d)) :=
+  let f (E : HypoellipticAleksandrov.Parabolic.TVSet d) :=
     ballLaterExitFourierTest hH hLE hd hlam hLam B hB v₀ hR H.1 T.1 H.2.2 ξ E
   have hmulNorm : ‖ContinuousLinearMap.mul ℝ ℂ‖ₑ ≤ 1 := by
     rw [← ofReal_norm]

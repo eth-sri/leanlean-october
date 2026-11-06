@@ -2,6 +2,7 @@ module
 
 import Mathlib.Tactic.Linarith
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.BarrierPiece
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Collar comparison across the pieces of a piecewise `C¹` curve
@@ -19,17 +20,18 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Filter Set
 open scoped Topology MatrixOrder
+section
+variable {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n} {γ : ℝ → PDE.Vec n} {a a' b b' : ℝ}
 
 /-- Monotonicity of the closed moving slab in its time interval. -/
-theorem movingClosedSlab_mono {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
-    {a a' b b' : ℝ} (ha : a ≤ a') (hb : b' ≤ b) :
+theorem movingClosedSlab_mono  (ha : a ≤ a') (hb : b' ≤ b) :
     movingClosedSlab Ω γ a' b' ⊆ movingClosedSlab Ω γ a b :=
   fun _ hp => ⟨ha.trans hp.1, hp.2.1.trans hb, hp.2.2⟩
 
 /-- Monotonicity of the active moving slab in its time interval. -/
-theorem movingActiveSlab_mono {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
-    {a a' b b' : ℝ} (ha : a ≤ a') (hb : b' ≤ b) :
+theorem movingActiveSlab_mono  (ha : a ≤ a') (hb : b' ≤ b) :
     movingActiveSlab Ω γ a' b' ⊆ movingActiveSlab Ω γ a b :=
   fun _ hp => ⟨ha.trans hp.1, hp.2.1.trans_le hb, hp.2.2⟩
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

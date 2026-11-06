@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeProductRepresentative
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeGradientProductRepresentative
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Original-time product representatives
@@ -40,7 +42,7 @@ private theorem originalTimeReflection_measurePreserving_toReverseTime (r₀ r�
 /-! The original-time and spatial restricted volumes form the literal
 time--velocity restricted volume on their product set. -/
 private theorem originalTimeVolume_prod_volumeOn_eq_timeVelocityVolumeOn
-    {d : ℕ} (r₀ r₁ : ℝ) (Ω : Set (PDE.Vec d)) :
+    {d : ℕ} (r₀ r₁ : ℝ) (Ω : HypoellipticAleksandrov.VecSet d) :
     (volume.restrict (Set.Ioo r₀ r₁)).prod (PDE.volumeOn Ω) =
       timeVelocityVolumeOn (Set.Ioo r₀ r₁ ×ˢ Ω) := by
   rw [timeVelocityVolumeOn, volume_timeVelocity_eq_prod]
@@ -51,7 +53,7 @@ private theorem originalTimeVolume_prod_volumeOn_eq_timeVelocityVolumeOn
 representative whose spatial slices agree almost everywhere with its reflected
 timewise values. -/
 theorem exists_originalTimeL2V_value_product_representative
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ : ℝ) (hΩ : IsOpen Ω)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (r₀ r₁ : ℝ) (hΩ : IsOpen Ω)
     (u : ReverseTimeL2V hΩ (r₁ - r₀)) :
     ∃ U : TimeVelocity d → ℝ,
       MemLp U (2 : ℝ≥0∞)

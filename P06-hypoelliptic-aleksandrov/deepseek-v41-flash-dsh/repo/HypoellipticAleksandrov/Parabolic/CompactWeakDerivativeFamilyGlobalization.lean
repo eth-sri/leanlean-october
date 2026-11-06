@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.ParabolicWeakDerivativeFamily
 public import HypoellipticAleksandrov.Parabolic.WeakDerivativesCompactGlobalization
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Globalization of compactly supported weak-derivative families
@@ -23,7 +24,7 @@ open scoped ENNReal Topology
 have topological support in the open local carrier. The ambient root is the
 selected zero representative, not the supplied local root. -/
 def ParabolicWeakDerivativeFamily.compactSupportGlobalize
-    {d L : ℕ} {U : Set (TimeVelocity d)}
+    {d L : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hU : IsOpen U) {f : TimeVelocity d → ℝ}
     (F : ParabolicWeakDerivativeFamily d L U f)
     (hsupp : ∀ beta, tsupport (F.representative beta) ⊆ U) :
@@ -45,7 +46,7 @@ def ParabolicWeakDerivativeFamily.compactSupportGlobalize
 /-- Compact-support globalization preserves every selected representative
 literally. -/
 @[simp] theorem ParabolicWeakDerivativeFamily.compactSupportGlobalize_representative
-    {d L : ℕ} {U : Set (TimeVelocity d)}
+    {d L : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hU : IsOpen U) {f : TimeVelocity d → ℝ}
     (F : ParabolicWeakDerivativeFamily d L U f)
     (hsupp : ∀ beta, tsupport (F.representative beta) ⊆ U)
@@ -57,7 +58,7 @@ literally. -/
 vanish off a measurable carrier, their local almost-everywhere equality
 extends to ambient volume. -/
 theorem ParabolicWeakDerivativeFamily.zero_representative_ae_eq_of_support_subset
-    {d L : ℕ} {U : Set (TimeVelocity d)}
+    {d L : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hU : MeasurableSet U) {f : TimeVelocity d → ℝ}
     (F : ParabolicWeakDerivativeFamily d L U f)
     (hFzero : tsupport

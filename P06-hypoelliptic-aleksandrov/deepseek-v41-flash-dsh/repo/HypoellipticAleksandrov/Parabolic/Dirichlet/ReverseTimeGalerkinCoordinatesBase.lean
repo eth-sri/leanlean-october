@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialForm
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSourceBochner
 public import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
 public import Mathlib.Topology.Algebra.Module.FiniteDimension
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Reverse-time finite Galerkin coordinates
@@ -23,14 +24,14 @@ open scoped BigOperators ENNReal Matrix Matrix.Norms.Elementwise RealInnerProduc
 
 /-- Reconstruct a finite Galerkin vector from its real coordinates. -/
 noncomputable def galerkinReconstruct
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (N : ℕ) :
     (Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ) →ₗ[ℝ] galerkinSpace hΩ N :=
   (galerkinSpaceBasis hΩ N).equivFun.symm.toLinearMap
 
 /-- Reconstruction is the finite basis expansion. -/
 theorem galerkinReconstruct_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (N : ℕ)
     (x : Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ) :
     galerkinReconstruct hΩ N x = ∑ i, x i • galerkinSpaceBasis hΩ N i := by
@@ -41,16 +42,16 @@ theorem galerkinReconstruct_apply
 
 /-- Reconstruction inverts the finite coordinate equivalence. -/
 @[simp] theorem galerkinReconstruct_equivFun
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (N : ℕ) (u : galerkinSpace hΩ N) :
     galerkinReconstruct hΩ N ((galerkinSpaceBasis hΩ N).equivFun u) = u := by
   exact (galerkinSpaceBasis hΩ N).equivFun.symm_apply_apply u
+section
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
 
 /-- `K i j` tests coordinate basis column `j` against row `i`. -/
 noncomputable def reverseTimeGalerkinStiffness
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
-    (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
+    
     (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
@@ -69,9 +70,7 @@ noncomputable def reverseTimeGalerkinStiffness
 
 /-- The finite stiffness matrix is continuous on the closed reverse-time interval. -/
 theorem continuous_reverseTimeGalerkinStiffness
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
-    (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
+    
     (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
@@ -91,9 +90,7 @@ theorem continuous_reverseTimeGalerkinStiffness
 
 /-- The already-negative reverse-time source in finite Galerkin coordinates. -/
 noncomputable def reverseTimeGalerkinSource
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
-    (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
+    
     (F : ℝ → PDE.Vec d → ℝ)
     (hFSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => F z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -105,9 +102,7 @@ noncomputable def reverseTimeGalerkinSource
 
 /-- The finite negative-source coordinate vector is continuous. -/
 theorem continuous_reverseTimeGalerkinSource
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
-    (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
+    
     (F : ℝ → PDE.Vec d → ℝ)
     (hFSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => F z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -121,9 +116,7 @@ theorem continuous_reverseTimeGalerkinSource
 
 /-- On the true reverse-time interval, a source coordinate is the literal source functional. -/
 theorem reverseTimeGalerkinSource_eq
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
-    (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
+    
     (F : ℝ → PDE.Vec d → ℝ)
     (hFSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => F z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -142,9 +135,7 @@ theorem reverseTimeGalerkinSource_eq
 
 /-- The mass-inverted stiffness contribution to the coordinate equation. -/
 noncomputable def reverseTimeGalerkinLinearPart
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
-    (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
+    
     (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
@@ -162,9 +153,7 @@ noncomputable def reverseTimeGalerkinLinearPart
 
 /-- The mass-inverted negative source contribution to the coordinate equation. -/
 noncomputable def reverseTimeGalerkinForcing
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
-    (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
+    
     (F : ℝ → PDE.Vec d → ℝ)
     (hFSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => F z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -172,6 +161,7 @@ noncomputable def reverseTimeGalerkinForcing
     Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ :=
   (galerkinMassGram hΩ N)⁻¹ *ᵥ
     reverseTimeGalerkinSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth N τ
+end
 
 private noncomputable def matrixToContinuousMulVec
     (I : Type) [Fintype I] [DecidableEq I] :
@@ -180,7 +170,7 @@ private noncomputable def matrixToContinuousMulVec
 
 /-- The mass-inverted stiffness coefficient is continuous on the closed interval. -/
 theorem continuous_reverseTimeGalerkinLinearPart
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
@@ -207,7 +197,7 @@ theorem continuous_reverseTimeGalerkinLinearPart
 
 /-- The mass-inverted source coefficient is continuous on the closed interval. -/
 theorem continuous_reverseTimeGalerkinForcing
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (F : ℝ → PDE.Vec d → ℝ)

@@ -42,18 +42,18 @@ theorem contDiff_kineticAffineInverse_prod {d : ℕ} (P₀ : KineticPoint d) (R 
 def scaledUnitCutoff {d : ℕ} (f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ)
     (P₀ : KineticPoint d) (R ell : ℝ) (P : KineticPoint d) : ℝ :=
   ell * f (KineticPoint.equivProd d (kineticAffineInverse P₀ R P))
+section
+variable {d : ℕ} {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
 
 /-- Smooth unit cutoffs give source-smooth tests near every set after affine transport. -/
-theorem scaledUnitCutoff_isSmoothNear {d : ℕ}
-    {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
+theorem scaledUnitCutoff_isSmoothNear 
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (P₀ : KineticPoint d) (R ell : ℝ)
     (E : Set (KineticPoint d)) : IsSmoothNear (scaledUnitCutoff f P₀ R ell) E := by
   refine ⟨univ, isOpen_univ, subset_univ E, ?_⟩
   exact (contDiff_const.mul (hf.comp (contDiff_kineticAffineInverse_prod P₀ R))).contDiffOn
 
 /-- The scaled cutoff stays between zero and its nonnegative level. -/
-theorem scaledUnitCutoff_bounds {d : ℕ}
-    {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
+theorem scaledUnitCutoff_bounds 
     (hf : ∀ z, 0 ≤ f z ∧ f z ≤ 1) (P₀ : KineticPoint d) (R ell : ℝ)
     (hell : 0 ≤ ell) (P : KineticPoint d) :
     0 ≤ scaledUnitCutoff f P₀ R ell P ∧ scaledUnitCutoff f P₀ R ell P ≤ ell := by
@@ -61,8 +61,7 @@ theorem scaledUnitCutoff_bounds {d : ℕ}
   exact ⟨mul_nonneg hell h0, (mul_le_mul_of_nonneg_left h1 hell).trans_eq (mul_one ell)⟩
 
 /-- The scaled plateau has exactly the prescribed level on the source affine cap. -/
-theorem scaledUnitCutoff_eq_level {d : ℕ}
-    {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
+theorem scaledUnitCutoff_eq_level 
     (hf : ∀ P ∈ closure (cap d), f (KineticPoint.equivProd d P) = 1)
     (P₀ : KineticPoint d) {R : ℝ} (hR : 0 < R) (ell : ℝ)
     {P : KineticPoint d} (hP : P ∈ kineticAffine P₀ R '' cap d) :
@@ -72,8 +71,7 @@ theorem scaledUnitCutoff_eq_level {d : ℕ}
   rw [kineticAffineInverse_apply P₀ hR.ne' Q, hf Q (subset_closure hQ), mul_one]
 
 /-- A unit cutoff supported inside the cylinder vanishes outside its affine image. -/
-theorem scaledUnitCutoff_eq_zero_of_not_mem {d : ℕ}
-    {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
+theorem scaledUnitCutoff_eq_zero_of_not_mem 
     (hf : tsupport f ⊆ KineticPoint.equivProd d ''
       backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1)
     (P₀ : KineticPoint d) {R : ℝ} (hR : 0 < R) (ell : ℝ)
@@ -91,6 +89,7 @@ theorem scaledUnitCutoff_eq_zero_of_not_mem {d : ℕ}
     rw [kineticAffine_apply_inverse P₀ hR.ne' P] at ha
     exact hP ha
   simp only [scaledUnitCutoff, hz, mul_zero]
+end
 
 /-- The source kinetic boundary is disjoint from the open backward cylinder. -/
 theorem kineticBoundary_not_mem_backwardCylinder {d : ℕ} {P₀ P : KineticPoint d}

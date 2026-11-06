@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyReferenceCollarCu
 public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyScaling
 public import HypoellipticAleksandrov.Parabolic.DensityToPoint
 public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyProjectionRecovery
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Physical local parabolic Morrey Holder estimate
@@ -21,10 +22,11 @@ namespace HypoellipticAleksandrov.Parabolic
 
 open Filter MeasureTheory Set
 open scoped BigOperators ENNReal Topology
+section
+variable {d : Nat} {U s : HypoellipticAleksandrov.Parabolic.TVSet d} {u : TimeVelocity d -> Real} {t0 r : Real} {v0 : PDE.Vec d}
 
 private theorem parabolicELpNormOn_timeDerivative_pullbackScalar_local
-    {d : Nat} {U s : Set (TimeVelocity d)} {u : TimeVelocity d -> Real}
-    {t0 r : Real} {v0 : PDE.Vec d} (hU : IsOpen U)
+     (hU : IsOpen U)
     (hs : MeasurableSet s) (hr : 0 < r) (hu : ContDiffOn Real 2 u U)
     (hmap : MapsTo (parabolicAffine t0 v0 r) s U) :
     parabolicELpNormOn d (timeDerivative (pullbackScalar u t0 v0 r)) s =
@@ -51,8 +53,7 @@ private theorem parabolicELpNormOn_timeDerivative_pullbackScalar_local
       ac_rfl
 
 private theorem parabolicELpNormOn_velocityGradient_pullbackScalar_local
-    {d : Nat} {U s : Set (TimeVelocity d)} {u : TimeVelocity d -> Real}
-    {t0 r : Real} {v0 : PDE.Vec d} (hU : IsOpen U)
+     (hU : IsOpen U)
     (hs : MeasurableSet s) (hr : 0 < r) (hu : ContDiffOn Real 2 u U)
     (hmap : MapsTo (parabolicAffine t0 v0 r) s U) (i : Fin d) :
     parabolicELpNormOn d (fun x => velocityGradient (pullbackScalar u t0 v0 r) x i) s =
@@ -82,8 +83,7 @@ private theorem parabolicELpNormOn_velocityGradient_pullbackScalar_local
       ac_rfl
 
 private theorem parabolicELpNormOn_velocityHessian_pullbackScalar_local
-    {d : Nat} {U s : Set (TimeVelocity d)} {u : TimeVelocity d -> Real}
-    {t0 r : Real} {v0 : PDE.Vec d} (hU : IsOpen U)
+     (hU : IsOpen U)
     (hs : MeasurableSet s) (hr : 0 < r) (hu : ContDiffOn Real 2 u U)
     (hmap : MapsTo (parabolicAffine t0 v0 r) s U) (i j : Fin d) :
     parabolicELpNormOn d
@@ -114,8 +114,7 @@ private theorem parabolicELpNormOn_velocityHessian_pullbackScalar_local
       ac_rfl
 
 private theorem parabolicLpNormOn_timeDerivative_pullbackScalar_local_finite
-    {d : Nat} {U s : Set (TimeVelocity d)} {u : TimeVelocity d -> Real}
-    {t0 r : Real} {v0 : PDE.Vec d} (hU : IsOpen U)
+     (hU : IsOpen U)
     (hs : MeasurableSet s) (hr : 0 < r) (hu : ContDiffOn Real 2 u U)
     (hmap : MapsTo (parabolicAffine t0 v0 r) s U)
     (hfin : parabolicELpNormOn d (timeDerivative u)
@@ -135,8 +134,7 @@ private theorem parabolicLpNormOn_timeDerivative_pullbackScalar_local_finite
     rw [hscale, ENNReal.toReal_mul]
 
 private theorem parabolicLpNormOn_velocityGradient_pullbackScalar_local_finite
-    {d : Nat} {U s : Set (TimeVelocity d)} {u : TimeVelocity d -> Real}
-    {t0 r : Real} {v0 : PDE.Vec d} (hU : IsOpen U)
+     (hU : IsOpen U)
     (hs : MeasurableSet s) (hr : 0 < r) (hu : ContDiffOn Real 2 u U)
     (hmap : MapsTo (parabolicAffine t0 v0 r) s U) (i : Fin d)
     (hfin : parabolicELpNormOn d (fun x => velocityGradient u x i)
@@ -157,8 +155,7 @@ private theorem parabolicLpNormOn_velocityGradient_pullbackScalar_local_finite
     rw [hscale, ENNReal.toReal_mul]
 
 private theorem parabolicLpNormOn_velocityHessian_pullbackScalar_local_finite
-    {d : Nat} {U s : Set (TimeVelocity d)} {u : TimeVelocity d -> Real}
-    {t0 r : Real} {v0 : PDE.Vec d} (hU : IsOpen U)
+     (hU : IsOpen U)
     (hs : MeasurableSet s) (hr : 0 < r) (hu : ContDiffOn Real 2 u U)
     (hmap : MapsTo (parabolicAffine t0 v0 r) s U) (i j : Fin d)
     (hfin : parabolicELpNormOn d (fun x => velocityHessian u x i j)
@@ -179,6 +176,7 @@ private theorem parabolicLpNormOn_velocityHessian_pullbackScalar_local_finite
         (ENNReal.rpow_ne_top_of_nonneg ENNReal.toReal_nonneg ENNReal.ofReal_ne_top)) hfin
   · unfold parabolicLpNormOn
     rw [hscale, ENNReal.toReal_mul]
+end
 
 private theorem mem_parabolicAffine_inner_box_iff
     {d : Nat} {t0 r : Real} {v0 : PDE.Vec d} (hr : 0 < r)
@@ -235,7 +233,7 @@ private theorem inner_box_subset_reference_cell (d : Nat) :
     constructor <;> linarith
 
 private theorem contDiff_cutoff_mul_of_contDiffOn
-    {d : Nat} {eta q : TimeVelocity d -> Real} {U : Set (TimeVelocity d)}
+    {d : Nat} {eta q : TimeVelocity d -> Real} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hU : IsOpen U) (heta : ContDiff Real 2 eta) (hetaU : tsupport eta ⊆ U)
     (hq : ContDiffOn Real 2 q U) : ContDiff Real 2 (fun x => eta x * q x) := by
   rw [contDiff_iff_contDiffAt]
@@ -353,9 +351,9 @@ theorem exists_parabolicMorreyPhysicalLocalHolderFullJetConst
   let R : Real := 2 * r
   let tau : Real := t0 - r ^ 2
   let A : TimeVelocity d -> TimeVelocity d := parabolicAffine tau v0 R
-  let U0 : Set (TimeVelocity d) := parabolicBox 1 1 0 0
-  let U : Set (TimeVelocity d) := parabolicBox 1 R tau v0
-  let I0 : Set (TimeVelocity d) := parabolicBox 1 (1 / 2 : Real) (1 / 4 : Real) 0
+  let U0 : HypoellipticAleksandrov.Parabolic.TVSet d := parabolicBox 1 1 0 0
+  let U : HypoellipticAleksandrov.Parabolic.TVSet d := parabolicBox 1 R tau v0
+  let I0 : HypoellipticAleksandrov.Parabolic.TVSet d := parabolicBox 1 (1 / 2 : Real) (1 / 4 : Real) 0
   let q : TimeVelocity d -> Real := pullbackScalar u tau v0 R
   have hR : 0 < R := by dsimp [R]; positivity
   have hU0meas : MeasurableSet U0 := by

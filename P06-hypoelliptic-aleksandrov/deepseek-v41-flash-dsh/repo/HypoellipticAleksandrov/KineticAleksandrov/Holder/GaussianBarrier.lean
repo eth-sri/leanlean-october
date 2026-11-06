@@ -25,17 +25,17 @@ def gaussianFormula {d : ℕ} (chi : ℝ → ℝ)
   ell * chi (sigma / h) *
     (Real.exp (-Xi d lam Lam H h * sigma -
       qform lam h sigma (P.position - x s) (P.velocity - v s)) - Real.exp (-L ^ 2))
+section
+variable {d : ℕ} (lam Lam H h L ell tminus sblock : ℝ) (x v : ℝ → PDE.Vec d) (P : KineticPoint d)
 
 /-- The source barrier, extended by zero from the positive-definite cutoff strip. -/
-def gaussianBarrier {d : ℕ} (lam Lam H h L ell tminus sblock : ℝ)
-    (x v : ℝ → PDE.Vec d) (P : KineticPoint d) : ℝ :=
+def gaussianBarrier  : ℝ :=
   if -(1 / 128 : ℝ) < (P.time - tminus - sblock) / h then
     gaussianFormula barrierCutoff lam Lam H h L ell tminus sblock x v P
   else 0
 
 /-- Outside the covariance strip the source cutoff kills the entire formula. -/
-theorem gaussianBarrier_eq_formula {d : ℕ} (lam Lam H h L ell tminus sblock : ℝ)
-    (x v : ℝ → PDE.Vec d) (P : KineticPoint d) :
+theorem gaussianBarrier_eq_formula  :
     gaussianBarrier lam Lam H h L ell tminus sblock x v P =
       gaussianFormula barrierCutoff lam Lam H h L ell tminus sblock x v P := by
   unfold gaussianBarrier
@@ -44,6 +44,7 @@ theorem gaussianBarrier_eq_formula {d : ℕ} (lam Lam H h L ell tminus sblock : 
   · unfold gaussianFormula
     dsimp only
     rw [barrierCutoff_zero (le_of_not_gt hs), mul_zero, zero_mul]
+end
 
 /-- Smoothness of the literal formula at each point of the closed definite strip. -/
 theorem contDiffAt_raw_gaussianFormula {d : ℕ} {lam h : ℝ}

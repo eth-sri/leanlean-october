@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.ParabolicDuhamelSmooth
 import Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # The Duhamel potential as a Green integral
@@ -46,7 +47,7 @@ theorem integral_Ioo_shift (f : ℝ → ℝ) (s L : ℝ) (hL : 0 ≤ L) :
     intervalIntegral.integral_comp_add_left f s, intervalIntegral.integral_of_le (by linarith)]
   simp
 
-variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d}
 variable (K : MovingFiberKernel Ω γ)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Occupation

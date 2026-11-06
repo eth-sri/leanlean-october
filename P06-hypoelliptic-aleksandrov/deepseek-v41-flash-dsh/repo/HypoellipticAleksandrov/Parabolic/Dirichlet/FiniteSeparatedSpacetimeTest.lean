@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.OriginalTimeSpacetimeTest
 public import HypoellipticAleksandrov.Parabolic.Derivatives
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Finite separated spacetime tests
@@ -20,14 +22,14 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 /-- A finite sum of smooth separated time--space tests. -/
 structure FiniteSeparatedSpacetimeTest
-    {d : ℕ} (τ₁ τ₂ : ℝ) (O : Set (PDE.Vec d)) where
+    {d : ℕ} (τ₁ τ₂ : ℝ) (O : HypoellipticAleksandrov.VecSet d) where
   termCount : ℕ
   timeFactor : Fin termCount → OriginalTimeScalarTest τ₁ τ₂
   spatialFactor : Fin termCount → PDE.WeakTestFunction O
 
 /-- The raw spacetime function represented by a finite separated test. -/
 noncomputable def FiniteSeparatedSpacetimeTest.toFun
-    {d : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)}
+    {d : ℕ} {τ₁ τ₂ : ℝ} {O : HypoellipticAleksandrov.VecSet d}
     (q : FiniteSeparatedSpacetimeTest τ₁ τ₂ O) :
     TimeVelocity d → ℝ :=
   fun z => ∑ m : Fin q.termCount,
@@ -35,7 +37,7 @@ noncomputable def FiniteSeparatedSpacetimeTest.toFun
 
 /-- The literal time derivative of a finite separated test. -/
 noncomputable def FiniteSeparatedSpacetimeTest.timeDeriv
-    {d : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)}
+    {d : ℕ} {τ₁ τ₂ : ℝ} {O : HypoellipticAleksandrov.VecSet d}
     (q : FiniteSeparatedSpacetimeTest τ₁ τ₂ O) :
     TimeVelocity d → ℝ :=
   fun z => ∑ m : Fin q.termCount,
@@ -43,7 +45,7 @@ noncomputable def FiniteSeparatedSpacetimeTest.timeDeriv
 
 /-- The time derivative of a finite separated test differentiates only its time factors. -/
 @[simp] theorem timeDerivative_finiteSeparatedSpacetimeTest
-    {d : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)}
+    {d : ℕ} {τ₁ τ₂ : ℝ} {O : HypoellipticAleksandrov.VecSet d}
     (q : FiniteSeparatedSpacetimeTest τ₁ τ₂ O)
     (z : TimeVelocity d) :
     timeDerivative q.toFun z = q.timeDeriv z := by

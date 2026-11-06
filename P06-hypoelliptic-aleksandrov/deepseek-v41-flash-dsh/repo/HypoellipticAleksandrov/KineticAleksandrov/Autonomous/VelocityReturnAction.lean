@@ -18,11 +18,12 @@ def activeVelocityDatum (c : Clock) : BoundedBorel Z := by
       by_cases hw : w ∈ B
       · simp only [indicator_of_mem hw, abs_one, le_refl]
       · simp only [indicator_of_notMem hw, abs_zero, zero_le_one]⟩⟩
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
 
 /-- Scalar and native physical terminal kernels agree at every nonnegative elapsed time. -/
 theorem return_Kphysical_eq_kernelXV
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
     (A : SmoothAutonomous lam Lam) (t : ℝ) (ht : 0 ≤ t) (z : Z) :
     Kphysical hH hLE hlam hLam A t z =
       kernelXV (fullSpaceEvolution hH hLE hlam hLam A) (Real.toNNReal t) z := by
@@ -33,8 +34,7 @@ theorem return_Kphysical_eq_kernelXV
 
 /-- The source active indicator action is the real mass of the same active velocity set. -/
 theorem activeVelocityDatum_action_eq
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
     (A : SmoothAutonomous lam Lam) (c : Clock) (t : ℝ) (ht : 0 ≤ t) (z : Z) :
     S hH hLE hlam hLam A t (activeVelocityDatum c) z =
       (kernelXV (fullSpaceEvolution hH hLE hlam hLam A) (Real.toNNReal t) z
@@ -51,8 +51,7 @@ theorem activeVelocityDatum_action_eq
 
 /-- Literal equation `e:velocity-return`, with the scalar source return-time premise. -/
 theorem velocity_return_action_of_return_time
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
     (hReturn : ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam) (F : BoundedBorel Z),
       (∀ z, 0 ≤ F z) → ∀ t s X v : ℝ,
       0 < t → 2 * t ≤ s → s ≤ 3 * t → |v| ≤ Real.sqrt t →
@@ -76,5 +75,6 @@ theorem velocity_return_action_of_return_time
   apply (ENNReal.toReal_mono (hmass.trans_lt ENNReal.one_lt_top).ne
     (measure_mono hsub)).trans
   simpa only [Real.coe_toNNReal t ht] using h A c.r z (Real.toNNReal t) c.positive hz
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

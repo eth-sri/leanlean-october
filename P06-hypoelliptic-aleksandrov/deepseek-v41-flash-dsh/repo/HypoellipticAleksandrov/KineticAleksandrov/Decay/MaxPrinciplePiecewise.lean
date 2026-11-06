@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Decay.MaxPrincipleSlab
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Backward propagation over a finite time subdivision
@@ -17,7 +18,7 @@ open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set
 /-- Moving-domain comparison for a finite strict time subdivision. Derivatives
 and the operator inequality are required only inside its open pieces. -/
 theorem nonpos_on_piecewise_maximumClosedTube {d : ℕ}
-    {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+    {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d}
     {B : FullKineticCoefficient d} {drift : PDE.Vec d → PDE.Vec d}
     {u : KineticPoint d → ℝ}
     (hΩ : IsOpen Ω) (hcΩ : IsCompact (closure Ω)) (n : ℕ) :

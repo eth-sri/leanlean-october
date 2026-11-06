@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Dge2CutoffRescaling
 import Mathlib.Tactic.FieldSimp
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Exact dilation identities for the cutoff interpolation -/
 

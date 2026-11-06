@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.KrylovEstimate.ScalarAffine
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Selected scalar and joint derivatives agree on smooth functions -/
 
@@ -9,8 +10,10 @@ noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.KrylovEstimate
 open Filter
 open scoped Topology
+section
+variable {N : ℕ} (w : TimeVelocity N → ℝ)
 
-private theorem coordinate_single_smooth {N : ℕ} (w : TimeVelocity N → ℝ)
+private theorem coordinate_single_smooth 
     (hw : ContDiff ℝ 2 w) (c : TimeVelocityCoord N) (z : TimeVelocity N) :
     TimeVelocityMultiIndex.coordinateIteratedFDeriv (Pi.single c 1) w z =
       fderiv ℝ w z (timeVelocityBasis c) := by
@@ -27,14 +30,14 @@ private theorem coordinate_single_smooth {N : ℕ} (w : TimeVelocity N → ℝ)
 
 /-- The scalar time derivative equals the joint directional derivative. -/
 theorem scalarTimeDerivative_eq_timeDerivative
-    {N : ℕ} (w : TimeVelocity N → ℝ) (hw : ContDiff ℝ 2 w) (z : TimeVelocity N) :
+     (hw : ContDiff ℝ 2 w) (z : TimeVelocity N) :
     scalarTimeDerivative w z = timeDerivative w z := by
   rw [scalarTimeDerivative_eq_coordinateIteratedFDeriv_of_contDiff_two hw z,
     coordinate_single_smooth w hw]
   rfl
 /-- The scalar gradient equals the joint velocity gradient. -/
 theorem scalarSpatialGradient_eq_velocityGradient
-    {N : ℕ} (w : TimeVelocity N → ℝ) (hw : ContDiff ℝ 2 w) (z : TimeVelocity N) :
+     (hw : ContDiff ℝ 2 w) (z : TimeVelocity N) :
     scalarSpatialGradient w z = velocityGradient w z := by
   ext i
   rw [scalarSpatialGradient_apply_eq_coordinateIteratedFDeriv_of_contDiff_two hw z i,
@@ -43,7 +46,7 @@ theorem scalarSpatialGradient_eq_velocityGradient
 
 /-- The scalar Hessian equals the joint velocity Hessian. -/
 theorem scalarSpatialHessian_eq_velocityHessian
-    {N : ℕ} (w : TimeVelocity N → ℝ) (hw : ContDiff ℝ 2 w) (z : TimeVelocity N) :
+     (hw : ContDiff ℝ 2 w) (z : TimeVelocity N) :
     scalarSpatialHessian w z = velocityHessian w z := by
   ext i j
   rw [scalarSpatialHessian_apply_eq_coordinateIteratedFDeriv_of_contDiff_two hw z i j]
@@ -65,5 +68,6 @@ theorem scalarSpatialHessian_eq_velocityHessian
   rw [fderiv_clm_apply hd (differentiableAt_const (c :=
     timeVelocityBasis (velocityCoord j)))]
   simp [timeVelocityBasis_velocity, velocityHessian, PDE.basisVec]
+end
 
 end HypoellipticAleksandrov.Parabolic.KrylovEstimate

@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.CutoffGradientSpatialDifferenceQuotientL2
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.LocalizedSpatialDifferenceQuotientH10ValueBound
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Nested-cutoff locality for spatial difference quotients
@@ -21,7 +22,7 @@ open scoped ENNReal
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 private theorem cutoffGradient_eq_zero_of_not_mem_tsupport
-    {d : ℕ} {inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (η : PDE.QuantitativeSmoothCutoff inner outer K) (i : Fin d)
     {y : PDE.Vec d} (hy : y ∉ tsupport η.toFun) :
     PDE.classicalGradient η.toFun y i = 0 := by
@@ -31,7 +32,7 @@ private theorem cutoffGradient_eq_zero_of_not_mem_tsupport
 /-- Multiplication by one coordinate of a quantitative cutoff gradient on
 spatial restricted `L²`. -/
 noncomputable def cutoffGradientL2Multiplier
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (η : PDE.QuantitativeSmoothCutoff inner outer K) (i : Fin d) :
     PDE.ScalarLp Ω (2 : ℝ≥0∞) →L[ℝ]
       PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
@@ -40,7 +41,7 @@ noncomputable def cutoffGradientL2Multiplier
     (cutoffGradient_norm_le η i)
 
 private theorem norm_cutoffGradientL2Multiplier_apply_le
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (η : PDE.QuantitativeSmoothCutoff inner outer K) (i : Fin d)
     (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
     ‖cutoffGradientL2Multiplier (Ω := Ω) η i f‖ ≤ K * ‖f‖ := by
@@ -54,7 +55,7 @@ private theorem norm_cutoffGradientL2Multiplier_apply_le
 plateau contains the smaller cutoff's topological support. -/
 theorem cutoffGradientSpatialDifferenceQuotientL2_eq_comp_of_tsupport_subset
     {d : ℕ}
-    {Ω innerη outerη innerχ outerχ : Set (PDE.Vec d)}
+    {Ω innerη outerη innerχ outerχ : HypoellipticAleksandrov.VecSet d}
     {Kη Kχ : ℝ}
     (hΩ : MeasurableSet Ω)
     (η : PDE.QuantitativeSmoothCutoff innerη outerη Kη)
@@ -99,7 +100,7 @@ theorem cutoffGradientSpatialDifferenceQuotientL2_eq_comp_of_tsupport_subset
 the larger localized quotient's value by the smaller cutoff gradient. -/
 theorem cutoffGradientSpatialDifferenceQuotientL2_apply_valueCLM_eq
     {d : ℕ}
-    {Ω innerη outerη innerχ outerχ : Set (PDE.Vec d)}
+    {Ω innerη outerη innerχ outerχ : HypoellipticAleksandrov.VecSet d}
     {Kη Kχ : ℝ}
     (hΩ : IsOpen Ω)
     (η : PDE.QuantitativeSmoothCutoff innerη outerη Kη)
@@ -145,7 +146,7 @@ theorem cutoffGradientSpatialDifferenceQuotientL2_apply_valueCLM_eq
 weak spatial gradient. -/
 theorem norm_cutoffGradientSpatialDifferenceQuotientL2_apply_valueCLM_le_gradient
     {d : ℕ}
-    {Ω innerη outerη innerχ outerχ : Set (PDE.Vec d)}
+    {Ω innerη outerη innerχ outerχ : HypoellipticAleksandrov.VecSet d}
     {Kη Kχ : ℝ}
     (hΩ : IsOpen Ω)
     (η : PDE.QuantitativeSmoothCutoff innerη outerη Kη)

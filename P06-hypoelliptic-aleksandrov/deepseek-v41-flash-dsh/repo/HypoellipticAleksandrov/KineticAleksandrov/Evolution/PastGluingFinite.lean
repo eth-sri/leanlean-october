@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonNodes
 import Mathlib.Tactic.Linarith
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Finite-past classical solutions and their uniqueness
 
@@ -16,12 +17,12 @@ open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set Filter
 open scoped Topology MatrixOrder
 
 /-- Interior raw coordinates of a finite past moving slab. -/
-def evolutionFiniteInteriorRaw {n : ℕ} (Ω : Set (PDE.Vec n))
+def evolutionFiniteInteriorRaw {n : ℕ} (Ω : HypoellipticAleksandrov.VecSet n)
     (γ : ℝ → PDE.Vec n) (a τ : ℝ) : Set (ℝ × (PDE.Vec n × PDE.Vec n)) :=
   {q | a < q.1 ∧ q ∈ evolutionPastInteriorRaw Ω γ τ}
 
 /-- A bounded classical viscous solution on a finite slab, without lower-time data. -/
-def IsClassicalViscousFiniteSolution {n : ℕ} (Ω : Set (PDE.Vec n))
+def IsClassicalViscousFiniteSolution {n : ℕ} (Ω : HypoellipticAleksandrov.VecSet n)
     (γ : ℝ → PDE.Vec n) (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
     (ε a τ : ℝ) (F : BoundedBorel (EvolutionAmbientState n))
     (u : KineticPoint n → ℝ) : Prop :=
@@ -36,14 +37,14 @@ def IsClassicalViscousFiniteSolution {n : ℕ} (Ω : Set (PDE.Vec n))
       p.position ∈ frontier (movingDomain Ω γ p.time) → u p = 0)
 
 /-- The strict finite-slab interior is open. -/
-theorem isOpen_evolutionFiniteInteriorRaw {n : ℕ} {Ω : Set (PDE.Vec n)}
+theorem isOpen_evolutionFiniteInteriorRaw {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n}
     (hΩ : IsOpen Ω) {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) (a τ : ℝ) :
     IsOpen (evolutionFiniteInteriorRaw Ω γ a τ) :=
   (isOpen_lt continuous_const continuous_fst).inter (isOpen_evolutionPastInteriorRaw hΩ hγ τ)
 
 /-- Finite-slab smoothness supplies slice regularity strictly above the lower time. -/
 theorem IsClassicalViscousFiniteSolution.isSliceRegularAt {n : ℕ}
-    {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω) {γ : ℝ → PDE.Vec n} (hγ : Continuous γ)
+    {Ω : HypoellipticAleksandrov.VecSet n} (hΩ : IsOpen Ω) {γ : ℝ → PDE.Vec n} (hγ : Continuous γ)
     {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n} {ε a τ : ℝ}
     {F : BoundedBorel (EvolutionAmbientState n)} {u : KineticPoint n → ℝ}
     (hu : IsClassicalViscousFiniteSolution Ω γ B b ε a τ F u)
@@ -57,7 +58,7 @@ theorem IsClassicalViscousFiniteSolution.isSliceRegularAt {n : ℕ}
       (WithTop.coe_le_coe.mpr (le_top : (2 : ℕ∞) ≤ ⊤))
 
 /-- Ordered data give comparison on the common finite past, above both lower endpoints. -/
-theorem finite_classical_comparison {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
+theorem finite_classical_comparison {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n} (hΩ : IsOpen Ω)
     {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {lam Lam : ℝ} (hlam : 0 < lam)
     {B : FullKineticCoefficient n} (hB : HasEverywhereLoewnerBounds lam Lam B)
     {Lb : ℝ} {b : PDE.Vec n → PDE.Vec n} (hb : HasEuclideanLipschitzDrift Lb b)
@@ -102,7 +103,7 @@ theorem finite_classical_comparison {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOp
     simp only [sub_self, le_refl]
 
 /-- Finite-past uniqueness makes different lower-time constructions compatible. -/
-theorem finite_classical_unique {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
+theorem finite_classical_unique {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n} (hΩ : IsOpen Ω)
     {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {lam Lam : ℝ} (hlam : 0 < lam)
     {B : FullKineticCoefficient n} (hB : HasEverywhereLoewnerBounds lam Lam B)
     {Lb : ℝ} {b : PDE.Vec n → PDE.Vec n} (hb : HasEuclideanLipschitzDrift Lb b)

@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.SpatialDifferenceQuotientCollar
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Compact support for spatial difference quotients
@@ -61,7 +62,7 @@ theorem tsupport_spatialDifferenceQuotient_subset
 /-- A quotient is supported in `U` when the original carrier lies in `U` and
 the corresponding backward shift maps that carrier into `U`. -/
 theorem tsupport_spatialDifferenceQuotient_subset_of_mapsTo_spatialShift_neg
-    {d : ℕ} {K U : Set (TimeVelocity d)}
+    {d : ℕ} {K U : HypoellipticAleksandrov.Parabolic.TVSet d}
     (k : Fin d) (h : ℝ) (f : TimeVelocity d → ℝ)
     (hfK : tsupport f ⊆ K) (hKU : K ⊆ U)
     (hshift : Set.MapsTo (spatialShift k (-h)) K U) :

@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.Coefficients.Ellipticity
 public import HypoellipticAleksandrov.Parabolic.ParabolicW12WeakDerivativeFamily
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Original-time equation for the canonical weight-two family
@@ -51,7 +53,7 @@ private theorem velocityTwo_comm {d : ℕ} (i j : Fin d) :
             TimeVelocityMultiIndex.velocity, velocityCoord, hki, hkj]
 
 private theorem representative_velocityTwo_ae_eq_velocityHessian
-    {d : ℕ} {U : Set (TimeVelocity d)}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hU : IsOpen U) (J : ParabolicW12Function d U 2) (j i : Fin d) :
     (fun z =>
       (J.toWeakDerivativeFamily hU).representative
@@ -69,7 +71,7 @@ private theorem representative_velocityTwo_ae_eq_velocityHessian
 /-- The literal original-time equation of a selected local `W^{1,2}_2` jet
 is preserved by its canonical weight-two weak-derivative family. -/
 theorem ParabolicW12Function.toWeakDerivativeFamily_originalTimeEquation
-    {d : ℕ} {U : Set (TimeVelocity d)}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hU : IsOpen U)
     (J : ParabolicW12Function d U 2)
     (a : CoefficientField d)

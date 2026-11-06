@@ -10,12 +10,12 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.InfiniteHori
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
 
 /-- Each actual clipped active Green kernel is bounded by the full all-time active-strip kernel. -/
 theorem visitActiveGreenKernel_le_allTime
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (p : Point) :
+     (p : Point) :
     visitUnionGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) s T p ≤
       coreAllTimeGreenKernel hH hLE hlam hLam A c p := by
   classical
@@ -44,9 +44,7 @@ theorem visitActiveGreenKernel_le_allTime
 
 /-- The genuine active Green mixture is bounded by its all-time active-strip extension. -/
 theorem visitActiveGreenMixture_le_allTime
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (mu : Measure Point) :
+     (mu : Measure Point) :
     visitUnionGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) s T ∘ₘ mu ≤
       coreAllTimeGreenMeasure hH hLE hlam hLam A c mu := by
   unfold coreAllTimeGreenMeasure
@@ -58,9 +56,7 @@ theorem visitActiveGreenMixture_le_allTime
 
 /-- Core occupation is dominated by the actual all-time Green measure of the full visit count. -/
 theorem visitOuterGreen_core_domination
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (hT : s < T)
+     (hT : s < T)
     (P : Point) (hP : s < P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier) :
     (visitUnionGreenKernel hH hLE hlam hLam A J.toFiniteUnion s T P).restrict
       {q | q.velocity 0 ∈ c.core} ≤
@@ -81,5 +77,6 @@ theorem visitOuterGreen_core_domination
   exact Measure.restrict_mono_measure
     (visitActiveGreenMixture_le_allTime hH hLE hlam hLam A c J s T
       (visitEntrancePiece hH hLE hlam hLam A c J s T P n)) C B
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

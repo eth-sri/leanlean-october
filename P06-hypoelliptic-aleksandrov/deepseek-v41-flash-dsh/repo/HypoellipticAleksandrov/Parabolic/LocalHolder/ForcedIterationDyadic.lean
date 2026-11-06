@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.ForcedIteration
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.ForcedIterationGeometry
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.ForcedIterationGeometric
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Dyadic decay of the forced solution's actual range
 
@@ -22,7 +23,7 @@ theorem exists_forced_dyadic_range_decay
     ∃ q K : ℝ, (1 / 2 : ℝ) ≤ q ∧ q < 1 ∧ 0 < K ∧
       ∀ (A : CoefficientField N), IsSmoothCoefficient A → IsSymmetricCoefficient A →
         HasLowerEllipticity lam A → HasUpperEllipticity Lam A →
-      ∀ (U : Set (TimeVelocity N)) (T : ℝ) (v₀ : PDE.Vec N) (r : ℝ),
+      ∀ (U : HypoellipticAleksandrov.Parabolic.TVSet N) (T : ℝ) (v₀ : PDE.Vec N) (r : ℝ),
         0 < r → r ≤ 1 →
         scalarParabolicClosedCylinder (T - r ^ 2) T (PDE.euclideanBall v₀ r) ⊆ U →
       ∀ (w : TimeVelocity N → ℝ) (M : ℝ), 0 ≤ M →

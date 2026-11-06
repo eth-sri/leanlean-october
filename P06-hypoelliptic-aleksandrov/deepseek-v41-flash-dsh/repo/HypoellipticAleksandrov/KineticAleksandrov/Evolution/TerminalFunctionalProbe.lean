@@ -3,6 +3,7 @@ module
 public import Mathlib.Topology.ContinuousMap.CompactlySupported
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.SmoothProbeDensity
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TerminalFunctionalExtension
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Smooth compactly supported terminal probes
@@ -22,7 +23,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov Set
 open scoped CompactlySupported ContDiff
 
-variable {n : ℕ} (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n) (τ : ℝ)
+variable {n : ℕ} (Ω : HypoellipticAleksandrov.VecSet n) (γ : ℝ → PDE.Vec n) (τ : ℝ)
 
 /-- Smooth compactly supported functions on the ambient state with support in the terminal
 fiber, as a real vector space of functions. -/

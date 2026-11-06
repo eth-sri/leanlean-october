@@ -22,23 +22,20 @@ theorem visitWaiting_disjoint_core (c : Clock) (J : Interval) :
     Disjoint (visitWaitingUnion c J).carrier c.core := by
   rw [visitWaitingUnion_carrier]
   exact Set.disjoint_left.mpr fun v hv hc => hv.2 (visitCore_subset_closedEntrance c hc)
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
 
 /-- Actual componentwise Green measures are supported in the union's velocity carrier. -/
 theorem visitUnionGreen_ae_velocity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (T : ℝ)
+     (H : FiniteIntervalUnion) (T : ℝ)
     (p : FiniteUnionPole H (T : WithTop ℝ)) :
-    ∀ᵐ q ∂finiteUnionGreen hH hLE hlam hLam A H T p, q.velocity 0 ∈ H.carrier := by
-  exact (stripGreenOfKernel_ae_mem_stripPast
+    ∀ᵐ q ∂finiteUnionGreen hH hLE hlam hLam A H T p, q.velocity 0 ∈ H.carrier := (stripGreenOfKernel_ae_mem_stripPast
     (H.component (finiteUnionPoleIndex H T p)) _ T (finiteUnionComponentPole H T p)).mono
       (fun _ hq => H.component_subset _ hq.2)
 
 /-- Every actual waiting Green kernel gives zero occupation to the core. -/
 theorem visitWaitingGreenKernel_core_zero
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (p : Point) :
+     (c : Clock) (J : Interval) (s T : ℝ) (p : Point) :
     visitUnionGreenKernel hH hLE hlam hLam A (visitWaitingUnion c J) s T p
       {q | q.velocity 0 ∈ c.core} = 0 := by
   classical
@@ -58,14 +55,13 @@ theorem visitWaitingGreenKernel_core_zero
 
 /-- Integrating any starting measure against the actual waiting kernel still avoids the core. -/
 theorem visitWaitingGreenMixture_core_zero
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (mu : Measure Point) :
+     (c : Clock) (J : Interval) (s T : ℝ) (mu : Measure Point) :
     (visitUnionGreenKernel hH hLE hlam hLam A (visitWaitingUnion c J) s T ∘ₘ mu)
       {q | q.velocity 0 ∈ c.core} = 0 := by
   have hC : MeasurableSet {q : Point | q.velocity 0 ∈ c.core} :=
     isClosed_Icc.measurableSet.preimage ((continuous_apply 0).comp continuous_velocity).measurable
   rw [Measure.bind_apply hC (Kernel.aemeasurable _)]
   simp only [visitWaitingGreenKernel_core_zero, lintegral_zero]
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

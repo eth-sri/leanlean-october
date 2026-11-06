@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonBarrierEnergy
 import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeVariationalComparison
 import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeVariationalNegation
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Two-sided variational bounds by stationary spatial barriers
 
@@ -17,7 +19,7 @@ open scoped ENNReal MatrixOrder Matrix.Norms.Elementwise
 
 /-- A stationary source supersolution bounds the absolute value of the energy solution. -/
 theorem variationalEnergySolution_abs_le_stationary_barrier {d : ℕ}
-    {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (hΩb : Bornology.IsBounded Ω)
+    {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (hΩb : Bornology.IsBounded Ω)
     (a T : ℝ) (haT : a < T) (lam : ℝ) (hlam : 0 < lam)
     (A : CoefficientField d) (hA : IsSmoothCoefficient A)
     (hlo : HasLowerEllipticity lam A) (F G : TimeVelocity d → ℝ)
@@ -68,7 +70,7 @@ theorem variationalEnergySolution_abs_le_stationary_barrier {d : ℕ}
     (stationarySourceCurve_hasWeakTimeDerivative hΩ (T - a) (sub_pos.mpr haT) Q) hqenergy
   have hninit : ∀ᵐ y ∂PDE.volumeOn Ω,
       (-(0 : PDE.ScalarLp Ω 2)) y ≤ valueCLM hΩ Q y := by
-    simpa only [neg_zero] using hinit
+    simpa using hinit
   have hneg := reverseTimeVariationalEnergySolution_le a T lam haT hlam hΩ hΩb
     A (fun _ _ => 0) (fun _ _ => 0) (fun t y => -F (t, y)) (fun t y => G (t, y))
     hAs hbs hcs (IsSmoothOnNeighborhood.neg hFs) hGs

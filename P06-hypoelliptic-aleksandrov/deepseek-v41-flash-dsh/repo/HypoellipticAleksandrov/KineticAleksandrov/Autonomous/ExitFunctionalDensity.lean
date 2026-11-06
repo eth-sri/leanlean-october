@@ -12,9 +12,11 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov Topology
 open SectionTwo TheoremA Evolution
 open scoped CompactlySupported Topology
+section
+variable (H : Interval) (T : ℝ)
 
 /-- Restriction of an ambient smooth probe to the closed physical exit carrier. -/
-def exitProbeCc (H : Interval) (T : ℝ) (f : exitProbeSubmodule) :
+def exitProbeCc  (f : exitProbeSubmodule) :
     C_c(stripClosedExit H T, ℝ) where
   toFun p := exitProbePhysical f p.1
   continuous_toFun := (exitProbePhysical_continuous_compact f).1.comp continuous_subtype_val
@@ -22,14 +24,14 @@ def exitProbeCc (H : Interval) (T : ℝ) (f : exitProbeSubmodule) :
     (isClosed_stripClosedExit H T).isClosedEmbedding_subtypeVal
 
 /-- Exit restriction is a linear map on the ambient probe vector space. -/
-def exitProbeCcLinear (H : Interval) (T : ℝ) :
+def exitProbeCcLinear  :
     exitProbeSubmodule →ₗ[ℝ] C_c(stripClosedExit H T, ℝ) where
   toFun := exitProbeCc H T
   map_add' f g := by ext p; rfl
   map_smul' c f := by ext p; rfl
 
 /-- The dense restriction family is closed under squaring. -/
-theorem exitProbeCc_sq (H : Interval) (T : ℝ) (f : exitProbeSubmodule) :
+theorem exitProbeCc_sq  (f : exitProbeSubmodule) :
     ∃ g : exitProbeSubmodule,
       exitProbeCcLinear H T g = exitProbeCcLinear H T f * exitProbeCcLinear H T f := by
   refine ⟨⟨fun x => f.1 x * f.1 x, f.2.1.mul f.2.1, f.2.2.mul_left⟩, ?_⟩
@@ -37,7 +39,7 @@ theorem exitProbeCc_sq (H : Interval) (T : ℝ) (f : exitProbeSubmodule) :
   rfl
 
 /-- Smooth compact ambient restrictions uniformly approximate every compact exit datum. -/
-theorem exitProbeCc_dense (H : Interval) (T : ℝ) (g : C_c(stripClosedExit H T, ℝ))
+theorem exitProbeCc_dense  (g : C_c(stripClosedExit H T, ℝ))
     (ε : ℝ) (hε : 0 < ε) :
     ∃ f : exitProbeSubmodule, ∀ p, |exitProbeCcLinear H T f p - g p| ≤ ε := by
   let j : stripClosedExit H T → EvolutionVec 1 :=
@@ -64,5 +66,6 @@ theorem exitProbeCc_dense (H : Interval) (T : ℝ) (g : C_c(stripClosedExit H T,
   have hh := hclose (j p)
   rw [hFg p] at hh
   exact hh
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

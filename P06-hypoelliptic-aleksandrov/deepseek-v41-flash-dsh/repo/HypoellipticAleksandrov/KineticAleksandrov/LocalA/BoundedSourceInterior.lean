@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundedSourcePositiveContinuity
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Interior continuity of literal signed bounded source potentials -/
 
@@ -8,7 +9,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundedSourcePos
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set Evolution
-variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d}
 
 /-- Every signed bounded Borel source supported in the past domain has a continuous
 literal potential there, with only the Hörmander input. -/

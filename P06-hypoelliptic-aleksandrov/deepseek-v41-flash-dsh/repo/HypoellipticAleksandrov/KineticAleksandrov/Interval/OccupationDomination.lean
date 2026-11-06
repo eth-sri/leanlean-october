@@ -49,8 +49,8 @@ theorem interval_parabolic_le_whole {a c lam Lam σ τ : ℝ}
     have he : (Subtype.val : EvolutionPosition (PDE.oneDimensionalAxisBox a c)
         stationary τ → PDE.Vec 1) ⁻¹' (PDE.oneDimensionalAxisBox a c)ᶜ = ∅ := by
       ext w
-      simp only [mem_preimage, mem_compl_iff, mem_empty_iff_false, iff_false, not_not]
-      simpa only [movingDomain_stationary] using w.2
+      simp
+      simpa using w.2
     rw [he, measure_empty]
   have hs : ν.restrict (PDE.oneDimensionalAxisBox a c) = ν :=
     Measure.restrict_eq_self_of_ae_mem (by

@@ -32,8 +32,7 @@ def kernelXV (E : FullSpaceEvolution) (t : NNReal) (z : Z) : Measure Z :=
   (E.2.master (wholeQuery t z)).map nativeToXV
 
 /-- Coordinate projection is measurable. -/
-theorem nativeToXV_measurable : Measurable nativeToXV := by
-  exact (measurable_pi_apply 0 |>.comp measurable_snd).prodMk
+theorem nativeToXV_measurable : Measurable nativeToXV := (measurable_pi_apply 0 |>.comp measurable_snd).prodMk
     (measurable_pi_apply 0 |>.comp measurable_fst)
 
 /-- Scalar kernels have probability mass. -/

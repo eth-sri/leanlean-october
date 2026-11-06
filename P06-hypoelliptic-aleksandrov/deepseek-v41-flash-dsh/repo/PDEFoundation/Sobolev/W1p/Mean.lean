@@ -62,52 +62,40 @@ theorem const_grad [IsFiniteMeasure (volumeOn U)]
     (c : ℝ) (x : Vec d) :
     (const (U := U) (p := p) c).grad x = 0 :=
   rfl
+section
+variable [Fact (1 ≤ p)] [IsFiniteMeasure (volumeOn U)] (u : W1pFunction U p)
 
 /-- Add a scalar constant without changing the weak gradient. -/
-noncomputable def addConst [Fact (1 ≤ p)]
-    [IsFiniteMeasure (volumeOn U)]
-    (u : W1pFunction U p) (c : ℝ) :
+noncomputable def addConst  (c : ℝ) :
     W1pFunction U p :=
   u + const (U := U) (p := p) c
 
 @[simp]
-theorem addConst_apply [Fact (1 ≤ p)]
-    [IsFiniteMeasure (volumeOn U)]
-    (u : W1pFunction U p) (c : ℝ) (x : Vec d) :
+theorem addConst_apply  (c : ℝ) (x : Vec d) :
     u.addConst c x = u x + c :=
   rfl
 
 @[simp]
-theorem addConst_grad [Fact (1 ≤ p)]
-    [IsFiniteMeasure (volumeOn U)]
-    (u : W1pFunction U p) (c : ℝ) (x : Vec d) :
+theorem addConst_grad  (c : ℝ) (x : Vec d) :
     (u.addConst c).grad x = u.grad x := by
   simp only [addConst, add_grad, const_grad, add_zero]
 
 /-- Subtract the arithmetic integral average from the value representative. -/
-noncomputable def subAverage [Fact (1 ≤ p)]
-    [IsFiniteMeasure (volumeOn U)]
-    (u : W1pFunction U p) : W1pFunction U p :=
+noncomputable def subAverage  : W1pFunction U p :=
   u.addConst (-integralAverage U u.toFun)
 
 @[simp]
-theorem subAverage_apply [Fact (1 ≤ p)]
-    [IsFiniteMeasure (volumeOn U)]
-    (u : W1pFunction U p) (x : Vec d) :
+theorem subAverage_apply  (x : Vec d) :
     u.subAverage x = u x - integralAverage U u.toFun := by
   simp only [subAverage, addConst_apply, sub_eq_add_neg]
 
 @[simp]
-theorem subAverage_grad [Fact (1 ≤ p)]
-    [IsFiniteMeasure (volumeOn U)]
-    (u : W1pFunction U p) (x : Vec d) :
+theorem subAverage_grad  (x : Vec d) :
     u.subAverage.grad x = u.grad x := by
   simp only [subAverage, addConst_grad]
 
 /-- Subtracting the average produces a zero-mean representative. -/
-theorem meanZeroOn_subAverage [Fact (1 ≤ p)]
-    [IsFiniteMeasure (volumeOn U)]
-    (u : W1pFunction U p)
+theorem meanZeroOn_subAverage 
     (hUPos : 0 < volume U) (hUTop : volume U < ∞) :
     MeanZeroOn U u.subAverage.toFun := by
   have hmean :=
@@ -116,6 +104,7 @@ theorem meanZeroOn_subAverage [Fact (1 ≤ p)]
   apply hmean.congr_ae
   exact Filter.Eventually.of_forall fun x => by
     rw [subAverage_apply]
+end
 
 end W1pFunction
 

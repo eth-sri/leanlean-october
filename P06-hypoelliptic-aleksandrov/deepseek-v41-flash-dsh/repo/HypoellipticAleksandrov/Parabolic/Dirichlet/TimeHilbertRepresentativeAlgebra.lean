@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeHilbertTraces
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Algebra of canonical reverse-time Hilbert representatives
@@ -22,7 +23,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 of the canonical representatives whenever the corresponding weak derivative
 data are available. -/
 theorem reverseTimeHilbertRepresentative_sub_eq
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hdu : HasGelfandWeakTimeDerivative hΩ T hT u g)

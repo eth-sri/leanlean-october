@@ -6,6 +6,7 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeGalerkinPri
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeGalerkinPrimalBochner
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeGelfandPairing
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSeparatedMultiplier
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Canonical initial trace of the reverse-time Galerkin limit
@@ -50,19 +51,19 @@ private theorem memLp_affine_reverseTime_deriv {T : ℝ} (_hT : 0 < T) :
   exact memLp_const _
 
 private noncomputable def affineReverseTimeVTest
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (T : ℝ)
     (hT : 0 < T) (v : H10HilbertGraph hΩ) : ReverseTimeL2V hΩ T :=
   reverseTimeSeparatedVTestOfMemLp hΩ (affineReverseTimeMultiplier T)
     (memLp_affine_reverseTime_multiplier hT) v
 
 private noncomputable def affineReverseTimeDerivativeVTest
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (T : ℝ)
     (hT : 0 < T) (v : H10HilbertGraph hΩ) : ReverseTimeL2V hΩ T :=
   reverseTimeSeparatedVTestOfMemLp hΩ (affineReverseTimeDerivative T)
     (memLp_affine_reverseTime_deriv hT) v
 
 private theorem reverseTimeDualPairingRightCLM_ofMemLp_eq_integral
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {T : ℝ}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {T : ℝ}
     (hΩ : IsOpen Ω) (g : ReverseTimeL2VStar hΩ T)
     (q : ℝ → ℝ) (hq : MemLp q (∞ : ℝ≥0∞) (reverseTimeVolume T))
     (v : H10HilbertGraph hΩ) :
@@ -84,7 +85,7 @@ private theorem reverseTimeDualPairingRightCLM_ofMemLp_eq_integral
       exact mul_comm _ _
 
 private theorem reverseTimeNegativeSource_pairing_ofMemLp_eq_integral_raw
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (F : ℝ → PDE.Vec d → ℝ)
@@ -113,7 +114,7 @@ private theorem reverseTimeNegativeSource_pairing_ofMemLp_eq_integral_raw
         congrArg (fun s => s v * q tau) hS
 
 private theorem reverseTimeSpatialForm_pairing_ofMemLp_eq_integral
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
@@ -150,7 +151,7 @@ private theorem reverseTimeSpatialForm_pairing_ofMemLp_eq_integral
       exact congrArg (fun s : ℝ => s * q tau) (hA v)
 
 private theorem integrable_source_raw_mul_multiplier
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (F : ℝ → PDE.Vec d → ℝ)
@@ -175,7 +176,7 @@ private theorem integrable_source_raw_mul_multiplier
   ring
 
 private theorem integrable_form_raw_mul_multiplier
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
@@ -207,7 +208,7 @@ private theorem integrable_form_raw_mul_multiplier
   ring
 
 private theorem canonical_affine_mass_eq_gelfand_mass
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hdu : HasGelfandWeakTimeDerivative hΩ T hT u g)
@@ -238,7 +239,7 @@ private theorem canonical_affine_mass_eq_gelfand_mass
     _ = _ := (reverseTimeGelfand_pairing_multiplier_eq_integral hΩ u qDeriv hqDeriv v).symm
 
 private noncomputable def affineReverseTimeMassPairing
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (v : H10HilbertGraph hΩ) : ℝ :=
   reverseTimeDualPairingRightCLM hΩ T
@@ -246,14 +247,14 @@ private noncomputable def affineReverseTimeMassPairing
     (reverseTimeGelfandCLM hΩ T u)
 
 private noncomputable def affineReverseTimeSourcePairing
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (S : ReverseTimeL2VStar hΩ T) (v : H10HilbertGraph hΩ) : ℝ :=
   reverseTimeDualPairingRightCLM hΩ T
     (affineReverseTimeVTest hΩ T hT v) S
 
 private noncomputable def affineReverseTimeFormPairing
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (A : ReverseTimeL2V hΩ T →L[ℝ] ReverseTimeL2VStar hΩ T)
     (u : ReverseTimeL2V hΩ T) (v : H10HilbertGraph hΩ) : ℝ :=
@@ -261,13 +262,13 @@ private noncomputable def affineReverseTimeFormPairing
     (affineReverseTimeVTest hΩ T hT v) (A u)
 
 private noncomputable def affineReverseTimeInitialPairing
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (v : H10HilbertGraph hΩ)
     (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) : ℝ :=
   inner ℝ (valueCLM hΩ v) initial
 
 private noncomputable def affineReverseTimeResidualPairing
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (g : ReverseTimeL2VStar hΩ T) (v : H10HilbertGraph hΩ) : ℝ :=
   reverseTimeDualPairingRightCLM hΩ T (affineReverseTimeVTest hΩ T hT v) g
@@ -279,7 +280,7 @@ private theorem neg_add_sub_of_pairing_eq
   rw [← hSource, ← hForm]
 
 private theorem reverseTimeDualPairingRightCLM_sub
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (T : ℝ) (z : ReverseTimeL2V hΩ T)
     (f g : ReverseTimeL2VStar hΩ T) :
     reverseTimeDualPairingRightCLM hΩ T z (f - g) =
@@ -288,7 +289,7 @@ private theorem reverseTimeDualPairingRightCLM_sub
   (reverseTimeDualPairingRightCLM hΩ T z).map_sub f g
 
 private theorem reverseTimeHilbertRepresentative_affine_initial_pairing_wrapped
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hdu : HasGelfandWeakTimeDerivative hΩ T hT u g)
@@ -316,7 +317,7 @@ private theorem reverseTimeHilbertRepresentative_affine_initial_pairing_wrapped
 
 
 private theorem finite_affine_boundary_pairing_wrapped
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
@@ -508,7 +509,7 @@ private theorem finite_affine_boundary_pairing_wrapped
         exact neg_add_sub_of_pairing_eq _ _ _ _ _ hSource' hForm'
 
 
-variable {d : ℕ} {Ω : Set (PDE.Vec d)}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
 variable
   (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam)
   (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)

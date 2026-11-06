@@ -39,7 +39,7 @@ theorem enlargedInitial_nested
       refine ⟨hP.2.1, ?_⟩
       rw [visitWaitingUnion_carrier]
       exact ⟨hP.2.2, hi⟩
-    have hmu : ∀ᵐ p ∂Measure.dirac P, p ∈ enlargedVisitPoleSet (visitWaitingUnion c J) T :=
+    have hmu :=
       (ae_dirac_iff (measurableSet_enlargedVisitPoleSet _ T)).mpr hpw
     have h := enlargedUnion_nested hH hLE hlam hLam A (visitWaitingUnion c J) J.toFiniteUnion
       hsub s T hT (Measure.dirac P) hmu

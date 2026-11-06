@@ -42,8 +42,7 @@ theorem deterministic_barrier_endpoint_uniform_of_modulus
   let C0 := B*(D^(alpha/6)+(2*Lam)^(alpha/2))
   have hL : 0 ≤ Lam := hlam.le.trans hLam
   have hD : 0 ≤ D := by dsimp only [D]; positivity
-  have hC : 0 ≤ C0 := by
-    exact mul_nonneg hB (add_nonneg (Real.rpow_nonneg hD _) (Real.rpow_nonneg (by positivity) _))
+  have hC : 0 ≤ C0 := mul_nonneg hB (add_nonneg (Real.rpow_nonneg hD _) (Real.rpow_nonneg (by positivity) _))
   refine ⟨C0+1, by linarith, ?_⟩
   intro A z T Y hv
   have h := deterministic_barrier_endpoint_of_modulus hH hLE hlam hLam
@@ -54,16 +53,15 @@ theorem deterministic_barrier_endpoint_uniform_of_modulus
     positivity
   have hbound := Real.rpow_le_rpow hp (position_moment_scale_le T.property hv)
     (show 0 ≤ alpha/6 by linarith)
-  have he : ((T : ℝ)^(3 : ℕ))^(alpha/6) = (T : ℝ)^(alpha/2) := by
-    exact (Real.rpow_natCast_mul T.property 3 (alpha/6)).symm.trans
+  have he : ((T : ℝ)^3)^(alpha/6) = (T : ℝ)^(alpha/2) := (Real.rpow_natCast_mul T.property 3 (alpha/6)).symm.trans
       (congrArg (fun a : ℝ => (T : ℝ)^a) (by ring))
-  have hpos : (D*(T : ℝ)^(3 : ℕ))^(alpha/6) = D^(alpha/6)*(T : ℝ)^(alpha/2) :=
+  have hpos : (D*(T : ℝ)^3)^(alpha/6) = D^(alpha/6)*(T : ℝ)^(alpha/2) :=
     (Real.mul_rpow hD (pow_nonneg T.property 3)).trans
       (congrArg (fun a : ℝ => D^(alpha/6)*a) he)
   have hvel : (2*Lam*(T : ℝ))^(alpha/2) = (2*Lam)^(alpha/2)*(T : ℝ)^(alpha/2) :=
     Real.mul_rpow (by positivity) T.property
   calc
-    _ ≤ B*((D*(T : ℝ)^(3 : ℕ))^(alpha/6)+(2*Lam*(T : ℝ))^(alpha/2)) :=
+    _ ≤ B*((D*(T : ℝ)^3)^(alpha/6)+(2*Lam*(T : ℝ))^(alpha/2)) :=
       mul_le_mul_of_nonneg_left (add_le_add hbound le_rfl) hB
     _ = C0*(T : ℝ)^(alpha/2) := by
       rw [hpos, hvel]

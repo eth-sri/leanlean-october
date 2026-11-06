@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeFormResidua
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeGelfandPairing
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.WeakTimeDerivative
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeGalerkinPrimalArbitraryTestLimit
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Residual weak derivative of the reverse-time Galerkin limit
@@ -22,12 +23,12 @@ noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 local instance instResidualDerivativeReverseTimeL2VStarModule
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) :
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (T : ℝ) :
     Module ℝ (ReverseTimeL2VStar hΩ T) :=
   MeasureTheory.Lp.instModule
 
 private theorem reverseTimeDualPairingRightCLM_sub
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (T : ℝ)
     (z : ReverseTimeL2V hΩ T) (g₁ g₂ : ReverseTimeL2VStar hΩ T) :
     reverseTimeDualPairingRightCLM hΩ T z (g₁ - g₂) =
       reverseTimeDualPairingRightCLM hΩ T z g₁ -
@@ -35,7 +36,7 @@ private theorem reverseTimeDualPairingRightCLM_sub
   (reverseTimeDualPairingRightCLM hΩ T z).map_sub g₁ g₂
 
 private theorem reverseTimeDualPairingRightCLM_reverseTimeFormResidual
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
@@ -69,7 +70,7 @@ private theorem residual_pairing_algebra {m s a q : ℝ}
     (hm : m = -s + a) (hq : q = s - a) : m = -q := by
   linarith
 
-variable {d : ℕ} {Ω : Set (PDE.Vec d)}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
 variable
   (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam)
   (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)

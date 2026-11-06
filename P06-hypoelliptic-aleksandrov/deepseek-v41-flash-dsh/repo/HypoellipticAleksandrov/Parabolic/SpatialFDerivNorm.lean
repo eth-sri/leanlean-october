@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.Geometry
 public import Mathlib.Analysis.Calculus.FDeriv.Basic
 public import PDEFoundation.Ambient.Basis
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Spatial Fréchet-derivative coordinate norms

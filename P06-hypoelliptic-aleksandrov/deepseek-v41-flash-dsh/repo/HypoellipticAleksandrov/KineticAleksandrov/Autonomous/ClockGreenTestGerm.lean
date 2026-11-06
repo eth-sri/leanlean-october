@@ -19,7 +19,7 @@ theorem clock_transport_operator_zero_after
   have ht : kineticTimeDerivative u p = 0 := by
     have hn : ∀ᶠ t in 𝓝 p.time, R < t := isOpen_Ioi.mem_nhds hp
     have heq : (fun t => u ⟨t, p.position, p.velocity⟩) =ᶠ[𝓝 p.time]
-        (fun _ => (0 : ℝ)) := hn.mono (fun t ht => hz _ ht.le)
+        (fun _ => 0) := hn.mono (fun t ht => hz _ ht.le)
     change deriv (fun t => u ⟨t, p.position, p.velocity⟩) p.time = 0
     rw [heq.deriv_eq]
     exact deriv_const _ _

@@ -11,12 +11,12 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 open scoped Classical
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval)
 
 /-- Every actual terminal family has mass at most one, including zero-duration poles. -/
 theorem enlarged_terminal_family_mass_le_one
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ) (p : Point) :
+     (b : ℝ) (p : Point) :
     enlargedActiveTerminalFamily hH hLE hlam hLam A c J b p univ ≤ 1 := by
   unfold enlargedActiveTerminalFamily
   split
@@ -31,18 +31,14 @@ theorem enlarged_terminal_family_mass_le_one
 
 /-- Every actual terminal fiber is finite. -/
 instance enlarged_terminal_family_isFiniteMeasure
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ) (p : Point) :
+     (b : ℝ) (p : Point) :
     IsFiniteMeasure (enlargedActiveTerminalFamily hH hLE hlam hLam A c J b p) :=
   ⟨(enlarged_terminal_family_mass_le_one hH hLE hlam hLam A c J b p).trans_lt
     ENNReal.one_lt_top⟩
 
 /-- At a valid earlier active pole, terminal and earlier restart exits are disjoint submeasures. -/
 theorem enlarged_terminal_and_early_exit_le
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b T : ℝ)
+     (b T : ℝ)
     (hJ : closure c.active ⊆ J.carrier) (p : Point) (hv : p.velocity 0 ∈ c.active)
     (hb : p.time < b) (hBT : b ≤ T)
     (B : Set Point) (hB : MeasurableSet B) (hsub : B ⊆ {q | q.time < b}) :
@@ -70,5 +66,6 @@ theorem enlarged_terminal_and_early_exit_le
   rw [dite_eq_left hp, dite_eq_left hpT]
   exact enlarged_stripExit_cap_and_early_le hH hLE hlam hLam A c.activeInterval ep b T
     hb hBT B hB hsub
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

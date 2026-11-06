@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.GlobalLinearODE
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeGalerkinCoordinates
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Reverse-time finite Galerkin ODE solutions
@@ -20,7 +21,7 @@ open scoped BigOperators ENNReal Matrix Matrix.Norms.Elementwise RealInnerProduc
 
 /-- A reverse-time finite Galerkin coordinate solution and its reconstruction exist. -/
 theorem exists_reverseTimeGalerkin_solution
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)

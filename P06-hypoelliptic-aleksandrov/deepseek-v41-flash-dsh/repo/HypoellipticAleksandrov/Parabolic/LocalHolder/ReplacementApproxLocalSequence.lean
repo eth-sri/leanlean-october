@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementApproxUni
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementApproxControlledFamilies
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementApproxHomogeneousLimit
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementApproxCollarGeometry
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Classical homogeneous convergence on a fixed interior collar
 
@@ -22,7 +24,7 @@ theorem scalarC12_homogeneous_local_sequence_limit {d : ℕ}
     (a q₀ p₀ s₀ s₁ p₁ q₁ T : ℝ)
     (haq₀ : a < q₀) (hq₀p₀ : q₀ < p₀) (hp₀s₀ : p₀ < s₀)
     (hs₀s₁ : s₀ < s₁) (hs₁p₁ : s₁ < p₁) (hp₁q₁ : p₁ < q₁) (hq₁T : q₁ < T)
-    (Ω O₀ O₁ O₂ : Set (PDE.Vec d)) (hΩ : IsOpen Ω)
+    (Ω O₀ O₁ O₂ : HypoellipticAleksandrov.VecSet d) (hΩ : IsOpen Ω)
     (hΩc : IsCompact (closure Ω))
     (hO₀ : IsOpen O₀) (hO₀c : IsCompact (closure O₀)) (hO₀Ω : closure O₀ ⊆ Ω)
     (hO₁ : IsOpen O₁) (hO₁c : IsCompact (closure O₁)) (hO₁O₀ : closure O₁ ⊆ O₀)

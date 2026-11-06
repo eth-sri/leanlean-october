@@ -17,15 +17,12 @@ def exitRealPart : ℂ →L[ℝ] ℂ := Complex.ofRealCLM.comp Complex.reCLM
 def exitL1Density {d : ℕ} (ν : Measure (PDE.Vec d × TimeVelocity d)) [IsFiniteMeasure ν] :
     PDE.Vec d → Lp ℂ 1 (exitMarginal ν) :=
   fun y => exitRealPart.compLp (exitL1Inversion ν y)
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B) (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R) (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
 
 /-- The real inverse has the same joint density representative at every position. -/
 theorem ballExitL1Density_coe
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
-    (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
+    
     (hv : P.1.velocity ∈ PDE.euclideanBall v₀ (3 * R / 4))
     (hT : T.1 - P.1.time = R ^ 2 / 8) (y : PDE.Vec d) :
     let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
@@ -50,17 +47,13 @@ theorem ballExitL1Density_coe
 
 /-- One smooth real inverse function serves every derivative order simultaneously. -/
 theorem ballExitL1Density_contDiff
-    (hH : HormanderHypoellipticityStatement)
-    (hLE : LiebermanEllipsoidDirichletStatement)
-    {d : ℕ} (hd : 1 ≤ d) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
-    (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
-    (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
+    
     (hv : P.1.velocity ∈ PDE.euclideanBall v₀ (3 * R / 4))
     (hT : T.1 - P.1.time = R ^ 2 / 8) :
     ContDiff ℝ (⊤ : ℕ∞)
       (exitL1Density (ballExit hH hLE hd hlam hLam B hB v₀ hR P T)) := by
   exact (exitRealPart.compLpL 1 _).contDiff.comp
     (ballExitL1Inversion_contDiff hH hLE hd hlam hLam B hB v₀ hR P T hv hT)
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

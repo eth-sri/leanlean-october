@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialForm
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialBounds
 public import Mathlib.Analysis.InnerProductSpace.Calculus
 public import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Reverse-time finite Galerkin energy bounds
@@ -22,13 +23,13 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 open scoped BigOperators ENNReal Matrix Matrix.Norms.Elementwise MatrixOrder RealInnerProductSpace
 
 private def galerkinEnergy
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (N : ℕ)
     (x : ℝ → Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ) (t : ℝ) : ℝ :=
   ‖valueCLM hΩ (galerkinReconstruct hΩ N (x t) : H10HilbertGraph hΩ)‖ ^ 2
 
 private def galerkinEnergyDeriv
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (N : ℕ)
     (x : ℝ → Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ)
     (xdot : Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ) (t : ℝ) : ℝ :=
@@ -37,7 +38,7 @@ private def galerkinEnergyDeriv
     (valueCLM hΩ (galerkinReconstruct hΩ N xdot : H10HilbertGraph hΩ))
 
 private def galerkinGradientEnergy
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (N : ℕ)
     (x : ℝ → Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ) (t : ℝ) : ℝ :=
   ‖gradientCLM hΩ (galerkinReconstruct hΩ N (x t) : H10HilbertGraph hΩ)‖ ^ 2
@@ -52,7 +53,7 @@ private theorem sum_smul_inner_right
   rw [inner_smul_right]
 
 private theorem coe_galerkinReconstruct_eq_sum
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (N : ℕ)
     (x : Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ) :
     (galerkinReconstruct hΩ N x : H10HilbertGraph hΩ) =
@@ -61,7 +62,7 @@ private theorem coe_galerkinReconstruct_eq_sum
     (galerkinReconstruct_apply hΩ N x)
 
 private theorem map_galerkinReconstruct_sum
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (N : ℕ) {Z : Type} [NormedAddCommGroup Z] [NormedSpace ℝ Z]
     (Q : H10HilbertGraph hΩ →L[ℝ] Z)
     (x : Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ) :
@@ -90,7 +91,7 @@ private theorem map_galerkinReconstruct_sum
           exact Q.map_smul (x i) (galerkinSpaceBasis hΩ N i : H10HilbertGraph hΩ)
 
 private theorem reverseTimeGalerkin_rows_sum
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
@@ -168,7 +169,7 @@ private theorem reverseTimeGalerkin_rows_sum
     hsum_left.symm.trans (hsum.trans hsum_right)
 
 private theorem hasDerivWithinAt_value_reconstruct
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (N : ℕ) (x : ℝ → Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ)
     (xdot : Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ)
     {s : Set ℝ} {τ : ℝ}
@@ -189,7 +190,7 @@ private theorem hasDerivWithinAt_value_reconstruct
     LinearMap.coe_toContinuousLinearMap'] using! hV
 
 private theorem hasDerivWithinAt_energy_reconstruct
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (N : ℕ) (x : ℝ → Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ)
     (xdot : Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ)
     {s : Set ℝ} {τ : ℝ}
@@ -202,7 +203,7 @@ private theorem hasDerivWithinAt_energy_reconstruct
   exact (hasDerivWithinAt_value_reconstruct hΩ N x xdot hx).norm_sq
 
 private theorem energy_differential_algebra
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (lam K M : ℝ) (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ)
     (w f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) (B : ℝ)
     (hidentity : inner ℝ w (valueCLM hΩ u) + B = -inner ℝ (valueCLM hΩ u) f)
@@ -223,7 +224,7 @@ private theorem energy_differential_algebra
   nlinarith
 
 private theorem continuousOn_galerkinEnergy
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (N : ℕ)
     (x : ℝ → Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ) (s : Set ℝ)
     (hx : ContinuousOn x s) :
@@ -242,7 +243,7 @@ private theorem continuousOn_galerkinEnergy
     LinearMap.coe_toContinuousLinearMap'] using! hV.norm.pow 2
 
 private theorem galerkinEnergy_zero_le_initial
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (N : ℕ)
     (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞))
     (x : ℝ → Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ)
@@ -264,7 +265,7 @@ private theorem galerkinEnergy_zero_le_initial
   exact (sq_le_sq₀ (norm_nonneg _) (norm_nonneg _)).2 hnorm
 
 private theorem continuousOn_galerkinGradientEnergy
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (N : ℕ)
     (x : ℝ → Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ) (s : Set ℝ)
     (hx : ContinuousOn x s) :
@@ -288,7 +289,7 @@ private theorem continuousOn_two_mul_inner
   exact continuousOn_const.mul (hv.inner hw)
 
 private theorem galerkin_energy_deriv_ineq
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ lam K M : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
@@ -373,7 +374,7 @@ private theorem galerkin_energy_deriv_ineq
     (le_sub_iff_add_le.mp hbound)
 
 private theorem continuousOn_galerkinEnergyDeriv
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (N : ℕ)
     (x xdot : ℝ → Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ) (s : Set ℝ)
     (hx : ContinuousOn x s) (hxdot : ContinuousOn xdot s) :
@@ -395,7 +396,7 @@ private theorem continuousOn_galerkinEnergyDeriv
     continuousOn_two_mul_inner _ _ hVx hVxdot
 
 private theorem exists_galerkin_energy_constants
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
@@ -428,7 +429,7 @@ private theorem exists_galerkin_energy_constants
   exact ⟨K, hK, hGarding, M, hM, hsource⟩
 
 private theorem reverseTimeGalerkin_uniform_energy_solution_fixed
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
@@ -600,7 +601,7 @@ private theorem reverseTimeGalerkin_uniform_energy_solution_fixed
     hgrad
 
 private theorem reverseTimeGalerkin_uniform_energy_solution_aux
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
@@ -661,7 +662,7 @@ private theorem reverseTimeGalerkin_uniform_energy_solution_aux
 
 /-- Smooth finite Galerkin systems have uniform primal energy bounds. -/
 theorem exists_reverseTimeGalerkin_uniform_energy_solution
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)

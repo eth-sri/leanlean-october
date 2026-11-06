@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.Measure.InkSpotsGeometry
 public import HypoellipticAleksandrov.Measure.IntervalUnion
 public import Mathlib.MeasureTheory.Integral.Marginal
 public import Mathlib.MeasureTheory.Measure.Prod
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Wind estimate for source ink spots
@@ -23,7 +25,7 @@ open scoped ENNReal Topology
 namespace HypoellipticAleksandrov.Parabolic
 
 private theorem strictDense_timeInterval_subset_unit {d : ℕ}
-    {Gamma : Set (TimeVelocity d)} {xi : ℝ} {q : InkSpotsBox d}
+    {Gamma : HypoellipticAleksandrov.Parabolic.TVSet d} {xi : ℝ} {q : InkSpotsBox d}
     (hq : inkSpotsStrictDense Gamma xi q) :
     Ioo q.baseTime (q.baseTime + q.radius ^ 2) ⊆ Ioo 0 1 := by
   have hr : 0 < q.radius := hq.1
@@ -42,7 +44,7 @@ private theorem strictDense_timeInterval_subset_unit {d : ℕ}
     norm_num
 
 private theorem strictDense_baseTime_nonneg {d : ℕ}
-    {Gamma : Set (TimeVelocity d)} {xi : ℝ} {q : InkSpotsBox d}
+    {Gamma : HypoellipticAleksandrov.Parabolic.TVSet d} {xi : ℝ} {q : InkSpotsBox d}
     (hq : inkSpotsStrictDense Gamma xi q) :
     0 ≤ q.baseTime := by
   have htime := strictDense_timeInterval_subset_unit hq
@@ -51,7 +53,7 @@ private theorem strictDense_baseTime_nonneg {d : ℕ}
   exact (Ioo_subset_Ioo_iff hnonempty).mp htime |>.1
 
 private theorem strictDense_baseTime_add_sq_le_one {d : ℕ}
-    {Gamma : Set (TimeVelocity d)} {xi : ℝ} {q : InkSpotsBox d}
+    {Gamma : HypoellipticAleksandrov.Parabolic.TVSet d} {xi : ℝ} {q : InkSpotsBox d}
     (hq : inkSpotsStrictDense Gamma xi q) :
     q.baseTime + q.radius ^ 2 ≤ 1 := by
   have htime := strictDense_timeInterval_subset_unit hq
@@ -62,14 +64,14 @@ private theorem strictDense_baseTime_add_sq_le_one {d : ℕ}
 private def windAmbientTime (eta : ℝ) : Set ℝ :=
   Ioo 0 (1 + 4 / eta)
 
-private def windAmbientVelocity (d : ℕ) : Set (PDE.Vec d) :=
-  velocityCube (0 : PDE.Vec d) 1
+private def windAmbientVelocity (d : ℕ) : HypoellipticAleksandrov.VecSet d :=
+  velocityCube 0 1
 
-private def windAmbient (d : ℕ) (eta : ℝ) : Set (TimeVelocity d) :=
+private def windAmbient (d : ℕ) (eta : ℝ) : HypoellipticAleksandrov.Parabolic.TVSet d :=
   windAmbientTime eta ×ˢ windAmbientVelocity d
 
 private theorem inkSpotsQ2_subset_windAmbient {d : ℕ} {eta : ℝ}
-    {Gamma : Set (TimeVelocity d)} {xi : ℝ} {q : InkSpotsBox d}
+    {Gamma : HypoellipticAleksandrov.Parabolic.TVSet d} {xi : ℝ} {q : InkSpotsBox d}
     (heta : 0 < eta) (hq : inkSpotsStrictDense Gamma xi q) :
     inkSpotsQ2 eta q ⊆ windAmbient d eta := by
   intro z hz
@@ -89,7 +91,7 @@ private theorem inkSpotsQ2_subset_windAmbient {d : ℕ} {eta : ℝ}
       nlinarith
     exact hz.2.1.trans_le (by linarith)
 
-private theorem inkSpotsD2_subset_windAmbient {d : ℕ} (Gamma : Set (TimeVelocity d))
+private theorem inkSpotsD2_subset_windAmbient {d : ℕ} (Gamma : HypoellipticAleksandrov.Parabolic.TVSet d)
     (xi eta : ℝ) (heta : 0 < eta) :
     inkSpotsD2 Gamma xi eta ⊆ windAmbient d eta := by
   intro z hz
@@ -108,7 +110,7 @@ private def windExpandedInterval {d : ℕ} (eta : ℝ) (q : InkSpotsBox d) : Set
   Ioo (q.baseTime - 3 * q.radius ^ 2) (inkSpotsTerminalTime eta q)
 
 private theorem inkSpotsQ1_time_mem_windExpandedInterval {d : ℕ}
-    {Gamma : Set (TimeVelocity d)} {xi eta : ℝ} {q : InkSpotsBox d} {t : ℝ}
+    {Gamma : HypoellipticAleksandrov.Parabolic.TVSet d} {xi eta : ℝ} {q : InkSpotsBox d} {t : ℝ}
     (heta : 0 < eta) (heta1 : eta < 1) (hq : inkSpotsStrictDense Gamma xi q)
     {v : PDE.Vec d} (ht : (t, v) ∈ inkSpotsQ1 q) :
     t ∈ windExpandedInterval eta q := by
@@ -168,7 +170,7 @@ private def rightEndpointExpansion (a kappa : ℝ) (I : Set ℝ) : Set ℝ :=
   Ioo (max a (sSup I - kappa * (sSup I - sInf I))) (sSup I)
 
 private theorem rightEndpointExpansion_forwardInterval {d : ℕ}
-    {Gamma : Set (TimeVelocity d)} {xi eta : ℝ} (q : InkSpotsBox d)
+    {Gamma : HypoellipticAleksandrov.Parabolic.TVSet d} {xi eta : ℝ} (q : InkSpotsBox d)
     (heta : 0 < eta) (hq : inkSpotsStrictDense Gamma xi q) :
     rightEndpointExpansion 0 (1 + eta) (windForwardInterval eta q) =
       Ioo (max 0 (q.baseTime - 3 * q.radius ^ 2))
@@ -279,18 +281,20 @@ private theorem volume_sUnion_rightEndpointExpansion {a b kappa : ℝ}
       ⟨b, fun x hx => (hI₂.2.2.2 hx).2.le⟩
     exact rightEndpointExpansion_mono_of_subset hI₁.1 hI₂below hI₁above hI₂above
       hkappa.le hsub
+section
+variable {d : ℕ}
 
-private def timeSection {d : ℕ} (S : Set (TimeVelocity d)) (v : PDE.Vec d) : Set ℝ :=
+private def timeSection  (S : HypoellipticAleksandrov.Parabolic.TVSet d) (v : PDE.Vec d) : Set ℝ :=
   {t | (t, v) ∈ S}
 
-private def windSectionFamily {d : ℕ} (Gamma : Set (TimeVelocity d))
+private def windSectionFamily  (Gamma : HypoellipticAleksandrov.Parabolic.TVSet d)
     (xi eta : ℝ) (v : PDE.Vec d) : Set (Set ℝ) :=
   {I | ∃ q, inkSpotsStrictDense Gamma xi q ∧
     v ∈ velocityCube q.center (3 * q.radius) ∧ v ∈ velocityCube 0 1 ∧
     I = windForwardInterval eta q}
 
-private theorem timeSection_inkSpotsD2_eq_sUnion_windSectionFamily {d : ℕ}
-    (Gamma : Set (TimeVelocity d)) (xi eta : ℝ) (v : PDE.Vec d) :
+private theorem timeSection_inkSpotsD2_eq_sUnion_windSectionFamily 
+    (Gamma : HypoellipticAleksandrov.Parabolic.TVSet d) (xi eta : ℝ) (v : PDE.Vec d) :
     timeSection (inkSpotsD2 Gamma xi eta) v =
       ⋃₀ (windSectionFamily Gamma xi eta v) := by
   ext t
@@ -309,8 +313,8 @@ private theorem timeSection_inkSpotsD2_eq_sUnion_windSectionFamily {d : ℕ}
     exact mem_iUnion.2 ⟨q, mem_iUnion.2 ⟨hq,
       (mem_inkSpotsQ2_iff).2 ⟨ht.1, ht.2, hvCenter, hvUnit⟩⟩⟩
 
-private theorem windForwardInterval_eligible {d : ℕ}
-    {Gamma : Set (TimeVelocity d)} {xi eta : ℝ} {q : InkSpotsBox d}
+private theorem windForwardInterval_eligible 
+    {Gamma : HypoellipticAleksandrov.Parabolic.TVSet d} {xi eta : ℝ} {q : InkSpotsBox d}
     (heta : 0 < eta) (hq : inkSpotsStrictDense Gamma xi q) :
     IsOpenSubinterval (windAmbientTime eta) (windForwardInterval eta q) := by
   constructor
@@ -338,8 +342,8 @@ private theorem windForwardInterval_eligible {d : ℕ}
         nlinarith
       exact ht.2.trans_le (by linarith)
 
-private theorem timeSection_inkSpotsD1_subset_expanded_windSections {d : ℕ}
-    {Gamma : Set (TimeVelocity d)} {xi eta : ℝ} (heta : 0 < eta)
+private theorem timeSection_inkSpotsD1_subset_expanded_windSections 
+    {Gamma : HypoellipticAleksandrov.Parabolic.TVSet d} {xi eta : ℝ} (heta : 0 < eta)
     (heta1 : eta < 1) (v : PDE.Vec d) :
     timeSection (inkSpotsD1 Gamma xi) v ⊆
       ⋃₀ (rightEndpointExpansion 0 (1 + eta) ''
@@ -371,8 +375,8 @@ private theorem timeSection_inkSpotsD1_subset_expanded_windSections {d : ℕ}
   exact ⟨windForwardInterval eta q,
     ⟨q, hq, ht.2.2.1, hUnitVelocity, rfl⟩, rfl⟩
 
-private theorem sUnion_windSectionFamily_bounded {d : ℕ}
-    (Gamma : Set (TimeVelocity d)) (xi eta : ℝ) (heta : 0 < eta)
+private theorem sUnion_windSectionFamily_bounded 
+    (Gamma : HypoellipticAleksandrov.Parabolic.TVSet d) (xi eta : ℝ) (heta : 0 < eta)
     (v : PDE.Vec d) :
     Bornology.IsBounded (⋃₀ windSectionFamily Gamma xi eta v) := by
   apply (Metric.isBounded_Ioo 0 (1 + 4 / eta)).subset
@@ -380,8 +384,8 @@ private theorem sUnion_windSectionFamily_bounded {d : ℕ}
   rcases hI with ⟨q, hq, _, _, rfl⟩
   exact (windForwardInterval_eligible heta hq).2.2.2
 
-private theorem volume_timeSection_inkSpotsD1_le_one_add_eta_mul_D2 {d : ℕ}
-    (Gamma : Set (TimeVelocity d)) (xi eta : ℝ) (heta : 0 < eta)
+private theorem volume_timeSection_inkSpotsD1_le_one_add_eta_mul_D2 
+    (Gamma : HypoellipticAleksandrov.Parabolic.TVSet d) (xi eta : ℝ) (heta : 0 < eta)
     (heta1 : eta < 1) (v : PDE.Vec d) :
     volume (timeSection (inkSpotsD1 Gamma xi) v) ≤
       ENNReal.ofReal (1 + eta) *
@@ -402,14 +406,14 @@ private theorem volume_timeSection_inkSpotsD1_le_one_add_eta_mul_D2 {d : ℕ}
         volume (timeSection (inkSpotsD2 Gamma xi eta) v) := by
       rw [timeSection_inkSpotsD2_eq_sUnion_windSectionFamily]
 
-private theorem volume_eq_lintegral_timeSection {d : ℕ} (S : Set (TimeVelocity d))
+private theorem volume_eq_lintegral_timeSection  (S : HypoellipticAleksandrov.Parabolic.TVSet d)
     (hS : MeasurableSet S) :
     volume S = ∫⁻ v, volume (timeSection S v) := by
   rw [Measure.volume_eq_prod, Measure.prod_apply_symm hS]
   rfl
 
-private theorem volume_inkSpotsD1_le_one_add_eta_mul_inkSpotsD2 {d : ℕ}
-    (Gamma : Set (TimeVelocity d)) (xi eta : ℝ) (heta : 0 < eta)
+private theorem volume_inkSpotsD1_le_one_add_eta_mul_inkSpotsD2 
+    (Gamma : HypoellipticAleksandrov.Parabolic.TVSet d) (xi eta : ℝ) (heta : 0 < eta)
     (heta1 : eta < 1) :
     volume (inkSpotsD1 Gamma xi) ≤
       ENNReal.ofReal (1 + eta) * volume (inkSpotsD2 Gamma xi eta) := by
@@ -425,13 +429,13 @@ private theorem volume_inkSpotsD1_le_one_add_eta_mul_inkSpotsD2 {d : ℕ}
         ∫⁻ v, volume (timeSection (inkSpotsD2 Gamma xi eta) v) :=
       lintegral_const_mul' _ _ ENNReal.ofReal_ne_top
 
-private theorem isBounded_velocityCube {d : ℕ} (v₀ : PDE.Vec d) (r : ℝ) :
+private theorem isBounded_velocityCube  (v₀ : PDE.Vec d) (r : ℝ) :
     Bornology.IsBounded (velocityCube v₀ r) := by
   apply (isCompact_velocityClosedCube v₀ r).isBounded.subset
   intro v hv i
   exact le_of_lt (hv i)
 
-private theorem volume_inkSpotsD2_ne_top {d : ℕ} (Gamma : Set (TimeVelocity d))
+private theorem volume_inkSpotsD2_ne_top  (Gamma : HypoellipticAleksandrov.Parabolic.TVSet d)
     (xi eta : ℝ) (heta : 0 < eta) :
     volume (inkSpotsD2 Gamma xi eta) ≠ ∞ := by
   apply ne_of_lt
@@ -443,7 +447,7 @@ private theorem volume_inkSpotsD2_ne_top {d : ℕ} (Gamma : Set (TimeVelocity d)
 /-- Krylov--Safonov, Lemma 2.3 (wind): the clipped first enlargements are controlled
 by the forward stacks. -/
 theorem volume_inkSpotsD1_toReal_le_one_add_eta_mul_D2
-    {d : ℕ} (Gamma : Set (TimeVelocity d)) (xi eta : ℝ)
+     (Gamma : HypoellipticAleksandrov.Parabolic.TVSet d) (xi eta : ℝ)
     (heta : 0 < eta) (heta1 : eta < 1) :
     (volume (inkSpotsD1 Gamma xi)).toReal ≤
       (1 + eta) * (volume (inkSpotsD2 Gamma xi eta)).toReal := by
@@ -455,5 +459,6 @@ theorem volume_inkSpotsD1_toReal_le_one_add_eta_mul_D2
   have hreal := ENNReal.toReal_mono hfinite hmeasure
   rw [ENNReal.toReal_mul, ENNReal.toReal_ofReal (by linarith)] at hreal
   exact hreal
+end
 
 end HypoellipticAleksandrov.Parabolic

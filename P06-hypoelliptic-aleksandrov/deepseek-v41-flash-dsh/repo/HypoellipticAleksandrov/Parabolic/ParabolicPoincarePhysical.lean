@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.ParabolicPoincare
 public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyScaling
 public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyProjection
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Physical parabolic Morrey Poincare estimate
@@ -92,7 +93,7 @@ theorem exists_parabolicMorreyBoxAffinePoincareConst (d : Nat)
     uhat z - parabolicMorreyUnitAffineProjection uhat z
   let factor : ENNReal := parabolicELpNormPullbackMeasureFactor d r
   let F : Real := factor.toReal
-  let box : Set (TimeVelocity d) := parabolicBox 1 r t₀ v₀
+  let box : HypoellipticAleksandrov.Parabolic.TVSet d := parabolicBox 1 r t₀ v₀
   have huHat : ContDiff Real 2 uhat := by
     exact hu.comp (contDiff_parabolicAffine t₀ v₀ r)
   have hpullResidual : pullbackScalar w t₀ v₀ r = what := by

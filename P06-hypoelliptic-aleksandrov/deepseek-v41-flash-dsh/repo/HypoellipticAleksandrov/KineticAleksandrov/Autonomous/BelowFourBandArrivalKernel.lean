@@ -10,12 +10,12 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory ProbabilityTheory Filter
 open scoped ENNReal
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
 
 /-- The native strip Green kernel restricted to the source closed core. -/
 def belowFour_coreGreenKernel
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (H : Interval) (T : ℝ) :
+     (c : Clock) (H : Interval) (T : ℝ) :
     Kernel (StripPole H (T : WithTop ℝ)) Point where
   toFun e := (stripGreen hH hLE hlam hLam A H T e).restrict {z | z.velocity 0 ∈ c.core}
   measurable' := nested_measurable_family_restrict _
@@ -26,9 +26,7 @@ def belowFour_coreGreenKernel
 
 /-- Uniform quadratic strip mass makes the native core Green family a finite kernel. -/
 instance belowFour_coreGreenKernel_isFinite
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (H : Interval) (T : ℝ) :
+     (c : Clock) (H : Interval) (T : ℝ) :
     IsFiniteKernel (belowFour_coreGreenKernel hH hLE hlam hLam A c H T) := by
   refine ⟨ENNReal.ofReal ((H.hi - H.lo) ^ 2 / (2 * lam)), ENNReal.ofReal_lt_top, ?_⟩
   intro e
@@ -42,9 +40,7 @@ instance belowFour_coreGreenKernel_isFinite
 
 /-- The actual internal first-arrival pole measure has mass at most one. -/
 theorem belowFour_restart_mass_le_one
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (W H : Interval) (s T : ℝ)
+     (W H : Interval) (s T : ℝ)
     (e : StripPole W (T : WithTop ℝ)) (he : s ≤ e.1.time) :
     nestedIntervalRestartPoles hH hLE hlam hLam A W H s T e univ ≤ 1 := by
   have hm := congrArg (fun mu : Measure Point => mu univ)
@@ -57,9 +53,7 @@ theorem belowFour_restart_mass_le_one
 
 /-- The actual internal first-arrival poles lie on the smaller interval's internal face. -/
 theorem belowFour_restart_ae_internal
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (W H : Interval) (s T : ℝ)
+     (W H : Interval) (s T : ℝ)
     (e : StripPole W (T : WithTop ℝ)) :
     ∀ᵐ ep ∂nestedIntervalRestartPoles hH hLE hlam hLam A W H s T e,
       ep.1 ∈ nestedIntervalInternalExit W H s T := by
@@ -67,5 +61,6 @@ theorem belowFour_restart_ae_internal
     (measurableSet_nestedIntervalInternalExit W H s T)
   rw [← nestedIntervalRestartPoles_map hH hLE hlam hLam A W H s T e] at hp
   exact ((MeasurableEmbedding.subtype_coe (measurableSet_nestedIntervalPole H T)).ae_map_iff).mp hp
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

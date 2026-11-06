@@ -35,10 +35,11 @@ theorem continuous_flatSecond (alpha r : ℝ) :
     Continuous (fun s : ℝ => deriv (deriv flatteningPsi) (s / Real.rpow r alpha)) := by
   rw [funext deriv_flatteningPsi]
   exact (contDiff_flatteningSlope.continuous_deriv (by simp)).comp (continuous_id.div_const _)
+section
+variable {d : ℕ} {alpha : ℝ} (h : CounterProfileStatement d alpha) (r : ℝ)
 
 /-- The flattened approximation values converge almost everywhere to the literal flattening. -/
-theorem mollifiedFlatProfile_ae_tendsto {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) :
+theorem mollifiedFlatProfile_ae_tendsto  :
     ∀ᵐ q ∂volume, Tendsto (fun n => mollifiedFlatProfile h r n q) atTop
       (nhds (selectedFlatProfile h r q)) := by
   have hH := (selectedProfile_spec h).2.2.2.2.2.2.1
@@ -50,8 +51,7 @@ theorem mollifiedFlatProfile_ae_tendsto {d : ℕ} {alpha : ℝ}
   exact hc.continuousAt.tendsto.comp hq
 
 /-- The position jets converge to the explicit selected flattened position jet. -/
-theorem dx_mollifiedFlatProfile_ae_tendsto {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r) (i : Fin d) :
+theorem dx_mollifiedFlatProfile_ae_tendsto  (hr : 0 < r) (i : Fin d) :
     ∀ᵐ q ∂volume, Tendsto (fun n => dx (mollifiedFlatProfile h r n) q i) atTop
       (nhds (flatProfilePositionJet h r q i)) := by
   have hH := (selectedProfile_spec h).2.2.2.2.2.2.1
@@ -71,8 +71,7 @@ theorem dx_mollifiedFlatProfile_ae_tendsto {d : ℕ} {alpha : ℝ}
   · rfl
 
 /-- The velocity jets converge to the explicit selected flattened velocity jet. -/
-theorem dv_mollifiedFlatProfile_ae_tendsto {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r) (i : Fin d) :
+theorem dv_mollifiedFlatProfile_ae_tendsto  (hr : 0 < r) (i : Fin d) :
     ∀ᵐ q ∂volume, Tendsto (fun n => dv (mollifiedFlatProfile h r n) q i) atTop
       (nhds (flatProfileVelocityJet h r q i)) := by
   have hH := (selectedProfile_spec h).2.2.2.2.2.2.1
@@ -92,8 +91,7 @@ theorem dv_mollifiedFlatProfile_ae_tendsto {d : ℕ} {alpha : ℝ}
   · rfl
 
 /-- The Hessian jets converge, including the nonlinear product of the two first jets. -/
-theorem dvv_mollifiedFlatProfile_ae_tendsto {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r) (i k : Fin d) :
+theorem dvv_mollifiedFlatProfile_ae_tendsto  (hr : 0 < r) (i k : Fin d) :
     ∀ᵐ q ∂volume, Tendsto (fun n => dvv (mollifiedFlatProfile h r n) q i k) atTop
       (nhds (flatProfileHessian h r q i k)) := by
   have hH := (selectedProfile_spec h).2.2.2.2.2.2.1
@@ -114,5 +112,6 @@ theorem dvv_mollifiedFlatProfile_ae_tendsto {d : ℕ} {alpha : ℝ}
       dvv_mollifiedProfile, dv_mollifiedProfile, dv_mollifiedProfile]
     rfl
   · rfl
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

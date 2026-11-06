@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Green.SlabSetting
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Transport of the slab to the real line
@@ -73,7 +74,7 @@ lemma map_slabTime (T : ℝ) (hT : 0 ≤ T) :
 /-- The slab base measure is Lebesgue measure on `(T - s, 2T - s) × ℝ^d` under `slabShift`. -/
 lemma map_slabBase_slabShift (d : ℕ) (T s : ℝ) (hT : 0 ≤ T) :
     (slabBase d T).map (slabShift d s) =
-      volume.restrict (Ioo (T - s) (2 * T - s) ×ˢ (univ : Set (PDE.Vec d))) := by
+      volume.restrict (Ioo (T - s) (2 * T - s) ×ˢ (univ : HypoellipticAleksandrov.VecSet d)) := by
   have h1 : slabShift d s =
       Prod.map (fun τ : ElapsedTime ⊤ => τ.1 - s) (id : PDE.Vec d → PDE.Vec d) := rfl
   have hmeas : Measurable (fun τ : ElapsedTime ⊤ => τ.1 - s) :=

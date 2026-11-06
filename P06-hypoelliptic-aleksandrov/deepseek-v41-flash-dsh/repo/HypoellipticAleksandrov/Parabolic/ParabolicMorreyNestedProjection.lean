@@ -143,9 +143,11 @@ private theorem unit_raw_integrable_mul_velocity
     rw [mem_parabolicBox_iff] at hz
     change |z.2 i| ≤ 1
     simpa only [Pi.zero_apply, sub_zero] using (hz.2.2 i).le
+section
+variable {d : Nat} (t_b : Real) (v_b : PDE.Vec d)
 
 private theorem parabolicMorreyBoxAverage_sub_projection
-    {d : Nat} (t_b : Real) (v_b : PDE.Vec d) (r_b : Real)
+     (r_b : Real)
     (t_s : Real) (v_s : PDE.Vec d) {r_s : Real} (hr_s : 0 < r_s)
     (u : TimeVelocity d -> Real)
     (hf : MemLp (fun z => u z -
@@ -186,7 +188,7 @@ private theorem parabolicMorreyBoxAverage_sub_projection
   linarith
 
 private theorem parabolicMorreyBoxVelocitySlope_sub_projection
-    {d : Nat} (t_b : Real) (v_b : PDE.Vec d) (r_b : Real)
+     (r_b : Real)
     (t_s : Real) (v_s : PDE.Vec d) {r_s : Real} (hr_s : 0 < r_s)
     (u : TimeVelocity d -> Real) (i : Fin d)
     (hf : MemLp (fun z => u z -
@@ -237,7 +239,7 @@ private theorem parabolicMorreyBoxVelocitySlope_sub_projection
   ring
 
 private theorem parabolicMorreyNestedProjection_abs_sub_le_discrepancy
-    {d : Nat} (t_b : Real) (v_b : PDE.Vec d) (r_b : Real)
+     (r_b : Real)
     (t_s : Real) (v_s : PDE.Vec d) {r_s : Real} (_hr_s : 0 < r_s)
     (u : TimeVelocity d -> Real) (z : TimeVelocity d)
     (hz : z ∈ parabolicBox 1 r_s t_s v_s) :
@@ -328,7 +330,7 @@ private theorem parabolicMorreyNestedProjection_abs_sub_le_discrepancy
 /-- The small-box projection discrepancy is controlled by the normalized
 residual from an arbitrary reference affine projection. -/
 theorem parabolicMorreyNestedProjection_discrepancy_le_smallResidual
-    {d : Nat} (t_b : Real) (v_b : PDE.Vec d) (r_b : Real)
+     (r_b : Real)
     (t_s : Real) (v_s : PDE.Vec d) {r_s : Real} (hr_s : 0 < r_s)
     (u : TimeVelocity d -> Real)
     (hsmall : MemLp (fun z => u z - parabolicMorreyBoxAffineProjection t_b v_b r_b u z)
@@ -360,7 +362,7 @@ theorem parabolicMorreyNestedProjection_discrepancy_le_smallResidual
 /-- A nested small-box discrepancy is controlled by the normalized residual
 on the containing large box with the exact parabolic radius factor. -/
 theorem parabolicMorreyNestedProjection_discrepancy_le_largeResidual
-    {d : Nat} (t_b : Real) (v_b : PDE.Vec d) {r_b : Real} (hr_b : 0 < r_b)
+     {r_b : Real} (hr_b : 0 < r_b)
     (t_s : Real) (v_s : PDE.Vec d) {r_s : Real} (hr_s : 0 < r_s)
     (hsub : parabolicBox 1 r_s t_s v_s ⊆ parabolicBox 1 r_b t_b v_b)
     (u : TimeVelocity d -> Real)
@@ -407,7 +409,7 @@ theorem parabolicMorreyNestedProjection_discrepancy_le_largeResidual
 /-- Two nested canonical affine projections differ pointwise by the same
 large-box residual bound on the small forward box. -/
 theorem parabolicMorreyNestedProjection_abs_sub_le_largeResidual
-    {d : Nat} (t_b : Real) (v_b : PDE.Vec d) {r_b : Real} (hr_b : 0 < r_b)
+     {r_b : Real} (hr_b : 0 < r_b)
     (t_s : Real) (v_s : PDE.Vec d) {r_s : Real} (hr_s : 0 < r_s)
     (hsub : parabolicBox 1 r_s t_s v_s ⊆ parabolicBox 1 r_b t_b v_b)
     (u : TimeVelocity d -> Real) (z : TimeVelocity d)
@@ -426,5 +428,6 @@ theorem parabolicMorreyNestedProjection_abs_sub_le_largeResidual
     t_b v_b r_b t_s v_s hr_s u z hz).trans
       (parabolicMorreyNestedProjection_discrepancy_le_largeResidual
         t_b v_b hr_b t_s v_s hr_s hsub u hbig)
+end
 
 end HypoellipticAleksandrov.Parabolic

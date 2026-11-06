@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonTraces
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonBallBarrier
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Continuous zero extensions of corrections on closed balls
 

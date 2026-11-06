@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.SpacetimeMollifier
 public import HypoellipticAleksandrov.Parabolic.WeakDerivatives
 public import Mathlib.Analysis.Calculus.FDeriv.Comp
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Weak derivatives and spacetime mollification
@@ -19,18 +20,20 @@ open Function MeasureTheory Set
 open scoped Convolution Pointwise Topology
 
 namespace HypoellipticAleksandrov.Parabolic.SpacetimeMollifier
+section
+variable {d : ℕ} {ε : ℝ}
 
 private theorem translatedKernel_contDiff
-    {d : ℕ} {ε : ℝ} (z : TimeVelocity d) :
+     (z : TimeVelocity d) :
     ContDiff ℝ (⊤ : ℕ∞)
       (fun y : TimeVelocity d => spacetimeMollifier ε (z - y)) := by
   exact (spacetimeMollifier_contDiff ε).comp (contDiff_const.sub contDiff_id)
 
 private theorem translatedKernel_hasCompactSupport
-    {d : ℕ} {ε : ℝ} (hε : 0 < ε) (z : TimeVelocity d) :
+     (hε : 0 < ε) (z : TimeVelocity d) :
     HasCompactSupport
       (fun y : TimeVelocity d => spacetimeMollifier ε (z - y)) := by
-  let C : Set (TimeVelocity d) :=
+  let C : HypoellipticAleksandrov.Parabolic.TVSet d :=
     (fun x : TimeVelocity d => z - x) '' tsupport (spacetimeMollifier (d := d) ε)
   have hC : IsCompact C :=
     (spacetimeMollifier_hasCompactSupport hε).isCompact.image
@@ -43,7 +46,7 @@ private theorem translatedKernel_hasCompactSupport
   exact sub_sub_cancel z y
 
 private theorem fderiv_translatedKernel_apply
-    {d : ℕ} {ε : ℝ} (z y q : TimeVelocity d) :
+     (z y q : TimeVelocity d) :
     fderiv ℝ (fun w : TimeVelocity d => spacetimeMollifier ε (z - w)) y q =
       -(fderiv ℝ (spacetimeMollifier (d := d) ε) (z - y) q) := by
   have hk : DifferentiableAt ℝ (spacetimeMollifier (d := d) ε) (z - y) :=
@@ -59,19 +62,19 @@ private theorem fderiv_translatedKernel_apply
   simp
 
 private theorem fderiv_spacetimeMollification_apply
-    {d : ℕ} {ε : ℝ} (hε : 0 < ε)
+     (hε : 0 < ε)
     (u du : TimeVelocity d → ℝ)
     (huLoc : LocallyIntegrable u
-      (volume : Measure (TimeVelocity d)))
+      (HypoellipticAleksandrov.Parabolic.TVVolume d))
     (hduLoc : LocallyIntegrable du
-      (volume : Measure (TimeVelocity d)))
+      (HypoellipticAleksandrov.Parabolic.TVVolume d))
     (q : TimeVelocity d)
     (hu : ∀ φ : TimeVelocity d → ℝ,
       ContDiff ℝ (⊤ : ℕ∞) φ → HasCompactSupport φ → tsupport φ ⊆ Set.univ →
       (∫ y in Set.univ, u y * fderiv ℝ φ y q
-        ∂(volume : Measure (TimeVelocity d))) =
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
         -∫ y in Set.univ, du y * φ y
-          ∂(volume : Measure (TimeVelocity d)))
+          ∂(HypoellipticAleksandrov.Parabolic.TVVolume d))
     (z : TimeVelocity d) :
     fderiv ℝ (spacetimeMollification ε u) z q =
       spacetimeMollification ε du z := by
@@ -82,21 +85,21 @@ private theorem fderiv_spacetimeMollification_apply
   have hweak := hu φ hφSmooth hφCompact (Set.subset_univ _)
   have hweak' :
       -(∫ y : TimeVelocity d, fderiv ℝ ρ (z - y) q * u y
-        ∂(volume : Measure (TimeVelocity d))) =
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
         -(∫ y : TimeVelocity d, ρ (z - y) * du y
-          ∂(volume : Measure (TimeVelocity d))) := by
+          ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) := by
     calc
-      -(∫ y, fderiv ℝ ρ (z - y) q * u y ∂(volume : Measure (TimeVelocity d))) =
-          ∫ y, u y * fderiv ℝ φ y q ∂(volume : Measure (TimeVelocity d)) := by
+      -(∫ y, fderiv ℝ ρ (z - y) q * u y ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
+          ∫ y, u y * fderiv ℝ φ y q ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
         rw [← integral_neg]
         apply integral_congr_ae
         exact Filter.Eventually.of_forall fun y => by
           dsimp [φ, ρ]
           rw [fderiv_translatedKernel_apply z y q]
           ring
-      _ = -(∫ y, du y * φ y ∂(volume : Measure (TimeVelocity d))) := by
+      _ = -(∫ y, du y * φ y ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) := by
         simpa only [Function.comp_def, setIntegral_univ] using hweak
-      _ = -(∫ y, ρ (z - y) * du y ∂(volume : Measure (TimeVelocity d))) := by
+      _ = -(∫ y, ρ (z - y) * du y ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) := by
         congr 1
         apply integral_congr_ae
         exact Filter.Eventually.of_forall fun y => by
@@ -104,18 +107,18 @@ private theorem fderiv_spacetimeMollification_apply
           ring
   have hintegrals :
       (∫ y : TimeVelocity d, fderiv ℝ ρ (z - y) q * u y
-        ∂(volume : Measure (TimeVelocity d))) =
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
         ∫ y : TimeVelocity d, ρ (z - y) * du y
-          ∂(volume : Measure (TimeVelocity d)) := neg_injective hweak'
+          ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := neg_injective hweak'
   have hduConvExists : MeasureTheory.ConvolutionExistsAt
       ρ du z (ContinuousLinearMap.lsmul ℝ ℝ)
-      (volume : Measure (TimeVelocity d)) :=
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) :=
     (spacetimeMollifier_hasCompactSupport hε).convolutionExists_left
       (ContinuousLinearMap.lsmul ℝ ℝ)
       (spacetimeMollifier_contDiff ε).continuous hduLoc z
   have hduIntegrable : Integrable
       (fun y : TimeVelocity d => ρ (z - y) * du y)
-      (volume : Measure (TimeVelocity d)) := by
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) := by
     simpa only [Function.comp_def, ContinuousLinearMap.lsmul_apply, smul_eq_mul] using
       (MeasureTheory.convolutionExistsAt_iff_integrable_swap.mp hduConvExists)
   have hderiv := (spacetimeMollifier_hasCompactSupport hε).hasFDerivAt_convolution_left
@@ -128,14 +131,14 @@ private theorem fderiv_spacetimeMollification_apply
   have hconvExists : MeasureTheory.ConvolutionExistsAt
       (fderiv ℝ ρ) u z
       (ContinuousLinearMap.precompL (TimeVelocity d) (ContinuousLinearMap.lsmul ℝ ℝ))
-      (volume : Measure (TimeVelocity d)) :=
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) :=
     hdρCompact.convolutionExists_left _ hdρContinuous huLoc z
   have hderivIntegrable : Integrable
       (fun y : TimeVelocity d =>
         ((ContinuousLinearMap.precompL (TimeVelocity d)
           (ContinuousLinearMap.lsmul ℝ ℝ))
             (fderiv ℝ (spacetimeMollifier ε) (z - y))) (u y))
-      (volume : Measure (TimeVelocity d)) := by
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) := by
     apply MeasureTheory.convolutionExistsAt_iff_integrable_swap.mp
     exact hconvExists
   unfold spacetimeMollification
@@ -146,32 +149,32 @@ private theorem fderiv_spacetimeMollification_apply
         ((ContinuousLinearMap.precompL (TimeVelocity d)
           (ContinuousLinearMap.lsmul ℝ ℝ))
             (fderiv ℝ (spacetimeMollifier ε) (z - y))) (u y)
-        ∂(volume : Measure (TimeVelocity d))) q =
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) q =
         ∫ y : TimeVelocity d,
           (((ContinuousLinearMap.precompL (TimeVelocity d)
             (ContinuousLinearMap.lsmul ℝ ℝ))
               (fderiv ℝ (spacetimeMollifier ε) (z - y))) (u y)) q
-          ∂(volume : Measure (TimeVelocity d)) := by
+          ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
       exact ((ContinuousLinearMap.apply ℝ ℝ q).integral_comp_comm hderivIntegrable).symm
     _ = ∫ y, fderiv ℝ ρ (z - y) q * u y
-          ∂(volume : Measure (TimeVelocity d)) := by
+          ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
       apply integral_congr_ae
       exact Filter.Eventually.of_forall fun y => by
         dsimp [ρ]
     _ = ∫ y, ρ (z - y) * du y
-        ∂(volume : Measure (TimeVelocity d)) := hintegrals
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := hintegrals
     _ = (spacetimeMollifier ε ⋆[ContinuousLinearMap.lsmul ℝ ℝ,
-        (volume : Measure (TimeVelocity d))] du) z := by
+        (HypoellipticAleksandrov.Parabolic.TVVolume d)] du) z := by
       by_cases hI : Integrable
           (fun y : TimeVelocity d => ρ (z - y) * du y)
-          (volume : Measure (TimeVelocity d))
+          (HypoellipticAleksandrov.Parabolic.TVVolume d)
       · rw [MeasureTheory.convolution_lsmul_swap]
         simp only [ρ, smul_eq_mul]
       · exact (hI hduIntegrable).elim
 
 private theorem spacetimeMollification_congr_on_of_eqOn_thickening_aux
-    {d : ℕ} {ε : ℝ} (hε : 0 < ε)
-    {K : Set (TimeVelocity d)}
+     (hε : 0 < ε)
+    {K : HypoellipticAleksandrov.Parabolic.TVSet d}
     {f g : TimeVelocity d → ℝ}
     (hfg : Set.EqOn f g (Metric.thickening ε K)) :
     Set.EqOn (spacetimeMollification ε f)
@@ -196,12 +199,12 @@ private theorem spacetimeMollification_congr_on_of_eqOn_thickening_aux
 /-- Ambient raw weak time differentiation commutes with the fixed positive-
 radius spacetime mollifier. -/
 theorem timeDerivative_spacetimeMollification
-    {d : ℕ} {ε : ℝ} (hε : 0 < ε)
+     (hε : 0 < ε)
     (u du : TimeVelocity d → ℝ)
     (huLoc : LocallyIntegrable u
-      (volume : Measure (TimeVelocity d)))
+      (HypoellipticAleksandrov.Parabolic.TVVolume d))
     (hduLoc : LocallyIntegrable du
-      (volume : Measure (TimeVelocity d)))
+      (HypoellipticAleksandrov.Parabolic.TVVolume d))
     (hu : HasWeakTimeDerivOn Set.univ u du) :
     timeDerivative (spacetimeMollification ε u) =
       spacetimeMollification ε du := by
@@ -211,12 +214,12 @@ theorem timeDerivative_spacetimeMollification
 /-- Ambient raw weak differentiation in one velocity coordinate commutes with
 the fixed positive-radius spacetime mollifier. -/
 theorem velocityGradient_spacetimeMollification
-    {d : ℕ} {ε : ℝ} (hε : 0 < ε)
+     (hε : 0 < ε)
     (i : Fin d) (u dui : TimeVelocity d → ℝ)
     (huLoc : LocallyIntegrable u
-      (volume : Measure (TimeVelocity d)))
+      (HypoellipticAleksandrov.Parabolic.TVVolume d))
     (hduiLoc : LocallyIntegrable dui
-      (volume : Measure (TimeVelocity d)))
+      (HypoellipticAleksandrov.Parabolic.TVVolume d))
     (hu : HasWeakVelocityPartialDerivOn Set.univ i u dui) :
     (fun z => velocityGradient (spacetimeMollification ε u) z i) =
       spacetimeMollification ε dui := by
@@ -227,12 +230,13 @@ theorem velocityGradient_spacetimeMollification
 /-- Convolution by the fixed positive-radius kernel only reads a function on
 the open radius thickening of the evaluation carrier. -/
 theorem spacetimeMollification_congr_on_of_eqOn_thickening
-    {d : ℕ} {ε : ℝ} (hε : 0 < ε)
-    {K : Set (TimeVelocity d)}
+     (hε : 0 < ε)
+    {K : HypoellipticAleksandrov.Parabolic.TVSet d}
     {f g : TimeVelocity d → ℝ}
     (hfg : Set.EqOn f g (Metric.thickening ε K)) :
     Set.EqOn (spacetimeMollification ε f)
       (spacetimeMollification ε g) K :=
   spacetimeMollification_congr_on_of_eqOn_thickening_aux hε hfg
+end
 
 end HypoellipticAleksandrov.Parabolic.SpacetimeMollifier

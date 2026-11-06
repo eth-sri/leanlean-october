@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.Parabolic.KrylovCylinder
 public import HypoellipticAleksandrov.Measure.TimeVelocity
 public import HypoellipticAleksandrov.Ambient.MatrixContraction
 import HypoellipticAleksandrov.Parabolic.KrylovEstimate.Assembly
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Parabolic Aleksandrov estimate (Krylov)

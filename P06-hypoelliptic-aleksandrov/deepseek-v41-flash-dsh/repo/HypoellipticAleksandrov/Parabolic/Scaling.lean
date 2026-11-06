@@ -3,6 +3,7 @@ module
 public import Mathlib.Analysis.Calculus.FDeriv.CompCLM
 public import HypoellipticAleksandrov.Parabolic.HarnackGeometry
 public import HypoellipticAleksandrov.Parabolic.LocalClassical
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Parabolic affine scaling
@@ -85,7 +86,7 @@ def pullbackCoefficient {d : ℕ} (B : CoefficientField d)
 
 /-- Local coefficient continuity is preserved by parabolic affine pullback. -/
 theorem IsContinuousCoefficientOn.pullback {d : ℕ} {B : CoefficientField d}
-    {U V : Set (TimeVelocity d)} {t₀ r : ℝ} {v₀ : PDE.Vec d}
+    {U V : HypoellipticAleksandrov.Parabolic.TVSet d} {t₀ r : ℝ} {v₀ : PDE.Vec d}
     (hB : IsContinuousCoefficientOn B U)
     (hmap : MapsTo (parabolicAffine t₀ v₀ r) V U) :
     IsContinuousCoefficientOn (pullbackCoefficient B t₀ v₀ r) V := by
@@ -93,14 +94,14 @@ theorem IsContinuousCoefficientOn.pullback {d : ℕ} {B : CoefficientField d}
 
 /-- Local `C²` regularity is preserved by parabolic affine pullback. -/
 theorem ContDiffOn.pullbackScalar {d : ℕ} {q : TimeVelocity d → ℝ}
-    {U V : Set (TimeVelocity d)} {t₀ r : ℝ} {v₀ : PDE.Vec d}
+    {U V : HypoellipticAleksandrov.Parabolic.TVSet d} {t₀ r : ℝ} {v₀ : PDE.Vec d}
     (hq : ContDiffOn ℝ 2 q U) (hmap : MapsTo (parabolicAffine t₀ v₀ r) V U) :
     ContDiffOn ℝ 2 (pullbackScalar q t₀ v₀ r) V := by
   exact hq.comp (contDiff_parabolicAffine t₀ v₀ r).contDiffOn hmap
 
 /-- Local nonnegativity is preserved by parabolic affine pullback. -/
 theorem IsNonnegativeOn.pullbackScalar {d : ℕ} {q : TimeVelocity d → ℝ}
-    {U V : Set (TimeVelocity d)} {t₀ r : ℝ} {v₀ : PDE.Vec d}
+    {U V : HypoellipticAleksandrov.Parabolic.TVSet d} {t₀ r : ℝ} {v₀ : PDE.Vec d}
     (hq : IsNonnegativeOn q U) (hmap : MapsTo (parabolicAffine t₀ v₀ r) V U) :
     IsNonnegativeOn (pullbackScalar q t₀ v₀ r) V :=
   fun z hz => by
@@ -108,7 +109,7 @@ theorem IsNonnegativeOn.pullbackScalar {d : ℕ} {q : TimeVelocity d → ℝ}
 
 /-- Local lower ellipticity is preserved by parabolic affine pullback. -/
 theorem HasLowerEllipticityOn.pullback {d : ℕ} {B : CoefficientField d}
-    {U V : Set (TimeVelocity d)} {lam t₀ r : ℝ} {v₀ : PDE.Vec d}
+    {U V : HypoellipticAleksandrov.Parabolic.TVSet d} {lam t₀ r : ℝ} {v₀ : PDE.Vec d}
     (hB : HasLowerEllipticityOn lam B U)
     (hmap : MapsTo (parabolicAffine t₀ v₀ r) V U) :
     HasLowerEllipticityOn lam (pullbackCoefficient B t₀ v₀ r) V :=
@@ -118,7 +119,7 @@ theorem HasLowerEllipticityOn.pullback {d : ℕ} {B : CoefficientField d}
 
 /-- Local upper ellipticity is preserved by parabolic affine pullback. -/
 theorem HasUpperEllipticityOn.pullback {d : ℕ} {B : CoefficientField d}
-    {U V : Set (TimeVelocity d)} {Lam t₀ r : ℝ} {v₀ : PDE.Vec d}
+    {U V : HypoellipticAleksandrov.Parabolic.TVSet d} {Lam t₀ r : ℝ} {v₀ : PDE.Vec d}
     (hB : HasUpperEllipticityOn Lam B U)
     (hmap : MapsTo (parabolicAffine t₀ v₀ r) V U) :
     HasUpperEllipticityOn Lam (pullbackCoefficient B t₀ v₀ r) V :=
@@ -220,7 +221,7 @@ theorem parabolicOperator_pullbackScalar {d : ℕ} {B : CoefficientField d}
 
 /-- A local supersolution pulls back with its source multiplied by the square scale. -/
 theorem IsParabolicSupersolutionOn.pullback {d : ℕ} {B : CoefficientField d}
-    {f q : TimeVelocity d → ℝ} {U V : Set (TimeVelocity d)} {t₀ r : ℝ}
+    {f q : TimeVelocity d → ℝ} {U V : HypoellipticAleksandrov.Parabolic.TVSet d} {t₀ r : ℝ}
     {v₀ : PDE.Vec d} (hU : IsOpen U) (hq : ContDiffOn ℝ 2 q U)
     (h : IsParabolicSupersolutionOn B f q U)
     (hmap : MapsTo (parabolicAffine t₀ v₀ r) V U) :

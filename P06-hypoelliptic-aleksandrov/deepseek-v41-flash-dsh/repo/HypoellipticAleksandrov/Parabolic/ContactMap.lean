@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.Derivatives
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Parabolic contact-map data
@@ -28,8 +29,8 @@ def affineVelocity {d : ℕ} (y₀ : PDE.Vec d) (h : ℝ) (p : PDE.Vec d)
   rfl
 
 /-- The open slope--intercept wedge associated with a height `M`. -/
-def slopeInterceptWedge (d : ℕ) (M : ℝ) : Set (TimeVelocity d) :=
-  Set.Ioo (M / 2) (3 * M / 4) ×ˢ PDE.euclideanBall (0 : PDE.Vec d) (M / 4)
+def slopeInterceptWedge (d : ℕ) (M : ℝ) : HypoellipticAleksandrov.Parabolic.TVSet d :=
+  Set.Ioo (M / 2) (3 * M / 4) ×ˢ PDE.euclideanBall 0 (M / 4)
 
 /-- Membership in the slope--intercept wedge. -/
 @[simp] theorem mem_slopeInterceptWedge_iff {d : ℕ} {M h : ℝ} {p : PDE.Vec d} :
@@ -58,7 +59,7 @@ noncomputable def parabolicNormalMap {d : ℕ} (u : TimeVelocity d → ℝ) (y�
 
 /-- The interior sign set on which the parabolic Jacobian has the required sign. -/
 def parabolicSignSet {d : ℕ} (T : ℝ) (y₀ : PDE.Vec d) (u : TimeVelocity d → ℝ) :
-    Set (TimeVelocity d) :=
+    HypoellipticAleksandrov.Parabolic.TVSet d :=
   {z | z ∈ parabolicInterior T y₀ ∧ 0 < u z ∧
     0 ≤ timeDerivative u z ∧ (-velocityHessian u z).PosSemidef}
 
@@ -76,7 +77,7 @@ private theorem isClosed_isHermitian (d : ℕ) :
       {H : PDE.Mat d | H.IsHermitian} =
         ⋂ i : Fin d, ⋂ j : Fin d, {H : PDE.Mat d | H j i = H i j} := by
     ext H
-    simp only [Set.mem_ofPred_eq, Set.mem_iInter]
+    simp
     constructor
     · intro h i j
       simpa using h.apply i j
@@ -95,7 +96,7 @@ private theorem isClosed_posSemidef (d : ℕ) :
         {H : PDE.Mat d | H.IsHermitian} ∩
           ⋂ q : PDE.Vec d, {H : PDE.Mat d | 0 ≤ q ⬝ᵥ (H *ᵥ q)} := by
     ext H
-    simp only [Set.mem_ofPred_eq, Set.mem_inter_iff, Set.mem_iInter]
+    simp
     simpa using (Matrix.posSemidef_iff_dotProduct_mulVec (M := H))
   rw [hset]
   refine (isClosed_isHermitian d).inter (isClosed_iInter fun q => ?_)
@@ -134,7 +135,7 @@ theorem measurableSet_parabolicSignSet {d : ℕ} {u : TimeVelocity d → ℝ}
       parabolicInterior T y₀ ∩ {z | 0 < u z} ∩ {z | 0 ≤ timeDerivative u z} ∩
         {z | (-velocityHessian u z).PosSemidef} by
     ext z
-    simp only [Set.mem_ofPred_eq, Set.mem_inter_iff, mem_parabolicSignSet_iff]
+    simp
     constructor
     · rintro ⟨hinterior, hpositive, htime, hpsd⟩
       exact ⟨⟨⟨hinterior, hpositive⟩, htime⟩, hpsd⟩

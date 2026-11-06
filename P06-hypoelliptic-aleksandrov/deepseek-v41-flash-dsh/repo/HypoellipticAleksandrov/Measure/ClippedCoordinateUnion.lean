@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.Parabolic.Geometry
 public import Mathlib.MeasureTheory.Constructions.Pi
 public import Mathlib.MeasureTheory.Integral.Prod
 public import Mathlib.MeasureTheory.Measure.Prod
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Clipped centred coordinate enlargements
@@ -148,16 +149,16 @@ theorem isClippedCoordinateInterval_centeredCoordinateContraction_image
     · exact nonempty_Ioo.mpr (hleft.trans hright)
     · exact Ioo_subset_Ioo hlow.le hupp.le
   · exact ⟨hleft, hright⟩
+section
+variable {n : Nat} (i : Fin (n + 1)) (S : Set (Fin (n + 1) -> Real))
 
 /-- The section obtained by varying `i`; remaining coordinates use
 `i.succAbove` order. -/
-def coordinateSection {n : Nat} (i : Fin (n + 1))
-    (S : Set (Fin (n + 1) -> Real)) (w : Fin n -> Real) : Set Real :=
+def coordinateSection  (w : Fin n -> Real) : Set Real :=
   {x | (MeasurableEquiv.piFinSuccAbove
     (fun _ : Fin (n + 1) => Real) i).symm (x, w) ∈ S}
 
-private theorem coordinateSection_eq_preimage_image {n : Nat}
-    (i : Fin (n + 1)) (S : Set (Fin (n + 1) -> Real)) (w : Fin n -> Real) :
+private theorem coordinateSection_eq_preimage_image  (w : Fin n -> Real) :
     (fun x : Real => (x, w)) ⁻¹'
       (MeasurableEquiv.piFinSuccAbove (fun _ : Fin (n + 1) => Real) i '' S) =
       coordinateSection i S w := by
@@ -175,8 +176,7 @@ private theorem coordinateSection_eq_preimage_image {n : Nat}
   · intro hx
     exact ⟨e.symm (x, w), hx, e.apply_symm_apply (x, w)⟩
 
-private theorem volume_eq_lintegral_coordinateSection {n : Nat}
-    (i : Fin (n + 1)) (S : Set (Fin (n + 1) -> Real))
+private theorem volume_eq_lintegral_coordinateSection 
     (hS : MeasurableSet S) :
     volume S = ∫⁻ w, volume (coordinateSection i S w) := by
   let e := MeasurableEquiv.piFinSuccAbove (fun _ : Fin (n + 1) => Real) i
@@ -192,6 +192,7 @@ private theorem volume_eq_lintegral_coordinateSection {n : Nat}
         (e.measurableSet_image.2 hS)]
       exact lintegral_congr fun w =>
         congr_arg volume (coordinateSection_eq_preimage_image i S w)
+end
 
 /-- Fubini lift of pointwise one-coordinate section inequalities. -/
 theorem volume_le_of_forall_volume_coordinateSection_le
@@ -220,11 +221,11 @@ def timeVelocityCoordinateEquiv (d : Nat) :
 /-- Coordinate section of a time--velocity set after the fixed coordinate
 identification. -/
 def timeVelocityCoordinateSection (d : Nat) (i : Fin (d + 1))
-    (S : Set (TimeVelocity d)) (w : Fin d -> Real) : Set Real :=
+    (S : HypoellipticAleksandrov.Parabolic.TVSet d) (w : Fin d -> Real) : Set Real :=
   coordinateSection i (timeVelocityCoordinateEquiv d '' S) w
 
 private theorem volume_timeVelocityCoordinateEquiv_image {d : Nat}
-    (S : Set (TimeVelocity d)) (hS : MeasurableSet S) :
+    (S : HypoellipticAleksandrov.Parabolic.TVSet d) (hS : MeasurableSet S) :
     volume (timeVelocityCoordinateEquiv d '' S) = volume S := by
   let e := timeVelocityCoordinateEquiv d
   have he : MeasurePreserving e :=
@@ -234,7 +235,7 @@ private theorem volume_timeVelocityCoordinateEquiv_image {d : Nat}
 
 /-- Fubini lift of coordinate-section bounds to time--velocity volume. -/
 theorem volume_timeVelocity_le_of_forall_volume_coordinateSection_le
-    {d : Nat} (i : Fin (d + 1)) (S T : Set (TimeVelocity d))
+    {d : Nat} (i : Fin (d + 1)) (S T : HypoellipticAleksandrov.Parabolic.TVSet d)
     (hS : MeasurableSet S) (hT : MeasurableSet T) (kappa : Real)
     (hsection : ∀ w : Fin d -> Real,
       volume (timeVelocityCoordinateSection d i S w) ≤

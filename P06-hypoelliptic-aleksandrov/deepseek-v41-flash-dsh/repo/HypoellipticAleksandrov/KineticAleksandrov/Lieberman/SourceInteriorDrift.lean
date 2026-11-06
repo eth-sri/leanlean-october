@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeVariationalEnergyExistence
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.SmoothInteriorBootstrap
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeVariationalEnvelope
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Signed source corrections from the proved energy solver
 
@@ -20,7 +22,7 @@ open scoped ENNReal Topology MatrixOrder Matrix.Norms.Elementwise
 
 /-- The proved energy solver supplies an interior classical representative for signed sources. -/
 theorem exists_signed_source_classicalInterior_withDrift {d : ℕ} (hd : 0 < d)
-    {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (hΩb : Bornology.IsBounded Ω)
+    {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (hΩb : Bornology.IsBounded Ω)
     (a T : ℝ) (haT : a < T) (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)

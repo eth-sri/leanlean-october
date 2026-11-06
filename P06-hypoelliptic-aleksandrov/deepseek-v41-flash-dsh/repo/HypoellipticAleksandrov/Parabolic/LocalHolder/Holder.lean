@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.ForcedIterationDyadic
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.HolderExponent
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.HolderGeometry
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # The inhomogeneous parabolic Hölder estimate
 

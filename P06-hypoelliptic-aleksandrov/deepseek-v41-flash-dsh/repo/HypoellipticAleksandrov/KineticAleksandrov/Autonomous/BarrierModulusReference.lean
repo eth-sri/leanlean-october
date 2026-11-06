@@ -45,7 +45,7 @@ theorem barrier_reference_increments {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
   obtain ⟨Cv, hCv, hbv⟩ := hv
   have hψ := h.origin_extension_continuous ha
   obtain ⟨B, hBb⟩ :=
-    (isCompact_closedBall (0 : ℝ × ℝ) 2).exists_bound_of_continuousOn hψ.continuousOn
+    (isCompact_closedBall 0 2).exists_bound_of_continuousOn hψ.continuousOn
   let B' := max B 0
   have hB : 0 ≤ B' := le_max_right _ _
   have hball q (hq : ‖q‖ ≤ 2) : |bellmanOriginExtension phi q| ≤ B' :=

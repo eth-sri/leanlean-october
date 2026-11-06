@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.ParabolicDuhamelWeak
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExternalRegularity
 public import Mathlib.Analysis.Distribution.AEEqOfIntegralContDiff
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Smoothness and the classical source equation for the parabolic Duhamel potential
@@ -45,13 +47,13 @@ theorem exists_smooth_representative_transported_source
 
 section Potential
 
-variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d}
 variable (K : MovingFiberKernel Ω γ)
 
 /-- The parabolic operator of a smooth function with continuous coefficient is continuous. -/
 theorem continuousOn_scalarParabolicOperator_of_contDiffOn {B' : CoefficientField d}
     (hBc : ∀ i j, Continuous (fun p : TimeVelocity d => B' p.1 p.2 i j))
-    {D : Set (TimeVelocity d)} (hD : IsOpen D) {w : TimeVelocity d → ℝ}
+    {D : HypoellipticAleksandrov.Parabolic.TVSet d} (hD : IsOpen D) {w : TimeVelocity d → ℝ}
     (hw : ContDiffOn ℝ (⊤ : ℕ∞) w D) :
     ContinuousOn (scalarParabolicOperator B' (fun _ _ => 0) w) D := by
   have hu : IsScalarC12On w D :=

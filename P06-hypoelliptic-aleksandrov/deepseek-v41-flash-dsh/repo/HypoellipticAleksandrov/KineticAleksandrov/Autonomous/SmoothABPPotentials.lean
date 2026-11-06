@@ -14,13 +14,13 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov Parabolic Filter Topology
 open SectionTwo TheoremA Evolution
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (Z₀ : Point) (R : ℝ) (hR : 0 < R)
 
 /-- The actual strip Green measure restricted to the observation cylinder.
 The zero value outside the cylinder is immaterial to all interior assertions. -/
 def autonomousCylinderGreen
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (Z₀ : Point) (R : ℝ) (hR : 0 < R)
+    
     (P : Point) : Measure Point := by
   classical
   exact
@@ -32,9 +32,7 @@ def autonomousCylinderGreen
 
 /-- Compact cylinder sources have the exact ABP potential regularity and equation. -/
 theorem autonomous_cylinder_green_potentials
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (Z₀ : Point) (R : ℝ) (hR : 0 < R)
+    
     (g : Point → ℝ)
     (hgs : ContDiff ℝ (⊤ : ℕ∞) (fun z => g ((KineticPoint.equivProd 1).symm z)))
     (hgc : HasCompactSupport g) (hgQ : tsupport g ⊆ forwardCylinder Z₀ R hR)
@@ -122,5 +120,6 @@ theorem autonomous_cylinder_green_potentials
   rw [forwardKineticOperator_eq_of_eventuallyEq _ hn, forwardOperator_autonomous]
   rw [hop P (WithTop.coe_lt_coe.mp (capacityCylinderPole Z₀ P R hR hP).2.1)
     (capacityCylinderPole Z₀ P R hR hP).2.2, hf]
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

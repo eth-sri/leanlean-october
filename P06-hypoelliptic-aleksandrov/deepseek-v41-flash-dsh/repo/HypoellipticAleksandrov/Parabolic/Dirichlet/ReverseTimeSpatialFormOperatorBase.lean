@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialFormBounds
 public import Mathlib.Analysis.Normed.Operator.Bilinear
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Fixed-time reverse-time spatial form operator
@@ -21,7 +22,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 private theorem continuousOn_reverseTimeCoefficientEntry_slice
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ τ : ℝ) (a : CoefficientField d) (i j : Fin d)
     (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -46,7 +47,7 @@ private theorem continuousOn_reverseTimeCoefficientEntry_slice
     (Continuous.prodMk_right _).continuousOn hmap
 
 private theorem continuousOn_reverseTimeDivergenceDriftEntry_slice
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ τ : ℝ) (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (j : Fin d)
     (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
@@ -85,7 +86,7 @@ private theorem continuousOn_reverseTimeDivergenceDriftEntry_slice
 
 /-- Smooth coefficients have nonnegative, time-uniform bounds for the slice multipliers. -/
 theorem exists_sliceMultiplierBounds_of_smoothOnNeighborhood
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c : ℝ → PDE.Vec d → ℝ)
@@ -174,30 +175,20 @@ theorem exists_sliceMultiplierBounds_of_smoothOnNeighborhood
   · intro τ
     filter_upwards [ae_restrict_mem hΩ.measurableSet] with y hy
     simpa only [Real.norm_eq_abs] using hCcBound τ.1 τ.2 y hy
+section
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (r₀ r₁ : ℝ) (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ) (Ca : Fin d → Fin d → ℝ) (hCa : ∀ i j, 0 ≤ Ca i j) (hAMeas : ∀ τ : Set.Icc 0 (r₁ - r₀), ∀ i j,
+      AEStronglyMeasurable (fun y => a (r₁ - τ.1) y i j) (PDE.volumeOn Ω)) (hABound : ∀ τ : Set.Icc 0 (r₁ - r₀), ∀ i j,
+      ∀ᵐ y ∂PDE.volumeOn Ω, ‖a (r₁ - τ.1) y i j‖ ≤ Ca i j) (Cd : Fin d → ℝ) (hCd : ∀ j, 0 ≤ Cd j) (hDriftMeas : ∀ τ : Set.Icc 0 (r₁ - r₀), ∀ j,
+      AEStronglyMeasurable
+        (fun y => reverseTimeDivergenceDrift r₁ a b τ.1 y j) (PDE.volumeOn Ω)) (hDriftBound : ∀ τ : Set.Icc 0 (r₁ - r₀), ∀ j,
+      ∀ᵐ y ∂PDE.volumeOn Ω, ‖reverseTimeDivergenceDrift r₁ a b τ.1 y j‖ ≤ Cd j) (Cc : ℝ) (hCc : 0 ≤ Cc) (hScalarMeas : ∀ τ : Set.Icc 0 (r₁ - r₀),
+      AEStronglyMeasurable
+        (fun y => reverseTimeScalarCoefficient r₁ c τ.1 y) (PDE.volumeOn Ω)) (hScalarBound : ∀ τ : Set.Icc 0 (r₁ - r₀),
+      ∀ᵐ y ∂PDE.volumeOn Ω, ‖reverseTimeScalarCoefficient r₁ c τ.1 y‖ ≤ Cc) (τ : Set.Icc 0 (r₁ - r₀))
 
 /-- Multiplier inner-product expression for the reverse-time spatial form. -/
 noncomputable def reverseTimeSpatialFormMultiplierExpression
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (r₀ r₁ : ℝ) (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
-    (Ca : Fin d → Fin d → ℝ) (hCa : ∀ i j, 0 ≤ Ca i j)
-    (hAMeas : ∀ τ : Set.Icc 0 (r₁ - r₀), ∀ i j,
-      AEStronglyMeasurable (fun y => a (r₁ - τ.1) y i j) (PDE.volumeOn Ω))
-    (hABound : ∀ τ : Set.Icc 0 (r₁ - r₀), ∀ i j,
-      ∀ᵐ y ∂PDE.volumeOn Ω, ‖a (r₁ - τ.1) y i j‖ ≤ Ca i j)
-    (Cd : Fin d → ℝ) (hCd : ∀ j, 0 ≤ Cd j)
-    (hDriftMeas : ∀ τ : Set.Icc 0 (r₁ - r₀), ∀ j,
-      AEStronglyMeasurable
-        (fun y => reverseTimeDivergenceDrift r₁ a b τ.1 y j) (PDE.volumeOn Ω))
-    (hDriftBound : ∀ τ : Set.Icc 0 (r₁ - r₀), ∀ j,
-      ∀ᵐ y ∂PDE.volumeOn Ω, ‖reverseTimeDivergenceDrift r₁ a b τ.1 y j‖ ≤ Cd j)
-    (Cc : ℝ) (hCc : 0 ≤ Cc)
-    (hScalarMeas : ∀ τ : Set.Icc 0 (r₁ - r₀),
-      AEStronglyMeasurable
-        (fun y => reverseTimeScalarCoefficient r₁ c τ.1 y) (PDE.volumeOn Ω))
-    (hScalarBound : ∀ τ : Set.Icc 0 (r₁ - r₀),
-      ∀ᵐ y ∂PDE.volumeOn Ω, ‖reverseTimeScalarCoefficient r₁ c τ.1 y‖ ≤ Cc)
-    (τ : Set.Icc 0 (r₁ - r₀)) (u v : H10HilbertGraph hΩ) : ℝ :=
+     (u v : H10HilbertGraph hΩ) : ℝ :=
   (∑ i : Fin d, ∑ j : Fin d,
     inner ℝ
       (scalarL2Multiplier (fun y => a (r₁ - τ.1) y i j)
@@ -216,27 +207,7 @@ noncomputable def reverseTimeSpatialFormMultiplierExpression
       (valueCLM hΩ v)
 
 private theorem reverseTimeSpatialForm_eq_multiplierExpression
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (r₀ r₁ : ℝ) (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
-    (Ca : Fin d → Fin d → ℝ) (hCa : ∀ i j, 0 ≤ Ca i j)
-    (hAMeas : ∀ τ : Set.Icc 0 (r₁ - r₀), ∀ i j,
-      AEStronglyMeasurable (fun y => a (r₁ - τ.1) y i j) (PDE.volumeOn Ω))
-    (hABound : ∀ τ : Set.Icc 0 (r₁ - r₀), ∀ i j,
-      ∀ᵐ y ∂PDE.volumeOn Ω, ‖a (r₁ - τ.1) y i j‖ ≤ Ca i j)
-    (Cd : Fin d → ℝ) (hCd : ∀ j, 0 ≤ Cd j)
-    (hDriftMeas : ∀ τ : Set.Icc 0 (r₁ - r₀), ∀ j,
-      AEStronglyMeasurable
-        (fun y => reverseTimeDivergenceDrift r₁ a b τ.1 y j) (PDE.volumeOn Ω))
-    (hDriftBound : ∀ τ : Set.Icc 0 (r₁ - r₀), ∀ j,
-      ∀ᵐ y ∂PDE.volumeOn Ω, ‖reverseTimeDivergenceDrift r₁ a b τ.1 y j‖ ≤ Cd j)
-    (Cc : ℝ) (hCc : 0 ≤ Cc)
-    (hScalarMeas : ∀ τ : Set.Icc 0 (r₁ - r₀),
-      AEStronglyMeasurable
-        (fun y => reverseTimeScalarCoefficient r₁ c τ.1 y) (PDE.volumeOn Ω))
-    (hScalarBound : ∀ τ : Set.Icc 0 (r₁ - r₀),
-      ∀ᵐ y ∂PDE.volumeOn Ω, ‖reverseTimeScalarCoefficient r₁ c τ.1 y‖ ≤ Cc)
-    (τ : Set.Icc 0 (r₁ - r₀)) (u v : H10HilbertGraph hΩ) :
+     (u v : H10HilbertGraph hΩ) :
     reverseTimeSpatialForm hΩ r₁ τ.1 a b c u v =
       reverseTimeSpatialFormMultiplierExpression hΩ r₀ r₁ a b c Ca hCa hAMeas hABound Cd hCd
         hDriftMeas hDriftBound Cc hCc hScalarMeas hScalarBound τ u v := by
@@ -246,27 +217,7 @@ private theorem reverseTimeSpatialForm_eq_multiplierExpression
 
 /-- The reverse-time spatial form as a bounded bilinear map. -/
 noncomputable def reverseTimeSpatialFormBilinear
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (r₀ r₁ : ℝ) (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
-    (Ca : Fin d → Fin d → ℝ) (hCa : ∀ i j, 0 ≤ Ca i j)
-    (hAMeas : ∀ τ : Set.Icc 0 (r₁ - r₀), ∀ i j,
-      AEStronglyMeasurable (fun y => a (r₁ - τ.1) y i j) (PDE.volumeOn Ω))
-    (hABound : ∀ τ : Set.Icc 0 (r₁ - r₀), ∀ i j,
-      ∀ᵐ y ∂PDE.volumeOn Ω, ‖a (r₁ - τ.1) y i j‖ ≤ Ca i j)
-    (Cd : Fin d → ℝ) (hCd : ∀ j, 0 ≤ Cd j)
-    (hDriftMeas : ∀ τ : Set.Icc 0 (r₁ - r₀), ∀ j,
-      AEStronglyMeasurable
-        (fun y => reverseTimeDivergenceDrift r₁ a b τ.1 y j) (PDE.volumeOn Ω))
-    (hDriftBound : ∀ τ : Set.Icc 0 (r₁ - r₀), ∀ j,
-      ∀ᵐ y ∂PDE.volumeOn Ω, ‖reverseTimeDivergenceDrift r₁ a b τ.1 y j‖ ≤ Cd j)
-    (Cc : ℝ) (hCc : 0 ≤ Cc)
-    (hScalarMeas : ∀ τ : Set.Icc 0 (r₁ - r₀),
-      AEStronglyMeasurable
-        (fun y => reverseTimeScalarCoefficient r₁ c τ.1 y) (PDE.volumeOn Ω))
-    (hScalarBound : ∀ τ : Set.Icc 0 (r₁ - r₀),
-      ∀ᵐ y ∂PDE.volumeOn Ω, ‖reverseTimeScalarCoefficient r₁ c τ.1 y‖ ≤ Cc)
-    (τ : Set.Icc 0 (r₁ - r₀)) :
+     :
     H10HilbertGraph hΩ →ₗ[ℝ] H10HilbertGraph hΩ →ₗ[ℝ] ℝ :=
   LinearMap.mk₂ ℝ
     (reverseTimeSpatialFormMultiplierExpression hΩ r₀ r₁ a b c Ca hCa hAMeas hABound Cd hCd
@@ -293,20 +244,16 @@ noncomputable def reverseTimeSpatialFormBilinear
         smul_eq_mul]
       simp_rw [← Finset.mul_sum]
       ring)
+end
+section
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ) (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
+      (scalarParabolicClosedCylinder r₀ r₁ Ω)) (hbSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2)
+      (scalarParabolicClosedCylinder r₀ r₁ Ω)) (hcSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => c z.1 z.2)
+      (scalarParabolicClosedCylinder r₀ r₁ Ω))
 
 /-- The reverse-time spatial form as a continuous operator at a local time. -/
 noncomputable def reverseTimeSpatialFormOperator
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
-    (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
-    (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (c : ℝ → PDE.Vec d → ℝ)
-    (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hbSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hcSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => c z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
+    
     (τ : Set.Icc 0 (r₁ - r₀)) :
     H10HilbertGraph hΩ →L[ℝ] H10HilbertGraphDual hΩ := by
   let hEvidence := exists_sliceMultiplierBounds_of_smoothOnNeighborhood r₀ r₁ hΩ hΩbounded
@@ -345,17 +292,7 @@ noncomputable def reverseTimeSpatialFormOperator
 
 /-- The local operator evaluates to the literal reverse-time spatial form. -/
 theorem reverseTimeSpatialFormOperator_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
-    (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
-    (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (c : ℝ → PDE.Vec d → ℝ)
-    (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hbSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hcSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => c z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
+    
     (τ : Set.Icc 0 (r₁ - r₀)) (u v : H10HilbertGraph hΩ) :
     reverseTimeSpatialFormOperator r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth τ u v =
       reverseTimeSpatialForm hΩ r₁ τ.1 a b c u v := by
@@ -373,17 +310,7 @@ theorem reverseTimeSpatialFormOperator_apply
 
 /-- The local operator curve has one time-uniform application bound. -/
 theorem exists_reverseTimeSpatialFormOperator_bound
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
-    (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
-    (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (c : ℝ → PDE.Vec d → ℝ)
-    (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hbSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hcSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => c z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω)) :
+     :
     ∃ C : ℝ, 0 ≤ C ∧
       ∀ τ : Set.Icc 0 (r₁ - r₀), ∀ u : H10HilbertGraph hΩ,
         ‖reverseTimeSpatialFormOperator r₀ r₁ h₀₁ hΩ hΩbounded a b c
@@ -397,6 +324,7 @@ theorem exists_reverseTimeSpatialFormOperator_bound
   intro v
   rw [Real.norm_eq_abs, reverseTimeSpatialFormOperator_apply]
   exact hForm τ.1 τ.2 u v
+end
 
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

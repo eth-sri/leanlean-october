@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Measure.ParabolicDyadicAddress
 public import HypoellipticAleksandrov.Measure.ParabolicDensity
 public import HypoellipticAleksandrov.Measure.InkSpotsGeometry
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Dyadic source boxes for parabolic ink spots
@@ -310,7 +311,7 @@ theorem parabolicDyadicOpenCell_parent_subset_inkSpotsQ1 {d n : Nat}
 /-- Subtype reference measure of an ambient measurable preimage is ambient
 volume intersected with the reference cell. -/
 theorem parabolicDyadicReferenceMeasure_preimage_eq_volume_inter_reference
-    (d : Nat) (s : Set (TimeVelocity d)) (_hs : MeasurableSet s) :
+    (d : Nat) (s : HypoellipticAleksandrov.Parabolic.TVSet d) (_hs : MeasurableSet s) :
     parabolicDyadicReferenceMeasure d (Subtype.val ⁻¹' s) =
       volume (s ∩ parabolicDyadicReferenceCell d) := by
   rw [parabolicDyadicReferenceMeasure, comap_subtype_coe_apply
@@ -320,13 +321,13 @@ theorem parabolicDyadicReferenceMeasure_preimage_eq_volume_inter_reference
 
 /-- On a set inside the reference cell, subtype reference measure is ambient volume. -/
 theorem parabolicDyadicReferenceMeasure_preimage_eq_volume {d : Nat}
-    (s : Set (TimeVelocity d)) (hs : MeasurableSet s)
+    (s : HypoellipticAleksandrov.Parabolic.TVSet d) (hs : MeasurableSet s)
     (hsub : s ⊆ parabolicDyadicReferenceCell d) :
     parabolicDyadicReferenceMeasure d (Subtype.val ⁻¹' s) = volume s := by
   rw [parabolicDyadicReferenceMeasure_preimage_eq_volume_inter_reference d s hs,
     inter_eq_left.mpr hsub]
 
-private def parabolicDyadicAllBoundary (d : Nat) : Set (TimeVelocity d) :=
+private def parabolicDyadicAllBoundary (d : Nat) : HypoellipticAleksandrov.Parabolic.TVSet d :=
   ⋃ address : ParabolicDyadicAddress d,
     parabolicDyadicHalfOpenCell address.2 \ parabolicDyadicOpenCell address.2
 
@@ -346,7 +347,7 @@ private theorem ae_not_mem_parabolicDyadicAllBoundary (d : Nat) :
 /-- A strict dyadic density on a restricted half-open cell gives a strict
 ink-spots density for its actual open source box. -/
 theorem inkSpotsStrictDense_of_restrictedCell_density_gt {d n : Nat}
-    (Gamma : Set (TimeVelocity d)) (hGamma : MeasurableSet Gamma) (xi : Real)
+    (Gamma : HypoellipticAleksandrov.Parabolic.TVSet d) (hGamma : MeasurableSet Gamma) (xi : Real)
     (index : ParabolicDyadicIndex d n)
     (h : xi * (parabolicDyadicReferenceMeasure d).real
         (parabolicDyadicRestrictedCell index) <
@@ -368,8 +369,8 @@ theorem inkSpotsStrictDense_of_restrictedCell_density_gt {d n : Nat}
   have hcellAE : parabolicDyadicOpenCell index =ᵐ[volume]
       parabolicDyadicHalfOpenCell index :=
     parabolicDyadicOpenCell_ae_eq_halfOpenCell index
-  have hinterAE : (parabolicDyadicOpenCell index ∩ Gamma : Set (TimeVelocity d)) =ᵐ[volume]
-      (parabolicDyadicHalfOpenCell index ∩ Gamma : Set (TimeVelocity d)) :=
+  have hinterAE : (parabolicDyadicOpenCell index ∩ Gamma : HypoellipticAleksandrov.Parabolic.TVSet d) =ᵐ[volume]
+      (parabolicDyadicHalfOpenCell index ∩ Gamma : HypoellipticAleksandrov.Parabolic.TVSet d) :=
     ae_eq_set_inter hcellAE (EventuallyEq.rfl)
   have hvolume : volume (parabolicDyadicOpenCell index) =
       volume (parabolicDyadicHalfOpenCell index) := measure_congr hcellAE
@@ -387,7 +388,7 @@ theorem inkSpotsStrictDense_of_restrictedCell_density_gt {d n : Nat}
 /-- A strict ambient density on a child open dyadic cell puts its parent open
 cell in the actual first ink-spots enlargement union. -/
 theorem parabolicDyadicOpenCell_parent_subset_inkSpotsD1_of_density_gt
-    {d n : Nat} (Gamma : Set (TimeVelocity d)) (xi : Real)
+    {d n : Nat} (Gamma : HypoellipticAleksandrov.Parabolic.TVSet d) (xi : Real)
     (index : ParabolicDyadicIndex d (n + 1))
     (h : xi * (volume (parabolicDyadicOpenCell index)).toReal <
       (volume (Gamma ∩ parabolicDyadicOpenCell index)).toReal) :
@@ -416,7 +417,7 @@ private theorem inkSpotsUnitBox_subset_parabolicDyadicReferenceCell (d : Nat) :
 /-- Almost every point of a measurable set in the unit source box belongs to
 the first ink-spots enlargement union. -/
 theorem ae_le_inkSpotsD1_of_parabolicDyadicDensity
-    (d : Nat) (Gamma : Set (TimeVelocity d)) (xi : Real)
+    (d : Nat) (Gamma : HypoellipticAleksandrov.Parabolic.TVSet d) (xi : Real)
     (hGamma : MeasurableSet Gamma) (hGammaUnit : Gamma ⊆ inkSpotsUnitBox d)
     (hxi : xi ∈ Set.Ioo (0 : Real) 1) :
     Gamma ≤ᵐ[volume] inkSpotsD1 Gamma xi := by

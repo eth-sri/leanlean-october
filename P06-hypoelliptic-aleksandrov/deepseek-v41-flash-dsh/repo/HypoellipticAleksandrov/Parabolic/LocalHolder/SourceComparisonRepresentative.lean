@@ -6,6 +6,8 @@ import HypoellipticAleksandrov.Parabolic.WeakDerivatives
 import Mathlib.Topology.Order.Lattice
 import Mathlib.MeasureTheory.Measure.Prod
 import Mathlib.MeasureTheory.Constructions.BorelSpace.Basic
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Continuous promotion of almost-everywhere source bounds
 
@@ -20,7 +22,7 @@ open Filter MeasureTheory Set
 
 /-- A continuous envelope bounding almost every slice bounds every interior point. -/
 theorem abs_le_of_continuousOn_of_ae_slices {d : ℕ}
-    {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (a T : ℝ) (w b : TimeVelocity d → ℝ)
+    {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (a T : ℝ) (w b : TimeVelocity d → ℝ)
     (hbc : Continuous b)
     (hw : ContinuousOn w (scalarParabolicOpenCylinder a T Ω))
     (hb : ∀ᵐ t ∂volume.restrict (Ioo a T),
@@ -61,7 +63,7 @@ theorem abs_le_of_continuousOn_of_ae_slices {d : ℕ}
 
 /-- An almost-everywhere time bound holds pointwise for a continuous interior representative. -/
 theorem abs_le_source_time_of_continuousOn_of_ae_slices {d : ℕ}
-    {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (a T M : ℝ) (w : TimeVelocity d → ℝ)
+    {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (a T M : ℝ) (w : TimeVelocity d → ℝ)
     (hw : ContinuousOn w (scalarParabolicOpenCylinder a T Ω))
     (hb : ∀ᵐ t ∂volume.restrict (Ioo a T),
       ∀ᵐ y ∂PDE.volumeOn Ω, |w (t, y)| ≤ M * (T - t)) :

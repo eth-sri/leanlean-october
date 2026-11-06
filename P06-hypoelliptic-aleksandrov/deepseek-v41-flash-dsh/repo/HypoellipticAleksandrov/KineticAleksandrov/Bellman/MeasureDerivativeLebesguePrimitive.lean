@@ -114,6 +114,6 @@ theorem bellman_lebesguePrimitive_weak (g : ℝ → ℝ) (hg : LocallyIntegrable
       funext x
       exact image_eq_zero_of_notMem_tsupport (fun hx => hn ⟨x, hx⟩)
     rw [hz, deriv_zero]
-    simp only [Pi.zero_apply, mul_zero, integral_zero, neg_zero]
+    simp
 
 end HypoellipticAleksandrov.KineticAleksandrov

@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.SpatialDifferenceQuotientBound
 public import HypoellipticAleksandrov.Topology.Support
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Cutoff-localized spatial difference-quotient fields
@@ -19,7 +20,7 @@ namespace HypoellipticAleksandrov.Parabolic
 continuous, compactly supported cutoff localizations of their small signed
 spatial translates and difference quotients. -/
 theorem IsCompact.exists_cutoff_mul_spatialFields_of_contDiffOn_one
-    {d : ℕ} {S U : Set (TimeVelocity d)}
+    {d : ℕ} {S U : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hS : IsCompact S) (hU : IsOpen U) (hSU : S ⊆ U)
     (q : TimeVelocity d → ℝ) (hq : ContDiffOn ℝ 1 q U) :
     ∃ δ C : ℝ, 0 < δ ∧ 0 ≤ C ∧
@@ -44,7 +45,7 @@ theorem IsCompact.exists_cutoff_mul_spatialFields_of_contDiffOn_one
   have hC : 0 ≤ max Q D := hD.trans (le_max_right _ _)
   refine ⟨δ, max Q D, hδ, hC, ?_⟩
   intro β hβ hβcompact hβS hβunit k h hh
-  let W : Set (TimeVelocity d) := U ∩ (spatialShift k h) ⁻¹' U
+  let W : HypoellipticAleksandrov.Parabolic.TVSet d := U ∩ (spatialShift k h) ⁻¹' U
   have hshiftcont : Continuous (spatialShift k h) := by
     change Continuous (fun z => z + (0, h • PDE.basisVec k))
     simpa only [Homeomorph.coe_addRight] using

@@ -35,7 +35,7 @@ theorem mass_trace_probe_weighted {d : ℕ} (Lam a T : ℝ) (v₀ : PDE.Vec d) (
   · have hlp : L ^ 2 ≤ ‖P.position‖ ^ 2 :=
       (sq_le_sq₀ hL (norm_nonneg _)).mpr (not_le.mp hp).le
     exact ((abs_sub (φ P) (u P)).trans (add_le_add (hφ P) (hb P hP))).trans
-      ((by linarith only [hsize] : M + ε + M ≤ ε * L ^ 2).trans
+      ((by linarith : M + ε + M ≤ ε * L ^ 2).trans
         (mul_le_mul_of_nonneg_left (hlp.trans (massGrowthBarrier_norm_lower Lam T P hP.2.1))
           hε))
 
@@ -48,20 +48,20 @@ theorem mass_aperture_size (M : ℝ) (hM : 0 ≤ M) (n : ℕ) :
   have hn : 0 ≤ (n : ℝ) := Nat.cast_nonneg n
   have hp : 0 < (n : ℝ) + 1 := by positivity
   have he : 0 < 1 / ((n : ℝ) + 1) := one_div_pos.mpr hp
-  have he1 : 1 / ((n : ℝ) + 1) ≤ 1 := (div_le_one hp).mpr (by linarith only [hn])
+  have he1 : 1 / ((n : ℝ) + 1) ≤ 1 := (div_le_one hp).mpr (by linarith)
   let L := (2 * M + 1) * ((n : ℝ) + 1) + 1 + (n : ℝ)
-  have hL : 1 ≤ L := by dsimp only [L]; nlinarith only [hn, hM]
-  have hnL : (n : ℝ) ≤ L := by dsimp only [L]; nlinarith only [hn, hM]
+  have hL : 1 ≤ L := by dsimp only [L]; nlinarith
+  have hnL : (n : ℝ) ≤ L := by dsimp only [L]; nlinarith
   have hsz : (2 * M + 1) * ((n : ℝ) + 1) ≤ L := by
     dsimp only [L]
-    linarith only [hn]
-  have hsq : L ≤ L ^ 2 := by nlinarith only [hL]
+    linarith
+  have hsq : L ≤ L ^ 2 := by nlinarith
   have hsz' : 2 * M + 1 ≤ (1 / ((n : ℝ) + 1)) * L := by
     rw [one_div, ← div_eq_inv_mul]
     exact (le_div_iff₀ hp).mpr hsz
-  refine ⟨he, he1, (by linarith only [hL]), hnL, ?_⟩
+  refine ⟨he, he1, (by linarith), hnL, ?_⟩
   have hsmall : 2 * M + 1 / ((n : ℝ) + 1) ≤ 2 * M + 1 := by
-    linarith only [he1]
+    linarith
   exact hsmall.trans (hsz'.trans (mul_le_mul_of_nonneg_left hsq he.le))
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

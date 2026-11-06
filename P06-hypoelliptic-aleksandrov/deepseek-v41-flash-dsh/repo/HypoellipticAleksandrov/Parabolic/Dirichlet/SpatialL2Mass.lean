@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeShiftedPositivePart
 public import Mathlib.MeasureTheory.Function.Holder
 public import Mathlib.MeasureTheory.Function.LpSpace.Indicator
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Spatial mass on bounded domains
@@ -24,7 +25,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 /-- Integration over a bounded spatial domain, as a continuous linear
 functional on its restricted-volume `L²` space. -/
 noncomputable def spatialMassCLM
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩbounded : Bornology.IsBounded Ω) :
     MeasureTheory.Lp ℝ 2 (PDE.volumeOn Ω) →L[ℝ] ℝ := by
   letI : IsFiniteMeasure (PDE.volumeOn Ω) :=
@@ -36,7 +37,7 @@ noncomputable def spatialMassCLM
 
 /-- Spatial mass is the literal integral of the chosen `L²` representative. -/
 theorem spatialMassCLM_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩbounded : Bornology.IsBounded Ω)
     (f : MeasureTheory.Lp ℝ 2 (PDE.volumeOn Ω)) :
     spatialMassCLM hΩbounded f = ∫ y, f y ∂PDE.volumeOn Ω := by
@@ -59,7 +60,7 @@ theorem spatialMassCLM_apply
 /-- The spatial mass of the affine-threshold shifted positive part is
 integrable in reverse time. -/
 theorem integrable_reverseTimeShiftedPositivePart_spatialMass
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (T : ℝ) (M N : ℝ≥0) (u : ReverseTimeL2V hΩ T) :
     Integrable (fun τ => ∫ y,

@@ -10,12 +10,12 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.VisitRecursi
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
 
 /-- Every actual active visit has the genuine outer Green and exit splitting. -/
 theorem visitEntrance_nested
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (hT : s < T)
+     (hT : s < T)
     (P : Point) (hP : s < P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier) (n : ℕ) :
     let gamma := visitEntrancePiece hH hLE hlam hLam A c J s T P n
     let beta := visitOutgoingPiece hH hLE hlam hLam A c J s T P n
@@ -37,9 +37,7 @@ theorem visitEntrance_nested
 
 /-- Every actual waiting visit has the genuine outer Green and exit splitting. -/
 theorem visitOutgoing_nested
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (hT : s < T)
+     (hT : s < T)
     (P : Point) (n : ℕ) :
     let beta := visitOutgoingPiece hH hLE hlam hLam A c J s T P n
     let gamma := visitEntrancePiece hH hLE hlam hLam A c J s T P (n + 1)
@@ -58,5 +56,6 @@ theorem visitOutgoing_nested
     (visitOutgoingPiece_ae_waitingPole hH hLE hlam hLam A c J s T P n)
   simpa only [visitWaiting_internalExit, visitEntrancePiece, visitGamma,
     visitOutgoingPiece, visitBeta] using h
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

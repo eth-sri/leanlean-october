@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeGelfandSteklov
 public import Mathlib.Analysis.Calculus.Deriv.Slope
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Reverse-time Steklov energy identities
@@ -28,7 +29,7 @@ private theorem normSq_sub_eq_inner_add_sub_inner
   ring
 
 private theorem pivot_normSq_sub_eq_dualSub_apply_add
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     (r s : H10HilbertGraph hΩ) :
     ‖valueCLM hΩ r‖ ^ 2 - ‖valueCLM hΩ s‖ ^ 2 =
       (scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ r) -
@@ -85,7 +86,7 @@ private theorem hasDerivAt_of_pivoted_curve
   exact hasDerivAt_iff_tendsto_slope.mpr hSlopeE
 
 private theorem reverseTimeForwardSteklov_energy_identity_raw
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
@@ -125,7 +126,7 @@ private theorem reverseTimeForwardSteklov_energy_identity_raw
 
 /-- Fixed-window forward Steklov energy identity in the reverse-time Gelfand triple. -/
 theorem reverseTimeForwardSteklov_energy_identity
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)

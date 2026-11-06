@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.GeneralOpenPositivePar
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.H10LevelSet
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.SpatialSobolevExtensionality
 public import Mathlib.MeasureTheory.Function.LpOrder
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Positive parts in spatial `H¹₀`
@@ -22,10 +23,12 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-variable {d : ℕ} {Ω : Set (PDE.Vec d)}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
+section
+variable (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ)
 
 private def h1FunctionOfH10
-    (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) : PDE.H1Function Ω where
+     : PDE.H1Function Ω where
   toFun := valueCLM hΩ u
   grad := fun x => (gradientCLM hΩ u x).ofLp
   memL2 := Lp.memLp _
@@ -44,7 +47,7 @@ private def h1FunctionOfH10
           (u : PDE.H1HilbertGraph Ω)) i φ
 
 private theorem h1FunctionOfH10_hasSupportedSmoothApproximation
-    (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) :
+     :
     Nonempty (h1FunctionOfH10 hΩ u).SupportedSmoothApproximation := by
   let ug := h10HilbertGraphContinuousLinearEquiv hΩ u
   rcases PDE.H10Graph.exists_tendsto_smooth hΩ ug with ⟨φ, hφ⟩
@@ -130,13 +133,12 @@ private theorem h1FunctionOfH10_hasSupportedSmoothApproximation
     simpa only [Function.comp_def, hseq] using heval
 
 private theorem exists_positivePart_data
-    (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) :
+     :
     ∃ v : H10HilbertGraph hΩ,
       valueCLM hΩ v = MeasureTheory.Lp.posPart (valueCLM hΩ u) ∧
       ∀ᵐ x ∂(PDE.volumeOn Ω),
         gradientCLM hΩ v x =
           {y | 0 < valueCLM hΩ u y}.indicator (gradientCLM hΩ u) x := by
-  let w := h1FunctionOfH10 hΩ u
   obtain ⟨z, hzValue, hzGrad, hzApprox⟩ :=
     PDE.H1Function.exists_positivePart_supportedSmoothApproximation
       (Classical.choice (h1FunctionOfH10_hasSupportedSmoothApproximation hΩ u))
@@ -170,7 +172,7 @@ private theorem exists_positivePart_data
 
 /-- The positive part has a unique spatial `H¹₀` graph representative. -/
 theorem exists_unique_h10PositivePart
-    (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) :
+     :
     ∃! v : H10HilbertGraph hΩ,
       valueCLM hΩ v = MeasureTheory.Lp.posPart (valueCLM hΩ u) := by
   obtain ⟨v, hv, _⟩ := exists_positivePart_data hΩ u
@@ -178,14 +180,14 @@ theorem exists_unique_h10PositivePart
 
 /-- The canonical positive part in the Hilbert realization of spatial `H¹₀`. -/
 noncomputable def h10PositivePart
-    (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) : H10HilbertGraph hΩ :=
+     : H10HilbertGraph hΩ :=
   Classical.choose (exists_unique_h10PositivePart hΩ u)
 
 /-- The value component of the canonical `H¹₀` positive part is the
 `L²` positive part of the original value component. -/
 @[simp]
 theorem valueCLM_h10PositivePart
-    (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) :
+     :
     valueCLM hΩ (h10PositivePart hΩ u) =
       MeasureTheory.Lp.posPart (valueCLM hΩ u) :=
   (Classical.choose_spec (exists_unique_h10PositivePart hΩ u)).1
@@ -193,7 +195,7 @@ theorem valueCLM_h10PositivePart
 /-- The weak gradient of the positive part is the original gradient on its
 strictly positive set and zero elsewhere. -/
 theorem gradientCLM_h10PositivePart
-    (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) :
+     :
     ∀ᵐ x ∂(PDE.volumeOn Ω),
       gradientCLM hΩ (h10PositivePart hΩ u) x =
         {y | 0 < valueCLM hΩ u y}.indicator (gradientCLM hΩ u) x := by
@@ -204,7 +206,7 @@ theorem gradientCLM_h10PositivePart
 
 /-- Taking the positive part contracts the value `L²` norm. -/
 theorem norm_valueCLM_h10PositivePart_le
-    (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) :
+     :
     ‖valueCLM hΩ (h10PositivePart hΩ u)‖ ≤ ‖valueCLM hΩ u‖ := by
   rw [valueCLM_h10PositivePart]
   change ‖Lp.lipschitzWith_pos_part.compLp (max_eq_right le_rfl) (valueCLM hΩ u)‖ ≤ _
@@ -213,7 +215,7 @@ theorem norm_valueCLM_h10PositivePart_le
 
 /-- Taking the positive part contracts the weak-gradient `L²` norm. -/
 theorem norm_gradientCLM_h10PositivePart_le
-    (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) :
+     :
     ‖gradientCLM hΩ (h10PositivePart hΩ u)‖ ≤ ‖gradientCLM hΩ u‖ := by
   rw [Lp.norm_def, Lp.norm_def]
   apply ENNReal.toReal_mono (Lp.eLpNorm_ne_top _)
@@ -225,5 +227,6 @@ theorem norm_gradientCLM_h10PositivePart_le
     _ ≤ eLpNorm (gradientCLM hΩ u) 2 (PDE.volumeOn Ω) :=
       eLpNorm_indicator_le _
         (measurableSet_lt measurable_const (Lp.stronglyMeasurable (valueCLM hΩ u)).measurable)
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

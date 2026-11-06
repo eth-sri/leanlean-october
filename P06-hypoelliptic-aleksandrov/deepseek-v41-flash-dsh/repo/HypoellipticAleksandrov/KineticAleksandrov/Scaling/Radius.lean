@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Scaling.Unique
 public import HypoellipticAleksandrov.KineticAleksandrov.Scaling.Fourier
 public import HypoellipticAleksandrov.KineticAleksandrov.Scaling.Structure
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # The source kinetic scaling (companion paper, (2.10), (2.11), Lemma 2.5)
@@ -79,9 +80,9 @@ kinetic scaling) realizes it for the rescaled coefficient `B_r`, again with iden
 transport. -/
 theorem realizes_ofRadius_wholeSpace (σ₀ : ℝ) (v₀ z₀ : PDE.Vec d) (r : {r : ℝ // 0 < r})
     {B : CoefficientField d}
-    {S : TerminalOperatorFamily (Set.univ : Set (PDE.Vec d)) (fun _ => (0 : PDE.Vec d))}
-    {K : MovingFiberKernel (Set.univ : Set (PDE.Vec d)) (fun _ => (0 : PDE.Vec d))}
-    (hreal : RealizesTerminalEvolution Set.univ (fun _ => (0 : PDE.Vec d)) MeasurableSet.univ
+    {S : TerminalOperatorFamily (Set.univ : HypoellipticAleksandrov.VecSet d) (fun _ => 0)}
+    {K : MovingFiberKernel (Set.univ : HypoellipticAleksandrov.VecSet d) (fun _ => 0)}
+    (hreal : RealizesTerminalEvolution Set.univ (fun _ => 0) MeasurableSet.univ
       (zIndependentCoefficient B) (identityDrift d) S K) :
     RealizesTerminalEvolution Set.univ (fun _ => (0 : PDE.Vec d)) MeasurableSet.univ
       (zIndependentCoefficient (scaledCoefficient B σ₀ v₀ r)) (identityDrift d)
@@ -106,23 +107,23 @@ and Fourier projections `ν` (frequency `ξ`) of `K` and `ν'` (frequency `r³ �
 `ν E = exp (-i r² (τ' - τ) ξ · v₀) ν' (r⁻¹ (E - v₀))` and `‖ν‖_TV = ‖ν'‖_TV`. -/
 theorem realizes_ofRadius_fourier_tv (σ₀ : ℝ) (v₀ z₀ : PDE.Vec d) (r : {r : ℝ // 0 < r})
     {B : CoefficientField d}
-    {S : TerminalOperatorFamily (Set.univ : Set (PDE.Vec d)) (fun _ => (0 : PDE.Vec d))}
-    {K : MovingFiberKernel (Set.univ : Set (PDE.Vec d)) (fun _ => (0 : PDE.Vec d))}
-    (hreal : RealizesTerminalEvolution Set.univ (fun _ => (0 : PDE.Vec d))
+    {S : TerminalOperatorFamily (Set.univ : HypoellipticAleksandrov.VecSet d) (fun _ => 0)}
+    {K : MovingFiberKernel (Set.univ : HypoellipticAleksandrov.VecSet d) (fun _ => 0)}
+    (hreal : RealizesTerminalEvolution Set.univ (fun _ => 0)
       (measurableSet_of_isAdmissibleEvolutionDomain (wholeSpace_admissible d))
       (zIndependentCoefficient B) (identityDrift d) S K)
-    {S' : TerminalOperatorFamily (Set.univ : Set (PDE.Vec d)) (fun _ => (0 : PDE.Vec d))}
-    {K' : MovingFiberKernel (Set.univ : Set (PDE.Vec d)) (fun _ => (0 : PDE.Vec d))}
-    (hreal' : RealizesTerminalEvolution Set.univ (fun _ => (0 : PDE.Vec d))
+    {S' : TerminalOperatorFamily (Set.univ : HypoellipticAleksandrov.VecSet d) (fun _ => 0)}
+    {K' : MovingFiberKernel (Set.univ : HypoellipticAleksandrov.VecSet d) (fun _ => 0)}
+    (hreal' : RealizesTerminalEvolution Set.univ (fun _ => 0)
       (measurableSet_of_isAdmissibleEvolutionDomain (wholeSpace_admissible d))
       (zIndependentCoefficient (scaledCoefficient B σ₀ v₀ r)) (identityDrift d) S' K')
-    (q' : EvolutionQuery (Set.univ : Set (PDE.Vec d)) (fun _ => (0 : PDE.Vec d)))
+    (q' : EvolutionQuery (Set.univ : HypoellipticAleksandrov.VecSet d) (fun _ => 0))
     (ξ : PDE.Vec d) (ν ν' : ComplexMeasure (PDE.Vec d))
     (hν : IsFourierProjection K (KineticAffineScaling.queryMap
       (KineticAffineScaling.mapsDomain_wholeSpace
         (KineticAffineScaling.ofRadius σ₀ v₀ z₀ (identityDrift d) r)) q') ξ ν)
     (hν' : IsFourierProjection K' q' (r.1 ^ 3 • ξ) ν') :
-    (∀ E : Set (PDE.Vec d), MeasurableSet E →
+    (∀ E : HypoellipticAleksandrov.VecSet d, MeasurableSet E →
       ν E = Complex.exp (-Complex.I *
           ((r.1 ^ 2 * (q'.1.2.1 - q'.1.1) * PDE.vecDot ξ v₀ : ℝ) : ℂ)) *
         ν' ((fun Y : PDE.Vec d => v₀ + r.1 • Y) ⁻¹' E)) ∧

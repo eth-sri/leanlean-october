@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundedSourceWeakTesting
 import Mathlib.MeasureTheory.Integral.Bochner.SumMeasure
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Bounded signed-source distributional Duhamel identity
 
@@ -15,7 +16,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set
 open Evolution Occupation
 open scoped Topology
-variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d}
 
 /-- The bounded-source weak identity in product coordinates. -/
 theorem duhamel_bounded_product_identity (hΩa : IsAdmissibleEvolutionDomain Ω)

@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementApproxWea
 public import HypoellipticAleksandrov.Coefficients.Ellipticity
 public import HypoellipticAleksandrov.Parabolic.ParabolicLowOrderIndex
 import Mathlib.Tactic.Ring
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Passing homogeneous equations through the common weak subsequence
 
@@ -17,10 +18,11 @@ noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Filter MeasureTheory Set
 open scoped BigOperators Topology Matrix.Norms.Elementwise
+section
+variable {d L : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {u : TimeVelocity d → ℝ} (hL : 2 ≤ L) (A : CoefficientField d)
 
 /-- The literal homogeneous residual of a coherent family through at least weight two. -/
-def homogeneousWeakFamilyResidual {d L : ℕ} {U : Set (TimeVelocity d)}
-    {u : TimeVelocity d → ℝ} (hL : 2 ≤ L) (A : CoefficientField d)
+def homogeneousWeakFamilyResidual 
     (D : ParabolicWeakDerivativeFamily d L U u) (z : TimeVelocity d) : ℝ :=
   D.representative (ParabolicDerivativeIndex.castLE hL
     (ParabolicDerivativeIndex.timeOne d)) z +
@@ -28,9 +30,7 @@ def homogeneousWeakFamilyResidual {d L : ℕ} {U : Set (TimeVelocity d)}
     (ParabolicDerivativeIndex.castLE hL (ParabolicDerivativeIndex.velocityTwo j i)) z
 
 /-- Testing the literal residual equals the sum of its selected derivative pairings. -/
-theorem integral_homogeneousWeakFamilyResidual_mul {d L : ℕ}
-    {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
-    (hL : 2 ≤ L) (A : CoefficientField d) (hA : IsSmoothCoefficient A)
+theorem integral_homogeneousWeakFamilyResidual_mul  (hA : IsSmoothCoefficient A)
     (D : ParabolicWeakDerivativeFamily d L U u)
     (φ : TimeVelocity d → ℝ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
     (hc : HasCompactSupport φ) :
@@ -68,10 +68,11 @@ theorem integral_homogeneousWeakFamilyResidual_mul {d L : ℕ}
     integral_finsetSum Finset.univ (fun i _ =>
       integrable_finsetSum Finset.univ (fun j _ => hij i j))]
   simp_rw [integral_finsetSum Finset.univ (fun j _ => hij _ j)]
+end
 
 /-- A common weak testing limit preserves the homogeneous equation almost everywhere. -/
 theorem homogeneousWeakFamilyResidual_ae_eq_zero_of_testing_limit {d L : ℕ}
-    (U : Set (TimeVelocity d)) (hU : IsOpen U)
+    (U : HypoellipticAleksandrov.Parabolic.TVSet d) (hU : IsOpen U)
     (hL : 2 ≤ L) (A : CoefficientField d) (hA : IsSmoothCoefficient A)
     (M : ℝ) (hAb : ∀ z ∈ U, ∀ i j, |A z.1 z.2 i j| ≤ M)
     (u : ℕ → TimeVelocity d → ℝ)

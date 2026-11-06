@@ -8,18 +8,17 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Construc
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory
+section
+variable {d : ℕ} {alpha : ℝ} (h : CounterProfileStatement d alpha) (r mu R m t : ℝ) (q : XV d)
 
 /-- The selected first representative on the native carrier. -/
-def constructionExtendedNativeGradient {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r mu R m t : ℝ)
-    (q : XV d) (i : Fin (d + d)) : ℝ :=
+def constructionExtendedNativeGradient  (i : Fin (d + d)) : ℝ :=
   constructionExtendedPackedGradient h r mu R m t ((spatialCoordinateCLE d).symm q) i
 
 /-- The selected second velocity representative on the native carrier. -/
-def constructionExtendedNativeHessian {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r mu R m t : ℝ)
-    (q : XV d) (i k : Fin d) : ℝ :=
+def constructionExtendedNativeHessian  (i k : Fin d) : ℝ :=
   constructionExtendedPackedHessian h r mu R m t ((spatialCoordinateCLE d).symm q) i k
+end
 
 /-- Spatial convolution differentiates to convolution of the selected first representatives. -/
 theorem construction_mollified_first_jet {d : ℕ} (hd : 1 ≤ d)

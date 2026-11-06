@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.Measure.InkSpotsGeometry
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 public import Mathlib.MeasureTheory.Measure.Real
 public import Mathlib.Tactic
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Selection geometry for parabolic ink spots
@@ -43,7 +44,7 @@ private theorem closedSourceBox_subset_closedUnitBox (d : Nat) (q : InkSpotsBox 
   rw [← hsource, ← hunit]
   exact closure_mono hq
 
-private theorem strictDense_source_bounds {d : Nat} {Gamma : Set (TimeVelocity d)}
+private theorem strictDense_source_bounds {d : Nat} {Gamma : HypoellipticAleksandrov.Parabolic.TVSet d}
     {xi : Real} {q : InkSpotsBox d} (hq : inkSpotsStrictDense Gamma xi q) :
     0 ≤ q.baseTime ∧ q.baseTime + q.radius ^ 2 ≤ 1 ∧
       ∀ i, |q.center i| + q.radius ≤ 1 := by
@@ -107,7 +108,7 @@ private theorem sourceBox_measure_ne_top {d : Nat} (q : InkSpotsBox d) :
   exact (isCompact_parabolicClosedBox 1 q.radius q.baseTime q.center).measure_ne_top
 
 private theorem inkSpotsQ3_subset_positive_unit {d : Nat}
-    {Gamma : Set (TimeVelocity d)} {xi eta zeta : Real} {q : InkSpotsBox d}
+    {Gamma : HypoellipticAleksandrov.Parabolic.TVSet d} {xi eta zeta : Real} {q : InkSpotsBox d}
     (heta : 0 < eta) (hzeta : 0 < zeta) (hzeta1 : zeta < 1)
     (hq : inkSpotsStrictDense Gamma xi q) :
     inkSpotsQ3 eta zeta q ⊆ Ioi 0 ×ˢ velocityCube (0 : PDE.Vec d) 1 := by
@@ -160,7 +161,7 @@ private theorem inkSpotsQ3_subset_positive_unit {d : Nat}
         linarith
       _ = 1 := by ring
 
-private theorem inkSpotsD3_subset_positive_unit (d : Nat) (Gamma : Set (TimeVelocity d))
+private theorem inkSpotsD3_subset_positive_unit (d : Nat) (Gamma : HypoellipticAleksandrov.Parabolic.TVSet d)
     (xi eta zeta : Real) (heta : 0 < eta) (hzeta : 0 < zeta) (hzeta1 : zeta < 1) :
     inkSpotsD3 Gamma xi eta zeta ⊆ Ioi 0 ×ˢ velocityCube (0 : PDE.Vec d) 1 := by
   intro z hz
@@ -271,7 +272,7 @@ theorem selected_inkSpots_alpha_pow
 /-- Strict density `a` on a source box transfers to strict density `a^2` on
 the selected shrunk source box. -/
 theorem inkSpotsStrictDense_shrunkSourceBox
-    (d : Nat) (Gamma : Set (TimeVelocity d)) (a alpha : Real)
+    (d : Nat) (Gamma : HypoellipticAleksandrov.Parabolic.TVSet d) (a alpha : Real)
     (q : InkSpotsBox d)
     (ha0 : 0 < a) (ha1 : a < 1)
     (halpha : alpha = (1 + a) ^ (-(1 / ((d : Real) + 2))))
@@ -286,8 +287,8 @@ theorem inkSpotsStrictDense_shrunkSourceBox
     · linarith
     · have hden : 0 < (d : Real) + 2 := by positivity
       exact neg_lt_zero.mpr (one_div_pos.mpr hden)
-  let Q : Set (TimeVelocity d) := inkSpotsSourceBox q
-  let Q' : Set (TimeVelocity d) := inkSpotsSourceBox (inkSpotsShrunkSourceBox alpha q)
+  let Q : HypoellipticAleksandrov.Parabolic.TVSet d := inkSpotsSourceBox q
+  let Q' : HypoellipticAleksandrov.Parabolic.TVSet d := inkSpotsSourceBox (inkSpotsShrunkSourceBox alpha q)
   have hsub : Q' ⊆ Q := inkSpotsSourceBox_shrunk_subset d alpha q halpha0 halpha1.le
   have hQfinite : volume Q ≠ ∞ := sourceBox_measure_ne_top q
   have hQ'finite : volume Q' ≠ ∞ := measure_ne_top_of_subset hsub hQfinite
@@ -341,7 +342,7 @@ theorem inkSpotsStrictDense_shrunkSourceBox
 /-- A strict large-outside volume alternative contains a strict dense source
 box whose forward enlargement contains a point at the time `1 + c`. -/
 theorem exists_inkSpotsQ2_crossing_of_volume_outside
-    (d : Nat) (Gamma : Set (TimeVelocity d)) (a eta zeta c : Real)
+    (d : Nat) (Gamma : HypoellipticAleksandrov.Parabolic.TVSet d) (a eta zeta c : Real)
     (hc : 0 < c)
     (heta0 : 0 < eta) (heta1 : eta < 1)
     (hzeta0 : 0 < zeta) (hzeta1 : zeta < 1)

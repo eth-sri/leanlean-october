@@ -7,6 +7,7 @@ public import Mathlib.MeasureTheory.Constructions.Polish.Basic
 public import Mathlib.MeasureTheory.Function.LpSeminorm.Basic
 public import Mathlib.MeasureTheory.Group.Measure
 public import Mathlib.MeasureTheory.Measure.Lebesgue.EqHaar
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Measure scaling for parabolic affine maps
@@ -80,18 +81,19 @@ private theorem parabolicLinear_det_ne_zero {d : ℕ} {r : ℝ} (hr : 0 < r) :
       TimeVelocity d) ≠ 0 := by
   rw [parabolicLinear_det]
   exact (pow_pos hr _).ne'
+section
+variable {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d)
 
-private theorem parabolicAffine_eq_add_parabolicLinear {d : ℕ}
-    (t₀ : ℝ) (v₀ : PDE.Vec d) (r : ℝ) :
+private theorem parabolicAffine_eq_add_parabolicLinear  (r : ℝ) :
     parabolicAffine t₀ v₀ r = fun z ↦ (t₀, v₀) + parabolicLinear r z := by
   funext z
   rfl
 
 /-- The pushforward of product Lebesgue volume by a positive-radius parabolic
 affine map has the inverse determinant factor. -/
-theorem map_volume_parabolicAffine {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d) {r : ℝ}
+theorem map_volume_parabolicAffine  {r : ℝ}
     (hr : 0 < r) :
-    Measure.map (parabolicAffine t₀ v₀ r) (volume : Measure (TimeVelocity d)) =
+    Measure.map (parabolicAffine t₀ v₀ r) (HypoellipticAleksandrov.Parabolic.TVVolume d) =
       ENNReal.ofReal ((r ^ (d + 2))⁻¹) • volume := by
   have hL_measurable : Measurable (parabolicLinear (d := d) r) :=
     (parabolicLinear (d := d) r).continuous_of_finiteDimensional.measurable
@@ -99,7 +101,7 @@ theorem map_volume_parabolicAffine {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d) {r 
     (continuous_const.add continuous_id).measurable
   let c : ℝ≥0∞ := ENNReal.ofReal ((r ^ (d + 2))⁻¹)
   have hlinear :
-      Measure.map (parabolicLinear (d := d) r) (volume : Measure (TimeVelocity d)) =
+      Measure.map (parabolicLinear (d := d) r) (HypoellipticAleksandrov.Parabolic.TVVolume d) =
         c • volume := by
     change Measure.map
         ((parabolicLinear (d := d) r : TimeVelocity d →ₗ[ℝ] TimeVelocity d) :
@@ -108,7 +110,7 @@ theorem map_volume_parabolicAffine {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d) {r 
       (parabolicLinear_det_ne_zero hr)]
     rw [parabolicLinear_det, abs_inv, abs_of_pos (pow_pos hr _)]
   calc
-    Measure.map (parabolicAffine t₀ v₀ r) (volume : Measure (TimeVelocity d)) =
+    Measure.map (parabolicAffine t₀ v₀ r) (HypoellipticAleksandrov.Parabolic.TVVolume d) =
         Measure.map (fun z : TimeVelocity d ↦ (t₀, v₀) + z)
           (Measure.map (parabolicLinear r) volume) := by
       rw [Measure.map_map htranslation_measurable hL_measurable]
@@ -124,13 +126,13 @@ theorem map_volume_parabolicAffine {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d) {r 
 
 /-- The image of a set under positive-radius parabolic affine scaling has the
 direct determinant factor. -/
-theorem volume_parabolicAffine_image_eq {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d)
-    {r : ℝ} (hr : 0 < r) (s : Set (TimeVelocity d)) :
-    (volume : Measure (TimeVelocity d)) (parabolicAffine t₀ v₀ r '' s) =
+theorem volume_parabolicAffine_image_eq 
+    {r : ℝ} (hr : 0 < r) (s : HypoellipticAleksandrov.Parabolic.TVSet d) :
+    (HypoellipticAleksandrov.Parabolic.TVVolume d) (parabolicAffine t₀ v₀ r '' s) =
       ENNReal.ofReal (r ^ (d + 2)) * volume s := by
   let q : TimeVelocity d := (t₀, v₀)
   calc
-    (volume : Measure (TimeVelocity d)) (parabolicAffine t₀ v₀ r '' s) =
+    (HypoellipticAleksandrov.Parabolic.TVVolume d) (parabolicAffine t₀ v₀ r '' s) =
         volume ((fun z : TimeVelocity d ↦ q + z) '' (parabolicLinear r '' s)) := by
       rw [parabolicAffine_eq_add_parabolicLinear, Set.image_image]
     _ = volume (parabolicLinear r '' s) := by
@@ -139,9 +141,9 @@ theorem volume_parabolicAffine_image_eq {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d
       rw [Measure.addHaar_image_continuousLinearMap, parabolicLinear_det,
         abs_of_pos (pow_pos hr _)]
 
-private theorem map_restrict_parabolicAffine {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d)
-    {r : ℝ} (hr : 0 < r) (s : Set (TimeVelocity d)) :
-    Measure.map (parabolicAffine t₀ v₀ r) ((volume : Measure (TimeVelocity d)).restrict s) =
+private theorem map_restrict_parabolicAffine 
+    {r : ℝ} (hr : 0 < r) (s : HypoellipticAleksandrov.Parabolic.TVSet d) :
+    Measure.map (parabolicAffine t₀ v₀ r) ((HypoellipticAleksandrov.Parabolic.TVVolume d).restrict s) =
       (Measure.map (parabolicAffine t₀ v₀ r) volume).restrict
         (parabolicAffine t₀ v₀ r '' s) := by
   have hpreimage : parabolicAffine t₀ v₀ r ⁻¹' (parabolicAffine t₀ v₀ r '' s) = s :=
@@ -158,8 +160,8 @@ private theorem map_restrict_parabolicAffine {d : ℕ} (t₀ : ℝ) (v₀ : PDE.
 
 /-- The ENNReal restricted-norm pullback formula before its elementary real
 power simplification.  It has no measurability or finiteness premise. -/
-theorem parabolicELpNormOn_pullback_raw {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d)
-    {r : ℝ} (hr : 0 < r) (f : TimeVelocity d → ℝ) (s : Set (TimeVelocity d)) :
+theorem parabolicELpNormOn_pullback_raw 
+    {r : ℝ} (hr : 0 < r) (f : TimeVelocity d → ℝ) (s : HypoellipticAleksandrov.Parabolic.TVSet d) :
     parabolicELpNormOn d
         (fun z ↦ r ^ 2 * f (parabolicAffine t₀ v₀ r z)) s =
       ‖r ^ 2‖ₑ *
@@ -179,6 +181,7 @@ theorem parabolicELpNormOn_pullback_raw {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d
     map_restrict_parabolicAffine t₀ v₀ hr s, map_volume_parabolicAffine t₀ v₀ hr,
     Measure.restrict_smul, eLpNorm_smul_measure_of_ne_zero hc]
   simp only [a, smul_eq_mul, mul_assoc]
+end
 
 private theorem parabolicExponent_toReal (d : ℕ) :
     (parabolicExponent d).toReal = (d : ℝ) + 1 := by
@@ -204,7 +207,7 @@ private theorem parabolic_norm_scaling_factor (d : ℕ) {r : ℝ} (hr : 0 < r) :
 pullback.  The `toReal` norm encoding makes the statement valid also when the
 underlying extended norm is infinite. -/
 theorem parabolicLpNormOn_pullback {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d) {r : ℝ}
-    (hr : 0 < r) (f : TimeVelocity d → ℝ) (s : Set (TimeVelocity d)) :
+    (hr : 0 < r) (f : TimeVelocity d → ℝ) (s : HypoellipticAleksandrov.Parabolic.TVSet d) :
     parabolicLpNormOn d
         (fun z ↦ r ^ 2 * f (parabolicAffine t₀ v₀ r z)) s =
       r ^ ((d : ℝ) / ((d : ℝ) + 1)) *

@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.H10InteriorCaccioppoli
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeGradientProductRepresentative
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimePlateauCutoffDerivativeBound
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! Transport of raw gradient representatives into interior Caccioppoli estimates. -/
 
@@ -15,7 +17,7 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 private theorem gradientCoord_localizedSpatialDifferenceQuotientH10CLM_eq_local
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (hηΩ : tsupport η.toFun ⊆ Ω)
     (hηshift : Set.MapsTo
@@ -39,7 +41,7 @@ private theorem gradientCoord_localizedSpatialDifferenceQuotientH10CLM_eq_local
     PDE.hilbertVectorLpCoord_hilbertVectorLpAssemble] using hgradient
 
 private theorem gradientCoord_localizedSpatialDifferenceQuotientH10CLM_ae_eq_raw_on
-    {d : ℕ} {Ω inner outer O : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer O : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (hOopen : IsOpen O)
     (hOinner : O ⊆ inner)
@@ -114,7 +116,7 @@ private theorem ae_prod_of_ae_ae_of_nullMeasurable
   exact hz.mp hs'
 
 private theorem exists_parabolicMemLpOn_of_product_ae_eq_restrict
-    {d : ℕ} {I J : Set ℝ} {Ω O : Set (PDE.Vec d)}
+    {d : ℕ} {I J : Set ℝ} {Ω O : HypoellipticAleksandrov.VecSet d}
     {f g : TimeVelocity d → ℝ}
     (hf : ParabolicMemLpOn (I ×ˢ Ω) (2 : ℝ≥0∞) f)
     (hJI : J ⊆ I) (hOΩ : O ⊆ Ω)
@@ -131,7 +133,7 @@ private theorem exists_parabolicMemLpOn_of_product_ae_eq_restrict
   exact eLpNorm_mono_measure f (Measure.restrict_mono_set volume hsub)
 
 private theorem norm_hilbertVectorLpCoord_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (j : Fin d)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (j : Fin d)
     (G : PDE.HilbertVectorLp Ω (2 : ℝ≥0∞)) :
     ‖PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j G‖ ≤ ‖G‖ := by
   rw [PDE.hilbertVectorLpCoord]
@@ -149,7 +151,7 @@ private theorem norm_hilbertVectorLpCoord_le
     _ = ‖G‖ := one_mul _
 
 private theorem norm_timeCoordinate_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {μ : Measure ℝ}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {μ : Measure ℝ}
     (j : Fin d)
     (q : Lp (PDE.HilbertVectorLp Ω (2 : ℝ≥0∞)) (2 : ℝ≥0∞) μ) :
     ‖(PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j).compLpL
@@ -196,7 +198,7 @@ private theorem norm_uncurry_toLp_eq_of_ae_slice
         (Lp.memLp q).aestronglyMeasurable).symm
 
 private theorem exists_raw_restrict_norm_sq_le_integral_vector
-    {d : ℕ} {Ω O : Set (PDE.Vec d)}
+    {d : ℕ} {Ω O : HypoellipticAleksandrov.VecSet d}
     (J : Set ℝ) (hOΩ : O ⊆ Ω)
     (q : Lp (PDE.HilbertVectorLp Ω (2 : ℝ≥0∞)) (2 : ℝ≥0∞)
       (volume.restrict J))
@@ -261,7 +263,7 @@ private theorem exists_raw_restrict_norm_sq_le_integral_vector
             (fun τ => q τ) (Lp.memLp q)).symm
 
 private theorem localizedSpatialDifferenceQuotient_aestronglyMeasurable
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω) (T : ℝ)
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (U : TimeVelocity d → ℝ)
@@ -275,7 +277,7 @@ private theorem localizedSpatialDifferenceQuotient_aestronglyMeasurable
       (fun z => localizedSpatialDifferenceQuotient η k h
         (fun y => U (z.1, y)) z.2)
       (timeVelocityVolumeOn (reverseTimeOpenInterval T ×ˢ Ω)) := by
-  let S : Set (TimeVelocity d) := reverseTimeOpenInterval T ×ˢ Ω
+  let S : HypoellipticAleksandrov.Parabolic.TVSet d := reverseTimeOpenInterval T ×ˢ Ω
   have hS : MeasurableSet S := measurableSet_Ioo.prod hΩ.measurableSet
   let E : Lp ℝ (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d)) :=
     Lp.zeroExtendLinearIsometry hS (hU.toLp U)
@@ -351,7 +353,7 @@ private theorem localizedSpatialDifferenceQuotient_aestronglyMeasurable
   exact (hEraw.mono_measure Measure.restrict_le_self).congr hraw.symm
 
 private theorem exists_raw_gradientCoord_spatialDifferenceQuotient_memLp_norm_sq_le
-    {d : ℕ} {Ω inner O : Set (PDE.Vec d)} {Kη : ℝ}
+    {d : ℕ} {Ω inner O : HypoellipticAleksandrov.VecSet d} {Kη : ℝ}
     (hΩ : IsOpen Ω) (T : ℝ)
     (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
     (hOopen : IsOpen O) (hOinner : O ⊆ inner)
@@ -501,7 +503,7 @@ private theorem exists_raw_gradientCoord_spatialDifferenceQuotient_memLp_norm_sq
   rw [hqτ]
 
 private theorem integrable_norm_sq_timewise_clm_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (T : ℝ)
     {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
     (L : H10HilbertGraph hΩ →L[ℝ] E) (u : ReverseTimeL2V hΩ T) :
     Integrable (fun τ => ‖L (u τ)‖ ^ 2) (reverseTimeVolume T) := by
@@ -519,7 +521,7 @@ namespace IsReverseTimeVariationalEnergySolution
 
 /-- Supplies raw gradient-coordinate representatives with uniform interior Caccioppoli bounds. -/
 theorem exists_gradientCoord_representatives_uniform_interiorSpatialDifferenceQuotient_caccioppoli
-    {d : ℕ} {Ω inner O : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner O : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (hd : 0 < d)
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω)

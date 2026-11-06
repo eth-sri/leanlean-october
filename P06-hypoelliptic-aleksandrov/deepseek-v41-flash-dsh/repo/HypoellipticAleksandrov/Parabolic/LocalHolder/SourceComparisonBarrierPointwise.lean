@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonEnergyPointwise
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonBarrierBound
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Transfer of spatial energy barriers to classical representatives
 
@@ -16,7 +18,7 @@ open scoped ENNReal Topology
 
 /-- A continuous spatial envelope of canonical energy values bounds the classical representative. -/
 theorem classicalEnergyRepresentative_abs_le_continuous_barrier {d : ℕ}
-    {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (a T : ℝ) (haT : a < T)
+    {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (a T : ℝ) (haT : a < T)
     (u : ReverseTimeL2V hΩ (T - a)) (g : ReverseTimeL2VStar hΩ (T - a))
     (hdu : HasGelfandWeakTimeDerivative hΩ (T - a) (sub_pos.mpr haT) u g)
     (q : PDE.Vec d → ℝ) (hq : Continuous q)

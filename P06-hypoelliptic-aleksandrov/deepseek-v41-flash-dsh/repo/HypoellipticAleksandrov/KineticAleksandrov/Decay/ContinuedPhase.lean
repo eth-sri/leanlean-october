@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Decay.ContinuedPhaseSta
 public import HypoellipticAleksandrov.KineticAleksandrov.Decay.BlockParameters
 import Mathlib.MeasureTheory.Measure.Module
 import Mathlib.Tactic.Linarith
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Source block phase errors after continuation and trimming -/
 
@@ -17,7 +18,7 @@ open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 
 /-- The two actual corridor phases remain in quarter-width strips after continuation. -/
 theorem block_continued_phase_error {d : ℕ} (hd : 1 ≤ d)
-    (lam Lam m Lb Cstar σ : ℝ) (D : Set (PDE.Vec d))
+    (lam Lam m Lb Cstar σ : ℝ) (D : HypoellipticAleksandrov.VecSet d)
     (B : CoefficientField d) (b : PDE.Vec d → PDE.Vec d)
     (hsetting : SourceSetting lam Lam m Lb D B b) (hC : 0 < Cstar)
     (ξ v0 z0 : PDE.Vec d) (hξ : PDE.vecNormSq ξ = 1)

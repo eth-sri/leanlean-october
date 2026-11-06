@@ -66,7 +66,7 @@ theorem positionVisitsStatement_holds_of_start_time
   · intro q hq
     let g := 2 - alpha
     let F := (1 + 1 / (1 - (1 + g * (q - 1)) / 2)) *
-      (3 : ℝ) ^ (1 - (1 + g * (q - 1)) / 2)
+      3 ^ (1 - (1 + g * (q - 1)) / 2)
     have hprod : g * (q - 1) < 1 := by
       have hh := mul_lt_mul_of_pos_right hg.2 (by linarith [hq.1] : 0 < q - 1)
       change (2 - alpha) * (q - 1) < 1

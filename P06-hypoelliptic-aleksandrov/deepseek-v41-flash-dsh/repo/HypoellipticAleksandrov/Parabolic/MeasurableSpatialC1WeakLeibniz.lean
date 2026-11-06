@@ -8,6 +8,7 @@ public import HypoellipticAleksandrov.Parabolic.WeakDerivativeSpacetimeMollifica
 public import HypoellipticAleksandrov.Parabolic.SpacetimeMollifierL2
 public import HypoellipticAleksandrov.Analysis.L2ProductConvergence
 public import Mathlib.MeasureTheory.Function.LpSpace.Indicator
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Weak Leibniz rule for measurable-time, spatially smooth multipliers
@@ -33,10 +34,11 @@ private theorem ae_restrict_of_forall_mem
     ∀ᵐ x ∂μ.restrict S, P x := by
   filter_upwards [ae_restrict_mem hS] with x hx
   exact hP x hx
+section
+variable {α : Type*} [MeasurableSpace α] {μ : Measure α} {p : ℝ≥0∞} {a f : α → ℝ} {M : ℝ}
 
 private theorem memLp_mul_of_abs_le
-    {α : Type*} [MeasurableSpace α] {μ : Measure α}
-    {p : ℝ≥0∞} {a f : α → ℝ} {M : ℝ}
+    
     (hM : 0 ≤ M) (ha : AEStronglyMeasurable a μ)
     (hf : MemLp f p μ) (haM : ∀ᵐ x ∂μ, |a x| ≤ M) :
     MemLp (fun x => a x * f x) p μ ∧
@@ -51,8 +53,7 @@ private theorem memLp_mul_of_abs_le
     eLpNorm_le_mul_eLpNorm_of_ae_le_mul hmeas hpoint p⟩
 
 private theorem toReal_eLpNorm_mul_le
-    {α : Type*} [MeasurableSpace α] {μ : Measure α}
-    {p : ℝ≥0∞} {a f : α → ℝ} {M : ℝ}
+    
     (hM : 0 ≤ M) (ha : AEStronglyMeasurable a μ)
     (hf : MemLp f p μ) (haM : ∀ᵐ x ∂μ, |a x| ≤ M) :
     MemLp (fun x => a x * f x) p μ ∧
@@ -64,13 +65,14 @@ private theorem toReal_eLpNorm_mul_le
     ENNReal.mul_ne_top ENNReal.ofReal_ne_top hf.eLpNorm_ne_top
   have hr := ENNReal.toReal_mono htop hle
   simpa only [ENNReal.toReal_mul, ENNReal.toReal_ofReal hM] using hr
+end
 
 private theorem aestronglyMeasurable_of_restrict_of_support_subset
-    {d : ℕ} {U : Set (TimeVelocity d)} (hU : MeasurableSet U)
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} (hU : MeasurableSet U)
     {f : TimeVelocity d → ℝ}
     (hf : AEStronglyMeasurable f (timeVelocityVolumeOn U))
     (hsupp : Function.support f ⊆ U) :
-    AEStronglyMeasurable f (volume : Measure (TimeVelocity d)) := by
+    AEStronglyMeasurable f (HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   have hindicator : U.indicator f = f := by
     funext z
     by_cases hz : z ∈ U
@@ -83,7 +85,7 @@ private theorem aestronglyMeasurable_of_restrict_of_support_subset
   exact (aestronglyMeasurable_indicator_iff hU).2 hf
 
 private theorem velocityGradient_eq_zero_of_eq_one_on
-    {d : ℕ} {b : TimeVelocity d → ℝ} {K : Set (TimeVelocity d)}
+    {d : ℕ} {b : TimeVelocity d → ℝ} {K : HypoellipticAleksandrov.Parabolic.TVSet d}
     {δ : ℝ} (hδ : 0 < δ) (hb : Set.EqOn b 1 (Metric.cthickening δ K))
     (k : Fin d) {z : TimeVelocity d} (hz : z ∈ K) :
     velocityGradient b z k = 0 := by
@@ -109,8 +111,8 @@ private theorem velocityGradient_tsupport_subset
 
 private theorem tendsto_integral_spacetimeMollification_mul_fixed
     {d : ℕ} (f g : TimeVelocity d → ℝ)
-    (hf : MemLp f (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d)))
-    (hg : MemLp g (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d))) :
+    (hf : MemLp f (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d))
+    (hg : MemLp g (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d)) :
     Tendsto
       (fun ε : ℝ => ∫ z : TimeVelocity d,
         spacetimeMollification ε f z * g z ∂volume)
@@ -126,14 +128,14 @@ private theorem tendsto_integral_spacetimeMollification_mul_fixed
       SpacetimeMollifierL2.tendsto_eLpNorm_spacetimeMollification_sub f hf
   · have hzero : (fun n : ℝ => eLpNorm
         (fun _ : TimeVelocity d => (0 : ℝ)) (2 : ℝ≥0∞)
-        (volume : Measure (TimeVelocity d))) = fun _ => (0 : ℝ≥0∞) := by
+        (HypoellipticAleksandrov.Parabolic.TVVolume d)) = fun _ => (0 : ℝ≥0∞) := by
       funext n
       exact eLpNorm_zero
     simpa only [sub_self, hzero] using
       (tendsto_const_nhds : Tendsto (fun _ : ℝ => (0 : ℝ≥0∞)) (𝓝[>] 0) (𝓝 0))
 
 private theorem integral_univ_eq_setIntegral_of_support_subset
-    {d : ℕ} {U : Set (TimeVelocity d)} (hU : MeasurableSet U)
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} (hU : MeasurableSet U)
     (f : TimeVelocity d → ℝ) (hsupp : Function.support f ⊆ U) :
     (∫ z : TimeVelocity d, f z ∂volume) = ∫ z in U, f z ∂volume := by
   rw [← integral_indicator hU]
@@ -147,7 +149,7 @@ private theorem integral_univ_eq_setIntegral_of_support_subset
       simp [hz, hfz]
 
 private theorem bounded_weak_mul
-    {d : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} (hU : IsOpen U)
     (k : Fin d) (Bq Bdq : ℝ) (hBq : 0 ≤ Bq) (hBdq : 0 ≤ Bdq)
     (q dq u du : TimeVelocity d → ℝ)
     (hqMeas : AEStronglyMeasurable q (timeVelocityVolumeOn U))
@@ -205,10 +207,10 @@ private theorem bounded_weak_mul
   have hDQMeasU : AEStronglyMeasurable DQ (timeVelocityVolumeOn U) :=
     (hbMeasU.mul hdqMeas).add (hqMeas.mul hdbMeasU)
   have hQMeas : AEStronglyMeasurable Q
-      (volume : Measure (TimeVelocity d)) :=
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) :=
     aestronglyMeasurable_of_restrict_of_support_subset hUmeas hQMeasU hQSupport
   have hDQMeas : AEStronglyMeasurable DQ
-      (volume : Measure (TimeVelocity d)) :=
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) :=
     aestronglyMeasurable_of_restrict_of_support_subset hUmeas hDQMeasU hDQSupport
   obtain ⟨Cb, hCb⟩ := hb.continuous.bounded_above_of_compact_support hbCompact
   have hdbCont : Continuous (fun z => velocityGradient b z k) := by
@@ -254,15 +256,15 @@ private theorem bounded_weak_mul
     exact HasCompactSupport.of_support_subset_isCompact hbCompact.isCompact
       ((subset_tsupport Q).trans
         (tsupport_mul_subset_left (f := b) (g := q)))
-  have hQMem : MemLp Q (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d)) :=
+  have hQMem : MemLp Q (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d) :=
     hQCompact.memLp_of_bound hQMeas (|Cb| * Bq) (Eventually.of_forall hQPoint)
   have hDQCompact : HasCompactSupport DQ := by
     exact HasCompactSupport.of_support_subset_isCompact hbCompact.isCompact
       ((subset_tsupport _).trans hDQSuppB)
-  have hDQMem : MemLp DQ (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d)) :=
+  have hDQMem : MemLp DQ (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d) :=
     hDQCompact.memLp_of_bound hDQMeas (|Cb| * Bdq + Bq * |Cdb|)
       (Eventually.of_forall hDQPoint)
-  have hφTop : MemLp φ ∞ (volume : Measure (TimeVelocity d)) :=
+  have hφTop : MemLp φ ∞ (HypoellipticAleksandrov.Parabolic.TVVolume d) :=
     hφ.continuous.memLp_top_of_hasCompactSupport hφCompact volume
   have hgradCont : Continuous (fun z => velocityGradient φ z k) := by
     unfold velocityGradient
@@ -271,7 +273,7 @@ private theorem bounded_weak_mul
     exact HasCompactSupport.of_support_subset_isCompact hφCompact.isCompact
       ((subset_tsupport _).trans (velocityGradient_tsupport_subset φ k))
   have hgradTop : MemLp (fun z => velocityGradient φ z k) ∞
-      (volume : Measure (TimeVelocity d)) :=
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) :=
     hgradCont.memLp_top_of_hasCompactSupport hgradCompact volume
   have huφR : ParabolicMemLpOn U 2 (fun z => u z * φ z) := by
     simpa only [mul_comm] using hu.mul' (hφTop.restrict U)
@@ -418,7 +420,7 @@ private theorem bounded_weak_mul
 /-- A scalar that is `C¹` on an open time--velocity carrier has its literal
 velocity derivative as its raw weak velocity derivative there. -/
 theorem contDiffOn_one_hasWeakVelocityPartialDerivOn
-    {d : ℕ} (U : Set (TimeVelocity d)) (hU : IsOpen U)
+    {d : ℕ} (U : HypoellipticAleksandrov.Parabolic.TVSet d) (hU : IsOpen U)
     (i : Fin d)
     (q : TimeVelocity d → ℝ) (hq : ContDiffOn ℝ 1 q U) :
     HasWeakVelocityPartialDerivOn U i q
@@ -514,7 +516,7 @@ theorem contDiffOn_one_hasWeakVelocityPartialDerivOn
 /-- A bounded `C¹` multiplier obeys the weak velocity Leibniz rule on an
 arbitrary open carrier, with sharp componentwise `L²` bounds. -/
 theorem velocityC1_mul_hasWeakVelocityPartialDerivOn_memLp_eLpNorm_le
-    {d : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} (hU : IsOpen U)
     (i : Fin d)
     (Bq Bdi : ℝ) (hBq : 0 ≤ Bq) (hBdi : 0 ≤ Bdi)
     (q : TimeVelocity d → ℝ) (hqC1 : ContDiffOn ℝ 1 q U)

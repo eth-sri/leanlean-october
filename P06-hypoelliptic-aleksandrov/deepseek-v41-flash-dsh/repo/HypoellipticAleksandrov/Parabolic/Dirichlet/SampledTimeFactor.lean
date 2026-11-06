@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.SeparatedSpacetimeCompactSupport
 public import HypoellipticAleksandrov.Parabolic.Derivatives
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Sampled time factors
@@ -25,7 +27,7 @@ private theorem isClosedEmbedding_fixedSpatial {d : ℕ} (y : PDE.Vec d) :
       simpa using congrArg Prod.fst h) ?_
   intro s hs
   have himage : (fun τ : ℝ => ((τ, y) : TimeVelocity d)) '' s =
-      s ×ˢ ({y} : Set (PDE.Vec d)) := by
+      s ×ˢ ({y} : HypoellipticAleksandrov.VecSet d) := by
     ext z
     simp only [mem_image, mem_prod, mem_singleton_iff]
     constructor
@@ -47,7 +49,7 @@ private theorem hasCompactSupport_fixedSpatial
 /-- A sampled time slice is an original-time scalar test, with its expected derivative and
 support in the compact time projection. -/
 theorem exists_sampledTimeFactor
-    {d : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)} {hO : IsOpen O}
+    {d : ℕ} {τ₁ τ₂ : ℝ} {O : HypoellipticAleksandrov.VecSet d} {hO : IsOpen O}
     (φ : TestFunction (originalTimeOpenCylinderOpens τ₁ τ₂ O hO) ℝ (⊤ : ℕ∞))
     (y : PDE.Vec d) :
     ∃ η : OriginalTimeScalarTest τ₁ τ₂,

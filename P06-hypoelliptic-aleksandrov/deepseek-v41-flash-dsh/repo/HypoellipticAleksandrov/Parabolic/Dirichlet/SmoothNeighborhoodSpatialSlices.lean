@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSmoothness
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Spatial slices of smooth neighborhood data
@@ -21,7 +22,7 @@ open scoped Matrix.Norms.Elementwise
 /-- A matrix-coefficient entry is spatially `C¹` at each time in the closed
 time interval when the matrix field is smooth near the closed cylinder. -/
 theorem contDiffOn_one_coefficientEntry_spatialSlice_of_smoothOnNeighborhood
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ r : ℝ) (a : CoefficientField d)
     (ha : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => a z.1 z.2)
@@ -47,7 +48,7 @@ theorem contDiffOn_one_coefficientEntry_spatialSlice_of_smoothOnNeighborhood
 /-- A vector-field entry is continuous on each spatial slice at a time in the
 closed interval when the vector field is smooth near the closed cylinder. -/
 theorem continuousOn_vectorEntry_spatialSlice_of_smoothOnNeighborhood
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ r : ℝ) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (hb : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => b z.1 z.2)

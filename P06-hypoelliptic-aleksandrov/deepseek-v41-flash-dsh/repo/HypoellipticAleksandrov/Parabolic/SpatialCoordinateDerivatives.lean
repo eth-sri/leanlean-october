@@ -3,6 +3,7 @@ module
 public import Mathlib.Analysis.Calculus.FDeriv.Basic
 public import Mathlib.Analysis.Calculus.ContDiff.Comp
 public import PDEFoundation.Ambient.Basis
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Native spatial coordinate derivatives
@@ -25,7 +26,7 @@ noncomputable def spatialPartial {d : ℕ} (i : Fin d)
 /-- A spatial coordinate derivative lowers finite differentiability by one
 on an open set. -/
 theorem ContDiffOn.spatialPartial
-    {d n : ℕ} {O : Set (PDE.Vec d)} {f : PDE.Vec d → ℝ}
+    {d n : ℕ} {O : HypoellipticAleksandrov.VecSet d} {f : PDE.Vec d → ℝ}
     (hf : ContDiffOn ℝ (n + 1) f O)
     (hO : IsOpen O) (k : Fin d) :
     ContDiffOn ℝ n (spatialPartial k f) O := by

@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.Parabolic.KrylovCylinder
 public import HypoellipticAleksandrov.Parabolic.Scaling
 public import Mathlib.Topology.UniformSpace.HeineCantor
 public import Mathlib.Topology.TietzeExtension
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Inward compression of the unit Krylov cylinder -/
 
@@ -12,15 +13,17 @@ noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.KrylovEstimate
 open Set Filter
 open scoped Topology
+section
+variable {N : ℕ} (t₀ h : ℝ) (v₀ : PDE.Vec N)
 
 /-- Parabolic compression about the time midpoint and velocity centre. -/
-def innerMap {N : ℕ} (t₀ h : ℝ) (v₀ : PDE.Vec N) (ρ : ℝ) :
+def innerMap  (ρ : ℝ) :
     TimeVelocity N → TimeVelocity N :=
   parabolicAffine (t₀ - h + (1 - ρ ^ 2) * h / 2) v₀ ρ
 
 /-- Strict compression sends the closed reference cylinder into the open source cylinder. -/
 theorem innerMap_mapsTo
-    {N : ℕ} (t₀ h : ℝ) (v₀ : PDE.Vec N) (hh : 0 < h)
+     (hh : 0 < h)
     {ρ : ℝ} (hρ : 0 < ρ) (hρ1 : ρ < 1) :
     Set.MapsTo (innerMap t₀ h v₀ ρ)
       (closedParabolicCylinder h (0 : PDE.Vec N))
@@ -44,7 +47,7 @@ theorem innerMap_mapsTo
 
 /-- At radius one, the forward boundary maps to the original bottom and lateral faces. -/
 theorem innerMap_one_boundary
-    {N : ℕ} (t₀ h : ℝ) (v₀ : PDE.Vec N) :
+     :
     Set.MapsTo (innerMap t₀ h v₀ 1)
       (forwardParabolicBoundary h (0 : PDE.Vec N))
       (krylovParabolicBoundary t₀ h v₀) := by
@@ -69,7 +72,7 @@ theorem innerMap_one_boundary
 
 /-- Compression can approximate the uncompressed values uniformly on the closed cylinder. -/
 theorem exists_innerMap_value_close
-    {N : ℕ} (t₀ h : ℝ) (v₀ : PDE.Vec N) (hh : 0 < h)
+     (hh : 0 < h)
     (u : TimeVelocity N → ℝ)
     (hu : ContinuousOn u (krylovClosedCylinder t₀ h v₀))
     {ε : ℝ} (hε : 0 < ε) :
@@ -113,5 +116,6 @@ theorem exists_innerMap_value_close
   dsimp [F] at hdist
   rw [hgeq _ hzρK, hgeq _ hz1K, Real.dist_eq, abs_sub_comm] at hdist
   exact hdist.le
+end
 
 end HypoellipticAleksandrov.Parabolic.KrylovEstimate

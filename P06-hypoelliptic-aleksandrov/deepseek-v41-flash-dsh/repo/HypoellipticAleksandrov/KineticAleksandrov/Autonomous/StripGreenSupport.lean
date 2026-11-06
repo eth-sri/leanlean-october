@@ -34,11 +34,11 @@ private theorem elapsedPhysicalPoint_mem_stripPast (H : Interval) (T : ℝ)
       simpa only [movingDomain, PDE.mem_translateSet_iff_sub_mem, sub_zero] using hw.1
     simpa only [stripPast, elapsedPhysicalPoint, Interval.carrier, PDE.vecOneCoordinate] using
       PDE.mem_oneDimensionalAxisBox_iff.mp hv
+section
+variable (H : Interval) (K : MovingFiberKernel (intervalDomain H) (fun _ => 0)) (T : ℝ) (e : StripPole H (T : WithTop ℝ))
 
 /-- Killing and elapsed-time truncation support the actual measure on the open past strip. -/
-theorem stripGreenOfKernel_compl_stripPast (H : Interval)
-    (K : MovingFiberKernel (intervalDomain H) (fun _ => 0)) (T : ℝ)
-    (e : StripPole H (T : WithTop ℝ)) :
+theorem stripGreenOfKernel_compl_stripPast  :
     stripGreenOfKernel H K T e (stripPast H T)ᶜ = 0 := by
   have hD := (isOpen_stripPast H T).measurableSet
   rw [← lintegral_indicator_one hD.compl]
@@ -52,16 +52,14 @@ theorem stripGreenOfKernel_compl_stripPast (H : Interval)
   filter_upwards [ae_restrict_mem
     (measurableSet_evolutionStateSet (intervalDomain_measurable H) (e.1.time + τ.1))]
     with w hw
-  have hn : elapsedPhysicalPoint e.1.time (τ, w) ∉ (stripPast H T)ᶜ := by
-    exact not_not.mpr (elapsedPhysicalPoint_mem_stripPast H T e τ w hw)
+  have hn : elapsedPhysicalPoint e.1.time (τ, w) ∉ (stripPast H T)ᶜ := not_not.mpr (elapsedPhysicalPoint_mem_stripPast H T e τ w hw)
   exact indicator_of_notMem hn _
 
 /-- Green almost every physical point lies in the open past strip. -/
-theorem stripGreenOfKernel_ae_mem_stripPast (H : Interval)
-    (K : MovingFiberKernel (intervalDomain H) (fun _ => 0)) (T : ℝ)
-    (e : StripPole H (T : WithTop ℝ)) :
+theorem stripGreenOfKernel_ae_mem_stripPast  :
     ∀ᵐ p ∂stripGreenOfKernel H K T e, p ∈ stripPast H T := by
   rw [ae_iff]
   exact stripGreenOfKernel_compl_stripPast H K T e
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

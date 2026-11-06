@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSeparatedTest
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Reverse-time separated bounded-scalar multipliers
@@ -23,12 +24,12 @@ theorem reverseTimeVolume_isFiniteMeasure_ofMemLp (T : ℝ) :
     IsFiniteMeasure (reverseTimeVolume T) := by
   unfold reverseTimeVolume reverseTimeOpenInterval
   infer_instance
+section
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {T : ℝ} (hΩ : IsOpen Ω) (q : ℝ → ℝ) (hq : MeasureTheory.MemLp q (∞ : ℝ≥0∞) (reverseTimeVolume T))
 
 /-- The reverse-time `L²(V)` class represented by `tau ↦ q tau • v`. -/
 noncomputable def reverseTimeSeparatedVTestOfMemLp
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {T : ℝ}
-    (hΩ : IsOpen Ω) (q : ℝ → ℝ)
-    (hq : MeasureTheory.MemLp q (∞ : ℝ≥0∞) (reverseTimeVolume T))
+    
     (v : H10HilbertGraph hΩ) : ReverseTimeL2V hΩ T := by
   letI : IsFiniteMeasure (reverseTimeVolume T) :=
     reverseTimeVolume_isFiniteMeasure_ofMemLp T
@@ -41,9 +42,7 @@ noncomputable def reverseTimeSeparatedVTestOfMemLp
 
 /-- The separated multiplier has the literal scalar-multiple representative. -/
 theorem ae_reverseTimeSeparatedVTestOfMemLp
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {T : ℝ}
-    (hΩ : IsOpen Ω) (q : ℝ → ℝ)
-    (hq : MeasureTheory.MemLp q (∞ : ℝ≥0∞) (reverseTimeVolume T))
+    
     (v : H10HilbertGraph hΩ) :
     reverseTimeSeparatedVTestOfMemLp hΩ q hq v =ᵐ[reverseTimeVolume T]
       fun tau => q tau • v := by
@@ -69,9 +68,7 @@ theorem ae_reverseTimeSeparatedVTestOfMemLp
 
 /-- Separated reverse-time multipliers depend continuously on their spatial vector. -/
 theorem tendsto_reverseTimeSeparatedVTestOfMemLp
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {T : ℝ}
-    (hΩ : IsOpen Ω) (q : ℝ → ℝ)
-    (hq : MeasureTheory.MemLp q (∞ : ℝ≥0∞) (reverseTimeVolume T))
+    
     {vN : ℕ → H10HilbertGraph hΩ} {v : H10HilbertGraph hΩ}
     (hv : Filter.Tendsto vN Filter.atTop (𝓝 v)) :
     Filter.Tendsto
@@ -87,5 +84,6 @@ theorem tendsto_reverseTimeSeparatedVTestOfMemLp
       (MeasureTheory.Lp.constL (2 : ℝ≥0∞) (reverseTimeVolume T) ℝ))
   change Filter.Tendsto (fun n => L (vN n)) Filter.atTop (𝓝 (L v))
   exact L.continuous.tendsto v |>.comp hv
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

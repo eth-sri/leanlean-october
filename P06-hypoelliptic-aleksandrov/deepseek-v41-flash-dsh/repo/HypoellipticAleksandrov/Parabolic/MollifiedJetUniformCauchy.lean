@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.LocalizedHigherJetMollification
 public import HypoellipticAleksandrov.Parabolic.UniformJetCauchyEstimate
 public import Mathlib.Topology.MetricSpace.Cauchy
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 @[expose] public section
 
@@ -18,10 +19,10 @@ private theorem ordinaryRepresentative_memLp_volume_local
     (G : ParabolicWeakDerivativeFamily d (2 * m) Set.univ root)
     (beta : TimeVelocityDerivativeIndex d m) :
     MemLp (G.ordinaryRepresentative beta) (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d)) := by
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   have h := G.ordinaryRepresentative_memLp beta
   change MemLp (G.ordinaryRepresentative beta) (2 : ℝ≥0∞)
-    ((volume : Measure (TimeVelocity d)).restrict Set.univ) at h
+    ((HypoellipticAleksandrov.Parabolic.TVVolume d).restrict Set.univ) at h
   simpa only [Measure.restrict_univ] using h
 
 private theorem coordinateIteratedFDeriv_contDiff_infty_local
@@ -145,7 +146,7 @@ theorem uniformCauchySeqOn_coordinateJet_spacetimeMollification_shrinkingRadius
     {d : ℕ} {root : TimeVelocity d → ℝ}
     (G : ParabolicWeakDerivativeFamily d (2 * (d + 4)) Set.univ root)
     (rho : ℝ) (hrho : 0 < rho)
-    (K : Set (TimeVelocity d)) (hK : IsCompact K)
+    (K : HypoellipticAleksandrov.Parabolic.TVSet d) (hK : IsCompact K)
     (hsupp : ∀ ε, 0 < ε → ε < rho →
       ∀ beta : TimeVelocityDerivativeIndex d (d + 4),
         tsupport (SpacetimeMollifier.spacetimeMollification ε
@@ -180,7 +181,7 @@ theorem uniformCauchySeqOn_coordinateJet_spacetimeMollification_shrinkingRadius
       (eLpNorm
         (SpacetimeMollifier.spacetimeMollification (r n)
             (G.ordinaryRepresentative beta) - G.ordinaryRepresentative beta)
-        (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d)))) atTop (nhds 0) := by
+        (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d))) atTop (nhds 0) := by
     exact (ENNReal.tendsto_toReal ENNReal.zero_ne_top).comp
       ((G.tendsto_eLpNorm_spacetimeMollification_ordinaryRepresentative_sub
           beta).comp
@@ -190,13 +191,13 @@ theorem uniformCauchySeqOn_coordinateJet_spacetimeMollification_shrinkingRadius
         (eLpNorm
           (SpacetimeMollifier.spacetimeMollification (r n)
               (G.ordinaryRepresentative beta) - G.ordinaryRepresentative beta)
-          (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d))) < ε / 2 := by
+          (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d)) < ε / 2 := by
     have hlim := ((tendsto_const_nhds : Tendsto (fun _ : ℕ => C) atTop (nhds C)).mul ht)
     have : Tendsto (fun n => C * ENNReal.toReal
         (eLpNorm
           (SpacetimeMollifier.spacetimeMollification (r n)
               (G.ordinaryRepresentative beta) - G.ordinaryRepresentative beta)
-          (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d)))) atTop (nhds 0) := by
+          (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d))) atTop (nhds 0) := by
       simpa using hlim
     exact (tendsto_order.1 this).2 _ (half_pos hε)
   rw [eventually_atTop] at htail
@@ -256,14 +257,14 @@ theorem uniformCauchySeqOn_coordinateJet_spacetimeMollification_shrinkingRadius
   have hmlim : AEStronglyMeasurable
       (SpacetimeMollifier.spacetimeMollification (r m)
         (G.ordinaryRepresentative beta) - G.ordinaryRepresentative beta)
-      (volume : Measure (TimeVelocity d)) :=
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) :=
     (SpacetimeMollifier.contDiff_spacetimeMollification (hrpos m) _
       (hmmem.locallyIntegrable (by norm_num))).continuous.aestronglyMeasurable.sub
         hmmem.aestronglyMeasurable
   have hnlim : AEStronglyMeasurable
       (SpacetimeMollifier.spacetimeMollification (r n)
         (G.ordinaryRepresentative beta) - G.ordinaryRepresentative beta)
-      (volume : Measure (TimeVelocity d)) :=
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) :=
     (SpacetimeMollifier.contDiff_spacetimeMollification (hrpos n) _
       (hmmem.locallyIntegrable (by norm_num))).continuous.aestronglyMeasurable.sub
         hmmem.aestronglyMeasurable

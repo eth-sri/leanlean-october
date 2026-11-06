@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Scaling.Transport
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.Uniqueness
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Any realization of the rescaled problem is the pushforward
@@ -23,7 +24,7 @@ open HypoellipticAleksandrov
 
 namespace KineticAffineScaling
 
-variable {d : ℕ} {Φ : KineticAffineScaling d} {Ω Ω' : Set (PDE.Vec d)}
+variable {d : ℕ} {Φ : KineticAffineScaling d} {Ω Ω' : HypoellipticAleksandrov.VecSet d}
   {γ γ' : ℝ → PDE.Vec d}
 
 /-- **Kernel transport.**  If `(S, K)` realizes the terminal evolution for `(Ω, γ, B, b)`
@@ -70,9 +71,9 @@ end KineticAffineScaling
 
 /-- The whole space with the stationary curve is mapped to itself by every scaling. -/
 theorem KineticAffineScaling.mapsDomain_wholeSpace {d : ℕ} (Φ : KineticAffineScaling d) :
-    Φ.MapsDomain (Set.univ : Set (PDE.Vec d)) (fun _ => 0) Set.univ (fun _ => 0) := by
+    Φ.MapsDomain (Set.univ : HypoellipticAleksandrov.VecSet d) (fun _ => 0) Set.univ (fun _ => 0) := by
   intro τ
-  have h : ∀ σ : ℝ, movingDomain (Set.univ : Set (PDE.Vec d)) (fun _ => (0 : PDE.Vec d)) σ =
+  have h : ∀ σ : ℝ, movingDomain (Set.univ : HypoellipticAleksandrov.VecSet d) (fun _ => (0 : PDE.Vec d)) σ =
       Set.univ := SectionTwo.movingDomain_wholeSpace d
   rw [h, h, preimage_univ]
 

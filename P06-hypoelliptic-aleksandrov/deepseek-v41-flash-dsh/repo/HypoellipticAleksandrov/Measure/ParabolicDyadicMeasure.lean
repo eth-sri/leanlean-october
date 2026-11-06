@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Measure.ParabolicDyadicGrid
 public import HypoellipticAleksandrov.Measure.TimeVelocity
 public import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Finite parabolic dyadic measure geometry
@@ -32,7 +33,7 @@ namespace HypoellipticAleksandrov.Parabolic
 noncomputable section
 
 /-- The half-open reference rectangle for the parabolic dyadic subdivision. -/
-def parabolicDyadicReferenceCell (d : ℕ) : Set (TimeVelocity d) :=
+def parabolicDyadicReferenceCell (d : ℕ) : HypoellipticAleksandrov.Parabolic.TVSet d :=
   Ioc (0 : ℝ) 1 ×ˢ Set.univ.pi fun _ : Fin d => Ioc (-1 : ℝ) 1
 
 /-- The time width of a generation-`n` parabolic dyadic cell. -/
@@ -44,14 +45,14 @@ def parabolicDyadicVelocityWidth (n : ℕ) : ℝ :=
   2 * ((2 : ℝ) ^ n)⁻¹
 
 /-- The finite, unbundled family of generation-`n` half-open dyadic cells. -/
-def parabolicDyadicGenerationCells (d n : ℕ) : Finset (Set (TimeVelocity d)) := by
+def parabolicDyadicGenerationCells (d n : ℕ) : Finset (HypoellipticAleksandrov.Parabolic.TVSet d) := by
   classical
   exact Finset.univ.image (fun index : ParabolicDyadicIndex d n =>
     parabolicDyadicHalfOpenCell index)
 
 /-- Membership in the finite generation family is exactly representation by an
 address of that generation. -/
-theorem mem_parabolicDyadicGenerationCells_iff {d n : ℕ} {s : Set (TimeVelocity d)} :
+theorem mem_parabolicDyadicGenerationCells_iff {d n : ℕ} {s : HypoellipticAleksandrov.Parabolic.TVSet d} :
     s ∈ parabolicDyadicGenerationCells d n ↔
       ∃ index : ParabolicDyadicIndex d n, parabolicDyadicHalfOpenCell index = s := by
   classical
@@ -564,17 +565,18 @@ theorem tendsto_parabolicDyadicVelocityWidth_atTop :
   simpa only [← inv_pow, mul_zero] using
     (tendsto_pow_atTop_nhds_zero_of_lt_one (show 0 ≤ (2 : ℝ)⁻¹ by positivity)
       (show (2 : ℝ)⁻¹ < 1 by norm_num)).const_mul 2
+section
+variable {d n : ℕ} (index : ParabolicDyadicIndex d n)
 
 /-- The open addressed cell agrees almost everywhere with its half-open
 counterpart under product Lebesgue measure. -/
-theorem parabolicDyadicOpenCell_ae_eq_halfOpenCell {d n : ℕ}
-    (index : ParabolicDyadicIndex d n) :
+theorem parabolicDyadicOpenCell_ae_eq_halfOpenCell  :
     parabolicDyadicOpenCell index =ᵐ[volume] parabolicDyadicHalfOpenCell index := by
   rw [volume_timeVelocity_eq_prod]
   exact Measure.set_prod_ae_eq Ioo_ae_eq_Ioc Measure.pi_Ioo_ae_eq_pi_Ioc
 
 /-- The real volume of an addressed time interval is its exact dyadic width. -/
-theorem volume_parabolicDyadicTimeCell_toReal {d n : ℕ} (index : ParabolicDyadicIndex d n) :
+theorem volume_parabolicDyadicTimeCell_toReal  :
     (volume (parabolicDyadicTimeCell index)).toReal = parabolicDyadicTimeWidth n := by
   have hnonneg : 0 ≤
       ((parabolicDyadicTimeCode n index + 1 : ℝ) / (4 : ℝ) ^ n) -
@@ -587,8 +589,7 @@ theorem volume_parabolicDyadicTimeCell_toReal {d n : ℕ} (index : ParabolicDyad
 
 /-- The real volume of an addressed velocity rectangle is the product of its
 equal coordinate widths. -/
-theorem volume_parabolicDyadicVelocityCell_toReal {d n : ℕ}
-    (index : ParabolicDyadicIndex d n) :
+theorem volume_parabolicDyadicVelocityCell_toReal  :
     (volume (parabolicDyadicVelocityCell index)).toReal =
       (parabolicDyadicVelocityWidth n) ^ d := by
   rw [parabolicDyadicVelocityCell, Real.volume_pi_Ioc_toReal]
@@ -600,8 +601,7 @@ theorem volume_parabolicDyadicVelocityCell_toReal {d n : ℕ}
     exact mul_nonneg (by norm_num) (inv_nonneg.mpr (by positivity))
 
 /-- The product-volume factorization of an addressed half-open cell. -/
-theorem volume_parabolicDyadicHalfOpenCell_toReal_factor {d n : ℕ}
-    (index : ParabolicDyadicIndex d n) :
+theorem volume_parabolicDyadicHalfOpenCell_toReal_factor  :
     (volume (parabolicDyadicHalfOpenCell index)).toReal =
       parabolicDyadicTimeWidth n * (parabolicDyadicVelocityWidth n) ^ d := by
   rw [volume_timeVelocity_eq_prod, parabolicDyadicHalfOpenCell, Measure.prod_prod,
@@ -610,8 +610,7 @@ theorem volume_parabolicDyadicHalfOpenCell_toReal_factor {d n : ℕ}
 
 /-- The real volume of an addressed half-open cell has the source's exact
 parabolic normalization. -/
-theorem volume_parabolicDyadicHalfOpenCell_toReal {d n : ℕ}
-    (index : ParabolicDyadicIndex d n) :
+theorem volume_parabolicDyadicHalfOpenCell_toReal  :
     (volume (parabolicDyadicHalfOpenCell index)).toReal =
       (2 : ℝ) ^ d / (2 : ℝ) ^ ((d + 2) * n) := by
   rw [volume_parabolicDyadicHalfOpenCell_toReal_factor]
@@ -633,7 +632,7 @@ theorem volume_parabolicDyadicHalfOpenCell_toReal {d n : ℕ}
       rw [Nat.mul_comm n d, Nat.add_comm, hexponent]
 
 /-- Two times in one addressed cell differ by at most its exact time width. -/
-theorem abs_sub_le_parabolicDyadicTimeWidth {d n : ℕ} (index : ParabolicDyadicIndex d n)
+theorem abs_sub_le_parabolicDyadicTimeWidth 
     {time time' : ℝ} {velocity velocity' : PDE.Vec d}
     (h : (time, velocity) ∈ parabolicDyadicHalfOpenCell index)
     (h' : (time', velocity') ∈ parabolicDyadicHalfOpenCell index) :
@@ -645,8 +644,7 @@ theorem abs_sub_le_parabolicDyadicTimeWidth {d n : ℕ} (index : ParabolicDyadic
 
 /-- Two velocity coordinates in one addressed cell differ by at most its exact
 coordinate width. -/
-theorem abs_sub_le_parabolicDyadicVelocityWidth {d n : ℕ}
-    (index : ParabolicDyadicIndex d n) (coordinate : Fin d)
+theorem abs_sub_le_parabolicDyadicVelocityWidth  (coordinate : Fin d)
     {time time' : ℝ} {velocity velocity' : PDE.Vec d}
     (h : (time, velocity) ∈ parabolicDyadicHalfOpenCell index)
     (h' : (time', velocity') ∈ parabolicDyadicHalfOpenCell index) :
@@ -657,6 +655,7 @@ theorem abs_sub_le_parabolicDyadicVelocityWidth {d n : ℕ}
   rw [← parabolicDyadicVelocityCell_width index coordinate]
   constructor <;> linarith [h.2 coordinate |>.1, h.2 coordinate |>.2,
     h'.2 coordinate |>.1, h'.2 coordinate |>.2]
+end
 
 end
 

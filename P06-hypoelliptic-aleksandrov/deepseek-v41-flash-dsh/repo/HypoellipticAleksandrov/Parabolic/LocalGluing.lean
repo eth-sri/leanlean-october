@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.Operator
 public import Mathlib.Geometry.Manifold.PartitionOfUnity
 public import Mathlib.Topology.Separation.Regular
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Compact cutoff gluing for local parabolic data
@@ -23,7 +24,7 @@ namespace HypoellipticAleksandrov.Parabolic
 /-- A smooth cutoff which is identically one in a neighbourhood of the compact
 set `K` and has topological support inside the open set `U`. -/
 theorem exists_smooth_cutoff_tsupport_subset
-    {d : ℕ} {K U : Set (TimeVelocity d)}
+    {d : ℕ} {K U : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hK : IsCompact K) (hU : IsOpen U) (hKU : K ⊆ U) :
     ∃ b : TimeVelocity d → ℝ,
       ContDiff ℝ ∞ b ∧
@@ -47,7 +48,7 @@ theorem exists_smooth_cutoff_tsupport_subset
 inside `U` turns a `C²` function on the open set `U` into a literal globally
 `C²` function. -/
 theorem contDiff_cutoff_mul_of_tsupport_subset
-    {d : ℕ} {U : Set (TimeVelocity d)} {b q : TimeVelocity d → ℝ}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {b q : TimeVelocity d → ℝ}
     (hU : IsOpen U) (hb : ContDiff ℝ 2 b) (hbU : tsupport b ⊆ U)
     (hq : ContDiffOn ℝ 2 q U) :
     ContDiff ℝ 2 (fun z => b z * q z) := by
@@ -67,7 +68,7 @@ theorem contDiff_cutoff_mul_of_tsupport_subset
 inside `U` turns a continuous scalar function on `U` into a literal globally
 continuous scalar function. -/
 theorem continuous_cutoff_mul_of_tsupport_subset
-    {d : ℕ} {U : Set (TimeVelocity d)} {b F : TimeVelocity d → ℝ}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {b F : TimeVelocity d → ℝ}
     (hU : IsOpen U) (hb : ContDiff ℝ 2 b) (hbU : tsupport b ⊆ U)
     (hF : ContinuousOn F U) :
     Continuous (fun z => b z * F z) := by
@@ -102,7 +103,7 @@ def cutoffExtendCoefficient {d : ℕ}
 original coefficient is continuous only on the open set containing the
 cutoff's topological support. -/
 theorem continuous_coefficientAt_cutoffExtendCoefficient
-    {d : ℕ} {U : Set (TimeVelocity d)} {b : TimeVelocity d → ℝ}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {b : TimeVelocity d → ℝ}
     {B : CoefficientField d} {lam : ℝ}
     (hU : IsOpen U) (hb : ContDiff ℝ 2 b) (hbU : tsupport b ⊆ U)
     (hB : ContinuousOn (coefficientAt B) U) :
@@ -130,7 +131,7 @@ theorem continuous_coefficientAt_cutoffExtendCoefficient
 /-- On the neighbourhood where the cutoff is one, the literal coefficient
 extension agrees with the original curried coefficient field. -/
 theorem coefficientAt_cutoffExtendCoefficient_eventuallyEq
-    {d : ℕ} {K : Set (TimeVelocity d)} {b : TimeVelocity d → ℝ}
+    {d : ℕ} {K : HypoellipticAleksandrov.Parabolic.TVSet d} {b : TimeVelocity d → ℝ}
     {B : CoefficientField d} {lam : ℝ}
     (hbOne : ∀ᶠ z in 𝓝ˢ K, b z = 1) :
     coefficientAt (cutoffExtendCoefficient b B lam) =ᶠ[𝓝ˢ K] coefficientAt B := by
@@ -140,7 +141,7 @@ theorem coefficientAt_cutoffExtendCoefficient_eventuallyEq
 /-- On the neighbourhood where the cutoff is one, the literal scalar product
 agrees with the original local function. -/
 theorem cutoff_mul_eventuallyEq
-    {d : ℕ} {K : Set (TimeVelocity d)} {b q : TimeVelocity d → ℝ}
+    {d : ℕ} {K : HypoellipticAleksandrov.Parabolic.TVSet d} {b q : TimeVelocity d → ℝ}
     (hbOne : ∀ᶠ z in 𝓝ˢ K, b z = 1) :
     (fun z => b z * q z) =ᶠ[𝓝ˢ K] q := by
   filter_upwards [hbOne] with z hz

@@ -7,6 +7,8 @@ public import HypoellipticAleksandrov.Parabolic.WeakDerivativeSpacetimeMollifica
 public import HypoellipticAleksandrov.Parabolic.SpacetimeMollifierL2
 public import HypoellipticAleksandrov.Analysis.L2ProductConvergence
 public import HypoellipticAleksandrov.Parabolic.WeakJetProduct
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Weak gradient time-energy identity
@@ -27,14 +29,14 @@ namespace HypoellipticAleksandrov.Parabolic.WeakGradientTimeEnergy
 /-- Strong global `L²` convergence descends to every restricted carrier,
 without a measurability or finite-measure assumption on the carrier. -/
 private theorem tendsto_eLpNorm_two_restrict_of_global
-    {d : ℕ} {l : Filter ℝ} (S : Set (TimeVelocity d))
+    {d : ℕ} {l : Filter ℝ} (S : HypoellipticAleksandrov.Parabolic.TVSet d)
     (f : ℝ → TimeVelocity d → ℝ) (f₀ : TimeVelocity d → ℝ)
     (h : Filter.Tendsto
       (fun a => eLpNorm (fun z => f a z - f₀ z) (2 : ℝ≥0∞)
-        (volume : Measure (TimeVelocity d))) l (𝓝 0)) :
+        (HypoellipticAleksandrov.Parabolic.TVVolume d)) l (𝓝 0)) :
     Filter.Tendsto
       (fun a => eLpNorm (fun z => f a z - f₀ z) (2 : ℝ≥0∞)
-        ((volume : Measure (TimeVelocity d)).restrict S)) l (𝓝 0) := by
+        ((HypoellipticAleksandrov.Parabolic.TVVolume d).restrict S)) l (𝓝 0) := by
   exact tendsto_of_tendsto_of_tendsto_of_le_of_le'
     tendsto_const_nhds h
     (Filter.Eventually.of_forall fun _ => bot_le)
@@ -44,16 +46,16 @@ private theorem tendsto_eLpNorm_two_restrict_of_global
 /-- After restriction, multiplication by a fixed `L∞` field preserves
 strong `L²` convergence. -/
 private theorem tendsto_eLpNorm_two_mul_restrict
-    {d : ℕ} {l : Filter ℝ} (S : Set (TimeVelocity d))
+    {d : ℕ} {l : Filter ℝ} (S : HypoellipticAleksandrov.Parabolic.TVSet d)
     (c : TimeVelocity d → ℝ)
     (f : ℝ → TimeVelocity d → ℝ) (f₀ : TimeVelocity d → ℝ)
-    (hc : MemLp c ∞ ((volume : Measure (TimeVelocity d)).restrict S))
+    (hc : MemLp c ∞ ((HypoellipticAleksandrov.Parabolic.TVVolume d).restrict S))
     (h : Filter.Tendsto
       (fun a => eLpNorm (fun z => f a z - f₀ z) (2 : ℝ≥0∞)
-        ((volume : Measure (TimeVelocity d)).restrict S)) l (𝓝 0)) :
+        ((HypoellipticAleksandrov.Parabolic.TVVolume d).restrict S)) l (𝓝 0)) :
     Filter.Tendsto
       (fun a => eLpNorm (fun z => c z * f a z - c z * f₀ z)
-        (2 : ℝ≥0∞) ((volume : Measure (TimeVelocity d)).restrict S))
+        (2 : ℝ≥0∞) ((HypoellipticAleksandrov.Parabolic.TVVolume d).restrict S))
       l (𝓝 0) := by
   exact HypoellipticAleksandrov.Analysis.tendsto_eLpNorm_mul_sub_mul_of_tendsto_eLpNorm_two
     c f f₀ hc h
@@ -61,23 +63,23 @@ private theorem tendsto_eLpNorm_two_mul_restrict
 /-- Restricted scalar-product integrals converge when both factors converge
 strongly in restricted `L²` and have the corresponding eventual membership. -/
 private theorem tendsto_integral_mul_restrict
-    {d : ℕ} {l : Filter ℝ} (S : Set (TimeVelocity d))
+    {d : ℕ} {l : Filter ℝ} (S : HypoellipticAleksandrov.Parabolic.TVSet d)
     (f g : ℝ → TimeVelocity d → ℝ)
     (f₀ g₀ : TimeVelocity d → ℝ)
     (hf : ∀ᶠ a in l, MemLp (f a) (2 : ℝ≥0∞)
-      ((volume : Measure (TimeVelocity d)).restrict S))
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).restrict S))
     (hg : ∀ᶠ a in l, MemLp (g a) (2 : ℝ≥0∞)
-      ((volume : Measure (TimeVelocity d)).restrict S))
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).restrict S))
     (hf₀ : MemLp f₀ (2 : ℝ≥0∞)
-      ((volume : Measure (TimeVelocity d)).restrict S))
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).restrict S))
     (hg₀ : MemLp g₀ (2 : ℝ≥0∞)
-      ((volume : Measure (TimeVelocity d)).restrict S))
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).restrict S))
     (hft : Filter.Tendsto
       (fun a => eLpNorm (fun z => f a z - f₀ z) (2 : ℝ≥0∞)
-        ((volume : Measure (TimeVelocity d)).restrict S)) l (𝓝 0))
+        ((HypoellipticAleksandrov.Parabolic.TVVolume d).restrict S)) l (𝓝 0))
     (hgt : Filter.Tendsto
       (fun a => eLpNorm (fun z => g a z - g₀ z) (2 : ℝ≥0∞)
-        ((volume : Measure (TimeVelocity d)).restrict S)) l (𝓝 0)) :
+        ((HypoellipticAleksandrov.Parabolic.TVVolume d).restrict S)) l (𝓝 0)) :
     Filter.Tendsto
       (fun a => ∫ z in S, f a z * g a z ∂volume)
       l (𝓝 (∫ z in S, f₀ z * g₀ z ∂volume)) := by
@@ -87,34 +89,34 @@ private theorem tendsto_integral_mul_restrict
 /-- A fixed bounded coefficient may be absorbed into the first factor of a
 restricted `L² × L²` product limit. -/
 private theorem tendsto_integral_fixed_mul_mul_restrict
-    {d : ℕ} {l : Filter ℝ} (S : Set (TimeVelocity d))
+    {d : ℕ} {l : Filter ℝ} (S : HypoellipticAleksandrov.Parabolic.TVSet d)
     (c : TimeVelocity d → ℝ)
     (f g : ℝ → TimeVelocity d → ℝ)
     (f₀ g₀ : TimeVelocity d → ℝ)
-    (hc : MemLp c ∞ ((volume : Measure (TimeVelocity d)).restrict S))
+    (hc : MemLp c ∞ ((HypoellipticAleksandrov.Parabolic.TVVolume d).restrict S))
     (hf : ∀ᶠ a in l, MemLp (f a) (2 : ℝ≥0∞)
-      ((volume : Measure (TimeVelocity d)).restrict S))
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).restrict S))
     (hg : ∀ᶠ a in l, MemLp (g a) (2 : ℝ≥0∞)
-      ((volume : Measure (TimeVelocity d)).restrict S))
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).restrict S))
     (hf₀ : MemLp f₀ (2 : ℝ≥0∞)
-      ((volume : Measure (TimeVelocity d)).restrict S))
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).restrict S))
     (hg₀ : MemLp g₀ (2 : ℝ≥0∞)
-      ((volume : Measure (TimeVelocity d)).restrict S))
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).restrict S))
     (hft : Filter.Tendsto
       (fun a => eLpNorm (fun z => f a z - f₀ z) (2 : ℝ≥0∞)
-        ((volume : Measure (TimeVelocity d)).restrict S)) l (𝓝 0))
+        ((HypoellipticAleksandrov.Parabolic.TVVolume d).restrict S)) l (𝓝 0))
     (hgt : Filter.Tendsto
       (fun a => eLpNorm (fun z => g a z - g₀ z) (2 : ℝ≥0∞)
-        ((volume : Measure (TimeVelocity d)).restrict S)) l (𝓝 0)) :
+        ((HypoellipticAleksandrov.Parabolic.TVVolume d).restrict S)) l (𝓝 0)) :
     Filter.Tendsto
       (fun a => ∫ z in S, c z * f a z * g a z ∂volume)
       l (𝓝 (∫ z in S, c z * f₀ z * g₀ z ∂volume)) := by
   have hcf : ∀ᶠ a in l, MemLp (fun z => c z * f a z) (2 : ℝ≥0∞)
-      ((volume : Measure (TimeVelocity d)).restrict S) := by
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).restrict S) := by
     filter_upwards [hf] with a hfa
     simpa only [mul_comm] using hfa.mul' hc
   have hcf₀ : MemLp (fun z => c z * f₀ z) (2 : ℝ≥0∞)
-      ((volume : Measure (TimeVelocity d)).restrict S) := by
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).restrict S) := by
     simpa only [mul_comm] using hf₀.mul' hc
   have hcft := tendsto_eLpNorm_two_mul_restrict S c f f₀ hc hft
   exact tendsto_integral_mul_restrict S
@@ -135,11 +137,11 @@ private theorem tendsto_sum_coordinates
 and spatial factors are continuous and compactly supported.  In particular,
 compactness is never falsely attributed to the time factor pulled back alone. -/
 private theorem separated_multiplier_memLp_top_restrict
-    {d : ℕ} (S : Set (TimeVelocity d))
+    {d : ℕ} (S : HypoellipticAleksandrov.Parabolic.TVSet d)
     (a : ℝ → ℝ) (ha : Continuous a) (haCompact : HasCompactSupport a)
     (c : PDE.Vec d → ℝ) (hc : Continuous c) (hcCompact : HasCompactSupport c) :
     MemLp (fun z : TimeVelocity d => a z.1 * c z.2) ∞
-      ((volume : Measure (TimeVelocity d)).restrict S) := by
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).restrict S) := by
   have hcont : Continuous (fun z : TimeVelocity d => a z.1 * c z.2) :=
     (ha.comp continuous_fst).mul (hc.comp continuous_snd)
   have hcompact : HasCompactSupport (fun z : TimeVelocity d => a z.1 * c z.2) := by
@@ -161,7 +163,7 @@ private theorem separated_multiplier_memLp_top_restrict
 bounded on every restricted carrier, with compactness supplied in both time
 and velocity variables. -/
 private theorem concrete_energy_multipliers_memLp_top
-    {d : ℕ} (S : Set (TimeVelocity d))
+    {d : ℕ} (S : HypoellipticAleksandrov.Parabolic.TVSet d)
     (η : PDE.Vec d → ℝ) (hη : ContDiff ℝ (⊤ : ℕ∞) η)
     (hηCompact : HasCompactSupport η)
     (ζ : ℝ → ℝ) (hζ : ContDiff ℝ (⊤ : ℕ∞) ζ)
@@ -169,11 +171,11 @@ private theorem concrete_energy_multipliers_memLp_top
     (∀ i : Fin d, MemLp
       (fun z : TimeVelocity d => (-2 : ℝ) * ζ z.1 *
         (η z.2 * spatialPartial i η z.2)) ∞
-      ((volume : Measure (TimeVelocity d)).restrict S)) ∧
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).restrict S)) ∧
     MemLp (fun z : TimeVelocity d => (-1 : ℝ) * ζ z.1 * η z.2 ^ 2) ∞
-      ((volume : Measure (TimeVelocity d)).restrict S) ∧
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).restrict S) ∧
     MemLp (fun z : TimeVelocity d => _root_.deriv ζ z.1 * η z.2 ^ 2) ∞
-      ((volume : Measure (TimeVelocity d)).restrict S) := by
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).restrict S) := by
   have hpartialCont (i : Fin d) : Continuous (spatialPartial i η) := by
     unfold spatialPartial
     simpa using (hη.continuous_fderiv (by simp)).clm_apply continuous_const
@@ -219,18 +221,18 @@ private theorem concrete_energy_multipliers_memLp_top
       _ hetaSqCont hetaSqCompact
 
 private theorem eventually_spacetimeMollification_memLp_restrict
-    {d : ℕ} (S : Set (TimeVelocity d)) (f : TimeVelocity d → ℝ)
-    (hf : MemLp f (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d))) :
+    {d : ℕ} (S : HypoellipticAleksandrov.Parabolic.TVSet d) (f : TimeVelocity d → ℝ)
+    (hf : MemLp f (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d)) :
     ∀ᶠ ε : ℝ in 𝓝[>] 0, MemLp
       (SpacetimeMollifier.spacetimeMollification ε f) (2 : ℝ≥0∞)
-      ((volume : Measure (TimeVelocity d)).restrict S) := by
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).restrict S) := by
   filter_upwards [self_mem_nhdsWithin] with ε hε
   exact (SpacetimeMollifierL2.spacetimeMollification_memLp hε f hf).restrict S
 
 /-- The three literal coordinate products used by the weak energy identity
 converge for the common positive-radius spacetime mollifier. -/
 private theorem coordinate_energy_product_limits
-    {d : ℕ} (S : Set (TimeVelocity d))
+    {d : ℕ} (S : HypoellipticAleksandrov.Parabolic.TVSet d)
     (η : PDE.Vec d → ℝ) (hη : ContDiff ℝ (⊤ : ℕ∞) η)
     (hηCompact : HasCompactSupport η)
     (ζ : ℝ → ℝ) (hζ : ContDiff ℝ (⊤ : ℕ∞) ζ)
@@ -288,7 +290,7 @@ private theorem coordinate_energy_product_limits
 /-- The three coordinate limits assemble into the exact finite sums used on
 the two sides of the localized weak energy identity. -/
 private theorem summed_energy_product_limits
-    {d : ℕ} (S : Set (TimeVelocity d))
+    {d : ℕ} (S : HypoellipticAleksandrov.Parabolic.TVSet d)
     (η : PDE.Vec d → ℝ) (hη : ContDiff ℝ (⊤ : ℕ∞) η)
     (hηCompact : HasCompactSupport η)
     (ζ : ℝ → ℝ) (hζ : ContDiff ℝ (⊤ : ℕ∞) ζ)
@@ -332,18 +334,18 @@ private theorem summed_energy_product_limits
 divergence and gradient-square presentation; every integral rewrite is backed
 by explicit `L² × L²` integrability. -/
 private theorem energy_coordinate_integral_algebra
-    {d : ℕ} (S : Set (TimeVelocity d))
+    {d : ℕ} (S : HypoellipticAleksandrov.Parabolic.TVSet d)
     (η : PDE.Vec d → ℝ) (hη : ContDiff ℝ (⊤ : ℕ∞) η)
     (hηCompact : HasCompactSupport η)
     (ζ : ℝ → ℝ) (hζ : ContDiff ℝ (⊤ : ℕ∞) ζ)
     (hζCompact : HasCompactSupport ζ)
     (rt : TimeVelocity d → ℝ)
     (ri rii : Fin d → TimeVelocity d → ℝ)
-    (hrt : MemLp rt (2 : ℝ≥0∞) ((volume : Measure (TimeVelocity d)).restrict S))
+    (hrt : MemLp rt (2 : ℝ≥0∞) ((HypoellipticAleksandrov.Parabolic.TVVolume d).restrict S))
     (hri : ∀ i, MemLp (ri i) (2 : ℝ≥0∞)
-      ((volume : Measure (TimeVelocity d)).restrict S))
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).restrict S))
     (hrii : ∀ i, MemLp (rii i) (2 : ℝ≥0∞)
-      ((volume : Measure (TimeVelocity d)).restrict S)) :
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).restrict S)) :
     (∑ i : Fin d,
         ((∫ z in S, ((-2 : ℝ) * ζ z.1 *
             (η z.2 * spatialPartial i η z.2)) * rt z * ri i z ∂volume) +
@@ -356,7 +358,7 @@ private theorem energy_coordinate_integral_algebra
         (_root_.deriv ζ z.1 * η z.2 ^ 2) * ri i z * ri i z ∂volume) =
       ∫ z in S, _root_.deriv ζ z.1 * η z.2 ^ 2 *
         ∑ i : Fin d, ri i z ^ 2 ∂volume := by
-  let μ := (volume : Measure (TimeVelocity d)).restrict S
+  let μ := (HypoellipticAleksandrov.Parabolic.TVVolume d).restrict S
   rcases concrete_energy_multipliers_memLp_top S η hη hηCompact ζ hζ hζCompact with
     ⟨hc₁, hc₂, hc₃⟩
   let A : Fin d → TimeVelocity d → ℝ := fun i z =>
@@ -408,7 +410,7 @@ private theorem energy_coordinate_integral_algebra
 /-- The exact localized divergence and gradient-square integrals converge for
 the one common mollification of all localized representatives. -/
 private theorem localized_energy_integral_limits
-    {d : ℕ} (S : Set (TimeVelocity d))
+    {d : ℕ} (S : HypoellipticAleksandrov.Parabolic.TVSet d)
     (η : PDE.Vec d → ℝ) (hη : ContDiff ℝ (⊤ : ℕ∞) η)
     (hηCompact : HasCompactSupport η)
     (ζ : ℝ → ℝ) (hζ : ContDiff ℝ (⊤ : ℕ∞) ζ)
@@ -476,7 +478,7 @@ private theorem localized_energy_integral_limits
 /-- The two literal weak-energy target integrands are integrable directly
 from the componentwise `L²` assumptions and bounded compact cutoffs. -/
 private theorem weak_energy_targets_integrableOn
-    {d : ℕ} (S : Set (TimeVelocity d))
+    {d : ℕ} (S : HypoellipticAleksandrov.Parabolic.TVSet d)
     (QW : TimeVelocity d → ℝ)
     (QG : TimeVelocity d → PDE.Vec d)
     (QH : TimeVelocity d → PDE.Mat d)
@@ -493,7 +495,7 @@ private theorem weak_energy_targets_integrableOn
       localizedGradientDivergence η QG QH z) S volume ∧
     IntegrableOn (fun z => _root_.deriv ζ z.1 * η z.2 ^ 2 *
       ∑ i : Fin d, QG z i ^ 2) S volume := by
-  let μ := (volume : Measure (TimeVelocity d)).restrict S
+  let μ := (HypoellipticAleksandrov.Parabolic.TVVolume d).restrict S
   rcases concrete_energy_multipliers_memLp_top S η hη hηCompact ζ hζ hζCompact with
     ⟨hc₁, hc₂, hc₃⟩
   let A : Fin d → TimeVelocity d → ℝ := fun i z =>
@@ -584,7 +586,7 @@ private theorem weak_energy_integrands_eq_of_eqOn_cutoff_support
 /-- The supports of the two cutoffs have one common smooth compact
 spacetime plateau inside the literal product cylinder. -/
 private theorem exists_common_cutoff_plateau
-    {d : ℕ} (s₀ s₁ : ℝ) (O : Set (PDE.Vec d)) (hO : IsOpen O)
+    {d : ℕ} (s₀ s₁ : ℝ) (O : HypoellipticAleksandrov.VecSet d) (hO : IsOpen O)
     (η : PDE.Vec d → ℝ) (hηCompact : HasCompactSupport η)
     (hηSub : tsupport η ⊆ O)
     (ζ : ℝ → ℝ) (hζCompact : HasCompactSupport ζ)
@@ -606,7 +608,7 @@ private theorem exists_common_cutoff_plateau
 at every point of the underlying carrier, so its first and second selected
 derivatives vanish there. -/
 private theorem plateau_value_derivatives
-    {d : ℕ} {K : Set (TimeVelocity d)} {δ : ℝ} (hδ : 0 < δ)
+    {d : ℕ} {K : HypoellipticAleksandrov.Parabolic.TVSet d} {δ : ℝ} (hδ : 0 < δ)
     (b : TimeVelocity d → ℝ)
     (hbOne : Set.EqOn b 1 (Metric.cthickening δ K))
     {z : TimeVelocity d} (hz : z ∈ K) :
@@ -645,7 +647,7 @@ private theorem plateau_value_derivatives
 /-- On the plateau carrier, all four localized representatives agree exactly
 with the originally selected representatives. -/
 private theorem localized_jet_eqOn_plateau
-    {d : ℕ} {K : Set (TimeVelocity d)} {δ : ℝ} (hδ : 0 < δ)
+    {d : ℕ} {K : HypoellipticAleksandrov.Parabolic.TVSet d} {δ : ℝ} (hδ : 0 < δ)
     (q QW : TimeVelocity d → ℝ)
     (QG : TimeVelocity d → PDE.Vec d)
     (QH : TimeVelocity d → PDE.Mat d)
@@ -679,7 +681,7 @@ private theorem localized_jet_eqOn_plateau
 /-- Multiplication by one smooth cutoff gives the exact selected weak time
 derivative and every selected first velocity derivative. -/
 private theorem localized_first_jet
-    {d : ℕ} {U : Set (TimeVelocity d)}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     (q QW : TimeVelocity d → ℝ)
     (QG : TimeVelocity d → PDE.Vec d)
     (hqLoc : LocallyIntegrableOn q U volume)
@@ -766,7 +768,7 @@ private theorem velocityGradient_cutoff_gradient
 /-- The localized selected first velocity representative has the exact
 diagonal second weak derivative furnished by the same cutoff. -/
 private theorem localized_diagonal_second_jet
-    {d : ℕ} {U : Set (TimeVelocity d)}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     (q : TimeVelocity d → ℝ)
     (QG : TimeVelocity d → PDE.Vec d)
     (QH : TimeVelocity d → PDE.Mat d)
@@ -875,7 +877,7 @@ private theorem velocityHessian_cutoff_compact
 /-- The four representatives obtained from one smooth compact localization
 inherit the `L²` exponent from the selected weak jet. -/
 private theorem localized_jet_memLp
-    {d : ℕ} {U : Set (TimeVelocity d)}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     (q QW : TimeVelocity d → ℝ)
     (QG : TimeVelocity d → PDE.Vec d)
     (QH : TimeVelocity d → PDE.Mat d)
@@ -951,7 +953,7 @@ private theorem localized_jet_memLp
 /-- One compact localization of the selected diagonal jet globalizes both its
 raw weak relations and its `L²` representatives. -/
 private theorem localized_jet_univ
-    {d : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} (hU : IsOpen U)
     (q QW : TimeVelocity d → ℝ)
     (QG : TimeVelocity d → PDE.Vec d)
     (QH : TimeVelocity d → PDE.Mat d)
@@ -1071,7 +1073,7 @@ private theorem localized_jet_univ
 time, first velocity, and diagonal second derivatives and converges strongly
 to their localized representatives. -/
 private theorem common_mollifier_of_localized_jet
-    {d : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} (hU : IsOpen U)
     (q QW : TimeVelocity d → ℝ)
     (QG : TimeVelocity d → PDE.Vec d)
     (QH : TimeVelocity d → PDE.Mat d)
@@ -1170,7 +1172,7 @@ private theorem common_mollifier_of_localized_jet
 product cylinder. -/
 theorem weakGradient_timeEnergy
     {d : ℕ} (s₀ s₁ : ℝ)
-    (O : Set (PDE.Vec d)) (hO : IsOpen O)
+    (O : HypoellipticAleksandrov.VecSet d) (hO : IsOpen O)
     (q QW : TimeVelocity d → ℝ)
     (QG : TimeVelocity d → PDE.Vec d)
     (QH : TimeVelocity d → PDE.Mat d)
@@ -1219,8 +1221,8 @@ theorem weakGradient_timeEnergy
           _root_.deriv ζ z.1 * η z.2 ^ 2 *
             ∑ i : Fin d, QG z i ^ 2
           ∂volume) := by
-  let U : Set (TimeVelocity d) := Set.Ioo s₀ s₁ ×ˢ O
-  let K : Set (TimeVelocity d) := tsupport ζ ×ˢ tsupport η
+  let U : HypoellipticAleksandrov.Parabolic.TVSet d := Set.Ioo s₀ s₁ ×ˢ O
+  let K : HypoellipticAleksandrov.Parabolic.TVSet d := tsupport ζ ×ˢ tsupport η
   have hU : IsOpen U := isOpen_Ioo.prod hO
   obtain ⟨δ, hδ, b, hb, hbCompact, hbSub, hbOne⟩ :=
     exists_common_cutoff_plateau s₀ s₁ O hO η hηcompact hηsupport

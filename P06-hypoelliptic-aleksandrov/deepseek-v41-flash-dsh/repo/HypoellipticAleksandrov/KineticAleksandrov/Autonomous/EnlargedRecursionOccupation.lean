@@ -10,12 +10,12 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory ProbabilityTheory HypoellipticAleksandrov
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open scoped ENNReal
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
 
 /-- Every killed strip occupation is dominated by the full-space physical occupation. -/
 theorem enlarged_stripGreen_le_fullspace
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (P : Point) (T : ℝ) (hT : 0 < T)
+     (H : Interval) (P : Point) (T : ℝ) (hT : 0 < T)
     (hv : P.velocity 0 ∈ H.carrier) :
     stripGreen hH hLE hlam hLam A H (P.time + T)
       ⟨P, WithTop.coe_lt_coe.mpr (by linarith), hv⟩ ≤
@@ -60,9 +60,7 @@ theorem enlarged_stripGreen_le_fullspace
 
 /-- Every finite enlarged active sum is dominated by the actual full-space occupation. -/
 theorem enlarged_active_occupation_le_fullspace
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T : ℝ) (hT : 0 < T)
+     (c : Clock) (J : Interval) (T : ℝ) (hT : 0 < T)
     (P : Point) (hv : P.velocity 0 ∈ J.carrier) (N : ℕ) :
     (∑ n ∈ Finset.range N,
       enlargedActivePiece hH hLE hlam hLam A c J P.time (P.time + T) P n) ≤
@@ -82,5 +80,6 @@ theorem enlarged_active_occupation_le_fullspace
   exact enlarged_stripGreen_le_fullspace hH hLE hlam hLam A _ P T hT
     (finiteUnionComponentPole J.toFiniteUnion (P.time + T)
       (enlargedVisitPole _ _ ⟨P, hp⟩)).2.2
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

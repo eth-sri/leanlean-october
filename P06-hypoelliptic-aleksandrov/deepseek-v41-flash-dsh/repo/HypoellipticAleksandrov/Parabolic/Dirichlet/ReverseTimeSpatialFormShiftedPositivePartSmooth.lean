@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialFormBounds
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialFormShiftedPositivePart
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Smooth-data shifted positive-part spatial-form inequality
@@ -23,7 +24,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 /-- Smoothness of the scalar coefficient on a bounded closed cylinder supplies
 the fixed-slice shifted positive-part spatial-form inequality. -/
 theorem reverseTimeSpatialForm_apply_shiftedPositivePart_ge_of_smoothOnNeighborhood
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)

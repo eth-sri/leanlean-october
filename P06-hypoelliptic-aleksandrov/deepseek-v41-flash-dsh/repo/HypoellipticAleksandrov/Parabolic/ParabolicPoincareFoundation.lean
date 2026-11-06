@@ -2,6 +2,7 @@ module
 
 public import Mathlib.Analysis.Normed.Group.Bounded
 public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyNorm
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Normalized parabolic moment-projection foundation
@@ -40,7 +41,7 @@ open MeasureTheory
 open scoped BigOperators ENNReal
 
 /-- The literal forward unit coordinate box used by the affine Poincare node. -/
-def parabolicMorreyUnitBox (d : ℕ) : Set (TimeVelocity d) :=
+def parabolicMorreyUnitBox (d : ℕ) : HypoellipticAleksandrov.Parabolic.TVSet d :=
   parabolicBox 1 1 0 0
 
 /-- The ordinary volume average on the fixed unit coordinate box. -/
@@ -88,8 +89,8 @@ theorem Continuous.memLp_parabolicMorreyUnitBox {d : ℕ}
     {f : TimeVelocity d → ℝ} (hf : Continuous f) :
     MemLp f (parabolicExponent d)
       (volume.restrict (parabolicMorreyUnitBox d)) := by
-  let K : Set (TimeVelocity d) :=
-    parabolicClosedBox 1 1 0 (0 : PDE.Vec d)
+  let K : HypoellipticAleksandrov.Parabolic.TVSet d :=
+    parabolicClosedBox 1 1 0 0
   have hKcompact : IsCompact K :=
     isCompact_parabolicClosedBox 1 1 0 (0 : PDE.Vec d)
   have hKmeasurable : MeasurableSet K := hKcompact.measurableSet

@@ -40,10 +40,11 @@ theorem kineticPullbackCoefficient_bounds {d : ℕ} {A : CoefficientField d}
   ⟨fun t v => hs (P₀.time + R ^ 2 * t) (P₀.velocity + R • v),
     fun t v => hlo (P₀.time + R ^ 2 * t) (P₀.velocity + R • v),
     fun t v => hhi (P₀.time + R ^ 2 * t) (P₀.velocity + R • v)⟩
+section
+variable {d : ℕ} {u : KineticPoint d → ℝ} {D : Set (KineticPoint d)}
 
 /-- The anisotropic classical class is preserved by the moving affine pullback. -/
-theorem kineticPullback_C112 {d : ℕ} {u : KineticPoint d → ℝ}
-    {D : Set (KineticPoint d)} (hD : IsOpen D) (hu : IsKineticC112On u D)
+theorem kineticPullback_C112  (hD : IsOpen D) (hu : IsKineticC112On u D)
     (P₀ : KineticPoint d) (R : ℝ) :
     IsKineticC112On (kineticPullback u P₀ R) (kineticAffine P₀ R ⁻¹' D) := by
   let E := kineticAffine P₀ R ⁻¹' D
@@ -95,8 +96,7 @@ theorem kineticPullback_C112 {d : ℕ} {u : KineticPoint d → ℝ}
       (fun P hp => kineticPullback_velocityHessian hu P₀ R P hp)
 
 /-- The normalized operator is the original operator multiplied by the time dilation. -/
-theorem kineticPullback_operator {d : ℕ} {u : KineticPoint d → ℝ}
-    {D : Set (KineticPoint d)} (hD : IsOpen D) (hu : IsKineticC112On u D)
+theorem kineticPullback_operator  (hD : IsOpen D) (hu : IsKineticC112On u D)
     (A : CoefficientField d) (P₀ : KineticPoint d) (R : ℝ) (P : KineticPoint d)
     (hp : kineticAffine P₀ R P ∈ D) :
     backwardOperatorOfTimeVelocityCoefficient (kineticPullbackCoefficient A P₀ R)
@@ -124,8 +124,7 @@ theorem kineticPullback_operator {d : ℕ} {u : KineticPoint d → ℝ}
   ring
 
 /-- The classical kinetic operator is continuous on its open solution domain. -/
-theorem continuousOn_backwardOperator {d : ℕ} {u : KineticPoint d → ℝ}
-    {D : Set (KineticPoint d)} (hu : IsKineticC112On u D)
+theorem continuousOn_backwardOperator  (hu : IsKineticC112On u D)
     {A : CoefficientField d} (hA : IsContinuousCoefficient A) :
     ContinuousOn (backwardOperatorOfTimeVelocityCoefficient A u) D := by
   have hc : ContinuousOn (fun P : KineticPoint d => A P.time P.velocity) D :=
@@ -150,8 +149,7 @@ theorem continuousOn_backwardOperator {d : ℕ} {u : KineticPoint d → ℝ}
         ((continuous_apply i).comp_continuousOn hh))
 
 /-- A continuous classical equation holding almost everywhere holds at every interior point. -/
-theorem backwardEquation_pointwise {d : ℕ} {u : KineticPoint d → ℝ}
-    {D : Set (KineticPoint d)} (hD : IsOpen D) (hu : IsKineticC112On u D)
+theorem backwardEquation_pointwise  (hD : IsOpen D) (hu : IsKineticC112On u D)
     {A : CoefficientField d} (hA : IsContinuousCoefficient A)
     (he : ∀ᵐ P ∂volume.restrict D, backwardOperatorOfTimeVelocityCoefficient A u P = 0) :
     ∀ P ∈ D, backwardOperatorOfTimeVelocityCoefficient A u P = 0 :=
@@ -159,6 +157,7 @@ theorem backwardEquation_pointwise {d : ℕ} {u : KineticPoint d → ℝ}
     ((continuousOn_backwardOperator hu hA).comp
       (Evolution.evolutionHomeomorph d).continuous.continuousOn (fun _ h => h))
     continuousOn_const he
+end
 
 /-- Normalization supplies the pointwise homogeneous equation on the unit cylinder. -/
 theorem kineticPullback_normalized {d : ℕ} {u : KineticPoint d → ℝ}

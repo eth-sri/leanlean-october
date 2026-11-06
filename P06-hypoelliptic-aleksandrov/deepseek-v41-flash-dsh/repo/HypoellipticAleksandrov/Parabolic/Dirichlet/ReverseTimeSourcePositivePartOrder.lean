@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.H10PositivePart
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialForm
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Reverse-time source order on positive parts
@@ -22,7 +23,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 /-- The reverse-time source difference is nonpositive on the canonical
 positive part when the second source is almost everywhere below the first. -/
 theorem reverseTimeSourceFunctional_sub_nonpos_of_ae_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω)
     (f₁ f₂ : PDE.ScalarLp Ω (2 : ℝ≥0∞))
     (hf : ∀ᵐ y ∂PDE.volumeOn Ω, f₂ y ≤ f₁ y)

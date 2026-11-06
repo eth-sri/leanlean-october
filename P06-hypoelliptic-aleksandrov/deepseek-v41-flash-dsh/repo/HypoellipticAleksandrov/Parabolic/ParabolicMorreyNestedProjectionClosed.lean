@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyNestedProjection
 public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyDyadicClosedGeometry
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Closed nested parabolic Morrey projection comparison
@@ -49,7 +50,7 @@ theorem parabolicMorreyNestedProjection_abs_sub_le_largeResidual_closed
           (fun w => u w -
             parabolicMorreyBoxAffineProjection t_b v_b r_b u w)
           (parabolicBox 1 r_b t_b v_b) hbig := by
-  let Q : Set (TimeVelocity d) := parabolicBox 1 r_s t_s v_s
+  let Q : HypoellipticAleksandrov.Parabolic.TVSet d := parabolicBox 1 r_s t_s v_s
   let B : Real :=
     (1 + 3 * (d : Real)) *
       (r_b / r_s) ^ (((d : Real) + 2) / ((d : Real) + 1)) *

@@ -3,6 +3,7 @@ module
 import Mathlib.Tactic.Linarith
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TerminalFunctional
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TerminalMeasureRiesz
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # The unique Riesz measure of the terminal evolution
@@ -31,7 +32,7 @@ open scoped CompactlySupported ENNReal
 
 section Outside
 
-variable {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n} {τ : ℝ}
+variable {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n} {γ : ℝ → PDE.Vec n} {τ : ℝ}
 
 /-- The open state fiber is locally compact. -/
 theorem locallyCompactSpace_evolutionState (hΩ : IsOpen Ω) :
@@ -61,7 +62,7 @@ section EvolutionData
 variable (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
 variable (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
 variable (hm : 0 < m) (hmLb : m ≤ L_b)
-variable (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
+variable (Ω : HypoellipticAleksandrov.VecSet n) (γ : ℝ → PDE.Vec n)
 variable (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
 variable (hΩ : IsAdmissibleEvolutionDomain Ω)
 variable (hγ : IsContinuousPiecewiseC1 γ)
@@ -81,10 +82,12 @@ local notation "ℓ_" => terminalFunctional n hn lam Lam m L_b hlam hlamLam hm h
   hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
 local notation "ℓ_spec" => terminalFunctional_spec n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
   hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
+section
+variable (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ)
 
 /-- The Riesz measure on the open terminal fiber of the terminal functional of the source
 state `p` (the terminal functional and `RealRMK.rieszMeasure`). -/
-def terminalFiberRieszMeasure (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
+def terminalFiberRieszMeasure  :
     Measure (EvolutionState Ω γ τ) :=
   have := locallyCompactSpace_evolutionState (γ := γ) (τ := τ)
     (isOpen_of_isAdmissibleEvolutionDomain hΩ)
@@ -92,7 +95,7 @@ def terminalFiberRieszMeasure (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionSt
 
 /-- The Riesz measure of the terminal functional has mass at most one. -/
 theorem terminalFiberRieszMeasure_univ_le_one
-    (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
+     :
     terminalFiberRieszMeasure n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p univ ≤ 1 :=
   have := locallyCompactSpace_evolutionState (γ := γ) (τ := τ)
@@ -101,7 +104,7 @@ theorem terminalFiberRieszMeasure_univ_le_one
 
 /-- The Riesz measure of the terminal functional is finite. -/
 theorem isFiniteMeasure_terminalFiberRieszMeasure
-    (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
+     :
     IsFiniteMeasure (terminalFiberRieszMeasure n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p) :=
   ⟨(terminalFiberRieszMeasure_univ_le_one n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
@@ -110,13 +113,14 @@ theorem isFiniteMeasure_terminalFiberRieszMeasure
 
 /-- The integral of a `C_c` test against the Riesz measure is the value of the functional. -/
 theorem integral_terminalFiberRieszMeasure
-    (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) (f : C_c(EvolutionState Ω γ τ, ℝ)) :
+     (f : C_c(EvolutionState Ω γ τ, ℝ)) :
     ∫ x, f x ∂(terminalFiberRieszMeasure n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p) =
       ℓ_ σ τ hστ p f :=
   have := locallyCompactSpace_evolutionState (γ := γ) (τ := τ)
     (isOpen_of_isAdmissibleEvolutionDomain hΩ)
   RealRMK.integral_rieszMeasure (ℓ_ σ τ hστ p) f
+end
 
 /-- The pushed-forward Riesz measure satisfies the characterization of the terminal measure. -/
 theorem map_terminalFiberRieszMeasure_spec (q : EvolutionQuery Ω γ) :

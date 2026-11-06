@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Scaling.Affine
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonCalculus
 import Mathlib.Analysis.Calculus.Deriv.Mul
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # The scaled transported operator (companion paper, (2.11))
@@ -69,9 +70,11 @@ theorem sliceHessian_affine {g : PDE.Vec d → ℝ} {y₀ : PDE.Vec d} {c : ℝ}
   simp only [smul_apply, ContinuousLinearMap.comp_apply,
     ContinuousLinearMap.id_apply, map_smul, smul_eq_mul]
   ring
+section
+variable {u : KineticPoint d → ℝ} {p : KineticPoint d}
 
 /-- Time derivative at a point of differentiability of the raw lift. -/
-theorem kineticTimeDerivative_eq_fderiv {u : KineticPoint d → ℝ} {p : KineticPoint d}
+theorem kineticTimeDerivative_eq_fderiv 
     (hu : DifferentiableAt ℝ (rawLift u) (rawPoint p)) :
     kineticTimeDerivative u p = fderiv ℝ (rawLift u) (rawPoint p) (1, (0, 0)) := by
   have hcurve : HasDerivAt (fun r : ℝ => ((r, (p.position, p.velocity)) :
@@ -80,7 +83,7 @@ theorem kineticTimeDerivative_eq_fderiv {u : KineticPoint d → ℝ} {p : Kineti
   exact (hu.hasFDerivAt.comp_hasDerivAt p.time hcurve).deriv
 
 /-- The velocity slice is differentiable, with the derivative of the raw lift. -/
-theorem hasFDerivAt_velocitySlice {u : KineticPoint d → ℝ} {p : KineticPoint d}
+theorem hasFDerivAt_velocitySlice 
     (hu : DifferentiableAt ℝ (rawLift u) (rawPoint p)) :
     HasFDerivAt (fun v : PDE.Vec d => u ⟨p.time, p.position, v⟩)
       ((fderiv ℝ (rawLift u) (rawPoint p)).comp
@@ -95,7 +98,7 @@ theorem hasFDerivAt_velocitySlice {u : KineticPoint d → ℝ} {p : KineticPoint
   exact hu.hasFDerivAt.comp p.velocity hι
 
 /-- The velocity slice has the directional derivative of the raw lift. -/
-theorem fderiv_velocitySlice {u : KineticPoint d → ℝ} {p : KineticPoint d}
+theorem fderiv_velocitySlice 
     (hu : DifferentiableAt ℝ (rawLift u) (rawPoint p)) (x : PDE.Vec d) :
     fderiv ℝ (fun v : PDE.Vec d => u ⟨p.time, p.position, v⟩) p.velocity x =
       fderiv ℝ (rawLift u) (rawPoint p) (0, (0, x)) := by
@@ -103,13 +106,14 @@ theorem fderiv_velocitySlice {u : KineticPoint d → ℝ} {p : KineticPoint d}
   simp
 
 /-- The dot product with the velocity gradient is a directional derivative. -/
-theorem vecDot_kineticVelocityGradient {u : KineticPoint d → ℝ} {p : KineticPoint d}
+theorem vecDot_kineticVelocityGradient 
     (hu : DifferentiableAt ℝ (rawLift u) (rawPoint p)) (x : PDE.Vec d) :
     PDE.vecDot x (kineticVelocityGradient u p) =
       fderiv ℝ (rawLift u) (rawPoint p) (0, (0, x)) := by
   rw [← fderiv_velocitySlice hu x, PDE.fderiv_apply_eq_vecDot_classicalGradient]
   rw [PDE.vecDot_comm]
   rfl
+end
 
 theorem vecDot_sub_left (x y z : PDE.Vec d) :
     PDE.vecDot (x - y) z = PDE.vecDot x z - PDE.vecDot y z := by

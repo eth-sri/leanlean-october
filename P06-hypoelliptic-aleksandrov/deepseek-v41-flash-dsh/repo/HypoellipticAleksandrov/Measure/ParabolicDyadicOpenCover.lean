@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Measure.ParabolicDyadicAddress
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Open covers from parabolic dyadic addresses
@@ -21,15 +22,15 @@ noncomputable section
 
 /-- The part of a half-open addressed cell omitted by its open interior. -/
 def parabolicDyadicAddressBoundary {d : Nat}
-    (a : ParabolicDyadicAddress d) : Set (TimeVelocity d) :=
+    (a : ParabolicDyadicAddress d) : HypoellipticAleksandrov.Parabolic.TVSet d :=
   parabolicDyadicHalfOpenCell a.2 \ parabolicDyadicOpenCell a.2
 
 /-- The countable union of all addressed parabolic dyadic boundaries. -/
-def parabolicDyadicAllBoundary (d : Nat) : Set (TimeVelocity d) :=
+def parabolicDyadicAllBoundary (d : Nat) : HypoellipticAleksandrov.Parabolic.TVSet d :=
   ⋃ a : ParabolicDyadicAddress d, parabolicDyadicAddressBoundary a
 
 /-- The non-root addressed cells that first become wholly contained in `U`. -/
-def parabolicDyadicFirstEntry {d : Nat} (U : Set (TimeVelocity d)) :
+def parabolicDyadicFirstEntry {d : Nat} (U : HypoellipticAleksandrov.Parabolic.TVSet d) :
     Set (ParabolicDyadicAddress d) :=
   fun a => match a with
     | ⟨0, _⟩ => False
@@ -38,7 +39,7 @@ def parabolicDyadicFirstEntry {d : Nat} (U : Set (TimeVelocity d)) :
           ¬ parabolicDyadicOpenCell (parabolicDyadicParent index) ⊆ U
 
 private theorem parabolicDyadicOpenCell_subset_of_firstEntry {d : Nat}
-    {U : Set (TimeVelocity d)} {a : ParabolicDyadicAddress d}
+    {U : HypoellipticAleksandrov.Parabolic.TVSet d} {a : ParabolicDyadicAddress d}
     (ha : a ∈ parabolicDyadicFirstEntry U) : parabolicDyadicOpenCell a.2 ⊆ U := by
   rcases a with ⟨n, index⟩
   cases n with
@@ -115,7 +116,7 @@ theorem parabolicDyadicOpenCell_subset_of_addressPrefix {d : Nat}
   exact parabolicDyadicOpenCell_subset_truncate hmn b.2
 
 /-- First-entry addresses are an antichain for the address-prefix relation. -/
-theorem isAntichain_parabolicDyadicFirstEntry {d : Nat} (U : Set (TimeVelocity d)) :
+theorem isAntichain_parabolicDyadicFirstEntry {d : Nat} (U : HypoellipticAleksandrov.Parabolic.TVSet d) :
     IsAntichain (parabolicDyadicAddressPrefix (d := d))
       (parabolicDyadicFirstEntry U) := by
   rintro ⟨m, a⟩ ha ⟨n, b⟩ hb hne hab
@@ -163,7 +164,7 @@ theorem isAntichain_parabolicDyadicFirstEntry {d : Nat} (U : Set (TimeVelocity d
 
 /-- Open cells indexed by distinct first entries are pairwise disjoint. -/
 theorem pairwiseDisjoint_parabolicDyadicFirstEntry_openCell {d : Nat}
-    (U : Set (TimeVelocity d)) :
+    (U : HypoellipticAleksandrov.Parabolic.TVSet d) :
     (parabolicDyadicFirstEntry U).Pairwise
       (Disjoint on (fun a : ParabolicDyadicAddress d => parabolicDyadicOpenCell a.2)) := by
   rintro a ha b hb hab
@@ -176,7 +177,7 @@ theorem pairwiseDisjoint_parabolicDyadicFirstEntry_openCell {d : Nat}
 /-- An open set captures an interior dyadic cell around each point off every
 addressed boundary. -/
 theorem exists_parabolicDyadicOpenCell_subset_of_mem_isOpen_off_boundary
-    (d : Nat) (U : Set (TimeVelocity d)) (hU : IsOpen U)
+    (d : Nat) (U : HypoellipticAleksandrov.Parabolic.TVSet d) (hU : IsOpen U)
     (z : TimeVelocity d) (hzRef : z ∈ parabolicDyadicReferenceCell d)
     (hzU : z ∈ U) (hzBoundary : z ∉ parabolicDyadicAllBoundary d) :
     ∃ a : ParabolicDyadicAddress d,
@@ -207,7 +208,7 @@ theorem exists_parabolicDyadicOpenCell_subset_of_mem_isOpen_off_boundary
       (abs_sub_le_parabolicDyadicVelocityWidth index coordinate hyHalf hzHalf).trans_lt hvelocity
 
 private theorem exists_parabolicDyadicFirstEntry_of_mem_isOpen_off_boundary
-    (d : Nat) (U : Set (TimeVelocity d)) (hU : IsOpen U)
+    (d : Nat) (U : HypoellipticAleksandrov.Parabolic.TVSet d) (hU : IsOpen U)
     (hURef : U ⊆ parabolicDyadicOpenCell (fun i => Fin.elim0 i))
     (hRoot : ¬ parabolicDyadicOpenCell (fun i => Fin.elim0 i) ⊆ U)
     (z : TimeVelocity d) (hzU : z ∈ U) (hzBoundary : z ∉ parabolicDyadicAllBoundary d) :
@@ -251,11 +252,11 @@ private theorem exists_parabolicDyadicFirstEntry_of_mem_isOpen_off_boundary
 /-- Subject to the root exclusion, an open subset of the root is a.e. the
 union of its first-entry open cells. -/
 theorem ae_eq_iUnion_parabolicDyadicFirstEntry_openCell
-    (d : Nat) (U : Set (TimeVelocity d)) (hU : IsOpen U)
+    (d : Nat) (U : HypoellipticAleksandrov.Parabolic.TVSet d) (hU : IsOpen U)
     (hURef : U ⊆ parabolicDyadicOpenCell (fun i => Fin.elim0 i))
     (hRoot : ¬ parabolicDyadicOpenCell (fun i => Fin.elim0 i) ⊆ U) :
     U =ᵐ[volume] ⋃ a ∈ parabolicDyadicFirstEntry U, parabolicDyadicOpenCell a.2 := by
-  let V : Set (TimeVelocity d) :=
+  let V : HypoellipticAleksandrov.Parabolic.TVSet d :=
     ⋃ a ∈ parabolicDyadicFirstEntry U, parabolicDyadicOpenCell a.2
   have hVsub : V ⊆ U := by
     intro z hz

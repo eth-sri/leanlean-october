@@ -31,7 +31,7 @@ theorem memLp_mul_eLpNorm_toReal_le_of_ae_abs_le
   have hmeas : AEStronglyMeasurable (fun x => a x * f x) μ := ha.mul hf.aestronglyMeasurable
   have hpoint : ∀ᵐ x ∂μ, ‖a x * f x‖ ≤ M * ‖f x‖ := by
     filter_upwards [haM] with x hx
-    simpa only [Real.norm_eq_abs, abs_mul] using
+    simpa using
       mul_le_mul hx le_rfl (abs_nonneg (f x)) hM
   have haf : MemLp (fun x => a x * f x) p μ := MemLp.of_le_mul hf hmeas hpoint
   have hle : eLpNorm (fun x => a x * f x) p μ ≤

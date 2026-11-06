@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.OccupationSc
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.OccupationDensityConsumer
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.Duality
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.OccupationDensityEvolution
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Occupation assembly and the exact slab consumer -/
 
@@ -24,7 +26,7 @@ theorem occupation_of_duality (lam Lam : ℝ) (hDuality :
           MeasurableSet.univ (zIndependentCoefficient B) (identityDrift d) S K)
         (_hP : HasParabolicMarginalBundle (wholeSpace d) (fun _ => (0 : PDE.Vec d))
           MeasurableSet.univ (zIndependentCoefficient B) K)
-        (ρ : Measure (PDE.Vec d)) [IsFiniteMeasure ρ],
+        (ρ : HypoellipticAleksandrov.VecMeasure d) [IsFiniteMeasure ρ],
         ∃ g : TimeVelocity d → ℝ, IsOccupationDensity K 0 1 ρ g ∧
           ∀ γ, 1 ≤ γ → γ ≤ ((d : ℝ) + 1) / d →
             MemLp g (ENNReal.ofReal γ)
@@ -38,7 +40,7 @@ theorem occupation_of_duality (lam Lam : ℝ) (hDuality :
           MeasurableSet.univ (zIndependentCoefficient B) (identityDrift d) S K)
         (_hP : HasParabolicMarginalBundle (wholeSpace d) (fun _ => (0 : PDE.Vec d))
           MeasurableSet.univ (zIndependentCoefficient B) K)
-        (ρ : Measure (PDE.Vec d)) [IsFiniteMeasure ρ]
+        (ρ : HypoellipticAleksandrov.VecMeasure d) [IsFiniteMeasure ρ]
         (σ₀ T : ℝ) (_hT : 0 < T),
         ∃ g : TimeVelocity d → ℝ, IsOccupationDensity K σ₀ T ρ g ∧
           ∀ γ, 1 ≤ γ → γ ≤ ((d : ℝ) + 1) / d →
@@ -66,7 +68,7 @@ theorem occupation
           MeasurableSet.univ (zIndependentCoefficient B) (identityDrift d) S K)
         (_hP : HasParabolicMarginalBundle (wholeSpace d) (fun _ => (0 : PDE.Vec d))
           MeasurableSet.univ (zIndependentCoefficient B) K)
-        (ρ : Measure (PDE.Vec d)) [IsFiniteMeasure ρ]
+        (ρ : HypoellipticAleksandrov.VecMeasure d) [IsFiniteMeasure ρ]
         (σ₀ T : ℝ) (_hT : 0 < T),
         ∃ g : TimeVelocity d → ℝ, IsOccupationDensity K σ₀ T ρ g ∧
           ∀ γ, 1 ≤ γ → γ ≤ ((d : ℝ) + 1) / d →

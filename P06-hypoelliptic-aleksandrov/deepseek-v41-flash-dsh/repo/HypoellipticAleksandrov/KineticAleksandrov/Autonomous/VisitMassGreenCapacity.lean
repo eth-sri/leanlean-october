@@ -10,12 +10,12 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.Capacity
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
 
 /-- Actual active Green mixtures are supported in the open active velocity interval. -/
 theorem visitActiveGreenMixture_ae_active
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
+    
     (mu : Measure Point) :
     ∀ᵐ q ∂(visitUnionGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) s T ∘ₘ mu),
       q.velocity 0 ∈ c.active := by
@@ -36,9 +36,7 @@ theorem visitActiveGreenMixture_ae_active
 
 /-- The partial sum of actual active Green masses has the source's velocity capacity bound. -/
 theorem visitActiveGreen_partial_capacity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (hT : s < T)
+     (hT : s < T)
     (P : Point) (hP : s < P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier) (N : ℕ) :
     ∑ n ∈ Finset.range N,
       ((visitUnionGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) s T ∘ₘ
@@ -66,12 +64,12 @@ theorem visitActiveGreen_partial_capacity
     dsimp only [visitActiveInterval]
     ring
   rw [hw] at hc
-  have hnon : 0 ≤ (J.hi - J.lo) / lam * (3 * c.r / 2) := by
-    exact mul_nonneg (div_nonneg (sub_pos.mpr J.ordered).le hlam.le)
+  have hnon : 0 ≤ (J.hi - J.lo) / lam * (3 * c.r / 2) := mul_nonneg (div_nonneg (sub_pos.mpr J.ordered).le hlam.le)
       (div_nonneg (mul_nonneg (by norm_num) c.positive.le) (by norm_num))
   have hb := ENNReal.toReal_mono ENNReal.ofReal_ne_top (hm.trans hc)
   rw [ENNReal.toReal_ofReal hnon, visit_partial_real_mass _ N U hU] at hb
   convert hb using 1
   exact Finset.sum_congr rfl (fun n _ => congrArg ENNReal.toReal (heq n))
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

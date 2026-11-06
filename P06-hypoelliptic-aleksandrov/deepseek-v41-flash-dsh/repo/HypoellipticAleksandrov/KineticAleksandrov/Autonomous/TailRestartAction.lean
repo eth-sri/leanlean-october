@@ -11,9 +11,11 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov SectionTwo ProbabilityTheory
 open scoped ENNReal
+section
+variable (H : Interval) (r : ℝ)
 
 /-- Restore a native state as a valid infinite-horizon pole. -/
-def tailRestartPole (H : Interval) (r : ℝ)
+def tailRestartPole 
     (a : EvolutionState (intervalDomain H) (fun _ => 0) r) : StripPole H ⊤ :=
   ⟨activeRestartPoint H r a, WithTop.coe_lt_top _, by
     have ha := PDE.mem_translateSet_iff_sub_mem.mp a.2.1
@@ -21,30 +23,31 @@ def tailRestartPole (H : Interval) (r : ℝ)
       PDE.mem_oneDimensionalAxisBox_iff, PDE.vecOneCoordinate, Interval.carrier] using ha⟩
 
 /-- The physical restarted pole is Borel in its native state. -/
-theorem measurable_tailRestartPole (H : Interval) (r : ℝ) :
+theorem measurable_tailRestartPole  :
     Measurable (tailRestartPole H r) :=
   (measurable_activeRestartPoint H r).subtype_mk
 
 /-- Native terminal states recover their unchanged coordinates as physical poles. -/
-theorem tailRestartPole_state (H : Interval) (r : ℝ)
+theorem tailRestartPole_state 
     (a : EvolutionState (intervalDomain H) (fun _ => 0) r) :
     stripPoleState H ⊤ (tailRestartPole H r a) = a := by
   apply Subtype.ext
   rfl
 
 /-- The restarted master query is jointly measurable in elapsed time and state. -/
-def tailRestartQuery (H : Interval) (r : ℝ)
+def tailRestartQuery 
     (q : ElapsedTime ⊤ × EvolutionState (intervalDomain H) (fun _ => 0) r) :
     EvolutionQuery (intervalDomain H) (fun _ => 0) :=
   ⟨(r, r + q.1.1, q.2.1), le_add_of_nonneg_right q.1.2.1.le, q.2.2⟩
 
 /-- The jointly varying restart query uses the already fixed Borel master kernel. -/
-theorem measurable_tailRestartQuery (H : Interval) (r : ℝ) :
+theorem measurable_tailRestartQuery  :
     Measurable (tailRestartQuery H r) := by
   apply Measurable.subtype_mk
   exact measurable_const.prodMk
     ((measurable_const.add (measurable_subtype_coe.comp measurable_fst)).prodMk
       (measurable_subtype_coe.comp measurable_snd))
+end
 
 /-- Fubini for the actual restarted master action requires no selected density family. -/
 theorem tailRestart_action_swap (H : Interval)

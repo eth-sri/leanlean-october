@@ -10,12 +10,12 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov Parabolic
 open SectionTwo TheoremA Evolution
 open scoped Classical
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
 
 /-- An active piece spends its potential on its terminal value and strictly earlier exits. -/
 theorem enlarged_active_stopped_step
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b T : ℝ) (hBT : b ≤ T)
+     (c : Clock) (J : Interval) (b T : ℝ) (hBT : b ≤ T)
     (hJ : closure c.active ⊆ J.carrier) (u : Point → ℝ)
     (hphi : IsKineticC112On u {p | p.time < b})
     (hc : ContinuousOn u {p | p.time ≤ b}) (M : ℝ) (hM : 0 ≤ M)
@@ -66,9 +66,7 @@ theorem enlarged_active_stopped_step
 
 /-- A waiting piece returns only the potential carried by poles strictly before observation. -/
 theorem enlarged_waiting_stopped_step
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (b T : ℝ) (hBT : b ≤ T)
+     (H : FiniteIntervalUnion) (b T : ℝ) (hBT : b ≤ T)
     (u : Point → ℝ) (hphi : IsKineticC112On u {p | p.time < b})
     (hc : ContinuousOn u {p | p.time ≤ b}) (M : ℝ) (hM : 0 ≤ M)
     (hbound : ∀ p, p.time ≤ b → |u p| ≤ M)
@@ -100,5 +98,6 @@ theorem enlarged_waiting_stopped_step
     exact (ae_restrict_of_ae
       (enlargedVisitExitKernel_ae_time_gt hH hLE hlam hLam A H T p)).mono
         fun q hq => ite_eq_right (not_le_of_gt ((le_of_not_gt hp).trans_lt hq))
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

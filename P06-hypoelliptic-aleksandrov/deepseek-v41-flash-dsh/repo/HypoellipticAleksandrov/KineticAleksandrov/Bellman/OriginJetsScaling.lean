@@ -10,9 +10,11 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open Set Filter
 open scoped Topology
+section
+variable {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
 
 /-- Homogeneity is an equality on a neighborhood of every punctured point. -/
-theorem IsBellmanHomogeneous.eventually_scaling {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
+theorem IsBellmanHomogeneous.eventually_scaling 
     (h : IsBellmanHomogeneous alpha phi) {r : ℝ} (hr : 0 < r)
     {q : ℝ × ℝ} (hq : q ∈ bellmanPuncturedSet) :
     (fun z => phi (bellmanPlaneDilation r z)) =ᶠ[𝓝 q] fun z => r ^ alpha * phi z := by
@@ -20,7 +22,7 @@ theorem IsBellmanHomogeneous.eventually_scaling {alpha : ℝ} {phi : (ℝ × ℝ
   exact h.2 r hr z hz
 
 /-- The first position jet has homogeneous degree alpha minus three. -/
-theorem IsBellmanHomogeneous.dx_scaling {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
+theorem IsBellmanHomogeneous.dx_scaling 
     (h : IsBellmanHomogeneous alpha phi) {r : ℝ} (hr : 0 < r)
     {q : ℝ × ℝ} (hq : q ∈ bellmanPuncturedSet) :
     bellmanDx phi (bellmanPlaneDilation r q) = r ^ (alpha - 3) * bellmanDx phi q := by
@@ -42,7 +44,7 @@ theorem IsBellmanHomogeneous.dx_scaling {alpha : ℝ} {phi : (ℝ × ℝ) → �
       ring
 
 /-- The first velocity jet has homogeneous degree alpha minus one. -/
-theorem IsBellmanHomogeneous.dv_scaling {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
+theorem IsBellmanHomogeneous.dv_scaling 
     (h : IsBellmanHomogeneous alpha phi) {r : ℝ} (hr : 0 < r)
     {q : ℝ × ℝ} (hq : q ∈ bellmanPuncturedSet) :
     bellmanDv phi (bellmanPlaneDilation r q) = r ^ (alpha - 1) * bellmanDv phi q := by
@@ -67,7 +69,7 @@ theorem IsBellmanHomogeneous.dv_scaling {alpha : ℝ} {phi : (ℝ × ℝ) → �
       rw [← mul_assoc, he]
 
 /-- The second velocity jet has homogeneous degree alpha minus two. -/
-theorem IsBellmanHomogeneous.dvv_scaling {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
+theorem IsBellmanHomogeneous.dvv_scaling 
     (h : IsBellmanHomogeneous alpha phi) {r : ℝ} (hr : 0 < r)
     {q : ℝ × ℝ} (hq : q ∈ bellmanPuncturedSet) :
     bellmanDvv phi (bellmanPlaneDilation r q) = r ^ (alpha - 2) * bellmanDvv phi q := by
@@ -91,5 +93,6 @@ theorem IsBellmanHomogeneous.dvv_scaling {alpha : ℝ} {phi : (ℝ × ℝ) → �
       rw [← mul_assoc, ← Real.rpow_natCast, ← Real.rpow_add hr]
       congr 2
       ring
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

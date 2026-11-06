@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering.InflationVolume
 import Mathlib.MeasureTheory.Group.Prod
 import Mathlib.Tactic
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Volume-preserving transport coordinates and cylinder slices -/
 
@@ -31,10 +32,10 @@ theorem measurePreserving_transport_fiber {d : ℕ} (v : PDE.Vec d) :
       (g := fun t x => x+t • v) ?_ ?_
     · exact (continuous_snd.add (continuous_fst.smul continuous_const)).measurable
     · exact Filter.Eventually.of_forall fun t =>
-        (measurePreserving_add_right (volume : Measure (PDE.Vec d)) (t • v)).map_eq
+        (measurePreserving_add_right (HypoellipticAleksandrov.VecVolume d) (t • v)).map_eq
   simpa only [Measure.volume_eq_prod, Function.comp_def, Prod.swap,
     MeasurableEquiv.prodAssoc, MeasurableEquiv.coe_mk, Equiv.prodAssoc_apply] using
-    h.comp (Measure.measurePreserving_swap (μ := (volume : Measure (PDE.Vec d)))
+    h.comp (Measure.measurePreserving_swap (μ := (HypoellipticAleksandrov.VecVolume d))
       (ν := (volume : Measure ℝ)))
 
 /-- The full transport chart preserves kinetic volume, with Jacobian one. -/
@@ -42,9 +43,9 @@ theorem measurePreserving_transportChart (d : ℕ) :
     MeasurePreserving (@transportChart d) volume volume := by
   have hshear : MeasurePreserving
       (fun z : PDE.Vec d × (PDE.Vec d × ℝ) => (z.1, z.2.2, z.2.1+z.2.2 • z.1))
-      ((volume : Measure (PDE.Vec d)).prod volume)
-      ((volume : Measure (PDE.Vec d)).prod volume) := by
-    refine (MeasurePreserving.id (volume : Measure (PDE.Vec d))).skew_product
+      ((HypoellipticAleksandrov.VecVolume d).prod volume)
+      ((HypoellipticAleksandrov.VecVolume d).prod volume) := by
+    refine (MeasurePreserving.id (HypoellipticAleksandrov.VecVolume d)).skew_product
       (g := fun (v : PDE.Vec d) (z : PDE.Vec d × ℝ) => (z.2, z.1+z.2 • v)) ?_ ?_
     · exact (continuous_snd.snd.prodMk
         (continuous_snd.fst.add (continuous_snd.snd.smul continuous_fst))).measurable
@@ -53,9 +54,9 @@ theorem measurePreserving_transportChart (d : ℕ) :
       (fun z : PDE.Vec d × (ℝ × PDE.Vec d) => (z.2.1, z.2.2, z.1)) volume volume := by
     simpa only [Measure.volume_eq_prod, Function.comp_def, Prod.swap,
     MeasurableEquiv.prodAssoc, MeasurableEquiv.coe_mk, Equiv.prodAssoc_apply] using
-      (measurePreserving_prodAssoc (volume : Measure ℝ) (volume : Measure (PDE.Vec d))
-        (volume : Measure (PDE.Vec d))).comp
-        (Measure.measurePreserving_swap (μ := (volume : Measure (PDE.Vec d)))
+      (measurePreserving_prodAssoc (volume : Measure ℝ) (HypoellipticAleksandrov.VecVolume d)
+        (HypoellipticAleksandrov.VecVolume d)).comp
+        (Measure.measurePreserving_swap (μ := (HypoellipticAleksandrov.VecVolume d))
           (ν := (volume : Measure (ℝ × PDE.Vec d))))
   have hinv : MeasurePreserving (KineticPoint.equivProd d).symm volume volume :=
     ⟨KineticPoint.measurable_equivProd_symm d, rfl⟩

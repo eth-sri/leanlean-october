@@ -14,11 +14,12 @@ open SectionTwo TheoremA Evolution
 /-- A weighted compact normalized probe expressed in physical coordinates. -/
 def clockWeightedProbe (c : Clock) (e : Point) (f : exitProbeSubmodule) : Point → ℝ :=
   fun p => |p.velocity 0| * exitProbePhysical f (c.map e p)
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
 
 /-- The genuine test has zero exit integral at every physical horizon past the clock cutoff. -/
 theorem clock_test_exit_zero
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
     (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point)
     (R T U : ℝ) (hRT : R < T) (hU : e.time + 2 * c.r ^ 2 * R ≤ U)
     (ep : StripPole c.activeInterval (U : WithTop ℝ)) (hep : ep.1 = e)
@@ -51,8 +52,7 @@ theorem clock_test_exit_zero
 /-- The literal full-test strip identity gives the weighted compact-probe integral.
 All regularity, boundedness and the zero exit term are proved from the actual normalized solver. -/
 theorem clock_weighted_test_finite
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
     (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point)
     (R T U : ℝ) (hRT : R < T) (hU : e.time + 2 * c.r ^ 2 * R ≤ U)
     (ep : StripPole c.activeInterval (U : WithTop ℝ)) (hep : ep.1 = e)
@@ -102,5 +102,6 @@ theorem clock_weighted_test_finite
       (∫ p, clockWeightedProbe c e f p ∂stripGreen hH hLE hlam hLam A
         c.activeInterval U ep) / (|c.vbar| * c.r ^ 2) := hi.trans (by ring)
   exact ((eq_div_iff hv).mp hi').symm.trans (mul_comm _ _)
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

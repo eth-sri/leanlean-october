@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.HormanderBridge
 public import HypoellipticAleksandrov.KineticAleksandrov.Hormander
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Hörmander's hypoellipticity theorem
@@ -26,7 +27,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 
 /-- The locally integrable Hörmander regularity statement. -/
 theorem exists_smooth_aeRepresentative_of_hormander
-    {k N : ℕ} {Ω : Set (PDE.Vec N)}
+    {k N : ℕ} {Ω : HypoellipticAleksandrov.VecSet N}
     (hΩ : IsOpen Ω)
     (X : Fin (k + 1) → PDE.Vec N → PDE.Vec N)
     (c g u : PDE.Vec N → ℝ)

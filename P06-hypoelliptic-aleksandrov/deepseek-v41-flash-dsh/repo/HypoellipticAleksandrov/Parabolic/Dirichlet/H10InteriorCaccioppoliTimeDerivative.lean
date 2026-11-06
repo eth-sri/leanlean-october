@@ -7,6 +7,8 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.HessianTimeDerivativeL
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.HessianCoefficientCancellation
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.SeparatedTestsDetermineWeakTimeDerivative
 public import HypoellipticAleksandrov.Parabolic.SpatialDifferenceQuotientL2WeakDerivative
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Interior Hessian and time-derivative recovery from the Caccioppoli estimate
@@ -29,7 +31,7 @@ namespace IsReverseTimeVariationalEnergySolution
 /-- The interior Caccioppoli estimate supplies ordered weak spatial Hessian
 representatives, with uniform `L²` control of every matrix entry. -/
 theorem exists_gradientCoord_representatives_hessian_timeDerivative_uniform_interior_caccioppoli
-    {d : ℕ} {Ω inner O : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner O : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (hd : 0 < d)
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω)

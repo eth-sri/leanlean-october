@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSourceBochn
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialForm
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeProductRepresentative
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.WeakTestFunctionSobolevJet
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Reverse-time separated raw slice expansions
@@ -23,7 +25,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 /-- A joint reverse-time value representative expands the fixed-time mass pairing. -/
 theorem reverseTime_raw_mass_expand_ae
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (T : ℝ) (hΩ : IsOpen Ω)
     (u : ReverseTimeL2V hΩ T)
     (U : TimeVelocity d → ℝ)
@@ -42,11 +44,11 @@ theorem reverseTime_raw_mass_expand_ae
   filter_upwards
     [ae_valueCLM_smoothCompactlySupportedH1HilbertGraph hΩ ψ, hU] with y hψ hy
   rw [hψ, ← hy]
-  simp only [RCLike.inner_apply, conj_trivial]
+  simp
 
 /-- The reverse-time negative source expands to the literal negative source integral. -/
 theorem reverseTime_raw_source_expand
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (F : ℝ → PDE.Vec d → ℝ)
@@ -71,11 +73,11 @@ theorem reverseTime_raw_source_expand
         r₀ r₁ hΩ hΩbounded F hFSmooth τ hτIcc),
       ae_valueCLM_smoothCompactlySupportedH1HilbertGraph hΩ ψ] with y hF hψ
   rw [hψ, hF]
-  simp only [RCLike.inner_apply, conj_trivial, reverseTimeScalarCoefficient_apply]
+  simp
 
 /-- Joint reverse-time value and gradient representatives expand the spatial form. -/
 theorem reverseTime_raw_spatialForm_expand_ae
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (T r₁ : ℝ) (hΩ : IsOpen Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c : ℝ → PDE.Vec d → ℝ)
@@ -121,7 +123,7 @@ theorem reverseTime_raw_spatialForm_expand_ae
        ae_gradientCoordCLM_smoothCompactlySupportedH1HilbertGraph hΩ ψ i] with
         y hGj hGyi hψi hψ
     rw [hGj, ← hGyi, hψi, hψ]
-    simp only [reverseTimeCoefficient_apply]
+    simp
   have hdrift (j : Fin d) :
       (∫ y in Ω, reverseTimeDivergenceDrift r₁ a b τ y j *
           (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j

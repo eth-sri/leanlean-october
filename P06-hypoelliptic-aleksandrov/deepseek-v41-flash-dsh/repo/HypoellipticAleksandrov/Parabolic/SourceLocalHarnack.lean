@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.Parabolic.SourceLevelGrowth
 public import HypoellipticAleksandrov.Parabolic.SourceForwardPropagation
 public import HypoellipticAleksandrov.Parabolic.LocalHarnackGeometry
 public import HypoellipticAleksandrov.Parabolic.PeakSelection
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Carrier-local source-aware parabolic Harnack estimate
@@ -28,26 +29,26 @@ private theorem parabolicBox_subset_closedBox {d : ℕ} {vartheta r t0 : ℝ}
   exact ⟨⟨hzleft.le, hzright.le⟩, fun i ↦ (hzv i).le⟩
 
 private theorem low_density_of_not_high_density {d : ℕ} {R eps t0 beta : ℝ}
-    {v0 : PDE.Vec d} (_hR : 0 < R) (U : Set (TimeVelocity d))
+    {v0 : PDE.Vec d} (_hR : 0 < R) (U : HypoellipticAleksandrov.Parabolic.TVSet d)
     (q : TimeVelocity d → ℝ) (_hU : IsOpen U)
     (hQU : parabolicBox 1 R t0 v0 ⊆ U) (hq : ContDiffOn ℝ 2 q U)
-    (hnot : ¬ beta * ((volume : Measure (TimeVelocity d))
+    (hnot : ¬ beta * ((HypoellipticAleksandrov.Parabolic.TVVolume d)
       (parabolicBox 1 R t0 v0)).toReal ≤
-      ((volume : Measure (TimeVelocity d))
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d)
         (parabolicBox 1 R t0 v0 ∩ {z | eps ≤ q z})).toReal) :
-    (1 - beta) * ((volume : Measure (TimeVelocity d))
+    (1 - beta) * ((HypoellipticAleksandrov.Parabolic.TVVolume d)
       (parabolicBox 1 R t0 v0)).toReal ≤
-      ((volume : Measure (TimeVelocity d))
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d)
         (parabolicBox 1 R t0 v0 ∩ {z | q z ≤ eps})).toReal := by
   let Q := parabolicBox 1 R t0 v0
-  let L : Set (TimeVelocity d) := Q ∩ {z | q z < eps}
-  let H : Set (TimeVelocity d) := Q ∩ {z | eps ≤ q z}
+  let L : HypoellipticAleksandrov.Parabolic.TVSet d := Q ∩ {z | q z < eps}
+  let H : HypoellipticAleksandrov.Parabolic.TVSet d := Q ∩ {z | eps ≤ q z}
   have hL : MeasurableSet L := by
     have hcont : ContinuousOn q Q := hq.continuousOn.mono hQU
     change MeasurableSet (Q ∩ q ⁻¹' Iio eps)
     exact (hcont.isOpen_inter_preimage (isOpen_parabolicBox 1 R t0 v0)
       isOpen_Iio).measurableSet
-  have hQfinite : (volume : Measure (TimeVelocity d)) Q ≠ ⊤ :=
+  have hQfinite : (HypoellipticAleksandrov.Parabolic.TVVolume d) Q ≠ ⊤ :=
     ne_top_of_le_ne_top (isCompact_parabolicClosedBox 1 R t0 v0).measure_ne_top
       (measure_mono parabolicBox_subset_closedBox)
   have hLsubset : L ⊆ Q := fun _ hz ↦ hz.1
@@ -71,13 +72,13 @@ private theorem low_density_of_not_high_density {d : ℕ} {R eps t0 beta : ℝ}
   have hsubset : L ⊆ Q ∩ {z | q z ≤ eps} := by
     intro z hz
     exact ⟨hz.1, (show q z < eps from hz.2).le⟩
-  have htargetFinite : (volume : Measure (TimeVelocity d))
+  have htargetFinite : (HypoellipticAleksandrov.Parabolic.TVVolume d)
       (Q ∩ {z | q z ≤ eps}) ≠ ⊤ :=
     ne_top_of_le_ne_top hQfinite (measure_mono fun _ hz ↦ hz.1)
   exact hlow.le.trans (ENNReal.toReal_mono htargetFinite (measure_mono hsubset))
 
 private theorem parabolicLpNormOn_abs {d : ℕ} (F : TimeVelocity d → ℝ)
-    (S : Set (TimeVelocity d)) (hF : AEStronglyMeasurable F (volume.restrict S)) :
+    (S : HypoellipticAleksandrov.Parabolic.TVSet d) (hF : AEStronglyMeasurable F (volume.restrict S)) :
     parabolicLpNormOn d (fun z ↦ |F z|) S = parabolicLpNormOn d F S := by
   unfold parabolicLpNormOn parabolicELpNormOn
   apply congrArg ENNReal.toReal
@@ -88,7 +89,7 @@ private theorem parabolicLpNormOn_abs {d : ℕ} (F : TimeVelocity d → ℝ)
   exact Real.enorm_abs (F z)
 
 private theorem parabolicLpNormOn_mono_of_continuousOn {d : ℕ}
-    {F : TimeVelocity d → ℝ} {U S T K : Set (TimeVelocity d)}
+    {F : TimeVelocity d → ℝ} {U S T K : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hF : ContinuousOn F U) (hKU : K ⊆ U) (hKcompact : IsCompact K)
     (hTK : T ⊆ K) (hST : S ⊆ T) :
     parabolicLpNormOn d F S ≤ parabolicLpNormOn d F T := by
@@ -116,7 +117,7 @@ private theorem parabolicLpNormOn_mono_of_continuousOn {d : ℕ}
     (eLpNorm_mono_measure F (Measure.restrict_mono_set volume hST))
 
 private theorem supersolution_of_equation_abs {d : ℕ} {B : CoefficientField d}
-    {F q : TimeVelocity d → ℝ} {V : Set (TimeVelocity d)}
+    {F q : TimeVelocity d → ℝ} {V : HypoellipticAleksandrov.Parabolic.TVSet d}
     (heq : ∀ z ∈ V, parabolicOperator B q z = F z) :
     IsParabolicSupersolutionOn B (fun z ↦ -|F z|) q V := by
   intro z hz
@@ -124,7 +125,7 @@ private theorem supersolution_of_equation_abs {d : ℕ} {B : CoefficientField d}
   exact neg_abs_le (F z)
 
 private theorem equation_add_const {d : ℕ} {B : CoefficientField d}
-    {F q : TimeVelocity d → ℝ} {V : Set (TimeVelocity d)} {e : ℝ}
+    {F q : TimeVelocity d → ℝ} {V : HypoellipticAleksandrov.Parabolic.TVSet d} {e : ℝ}
     (heq : ∀ z ∈ V, parabolicOperator B q z = F z) :
     ∀ z ∈ V, parabolicOperator B (fun y ↦ q y + e) z = F z := by
   intro z hz
@@ -135,7 +136,7 @@ theorem exists_source_local_parabolic_harnack_positive
     (d : Nat) (hd : 1 ≤ d) (lam : Real) (hlam : 0 < lam)
     (Lam : Real) (hlamLam : lam ≤ Lam) :
     ∃ hBox C : Real, 0 < hBox ∧ hBox ≤ 1 ∧ 0 < C ∧
-      ∀ (K U : Set (TimeVelocity d)) (B : CoefficientField d)
+      ∀ (K U : HypoellipticAleksandrov.Parabolic.TVSet d) (B : CoefficientField d)
         (q F : TimeVelocity d → Real),
         IsCompact K → K ⊆ U → IsOpen U →
         parabolicClosedBox 2 2 0 0 ⊆ K →
@@ -169,7 +170,7 @@ theorem exists_source_local_parabolic_harnack_positive
   have hratio_id :
       (2 - gStar) / (2 * (1 - gStar)) = 2 * (2 : ℝ) ^ m + 1 / 2 := by
     dsimp [gStar]
-    field_simp [hden0.ne']
+    field_simp
     ring
   obtain ⟨rho, hrho0, hrho1, CStar, hCStar, hdtpStar⟩ :=
     exists_sourceDensityToPoint_near_one d hd' lam hlam Lam hlamLam
@@ -292,14 +293,14 @@ theorem exists_source_local_parabolic_harnack_positive
       calc
         hBox * q (4, (0 : PDE.Vec d)) ≤ hBox * (H * A) :=
           mul_le_mul_of_nonneg_left hsourceBound hhBox0.le
-        _ ≤ H * A := by nlinarith [hH, hA]
+        _ ≤ H * A := by nlinarith
         _ ≤ C * A := hCA
         _ ≤ q (localHarnackTerminalApprox j, v) + C * A :=
           le_add_of_nonneg_left htargetNonneg
   intro hhigh
-  have hhighDensity : beta * ((volume : Measure (TimeVelocity d))
+  have hhighDensity : beta * ((HypoellipticAleksandrov.Parabolic.TVVolume d)
       (parabolicBox 1 s tBase v1)).toReal ≤
-      ((volume : Measure (TimeVelocity d))
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d)
         (parabolicBox 1 s tBase v1 ∩ {z | u1 / 2 ≤ q z})).toReal := by
     by_contra hnot
     have hLow := low_density_of_not_high_density hs U q hU hopenSmallU hq hnot
@@ -320,7 +321,7 @@ theorem exists_source_local_parabolic_harnack_positive
           dsimp [aPeak]
           ring
         _ ≤ kappaLG * s ^ p * parabolicLpNormOn d F (parabolicBox 1 s tBase v1) := by
-          linarith only [hgrowth'']
+          linarith
     have hnormSmallF : parabolicLpNormOn d F (parabolicBox 1 s tBase v1) ≤ A := by
       rw [← parabolicLpNormOn_abs F (parabolicBox 1 s tBase v1)
         ((hF.mono hopenSmallU).aestronglyMeasurable
@@ -348,10 +349,10 @@ theorem exists_source_local_parabolic_harnack_positive
       have hstrict : kappaLG * A < aPeak * H * A := by
         have hAH : aPeak * H = aPeak + 2 * kappaLG := by
           dsimp [H]
-          field_simp [haPeak.ne']
+          field_simp
         have hAHlt : kappaLG < aPeak * H := by
           rw [hAH]
-          linarith only [haPeak, hkappaLG0]
+          linarith
         simpa only [mul_assoc] using mul_lt_mul_of_pos_right hAHlt hApos
       have hcontra : aPeak * H * A < aPeak * u1 := by
         have hsource : H * A < u1 := hhigh.trans_le hweightToU1
@@ -397,7 +398,7 @@ theorem exists_source_local_parabolic_harnack_positive
   let tau : ℝ := selectedLocalHarnackForwardTime t1 j
   let lower : PDE.Vec d := localHarnackCorridorLower v1 v
   let upper : PDE.Vec d := localHarnackCorridorUpper v1 v
-  let UHat : Set (TimeVelocity d) := localHarnackCorridorNeighborhood t1
+  let UHat : HypoellipticAleksandrov.Parabolic.TVSet d := localHarnackCorridorNeighborhood t1
   let BHat : CoefficientField d := pullbackCoefficient B t1 (0 : PDE.Vec d) 1
   let qHat : TimeVelocity d → ℝ := pullbackScalar (fun z ↦ q z + eD) t1 (0 : PDE.Vec d) 1
   let GHat : TimeVelocity d → ℝ := pullbackScalar G t1 (0 : PDE.Vec d) 1

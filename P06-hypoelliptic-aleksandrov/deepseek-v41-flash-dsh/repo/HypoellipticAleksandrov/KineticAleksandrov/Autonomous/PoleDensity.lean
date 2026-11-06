@@ -16,7 +16,7 @@ clock centres, radii and starting points. The analytic classical inputs remain e
 theorem one_sign_pole_density
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (q : ℝ) (hq : 1 < q) (hq2 : q < (3 : ℝ) / 2) :
+    (q : ℝ) (hq : 1 < q) (hq2 : q < 3 / 2) :
     ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point)
       (he : e.velocity 0 ∈ c.active), ∃ g : Point → ℝ,
       Measurable g ∧ (∀ p, 0 ≤ g p) ∧

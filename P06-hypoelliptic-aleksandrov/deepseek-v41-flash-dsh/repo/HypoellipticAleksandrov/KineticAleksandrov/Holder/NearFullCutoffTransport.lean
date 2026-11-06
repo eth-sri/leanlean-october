@@ -59,7 +59,7 @@ theorem hasDerivAt_inverse_transport {d : ℕ} (P₀ P : KineticPoint d)
   have ht : HasDerivAt (fun t : ℝ => P.time + t) 1 0 :=
     (hasDerivAt_id (0 : ℝ)).const_add P.time
   have hx : HasDerivAt (fun t : ℝ => P.position + t • P.velocity) P.velocity 0 := by
-    simpa only [one_smul, id_eq] using
+    simpa using
       ((hasDerivAt_id (0 : ℝ)).smul_const P.velocity).const_add P.position
   have ht' := (ht.sub_const P₀.time).div_const (R ^ 2)
   have hx' := ((hx.sub_const P₀.position).sub
@@ -70,7 +70,7 @@ theorem hasDerivAt_inverse_transport {d : ℕ} (P₀ P : KineticPoint d)
       ((R ^ 3)⁻¹ • (P.position + t • P.velocity - P₀.position -
         (P.time + t - P₀.time) • P₀.velocity), R⁻¹ • (P.velocity - P₀.velocity))))
     ((R ^ 2)⁻¹, ((R ^ 3)⁻¹ • (P.velocity - P₀.velocity), 0)) 0
-  simpa only [one_div, Pi.sub_apply, Pi.smul_apply, one_smul] using
+  simpa using
     ht'.prodMk (hx'.prodMk hv')
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

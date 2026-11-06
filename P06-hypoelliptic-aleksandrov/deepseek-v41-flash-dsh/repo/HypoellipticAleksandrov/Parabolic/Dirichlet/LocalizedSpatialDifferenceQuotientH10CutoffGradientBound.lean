@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.LocalizedSpatialDifferenceQuotientPrincipalField
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Aggregate cutoff-gradient bound for localized spatial difference quotients
@@ -20,7 +21,7 @@ open scoped ENNReal
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 private theorem cutoffGradientL2Multiplier_apply_ae
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (η : PDE.QuantitativeSmoothCutoff inner outer K) (i : Fin d)
     (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
     ⇑(cutoffGradientL2Multiplier (Ω := Ω) η i f) =ᵐ[PDE.volumeOn Ω]
@@ -32,7 +33,7 @@ private theorem cutoffGradientL2Multiplier_apply_ae
 /-- The assembled cutoff-gradient commutator field is uniformly controlled
 by the input weak gradient through any larger shifted plateau cutoff. -/
 theorem norm_sq_cutoffGradientSpatialDifferenceQuotientH10CLM_apply_le_gradient
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (hΩ : IsOpen Ω)
     (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
     (χ : PDE.QuantitativeSmoothCutoff (tsupport η.toFun) Ω Kχ)

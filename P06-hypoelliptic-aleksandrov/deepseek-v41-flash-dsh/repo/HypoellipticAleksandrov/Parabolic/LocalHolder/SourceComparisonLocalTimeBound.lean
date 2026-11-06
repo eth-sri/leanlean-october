@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonLoca
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonLocalCutoff
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Bounding the time term in localized value energy
 
@@ -18,7 +19,7 @@ open MeasureTheory Set
 
 /-- Quadratic testing bounds time energy by the value integral and a cutoff derivative bound. -/
 theorem integral_local_time_energy_le {d : ℕ}
-    {U : Set (TimeVelocity d)} (hU : IsOpen U)
+    {U : HypoellipticAleksandrov.Parabolic.TVSet d} (hU : IsOpen U)
     (u ρ : TimeVelocity d → ℝ) (hu : IsScalarC12On u U)
     (hρ : ContDiff ℝ (⊤ : ℕ∞) ρ) (hc : HasCompactSupport ρ)
     (hsub : tsupport ρ ⊆ U) (K : ℝ)

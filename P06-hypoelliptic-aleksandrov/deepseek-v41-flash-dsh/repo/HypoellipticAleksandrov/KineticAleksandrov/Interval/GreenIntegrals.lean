@@ -17,7 +17,7 @@ theorem killed_power_moment_finite {δ k : ℝ} (hδ : 0 < δ) (hk : 0 < k) :
     (∫⁻ T in Ioi (0 : ℝ), ENNReal.ofReal
       (T ^ (δ - 1) * Real.exp (-k * T))) < ⊤ := by
   have hi : IntegrableOn (fun T : ℝ => T ^ (δ - 1) * Real.exp (-k * T)) (Ioi 0) := by
-    simpa only [Real.rpow_one] using integrableOn_rpow_mul_exp_neg_mul_rpow
+    simpa using integrableOn_rpow_mul_exp_neg_mul_rpow
       (p := 1) (s := δ - 1) (by linarith) (by norm_num) hk
   rw [← ofReal_integral_eq_lintegral_ofReal hi]
   · exact ENNReal.ofReal_lt_top
@@ -56,7 +56,7 @@ theorem log_mul_measure_univ_le {X : Type*} [MeasurableSpace X]
     exact hx.trans_le hSR
   have hu : (⋃ S : ℝ, {x | h x < S}) = univ := by
     ext x
-    simp only [mem_iUnion, mem_ofPred_eq, mem_univ, iff_true]
+    simp
     exact ⟨h x + 1, by linarith⟩
   rw [← hu, hm.measure_iUnion, ENNReal.mul_iSup]
   refine iSup_le fun S => (log_mul_measure_le ν hh hpos S).trans ?_

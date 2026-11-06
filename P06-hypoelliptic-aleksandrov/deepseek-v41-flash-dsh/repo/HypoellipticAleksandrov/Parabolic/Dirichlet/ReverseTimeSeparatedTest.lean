@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeTests
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeDualPairing
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Reverse-time separated tests and dual pairings
@@ -25,11 +26,12 @@ theorem reverseTimeVolume_isFiniteMeasure (T : ℝ) :
     IsFiniteMeasure (reverseTimeVolume T) := by
   unfold reverseTimeVolume reverseTimeOpenInterval
   infer_instance
+section
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {T : ℝ} (hΩ : IsOpen Ω) (eta : ReverseTimeScalarTest T)
 
 /-- The reverse-time `L²(V)` class represented by `τ ↦ eta τ • v`. -/
 noncomputable def reverseTimeSeparatedVTest
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {T : ℝ}
-    (hΩ : IsOpen Ω) (eta : ReverseTimeScalarTest T) (v : H10HilbertGraph hΩ) :
+     (v : H10HilbertGraph hΩ) :
     ReverseTimeL2V hΩ T := by
   letI : IsFiniteMeasure (reverseTimeVolume T) := reverseTimeVolume_isFiniteMeasure T
   exact
@@ -41,8 +43,7 @@ noncomputable def reverseTimeSeparatedVTest
 
 /-- The separated reverse-time test has the literal scalar-multiple representative. -/
 theorem ae_reverseTimeSeparatedVTest
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {T : ℝ}
-    (hΩ : IsOpen Ω) (eta : ReverseTimeScalarTest T) (v : H10HilbertGraph hΩ) :
+     (v : H10HilbertGraph hΩ) :
     reverseTimeSeparatedVTest hΩ eta v =ᵐ[reverseTimeVolume T]
       fun tau => eta tau • v := by
   letI : IsFiniteMeasure (reverseTimeVolume T) := reverseTimeVolume_isFiniteMeasure T
@@ -66,8 +67,7 @@ theorem ae_reverseTimeSeparatedVTest
 
 /-- Separated reverse-time tests depend continuously on their spatial vector. -/
 theorem tendsto_reverseTimeSeparatedVTest
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {T : ℝ}
-    (hΩ : IsOpen Ω) (eta : ReverseTimeScalarTest T)
+    
     {vN : ℕ → H10HilbertGraph hΩ} {v : H10HilbertGraph hΩ}
     (hv : Tendsto vN atTop (𝓝 v)) :
     Tendsto (fun n => reverseTimeSeparatedVTest hΩ eta (vN n)) atTop
@@ -81,10 +81,11 @@ theorem tendsto_reverseTimeSeparatedVTest
       (MeasureTheory.Lp.constL (2 : ℝ≥0∞) (reverseTimeVolume T) ℝ))
   change Tendsto (fun n => L (vN n)) atTop (𝓝 (L v))
   exact L.continuous.tendsto v |>.comp hv
+end
 
 /-- The continuous `L²(V*)`--`L²(V)` pairing over the reverse-time volume. -/
 noncomputable def reverseTimeDualPairingCLM
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (T : ℝ) :
     ReverseTimeL2VStar hΩ T →L[ℝ] ReverseTimeL2V hΩ T →L[ℝ] ℝ :=
   let pairing : H10HilbertGraphDual hΩ →L[ℝ]
@@ -94,7 +95,7 @@ noncomputable def reverseTimeDualPairingCLM
 
 /-- The reverse-time dual pairing is the integral of the literal pointwise pairing. -/
 theorem reverseTimeDualPairingCLM_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (T : ℝ)
     (g : ReverseTimeL2VStar hΩ T) (z : ReverseTimeL2V hΩ T) :
     reverseTimeDualPairingCLM hΩ T g z =
@@ -102,6 +103,6 @@ theorem reverseTimeDualPairingCLM_apply
   unfold reverseTimeDualPairingCLM
   dsimp only
   rw [ContinuousLinearMap.lpPairing_eq_integral]
-  simp only [ContinuousLinearMap.flip_apply, ContinuousLinearMap.apply_apply]
+  simp
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

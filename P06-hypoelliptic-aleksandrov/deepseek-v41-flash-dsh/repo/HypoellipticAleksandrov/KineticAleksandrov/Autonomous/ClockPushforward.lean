@@ -20,7 +20,7 @@ theorem clock_green_pushforward
     Measure.map (c.map e) ((stripGreen hH hLE hlam hLam A c.activeInterval ⊤
       ⟨e, WithTop.coe_lt_top _, he⟩).withDensity (fun p => ENNReal.ofReal |p.velocity 0|)) =
       ENNReal.ofReal (|c.vbar| * c.r ^ 2) • clockGreen hH hLE hlam hLam A c e he := by
-  have hD : 0 < |c.vbar| * c.r ^ 2 :=
+  have hD :=
     mul_pos (abs_pos.mpr c.nonzero) (sq_pos_of_pos c.positive)
   have : IsFiniteMeasure ((stripGreen hH hLE hlam hLam A c.activeInterval ⊤
       ⟨e, WithTop.coe_lt_top _, he⟩).withDensity

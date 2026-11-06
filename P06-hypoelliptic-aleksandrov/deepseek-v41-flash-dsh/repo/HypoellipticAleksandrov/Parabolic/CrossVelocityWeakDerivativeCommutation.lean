@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.WeakDerivativesUnique
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Crossed weak velocity derivatives
@@ -17,7 +18,7 @@ open scoped ENNReal Topology
 
 namespace HypoellipticAleksandrov.Parabolic
 
-private theorem cross_ae_eq_of_pairing_eq {d : ℕ} {U : Set (TimeVelocity d)}
+private theorem cross_ae_eq_of_pairing_eq {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hU : IsOpen U) {du dv : TimeVelocity d → ℝ}
     (hdu : LocallyIntegrableOn du U volume)
     (hdv : LocallyIntegrableOn dv U volume)
@@ -76,24 +77,23 @@ private theorem cross_ae_eq_of_pairing_eq {d : ℕ} {U : Set (TimeVelocity d)}
   rw [Filter.EventuallyEq, ae_restrict_iff' hU.measurableSet]
   filter_upwards [hdiffZero] with z hz hzU
   exact sub_eq_zero.mp (hz hzU)
+section
+variable {d : ℕ} {f : TimeVelocity d → ℝ} {i : Fin d}
 
-private theorem cross_velocityGradient_contDiff_infty {d : ℕ}
-    {f : TimeVelocity d → ℝ} {i : Fin d}
+private theorem cross_velocityGradient_contDiff_infty 
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
     ContDiff ℝ (⊤ : ℕ∞) (fun z => velocityGradient f z i) := by
   unfold velocityGradient
   exact (contDiff_infty_iff_fderiv.mp hf).2.clm_apply contDiff_const
 
-private theorem cross_velocityGradient_hasCompactSupport {d : ℕ}
-    {f : TimeVelocity d → ℝ} {i : Fin d}
+private theorem cross_velocityGradient_hasCompactSupport 
     (hf : HasCompactSupport f) :
     HasCompactSupport (fun z => velocityGradient f z i) := by
   unfold velocityGradient
   simpa using hf.fderiv_apply (𝕜 := ℝ)
     ((0, Pi.single i 1) : TimeVelocity d)
 
-private theorem cross_velocityGradient_tsupport_subset {d : ℕ}
-    {f : TimeVelocity d → ℝ} {i : Fin d} :
+private theorem cross_velocityGradient_tsupport_subset  :
     tsupport (fun z => velocityGradient f z i) ⊆ tsupport f := by
   unfold velocityGradient
   change closure (Function.support
@@ -104,6 +104,7 @@ private theorem cross_velocityGradient_tsupport_subset {d : ℕ}
   intro hzero
   apply hz
   simp [hzero]
+end
 
 private theorem cross_velocityGradient_velocityGradient_commute {d : ℕ}
     {f : TimeVelocity d → ℝ} (hf : ContDiff ℝ (⊤ : ℕ∞) f)
@@ -143,7 +144,7 @@ namespace HasWeakVelocityPartialDerivOn
 /-- Two crossed second weak velocity derivatives of the same raw function
 agree almost everywhere on an open domain. -/
 theorem cross_ae_eq_of_memLp
-    {d : ℕ} {U : Set (TimeVelocity d)}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hU : IsOpen U)
     (i j : Fin d)
     (u ui uj dij dji : TimeVelocity d → ℝ)

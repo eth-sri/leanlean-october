@@ -9,16 +9,17 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov Filter
 open scoped Topology ENNReal
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
 
 /-- The unique infinite-horizon exit measure retains exactly unit mass. -/
 theorem stripInfiniteExit_mass_one
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
     (A : SmoothAutonomous lam Lam) (H : Interval) (e : StripPole H ⊤) :
     stripInfiniteExit hH hLE hlam hLam A H e univ = 1 := by
   let μ := stripInfiniteExit hH hLE hlam hLam A H e
   let q := (e.1.velocity 0 - H.lo) * (H.hi - e.1.velocity 0) / (2 * lam)
-  have hineq (n : ℕ) : (1 : ℝ) ≤ μ.real univ + q / ((n : ℝ) + 1) := by
+  have hineq (n : ℕ) : 1 ≤ μ.real univ + q / ((n : ℝ) + 1) := by
     let R := e.1.time + (n : ℝ) + 1
     let T := R + 1
     have ht : e.1.time < T := by
@@ -56,17 +57,17 @@ theorem stripInfiniteExit_mass_one
     have h := (tendsto_const_nhds (x := μ.real univ)).add
       (tendsto_one_div_add_atTop_nhds_zero_nat.const_mul q)
     simpa only [div_eq_mul_inv, one_mul, mul_zero, add_zero] using h
-  have hr : (1 : ℝ) ≤ μ.real univ := ge_of_tendsto hlim (Eventually.of_forall hineq)
+  have hr : 1 ≤ μ.real univ := ge_of_tendsto hlim (Eventually.of_forall hineq)
   apply le_antisymm (stripInfiniteExit_mass_le_one hH hLE hlam hLam A H e)
   exact (ENNReal.toReal_le_toReal (by simp) (measure_ne_top μ univ)).mp (by
     simpa only [ENNReal.toReal_one, Measure.real] using hr)
 
 /-- Infinite exits form probability measures; the claim follows from the proved tail estimate. -/
 instance stripInfiniteExit_isProbabilityMeasure
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
     (A : SmoothAutonomous lam Lam) (H : Interval) (e : StripPole H ⊤) :
     IsProbabilityMeasure (stripInfiniteExit hH hLE hlam hLam A H e) :=
   ⟨stripInfiniteExit_mass_one hH hLE hlam hLam A H e⟩
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

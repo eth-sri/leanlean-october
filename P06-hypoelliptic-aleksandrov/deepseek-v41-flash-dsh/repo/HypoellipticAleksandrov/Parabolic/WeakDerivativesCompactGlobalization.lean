@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.Parabolic.WeakDerivatives
 public import Mathlib.Analysis.Calculus.FDeriv.Mul
 public import Mathlib.MeasureTheory.Function.LpSeminorm.Basic
 public import Mathlib.MeasureTheory.Integral.Bochner.Set
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Globalization of compactly supported weak derivatives
@@ -29,22 +30,24 @@ private theorem value_eq_zero_of_not_mem_tsupport
     (hx : x ∉ tsupport f) : f x = 0 := by
   by_contra hzero
   exact hx (subset_closure (Function.mem_support.mpr hzero))
+section
+variable {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
 
 private theorem weakFDerivApply_univ_of_tsupport_subset
-    {d : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
+     (hU : IsOpen U)
     {u du : TimeVelocity d → ℝ} (q : TimeVelocity d)
     (h : ∀ φ : TimeVelocity d → ℝ,
       ContDiff ℝ (⊤ : ℕ∞) φ → HasCompactSupport φ → tsupport φ ⊆ U →
-      (∫ z in U, u z * fderiv ℝ φ z q ∂(volume : Measure (TimeVelocity d))) =
-        -∫ z in U, du z * φ z ∂(volume : Measure (TimeVelocity d)))
+      (∫ z in U, u z * fderiv ℝ φ z q ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
+        -∫ z in U, du z * φ z ∂(HypoellipticAleksandrov.Parabolic.TVVolume d))
     (hu : tsupport u ⊆ U) (hdu : tsupport du ⊆ U) :
     ∀ φ : TimeVelocity d → ℝ,
       ContDiff ℝ (⊤ : ℕ∞) φ → HasCompactSupport φ → tsupport φ ⊆ Set.univ →
       (∫ z in Set.univ, u z * fderiv ℝ φ z q
-        ∂(volume : Measure (TimeVelocity d))) =
-        -∫ z in Set.univ, du z * φ z ∂(volume : Measure (TimeVelocity d)) := by
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
+        -∫ z in Set.univ, du z * φ z ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   intro φ hφ hφCompact _
-  let K : Set (TimeVelocity d) :=
+  let K : HypoellipticAleksandrov.Parabolic.TVSet d :=
     (tsupport u ∪ tsupport du) ∩ tsupport φ
   have hKCompact : IsCompact K := by
     exact hφCompact.isCompact.of_isClosed_subset
@@ -98,19 +101,19 @@ private theorem weakFDerivApply_univ_of_tsupport_subset
     simp [ψ, hbz]
   have hweak := h ψ hψSmooth hψCompact hψU
   have hleftRestrict :
-      (∫ z in U, u z * fderiv ℝ ψ z q ∂(volume : Measure (TimeVelocity d))) =
+      (∫ z in U, u z * fderiv ℝ ψ z q ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
         ∫ z in U, u z * fderiv ℝ φ z q
-          ∂(volume : Measure (TimeVelocity d)) := by
+          ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
     exact integral_congr_ae (Eventually.of_forall hleftPoint)
   have hrightRestrict :
-      (∫ z in U, du z * ψ z ∂(volume : Measure (TimeVelocity d))) =
-        ∫ z in U, du z * φ z ∂(volume : Measure (TimeVelocity d)) := by
+      (∫ z in U, du z * ψ z ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
+        ∫ z in U, du z * φ z ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
     exact integral_congr_ae (Eventually.of_forall hrightPoint)
   have hleftUniv :
       (∫ z in Set.univ, u z * fderiv ℝ φ z q
-        ∂(volume : Measure (TimeVelocity d))) =
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
         ∫ z in U, u z * fderiv ℝ φ z q
-          ∂(volume : Measure (TimeVelocity d)) := by
+          ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
     rw [setIntegral_univ, ← integral_indicator hU.measurableSet]
     apply integral_congr_ae
     exact Eventually.of_forall fun z => by
@@ -121,8 +124,8 @@ private theorem weakFDerivApply_univ_of_tsupport_subset
           exact fun hzts => hz (hu hzts)
         simp [hz, huz]
   have hrightUniv :
-      (∫ z in Set.univ, du z * φ z ∂(volume : Measure (TimeVelocity d))) =
-        ∫ z in U, du z * φ z ∂(volume : Measure (TimeVelocity d)) := by
+      (∫ z in Set.univ, du z * φ z ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
+        ∫ z in U, du z * φ z ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
     rw [setIntegral_univ, ← integral_indicator hU.measurableSet]
     apply integral_congr_ae
     exact Eventually.of_forall fun z => by
@@ -139,7 +142,7 @@ private theorem weakFDerivApply_univ_of_tsupport_subset
 carrier is
 also the ambient raw weak time derivative. -/
 theorem HasWeakTimeDerivOn.univ_of_tsupport_subset
-    {d : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
+     (hU : IsOpen U)
     {u du : TimeVelocity d → ℝ}
     (h : HasWeakTimeDerivOn U u du)
     (hu : tsupport u ⊆ U)
@@ -150,7 +153,7 @@ theorem HasWeakTimeDerivOn.univ_of_tsupport_subset
 /-- A raw weak velocity derivative whose topological supports lie in an open
 carrier is also the ambient raw weak velocity derivative. -/
 theorem HasWeakVelocityPartialDerivOn.univ_of_tsupport_subset
-    {d : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
+     (hU : IsOpen U)
     {i : Fin d} {u dui : TimeVelocity d → ℝ}
     (h : HasWeakVelocityPartialDerivOn U i u dui)
     (hu : tsupport u ⊆ U)
@@ -161,12 +164,12 @@ theorem HasWeakVelocityPartialDerivOn.univ_of_tsupport_subset
 /-- Restricted `Lᵖ` membership globalizes when the selected representative
 vanishes pointwise off the measurable carrier. -/
 theorem ParabolicMemLpOn.memLp_of_support_subset
-    {d : ℕ} {U : Set (TimeVelocity d)} (hU : MeasurableSet U)
+     (hU : MeasurableSet U)
     {p : ℝ≥0∞} {f : TimeVelocity d → ℝ}
     (hf : ParabolicMemLpOn U p f)
     (hsupp : Function.support f ⊆ U) :
     MeasureTheory.MemLp f p
-      (volume : Measure (TimeVelocity d)) := by
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   have hindicator : U.indicator f = f := by
     funext z
     by_cases hz : z ∈ U
@@ -177,5 +180,6 @@ theorem ParabolicMemLpOn.memLp_of_support_subset
       simp [hz, hfz]
   rw [← hindicator]
   exact (memLp_indicator_iff_restrict hU).2 hf
+end
 
 end HypoellipticAleksandrov.Parabolic

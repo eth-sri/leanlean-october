@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.HarnackOscillation
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.HarnackOscillationGeometry
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Structural homogeneous contraction on physical Euclidean cylinders -/
 

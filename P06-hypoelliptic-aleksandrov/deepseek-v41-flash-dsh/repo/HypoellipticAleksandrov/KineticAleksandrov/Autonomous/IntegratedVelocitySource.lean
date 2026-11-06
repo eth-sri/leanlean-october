@@ -44,16 +44,14 @@ theorem velocity_profile_source_bound (hH : HormanderHypoellipticityStatement)
       Real.sqrt (2 * Lam * (T - p.time)) := by
   let g := fun q : Point => f (q.time, q.position, q.velocity) *
     (lam * velocityOccupationDensity r (q.position 0))
-  have hgs : ContDiff ℝ (⊤ : ℕ∞) (rawLift g) := by
-    exact hf.mul (contDiff_const.mul ((velocityOccupationDensity_contDiff hr).comp
+  have hgs : ContDiff ℝ (⊤ : ℕ∞) (rawLift g) := hf.mul (contDiff_const.mul ((velocityOccupationDensity_contDiff hr).comp
       ((contDiff_apply ℝ ℝ 0).comp contDiff_snd.fst)))
   have hc : HasCompactSupport g :=
     (hfc.comp_homeomorph (KineticPoint.homeomorphProd 1)).mul_right
   have hu : tsupport g ⊆ evolutionPastOpenCylinder autonomousWholeDomain (fun _ => 0) T := by
     intro q hq
     have hqf := tsupport_mul_subset_left hq
-    have hraw : (q.time, q.position, q.velocity) ∈ tsupport f := by
-      exact tsupport_comp_subset_preimage f
+    have hraw : (q.time, q.position, q.velocity) ∈ tsupport f := tsupport_comp_subset_preimage f
         (KineticPoint.homeomorphProd 1).continuous hqf
     refine ⟨hfU hraw, ?_⟩
     change q.position ∈ movingDomain (wholeSpace 1) (fun _ => 0) q.time

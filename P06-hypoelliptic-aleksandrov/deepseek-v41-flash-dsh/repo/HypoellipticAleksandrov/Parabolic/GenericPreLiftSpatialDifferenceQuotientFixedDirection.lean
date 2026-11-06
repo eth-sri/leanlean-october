@@ -10,6 +10,8 @@ public import HypoellipticAleksandrov.Parabolic.SpatialCoordinateDerivatives
 public import HypoellipticAleksandrov.Parabolic.SpatialSliceDifferenceQuotientBound
 public import HypoellipticAleksandrov.Parabolic.WeakDerivativeSpatialDifferenceQuotientL2Bound
 public import HypoellipticAleksandrov.Parabolic.WeakJetProduct
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Fixed-direction generic spatial difference-quotient estimate
@@ -73,7 +75,7 @@ controls the corresponding quotient on any carrier whose full directed
 segments remain in the outer carrier.  Applying this helper to `q` and then
 to a gradient component supplies the two bounds used in assembly. -/
 private theorem exists_spatialDifferenceQuotient_memLp_norm_le_on_inner
-    {d : ℕ} {U V : Set (TimeVelocity d)}
+    {d : ℕ} {U V : HypoellipticAleksandrov.Parabolic.TVSet d}
     (k : Fin d)
     (hU : IsOpen U) (q Gk : TimeVelocity d → ℝ)
     (hq : ParabolicMemLpOn U 2 q) (hGk : ParabolicMemLpOn U 2 Gk)
@@ -89,7 +91,7 @@ private theorem exists_spatialDifferenceQuotient_memLp_norm_le_on_inner
 produces global `L²` representatives with the exact ambient weak derivative
 and with support retained in the local carrier. -/
 private theorem localized_spatialDifferenceQuotient_weakJet_global
-    {d : ℕ} {V : Set (TimeVelocity d)} (hV : IsOpen V)
+    {d : ℕ} {V : HypoellipticAleksandrov.Parabolic.TVSet d} (hV : IsOpen V)
     (qh : TimeVelocity d → ℝ) (H : Fin d → TimeVelocity d → ℝ)
     (hqh : ParabolicMemLpOn V 2 qh) (hH : ∀ i, ParabolicMemLpOn V 2 (H i))
     (hweak : ∀ i, HasWeakVelocityPartialDerivOn V i qh (H i))
@@ -156,7 +158,7 @@ private theorem exists_backward_spatialDifferenceQuotient_memLp_norm_le
     ∃ hback : ParabolicMemLpOn Set.univ 2
         (spatialDifferenceQuotient k (-h) psi),
       ‖hback.toLp (spatialDifferenceQuotient k (-h) psi)‖ ≤ ‖hDpsi.toLp Dpsi‖ := by
-  have hseg : ∀ z ∈ (Set.univ : Set (TimeVelocity d)),
+  have hseg : ∀ z ∈ (Set.univ : HypoellipticAleksandrov.Parabolic.TVSet d),
       [z -[ℝ] spatialShift k (-h) z] ⊆ Set.univ := by
     intro z hz
     exact subset_univ _
@@ -240,7 +242,7 @@ private theorem fixedCore_integral_sq_eq_norm_sq_toLp
 /-- Multiplication by a cutoff in `[0,1]` has squared `L²` norm bounded by
 the corresponding singly weighted energy. -/
 private theorem exists_weightedMultiplier_memLp_norm_sq_le_integral
-    {d : ℕ} {V : Set (TimeVelocity d)}
+    {d : ℕ} {V : HypoellipticAleksandrov.Parabolic.TVSet d}
     (w H : TimeVelocity d → ℝ)
     (hH : ParabolicMemLpOn V 2 H)
     (hwMeas : AEStronglyMeasurable w (timeVelocityVolumeOn V))
@@ -273,7 +275,7 @@ private theorem exists_weightedMultiplier_memLp_norm_sq_le_integral
 /-- The cutoff-gradient multiplier has the sharp scale `2 * Keta`, with no
 difference-quotient step in the bound. -/
 private theorem exists_cutoffGradientMultiplier_memLp_norm_le
-    {d : ℕ} {V : Set (TimeVelocity d)}
+    {d : ℕ} {V : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hV : MeasurableSet V) (k : Fin d)
     (w qh : TimeVelocity d → ℝ) (Keta : ℝ)
     (hKeta : 0 ≤ Keta) (hqh : ParabolicMemLpOn V 2 qh)
@@ -297,7 +299,7 @@ private theorem exists_cutoffGradientMultiplier_memLp_norm_le
 /-- The localized product-rule derivative retains the singly weighted
 gradient energy in its `L²` bound. -/
 private theorem exists_localizedDerivative_memLp_norm_le_weighted
-    {d : ℕ} {V : Set (TimeVelocity d)} (hV : MeasurableSet V)
+    {d : ℕ} {V : HypoellipticAleksandrov.Parabolic.TVSet d} (hV : MeasurableSet V)
     (k : Fin d) (qh Hk w : TimeVelocity d → ℝ) (Keta : ℝ)
     (hKeta : 0 ≤ Keta)
     (hqh : ParabolicMemLpOn V 2 qh) (hHk : ParabolicMemLpOn V 2 Hk)
@@ -361,7 +363,7 @@ private theorem exists_localizedDerivative_memLp_norm_le_weighted
 /-- The source pairing bound used for absorption, with the gradient factor
 measured by its cutoff-weighted energy rather than its unweighted norm. -/
 private theorem abs_integral_source_mul_backwardQuotient_le_localized_weighted
-    {d : ℕ} {V : Set (TimeVelocity d)} (hV : MeasurableSet V)
+    {d : ℕ} {V : HypoellipticAleksandrov.Parabolic.TVSet d} (hV : MeasurableSet V)
     (k : Fin d) (h : ℝ) (hh : h ≠ 0)
     (R psi qh Hk w : TimeVelocity d → ℝ) (Keta : ℝ)
     (hKeta : 0 ≤ Keta) (hR : MemLp R 2 volume) (hpsi : MemLp psi 2 volume)
@@ -398,7 +400,7 @@ private theorem mul_le_lambda_eighth_sq_add (lam a b : ℝ) (hlam : 0 < lam) :
 gradient energy and quotient norm, leaving only the undifferenced source
 norm with a coarse coefficient depending on `lam` and `Keta`. -/
 private theorem abs_integral_source_mul_backwardQuotient_le_absorbed_weighted
-    {d : ℕ} {V : Set (TimeVelocity d)} (hV : MeasurableSet V)
+    {d : ℕ} {V : HypoellipticAleksandrov.Parabolic.TVSet d} (hV : MeasurableSet V)
     (k : Fin d) (h : ℝ) (hh : h ≠ 0)
     (R psi qh Hk w : TimeVelocity d → ℝ) (lam Keta : ℝ)
     (hlam : 0 < lam) (hKeta : 0 ≤ Keta)
@@ -443,7 +445,7 @@ private theorem abs_integral_source_mul_backwardQuotient_le_absorbed_weighted
 /-- A spatial coordinate-shift collar contains every full signed spacetime
 segment starting in its intermediate cylinder. -/
 private theorem segment_spatialShift_subset_prod_of_carrier
-    {d : ℕ} {I : Set ℝ} {O₀ O₂ : Set (PDE.Vec d)} {δ h : ℝ}
+    {d : ℕ} {I : Set ℝ} {O₀ O₂ : HypoellipticAleksandrov.VecSet d} {δ h : ℝ}
     (hcarrier :
       Dirichlet.spatialCoordinateShiftCarrier (closure O₂) δ ⊆ O₀)
     (hh : |h| ≤ δ) (k : Fin d) :
@@ -469,7 +471,7 @@ private theorem segment_spatialShift_subset_prod_of_carrier
 /-- The signed collar also supplies the endpoint translation required by the
 quotient-test energy identity. -/
 private theorem mapsTo_spatialShift_prod_of_carrier
-    {d : ℕ} {I : Set ℝ} {O₀ O₂ : Set (PDE.Vec d)} {δ h : ℝ}
+    {d : ℕ} {I : Set ℝ} {O₀ O₂ : HypoellipticAleksandrov.VecSet d} {δ h : ℝ}
     (hcarrier :
       Dirichlet.spatialCoordinateShiftCarrier (closure O₂) δ ⊆ O₀)
     (hh : |h| ≤ δ) (k : Fin d) :
@@ -483,7 +485,7 @@ private theorem mapsTo_spatialShift_prod_of_carrier
 /-- The spatial projection of the signed collar contains the coordinate
 segment needed by the fixed-time mean-value estimate. -/
 private theorem segment_add_smul_basisVec_subset_of_carrier
-    {d : ℕ} {O₀ O₂ : Set (PDE.Vec d)} {δ h : ℝ}
+    {d : ℕ} {O₀ O₂ : HypoellipticAleksandrov.VecSet d} {δ h : ℝ}
     (hcarrier :
       Dirichlet.spatialCoordinateShiftCarrier (closure O₂) δ ⊆ O₀)
     (hh : |h| ≤ δ) (k : Fin d) :
@@ -633,7 +635,7 @@ private theorem velocityGradient_productCutoff
 /-- On the inner product cylinder the two plateau factors make the product
 cutoff exactly one. -/
 private theorem productCutoff_eq_one_on_inner
-    {d : ℕ} {t₁ t₂ : ℝ} {O₁ : Set (PDE.Vec d)}
+    {d : ℕ} {t₁ t₂ : ℝ} {O₁ : HypoellipticAleksandrov.VecSet d}
     (zeta : ℝ → ℝ) (eta : PDE.Vec d → ℝ)
     (hzeta : ∀ t ∈ Icc t₁ t₂, zeta t = 1)
     (heta : ∀ y ∈ closure O₁, eta y = 1) :
@@ -647,7 +649,7 @@ private theorem productCutoff_eq_one_on_inner
 and plateau properties consumed by the fixed-step energy argument. -/
 private theorem productCutoff_data
     {d : ℕ} {s₀ t₁ t₂ s₁ δ Keta Kzeta : ℝ}
-    {O₀ O₁ O₂ : Set (PDE.Vec d)}
+    {O₀ O₁ O₂ : HypoellipticAleksandrov.VecSet d}
     (hO₂O₀ : closure O₂ ⊆ O₀)
     (hcarrier :
       Dirichlet.spatialCoordinateShiftCarrier (closure O₂) δ ⊆ O₀)
@@ -768,7 +770,7 @@ private theorem productCutoff_data
 /-- Two-sided Loewner control makes each local coefficient flux entry square
 integrable on compact subsets of the outer cylinder. -/
 private theorem fluxEntry_parabolicMemLpOn_compact
-    {d : ℕ} {U K : Set (TimeVelocity d)} {lam Lam : ℝ}
+    {d : ℕ} {U K : HypoellipticAleksandrov.Parabolic.TVSet d} {lam Lam : ℝ}
     (hK : IsCompact K) (hKU : K ⊆ U)
     (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (A : TimeVelocity d → PDE.Mat d)
@@ -794,7 +796,7 @@ private theorem fluxEntry_parabolicMemLpOn_compact
 /-- Joint `C¹` coefficient regularity and the signed collar convert the
 displayed spatial derivative bound into a uniform coefficient quotient bound. -/
 private theorem coefficient_spatialDifferenceQuotient_bound
-    {d : ℕ} {s₀ s₁ : ℝ} {O₀ O₂ : Set (PDE.Vec d)} {δ h Ma : ℝ}
+    {d : ℕ} {s₀ s₁ : ℝ} {O₀ O₂ : HypoellipticAleksandrov.VecSet d} {δ h Ma : ℝ}
     (hO₀ : IsOpen O₀)
     (hcarrier :
       Dirichlet.spatialCoordinateShiftCarrier (closure O₂) δ ⊆ O₀)
@@ -839,7 +841,7 @@ private theorem spatialDifferenceQuotient_principalFluxRow
 /-- The absorbed source estimate only needs square integrability of the source
 on the carrier on which the energy identity is integrated. -/
 private theorem abs_setIntegral_source_mul_backwardQuotient_le_absorbed_weighted
-    {d : ℕ} {S V : Set (TimeVelocity d)}
+    {d : ℕ} {S V : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hS : MeasurableSet S) (hV : MeasurableSet V)
     (k : Fin d) (h : ℝ) (hh : h ≠ 0)
     (R psi qh Hk w : TimeVelocity d → ℝ) (lam Keta : ℝ)
@@ -880,7 +882,7 @@ private theorem abs_setIntegral_source_mul_backwardQuotient_le_absorbed_weighted
 /-- A bounded time-cutoff derivative controls the absolute time contribution;
 no sign of the derivative is required. -/
 private theorem abs_setIntegral_timeDerivative_mul_sq_le
-    {d : ℕ} {V : Set (TimeVelocity d)} (hV : MeasurableSet V)
+    {d : ℕ} {V : HypoellipticAleksandrov.Parabolic.TVSet d} (hV : MeasurableSet V)
     (Q w : TimeVelocity d → ℝ) (Kzeta : ℝ)
     (hQ : ParabolicMemLpOn V 2 Q)
     (hint : Integrable (fun z ↦ timeDerivative w z * Q z ^ 2)
@@ -920,7 +922,7 @@ private theorem abs_setIntegral_timeDerivative_mul_sq_le
 membership and bounds the sum of its squared norms by the weighted outer
 energy. -/
 private theorem memLpOn_inner_and_sum_norm_sq_le_weighted
-    {d n : ℕ} {outer inner : Set (TimeVelocity d)}
+    {d n : ℕ} {outer inner : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hOuter : MeasurableSet outer) (hInner : MeasurableSet inner)
     (hInnerOuter : inner ⊆ outer)
     (H : Fin n → TimeVelocity d → ℝ) (w : TimeVelocity d → ℝ)
@@ -1012,7 +1014,7 @@ in a tested divergence-form equation. -/
 theorem exists_fixedDirection_gradient_spatialDifferenceQuotient_estimate_of_testedEquation
     (d : ℕ) (s₀ t₁ t₂ s₁ : ℝ)
     (hs₀t₁ : s₀ < t₁) (ht₁t₂ : t₁ < t₂) (ht₂s₁ : t₂ < s₁)
-    (O₀ O₁ : Set (PDE.Vec d))
+    (O₀ O₁ : HypoellipticAleksandrov.VecSet d)
     (hO₀ : IsOpen O₀) (hO₁ : IsOpen O₁) (hO₁ne : O₁.Nonempty)
     (hO₁compact : IsCompact (closure O₁))
     (hO₁O₀ : closure O₁ ⊆ O₀)
@@ -1079,9 +1081,9 @@ theorem exists_fixedDirection_gradient_spatialDifferenceQuotient_estimate_of_tes
     positivity
   refine ⟨C, δ, hC, hδ, ?_⟩
   intro A q G R hSymm hEll hA hAbound hq hG hR hWeak hEq k h hh hhd
-  let S : Set (TimeVelocity d) := Ioo s₀ s₁ ×ˢ O₀
-  let V : Set (TimeVelocity d) := Ioo s₀ s₁ ×ˢ O₂
-  let inner : Set (TimeVelocity d) := Ioo t₁ t₂ ×ˢ O₁
+  let S : HypoellipticAleksandrov.Parabolic.TVSet d := Ioo s₀ s₁ ×ˢ O₀
+  let V : HypoellipticAleksandrov.Parabolic.TVSet d := Ioo s₀ s₁ ×ˢ O₂
+  let inner : HypoellipticAleksandrov.Parabolic.TVSet d := Ioo t₁ t₂ ×ˢ O₁
   let w : TimeVelocity d → ℝ := fun z ↦ zeta z.1 * eta z.2 ^ 2
   let Q : TimeVelocity d → ℝ := spatialDifferenceQuotient k h q
   let H : Fin d → TimeVelocity d → ℝ := fun i ↦ spatialDifferenceQuotient k h (G i)
@@ -1120,7 +1122,7 @@ theorem exists_fixedDirection_gradient_spatialDifferenceQuotient_estimate_of_tes
   obtain ⟨hpsi, hDpsi, hpsiWeak, hpsiSupport, hDpsiSupport⟩ :=
     localized_spatialDifferenceQuotient_weakJet_global hVopen Q H hQ hH hQweak
       w hwSmooth hwCompact hwSupportV
-  have hFlux (i j : Fin d) (K : Set (TimeVelocity d))
+  have hFlux (i j : Fin d) (K : HypoellipticAleksandrov.Parabolic.TVSet d)
       (hK : IsCompact K) (hKS : K ⊆ S) :
       ParabolicMemLpOn K 2 (fun z ↦ A z i j * G j z) :=
     fluxEntry_parabolicMemLpOn_compact hK hKS hlam hlamLam A hEll hA G hG i j

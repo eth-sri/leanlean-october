@@ -17,7 +17,7 @@ theorem return_loss_exponent {c : ℝ} (hc : 0 < c) :
   obtain ⟨n, hn⟩ := exists_pow_lt_of_lt_one hc (by norm_num : (1 / 2 : ℝ) < 1)
   refine ⟨n + 1, by omega, ?_⟩
   rw [pow_succ]
-  nlinarith [pow_nonneg (by norm_num : (0 : ℝ) ≤ 1 / 2) n]
+  nlinarith
 
 /-- Stop doubling at a radius between the fixed cutoff and twice that cutoff. -/
 theorem return_doubling_cutoff (r ell : ℝ) (_hr : 0 < r) (hell : 0 < ell)
@@ -51,6 +51,6 @@ theorem return_loss_power {c ell : ℝ} {m N : ℕ}
     norm_num
   rw [← he]
   exact (mul_le_mul_of_nonneg_left hpow (pow_nonneg (pow_nonneg (by norm_num) m) N)).trans
-    (by simpa only [mul_one] using hcoeff)
+    (by simpa using hcoeff)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

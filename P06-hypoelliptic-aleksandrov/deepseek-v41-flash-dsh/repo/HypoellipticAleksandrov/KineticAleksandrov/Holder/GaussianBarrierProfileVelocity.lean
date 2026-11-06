@@ -23,9 +23,11 @@ theorem contDiff_qform_velocity {d : ℕ} (lam h sigma : ℝ) (y : PDE.Vec d) :
     ContDiff ℝ (⊤ : ℕ∞) (fun V => qform lam h sigma y V) := by
   unfold qform PDE.vecDot
   fun_prop
+section
+variable {d : ℕ} (lam Lam H L ell sblock : ℝ) {h s : ℝ}
 
 /-- The profile velocity slice factors into an exponential quadratic and a constant. -/
-theorem gaussianProfile_velocitySlice {d : ℕ} (lam Lam H L ell sblock : ℝ) {h s : ℝ}
+theorem gaussianProfile_velocitySlice 
     (hh : 0 < h) (hs : 0 < s - sblock) (y : PDE.Vec d) :
     (fun V => gaussianProfile lam Lam H h L ell sblock (s, (y, V))) =
       (fun V => (ell * Real.exp (-Xi d lam Lam H h * (s - sblock))) *
@@ -36,7 +38,7 @@ theorem gaussianProfile_velocitySlice {d : ℕ} (lam Lam H L ell sblock : ℝ) {
   ring
 
 /-- The profile velocity gradient is exactly minus twice amplitude times Gaussian times `p`. -/
-theorem gaussianProfile_velocityGradient {d : ℕ} (lam Lam H L ell sblock : ℝ) {h s : ℝ}
+theorem gaussianProfile_velocityGradient 
     (hh : 0 < h) (hs : 0 < s - sblock) (y V : PDE.Vec d) :
     PDE.classicalGradient
       (fun W => gaussianProfile lam Lam H h L ell sblock (s, (y, W))) V =
@@ -65,7 +67,7 @@ theorem gaussianProfile_velocityGradient {d : ℕ} (lam Lam H L ell sblock : ℝ
   ring
 
 /-- The profile velocity Hessian has the exact Gaussian rank-one minus covariance form. -/
-theorem gaussianProfile_velocityHessian {d : ℕ} (lam Lam H L ell sblock : ℝ) {h s : ℝ}
+theorem gaussianProfile_velocityHessian 
     (hh : 0 < h) (hs : 0 < s - sblock) (y V : PDE.Vec d) (i j : Fin d) :
     sliceHessian (fun W => gaussianProfile lam Lam H h L ell sblock (s, (y, W))) V i j =
       ell * Real.exp (-Xi d lam Lam H h * (s - sblock) -
@@ -102,5 +104,6 @@ theorem gaussianProfile_velocityHessian {d : ℕ} (lam Lam H L ell sblock : ℝ)
   simp only [Pi.smul_apply, smul_eq_mul, Matrix.smul_apply]
   rw [sub_eq_add_neg (-Xi d lam Lam H h * (s - sblock)), Real.exp_add]
   ring
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

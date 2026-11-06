@@ -2,6 +2,7 @@ module
 
 import Mathlib.Tactic.Linarith
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TerminalPointValue
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Linearity, positivity and bounds of the terminal point value
@@ -23,7 +24,7 @@ open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set
 
 section Outside
 
-variable {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
+variable {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n} {γ : ℝ → PDE.Vec n}
   {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n} {τ : ℝ}
 
 /-- Sums of smooth compactly supported terminal data are smooth compactly supported data. -/
@@ -60,7 +61,7 @@ section EvolutionData
 variable (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
 variable (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
 variable (hm : 0 < m) (hmLb : m ≤ L_b)
-variable (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
+variable (Ω : HypoellipticAleksandrov.VecSet n) (γ : ℝ → PDE.Vec n)
 variable (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
 variable (hΩ : IsAdmissibleEvolutionDomain Ω)
 variable (hγ : IsContinuousPiecewiseC1 γ)
@@ -76,10 +77,12 @@ include hb_smooth hb_lipschitz hb_coercive hEx
 
 local notation "S" => terminalValue n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
   hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
+section
+variable (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ)
 
 /-- The terminal point value is additive in the datum. -/
 theorem terminalValue_add
-    (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ)
+    
     (F G : BoundedBorel (EvolutionAmbientState n))
     (hF : IsSmoothCompactTerminalDatum Ω γ τ F) (hG : IsSmoothCompactTerminalDatum Ω γ τ G) :
     S σ τ hστ p (F + G) (hF.add hG) = S σ τ hστ p F hF + S σ τ hστ p G hG := by
@@ -95,7 +98,7 @@ theorem terminalValue_add
 
 /-- The terminal point value is homogeneous in the datum. -/
 theorem terminalValue_smul
-    (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) (c : ℝ)
+     (c : ℝ)
     (F : BoundedBorel (EvolutionAmbientState n))
     (hF : IsSmoothCompactTerminalDatum Ω γ τ F) :
     S σ τ hστ p (c • F) (hF.smul c) = c * S σ τ hστ p F hF := by
@@ -109,7 +112,7 @@ theorem terminalValue_smul
 
 /-- The terminal point value is nonnegative on nonnegative data. -/
 theorem terminalValue_nonneg
-    (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ)
+    
     (F : BoundedBorel (EvolutionAmbientState n))
     (hF : IsSmoothCompactTerminalDatum Ω γ τ F) (hpos : ∀ q, 0 ≤ F q) :
     0 ≤ S σ τ hστ p F hF := by
@@ -125,7 +128,7 @@ theorem terminalValue_nonneg
 
 /-- The terminal point value is bounded by every uniform bound of the datum. -/
 theorem abs_terminalValue_le
-    (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ)
+    
     (F : BoundedBorel (EvolutionAmbientState n))
     (hF : IsSmoothCompactTerminalDatum Ω γ τ F) (C : ℝ) (hC : 0 ≤ C)
     (hFC : ∀ q, |F q| ≤ C) :
@@ -134,6 +137,7 @@ theorem abs_terminalValue_le
   rw [terminalValue_eq_of_solution n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
     hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p F hF u hu]
   exact hbd C hC hFC _ (mk_mem_evolutionPastClosedCylinder hστ p)
+end
 
 /-- At equal times the terminal point value is the datum itself. -/
 theorem terminalValue_self

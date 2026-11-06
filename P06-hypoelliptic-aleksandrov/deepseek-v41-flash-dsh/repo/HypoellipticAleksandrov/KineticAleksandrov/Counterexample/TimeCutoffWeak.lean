@@ -3,6 +3,7 @@ module
 public import PDEFoundation.Sobolev.W1p.Composition
 public import PDEFoundation.Sobolev.W1p.Algebra
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.TimeCutoff
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Weak first chain rule for a scalar cutoff of a difference
@@ -18,7 +19,7 @@ open scoped ENNReal
 
 /-- A bounded-derivative `C¹` cutoff of two Sobolev representatives has the chain-rule
 weak gradient, including the derivative of the subtracted function. -/
-theorem weakGradient_cutoff_sub {n : ℕ} {D : Set (PDE.Vec n)} {p : ℝ≥0∞}
+theorem weakGradient_cutoff_sub {n : ℕ} {D : HypoellipticAleksandrov.VecSet n} {p : ℝ≥0∞}
     (hD : PDE.IsOpenBoundedConvexDomain D) (hp : 1 ≤ p) (hpTop : p ≠ ∞)
     (u B : PDE.W1pFunction D p) (theta : ℝ → ℝ) (htheta : ContDiff ℝ 1 theta)
     (M : ℝ) (hM : 0 ≤ M) (hbound : ∀ s, |deriv theta s| ≤ M) :
@@ -31,7 +32,7 @@ theorem weakGradient_cutoff_sub {n : ℕ} {D : Set (PDE.Vec n)} {p : ℝ≥0∞}
       hD hp hpTop (u - B) htheta hM hbound
 
 /-- The fixed Appendix C cutoff has multiplier bound one in the weak chain rule. -/
-theorem weakGradient_timeCutoff_sub {n : ℕ} {D : Set (PDE.Vec n)} {p : ℝ≥0∞}
+theorem weakGradient_timeCutoff_sub {n : ℕ} {D : HypoellipticAleksandrov.VecSet n} {p : ℝ≥0∞}
     (hD : PDE.IsOpenBoundedConvexDomain D) (hp : 1 ≤ p) (hpTop : p ≠ ∞)
     (u B : PDE.W1pFunction D p) :
     PDE.HasWeakGradientOn D

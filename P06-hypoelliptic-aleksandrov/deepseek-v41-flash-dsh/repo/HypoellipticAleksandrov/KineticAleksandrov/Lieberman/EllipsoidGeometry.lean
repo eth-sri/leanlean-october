@@ -7,6 +7,7 @@ import Mathlib.Topology.Order.Compact
 import Mathlib.Topology.MetricSpace.ProperSpace
 import Mathlib.Analysis.Normed.Group.Bounded
 import Mathlib.Tactic
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Geometry and compact-cylinder drift bounds for the literal ellipsoid -/
 
@@ -15,13 +16,15 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Lieberman
 open HypoellipticAleksandrov Parabolic Set
 open scoped Matrix Topology BigOperators
+section
+variable {d : ℕ}
 
-private theorem quadratic_continuous {d : ℕ} (Q : PDE.Mat d) :
+private theorem quadratic_continuous  (Q : PDE.Mat d) :
     Continuous (fun x => PDE.vecDot x (Q *ᵥ x)) := by
   unfold PDE.vecDot Matrix.mulVec dotProduct
   fun_prop
 
-private theorem quadratic_smul {d : ℕ} (Q : PDE.Mat d) (c : ℝ) (x : PDE.Vec d) :
+private theorem quadratic_smul  (Q : PDE.Mat d) (c : ℝ) (x : PDE.Vec d) :
     PDE.vecDot (c • x) (Q *ᵥ (c • x)) = c ^ 2 * PDE.vecDot x (Q *ᵥ x) := by
   simp only [Matrix.mulVec_smul, PDE.vecDot, Pi.smul_apply, smul_eq_mul]
   rw [Finset.mul_sum]
@@ -29,16 +32,16 @@ private theorem quadratic_smul {d : ℕ} (Q : PDE.Mat d) (c : ℝ) (x : PDE.Vec 
   intro i _
   ring
 
-private theorem quadratic_nonneg {d : ℕ} {Q : PDE.Mat d} (hQ : Q.PosDef)
+private theorem quadratic_nonneg  {Q : PDE.Mat d} (hQ : Q.PosDef)
     (x : PDE.Vec d) : 0 ≤ PDE.vecDot x (Q *ᵥ x) := by
   simpa only [PDE.vecDot, dotProduct, star_trivial] using
     hQ.posSemidef.dotProduct_mulVec_nonneg x
 
 /-- Every literal open ellipsoid is open, without a definiteness assumption. -/
-theorem isOpen_openEllipsoid {d : ℕ} (Q : PDE.Mat d) : IsOpen (openEllipsoid Q) :=
+theorem isOpen_openEllipsoid  (Q : PDE.Mat d) : IsOpen (openEllipsoid Q) :=
   isOpen_lt (quadratic_continuous Q) continuous_const
 
-private theorem ellipsoid_bounded {d : ℕ} {Q : PDE.Mat d} (hQ : Q.PosDef) :
+private theorem ellipsoid_bounded  {Q : PDE.Mat d} (hQ : Q.PosDef) :
     Bornology.IsBounded (openEllipsoid Q) := by
   obtain ⟨m, hm, hmin⟩ := (isCompact_sphere (0 : PDE.Vec d) 1).exists_forall_le'
     (quadratic_continuous Q).continuousOn (a := 0) (by
@@ -69,7 +72,7 @@ private theorem ellipsoid_bounded {d : ℕ} {Q : PDE.Mat d} (hQ : Q.PosDef) :
   have hdiv : 0 < 1 / m := one_div_pos.mpr hm
   nlinarith only [hm, hn, hmul, hq, hmdiv, hdiv, sq_nonneg (‖x‖ - 1)]
 
-private theorem ellipsoid_closure {d : ℕ} {Q : PDE.Mat d} (_hQ : Q.PosDef) :
+private theorem ellipsoid_closure  {Q : PDE.Mat d} (_hQ : Q.PosDef) :
     closure (openEllipsoid Q) = {x | PDE.vecDot x (Q *ᵥ x) ≤ 1} := by
   apply subset_antisymm
   · exact closure_lt_subset_le (quadratic_continuous Q) continuous_const
@@ -89,7 +92,7 @@ private theorem ellipsoid_closure {d : ℕ} {Q : PDE.Mat d} (_hQ : Q.PosDef) :
     have ht := closure_mono him hh
     simpa only [one_smul] using ht
 
-private theorem quadratic_add {d : ℕ} {Q : PDE.Mat d} (hQ : Q.IsSymm)
+private theorem quadratic_add  {Q : PDE.Mat d} (hQ : Q.IsSymm)
     (x y : PDE.Vec d) :
     PDE.vecDot (x + y) (Q *ᵥ (x + y)) = PDE.vecDot x (Q *ᵥ x) +
       2 * PDE.vecDot y (Q *ᵥ x) + PDE.vecDot y (Q *ᵥ y) := by
@@ -100,7 +103,7 @@ private theorem quadratic_add {d : ℕ} {Q : PDE.Mat d} (hQ : Q.IsSymm)
   ring
 
 /-- Positive-definite ellipsoids have bounded closure and Euclidean exterior cones. -/
-theorem openEllipsoid_geometry {d : ℕ} {Q : PDE.Mat d} (hQ : Q.PosDef) :
+theorem openEllipsoid_geometry  {Q : PDE.Mat d} (hQ : Q.PosDef) :
     Bornology.IsBounded (openEllipsoid Q) ∧
     closure (openEllipsoid Q) = {x | PDE.vecDot x (Q *ᵥ x) ≤ 1} ∧
     frontier (openEllipsoid Q) = {x | PDE.vecDot x (Q *ᵥ x) = 1} ∧
@@ -141,7 +144,7 @@ theorem openEllipsoid_geometry {d : ℕ} {Q : PDE.Mat d} (hQ : Q.PosDef) :
     linarith only [hpos, hzq]
 
 /-- A continuous drift is Euclidean-bounded on every bounded closed spatial cylinder. -/
-theorem exists_closedCylinder_drift_bound {d : ℕ} {Ω : Set (PDE.Vec d)}
+theorem exists_closedCylinder_drift_bound  {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : Bornology.IsBounded Ω) (a T : ℝ) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (hb : Continuous (fun z : TimeVelocity d => b z.1 z.2)) :
     ∃ B : ℝ, 0 ≤ B ∧ ∀ z ∈ scalarParabolicClosedCylinder a T Ω,
@@ -153,5 +156,6 @@ theorem exists_closedCylinder_drift_bound {d : ℕ} {Ω : Set (PDE.Vec d)}
   refine ⟨max B 0, le_max_right _ _, ?_⟩
   intro z hz
   exact (le_abs_self _).trans ((hB z hz).trans (le_max_left _ _))
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Lieberman

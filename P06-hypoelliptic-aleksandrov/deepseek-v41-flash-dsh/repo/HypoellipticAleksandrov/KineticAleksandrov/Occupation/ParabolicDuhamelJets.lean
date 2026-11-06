@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TruncationWea
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.HormanderBridgeTransfer
 public import HypoellipticAleksandrov.Parabolic.ContDiffOnTwoToScalarC12
 public import HypoellipticAleksandrov.Parabolic.HarnackUnitCylinder.ScalarHessian
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Weak integration by parts for `z`-independent functions
@@ -64,7 +65,7 @@ theorem evolutionToTimeVelocity_line (x w : EvolutionVec d)
     Prod.mk_add_mk, add_zero]
 
 /-- The time line derivative of a `z`-independent function. -/
-theorem hasLineDerivAt_zIndep_time {w : TimeVelocity d → ℝ} {D : Set (TimeVelocity d)}
+theorem hasLineDerivAt_zIndep_time {w : TimeVelocity d → ℝ} {D : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hD : IsOpen D) (hw : IsScalarC12On w D) {x : EvolutionVec d}
     (hx : evolutionToTimeVelocity d x ∈ D) :
     HasLineDerivAt ℝ (w ∘ evolutionToTimeVelocity d)
@@ -76,7 +77,7 @@ theorem hasLineDerivAt_zIndep_time {w : TimeVelocity d → ℝ} {D : Set (TimeVe
     ContinuousLinearMap.id_apply, one_smul, map_zero, add_zero] using h
 
 /-- Spatial line derivatives of a `z`-independent function. -/
-theorem hasLineDerivAt_zIndep_spatial {w : TimeVelocity d → ℝ} {D : Set (TimeVelocity d)}
+theorem hasLineDerivAt_zIndep_spatial {w : TimeVelocity d → ℝ} {D : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hw : IsScalarC12On w D) {x v : EvolutionVec d} (hx : evolutionToTimeVelocity d x ∈ D)
     (hv : Evolution.timeCoord d v = 0) :
     HasLineDerivAt ℝ (w ∘ evolutionToTimeVelocity d)
@@ -90,7 +91,7 @@ theorem hasLineDerivAt_zIndep_spatial {w : TimeVelocity d → ℝ} {D : Set (Tim
     scalarSpatialGradient] using! h
 
 /-- Spatial line derivatives of gradient entries are scalar Hessian entries. -/
-theorem hasLineDerivAt_zIndep_gradient {w : TimeVelocity d → ℝ} {D : Set (TimeVelocity d)}
+theorem hasLineDerivAt_zIndep_gradient {w : TimeVelocity d → ℝ} {D : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hw : IsScalarC12On w D) {x v : EvolutionVec d} (hx : evolutionToTimeVelocity d x ∈ D)
     (hv : Evolution.timeCoord d v = 0) (i j : Fin d)
     (hdir : diffusedCoord d v = PDE.basisVec i) :
@@ -123,7 +124,7 @@ and a smooth compactly supported test `ψ` supported in `π ⁻¹' D`,
 theorem integral_transportedAdjoint_zIndep {B' : CoefficientField d}
     (hB : IsSmoothFullKineticCoefficient (zIndependentCoefficient B'))
     {b : PDE.Vec d → PDE.Vec d} (hb : IsSmoothDrift b)
-    {D : Set (TimeVelocity d)} (hD : IsOpen D) {w : TimeVelocity d → ℝ}
+    {D : HypoellipticAleksandrov.Parabolic.TVSet d} (hD : IsOpen D) {w : TimeVelocity d → ℝ}
     (hw : ContDiffOn ℝ (⊤ : ℕ∞) w D)
     {ψ : EvolutionVec d → ℝ} (hψ : ContDiff ℝ (⊤ : ℕ∞) ψ) (hc : HasCompactSupport ψ)
     (hs : tsupport ψ ⊆ evolutionToTimeVelocity d ⁻¹' D) :

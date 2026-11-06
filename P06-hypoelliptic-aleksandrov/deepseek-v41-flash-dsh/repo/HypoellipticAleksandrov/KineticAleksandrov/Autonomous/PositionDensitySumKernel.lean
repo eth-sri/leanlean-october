@@ -48,8 +48,7 @@ theorem position_exp_abs_summable (d : ℝ) (hd : 0 < d) :
 
 /-- The two-index majorant has finite real l1 mass. -/
 theorem positionYoungKernel_summable (d : ℝ) (hd : 0 < d) :
-    Summable (positionYoungKernel d) := by
-  exact (position_exp_abs_summable d hd).mul_of_nonneg
+    Summable (positionYoungKernel d) := (position_exp_abs_summable d hd).mul_of_nonneg
     (position_exp_abs_summable d hd) (fun _ => (Real.exp_pos _).le)
     (fun _ => (Real.exp_pos _).le)
 

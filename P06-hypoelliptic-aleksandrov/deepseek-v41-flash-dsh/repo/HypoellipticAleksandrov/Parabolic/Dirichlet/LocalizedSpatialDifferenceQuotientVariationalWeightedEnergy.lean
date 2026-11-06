@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeVariationalWeightedEnergy
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.LocalizedSpatialDifferenceQuotientEnergyTestH10
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 @[expose] public section
 
@@ -24,7 +25,7 @@ namespace IsReverseTimeVariationalEnergySolution
 for the localized quotient and its energy test. -/
 theorem
     integral_localizedSpatialDifferenceQuotient_norm_sq_mul_reverseTimeScalarTest_deriv_eq
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
@@ -50,7 +51,7 @@ theorem
       (sub_pos.mpr h₀₁) u g)
     (hu : IsReverseTimeVariationalEnergySolution
       r₀ r₁ h₀₁ hΩ hΩbounded a b c F hFSmooth initial u g hdu)
-    {inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ)
     (hηΩ : tsupport η.toFun ⊆ Ω)

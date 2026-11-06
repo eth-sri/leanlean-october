@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.Parabolic.LocalWeakTimeProduct
 public import HypoellipticAleksandrov.Parabolic.MeasurableSpatialC1WeakLeibniz
 public import HypoellipticAleksandrov.Parabolic.ParabolicWeakDerivativeFamily
 public import HypoellipticAleksandrov.Parabolic.TimeVelocityMultiIndexLocalCalculus
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Weak multi-index Leibniz families
 
@@ -24,7 +25,7 @@ selected weak derivative family by a classical coefficient. -/
 noncomputable def parabolicWeakMulRepresentative
     {d L : ℕ}
     (q : TimeVelocity d → ℝ)
-    {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
+    {U : HypoellipticAleksandrov.Parabolic.TVSet d} {u : TimeVelocity d → ℝ}
     (Du : ParabolicWeakDerivativeFamily d L U u)
     (beta : ParabolicDerivativeIndex d L) :
     TimeVelocity d → ℝ :=
@@ -63,7 +64,7 @@ private theorem split_zero_eq {d : ℕ}
 
 private theorem representative_zero
     {d L : ℕ} (q : TimeVelocity d → ℝ)
-    {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
+    {U : HypoellipticAleksandrov.Parabolic.TVSet d} {u : TimeVelocity d → ℝ}
     (Du : ParabolicWeakDerivativeFamily d L U u) :
     parabolicWeakMulRepresentative q Du (ParabolicDerivativeIndex.zero d L) =
       fun z => q z * Du.representative (ParabolicDerivativeIndex.zero d L) z := by
@@ -114,7 +115,7 @@ private theorem toReal_eLpNorm_mul_le
   exact ⟨haf, by simpa only [ENNReal.toReal_mul, ENNReal.toReal_ofReal hM] using hr⟩
 
 private theorem mulTerm_memLp_norm
-    {d : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} (hU : IsOpen U)
     (B : ℝ) (hB : 0 ≤ B) (a f : TimeVelocity d → ℝ)
     (ha : ContinuousOn a U) (haB : ∀ z ∈ U, |a z| ≤ B)
     (hf : ParabolicMemLpOn U 2 f) :
@@ -163,7 +164,7 @@ private theorem weight_add_velocity_single {d : ℕ}
 /-- Multiplication by a bounded finite-order classical coefficient preserves a
 coherent weak parabolic derivative family on an arbitrary open carrier. -/
 noncomputable def ParabolicWeakDerivativeFamily.mulContDiffOn
-    {d L : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
+    {d L : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} (hU : IsOpen U)
     (Bq : ParabolicDerivativeIndex d L → ℝ)
     (hBq : ∀ alpha, 0 ≤ Bq alpha)
     (q : TimeVelocity d → ℝ) (hq : ContDiffOn ℝ L q U)
@@ -555,7 +556,7 @@ noncomputable def ParabolicWeakDerivativeFamily.mulContDiffOn
 /-- The selected representative of `mulContDiffOn` is definitionally the
 literal multi-index Leibniz sum. -/
 @[simp] theorem ParabolicWeakDerivativeFamily.mulContDiffOn_representative
-    {d L : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
+    {d L : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} (hU : IsOpen U)
     (Bq : ParabolicDerivativeIndex d L → ℝ)
     (hBq : ∀ alpha, 0 ≤ Bq alpha)
     (q : TimeVelocity d → ℝ) (hq : ContDiffOn ℝ L q U)

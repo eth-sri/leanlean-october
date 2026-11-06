@@ -55,10 +55,11 @@ theorem volume_transport_slices {d : ℕ} {S : Set (KineticPoint d)}
   intro v
   rw [Measure.volume_eq_prod, Measure.prod_apply (measurable_prodMk_left hs)]
   rfl
+section
+variable {d : ℕ} {ι : Type*} [Countable ι] (P : ι → KineticPoint d) (r : ι → ℝ)
 
 /-- Each transport slice satisfies the sharp one-dimensional delayed-union inequality. -/
-theorem delayed_union_slice {d : ℕ} {ι : Type*} [Countable ι]
-    (P : ι → KineticPoint d) (r : ι → ℝ) (hr : ∀ i, 0 < r i)
+theorem delayed_union_slice  (hr : ∀ i, 0 < r i)
     (m : ℕ) (hm : 0 < m) (v y : PDE.Vec d) :
     volume {t : ℝ | transportChart (v,y,t) ∈ ⋃ i, backwardCylinder (P i) (r i)} ≤
       ENNReal.ofReal (((m : ℝ)+1)/(m : ℝ)) *
@@ -86,8 +87,7 @@ theorem delayed_union_slice {d : ℕ} {ι : Type*} [Countable ι]
     _ ≤ _ := mul_le_mul_right (measure_mono hforward) _
 
 /-- Countable kinetic cylinder families satisfy the sharp delayed-union estimate. -/
-theorem delayed_union_countable {d : ℕ} {ι : Type*} [Countable ι]
-    (P : ι → KineticPoint d) (r : ι → ℝ) (hr : ∀ i, 0 < r i)
+theorem delayed_union_countable  (hr : ∀ i, 0 < r i)
     (m : ℕ) (hm : 0 < m) :
     volume (⋃ i, backwardCylinder (P i) (r i)) ≤
       ENNReal.ofReal (((m : ℝ)+1)/(m : ℝ)) *
@@ -101,5 +101,6 @@ theorem delayed_union_countable {d : ℕ} {ι : Type*} [Countable ι]
   dsimp only
   rw [← lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
   exact lintegral_mono fun y => delayed_union_slice P r hr m hm v y
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering

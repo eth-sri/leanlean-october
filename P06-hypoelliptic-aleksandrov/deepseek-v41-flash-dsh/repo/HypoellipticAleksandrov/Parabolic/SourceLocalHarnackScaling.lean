@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.SourceLocalHarnackEndpoint
 public import HypoellipticAleksandrov.Parabolic.ScalingMeasure
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Physical scaling for the source-aware local parabolic Harnack estimate
@@ -46,14 +47,14 @@ private def parabolicAffineHomeomorph
 
 private theorem isCompact_parabolicAffine_preimage
     {d : ℕ} {t0 s : ℝ} {v0 : PDE.Vec d} (hs : 0 < s)
-    {K : Set (TimeVelocity d)} (hK : IsCompact K) :
+    {K : HypoellipticAleksandrov.Parabolic.TVSet d} (hK : IsCompact K) :
     IsCompact (parabolicAffine t0 v0 s ⁻¹' K) := by
   change IsCompact ((parabolicAffineHomeomorph t0 v0 s hs) ⁻¹' K)
   exact (parabolicAffineHomeomorph t0 v0 s hs).isCompact_preimage.mpr hK
 
 private theorem parabolicAffine_image_preimage_eq
     {d : ℕ} {t0 s : ℝ} {v0 : PDE.Vec d} (hs : 0 < s)
-    (K : Set (TimeVelocity d)) :
+    (K : HypoellipticAleksandrov.Parabolic.TVSet d) :
     parabolicAffine t0 v0 s '' (parabolicAffine t0 v0 s ⁻¹' K) = K := by
   change (parabolicAffineHomeomorph t0 v0 s hs : TimeVelocity d → TimeVelocity d) ''
     ((parabolicAffineHomeomorph t0 v0 s hs : TimeVelocity d → TimeVelocity d) ⁻¹' K) = K
@@ -87,7 +88,7 @@ theorem exists_source_local_parabolic_harnack
     (d : Nat) (hd : 1 <= d) (lam : Real) (hlam : 0 < lam)
     (Lam : Real) (hlamLam : lam <= Lam) :
     ∃ hBox C : Real, 0 < hBox ∧ hBox <= 1 ∧ 0 < C ∧
-      ∀ (K U : Set (TimeVelocity d)) (B : CoefficientField d)
+      ∀ (K U : HypoellipticAleksandrov.Parabolic.TVSet d) (B : CoefficientField d)
         (q F : TimeVelocity d -> Real) (t0 : Real) (v0 : PDE.Vec d) (r : Real),
         0 < r -> IsCompact K -> K ⊆ U -> IsOpen U ->
         parabolicClosedBox 2 r (t0 - r ^ 2) v0 ⊆ K ->
@@ -105,8 +106,8 @@ theorem exists_source_local_parabolic_harnack
   intro K U B q F t0 v0 r hr hK hKU hU hbox hB hq hF hnonneg hlower hupper heq v hv
   let s : ℝ := r / 2
   let a : TimeVelocity d → TimeVelocity d := parabolicAffine (t0 - r ^ 2) v0 s
-  let KHat : Set (TimeVelocity d) := a ⁻¹' K
-  let UHat : Set (TimeVelocity d) := a ⁻¹' U
+  let KHat : HypoellipticAleksandrov.Parabolic.TVSet d := a ⁻¹' K
+  let UHat : HypoellipticAleksandrov.Parabolic.TVSet d := a ⁻¹' U
   let BHat : CoefficientField d := pullbackCoefficient B (t0 - r ^ 2) v0 s
   let qHat : TimeVelocity d → ℝ := pullbackScalar q (t0 - r ^ 2) v0 s
   let FHat : TimeVelocity d → ℝ := fun z ↦ s ^ 2 * F (a z)

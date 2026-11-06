@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Measure.ParabolicDyadicSaturation
 public import HypoellipticAleksandrov.Measure.InkSpotsWind
 public import HypoellipticAleksandrov.Measure.InkSpotsHotWind
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Aggregate ink-spots volume estimate
@@ -22,7 +23,7 @@ noncomputable section
 /-- Krylov--Safonov, Lemma 2.5: the initial measurable set is controlled by its third
 ink-spots enlargement. -/
 theorem volume_Gamma_le_inkSpotsD3
-    (d : Nat) (Gamma : Set (TimeVelocity d)) (xi eta zeta : Real)
+    (d : Nat) (Gamma : HypoellipticAleksandrov.Parabolic.TVSet d) (xi eta zeta : Real)
     (hGamma : MeasurableSet Gamma)
     (hGammaUnit : Gamma ⊆ inkSpotsUnitBox d)
     (hxi : xi ∈ Set.Ioo (0 : Real) 1)

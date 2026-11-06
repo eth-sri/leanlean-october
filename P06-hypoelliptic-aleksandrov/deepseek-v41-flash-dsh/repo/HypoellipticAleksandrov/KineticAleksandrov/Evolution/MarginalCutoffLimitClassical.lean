@@ -7,6 +7,7 @@ import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ClassicalTerminalWea
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.MarginalCutoffLimit
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ViscosityWeakLimit
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExternalRegularity
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # The cutoff limit is a classical solution (Proposition 2.1)
@@ -58,7 +59,7 @@ theorem exists_cutoff_limit_classical
     (hH : HormanderHypoellipticityStatement)
     (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
     (hlam : 0 < lam) (hlamLam : lam ≤ Lam) (hm : 0 < m) (hmLb : m ≤ L_b)
-    (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
+    (Ω : HypoellipticAleksandrov.VecSet n) (γ : ℝ → PDE.Vec n)
     (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
     (hΩ : IsAdmissibleEvolutionDomain Ω) (hγ : IsContinuousPiecewiseC1 γ)
     (hB_smooth : IsSmoothFullKineticCoefficient B)

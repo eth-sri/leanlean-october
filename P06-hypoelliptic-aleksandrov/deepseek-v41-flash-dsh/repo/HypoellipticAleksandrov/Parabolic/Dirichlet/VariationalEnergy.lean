@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialForm
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeHilbertIntegrationByParts
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.WeakTimeDerivativeUnique
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.IntegralGronwall
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Reverse-time variational energy uniqueness
@@ -23,14 +24,14 @@ noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 local instance instReverseTimeL2VStarModuleEnergy
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) :
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (T : ℝ) :
     Module ℝ (ReverseTimeL2VStar hΩ T) :=
   MeasureTheory.Lp.instModule
 
 /-- A literal common-event weak variational solution of the reversed,
 homogeneous-lateral Dirichlet energy problem. -/
 def IsReverseTimeVariationalEnergySolution
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
@@ -56,7 +57,7 @@ def IsReverseTimeVariationalEnergySolution
 
 /-- The literal closed-time Gårding difference-energy inequality. -/
 def HasReverseTimeDifferenceEnergyBound
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ lam K : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
     (u : ReverseTimeL2V hΩ (r₁ - r₀))
     (g : ReverseTimeL2VStar hΩ (r₁ - r₀))
@@ -84,7 +85,7 @@ def HasReverseTimeDifferenceEnergyBound
           ∂reverseTimeVolume (r₁ - r₀))
 
 private theorem exists_reverseTimeSpatialForm_sliceEvidence_of_smoothOnNeighborhood
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c : ℝ → PDE.Vec d → ℝ)
@@ -213,7 +214,7 @@ private theorem exists_reverseTimeSpatialForm_sliceEvidence_of_smoothOnNeighborh
     simpa only [Real.norm_eq_abs] using hCcBound τ hτ y hy
 
 private noncomputable def reverseTimeSpatialFormMultiplierExpression
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (r₁ τ : ℝ) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (Ca : Fin d → Fin d → ℝ) (Cd : Fin d → ℝ) (Cc : ℝ)
@@ -250,7 +251,7 @@ private noncomputable def reverseTimeSpatialFormMultiplierExpression
       (valueCLM hΩ v)
 
 private theorem reverseTimeSpatialForm_eq_multiplierExpression
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (r₁ τ : ℝ) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (Ca : Fin d → Fin d → ℝ) (Cd : Fin d → ℝ) (Cc : ℝ)
@@ -276,7 +277,7 @@ private theorem reverseTimeSpatialForm_eq_multiplierExpression
     Ca hCa hAMeas hABound Cd hCd hDriftMeas hDriftBound Cc hCc hScalarMeas hScalarBound
 
 private theorem reverseTimeSpatialForm_sub_left_of_sliceEvidence
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (r₁ τ : ℝ) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (Ca : Fin d → Fin d → ℝ) (Cd : Fin d → ℝ) (Cc : ℝ)
@@ -309,7 +310,7 @@ private theorem reverseTimeSpatialForm_sub_left_of_sliceEvidence
   ring
 
 private theorem reverseTimeSpatialForm_sub_left_of_smoothOnNeighborhood
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c : ℝ → PDE.Vec d → ℝ)
@@ -332,7 +333,7 @@ private theorem reverseTimeSpatialForm_sub_left_of_smoothOnNeighborhood
     hABound hCd hDriftMeas hDriftBound hCc hScalarMeas hScalarBound u₁ u₂ v
 
 private theorem reverseTimeSpatialForm_sub_left_diagonal_of_smoothOnNeighborhood
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c : ℝ → PDE.Vec d → ℝ)
@@ -352,7 +353,7 @@ private theorem reverseTimeSpatialForm_sub_left_diagonal_of_smoothOnNeighborhood
       r₀ r₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth τ hτ u v (u - v)).symm
 
 private theorem hasGelfandWeakTimeDerivative_sub
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {hΩ : IsOpen Ω} {T : ℝ} {hT : 0 < T}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {hΩ : IsOpen Ω} {T : ℝ} {hT : 0 < T}
     {u v : ReverseTimeL2V hΩ T} {g k : ReverseTimeL2VStar hΩ T}
     (hu : HasGelfandWeakTimeDerivative hΩ T hT u g)
     (hv : HasGelfandWeakTimeDerivative hΩ T hT v k) :
@@ -360,7 +361,7 @@ private theorem hasGelfandWeakTimeDerivative_sub
   simpa [sub_eq_add_neg] using hu.add (hv.smul (-1 : ℝ))
 
 private theorem ae_reverseTimeVariationalEnergy_difference_equation
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
@@ -404,7 +405,7 @@ private theorem ae_reverseTimeVariationalEnergy_difference_equation
   linarith
 
 private theorem reverseTimeHilbertRepresentative_sub_eq
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hdu : HasGelfandWeakTimeDerivative hΩ T hT u g)
@@ -449,7 +450,7 @@ private theorem setIntegral_garding_of_ae
   exact h
 
 private theorem hasReverseTimeDifferenceEnergyBound_of_pointwise
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ lam K : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
     (u : ReverseTimeL2V hΩ (r₁ - r₀)) (g : ReverseTimeL2VStar hΩ (r₁ - r₀))
     (hdu : HasGelfandWeakTimeDerivative hΩ (r₁ - r₀) (sub_pos.mpr h₀₁) u g)
@@ -518,7 +519,7 @@ private theorem hasReverseTimeDifferenceEnergyBound_of_pointwise
 /-- Smooth coefficient data supply a difference-energy constant before the
 forcing, initial datum, solution curves, and time endpoints are chosen. -/
 theorem exists_reverseTimeVariationalEnergy_difference_constant
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
@@ -614,7 +615,7 @@ private theorem eq_zero_of_norm_sq_eq_zero
   exact norm_eq_zero.mp hnorm
 
 private theorem reverseTime_value_sq_integral_eq_clamped_energy
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (w : ReverseTimeL2V hΩ T)
     (W : C(↥(Set.Icc 0 T), PDE.ScalarLp Ω (2 : ℝ≥0∞)))
@@ -640,7 +641,7 @@ private theorem reverseTime_value_sq_integral_eq_clamped_energy
       setIntegral_Ioc_reverseTimeVolume_eq_volume _ ht
 
 private theorem reverseTimeHilbertRepresentative_eq_zero_of_clamped_energy_bound
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (_hΩ : IsOpen Ω) (T K : ℝ) (hT : 0 < T) (hK : 0 ≤ K)
     (W : C(↥(Set.Icc 0 T), PDE.ScalarLp Ω (2 : ℝ≥0∞)))
     (hWzero : W ⟨0, ⟨le_rfl, hT.le⟩⟩ = 0)
@@ -687,7 +688,7 @@ private theorem reverseTimeHilbertRepresentative_eq_zero_of_clamped_energy_bound
   exact eq_zero_of_norm_sq_eq_zero _ hsq
 
 private theorem reverseTimeL2V_eq_of_hilbertRepresentative_eq_zero
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (T : ℝ)
     (u v : ReverseTimeL2V hΩ T)
     (W : C(↥(Set.Icc 0 T), PDE.ScalarLp Ω (2 : ℝ≥0∞)))
@@ -708,7 +709,7 @@ private theorem reverseTimeL2V_eq_of_hilbertRepresentative_eq_zero
   simpa only [Pi.sub_apply] using sub_eq_zero.mp hdiffzero
 
 private theorem reverseTimeL2V_eq_of_differenceEnergyBound
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ lam K : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam) (hK : 0 ≤ K)
     (hΩ : IsOpen Ω)
     (u : ReverseTimeL2V hΩ (r₁ - r₀)) (g : ReverseTimeL2VStar hΩ (r₁ - r₀))
@@ -802,7 +803,7 @@ private theorem reverseTimeL2V_eq_of_differenceEnergyBound
 
 /-- Two reverse-time variational energy solutions with common initial trace are equal. -/
 theorem reverseTimeVariationalEnergySolution_unique
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)

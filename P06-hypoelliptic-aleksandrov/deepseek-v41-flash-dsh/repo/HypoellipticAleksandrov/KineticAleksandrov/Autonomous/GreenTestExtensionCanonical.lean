@@ -20,13 +20,12 @@ theorem reconstruction_raw_smooth_to_packed (phi : Point → ℝ)
     (evolutionProdCLE 1).contDiff.fst.prodMk
       ((evolutionProdCLE 1).contDiff.snd.snd.prodMk (evolutionProdCLE 1).contDiff.snd.fst)
   exact hphi.comp hc
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (H : Interval) (T : ℝ) (e : StripPole H (T : WithTop ℝ))
 
 /-- The source's canonical bounded smooth identity in raw physical coordinates. -/
 theorem strip_identity_bounded_smooth
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (T : ℝ)
-    (e : StripPole H (T : WithTop ℝ)) (phi : Point → ℝ)
+     (phi : Point → ℝ)
     (hphi : ContDiff ℝ (⊤ : ℕ∞) (phi ∘ (KineticPoint.equivProd 1).symm))
     (hb : ∃ M : ℝ, ∀ p, p.velocity 0 ∈ H.carrier →
       |phi p| ≤ M ∧ |forwardScalarOperator A.a phi p| ≤ M) :
@@ -38,19 +37,14 @@ theorem strip_identity_bounded_smooth
 
 /-- The canonical finite-horizon exit measure has total mass one. -/
 theorem stripExit_mass_one
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (T : ℝ)
-    (e : StripPole H (T : WithTop ℝ)) : stripExit hH hLE hlam hLam A H T e univ = 1 :=
+     : stripExit hH hLE hlam hLam A H T e univ = 1 :=
   stripExitOfRealization_mass_one hH hlam hLam A H _
     (stripEvolution_spec hH hLE hlam hLam A H) T e
 
 /-- The canonical exit family consists of probability measures. -/
 instance stripExit_isProbabilityMeasure
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (T : ℝ)
-    (e : StripPole H (T : WithTop ℝ)) : IsProbabilityMeasure (stripExit hH hLE hlam hLam A H T e) :=
+     : IsProbabilityMeasure (stripExit hH hLE hlam hLam A H T e) :=
   ⟨stripExit_mass_one hH hLE hlam hLam A H T e⟩
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

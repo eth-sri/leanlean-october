@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.HilbertWeakSequentialC
 public import Mathlib.MeasureTheory.Function.L2Space
 public import Mathlib.MeasureTheory.Function.LpSpace.Complete
 public import Mathlib.MeasureTheory.Measure.SeparableMeasure
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Continuous-functional weak subsequence of reverse-time Galerkin primal curves
@@ -23,7 +24,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 open Filter MeasureTheory Set
 open scoped ENNReal Matrix Matrix.Norms.Elementwise MatrixOrder RealInnerProductSpace Topology
 
-variable {d : ℕ} {Ω : Set (PDE.Vec d)}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
 variable
   (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam)
   (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)

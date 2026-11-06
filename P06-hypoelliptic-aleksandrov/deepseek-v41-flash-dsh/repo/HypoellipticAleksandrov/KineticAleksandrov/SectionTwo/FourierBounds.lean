@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.Fourier
 import Mathlib.MeasureTheory.VectorMeasure.WithDensityVec
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Variation and support of Fourier projection -/
 
@@ -12,7 +13,7 @@ open MeasureTheory Set
 open scoped ENNReal ProbabilityTheory
 
 /-- Variation is dominated by the source velocity marginal. -/
-theorem fourierProjection_variation_le {d : ℕ} {Ω : Set (PDE.Vec d)}
+theorem fourierProjection_variation_le {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ)
     (q : EvolutionQuery Ω γ) (ξ : PDE.Vec d)
     (ν : ComplexMeasure (PDE.Vec d)) (hν : IsFourierProjection K q ξ ν) :
@@ -34,11 +35,11 @@ theorem fourierProjection_variation_le {d : ℕ} {Ω : Set (PDE.Vec d)}
 /-- Total variation on the whole carrier, before any conversion to real. -/
 abbrev totalVariationNorm {d : ℕ} (ν : ComplexMeasure (PDE.Vec d)) : ℝ≥0∞ :=
   ν.variation Set.univ
+section
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (q : EvolutionQuery Ω γ)
 
 /-- The projected measure has total variation at most one. -/
-theorem fourierProjection_totalVariation_le_one {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ)
-    (q : EvolutionQuery Ω γ) (ξ : PDE.Vec d)
+theorem fourierProjection_totalVariation_le_one  (ξ : PDE.Vec d)
     (ν : ComplexMeasure (PDE.Vec d)) (hν : IsFourierProjection K q ξ ν) :
     totalVariationNorm ν ≤ 1 := by
   apply (Measure.le_iff.1 (fourierProjection_variation_le K q ξ ν hν) univ
@@ -48,10 +49,8 @@ theorem fourierProjection_totalVariation_le_one {d : ℕ} {Ω : Set (PDE.Vec d)}
   exact K.mass_le_one q
 
 /-- The zero frequency is the positive velocity marginal. -/
-theorem fourierProjection_zero {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ)
-    (q : EvolutionQuery Ω γ) (ν : ComplexMeasure (PDE.Vec d))
-    (hν : IsFourierProjection K q 0 ν) (E : Set (PDE.Vec d))
+theorem fourierProjection_zero  (ν : ComplexMeasure (PDE.Vec d))
+    (hν : IsFourierProjection K q 0 ν) (E : HypoellipticAleksandrov.VecSet d)
     (hE : MeasurableSet E) : ν E = ((K.firstMarginal q E).toReal : ℂ) := by
   have hz : fourierPhase (0 : PDE.Vec d) q.1.2.2.2 = fun _ => (1 : ℂ) := by
     funext w
@@ -67,8 +66,7 @@ theorem fourierProjection_zero {d : ℕ} {Ω : Set (PDE.Vec d)}
   simp only [setIntegral_const, measureReal_def, Complex.real_smul, mul_one]
 
 /-- A full zero-mode equality usable for vector-measure rewriting. -/
-theorem fourierProjection_zero_measure {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (q : EvolutionQuery Ω γ)
+theorem fourierProjection_zero_measure 
     (ν : ComplexMeasure (PDE.Vec d)) (hν : IsFourierProjection K q 0 ν) :
     ν = (K.firstMarginal q).withDensityᵥ (fun _ => (1 : ℂ)) := by
   have hm : IsFiniteMeasure (K.firstMarginal q) := by
@@ -78,5 +76,6 @@ theorem fourierProjection_zero_measure {d : ℕ} {Ω : Set (PDE.Vec d)}
   intro E hE
   rw [fourierProjection_zero K q ν hν E hE, withDensityᵥ_apply (integrable_const (1 : ℂ)) hE]
   simp only [setIntegral_const, measureReal_def, Complex.real_smul, mul_one]
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

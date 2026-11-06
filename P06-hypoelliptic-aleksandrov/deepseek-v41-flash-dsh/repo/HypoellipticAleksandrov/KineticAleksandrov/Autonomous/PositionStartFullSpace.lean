@@ -10,12 +10,12 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 open scoped Classical ENNReal
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (P : Point)
 
 /-- Full-space terminal mass in the physical source box is its elapsed box probability. -/
 theorem positionStartFullSpaceTerminal_box
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (P : Point) (Y b : ℝ) :
+     (Y b : ℝ) :
     enlargedFullSpaceTerminal hH hLE hlam hLam A P (P.time + b) (positionStartBox c Y) =
       kernelXV (fullSpaceEvolution hH hLE hlam hLam A) (Real.toNNReal b)
         (P.position 0, P.velocity 0) (box 4 c.r Y) := by
@@ -26,9 +26,7 @@ theorem positionStartFullSpaceTerminal_box
 
 /-- The full-space occupation mass in a physical slab is the source iterated box action. -/
 theorem positionStartFullSpaceOccupation_box_slab
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (P : Point) (Y a b T : ℝ)
+     (Y a b T : ℝ)
     (ha : 0 ≤ a) (hb : b ≤ T) :
     enlargedFullSpaceOccupation hH hLE hlam hLam A P T
       ({q : Point | P.time + a < q.time ∧ q.time ≤ P.time + b} ∩ positionStartBox c Y) =
@@ -63,7 +61,7 @@ theorem positionStartFullSpaceOccupation_box_slab
       simp only [F, Set.indicator, heq, Pi.one_apply]
     · rw [indicator_of_notMem ht]
       have hz : (fun z : Z => F (enlargedTerminalPoint (P.time + t) z)) =
-          fun _ => (0 : ℝ≥0∞) := by
+          fun _ => 0 := by
         funext z
         have hn : enlargedTerminalPoint (P.time + t) z ∉ S ∩ W := by
           intro hz
@@ -78,6 +76,7 @@ theorem positionStartFullSpaceOccupation_box_slab
   have hs : Ioc a b ∩ Ioc 0 T = Ioc a b :=
     inter_eq_left.mpr (fun _ ht => ⟨ha.trans_lt ht.1, ht.2.trans hb⟩)
   rw [hs]
+end
 
 /-- The extended slab box action equals the ofReal of the actual integrable real action. -/
 theorem positionStartBox_slab_ofReal_integral (E : FullSpaceEvolution) (z : Z)

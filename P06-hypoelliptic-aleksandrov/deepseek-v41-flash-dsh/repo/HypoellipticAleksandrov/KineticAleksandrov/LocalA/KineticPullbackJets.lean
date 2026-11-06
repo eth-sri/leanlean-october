@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Holder.AffineGeometry
 public import HypoellipticAleksandrov.KineticAleksandrov.Scaling.Calculus
 public import HypoellipticAleksandrov.KineticAleksandrov.Operator
 import Mathlib.Tactic
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Classical jets under kinetic affine normalization -/
 
@@ -32,10 +33,11 @@ theorem classicalGradient_affine {d : ℕ} {f : PDE.Vec d → ℝ}
   simp only [ContinuousLinearMap.comp_apply, smul_apply,
     ContinuousLinearMap.id_apply, map_smul]
   rfl
+section
+variable {d : ℕ} {u : KineticPoint d → ℝ} {D : Set (KineticPoint d)}
 
 /-- Position jets acquire the cubic spatial dilation. -/
-theorem kineticPullback_positionGradient {d : ℕ} {u : KineticPoint d → ℝ}
-    {D : Set (KineticPoint d)} (hu : IsKineticC112On u D)
+theorem kineticPullback_positionGradient  (hu : IsKineticC112On u D)
     (P₀ : KineticPoint d) (R : ℝ) (P : KineticPoint d)
     (hp : kineticAffine P₀ R P ∈ D) :
     kineticPositionGradient (kineticPullback u P₀ R) P =
@@ -59,8 +61,7 @@ theorem kineticPullback_positionGradient {d : ℕ} {u : KineticPoint d → ℝ}
     (hf.differentiableAt (by norm_num))
 
 /-- Velocity jets acquire the linear velocity dilation. -/
-theorem kineticPullback_velocityGradient {d : ℕ} {u : KineticPoint d → ℝ}
-    {D : Set (KineticPoint d)} (hu : IsKineticC112On u D)
+theorem kineticPullback_velocityGradient  (hu : IsKineticC112On u D)
     (P₀ : KineticPoint d) (R : ℝ) (P : KineticPoint d)
     (hp : kineticAffine P₀ R P ∈ D) :
     kineticVelocityGradient (kineticPullback u P₀ R) P =
@@ -70,8 +71,7 @@ theorem kineticPullback_velocityGradient {d : ℕ} {u : KineticPoint d → ℝ}
     ((hu.velocitySlice_contDiffAt hp).differentiableAt (by norm_num))
 
 /-- Velocity Hessians acquire the quadratic dilation. -/
-theorem kineticPullback_velocityHessian {d : ℕ} {u : KineticPoint d → ℝ}
-    {D : Set (KineticPoint d)} (hu : IsKineticC112On u D)
+theorem kineticPullback_velocityHessian  (hu : IsKineticC112On u D)
     (P₀ : KineticPoint d) (R : ℝ) (P : KineticPoint d)
     (hp : kineticAffine P₀ R P ∈ D) :
     kineticVelocityHessian (kineticPullback u P₀ R) P =
@@ -80,8 +80,7 @@ theorem kineticPullback_velocityHessian {d : ℕ} {u : KineticPoint d → ℝ}
   exact sliceHessian_affine (hu.velocitySlice_contDiffAt hp)
 
 /-- Time dilation also differentiates the Galilean translation of position. -/
-theorem kineticPullback_time_hasDerivAt {d : ℕ} {u : KineticPoint d → ℝ}
-    {D : Set (KineticPoint d)} (hD : IsOpen D) (hu : IsKineticC112On u D)
+theorem kineticPullback_time_hasDerivAt  (hD : IsOpen D) (hu : IsKineticC112On u D)
     (P₀ : KineticPoint d) (R : ℝ) (P : KineticPoint d)
     (hp : kineticAffine P₀ R P ∈ D) :
     HasDerivAt (fun t => kineticPullback u P₀ R ⟨t, P.position, P.velocity⟩)
@@ -102,13 +101,13 @@ theorem kineticPullback_time_hasDerivAt {d : ℕ} {u : KineticPoint d → ℝ}
   ring
 
 /-- The exact time jet of the normalized solution. -/
-theorem kineticPullback_timeDerivative {d : ℕ} {u : KineticPoint d → ℝ}
-    {D : Set (KineticPoint d)} (hD : IsOpen D) (hu : IsKineticC112On u D)
+theorem kineticPullback_timeDerivative  (hD : IsOpen D) (hu : IsKineticC112On u D)
     (P₀ : KineticPoint d) (R : ℝ) (P : KineticPoint d)
     (hp : kineticAffine P₀ R P ∈ D) :
     kineticTimeDerivative (kineticPullback u P₀ R) P =
       R ^ 2 * (kineticTimeDerivative u (kineticAffine P₀ R P) +
         PDE.vecDot P₀.velocity (kineticPositionGradient u (kineticAffine P₀ R P))) :=
   (kineticPullback_time_hasDerivAt hD hu P₀ R P hp).deriv
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

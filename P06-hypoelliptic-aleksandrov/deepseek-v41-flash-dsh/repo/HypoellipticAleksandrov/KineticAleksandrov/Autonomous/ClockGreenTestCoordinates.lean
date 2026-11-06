@@ -21,9 +21,9 @@ theorem clock_native_smooth_to_scalar (u : Point → ℝ)
   let c : (Fin 3 → ℝ) → EvolutionVec 1 := fun q =>
     (evolutionProdCLE 1).symm (q 0, (fun _ => q 2), (fun _ => q 1))
   have hc : ContDiff ℝ (⊤ : ℕ∞) c := (evolutionProdCLE 1).symm.contDiff.comp
-    ((contDiff_apply ℝ ℝ (0 : Fin 3)).prodMk
-      ((contDiff_pi.mpr (fun _ => contDiff_apply ℝ ℝ (2 : Fin 3))).prodMk
-        (contDiff_pi.mpr (fun _ => contDiff_apply ℝ ℝ (1 : Fin 3)))))
+    ((contDiff_apply ℝ ℝ 0).prodMk
+      ((contDiff_pi.mpr (fun _ => contDiff_apply ℝ ℝ 2)).prodMk
+        (contDiff_pi.mpr (fun _ => contDiff_apply ℝ ℝ 1))))
   have he (q : Fin 3 → ℝ) : evolutionHomeomorph 1 (c q) = sectionTwoPoint (scalarPoint q) := by
     apply (KineticPoint.equivProd 1).injective
     change evolutionProdCLE 1 ((evolutionProdCLE 1).symm _) = _

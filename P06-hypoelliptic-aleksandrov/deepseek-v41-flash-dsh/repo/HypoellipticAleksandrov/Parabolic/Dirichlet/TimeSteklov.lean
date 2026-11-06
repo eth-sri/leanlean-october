@@ -45,9 +45,11 @@ private theorem reverseTimeVolume_noAtoms (T : ℝ) :
     NoAtoms (reverseTimeVolume T) := by
   change NullSingletonClass (volume.restrict (Ioo (0 : ℝ) T))
   infer_instance
+section
+variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
 
 private theorem forward_window_product_memLp
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
+    
     (F : ℝ → E) (hF : MemLp F (2 : ℝ≥0∞) volume) (h : ℝ) (K : Set ℝ) :
     MemLp (fun z : ℝ × ℝ => F (z.1 + z.2) - F z.2) (2 : ℝ≥0∞)
       ((volume.restrict (Ioc 0 h)).prod (volume.restrict K)) := by
@@ -73,7 +75,7 @@ private theorem forward_window_product_memLp
   exact hplusK.sub hzeroK
 
 private theorem forward_window_sqNorm_integral_swap
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
+    
     (F : ℝ → E) (hF : MemLp F (2 : ℝ≥0∞) volume) (h : ℝ) (K : Set ℝ)
     [IsFiniteMeasure (volume.restrict K)] :
     (∫ s in Ioc 0 h, ∫ t in K, ‖F (s + t) - F t‖ ^ 2) =
@@ -88,7 +90,7 @@ private theorem forward_window_sqNorm_integral_swap
     integral_integral_swap hPhiSq
 
 private theorem ae_memLp_forward_window_slice
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
+    
     (F : ℝ → E) (hF : MemLp F (2 : ℝ≥0∞) volume) (h : ℝ) (K : Set ℝ)
     [IsFiniteMeasure (volume.restrict K)] :
     ∀ᵐ t ∂volume.restrict K,
@@ -107,7 +109,7 @@ private theorem ae_memLp_forward_window_slice
   exact (memLp_two_iff_integrable_sq_norm ht.aestronglyMeasurable).mpr htSq
 
 private theorem sqNorm_smul_window_integral_le
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
+    
     (h : ℝ) (hh : 0 < h) (φ : ℝ → E)
     (hφ : MemLp φ (2 : ℝ≥0∞) (volume.restrict (Ioc 0 h))) :
     ‖h⁻¹ • ∫ s, φ s ∂volume.restrict (Ioc 0 h)‖ ^ 2 ≤
@@ -158,7 +160,7 @@ private theorem sqNorm_smul_window_integral_le
     _ = h⁻¹ * ∫ s, ‖φ s‖ ^ 2 ∂μ := hcalc
 
 private theorem sqNorm_forward_window_average_le
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
+    
     (F : ℝ → E) (hF : MemLp F (2 : ℝ≥0∞) volume) (h : ℝ) (hh : 0 < h) (K : Set ℝ)
     [IsFiniteMeasure (volume.restrict K)] :
     (∫ t in K, ‖h⁻¹ • ∫ s in Ioc 0 h, (F (s + t) - F t)‖ ^ 2) ≤
@@ -197,7 +199,7 @@ private theorem sqNorm_forward_window_average_le
       rw [← forward_window_sqNorm_integral_swap F hF h K]
 
 private theorem forwardSteklov_eq_primitive_sub
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
+    
     (T h : ℝ) (hh : 0 < h)
     (f : MeasureTheory.Lp E (2 : ℝ≥0∞) (reverseTimeVolume T)) (t : ℝ) :
     reverseTimeForwardSteklov T h f t = h⁻¹ •
@@ -216,6 +218,7 @@ private theorem forwardSteklov_eq_primitive_sub
         ∫ s in (0 : ℝ)..t, f s ∂reverseTimeVolume T :=
     (eq_sub_iff_add_eq).mpr (by simpa [add_comm] using hadd)
   rw [reverseTimeForwardSteklov, ← intervalIntegral.integral_of_le (by linarith), hsub]
+end
 
 private theorem tendsto_inv_mul_setIntegral_Ioc_zero
     (q : ℝ → ℝ) (hq : Tendsto q (𝓝[>] 0) (𝓝 0))

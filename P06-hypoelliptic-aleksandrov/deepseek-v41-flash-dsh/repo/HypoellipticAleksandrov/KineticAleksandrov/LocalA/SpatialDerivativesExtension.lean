@@ -32,17 +32,16 @@ theorem spatialData_compact_extension
   · change χ x * G x = f x
     rw [hχone x hx, one_mul]
     exact congrArg (fun g : K →ᵇ ℝ => g ⟨x, hx⟩) he
+section
+variable {V Z : Type} [PseudoMetricSpace V] [PseudoMetricSpace Z] (H : V × Z → ℝ) (hH : UniformContinuous H) (M : ℝ) (hb : ∀ p, ‖H p‖ ≤ M)
 
 /-- Uniformly continuous bounded joint data vary continuously in the bounded-function norm. -/
-def spatialDataCurry {V Z : Type} [PseudoMetricSpace V] [PseudoMetricSpace Z]
-    (H : V × Z → ℝ) (hH : UniformContinuous H) (M : ℝ)
-    (hb : ∀ p, ‖H p‖ ≤ M) (x : V) : Z →ᵇ ℝ :=
+def spatialDataCurry  (x : V) : Z →ᵇ ℝ :=
   BoundedContinuousFunction.ofNormedAddCommGroup (fun z => H (x, z))
     (hH.continuous.comp (continuous_const.prodMk continuous_id)) M (fun z => hb (x, z))
 
 /-- Currying uniformly continuous bounded data is continuous for the sup norm. -/
-theorem continuous_spatialDataCurry {V Z : Type} [PseudoMetricSpace V] [PseudoMetricSpace Z]
-    (H : V × Z → ℝ) (hH : UniformContinuous H) (M : ℝ) (hb : ∀ p, ‖H p‖ ≤ M) :
+theorem continuous_spatialDataCurry  :
     Continuous (spatialDataCurry H hH M hb) := by
   apply Metric.continuous_iff.mpr
   intro x ε hε
@@ -53,5 +52,6 @@ theorem continuous_spatialDataCurry {V Z : Type} [PseudoMetricSpace V] [PseudoMe
   intro z
   apply (hd ?_).le
   simpa only [Prod.dist_eq, dist_self, max_eq_left (dist_nonneg)] using hy
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

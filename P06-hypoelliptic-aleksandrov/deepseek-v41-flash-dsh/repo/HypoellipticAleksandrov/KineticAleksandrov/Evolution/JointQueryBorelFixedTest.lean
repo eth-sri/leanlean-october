@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.JointQueryBorelProbe
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Joint Borel evaluations of fixed admissible terminal probes
 
@@ -19,7 +20,7 @@ open scoped Topology
 
 
 /-- The integral of a fixed probe at admissible terminal times, and zero at the other times. -/
-def validTerminalProbeIntegral (n : ℕ) (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
+def validTerminalProbeIntegral (n : ℕ) (Ω : HypoellipticAleksandrov.VecSet n) (γ : ℝ → PDE.Vec n)
     (μ : EvolutionQuery Ω γ → Measure (EvolutionAmbientState n))
     (F : BoundedBorel (EvolutionAmbientState n)) (q : EvolutionQuery Ω γ) : ℝ := by
   classical
@@ -30,7 +31,7 @@ section EvolutionData
 variable (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
 variable (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
 variable (hm : 0 < m) (hmLb : m ≤ L_b)
-variable (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
+variable (Ω : HypoellipticAleksandrov.VecSet n) (γ : ℝ → PDE.Vec n)
 variable (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
 variable (hΩ : IsAdmissibleEvolutionDomain Ω)
 variable (hγ : IsContinuousPiecewiseC1 γ)

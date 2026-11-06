@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Decay.SourceNotation
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.Uniqueness
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.Fourier
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Exact authorized conditional inputs for Section 3 iteration
 
@@ -24,7 +25,7 @@ def IterationEvolutionStatement : Prop :=
     (lam Lam m L_b : ℝ)
     (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hm : 0 < m) (hmLb : m ≤ L_b)
-    (Ω : Set (PDE.Vec n))
+    (Ω : HypoellipticAleksandrov.VecSet n)
     (γ : ℝ → PDE.Vec n)
     (B : FullKineticCoefficient n)
     (b : PDE.Vec n → PDE.Vec n)
@@ -99,7 +100,7 @@ def UnitBlockStatementW (d : ℕ) (hd : 1 ≤ d)
     (lam Lam m Lb : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hm : 0 < m) (hmLb : m ≤ Lb) : Prop :=
     ∃ L δ : ℝ, 0 < L ∧ 0 < δ ∧ δ < 1 ∧
-      ∀ (D : Set (PDE.Vec d)) (B : CoefficientField d) (b : PDE.Vec d → PDE.Vec d),
+      ∀ (D : HypoellipticAleksandrov.VecSet d) (B : CoefficientField d) (b : PDE.Vec d → PDE.Vec d),
         SourceSetting lam Lam m Lb D B b → D = univ →
       ∀ (hD : MeasurableSet D) (S : TerminalOperatorFamily D stationary)
         (K : MovingFiberKernel D stationary),

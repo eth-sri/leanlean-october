@@ -7,6 +7,8 @@ public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonLoca
 import Mathlib.Analysis.Normed.Group.Bounded
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # A local gradient bound from solution values
 
@@ -22,7 +24,7 @@ open scoped BigOperators MatrixOrder Matrix.Norms.Elementwise
 
 /-- Localized gradient energy is bounded by value energy for a homogeneous classical solution. -/
 theorem integral_local_gradient_energy_le {d : ℕ}
-    (a T : ℝ) (O : Set (PDE.Vec d)) (hO : IsOpen O)
+    (a T : ℝ) (O : HypoellipticAleksandrov.VecSet d) (hO : IsOpen O)
     (u ρ : TimeVelocity d → ℝ) (hu : IsScalarC12On u (Ioo a T ×ˢ O))
     (hρ : ContDiff ℝ (⊤ : ℕ∞) ρ) (hc : HasCompactSupport ρ)
     (hsub : tsupport ρ ⊆ Ioo a T ×ˢ O)
@@ -123,7 +125,7 @@ theorem exists_local_cutoff_square_timeDerivative_bound {d : ℕ}
 
 /-- One cutoff-dependent constant bounds every homogeneous solution's gradient energy. -/
 theorem exists_local_gradient_energy_constant {d : ℕ}
-    (a T : ℝ) (O : Set (PDE.Vec d)) (hO : IsOpen O)
+    (a T : ℝ) (O : HypoellipticAleksandrov.VecSet d) (hO : IsOpen O)
     (ρ : TimeVelocity d → ℝ) (hρ : ContDiff ℝ (⊤ : ℕ∞) ρ)
     (hc : HasCompactSupport ρ) (hsub : tsupport ρ ⊆ Ioo a T ×ˢ O)
     (A : CoefficientField d) (hA : IsSmoothCoefficient A)

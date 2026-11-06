@@ -13,10 +13,11 @@ preserve the entrance restriction and the initial time-bin convention.
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory
+section
+variable (c : Clock) (s x : ℝ) (j : ℕ)
 
 /-- Each position-resolved visit cell is measurable. -/
-theorem measurableSet_enlargedPositionVisitCell (c : Clock) (s x : ℝ)
-    (j : ℕ) (k : ℤ) :
+theorem measurableSet_enlargedPositionVisitCell  (k : ℤ) :
     MeasurableSet (enlargedStartCell c s x j k ∩
       {p | p.velocity 0 ∈ closure c.entrance}) :=
   (measurableSet_enlargedStartCell c s x j k).inter
@@ -24,7 +25,7 @@ theorem measurableSet_enlargedPositionVisitCell (c : Clock) (s x : ℝ)
       ((continuous_apply 0).comp continuous_velocity).measurable)
 
 /-- Position cells partition the entrance-supported portion of one time bin. -/
-theorem iUnion_enlargedPositionVisitCell (c : Clock) (s x : ℝ) (j : ℕ) :
+theorem iUnion_enlargedPositionVisitCell  :
     (⋃ k : ℤ, enlargedStartCell c s x j k ∩
       {p | p.velocity 0 ∈ closure c.entrance}) =
       {p | p.time ∈ enlargedTimeBin c.r s j ∧ p.velocity 0 ∈ closure c.entrance} := by
@@ -38,7 +39,7 @@ theorem iUnion_enlargedPositionVisitCell (c : Clock) (s x : ℝ) (j : ℕ) :
     exact mem_iUnion.mpr ⟨k, ⟨⟨hp.1, hk⟩, hp.2⟩⟩
 
 /-- Distinct position-resolved visit cells in one time bin are disjoint. -/
-theorem pairwiseDisjoint_enlargedPositionVisitCell (c : Clock) (s x : ℝ) (j : ℕ) :
+theorem pairwiseDisjoint_enlargedPositionVisitCell  :
     Pairwise (fun k l : ℤ => Disjoint
       (enlargedStartCell c s x j k ∩ {p | p.velocity 0 ∈ closure c.entrance})
       (enlargedStartCell c s x j l ∩ {p | p.velocity 0 ∈ closure c.entrance})) := by
@@ -47,6 +48,7 @@ theorem pairwiseDisjoint_enlargedPositionVisitCell (c : Clock) (s x : ℝ) (j : 
   intro p hk hl
   exact disjoint_left.mp (enlargedPositionCell_disjoint c.r x c.positive hkl)
     hk.1.2 hl.1.2
+end
 
 /-- The extended masses sum to the entrance-supported time-bin mass. -/
 theorem tsum_enlargedPositionVisitCell_measure (nu : Measure Point) (c : Clock)

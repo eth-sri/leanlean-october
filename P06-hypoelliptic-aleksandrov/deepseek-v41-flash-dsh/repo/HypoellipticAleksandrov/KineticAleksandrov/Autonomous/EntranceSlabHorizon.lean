@@ -9,12 +9,12 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.InfiniteHori
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory ProbabilityTheory HypoellipticAleksandrov
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (b T : ℝ)
 
 /-- Componentwise finite-union Green measures retain the exact physical horizon restriction. -/
 theorem entranceSlab_unionGreen_horizon_restrict
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (b T : ℝ)
+    
     (hBT : b ≤ T) (p : Point) (hb : p.time < b) (hv : p.velocity 0 ∈ H.carrier) :
     finiteUnionGreen hH hLE hlam hLam A H b (enlargedVisitPole H b ⟨p, hb, hv⟩) =
       (finiteUnionGreen hH hLE hlam hLam A H T
@@ -39,9 +39,7 @@ theorem entranceSlab_unionGreen_horizon_restrict
 
 /-- Clipping a Green kernel at `b` only removes occupation after `b`. -/
 theorem entranceSlab_greenKernel_horizon_le
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (b T : ℝ)
+    
     (hBT : b ≤ T) (p : Point) :
     enlargedVisitGreenKernel hH hLE hlam hLam A H b p ≤
       (enlargedVisitGreenKernel hH hLE hlam hLam A H T p).restrict {q | q.time < b} := by
@@ -63,5 +61,6 @@ theorem entranceSlab_greenKernel_horizon_le
       exact dite_eq_right hp
     rw [hz]
     exact Measure.zero_le _
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

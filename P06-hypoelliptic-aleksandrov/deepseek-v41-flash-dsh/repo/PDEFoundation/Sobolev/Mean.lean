@@ -43,9 +43,10 @@ theorem integral_normalizedVolumeOn_eq_integralAverage
   rw [normalizedVolumeOn, integral_smul_measure,
     ENNReal.toReal_inv]
   rfl
+section
+variable {d : ℕ} {U : Set (Vec d)} {u : Vec d → ℝ}
 
-theorem integralAverage_eq_zero_of_meanZeroOn {d : ℕ}
-    {U : Set (Vec d)} {u : Vec d → ℝ}
+theorem integralAverage_eq_zero_of_meanZeroOn 
     (hu : MeanZeroOn U u) :
     integralAverage U u = 0 := by
   rw [integralAverage, hu, mul_zero]
@@ -53,7 +54,7 @@ theorem integralAverage_eq_zero_of_meanZeroOn {d : ℕ}
 /-- Subtracting the arithmetic average produces a zero-mean function on a
 positive finite-volume set. -/
 theorem meanZeroOn_sub_integralAverage
-    {d : ℕ} {U : Set (Vec d)} {u : Vec d → ℝ}
+    
     (hu : IntegrableOn u U volume)
     (hUPos : 0 < volume U) (hUTop : volume U < ∞) :
     MeanZeroOn U (fun x => u x - integralAverage U u) := by
@@ -77,7 +78,7 @@ average of all pointwise differences from a fixed point.
 
 This identity is the Jensen step in the convex-domain Poincaré argument. -/
 theorem sub_integralAverage_eq_volumeAverage_sub
-    {d : ℕ} {U : Set (Vec d)} {u : Vec d → ℝ}
+    
     (hu : IntegrableOn u U volume)
     (hUPos : 0 < volume U) (hUTop : volume U < ∞)
     (x : Vec d) :
@@ -116,7 +117,7 @@ theorem sub_integralAverage_eq_volumeAverage_sub
 
 /-- Probability-measure form of the mean-difference identity. -/
 theorem sub_integralAverage_eq_integral_sub_normalizedVolumeOn
-    {d : ℕ} {U : Set (Vec d)} {u : Vec d → ℝ}
+    
     (hu : IntegrableOn u U volume)
     (hUPos : 0 < volume U) (hUTop : volume U < ∞)
     (x : Vec d) :
@@ -130,7 +131,7 @@ theorem sub_integralAverage_eq_integral_sub_normalizedVolumeOn
 /-- Jensen's inequality for the mean-subtracted value, written on normalized
 restricted volume. -/
 theorem abs_sub_integralAverage_rpow_le_integral_abs_sub_rpow
-    {d : ℕ} {U : Set (Vec d)} {u : Vec d → ℝ}
+    
     {p : ℝ} (hp : 1 ≤ p)
     (hu : IntegrableOn u U volume)
     (hUPos : 0 < volume U) (hUTop : volume U < ∞)
@@ -159,6 +160,7 @@ theorem abs_sub_integralAverage_rpow_le_integral_abs_sub_rpow
     hu hUPos hUTop x]
   exact abs_integral_rpow_le_integral_abs_rpow
     hp hdiff hpowDiff
+end
 
 theorem MeanZeroOn.congr_ae {d : ℕ}
     {U : Set (Vec d)} {u v : Vec d → ℝ}

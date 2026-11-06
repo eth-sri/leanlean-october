@@ -93,7 +93,7 @@ theorem transportedOperator_eq_zero_of_notMem_tsupport {f : EvolutionVec 1 → �
     {x : EvolutionVec 1} (hx : x ∉ tsupport f) (B : FullKineticCoefficient 1)
     (b : PDE.Vec 1 → PDE.Vec 1) : transportedOperator B b f x = 0 := by
   have h0 := fderiv_of_notMem_tsupport ℝ hx
-  have hn : x ∉ tsupport (fun y => fderiv ℝ f y (basisV (0 : Fin 1))) :=
+  have hn : x ∉ tsupport (fun y => fderiv ℝ f y (basisV 0)) :=
     fun h => hx (tsupport_fderiv_apply_subset ℝ (basisV 0) h)
   have h1 := fderiv_of_notMem_tsupport ℝ hn
   simp only [transportedOperator, Fin.sum_univ_one, h0, h1,

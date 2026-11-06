@@ -56,9 +56,11 @@ theorem gradMemLpOn_mono {d : ℕ}
   exact memLpOn_mono hVU (hDu i)
 
 namespace W1pFunction
+section
+variable {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
 
 @[ext]
-theorem ext {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
+theorem ext 
     {u v : W1pFunction U p}
     (htoFun : u.toFun = v.toFun) (hgrad : u.grad = v.grad) :
     u = v := by
@@ -68,17 +70,16 @@ theorem ext {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
   cases hgrad
   rfl
 
-theorem hasWeakPartialDerivOn {d : ℕ}
-    {U : Set (Vec d)} {p : ℝ≥0∞}
+theorem hasWeakPartialDerivOn 
     (u : W1pFunction U p) (i : Fin d) :
     HasWeakPartialDerivOn U i u.toFun (fun x => u.grad x i) :=
   u.hasWeakGradient i
 
-theorem grad_memLp {d : ℕ}
-    {U : Set (Vec d)} {p : ℝ≥0∞}
+theorem grad_memLp 
     (u : W1pFunction U p) (i : Fin d) :
     MemLpOn U p (fun x => u.grad x i) :=
   u.gradMemLp i
+end
 
 /-- Restrict a representative-level Sobolev function to an open subset. -/
 def restrict {d : ℕ} {U V : Set (Vec d)} {p : ℝ≥0∞}

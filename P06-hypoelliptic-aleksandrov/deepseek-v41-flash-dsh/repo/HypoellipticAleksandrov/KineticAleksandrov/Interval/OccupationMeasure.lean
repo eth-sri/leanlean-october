@@ -40,7 +40,7 @@ def intervalOccupationKernel (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a
       (PDE.Vec 1) :=
   K.firstMarginal.comap (fun q => movingQuery σ (σ + q.2.1) (le_add_of_nonneg_right q.2.2.1.le)
     q.1.1 0
-    (by simpa only [movingDomain_stationary] using q.1.2)) (by
+    (by simpa using q.1.2)) (by
     apply Measurable.subtype_mk
     change Measurable (fun q : (PDE.oneDimensionalAxisBox a c) × ElapsedTime (ENNReal.ofReal T) =>
       (σ, (σ + q.2.1, (q.1.1, 0))))
@@ -96,7 +96,7 @@ theorem integral_intervalOccupationMeasure (K : MovingFiberKernel (PDE.oneDimens
       ∫ v, ∫ τ : ElapsedTime (ENNReal.ofReal T),
         ∫ w, φ (τ.1, w) ∂K.firstMarginal
           (movingQuery σ (σ + τ.1) (le_add_of_nonneg_right τ.2.1.le) v.1 0
-            (by simpa only [movingDomain_stationary] using v.2))
+            (by simpa using v.2))
         ∂elapsedVolume (ENNReal.ofReal T) ∂ρ := by
   have := intervalElapsedVolume_finite T hT
   obtain ⟨M, hM⟩ := hφb
@@ -106,7 +106,7 @@ theorem integral_intervalOccupationMeasure (K : MovingFiberKernel (PDE.oneDimens
   have hi : Integrable ψ ((ρ.prod (elapsedVolume (ENNReal.ofReal T))).compProd
       (intervalOccupationKernel σ T K)) :=
     (integrable_const M).mono' hψ.aestronglyMeasurable
-      (Filter.Eventually.of_forall fun q => by simpa only [Real.norm_eq_abs] using hM _)
+      (Filter.Eventually.of_forall fun q => by simpa using hM _)
   rw [intervalOccupationMeasure, integral_map (by fun_prop) hφ.aestronglyMeasurable]
   change (∫ q, ψ q ∂_) = _
   rw [Measure.integral_compProd hi]
@@ -153,7 +153,7 @@ theorem intervalOccupationMeasure_compl_region
   rw [he]
   let q : EvolutionQuery (PDE.oneDimensionalAxisBox a c) stationary := movingQuery σ (σ + t.1)
     (le_add_of_nonneg_right t.2.1.le) v.1 0
-    (by simpa only [movingDomain_stationary] using v.2)
+    (by simpa using v.2)
   change K.firstMarginal q _ = 0
   have hpre : MeasurableSet {p : EvolutionAmbientState 1 |
       p.1 ∈ (PDE.oneDimensionalAxisBox a c)ᶜ} := hJ.compl.preimage measurable_fst

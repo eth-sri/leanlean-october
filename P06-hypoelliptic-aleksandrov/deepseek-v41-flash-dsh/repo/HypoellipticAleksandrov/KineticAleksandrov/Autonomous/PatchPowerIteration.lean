@@ -11,7 +11,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov Parabolic Set
 
 /-- The radius after `n` doublings. -/
-def returnExpandedRadius (ell : ℝ) (n : ℕ) : ℝ := (2 : ℝ) ^ n * ell
+def returnExpandedRadius (ell : ℝ) (n : ℕ) : ℝ := 2 ^ n * ell
 
 /-- The transported centre after `n` doublings, with the geometric time sum evaluated. -/
 def returnExpandedCenter (z : Point) (ell : ℝ) (n : ℕ) : Point :=
@@ -34,8 +34,7 @@ theorem returnExpandedCenter_succ (z : Point) (ell : ℝ) (n : ℕ) :
 
 /-- The expanded radius never decreases. -/
 theorem returnExpandedRadius_mono {ell : ℝ} (hell : 0 ≤ ell) {m n : ℕ} (hmn : m ≤ n) :
-    returnExpandedRadius ell m ≤ returnExpandedRadius ell n := by
-  exact mul_le_mul_of_nonneg_right (pow_le_pow_right₀ (by norm_num) hmn) hell
+    returnExpandedRadius ell m ≤ returnExpandedRadius ell n := mul_le_mul_of_nonneg_right (pow_le_pow_right₀ (by norm_num) hmn) hell
 
 /-- All intermediate centres stay later than the initial centre. -/
 theorem returnExpandedCenter_time_ge (z : Point) {ell : ℝ} (hell : 0 ≤ ell) (n : ℕ) :

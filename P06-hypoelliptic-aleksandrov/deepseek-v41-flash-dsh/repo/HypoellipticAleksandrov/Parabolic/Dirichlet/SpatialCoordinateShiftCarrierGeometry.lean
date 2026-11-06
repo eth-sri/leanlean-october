@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.SpatialCoordinateShiftCarrier
 public import HypoellipticAleksandrov.Parabolic.SpatialDifferenceQuotientCollar
 public import Mathlib.Analysis.Convex.Segment
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Geometry of spatial coordinate-shift carriers
@@ -22,12 +24,12 @@ open scoped Convex
 /-- A compact spatial carrier inside an open set has a positive common signed
 coordinate-shift radius whose literal carrier stays in the open set. -/
 theorem IsCompact.exists_spatialCoordinateShiftCarrier_subset_open
-    {d : ℕ} {K Ω : Set (PDE.Vec d)}
+    {d : ℕ} {K Ω : HypoellipticAleksandrov.VecSet d}
     (hK : IsCompact K) (hΩ : IsOpen Ω) (hKΩ : K ⊆ Ω) :
     ∃ δ : ℝ, 0 < δ ∧
       HypoellipticAleksandrov.Parabolic.Dirichlet.spatialCoordinateShiftCarrier K δ ⊆ Ω := by
-  let K' : Set (TimeVelocity d) := ({0} : Set ℝ) ×ˢ K
-  let U : Set (TimeVelocity d) := Set.univ ×ˢ Ω
+  let K' : HypoellipticAleksandrov.Parabolic.TVSet d := ({0} : Set ℝ) ×ˢ K
+  let U : HypoellipticAleksandrov.Parabolic.TVSet d := Set.univ ×ˢ Ω
   have hK' : IsCompact K' := isCompact_singleton.prod hK
   have hU : IsOpen U := isOpen_univ.prod hΩ
   have hK'U : K' ⊆ U := by
@@ -43,7 +45,7 @@ theorem IsCompact.exists_spatialCoordinateShiftCarrier_subset_open
 /-- Containment of the coordinate-shift carrier gives the corresponding
 signed coordinate-shift map into the outer set. -/
 theorem mapsTo_add_smul_basisVec_of_spatialCoordinateShiftCarrier_subset
-    {d : ℕ} {K Ω : Set (PDE.Vec d)} {δ h : ℝ}
+    {d : ℕ} {K Ω : HypoellipticAleksandrov.VecSet d} {δ h : ℝ}
     (hcarrier : spatialCoordinateShiftCarrier K δ ⊆ Ω)
     (k : Fin d) (hh : |h| ≤ δ) :
     Set.MapsTo (fun y : PDE.Vec d => y + h • PDE.basisVec k) K Ω := by
@@ -53,7 +55,7 @@ theorem mapsTo_add_smul_basisVec_of_spatialCoordinateShiftCarrier_subset
 /-- A time--velocity coordinate segment over `K` stays in the closed time slab
 and the literal signed coordinate-shift carrier. -/
 theorem segment_spatialShift_subset_Icc_prod_spatialCoordinateShiftCarrier
-    {d : ℕ} {K : Set (PDE.Vec d)} {T δ h : ℝ}
+    {d : ℕ} {K : HypoellipticAleksandrov.VecSet d} {T δ h : ℝ}
     (k : Fin d) (z : TimeVelocity d)
     (hh : |h| ≤ δ) (hz : z ∈ Set.Icc 0 T ×ˢ K) :
     [z -[ℝ] spatialShift k h z] ⊆

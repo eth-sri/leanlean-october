@@ -2,6 +2,7 @@ module
 
 public import PDEFoundation.Sobolev.H1.Algebra
 public import PDEFoundation.Sobolev.H1.ZeroBoundary
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Addition of representative-level `H¹₀` functions
@@ -19,7 +20,7 @@ namespace PDE.H10Function
 
 open Filter MeasureTheory
 
-variable {d : ℕ} {U : Set (PDE.Vec d)}
+variable {d : ℕ} {U : HypoellipticAleksandrov.VecSet d}
 
 /-- Add two representative-level `H¹₀` functions, using the pointwise sum
 of their supplied smooth compactly supported approximations. -/
@@ -53,7 +54,7 @@ noncomputable def add (u v : PDE.H10Function U) : PDE.H10Function U where
           (fun x => u.approx n x - u.toH1Function.toFun x) +
             (fun x => v.approx n x - v.toH1Function.toFun x) := by
       funext x
-      simp only [PDE.H1Function.add_toFun, Pi.add_apply]
+      simp
       ring
     change eLpNorm
       (fun x => (u.approx n x + v.approx n x) -

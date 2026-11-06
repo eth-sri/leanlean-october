@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.LocalRepresentationTransport
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Continuity, boundedness and measurability of supported local residuals -/
 

@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Statements.ParabolicHarnack
 public import HypoellipticAleksandrov.Parabolic.AffineScalarCalculus
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Homogeneous range contraction
 

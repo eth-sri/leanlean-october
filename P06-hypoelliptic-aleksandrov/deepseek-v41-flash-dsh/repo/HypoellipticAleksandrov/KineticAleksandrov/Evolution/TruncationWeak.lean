@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TruncationWea
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TruncationWeakAdjoint
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TruncationGeometry
 public import HypoellipticAleksandrov.KineticAleksandrov.EvolutionProblem
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Weak transfer of the actual straightened Dirichlet solution
@@ -26,7 +27,7 @@ section EvolutionData
 variable (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
 variable (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
 variable (hm : 0 < m) (hmLb : m ≤ L_b)
-variable (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
+variable (Ω : HypoellipticAleksandrov.VecSet n) (γ : ℝ → PDE.Vec n)
 variable (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
 variable (hΩ : IsAdmissibleEvolutionDomain Ω)
 variable (hγ : IsContinuousPiecewiseC1 γ)

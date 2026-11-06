@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeProductRepresentative
 public import HypoellipticAleksandrov.Parabolic.WeakDerivatives
 public import Mathlib.MeasureTheory.Integral.Prod
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Reverse-time spatial weak derivatives
@@ -46,9 +48,11 @@ private theorem hasCompactSupport_timeSlice
   intro y hy
   change φ (τ, y) ≠ 0 at hy
   exact subset_tsupport φ hy
+section
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {T : ℝ} (τ : ℝ) (φ : TimeVelocity d → ℝ)
 
 private theorem tsupport_timeSlice_subset
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {T : ℝ} (τ : ℝ) (φ : TimeVelocity d → ℝ)
+    
     (hφ : tsupport φ ⊆ reverseTimeOpenInterval T ×ˢ Ω) :
     tsupport (fun y : PDE.Vec d => φ (τ, y)) ⊆ Ω := by
   intro y hy
@@ -65,8 +69,7 @@ private theorem tsupport_timeSlice_subset
   exact (hφ hmem).2
 
 private noncomputable def timeSliceWeakTestFunction
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {T : ℝ}
-    (τ : ℝ) (φ : TimeVelocity d → ℝ)
+    
     (hφsmooth : ContDiff ℝ (⊤ : ℕ∞) φ) (hφcompact : HasCompactSupport φ)
     (hφsupport : tsupport φ ⊆ reverseTimeOpenInterval T ×ˢ Ω) :
     PDE.WeakTestFunction Ω where
@@ -76,8 +79,7 @@ private noncomputable def timeSliceWeakTestFunction
   tsupport_subset := tsupport_timeSlice_subset τ φ hφsupport
 
 private theorem velocityGradient_timeSlice_eq_partialDeriv
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {T : ℝ}
-    (τ : ℝ) (φ : TimeVelocity d → ℝ)
+    
     (hφsmooth : ContDiff ℝ (⊤ : ℕ∞) φ) (hφcompact : HasCompactSupport φ)
     (hφsupport : tsupport φ ⊆ reverseTimeOpenInterval T ×ˢ Ω)
     (y : PDE.Vec d) (i : Fin d) :
@@ -89,9 +91,10 @@ private theorem velocityGradient_timeSlice_eq_partialDeriv
     fderiv ℝ (φ ∘ Prod.mk τ) y (PDE.basisVec i)
   rw [hslice.fderiv]
   rfl
+end
 
 private theorem h10HilbertGraph_integral_partialDeriv
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     (v : H10HilbertGraph hΩ) (i : Fin d) (ψ : PDE.WeakTestFunction Ω) :
     (∫ y, valueCLM hΩ v y * ψ.partialDeriv i y ∂PDE.volumeOn Ω) =
       -∫ y, gradientCLM hΩ v y i * ψ y ∂PDE.volumeOn Ω := by
@@ -104,8 +107,8 @@ private theorem h10HilbertGraph_integral_partialDeriv
 
 private theorem integrable_mul_of_memLp_two_of_continuous_compact
     {d : ℕ} {W q : TimeVelocity d → ℝ}
-    {S : Set (TimeVelocity d)}
-    (hW : MemLp W (2 : ℝ≥0∞) (timeVelocityVolumeOn S))
+    {S : HypoellipticAleksandrov.Parabolic.TVSet d}
+    (hW : MemLp W 2 (timeVelocityVolumeOn S))
     (hq : Continuous q) (hqcompact : HasCompactSupport q) :
     Integrable (fun z => W z * q z) (timeVelocityVolumeOn S) := by
   have hqLp : MemLp q (2 : ℝ≥0∞) (timeVelocityVolumeOn S) :=
@@ -115,7 +118,7 @@ private theorem integrable_mul_of_memLp_two_of_continuous_compact
 /-- Reverse-time product representatives of a spatial Sobolev curve retain
 their joint raw weak velocity derivatives. -/
 theorem reverseTime_hasWeakVelocityPartialDerivOn_of_product_representatives
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (T : ℝ)
     (u : ReverseTimeL2V hΩ T)
     (U : TimeVelocity d → ℝ)

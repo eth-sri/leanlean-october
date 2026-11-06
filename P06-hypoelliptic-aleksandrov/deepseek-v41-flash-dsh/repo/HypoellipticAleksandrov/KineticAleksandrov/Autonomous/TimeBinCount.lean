@@ -54,8 +54,7 @@ theorem timeBinCount_holds_of_return_time
     have he := timeBinCount_initial_slice hH hLE hlam hLam A c J T P hvel
     have hs' : (nu {p | p.time ∈ Ioc P.time (P.time + min (c.r ^ 2) T)}).toReal ≤ D := by
       simpa only [Nat.cast_zero, zero_add, add_zero, Real.one_rpow, mul_one] using hs
-    have he' : (nu {p | p.time = P.time}).toReal = 1 := by
-      exact congrArg ENNReal.toReal he
+    have he' : (nu {p | p.time = P.time}).toReal = 1 := congrArg ENNReal.toReal he
     simpa only [Nat.cast_zero, add_zero, Real.one_rpow, mul_one] using
       hm.trans (by rw [he']; linarith only [hs'])
   · by_cases hlate : T ≤ (j : ℝ) * c.r ^ 2

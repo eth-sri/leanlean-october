@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.WeakDerivativesUnique
 public import HypoellipticAleksandrov.Parabolic.ParabolicWeakDerivativeFamily
 public import Mathlib.MeasureTheory.Function.L2Space
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Testing bounded-coefficient weak families on open collars
 
@@ -14,9 +15,11 @@ convert a tested equation into an almost-everywhere equation.
 noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Filter MeasureTheory Set
+section
+variable {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
 
 /-- An actual bounded continuous multiplier preserves restricted L2 membership. -/
-theorem memLp_two_mul_of_bound {d : ℕ} {U : Set (TimeVelocity d)}
+theorem memLp_two_mul_of_bound 
     (hU : MeasurableSet U) (a f : TimeVelocity d → ℝ) (ha : Continuous a)
     (hf : ParabolicMemLpOn U 2 f) (M : ℝ) (hb : ∀ z ∈ U, |a z| ≤ M) :
     ParabolicMemLpOn U 2 (fun z => a z * f z) := by
@@ -29,7 +32,7 @@ theorem memLp_two_mul_of_bound {d : ℕ} {U : Set (TimeVelocity d)}
   exact mul_le_mul_of_nonneg_right (hb z hz) (norm_nonneg _)
 
 /-- A restricted L2 field pairs integrably with every ambient smooth compact test. -/
-theorem integrableOn_weak_pairing {d : ℕ} {U : Set (TimeVelocity d)}
+theorem integrableOn_weak_pairing 
     (f φ : TimeVelocity d → ℝ) (hf : ParabolicMemLpOn U 2 f)
     (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (hc : HasCompactSupport φ) :
     IntegrableOn (fun z => f z * φ z) U := by
@@ -43,8 +46,7 @@ theorem integrableOn_weak_pairing {d : ℕ} {U : Set (TimeVelocity d)}
   simpa only [timeVelocityVolumeOn, IntegrableOn] using hi
 
 /-- Restricted pairings with compact interior tests equal their ambient integrals. -/
-theorem setIntegral_weak_pairing_eq_integral {d : ℕ}
-    {U : Set (TimeVelocity d)} (f φ : TimeVelocity d → ℝ)
+theorem setIntegral_weak_pairing_eq_integral  (f φ : TimeVelocity d → ℝ)
     (hsub : tsupport φ ⊆ U) :
     (∫ z in U, f z * φ z) = ∫ z, f z * φ z := by
   apply setIntegral_eq_integral_of_forall_compl_eq_zero
@@ -53,7 +55,7 @@ theorem setIntegral_weak_pairing_eq_integral {d : ℕ}
   rw [image_eq_zero_of_notMem_tsupport hzout, mul_zero]
 
 /-- Vanishing compact-test pairings give the actual almost-everywhere equation. -/
-theorem ae_eq_zero_of_weak_pairings {d : ℕ} {U : Set (TimeVelocity d)}
+theorem ae_eq_zero_of_weak_pairings 
     (hU : IsOpen U) (f : TimeVelocity d → ℝ) (hf : ParabolicMemLpOn U 2 f)
     (hpair : ∀ φ : TimeVelocity d → ℝ, ContDiff ℝ (⊤ : ℕ∞) φ →
       HasCompactSupport φ → tsupport φ ⊆ U → (∫ z in U, f z * φ z) = 0) :
@@ -70,5 +72,6 @@ theorem ae_eq_zero_of_weak_pairings {d : ℕ} {U : Set (TimeVelocity d)}
   filter_upwards [hz.filter_mono (ae_mono Measure.restrict_le_self),
     ae_restrict_mem hU.measurableSet] with z hz hzU
   exact hz hzU
+end
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

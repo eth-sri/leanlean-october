@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.SpatialL2Mass
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialForm
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Reverse-time source bound on shifted positive parts
@@ -22,7 +23,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 /-- The negative reverse-time source functional on a shifted positive part is
 bounded by the source amplitude times its spatial mass. -/
 theorem reverseTimeSourceFunctional_apply_shiftedPositivePart_le_mass_of_ae_abs_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) (MF : ℝ≥0)
     (hf : ∀ᵐ y ∂PDE.volumeOn Ω, |f y| ≤ (MF : ℝ))

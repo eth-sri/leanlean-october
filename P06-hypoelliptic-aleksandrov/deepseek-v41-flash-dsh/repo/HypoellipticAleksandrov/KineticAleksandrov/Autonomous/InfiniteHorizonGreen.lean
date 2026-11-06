@@ -13,12 +13,12 @@ open Set MeasureTheory HypoellipticAleksandrov
 /-- Every infinite pole determines the same physical pole at any later finite terminal time. -/
 def stripPoleFinite (H : Interval) (e : StripPole H ⊤) (T : ℝ) (hT : e.1.time < T) :
     StripPole H (T : WithTop ℝ) := ⟨e.1, WithTop.coe_lt_coe.mpr hT, e.2.2⟩
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (H : Interval) (e : StripPole H ⊤)
 
 /-- Every finite terminal Green measure is the physical-time restriction of the infinite one. -/
 theorem stripGreen_finite_restrict_infinite
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (e : StripPole H ⊤)
+    
     (T : ℝ) (hT : e.1.time < T) :
     stripGreen hH hLE hlam hLam A H T (stripPoleFinite H e T hT) =
       (stripGreen hH hLE hlam hLam A H ⊤ e).restrict {p | p.time < T} :=
@@ -26,9 +26,7 @@ theorem stripGreen_finite_restrict_infinite
 
 /-- The actual infinite Green measure is the supremum over all later finite terminal times. -/
 theorem stripGreen_infinite_eq_iSup
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (e : StripPole H ⊤) :
+     :
     stripGreen hH hLE hlam hLam A H ⊤ e =
       ⨆ (T : ℝ) (hT : e.1.time < T),
         stripGreen hH hLE hlam hLam A H T (stripPoleFinite H e T hT) := by
@@ -78,5 +76,6 @@ theorem stripGreen_infinite_eq_iSup
     intro hT
     rw [stripGreen_finite_restrict_infinite hH hLE hlam hLam A H e T hT]
     exact Measure.restrict_le_self
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeGalerkinPrimalFixedTestLimit
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Arbitrary-test reverse-time Galerkin limit identity
@@ -16,7 +17,7 @@ open scoped ENNReal Matrix Matrix.Norms.Elementwise MatrixOrder RealInnerProduct
 noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-variable {d : ℕ} {Ω : Set (PDE.Vec d)}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
 variable
   (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam)
   (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
@@ -42,7 +43,7 @@ variable
 
 /-- The quotient-level reverse-time identity against an arbitrary spatial test. -/
 def reverseTimeGalerkinPrimal_arbitrary_test_identity_prop
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)

@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.FourierKernels
 import Mathlib.MeasureTheory.Measure.Map
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Translation independence of displacement Fourier measures -/
 
@@ -17,13 +18,13 @@ theorem measurable_evolutionAmbientStateShift {d : ℕ} (h : PDE.Vec d) :
   exact measurable_fst.prodMk (measurable_snd.add_const h)
 
 /-- Translation on the terminal state subtype is Borel. -/
-theorem measurable_evolutionStateShift {d : ℕ} (Ω : Set (PDE.Vec d))
+theorem measurable_evolutionStateShift {d : ℕ} (Ω : HypoellipticAleksandrov.VecSet d)
     (γ : ℝ → PDE.Vec d) (σ : ℝ) (h : PDE.Vec d) :
     Measurable (evolutionStateShift Ω γ σ h) :=
   ((measurable_evolutionAmbientStateShift h).comp measurable_subtype_coe).subtype_mk
 
 /-- Fiber covariance pushes forward to the ambient master measures. -/
-theorem master_translation {d : ℕ} {Ω : Set (PDE.Vec d)}
+theorem master_translation {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     {γ : ℝ → PDE.Vec d} (hΩ : MeasurableSet Ω) (K : MovingFiberKernel Ω γ)
     (hcov : IsTranslationCovariantEvolution Ω γ hΩ K)
     (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) (h : PDE.Vec d) :
@@ -45,7 +46,7 @@ theorem fourierPhase_shift {d : ℕ} (ξ z h : PDE.Vec d) (w : EvolutionAmbientS
   simp only [fourierPhase, evolutionAmbientStateShift, add_sub_add_right_eq_sub]
 
 /-- The Fourier projection is independent of simultaneous starting-position translation. -/
-theorem fourierProjection_translation {d : ℕ} {Ω : Set (PDE.Vec d)}
+theorem fourierProjection_translation {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     {γ : ℝ → PDE.Vec d} (hΩ : MeasurableSet Ω) (K : MovingFiberKernel Ω γ)
     (hcov : IsTranslationCovariantEvolution Ω γ hΩ K)
     (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) (h ξ : PDE.Vec d) :

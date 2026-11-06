@@ -15,7 +15,7 @@ theorem barrier_small_gauge_norm {q : ℝ × ℝ} (hq : bellmanGauge q < 1) : �
   obtain ⟨hX, hv⟩ := bellmanGauge_coordinate_bounds q
   rw [Prod.norm_def, max_le_iff, Real.norm_eq_abs, Real.norm_eq_abs]
   have hpow : bellmanGauge q ^ 3 ≤ 1 := by
-    simpa only [one_pow] using pow_le_pow_left₀ (bellmanGauge_nonneg q) hq.le 3
+    simpa using pow_le_pow_left₀ (bellmanGauge_nonneg q) hq.le 3
   exact ⟨hX.trans hpow, hv.trans hq.le⟩
 
 /-- A reference-scale axis increment is controlled either by distant jets or a compact ball. -/
@@ -45,11 +45,11 @@ theorem barrier_reference_axis_increment (Phi : (ℝ × ℝ) → ℝ)
       have hdist := (haxisdist x t).trans
         (by simpa only [abs_sub_comm] using (abs_sub_left_of_mem_uIcc ht).trans hxy)
       have hh := norm_le_norm_add_norm_sub' (axis x) (axis t)
-      linarith only [hdist, hh, htq]
+      linarith
     have hy : ‖axis y‖ ≤ 2 := by
       have hdist := (haxisdist y t).trans ((abs_sub_right_of_mem_uIcc ht).trans hxy)
       have hh := norm_le_norm_add_norm_sub' (axis y) (axis t)
-      linarith only [hdist, hh, htq]
+      linarith
     exact (abs_sub _ _).trans (by linarith only [hball _ hx, hball _ hy, hD])
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous.BarrierRegularization

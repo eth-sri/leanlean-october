@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.CutoffPiBernsteinSpati
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.FiniteSeparatedSpacetimeTest
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.PiBernsteinCore
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.SampledTimeFactor
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Finite separated assembly of cutoff Bernstein sums
@@ -37,7 +39,7 @@ def cutoffPiBernsteinApproximation {d n : ℕ} (R : ℝ)
 /-- The sampled cutoff Bernstein sum and its literal time derivative have a finite separated
 representation whose factors share the prescribed compact product support. -/
 theorem exists_finiteSeparatedSpacetimeTest_cutoffPiBernstein
-    {d n : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)} (hO : IsOpen O)
+    {d n : ℕ} {τ₁ τ₂ : ℝ} {O : HypoellipticAleksandrov.VecSet d} (hO : IsOpen O)
     (φ : TestFunction (originalTimeOpenCylinderOpens τ₁ τ₂ O hO) ℝ (⊤ : ℕ∞))
     (χ : PDE.Vec d → ℝ) (hχ : ContDiff ℝ (⊤ : ℕ∞) χ)
     (hχcompact : IsCompact (tsupport χ)) (hχO : tsupport χ ⊆ O)

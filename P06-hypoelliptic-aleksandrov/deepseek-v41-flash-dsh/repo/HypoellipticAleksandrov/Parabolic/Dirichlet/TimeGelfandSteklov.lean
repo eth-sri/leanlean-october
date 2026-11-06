@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeGelfandAffine
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeSteklov
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Reverse-time Gelfand--Steklov calculus
@@ -210,29 +211,25 @@ private theorem hasDerivAt_backward_affineAverage
     (Ioc (s - h) s)) = _
   rw [Measure.restrict_restrict_of_subset hWin,
     ← intervalIntegral.integral_of_le (by linarith), hSub]
+section
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T) (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
 
 /-- The continuous affine `V*` curve attached to a reverse-time Gelfand
 weak derivative. -/
 noncomputable def reverseTimeGelfandAffineCurve
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) :
+     :
     ℝ → H10HilbertGraphDual hΩ :=
   fun t => reverseTimeVStarPrimitive hΩ T g t +
     reverseTimeGelfandAffineConstant hΩ T hT u g
 
 private theorem continuousOn_reverseTimeGelfandAffineCurve
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) :
+     :
     ContinuousOn (reverseTimeGelfandAffineCurve hΩ T hT u g) (Icc 0 T) := by
   exact (continuousOn_reverseTimeVStarPrimitive hΩ T g).add continuousOn_const
 
 /-- Endpoint-safe increments of the affine Gelfand curve. -/
 theorem reverseTimeGelfandAffineCurve_sub
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
+    
     {s t : ℝ} (hs : s ∈ Set.Icc 0 T) (ht : t ∈ Set.Icc 0 T)
     (hst : s ≤ t) :
     reverseTimeGelfandAffineCurve hΩ T hT u g t -
@@ -246,9 +243,7 @@ theorem reverseTimeGelfandAffineCurve_sub
   exact reverseTimeVStarPrimitive_sub hΩ T g hs ht hst
 
 private theorem reverseTimeGelfandAffineCurve_ae
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
+    
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g) :
     (fun s => ((scalarLpToH10HilbertGraphDual hΩ).comp (valueCLM hΩ)) (u s))
       =ᵐ[reverseTimeVolume T] reverseTimeGelfandAffineCurve hΩ T hT u g := by
@@ -258,9 +253,7 @@ private theorem reverseTimeGelfandAffineCurve_ae
   exact ht
 
 private theorem forward_gelfand_window_eq_affineAverage_raw
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
+    
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
     (h t : ℝ) (_hh : 0 < h) (_ht0 : 0 ≤ t) (_htT : t + h ≤ T) :
     scalarLpToH10HilbertGraphDual hΩ
@@ -277,9 +270,7 @@ private theorem forward_gelfand_window_eq_affineAverage_raw
       (h := h) (t := t)
 
 private theorem backward_gelfand_window_eq_affineAverage_raw
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
+    
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
     (h t : ℝ) (_hh : 0 < h) (_ht0 : 0 ≤ t - h) (_htT : t ≤ T) :
     scalarLpToH10HilbertGraphDual hΩ
@@ -296,9 +287,7 @@ private theorem backward_gelfand_window_eq_affineAverage_raw
       (h := h) (t := t)
 
 private theorem forward_gelfand_window_eventuallyEq_affineAverage
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
+    
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
     {h t : ℝ} (hh : 0 < h) (ht0 : 0 < t) (htT : t + h < T) :
     (fun s => scalarLpToH10HilbertGraphDual hΩ
@@ -311,9 +300,7 @@ private theorem forward_gelfand_window_eventuallyEq_affineAverage
     (le_of_lt hs.1) (by linarith [hs.2])
 
 private theorem backward_gelfand_window_eventuallyEq_affineAverage
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
+    
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
     {h t : ℝ} (hh : 0 < h) (ht0 : 0 < t - h) (htT : t < T) :
     (fun s => scalarLpToH10HilbertGraphDual hΩ
@@ -326,9 +313,7 @@ private theorem backward_gelfand_window_eventuallyEq_affineAverage
     (by linarith [hs.1]) (le_of_lt hs.2)
 
 private theorem forward_affineIncrement_normalized_eq_steklov
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
+    
     {h t : ℝ} (hh : 0 < h) (ht0 : 0 < t) (htT : t + h < T) :
     h⁻¹ • (reverseTimeGelfandAffineCurve hΩ T hT u g (t + h) -
       reverseTimeGelfandAffineCurve hΩ T hT u g t) =
@@ -350,9 +335,7 @@ private theorem forward_affineIncrement_normalized_eq_steklov
       (by linarith))
 
 private theorem backward_affineIncrement_normalized_eq_steklov
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
+    
     {h t : ℝ} (hh : 0 < h) (ht0 : 0 < t - h) (htT : t < T) :
     h⁻¹ • (reverseTimeGelfandAffineCurve hΩ T hT u g t -
       reverseTimeGelfandAffineCurve hΩ T hT u g (t - h)) =
@@ -375,9 +358,7 @@ private theorem backward_affineIncrement_normalized_eq_steklov
 
 /-- Strict-interior derivative of the pivoted forward Steklov curve. -/
 theorem hasDerivAt_reverseTimeForwardSteklov_gelfand
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
+    
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
     {h t : ℝ} (hh : 0 < h) (ht0 : 0 < t) (htT : t + h < T) :
     HasDerivAt
@@ -401,9 +382,7 @@ theorem hasDerivAt_reverseTimeForwardSteklov_gelfand
 
 /-- Strict-interior derivative of the pivoted backward Steklov curve. -/
 theorem hasDerivAt_reverseTimeBackwardSteklov_gelfand
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
+    
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
     {h t : ℝ} (hh : 0 < h) (ht0 : 0 < t - h) (htT : t < T) :
     HasDerivAt
@@ -424,5 +403,6 @@ theorem hasDerivAt_reverseTimeBackwardSteklov_gelfand
   simpa only [backward_affineIncrement_normalized_eq_steklov
     (hΩ := hΩ) (T := T) (hT := hT) (u := u) (g := g)
     (hh := hh) (ht0 := ht0) (htT := htT)] using hTransport
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

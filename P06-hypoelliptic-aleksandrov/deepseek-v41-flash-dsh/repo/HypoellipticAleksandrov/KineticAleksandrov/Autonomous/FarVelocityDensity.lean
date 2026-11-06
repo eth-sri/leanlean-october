@@ -52,7 +52,7 @@ theorem cylinder_density_far (hpush : PushforwardStatement)
         (eLpNorm G (ENNReal.ofReal q)
           (volume.restrict (forwardCylinder Z₀ R hR))).toReal ≤ C * R ^ (6 / q - 4) := by
   obtain ⟨C, hC, hc⟩ := (hpush hH hLE lam Lam hlam hLam).2 q hq
-  refine ⟨C * (4 : ℝ) ^ (6 / q - 4), by positivity, ?_⟩
+  refine ⟨C * 4 ^ (6 / q - 4), by positivity, ?_⟩
   intro A Z₀ R hR P hP hfar
   let c := farVelocityClock Z₀ R hR hfar
   have hsub := farVelocityClock_contains Z₀ R hR hfar
@@ -76,7 +76,7 @@ theorem cylinder_density_far (hpush : PushforwardStatement)
     (ENNReal.ofReal q) hfp hm
   refine ⟨g, hgm, hg0, hgd, hgp, ?_⟩
   have hn := (ENNReal.toReal_mono hfp.ne hgn).trans hfn
-  have hr : c.r ^ (6 / q - 4) = (4 : ℝ) ^ (6 / q - 4) * R ^ (6 / q - 4) :=
+  have hr : c.r ^ (6 / q - 4) = 4 ^ (6 / q - 4) * R ^ (6 / q - 4) :=
     Real.mul_rpow (by norm_num) hR.le
   rw [hr] at hn
   simpa only [mul_assoc] using hn

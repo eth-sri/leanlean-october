@@ -8,13 +8,12 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.NestedStripC
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (H1 H2 : FiniteIntervalUnion) (hsub : H1.carrier ⊆ H2.carrier)
 
 /-- Both actual union measure identities hold on every certified nested component. -/
 theorem nested_union_component_identity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H1 H2 : FiniteIntervalUnion)
-    (hsub : H1.carrier ⊆ H2.carrier) (i : Fin H1.count) (j : Fin H2.count)
+     (i : Fin H1.count) (j : Fin H2.count)
     (hij : (H1.component i).carrier ⊆ (H2.component j).carrier) (sMinus T : ℝ)
     (e : StripPole (H1.component i) (T : WithTop ℝ)) (he : sMinus < e.1.time) :
     let ep := componentPoleInclusion H1 i T e
@@ -58,10 +57,7 @@ theorem nested_union_component_identity
 
 /-- The literal nested identities hold for every physical pole of a finite interval union. -/
 theorem strip_nested_union_point
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H1 H2 : FiniteIntervalUnion)
-    (hsub : H1.carrier ⊆ H2.carrier) (sMinus T : ℝ)
+     (sMinus T : ℝ)
     (e : FiniteUnionPole H1 (T : WithTop ℝ)) (he : sMinus < e.1.time) :
     finiteUnionGreen hH hLE hlam hLam A H2 T
       (finiteUnionNestedPoleInclusion H1 H2 hsub T e) =
@@ -82,5 +78,6 @@ theorem strip_nested_union_point
   dsimp only at hh
   rw [heq] at hh
   exact hh
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

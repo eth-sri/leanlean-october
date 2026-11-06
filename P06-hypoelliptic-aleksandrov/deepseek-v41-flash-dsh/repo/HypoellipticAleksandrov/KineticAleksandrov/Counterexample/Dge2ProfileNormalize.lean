@@ -39,17 +39,19 @@ theorem continuousOn_normalizeGauge (d : ℕ) :
   have hi := (continuous_rho d).continuousOn.inv₀ (fun q hq => (rho_eq_zero_iff q).not.mpr hq)
   exact (hi.pow 3 |>.smul continuous_fst.continuousOn).prodMk
     (hi.smul continuous_snd.continuousOn)
+section
+variable {d : ℕ} (H : XV d → ℝ)
 
 /-- The normalized velocity Hessian, assigned the identity at the joint origin. -/
-def normalizedProfileMatrix {d : ℕ} (H : XV d → ℝ) (q : XV d) : PDE.Mat d :=
+def normalizedProfileMatrix  (q : XV d) : PDE.Mat d :=
   if q = 0 then 1 else dvv H (normalizeGauge q)
 
 /-- The normalized transport scalar, assigned one at the joint origin. -/
-def normalizedProfileTransport {d : ℕ} (H : XV d → ℝ) (q : XV d) : ℝ :=
+def normalizedProfileTransport  (q : XV d) : ℝ :=
   if q = 0 then 1 else PDE.vecDot (normalizeGauge q).2 (dx H (normalizeGauge q))
 
 /-- The normalized Hessian field is continuous off the origin. -/
-theorem continuousOn_normalizedProfileMatrix {d : ℕ} (H : XV d → ℝ)
+theorem continuousOn_normalizedProfileMatrix 
     (hH : ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ)) :
     ContinuousOn (normalizedProfileMatrix H) ({0}ᶜ) := by
   apply ((continuousOn_dvv_off_origin H hH).comp (continuousOn_normalizeGauge d)
@@ -59,7 +61,7 @@ theorem continuousOn_normalizedProfileMatrix {d : ℕ} (H : XV d → ℝ)
   simp only [normalizedProfileMatrix, ite_eq_right hq, Function.comp_apply]
 
 /-- The normalized transport is continuous off the origin. -/
-theorem continuousOn_normalizedProfileTransport {d : ℕ} (H : XV d → ℝ)
+theorem continuousOn_normalizedProfileTransport 
     (hH : ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ)) :
     ContinuousOn (normalizedProfileTransport H) ({0}ᶜ) := by
   apply ((continuousOn_transport_off_origin H hH).comp (continuousOn_normalizeGauge d)
@@ -69,7 +71,7 @@ theorem continuousOn_normalizedProfileTransport {d : ℕ} (H : XV d → ℝ)
   simp only [normalizedProfileTransport, ite_eq_right hq, Function.comp_apply]
 
 /-- The normalized Hessian field is Hermitian everywhere, including its assigned origin value. -/
-theorem normalizedProfileMatrix_isHermitian {d : ℕ} (H : XV d → ℝ)
+theorem normalizedProfileMatrix_isHermitian 
     (hH : ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ)) (q : XV d) :
     (normalizedProfileMatrix H q).IsHermitian := by
   by_cases hq : q = 0
@@ -80,12 +82,12 @@ theorem normalizedProfileMatrix_isHermitian {d : ℕ} (H : XV d → ℝ)
     exact dvv_isHermitian H _ (hH.contDiffAt (hopen.mem_nhds (normalizeGauge_ne_zero q hq)))
 
 /-- The source canonical spectral matrix on normalized jets, with identity at the origin. -/
-def homogeneousSpectralMatrix {d : ℕ} (H : XV d → ℝ) (cminus : ℝ) (q : XV d) : PDE.Mat d :=
+def homogeneousSpectralMatrix  (cminus : ℝ) (q : XV d) : PDE.Mat d :=
   if q = 0 then 1 else
     spectralTraceMatrix (normalizedProfileMatrix H q) (normalizedProfileTransport H q) cminus
 
 /-- The globally extended canonical matrix has measurable entries. -/
-theorem measurable_homogeneousSpectralMatrix {d : ℕ} (H : XV d → ℝ)
+theorem measurable_homogeneousSpectralMatrix 
     (hH : ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ)) (cminus : ℝ) (i k : Fin d) :
     Measurable (fun q => homogeneousSpectralMatrix H cminus q i k) := by
   classical
@@ -102,6 +104,7 @@ theorem measurable_homogeneousSpectralMatrix {d : ℕ} (H : XV d → ℝ)
   funext q
   simp only [homogeneousSpectralMatrix, Set.mem_singleton_iff]
   split_ifs <;> rfl
+end
 
 /-- Scalar identity matrices are ordered according to their scalar weights. -/
 theorem scalar_identity_le {d : ℕ} (a b : ℝ) (hab : a ≤ b) :

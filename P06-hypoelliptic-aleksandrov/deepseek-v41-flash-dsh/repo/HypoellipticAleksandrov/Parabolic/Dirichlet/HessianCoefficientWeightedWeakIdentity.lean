@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.SmoothNeighborhoodProduct
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.OriginalTimeSpacetimeTest
 public import HypoellipticAleksandrov.Parabolic.WeakJetProduct
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Coefficient-weighted weak Hessian identities
 
@@ -14,9 +16,11 @@ open Filter MeasureTheory Set Topology
 open scoped ENNReal BigOperators Matrix.Norms.Elementwise MatrixOrder
 noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
+section
+variable {d : ℕ}
 
 private theorem integrable_mul_compact_of_locallyIntegrableOn
-    {d : ℕ} {S : Set (TimeVelocity d)} {f q : TimeVelocity d → ℝ}
+     {S : HypoellipticAleksandrov.Parabolic.TVSet d} {f q : TimeVelocity d → ℝ}
     (hf : LocallyIntegrableOn f S volume) (hq : Continuous q)
     (hc : HasCompactSupport q) (hs : tsupport q ⊆ S) :
     Integrable (fun z => f z * q z) (timeVelocityVolumeOn S) := by
@@ -28,7 +32,7 @@ private theorem integrable_mul_compact_of_locallyIntegrableOn
   exact tsupport_mul_subset_right (subset_closure hz)
 
 private theorem velocityGradient_mul_at
-    {d : ℕ} (f q : TimeVelocity d → ℝ) (z : TimeVelocity d) (i : Fin d)
+     (f q : TimeVelocity d → ℝ) (z : TimeVelocity d) (i : Fin d)
     (hf : DifferentiableAt ℝ f z) (hq : DifferentiableAt ℝ q z) :
     velocityGradient (f * q) z i =
       f z * velocityGradient q z i + q z * velocityGradient f z i := by
@@ -37,7 +41,7 @@ private theorem velocityGradient_mul_at
   simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, smul_eq_mul]
 
 private theorem velocityGradient_tsupport_subset
-    {d : ℕ} (q : TimeVelocity d → ℝ) (i : Fin d) :
+     (q : TimeVelocity d → ℝ) (i : Fin d) :
     tsupport (fun z => velocityGradient q z i) ⊆ tsupport q := by
   unfold velocityGradient
   change closure (Function.support (fun z => fderiv ℝ q z (0, Pi.single i 1))) ⊆ tsupport q
@@ -49,7 +53,7 @@ private theorem velocityGradient_tsupport_subset
   simp [hzero]
 
 private theorem reverseTimeCompactCylinder_mapsTo
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ : ℝ) :
+     {Ω : HypoellipticAleksandrov.VecSet d} (r₀ r₁ : ℝ) :
     reverseTimeMap r₁ '' (Set.Icc 0 (r₁ - r₀) ×ˢ closure Ω) ⊆
       scalarParabolicClosedCylinder r₀ r₁ Ω := by
   rintro _ ⟨⟨τ, y⟩, h, rfl⟩
@@ -57,7 +61,7 @@ private theorem reverseTimeCompactCylinder_mapsTo
   exact ⟨⟨by linarith [h.1.2], by linarith [h.1.1]⟩, h.2⟩
 
 private theorem velocityGradient_eq_spatialSlice_fderiv
-    {d : ℕ} {f : TimeVelocity d → ℝ} (z : TimeVelocity d) (i : Fin d)
+     {f : TimeVelocity d → ℝ} (z : TimeVelocity d) (i : Fin d)
     (hf : DifferentiableAt ℝ f z) :
     velocityGradient f z i =
       (fderiv ℝ (fun y : PDE.Vec d => f (z.1, y)) z.2) (PDE.basisVec i) := by
@@ -69,7 +73,7 @@ private theorem velocityGradient_eq_spatialSlice_fderiv
   rfl
 
 private theorem separatedBase_admissible
-    {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen O) (τ₁ τ₂ : ℝ)
+     {O : HypoellipticAleksandrov.VecSet d} (hO : IsOpen O) (τ₁ τ₂ : ℝ)
     (eta : OriginalTimeScalarTest τ₁ τ₂) (psi : PDE.WeakTestFunction O) :
     let base : TimeVelocity d → ℝ := fun z => eta z.1 * psi z.2
     ContDiff ℝ (⊤ : ℕ∞) base ∧ HasCompactSupport base ∧
@@ -92,7 +96,7 @@ private theorem separatedBase_admissible
     exact ⟨eta.tsupport_subset hz'.1, psi.tsupport_subset hz'.2⟩
 
 private theorem weighted_admissible
-    {d : ℕ} {S K : Set (TimeVelocity d)} {c q : TimeVelocity d → ℝ}
+     {S K : HypoellipticAleksandrov.Parabolic.TVSet d} {c q : TimeVelocity d → ℝ}
     (hc : IsSmoothOnNeighborhood c K) (hq : ContDiff ℝ (⊤ : ℕ∞) q)
     (hqCompact : HasCompactSupport q) (hqS : tsupport q ⊆ S) (hSK : S ⊆ K) :
     ContDiff ℝ (⊤ : ℕ∞) (fun z => c z * q z) ∧
@@ -103,7 +107,7 @@ private theorem weighted_admissible
     hqCompact.mul_left, tsupport_mul_subset_right.trans hqS⟩
 
 private theorem reverseTime_coefficient_smoothOn_closedCylinder
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ : ℝ) (a : CoefficientField d)
+     {Ω : HypoellipticAleksandrov.VecSet d} (r₀ r₁ : ℝ) (a : CoefficientField d)
     (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω)) (i j : Fin d) :
     IsSmoothOnNeighborhood
@@ -116,7 +120,7 @@ private theorem reverseTime_coefficient_smoothOn_closedCylinder
     (IsSmoothOnNeighborhood.coefficientEntry a ha i j)
 
 private theorem velocityGradient_separatedBase
-    {d : ℕ} {O : Set (PDE.Vec d)} {τ₁ τ₂ : ℝ}
+     {O : HypoellipticAleksandrov.VecSet d} {τ₁ τ₂ : ℝ}
     (eta : OriginalTimeScalarTest τ₁ τ₂) (psi : PDE.WeakTestFunction O)
     (z : TimeVelocity d) (i : Fin d) :
     velocityGradient (fun w : TimeVelocity d => eta w.1 * psi w.2) z i =
@@ -132,7 +136,7 @@ private theorem velocityGradient_separatedBase
     PDE.WeakTestFunction.partialDeriv]
 
 private theorem velocityGradient_reverseTimeCoefficient_mul_separatedBase
-    {d : ℕ} {Ω O : Set (PDE.Vec d)} (r₀ r₁ : ℝ) (τ₁ τ₂ : ℝ)
+     {Ω O : HypoellipticAleksandrov.VecSet d} (r₀ r₁ : ℝ) (τ₁ τ₂ : ℝ)
     (htime : Set.Ioo τ₁ τ₂ ⊆ reverseTimeOpenInterval (r₁ - r₀))
     (hOΩ : O ⊆ Ω) (a : CoefficientField d)
     (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
@@ -172,7 +176,7 @@ private theorem velocityGradient_reverseTimeCoefficient_mul_separatedBase
 /-- Weak integration by parts for one ordered Hessian entry against a
 reverse-time coefficient-weighted separated test. -/
 theorem reverseTime_coefficient_weighted_weak_identity
-    {d : ℕ} {Ω O : Set (PDE.Vec d)}
+     {Ω O : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (hO : IsOpen O) (hOΩ : O ⊆ Ω)
     (τ₁ τ₂ : ℝ)
     (htime : Set.Ioo τ₁ τ₂ ⊆ reverseTimeOpenInterval (r₁ - r₀))
@@ -208,11 +212,11 @@ theorem reverseTime_coefficient_weighted_weak_identity
       Integrable hessianPair
         (timeVelocityVolumeOn (Set.Ioo τ₁ τ₂ ×ˢ O)) ∧
       (∫ z in Set.Ioo τ₁ τ₂ ×ˢ O, grouped z
-          ∂(volume : Measure (TimeVelocity d))) =
+          ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
         -∫ z in Set.Ioo τ₁ τ₂ ×ˢ O, hessianPair z
-          ∂(volume : Measure (TimeVelocity d)) := by
-  let S : Set (TimeVelocity d) := Set.Ioo τ₁ τ₂ ×ˢ O
-  let K : Set (TimeVelocity d) := Set.Icc 0 (r₁ - r₀) ×ˢ closure Ω
+          ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
+  let S : HypoellipticAleksandrov.Parabolic.TVSet d := Set.Ioo τ₁ τ₂ ×ˢ O
+  let K : HypoellipticAleksandrov.Parabolic.TVSet d := Set.Icc 0 (r₁ - r₀) ×ˢ closure Ω
   let c : TimeVelocity d → ℝ := fun z =>
     reverseTimeCoefficient r₁ a z.1 z.2 i j
   let base : TimeVelocity d → ℝ := fun z => eta z.1 * psi z.2
@@ -273,5 +277,6 @@ theorem reverseTime_coefficient_weighted_weak_identity
     apply integral_congr_ae
     filter_upwards [ae_restrict_mem (measurableSet_Ioo.prod hO.measurableSet)] with z hz
     rw [hformula z hz]
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

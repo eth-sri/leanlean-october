@@ -171,20 +171,22 @@ variable {n : ℕ}
     viscousBlockMatrix A ε (Fin.castAdd n i) (Fin.castAdd n j) = A i j := by
   simp only [viscousBlockMatrix, Matrix.reindex_apply, Matrix.submatrix_apply,
     finSumFinEquiv_symm_apply_castAdd, Matrix.fromBlocks_apply₁₁]
+section
+variable (A : PDE.Mat n) (ε : ℝ) (i j : Fin n)
 
-theorem viscousBlockMatrix_castAdd_natAdd (A : PDE.Mat n) (ε : ℝ) (i j : Fin n) :
+theorem viscousBlockMatrix_castAdd_natAdd  :
     viscousBlockMatrix A ε (Fin.castAdd n i) (Fin.natAdd n j) = 0 := by
   simp only [viscousBlockMatrix, Matrix.reindex_apply, Matrix.submatrix_apply,
     finSumFinEquiv_symm_apply_castAdd, finSumFinEquiv_symm_apply_natAdd,
     Matrix.fromBlocks_apply₁₂, Matrix.zero_apply]
 
-theorem viscousBlockMatrix_natAdd_castAdd (A : PDE.Mat n) (ε : ℝ) (i j : Fin n) :
+theorem viscousBlockMatrix_natAdd_castAdd  :
     viscousBlockMatrix A ε (Fin.natAdd n i) (Fin.castAdd n j) = 0 := by
   simp only [viscousBlockMatrix, Matrix.reindex_apply, Matrix.submatrix_apply,
     finSumFinEquiv_symm_apply_castAdd, finSumFinEquiv_symm_apply_natAdd,
     Matrix.fromBlocks_apply₂₁, Matrix.zero_apply]
 
-theorem viscousBlockMatrix_natAdd_natAdd (A : PDE.Mat n) (ε : ℝ) (i j : Fin n) :
+theorem viscousBlockMatrix_natAdd_natAdd  :
     viscousBlockMatrix A ε (Fin.natAdd n i) (Fin.natAdd n j) =
       ε * (1 : PDE.Mat n) i j := by
   simp only [viscousBlockMatrix, Matrix.reindex_apply, Matrix.submatrix_apply,
@@ -205,6 +207,7 @@ theorem viscousBlockMatrix_natAdd_natAdd (A : PDE.Mat n) (ε : ℝ) (i j : Fin n
     viscousBlockMatrix A ε (i.addNat n) (j.addNat n) = ε * (1 : PDE.Mat n) i j := by
   rw [← Fin.natAdd_eq_addNat, ← Fin.natAdd_eq_addNat]
   exact viscousBlockMatrix_natAdd_natAdd A ε i j
+end
 
 /-- Entrywise extensionality for matrices on `Fin (n + n)` along the block decomposition. -/
 theorem matrix_ext_blocks {M M' : PDE.Mat (n + n)}

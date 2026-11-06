@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.ScalarDirichletData
 import Mathlib.Analysis.Calculus.FDeriv.Congr
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Locality of the stationary scalar operator
 
@@ -15,7 +16,7 @@ open Filter Set
 open scoped Topology
 
 /-- Stationary scalar operators agree wherever their spatial representatives agree openly. -/
-theorem stationary_scalarOperator_eqOn {d : ℕ} {Ω : Set (PDE.Vec d)}
+theorem stationary_scalarOperator_eqOn {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (f q : PDE.Vec d → ℝ) (heq : EqOn f q Ω)
     (A : CoefficientField d) (z : TimeVelocity d) (hz : z.2 ∈ Ω) :
     scalarParabolicZeroOrderOperator A (fun _ _ => 0) (fun _ _ => 0)

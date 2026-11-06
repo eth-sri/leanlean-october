@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.LocalizedSpatialDifferenceQuotientPointwise
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Localized spatial quotient smooth tests
@@ -14,14 +15,13 @@ a smooth compactly supported test and records its coordinate weak derivative.
 noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
+section
+variable {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ} (η : PDE.QuantitativeSmoothCutoff inner outer K) (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω) (hηΩ : tsupport η.toFun ⊆ Ω)
 
 /-- The localized forward quotient of a bundled smooth test, supported by the
 cutoff inside the raw carrier. -/
 noncomputable def localizedSpatialDifferenceQuotientWeakTest
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
-    (hηΩ : tsupport η.toFun ⊆ Ω) :
+     :
     PDE.WeakTestFunction Ω where
   toFun := localizedSpatialDifferenceQuotient η k h φ
   contDiff := ContDiff.localizedSpatialDifferenceQuotient φ.contDiff η k h
@@ -31,7 +31,7 @@ noncomputable def localizedSpatialDifferenceQuotientWeakTest
 
 /-- The bundled localized quotient has the literal pointwise value. -/
 @[simp] theorem localizedSpatialDifferenceQuotientWeakTest_apply
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
     (hηΩ : tsupport η.toFun ⊆ Ω) (y : PDE.Vec d) :
@@ -42,10 +42,7 @@ noncomputable def localizedSpatialDifferenceQuotientWeakTest
 /-- The coordinate derivative of the bundled localized quotient obeys the
 literal cutoff product rule. -/
 theorem localizedSpatialDifferenceQuotientWeakTest_partialDeriv
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
-    (hηΩ : tsupport η.toFun ⊆ Ω)
+    
     (j : Fin d) (y : PDE.Vec d) :
     (localizedSpatialDifferenceQuotientWeakTest η k h φ hηΩ).partialDeriv j y =
       PDE.classicalGradient η.toFun y j *
@@ -99,5 +96,6 @@ theorem localizedSpatialDifferenceQuotientWeakTest_partialDeriv
   rw [hquotientDeriv]
   simp only [PDE.WeakTestFunction.partialDeriv]
   ring
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

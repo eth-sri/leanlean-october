@@ -21,7 +21,7 @@ theorem capacity_primitive_smooth {f : ℝ → ℝ} (hf : ContDiff ℝ (⊤ : �
       hf.continuous.aestronglyMeasurable.stronglyMeasurableAtFilter hf.continuous.continuousAt
   apply contDiff_infty_iff_deriv.mpr
   refine ⟨fun v => (hd v).differentiableAt, ?_⟩
-  have he : deriv (fun v => ∫ x in a..v, f x) = f := funext fun v => (hd v).deriv
+  have he := funext fun v => (hd v).deriv
   rw [he]
   exact hf
 

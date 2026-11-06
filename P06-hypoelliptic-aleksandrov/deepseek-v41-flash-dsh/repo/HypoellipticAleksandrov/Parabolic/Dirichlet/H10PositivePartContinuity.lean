@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.H10PositivePart
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.SpatialSobolevNorm
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Continuity of positive parts in spatial `H¹₀`
@@ -19,7 +20,7 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-variable {d : ℕ} {Ω : Set (PDE.Vec d)}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
 
 private theorem tendsto_eLpNorm_two_zero_of_ae_dominated
     {α E : Type*} [MeasurableSpace α] [NormedAddCommGroup E]

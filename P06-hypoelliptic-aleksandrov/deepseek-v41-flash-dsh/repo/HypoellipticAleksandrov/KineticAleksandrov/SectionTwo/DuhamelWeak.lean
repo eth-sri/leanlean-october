@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.DuhamelTerminal
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Distributional equation for the kinetic Duhamel potential -/
 
@@ -10,7 +11,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set Filter
 open Evolution Occupation
 open scoped Topology
-variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d}
 
 /-- Packing the product coordinates agrees with the existing kinetic coordinate homeomorphism. -/
 @[simp] theorem duhamel_homeomorph_packQ (q : ℝ × EvolutionAmbientState d) :

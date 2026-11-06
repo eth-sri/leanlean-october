@@ -1,6 +1,7 @@
 module
 
 public import PDEFoundation.Sobolev.H1.ZeroBoundary
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Changing an H1 zero-boundary carrier almost everywhere
@@ -20,7 +21,7 @@ open Filter MeasureTheory
 /-- Copy an `H10Function` approximation certificate to an almost-everywhere equal
 `H1Function` carrier. -/
 noncomputable def copyToH1Function_of_ae_eq
-    {d : ℕ} {U : Set (PDE.Vec d)}
+    {d : ℕ} {U : HypoellipticAleksandrov.VecSet d}
     (w : PDE.H10Function U) (q : PDE.H1Function U)
     (hfun : w.toH1Function.toFun =ᵐ[PDE.volumeOn U] q.toFun)
     (hgrad : ∀ i : Fin d,
@@ -64,7 +65,7 @@ noncomputable def copyToH1Function_of_ae_eq
     exact w.tendsto_approx_grad i
 
 @[simp] theorem copyToH1Function_of_ae_eq_toH1Function
-    {d : ℕ} {U : Set (PDE.Vec d)}
+    {d : ℕ} {U : HypoellipticAleksandrov.VecSet d}
     (w : PDE.H10Function U) (q : PDE.H1Function U)
     (hfun : w.toH1Function.toFun =ᵐ[PDE.volumeOn U] q.toFun)
     (hgrad : ∀ i : Fin d,

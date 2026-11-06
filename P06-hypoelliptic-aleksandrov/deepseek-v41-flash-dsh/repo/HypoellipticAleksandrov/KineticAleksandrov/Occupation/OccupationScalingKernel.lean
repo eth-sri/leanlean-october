@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Scaling.Pushforward
 public import HypoellipticAleksandrov.KineticAleksandrov.Scaling.Radius
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.OccupationScalingBorel
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # First marginal of the constructed affine kernel pushforward -/
 
@@ -13,7 +14,7 @@ open MeasureTheory Scaling
 
 /-- The first marginal of the pushed kernel is the inverse velocity affine image. -/
 theorem firstMarginal_pushKernel {d : ℕ} (Φ : KineticAffineScaling d)
-    {Ω Ω' : Set (PDE.Vec d)} {γ γ' : ℝ → PDE.Vec d}
+    {Ω Ω' : HypoellipticAleksandrov.VecSet d} {γ γ' : ℝ → PDE.Vec d}
     (h : Φ.MapsDomain Ω γ Ω' γ') (K : MovingFiberKernel Ω γ)
     (q : EvolutionQuery Ω' γ') :
     (KineticAffineScaling.pushKernel h K).firstMarginal q =
@@ -74,11 +75,11 @@ theorem firstMarginal_independent_position {d : ℕ} {B : CoefficientField d}
     MeasurableSet.univ σ τ hστ
     (evolutionStateOfPosition (SectionTwo.wholeSpace d) (fun _ => 0) σ y z')
   exact hz.symm.trans (hh.trans hz')
+section
+variable {d : ℕ} {B : CoefficientField d} (Φ : KineticAffineScaling d) (K : MovingFiberKernel (SectionTwo.wholeSpace d) (fun _ => 0))
 
 /-- The scaled scalar marginal is conjugate by the fixed-time position equivalences. -/
-theorem occupation_parabolicMarginal_conjugate {d : ℕ} {B : CoefficientField d}
-    (Φ : KineticAffineScaling d)
-    (K : MovingFiberKernel (SectionTwo.wholeSpace d) (fun _ => (0 : PDE.Vec d)))
+theorem occupation_parabolicMarginal_conjugate 
     (hP : SectionTwo.HasParabolicMarginalBundle (SectionTwo.wholeSpace d)
       (fun _ => (0 : PDE.Vec d)) MeasurableSet.univ (zIndependentCoefficient B) K)
     (σ τ : ℝ) (hστ : σ ≤ τ)
@@ -128,9 +129,7 @@ theorem occupation_parabolicMarginal_conjugate {d : ℕ} {B : CoefficientField d
   exact ht.trans (hp2.trans (hh.symm.trans hrhs.symm))
 
 /-- Position independence survives the constructed affine kernel pushforward. -/
-theorem occupation_scaled_firstMarginal_independent {d : ℕ} {B : CoefficientField d}
-    (Φ : KineticAffineScaling d)
-    (K : MovingFiberKernel (SectionTwo.wholeSpace d) (fun _ => (0 : PDE.Vec d)))
+theorem occupation_scaled_firstMarginal_independent 
     (hP : SectionTwo.HasParabolicMarginalBundle (SectionTwo.wholeSpace d)
       (fun _ => (0 : PDE.Vec d)) MeasurableSet.univ (zIndependentCoefficient B) K)
     (σ τ : ℝ) (hστ : σ ≤ τ) (v z z' : PDE.Vec d) :
@@ -154,9 +153,7 @@ theorem occupation_scaled_firstMarginal_independent {d : ℕ} {B : CoefficientFi
   exact hp.trans ((congrArg (Measure.map Φ.positionInv) hh).trans hp'.symm)
 
 /-- Equality of the scaled scalar kernel with the constructed kernel conjugation. -/
-theorem occupation_parabolicKernel_conjugate {d : ℕ} {B : CoefficientField d}
-    (Φ : KineticAffineScaling d)
-    (K : MovingFiberKernel (SectionTwo.wholeSpace d) (fun _ => (0 : PDE.Vec d)))
+theorem occupation_parabolicKernel_conjugate 
     (hP : SectionTwo.HasParabolicMarginalBundle (SectionTwo.wholeSpace d)
       (fun _ => (0 : PDE.Vec d)) MeasurableSet.univ (zIndependentCoefficient B) K)
     (σ τ : ℝ) (hστ : σ ≤ τ) :
@@ -171,6 +168,7 @@ theorem occupation_parabolicKernel_conjugate {d : ℕ} {B : CoefficientField d}
     (kernelConj_apply (occupation_positionEquiv Φ σ) (occupation_positionEquiv Φ τ)
       (parabolicMarginalKernel K MeasurableSet.univ (Φ.time σ) (Φ.time τ)
         (Φ.time_le_iff.mpr hστ)) y).symm
+end
 
 /-- The ambient scalar marginal is a measurable-query evaluation of the master marginal. -/
 theorem occupation_parabolicMarginalAmbient_eq {d : ℕ}
@@ -184,8 +182,8 @@ theorem occupation_parabolicMarginalAmbient_eq {d : ℕ}
 
 /-- Joint measurable-set evaluation for every whole-space scalar marginal. -/
 theorem occupation_parabolicMarginal_measurable {d : ℕ}
-    (K : MovingFiberKernel (SectionTwo.wholeSpace d) (fun _ => (0 : PDE.Vec d)))
-    (E : Set (PDE.Vec d)) (hE : MeasurableSet E) :
+    (K : MovingFiberKernel (SectionTwo.wholeSpace d) (fun _ => 0))
+    (E : HypoellipticAleksandrov.VecSet d) (hE : MeasurableSet E) :
     Measurable (fun q : ParabolicEvolutionQuery (SectionTwo.wholeSpace d)
       (fun _ => (0 : PDE.Vec d)) => parabolicMarginalAmbientMeasure K MeasurableSet.univ q E) := by
   have hq : Measurable (fun q : ParabolicEvolutionQuery (SectionTwo.wholeSpace d)

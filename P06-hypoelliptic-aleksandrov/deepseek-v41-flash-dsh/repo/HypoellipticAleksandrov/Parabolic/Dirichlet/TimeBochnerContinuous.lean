@@ -43,14 +43,15 @@ theorem integral_norm_sq_eq_norm_sq_toLp
       (integral_nonneg fun _ => sq_nonneg _) (by norm_num)).symm
   · norm_num
   · simp
+section
+variable {E : Type*} [NormedAddCommGroup E] (T : ℝ) (w : ℝ → E)
 
 /-- A curve continuous on the closed interval belongs to reverse-time Bochner `L²`.
 
 For nonpositive `T`, the literal carrier `Ioo 0 T` is empty. -/
 theorem memLp_two_reverseTime_of_continuousOn
-    {E : Type*} [NormedAddCommGroup E]
-    (T : ℝ) (w : ℝ → E) (hw : ContinuousOn w (Set.Icc 0 T)) :
-    MeasureTheory.MemLp w (2 : ℝ≥0∞) (reverseTimeVolume T) := by
+     (hw : ContinuousOn w (Set.Icc 0 T)) :
+    MeasureTheory.MemLp w 2 (reverseTimeVolume T) := by
   by_cases hT : 0 < T
   · let K : Set ℝ := Icc 0 T
     have hKcompact : IsCompact K := isCompact_Icc
@@ -77,17 +78,16 @@ theorem memLp_two_reverseTime_of_continuousOn
 
 /-- The quotient-valued reverse-time Bochner `L²` class of a continuous curve. -/
 noncomputable def reverseTimeL2OfContinuousOn
-    {E : Type*} [NormedAddCommGroup E]
-    (T : ℝ) (w : ℝ → E) (hw : ContinuousOn w (Set.Icc 0 T)) :
-    MeasureTheory.Lp E (2 : ℝ≥0∞) (reverseTimeVolume T) :=
+     (hw : ContinuousOn w (Set.Icc 0 T)) :
+    MeasureTheory.Lp E 2 (reverseTimeVolume T) :=
   (memLp_two_reverseTime_of_continuousOn T w hw).toLp w
 
 /-- The continuous curve represents its reverse-time Bochner class almost everywhere. -/
 theorem coeFn_reverseTimeL2OfContinuousOn
-    {E : Type*} [NormedAddCommGroup E]
-    (T : ℝ) (w : ℝ → E) (hw : ContinuousOn w (Set.Icc 0 T)) :
+     (hw : ContinuousOn w (Set.Icc 0 T)) :
     reverseTimeL2OfContinuousOn T w hw =ᵐ[reverseTimeVolume T] w := by
   simpa only [reverseTimeL2OfContinuousOn] using
     (memLp_two_reverseTime_of_continuousOn T w hw).coeFn_toLp
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

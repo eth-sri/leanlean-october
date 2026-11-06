@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.ParabolicDerivativeIndexBoundCoherence
 public import HypoellipticAleksandrov.Parabolic.ParabolicWeakDerivativeFamily
 public import HypoellipticAleksandrov.Parabolic.WeakDerivativesLocal
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Locality for coherent parabolic weak-derivative families
@@ -20,7 +21,7 @@ open MeasureTheory
 /-- Restrict a coherent weak-derivative family to a smaller raw domain,
 without changing its selected representatives. -/
 def restrict
-    {d L : ℕ} {U V : Set (TimeVelocity d)}
+    {d L : ℕ} {U V : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u : TimeVelocity d → ℝ}
     (F : ParabolicWeakDerivativeFamily d L U u)
     (hVU : V ⊆ U) :
@@ -35,7 +36,7 @@ def restrict
 
 /-- Domain restriction preserves every selected representative literally. -/
 @[simp] theorem restrict_representative
-    {d L : ℕ} {U V : Set (TimeVelocity d)}
+    {d L : ℕ} {U V : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u : TimeVelocity d → ℝ}
     (F : ParabolicWeakDerivativeFamily d L U u)
     (hVU : V ⊆ U) (beta : ParabolicDerivativeIndex d L) :
@@ -45,7 +46,7 @@ def restrict
 /-- Truncate a coherent weak-derivative family to a lower parabolic bound,
 using the bound cast to retain the same representatives. -/
 def truncate
-    {d M L : ℕ} {U : Set (TimeVelocity d)}
+    {d M L : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u : TimeVelocity d → ℝ}
     (F : ParabolicWeakDerivativeFamily d L U u)
     (hML : M ≤ L) :
@@ -66,7 +67,7 @@ def truncate
 /-- Bound truncation selects the representative at the corresponding
 enlarged-bound index literally. -/
 @[simp] theorem truncate_representative
-    {d M L : ℕ} {U : Set (TimeVelocity d)}
+    {d M L : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u : TimeVelocity d → ℝ}
     (F : ParabolicWeakDerivativeFamily d L U u)
     (hML : M ≤ L) (beta : ParabolicDerivativeIndex d M) :

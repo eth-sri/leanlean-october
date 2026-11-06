@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Lieberman.StationaryEnergyDrift
 import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeVariationalComparison
 import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeVariationalNegation
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Two-sided variational bounds by stationary spatial barriers
 
@@ -19,7 +21,7 @@ open scoped ENNReal MatrixOrder Matrix.Norms.Elementwise
 
 /-- A stationary source supersolution bounds the absolute value of the energy solution. -/
 theorem variational_abs_le_stationary_withDrift {d : ℕ}
-    {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (hΩb : Bornology.IsBounded Ω)
+    {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (hΩb : Bornology.IsBounded Ω)
     (a T : ℝ) (haT : a < T) (lam : ℝ) (hlam : 0 < lam)
     (A : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)

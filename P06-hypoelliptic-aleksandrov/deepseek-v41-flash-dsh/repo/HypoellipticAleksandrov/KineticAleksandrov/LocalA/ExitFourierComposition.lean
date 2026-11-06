@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.ExitFourierFactors
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.FourierIntegral
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Fourier composition through the genuine later exit operator -/
 
@@ -22,7 +23,7 @@ actual later exits, with the exact unit centering phase. -/
 theorem ballExitRestart_fourier_apply
     (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
     (H : {t : ℝ // P.1.time < t ∧ t < T.1}) (ξ : PDE.Vec d)
-    (E : Set (TimeVelocity d)) (hE : MeasurableSet E) :
+    (E : HypoellipticAleksandrov.Parabolic.TVSet d) (hE : MeasurableSet E) :
     exitFourier ((ballExitRestart hH hLE hd hlam hLam B hB v₀ hR P T H).map
       (exitCoordinates P.1 v₀)) ξ E =
       exitFourierStepPhase P.1 H.1 v₀ ξ *

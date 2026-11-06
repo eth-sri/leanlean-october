@@ -8,6 +8,7 @@ import Mathlib.LinearAlgebra.Matrix.PosDef
 import Mathlib.Tactic.Linarith
 public import HypoellipticAleksandrov.KineticAleksandrov.Operator
 import HypoellipticAleksandrov.Parabolic.MinimumPrinciple
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Pointwise maximum calculus for the viscous transported operator
@@ -122,10 +123,11 @@ private theorem deriv_deriv_nonpos_of_isLocalMax
       _ = deriv (fun _ => 0) a := hderivEq.deriv_eq
       _ = 0 := deriv_const _ _
   exact hcpos.ne' this
+section
+variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] {g : E → ℝ} {x q : E}
 
 private theorem hasDerivAt_fderiv_restrict_affine_line
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    {g : E → ℝ} {x q : E}
+    
     {H : E →L[ℝ] E →L[ℝ] ℝ}
     (hsecond : HasFDerivAt (fderiv ℝ g) H x) :
     HasDerivAt
@@ -141,8 +143,7 @@ private theorem hasDerivAt_fderiv_restrict_affine_line
     hgrad.clm_apply (hasDerivAt_const (x := 0) (c := q))
 
 private theorem hasDerivAt_deriv_restrict_affine_line_of_contDiffAt
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    {g : E → ℝ} {x q : E}
+    
     (hg : ContDiffAt ℝ 2 g x) :
     HasDerivAt (deriv (fun r : ℝ => g (x + r • q)))
       (fderiv ℝ (fderiv ℝ g) x q q) 0 := by
@@ -165,8 +166,7 @@ private theorem hasDerivAt_deriv_restrict_affine_line_of_contDiffAt
     r (hasDerivAt_affine_line x q r) |>.deriv
 
 private theorem fderiv_fderiv_apply_nonpos_of_isLocalMax_affineLine
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    {g : E → ℝ} {x q : E}
+    
     (hg : ContDiffAt ℝ 2 g x)
     (hmax : IsLocalMax (fun r : ℝ => g (x + r • q)) 0) :
     fderiv ℝ (fderiv ℝ g) x q q ≤ 0 := by
@@ -178,6 +178,7 @@ private theorem fderiv_fderiv_apply_nonpos_of_isLocalMax_affineLine
     hgAtLineZero.comp' (f := fun r : ℝ => x + r • q) hlineCont
   exact deriv_deriv_nonpos_of_isLocalMax hmax
     (hasDerivAt_deriv_restrict_affine_line_of_contDiffAt hg) hcompCont
+end
 
 /-- Entries of `sliceHessian` are second Fréchet derivatives. -/
 theorem sliceHessian_apply_eq_sndFDeriv {n : ℕ}

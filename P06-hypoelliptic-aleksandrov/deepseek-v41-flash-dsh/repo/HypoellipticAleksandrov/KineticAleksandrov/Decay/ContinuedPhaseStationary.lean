@@ -5,6 +5,7 @@ import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonEvolution
 import HypoellipticAleksandrov.KineticAleksandrov.Evolution.BarrierGeometry
 import HypoellipticAleksandrov.KineticAleksandrov.Decay.MinorantScaling
 import Mathlib.Tactic.FunProp
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Phase localization in a stationary ball with arbitrary center -/
 
@@ -14,12 +15,11 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
 open Set MeasureTheory
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
+section
+variable (d : ℕ) (lam Lam : ℝ) (m Lb : ℝ) (D : HypoellipticAleksandrov.VecSet d) (B : CoefficientField d) (b : PDE.Vec d → PDE.Vec d)
 
 /-- Smooth forbidden-phase tests have zero integral against the supplied moving kernel. -/
-theorem stationary_phase_test_zero (d : ℕ)
-    (lam Lam : ℝ)
-    (m Lb : ℝ) (D : Set (PDE.Vec d)) (B : CoefficientField d)
-    (b : PDE.Vec d → PDE.Vec d) (hsetting : SourceSetting lam Lam m Lb D B b)
+theorem stationary_phase_test_zero  (hsetting : SourceSetting lam Lam m Lb D B b)
     (σ τ ρ : ℝ) (c : PDE.Vec d) (hρ : 0 < ρ)
     (S : TerminalOperatorFamily (PDE.euclideanBall c ρ) stationary)
     (K : MovingFiberKernel (PDE.euclideanBall c ρ) stationary)
@@ -93,10 +93,7 @@ theorem stationary_phase_test_zero (d : ℕ)
 
 
 /-- The supplied moving kernel is concentrated in the source closed phase strip. -/
-theorem stationary_phase_localization (d : ℕ)
-    (lam Lam : ℝ)
-    (m Lb : ℝ) (D : Set (PDE.Vec d)) (B : CoefficientField d)
-    (b : PDE.Vec d → PDE.Vec d) (hsetting : SourceSetting lam Lam m Lb D B b)
+theorem stationary_phase_localization  (hsetting : SourceSetting lam Lam m Lb D B b)
     (σ τ ρ : ℝ) (c : PDE.Vec d) (hρ : 0 < ρ)
     (S : TerminalOperatorFamily (PDE.euclideanBall c ρ) stationary)
     (K : MovingFiberKernel (PDE.euclideanBall c ρ) stationary)
@@ -131,6 +128,7 @@ theorem stationary_phase_localization (d : ℕ)
   exact stationary_phase_test_zero d lam Lam
     m Lb D B b hsetting σ τ ρ c hρ S K hreal
     ξ z0 v hξ hστ hv sgn hsgn φB hdatum hbound (fun x hx => (hs hx).1)
+end
 
 
 end HypoellipticAleksandrov.KineticAleksandrov.Decay

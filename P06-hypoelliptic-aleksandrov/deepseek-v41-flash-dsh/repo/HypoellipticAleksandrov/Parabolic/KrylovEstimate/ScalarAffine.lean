@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.Parabolic.KrylovCylinder
 public import HypoellipticAleksandrov.Parabolic.Scaling
 public import HypoellipticAleksandrov.Parabolic.C2ToScalarC12
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Scalar slice calculus for the Krylov estimate -/
 
@@ -16,9 +18,10 @@ open scoped Topology
 def residual {N : ℕ} (a : TimeVelocity N → PDE.Mat N)
     (u : TimeVelocity N → ℝ) (z : TimeVelocity N) : ℝ :=
   scalarTimeDerivative u z - matrixContraction (a z) (scalarSpatialHessian u z)
+section
+variable {N : ℕ} (f : PDE.Vec N → ℝ) (v : PDE.Vec N) (ρ : ℝ) (x : PDE.Vec N)
 
-private theorem gradient_affine {N : ℕ} (f : PDE.Vec N → ℝ)
-    (v : PDE.Vec N) (ρ : ℝ) (x : PDE.Vec N)
+private theorem gradient_affine 
     (hf : DifferentiableAt ℝ f (v + ρ • x)) :
     PDE.classicalGradient (fun y => f (v + ρ • y)) x =
       ρ • PDE.classicalGradient f (v + ρ • x) := by
@@ -33,8 +36,7 @@ private theorem gradient_affine {N : ℕ} (f : PDE.Vec N → ℝ)
   simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.smul_apply,
     ContinuousLinearMap.id_apply, map_smul, smul_eq_mul]
 
-private theorem hessian_affine {N : ℕ} (f : PDE.Vec N → ℝ)
-    (v : PDE.Vec N) (ρ : ℝ) (x : PDE.Vec N)
+private theorem hessian_affine 
     (hf : ContDiffAt ℝ 2 f (v + ρ • x)) :
     (fun i j => (fderiv ℝ (PDE.classicalGradient (fun y => f (v + ρ • y))) x
       (PDE.basisVec i)) j) =
@@ -60,6 +62,7 @@ private theorem hessian_affine {N : ℕ} (f : PDE.Vec N → ℝ)
   simp only [Pi.smul_apply, smul_eq_mul, ContinuousLinearMap.smul_apply,
     ContinuousLinearMap.comp_apply, ContinuousLinearMap.id_apply, map_smul]
   ring
+end
 
 private theorem time_affine {N : ℕ} (u : TimeVelocity N → ℝ)
     (b : ℝ) (v : PDE.Vec N) (ρ : ℝ) (z : TimeVelocity N)
@@ -77,7 +80,7 @@ private theorem time_affine {N : ℕ} (u : TimeVelocity N → ℝ)
 
 /-- Parabolic affine pullback preserves scalar C12 regularity and its selected derivatives. -/
 theorem scalarC12On_affine_pullback
-    {N : ℕ} {D : Set (TimeVelocity N)} (hD : IsOpen D)
+    {N : ℕ} {D : HypoellipticAleksandrov.Parabolic.TVSet N} (hD : IsOpen D)
     (u : TimeVelocity N → ℝ) (hu : IsScalarC12On u D)
     (b : ℝ) (v₀ : PDE.Vec N) {ρ : ℝ} (hρ : 0 < ρ) :
     IsScalarC12On (u ∘ parabolicAffine b v₀ ρ)

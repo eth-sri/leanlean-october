@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.Parabolic.WeakDerivatives
 public import Mathlib.Analysis.Calculus.ContDiff.Defs
 public import Mathlib.MeasureTheory.Measure.OpenPos
 public import Mathlib.Topology.Compactness.Lindelof
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Gluing ambient C² representatives
@@ -25,9 +26,9 @@ noncomputable section
 to a `C²` function on the covered carrier, with their complete local germs and the
 global AE class preserved. -/
 theorem exists_contDiffOn_two_gluing
-    {d : ℕ} {Q : Set (TimeVelocity d)}
+    {d : ℕ} {Q : HypoellipticAleksandrov.Parabolic.TVSet d}
     {w₀ : TimeVelocity d → ℝ}
-    (V : Q → Set (TimeVelocity d))
+    (V : Q → HypoellipticAleksandrov.Parabolic.TVSet d)
     (v : Q → TimeVelocity d → ℝ)
     (hVopen : ∀ z, IsOpen (V z))
     (hzV : ∀ z, (z : TimeVelocity d) ∈ V z)

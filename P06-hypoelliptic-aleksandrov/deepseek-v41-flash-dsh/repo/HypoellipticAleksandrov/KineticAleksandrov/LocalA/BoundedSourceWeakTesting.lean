@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundedSourceWeakDetermination
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.DuhamelWeak
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Smooth testing discharges the finite-measure determination premise -/
 
@@ -11,7 +12,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set
 open Evolution Occupation
 open scoped Topology
-variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d}
 
 /-- Product-coordinate test sources retain their closed support under the homeomorphism. -/
 theorem boundedSourceTest_support (φ : ℝ × EvolutionAmbientState d → ℝ) :

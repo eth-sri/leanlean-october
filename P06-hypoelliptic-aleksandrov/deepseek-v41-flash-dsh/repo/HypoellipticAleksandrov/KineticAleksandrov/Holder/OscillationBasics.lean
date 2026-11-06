@@ -15,26 +15,28 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
 open Set
+section
+variable {d : ℕ} {u : KineticPoint d → ℝ}
 
 /-- Values on a bounded image lie below its real supremum. -/
-theorem le_sup_values {d : ℕ} {u : KineticPoint d → ℝ}
+theorem le_sup_values 
     {E : Set (KineticPoint d)} (hE : BddAbove (u '' E)) {P : KineticPoint d}
     (hP : P ∈ E) : u P ≤ sSup (u '' E) := le_csSup hE (mem_image_of_mem u hP)
 
 /-- Values on a bounded image lie above its real infimum. -/
-theorem inf_values_le {d : ℕ} {u : KineticPoint d → ℝ}
+theorem inf_values_le 
     {E : Set (KineticPoint d)} (hE : BddBelow (u '' E)) {P : KineticPoint d}
     (hP : P ∈ E) : sInf (u '' E) ≤ u P := csInf_le hE (mem_image_of_mem u hP)
 
 /-- Nonempty bounded value sets have nonnegative oscillation. -/
-theorem oscillationOn_nonneg {d : ℕ} {u : KineticPoint d → ℝ}
+theorem oscillationOn_nonneg 
     {E : Set (KineticPoint d)} (hne : E.Nonempty)
     (hab : BddAbove (u '' E)) (hbb : BddBelow (u '' E)) : 0 ≤ oscillationOn u E := by
   obtain ⟨P, hP⟩ := hne
   exact sub_nonneg.mpr ((inf_values_le hbb hP).trans (le_sup_values hab hP))
 
 /-- Any difference of values is controlled by the literal oscillation. -/
-theorem abs_sub_le_oscillationOn {d : ℕ} {u : KineticPoint d → ℝ}
+theorem abs_sub_le_oscillationOn 
     {E : Set (KineticPoint d)} (hab : BddAbove (u '' E)) (hbb : BddBelow (u '' E))
     {P Q : KineticPoint d} (hP : P ∈ E) (hQ : Q ∈ E) :
     |u P - u Q| ≤ oscillationOn u E := by
@@ -44,7 +46,7 @@ theorem abs_sub_le_oscillationOn {d : ℕ} {u : KineticPoint d → ℝ}
   · exact sub_le_sub (le_sup_values hab hP) (inf_values_le hbb hQ)
 
 /-- Passing to a smaller nonempty set cannot increase finite oscillation. -/
-theorem oscillationOn_mono {d : ℕ} {u : KineticPoint d → ℝ}
+theorem oscillationOn_mono 
     {E F : Set (KineticPoint d)} (hne : E.Nonempty) (hEF : E ⊆ F)
     (hab : BddAbove (u '' F)) (hbb : BddBelow (u '' F)) :
     oscillationOn u E ≤ oscillationOn u F := by
@@ -52,7 +54,7 @@ theorem oscillationOn_mono {d : ℕ} {u : KineticPoint d → ℝ}
     (csInf_le_csInf hbb (hne.image u) (image_mono hEF))
 
 /-- Uniform upper and lower bounds control the real oscillation. -/
-theorem oscillationOn_le {d : ℕ} {u : KineticPoint d → ℝ}
+theorem oscillationOn_le 
     {E : Set (KineticPoint d)} (hne : E.Nonempty) {a b : ℝ}
     (hlo : ∀ P ∈ E, a ≤ u P) (hhi : ∀ P ∈ E, u P ≤ b) :
     oscillationOn u E ≤ b - a := by
@@ -61,13 +63,13 @@ theorem oscillationOn_le {d : ℕ} {u : KineticPoint d → ℝ}
   · exact le_csInf (hne.image u) (by rintro _ ⟨P, hP, rfl⟩; exact hlo P hP)
 
 /-- Compact closures and continuity provide both boundedness conditions. -/
-theorem bounded_values_of_compact {d : ℕ} {u : KineticPoint d → ℝ}
+theorem bounded_values_of_compact 
     {E : Set (KineticPoint d)} (hE : IsCompact E) (hu : ContinuousOn u E) :
     BddAbove (u '' E) ∧ BddBelow (u '' E) :=
   ⟨hE.bddAbove_image hu, hE.bddBelow_image hu⟩
 
 /-- Positive affine transformations transport a finite real supremum exactly. -/
-theorem sup_values_pos_affine {d : ℕ} {u : KineticPoint d → ℝ}
+theorem sup_values_pos_affine 
     {E : Set (KineticPoint d)} (hne : E.Nonempty) (hab : BddAbove (u '' E))
     (a b : ℝ) (ha : 0 < a) :
     sSup ((fun P => a * u P + b) '' E) = a * sSup (u '' E) + b := by
@@ -77,7 +79,7 @@ theorem sup_values_pos_affine {d : ℕ} {u : KineticPoint d → ℝ}
     image_image, Function.comp_def] using h.symm
 
 /-- Continuity preserves the upper value bound on the closure. -/
-theorem closure_values_le_sup {d : ℕ} {u : KineticPoint d → ℝ}
+theorem closure_values_le_sup 
     {E : Set (KineticPoint d)} (hu : ContinuousOn u (closure E))
     (hab : BddAbove (u '' E)) {P : KineticPoint d} (hP : P ∈ closure E) :
     u P ≤ sSup (u '' E) := by
@@ -85,7 +87,7 @@ theorem closure_values_le_sup {d : ℕ} {u : KineticPoint d → ℝ}
   exact (closure_minimal hsub isClosed_Iic) (hu.image_closure (mem_image_of_mem u hP))
 
 /-- Continuity preserves the lower value bound on the closure. -/
-theorem inf_le_closure_values {d : ℕ} {u : KineticPoint d → ℝ}
+theorem inf_le_closure_values 
     {E : Set (KineticPoint d)} (hu : ContinuousOn u (closure E))
     (hbb : BddBelow (u '' E)) {P : KineticPoint d} (hP : P ∈ closure E) :
     sInf (u '' E) ≤ u P := by
@@ -93,7 +95,7 @@ theorem inf_le_closure_values {d : ℕ} {u : KineticPoint d → ℝ}
   exact (closure_minimal hsub isClosed_Ici) (hu.image_closure (mem_image_of_mem u hP))
 
 /-- Compact closure and continuity make closure oscillation equal open-set oscillation. -/
-theorem oscillationOn_closure {d : ℕ} {u : KineticPoint d → ℝ}
+theorem oscillationOn_closure 
     {E : Set (KineticPoint d)} (hne : E.Nonempty) (hE : IsCompact (closure E))
     (hu : ContinuousOn u (closure E)) : oscillationOn u (closure E) = oscillationOn u E := by
   have hab := hE.bddAbove_image hu
@@ -113,5 +115,6 @@ theorem oscillationOn_closure {d : ℕ} {u : KineticPoint d → ℝ}
       rintro _ ⟨P, hP, rfl⟩
       exact inf_le_closure_values hu hbbe hP
   simp only [oscillationOn, hs, hi]
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

@@ -28,14 +28,14 @@ theorem singular_line_weak_derivative (f g : ℝ → ℝ) (hf : Continuous f)
   have hdH (x : ℝ) (hx : x ≠ 0) : HasDerivAt H (D x) x :=
     (hd x hx).mul ((ht.differentiable (by norm_num) x).hasDerivAt)
   have hneg := integral_Iic_of_hasDerivAt_of_tendsto
-    (hH.continuousAt.continuousWithinAt (x := (0 : ℝ)))
+    (hH.continuousAt.continuousWithinAt (x := 0))
     (fun x hx => hdH x hx.ne) hD.integrableOn
     (hHk.is_zero_at_infty.mono_left atBot_le_cocompact)
   have hpos := integral_Ioi_of_hasDerivAt_of_tendsto
-    (hH.continuousAt.continuousWithinAt (x := (0 : ℝ)))
+    (hH.continuousAt.continuousWithinAt (x := 0))
     (fun x hx => hdH x hx.ne') hD.integrableOn
     (hHk.is_zero_at_infty.mono_left atTop_le_cocompact)
-  have he := integral_add_compl (s := Iic (0 : ℝ)) measurableSet_Iic hD
+  have he := integral_add_compl (s := Iic 0) measurableSet_Iic hD
   rw [compl_Iic, hneg, hpos] at he
   have hz : (∫ x, D x) = 0 := by linarith only [he]
   rw [integral_add h1 h2] at hz

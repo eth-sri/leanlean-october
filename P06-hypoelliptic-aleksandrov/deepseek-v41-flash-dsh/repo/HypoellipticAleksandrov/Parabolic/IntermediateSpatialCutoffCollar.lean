@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.SpatialCoordinateShiftCarrierGeometry
 public import HypoellipticAleksandrov.Parabolic.QuantitativeSmoothCutoffExistence
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Intermediate spatial cutoff and signed collar
@@ -19,11 +20,11 @@ namespace HypoellipticAleksandrov.Parabolic
 choose an intermediate open set, a quantitative plateau cutoff, and a positive
 signed coordinate-shift radius whose full carrier remains in the ambient set. -/
 theorem exists_intermediateSpatialCutoff_signedCollar
-    {d : ℕ} (O₀ O₁ : Set (PDE.Vec d))
+    {d : ℕ} (O₀ O₁ : HypoellipticAleksandrov.VecSet d)
     (hO₀ : IsOpen O₀)
     (hO₁compact : IsCompact (closure O₁))
     (hO₁O₀ : closure O₁ ⊆ O₀) :
-    ∃ (O₂ : Set (PDE.Vec d)) (Keta : ℝ)
+    ∃ (O₂ : HypoellipticAleksandrov.VecSet d) (Keta : ℝ)
       (_η : PDE.QuantitativeSmoothCutoff (closure O₁) O₂ Keta)
       (δ : ℝ),
       IsOpen O₂ ∧

@@ -5,6 +5,8 @@ public import HypoellipticAleksandrov.Coefficients.Ellipticity
 public import HypoellipticAleksandrov.Parabolic.Geometry
 public import Mathlib.Analysis.Calculus.ContDiff.FiniteDimension
 public import PDEFoundation.Sobolev.ClassicalGradient
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Scalar classical parabolic carrier
@@ -22,33 +24,33 @@ noncomputable section
 namespace HypoellipticAleksandrov.Parabolic
 
 /-- The open scalar parabolic cylinder `(r₀, r₁) × Ω`. -/
-def scalarParabolicOpenCylinder {n : ℕ} (r₀ r₁ : ℝ) (Ω : Set (PDE.Vec n)) :
-    Set (TimeVelocity n) :=
+def scalarParabolicOpenCylinder {n : ℕ} (r₀ r₁ : ℝ) (Ω : HypoellipticAleksandrov.VecSet n) :
+    HypoellipticAleksandrov.Parabolic.TVSet n :=
   Set.Ioo r₀ r₁ ×ˢ Ω
 
 /-- The closed scalar parabolic cylinder `[r₀, r₁] × closure Ω`. -/
-def scalarParabolicClosedCylinder {n : ℕ} (r₀ r₁ : ℝ) (Ω : Set (PDE.Vec n)) :
-    Set (TimeVelocity n) :=
+def scalarParabolicClosedCylinder {n : ℕ} (r₀ r₁ : ℝ) (Ω : HypoellipticAleksandrov.VecSet n) :
+    HypoellipticAleksandrov.Parabolic.TVSet n :=
   Set.Icc r₀ r₁ ×ˢ closure Ω
 
 /-- The terminal face `{r₁} × closure Ω` of a scalar parabolic cylinder. -/
-def scalarParabolicTerminalFace {n : ℕ} (r₁ : ℝ) (Ω : Set (PDE.Vec n)) :
-    Set (TimeVelocity n) :=
+def scalarParabolicTerminalFace {n : ℕ} (r₁ : ℝ) (Ω : HypoellipticAleksandrov.VecSet n) :
+    HypoellipticAleksandrov.Parabolic.TVSet n :=
   ({r₁} : Set ℝ) ×ˢ closure Ω
 
 /-- The lateral face `[r₀, r₁] × frontier Ω` of a scalar parabolic cylinder. -/
-def scalarParabolicLateralFace {n : ℕ} (r₀ r₁ : ℝ) (Ω : Set (PDE.Vec n)) :
-    Set (TimeVelocity n) :=
+def scalarParabolicLateralFace {n : ℕ} (r₀ r₁ : ℝ) (Ω : HypoellipticAleksandrov.VecSet n) :
+    HypoellipticAleksandrov.Parabolic.TVSet n :=
   Set.Icc r₀ r₁ ×ˢ frontier Ω
 
 /-- The terminal-lateral boundary of a scalar parabolic cylinder. -/
-def scalarParabolicTerminalLateralBoundary {n : ℕ} (r₀ r₁ : ℝ) (Ω : Set (PDE.Vec n)) :
-    Set (TimeVelocity n) :=
+def scalarParabolicTerminalLateralBoundary {n : ℕ} (r₀ r₁ : ℝ) (Ω : HypoellipticAleksandrov.VecSet n) :
+    HypoellipticAleksandrov.Parabolic.TVSet n :=
   scalarParabolicTerminalFace r₁ Ω ∪ scalarParabolicLateralFace r₀ r₁ Ω
 
 /-- Membership in an open scalar parabolic cylinder. -/
 @[simp] theorem mem_scalarParabolicOpenCylinder_iff {n : ℕ} {r₀ r₁ r : ℝ}
-    {Ω : Set (PDE.Vec n)} {y : PDE.Vec n} :
+    {Ω : HypoellipticAleksandrov.VecSet n} {y : PDE.Vec n} :
     (r, y) ∈ scalarParabolicOpenCylinder r₀ r₁ Ω ↔
       r₀ < r ∧ r < r₁ ∧ y ∈ Ω := by
   constructor
@@ -59,7 +61,7 @@ def scalarParabolicTerminalLateralBoundary {n : ℕ} (r₀ r₁ : ℝ) (Ω : Set
 
 /-- Membership in a closed scalar parabolic cylinder. -/
 @[simp] theorem mem_scalarParabolicClosedCylinder_iff {n : ℕ} {r₀ r₁ r : ℝ}
-    {Ω : Set (PDE.Vec n)} {y : PDE.Vec n} :
+    {Ω : HypoellipticAleksandrov.VecSet n} {y : PDE.Vec n} :
     (r, y) ∈ scalarParabolicClosedCylinder r₀ r₁ Ω ↔
       r₀ ≤ r ∧ r ≤ r₁ ∧ y ∈ closure Ω := by
   constructor
@@ -70,13 +72,13 @@ def scalarParabolicTerminalLateralBoundary {n : ℕ} (r₀ r₁ : ℝ) (Ω : Set
 
 /-- Membership in the terminal face of a scalar parabolic cylinder. -/
 @[simp] theorem mem_scalarParabolicTerminalFace_iff {n : ℕ} {r₁ r : ℝ}
-    {Ω : Set (PDE.Vec n)} {y : PDE.Vec n} :
+    {Ω : HypoellipticAleksandrov.VecSet n} {y : PDE.Vec n} :
     (r, y) ∈ scalarParabolicTerminalFace r₁ Ω ↔ r = r₁ ∧ y ∈ closure Ω := by
   simp [scalarParabolicTerminalFace]
 
 /-- Membership in the lateral face of a scalar parabolic cylinder. -/
 @[simp] theorem mem_scalarParabolicLateralFace_iff {n : ℕ} {r₀ r₁ r : ℝ}
-    {Ω : Set (PDE.Vec n)} {y : PDE.Vec n} :
+    {Ω : HypoellipticAleksandrov.VecSet n} {y : PDE.Vec n} :
     (r, y) ∈ scalarParabolicLateralFace r₀ r₁ Ω ↔
       r₀ ≤ r ∧ r ≤ r₁ ∧ y ∈ frontier Ω := by
   constructor
@@ -87,7 +89,7 @@ def scalarParabolicTerminalLateralBoundary {n : ℕ} (r₀ r₁ : ℝ) (Ω : Set
 
 /-- Membership in the terminal-lateral boundary of a scalar parabolic cylinder. -/
 @[simp] theorem mem_scalarParabolicTerminalLateralBoundary_iff {n : ℕ}
-    {r₀ r₁ r : ℝ} {Ω : Set (PDE.Vec n)} {y : PDE.Vec n} :
+    {r₀ r₁ r : ℝ} {Ω : HypoellipticAleksandrov.VecSet n} {y : PDE.Vec n} :
     (r, y) ∈ scalarParabolicTerminalLateralBoundary r₀ r₁ Ω ↔
       (r = r₁ ∧ y ∈ closure Ω) ∨ (r₀ ≤ r ∧ r ≤ r₁ ∧ y ∈ frontier Ω) := by
   simp [scalarParabolicTerminalLateralBoundary]
@@ -113,7 +115,7 @@ def scalarSpatialHessian {n : ℕ} (u : TimeVelocity n → ℝ) (z : TimeVelocit
 The anisotropic scalar `C^{1,2}` regularity required by the classical
 parabolic maximum principle.  It demands no mixed or second time derivatives.
 -/
-def IsScalarC12On {n : ℕ} (u : TimeVelocity n → ℝ) (D : Set (TimeVelocity n)) : Prop :=
+def IsScalarC12On {n : ℕ} (u : TimeVelocity n → ℝ) (D : HypoellipticAleksandrov.Parabolic.TVSet n) : Prop :=
   ContinuousOn u D ∧
     (∀ z ∈ D, DifferentiableAt ℝ (fun r : ℝ => u (r, z.2)) z.1) ∧
     (∀ z ∈ D, ContDiffAt ℝ 2 (fun y : PDE.Vec n => u (z.1, y)) z.2) ∧
@@ -122,51 +124,48 @@ def IsScalarC12On {n : ℕ} (u : TimeVelocity n → ℝ) (D : Set (TimeVelocity 
     ContinuousOn (scalarSpatialHessian u) D
 
 namespace IsScalarC12On
+section
+variable {n : ℕ} {u : TimeVelocity n → ℝ} {D : HypoellipticAleksandrov.Parabolic.TVSet n}
 
 /-- The function itself is continuous on the specified set. -/
-theorem continuousOn {n : ℕ} {u : TimeVelocity n → ℝ} {D : Set (TimeVelocity n)}
+theorem continuousOn 
     (h : IsScalarC12On u D) :
     ContinuousOn u D :=
   h.1
 
 /-- Each fixed-velocity time slice is differentiable at points of the set. -/
-theorem timeSlice_differentiableAt {n : ℕ} {u : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (h : IsScalarC12On u D) {z : TimeVelocity n}
+theorem timeSlice_differentiableAt  (h : IsScalarC12On u D) {z : TimeVelocity n}
     (hz : z ∈ D) :
     DifferentiableAt ℝ (fun r : ℝ => u (r, z.2)) z.1 :=
   h.2.1 z hz
 
 /-- Each fixed-time spatial slice is `C²` at points of the set. -/
-theorem spatialSlice_contDiffAt {n : ℕ} {u : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (h : IsScalarC12On u D) {z : TimeVelocity n}
+theorem spatialSlice_contDiffAt  (h : IsScalarC12On u D) {z : TimeVelocity n}
     (hz : z ∈ D) :
     ContDiffAt ℝ 2 (fun y : PDE.Vec n => u (z.1, y)) z.2 :=
   h.2.2.1 z hz
 
 /-- The scalar time derivative is continuous on the specified set. -/
-theorem continuousOn_scalarTimeDerivative {n : ℕ} {u : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (h : IsScalarC12On u D) :
+theorem continuousOn_scalarTimeDerivative  (h : IsScalarC12On u D) :
     ContinuousOn (scalarTimeDerivative u) D :=
   h.2.2.2.1
 
 /-- The scalar spatial gradient is continuous on the specified set. -/
-theorem continuousOn_scalarSpatialGradient {n : ℕ} {u : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (h : IsScalarC12On u D) :
+theorem continuousOn_scalarSpatialGradient  (h : IsScalarC12On u D) :
     ContinuousOn (scalarSpatialGradient u) D :=
   h.2.2.2.2.1
 
 /-- The scalar spatial Hessian is continuous on the specified set. -/
-theorem continuousOn_scalarSpatialHessian {n : ℕ} {u : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (h : IsScalarC12On u D) :
+theorem continuousOn_scalarSpatialHessian  (h : IsScalarC12On u D) :
     ContinuousOn (scalarSpatialHessian u) D :=
   h.2.2.2.2.2
 
 /-- The fixed-velocity time slice has derivative `scalarTimeDerivative`. -/
-theorem timeSlice_hasDerivAt {n : ℕ} {u : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (h : IsScalarC12On u D) {z : TimeVelocity n}
+theorem timeSlice_hasDerivAt  (h : IsScalarC12On u D) {z : TimeVelocity n}
     (hz : z ∈ D) :
     HasDerivAt (fun r : ℝ => u (r, z.2)) (scalarTimeDerivative u z) z.1 := by
   exact (h.timeSlice_differentiableAt hz).hasDerivAt
+end
 
 end IsScalarC12On
 

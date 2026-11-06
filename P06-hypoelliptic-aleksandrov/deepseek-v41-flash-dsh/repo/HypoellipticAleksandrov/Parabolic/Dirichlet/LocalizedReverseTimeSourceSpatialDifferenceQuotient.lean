@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.Parabolic.SpatialDifferenceQuotientCutoffF
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTime
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeTests
 public import PDEFoundation.Sobolev.Cutoff.Basic
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Localized reverse-time source difference-quotient fields
@@ -28,7 +30,7 @@ private theorem contDiff_reverseTimeMap {d : ℕ} (r₁ : ℝ) :
 quotient of the reverse-time source to a continuous, compactly supported,
 uniformly bounded field. -/
 theorem exists_reverseTimeSource_cutoff_mul_spatialDifferenceQuotient_fields_of_smoothOnNeighborhood
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (r₀ r₁ : ℝ)
     (χ : PDE.QuantitativeSmoothCutoff inner outer K)
     (hχΩ : tsupport χ.toFun ⊆ Ω)
@@ -51,7 +53,7 @@ theorem exists_reverseTimeSource_cutoff_mul_spatialDifferenceQuotient_fields_of_
         ∀ z : TimeVelocity d, ‖ζ z.1 * χ z.2 *
           spatialDifferenceQuotient k h
             (fun w : TimeVelocity d => F (r₁ - w.1) w.2) z‖ ≤ C := by
-  let S : Set (TimeVelocity d) :=
+  let S : HypoellipticAleksandrov.Parabolic.TVSet d :=
     tsupport (ζ : ℝ → ℝ) ×ˢ tsupport χ.toFun
   let β : TimeVelocity d → ℝ := fun z => ζ z.1 * χ z.2
   have hS : IsCompact S := by
@@ -87,7 +89,7 @@ theorem exists_reverseTimeSource_cutoff_mul_spatialDifferenceQuotient_fields_of_
       _ ≤ 1 * 1 := mul_le_mul (hζunit z.1) hχunit (norm_nonneg _) zero_le_one
       _ = 1 := one_mul 1
   rcases hFSmooth with ⟨V, hVopen, hcylV, hFV⟩
-  let U : Set (TimeVelocity d) := reverseTimeMap r₁ ⁻¹' V
+  let U : HypoellipticAleksandrov.Parabolic.TVSet d := reverseTimeMap r₁ ⁻¹' V
   have hU : IsOpen U := by
     exact (contDiff_reverseTimeMap r₁).continuous.isOpen_preimage V hVopen
   have hSU : S ⊆ U := by

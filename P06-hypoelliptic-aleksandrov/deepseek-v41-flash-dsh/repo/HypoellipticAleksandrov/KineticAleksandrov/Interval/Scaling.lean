@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Interval.Setting
 public import HypoellipticAleksandrov.KineticAleksandrov.Scaling.Radius
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Kinetic scaling on bounded intervals
 
@@ -64,13 +65,11 @@ theorem mapsDomain_interval (a c σ₀ : ℝ) (v₀ z₀ : PDE.Vec 1)
   simp only [movingDomain, stationary, PDE.mem_translateSet_iff_sub_mem,
     sub_zero, mem_preimage, scaledDomain, mem_ofPred_eq]
   rfl
+section
+variable (a c σ₀ : ℝ) (hac : a < c) (v₀ z₀ : PDE.Vec 1) (b : PDE.Vec 1 → PDE.Vec 1) (r : {r : ℝ // 0 < r}) {B : CoefficientField 1} {S : TerminalOperatorFamily (PDE.oneDimensionalAxisBox a c) stationary} {K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary}
 
 /-- The rescaled interval realization is the affine pushforward of the original realization. -/
-theorem realizes_ofRadius_interval (a c σ₀ : ℝ) (hac : a < c)
-    (v₀ z₀ : PDE.Vec 1) (b : PDE.Vec 1 → PDE.Vec 1) (r : {r : ℝ // 0 < r})
-    {B : CoefficientField 1}
-    {S : TerminalOperatorFamily (PDE.oneDimensionalAxisBox a c) stationary}
-    {K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary}
+theorem realizes_ofRadius_interval 
     (hreal : RealizesTerminalEvolution (PDE.oneDimensionalAxisBox a c) stationary
       (measurableSet_of_isAdmissibleEvolutionDomain (interval_admissible hac))
       (zIndependentCoefficient B) b S K) :
@@ -90,11 +89,7 @@ theorem realizes_ofRadius_interval (a c σ₀ : ℝ) (hac : a < c)
   exact h
 
 /-- Fourier affine image and exact total-variation equality on the rescaled interval. -/
-theorem realizes_ofRadius_interval_fourier_tv (a c σ₀ : ℝ) (hac : a < c)
-    (v₀ z₀ : PDE.Vec 1) (b : PDE.Vec 1 → PDE.Vec 1) (r : {r : ℝ // 0 < r})
-    {B : CoefficientField 1}
-    {S : TerminalOperatorFamily (PDE.oneDimensionalAxisBox a c) stationary}
-    {K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary}
+theorem realizes_ofRadius_interval_fourier_tv 
     (hreal : RealizesTerminalEvolution (PDE.oneDimensionalAxisBox a c) stationary
       (measurableSet_of_isAdmissibleEvolutionDomain (interval_admissible hac))
       (zIndependentCoefficient B) b S K)
@@ -110,7 +105,7 @@ theorem realizes_ofRadius_interval_fourier_tv (a c σ₀ : ℝ) (hac : a < c)
     (hν : IsFourierProjection K (KineticAffineScaling.queryMap
       (mapsDomain_interval a c σ₀ v₀ z₀ b r) q') ξ ν)
     (hν' : IsFourierProjection K' q' (r.1 ^ 3 • ξ) ν') :
-    (∀ E : Set (PDE.Vec 1), MeasurableSet E →
+    (∀ E : HypoellipticAleksandrov.VecSet 1, MeasurableSet E →
       ν E = Complex.exp (-Complex.I *
         ((r.1 ^ 2 * (q'.1.2.1 - q'.1.1) * PDE.vecDot ξ (b v₀) : ℝ) : ℂ)) *
         ν' ((fun Y : PDE.Vec 1 => v₀ + r.1 • Y) ⁻¹' E)) ∧
@@ -125,5 +120,6 @@ theorem realizes_ofRadius_interval_fourier_tv (a c σ₀ : ℝ) (hac : a < c)
   exact KineticAffineScaling.realizes_fourier_tv _ (interval_admissible hac)
     (zeroCurve_piecewiseC1 1) (scaled_interval_admissible hac v₀ r)
     hreal hreal'' q' ξ ν ν' hν hν'
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Interval

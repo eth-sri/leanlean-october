@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Green.SlabDensity
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Reconstruction on an interval slab retaining exponential killing -/
 
@@ -48,7 +49,7 @@ theorem killed_slab_arith (a b : ℝ≥0) (M : ℝ≥0∞) {T k q : ℝ}
       ring
 
 /-- The shared reconstruction proof with the interval killing height estimate. -/
-theorem killed_slab_reconstruction {Ω : Set (PDE.Vec 1)} {γ : ℝ → PDE.Vec 1}
+theorem killed_slab_reconstruction {Ω : HypoellipticAleksandrov.VecSet 1} {γ : ℝ → PDE.Vec 1}
     (C : ℝ → ℝ≥0) (k : ℝ) (K : MovingFiberKernel Ω γ) (σ : ℝ)
     (μ : Measure (EvolutionState Ω γ σ)) [IsFiniteMeasure μ]
     (Γ : Measure (GreenCarrier 1)) (hΓ : IsGreenMeasure K σ ⊤ μ Γ)

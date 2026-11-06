@@ -80,7 +80,7 @@ theorem bellman_measure_density_of_flux (F H : Measure ℝ)
     rw [bellmanWeightedTestIntegral_apply H _ h1,
       bellmanWeightedTestIntegral_apply volume p hp]
     change (∫ x, deriv φ x * 1 ∂H) - (∫ x, deriv φ x * p x) = 0
-    simp only [mul_one]
+    simp
     rw [hw φ]
     have he := bellman_fluxMeasurePrimitive_weak F g J hg hJ a φ
     change (∫ x, φ x * J x) - a * (∫ x, g x * φ x ∂F) =
@@ -102,7 +102,7 @@ theorem bellman_measure_density_of_flux (F H : Measure ℝ)
       bellmanWeightedTestIntegral volume p φ = c * (∫ x, φ x) at he
     rw [bellmanWeightedTestIntegral_apply H _ h1,
       bellmanWeightedTestIntegral_apply volume p hp] at he
-    simp only [mul_one] at he
+    simp at he
     have hi : Integrable (fun x => φ x * p x) volume := by
       convert! hp.integrable_smul_left_of_hasCompactSupport
         φ.contDiff.continuous φ.hasCompactSupport using 1

@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.VariationalEnergy
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeGalerkinPrimalInitialTraceNorm
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Reverse-time variational energy existence with radius bound
@@ -23,7 +24,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 energy solution with the prescribed canonical initial trace and explicit
 uniform Bochner-radius bound. -/
 theorem exists_reverseTime_variational_energy_solution_norm_le_radius
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ lam Lam : ℝ) (h₀₁ : r₀ < r₁)
     (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)

@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.LinearAlgebra.LoewnerPolarization
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.LocalizedSpatialDifferenceQuotientPrincipalField
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialCoefficientCutoffFields
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Translated principal coercivity for localized spatial difference quotients
@@ -63,7 +65,7 @@ private theorem hilbertVec_vecNormSq_eq_norm_sq {d : ℕ} (v : PDE.HilbertVec d)
     PDE.vecNormSq v.toVec = ‖v‖ ^ 2 := by
   rw [PDE.HilbertVec.norm_eq_vecEuclideanNorm, PDE.vecEuclideanNorm_sq]
 
-private theorem integral_coercivity_of_ae {d : ℕ} {Ω : Set (PDE.Vec d)}
+private theorem integral_coercivity_of_ae {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (c lam Lam : ℝ) (G W : PDE.HilbertVectorLp Ω (2 : ℝ≥0∞))
     (F : Fin d → Fin d → PDE.Vec d → ℝ)
     (hterm : ∀ i j : Fin d, Integrable (F i j) (PDE.volumeOn Ω))
@@ -116,7 +118,7 @@ private theorem integral_coercivity_of_ae {d : ℕ} {Ω : Set (PDE.Vec d)}
 /-- The one-cutoff translated principal term controls the sharp localized
 difference-quotient gradient-minus-commutator norm expression. -/
 theorem localizedSpatialDifferenceQuotient_translatedPrincipal_lower_of_loewner
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₀ r₁ lam Lam : ℝ) (hΩ : IsOpen Ω)
     (a : CoefficientField d)
     (haSmooth : IsSmoothOnNeighborhood

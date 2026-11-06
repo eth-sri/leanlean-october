@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSeparatedRa
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeLocalTestLift
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.WeakTestFunctionMonotone
 public import Mathlib.MeasureTheory.Integral.Bochner.Set
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Local reverse-time separated product distribution
@@ -24,7 +26,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 /-- A supplied reverse-time variational energy solution and explicit global product
 representatives satisfy every local separated product distribution identity. -/
 theorem reverseTime_separated_product_distribution_of_reverseTimeVariationalEnergy
-    {d : ℕ} {Ω O : Set (PDE.Vec d)}
+    {d : ℕ} {Ω O : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (hO : IsOpen O) (hOΩ : O ⊆ Ω)
@@ -104,8 +106,8 @@ theorem reverseTime_separated_product_distribution_of_reverseTimeVariationalEner
     simpa only [raw, etaGlobal, psiGlobal, reverseTimeScalarTestOfLocal_apply,
       reverseTimeScalarTestOfLocal_deriv, PDE.WeakTestFunction.mono_apply,
       PDE.WeakTestFunction.mono_partialDeriv] using hglobal
-  let localSet : Set (TimeVelocity d) := Set.Ioo τ₁ τ₂ ×ˢ O
-  let globalSet : Set (TimeVelocity d) := reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω
+  let localSet : HypoellipticAleksandrov.Parabolic.TVSet d := Set.Ioo τ₁ τ₂ ×ˢ O
+  let globalSet : HypoellipticAleksandrov.Parabolic.TVSet d := reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω
   have hlocalGlobal : localSet ⊆ globalSet := by
     rintro ⟨τ, y⟩ ⟨hτ, hy⟩
     exact ⟨htime hτ, hOΩ hy⟩
@@ -143,14 +145,14 @@ theorem reverseTime_separated_product_distribution_of_reverseTimeVariationalEner
   refine ⟨?_, ?_⟩
   · simpa only [raw, localSet] using hlocalInt
   · have hintEq :
-        (∫ z in globalSet, raw z ∂(volume : Measure (TimeVelocity d))) =
-          ∫ z in localSet, raw z ∂(volume : Measure (TimeVelocity d)) :=
+        (∫ z in globalSet, raw z ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
+          ∫ z in localSet, raw z ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) :=
       setIntegral_eq_of_subset_of_forall_diff_eq_zero hglobalMeas hlocalGlobal hzero
     have hglobalZero :
-        (∫ z in globalSet, raw z ∂(volume : Measure (TimeVelocity d))) = 0 := by
+        (∫ z in globalSet, raw z ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) = 0 := by
       simpa only [timeVelocityVolumeOn] using hglobal'.2
     have hlocalZero :
-        (∫ z in localSet, raw z ∂(volume : Measure (TimeVelocity d))) = 0 := by
+        (∫ z in localSet, raw z ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) = 0 := by
       rw [← hintEq, hglobalZero]
     simpa only [raw, localSet, timeVelocityVolumeOn] using hlocalZero
 

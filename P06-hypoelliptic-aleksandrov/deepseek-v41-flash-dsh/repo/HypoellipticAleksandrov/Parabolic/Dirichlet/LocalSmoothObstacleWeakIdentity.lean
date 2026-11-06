@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTime
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.WeakTestFunctionSobolevJet
 public import HypoellipticAleksandrov.Parabolic.LocalCompactSupportIntegrationByParts
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Local smooth-obstacle weak identity
@@ -19,9 +21,11 @@ open MeasureTheory Set
 open scoped BigOperators
 
 namespace HypoellipticAleksandrov.Parabolic
+section
+variable {d : ℕ} {D : HypoellipticAleksandrov.VecSet d}
 
 private theorem spatialPartial_mul_local
-    {d : ℕ} {D : Set (PDE.Vec d)} (hD : IsOpen D) (i : Fin d)
+     (hD : IsOpen D) (i : Fin d)
     {f g : PDE.Vec d → ℝ} (hf : ContDiffOn ℝ 1 f D)
     (hg : ContDiffOn ℝ 1 g D) {y : PDE.Vec d} (hy : y ∈ D) :
     spatialPartial i (fun x ↦ f x * g x) y =
@@ -34,7 +38,7 @@ private theorem spatialPartial_mul_local
   ring
 
 private theorem integrable_mul_of_right_compactSupport
-    {d : ℕ} {D : Set (PDE.Vec d)} {f g : PDE.Vec d → ℝ}
+     {f g : PDE.Vec d → ℝ}
     (hf : ContinuousOn f D) (hg : Continuous g)
     (hgcompact : HasCompactSupport g) (hgsupport : tsupport g ⊆ D) :
     Integrable (fun y ↦ f y * g y) := by
@@ -48,7 +52,7 @@ private theorem integrable_mul_of_right_compactSupport
 /-- The lower-order remainder in the generic reverse-time classical identity
 is integrable against a bundled smooth compactly supported test function. -/
 theorem integrableOn_reverseTimeClassicalRemainder_weakTest
-    {d : ℕ} {D : Set (PDE.Vec d)} (hD : IsOpen D)
+     (hD : IsOpen D)
     (r₁ τ : ℝ)
     (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
@@ -122,7 +126,7 @@ classical scalar field equals the negative original-time operator against each
 bundled smooth compactly supported test function.  A source-facing obstacle
 consumer must derive the stated lower-order remainder integrability. -/
 theorem integral_reverseTimeClassicalResidual_weakTest_eq_neg_operator
-    {d : ℕ} {D : Set (PDE.Vec d)} (hD : IsOpen D)
+     (hD : IsOpen D)
     (r₁ τ : ℝ)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c : ℝ → PDE.Vec d → ℝ) (ell : TimeVelocity d → ℝ)
@@ -305,5 +309,6 @@ theorem integral_reverseTimeClassicalResidual_weakTest_eq_neg_operator
       simp_rw [Finset.sum_sub_distrib]
       simp_rw [Finset.sum_neg_distrib]
       ring_nf
+end
 
 end HypoellipticAleksandrov.Parabolic

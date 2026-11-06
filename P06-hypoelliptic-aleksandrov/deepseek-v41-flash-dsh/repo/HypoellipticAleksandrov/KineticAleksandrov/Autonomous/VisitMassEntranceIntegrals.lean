@@ -35,13 +35,12 @@ theorem visitGamma_ae_closedEntrance (P : Point) (c : Clock) (J : Interval) (s T
     exact (ae_restrict_mem
       (measurableSet_visitBoundary s T (visitEntranceInterval c) J)).mono
         (fun _ hp => frontier_subset_closure hp.2.2.1)
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (P : Point) (n : ℕ)
 
 /-- The physical quadratic is integrable against every actual finite entrance piece. -/
 theorem visitQuadratic_integrable_entrance
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
-    (P : Point) (n : ℕ) :
+     :
     Integrable (fun p => visitQuadratic c (p.velocity 0))
       (visitEntrancePiece hH hLE hlam hLam A c J s T P n) := by
   have hc : Continuous (fun p : Point => visitQuadratic c (p.velocity 0)) :=
@@ -57,10 +56,7 @@ theorem visitQuadratic_integrable_entrance
 
 /-- The exact five-sixteenths lower bound survives integration, with the initial atom included. -/
 theorem visitQuadratic_entrance_integral_lower
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
-    (P : Point) (n : ℕ) :
+     :
     5 * c.r ^ 2 / 16 * (visitEntrancePiece hH hLE hlam hLam A c J s T P n univ).toReal ≤
       ∫ p, visitQuadratic c (p.velocity 0)
         ∂visitEntrancePiece hH hLE hlam hLam A c J s T P n := by
@@ -71,5 +67,6 @@ theorem visitQuadratic_entrance_integral_lower
       (visitUnionExitKernel hH hLE hlam hLam A (visitWaitingUnion c J) s T) n] with p hp
     exact visitQuadratic_entrance_lower c hp)
   simpa only [integral_const, smul_eq_mul, Measure.real, mul_comm] using hb
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

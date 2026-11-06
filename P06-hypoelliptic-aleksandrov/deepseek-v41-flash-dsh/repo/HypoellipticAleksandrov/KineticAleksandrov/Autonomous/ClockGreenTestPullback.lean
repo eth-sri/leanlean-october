@@ -25,9 +25,9 @@ theorem clock_pullback_C112 (c : Clock) (e : Point) (h : Point → ℝ)
     · change ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × PDE.Vec 1 × PDE.Vec 1 => q.1)
       exact contDiff_fst
     · change ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × PDE.Vec 1 × PDE.Vec 1 => q.2.1 0)
-      exact (contDiff_apply ℝ ℝ (0 : Fin 1)).comp contDiff_snd.fst
+      exact (contDiff_apply ℝ ℝ 0).comp contDiff_snd.fst
     · change ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × PDE.Vec 1 × PDE.Vec 1 => q.2.2 0)
-      exact (contDiff_apply ℝ ℝ (0 : Fin 1)).comp contDiff_snd.snd
+      exact (contDiff_apply ℝ ℝ 0).comp contDiff_snd.snd
   have hm : MapsTo (c.mapCoordinates e ∘ l)
       (KineticPoint.equivProd 1 '' {p : Point | p.velocity 0 ∈ c.active})
       {q : Fin 3 → ℝ | q 2 ∈ normalizedActive} := by

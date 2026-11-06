@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.Parabolic.KrylovCylinder
 public import HypoellipticAleksandrov.Parabolic.KrylovEstimate.ScalarAffine
 public import HypoellipticAleksandrov.Parabolic.TimeReversal
 import Mathlib.Analysis.Calculus.Deriv.Shift
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Reflect-and-rescale calculus for the localized occupation estimate
@@ -66,7 +68,7 @@ theorem scalarSpatialHessian_timeReflectedScalar (V : TimeVelocity d → ℝ)
   rfl
 
 /-- Scalar `C^{1,2}` regularity transfers through the time reflection. -/
-theorem isScalarC12On_timeReflectedScalar {V : TimeVelocity d → ℝ} {D : Set (TimeVelocity d)}
+theorem isScalarC12On_timeReflectedScalar {V : TimeVelocity d → ℝ} {D : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hV : IsScalarC12On V D) :
     IsScalarC12On (timeReflectedScalar V) (timeReflection ⁻¹' D) := by
   have hm : MapsTo (timeReflection (d := d)) (timeReflection ⁻¹' D) D := fun _ hz => hz
@@ -111,7 +113,7 @@ theorem scalarSpatialGradient_parabolicAffine (u : TimeVelocity d → ℝ) (b : 
   gradient_affine_aux (fun y => u (b + ρ ^ 2 * z.1, y)) v ρ z.2 hu
 
 /-- `C^{1,2}` regularity and the derivative identities for `V ∘ reflectScale`. -/
-theorem isScalarC12On_reflectScale {V : TimeVelocity d → ℝ} {D : Set (TimeVelocity d)}
+theorem isScalarC12On_reflectScale {V : TimeVelocity d → ℝ} {D : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hD : IsOpen D) (hV : IsScalarC12On V D) {R : ℝ} (hR : 0 < R) (vStar : PDE.Vec d) :
     IsScalarC12On (fun z => V (reflectScale R vStar z)) (reflectScale R vStar ⁻¹' D) ∧
     ∀ z ∈ reflectScale R vStar ⁻¹' D,
@@ -121,7 +123,7 @@ theorem isScalarC12On_reflectScale {V : TimeVelocity d → ℝ} {D : Set (TimeVe
         R • scalarSpatialGradient V (reflectScale R vStar z) ∧
       scalarSpatialHessian (fun w => V (reflectScale R vStar w)) z =
         R ^ 2 • scalarSpatialHessian V (reflectScale R vStar z) := by
-  have hD' : IsOpen (timeReflection ⁻¹' D : Set (TimeVelocity d)) :=
+  have hD' : IsOpen (timeReflection ⁻¹' D : HypoellipticAleksandrov.Parabolic.TVSet d) :=
     hD.preimage continuous_timeReflection
   have hV' := isScalarC12On_timeReflectedScalar hV
   have hfun : (fun z => V (reflectScale R vStar z)) =
@@ -152,7 +154,7 @@ theorem isScalarC12On_reflectScale {V : TimeVelocity d → ℝ} {D : Set (TimeVe
   · rw [hh, scalarSpatialHessian_timeReflectedScalar, hΦ]
 
 /-- The scaled backward operator: `u_t - a : D² u = -R² (V_r + B : D² V)` at `reflectScale`. -/
-theorem scaled_operator_eq {V : TimeVelocity d → ℝ} {D : Set (TimeVelocity d)}
+theorem scaled_operator_eq {V : TimeVelocity d → ℝ} {D : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hD : IsOpen D) (hV : IsScalarC12On V D) {R : ℝ} (hR : 0 < R) (vStar : PDE.Vec d)
     (B : CoefficientField d) {z : TimeVelocity d} (hz : z ∈ reflectScale R vStar ⁻¹' D) :
     scalarTimeDerivative (fun w => V (reflectScale R vStar w)) z -

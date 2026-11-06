@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.LocalCompactSupportIntegrationByParts
 import Mathlib.Analysis.Calculus.FDeriv.Mul
 import Mathlib.Tactic.Ring
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Local spatial value-energy testing
 
@@ -15,7 +16,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open MeasureTheory Set
 
-private theorem spatialPartial_mul_at {d : ℕ} {O : Set (PDE.Vec d)}
+private theorem spatialPartial_mul_at {d : ℕ} {O : HypoellipticAleksandrov.VecSet d}
     (hO : IsOpen O) (i : Fin d) {f g : PDE.Vec d → ℝ}
     (hf : ContDiffOn ℝ 1 f O) (hg : ContDiffOn ℝ 1 g O)
     {y : PDE.Vec d} (hy : y ∈ O) :
@@ -29,7 +30,7 @@ private theorem spatialPartial_mul_at {d : ℕ} {O : Set (PDE.Vec d)}
 
 /-- A single coefficient entry obeys the exact cutoff value-energy identity. -/
 theorem integral_local_spatial_value_energy_entry {d : ℕ}
-    (O : Set (PDE.Vec d)) (hO : IsOpen O) (i j : Fin d)
+    (O : HypoellipticAleksandrov.VecSet d) (hO : IsOpen O) (i j : Fin d)
     (a q η : PDE.Vec d → ℝ) (ha : ContDiffOn ℝ 1 a O)
     (hq : ContDiffOn ℝ 2 q O) (hη : ContDiff ℝ (⊤ : ℕ∞) η)
     (hc : HasCompactSupport η) (hsub : tsupport η ⊆ O) :

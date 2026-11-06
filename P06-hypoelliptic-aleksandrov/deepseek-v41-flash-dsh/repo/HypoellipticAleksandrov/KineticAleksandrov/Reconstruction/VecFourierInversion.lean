@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Reconstruction.FourierInversion
 public import PDEFoundation.Ambient.EuclideanNorm
 import Mathlib.Analysis.InnerProductSpace.PiL2
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Fourier inversion on the native carrier `PDE.Vec d`
@@ -26,7 +27,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Reconstruction
 variable {d : ℕ}
 
 /-- The Fourier transform `ξ ↦ ∫ e^{-i ξ·x} dμ(x)` of a measure on `ℝ^d`. -/
-def vecFourier (μ : Measure (PDE.Vec d)) (ξ : PDE.Vec d) : ℂ :=
+def vecFourier (μ : HypoellipticAleksandrov.VecMeasure d) (ξ : PDE.Vec d) : ℂ :=
   ∫ x, cexp (-((PDE.vecDot ξ x : ℝ) * I)) ∂μ
 
 /-- The Fourier-inversion integral `∫ e^{i ξ·z} φ(ξ) dξ` on `ℝ^d`. -/
@@ -34,7 +35,7 @@ def vecInvIntegral (φ : PDE.Vec d → ℂ) (z : PDE.Vec d) : ℂ :=
   ∫ ξ, cexp (I * ((PDE.vecDot ξ z : ℝ) : ℂ)) * φ ξ
 
 /-- The inversion density `(2π)^{-d} Re ∫ e^{i ξ·z} μ̂(ξ) dξ` of a measure on `ℝ^d`. -/
-def vecInvDensity (μ : Measure (PDE.Vec d)) (z : PDE.Vec d) : ℝ :=
+def vecInvDensity (μ : HypoellipticAleksandrov.VecMeasure d) (z : PDE.Vec d) : ℝ :=
   ((2 * Real.pi) ^ d)⁻¹ * (vecInvIntegral (vecFourier μ) z).re
 
 /-- The coordinate equivalence `ℝ^d ≃ EuclideanSpace ℝ (Fin d)`. -/
@@ -48,7 +49,7 @@ lemma inner_toLp (ξ x : PDE.Vec d) :
   exact Finset.sum_congr rfl fun i _ => mul_comm _ _
 
 /-- The Fourier transform on `ℝ^d` agrees with that of the pushforward to Euclidean space. -/
-lemma vecFourier_eq (μ : Measure (PDE.Vec d)) (ξ : PDE.Vec d) :
+lemma vecFourier_eq (μ : HypoellipticAleksandrov.VecMeasure d) (ξ : PDE.Vec d) :
     measureFourier (μ.map (toEuclid d)) (WithLp.toLp 2 ξ) = vecFourier μ ξ := by
   unfold measureFourier vecFourier
   rw [(toEuclid d).measurableEmbedding.integral_map]
@@ -56,7 +57,7 @@ lemma vecFourier_eq (μ : Measure (PDE.Vec d)) (ξ : PDE.Vec d) :
   simp only [toEuclid, MeasurableEquiv.toLp_apply, inner_toLp]
 
 /-- The inversion integral agrees with that of the pushforward to Euclidean space. -/
-lemma invIntegral_eq (μ : Measure (PDE.Vec d)) (z : PDE.Vec d) :
+lemma invIntegral_eq (μ : HypoellipticAleksandrov.VecMeasure d) (z : PDE.Vec d) :
     invIntegral (measureFourier (μ.map (toEuclid d))) (WithLp.toLp 2 z) =
       vecInvIntegral (vecFourier μ) z := by
   unfold invIntegral vecInvIntegral
@@ -66,13 +67,13 @@ lemma invIntegral_eq (μ : Measure (PDE.Vec d)) (z : PDE.Vec d) :
   simp only [inner_toLp, vecFourier_eq]
 
 /-- The inversion density agrees with that of the pushforward to Euclidean space. -/
-lemma invDensity_eq (μ : Measure (PDE.Vec d)) (z : PDE.Vec d) :
+lemma invDensity_eq (μ : HypoellipticAleksandrov.VecMeasure d) (z : PDE.Vec d) :
     invDensity (μ.map (toEuclid d)) (WithLp.toLp 2 z) = vecInvDensity μ z := by
   unfold invDensity vecInvDensity
   rw [invIntegral_eq, finrank_euclideanSpace_fin]
 
 /-- Integrability of the Fourier transform is preserved by the coordinate equivalence. -/
-lemma integrable_vecFourier_iff (μ : Measure (PDE.Vec d)) :
+lemma integrable_vecFourier_iff (μ : HypoellipticAleksandrov.VecMeasure d) :
     Integrable (measureFourier (μ.map (toEuclid d))) ↔ Integrable (vecFourier μ) := by
   rw [← (PiLp.volume_preserving_toLp (Fin d)).integrable_comp_emb
     (toEuclid d).measurableEmbedding]
@@ -80,7 +81,7 @@ lemma integrable_vecFourier_iff (μ : Measure (PDE.Vec d)) :
   exact vecFourier_eq μ ξ
 
 /-- The `L^1` norm of the Fourier transform is preserved by the coordinate equivalence. -/
-lemma integral_norm_vecFourier (μ : Measure (PDE.Vec d)) :
+lemma integral_norm_vecFourier (μ : HypoellipticAleksandrov.VecMeasure d) :
     ∫ ξ, ‖measureFourier (μ.map (toEuclid d)) ξ‖ = ∫ ξ, ‖vecFourier μ ξ‖ := by
   rw [← (PiLp.volume_preserving_toLp (Fin d)).integral_comp (toEuclid d).measurableEmbedding]
   exact integral_congr_ae (Filter.Eventually.of_forall fun ξ => by
@@ -88,7 +89,7 @@ lemma integral_norm_vecFourier (μ : Measure (PDE.Vec d)) :
 
 section Inversion
 
-variable (μ : Measure (PDE.Vec d)) [IsFiniteMeasure μ] (hφ : Integrable (vecFourier μ))
+variable (μ : HypoellipticAleksandrov.VecMeasure d) [IsFiniteMeasure μ] (hφ : Integrable (vecFourier μ))
 include hφ
 
 /-- The inversion density of a finite measure with integrable Fourier transform is nonnegative. -/

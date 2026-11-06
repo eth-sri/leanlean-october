@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Green.SlabFourierMarginal
 public import HypoellipticAleksandrov.KineticAleksandrov.Green.SlabFourierEvolved
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Lemma 5.1: domination of the Fourier marginal
@@ -61,15 +62,15 @@ lemma wholeSpaceQuery_congr (σ a b : ℝ) (h₁ : σ ≤ a) (h₂ : σ ≤ b) (
 /-- The displacement phase integrated over a `v`-slab: `e^{-iξ·z}` times the Fourier kernel. -/
 lemma master_phase_integral
     (hcov : IsTranslationCovariantEvolution (wholeSpace d) (fun _ => 0) MeasurableSet.univ K)
-    (σ τ : ℝ) (hστ : σ ≤ τ) (ξ v z : PDE.Vec d) {E : Set (PDE.Vec d)} (hE : MeasurableSet E) :
-    ∫ w, (E ×ˢ (univ : Set (PDE.Vec d))).indicator (fourierPhase ξ 0) w
+    (σ τ : ℝ) (hστ : σ ≤ τ) (ξ v z : PDE.Vec d) {E : HypoellipticAleksandrov.VecSet d} (hE : MeasurableSet E) :
+    ∫ w, (E ×ˢ (univ : HypoellipticAleksandrov.VecSet d)).indicator (fourierPhase ξ 0) w
         ∂K.master (wholeSpaceQuery σ τ hστ v z) =
       fourierPhase ξ 0 (v, z) * fourierKernel K σ τ hστ ξ v E := by
   rw [← fourierKernel_eq_startingPosition K hcov σ τ hστ ξ v z,
     fourierProjection_spec K (wholeSpaceQuery σ τ hστ v z) ξ E hE, ← integral_const_mul,
     ← integral_indicator (hE.prod MeasurableSet.univ)]
   refine integral_congr_ae (Filter.Eventually.of_forall (fun w => ?_))
-  by_cases hw : w ∈ E ×ˢ (univ : Set (PDE.Vec d))
+  by_cases hw : w ∈ E ×ˢ (univ : HypoellipticAleksandrov.VecSet d)
   · simp only [Set.indicator_of_mem hw]
     exact fourierPhase_factor ξ 0 (v, z) w
   · simp only [Set.indicator_of_notMem hw]
@@ -78,8 +79,8 @@ lemma master_phase_integral
 lemma fibreMeasure_halfKernel
     (hcov : IsTranslationCovariantEvolution (wholeSpace d) (fun _ => 0) MeasurableSet.univ K)
     (σ₀ r : ℝ) (hσr : σ₀ ≤ r) (ξ : PDE.Vec d)
-    (x : EvolutionState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ₀)
-    {E : Set (PDE.Vec d)} (hE : MeasurableSet E) :
+    (x : EvolutionState (wholeSpace d) (fun _ => 0) σ₀)
+    {E : HypoellipticAleksandrov.VecSet d} (hE : MeasurableSet E) :
     fibreMeasure (halfKernel K σ₀ r hσr) (halfPhase d ξ r) (halfVelocity d r) x E =
       fourierPhase ξ 0 x.1 * fourierKernel K σ₀ r hσr ξ x.1.1 E := by
   rw [fibreMeasure_apply _ _ _ (measurable_halfPhase ξ r) (norm_halfPhase ξ r)
@@ -92,12 +93,12 @@ lemma fibreMeasure_halfKernel
     intro y
     by_cases hy : y.1.1 ∈ E
     · have h2 : y ∈ halfVelocity d r ⁻¹' E := hy
-      have h3 : y.1 ∈ E ×ˢ (univ : Set (PDE.Vec d)) := ⟨hy, mem_univ _⟩
+      have h3 : y.1 ∈ E ×ˢ (univ : HypoellipticAleksandrov.VecSet d) := ⟨hy, mem_univ _⟩
       rw [Set.indicator_of_mem h2]
       simp only [G, Set.indicator_of_mem h3]
       rfl
     · have h2 : y ∉ halfVelocity d r ⁻¹' E := hy
-      have h3 : y.1 ∉ E ×ˢ (univ : Set (PDE.Vec d)) := fun h => hy h.1
+      have h3 : y.1 ∉ E ×ˢ (univ : HypoellipticAleksandrov.VecSet d) := fun h => hy h.1
       rw [Set.indicator_of_notMem h2]
       simp only [G, Set.indicator_of_notMem h3]
   simp_rw [h1]
@@ -128,17 +129,17 @@ lemma fibreMeasure_variation_le
 
 
 /-- The phase `e^{-iξ·z'}` cut to the velocity set `E`. -/
-def phaseSection (d : ℕ) (ξ : PDE.Vec d) (E : Set (PDE.Vec d)) : EvolutionAmbientState d → ℂ :=
-  (E ×ˢ (univ : Set (PDE.Vec d))).indicator (fourierPhase ξ 0)
+def phaseSection (d : ℕ) (ξ : PDE.Vec d) (E : HypoellipticAleksandrov.VecSet d) : EvolutionAmbientState d → ℂ :=
+  (E ×ˢ (univ : HypoellipticAleksandrov.VecSet d)).indicator (fourierPhase ξ 0)
 
-lemma measurable_phaseSection (ξ : PDE.Vec d) {E : Set (PDE.Vec d)} (hE : MeasurableSet E) :
+lemma measurable_phaseSection (ξ : PDE.Vec d) {E : HypoellipticAleksandrov.VecSet d} (hE : MeasurableSet E) :
     Measurable (phaseSection d ξ E) :=
   (continuous_fourierPhase ξ 0).measurable.indicator (hE.prod MeasurableSet.univ)
 
-lemma norm_phaseSection_le (ξ : PDE.Vec d) (E : Set (PDE.Vec d)) (w : EvolutionAmbientState d) :
+lemma norm_phaseSection_le (ξ : PDE.Vec d) (E : HypoellipticAleksandrov.VecSet d) (w : EvolutionAmbientState d) :
     ‖phaseSection d ξ E w‖ ≤ 1 := by
   unfold phaseSection
-  by_cases hw : w ∈ E ×ˢ (univ : Set (PDE.Vec d))
+  by_cases hw : w ∈ E ×ˢ (univ : HypoellipticAleksandrov.VecSet d)
   · rw [Set.indicator_of_mem hw, norm_fourierPhase]
   · rw [Set.indicator_of_notMem hw, norm_zero]; exact zero_le_one
 
@@ -148,7 +149,7 @@ theorem slab_pairing
     (hcomp : K.HasComposition MeasurableSet.univ) (σ₀ : ℝ)
     (μ : Measure (EvolutionState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ₀))
     [IsFiniteMeasure μ] (r : ℝ) (hσr : σ₀ ≤ r) (ξ : PDE.Vec d) (τ : ElapsedTime ⊤)
-    (hrτ : r ≤ σ₀ + τ.1) {E : Set (PDE.Vec d)} (hE : MeasurableSet E) :
+    (hrτ : r ≤ σ₀ + τ.1) {E : HypoellipticAleksandrov.VecSet d} (hE : MeasurableSet E) :
     ∫ p, ∫ w, phaseSection d ξ E w ∂K.master (elapsedQuery σ₀ p τ) ∂μ =
       ∫ x, ∫ y, fourierKernel K r (σ₀ + τ.1) hrτ ξ (halfVelocity d r y) E * halfPhase d ξ r y
         ∂halfKernel K σ₀ r hσr x ∂μ := by
@@ -194,7 +195,7 @@ theorem slab_section_bound
     (hcomp : K.HasComposition MeasurableSet.univ) (σ₀ : ℝ)
     (μ : Measure (EvolutionState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ₀))
     [IsFiniteMeasure μ] {T : ℝ} (hT : 0 < T) (ξ : PDE.Vec d) (τ : ElapsedTime ⊤)
-    (hτ : T < τ.1) {E : Set (PDE.Vec d)} (hE : MeasurableSet E) :
+    (hτ : T < τ.1) {E : HypoellipticAleksandrov.VecSet d} (hE : MeasurableSet E) :
     ‖∫ p, ∫ w, phaseSection d ξ E w ∂K.master (elapsedQuery σ₀ p τ) ∂μ‖ₑ ≤
       ∫⁻ v, occupationKernel K (σ₀ + T / 2) (τ.1 - T / 2) v E
         ∂(halfMeasure K σ₀ T hT.le μ ξ).variation := by
@@ -293,11 +294,11 @@ theorem slab_domination_ineq
             unfold phaseSection
             by_cases hw : (τ, w.1) ∈ E
             · have h1 : (τ, w) ∈ SE := ⟨hw, hτ.1, hτ.2⟩
-              have h2 : w ∈ ({w' : PDE.Vec d | (τ, w') ∈ E} ×ˢ (univ : Set (PDE.Vec d))) :=
+              have h2 : w ∈ ({w' : PDE.Vec d | (τ, w') ∈ E} ×ˢ (univ : HypoellipticAleksandrov.VecSet d)) :=
                 ⟨hw, mem_univ _⟩
               rw [Set.indicator_of_mem h1, Set.indicator_of_mem h2, greenPhase_eq]
             · have h1 : (τ, w) ∉ SE := fun h => hw h.1
-              have h2 : w ∉ ({w' : PDE.Vec d | (τ, w') ∈ E} ×ˢ (univ : Set (PDE.Vec d))) :=
+              have h2 : w ∉ ({w' : PDE.Vec d | (τ, w') ∈ E} ×ˢ (univ : HypoellipticAleksandrov.VecSet d)) :=
                 fun h => hw h.1
               rw [Set.indicator_of_notMem h1, Set.indicator_of_notMem h2]
           simp_rw [hfun]

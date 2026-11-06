@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.DuhamelBound
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.DuhamelLayer
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.HormanderBridgeTransfer
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.HormanderBridgeOperator
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Terminal source limits for full kinetic Duhamel slices -/
 
@@ -13,7 +14,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set Filter
 open Evolution Occupation
 open scoped Topology
-variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d}
 
 /-- The kinetic past cylinder is open for an open base domain and continuous motion. -/
 theorem isOpen_duhamelCylinder (hΩ : IsOpen Ω) (hγ : Continuous γ) (T : ℝ) :

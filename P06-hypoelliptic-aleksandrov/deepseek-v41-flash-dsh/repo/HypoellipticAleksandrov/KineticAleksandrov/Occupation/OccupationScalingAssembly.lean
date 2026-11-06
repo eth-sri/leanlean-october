@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.OccupationScalingCharacterization
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.OccupationScalingBundle
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Scaling assembly from the unit-time duality conclusion -/
 

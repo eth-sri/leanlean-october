@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.Duhamel
 import Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Signed bounded-source Duhamel estimates
 
@@ -13,7 +14,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set
 open scoped ENNReal
-variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d}
 
 /-- Sub-Markov contraction bounds a signed source integral in absolute value. -/
 theorem abs_duhamelSourceIntegral_le (K : MovingFiberKernel Ω γ)
@@ -54,10 +55,11 @@ theorem integrableOn_duhamelIntegrand_bounded (K : MovingFiberKernel Ω γ)
   exact Filter.Eventually.of_forall fun r => by
     rw [Real.norm_eq_abs]
     exact abs_duhamelIntegrand_le K g M hM hgb p r
+section
+variable (K : MovingFiberKernel Ω γ) (g : KineticPoint d → ℝ)
 
 /-- The finite-horizon Duhamel estimate holds for signed bounded sources. -/
-theorem abs_duhamelPotential_le (K : MovingFiberKernel Ω γ)
-    (g : KineticPoint d → ℝ) (M : ℝ) (hM : 0 ≤ M)
+theorem abs_duhamelPotential_le  (M : ℝ) (hM : 0 ≤ M)
     (hgb : ∀ p, |g p| ≤ M) (p : KineticPoint d) (T : ℝ) (hp : p.time ≤ T) :
     |duhamelPotential K T g p| ≤ (T - p.time) * M := by
   have hn := norm_integral_le_of_norm_le_const
@@ -71,8 +73,7 @@ theorem abs_duhamelPotential_le (K : MovingFiberKernel Ω γ)
     ENNReal.toReal_ofReal (sub_nonneg.mpr hp), mul_comm] using hn
 
 /-- An absolute time distance dominates the potential on the entire starting space. -/
-theorem abs_duhamelPotential_le_abs_time (K : MovingFiberKernel Ω γ)
-    (g : KineticPoint d → ℝ) (M : ℝ) (hM : 0 ≤ M)
+theorem abs_duhamelPotential_le_abs_time  (M : ℝ) (hM : 0 ≤ M)
     (hgb : ∀ p, |g p| ≤ M) (p : KineticPoint d) (T : ℝ) :
     |duhamelPotential K T g p| ≤ |T - p.time| * M := by
   by_cases hp : p.time ≤ T
@@ -82,15 +83,13 @@ theorem abs_duhamelPotential_le_abs_time (K : MovingFiberKernel Ω γ)
     exact mul_nonneg (abs_nonneg _) hM
 
 /-- The Duhamel integrand vanishes strictly before its starting time. -/
-theorem duhamelIntegrand_eq_zero_of_lt_start (K : MovingFiberKernel Ω γ)
-    (g : KineticPoint d → ℝ) (p : KineticPoint d) {r : ℝ} (hr : r < p.time) :
+theorem duhamelIntegrand_eq_zero_of_lt_start  (p : KineticPoint d) {r : ℝ} (hr : r < p.time) :
     duhamelIntegrand K g p r = 0 := by
   unfold duhamelIntegrand
   exact dite_eq_right (fun h => (not_le_of_gt hr) h.1)
 
 /-- Below-start source times contribute zero, and the diagonal has zero time measure. -/
-theorem duhamelPotential_eq_integral_window (K : MovingFiberKernel Ω γ)
-    (g : KineticPoint d → ℝ) (p : KineticPoint d) {a T : ℝ} (ha : a ≤ p.time) :
+theorem duhamelPotential_eq_integral_window  (p : KineticPoint d) {a T : ℝ} (ha : a ≤ p.time) :
     duhamelPotential K T g p = ∫ r in Ioo a T, duhamelIntegrand K g p r := by
   rw [duhamelPotential, integral_Ioc_eq_integral_Ioo]
   symm
@@ -100,5 +99,6 @@ theorem duhamelPotential_eq_integral_window (K : MovingFiberKernel Ω γ)
   intro hr
   have hle : r ≤ p.time := le_of_not_gt (fun h => hr.2 ⟨h, hr.1.2⟩)
   exact duhamelIntegrand_eq_zero_of_lt_start K g p (lt_of_le_of_ne hle hne)
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

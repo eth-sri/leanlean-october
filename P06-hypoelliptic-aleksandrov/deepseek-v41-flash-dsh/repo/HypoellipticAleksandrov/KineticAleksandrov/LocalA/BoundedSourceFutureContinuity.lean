@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundedSourceFut
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundedSourceHomogeneousLimit
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundedSourceL2Convergence
 import Mathlib.MeasureTheory.Measure.Dirac.Basic
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Pointwise continuity of bounded future potentials on compact collars
 
@@ -16,7 +17,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set Filter Evolution
 open scoped Topology
-variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d}
 
 /-- A positive bounded source supported strictly in the future gives a continuous literal
 potential on every compact regular collar lying strictly before the source starts. -/

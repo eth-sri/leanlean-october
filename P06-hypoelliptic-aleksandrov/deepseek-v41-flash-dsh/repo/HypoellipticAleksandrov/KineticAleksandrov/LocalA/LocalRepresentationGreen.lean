@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.LocalRepresentationBounds
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.ConeSupportTransition
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # The local position cutoff defect has zero actual Green integral -/
 

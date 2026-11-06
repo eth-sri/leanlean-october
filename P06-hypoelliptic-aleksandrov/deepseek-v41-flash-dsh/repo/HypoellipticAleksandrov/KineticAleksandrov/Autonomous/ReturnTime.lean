@@ -14,11 +14,12 @@ admissibility statement. The constant is chosen before coefficients, data, times
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov Parabolic Set MeasureTheory
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
 
 /-- Smooth terminal data satisfy the return comparison at every kinetic scale. -/
 theorem return_time_smooth
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
     (hp6 : SmoothAutonomousP6Statement lam Lam) :
     ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam) (F : BoundedBorel Z),
       (∀ z, 0 ≤ F z) → ContDiff ℝ (⊤ : ℕ∞) F →
@@ -48,8 +49,7 @@ theorem return_time_smooth
 
 /-- Bounded nonnegative Borel data satisfy the same full-space return comparison. -/
 theorem return_time
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
     (hp6 : SmoothAutonomousP6Statement lam Lam) :
     ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam) (F : BoundedBorel Z),
       (∀ z, 0 ≤ F z) → ∀ t s X v : ℝ,
@@ -62,5 +62,6 @@ theorem return_time
     (by linarith) (X, v) ?_ F hF0
   intro G hG0 hG
   exact hsmooth A G hG0 hG t s X v ht hs hs1 hv
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

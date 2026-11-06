@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeVariationalAffineUpper
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeVariationalNegation
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Sharp affine envelope for reverse-time variational solutions -/
 
@@ -15,14 +16,14 @@ noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 local instance instReverseTimeL2VStarModuleEnvelope
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) :
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (T : ℝ) :
     Module ℝ (ReverseTimeL2VStar hΩ T) :=
   MeasureTheory.Lp.instModule
 
 /-- A reverse-time variational energy solution is bounded in absolute value by
 the sharp affine envelope determined by its initial and source bounds. -/
 theorem IsReverseTimeVariationalEnergySolution.abs_reverseTimeHilbertRepresentative_le_affine
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)

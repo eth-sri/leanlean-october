@@ -6,6 +6,7 @@ public import HypoellipticAleksandrov.Parabolic.MixedTimeVelocityWeakDerivativeC
 public import HypoellipticAleksandrov.Parabolic.ParabolicDerivativeIndexBoundCoherence
 public import HypoellipticAleksandrov.Parabolic.ParabolicWeakDerivativeFamilyL2Norm
 public import HypoellipticAleksandrov.Parabolic.WeakDerivativesUnique
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Generic add-two assembly for parabolic weak-derivative families
@@ -254,7 +255,7 @@ private theorem sourceVelocityTwo_pureVelocityPredecessor
 literal, while exact-top entries use the selected time or pure-spatial
 predecessor. -/
 private noncomputable def canonicalRepresentative
-    {d M : ℕ} (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
+    {d M : ℕ} (hM : 1 ≤ M) {V : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u : TimeVelocity d → ℝ}
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
     (H : TimeVelocity d → ParabolicDerivativeIndex d M → Fin d → Fin d → ℝ)
@@ -275,7 +276,7 @@ private noncomputable def canonicalRepresentative
         (weight_eq_add_two_of_not_le_add_one alpha hle))
 
 private theorem canonicalRepresentative_inherited
-    {d M : ℕ} (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
+    {d M : ℕ} (hM : 1 ≤ M) {V : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u : TimeVelocity d → ℝ}
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
     (H : TimeVelocity d → ParabolicDerivativeIndex d M → Fin d → Fin d → ℝ)
@@ -290,7 +291,7 @@ private theorem canonicalRepresentative_inherited
   rfl
 
 private theorem canonicalRepresentative_time_top
-    {d M : ℕ} (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
+    {d M : ℕ} (hM : 1 ≤ M) {V : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u : TimeVelocity d → ℝ}
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
     (H : TimeVelocity d → ParabolicDerivativeIndex d M → Fin d → Fin d → ℝ)
@@ -305,7 +306,7 @@ private theorem canonicalRepresentative_time_top
   rw [dif_neg hnot, dif_pos ht]
 
 private theorem canonicalRepresentative_pure_spatial_top
-    {d M : ℕ} (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
+    {d M : ℕ} (hM : 1 ≤ M) {V : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u : TimeVelocity d → ℝ}
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
     (H : TimeVelocity d → ParabolicDerivativeIndex d M → Fin d → Fin d → ℝ)
@@ -325,7 +326,7 @@ private theorem canonicalRepresentative_pure_spatial_top
   rw [dif_neg hnot, dif_neg (not_lt.mpr (Nat.le_of_eq ht))]
 
 private theorem canonicalRepresentative_memLp
-    {d M : ℕ} (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
+    {d M : ℕ} (hM : 1 ≤ M) {V : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u : TimeVelocity d → ℝ}
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
     (H : TimeVelocity d → ParabolicDerivativeIndex d M → Fin d → Fin d → ℝ)
@@ -344,7 +345,7 @@ private theorem canonicalRepresentative_memLp
       exact hHmem _ _ _
 
 private theorem canonicalRepresentative_zero_ae
-    {d M : ℕ} (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
+    {d M : ℕ} (hM : 1 ≤ M) {V : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u : TimeVelocity d → ℝ}
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
     (H : TimeVelocity d → ParabolicDerivativeIndex d M → Fin d → Fin d → ℝ)
@@ -356,7 +357,7 @@ private theorem canonicalRepresentative_zero_ae
   exact D.zero_ae
 
 private theorem canonicalRepresentative_hasWeakTimeSucc
-    {d M : ℕ} (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
+    {d M : ℕ} (hM : 1 ≤ M) {V : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u : TimeVelocity d → ℝ}
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
     (H : TimeVelocity d → ParabolicDerivativeIndex d M → Fin d → Fin d → ℝ)
@@ -404,7 +405,7 @@ private theorem canonicalRepresentative_hasWeakTimeSucc
 /-- Coherence of a velocity edge whose target remains in the inherited
 layer.  The exact-top collision branches are handled separately. -/
 private theorem canonicalRepresentative_hasWeakVelocitySucc_inherited
-    {d M : ℕ} (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
+    {d M : ℕ} (hM : 1 ≤ M) {V : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u : TimeVelocity d → ℝ}
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
     (H : TimeVelocity d → ParabolicDerivativeIndex d M → Fin d → Fin d → ℝ)
@@ -534,7 +535,7 @@ private theorem exists_pureSpatial_velocityCommonRoot
 derivative.  Both presentations descend from the index obtained by removing
 that time derivative before adjoining the displayed velocity coordinate. -/
 private theorem canonicalRepresentative_hasWeakVelocitySucc_time_top
-    {d M : ℕ} (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
+    {d M : ℕ} (hM : 1 ≤ M) {V : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u : TimeVelocity d → ℝ}
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
     (H : TimeVelocity d → ParabolicDerivativeIndex d M → Fin d → Fin d → ℝ)
@@ -621,7 +622,7 @@ private theorem canonicalRepresentative_hasWeakVelocitySucc_time_top
 noncanonical final direction is reconciled with the canonical Hessian entry by
 commuting the two weak velocity derivatives from their common predecessor. -/
 private theorem canonicalRepresentative_hasWeakVelocitySucc_pure_spatial_top
-    {d M : ℕ} (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
+    {d M : ℕ} (hM : 1 ≤ M) {V : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u : TimeVelocity d → ℝ}
     (hVopen : IsOpen V)
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
@@ -719,7 +720,7 @@ private theorem canonicalRepresentative_hasWeakVelocitySucc_pure_spatial_top
     exact halt.congr_ae (Filter.EventuallyEq.rfl) hcross
 
 private theorem canonicalRepresentative_hasWeakVelocitySucc
-    {d M : ℕ} (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
+    {d M : ℕ} (hM : 1 ≤ M) {V : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u : TimeVelocity d → ℝ}
     (hVopen : IsOpen V)
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
@@ -753,7 +754,7 @@ private theorem canonicalRepresentative_hasWeakVelocitySucc
 /-- The coherent add-two family assembled from the inherited family, supplied
 Hessian representatives, and supplied time-successor representatives. -/
 private noncomputable def canonicalFamily
-    {d M : ℕ} (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
+    {d M : ℕ} (hM : 1 ≤ M) {V : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u : TimeVelocity d → ℝ}
     (hVopen : IsOpen V)
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
@@ -778,7 +779,7 @@ private noncomputable def canonicalFamily
     hM hVopen D H W hHmem hHweak hWweak
 
 @[simp] private theorem canonicalFamily_representative
-    {d M : ℕ} (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
+    {d M : ℕ} (hM : 1 ≤ M) {V : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u : TimeVelocity d → ℝ}
     (hVopen : IsOpen V)
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
@@ -799,7 +800,7 @@ private noncomputable def canonicalFamily
       canonicalRepresentative hM D H W alpha := rfl
 
 private theorem canonicalFamily_representative_inherited
-    {d M : ℕ} (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
+    {d M : ℕ} (hM : 1 ≤ M) {V : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u : TimeVelocity d → ℝ}
     (hVopen : IsOpen V)
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
@@ -821,7 +822,7 @@ private theorem canonicalFamily_representative_inherited
   exact canonicalRepresentative_inherited hM D H W alpha
 
 private theorem canonicalFamily_representative_sourceTime_ae
-    {d M : ℕ} (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
+    {d M : ℕ} (hM : 1 ≤ M) {V : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u : TimeVelocity d → ℝ} (hV : IsOpen V)
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
     (H : TimeVelocity d → ParabolicDerivativeIndex d M → Fin d → Fin d → ℝ)
@@ -861,7 +862,7 @@ private theorem canonicalFamily_representative_sourceTime_ae
     (F.memLp _) (hWmem beta) hfirst (hWweak beta)
 
 private theorem canonicalFamily_representative_sourceVelocityTwo_ae
-    {d M : ℕ} (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
+    {d M : ℕ} (hM : 1 ≤ M) {V : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u : TimeVelocity d → ℝ} (hV : IsOpen V)
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
     (H : TimeVelocity d → ParabolicDerivativeIndex d M → Fin d → Fin d → ℝ)
@@ -905,7 +906,7 @@ private theorem canonicalFamily_representative_sourceVelocityTwo_ae
     (F.memLp _) (hHmem beta j i) hfirst (hHweak beta j i)
 
 private theorem canonicalFamily_component_sq_le_total
-    {d M : ℕ} (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
+    {d M : ℕ} (hM : 1 ≤ M) {V : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u : TimeVelocity d → ℝ} (hV : IsOpen V)
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
     (H : TimeVelocity d → ParabolicDerivativeIndex d M → Fin d → Fin d → ℝ)
@@ -975,7 +976,7 @@ private theorem canonicalFamily_component_sq_le_total
         (le_add_of_nonneg_right (Finset.sum_nonneg fun _ _ => sq_nonneg _)))
 
 private theorem canonicalFamily_squaredL2Norm_le
-    {d M : ℕ} (hM : 1 ≤ M) {V : Set (TimeVelocity d)}
+    {d M : ℕ} (hM : 1 ≤ M) {V : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u : TimeVelocity d → ℝ} (hV : IsOpen V)
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
     (H : TimeVelocity d → ParabolicDerivativeIndex d M → Fin d → Fin d → ℝ)
@@ -1019,7 +1020,7 @@ private theorem canonicalFamily_squaredL2Norm_le
 to `M + 2` using supplied representatives two weights above each `beta`. -/
 theorem exists_parabolicWeakDerivativeFamily_add_two_of_hessian_timeSuccessors
     (d M : ℕ) (hM : 1 ≤ M)
-    {V : Set (TimeVelocity d)} (hV : IsOpen V)
+    {V : HypoellipticAleksandrov.Parabolic.TVSet d} (hV : IsOpen V)
     {u : TimeVelocity d → ℝ}
     (D : ParabolicWeakDerivativeFamily d (M + 1) V u)
     (H : TimeVelocity d → ParabolicDerivativeIndex d M →

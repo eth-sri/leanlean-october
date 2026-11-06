@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.WeakDerivativesAlgebra
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Commutation of mixed time and velocity weak derivatives
@@ -17,34 +18,37 @@ noncomputable section
 namespace HypoellipticAleksandrov.Parabolic
 
 open MeasureTheory Set
+section
+variable {d : ℕ} {f : TimeVelocity d → ℝ}
 
 private theorem timeDerivative_contDiff_infty
-    {d : ℕ} {f : TimeVelocity d → ℝ}
+    
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
     ContDiff ℝ (⊤ : ℕ∞) (timeDerivative f) := by
   unfold timeDerivative
   exact (contDiff_infty_iff_fderiv.mp hf).2.clm_apply contDiff_const
 
 private theorem velocityGradient_contDiff_infty
-    {d : ℕ} {f : TimeVelocity d → ℝ} (k : Fin d)
+     (k : Fin d)
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
     ContDiff ℝ (⊤ : ℕ∞) (fun z => velocityGradient f z k) := by
   unfold velocityGradient
   exact (contDiff_infty_iff_fderiv.mp hf).2.clm_apply contDiff_const
 
 private theorem timeDerivative_hasCompactSupport
-    {d : ℕ} {f : TimeVelocity d → ℝ} (hf : HasCompactSupport f) :
+     (hf : HasCompactSupport f) :
     HasCompactSupport (timeDerivative f) := by
   unfold timeDerivative
   simpa using hf.fderiv_apply (𝕜 := ℝ) ((1, 0) : TimeVelocity d)
 
 private theorem velocityGradient_hasCompactSupport
-    {d : ℕ} {f : TimeVelocity d → ℝ} (k : Fin d)
+     (k : Fin d)
     (hf : HasCompactSupport f) :
     HasCompactSupport (fun z => velocityGradient f z k) := by
   unfold velocityGradient
   simpa using hf.fderiv_apply (𝕜 := ℝ)
     ((0, Pi.single k 1) : TimeVelocity d)
+end
 
 private theorem timeDerivative_tsupport_subset
     {d : ℕ} (f : TimeVelocity d → ℝ) :
@@ -98,7 +102,7 @@ private theorem time_velocity_derivative_commute
 also the corresponding weak velocity derivative of the selected time
 derivative. -/
 theorem hasWeakVelocityPartialDerivOn_of_hasWeakTimeDerivOn_velocityDeriv
-    {d : ℕ} {U : Set (TimeVelocity d)} (k : Fin d)
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} (k : Fin d)
     {u ut uk r : TimeVelocity d → ℝ}
     (hut : HasWeakTimeDerivOn U u ut)
     (huk : HasWeakVelocityPartialDerivOn U k u uk)
@@ -115,9 +119,9 @@ theorem hasWeakVelocityPartialDerivOn_of_hasWeakTimeDerivOn_velocityDeriv
     ((velocityGradient_tsupport_subset φ k).trans hφU)
   have huktφ := hukt φ hφ hφcompact hφU
   have hmixed : (∫ z in U, u z * velocityGradient (timeDerivative φ) z k
-      ∂(volume : Measure (TimeVelocity d))) =
+      ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
       ∫ z in U, u z * timeDerivative (fun w => velocityGradient φ w k) z
-        ∂(volume : Measure (TimeVelocity d)) := by
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
     apply integral_congr_ae
     exact Filter.Eventually.of_forall fun z => by
       dsimp only

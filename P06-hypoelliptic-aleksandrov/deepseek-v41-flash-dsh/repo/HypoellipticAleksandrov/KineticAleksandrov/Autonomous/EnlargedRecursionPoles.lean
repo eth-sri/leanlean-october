@@ -42,12 +42,12 @@ theorem enlargedExtendKernel_comp_unionPole (H : FiniteIntervalUnion) (T : ℝ)
   change (if ht : e.1 ∈ enlargedVisitPoleSet H T then
     f (enlargedVisitPole H T ⟨e.1, ht⟩) else 0) = f e
   rw [dite_eq_left hp, hi]
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (T : ℝ) (mu : Measure Point)
 
 /-- The actual physical Green composition is exactly the nested theorem's Green mixture. -/
 theorem enlargedGreenKernel_comp_poles
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (T : ℝ) (mu : Measure Point)
+    
     (hmu : ∀ᵐ p ∂mu, p ∈ enlargedVisitPoleSet H T) :
     enlargedVisitGreenKernel hH hLE hlam hLam A H T ∘ₘ mu =
       finiteUnionGreenMixture hH hLE hlam hLam A H T (visitUnionPoleMeasure H T mu) :=
@@ -56,14 +56,13 @@ theorem enlargedGreenKernel_comp_poles
 
 /-- The actual physical exit composition is exactly the nested theorem's exit mixture. -/
 theorem enlargedExitKernel_comp_poles
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (T : ℝ) (mu : Measure Point)
+    
     (hmu : ∀ᵐ p ∂mu, p ∈ enlargedVisitPoleSet H T) :
     enlargedVisitExitKernel hH hLE hlam hLam A H T ∘ₘ mu =
       finiteUnionExitMixture hH hLE hlam hLam A H T (visitUnionPoleMeasure H T mu) :=
   enlargedExtendKernel_comp_unionPole H T _ (finiteUnionExit_measurable hH hLE hlam hLam A H T)
     mu hmu
+end
 
 /-- Including source poles into the larger union retains exactly their physical measure. -/
 theorem enlargedUnionPoleMeasure_nested_map (H1 H2 : FiniteIntervalUnion)

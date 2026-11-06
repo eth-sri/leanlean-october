@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.LocalizedKry
 public import HypoellipticAleksandrov.Parabolic.ScalingMeasure
 public import HypoellipticAleksandrov.Measure.TimeVelocity
 public import PDEFoundation.Geometry.EuclideanBall.Topology
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Geometry and `L^{d+1}` scaling of the localized occupation reflection
@@ -219,7 +220,7 @@ variable {α R : ℝ} {vStar : PDE.Vec d}
 
 /-- Reflection of a measurable set preserves the restricted `L^{d+1}` extended norm. -/
 theorem parabolicELpNormOn_timeReflectedScalar_preimage {F : TimeVelocity d → ℝ}
-    (hF : Continuous F) {S : Set (TimeVelocity d)} (hS : MeasurableSet S) :
+    (hF : Continuous F) {S : HypoellipticAleksandrov.Parabolic.TVSet d} (hS : MeasurableSet S) :
     parabolicELpNormOn d (timeReflectedScalar F) (timeReflection ⁻¹' S) =
       parabolicELpNormOn d F S := by
   unfold parabolicELpNormOn timeReflectedScalar

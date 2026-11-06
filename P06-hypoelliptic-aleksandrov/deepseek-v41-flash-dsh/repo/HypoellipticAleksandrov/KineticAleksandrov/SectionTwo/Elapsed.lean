@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.Realization
 public import Mathlib.MeasureTheory.Measure.Prod
 import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Elapsed-time Lebesgue measure for finite and infinite horizons -/
 
@@ -20,7 +21,7 @@ def elapsedVolume (S : ℝ≥0∞) : Measure (ElapsedTime S) :=
   Measure.comap Subtype.val volume
 
 /-- The literal ordered query at a positive elapsed time. -/
-def elapsedQuery {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+def elapsedQuery {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d}
     (σ₀ : ℝ) (p : EvolutionState Ω γ σ₀) {S : ℝ≥0∞} (τ : ElapsedTime S) :
     EvolutionQuery Ω γ :=
   ⟨(σ₀, (σ₀ + τ.1, p.1)), le_add_of_nonneg_right τ.2.1.le, p.2⟩
@@ -47,18 +48,20 @@ instance elapsedVolume_sigmaFinite (S : ℝ≥0∞) : SigmaFinite (elapsedVolume
 
 /-- The Green construction has an s-finite elapsed measure for every horizon. -/
 instance elapsedVolume_sFinite (S : ℝ≥0∞) : SFinite (elapsedVolume S) := inferInstance
+section
+variable {T S : ℝ≥0∞} (hTS : T ≤ S)
 
 /-- The literal inclusion of a shorter elapsed-time carrier. -/
-def elapsedInclusion {T S : ℝ≥0∞} (hTS : T ≤ S) : ElapsedTime T → ElapsedTime S :=
+def elapsedInclusion  : ElapsedTime T → ElapsedTime S :=
   fun τ => ⟨τ.1, τ.2.1, τ.2.2.trans_le hTS⟩
 
 
 /-- The shorter-horizon inclusion is measurable. -/
-theorem measurable_elapsedInclusion {T S : ℝ≥0∞} (hTS : T ≤ S) :
+theorem measurable_elapsedInclusion  :
     Measurable (elapsedInclusion hTS) := measurable_subtype_coe.subtype_mk
 
 /-- Horizon inclusion pushes Lebesgue measure to its exact time restriction. -/
-theorem elapsedInclusion_map {T S : ℝ≥0∞} (hTS : T ≤ S) :
+theorem elapsedInclusion_map  :
     (elapsedVolume T).map (elapsedInclusion hTS) =
       (elapsedVolume S).restrict {τ | ENNReal.ofReal τ.1 < T} := by
   have ht : MeasurableSet {τ : ElapsedTime S | ENNReal.ofReal τ.1 < T} :=
@@ -74,6 +77,7 @@ theorem elapsedInclusion_map {T S : ℝ≥0∞} (hTS : T ≤ S) :
     exact ⟨elapsedInclusion hTS τ, ⟨hτ, τ.2.2⟩, rfl⟩
   · rintro ⟨τ, ⟨hτ, htτ⟩, rfl⟩
     exact ⟨⟨τ.1, τ.2.1, htτ⟩, hτ, rfl⟩
+end
 
 /-- Finite elapsed-time volume is exactly the unnormalized horizon length. -/
 theorem elapsedVolume_univ (S : ℝ) (hS : 0 < S) :

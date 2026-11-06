@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.Parabolic.SpatialFDerivNormContinuity
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSmoothness
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.SpatialCoordinateShiftCarrier
 public import PDEFoundation.Sobolev.Cutoff.Basic
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Interior coefficient majorants after time reflection
@@ -22,7 +24,7 @@ open scoped BigOperators Matrix.Norms.Elementwise
 
 private theorem IsSmoothOnNeighborhood.reverseTimeNormed
     {d : ℕ} {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    {S K : Set (TimeVelocity d)} (r₁ : ℝ) {f : TimeVelocity d → E}
+    {S K : HypoellipticAleksandrov.Parabolic.TVSet d} (r₁ : ℝ) {f : TimeVelocity d → E}
     (hSK : reverseTimeMap r₁ '' S ⊆ K) (hf : IsSmoothOnNeighborhood f K) :
     IsSmoothOnNeighborhood (f ∘ reverseTimeMap r₁) S := by
   rcases hf with ⟨V, hVopen, hKV, hV⟩
@@ -50,7 +52,7 @@ private theorem IsSmoothOnNeighborhood.continuousOn
   exact hV.continuousOn.mono hKV
 
 private theorem IsSmoothOnNeighborhood.divergenceDrift
-    {d : ℕ} {K : Set (TimeVelocity d)}
+    {d : ℕ} {K : HypoellipticAleksandrov.Parabolic.TVSet d}
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2) K)
     (hb : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2) K) :
@@ -85,7 +87,7 @@ private theorem IsSmoothOnNeighborhood.divergenceDrift
   · exact hVb.mono Set.inter_subset_right
 
 private theorem reverseTimeImage_subset_closedCylinder
-    {d : ℕ} {r₀ r₁ : ℝ} {Ω K : Set (PDE.Vec d)}
+    {d : ℕ} {r₀ r₁ : ℝ} {Ω K : HypoellipticAleksandrov.VecSet d}
     (hKΩ : K ⊆ Ω) :
     reverseTimeMap r₁ '' (Set.Icc 0 (r₁ - r₀) ×ˢ K) ⊆
       scalarParabolicClosedCylinder r₀ r₁ Ω := by
@@ -100,7 +102,7 @@ private theorem reverseTimeImage_subset_closedCylinder
 /-- Smooth data have one common finite majorant for all coefficient and source
 quantities used by the interior difference-quotient estimate. -/
 theorem exists_reverseTimeInteriorCoefficientMajorant
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kχ : ℝ}
     (r₀ r₁ : ℝ)
     (χ : PDE.QuantitativeSmoothCutoff inner Ω Kχ)
     (δ : ℝ)
@@ -150,7 +152,7 @@ theorem exists_reverseTimeInteriorCoefficientMajorant
           (fun w : TimeVelocity d =>
             -(reverseTimeScalarCoefficient r₁ F w.1 w.2)) z ≤ M := by
   classical
-  let Q : Set (TimeVelocity d) := Set.Icc 0 (r₁ - r₀) ×ˢ
+  let Q : HypoellipticAleksandrov.Parabolic.TVSet d := Set.Icc 0 (r₁ - r₀) ×ˢ
     spatialCoordinateShiftCarrier (tsupport χ.toFun) δ
   have hχcompact : IsCompact (tsupport χ.toFun) := χ.hasCompactSupport
   have hQcompact : IsCompact Q := isCompact_Icc.prod

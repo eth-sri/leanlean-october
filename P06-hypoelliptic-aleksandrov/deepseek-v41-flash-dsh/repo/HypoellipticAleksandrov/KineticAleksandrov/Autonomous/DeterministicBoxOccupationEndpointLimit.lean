@@ -38,7 +38,7 @@ theorem barrier_mollifier_endpoint_tendsto
   have hx := terminal_position_fractional_moment hH hLE hlam hLam A z T
     (a := alpha / 3) (by linarith) (by linarith)
   have hv := terminal_velocity_fractional_moment hH hLE hlam hLam A z T ha.le (by linarith)
-  have hgi : Integrable g (kernelXV E T z) := (hx.1.add hv.1).const_mul D
+  have hgi := (hx.1.add hv.1).const_mul D
   have hfm (n : ℕ) : Measurable (f n) :=
     ((hc n).measurable.comp ((measurable_fst.sub_const Y).prodMk measurable_snd)).sub_const _
   have hfb (n : ℕ) (q : Z) : ‖f n q‖ ≤ g q := by
@@ -54,7 +54,7 @@ theorem barrier_mollifier_endpoint_tendsto
       (barrier_position_mollifier_tendsto h ha (z.1 - Y, z.2))
   apply hlim.congr'
   filter_upwards with n
-  have hdiff : Integrable (f n) (kernelXV E T z) :=
+  have hdiff :=
     hgi.mono' (hfm n).aestronglyMeasurable (Eventually.of_forall (hfb n))
   have hi : Integrable (fun q : Z => Phi n (q.1 - Y, q.2)) (kernelXV E T z) := by
     convert hdiff.add (integrable_const (Phi n (z.1 - Y, z.2))) using 1

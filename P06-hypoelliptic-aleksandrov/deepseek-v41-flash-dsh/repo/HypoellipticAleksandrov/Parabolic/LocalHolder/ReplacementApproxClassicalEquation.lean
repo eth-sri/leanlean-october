@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementApproxCla
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementApproxWeakEquationLimit
 public import HypoellipticAleksandrov.Parabolic.ParabolicWeakDerivativeFamilyShift
 public import HypoellipticAleksandrov.Parabolic.ParabolicW12WeakDerivativeFamilyEquation
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Identifying the weak limit equation with the actual classical equation
 
@@ -19,7 +20,7 @@ open scoped BigOperators Matrix.Norms.Elementwise
 
 /-- A classical root satisfying the actual coherent weak-family equation solves it pointwise. -/
 theorem classical_homogeneous_equation_of_weak_family {d L : ℕ}
-    {U : Set (TimeVelocity d)} (hU : IsOpen U) (hL : 2 ≤ L)
+    {U : HypoellipticAleksandrov.Parabolic.TVSet d} (hU : IsOpen U) (hL : 2 ≤ L)
     (u : TimeVelocity d → ℝ) (hu : IsScalarC12On u U)
     (A : CoefficientField d) (hA : IsSmoothCoefficient A)
     (E : ParabolicWeakDerivativeFamily d L U u)

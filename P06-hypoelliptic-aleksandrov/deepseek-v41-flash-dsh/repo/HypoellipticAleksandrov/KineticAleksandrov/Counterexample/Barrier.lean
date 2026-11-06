@@ -23,13 +23,15 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open HypoellipticAleksandrov.Parabolic
 open scoped BigOperators MatrixOrder
+section
+variable {d : ℕ} (mu R : ℝ) (P : KineticPoint d)
 
 /-- Decaying quadratic barrier from Appendix C. -/
-def barrier {d : ℕ} (mu R : ℝ) (P : KineticPoint d) : ℝ :=
+def barrier  : ℝ :=
   Real.exp (-mu * P.time) * (2 - PDE.vecNormSq P.velocity / R ^ 2)
 
 /-- Exact time derivative. -/
-theorem barrier_timeDerivative {d : ℕ} (mu R : ℝ) (P : KineticPoint d) :
+theorem barrier_timeDerivative  :
     kineticTimeDerivative (barrier mu R) P =
       -mu * Real.exp (-mu * P.time) * (2 - PDE.vecNormSq P.velocity / R ^ 2) := by
   have h := (((hasDerivAt_id P.time).const_mul (-mu)).exp).mul_const
@@ -39,7 +41,7 @@ theorem barrier_timeDerivative {d : ℕ} (mu R : ℝ) (P : KineticPoint d) :
   simpa only [id_eq, mul_one, mul_assoc, mul_comm, mul_left_comm] using h.deriv
 
 /-- Independence of position. -/
-theorem barrier_positionGradient {d : ℕ} (mu R : ℝ) (P : KineticPoint d) :
+theorem barrier_positionGradient  :
     kineticPositionGradient (barrier mu R) P = 0 := by
   ext i
   change fderiv ℝ (fun _x : PDE.Vec d =>
@@ -49,7 +51,7 @@ theorem barrier_positionGradient {d : ℕ} (mu R : ℝ) (P : KineticPoint d) :
   rfl
 
 /-- Exact coordinate velocity gradient. -/
-theorem barrier_velocityGradient {d : ℕ} (mu R : ℝ) (P : KineticPoint d) :
+theorem barrier_velocityGradient  :
     kineticVelocityGradient (barrier mu R) P =
       fun i => -(2 * Real.exp (-mu * P.time) / R ^ 2) * P.velocity i := by
   have h := ((hasFDerivAt_const (c := (2 : ℝ)) P.velocity).sub
@@ -68,7 +70,7 @@ theorem barrier_velocityGradient {d : ℕ} (mu R : ℝ) (P : KineticPoint d) :
   ring
 
 /-- Exact velocity Hessian, including its diagonal factor two. -/
-theorem barrier_velocityHessian {d : ℕ} (mu R : ℝ) (P : KineticPoint d) :
+theorem barrier_velocityHessian  :
     kineticVelocityHessian (barrier mu R) P =
       (-(2 * Real.exp (-mu * P.time) / R ^ 2)) • (1 : PDE.Mat d) := by
   have hg : (fun v : PDE.Vec d => PDE.classicalGradient
@@ -87,6 +89,7 @@ theorem barrier_velocityHessian {d : ℕ} (mu R : ℝ) (P : KineticPoint d) :
   simp only [_root_.smul_apply, ContinuousLinearMap.id_apply,
     Pi.smul_apply, smul_eq_mul, Matrix.smul_apply, Matrix.one_apply, PDE.basisVec_apply]
   simp only [eq_comm]
+end
 
 /-- Contraction of the barrier Hessian with an arbitrary coefficient. -/
 theorem barrier_hessianContraction {d : ℕ} (A : PDE.Mat d) (mu R : ℝ)

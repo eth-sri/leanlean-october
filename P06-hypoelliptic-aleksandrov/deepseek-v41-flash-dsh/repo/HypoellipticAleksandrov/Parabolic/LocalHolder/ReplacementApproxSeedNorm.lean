@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.ParabolicW12WeakDerivativeFamily
 public import HypoellipticAleksandrov.Parabolic.ParabolicWeakDerivativeFamilyL2Norm
 import Mathlib.Tactic.Ring
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Finite-family energy from the actual selected weak jet
 
@@ -17,7 +18,7 @@ open MeasureTheory
 open scoped BigOperators
 
 /-- Uniform bounds on the literal selected jet bound its complete weight-two family. -/
-theorem squaredL2Norm_classical_seed_le {d : ℕ} {U : Set (TimeVelocity d)}
+theorem squaredL2Norm_classical_seed_le {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hU : IsOpen U) (J : ParabolicW12Function d U 2) (B : ℝ)
     (hq : (eLpNorm J.toFun 2 (timeVelocityVolumeOn U)).toReal ^ 2 ≤ B)
     (ht : (eLpNorm J.timeDeriv 2 (timeVelocityVolumeOn U)).toReal ^ 2 ≤ B)

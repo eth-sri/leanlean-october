@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.CenteredCutoffPiBernst
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.SeparatedSpacetimeCompactSupport
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.FiniteSeparatedBernsteinAssembly
 public import HypoellipticAleksandrov.Parabolic.WeakDerivatives
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Density of finite separated spacetime tests
@@ -24,7 +26,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 /-- Smooth spacetime tests are approximated, together with their time derivative, by finite
 separated tests whose factors all have support in one compact product. -/
 theorem exists_finiteSeparatedSpacetimeTest_tendsto_integral_sq
-    {d : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)}
+    {d : ℕ} {τ₁ τ₂ : ℝ} {O : HypoellipticAleksandrov.VecSet d}
     (hO : IsOpen O)
     (φ : TestFunction
       (originalTimeOpenCylinderOpens τ₁ τ₂ O hO) ℝ (⊤ : ℕ∞)) :
@@ -32,11 +34,11 @@ theorem exists_finiteSeparatedSpacetimeTest_tendsto_integral_sq
       (Ky : TopologicalSpace.Compacts (PDE.Vec d))
       (q : ℕ → FiniteSeparatedSpacetimeTest τ₁ τ₂ O),
       (Kt : Set ℝ) ⊆ Set.Ioo τ₁ τ₂ ∧
-      (Ky : Set (PDE.Vec d)) ⊆ O ∧
+      (Ky : HypoellipticAleksandrov.VecSet d) ⊆ O ∧
       (∀ n m,
         tsupport ((q n).timeFactor m : ℝ → ℝ) ×ˢ
             tsupport ((q n).spatialFactor m : PDE.Vec d → ℝ) ⊆
-          (Kt : Set ℝ) ×ˢ (Ky : Set (PDE.Vec d))) ∧
+          (Kt : Set ℝ) ×ˢ (Ky : HypoellipticAleksandrov.VecSet d)) ∧
       Tendsto
         (fun n => ∫ z,
           ((q n).toFun z - φ z) ^ 2
@@ -51,7 +53,7 @@ theorem exists_finiteSeparatedSpacetimeTest_tendsto_integral_sq
   obtain ⟨R, hR, hcube⟩ :=
     HypoellipticAleksandrov.Parabolic.Dirichlet.IsCompact.exists_subset_pi_Icc_vec hχcompact
   let Kt := spacetimeTestTimeSupportCompact φ
-  let Ksp : Set (PDE.Vec d) := spacetimeTestSpatialSupportCompact φ
+  let Ksp : HypoellipticAleksandrov.VecSet d := spacetimeTestSpatialSupportCompact φ
   let Ky : TopologicalSpace.Compacts (PDE.Vec d) := ⟨tsupport χ, hχcompact⟩
   choose q hqval hqderiv hqsupport using fun n =>
     exists_finiteSeparatedSpacetimeTest_cutoffPiBernstein

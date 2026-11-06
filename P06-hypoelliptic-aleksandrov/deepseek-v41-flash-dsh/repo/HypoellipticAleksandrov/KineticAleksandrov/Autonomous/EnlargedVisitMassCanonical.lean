@@ -8,11 +8,12 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedVisi
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
 
 /-- The actual enlarged count has the source horizon bound independently of the outer interval. -/
 theorem enlargedVisitStarts_mass_le
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (R T : ℝ)
     (P : Point) (hR : 0 < R) (hT : 0 < T) (hTR : T ≤ R ^ 2)
     (hbar : |c.vbar| = 2 * c.r) (hJ : closure c.active ⊆ J.carrier)
@@ -66,8 +67,7 @@ theorem enlargedVisitStarts_mass_le
 
 /-- The canonical total enlarged visit count is finite, including the initial atom. -/
 theorem enlargedVisitStarts_isFiniteMeasure
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
     (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (R T : ℝ)
     (P : Point) (hR : 0 < R) (hT : 0 < T) (hTR : T ≤ R ^ 2)
     (hbar : |c.vbar| = 2 * c.r) (hJ : closure c.active ⊆ J.carrier)
@@ -75,5 +75,6 @@ theorem enlargedVisitStarts_isFiniteMeasure
     IsFiniteMeasure (enlargedVisitStarts hH hLE hlam hLam A c J P.time (P.time + T) P) :=
   ⟨(enlargedVisitStarts_mass_le hH hLE hlam hLam A c J R T P
     hR hT hTR hbar hJ hvel).trans_lt ENNReal.ofReal_lt_top⟩
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

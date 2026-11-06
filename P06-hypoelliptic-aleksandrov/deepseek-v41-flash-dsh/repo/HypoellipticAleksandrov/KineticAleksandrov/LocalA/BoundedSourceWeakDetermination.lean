@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundedSourceWeakIntegrability
 import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.UniquenessMeasure
 import Mathlib.MeasureTheory.Integral.Bochner.SumMeasure
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Finite measures determined by the smooth Duhamel identity -/
 
@@ -11,7 +12,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set
 open scoped ENNReal
-variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d}
 
 /-- Positive test weights vanish outside every set containing their closed support. -/
 theorem sourcePositiveMeasure_compl_eq_zero

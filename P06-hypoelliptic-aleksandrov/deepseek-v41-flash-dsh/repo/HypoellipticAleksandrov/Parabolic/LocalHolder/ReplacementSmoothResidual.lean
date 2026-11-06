@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.C2ToScalarC12
 public import HypoellipticAleksandrov.Coefficients.Ellipticity
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Smooth forcing of smooth ambient boundary extensions
 

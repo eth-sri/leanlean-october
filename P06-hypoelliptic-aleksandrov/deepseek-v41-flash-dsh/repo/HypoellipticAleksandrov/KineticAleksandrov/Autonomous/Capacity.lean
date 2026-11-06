@@ -26,8 +26,7 @@ theorem strip_capacity
     isOpen_Ioo.measurableSet.preimage ((continuous_apply 0).comp continuous_velocity).measurable
   have hfin : IsFiniteMeasure Γ := by dsimp only [Γ, stripGreen]; infer_instance
   let g : Point → ℝ := fun p => 2 * A.a (p.position 0) (p.velocity 0) * chi (p.velocity 0)
-  have hgc : Continuous g := by
-    exact (continuous_const.mul (A.smooth.continuous.comp
+  have hgc : Continuous g := (continuous_const.mul (A.smooth.continuous.comp
       (((continuous_apply 0).comp continuous_position).prodMk
         ((continuous_apply 0).comp continuous_velocity)))).mul
       (hchi.continuous.comp ((continuous_apply 0).comp continuous_velocity))

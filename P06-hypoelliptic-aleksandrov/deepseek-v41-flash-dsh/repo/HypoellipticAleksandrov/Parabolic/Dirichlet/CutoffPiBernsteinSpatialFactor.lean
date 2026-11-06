@@ -3,6 +3,7 @@ module
 public import PDEFoundation.Sobolev.WeakDerivative
 public import Mathlib.Analysis.Calculus.ContDiff.Polynomial
 public import Mathlib.RingTheory.Polynomial.Bernstein
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Cutoff product-Bernstein spatial factors
@@ -21,7 +22,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 /-- Multiplying a product-Bernstein polynomial by the fixed cutoff gives a spatial weak test. -/
 theorem exists_cutoffPiBernsteinSpatialFactor
-    {d n : ℕ} {O : Set (PDE.Vec d)}
+    {d n : ℕ} {O : HypoellipticAleksandrov.VecSet d}
     (χ : PDE.Vec d → ℝ) (hχ : ContDiff ℝ (⊤ : ℕ∞) χ)
     (hχcompact : IsCompact (tsupport χ)) (hχO : tsupport χ ⊆ O)
     (R : ℝ) (hR : 0 < R)

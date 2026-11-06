@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.WeakHessianDifferenceQuotientEnergy
 public import HypoellipticAleksandrov.Parabolic.WeakDerivatives
 public import HypoellipticAleksandrov.Coefficients.Ellipticity
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Local Hessian energy for homogeneous replacement jets
 
@@ -18,7 +19,7 @@ open scoped BigOperators MatrixOrder
 
 /-- One constant controls Hessian energy of all homogeneous weak jets on the fixed collar. -/
 theorem exists_local_homogeneous_hessian_constant {d : ℕ}
-    (a T : ℝ) (O : Set (PDE.Vec d)) (hO : IsOpen O)
+    (a T : ℝ) (O : HypoellipticAleksandrov.VecSet d) (hO : IsOpen O)
     (A : TimeVelocity d → PDE.Mat d)
     (hAm : AEStronglyMeasurable A (timeVelocityVolumeOn (Ioo a T ×ˢ O)))
     (hAs : ∀ t ∈ Ioo a T, ∀ i j, ContDiffOn ℝ 1 (fun y => A (t, y) i j) O)

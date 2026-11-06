@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.Duhamel
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Identification of Duhamel source slices with the supplied evolution operators -/
 
@@ -20,7 +21,7 @@ def duhamelSlice {d : ℕ} (g : BoundedBorel (KineticPoint d)) (r : ℝ) :
     exact ⟨C, hC, fun w => hg ⟨r, w.1, w.2⟩⟩
 
 /-- Each source-time kernel integral equals the supplied terminal evolution action. -/
-theorem duhamelSourceIntegral_eq_evolution {d : ℕ} {Ω : Set (PDE.Vec d)}
+theorem duhamelSourceIntegral_eq_evolution {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     {γ : ℝ → PDE.Vec d} (hΩ : MeasurableSet Ω)
     (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
     (S : TerminalOperatorFamily Ω γ) (K : MovingFiberKernel Ω γ)

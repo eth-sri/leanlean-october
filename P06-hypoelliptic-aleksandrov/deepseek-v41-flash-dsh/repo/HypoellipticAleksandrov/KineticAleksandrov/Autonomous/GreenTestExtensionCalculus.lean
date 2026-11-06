@@ -33,25 +33,25 @@ theorem reconstruction_position_cutoff_operator
         b (diffusedCoord 1 x) 0 * deriv chi (transportedCoord 1 x 0) * f x := by
   let c : EvolutionVec 1 → ℝ := fun y => chi (transportedCoord 1 y 0)
   have hc : ContDiff ℝ (⊤ : ℕ∞) c :=
-    hchi.comp ((contDiff_apply ℝ ℝ (0 : Fin 1)).comp (transportedCoord 1).contDiff)
+    hchi.comp ((contDiff_apply ℝ ℝ 0).comp (transportedCoord 1).contDiff)
   have hcd := hc.differentiable (by simp)
   have hfd := hf.differentiable (by simp)
-  have hcv (y : EvolutionVec 1) : fderiv ℝ c y (basisV (0 : Fin 1)) = 0 := by
+  have hcv (y : EvolutionVec 1) : fderiv ℝ c y (basisV 0) = 0 := by
     rw [reconstruction_position_cutoff_fderiv _ (hchi.differentiable (by simp))]
     simp only [basisV, transportedCoord_packPoint, Pi.zero_apply, mul_zero]
   have hct : fderiv ℝ c x basisT = 0 := by
     rw [reconstruction_position_cutoff_fderiv _ (hchi.differentiable (by simp))]
     simp only [basisT, transportedCoord_packPoint, Pi.zero_apply, mul_zero]
-  have hcz : fderiv ℝ c x (basisZ (0 : Fin 1)) = deriv chi (transportedCoord 1 x 0) := by
+  have hcz : fderiv ℝ c x (basisZ 0) = deriv chi (transportedCoord 1 x 0) := by
     rw [reconstruction_position_cutoff_fderiv _ (hchi.differentiable (by simp))]
     simp only [basisZ, transportedCoord_packPoint, Pi.single_eq_same, mul_one]
-  have hv : (fun y => fderiv ℝ (fun z => c z * f z) y (basisV (0 : Fin 1))) =
-      fun y => c y * fderiv ℝ f y (basisV (0 : Fin 1)) := by
+  have hv : (fun y => fderiv ℝ (fun z => c z * f z) y (basisV 0)) =
+      fun y => c y * fderiv ℝ f y (basisV 0) := by
     funext y
     rw [fderiv_fun_mul (hcd y) (hfd y)]
     simp only [add_apply, smul_apply,
       smul_eq_mul, hcv, mul_zero, add_zero]
-  have hfv : Differentiable ℝ (fun y => fderiv ℝ f y (basisV (0 : Fin 1))) :=
+  have hfv : Differentiable ℝ (fun y => fderiv ℝ f y (basisV 0)) :=
     ((hf.contDiff_fderiv_apply (m := (⊤ : ℕ∞)) (by simp)).comp
       (contDiff_id.prodMk contDiff_const)).differentiable (by simp)
   change transportedOperator B b (fun y => c y * f y) x = _

@@ -12,12 +12,12 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory Filter
 open scoped Topology
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
 
 /-- The genuine outer Green continuation tends to zero for the actual entrance recursion. -/
 theorem enlargedOuterGreen_remainder_tendsto_zero
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (_hT : s < T)
+     (_hT : s < T)
     (P : Point) (hP : s ≤ P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier)
     [IsFiniteMeasure (enlargedVisitStarts hH hLE hlam hLam A c J s T P)] :
     Tendsto (fun n => (enlargedVisitGreenKernel hH hLE hlam hLam A J.toFiniteUnion T ∘ₘ
@@ -36,9 +36,7 @@ theorem enlargedOuterGreen_remainder_tendsto_zero
 
 /-- The actual outer core occupation is exactly the sum of its active visit occupations. -/
 theorem enlargedOuterGreen_core_identity_of_finite_count
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (hT : s < T)
+     (hT : s < T)
     (P : Point) (hP : s ≤ P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier)
     [IsFiniteMeasure (enlargedVisitStarts hH hLE hlam hLam A c J s T P)] :
     (enlargedVisitGreenKernel hH hLE hlam hLam A J.toFiniteUnion T P).restrict
@@ -75,5 +73,6 @@ theorem enlargedOuterGreen_core_identity_of_finite_count
   · have hz := enlargedOuterGreen_remainder_tendsto_zero hH hLE hlam hLam A c J s T hT P hP
     exact tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds hz
       (fun _ => zero_le) (fun n => Measure.restrict_le_self univ)
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

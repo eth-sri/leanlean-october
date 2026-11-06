@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementEnergyInterior
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonRepresentative
 import Mathlib.MeasureTheory.Group.Measure
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Pointwise source bounds for classical energy representatives
 
@@ -33,7 +35,7 @@ theorem sourceTimeReflection_measurePreserving (a T : ℝ) :
 /-- A continuous classical representative of the zero-initial energy correction has
 the sharp source-amplitude time bound at every interior point. -/
 theorem classicalEnergyRepresentative_abs_le_source_time {d : ℕ}
-    {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (hΩb : Bornology.IsBounded Ω)
+    {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (hΩb : Bornology.IsBounded Ω)
     (a T lam : ℝ) (haT : a < T) (hlam : 0 < lam)
     (A : CoefficientField d) (hA : IsSmoothCoefficient A)
     (hlo : HasLowerEllipticity lam A)

@@ -10,12 +10,12 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory
 open scoped ENNReal
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (q : ℝ)
 
 /-- The actual all-time mixture has the source real density and q-power bin estimate. -/
 theorem entrance_density_sum
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (q : ℝ) (hq : 1 < q ∧ q < 3 / 2) :
+     (hq : 1 < q ∧ q < 3 / 2) :
     ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam)
       (c : Clock) (nu : Measure Point) [IsFiniteMeasure nu],
       (∀ᵐ e ∂nu, e.velocity 0 ∈ c.active) →
@@ -56,9 +56,7 @@ theorem entrance_density_sum
 
 /-- Total and short-window starting masses yield the exact source integrated norm scaling. -/
 theorem entrance_density_from_counts
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (q : ℝ) (hq : 1 < q ∧ q < 3 / 2) (B M : ℝ) (hB : 0 < B) (hM : 0 < M) :
+     (hq : 1 < q ∧ q < 3 / 2) (B M : ℝ) (hB : 0 < B) (hM : 0 < M) :
     ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam) (c : Clock)
       (nu : Measure Point) [IsFiniteMeasure nu] (b : ℝ), 0 ≤ b →
       (∀ᵐ e ∂nu, e.velocity 0 ∈ c.active) →
@@ -83,8 +81,7 @@ theorem entrance_density_from_counts
       ENNReal.ofReal (D * c.r ^ (6 - 4 * q) * (B * b) * M ^ (q - 1)) := by
     calc
       _ ≤ ENNReal.ofReal (D * c.r ^ (6 - 4 * q)) *
-          (nu univ * ENNReal.ofReal M ^ (q - 1)) := by
-        exact hGi.trans (mul_le_mul_right hsum _)
+          (nu univ * ENNReal.ofReal M ^ (q - 1)) := hGi.trans (mul_le_mul_right hsum _)
       _ ≤ ENNReal.ofReal (D * c.r ^ (6 - 4 * q)) *
           (ENNReal.ofReal (B * b) * ENNReal.ofReal M ^ (q - 1)) := by gcongr
       _ = _ := by
@@ -115,5 +112,6 @@ theorem entrance_density_from_counts
     (ENNReal.toReal_ofReal (mul_nonneg
       (mul_nonneg (Real.rpow_nonneg hbase.le _) (Real.rpow_nonneg c.positive.le _))
         (Real.rpow_nonneg hb _)))
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

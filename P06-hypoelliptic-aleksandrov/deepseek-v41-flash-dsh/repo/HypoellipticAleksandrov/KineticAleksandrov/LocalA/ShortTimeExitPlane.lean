@@ -14,20 +14,22 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open HypoellipticAleksandrov Parabolic Set
 open scoped MatrixOrder
+section
+variable {d : ℕ} (i : Fin d)
 
 /-- A scalar exponential plane in one velocity coordinate and time. -/
-def ballExitPlane {d : ℕ} (i : Fin d) (a b c : ℝ) (p : TimeVelocity d) : ℝ :=
+def ballExitPlane  (a b c : ℝ) (p : TimeVelocity d) : ℝ :=
   Real.exp (a * p.1 + b * p.2 i + c)
 
 /-- Coordinate exponential planes are smooth at every order. -/
-theorem ballExitPlane_contDiff {d : ℕ} (i : Fin d) (a b c : ℝ) :
+theorem ballExitPlane_contDiff  (a b c : ℝ) :
     ContDiff ℝ (⊤ : ℕ∞) (ballExitPlane i a b c) := by
   exact ((contDiff_const.mul contDiff_fst).add
     (contDiff_const.mul ((contDiff_apply ℝ ℝ i).comp contDiff_snd)) |>.add
       contDiff_const).exp
 
 /-- The affine exponential has an explicit coordinate gradient. -/
-theorem ballExitPlane_gradient {d : ℕ} (i : Fin d) (a b c t : ℝ) (v : PDE.Vec d) :
+theorem ballExitPlane_gradient  (a b c t : ℝ) (v : PDE.Vec d) :
     PDE.classicalGradient (fun w => ballExitPlane i a b c (t, w)) v =
       (b * ballExitPlane i a b c (t, v)) • PDE.basisVec i := by
   have h := (((hasFDerivAt_apply (𝕜 := ℝ) i v).const_mul b).const_add (a * t)
@@ -42,7 +44,7 @@ theorem ballExitPlane_gradient {d : ℕ} (i : Fin d) (a b c t : ℝ) (v : PDE.Ve
   · simp [hj, Ne.symm hj, PDE.basisVec_apply, smul_eq_mul]
 
 /-- Its Hessian has a single nonzero diagonal entry. -/
-theorem ballExitPlane_hessian {d : ℕ} (i : Fin d) (a b c : ℝ)
+theorem ballExitPlane_hessian  (a b c : ℝ)
     (p : TimeVelocity d) (j k : Fin d) :
     scalarSpatialHessian (ballExitPlane i a b c) p j k =
       if j = i ∧ k = i then b ^ 2 * ballExitPlane i a b c p else 0 := by
@@ -68,10 +70,11 @@ theorem ballExitPlane_hessian {d : ℕ} (i : Fin d) (a b c : ℝ)
   · simp [hj, Ne.symm hj, PDE.basisVec_apply, smul_eq_mul]
 
 /-- The time derivative differentiates the affine time coefficient only. -/
-theorem ballExitPlane_time {d : ℕ} (i : Fin d) (a b c : ℝ) (p : TimeVelocity d) :
+theorem ballExitPlane_time  (a b c : ℝ) (p : TimeVelocity d) :
     scalarTimeDerivative (ballExitPlane i a b c) p = a * ballExitPlane i a b c p := by
   have h := ((((hasDerivAt_id p.1).const_mul a).add_const (b * p.2 i)).add_const c).exp
   simpa only [scalarTimeDerivative, ballExitPlane, id_eq, mul_one, mul_comm] using h.deriv
+end
 
 /-- The backward operator of a plane has no derivatives of the coefficient. -/
 theorem ballExitPlane_operator {d : ℕ} (B : CoefficientField d) (i : Fin d)

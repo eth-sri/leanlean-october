@@ -11,12 +11,12 @@ import Mathlib.Tactic
 @[expose] public section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (P : Point)
 
 /-- Every actual entrance satisfies the integrated quadratic identity on its active domain. -/
 theorem visitQuadratic_entrance_green_identity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (P : Point)
+    
     (hP : s < P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier) (n : ℕ) :
     (∫ p, visitQuadratic c (p.velocity 0)
       ∂visitEntrancePiece hH hLE hlam hLam A c J s T P n) =
@@ -71,9 +71,7 @@ theorem visitQuadratic_entrance_green_identity
 
 /-- The genuine per-entrance count inequality follows from the actual quadratic Green identity. -/
 theorem visitQuadratic_entrance_mass_bound
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (P : Point)
+    
     (hP : s < P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier) (n : ℕ) :
     let mu := visitEntrancePiece hH hLE hlam hLam A c J s T P n
     let E := visitUnionExitKernel hH hLE hlam hLam A (visitActiveUnion c J) s T
@@ -106,9 +104,7 @@ theorem visitQuadratic_entrance_mass_bound
 
 /-- Summing actual entrance estimates gives the finite quadratic counting inequality. -/
 theorem visitQuadratic_partial_mass_bound
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (P : Point)
+    
     (hP : s < P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier) (N : ℕ) :
     let mu := visitEntrancePiece hH hLE hlam hLam A c J s T P
     let E := visitUnionExitKernel hH hLE hlam hLam A (visitActiveUnion c J) s T
@@ -122,5 +118,6 @@ theorem visitQuadratic_partial_mass_bound
     (fun n _ => visitQuadratic_entrance_mass_bound hH hLE hlam hLam A c J s T P hP n)
   dsimp only at h ⊢
   simpa only [Finset.mul_sum, Finset.sum_add_distrib] using h
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

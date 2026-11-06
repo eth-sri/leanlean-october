@@ -8,6 +8,7 @@ import Mathlib.Analysis.Calculus.FDeriv.Mul
 import Mathlib.Analysis.InnerProductSpace.Basic
 import Mathlib.Analysis.Normed.Group.Real
 import Mathlib.Tactic
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Native velocity derivatives of an exponential quadratic -/
 

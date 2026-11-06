@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeDerivativeKernel
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeSteklovPairing
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeSteklovEnergy
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Scalar reverse-time energy representatives
@@ -22,22 +23,22 @@ open Filter Function MeasureTheory Set Topology
 open scoped ENNReal RealInnerProductSpace
 
 private noncomputable def rawEnergy
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (T : ℝ)
     (u : ReverseTimeL2V hΩ T) : ℝ → ℝ :=
   fun t => ‖valueCLM hΩ (u t)‖ ^ 2
 
 private noncomputable def rawEnergyRate
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (T : ℝ)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) : ℝ → ℝ :=
   fun t => 2 * (g t) (u t)
 
 private noncomputable def reverseTimeEnergyPrimitive
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (T : ℝ)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) : ℝ → ℝ :=
   fun t => ∫ r in Set.Ioc 0 t, rawEnergyRate hΩ T u g r ∂reverseTimeVolume T
 
 private theorem integrable_rawEnergy
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (T : ℝ)
     (u : ReverseTimeL2V hΩ T) :
     Integrable (rawEnergy hΩ T u) (reverseTimeVolume T) := by
   letI : IsFiniteMeasure (reverseTimeVolume T) := by
@@ -49,7 +50,7 @@ private theorem integrable_rawEnergy
   exact hu.integrable_norm_pow (by norm_num : (2 : ℕ) ≠ 0)
 
 private theorem integrable_rawEnergyRate
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (T : ℝ)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) :
     Integrable (rawEnergyRate hΩ T u g) (reverseTimeVolume T) := by
   unfold rawEnergyRate
@@ -57,7 +58,7 @@ private theorem integrable_rawEnergyRate
     (integrable_reverseTimeDualPairing hΩ T u g).const_mul 2
 
 private theorem continuousOn_reverseTimeEnergyPrimitive
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (T : ℝ)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) :
     ContinuousOn (reverseTimeEnergyPrimitive hΩ T u g) (Icc 0 T) := by
   letI : NullSingletonClass (reverseTimeVolume T) := by
@@ -67,7 +68,7 @@ private theorem continuousOn_reverseTimeEnergyPrimitive
     (integrable_rawEnergyRate hΩ T u g).integrableOn
 
 private theorem reverseTimeEnergyPrimitive_sub
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (T : ℝ)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     {s t : ℝ} (hs : s ∈ Icc 0 T) (ht : t ∈ Icc 0 T) (hst : s ≤ t) :
     reverseTimeEnergyPrimitive hΩ T u g t -
@@ -206,7 +207,7 @@ private theorem abs_sq_sub_le_of_bounds
     _ = N ^ 2 * delta ^ 2 + 2 * N ^ 2 * y * delta := by ring
 
 private theorem abs_sqNorm_valueCLM_sub_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     (x y : H10HilbertGraph hΩ) :
     |‖valueCLM hΩ x‖ ^ 2 - ‖valueCLM hΩ y‖ ^ 2| ≤
       ‖valueCLM hΩ‖ ^ 2 * ‖x - y‖ ^ 2 +
@@ -260,7 +261,7 @@ private theorem memLp_on_Icc_of_continuous
   exact (hf.norm.pow 2).integrableOn_Icc
 
 private theorem tendsto_integral_abs_valueSq_of_sqNorm
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     (μ : Measure ℝ) (u : ℝ → H10HilbertGraph hΩ)
     (uh : ℝ → ℝ → H10HilbertGraph hΩ)
     (hu : MemLp u (2 : ℝ≥0∞) μ)
@@ -350,7 +351,7 @@ private theorem tendsto_integral_abs_valueSq_of_sqNorm
   · simpa only [add_zero] using hfirst.add hsecond
 
 private theorem tendsto_forwardSteklov_valueSq_error_on_Icc
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (T : ℝ)
     (u : ReverseTimeL2V hΩ T) {a b : ℝ}
     (ha : 0 < a) (hab : a ≤ b) (hb : b < T) :
     Tendsto (fun h : ℝ => ∫ t in Icc a b,
@@ -440,12 +441,12 @@ private theorem tendsto_integral_mul_of_tendsto_integral_abs
   ring
 
 private noncomputable def forwardSteklovEnergy
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T h : ℝ)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (T h : ℝ)
     (u : ReverseTimeL2V hΩ T) : ℝ → ℝ :=
   fun t => ‖valueCLM hΩ (reverseTimeForwardSteklov T h u t)‖ ^ 2
 
 private noncomputable def forwardSteklovEnergyRate
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T h : ℝ)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (T h : ℝ)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) : ℝ → ℝ :=
   fun t => 2 * (reverseTimeForwardSteklov T h g t)
     (reverseTimeForwardSteklov T h u t)
@@ -455,7 +456,7 @@ private theorem abs_two_mul_sub (x y : ℝ) :
   rw [← mul_sub, abs_mul, abs_of_nonneg (by norm_num : (0 : ℝ) ≤ 2)]
 
 private theorem abs_forwardSteklovEnergyRate_sub_eq
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T h : ℝ)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (T h : ℝ)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) (t : ℝ) :
     |forwardSteklovEnergyRate hΩ T h u g t - rawEnergyRate hΩ T u g t| =
       2 * |(reverseTimeForwardSteklov T h g t)
@@ -465,7 +466,7 @@ private theorem abs_forwardSteklovEnergyRate_sub_eq
   exact abs_two_mul_sub _ _
 
 private theorem rawEnergy_test_deriv
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
@@ -574,7 +575,7 @@ private theorem rawEnergy_test_deriv
   linarith
 
 private theorem integrable_reverseTimeEnergyPrimitive
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (T : ℝ)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) :
     Integrable (reverseTimeEnergyPrimitive hΩ T u g) (reverseTimeVolume T) := by
   change IntegrableOn (reverseTimeEnergyPrimitive hΩ T u g) (Ioo (0 : ℝ) T) volume
@@ -591,7 +592,7 @@ private theorem integrable_mul_reverseTimeScalarTest_deriv
   exact hC t
 
 private theorem reverseTimeEnergyPrimitive_test_deriv
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (T : ℝ)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (eta : ReverseTimeScalarTest T) :
     (∫ t, reverseTimeEnergyPrimitive hΩ T u g t * eta.deriv t
@@ -628,7 +629,7 @@ private theorem reverseTimeEnergyPrimitive_test_deriv
           (eta.contDiff.of_le (by simp)) eta.tsupport_subset
 
 private theorem exists_continuous_reverseTimeScalarEnergyRepresentative_raw
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g) :
@@ -696,7 +697,7 @@ private theorem exists_continuous_reverseTimeScalarEnergyRepresentative_raw
 /-- A continuous scalar reverse-time energy representative of a Gelfand weak
 derivative on the closed reverse-time interval. -/
 theorem exists_continuous_reverseTimeScalarEnergyRepresentative
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g) :

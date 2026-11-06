@@ -58,8 +58,10 @@ private theorem series_sum (a : ℝ) (b : Pos) :
     (FormalMultilinearSeries.ofScalars ℝ (coeff a b)).sum = M a b := by
   funext z
   exact FormalMultilinearSeries.ofScalars_sum_eq (coeff a b) z
+section
+variable (a : ℝ) (b : Pos) (z : ℝ)
 
-private theorem derivative_sum (a : ℝ) (b : Pos) (z : ℝ) :
+private theorem derivative_sum  :
     (FormalMultilinearSeries.ofScalars ℝ (coeff a b)).derivSeries.sum z 1 =
       ∑' n : ℕ, ((n + 1 : ℝ) * coeff a b (n + 1)) * z ^ n := by
   have hz : z ∈ Metric.eball (0 : ℝ)
@@ -88,7 +90,7 @@ private theorem derivative_sum (a : ℝ) (b : Pos) (z : ℝ) :
   ring
 
 /-- Termwise differentiated series, with a genuine derivative. -/
-theorem hasDerivAt_M (a : ℝ) (b : Pos) (z : ℝ) :
+theorem hasDerivAt_M  :
     HasDerivAt (M a b) ((a / b.1) * M (a + 1) (next b) z) z := by
   have hz : ‖z‖ₑ < (FormalMultilinearSeries.ofScalars ℝ (coeff a b)).radius := by
     rw [radius_M]
@@ -99,12 +101,12 @@ theorem hasDerivAt_M (a : ℝ) (b : Pos) (z : ℝ) :
   simpa only [coeff_deriv, mul_assoc, tsum_mul_left, M] using hd
 
 /-- The first derivative shifts both Kummer parameters. -/
-theorem deriv_M (a : ℝ) (b : Pos) (z : ℝ) :
+theorem deriv_M  :
     deriv (M a b) z = (a / b.1) * M (a + 1) ⟨b.1 + 1, by linarith [b.2]⟩ z :=
   (hasDerivAt_M a b z).deriv
 
 /-- The second derivative shifts both parameters twice. -/
-theorem deriv2_M (a : ℝ) (b : Pos) (z : ℝ) :
+theorem deriv2_M  :
     deriv (deriv (M a b)) z =
       (a / b.1) * ((a + 1) / (b.1 + 1)) * M (a + 2) (next (next b)) z := by
   have he : deriv (M a b) = fun x => (a / b.1) * M (a + 1) (next b) x :=
@@ -115,7 +117,7 @@ theorem deriv2_M (a : ℝ) (b : Pos) (z : ℝ) :
   rw [he2, mul_assoc]
 
 /-- The first differentiated series. -/
-theorem hasSum_deriv_M (a : ℝ) (b : Pos) (z : ℝ) :
+theorem hasSum_deriv_M  :
     HasSum (fun n : ℕ => (n + 1 : ℝ) * coeff a b (n + 1) * z ^ n)
       (deriv (M a b) z) := by
   rw [(hasDerivAt_M a b z).deriv]
@@ -123,7 +125,7 @@ theorem hasSum_deriv_M (a : ℝ) (b : Pos) (z : ℝ) :
     |>.mul_left (a / b.1)
 
 /-- The twice differentiated series. -/
-theorem hasSum_deriv2_M (a : ℝ) (b : Pos) (z : ℝ) :
+theorem hasSum_deriv2_M  :
     HasSum (fun n : ℕ =>
       (n + 1 : ℝ) * (n + 2 : ℝ) * coeff a b (n + 2) * z ^ n)
       (deriv (deriv (M a b)) z) := by
@@ -146,7 +148,7 @@ theorem hasSum_deriv2_M (a : ℝ) (b : Pos) (z : ℝ) :
   simpa only [hc, mul_assoc] using (hasSum_M (a + 2) (next (next b)) z)
     |>.mul_left (a / b.1 * ((a + 1) / (b.1 + 1)))
 
-private theorem hasSum_z_deriv (a : ℝ) (b : Pos) (z : ℝ) :
+private theorem hasSum_z_deriv  :
     HasSum (fun n : ℕ => (n : ℝ) * coeff a b n * z ^ n)
       (z * deriv (M a b) z) := by
   have hs := (hasSum_deriv_M a b z).mul_left z
@@ -158,7 +160,7 @@ private theorem hasSum_z_deriv (a : ℝ) (b : Pos) (z : ℝ) :
   simpa only [Nat.cast_zero, zero_mul, zero_add] using
     hs.zero_add (f := fun n : ℕ => (n : ℝ) * coeff a b n * z ^ n)
 
-private theorem hasSum_z_deriv2 (a : ℝ) (b : Pos) (z : ℝ) :
+private theorem hasSum_z_deriv2  :
     HasSum (fun n : ℕ => (n : ℝ) * (n + 1 : ℝ) * coeff a b (n + 1) * z ^ n)
       (z * deriv (deriv (M a b)) z) := by
   have hs := (hasSum_deriv2_M a b z).mul_left z
@@ -173,7 +175,7 @@ private theorem hasSum_z_deriv2 (a : ℝ) (b : Pos) (z : ℝ) :
       (n : ℝ) * (n + 1 : ℝ) * coeff a b (n + 1) * z ^ n)
 
 /-- The literal entire power series solves Kummer's differential equation. -/
-theorem M_ode (a : ℝ) (b : Pos) (z : ℝ) :
+theorem M_ode  :
     z * deriv (deriv (M a b)) z + (b.1 - z) * deriv (M a b) z - a * M a b z = 0 := by
   have hl := (hasSum_z_deriv2 a b z).add ((hasSum_deriv_M a b z).mul_left b.1)
   have hr := (hasSum_z_deriv a b z).add ((hasSum_M a b z).mul_left a)
@@ -187,5 +189,6 @@ theorem M_ode (a : ℝ) (b : Pos) (z : ℝ) :
   simp only [he] at hl
   have h := hl.unique hr
   linarith only [h]
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer

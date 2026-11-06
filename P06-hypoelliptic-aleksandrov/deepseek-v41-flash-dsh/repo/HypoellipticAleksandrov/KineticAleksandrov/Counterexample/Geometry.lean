@@ -21,33 +21,35 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
 /-- Native position--velocity coordinates. -/
 abbrev XV (d : ℕ) := PDE.Vec d × PDE.Vec d
+section
+variable {d : ℕ}
 
 /-- The Euclidean kinetic gauge in Appendix C. -/
-noncomputable def rho {d : ℕ} (q : XV d) : ℝ :=
+noncomputable def rho  (q : XV d) : ℝ :=
   Real.rpow (PDE.vecNormSq q.1 + (PDE.vecNormSq q.2) ^ 3) (1 / 6)
 
 /-- Kinetic dilation of position and velocity. -/
-def dilate {d : ℕ} (r : ℝ) (q : XV d) : XV d := (r ^ 3 • q.1, r • q.2)
+def dilate  (r : ℝ) (q : XV d) : XV d := (r ^ 3 • q.1, r • q.2)
 
 /-- Position derivative selectors on the native product. -/
-noncomputable def dx {d : ℕ} (H : XV d → ℝ) (q : XV d) : PDE.Vec d :=
+noncomputable def dx  (H : XV d → ℝ) (q : XV d) : PDE.Vec d :=
   fun i => fderiv ℝ H q (Pi.single i 1, 0)
 
 /-- Velocity derivative selectors on the native product. -/
-noncomputable def dv {d : ℕ} (H : XV d → ℝ) (q : XV d) : PDE.Vec d :=
+noncomputable def dv  (H : XV d → ℝ) (q : XV d) : PDE.Vec d :=
   fun i => fderiv ℝ H q (0, Pi.single i 1)
 
 /-- Velocity Hessian selectors, indexed as the derivative of component `k` along `i`. -/
-noncomputable def dvv {d : ℕ} (H : XV d → ℝ) (q : XV d) : PDE.Mat d :=
+noncomputable def dvv  (H : XV d → ℝ) (q : XV d) : PDE.Mat d :=
   fun i k => fderiv ℝ (fun z => dv H z k) q (0, Pi.single i 1)
 
 /-- Stationary transport minus velocity diffusion. -/
-noncomputable def statOp {d : ℕ} (A : XV d → PDE.Mat d)
+noncomputable def statOp  (A : XV d → PDE.Mat d)
     (H : XV d → ℝ) (q : XV d) : ℝ :=
   PDE.vecDot q.2 (dx H q) - matrixContraction (A q) (dvv H q)
 
 /-- The kinetic gauge is nonnegative. -/
-theorem rho_nonneg {d : ℕ} (q : XV d) : 0 ≤ rho q :=
+theorem rho_nonneg  (q : XV d) : 0 ≤ rho q :=
   Real.rpow_nonneg
     (add_nonneg (PDE.vecNormSq_nonneg _) (pow_nonneg (PDE.vecNormSq_nonneg _) _)) _
 
@@ -64,19 +66,19 @@ theorem rho_nonneg {d : ℕ} (q : XV d) : 0 ≤ rho q :=
   simp [dilate]
 
 /-- Kinetic dilations compose multiplicatively. -/
-theorem dilate_mul {d : ℕ} (r s : ℝ) (q : XV d) :
+theorem dilate_mul  (r s : ℝ) (q : XV d) :
     dilate r (dilate s q) = dilate (r * s) q := by
   simp only [dilate, smul_smul, mul_pow]
 
 /-- The sixth power inside the gauge has kinetic degree six. -/
-theorem gauge_polynomial_dilate {d : ℕ} (r : ℝ) (q : XV d) :
+theorem gauge_polynomial_dilate  (r : ℝ) (q : XV d) :
     PDE.vecNormSq (dilate r q).1 + (PDE.vecNormSq (dilate r q).2) ^ 3 =
       r ^ 6 * (PDE.vecNormSq q.1 + (PDE.vecNormSq q.2) ^ 3) := by
   simp only [dilate, PDE.vecNormSq_smul]
   ring
 
 /-- The gauge scales linearly under positive kinetic dilations. -/
-theorem rho_dilate {d : ℕ} (r : ℝ) (hr : 0 < r) (q : XV d) :
+theorem rho_dilate  (r : ℝ) (hr : 0 < r) (q : XV d) :
     rho (dilate r q) = r * rho q := by
   unfold rho
   simp only [Real.rpow_eq_pow]
@@ -88,6 +90,7 @@ theorem rho_dilate {d : ℕ} (r : ℝ) (hr : 0 < r) (q : XV d) :
     rw [← Real.rpow_natCast_mul hr.le]
     norm_num
   rw [hpower]
+end
 
 /-- The gauge is continuous also at its unique singular point. -/
 theorem continuous_rho (d : ℕ) : Continuous (rho (d := d)) := by

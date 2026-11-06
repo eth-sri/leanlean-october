@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Decay.MaxPrincipleAttainment
 public import HypoellipticAleksandrov.KineticAleksandrov.Decay.MaxPrincipleLocal
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Strict maximum exclusion on an inset moving tube
@@ -18,7 +19,7 @@ open scoped Topology
 /-- A strictly positive operator excludes positive maxima on any inset tube.
 All maximum-attainment and moving-boundary steps are discharged internally. -/
 theorem nonpos_on_inset_maximumClosedTube_of_strict {d : ℕ}
-    {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d} {a α b : ℝ}
+    {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d} {a α b : ℝ}
     {B : FullKineticCoefficient d} {drift : PDE.Vec d → PDE.Vec d}
     {u : KineticPoint d → ℝ}
     (hΩ : IsOpen Ω) (hcΩ : IsCompact (closure Ω)) (haα : a < α)

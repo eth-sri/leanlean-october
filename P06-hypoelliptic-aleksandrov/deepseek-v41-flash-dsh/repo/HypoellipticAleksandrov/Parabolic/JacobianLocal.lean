@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.Jacobian
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Local parabolic normal-map Jacobian
@@ -72,7 +73,7 @@ theorem parabolicNormalMap_hasFDerivAt_of_contDiffAt
 /-- A `C²` germ supplies the displayed Fréchet derivative within every set. -/
 theorem parabolicNormalMap_hasFDerivWithinAt_of_contDiffAt
     {d : ℕ} {u : TimeVelocity d → ℝ} {y₀ : PDE.Vec d}
-    {s : Set (TimeVelocity d)} {z : TimeVelocity d}
+    {s : HypoellipticAleksandrov.Parabolic.TVSet d} {z : TimeVelocity d}
     (hu : ContDiffAt ℝ 2 u z) :
     HasFDerivWithinAt (parabolicNormalMap u y₀)
       (parabolicNormalMapDerivative u y₀ z) s z :=

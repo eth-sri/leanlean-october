@@ -44,25 +44,25 @@ theorem gaussianBarrier_overlap_compare {d : ℕ} (hd : 1 ≤ d)
   obtain ⟨hvball, hxball⟩ := gaussianBarrier_initial_previous_spatial hd hlam hLam
     hH hT0 hT1 hh hhstar hell' tminus sblock hv hkin hLip P ht hp
   have hW := two_le_barrierW (d := d) (lam := lam) (Lam := Lam) (T1 := T1) hH
-  have hR : 0 < W * Real.sqrt h := mul_pos (by linarith only [hW])
+  have hR : 0 < W * Real.sqrt h := mul_pos (by linarith)
     (Real.sqrt_pos.mpr hh)
   constructor
   · apply mem_closure_backwardCylinder_of_strict_spatial _ P hR _ _ hvball hxball
     · rw [propagation_block_radius_sq hh.le]
       change tminus + sblock - W ^ 2 * h < P.time
       have he : 4 * h ≤ W ^ 2 * h :=
-        mul_le_mul_of_nonneg_right (by nlinarith only [hW]) hh.le
-      linarith only [hs, he, hh]
+        mul_le_mul_of_nonneg_right (by nlinarith) hh.le
+      linarith
     · change P.time ≤ tminus + sblock
-      linarith only [ht]
+      linarith
   · have hqover := qform_overlap hlam hh hs.le ht
       (P.position - x (P.time - tminus)) (P.velocity - v (P.time - tminus))
     have hqhalf : qform lam h (sigma + h)
         (P.position - x (P.time - tminus)) (P.velocity - v (P.time - tminus)) ≤ L ^ 2 / 2 := by
       have he := mul_le_mul_of_nonneg_left hq.le (by norm_num : (0 : ℝ) ≤ 13 / 50)
-      nlinarith only [hqover, he, sq_nonneg L]
-    have hs' : 0 ≤ P.time - tminus - (sblock - h) := by linarith only [hs, hh]
-    have ht' : P.time - tminus - (sblock - h) ≤ h := by linarith only [ht]
+      nlinarith
+    have hs' : 0 ≤ P.time - tminus - (sblock - h) := by linarith
+    have ht' : P.time - tminus - (sblock - h) ≤ h := by linarith
     have hq' : qform lam h (P.time - tminus - (sblock - h))
         (P.position - x (P.time - tminus)) (P.velocity - v (P.time - tminus)) ≤ L ^ 2 / 2 := by
       have he : P.time - tminus - (sblock - h) = sigma + h := by

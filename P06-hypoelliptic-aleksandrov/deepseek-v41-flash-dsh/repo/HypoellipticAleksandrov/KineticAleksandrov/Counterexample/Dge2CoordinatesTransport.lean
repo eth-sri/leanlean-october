@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Dge2CoordinatesDifferential
 import Mathlib.Tactic.LinearCombination
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Exact transport contraction of the homogeneous ansatz -/
 

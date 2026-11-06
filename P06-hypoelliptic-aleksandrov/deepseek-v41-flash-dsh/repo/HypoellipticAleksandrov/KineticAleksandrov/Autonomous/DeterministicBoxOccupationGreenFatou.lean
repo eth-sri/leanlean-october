@@ -71,7 +71,7 @@ theorem deterministic_barrier_occupation_uniform
             ∂physicalOccupationMeasure E z T) ≤
           ENNReal.ofReal (C * (T : ℝ) ^ (alpha / 2)) := by
   obtain ⟨hlo, _, _⟩ := exists_bellman_barrier lam Lam hlam hLam
-  have ha0 : 0 < alpha := lt_of_le_of_lt (sub_nonneg.mpr hlo) ha
+  have ha0 := lt_of_le_of_lt (sub_nonneg.mpr hlo) ha
   obtain ⟨phi, c, D, h, hc, _, hbound, _⟩ :=
     exists_bellman_barrier_with_modulus lam Lam hlam hLam alpha ha ha1
   obtain ⟨C, hC, hendpoint⟩ :=

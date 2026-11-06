@@ -8,6 +8,8 @@ public import Mathlib.LinearAlgebra.Matrix.PosDef
 public import Mathlib.LinearAlgebra.Matrix.Symmetric
 public import Mathlib.Tactic.NormNum
 public import Mathlib.Topology.Algebra.Module.Determinant
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Time--velocity derivatives
@@ -58,18 +60,18 @@ private theorem hasDerivAt_affine_line
     HasDerivAt (fun r : ℝ => x + r • q) q s := by
   simpa only [one_smul] using
     ((hasDerivAt_id' (𝕜 := ℝ) s).smul_const q).const_add x
+section
+variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] {g : E → ℝ}
 
 private theorem deriv_restrict_affine_line
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    {g : E → ℝ} (hg : Differentiable ℝ g) (x q : E) (s : ℝ) :
+     (hg : Differentiable ℝ g) (x q : E) (s : ℝ) :
     deriv (fun r : ℝ => g (x + r • q)) s =
       fderiv ℝ g (x + s • q) q := by
   exact (hg (x + s • q)).hasFDerivAt.comp_hasDerivAt
     s (hasDerivAt_affine_line x q s) |>.deriv
 
 private theorem hasDerivAt_fderiv_restrict_affine_line
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    {g : E → ℝ} {x q : E}
+     {x q : E}
     {H : E →L[ℝ] E →L[ℝ] ℝ}
     (hsecond : HasFDerivAt (fderiv ℝ g) H x) :
     HasDerivAt
@@ -85,8 +87,7 @@ private theorem hasDerivAt_fderiv_restrict_affine_line
     hgrad.clm_apply (hasDerivAt_const (x := 0) (c := q))
 
 private theorem hasDerivAt_deriv_restrict_affine_line
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    {g : E → ℝ} (hg : ContDiff ℝ 2 g) (x q : E) :
+     (hg : ContDiff ℝ 2 g) (x q : E) :
     HasDerivAt (deriv (fun r : ℝ => g (x + r • q)))
       (fderiv ℝ (fderiv ℝ g) x q q) 0 := by
   have hgDiff : Differentiable ℝ g := hg.differentiable (by norm_num)
@@ -103,8 +104,7 @@ private theorem hasDerivAt_deriv_restrict_affine_line
 /-- At a local maximum of a globally `C²` scalar function, every diagonal value of its
 second Fréchet derivative is nonpositive. -/
 theorem fderiv_fderiv_apply_nonpos_of_isLocalMax
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
-    {g : E → ℝ} {x q : E}
+     {x q : E}
     (hg : ContDiff ℝ 2 g) (hmax : IsLocalMax g x) :
     fderiv ℝ (fderiv ℝ g) x q q ≤ 0 := by
   let line : ℝ → E := fun r => x + r • q
@@ -124,6 +124,7 @@ theorem fderiv_fderiv_apply_nonpos_of_isLocalMax
       (fderiv ℝ (fderiv ℝ g) x q q) 0 :=
     hasDerivAt_deriv_restrict_affine_line hg x q
   exact deriv_deriv_nonpos_of_isLocalMax hfmax hfsecond hfcont
+end
 
 /-- The derivative of `u` in the unit time direction at `z`. -/
 def timeDerivative {d : ℕ} (u : TimeVelocity d → ℝ) (z : TimeVelocity d) : ℝ :=

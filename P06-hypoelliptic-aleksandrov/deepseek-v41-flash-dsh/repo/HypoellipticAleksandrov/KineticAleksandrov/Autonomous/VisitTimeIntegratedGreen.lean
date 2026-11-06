@@ -9,13 +9,12 @@ import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.NestedStripKernelIn
 @[expose] public section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T b : ℝ) (P : Point)
 
 /-- The localized quadratic is integrable against every actual entrance measure. -/
 theorem visitTimeQuadratic_integrable_entrance
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T b : ℝ)
-    (P : Point) (n : ℕ) :
+     (n : ℕ) :
     Integrable (fun p => visitTimeCutoff b c.r c.positive p.time *
       visitQuadratic c (p.velocity 0))
       (visitEntrancePiece hH hLE hlam hLam A c J s T P n) := by
@@ -25,10 +24,7 @@ theorem visitTimeQuadratic_integrable_entrance
 
 /-- The localized quadratic also has exactly zero outgoing internal-face integral. -/
 theorem visitTimeQuadratic_outgoing_integral_zero
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T b : ℝ)
-    (P : Point) (n : ℕ) :
+     (n : ℕ) :
     (∫ p, visitTimeCutoff b c.r c.positive p.time * visitQuadratic c (p.velocity 0)
       ∂visitOutgoingPiece hH hLE hlam hLam A c J s T P n) = 0 := by
   have hz : (fun p => visitTimeCutoff b c.r c.positive p.time *
@@ -42,9 +38,7 @@ theorem visitTimeQuadratic_outgoing_integral_zero
 
 /-- Every actual entrance satisfies the genuine integrated short-time quadratic identity. -/
 theorem visitTimeQuadratic_entrance_green_identity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T b : ℝ) (P : Point)
+    
     (hP : s < P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier) (n : ℕ) :
     let mu := visitEntrancePiece hH hLE hlam hLam A c J s T P n
     let E := visitUnionExitKernel hH hLE hlam hLam A (visitActiveUnion c J) s T
@@ -93,5 +87,6 @@ theorem visitTimeQuadratic_entrance_green_identity
   rw [integral_congr_ae hp, integral_sub hiE hiG]
   rw [nested_integral_bind mu E E.measurable f hE,
     nested_integral_bind mu G G.measurable g hG]
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

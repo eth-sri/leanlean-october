@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.WeakDerivatives
 public import Mathlib.MeasureTheory.Function.LpSeminorm.Basic
 public import Mathlib.MeasureTheory.Function.LocallyIntegrable
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Finite-p membership on compactly contained open domains -/
 
@@ -15,7 +16,7 @@ open scoped ENNReal
 
 /-- Continuity on a neighborhood of a compact closure gives every restricted Lp bound. -/
 theorem memLp_on_of_continuousOn_compact_closure
-    {d : ℕ} {U V : Set (TimeVelocity d)} {f : TimeVelocity d → ℝ}
+    {d : ℕ} {U V : HypoellipticAleksandrov.Parabolic.TVSet d} {f : TimeVelocity d → ℝ}
     (hf : ContinuousOn f U) (hV : IsOpen V)
     (hcompact : IsCompact (closure V)) (hVU : closure V ⊆ U)
     (p : ℝ≥0∞) : MemLp f p (timeVelocityVolumeOn V) := by

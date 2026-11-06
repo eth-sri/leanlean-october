@@ -119,9 +119,11 @@ theorem scalarCoordinates_volumePreserving :
   intro p
   ext i
   fin_cases i <;> rfl
+section
+variable (c : Clock) (e : Point)
 
 /-- The inverse clock rescales the actual kinetic volume, not a replacement measure. -/
-theorem Clock.map_inverse_volume (c : Clock) (e : Point) :
+theorem Clock.map_inverse_volume  :
     Measure.map (c.inverse e) volume = ENNReal.ofReal ((c.r ^ 6)⁻¹) •
       (volume : Measure Point) := by
   have hpoint := scalarCoordinates_volumePreserving.symm
@@ -144,11 +146,11 @@ theorem Clock.map_inverse_volume (c : Clock) (e : Point) :
   exact congrArg (fun m => ENNReal.ofReal ((c.r ^ 6)⁻¹) • m) hpoint.map_eq
 
 /-- The forward clock in the same native scalar coordinates as its inverse. -/
-def Clock.mapCoordinates (c : Clock) (e : Point) (q : Fin 3 → ℝ) : Fin 3 → ℝ :=
+def Clock.mapCoordinates  (q : Fin 3 → ℝ) : Fin 3 → ℝ :=
   scalarCoordinates (c.map e (scalarPoint q))
 
 /-- Smoothness of the global forward coordinate map. -/
-theorem Clock.mapCoordinates_smooth (c : Clock) (e : Point) :
+theorem Clock.mapCoordinates_smooth  :
     ContDiff ℝ (⊤ : ℕ∞) (c.mapCoordinates e) := by
   apply contDiff_pi.mpr
   intro i
@@ -156,7 +158,7 @@ theorem Clock.mapCoordinates_smooth (c : Clock) (e : Point) :
     dsimp [Clock.mapCoordinates, Clock.map, scalarCoordinates, scalarPoint] <;> fun_prop
 
 /-- In the forward direction the source volume formula has factor `r^6`. -/
-theorem Clock.map_volume (c : Clock) (e : Point) :
+theorem Clock.map_volume  :
     Measure.map (c.map e) volume = ENNReal.ofReal (c.r ^ 6) •
       (volume : Measure Point) := by
   have hr : 0 < c.r ^ 6 := pow_pos c.positive 6
@@ -173,5 +175,6 @@ theorem Clock.map_volume (c : Clock) (e : Point) :
       rw [Measure.map_smul _ (c.continuous_map e).measurable.aemeasurable,
         Measure.map_map (c.continuous_map e).measurable
           (c.continuous_inverse e).measurable, heq, Measure.map_id]
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

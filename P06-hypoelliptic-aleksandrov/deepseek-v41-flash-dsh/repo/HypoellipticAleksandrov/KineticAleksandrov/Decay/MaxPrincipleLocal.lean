@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Decay.MaxPrincipleCalculus
 public import HypoellipticAleksandrov.KineticAleksandrov.Decay.MaxPrincipleGeometry
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # One-sided time calculus at a moving-tube maximum
@@ -19,7 +20,7 @@ open scoped Topology
 /-- The transported operator is nonpositive at a tube maximum strictly before
 terminal time, with differentiability only in the slices required by the source. -/
 theorem transportedForwardOperator_nonpos_at_tube_max {d : ℕ}
-    {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d} {a b : ℝ}
+    {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d} {a b : ℝ}
     {B : FullKineticCoefficient d} {drift : PDE.Vec d → PDE.Vec d}
     {u : KineticPoint d → ℝ} {p : KineticPoint d}
     (hΩ : IsOpen Ω) (hγ : ContinuousAt γ p.time)

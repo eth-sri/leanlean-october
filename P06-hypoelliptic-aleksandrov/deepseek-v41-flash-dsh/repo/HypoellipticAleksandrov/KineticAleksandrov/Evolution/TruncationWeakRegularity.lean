@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.StraightenedTransferClassical
 public import Mathlib.Analysis.Calculus.FDeriv.Partial
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Joint first differentiability of scalar C1,2 solutions
@@ -18,7 +19,7 @@ open scoped Topology
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
 /-- The joint first derivative of an anisotropic scalar C1,2 function. -/
-theorem scalarC12_hasFDerivAt {d : ℕ} {U : Set (TimeVelocity d)}
+theorem scalarC12_hasFDerivAt {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u : TimeVelocity d → ℝ} (hU : IsOpen U) (hu : IsScalarC12On u U)
     {z : TimeVelocity d} (hz : z ∈ U) :
     HasFDerivAt u
@@ -56,7 +57,7 @@ theorem scalarC12_hasFDerivAt {d : ℕ} {U : Set (TimeVelocity d)}
     (hT.continuousAt (hU.mem_nhds hz)) (hS.continuousAt (hU.mem_nhds hz))).hasFDerivAt
 
 /-- An anisotropic scalar C1,2 function on an open set is jointly differentiable. -/
-theorem scalarC12_differentiableAt {d : ℕ} {U : Set (TimeVelocity d)}
+theorem scalarC12_differentiableAt {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u : TimeVelocity d → ℝ} (hU : IsOpen U) (hu : IsScalarC12On u U)
     {z : TimeVelocity d} (hz : z ∈ U) : DifferentiableAt ℝ u z :=
   (scalarC12_hasFDerivAt hU hu hz).differentiableAt

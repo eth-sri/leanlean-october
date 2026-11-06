@@ -71,12 +71,12 @@ theorem visitTimeQuadratic_operator_integrable_of_active_support
     (fun q => visitTimeCutoff b c.r c.positive q.time * visitQuadratic c (q.velocity 0)) p‖ ≤ _
   rw [Real.norm_eq_abs]
   exact hd c b lam Lam hlam A p hp
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval)
 
 /-- The actual active Green mixture has closed active velocity support. -/
 theorem visitActiveGreenMixture_ae_closedActive
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
+     (s T : ℝ)
     (mu : Measure Point) :
     ∀ᵐ q ∂(visitUnionGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) s T ∘ₘ mu),
       q.velocity 0 ∈ closure c.active := by
@@ -98,9 +98,7 @@ theorem visitActiveGreenMixture_ae_closedActive
 
 /-- The actual active exit mixture discharges the localized test's support condition. -/
 theorem visitTimeQuadratic_integrable_activeExitMixture
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T b : ℝ)
+     (s T b : ℝ)
     (mu : Measure Point) [IsFiniteMeasure mu] :
     Integrable (fun p => visitTimeCutoff b c.r c.positive p.time *
       visitQuadratic c (p.velocity 0))
@@ -110,9 +108,7 @@ theorem visitTimeQuadratic_integrable_activeExitMixture
 
 /-- The actual active Green mixture discharges the localized operator's support condition. -/
 theorem visitTimeQuadratic_operator_integrable_activeGreenMixture
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T b : ℝ)
+     (s T b : ℝ)
     (mu : Measure Point) [IsFiniteMeasure mu] :
     Integrable (fun p => forwardScalarOperator A.a
       (fun q => visitTimeCutoff b c.r c.positive q.time *
@@ -120,5 +116,6 @@ theorem visitTimeQuadratic_operator_integrable_activeGreenMixture
       (visitUnionGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) s T ∘ₘ mu) :=
   visitTimeQuadratic_operator_integrable_of_active_support hlam A c b _
     (visitActiveGreenMixture_ae_closedActive hH hLE hlam hLam A c J s T mu)
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

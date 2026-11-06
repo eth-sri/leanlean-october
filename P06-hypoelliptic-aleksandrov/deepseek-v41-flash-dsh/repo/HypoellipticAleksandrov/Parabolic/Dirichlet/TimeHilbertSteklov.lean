@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeSteklovEndpoint
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeSteklovEnergy
 public import Mathlib.MeasureTheory.Integral.Average
 public import Mathlib.Topology.ContinuousMap.Compact
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Hilbert-valued reverse-time Steklov curves
@@ -45,7 +46,7 @@ theorem tendsto_reverseTimeSteklovStep
 
 /-- Forward Hilbert-valued Steklov curves on a left closed time collar. -/
 noncomputable def reverseTimeForwardSteklovHilbertOnIcc
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (b : ℝ) :
     ℕ → C(↥(Set.Icc 0 b), PDE.ScalarLp Ω (2 : ℝ≥0∞)) :=
@@ -58,7 +59,7 @@ noncomputable def reverseTimeForwardSteklovHilbertOnIcc
 
 /-- Backward Hilbert-valued Steklov curves on a right closed time collar. -/
 noncomputable def reverseTimeBackwardSteklovHilbertOnIcc
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (a : ℝ) :
     ℕ → C(↥(Set.Icc a T), PDE.ScalarLp Ω (2 : ℝ≥0∞)) :=
@@ -77,7 +78,7 @@ private theorem normSq_sub_eq_inner_add_sub_inner
   ring
 
 private theorem pivot_normSq_sub_eq_dualSub_apply_add
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     (r s : H10HilbertGraph hΩ) :
     ‖valueCLM hΩ r‖ ^ 2 - ‖valueCLM hΩ s‖ ^ 2 =
       (scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ r) -
@@ -134,7 +135,7 @@ private theorem hasDerivAt_of_pivoted_curve
   exact hasDerivAt_iff_tendsto_slope.mpr hSlopeE
 
 private theorem mixed_energy_identity_of_pivot
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     (x : ℝ → H10HilbertGraph hΩ) (y : ℝ → H10HilbertGraphDual hΩ)
     (U : ℝ → H10HilbertGraph hΩ →L[ℝ] ℝ)
     {a b : ℝ} (hab : a ≤ b) (hx : Continuous x) (hy : Continuous y)
@@ -162,7 +163,7 @@ private theorem mixed_energy_identity_of_pivot
       rw [integral_Icc_eq_integral_Ioc]
 
 private theorem hasDerivAt_forward_mixed_gelfand
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
@@ -180,7 +181,7 @@ private theorem hasDerivAt_forward_mixed_gelfand
       (h := k) (t := t) hk ht0 htk)
 
 private theorem hasDerivAt_backward_mixed_gelfand
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
@@ -198,7 +199,7 @@ private theorem hasDerivAt_backward_mixed_gelfand
       (h := k) (t := t) hk htk htT)
 
 private theorem forward_mixed_pivot
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     (T h k : ℝ) (u : ReverseTimeL2V hΩ T) (r s : ℝ) :
     ‖valueCLM hΩ (reverseTimeForwardSteklov T h u r -
         reverseTimeForwardSteklov T k u r)‖ ^ 2 -
@@ -220,7 +221,7 @@ private theorem forward_mixed_pivot
       (reverseTimeForwardSteklov T h u s - reverseTimeForwardSteklov T k u s)
 
 private theorem backward_mixed_pivot
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     (T h k : ℝ) (u : ReverseTimeL2V hΩ T) (r s : ℝ) :
     ‖valueCLM hΩ (reverseTimeBackwardSteklov T h u r -
         reverseTimeBackwardSteklov T k u r)‖ ^ 2 -
@@ -300,7 +301,7 @@ private theorem memLp_two_on_full_Icc
     restrict_Ioo_eq_restrict_Icc] using Lp.memLp f
 
 private theorem forward_mixed_energy_identity
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
@@ -338,7 +339,7 @@ private theorem forward_mixed_energy_identity
   exact hderivU
 
 private theorem backward_mixed_energy_identity
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
@@ -443,7 +444,7 @@ private theorem eventually_pairwise_sqNorm_integral_lt
     _ < δ := by linarith
 
 private theorem sqNorm_valueCLM_sub_le_opNorm_sq_mul
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω)
     (x y : H10HilbertGraph hΩ) :
     ‖valueCLM hΩ (x - y)‖ ^ 2 ≤
       ‖valueCLM hΩ‖ ^ 2 * ‖x - y‖ ^ 2 := by
@@ -513,9 +514,11 @@ private theorem eventually_backward_pairwise_sqNorm_integral_lt
   · exact memLp_two_on_full_Icc T f
   · exact tendsto_backward_step_sqNorm_error T hT f
   · exact hδ
+section
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (T : ℝ)
 
 private theorem abs_setIntegral_pairing_le_sqrt_full
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
+    
     (x : ℝ → H10HilbertGraph hΩ) (y : ℝ → H10HilbertGraphDual hΩ)
     (hx : Continuous x) (hy : Continuous y)
     {a b : ℝ} (hsub : Icc a b ⊆ Icc 0 T) :
@@ -553,7 +556,7 @@ private theorem abs_setIntegral_pairing_le_sqrt_full
     _ = _ := rfl
 
 private theorem sqNorm_at_le_anchor_add_pairwise_integrals
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
+    
     (x : ℝ → H10HilbertGraph hΩ) (y : ℝ → H10HilbertGraphDual hΩ)
     (hx : Continuous x) (hy : Continuous y)
     (K : Set ℝ) (hK : K ⊆ Icc 0 T)
@@ -602,7 +605,7 @@ private theorem sqNorm_at_le_anchor_add_pairwise_integrals
     linarith
 
 private theorem exists_anchor_sqNorm_valueCLM_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
+    
     (x : ℝ → H10HilbertGraph hΩ) (hx : Continuous x)
     {a b v : ℝ} (hab : a < b) (hvol : volume.real (Icc a b) = v)
     (hsub : Icc a b ⊆ Icc 0 T) :
@@ -657,8 +660,7 @@ private theorem exists_anchor_sqNorm_valueCLM_le
 /-- The deterministic forward Steklov curves are Cauchy uniformly in spatial `L²` on every
 left closed collar `Icc 0 b` with `0 < b < T`. -/
 theorem cauchySeq_reverseTimeForwardSteklovHilbertOnIcc
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
+     (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
     {b : ℝ} (hb0 : 0 < b) (hbT : b < T) :
@@ -766,8 +768,7 @@ theorem cauchySeq_reverseTimeForwardSteklovHilbertOnIcc
 /-- The deterministic backward Steklov curves are Cauchy uniformly in spatial `L²` on every
 right closed collar `Icc a T` with `0 < a < T`. -/
 theorem cauchySeq_reverseTimeBackwardSteklovHilbertOnIcc
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
+     (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
     {a : ℝ} (ha0 : 0 < a) (haT : a < T) :
@@ -869,5 +870,6 @@ theorem cauchySeq_reverseTimeBackwardSteklovHilbertOnIcc
     (sq_lt_sq₀ (norm_nonneg _) hε.le).mp hsq
   simpa only [reverseTimeBackwardSteklovHilbertOnIcc, ContinuousMap.coe_mk,
     ContinuousMap.coe_mk, dist_eq_norm, ContinuousLinearMap.map_sub, x] using! hnorm
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

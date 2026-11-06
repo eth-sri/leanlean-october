@@ -8,6 +8,8 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Operator
 public import HypoellipticAleksandrov.Parabolic.ScalarClassical
 public import PDEFoundation.Geometry.ConvexDomain
 public import PDEFoundation.Measure.OneDimensionalCoordinate
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Terminal evolution problem
@@ -30,19 +32,21 @@ open HypoellipticAleksandrov.Parabolic
 open scoped MatrixOrder ProbabilityTheory
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
+section
+variable {n : ℕ}
 
 /-! ## Domains and moving cylinders -/
 
 /-- The base domains allowed by the terminal-evolution conditions. -/
-def IsAdmissibleEvolutionDomain {n : ℕ} (Ω : Set (PDE.Vec n)) : Prop :=
+def IsAdmissibleEvolutionDomain  (Ω : HypoellipticAleksandrov.VecSet n) : Prop :=
   Ω = Set.univ ∨
     (∃ c r, 0 < r ∧ Ω = PDE.euclideanBall c r) ∨
       (∃ hn : n = 1, ∃ a b, a < b ∧
         hn ▸ Ω = PDE.oneDimensionalAxisBox a b)
 
 /-- An admissible base domain is open. -/
-theorem isOpen_of_isAdmissibleEvolutionDomain {n : ℕ}
-    {Ω : Set (PDE.Vec n)}
+theorem isOpen_of_isAdmissibleEvolutionDomain 
+    {Ω : HypoellipticAleksandrov.VecSet n}
     (hΩ : IsAdmissibleEvolutionDomain Ω) : IsOpen Ω := by
   rcases hΩ with hΩ | ⟨c, r, hr, hΩ⟩ | ⟨hn, a, b, hab, hΩ⟩
   · rw [hΩ]
@@ -57,69 +61,71 @@ theorem isOpen_of_isAdmissibleEvolutionDomain {n : ℕ}
       (PDE.isOpen_axisBox (fun _ : Fin 1 => a) (fun _ : Fin 1 => b))
 
 /-- An admissible base domain is Borel measurable. -/
-theorem measurableSet_of_isAdmissibleEvolutionDomain {n : ℕ}
-    {Ω : Set (PDE.Vec n)}
+theorem measurableSet_of_isAdmissibleEvolutionDomain 
+    {Ω : HypoellipticAleksandrov.VecSet n}
     (hΩ : IsAdmissibleEvolutionDomain Ω) : MeasurableSet Ω :=
   (isOpen_of_isAdmissibleEvolutionDomain hΩ).measurableSet
 
 /-- The moving domain is open for an admissible base domain. -/
-theorem isOpen_movingDomain_of_isAdmissibleEvolutionDomain {n : ℕ}
-    {Ω : Set (PDE.Vec n)} (γ : ℝ → PDE.Vec n)
+theorem isOpen_movingDomain_of_isAdmissibleEvolutionDomain 
+    {Ω : HypoellipticAleksandrov.VecSet n} (γ : ℝ → PDE.Vec n)
     (hΩ : IsAdmissibleEvolutionDomain Ω) (σ : ℝ) :
     IsOpen (movingDomain Ω γ σ) :=
   isOpen_movingDomain (isOpen_of_isAdmissibleEvolutionDomain hΩ) σ
 
 /-- A continuous curve that is piecewise `C¹` on every compact subinterval. -/
-def IsContinuousPiecewiseC1 {n : ℕ} (γ : ℝ → PDE.Vec n) : Prop :=
+def IsContinuousPiecewiseC1  (γ : ℝ → PDE.Vec n) : Prop :=
   Continuous γ ∧
     ∀ a b, a < b →
       ∃ N : ℕ, ∃ t : Fin (N + 2) → ℝ, StrictMono t ∧ t 0 = a ∧
         t (Fin.last (N + 1)) = b ∧
           ∀ i : Fin (N + 1),
-            ContDiffOn ℝ 1 γ (Set.Icc (t i.castSucc) (t i.succ))
+            ContDiffOn ℝ 1 γ (Icc (t i.castSucc) (t i.succ))
 
 /-! ## Coefficient and drift hypotheses -/
 
 /-- Smoothness of a full coefficient in the ordered `(σ,y,z)` variables. -/
-def IsSmoothFullKineticCoefficient {n : ℕ}
+def IsSmoothFullKineticCoefficient 
     (B : FullKineticCoefficient n) : Prop :=
   ∀ i j, ContDiff ℝ (⊤ : ℕ∞)
     (fun q : ℝ × (PDE.Vec n × PDE.Vec n) => B q.1 q.2.1 q.2.2 i j)
 
 /-- Pointwise symmetry of every matrix of a full coefficient. -/
-def IsSymmetricFullKineticCoefficient {n : ℕ}
+def IsSymmetricFullKineticCoefficient 
     (B : FullKineticCoefficient n) : Prop :=
   ∀ σ y z, (B σ y z).IsSymm
 
 /-- A full coefficient obeys the source's everywhere Loewner bounds. -/
-def HasEverywhereLoewnerBounds {n : ℕ} (lam Lam : ℝ)
+def HasEverywhereLoewnerBounds  (lam Lam : ℝ)
     (B : FullKineticCoefficient n) : Prop :=
   ∀ σ y z,
-    lam • (1 : PDE.Mat n) ≤ B σ y z ∧
-      B σ y z ≤ Lam • (1 : PDE.Mat n)
+    lam • 1 ≤ B σ y z ∧
+      B σ y z ≤ Lam • 1
 
 /-- Smoothness of the drift in the Euclidean vector carrier. -/
-def IsSmoothDrift {n : ℕ} (b : PDE.Vec n → PDE.Vec n) : Prop :=
+def IsSmoothDrift  (b : PDE.Vec n → PDE.Vec n) : Prop :=
   ContDiff ℝ (⊤ : ℕ∞) b
 
 /-- The Euclidean Lipschitz estimate for the drift. -/
-def HasEuclideanLipschitzDrift {n : ℕ} (L_b : ℝ)
+def HasEuclideanLipschitzDrift  (L_b : ℝ)
     (b : PDE.Vec n → PDE.Vec n) : Prop :=
   ∀ y y',
     PDE.vecEuclideanNorm (b y - b y') ≤
       L_b * PDE.vecEuclideanNorm (y - y')
 
 /-- The unit-direction derivative coercivity estimate for the drift. -/
-def HasUnitDirectionDriftCoercivity {n : ℕ} (m : ℝ)
+def HasUnitDirectionDriftCoercivity  (m : ℝ)
     (b : PDE.Vec n → PDE.Vec n) : Prop :=
   ∀ y ξ, PDE.vecEuclideanNorm ξ = 1 →
     m ≤ PDE.vecDot ξ ((fderiv ℝ b y) ξ)
+section
+variable (Ω : HypoellipticAleksandrov.VecSet n) (γ : ℝ → PDE.Vec n)
 
 /-! ## Smooth compactly supported terminal data -/
 
 /-- Smooth compactly supported data supported in the terminal state fiber. -/
-def IsSmoothCompactTerminalDatum {n : ℕ}
-    (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n) (τ : ℝ)
+def IsSmoothCompactTerminalDatum 
+     (τ : ℝ)
     (F : BoundedBorel (EvolutionAmbientState n)) : Prop :=
   ContDiff ℝ (⊤ : ℕ∞) F ∧ HasCompactSupport F ∧
     tsupport F ⊆ evolutionStateSet Ω γ τ
@@ -127,48 +133,41 @@ def IsSmoothCompactTerminalDatum {n : ℕ}
 /-! ## Operator and classical-solution carriers -/
 
 /-- The one shared real-linear terminal operator family. -/
-abbrev TerminalOperatorFamily {n : ℕ} (Ω : Set (PDE.Vec n))
-    (γ : ℝ → PDE.Vec n) :=
+abbrev TerminalOperatorFamily   :=
   ∀ (σ τ : ℝ), σ ≤ τ →
     BoundedBorel (EvolutionState Ω γ τ) →ₗ[ℝ]
       BoundedBorel (EvolutionState Ω γ σ)
 
 /-- The one shared real-linear scalar marginal operator family. -/
-abbrev ParabolicOperatorFamily {n : ℕ} (Ω : Set (PDE.Vec n))
-    (γ : ℝ → PDE.Vec n) :=
+abbrev ParabolicOperatorFamily   :=
   ∀ (σ τ : ℝ), σ ≤ τ →
     BoundedBorel (EvolutionPosition Ω γ τ) →ₗ[ℝ]
       BoundedBorel (EvolutionPosition Ω γ σ)
 
 /-- The open past moving cylinder, with arbitrary transported coordinate. -/
-def evolutionPastOpenCylinder {n : ℕ} (Ω : Set (PDE.Vec n))
-    (γ : ℝ → PDE.Vec n) (τ : ℝ) : Set (KineticPoint n) :=
+def evolutionPastOpenCylinder   (τ : ℝ) : Set (KineticPoint n) :=
   {p | p.time < τ ∧ p.position ∈ movingDomain Ω γ p.time}
 
 /-- The closed past moving cylinder, with arbitrary transported coordinate. -/
-def evolutionPastClosedCylinder {n : ℕ} (Ω : Set (PDE.Vec n))
-    (γ : ℝ → PDE.Vec n) (τ : ℝ) : Set (KineticPoint n) :=
+def evolutionPastClosedCylinder   (τ : ℝ) : Set (KineticPoint n) :=
   {p | p.time ≤ τ ∧ p.position ∈ closure (movingDomain Ω γ p.time)}
 
 /-- Raw coordinate carrier for interior smoothness of a kinetic solution. -/
-def evolutionPastInteriorRaw {n : ℕ} (Ω : Set (PDE.Vec n))
-    (γ : ℝ → PDE.Vec n) (τ : ℝ) : Set (ℝ × (PDE.Vec n × PDE.Vec n)) :=
+def evolutionPastInteriorRaw   (τ : ℝ) : Set (ℝ × (PDE.Vec n × PDE.Vec n)) :=
   {q | q.1 < τ ∧ q.2.1 ∈ movingDomain Ω γ q.1}
 
 /-- The terminal face of the closed past moving cylinder. -/
-def evolutionTerminalClosure {n : ℕ} (Ω : Set (PDE.Vec n))
-    (γ : ℝ → PDE.Vec n) (τ : ℝ) : Set (KineticPoint n) :=
+def evolutionTerminalClosure   (τ : ℝ) : Set (KineticPoint n) :=
   {p | p.time = τ ∧ p.position ∈ closure (movingDomain Ω γ τ)}
 
 /-- The lateral frontier of the closed past moving cylinder. -/
-def evolutionLateralFrontier {n : ℕ} (Ω : Set (PDE.Vec n))
-    (γ : ℝ → PDE.Vec n) (τ : ℝ) : Set (KineticPoint n) :=
+def evolutionLateralFrontier   (τ : ℝ) : Set (KineticPoint n) :=
   {p | p.time ≤ τ ∧ p.position ∈ frontier (movingDomain Ω γ p.time)}
 
 /-- The literal classical terminal-solution predicate for the transported
 operator.  It contains regularity, equation, and boundary conditions. -/
-def IsClassicalTerminalSolution {n : ℕ}
-    (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
+def IsClassicalTerminalSolution 
+    
     (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
     (τ : ℝ) (F : BoundedBorel (EvolutionAmbientState n))
     (u : KineticPoint n → ℝ) : Prop :=
@@ -183,40 +182,41 @@ def IsClassicalTerminalSolution {n : ℕ}
     (∀ p ∈ evolutionTerminalClosure Ω γ τ,
       u p = F (p.position, p.velocity)) ∧
     (∀ p ∈ evolutionLateralFrontier Ω γ τ, u p = 0)
+end
 
 /-- Shift the transported coordinate in an ambient fixed-time state. -/
-def evolutionAmbientStateShift {n : ℕ} (h : PDE.Vec n)
+def evolutionAmbientStateShift  (h : PDE.Vec n)
     (p : EvolutionAmbientState n) : EvolutionAmbientState n :=
   (p.1, p.2 + h)
 
 /-- Shift the transported coordinate in a moving fiber state. -/
-def evolutionStateShift {n : ℕ} (Ω : Set (PDE.Vec n))
+def evolutionStateShift  (Ω : HypoellipticAleksandrov.VecSet n)
     (γ : ℝ → PDE.Vec n) (σ : ℝ) (h : PDE.Vec n)
     (p : EvolutionState Ω γ σ) : EvolutionState Ω γ σ :=
   ⟨evolutionAmbientStateShift h p.1, ⟨p.2.1, mem_univ _⟩⟩
 
 /-- Insert a position and transported coordinate into a moving state fiber. -/
-def evolutionStateOfPosition {n : ℕ} (Ω : Set (PDE.Vec n))
+def evolutionStateOfPosition  (Ω : HypoellipticAleksandrov.VecSet n)
     (γ : ℝ → PDE.Vec n) (σ : ℝ)
     (y : EvolutionPosition Ω γ σ) (z : PDE.Vec n) : EvolutionState Ω γ σ :=
   ⟨(y.1, z), ⟨y.2, mem_univ _⟩⟩
 
 /-- The measurable zero-transport-coordinate lift of a position state. -/
-def positionStateZero {n : ℕ} (Ω : Set (PDE.Vec n))
+def positionStateZero  (Ω : HypoellipticAleksandrov.VecSet n)
     (γ : ℝ → PDE.Vec n) (σ : ℝ) :
     EvolutionPosition Ω γ σ → EvolutionState Ω γ σ :=
   fun y => evolutionStateOfPosition Ω γ σ y 0
 
 /-- Measurability of the zero-transport-coordinate position-state lift. -/
-theorem measurable_positionStateZero {n : ℕ} (Ω : Set (PDE.Vec n))
+theorem measurable_positionStateZero  (Ω : HypoellipticAleksandrov.VecSet n)
     (γ : ℝ → PDE.Vec n) (σ : ℝ) :
     Measurable (positionStateZero Ω γ σ) := by
   apply Measurable.subtype_mk
   fun_prop
 
 /-- The scalar marginal kernel pulled back from the same fiber kernel. -/
-noncomputable def parabolicMarginalKernel {n : ℕ}
-    {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
+noncomputable def parabolicMarginalKernel 
+    {Ω : HypoellipticAleksandrov.VecSet n} {γ : ℝ → PDE.Vec n}
     (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω)
     (σ τ : ℝ) (hστ : σ ≤ τ) :
     ProbabilityTheory.Kernel
@@ -227,8 +227,8 @@ noncomputable def parabolicMarginalKernel {n : ℕ}
     (measurable_positionStateZero Ω γ σ)
 
 /-- Evaluation of the scalar marginal pullback at a source position. -/
-theorem parabolicMarginalKernel_apply {n : ℕ}
-    {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
+theorem parabolicMarginalKernel_apply 
+    {Ω : HypoellipticAleksandrov.VecSet n} {γ : ℝ → PDE.Vec n}
     (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω)
     (σ τ : ℝ) (hστ : σ ≤ τ) (y : EvolutionPosition Ω γ σ) :
     parabolicMarginalKernel K hΩ σ τ hστ y =
@@ -238,37 +238,37 @@ theorem parabolicMarginalKernel_apply {n : ℕ}
 namespace ParabolicProbe
 
 /-- Smooth compactly supported scalar data on the moving terminal domain. -/
-def IsSmoothCompactScalarTerminalDatum {n : ℕ}
-    (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n) (τ : ℝ)
+def IsSmoothCompactScalarTerminalDatum 
+    (Ω : HypoellipticAleksandrov.VecSet n) (γ : ℝ → PDE.Vec n) (τ : ℝ)
     (F : BoundedBorel (PDE.Vec n)) : Prop :=
   ContDiff ℝ (⊤ : ℕ∞) (F : PDE.Vec n → ℝ) ∧
     IsCompact (tsupport (F : PDE.Vec n → ℝ)) ∧
     tsupport (F : PDE.Vec n → ℝ) ⊆ movingDomain Ω γ τ
 
 /-- The open past moving scalar-parabolic cylinder. -/
-def scalarPastOpenCylinder {n : ℕ} (Ω : Set (PDE.Vec n))
-    (γ : ℝ → PDE.Vec n) (τ : ℝ) : Set (TimeVelocity n) :=
+def scalarPastOpenCylinder  (Ω : HypoellipticAleksandrov.VecSet n)
+    (γ : ℝ → PDE.Vec n) (τ : ℝ) : HypoellipticAleksandrov.Parabolic.TVSet n :=
   {p | p.1 < τ ∧ p.2 ∈ movingDomain Ω γ p.1}
 
 /-- The closed past moving scalar-parabolic cylinder. -/
-def scalarPastClosedCylinder {n : ℕ} (Ω : Set (PDE.Vec n))
-    (γ : ℝ → PDE.Vec n) (τ : ℝ) : Set (TimeVelocity n) :=
+def scalarPastClosedCylinder  (Ω : HypoellipticAleksandrov.VecSet n)
+    (γ : ℝ → PDE.Vec n) (τ : ℝ) : HypoellipticAleksandrov.Parabolic.TVSet n :=
   {p | p.1 ≤ τ ∧ p.2 ∈ closure (movingDomain Ω γ p.1)}
 
 /-- The terminal face of the scalar-parabolic cylinder. -/
-def scalarTerminalClosure {n : ℕ} (Ω : Set (PDE.Vec n))
-    (γ : ℝ → PDE.Vec n) (τ : ℝ) : Set (TimeVelocity n) :=
+def scalarTerminalClosure  (Ω : HypoellipticAleksandrov.VecSet n)
+    (γ : ℝ → PDE.Vec n) (τ : ℝ) : HypoellipticAleksandrov.Parabolic.TVSet n :=
   {p | p.1 = τ ∧ p.2 ∈ closure (movingDomain Ω γ τ)}
 
 /-- The lateral frontier of the scalar-parabolic cylinder. -/
-def scalarLateralFrontier {n : ℕ} (Ω : Set (PDE.Vec n))
-    (γ : ℝ → PDE.Vec n) (τ : ℝ) : Set (TimeVelocity n) :=
+def scalarLateralFrontier  (Ω : HypoellipticAleksandrov.VecSet n)
+    (γ : ℝ → PDE.Vec n) (τ : ℝ) : HypoellipticAleksandrov.Parabolic.TVSet n :=
   {p | p.1 ≤ τ ∧ p.2 ∈ frontier (movingDomain Ω γ p.1)}
 
 /-- The literal classical terminal-solution predicate for the scalar
 equation with coefficient `B σ y 0`; no uniqueness package is included. -/
-def IsClassicalScalarTerminalSolution {n : ℕ}
-    (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
+def IsClassicalScalarTerminalSolution 
+    (Ω : HypoellipticAleksandrov.VecSet n) (γ : ℝ → PDE.Vec n)
     (B : FullKineticCoefficient n) (τ : ℝ)
     (F : BoundedBorel (PDE.Vec n)) (V : TimeVelocity n → ℝ) : Prop :=
   (∃ C : ℝ, 0 ≤ C ∧
@@ -286,20 +286,20 @@ end ParabolicProbe
 joint measurability clause for the derived scalar kernel. -/
 
 /-- A query with ordered times and a source position in the moving domain. -/
-abbrev ParabolicEvolutionQuery {n : ℕ} (Ω : Set (PDE.Vec n))
+abbrev ParabolicEvolutionQuery  (Ω : HypoellipticAleksandrov.VecSet n)
     (γ : ℝ → PDE.Vec n) :=
   {q : ℝ × (ℝ × PDE.Vec n) //
     q.1 ≤ q.2.1 ∧ q.2.2 ∈ movingDomain Ω γ q.1}
 
 /-- The source position associated with a parabolic evolution query. -/
-def parabolicQuerySource {n : ℕ} {Ω : Set (PDE.Vec n)}
+def parabolicQuerySource  {Ω : HypoellipticAleksandrov.VecSet n}
     {γ : ℝ → PDE.Vec n} (q : ParabolicEvolutionQuery Ω γ) :
     EvolutionPosition Ω γ q.1.1 :=
   ⟨q.1.2.2, q.property.2⟩
 
 /-- The ambient spatial measure obtained from the scalar marginal kernel. -/
-noncomputable def parabolicMarginalAmbientMeasure {n : ℕ}
-    {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
+noncomputable def parabolicMarginalAmbientMeasure 
+    {Ω : HypoellipticAleksandrov.VecSet n} {γ : ℝ → PDE.Vec n}
     (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω)
     (q : ParabolicEvolutionQuery Ω γ) : Measure (PDE.Vec n) :=
   Measure.map
@@ -308,17 +308,18 @@ noncomputable def parabolicMarginalAmbientMeasure {n : ℕ}
       (parabolicQuerySource q))
 
 /-- Restriction of ambient terminal data to a terminal state fiber. -/
-def terminalStateDatum {n : ℕ} {Ω : Set (PDE.Vec n)}
+def terminalStateDatum  {Ω : HypoellipticAleksandrov.VecSet n}
     {γ : ℝ → PDE.Vec n} {τ : ℝ}
     (F : BoundedBorel (EvolutionAmbientState n)) :
     BoundedBorel (EvolutionState Ω γ τ) :=
   BoundedBorel.restrict (evolutionStateSet Ω γ τ) F
 
 /-- Restriction of scalar terminal data to a moving position fiber. -/
-def terminalPositionDatum {n : ℕ} {Ω : Set (PDE.Vec n)}
+def terminalPositionDatum  {Ω : HypoellipticAleksandrov.VecSet n}
     {γ : ℝ → PDE.Vec n} {τ : ℝ}
     (F : BoundedBorel (PDE.Vec n)) :
     BoundedBorel (EvolutionPosition Ω γ τ) :=
   BoundedBorel.restrict (movingDomain Ω γ τ) F
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

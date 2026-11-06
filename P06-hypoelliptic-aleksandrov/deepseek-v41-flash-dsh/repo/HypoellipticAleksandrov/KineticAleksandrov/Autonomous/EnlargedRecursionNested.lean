@@ -29,8 +29,8 @@ theorem enlarged_strip_nested
         finiteUnionExitMixture hH hLE hlam hLam A H2 T tau := by
   let inc := finiteUnionNestedPoleInclusion H1 H2 hsub (T : WithTop ℝ)
   let k := finiteUnionPointRestartPoles hH hLE hlam hLam A H1 H2 sMinus T
-  have hinc : Measurable inc := measurable_finiteUnionNestedPoleInclusion H1 H2 hsub T
-  have hk : Measurable k := finiteUnionPointRestartPoles_measurable
+  have hinc := measurable_finiteUnionNestedPoleInclusion H1 H2 hsub T
+  have hk := finiteUnionPointRestartPoles_measurable
     hH hLE hlam hLam A H1 H2 sMinus T
   have hG1 := finiteUnionGreen_measurable hH hLE hlam hLam A H1 (T : WithTop ℝ)
   have hG2 := finiteUnionGreen_measurable hH hLE hlam hLam A H2 (T : WithTop ℝ)

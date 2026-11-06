@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.Parabolic.SpacetimeMollifier
 public import HypoellipticAleksandrov.Measure.TimeVelocity
 public import Mathlib.MeasureTheory.Function.LpSpace.DomAct.Continuous
 public import Mathlib.MeasureTheory.Function.L2Space
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Translation input for spacetime mollification in `L²`
@@ -27,17 +28,17 @@ private theorem tendsto_eLpNorm_add_translate_sub
     {d : ℕ}
     (f : TimeVelocity d → ℝ)
     (hf : MemLp f (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d))) :
+      (HypoellipticAleksandrov.Parabolic.TVVolume d)) :
     Tendsto
       (fun x : TimeVelocity d =>
         eLpNorm (fun z => f (x + z) - f z) (2 : ℝ≥0∞)
-          (volume : Measure (TimeVelocity d)))
+          (HypoellipticAleksandrov.Parabolic.TVVolume d))
       (nhds 0) (nhds 0) := by
   letI : Fact ((2 : ℝ≥0∞) ≠ ∞) := ⟨by norm_num⟩
   letI : ContinuousVAdd (TimeVelocity d)ᵈᵃᵃ
-      (Lp ℝ (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d))) :=
+      (Lp ℝ (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d)) :=
     MeasureTheory.Lp.instContinuousVAddDomAddAct
-  let F : Lp ℝ (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d)) := hf.toLp f
+  let F : Lp ℝ (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d) := hf.toLp f
   have hcont : Continuous (fun x : TimeVelocity d => DomAddAct.mk x +ᵥ F) :=
     continuous_vadd.comp (DomAddAct.continuous_mk.prodMk continuous_const)
   have hzero : DomAddAct.mk (0 : TimeVelocity d) +ᵥ F = F := by simp
@@ -64,7 +65,7 @@ private theorem tendsto_eLpNorm_add_translate_sub
   have hzf_add : (fun z : TimeVelocity d => F (x + z)) =ᵐ[volume]
       (fun z => f (x + z)) := by
     simpa only [Function.comp_def] using
-      (quasiMeasurePreserving_add_left (volume : Measure (TimeVelocity d)) x).ae_eq_comp
+      (quasiMeasurePreserving_add_left (HypoellipticAleksandrov.Parabolic.TVVolume d) x).ae_eq_comp
         hf.coeFn_toLp
   filter_upwards [Lp.coeFn_sub (DomAddAct.mk x +ᵥ F) F,
     DomAddAct.vadd_Lp_ae_eq (DomAddAct.mk x) F,
@@ -75,38 +76,40 @@ private theorem tendsto_eLpNorm_add_translate_sub
   rw [hz, hzf]
   change F (x + z) - f z = f (x + z) - f z
   rw [hzf_add_z]
+section
+variable {d : ℕ} {ε : ℝ}
 
 private theorem spacetimeMollifier_integrable
-    {d : ℕ} {ε : ℝ} (hε : 0 < ε) :
+     (hε : 0 < ε) :
     Integrable (spacetimeMollifier (d := d) ε)
-      (volume : Measure (TimeVelocity d)) := by
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   exact (spacetimeMollifier_contDiff (d := d) ε).continuous
     |>.integrable_of_hasCompactSupport (spacetimeMollifier_hasCompactSupport hε)
 
 private theorem integrable_spacetimeMollifier_mul_sq_sub
-    {d : ℕ} {ε : ℝ} (hε : 0 < ε)
+     (hε : 0 < ε)
     (f : TimeVelocity d → ℝ)
     (hf : MemLp f (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d))) :
+      (HypoellipticAleksandrov.Parabolic.TVVolume d)) :
     Integrable
       (fun p : TimeVelocity d × TimeVelocity d =>
         spacetimeMollifier ε p.1 * f (p.2 - p.1) ^ 2)
-      ((volume : Measure (TimeVelocity d)).prod volume) := by
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).prod volume) := by
   have hprod : Integrable
       (fun p : TimeVelocity d × TimeVelocity d =>
         spacetimeMollifier ε p.1 * f p.2 ^ 2)
-      ((volume : Measure (TimeVelocity d)).prod volume) :=
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).prod volume) :=
     (spacetimeMollifier_integrable hε).mul_prod hf.integrable_sq
   simpa only [Function.comp_def] using
     (measurePreserving_prod_sub
-      (volume : Measure (TimeVelocity d))
-      (volume : Measure (TimeVelocity d))).integrable_comp_of_integrable hprod
+      (HypoellipticAleksandrov.Parabolic.TVVolume d)
+      (HypoellipticAleksandrov.Parabolic.TVVolume d)).integrable_comp_of_integrable hprod
 
 private theorem integral_integral_spacetimeMollifier_mul_sq_sub_swap
-    {d : ℕ} {ε : ℝ} (hε : 0 < ε)
+     (hε : 0 < ε)
     (f : TimeVelocity d → ℝ)
     (hf : MemLp f (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d))) :
+      (HypoellipticAleksandrov.Parabolic.TVVolume d)) :
     (∫ z : TimeVelocity d, ∫ x : TimeVelocity d,
         spacetimeMollifier ε x * f (z - x) ^ 2 ∂volume ∂volume) =
       ∫ x : TimeVelocity d, ∫ z : TimeVelocity d,
@@ -116,10 +119,10 @@ private theorem integral_integral_spacetimeMollifier_mul_sq_sub_swap
     (integrable_spacetimeMollifier_mul_sq_sub hε f hf).swap
 
 private theorem ae_sq_integral_spacetimeMollifier_mul_le
-    {d : ℕ} {ε : ℝ} (hε : 0 < ε)
+     (hε : 0 < ε)
     (f : TimeVelocity d → ℝ)
     (hf : MemLp f (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d))) :
+      (HypoellipticAleksandrov.Parabolic.TVVolume d)) :
     ∀ᵐ z : TimeVelocity d ∂volume,
       |∫ x : TimeVelocity d,
           spacetimeMollifier ε x * f (z - x) ∂volume| ^ 2 ≤
@@ -134,32 +137,32 @@ private theorem ae_sq_integral_spacetimeMollifier_mul_le
   have ha_cont : Continuous a :=
     (spacetimeMollifier_contDiff (d := d) ε).continuous.sqrt
   have ha_sq : Integrable (fun x => a x ^ 2)
-      (volume : Measure (TimeVelocity d)) := by
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) := by
     apply (spacetimeMollifier_integrable hε).congr
     exact ae_of_all _ fun x => by
       simp only [a, Real.sq_sqrt (spacetimeMollifier_nonneg ε x)]
   have ha : MemLp a (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d)) :=
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) :=
     (memLp_two_iff_integrable_sq ha_cont.aestronglyMeasurable).2 ha_sq
   have hsub : MeasurePreserving (fun x : TimeVelocity d => z - x)
-      (volume : Measure (TimeVelocity d)) volume := by
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) volume := by
     simpa only [Function.comp_def, sub_eq_add_neg, add_comm] using
-      (measurePreserving_add_left (volume : Measure (TimeVelocity d)) z).comp
-        (Measure.measurePreserving_neg (volume : Measure (TimeVelocity d)))
+      (measurePreserving_add_left (HypoellipticAleksandrov.Parabolic.TVVolume d) z).comp
+        (Measure.measurePreserving_neg (HypoellipticAleksandrov.Parabolic.TVVolume d))
   have hb_meas : AEStronglyMeasurable b
-      (volume : Measure (TimeVelocity d)) :=
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) :=
     ha_cont.aestronglyMeasurable.mul
       ((hf.aestronglyMeasurable.comp_measurePreserving hsub).norm)
   have hb_sq : Integrable (fun x => b x ^ 2)
-      (volume : Measure (TimeVelocity d)) := by
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) := by
     convert hz using 1
     · funext x
       simp only [b, mul_pow, sq_abs, Real.sq_sqrt (spacetimeMollifier_nonneg ε x)]
   have hb : MemLp b (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d)) :=
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) :=
     (memLp_two_iff_integrable_sq hb_meas).2 hb_sq
   have hholder := integral_mul_le_Lp_mul_Lq_of_nonneg
-    (μ := (volume : Measure (TimeVelocity d))) (f := a) (g := b)
+    (μ := (HypoellipticAleksandrov.Parabolic.TVVolume d)) (f := a) (g := b)
     Real.HolderConjugate.two_two
     (ae_of_all _ fun x => Real.sqrt_nonneg _)
     (ae_of_all _ fun x => mul_nonneg (Real.sqrt_nonneg _) (abs_nonneg _))
@@ -237,10 +240,10 @@ private theorem ae_sq_integral_spacetimeMollifier_mul_le
   simpa only [Function.comp_def, Real.sq_sqrt hright] using hsquare
 
 private theorem integral_integral_spacetimeMollifier_mul_sq_sub
-    {d : ℕ} {ε : ℝ} (hε : 0 < ε)
+     (hε : 0 < ε)
     (f : TimeVelocity d → ℝ)
     (hf : MemLp f (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d))) :
+      (HypoellipticAleksandrov.Parabolic.TVVolume d)) :
     (∫ z : TimeVelocity d, ∫ x : TimeVelocity d,
         spacetimeMollifier ε x * f (z - x) ^ 2 ∂volume ∂volume) =
       ∫ z : TimeVelocity d, f z ^ 2 ∂volume := by
@@ -249,8 +252,8 @@ private theorem integral_integral_spacetimeMollifier_mul_sq_sub
       (∫ z : TimeVelocity d, f (z - x) ^ 2 ∂volume) =
         ∫ z : TimeVelocity d, f z ^ 2 ∂volume := by
     have hsub : MeasurePreserving (MeasurableEquiv.addLeft (-x : TimeVelocity d))
-        (volume : Measure (TimeVelocity d)) volume := by
-      exact measurePreserving_add_left (volume : Measure (TimeVelocity d)) (-x)
+        (HypoellipticAleksandrov.Parabolic.TVVolume d) volume := by
+      exact measurePreserving_add_left (HypoellipticAleksandrov.Parabolic.TVVolume d) (-x)
     simpa [sub_eq_add_neg, add_comm] using
       hsub.integral_comp' (fun z => f z ^ 2)
   simp_rw [integral_const_mul, htranslate]
@@ -258,32 +261,32 @@ private theorem integral_integral_spacetimeMollifier_mul_sq_sub
 
 /-- Positive-radius spacetime mollification is an exact `L²` contraction. -/
 theorem eLpNorm_spacetimeMollification_le
-    {d : ℕ} {ε : ℝ} (hε : 0 < ε)
+     (hε : 0 < ε)
     (f : TimeVelocity d → ℝ)
     (hf : MemLp f (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d))) :
+      (HypoellipticAleksandrov.Parabolic.TVVolume d)) :
     eLpNorm (spacetimeMollification ε f) (2 : ℝ≥0∞)
-        (volume : Measure (TimeVelocity d)) ≤
+        (HypoellipticAleksandrov.Parabolic.TVVolume d) ≤
       eLpNorm f (2 : ℝ≥0∞)
-        (volume : Measure (TimeVelocity d)) := by
+        (HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   have hcont : Continuous (spacetimeMollification ε f) :=
     (contDiff_spacetimeMollification hε f (hf.locallyIntegrable (by norm_num))).continuous
   have hweighted : Integrable (fun z : TimeVelocity d =>
       ∫ x : TimeVelocity d,
         spacetimeMollifier ε x * f (z - x) ^ 2 ∂volume)
-      (volume : Measure (TimeVelocity d)) := by
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) := by
     simpa only [Function.comp_def, Function.uncurry_def, Prod.swap] using
       (integrable_spacetimeMollifier_mul_sq_sub hε f hf).swap.integral_prod_left
   have hsquare : Integrable (fun z : TimeVelocity d =>
       spacetimeMollification ε f z ^ 2)
-      (volume : Measure (TimeVelocity d)) := by
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) := by
     apply hweighted.mono' (hcont.aestronglyMeasurable.pow 2)
     filter_upwards [ae_sq_integral_spacetimeMollifier_mul_le hε f hf] with z hz
     rw [Pi.pow_apply, Real.norm_eq_abs, abs_sq]
     simpa only [Function.comp_def, spacetimeMollification, convolution_def,
       ContinuousLinearMap.lsmul_apply, smul_eq_mul, sq_abs] using hz
   have hg : MemLp (spacetimeMollification ε f) (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d)) :=
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) :=
     (memLp_two_iff_integrable_sq hcont.aestronglyMeasurable).2 hsquare
   have hintegral :
       (∫ z : TimeVelocity d, spacetimeMollification ε f z ^ 2 ∂volume) ≤
@@ -305,42 +308,42 @@ theorem eLpNorm_spacetimeMollification_le
 /-- Positive-radius spacetime mollification preserves global `L²`
 membership. -/
 theorem spacetimeMollification_memLp
-    {d : ℕ} {ε : ℝ} (hε : 0 < ε)
+     (hε : 0 < ε)
     (f : TimeVelocity d → ℝ)
     (hf : MemLp f (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d))) :
+      (HypoellipticAleksandrov.Parabolic.TVVolume d)) :
     MemLp (spacetimeMollification ε f) (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d)) := by
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   exact (eLpNorm_spacetimeMollification_le hε f hf).trans_lt hf.eLpNorm_lt_top
 
 private theorem integrable_spacetimeMollifier_mul_sq_sub_self
-    {d : ℕ} {ε : ℝ} (hε : 0 < ε)
+     (hε : 0 < ε)
     (f : TimeVelocity d → ℝ)
     (hf : MemLp f (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d))) :
+      (HypoellipticAleksandrov.Parabolic.TVVolume d)) :
     Integrable
       (fun p : TimeVelocity d × TimeVelocity d =>
         spacetimeMollifier ε p.1 * (f (p.2 - p.1) - f p.2) ^ 2)
-      ((volume : Measure (TimeVelocity d)).prod volume) := by
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).prod volume) := by
   have hfirst := (integrable_spacetimeMollifier_mul_sq_sub hε f hf).const_mul 2
   have hsecond : Integrable
       (fun p : TimeVelocity d × TimeVelocity d =>
         2 * spacetimeMollifier ε p.1 * f p.2 ^ 2)
-      ((volume : Measure (TimeVelocity d)).prod volume) := by
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).prod volume) := by
     simpa only [Function.comp_def, mul_assoc] using
       ((spacetimeMollifier_integrable hε).const_mul 2).mul_prod hf.integrable_sq
   apply (hfirst.add hsecond).mono'
   · have hz : AEStronglyMeasurable
         (fun p : TimeVelocity d × TimeVelocity d => f p.2)
-        ((volume : Measure (TimeVelocity d)).prod volume) :=
+        ((HypoellipticAleksandrov.Parabolic.TVVolume d).prod volume) :=
       hf.aestronglyMeasurable.comp_snd
     have hsub : AEStronglyMeasurable
         (fun p : TimeVelocity d × TimeVelocity d => f (p.2 - p.1))
-        ((volume : Measure (TimeVelocity d)).prod volume) := by
+        ((HypoellipticAleksandrov.Parabolic.TVVolume d).prod volume) := by
       simpa only [Function.comp_def] using hz.comp_measurePreserving
         (measurePreserving_prod_sub
-          (volume : Measure (TimeVelocity d))
-          (volume : Measure (TimeVelocity d)))
+          (HypoellipticAleksandrov.Parabolic.TVVolume d)
+          (HypoellipticAleksandrov.Parabolic.TVVolume d))
     exact ((spacetimeMollifier_contDiff (d := d) ε).continuous.comp continuous_fst
       |>.aestronglyMeasurable).mul ((hsub.sub hz).pow 2)
   · exact ae_of_all _ fun p => by
@@ -349,16 +352,17 @@ private theorem integrable_spacetimeMollifier_mul_sq_sub_self
       have hρ := spacetimeMollifier_nonneg ε p.1
       nlinarith [sq_nonneg (f (p.2 - p.1) + f p.2),
         sq_nonneg (f (p.2 - p.1) - f p.2)]
+end
 
 private theorem tendsto_eLpNorm_sub_translate_sub
     {d : ℕ}
     (f : TimeVelocity d → ℝ)
     (hf : MemLp f (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d))) :
+      (HypoellipticAleksandrov.Parabolic.TVVolume d)) :
     Tendsto
       (fun x : TimeVelocity d =>
         eLpNorm (fun z => f (z - x) - f z) (2 : ℝ≥0∞)
-          (volume : Measure (TimeVelocity d)))
+          (HypoellipticAleksandrov.Parabolic.TVVolume d))
       (nhds 0) (nhds 0) := by
   have hneg : Tendsto (fun x : TimeVelocity d => -x) (nhds 0) (nhds 0) := by
     have hn := continuousAt_neg (G := TimeVelocity d) (x := (0 : TimeVelocity d))
@@ -371,16 +375,16 @@ private theorem integral_sq_sub_translate_eq_toReal_eLpNorm_sq
     {d : ℕ} (x : TimeVelocity d)
     (f : TimeVelocity d → ℝ)
     (hf : MemLp f (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d))) :
+      (HypoellipticAleksandrov.Parabolic.TVVolume d)) :
     (∫ z : TimeVelocity d, (f (z - x) - f z) ^ 2 ∂volume) =
       (eLpNorm (fun z => f (z - x) - f z) (2 : ℝ≥0∞)
-        (volume : Measure (TimeVelocity d))).toReal ^ 2 := by
+        (HypoellipticAleksandrov.Parabolic.TVVolume d)).toReal ^ 2 := by
   have hsub : MeasurePreserving (fun z : TimeVelocity d => z - x)
-      (volume : Measure (TimeVelocity d)) volume := by
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) volume := by
     simpa only [Function.comp_def, sub_eq_add_neg, add_comm] using
-      (measurePreserving_add_left (volume : Measure (TimeVelocity d)) (-x))
+      (measurePreserving_add_left (HypoellipticAleksandrov.Parabolic.TVVolume d) (-x))
   have hd : MemLp (fun z => f (z - x) - f z) (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d)) :=
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) :=
     (hf.comp_measurePreserving hsub).sub hf
   rw [hd.eLpNorm_eq_integral_rpow_norm (by norm_num) ENNReal.ofNat_ne_top]
   simp only [ENNReal.toReal_ofReal (Real.rpow_nonneg (integral_nonneg fun _ => sq_nonneg _) _),
@@ -392,21 +396,21 @@ private theorem tendsto_integral_sq_sub_translate
     {d : ℕ}
     (f : TimeVelocity d → ℝ)
     (hf : MemLp f (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d))) :
+      (HypoellipticAleksandrov.Parabolic.TVVolume d)) :
     Tendsto (fun x : TimeVelocity d =>
       ∫ z : TimeVelocity d, (f (z - x) - f z) ^ 2 ∂volume)
       (nhds 0) (nhds 0) := by
   have hfinite (x : TimeVelocity d) :
       eLpNorm (fun z => f (z - x) - f z) (2 : ℝ≥0∞)
-        (volume : Measure (TimeVelocity d)) ≠ ∞ := by
+        (HypoellipticAleksandrov.Parabolic.TVVolume d) ≠ ∞ := by
     have hsub : MeasurePreserving (fun z : TimeVelocity d => z - x)
-        (volume : Measure (TimeVelocity d)) volume := by
+        (HypoellipticAleksandrov.Parabolic.TVVolume d) volume := by
       simpa only [Function.comp_def, sub_eq_add_neg, add_comm] using
-        measurePreserving_add_left (volume : Measure (TimeVelocity d)) (-x)
+        measurePreserving_add_left (HypoellipticAleksandrov.Parabolic.TVVolume d) (-x)
     exact ((hf.comp_measurePreserving hsub).sub hf).eLpNorm_ne_top
   have hreal : Tendsto (fun x : TimeVelocity d =>
       (eLpNorm (fun z => f (z - x) - f z) (2 : ℝ≥0∞)
-        (volume : Measure (TimeVelocity d))).toReal) (nhds 0) (nhds 0) :=
+        (HypoellipticAleksandrov.Parabolic.TVVolume d)).toReal) (nhds 0) (nhds 0) :=
     (ENNReal.tendsto_toReal_zero_iff hfinite).2 (tendsto_eLpNorm_sub_translate_sub f hf)
   simpa only [Function.comp_def, integral_sq_sub_translate_eq_toReal_eLpNorm_sq (f := f) (hf := hf),
     zero_pow (by norm_num : (2 : ℕ) ≠ 0)] using
@@ -416,7 +420,7 @@ private theorem ae_sq_integral_spacetimeMollifier_mul_sub_self_le
     {d : ℕ} {ε : ℝ} (hε : 0 < ε)
     (f : TimeVelocity d → ℝ)
     (hf : MemLp f (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d))) :
+      (HypoellipticAleksandrov.Parabolic.TVVolume d)) :
     ∀ᵐ z : TimeVelocity d ∂volume,
       Integrable (fun x : TimeVelocity d => spacetimeMollifier ε x *
           (f (z - x) - f z)) volume ∧
@@ -433,34 +437,34 @@ private theorem ae_sq_integral_spacetimeMollifier_mul_sub_self_le
   have ha_cont : Continuous a :=
     (spacetimeMollifier_contDiff (d := d) ε).continuous.sqrt
   have ha_sq : Integrable (fun x => a x ^ 2)
-      (volume : Measure (TimeVelocity d)) := by
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) := by
     apply (spacetimeMollifier_integrable hε).congr
     exact ae_of_all _ fun x => by
       simp only [a, Real.sq_sqrt (spacetimeMollifier_nonneg ε x)]
   have ha : MemLp a (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d)) :=
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) :=
     (memLp_two_iff_integrable_sq ha_cont.aestronglyMeasurable).2 ha_sq
   have hsub : MeasurePreserving (fun x : TimeVelocity d => z - x)
-      (volume : Measure (TimeVelocity d)) volume := by
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) volume := by
     simpa only [Function.comp_def, sub_eq_add_neg] using
-      (measurePreserving_add_left (volume : Measure (TimeVelocity d)) z).comp
-        (Measure.measurePreserving_neg (volume : Measure (TimeVelocity d)))
+      (measurePreserving_add_left (HypoellipticAleksandrov.Parabolic.TVVolume d) z).comp
+        (Measure.measurePreserving_neg (HypoellipticAleksandrov.Parabolic.TVVolume d))
   have hb_meas : AEStronglyMeasurable b
-      (volume : Measure (TimeVelocity d)) :=
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) :=
     ha_cont.aestronglyMeasurable.mul
       (((hf.aestronglyMeasurable.comp_measurePreserving hsub).sub
         (aestronglyMeasurable_const : AEStronglyMeasurable
           (fun _ : TimeVelocity d => f z) volume)).norm)
   have hb_sq : Integrable (fun x => b x ^ 2)
-      (volume : Measure (TimeVelocity d)) := by
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) := by
     convert hz using 1
     · funext x
       simp only [b, mul_pow, sq_abs, Real.sq_sqrt (spacetimeMollifier_nonneg ε x)]
   have hb : MemLp b (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d)) :=
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) :=
     (memLp_two_iff_integrable_sq hb_meas).2 hb_sq
   have hholder := integral_mul_le_Lp_mul_Lq_of_nonneg
-    (μ := (volume : Measure (TimeVelocity d))) (f := a) (g := b)
+    (μ := (HypoellipticAleksandrov.Parabolic.TVVolume d)) (f := a) (g := b)
     Real.HolderConjugate.two_two
     (ae_of_all _ fun _ => Real.sqrt_nonneg _)
     (ae_of_all _ fun _ => mul_nonneg (Real.sqrt_nonneg _) (abs_nonneg _))
@@ -544,7 +548,7 @@ private theorem tendsto_weighted_integral_sq_sub_translate
     {d : ℕ}
     (f : TimeVelocity d → ℝ)
     (hf : MemLp f (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d))) :
+      (HypoellipticAleksandrov.Parabolic.TVVolume d)) :
     Tendsto (fun ε : ℝ => ∫ x : TimeVelocity d,
       spacetimeMollifier ε x *
         (∫ z : TimeVelocity d, (f (z - x) - f z) ^ 2 ∂volume) ∂volume)
@@ -610,13 +614,13 @@ theorem tendsto_eLpNorm_spacetimeMollification_sub
     {d : ℕ}
     (f : TimeVelocity d → ℝ)
     (hf : MemLp f (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d))) :
+      (HypoellipticAleksandrov.Parabolic.TVVolume d)) :
     Filter.Tendsto
       (fun ε : ℝ =>
         eLpNorm
           (spacetimeMollification ε f - f)
           (2 : ℝ≥0∞)
-          (volume : Measure (TimeVelocity d)))
+          (HypoellipticAleksandrov.Parabolic.TVVolume d))
       (𝓝[>] 0) (𝓝 0) := by
   let q : ℝ → ℝ := fun ε => ∫ z : TimeVelocity d,
     (spacetimeMollification ε f z - f z) ^ 2 ∂volume

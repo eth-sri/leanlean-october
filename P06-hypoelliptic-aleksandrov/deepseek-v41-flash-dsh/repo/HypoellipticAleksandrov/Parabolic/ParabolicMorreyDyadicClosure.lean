@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyDyadicStep
 public import Mathlib.Tactic
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Closed one-step dyadic parabolic Morrey projection estimate
@@ -74,7 +75,7 @@ theorem exists_parabolicMorreyDyadicChildProjectionClosedConst (d : Nat)
   refine ⟨C, hCpos, ?_⟩
   intro n index child u hu z hz
   let qC := parabolicDyadicSourceBox (parabolicDyadicChildIndex index child)
-  let QC : Set (TimeVelocity d) := parabolicBox 1 qC.radius qC.baseTime qC.center
+  let QC : HypoellipticAleksandrov.Parabolic.TVSet d := parabolicBox 1 qC.radius qC.baseTime qC.center
   let B : Real := C * (parabolicDyadicSourceBox index).radius ^
       parabolicMorreyExponent d *
     (parabolicLpNormOn d (timeDerivative u) (parabolicBox 1

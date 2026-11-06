@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Scaling.Calculus
 public import HypoellipticAleksandrov.KineticAleksandrov.Scaling.Cylinders
 public import HypoellipticAleksandrov.KineticAleksandrov.EvolutionProblem
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Classical terminal solutions under an affine change of variables
@@ -66,7 +67,7 @@ theorem contDiffOn_raw_iff {S S' : Set (ℝ × (PDE.Vec d × PDE.Vec d))}
   · intro h
     exact h.comp Φ.contDiff_raw.contDiffOn (fun q hq => (hS q).1 hq)
 
-variable {Ω Ω' : Set (PDE.Vec d)} {γ γ' : ℝ → PDE.Vec d}
+variable {Ω Ω' : HypoellipticAleksandrov.VecSet d} {γ γ' : ℝ → PDE.Vec d}
 
 /-- **Classical solutions are transported by the change of variables.**  If the moving
 domains correspond, `Ω` is open, `γ` is continuous, and the terminal data correspond

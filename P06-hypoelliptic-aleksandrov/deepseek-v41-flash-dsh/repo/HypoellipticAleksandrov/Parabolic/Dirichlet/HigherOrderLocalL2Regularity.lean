@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.Parabolic.HigherOrderSourceWeakDerivativeF
 public import HypoellipticAleksandrov.Parabolic.HigherOrderNestedProductBoxChain
 public import HypoellipticAleksandrov.Parabolic.GenericPreLiftWeakDerivativeFamilyIteration
 public import HypoellipticAleksandrov.Parabolic.ParabolicW12WeakDerivativeFamilyEquation
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Higher-order local L2 regularity
@@ -23,7 +25,7 @@ open Set MeasureTheory
 open scoped BigOperators ENNReal MatrixOrder Matrix.Norms.Elementwise
 
 private theorem closure_outerBox_subset_closedCylinder
-    {d : ℕ} {Ω O₀ : Set (PDE.Vec d)} {r₀ q₀ q₁ r₁ : ℝ}
+    {d : ℕ} {Ω O₀ : HypoellipticAleksandrov.VecSet d} {r₀ q₀ q₁ r₁ : ℝ}
     (hr₀q₀ : r₀ < q₀) (hq₀q₁ : q₀ < q₁) (hq₁r₁ : q₁ < r₁)
     (hO₀Ω : closure O₀ ⊆ Ω) :
     closure (Set.Ioo q₀ q₁ ×ˢ O₀) ⊆
@@ -33,15 +35,15 @@ private theorem closure_outerBox_subset_closedCylinder
   exact ⟨⟨hr₀q₀.le.trans hz.1, hz.2.trans hq₁r₁.le⟩, subset_closure (hO₀Ω hy)⟩
 
 private theorem outerBox_closure_compact
-    {d : ℕ} {O₀ : Set (PDE.Vec d)} {q₀ q₁ : ℝ}
+    {d : ℕ} {O₀ : HypoellipticAleksandrov.VecSet d} {q₀ q₁ : ℝ}
     (hq₀q₁ : q₀ < q₁) (hO₀compact : IsCompact (closure O₀)) :
     IsCompact (closure (Set.Ioo q₀ q₁ ×ˢ O₀)) := by
   rw [closure_prod_eq, closure_Ioo hq₀q₁.ne]
   exact isCompact_Icc.prod hO₀compact
 
 private theorem chain_left_le_right_le_spatial_subset_zero
-    {d N : ℕ} {q₀ s₀ s₁ q₁ : ℝ} {Ω O₀ O : Set (PDE.Vec d)}
-    {left right : ℕ → ℝ} {spatial : ℕ → Set (PDE.Vec d)}
+    {d N : ℕ} {q₀ s₀ s₁ q₁ : ℝ} {Ω O₀ O : HypoellipticAleksandrov.VecSet d}
+    {left right : ℕ → ℝ} {spatial : ℕ → HypoellipticAleksandrov.VecSet d}
     (h : IsHigherOrderNestedProductBoxChain
       d N q₀ s₀ s₁ q₁ Ω O₀ O left right spatial)
     {k : ℕ} (hk : k ≤ N + 2) :
@@ -58,7 +60,7 @@ private theorem chain_left_le_right_le_spatial_subset_zero
 /-- A supplied local weight-two strong jet bootstraps to the finite
 higher-order weak-derivative family on a larger box around the target. -/
 theorem exists_higherOrderLocalL2WeakDerivativeFamily_of_strongJet
-    {d : ℕ} {Ω O₀ O : Set (PDE.Vec d)}
+    {d : ℕ} {Ω O₀ O : HypoellipticAleksandrov.VecSet d}
     (r₀ q₀ s₀ s₁ q₁ r₁ : ℝ)
     (hr₀q₀ : r₀ < q₀) (hq₀s₀ : q₀ < s₀) (hs₀s₁ : s₀ < s₁)
     (hs₁q₁ : s₁ < q₁) (hq₁r₁ : q₁ < r₁)
@@ -89,7 +91,7 @@ theorem exists_higherOrderLocalL2WeakDerivativeFamily_of_strongJet
             a z.1 z.2 i j * J.velocityHessian z j i) +
           (∑ j : Fin d, b z.1 z.2 j * J.velocityGrad z j) +
           c z.1 z.2 * J.toFun z = F z.1 z.2) →
-        ∃ (coreLeft coreRight : ℝ) (Ocore : Set (PDE.Vec d))
+        ∃ (coreLeft coreRight : ℝ) (Ocore : HypoellipticAleksandrov.VecSet d)
           (B : ParabolicDerivativeIndex d (2 * d + 6) → ℝ)
           (Emax : ParabolicWeakDerivativeFamily d (2 * d + 6)
             (Set.Ioo q₀ q₁ ×ˢ O₀) (fun z : TimeVelocity d => F z.1 z.2))
@@ -249,7 +251,7 @@ theorem exists_higherOrderLocalL2WeakDerivativeFamily_of_strongJet
 /-- A selected global value representative admits a compatible local
 higher-order weak-derivative family. -/
 theorem exists_higherOrderLocalL2WeakDerivativeFamily_of_valueRepresentative
-    {d : ℕ} {Ω O₀ O : Set (PDE.Vec d)} (hd : 0 < d)
+    {d : ℕ} {Ω O₀ O : HypoellipticAleksandrov.VecSet d} (hd : 0 < d)
     (r₀ q₀ s₀ s₁ q₁ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hr₀q₀ : r₀ < q₀)
     (hq₀s₀ : q₀ < s₀) (hs₀s₁ : s₀ < s₁) (hs₁q₁ : s₁ < q₁) (hq₁r₁ : q₁ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
@@ -281,8 +283,8 @@ theorem exists_higherOrderLocalL2WeakDerivativeFamily_of_valueRepresentative
       (hwmem : MemLp w (2 : ℝ≥0∞) (timeVelocityVolumeOn (Set.Ioo r₀ r₁ ×ˢ Ω)))
       (hwslice : ∀ᵐ r ∂volume.restrict (Set.Ioo r₀ r₁),
         (fun y => w (r, y)) =ᵐ[PDE.volumeOn Ω] fun y => valueCLM hΩ (u (r₁ - r)) y),
-      ∃ (J : ParabolicW12Function d (Set.Ioo q₀ q₁ ×ˢ O₀) (2 : ℝ≥0∞))
-        (coreLeft coreRight : ℝ) (Ocore : Set (PDE.Vec d))
+      ∃ (J : ParabolicW12Function d (Set.Ioo q₀ q₁ ×ˢ O₀) 2)
+        (coreLeft coreRight : ℝ) (Ocore : HypoellipticAleksandrov.VecSet d)
         (B : ParabolicDerivativeIndex d (2 * d + 6) → ℝ)
         (Emax : ParabolicWeakDerivativeFamily d (2 * d + 6) (Set.Ioo q₀ q₁ ×ˢ O₀)
           (fun z : TimeVelocity d => F z.1 z.2))

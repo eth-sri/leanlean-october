@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.EvolutionProblem
 public import PDEFoundation.Geometry.EuclideanBall.Topology
 public import Mathlib.Topology.Algebra.Group.ContinuousDiv
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Compact moving tubes for maximum attainment
@@ -16,27 +17,29 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
 open HypoellipticAleksandrov Set
+section
+variable {d : ℕ} (Ω : HypoellipticAleksandrov.VecSet d) (γ : ℝ → PDE.Vec d)
 
 /-- The finite closed moving tube with unrestricted transported coordinate. -/
-def maximumClosedTube {d : ℕ} (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE.Vec d)
+def maximumClosedTube 
     (a b : ℝ) : Set (KineticPoint d) :=
   {p | p.time ∈ Icc a b ∧ p.position ∈ closure (movingDomain Ω γ p.time)}
 
 /-- The finite open moving tube with unrestricted transported coordinate. -/
-def maximumOpenTube {d : ℕ} (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE.Vec d)
+def maximumOpenTube 
     (a b : ℝ) : Set (KineticPoint d) :=
   {p | p.time ∈ Ioo a b ∧ p.position ∈ movingDomain Ω γ p.time}
 
 /-- Closure membership is expressed in the fixed translated-back domain. -/
-theorem mem_closure_movingDomain_iff {d : ℕ} (Ω : Set (PDE.Vec d))
-    (γ : ℝ → PDE.Vec d) (t : ℝ) (v : PDE.Vec d) :
+theorem mem_closure_movingDomain_iff  (t : ℝ) (v : PDE.Vec d) :
     v ∈ closure (movingDomain Ω γ t) ↔ v - γ t ∈ closure Ω := by
   rw [movingDomain, ← PDE.preimage_subRight_eq_translateSet]
   exact (Set.ext_iff.mp ((Homeomorph.subRight (γ t)).preimage_closure Ω).symm) v
+end
 
 /-- A closed moving tube truncated in the transported coordinate is compact. -/
 theorem isCompact_maximumClosedTube_truncated {d : ℕ}
-    {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d} {a b R : ℝ}
+    {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d} {a b R : ℝ}
     (hΩ : IsCompact (closure Ω)) (hγ : ContinuousOn γ (Icc a b)) (hR : 0 ≤ R) :
     IsCompact {p ∈ maximumClosedTube Ω γ a b |
       p.velocity ∈ PDE.euclideanClosedBall 0 R} := by

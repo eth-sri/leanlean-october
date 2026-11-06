@@ -5,6 +5,7 @@ public import Mathlib.Analysis.Calculus.ContDiff.Operations
 public import Mathlib.Analysis.Calculus.FDeriv.Symmetric
 public import Mathlib.Data.Nat.Choose.Basic
 public import Lean.Elab.Tactic.Omega
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Time--velocity multi-index derivatives
@@ -364,7 +365,7 @@ theorem coordinateIteratedFDeriv_congr_of_eventuallyEq
 /-- On an open set, pointwise equality gives equality of every actual
 coordinate iterated derivative at each point of that set. -/
 theorem coordinateIteratedFDeriv_congr_of_eqOn
-    (U : Set (TimeVelocity d)) (hU : IsOpen U)
+    (U : HypoellipticAleksandrov.Parabolic.TVSet d) (hU : IsOpen U)
     (beta : TimeVelocityMultiIndex d)
     {f g : TimeVelocity d → ℝ}
     (hfg : Set.EqOn f g U)

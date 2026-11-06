@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.SobolevJetAEIdentification
 public import HypoellipticAleksandrov.Parabolic.C2ToScalarC12
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Finite-order Sobolev representatives with scalar parabolic regularity
@@ -21,7 +22,7 @@ noncomputable section
 every compact subset of its open carrier, with its complete order-two
 coordinate jet identified almost everywhere. -/
 theorem exists_finiteOrderSobolevC12Representative
-    {d : ℕ} {U C : Set (TimeVelocity d)}
+    {d : ℕ} {U C : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hU : IsOpen U) (hC : IsCompact C) (hCU : C ⊆ U)
     {u : TimeVelocity d → ℝ}
     (D : ParabolicWeakDerivativeFamily d (2 * (d + 4)) U u) :
@@ -56,7 +57,7 @@ theorem exists_finiteOrderSobolevC12Representative
       G rho hrho K hK hsupp
   have hglobal := coordinateJet_aeEq_ordinaryRepresentative_of_uniformLimit
     G rho hrho v huniform
-  let S : Set (TimeVelocity d) := Metric.thickening rho C
+  let S : HypoellipticAleksandrov.Parabolic.TVSet d := Metric.thickening rho C
   have hSMeas : MeasurableSet S := Metric.isOpen_thickening.measurableSet
   have hjet : ∀ alpha : TimeVelocityDerivativeIndex d 2,
       TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1 v =ᵐ[

@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeGelfandOperator
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeScalarIncrement
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeHilbertIntegrationByParts
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Reverse-time energy testing by a bounded pivot factorization
@@ -19,9 +20,11 @@ open scoped ENNReal RealInnerProductSpace
 noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
+section
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
 
 private theorem pivot_symmetric_of_factorization
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (hΩ : IsOpen Ω)
     (A S : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)
     (hfactor : ∀ x y : H10HilbertGraph hΩ,
@@ -39,7 +42,7 @@ private theorem pivot_symmetric_of_factorization
     _ = inner ℝ (valueCLM hΩ (S x)) (valueCLM hΩ y) := real_inner_comm _ _
 
 private theorem ae_pivot_factorization_rate
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (hΩ : IsOpen Ω) (T : ℝ)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (S : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)
@@ -55,7 +58,7 @@ private theorem ae_pivot_factorization_rate
   ring
 
 private theorem integrable_pivot_factorization_rate
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (hΩ : IsOpen Ω) (T : ℝ)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (S : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)
@@ -68,8 +71,8 @@ private theorem integrable_pivot_factorization_rate
   rw [hrSu]
 
 private theorem continuousOn_pivot_factorization_cross_energy
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {T : ℝ}
-    (U V : C(↥(Icc 0 T), PDE.ScalarLp Ω (2 : ℝ≥0∞))) :
+     {T : ℝ}
+    (U V : C(↥(Icc 0 T), PDE.ScalarLp Ω 2)) :
     ContinuousOn
       (fun t => if ht : t ∈ Icc 0 T then
         inner ℝ (U ⟨t, ht⟩) (V ⟨t, ht⟩) else 0)
@@ -87,8 +90,8 @@ private theorem continuousOn_pivot_factorization_cross_energy
   exact hinner.comp (U.continuous.prodMk V.continuous)
 
 private theorem pivot_factorization_cross_energy_increment
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {T : ℝ}
-    (U V : C(↥(Icc 0 T), PDE.ScalarLp Ω (2 : ℝ≥0∞)))
+     {T : ℝ}
+    (U V : C(↥(Icc 0 T), PDE.ScalarLp Ω 2))
     (rate q : ℝ → ℝ)
     (hinc : ∀ s t : ℝ, ∀ hs : s ∈ Icc 0 T, ∀ ht : t ∈ Icc 0 T, s ≤ t →
       inner ℝ (U ⟨t, ht⟩) (V ⟨t, ht⟩) -
@@ -106,7 +109,7 @@ private theorem pivot_factorization_cross_energy_increment
     (integral_congr_ae (ae_restrict_of_ae hrate))
 
 private theorem ae_pivot_factorization_cross_energy_eq_norm_sq
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (hΩ : IsOpen Ω) (T : ℝ)
     (A S : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)
     (hfactor : ∀ x y : H10HilbertGraph hΩ,
@@ -132,7 +135,7 @@ set_option linter.unusedVariables false in
 /-- A bounded spatial pivot factorization has a continuous closed-time
 energy representative for the value norm of its left factor. -/
 theorem exists_continuous_value_norm_sq_energy_increment_of_pivot_factorization
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (A S : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)
     (hfactor : ∀ x y : H10HilbertGraph hΩ,
@@ -197,7 +200,7 @@ theorem exists_continuous_value_norm_sq_energy_increment_of_pivot_factorization
 testing identity for the value-level `L²` norm of its left factor. -/
 theorem
     integral_value_norm_sq_mul_reverseTimeScalarTest_deriv_eq_neg_integral_of_pivot_factorization
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (A S : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)
     (hfactor : ∀ x y : H10HilbertGraph hΩ,
@@ -225,5 +228,6 @@ theorem
       rw [ht]
     _ = -(∫ t, (2 * (g t) (S (u t))) * eta t
         ∂reverseTimeVolume T) := hscalar
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

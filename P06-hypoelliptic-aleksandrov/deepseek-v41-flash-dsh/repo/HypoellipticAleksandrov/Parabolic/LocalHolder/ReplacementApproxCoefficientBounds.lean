@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Coefficients.Ellipticity
 public import HypoellipticAleksandrov.Parabolic.C2ToScalarC12
 public import HypoellipticAleksandrov.Parabolic.SpatialCoordinateDerivatives
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Coefficient derivative bounds on compact collars
 
@@ -19,7 +20,7 @@ open scoped Matrix.Norms.Elementwise
 /-- All first spatial coefficient derivatives have a common bound on a compact carrier. -/
 theorem exists_compact_coefficient_spatial_derivative_bound {d : ℕ}
     (A : CoefficientField d) (hA : IsSmoothCoefficient A)
-    (K : Set (TimeVelocity d)) (hK : IsCompact K) :
+    (K : HypoellipticAleksandrov.Parabolic.TVSet d) (hK : IsCompact K) :
     ∃ M : ℝ, 0 ≤ M ∧ ∀ z ∈ K, ∀ i j k,
       |spatialPartial k (fun y => A z.1 y i j) z.2| ≤ M := by
   let D (z : TimeVelocity d) (k i j : Fin d) :=

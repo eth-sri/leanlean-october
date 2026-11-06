@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.SpatialL2Multiplier
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Differences of bounded scalar multipliers on spatial `L²`
@@ -17,19 +18,13 @@ open scoped ENNReal RealInnerProductSpace
 noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
+section
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (q p : PDE.Vec d → ℝ) (hq : AEStronglyMeasurable q (PDE.volumeOn Ω)) (hp : AEStronglyMeasurable p (PDE.volumeOn Ω)) (Cq : ℝ) (hCq : 0 ≤ Cq) (hqBound : ∀ᵐ y ∂PDE.volumeOn Ω, ‖q y‖ ≤ Cq) (Cp : ℝ) (hCp : 0 ≤ Cp) (hpBound : ∀ᵐ y ∂PDE.volumeOn Ω, ‖p y‖ ≤ Cp) (D : ℝ)
 
 /-- An almost-everywhere uniform bound on two scalar coefficients' difference
 bounds the difference of their induced spatial `L²` multipliers at each input. -/
 theorem norm_scalarL2Multiplier_sub_apply_le_of_ae_norm_sub_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (q p : PDE.Vec d → ℝ)
-    (hq : AEStronglyMeasurable q (PDE.volumeOn Ω))
-    (hp : AEStronglyMeasurable p (PDE.volumeOn Ω))
-    (Cq : ℝ) (hCq : 0 ≤ Cq)
-    (hqBound : ∀ᵐ y ∂PDE.volumeOn Ω, ‖q y‖ ≤ Cq)
-    (Cp : ℝ) (hCp : 0 ≤ Cp)
-    (hpBound : ∀ᵐ y ∂PDE.volumeOn Ω, ‖p y‖ ≤ Cp)
-    (D : ℝ) (hD : 0 ≤ D)
+     (hD : 0 ≤ D)
     (hsub : ∀ᵐ y ∂PDE.volumeOn Ω, ‖q y - p y‖ ≤ D)
     (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
     ‖(scalarL2Multiplier q hq Cq hCq hqBound -
@@ -48,15 +43,7 @@ theorem norm_scalarL2Multiplier_sub_apply_le_of_ae_norm_sub_le
 /-- An almost-everywhere uniform bound on two scalar coefficients' difference
 bounds the operator norm of their induced spatial `L²` multipliers. -/
 theorem norm_scalarL2Multiplier_sub_le_of_ae_norm_sub_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (q p : PDE.Vec d → ℝ)
-    (hq : AEStronglyMeasurable q (PDE.volumeOn Ω))
-    (hp : AEStronglyMeasurable p (PDE.volumeOn Ω))
-    (Cq : ℝ) (hCq : 0 ≤ Cq)
-    (hqBound : ∀ᵐ y ∂PDE.volumeOn Ω, ‖q y‖ ≤ Cq)
-    (Cp : ℝ) (hCp : 0 ≤ Cp)
-    (hpBound : ∀ᵐ y ∂PDE.volumeOn Ω, ‖p y‖ ≤ Cp)
-    (D : ℝ) (hD : 0 ≤ D)
+     (hD : 0 ≤ D)
     (hsub : ∀ᵐ y ∂PDE.volumeOn Ω, ‖q y - p y‖ ≤ D) :
     ‖scalarL2Multiplier q hq Cq hCq hqBound -
         scalarL2Multiplier p hp Cp hCp hpBound‖ ≤ D := by
@@ -64,5 +51,6 @@ theorem norm_scalarL2Multiplier_sub_le_of_ae_norm_sub_le
   intro f
   exact norm_scalarL2Multiplier_sub_apply_le_of_ae_norm_sub_le
     q p hq hp Cq hCq hqBound Cp hCp hpBound D hD hsub f
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

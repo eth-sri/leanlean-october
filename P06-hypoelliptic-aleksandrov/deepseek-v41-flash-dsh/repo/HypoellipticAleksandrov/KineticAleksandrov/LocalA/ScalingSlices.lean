@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.Geometry
 public import HypoellipticAleksandrov.KineticAleksandrov.Operator
 public import HypoellipticAleksandrov.Parabolic.ScalarClassical
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Fixed-position parabolic slices of the normalized kinetic equation -/
 
@@ -18,7 +19,7 @@ theorem continuous_fixedPosition {d : ℕ} (x : PDE.Vec d) :
 
 /-- Restriction to a fixed position preserves the anisotropic scalar regularity. -/
 theorem kineticC112_fixedPosition {d : ℕ} {u : KineticPoint d → ℝ}
-    {D : Set (KineticPoint d)} {E : Set (TimeVelocity d)}
+    {D : Set (KineticPoint d)} {E : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hu : IsKineticC112On u D) (x : PDE.Vec d)
     (hE : ∀ z ∈ E, (⟨z.1, x, z.2⟩ : KineticPoint d) ∈ D) :
     IsScalarC12On (fun z => u ⟨z.1, x, z.2⟩) E := by

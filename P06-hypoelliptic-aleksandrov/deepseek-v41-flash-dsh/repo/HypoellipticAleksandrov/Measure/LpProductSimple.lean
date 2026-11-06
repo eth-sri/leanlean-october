@@ -52,11 +52,12 @@ private theorem integral_sq_coeFn_eq_norm_sq
       simp [pow_two]
     _ = inner ℝ c c := (MeasureTheory.L2.inner_def c c).symm
     _ = ‖c‖ ^ 2 := real_inner_self_eq_norm_sq c
+section
+variable {α β : Type*} [MeasurableSpace α] [MeasurableSpace β] (μ : Measure α) (ν : Measure β) [SFinite ν]
 
 /-- The raw lift of an outer simple `L²` function belongs to product `L²`. -/
 theorem memLp_simpleUncurry_two
-    {α β : Type*} [MeasurableSpace α] [MeasurableSpace β]
-    (μ : Measure α) (ν : Measure β) [SFinite ν]
+    
     (s : SimpleFunc α (MeasureTheory.Lp ℝ (2 : ℝ≥0∞) ν))
     (hs : MeasureTheory.MemLp s (2 : ℝ≥0∞) μ) :
     MeasureTheory.MemLp (simpleUncurry s) (2 : ℝ≥0∞) (μ.prod ν) := by
@@ -85,8 +86,7 @@ theorem memLp_simpleUncurry_two
 
 /-- Subtraction of raw lifts agrees almost everywhere with the raw lift of subtraction. -/
 theorem ae_simpleUncurry_sub
-    {α β : Type*} [MeasurableSpace α] [MeasurableSpace β]
-    (μ : Measure α) (ν : Measure β) [SFinite ν]
+    
     (s t : SimpleFunc α (MeasureTheory.Lp ℝ (2 : ℝ≥0∞) ν)) :
     simpleUncurry (s - t) =ᵐ[μ.prod ν] simpleUncurry s - simpleUncurry t := by
   apply (MeasureTheory.Measure.ae_prod_iff_ae_ae
@@ -98,8 +98,7 @@ theorem ae_simpleUncurry_sub
 
 /-- The `L²` norm of the product lift equals the outer `L²` norm. -/
 theorem norm_simpleUncurry_toLp_eq
-    {α β : Type*} [MeasurableSpace α] [MeasurableSpace β]
-    (μ : Measure α) (ν : Measure β) [SFinite ν]
+    
     (s : SimpleFunc α (MeasureTheory.Lp ℝ (2 : ℝ≥0∞) ν))
     (hs : MeasureTheory.MemLp s (2 : ℝ≥0∞) μ) :
     ‖(memLp_simpleUncurry_two μ ν s hs).toLp (simpleUncurry s)‖ = ‖hs.toLp s‖ := by
@@ -130,8 +129,7 @@ theorem norm_simpleUncurry_toLp_eq
 
 /-- The norm of the difference of two product lifts equals the outer difference norm. -/
 theorem norm_sub_simpleUncurry_toLp_eq
-    {α β : Type*} [MeasurableSpace α] [MeasurableSpace β]
-    (μ : Measure α) (ν : Measure β) [SFinite ν]
+    
     (s t : SimpleFunc α (MeasureTheory.Lp ℝ (2 : ℝ≥0∞) ν))
     (hs : MeasureTheory.MemLp s (2 : ℝ≥0∞) μ)
     (ht : MeasureTheory.MemLp t (2 : ℝ≥0∞) μ) :
@@ -158,6 +156,7 @@ theorem norm_sub_simpleUncurry_toLp_eq
       apply MeasureTheory.MemLp.toLp_congr
       filter_upwards with x
       rfl
+end
 
 end
 

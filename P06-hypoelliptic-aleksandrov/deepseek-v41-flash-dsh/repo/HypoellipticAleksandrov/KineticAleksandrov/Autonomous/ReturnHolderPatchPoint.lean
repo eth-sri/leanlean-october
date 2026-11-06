@@ -25,7 +25,7 @@ theorem return_holder_patch_point (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam �
   obtain ⟨alpha, D, ha, ha1, hD, hmod⟩ := return_holder_modulus lam Lam hlam hLam hp6
   obtain ⟨beta, cp, hb, hcp, hpatch⟩ := return_patch_power lam Lam hlam hLam hp6
   let δ := returnHolderRadiusFactor alpha D
-  let c₀ := (cp * δ ^ beta / 2) / (8192 : ℝ) ^ beta
+  let c₀ := (cp * δ ^ beta / 2) / 8192 ^ beta
   have hδ := returnHolderRadiusFactor_bounds alpha D ha hD
   have hδpos : 0 < δ := hδ.1
   have hc₀ : 0 < c₀ := by dsimp [c₀]; positivity
@@ -65,7 +65,7 @@ theorem return_holder_patch_point (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam �
     (hradius.2.1.trans hh1) (by positivity) hzref hstar hlower
   have he := return_holder_height_factor alpha beta cp δ h (u z) M
     hδ.1.le hh.le huzpos hMb
-  have hhpower : h ^ beta = (b - a) ^ beta / (8192 : ℝ) ^ beta :=
+  have hhpower : h ^ beta = (b - a) ^ beta / 8192 ^ beta :=
     Real.div_rpow (by linarith) (by norm_num) beta
   change cp * (δ * h * (u z / M) ^ (1 / alpha)) ^ beta * (u z / 2) ≤ u zStar at hheight
   rw [he, hhpower] at hheight

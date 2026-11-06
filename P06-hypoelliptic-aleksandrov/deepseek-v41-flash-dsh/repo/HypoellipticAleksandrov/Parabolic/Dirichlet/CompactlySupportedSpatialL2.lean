@@ -4,6 +4,7 @@ public import PDEFoundation.Measure.LpSpace
 public import Mathlib.MeasureTheory.Function.L2Space
 public import Mathlib.MeasureTheory.Function.LpSpace.Indicator
 public import Mathlib.MeasureTheory.Integral.Bochner.Set
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Compactly supported continuous functions in restricted scalar `L²`
@@ -24,7 +25,7 @@ open scoped ENNReal
 /-- Package a continuous compactly supported scalar function in restricted
 scalar `L²` on an arbitrary raw spatial carrier. -/
 noncomputable def compactlySupportedContinuousToScalarLp
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (q : PDE.Vec d → ℝ) (hq : Continuous q) (hqcompact : HasCompactSupport q) :
     PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
   ((hq.memLp_of_hasCompactSupport hqcompact).restrict Ω).toLp q
@@ -32,7 +33,7 @@ noncomputable def compactlySupportedContinuousToScalarLp
 /-- The canonical restricted scalar `L²` package agrees almost everywhere with
 its supplied continuous compactly supported function. -/
 theorem coeFn_compactlySupportedContinuousToScalarLp
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (q : PDE.Vec d → ℝ) (hq : Continuous q) (hqcompact : HasCompactSupport q) :
     ⇑(compactlySupportedContinuousToScalarLp (Ω := Ω) q hq hqcompact) =ᵐ[PDE.volumeOn Ω] q := by
   exact ((hq.memLp_of_hasCompactSupport hqcompact).restrict Ω).coeFn_toLp
@@ -40,7 +41,7 @@ theorem coeFn_compactlySupportedContinuousToScalarLp
 /-- A uniformly bounded continuous field supported in a compact carrier has
 the corresponding restricted-volume squared-energy bound. -/
 theorem integral_sq_le_mul_volumeOn_of_tsupport_subset
-    {d : ℕ} {Ω K : Set (PDE.Vec d)}
+    {d : ℕ} {Ω K : HypoellipticAleksandrov.VecSet d}
     (q : PDE.Vec d → ℝ) (hq : Continuous q)
     (hK : IsCompact K) (hqK : tsupport q ⊆ K)
     (C : ℝ) (hqC : ∀ y : PDE.Vec d, ‖q y‖ ≤ C) :

@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.LocalClassical
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Closure of local lower ellipticity
@@ -25,7 +26,7 @@ private theorem isClosed_isHermitian (d : ℕ) :
       {H : PDE.Mat d | H.IsHermitian} =
         ⋂ i : Fin d, ⋂ j : Fin d, {H : PDE.Mat d | H j i = H i j} := by
     ext H
-    simp only [Set.mem_setOf_eq, Set.mem_iInter]
+    simp
     constructor
     · intro h i j
       simpa using h.apply i j
@@ -44,7 +45,7 @@ private theorem isClosed_posSemidef (d : ℕ) :
         {H : PDE.Mat d | H.IsHermitian} ∩
           ⋂ q : PDE.Vec d, {H : PDE.Mat d | 0 ≤ dotProduct q (H *ᵥ q)} := by
     ext H
-    simp only [Set.mem_setOf_eq, Set.mem_inter_iff, Set.mem_iInter]
+    simp
     simpa using (Matrix.posSemidef_iff_dotProduct_mulVec (M := H))
   rw [hset]
   refine (isClosed_isHermitian d).inter (isClosed_iInter fun q => ?_)
@@ -69,7 +70,7 @@ namespace HasLowerEllipticityOn
 closure stays within the coefficient's continuity set. -/
 theorem closure
     {d : ℕ} {lam : ℝ} {A : CoefficientField d}
-    {S U : Set (TimeVelocity d)}
+    {S U : HypoellipticAleksandrov.Parabolic.TVSet d}
     (h : HasLowerEllipticityOn lam A S)
     (hcont : IsContinuousCoefficientOn A U)
     (hclosureU : _root_.closure S ⊆ U) :

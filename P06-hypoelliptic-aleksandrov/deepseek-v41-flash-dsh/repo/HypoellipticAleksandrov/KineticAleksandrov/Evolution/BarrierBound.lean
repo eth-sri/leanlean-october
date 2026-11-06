@@ -3,6 +3,7 @@ module
 import Mathlib.Tactic.Linarith
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.BarrierCollar
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonNodes
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # The global bound `|u| ≤ ‖F‖` for viscous classical terminal solutions
@@ -38,7 +39,7 @@ theorem viscousTransportedOperator_const {n : ℕ} (B : FullKineticCoefficient n
   simp [PDE.vecDot]
 
 /-- The negative of a viscous classical solution solves the problem with negated datum. -/
-theorem IsClassicalViscousTerminalSolution.neg {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
+theorem IsClassicalViscousTerminalSolution.neg {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n} (hΩ : IsOpen Ω)
     {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {B : FullKineticCoefficient n}
     {b : PDE.Vec n → PDE.Vec n} {ε τ : ℝ} {F : BoundedBorel (EvolutionAmbientState n)}
     {u : KineticPoint n → ℝ} (hu : IsClassicalViscousTerminalSolution Ω γ B b ε τ F u) :
@@ -63,7 +64,7 @@ theorem IsClassicalViscousTerminalSolution.neg {n : ℕ} {Ω : Set (PDE.Vec n)} 
     simp
 
 /-- A viscous classical solution with terminal datum at most `c ≥ 0` is at most `c`. -/
-theorem classical_le_const {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
+theorem classical_le_const {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n} (hΩ : IsOpen Ω)
     {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {lam Lam : ℝ} (hlam : 0 < lam)
     {B : FullKineticCoefficient n} (hB : HasEverywhereLoewnerBounds lam Lam B)
     {Lb : ℝ} {b : PDE.Vec n → PDE.Vec n} (hb : HasEuclideanLipschitzDrift Lb b)
@@ -109,7 +110,7 @@ theorem classical_le_const {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
     linarith
 
 /-- A viscous classical solution with terminal datum bounded by `c ≥ 0` is bounded by `c`. -/
-theorem classical_abs_le_const {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
+theorem classical_abs_le_const {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n} (hΩ : IsOpen Ω)
     {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {lam Lam : ℝ} (hlam : 0 < lam)
     {B : FullKineticCoefficient n} (hB : HasEverywhereLoewnerBounds lam Lam B)
     {Lb : ℝ} {b : PDE.Vec n → PDE.Vec n} (hb : HasEuclideanLipschitzDrift Lb b)

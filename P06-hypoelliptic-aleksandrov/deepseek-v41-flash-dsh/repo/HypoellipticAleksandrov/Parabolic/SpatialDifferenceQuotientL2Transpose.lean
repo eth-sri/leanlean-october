@@ -6,6 +6,7 @@ public import Mathlib.MeasureTheory.Function.LpSpace.Indicator
 public import Mathlib.MeasureTheory.Function.L1Space.Integrable
 public import Mathlib.MeasureTheory.Group.Measure
 public import Mathlib.MeasureTheory.Integral.Bochner.Set
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Spacetime spatial difference-quotient transposition
@@ -47,8 +48,8 @@ private theorem spatialShift_measurableEmbedding
 private theorem spatialShift_measurePreserving
     {d : ℕ} (k : Fin d) (h : ℝ) :
     MeasurePreserving (spatialShift k h)
-      (volume : Measure (TimeVelocity d))
-      (volume : Measure (TimeVelocity d)) := by
+      (HypoellipticAleksandrov.Parabolic.TVVolume d)
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   change MeasurePreserving
     (fun z : TimeVelocity d => z + (0, h • PDE.basisVec k)) volume volume
   exact measurePreserving_add_right volume _
@@ -56,7 +57,7 @@ private theorem spatialShift_measurePreserving
 /-- A forward spatial difference quotient transposes to the negative backward
 quotient on any raw carrier containing the test support and its forward shift. -/
 theorem setIntegral_spatialDifferenceQuotient_mul_eq_neg_mul_spatialDifferenceQuotient_neg
-    {d : ℕ} (U : Set (TimeVelocity d))
+    {d : ℕ} (U : HypoellipticAleksandrov.Parabolic.TVSet d)
     (k : Fin d) (h : ℝ) (u φ : TimeVelocity d → ℝ)
     (hu : ParabolicMemLpOn U (2 : ℝ≥0∞) u)
     (hφ : Continuous φ) (hφcompact : HasCompactSupport φ)

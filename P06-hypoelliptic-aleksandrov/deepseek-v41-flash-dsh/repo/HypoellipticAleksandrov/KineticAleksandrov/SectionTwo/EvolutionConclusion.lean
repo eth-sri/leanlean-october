@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.Realization
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # The shared terminal evolution conclusion
 
@@ -21,7 +22,7 @@ def TerminalEvolutionConclusion : Prop :=
     (lam Lam m L_b : ℝ)
     (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hm : 0 < m) (hmLb : m ≤ L_b)
-    (Ω : Set (PDE.Vec n))
+    (Ω : HypoellipticAleksandrov.VecSet n)
     (γ : ℝ → PDE.Vec n)
     (B : FullKineticCoefficient n)
     (b : PDE.Vec n → PDE.Vec n)

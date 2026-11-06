@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonStability
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementReflection
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Forward initial and lateral source comparison
 
@@ -15,7 +17,7 @@ open Set
 
 /-- Reflection transports an arbitrary open cylinder to the reversed time cylinder. -/
 theorem timeReflection_mem_openCylinder_iff {d : ℕ} (a T : ℝ)
-    (Ω : Set (PDE.Vec d)) (z : TimeVelocity d) :
+    (Ω : HypoellipticAleksandrov.VecSet d) (z : TimeVelocity d) :
     timeReflection z ∈ scalarParabolicOpenCylinder a T Ω ↔
       z ∈ scalarParabolicOpenCylinder (1 - T) (1 - a) Ω := by
   change (a < 1 - z.1 ∧ 1 - z.1 < T) ∧ z.2 ∈ Ω ↔
@@ -24,7 +26,7 @@ theorem timeReflection_mem_openCylinder_iff {d : ℕ} (a T : ℝ)
 
 /-- Reflection transports an arbitrary closed cylinder to the reversed time cylinder. -/
 theorem timeReflection_mem_closedCylinder_iff {d : ℕ} (a T : ℝ)
-    (Ω : Set (PDE.Vec d)) (z : TimeVelocity d) :
+    (Ω : HypoellipticAleksandrov.VecSet d) (z : TimeVelocity d) :
     timeReflection z ∈ scalarParabolicClosedCylinder a T Ω ↔
       z ∈ scalarParabolicClosedCylinder (1 - T) (1 - a) Ω := by
   change (a ≤ 1 - z.1 ∧ 1 - z.1 ≤ T) ∧ z.2 ∈ closure Ω ↔
@@ -32,7 +34,7 @@ theorem timeReflection_mem_closedCylinder_iff {d : ℕ} (a T : ℝ)
   constructor <;> rintro ⟨⟨hlo, hhi⟩, hy⟩ <;> refine ⟨⟨?_, ?_⟩, hy⟩ <;> linarith
 
 /-- A zero initial/lateral forward solution obeys the signed source time bound. -/
-theorem abs_zeroBoundary_forward_le_time {d : ℕ} {Ω : Set (PDE.Vec d)} {a T : ℝ}
+theorem abs_zeroBoundary_forward_le_time {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {a T : ℝ}
     (hΩo : IsOpen Ω) (hΩb : Bornology.IsBounded Ω) (haT : a < T)
     (A : CoefficientField d) (hAc : IsContinuousCoefficient A)
     (hApsd : ∀ t y, (A t y).PosSemidef)
@@ -92,7 +94,7 @@ theorem abs_zeroBoundary_forward_le_time {d : ℕ} {Ω : Set (PDE.Vec d)} {a T :
   convert hb using 1; ring
 
 /-- A homogeneous replacement with the same forward traces has the sharp residual bound. -/
-theorem abs_forward_replacement_error_le_time {d : ℕ} {Ω : Set (PDE.Vec d)}
+theorem abs_forward_replacement_error_le_time {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     {a T : ℝ} (hΩo : IsOpen Ω) (hΩb : Bornology.IsBounded Ω) (haT : a < T)
     (A : CoefficientField d) (hAc : IsContinuousCoefficient A)
     (hApsd : ∀ t y, (A t y).PosSemidef)
@@ -135,7 +137,7 @@ theorem abs_forward_replacement_error_le_time {d : ℕ} {Ω : Set (PDE.Vec d)}
     exact hf z hz
 
 /-- The forward replacement error is uniformly bounded over the entire finite horizon. -/
-theorem abs_forward_replacement_error_le_horizon {d : ℕ} {Ω : Set (PDE.Vec d)}
+theorem abs_forward_replacement_error_le_horizon {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     {a T : ℝ} (hΩo : IsOpen Ω) (hΩb : Bornology.IsBounded Ω) (haT : a < T)
     (A : CoefficientField d) (hAc : IsContinuousCoefficient A)
     (hApsd : ∀ t y, (A t y).PosSemidef)

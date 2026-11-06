@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.OccupationScalingNorm
 public import Mathlib.MeasureTheory.Integral.Bochner.Basic
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Lebesgue pairing under occupation density scaling -/
 
@@ -35,11 +36,11 @@ theorem occupation_forward_inverse {d : ℕ} {T : ℝ} (hT : 0 < T)
   · change 0 + (Real.sqrt T) ^ 2 * (0 + (Real.sqrt T)⁻¹ ^ 2 * q.1) = q.1
     rw [inv_pow]
     field_simp
-    simp only [zero_add, zero_mul]
+    simp
   · ext j
     change 0 + Real.sqrt T * (0 + (Real.sqrt T)⁻¹ * q.2 j) = q.2 j
     field_simp
-    simp only [zero_add, zero_mul]
+    simp
 
 /-- The density pairing transforms with exactly one factor of T. -/
 theorem occupation_scaledDensity_pairing {d : ℕ} {T : ℝ} (hT : 0 < T)

@@ -9,6 +9,8 @@ public import HypoellipticAleksandrov.LinearAlgebra.LoewnerEntryBound
 public import HypoellipticAleksandrov.Parabolic.LocalizedGradientDivergence
 public import HypoellipticAleksandrov.Parabolic.SpatialPrincipalCoercivity
 public import HypoellipticAleksandrov.Analysis.L2ProductConvergence
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Weak principal coercivity core
@@ -52,11 +54,13 @@ private theorem memLp_top_of_ae_abs_le
     MemLp f ∞ μ := by
   rw [MemLp, eLpNorm_exponent_top hf]
   exact (eLpNormEssSup_le_of_ae_bound hC).trans_lt ENNReal.ofReal_lt_top
+section
+variable {d : ℕ}
 
 /-- Every coefficient entry is jointly measurable and essentially bounded by
 the literal upper ellipticity constant on the product carrier. -/
 private theorem coefficient_entry_memLp_top
-    {d : ℕ} {lam Lam : ℝ} {S : Set (TimeVelocity d)}
+     {lam Lam : ℝ} {S : HypoellipticAleksandrov.Parabolic.TVSet d}
     (A : TimeVelocity d → PDE.Mat d)
     (hAmeas : AEStronglyMeasurable A (timeVelocityVolumeOn S))
     (hlam : 0 < lam)
@@ -76,7 +80,7 @@ private theorem coefficient_entry_memLp_top
   exact ⟨hmeas, hbound, memLp_top_of_ae_abs_le _ _ hmeas hbound⟩
 
 private theorem separated_multiplier_memLp_top_restrict
-    {d : ℕ} (S : Set (TimeVelocity d))
+     (S : HypoellipticAleksandrov.Parabolic.TVSet d)
     (a : ℝ → ℝ) (ha : Continuous a) (haCompact : HasCompactSupport a)
     (c : PDE.Vec d → ℝ) (hc : Continuous c) (hcCompact : HasCompactSupport c) :
     MemLp (fun z : TimeVelocity d => a z.1 * c z.2) ∞
@@ -100,7 +104,7 @@ private theorem separated_multiplier_memLp_top_restrict
 /-- The three literal rough principal-coercivity integrands are integrable on
 the product cylinder under exactly the selected `L²` and cutoff hypotheses. -/
 theorem WeakPrincipalCoercivityCore.targets_integrableOn
-    {d : ℕ} (s₀ s₁ : ℝ) (O : Set (PDE.Vec d)) (hO : IsOpen O)
+     (s₀ s₁ : ℝ) (O : HypoellipticAleksandrov.VecSet d) (hO : IsOpen O)
     (lam Lam : ℝ) (A : TimeVelocity d → PDE.Mat d)
     (QG : TimeVelocity d → PDE.Vec d) (QH : TimeVelocity d → PDE.Mat d)
     (hAmeas : AEStronglyMeasurable A
@@ -128,7 +132,7 @@ theorem WeakPrincipalCoercivityCore.targets_integrableOn
     IntegrableOn (fun z => ζ z.1 * (tsupport η).indicator
       (fun y => ∑ k : Fin d, QG (z.1, y) k ^ 2) z.2)
       (Set.Ioo s₀ s₁ ×ˢ O) volume := by
-  let S : Set (TimeVelocity d) := Set.Ioo s₀ s₁ ×ˢ O
+  let S : HypoellipticAleksandrov.Parabolic.TVSet d := Set.Ioo s₀ s₁ ×ˢ O
   let μ := (volume : Measure (TimeVelocity d)).restrict S
   have hS : MeasurableSet S := measurableSet_Ioo.prod hO.measurableSet
   have hAij (i j : Fin d) : MemLp (fun z => A z i j) ∞ μ :=
@@ -235,13 +239,13 @@ theorem WeakPrincipalCoercivityCore.targets_integrableOn
         ring
       · simp [c, hz]
 
-private theorem velocityGradient_contDiff_infty {d : ℕ}
+private theorem velocityGradient_contDiff_infty 
     (b : TimeVelocity d → ℝ) (hb : ContDiff ℝ (⊤ : ℕ∞) b) (j : Fin d) :
     ContDiff ℝ (⊤ : ℕ∞) (fun z => velocityGradient b z j) := by
   unfold velocityGradient
   exact (contDiff_infty_iff_fderiv.mp hb).2.clm_apply contDiff_const
 
-private theorem velocityGradient_gradient {d : ℕ}
+private theorem velocityGradient_gradient 
     (b : TimeVelocity d → ℝ) (hb : ContDiff ℝ (⊤ : ℕ∞) b)
     (j i : Fin d) (z : TimeVelocity d) :
     velocityGradient (fun y => velocityGradient b y j) z i =
@@ -261,13 +265,13 @@ private theorem velocityGradient_gradient {d : ℕ}
       exact WithTop.coe_le_coe.mpr le_top)) z
   exact hraw.trans (hsymm.apply j i)
 
-private theorem velocityGradient_compact {d : ℕ}
+private theorem velocityGradient_compact 
     (b : TimeVelocity d → ℝ) (hb : HasCompactSupport b) (j : Fin d) :
     HasCompactSupport (fun z => velocityGradient b z j) := by
   unfold velocityGradient
   simpa using hb.fderiv_apply (𝕜 := ℝ) ((0, Pi.single j 1) : TimeVelocity d)
 
-private theorem velocityHessian_continuous {d : ℕ}
+private theorem velocityHessian_continuous 
     (b : TimeVelocity d → ℝ) (hb : ContDiff ℝ (⊤ : ℕ∞) b) (j i : Fin d) :
     Continuous (fun z => velocityHessian b z j i) := by
   unfold velocityHessian
@@ -276,7 +280,7 @@ private theorem velocityHessian_continuous {d : ℕ}
   simpa using (hgrad.continuous_fderiv (by simp)).clm_apply continuous_const |>.clm_apply
     continuous_const
 
-private theorem velocityHessian_compact {d : ℕ}
+private theorem velocityHessian_compact 
     (b : TimeVelocity d → ℝ) (hb : HasCompactSupport b) (j i : Fin d) :
     HasCompactSupport (fun z => velocityHessian b z j i) := by
   unfold velocityHessian
@@ -287,7 +291,7 @@ private theorem velocityHessian_compact {d : ℕ}
       H ((0, Pi.single j 1) : TimeVelocity d)
         ((0, Pi.single i 1) : TimeVelocity d)) rfl
 
-private theorem localized_spatial_jet_tsupport_subset {d : ℕ}
+private theorem localized_spatial_jet_tsupport_subset 
     (b q : TimeVelocity d → ℝ) (QG : TimeVelocity d → PDE.Vec d)
     (QH : TimeVelocity d → PDE.Mat d) :
     tsupport (localizedScalar b q) ⊆ tsupport b ∧
@@ -332,7 +336,7 @@ private theorem localized_spatial_jet_tsupport_subset {d : ℕ}
 the underlying compact carrier, so all selected first and mixed second
 velocity derivatives vanish there. -/
 private theorem plateau_spatial_value_derivatives
-    {d : ℕ} {K : Set (TimeVelocity d)} {δ : ℝ}
+     {K : HypoellipticAleksandrov.Parabolic.TVSet d} {δ : ℝ}
     (b : TimeVelocity d → ℝ)
     (hbOne : Set.EqOn b 1 (Metric.cthickening δ K))
     {z : TimeVelocity d} (hz : z ∈ Metric.thickening δ K) :
@@ -368,7 +372,7 @@ private theorem plateau_spatial_value_derivatives
 /-- The complete localized ordered spatial jet agrees literally with the
 selected representatives on the compact plateau carrier. -/
 private theorem localized_spatial_jet_eqOn_plateau
-    {d : ℕ} {K : Set (TimeVelocity d)} {δ : ℝ}
+     {K : HypoellipticAleksandrov.Parabolic.TVSet d} {δ : ℝ}
     (q : TimeVelocity d → ℝ) (QG : TimeVelocity d → PDE.Vec d)
     (QH : TimeVelocity d → PDE.Mat d) (b : TimeVelocity d → ℝ)
     (hbOne : Set.EqOn b 1 (Metric.cthickening δ K)) :
@@ -393,7 +397,7 @@ private theorem localized_spatial_jet_eqOn_plateau
 plateau, on which the complete localized spatial jet recovers the selected
 representatives exactly. -/
 theorem WeakPrincipalCoercivityCore.exists_localized_spatial_jet_plateau
-    {d : ℕ} (s₀ s₁ : ℝ) (O : Set (PDE.Vec d)) (hO : IsOpen O)
+     (s₀ s₁ : ℝ) (O : HypoellipticAleksandrov.VecSet d) (hO : IsOpen O)
     (q : TimeVelocity d → ℝ) (QG : TimeVelocity d → PDE.Vec d)
     (QH : TimeVelocity d → PDE.Mat d)
     (η : PDE.Vec d → ℝ) (hηCompact : HasCompactSupport η)
@@ -413,8 +417,8 @@ theorem WeakPrincipalCoercivityCore.exists_localized_spatial_jet_plateau
       ∀ j i : Fin d, Set.EqOn (localizedHessian b q QG QH j i)
         (fun z => QH z j i)
           (Metric.thickening δ (tsupport ζ ×ˢ tsupport η)) := by
-  let S : Set (TimeVelocity d) := Set.Ioo s₀ s₁ ×ˢ O
-  let K₀ : Set (TimeVelocity d) := tsupport ζ ×ˢ tsupport η
+  let S : HypoellipticAleksandrov.Parabolic.TVSet d := Set.Ioo s₀ s₁ ×ˢ O
+  let K₀ : HypoellipticAleksandrov.Parabolic.TVSet d := tsupport ζ ×ˢ tsupport η
   have hS : IsOpen S := isOpen_Ioo.prod hO
   have hK₀ : IsCompact K₀ := hζCompact.isCompact.prod hηCompact.isCompact
   have hK₀S : K₀ ⊆ S := Set.prod_mono hζSupport hηSupport
@@ -427,7 +431,7 @@ theorem WeakPrincipalCoercivityCore.exists_localized_spatial_jet_plateau
 /-- A single smooth compact cutoff localizes a complete ordered spatial weak
 jet, globalizing every selected relation and every `L²` representative. -/
 private theorem localized_ordered_spatial_jet_univ
-    {d : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
+     {U : HypoellipticAleksandrov.Parabolic.TVSet d} (hU : IsOpen U)
     (q : TimeVelocity d → ℝ) (QG : TimeVelocity d → PDE.Vec d)
     (QH : TimeVelocity d → PDE.Mat d)
     (hq : ParabolicMemLpOn U (2 : ℝ≥0∞) q)
@@ -547,7 +551,7 @@ private theorem localized_ordered_spatial_jet_univ
 selected first and ordered second velocity derivative, and all members of the
 common family converge strongly in global `L²`. -/
 private theorem common_mollifier_of_localized_ordered_spatial_jet
-    {d : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
+     {U : HypoellipticAleksandrov.Parabolic.TVSet d} (hU : IsOpen U)
     (q : TimeVelocity d → ℝ) (QG : TimeVelocity d → PDE.Vec d)
     (QH : TimeVelocity d → PDE.Mat d)
     (hq : ParabolicMemLpOn U (2 : ℝ≥0∞) q)
@@ -635,7 +639,7 @@ private theorem common_mollifier_of_localized_ordered_spatial_jet
       (hrii j i)⟩
 
 private theorem spatialPartial_timeSlice
-    {d : ℕ} (q : TimeVelocity d → ℝ) (hq : ContDiff ℝ (⊤ : ℕ∞) q)
+     (q : TimeVelocity d → ℝ) (hq : ContDiff ℝ (⊤ : ℕ∞) q)
     (r : ℝ) (y : PDE.Vec d) (i : Fin d) :
     spatialPartial i (fun x => q (r, x)) y = velocityGradient q (r, y) i := by
   unfold spatialPartial velocityGradient
@@ -646,7 +650,7 @@ private theorem spatialPartial_timeSlice
   rfl
 
 private theorem spatialSecond_timeSlice
-    {d : ℕ} (q : TimeVelocity d → ℝ) (hq : ContDiff ℝ (⊤ : ℕ∞) q)
+     (q : TimeVelocity d → ℝ) (hq : ContDiff ℝ (⊤ : ℕ∞) q)
     (r : ℝ) (y : PDE.Vec d) (j i : Fin d) :
     spatialSecond (fun x => q (r, x)) j i y = velocityHessian q (r, y) j i := by
   unfold spatialSecond
@@ -662,8 +666,8 @@ private theorem spatialSecond_timeSlice
 slice of one common smooth spacetime scalar, with the supplied selected
 derivative representatives substituted literally. -/
 private theorem smooth_principal_coercivity_timeSlice
-    {d : ℕ} (lam Lam M K : ℝ) (s₀ s₁ r : ℝ)
-    (O : Set (PDE.Vec d)) (hO : IsOpen O)
+     (lam Lam M K : ℝ) (s₀ s₁ r : ℝ)
+    (O : HypoellipticAleksandrov.VecSet d) (hO : IsOpen O)
     (A : TimeVelocity d → PDE.Mat d) (q : TimeVelocity d → ℝ)
     (QG : TimeVelocity d → PDE.Vec d) (QH : TimeVelocity d → PDE.Mat d)
     (hr : r ∈ Set.Ioo s₀ s₁)
@@ -709,7 +713,7 @@ private theorem smooth_principal_coercivity_timeSlice
 /-- An integrable function on the literal product cylinder has the expected
 iterated time--velocity integral. -/
 private theorem integralOn_timeVelocity_prod
-    {d : ℕ} (s₀ s₁ : ℝ) (O : Set (PDE.Vec d))
+     (s₀ s₁ : ℝ) (O : HypoellipticAleksandrov.VecSet d)
     (f : TimeVelocity d → ℝ)
     (hf : IntegrableOn f (Set.Ioo s₀ s₁ ×ˢ O) volume) :
     (∫ z in Set.Ioo s₀ s₁ ×ˢ O, f z ∂volume) =
@@ -720,7 +724,7 @@ private theorem integralOn_timeVelocity_prod
   rw [integral_prod _ hf]
 
 private theorem integrableOn_integral_timeVelocity_right
-    {d : ℕ} (s₀ s₁ : ℝ) (O : Set (PDE.Vec d))
+     (s₀ s₁ : ℝ) (O : HypoellipticAleksandrov.VecSet d)
     (f : TimeVelocity d → ℝ)
     (hf : IntegrableOn f (Set.Ioo s₀ s₁ ×ˢ O) volume) :
     IntegrableOn (fun r => ∫ y in O, f (r, y) ∂volume) (Set.Ioo s₀ s₁) volume := by
@@ -730,7 +734,7 @@ private theorem integrableOn_integral_timeVelocity_right
   exact hf.integral_prod_left
 
 private theorem indicator_gradient_slice
-    {d : ℕ} (O : Set (PDE.Vec d)) (η : PDE.Vec d → ℝ)
+     (O : HypoellipticAleksandrov.VecSet d) (η : PDE.Vec d → ℝ)
     (hηsupport : tsupport η ⊆ O) (r : ℝ)
     (QG : TimeVelocity d → PDE.Vec d) :
     (∫ y in O, (tsupport η).indicator
@@ -742,8 +746,8 @@ private theorem indicator_gradient_slice
 /-- Smooth spacetime principal coercivity obtained by weighting the exact
 fixed-time theorem and integrating its slices over the literal cylinder. -/
 private theorem smooth_principal_coercivity_spacetime
-    {d : ℕ} (lam Lam M K : ℝ) (s₀ s₁ : ℝ)
-    (O : Set (PDE.Vec d)) (hO : IsOpen O)
+     (lam Lam M K : ℝ) (s₀ s₁ : ℝ)
+    (O : HypoellipticAleksandrov.VecSet d) (hO : IsOpen O)
     (A : TimeVelocity d → PDE.Mat d) (q : TimeVelocity d → ℝ)
     (QG : TimeVelocity d → PDE.Vec d) (QH : TimeVelocity d → PDE.Mat d)
     (hAmeas : AEStronglyMeasurable A
@@ -780,7 +784,7 @@ private theorem smooth_principal_coercivity_spacetime
       (∫ z in Set.Ioo s₀ s₁ ×ˢ O, ζ z.1 *
         (tsupport η).indicator
           (fun y => ∑ k : Fin d, QG (z.1, y) k ^ 2) z.2 ∂volume) := by
-  let S : Set (TimeVelocity d) := Set.Ioo s₀ s₁ ×ˢ O
+  let S : HypoellipticAleksandrov.Parabolic.TVSet d := Set.Ioo s₀ s₁ ×ˢ O
   let L : TimeVelocity d → ℝ := fun z => ζ z.1 *
     (∑ i : Fin d, ∑ j : Fin d, A z i j * QH z j i) *
     WeakGradientTimeEnergy.localizedGradientDivergence η QG QH z
@@ -863,7 +867,7 @@ private theorem smooth_principal_coercivity_spacetime
   exact hmono
 
 private theorem tendsto_eLpNorm_two_restrict_of_global
-    {d : ℕ} {l : Filter ℝ} (S : Set (TimeVelocity d))
+     {l : Filter ℝ} (S : HypoellipticAleksandrov.Parabolic.TVSet d)
     (f : ℝ → TimeVelocity d → ℝ) (f₀ : TimeVelocity d → ℝ)
     (h : Filter.Tendsto (fun a => eLpNorm (f a - f₀) 2 volume) l (nhds 0)) :
     Filter.Tendsto (fun a => eLpNorm (f a - f₀) 2
@@ -874,7 +878,7 @@ private theorem tendsto_eLpNorm_two_restrict_of_global
       eLpNorm_mono_measure (f a - f₀) Measure.restrict_le_self)
 
 private theorem tendsto_eLpNorm_two_fixed_mul
-    {d : ℕ} {l : Filter ℝ} (S : Set (TimeVelocity d))
+     {l : Filter ℝ} (S : HypoellipticAleksandrov.Parabolic.TVSet d)
     (c : TimeVelocity d → ℝ) (f : ℝ → TimeVelocity d → ℝ)
     (f₀ : TimeVelocity d → ℝ)
     (hc : MemLp c ∞ ((volume : Measure (TimeVelocity d)).restrict S))
@@ -887,7 +891,7 @@ private theorem tendsto_eLpNorm_two_fixed_mul
     c f f₀ hc h
 
 private theorem tendsto_integral_pairing_restrict
-    {d : ℕ} {l : Filter ℝ} (S : Set (TimeVelocity d))
+     {l : Filter ℝ} (S : HypoellipticAleksandrov.Parabolic.TVSet d)
     (f g : ℝ → TimeVelocity d → ℝ) (f₀ g₀ : TimeVelocity d → ℝ)
     (hf : ∀ᶠ a in l, MemLp (f a) 2 ((volume : Measure (TimeVelocity d)).restrict S))
     (hg : ∀ᶠ a in l, MemLp (g a) 2 ((volume : Measure (TimeVelocity d)).restrict S))
@@ -903,7 +907,7 @@ private theorem tendsto_integral_pairing_restrict
     f g f₀ g₀ hf hg hf₀ hg₀ hft hgt
 
 private theorem tendsto_integral_fixed_multipliers_pairing
-    {d : ℕ} {l : Filter ℝ} (S : Set (TimeVelocity d))
+     {l : Filter ℝ} (S : HypoellipticAleksandrov.Parabolic.TVSet d)
     (c e : TimeVelocity d → ℝ)
     (f g : ℝ → TimeVelocity d → ℝ) (f₀ g₀ : TimeVelocity d → ℝ)
     (hc : MemLp c ∞ ((volume : Measure (TimeVelocity d)).restrict S))
@@ -940,7 +944,7 @@ private theorem tendsto_integral_fixed_multipliers_pairing
     (tendsto_eLpNorm_two_fixed_mul S e g g₀ he hgt)
 
 private theorem principal_limit_multipliers_memLp_top
-    {d : ℕ} (S : Set (TimeVelocity d))
+     (S : HypoellipticAleksandrov.Parabolic.TVSet d)
     (η : PDE.Vec d → ℝ) (hη : ContDiff ℝ (⊤ : ℕ∞) η)
     (hηCompact : HasCompactSupport η)
     (ζ : ℝ → ℝ) (hζ : ContDiff ℝ (⊤ : ℕ∞) ζ)
@@ -996,7 +1000,7 @@ private theorem principal_limit_multipliers_memLp_top
 /-- The three finite-coordinate integral expressions converge for the one
 common mollification of the complete localized ordered spatial jet. -/
 private theorem localized_principal_coordinate_integral_limits
-    {d : ℕ} (S : Set (TimeVelocity d))
+     (S : HypoellipticAleksandrov.Parabolic.TVSet d)
     (lam Lam : ℝ) (A : TimeVelocity d → PDE.Mat d)
     (hAmeas : AEStronglyMeasurable A (timeVelocityVolumeOn S))
     (hlam : 0 < lam)
@@ -1104,7 +1108,7 @@ private theorem localized_principal_coordinate_integral_limits
       ((hG k).restrict S) ((hG k).restrict S)
       (hconv _ (hG k)) (hconv _ (hG k))
 
-private theorem sum_sum_sum_rotate {d : ℕ} (f : Fin d → Fin d → Fin d → ℝ) :
+private theorem sum_sum_sum_rotate  (f : Fin d → Fin d → Fin d → ℝ) :
     (∑ i : Fin d, ∑ j : Fin d, ∑ k : Fin d, f i j k) =
       ∑ k : Fin d, ∑ i : Fin d, ∑ j : Fin d, f i j k := by
   calc
@@ -1115,7 +1119,7 @@ private theorem sum_sum_sum_rotate {d : ℕ} (f : Fin d → Fin d → Fin d → 
     _ = _ := Finset.sum_comm
 
 private theorem principal_coordinate_integral_algebra
-    {d : ℕ} (S : Set (TimeVelocity d)) (A : TimeVelocity d → PDE.Mat d)
+     (S : HypoellipticAleksandrov.Parabolic.TVSet d) (A : TimeVelocity d → PDE.Mat d)
     (η : PDE.Vec d → ℝ) (hη : ContDiff ℝ (⊤ : ℕ∞) η)
     (hηCompact : HasCompactSupport η)
     (ζ : ℝ → ℝ) (hζ : ContDiff ℝ (⊤ : ℕ∞) ζ)
@@ -1256,8 +1260,8 @@ private theorem principal_coordinate_integral_algebra
 /-- The raw localized weak jet satisfies the principal coercivity inequality,
 before any plateau identities are used to recover the original representatives. -/
 theorem WeakPrincipalCoercivityCore.localized_limit
-    {d : ℕ} (lam Lam M K : ℝ) (s₀ s₁ : ℝ)
-    (O : Set (PDE.Vec d)) (hO : IsOpen O)
+     (lam Lam M K : ℝ) (s₀ s₁ : ℝ)
+    (O : HypoellipticAleksandrov.VecSet d) (hO : IsOpen O)
     (A : TimeVelocity d → PDE.Mat d) (q : TimeVelocity d → ℝ)
     (QG : TimeVelocity d → PDE.Vec d) (QH : TimeVelocity d → PDE.Mat d)
     (hAmeas : AEStronglyMeasurable A
@@ -1299,7 +1303,7 @@ theorem WeakPrincipalCoercivityCore.localized_limit
       principalCoercivityConstant d lam Lam M K *
         (∫ z in Set.Ioo s₀ s₁ ×ˢ O, ζ z.1 * (tsupport η).indicator
           (fun y => ∑ k : Fin d, localizedGradient b q QG k (z.1, y) ^ 2) z.2 ∂volume) := by
-  let S : Set (TimeVelocity d) := Set.Ioo s₀ s₁ ×ˢ O
+  let S : HypoellipticAleksandrov.Parabolic.TVSet d := Set.Ioo s₀ s₁ ×ˢ O
   let rG : Fin d → TimeVelocity d → ℝ := fun j => localizedGradient b q QG j
   let rH : Fin d → Fin d → TimeVelocity d → ℝ :=
     fun j i => localizedHessian b q QG QH j i
@@ -1355,5 +1359,6 @@ theorem WeakPrincipalCoercivityCore.localized_limit
   rw [halg.1] at hleft
   rw [halg.2.1, halg.2.2] at hright
   exact le_of_tendsto_of_tendsto hright hleft hsmooth
+end
 
 end HypoellipticAleksandrov.Parabolic

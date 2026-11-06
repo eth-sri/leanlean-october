@@ -19,16 +19,18 @@ open scoped ENNReal
 namespace PDE
 
 open MeasureTheory
+section
+variable {α : Type*} [MeasurableSpace α] {μ : Measure α}
 
 private theorem eLpNorm_abs_eq
-    {α : Type*} [MeasurableSpace α] {μ : Measure α}
+    
     (f : α → ℝ) (p : ℝ≥0∞) (hf : AEStronglyMeasurable f μ) :
     eLpNorm (fun x => |f x|) p μ = eLpNorm f p μ := by
   simpa only [Real.norm_eq_abs] using!
     eLpNorm_norm f (p := p) (μ := μ) hf
 
 private theorem aestronglyMeasurable_vecEuclideanNorm_of_coord'
-    {α : Type*} [MeasurableSpace α] {μ : Measure α}
+    
     {d : ℕ} {F : α → Vec d}
     (hF : ∀ i, AEStronglyMeasurable (fun x => F x i) μ) :
     AEStronglyMeasurable (fun x => vecEuclideanNorm (F x)) μ := by
@@ -45,7 +47,7 @@ private theorem aestronglyMeasurable_vecEuclideanNorm_of_coord'
 /-- Coordinatewise `L^p` convergence of native vector fields implies
 `L^p` convergence of their explicit Euclidean difference. -/
 theorem tendsto_eLpNorm_vecEuclideanNorm_sub_zero_of_coordinate
-    {α : Type*} [MeasurableSpace α] {μ : Measure α}
+    
     {d : ℕ} {p : ℝ≥0∞}
     {F : ℕ → α → Vec d} {G : α → Vec d}
     (hp : 1 ≤ p)
@@ -139,5 +141,6 @@ theorem tendsto_eLpNorm_vecEuclideanNorm_sub_zero_of_coordinate
     tendsto_of_tendsto_of_tendsto_of_le_of_le
       tendsto_const_nhds hSum
       (fun _ => zero_le) hBound
+end
 
 end PDE

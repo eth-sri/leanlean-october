@@ -11,26 +11,28 @@ public import Mathlib.Topology.MetricSpace.Pseudo.Lemmas
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
 open Set Filter
+section
+variable {d : ℕ} (H : XV d → ℝ)
 
 /-- The total position derivative selectors are measurable, even at singular points. -/
-theorem measurable_dx {d : ℕ} (H : XV d → ℝ) : Measurable (dx H) := by
+theorem measurable_dx  : Measurable (dx H) := by
   apply Measurable.of_eval
   intro i
   exact measurable_fderiv_apply_const ℝ H (Pi.single i 1, 0)
 
 /-- The total velocity derivative selectors are measurable, even at singular points. -/
-theorem measurable_dv {d : ℕ} (H : XV d → ℝ) : Measurable (dv H) := by
+theorem measurable_dv  : Measurable (dv H) := by
   apply Measurable.of_eval
   intro i
   exact measurable_fderiv_apply_const ℝ H (0, Pi.single i 1)
 
 /-- The total second velocity derivative selectors are entrywise measurable. -/
-theorem measurable_dvv {d : ℕ} (H : XV d → ℝ) (i k : Fin d) :
+theorem measurable_dvv  (i k : Fin d) :
     Measurable (fun q => dvv H q i k) :=
   measurable_fderiv_apply_const ℝ (fun q => dv H q k) (0, Pi.single i 1)
 
 /-- Smoothness off the origin gives smooth position derivative components there. -/
-theorem contDiffAt_dx_off_origin {d : ℕ} (H : XV d → ℝ)
+theorem contDiffAt_dx_off_origin 
     (hs : ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ : Set (XV d)))
     (q : XV d) (hq : q ≠ 0) (i : Fin d) :
     ContDiffAt ℝ (⊤ : ℕ∞) (fun z => dx H z i) q := by
@@ -38,7 +40,7 @@ theorem contDiffAt_dx_off_origin {d : ℕ} (H : XV d → ℝ)
   exact (h.fderiv_right (m := (⊤ : ℕ∞)) (by simp)).clm_apply contDiffAt_const
 
 /-- Smoothness off the origin gives smooth velocity derivative components there. -/
-theorem contDiffAt_dv_off_origin {d : ℕ} (H : XV d → ℝ)
+theorem contDiffAt_dv_off_origin 
     (hs : ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ : Set (XV d)))
     (q : XV d) (hq : q ≠ 0) (i : Fin d) :
     ContDiffAt ℝ (⊤ : ℕ∞) (fun z => dv H z i) q := by
@@ -46,7 +48,7 @@ theorem contDiffAt_dv_off_origin {d : ℕ} (H : XV d → ℝ)
   exact (h.fderiv_right (m := (⊤ : ℕ∞)) (by simp)).clm_apply contDiffAt_const
 
 /-- Smoothness off the origin gives smooth second velocity derivative components there. -/
-theorem contDiffAt_dvv_off_origin {d : ℕ} (H : XV d → ℝ)
+theorem contDiffAt_dvv_off_origin 
     (hs : ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ : Set (XV d)))
     (q : XV d) (hq : q ≠ 0) (i k : Fin d) :
     ContDiffAt ℝ (⊤ : ℕ∞) (fun z => dvv H z i k) q := by
@@ -54,7 +56,7 @@ theorem contDiffAt_dvv_off_origin {d : ℕ} (H : XV d → ℝ)
     (m := (⊤ : ℕ∞)) (by simp)).clm_apply contDiffAt_const
 
 /-- The full first derivative vectors are continuous away from the origin. -/
-theorem continuousOn_profile_jets {d : ℕ} (H : XV d → ℝ)
+theorem continuousOn_profile_jets 
     (hs : ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ : Set (XV d))) :
     ContinuousOn (dx H) ({0}ᶜ : Set (XV d)) ∧
     ContinuousOn (dv H) ({0}ᶜ : Set (XV d)) ∧
@@ -76,7 +78,7 @@ theorem continuousOn_profile_jets {d : ℕ} (H : XV d → ℝ)
     exact (contDiffAt_dvv_off_origin H hs q (by simpa using hq) i k).continuousAt.continuousWithinAt
 
 /-- All classical jet components are bounded on each compact set avoiding the origin. -/
-theorem profile_jets_compact_bound {d : ℕ} (H : XV d → ℝ)
+theorem profile_jets_compact_bound 
     (hs : ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ : Set (XV d)))
     (K : Set (XV d)) (hK : IsCompact K) (hz : 0 ∉ K) :
     ∃ M : ℝ, ∀ q ∈ K,
@@ -110,7 +112,7 @@ theorem profile_jets_compact_bound {d : ℕ} (H : XV d → ℝ)
   exact hc'.trans ((hh q hq).trans ((le_max_right _ _).trans (le_max_right _ _)))
 
 /-- Positive gauge comparability and smoothness away from zero imply continuity everywhere. -/
-theorem continuous_profile_of_comparison {d : ℕ} (H : XV d → ℝ)
+theorem continuous_profile_of_comparison 
     (alpha c C : ℝ) (ha : 0 < alpha) (hc : 0 ≤ c) (hzero : H 0 = 0)
     (hcomp : ∀ q, c * Real.rpow (rho q) alpha ≤ H q ∧
       H q ≤ C * Real.rpow (rho q) alpha)
@@ -130,5 +132,6 @@ theorem continuous_profile_of_comparison {d : ℕ} (H : XV d → ℝ)
     simpa only [ContinuousAt, hzero] using hz
   · exact hsmooth.continuousOn.continuousAt
       (isOpen_compl_singleton.mem_nhds (by simpa using hq))
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.MovingLensSign
 public import HypoellipticAleksandrov.Parabolic.LocalClassical
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Geometry for forward propagation
@@ -24,26 +26,26 @@ noncomputable section
 open Set
 
 /-- An open coordinate rectangle in velocity space. -/
-def velocityRectangle {d : ℕ} (lower upper : PDE.Vec d) : Set (PDE.Vec d) :=
+def velocityRectangle {d : ℕ} (lower upper : PDE.Vec d) : HypoellipticAleksandrov.VecSet d :=
   {v | ∀ i, lower i < v i ∧ v i < upper i}
 
 /-- The closed coordinate rectangle with the same faces. -/
-def velocityClosedRectangle {d : ℕ} (lower upper : PDE.Vec d) : Set (PDE.Vec d) :=
+def velocityClosedRectangle {d : ℕ} (lower upper : PDE.Vec d) : HypoellipticAleksandrov.VecSet d :=
   {v | ∀ i, lower i ≤ v i ∧ v i ≤ upper i}
 
 /-- The source open time--velocity rectangle based at time zero. -/
 def parabolicRectangle {d : ℕ} (tau : ℝ) (lower upper : PDE.Vec d) :
-    Set (TimeVelocity d) :=
+    HypoellipticAleksandrov.Parabolic.TVSet d :=
   Ioo 0 tau ×ˢ velocityRectangle lower upper
 
 /-- The compact closed counterpart of `parabolicRectangle`. -/
 def parabolicClosedRectangle {d : ℕ} (tau : ℝ) (lower upper : PDE.Vec d) :
-    Set (TimeVelocity d) :=
+    HypoellipticAleksandrov.Parabolic.TVSet d :=
   Icc 0 tau ×ˢ velocityClosedRectangle lower upper
 
 /-- The positive-time rectangle including its terminal face. -/
 def parabolicTerminalRectangle {d : ℕ} (tau : ℝ) (lower upper : PDE.Vec d) :
-    Set (TimeVelocity d) :=
+    HypoellipticAleksandrov.Parabolic.TVSet d :=
   Ioc 0 tau ×ˢ velocityRectangle lower upper
 
 /-- Membership in an open velocity rectangle. -/

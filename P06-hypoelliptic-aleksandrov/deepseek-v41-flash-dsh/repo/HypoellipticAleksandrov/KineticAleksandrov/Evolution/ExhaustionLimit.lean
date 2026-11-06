@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionLimitBalls
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionLimitInterval
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionLimitWholeSpace
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Actual classical viscous terminal evolution by exhaustion
@@ -30,7 +31,7 @@ section EvolutionData
 
 variable (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
 variable (hlam : 0 < lam) (hlamLam : lam ≤ Lam) (hm : 0 < m) (hmLb : m ≤ L_b)
-variable (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
+variable (Ω : HypoellipticAleksandrov.VecSet n) (γ : ℝ → PDE.Vec n)
 variable (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
 variable (hΩ : IsAdmissibleEvolutionDomain Ω) (hγ : IsContinuousPiecewiseC1 γ)
 variable (hB_smooth : IsSmoothFullKineticCoefficient B)

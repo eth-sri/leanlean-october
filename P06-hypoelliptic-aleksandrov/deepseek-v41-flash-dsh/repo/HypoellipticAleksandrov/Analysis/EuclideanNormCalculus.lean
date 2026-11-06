@@ -29,8 +29,7 @@ theorem vecNormSqFDeriv_apply {d : ℕ} (z w : PDE.Vec d) :
     vecNormSqFDeriv z w = 2 * PDE.vecDot z w := by
   classical
   unfold vecNormSqFDeriv PDE.vecDot
-  simp only [ContinuousLinearMap.sum_apply, ContinuousLinearMap.smul_apply,
-    ContinuousLinearMap.proj_apply, smul_eq_mul]
+  simp
   rw [Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro i _hi
@@ -48,14 +47,14 @@ theorem hasFDerivAt_vecNormSq {d : ℕ} (z : PDE.Vec d) :
   rw [vecNormSqFDeriv_apply]
   unfold PDE.vecNormSq PDE.vecDot
   rw [fderiv_fun_sum fun i _ => by fun_prop]
-  simp only [ContinuousLinearMap.sum_apply]
+  simp
   rw [Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro i _hi
   rw [fderiv_fun_mul (by fun_prop) (by fun_prop)]
-  simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, smul_eq_mul]
+  simp
   rw [(hasFDerivAt_apply (𝕜 := ℝ) i z).fderiv]
-  simp only [ContinuousLinearMap.proj_apply]
+  simp
   ring
 
 /-- The continuous linear functional `w ↦ (z · w) / |z|`. -/
@@ -68,8 +67,7 @@ theorem vecEuclideanNormFDeriv_apply {d : ℕ} (z w : PDE.Vec d) :
     vecEuclideanNormFDeriv z w = PDE.vecDot z w / PDE.vecEuclideanNorm z := by
   classical
   unfold vecEuclideanNormFDeriv PDE.vecDot
-  simp only [ContinuousLinearMap.smul_apply, ContinuousLinearMap.sum_apply,
-    ContinuousLinearMap.proj_apply, smul_eq_mul]
+  simp
   rw [div_eq_inv_mul]
 
 end

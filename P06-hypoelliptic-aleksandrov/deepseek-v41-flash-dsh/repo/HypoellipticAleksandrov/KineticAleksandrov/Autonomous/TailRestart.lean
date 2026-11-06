@@ -11,13 +11,12 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov SectionTwo ProbabilityTheory
 open scoped ENNReal
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) (he : e.velocity 0 ∈ c.active)
 
 /-- The strict one-pole tail is exactly the enlarged Green mixture of surviving terminal mass. -/
 theorem active_tail_restart_identity_strict
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point)
-    (he : e.velocity 0 ∈ c.active) (t : ℝ) (ht : 0 ≤ t) :
+     (t : ℝ) (ht : 0 ≤ t) :
     (stripGreen hH hLE hlam hLam A c.activeInterval ⊤ (densityClockPole c e he)).restrict
       {p | e.time + t < p.time} =
         enlargedActiveGreen hH hLE hlam hLam A c
@@ -52,10 +51,7 @@ theorem active_tail_restart_identity_strict
 
 /-- A one-pole Green measure assigns zero mass to each exact physical time slice. -/
 theorem active_green_time_slice_null
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point)
-    (he : e.velocity 0 ∈ c.active) (s : ℝ) :
+     (s : ℝ) :
     stripGreen hH hLE hlam hLam A c.activeInterval ⊤ (densityClockPole c e he)
       {p | p.time = s} = 0 := by
   have hh := stripGreen_timeMarginal hH hLE hlam hLam A c.activeInterval ⊤
@@ -64,10 +60,7 @@ theorem active_green_time_slice_null
 
 /-- Including the restart-time endpoint does not change the Green restart identity. -/
 theorem active_tail_restart_identity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point)
-    (he : e.velocity 0 ∈ c.active) (t : ℝ) (ht : 0 ≤ t) :
+     (t : ℝ) (ht : 0 ≤ t) :
     (stripGreen hH hLE hlam hLam A c.activeInterval ⊤ (densityClockPole c e he)).restrict
       {p | e.time + t ≤ p.time} =
         enlargedActiveGreen hH hLE hlam hLam A c
@@ -81,5 +74,6 @@ theorem active_tail_restart_identity
       active_green_time_slice_null hH hLE hlam hLam A c e he (e.time + t)
   filter_upwards [hn] with p hp
   exact propext (le_iff_lt_or_eq.trans (or_iff_left hp.symm))
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

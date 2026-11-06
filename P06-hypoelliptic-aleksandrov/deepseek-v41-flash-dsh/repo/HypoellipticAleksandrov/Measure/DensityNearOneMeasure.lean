@@ -7,6 +7,7 @@ public import Mathlib.MeasureTheory.Measure.Real
 public import Mathlib.Tactic.Linarith
 public import Mathlib.Tactic.NormNum
 public import Mathlib.Tactic.Ring
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Measure bookkeeping for the near-one density argument
@@ -69,7 +70,7 @@ theorem volume_parabolicBox_one_ne_top (d : Nat) :
 /-- A restricted parabolic norm is bounded by a constant on a measurable
 support, without a positive-dimension assumption. -/
 theorem parabolicELpNormOn_le_of_norm_le_indicator
-    (d : Nat) (f : TimeVelocity d → Real) (s E : Set (TimeVelocity d))
+    (d : Nat) (f : TimeVelocity d → Real) (s E : HypoellipticAleksandrov.Parabolic.TVSet d)
     (M : Real) (hf : AEStronglyMeasurable f (volume.restrict s))
     (hs : MeasurableSet s) (hE : MeasurableSet E) (hM : 0 ≤ M)
     (hbound : ∀ z ∈ s, ‖f z‖ ≤ E.indicator (fun _ : TimeVelocity d ↦ M) z) :
@@ -97,7 +98,7 @@ theorem parabolicELpNormOn_le_of_norm_le_indicator
 
 /-- Real-valued corollary of the finite-support parabolic norm estimate. -/
 theorem parabolicLpNormOn_le_of_norm_le_indicator
-    (d : Nat) (f : TimeVelocity d → Real) (s E : Set (TimeVelocity d))
+    (d : Nat) (f : TimeVelocity d → Real) (s E : HypoellipticAleksandrov.Parabolic.TVSet d)
     (M : Real) (hf : AEStronglyMeasurable f (volume.restrict s))
     (hs : MeasurableSet s) (hE : MeasurableSet E) (hM : 0 ≤ M)
     (hfinite : volume (s ∩ E) ≠ ∞)
@@ -119,7 +120,7 @@ theorem parabolicLpNormOn_le_of_norm_le_indicator
 /-- The strict sublevel set is measurable relative to the unit box under the
 local `C²` regularity supplied to `DensityToPoint`. -/
 theorem measurableSet_parabolicBox_inter_lt_one_of_contDiffOn
-    (d : Nat) (U : Set (TimeVelocity d)) (u : TimeVelocity d → Real)
+    (d : Nat) (U : HypoellipticAleksandrov.Parabolic.TVSet d) (u : TimeVelocity d → Real)
     (hQU : parabolicBox 1 1 0 (0 : PDE.Vec d) ⊆ U)
     (hu : ContDiffOn Real 2 u U) :
     MeasurableSet (parabolicBox 1 1 0 (0 : PDE.Vec d) ∩ {z | u z < 1}) := by
@@ -132,7 +133,7 @@ theorem measurableSet_parabolicBox_inter_lt_one_of_contDiffOn
 /-- Density of the non-strict superlevel set bounds its exact strict
 sublevel complement in the normalized parabolic box. -/
 theorem volume_parabolicBox_inter_lt_one_toReal_le_one_sub_mul
-    (d : Nat) (beta : Real) (U : Set (TimeVelocity d))
+    (d : Nat) (beta : Real) (U : HypoellipticAleksandrov.Parabolic.TVSet d)
     (u : TimeVelocity d → Real)
     (hQU : parabolicBox 1 1 0 (0 : PDE.Vec d) ⊆ U)
     (hu : ContDiffOn Real 2 u U)
@@ -141,9 +142,9 @@ theorem volume_parabolicBox_inter_lt_one_toReal_le_one_sub_mul
       (volume (parabolicBox 1 1 0 (0 : PDE.Vec d) ∩ {z | 1 ≤ u z})).toReal) :
     (volume (parabolicBox 1 1 0 (0 : PDE.Vec d) ∩ {z | u z < 1})).toReal ≤
       (1 - beta) * (volume (parabolicBox 1 1 0 (0 : PDE.Vec d))).toReal := by
-  let Q : Set (TimeVelocity d) := parabolicBox 1 1 0 0
-  let L : Set (TimeVelocity d) := Q ∩ {z | u z < 1}
-  let H : Set (TimeVelocity d) := Q ∩ {z | 1 ≤ u z}
+  let Q : HypoellipticAleksandrov.Parabolic.TVSet d := parabolicBox 1 1 0 0
+  let L : HypoellipticAleksandrov.Parabolic.TVSet d := Q ∩ {z | u z < 1}
+  let H : HypoellipticAleksandrov.Parabolic.TVSet d := Q ∩ {z | 1 ≤ u z}
   have hL : MeasurableSet L := by
     exact measurableSet_parabolicBox_inter_lt_one_of_contDiffOn d U u hQU hu
   have hLsubset : L ⊆ Q := fun _ hz => hz.1
@@ -176,7 +177,7 @@ private theorem weightedSource_nonneg {d : Nat} (rho : Real) (u : TimeVelocity d
 volume, with no coefficient or ABP premise. -/
 theorem parabolicLpNormOn_localABP_weighted_one_sub_le
     (d : Nat) (rho : Real) (hrho : 0 ≤ rho)
-    (U : Set (TimeVelocity d)) (u : TimeVelocity d → Real)
+    (U : HypoellipticAleksandrov.Parabolic.TVSet d) (u : TimeVelocity d → Real)
     (hQU : parabolicBox 1 1 0 (0 : PDE.Vec d) ⊆ U)
     (hu : ContDiffOn Real 2 u U)
     (hu_nonneg : IsNonnegativeOn u (parabolicBox 1 1 0 (0 : PDE.Vec d)))
@@ -187,8 +188,8 @@ theorem parabolicLpNormOn_localABP_weighted_one_sub_le
       rho * Real.exp (rho / 4) *
         Real.rpow (volume (parabolicBox 1 1 0 (0 : PDE.Vec d) ∩ {z | u z < 1})).toReal
           (1 / ((d : Real) + 1)) := by
-  let Q : Set (TimeVelocity d) := parabolicBox 1 1 0 0
-  let E : Set (TimeVelocity d) := Q ∩ {z | u z < 1}
+  let Q : HypoellipticAleksandrov.Parabolic.TVSet d := parabolicBox 1 1 0 0
+  let E : HypoellipticAleksandrov.Parabolic.TVSet d := Q ∩ {z | u z < 1}
   let f : TimeVelocity d → Real := fun z ↦
     Real.exp (rho * (z.1 - 3 / 4)) * (rho * max (1 - u z) 0)
   have hM : 0 ≤ rho * Real.exp (rho / 4) := mul_nonneg hrho (Real.exp_pos _).le
@@ -274,7 +275,7 @@ theorem parabolicLpNormOn_localABP_weighted_one_sub_le
 the weighted-source estimate. -/
 theorem exp_neg_quarter_mul_parabolicLpNormOn_localABP_weighted_one_sub_le
     (d : Nat) (rho : Real) (hrho : 0 ≤ rho)
-    (U : Set (TimeVelocity d)) (u : TimeVelocity d → Real)
+    (U : HypoellipticAleksandrov.Parabolic.TVSet d) (u : TimeVelocity d → Real)
     (hQU : parabolicBox 1 1 0 (0 : PDE.Vec d) ⊆ U)
     (hu : ContDiffOn Real 2 u U)
     (hu_nonneg : IsNonnegativeOn u (parabolicBox 1 1 0 (0 : PDE.Vec d)))

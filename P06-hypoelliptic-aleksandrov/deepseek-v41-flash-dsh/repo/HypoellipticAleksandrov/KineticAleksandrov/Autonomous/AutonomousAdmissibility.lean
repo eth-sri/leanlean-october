@@ -52,7 +52,7 @@ theorem autonomous_admissibility_of_below_four_density
     refine ⟨hw.continuousOn, ?_⟩
     intro P₀ R hR hQ psi hpsi
     obtain ⟨U, _hU, hUQ, hps⟩ := smoothNear_regular hpsi
-    have hQQ : backwardCylinder P₀ R ⊆ Omega := subset_closure.trans hQ
+    have hQQ := subset_closure.trans hQ
     have hpr := comparison_regular_mono hps (subset_closure.trans hUQ)
     have hwr := comparison_regular_mono hw hQQ
     have hneg := comparison_regular_const_mul hwr (-1)

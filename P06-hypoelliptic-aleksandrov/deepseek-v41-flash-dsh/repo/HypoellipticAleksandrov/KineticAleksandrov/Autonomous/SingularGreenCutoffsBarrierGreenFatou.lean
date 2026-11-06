@@ -54,7 +54,7 @@ theorem barrier_green_cutoff_removal
     simpa only [add_zero] using (hi.sub hcut0).add herr
   have hboundF (n : ℕ) : (∫⁻ q, F n q ∂physicalOccupationMeasure E z T) ≤ ENNReal.ofReal (b n) :=
     hb ((n : ℝ) + 1) (by
-      have hn : (0 : ℝ) ≤ n := by positivity
+      have hn : 0 ≤ n := by positivity
       linarith only [hn])
   have hh := singular_fatou_of_real_bounds (physicalOccupationMeasure E z T) F
     (fun q => ENNReal.ofReal (c * w q)) hmF hpF b _ hbt hboundF

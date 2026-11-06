@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.Ambient.MatrixContraction
 public import HypoellipticAleksandrov.Coefficients.ParabolicRegularization
 public import HypoellipticAleksandrov.Parabolic.ParabolicMollifierConvergence
 public import PDEFoundation.Measure.LpDominatedConvergence
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Decay of the parabolic convolution commutator
@@ -185,7 +186,7 @@ private theorem parabolicConvolution_eq_leftConvolution {d : Nat}
     (f rho : TimeVelocity d → Real) :
     parabolicConvolution f rho =
       rho ⋆[ContinuousLinearMap.lsmul Real Real,
-        (volume : Measure (TimeVelocity d))] f := by
+        (HypoellipticAleksandrov.Parabolic.TVVolume d)] f := by
   rw [← convolution_flip]
   ext z
   simp only [parabolicConvolution, convolution_def]
@@ -303,7 +304,7 @@ private theorem parabolicConvolution_matrixContraction_eq_sum
 theorem tendsto_eLpNorm_parabolicConvolutionCommutator_on_compact
     {d : Nat} (A : CoefficientField d)
     (H : TimeVelocity d → PDE.Mat d)
-    (K : Set (TimeVelocity d)) (hK : IsCompact K)
+    (K : HypoellipticAleksandrov.Parabolic.TVSet d) (hK : IsCompact K)
     (M : Real) (hM : 0 ≤ M)
     (hAmeas : ∀ i j : Fin d,
       AEStronglyMeasurable (fun z => coefficientAt A z i j) volume)
@@ -317,7 +318,7 @@ theorem tendsto_eLpNorm_parabolicConvolutionCommutator_on_compact
       (parabolicConvolutionCommutator A H n)
       (parabolicExponent d) (volume.restrict K)) atTop (nhds 0) := by
   letI : DecidableEq (Fin d) := Classical.decEq _
-  let μK : Measure (TimeVelocity d) := volume.restrict K
+  let μK : HypoellipticAleksandrov.Parabolic.TVMeasure d := volume.restrict K
   letI : IsFiniteMeasure μK := isFiniteMeasure_restrict.mpr hK.measure_ne_top
   let p : ENNReal := parabolicExponent d
   have hpOne : (1 : ENNReal) ≤ p := by

@@ -77,7 +77,7 @@ theorem barrier_weight_fiber_locallyIntegrable (alpha : ℝ) (ha : 0 < alpha)
   have hb := ((bellman_abs_rpow_locallyIntegrable ((alpha - 2) / 3)
     (by linarith)).integrableOn_isCompact hK)
   apply hb.mono' hm.aestronglyMeasurable.restrict
-  filter_upwards [ae_restrict_of_ae (volume.ae_ne (0 : ℝ))] with X hX
+  filter_upwards [ae_restrict_of_ae (volume.ae_ne 0)] with X hX
   rw [Real.norm_eq_abs, abs_of_nonneg (Real.rpow_nonneg (bellmanGauge_nonneg _) _)]
   have hh := barrier_position_fiber_bound (alpha - 2) (by linarith)
     (fun q => bellmanGauge q ^ (alpha - 2)) 1 zero_le_one
@@ -108,7 +108,7 @@ theorem barrier_convolved_jet_inequality {lam Lam alpha c : ℝ}
     ((hiX.const_mul q.2).add (hivv.const_mul (A.a q.1 q.2))) ?_
   · simpa only [positionConvolution, Pi.add_apply, integral_add (hiX.const_mul q.2)
       (hivv.const_mul (A.a q.1 q.2)), integral_const_mul] using hh
-  · filter_upwards [volume.ae_ne (0 : ℝ)] with X hX
+  · filter_upwards [volume.ae_ne 0] with X hX
     have hq : (X, q.2) ∈ bellmanPuncturedSet := fun he => hX (congrArg Prod.fst he)
     have hb := hbound (X, q.2) hq (A.a q.1 q.2) (A.bounds q.1 q.2)
     have hi := mul_le_mul_of_nonneg_left hb (heta.2.2.1 (q.1 - Y - X))

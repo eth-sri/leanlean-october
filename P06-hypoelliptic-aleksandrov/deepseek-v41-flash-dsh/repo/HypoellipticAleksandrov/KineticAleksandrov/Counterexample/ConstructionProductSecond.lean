@@ -2,6 +2,7 @@ module
 
 public import PDEFoundation.Sobolev.WeakDerivative.Product
 public import PDEFoundation.Sobolev.WeakDerivative.Algebra
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Second weak product rule with the same first representatives -/
 
@@ -12,7 +13,7 @@ open MeasureTheory
 
 /-- Multiplication by a smooth function preserves a prescribed second weak derivative.
 The two first representatives are the ones appearing in both weak identities. -/
-theorem construction_weak_second_product {n : ℕ} {D : Set (PDE.Vec n)}
+theorem construction_weak_second_product {n : ℕ} {D : HypoellipticAleksandrov.VecSet n}
     (u gi gk hik phi : PDE.Vec n → ℝ) (i k : Fin n)
     (hu : PDE.HasWeakPartialDerivOn D i u gi)
     (hg : PDE.HasWeakPartialDerivOn D i gk hik)

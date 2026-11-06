@@ -38,7 +38,7 @@ theorem propagation_step_position {d : ℕ} {lam Lam H T0 T1 kx kv h : ℝ}
     (hhstar.trans (stepSize_le_position d lam Lam H T0 T1 kx kv))
     (show (0 : ℝ) ≤ 3 / 2 by norm_num)
   rw [← Real.rpow_mul hratio.le] at hb
-  norm_num only [show (2 / 3 : ℝ) * (3 / 2) = 1 by norm_num, Real.rpow_one] at hb
+  norm_num at hb
   calc
     _ ≤ positionTubeConstant d lam Lam H T1 *
         (kx / (2 * positionTubeConstant d lam Lam H T1)) :=

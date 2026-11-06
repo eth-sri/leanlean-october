@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Reconstruction.VecFouri
 public import Mathlib.Probability.Kernel.Disintegration.StandardBorel
 import Mathlib.Probability.Kernel.MeasurableIntegral
 import Mathlib.Probability.Kernel.Composition.IntegralCompProd
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Disintegration and jointly measurable Fourier representatives
@@ -120,7 +121,7 @@ lemma setIntegral_fiberDensity {m : Measure Y} {g : Y → ℝ≥0∞} (hg : Meas
     [IsFiniteMeasure ((m.withDensity g) ⊗ₘ κ)] [SFinite m] (ξ : PDE.Vec d) {E : Set Y}
     (hE : MeasurableSet E) :
     ∫ y in E, fiberDensity g κ ξ y ∂m =
-      ∫ p in E ×ˢ (univ : Set (PDE.Vec d)), cexp (-((PDE.vecDot ξ p.2 : ℝ) * I))
+      ∫ p in E ×ˢ (univ : HypoellipticAleksandrov.VecSet d), cexp (-((PDE.vecDot ξ p.2 : ℝ) * I))
         ∂((m.withDensity g) ⊗ₘ κ) := by
   have hf : Measurable fun p : Y × PDE.Vec d => cexp (-((PDE.vecDot ξ p.2 : ℝ) * I)) := by
     have hc : Continuous fun z : PDE.Vec d => cexp (-((PDE.vecDot ξ z : ℝ) * I)) := by
@@ -128,7 +129,7 @@ lemma setIntegral_fiberDensity {m : Measure Y} {g : Y → ℝ≥0∞} (hg : Meas
       fun_prop
     exact hc.measurable.comp measurable_snd
   have hint : IntegrableOn (fun p : Y × PDE.Vec d => cexp (-((PDE.vecDot ξ p.2 : ℝ) * I)))
-      (E ×ˢ (univ : Set (PDE.Vec d))) ((m.withDensity g) ⊗ₘ κ) :=
+      (E ×ˢ (univ : HypoellipticAleksandrov.VecSet d)) ((m.withDensity g) ⊗ₘ κ) :=
     (Integrable.of_bound hf.aestronglyMeasurable 1
       (Filter.Eventually.of_forall fun p => (norm_exp_vecDot ξ p.2).le)).integrableOn
   rw [Measure.setIntegral_compProd hE MeasurableSet.univ hint]
@@ -167,7 +168,7 @@ theorem fiber_disintegration {m : Measure Y} [SigmaFinite m] (Γ : Measure (Y ×
     [IsFiniteMeasure Γ] {g : Y → ℝ≥0∞} (hg : Measurable g) (hΓ : Γ.fst = m.withDensity g)
     (k : PDE.Vec d → Y → ℂ)
     (hk : ∀ ξ, Integrable (k ξ) m ∧ ∀ E, MeasurableSet E →
-      ∫ y in E, k ξ y ∂m = ∫ p in E ×ˢ (univ : Set (PDE.Vec d)),
+      ∫ y in E, k ξ y ∂m = ∫ p in E ×ˢ (univ : HypoellipticAleksandrov.VecSet d),
         cexp (-((PDE.vecDot ξ p.2 : ℝ) * I)) ∂Γ) :
     Γ = (m.withDensity g) ⊗ₘ Γ.condKernel ∧
     (∀ y, IsProbabilityMeasure (Γ.condKernel y)) ∧

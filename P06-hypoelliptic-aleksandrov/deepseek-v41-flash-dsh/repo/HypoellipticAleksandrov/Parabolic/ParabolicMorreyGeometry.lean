@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.HarnackGeometry
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Parabolic coordinate geometry for Morrey regularity
@@ -28,11 +29,11 @@ noncomputable def parabolicCoordinateDist {d : Nat}
 
 /-- The open coordinate box of parabolic radius `r` about `z0`. -/
 def parabolicCoordinateBox {d : Nat} (z0 : TimeVelocity d) (r : Real) :
-    Set (TimeVelocity d) :=
+    HypoellipticAleksandrov.Parabolic.TVSet d :=
   {z | parabolicCoordinateDist z z0 < r}
 
 /-- A pointwise parabolic Hölder-seminorm upper bound on a set. -/
-def ParabolicHolderSeminormLE {d : Nat} (S : Set (TimeVelocity d))
+def ParabolicHolderSeminormLE {d : Nat} (S : HypoellipticAleksandrov.Parabolic.TVSet d)
     (u : TimeVelocity d -> Real) (alpha K : Real) : Prop :=
   ∀ z ∈ S, ∀ w ∈ S,
     |u z - u w| <= K * parabolicCoordinateDist z w ^ alpha
@@ -124,7 +125,7 @@ theorem parabolicCoordinateDist_parabolicAffine {d : Nat} (t0 : Real) (v0 : PDE.
 namespace ParabolicHolderSeminormLE
 
 /-- A positive-exponent parabolic Hölder bound yields continuity on its set. -/
-theorem continuousOn {d : Nat} {S : Set (TimeVelocity d)} {u : TimeVelocity d -> Real}
+theorem continuousOn {d : Nat} {S : HypoellipticAleksandrov.Parabolic.TVSet d} {u : TimeVelocity d -> Real}
     {alpha K : Real} (h : ParabolicHolderSeminormLE S u alpha K) (halpha : 0 < alpha)
     (hK : 0 <= K) : ContinuousOn u S := by
   intro z hz

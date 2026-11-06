@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.ParabolicPoincareSpatial
 public import HypoellipticAleksandrov.Parabolic.ParabolicPoincareTime
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Smooth normalized parabolic Poincare estimate
@@ -42,7 +43,7 @@ private theorem continuous_velocityHessian_local
 private theorem stronglyMeasurable_parabolicMorreyUnitSpatialAffineProjection
     {d : Nat} {u : TimeVelocity d -> Real} (hu : Continuous u) :
     StronglyMeasurable (parabolicMorreyUnitSpatialAffineProjection u) := by
-  let V : Set (PDE.Vec d) := velocityCube (0 : PDE.Vec d) 1
+  let V : HypoellipticAleksandrov.VecSet d := velocityCube (0 : PDE.Vec d) 1
   let ν : Measure (PDE.Vec d) := volume.restrict V
   have huStrong : StronglyMeasurable
       (Function.uncurry fun t : Real => fun v : PDE.Vec d => u (t, v)) := by

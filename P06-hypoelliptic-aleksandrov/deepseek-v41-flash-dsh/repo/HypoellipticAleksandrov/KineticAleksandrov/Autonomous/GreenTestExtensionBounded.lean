@@ -10,15 +10,13 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov Filter
 open SectionTwo TheoremA Evolution
 open scoped Topology
+section
+variable (hH : HormanderHypoellipticityStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H) (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ)) (phi : Point → ℝ)
 
 /-- The actual identity holds for every globally smooth test bounded, together with its
 operator, on the open velocity strip. No derivative of the coefficient enters the bound. -/
 theorem strip_identity_bounded_smooth_future_of_realization
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
-    (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ))
-    (phi : Point → ℝ)
+    
     (hphi : ContDiff ℝ (⊤ : ℕ∞) (phi ∘ reconstructionPhysicalHomeomorph))
     (hb : ∃ M : ℝ, ∀ p, e.1.time ≤ p.time → p.time ≤ T →
       p.velocity 0 ∈ H.carrier →
@@ -127,11 +125,7 @@ theorem strip_identity_bounded_smooth_future_of_realization
 
 /-- The bounded smooth identity under the source's time-uniform open-velocity bounds. -/
 theorem strip_identity_bounded_smooth_of_realization
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
-    (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ))
-    (phi : Point → ℝ)
+    
     (hphi : ContDiff ℝ (⊤ : ℕ∞) (phi ∘ reconstructionPhysicalHomeomorph))
     (hb : ∃ M : ℝ, ∀ p, p.velocity 0 ∈ H.carrier →
       |phi p| ≤ M ∧ |forwardScalarOperator A.a phi p| ≤ M) :
@@ -140,5 +134,6 @@ theorem strip_identity_bounded_smooth_of_realization
   apply strip_identity_bounded_smooth_future_of_realization hH hlam hLam A H E hE T e phi hphi
   obtain ⟨M, hM⟩ := hb
   exact ⟨M, fun p _ _ hp => hM p hp⟩
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

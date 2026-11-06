@@ -11,21 +11,20 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.ProfileG
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
 open MeasureTheory
+section
+variable {d : ℕ} {alpha : ℝ} (h : CounterProfileStatement d alpha) (n : ℕ)
 
 /-- The standard smooth approximation of the selected unflattened profile. -/
-noncomputable def mollifiedProfile {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (n : ℕ) : XV d → ℝ :=
+noncomputable def mollifiedProfile  : XV d → ℝ :=
   spatialMollify (standardMollifierSequence n) (profileFunction h)
 
 /-- Each selected profile approximation is smooth. -/
-theorem contDiff_mollifiedProfile {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (n : ℕ) :
+theorem contDiff_mollifiedProfile  :
     ContDiff ℝ (⊤ : ℕ∞) (mollifiedProfile h n) :=
   spatialMollify_contDiff _ _ (selectedProfile_spec h).2.2.2.2.2.2.1.locallyIntegrable
 
 /-- The position derivative of the profile approximation is convolution of the selected jet. -/
-theorem dx_mollifiedProfile {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (n : ℕ) (q : XV d) (i : Fin d) :
+theorem dx_mollifiedProfile  (q : XV d) (i : Fin d) :
     dx (mollifiedProfile h n) q i =
       spatialMollify (standardMollifierSequence n) (fun z => profilePositionJet h z i) q := by
   have hH := (selectedProfile_spec h).2.2.2.2.2.2.1
@@ -35,8 +34,7 @@ theorem dx_mollifiedProfile {d : ℕ} {alpha : ℝ}
   exact (hw test (ht.of_le (by simp)) hc).1 i
 
 /-- The velocity derivative of the approximation is convolution of the selected weak jet. -/
-theorem dv_mollifiedProfile {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (n : ℕ) (q : XV d) (i : Fin d) :
+theorem dv_mollifiedProfile  (q : XV d) (i : Fin d) :
     dv (mollifiedProfile h n) q i =
       spatialMollify (standardMollifierSequence n) (fun z => profileVelocityJet h z i) q := by
   have hH := (selectedProfile_spec h).2.2.2.2.2.2.1
@@ -46,8 +44,7 @@ theorem dv_mollifiedProfile {d : ℕ} {alpha : ℝ}
   exact (hw test (ht.of_le (by simp)) hc).2.1 i
 
 /-- The velocity Hessian of the approximation is convolution of the selected weak Hessian. -/
-theorem dvv_mollifiedProfile {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (n : ℕ) (q : XV d) (i k : Fin d) :
+theorem dvv_mollifiedProfile  (q : XV d) (i k : Fin d) :
     dvv (mollifiedProfile h n) q i k =
       spatialMollify (standardMollifierSequence n) (fun z => profileHessian h z i k) q := by
   have hH := (selectedProfile_spec h).2.2.2.2.2.2.1
@@ -65,5 +62,6 @@ theorem dvv_mollifiedProfile {d : ℕ} {alpha : ℝ}
         exact Filter.Eventually.of_forall (fun z => congrArg (fun a => profileFunction h z * a)
           (dvv_test_swap test (ht.of_le (by simp)) z k i))
       _ = _ := (hw test (ht.of_le (by simp)) hc).2.2 i k
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Interval.KillingTests
 public import HypoellipticAleksandrov.KineticAleksandrov.Decay.SmoothTestOrder
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # From smooth endpoint tests to killed interval mass -/
 
@@ -13,7 +14,7 @@ open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open HypoellipticAleksandrov.KineticAleksandrov.Decay
 
 /-- Smooth compact tests bounded by one determine an upper bound for supported mass. -/
-theorem mass_le_of_interval_smooth_tests {U : Set (PDE.Vec 1)} (hU : IsOpen U)
+theorem mass_le_of_interval_smooth_tests {U : HypoellipticAleksandrov.VecSet 1} (hU : IsOpen U)
     (μ : Measure (PDE.Vec 1)) [IsFiniteMeasure μ] (hμ : μ.restrict U = μ)
     {C : ℝ} (hC : 0 ≤ C)
     (htest : ∀ φ : PDE.Vec 1 → ℝ, ContDiff ℝ (⊤ : ℕ∞) φ → HasCompactSupport φ →

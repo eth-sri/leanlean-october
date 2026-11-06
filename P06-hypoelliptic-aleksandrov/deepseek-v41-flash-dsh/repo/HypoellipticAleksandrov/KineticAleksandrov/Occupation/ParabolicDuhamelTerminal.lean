@@ -2,6 +2,8 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.ParabolicDuhamelSliceLimit
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.ParabolicDuhamelContinuity
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # The terminal trace of a source slice against a test function
@@ -21,7 +23,7 @@ open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
 open HypoellipticAleksandrov.KineticAleksandrov.Evolution
 open scoped Topology
 
-variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d}
 variable (K : MovingFiberKernel Ω γ)
 
 /-- The slice integrand has the terminal value `g(r,v)` as a left limit at interior points. -/

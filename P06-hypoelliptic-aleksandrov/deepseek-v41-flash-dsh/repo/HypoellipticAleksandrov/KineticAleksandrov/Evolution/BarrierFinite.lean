@@ -37,9 +37,11 @@ theorem fderiv_clm_apply_const_eval {E F : Type*} [NormedAddCommGroup E] [Normed
   have := (hc.hasFDerivAt.clm_apply (hasFDerivAt_const w x)).fderiv
   rw [this]
   simp
+section
+variable {n : ℕ}
 
 /-- The Hessian of the restriction of `F` along an affine embedding with derivative `J`. -/
-theorem sliceHessian_comp_embed {n : ℕ} {F : PDE.Vec n × PDE.Vec n → ℝ} (hF : ContDiff ℝ 2 F)
+theorem sliceHessian_comp_embed  {F : PDE.Vec n × PDE.Vec n → ℝ} (hF : ContDiff ℝ 2 F)
     {ι : PDE.Vec n → PDE.Vec n × PDE.Vec n} (hιc : ContDiff ℝ 2 ι)
     {J : PDE.Vec n →L[ℝ] PDE.Vec n × PDE.Vec n} (hι : ∀ x, HasFDerivAt ι J x)
     (x : PDE.Vec n) (i j : Fin n) :
@@ -74,7 +76,7 @@ theorem sliceHessian_comp_embed {n : ℕ} {F : PDE.Vec n × PDE.Vec n → ℝ} (
   rw [fderiv_clm_apply_const_eval hF1]
 
 /-- Entries of a matrix with `0 ≤ A ≤ Λ I` are bounded by `Λ`. -/
-theorem abs_apply_le_of_loewner {n : ℕ} {A : PDE.Mat n} {Lam : ℝ} (h0 : A.PosSemidef)
+theorem abs_apply_le_of_loewner  {A : PDE.Mat n} {Lam : ℝ} (h0 : A.PosSemidef)
     (h1 : (Lam • (1 : PDE.Mat n) - A).PosSemidef) (i j : Fin n) : |A i j| ≤ Lam := by
   have hsymm : ∀ k l, A k l = A l k := fun k l => by
     simpa using (h0.isHermitian.apply l k)
@@ -103,38 +105,38 @@ theorem abs_apply_le_of_loewner {n : ℕ} {A : PDE.Mat n} {Lam : ℝ} (h0 : A.Po
     nlinarith
 
 /-- Coordinate basis vectors have sup-norm at most one. -/
-theorem norm_basisVec_le {n : ℕ} (i : Fin n) : ‖(PDE.basisVec i : PDE.Vec n)‖ ≤ 1 := by
+theorem norm_basisVec_le  (i : Fin n) : ‖(PDE.basisVec i : PDE.Vec n)‖ ≤ 1 := by
   rw [pi_norm_le_iff_of_nonneg zero_le_one]
   intro k
   rw [Real.norm_eq_abs, PDE.basisVec_apply]
   split_ifs <;> simp
 
 /-- The embedded basis vector `(e_i, 0)` has norm at most one. -/
-theorem norm_inl_basisVec_le {n : ℕ} (i : Fin n) :
+theorem norm_inl_basisVec_le  (i : Fin n) :
     ‖((PDE.basisVec i : PDE.Vec n), (0 : PDE.Vec n))‖ ≤ 1 := by
   rw [Prod.norm_def]
   exact max_le (norm_basisVec_le i) (by simp)
 
 /-- The embedded basis vector `(0, e_i)` has norm at most one. -/
-theorem norm_inr_basisVec_le {n : ℕ} (i : Fin n) :
+theorem norm_inr_basisVec_le  (i : Fin n) :
     ‖((0 : PDE.Vec n), (PDE.basisVec i : PDE.Vec n))‖ ≤ 1 := by
   rw [Prod.norm_def]
   exact max_le (by simp) (norm_basisVec_le i)
 
 /-- The derivative of the embedding `y ↦ (y, z)`. -/
-theorem hasFDerivAt_embedLeft {n : ℕ} (z y : PDE.Vec n) :
+theorem hasFDerivAt_embedLeft  (z y : PDE.Vec n) :
     HasFDerivAt (fun y' : PDE.Vec n => (y', z))
       ((ContinuousLinearMap.id ℝ (PDE.Vec n)).prod (0 : PDE.Vec n →L[ℝ] PDE.Vec n)) y :=
   (hasFDerivAt_id y).prodMk (hasFDerivAt_const z y)
 
 /-- The derivative of the embedding `z ↦ (y, z)`. -/
-theorem hasFDerivAt_embedRight {n : ℕ} (y z : PDE.Vec n) :
+theorem hasFDerivAt_embedRight  (y z : PDE.Vec n) :
     HasFDerivAt (fun z' : PDE.Vec n => (y, z'))
       ((0 : PDE.Vec n →L[ℝ] PDE.Vec n).prod (ContinuousLinearMap.id ℝ (PDE.Vec n))) z :=
   (hasFDerivAt_const y z).prodMk (hasFDerivAt_id z)
 
 /-- Entries of the `y`-Hessian are bounded by the second derivative bound. -/
-theorem abs_sliceHessian_position_le {n : ℕ} {F : PDE.Vec n × PDE.Vec n → ℝ}
+theorem abs_sliceHessian_position_le  {F : PDE.Vec n × PDE.Vec n → ℝ}
     (hF : ContDiff ℝ 2 F) {K2 : ℝ} (hK2 : ∀ x, ‖fderiv ℝ (fderiv ℝ F) x‖ ≤ K2)
     (y z : PDE.Vec n) (i j : Fin n) :
     |sliceHessian (fun y' => F (y', z)) y i j| ≤ K2 := by
@@ -157,7 +159,7 @@ theorem abs_sliceHessian_position_le {n : ℕ} {F : PDE.Vec n × PDE.Vec n → �
     _ = K2 := by ring
 
 /-- Entries of the `z`-Hessian are bounded by the second derivative bound. -/
-theorem abs_sliceHessian_velocity_le {n : ℕ} {F : PDE.Vec n × PDE.Vec n → ℝ}
+theorem abs_sliceHessian_velocity_le  {F : PDE.Vec n × PDE.Vec n → ℝ}
     (hF : ContDiff ℝ 2 F) {K2 : ℝ} (hK2 : ∀ x, ‖fderiv ℝ (fderiv ℝ F) x‖ ≤ K2)
     (y z : PDE.Vec n) (i j : Fin n) :
     |sliceHessian (fun z' => F (y, z')) z i j| ≤ K2 := by
@@ -180,7 +182,7 @@ theorem abs_sliceHessian_velocity_le {n : ℕ} {F : PDE.Vec n × PDE.Vec n → �
     _ = K2 := by ring
 
 /-- The `z`-gradient is the partial Fréchet derivative. -/
-theorem classicalGradient_velocity_eq {n : ℕ} {F : PDE.Vec n × PDE.Vec n → ℝ}
+theorem classicalGradient_velocity_eq  {F : PDE.Vec n × PDE.Vec n → ℝ}
     (hF : ContDiff ℝ 1 F) (y z : PDE.Vec n) (j : Fin n) :
     PDE.classicalGradient (fun z' => F (y, z')) z j =
       fderiv ℝ F (y, z) ((0 : PDE.Vec n), (PDE.basisVec j : PDE.Vec n)) := by
@@ -193,7 +195,7 @@ theorem classicalGradient_velocity_eq {n : ℕ} {F : PDE.Vec n × PDE.Vec n → 
   simp only [ContinuousLinearMap.prod_apply, ContinuousLinearMap.id_apply, zero_apply]
 
 /-- The `z`-gradient is bounded by the first derivative bound. -/
-theorem abs_classicalGradient_velocity_le {n : ℕ} {F : PDE.Vec n × PDE.Vec n → ℝ}
+theorem abs_classicalGradient_velocity_le  {F : PDE.Vec n × PDE.Vec n → ℝ}
     (hF : ContDiff ℝ 1 F) {K1 : ℝ} (hK1 : ∀ x, ‖fderiv ℝ F x‖ ≤ K1)
     (y z : PDE.Vec n) (j : Fin n) :
     |PDE.classicalGradient (fun z' => F (y, z')) z j| ≤ K1 := by
@@ -217,7 +219,7 @@ theorem abs_classicalGradient_velocity_le {n : ℕ} {F : PDE.Vec n × PDE.Vec n 
 
 /-- `M_F = sup_ε ‖L_ε F‖_∞` is finite for a smooth compactly supported `F`, for coefficients
 with Loewner bounds and a Lipschitz drift. -/
-theorem exists_terminalGenerator_bound {n : ℕ} {F : BoundedBorel (EvolutionAmbientState n)}
+theorem exists_terminalGenerator_bound  {F : BoundedBorel (EvolutionAmbientState n)}
     (hF : ContDiff ℝ (⊤ : ℕ∞) F) (hcs : HasCompactSupport (F : EvolutionAmbientState n → ℝ))
     {lam Lam : ℝ} (hlam : 0 < lam) {B : FullKineticCoefficient n}
     (hB : HasEverywhereLoewnerBounds lam Lam B) {Lb : ℝ} {b : PDE.Vec n → PDE.Vec n}
@@ -331,5 +333,6 @@ theorem exists_terminalGenerator_bound {n : ℕ} {F : BoundedBorel (EvolutionAmb
   have h5 := abs_le.mp h4
   rw [abs_le]
   constructor <;> linarith [h1.1, h1.2, h2.1, h2.2, h5.1, h5.2]
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

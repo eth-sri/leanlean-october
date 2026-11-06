@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.WeakTimeDerivative
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeDistribution
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.SpatialSobolevSeparable
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Uniqueness of Gelfand weak time derivatives
@@ -21,9 +22,11 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 open Filter MeasureTheory Set
 open scoped ENNReal
+section
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {hΩ : IsOpen Ω} {T : ℝ}
 
 private theorem memLp_two_weakDerivativePairing_sub
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {hΩ : IsOpen Ω} {T : ℝ}
+    
     (g g' : ReverseTimeL2VStar hΩ T) (v : H10HilbertGraph hΩ) :
     MemLp (fun tau => (g tau) v - (g' tau) v)
       (2 : ℝ≥0∞) (reverseTimeVolume T) := by
@@ -34,7 +37,7 @@ private theorem memLp_two_weakDerivativePairing_sub
         (ContinuousLinearMap.apply ℝ ℝ v))
 
 private theorem integral_weakDerivativePairing_sub_eq_zero
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {hΩ : IsOpen Ω} {T : ℝ} {hT : 0 < T}
+     {hT : 0 < T}
     {u : ReverseTimeL2V hΩ T} {g g' : ReverseTimeL2VStar hΩ T}
     (hg : HasGelfandWeakTimeDerivative hΩ T hT u g)
     (hg' : HasGelfandWeakTimeDerivative hΩ T hT u g')
@@ -67,8 +70,7 @@ private theorem integral_weakDerivativePairing_sub_eq_zero
 /-- A fixed reverse-time curve has at most one Gelfand weak time derivative,
 as an `L²(V*)` equivalence class. -/
 theorem HasGelfandWeakTimeDerivative.unique
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    {hΩ : IsOpen Ω} {T : ℝ} {hT : 0 < T}
+     {hT : 0 < T}
     {u : ReverseTimeL2V hΩ T}
     {g g' : ReverseTimeL2VStar hΩ T}
     (hg : HasGelfandWeakTimeDerivative hΩ T hT u g)
@@ -97,5 +99,6 @@ theorem HasGelfandWeakTimeDerivative.unique
       rintro _ ⟨n, rfl⟩
       exact htau n)
   exact MeasureTheory.Lp.ext hdualAE
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

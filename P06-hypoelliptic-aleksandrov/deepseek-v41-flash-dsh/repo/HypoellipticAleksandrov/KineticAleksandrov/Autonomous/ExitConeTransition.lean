@@ -23,7 +23,7 @@ theorem reconstructionConeTransition_bound (x : ℝ) :
 /-- The exact derivative of the cone transition. -/
 theorem reconstructionConeTransition_deriv (x : ℝ) :
     deriv expNegInvGlue x = x⁻¹ ^ 2 * expNegInvGlue x := by
-  have hh := (expNegInvGlue.hasDerivAt_polynomial_eval_inv_mul (1 : Polynomial ℝ) x).deriv
+  have hh := (expNegInvGlue.hasDerivAt_polynomial_eval_inv_mul 1 x).deriv
   simpa using hh
 
 /-- The derivative is bounded and strictly positive exactly on the positive axis. -/

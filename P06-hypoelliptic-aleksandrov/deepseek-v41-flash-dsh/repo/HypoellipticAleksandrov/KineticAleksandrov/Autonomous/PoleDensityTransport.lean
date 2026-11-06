@@ -26,12 +26,12 @@ theorem poleDensity_clock_map_withDensity (c : Clock) (e : Point) (F : Point →
     (c.continuous_inverse e).measurable
   refine (lintegral_congr (fun p => ?_)).trans hm.symm
   exact congrArg (fun q : Point => ENNReal.ofReal (F q)) (c.map_inverse e p).symm
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) (he : e.velocity 0 ∈ c.active)
 
 /-- Inverse mapping the actual pushforward recovers the original weighted physical Green. -/
 theorem clock_weightedGreen_inverse
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) (he : e.velocity 0 ∈ c.active) :
+     :
     (stripGreen hH hLE hlam hLam A c.activeInterval ⊤
       ⟨e, WithTop.coe_lt_top _, he⟩).withDensity (fun p => ENNReal.ofReal |p.velocity 0|) =
       ENNReal.ofReal (|c.vbar| * c.r ^ 2) •
@@ -48,9 +48,7 @@ theorem clock_weightedGreen_inverse
 /-- A proved real normalized density yields the exact weighted physical density with the clock
 Jacobian factor; no density bridge is assumed. -/
 theorem clock_weightedGreen_density
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) (he : e.velocity 0 ∈ c.active)
+    
     (F : Point → ℝ) (hF : Measurable F) (_hFn : ∀ p, 0 ≤ F p)
     (hFd : clockGreen hH hLE hlam hLam A c e he =
       volume.withDensity (fun p => ENNReal.ofReal (F p))) :
@@ -78,5 +76,6 @@ theorem clock_weightedGreen_density
   exact ((ENNReal.ofReal_mul (mul_nonneg hD hr)).trans
     (congrArg (fun x : ℝ≥0∞ => x * ENNReal.ofReal (F (c.map e p)))
       (ENNReal.ofReal_mul hD))).symm
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

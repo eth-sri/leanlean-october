@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.Parabolic.HigherOrderNestedProductBoxChain
 public import HypoellipticAleksandrov.Parabolic.GenericPreLiftWeakDerivativeFamilyAddTwo
 public import HypoellipticAleksandrov.Parabolic.ParabolicWeakDerivativeFamilyL2NormTruncate
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Finite iteration of the generic pre-lift estimate
@@ -24,8 +26,8 @@ open scoped BigOperators ENNReal MatrixOrder Matrix.Norms.Elementwise
 
 private theorem chainBox_subset_zero
     {d N : ℕ} {q₀ s₀ s₁ q₁ : ℝ}
-    {Ω O₀ O : Set (PDE.Vec d)}
-    {left right : ℕ → ℝ} {spatial : ℕ → Set (PDE.Vec d)}
+    {Ω O₀ O : HypoellipticAleksandrov.VecSet d}
+    {left right : ℕ → ℝ} {spatial : ℕ → HypoellipticAleksandrov.VecSet d}
     (hchain : IsHigherOrderNestedProductBoxChain
       d N q₀ s₀ s₁ q₁ Ω O₀ O left right spatial)
     {k : ℕ} (hk : k ≤ N + 2) :
@@ -59,9 +61,9 @@ higher-order nested product-box chain. -/
 theorem exists_iterated_genericPrelift_weakDerivativeFamily_estimate
     (d N : ℕ) (hN : 1 ≤ N)
     (q₀ s₀ s₁ q₁ : ℝ)
-    (Ω O₀ O : Set (PDE.Vec d))
+    (Ω O₀ O : HypoellipticAleksandrov.VecSet d)
     (left right : ℕ → ℝ)
-    (spatial : ℕ → Set (PDE.Vec d))
+    (spatial : ℕ → HypoellipticAleksandrov.VecSet d)
     (hchain : IsHigherOrderNestedProductBoxChain
       d N q₀ s₀ s₁ q₁ Ω O₀ O left right spatial)
     (lam Lam : ℝ) (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
@@ -218,7 +220,7 @@ theorem exists_iterated_genericPrelift_weakDerivativeFamily_estimate
         simpa only [K, Nat.rec_add_one] using hprod
   refine ⟨K N, hK N, ?_⟩
   intro a b c F u Dseed Emax hEll ha hb hc haBound hbBound hcBound hEq
-  let Q : ℕ → Set (TimeVelocity d) := fun k => Set.Ioo (left k) (right k) ×ˢ spatial k
+  let Q : ℕ → HypoellipticAleksandrov.Parabolic.TVSet d := fun k => Set.Ioo (left k) (right k) ×ˢ spatial k
   have hQsub (k : ℕ) (hk : k ≤ N) : Q k ⊆ Q 0 := chainBox_subset_zero hchain (by omega)
   have hiterate : ∀ k, k ≤ N →
       ∃ D : ParabolicWeakDerivativeFamily d (k + 2) (Q k) u,

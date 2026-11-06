@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.Parabolic.ScalarClassical
 public import Mathlib.MeasureTheory.Function.LocallyIntegrable
 public import Mathlib.Topology.Algebra.Support
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Compact cutoff support and integrability on local cylinders
 
@@ -17,7 +19,7 @@ open Filter MeasureTheory Set
 open scoped Topology
 
 /-- A continuous local field times an interior compact cutoff is globally integrable. -/
-theorem integrable_local_cutoff_mul {d : ℕ} {U : Set (TimeVelocity d)}
+theorem integrable_local_cutoff_mul {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hU : IsOpen U) (f χ : TimeVelocity d → ℝ) (hf : ContinuousOn f U)
     (hχ : Continuous χ) (hc : HasCompactSupport χ) (hsub : tsupport χ ⊆ U) :
     Integrable (fun z => f z * χ z) := by
@@ -27,7 +29,7 @@ theorem integrable_local_cutoff_mul {d : ℕ} {U : Set (TimeVelocity d)}
   exact hprod.integrable_of_hasCompactSupport (HasCompactSupport.mul_left hc)
 
 /-- Squared interior cutoffs also globalize continuous local integrands. -/
-theorem integrable_local_cutoff_square_mul {d : ℕ} {U : Set (TimeVelocity d)}
+theorem integrable_local_cutoff_square_mul {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hU : IsOpen U) (f ρ : TimeVelocity d → ℝ) (hf : ContinuousOn f U)
     (hρ : Continuous ρ) (hc : HasCompactSupport ρ) (hsub : tsupport ρ ⊆ U) :
     Integrable (fun z => f z * ρ z ^ 2) := by
@@ -55,7 +57,7 @@ theorem hasCompactSupport_local_cutoff_time_slice {d : ℕ}
 
 /-- The support of a fixed-time cutoff slice stays in the spatial carrier. -/
 theorem tsupport_local_cutoff_time_slice_subset {d : ℕ}
-    (χ : TimeVelocity d → ℝ) {a T : ℝ} {O : Set (PDE.Vec d)}
+    (χ : TimeVelocity d → ℝ) {a T : ℝ} {O : HypoellipticAleksandrov.VecSet d}
     (hsub : tsupport χ ⊆ Ioo a T ×ˢ O) (t : ℝ) :
     tsupport (fun y => χ (t, y)) ⊆ O := by
   have hpre : tsupport (fun y => χ (t, y)) ⊆

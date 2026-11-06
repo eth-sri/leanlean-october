@@ -13,6 +13,8 @@ public import Mathlib.Topology.Order.IntermediateValue
 public import Mathlib.Tactic.FieldSimp
 public import Mathlib.Tactic.Linarith
 public import Mathlib.Tactic.Ring
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Physical moving-lens first contact
@@ -34,7 +36,7 @@ open scoped Topology
 
 /-- Concrete physical contact/area API for supplied-source lower-bound proof: sign set. -/
 def movingLensSourceSignSet {d : ℕ} (xi eps tau : ℝ) (y : PDE.Vec d)
-    (u : TimeVelocity d → ℝ) : Set (TimeVelocity d) :=
+    (u : TimeVelocity d → ℝ) : HypoellipticAleksandrov.Parabolic.TVSet d :=
   {z | 0 < z.1 ∧ z.1 < tau ∧
     PDE.vecNormSq (movingLensDisplacement y z) < movingLensDenominator xi eps z.1 ∧
     0 < u z ∧ 0 ≤ timeDerivative u z ∧ (-velocityHessian u z).PosSemidef}
@@ -44,7 +46,7 @@ def movingLensVelocityFootprint (d : ℕ) (kappa : ℝ) : ℝ :=
   kappa + Real.sqrt d * kappa ^ (-3 : ℤ)
 
 /-- Concrete physical contact/area API for supplied-source lower-bound proof: its wedge. -/
-def movingLensSlopeInterceptWedge (d : ℕ) (R M : ℝ) : Set (TimeVelocity d) :=
+def movingLensSlopeInterceptWedge (d : ℕ) (R M : ℝ) : HypoellipticAleksandrov.Parabolic.TVSet d :=
   Set.Ioo (M / 2) (3 * M / 4) ×ˢ
     PDE.euclideanBall (0 : PDE.Vec d) (M / (4 * R))
 
@@ -65,7 +67,7 @@ private theorem movingLensDenominator_lt_kappa_sq
         mul_le_mul_of_nonneg_left (ht.trans htau_kappa) hxi
       _ = kappa ^ 2 / 2 := by
         unfold movingLensSignXi
-        field_simp [hkappa.ne']
+        field_simp
   unfold movingLensDenominator
   nlinarith
 
@@ -125,7 +127,7 @@ private theorem movingLensClosed_velocity_norm_lt_footprint
       _ ≤ kappa⁻¹ * (Real.sqrt d * kappa ^ (-2 : ℤ)) :=
         mul_le_mul_of_nonneg_right (hztau.trans htau_kappa) (by positivity)
       _ = Real.sqrt d * kappa ^ (-3 : ℤ) := by
-        field_simp [hkappa.ne']
+        field_simp
   have hsplit : z.2 = movingLensDisplacement y z + z.1 • y := by
     rw [movingLensDisplacement]
     exact (sub_add_cancel _ _).symm
@@ -167,7 +169,7 @@ private theorem affineVelocity_pos_on_movingLens
       _ < (M / (4 * movingLensVelocityFootprint d kappa)) *
           movingLensVelocityFootprint d kappa :=
         mul_lt_mul_of_pos_right hpNorm hR
-      _ = M / 4 := by field_simp [hR.ne']
+      _ = M / 4 := by field_simp
   have hdot : -(M / 4) < PDE.vecDot p z.2 := by
     nlinarith [neg_abs_le (PDE.vecDot p z.2),
       (PDE.abs_vecDot_le_vecEuclideanNorm_mul p z.2).trans_lt hprod]
@@ -204,7 +206,7 @@ private theorem affineVelocity_lt_on_movingLens
       _ < (M / (4 * movingLensVelocityFootprint d kappa)) *
           movingLensVelocityFootprint d kappa :=
         mul_lt_mul_of_pos_right hpNorm hR
-      _ = M / 4 := by field_simp [hR.ne']
+      _ = M / 4 := by field_simp
   have hdot : PDE.vecDot p z.2 < M / 4 :=
     lt_of_le_of_lt (le_abs_self _) ((PDE.abs_vecDot_le_vecEuclideanNorm_mul p z.2).trans_lt hprod)
   rw [affineVelocity_apply]
@@ -404,7 +406,7 @@ theorem movingLensSlopeInterceptWedge_subset_image_signSet_local
       unfold ell affineVelocity PDE.vecDot
       fun_prop
     exact hucont.sub hellCont.continuousOn
-  let S : Set (TimeVelocity d) :=
+  let S : HypoellipticAleksandrov.Parabolic.TVSet d :=
     movingLensClosed xi eps tau y ∩ {z | 0 ≤ g z}
   have hcenterS : (tau, tau • y) ∈ S := ⟨hclosedCenter, hgCenter.le⟩
   have hSCompact : IsCompact S := by
@@ -670,7 +672,7 @@ theorem movingLensSlopeInterceptWedge_subset_image_signSet_local
       have hne : zc.1 ≠ t := by
         intro heq
         subst t
-        linarith [hgcZero]
+        linarith
       have hlt : zc.1 < t := lt_of_le_of_ne hmin hne
       exact (not_lt_of_ge hle) hlt
     change u (t, zc.2) - ell zc.2 ≤ u zc - ell zc.2
@@ -718,7 +720,7 @@ private theorem movingLensSourceSignSet_areaFormulaData_of_localC2
         HasFDerivWithinAt (parabolicNormalMap u 0)
           (parabolicNormalMapDerivative u 0 z)
           (movingLensSourceSignSet xi eps tau y u) z := by
-  let O : Set (TimeVelocity d) := {z | 0 < z.1 /\ z.1 < tau /\
+  let O : HypoellipticAleksandrov.Parabolic.TVSet d := {z | 0 < z.1 /\ z.1 < tau /\
     PDE.vecNormSq (movingLensDisplacement y z) < movingLensDenominator xi eps z.1}
   have hO : IsOpen O := by
     rw [show O = {z | 0 < z.1 /\

@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonLocalGradientBound
 public import HypoellipticAleksandrov.Parabolic.WeakJetCutoff
 import Mathlib.Tactic.Linarith
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Uniform gradient energy on smaller collars
 
@@ -18,9 +20,9 @@ open scoped BigOperators MatrixOrder Topology
 
 /-- Every compactly contained carrier has a uniform gradient bound from outer value energy. -/
 theorem exists_local_gradient_collar_constant {d : ℕ}
-    (a T : ℝ) (O : Set (PDE.Vec d)) (hO : IsOpen O)
+    (a T : ℝ) (O : HypoellipticAleksandrov.VecSet d) (hO : IsOpen O)
     (hUc : IsCompact (closure (Ioo a T ×ˢ O)))
-    (V : Set (TimeVelocity d)) (hVm : MeasurableSet V)
+    (V : HypoellipticAleksandrov.Parabolic.TVSet d) (hVm : MeasurableSet V)
     (hVc : IsCompact (closure V)) (hVU : closure V ⊆ Ioo a T ×ˢ O)
     (A : CoefficientField d) (hA : IsSmoothCoefficient A)
     (lam : ℝ) (hlam : 0 < lam)

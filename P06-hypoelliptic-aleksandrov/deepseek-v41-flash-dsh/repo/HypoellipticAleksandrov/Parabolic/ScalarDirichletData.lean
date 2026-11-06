@@ -1,6 +1,8 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.ScalarClassical
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 @[expose] public section
 
@@ -49,7 +51,7 @@ def scalarParabolicZeroOrderOperator {n : ℕ}
 
 /-- A supplied classical solution of the backward scalar Dirichlet problem. -/
 def IsClassicalBackwardDirichletSolution {n : ℕ}
-    (r₀ r₁ : ℝ) (Ω : Set (PDE.Vec n))
+    (r₀ r₁ : ℝ) (Ω : HypoellipticAleksandrov.VecSet n)
     (a : CoefficientField n)
     (b : ℝ → PDE.Vec n → PDE.Vec n)
     (c F : ℝ → PDE.Vec n → ℝ)

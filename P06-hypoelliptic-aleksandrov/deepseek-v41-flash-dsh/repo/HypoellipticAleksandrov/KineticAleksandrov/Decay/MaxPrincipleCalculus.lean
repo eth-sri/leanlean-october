@@ -9,6 +9,8 @@ public import Mathlib.LinearAlgebra.Matrix.PosDef
 import Mathlib.Tactic.Linarith
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Operator
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Pointwise calculus for the transported moving-domain maximum principle
@@ -112,9 +114,10 @@ private theorem fderiv_fderiv_apply_nonpos_of_isLocalMax_affineLine
     hgAtLineZero.comp' (f := fun r : ℝ => x + r • q) hlineCont
   exact deriv_deriv_nonpos_of_isLocalMax hmax
     (hasDerivAt_deriv_restrict_affine_line_of_contDiffAt hg) hcompCont
+section
+variable {n : ℕ} {u : TimeVelocity n → ℝ}
 
-private theorem scalarSpatialHessian_apply_eq_sndFDeriv {n : ℕ}
-    {u : TimeVelocity n → ℝ} {z : TimeVelocity n}
+private theorem scalarSpatialHessian_apply_eq_sndFDeriv  {z : TimeVelocity n}
     (hu : ContDiffAt ℝ 2 (fun y : PDE.Vec n => u (z.1, y)) z.2)
     (i j : Fin n) :
     scalarSpatialHessian u z i j =
@@ -135,8 +138,7 @@ private theorem scalarSpatialHessian_apply_eq_sndFDeriv {n : ℕ}
   have hjapply := congrArg (fun L : PDE.Vec n →L[ℝ] ℝ => L (PDE.basisVec i)) hj
   simpa [ContinuousLinearMap.flip_apply] using hjapply
 
-private theorem scalarSpatialHessian_quadratic_eq {n : ℕ}
-    {u : TimeVelocity n → ℝ} {z : TimeVelocity n}
+private theorem scalarSpatialHessian_quadratic_eq  {z : TimeVelocity n}
     (hu : ContDiffAt ℝ 2 (fun y : PDE.Vec n => u (z.1, y)) z.2)
     (q : PDE.Vec n) :
     dotProduct q ((scalarSpatialHessian u z).mulVec q) =
@@ -168,8 +170,7 @@ private theorem scalarSpatialHessian_quadratic_eq {n : ℕ}
       simp only [map_smul, _root_.smul_apply, smul_eq_mul]
     _ = H q q := by rw [PDE.sum_smul_basisVec]
 
-private theorem scalarSpatialHessian_isSymm_of_contDiffAt {n : ℕ}
-    {u : TimeVelocity n → ℝ} {z : TimeVelocity n}
+private theorem scalarSpatialHessian_isSymm_of_contDiffAt  {z : TimeVelocity n}
     (hu : ContDiffAt ℝ 2 (fun y : PDE.Vec n => u (z.1, y)) z.2) :
     (scalarSpatialHessian u z).IsSymm := by
   refine Matrix.IsSymm.ext ?_
@@ -180,7 +181,7 @@ private theorem scalarSpatialHessian_isSymm_of_contDiffAt {n : ℕ}
     (hu.isSymmSndFDerivAt (by norm_num)).eq (PDE.basisVec j) (PDE.basisVec i)
 
 private theorem neg_scalarSpatialHessian_posSemidef_of_spatial_localMax
-    {n : ℕ} {u : TimeVelocity n → ℝ} {z : TimeVelocity n}
+     {z : TimeVelocity n}
     (hu : ContDiffAt ℝ 2 (fun y : PDE.Vec n => u (z.1, y)) z.2)
     (hmax : IsLocalMax (fun y : PDE.Vec n => u (z.1, y)) z.2) :
     (-scalarSpatialHessian u z).PosSemidef := by
@@ -205,6 +206,7 @@ private theorem neg_scalarSpatialHessian_posSemidef_of_spatial_localMax
     rw [scalarSpatialHessian_quadratic_eq hu q]
     exact neg_nonneg.mpr
       (fderiv_fderiv_apply_nonpos_of_isLocalMax_affineLine hu hlineMax)
+end
 
 private theorem trace_mul_nonneg_of_posSemidef {n : ℕ} {A H : PDE.Mat n}
     (hA : A.PosSemidef) (hH : H.PosSemidef) :

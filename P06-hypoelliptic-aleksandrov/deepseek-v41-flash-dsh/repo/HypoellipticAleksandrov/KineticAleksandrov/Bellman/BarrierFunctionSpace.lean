@@ -20,18 +20,21 @@ def IsBellmanHomogeneous (alpha : ℝ) (phi : (ℝ × ℝ) → ℝ) : Prop :=
   ContDiffOn ℝ 2 phi bellmanPuncturedSet ∧
     ∀ r : ℝ, 0 < r → ∀ q ∈ bellmanPuncturedSet,
       phi (bellmanPlaneDilation r q) = r ^ alpha * phi q
+section
+variable (phi : (ℝ × ℝ) → ℝ) (q : ℝ × ℝ)
 
 /-- The position directional derivative. -/
-def bellmanDx (phi : (ℝ × ℝ) → ℝ) (q : ℝ × ℝ) : ℝ :=
+def bellmanDx  : ℝ :=
   fderiv ℝ phi q (1, 0)
 
 /-- The velocity directional derivative. -/
-def bellmanDv (phi : (ℝ × ℝ) → ℝ) (q : ℝ × ℝ) : ℝ :=
+def bellmanDv  : ℝ :=
   fderiv ℝ phi q (0, 1)
 
 /-- The second velocity derivative. -/
-def bellmanDvv (phi : (ℝ × ℝ) → ℝ) (q : ℝ × ℝ) : ℝ :=
+def bellmanDvv  : ℝ :=
   fderiv ℝ (bellmanDv phi) q (0, 1)
+end
 
 /-- The constant-diffusion operator in the source sign convention. -/
 def bellmanOperator (b : ℝ) (phi : (ℝ × ℝ) → ℝ) (q : ℝ × ℝ) : ℝ :=
@@ -40,27 +43,27 @@ def bellmanOperator (b : ℝ) (phi : (ℝ × ℝ) → ℝ) (q : ℝ × ℝ) : �
 /-- The punctured carrier is open. -/
 theorem bellmanPuncturedSet_isOpen : IsOpen bellmanPuncturedSet := isOpen_ne_fun
   continuous_id continuous_const
+section
+variable {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
 
 /-- C² homogeneity gives a C¹ directional derivative on the punctured plane. -/
-theorem IsBellmanHomogeneous.directional_contDiffOn {alpha : ℝ}
-    {phi : (ℝ × ℝ) → ℝ} (h : IsBellmanHomogeneous alpha phi) (e : ℝ × ℝ) :
+theorem IsBellmanHomogeneous.directional_contDiffOn  (h : IsBellmanHomogeneous alpha phi) (e : ℝ × ℝ) :
     ContDiffOn ℝ 1 (fun q => fderiv ℝ phi q e) bellmanPuncturedSet := by
   exact (h.1.fderiv_of_isOpen bellmanPuncturedSet_isOpen (by norm_num)).clm_apply
     contDiffOn_const
 
 /-- Each first jet is continuous on the source carrier. -/
-theorem IsBellmanHomogeneous.dx_continuousOn {alpha : ℝ}
-    {phi : (ℝ × ℝ) → ℝ} (h : IsBellmanHomogeneous alpha phi) :
+theorem IsBellmanHomogeneous.dx_continuousOn  (h : IsBellmanHomogeneous alpha phi) :
     ContinuousOn (bellmanDx phi) bellmanPuncturedSet :=
   (h.directional_contDiffOn (1, 0)).continuousOn
 
 /-- The second velocity jet is continuous on the source carrier. -/
-theorem IsBellmanHomogeneous.dvv_continuousOn {alpha : ℝ}
-    {phi : (ℝ × ℝ) → ℝ} (h : IsBellmanHomogeneous alpha phi) :
+theorem IsBellmanHomogeneous.dvv_continuousOn  (h : IsBellmanHomogeneous alpha phi) :
     ContinuousOn (bellmanDvv phi) bellmanPuncturedSet := by
   exact ((h.directional_contDiffOn (0, 1)).fderiv_of_isOpen
     bellmanPuncturedSet_isOpen (m := 0) (by norm_num)).continuousOn.clm_apply
     continuousOn_const
+end
 
 /-- The Bellman expression is continuous on the sphere and coefficient interval. -/
 theorem IsBellmanHomogeneous.image_continuous {alpha lam Lam : ℝ}

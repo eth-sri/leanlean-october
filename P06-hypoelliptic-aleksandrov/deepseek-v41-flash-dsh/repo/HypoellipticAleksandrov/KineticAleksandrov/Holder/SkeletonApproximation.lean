@@ -16,9 +16,11 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
 open Set MeasureTheory
+section
+variable {d : ℕ}
 
 /-- Euclidean interval integral estimate, transported through the existing Hilbert carrier. -/
-theorem vecEuclideanNorm_intervalIntegral_le {d : ℕ} {f : ℝ → PDE.Vec d}
+theorem vecEuclideanNorm_intervalIntegral_le  {f : ℝ → PDE.Vec d}
     {a b C : ℝ} (hf : IntervalIntegrable f volume a b)
     (hbound : ∀ t ∈ uIoc a b, PDE.vecEuclideanNorm (f t) ≤ C) :
     PDE.vecEuclideanNorm (∫ t in a..b, f t) ≤ C * |b - a| := by
@@ -34,7 +36,7 @@ theorem vecEuclideanNorm_intervalIntegral_le {d : ℕ} {f : ℝ → PDE.Vec d}
     exact hbound t ht
 
 /-- The position of a skeleton is the integral of its compatible velocity. -/
-theorem IsSkeleton.position_eq_integral {d : ℕ} {x v : ℝ → PDE.Vec d}
+theorem IsSkeleton.position_eq_integral  {x v : ℝ → PDE.Vec d}
     {H a b : ℝ} (hx : IsSkeleton x v H a b) {s : ℝ} (hs : s ∈ Icc a b) :
     x s = x a + ∫ t in a..s, v t := by
   have hsub : Icc a s ⊆ Icc a b := Icc_subset_Icc_right hs.2
@@ -47,11 +49,11 @@ theorem IsSkeleton.position_eq_integral {d : ℕ} {x v : ℝ → PDE.Vec d}
   abel
 
 /-- Integrating the endpoint-constant velocity gives the tangent extension of position. -/
-def extendPosition {d : ℕ} (x v : ℝ → PDE.Vec d) (a b : ℝ) (hab : a ≤ b) :
+def extendPosition  (x v : ℝ → PDE.Vec d) (a b : ℝ) (hab : a ≤ b) :
     ℝ → PDE.Vec d := fun s => x a + ∫ t in a..s, extendVelocity v a b hab t
 
 /-- The tangent extension agrees with the original position throughout its interval. -/
-theorem extendPosition_eq {d : ℕ} {x v : ℝ → PDE.Vec d} {H a b : ℝ}
+theorem extendPosition_eq  {x v : ℝ → PDE.Vec d} {H a b : ℝ}
     (hab : a ≤ b) (hx : IsSkeleton x v H a b) {s : ℝ} (hs : s ∈ Icc a b) :
     extendPosition x v a b hab s = x s := by
   rw [hx.position_eq_integral hs]
@@ -64,7 +66,7 @@ theorem extendPosition_eq {d : ℕ} {x v : ℝ → PDE.Vec d} {H a b : ℝ}
       (mem_Icc.mp ((uIcc_of_le hs.1) ▸ ht)).2.trans hs.2⟩
 
 /-- The tangent extension is compatible with the endpoint-constant velocity globally. -/
-theorem hasDerivAt_extendPosition {d : ℕ} {x v : ℝ → PDE.Vec d} {H a b : ℝ}
+theorem hasDerivAt_extendPosition  {x v : ℝ → PDE.Vec d} {H a b : ℝ}
     (hab : a ≤ b) (hx : IsSkeleton x v H a b) (s : ℝ) :
     HasDerivAt (extendPosition x v a b hab) (extendVelocity v a b hab s) s := by
   have hc := continuous_extendVelocity hab hx.1
@@ -72,7 +74,7 @@ theorem hasDerivAt_extendPosition {d : ℕ} {x v : ℝ → PDE.Vec d} {H a b : �
     hc.aestronglyMeasurable.stronglyMeasurableAtFilter hc.continuousAt).const_add (x a)
 
 /-- Before the initial time, the extension is exactly the initial tangent line. -/
-theorem extendPosition_left {d : ℕ} (x v : ℝ → PDE.Vec d) {a b s : ℝ}
+theorem extendPosition_left  (x v : ℝ → PDE.Vec d) {a b s : ℝ}
     (hab : a ≤ b) (hs : s ≤ a) :
     extendPosition x v a b hab s = x a + (s - a) • v a := by
   unfold extendPosition
@@ -86,7 +88,7 @@ theorem extendPosition_left {d : ℕ} (x v : ℝ → PDE.Vec d) {a b s : ℝ}
     _ = _ := intervalIntegral.integral_const _
 
 /-- The compatible tangent extension retains the original acceleration bound on any interval. -/
-theorem extendPosition_isSkeleton {d : ℕ} {x v : ℝ → PDE.Vec d} {H a b : ℝ}
+theorem extendPosition_isSkeleton  {x v : ℝ → PDE.Vec d} {H a b : ℝ}
     (hab : a ≤ b) (hH : 0 ≤ H) (hx : IsSkeleton x v H a b) (c e : ℝ) :
     IsSkeleton (extendPosition x v a b hab) (extendVelocity v a b hab) H c e :=
   ⟨(continuous_extendVelocity hab hx.1).continuousOn,
@@ -94,7 +96,7 @@ theorem extendPosition_isSkeleton {d : ℕ} {x v : ℝ → PDE.Vec d} {H a b : �
     fun s _ t _ => extendVelocity_lipschitz hab hH hx s t⟩
 
 /-- Smooth approximation preserves the acceleration bound and position–velocity compatibility. -/
-theorem smooth_skeleton_approx {d : ℕ} (x v : ℝ → PDE.Vec d)
+theorem smooth_skeleton_approx  (x v : ℝ → PDE.Vec d)
     (H a b : ℝ) (hab : a < b) (hH : 0 ≤ H)
     (hx : IsSkeleton x v H a b) (eps : ℝ) (heps : 0 < eps) :
     ∃ y w : ℝ → PDE.Vec d,
@@ -149,5 +151,6 @@ theorem smooth_skeleton_approx {d : ℕ} (x v : ℝ → PDE.Vec d)
     exact div_mul_cancel₀ eps hden.ne'
   have hsb := hs.2
   nlinarith
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

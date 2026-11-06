@@ -21,8 +21,10 @@ open Filter MeasureTheory Topology
 open scoped NNReal ENNReal
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
+section
+variable {α : Type*} [MeasurableSpace α]
 
-private theorem integral_mul_toLp {α : Type*} [MeasurableSpace α]
+private theorem integral_mul_toLp 
     {μ : Measure α} {f g : α → ℝ} (hf : MemLp f 2 μ) (hg : MemLp g 2 μ) :
     inner ℝ (hf.toLp f) (hg.toLp g) = ∫ x, f x * g x ∂μ := by
   rw [L2.inner_def]
@@ -30,7 +32,7 @@ private theorem integral_mul_toLp {α : Type*} [MeasurableSpace α]
   filter_upwards [hf.coeFn_toLp, hg.coeFn_toLp] with x hx hy
   simp only [hx, hy, RCLike.inner_apply, starRingEnd_apply, star_trivial, mul_comm]
 
-private theorem pairing_lipschitz {α : Type*} [MeasurableSpace α]
+private theorem pairing_lipschitz 
     {μ : Measure α} {f : α → ℝ} {C : ℝ≥0}
     (hf : AEStronglyMeasurable f μ) (hb : ∀ᵐ x ∂μ, |f x| ≤ C) :
     LipschitzWith C (fun ψ : Lp ℝ 1 μ => ∫ x, f x * ψ x ∂μ) := by
@@ -50,7 +52,7 @@ private theorem pairing_lipschitz {α : Type*} [MeasurableSpace α]
   rw [he, Pi.sub_apply, ← mul_sub, norm_mul]
   exact mul_le_mul_of_nonneg_right hx (norm_nonneg _)
 
-private theorem extend_integral_tests {α : Type*} [MeasurableSpace α]
+private theorem extend_integral_tests 
     {μ : Measure α} [IsFiniteMeasure μ]
     (v : ℕ → α → ℝ) (u : α → ℝ) (C : ℝ) (hC : 0 ≤ C)
     (hv : ∀ j, AEStronglyMeasurable (v j) μ)
@@ -105,7 +107,7 @@ private theorem extend_integral_tests {α : Type*} [MeasurableSpace α]
 /-- Uniformly bounded measurable functions on a finite separable measure space
 have a subsequence converging against every integrable test. -/
 theorem exists_finite_bounded_weak_subsequence
-    {α : Type*} [MeasurableSpace α] (μ : Measure α) [IsFiniteMeasure μ]
+     (μ : Measure α) [IsFiniteMeasure μ]
     [MeasureTheory.IsSeparable μ]
     (v : ℕ → α → ℝ) (C : ℝ) (hC : 0 ≤ C)
     (hv : ∀ j, AEStronglyMeasurable (v j) μ)
@@ -169,5 +171,6 @@ theorem exists_finite_bounded_weak_subsequence
   exact ⟨u, ν, hν, Lp.aestronglyMeasurable u, hub,
     extend_integral_tests (fun j => v (ν j)) u C hC (fun j => hv (ν j))
       (fun j => hb (ν j)) (Lp.aestronglyMeasurable u) hub htest⟩
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

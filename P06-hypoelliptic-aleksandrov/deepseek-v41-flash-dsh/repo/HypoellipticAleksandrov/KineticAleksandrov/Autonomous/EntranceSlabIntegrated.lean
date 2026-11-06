@@ -8,12 +8,12 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EntranceSlab
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory ProbabilityTheory HypoellipticAleksandrov
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval)
 
 /-- A lower time bound makes the clipped active occupation of any finite start measure finite. -/
 theorem entranceSlabGreen_isFiniteMeasure
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (a b : ℝ)
+     (a b : ℝ)
     (mu : Measure Point) [IsFiniteMeasure mu] (ha : ∀ᵐ p ∂mu, a ≤ p.time) :
     IsFiniteMeasure
       (enlargedVisitGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) b ∘ₘ mu) := by
@@ -22,9 +22,7 @@ theorem entranceSlabGreen_isFiniteMeasure
 
 /-- Finite mixtures of starts up to `b` obey the exact actual terminal/occupation identity. -/
 theorem entranceSlabQuadratic_integrated_identity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (a b : ℝ)
+     (a b : ℝ)
     (hJ : closure c.active ⊆ J.carrier) (mu : Measure Point) [IsFiniteMeasure mu]
     (hmu : ∀ᵐ p ∂mu, a ≤ p.time ∧ p.time ≤ b ∧
       p.velocity 0 ∈ (visitActiveUnion c J).carrier) :
@@ -59,9 +57,7 @@ theorem entranceSlabQuadratic_integrated_identity
 
 /-- The exact source quadratic bounds starts by their actual terminal and clipped occupation. -/
 theorem entranceSlabQuadratic_mass_bound
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (a b : ℝ)
+     (a b : ℝ)
     (hJ : closure c.active ⊆ J.carrier) (mu : Measure Point) [IsFiniteMeasure mu]
     (hmu : ∀ᵐ p ∂mu, a ≤ p.time ∧ p.time ≤ b ∧ p.velocity 0 ∈ closure c.entrance) :
     5 * c.r ^ 2 / 16 * (mu univ).toReal ≤
@@ -89,9 +85,7 @@ theorem entranceSlabQuadratic_mass_bound
 
 /-- Finite canonical slab counts satisfy the source quadratic estimate without a past-mass term. -/
 theorem entranceSlabQuadratic_partial_mass_bound
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
+     (s T : ℝ)
     (P : Point) (hs : s ≤ P.time) (hT : P.time < T)
     (hJ : closure c.active ⊆ J.carrier) (a b : ℝ) (N : ℕ) :
     let mu := fun n => (enlargedVisitEntrance hH hLE hlam hLam A c J s T P n).restrict
@@ -119,5 +113,6 @@ theorem entranceSlabQuadratic_partial_mass_bound
   have h := Finset.sum_le_sum (s := Finset.range N) (fun n _ =>
     entranceSlabQuadratic_mass_bound hH hLE hlam hLam A c J a b hJ (mu n) (hm n))
   simpa only [Finset.mul_sum, Finset.sum_add_distrib] using h
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

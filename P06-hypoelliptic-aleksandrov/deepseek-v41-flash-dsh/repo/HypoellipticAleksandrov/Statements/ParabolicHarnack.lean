@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.Parabolic.ScalarClassical
 public import HypoellipticAleksandrov.Parabolic.LocalClassical
 public import PDEFoundation.Geometry.EuclideanBall.Basic
 import HypoellipticAleksandrov.Parabolic.HarnackUnitCylinder.Assembly
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Parabolic Harnack inequality (Krylov–Safonov)

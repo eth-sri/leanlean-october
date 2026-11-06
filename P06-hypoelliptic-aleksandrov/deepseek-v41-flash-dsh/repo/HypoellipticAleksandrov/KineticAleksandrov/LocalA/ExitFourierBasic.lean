@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.ExitDecomposition
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.KilledFourier
 import Mathlib.MeasureTheory.VectorMeasure.WithDensityVec
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Integral characterization and total variation of the actual exit Fourier measure -/
 
@@ -11,19 +12,18 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory SectionTwo Parabolic
 open scoped ENNReal
+section
+variable {d : ℕ} (ω : Measure (PDE.Vec d × TimeVelocity d)) [IsFiniteMeasure ω] (ξ : PDE.Vec d)
 
 /-- The literal exit Fourier measure has the density-map integral characterization. -/
-theorem exitFourier_apply {d : ℕ}
-    (ω : Measure (PDE.Vec d × TimeVelocity d)) [IsFiniteMeasure ω]
-    (ξ : PDE.Vec d) (E : Set (TimeVelocity d)) (hE : MeasurableSet E) :
+theorem exitFourier_apply  (E : HypoellipticAleksandrov.Parabolic.TVSet d) (hE : MeasurableSet E) :
     exitFourier ω ξ E = ∫ z in Prod.snd ⁻¹' E, exitPhase ξ z ∂ω := by
   unfold exitFourier
   rw [VectorMeasure.map_apply _ measurable_snd hE,
     withDensityᵥ_apply (integrable_exitPhase ω ξ) (measurable_snd hE)]
 
 /-- Fourier density and projection cannot increase the total mass of a finite exit measure. -/
-theorem exitFourier_variation_le {d : ℕ}
-    (ω : Measure (PDE.Vec d × TimeVelocity d)) [IsFiniteMeasure ω] (ξ : PDE.Vec d) :
+theorem exitFourier_variation_le  :
     (exitFourier ω ξ).variation ≤ ω.map Prod.snd := by
   apply VectorMeasure.variation_map_le.trans
   rw [Measure.variation_withDensityᵥ (integrable_exitPhase ω ξ)]
@@ -34,11 +34,11 @@ theorem exitFourier_variation_le {d : ℕ}
   rw [hp, withDensity_one]
 
 /-- The Fourier total variation is bounded by the original finite total mass. -/
-theorem exitFourier_totalVariation_le_mass {d : ℕ}
-    (ω : Measure (PDE.Vec d × TimeVelocity d)) [IsFiniteMeasure ω] (ξ : PDE.Vec d) :
+theorem exitFourier_totalVariation_le_mass  :
     (exitFourier ω ξ).variation univ ≤ ω univ := by
   have h := Measure.le_iff.mp (exitFourier_variation_le ω ξ) univ MeasurableSet.univ
   rwa [Measure.map_apply measurable_snd MeasurableSet.univ, preimage_univ] at h
+end
 
 /-- The actual ball exit Fourier measure has total variation at most one. -/
 theorem ballExit_fourier_totalVariation_le_one

@@ -12,6 +12,8 @@ public import Mathlib.MeasureTheory.Function.LocallyIntegrable
 public import Mathlib.Analysis.Convex.Integral
 public import Mathlib.Analysis.Convex.SpecificFunctions.Basic
 public import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Temporal derivatives of time-slice velocity projections
@@ -59,9 +61,9 @@ private theorem hasDerivAt_integral_velocity_weighted
       (∫ v in velocityCube (0 : PDE.Vec d) 1,
         timeDerivative u (t, v) * w v)
       t := by
-  let V : Set (PDE.Vec d) := velocityCube (0 : PDE.Vec d) 1
-  let W : Set (PDE.Vec d) := velocityClosedCube (0 : PDE.Vec d) 1
-  let K : Set (TimeVelocity d) := Set.Icc (t - 1) (t + 1) ×ˢ W
+  let V : HypoellipticAleksandrov.VecSet d := velocityCube (0 : PDE.Vec d) 1
+  let W : HypoellipticAleksandrov.VecSet d := velocityClosedCube (0 : PDE.Vec d) 1
+  let K : HypoellipticAleksandrov.Parabolic.TVSet d := Set.Icc (t - 1) (t + 1) ×ˢ W
   let F : Real -> PDE.Vec d -> Real := fun s v => u (s, v) * w v
   let F' : Real -> PDE.Vec d -> Real := fun s v => timeDerivative u (s, v) * w v
   have hVW : V ⊆ W := by
@@ -348,7 +350,7 @@ private theorem continuous_parabolicMorreyUnitAffineProjection
 private theorem continuous_integrable_parabolicMorreyUnitBox
     {d : Nat} {f : TimeVelocity d -> Real} (hf : Continuous f) :
     Integrable f (volume.restrict (parabolicMorreyUnitBox d)) := by
-  let K : Set (TimeVelocity d) :=
+  let K : HypoellipticAleksandrov.Parabolic.TVSet d :=
     parabolicClosedBox 1 1 0 (0 : PDE.Vec d)
   have hKcompact : IsCompact K :=
     isCompact_parabolicClosedBox 1 1 0 (0 : PDE.Vec d)
@@ -378,8 +380,8 @@ private theorem integrableOn_parabolicMorreyUnitBox_as_prod
     (hf : Integrable f (volume.restrict (parabolicMorreyUnitBox d))) :
     IntegrableOn f
       (Set.Ioo (0 : Real) 1 ×ˢ velocityCube (0 : PDE.Vec d) 1)
-      ((volume : Measure Real).prod (volume : Measure (PDE.Vec d))) := by
-  change Integrable f (((volume : Measure Real).prod (volume : Measure (PDE.Vec d))).restrict
+      ((volume : Measure Real).prod (HypoellipticAleksandrov.VecVolume d)) := by
+  change Integrable f (((volume : Measure Real).prod (HypoellipticAleksandrov.VecVolume d)).restrict
     (Set.Ioo (0 : Real) 1 ×ˢ velocityCube (0 : PDE.Vec d) 1))
   rw [← Measure.prod_restrict, ← parabolicMorreyUnitBox_restrict_volume_eq_prod]
   exact hf
@@ -390,11 +392,11 @@ private theorem parabolicMorreyUnitAverage_eq_integral_velocityAverage
     parabolicMorreyUnitAverage u =
       ∫ t in Set.Ioo (0 : Real) 1, parabolicMorreyUnitVelocityAverage u t := by
   let I : Set Real := Set.Ioo 0 1
-  let V : Set (PDE.Vec d) := velocityCube (0 : PDE.Vec d) 1
+  let V : HypoellipticAleksandrov.VecSet d := velocityCube (0 : PDE.Vec d) 1
   have huInt : Integrable u (volume.restrict (parabolicMorreyUnitBox d)) :=
     continuous_integrable_parabolicMorreyUnitBox hu
   have huProd : IntegrableOn u (I ×ˢ V)
-      ((volume : Measure Real).prod (volume : Measure (PDE.Vec d))) := by
+      ((volume : Measure Real).prod (HypoellipticAleksandrov.VecVolume d)) := by
     simpa only [I, V] using integrableOn_parabolicMorreyUnitBox_as_prod huInt
   have hFubini : ∫ z in parabolicMorreyUnitBox d, u z =
       ∫ t in I, ∫ v in V, u (t, v) := by
@@ -471,8 +473,8 @@ private theorem continuous_integral_velocity_weighted_of_continuous
   rw [continuous_iff_continuousAt]
   intro t
   let J : Set Real := Set.Icc (t - 1) (t + 1)
-  let V : Set (PDE.Vec d) := velocityCube (0 : PDE.Vec d) 1
-  let W : Set (PDE.Vec d) := velocityClosedCube (0 : PDE.Vec d) 1
+  let V : HypoellipticAleksandrov.VecSet d := velocityCube (0 : PDE.Vec d) 1
+  let W : HypoellipticAleksandrov.VecSet d := velocityClosedCube (0 : PDE.Vec d) 1
   let F : Real -> PDE.Vec d -> Real := fun s v => g (s, v) * w v
   have hVW : V ⊆ W := by
     intro v hv i
@@ -536,7 +538,7 @@ private theorem parabolicELpNormOn_spatialAffineProjection_timeDerivative_le
       ENNReal.ofReal (1 + 3 * (d : Real)) *
         parabolicELpNormOn d (timeDerivative u) (parabolicMorreyUnitBox d) := by
   let I : Set Real := Set.Ioo 0 1
-  let V : Set (PDE.Vec d) := velocityCube (0 : PDE.Vec d) 1
+  let V : HypoellipticAleksandrov.VecSet d := velocityCube (0 : PDE.Vec d) 1
   let p : ENNReal := parabolicExponent d
   let q : Real -> ENNReal := fun t =>
     PDE.eLpNormOn V p (fun v =>
@@ -594,8 +596,8 @@ private theorem temporalResidual_setIntegral_rpow_le_spatialProjection
         |parabolicMorreyUnitSpatialAffineProjection (timeDerivative u) z| ^
           ((d : Real) + 1) := by
   let I : Set Real := Set.Ioo 0 1
-  let V : Set (PDE.Vec d) := velocityCube 0 1
-  let B : Set (TimeVelocity d) := parabolicMorreyUnitBox d
+  let V : HypoellipticAleksandrov.VecSet d := velocityCube 0 1
+  let B : HypoellipticAleksandrov.Parabolic.TVSet d := parabolicMorreyUnitBox d
   let p : Real := (d : Real) + 1
   let R : TimeVelocity d -> Real := fun z =>
     parabolicMorreyUnitSpatialAffineProjection u z -
@@ -603,7 +605,7 @@ private theorem temporalResidual_setIntegral_rpow_le_spatialProjection
   let S : TimeVelocity d -> Real :=
     parabolicMorreyUnitSpatialAffineProjection (timeDerivative u)
   let μ : Measure Real := volume.restrict I
-  let ν : Measure (PDE.Vec d) := volume.restrict V
+  let ν : HypoellipticAleksandrov.VecMeasure d := volume.restrict V
 
   have hp : 0 < p := by
     dsimp only [p]
@@ -636,7 +638,7 @@ private theorem temporalResidual_setIntegral_rpow_le_spatialProjection
       |R (t, v)| ^ p) ((volume.restrict I).prod (volume.restrict V))
     rw [Measure.prod_restrict]
     change IntegrableOn (fun z => |R z| ^ p) (I ×ˢ V)
-      ((volume : Measure Real).prod (volume : Measure (PDE.Vec d)))
+      ((volume : Measure Real).prod (HypoellipticAleksandrov.VecVolume d))
     exact integrableOn_parabolicMorreyUnitBox_as_prod hRpow
   have hSprod : Integrable (Function.uncurry fun t : Real => fun v : PDE.Vec d =>
       |S (t, v)| ^ p) (μ.prod ν) := by
@@ -644,7 +646,7 @@ private theorem temporalResidual_setIntegral_rpow_le_spatialProjection
       |S (t, v)| ^ p) ((volume.restrict I).prod (volume.restrict V))
     rw [Measure.prod_restrict]
     change IntegrableOn (fun z => |S z| ^ p) (I ×ˢ V)
-      ((volume : Measure Real).prod (volume : Measure (PDE.Vec d)))
+      ((volume : Measure Real).prod (HypoellipticAleksandrov.VecVolume d))
     exact integrableOn_parabolicMorreyUnitBox_as_prod hSpow
   have hpoint (v : PDE.Vec d) :
       ∫ t, |R (t, v)| ^ p ∂μ <= ∫ t, |S (t, v)| ^ p ∂μ := by

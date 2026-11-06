@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeGalerkinPrimalBase
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeBochnerEnergy
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Canonical reverse-time Galerkin Bochner classes
@@ -21,7 +22,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 open MeasureTheory Set
 open scoped ENNReal Matrix Matrix.Norms.Elementwise MatrixOrder RealInnerProductSpace
 
-variable {d : ℕ} {Ω : Set (PDE.Vec d)}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
 variable
   (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam)
   (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
@@ -210,7 +211,7 @@ theorem norm_reverseTimeGalerkinPrimal_le_radius
   apply (Real.le_sqrt (norm_nonneg _)
     (reverseTimeGalerkinPrimalNormSqBound_nonneg r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
       haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial)).mpr
-  simpa only [reverseTimeGalerkinPrimalRadius] using
+  simpa using
     (norm_sq_reverseTimeGalerkinPrimal_le r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
       haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial N)
 

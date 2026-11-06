@@ -6,6 +6,8 @@ public import HypoellipticAleksandrov.Parabolic.ParabolicWeakDerivativeFamilyL2N
 public import HypoellipticAleksandrov.Parabolic.GenericPreLiftSpatialDifferenceQuotientFixedCore
 public import HypoellipticAleksandrov.Analysis.BoundedMultiplierLp
 public import HypoellipticAleksandrov.Analysis.FiniteSumL2Norm
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Generic pre-lift spatial difference-quotient estimate
@@ -78,7 +80,7 @@ private theorem potentialValueMajorant_nonneg
   hBc (ParabolicDerivativeIndex.zero d M)
 
 private theorem diffusionGradient_abs_le_majorant
-    {d M : ℕ} {U : Set (TimeVelocity d)} (hM : 1 ≤ M)
+    {d M : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} (hM : 1 ≤ M)
     (a : CoefficientField d)
     (Ba : Fin d → Fin d → ParabolicDerivativeIndex d (M + 1) → ℝ)
     (hBa : ∀ i j alpha, 0 ≤ Ba i j alpha)
@@ -108,7 +110,7 @@ private theorem diffusionGradient_abs_le_majorant
     (hij.trans (hi.trans hk))
 
 private theorem spatialPartial_coefficient_eq_singletonDerivative
-    {d M : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U) (hM : 1 ≤ M)
+    {d M : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} (hU : IsOpen U) (hM : 1 ≤ M)
     (a : CoefficientField d)
     (ha : ∀ i j, ContDiffOn ℝ (M + 1)
       (fun z : TimeVelocity d => a z.1 z.2 i j) U) :
@@ -145,7 +147,7 @@ private theorem spatialPartial_coefficient_eq_singletonDerivative
   rfl
 
 private theorem spatialPartial_coefficient_abs_le_majorant
-    {d M : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U) (hM : 1 ≤ M)
+    {d M : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} (hU : IsOpen U) (hM : 1 ≤ M)
     (a : CoefficientField d)
     (Ba : Fin d → Fin d → ParabolicDerivativeIndex d (M + 1) → ℝ)
     (hBa : ∀ i j alpha, 0 ≤ Ba i j alpha)
@@ -162,7 +164,7 @@ private theorem spatialPartial_coefficient_abs_le_majorant
   exact diffusionGradient_abs_le_majorant hM a Ba hBa haBound i j k z hz
 
 private theorem driftValue_abs_le_majorant
-    {d M : ℕ} {U : Set (TimeVelocity d)}
+    {d M : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     (b : ℝ → PDE.Vec d → PDE.Vec d)
     (Bb : Fin d → ParabolicDerivativeIndex d M → ℝ)
     (hBb : ∀ j alpha, 0 ≤ Bb j alpha)
@@ -182,7 +184,7 @@ private theorem driftValue_abs_le_majorant
   exact hv.trans hj
 
 private theorem potentialValue_abs_le_majorant
-    {d M : ℕ} {U : Set (TimeVelocity d)}
+    {d M : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     (c : ℝ → PDE.Vec d → ℝ)
     (Bc : ParabolicDerivativeIndex d M → ℝ)
     (hcBound : ∀ alpha z, z ∈ U →
@@ -194,7 +196,7 @@ private theorem potentialValue_abs_le_majorant
     hcBound (ParabolicDerivativeIndex.zero d M) z hz
 
 private theorem singletonCoefficientDerivative_continuousOn
-    {d M : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U) (hM : 1 ≤ M)
+    {d M : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} (hU : IsOpen U) (hM : 1 ≤ M)
     (q : TimeVelocity d → ℝ) (hq : ContDiffOn ℝ (M + 1) q U)
     (i : Fin d) :
     ContinuousOn (TimeVelocityMultiIndex.coordinateIteratedFDeriv
@@ -221,7 +223,7 @@ private theorem singletonCoefficientDerivative_continuousOn
     |>.continuousAt
 
 private theorem diffusionGradient_aestronglyMeasurable
-    {d M : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U) (hM : 1 ≤ M)
+    {d M : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} (hU : IsOpen U) (hM : 1 ≤ M)
     (a : CoefficientField d)
     (ha : ∀ i j, ContDiffOn ℝ (M + 1)
       (fun z : TimeVelocity d => a z.1 z.2 i j) U) (i j : Fin d) :
@@ -234,7 +236,7 @@ private theorem diffusionGradient_aestronglyMeasurable
     |>.aestronglyMeasurable hU.measurableSet
 
 private theorem driftValue_aestronglyMeasurable
-    {d M : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
+    {d M : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} (hU : IsOpen U)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
     (hb : ∀ j, ContDiffOn ℝ M
       (fun z : TimeVelocity d => b z.1 z.2 j) U) (j : Fin d) :
@@ -243,7 +245,7 @@ private theorem driftValue_aestronglyMeasurable
   (hb j).continuousOn.aestronglyMeasurable hU.measurableSet
 
 private theorem potentialValue_aestronglyMeasurable
-    {d M : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
+    {d M : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} (hU : IsOpen U)
     (c : ℝ → PDE.Vec d → ℝ)
     (hc : ContDiffOn ℝ M (fun z : TimeVelocity d => c z.1 z.2) U) :
     AEStronglyMeasurable (fun z : TimeVelocity d => c z.1 z.2)
@@ -281,7 +283,7 @@ private theorem properResidualCoarseConstant_nonneg
   exact Finset.sum_nonneg fun beta _ => mul_nonneg (by positivity) (by positivity)
 
 private theorem properResidual_memLp_and_sum_sq_le_coarse
-    {d M : ℕ} (U : Set (TimeVelocity d)) (hU : IsOpen U)
+    {d M : ℕ} (U : HypoellipticAleksandrov.Parabolic.TVSet d) (hU : IsOpen U)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c : ℝ → PDE.Vec d → ℝ) (u : TimeVelocity d → ℝ)
     (F : ℝ → PDE.Vec d → ℝ)
@@ -386,7 +388,7 @@ private def preliftGradientIndex {d M : ℕ}
     omega)
 
 private theorem preliftValue_component_sq_le
-    {d M : ℕ} {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
+    {d M : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {u : TimeVelocity d → ℝ}
     (D : ParabolicWeakDerivativeFamily d (M + 1) U u)
     (beta : ParabolicDerivativeIndex d M) :
     (ENNReal.toReal (eLpNorm (D.representative (preliftValueIndex beta)) 2
@@ -395,7 +397,7 @@ private theorem preliftValue_component_sq_le
   ParabolicWeakDerivativeFamily.component_sq_le_squaredL2Norm D _
 
 private theorem preliftGradient_component_sum_sq_le
-    {d M : ℕ} {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
+    {d M : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {u : TimeVelocity d → ℝ}
     (D : ParabolicWeakDerivativeFamily d (M + 1) U u)
     (beta : ParabolicDerivativeIndex d M) :
     (∑ j : Fin d, (ENNReal.toReal (eLpNorm
@@ -409,7 +411,7 @@ private theorem preliftGradient_component_sum_sq_le
     _ = _ := by simp
 
 private theorem preliftGradient_double_component_sum_sq_le
-    {d M : ℕ} {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
+    {d M : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {u : TimeVelocity d → ℝ}
     (D : ParabolicWeakDerivativeFamily d (M + 1) U u)
     (beta : ParabolicDerivativeIndex d M) :
     (∑ _i : Fin d, ∑ j : Fin d, (ENNReal.toReal (eLpNorm
@@ -423,7 +425,7 @@ private theorem preliftGradient_double_component_sum_sq_le
     _ = _ := by simp; ring
 
 private theorem allPreliftValue_component_sum_sq_le
-    {d M : ℕ} {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
+    {d M : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {u : TimeVelocity d → ℝ}
     (D : ParabolicWeakDerivativeFamily d (M + 1) U u) :
     (∑ beta : ParabolicDerivativeIndex d M,
       (ENNReal.toReal (eLpNorm (D.representative (preliftValueIndex beta)) 2
@@ -437,7 +439,7 @@ private theorem allPreliftValue_component_sum_sq_le
     _ = _ := by simp
 
 private theorem allPreliftGradient_component_sum_sq_le
-    {d M : ℕ} {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
+    {d M : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {u : TimeVelocity d → ℝ}
     (D : ParabolicWeakDerivativeFamily d (M + 1) U u) :
     (∑ beta : ParabolicDerivativeIndex d M, ∑ j : Fin d,
       (ENNReal.toReal (eLpNorm (D.representative (preliftGradientIndex beta j)) 2
@@ -451,7 +453,7 @@ private theorem allPreliftGradient_component_sum_sq_le
     _ = _ := by simp; ring
 
 private theorem allPreliftGradient_double_component_sum_sq_le
-    {d M : ℕ} {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
+    {d M : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {u : TimeVelocity d → ℝ}
     (D : ParabolicWeakDerivativeFamily d (M + 1) U u) :
     (∑ beta : ParabolicDerivativeIndex d M, ∑ _i : Fin d, ∑ j : Fin d,
       (ENNReal.toReal (eLpNorm (D.representative (preliftGradientIndex beta j)) 2
@@ -507,7 +509,7 @@ private theorem card_fullResidualTermIndex (d : ℕ) :
   ring
 
 private theorem genericPreliftFullResidual_memLp_and_sq_le
-    {d : ℕ} {U : Set (TimeVelocity d)}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     (Rproper : TimeVelocity d → ℝ)
     (da : Fin d → Fin d → TimeVelocity d → ℝ)
     (b : Fin d → TimeVelocity d → ℝ) (c q : TimeVelocity d → ℝ)
@@ -738,7 +740,7 @@ private theorem sum_le_coarse_product_of_pointwise_four_term
           (Dnorm + Enorm) := by ring
 
 private theorem genericPreliftFullResidual_family_memLp_and_sum_sq_le
-    {ι : Type*} [Fintype ι] {d : ℕ} {U : Set (TimeVelocity d)}
+    {ι : Type*} [Fintype ι] {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     (Rproper q : ι → TimeVelocity d → ℝ)
     (G : ι → Fin d → TimeVelocity d → ℝ)
     (da : Fin d → Fin d → TimeVelocity d → ℝ)
@@ -808,7 +810,7 @@ private theorem genericPreliftFullResidual_family_memLp_and_sum_sq_le
 private def sourceSpecificFullResidual
     {d M : ℕ} (hM : 1 ≤ M)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (c : ℝ → PDE.Vec d → ℝ) {U : Set (TimeVelocity d)}
+    (c : ℝ → PDE.Vec d → ℝ) {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u : TimeVelocity d → ℝ} {F : ℝ → PDE.Vec d → ℝ}
     (D : ParabolicWeakDerivativeFamily d (M + 1) U u)
     (E : ParabolicWeakDerivativeFamily d M U
@@ -824,7 +826,7 @@ private def sourceSpecificFullResidual
     (fun j => D.representative (preliftGradientIndex beta j))
 
 private theorem sourceSpecificFullResidual_memLp_and_sum_sq_le
-    {d M : ℕ} (U : Set (TimeVelocity d)) (hU : IsOpen U) (hM : 1 ≤ M)
+    {d M : ℕ} (U : HypoellipticAleksandrov.Parabolic.TVSet d) (hU : IsOpen U) (hM : 1 ≤ M)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c : ℝ → PDE.Vec d → ℝ) (u : TimeVelocity d → ℝ)
     (F : ℝ → PDE.Vec d → ℝ)
@@ -923,7 +925,7 @@ private theorem sourceSpecificFullResidual_memLp_and_sum_sq_le
   simpa only [sourceSpecificFullResidual, fullResidualCoarseConstant, BaM] using hfull
 
 private theorem integrable_mul_test_of_memLp
-    {d : ℕ} {U : Set (TimeVelocity d)} {f φ : TimeVelocity d → ℝ}
+    {d : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} {f φ : TimeVelocity d → ℝ}
     (hf : ParabolicMemLpOn U 2 f) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
     (hφc : HasCompactSupport φ) :
     Integrable (fun z => f z * φ z) (timeVelocityVolumeOn U) := by
@@ -932,7 +934,7 @@ private theorem integrable_mul_test_of_memLp
   simpa only [Pi.mul_def] using hf.integrable_mul hφLp
 
 private theorem sourceSpecific_testedEquation
-    {d M : ℕ} (hM : 1 ≤ M) (U : Set (TimeVelocity d)) (hU : IsOpen U)
+    {d M : ℕ} (hM : 1 ≤ M) (U : HypoellipticAleksandrov.Parabolic.TVSet d) (hU : IsOpen U)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c F : ℝ → PDE.Vec d → ℝ) (u : TimeVelocity d → ℝ)
     (D : ParabolicWeakDerivativeFamily d (M + 1) U u)
@@ -1078,7 +1080,7 @@ theorem exists_genericPrelift_gradient_spatialDifferenceQuotient_estimate
     (d M : ℕ) (hM : 1 ≤ M)
     (t₀ t₁ t₂ t₃ : ℝ)
     (ht₀₁ : t₀ < t₁) (ht₁₂ : t₁ < t₂) (ht₂₃ : t₂ < t₃)
-    (O₀ O₁ : Set (PDE.Vec d))
+    (O₀ O₁ : HypoellipticAleksandrov.VecSet d)
     (hO₀ : IsOpen O₀) (hO₁ : IsOpen O₁) (hO₁ne : O₁.Nonempty)
     (hO₁compact : IsCompact (closure O₁))
     (hO₁O₀ : closure O₁ ⊆ O₀)
@@ -1184,7 +1186,7 @@ theorem exists_genericPrelift_gradient_spatialDifferenceQuotient_estimate
       (mul_nonneg (by positivity) (by positivity))
       (fullResidualCoarseConstant_nonneg hM Ba Bb Bc)
   · intro a b c F u D E hSymm hEll ha hb hc haBound hbBound hcBound hEq
-    let U : Set (TimeVelocity d) := Set.Ioo t₀ t₃ ×ˢ O₀
+    let U : HypoellipticAleksandrov.Parabolic.TVSet d := Set.Ioo t₀ t₃ ×ˢ O₀
     have hU : IsOpen U := isOpen_Ioo.prod hO₀
     have hres := sourceSpecificFullResidual_memLp_and_sum_sq_le U hU hM
       a b c u F D E Ba Bb Bc hBa hBb hBc ha hb hc haBound hbBound hcBound

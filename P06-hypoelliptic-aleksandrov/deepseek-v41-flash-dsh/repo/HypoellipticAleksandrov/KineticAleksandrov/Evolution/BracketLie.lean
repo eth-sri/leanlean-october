@@ -22,11 +22,12 @@ open scoped MatrixOrder
 namespace HypoellipticAleksandrov.KineticAleksandrov.Evolution
 
 variable {n : ℕ}
+section
+variable {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F] (L : EvolutionVec n →L[ℝ] F) {W : EvolutionVec n → EvolutionVec n}
 
 /-- A coordinate projection of the derivative of a field is the derivative of the projected
 field. -/
-theorem coord_fderiv_comp {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
-    (L : EvolutionVec n →L[ℝ] F) {W : EvolutionVec n → EvolutionVec n} {g : EvolutionVec n → F}
+theorem coord_fderiv_comp  {g : EvolutionVec n → F}
     {x : EvolutionVec n} (hW : DifferentiableAt ℝ W x)
     (h : ∀ y, L (W y) = g y) (w : EvolutionVec n) :
     L (fderiv ℝ W x w) = fderiv ℝ g x w := by
@@ -37,12 +38,12 @@ theorem coord_fderiv_comp {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
   rfl
 
 /-- A coordinate projection of the derivative of a field with constant coordinate vanishes. -/
-theorem coord_fderiv_const {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
-    (L : EvolutionVec n →L[ℝ] F) {W : EvolutionVec n → EvolutionVec n} {x : EvolutionVec n}
+theorem coord_fderiv_const  {x : EvolutionVec n}
     (hW : DifferentiableAt ℝ W x) (c : F) (h : ∀ y, L (W y) = c) (w : EvolutionVec n) :
     L (fderiv ℝ W x w) = 0 := by
   rw [coord_fderiv_comp L hW (g := fun _ => c) h w]
   simp
+end
 
 /-- A drift with `m ≤ ξ · Db(v) ξ` for unit `ξ`, `m > 0`, has surjective derivative. -/
 theorem fderiv_surjective_of_coercive {m : ℝ} {b : PDE.Vec n → PDE.Vec n} (hm : 0 < m)

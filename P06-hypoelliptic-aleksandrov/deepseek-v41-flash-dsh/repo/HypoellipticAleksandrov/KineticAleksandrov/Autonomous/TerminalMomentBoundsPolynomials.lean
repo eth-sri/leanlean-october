@@ -33,7 +33,7 @@ theorem velocitySecondBarrier_terminal (Lam v0 : ℝ) (p : Point) :
 theorem positionSecondBarrier_terminal (Lam X0 : ℝ) (p : Point) :
     positionSecondBarrier Lam X0 p.time p = (p.position 0-X0)^2 := by
   simp only [positionSecondBarrier, sub_self, zero_mul, add_zero, zero_pow
-    (by norm_num : (3 : ℕ) ≠ 0), mul_zero]
+    (by norm_num : 3 ≠ 0), mul_zero]
 
 /-- Exact quadratic velocity computation for the physical kinetic operator. -/
 theorem velocitySecondBarrier_operator (a : ℝ → ℝ → ℝ) (Lam v0 tau : ℝ)
@@ -124,7 +124,7 @@ theorem positionSecondBarrier_operator_nonpos (a : ℝ → ℝ → ℝ)
 /-- Starting-point quadratic velocity value has the exact source constant. -/
 theorem velocitySecondBarrier_start (Lam X0 v0 T : ℝ) :
     velocitySecondBarrier Lam v0 T ⟨0, fun _ => X0, fun _ => v0⟩ = 2*Lam*T := by
-  simp only [velocitySecondBarrier, sub_self, zero_pow (by norm_num : (2 : ℕ) ≠ 0),
+  simp only [velocitySecondBarrier, sub_self, zero_pow (by norm_num : 2 ≠ 0),
     zero_add, sub_zero]
 
 /-- Starting-point quadratic position value has the integrated diffusion time power. -/

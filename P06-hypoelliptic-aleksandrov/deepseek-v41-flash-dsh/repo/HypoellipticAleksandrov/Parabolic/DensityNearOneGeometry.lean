@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.Parabolic.EllipticityClosure
 public import Mathlib.Analysis.SpecificLimits.Basic
 public import Mathlib.Tactic.Linarith
 public import Mathlib.Tactic.NormNum
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Local geometry for the near-one density argument
@@ -22,10 +23,12 @@ open scoped Topology
 namespace HypoellipticAleksandrov.Parabolic
 
 noncomputable section
+section
+variable {d : ℕ}
 
 /-- A closed round Euclidean ball is contained in the coordinate closed cube
 of the same nonnegative radius. -/
-theorem euclideanClosedBall_subset_velocityClosedCube {d : ℕ}
+theorem euclideanClosedBall_subset_velocityClosedCube 
     {v₀ : PDE.Vec d} {r : ℝ} (hr : 0 ≤ r) :
     PDE.euclideanClosedBall v₀ r ⊆ velocityClosedCube v₀ r := by
   intro v hv i
@@ -34,7 +37,7 @@ theorem euclideanClosedBall_subset_velocityClosedCube {d : ℕ}
       (PDE.sq_apply_le_vecNormSq (v - v₀) i).trans hv
   exact abs_le_of_sq_le_sq hcoord hr
 
-private theorem euclideanClosedBall_subset_closure_euclideanBall {d : ℕ}
+private theorem euclideanClosedBall_subset_closure_euclideanBall 
     (v₀ : PDE.Vec d) :
     PDE.euclideanClosedBall v₀ 1 ⊆ closure (PDE.euclideanBall v₀ 1) := by
   intro v hv
@@ -79,7 +82,7 @@ private theorem euclideanClosedBall_subset_closure_euclideanBall {d : ℕ}
       exact hsq
 
 private theorem closedParabolicCylinder_one_subset_closure_parabolicInterior
-    {d : ℕ} :
+     :
     closedParabolicCylinder 1 (0 : PDE.Vec d) ⊆
       closure (parabolicInterior 1 (0 : PDE.Vec d)) := by
   intro z hz
@@ -90,7 +93,7 @@ private theorem closedParabolicCylinder_one_subset_closure_parabolicInterior
       (mem_closedParabolicCylinder_iff.mp hz).2.2⟩
 
 private theorem forwardParabolicBoundary_one_subset_closure_parabolicInterior
-    {d : ℕ} :
+     :
     forwardParabolicBoundary 1 (0 : PDE.Vec d) ⊆
       closure (parabolicInterior 1 (0 : PDE.Vec d)) := by
   intro z hz
@@ -108,7 +111,7 @@ private theorem forwardParabolicBoundary_one_subset_closure_parabolicInterior
 
 /-- The compact local ABP cylinder lies in the supplied unit closed
 coordinate box whenever its centre lies in the half cube. -/
-theorem localABPClosure_subset_parabolicClosedBox_one {d : ℕ}
+theorem localABPClosure_subset_parabolicClosedBox_one 
     {v₀ : PDE.Vec d} (hv₀ : v₀ ∈ velocityClosedCube 0 (1 / 2 : ℝ)) :
     localABPClosure v₀ ⊆ parabolicClosedBox 1 1 0 0 := by
   rintro z ⟨w, hw, rfl⟩
@@ -137,7 +140,7 @@ theorem localABPClosure_subset_parabolicClosedBox_one {d : ℕ}
 
 /-- The open local ABP cylinder lies in the unit open coordinate box whenever
 its centre lies in the half closed cube. -/
-theorem localABPInterior_subset_parabolicBox_one {d : ℕ}
+theorem localABPInterior_subset_parabolicBox_one 
     {v₀ : PDE.Vec d} (hv₀ : v₀ ∈ velocityClosedCube 0 (1 / 2 : ℝ)) :
     localABPInterior v₀ ⊆ parabolicBox 1 1 0 0 := by
   rintro z ⟨w, hw, rfl⟩
@@ -169,7 +172,7 @@ theorem localABPInterior_subset_parabolicBox_one {d : ℕ}
 
 /-- Every initial or lateral local ABP boundary point is a limit of points of
 the open local ABP cylinder. -/
-theorem localABPForwardBoundary_subset_closure_interior {d : ℕ}
+theorem localABPForwardBoundary_subset_closure_interior 
     (v₀ : PDE.Vec d) :
     localABPForwardBoundary v₀ ⊆ closure (localABPInterior v₀) := by
   unfold localABPForwardBoundary localABPInterior
@@ -181,7 +184,7 @@ theorem localABPForwardBoundary_subset_closure_interior {d : ℕ}
       image_closure_subset_closure_image
         (contDiff_parabolicAffine (3 / 4) v₀ (1 / 2)).continuous
 
-private theorem closure_velocityCube_zero_one {d : ℕ} :
+private theorem closure_velocityCube_zero_one  :
     closure (velocityCube (0 : PDE.Vec d) 1) =
       velocityClosedCube (0 : PDE.Vec d) 1 := by
   rw [velocityCube_eq_pi, closure_pi_set, velocityClosedCube_eq_pi]
@@ -190,7 +193,7 @@ private theorem closure_velocityCube_zero_one {d : ℕ} :
 
 /-- The normalized closed coordinate box is exactly the closure of its open
 counterpart. -/
-theorem closure_parabolicBox_one {d : ℕ} :
+theorem closure_parabolicBox_one  :
     closure (parabolicBox 1 1 0 (0 : PDE.Vec d)) =
       parabolicClosedBox 1 1 0 0 := by
   simp only [parabolicBox, parabolicClosedBox, zero_add, one_mul, one_pow]
@@ -200,8 +203,8 @@ theorem closure_parabolicBox_one {d : ℕ} :
 /-- The unit-box lower ellipticity bound extends to every local ABP compact
 closure centred in the terminal half-cube. -/
 theorem hasLowerEllipticityOn_localABPClosure
-    {d : ℕ} {lam : ℝ} {B : CoefficientField d}
-    {U : Set (TimeVelocity d)} {v0 : PDE.Vec d}
+     {lam : ℝ} {B : CoefficientField d}
+    {U : HypoellipticAleksandrov.Parabolic.TVSet d} {v0 : PDE.Vec d}
     (hclosed : parabolicClosedBox 1 1 0 (0 : PDE.Vec d) ⊆ U)
     (hcont : IsContinuousCoefficientOn B U)
     (hlow : HasLowerEllipticityOn lam B
@@ -213,6 +216,7 @@ theorem hasLowerEllipticityOn_localABPClosure
     rw [← closure_parabolicBox_one]
     exact hlow.closure hcont (by rw [closure_parabolicBox_one]; exact hclosed)
   exact hlowClosed.mono (localABPClosure_subset_parabolicClosedBox_one hv0)
+end
 
 end
 

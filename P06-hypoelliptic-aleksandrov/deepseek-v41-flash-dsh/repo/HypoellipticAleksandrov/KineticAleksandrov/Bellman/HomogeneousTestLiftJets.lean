@@ -11,9 +11,11 @@ import Mathlib.Tactic
 noncomputable section
 open Set MeasureTheory Filter Topology
 namespace HypoellipticAleksandrov.KineticAleksandrov
+section
+variable (alpha : ℝ) (zeta : (ℝ × ℝ) → ℝ)
 
 /-- The first position derivative is the lift of the first test jet with its shifted weight. -/
-theorem bellman_lift_dx (alpha : ℝ) (zeta : (ℝ × ℝ) → ℝ)
+theorem bellman_lift_dx 
     (hz : ContDiffOn ℝ 1 zeta bellmanPuncturedSet) (hc : HasCompactSupport zeta)
     (hs : tsupport zeta ⊆ bellmanPuncturedSet) (q : ℝ × ℝ)
     (hq : q ∈ bellmanPuncturedSet) :
@@ -34,7 +36,7 @@ theorem bellman_lift_dx (alpha : ℝ) (zeta : (ℝ × ℝ) → ℝ)
   rfl
 
 /-- The first velocity derivative is the lift of the first test jet with its shifted weight. -/
-theorem bellman_lift_dv (alpha : ℝ) (zeta : (ℝ × ℝ) → ℝ)
+theorem bellman_lift_dv 
     (hz : ContDiffOn ℝ 1 zeta bellmanPuncturedSet) (hc : HasCompactSupport zeta)
     (hs : tsupport zeta ⊆ bellmanPuncturedSet) (q : ℝ × ℝ)
     (hq : q ∈ bellmanPuncturedSet) :
@@ -56,7 +58,7 @@ theorem bellman_lift_dv (alpha : ℝ) (zeta : (ℝ × ℝ) → ℝ)
   rfl
 
 /-- The second velocity derivative is the lift of the second test jet with its shifted weight. -/
-theorem bellman_lift_dvv (alpha : ℝ) (zeta : (ℝ × ℝ) → ℝ)
+theorem bellman_lift_dvv 
     (hz : ContDiffOn ℝ 2 zeta bellmanPuncturedSet) (hc : HasCompactSupport zeta)
     (hs : tsupport zeta ⊆ bellmanPuncturedSet) (q : ℝ × ℝ)
     (hq : q ∈ bellmanPuncturedSet) :
@@ -75,5 +77,6 @@ theorem bellman_lift_dvv (alpha : ℝ) (zeta : (ℝ × ℝ) → ℝ)
   have heq : alpha - 1 - 1 = alpha - 2 := by ring
   rw [heq]
   rfl
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

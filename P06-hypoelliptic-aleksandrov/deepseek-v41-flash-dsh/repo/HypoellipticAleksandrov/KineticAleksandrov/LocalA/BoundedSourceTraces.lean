@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundedSourceWeak
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Terminal traces for signed bounded Borel source potentials
 
@@ -14,7 +15,7 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set Filter
 open Evolution
 open scoped Topology
-variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d}
 
 /-- Signed bounded potentials tend to zero at every point of the terminal face. -/
 theorem tendsto_duhamelPotential_terminal (K : MovingFiberKernel Ω γ)

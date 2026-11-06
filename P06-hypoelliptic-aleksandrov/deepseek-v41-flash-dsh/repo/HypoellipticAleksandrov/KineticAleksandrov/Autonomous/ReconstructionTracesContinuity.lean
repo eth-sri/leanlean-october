@@ -10,11 +10,11 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov Filter
 open SectionTwo TheoremA Evolution
 open scoped Topology
+section
+variable (H : Interval) (K : MovingFiberKernel (intervalDomain H) (fun _ => 0)) (T : ℝ) (g : BoundedBorel Point)
 
 /-- The source potential is zero at every invalid open-strip pole. -/
-theorem reconstruction_potential_zero_outside (H : Interval)
-    (K : MovingFiberKernel (intervalDomain H) (fun _ => 0)) (T : ℝ)
-    (g : BoundedBorel Point) (p : Point) (hp : p ∉ stripPast H T) :
+theorem reconstruction_potential_zero_outside  (p : Point) (hp : p ∉ stripPast H T) :
     stripSourcePotential H K T g p = 0 := by
   by_cases ht : p.time < T
   · apply duhamelPotential_eq_zero_of_not_mem
@@ -26,9 +26,7 @@ theorem reconstruction_potential_zero_outside (H : Interval)
       (sectionTwoPoint p) (le_of_not_gt ht)
 
 /-- The time barrier extends continuously to all ambient points. -/
-theorem reconstruction_potential_abs_le_time (H : Interval)
-    (K : MovingFiberKernel (intervalDomain H) (fun _ => 0)) (T : ℝ)
-    (g : BoundedBorel Point) (C : ℝ) (hC : 0 ≤ C) (hg : ∀ p, |g p| ≤ C) (p : Point) :
+theorem reconstruction_potential_abs_le_time  (C : ℝ) (hC : 0 ≤ C) (hg : ∀ p, |g p| ≤ C) (p : Point) :
     |stripSourcePotential H K T g p| ≤ C * max (T - p.time) 0 := by
   by_cases hp : p ∈ stripPast H T
   · let e : StripPole H (T : WithTop ℝ) := ⟨p, WithTop.coe_lt_coe.mpr hp.1, hp.2⟩
@@ -37,6 +35,7 @@ theorem reconstruction_potential_abs_le_time (H : Interval)
     exact stripPotentialOfKernel_abs_le H K T g e C hC hg
   · rw [reconstruction_potential_zero_outside H K T g p hp, abs_zero]
     exact mul_nonneg hC (le_max_right _ _)
+end
 
 /-- The quadratic face barrier extends continuously to all ambient points. -/
 theorem reconstruction_potential_abs_le_face

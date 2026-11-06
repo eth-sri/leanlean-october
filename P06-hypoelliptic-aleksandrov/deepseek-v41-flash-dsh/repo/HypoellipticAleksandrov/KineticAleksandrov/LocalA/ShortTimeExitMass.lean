@@ -3,6 +3,8 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.ShortTimeExitLinear
 import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.UniquenessMeasure
 import HypoellipticAleksandrov.KineticAleksandrov.Evolution.MarginalOperator
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Compact terminal cutoffs recover the lost parabolic mass
 
@@ -31,19 +33,19 @@ theorem ballExit_marginal_loss_le {d : ℕ} {lam Lam R σ τ : ℝ}
     (hΨlat : ∀ p ∈ scalarParabolicLateralFace σ τ (PDE.euclideanBall v₀ R), 1 ≤ Ψ p)
     (v : PDE.Vec d) (hv : v ∈ PDE.euclideanBall v₀ R) :
     1 - (parabolicMarginalKernel K (PDE.isOpen_euclideanBall v₀ R).measurableSet
-      σ τ hστ.le ⟨v, by simpa only [movingDomain_stationary] using hv⟩).real univ ≤
+      σ τ hστ.le ⟨v, by simpa using hv⟩).real univ ≤
         Ψ (σ, v) := by
   let D := PDE.euclideanBall v₀ R
   let hD := (PDE.isOpen_euclideanBall v₀ R).measurableSet
   let y : EvolutionPosition D stationary σ :=
-    ⟨v, by simpa only [movingDomain_stationary] using hv⟩
+    ⟨v, by simpa using hv⟩
   let μ := parabolicMarginalKernel K hD σ τ hστ.le y
   have := isFiniteKernel_parabolicMarginalKernel K hD σ τ hστ.le
   obtain ⟨Q, _hfirst, _hid, _hpos, _hsub, _hcomp, hrepr,
     _hmeas, _hend, _hkc, hsolve⟩ := hpar (fun _ _ _ _ => rfl)
   have hεbound : ∀ ε : ℝ, 0 < ε → 1 - Ψ (σ, v) - ε ≤ μ.real univ := by
     intro ε hε
-    let C : Set (PDE.Vec d) := closure D ∩ {w | ε ≤ 1 - Ψ (τ, w)}
+    let C : HypoellipticAleksandrov.VecSet d := closure D ∩ {w | ε ≤ 1 - Ψ (τ, w)}
     have hclosed : IsClosed {w : PDE.Vec d | ε ≤ 1 - Ψ (τ, w)} :=
       isClosed_le continuous_const
         (continuous_const.sub (hΨ.continuous.comp (continuous_const.prodMk continuous_id)))
@@ -58,7 +60,7 @@ theorem ballExit_marginal_loss_le {d : ℕ} {lam Lam R σ τ : ℝ}
         exact ⟨hw.1, hn⟩
       have hl := hΨlat (τ, w) ⟨⟨hστ.le, le_rfl⟩, hfront⟩
       have hh : ε ≤ 1 - Ψ (τ, w) := hw.2
-      linarith only [hl, hh, hε]
+      linarith
     obtain ⟨φ, hφs, hφc, hφD, hφrange, hφC⟩ :=
       exists_smooth_cutoff hcompact (PDE.isOpen_euclideanBall v₀ R) hCD
     let F : BoundedBorel (PDE.Vec d) :=
@@ -66,7 +68,7 @@ theorem ballExit_marginal_loss_le {d : ℕ} {lam Lam R σ τ : ℝ}
         rw [abs_of_nonneg (hφrange w).1]
         exact (hφrange w).2⟩⟩
     obtain ⟨V, hV, heval, _huniq⟩ := hsolve τ F
-      ⟨hφs, hφc, by simpa only [movingDomain_stationary] using hφD⟩
+      ⟨hφs, hφc, by simpa using hφD⟩
     let U : TimeVelocity d → ℝ := fun p => (1 - ε) + (-1) * Ψ p
     have hU : ContDiff ℝ (⊤ : ℕ∞) U := contDiff_const.add (contDiff_const.mul hΨ)
     have hUV := ball_terminal_lower_comparison v₀ hR hστ hB.1 B hB F V U hV
@@ -75,20 +77,20 @@ theorem ballExit_marginal_loss_le {d : ℕ} {lam Lam R σ τ : ℝ}
         rw [ballExit_operator_add B _ _ contDiff_const
           ((contDiff_const.mul hΨ).of_le (by simp)), ballExit_operator_const,
           ballExit_operator_mul B (-1) Ψ (hΨ.of_le (by simp))]
-        simpa only [zero_add, neg_one_mul] using neg_nonneg.mpr (hΨop p hp))
+        simpa using neg_nonneg.mpr (hΨop p hp))
       (fun w hw => by
         change (1 - ε) + (-1) * Ψ (τ, w) ≤ φ w
         by_cases hwC : w ∈ C
         · rw [hφC w hwC]
           have hp := hΨpos (τ, w) ⟨⟨hστ.le, le_rfl⟩, hw⟩
-          linarith only [hp, hε]
+          linarith
         · have hn : ¬ε ≤ 1 - Ψ (τ, w) := fun hh => hwC ⟨hw, hh⟩
           have hp := (hφrange w).1
-          linarith only [lt_of_not_ge hn, hp])
+          linarith)
       (fun p hp => by
         have hh := hΨlat p hp
         dsimp only [U]
-        linarith only [hh, hε])
+        linarith)
       v (subset_closure hv)
     have he := heval σ hστ.le y
     rw [hrepr] at he
@@ -101,7 +103,7 @@ theorem ballExit_marginal_loss_le {d : ℕ} {lam Lam R σ τ : ℝ}
           intro w
           exact (hφrange w.1).2
         _ = μ.real univ := (integral_const (μ := μ) (1 : ℝ)).trans
-          (by simp only [smul_eq_mul, mul_one])
+          (by simp)
     have hh : 1 - Ψ (σ, v) - ε ≤ V (σ, v) := by
       convert hUV using 1
       dsimp only [U]
@@ -111,8 +113,8 @@ theorem ballExit_marginal_loss_le {d : ℕ} {lam Lam R σ τ : ℝ}
     apply le_of_forall_pos_le_add
     intro ε hε
     have h := hεbound ε hε
-    linarith only [h]
+    linarith
   change 1 - μ.real univ ≤ Ψ (σ, v)
-  linarith only [hlim]
+  linarith
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

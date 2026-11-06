@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.C2ToScalarC12
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Local C² regularity implies scalar parabolic C¹˒² regularity
@@ -16,9 +17,11 @@ open Set
 open scoped Topology
 noncomputable section
 open TimeVelocityMultiIndex
+section
+variable {d : ℕ} (u : TimeVelocity d → ℝ) (z : TimeVelocity d)
 
 private theorem scalarTimeDerivative_eq_coordinate_open_local
-    {d : ℕ} (u : TimeVelocity d → ℝ) (z : TimeVelocity d)
+    
     (hu : ContDiffAt ℝ 1 u z) :
     scalarTimeDerivative u z =
       coordinateIteratedFDeriv (Pi.single (timeCoord d) 1) u z := by
@@ -40,7 +43,7 @@ private theorem scalarTimeDerivative_eq_coordinate_open_local
   exact hs.deriv
 
 private theorem scalarSpatialGradient_eq_coordinate_open_local
-    {d : ℕ} (u : TimeVelocity d → ℝ) (z : TimeVelocity d) (j : Fin d)
+     (j : Fin d)
     (hu : ContDiffAt ℝ 1 u z) :
     scalarSpatialGradient u z j =
       coordinateIteratedFDeriv (Pi.single (velocityCoord j) 1) u z := by
@@ -60,7 +63,7 @@ private theorem scalarSpatialGradient_eq_coordinate_open_local
   simp
 
 private theorem scalarSpatialHessian_eq_coordinate_open_local
-    {d : ℕ} (u : TimeVelocity d → ℝ) (z : TimeVelocity d) (i j : Fin d)
+     (i j : Fin d)
     (hu : ContDiffAt ℝ 2 u z) :
     scalarSpatialHessian u z i j =
       coordinateIteratedFDeriv
@@ -130,9 +133,10 @@ private theorem scalarSpatialHessian_eq_coordinate_open_local
     scalarSpatialGradient u (z.1, y) j) z.2) (PDE.basisVec i) = _
   rw [hcomp, hgradient.fderiv_eq]
   simpa [q] using hsucc.symm
+end
 
 private theorem coordinateIteratedFDeriv_continuousOn_open
-    {d N : ℕ} {Q : Set (TimeVelocity d)} (hQ : IsOpen Q)
+    {d N : ℕ} {Q : HypoellipticAleksandrov.Parabolic.TVSet d} (hQ : IsOpen Q)
     (w : TimeVelocity d → ℝ) (hw : ContDiffOn ℝ N w Q)
     (alpha : TimeVelocityMultiIndex d) (horder : alpha.order ≤ N) :
     ContinuousOn (coordinateIteratedFDeriv alpha w) Q := by
@@ -151,7 +155,7 @@ private theorem coordinateIteratedFDeriv_continuousOn_open
 /-- On an open carrier, ambient `C²` regularity within the carrier implies the
 scalar anisotropic `C¹,²` regularity used by the parabolic equation. -/
 theorem isScalarC12On_of_isOpen_contDiffOn_two
-    {d : ℕ} {Q : Set (TimeVelocity d)} {w : TimeVelocity d → ℝ}
+    {d : ℕ} {Q : HypoellipticAleksandrov.Parabolic.TVSet d} {w : TimeVelocity d → ℝ}
     (hQ : IsOpen Q) (hw : ContDiffOn ℝ 2 w Q) :
     IsScalarC12On w Q := by
   refine ⟨hw.continuousOn, ?_, ?_, ?_, ?_, ?_⟩

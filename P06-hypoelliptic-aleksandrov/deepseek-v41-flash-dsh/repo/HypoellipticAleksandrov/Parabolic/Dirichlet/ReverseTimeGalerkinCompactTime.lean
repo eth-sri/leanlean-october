@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeGalerkinWea
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeTests
 public import Mathlib.Analysis.InnerProductSpace.Calculus
 public import Mathlib.MeasureTheory.Integral.IntervalIntegral.IntegrationByParts
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Compactly supported time tests for finite reverse-time Galerkin curves
@@ -21,11 +22,11 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 open MeasureTheory Set
 open scoped ENNReal Matrix Matrix.Norms.Elementwise MatrixOrder RealInnerProductSpace
+section
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (N : ℕ) (x : ℝ → Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ)
 
 private theorem hasDerivWithinAt_fixed_galerkin_pairing
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (N : ℕ)
-    (x : ℝ → Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ)
+    
     (xdot : Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ)
     (v : galerkinSpace hΩ N) {s : Set ℝ} {τ : ℝ}
     (hx : HasDerivWithinAt x xdot s τ) :
@@ -52,9 +53,7 @@ private theorem hasDerivWithinAt_fixed_galerkin_pairing
     LinearMap.coe_toContinuousLinearMap'] using hI
 
 private theorem continuousOn_fixed_galerkin_pairing
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (N : ℕ)
-    (x : ℝ → Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ)
+    
     (v : galerkinSpace hΩ N) (s : Set ℝ) (hx : ContinuousOn x s) :
     ContinuousOn
       (fun t =>
@@ -78,9 +77,7 @@ private theorem continuousOn_fixed_galerkin_pairing
     I.continuous.continuousOn.comp hV fun _ _ => Set.mem_univ _
 
 private theorem continuousOn_galerkin_reconstruct
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (N : ℕ)
-    (x : ℝ → Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ)
+    
     (s : Set ℝ) (hx : ContinuousOn x s) :
     ContinuousOn
       (fun t => (galerkinReconstruct hΩ N (x t) : H10HilbertGraph hΩ)) s := by
@@ -92,6 +89,7 @@ private theorem continuousOn_galerkin_reconstruct
     R.continuous.continuousOn.comp hx fun _ _ => Set.mem_univ _
   simpa only [R, ContinuousLinearMap.comp_apply, ContinuousLinearMap.coe_coe,
     Submodule.subtypeL_apply, LinearMap.coe_toContinuousLinearMap'] using hR
+end
 
 private theorem compactTime_scalar_identity
     (T : ℝ) (hT : 0 < T) (pairing residual : ℝ → ℝ)
@@ -159,7 +157,7 @@ private theorem compactTime_scalar_identity
 
 /-- The finite Galerkin row equation yields the compactly supported scalar time identity. -/
 theorem reverseTimeGalerkin_compactTime_identity_of_basisRows
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)

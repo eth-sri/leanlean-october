@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.ShortTimeExitPlane
 import HypoellipticAleksandrov.KineticAleksandrov.Evolution.BarrierCollar
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Finite linearity of the scalar operator on smooth barriers -/
 

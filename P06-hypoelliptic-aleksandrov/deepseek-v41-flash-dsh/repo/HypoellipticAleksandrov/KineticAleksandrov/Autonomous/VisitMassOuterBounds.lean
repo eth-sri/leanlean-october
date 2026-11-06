@@ -9,12 +9,12 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.VisitRecursi
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
 
 /-- Every actual zero-extended exit kernel has mass at most one. -/
 theorem visitUnionExitKernel_mass_le_one
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (s T : ℝ) (p : Point) :
+     (H : FiniteIntervalUnion) (s T : ℝ) (p : Point) :
     visitUnionExitKernel hH hLE hlam hLam A H s T p univ ≤ 1 := by
   classical
   change (if hp : p ∈ visitPoleSet H s T then
@@ -26,9 +26,7 @@ theorem visitUnionExitKernel_mass_le_one
 
 /-- The real masses of all retained active exits in a finite visit sum add to at most one. -/
 theorem visitRetainedExit_partial_real_mass_le_one
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (hT : s < T)
+     (c : Clock) (J : Interval) (s T : ℝ) (hT : s < T)
     (P : Point) (hP : s < P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier) (N : ℕ) :
     ∑ n ∈ Finset.range N,
       (((visitUnionExitKernel hH hLE hlam hLam A (visitActiveUnion c J) s T ∘ₘ
@@ -47,20 +45,18 @@ theorem visitRetainedExit_partial_real_mass_le_one
 
 /-- On an interior physical pole, the single-interval union kernel is the original strip Green. -/
 theorem visitOuterGreen_eq_strip
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (J : Interval) (s T : ℝ) (P : Point)
+     (J : Interval) (s T : ℝ) (P : Point)
     (hP : s < P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier) :
     visitUnionGreenKernel hH hLE hlam hLam A J.toFiniteUnion s T P =
       stripGreen hH hLE hlam hLam A J T
         ⟨P, WithTop.coe_lt_coe.mpr hP.2.1, hP.2.2⟩ := by
   classical
-  have hp : P ∈ visitPoleSet J.toFiniteUnion s T := by
-    exact ⟨hP.1, hP.2.1, by simpa only [Interval.toFiniteUnion_carrier] using hP.2.2⟩
+  have hp : P ∈ visitPoleSet J.toFiniteUnion s T := ⟨hP.1, hP.2.1, by simpa only [Interval.toFiniteUnion_carrier] using hP.2.2⟩
   change (if ht : P ∈ visitPoleSet J.toFiniteUnion s T then
     finiteUnionGreen hH hLE hlam hLam A J.toFiniteUnion T
       (visitPoleInclusion _ s T ⟨P, ht⟩) else 0) = _
   rw [dite_eq_left hp]
   rfl
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

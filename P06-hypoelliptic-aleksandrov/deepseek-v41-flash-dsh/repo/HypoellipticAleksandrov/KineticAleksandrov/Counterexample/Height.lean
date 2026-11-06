@@ -23,9 +23,11 @@ theorem barrier_terminal_origin {d : ℕ} (mu R : ℝ) (hmu : 0 < mu) :
   simp only [barrier, barrier_terminal_factor hmu, PDE.vecNormSq, PDE.vecDot,
     Pi.zero_apply, mul_zero, Finset.sum_const_zero, zero_div, sub_zero]
   norm_num
+section
+variable {d : ℕ} (H : XV d → ℝ) (alpha r mu R : ℝ)
 
 /-- A small flattening scale gives the terminal height required in Appendix C. -/
-theorem timeCutoff_height {d : ℕ} (H : XV d → ℝ) (alpha r mu R : ℝ)
+theorem timeCutoff_height 
     (hH : H 0 = 0) (hr : 0 < r) (hmu : 0 < mu)
     (hsmall : flatteningOffset * Real.rpow r alpha ≤ 1 / 4) :
     3 / 8 ≤ timeCutoffProfile H alpha r mu R ⟨barrierTime mu, 0, 0⟩ := by
@@ -40,8 +42,7 @@ theorem timeCutoff_height {d : ℕ} (H : XV d → ℝ) (alpha r mu R : ℝ)
   linarith
 
 /-- The time trace is continuous even when the spatial profile is only continuous. -/
-theorem continuous_timeCutoffProfile_time {d : ℕ} (H : XV d → ℝ)
-    (alpha r mu R : ℝ) (q : XV d) :
+theorem continuous_timeCutoffProfile_time  (q : XV d) :
     Continuous (fun t => timeCutoffProfile H alpha r mu R ⟨t, q.1, q.2⟩) := by
   simpa only [timeCutoffProfile, barrier] using!
     contDiff_timeCutoffTheta.continuous.comp
@@ -50,7 +51,7 @@ theorem continuous_timeCutoffProfile_time {d : ℕ} (H : XV d → ℝ)
           continuous_const))
 
 /-- The terminal height is attained with a strict margin at an earlier positive time. -/
-theorem timeCutoff_interior_height {d : ℕ} (H : XV d → ℝ) (alpha r mu R : ℝ)
+theorem timeCutoff_interior_height 
     (hH : H 0 = 0) (hr : 0 < r) (hmu : 0 < mu)
     (hsmall : flatteningOffset * Real.rpow r alpha ≤ 1 / 4) :
     ∃ t : ℝ, 0 < t ∧ t < barrierTime mu ∧
@@ -72,5 +73,6 @@ theorem timeCutoff_interior_height {d : ℕ} (H : XV d → ℝ) (alpha r mu R : 
   constructor
   · dsimp [t]; have := le_max_left a 0; linarith
   · exact htT.trans htb
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

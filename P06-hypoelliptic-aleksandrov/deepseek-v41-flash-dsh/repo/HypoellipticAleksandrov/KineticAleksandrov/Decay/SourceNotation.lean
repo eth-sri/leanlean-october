@@ -6,6 +6,7 @@ public import Mathlib.MeasureTheory.Measure.Complex
 public import Mathlib.MeasureTheory.VectorMeasure.Variation.Basic
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 public import Mathlib.Analysis.SpecialFunctions.Exp
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Literal notation for the Section 3 source proofs
@@ -24,55 +25,58 @@ open Set MeasureTheory
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open scoped ENNReal MatrixOrder Topology
+section
+variable {d : ℕ}
 
 /-- Literal Section 3 notation: `TV`. -/
-abbrev TV {d : ℕ} (ν : ComplexMeasure (PDE.Vec d)) : ℝ :=
+abbrev TV  (ν : ComplexMeasure (PDE.Vec d)) : ℝ :=
   (ν.variation univ).toReal
 
 /-- Literal Section 3 notation: `stationary`. -/
-def stationary {d : ℕ} : ℝ → PDE.Vec d := fun _ => 0
+def stationary  : ℝ → PDE.Vec d := fun _ => 0
 
 /-- Literal Section 3 notation: `SourceCase`. -/
-def SourceCase {d : ℕ} (D : Set (PDE.Vec d)) (b : PDE.Vec d → PDE.Vec d)
+def SourceCase  (D : HypoellipticAleksandrov.VecSet d) (b : PDE.Vec d → PDE.Vec d)
     (m Lb : ℝ) : Prop :=
   (D = univ ∧ b = id ∧ m = 1 ∧ Lb = 1) ∨
   (∃ hd : d = 1, ∃ a c : ℝ, a < c ∧ hd ▸ D = PDE.oneDimensionalAxisBox a c)
 
 /-- Literal Section 3 notation: `SourceSetting`. -/
-def SourceSetting {d : ℕ} (lam Lam m Lb : ℝ) (D : Set (PDE.Vec d))
+def SourceSetting  (lam Lam m Lb : ℝ) (D : HypoellipticAleksandrov.VecSet d)
     (B : CoefficientField d) (b : PDE.Vec d → PDE.Vec d) : Prop :=
   IsSectionTwoCoefficient lam Lam B ∧ IsSmoothDrift b ∧
   0 < m ∧ m ≤ Lb ∧ HasTransportBounds m Lb b ∧ SourceCase D b m Lb
 
 /-- Literal Section 3 notation: `movingQuery`. -/
-def movingQuery {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+def movingQuery  {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d}
     (σ τ : ℝ) (hστ : σ ≤ τ) (v z : PDE.Vec d)
     (hv : v ∈ movingDomain Ω γ σ) : EvolutionQuery Ω γ :=
   ⟨(σ, τ, v, z), hστ, hv, mem_univ z⟩
 
 /-- Literal Section 3 notation: `scalarQuery`. -/
-def scalarQuery {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+def scalarQuery  {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d}
     (σ τ : ℝ) (hστ : σ ≤ τ) (v : PDE.Vec d)
     (hv : v ∈ movingDomain Ω γ σ) : ParabolicEvolutionQuery Ω γ :=
   ⟨(σ, τ, v), hστ, hv⟩
 
 /-- Literal Section 3 notation: `P`. -/
-abbrev P {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+abbrev P  {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d}
     (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω)
     (q : ParabolicEvolutionQuery Ω γ) : Measure (PDE.Vec d) :=
   parabolicMarginalAmbientMeasure K hΩ q
 
 /-- Literal Section 3 notation: `phaseCoordinate`. -/
-def phaseCoordinate {d : ℕ} (ξ z0 : PDE.Vec d)
+def phaseCoordinate  (ξ z0 : PDE.Vec d)
     (x : EvolutionAmbientState d) : ℝ := PDE.vecDot ξ (x.2 - z0)
 
 /-- Literal Section 3 notation: `barrier`. -/
-def barrier {d : ℕ} (N : ℕ) (s : ℝ) (Y : PDE.Vec d) : ℝ :=
+def barrier  (N : ℕ) (s : ℝ) (Y : PDE.Vec d) : ℝ :=
   (max (1 - PDE.vecNormSq Y / s ^ 2) 0) ^ N
 
 /-- Literal Section 3 notation: `Hess`. -/
-abbrev Hess {d : ℕ} (f : PDE.Vec d → ℝ) (Y : PDE.Vec d) : PDE.Mat d :=
+abbrev Hess  (f : PDE.Vec d → ℝ) (Y : PDE.Vec d) : PDE.Mat d :=
   scalarSpatialHessian (fun z : TimeVelocity d => f z.2) (0, Y)
+end
 
 /-- Literal Section 3 notation: `barrierC`. -/
 def barrierC (d N : ℕ) (lam Lam : ℝ) : ℝ :=
@@ -133,14 +137,14 @@ def swapDiffusedTransported {d : ℕ} (p : KineticPoint d) : KineticPoint d :=
 
 /-- The query lift preserves the two times and both source coordinates. -/
 @[simp]
-theorem movingQuery_val {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+theorem movingQuery_val {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d}
     (σ τ : ℝ) (hστ : σ ≤ τ) (v z : PDE.Vec d)
     (hv : v ∈ movingDomain Ω γ σ) :
     (movingQuery σ τ hστ v z hv).val = (σ, τ, v, z) := rfl
 
 /-- The scalar query lift preserves the two times and source position. -/
 @[simp]
-theorem scalarQuery_val {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+theorem scalarQuery_val {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d}
     (σ τ : ℝ) (hστ : σ ≤ τ) (v : PDE.Vec d)
     (hv : v ∈ movingDomain Ω γ σ) :
     (scalarQuery σ τ hστ v hv).val = (σ, τ, v) := rfl

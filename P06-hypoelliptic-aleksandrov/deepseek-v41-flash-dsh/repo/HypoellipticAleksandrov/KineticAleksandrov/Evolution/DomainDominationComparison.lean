@@ -2,6 +2,7 @@ module
 
 import Mathlib.Tactic.Linarith
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TerminalPointValueLinear
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Comparison of a small-domain solution with a large-domain solution (domain domination ingredient)
@@ -29,7 +30,7 @@ variable {n : ℕ}
 
 /-- A classical terminal solution with nonnegative datum is nonnegative on the past closed
 cylinder. -/
-theorem IsClassicalTerminalSolution.nonneg_of_nonneg {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
+theorem IsClassicalTerminalSolution.nonneg_of_nonneg {Ω : HypoellipticAleksandrov.VecSet n} {γ : ℝ → PDE.Vec n}
     (hΩ : IsOpen Ω) (hγ : Continuous γ) {lam Lam : ℝ} (hlam : 0 < lam)
     {B : FullKineticCoefficient n} (hB : HasEverywhereLoewnerBounds lam Lam B) {Lb : ℝ}
     {b : PDE.Vec n → PDE.Vec n} (hb : HasEuclideanLipschitzDrift Lb b) {τ : ℝ}
@@ -44,7 +45,7 @@ theorem IsClassicalTerminalSolution.nonneg_of_nonneg {Ω : Set (PDE.Vec n)} {γ 
 
 /-- A solution on a moving subdomain is dominated by the solution on the large domain with the
 same nonnegative datum. -/
-theorem classical_le_of_subdomain {Ω Ω' : Set (PDE.Vec n)} {γ γ' : ℝ → PDE.Vec n}
+theorem classical_le_of_subdomain {Ω Ω' : HypoellipticAleksandrov.VecSet n} {γ γ' : ℝ → PDE.Vec n}
     (hΩ : IsOpen Ω) (hΩ' : IsOpen Ω') (hγ : Continuous γ) (hγ' : Continuous γ')
     (hsub : ∀ σ, movingDomain Ω' γ' σ ⊆ movingDomain Ω γ σ) {lam Lam : ℝ} (hlam : 0 < lam)
     {B : FullKineticCoefficient n} (hB : HasEverywhereLoewnerBounds lam Lam B) {Lb : ℝ}

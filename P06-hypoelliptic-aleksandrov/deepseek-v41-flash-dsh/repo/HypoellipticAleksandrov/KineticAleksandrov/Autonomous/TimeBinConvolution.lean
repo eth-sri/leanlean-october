@@ -84,11 +84,12 @@ theorem entrance_source_bin_norm (hpush : PushforwardStatement)
       (positionMixtureDensity hH hLE hlam hLam A c (nu.restrict B)) ≤
         (nu.restrict B) univ * 0 at hn
     simpa only [entranceBinWeight, ite_eq_right hkj, mul_zero, zero_mul] using hn
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
 
 /-- The actual positive mixture decomposes into its full-grid source-bin mixtures. -/
 theorem entranceMixtureDensity_sum_bins
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
     (A : SmoothAutonomous lam Lam) (c : Clock) (nu : Measure Point) :
     positionMixtureDensity hH hLE hlam hLam A c nu =
       fun z => ∑' k : ℤ, positionMixtureDensity hH hLE hlam hLam A c
@@ -106,8 +107,7 @@ theorem entranceMixtureDensity_sum_bins
 
 /-- The literal source time-bin convolution holds for the actual all-time active mixture. -/
 theorem entrance_time_bin_convolution
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
     (q : ℝ) (hq : 1 < q ∧ q < 3 / 2) :
     ∃ C c₀ : ℝ, 0 < C ∧ 0 < c₀ ∧ ∀ (A : SmoothAutonomous lam Lam)
       (c : Clock) (nu : Measure Point) [IsFiniteMeasure nu],
@@ -132,5 +132,6 @@ theorem entrance_time_bin_convolution
         entranceBinWeight c₀ j k * nu (entranceTimeBin c.r k) :=
       ENNReal.tsum_le_tsum (fun k => hd A c nu hnu j k)
     _ = _ := by simp_rw [mul_assoc]; rw [ENNReal.tsum_mul_left]
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

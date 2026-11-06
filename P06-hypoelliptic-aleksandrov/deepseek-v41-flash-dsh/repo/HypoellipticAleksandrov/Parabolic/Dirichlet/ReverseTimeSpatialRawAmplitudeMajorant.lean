@@ -5,6 +5,8 @@ public import HypoellipticAleksandrov.Parabolic.SpatialDirectionalDifferenceQuot
 public import HypoellipticAleksandrov.Parabolic.SpatialFDerivNorm
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSmoothness
 public import PDEFoundation.Sobolev.Cutoff.Basic
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Uniform reverse-time raw-amplitude majorants
@@ -27,7 +29,7 @@ open scoped Matrix.Norms.Elementwise
 carrier give all signed raw reverse-time amplitudes used by the Caccioppoli
 commutator. -/
 theorem reverseTimeSpatialSignedRawAmplitude_bounds_of_majorants
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kχ : ℝ}
     (r₀ r₁ : ℝ) (χ : PDE.QuantitativeSmoothCutoff inner Ω Kχ)
     (δ M : ℝ)
     (hcarrier : spatialCoordinateShiftCarrier (tsupport χ.toFun) δ ⊆ Ω)
@@ -97,7 +99,7 @@ theorem reverseTimeSpatialSignedRawAmplitude_bounds_of_majorants
         (fun z : TimeVelocity d => -(reverseTimeScalarCoefficient r₁ c z.1 z.2))
         (τ, y)| ≤ M) := by
   classical
-  let Q : Set (TimeVelocity d) := Set.Icc 0 (r₁ - r₀) ×ˢ
+  let Q : HypoellipticAleksandrov.Parabolic.TVSet d := Set.Icc 0 (r₁ - r₀) ×ˢ
     spatialCoordinateShiftCarrier (tsupport χ.toFun) δ
   have hQreverse : reverseTimeMap r₁ '' Q ⊆ scalarParabolicClosedCylinder r₀ r₁ Ω := by
     rintro w ⟨z, hz, rfl⟩
@@ -193,7 +195,7 @@ theorem reverseTimeSpatialSignedRawAmplitude_bounds_of_majorants
 /-- The raw-amplitude bounds in the sign convention consumed by the existing
 nonprincipal remainder are the immediate sign corollary of the signed bridge. -/
 theorem reverseTimeSpatialRawAmplitude_bounds_of_majorants
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kχ : ℝ}
     (r₀ r₁ : ℝ) (χ : PDE.QuantitativeSmoothCutoff inner Ω Kχ)
     (δ M : ℝ)
     (hcarrier : spatialCoordinateShiftCarrier (tsupport χ.toFun) δ ⊆ Ω)

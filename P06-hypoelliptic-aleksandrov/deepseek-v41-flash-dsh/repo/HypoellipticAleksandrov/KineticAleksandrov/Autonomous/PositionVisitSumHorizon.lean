@@ -41,7 +41,7 @@ theorem enlargedPositionVisitMass_power_sum_horizon_le
     (∑' j : ℕ, ∑' k : ℤ, ENNReal.ofReal (enlargedPositionVisitMass nu c s x j k ^ q)) ≤
       ENNReal.ofReal ((Cp ^ (q - 1) * Ct *
         ((1 + 1 / (1 - (1 + g * (q - 1)) / 2)) *
-          (3 : ℝ) ^ (1 - (1 + g * (q - 1)) / 2))) *
+          3 ^ (1 - (1 + g * (q - 1)) / 2))) *
             (1 + R / c.r) ^ (1 - g * (q - 1))) := by
   let N : ℕ := ⌊T / c.r ^ 2⌋₊ + 1
   have hr := c.positive

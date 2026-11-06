@@ -14,27 +14,25 @@ The proposition records the full conclusion proved in `FlatteningSourceProfile`.
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
 open MeasureTheory Set
+section
+variable {d : ℕ} {alpha : ℝ} (h : CounterProfileStatement d alpha) (r : ℝ)
 
 /-- The literal flattening of the selected profile. -/
-noncomputable def selectedFlatProfile {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) : XV d → ℝ :=
+noncomputable def selectedFlatProfile  : XV d → ℝ :=
   flatProfile (profileFunction h) flatteningPsi flatteningOffset alpha r
 
 /-- The position derivative representative obtained by the scalar chain rule. -/
-noncomputable def flatProfilePositionJet {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) (q : XV d) : PDE.Vec d :=
+noncomputable def flatProfilePositionJet  (q : XV d) : PDE.Vec d :=
   fun i => -deriv flatteningPsi (profileFunction h q / Real.rpow r alpha) *
     profilePositionJet h q i
 
 /-- The velocity derivative representative obtained by the scalar chain rule. -/
-noncomputable def flatProfileVelocityJet {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) (q : XV d) : PDE.Vec d :=
+noncomputable def flatProfileVelocityJet  (q : XV d) : PDE.Vec d :=
   fun i => -deriv flatteningPsi (profileFunction h q / Real.rpow r alpha) *
     profileVelocityJet h q i
 
 /-- The second velocity derivative, including the rank-one chain-rule term. -/
-noncomputable def flatProfileHessian {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) (q : XV d) : PDE.Mat d :=
+noncomputable def flatProfileHessian  (q : XV d) : PDE.Mat d :=
   fun i k =>
     -deriv flatteningPsi (profileFunction h q / Real.rpow r alpha) *
       profileHessian h q i k -
@@ -43,13 +41,13 @@ noncomputable def flatProfileHessian {d : ℕ} {alpha : ℝ}
       profileVelocityJet h q i * profileVelocityJet h q k
 
 /-- The selected literal flattened profile is continuous. -/
-theorem continuous_selectedFlatProfile {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) :
+theorem continuous_selectedFlatProfile  :
     Continuous (selectedFlatProfile h r) := by
   have hH := (selectedProfile_spec h).2.2.2.2.2.2.1
   unfold selectedFlatProfile flatProfile
   exact continuous_const.sub (continuous_const.mul
     (contDiff_flatteningPsi.continuous.comp (hH.div_const _)))
+end
 
 /-- The ordinary first chain rule at a differentiability point of the unflattened profile. -/
 theorem fderiv_flatProfile {d : ℕ} (H : XV d → ℝ) (alpha r : ℝ)

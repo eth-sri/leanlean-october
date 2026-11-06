@@ -27,32 +27,34 @@ theorem coneAmbientBump_tendsto (d : ℕ) (P : KineticPoint d) :
   apply (coneAmbientBump d n).one_of_mem_closedBall
   rw [Metric.mem_closedBall, dist_zero_right]
   exact hn.trans (le_add_of_nonneg_right zero_le_one)
+section
+variable {d : ℕ} (α : ℝ) (e : PDE.Vec d) (γ : ℝ) (n : ℕ)
 
 /-- A genuine smooth compact physical probe detecting the positive affine half-space. -/
-def coneCompactProbe {d : ℕ} (α : ℝ) (e : PDE.Vec d) (γ : ℝ) (n : ℕ)
+def coneCompactProbe 
     (P : KineticPoint d) : ℝ :=
   expNegInvGlue (coneCoordinate α e γ P) *
     coneAmbientBump d n ((KineticPoint.equivProd d) P)
 
 /-- The cutoff probe retains exactly the prescribed ambient smoothness. -/
-theorem coneCompactProbe_smooth {d : ℕ} (α : ℝ) (e : PDE.Vec d) (γ : ℝ) (n : ℕ) :
+theorem coneCompactProbe_smooth  :
     ContDiff ℝ (⊤ : ℕ∞) (coneCompactProbe α e γ n ∘ (KineticPoint.equivProd d).symm) := by
   have hs := (coneProbe_smooth α e γ).mul (coneAmbientBump d n).contDiff
   simpa only [coneCompactProbe, Function.comp_apply, Equiv.apply_symm_apply] using! hs
 
 /-- Its support is compact in the actual physical carrier. -/
-theorem coneCompactProbe_compact {d : ℕ} (α : ℝ) (e : PDE.Vec d) (γ : ℝ) (n : ℕ) :
+theorem coneCompactProbe_compact  :
     HasCompactSupport (coneCompactProbe α e γ n) :=
   ((coneAmbientBump d n).hasCompactSupport.comp_homeomorph
     (KineticPoint.homeomorphProd d)).mul_left
 
 /-- Every compact probe is nonnegative and below the bounded transition. -/
-theorem coneCompactProbe_bounds {d : ℕ} (α : ℝ) (e : PDE.Vec d) (γ : ℝ)
-    (n : ℕ) (P : KineticPoint d) :
+theorem coneCompactProbe_bounds  (P : KineticPoint d) :
     0 ≤ coneCompactProbe α e γ n P ∧
       coneCompactProbe α e γ n P ≤ expNegInvGlue (coneCoordinate α e γ P) := by
   exact ⟨mul_nonneg (expNegInvGlue.nonneg _) (coneAmbientBump d n).nonneg,
     mul_le_of_le_one_right (expNegInvGlue.nonneg _) (coneAmbientBump d n).le_one⟩
+end
 
 /-- Nonpositive directional speed forces the actual exit measure onto its closed half-space. -/
 theorem ballExitRaw_directional_cone

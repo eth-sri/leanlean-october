@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.Parabolic.SpacetimeMollifierL2
 public import HypoellipticAleksandrov.Parabolic.Derivatives
 public import HypoellipticAleksandrov.Parabolic.LocalWeakTimeProduct
 public import Mathlib.Analysis.Calculus.LineDeriv.IntegrationByParts
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Weighted time energy for spacetime mollification
@@ -26,12 +27,12 @@ private theorem timeDerivative_spacetimeMollifier
     {d : ℕ} {ε : ℝ} (hε : 0 < ε) (z : TimeVelocity d) :
     timeDerivative (spacetimeMollifier ε) z =
       (((∫ x : TimeVelocity d, ExistsContDiffBumpBase.u x
-          ∂(volume : Measure (TimeVelocity d))) *
+          ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) *
           ε ^ Module.finrank ℝ (TimeVelocity d))⁻¹) * ε⁻¹ *
         fderiv ℝ (ExistsContDiffBumpBase.u : TimeVelocity d → ℝ)
           (ε⁻¹ • z) (1, 0) := by
   let c : ℝ := ((∫ x : TimeVelocity d, ExistsContDiffBumpBase.u x
-      ∂(volume : Measure (TimeVelocity d))) *
+      ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) *
       ε ^ Module.finrank ℝ (TimeVelocity d))⁻¹
   let s : TimeVelocity d → TimeVelocity d := fun y => ε⁻¹ • y
   have hu : DifferentiableAt ℝ
@@ -84,7 +85,7 @@ private theorem timeDerivative_spacetimeMollifier_neg
 private theorem integrable_timeDerivative_spacetimeMollifier
     {d : ℕ} {ε : ℝ} (hε : 0 < ε) :
     Integrable (timeDerivative (spacetimeMollifier (d := d) ε))
-      (volume : Measure (TimeVelocity d)) := by
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   have hsmooth : ContDiff ℝ (⊤ : ℕ∞)
       (timeDerivative (spacetimeMollifier (d := d) ε)) := by
     unfold timeDerivative
@@ -99,26 +100,26 @@ private theorem integrable_timeDerivative_spacetimeMollifier
 
 private theorem bump_volume_integral_pos (d : ℕ) :
     0 < ∫ x : TimeVelocity d, ExistsContDiffBumpBase.u x
-      ∂(volume : Measure (TimeVelocity d)) := by
+      ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   refine (integral_pos_iff_support_of_nonneg ExistsContDiffBumpBase.u_nonneg ?_).mpr ?_
   · exact (ExistsContDiffBumpBase.u_smooth (TimeVelocity d)).continuous
       |>.integrable_of_hasCompactSupport
         (ExistsContDiffBumpBase.u_compact_support (TimeVelocity d))
   · rw [ExistsContDiffBumpBase.u_support]
-    exact Metric.measure_ball_pos (volume : Measure (TimeVelocity d)) 0 zero_lt_one
+    exact Metric.measure_ball_pos (HypoellipticAleksandrov.Parabolic.TVVolume d) 0 zero_lt_one
 
 private theorem integral_norm_mul_abs_timeDerivative_spacetimeMollifier
     {d : ℕ} {ε : ℝ} (hε : 0 < ε) :
     (∫ z : TimeVelocity d,
         ‖z‖ * |timeDerivative (spacetimeMollifier ε) z|
-        ∂(volume : Measure (TimeVelocity d))) =
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
       (∫ x : TimeVelocity d, ExistsContDiffBumpBase.u x
-          ∂(volume : Measure (TimeVelocity d)))⁻¹ *
+          ∂(HypoellipticAleksandrov.Parabolic.TVVolume d))⁻¹ *
         ∫ y : TimeVelocity d, ‖y‖ *
           |fderiv ℝ (ExistsContDiffBumpBase.u : TimeVelocity d → ℝ)
-            y (1, 0)| ∂(volume : Measure (TimeVelocity d)) := by
+            y (1, 0)| ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   let A : ℝ := ∫ x : TimeVelocity d, ExistsContDiffBumpBase.u x
-    ∂(volume : Measure (TimeVelocity d))
+    ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)
   let g : TimeVelocity d → ℝ := fun y =>
     ‖y‖ * |fderiv ℝ (ExistsContDiffBumpBase.u : TimeVelocity d → ℝ) y (1, 0)|
   have hA : A ≠ 0 := (bump_volume_integral_pos d).ne'
@@ -134,7 +135,7 @@ private theorem integral_norm_mul_abs_timeDerivative_spacetimeMollifier
     field_simp
   simp_rw [hpoint, integral_const_mul]
   rw [Measure.integral_comp_inv_smul_of_nonneg
-    (volume : Measure (TimeVelocity d)) g hε.le]
+    (HypoellipticAleksandrov.Parabolic.TVVolume d) g hε.le]
   change ((A * ε ^ Module.finrank ℝ (TimeVelocity d))⁻¹ * ε⁻¹ * ε) *
       (ε ^ Module.finrank ℝ (TimeVelocity d) * ∫ y, g y ∂volume) =
     A⁻¹ * ∫ y, g y ∂volume
@@ -145,35 +146,37 @@ private theorem exists_uniform_firstMoment_timeDerivative_spacetimeMollifier
     ∃ C : ℝ, 0 ≤ C ∧ ∀ {ε : ℝ}, 0 < ε →
       (∫ z : TimeVelocity d,
           ‖z‖ * |timeDerivative (spacetimeMollifier ε) z|
-          ∂(volume : Measure (TimeVelocity d))) ≤ C := by
+          ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) ≤ C := by
   let C : ℝ :=
     (∫ x : TimeVelocity d, ExistsContDiffBumpBase.u x
-        ∂(volume : Measure (TimeVelocity d)))⁻¹ *
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d))⁻¹ *
       ∫ y : TimeVelocity d, ‖y‖ *
         |fderiv ℝ (ExistsContDiffBumpBase.u : TimeVelocity d → ℝ)
-          y (1, 0)| ∂(volume : Measure (TimeVelocity d))
+          y (1, 0)| ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)
   refine ⟨C, mul_nonneg (inv_nonneg.mpr (bump_volume_integral_pos d).le)
     (integral_nonneg fun _ => mul_nonneg (norm_nonneg _) (abs_nonneg _)), ?_⟩
   intro ε hε
   exact (integral_norm_mul_abs_timeDerivative_spacetimeMollifier hε).le
+section
+variable {d : ℕ}
 
 private theorem mul_memLp_two_of_contDiff_hasCompactSupport
-    {d : ℕ} (q w : TimeVelocity d → ℝ)
+     (q w : TimeVelocity d → ℝ)
     (hq : MemLp q (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d)))
+      (HypoellipticAleksandrov.Parabolic.TVVolume d))
     (hwSmooth : ContDiff ℝ (⊤ : ℕ∞) w)
     (hwCompact : HasCompactSupport w) :
     MemLp (fun z => w z * q z) (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d)) := by
-  have hw : MemLp w ∞ (volume : Measure (TimeVelocity d)) :=
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) := by
+  have hw : MemLp w ∞ (HypoellipticAleksandrov.Parabolic.TVVolume d) :=
     hwSmooth.continuous.memLp_of_hasCompactSupport hwCompact
   simpa only [mul_comm] using hq.fun_mul hw
 
 private theorem timeDerivative_spacetimeMollification_mul
-    {d : ℕ} {ε : ℝ} (hε : 0 < ε)
+     {ε : ℝ} (hε : 0 < ε)
     (q w : TimeVelocity d → ℝ)
     (hq : MemLp q (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d)))
+      (HypoellipticAleksandrov.Parabolic.TVVolume d))
     (hwSmooth : ContDiff ℝ (⊤ : ℕ∞) w)
     (hwCompact : HasCompactSupport w)
     (z : TimeVelocity d) :
@@ -182,13 +185,13 @@ private theorem timeDerivative_spacetimeMollification_mul
       ∫ x : TimeVelocity d,
         timeDerivative (spacetimeMollifier ε) x *
           (w (z - x) * q (z - x))
-        ∂(volume : Measure (TimeVelocity d)) := by
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   let f : TimeVelocity d → ℝ := fun y => w y * q y
   have hf : MemLp f (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d)) :=
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) :=
     mul_memLp_two_of_contDiff_hasCompactSupport q w hq hwSmooth hwCompact
   have hfLoc : LocallyIntegrable f
-      (volume : Measure (TimeVelocity d)) := hf.locallyIntegrable (by norm_num)
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) := hf.locallyIntegrable (by norm_num)
   have hderiv := (spacetimeMollifier_hasCompactSupport hε).hasFDerivAt_convolution_left
     (ContinuousLinearMap.lsmul ℝ ℝ)
     ((spacetimeMollifier_contDiff ε).of_le (by simp)) hfLoc z
@@ -202,14 +205,14 @@ private theorem timeDerivative_spacetimeMollification_mul
       (fderiv ℝ (spacetimeMollifier (d := d) ε)) f z
       (ContinuousLinearMap.precompL (TimeVelocity d)
         (ContinuousLinearMap.lsmul ℝ ℝ))
-      (volume : Measure (TimeVelocity d)) :=
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) :=
     hkernel.convolutionExists_left _ hkernelCont hfLoc z
   have hint : Integrable
       (fun x : TimeVelocity d =>
         ((ContinuousLinearMap.precompL (TimeVelocity d)
           (ContinuousLinearMap.lsmul ℝ ℝ))
             (fderiv ℝ (spacetimeMollifier ε) x)) (f (z - x)))
-      (volume : Measure (TimeVelocity d)) := by
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) := by
     exact hconv
   unfold timeDerivative spacetimeMollification
   rw [hderiv.fderiv]
@@ -232,38 +235,38 @@ private theorem timeDerivative_spacetimeMollification_mul
         dsimp [f]
 
 private theorem integrable_kernel_mul_memLp_two_mul_translate
-    {d : ℕ} (k f g : TimeVelocity d → ℝ)
-    (hk : Integrable k (volume : Measure (TimeVelocity d)))
-    (hf : MemLp f (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d)))
-    (hg : MemLp g (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d))) :
+     (k f g : TimeVelocity d → ℝ)
+    (hk : Integrable k (HypoellipticAleksandrov.Parabolic.TVVolume d))
+    (hf : MemLp f (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d))
+    (hg : MemLp g (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d)) :
     Integrable
       (fun p : TimeVelocity d × TimeVelocity d =>
         k p.1 * f p.2 * g (p.2 - p.1))
-      ((volume : Measure (TimeVelocity d)).prod volume) := by
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).prod volume) := by
   have hfirst : Integrable
       (fun p : TimeVelocity d × TimeVelocity d =>
         |k p.1| * f p.2 ^ 2)
-      ((volume : Measure (TimeVelocity d)).prod volume) :=
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).prod volume) :=
     hk.abs.mul_prod hf.integrable_sq
   have hbase : Integrable
       (fun p : TimeVelocity d × TimeVelocity d =>
         |k p.1| * g p.2 ^ 2)
-      ((volume : Measure (TimeVelocity d)).prod volume) :=
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).prod volume) :=
     hk.abs.mul_prod hg.integrable_sq
   have hsecond : Integrable
       (fun p : TimeVelocity d × TimeVelocity d =>
         |k p.1| * g (p.2 - p.1) ^ 2)
-      ((volume : Measure (TimeVelocity d)).prod volume) := by
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).prod volume) := by
     simpa only [Function.comp_def] using
       (measurePreserving_prod_sub
-        (volume : Measure (TimeVelocity d))
-        (volume : Measure (TimeVelocity d))).integrable_comp_of_integrable hbase
+        (HypoellipticAleksandrov.Parabolic.TVVolume d)
+        (HypoellipticAleksandrov.Parabolic.TVVolume d)).integrable_comp_of_integrable hbase
   apply (hfirst.add hsecond).mono'
   · exact hk.1.comp_fst |>.mul hf.aestronglyMeasurable.comp_snd |>.mul <| by
       simpa only [Function.comp_def] using hg.aestronglyMeasurable.comp_snd.comp_measurePreserving
         (measurePreserving_prod_sub
-          (volume : Measure (TimeVelocity d))
-          (volume : Measure (TimeVelocity d)))
+          (HypoellipticAleksandrov.Parabolic.TVVolume d)
+          (HypoellipticAleksandrov.Parabolic.TVVolume d))
   · exact ae_of_all _ fun p => by
       rw [Real.norm_eq_abs, abs_mul, abs_mul]
       have hk0 := abs_nonneg (k p.1)
@@ -275,17 +278,17 @@ private theorem integrable_kernel_mul_memLp_two_mul_translate
       nlinarith
 
 private theorem integrable_pairing_doubleIntegrand
-    {d : ℕ} {ε : ℝ} (hε : 0 < ε)
+     {ε : ℝ} (hε : 0 < ε)
     (q w : TimeVelocity d → ℝ)
     (hq : MemLp q (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d)))
+      (HypoellipticAleksandrov.Parabolic.TVVolume d))
     (hwSmooth : ContDiff ℝ (⊤ : ℕ∞) w)
     (hwCompact : HasCompactSupport w) :
     Integrable
       (fun p : TimeVelocity d × TimeVelocity d =>
         q p.2 * timeDerivative (spacetimeMollifier ε) p.1 *
           (w (p.2 - p.1) * q (p.2 - p.1)))
-      ((volume : Measure (TimeVelocity d)).prod volume) := by
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).prod volume) := by
   have hwq := mul_memLp_two_of_contDiff_hasCompactSupport q w hq hwSmooth hwCompact
   have h := integrable_kernel_mul_memLp_two_mul_translate
     (timeDerivative (spacetimeMollifier ε)) q (fun z => w z * q z)
@@ -294,21 +297,21 @@ private theorem integrable_pairing_doubleIntegrand
   exact ae_of_all _ fun p => by ring_nf
 
 private theorem pairing_eq_integral_integral
-    {d : ℕ} {ε : ℝ} (hε : 0 < ε)
+     {ε : ℝ} (hε : 0 < ε)
     (q w : TimeVelocity d → ℝ)
     (hq : MemLp q (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d)))
+      (HypoellipticAleksandrov.Parabolic.TVVolume d))
     (hwSmooth : ContDiff ℝ (⊤ : ℕ∞) w)
     (hwCompact : HasCompactSupport w) :
     (∫ z : TimeVelocity d,
         q z * timeDerivative
           (spacetimeMollification ε (fun y => w y * q y)) z
-        ∂(volume : Measure (TimeVelocity d))) =
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
       ∫ x : TimeVelocity d, ∫ y : TimeVelocity d,
         q y * timeDerivative (spacetimeMollifier ε) x *
           (w (y - x) * q (y - x))
-        ∂(volume : Measure (TimeVelocity d))
-      ∂(volume : Measure (TimeVelocity d)) := by
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)
+      ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   have hdouble := integrable_pairing_doubleIntegrand hε q w hq hwSmooth hwCompact
   calc
     _ = ∫ z : TimeVelocity d, ∫ x : TimeVelocity d,
@@ -329,26 +332,26 @@ private theorem pairing_eq_integral_integral
       rfl
 
 private theorem pairing_eq_translated_integral_integral
-    {d : ℕ} {ε : ℝ} (hε : 0 < ε)
+     {ε : ℝ} (hε : 0 < ε)
     (q w : TimeVelocity d → ℝ)
     (hq : MemLp q (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d)))
+      (HypoellipticAleksandrov.Parabolic.TVVolume d))
     (hwSmooth : ContDiff ℝ (⊤ : ℕ∞) w)
     (hwCompact : HasCompactSupport w) :
     (∫ z : TimeVelocity d,
         q z * timeDerivative
           (spacetimeMollification ε (fun y => w y * q y)) z
-        ∂(volume : Measure (TimeVelocity d))) =
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
       ∫ x : TimeVelocity d, ∫ y : TimeVelocity d,
         timeDerivative (spacetimeMollifier ε) x * w y * q y * q (y + x)
-        ∂(volume : Measure (TimeVelocity d))
-      ∂(volume : Measure (TimeVelocity d)) := by
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)
+      ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   rw [pairing_eq_integral_integral hε q w hq hwSmooth hwCompact]
   apply integral_congr_ae
   exact ae_of_all _ fun x => by
     have hmp : MeasurePreserving (MeasurableEquiv.addLeft x)
-        (volume : Measure (TimeVelocity d)) volume :=
-      measurePreserving_add_left (volume : Measure (TimeVelocity d)) x
+        (HypoellipticAleksandrov.Parabolic.TVVolume d) volume :=
+      measurePreserving_add_left (HypoellipticAleksandrov.Parabolic.TVVolume d) x
     have htranslate := hmp.integral_comp'
       (fun y : TimeVelocity d =>
         q y * timeDerivative (spacetimeMollifier ε) x *
@@ -361,24 +364,24 @@ private theorem pairing_eq_translated_integral_integral
       ring_nf
 
 private theorem pairing_eq_neg_reflected_integral_integral
-    {d : ℕ} {ε : ℝ} (hε : 0 < ε)
+     {ε : ℝ} (hε : 0 < ε)
     (q w : TimeVelocity d → ℝ)
     (hq : MemLp q (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d)))
+      (HypoellipticAleksandrov.Parabolic.TVVolume d))
     (hwSmooth : ContDiff ℝ (⊤ : ℕ∞) w)
     (hwCompact : HasCompactSupport w) :
     (∫ z : TimeVelocity d,
         q z * timeDerivative
           (spacetimeMollification ε (fun y => w y * q y)) z
-        ∂(volume : Measure (TimeVelocity d))) =
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
       -(∫ x : TimeVelocity d, ∫ y : TimeVelocity d,
         timeDerivative (spacetimeMollifier ε) x * w (y + x) * q y * q (y + x)
-        ∂(volume : Measure (TimeVelocity d))
-      ∂(volume : Measure (TimeVelocity d))) := by
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)
+      ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) := by
   rw [pairing_eq_integral_integral hε q w hq hwSmooth hwCompact]
   have hmp : MeasurePreserving (MeasurableEquiv.neg (TimeVelocity d))
-      (volume : Measure (TimeVelocity d)) volume :=
-    Measure.measurePreserving_neg (volume : Measure (TimeVelocity d))
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) volume :=
+    Measure.measurePreserving_neg (HypoellipticAleksandrov.Parabolic.TVVolume d)
   have hreflect := hmp.integral_comp'
     (fun x : TimeVelocity d => ∫ y : TimeVelocity d,
       q y * timeDerivative (spacetimeMollifier ε) x *
@@ -398,21 +401,21 @@ private theorem pairing_eq_neg_reflected_integral_integral
       ring_nf
 
 private theorem pairing_eq_half_symmetrized
-    {d : ℕ} {ε : ℝ} (hε : 0 < ε)
+     {ε : ℝ} (hε : 0 < ε)
     (q w : TimeVelocity d → ℝ)
     (hq : MemLp q (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d)))
+      (HypoellipticAleksandrov.Parabolic.TVVolume d))
     (hwSmooth : ContDiff ℝ (⊤ : ℕ∞) w)
     (hwCompact : HasCompactSupport w) :
     (∫ z : TimeVelocity d,
         q z * timeDerivative
           (spacetimeMollification ε (fun y => w y * q y)) z
-        ∂(volume : Measure (TimeVelocity d))) =
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
       (1 / 2 : ℝ) * ∫ x : TimeVelocity d, ∫ y : TimeVelocity d,
         timeDerivative (spacetimeMollifier ε) x * (w y - w (y + x)) *
           q y * q (y + x)
-        ∂(volume : Measure (TimeVelocity d))
-      ∂(volume : Measure (TimeVelocity d)) := by
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)
+      ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   let P : ℝ := ∫ z : TimeVelocity d,
     q z * timeDerivative
       (spacetimeMollification ε (fun y => w y * q y)) z ∂volume
@@ -429,25 +432,25 @@ private theorem pairing_eq_half_symmetrized
   have hAprod : Integrable
       (fun p : TimeVelocity d × TimeVelocity d =>
         timeDerivative (spacetimeMollifier ε) p.1 * w p.2 * q p.2 * q (p.2 + p.1))
-      ((volume : Measure (TimeVelocity d)).prod volume) := by
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).prod volume) := by
     have hc := (measurePreserving_prod_add
-      (volume : Measure (TimeVelocity d))
-      (volume : Measure (TimeVelocity d))).integrable_comp_of_integrable hdouble
+      (HypoellipticAleksandrov.Parabolic.TVVolume d)
+      (HypoellipticAleksandrov.Parabolic.TVVolume d)).integrable_comp_of_integrable hdouble
     apply hc.congr
     exact ae_of_all _ fun p => by
       simp only [Function.comp_apply, add_sub_cancel_left, add_comm]
       ring_nf
   have hnegProd : MeasurePreserving
       (fun p : TimeVelocity d × TimeVelocity d => (-p.1, p.2))
-      ((volume : Measure (TimeVelocity d)).prod volume)
-      ((volume : Measure (TimeVelocity d)).prod volume) :=
-    (Measure.measurePreserving_neg (volume : Measure (TimeVelocity d))).prod
-      (MeasurePreserving.id (volume : Measure (TimeVelocity d)))
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).prod volume)
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).prod volume) :=
+    (Measure.measurePreserving_neg (HypoellipticAleksandrov.Parabolic.TVVolume d)).prod
+      (MeasurePreserving.id (HypoellipticAleksandrov.Parabolic.TVVolume d))
   have hBprod : Integrable
       (fun p : TimeVelocity d × TimeVelocity d =>
         timeDerivative (spacetimeMollifier ε) p.1 * w (p.2 + p.1) *
           q p.2 * q (p.2 + p.1))
-      ((volume : Measure (TimeVelocity d)).prod volume) := by
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).prod volume) := by
     have hc := hnegProd.integrable_comp_of_integrable hdouble
     apply hc.neg.congr
     exact ae_of_all _ fun p => by
@@ -461,11 +464,11 @@ private theorem pairing_eq_half_symmetrized
         q y * q (y + x) ∂volume ∂volume) = A - B := by
     have hAouter : Integrable (fun x : TimeVelocity d => ∫ y : TimeVelocity d,
         timeDerivative (spacetimeMollifier ε) x * w y * q y * q (y + x) ∂volume)
-        (volume : Measure (TimeVelocity d)) := by
+        (HypoellipticAleksandrov.Parabolic.TVVolume d) := by
       simpa only [Prod.fst, Prod.snd] using hAprod.integral_prod_left
     have hBouter : Integrable (fun x : TimeVelocity d => ∫ y : TimeVelocity d,
         timeDerivative (spacetimeMollifier ε) x * w (y + x) * q y * q (y + x) ∂volume)
-        (volume : Measure (TimeVelocity d)) := by
+        (HypoellipticAleksandrov.Parabolic.TVVolume d) := by
       simpa only [Prod.fst, Prod.snd] using hBprod.integral_prod_left
     simp only [A, B]
     rw [← integral_sub hAouter hBouter]
@@ -479,28 +482,28 @@ private theorem pairing_eq_half_symmetrized
   linarith
 
 private theorem memLp_add_translate
-    {d : ℕ} (x : TimeVelocity d) (f : TimeVelocity d → ℝ)
+     (x : TimeVelocity d) (f : TimeVelocity d → ℝ)
     (hf : MemLp f (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d))) :
+      (HypoellipticAleksandrov.Parabolic.TVVolume d)) :
     MemLp (fun y => f (y + x)) (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d)) := by
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   simpa only [Function.comp_def, add_comm] using
     hf.comp_measurePreserving
-      (measurePreserving_add_left (volume : Measure (TimeVelocity d)) x)
+      (measurePreserving_add_left (HypoellipticAleksandrov.Parabolic.TVVolume d) x)
 
 private theorem integral_abs_mul_add_translate_le
-    {d : ℕ} (x : TimeVelocity d) (f g : TimeVelocity d → ℝ)
+     (x : TimeVelocity d) (f g : TimeVelocity d → ℝ)
     (hf : MemLp f (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d)))
+      (HypoellipticAleksandrov.Parabolic.TVVolume d))
     (hg : MemLp g (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d))) :
+      (HypoellipticAleksandrov.Parabolic.TVVolume d)) :
     (∫ y : TimeVelocity d, |f y| * |g (y + x)|
-      ∂(volume : Measure (TimeVelocity d))) ≤
+      ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) ≤
       Real.sqrt (∫ y : TimeVelocity d, f y ^ 2 ∂volume) *
         Real.sqrt (∫ y : TimeVelocity d, g y ^ 2 ∂volume) := by
   have hgt := memLp_add_translate x g hg
   have hholder := integral_mul_le_Lp_mul_Lq_of_nonneg
-    (μ := (volume : Measure (TimeVelocity d)))
+    (μ := (HypoellipticAleksandrov.Parabolic.TVVolume d))
     (f := fun y => |f y|) (g := fun y => |g (y + x)|)
     Real.HolderConjugate.two_two
     (ae_of_all _ fun _ => abs_nonneg _)
@@ -510,37 +513,37 @@ private theorem integral_abs_mul_add_translate_le
   have htranslate : (∫ y : TimeVelocity d, g (y + x) ^ 2 ∂volume) =
       ∫ y : TimeVelocity d, g y ^ 2 ∂volume := by
     have hmp : MeasurePreserving (MeasurableEquiv.addLeft x)
-        (volume : Measure (TimeVelocity d)) volume :=
-      measurePreserving_add_left (volume : Measure (TimeVelocity d)) x
+        (HypoellipticAleksandrov.Parabolic.TVVolume d) volume :=
+      measurePreserving_add_left (HypoellipticAleksandrov.Parabolic.TVVolume d) x
     simpa only [MeasurableEquiv.coe_addLeft, add_comm] using
       hmp.integral_comp' (fun y : TimeVelocity d => g y ^ 2)
   rw [Real.sqrt_eq_rpow, Real.sqrt_eq_rpow]
   simpa only [Real.rpow_two, sq_abs, htranslate] using hholder
 
 private theorem exists_lipschitzWith_weight
-    {d : ℕ} (w : TimeVelocity d → ℝ)
+     (w : TimeVelocity d → ℝ)
     (hwSmooth : ContDiff ℝ (⊤ : ℕ∞) w)
     (hwCompact : HasCompactSupport w) :
     ∃ K : ℝ≥0, LipschitzWith K w := by
   exact ContDiff.lipschitzWith_of_hasCompactSupport hwCompact hwSmooth (by simp)
 
 private theorem abs_integral_symmetrized_inner_le
-    {d : ℕ} (K : ℝ≥0) (w : TimeVelocity d → ℝ)
+     (K : ℝ≥0) (w : TimeVelocity d → ℝ)
     (hwLip : LipschitzWith K w)
     (x : TimeVelocity d) (k : ℝ)
     (f g : TimeVelocity d → ℝ)
     (hf : MemLp f (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d)))
+      (HypoellipticAleksandrov.Parabolic.TVVolume d))
     (hg : MemLp g (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d))) :
+      (HypoellipticAleksandrov.Parabolic.TVVolume d)) :
     |∫ y : TimeVelocity d,
         k * (w y - w (y + x)) * f y * g (y + x)
-        ∂(volume : Measure (TimeVelocity d))| ≤
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)| ≤
       |k| * (K : ℝ) * ‖x‖ *
         (Real.sqrt (∫ y : TimeVelocity d, f y ^ 2 ∂volume) *
           Real.sqrt (∫ y : TimeVelocity d, g y ^ 2 ∂volume)) := by
   have hfg : Integrable (fun y : TimeVelocity d => |f y| * |g (y + x)|)
-      (volume : Measure (TimeVelocity d)) := by
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) := by
     have hgt := memLp_add_translate x g hg
     simpa only [Pi.mul_def, Real.norm_eq_abs, abs_abs] using hf.norm.integrable_mul hgt.norm
   calc
@@ -577,10 +580,10 @@ private theorem abs_integral_symmetrized_inner_le
       (mul_nonneg (mul_nonneg (abs_nonneg _) K.coe_nonneg) (norm_nonneg _))
 
 private theorem integrable_norm_mul_abs_timeDerivative_spacetimeMollifier
-    {d : ℕ} {ε : ℝ} (hε : 0 < ε) :
+     {ε : ℝ} (hε : 0 < ε) :
     Integrable (fun x : TimeVelocity d =>
       ‖x‖ * |timeDerivative (spacetimeMollifier ε) x|)
-      (volume : Measure (TimeVelocity d)) := by
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   have hdtCont : Continuous
       (timeDerivative (spacetimeMollifier (d := d) ε)) := by
     unfold timeDerivative
@@ -595,13 +598,13 @@ private theorem integrable_norm_mul_abs_timeDerivative_spacetimeMollifier
     hdtCompact.abs.mul_left
 
 private theorem abs_symmetrized_bilinear_le
-    {d : ℕ} {ε M : ℝ} (hε : 0 < ε)
+     {ε M : ℝ} (hε : 0 < ε)
     (hmoment : (∫ x : TimeVelocity d,
       ‖x‖ * |timeDerivative (spacetimeMollifier ε) x| ∂volume) ≤ M)
     (K : ℝ≥0) (w : TimeVelocity d → ℝ) (hwLip : LipschitzWith K w)
     (f g : TimeVelocity d → ℝ)
-    (hf : MemLp f (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d)))
-    (hg : MemLp g (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d))) :
+    (hf : MemLp f (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d))
+    (hg : MemLp g (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d)) :
     |∫ x : TimeVelocity d, ∫ y : TimeVelocity d,
         timeDerivative (spacetimeMollifier ε) x * (w y - w (y + x)) *
           f y * g (y + x) ∂volume ∂volume| ≤
@@ -647,13 +650,13 @@ private theorem abs_symmetrized_bilinear_le
     _ = _ := by ring
 
 private theorem exists_uniform_symmetrized_bilinear_bound
-    {d : ℕ} (w : TimeVelocity d → ℝ)
+     (w : TimeVelocity d → ℝ)
     (hwSmooth : ContDiff ℝ (⊤ : ℕ∞) w)
     (hwCompact : HasCompactSupport w) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ {ε : ℝ}, 0 < ε →
       ∀ (f g : TimeVelocity d → ℝ),
-      MemLp f (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d)) →
-      MemLp g (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d)) →
+      MemLp f (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d) →
+      MemLp g (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d) →
       |∫ x : TimeVelocity d, ∫ y : TimeVelocity d,
           timeDerivative (spacetimeMollifier ε) x * (w y - w (y + x)) *
             f y * g (y + x) ∂volume ∂volume| ≤
@@ -667,33 +670,33 @@ private theorem exists_uniform_symmetrized_bilinear_bound
   exact abs_symmetrized_bilinear_le hε (hmoment hε) K w hwLip f g hf hg
 
 private def symmetrizedBilinear
-    {d : ℕ} (ε : ℝ) (w f g : TimeVelocity d → ℝ) : ℝ :=
+     (ε : ℝ) (w f g : TimeVelocity d → ℝ) : ℝ :=
   ∫ x : TimeVelocity d, ∫ y : TimeVelocity d,
     timeDerivative (spacetimeMollifier ε) x * (w y - w (y + x)) *
       f y * g (y + x) ∂volume ∂volume
 
 private theorem integrable_symmetrizedBilinear_double
-    {d : ℕ} {ε : ℝ} (hε : 0 < ε)
+     {ε : ℝ} (hε : 0 < ε)
     (w f g : TimeVelocity d → ℝ)
     (hwSmooth : ContDiff ℝ (⊤ : ℕ∞) w)
     (hwCompact : HasCompactSupport w)
-    (hf : MemLp f (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d)))
-    (hg : MemLp g (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d))) :
+    (hf : MemLp f (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d))
+    (hg : MemLp g (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d)) :
     Integrable (fun p : TimeVelocity d × TimeVelocity d =>
       timeDerivative (spacetimeMollifier ε) p.1 * (w p.2 - w (p.2 + p.1)) *
         f p.2 * g (p.2 + p.1))
-      ((volume : Measure (TimeVelocity d)).prod volume) := by
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).prod volume) := by
   have hwf := mul_memLp_two_of_contDiff_hasCompactSupport f w hf hwSmooth hwCompact
   have hwg := mul_memLp_two_of_contDiff_hasCompactSupport g w hg hwSmooth hwCompact
   have hk := integrable_timeDerivative_spacetimeMollifier (d := d) hε
   have hbaseA := integrable_kernel_mul_memLp_two_mul_translate
     (timeDerivative (spacetimeMollifier ε)) g (fun y => w y * f y) hk hg hwf
   have hAcomp := (measurePreserving_prod_add
-    (volume : Measure (TimeVelocity d))
-    (volume : Measure (TimeVelocity d))).integrable_comp_of_integrable hbaseA
+    (HypoellipticAleksandrov.Parabolic.TVVolume d)
+    (HypoellipticAleksandrov.Parabolic.TVVolume d)).integrable_comp_of_integrable hbaseA
   have hA : Integrable (fun p : TimeVelocity d × TimeVelocity d =>
       timeDerivative (spacetimeMollifier ε) p.1 * w p.2 * f p.2 * g (p.2 + p.1))
-      ((volume : Measure (TimeVelocity d)).prod volume) := by
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).prod volume) := by
     apply hAcomp.congr
     exact ae_of_all _ fun p => by
       simp only [Function.comp_apply, add_sub_cancel_left, add_comm]
@@ -704,15 +707,15 @@ private theorem integrable_symmetrizedBilinear_double
       ((integrable_timeDerivative_spacetimeMollifier hε).comp_neg) hf hwg
   have hnegProd : MeasurePreserving
       (fun p : TimeVelocity d × TimeVelocity d => (-p.1, p.2))
-      ((volume : Measure (TimeVelocity d)).prod volume)
-      ((volume : Measure (TimeVelocity d)).prod volume) :=
-    (Measure.measurePreserving_neg (volume : Measure (TimeVelocity d))).prod
-      (MeasurePreserving.id (volume : Measure (TimeVelocity d)))
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).prod volume)
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).prod volume) :=
+    (Measure.measurePreserving_neg (HypoellipticAleksandrov.Parabolic.TVVolume d)).prod
+      (MeasurePreserving.id (HypoellipticAleksandrov.Parabolic.TVVolume d))
   have hBcomp := hnegProd.integrable_comp_of_integrable hbaseB
   have hB : Integrable (fun p : TimeVelocity d × TimeVelocity d =>
       timeDerivative (spacetimeMollifier ε) p.1 * w (p.2 + p.1) *
         f p.2 * g (p.2 + p.1))
-      ((volume : Measure (TimeVelocity d)).prod volume) := by
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).prod volume) := by
     apply hBcomp.congr
     exact ae_of_all _ fun p => by
       change timeDerivative (spacetimeMollifier ε) (-(-p.1)) * f p.2 *
@@ -725,26 +728,26 @@ private theorem integrable_symmetrizedBilinear_double
     ring
 
 private theorem integrable_symmetrizedBilinear_outer
-    {d : ℕ} {ε : ℝ} (hε : 0 < ε)
+     {ε : ℝ} (hε : 0 < ε)
     (w f g : TimeVelocity d → ℝ)
     (hwSmooth : ContDiff ℝ (⊤ : ℕ∞) w)
     (hwCompact : HasCompactSupport w)
-    (hf : MemLp f (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d)))
-    (hg : MemLp g (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d))) :
+    (hf : MemLp f (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d))
+    (hg : MemLp g (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d)) :
     Integrable (fun x : TimeVelocity d => ∫ y : TimeVelocity d,
       timeDerivative (spacetimeMollifier ε) x * (w y - w (y + x)) *
         f y * g (y + x) ∂volume)
-      (volume : Measure (TimeVelocity d)) := by
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   simpa only [Prod.fst, Prod.snd] using
     (integrable_symmetrizedBilinear_double hε w f g hwSmooth hwCompact hf hg).integral_prod_left
 
 private theorem symmetrizedBilinear_quadratic_sub
-    {d : ℕ} {ε : ℝ} (hε : 0 < ε)
+     {ε : ℝ} (hε : 0 < ε)
     (w q p : TimeVelocity d → ℝ)
     (hwSmooth : ContDiff ℝ (⊤ : ℕ∞) w)
     (hwCompact : HasCompactSupport w)
-    (hq : MemLp q (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d)))
-    (hp : MemLp p (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d))) :
+    (hq : MemLp q (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d))
+    (hp : MemLp p (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d)) :
     symmetrizedBilinear ε w q q - symmetrizedBilinear ε w p p =
       symmetrizedBilinear ε w (q - p) q +
         symmetrizedBilinear ε w p (q - p) := by
@@ -771,13 +774,13 @@ private theorem symmetrizedBilinear_quadratic_sub
     ring
 
 private theorem exists_uniform_pairing_quadratic_continuity
-    {d : ℕ} (w : TimeVelocity d → ℝ)
+     (w : TimeVelocity d → ℝ)
     (hwSmooth : ContDiff ℝ (⊤ : ℕ∞) w)
     (hwCompact : HasCompactSupport w) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ {ε : ℝ}, 0 < ε →
       ∀ (q p : TimeVelocity d → ℝ),
-      MemLp q (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d)) →
-      MemLp p (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d)) →
+      MemLp q (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d) →
+      MemLp p (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d) →
       |(∫ z : TimeVelocity d, q z * timeDerivative
           (spacetimeMollification ε (fun y => w y * q y)) z ∂volume) -
         ∫ z : TimeVelocity d, p z * timeDerivative
@@ -823,7 +826,7 @@ private theorem exists_uniform_pairing_quadratic_continuity
         _ = _ := by ring
 
 private theorem timeDerivative_mul
-    {d : ℕ} (f g : TimeVelocity d → ℝ)
+     (f g : TimeVelocity d → ℝ)
     (hf : Differentiable ℝ f) (hg : Differentiable ℝ g)
     (z : TimeVelocity d) :
     timeDerivative (fun y => f y * g y) z =
@@ -835,11 +838,11 @@ private theorem timeDerivative_mul
   ring
 
 private theorem smooth_weighted_time_energy_identity
-    {d : ℕ} (p w : TimeVelocity d → ℝ)
+     (p w : TimeVelocity d → ℝ)
     (hpSmooth : ContDiff ℝ (⊤ : ℕ∞) p)
-    (hp : MemLp p (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d)))
+    (hp : MemLp p (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d))
     (hpt : MemLp (timeDerivative p) (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d)))
+      (HypoellipticAleksandrov.Parabolic.TVVolume d))
     (hwSmooth : ContDiff ℝ (⊤ : ℕ∞) w)
     (hwCompact : HasCompactSupport w) :
     (∫ z : TimeVelocity d,
@@ -849,7 +852,7 @@ private theorem smooth_weighted_time_energy_identity
   have hpDiff : Differentiable ℝ p := hpSmooth.differentiable (by simp)
   have hwDiff : Differentiable ℝ w := hwSmooth.differentiable (by simp)
   have hwpDiff : Differentiable ℝ (fun z => w z * p z) := hwDiff.mul hpDiff
-  have hwTop : MemLp w ∞ (volume : Measure (TimeVelocity d)) :=
+  have hwTop : MemLp w ∞ (HypoellipticAleksandrov.Parabolic.TVVolume d) :=
     hwSmooth.continuous.memLp_of_hasCompactSupport hwCompact
   have hwtSmooth : ContDiff ℝ (⊤ : ℕ∞) (timeDerivative w) := by
     unfold timeDerivative
@@ -858,7 +861,7 @@ private theorem smooth_weighted_time_energy_identity
     unfold timeDerivative
     exact HasCompactSupport.fderiv_apply (𝕜 := ℝ) hwCompact (1, 0)
   have hwtTop : MemLp (timeDerivative w) ∞
-      (volume : Measure (TimeVelocity d)) :=
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) :=
     hwtSmooth.continuous.memLp_of_hasCompactSupport hwtCompact
   have hpp : Integrable (fun z : TimeVelocity d => p z * p z) volume := by
     simpa only [Pi.mul_def] using hp.integrable_mul hp
@@ -890,7 +893,7 @@ private theorem smooth_weighted_time_energy_identity
     apply this.congr
     exact ae_of_all _ fun z => by simp only [Pi.mul_apply]; ring
   have hibp := integral_mul_fderiv_eq_neg_fderiv_mul_of_integrable
-    (μ := (volume : Measure (TimeVelocity d))) (v := (1, 0))
+    (μ := (HypoellipticAleksandrov.Parabolic.TVVolume d)) (v := (1, 0))
     hdtwp_p hwppt hwpp (fun z _ => hwpDiff z) (fun z _ => hpDiff z)
   change (∫ z, (w z * p z) * timeDerivative p z ∂volume) =
       -(∫ z, timeDerivative (fun y => w y * p y) z * p z ∂volume) at hibp
@@ -915,17 +918,17 @@ private theorem smooth_weighted_time_energy_identity
   linarith
 
 private theorem timeDerivative_spacetimeMollification
-    {d : ℕ} {ε : ℝ} (hε : 0 < ε)
+     {ε : ℝ} (hε : 0 < ε)
     (f : TimeVelocity d → ℝ)
     (hf : MemLp f (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d)))
+      (HypoellipticAleksandrov.Parabolic.TVVolume d))
     (z : TimeVelocity d) :
     timeDerivative (spacetimeMollification ε f) z =
       ∫ x : TimeVelocity d,
         timeDerivative (spacetimeMollifier ε) x * f (z - x)
-        ∂(volume : Measure (TimeVelocity d)) := by
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   have hfLoc : LocallyIntegrable f
-      (volume : Measure (TimeVelocity d)) := hf.locallyIntegrable (by norm_num)
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) := hf.locallyIntegrable (by norm_num)
   have hderiv := (spacetimeMollifier_hasCompactSupport hε).hasFDerivAt_convolution_left
     (ContinuousLinearMap.lsmul ℝ ℝ)
     ((spacetimeMollifier_contDiff ε).of_le (by simp)) hfLoc z
@@ -939,14 +942,14 @@ private theorem timeDerivative_spacetimeMollification
       (fderiv ℝ (spacetimeMollifier (d := d) ε)) f z
       (ContinuousLinearMap.precompL (TimeVelocity d)
         (ContinuousLinearMap.lsmul ℝ ℝ))
-      (volume : Measure (TimeVelocity d)) :=
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) :=
     hkernel.convolutionExists_left _ hkernelCont hfLoc z
   have hint : Integrable
       (fun x : TimeVelocity d =>
         ((ContinuousLinearMap.precompL (TimeVelocity d)
           (ContinuousLinearMap.lsmul ℝ ℝ))
             (fderiv ℝ (spacetimeMollifier ε) x)) (f (z - x)))
-      (volume : Measure (TimeVelocity d)) := hconv
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) := hconv
   unfold timeDerivative spacetimeMollification
   rw [hderiv.fderiv]
   calc
@@ -967,30 +970,30 @@ private theorem timeDerivative_spacetimeMollification
       exact ae_of_all _ fun x => by rfl
 
 private theorem spacetimeMollification_smooth_memLp
-    {d : ℕ} {δ : ℝ} (hδ : 0 < δ)
+     {δ : ℝ} (hδ : 0 < δ)
     (q : TimeVelocity d → ℝ)
     (hq : MemLp q (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d))) :
+      (HypoellipticAleksandrov.Parabolic.TVVolume d)) :
     ContDiff ℝ (⊤ : ℕ∞) (spacetimeMollification δ q) ∧
       MemLp (spacetimeMollification δ q) (2 : ℝ≥0∞)
-        (volume : Measure (TimeVelocity d)) := by
+        (HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   exact ⟨contDiff_spacetimeMollification hδ q
       (hq.locallyIntegrable (by norm_num)),
     SpacetimeMollifierL2.spacetimeMollification_memLp hδ q hq⟩
 
 private theorem timeDerivative_mul_memLp_two
-    {d : ℕ} (p w : TimeVelocity d → ℝ)
+     (p w : TimeVelocity d → ℝ)
     (hpSmooth : ContDiff ℝ (⊤ : ℕ∞) p)
-    (hp : MemLp p (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d)))
+    (hp : MemLp p (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d))
     (hpt : MemLp (timeDerivative p) (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d)))
+      (HypoellipticAleksandrov.Parabolic.TVVolume d))
     (hwSmooth : ContDiff ℝ (⊤ : ℕ∞) w)
     (hwCompact : HasCompactSupport w) :
     MemLp (timeDerivative (fun y => w y * p y)) (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d)) := by
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   have hpDiff : Differentiable ℝ p := hpSmooth.differentiable (by simp)
   have hwDiff : Differentiable ℝ w := hwSmooth.differentiable (by simp)
-  have hwTop : MemLp w ∞ (volume : Measure (TimeVelocity d)) :=
+  have hwTop : MemLp w ∞ (HypoellipticAleksandrov.Parabolic.TVVolume d) :=
     hwSmooth.continuous.memLp_of_hasCompactSupport hwCompact
   have hwtSmooth : ContDiff ℝ (⊤ : ℕ∞) (timeDerivative w) := by
     unfold timeDerivative
@@ -999,7 +1002,7 @@ private theorem timeDerivative_mul_memLp_two
     unfold timeDerivative
     exact HasCompactSupport.fderiv_apply (𝕜 := ℝ) hwCompact (1, 0)
   have hwtTop : MemLp (timeDerivative w) ∞
-      (volume : Measure (TimeVelocity d)) :=
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) :=
     hwtSmooth.continuous.memLp_of_hasCompactSupport hwtCompact
   have hfirst : MemLp (fun z => timeDerivative w z * p z) (2 : ℝ≥0∞) volume :=
     by simpa only [mul_comm] using hp.fun_mul hwtTop
@@ -1013,11 +1016,11 @@ private theorem timeDerivative_mul_memLp_two
   simpa only [Pi.add_def] using hfirst.add hsecond
 
 private theorem tendsto_smooth_pairing
-    {d : ℕ} (p w : TimeVelocity d → ℝ)
+     (p w : TimeVelocity d → ℝ)
     (hpSmooth : ContDiff ℝ (⊤ : ℕ∞) p)
-    (hp : MemLp p (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d)))
+    (hp : MemLp p (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d))
     (hpt : MemLp (timeDerivative p) (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d)))
+      (HypoellipticAleksandrov.Parabolic.TVVolume d))
     (hwSmooth : ContDiff ℝ (⊤ : ℕ∞) w)
     (hwCompact : HasCompactSupport w) :
     Tendsto (fun ε : ℝ => ∫ z : TimeVelocity d,
@@ -1028,9 +1031,9 @@ private theorem tendsto_smooth_pairing
   let f : TimeVelocity d → ℝ := fun y => w y * p y
   let df : TimeVelocity d → ℝ := timeDerivative f
   have hfSmooth : ContDiff ℝ (⊤ : ℕ∞) f := hwSmooth.mul hpSmooth
-  have hf : MemLp f (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d)) :=
+  have hf : MemLp f (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d) :=
     mul_memLp_two_of_contDiff_hasCompactSupport p w hp hwSmooth hwCompact
-  have hdf : MemLp df (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d)) :=
+  have hdf : MemLp df (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d) :=
     timeDerivative_mul_memLp_two p w hpSmooth hp hpt hwSmooth hwCompact
   have hweak : HasWeakTimeDerivOn Set.univ f df :=
     HypoellipticAleksandrov.Parabolic.contDiffOn_one_hasWeakTimeDerivOn
@@ -1042,7 +1045,7 @@ private theorem tendsto_smooth_pairing
       (hf.locallyIntegrable (by norm_num)) (hdf.locallyIntegrable (by norm_num)) hweak
   have ht := HypoellipticAleksandrov.Analysis.tendsto_integral_mul_of_tendsto_eLpNorm_two
     (fun ε : ℝ => p) (fun ε => spacetimeMollification ε df) p df
-    (μ := (volume : Measure (TimeVelocity d)))
+    (μ := (HypoellipticAleksandrov.Parabolic.TVVolume d))
     (l := 𝓝[>] (0 : ℝ))
     (Eventually.of_forall fun _ => hp)
     (by filter_upwards [self_mem_nhdsWithin] with ε hε
@@ -1062,11 +1065,11 @@ private theorem tendsto_smooth_pairing
   rw [hcomm hε]
 
 private theorem tendsto_smooth_pairing_to_half
-    {d : ℕ} (p w : TimeVelocity d → ℝ)
+     (p w : TimeVelocity d → ℝ)
     (hpSmooth : ContDiff ℝ (⊤ : ℕ∞) p)
-    (hp : MemLp p (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d)))
+    (hp : MemLp p (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d))
     (hpt : MemLp (timeDerivative p) (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d)))
+      (HypoellipticAleksandrov.Parabolic.TVVolume d))
     (hwSmooth : ContDiff ℝ (⊤ : ℕ∞) w)
     (hwCompact : HasCompactSupport w) :
     Tendsto (fun ε : ℝ => ∫ z : TimeVelocity d,
@@ -1078,28 +1081,28 @@ private theorem tendsto_smooth_pairing_to_half
   exact tendsto_smooth_pairing p w hpSmooth hp hpt hwSmooth hwCompact
 
 private theorem integrable_abs_kernel_mul_sq_translate
-    {d : ℕ} (k f : TimeVelocity d → ℝ)
-    (hk : Integrable k (volume : Measure (TimeVelocity d)))
-    (hf : MemLp f (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d))) :
+     (k f : TimeVelocity d → ℝ)
+    (hk : Integrable k (HypoellipticAleksandrov.Parabolic.TVVolume d))
+    (hf : MemLp f (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d)) :
     Integrable (fun p : TimeVelocity d × TimeVelocity d =>
       |k p.2| * f (p.1 - p.2) ^ 2)
-      ((volume : Measure (TimeVelocity d)).prod volume) := by
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).prod volume) := by
   have hbase : Integrable (fun p : TimeVelocity d × TimeVelocity d =>
       f p.1 ^ 2 * |k p.2|)
-      ((volume : Measure (TimeVelocity d)).prod volume) :=
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).prod volume) :=
     hf.integrable_sq.mul_prod hk.abs
   have h := (measurePreserving_sub_prod
-    (volume : Measure (TimeVelocity d))
-    (volume : Measure (TimeVelocity d))).integrable_comp_of_integrable hbase
+    (HypoellipticAleksandrov.Parabolic.TVVolume d)
+    (HypoellipticAleksandrov.Parabolic.TVVolume d)).integrable_comp_of_integrable hbase
   apply h.congr
   exact ae_of_all _ fun p => by
     simp only [Function.comp_apply]
     ring
 
 private theorem ae_sq_integral_kernel_mul_translate_le
-    {d : ℕ} (k f : TimeVelocity d → ℝ)
-    (hk : Integrable k (volume : Measure (TimeVelocity d)))
-    (hf : MemLp f (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d))) :
+     (k f : TimeVelocity d → ℝ)
+    (hk : Integrable k (HypoellipticAleksandrov.Parabolic.TVVolume d))
+    (hf : MemLp f (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d)) :
     ∀ᵐ z : TimeVelocity d ∂volume,
       |∫ x : TimeVelocity d, k x * f (z - x) ∂volume| ^ 2 ≤
         (∫ x : TimeVelocity d, |k x| ∂volume) *
@@ -1121,15 +1124,15 @@ private theorem ae_sq_integral_kernel_mul_translate_le
   have hsub : AEStronglyMeasurable (fun x : TimeVelocity d => f (z - x)) volume := by
     have hmp : MeasurePreserving (fun x : TimeVelocity d => z - x) volume volume := by
       simpa only [Function.comp_def, sub_eq_add_neg] using
-        (measurePreserving_add_left (volume : Measure (TimeVelocity d)) z).comp
-          (Measure.measurePreserving_neg (volume : Measure (TimeVelocity d)))
+        (measurePreserving_add_left (HypoellipticAleksandrov.Parabolic.TVVolume d) z).comp
+          (Measure.measurePreserving_neg (HypoellipticAleksandrov.Parabolic.TVVolume d))
     exact hf.aestronglyMeasurable.comp_measurePreserving hmp
   have hbMeas : AEStronglyMeasurable b volume :=
     (Real.continuous_sqrt.comp_aestronglyMeasurable hk.1.norm).mul hsub.norm
   have hb : MemLp b (2 : ℝ≥0∞) volume :=
     (memLp_two_iff_integrable_sq hbMeas).2 hbSq
   have hholder := integral_mul_le_Lp_mul_Lq_of_nonneg
-    (μ := (volume : Measure (TimeVelocity d))) (f := a) (g := b)
+    (μ := (HypoellipticAleksandrov.Parabolic.TVVolume d)) (f := a) (g := b)
     Real.HolderConjugate.two_two
     (ae_of_all _ fun _ => Real.sqrt_nonneg _)
     (ae_of_all _ fun _ => mul_nonneg (Real.sqrt_nonneg _) (abs_nonneg _))
@@ -1179,21 +1182,21 @@ private theorem ae_sq_integral_kernel_mul_translate_le
   exact hleft
 
 private theorem memLp_integral_kernel_mul_translate
-    {d : ℕ} (k f : TimeVelocity d → ℝ)
-    (hk : Integrable k (volume : Measure (TimeVelocity d)))
-    (hf : MemLp f (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d))) :
+     (k f : TimeVelocity d → ℝ)
+    (hk : Integrable k (HypoellipticAleksandrov.Parabolic.TVVolume d))
+    (hf : MemLp f (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d)) :
     MemLp (fun z => ∫ x : TimeVelocity d, k x * f (z - x) ∂volume)
-      (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d)) := by
+      (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   have hjoint : AEStronglyMeasurable
       (fun p : TimeVelocity d × TimeVelocity d => k p.2 * f (p.1 - p.2))
-      ((volume : Measure (TimeVelocity d)).prod volume) := by
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).prod volume) := by
     have hfcomp : AEStronglyMeasurable
         (fun p : TimeVelocity d × TimeVelocity d => f (p.1 - p.2))
-        ((volume : Measure (TimeVelocity d)).prod volume) := by
+        ((HypoellipticAleksandrov.Parabolic.TVVolume d).prod volume) := by
       simpa only [Function.comp_def] using hf.aestronglyMeasurable.comp_fst.comp_measurePreserving
         (measurePreserving_sub_prod
-          (volume : Measure (TimeVelocity d))
-          (volume : Measure (TimeVelocity d)))
+          (HypoellipticAleksandrov.Parabolic.TVVolume d)
+          (HypoellipticAleksandrov.Parabolic.TVVolume d))
     exact hk.1.comp_snd.mul hfcomp
   have houtMeas := hjoint.integral_prod_right'
   have hright : Integrable (fun z : TimeVelocity d =>
@@ -1207,11 +1210,11 @@ private theorem memLp_integral_kernel_mul_translate
   simpa only [sq_abs] using hz
 
 private theorem timeDerivative_spacetimeMollification_memLp
-    {d : ℕ} {δ : ℝ} (hδ : 0 < δ)
+     {δ : ℝ} (hδ : 0 < δ)
     (q : TimeVelocity d → ℝ)
-    (hq : MemLp q (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d))) :
+    (hq : MemLp q (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d)) :
     MemLp (timeDerivative (spacetimeMollification δ q)) (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d)) := by
+      (HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   have hconv := memLp_integral_kernel_mul_translate
     (timeDerivative (spacetimeMollifier δ)) q
     (integrable_timeDerivative_spacetimeMollifier hδ) hq
@@ -1223,20 +1226,20 @@ private theorem timeDerivative_spacetimeMollification_memLp
   exact hconv
 
 private theorem sqrt_integral_sq_eq_eLpNorm_toReal
-    {d : ℕ} (f : TimeVelocity d → ℝ)
-    (hf : MemLp f (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d))) :
+     (f : TimeVelocity d → ℝ)
+    (hf : MemLp f (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d)) :
     Real.sqrt (∫ z : TimeVelocity d, f z ^ 2 ∂volume) =
-      (eLpNorm f (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d))).toReal := by
+      (eLpNorm f (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d)).toReal := by
   rw [hf.eLpNorm_eq_integral_rpow_norm (by norm_num) ENNReal.ofNat_ne_top]
   simp only [ENNReal.toReal_ofReal (Real.rpow_nonneg (integral_nonneg fun _ => sq_nonneg _) _),
     ENNReal.toReal_ofNat, Real.norm_eq_abs, Real.rpow_two, sq_abs, Real.sqrt_eq_rpow,
     one_div]
 
 private theorem tendsto_weighted_sq_integral
-    {d : ℕ} (w q : TimeVelocity d → ℝ)
+     (w q : TimeVelocity d → ℝ)
     (hwSmooth : ContDiff ℝ (⊤ : ℕ∞) w)
     (hwCompact : HasCompactSupport w)
-    (hq : MemLp q (2 : ℝ≥0∞) (volume : Measure (TimeVelocity d))) :
+    (hq : MemLp q (2 : ℝ≥0∞) (HypoellipticAleksandrov.Parabolic.TVVolume d)) :
     Tendsto (fun δ : ℝ => ∫ z : TimeVelocity d,
       timeDerivative w z * spacetimeMollification δ q z ^ 2 ∂volume)
       (𝓝[>] 0) (𝓝 (∫ z : TimeVelocity d, timeDerivative w z * q z ^ 2 ∂volume)) := by
@@ -1288,20 +1291,20 @@ private theorem tendsto_weighted_sq_integral
 
 /-- Weighted time-energy limit for raw global `L²` data. -/
 theorem tendsto_integral_mul_timeDerivative_spacetimeMollification_mul
-    {d : ℕ} (q w : TimeVelocity d → ℝ)
+     (q w : TimeVelocity d → ℝ)
     (hq : MemLp q (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d)))
+      (HypoellipticAleksandrov.Parabolic.TVVolume d))
     (hwSmooth : ContDiff ℝ (⊤ : ℕ∞) w)
     (hwCompact : HasCompactSupport w) :
     Tendsto
       (fun ε : ℝ => ∫ z : TimeVelocity d,
         q z * timeDerivative
           (spacetimeMollification ε (fun y => w y * q y)) z
-        ∂(volume : Measure (TimeVelocity d)))
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d))
       (𝓝[>] 0)
       (𝓝 ((1 / 2 : ℝ) * ∫ z : TimeVelocity d,
         timeDerivative w z * q z ^ 2
-        ∂(volume : Measure (TimeVelocity d)))) := by
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d))) := by
   let P : (TimeVelocity d → ℝ) → ℝ → ℝ := fun f ε => ∫ z : TimeVelocity d,
     f z * timeDerivative (spacetimeMollification ε (fun y => w y * f y)) z ∂volume
   let R : (TimeVelocity d → ℝ) → ℝ := fun f =>
@@ -1391,5 +1394,6 @@ theorem tendsto_integral_mul_timeDerivative_spacetimeMollification_mul
       · simpa only [Real.dist_eq] using hεp
       · simpa only [Metric.mem_ball, Real.dist_eq] using hδR
     _ = η := by ring
+end
 
 end HypoellipticAleksandrov.Parabolic.SpacetimeMollifierWeightedTimeEnergy

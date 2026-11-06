@@ -41,7 +41,7 @@ def boundedBorelSubmodule (α : Type*) [MeasurableSpace α] :
     · rcases hf.2 with ⟨C, hC, hf⟩
       refine ⟨abs c * C, mul_nonneg (abs_nonneg _) hC, ?_⟩
       intro x
-      simpa only [Pi.smul_apply, smul_eq_mul, abs_mul] using
+      simpa using
         mul_le_mul_of_nonneg_left (hf x) (abs_nonneg c)
 
 /-- The literal bounded-Borel real-function carrier. -/
@@ -173,10 +173,11 @@ def positivePart {α : Type*} [MeasurableSpace α]
 @[simp]
 theorem positivePart_apply {α : Type*} [MeasurableSpace α]
     (f : BoundedBorel α) (x : α) : f.positivePart x = max (f x) 0 := rfl
+section
+variable {α β : Type*} [MeasurableSpace α] [MeasurableSpace β] (g : β → α) (hg : Measurable g) (f : BoundedBorel α)
 
 /-- Pull a bounded-Borel function back along a measurable map. -/
-def pullback {α β : Type*} [MeasurableSpace α] [MeasurableSpace β]
-    (g : β → α) (hg : Measurable g) (f : BoundedBorel α) : BoundedBorel β :=
+def pullback  : BoundedBorel β :=
   ⟨fun x => f (g x), by
     constructor
     · exact f.measurable.comp hg
@@ -184,9 +185,8 @@ def pullback {α β : Type*} [MeasurableSpace α] [MeasurableSpace β]
       exact ⟨C, hC, fun x => hf (g x)⟩⟩
 
 @[simp]
-theorem pullback_apply {α β : Type*} [MeasurableSpace α]
-    [MeasurableSpace β] (g : β → α) (hg : Measurable g)
-    (f : BoundedBorel α) (x : β) : f.pullback g hg x = f (g x) := rfl
+theorem pullback_apply  (x : β) : f.pullback g hg x = f (g x) := rfl
+end
 
 /-- Restrict a bounded-Borel function to a subtype. -/
 def restrict {α : Type*} [MeasurableSpace α]

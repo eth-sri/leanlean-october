@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.GenericParabolicIndexArithmetic
 public import HypoellipticAleksandrov.Parabolic.ParabolicWeakDerivativeFamily
 public import HypoellipticAleksandrov.Parabolic.WeakDerivativesUnique
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Shifts and extensionality for parabolic weak derivative families
@@ -20,14 +21,13 @@ open MeasureTheory
 open scoped ENNReal
 
 namespace ParabolicDerivativeIndex
+section
+variable {d L M : ℕ} (alpha : ParabolicDerivativeIndex d L) (beta : ParabolicDerivativeIndex d M) (hαM : alpha.1.parabolicWeight + M ≤ L)
 
 /-- Add a bounded right index to a fixed left index while staying inside the
 original parabolic-weight bound. -/
 def addWithin
-    {d L M : ℕ}
-    (alpha : ParabolicDerivativeIndex d L)
-    (beta : ParabolicDerivativeIndex d M)
-    (hαM : alpha.1.parabolicWeight + M ≤ L) :
+     :
     ParabolicDerivativeIndex d L :=
   ⟨alpha.1 + beta.1, by
     rw [TimeVelocityMultiIndex.parabolicWeight_add]
@@ -54,10 +54,7 @@ def addWithin
   exact add_zero alpha.1
 
 private theorem addWithin_timeSucc
-    {d L M : ℕ}
-    (alpha : ParabolicDerivativeIndex d L)
-    (beta : ParabolicDerivativeIndex d M)
-    (hαM : alpha.1.parabolicWeight + M ≤ L)
+    
     (hβ : beta.1.parabolicWeight + 2 ≤ M)
     (hL : (addWithin alpha beta hαM).1.parabolicWeight + 2 ≤ L) :
     addWithin alpha (timeSucc beta hβ) hαM =
@@ -69,6 +66,7 @@ private theorem addWithin_timeSucc
       alpha.1 (timeCoord d) + beta.1 (timeCoord d) + 1
     omega
   · rfl
+end
 
 private theorem addWithin_velocitySucc
     {d L M : ℕ}
@@ -98,7 +96,7 @@ namespace ParabolicWeakDerivativeFamily
 /-- Re-root a coherent weak derivative family at a fixed selected derivative,
 retaining `M` further parabolic weights. -/
 def shift
-    {d L M : ℕ} {U : Set (TimeVelocity d)}
+    {d L M : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u : TimeVelocity d → ℝ}
     (D : ParabolicWeakDerivativeFamily d L U u)
     (alpha : ParabolicDerivativeIndex d L)
@@ -130,7 +128,7 @@ def shift
 
 /-- A shifted family selects the literal sum of its root and increment indices. -/
 @[simp] theorem shift_representative
-    {d L M : ℕ} {U : Set (TimeVelocity d)}
+    {d L M : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d}
     {u : TimeVelocity d → ℝ}
     (D : ParabolicWeakDerivativeFamily d L U u)
     (alpha : ParabolicDerivativeIndex d L)
@@ -144,7 +142,7 @@ def shift
 /-- Coherent restricted-`L²` weak derivative families on an open carrier are
 determined almost everywhere by their root functions. -/
 theorem representative_ae_eq_of_root_ae
-    {d L : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
+    {d L : ℕ} {U : HypoellipticAleksandrov.Parabolic.TVSet d} (hU : IsOpen U)
     {u v : TimeVelocity d → ℝ}
     (D : ParabolicWeakDerivativeFamily d L U u)
     (E : ParabolicWeakDerivativeFamily d L U v)

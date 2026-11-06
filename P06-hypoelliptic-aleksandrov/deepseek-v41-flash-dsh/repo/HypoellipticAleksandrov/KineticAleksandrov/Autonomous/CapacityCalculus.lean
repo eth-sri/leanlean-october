@@ -23,7 +23,7 @@ theorem capacity_velocity_operator (a : ℝ → ℝ → ℝ) (Phi : ℝ → ℝ)
 theorem capacity_velocity_smooth {Phi : ℝ → ℝ} (hPhi : ContDiff ℝ (⊤ : ℕ∞) Phi) :
     ContDiff ℝ (⊤ : ℕ∞)
       ((fun q : Point => Phi (q.velocity 0)) ∘ (KineticPoint.equivProd 1).symm) :=
-  hPhi.comp ((contDiff_apply ℝ ℝ (0 : Fin 1)).comp contDiff_snd.snd)
+  hPhi.comp ((contDiff_apply ℝ ℝ 0).comp contDiff_snd.snd)
 
 /-- A derivative bound controls differences of the convex test on the closed strip. -/
 theorem capacity_test_difference {Phi : ℝ → ℝ} (hPhi : ContDiff ℝ (⊤ : ℕ∞) Phi)

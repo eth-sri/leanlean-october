@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.QuantitativeSmoothCutoffExistence
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Nested quantitative smooth cutoffs
@@ -17,7 +18,7 @@ namespace HypoellipticAleksandrov.Parabolic
 smooth cutoffs: the second equals one on the first cutoff's topological
 support, and both supports lie in the original open set. -/
 theorem exists_nestedQuantitativeSmoothCutoffs_tsupport_subset
-    {d : ℕ} {E Ω : Set (PDE.Vec d)}
+    {d : ℕ} {E Ω : HypoellipticAleksandrov.VecSet d}
     (hE : IsCompact E) (hΩ : IsOpen Ω) (hEΩ : E ⊆ Ω) :
     ∃ Kη : ℝ, Nonempty
       (Σ η : PDE.QuantitativeSmoothCutoff E Ω Kη,

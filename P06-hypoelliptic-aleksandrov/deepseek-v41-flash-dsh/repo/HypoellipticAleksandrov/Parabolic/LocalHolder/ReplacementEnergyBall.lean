@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementEnergyInt
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonBarrierPointwise
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonBallBarrierSobolev
 import HypoellipticAleksandrov.KineticAleksandrov.Occupation.LocalizedKrylovGeometry
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Signed smooth corrections with both ball boundary envelopes
 

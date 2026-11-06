@@ -65,7 +65,7 @@ theorem forward_autonomous_abp_of_below_four_density
       (autonomousCoefficient A.a P.time P.position P.velocity).PosSemidef := by
     intro P _
     have heq : autonomousCoefficient A.a P.time P.position P.velocity =
-        A.a (P.position 0) (P.velocity 0) • (1 : PDE.Mat 1) := by
+        A.a (P.position 0) (P.velocity 0) • 1 := by
       ext i j
       fin_cases i
       fin_cases j

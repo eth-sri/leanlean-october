@@ -3,6 +3,7 @@ module
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Positivity
 public import HypoellipticAleksandrov.KineticAleksandrov.EvolutionProblem
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # A bounded interval is a one-dimensional ball
@@ -44,7 +45,7 @@ theorem oneDimensionalAxisBox_eq_euclideanBall {lo hi : ℝ} (hlohi : lo < hi) :
 /-- An admissible evolution domain is `ℝ^d` or a Euclidean ball: the bounded-interval case
 `d = 1` is a ball. -/
 theorem eq_univ_or_exists_euclideanBall_of_isAdmissibleEvolutionDomain {n : ℕ}
-    {Ω : Set (PDE.Vec n)} (hΩ : IsAdmissibleEvolutionDomain Ω) :
+    {Ω : HypoellipticAleksandrov.VecSet n} (hΩ : IsAdmissibleEvolutionDomain Ω) :
     Ω = Set.univ ∨ ∃ (c : PDE.Vec n) (r : ℝ), 0 < r ∧ Ω = PDE.euclideanBall c r := by
   rcases hΩ with h | h | ⟨hn, lo, hi, hlohi, h⟩
   · exact Or.inl h

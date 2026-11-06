@@ -1,6 +1,8 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.GenericPreLiftDifferentiatedWeakEquationSupport
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Generic pre-lift differentiated weak equation
@@ -31,10 +33,10 @@ private theorem coordinateIteratedFDeriv_tsupport_subset
     exact ContinuousMultilinearMap.zero_apply _)
 
 private theorem setIntegral_mul_eq_of_tsupport_subset
-    {d : ℕ} {V U : Set (TimeVelocity d)} (hU : MeasurableSet U)
+    {d : ℕ} {V U : HypoellipticAleksandrov.Parabolic.TVSet d} (hU : MeasurableSet U)
     (hVU : V ⊆ U) (f g : TimeVelocity d → ℝ) (hgV : tsupport g ⊆ V) :
-    (∫ z in U, f z * g z ∂(volume : Measure (TimeVelocity d))) =
-      ∫ z in V, f z * g z ∂(volume : Measure (TimeVelocity d)) := by
+    (∫ z in U, f z * g z ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
+      ∫ z in V, f z * g z ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   apply setIntegral_eq_of_subset_of_forall_diff_eq_zero hU hVU
   intro z hz
   have hgz : g z = 0 := by
@@ -90,7 +92,7 @@ private theorem velocityGradient_tsupport_subset
   exact coordinateIteratedFDeriv_tsupport_subset _ f
 
 private theorem bounded_mul_memLp
-    {d : ℕ} {V : Set (TimeVelocity d)} (hV : IsOpen V)
+    {d : ℕ} {V : HypoellipticAleksandrov.Parabolic.TVSet d} (hV : IsOpen V)
     (q f : TimeVelocity d → ℝ) (C : ℝ) (hC : 0 ≤ C)
     (hq : ContinuousOn q V) (hqBound : ∀ z ∈ V, |q z| ≤ C)
     (hf : ParabolicMemLpOn V 2 f) :
@@ -121,7 +123,7 @@ private theorem coordinateIteratedFDeriv_contDiff
     (fun i ↦ timeVelocityBasis (gamma.coordinateList.get i)))).clm_apply hi
 
 private theorem coordinateIteratedFDeriv_continuousOn
-    {d N : ℕ} {V : Set (TimeVelocity d)} (hV : IsOpen V)
+    {d N : ℕ} {V : HypoellipticAleksandrov.Parabolic.TVSet d} (hV : IsOpen V)
     (q : TimeVelocity d → ℝ) (hq : ContDiffOn ℝ N q V)
     (alpha : TimeVelocityMultiIndex d) (halpha : alpha.order ≤ N) :
     ContinuousOn (TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha q) V := by
@@ -145,7 +147,7 @@ private theorem splitLeft_order_le
   exact gamma.order_left_le.trans (horder_weight.trans beta.2)
 
 private theorem properAtom_memLp
-    {d M N : ℕ} {V : Set (TimeVelocity d)} (hV : IsOpen V)
+    {d M N : ℕ} {V : HypoellipticAleksandrov.Parabolic.TVSet d} (hV : IsOpen V)
     (q : TimeVelocity d → ℝ) (hq : ContDiffOn ℝ N q V)
     (B : ParabolicDerivativeIndex d N → ℝ) (hB : ∀ alpha, 0 ≤ B alpha)
     (hqBound : ∀ alpha z, z ∈ V →
@@ -182,7 +184,7 @@ private theorem properAtom_memLp
     exact MemLp.zero'
 
 private theorem properCommutatorComponents_memLp
-    {d M : ℕ} {V : Set (TimeVelocity d)} (hV : IsOpen V)
+    {d M : ℕ} {V : HypoellipticAleksandrov.Parabolic.TVSet d} (hV : IsOpen V)
     (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c : ℝ → PDE.Vec d → ℝ)
@@ -269,7 +271,7 @@ private theorem properCommutatorComponents_memLp
 
 private theorem originalEquation_integral
     {d M : ℕ} (hM : 1 ≤ M)
-    {V : Set (TimeVelocity d)} (hV : IsOpen V)
+    {V : HypoellipticAleksandrov.Parabolic.TVSet d} (hV : IsOpen V)
     (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c F : ℝ → PDE.Vec d → ℝ)
@@ -459,7 +461,7 @@ private theorem originalEquation_integral
 
 
 private theorem principalComponent_pairing_explicit
-    {d M : ℕ} {V : Set (TimeVelocity d)} (hV : IsOpen V)
+    {d M : ℕ} {V : HypoellipticAleksandrov.Parabolic.TVSet d} (hV : IsOpen V)
     (q : TimeVelocity d → ℝ) (hq : ContDiffOn ℝ (M + 1) q V)
     (Bq : ParabolicDerivativeIndex d (M + 1) → ℝ)
     (hBq : ∀ alpha, 0 ≤ Bq alpha)
@@ -479,7 +481,7 @@ private theorem principalComponent_pairing_explicit
                   change beta.1.parabolicWeight + 1 ≤ M + 1
                   omega)) z *
           velocityGradient φ z i
-        ∂(volume : Measure (TimeVelocity d))) -
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) -
       ∫ z in V,
         TimeVelocityMultiIndex.coordinateIteratedFDeriv
               (Pi.single (velocityCoord i) 1) q z *
@@ -490,7 +492,7 @@ private theorem principalComponent_pairing_explicit
                   change beta.1.parabolicWeight + 1 ≤ M + 1
                   omega)) z *
           φ z
-        ∂(volume : Measure (TimeVelocity d)) =
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) =
       ((-1 : ℝ) ^ beta.1.order) *
         ∫ z in V,
           (q z *
@@ -498,7 +500,7 @@ private theorem principalComponent_pairing_explicit
               (ParabolicDerivativeIndex.castLE (by omega : 2 ≤ M + 1)
                 (ParabolicDerivativeIndex.velocityTwo j i)) z) *
             TimeVelocityMultiIndex.coordinateIteratedFDeriv beta.1 φ z
-          ∂(volume : Measure (TimeVelocity d)) -
+          ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) -
       ∫ z in V,
         (∑ gamma : TimeVelocityMultiIndex.Split beta.1,
           if hproper : gamma.left ≠ 0 then
@@ -508,12 +510,12 @@ private theorem principalComponent_pairing_explicit
                 (ParabolicDerivativeIndex.properSplitRightVelocityTwo
                   beta gamma hproper j i) z
           else 0) * φ z
-        ∂(volume : Measure (TimeVelocity d)) := by
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   exact GenericPreLiftDifferentiatedWeakEquationSupport.principalComponent_pairing
     hV q hq Bq hBq hqBound hM D beta j i φ hφ hφCompact hφV
 
 private theorem principalComponents_pairing_explicit
-    {d M : ℕ} {V : Set (TimeVelocity d)} (hV : IsOpen V)
+    {d M : ℕ} {V : HypoellipticAleksandrov.Parabolic.TVSet d} (hV : IsOpen V)
     (a : CoefficientField d)
     (ha : ∀ i j, ContDiffOn ℝ (M + 1)
       (fun z : TimeVelocity d ↦ a z.1 z.2 i j) V)
@@ -537,7 +539,7 @@ private theorem principalComponents_pairing_explicit
                       change beta.1.parabolicWeight + 1 ≤ M + 1
                       omega)) z *
               velocityGradient φ z i
-            ∂(volume : Measure (TimeVelocity d))) -
+            ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) -
           ∫ z in V,
             TimeVelocityMultiIndex.coordinateIteratedFDeriv
                   (Pi.single (velocityCoord i) 1)
@@ -549,7 +551,7 @@ private theorem principalComponents_pairing_explicit
                       change beta.1.parabolicWeight + 1 ≤ M + 1
                       omega)) z *
               φ z
-            ∂(volume : Measure (TimeVelocity d)))) =
+            ∂(HypoellipticAleksandrov.Parabolic.TVVolume d))) =
       ((-1 : ℝ) ^ beta.1.order) *
         (∑ i, ∑ j, ∫ z in V,
           (a z.1 z.2 i j *
@@ -557,7 +559,7 @@ private theorem principalComponents_pairing_explicit
               (ParabolicDerivativeIndex.castLE (by omega : 2 ≤ M + 1)
                 (ParabolicDerivativeIndex.velocityTwo j i)) z) *
             TimeVelocityMultiIndex.coordinateIteratedFDeriv beta.1 φ z
-          ∂(volume : Measure (TimeVelocity d))) -
+          ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) -
       (∑ i, ∑ j, ∫ z in V,
         (∑ gamma : TimeVelocityMultiIndex.Split beta.1,
           if hproper : gamma.left ≠ 0 then
@@ -568,7 +570,7 @@ private theorem principalComponents_pairing_explicit
                 (ParabolicDerivativeIndex.properSplitRightVelocityTwo
                   beta gamma hproper j i) z
           else 0) * φ z
-        ∂(volume : Measure (TimeVelocity d))) := by
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) := by
   classical
   have hcomponent (i j : Fin d) := principalComponent_pairing_explicit hV
     (fun z : TimeVelocity d ↦ a z.1 z.2 i j) (ha i j) (Ba i j)
@@ -582,7 +584,7 @@ private theorem principalComponents_pairing_explicit
                   (ParabolicDerivativeIndex.castLE (by omega : 2 ≤ M + 1)
                     (ParabolicDerivativeIndex.velocityTwo j i)) z) *
                 TimeVelocityMultiIndex.coordinateIteratedFDeriv beta.1 φ z
-              ∂(volume : Measure (TimeVelocity d)) -
+              ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) -
           ∫ z in V,
             (∑ gamma : TimeVelocityMultiIndex.Split beta.1,
               if hproper : gamma.left ≠ 0 then
@@ -593,7 +595,7 @@ private theorem principalComponents_pairing_explicit
                     (ParabolicDerivativeIndex.properSplitRightVelocityTwo
                       beta gamma hproper j i) z
               else 0) * φ z
-            ∂(volume : Measure (TimeVelocity d))) := by
+            ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) := by
       apply Finset.sum_congr rfl
       intro i hi
       apply Finset.sum_congr rfl
@@ -604,7 +606,7 @@ private theorem principalComponents_pairing_explicit
 
 private theorem integral_genericPreliftDifferentiatedScalarEquationOn
     {d M : ℕ} (hM : 1 ≤ M)
-    {V : Set (TimeVelocity d)} (hV : IsOpen V)
+    {V : HypoellipticAleksandrov.Parabolic.TVSet d} (hV : IsOpen V)
     (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c F : ℝ → PDE.Vec d → ℝ)
@@ -655,7 +657,7 @@ private theorem integral_genericPreliftDifferentiatedScalarEquationOn
     -(∫ z in V,
         D.representative
             (ParabolicDerivativeIndex.castLE (Nat.le_succ M) beta) z *
-          timeDerivative φ z ∂(volume : Measure (TimeVelocity d))) -
+          timeDerivative φ z ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) -
       (∑ i, ∑ j, ∫ z in V,
         a z.1 z.2 i j *
             D.representative
@@ -664,7 +666,7 @@ private theorem integral_genericPreliftDifferentiatedScalarEquationOn
                 (by
                   change beta.1.parabolicWeight + 1 ≤ M + 1
                   omega)) z *
-          velocityGradient φ z i ∂(volume : Measure (TimeVelocity d))) -
+          velocityGradient φ z i ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) -
       (∑ i, ∑ j, ∫ z in V,
         TimeVelocityMultiIndex.coordinateIteratedFDeriv
               (Pi.single (velocityCoord i) 1)
@@ -675,7 +677,7 @@ private theorem integral_genericPreliftDifferentiatedScalarEquationOn
                 (by
                   change beta.1.parabolicWeight + 1 ≤ M + 1
                   omega)) z *
-          φ z ∂(volume : Measure (TimeVelocity d))) +
+          φ z ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) +
       (∑ j, ∫ z in V,
         b z.1 z.2 j *
             D.representative
@@ -684,14 +686,14 @@ private theorem integral_genericPreliftDifferentiatedScalarEquationOn
                 (by
                   change beta.1.parabolicWeight + 1 ≤ M + 1
                   omega)) z *
-          φ z ∂(volume : Measure (TimeVelocity d))) +
+          φ z ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) +
       (∫ z in V, c z.1 z.2 *
           D.representative
             (ParabolicDerivativeIndex.castLE (Nat.le_succ M) beta) z *
-          φ z ∂(volume : Measure (TimeVelocity d))) =
+          φ z ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
       ∫ z in V,
         properDifferentiatedScalarCommutatorResidual a b c D E beta z * φ z
-        ∂(volume : Measure (TimeVelocity d)) := by
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   classical
   let s : ℝ := (-1 : ℝ) ^ beta.1.order
   let A : TimeVelocity d → ℝ := fun z ↦
@@ -992,7 +994,7 @@ coordinate, retaining both the coefficient and coefficient-derivative terms. -/
 theorem integral_genericPreliftDifferentiatedScalarEquation
     {d M : ℕ}
     (hM : 1 ≤ M)
-    (U : Set (TimeVelocity d)) (hU : IsOpen U)
+    (U : HypoellipticAleksandrov.Parabolic.TVSet d) (hU : IsOpen U)
     (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c F : ℝ → PDE.Vec d → ℝ)
@@ -1041,7 +1043,7 @@ theorem integral_genericPreliftDifferentiatedScalarEquation
             (ParabolicDerivativeIndex.castLE
               (Nat.le_succ M) beta) z *
           timeDerivative φ z
-        ∂(volume : Measure (TimeVelocity d))) -
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) -
       (∑ i, ∑ j,
         ∫ z in U,
           a z.1 z.2 i j *
@@ -1053,7 +1055,7 @@ theorem integral_genericPreliftDifferentiatedScalarEquation
                     change beta.1.parabolicWeight + 1 ≤ M + 1
                     omega)) z *
             velocityGradient φ z i
-          ∂(volume : Measure (TimeVelocity d))) -
+          ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) -
       (∑ i, ∑ j,
         ∫ z in U,
           TimeVelocityMultiIndex.coordinateIteratedFDeriv
@@ -1067,7 +1069,7 @@ theorem integral_genericPreliftDifferentiatedScalarEquation
                     change beta.1.parabolicWeight + 1 ≤ M + 1
                     omega)) z *
             φ z
-          ∂(volume : Measure (TimeVelocity d))) +
+          ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) +
       (∑ j,
         ∫ z in U,
           b z.1 z.2 j *
@@ -1079,18 +1081,18 @@ theorem integral_genericPreliftDifferentiatedScalarEquation
                     change beta.1.parabolicWeight + 1 ≤ M + 1
                     omega)) z *
             φ z
-          ∂(volume : Measure (TimeVelocity d))) +
+          ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) +
       (∫ z in U,
         c z.1 z.2 *
             D.representative
               (ParabolicDerivativeIndex.castLE
                 (Nat.le_succ M) beta) z *
           φ z
-        ∂(volume : Measure (TimeVelocity d))) =
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
       ∫ z in U,
         properDifferentiatedScalarCommutatorResidual a b c D E beta z *
           φ z
-        ∂(volume : Measure (TimeVelocity d)) := by
+        ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) := by
   classical
   obtain ⟨V, Ba, Bb, Bc, hV, hφV, hclosureVU, _hVCompact,
       hBa, hBb, hBc, haBoundClosure, hbBoundClosure, hcBoundClosure⟩ :=
@@ -1131,27 +1133,27 @@ theorem integral_genericPreliftDifferentiatedScalarEquation
   have htime :
       (∫ z in U, D.representative
           (ParabolicDerivativeIndex.castLE (Nat.le_succ M) beta) z *
-          timeDerivative φ z ∂(volume : Measure (TimeVelocity d))) =
+          timeDerivative φ z ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
         ∫ z in V, D.representative
           (ParabolicDerivativeIndex.castLE (Nat.le_succ M) beta) z *
-          timeDerivative φ z ∂(volume : Measure (TimeVelocity d)) :=
+          timeDerivative φ z ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) :=
     setIntegral_mul_eq_of_tsupport_subset hU.measurableSet hVU _ _ htimeSupport
   have hprincipal (i j : Fin d) :
       (∫ z in U, (a z.1 z.2 i j * D.representative
           (ParabolicDerivativeIndex.velocitySucc
             (ParabolicDerivativeIndex.castLE (Nat.le_succ M) beta) j
             (by change beta.1.parabolicWeight + 1 ≤ M + 1; omega)) z) *
-          velocityGradient φ z i ∂(volume : Measure (TimeVelocity d))) =
+          velocityGradient φ z i ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
         ∫ z in V, (a z.1 z.2 i j * D.representative
           (ParabolicDerivativeIndex.velocitySucc
             (ParabolicDerivativeIndex.castLE (Nat.le_succ M) beta) j
             (by change beta.1.parabolicWeight + 1 ≤ M + 1; omega)) z) *
-          velocityGradient φ z i ∂(volume : Measure (TimeVelocity d)) :=
+          velocityGradient φ z i ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) :=
     setIntegral_mul_eq_of_tsupport_subset hU.measurableSet hVU _ _
       ((velocityGradient_tsupport_subset φ hφSmooth i).trans hφV)
   have hphiMul (f : TimeVelocity d → ℝ) :
-      (∫ z in U, f z * φ z ∂(volume : Measure (TimeVelocity d))) =
-        ∫ z in V, f z * φ z ∂(volume : Measure (TimeVelocity d)) :=
+      (∫ z in U, f z * φ z ∂(HypoellipticAleksandrov.Parabolic.TVVolume d)) =
+        ∫ z in V, f z * φ z ∂(HypoellipticAleksandrov.Parabolic.TVVolume d) :=
     setIntegral_mul_eq_of_tsupport_subset hU.measurableSet hVU f φ hφV
   simpa only [DV, EV, ParabolicWeakDerivativeFamily.restrict_representative,
     htime, hprincipal, hphiMul, properDifferentiatedScalarCommutatorResidual] using hlocal

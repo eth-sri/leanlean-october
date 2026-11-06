@@ -2,6 +2,7 @@ module
 
 public import PDEFoundation.Sobolev.Cutoff.Basic
 public import Mathlib.Geometry.Manifold.PartitionOfUnity
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Quantitative smooth cutoffs on open velocity sets
@@ -19,7 +20,7 @@ open scoped Manifold
 /-- A compact subset of an open velocity set admits a quantitative smooth
 cutoff with topological support in that open set. -/
 theorem exists_quantitativeSmoothCutoff_tsupport_subset
-    {d : ℕ} {E Ω : Set (PDE.Vec d)}
+    {d : ℕ} {E Ω : HypoellipticAleksandrov.VecSet d}
     (hE : IsCompact E) (hΩ : IsOpen Ω) (hEΩ : E ⊆ Ω) :
     ∃ K : ℝ, Nonempty (PDE.QuantitativeSmoothCutoff E Ω K) := by
   obtain ⟨V, hVopen, hEV, hclosureVΩ, hclosureVcompact⟩ :=

@@ -5,6 +5,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Lieberman.EllipsoidBarr
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonSobolev
 import Mathlib.Analysis.Matrix.Order
 import Mathlib.Tactic
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Smooth zero-boundary ellipsoid barriers absorbing bounded drift -/
 
@@ -58,7 +59,7 @@ private theorem drift_absorption {lam t B k s X Y D : ℝ}
   have hsquare : 0 ≤ 2 * k ^ 2 * lam * s ^ 2 := by positivity
   linarith only [hx, hy, hd, hyoung, hmargin, hsquare]
 
-private theorem stationary_operator_congr {d : ℕ} {Ω : Set (PDE.Vec d)}
+private theorem stationary_operator_congr {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (hΩ : IsOpen Ω) (f q : PDE.Vec d → ℝ) (heq : EqOn f q Ω)
     (A : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (z : TimeVelocity d) (hz : z.2 ∈ Ω) :

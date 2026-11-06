@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.GeneralOpenPositivePartApproximation
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.H10PositivePartContinuity
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Shifted positive parts in spatial `H¹₀`
@@ -19,7 +20,7 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-variable {d : ℕ} {Ω : Set (PDE.Vec d)}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
 
 /-- The shifted positive-part function has Lipschitz constant one. -/
 theorem lipschitzWith_max_sub_zero (k : ℝ≥0) :
@@ -528,9 +529,11 @@ private theorem tendsto_shifted_step_indicator_eLpNorm
   · filter_upwards [hf, hlevel] with x hfx hlx
     simpa only [indicator_apply, Set.mem_setOf_eq] using
       tendsto_shifted_step_mul_sub_indicator k hδPos hδ hfx hlx
+section
+variable (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) (k : ℝ≥0)
 
 private theorem exists_shiftedPositivePart_data
-    (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) (k : ℝ≥0) :
+     :
     ∃ v : H10HilbertGraph hΩ,
       valueCLM hΩ v = shiftedPositivePartValue k (valueCLM hΩ u) ∧
       ∀ᵐ x ∂(PDE.volumeOn Ω),
@@ -728,7 +731,7 @@ private theorem exists_shiftedPositivePart_data
 
 /-- The shifted positive part has a unique spatial `H¹₀` graph representative. -/
 theorem exists_unique_h10ShiftedPositivePart
-    (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) (k : ℝ≥0) :
+     :
     ∃! v : H10HilbertGraph hΩ,
       valueCLM hΩ v = shiftedPositivePartValue k (valueCLM hΩ u) := by
   obtain ⟨v, hv, _⟩ := exists_shiftedPositivePart_data hΩ u k
@@ -736,20 +739,20 @@ theorem exists_unique_h10ShiftedPositivePart
 
 /-- The canonical shifted positive part `(u - k)₊` in spatial `H¹₀`. -/
 noncomputable def h10ShiftedPositivePart
-    (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) (k : ℝ≥0) : H10HilbertGraph hΩ :=
+     : H10HilbertGraph hΩ :=
   Classical.choose (exists_unique_h10ShiftedPositivePart hΩ u k)
 
 /-- The value component of the canonical shifted positive part. -/
 @[simp]
 theorem valueCLM_h10ShiftedPositivePart
-    (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) (k : ℝ≥0) :
+     :
     valueCLM hΩ (h10ShiftedPositivePart hΩ u k) =
       shiftedPositivePartValue k (valueCLM hΩ u) :=
   (Classical.choose_spec (exists_unique_h10ShiftedPositivePart hΩ u k)).1
 
 /-- Evaluation of the value representative of the shifted positive part. -/
 theorem coeFn_valueCLM_h10ShiftedPositivePart
-    (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) (k : ℝ≥0) :
+     :
     valueCLM hΩ (h10ShiftedPositivePart hΩ u k) =ᵐ[PDE.volumeOn Ω]
       fun x => max (valueCLM hΩ u x - (k : ℝ)) 0 := by
   rw [valueCLM_h10ShiftedPositivePart]
@@ -758,7 +761,7 @@ theorem coeFn_valueCLM_h10ShiftedPositivePart
 /-- The weak gradient of `(u - k)₊` is the original gradient precisely on
 the strict superlevel set `{k < u}` and is zero elsewhere. -/
 theorem gradientCLM_h10ShiftedPositivePart
-    (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) (k : ℝ≥0) :
+     :
     ∀ᵐ x ∂(PDE.volumeOn Ω),
       gradientCLM hΩ (h10ShiftedPositivePart hΩ u k) x =
         {y | (k : ℝ) < valueCLM hΩ u y}.indicator (gradientCLM hΩ u) x := by
@@ -769,14 +772,14 @@ theorem gradientCLM_h10ShiftedPositivePart
 
 /-- Shifted positive-part truncation contracts the value `L²` norm. -/
 theorem norm_valueCLM_h10ShiftedPositivePart_le
-    (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) (k : ℝ≥0) :
+     :
     ‖valueCLM hΩ (h10ShiftedPositivePart hΩ u k)‖ ≤ ‖valueCLM hΩ u‖ := by
   rw [valueCLM_h10ShiftedPositivePart]
   exact norm_shiftedPositivePartValue_le k (valueCLM hΩ u)
 
 /-- Shifted positive-part truncation contracts the weak-gradient `L²` norm. -/
 theorem norm_gradientCLM_h10ShiftedPositivePart_le
-    (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) (k : ℝ≥0) :
+     :
     ‖gradientCLM hΩ (h10ShiftedPositivePart hΩ u k)‖ ≤ ‖gradientCLM hΩ u‖ := by
   rw [Lp.norm_def, Lp.norm_def]
   apply ENNReal.toReal_mono (Lp.eLpNorm_ne_top _)
@@ -796,7 +799,7 @@ theorem norm_gradientCLM_h10ShiftedPositivePart_le
 /-- Shifted positive-part truncation contracts the full spatial `H¹₀`
 graph norm, with sharp constant one. -/
 theorem norm_h10ShiftedPositivePart_le
-    (hΩ : IsOpen Ω) (u : H10HilbertGraph hΩ) (k : ℝ≥0) :
+     :
     ‖h10ShiftedPositivePart hΩ u k‖ ≤ ‖u‖ := by
   rw [← sq_le_sq₀ (norm_nonneg _) (norm_nonneg _)]
   rw [norm_sq_h10HilbertGraph hΩ, norm_sq_h10HilbertGraph hΩ]
@@ -805,6 +808,7 @@ theorem norm_h10ShiftedPositivePart_le
       (norm_valueCLM_h10ShiftedPositivePart_le hΩ u k))
     (sq_le_sq₀ (norm_nonneg _) (norm_nonneg _) |>.2
       (norm_gradientCLM_h10ShiftedPositivePart_le hΩ u k))
+end
 
 private theorem tendsto_shifted_value_threshold_eLpNorm
     {f : PDE.Vec d → ℝ} (hf : MemLp f (2 : ℝ≥0∞) (PDE.volumeOn Ω))
@@ -881,7 +885,7 @@ private theorem tendsto_moving_indicator_sub_indicator
     simp only [indicator_apply, Set.mem_setOf_eq, sub_pos.mp hn, hgt, sub_self]
 
 private theorem indicator_sub_add_indicator_difference
-    {E : Type*} [AddCommGroup E] {A B : Set (PDE.Vec d)}
+    {E : Type*} [AddCommGroup E] {A B : HypoellipticAleksandrov.VecSet d}
     (a b : PDE.Vec d → E) (x : PDE.Vec d) :
     A.indicator (a - b) x + (A.indicator b x - B.indicator b x) =
       A.indicator a x - B.indicator b x := by

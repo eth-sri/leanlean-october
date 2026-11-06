@@ -34,9 +34,11 @@ theorem nested_bind_map {X Y Z : Type*} [MeasurableSpace X] [MeasurableSpace Y]
   rw [Measure.bind_apply hB hk.aemeasurable,
     Measure.bind_apply hB (hk.comp hf).aemeasurable]
   exact lintegral_map' ((Measure.measurable_coe hB).comp hk).aemeasurable hf.aemeasurable
+section
+variable {X Y : Type*} [MeasurableSpace X] [MeasurableSpace Y]
 
 /-- Restricting an actual measurable measure family remains measurable. -/
-theorem nested_measurable_family_restrict {X Y : Type*} [MeasurableSpace X] [MeasurableSpace Y]
+theorem nested_measurable_family_restrict 
     (k : X → Measure Y) (hk : Measurable k) (S : Set Y) (hS : MeasurableSet S) :
     Measurable (fun x => (k x).restrict S) := by
   apply Measure.measurable_measure.mpr
@@ -47,7 +49,7 @@ theorem nested_measurable_family_restrict {X Y : Type*} [MeasurableSpace X] [Mea
   exact (Measure.measurable_coe (hB.inter hS)).comp hk
 
 /-- Restriction commutes with the actual measurable measure integral. -/
-theorem nested_bind_restrict {X Y : Type*} [MeasurableSpace X] [MeasurableSpace Y]
+theorem nested_bind_restrict 
     (nu : Measure X) (k : X → Measure Y) (hk : Measurable k)
     (S : Set Y) (hS : MeasurableSet S) :
     (nu.bind k).restrict S = nu.bind (fun x => (k x).restrict S) := by
@@ -58,7 +60,7 @@ theorem nested_bind_restrict {X Y : Type*} [MeasurableSpace X] [MeasurableSpace 
     (fun x => (Measure.restrict_apply hB).symm))
 
 /-- Subtype pullback of a measurable physical family remains measurable on a Borel carrier. -/
-theorem nested_measurable_family_comap {X Y : Type*} [MeasurableSpace X] [MeasurableSpace Y]
+theorem nested_measurable_family_comap 
     (k : X → Measure Y) (hk : Measurable k) (S : Set Y) (hS : MeasurableSet S) :
     Measurable (fun x => (k x).comap (Subtype.val : S → Y)) := by
   apply Measure.measurable_measure.mpr
@@ -71,7 +73,7 @@ theorem nested_measurable_family_comap {X Y : Type*} [MeasurableSpace X] [Measur
     ((MeasurableEmbedding.subtype_coe hS).measurableSet_image.mpr hB)).comp hk
 
 /-- Subtype pullback commutes with genuine measurable mixtures on a Borel carrier. -/
-theorem nested_comap_bind {X Y : Type*} [MeasurableSpace X] [MeasurableSpace Y]
+theorem nested_comap_bind 
     (nu : Measure X) (k : X → Measure Y) (hk : Measurable k)
     (S : Set Y) (hS : MeasurableSet S) :
     (nu.bind k).comap (Subtype.val : S → Y) =
@@ -85,7 +87,7 @@ theorem nested_comap_bind {X Y : Type*} [MeasurableSpace X] [MeasurableSpace Y]
     ((MeasurableEmbedding.subtype_coe hS).comap_apply (k x) B).symm))
 
 /-- Sums of actual measurable measure families are measurable. -/
-theorem nested_measurable_family_add {X Y : Type*} [MeasurableSpace X] [MeasurableSpace Y]
+theorem nested_measurable_family_add 
     (k l : X → Measure Y) (hk : Measurable k) (hl : Measurable l) :
     Measurable (fun x => k x + l x) := by
   apply Measure.measurable_measure.mpr
@@ -96,7 +98,7 @@ theorem nested_measurable_family_add {X Y : Type*} [MeasurableSpace X] [Measurab
   exact ((Measure.measurable_coe hB).comp hk).add ((Measure.measurable_coe hB).comp hl)
 
 /-- Actual measure mixtures distribute over sums of measurable measure families. -/
-theorem nested_bind_add {X Y : Type*} [MeasurableSpace X] [MeasurableSpace Y]
+theorem nested_bind_add 
     (nu : Measure X) (k l : X → Measure Y) (hk : Measurable k) (hl : Measurable l) :
     nu.bind (fun x => k x + l x) = nu.bind k + nu.bind l := by
   ext B hB
@@ -105,5 +107,6 @@ theorem nested_bind_add {X Y : Type*} [MeasurableSpace X] [MeasurableSpace Y]
     Measure.bind_apply hB hl.aemeasurable]
   simp only [Measure.add_apply]
   exact lintegral_add_left ((Measure.measurable_coe hB).comp hk) _
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

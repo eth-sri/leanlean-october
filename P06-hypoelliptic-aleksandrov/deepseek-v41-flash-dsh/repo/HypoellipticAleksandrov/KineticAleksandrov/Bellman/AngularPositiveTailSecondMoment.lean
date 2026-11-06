@@ -35,7 +35,7 @@ theorem bellmanAngularSecondMoment_div_tendsto (f : ℝ → ℝ)
       apply mul_le_of_le_one_left (norm_nonneg _)
       exact (div_le_one (by linarith : 0 < y)).mpr hzy
     · rw [show G y z = 0 from indicator_of_notMem (show z ∉ Iic y from hzy) _]
-      simpa only [norm_zero] using norm_nonneg (z * f z)
+      simpa using norm_nonneg (z * f z)
   have hlim : ∀ᵐ z ∂volume.restrict (Ioi 0),
       Tendsto (fun y => G y z) atTop (𝓝 (0 : ℝ)) := by
     apply ae_of_all
@@ -46,16 +46,16 @@ theorem bellmanAngularSecondMoment_div_tendsto (f : ℝ → ℝ)
     have hr : Tendsto (fun y : ℝ => z / y) atTop (𝓝 0) :=
       tendsto_const_nhds.div_atTop tendsto_id
     have ht := hr.mul_const (z * f z)
-    simpa only [zero_mul] using ht.congr' he.symm
+    simpa using ht.congr' he.symm
   have ht := tendsto_integral_filter_of_dominated_convergence
     (fun z => ‖z * f z‖) hmeas hbound hi.norm hlim
-  simp only [integral_zero] at ht
+  simp at ht
   apply ht.congr'
   filter_upwards [eventually_ge_atTop (1 : ℝ)] with y hy
   dsimp [G]
   rw [integral_indicator measurableSet_Iic, Measure.restrict_restrict measurableSet_Iic,
-    show Iic y ∩ Ioi (0 : ℝ) = Ioc 0 y from
-      Set.ext (fun z => by simp only [mem_inter_iff, mem_Iic, mem_Ioi, mem_Ioc]; tauto),
+    show Iic y ∩ Ioi 0 = Ioc 0 y from
+      Set.ext (fun z => by simp; tauto),
     bellmanAngularSecondMoment, intervalIntegral.integral_of_le (by linarith : 0 ≤ y)]
   rw [← integral_div]
   apply setIntegral_congr_fun measurableSet_Ioc

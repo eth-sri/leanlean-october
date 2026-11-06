@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.ExitFourierLater
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Exact centered phase factorization and genuine later translation covariance -/
 
@@ -21,7 +22,7 @@ theorem norm_exitFourierStepPhase {d : ℕ}
 
 /-- Physical centered Fourier tests factor at the true intermediate physical pole. -/
 theorem exitFourierTest_factor {d : ℕ} (P W Q : KineticPoint d)
-    (v₀ ξ : PDE.Vec d) (E : Set (TimeVelocity d)) :
+    (v₀ ξ : PDE.Vec d) (E : HypoellipticAleksandrov.Parabolic.TVSet d) :
     exitFourierTest P v₀ ξ E Q =
       exitFourierStepPhase P W.time v₀ ξ *
         fourierPhase ξ P.position (W.velocity, W.position) * exitFourierTest W v₀ ξ E Q := by
@@ -76,7 +77,7 @@ theorem ballLaterExitFourier_eq_state (s T : ℝ) (hsT : s < T) (ξ : PDE.Vec d)
 
 /-- The zero-extended scalar test has modulus at most one on every ambient velocity. -/
 theorem norm_ballLaterExitFourierTest_le_one (s T : ℝ) (hsT : s < T) (ξ : PDE.Vec d)
-    (E : Set (TimeVelocity d)) (v : PDE.Vec d) :
+    (E : HypoellipticAleksandrov.Parabolic.TVSet d) (v : PDE.Vec d) :
     ‖ballLaterExitFourierTest hH hLE hd hlam hLam B hB v₀ hR s T hsT ξ E v‖ ≤ 1 := by
   by_cases hv : v ∈ movingDomain (PDE.euclideanBall v₀ R) (fun _ => 0) s
   · rw [ballLaterExitFourierTest_valid hH hLE hd hlam hLam B hB v₀ hR

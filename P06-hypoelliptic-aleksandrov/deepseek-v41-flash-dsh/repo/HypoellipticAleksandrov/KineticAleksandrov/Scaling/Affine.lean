@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.Realization
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Kinetic affine changes of variables
@@ -241,11 +242,11 @@ def drift (b : PDE.Vec d → PDE.Vec d) : PDE.Vec d → PDE.Vec d :=
 
 /-- The hat moving domains are the preimages of the original ones:
 `movingDomain Ω̂ γ̂ τ = {Y | y₀ + c Y ∈ movingDomain Ω γ (σ₀ + a τ)}`. -/
-def MapsDomain (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE.Vec d)
-    (Ω' : Set (PDE.Vec d)) (γ' : ℝ → PDE.Vec d) : Prop :=
+def MapsDomain (Ω : HypoellipticAleksandrov.VecSet d) (γ : ℝ → PDE.Vec d)
+    (Ω' : HypoellipticAleksandrov.VecSet d) (γ' : ℝ → PDE.Vec d) : Prop :=
   ∀ τ, movingDomain Ω' γ' τ = Φ.position ⁻¹' movingDomain Ω γ (Φ.time τ)
 
-variable {Ω Ω' : Set (PDE.Vec d)} {γ γ' : ℝ → PDE.Vec d}
+variable {Ω Ω' : HypoellipticAleksandrov.VecSet d} {γ γ' : ℝ → PDE.Vec d}
 
 variable {Φ}
 

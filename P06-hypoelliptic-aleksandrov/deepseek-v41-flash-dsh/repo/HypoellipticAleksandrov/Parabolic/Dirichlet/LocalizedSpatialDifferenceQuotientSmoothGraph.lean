@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.CutoffGradientSpatialD
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.LocalizedSpatialDifferenceQuotientL2
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.LocalizedSpatialDifferenceQuotientWeakTest
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.WeakTestFunctionSobolevJet
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Localized quotient smooth graph compatibility
@@ -25,7 +26,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 /-- The smooth localized quotient has the expected coordinatewise `L²`
 product-rule representative in the spatial Sobolev jet. -/
 theorem localizedSpatialDifferenceQuotientWeakTest_gradientCoord_eq
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
+    {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ}
     (hΩ : IsOpen Ω)
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)

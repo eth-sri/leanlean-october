@@ -19,10 +19,10 @@ theorem enlarged_integral_kernel_pair_le
     (∫ q, f q ∂K ∘ₘ mu) + (∫ q, f q ∂L ∘ₘ mu) ≤ ∫ p, g p ∂mu := by
   have hiK : Integrable (fun p => ∫ q, f q ∂K p) mu := by
     rw [Measure.comp_eq_comp_const_apply] at hK
-    simpa only [Kernel.const_apply] using hK.integral_comp
+    simpa using hK.integral_comp
   have hiL : Integrable (fun p => ∫ q, f q ∂L p) mu := by
     rw [Measure.comp_eq_comp_const_apply] at hL
-    simpa only [Kernel.const_apply] using hL.integral_comp
+    simpa using hL.integral_comp
   rw [nested_integral_bind mu K K.measurable f hK,
     nested_integral_bind mu L L.measurable f hL, ← integral_add hiK hiL]
   exact integral_mono_ae (hiK.add hiL) hg hstep
@@ -35,7 +35,7 @@ theorem enlarged_integral_kernel_le
     (∫ q, f q ∂K ∘ₘ mu) ≤ ∫ p, g p ∂mu := by
   have hiK : Integrable (fun p => ∫ q, f q ∂K p) mu := by
     rw [Measure.comp_eq_comp_const_apply] at hK
-    simpa only [Kernel.const_apply] using hK.integral_comp
+    simpa using hK.integral_comp
   rw [nested_integral_bind mu K K.measurable f hK]
   exact integral_mono_ae hiK hg hstep
 
@@ -47,7 +47,7 @@ theorem enlarged_terminal_values_telescope (U R D : ℕ → ℝ)
   have hh : ∀ N, (∑ n ∈ Finset.range N, D n) + U N ≤ U 0 := by
     intro N
     induction N with
-    | zero => simp only [Finset.range_zero, Finset.sum_empty, zero_add, le_refl]
+    | zero => simp
     | succ N ih =>
       rw [Finset.sum_range_succ]
       linarith [ha N, hw N]

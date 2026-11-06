@@ -11,11 +11,12 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open scoped ENNReal
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
 
 /-- The larger-interval restart measure is the subtype pullback of the actual restricted exit. -/
 def nestedIntervalRestartPoles
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
     (A : SmoothAutonomous lam Lam) (H1 H2 : Interval) (sMinus T : ℝ)
     (e : StripPole H1 (T : WithTop ℝ)) : Measure (StripPole H2 (T : WithTop ℝ)) :=
   ((stripExit hH hLE hlam hLam A H1 T e).restrict
@@ -23,13 +24,13 @@ def nestedIntervalRestartPoles
 
 /-- The actual restart pole measure is finite. -/
 instance nestedIntervalRestartPoles_isFiniteMeasure
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
     (A : SmoothAutonomous lam Lam) (H1 H2 : Interval) (sMinus T : ℝ)
     (e : StripPole H1 (T : WithTop ℝ)) :
     IsFiniteMeasure (nestedIntervalRestartPoles hH hLE hlam hLam A H1 H2 sMinus T e) := by
   unfold nestedIntervalRestartPoles
   infer_instance
+end
 
 /-- The finite pole predicate for an interval is a Borel set in physical coordinates. -/
 theorem measurableSet_nestedIntervalPole (H : Interval) (T : ℝ) :
@@ -37,13 +38,12 @@ theorem measurableSet_nestedIntervalPole (H : Interval) (T : ℝ) :
   convert (isOpen_stripPast H T).measurableSet using 1
   ext p
   exact and_congr WithTop.coe_lt_coe Iff.rfl
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (H1 H2 : Interval) (sMinus T : ℝ) (e : StripPole H1 (T : WithTop ℝ))
 
 /-- The restart poles recover precisely the actual smaller exit restricted to the internal face. -/
 theorem nestedIntervalRestartPoles_map
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H1 H2 : Interval) (sMinus T : ℝ)
-    (e : StripPole H1 (T : WithTop ℝ)) :
+     :
     (nestedIntervalRestartPoles hH hLE hlam hLam A H1 H2 sMinus T e).map Subtype.val =
       (stripExit hH hLE hlam hLam A H1 T e).restrict
         (nestedIntervalInternalExit H1 H2 sMinus T) := by
@@ -56,10 +56,7 @@ theorem nestedIntervalRestartPoles_map
 
 /-- Genuine restart poles retain the strict lower-time support of the internal face. -/
 theorem nestedIntervalRestartPoles_ae_time_gt
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H1 H2 : Interval) (sMinus T : ℝ)
-    (e : StripPole H1 (T : WithTop ℝ)) :
+     :
     ∀ᵐ ep ∂nestedIntervalRestartPoles hH hLE hlam hLam A H1 H2 sMinus T e,
       sMinus < ep.1.time := by
   have ht : ∀ᵐ p ∂(stripExit hH hLE hlam hLam A H1 T e).restrict
@@ -72,19 +69,13 @@ theorem nestedIntervalRestartPoles_ae_time_gt
 
 /-- The larger Green mixture of internal restart poles is the actual measurable measure bind. -/
 def nestedIntervalRestartGreen
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H1 H2 : Interval) (sMinus T : ℝ)
-    (e : StripPole H1 (T : WithTop ℝ)) : Measure Point :=
+     : Measure Point :=
   (nestedIntervalRestartPoles hH hLE hlam hLam A H1 H2 sMinus T e).bind
     (stripGreen hH hLE hlam hLam A H2 T)
 
 /-- Uniform interval geometry makes the actual restart Green mixture finite. -/
 instance nestedIntervalRestartGreen_isFiniteMeasure
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H1 H2 : Interval) (sMinus T : ℝ)
-    (e : StripPole H1 (T : WithTop ℝ)) :
+     :
     IsFiniteMeasure (nestedIntervalRestartGreen hH hLE hlam hLam A H1 H2 sMinus T e) := by
   let τ := nestedIntervalRestartPoles hH hLE hlam hLam A H1 H2 sMinus T e
   let C := finiteUnionGreenMassBound lam H2.toFiniteUnion
@@ -106,5 +97,6 @@ instance nestedIntervalRestartGreen_isFiniteMeasure
       (measure_lt_top τ univ)
   · exact (Measure.measurable_measure.mpr (fun B hB =>
       stripGreen_measurable_apply hH hLE hlam hLam A H2 T B hB)).aemeasurable
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

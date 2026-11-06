@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonLoca
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.SourceComparisonLocalSpatialIntegrability
 import HypoellipticAleksandrov.Measure.TimeVelocity
 import Mathlib.MeasureTheory.Integral.Prod
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Spacetime spatial value-energy identity
 
@@ -19,7 +21,7 @@ open scoped Matrix.Norms.Elementwise
 
 /-- The spatial value-energy identity holds on the literal product-volume cylinder. -/
 theorem integral_scalar_local_spatial_value_energy_spacetime {d : ℕ}
-    (a T : ℝ) (O : Set (PDE.Vec d)) (hO : IsOpen O)
+    (a T : ℝ) (O : HypoellipticAleksandrov.VecSet d) (hO : IsOpen O)
     (u ρ : TimeVelocity d → ℝ) (hu : IsScalarC12On u (Ioo a T ×ˢ O))
     (hρ : ContDiff ℝ (⊤ : ℕ∞) ρ) (hc : HasCompactSupport ρ)
     (hsub : tsupport ρ ⊆ Ioo a T ×ˢ O)
@@ -40,7 +42,7 @@ theorem integral_scalar_local_spatial_value_energy_spacetime {d : ℕ}
   have hint := integrable_scalar_local_spatial_value_energy_terms (isOpen_Ioo.prod hO)
     u ρ hu hρ hc hsub A hA i j
   have hprod : (volume.restrict (Ioo a T)).prod (volume.restrict O) =
-      volume.restrict (Ioo a T ×ˢ O : Set (TimeVelocity d)) := by
+      volume.restrict (Ioo a T ×ˢ O : HypoellipticAleksandrov.Parabolic.TVSet d) := by
     rw [volume_timeVelocity_eq_prod]
     exact Measure.prod_restrict (Ioo a T) O
   have hl : Integrable left ((volume.restrict (Ioo a T)).prod (volume.restrict O)) := by

@@ -21,7 +21,7 @@ def geometricBandPower (delta : ℝ) (j : ℕ) : ℝ :=
 theorem geometricBandPower_summable (delta : ℝ) (hd : 0 < delta) :
     Summable (geometricBandPower delta) := by
   have he (j : ℕ) : geometricBandPower delta j =
-      (4 : ℝ) ^ delta * ((7 / 8 : ℝ) ^ delta) ^ j := by
+      4 ^ delta * ((7 / 8 : ℝ) ^ delta) ^ j := by
     unfold geometricBandPower
     rw [Real.mul_rpow (by norm_num) (by positivity), ← Real.rpow_natCast,
       ← Real.rpow_mul (by norm_num), mul_comm (j : ℝ) delta,
@@ -35,8 +35,7 @@ theorem geometricBandPower_summable (delta : ℝ) (hd : 0 < delta) :
 
 /-- The geometric band sum is strictly positive. -/
 theorem geometricBandPower_tsum_pos (delta : ℝ) (hd : 0 < delta) :
-    0 < ∑' j, geometricBandPower delta j := by
-  exact (geometricBandPower_summable delta hd).tsum_pos
+    0 < ∑' j, geometricBandPower delta j := (geometricBandPower_summable delta hd).tsum_pos
     (fun j => by unfold geometricBandPower; positivity) 0
     (by unfold geometricBandPower; positivity)
 

@@ -42,7 +42,7 @@ theorem clockSourcePotential_physical_equation
   obtain ⟨-, hsm, -, hop⟩ :=
     clockSourcePotential_regular hH hLE hlam hLam A c e R T hRT f hfn hs hz
   rw [c.conjugacy A.a e _ hsm p hp]
-  have hi : (sectionTwoPoint (c.map e p)).position 0 ∈ normalizedActive :=
+  have hi :=
     (c.mem_active_iff (p.velocity 0)).mp hp
   rw [clock_extended_operator_eq A c e _ _ hi]
   have heq : (clockSourcePotential hH hLE hlam hLam A c e T f ∘ sectionTwoPoint) ∘

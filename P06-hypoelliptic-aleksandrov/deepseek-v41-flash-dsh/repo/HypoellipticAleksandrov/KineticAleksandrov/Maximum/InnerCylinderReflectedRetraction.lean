@@ -16,11 +16,11 @@ private theorem reflection_closure_backward {d : ℕ}
       closure (forwardCylinder (kineticReflection P₀) R hR) := by
   rw [kineticReflection_image_closure,
     kineticReflection_image_backwardCylinder]
+section
+variable {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2)
 
 /-- Reflected retraction maps the original closure onto the inner backward closure. -/
-theorem reflectedInnerRetraction_image_closure {d : ℕ}
-    (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
-    (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2) :
+theorem reflectedInnerRetraction_image_closure  :
     reflectedInnerRetraction P₀ R hR δ hδ0 hδlt '' closure (backwardCylinder P₀ R) =
       closure (backwardCylinder
         ⟨P₀.time - δ, P₀.position - δ • P₀.velocity, P₀.velocity⟩
@@ -37,9 +37,7 @@ theorem reflectedInnerRetraction_image_closure {d : ℕ}
     kineticReflection_image_innerCylinder]
 
 /-- Reflected retraction is onto the inner kinetic boundary used by Borel passage. -/
-theorem reflectedInnerRetraction_image_kineticBoundary {d : ℕ}
-    (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
-    (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2) :
+theorem reflectedInnerRetraction_image_kineticBoundary  :
     reflectedInnerRetraction P₀ R hR δ hδ0 hδlt '' kineticBoundary P₀ R =
       kineticBoundary
         ⟨P₀.time - δ, P₀.position - δ • P₀.velocity, P₀.velocity⟩
@@ -53,6 +51,7 @@ theorem reflectedInnerRetraction_image_kineticBoundary {d : ℕ}
     ← image_image (innerRetraction (kineticReflection P₀) R hR δ hδ0 hδlt)
       kineticReflection, kineticReflection_image_kineticBoundary P₀ R hR,
     innerRetraction_image_exitBoundary,kineticReflection_image_innerExitBoundary]
+end
 
 /-- Reflection preserves the existing product-metric distance, used only topologically. -/
 theorem dist_kineticReflection {d : ℕ} (P Q : KineticPoint d) :

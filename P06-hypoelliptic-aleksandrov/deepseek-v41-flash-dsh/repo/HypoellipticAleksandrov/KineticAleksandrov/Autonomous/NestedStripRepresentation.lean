@@ -28,8 +28,7 @@ theorem nestedSourcePotential_eq_green {lam Lam : ℝ} (A : SmoothAutonomous lam
 
 /-- The actual compact-source potential is globally Borel before any regularity argument. -/
 theorem nestedSourcePotential_measurable (H : Interval) (E : StripEvolution H) (T : ℝ)
-    (f : exitProbeSubmodule) : Measurable (nestedSourcePotential H E T f) := by
-  exact (measurable_duhamelPotential E.2 (intervalDomain_measurable H) continuous_const T
+    (f : exitProbeSubmodule) : Measurable (nestedSourcePotential H E T f) := (measurable_duhamelPotential E.2 (intervalDomain_measurable H) continuous_const T
     (exitProbePhysical f ∘ sectionTwoPoint)
     ((exitProbePhysical_continuous_compact f).1.measurable.comp
       (continuous_sectionTwoPoint 1).measurable)).comp

@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Green.SlabFourierOccupa
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.FourierKernelsVariation
 import Mathlib.Probability.Kernel.MeasurableIntegral
 import Mathlib.Probability.Kernel.Composition.IntegralCompProd
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Green-measure integral calculus on the slab
@@ -49,11 +50,11 @@ theorem firstMarginal_startingPosition {d : ℕ}
   rw [ProbabilityTheory.Kernel.fst_apply, ProbabilityTheory.Kernel.fst_apply, ← hmt,
     Measure.map_map measurable_fst (measurable_evolutionAmbientStateShift z)]
   rfl
+section
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (σ₀ : ℝ) (μ : Measure (EvolutionState Ω γ σ₀)) [IsFiniteMeasure μ]
 
 /-- A Green measure is the explicit kernel-product measure. -/
-theorem green_eq_compProd {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (K : MovingFiberKernel Ω γ) (σ₀ : ℝ) (μ : Measure (EvolutionState Ω γ σ₀))
-    [IsFiniteMeasure μ] (Γ : Measure (ElapsedTime ⊤ × EvolutionAmbientState d))
+theorem green_eq_compProd  (Γ : Measure (ElapsedTime ⊤ × EvolutionAmbientState d))
     (hΓ : IsGreenMeasure K σ₀ ⊤ μ Γ) :
     Γ = (((μ.prod (elapsedVolume ⊤)).compProd (elapsedKernel K σ₀ ⊤)).map
       (fun q => (q.1.2, q.2))) :=
@@ -61,9 +62,7 @@ theorem green_eq_compProd {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec
 
 
 /-- A bounded Borel function supported in the slab is integrable against a Green measure. -/
-theorem integrable_green_slab {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (K : MovingFiberKernel Ω γ) (σ₀ : ℝ) (μ : Measure (EvolutionState Ω γ σ₀))
-    [IsFiniteMeasure μ] (Γ : Measure (GreenCarrier d)) (hΓ : IsGreenMeasure K σ₀ ⊤ μ Γ)
+theorem integrable_green_slab  (Γ : Measure (GreenCarrier d)) (hΓ : IsGreenMeasure K σ₀ ⊤ μ Γ)
     {T : ℝ} (hT : 0 < T) (f : GreenCarrier d → ℂ) (hf : Measurable f)
     (hfb : ∀ p, ‖f p‖ ≤ 1) (hsupp : ∀ p, p ∉ slabSet T → f p = 0) : Integrable f Γ := by
   have hfin : Γ (slabSet (d := d) T) < ⊤ :=
@@ -79,9 +78,7 @@ theorem integrable_green_slab {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE
 
 /-- **Green integral calculus.**  For bounded complex Borel `f` supported in the slab,
 `∫ f dΓ = ∫_τ ∫_μ ∫_{master (σ₀ → σ₀ + τ)} f(τ, ·)`. -/
-theorem green_integral {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (K : MovingFiberKernel Ω γ) (σ₀ : ℝ) (μ : Measure (EvolutionState Ω γ σ₀))
-    [IsFiniteMeasure μ] (Γ : Measure (GreenCarrier d)) (hΓ : IsGreenMeasure K σ₀ ⊤ μ Γ)
+theorem green_integral  (Γ : Measure (GreenCarrier d)) (hΓ : IsGreenMeasure K σ₀ ⊤ μ Γ)
     {T : ℝ} (hT : 0 < T) (f : GreenCarrier d → ℂ) (hf : Measurable f)
     (hfb : ∀ p, ‖f p‖ ≤ 1) (hsupp : ∀ p, p ∉ slabSet T → f p = 0) :
     ∫ p, f p ∂Γ = ∫ τ, (∫ p, (∫ w, f (τ, w) ∂K.master (elapsedQuery σ₀ p τ)) ∂μ)
@@ -137,5 +134,6 @@ theorem green_integral {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
     exact Integrable.mono' hi hGm.aestronglyMeasurable (Filter.Eventually.of_forall hGb)
   rw [integral_prod_symm G hGi]
   rfl
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Green

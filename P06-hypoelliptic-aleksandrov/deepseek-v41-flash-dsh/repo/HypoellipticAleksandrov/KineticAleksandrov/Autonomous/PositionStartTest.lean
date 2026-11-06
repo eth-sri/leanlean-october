@@ -11,13 +11,15 @@ import Mathlib.Tactic
 noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory
+section
+variable (Y r : ℝ) (hr : 0 < r)
 
 /-- A translated cutoff with inner radius three quarters of the cell width. -/
-def positionStartCutoff (Y r : ℝ) (hr : 0 < r) (X : ℝ) : ℝ :=
+def positionStartCutoff  (X : ℝ) : ℝ :=
   reconstructionPositionBump (3 * r ^ 3 / 4) (by positivity) (X - Y)
 
 /-- The position cutoff is smooth and lies between zero and one. -/
-theorem positionStartCutoff_properties (Y r : ℝ) (hr : 0 < r) :
+theorem positionStartCutoff_properties  :
     ContDiff ℝ (⊤ : ℕ∞) (positionStartCutoff Y r hr) ∧
       (∀ X, 0 ≤ positionStartCutoff Y r hr X ∧ positionStartCutoff Y r hr X ≤ 1) :=
   ⟨(reconstructionPositionBump _ _).contDiff.comp (contDiff_id.sub contDiff_const),
@@ -25,7 +27,7 @@ theorem positionStartCutoff_properties (Y r : ℝ) (hr : 0 < r) :
       (reconstructionPositionBump _ _).le_one⟩⟩
 
 /-- It equals one within half a cell width of its centre. -/
-theorem positionStartCutoff_eq_one (Y r : ℝ) (hr : 0 < r) {X : ℝ}
+theorem positionStartCutoff_eq_one  {X : ℝ}
     (ht : |X - Y| ≤ r ^ 3 / 2) : positionStartCutoff Y r hr X = 1 := by
   apply (reconstructionPositionBump _ _).one_of_mem_closedBall
   rw [Metric.mem_closedBall, Real.dist_eq, sub_zero]
@@ -34,7 +36,7 @@ theorem positionStartCutoff_eq_one (Y r : ℝ) (hr : 0 < r) {X : ℝ}
   constructor <;> linarith [pow_pos hr 3, (abs_le.mp ht).1, (abs_le.mp ht).2]
 
 /-- Its nonzero support is confined to an interval of length three r cubed. -/
-theorem positionStartCutoff_support (Y r : ℝ) (hr : 0 < r) :
+theorem positionStartCutoff_support  :
     Function.support (positionStartCutoff Y r hr) ⊆
       Ioo (Y - 3 * r ^ 3 / 2) (Y + 3 * r ^ 3 / 2) := by
   intro X ht
@@ -44,6 +46,7 @@ theorem positionStartCutoff_support (Y r : ℝ) (hr : 0 < r) :
   change |X - Y| < 2 * (3 * r ^ 3 / 4) at hb
   obtain ⟨hl, hu⟩ := abs_lt.mp hb
   constructor <;> linarith
+end
 
 /-- A single constant controls the derivative of every rescaled position cutoff. -/
 theorem positionStartCutoff_deriv_bound : ∃ D : ℝ, 0 ≤ D ∧

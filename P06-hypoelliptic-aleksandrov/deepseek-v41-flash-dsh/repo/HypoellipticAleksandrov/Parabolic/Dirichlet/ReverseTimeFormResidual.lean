@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSpatialFormBochner
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeSourceBochner
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Reverse-time form residual
@@ -18,29 +19,20 @@ open scoped BigOperators ENNReal RealInnerProductSpace Matrix.Norms.Elementwise 
 noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
+section
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ) (haSmooth : IsSmoothOnNeighborhood
+      (fun z : TimeVelocity d => a z.1 z.2)
+      (scalarParabolicClosedCylinder r₀ r₁ Ω)) (hbSmooth : IsSmoothOnNeighborhood
+      (fun z : TimeVelocity d => b z.1 z.2)
+      (scalarParabolicClosedCylinder r₀ r₁ Ω)) (hcSmooth : IsSmoothOnNeighborhood
+      (fun z : TimeVelocity d => c z.1 z.2)
+      (scalarParabolicClosedCylinder r₀ r₁ Ω)) (F : ℝ → PDE.Vec d → ℝ) (hFSmooth : IsSmoothOnNeighborhood
+      (fun z : TimeVelocity d => F z.1 z.2)
+      (scalarParabolicClosedCylinder r₀ r₁ Ω)) (u : ReverseTimeL2V hΩ (r₁ - r₀))
 
 /-- The reverse-time residual candidate in the Bochner dual carrier. -/
 noncomputable def reverseTimeFormResidual
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
-    (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
-    (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (c : ℝ → PDE.Vec d → ℝ)
-    (haSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hbSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hcSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => c z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (F : ℝ → PDE.Vec d → ℝ)
-    (hFSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (u : ReverseTimeL2V hΩ (r₁ - r₀)) :
+     :
     ReverseTimeL2VStar hΩ (r₁ - r₀) :=
   reverseTimeNegativeSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth -
     reverseTimeSpatialFormBochnerAction r₀ r₁ h₀₁ hΩ hΩbounded a b c
@@ -49,26 +41,7 @@ noncomputable def reverseTimeFormResidual
 /-- On one event, the residual plus the literal spatial form is the
 negative reverse-time source functional, simultaneously for all spatial tests. -/
 theorem ae_reverseTimeFormResidual_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
-    (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
-    (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (c : ℝ → PDE.Vec d → ℝ)
-    (haSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hbSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hcSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => c z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (F : ℝ → PDE.Vec d → ℝ)
-    (hFSmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (u : ReverseTimeL2V hΩ (r₁ - r₀)) :
+     :
     ∀ᵐ τ ∂reverseTimeVolume (r₁ - r₀),
       ∀ hτ : τ ∈ Set.Ioo 0 (r₁ - r₀),
         ∀ v : H10HilbertGraph hΩ,
@@ -92,5 +65,6 @@ theorem ae_reverseTimeFormResidual_apply
   rw [reverseTimeFormResidual, hSub, Pi.sub_apply, ContinuousLinearMap.sub_apply,
     hSource hτ, hAction v]
   abel
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

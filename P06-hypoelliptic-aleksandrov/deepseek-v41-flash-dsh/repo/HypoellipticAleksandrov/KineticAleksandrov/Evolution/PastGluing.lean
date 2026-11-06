@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.PastGluingFinite
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.PastGluingLocality
 import Mathlib.Tactic.Linarith
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Gluing finite-past viscous terminal solutions
 
@@ -21,7 +22,7 @@ def pastGluedFunction {n : ℕ} (τ : ℝ) (u : ℝ → KineticPoint n → ℝ)
     (p : KineticPoint n) : ℝ := u (min (p.time - 1) (τ - 1)) p
 
 section Family
-variable {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
+variable {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n} (hΩ : IsOpen Ω)
 variable {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {lam Lam : ℝ} (hlam : 0 < lam)
 variable {B : FullKineticCoefficient n} (hB : HasEverywhereLoewnerBounds lam Lam B)
 variable {Lb : ℝ} {b : PDE.Vec n → PDE.Vec n} (hb : HasEuclideanLipschitzDrift Lb b)
@@ -113,7 +114,7 @@ end Family
 /-- The PastGluing step consumes actual uniformly bounded solutions on every finite slab.
 It does not assert that the exhaustion construction supplying those solutions is complete. -/
 theorem exists_viscous_terminalSolution_of_finiteSlabs {n : ℕ}
-    {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω) {γ : ℝ → PDE.Vec n} (hγ : Continuous γ)
+    {Ω : HypoellipticAleksandrov.VecSet n} (hΩ : IsOpen Ω) {γ : ℝ → PDE.Vec n} (hγ : Continuous γ)
     {lam Lam : ℝ} (hlam : 0 < lam) {B : FullKineticCoefficient n}
     (hB : HasEverywhereLoewnerBounds lam Lam B) {Lb : ℝ}
     {b : PDE.Vec n → PDE.Vec n} (hb : HasEuclideanLipschitzDrift Lb b)

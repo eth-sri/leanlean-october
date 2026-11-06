@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.FiniteOrderSobolevC12Representative
 public import HypoellipticAleksandrov.Parabolic.LocalHolder.ReplacementApproxWeakLimit
 public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.LocalizedKrylovRegularity
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Classical regularity of a continuous higher-weak-derivative limit
 
@@ -18,7 +19,7 @@ open scoped Topology
 
 /-- Scalar anisotropic classical regularity is local on its carrier. -/
 theorem scalarC12On_of_locally_scalarC12On {d : ℕ}
-    {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
+    {U : HypoellipticAleksandrov.Parabolic.TVSet d} {u : TimeVelocity d → ℝ}
     (hlocal : ∀ z ∈ U, ∃ V, IsOpen V ∧ z ∈ V ∧ IsScalarC12On u V) :
     IsScalarC12On u U := by
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_⟩
@@ -47,7 +48,7 @@ theorem scalarC12On_of_locally_scalarC12On {d : ℕ}
 
 /-- A continuous function carrying the actual higher weak family is classical on its carrier. -/
 theorem scalarC12On_of_continuousOn_higher_weak_family {d : ℕ}
-    {U : Set (TimeVelocity d)} (hU : IsOpen U)
+    {U : HypoellipticAleksandrov.Parabolic.TVSet d} (hU : IsOpen U)
     {u : TimeVelocity d → ℝ} (hu : ContinuousOn u U)
     (D : ParabolicWeakDerivativeFamily d (2 * (d + 4)) U u) :
     IsScalarC12On u U := by
@@ -56,7 +57,7 @@ theorem scalarC12On_of_continuousOn_higher_weak_family {d : ℕ}
   obtain ⟨rho, hrho, v, hsub, hv, hv12, hvae, hjet⟩ :=
     exists_finiteOrderSobolevC12Representative hU (isCompact_singleton (x := z))
       (singleton_subset_iff.mpr hz) D
-  let V := Metric.thickening rho ({z} : Set (TimeVelocity d))
+  let V := Metric.thickening rho ({z} : HypoellipticAleksandrov.Parabolic.TVSet d)
   have hV : IsOpen V := Metric.isOpen_thickening
   have heq : EqOn v u V := Measure.eqOn_open_of_ae_eq hvae hV
     hv.continuous.continuousOn (hu.mono hsub)

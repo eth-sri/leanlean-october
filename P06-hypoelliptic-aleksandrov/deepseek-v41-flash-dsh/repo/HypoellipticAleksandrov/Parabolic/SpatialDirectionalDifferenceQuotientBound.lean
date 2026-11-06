@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.SpatialDifferenceQuotient
 public import Mathlib.Analysis.Calculus.Deriv.MeanValue
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Directed spatial difference-quotient bounds

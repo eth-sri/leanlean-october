@@ -6,6 +6,7 @@ public import Mathlib.Analysis.Matrix.Order
 public import Mathlib.Analysis.MeanInequalities
 public import Mathlib.MeasureTheory.Function.L2Space
 public import Mathlib.Tactic.Ring
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Bounds for the reverse-time spatial form
@@ -23,11 +24,13 @@ open scoped BigOperators ENNReal RealInnerProductSpace Matrix.Norms.Elementwise 
 noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
+section
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
 
 private theorem norm_hilbertVectorLpCoord_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (i : Fin d)
-    (G : PDE.HilbertVectorLp Ω (2 : ℝ≥0∞)) :
-    ‖PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i G‖ ≤ ‖G‖ := by
+     (i : Fin d)
+    (G : PDE.HilbertVectorLp Ω 2) :
+    ‖PDE.hilbertVectorLpCoord Ω 2 i G‖ ≤ ‖G‖ := by
   rw [PDE.hilbertVectorLpCoord]
   calc
     ‖(PiLp.proj (𝕜 := ℝ) 2 (fun _ : Fin d => ℝ) i).compLpL
@@ -43,7 +46,7 @@ private theorem norm_hilbertVectorLpCoord_le
     _ = ‖G‖ := one_mul _
 
 private theorem abs_principal_multiplierInner_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (q : PDE.Vec d → ℝ)
     (hq : AEStronglyMeasurable q (PDE.volumeOn Ω))
     (C : ℝ) (hC : 0 ≤ C)
@@ -59,7 +62,7 @@ private theorem abs_principal_multiplierInner_le
         (norm_scalarL2Multiplier_apply_le q hq C hC hqBound f) (norm_nonneg _)
 
 private theorem abs_drift_multiplierInner_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (q : PDE.Vec d → ℝ)
     (hq : AEStronglyMeasurable q (PDE.volumeOn Ω))
     (C : ℝ) (hC : 0 ≤ C)
@@ -71,7 +74,7 @@ private theorem abs_drift_multiplierInner_le
 /-- Explicit slice multiplier evidence makes the reverse-time spatial form
 bounded on the spatial `H¹₀` Hilbert graph. -/
 theorem reverseTimeSpatialForm_bounded_of_sliceMultiplierBounds
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (r₀ r₁ : ℝ) (hΩ : IsOpen Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c : ℝ → PDE.Vec d → ℝ)
@@ -283,7 +286,7 @@ theorem reverseTimeSpatialForm_bounded_of_sliceMultiplierBounds
       ring
 
 private theorem principal_lower_of_loewner
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (r₀ r₁ lam τ : ℝ) (hΩ : IsOpen Ω)
     (a : CoefficientField d) (u : H10HilbertGraph hΩ)
     (Ca : Fin d → Fin d → ℝ) (hCa : ∀ i j, 0 ≤ Ca i j)
@@ -387,7 +390,7 @@ private theorem principal_lower_of_loewner
       ring
 
 private theorem drift_lower_of_sliceMultiplierBounds
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (hΩ : IsOpen Ω) (r₁ τ : ℝ) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
     (Cd : Fin d → ℝ) (hCd : ∀ j, 0 ≤ Cd j)
@@ -444,7 +447,7 @@ private theorem drift_lower_of_sliceMultiplierBounds
   exact (neg_le_neg habs).trans (neg_abs_le B)
 
 private theorem scalar_multiplierInner_nonpos_of_nonpos
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (r₀ r₁ τ : ℝ) (hΩ : IsOpen Ω) (c : ℝ → PDE.Vec d → ℝ)
     (Cc : ℝ) (hCc : 0 ≤ Cc)
     (hScalarMeas : AEStronglyMeasurable
@@ -492,6 +495,7 @@ private theorem scalar_multiplierInner_nonpos_of_nonpos
           simp only [RCLike.inner_apply, conj_trivial]
           ring
     _ ≤ 0 := hnonpos
+end
 
 private theorem garding_young
     (lam D G U : ℝ) (hlam : 0 < lam) :
@@ -503,7 +507,7 @@ private theorem garding_young
 /-- Explicit slice multiplier evidence and a local Loewner lower bound give a
 uniform reverse-time spatial Gårding estimate. -/
 theorem reverseTimeSpatialForm_garding_of_sliceMultiplierBounds
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ lam : ℝ) (hlam : 0 < lam) (hΩ : IsOpen Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c : ℝ → PDE.Vec d → ℝ)
@@ -557,7 +561,7 @@ theorem reverseTimeSpatialForm_garding_of_sliceMultiplierBounds
   linarith
 
 private theorem continuousOn_reverseTimeCoefficientEntry_slice_of_smoothOnNeighborhood
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ τ : ℝ) (a : CoefficientField d) (i j : Fin d)
     (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -582,7 +586,7 @@ private theorem continuousOn_reverseTimeCoefficientEntry_slice_of_smoothOnNeighb
     (Continuous.prodMk_right _).continuousOn hmap
 
 private theorem continuousOn_reverseTimeDivergenceDriftEntry_slice_of_smoothOnNeighborhood
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ τ : ℝ) (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (j : Fin d)
     (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
@@ -621,7 +625,7 @@ private theorem continuousOn_reverseTimeDivergenceDriftEntry_slice_of_smoothOnNe
 /-- Smooth coefficients on a bounded closed cylinder give a bounded reverse-time
 spatial form. -/
 theorem reverseTimeSpatialForm_bounded_of_smoothOnNeighborhood
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c : ℝ → PDE.Vec d → ℝ)
@@ -703,7 +707,7 @@ theorem reverseTimeSpatialForm_bounded_of_smoothOnNeighborhood
 /-- Smooth coefficients on a bounded closed cylinder and a local lower
 Loewner bound give a reverse-time spatial Gårding estimate. -/
 theorem reverseTimeSpatialForm_garding_of_smoothOnNeighborhood
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d}
     (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)

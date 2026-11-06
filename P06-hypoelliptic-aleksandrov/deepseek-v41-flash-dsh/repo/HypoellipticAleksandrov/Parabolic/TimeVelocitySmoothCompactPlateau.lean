@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.Geometry
 public import Mathlib.Geometry.Manifold.SmoothApprox
 public import Mathlib.Topology.UrysohnsLemma
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Smooth compact plateaus in time--velocity space
@@ -21,7 +22,7 @@ namespace HypoellipticAleksandrov.Parabolic
 /-- A compact subset of an open time--velocity carrier has a smooth compact
 plateau on a positive closed metric thickening. -/
 theorem exists_contDiff_one_on_cthickening_tsupport_subset
-    {d : ℕ} {U K : Set (TimeVelocity d)}
+    {d : ℕ} {U K : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hU : IsOpen U) (hK : IsCompact K) (hKU : K ⊆ U) :
     ∃ δ : ℝ, 0 < δ ∧
       ∃ b : TimeVelocity d → ℝ,
@@ -31,7 +32,7 @@ theorem exists_contDiff_one_on_cthickening_tsupport_subset
           Set.EqOn b 1 (Metric.cthickening δ K) := by
   obtain ⟨r, hr, hrU⟩ := hK.exists_cthickening_subset_open hU hKU
   let δ : ℝ := r / 4
-  let L : Set (TimeVelocity d) := Metric.cthickening (r / 2) K
+  let L : HypoellipticAleksandrov.Parabolic.TVSet d := Metric.cthickening (r / 2) K
   have hδ : 0 < δ := by
     dsimp [δ]
     positivity
@@ -41,8 +42,8 @@ theorem exists_contDiff_one_on_cthickening_tsupport_subset
     exact (Metric.cthickening_mono (by linarith) K).trans hrU
   obtain ⟨f, hf_one, hf_compact, hfU, _⟩ :=
     exists_continuousMap_one_of_isCompact_subset_isOpen hL_compact hU hLU
-  let S : Set (TimeVelocity d) := Metric.cthickening δ K
-  let N : Set (TimeVelocity d) := Metric.thickening δ S
+  let S : HypoellipticAleksandrov.Parabolic.TVSet d := Metric.cthickening δ K
+  let N : HypoellipticAleksandrov.Parabolic.TVSet d := Metric.thickening δ S
   have hNS : N ∈ 𝓝ˢ S := by
     exact Metric.thickening_mem_nhdsSet S hδ
   have hNL : N ⊆ L := by

@@ -145,7 +145,7 @@ theorem reconstruction_green_le_profile
   have hgc (n : ℕ) : HasCompactSupport (g n) :=
     ((hχ n).2.1.comp_homeomorph (KineticPoint.homeomorphProd 1)).mul_right
   have hgs (n : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (rawLift (g n)) :=
-    (hχ n).1.mul (hk.comp ((contDiff_apply ℝ ℝ (0 : Fin 1)).comp contDiff_snd.fst))
+    (hχ n).1.mul (hk.comp ((contDiff_apply ℝ ℝ 0).comp contDiff_snd.fst))
   have hgcont (n : ℕ) : Continuous (g n) :=
     ((hχ n).1.continuous.comp (KineticPoint.homeomorphProd 1).continuous).mul
       (reconstructionProfile_continuous hk.continuous)

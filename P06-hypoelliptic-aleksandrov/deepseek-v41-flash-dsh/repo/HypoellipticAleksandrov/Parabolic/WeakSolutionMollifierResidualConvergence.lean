@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.WeakEquationMollificationResidualDecay
 public import HypoellipticAleksandrov.Parabolic.WeakSolutionMollifierConvergence
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Aligned residual-bearing weak-solution mollifications
@@ -26,7 +27,7 @@ namespace LocalizedParabolicJet
 pointwise mollified residual equation on its compact carrier. -/
 theorem eventually_residual_equation_on
     {d : Nat} {A Aext : CoefficientField d}
-    {U K : Set (TimeVelocity d)} {u : TimeVelocity d → Real}
+    {U K : HypoellipticAleksandrov.Parabolic.TVSet d} {u : TimeVelocity d → Real}
     (J : LocalizedParabolicJet d U K u)
     (hExtAE : coefficientAt Aext =ᵐ[timeVelocityVolumeOn U] coefficientAt A)
     (hWeak : IsWeakParabolicEquationLoc A U (parabolicExponent d) u) :
@@ -77,7 +78,7 @@ approximation properties on the same compact carrier. -/
 theorem exists_localizedJet_eventually_nonnegative_residual_mollifications_tendsto
     (d : Nat) (hd : 1 ≤ d) (lam Lam : Real)
     (A Aext : CoefficientField d)
-    (U K : Set (TimeVelocity d))
+    (U K : HypoellipticAleksandrov.Parabolic.TVSet d)
     (u q : TimeVelocity d → Real)
     (hU : IsOpen U) (hK : IsCompact K) (hKU : K ⊆ U)
     (hExtAE : coefficientAt Aext =ᵐ[timeVelocityVolumeOn U] coefficientAt A)

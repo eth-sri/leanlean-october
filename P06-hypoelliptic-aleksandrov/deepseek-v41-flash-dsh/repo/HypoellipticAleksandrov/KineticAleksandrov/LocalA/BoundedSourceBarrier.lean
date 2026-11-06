@@ -17,20 +17,22 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open HypoellipticAleksandrov Parabolic Set Matrix Evolution
 open scoped MatrixOrder
+section
+variable {d : ℕ}
 
 /-- Quadratic source barrier in the diffused coordinate. -/
-def boundedSourceQuadratic {d : ℕ} (c : PDE.Vec d) (R lam : ℝ)
+def boundedSourceQuadratic  (c : PDE.Vec d) (R lam : ℝ)
     (p : KineticPoint d) : ℝ :=
   (R ^ 2 - PDE.vecNormSq (p.position - c)) / (2 * (d : ℝ) * lam)
 
 /-- The quadratic barrier is continuous without any sign assumptions on its parameters. -/
-theorem continuous_boundedSourceQuadratic {d : ℕ} (c : PDE.Vec d) (R lam : ℝ) :
+theorem continuous_boundedSourceQuadratic  (c : PDE.Vec d) (R lam : ℝ) :
     Continuous (boundedSourceQuadratic c R lam) :=
   (continuous_const.sub
     ((contDiff_vecNormSq_sub c).continuous.comp continuous_position)).div_const _
 
 /-- Every coordinate slice of the quadratic barrier has the required classical regularity. -/
-theorem isSliceRegularAt_boundedSourceQuadratic {d : ℕ} (c : PDE.Vec d)
+theorem isSliceRegularAt_boundedSourceQuadratic  (c : PDE.Vec d)
     (R lam : ℝ) (p : KineticPoint d) :
     IsSliceRegularAt (boundedSourceQuadratic c R lam) p := by
   unfold boundedSourceQuadratic
@@ -46,7 +48,7 @@ theorem isSliceRegularAt_boundedSourceQuadratic {d : ℕ} (c : PDE.Vec d)
     exact contDiffAt_const
 
 /-- Lower Loewner ellipticity controls the trace in the exact dimension normalization. -/
-theorem trace_ge_of_smul_one_le {d : ℕ} {A : PDE.Mat d} {lam : ℝ}
+theorem trace_ge_of_smul_one_le  {A : PDE.Mat d} {lam : ℝ}
     (h : lam • (1 : PDE.Mat d) ≤ A) : (d : ℝ) * lam ≤ A.trace := by
   have htrace := (Matrix.le_iff.mp h).trace_nonneg
   rw [Matrix.trace_sub, Matrix.trace_smul, Matrix.trace_one] at htrace
@@ -54,7 +56,7 @@ theorem trace_ge_of_smul_one_le {d : ℕ} {A : PDE.Mat d} {lam : ℝ}
   linarith
 
 /-- The unregularized kinetic operator of the quadratic barrier. -/
-theorem viscousTransportedOperator_boundedSourceQuadratic {d : ℕ}
+theorem viscousTransportedOperator_boundedSourceQuadratic 
     (B : FullKineticCoefficient d) (b : PDE.Vec d → PDE.Vec d)
     (c : PDE.Vec d) (R lam : ℝ) (p : KineticPoint d) :
     viscousTransportedOperator B b 0 (boundedSourceQuadratic c R lam) p =
@@ -94,7 +96,7 @@ theorem viscousTransportedOperator_boundedSourceQuadratic {d : ℕ}
     Finset.sum_const_zero, zero_add, add_zero, zero_mul]
 
 /-- Positive dimension and lower ellipticity make the quadratic a source-one supersolution. -/
-theorem viscousTransportedOperator_boundedSourceQuadratic_le {d : ℕ}
+theorem viscousTransportedOperator_boundedSourceQuadratic_le 
     (hd : 0 < d) {lam Lam : ℝ} (hlam : 0 < lam)
     (B : FullKineticCoefficient d) (hell : HasEverywhereLoewnerBounds lam Lam B)
     (b : PDE.Vec d → PDE.Vec d) (c : PDE.Vec d) (R : ℝ) (p : KineticPoint d) :
@@ -106,7 +108,7 @@ theorem viscousTransportedOperator_boundedSourceQuadratic_le {d : ℕ}
   nlinarith only [htr]
 
 /-- Smoothness in transported coordinates implies slice regularity of the literal potential. -/
-theorem boundedSource_sliceRegular_of_smooth {d : ℕ} (u : KineticPoint d → ℝ)
+theorem boundedSource_sliceRegular_of_smooth  (u : KineticPoint d → ℝ)
     (p : KineticPoint d)
     (hu : ContDiffAt ℝ (⊤ : ℕ∞) (u ∘ evolutionHomeomorph d)
       ((evolutionHomeomorph d).symm p)) : IsSliceRegularAt u p := by
@@ -121,7 +123,7 @@ theorem boundedSource_sliceRegular_of_smooth {d : ℕ} (u : KineticPoint d → �
   exact h.of_le (WithTop.coe_le_coe.mpr (le_top : (2 : ℕ∞) ≤ ⊤))
 
 /-- The quadratic barrier is nonnegative on the closed ball in the actual Euclidean geometry. -/
-theorem boundedSourceQuadratic_nonneg {d : ℕ} {lam : ℝ}
+theorem boundedSourceQuadratic_nonneg  {lam : ℝ}
     (hlam : 0 < lam) (c : PDE.Vec d) (R : ℝ) (p : KineticPoint d)
     (hp : p.position ∈ closure (PDE.euclideanBall c R)) :
     0 ≤ boundedSourceQuadratic c R lam p := by
@@ -134,5 +136,6 @@ theorem boundedSourceQuadratic_nonneg {d : ℕ} {lam : ℝ}
     · exact isClosed_le (contDiff_vecNormSq_sub c).continuous continuous_const
   exact div_nonneg (sub_nonneg.mpr (hs hp))
     (mul_nonneg (mul_nonneg (by norm_num) (Nat.cast_nonneg d)) hlam.le)
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

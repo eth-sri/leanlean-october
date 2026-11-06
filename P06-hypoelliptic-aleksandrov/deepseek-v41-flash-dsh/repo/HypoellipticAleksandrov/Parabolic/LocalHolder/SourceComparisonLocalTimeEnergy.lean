@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.HarnackUnitCylinder.TimeWeakDerivative
 import Mathlib.Analysis.Calculus.Deriv.Pow
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-! # Local value energy for anisotropic classical solutions
 
@@ -16,7 +17,7 @@ open MeasureTheory Set
 
 /-- Squaring a classical scalar solution gives its literal weak time derivative. -/
 theorem hasWeakTimeDerivOn_square_of_scalarC12 {d : ℕ}
-    {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
+    {U : HypoellipticAleksandrov.Parabolic.TVSet d} {u : TimeVelocity d → ℝ}
     (hu : IsScalarC12On u U) :
     HasWeakTimeDerivOn U (fun z => u z ^ 2)
       (fun z => 2 * u z * scalarTimeDerivative u z) := by
@@ -39,7 +40,7 @@ theorem hasWeakTimeDerivOn_square_of_scalarC12 {d : ℕ}
 
 /-- The local quadratic time-energy identity holds against every smooth compact cutoff. -/
 theorem integral_square_mul_timeDerivative_eq {d : ℕ}
-    {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
+    {U : HypoellipticAleksandrov.Parabolic.TVSet d} {u : TimeVelocity d → ℝ}
     (hu : IsScalarC12On u U) (χ : TimeVelocity d → ℝ)
     (hχ : ContDiff ℝ (⊤ : ℕ∞) χ) (hc : HasCompactSupport χ)
     (hsub : tsupport χ ⊆ U) :

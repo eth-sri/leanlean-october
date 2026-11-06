@@ -3,6 +3,7 @@ module
 public import Mathlib.Analysis.Normed.Operator.Extend
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.LocalizedSpatialDifferenceQuotientSmoothCore
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.SmoothH10DenseRange
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Localized spatial quotients on spatial `H¹₀`
@@ -19,12 +20,11 @@ noncomputable section
 open scoped ENNReal
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
+section
+variable {d : ℕ} {Ω inner outer : HypoellipticAleksandrov.VecSet d} {K : ℝ} (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K) (k : Fin d) (h : ℝ)
 
 private theorem exists_localizedSpatialDifferenceQuotientSmoothCore_bound
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (hΩ : IsOpen Ω)
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (k : Fin d) (h : ℝ)
+    
     (hηΩ : tsupport η.toFun ⊆ Ω)
     (hηshift : Set.MapsTo
       (fun y : PDE.Vec d => y + h • PDE.basisVec k)
@@ -44,10 +44,7 @@ the complete zero-boundary Sobolev graph. The forward collar fixes the
 regime in which the advertised core agreement and norm bound hold. -/
 @[nolint unusedArguments]
 noncomputable def localizedSpatialDifferenceQuotientH10CLM
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (hΩ : IsOpen Ω)
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (k : Fin d) (h : ℝ)
+    
     (hηΩ : tsupport η.toFun ⊆ Ω)
     (hηshift : Set.MapsTo
       (fun y : PDE.Vec d => y + h • PDE.basisVec k)
@@ -60,10 +57,7 @@ noncomputable def localizedSpatialDifferenceQuotientH10CLM
 /-- The extended quotient agrees with the literal bounded map on every
 actual bundled smooth test. -/
 theorem localizedSpatialDifferenceQuotientH10CLM_apply_smooth
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (hΩ : IsOpen Ω)
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
+     (φ : PDE.WeakTestFunction Ω)
     (hηΩ : tsupport η.toFun ⊆ Ω)
     (hηshift : Set.MapsTo
       (fun y : PDE.Vec d => y + h • PDE.basisVec k)
@@ -82,10 +76,7 @@ theorem localizedSpatialDifferenceQuotientH10CLM_apply_smooth
 /-- The value component of the extended quotient is exactly the
 quotient-level scalar operator. -/
 theorem valueCLM_comp_localizedSpatialDifferenceQuotientH10CLM
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (hΩ : IsOpen Ω)
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (k : Fin d) (h : ℝ)
+    
     (hηΩ : tsupport η.toFun ⊆ Ω)
     (hηshift : Set.MapsTo
       (fun y : PDE.Vec d => y + h • PDE.basisVec k)
@@ -124,10 +115,7 @@ theorem valueCLM_comp_localizedSpatialDifferenceQuotientH10CLM
 /-- The gradient component of the extended quotient is exactly the
 assembled quotient-level vector operator. -/
 theorem gradientCLM_comp_localizedSpatialDifferenceQuotientH10CLM
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (hΩ : IsOpen Ω)
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (k : Fin d) (h : ℝ)
+    
     (hηΩ : tsupport η.toFun ⊆ Ω)
     (hηshift : Set.MapsTo
       (fun y : PDE.Vec d => y + h • PDE.basisVec k)
@@ -161,5 +149,6 @@ theorem gradientCLM_comp_localizedSpatialDifferenceQuotientH10CLM
         hΩ η k h φ hηΩ hηshift]
       exact gradientCLM_localizedSpatialDifferenceQuotientSmoothCoreLinearMap_apply
         hΩ η k h φ hηΩ hηshift)) x
+end
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

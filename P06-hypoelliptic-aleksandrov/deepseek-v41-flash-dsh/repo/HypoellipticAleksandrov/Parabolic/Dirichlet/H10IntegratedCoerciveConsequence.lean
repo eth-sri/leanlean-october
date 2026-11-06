@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.LocalizedSpatialDifferenceQuotientH10CoerciveConsequence
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.LocalizedSpatialDifferenceQuotientVariationalWeightedEnergy
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Integrated localized H10 coercive consequence
@@ -23,7 +24,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 namespace IsReverseTimeVariationalEnergySolution
 
 private theorem eta_tsupport_subset_chi
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
     (χ : PDE.QuantitativeSmoothCutoff (tsupport η.toFun) Ω Kχ) :
     tsupport η.toFun ⊆ tsupport χ.toFun := by
@@ -34,7 +35,7 @@ private theorem eta_tsupport_subset_chi
   exact one_ne_zero
 
 private def parentFixedSlice
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c F : ℝ → PDE.Vec d → ℝ)
@@ -68,7 +69,7 @@ private def parentFixedSlice
     ζ τ * (ε * ‖Gv‖ ^ 2 + Cε * (1 + ‖u‖ ^ 2))
 
 private theorem integrable_norm_sq_timewise_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} (hΩ : IsOpen Ω) (T : ℝ)
     {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
     (L : H10HilbertGraph hΩ →L[ℝ] E) (u : ReverseTimeL2V hΩ T) :
     Integrable (fun τ => ‖L (u τ)‖ ^ 2) (reverseTimeVolume T) := by
@@ -88,7 +89,7 @@ private theorem integrable_weighted
     (Filter.Eventually.of_forall hζunit)
 
 private theorem integral_energy_term_eq_integral_residual
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {Kη : ℝ}
+    {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {Kη : ℝ}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
@@ -107,7 +108,7 @@ private theorem integral_energy_term_eq_integral_residual
     (hdu : HasGelfandWeakTimeDerivative hΩ (r₁ - r₀) (sub_pos.mpr h₀₁) u g)
     (hu : IsReverseTimeVariationalEnergySolution
       r₀ r₁ h₀₁ hΩ hΩbounded a b c F hF initial u g hdu)
-    {inner : Set (PDE.Vec d)}
+    {inner : HypoellipticAleksandrov.VecSet d}
     (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
     (k : Fin d) (h : ℝ)
     (hηshift : Set.MapsTo (fun y : PDE.Vec d => y + h • PDE.basisVec k)
@@ -174,7 +175,7 @@ private theorem integral_energy_term_eq_integral_residual
 /-- The reducible exact output proposition of the unabsorbed integrated H10
 coercive consequence.  This names a conclusion and is not an assumption package. -/
 abbrev integratedH10CoerciveConsequenceOutput
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
@@ -243,7 +244,7 @@ abbrev integratedH10CoerciveConsequenceOutput
                     ∂reverseTimeVolume (r₁ - r₀)))
 
 private def integratedH10Leaf
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
@@ -309,7 +310,7 @@ private theorem integratedH10Pointwise_fixedTime_scalar
   exact hslice
 
 private theorem ae_integratedH10Pointwise_of_parent
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
@@ -378,7 +379,7 @@ private theorem ae_integratedH10Pointwise_of_parent
 /-- An almost-everywhere nonnegative reverse-time test turns the fixed-slice
 H10 coercive commutator inequality into its unabsorbed variational integral form. -/
 private theorem integratedH10Leaf_proof
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
@@ -498,7 +499,7 @@ in the reverse-time scalar test and all data satisfying the supplied literal
 majorants. -/
 theorem
   exists_uniform_timeTest_integral_h10Commutator_add_coerciveTerm_le_nonprincipalYoung_of_majorants
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    {d : ℕ} {Ω inner : HypoellipticAleksandrov.VecSet d} {Kη Kχ : ℝ}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω)
     (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)

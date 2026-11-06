@@ -54,7 +54,7 @@ theorem fullspace_mass_one {lam Lam : ℝ} (hlam : 0 < lam)
         filter_upwards with x
         rw [Real.norm_of_nonneg (conservationDatum_bounds N x).1]
         exact (conservationDatum_bounds N x).2
-      have hi := integral_mono hint (integrable_const (1 : ℝ))
+      have hi := integral_mono hint (integrable_const 1)
         (fun x => (conservationDatum_bounds N x).2)
       simpa only [integral_const, smul_eq_mul, mul_one, Measure.real] using hi
     rw [huq] at hc
@@ -62,7 +62,7 @@ theorem fullspace_mass_one {lam Lam : ℝ} (hlam : 0 < lam)
   have ht := (tendsto_one_div_add_atTop_nhds_zero_nat.pow 2).mul_const (growthBarrier C τ p)
   have hzero : Tendsto (fun N : ℕ => ((N : ℝ) + 1)⁻¹ ^ 2 * growthBarrier C τ p)
       atTop (𝓝 0) := by
-    simpa only [one_div, zero_pow (by norm_num : (2 : ℕ) ≠ 0), zero_mul] using ht
+    simpa only [one_div, zero_pow (by norm_num : 2 ≠ 0), zero_mul] using ht
   have hle : 1 ≤ (E.2.master q univ).toReal := by
     have hz := ge_of_tendsto hzero (Filter.Eventually.of_forall hbd)
     linarith

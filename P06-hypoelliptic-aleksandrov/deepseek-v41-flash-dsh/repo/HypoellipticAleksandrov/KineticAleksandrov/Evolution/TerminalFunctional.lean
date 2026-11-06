@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TerminalFunctionalProbe
 public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.TerminalPointValueLinear
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # The positive terminal functional on `C_c` of the open fiber
@@ -35,7 +36,7 @@ section EvolutionData
 variable (n : ℕ) (hn : 1 ≤ n) (lam Lam m L_b : ℝ)
 variable (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
 variable (hm : 0 < m) (hmLb : m ≤ L_b)
-variable (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
+variable (Ω : HypoellipticAleksandrov.VecSet n) (γ : ℝ → PDE.Vec n)
 variable (B : FullKineticCoefficient n) (b : PDE.Vec n → PDE.Vec n)
 variable (hΩ : IsAdmissibleEvolutionDomain Ω)
 variable (hγ : IsContinuousPiecewiseC1 γ)
@@ -59,11 +60,13 @@ local notation "S_nonneg" => terminalValue_nonneg n hn lam Lam m L_b hlam hlamLa
   hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
 local notation "S_abs_le" => abs_terminalValue_le n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
   hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
+section
+variable (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ)
 
 /-- The terminal point value depends only on the datum, not on the smoothness proof or the
 presentation of the datum. -/
 theorem terminalValue_congr
-    (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ)
+    
     {F G : BoundedBorel (EvolutionAmbientState n)} (h : F = G)
     (hF : IsSmoothCompactTerminalDatum Ω γ τ F) (hG : IsSmoothCompactTerminalDatum Ω γ τ G) :
     S σ τ hστ p F hF = S σ τ hστ p G hG := by
@@ -71,7 +74,7 @@ theorem terminalValue_congr
   rfl
 
 /-- The terminal point value as a linear functional on smooth compactly supported probes. -/
-def terminalProbeValue (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
+def terminalProbeValue  :
     terminalProbeSubmodule Ω γ τ →ₗ[ℝ] ℝ where
   toFun F := S σ τ hστ p (terminalProbeDatum F) F.2
   map_add' F G := by
@@ -93,7 +96,7 @@ def terminalProbeValue (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω 
 /-- For each source state, the terminal point value extends uniquely to a positive
 linear functional on `C_c` of the open terminal fiber, bounded by the sup norm. -/
 theorem exists_unique_terminalFunctional
-    (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
+     :
     ∃! ℓ : C_c(EvolutionState Ω γ τ, ℝ) →ₚ[ℝ] ℝ,
       (∀ (f : C_c(EvolutionState Ω γ τ, ℝ)) (c : ℝ), 0 ≤ c → (∀ x, |f x| ≤ c) →
         |ℓ f| ≤ c) ∧
@@ -135,7 +138,7 @@ theorem exists_unique_terminalFunctional
 
 /-- The unique positive terminal functional at the source state `p`, chosen from the
 `∃!` statement `exists_unique_terminalFunctional`. -/
-def terminalFunctional (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
+def terminalFunctional  :
     C_c(EvolutionState Ω γ τ, ℝ) →ₚ[ℝ] ℝ :=
   (exists_unique_terminalFunctional n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
     hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p).choose
@@ -143,7 +146,7 @@ def terminalFunctional (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω 
 /-- The chosen functional is sup-norm bounded and reproduces the point value on
 every smooth compactly supported probe. -/
 theorem terminalFunctional_spec
-    (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
+     :
     (∀ (f : C_c(EvolutionState Ω γ τ, ℝ)) (c : ℝ), 0 ≤ c → (∀ x, |f x| ≤ c) →
       |terminalFunctional n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
         hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p f| ≤ c) ∧
@@ -156,6 +159,7 @@ theorem terminalFunctional_spec
             S σ τ hστ p F hF :=
   (exists_unique_terminalFunctional n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
     hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p).choose_spec.1
+end
 
 end EvolutionData
 

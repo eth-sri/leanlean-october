@@ -62,7 +62,7 @@ theorem smooth_coefficient_error_tendsto {d : ℕ}
     apply AEStronglyMeasurable.restrict
     apply Measurable.aestronglyMeasurable
     unfold matrixContraction
-    simp only [Matrix.sub_apply]
+    simp
     apply Finset.measurable_sum
     intro i hi
     apply Finset.measurable_sum
@@ -82,11 +82,11 @@ theorem smooth_coefficient_error_tendsto {d : ℕ}
       rw [norm_mul]
       apply mul_le_mul _ (hH P hP i k) (norm_nonneg _) (by positivity)
       exact (norm_sub_le _ _).trans (by
-        simp only [Real.norm_eq_abs]
+        simp
         dsimp [C]
-        linarith only [h1, h2])
+        linarith)
     unfold matrixContraction
-    simp only [Matrix.sub_apply]
+    simp
     calc
       _ ≤ ∑ i : Fin d, ∑ k : Fin d, ‖(mollifiedMatrix (standardMollifierSequence n) A
           (P.position, P.velocity) i k - A (P.position, P.velocity) i k) *
@@ -95,7 +95,7 @@ theorem smooth_coefficient_error_tendsto {d : ℕ}
       _ ≤ ∑ _i : Fin d, ∑ _k : Fin d, 2 * C * M :=
         Finset.sum_le_sum (fun i _ => Finset.sum_le_sum (fun k _ => hb i k))
       _ = _ := by
-        simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
+        simp
         ring
   · filter_upwards [ae_restrict_of_ae (ae_spatial_lift
       (ae_tendsto_mollifiedMatrix A lam Lam hA hbound))] with P hP
@@ -106,11 +106,11 @@ theorem smooth_coefficient_error_tendsto {d : ℕ}
       have h := ((continuous_apply k).comp (continuous_apply i)).continuousAt.tendsto.comp hP
       change Tendsto (fun n => mollifiedMatrix (standardMollifierSequence n) A
         (P.position, P.velocity) i k) atTop (𝓝 (A (P.position, P.velocity) i k)) at h
-      simpa only [sub_self, zero_mul] using!
+      simpa using!
         (h.sub_const (A (P.position, P.velocity) i k)).mul_const
           (kineticVelocityHessian u P i k)
     have hh := tendsto_finsetSum Finset.univ (fun i _ =>
       tendsto_finsetSum Finset.univ (fun k _ => he i k))
-    simpa only [matrixContraction, Matrix.sub_apply, Finset.sum_const_zero] using! hh
+    simpa using! hh
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

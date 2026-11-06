@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.LinearAlgebra.LoewnerEntryBound
 public import HypoellipticAleksandrov.Parabolic.SpatialPrincipalIntegrationByParts
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Smooth principal coercivity
@@ -24,13 +25,15 @@ def principalCoercivityConstant
     (d : ℕ) (lam Lam M K : ℝ) : ℝ :=
   2 * (d : ℝ) ^ 3 / lam * (M + Lam * K) ^ 2
 
-private theorem contDiffOn_spatialPartial {d n : ℕ} {O : Set (PDE.Vec d)}
+private theorem contDiffOn_spatialPartial {d n : ℕ} {O : HypoellipticAleksandrov.VecSet d}
     (hO : IsOpen O) (i : Fin d) {f : PDE.Vec d → ℝ}
     (hf : ContDiffOn ℝ (n + 1) f O) :
     ContDiffOn ℝ n (spatialPartial i f) O := by
   exact (hf.fderiv_of_isOpen hO (by simp)).clm_apply contDiffOn_const
+section
+variable {d : ℕ}
 
-private theorem spatialSecond_comm {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen O)
+private theorem spatialSecond_comm  {O : HypoellipticAleksandrov.VecSet d} (hO : IsOpen O)
     (q : PDE.Vec d → ℝ) (hq : ContDiffOn ℝ 2 q O)
     (j k : Fin d) {y : PDE.Vec d} (hy : y ∈ O) :
     spatialSecond q j k y = spatialSecond q k j y := by
@@ -54,7 +57,7 @@ private theorem spatialSecond_comm {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen 
   exact hs.eq (PDE.basisVec k) (PDE.basisVec j)
 
 private theorem principal_lower_pointwise
-    {d : ℕ} {lam : ℝ} {O : Set (PDE.Vec d)}
+     {lam : ℝ} {O : HypoellipticAleksandrov.VecSet d}
     (A : PDE.Vec d → PDE.Mat d) (q η : PDE.Vec d → ℝ)
     (hAlower : ∀ y ∈ O, lam • (1 : PDE.Mat d) ≤ A y)
     {y : PDE.Vec d} (hy : y ∈ O) :
@@ -94,7 +97,7 @@ private theorem principal_lower_pointwise
       intro k _
       ring
 
-private theorem contDiff_of_local_compactSupport {d : ℕ} {O : Set (PDE.Vec d)}
+private theorem contDiff_of_local_compactSupport  {O : HypoellipticAleksandrov.VecSet d}
     (hO : IsOpen O) (f : PDE.Vec d → ℝ) (hf : ContDiffOn ℝ 0 f O)
     (hfsupport : tsupport f ⊆ O) : Continuous f := by
   rw [continuous_iff_continuousAt]
@@ -105,7 +108,7 @@ private theorem contDiff_of_local_compactSupport {d : ℕ} {O : Set (PDE.Vec d)}
     exact continuousAt_const.congr_of_eventuallyEq
       (notMem_tsupport_iff_eventuallyEq.mp hnot)
 
-private theorem integrableOn_of_local_compactSupport {d : ℕ} {O : Set (PDE.Vec d)}
+private theorem integrableOn_of_local_compactSupport  {O : HypoellipticAleksandrov.VecSet d}
     (hO : IsOpen O) (f : PDE.Vec d → ℝ) (hf : ContDiffOn ℝ 0 f O)
     (hfcompact : HasCompactSupport f) (hfsupport : tsupport f ⊆ O) :
     IntegrableOn f O :=
@@ -113,7 +116,7 @@ private theorem integrableOn_of_local_compactSupport {d : ℕ} {O : Set (PDE.Vec
     hfcompact |>.integrableOn
 
 private theorem weighted_young
-    {d : ℕ} (hd : 0 < d) {lam B C e H G : ℝ}
+     (hd : 0 < d) {lam B C e H G : ℝ}
     (hlam : 0 < lam) (hB : 0 ≤ B) (hC : 0 < C) (he : 0 ≤ e) :
     B * e * |H| * |G| ≤
       (lam * B / (4 * C * (d : ℝ))) * (e ^ 2 * H ^ 2) +
@@ -173,7 +176,7 @@ private theorem weighted_young
     _ = _ := by ring
 
 private theorem sum_abs_mul_abs_le_jk_k
-    {d : ℕ} (hd : 0 < d) {lam B C e : ℝ}
+     (hd : 0 < d) {lam B C e : ℝ}
     (H : Fin d → Fin d → ℝ) (G : Fin d → ℝ)
     (hlam : 0 < lam) (hB : 0 ≤ B) (hC : 0 < C) (he : 0 ≤ e) :
     B * e * (∑ _i : Fin d, ∑ j, ∑ k, |H j k| * |G k|) ≤
@@ -197,7 +200,7 @@ private theorem sum_abs_mul_abs_le_jk_k
       field_simp
 
 private theorem sum_abs_mul_abs_le_ji_k
-    {d : ℕ} (hd : 0 < d) {lam B C e : ℝ}
+     (hd : 0 < d) {lam B C e : ℝ}
     (H : Fin d → Fin d → ℝ) (G : Fin d → ℝ)
     (hlam : 0 < lam) (hB : 0 ≤ B) (hC : 0 < C) (he : 0 ≤ e) :
     B * e * (∑ i, ∑ j, ∑ k, |H j i| * |G k|) ≤
@@ -222,8 +225,8 @@ private theorem sum_abs_mul_abs_le_ji_k
       field_simp
 
 private theorem remainder_lower_pointwise
-    {d : ℕ} (hd : 0 < d) {lam Lam M K : ℝ}
-    {O : Set (PDE.Vec d)} (hO : IsOpen O)
+     (hd : 0 < d) {lam Lam M K : ℝ}
+    {O : HypoellipticAleksandrov.VecSet d} (hO : IsOpen O)
     (A : PDE.Vec d → PDE.Mat d) (q η : PDE.Vec d → ℝ)
     (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hAlower : ∀ y ∈ O, lam • (1 : PDE.Mat d) ≤ A y)
@@ -402,8 +405,8 @@ private theorem remainder_lower_pointwise
   linarith
 
 private theorem principal_remainder_lower_pointwise_on_support
-    {d : ℕ} (lam Lam M K : ℝ)
-    (O : Set (PDE.Vec d)) (hO : IsOpen O)
+     (lam Lam M K : ℝ)
+    (O : HypoellipticAleksandrov.VecSet d) (hO : IsOpen O)
     (A : PDE.Vec d → PDE.Mat d) (q η : PDE.Vec d → ℝ)
     (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (_hA : ∀ i j : Fin d, ContDiffOn ℝ 1 (fun y => A y i j) O)
@@ -494,7 +497,7 @@ private theorem principal_remainder_lower_pointwise_on_support
     simp
 
 private theorem integrableOn_weighted_spatialSecond_sq
-    {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen O)
+     {O : HypoellipticAleksandrov.VecSet d} (hO : IsOpen O)
     (q η : PDE.Vec d → ℝ) (hq : ContDiffOn ℝ 3 q O)
     (hη : ContDiff ℝ (⊤ : ℕ∞) η) (hηcompact : HasCompactSupport η)
     (hηsupport : tsupport η ⊆ O) :
@@ -517,7 +520,7 @@ private theorem integrableOn_weighted_spatialSecond_sq
     hcompact2.mul_right (tsupport_mul_subset_left.trans hsupport2)
 
 private theorem integrableOn_spatialPartial_sq_tsupport
-    {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen O)
+     {O : HypoellipticAleksandrov.VecSet d} (hO : IsOpen O)
     (q η : PDE.Vec d → ℝ) (hq : ContDiffOn ℝ 3 q O)
     (hηcompact : HasCompactSupport η) (hηsupport : tsupport η ⊆ O) :
     IntegrableOn (fun y => ∑ k, spatialPartial k q y ^ 2) (tsupport η) := by
@@ -529,7 +532,7 @@ private theorem integrableOn_spatialPartial_sq_tsupport
   exact (hsum.continuousOn.mono hηsupport).integrableOn_compact hηcompact
 
 private theorem integrableOn_principal_remainder_identity_side
-    {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen O)
+     {O : HypoellipticAleksandrov.VecSet d} (hO : IsOpen O)
     (A : PDE.Vec d → PDE.Mat d) (q η : PDE.Vec d → ℝ)
     (hA : ∀ i j : Fin d, ContDiffOn ℝ 1 (fun y => A y i j) O)
     (hq : ContDiffOn ℝ 3 q O)
@@ -616,8 +619,8 @@ private theorem integrableOn_principal_remainder_identity_side
 /-- Quantitative fixed-time coercivity of the negative localized principal
 pairing, modulo the gradient remainder on the cutoff's topological support. -/
 theorem smoothPrincipalIntegrationByParts_coercive
-    {d : ℕ} (lam Lam M K : ℝ)
-    (O : Set (PDE.Vec d)) (hO : IsOpen O)
+     (lam Lam M K : ℝ)
+    (O : HypoellipticAleksandrov.VecSet d) (hO : IsOpen O)
     (A : PDE.Vec d → PDE.Mat d) (q η : PDE.Vec d → ℝ)
     (hlam : 0 < lam) (hlamLam : lam ≤ Lam)
     (hA : ∀ i j : Fin d, ContDiffOn ℝ 1 (fun y => A y i j) O)
@@ -788,3 +791,4 @@ theorem smoothPrincipalIntegrationByParts_coercive
     linarith
   rw [hnegIdentity, ← hrightIntegral]
   exact hmono
+end

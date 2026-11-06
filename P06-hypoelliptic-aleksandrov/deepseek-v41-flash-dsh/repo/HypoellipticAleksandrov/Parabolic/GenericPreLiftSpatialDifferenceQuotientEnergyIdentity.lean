@@ -11,6 +11,7 @@ public import HypoellipticAleksandrov.Parabolic.TimeVelocitySmoothCompactPlateau
 public import HypoellipticAleksandrov.Parabolic.WeakDerivativesCompactGlobalization
 public import HypoellipticAleksandrov.Parabolic.WeakDerivativeSpacetimeMollification
 public import HypoellipticAleksandrov.Parabolic.WeakJetProduct
+public import HypoellipticAleksandrov.Parabolic.TypeAbbrev
 
 /-!
 # Quotient-test energy identity
@@ -31,23 +32,25 @@ open MeasureTheory Set
 open scoped Convolution ENNReal Pointwise Topology
 open HypoellipticAleksandrov.Parabolic.SpacetimeMollifier
 open SpacetimeMollifierWeightedTimeEnergy
+section
+variable {d : ℕ} {f : TimeVelocity d → ℝ}
 
 private theorem velocityGradient_contDiff_infty
-    {d : ℕ} {f : TimeVelocity d → ℝ} {i : Fin d}
+     {i : Fin d}
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
     ContDiff ℝ (⊤ : ℕ∞) (fun z ↦ velocityGradient f z i) := by
   unfold velocityGradient
   exact (contDiff_infty_iff_fderiv.mp hf).2.clm_apply contDiff_const
 
 private theorem velocityGradient_compact
-    {d : ℕ} {f : TimeVelocity d → ℝ} {i : Fin d}
+     {i : Fin d}
     (hf : HasCompactSupport f) :
     HasCompactSupport (fun z ↦ velocityGradient f z i) := by
   unfold velocityGradient
   simpa using hf.fderiv_apply (𝕜 := ℝ) ((0, Pi.single i 1) : TimeVelocity d)
 
 private theorem velocityGradient_tsupport_subset
-    {d : ℕ} {f : TimeVelocity d → ℝ} {i : Fin d} :
+     {i : Fin d} :
     tsupport (fun z ↦ velocityGradient f z i) ⊆ tsupport f := by
   unfold velocityGradient
   change closure (Function.support (fun z ↦
@@ -60,7 +63,7 @@ private theorem velocityGradient_tsupport_subset
   simp [hzero]
 
 private theorem timeDerivative_tsupport_subset
-    {d : ℕ} {f : TimeVelocity d → ℝ} :
+     :
     tsupport (timeDerivative f) ⊆ tsupport f := by
   unfold timeDerivative
   change closure (Function.support (fun z ↦
@@ -71,6 +74,7 @@ private theorem timeDerivative_tsupport_subset
   intro hzero
   apply hz
   simp [hzero]
+end
 
 /-- Time differentiation commutes exactly with a spatial difference quotient. -/
 private theorem timeDerivative_spatialDifferenceQuotient
@@ -123,7 +127,7 @@ private theorem velocityGradient_spatialDifferenceQuotient
 /-- A selected velocity derivative of a backward quotient transposes from a
 smooth compact test to the forward quotient of an `L²` factor. -/
 private theorem setIntegral_mul_velocityGradient_spatialDifferenceQuotient_neg
-    {d : ℕ} {S C V : Set (TimeVelocity d)}
+    {d : ℕ} {S C V : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hSmeas : MeasurableSet S) (hCcompact : IsCompact C)
     (hCS : C ⊆ S) (hVC : V ⊆ C)
     (H : TimeVelocity d → ℝ) (hH : ParabolicMemLpOn C 2 H)
@@ -179,7 +183,7 @@ private theorem setIntegral_mul_velocityGradient_spatialDifferenceQuotient_neg
 compact test to the forward quotient of the rough factor, with the latter
 pairing restricted to its shift-safe carrier. -/
 private theorem setIntegral_mul_timeDerivative_spatialDifferenceQuotient_neg
-    {d : ℕ} {S V : Set (TimeVelocity d)}
+    {d : ℕ} {S V : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hSmeas : MeasurableSet S) (hVS : V ⊆ S)
     (q : TimeVelocity d → ℝ) (hq : ParabolicMemLpOn S 2 q)
     (k : Fin d) (h : ℝ) (f : TimeVelocity d → ℝ)
@@ -237,7 +241,7 @@ private theorem tsupport_spacetimeMollification_subset_cthickening
 /-- A local `L²` representative can be globalized without changing the
 weighted time-energy pairing near the support of the smooth weight. -/
 private theorem tendsto_localized_timeEnergy_spacetimeMollification
-    {d : ℕ} {V : Set (TimeVelocity d)}
+    {d : ℕ} {V : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hVopen : IsOpen V)
     (qh w : TimeVelocity d → ℝ) (hqh : ParabolicMemLpOn V 2 qh)
     (hwSmooth : ContDiff ℝ (⊤ : ℕ∞) w)
@@ -307,7 +311,7 @@ private theorem tendsto_localized_timeEnergy_spacetimeMollification
     calc
       (∫ z : TimeVelocity d, Q z * D z) = ∫ z in V, Q z * D z := by
         have ht := setIntegral_eq_of_subset_of_forall_diff_eq_zero
-          (μ := (volume : Measure (TimeVelocity d))) MeasurableSet.univ
+          (μ := (HypoellipticAleksandrov.Parabolic.TVVolume d)) MeasurableSet.univ
           (subset_univ V) (f := fun z ↦ Q z * D z) (fun z hz ↦ by
             by_cases hzD : D z = 0
             · simp [hzD]
@@ -328,7 +332,7 @@ private theorem tendsto_localized_timeEnergy_spacetimeMollification
     rw [hwtQsq]
     congr 1
     have ht := setIntegral_eq_of_subset_of_forall_diff_eq_zero
-      (μ := (volume : Measure (TimeVelocity d))) MeasurableSet.univ
+      (μ := (HypoellipticAleksandrov.Parabolic.TVVolume d)) MeasurableSet.univ
       (subset_univ V) (f := fun z ↦ timeDerivative w z * qh z ^ 2) (fun z hz ↦ by
         have hwtz : timeDerivative w z = 0 :=
           image_eq_zero_of_notMem_tsupport
@@ -342,7 +346,7 @@ private theorem tendsto_localized_timeEnergy_spacetimeMollification
 /-- The localized quotient test and all its selected spatial derivatives have
 global `L²` representatives and ambient weak-derivative relations. -/
 private theorem exists_global_localizedQuotient_weakGradient
-    {d : ℕ} {S : Set (TimeVelocity d)} (hS : IsOpen S)
+    {d : ℕ} {S : HypoellipticAleksandrov.Parabolic.TVSet d} (hS : IsOpen S)
     (q : TimeVelocity d → ℝ) (G : Fin d → TimeVelocity d → ℝ)
     (hq : ParabolicMemLpOn S 2 q)
     (hG : ∀ j, ParabolicMemLpOn S 2 (G j))
@@ -352,7 +356,7 @@ private theorem exists_global_localizedQuotient_weakGradient
     (hwCompact : HasCompactSupport w) (hwSupport : tsupport w ⊆ S)
     (k : Fin d) (h : ℝ)
     (hwShift : Set.MapsTo (spatialShift k h) (tsupport w) S) :
-    ∃ V C : Set (TimeVelocity d), IsOpen V ∧ IsCompact (closure V) ∧
+    ∃ V C : HypoellipticAleksandrov.Parabolic.TVSet d, IsOpen V ∧ IsCompact (closure V) ∧
       tsupport w ⊆ V ∧ V ⊆ S ∧
       IsCompact C ∧ V ⊆ C ∧ C ⊆ S ∧
       Set.MapsTo (spatialShift k h) V C ∧
@@ -372,8 +376,8 @@ private theorem exists_global_localizedQuotient_weakGradient
       ∀ i, tsupport (fun z ↦
         velocityGradient w z i * spatialDifferenceQuotient k h q z +
           w z * spatialDifferenceQuotient k h (G i) z) ⊆ V := by
-  let K : Set (TimeVelocity d) := tsupport w
-  let U : Set (TimeVelocity d) :=
+  let K : HypoellipticAleksandrov.Parabolic.TVSet d := tsupport w
+  let U : HypoellipticAleksandrov.Parabolic.TVSet d :=
     S ∩ spatialShift k h ⁻¹' S
   have hshiftContinuous : Continuous (spatialShift k h) := by
     convert (Homeomorph.addRight
@@ -387,7 +391,7 @@ private theorem exists_global_localizedQuotient_weakGradient
     intro z hz
     exact ⟨hwSupport hz, hwShift hz⟩
   obtain ⟨δ, hδ, hcollar⟩ := hwCompact.isCompact.exists_cthickening_subset_open hU hKU
-  let V : Set (TimeVelocity d) := Metric.thickening δ K
+  let V : HypoellipticAleksandrov.Parabolic.TVSet d := Metric.thickening δ K
   have hVopen : IsOpen V := Metric.isOpen_thickening
   have hVclosure : IsCompact (closure V) := by
     apply IsCompact.of_isClosed_subset hwCompact.isCompact.cthickening isClosed_closure
@@ -399,7 +403,7 @@ private theorem exists_global_localizedQuotient_weakGradient
     (Metric.closure_thickening_subset_cthickening δ K).trans hcollar
   have hVS : V ⊆ S := fun z hz ↦ (hVU hz).1
   have hVshift : Set.MapsTo (spatialShift k h) V S := fun z hz ↦ (hVU hz).2
-  let C : Set (TimeVelocity d) :=
+  let C : HypoellipticAleksandrov.Parabolic.TVSet d :=
     closure V ∪ spatialShift k h '' closure V
   have hCcompact : IsCompact C := by
     exact hVclosure.union (hVclosure.image hshiftContinuous)
@@ -472,7 +476,7 @@ private theorem exists_global_localizedQuotient_weakGradient
 compact tests, their exact selected gradients, and a backward-quotient test
 whose support remains in the original open carrier. -/
 private theorem exists_mollifiedLocalizedQuotient_testPackage
-    {d : ℕ} {S V : Set (TimeVelocity d)}
+    {d : ℕ} {S V : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hVopen : IsOpen V) (hVcompact : IsCompact (closure V))
     (hVS : V ⊆ S) (k : Fin d) (h : ℝ)
     (hVshift : Set.MapsTo (spatialShift k h) V S)
@@ -567,7 +571,7 @@ private theorem tendsto_eLpNorm_spatialDifferenceQuotient_sub
       funext z
       simp only [g, spatialDifferenceQuotient_apply, spatialTranslate_apply,
         Pi.sub_apply, Pi.smul_apply, smul_eq_mul, Function.comp_apply]
-      field_simp [hh]
+      field_simp
       ring]
     rw [eLpNorm_const_smul]
     gcongr
@@ -585,7 +589,7 @@ private theorem tendsto_eLpNorm_spatialDifferenceQuotient_sub
 /-- The source stays undifferenced when the mollified localized quotient is
 passed to the fixed backward quotient. -/
 private theorem tendsto_sourcePairing_mollifiedBackwardQuotient
-    {d : ℕ} (S : Set (TimeVelocity d)) (R ψ : TimeVelocity d → ℝ)
+    {d : ℕ} (S : HypoellipticAleksandrov.Parabolic.TVSet d) (R ψ : TimeVelocity d → ℝ)
     (hR : ParabolicMemLpOn S 2 R) (hψ : MemLp ψ 2 volume)
     (k : Fin d) (h : ℝ) (hh : h ≠ 0) :
     Filter.Tendsto (fun ε : ℝ ↦ ∫ z in S, R z *
@@ -612,7 +616,7 @@ private theorem tendsto_sourcePairing_mollifiedBackwardQuotient
   have hquotLimS : Filter.Tendsto (fun ε ↦ eLpNorm
       (spatialDifferenceQuotient k (-h) (spacetimeMollification ε ψ) -
         spatialDifferenceQuotient k (-h) ψ) 2
-      ((volume : Measure (TimeVelocity d)).restrict S))
+      ((HypoellipticAleksandrov.Parabolic.TVVolume d).restrict S))
       (nhdsWithin 0 (Set.Ioi 0)) (nhds 0) := by
     exact tendsto_of_tendsto_of_tendsto_of_le_of_le' tendsto_const_nhds hquotLim
       (Filter.Eventually.of_forall fun _ ↦ bot_le)
@@ -628,7 +632,7 @@ private theorem tendsto_sourcePairing_mollifiedBackwardQuotient
   · exact (hquotMem _ hψ).mono_measure Measure.restrict_le_self
   · have hzero : (fun ε : ℝ ↦ eLpNorm
         (fun _ : TimeVelocity d ↦ (0 : ℝ)) 2
-        ((volume : Measure (TimeVelocity d)).restrict S)) =
+        ((HypoellipticAleksandrov.Parabolic.TVVolume d).restrict S)) =
         fun _ ↦ (0 : ℝ≥0∞) := by
       funext ε
       exact eLpNorm_zero
@@ -640,7 +644,7 @@ private theorem tendsto_sourcePairing_mollifiedBackwardQuotient
 /-- Rearranging the supplied divergence identity for the mollified
 backward-quotient test gives the signs produced by testing with its negative. -/
 private theorem testedEquation_neg_mollifiedBackwardQuotient
-    {d : ℕ} {S : Set (TimeVelocity d)}
+    {d : ℕ} {S : HypoellipticAleksandrov.Parabolic.TVSet d}
     (A : TimeVelocity d → PDE.Mat d) (q R : TimeVelocity d → ℝ)
     (G : Fin d → TimeVelocity d → ℝ)
     (hEq : ∀ φ : TimeVelocity d → ℝ,
@@ -688,7 +692,7 @@ private theorem spatialDifferenceQuotient_finset_sum
 Only local `L²` control of the quotient near the compact weight support is
 used. -/
 private theorem integrableOn_timeDerivative_mul_spatialDifferenceQuotient_sq
-    {d : ℕ} {S V : Set (TimeVelocity d)} (hVS : V ⊆ S)
+    {d : ℕ} {S V : HypoellipticAleksandrov.Parabolic.TVSet d} (hVS : V ⊆ S)
     (q : TimeVelocity d → ℝ) (hq : ParabolicMemLpOn V 2 q)
     (w : TimeVelocity d → ℝ)
     (hwSmooth : ContDiff ℝ (⊤ : ℕ∞) w)
@@ -719,7 +723,7 @@ private theorem integrableOn_timeDerivative_mul_spatialDifferenceQuotient_sq
 /-- Pairing an `L²` source on a carrier with a fixed backward quotient of a
 global `L²` function is integrable on that carrier. -/
 private theorem integrableOn_source_mul_spatialDifferenceQuotient
-    {d : ℕ} (S : Set (TimeVelocity d))
+    {d : ℕ} (S : HypoellipticAleksandrov.Parabolic.TVSet d)
     (R ψ : TimeVelocity d → ℝ) (hR : ParabolicMemLpOn S 2 R)
     (hψ : MemLp ψ 2 volume) (k : Fin d) (h : ℝ) :
     IntegrableOn (fun z ↦ R z * spatialDifferenceQuotient k (-h) ψ z) S := by
@@ -737,10 +741,10 @@ private theorem integrableOn_source_mul_spatialDifferenceQuotient
 /-- The aggregate forward flux quotient paired with a compactly supported
 global `L²` test gradient is integrable on the original carrier. -/
 private theorem integrableOn_sum_principalFluxQuotient_mul
-    {d : ℕ} {S C V : Set (TimeVelocity d)}
+    {d : ℕ} {S C V : HypoellipticAleksandrov.Parabolic.TVSet d}
     (hCcompact : IsCompact C) (hCS : C ⊆ S) (hVC : V ⊆ C)
     (A : TimeVelocity d → PDE.Mat d) (G : Fin d → TimeVelocity d → ℝ)
-    (hFlux : ∀ i j, ∀ K : Set (TimeVelocity d), IsCompact K → K ⊆ S →
+    (hFlux : ∀ i j, ∀ K : HypoellipticAleksandrov.Parabolic.TVSet d, IsCompact K → K ⊆ S →
       ParabolicMemLpOn K 2 (fun z ↦ A z i j * G j z))
     (i k : Fin d) (h : ℝ)
     (hshift : Set.MapsTo (spatialShift k h) V C)
@@ -772,12 +776,12 @@ private theorem integrableOn_sum_principalFluxQuotient_mul
 /-- The quotient-test energy identity obtained from a tested divergence-form
 equation by smooth compact approximation. -/
 theorem integral_spatialDifferenceQuotient_energyIdentity_of_testedEquation
-    (d : ℕ) (S : Set (TimeVelocity d)) (hS : IsOpen S)
+    (d : ℕ) (S : HypoellipticAleksandrov.Parabolic.TVSet d) (hS : IsOpen S)
     (A : TimeVelocity d → PDE.Mat d) (q R : TimeVelocity d → ℝ)
     (G : Fin d → TimeVelocity d → ℝ)
     (hq : ParabolicMemLpOn S 2 q) (hR : ParabolicMemLpOn S 2 R)
     (hG : ∀ j, ParabolicMemLpOn S 2 (G j))
-    (hFlux : ∀ i j, ∀ K : Set (TimeVelocity d), IsCompact K → K ⊆ S →
+    (hFlux : ∀ i j, ∀ K : HypoellipticAleksandrov.Parabolic.TVSet d, IsCompact K → K ⊆ S →
       ParabolicMemLpOn K 2 (fun z ↦ A z i j * G j z))
     (hWeak : ∀ j, HasWeakVelocityPartialDerivOn S j q (G j))
     (hEq : ∀ φ : TimeVelocity d → ℝ,

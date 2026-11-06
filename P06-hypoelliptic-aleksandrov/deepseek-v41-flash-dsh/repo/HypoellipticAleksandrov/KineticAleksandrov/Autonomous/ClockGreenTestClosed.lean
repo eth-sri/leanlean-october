@@ -24,12 +24,12 @@ theorem Clock.closed_active_image (c : Clock) (e p : Point)
   · apply (div_le_iff₀ c.positive).mpr
     have hh : p.velocity 0 ≤ c.vbar + 3 * c.r / 4 := hp.2
     linarith
+section
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) (R T : ℝ)
 
 /-- Actual normalized Duhamel boundary continuity transfers to the entire physical closed strip. -/
 theorem clockSourcePotential_pullback_continuous
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) (R T : ℝ) (hRT : R < T)
+     (hRT : R < T)
     (f : exitProbeSubmodule) (hfn : ∀ p, 0 ≤ exitProbePhysical f p)
     (hs : tsupport (exitProbePhysical f) ⊆
       {p | p.time < T ∧ p.velocity 0 ∈ clockNormalizedInterval.carrier})
@@ -45,9 +45,7 @@ theorem clockSourcePotential_pullback_continuous
 
 /-- Each physical lateral face maps to its matching actual normalized Dirichlet face. -/
 theorem clockSourcePotential_pullback_zero_faces
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) (R T : ℝ) (hRT : R < T)
+     (hRT : R < T)
     (f : exitProbeSubmodule) (hfn : ∀ p, 0 ≤ exitProbePhysical f p)
     (hs : tsupport (exitProbePhysical f) ⊆
       {p | p.time < T ∧ p.velocity 0 ∈ clockNormalizedInterval.carrier})
@@ -69,5 +67,6 @@ theorem clockSourcePotential_pullback_zero_faces
     dsimp [Clock.activeInterval]
     field_simp [ne_of_gt c.positive]
     ring
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

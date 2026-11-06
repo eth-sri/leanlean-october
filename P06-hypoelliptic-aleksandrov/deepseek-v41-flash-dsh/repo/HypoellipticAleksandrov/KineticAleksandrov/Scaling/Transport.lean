@@ -4,6 +4,7 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Scaling.Solutions
 public import HypoellipticAleksandrov.KineticAleksandrov.Scaling.Pushforward
 public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.Realization
 public import Mathlib.Probability.Kernel.MeasurableIntegral
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-!
 # Transport of the terminal evolution under an affine change of variables
@@ -31,7 +32,7 @@ open scoped ENNReal
 
 /-- The terminal operator family obtained by integrating bounded Borel data against the
 fibre kernels of `K`. -/
-def fiberOperator {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
+def fiberOperator {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n} {γ : ℝ → PDE.Vec n}
     (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω) : TerminalOperatorFamily Ω γ :=
   fun σ τ hστ =>
     { toFun := fun f =>
@@ -67,14 +68,14 @@ def fiberOperator {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
         intro p
         exact integral_smul c f }
 
-theorem fiberOperator_apply {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
+theorem fiberOperator_apply {n : ℕ} {Ω : HypoellipticAleksandrov.VecSet n} {γ : ℝ → PDE.Vec n}
     (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω) (σ τ : ℝ) (hστ : σ ≤ τ)
     (f : BoundedBorel (EvolutionState Ω γ τ)) (p : EvolutionState Ω γ σ) :
     fiberOperator K hΩ σ τ hστ f p = ∫ q, f q ∂K.fiberKernel hΩ σ τ hστ p := rfl
 
 namespace KineticAffineScaling
 
-variable {d : ℕ} {Φ : KineticAffineScaling d} {Ω Ω' : Set (PDE.Vec d)}
+variable {d : ℕ} {Φ : KineticAffineScaling d} {Ω Ω' : HypoellipticAleksandrov.VecSet d}
   {γ γ' : ℝ → PDE.Vec d}
 
 theorem contDiff_ambientSymm (Φ : KineticAffineScaling d) (τ : ℝ) :

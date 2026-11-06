@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.KineticClassical
 public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.HomogeneousReconstructionJets
 public import HypoellipticAleksandrov.KineticAleksandrov.TheoremA.GreenPotentialsGeometry
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Physical C112 jets in packed evolution coordinates
 
@@ -40,9 +41,11 @@ private theorem physical_position_line (x : EvolutionVec d) (i : Fin d) (t : ℝ
       ⟨timeCoord d x, transportedCoord d x + t • PDE.basisVec i,
         diffusedCoord d x⟩ := by
   simp [massPhysicalPoint, basisZ, PDE.basisVec]
+section
+variable {phi : KineticPoint d → ℝ} {D : Set (KineticPoint d)}
 
 /-- The physical time slice supplies the packed time line derivative. -/
-theorem mass_time_hasLineDerivAt {phi : KineticPoint d → ℝ} {D : Set (KineticPoint d)}
+theorem mass_time_hasLineDerivAt 
     (hphi : IsKineticC112On phi D) {x : EvolutionVec d}
     (hx : massPhysicalPoint x ∈ D) :
     HasLineDerivAt ℝ (phi ∘ massPhysicalPoint)
@@ -56,7 +59,7 @@ theorem mass_time_hasLineDerivAt {phi : KineticPoint d → ℝ} {D : Set (Kineti
   simpa only [Function.comp_def, mul_one, massPhysicalPoint] using! h
 
 /-- The physical velocity slice supplies each packed diffused line derivative. -/
-theorem mass_velocity_hasLineDerivAt {phi : KineticPoint d → ℝ} {D : Set (KineticPoint d)}
+theorem mass_velocity_hasLineDerivAt 
     (hphi : IsKineticC112On phi D) {x : EvolutionVec d}
     (hx : massPhysicalPoint x ∈ D) (i : Fin d) :
     HasLineDerivAt ℝ (phi ∘ massPhysicalPoint)
@@ -68,7 +71,7 @@ theorem mass_velocity_hasLineDerivAt {phi : KineticPoint d → ℝ} {D : Set (Ki
   exact h
 
 /-- The physical position slice supplies each packed transported line derivative. -/
-theorem mass_position_hasLineDerivAt {phi : KineticPoint d → ℝ} {D : Set (KineticPoint d)}
+theorem mass_position_hasLineDerivAt 
     (hphi : IsKineticC112On phi D) {x : EvolutionVec d}
     (hx : massPhysicalPoint x ∈ D) (i : Fin d) :
     HasLineDerivAt ℝ (phi ∘ massPhysicalPoint)
@@ -80,7 +83,7 @@ theorem mass_position_hasLineDerivAt {phi : KineticPoint d → ℝ} {D : Set (Ki
   exact h
 
 /-- Differentiating a physical velocity gradient entry gives the actual Hessian entry. -/
-theorem mass_hessian_hasLineDerivAt {phi : KineticPoint d → ℝ} {D : Set (KineticPoint d)}
+theorem mass_hessian_hasLineDerivAt 
     (hphi : IsKineticC112On phi D) {x : EvolutionVec d}
     (hx : massPhysicalPoint x ∈ D) (i j : Fin d) :
     HasLineDerivAt ℝ
@@ -99,5 +102,6 @@ theorem mass_hessian_hasLineDerivAt {phi : KineticPoint d → ℝ} {D : Set (Kin
   unfold HasLineDerivAt
   simp only [physical_velocity_line]
   exact h
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

@@ -58,7 +58,7 @@ theorem reconstruction_homogeneous_exit_representation
   have hr0 : Tendsto r atTop (𝓝 0) := tendsto_one_div_add_atTop_nhds_zero_nat
   have hexp : Tendsto (fun n : ℕ => Real.exp (-((n : ℝ) + 1))) atTop (𝓝 0) :=
     Real.tendsto_exp_atBot.comp
-      (tendsto_neg_atTop_atBot.comp (tendsto_atTop_add_const_right atTop (1 : ℝ)
+      (tendsto_neg_atTop_atBot.comp (tendsto_atTop_add_const_right atTop 1
         tendsto_natCast_atTop_atTop))
   have hb0 : Tendsto b atTop (𝓝 0) := by
     simpa only [b, mul_zero, zero_mul, add_zero] using

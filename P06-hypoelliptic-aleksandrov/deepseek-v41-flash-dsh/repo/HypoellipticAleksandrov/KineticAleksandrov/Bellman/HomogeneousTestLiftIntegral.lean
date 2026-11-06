@@ -48,9 +48,10 @@ theorem bellman_compact_parameter_bound {U : Set E} (hU : IsOpen U)
     fun x hx a => hC ⟨(x, a), ⟨hx, trivial⟩, rfl⟩⟩
 
 omit [CompleteSpace F] [SecondCountableTopology A] in
+section
+variable (mu : Measure A) [IsFiniteMeasure mu] {U : Set E}
 /-- On an open spatial set a compact parameter integral has its expected first derivative. -/
-theorem bellman_compact_parameter_hasFDerivAt (mu : Measure A) [IsFiniteMeasure mu]
-    {U : Set E} (hU : IsOpen U) (f : E → A → F) (f' : E → A → E →L[ℝ] F)
+theorem bellman_compact_parameter_hasFDerivAt  (hU : IsOpen U) (f : E → A → F) (f' : E → A → E →L[ℝ] F)
     (hf : ContinuousOn (Function.uncurry f) (U ×ˢ univ))
     (hf' : ContinuousOn (Function.uncurry f') (U ×ˢ univ))
     (hd : ∀ q ∈ U, ∀ a, HasFDerivAt (fun x => f x a) (f' q a) q)
@@ -68,8 +69,7 @@ theorem bellman_compact_parameter_hasFDerivAt (mu : Measure A) [IsFiniteMeasure 
 
 omit [NormedSpace ℝ E] [CompleteSpace F] [SecondCountableTopology A] in
 /-- Joint continuity on a compact parameter gives continuity of the parameter integral. -/
-theorem bellman_compact_parameter_continuousAt (mu : Measure A) [IsFiniteMeasure mu]
-    {U : Set E} (hU : IsOpen U) (f : E → A → F)
+theorem bellman_compact_parameter_continuousAt  (hU : IsOpen U) (f : E → A → F)
     (hf : ContinuousOn (Function.uncurry f) (U ×ˢ univ))
     {q : E} (hq : q ∈ U) : ContinuousAt (fun x => ∫ a, f x a ∂mu) q := by
   obtain ⟨s, hs, hsub, C, hC⟩ := bellman_compact_parameter_bound hU hf hq
@@ -88,8 +88,7 @@ theorem bellman_compact_parameter_continuousAt (mu : Measure A) [IsFiniteMeasure
 
 omit [CompleteSpace F] [SecondCountableTopology A] in
 /-- Two continuous parameter derivatives yield C² regularity of the actual integral. -/
-theorem bellman_compact_parameter_contDiffOn_two (mu : Measure A) [IsFiniteMeasure mu]
-    {U : Set E} (hU : IsOpen U) (f : E → A → F) (f' : E → A → E →L[ℝ] F)
+theorem bellman_compact_parameter_contDiffOn_two  (hU : IsOpen U) (f : E → A → F) (f' : E → A → E →L[ℝ] F)
     (f'' : E → A → E →L[ℝ] (E →L[ℝ] F))
     (hf : ContinuousOn (Function.uncurry f) (U ×ˢ univ))
     (hf' : ContinuousOn (Function.uncurry f') (U ×ˢ univ))
@@ -111,5 +110,6 @@ theorem bellman_compact_parameter_contDiffOn_two (mu : Measure A) [IsFiniteMeasu
     · intro x hx
       exact bellman_compact_parameter_hasFDerivAt mu hU f' f'' hf' hf'' hd' hx
     · exact contDiffAt_zero.mpr ⟨U, hU.mem_nhds hq, hc⟩
+end
 
 end HypoellipticAleksandrov.KineticAleksandrov

@@ -2,6 +2,7 @@ module
 
 public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundedSourceWeakMeasure
 import Mathlib.MeasureTheory.Integral.DominatedConvergence
+public import HypoellipticAleksandrov.Ambient.TypeAbbrev
 
 /-! # Actual source-action convergence of bounded potentials
 
@@ -14,7 +15,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set Filter
 open scoped Topology ProbabilityTheory
-variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+variable {d : ℕ} {Ω : HypoellipticAleksandrov.VecSet d} {γ : ℝ → PDE.Vec d}
 
 /-- Approximation for the actual finite source-action measure yields almost-everywhere
 convergence of the literal bounded potentials for the supplied starting measure. -/
