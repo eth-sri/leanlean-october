@@ -1,7 +1,6 @@
 module
 
-public import Mathlib
-
+public import ADR11.Finite
 /-!
 # The multispecies coalescent model: shared definitions
 

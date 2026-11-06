@@ -1,7 +1,6 @@
 module
 
 public import ADR11.Defs
-
 /-!
 # Notions used in the statements of the paper's results
 
@@ -27,84 +26,49 @@ open Finset
 
 variable {X : Type*} [Fintype X] [DecidableEq X]
 
+theorem subtype_nonempty_iff {S A : Finset X} :
+    (A.trace S).Nonempty ↔ (A ∩ S).Nonempty := by
+  simp [Finset.Nonempty, mem_subtype, mem_inter, and_comm]
+
 /-- The clusters of `H` that meet `S`, restricted to `S`, as clusters on the subtype `S`. -/
-def restrictClusters (S : Finset X) (H : Finset (Finset X)) : Finset (Finset S) :=
-  (H.filter fun A => (A ∩ S).Nonempty).image fun A => A.subtype (· ∈ S)
+def restrictClusters (S : Finset X) (H : Family X) : Family S :=
+  (H.filter fun A => (A ∩ S).Nonempty).image fun A => A.trace S
 
 /-- The induced unrooted tree `T(S)` of an unrooted tree `T` (given by the sides of its splits):
 the splits of `T` whose two sides both meet `S`, restricted to `S`. -/
-def restrictSplits (S : Finset X) (T : Finset (Finset X)) : Finset (Finset S) :=
-  (T.filter fun A => (A ∩ S).Nonempty ∧ (Aᶜ ∩ S).Nonempty).image fun A => A.subtype (· ∈ S)
+def restrictSplits (S : Finset X) (T : Family X) : Family S :=
+  (T.filter fun A => (A ∩ S).Nonempty ∧ (Aᶜ ∩ S).Nonempty).image fun A => A.trace S
 
 namespace SpeciesTree
-
-theorem restrict_univ_mem (σ : SpeciesTree X) (S : Finset X) (hS : S.Nonempty) :
-    (univ : Finset S) ∈ restrictClusters S σ.clusters := by
-  unfold restrictClusters
-  rw [mem_image]
-  refine ⟨univ, mem_filter.2 ⟨σ.univ_mem, by simpa using hS⟩, ?_⟩
-  simp
-
-theorem restrict_singleton_mem (σ : SpeciesTree X) (S : Finset X) (x : S) :
-    {x} ∈ restrictClusters S σ.clusters := by
-  unfold restrictClusters
-  rw [mem_image]
-  refine ⟨{x.1}, mem_filter.2 ⟨σ.singleton_mem x.1, ⟨x.1, by simp [x.2]⟩⟩, ?_⟩
-  ext ⟨y, hy⟩
-  rw [mem_subtype, mem_singleton, mem_singleton, Subtype.ext_iff]
-
-theorem restrict_nonempty_of_mem (σ : SpeciesTree X) (S : Finset X) :
-    ∀ C ∈ restrictClusters S σ.clusters, C.Nonempty := by
-  intro C hC
-  obtain ⟨A, hA, rfl⟩ := mem_image.1 hC
-  obtain ⟨y, hy⟩ := (mem_filter.1 hA).2
-  rw [mem_inter] at hy
-  exact ⟨⟨y, hy.2⟩, by simp [hy.1]⟩
-
-theorem restrict_laminar (σ : SpeciesTree X) (S : Finset X) :
-    ∀ C ∈ restrictClusters S σ.clusters, ∀ D ∈ restrictClusters S σ.clusters,
-      C ⊆ D ∨ D ⊆ C ∨ Disjoint C D := by
-  intro C hC D hD
-  obtain ⟨A, hA, rfl⟩ := mem_image.1 hC
-  obtain ⟨B, hB, rfl⟩ := mem_image.1 hD
-  rcases σ.laminar A (mem_filter.1 hA).1 B (mem_filter.1 hB).1 with h | h | h
-  · exact Or.inl (subtype_mono h)
-  · exact Or.inr (Or.inl (subtype_mono h))
-  · refine Or.inr (Or.inr ?_)
-    rw [Finset.disjoint_left] at h ⊢
-    intro a ha hb
-    exact h (mem_subtype.1 ha) (mem_subtype.1 hb)
 
 /-- The length of the edge above the cluster `C` of the induced tree `σ(S)`: the sum of the
 lengths of the edges above the clusters of `σ` whose trace on `S` is `C`. -/
 noncomputable def restrictLength (σ : SpeciesTree X) (S : Finset X) (C : Finset S) : ℝ :=
-  ∑ A ∈ σ.clusters with A ≠ univ ∧ A.subtype (· ∈ S) = C, σ.length A
-
-theorem restrictLength_pos (σ : SpeciesTree X) (S : Finset X) :
-    ∀ C ∈ restrictClusters S σ.clusters, C ≠ univ → 0 < σ.restrictLength S C := by
-  intro C hC hCu
-  obtain ⟨A, hA, rfl⟩ := mem_image.1 hC
-  have hA' := (mem_filter.1 hA).1
-  have hAu : A ≠ univ := by
-    rintro rfl
-    exact hCu (subtype_univ _)
-  unfold restrictLength
-  apply Finset.sum_pos
-  · intro B hB
-    rw [mem_filter] at hB
-    exact σ.length_pos B hB.1 hB.2.1
-  · exact ⟨A, mem_filter.2 ⟨hA', hAu, rfl⟩⟩
+  ∑ A ∈ σ.clusters with A ≠ univ ∧ A.trace S = C, σ.length A
 
 /-- The induced species tree `σ⁺(S)` on a nonempty set of taxa `S`. -/
 noncomputable def restrict (σ : SpeciesTree X) (S : Finset X) (hS : S.Nonempty) :
     SpeciesTree S where
   clusters := restrictClusters S σ.clusters
-  univ_mem := σ.restrict_univ_mem S hS
-  singleton_mem := σ.restrict_singleton_mem S
-  nonempty_of_mem := σ.restrict_nonempty_of_mem S
-  laminar := σ.restrict_laminar S
+  univ_mem := mem_image.2 ⟨univ, by simp [σ.univ_mem, hS], subtype_univ _⟩
+  singleton_mem := by
+    intro x
+    refine mem_image.2 ⟨{x.1}, by simp [σ.singleton_mem, x.2], ?_⟩
+    ext ⟨y, hy⟩
+    simp [mem_subtype, Subtype.ext_iff]
+  nonempty_of_mem := by
+    grind [restrictClusters, subtype_nonempty_iff]
+  laminar := by
+    have := σ.laminar
+    grind [restrictClusters, Finset.subtype_mono, disjoint_left]
   length := σ.restrictLength S
-  length_pos := σ.restrictLength_pos S
+  length_pos := by
+    intro C hC hCu
+    unfold restrictLength
+    apply Finset.sum_pos
+    · intro B hB
+      grind [σ.length_pos]
+    · aesop (add simp [restrictClusters, filter_nonempty_iff])
 
 end SpeciesTree
 

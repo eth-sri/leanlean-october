@@ -2,9 +2,6 @@ module
 
 public import ADR11.SmallTrees
 public import ADR11.MSC.Basic
-public import ADR11.Model.History
-public import ADR11.Computation.Caterpillar5
-
 /-!
 # Section 3: the multispecies coalescent model
 
@@ -31,19 +28,27 @@ public import ADR11.Computation.Caterpillar5
 
 namespace ADR11
 
-open Finset Real Filter Topology
+open Finset
 
-variable {X : Type*} [Fintype X] [DecidableEq X]
+variable {X : Type*} [Fintype X] [DecidableEq X] {L : Type*} [Fintype L] [DecidableEq L]
 
 /-- Section 1: the unrooted gene tree probabilities form a well-defined probability distribution:
 they are nonnegative ... -/
-theorem unrootedDist_nonneg {L : Type*} [Fintype L] [DecidableEq L] (σ : SpeciesTree X)
-    (s : L → X) (T : Finset (Finset L)) : 0 ≤ σ.unrootedDist s T :=
-  unrootedDistOf_nonneg σ.isHierarchy (fun A hA hAu => (σ.length_pos A hA hAu).le) s T
+theorem unrootedDist_nonneg (σ : SpeciesTree X)
+    (s : L → X) (T : Finset (Finset L)) : 0 ≤ σ.unrootedDist s T := by
+  unfold SpeciesTree.unrootedDist SpeciesTree.rootedDist
+  refine sum_nonneg fun G _ => ?_
+  split
+  · exact forestDist_nonneg_of_ne_univ σ.isHierarchy
+      (fun A hA hAu => (σ.length_pos A hA hAu).le) s σ.univ_mem G
+  · exact le_rfl
 
 /-- ... and sum to `1`. -/
-theorem unrootedDist_sum {L : Type*} [Fintype L] [DecidableEq L] (σ : SpeciesTree X)
-    (s : L → X) : ∑ T, σ.unrootedDist s T = 1 :=
-  unrootedDistOf_sum σ.isHierarchy σ.length s
+theorem unrootedDist_sum (σ : SpeciesTree X)
+    (s : L → X) : ∑ T, σ.unrootedDist s T = 1 := by
+  unfold SpeciesTree.unrootedDist SpeciesTree.rootedDist
+  rw [sum_comm]
+  simp_rw [sum_ite_eq, mem_univ, ite_true]
+  exact forestDist_sum σ.isHierarchy σ.length s
 
 end ADR11
