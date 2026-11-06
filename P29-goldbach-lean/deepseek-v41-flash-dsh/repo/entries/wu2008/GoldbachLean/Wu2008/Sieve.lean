@@ -38,8 +38,7 @@ lemma sifted_mono {D : ℕ} {y y' : ℝ} (h : y ≤ y') {a : ℕ} (ha : Sifted D
 lemma mem_PS {N : ℕ} {w z : ℝ} {p : ℕ} :
     p ∈ PS N w z ↔ p.Prime ∧ w ≤ p ∧ (p : ℝ) < z ∧ p.Coprime N := by
   unfold PS
-  simp only [mem_filter, mem_range, and_iff_right_iff_imp]
-  rintro ⟨-, -, hz, -⟩
-  exact Nat.lt_ceil.mpr hz
+  simp only [mem_filter, mem_range, Nat.lt_ceil]
+  tauto
 
 end GoldbachLean.Wu2008.WuSieve

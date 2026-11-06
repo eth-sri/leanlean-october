@@ -35,37 +35,6 @@ open GoldbachLean.Wu2008.WuReal (e13)
 @[expose] public noncomputable section
 open scoped Classical
 
-/-! ## The integer terms, Wu's conditions on primes -/
-
-variable (N : ℕ) (a : ℕ) (k1 k2 : ℝ)
-
-/-- `p₁ = e`, `p₂ = f`: every prime factor of `a` below `f` is `e`. -/
-def lowP (e f : ℕ) : Prop := ∀ q ∈ a.primeFactors, f ≤ q ∨ q = e
-
-def I2 (k1 k2 : ℝ) : ℤ := if ∀ p ∈ a.primeFactors, (N : ℝ) ^ k2 ≤ (p : ℝ) then 1 else 0
-def I3 (k1 k2 : ℝ) : ℤ := #(a.primeFactors.filter (fun p : ℕ => (p : ℝ) < (N : ℝ) ^ e13))
-def I4 (k1 k2 : ℝ) : ℤ := #(a.primeFactors.filter (fun p : ℕ => (p : ℝ) < (N : ℝ) ^ WuReal.em k1))
-def I5 (k1 k2 : ℝ) : ℤ := #((a.primeFactors ×ˢ a.primeFactors).filter (fun t => t.1 < t.2 ∧ (t.2 : ℝ) < (N : ℝ) ^ k2))
-def I6 (k1 k2 : ℝ) : ℤ := #((a.primeFactors ×ˢ a.primeFactors).filter (fun t => (N : ℝ) ^ k1 ≤ (t.1 : ℝ) ∧ (t.1 : ℝ) < (N : ℝ) ^ k2 ∧
-  (N : ℝ) ^ k2 ≤ (t.2 : ℝ) ∧ (t.2 : ℝ) < (N : ℝ) ^ WuReal.em k1))
-def I7 (k1 k2 : ℝ) : ℤ := #((a.primeFactors ×ˢ a.primeFactors).filter (fun t => t.1 < t.2 ∧ (N : ℝ) ^ WuReal.em k1 ≤ (t.1 : ℝ) ∧
-  t.1 * t.2 ^ 2 < N ∧ lowP a t.1 t.2))
-def I8 (k1 k2 : ℝ) : ℤ := #((a.primeFactors ×ˢ a.primeFactors).filter (fun t => (t.1 : ℝ) < (N : ℝ) ^ e13 ∧ (N : ℝ) ^ e13 ≤ (t.2 : ℝ) ∧
-  t.1 * t.2 ^ 2 < N ∧ lowP a t.1 t.2))
-def I9 (k1 k2 : ℝ) : ℤ := #((a.primeFactors ×ˢ a.primeFactors).filter (fun t => (N : ℝ) ^ k2 ≤ (t.1 : ℝ) ∧ (t.1 : ℝ) < (N : ℝ) ^ WuReal.em k1 ∧
-  (N : ℝ) ^ WuReal.em k1 ≤ (t.2 : ℝ) ∧ t.1 * t.2 ^ 2 < N ∧
-  ∀ q ∈ a.primeFactors, N ≤ t.1 * t.2 * q ^ 2 ∨ q = t.1 ∨ q = t.2))
-def I10 (k1 k2 : ℝ) : ℤ := #((a.primeFactors ×ˢ a.primeFactors ×ˢ a.primeFactors ×ˢ a.primeFactors).filter (fun t => t.1 < t.2.1 ∧ t.2.1 < t.2.2.1 ∧
-  t.2.2.1 < t.2.2.2 ∧ (t.2.2.2 : ℝ) < (N : ℝ) ^ k2 ∧ lowP a t.1 t.2.1))
-/-- Υ₁₁ with the repaired range `p₄ < N^{1/2−3κ₁}`. -/
-def I11 (k1 k2 : ℝ) : ℤ := #((a.primeFactors ×ˢ a.primeFactors ×ˢ a.primeFactors ×ˢ a.primeFactors).filter (fun t => t.1 < t.2.1 ∧ t.2.1 < t.2.2.1 ∧
-  (t.2.2.1 : ℝ) < (N : ℝ) ^ k2 ∧ (N : ℝ) ^ k2 ≤ (t.2.2.2 : ℝ) ∧ (t.2.2.2 : ℝ) < (N : ℝ) ^ WuReal.em k1 ∧
-  lowP a t.1 t.2.1))
-
-def rhsI (k1 k2 : ℝ) : ℤ :=
-  3 + I2 N a k1 k2 - I3 N a k1 k2 - I4 N a k1 k2 + I5 N a k1 k2 + I6 N a k1 k2 - 2 * I7 N a k1 k2 - I8 N a k1 k2 - I9 N a k1 k2 - I10 N a k1 k2
-    - I11 N a k1 k2
-
 /-! ## Transfer lemmas -/
 
 section transfer
@@ -78,54 +47,10 @@ lemma card_filter_image {s : Finset α} {f : α → β} (hf : Set.InjOn f s) {R 
   congr 1
   exact filter_congr h
 
-lemma card_filter_image2 {s : Finset α} {f : α → β} (hf : Set.InjOn f s) {R : α × α → Prop}
-    {Q : β × β → Prop} [DecidablePred R] [DecidablePred Q]
-    (h : ∀ p ∈ s, ∀ q ∈ s, R (p, q) ↔ Q (f p, f q)) :
-    #((s ×ˢ s).filter R) = #(((s.image f) ×ˢ (s.image f)).filter Q) := by
-  have e : ((s.image f) ×ˢ (s.image f)).filter Q =
-      ((s ×ˢ s).filter R).image (fun t => (f t.1, f t.2)) := by
-    ext ⟨u, v⟩
-    simp only [mem_filter, mem_product, mem_image, Prod.exists, Prod.mk.injEq]
-    constructor
-    · rintro ⟨⟨⟨p, hp, rfl⟩, ⟨q, hq, rfl⟩⟩, hQ⟩
-      exact ⟨p, q, ⟨⟨hp, hq⟩, (h p hp q hq).2 hQ⟩, rfl, rfl⟩
-    · rintro ⟨p, q, ⟨⟨hp, hq⟩, hR⟩, rfl, rfl⟩
-      exact ⟨⟨⟨p, hp, rfl⟩, ⟨q, hq, rfl⟩⟩, (h p hp q hq).1 hR⟩
-  rw [e, card_image_of_injOn]
-  rintro ⟨p, q⟩ hpq ⟨p', q'⟩ hpq' hh
-  simp only [coe_filter, mem_product, Set.mem_setOf_eq] at hpq hpq'
-  simp only [Prod.mk.injEq] at hh
-  exact Prod.ext (hf hpq.1.1 hpq'.1.1 hh.1) (hf hpq.1.2 hpq'.1.2 hh.2)
-
-lemma card_filter_image4 {s : Finset α} {f : α → β} (hf : Set.InjOn f s)
-    {R : α × α × α × α → Prop} {Q : β × β × β × β → Prop} [DecidablePred R] [DecidablePred Q]
-    (h : ∀ p ∈ s, ∀ q ∈ s, ∀ r ∈ s, ∀ w ∈ s, R (p, q, r, w) ↔ Q (f p, f q, f r, f w)) :
-    #((s ×ˢ s ×ˢ s ×ˢ s).filter R) =
-      #(((s.image f) ×ˢ (s.image f) ×ˢ (s.image f) ×ˢ (s.image f)).filter Q) := by
-  have e : ((s.image f) ×ˢ (s.image f) ×ˢ (s.image f) ×ˢ (s.image f)).filter Q =
-      ((s ×ˢ s ×ˢ s ×ˢ s).filter R).image (fun t => (f t.1, f t.2.1, f t.2.2.1, f t.2.2.2)) := by
-    ext ⟨u, v, x, y⟩
-    simp only [mem_filter, mem_product, mem_image, Prod.exists, Prod.mk.injEq]
-    constructor
-    · rintro ⟨⟨⟨p, hp, rfl⟩, ⟨q, hq, rfl⟩, ⟨r, hr, rfl⟩, ⟨w, hw, rfl⟩⟩, hQ⟩
-      exact ⟨p, q, r, w, ⟨⟨hp, hq, hr, hw⟩, (h p hp q hq r hr w hw).2 hQ⟩, rfl, rfl, rfl, rfl⟩
-    · rintro ⟨p, q, r, w, ⟨⟨hp, hq, hr, hw⟩, hR⟩, rfl, rfl, rfl, rfl⟩
-      exact ⟨⟨⟨p, hp, rfl⟩, ⟨q, hq, rfl⟩, ⟨r, hr, rfl⟩, ⟨w, hw, rfl⟩⟩,
-        (h p hp q hq r hr w hw).1 hR⟩
-  rw [e, card_image_of_injOn]
-  rintro ⟨p, q, r, w⟩ hpq ⟨p', q', r', w'⟩ hpq' hh
-  simp only [coe_filter, mem_product, Set.mem_setOf_eq] at hpq hpq'
-  simp only [Prod.mk.injEq] at hh
-  obtain ⟨⟨h1, h2, h3, h4⟩, -⟩ := hpq
-  obtain ⟨⟨h1', h2', h3', h4'⟩, -⟩ := hpq'
-  simp only [Prod.mk.injEq]
-  exact ⟨hf h1 h1' hh.1, hf h2 h2' hh.2.1, hf h3 h3' hh.2.2.1, hf h4 h4' hh.2.2.2⟩
-
 end transfer
 
-/-! ## The exponent map -/
+variable (N : ℕ)
 
-/-- The real exponent of `p` in base `N`. -/
 def ex (p : ℕ) : ℝ := Real.log p / Real.log N
 
 variable {N}
@@ -158,170 +83,50 @@ lemma rpow_le_iff {p : ℕ} (hp : 0 < p) (κ : ℝ) : (N : ℝ) ^ κ ≤ (p : �
 lemma mul_sq_lt_iff {p q : ℕ} (hp : 0 < p) (hq : 0 < q) :
     p * q ^ 2 < N ↔ ex N p + 2 * ex N q < 1 := by
   have hL := logN_pos hN
-  have h0 : (0 : ℝ) < ((p * q ^ 2 : ℕ) : ℝ) := by exact_mod_cast Nat.mul_pos hp (pow_pos hq 2)
-  have hlog : Real.log ((p * q ^ 2 : ℕ) : ℝ) = Real.log p + 2 * Real.log q := by
-    push_cast
-    rw [Real.log_mul (by positivity) (by positivity), Real.log_pow]; push_cast; ring
-  have he : ex N p + 2 * ex N q = (Real.log p + 2 * Real.log q) / Real.log N := by unfold ex; ring
-  rw [← Nat.cast_lt (α := ℝ), ← Real.log_lt_log_iff h0 (by positivity), hlog, he, div_lt_one hL]
+  have h0 : (0 : ℝ) < ((p * q ^ 2 : ℕ) : ℝ) := by positivity
+  rw [← Nat.cast_lt (α := ℝ), ← Real.log_lt_log_iff h0 (by positivity),
+    Nat.cast_mul, Nat.cast_pow, Real.log_mul (by positivity) (by positivity),
+    Real.log_pow]
+  unfold ex
+  field_simp [hL.ne']
+  ring_nf
 
 lemma le_mul_mul_sq_iff {p q r : ℕ} (hp : 0 < p) (hq : 0 < q) (hr : 0 < r) :
     N ≤ p * q * r ^ 2 ↔ 1 ≤ ex N p + ex N q + 2 * ex N r := by
   have hL := logN_pos hN
-  have h0 : (0 : ℝ) < ((p * q * r ^ 2 : ℕ) : ℝ) := by
-    exact_mod_cast Nat.mul_pos (Nat.mul_pos hp hq) (pow_pos hr 2)
-  have hlog : Real.log ((p * q * r ^ 2 : ℕ) : ℝ) = Real.log p + Real.log q + 2 * Real.log r := by
-    push_cast
-    rw [Real.log_mul (by positivity) (by positivity), Real.log_mul (by positivity) (by positivity),
-      Real.log_pow]
-    push_cast; ring
-  have he : ex N p + ex N q + 2 * ex N r =
-      (Real.log p + Real.log q + 2 * Real.log r) / Real.log N := by unfold ex; ring
-  rw [← Nat.cast_le (α := ℝ), ← Real.log_le_log_iff (by positivity) h0, hlog, he, one_le_div hL]
-
-lemma ex_injOn : Set.InjOn (ex N) {p : ℕ | 0 < p} := by
-  intro p hp q hq h
-  exact (x_eq_iff hN hp hq).1 h
+  have h0 : (0 : ℝ) < ((p * q * r ^ 2 : ℕ) : ℝ) := by positivity
+  rw [← Nat.cast_le (α := ℝ), ← Real.log_le_log_iff (by positivity) h0,
+    Nat.cast_mul, Nat.cast_mul, Nat.cast_pow, Real.log_mul (by positivity) (by positivity),
+    Real.log_mul (by positivity) (by positivity), Real.log_pow]
+  unfold ex
+  field_simp [hL.ne']
+  ring_nf
 
 end expo
 
-/-! ## Each count equals the real-model count -/
+variable (a : ℕ)
 
 lemma pos_of_mem {p : ℕ} (hp : p ∈ a.primeFactors) : 0 < p :=
   (Nat.prime_of_mem_primeFactors hp).pos
+
+/-- `p₁ = e`, `p₂ = f`: every prime factor of `a` below `f` is `e`. -/
+def lowP (e f : ℕ) : Prop := ∀ q ∈ a.primeFactors, f ≤ q ∨ q = e
 
 section counts
 variable (hN : 1 < N)
 include hN
 
 lemma injP : Set.InjOn (ex N) (a.primeFactors : Set ℕ) :=
-  (ex_injOn hN).mono (fun p hp => pos_of_mem a hp)
+  fun p hp q hq h => (x_eq_iff hN (pos_of_mem a hp) (pos_of_mem a hq)).1 h
 
 lemma lowP_iff {e f : ℕ} (he : 0 < e) (hf : 0 < f) :
     lowP a e f ↔ WuReal.low2 (a.primeFactors.image (ex N)) (ex N e) (ex N f) := by
   unfold lowP WuReal.low2
   rw [forall_mem_image]
-  refine forall₂_congr (fun q hq => ?_)
-  rw [x_le_iff hN hf (pos_of_mem a hq), x_eq_iff hN (pos_of_mem a hq) he]
-
-lemma I2_eq : I2 N a k1 k2 = WuReal.U2 k1 k2 (a.primeFactors.image (ex N)) := by
-  unfold I2 WuReal.U2
-  congr 1
-  rw [forall_mem_image]
-  exact propext (forall₂_congr (fun p hp => rpow_le_iff hN (pos_of_mem a hp) _))
-
-lemma I3_eq : I3 N a k1 k2 = WuReal.U3 k1 k2 (a.primeFactors.image (ex N)) := by
-  unfold I3 WuReal.U3
-  congr 1
-  have := card_filter_image (injP a hN) (R := fun p : ℕ => (p : ℝ) < (N : ℝ) ^ e13)
-    (Q := fun y => y < e13) (fun p hp => lt_rpow_iff hN (pos_of_mem a hp) e13)
-  exact_mod_cast this
-
-lemma I4_eq : I4 N a k1 k2 = WuReal.U4 k1 k2 (a.primeFactors.image (ex N)) := by
-  unfold I4 WuReal.U4
-  congr 1
-  have := card_filter_image (injP a hN) (R := fun p : ℕ => (p : ℝ) < (N : ℝ) ^ WuReal.em k1)
-    (Q := fun y => y < WuReal.em k1) (fun p hp => lt_rpow_iff hN (pos_of_mem a hp) (WuReal.em k1))
-  exact_mod_cast this
-
-lemma I5_eq : I5 N a k1 k2 = WuReal.U5 k1 k2 (a.primeFactors.image (ex N)) := by
-  unfold I5 WuReal.U5
-  congr 1
-  refine card_filter_image2 (injP a hN) (fun p hp q hq => ?_)
-  have hp' := pos_of_mem a hp; have hq' := pos_of_mem a hq
-  rw [x_lt_iff hN hp' hq', lt_rpow_iff hN hq']
-
-lemma I6_eq : I6 N a k1 k2 = WuReal.U6 k1 k2 (a.primeFactors.image (ex N)) := by
-  unfold I6 WuReal.U6
-  congr 1
-  refine card_filter_image2 (injP a hN) (fun p hp q hq => ?_)
-  have hp' := pos_of_mem a hp; have hq' := pos_of_mem a hq
-  rw [rpow_le_iff hN hp', lt_rpow_iff hN hp', rpow_le_iff hN hq', lt_rpow_iff hN hq']
-
-lemma I7_eq : I7 N a k1 k2 = WuReal.U7 k1 k2 (a.primeFactors.image (ex N)) := by
-  unfold I7 WuReal.U7
-  congr 1
-  refine card_filter_image2 (injP a hN) (fun p hp q hq => ?_)
-  have hp' := pos_of_mem a hp; have hq' := pos_of_mem a hq
-  rw [x_lt_iff hN hp' hq', rpow_le_iff hN hp', mul_sq_lt_iff hN hp' hq', lowP_iff a hN hp' hq']
-
-lemma I8_eq : I8 N a k1 k2 = WuReal.U8 k1 k2 (a.primeFactors.image (ex N)) := by
-  unfold I8 WuReal.U8
-  congr 1
-  refine card_filter_image2 (injP a hN) (fun p hp q hq => ?_)
-  have hp' := pos_of_mem a hp; have hq' := pos_of_mem a hq
-  rw [lt_rpow_iff hN hp', rpow_le_iff hN hq', mul_sq_lt_iff hN hp' hq', lowP_iff a hN hp' hq']
-
-lemma I9_eq : I9 N a k1 k2 = WuReal.U9 k1 k2 (a.primeFactors.image (ex N)) := by
-  unfold I9 WuReal.U9
-  congr 1
-  refine card_filter_image2 (injP a hN) (fun p hp q hq => ?_)
-  have hp' := pos_of_mem a hp; have hq' := pos_of_mem a hq
-  rw [rpow_le_iff hN hp', lt_rpow_iff hN hp', rpow_le_iff hN hq', mul_sq_lt_iff hN hp' hq',
-    forall_mem_image]
-  refine and_congr_right' (and_congr_right' (and_congr_right' (and_congr_right'
-    (forall₂_congr (fun r hr => ?_)))))
-  have hr' := pos_of_mem a hr
-  rw [le_mul_mul_sq_iff hN hp' hq' hr', x_eq_iff hN hr' hp', x_eq_iff hN hr' hq']
-
-lemma I10_eq : I10 N a k1 k2 = WuReal.U10 k1 k2 (a.primeFactors.image (ex N)) := by
-  unfold I10 WuReal.U10 WuReal.quads
-  congr 1
-  refine card_filter_image4 (injP a hN) (fun p hp q hq r hr w hw => ?_)
-  have hp' := pos_of_mem a hp; have hq' := pos_of_mem a hq
-  have hr' := pos_of_mem a hr; have hw' := pos_of_mem a hw
-  rw [x_lt_iff hN hp' hq', x_lt_iff hN hq' hr', x_lt_iff hN hr' hw', lt_rpow_iff hN hw',
-    lowP_iff a hN hp' hq']
-
-lemma I11_eq : I11 N a k1 k2 = WuReal.U11 k1 k2 (a.primeFactors.image (ex N)) := by
-  unfold I11 WuReal.U11 WuReal.quads
-  congr 1
-  refine card_filter_image4 (injP a hN) (fun p hp q hq r hr w hw => ?_)
-  have hp' := pos_of_mem a hp; have hq' := pos_of_mem a hq
-  have hr' := pos_of_mem a hr; have hw' := pos_of_mem a hw
-  rw [x_lt_iff hN hp' hq', x_lt_iff hN hq' hr', lt_rpow_iff hN hr', rpow_le_iff hN hw',
-    lt_rpow_iff hN hw', lowP_iff a hN hp' hq']
+  exact forall₂_congr fun q hq => by
+    rw [x_le_iff hN hf (pos_of_mem a hq), x_eq_iff hN (pos_of_mem a hq) he]
 
 end counts
-
-lemma cardFactors_of_squarefree {a : ℕ} (h : Squarefree a) (h0 : a ≠ 0) :
-    Ω a = #a.primeFactors := by
-  rw [ArithmeticFunction.cardFactors_apply, ← Nat.toFinset_factors,
-    List.toFinset_card_of_nodup ((Nat.squarefree_iff_nodup_primeFactorsList h0).1 h)]
-
-/-- **Wu 2008 Lemma 2.2, Υ₁₁ repaired, for one integer `a`, squarefree or not**, with
-`ω(a) ≤ 2` on the left: every term depends only on the set of prime factors of `a`. -/
-theorem pointwise_omega (hA : WuReal.Admissible k1 k2) (hN : 1 < N) (ha0 : 0 < a) (haN : a < N)
-    (hk : ∀ p ∈ a.primeFactors, (N : ℝ) ^ k1 ≤ (p : ℝ)) :
-    rhsI N a k1 k2 ≤ if #a.primeFactors ≤ 2 then 4 else 0 := by
-  set d := a.primeFactors.image (ex N) with hd
-  have hinj := injP a hN
-  have hk' : ∀ e ∈ d, k1 ≤ e := by
-    rw [hd, forall_mem_image]
-    intro p hp
-    exact (rpow_le_iff hN (pos_of_mem a hp) _).1 (hk p hp)
-  have hs : ∑ e ∈ d, e < 1 := by
-    rw [hd, sum_image hinj]
-    have hL := logN_pos hN
-    have hprod : ((∏ p ∈ a.primeFactors, p : ℕ) : ℝ) < N := by
-      have := Nat.le_of_dvd ha0 (Nat.prod_primeFactors_dvd a)
-      exact_mod_cast lt_of_le_of_lt this haN
-    push_cast at hprod
-    have hpos : ∀ p ∈ a.primeFactors, ((p : ℕ) : ℝ) ≠ 0 := fun p hp =>
-      by exact_mod_cast (pos_of_mem a hp).ne'
-    have hlog := Real.log_lt_log (prod_pos (fun p hp => by exact_mod_cast pos_of_mem a hp)) hprod
-    rw [Real.log_prod hpos] at hlog
-    unfold ex
-    rw [← sum_div, div_lt_one hL]
-    exact hlog
-  have key := WuReal.pointwise k1 k2 hA d hk' hs
-  have hcard : #d = #a.primeFactors := card_image_of_injOn hinj
-  unfold rhsI
-  unfold WuReal.rhs WuReal.lhs at key
-  rw [I2_eq a k1 k2 hN, I3_eq a k1 k2 hN, I4_eq a k1 k2 hN, I5_eq a k1 k2 hN, I6_eq a k1 k2 hN, I7_eq a k1 k2 hN, I8_eq a k1 k2 hN,
-    I9_eq a k1 k2 hN, I10_eq a k1 k2 hN, I11_eq a k1 k2 hN]
-  rw [hcard] at key
-  exact key
 
 /-! ## Vacuity: the F-0050 shape as an actual integer -/
 
