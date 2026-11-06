@@ -44,25 +44,20 @@ open PowerSeries
 
 /-- The combinatorial identity in the proof of Lemma 5.5:
 `∑_{n=0}^ℓ (-1)ⁿ / (n! (ℓ - n)!) = 1` if `ℓ = 0` and `0` otherwise. -/
-theorem alternating_factorial_sum (l : ℕ) :
-    ∑ n ∈ Finset.range (l + 1), ((-1 : ℚ) ^ n / (n.factorial * (l - n).factorial)) =
+theorem alternating_factorial_sum l :
+    ∑ n ∈ Finset.range (l + 1), (-1 : ℚ) ^ n / (n.factorial * (l - n).factorial) =
       if l = 0 then 1 else 0 := by
-  have key : ∀ n ∈ Finset.range (l + 1), ((-1 : ℚ) ^ n / (n.factorial * (l - n).factorial)) =
-      ((-1) ^ n * (l.choose n : ℚ)) / l.factorial := by
+  rw [Finset.sum_congr rfl (show ∀ n ∈ Finset.range (l + 1), (-1 : ℚ) ^ n / (n.factorial * (l - n).factorial) = (-1) ^ n * (l.choose n : ℚ) / l.factorial by
     intro n hn
     rw [Finset.mem_range] at hn
     rw [div_eq_div_iff (by positivity) (by positivity),
       ← Nat.choose_mul_factorial_mul_factorial (show n ≤ l by omega)]
-    push_cast; ring
-  rw [Finset.sum_congr rfl key, ← Finset.sum_div]
-  have h2 : ∑ n ∈ Finset.range (l + 1), ((-1 : ℚ) ^ n * (l.choose n : ℚ)) =
-      ((∑ n ∈ Finset.range (l + 1), ((-1 : ℤ) ^ n * (l.choose n : ℤ)) : ℤ) : ℚ) := by
-    push_cast; rfl
-  rw [h2, Int.alternating_sum_range_choose]
+    push_cast; ring), ← Finset.sum_div]
+  rw [show ∑ n ∈ Finset.range (l + 1), (-1 : ℚ) ^ n * (l.choose n) = (∑ n ∈ Finset.range (l + 1), ((-1 : ℤ) ^ n * (l.choose n : ℤ)) : ℤ) by
+    push_cast; rfl, Int.alternating_sum_range_choose]
   split_ifs with h <;> simp [h]
 
 variable {R : Type*} [CommRing R] [Algebra ℚ R]
 
-variable {D Dbar : Derivation ℚ R R} {z : R} {J : R →ₗ[ℚ] R} {A : Submodule ℚ R}
 
 end PolyaNeumann

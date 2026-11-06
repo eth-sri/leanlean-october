@@ -43,21 +43,19 @@ operator-norm continuous at `E₀`, with `R_{E₀} = α I + C` (`α > 0`, `C` co
 injective. Then there is `A₀ > 0` such that for all `E` near `E₀`,
 `Re ⟨z, R_E z⟩ ≥ -A₀ ‖S_E z‖²` for every `z`. -/
 theorem reduced_lower_bound (α : ℝ) (hα : 0 < α) (C : Z →L[ℂ] Z) (hC : IsCompactOperator C)
-    (R : ℝ → Z →L[ℂ] Z) (S : ℝ → Z →L[ℂ] Y) (E₀ : ℝ) (hR : ContinuousAt R E₀)
+    (R : ℝ → Z →L[ℂ] Z) (S : ℝ → Z →L[ℂ] Y) E₀ (hR : ContinuousAt R E₀)
     (hS : ContinuousAt S E₀) (hR₀ : R E₀ = (α : ℂ) • ContinuousLinearMap.id ℂ Z + C)
     (hinj : Function.Injective (S E₀)) :
     ∃ A₀ > 0, ∀ᶠ E in 𝓝 E₀, ∀ z : Z, -(A₀ * ‖S E z‖ ^ 2) ≤ (⟪z, R E z⟫_ℂ).re := by
   obtain ⟨A, hA, ε, hε, δ, hδ, h⟩ := compact_perturbation_coercive_nhds α hα C hC (S E₀) hinj
   refine ⟨A, hA, ?_⟩
-  have h1 : ∀ᶠ E in 𝓝 E₀, ‖R E - R E₀‖ < δ := by
+  filter_upwards [show ∀ᶠ E in 𝓝 E₀, ‖R E - R E₀‖ < δ by
     have := (hR.sub_const (R E₀)).norm
-    simp only [sub_self, norm_zero] at this
-    exact this.eventually (gt_mem_nhds hδ)
-  have h2 : ∀ᶠ E in 𝓝 E₀, ‖S E - S E₀‖ < δ := by
+    simp at this
+    exact this.eventually (gt_mem_nhds hδ), show ∀ᶠ E in 𝓝 E₀, ‖S E - S E₀‖ < δ by
     have := (hS.sub_const (S E₀)).norm
-    simp only [sub_self, norm_zero] at this
-    exact this.eventually (gt_mem_nhds hδ)
-  filter_upwards [h1, h2] with E hE1 hE2 z
+    simp at this
+    exact this.eventually (gt_mem_nhds hδ)] with E hE1 hE2 z
   rw [hR₀] at hE1
   have := h (R E) (S E) hE1 hE2 z
   have : 0 ≤ ε / 2 * ‖z‖ ^ 2 := by positivity
@@ -67,21 +65,8 @@ end Reduced
 
 /-! ### Lemma 7.9 -/
 
-section Boundary
-
-variable {G X W : Type*} [NormedAddCommGroup G] [InnerProductSpace ℂ G]
-  [NormedAddCommGroup X] [InnerProductSpace ℂ X]
-  [NormedAddCommGroup W] [InnerProductSpace ℂ W]
-
-end Boundary
 
 /-! ### Proposition 7.10 -/
 
-section Rank
-
-variable {G X : Type*} [NormedAddCommGroup G] [InnerProductSpace ℂ G]
-  [NormedAddCommGroup X] [InnerProductSpace ℂ X]
-
-end Rank
 
 end PolyaNeumann

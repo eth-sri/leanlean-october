@@ -31,7 +31,7 @@ namespace PolyaNeumann
 /-- Iteration of the genuine primitive `f ↦ (t ↦ ∫ s in 0..t, a s * f s)`. -/
 def volterraPrimitiveIterate (a h : ℝ → ℂ) : ℕ → ℝ → ℂ
   | 0 => h
-  | n + 1 => fun t => ∫ s in (0 : ℝ)..t, a s * volterraPrimitiveIterate a h n s
+  | n + 1 => fun t => ∫ s in 0..t, a s * volterraPrimitiveIterate a h n s
 
 variable {a h : ℝ → ℂ}
 
@@ -45,60 +45,45 @@ theorem continuous_volterraPrimitiveIterate (ha : Continuous a) (hh : Continuous
 
 /-- The continuous integrand defining the next iterate is interval integrable. -/
 theorem intervalIntegrable_volterraPrimitiveIntegrand
-    (ha : Continuous a) (hh : Continuous h) (n : ℕ) (x y : ℝ) :
+    (ha : Continuous a) (hh : Continuous h) n x y :
     IntervalIntegrable (fun s => a s * volterraPrimitiveIterate a h n s) volume x y :=
   (ha.mul (continuous_volterraPrimitiveIterate ha hh n)).intervalIntegrable x y
-
-/-- A compact form of the factorial estimate, retaining `(M * t) ^ n`. -/
-theorem volterraPrimitiveIterate_bound_mul
-    (ha : Continuous a) (hh : Continuous h)
-    {T M H : ℝ} (_hT : 0 ≤ T) (hM0 : 0 ≤ M) (_hH0 : 0 ≤ H)
-    (hM : ∀ t ∈ Set.Icc 0 T, ‖a t‖ ≤ M)
-    (hH : ∀ t ∈ Set.Icc 0 T, ‖h t‖ ≤ H) :
-    ∀ n t, t ∈ Set.Icc 0 T →
-      ‖volterraPrimitiveIterate a h n t‖ ≤ H * (M * t) ^ n / (n.factorial : ℝ) := by
-  intro n
-  induction n with
-  | zero =>
-      intro t ht
-      simpa [volterraPrimitiveIterate] using hH t ht
-  | succ n ih =>
-      intro t ht
-      simp only [volterraPrimitiveIterate]
-      refine (intervalIntegral.norm_integral_le_integral_norm ht.1).trans ?_
-      have hint1 :
-          IntervalIntegrable (fun s => ‖a s * volterraPrimitiveIterate a h n s‖)
-            volume 0 t :=
-        (intervalIntegrable_volterraPrimitiveIntegrand ha hh n 0 t).norm
-      have hint2 : IntervalIntegrable
-          (fun s => M * (H * (M * s) ^ n / (n.factorial : ℝ))) volume 0 t := by
-        apply Continuous.intervalIntegrable
-        fun_prop
-      refine (intervalIntegral.integral_mono_on ht.1 hint1 hint2
-        fun s hs => ?_).trans_eq ?_
-      · have hsT : s ∈ Set.Icc 0 T := ⟨hs.1, hs.2.trans ht.2⟩
-        exact (norm_mul_le _ _).trans
-          (mul_le_mul (hM s hsT) (ih s hsT) (norm_nonneg _) hM0)
-      · have heq :
-            (fun s : ℝ => M * (H * (M * s) ^ n / (n.factorial : ℝ))) =
-              fun s => (M * H * M ^ n / (n.factorial : ℝ)) * s ^ n := by
-          funext s
-          rw [mul_pow]
-          ring
-        rw [heq, intervalIntegral.integral_const_mul, integral_pow, Nat.factorial_succ]
-        push_cast
-        field_simp
-        ring
 
 /-- A bound independent of the evaluation point in `[0,T]`. -/
 theorem volterraPrimitiveIterate_bound_uniform
     (ha : Continuous a) (hh : Continuous h)
-    {T M H : ℝ} (hT : 0 ≤ T) (hM0 : 0 ≤ M) (hH0 : 0 ≤ H)
+     (hT : 0 ≤ T) (hM0 : 0 ≤ M) (hH0 : 0 ≤ H)
     (hM : ∀ t ∈ Set.Icc 0 T, ‖a t‖ ≤ M)
     (hH : ∀ t ∈ Set.Icc 0 T, ‖h t‖ ≤ H)
-    (n : ℕ) (t : ℝ) (ht : t ∈ Set.Icc 0 T) :
+    n t (ht : t ∈ Set.Icc 0 T) :
     ‖volterraPrimitiveIterate a h n t‖ ≤ H * (M * T) ^ n / (n.factorial : ℝ) := by
-  refine (volterraPrimitiveIterate_bound_mul ha hh hT hM0 hH0 hM hH n t ht).trans ?_
+  refine ((show ∀ n t, t ∈ Set.Icc 0 T → ‖volterraPrimitiveIterate a h n t‖ ≤ H * (M * t) ^ n / (n.factorial : ℝ) by
+    intro n
+    induction n with
+    | zero =>
+        intro t ht
+        simpa [volterraPrimitiveIterate] using hH t ht
+    | succ n ih =>
+        intro t ht
+        simp [volterraPrimitiveIterate]
+        refine (intervalIntegral.norm_integral_le_integral_norm ht.1).trans ?_
+        refine (intervalIntegral.integral_mono_on ht.1 ((intervalIntegrable_volterraPrimitiveIntegrand ha hh n 0 t).norm) (show IntervalIntegrable (fun s => M * (H * (M * s) ^ n / n.factorial)) volume 0 t by
+          apply Continuous.intervalIntegrable
+          fun_prop)
+          fun s hs => ?_).trans_eq ?_
+        · have hsT : s ∈ Set.Icc 0 T := ⟨hs.1, hs.2.trans ht.2⟩
+          exact (norm_mul_le _ _).trans
+            (mul_le_mul (hM s hsT) (ih s hsT) (norm_nonneg _) hM0)
+        · have heq :
+              (fun s => M * (H * (M * s) ^ n / n.factorial)) =
+                fun s => M * H * M ^ n / n.factorial * s ^ n := by
+            funext s
+            rw [mul_pow]
+            ring
+          rw [heq, intervalIntegral.integral_const_mul, integral_pow, Nat.factorial_succ]
+          push_cast
+          field_simp
+          ring) n t ht).trans ?_
   exact div_le_div_of_nonneg_right
     (mul_le_mul_of_nonneg_left
       (pow_le_pow_left₀ (mul_nonneg hM0 ht.1)
@@ -106,13 +91,13 @@ theorem volterraPrimitiveIterate_bound_uniform
     (Nat.cast_nonneg n.factorial)
 
 /-- The scalar factorial majorant is summable for every real multiplier. -/
-theorem summable_volterraPrimitive_majorant (H c : ℝ) :
-    Summable (fun n : ℕ => H * c ^ n / (n.factorial : ℝ)) := by
-  simpa only [mul_div_assoc] using (Real.summable_pow_div_factorial c).mul_left H
+theorem summable_volterraPrimitive_majorant H c :
+    Summable (fun n => H * c ^ n / (n.factorial : ℝ)) := by
+  simpa [mul_div_assoc] using (Real.summable_pow_div_factorial c).mul_left H
 
 /-- The next iterate has the genuine derivative prescribed by its continuous integrand. -/
 theorem hasDerivAt_volterraPrimitiveIterate_succ
-    (ha : Continuous a) (hh : Continuous h) (n : ℕ) (t : ℝ) :
+    (ha : Continuous a) (hh : Continuous h) n t :
     HasDerivAt (volterraPrimitiveIterate a h (n + 1))
       (a t * volterraPrimitiveIterate a h n t) t := by
   have hc := ha.mul (continuous_volterraPrimitiveIterate ha hh n)

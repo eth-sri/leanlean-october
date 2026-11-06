@@ -59,11 +59,7 @@ instance : ContinuousStar (Ell2 →L[ℂ] Ell2) :=
 instance : StarModule ℝ (Ell2 →L[ℂ] Ell2) :=
   @StarModule.complexToReal (Ell2 →L[ℂ] Ell2) _ _ _ _
 
-instance : IsScalarTower ℝ (Ell2 →L[ℂ] Ell2) (Ell2 →L[ℂ] Ell2) :=
-  @IsScalarTower.right ℝ (Ell2 →L[ℂ] Ell2) _ _ _
 
-instance : SMulCommClass ℝ (Ell2 →L[ℂ] Ell2) (Ell2 →L[ℂ] Ell2) :=
-  @Algebra.to_smulCommClass ℝ (Ell2 →L[ℂ] Ell2) _ _ _
 
 /-- `r • x = (r : ℂ) • x` for real scalars acting on `ℋ`. -/
 lemma real_smul_eq_coe_smul_ell2 (r : ℝ) (x : Ell2) : r • x = (r : ℂ) • x :=
@@ -76,13 +72,13 @@ lemma real_smul_eq_coe_smul_clm (r : ℝ) (A : Ell2 →L[ℂ] Ell2) : r • A = 
 /-- The weights of the shift: `w_0 = √2`, `w_n = 1` for `n ≥ 1`. -/
 def shiftWeight (n : ℕ) : ℂ := if n = 0 then (Real.sqrt 2 : ℂ) else 1
 
-lemma conj_shiftWeight (n : ℕ) : conj (shiftWeight n) = shiftWeight n := by
+lemma conj_shiftWeight n : conj (shiftWeight n) = shiftWeight n := by
   unfold shiftWeight; split_ifs <;> simp
 
-lemma norm_shiftWeight_sq_le (n : ℕ) : ‖shiftWeight n‖ ^ 2 ≤ 2 := by
+lemma norm_shiftWeight_sq_le n : ‖shiftWeight n‖ ^ 2 ≤ 2 := by
   unfold shiftWeight; split_ifs <;> simp
 
-lemma shiftWeight_mul_self (n : ℕ) :
+lemma shiftWeight_mul_self n :
     shiftWeight n * shiftWeight n = if n = 0 then 2 else 1 := by
   unfold shiftWeight; split_ifs
   · rw [← Complex.ofReal_mul, Real.mul_self_sqrt (by norm_num)]; simp
@@ -99,8 +95,7 @@ def shiftAdjFun (f : ℕ → ℂ) : ℕ → ℂ := fun n => shiftWeight n * f (n
 lemma two_toReal : (2 : ENNReal).toReal = 2 := by simp
 
 lemma summable_sq (f : Ell2) : Summable fun n => ‖(f : ℕ → ℂ) n‖ ^ 2 := by
-  have := (memℓp_gen_iff (p := 2) (by simp)).mp f.2
-  simpa [two_toReal] using this
+  simpa [two_toReal] using (memℓp_gen_iff (p := 2) (by simp)).mp f.2
 
 lemma memℓp_of_summable_sq {g : ℕ → ℂ} (h : Summable fun n => ‖g n‖ ^ 2) :
     Memℓp g 2 := by
@@ -109,15 +104,15 @@ lemma memℓp_of_summable_sq {g : ℕ → ℂ} (h : Summable fun n => ‖g n‖ 
 
 lemma tsum_sq_eq_norm_sq (f : Ell2) : ∑' n, ‖(f : ℕ → ℂ) n‖ ^ 2 = ‖f‖ ^ 2 := by
   have := lp.norm_rpow_eq_tsum (p := 2) (by simp) f
-  simp only [two_toReal, Real.rpow_two] at this
+  simp at this
   exact this.symm
 
-lemma shift_sq_bound (f : Ell2) (n : ℕ) :
+lemma shift_sq_bound f n :
     ‖shiftWeight n * (f : ℕ → ℂ) n‖ ^ 2 ≤ 2 * ‖(f : ℕ → ℂ) n‖ ^ 2 := by
   rw [norm_mul, mul_pow]
   exact mul_le_mul_of_nonneg_right (norm_shiftWeight_sq_le n) (by positivity)
 
-lemma shiftAdj_sq_bound (f : Ell2) (n : ℕ) :
+lemma shiftAdj_sq_bound f n :
     ‖shiftWeight n * (f : ℕ → ℂ) (n + 1)‖ ^ 2 ≤ 2 * ‖(f : ℕ → ℂ) (n + 1)‖ ^ 2 := by
   rw [norm_mul, mul_pow]
   exact mul_le_mul_of_nonneg_right (norm_shiftWeight_sq_le n) (by positivity)
@@ -129,7 +124,7 @@ lemma summable_shiftFun (f : Ell2) : Summable fun n => ‖shiftFun f n‖ ^ 2 :=
   exact shift_sq_bound f n
 
 lemma summable_shiftAdjFun (f : Ell2) : Summable fun n => ‖shiftAdjFun f n‖ ^ 2 := by
-  refine Summable.of_nonneg_of_le (fun _ => by positivity) (fun n => shiftAdj_sq_bound f n)
+  refine Summable.of_nonneg_of_le (fun _ => by positivity) (shiftAdj_sq_bound f)
     (((summable_nat_add_iff 1).mpr (summable_sq f)).mul_left 2)
 
 /-- `S_N` as a linear map. -/
@@ -156,29 +151,29 @@ def shiftAdjLin : Ell2 →ₗ[ℂ] Ell2 where
     change shiftAdjFun (⇑(c • f)) n = c • shiftAdjFun ⇑f n
     simp [shiftAdjFun]; ring
 
-lemma shiftLin_norm_le (f : Ell2) : ‖shiftLin f‖ ≤ Real.sqrt 2 * ‖f‖ := by
+lemma shiftLin_norm_le f : ‖shiftLin f‖ ≤ Real.sqrt 2 * ‖f‖ := by
   apply lp.norm_le_of_tsum_le (p := 2) (by simp) (by positivity)
-  simp only [two_toReal, Real.rpow_two]
+  simp
   rw [mul_pow, Real.sq_sqrt (by norm_num), ← tsum_sq_eq_norm_sq, ← tsum_mul_left]
   change ∑' n, ‖shiftFun f n‖ ^ 2 ≤ _
   rw [(summable_shiftFun f).tsum_eq_zero_add]
   simp only [shiftFun, norm_zero, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true,
     zero_pow, zero_add]
-  calc ∑' n, ‖shiftWeight n * (f : ℕ → ℂ) n‖ ^ 2 ≤ ∑' n, 2 * ‖(f : ℕ → ℂ) n‖ ^ 2 :=
-        Summable.tsum_le_tsum (fun n => shift_sq_bound f n)
+  calc _ ≤ _ :=
+        Summable.tsum_le_tsum (shift_sq_bound f)
           ((summable_nat_add_iff 1).mpr (summable_shiftFun f))
           ((summable_sq f).mul_left 2)
     _ ≤ _ := le_rfl
 
-lemma shiftAdjLin_norm_le (f : Ell2) : ‖shiftAdjLin f‖ ≤ Real.sqrt 2 * ‖f‖ := by
+lemma shiftAdjLin_norm_le f : ‖shiftAdjLin f‖ ≤ Real.sqrt 2 * ‖f‖ := by
   apply lp.norm_le_of_tsum_le (p := 2) (by simp) (by positivity)
-  simp only [two_toReal, Real.rpow_two]
+  simp
   rw [mul_pow, Real.sq_sqrt (by norm_num), ← tsum_sq_eq_norm_sq, ← tsum_mul_left]
   change ∑' n, ‖shiftAdjFun f n‖ ^ 2 ≤ _
-  calc ∑' n, ‖shiftAdjFun f n‖ ^ 2 ≤ ∑' n, 2 * ‖(f : ℕ → ℂ) (n + 1)‖ ^ 2 :=
-        Summable.tsum_le_tsum (fun n => shiftAdj_sq_bound f n) (summable_shiftAdjFun f)
+  calc _ ≤ _ :=
+        Summable.tsum_le_tsum (shiftAdj_sq_bound f) (summable_shiftAdjFun f)
           (((summable_nat_add_iff 1).mpr (summable_sq f)).mul_left 2)
-    _ ≤ ∑' n, 2 * ‖(f : ℕ → ℂ) n‖ ^ 2 := by
+    _ ≤ _ := by
       rw [((summable_sq f).mul_left 2).tsum_eq_zero_add]
       exact le_add_of_nonneg_left (by positivity)
 
@@ -188,21 +183,19 @@ def shiftN : Ell2 →L[ℂ] Ell2 := shiftLin.mkContinuous (Real.sqrt 2) shiftLin
 /-- The concrete formula for `S_N^*`. -/
 def shiftNAdj : Ell2 →L[ℂ] Ell2 := shiftAdjLin.mkContinuous (Real.sqrt 2) shiftAdjLin_norm_le
 
-@[simp] lemma shiftN_apply_zero (f : Ell2) : (shiftN f : ℕ → ℂ) 0 = 0 := rfl
+@[simp] lemma shiftN_apply_zero f : (shiftN f : ℕ → ℂ) 0 = 0 := rfl
 
-@[simp] lemma shiftN_apply_succ (f : Ell2) (n : ℕ) :
+@[simp] lemma shiftN_apply_succ f n :
     (shiftN f : ℕ → ℂ) (n + 1) = shiftWeight n * (f : ℕ → ℂ) n := rfl
 
-@[simp] lemma shiftNAdj_apply (f : Ell2) (n : ℕ) :
+@[simp] lemma shiftNAdj_apply f n :
     (shiftNAdj f : ℕ → ℂ) n = shiftWeight n * (f : ℕ → ℂ) (n + 1) := rfl
 
 /-- `shiftNAdj` is the Hilbert-space adjoint of `S_N`. -/
 lemma shiftNAdj_eq_adjoint : shiftNAdj = ContinuousLinearMap.adjoint shiftN := by
   rw [ContinuousLinearMap.eq_adjoint_iff]
   intro f g
-  have hs : Summable fun i => inner ℂ ((f : ℕ → ℂ) i) ((shiftN g : ℕ → ℂ) i) :=
-    lp.summable_inner f (shiftN g)
-  rw [lp.inner_eq_tsum, lp.inner_eq_tsum, hs.tsum_eq_zero_add]
+  rw [lp.inner_eq_tsum, lp.inner_eq_tsum, (lp.summable_inner f (shiftN g) : Summable fun i => inner ℂ (f i) ((shiftN g : ℕ → ℂ) i)).tsum_eq_zero_add]
   simp only [shiftNAdj_apply, shiftN_apply_zero, shiftN_apply_succ,
     RCLike.inner_apply]
   rw [zero_mul, zero_add]
@@ -220,13 +213,13 @@ def diagN : Ell2 →L[ℂ] Ell2 :=
 /-- The diagonal entries of `D_N`. -/
 def diagEntry (n : ℕ) : ℂ := if n = 0 then 2 else if n = 1 then -1 else 0
 
-lemma inner_single (f : Ell2) (k : ℕ) :
-    inner ℂ (lp.single 2 k (1 : ℂ) : Ell2) f = (f : ℕ → ℂ) k := by
+lemma inner_single f k :
+    inner ℂ (lp.single 2 k 1 : Ell2) f = (f : ℕ → ℂ) k := by
   rw [lp.inner_eq_tsum, tsum_eq_single k]
   · simp
-  · intro b hb; simp [lp.single_apply, hb]
+  · intro b hb; simp [hb]
 
-lemma diagN_apply (f : Ell2) (n : ℕ) :
+lemma diagN_apply f n :
     (diagN f : ℕ → ℂ) n = diagEntry n * (f : ℕ → ℂ) n := by
   simp only [diagN, ContinuousLinearMap.sub_apply, ContinuousLinearMap.smul_apply,
     ContinuousLinearMap.comp_apply, innerSL_apply_apply, inner_single,
@@ -241,18 +234,14 @@ theorem shift_commutator :
   rw [← shiftNAdj_eq_adjoint]
   ext1 f
   apply lp.ext; funext n
-  simp only [ContinuousLinearMap.sub_apply, ContinuousLinearMap.mul_apply, lp.coeFn_sub,
-    Pi.sub_apply, diagN_apply, shiftNAdj_apply, shiftN_apply_succ]
+  simp [diagN_apply]
   rcases n with _ | _ | n
   · simp [shiftWeight_mul_self, diagEntry, ← mul_assoc]
-  · simp only [shiftN_apply_succ, shiftNAdj_apply, diagEntry]
+  · simp [diagEntry]
     rw [← mul_assoc, ← mul_assoc, shiftWeight_mul_self, shiftWeight_mul_self]; norm_num; ring
-  · simp only [shiftN_apply_succ, shiftNAdj_apply, diagEntry]
+  · simp [diagEntry]
     rw [← mul_assoc, ← mul_assoc, shiftWeight_mul_self, shiftWeight_mul_self]; simp
 
-/-- `G_x = -i (S_N + S_N^*) / 2`. -/
-def Gx : Ell2 →L[ℂ] Ell2 :=
-  (-Complex.I / 2) • (shiftN + ContinuousLinearMap.adjoint shiftN)
 
 /-- The standard basis vector `e_n` of `ℓ²(ℕ₀)`. -/
 def basisVec (n : ℕ) : Ell2 := lp.single 2 n (1 : ℂ)

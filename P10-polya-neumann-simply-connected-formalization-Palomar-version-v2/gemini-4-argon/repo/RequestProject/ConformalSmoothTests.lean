@@ -17,13 +17,17 @@ values and chain differential.
 
 noncomputable section
 
+open scoped ContDiff
+
 namespace PolyaNeumann
 
 open Set Metric
 
+variable {R : ℝ}
+
 /-- A global smooth test representing composition in a disk neighbourhood. -/
-def smoothDiskCompositionLin {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
-    (hF : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R)) :
+def smoothDiskCompositionLin  (hR : 1 < R) (F : ℂ → ℂ)
+    (hF : ContDiffOn ℝ ∞ F (ball 0 R)) :
     smoothTraceTests →ₗ[ℂ] smoothTraceTests where
   toFun f := ⟨smoothDiskCutoff R hR ((f : ℂ → ℂ) ∘ F),
     smoothDiskCutoff_testFunction hR (f.property.1.comp_contDiffOn hF)⟩
@@ -41,19 +45,19 @@ def smoothDiskCompositionLin {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
       c * ((smoothDiskCutoffBump R hR z : ℂ) * f (F z))
     ring
 
-theorem smoothDiskCompositionLin_eq_closedDisk {R : ℝ} (hR : 1 < R)
-    (F : ℂ → ℂ) (hF : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
-    (f : smoothTraceTests) {z : ℂ} (hz : z ∈ closedBall (0 : ℂ) 1) :
+theorem smoothDiskCompositionLin_eq_closedDisk  (hR : 1 < R)
+    F hF
+    f  (hz : z ∈ closedBall 0 1) :
     smoothDiskCompositionLin hR F hF f z = f (F z) :=
   smoothDiskCutoff_eq_closedDisk hR ((f : ℂ → ℂ) ∘ F) hz
 
-theorem fderiv_smoothDiskCompositionLin {R : ℝ} (hR : 1 < R)
-    (F : ℂ → ℂ) (hF : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
-    (f : smoothTraceTests) {z : ℂ} (hz : z ∈ closedBall (0 : ℂ) 1) :
+theorem fderiv_smoothDiskCompositionLin  (hR : 1 < R)
+    F hF
+    f  (hz : z ∈ closedBall 0 1) :
     fderiv ℝ (smoothDiskCompositionLin hR F hF f : ℂ → ℂ) z =
       (fderiv ℝ (f : ℂ → ℂ) (F z)).comp (fderiv ℝ F z) := by
-  change fderiv ℝ (smoothDiskCutoff R hR ((f : ℂ → ℂ) ∘ F)) z = _
-  rw [fderiv_smoothDiskCutoff_eq hR ((f : ℂ → ℂ) ∘ F) hz]
+  change fderiv ℝ (smoothDiskCutoff R hR (f ∘ F)) z = _
+  rw [fderiv_smoothDiskCutoff_eq hR (f ∘ F) hz]
   exact fderiv_comp z (f.property.1.differentiable (by simp) (F z))
     ((hF.contDiffAt (isOpen_ball.mem_nhds (closedBall_subset_ball hR hz))).differentiableAt
       (by simp))

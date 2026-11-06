@@ -24,55 +24,57 @@ namespace PolyaNeumann
 open MeasureTheory Set Metric Filter
 open scoped Real ContDiff Topology
 
-def localConformalDiskH1Trace {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
-    (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
-    (hL : IsLipschitzDomain (F '' ball (0 : ℂ) 1)) :
-    NeumannH1 (F '' ball (0 : ℂ) 1) →L[ℂ] BoundaryL2 :=
+variable {R : ℝ} {C : ℝ}
+
+local notation "Φ0" => ball 0 1
+
+def localConformalDiskH1Trace  (hR : 1 < R) (F : ℂ → ℂ)
+    (hFs : ContDiffOn ℝ ∞ F (ball 0 R))
+    (hL : IsLipschitzDomain (F '' Φ0)) :
+    NeumannH1 (F '' Φ0) →L[ℂ] BoundaryL2 :=
   diskH1Trace.comp (localConformalH1Pullback hR F hFs hL)
 
-def localConformalDiskHalfTrace {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
-    (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
-    (hL : IsLipschitzDomain (F '' ball (0 : ℂ) 1)) :
-    NeumannH1 (F '' ball (0 : ℂ) 1) →L[ℂ] L2Z :=
+def localConformalDiskHalfTrace  (hR : 1 < R) (F : ℂ → ℂ)
+    (hFs : ContDiffOn ℝ ∞ F (ball 0 R))
+    (hL : IsLipschitzDomain (F '' Φ0)) :
+    NeumannH1 (F '' Φ0) →L[ℂ] L2Z :=
   diskHalfTrace.comp (localConformalH1Pullback hR F hFs hL)
 
-@[simp] theorem localConformalDiskHalfTrace_apply {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
-    (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
-    (hL : IsLipschitzDomain (F '' ball (0 : ℂ) 1))
-    (u : NeumannH1 (F '' ball (0 : ℂ) 1)) (n : ℤ) :
+@[simp] theorem localConformalDiskHalfTrace_apply  (hR : 1 < R) F
+    hFs
+    hL
+    u n :
     localConformalDiskHalfTrace hR F hFs hL u n =
       (Real.sqrt (1 + |(n : ℝ)|) : ℂ) *
         boundaryFourier (localConformalDiskH1Trace hR F hFs hL u) n :=
   diskHalfTrace_apply _ n
 
-theorem localConformalDiskH1Trace_smooth_ae {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
-    (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
-    (hb : Bornology.IsBounded (F '' ball (0 : ℂ) 1))
-    (hL : IsLipschitzDomain (F '' ball (0 : ℂ) 1))
-    (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    (hinj : InjOn F (ball (0 : ℂ) 1)) {C : ℝ}
-    (hC : ∀ z ∈ ball (0 : ℂ) 1, 1 ≤ C * ‖deriv F z‖ ^ 2)
-    (f : smoothTraceTests) :
-    (localConformalDiskH1Trace hR F hFs hL (smoothTraceH1 (F '' ball (0 : ℂ) 1) f) : ℝ → ℂ)
-      =ᵐ[volume.restrict (Ioc (0 : ℝ) (2 * π))] fun θ => f (F (circleMap 0 1 θ)) := by
+theorem localConformalDiskH1Trace_smooth_ae  (hR : 1 < R) F
+    (hFs : ContDiffOn ℝ ∞ F (ball 0 R))
+    (hb : Bornology.IsBounded (F '' Φ0))
+    hL
+    (hhol : DifferentiableOn ℂ F (Φ0))
+    (hinj : InjOn F (Φ0)) 
+    (hC : ∀ z ∈ Φ0, 1 ≤ C * ‖deriv F z‖ ^ 2)
+    f :
+    (localConformalDiskH1Trace hR F hFs hL (smoothTraceH1 (F '' Φ0) f) : ℝ → ℂ)
+      =ᵐ[volume.restrict (Ioc 0 (2 * π))] fun θ => f (F (circleMap 0 1 θ)) := by
   change (diskH1Trace (localConformalH1Pullback hR F hFs hL
-    (smoothTraceH1 (F '' ball (0 : ℂ) 1) f)) : ℝ → ℂ) =ᵐ[_] _
+    (smoothTraceH1 (F '' Φ0) f)) : ℝ → ℂ) =ᵐ[_] _
   rw [localConformalH1Pullback_smooth hR F hFs hb hL hhol hinj hC f]
-  have h := h1BoundaryTrace_smooth_ae unitDisk_bounded isLipschitzDomain_unitDisk
-    unitCircle_isBoundaryParam (smoothDiskCompositionLin hR F hFs f)
-  filter_upwards [h] with θ hθ
+  filter_upwards [h1BoundaryTrace_smooth_ae unitDisk_bounded isLipschitzDomain_unitDisk unitCircle_isBoundaryParam (smoothDiskCompositionLin hR F hFs f)] with θ hθ
   rw [diskH1Trace, hθ]
   exact smoothDiskCompositionLin_eq_closedDisk hR F hFs f
     (sphere_subset_closedBall (circleMap_mem_sphere (0 : ℂ) (by norm_num : (0 : ℝ) ≤ 1) θ))
 
-theorem localConformalDiskH1Trace_eq_reparam {R : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
-    (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
-    (hb : Bornology.IsBounded (F '' ball (0 : ℂ) 1))
-    (hL : IsLipschitzDomain (F '' ball (0 : ℂ) 1))
-    (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    (hinj : InjOn F (ball (0 : ℂ) 1)) {C : ℝ}
-    (hC : ∀ z ∈ ball (0 : ℂ) 1, 1 ≤ C * ‖deriv F z‖ ^ 2)
-    {γ : ℝ → ℂ} (hγ : IsBoundaryParam (F '' ball (0 : ℂ) 1) γ)
+theorem localConformalDiskH1Trace_eq_reparam  (hR : 1 < R) (F : ℂ → ℂ)
+    hFs
+    (hb : Bornology.IsBounded (F '' Φ0))
+    hL
+    (hhol : DifferentiableOn ℂ F (Φ0))
+    (hinj : InjOn F (Φ0)) 
+    (hC : ∀ z ∈ Φ0, 1 ≤ C * ‖deriv F z‖ ^ 2)
+    {γ : ℝ → ℂ} (hγ : IsBoundaryParam (F '' Φ0) γ)
     {τ : ℝ → ℝ} {c : ℝ} (hτ : IsC1TraceReparam τ c)
     (hcoord : ∀ θ, F (circleMap 0 1 θ) = γ (τ θ)) :
     h1ReparamBoundaryTrace hL hγ hτ = localConformalDiskH1Trace hR F hFs hL := by
@@ -80,8 +82,8 @@ theorem localConformalDiskH1Trace_eq_reparam {R : ℝ} (hR : 1 < R) (F : ℂ →
   intro f
   apply Lp.ext
   have h := localConformalDiskH1Trace_smooth_ae hR F hFs hb hL hhol hinj hC f
-  have h' : (smoothReparamBoundaryLin hγ hτ f : ℝ → ℂ)
-      =ᵐ[volume.restrict (Ioc (0 : ℝ) (2 * π))] fun θ => f (γ (τ θ)) :=
+  have h' : smoothReparamBoundaryLin hγ hτ f
+      =ᵐ[volume.restrict (Ioc 0 (2 * π))] fun θ => f (γ (τ θ)) :=
     (smoothReparamBoundary_memLp hγ hτ f).coeFn_toLp
   filter_upwards [h, h'] with θ hθ hθ'
   rw [hθ, hθ', hcoord]

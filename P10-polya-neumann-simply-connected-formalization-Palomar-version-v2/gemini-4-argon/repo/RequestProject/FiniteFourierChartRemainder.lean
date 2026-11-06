@@ -12,7 +12,6 @@ compressed positive principal part is regular at every Sobolev order.
 
 @[expose] public section
 
-set_option autoImplicit false
 
 noncomputable section
 
@@ -23,20 +22,17 @@ open scoped InnerProductSpace
 
 local notation "H₁" => nonpositiveFourierSubspaceᗮ
 
-def finiteFourierChart {d : ℕ} (u : Fin d → H₁) (v : Fin d → L2Z) :
+def finiteFourierChart  (u : Fin d → H₁) (v : Fin d → L2Z) :
     H₁ →L[ℂ] L2Z :=
   Submodule.subtypeL H₁ + ∑ r, InnerProductSpace.rankOne ℂ (v r) (u r)
 
 theorem finiteFourierChart_correction_sobolev {d : ℕ}
-    (u : Fin d → H₁) (v : Fin d → L2Z)
+    (u : Fin d → H₁) v
     (hv : ∀ r, (Function.support (v r : ℤ → ℂ)).Finite)
-    (s : ℝ) (z : H₁) :
+    (s : ℝ) z :
     IsSobolevSeq s ((finiteFourierChart u v z - (z : L2Z) : L2Z) : ℤ → ℂ) := by
-  have heq : finiteFourierChart u v z - (z : L2Z) =
-      (∑ r, InnerProductSpace.rankOne ℂ (v r) (u r)) z := by
-    simp only [finiteFourierChart, ContinuousLinearMap.add_apply,
-      Submodule.subtypeL_apply, add_sub_cancel_left]
-  rw [heq]
+  rw [show finiteFourierChart u v z - z = (∑ r, InnerProductSpace.rankOne ℂ (v r) (u r)) z by
+    simp [finiteFourierChart, Submodule.subtypeL_apply]]
   change _ ∈ fourierSobolevSubmodule s
   rw [ContinuousLinearMap.sum_apply]
   apply Submodule.sum_mem

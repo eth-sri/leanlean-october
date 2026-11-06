@@ -35,33 +35,28 @@ abbrev L2Circ := Lp ℂ 2 (@AddCircle.haarAddCircle (2 * π) _)
 def circRep (x : AddCircle (2 * π)) : ℝ := (AddCircle.measurableEquivIco (2 * π) 0 x : ℝ)
 
 lemma circRep_mem (x : AddCircle (2 * π)) : circRep x ∈ Set.Ico 0 (2 * π) := by
-  have := (AddCircle.measurableEquivIco (2 * π) 0 x).2
-  simpa [circRep] using this
+  simpa [circRep] using (AddCircle.measurableEquivIco (2 * π) 0 x).2
 
 lemma liftIco_eq_comp (f : ℝ → ℂ) : AddCircle.liftIco (2 * π) 0 f = fun x => f (circRep x) := rfl
 
-lemma measurable_liftIco_two_pi {f : ℝ → ℂ} (hf : Measurable f) :
-    Measurable (AddCircle.liftIco (2 * π) 0 f) := by
-  rw [liftIco_eq_comp]
-  exact hf.comp (measurable_subtype_coe.comp (AddCircle.measurableEquivIco (2 * π) 0).measurable)
-
-lemma memLp_liftIco_two_pi {f : ℝ → ℂ} (hf : Measurable f) {M : ℝ} (hM : ∀ t, ‖f t‖ ≤ M) :
+lemma memLp_liftIco_two_pi {f : ℝ → ℂ} (hf : Measurable f)  (hM : ∀ t, ‖f t‖ ≤ M) :
     MemLp (AddCircle.liftIco (2 * π) 0 f) 2 AddCircle.haarAddCircle :=
-  MemLp.of_bound (measurable_liftIco_two_pi hf).aestronglyMeasurable M
+  MemLp.of_bound (show Measurable (AddCircle.liftIco (2 * π) 0 f) by
+    rw [liftIco_eq_comp]
+    exact hf.comp (measurable_subtype_coe.comp (AddCircle.measurableEquivIco (2 * π) 0).measurable)).aestronglyMeasurable M
     (ae_of_all _ fun x => by rw [liftIco_eq_comp]; exact hM _)
 
 /-- Fourier coefficients of the lift of a function on `[0, 2π)` to the circle. -/
-lemma fourierCoeff_liftIco_two_pi (f : ℝ → ℂ) (n : ℤ) :
+lemma fourierCoeff_liftIco_two_pi (f : ℝ → ℂ) n :
     fourierCoeff (AddCircle.liftIco (2 * π) 0 f) n = fourierCoeffOn two_pi_pos f n := by
   rw [fourierCoeff_liftIco_eq, fourierCoeffOn_eq_integral, fourierCoeffOn_eq_integral]
-  simp only [fourier_coe_apply, zero_add, sub_zero]
+  simp
 
 /-- Fourier coefficients of a complex conjugate. -/
 lemma fourierCoeffOn_conj (g : ℝ → ℂ) (m : ℤ) :
     fourierCoeffOn two_pi_pos (fun θ => conj (g θ)) m =
       conj (fourierCoeffOn two_pi_pos g (-m)) := by
-  rw [fourierCoeffOn_eq_integral, fourierCoeffOn_eq_integral]
-  rw [Complex.real_smul, Complex.real_smul, map_mul, Complex.conj_ofReal]
+  rw [fourierCoeffOn_eq_integral, fourierCoeffOn_eq_integral, Complex.real_smul, Complex.real_smul, map_mul, Complex.conj_ofReal]
   congr 1
   rw [← intervalIntegral_conj]
   refine intervalIntegral.integral_congr fun θ _ => ?_
@@ -69,8 +64,7 @@ lemma fourierCoeffOn_conj (g : ℝ → ℂ) (m : ℤ) :
   congr 1
   rw [fourier_coe_apply, fourier_coe_apply, ← Complex.exp_conj]
   congr 1
-  have h2 : (starRingEnd ℂ) 2 = 2 := map_ofNat _ 2
-  simp [Complex.conj_ofReal, h2]
+  simp [map_ofNat _ 2]
 
 section Kernel
 
@@ -81,15 +75,13 @@ variable {k : ℝ → ℝ → ℂ} {M : ℝ} {K : NNReal}
 def kernelRow (θ : ℝ) : L2Circ :=
   (memLp_liftIco_two_pi (hmeas θ) (hbd θ)).toLp _
 
-include hmeas hbd in
-lemma inner_kernelRow_fourierBasis (θ : ℝ) (n : ℤ) :
+lemma inner_kernelRow_fourierBasis (θ : ℝ) n :
     ⟪kernelRow hmeas hbd θ, fourierBasis n⟫_ℂ = conj (fourierCoeffOn two_pi_pos (k θ) n) := by
   rw [← inner_conj_symm, ← HilbertBasis.repr_apply_apply, fourierBasis_repr]
   congr 1
   rw [kernelRow, fourierCoeff_congr_ae (MemLp.coeFn_toLp (memLp_liftIco_two_pi (hmeas θ) (hbd θ))),
     fourierCoeff_liftIco_two_pi]
 
-include hmeas hbd in
 lemma norm_kernelRow_sub_le
     (hlip : ∀ θ θ' t, t ∈ Set.Ico 0 (2 * π) → ‖k θ t - k θ' t‖ ≤ K * |θ - θ'|) (θ θ' : ℝ) :
     ‖kernelRow hmeas hbd θ - kernelRow hmeas hbd θ'‖ ≤ K * |θ - θ'| := by
@@ -106,7 +98,6 @@ lemma norm_kernelRow_sub_le
     rw [hx, Pi.sub_apply, liftIco_eq_comp, liftIco_eq_comp]
     exact hlip θ θ' _ (circRep_mem x)
 
-include hmeas hbd in
 lemma kernelRow_periodic (hper : ∀ θ t, t ∈ Set.Ico 0 (2 * π) → k (θ + 2 * π) t = k θ t) :
     Function.Periodic (kernelRow hmeas hbd) (2 * π) := by
   intro θ

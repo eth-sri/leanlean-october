@@ -8,7 +8,6 @@ public import Mathlib.Tactic
 
 @[expose] public section
 
-set_option autoImplicit false
 
 noncomputable section
 
@@ -26,41 +25,43 @@ include ha hbound in
 theorem memLp_bounded_mul (v : Lp ℂ 2 μ) : MemLp (fun x => a x * v x) 2 μ := by
   apply (Lp.memLp v).of_le_mul (c := C) (ha.mul (Lp.aestronglyMeasurable v))
   filter_upwards [hbound] with x hx
-  change ‖a x * v x‖ ≤ C * ‖v x‖
+  change ‖a x * v x‖ ≤ _
   rw [norm_mul]
   exact mul_le_mul_of_nonneg_right hx (norm_nonneg _)
 
+local notation "Φ0" => memLp_bounded_mul a ha hbound
+
 def lpBoundedMulLin : Lp ℂ 2 μ →ₗ[ℂ] Lp ℂ 2 μ where
-  toFun v := (memLp_bounded_mul a ha hbound v).toLp (fun x => a x * v x)
+  toFun v := (Φ0 v).toLp (fun x => a x * v x)
   map_add' v w := by
     apply Lp.ext
-    filter_upwards [(memLp_bounded_mul a ha hbound (v + w)).coeFn_toLp,
-      (memLp_bounded_mul a ha hbound v).coeFn_toLp,
-      (memLp_bounded_mul a ha hbound w).coeFn_toLp,
+    filter_upwards [(Φ0 (v + w)).coeFn_toLp,
+      (Φ0 v).coeFn_toLp,
+      (Φ0 w).coeFn_toLp,
       Lp.coeFn_add v w,
-      Lp.coeFn_add ((memLp_bounded_mul a ha hbound v).toLp _)
-        ((memLp_bounded_mul a ha hbound w).toLp _)] with x hsum hv hw hvw hout
-    change ((memLp_bounded_mul a ha hbound (v + w)).toLp _) x = _
+      Lp.coeFn_add ((Φ0 v).toLp _)
+        ((Φ0 w).toLp _)] with x hsum hv hw hvw hout
+    change ((Φ0 (v + w)).toLp _) x = _
     rw [hsum, hvw, hout]
-    simp only [Pi.add_apply]
+    simp
     rw [hv, hw, mul_add]
   map_smul' c v := by
     apply Lp.ext
-    filter_upwards [(memLp_bounded_mul a ha hbound (c • v)).coeFn_toLp,
-      (memLp_bounded_mul a ha hbound v).coeFn_toLp,
+    filter_upwards [(Φ0 (c • v)).coeFn_toLp,
+      (Φ0 v).coeFn_toLp,
       Lp.coeFn_smul c v,
-      Lp.coeFn_smul c ((memLp_bounded_mul a ha hbound v).toLp _)]
+      Lp.coeFn_smul c ((Φ0 v).toLp _)]
       with x hcv hv hin hout
-    change ((memLp_bounded_mul a ha hbound (c • v)).toLp _) x =
-      (c • (memLp_bounded_mul a ha hbound v).toLp (fun x => a x * v x)) x
+    change ((Φ0 (c • v)).toLp _) x =
+      (c • (Φ0 v).toLp (fun x => a x * v x)) x
     rw [hcv, hin, hout]
-    simp only [Pi.smul_apply, smul_eq_mul]
+    simp
     rw [hv]
     ring
 
 theorem lpBoundedMulLin_ae (v : Lp ℂ 2 μ) :
     (lpBoundedMulLin a ha hbound v : α → ℂ) =ᵐ[μ] fun x => a x * v x :=
-  (memLp_bounded_mul a ha hbound v).coeFn_toLp
+  (Φ0 v).coeFn_toLp
 
 theorem norm_lpBoundedMulLin_le (v : Lp ℂ 2 μ) :
     ‖lpBoundedMulLin a ha hbound v‖ ≤ C * ‖v‖ := by

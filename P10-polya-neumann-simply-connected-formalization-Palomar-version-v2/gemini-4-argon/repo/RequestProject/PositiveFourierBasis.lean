@@ -13,7 +13,6 @@ the full standard basis, have genuinely finite Fourier support.
 
 @[expose] public section
 
-set_option autoImplicit false
 
 noncomputable section
 
@@ -22,29 +21,15 @@ namespace PolyaNeumann
 open Set
 open scoped InnerProductSpace
 
-theorem stdBasisZ_mem_nonpositive {n : ℤ} (hn : n ≤ 0) :
-    stdBasisZ n ∈ nonpositiveFourierSubspace := by
-  intro k hk
-  have hkn : k ≠ n := by omega
-  simp [stdBasisZ_apply, lp.single_apply, hkn]
-
-theorem nonpositive_orthogonal_coefficient_eq_zero
-    (b : nonpositiveFourierSubspaceᗮ) {n : ℤ} (hn : n ≤ 0) :
-    (b : L2Z) n = 0 := by
-  have h := (Submodule.mem_orthogonal _ _).mp b.property (stdBasisZ n)
-    (stdBasisZ_mem_nonpositive hn)
-  simpa [stdBasisZ_apply, lp.inner_single_left, RCLike.inner_apply'] using h
-
-theorem stdBasisZ_mem_nonpositive_orthogonal {n : ℤ} (hn : 0 < n) :
+theorem stdBasisZ_mem_nonpositive_orthogonal  (hn : 0 < n) :
     stdBasisZ n ∈ nonpositiveFourierSubspaceᗮ := by
-  have heq : posProj (stdBasisZ n) = stdBasisZ n := by
+  rw [← (show posProj (stdBasisZ n) = stdBasisZ n by
     apply lp.ext
     funext k
     by_cases hkn : k = n
     · subst k
-      simp [posProj, diagOp_apply, hn]
-    · simp [posProj, diagOp_apply, stdBasisZ_apply, lp.single_apply, hkn]
-  rw [← heq]
+      simp [posProj, hn]
+    · simp [posProj, stdBasisZ_apply, hkn])]
   exact posProj_mem_nonpositive_orthogonal _
 
 def positiveFourierVector (n : {n : ℤ // 0 < n}) :
@@ -70,21 +55,18 @@ theorem positiveFourierVector_span_orthogonal_eq_bot :
       (positiveFourierVector ⟨n, hn⟩)
       (Submodule.subset_span (show positiveFourierVector ⟨n, hn⟩ ∈
         range positiveFourierVector from ⟨⟨n, hn⟩, rfl⟩))
-    change ⟪stdBasisZ n, (b : L2Z)⟫_ℂ = 0 at h
-    simpa [stdBasisZ_apply, lp.inner_single_left, RCLike.inner_apply'] using h
-  · exact nonpositive_orthogonal_coefficient_eq_zero b (le_of_not_gt hn)
+    change ⟪stdBasisZ n, b⟫_ℂ = 0 at h
+    simpa [stdBasisZ_apply, lp.inner_single_left] using h
+  · exact (by
+    simpa [stdBasisZ_apply, lp.inner_single_left] using ((Submodule.mem_orthogonal _ _).mp b.property (stdBasisZ n) (by
+      intro k hk
+      simp [stdBasisZ_apply, show k ≠ n by omega])))
 
 def positiveFourierHilbertBasis :
     HilbertBasis {n : ℤ // 0 < n} ℂ nonpositiveFourierSubspaceᗮ :=
   HilbertBasis.mkOfOrthogonalEqBot orthonormal_positiveFourierVector
     positiveFourierVector_span_orthogonal_eq_bot
 
-@[simp] theorem positiveFourierHilbertBasis_apply (n : {n : ℤ // 0 < n}) :
-    positiveFourierHilbertBasis n = positiveFourierVector n := by
-  exact congrFun (HilbertBasis.coe_mkOfOrthogonalEqBot
-    orthonormal_positiveFourierVector positiveFourierVector_span_orthogonal_eq_bot) n
-
-/-- The linear subspace of sequences having genuinely finite support. -/
 def finiteFourierSubmodule : Submodule ℂ L2Z where
   carrier := {b | (Function.support (b : ℤ → ℂ)).Finite}
   zero_mem' := Set.finite_empty.subset fun n hn => hn (by simp)
@@ -107,15 +89,14 @@ def finiteFourierSubmodule : Submodule ℂ L2Z where
     by_contra hb0
     exact hn (by simp [not_not.mp hb0])
 
-theorem stdBasisZ_mem_finiteFourierSubmodule (n : ℤ) :
+theorem stdBasisZ_mem_finiteFourierSubmodule n :
     stdBasisZ n ∈ finiteFourierSubmodule := by
   refine (finite_singleton n).subset ?_
   intro k hk
   by_contra hkn
-  have hkn' : k ≠ n := by simpa only [mem_singleton_iff] using hkn
-  exact hk (by simp [stdBasisZ_apply, lp.single_apply, hkn'])
+  exact hk (by simp [stdBasisZ_apply, show k ≠ n by simpa using hkn])
 
-theorem finite_support_of_mem_span_stdBasisZ {b : L2Z}
+theorem finite_support_of_mem_span_stdBasisZ 
     (hb : b ∈ Submodule.span ℂ (range stdBasisZ)) :
     (Function.support (b : ℤ → ℂ)).Finite := by
   apply (show Submodule.span ℂ (range stdBasisZ) ≤ finiteFourierSubmodule from ?_) hb
@@ -124,20 +105,21 @@ theorem finite_support_of_mem_span_stdBasisZ {b : L2Z}
   exact stdBasisZ_mem_finiteFourierSubmodule n
 
 theorem finite_support_of_mem_span_positiveFourierHilbertBasis
-    {b : nonpositiveFourierSubspaceᗮ}
+    
     (hb : b ∈ Submodule.span ℂ (range positiveFourierHilbertBasis)) :
     (Function.support ((b : L2Z) : ℤ → ℂ)).Finite := by
-  have hle : Submodule.span ℂ (range positiveFourierHilbertBasis) ≤
-      finiteFourierSubmodule.comap nonpositiveFourierSubspaceᗮ.subtype := by
+  exact (show Submodule.span ℂ (range positiveFourierHilbertBasis) ≤ finiteFourierSubmodule.comap nonpositiveFourierSubspaceᗮ.subtype by
     apply Submodule.span_le.mpr
     rintro _ ⟨n, rfl⟩
     change (positiveFourierHilbertBasis n : L2Z) ∈ finiteFourierSubmodule
-    rw [positiveFourierHilbertBasis_apply]
-    exact stdBasisZ_mem_finiteFourierSubmodule n
-  exact hle hb
+    have h_inl n : positiveFourierHilbertBasis n = positiveFourierVector n := by
+      exact congrFun (HilbertBasis.coe_mkOfOrthogonalEqBot
+        orthonormal_positiveFourierVector positiveFourierVector_span_orthogonal_eq_bot) n
+    rw [h_inl]
+    exact stdBasisZ_mem_finiteFourierSubmodule n) hb
 
-theorem isSobolevSeq_of_finite_fourier_support (s : ℝ) {b : L2Z}
-    (hb : (Function.support (b : ℤ → ℂ)).Finite) :
+theorem isSobolevSeq_of_finite_fourier_support s 
+    (hb : (Function.support b).Finite) :
     IsSobolevSeq s (b : ℤ → ℂ) := by
   apply summable_of_finite_support
   refine hb.subset ?_

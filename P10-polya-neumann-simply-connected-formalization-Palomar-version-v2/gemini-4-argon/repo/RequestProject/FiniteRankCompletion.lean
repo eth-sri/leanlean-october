@@ -50,18 +50,19 @@ namespace PolyaNeumann
 
 open Filter Topology
 
+variable {E₀ : ℝ}
+
 section Banach
 
 variable {𝕜 : Type*} [RCLike 𝕜] {X : Type*} [NormedAddCommGroup X] [NormedSpace 𝕜 X]
 
 /-- A compact operator maps a bounded sequence to one with a convergent subsequence. -/
 lemma IsCompactOperator.exists_subseq_tendsto {C : X →L[𝕜] X} (hC : IsCompactOperator C)
-    {u : ℕ → X} {R : ℝ} (hu : ∀ n, ‖u n‖ ≤ R) :
+    {u : ℕ → X}  (hu : ∀ n, ‖u n‖ ≤ R) :
     ∃ y : X, ∃ φ : ℕ → ℕ, StrictMono φ ∧ Tendsto (fun n => C (u (φ n))) atTop (𝓝 y) := by
-  have hK := hC.isCompact_closure_image_closedBall R
   have hmem : ∀ n, C (u n) ∈ closure (C '' Metric.closedBall 0 R) := fun n =>
     subset_closure ⟨u n, by simpa using hu n, rfl⟩
-  obtain ⟨y, -, φ, hφ, hlim⟩ := hK.tendsto_subseq hmem
+  obtain ⟨y, -, φ, hφ, hlim⟩ := (hC.isCompact_closure_image_closedBall R).tendsto_subseq hmem
   exact ⟨y, φ, hφ, hlim⟩
 
 /-- A compact operator cannot map a norm-bounded sequence to a sequence with pairwise distances
@@ -82,23 +83,20 @@ lemma IsCompactOperator.not_separated {C : X →L[𝕜] X} (hC : IsCompactOperat
 lemma not_strictAnti_chain {C : X →L[𝕜] X} (hC : IsCompactOperator C)
     (R : ℕ → Submodule 𝕜 X) (hcl : ∀ n, IsClosed (R n : Set X))
     (hlt : ∀ n, R (n + 1) < R n) (hmap : ∀ n, ∀ x ∈ R n, x + C x ∈ R (n + 1)) : False := by
-  have hanti : Antitone R := antitone_nat_of_succ_le fun n => (hlt n).le
+  have hanti := antitone_nat_of_succ_le fun n => (hlt n).le
   have hx : ∀ n, ∃ x ∈ R n, ‖x‖ = 1 ∧ ∀ y ∈ R (n + 1), 1 / 2 ≤ ‖x - y‖ := by
     intro n
     obtain ⟨z, hzn, hz⟩ := SetLike.exists_of_lt (hlt n)
     -- Riesz lemma inside the subspace `R n`
-    let F : Submodule 𝕜 (R n) := (R (n + 1)).comap (R n).subtype
-    have hFc : IsClosed (F : Set (R n)) := (hcl (n + 1)).preimage continuous_subtype_val
+    have hFc : IsClosed (((R (n + 1)).comap (R n).subtype) : Set (R n)) := (hcl (n + 1)).preimage continuous_subtype_val
     obtain ⟨x, -, hx1, hxF⟩ := riesz_lemma_of_lt_one hFc ⟨⟨z, hzn⟩, hz⟩ (r := 1 / 2) (by norm_num)
     refine ⟨x, x.2, by simpa using hx1, fun y hy => ?_⟩
-    have := hxF ⟨y, (hlt n).le hy⟩ hy
-    simpa using this
+    simpa using hxF ⟨y, (hlt n).le hy⟩ hy
   choose u huR hu1 husep using hx
   refine IsCompactOperator.not_separated hC (u := u) (fun n => (hu1 n).le) fun m n hmn => ?_
-  have hmem : (u m + C (u m)) - (u n + C (u n)) + u n ∈ R (m + 1) := by
-    refine add_mem (sub_mem (hmap m _ (huR m)) (hanti (show m + 1 ≤ n + 1 by omega)
-      (hmap n _ (huR n)))) (hanti (show m + 1 ≤ n by omega) (huR n))
-  have := husep m _ hmem
+  have := husep m _ (by
+    refine add_mem (sub_mem (hmap m _ (huR m)) (hanti (by omega)
+      (hmap n _ (huR n)))) (hanti (by omega) (huR n)))
   convert this using 2
   abel
 
@@ -106,22 +104,19 @@ lemma not_strictAnti_chain {C : X →L[𝕜] X} (hC : IsCompactOperator C)
 lemma not_strictMono_chain {C : X →L[𝕜] X} (hC : IsCompactOperator C)
     (N : ℕ → Submodule 𝕜 X) (hcl : ∀ n, IsClosed (N n : Set X))
     (hlt : ∀ n, N n < N (n + 1)) (hmap : ∀ n, ∀ x ∈ N (n + 1), x + C x ∈ N n) : False := by
-  have hmono : Monotone N := monotone_nat_of_le_succ fun n => (hlt n).le
+  have hmono := monotone_nat_of_le_succ fun n => (hlt n).le
   have hx : ∀ n, ∃ x ∈ N (n + 1), ‖x‖ = 1 ∧ ∀ y ∈ N n, 1 / 2 ≤ ‖x - y‖ := by
     intro n
     obtain ⟨z, hzn, hz⟩ := SetLike.exists_of_lt (hlt n)
-    let F : Submodule 𝕜 (N (n + 1)) := (N n).comap (N (n + 1)).subtype
-    have hFc : IsClosed (F : Set (N (n + 1))) := (hcl n).preimage continuous_subtype_val
+    have hFc : IsClosed (((N n).comap (N (n + 1)).subtype) : Set (N (n + 1))) := (hcl n).preimage continuous_subtype_val
     obtain ⟨x, -, hx1, hxF⟩ := riesz_lemma_of_lt_one hFc ⟨⟨z, hzn⟩, hz⟩ (r := 1 / 2) (by norm_num)
     refine ⟨x, x.2, by simpa using hx1, fun y hy => ?_⟩
-    have := hxF ⟨y, (hlt n).le hy⟩ hy
-    simpa using this
+    simpa using hxF ⟨y, (hlt n).le hy⟩ hy
   choose u huN hu1 husep using hx
   refine IsCompactOperator.not_separated hC (u := u) (fun n => (hu1 n).le) fun m n hmn => ?_
-  have hmem : (u n + C (u n)) - (u m + C (u m)) + u m ∈ N n := by
-    refine add_mem (sub_mem (hmap n _ (huN n)) (hmono (show m ≤ n by omega)
-      (hmap m _ (huN m)))) (hmono (show m + 1 ≤ n by omega) (huN m))
-  have := husep n _ hmem
+  have := husep n _ (by
+    refine add_mem (sub_mem (hmap n _ (huN n)) (hmono (by omega)
+      (hmap m _ (huN m)))) (hmono (by omega) (huN m)))
   rw [norm_sub_rev]
   convert this using 2
   abel
@@ -144,28 +139,21 @@ lemma exists_bound_of_injective_one_add {C : X →L[𝕜] X} (hC : IsCompactOper
       rintro rfl
       simp at hx
     refine ⟨(‖x‖⁻¹ : 𝕜) • x, norm_smul_inv_norm hx0, ?_⟩
-    rw [map_smul, norm_smul, norm_inv, RCLike.norm_ofReal, abs_norm]
-    have hpos : 0 < ‖x‖ := norm_pos_iff.2 hx0
-    rw [inv_mul_lt_iff₀ hpos]
+    rw [map_smul, norm_smul, norm_inv, RCLike.norm_ofReal, abs_norm, inv_mul_lt_iff₀ (norm_pos_iff.2 hx0)]
     linarith
   choose u hu1 hu using hx
   obtain ⟨y, φ, hφ, hlim⟩ := IsCompactOperator.exists_subseq_tendsto hC (fun n => (hu1 n).le)
   have hT : Tendsto (fun n => (1 + C) (u (φ n))) atTop (𝓝 0) := by
     rw [tendsto_zero_iff_norm_tendsto_zero]
     refine squeeze_zero (fun n => norm_nonneg _) (fun n => (hu (φ n)).le) ?_
-    have : Tendsto (fun n : ℕ => 1 / ((φ n : ℝ) + 1)) atTop (𝓝 0) :=
-      tendsto_one_div_add_atTop_nhds_zero_nat.comp hφ.tendsto_atTop
-    exact this
+    exact tendsto_one_div_add_atTop_nhds_zero_nat.comp hφ.tendsto_atTop
   have hu_lim : Tendsto (fun n => u (φ n)) atTop (𝓝 (-y)) := by
     have := hT.sub hlim
-    simp only [zero_sub] at this
+    simp at this
     refine this.congr fun n => ?_
     simp
-  have hTy : (1 + C) (-y) = 0 :=
-    tendsto_nhds_unique (((1 + C).continuous.tendsto _).comp hu_lim) hT
-  have hy0 : -y = 0 := hinj (by rw [hTy, map_zero])
-  have hnorm : Tendsto (fun n => ‖u (φ n)‖) atTop (𝓝 ‖-y‖) := hu_lim.norm
-  simp only [hu1, hy0, norm_zero] at hnorm
+  have hnorm := hu_lim.norm
+  simp only [hu1, (hinj (by rw [tendsto_nhds_unique (((1 + C).continuous.tendsto _).comp hu_lim) hT, map_zero]) : -y = 0), norm_zero] at hnorm
   exact one_ne_zero (tendsto_nhds_unique tendsto_const_nhds hnorm)
 
 /-- **Fredholm alternative**, injective implies surjective: if `C` is compact and `I + C` is
@@ -177,21 +165,19 @@ theorem surjective_of_injective_one_add {C : X →L[𝕜] X} (hC : IsCompactOper
   set T : X →L[𝕜] X := 1 + C with hTdef
   by_contra hs
   obtain ⟨y, hy⟩ : ∃ y, y ∉ Set.range T := by
-    simpa [Function.Surjective, Set.mem_range] using hs
-  have hanti : AntilipschitzWith (Real.toNNReal c⁻¹) T := by
-    refine T.antilipschitz_of_bound fun x => ?_
-    rw [Real.coe_toNNReal _ (by positivity)]
-    have := hbound x
-    rw [le_inv_mul_iff₀ hc]
-    linarith
-  have hantin : ∀ n : ℕ, AntilipschitzWith (Real.toNNReal c⁻¹ ^ n) (T ^ n : X →L[𝕜] X) := by
+    simpa [Function.Surjective] using hs
+  have hantin : ∀ n : ℕ, AntilipschitzWith (Real.toNNReal c⁻¹ ^ n) (T ^ n) := by
     intro n
     induction n with
     | zero => simpa using AntilipschitzWith.id
     | succ n ih =>
       rw [pow_succ' (Real.toNNReal c⁻¹), pow_succ T, FunLike.coe_mul_eq_comp]
-      exact ih.comp hanti
-  have hinjn : ∀ n : ℕ, Function.Injective (T ^ n : X →L[𝕜] X) := fun n => (hantin n).injective
+      exact ih.comp (by
+        refine T.antilipschitz_of_bound fun x => ?_
+        rw [Real.coe_toNNReal _ (by positivity)]
+        have := hbound x
+        rw [le_inv_mul_iff₀ hc]
+        linarith)
   refine not_strictAnti_chain hC (fun n => LinearMap.range ((T ^ n : X →L[𝕜] X) : X →ₗ[𝕜] X))
     (fun n => ?_) (fun n => ?_) (fun n => ?_)
   · rw [LinearMap.coe_range, ContinuousLinearMap.coe_coe]
@@ -204,7 +190,7 @@ theorem surjective_of_injective_one_add {C : X →L[𝕜] X} (hC : IsCompactOper
       rw [← heq] at hmem
       obtain ⟨z, hz⟩ := hmem
       apply hy
-      refine ⟨z, hinjn n ?_⟩
+      refine ⟨z, (fun n => (hantin n).injective) n ?_⟩
       rw [← hz, pow_succ]
       rfl
   · rintro x ⟨z, rfl⟩
@@ -218,12 +204,12 @@ surjective, then `I + C` is injective. -/
 theorem injective_of_surjective_one_add {C : X →L[𝕜] X} (hC : IsCompactOperator C)
     (hsurj : Function.Surjective ⇑((1 : X →L[𝕜] X) + C)) :
     Function.Injective ⇑((1 : X →L[𝕜] X) + C) := by
-  set T : X →L[𝕜] X := 1 + C with hTdef
+  set T := 1 + C with hTdef
   rw [injective_iff_map_eq_zero]
   by_contra hne
   push_neg at hne
   obtain ⟨x₁, hx₁, hx₁0⟩ := hne
-  have hsurjn : ∀ n : ℕ, Function.Surjective (T ^ n : X →L[𝕜] X) := fun n => by
+  have hsurjn : ∀ n : ℕ, Function.Surjective (T ^ n) := fun n => by
     rw [FunLike.coe_pow_eq_iterate]
     exact hsurj.iterate n
   refine not_strictMono_chain hC (fun n => LinearMap.ker ((T ^ n : X →L[𝕜] X) : X →ₗ[𝕜] X))
@@ -256,15 +242,14 @@ theorem finiteDimensional_ker_one_add {C : X →L[𝕜] X} (hC : IsCompactOperat
     FiniteDimensional 𝕜 (LinearMap.ker (((1 : X →L[𝕜] X) + C : X →L[𝕜] X) : X →ₗ[𝕜] X)) := by
   by_contra hfin
   obtain ⟨R, f, -, hfR, hf⟩ := exists_seq_norm_le_one_le_norm_sub hfin
-  have hCf : ∀ n, C (f n : X) = -(f n : X) := by
+  have hCf : ∀ n, C (f n) = -f n := by
     intro n
     have := (f n).2
-    simp only [LinearMap.mem_ker, ContinuousLinearMap.coe_coe, ContinuousLinearMap.add_apply,
-      ContinuousLinearMap.one_apply] at this
+    simp at this
     exact eq_neg_of_add_eq_zero_right this
   obtain ⟨y, φ, hφ, hlim⟩ :=
-    IsCompactOperator.exists_subseq_tendsto hC (u := fun n => (f n : X)) (R := R)
-      (fun n => hfR n)
+    IsCompactOperator.exists_subseq_tendsto hC (u := fun n => (f n)) (R := R)
+      hfR
   have hc := hlim.cauchySeq
   rw [Metric.cauchySeq_iff'] at hc
   obtain ⟨N, hN⟩ := hc 1 one_pos
@@ -284,16 +269,16 @@ variable {Y : Type*} [NormedAddCommGroup Y] [NormedSpace 𝕜 Y]
 theorem isCompactOperator_of_finiteDimensional_range (F : X →L[𝕜] Y)
     [FiniteDimensional 𝕜 (LinearMap.range (F : X →ₗ[𝕜] Y))] : IsCompactOperator F := by
   set V := LinearMap.range (F : X →ₗ[𝕜] Y)
-  let F' : X →L[𝕜] V := F.codRestrict V (fun x => LinearMap.mem_range_self _ x)
+  let F' : X →L[𝕜] V := F.codRestrict V (LinearMap.mem_range_self _)
   refine ⟨V.subtype '' Metric.closedBall 0 ‖F'‖, (isCompact_closedBall _ _).image
     continuous_subtype_val, ?_⟩
   refine Filter.mem_of_superset (Metric.ball_mem_nhds 0 one_pos) fun x hx => ?_
   refine ⟨F' x, ?_, rfl⟩
   rw [mem_closedBall_zero_iff]
   rw [mem_ball_zero_iff] at hx
-  calc ‖F' x‖ ≤ ‖F'‖ * ‖x‖ := F'.le_opNorm x
-    _ ≤ ‖F'‖ * 1 := mul_le_mul_of_nonneg_left hx.le F'.opNorm_nonneg
-    _ = ‖F'‖ := mul_one _
+  calc _ ≤ _ := F'.le_opNorm x
+    _ ≤ _ := mul_le_mul_of_nonneg_left hx.le F'.opNorm_nonneg
+    _ = _ := mul_one _
 
 end FiniteRank
 
@@ -325,7 +310,7 @@ lemma finrank_ker_le_of_sup_eq_top {C : X →L[𝕜] X} (hC : IsCompactOperator 
     Module.finrank 𝕜 (LinearMap.ker (((1 : X →L[𝕜] X) + C : X →L[𝕜] X) : X →ₗ[𝕜] X)) ≤
       Module.finrank 𝕜 Q := by
   haveI := finiteDimensional_ker_one_add hC
-  set A : X →L[𝕜] X := (1 : X →L[𝕜] X) + C with hAdef
+  set A := (1 : X →L[𝕜] X) + C with hAdef
   set K := LinearMap.ker (A : X →ₗ[𝕜] X)
   by_contra hlt
   push_neg at hlt
@@ -336,43 +321,32 @@ lemma finrank_ker_le_of_sup_eq_top {C : X →L[𝕜] X} (hC : IsCompactOperator 
     have hrn := LinearMap.finrank_range_add_finrank_ker L
     have hr : Module.finrank 𝕜 (LinearMap.range L) ≤ Module.finrank 𝕜 Q :=
       Submodule.finrank_le _
-    have hpos : 0 < Module.finrank 𝕜 (LinearMap.ker L) := by omega
-    exact Submodule.exists_mem_ne_zero_of_ne_bot (Submodule.one_le_finrank_iff.1 hpos)
-  let Lc : K →L[𝕜] Q := LinearMap.toContinuousLinearMap L
-  let F : X →L[𝕜] X := Q.subtypeL ∘L Lc ∘L P
+    exact Submodule.exists_mem_ne_zero_of_ne_bot (Submodule.one_le_finrank_iff.1 (by omega))
+  let Lc := LinearMap.toContinuousLinearMap L
+  let F := Q.subtypeL ∘L Lc ∘L P
   have hFrange : FiniteDimensional 𝕜 (LinearMap.range (F : X →ₗ[𝕜] X)) := by
     refine Submodule.finiteDimensional_of_le (S₂ := Q) ?_
     rintro _ ⟨x, rfl⟩
     exact (Lc (P x)).2
-  have hFc : IsCompactOperator (C + F) :=
-    hC.add (isCompactOperator_of_finiteDimensional_range F)
   have hKA : ∀ k ∈ K, A k = 0 := fun k hk => hk
-  have hsurj : Function.Surjective ((1 : X →L[𝕜] X) + (C + F)) := by
+  have hinj := injective_of_surjective_one_add (hC.add (isCompactOperator_of_finiteDimensional_range F)) (by
     intro h
-    have hh : h ∈ LinearMap.range (A : X →ₗ[𝕜] X) ⊔ Q := htop ▸ Submodule.mem_top
-    obtain ⟨_, ⟨x, rfl⟩, q, hq, rfl⟩ := Submodule.mem_sup.1 hh
+    obtain ⟨_, ⟨x, rfl⟩, q, hq, rfl⟩ := Submodule.mem_sup.1 (htop ▸ Submodule.mem_top : h ∈ LinearMap.range (A : X →ₗ[𝕜] X) ⊔ Q)
     obtain ⟨k₀, hk₀⟩ := hL ⟨q, hq⟩
-    refine ⟨x - (P x : X) + (k₀ : X), ?_⟩
+    refine ⟨x - P x + k₀, ?_⟩
     have h1 : (1 : X →L[𝕜] X) + (C + F) = A + F := by rw [hAdef, add_assoc]
     rw [h1, ContinuousLinearMap.add_apply]
-    have hA : A (x - (P x : X) + (k₀ : X)) = A x := by
-      rw [map_add, map_sub, hKA _ (P x).2, hKA _ k₀.2, sub_zero, add_zero]
-    have hF : F (x - (P x : X) + (k₀ : X)) = q := by
-      simp only [F, ContinuousLinearMap.comp_apply, map_add, map_sub]
-      have hPx : P (P x : X) = P x := hP (P x)
-      have hPk : P (k₀ : X) = k₀ := hP k₀
-      rw [hPx, hPk, sub_self, zero_add]
-      simp [Lc, hk₀]
-    rw [hA, hF]
-    rfl
-  have hinj := injective_of_surjective_one_add hFc hsurj
+    rw [(show A (x - (P x) + k₀) = A x by
+      rw [map_add, map_sub, hKA _ (P x).2, hKA _ k₀.2, sub_zero, add_zero]), show F (x - P x + k₀) = q by
+      simp [F]
+      rw [hP (P x), hP k₀, sub_self, zero_add]
+      simp [Lc, hk₀]]
+    rfl)
   apply hk₁0
-  have : ((1 : X →L[𝕜] X) + (C + F)) (k₁ : X) = ((1 : X →L[𝕜] X) + (C + F)) 0 := by
-    have h1 : (1 : X →L[𝕜] X) + (C + F) = A + F := by rw [hAdef, add_assoc]
-    rw [h1, map_zero, ContinuousLinearMap.add_apply, hKA _ k₁.2, zero_add]
-    simp only [F, ContinuousLinearMap.comp_apply, hP k₁]
-    simp [Lc, LinearMap.mem_ker.1 hk₁L]
-  exact Subtype.ext (hinj this)
+  exact Subtype.ext (hinj (show ((1 : X →L[𝕜] X) + (C + F)) k₁ = ((1 : X →L[𝕜] X) + (C + F)) 0 by
+    rw [show (1 : X →L[𝕜] X) + (C + F) = A + F by rw [hAdef, add_assoc], map_zero, ContinuousLinearMap.add_apply, hKA _ k₁.2, zero_add]
+    simp [F, hP k₁]
+    simp [Lc, LinearMap.mem_ker.1 hk₁L]))
 
 omit [CompleteSpace X] in
 /-- The range of `I + C` has codimension at least `dim ker (I + C)`: there is a subspace `Q`
@@ -404,16 +378,15 @@ theorem exists_complement_range_one_add {C : X →L[𝕜] X} (hC : IsCompactOper
       have hyQ : y ∉ Q := fun h => hy (Submodule.mem_sup_right h)
       refine ⟨Q ⊔ Submodule.span 𝕜 {y}, inferInstance, ?_, ?_⟩
       · have hy0 : y ≠ 0 := fun h => hyQ (h ▸ Q.zero_mem)
-        have hinf : Q ⊓ Submodule.span 𝕜 {y} = ⊥ := by
+        have := Submodule.finrank_sup_add_finrank_inf_eq Q (Submodule.span 𝕜 {y})
+        rw [show Q ⊓ Submodule.span 𝕜 {y} = ⊥ by
           rw [eq_bot_iff]
           intro z hz
           obtain ⟨hzQ, hzy⟩ := Submodule.mem_inf.1 hz
           obtain ⟨t, rfl⟩ := Submodule.mem_span_singleton.1 hzy
           by_cases ht : t = 0
           · simp [ht]
-          · exact absurd ((Submodule.smul_mem_iff Q ht).1 hzQ) hyQ
-        have := Submodule.finrank_sup_add_finrank_inf_eq Q (Submodule.span 𝕜 {y})
-        rw [hinf, finrank_bot, add_zero, finrank_span_singleton hy0, hQn] at this
+          · exact absurd ((Submodule.smul_mem_iff Q ht).1 hzQ) hyQ, finrank_bot, add_zero, finrank_span_singleton hy0, hQn] at this
         exact this
       · rw [Submodule.disjoint_def]
         intro z hz hzR
@@ -421,13 +394,12 @@ theorem exists_complement_range_one_add {C : X →L[𝕜] X} (hC : IsCompactOper
         obtain ⟨t, rfl⟩ := Submodule.mem_span_singleton.1 hw
         by_cases ht : t = 0
         · subst ht
-          simp only [zero_smul, add_zero] at hzR ⊢
+          simp at hzR ⊢
           exact Submodule.disjoint_def.1 hQd q hq hzR
         · exfalso
           apply hy
-          have : y = t⁻¹ • (q + t • y) - t⁻¹ • q := by
-            rw [smul_add, inv_smul_smul₀ ht]; abel
-          rw [this]
+          rw [show y = t⁻¹ • (q + t • y) - t⁻¹ • q by
+            rw [smul_add, inv_smul_smul₀ ht]; abel]
           exact sub_mem (Submodule.smul_mem _ _ (Submodule.mem_sup_left hzR))
             (Submodule.smul_mem _ _ (Submodule.mem_sup_right hq))
 
@@ -437,83 +409,9 @@ section Hilbert
 
 variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace 𝕜 H] [CompleteSpace H]
 
-/-- **Lemma 7.2 (finite-rank completion).** Let `H = H₀ ⊕ H₀ᗮ` be a Hilbert space and
-`A = I + C` with `C` compact. If `A` is injective on `H₀`, there is a finite-rank bounded
-`F : H₀ᗮ → H` such that `A + F Π₁` is bijective, where `Π₁` is the orthogonal projection onto
-`H₀ᗮ`. -/
-theorem finite_rank_completion {C : H →L[𝕜] H} (hC : IsCompactOperator C)
-    (H₀ : Submodule 𝕜 H) [H₀.HasOrthogonalProjection]
-    (hinj : ∀ x ∈ H₀, x + C x = 0 → x = 0) :
-    ∃ F : H₀ᗮ →L[𝕜] H, FiniteDimensional 𝕜 (LinearMap.range (F : H₀ᗮ →ₗ[𝕜] H)) ∧
-      Function.Bijective ⇑((1 : H →L[𝕜] H) + C + F ∘L H₀ᗮ.orthogonalProjection) := by
-  haveI := finiteDimensional_ker_one_add hC
-  set A : H →L[𝕜] H := (1 : H →L[𝕜] H) + C with hAdef
-  set K := LinearMap.ker (A : H →ₗ[𝕜] H) with hKdef
-  obtain ⟨Q, hQf, hQk, hQd⟩ := exists_complement_range_one_add hC
-  set P₁ : H →L[𝕜] H₀ᗮ := H₀ᗮ.orthogonalProjection
-  have hKA : ∀ k ∈ K, k + C k = 0 := fun k hk => by
-    simpa [hAdef] using (LinearMap.mem_ker.1 hk)
-  -- `Π₁` is injective on the kernel
-  have hP₁inj : Function.Injective ((P₁ : H →ₗ[𝕜] H₀ᗮ) ∘ₗ K.subtype) := by
-    rw [← LinearMap.ker_eq_bot, eq_bot_iff]
-    intro k hk
-    rw [LinearMap.mem_ker, LinearMap.comp_apply] at hk
-    have h0 : (k : H) ∈ H₀ := by
-      have := (Submodule.orthogonalProjection_eq_zero_iff (K := H₀ᗮ)).1 hk
-      rwa [Submodule.orthogonal_orthogonal] at this
-    have := hinj _ h0 (hKA _ k.2)
-    simp [Subtype.ext_iff, this]
-  set M : Submodule 𝕜 H₀ᗮ := LinearMap.range ((P₁ : H →ₗ[𝕜] H₀ᗮ) ∘ₗ K.subtype) with hMdef
-  have hMk : Module.finrank 𝕜 M = Module.finrank 𝕜 K := LinearMap.finrank_range_of_inj hP₁inj
-  let e : M ≃ₗ[𝕜] Q := LinearEquiv.ofFinrankEq _ _ (by rw [hMk, hQk])
-  let Lc : M →L[𝕜] Q := LinearMap.toContinuousLinearMap (e : M →ₗ[𝕜] Q)
-  let F : H₀ᗮ →L[𝕜] H := Q.subtypeL ∘L Lc ∘L M.orthogonalProjection
-  have hFQ : ∀ y, F y ∈ Q := fun y => (Lc _).2
-  have hFrange : FiniteDimensional 𝕜 (LinearMap.range (F : H₀ᗮ →ₗ[𝕜] H)) := by
-    refine Submodule.finiteDimensional_of_le (S₂ := Q) ?_
-    rintro _ ⟨x, rfl⟩
-    exact hFQ x
-  refine ⟨F, hFrange, ?_⟩
-  have hFP : FiniteDimensional 𝕜 (LinearMap.range ((F ∘L P₁ : H →L[𝕜] H) : H →ₗ[𝕜] H)) := by
-    refine Submodule.finiteDimensional_of_le (S₂ := Q) ?_
-    rintro _ ⟨x, rfl⟩
-    exact hFQ _
-  have hcpt : IsCompactOperator (C + F ∘L P₁) :=
-    hC.add (isCompactOperator_of_finiteDimensional_range _)
-  have heq : (1 : H →L[𝕜] H) + C + F ∘L P₁ = (1 : H →L[𝕜] H) + (C + F ∘L P₁) := add_assoc _ _ _
-  have hinj' : Function.Injective ⇑((1 : H →L[𝕜] H) + C + F ∘L P₁) := by
-    rw [injective_iff_map_eq_zero]
-    intro x hx
-    rw [ContinuousLinearMap.add_apply, ContinuousLinearMap.comp_apply] at hx
-    have hAx : A x = -F (P₁ x) := eq_neg_of_add_eq_zero_left hx
-    have hAx0 : A x = 0 := by
-      refine Submodule.disjoint_def.1 hQd (A x) ?_ ⟨x, rfl⟩
-      rw [hAx]
-      exact Q.neg_mem (hFQ _)
-    have hxK : x ∈ K := hAx0
-    have hF0 : F (P₁ x) = 0 := by rw [← neg_eq_zero, ← hAx, hAx0]
-    have hPM : P₁ x ∈ M := ⟨⟨x, hxK⟩, rfl⟩
-    have hPx : M.orthogonalProjection (P₁ x) = ⟨P₁ x, hPM⟩ :=
-      Submodule.orthogonalProjection_mem_subspace_eq_self (K := M) ⟨P₁ x, hPM⟩
-    have hP0 : P₁ x = 0 := by
-      have h1 : (e ⟨P₁ x, hPM⟩ : H) = 0 := by
-        simpa [F, Lc, hPx] using hF0
-      have h2 : e ⟨P₁ x, hPM⟩ = 0 := Subtype.ext h1
-      have h3 : (⟨P₁ x, hPM⟩ : M) = 0 := by simpa using h2
-      simpa using congrArg Subtype.val h3
-    have h0 : x ∈ H₀ := by
-      have := (Submodule.orthogonalProjection_eq_zero_iff (K := H₀ᗮ)).1 hP0
-      rwa [Submodule.orthogonal_orthogonal] at this
-    exact hinj x h0 (hKA x hxK)
-  refine ⟨hinj', ?_⟩
-  rw [heq] at hinj' ⊢
-  exact surjective_of_injective_one_add hcpt hinj'
-
 /-- A bijective bounded operator on a Banach space is a unit of the operator algebra. -/
 lemma isUnit_of_bijective (f : H →L[𝕜] H) (hf : Function.Bijective f) : IsUnit f := by
-  let e := ContinuousLinearEquiv.ofBijective f (LinearMap.ker_eq_bot.2 hf.1)
-    (LinearMap.range_eq_top.2 hf.2)
-  exact ⟨(ContinuousLinearEquiv.unitsEquiv 𝕜 H).symm e, by ext x; rfl⟩
+  exact ⟨(ContinuousLinearEquiv.unitsEquiv 𝕜 H).symm (ContinuousLinearEquiv.ofBijective f (LinearMap.ker_eq_bot.2 hf.1) (LinearMap.range_eq_top.2 hf.2)), by ext x; rfl⟩
 
 /-- **Lemma 7.2**, stated with invertibility in the operator algebra: `A + F Π₁` is a unit. -/
 theorem finite_rank_completion_isUnit {C : H →L[𝕜] H} (hC : IsCompactOperator C)
@@ -521,13 +419,65 @@ theorem finite_rank_completion_isUnit {C : H →L[𝕜] H} (hC : IsCompactOperat
     (hinj : ∀ x ∈ H₀, x + C x = 0 → x = 0) :
     ∃ F : H₀ᗮ →L[𝕜] H, FiniteDimensional 𝕜 (LinearMap.range (F : H₀ᗮ →ₗ[𝕜] H)) ∧
       IsUnit ((1 : H →L[𝕜] H) + C + F ∘L H₀ᗮ.orthogonalProjection) := by
-  obtain ⟨F, hF, hbij⟩ := finite_rank_completion hC H₀ hinj
+  obtain ⟨F, hF, hbij⟩ : ∃ F : H₀ᗮ →L[𝕜] H, FiniteDimensional 𝕜 (LinearMap.range (F : H₀ᗮ →ₗ[𝕜] H)) ∧ Function.Bijective ⇑((1 : H →L[𝕜] H) + C + F ∘L H₀ᗮ.orthogonalProjection) := by
+    haveI := finiteDimensional_ker_one_add hC
+    set A := (1 : H →L[𝕜] H) + C with hAdef
+    set K := LinearMap.ker (A : H →ₗ[𝕜] H) with hKdef
+    obtain ⟨Q, hQf, hQk, hQd⟩ := exists_complement_range_one_add hC
+    set P₁ := H₀ᗮ.orthogonalProjection
+    have hKA : ∀ k ∈ K, k + C k = 0 := fun k hk => by
+      simpa [hAdef] using LinearMap.mem_ker.1 hk
+    set M := LinearMap.range ((P₁ : H →ₗ[𝕜] H₀ᗮ) ∘ₗ K.subtype) with hMdef
+    let e : M ≃ₗ[𝕜] Q := LinearEquiv.ofFinrankEq _ _ (by rw [LinearMap.finrank_range_of_inj (by
+      rw [← LinearMap.ker_eq_bot, eq_bot_iff]
+      intro k hk
+      rw [LinearMap.mem_ker, LinearMap.comp_apply] at hk
+      have h0 : (k : H) ∈ H₀ := by
+        have := (Submodule.orthogonalProjection_eq_zero_iff (K := H₀ᗮ)).1 hk
+        rwa [Submodule.orthogonal_orthogonal] at this
+      have := hinj _ h0 (hKA _ k.2)
+      simp [Subtype.ext_iff, this]), hQk])
+    let Lc := LinearMap.toContinuousLinearMap (e : M →ₗ[𝕜] Q)
+    let F := Q.subtypeL ∘L Lc ∘L M.orthogonalProjection
+    have hFQ : ∀ y, F y ∈ Q := fun y => (Lc _).2
+    refine ⟨F, (by
+      refine Submodule.finiteDimensional_of_le (S₂ := Q) ?_
+      rintro _ ⟨x, rfl⟩
+      exact hFQ x), ?_⟩
+    have hFP : FiniteDimensional 𝕜 (LinearMap.range ((F ∘L P₁ : H →L[𝕜] H) : H →ₗ[𝕜] H)) := by
+      refine Submodule.finiteDimensional_of_le (S₂ := Q) ?_
+      rintro _ ⟨x, rfl⟩
+      exact hFQ _
+    have hinj' : Function.Injective ⇑((1 : H →L[𝕜] H) + C + F ∘L P₁) := by
+      rw [injective_iff_map_eq_zero]
+      intro x hx
+      rw [ContinuousLinearMap.add_apply, ContinuousLinearMap.comp_apply] at hx
+      have hAx := eq_neg_of_add_eq_zero_left hx
+      have hAx0 : A x = 0 := by
+        refine Submodule.disjoint_def.1 hQd (A x) ?_ ⟨x, rfl⟩
+        rw [hAx]
+        exact Q.neg_mem (hFQ _)
+      have hxK := hAx0
+      have hPM : P₁ x ∈ M := ⟨⟨x, hxK⟩, rfl⟩
+      have hPx :=
+        Submodule.orthogonalProjection_mem_subspace_eq_self (K := M) ⟨P₁ x, hPM⟩
+      have h0 : x ∈ H₀ := by
+        have := (Submodule.orthogonalProjection_eq_zero_iff (K := H₀ᗮ)).1 (show P₁ x = 0 by
+          have h1 : (e ⟨P₁ x, hPM⟩ : H) = 0 := by
+            simpa [F, Lc, hPx] using show F (P₁ x) = 0 by rw [← neg_eq_zero, ← hAx, hAx0]
+          have h3 : (⟨P₁ x, hPM⟩ : M) = 0 := by simpa using (Subtype.ext h1 : e ⟨P₁ x, hPM⟩ = 0)
+          simpa using congrArg Subtype.val h3)
+        rwa [Submodule.orthogonal_orthogonal] at this
+      exact hinj x h0 (hKA x hxK)
+    refine ⟨hinj', ?_⟩
+    rw [add_assoc _ _ _] at hinj' ⊢
+    exact surjective_of_injective_one_add (hC.add (isCompactOperator_of_finiteDimensional_range _)) hinj'
   exact ⟨F, hF, isUnit_of_bijective _ hbij⟩
 
 /-- Invertibility at `E₀` of `Ĵ_E Π₀ + R Π₁` propagates to a neighbourhood of `E₀`, with
 norm-continuous inverse. -/
 lemma isUnit_nhds_of_isUnit (H₀ : Submodule 𝕜 H) [H₀.HasOrthogonalProjection]
-    {J : ℝ → (H₀ →L[𝕜] H)} (hJ : Continuous J) {E₀ : ℝ} (R : H₀ᗮ →L[𝕜] H)
+    {J} (hJ : Continuous J)  (R : H₀ᗮ →L[𝕜] H)
     (hunit : IsUnit (J E₀ ∘L H₀.orthogonalProjection + R ∘L H₀ᗮ.orthogonalProjection)) :
     ∃ U ∈ 𝓝 E₀,
       (∀ E ∈ U, IsUnit (J E ∘L H₀.orthogonalProjection + R ∘L H₀ᗮ.orthogonalProjection)) ∧
@@ -558,17 +508,12 @@ lemma fixed_complement_aux (H₀ : Submodule 𝕜 H) [H₀.HasOrthogonalProjecti
         Submodule.subtypeL H₀ᗮ ∘L H₀ᗮ.orthogonalProjection - (1 : H →L[𝕜] H)) +
         F ∘L H₀ᗮ.orthogonalProjection := by
   refine ⟨fun x hx h0 => ?_, fun F => ?_⟩
-  · have hP₁ : H₀ᗮ.orthogonalProjection x = 0 :=
+  · have hP₁ :=
       (Submodule.orthogonalProjection_eq_zero_iff (K := H₀ᗮ)).2
         (Submodule.le_orthogonal_orthogonal H₀ hx)
-    have hP₀ : H₀.orthogonalProjection x = ⟨x, hx⟩ :=
-      Submodule.orthogonalProjection_mem_subspace_eq_self (K := H₀) ⟨x, hx⟩
-    simp only [ContinuousLinearMap.sub_apply, ContinuousLinearMap.add_apply,
-      ContinuousLinearMap.comp_apply, hP₁, hP₀, map_zero, add_zero,
-      ContinuousLinearMap.one_apply, add_sub_cancel] at h0
-    have := hinj (h0.trans (map_zero J₀).symm)
-    simpa using congrArg Subtype.val this
-  · simp only [ContinuousLinearMap.add_comp]
+    simp [hP₁, Submodule.orthogonalProjection_mem_subspace_eq_self (K := H₀) ⟨x, hx⟩] at h0
+    simpa using congrArg Subtype.val (hinj (h0.trans (map_zero J₀).symm))
+  · simp
     abel
 
 /-- A finite-rank bounded operator between Hilbert spaces is a finite sum of rank-one operators
@@ -579,10 +524,9 @@ lemma exists_eq_sum_rankOne {Y : Type*} [NormedAddCommGroup Y] [InnerProductSpac
       F = ∑ r, InnerProductSpace.rankOne 𝕜 (v r) (u r) := by
   set V := LinearMap.range (F : Y →ₗ[𝕜] H)
   let e := stdOrthonormalBasis 𝕜 V
-  refine ⟨_, fun r => ContinuousLinearMap.adjoint F (e r), fun r => (e r : H), ?_⟩
+  refine ⟨_, fun r => ContinuousLinearMap.adjoint F (e r), fun r => e r, ?_⟩
   ext z
-  have hz := e.sum_repr' (⟨F z, LinearMap.mem_range_self _ z⟩ : V)
-  have := congrArg Subtype.val hz
+  have := congrArg Subtype.val (e.sum_repr' ⟨F z, LinearMap.mem_range_self _ z⟩)
   simp only [Submodule.coe_sum, Submodule.coe_smul] at this
   rw [ContinuousLinearMap.sum_apply]
   simp only [InnerProductSpace.rankOne_apply, ContinuousLinearMap.adjoint_inner_left]
@@ -594,7 +538,7 @@ omit [CompleteSpace H] in
 lemma continuous_rankOne {Y Z : Type*} [NormedAddCommGroup Y] [InnerProductSpace 𝕜 Y]
     [TopologicalSpace Z] {f : Z → H} {g : Z → Y} (hf : Continuous f) (hg : Continuous g) :
     Continuous fun z => InnerProductSpace.rankOne 𝕜 (f z) (g z) := by
-  simp only [InnerProductSpace.rankOne_def']
+  simp [InnerProductSpace.rankOne_def']
   refine Continuous.clm_comp ?_ ((innerSL 𝕜 (E := Y)).continuous.comp hg)
   exact (ContinuousLinearMap.toSpanSingletonCLE (𝕜 := 𝕜) (E := H)).continuous.comp hf
 
@@ -614,30 +558,26 @@ theorem finite_rank_completion_basis {C : H →L[𝕜] H} (hC : IsCompactOperato
         (∑ r, InnerProductSpace.rankOne 𝕜 (v r) (u r)) ∘L H₀ᗮ.orthogonalProjection) := by
   obtain ⟨F, hF, hunit⟩ := finite_rank_completion_isUnit hC H₀ hinj
   obtain ⟨d, u, v, rfl⟩ := exists_eq_sum_rankOne F
-  set P₁ : H →L[𝕜] H₀ᗮ := H₀ᗮ.orthogonalProjection
+  set P₁ := H₀ᗮ.orthogonalProjection
   let Φ : (Fin d → H₀ᗮ) × (Fin d → H) → (H →L[𝕜] H) := fun p =>
     (1 : H →L[𝕜] H) + C + (∑ r, InnerProductSpace.rankOne 𝕜 (p.2 r) (p.1 r)) ∘L P₁
-  have hΦ : Continuous Φ := by
+  obtain ⟨⟨u', v'⟩, hmem, hD⟩ := (show Dense ((Set.univ.pi fun _ : Fin d => (Submodule.span 𝕜 (Set.range b₁) : Set H₀ᗮ)) ×ˢ (Set.univ.pi fun _ : Fin d => (Submodule.span 𝕜 (Set.range b) : Set H))) by
+    refine Dense.prod (dense_pi _ fun _ _ => ?_) (dense_pi _ fun _ _ => ?_)
+    · exact Submodule.dense_iff_topologicalClosure_eq_top.2 b₁.dense_span
+    · exact Submodule.dense_iff_topologicalClosure_eq_top.2 b.dense_span).inter_open_nonempty _ (Units.isOpen.preimage (show Continuous Φ by
     refine continuous_const.add ?_
     refine ((ContinuousLinearMap.compL 𝕜 H H₀ᗮ H).flip P₁).continuous.comp ?_
     refine continuous_finset_sum _ fun r _ => ?_
     exact continuous_rankOne ((continuous_apply r).comp continuous_snd)
-      ((continuous_apply r).comp continuous_fst)
-  have hO : IsOpen (Φ ⁻¹' {x | IsUnit x}) := Units.isOpen.preimage hΦ
-  have hdense : Dense ((Set.univ.pi fun _ : Fin d => (Submodule.span 𝕜 (Set.range b₁) : Set H₀ᗮ))
-      ×ˢ (Set.univ.pi fun _ : Fin d => (Submodule.span 𝕜 (Set.range b) : Set H))) := by
-    refine Dense.prod (dense_pi _ fun _ _ => ?_) (dense_pi _ fun _ _ => ?_)
-    · exact (Submodule.dense_iff_topologicalClosure_eq_top).2 b₁.dense_span
-    · exact (Submodule.dense_iff_topologicalClosure_eq_top).2 b.dense_span
-  obtain ⟨⟨u', v'⟩, hmem, hD⟩ := hdense.inter_open_nonempty _ hO ⟨(u, v), hunit⟩
-  simp only [Set.mem_prod, Set.mem_pi, Set.mem_univ, true_implies, SetLike.mem_coe] at hD
+      ((continuous_apply r).comp continuous_fst))) ⟨(u, v), hunit⟩
+  simp at hD
   exact ⟨d, u', v', hD.1, hD.2, hmem⟩
 
 /-- **Lemma 7.3**, with finite basis input and output vectors: given Hilbert bases `b` of `H`
 and `b₁` of `H₀ᗮ`, the fixed map can be taken as `R z = z + ∑_r ⟪u_r, z⟫ v_r` with finite basis
 combinations `u_r`, `v_r`. -/
 theorem exists_fixed_complement_basis (H₀ : Submodule 𝕜 H) [H₀.HasOrthogonalProjection]
-    {J : ℝ → (H₀ →L[𝕜] H)} (hJ : Continuous J) {E₀ : ℝ}
+    {J : ℝ → (H₀ →L[𝕜] H)} (hJ : Continuous J) 
     (hcpt : IsCompactOperator (J E₀ ∘L H₀.orthogonalProjection +
       Submodule.subtypeL H₀ᗮ ∘L H₀ᗮ.orthogonalProjection - (1 : H →L[𝕜] H)))
     (hinj : Function.Injective (J E₀))

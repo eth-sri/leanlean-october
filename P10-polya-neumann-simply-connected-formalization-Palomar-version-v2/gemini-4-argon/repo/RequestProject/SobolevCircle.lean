@@ -32,15 +32,14 @@ open scoped ENNReal InnerProductSpace
 abbrev L2Z := lp (fun _ : ℤ => ℂ) 2
 
 lemma memℓp_two_iff_summable {f : ℤ → ℂ} : Memℓp f 2 ↔ Summable fun n => ‖f n‖ ^ 2 := by
-  rw [memℓp_gen_iff (by norm_num : (0 : ℝ) < (2 : ℝ≥0∞).toReal)]
+  rw [memℓp_gen_iff (by norm_num : 0 < (2 : ℝ≥0∞).toReal)]
   simp
 
 lemma summable_norm_sq_L2Z (f : L2Z) : Summable fun n => ‖f n‖ ^ 2 :=
   memℓp_two_iff_summable.mp (lp.memℓp f)
 
 lemma norm_sq_L2Z (f : L2Z) : ‖f‖ ^ 2 = ∑' n, ‖f n‖ ^ 2 := by
-  have := lp.norm_rpow_eq_tsum (p := 2) (by norm_num) f
-  simpa using this
+  simpa using lp.norm_rpow_eq_tsum (p := 2) (by norm_num) f
 
 /-! ### Bounded multipliers -/
 
@@ -49,24 +48,21 @@ section Diag
 variable (w : ℤ → ℂ) (C : ℝ) (hw : ∀ n, ‖w n‖ ≤ C)
 include hw
 
-lemma memℓp_mul_of_bounded (f : L2Z) : Memℓp (fun n => w n * f n) 2 := by
-  refine memℓp_two_iff_summable.mpr ?_
-  refine Summable.of_nonneg_of_le (fun n => by positivity) (fun n => ?_)
-    ((summable_norm_sq_L2Z f).mul_left (C ^ 2))
-  rw [norm_mul, mul_pow]
-  gcongr
-  exact hw n
-
-/-- The multiplier `f ↦ (wₙ fₙ)ₙ` as a linear map. -/
 def diagLin : L2Z →ₗ[ℂ] L2Z where
-  toFun f := ⟨fun n => w n * f n, memℓp_mul_of_bounded w C hw f⟩
+  toFun f := ⟨fun n => w n * f n, (show Memℓp (fun n => w n * f n) 2 by
+    refine memℓp_two_iff_summable.mpr ?_
+    refine Summable.of_nonneg_of_le (fun n => by positivity) (fun n => ?_)
+      ((summable_norm_sq_L2Z f).mul_left (C ^ 2))
+    rw [norm_mul, mul_pow]
+    gcongr
+    exact hw n)⟩
   map_add' f g := by
     ext n
     change w n * ((f + g : L2Z) : ℤ → ℂ) n = w n * f n + w n * g n
     simp [mul_add]
   map_smul' c f := by
     ext n
-    simp only [lp.coeFn_smul, Pi.smul_apply, smul_eq_mul, RingHom.id_apply]
+    simp
     show w n * (c * f n) = c * (w n * f n)
     ring
 
@@ -74,21 +70,20 @@ lemma nonneg_of_bounded : 0 ≤ C := (norm_nonneg _).trans (hw 0)
 
 lemma norm_diagLin_le (f : L2Z) : ‖diagLin w C hw f‖ ≤ C * ‖f‖ := by
   have hC := nonneg_of_bounded w C hw
-  have h1 : ‖diagLin w C hw f‖ ^ 2 ≤ (C * ‖f‖) ^ 2 := by
+  exact (sq_le_sq₀ (norm_nonneg _) (by positivity)).mp (by
     rw [norm_sq_L2Z, mul_pow, norm_sq_L2Z, ← tsum_mul_left]
     refine (summable_norm_sq_L2Z _).tsum_le_tsum (fun n => ?_)
       ((summable_norm_sq_L2Z f).mul_left _)
     show ‖w n * f n‖ ^ 2 ≤ C ^ 2 * ‖f n‖ ^ 2
     rw [norm_mul, mul_pow]
     gcongr
-    exact hw n
-  exact (sq_le_sq₀ (norm_nonneg _) (by positivity)).mp h1
+    exact hw n)
 
 /-- The bounded multiplier by a sequence `w` with `‖wₙ‖ ≤ C`. -/
 def diagOp : L2Z →L[ℂ] L2Z :=
   (diagLin w C hw).mkContinuous C (norm_diagLin_le w C hw)
 
-@[simp] lemma diagOp_apply (f : L2Z) (n : ℤ) : (diagOp w C hw f : ℤ → ℂ) n = w n * f n := rfl
+@[simp] lemma diagOp_apply (f : L2Z) n : (diagOp w C hw f : ℤ → ℂ) n = w n * f n := rfl
 
 lemma norm_diagOp_le : ‖diagOp w C hw‖ ≤ C :=
   LinearMap.mkContinuous_norm_le _ (nonneg_of_bounded w C hw) _
@@ -98,39 +93,33 @@ end Diag
 /-- The standard Hilbert basis `(δₙ)` of `ℓ²(ℤ)`. -/
 def stdBasisZ : HilbertBasis ℤ ℂ L2Z := HilbertBasis.ofRepr (LinearIsometryEquiv.refl ℂ L2Z)
 
-lemma stdBasisZ_apply (n : ℤ) : stdBasisZ n = lp.single 2 n 1 := by
+lemma stdBasisZ_apply n : stdBasisZ n = lp.single 2 n 1 := by
   rw [← HilbertBasis.repr_symm_single]
   rfl
 
-lemma diagOp_stdBasisZ (w : ℤ → ℂ) (C : ℝ) (hw : ∀ n, ‖w n‖ ≤ C) (n : ℤ) :
-    diagOp w C hw (stdBasisZ n) = lp.single 2 n (w n) := by
-  ext m
-  rw [diagOp_apply, stdBasisZ_apply, lp.single_apply, lp.single_apply]
-  by_cases h : m = n
-  · subst h; simp
-  · simp [h]
-
-/-- A multiplier by a finitely supported sequence is compact. -/
-lemma isCompactOperator_diagOp_of_finite (w : ℤ → ℂ) (C : ℝ) (hw : ∀ n, ‖w n‖ ≤ C)
+lemma isCompactOperator_diagOp_of_finite w C hw
     (S : Finset ℤ) (hS : ∀ n ∉ S, w n = 0) : IsCompactOperator (diagOp w C hw) := by
   refine isCompactOperator_of_summable_norm_sq stdBasisZ _ ?_
   refine summable_of_ne_finset_zero (s := S) fun n hn => ?_
-  rw [diagOp_stdBasisZ, hS n hn]
+  have h_inl w C hw n : diagOp w C hw (stdBasisZ n) = lp.single 2 n (w n) := by
+    ext m
+    rw [diagOp_apply, stdBasisZ_apply, lp.single_apply, lp.single_apply]
+    by_cases h : m = n
+    · subst h; simp
+    · simp [h]
+  rw [h_inl, hS n hn]
   simp
 
 /-- **Compact multipliers.** A multiplier by a bounded sequence tending to zero at infinity is a
 compact operator on `ℓ²(ℤ)`. -/
-theorem isCompactOperator_diagOp (w : ℤ → ℂ) (C : ℝ) (hw : ∀ n, ‖w n‖ ≤ C)
+theorem isCompactOperator_diagOp w (C : ℝ) hw
     (hw0 : Tendsto w cofinite (𝓝 0)) : IsCompactOperator (diagOp w C hw) := by
   classical
-  have hcl : IsClosed {f : L2Z →L[ℂ] L2Z | IsCompactOperator f} :=
-    isClosed_setOf_isCompactOperator
   show diagOp w C hw ∈ {f : L2Z →L[ℂ] L2Z | IsCompactOperator f}
-  rw [← hcl.closure_eq]
+  rw [← isClosed_setOf_isCompactOperator.closure_eq]
   refine Metric.mem_closure_iff.mpr fun ε hε => ?_
   have hev : ∀ᶠ n in cofinite, ‖w n‖ < ε / 2 := by
-    have := hw0.norm
-    simpa using this.eventually (gt_mem_nhds (by simpa using half_pos hε))
+    simpa using hw0.norm.eventually (gt_mem_nhds (by simpa using half_pos hε))
   rw [Filter.eventually_cofinite] at hev
   set S := hev.toFinset
   set w' : ℤ → ℂ := fun n => if n ∈ S then w n else 0
@@ -152,11 +141,9 @@ theorem isCompactOperator_diagOp (w : ℤ → ℂ) (C : ℝ) (hw : ∀ n, ‖w n
       exact (not_le.mp this).le
   have hle : ‖diagOp w C hw - diagOp w' C hw'‖ ≤ ε / 2 := by
     refine ContinuousLinearMap.opNorm_le_bound _ (by positivity) fun f => ?_
-    have heq : (diagOp w C hw - diagOp w' C hw') f =
-        diagOp (fun n => w n - w' n) (ε / 2) hd f := by
+    rw [show (diagOp w C hw - diagOp w' C hw') f = diagOp (fun n => w n - w' n) (ε / 2) hd f by
       ext n
-      simp [sub_mul]
-    rw [heq]
+      simp [sub_mul]]
     exact (diagOp _ _ hd).le_opNorm f |>.trans (by gcongr; exact norm_diagOp_le _ _ hd)
   linarith
 
@@ -165,12 +152,12 @@ theorem isCompactOperator_diagOp (w : ℤ → ℂ) (C : ℝ) (hw : ∀ n, ‖w n
 /-- The Sobolev weight `λₙ = 1 + |n|`. -/
 def sobWeight (n : ℤ) : ℝ := 1 + |(n : ℝ)|
 
-lemma one_le_sobWeight (n : ℤ) : 1 ≤ sobWeight n := by
+lemma one_le_sobWeight n : 1 ≤ sobWeight n := by
   unfold sobWeight; linarith [abs_nonneg (n : ℝ)]
 
-lemma sobWeight_pos (n : ℤ) : 0 < sobWeight n := lt_of_lt_of_le one_pos (one_le_sobWeight n)
+lemma sobWeight_pos n : 0 < sobWeight n := lt_of_lt_of_le one_pos (one_le_sobWeight n)
 
-lemma norm_sobWeight_rpow_neg_le {s : ℝ} (hs : 0 ≤ s) (n : ℤ) :
+lemma norm_sobWeight_rpow_neg_le {s : ℝ} (hs : 0 ≤ s) n :
     ‖((sobWeight n ^ (-s) : ℝ) : ℂ)‖ ≤ 1 := by
   rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (by have := sobWeight_pos n; positivity)]
   exact Real.rpow_le_one_of_one_le_of_nonpos (one_le_sobWeight n) (by linarith)
@@ -194,10 +181,7 @@ inclusion `H^{s+ε}(𝕋) ↪ H^s(𝕋)` is compact. -/
 theorem isCompactOperator_sobolevSmoothing {ε : ℝ} (hε : 0 < ε) :
     IsCompactOperator (sobolevSmoothing ε hε.le) := by
   refine isCompactOperator_diagOp _ _ _ ?_
-  have h : Tendsto (fun n => sobWeight n ^ (-ε)) cofinite (𝓝 0) :=
-    (tendsto_rpow_neg_atTop hε).comp tendsto_sobWeight_cofinite
-  have := (Complex.continuous_ofReal.tendsto 0).comp h
-  simpa [Function.comp_def] using this
+  simpa [Function.comp_def] using (Complex.continuous_ofReal.tendsto 0).comp ((tendsto_rpow_neg_atTop hε).comp tendsto_sobWeight_cofinite)
 
 /-! ### The normalized principal part of the periodic form (Lemma 6.7) -/
 
@@ -211,33 +195,29 @@ is set to zero. -/
 def principalSymbol (n : ℤ) : ℂ :=
   if n = 0 then 0 else ((sobWeight n * (2 / |(n : ℝ)| + 2 / (n : ℝ)) : ℝ) : ℂ)
 
-lemma principalSymbol_pos {n : ℤ} (hn : 0 < n) : principalSymbol n = 4 + 4 / (n : ℂ) := by
-  have hn' : (0 : ℝ) < n := by exact_mod_cast hn
+lemma principalSymbol_pos  (hn : 0 < n) : principalSymbol n = 4 + 4 / (n : ℂ) := by
   have hc : (n : ℂ) ≠ 0 := by exact_mod_cast hn.ne'
-  simp only [principalSymbol, hn.ne', if_false, sobWeight, abs_of_pos hn']
-  push_cast
+  simp [principalSymbol, hn.ne', sobWeight, abs_of_pos (show (0 : ℝ) < n by exact_mod_cast hn)]
   field_simp
   ring
 
-lemma principalSymbol_neg {n : ℤ} (hn : n < 0) : principalSymbol n = 0 := by
-  have hn' : (n : ℝ) < 0 := by exact_mod_cast hn
-  simp only [principalSymbol, hn.ne, if_false, abs_of_neg hn']
+lemma principalSymbol_neg  (hn : n < 0) : principalSymbol n = 0 := by
+  simp only [principalSymbol, hn.ne, if_false, abs_of_neg (show (n : ℝ) < 0 by exact_mod_cast hn)]
   rw [div_neg, neg_add_cancel, mul_zero, Complex.ofReal_zero]
 
-lemma norm_principalSymbol_le (n : ℤ) : ‖principalSymbol n‖ ≤ 8 := by
+lemma norm_principalSymbol_le n : ‖principalSymbol n‖ ≤ 8 := by
   rcases lt_trichotomy n 0 with h | h | h
   · simp [principalSymbol_neg h]
   · simp [principalSymbol, h]
   · rw [principalSymbol_pos h]
     have hn : (1 : ℝ) ≤ n := by exact_mod_cast h
-    calc ‖(4 : ℂ) + 4 / (n : ℂ)‖ ≤ ‖(4 : ℂ)‖ + ‖4 / (n : ℂ)‖ := norm_add_le _ _
+    calc _ ≤ _ := norm_add_le _ _
       _ ≤ 4 + 4 := by
         gcongr
         · simp
         · rw [norm_div, Complex.norm_intCast]
-          simp only [Complex.norm_ofNat]
-          rw [abs_of_pos (by linarith)]
-          rw [div_le_iff₀ (by linarith)]
+          simp
+          rw [abs_of_pos (by linarith), div_le_iff₀ (by linarith)]
           nlinarith
       _ = 8 := by norm_num
 
@@ -253,28 +233,21 @@ theorem principal_normalized_sub_four_posProj_compact :
     have h1 := norm_principalSymbol_le n
     have h2 : ‖(4 : ℂ) * (if 0 < n then 1 else 0)‖ ≤ 4 := by split_ifs <;> simp
     linarith
-  have heq : principalNormalized - (4 : ℂ) • posProj =
-      diagOp (fun n => principalSymbol n - 4 * (if 0 < n then 1 else 0)) 12 hb := by
+  rw [show principalNormalized - (4 : ℂ) • posProj = diagOp (fun n => principalSymbol n - 4 * (if 0 < n then 1 else 0)) 12 hb by
     ext f n
     simp only [ContinuousLinearMap.sub_apply, ContinuousLinearMap.smul_apply, lp.coeFn_sub,
       lp.coeFn_smul]
-    simp [principalNormalized, posProj, sub_mul]
-  rw [heq]
+    simp [principalNormalized, posProj, sub_mul]]
   refine isCompactOperator_diagOp _ _ _ ?_
-  have hev : (fun n : ℤ => principalSymbol n - 4 * (if 0 < n then 1 else 0)) =
-      fun n : ℤ => if 0 < n then 4 / (n : ℂ) else 0 := by
+  rw [show (fun n => principalSymbol n - 4 * (if 0 < n then 1 else 0)) = fun n : ℤ => if 0 < n then 4 / (n : ℂ) else 0 by
     funext n
     rcases lt_trichotomy n 0 with h | h | h
     · simp [principalSymbol_neg h, not_lt.mpr h.le]
     · simp [principalSymbol, h]
-    · simp [principalSymbol_pos h, h]
-  rw [hev]
-  have h1 : Tendsto (fun n : ℤ => ‖(n : ℂ)‖) cofinite atTop := by
-    have := tendsto_atTop_add_const_right _ (-1) tendsto_sobWeight_cofinite
-    refine this.congr fun n => ?_
-    simp [sobWeight, Complex.norm_intCast]
-  have h2 := (tendsto_const_nhds (x := (4 : ℝ))).div_atTop h1
-  refine squeeze_zero_norm (fun n => ?_) h2
+    · simp [principalSymbol_pos h, h]]
+  refine squeeze_zero_norm (fun n => ?_) ((tendsto_const_nhds (x := 4)).div_atTop (show Tendsto (fun n : ℤ => ‖(n : ℂ)‖) cofinite atTop by
+    refine (tendsto_atTop_add_const_right _ (-1) tendsto_sobWeight_cofinite).congr fun n => ?_
+    simp [sobWeight, Complex.norm_intCast]))
   split_ifs with h
   · simp
   · simp only [norm_zero]

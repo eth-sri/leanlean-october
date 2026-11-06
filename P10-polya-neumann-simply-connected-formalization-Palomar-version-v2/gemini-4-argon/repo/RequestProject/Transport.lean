@@ -36,7 +36,7 @@ structure IsBoundaryParam (Ω : Set ℂ) (γ : ℝ → ℂ) : Prop where
   injOn : Set.InjOn γ (Set.Ico 0 (2 * π))
   image : γ '' Set.Icc 0 (2 * π) = frontier Ω
   const_speed : ∃ c : ℝ, 0 < c ∧ ∀ᵐ θ, ‖deriv γ θ‖ = c
-  area : ∫ θ in (0 : ℝ)..(2 * π), (conj (γ θ) * deriv γ θ).im = 2 * (volume Ω).toReal
+  area : ∫ θ in 0..(2 * π), (conj (γ θ) * deriv γ θ).im = 2 * (volume Ω).toReal
 
 /-- The transport coefficient
 `C_E(θ) = -(i √E / 2) (γ'(θ) S_N^* + conj(γ'(θ)) S_N)`. -/
@@ -48,7 +48,7 @@ def transportCoeff (γ : ℝ → ℂ) (E : ℝ) (θ : ℝ) : Ell2 →L[ℂ] Ell2
 `W(θ) = I + ∫₀^θ C_E(s) W(s) ds` there. -/
 def IsTransport (γ : ℝ → ℂ) (E : ℝ) (W : ℝ → Ell2 →L[ℂ] Ell2) : Prop :=
   ContinuousOn W (Set.Icc 0 (2 * π)) ∧
-  ∀ θ ∈ Set.Icc 0 (2 * π), W θ = 1 + ∫ s in (0 : ℝ)..θ, transportCoeff γ E s * W s
+  ∀ θ ∈ Set.Icc 0 (2 * π), W θ = 1 + ∫ s in 0..θ, transportCoeff γ E s * W s
 
 /-- The monodromy `U_E = W_E(L)^*`. -/
 def monodromy (W : ℝ → Ell2 →L[ℂ] Ell2) : Ell2 →L[ℂ] Ell2 :=
@@ -58,16 +58,13 @@ def monodromy (W : ℝ → Ell2 →L[ℂ] Ell2) : Ell2 →L[ℂ] Ell2 :=
 lemma norm_sub_one_pos {U : Ell2 →L[ℂ] Ell2} (h : U ≠ 1) : 0 < ‖U - 1‖ :=
   norm_pos_iff.mpr (sub_ne_zero.mpr h)
 
-lemma transportCoeff_aestronglyMeasurable (γ : ℝ → ℂ) (E : ℝ) :
+lemma transportCoeff_aestronglyMeasurable γ E :
     AEStronglyMeasurable (transportCoeff γ E) volume := by
-  have hg : Continuous fun z : ℂ => (-(Complex.I * (Real.sqrt E : ℂ)) / 2) •
-      (z • ContinuousLinearMap.adjoint shiftN + conj z • shiftN) := by
-    have : Continuous fun z : ℂ => conj z := Complex.continuous_conj
-    fun_prop
-  exact hg.comp_aestronglyMeasurable (measurable_deriv γ).aestronglyMeasurable
+  exact (show Continuous fun z : ℂ => (-(Complex.I * (Real.sqrt E)) / 2) • (z • ContinuousLinearMap.adjoint shiftN + conj z • shiftN) by
+    fun_prop).comp_aestronglyMeasurable (measurable_deriv γ).aestronglyMeasurable
 
-lemma transportCoeff_norm_le (γ : ℝ → ℂ) (E : ℝ) {K : NNReal} (hK : LipschitzWith K γ)
-    (θ : ℝ) : ‖transportCoeff γ E θ‖ ≤ ‖(-(Complex.I * (Real.sqrt E : ℂ)) / 2)‖ *
+lemma transportCoeff_norm_le γ E  (hK : LipschitzWith K γ)
+    θ : ‖transportCoeff γ E θ‖ ≤ ‖(-(Complex.I * (Real.sqrt E : ℂ)) / 2)‖ *
       (K * ‖(ContinuousLinearMap.adjoint shiftN : Ell2 →L[ℂ] Ell2)‖ + K * ‖shiftN‖) := by
   have hd : ‖deriv γ θ‖ ≤ K := norm_deriv_le_of_lipschitz hK
   unfold transportCoeff
@@ -78,14 +75,14 @@ lemma transportCoeff_norm_le (γ : ℝ → ℂ) (E : ℝ) {K : NNReal} (hK : Lip
   · rw [norm_smul, Complex.norm_conj]; gcongr
 
 /-- Lemma 10.2 (existence): for a Lipschitz curve the transport equation has a solution. -/
-theorem transport_exists_of_lipschitz (γ : ℝ → ℂ) {K : NNReal} (hK : LipschitzWith K γ)
-    (E : ℝ) : ∃ W : ℝ → Ell2 →L[ℂ] Ell2, IsTransport γ E W :=
+theorem transport_exists_of_lipschitz γ  (hK : LipschitzWith K γ)
+    E : ∃ W : ℝ → Ell2 →L[ℂ] Ell2, IsTransport γ E W :=
   exists_volterra_solution (transportCoeff_aestronglyMeasurable γ E)
     (transportCoeff_norm_le γ E hK) (2 * π)
 
 /-- Lemma 10.2 (uniqueness): the transport is unique on `[0, L]`. -/
-theorem transport_unique_of_lipschitz (γ : ℝ → ℂ) {K : NNReal} (hK : LipschitzWith K γ)
-    (E : ℝ) {W W' : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport γ E W)
+theorem transport_unique_of_lipschitz γ  (hK : LipschitzWith K γ)
+    E  (hW : IsTransport γ E W)
     (hW' : IsTransport γ E W') : Set.EqOn W W' (Set.Icc 0 (2 * π)) :=
   volterra_unique (transportCoeff_aestronglyMeasurable γ E) (transportCoeff_norm_le γ E hK)
     (2 * π) hW.1 hW'.1 hW.2 hW'.2

@@ -37,7 +37,7 @@ theorem phase_le_count_of_jumps (lam : ℕ → ℝ) (h0 : lam 0 = 0) (M : ℝ �
     (hjump : ∀ j, 0 < lam j → ∀ m : ℕ, {i | lam i = lam j}.encard = m →
       ∃ δ > 0, ∀ E₁ E₂, 0 < E₁ → lam j - δ < E₁ → E₁ < lam j →
       lam j < E₂ → E₂ < lam j + δ → (∀ i, lam i ≠ E₁) → (∀ i, lam i ≠ E₂) → M E₂ ≤ M E₁ + m)
-    (E : ℝ) (hE : 0 < E) (hnr : ∀ j, lam j ≠ E) (hfin : {j | lam j < E}.Finite) :
+    E (hE : 0 < E) (hnr : ∀ j, lam j ≠ E) (hfin : {j | lam j < E}.Finite) :
     M E ≤ {j | lam j < E}.ncard := by
   obtain ⟨δ0, hδ0, hinit⟩ := hinit
   induction h : (lam '' {j | 0 < lam j ∧ lam j < E}).ncard using Nat.strong_induction_on
@@ -46,15 +46,14 @@ theorem phase_le_count_of_jumps (lam : ℕ → ℝ) (h0 : lam 0 = 0) (M : ℝ �
   set P := lam '' {j | 0 < lam j ∧ lam j < E} with hP
   have hPfin : P.Finite := (hfin.subset (fun j hj => hj.2)).image lam
   have hone : (1 : ℝ) ≤ {j | lam j < E}.ncard := by
-    have : 0 < {j | lam j < E}.ncard := (Set.ncard_pos hfin).2 ⟨0, by simp [h0, hE]⟩
-    exact_mod_cast this
+    exact_mod_cast ((Set.ncard_pos hfin).2 ⟨0, by simp [h0, hE]⟩)
   rcases P.eq_empty_or_nonempty with hPe | hPne
   · set E' := min (δ0 / 2) E
     have hE'pos : 0 < E' := lt_min (by positivity) hE
     have hE'le : E' ≤ E := min_le_right _ _
     have hno : ∀ j, lam j ∉ Icc E' E := by
       intro j hj
-      have hlt : lam j < E := lt_of_le_of_ne hj.2 (hnr j)
+      have hlt := lt_of_le_of_ne hj.2 (hnr j)
       have : lam j ∈ P := ⟨j, ⟨hE'pos.trans_le hj.1, hlt⟩, rfl⟩
       rw [hPe] at this; exact this
     have h1 := hconst E' E hE'pos hE'le hno
@@ -63,62 +62,52 @@ theorem phase_le_count_of_jumps (lam : ℕ → ℝ) (h0 : lam 0 = 0) (M : ℝ �
     linarith
   · have hne : hPfin.toFinset.Nonempty := by simpa using hPne
     set e := hPfin.toFinset.max' hne with he
-    have heP : e ∈ P := by simpa using hPfin.toFinset.max'_mem hne
     have hemax : ∀ x ∈ P, x ≤ e := fun x hx =>
       hPfin.toFinset.le_max' x (by simpa using hx)
-    set A := insert (0 : ℝ) (hPfin.toFinset.erase e) with hA
+    set A := insert 0 (hPfin.toFinset.erase e) with hA
     have hAne : A.Nonempty := Finset.insert_nonempty _ _
     set a := A.max' hAne with ha
-    have ha0 : 0 ≤ a := A.le_max' 0 (Finset.mem_insert_self _ _)
     have haP : ∀ x ∈ P, x ≠ e → x ≤ a := fun x hx hxe =>
       A.le_max' x (Finset.mem_insert_of_mem (Finset.mem_erase.2 ⟨hxe, by simpa using hx⟩))
-    obtain ⟨j0, ⟨hj0pos, hj0E⟩, hj0e⟩ := heP
-    have hepos : 0 < e := hj0e ▸ hj0pos
-    have heE : e < E := hj0e ▸ hj0E
-    have hae : a < e := by
-      have hmem := A.max'_mem hAne
-      rw [← ha] at hmem
-      rcases Finset.mem_insert.1 hmem with h0' | h0'
-      · rw [h0']; exact hepos
-      · obtain ⟨hne', hm⟩ := Finset.mem_erase.1 h0'
-        exact lt_of_le_of_ne (hemax a (by simpa using hm)) hne'
+    obtain ⟨j0, ⟨hj0pos, hj0E⟩, hj0e⟩ := show e ∈ P by simpa using hPfin.toFinset.max'_mem hne
+    have heE := hj0e ▸ hj0E
     -- the multiplicity of `e`
     have hsub : {i | lam i = e} ⊆ {j | lam j < E} := fun i hi => by
-      simp only [mem_setOf_eq] at hi ⊢; rw [hi]; exact heE
-    have hmfin : {i | lam i = e}.Finite := hfin.subset hsub
-    have hm := hmfin.cast_ncard_eq
-    obtain ⟨δ, hδ, hjump⟩ := hjump j0 hj0pos _ (by rw [hj0e]; exact hm.symm)
+      simp at hi ⊢; rw [hi]; exact heE
+    have hmfin := hfin.subset hsub
+    obtain ⟨δ, hδ, hjump⟩ := hjump j0 hj0pos _ (by rw [hj0e]; exact hmfin.cast_ncard_eq.symm)
     rw [hj0e] at hjump
     set E₁ := (max a (e - δ) + e) / 2 with hE₁
     set E₂ := (e + min (e + δ) E) / 2 with hE₂
-    have hmax : max a (e - δ) < e := max_lt hae (by linarith)
+    have hmax : max a (e - δ) < e := max_lt (by
+      have hmem := A.max'_mem hAne
+      rw [← ha] at hmem
+      rcases Finset.mem_insert.1 hmem with h0' | h0'
+      · rw [h0']; exact hj0e ▸ hj0pos
+      · obtain ⟨hne', hm⟩ := Finset.mem_erase.1 h0'
+        exact lt_of_le_of_ne (hemax a (by simpa using hm)) hne') (by linarith)
     have hE₁lo : max a (e - δ) < E₁ := by rw [hE₁]; linarith
     have hE₁hi : E₁ < e := by rw [hE₁]; linarith
-    have haE₁ : a < E₁ := lt_of_le_of_lt (le_max_left _ _) hE₁lo
-    have hδE₁ : e - δ < E₁ := lt_of_le_of_lt (le_max_right _ _) hE₁lo
-    have hE₁pos : 0 < E₁ := lt_of_le_of_lt ha0 haE₁
+    have haE₁ := lt_of_le_of_lt (le_max_left _ _) hE₁lo
+    have hE₁pos := lt_of_le_of_lt (A.le_max' 0 (Finset.mem_insert_self _ _)) haE₁
     have hmin : e < min (e + δ) E := lt_min (by linarith) heE
     have hE₂lo : e < E₂ := by rw [hE₂]; linarith
     have hE₂hi : E₂ < min (e + δ) E := by rw [hE₂]; linarith
-    have hE₂δ : E₂ < e + δ := lt_of_lt_of_le hE₂hi (min_le_left _ _)
-    have hE₂E : E₂ < E := lt_of_lt_of_le hE₂hi (min_le_right _ _)
+    have hE₂E := lt_of_lt_of_le hE₂hi (min_le_right _ _)
     have hnr₁ : ∀ i, lam i ≠ E₁ := by
       intro i hi
-      have hiP : lam i ∈ P := ⟨i, ⟨hi ▸ hE₁pos, hi ▸ hE₁hi.trans heE⟩, rfl⟩
-      have := haP _ hiP (by rw [hi]; exact hE₁hi.ne)
+      have := haP _ ⟨i, ⟨hi ▸ hE₁pos, hi ▸ hE₁hi.trans heE⟩, rfl⟩ (by rw [hi]; exact hE₁hi.ne)
       linarith
     have hno₂ : ∀ i, lam i ∉ Icc E₂ E := by
       intro i hi
-      have hlt : lam i < E := lt_of_le_of_ne hi.2 (hnr i)
-      have hiP : lam i ∈ P := ⟨i, ⟨by linarith [hi.1], hlt⟩, rfl⟩
-      have := hemax _ hiP
+      have hlt := lt_of_le_of_ne hi.2 (hnr i)
+      have := hemax _ ⟨i, ⟨by linarith [hi.1], hlt⟩, rfl⟩
       linarith [hi.1]
-    have hnr₂ : ∀ i, lam i ≠ E₂ := fun i hi => hno₂ i (by rw [hi]; exact ⟨le_rfl, hE₂E.le⟩)
-    have hjmp := hjump E₁ E₂ hE₁pos hδE₁ hE₁hi hE₂lo hE₂δ hnr₁ hnr₂
+    have hjmp := hjump E₁ E₂ hE₁pos (lt_of_le_of_lt (le_max_right _ _) hE₁lo) hE₁hi hE₂lo (lt_of_lt_of_le hE₂hi (min_le_left _ _)) hnr₁ (fun i hi => hno₂ i (by rw [hi]; exact ⟨le_rfl, hE₂E.le⟩))
     -- the induction hypothesis at `E₁`
     have hfin₁ : {j | lam j < E₁}.Finite :=
       hfin.subset fun j hj => lt_trans hj (hE₁hi.trans heE)
-    have hlt : (lam '' {j | 0 < lam j ∧ lam j < E₁}).ncard < n := by
+    have hih := ih _ (by
       rw [← h]
       refine Set.ncard_lt_ncard ?_ hPfin
       refine ⟨?_, ?_⟩
@@ -126,33 +115,28 @@ theorem phase_le_count_of_jumps (lam : ℕ → ℝ) (h0 : lam 0 = 0) (M : ℝ �
         exact ⟨j, ⟨hj1, hj2.trans (hE₁hi.trans heE)⟩, rfl⟩
       · intro hsub'
         obtain ⟨j, ⟨-, hj2⟩, hje⟩ := hsub' ⟨j0, ⟨hj0pos, hj0E⟩, hj0e⟩
-        linarith
-    have hih := ih _ hlt E₁ hE₁pos hnr₁ hfin₁ rfl
+        linarith) E₁ hE₁pos hnr₁ hfin₁ rfl
     -- the count splits at `e`
-    have hsplit : {j | lam j < E} = {j | lam j < E₁} ∪ {i | lam i = e} := by
-      ext j
-      simp only [mem_setOf_eq, mem_union]
-      constructor
-      · intro hj
-        by_cases hj0 : lam j ≤ 0
-        · left; linarith
-        · have hjP : lam j ∈ P := ⟨j, ⟨lt_of_not_ge hj0, hj⟩, rfl⟩
-          by_cases hje : lam j = e
-          · right; exact hje
-          · left; exact lt_of_le_of_lt (haP _ hjP hje) haE₁
-      · rintro (hj | hj)
-        · exact hj.trans (hE₁hi.trans heE)
-        · rw [hj]; exact heE
-    have hdisj : Disjoint {j | lam j < E₁} {i | lam i = e} := by
-      rw [Set.disjoint_left]
-      intro j hj1 hj2
-      simp only [mem_setOf_eq] at hj1 hj2
-      linarith
-    have hcount : ({j | lam j < E}.ncard : ℝ) =
-        {j | lam j < E₁}.ncard + {i | lam i = e}.ncard := by
-      rw [hsplit, Set.ncard_union_eq hdisj hfin₁ hmfin]; push_cast; ring
     have hc := hconst E₂ E (hE₁pos.trans (hE₁hi.trans hE₂lo)) hE₂E.le hno₂
-    rw [hcount]
+    rw [show ({j | lam j < E}.ncard : ℝ) = {j | lam j < E₁}.ncard + {i | lam i = e}.ncard by
+      rw [show {j | lam j < E} = {j | lam j < E₁} ∪ {i | lam i = e} by
+        ext j
+        simp
+        constructor
+        · intro hj
+          by_cases hj0 : lam j ≤ 0
+          · left; linarith
+          · have hjP : lam j ∈ P := ⟨j, ⟨lt_of_not_ge hj0, hj⟩, rfl⟩
+            by_cases hje : lam j = e
+            · right; exact hje
+            · left; exact lt_of_le_of_lt (haP _ hjP hje) haE₁
+        · rintro (hj | hj)
+          · exact hj.trans (hE₁hi.trans heE)
+          · rw [hj]; exact heE, Set.ncard_union_eq (by
+        rw [Set.disjoint_left]
+        intro j hj1 hj2
+        simp at hj1 hj2
+        linarith) hfin₁ hmfin]; push_cast; ring]
     linarith
 
 end PolyaNeumann

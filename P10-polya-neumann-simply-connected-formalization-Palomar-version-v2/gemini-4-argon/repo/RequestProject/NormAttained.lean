@@ -24,13 +24,9 @@ set_option maxHeartbeats 10000000
 variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
 
 /-- A nonzero spectral value of a compact operator is an eigenvalue (Fredholm alternative). -/
-theorem exists_eigenvector_of_mem_spectrum {T : H →L[ℂ] H} (hT : IsCompactOperator T) {k : ℂ}
+theorem exists_eigenvector_of_mem_spectrum {T : H →L[ℂ] H} (hT : IsCompactOperator T) 
     (hk : k ∈ spectrum ℂ T) (hk0 : k ≠ 0) : ∃ v : H, v ≠ 0 ∧ T v = k • v := by
-  set C : H →L[ℂ] H := (-k⁻¹) • T with hCdef
-  have hC : IsCompactOperator C := hT.smul _
-  have hrel : algebraMap ℂ (H →L[ℂ] H) k - T = k • ((1 : H →L[ℂ] H) + C) := by
-    rw [hCdef, smul_add, smul_smul, mul_neg, mul_inv_cancel₀ hk0, neg_one_smul,
-      Algebra.algebraMap_eq_smul_one, sub_eq_add_neg]
+  set C := (-k⁻¹) • T with hCdef
   by_contra hno
   push_neg at hno
   have hinj : Function.Injective ⇑((1 : H →L[ℂ] H) + C) := by
@@ -43,26 +39,26 @@ theorem exists_eigenvector_of_mem_spectrum {T : H →L[ℂ] H} (hT : IsCompactOp
     have h2 : k • (v + (-k⁻¹) • T v) = 0 := by rw [h1, smul_zero]
     rw [smul_add, smul_smul, mul_neg, mul_inv_cancel₀ hk0, neg_one_smul] at h2
     exact (eq_of_sub_eq_zero (by rw [← h2]; abel)).symm
-  have hsurj := (injective_iff_surjective_one_add hC).mp hinj
-  have hunit : IsUnit ((1 : H →L[ℂ] H) + C) := isUnit_of_bijective _ ⟨hinj, hsurj⟩
+  have hsurj := (injective_iff_surjective_one_add (hT.smul _)).mp hinj
   apply hk
   show IsUnit _
-  rw [hrel, Algebra.smul_def]
-  exact ((IsUnit.mk0 k hk0).map (algebraMap ℂ (H →L[ℂ] H))).mul hunit
+  rw [show algebraMap ℂ (H →L[ℂ] H) k - T = k • ((1 : H →L[ℂ] H) + C) by
+    rw [hCdef, smul_add, smul_smul, mul_neg, mul_inv_cancel₀ hk0, neg_one_smul,
+      Algebra.algebraMap_eq_smul_one, sub_eq_add_neg], Algebra.smul_def]
+  exact ((IsUnit.mk0 k hk0).map (algebraMap ℂ (H →L[ℂ] H))).mul (isUnit_of_bijective _ ⟨hinj, hsurj⟩)
 
 set_option synthInstance.maxHeartbeats 10000000 in
 set_option maxHeartbeats 10000000 in
 /-- **Lemma 9.2 (norm attained).** If `U` is unitary, `U - I` is compact and `U ≠ I`, then
 some eigenvalue `z ≠ 1` of `U` satisfies `|z - 1| = ‖U - I‖`. -/
-theorem exists_eigenvalue_norm_sub_one {U : H →L[ℂ] H} (hU : U ∈ unitary (H →L[ℂ] H))
+theorem exists_eigenvalue_norm_sub_one  (hU : U ∈ unitary (H →L[ℂ] H))
     (hC : IsCompactOperator ⇑(U - 1)) (h1 : U ≠ 1) :
     ∃ (z : ℂ) (v : H), v ≠ 0 ∧ U v = z • v ∧ z ≠ 1 ∧ ‖z - 1‖ = ‖U - 1‖ := by
   have hn : IsStarNormal (U - 1) := by
     constructor
     rw [Commute, SemiconjBy, star_sub, star_one]
     have h1 := Unitary.star_mul_self_of_mem hU
-    have h2 := Unitary.mul_star_self_of_mem hU
-    simp only [sub_mul, mul_sub, h1, h2, one_mul, mul_one]
+    simp [sub_mul, mul_sub, h1, Unitary.mul_star_self_of_mem hU]
     abel
   letI : IsStarNormal (U - 1) := hn
   haveI : Nontrivial H := by
@@ -71,14 +67,9 @@ theorem exists_eigenvalue_norm_sub_one {U : H →L[ℂ] H} (hU : U ∈ unitary (
     exact h1 (ContinuousLinearMap.ext fun x => Subsingleton.elim _ _)
   obtain ⟨k, hk, hkn⟩ :=
     spectrum.exists_nnnorm_eq_spectralRadius_of_nonempty (spectrum.nonempty (U - 1))
-  have hspec : spectralRadius ℂ (U - 1) = ENNReal.ofNNReal ‖U - 1‖₊ :=
-    @IsStarNormal.spectralRadius_eq_nnnorm (H →L[ℂ] H)
-      (inferInstance : CStarAlgebra (H →L[ℂ] H)) (U - 1) hn
-  rw [hspec] at hkn
-  have hknNN : ‖k‖₊ = ‖U - 1‖₊ := by
-    exact ENNReal.coe_inj.mp hkn
+  rw [@IsStarNormal.spectralRadius_eq_nnnorm (H →L[ℂ] H) (inferInstance : CStarAlgebra (H →L[ℂ] H)) (U - 1) hn] at hkn
   have hkn' : ‖k‖ = ‖U - 1‖ := by
-    simpa using congrArg NNReal.toReal hknNN
+    simpa using congrArg NNReal.toReal (ENNReal.coe_inj.mp hkn)
   have hk0 : k ≠ 0 := by
     rintro rfl
     rw [norm_zero, eq_comm, norm_eq_zero, sub_eq_zero] at hkn'
