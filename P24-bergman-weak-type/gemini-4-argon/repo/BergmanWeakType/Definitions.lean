@@ -5,8 +5,11 @@ Authors: Yongxi Lin
 -/
 module
 
+public import Mathlib.AlgebraicTopology.FundamentalGroupoid.SimplyConnected
+public import Mathlib.Analysis.Calculus.Deriv.Basic
 public import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
 public import Mathlib.Analysis.SpecialFunctions.Pow.Complex
+public import Mathlib.MeasureTheory.Function.LpSeminorm.Basic
 public import Mathlib.MeasureTheory.Integral.Bochner.Basic
 public import Mathlib.MeasureTheory.Measure.Lebesgue.Complex
 public import Mathlib.MeasureTheory.Measure.WithDensity
@@ -71,5 +74,17 @@ def gammaConstant (α : ℝ) : ℝ := Real.Gamma (α + 1) / Real.Gamma (1 + α /
 /-- The boundary point-mass lower bound for the complex weighted projection. -/
 def boundaryConstant (α : ℝ) : ℝ :=
   (α + 1) / (α + 2) * gammaConstant α
+
+/-- The standard reproducing-kernel characterization of the Bergman kernel of a planar domain. -/
+structure IsBergmanKernel (Ω : Set ℂ) (K : ℂ → ℂ → ℂ) : Prop where
+  holomorphic : ∀ w ∈ Ω, DifferentiableOn ℂ (fun z ↦ K z w) Ω
+  hermitian : ∀ z ∈ Ω, ∀ w ∈ Ω, K z w = star (K w z)
+  squareIntegrable : ∀ z ∈ Ω, MemLp (fun w ↦ K z w) 2 (area.restrict Ω)
+  reproduces : ∀ f : ℂ → ℂ, DifferentiableOn ℂ f Ω → MemLp f 2 (area.restrict Ω) →
+    ∀ z ∈ Ω, (∫ w, K z w * f w ∂area.restrict Ω) = f z
+
+/-- The positive Bergman operator of a domain with its normalized-area kernel. -/
+def domainPositiveProjection (Ω : Set ℂ) (K : ℂ → ℂ → ℂ) (f : ℂ → ℂ)
+    (z : ℂ) : ℝ≥0∞ := ∫⁻ w, ENNReal.ofReal ‖K z w‖ * ‖f w‖ₑ ∂area.restrict Ω
 
 end BergmanWeakType
