@@ -20,13 +20,10 @@ prescription from an external physical chart, and restoring above an owner,
 are separate obligations.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedDecode
-open Transform Value ExtOrd CappedDonor LowOnly CanonicalPairedInverse
-open LowOnlyPaddedSuccessor LowOnlyOrderedLadder
-noncomputable section
+open Transform Value ExtOrd CappedDonor LowOnly CanonicalPairedInverse LowOnlyPaddedSuccessor LowOnlyOrderedLadder
 
 section Grid
 variable {n K j b : ℕ} {P C : SemScheme n} {F : LowOnly.Family P C K}
@@ -53,58 +50,37 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
       a.1 = I.shared.f i ∧ (F.root.face a).1 = I.shared.g i)
   (hA : 2 ≤ A.card) (hB : B ⊂ A) (hC : C ⊂ A)
 
-theorem protected_caps {b : ℕ} {a : F.Anchor 2} {S : State I.left I.right}
-    (r : F.ProtectedRepair a.val S 2 b)
-    (hb : b ≤ 2 * Fintype.card (Field I.left I.right) + 1)
-    (d : Cell (carrier I F hroot hA hB hC)) :
-    min (r.decoder (source I F hroot hA hB hC r.anchor d)) (grid 2 b) =
-      min (source I F hroot hA hB hC a d) (grid 2 b) := by
-  exact OrbitPrefixSupport.decode_agree r.witness (grid_visible 2 b)
-    (by rw [gTop_of_le le_rfl]; exact le_top) r.reaches
-    (fun _ hz hlt => grid_fixed_below r hz hlt) r.boundary_fixed
-    (source_supported I F hroot hA hB hC a)
-    (source_prefix I F hroot hA hB hC r.anchor a
-      (PairedSlotComparison.sourceGrid_endpoint hb) r.prefix_eq) d
+local notation "Car" => carrier I F hroot hA hB hC
+local notation "Cbelow" => CellScheme.below (carrier I F hroot hA hB hC)
+local notation "Rws" => rows I F hroot hA hB hC
+local notation "src" => source I F hroot hA hB hC
+local notation "orig" => original I F hroot hA hB hC
 
-theorem protected_lawful {b : ℕ} {a : F.Anchor 2} {S : State I.left I.right}
+theorem protected_decode {b : ℕ} {a : F.Anchor 2} {S : State I.left I.right}
     (r : F.ProtectedRepair a.val S 2 b)
     (hb : b ≤ 2 * Fintype.card (Field I.left I.right) + 1) :
-    RespectsSemanticsBelow (rows I F hroot hA hB hC) (A, 2)
-      (fun d => r.decoder (source I F hroot hA hB hC r.anchor d.1)) := by
-  exact (OrbitPrefixSupport.decode_respects_of_positive_cut r.witness
+    RespectsSemanticsBelow Rws (A, 2) (fun d => r.decoder (src r.anchor d.1)) ∧
+      ∀ d : Cbelow (A, 2),
+        min (r.decoder (src r.anchor d.1)) (grid 2 b) = min (src a d.1) (grid 2 b) :=
+  OrbitPrefixSupport.decode_respects_of_positive_cut r.witness
     (source_lawful I F hroot hA hB hC a) (source_lawful I F hroot hA hB hC r.anchor)
     (fun d => d.2.2) (grid_visible 2 b) (ofOrd_ne_bot _) r.reaches
     (fun _ hz hlt => grid_fixed_below r hz hlt) r.boundary_fixed
     (fun d => source_supported I F hroot hA hB hC a d.1)
     (fun d => source_prefix I F hroot hA hB hC r.anchor a
-      (PairedSlotComparison.sourceGrid_endpoint hb) r.prefix_eq d.1)).1
+      (PairedSlotComparison.sourceGrid_endpoint hb) r.prefix_eq d.1)
 
-theorem original_decode {b : ℕ} {a : F.Anchor 2} {S : State I.left I.right}
-    (r : F.ProtectedRepair a.val S 2 b) (d : Cell I.boundary) :
-    r.decoder (source I F hroot hA hB hC r.anchor (original I F hroot hA hB hC d)) =
-      S.profile (field I d) := by
-  rw [original_readback]
-  exact r.readback _
-
-/-- Physical private occurrences in the grade-two target. -/
-def privateAt (d : I.right.scheme.below (effC n 2)) :
-    (carrier I F hroot hA hB hC).below (A, 2) :=
-  ⟨original I F hroot hA hB hC (I.rightFace.map d.1), by
+def privateAt (d : I.right.scheme.below (effC n 2)) : Cbelow (A, 2) :=
+  ⟨orig (I.rightFace.map d.1), by
     rw [original_index]
-    refine ⟨I.boundary.isPlan.subset_of_mem (I.boundary.scope_mem_plan _), ?_⟩
-    have hg := congrArg Prod.snd (I.rightFace.index d.1)
-    change I.boundary.grade (I.rightFace.map d.1) = I.right.scheme.grade d.1 at hg
-    exact hg.le.trans (d.2.2.trans (min_le_left _ _))⟩
+    exact ⟨I.boundary.isPlan.subset_of_mem (I.boundary.scope_mem_plan _),
+      (congrArg Prod.snd (I.rightFace.index d.1)).le.trans (d.2.2.trans (min_le_left _ _))⟩⟩
 
-/-- Physical donor occurrences in the same target. -/
-def donorAt (d : I.left.scheme.below (effC n 2)) :
-    (carrier I F hroot hA hB hC).below (A, 2) :=
-  ⟨original I F hroot hA hB hC (I.leftFace.map d.1), by
+def donorAt (d : I.left.scheme.below (effC n 2)) : Cbelow (A, 2) :=
+  ⟨orig (I.leftFace.map d.1), by
     rw [original_index]
-    refine ⟨I.boundary.isPlan.subset_of_mem (I.boundary.scope_mem_plan _), ?_⟩
-    have hg := congrArg Prod.snd (I.leftFace.index d.1)
-    change I.boundary.grade (I.leftFace.map d.1) = I.left.scheme.grade d.1 at hg
-    exact hg.le.trans (d.2.2.trans (min_le_left _ _))⟩
+    exact ⟨I.boundary.isPlan.subset_of_mem (I.boundary.scope_mem_plan _),
+      (congrArg Prod.snd (I.leftFace.index d.1)).le.trans (d.2.2.trans (min_le_left _ _))⟩⟩
 
 theorem private_source_repair {b : ℕ} {S : State I.left I.right}
     (hS : F.Admissible 2 S)
@@ -113,23 +89,18 @@ theorem private_source_repair {b : ℕ} {S : State I.left I.right}
     {v : I.right.scheme.below (effC n 2) → ExtOrd}
     (hv : RespectsSemanticsBelow I.right.rows (effC n 2) v)
     (hag : ∀ d, min (v d) (grid 2 b) = min (S.lowerC 2 d) (grid 2 b)) :
-    ∃ w, RespectsSemanticsBelow (rows I F hroot hA hB hC) (A, 2) w ∧
+    ∃ w, RespectsSemanticsBelow Rws (A, 2) w ∧
       (∀ d, w (privateAt I F hroot hA hB hC d) = v d) ∧
       ∀ d, min (w d) (grid 2 b) =
-        min (source I F hroot hA hB hC ⟨S.profile, hc, S, hS, rfl⟩ d.1) (grid 2 b) := by
+        min (src ⟨S.profile, hc, S, hS, rfl⟩ d.1) (grid 2 b) := by
   obtain ⟨S', hS', he, _, _, ⟨r⟩⟩ := F.private_protected_repair (by decide) hS hc hv hag
-  refine ⟨_, protected_lawful I F hroot hA hB hC
-    (a := ⟨S.profile, hc, S, hS, rfl⟩) r hb, ?_,
-    fun d => protected_caps I F hroot hA hB hC
-      (a := ⟨S.profile, hc, S, hS, rfl⟩) r hb d.1⟩
-  intro d
-  change r.decoder (source I F hroot hA hB hC r.anchor
-    (original I F hroot hA hB hC (I.rightFace.map d.1))) = v d
-  exact (original_decode I F hroot hA hB hC
-    (a := ⟨S.profile, hc, S, hS, rfl⟩) r (I.rightFace.map d.1)).trans
-    ((field_private I F hroot
-      (LowOnlyRecursiveCoverage.admissible_down F (by decide) (by decide) hS') d.1).trans
-        (congrFun he d))
+  obtain ⟨hl, hcap⟩ := protected_decode I F hroot hA hB hC (a := ⟨S.profile, hc, S, hS, rfl⟩) r hb
+  refine ⟨_, hl, fun d => ?_, hcap⟩
+  change r.decoder (src r.anchor (orig (I.rightFace.map d.1))) = v d
+  rw [original_readback]
+  exact (r.readback _).trans ((field_private I F hroot
+    (LowOnlyRecursiveCoverage.admissible_down F (by decide) (by decide) hS') d.1).trans
+    (congrFun he d))
 
 theorem donor_source_repair {b : ℕ} {S : State I.left I.right}
     (hS : F.Admissible 2 S)
@@ -138,22 +109,14 @@ theorem donor_source_repair {b : ℕ} {S : State I.left I.right}
     {u : I.left.scheme.below (effC n 2) → ExtOrd}
     (hu : RespectsSemanticsBelow I.left.rows (effC n 2) u)
     (hag : ∀ d, min (u d) (grid 2 b) = min (S.lowerP 2 d) (grid 2 b)) :
-    ∃ w, RespectsSemanticsBelow (rows I F hroot hA hB hC) (A, 2) w ∧
+    ∃ w, RespectsSemanticsBelow Rws (A, 2) w ∧
       (∀ d, w (donorAt I F hroot hA hB hC d) = u d) ∧
       ∀ d, min (w d) (grid 2 b) =
-        min (source I F hroot hA hB hC ⟨S.profile, hc, S, hS, rfl⟩ d.1) (grid 2 b) := by
+        min (src ⟨S.profile, hc, S, hS, rfl⟩ d.1) (grid 2 b) := by
   obtain ⟨S', hS', he, _, _, ⟨r⟩⟩ := F.donor_protected_repair (by decide) hS hc hu hag
-  refine ⟨_, protected_lawful I F hroot hA hB hC
-    (a := ⟨S.profile, hc, S, hS, rfl⟩) r hb, ?_,
-    fun d => protected_caps I F hroot hA hB hC
-      (a := ⟨S.profile, hc, S, hS, rfl⟩) r hb d.1⟩
-  intro d
-  change r.decoder (source I F hroot hA hB hC r.anchor
-    (original I F hroot hA hB hC (I.leftFace.map d.1))) = u d
-  exact (original_decode I F hroot hA hB hC
-    (a := ⟨S.profile, hc, S, hS, rfl⟩) r (I.leftFace.map d.1)).trans
-    ((field_read I S' (I.leftFace.map d.1)).trans
-      ((I.paste_left S'.u S'.v d.1).trans (congrFun he d)))
-
-end
-end VaughtConjecture.Knight.LowOnlyPaddedDecode
+  obtain ⟨hl, hcap⟩ := protected_decode I F hroot hA hB hC (a := ⟨S.profile, hc, S, hS, rfl⟩) r hb
+  refine ⟨_, hl, fun d => ?_, hcap⟩
+  change r.decoder (src r.anchor (orig (I.leftFace.map d.1))) = u d
+  rw [original_readback]
+  exact (r.readback _).trans ((field_read I S' (I.leftFace.map d.1)).trans
+    ((I.paste_left S'.u S'.v d.1).trans (congrFun he d)))

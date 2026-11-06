@@ -6,7 +6,7 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.CoatomBoundaryExtension
-public import VaughtConjecture.Knight.SameScopeBountiful
+public import VaughtConjecture.Knight.FullScopeBountiful
 public import VaughtConjecture.Knight.PartialSections
 
 /-! # Exhaustive lifting reduction at the actual grade ceiling
@@ -18,12 +18,11 @@ Same-scope grade changes then reduce the ledger to same-grade pairs.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.EffectiveGradeLifting
 open Transform Value ExtOrd CoatomBoundaryExtension AmalgamationPlan
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable {sem : Semantics D} {K : ℕ} (hK : ∀ d : Cell D, D.grade d ≤ K)
+  {sem : Semantics D} {K : ℕ} (hK : ∀ d : Cell D, D.grade d ≤ K)
 
 def cut (J : Finset ι × ℕ) : Finset ι × ℕ := (J.1, min J.2 K)
 
@@ -91,5 +90,3 @@ theorem bountiful_of_bounded_same_grade (hpos : 0 < K)
     obtain ⟨hs, hi, hc⟩ := Plan.mem_gradedPlan.mp hm
     exact Plan.mem_gradedPlan.mpr ⟨hs, lt_min hi hpos, (min_le_left _ _).trans hc⟩
   exact hsame C B (min i K) (mem C hC) (mem B hB) (min_le_right _ _) h
-
-end VaughtConjecture.Knight.EffectiveGradeLifting

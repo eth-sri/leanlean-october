@@ -41,7 +41,7 @@ gate — at the current cutoff `j`.
 Nothing here extracts a source profile from a physical section; the physical decoder side
 (`PairedSlotDecoder`) is not used. -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight
 
@@ -73,11 +73,11 @@ variable {I : Type*} [Fintype I] {N : ℕ} {R : Ref I nP N J P C}
 /-! ## The inventory and the canonical incoming encoder -/
 
 /-- The receiving inventory of a state: the ordinal values of its source vector. -/
-noncomputable def State.inventory {j : ℕ} (st : R.State j) : Finset Ordinal.{0} :=
+def State.inventory {j : ℕ} (st : R.State j) : Finset Ordinal.{0} :=
   PairedSlotEncoding.values st.sourceProfile
 
 /-- The canonical incoming encoder of a state at its cutoff. -/
-noncomputable def State.encoder {j : ℕ} (st : R.State j) : ExtOrd → ExtOrd :=
+def State.encoder {j : ℕ} (st : R.State j) : ExtOrd → ExtOrd :=
   PairedSlotIncoming.encoder j st.inventory
 
 theorem State.encoder_witness {j : ℕ} (st : R.State j) : Witness (gTop j) st.encoder :=
@@ -88,7 +88,7 @@ theorem State.encoder_reflects_bottom {j : ℕ} (st : R.State j) (x : ExtOrd)
   PairedSlotIncoming.encoder_reflects_bottom j st.inventory x h
 
 /-- **Canonical normalization** of a state: the encoder applied to every field. -/
-noncomputable def normalizeState {j : ℕ} (st : R.State j) : R.State j := mapState st.encoder st
+def normalizeState {j : ℕ} (st : R.State j) : R.State j := mapState st.encoder st
 
 /-- On the source vector, normalization is the paired-slot normalization. -/
 theorem sourceProfile_normalizeState {j : ℕ} (st : R.State j) (f : Field P C) :
@@ -113,9 +113,3 @@ theorem normalizeState_synchronized {j : ℕ} (hj : 1 ≤ j) {st : R.State j}
 /-! ## Relative prefix preservation -/
 
 /-! ## Normalized repairs stay in the catalogue -/
-
-end Ref
-
-end CappedDonor
-
-end VaughtConjecture.Knight

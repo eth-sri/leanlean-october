@@ -17,14 +17,11 @@ Closure uses bottom-reflecting transport on long original rows. This is not
 upward admission, and no physical auxiliary receipts are asserted here.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.LowOnly
 
-open Transform Value ExtOrd AmalgamationPlan CappedDonor CappedDonor.Ref
-open SharpWitnessComposition
-
-noncomputable section
+open Transform Value ExtOrd AmalgamationPlan CappedDonor CappedDonor.Ref SharpWitnessComposition
 
 variable {n K : ℕ} {P C : SemScheme n}
 
@@ -41,16 +38,13 @@ def profile (S : State P C) : Field P C → ExtOrd
 def ofProfile (a : Field P C → ExtOrd) : State P C :=
   ⟨fun d => a (.inl d), fun d => a (.inr (.inl d)), a (.inr (.inr ()))⟩
 
-@[simp] theorem ofProfile_profile (S : State P C) : ofProfile S.profile = S := rfl
-
 @[simp] theorem profile_ofProfile (a : Field P C → ExtOrd) :
     (ofProfile a).profile = a := by
   funext f
   rcases f with d | d | ⟨⟩ <;> rfl
 
-theorem profile_injective : Function.Injective (profile (P := P) (C := C)) := by
-  intro S T h
-  simpa only [ofProfile_profile] using congrArg ofProfile h
+theorem profile_injective : Function.Injective (profile (P := P) (C := C)) :=
+  fun _ _ h => congrArg ofProfile h
 
 def map (σ : ExtOrd → ExtOrd) (S : State P C) : State P C :=
   ⟨fun d => σ (S.u d), fun d => σ (S.v d), σ S.b⟩
@@ -124,7 +118,3 @@ theorem normalize_inventory (j : ℕ) {S : State P C} (hp : ∀ d, S.profile d �
     funext (State.profile_normalize j S)
   rw [he]
   exact CanonicalPairedProfiles.normalize_mem_inventory _ _ hp
-
-end Family
-end
-end VaughtConjecture.Knight.LowOnly

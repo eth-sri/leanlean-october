@@ -16,12 +16,10 @@ inequality, not strict separation. The proof handles provisionally capped
 and band-valued arguments separately on their actual rows.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthMarkerCalibration
 open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan
-noncomputable section
 
 private theorem evr_offset_mono (x : ExtOrd) (N : ℕ) {i j : ℕ} (h : i ≤ j) :
     extVisibilityReplace x N i ≤ extVisibilityReplace x N j := by
@@ -130,6 +128,3 @@ theorem exists_hollow_marker_context {M : Type*} {α : LimitStage}
       exact le_csSup y.type.topGrades_bddAbove (grade_mem_topGrades hdtop)
   exact ⟨hbelow, hm L ((le_max_right K L).trans hN.le)
     ⟨mapCell hpy d, hbelow⟩ hdtop (htop d hd).le⟩
-
-end
-end VaughtConjecture.Knight.GrowthMarkerCalibration

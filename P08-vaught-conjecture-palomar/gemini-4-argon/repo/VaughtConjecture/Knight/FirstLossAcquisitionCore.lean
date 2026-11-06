@@ -328,5 +328,3 @@ theorem exists_enlarged_donor {n k : ℕ} (pR : S α.1 k) (e : Fin n ↪ Fin k) 
     have hmem : d ∈ topSet (lower Q₀.label HK (ofOrd b)) := hd
     rw [topSet_lower hHK.subset (ofOrd_ne_top _)] at hmem
     exact hmem.2
-
-end VaughtConjecture.Knight.FirstLossAcquisition

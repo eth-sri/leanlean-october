@@ -125,7 +125,3 @@ theorem exists_localCharts (hr : RespectsSemanticsBelow sem BJ r) :
     exact ⟨σ, hw, he⟩
   choose σ hw he using h
   exact ⟨⟨σ, hw, he⟩⟩
-
-end Scheme
-
-end VaughtConjecture.Knight.SharpWitnessComposition

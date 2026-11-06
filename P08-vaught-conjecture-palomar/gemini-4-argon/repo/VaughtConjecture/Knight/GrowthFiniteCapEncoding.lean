@@ -15,12 +15,11 @@ constructed from reference readings, including the new stable block.
 No source encoding or source-strip separation is assumed.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthFiniteCapEncoding
 open Value ExtOrd SharpWitnessComposition
-noncomputable section
+
 variable {N L r i : ℕ} {τ : ExtOrd → ExtOrd} (hτ : BoundedMap N τ)
   {α sa : Ordinal.{0}} (hα : limitPart α = α)
   (ha : τ (ofOrd sa) = ofOrd (α + i)) (hi : i < N)
@@ -90,6 +89,3 @@ theorem code_of_read {p b : Ordinal.{0}} (hp : limitPart p ∈ S)
   have hf := (read_finitePart hτ hb (hfp.trans hLN)).2
   rw [code_listed hτ hα ha hi hrL S hS hle src off hoff hread hp hfp.le,
     ← hsame, ← hf, limitPart_add_finitePart]
-
-end
-end VaughtConjecture.Knight.GrowthFiniteCapEncoding

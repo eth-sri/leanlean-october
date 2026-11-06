@@ -16,17 +16,15 @@ the full private lower-domain equivalence and lawfulness transport. No
 selected-section or ambient-extension hypothesis is used.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.NativePrivateFace
 open Transform Value ExtOrd CappedDonor
-noncomputable section
 
 variable {ι : Type*} [DecidableEq ι] {A S : Finset ι} {D : CellScheme A}
-variable {N : ℕ} (C : SemScheme N) (place : Fin N ↪ ι) (hS : Finset.univ.image place = S)
-variable {sem : Semantics D}
-variable (E : ExactSemanticFace (PointImageSemantics.rows C.scheme place hS C.rows) sem)
+  {N : ℕ} (C : SemScheme N) (place : Fin N ↪ ι) (hS : Finset.univ.image place = S)
+  {sem : Semantics D}
+  (E : ExactSemanticFace (PointImageSemantics.rows C.scheme place hS C.rows) sem)
 
 theorem index (d : Cell C.scheme) :
     D.cell (E.map d) = ((C.scheme.scope d).image place, C.scheme.grade d) := E.index d
@@ -62,6 +60,3 @@ theorem respects_iff (p : D.below (S, N) → ExtOrd) :
     rw [index C place hS E, index C place hS E, Finset.image_subset_image_iff place.injective]
   · exact ((E.row c.1 (PointImageSemantics.belowEquiv C.scheme place hS c.1 d)).trans
       (PointImageSemantics.row C.scheme place hS C.rows c.1 d)).symm
-
-end
-end VaughtConjecture.Knight.NativePrivateFace

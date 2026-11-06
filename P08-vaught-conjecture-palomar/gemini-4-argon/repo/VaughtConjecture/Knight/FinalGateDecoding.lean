@@ -21,15 +21,13 @@ only at the newly installed short rows. The predecessor and catalogue producers
 remain outside this module; no bountifulness of the output is assumed or proved.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.FinalGateLayer.Input
 open Transform Value ExtOrd SourcePrefixRows SharpWitnessComposition
-noncomputable section
 
 variable {ι X Q : Type*} [DecidableEq ι] [Fintype Q]
-variable {A : Finset ι} {D : CellScheme A} {N : ℕ} (I : Input D N X Q)
+  {A : Finset ι} {D : CellScheme A} {N : ℕ} (I : Input D N X Q)
 
 theorem master_eq_source (q : SourcePrefixLayer.Controller I.carrier N) (d : Cell I.carrier) :
     WeightedSourcePrefixLayer.master I.data I.weight q d = I.source (I.member q).1 d := by
@@ -55,7 +53,7 @@ theorem decode_source_prefix (a b : Q) {h : ExtOrd} (hh : h ∈ I.grid) (hpos : 
     (fun d => I.source_supported hsupport a d.1 d.2.2) (I.source_prefix b a hh hag)
 
 variable (hfields : ∀ a x, Short N (I.fields a x))
-variable (hgrid : ∀ z ∈ I.grid, Short N z)
+  (hgrid : ∀ z ∈ I.grid, Short N z)
 
 include hsupport hfields hgrid in
 theorem source_short (a : Q) (d : Cell I.carrier) (hd : I.carrier.grade d ≤ N) :
@@ -124,6 +122,3 @@ theorem decoded_respects (a : Q) {ν : ExtOrd → ExtOrd} (hν : Witness (gTop N
   · intro c t hs hg
     obtain ⟨w, hw, hle⟩ := hr.availability c t hs hg
     exact ⟨w, hw, hν.mono hle⟩
-
-end
-end VaughtConjecture.Knight.FinalGateLayer.Input

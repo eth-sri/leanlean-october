@@ -5,8 +5,8 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.OneBlockReceiving
-public import VaughtConjecture.Knight.FiniteCoverCoordinates
+public import VaughtConjecture.Knight.BlockStages
+public import VaughtConjecture.Knight.Model
 public import VaughtConjecture.Knight.ModelEmpty
 public import VaughtConjecture.Knight.ReductModel
 public import VaughtConjecture.Knight.Sentence
@@ -49,5 +49,3 @@ theorem qrank_lt_ord_aleph_one {L : Language.{u, v}} {γ : Type u'} :
   VaughtConjecture.qrank_lt_ord_aleph_one
 
 /-! ## Sentence agreement -/
-
-end VaughtConjecture.Knight

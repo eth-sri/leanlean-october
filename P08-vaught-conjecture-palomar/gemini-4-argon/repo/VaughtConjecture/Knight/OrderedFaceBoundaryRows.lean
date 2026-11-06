@@ -16,9 +16,7 @@ Only equality of the shared source rows is required for row installation.
 Generalizes `AmalgamatedBoundaryRows` without requiring coatom geometry.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.OrderedFaceBoundaryRows
 
@@ -27,11 +25,11 @@ open AmalgamatedBoundary (Overlap)
 open AmalgamatedBoundaryRows (total total_below pushRow pushRow_at pushRow_outside)
 
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
-variable (D : CellScheme B) (E : CellScheme C)
-variable {k : ℕ} (w : Overlap D E k)
-variable (R : Finset (Finset ι)) (hR : Plan.IsPlan A R)
-variable (hD : D.plan ⊆ R) (hE : E.plan ⊆ R)
-variable (semD : Semantics D) (semE : Semantics E)
+  (D : CellScheme B) (E : CellScheme C)
+  {k : ℕ} (w : Overlap D E k)
+  (R : Finset (Finset ι)) (hR : Plan.IsPlan A R)
+  (hD : D.plan ⊆ R) (hE : E.plan ⊆ R)
+  (semD : Semantics D) (semE : Semantics E)
 
 local notation "K" => scheme D E w R hR hD hE
 local notation "l" => leftCell D E w R hR hD hE
@@ -77,7 +75,7 @@ theorem pushRow_shared (hc : Compatible D E w semD semE) (i : Fin k) :
       (right_index D E w R hR hD hE) semE]
     rwa [← w.shared]
 
-noncomputable def table (c : Cell K) : Cell K → ExtOrd :=
+def table (c : Cell K) : Cell K → ExtOrd :=
   ProfileFaceUnion.paste w.g (pushRow l semD) (pushRow r semE)
     ((enumeration D E w).symm c)
 
@@ -120,7 +118,7 @@ theorem table_orderly (c : Cell K) (d : (K).below ((K).cell c)) :
     exact semE.orderly c e
 
 /-- Both rows are copied literally; the common rows agree by compatibility. -/
-noncomputable def rows : Semantics K where
+def rows : Semantics K where
   E c d := table D E w R hR hD hE semD semE c d.1
   orderly := table_orderly D E w R hR hD hE semD semE hc
 
@@ -133,5 +131,3 @@ theorem rows_right (c : Cell E) (d : E.below (E.cell c)) :
     (rows D E w R hR hD hE semD semE hc).E (r c) (rightBelow D E w R hR hD hE c d) =
       semE.E c d :=
   (table_right D E w R hR hD hE semD semE hc c d.1).trans (total_below semE c d)
-
-end VaughtConjecture.Knight.OrderedFaceBoundaryRows

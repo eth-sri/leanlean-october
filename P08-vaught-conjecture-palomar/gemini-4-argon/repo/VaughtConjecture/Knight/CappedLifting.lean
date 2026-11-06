@@ -22,15 +22,12 @@ supplied separately by `CappedLiftOfExtension`.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.CoatomBoundaryExtension
 
-open Transform Value ExtOrd
-open VaughtConjecture.AmalgamationPlan
+open Transform Value ExtOrd VaughtConjecture.AmalgamationPlan
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable {sem : Semantics D} {I U J K : Finset ι × ℕ}
+  {sem : Semantics D} {I U J K : Finset ι × ℕ}
 
 /-- A single literal old graded-pair lifting clause, also allowing equal
 indices and empty source domains. No new whole-target lift is included. -/
@@ -92,16 +89,33 @@ theorem CappedLift.of_equiv
       rw [Equiv.apply_symm_apply, hsquare, Equiv.apply_symm_apply]
     rw [Function.comp_apply, he, hf, Function.comp_apply, Equiv.apply_symm_apply]
 
-section FaceTransport
+theorem CappedLift.of_respects_iff
+    {D' : CellScheme A} {sem' : Semantics D'} {h : GradedLe I U}
+    (eI : D'.below I ≃ D.below I) (eU : D'.below U ≃ D.below U)
+    (hsquare : ∀ d, eU (CellScheme.below.mono h d) = CellScheme.below.mono h (eI d))
+    (hsource : ∀ p, RespectsSemanticsBelow sem' I p ↔
+      RespectsSemanticsBelow sem I (p ∘ eI.symm))
+    (htarget : ∀ q, RespectsSemanticsBelow sem' U q ↔
+      RespectsSemanticsBelow sem U (q ∘ eU.symm))
+    (hl : CappedLift sem' h) : CappedLift sem h :=
+  hl.of_equiv eI eU hsquare le_rfl
+    (fun p hp => (hsource _).mpr (by simpa only [Function.comp_def, Equiv.apply_symm_apply] using hp))
+    (fun q => ⟨fun hq => (htarget _).mpr (by simpa only [Function.comp_def, Equiv.apply_symm_apply] using hq),
+      fun hq => by simpa only [Function.comp_def, Equiv.apply_symm_apply] using (htarget _).mp hq⟩)
 
-open CellScheme.restrictFace
-
-variable {m n : ℕ} {D₀ : CellScheme (ι := Fin n) Finset.univ}
-variable {s : Semantics D₀} {f : Fin m ↪ Fin n}
-variable {hf : Finset.univ.image f ∈ D₀.plan}
-variable {I' U' : Finset (Fin m) × ℕ}
-
-end FaceTransport
+theorem CappedLift.iff_of_respects_iff
+    {D' : CellScheme A} {sem' : Semantics D'} {h : GradedLe I U}
+    (eI : D'.below I ≃ D.below I) (eU : D'.below U ≃ D.below U)
+    (hsquare : ∀ d, eU (CellScheme.below.mono h d) = CellScheme.below.mono h (eI d))
+    (hsource : ∀ p, RespectsSemanticsBelow sem' I p ↔
+      RespectsSemanticsBelow sem I (p ∘ eI.symm))
+    (htarget : ∀ q, RespectsSemanticsBelow sem' U q ↔
+      RespectsSemanticsBelow sem U (q ∘ eU.symm)) :
+    CappedLift sem' h ↔ CappedLift sem h :=
+  ⟨fun hl => hl.of_respects_iff eI eU hsquare hsource htarget,
+   fun hl => hl.of_equiv eI.symm eU.symm
+     (fun d => eU.injective (by rw [Equiv.apply_symm_apply, hsquare, Equiv.apply_symm_apply]))
+     le_rfl (fun p hp => (hsource p).mp hp) htarget⟩
 
 theorem CappedLift.comp {hIJ : GradedLe I J} {hJK : GradedLe J K}
     (hleft : CappedLift sem hIJ) (hright : CappedLift sem hJK) :
@@ -112,4 +126,3 @@ theorem CappedLift.comp {hIJ : GradedLe I J} {hJK : GradedLe J K}
   obtain ⟨r, hr, hcap, hread⟩ := hright u q γ hu hq hγ (fun d => (hucap d).symm)
   exact ⟨r, hr, hcap, fun d => (hread (CellScheme.below.mono hIJ d)).trans (huread d)⟩
 
-end VaughtConjecture.Knight.CoatomBoundaryExtension

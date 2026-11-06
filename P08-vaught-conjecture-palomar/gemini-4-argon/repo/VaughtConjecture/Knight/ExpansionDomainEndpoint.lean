@@ -10,7 +10,22 @@ public import VaughtConjecture.Knight.BFBoundednessThinness
 public import VaughtConjecture.Knight.ConstructedTerminalCountability
 public import VaughtConjecture.Knight.ConstructedTerminalLoss
 public import VaughtConjecture.Knight.ExpansionDomainCertificate
-public import VaughtConjecture.Spectrum.Thinness
+public import InfinitaryLogic.Descriptive.StructureIsoSetoid
+public import InfinitaryLogic.Descriptive.Polish
+public import VaughtConjecture.Spectrum.Sentence
+public import InfinitaryLogic.Descriptive.SatisfactionBorelOn
+public import InfinitaryLogic.Descriptive.StructureSpace
+public import InfinitaryLogic.Lomega1omega.Theory
+public import InfinitaryLogic.Scott.RefinementCount
+public import InfinitaryLogic.Karp.PotentialIso
+public import InfinitaryLogic.Scott.Sentence
+public import InfinitaryLogic.Scott.Formula
+public import InfinitaryLogic.Lomega1omega.QuantifierRank
+public import InfinitaryLogic.Karp.CarrierTheorem
+public import InfinitaryLogic.OrdinalUtil
+public import InfinitaryLogic.Descriptive.SatisfactionBorel
+public import InfinitaryLogic.Scott.BackAndForth
+public import InfinitaryLogic.Descriptive.PerfectAntichain
 
 /-! # Spectrum and thinness without global termination
 
@@ -49,5 +64,3 @@ Morley counting, nor eventual departure is used in this proof. -/
 theorem natModelSpectrum_eq_aleph_one : natModelSpectrum knightSentence = aleph 1 := by
   rw [natModelSpectrum_knightSentence]
   exact certificate.cardinality
-
-end VaughtConjecture.Knight.ExpansionDomainEndpoint

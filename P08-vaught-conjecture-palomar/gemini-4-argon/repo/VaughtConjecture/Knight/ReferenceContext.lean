@@ -57,7 +57,7 @@ representatives read through the face map, the trigger `Σ♦`, the controllers 
 bountifulness (§9), and the `∞` branch (Lemma 8.1.1 clauses 1–2 and Def. 8.3.1 clauses 3–5).
 Construction-private, not root-exported. -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight
 
@@ -71,48 +71,24 @@ variable {M : Type w} {α : LimitStage} {R : KnightRealization α M}
 
 /-- A finite request: a block (to be a non-successor below the stage) and an offset. -/
 structure BlockRequest where
-  /-- The requested limit block. -/
   block : Ordinal.{0}
-  /-- The requested finite offset. -/
   offset : ℕ
 
-/-- The requested value `μ + i`. -/
-def BlockRequest.value (r : BlockRequest) : Ordinal.{0} := r.block + r.offset
-
-/-- **The finite reference context** over a root tuple `t`, for the requests `reqs`. -/
 structure ReferenceContext (R : KnightRealization α M) {n : ℕ} (t : Fin n ↪ M)
     (reqs : List BlockRequest) : Type (max 1 w) where
-  /-- Arity of the enlarged context. -/
   m : ℕ
-  /-- The enlarged context tuple. -/
   ctx : Fin m ↪ M
-  /-- The projection back to the root tuple. -/
   proj : Fin n ↪ Fin m
-  /-- The root tuple is a face of the context. -/
   proj_ctx : proj.trans ctx = t
-  /-- The realized type of the context. -/
   p₀ : S α.1 m
-  /-- It is realized. -/
   eval_ctx : R.eval ctx = some p₀
-  /-- The threshold. -/
   N : ℕ
-  /-- The cap: an old full-grade cell. -/
   capBase : Cell p₀.scheme.scheme
-  /-- The cap has grade `N`. -/
   cap_grade : p₀.scheme.scheme.grade capBase = N
-  /-- The cap dominates every requested finite value. -/
-  cap_dom : ∀ r ∈ reqs, ofOrd r.value < p₀.label capBase
-  /-- The block representatives. -/
   repBase : Ordinal.{0} → Cell p₀.scheme.scheme
-  /-- Their offsets. -/
   repOff : Ordinal.{0} → ℕ
-  /-- Each representative carries its block plus a finite offset. -/
   rep_label : ∀ r ∈ reqs, p₀.label (repBase r.block) = ofOrd (r.block + repOff r.block)
-  /-- The offsets are below the threshold. -/
   rep_off_lt : ∀ r ∈ reqs, repOff r.block < N
-  /-- The representatives are under the cap. -/
-  rep_le_cap : ∀ r ∈ reqs, p₀.label (repBase r.block) ≤ p₀.label capBase
-  /-- The requested offsets are below the threshold. -/
   offset_lt : ∀ r ∈ reqs, r.offset < N
 
 /-! ## The intermediate context state and one coface step -/
@@ -193,7 +169,7 @@ theorem exists_nat_of_band {μ : Ordinal.{0}} {x : ExtOrd} (h1 : ofOrd μ ≤ x)
   rw [← hj, Ordinal.add_sub_cancel_of_le h1]
 
 /-- The finite maximum of a list of ordinals. -/
-noncomputable def listMax (l : List Ordinal.{0}) : Ordinal.{0} := l.foldr max 0
+def listMax (l : List Ordinal.{0}) : Ordinal.{0} := l.foldr max 0
 
 theorem le_listMax {l : List Ordinal.{0}} {a : Ordinal.{0}} (h : a ∈ l) : a ≤ listMax l := by
   induction l with
@@ -260,7 +236,7 @@ theorem exists_ctx_hasCells (hM : R.IsModel) (C : Ctx R t) (rs : List BlockReque
     · exact (h₁.step hcof heval) r' hr'
 
 /-- A request with a given block, when one exists. -/
-noncomputable def pick (reqs : List BlockRequest) (μ : Ordinal.{0})
+def pick (reqs : List BlockRequest) (μ : Ordinal.{0})
     (h : ∃ r ∈ reqs, r.block = μ) : BlockRequest := h.choose
 
 theorem pick_mem (reqs : List BlockRequest) (μ : Ordinal.{0}) (h : ∃ r ∈ reqs, r.block = μ) :
@@ -271,7 +247,7 @@ theorem pick_block (reqs : List BlockRequest) (μ : Ordinal.{0}) (h : ∃ r ∈ 
 
 open Classical in
 /-- Totalize a request-indexed assignment over blocks, with a default off the requested blocks. -/
-noncomputable def totalize {X : Type*} (reqs : List BlockRequest) (v : ∀ r, r ∈ reqs → X)
+def totalize {X : Type*} (reqs : List BlockRequest) (v : ∀ r, r ∈ reqs → X)
     (dflt : X) (μ : Ordinal.{0}) : X :=
   if h : ∃ r ∈ reqs, r.block = μ then v (pick reqs μ h) (pick_mem reqs μ h) else dflt
 
@@ -280,5 +256,3 @@ theorem totalize_of_ex {X : Type*} (reqs : List BlockRequest) (v : ∀ r, r ∈ 
     totalize reqs v dflt μ = v (pick reqs μ h) (pick_mem reqs μ h) := by
   unfold totalize
   rw [dite_eq_left h]
-
-end VaughtConjecture.Knight

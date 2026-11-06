@@ -82,5 +82,3 @@ theorem exists_uniform_bfSeparation {A : Set (StructureSpace L × StructureSpace
   refine ⟨α, hα, fun p hp h ↦ ?_⟩
   have := hwf p hp
   exact ((lt_treeHeight_bfTree_of_codeBFEquiv h).trans (hbound p hp)).false
-
-end FirstOrder.Language

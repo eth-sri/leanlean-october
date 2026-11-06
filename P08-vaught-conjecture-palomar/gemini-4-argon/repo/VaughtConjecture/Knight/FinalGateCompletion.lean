@@ -17,15 +17,14 @@ through the final active grade only needs the predecessor's missing-index
 ledger, and does not assume that the predecessor is already complete there.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.FinalGateLayer.Input
 open Transform Value ExtOrd AmalgamationPlan
-noncomputable section
+section
 
 variable {ι X Q : Type*} [DecidableEq ι] [Fintype Q]
-variable {A : Finset ι} {D : CellScheme A} {N : ℕ} (F : Input D N X Q)
+  {A : Finset ι} {D : CellScheme A} {N : ℕ} (F : Input D N X Q)
 
 theorem node_row (a : Q) (marked : Bool)
     (d : F.carrier.below (F.carrier.cell (F.added a marked))) :
@@ -88,9 +87,9 @@ end VaughtConjecture.Knight.FinalGateLayer.Input
 
 namespace VaughtConjecture.Knight.OrdinaryFinalCatalogue
 open Transform Value ExtOrd CappedDonor CappedDonor.Ref PairedSlotComparison
-noncomputable section
+
 variable {I : Type*} [Fintype I] {nP N : ℕ}
-variable {P : SemScheme (nP + 1)} {C : SemScheme N} (R : Ref I nP N N P C)
+  {P : SemScheme (nP + 1)} {C : SemScheme N} (R : Ref I nP N N P C)
 
 theorem member_coded (a : Member R) (f : Field P C) : IsCodedLabel N (a.val f) := by
   rcases mem_codedAlphabet_iff.mp
@@ -98,6 +97,3 @@ theorem member_coded (a : Member R) (f : Field P C) : IsCodedLabel N (a.val f) :
     with hb | ⟨b, i, _, hi, he⟩
   · exact Or.inl hb
   · exact Or.inr ⟨b, i, hi, he⟩
-
-end
-end VaughtConjecture.Knight.OrdinaryFinalCatalogue

@@ -155,5 +155,3 @@ theorem exists_stage_extends_capped_emb {k m : ℕ} (D : SemScheme m)
   dsimp only at hs he ⊢
   cases hs
   exact StageType.ext rfl (heq_of_eq (funext he))
-
-end VaughtConjecture.Knight.FiniteCoverReceiving

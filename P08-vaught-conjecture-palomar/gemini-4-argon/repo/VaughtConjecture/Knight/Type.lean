@@ -58,7 +58,7 @@ consumers (band control, the one-point transfer) and are not ported here; each i
 from `typeMap_eq_some` and the definition of `StageType.restrictFace` (labels and rows are
 read off the original type). -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight
 
@@ -175,7 +175,7 @@ instance subsingleton_zero : Subsingleton (S α 0) := by
 no cells.  Coding, consistency and bountifulness are vacuous (no cells); completeness is
 vacuous because the graded plan over `Fin 0` is empty (`j ≤ |∅| = 0 < j`).  For `n ≥ 1` a
 complete scheme must have cells, so there is no empty `SemScheme n`. -/
-noncomputable def emptySemScheme : SemScheme 0 where
+def emptySemScheme : SemScheme 0 where
   scheme :=
     { plan := Plan.canonicalPlan (Finset.univ : Finset (Fin 0))
       isPlan := Plan.isPlan_canonicalPlan _
@@ -194,7 +194,7 @@ noncomputable def emptySemScheme : SemScheme 0 where
 
 /-- The empty stage type on `0`-tuples at any stage: the empty domain, no labels (the unique
 element of `S α 0`, `subsingleton_zero`). -/
-noncomputable def emptyType : S α 0 where
+def emptyType : S α 0 where
   scheme := emptySemScheme
   label := fun d => d.elim0
   label_bound := fun d => d.elim0
@@ -226,30 +226,12 @@ of Knight-VC `typeMap`): the face restriction of the domain with its associated 
 (`SemScheme.restrictFace`: the restricted scheme, the rows read at the underlying visible
 cells) and the labels of the visible cells; respect transports faithfully
 (`RespectsSemantics.restrictFace`). -/
-noncomputable def restrictFace (t : S α n) (f : Fin m ↪ Fin n)
+def restrictFace (t : S α n) (f : Fin m ↪ Fin n)
     (hr : Finset.univ.image f ∈ t.scheme.scheme.plan) : S α m where
   scheme := t.scheme.restrictFace f hr
   label i := t.label (toCell t.scheme.scheme f hr i)
   label_bound i := t.label_bound (toCell t.scheme.scheme f hr i)
   respects := t.respects.restrictFace f hr
-
-@[simp] theorem restrictFace_scheme (t : S α n) (f : Fin m ↪ Fin n)
-    (hr : Finset.univ.image f ∈ t.scheme.scheme.plan) :
-    (t.restrictFace f hr).scheme = t.scheme.restrictFace f hr := rfl
-
-@[simp] theorem restrictFace_label (t : S α n) (f : Fin m ↪ Fin n)
-    (hr : Finset.univ.image f ∈ t.scheme.scheme.plan)
-    (i : Cell (t.scheme.scheme.restrictFace f hr)) :
-    (t.restrictFace f hr).label i = t.label (toCell t.scheme.scheme f hr i) := rfl
-
-@[simp] theorem restrictFace_rows_E (t : S α n) (f : Fin m ↪ Fin n)
-    (hr : Finset.univ.image f ∈ t.scheme.scheme.plan)
-    (Sig : Cell (t.scheme.scheme.restrictFace f hr))
-    (d : (t.scheme.scheme.restrictFace f hr).below
-      ((t.scheme.scheme.restrictFace f hr).cell Sig)) :
-    (t.restrictFace f hr).scheme.rows.E Sig d =
-      t.scheme.rows.E (toCell t.scheme.scheme f hr Sig) (belowMap t.scheme.scheme f hr Sig d) :=
-  rfl
 
 end StageType
 
@@ -260,7 +242,7 @@ variable {α : Ordinal.{0}} {k m n : ℕ}
 /-- **Horizontal restriction** `S^α f` (Knight, Def. 3.1.5; Knight-VC `typeMap`): the partial
 restriction of a stage type along `f : Fin m ↪ Fin n`, defined exactly when the range of `f` is
 a visible face of its plan.  This is the `pull` of the Knight `TypeTower` instance. -/
-noncomputable def typeMap (f : Fin m ↪ Fin n) (t : S α n) : Option (S α m) :=
+def typeMap (f : Fin m ↪ Fin n) (t : S α n) : Option (S α m) :=
   if hr : Finset.univ.image f ∈ t.scheme.scheme.plan then some (t.restrictFace f hr) else none
 
 theorem typeMap_eq_some (f : Fin m ↪ Fin n) (t : S α n)
@@ -404,5 +386,3 @@ theorem typeMap_trans (f : Fin k ↪ Fin m) (g : Fin m ↪ Fin n) (t : S α n) (
     rw [typeMap_eq_none f _ hf, typeMap_eq_none _ t hfg]
 
 /-! ### Face closure -/
-
-end VaughtConjecture.Knight

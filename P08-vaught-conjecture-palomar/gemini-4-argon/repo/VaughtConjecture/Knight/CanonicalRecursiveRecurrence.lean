@@ -18,14 +18,13 @@ An unrelated three-grade catalogue equivalence is not used to discharge it.
 This is not ordered coatom installation or receiving-family realization.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalRecursiveRecurrence
 open Transform Value ExtOrd
-noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable (sem : Semantics D) (hp : ∀ d : Cell D, D.scope d ≠ A)
+  (sem : Semantics D) (hp : ∀ d : Cell D, D.scope d ≠ A)
 
 def Ready (m : ℕ) (hm : m + 3 ≤ A.card) : Prop :=
   sem.IsConsistent ∧
@@ -33,9 +32,9 @@ def Ready (m : ℕ) (hm : m + 3 ≤ A.card) : Prop :=
       (CanonicalRecursiveSemantics.rows sem hp m hm)).IsBountiful
 
 variable (hold : CanonicalCoatomBountiful.OldLifts sem) {L R : Finset ι}
-variable (hL : L ∈ D.plan) (hR : R ∈ D.plan) (hLA : L ≠ A) (hRA : R ≠ A)
-variable (hO : L ∩ R ∈ D.plan)
-variable (hcover : ∀ C ∈ D.plan, C ≠ A → C ⊆ L ∨ C ⊆ R)
+  (hL : L ∈ D.plan) (hR : R ∈ D.plan) (hLA : L ≠ A) (hRA : R ≠ A)
+  (hO : L ∩ R ∈ D.plan)
+  (hcover : ∀ C ∈ D.plan, C ≠ A → C ⊆ L ∨ C ⊆ R)
 
 include hold hL hR hLA hRA hO hcover in
 /-- One constructor preserves the identical readiness predicate at the next
@@ -69,6 +68,3 @@ theorem iterate (n : ℕ) (hA : n + 3 ≤ A.card)
       (fun C hC hCA i hi hic hin => hcomplete C hC hCA i hi hic (by omega))
     exact successor sem hp hold hL hR hLA hRA hO hcover n hA hs hLc hRc
       (fun C hC hCA hic => hcomplete C hC hCA (n + 4) (by omega) hic le_rfl)
-
-end
-end VaughtConjecture.Knight.CanonicalRecursiveRecurrence

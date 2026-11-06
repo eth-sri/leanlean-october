@@ -14,16 +14,15 @@ section. The grid and ceiling are unchanged. Support is flattened to the
 original field vector rather than treating earlier auxiliaries as new fields.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrderedScopeRelocation
 open AmalgamationPlan Transform Value ExtOrd SourcePrefixRows OrbitPrefixSupport
-noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A B : Finset ι}
-variable {D : CellScheme A} (sem : Semantics D) (hB : B ∈ D.plan) {k : ℕ}
-variable (S : OrdinaryScopeOperator.Core (ScopeBoundary.rows D B hB sem) k)
-variable (hsep : Separated (D := D) (B := B))
+  {D : CellScheme A} (sem : Semantics D) (hB : B ∈ D.plan) {k : ℕ}
+  (S : OrdinaryScopeOperator.Core (ScopeBoundary.rows D B hB sem) k)
+  (hsep : Separated (D := D) (B := B))
 
 local notation "K" => carrier sem hB S
 local notation "l" => old sem hB S
@@ -94,7 +93,7 @@ def render {p : Cell D → ExtOrd} (hp : RespectsSemantics sem p) (ht : ∀ d, p
     (fun c => ht (ScopeBoundary.toCell D B hB c)) G θ)
 
 variable {p : Cell D → ExtOrd} (hp : RespectsSemantics sem p) (ht : ∀ d, p d ≠ ⊤)
-variable {G : Finset ExtOrd} {θ : ExtOrd}
+  {G : Finset ExtOrd} {θ : ExtOrd}
 
 theorem render_old (d : Cell D) : render sem hB S hp ht G θ (l d) = p d :=
   paste_old sem hB S _ _ d
@@ -137,6 +136,3 @@ theorem render_agreement {q : Cell D → ExtOrd} (hq : RespectsSemantics sem q)
   · rw [render_old, render_old]; exact he c
   · rw [render_local sem hB S hp ht hG hθ, render_local sem hB S hq htq hG hθ]
     exact S.agreement _ _ _ _ hG hθ hγ hγθ (fun c => he _) c
-
-end
-end VaughtConjecture.Knight.OrderedScopeRelocation

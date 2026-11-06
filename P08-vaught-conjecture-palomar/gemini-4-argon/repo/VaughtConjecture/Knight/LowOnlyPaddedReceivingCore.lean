@@ -25,13 +25,11 @@ Finite geometric coverage of the attachment remains explicit. The first-loss acq
 its rootwise attachment are separate adapters.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedModelReceiving
-open TypeTower StageType KnightRealization Value ExtOrd CappedDonor LowOnly
-open CellScheme.restrictFace
-noncomputable section
+open TypeTower StageType KnightRealization Value ExtOrd CappedDonor LowOnly CellScheme.restrictFace
+
 universe w
 variable {l m n K : ℕ} {B C : Finset (Fin l)} {R : Finset (Finset (Fin l))}
   (I : WholeDonorBoundary.Input Finset.univ B C R m n n)
@@ -146,6 +144,3 @@ theorem receive_of_shared_of_receiving {M : Type w} {α : LimitStage} {W : Knigh
     hpbound (fun d hd => (pC.label_bound _).resolve_right hd)
   exact receive_raw_of_receiving I F hroot hA hB hC hcover hcons hFC
     (S := ⟨F.p, v, b⟩) (hadm _) rfl hc hr hactive hb u pC hu hCs (fun _ => rfl)
-
-end
-end VaughtConjecture.Knight.LowOnlyPaddedModelReceiving

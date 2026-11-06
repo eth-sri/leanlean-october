@@ -18,31 +18,17 @@ case this gives unrestricted lifting through the constructed height, not an
 existential replacement carrier. It does not yet iterate over missing scopes.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.WholeDonorOrdinaryLift
-open AmalgamationPlan Transform Value ExtOrd CoatomBoundaryExtension
-open WholeDonorOrdinarySections
-noncomputable section
+open AmalgamationPlan Transform Value ExtOrd CoatomBoundaryExtension WholeDonorOrdinarySections
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι} {R : Finset (Finset ι)}
-variable {m nL nR : ℕ} (I : WholeDonorBoundary.Input A B C R m nL nR)
-variable (hBA : B ≠ A) (hCA : C ≠ A)
+  {m nL nR : ℕ} (I : WholeDonorBoundary.Input A B C R m nL nR)
+  (hBA : B ≠ A) (hCA : C ≠ A)
 
 theorem left_mem : B ∈ I.boundary.plan :=
   I.leftPlan_le I.leftScheme.isPlan.domain_mem
 
 theorem right_mem : C ∈ I.boundary.plan :=
   I.rightPlan_le I.rightScheme.isPlan.domain_mem
-
-variable (n : ℕ) (hA : n + 3 ≤ A.card)
-
-theorem coded : (rows I hBA hCA n hA).IsCoded :=
-  CanonicalRecursiveCoding.coded I.rows (proper_boundary I hBA hCA) I.coded n hA
-
-variable {CI BJ : Finset ι × ℕ}
-
-variable (hcover : ∀ S ∈ R, S ≠ A → S ⊆ B ∨ S ⊆ C)
-
-end
-end VaughtConjecture.Knight.WholeDonorOrdinaryLift

@@ -54,50 +54,13 @@ open CellScheme.restrictFace (toCell pushGraded gradedLe_pushGraded_iff)
 
 /-! ## Cell transport along an equality of schemes -/
 
-section Cast
-
-variable {ι : Type*} [DecidableEq ι] {A : Finset ι}
-
-end Cast
-
 /-! ## The identification -/
-
-section Identification
-
-variable {m n : ℕ} {X : CellScheme (ι := Fin m) Finset.univ}
-  {Y : CellScheme (ι := Fin (n + 1)) Finset.univ} {e : Fin n ↪ Fin m}
-  {Rp : Finset (Finset (Fin (m + 1)))} {hR : Plan.IsPlan Finset.univ Rp}
-  {hRA : Plan.restrictPlan Rp (Finset.univ.image Fin.castSuccEmb) =
-    X.plan.image (Finset.image Fin.castSuccEmb)}
-  {hRB : Plan.restrictPlan Rp (Finset.univ.image (onePointProj e)) =
-    Y.plan.image (Finset.image (onePointProj e))}
-  (hvX : Finset.univ.image e ∈ X.plan) (hvY : Finset.univ.image Fin.castSuccEmb ∈ Y.plan)
-  (hroot : X.restrictFace e hvX = Y.restrictFace Fin.castSuccEmb hvY)
 
 /-! ## Lower-domain transport -/
 
 /-! ## Root request cells, explicitly -/
 
-end Identification
-
 /-! ## The rows prescribed by both faces -/
-
-section Rows
-
-variable {m n : ℕ} {X : CellScheme (ι := Fin m) Finset.univ}
-  {Y : CellScheme (ι := Fin (n + 1)) Finset.univ} {e : Fin n ↪ Fin m}
-  {Rp : Finset (Finset (Fin (m + 1)))} {hR : Plan.IsPlan Finset.univ Rp}
-  {hRA : Plan.restrictPlan Rp (Finset.univ.image Fin.castSuccEmb) =
-    X.plan.image (Finset.image Fin.castSuccEmb)}
-  {hRB : Plan.restrictPlan Rp (Finset.univ.image (onePointProj e)) =
-    Y.plan.image (Finset.image (onePointProj e))}
-  (hvX : Finset.univ.image e ∈ X.plan) (hvY : Finset.univ.image Fin.castSuccEmb ∈ Y.plan)
-  (hroot : X.restrictFace e hvX = Y.restrictFace Fin.castSuccEmb hvY)
-  (rowsX : Semantics X) (rowsY : Semantics Y)
-
-variable {ctrl}
-
-end Rows
 
 /-! ## The first mixed scope: a degenerate consistent row is available; adequacy is separate
 
@@ -144,9 +107,3 @@ theorem TransformsTo.to_bot {E : Type*} {grade : E → ℕ} (p : E → ExtOrd) :
   ⟨fun _ => ⊤, fun _ => ⊥, fun _ _ _ => le_rfl, fun _ => rfl, rfl, monotone_const,
     fun _ _ _ _ _ => (extVisibilityReplace_bot _ _).symm,
     fun _ => (min_eq_left bot_le).symm⟩
-
-variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A} (sem : Semantics D)
-
-end MixedScope
-
-end VaughtConjecture.Knight

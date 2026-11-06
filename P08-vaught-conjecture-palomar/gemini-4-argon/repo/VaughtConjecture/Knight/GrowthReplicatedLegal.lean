@@ -19,12 +19,11 @@ no LOW carrier or lifting theorem is used to supply growth bountifulness.
 Stage-bounded selected displays and model receiving remain separate.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthReplicatedLegal
 open Transform Value ExtOrd AmalgamationPlan Growth
-noncomputable section
+
 variable {l m n J : ℕ} {B C : Finset (Fin l)}
   {R : Finset (Finset (Fin l))}
   (I : WholeDonorBoundary.Input Finset.univ B C R m (n + 1) J)
@@ -106,6 +105,3 @@ theorem private_occurrence (d : Cell I.right.scheme) :
   OrderedFaceRestriction.toCell_eq I.right (E).scheme (E).rows I.placeRight I.imageRight
     (privateFace I X T hA hB hC hsmall) (GrowthReplicatedRows.private_order I X T hA hB hC _ _)
     (private_plan I X T hA hB hC hsmall) d
-
-end
-end VaughtConjecture.Knight.GrowthReplicatedLegal

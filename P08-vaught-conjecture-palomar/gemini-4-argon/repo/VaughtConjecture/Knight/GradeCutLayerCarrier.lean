@@ -15,19 +15,15 @@ same controller inventory. Its lower domains through j are exactly the small
 carrier's, while every proper old owner's lower domain is exactly the old one.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.GradeCutLayerCarrier
 
-open Transform Value ExtOrd
-open SourceLayerCarrier
-noncomputable section
+open Transform Value ExtOrd SourceLayerCarrier
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι}
-variable (D : CellScheme A) (Q : Type*) [Fintype Q] (j : ℕ)
-variable (hj : 0 < j) (hA : j ≤ A.card)
+  (D : CellScheme A) (Q : Type*) [Fintype Q] (j : ℕ)
+  (hj : 0 < j) (hA : j ≤ A.card)
 
 abbrev small := scheme (GradeCutBoundary.scheme D j) Q j hj hA
 abbrev enlarged := scheme D Q j hj hA
@@ -107,6 +103,3 @@ def properEquiv (BJ : Finset ι × ℕ) (hB : ¬ A ⊆ BJ.1) :
         have hc : A ⊆ BJ.1 := by
           simpa only [CellScheme.scope, cell_eq, he, index] using d.2.1
         exact False.elim (hB hc)⟩
-
-end
-end VaughtConjecture.Knight.GradeCutLayerCarrier

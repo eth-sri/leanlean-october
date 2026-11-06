@@ -9,7 +9,15 @@ public import VaughtConjecture.Knight.SourceBlockLocalityTransport
 public import VaughtConjecture.Knight.OrbitBlock
 public import VaughtConjecture.Knight.CoupledGradeOne
 public import VaughtConjecture.Knight.RelativeLiftData
-public import VaughtConjecture.Knight.GradeTwoCodedBountiful
+public import VaughtConjecture.Knight.PositiveNormalization
+public import VaughtConjecture.Knight.FullScopeZeroExtension
+public import VaughtConjecture.Knight.RowReadback
+public import VaughtConjecture.Knight.RowCorrectness
+public import VaughtConjecture.Knight.Semantics
+public import VaughtConjecture.Knight.CappedLocalityRecoding
+public import VaughtConjecture.Knight.Reduction
+public import VaughtConjecture.Knight.VisibilityAlgebra
+public import VaughtConjecture.Knight.CountedRecoding
 
 /-! # The common visible positive floor, and bottom-reflecting transport on long rows
 
@@ -54,5 +62,3 @@ theorem map_respects_of_bottom_reflecting {BJ : Finset ι × ℕ} {r : D.below B
   change min (ν (r (CellScheme.below.incl c e))) (ν (r c)) = ⊥
   rw [← hν.mono.map_min] at hz ⊢
   rw [h0 (hrefl _ hz), hν.bot]
-
-end VaughtConjecture.Knight

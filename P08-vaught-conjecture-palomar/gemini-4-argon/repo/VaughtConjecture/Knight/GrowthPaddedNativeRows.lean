@@ -14,13 +14,11 @@ These are native row identities, not recognition assumptions or equalities
 between independently selected renderings. The shadow maximum calculation
 follows the grade-two calculation in V-C's GrowthLeafRecognition.
 -/
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthPaddedNativeRows
-open Transform Value ExtOrd Growth GrowthOrderedBase GrowthHigherSources
-open GrowthPaddedContract GrowthPaddedIteration
-noncomputable section
+open Transform Value ExtOrd Growth GrowthOrderedBase GrowthHigherSources GrowthPaddedContract GrowthPaddedIteration
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n J : ℕ}
   (I : WholeDonorBoundary.Input A B C R m (n + 1) J)
@@ -190,6 +188,3 @@ theorem source_ceiling_at (t : ℕ) (ht : t + 2 ≤ A.card) (a : Catalogue X (t 
     change GrowthPaddedStepRows.source P _ _ a (GrowthPaddedStepRows.old P _ c) = _
     rw [GrowthPaddedStepRows.source_old]
     exact hv
-
-end
-end VaughtConjecture.Knight.GrowthPaddedNativeRows

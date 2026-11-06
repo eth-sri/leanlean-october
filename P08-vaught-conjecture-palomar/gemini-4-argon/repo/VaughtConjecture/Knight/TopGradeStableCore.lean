@@ -70,6 +70,3 @@ theorem stabilizesTo_label_of_ne_top (x : R.LabelledExt) {Xi : Cell x.type.schem
   · rw [label_mapCell hpq Xi]
 
 /-! ### Stabilization on a tail of constant top grade -/
-
-end KnightRealization
-end VaughtConjecture.Knight

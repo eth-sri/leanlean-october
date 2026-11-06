@@ -14,15 +14,12 @@ Strict donor arity excludes active donor owners at or above activation;
 no activated donor fibre, mixed-scope lifting, or output bountifulness is used.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthPaddedOriginalInduction
-open Transform Value ExtOrd Growth
-open GrowthPaddedContract GrowthPaddedIteration
+open Transform Value ExtOrd Growth GrowthPaddedContract GrowthPaddedIteration
 open GrowthPaddedStepPrivateLift (PrivateLowerLift previousPrivateAt)
 open GrowthPaddedStepDonorLift (DonorLowerLift previousDonorAt)
-noncomputable section
 
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n J : ℕ}
@@ -84,6 +81,3 @@ theorem build_donor (hsmall : n + 1 < X.req.N) (t : ℕ) (ht : t + 2 ≤ A.card)
   | succ t ih =>
     exact successor_donor (build I X T hA hB hC t (by omega))
       (by omega) (by omega) hsmall (ih (by omega))
-
-end
-end VaughtConjecture.Knight.GrowthPaddedOriginalInduction

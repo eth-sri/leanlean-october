@@ -13,13 +13,11 @@ The producer exhausts the actual installed inventory. Its returned maps preserve
 occurrence order, every base coordinate, and the owner's entire native row.
 No provenance or hidden-completion hypothesis is supplied by the caller.
 -/
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthPaddedOwnerProvenance
-open Transform Value ExtOrd Growth GrowthOrderedBase GrowthHigherSources
-open GrowthPaddedContract GrowthPaddedIteration GrowthPaddedNativeRows
-noncomputable section
+open Transform Value ExtOrd Growth GrowthOrderedBase GrowthHigherSources GrowthPaddedContract GrowthPaddedIteration GrowthPaddedNativeRows
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n J : ℕ}
   (I : WholeDonorBoundary.Input A B C R m (n + 1) J)
@@ -236,10 +234,3 @@ theorem row_ceiling_at (i : ℕ) (hi : 1 ≤ i) (hib : i ≤ O.birth + 2) :
     ⟨d, by rw [hd, GrowthPaddedNativeRows.owner_index]; exact ⟨le_rfl, hib⟩⟩
   exact ⟨O.domain e, (congrArg _ (O.domain_val e)).trans ((O.index d).trans hd),
     (O.row e).trans hv⟩
-
-end Origin
-
-open GrowthPaddedCutTransport
-
-end
-end VaughtConjecture.Knight.GrowthPaddedOwnerProvenance

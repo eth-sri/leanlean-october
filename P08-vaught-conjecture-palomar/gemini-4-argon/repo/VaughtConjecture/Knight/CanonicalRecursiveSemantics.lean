@@ -14,15 +14,13 @@ contract fields are constructed by induction. This is not iteration of legal
 attachments: unrestricted recursive bountifulness remains a separate theorem.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalRecursiveSemantics
-open Transform Value ExtOrd SourcePrefixRows PairedSlotEncoding
-open CanonicalRecursiveContract
-noncomputable section
+open Transform Value ExtOrd SourcePrefixRows PairedSlotEncoding CanonicalRecursiveContract
+
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable (sem : Semantics D) (hp : ∀ d : Cell D, D.scope d ≠ A)
+  (sem : Semantics D) (hp : ∀ d : Cell D, D.scope d ≠ A)
 
 /-- Construct every contract field, starting at the actual recursive seed. -/
 def state : (n : ℕ) → (hA : n + 3 ≤ A.card) → State sem n hA
@@ -34,6 +32,3 @@ abbrev rows (n : ℕ) (hA : n + 3 ≤ A.card) := (state sem hp n hA).rows
 
 theorem consistent (hs : sem.IsConsistent) (n : ℕ) (hA : n + 3 ≤ A.card) :
     (rows sem hp n hA).IsConsistent := (state sem hp n hA).consistent hs
-
-end
-end VaughtConjecture.Knight.CanonicalRecursiveSemantics

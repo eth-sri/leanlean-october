@@ -6,7 +6,18 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.FiniteFloorCompletion
-public import VaughtConjecture.Knight.TwoContextCoupled
+public import VaughtConjecture.Knight.WitnessAlgebra
+public import VaughtConjecture.Knight.Type
+public import VaughtConjecture.Knight.PartialSections
+public import VaughtConjecture.Knight.WitnessSplice
+public import VaughtConjecture.Knight.PullbackSemantics
+public import VaughtConjecture.Knight.RowReadback
+public import VaughtConjecture.Knight.RowCorrectness
+public import VaughtConjecture.Knight.FullScopeBountiful
+public import VaughtConjecture.Knight.Domain
+public import VaughtConjecture.Knight.OnePointSuccessor
+public import VaughtConjecture.Knight.CountedRecoding
+public import VaughtConjecture.Knight.CappedCore
 
 /-! # The owner-local saturation endpoint (audit13 / notes40 §2.1)
 
@@ -180,7 +191,3 @@ theorem Saturation.of_witness {j : ℕ} {s p : ι → ExtOrd} {c : ι} {τ : Ext
     (face : ∀ d, τ (s d) = min (p d) γ) (proper : ∀ d, s d ≠ ⊤) (owner_vis : SelfVis j (s c)) :
     Saturation j s p c τ γ :=
   ⟨hτ.bot, hτ.mono, bound, pos, cap, face, proper, owner_vis⟩
-
-end OwnerLocalEndpoint
-
-end VaughtConjecture.Knight

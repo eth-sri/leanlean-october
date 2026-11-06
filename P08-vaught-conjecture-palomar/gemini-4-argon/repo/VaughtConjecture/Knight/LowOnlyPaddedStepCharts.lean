@@ -14,14 +14,12 @@ Locality and availability select an installed native leaf from an arbitrary
 lawful target-local ambient. Its chart reads every physical coordinate.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedStepCharts
-open Transform Value ExtOrd CappedDonor LowOnly CanonicalPairedInverse
-open LowOnlyPaddedContract LowOnlyPaddedStepRows LowOnlyOrderedLadder
+open Transform Value ExtOrd CappedDonor LowOnly CanonicalPairedInverse LowOnlyPaddedContract LowOnlyPaddedStepRows LowOnlyOrderedLadder
 open LowOnlyPaddedDecode (grid_fixed_below)
-noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n K : ℕ}
   {I : WholeDonorBoundary.Input A B C R m n n} {F : LowOnly.Family I.left I.right K}
@@ -60,6 +58,3 @@ theorem exists_chart
     rw [ha]
     rfl
   rwa [he] at hr
-
-end
-end VaughtConjecture.Knight.LowOnlyPaddedStepCharts

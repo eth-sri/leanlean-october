@@ -14,17 +14,14 @@ domain at a retained grade is unchanged, including all availability witnesses.
 The point plan is retained; completeness at grades above the cut is not asserted.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.GradeCutBoundary
 
 open Transform Value ExtOrd
-noncomputable section
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι}
-variable (D : CellScheme A) (j : ℕ)
+  (D : CellScheme A) (j : ℕ)
 
 def inventory : Finset (Cell D) := Finset.univ.filter (fun d => D.grade d ≤ j)
 
@@ -36,8 +33,6 @@ def scheme : CellScheme A where
   cell_mem _c := D.cell_mem _
 
 def toCell : Cell (scheme D j) ↪o Cell D := (inventory D j).orderEmbOfFin rfl
-
-theorem cell_eq (d : Cell (scheme D j)) : (scheme D j).cell d = D.cell (toCell D j d) := rfl
 
 theorem grade_bound (d : Cell (scheme D j)) : D.grade (toCell D j d) ≤ j :=
   (Finset.mem_filter.mp ((inventory D j).orderEmbOfFin_mem rfl d)).2
@@ -63,8 +58,7 @@ def belowEquiv (BJ : Finset ι × ℕ) (hBJ : BJ.2 ≤ j) :
     exact Subtype.ext ((toCell D j).injective he), by
     intro d
     obtain ⟨c, hc⟩ := exhaustive D j (d.2.2.trans hBJ)
-    refine ⟨⟨c, ?_⟩, Subtype.ext hc⟩
-    simpa only [cell_eq, hc] using d.2⟩
+    exact ⟨⟨c, by change GradedLe (D.cell (toCell D j c)) BJ; rw [hc]; exact d.2⟩, Subtype.ext hc⟩⟩
 
 variable (sem : Semantics D)
 
@@ -96,6 +90,3 @@ theorem consistent (hs : sem.IsConsistent) : (rows D j sem).IsConsistent := by
 
 theorem proper (hp : ∀ d : Cell D, D.scope d ≠ A) (d : Cell (scheme D j)) :
     (scheme D j).scope d ≠ A := hp (toCell D j d)
-
-end
-end VaughtConjecture.Knight.GradeCutBoundary

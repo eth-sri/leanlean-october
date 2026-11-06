@@ -16,211 +16,187 @@ availability and consistency are constructed from current-domain sections.
 No whole-boundary completion or future-owner lawfulness is assumed.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalRecursiveSeedRows
 open Transform Value ExtOrd SourcePrefixRows PairedSlotEncoding PairedSlotComparison
-noncomputable section
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable (sem : Semantics D) (hA : 3 ≤ A.card) (hp : ∀ d : Cell D, D.scope d ≠ A)
+  (sem : Semantics D) (hA : 3 ≤ A.card) (hp : ∀ d : Cell D, D.scope d ≠ A)
+
 abbrev two_le := (by decide : 2 ≤ 3).trans hA
 abbrev predecessor := CanonicalPairLocalSections.carrier sem (two_le hA)
 abbrev predecessorRows := CanonicalPairLocalSections.semantics sem (two_le hA) hp
 abbrev Profile := CanonicalRecursiveInventory.Profile sem 3
-abbrev carrier := SourceLayerCarrier.scheme (predecessor sem hA) (Profile sem) 3 (by decide) hA
-abbrev old (d : Cell (predecessor sem hA)) :=
-  SourceLayerCarrier.toCell (predecessor sem hA) (Profile sem) 3 (by decide) hA (.inl d)
-abbrev controller := SourceLayerCarrier.controller (predecessor sem hA) (Profile sem)
-  3 (by decide) hA
+
+local notation "pred" => predecessor sem hA
+local notation "pRows" => predecessorRows sem hA hp
+local notation "Prof" => Profile sem
+local notation "pos3" => Nat.succ_pos 2
+
+abbrev carrier := SourceLayerCarrier.scheme pred Prof 3 pos3 hA
+abbrev old (d : Cell pred) := SourceLayerCarrier.toCell pred Prof 3 pos3 hA (.inl d)
+abbrev controller := SourceLayerCarrier.controller pred Prof 3 pos3 hA
+
+local notation "K" => carrier sem hA
+local notation "oldC" => old sem hA
+local notation "ctrl" => controller sem hA
+
 include hp in
-theorem separation (d : Cell (predecessor sem hA)) :
-    ¬ GradedLe (A, 3) ((predecessor sem hA).cell d) :=
+theorem separation (d : Cell pred) : ¬ GradedLe (A, 3) (CellScheme.cell pred d) :=
   CanonicalRecursiveInventory.separated sem hp 2 (two_le hA) d
-abbrev ownerEquiv := SeparatedSourceLayerCarrier.ownerEquiv (predecessor sem hA)
-  (Profile sem) 3 (by decide) hA (separation sem hA hp)
-abbrev controllerEquiv := SeparatedSourceLayerCarrier.controllerEquiv (predecessor sem hA)
-  (Profile sem) 3 (by decide) hA (separation sem hA hp)
+
+local notation "sep" => separation sem hA hp
+
+abbrev ownerEquiv := SeparatedSourceLayerCarrier.ownerEquiv pred Prof 3 pos3 hA sep
+abbrev controllerEquiv := SeparatedSourceLayerCarrier.controllerEquiv pred Prof 3 pos3 hA sep
 abbrev member := (controllerEquiv sem hA hp).symm
-theorem member_controller (q : Profile sem) :
-    member sem hA hp (controller sem hA q) = q :=
-  (controllerEquiv sem hA hp).symm_apply_apply q
+
+local notation "oEq" => ownerEquiv sem hA hp
+local notation "cEq" => controllerEquiv sem hA hp
+local notation "mem" => member sem hA hp
+
+theorem member_controller (q : Prof) : mem (ctrl q) = q := Equiv.symm_apply_apply cEq q
+
 abbrev grid := sourceGrid 3 (Fintype.card (Cell D))
 abbrev ceiling := CanonicalFieldLayer.ceiling 3 (Cell D)
 
-theorem carrier_eq_recursive : carrier sem hA = CanonicalRecursiveInventory.scheme sem 3 hA := rfl
+local notation "grd" => grid (D := D)
+local notation "ceil" => ceiling (D := D)
 
-theorem profile_lawful (q : Profile sem) :
+theorem profile_lawful (q : Prof) :
     RespectsSemanticsBelow sem (A, 3) (fun d => q.val d.1) := by
-  have hr := (GradeCutBoundary.respects_iff D 3 sem (A, 3) le_rfl _).mp
-    (q.property.1.toBelow (A, 3))
-  convert hr using 1
+  convert (GradeCutBoundary.respects_iff D 3 sem (A, 3) le_rfl _).mp
+    (q.property.1.toBelow (A, 3)) using 1
   funext d
   exact (congrArg q.val (congrArg Subtype.val
     ((GradeCutBoundary.belowEquiv D 3 (A, 3) le_rfl).apply_symm_apply d))).symm
 
-theorem profile_proper (q : Profile sem) (d : Cell D) : q.val d ≠ ⊤ := q.property.2.2 d
+local notation "pLaw" => profile_lawful sem
 
-abbrev selected (q : Profile sem) := CanonicalPairLocalSections.sectionOf sem (two_le hA) hp
-  (by decide : 2 ≤ 3) (profile_lawful sem q) (profile_proper sem q)
-  (grid (D := D)) (ceiling (D := D))
+abbrev selected (q : Prof) := CanonicalPairLocalSections.sectionOf sem (two_le hA) hp
+  (by decide : 2 ≤ 3) (pLaw q) q.2.2.2 grd ceil
 
-theorem selected_lawful (q : Profile sem) :
-    RespectsSemanticsBelow (predecessorRows sem hA hp) (A, 3)
-      (fun d => selected sem hA hp q d.1) :=
-  CanonicalPairLocalSections.section_lawful sem (two_le hA) hp (by decide)
-    (profile_lawful sem q) (profile_proper sem q)
-    (fun _ hz => selfVis_mono (sourceGrid_visible hz) (by decide : 2 ≤ 3))
-    (selfVis_mono (sourceGrid_visible (sourceGrid_endpoint le_rfl)) (by decide : 2 ≤ 3))
+local notation "sel" => selected sem hA hp
 
-theorem selected_bound (q : Profile sem) (d : Cell (predecessor sem hA)) :
-    selected sem hA hp q d ≤ ceiling (D := D) :=
-  CanonicalPairLocalSections.section_bound sem (two_le hA) hp (by decide)
-    (profile_lawful sem q) (profile_proper sem q)
-    (selfVis_mono (sourceGrid_visible (sourceGrid_endpoint le_rfl)) (by decide : 2 ≤ 3))
-    (CanonicalFieldLayer.profile_bound (GradeCutBoundary.rows D 3 sem) 3
-      (Cell D) (GradeCutBoundary.toCell D 3) q) d
-
-theorem selected_agreement (p q : Profile sem) {h : ExtOrd}
-    (hh : h ∈ grid (D := D)) (hag : Agree p.val q.val h) :
-    Agree (selected sem hA hp p) (selected sem hA hp q) h :=
+theorem selected_agreement (p q : Prof) {h : ExtOrd} (hh : h ∈ grd) (hag : Agree p.val q.val h) :
+    Agree (sel p) (sel q) h :=
   CanonicalPairLocalSections.section_agreement sem (two_le hA) hp (by decide)
-    (profile_lawful sem p) (profile_proper sem p) (profile_lawful sem q) (profile_proper sem q)
-    (fun _ hz => selfVis_mono (sourceGrid_visible hz) (by decide : 2 ≤ 3))
-    (selfVis_mono (sourceGrid_visible (sourceGrid_endpoint le_rfl)) (by decide : 2 ≤ 3))
+    (pLaw p) p.2.2.2 (pLaw q) q.2.2.2
+    (fun _ hz => selfVis_mono (sourceGrid_visible hz) (by decide))
+    (selfVis_mono (sourceGrid_visible (sourceGrid_endpoint le_rfl)) (by decide))
     hh (CanonicalFieldLayer.grid_bound 3 (Cell D) hh) hag
 
-theorem selected_supported (q : Profile sem) (d : Cell (predecessor sem hA)) :
-    OrbitPrefixSupport.Supported 3 (grid (D := D) : Set ExtOrd) q.val
-      (selected sem hA hp q d) :=
-  CanonicalPairLocalSections.section_supported sem (two_le hA) hp (by decide)
-    (profile_lawful sem q) (profile_proper sem q) (by decide)
-    (sourceGrid_endpoint le_rfl) d
-
-def lower (q : Profile sem) (d : Cell (carrier sem hA)) : ExtOrd :=
-  match SourceLayerCarrier.toOcc (predecessor sem hA) (Profile sem) 3 (by decide) hA d with
-  | .inl x => selected sem hA hp q x
+def lower (q : Prof) (d : Cell K) : ExtOrd :=
+  match SourceLayerCarrier.toOcc pred Prof 3 pos3 hA d with
+  | .inl x => sel q x
   | .inr _ => ⊥
 
-theorem lower_old (q : Profile sem) (d : Cell (predecessor sem hA)) :
-    lower sem hA hp q (old sem hA d) = selected sem hA hp q d := by
-  change lower sem hA hp q
-    (SourceLayerCarrier.toCell (predecessor sem hA) (Profile sem) 3 (by decide) hA (.inl d)) = _
+local notation "lwr" => lower sem hA hp
+
+theorem lower_old (q : Prof) (d : Cell pred) : lwr q (oldC d) = sel q d := by
+  change lwr q (SourceLayerCarrier.toCell pred Prof 3 pos3 hA (.inl d)) = _
   simp only [lower, SourceLayerCarrier.toOcc_toCell]
 
-def data : ScopedSourcePrefixLayer.Data (carrier sem hA) 3 (Cell D) where
-  base := SeparatedSourceLayerCarrier.base (predecessor sem hA) (Profile sem) 3
-    (by decide) hA (separation sem hA hp) (predecessorRows sem hA hp)
+def data : ScopedSourcePrefixLayer.Data K 3 (Cell D) where
+  base := SeparatedSourceLayerCarrier.base pred Prof 3 pos3 hA sep pRows
   separated c hc := by
-    obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence (predecessor sem hA)
-      (Profile sem) 3 (by decide) hA c hc
+    obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence pred Prof 3 pos3 hA c hc
     rw [SourceLayerCarrier.cell_toCell]
-    exact separation sem hA hp x
-  grid := grid (D := D)
+    exact sep x
+  grid := grd
   bot_mem := sourceGrid_bot _ _
-  ceiling := ceiling (D := D)
+  ceiling := ceil
   ceiling_mem := sourceGrid_endpoint le_rfl
   grid_bound _ hh := CanonicalFieldLayer.grid_bound 3 (Cell D) hh
   grid_visible _ hh := sourceGrid_visible hh
-  boundary c := (member sem hA hp c).val
-  lower c := lower sem hA hp (member sem hA hp c)
+  boundary c := (mem c).val
+  lower c := lwr (mem c)
   lower_bound c d _ hd := by
-    obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence (predecessor sem hA)
-      (Profile sem) 3 (by decide) hA d hd
+    obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence pred Prof 3 pos3 hA d hd
     rw [lower_old]
-    exact selected_bound sem hA hp _ x
+    exact CanonicalPairLocalSections.section_bound sem (two_le hA) hp (by decide)
+      (pLaw _) (mem c).2.2.2
+      (selfVis_mono (sourceGrid_visible (sourceGrid_endpoint le_rfl)) (by decide))
+      (CanonicalFieldLayer.profile_bound (GradeCutBoundary.rows D 3 sem) 3
+        (Cell D) (GradeCutBoundary.toCell D 3) _) x
   lower_lawful c d hg hd := by
-    obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence (predecessor sem hA)
-      (Profile sem) 3 (by decide) hA d hd
-    apply (SeparatedSourceLayerCarrier.base_respects_iff (predecessor sem hA)
-      (Profile sem) 3 (by decide) hA (separation sem hA hp) (predecessorRows sem hA hp) x _).mpr
-    change RespectsSemanticsBelow (predecessorRows sem hA hp) _
-      (fun d => lower sem hA hp _ (old sem hA d.1))
-    have hx : GradedLe ((predecessor sem hA).cell x) (A, 3) :=
-      ⟨(predecessor sem hA).isPlan.subset_of_mem ((predecessor sem hA).scope_mem_plan x), by
-        simpa only [CellScheme.grade, SourceLayerCarrier.cell_toCell, SourceLayerCarrier.index]
-          using hg⟩
-    simpa only [lower_old, CellScheme.below.mono] using
-      (selected_lawful sem hA hp _).mono hx
+    obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence pred Prof 3 pos3 hA d hd
+    apply (SeparatedSourceLayerCarrier.base_respects_iff pred Prof 3 pos3 hA sep pRows x _).mpr
+    change RespectsSemanticsBelow pRows _ (fun d => lwr _ (oldC d.1))
+    have hx : GradedLe (CellScheme.cell pred x) (A, 3) :=
+      ⟨(CellScheme.isPlan pred).subset_of_mem (CellScheme.scope_mem_plan pred x), by
+        simpa only [CellScheme.grade, SourceLayerCarrier.cell_toCell, SourceLayerCarrier.index] using hg⟩
+    have hl : RespectsSemanticsBelow pRows (A, 3) (fun d => sel (mem c) d.1) :=
+      CanonicalPairLocalSections.section_lawful sem (two_le hA) hp (by decide)
+        (pLaw _) (mem c).2.2.2
+        (fun _ hz => selfVis_mono (sourceGrid_visible hz) (by decide))
+        (selfVis_mono (sourceGrid_visible (sourceGrid_endpoint le_rfl)) (by decide))
+    simpa only [lower_old, CellScheme.below.mono] using hl.mono hx
   grid_agreement p q h hh hag d _ hd := by
-    obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence (predecessor sem hA)
-      (Profile sem) 3 (by decide) hA d hd
+    obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence pred Prof 3 pos3 hA d hd
     simpa only [lower_old] using selected_agreement sem hA hp _ _ hh hag x
 
-abbrev rows := (data sem hA hp).rows
-abbrev source (q : Profile sem) := (data sem hA hp).profile (controller sem hA q)
-abbrev boundary (d : Cell D) := old sem hA (CanonicalPairLocalSections.original sem (two_le hA) d)
+local notation "dat" => data sem hA hp
 
-theorem source_old (q : Profile sem) (d : Cell (predecessor sem hA)) :
-    source sem hA hp q (old sem hA d) = selected sem hA hp q d := by
+abbrev rows := ScopedSourcePrefixLayer.Data.rows dat
+abbrev source (q : Prof) := ScopedSourcePrefixLayer.Data.profile dat (ctrl q)
+abbrev boundary (d : Cell D) := oldC (CanonicalPairLocalSections.original sem (two_le hA) d)
+
+local notation "src" => source sem hA hp
+
+theorem source_old (q : Prof) (d : Cell pred) : src q (oldC d) = sel q d := by
   rw [source, ScopedSourcePrefixLayer.Data.profile_old _ _
-    (SeparatedSourceLayerCarrier.old_not_full _ _ _ _ _ (separation sem hA hp) d)]
-  change lower sem hA hp (member sem hA hp (controller sem hA q)) _ = _
+    (SeparatedSourceLayerCarrier.old_not_full _ _ _ _ _ sep d)]
+  change lwr (mem (ctrl q)) _ = _
   rw [member_controller, lower_old]
 
-theorem source_boundary (q : Profile sem) (d : Cell D) :
-    source sem hA hp q (boundary sem hA d) = q.val d := by
+theorem source_boundary (q : Prof) (d : Cell D) : src q (boundary sem hA d) = q.val d := by
   rw [source_old]
-  exact CanonicalPairLocalSections.section_old sem (two_le hA) hp (by decide)
-    (profile_lawful sem q) (profile_proper sem q) d
+  exact CanonicalPairLocalSections.section_old sem (two_le hA) hp (by decide) (pLaw q) q.2.2.2 d
 
-theorem source_supported (q : Profile sem) (d : Cell (carrier sem hA)) :
-    OrbitPrefixSupport.Supported 3 (grid (D := D) : Set ExtOrd) q.val
-      (source sem hA hp q d) := by
-  by_cases hd : (carrier sem hA).cell d = (A, 3)
+theorem source_supported (q : Prof) (d : Cell K) :
+    OrbitPrefixSupport.Supported 3 (grd : Set ExtOrd) q.val (src q d) := by
+  by_cases hd : CellScheme.cell K d = (A, 3)
   · exact Or.inr (Or.inl (by
-      change (data sem hA hp).profile _ d ∈ _
+      change ScopedSourcePrefixLayer.Data.profile dat _ d ∈ _
       rw [show d = (⟨d, hd⟩ : SourcePrefixLayer.Controller _ 3).1 from rfl,
         ScopedSourcePrefixLayer.Data.profile_new]
       exact cut_mem (sourceGrid_bot _ _) _ _))
-  · obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence (predecessor sem hA)
-      (Profile sem) 3 (by decide) hA d hd
+  · obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence pred Prof 3 pos3 hA d hd
     rw [source_old]
-    exact selected_supported sem hA hp q x
+    exact CanonicalPairLocalSections.section_supported sem (two_le hA) hp (by decide)
+      (pLaw q) q.2.2.2 (by decide) (sourceGrid_endpoint le_rfl) x
 
-theorem source_short (q : Profile sem) (d : Cell (carrier sem hA)) :
-    SharpWitnessComposition.Short 3 (source sem hA hp q d) :=
+theorem source_short (q : Prof) (d : Cell K) :
+    SharpWitnessComposition.Short 3 (src q d) :=
   PairedCoupledSections.supported_short
     (fun _ hh => CanonicalFieldLayer.grid_short 3 (Cell D) hh)
     (CanonicalFieldLayer.profile_short (GradeCutBoundary.rows D 3 sem) 3
       (Cell D) (GradeCutBoundary.toCell D 3) q) (source_supported sem hA hp q d)
 
-theorem source_agreement_all (p q : Profile sem) {h : ExtOrd}
-    (hh : h ∈ grid (D := D)) (hag : Agree p.val q.val h) :
-    Agree (source sem hA hp p) (source sem hA hp q) h := by
+theorem source_agreement_all (p q : Prof) {h : ExtOrd} (hh : h ∈ grd) (hag : Agree p.val q.val h) :
+    Agree (src p) (src q) h := by
   intro d
-  by_cases hd : (carrier sem hA).cell d = (A, 3)
-  · have hb : GradedLe ((carrier sem hA).cell d) (A, 3) := by
-      rw [hd]; exact GradedLe.refl _
-    exact (data sem hA hp).profile_prefix hh
-      (by simpa only [data, member_controller] using hag) ⟨d, hb⟩
-  · obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence (predecessor sem hA)
-      (Profile sem) 3 (by decide) hA d hd
+  by_cases hd : CellScheme.cell K d = (A, 3)
+  · exact ScopedSourcePrefixLayer.Data.profile_prefix dat hh
+      (by simpa only [data, member_controller] using hag) ⟨d, hd ▸ GradedLe.refl _⟩
+  · obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence pred Prof 3 pos3 hA d hd
     simpa only [source_old] using selected_agreement sem hA hp p q hh hag x
 
-theorem inherited_row (c : Cell (predecessor sem hA))
-    (d : (predecessor sem hA).below ((predecessor sem hA).cell c)) :
-    (rows sem hA hp).E (old sem hA c) (ownerEquiv sem hA hp c d) =
-      (predecessorRows sem hA hp).E c d := by
+theorem inherited_row (c : Cell pred) (d : CellScheme.below pred (CellScheme.cell pred c)) :
+    (rows sem hA hp).E (oldC c) (oEq c d) = Semantics.E pRows c d := by
   rw [ScopedSourcePrefixLayer.Data.row_old _
-    (SeparatedSourceLayerCarrier.old_not_full _ _ _ _ _ (separation sem hA hp) c)]
+    (SeparatedSourceLayerCarrier.old_not_full _ _ _ _ _ sep c)]
   exact SeparatedSourceLayerCarrier.base_old _ _ _ _ _ _ _ c d
 
 theorem consistent (hs : sem.IsConsistent) : (rows sem hA hp).IsConsistent := by
   apply ScopedSourcePrefixLayer.Data.consistent
   intro c hc
-  obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence (predecessor sem hA)
-    (Profile sem) 3 (by decide) hA c hc
-  apply (SeparatedSourceLayerCarrier.base_respects_iff (predecessor sem hA)
-    (Profile sem) 3 (by decide) hA (separation sem hA hp) (predecessorRows sem hA hp) x _).mpr
-  have he : (data sem hA hp).base.E (old sem hA x) ∘ ownerEquiv sem hA hp x =
-      (predecessorRows sem hA hp).E x := by
-    funext d
-    exact SeparatedSourceLayerCarrier.base_old _ _ _ _ _ _ _ x d
+  obtain ⟨x, rfl⟩ := SourceLayerCarrier.old_occurrence pred Prof 3 pos3 hA c hc
+  apply (SeparatedSourceLayerCarrier.base_respects_iff pred Prof 3 pos3 hA sep pRows x _).mpr
+  have he : (ScopedSourcePrefixLayer.Data.base dat).E (oldC x) ∘ oEq x = Semantics.E pRows x :=
+    funext fun d => SeparatedSourceLayerCarrier.base_old _ _ _ _ _ _ _ x d
   rw [he]
   exact CanonicalPairBoundary.consistent sem 1 2 (by decide)
     (CanonicalPairLocalSections.one_le (two_le hA)) (by decide) (two_le hA) hp (by decide) hs x
-
-end
-end VaughtConjecture.Knight.CanonicalRecursiveSeedRows

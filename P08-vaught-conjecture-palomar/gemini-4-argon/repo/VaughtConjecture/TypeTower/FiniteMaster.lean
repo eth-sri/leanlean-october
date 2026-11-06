@@ -151,6 +151,3 @@ theorem extends_iff (t : FiniteMaster T α M) : s.Extends t ↔ s.chart.Extends 
     have hp := h s.tuple s.type s.chart_self
     obtain ⟨f, hf⟩ := t.supported_of_eval hp
     exact ⟨f, hf, (t.chart_factor f).symm.trans (hf ▸ hp)⟩
-
-end FiniteMaster
-end VaughtConjecture.TypeTower

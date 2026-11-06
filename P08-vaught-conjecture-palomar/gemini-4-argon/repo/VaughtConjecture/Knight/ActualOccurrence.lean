@@ -21,7 +21,6 @@ separate. Historical names for the coordinate geometry are preserved.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight
 open TypeTower KnightRealization StageType
 
@@ -93,6 +92,3 @@ theorem restrict_actual_extension {α : LimitStage} {W : KnightRealization α M}
   refine ⟨hyRoot, he, ?_⟩
   rw [← he, hW (snoc u y hy) r (onePointProj e) hr]
   exact hs
-
-end KnightRealization
-end VaughtConjecture.Knight

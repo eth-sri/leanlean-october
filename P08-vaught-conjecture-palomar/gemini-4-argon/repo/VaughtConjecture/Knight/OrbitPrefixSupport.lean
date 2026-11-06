@@ -28,8 +28,6 @@ the preservation theorem, not a hidden finite-extension supply assumption.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.OrbitPrefixSupport
 
 open Transform Value ExtOrd
@@ -115,5 +113,3 @@ theorem decode_respects_of_positive_cut
   have hag' := decode_agree hw hh hguard hreach hgrid hboundary hs hag
   exact ⟨SharpWitnessComposition.map_respects_of_positive_cap_agreement hb ha hK
     (SharpWitnessComposition.boundedMap_of_witness hw) hpos hag', hag'⟩
-
-end VaughtConjecture.Knight.OrbitPrefixSupport

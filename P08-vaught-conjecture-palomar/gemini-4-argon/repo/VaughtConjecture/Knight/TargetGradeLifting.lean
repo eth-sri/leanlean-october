@@ -19,12 +19,11 @@ successor is installed. Native repair and independent bottom supply remain
 separate construction obligations.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.TargetGradeLifting
 open Transform Value ExtOrd AmalgamationPlan CoatomBoundaryExtension
-noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
   (sem : Semantics D)
 
@@ -32,10 +31,6 @@ variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 def Through (r : ℕ) : Prop :=
   ∀ {I J : Finset ι × ℕ}, I ∈ Plan.gradedPlan D.plan →
     J ∈ Plan.gradedPlan D.plan → (h : GradedLe I J) → J.2 ≤ r → CappedLift sem h
-
-theorem zero : Through sem 0 := by
-  intro I J _ hJ _ hj
-  exact False.elim ((not_lt_of_ge hj) (Plan.mem_gradedPlan.mp hJ).2.1)
 
 /-- The successor ledger requires only the genuinely new same-grade clauses.
 All lower-source grade changes are constructed using the lawful upper ambient. -/
@@ -97,7 +92,3 @@ theorem through_separated {r : ℕ} (hrk : r < k) (hprev : Through sem r) :
   apply SeparatedLayerFace.lift D Q k hk hA hs sem out hrow h
     (fun hn => (not_le_of_gt hrk) (hn.2.trans hj))
   exact hprev hI hJ h hj
-end Transport
-
-end
-end VaughtConjecture.Knight.TargetGradeLifting

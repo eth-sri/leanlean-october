@@ -50,26 +50,14 @@ identification of the named cells with the scheme's cells — are the theorems a
 Not done: grades two and three of `ProperToFull₃Low`.  Construction-private (not root-exported). -/
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight
 
 open AmalgamationPlan Transform Value ExtOrd
 open CellScheme.restrictFace (toCell belowMap pushGraded)
 
-attribute [local instance] decEqRow1 decEqCore2 decEqCappedCore3
-
 /-! ## Cell uniqueness at grades at most two -/
 
-section Unique
-
-end Unique
-
 /-! ## Rows and labellings at grade one -/
-
-section One
-
-end One
 
 /-! ## Self-visibility of minima and maxima -/
 
@@ -82,9 +70,3 @@ theorem selfVis_max {K : ℕ} {a b : ExtOrd} (ha : SelfVis K a) (hb : SelfVis K 
   rw [ha, hb]
 
 /-! ## The grade-one retuning -/
-
-section Retune
-
-end Retune
-
-end VaughtConjecture.Knight

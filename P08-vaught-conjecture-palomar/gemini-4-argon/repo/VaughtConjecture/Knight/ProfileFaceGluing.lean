@@ -18,16 +18,14 @@ condition or new support-plan legality is inferred.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.ProfileFaceGluing
 
-open Transform Value ExtOrd NormalizedProfileFamily
+open Transform Value ExtOrd
 
 variable {C X Y Z : Type*}
 
-variable (f : C ↪ X) (g : C ↪ Y) (L : OrderLaw X) (R : OrderLaw Y)
-variable {K : (C → ExtOrd) → Prop}
+  (f : C ↪ X) (g : C ↪ Y)
+  {K : (C → ExtOrd) → Prop}
 
 open ProfileFaceUnion
 
@@ -35,5 +33,3 @@ noncomputable instance [Fintype X] [Fintype Y] : Fintype (Carrier (X := X) g) :=
   classical
   unfold Carrier
   infer_instance
-
-end VaughtConjecture.Knight.ProfileFaceGluing

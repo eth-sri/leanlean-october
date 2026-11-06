@@ -15,12 +15,11 @@ are constructed here. The donor's own bountifulness is the only lifting
 input. In particular, the encoding grade is not the marker offset.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthFiniteCapTemplate
 open AmalgamationPlan Transform Value ExtOrd SharpWitnessComposition
-noncomputable section
+
 variable {ιA ιQ : Type*} [DecidableEq ιA] [DecidableEq ιQ]
   {A : Finset ιA} {Q : Finset ιQ} {DA : CellScheme A} {DQ : CellScheme Q}
   {semA : Semantics DA} {semQ : Semantics DQ}
@@ -150,6 +149,3 @@ theorem exists_template (req : Requests DA DQ)
     (by simpa only [hheight] using hrootcap) hZ hFenc
     (by simpa only [hheight] using hFlt)
     (fun y hy => (congrArg B.code (hT y hy)).trans (hBtop.trans hheight.symm))
-
-end
-end VaughtConjecture.Knight.GrowthFiniteCapTemplate

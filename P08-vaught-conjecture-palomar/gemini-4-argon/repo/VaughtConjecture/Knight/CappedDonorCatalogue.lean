@@ -35,12 +35,11 @@ normalization and fibre results, with complete-field receipts:
 
 Nothing here asserts admission of an arbitrary physical section or any upward admission. -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.CappedDonor.Ref
 
 open Transform Value ExtOrd
-noncomputable section
 
 variable {I : Type*} [Fintype I] {nP N J : ℕ} {P : SemScheme (nP + 1)} {C : SemScheme J}
   {R : Ref I nP N J P C}
@@ -170,7 +169,7 @@ theorem Synchronized.gateOff {j : ℕ} (hj : 1 ≤ j) {st : R.State j} (hs : Syn
 
 /-- A fresh limit block floor above every proper value of the source vector and above a given
 ordinal. -/
-noncomputable def State.freshFloor {j : ℕ} (st : R.State j) (h : Ordinal.{0}) : Ordinal.{0} :=
+def State.freshFloor {j : ℕ} (st : R.State j) (h : Ordinal.{0}) : Ordinal.{0} :=
   Ordinal.omega0 * ((insert h st.inventory).sup id + 1)
 
 theorem State.freshFloor_limit {j : ℕ} (st : R.State j) (h : Ordinal.{0}) :
@@ -294,6 +293,3 @@ theorem catalogue_finite : (R.Catalogue).Finite :=
 theorem Admitted.normalize_mem_catalogue {a : Field P C → ExtOrd} (h : R.Admitted a)
     (hproper : ∀ f, a f ≠ ⊤) : PairedSlotEncoding.normalize N a ∈ R.Catalogue :=
   ⟨CanonicalPairedProfiles.normalize_mem_inventory _ _ hproper, h.normalize⟩
-
-end
-end VaughtConjecture.Knight.CappedDonor.Ref

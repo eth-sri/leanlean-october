@@ -18,31 +18,26 @@ alphabet bound is explicit. This constructs a scalar map and codes, not a lawful
 replacement member, available controller, or uniform source enlargement.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.PaddedSourceDecoder
 
 open Transform Value ExtOrd SharpWitnessComposition SourceBlockPadding
 
 /-- Move nonbottom sources by `b` whole blocks. -/
-noncomputable def reserve : ℕ → ExtOrd → ExtOrd
+def reserve : ℕ → ExtOrd → ExtOrd
   | 0, x => x
   | b + 1, x => pad (reserve b x)
 
 /-- Erase the reserved blocks; every erased block is killed in its entirety. -/
-noncomputable def release : ℕ → ExtOrd → ExtOrd
+def release : ℕ → ExtOrd → ExtOrd
   | 0, x => x
   | b + 1, x => release b (unpad x)
 
 @[simp] theorem reserve_bot (b : ℕ) : reserve b ⊥ = ⊥ := by
   induction b with
   | zero => rfl
-  | succ b ih => simp only [reserve, ih, pad_bot]
-
-@[simp] theorem release_bot (b : ℕ) : release b ⊥ = ⊥ := by
-  induction b with
-  | zero => rfl
-  | succ b ih => simpa only [release, unpad_bot] using ih
+  | succ b ih => simp only [reserve, ih, pad]
 
 /-- The inverse is literal at every padded source, including bottom and top. -/
 theorem release_reserve (b : ℕ) (x : ExtOrd) : release b (reserve b x) = x := by
@@ -107,7 +102,7 @@ theorem reserve_mem_codedAlphabet {t K : ℕ} {x : ExtOrd}
       (Or.inr ⟨u + b, j, Nat.add_le_add_right hu b, hj, reserve_code b u j⟩)
 
 /-- The actual finite tail code. Original literal top is represented by a proper code. -/
-noncomputable def encode (S : Finset Ordinal.{0}) (K b : ℕ) (y : ExtOrd) : ExtOrd :=
+def encode (S : Finset Ordinal.{0}) (K b : ℕ) (y : ExtOrd) : ExtOrd :=
   reserve b (canonicalNormalizer S K y)
 
 /-- Exact alphabet accounting: no availability of this much room in a tower is assumed. -/
@@ -132,7 +127,7 @@ theorem encode_ge_floor (S : Finset Ordinal.{0}) {K b : ℕ} {y : ExtOrd}
 
 /-- Join a clipped old witness to the new decoder. The join uses existing normalized
 witness closure; its decoder is precomposed only with the exact source inverse. -/
-noncomputable def extend (S : Finset Ordinal.{0}) (K b : ℕ)
+def extend (S : Finset Ordinal.{0}) (K b : ℕ)
     (σ : ExtOrd → ExtOrd) (γ : ExtOrd) (x : ExtOrd) : ExtOrd :=
   max (min (σ x) γ) (canonicalDecoder S K (release b x))
 
@@ -170,5 +165,3 @@ theorem extend_cap_agreement (S : Finset Ordinal.{0}) {K b : ℕ}
   CapFirstScalar.map_cap_agreement_of_clipped_prefix hσ.mono
     (extend_witness S hσ hγ).mono
     (fun _ hz => extend_before S (hz.trans_lt ha)) hxy hactive
-
-end VaughtConjecture.Knight.PaddedSourceDecoder

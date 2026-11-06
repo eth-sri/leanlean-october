@@ -54,7 +54,7 @@ restriction (`Knight.Type`: `typeMap_refl`, `typeMap_trans`) all reduce to one f
 `restrictFace.toCell_cast_eq_of_emb`: any strictly monotone enumeration of exactly the visible
 cells is `toCell` up to `Fin.cast`. -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight
 
@@ -250,7 +250,7 @@ theorem gradedLe_pullCell_iff {a b : Cell D} (ha : D.scope a ⊆ Finset.univ.ima
 visible face (Knight, Def. 3.1.5; the scheme part of Knight-VC `typeMap`): the pullback plan
 `{C ⊆ Fin m | f[C] ∈ D.plan}`, and the cells of `D` visible through `f`, pulled back along `f`
 and enumerated in increasing order. -/
-noncomputable def restrictFace (hr : Finset.univ.image f ∈ D.plan) :
+def restrictFace (hr : Finset.univ.image f ∈ D.plan) :
     CellScheme (ι := Fin m) Finset.univ where
   plan := (Finset.univ : Finset (Fin m)).powerset.filter (fun C => C.image f ∈ D.plan)
   isPlan := Plan.pullback_isPlan_fin f D.isPlan hr
@@ -265,10 +265,6 @@ noncomputable def restrictFace (hr : Finset.univ.image f ∈ D.plan) :
 
 variable (hr : Finset.univ.image f ∈ D.plan)
 
-theorem restrictFace_plan :
-    (D.restrictFace f hr).plan =
-      (Finset.univ : Finset (Fin m)).powerset.filter (fun C => C.image f ∈ D.plan) := rfl
-
 /-- The plan of the restriction is the (defined) pullback plan. -/
 theorem pullbackPlan_eq_restrictFace_plan :
     Plan.pullbackPlan f D.plan = some (D.restrictFace f hr).plan :=
@@ -277,7 +273,7 @@ theorem pullbackPlan_eq_restrictFace_plan :
 /-- Membership in the restricted plan: a face of `Fin m` is visible iff its image is. -/
 theorem mem_restrictFace_plan {C : Finset (Fin m)} :
     C ∈ (D.restrictFace f hr).plan ↔ C.image f ∈ D.plan := by
-  simp [restrictFace_plan]
+  simp [restrictFace]
 
 theorem card_restrictFace : (D.restrictFace f hr).card = (D.visibleCells f).card := rfl
 
@@ -285,7 +281,7 @@ namespace restrictFace
 
 /-- The cell map of a face restriction: the `i`-th cell of `D.restrictFace f hr` is the `i`-th
 visible cell of `D` in increasing order (Knight-VC: `canonEquivFin` of the visible subtype). -/
-noncomputable def toCell : Cell (D.restrictFace f hr) ↪o Cell D :=
+def toCell : Cell (D.restrictFace f hr) ↪o Cell D :=
   (D.visibleCells f).orderEmbOfFin (D.card_restrictFace f hr).symm
 
 theorem scope_toCell_subset (i : Cell (D.restrictFace f hr)) :
@@ -333,14 +329,10 @@ theorem gradedLe_of_restrictFace {i j : Cell (D.restrictFace f hr)}
 
 /-- Transport of the lower set below a restricted cell `Sig` into the lower set below
 `toCell Sig` in `D` (the index map of the semantic rows). -/
-noncomputable def belowMap (Sig : Cell (D.restrictFace f hr)) :
+def belowMap (Sig : Cell (D.restrictFace f hr)) :
     (D.restrictFace f hr).below ((D.restrictFace f hr).cell Sig) →
       D.below (D.cell (toCell D f hr Sig)) :=
   fun d => ⟨toCell D f hr d.1, gradedLe_of_restrictFace D f hr d.2⟩
-
-@[simp] theorem belowMap_val (Sig : Cell (D.restrictFace f hr))
-    (d : (D.restrictFace f hr).below ((D.restrictFace f hr).cell Sig)) :
-    (belowMap D f hr Sig d).1 = toCell D f hr d.1 := rfl
 
 /-! The canonical enumeration is determined by its range: any strictly monotone `e : Fin k → Cell D`
 whose range is exactly the visible cells is `toCell` up to `Fin.cast`.  This is the one fact
@@ -372,11 +364,3 @@ theorem toCell_cast_eq_of_emb (he : StrictMono e)
   have hk' : (D.visibleCells f).card = k := hk
   rw [Finset.orderEmbOfFin_unique hk' (fun c => (D.mem_visibleCells f).mpr (hvis c)) he, toCell,
     Finset.orderEmbOfFin_eq_orderEmbOfFin_iff, Fin.val_cast]
-
-end Emb
-
-end restrictFace
-
-end CellScheme
-
-end VaughtConjecture.Knight

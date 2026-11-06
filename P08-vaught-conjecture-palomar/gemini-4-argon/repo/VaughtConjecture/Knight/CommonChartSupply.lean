@@ -35,8 +35,8 @@ universe w
 namespace KnightRealization
 
 variable {M₁ M₂ : Type w}
-variable {α : LimitStage}
-variable {A₁ : KnightRealization α M₁} {A₂ : KnightRealization α M₂}
+  {α : LimitStage}
+  {A₁ : KnightRealization α M₁} {A₂ : KnightRealization α M₂}
 
 /-- One common full source chart, with no higher-stage witness attached. -/
 structure CommonChartNode where
@@ -81,7 +81,3 @@ def RestrictedCommonChartStepSupply
     (Good : CommonChartNode (A₁ := A₁) (A₂ := A₂) → Prop) : Prop :=
   ∀ (nd : CommonChartNode (A₁ := A₁) (A₂ := A₂)), Good nd →
     ∀ z : M₁ ⊕ M₂, Nonempty (GoodCommonChartExtension Good nd z)
-
-end KnightRealization
-
-end VaughtConjecture.Knight

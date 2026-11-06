@@ -16,18 +16,15 @@ Their rows and labels remain literal. No overlap compatibility, future locality
 or lower completion is supplied as an input.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.CanonicalGradeCutSections
 
 open Transform Value ExtOrd SourcePrefixRows
-noncomputable section
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable (sem : Semantics D) (j : ℕ) (hj : 0 < j) (hA : j ≤ A.card)
-variable (hproper : ∀ d : Cell D, D.scope d ≠ A)
+  (sem : Semantics D) (j : ℕ) (hj : 0 < j) (hA : j ≤ A.card)
+  (hproper : ∀ d : Cell D, D.scope d ≠ A)
 
 abbrev boundary := GradeCutBoundary.scheme D j
 abbrev boundaryRows := GradeCutBoundary.rows D j sem
@@ -77,7 +74,7 @@ theorem lower_row (c : Cell (lower sem j hj hA))
     (overlap sem j hj hA hproper) c d
 
 variable {p : Cell D → ExtOrd} (hp : RespectsSemantics sem p)
-variable (ht : ∀ d : Cell D, p d ≠ ⊤)
+  (ht : ∀ d : Cell D, p d ≠ ⊤)
 
 def lowerSection (G : Finset ExtOrd) (C : ExtOrd) : Cell (lower sem j hj hA) → ExtOrd :=
   CanonicalFieldLayer.sectionOf (boundaryRows sem j) j
@@ -160,6 +157,3 @@ theorem section_agreement {q : Cell D → ExtOrd} (hq : RespectsSemantics sem q)
   cases SourceLayerCarrier.toOcc D (Profiles sem j) j hj hA d with
   | inl c => exact hag c
   | inr q => exact hl _
-
-end
-end VaughtConjecture.Knight.CanonicalGradeCutSections

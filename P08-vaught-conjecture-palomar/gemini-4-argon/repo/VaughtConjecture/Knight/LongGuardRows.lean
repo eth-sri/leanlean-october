@@ -21,9 +21,7 @@ support compiler in `simplification-notes6/zero_implications.md`, Section 2.
 It does not by itself install a support plan or prove lifting.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.LongGuardRows
 
@@ -67,10 +65,10 @@ theorem bottom_of_same_block {Y : Type*} {E t : Y → ExtOrd}
     rw [hr e, he, min_bot_left]
   · rw [hr e, hz, min_bot_right]
 
-noncomputable def endpoint (i : ℕ) : ExtOrd :=
+def endpoint (i : ℕ) : ExtOrd :=
   ofOrd (Ordinal.omega0 * i + (2 : ℕ))
 
-noncomputable def source (i k : ℕ) : ExtOrd :=
+def source (i k : ℕ) : ExtOrd :=
   if k ≤ i then SlotControllerFamily.value k else endpoint i
 
 theorem endpoint_visible (i : ℕ) : SelfVis 1 (endpoint i) := by
@@ -120,9 +118,3 @@ theorem source_le_iff (i k l : ℕ) :
     · intro h; omega
   · simp only [source, ite_eq_right hk, ite_eq_right hl, le_refl,
       min_eq_right (by omega : i + 1 ≤ k), min_eq_right (by omega : i + 1 ≤ l)]
-
-namespace Regression
-
-end Regression
-
-end VaughtConjecture.Knight.LongGuardRows

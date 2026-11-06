@@ -16,13 +16,10 @@ No shortness is imposed on inherited rows. The selected native source values
 are short at grade two, including their readings at the retained long tips.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedCharts
-open Transform Value ExtOrd CappedDonor LowOnly
-open LowOnlyPaddedSuccessor LowOnlyPaddedDecode
-noncomputable section
+open Transform Value ExtOrd CappedDonor LowOnly LowOnlyPaddedSuccessor LowOnlyPaddedDecode
 
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n K : ℕ}
@@ -93,6 +90,3 @@ theorem lower_respects_iff (p : (input I F hroot hA hB hC).lower.below (A, 1) �
     (fun d e => ?_) (fun b d _ => ?_) p
   · simp only [CellScheme.scope, lowerEquiv, HighLayerBountiful.equiv_cell]
   · exact (inherited_row I F hroot hA hB hC b.1 d).symm
-
-end
-end VaughtConjecture.Knight.LowOnlyPaddedCharts

@@ -27,12 +27,11 @@ donor tops remain `LowRef.readback_of_actualFace`'s business.
 * `capped_readback`: the calculation, through `cut_map`/`sel_map`, `cut_congr`/`sel_congr` and
   `sel_actual`. -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.CappedDonor.Ref
 
 open Transform Value ExtOrd
-noncomputable section
 
 variable {I : Type*} [Fintype I] {nP N J : ℕ} {P : SemScheme (nP + 1)} {C : SemScheme J}
   {R : Ref I nP N J P C}
@@ -70,6 +69,3 @@ theorem capped_readback {j : ℕ} (hj : N ≤ j) {st : R.State j} (hst : R.Admis
   rw [hσ.mono.map_min, hu, hcut, hsel] at h
   have hβm : R.cut R.vactL ≤ m := (cut_actual_lt_cap (R := R)).le.trans hm
   rwa [min_assoc, min_eq_right hβm] at h
-
-end
-end VaughtConjecture.Knight.CappedDonor.Ref

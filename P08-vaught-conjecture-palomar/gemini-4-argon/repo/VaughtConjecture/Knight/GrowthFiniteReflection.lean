@@ -17,12 +17,11 @@ admission transport once a physical chart has established those receipts;
 it does not construct that chart or prove mixed-scope lawfulness.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.Growth
 open Transform Value ExtOrd AmalgamationPlan CappedDonor.Ref SharpWitnessComposition
-noncomputable section
+
 variable {ιA ιQ : Type*} [DecidableEq ιA] [DecidableEq ιQ]
   {A : Finset ιA} {Q : Finset ιQ} {DA : CellScheme A} {DQ : CellScheme Q}
   {semA : Semantics DA} {semQ : Semantics DQ}
@@ -77,6 +76,3 @@ theorem Admitted.map_on_profile {j : ℕ} {S : State DA DQ} (hS : Admitted X j S
       rw [← map_comm hσ hN _ X.req.R_lt_N.le, ← hσ.mono.map_min,
         ← hσ.mono.map_min]
       exact hσ.mono (ht y hT)
-
-end
-end VaughtConjecture.Knight.Growth

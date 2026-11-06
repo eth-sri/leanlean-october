@@ -16,12 +16,11 @@ are unchanged. In particular this does not promote a lower admitted state
 to a higher cutoff.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyOrderedSources
 open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder
-noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n K : ℕ}
   (I : WholeDonorBoundary.Input A B C R m n n) (F : LowOnly.Family I.left I.right K)
@@ -87,6 +86,3 @@ theorem anchor_lawful (j : ℕ) (a : F.Anchor j) :
   have hv : (fun d : I.boundary.below (A, j) => F.fields j a (field I d.1)) =
       (fun d => S.profile (field I d.1)) := funext (fun d => (congrFun he _).symm)
   exact hv ▸ boundary_lawful_at I F hroot j S hS
-
-end
-end VaughtConjecture.Knight.LowOnlyOrderedSources

@@ -5,7 +5,14 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.NormalizedProfileLifting
+public import VaughtConjecture.Knight.VisibleOrderInterpolation
+public import VaughtConjecture.Knight.SourceBlockLocalityTransport
+public import VaughtConjecture.Knight.FiniteProfileControllers
+public import VaughtConjecture.Knight.SlackCutPasting
+public import VaughtConjecture.Knight.SlotControllerFamily
+public import VaughtConjecture.Knight.FreshSourceSlots
+public import VaughtConjecture.Knight.SourceBlockPadding
+public import VaughtConjecture.Knight.FreeDiagonal
 
 /-! # Occurrence-exact unions of two faces
 
@@ -15,8 +22,6 @@ boundary inventory, not the missing full-scope rows of a support plan.
 -/
 
 @[expose] public section
-
-set_option autoImplicit false
 
 namespace VaughtConjecture.Knight.ProfileFaceUnion
 
@@ -74,7 +79,3 @@ theorem paste_right {V : Type*} {p : X → V} {q : Y → V}
     exact h c
   · rw [right, dite_eq_right hy]
     rfl
-
-open NormalizedProfileFamily Transform Value ExtOrd
-
-end VaughtConjecture.Knight.ProfileFaceUnion

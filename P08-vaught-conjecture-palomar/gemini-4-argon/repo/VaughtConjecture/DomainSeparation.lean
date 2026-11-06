@@ -140,5 +140,3 @@ theorem mk_eq_aleph_one_of_countable_core {X : Type 1} (D : Ordinal.{0} → Set 
       · have h1 : ζ.1 + 1 ≤ ξ.1 := Order.add_one_le_iff.mpr hlt
         exact (hpick ζ).2 (hξζ.symm ▸ hanti h1 (hpick ξ).1)
     exact (aleph_one_le_mk_of_cofinal T hT hcof).trans (Cardinal.mk_le_of_injective hinj)
-
-end VaughtConjecture.DomainSeparation

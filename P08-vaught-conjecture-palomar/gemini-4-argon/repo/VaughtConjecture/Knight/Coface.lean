@@ -81,9 +81,8 @@ witnesses for clauses (b)/(c) over them — not the (a)-families. -/
 
 namespace VaughtConjecture.Knight
 
-open VaughtConjecture.AmalgamationPlan
+open VaughtConjecture.AmalgamationPlan Value ExtOrd
 
-open Value ExtOrd
 open CellScheme.restrictFace (toCell belowEquiv belowEquiv_symm_mk toCell_belowEquiv_symm_val
   pushGraded gradedLe_cell_pushGraded_iff)
 
@@ -131,14 +130,6 @@ noncomputable def ofRespects (hα : Order.IsSuccLimit α) (D : SemScheme n)
   label d := truncExt α (q' d)
   label_bound _ := truncExt_bound α _
   respects := hq'.truncate hα
-
-@[simp] theorem ofRespects_scheme (hα : Order.IsSuccLimit α) (D : SemScheme n)
-    (q' : Cell D.scheme → ExtOrd) (hq' : RespectsSemantics D.rows q') :
-    (ofRespects hα D q' hq').scheme = D := rfl
-
-@[simp] theorem ofRespects_label (hα : Order.IsSuccLimit α) (D : SemScheme n)
-    (q' : Cell D.scheme → ExtOrd) (hq' : RespectsSemantics D.rows q') (d : Cell D.scheme) :
-    (ofRespects hα D q' hq').label d = truncExt α (q' d) := rfl
 
 /-- **Truncation does not disturb the face.**  If `q'` respects the rows of an extension domain
 `D` of `dom p` and extends `p.label` along the cell map of the initial face (`hD.cellOf`),
@@ -285,7 +276,3 @@ theorem bottomPatternFamily_nonempty (hα : Order.IsSuccLimit α) {p : S α n}
     (hq' : RespectsSemantics D.rows q') (hext : ∀ d, q' (hD.cellOf d) = p.label d) :
     ∃ q ∈ BottomPatternFamily (α := α) D q', IsCoface p q :=
   ⟨ofRespects hα D q' hq', ⟨rfl, fun _ => truncExt_eq_bot_iff⟩, isCoface_ofRespects hα hD hq' hext⟩
-
-end StageType
-
-end VaughtConjecture.Knight

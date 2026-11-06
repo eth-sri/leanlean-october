@@ -16,13 +16,11 @@ application must still produce the received tuple and its finite-cut receipts.
 No realization of a selected display is inferred from bottom patterns alone.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedLegalCertificate
-open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder
-open LowOnlyPaddedIteration LowOnlyPaddedInstallation LowOnlyPaddedEndpoints
-noncomputable section
+open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder LowOnlyPaddedIteration LowOnlyPaddedInstallation LowOnlyPaddedEndpoints
+
 variable {l m n K : ℕ} {B C : Finset (Fin l)} {R : Finset (Finset (Fin l))}
   (I : WholeDonorBoundary.Input Finset.univ B C R m n n)
   (F : LowOnly.Family I.left I.right K)
@@ -76,6 +74,3 @@ theorem exists_supported_certificate {S : State I.left I.right}
     exact (congrArg q (hdmap d)).trans (hread q hq
       (((congrArg q (hcmap F.gap.c)).symm.trans (hp F.gap.c)).trans hc)
       (((congrArg q (hcmap F.gap.r.1)).symm.trans (hp F.gap.r.1)).trans hr) δ hδ hcap d)
-
-end
-end VaughtConjecture.Knight.LowOnlyPaddedLegalCertificate

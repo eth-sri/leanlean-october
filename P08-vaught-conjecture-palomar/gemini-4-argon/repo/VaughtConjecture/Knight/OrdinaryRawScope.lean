@@ -14,15 +14,13 @@ No second enumeration, independently chosen facet, or output lifting theorem
 is supplied. The binary facets and their common plan come from this plan.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryRawScope
-open AmalgamationPlan Transform Value ExtOrd CoatomBoundaryExtension
-open OrdinaryScopeOperator AmalgamatedBoundaryPlan
-noncomputable section
+open AmalgamationPlan Transform Value ExtOrd CoatomBoundaryExtension OrdinaryScopeOperator AmalgamatedBoundaryPlan
+section
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable (sem : Semantics D)
+  (sem : Semantics D)
 
 /-- Properties of the existing proper boundary, not of a prospective output. -/
 structure Ready : Prop where
@@ -235,7 +233,7 @@ end
 
 section Mute
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable {sem : Semantics D} {k : ℕ} (S : OrdinaryScopeOperator.Core sem k)
+  {sem : Semantics D} {k : ℕ} (S : OrdinaryScopeOperator.Core sem k)
 
 theorem completed_highest_row (hk : 0 < k) (hcard : A.card = k + 1)
     (c : Cell (S.finish hk hcard).carrier)
@@ -251,6 +249,3 @@ theorem completed_highest_row (hk : 0 < k) (hcard : A.card = k + 1)
     omega
   · exact OrdinaryScopeMute.apex_row S.carrier S.rows k (k + 1) S.grade
       (Nat.lt_succ_self k) hcard.ge d
-
-end Mute
-end VaughtConjecture.Knight.OrdinaryRawScope

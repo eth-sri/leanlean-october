@@ -42,7 +42,7 @@ decomposition `α = μ + n` of an ordinal into a **limit part** `μ` (zero or a 
 * `IsNonSuccessor` (zero or a limit) and the canonical block levels
   `blockLevel ξ := ω + ω * ξ` (the ω-blocks of `docs/TERMINOLOGY.md`). -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight
 
@@ -102,11 +102,11 @@ open Ordinal ExtOrd
 
 /-- The limit part `μ` in the decomposition `α = μ + n` (`n < ω`), defined as `ω * (α / ω)`
 by the ordinal division algorithm. -/
-noncomputable def limitPart (α : Ordinal.{0}) : Ordinal.{0} :=
+def limitPart (α : Ordinal.{0}) : Ordinal.{0} :=
   Ordinal.omega0 * (α / Ordinal.omega0)
 
 /-- The finite part `n` in the decomposition `α = μ + n`, the natural number `α % ω`. -/
-noncomputable def finitePart (α : Ordinal.{0}) : ℕ :=
+def finitePart (α : Ordinal.{0}) : ℕ :=
   (Ordinal.lt_omega0.mp (Ordinal.mod_lt α Ordinal.omega0_ne_zero)).choose
 
 /-- The residue `α % ω` is the finite part, as an ordinal. -/
@@ -154,17 +154,17 @@ theorem limitPart_limitPart_add_nat (ξ : Ordinal.{0}) (i : ℕ) :
 /-! ### Replacement of the finite part and visibility replacement -/
 
 /-- Replace the finite part of `α` by `m` (Knight, Def. 2.2.2). -/
-noncomputable def ordinalReplace (α : Ordinal.{0}) (m : ℕ) : Ordinal.{0} :=
+def ordinalReplace (α : Ordinal.{0}) (m : ℕ) : Ordinal.{0} :=
   limitPart α + m
 
 /-- Visibility replacement (Knight, Def. 2.2.3): if the finite part of `α` is below the
 visibility threshold `K`, replace it by `m`; otherwise leave `α` unchanged. -/
-noncomputable def visibilityReplace (α : Ordinal.{0}) (K m : ℕ) : Ordinal.{0} :=
+def visibilityReplace (α : Ordinal.{0}) (K m : ℕ) : Ordinal.{0} :=
   if finitePart α < K then ordinalReplace α m else α
 
 /-- Visibility replacement on labels (Knight, Def. 2.2.1 together with Def. 2.2.3): the
 bottom and top labels are fixed, and an ordinal label is replaced by `visibilityReplace`. -/
-noncomputable def extVisibilityReplace (γ : ExtOrd) (K m : ℕ) : ExtOrd :=
+def extVisibilityReplace (γ : ExtOrd) (K m : ℕ) : ExtOrd :=
   match γ with
   | ⊥ => ⊥
   | some ⊤ => ⊤
@@ -287,17 +287,6 @@ theorem visReplace_le_of_le_selfVis {γ δ : Ordinal.{0}} {k i : ℕ}
       _ = δ := decomposition δ
   · exact hγδ
 
-/-- `extVisibilityReplace` stays `≤ ofOrd δ` when `x ≤ ofOrd γ`, `γ ≤ δ`, `δ` is self-visible
-at `k`, and the replacement value is `≤ k`. -/
-theorem extVisReplace_le_of_le {γ δ : Ordinal.{0}} {k i : ℕ} {x : ExtOrd}
-    (hx : x ≤ ofOrd γ) (hγδ : γ ≤ δ) (hδ_sv : k ≤ finitePart δ) (hi : i ≤ k) :
-    extVisibilityReplace x k i ≤ ofOrd δ := by
-  rcases ExtOrd.cases x with rfl | rfl | ⟨β, rfl⟩
-  · exact bot_le
-  · exact absurd hx (not_top_le_ofOrd γ)
-  · rw [extVisibilityReplace_ofOrd, ofOrd_le_ofOrd]
-    exact visReplace_le_of_le_selfVis ((ofOrd_le_ofOrd.mp hx).trans hγδ) hδ_sv hi
-
 /-! ### Vertical truncation of labels -/
 
 /-- Vertical truncation of a label at stage `α` (the pointwise content of Knight's reduction
@@ -307,7 +296,7 @@ boundary label `ofOrd α` is sent to `⊤`, so the labels of a stage-`α` type a
 `⊤` (`truncExt_bound`), and truncation commutes with visibility replacement at every limit
 stage without a boundary side condition (`truncExt_evr_comm`); Knight-VC's non-strict variant
 (`β ≤ α` kept) fails there. -/
-noncomputable def truncExt (α : Ordinal.{0}) (γ : ExtOrd) : ExtOrd :=
+def truncExt (α : Ordinal.{0}) (γ : ExtOrd) : ExtOrd :=
   match γ with
   | ⊥ => ⊥
   | some ⊤ => ⊤
@@ -470,7 +459,7 @@ def IsNonSuccessor (γ : Ordinal.{0}) : Prop := γ = 0 ∨ Order.IsSuccLimit γ
 
 /-- The canonical block levels `ω + ω * ξ` (the ω-blocks of `docs/TERMINOLOGY.md`): block `ξ`
 is the step from `blockLevel ξ` to `blockLevel (ξ + 1) = blockLevel ξ + ω`. -/
-noncomputable def blockLevel (ξ : Ordinal.{0}) : Ordinal.{0} :=
+def blockLevel (ξ : Ordinal.{0}) : Ordinal.{0} :=
   Ordinal.omega0 + Ordinal.omega0 * ξ
 
 theorem blockLevel_succ (ξ : Ordinal.{0}) :
@@ -492,7 +481,3 @@ theorem isSuccLimit_blockLevel (ξ : Ordinal.{0}) : Order.IsSuccLimit (blockLeve
   rw [Ordinal.isSuccLimit_iff, Ordinal.isSuccPrelimit_iff_omega0_dvd]
   exact ⟨(Ordinal.omega0_pos.trans_le le_self_add).ne',
     (Ordinal.dvd_add_iff dvd_rfl).mpr (dvd_mul_right _ _)⟩
-
-end Value
-
-end VaughtConjecture.Knight

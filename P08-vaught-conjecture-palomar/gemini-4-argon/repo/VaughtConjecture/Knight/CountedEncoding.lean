@@ -25,7 +25,7 @@ keyedness excludes.
 
 Construction-private (not root-exported). -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight
 
@@ -41,13 +41,11 @@ variable (l : ℕ) (S : Finset Ordinal.{0})
 
 /-- The counted code of an ordinal, on all ordinals (`code l S` of
 `Knight/CountedRecoding.lean`). -/
-noncomputable def encOrdK (v : Ordinal.{0}) : Ordinal.{0} :=
+def encOrdK (v : Ordinal.{0}) : Ordinal.{0} :=
   Ordinal.omega0 * (blockOf l S v : ℕ) + (min (finitePart v) l : ℕ)
 
-theorem encOrdK_eq_code (v : Ordinal.{0}) : encOrdK l S v = code l S v := rfl
-
 /-- The counted encoding on labels: `⊥`, `⊤` fixed, ordinals coded. -/
-noncomputable def encT : ExtOrd → ExtOrd
+def encT : ExtOrd → ExtOrd
   | ⊥ => ⊥
   | some ⊤ => ⊤
   | some (some α) => ofOrd (encOrdK l S α)
@@ -259,7 +257,7 @@ variable {l S grade source target}
 
 /-- **Transport of a keyed certificate along the counted encoding**, with the coding grade at
 least every grade. -/
-noncomputable def FiniteBlockBridgeCertificate.encode
+def FiniteBlockBridgeCertificate.encode
     (C : FiniteBlockBridgeCertificate grade source target)
     (hl : ∀ d, grade d ≤ l) (ht : ∀ d, Keyed l S (target d))
     (hkeyed : ∀ y ∈ C.tableDomain, Keyed l S (C.table y)) :
@@ -349,9 +347,3 @@ theorem isOrderly_encode (hl : ∀ d, grade d ≤ l) (hord : IsOrderly grade tar
   intro d
   show encT l S (target d) = extVisibilityReplace (encT l S (target d)) (grade d) (grade d)
   rw [← encT_evr_of_le l S (hl d) _ le_rfl, ← hord d]
-
-end Transport
-
-open Transform Value ExtOrd
-
-end VaughtConjecture.Knight

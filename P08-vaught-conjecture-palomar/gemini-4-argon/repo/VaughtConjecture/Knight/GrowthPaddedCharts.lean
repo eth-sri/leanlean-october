@@ -17,13 +17,10 @@ are short at grade two, including their readings at the retained long tips.
 Adapted from `LowOnlyPaddedCharts` on the unchanged growth rows.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthPaddedCharts
-open Transform Value ExtOrd CappedDonor Growth
-open GrowthPaddedSuccessor GrowthPaddedDecode
-noncomputable section
+open Transform Value ExtOrd CappedDonor Growth GrowthPaddedSuccessor GrowthPaddedDecode
 
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n J : ℕ}
@@ -94,6 +91,3 @@ theorem lower_respects_iff (p : (input I X T hA hB hC).lower.below (A, 1) → Ex
     (fun d e => ?_) (fun b d _ => ?_) p
   · simp only [CellScheme.scope, lowerEquiv, HighLayerBountiful.equiv_cell]
   · exact (inherited_row I X T hA hB hC b.1 d).symm
-
-end
-end VaughtConjecture.Knight.GrowthPaddedCharts

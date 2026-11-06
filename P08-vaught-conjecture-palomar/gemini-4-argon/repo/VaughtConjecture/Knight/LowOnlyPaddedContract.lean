@@ -15,13 +15,10 @@ their own grade. This is an invariant of a constructed semantic layer, not a
 lifting or bountifulness hypothesis.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedContract
-open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder
-open SourcePrefixRows SharpWitnessComposition PairedSlotComparison
-noncomputable section
+open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder SourcePrefixRows SharpWitnessComposition PairedSlotComparison
 
 section Catalogue
 variable {n K : ℕ} {P C : SemScheme n} (F : LowOnly.Family P C K)
@@ -52,9 +49,11 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
 abbrev base := (LowOnlyPaddedSuccessor.input I F hroot hA hB hC).lower
 abbrev baseRows := (LowOnlyPaddedSuccessor.input I F hroot hA hB hC).lowerRows
 
-theorem base_full_grade (c : Cell (base I F hroot hA hB hC))
-    (hc : (base I F hroot hA hB hC).scope c = A) :
-    (base I F hroot hA hB hC).grade c = 1 := by
+local notation "bse" => base I F hroot hA hB hC
+local notation "Bcell" => CellScheme.cell (base I F hroot hA hB hC)
+
+theorem base_full_grade (c : Cell bse) (hc : CellScheme.scope bse c = A) :
+    CellScheme.grade bse c = 1 := by
   rcases RelativeLadderLayer.cell_cases I.boundary (by omega : 0 < A.card) c with
     ⟨d, rfl⟩ | ⟨v, rfl⟩
   · exact False.elim (proper I hB hC d
@@ -65,17 +64,15 @@ structure Layer (k : ℕ) where
   carrier : CellScheme A
   rows : Semantics carrier
   consistent : rows.IsConsistent
-  baseMap : Cell (base I F hroot hA hB hC) → Cell carrier
+  baseMap : Cell bse → Cell carrier
   base_mono : StrictMono baseMap
-  base_index : ∀ c, carrier.cell (baseMap c) = (base I F hroot hA hB hC).cell c
-  base_row : ∀ c (d : (base I F hroot hA hB hC).below
-      ((base I F hroot hA hB hC).cell c)),
+  base_index : ∀ c, carrier.cell (baseMap c) = Bcell c
+  base_row : ∀ c (d : CellScheme.below bse (Bcell c)),
     rows.E (baseMap c) ⟨baseMap d.1, by simpa only [base_index] using d.2⟩ =
       (baseRows I F hroot hA hB hC).E c d
   base_respects : ∀ c (p : Cell carrier → ExtOrd),
     RespectsSemanticsBelow rows (carrier.cell (baseMap c)) (fun d => p d.1) ↔
-      RespectsSemanticsBelow (baseRows I F hroot hA hB hC)
-        ((base I F hroot hA hB hC).cell c) (fun d => p (baseMap d.1))
+      RespectsSemanticsBelow (baseRows I F hroot hA hB hC) (Bcell c) (fun d => p (baseMap d.1))
   cases : ∀ d, (∃ c, d = baseMap c) ∨
     carrier.scope d = A ∧ 2 ≤ carrier.grade d ∧ carrier.grade d ≤ k
   higher_short : ∀ c, carrier.scope c = A → 2 ≤ carrier.grade c →
@@ -111,23 +108,19 @@ structure Layer (k : ℕ) where
 namespace Layer
 variable {k : ℕ} (P : Layer I F hroot hA hB hC k)
 
-theorem full_grade (hk : 1 ≤ k) (d : Cell P.carrier) (hd : P.carrier.scope d = A) :
-    P.carrier.grade d ≤ k := by
-  rcases P.cases d with ⟨c, rfl⟩ | ⟨_, _, hg⟩
-  · have hs : (base I F hroot hA hB hC).scope c = A :=
-      (congrArg Prod.fst (P.base_index c)).symm.trans hd
-    exact (congrArg Prod.snd (P.base_index c)).le.trans
-      ((base_full_grade I F hroot hA hB hC c hs).le.trans hk)
-  · exact hg
-
 theorem separated (hk : 1 ≤ k) (d : Cell P.carrier) :
     ¬ GradedLe (A, k + 1) (P.carrier.cell d) := by
   intro hd
   have hs := Finset.Subset.antisymm
     (P.carrier.isPlan.subset_of_mem (P.carrier.scope_mem_plan d)) hd.1
-  have hg := P.full_grade I F hroot hA hB hC hk d hs
   have hk' : k + 1 ≤ P.carrier.grade d := hd.2
-  omega
+  rcases P.cases d with ⟨c, rfl⟩ | ⟨_, _, hg⟩
+  · have hb := base_full_grade I F hroot hA hB hC c
+      ((congrArg Prod.fst (P.base_index c)).symm.trans hs)
+    have hi : P.carrier.grade (P.baseMap c) = CellScheme.grade bse c :=
+      congrArg Prod.snd (P.base_index c)
+    omega
+  · omega
 
 theorem original_readback {j : ℕ} (hj : k ≤ j) (S : State I.left I.right)
     (hS : F.Admissible j S) (hp : ∀ d, S.profile d ≠ ⊤) {G H}
@@ -140,17 +133,17 @@ theorem original_readback {j : ℕ} (hj : k ≤ j) (S : State I.left I.right)
     _ _ _ (P.birth_ranks hj S hS hp) d
 end Layer
 
-/-- The existing actual first successor supplies the invariant without changing its rows. -/
+open LowOnlyPaddedSuccessor LowOnlyPaddedRendering in
 def initial : Layer I F hroot hA hB hC 2 where
-  carrier := LowOnlyPaddedSuccessor.carrier I F hroot hA hB hC
-  rows := LowOnlyPaddedSuccessor.rows I F hroot hA hB hC
-  consistent := LowOnlyPaddedSuccessor.consistent I F hroot hA hB hC
-  baseMap := LowOnlyPaddedSuccessor.old I F hroot hA hB hC
+  carrier := carrier I F hroot hA hB hC
+  rows := rows I F hroot hA hB hC
+  consistent := consistent I F hroot hA hB hC
+  baseMap := old I F hroot hA hB hC
   base_mono := SourceLayerCarrier.old_order _ _ _ _ _
-  base_index c := SourceLayerCarrier.cell_toCell _ _ _ _ _ _
-  base_row := LowOnlyPaddedSuccessor.inherited_row I F hroot hA hB hC
+  base_index _ := SourceLayerCarrier.cell_toCell _ _ _ _ _ _
+  base_row := inherited_row I F hroot hA hB hC
   base_respects c p := by
-    let J := LowOnlyPaddedSuccessor.input I F hroot hA hB hC
+    let J := input I F hroot hA hB hC
     rw [WeightedSourcePrefixLayer.old_respects_iff J.data J.weight J.weight_visible
       (SeparatedSourceLayerCarrier.old_not_full _ _ _ _ _ J.separation c)]
     exact SeparatedSourceLayerCarrier.base_respects_iff J.lower
@@ -159,41 +152,29 @@ def initial : Layer I F hroot hA hB hC 2 where
   cases d := by
     rcases LowOnlyPaddedSuccessor.cell_cases I F hroot hA hB hC d with h | ⟨a, rfl⟩
     · exact Or.inl h
-    · exact Or.inr ⟨congrArg Prod.fst (LowOnlyPaddedSuccessor.leaf_index I F hroot hA hB hC a),
-        (congrArg Prod.snd (LowOnlyPaddedSuccessor.leaf_index I F hroot hA hB hC a)).ge,
-        (congrArg Prod.snd (LowOnlyPaddedSuccessor.leaf_index I F hroot hA hB hC a)).le⟩
+    · have hl := leaf_index I F hroot hA hB hC a
+      exact Or.inr ⟨congrArg Prod.fst hl, (congrArg Prod.snd hl).ge, (congrArg Prod.snd hl).le⟩
   higher_short c hc hg d := by
     rcases LowOnlyPaddedSuccessor.cell_cases I F hroot hA hB hC c with ⟨b, rfl⟩ | ⟨a, rfl⟩
-    · have hi := SourceLayerCarrier.cell_toCell
-        (base I F hroot hA hB hC)
+    · have hi := SourceLayerCarrier.cell_toCell bse
         (LadderWeightedSuccessor.Input.Node (U := F.Anchor 2) (V := Empty))
         2 (by decide) hA (.inl b)
-      have hb := base_full_grade I F hroot hA hB hC b
-        ((congrArg Prod.fst hi).symm.trans hc)
-      have he := (congrArg Prod.snd hi).trans hb
-      have he' : (LowOnlyPaddedSuccessor.carrier I F hroot hA hB hC).grade
-          (LowOnlyPaddedSuccessor.old I F hroot hA hB hC b) = 1 := he
-      exact False.elim (by omega)
-    · simpa only [CellScheme.grade, LowOnlyPaddedSuccessor.leaf_index,
-        LowOnlyPaddedSuccessor.leaf_row] using
-        LowOnlyPaddedRendering.source_short I F hroot hA hB hC a d.1
-  render := LowOnlyPaddedRendering.render I F hroot hA hB hC
-  birth {j} hj S hS hp := LowOnlyPaddedSuccessor.baseAnchor F
-    (LowOnlyPaddedRendering.anchor I F hj S hS hp)
-  birth_ranks := LowOnlyPaddedRendering.birth_ranks I F
-  render_base := LowOnlyPaddedRendering.render_old I F hroot hA hB hC
-  lawful := LowOnlyPaddedRendering.render_lawful I F hroot hA hB hC
-  bound := LowOnlyPaddedRendering.render_bound I F hroot hA hB hC
-  supported := LowOnlyPaddedRendering.render_supported I F hroot hA hB hC
-  agreement {j} hj S T hS hT hp ht :=
-    LowOnlyPaddedRendering.render_prefix I F hroot hA hB hC hj S hS hp hT ht
+      have hb := base_full_grade I F hroot hA hB hC b ((congrArg Prod.fst hi).symm.trans hc)
+      have he : (carrier I F hroot hA hB hC).grade (old I F hroot hA hB hC b) = 1 :=
+        (congrArg Prod.snd hi).trans hb
+      omega
+    · simpa only [CellScheme.grade, leaf_index, leaf_row] using
+        source_short I F hroot hA hB hC a d.1
+  render := render I F hroot hA hB hC
+  birth {j} hj S hS hp := baseAnchor F (anchor I F hj S hS hp)
+  birth_ranks := birth_ranks I F
+  render_base := render_old I F hroot hA hB hC
+  lawful := render_lawful I F hroot hA hB hC
+  bound := render_bound I F hroot hA hB hC
+  supported := render_supported I F hroot hA hB hC
+  agreement {j} hj S T hS hT hp ht := render_prefix I F hroot hA hB hC hj S hS hp hT ht
   ceiling_at {j} hj S hS hp {G H} hG hH hb i hi hik := by
-    have he : i = 1 ∨ i = 2 := by omega
-    rcases he with rfl | rfl
-    · exact LowOnlyPaddedRendering.render_base_ceiling I F hroot hA hB hC
-        hj S hS hp hG hH hb
-    · exact ⟨_, LowOnlyPaddedSuccessor.leaf_index I F hroot hA hB hC _,
-        LowOnlyPaddedRendering.render_ceiling I F hroot hA hB hC hj S hS hp hH hb⟩
-
-end
-end VaughtConjecture.Knight.LowOnlyPaddedContract
+    rcases (show i = 1 ∨ i = 2 by omega) with rfl | rfl
+    · exact render_base_ceiling I F hroot hA hB hC hj S hS hp hG hH hb
+    · exact ⟨_, leaf_index I F hroot hA hB hC _,
+        render_ceiling I F hroot hA hB hC hj S hS hp hH hb⟩

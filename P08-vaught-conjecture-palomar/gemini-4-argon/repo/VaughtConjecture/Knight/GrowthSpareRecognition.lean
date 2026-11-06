@@ -43,16 +43,11 @@ grades.
 Everything stays on the actual one-scope carrier; replication, mixed extension and lifting are not
 touched. -/
 
-@[expose] public section
-
-set_option autoImplicit false
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.GrowthSpareRecognition
 
-open Transform Value ExtOrd Growth GrowthHigherSources GrowthPaddedSuccessor GrowthLeafRecognition
-open SupportLadderRows LadderScalarRendering SharpWitnessComposition CappedDonor.Ref
-
-noncomputable section
+open Transform Value ExtOrd Growth GrowthHigherSources GrowthPaddedSuccessor GrowthLeafRecognition SupportLadderRows LadderScalarRendering SharpWitnessComposition CappedDonor.Ref
 
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n J : ℕ}
@@ -117,24 +112,7 @@ theorem row_spare (a : Catalogue X 1) (v : Pt) :
 
 /-! ## Uncapped recognition of the complete shadow vector -/
 
-section Chart
-
-variable {a : Catalogue X 1} {τ : ExtOrd → ExtOrd} (hτ : Witness (gTop 1) τ)
-
-include hτ
-
-end Chart
-
 /-! ## Lawfulness and admission of the uncapped vector at grade one -/
-
-section Admission
-
-variable (hp : RespectsSemanticsBelow (rows I X T hA hB hC) (A, 2) p) {a : Catalogue X 1}
-  {τ : ExtOrd → ExtOrd} (hτ : Witness (gTop 1) τ)
-
-include hp hτ
-
-end Admission
 
 /-! ## The two-grade hidden-original projection -/
 
@@ -157,15 +135,3 @@ reconstructing and gluing the two faces: the anchor's boundary lawfulness
 transports directly.  Root agreement of the grade-dependent projection follows from the uncapped
 root agreement and root-grade preservation (`RootAttachment.grade`).  None of this uses the
 admission hypothesis `1 < X.req.N`. -/
-
-section Boundary
-
-variable (hp : RespectsSemanticsBelow (rows I X T hA hB hC) (A, 2) p) {a : Catalogue X 1}
-  {τ : ExtOrd → ExtOrd} (hτ : Witness (gTop 1) τ)
-
-include hp hτ
-
-end Boundary
-
-end
-end VaughtConjecture.Knight.GrowthSpareRecognition

@@ -19,9 +19,7 @@ No completeness or lifting at new mixed indices is asserted. The boundary has no
 new owners; it is not packaged as a legal receiving scheme.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.OrderedFaceBoundarySemantics
 
@@ -30,25 +28,25 @@ open AmalgamatedBoundary (Overlap)
 open Transform Value ExtOrd
 
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
-variable (D : CellScheme B) (E : CellScheme C)
-variable {k : ℕ} (w : Overlap D E k)
-variable (R : Finset (Finset ι)) (hR : Plan.IsPlan A R)
-variable (hD : D.plan ⊆ R) (hE : E.plan ⊆ R)
-variable (semD : Semantics D) (semE : Semantics E)
-variable (hc : Compatible D E w semD semE)
+  (D : CellScheme B) (E : CellScheme C)
+  {k : ℕ} (w : Overlap D E k)
+  (R : Finset (Finset ι)) (hR : Plan.IsPlan A R)
+  (hD : D.plan ⊆ R) (hE : E.plan ⊆ R)
+  (semD : Semantics D) (semE : Semantics E)
+  (hc : Compatible D E w semD semE)
 
 local notation "K" => scheme D E w R hR hD hE
 local notation "l" => leftCell D E w R hR hD hE
 local notation "r" => rightCell D E w R hR hD hE
 local notation "sem" => rows D E w R hR hD hE semD semE hc
 
-noncomputable def leftFace : ExactSemanticFace semD sem where
+def leftFace : ExactSemanticFace semD sem where
   map := ⟨l, (left_order D E w R hR hD hE).injective⟩
   index := left_index D E w R hR hD hE
   exhaustive := left_exhaustive D E w R hR hD hE
   row := rows_left D E w R hR hD hE semD semE hc
 
-noncomputable def rightFace : ExactSemanticFace semE sem where
+def rightFace : ExactSemanticFace semE sem where
   map := ⟨r, (right_order D E w R hR hD hE).injective⟩
   index := right_index D E w R hR hD hE
   exhaustive := right_exhaustive D E w R hR hD hE
@@ -95,7 +93,7 @@ theorem respects_iff (p : Cell K → ExtOrd) : RespectsSemantics sem p ↔
       · exact (leftFace D E w R hR hD hE semD semE hc).availability_at hpD c e hs hg
       · exact (rightFace D E w R hR hD hE semD semE hc).availability_at hpE c e hs hg
 
-noncomputable def paste (p : Cell D → ExtOrd) (q : Cell E → ExtOrd) : Cell K → ExtOrd :=
+def paste (p : Cell D → ExtOrd) (q : Cell E → ExtOrd) : Cell K → ExtOrd :=
   ProfileFaceUnion.paste w.g p q ∘ (enumeration D E w).symm
 
 theorem paste_left (p : Cell D → ExtOrd) (q : Cell E → ExtOrd) (d : Cell D) :
@@ -112,5 +110,3 @@ theorem paste_right (p : Cell D → ExtOrd) (q : Cell E → ExtOrd)
     (enumeration D E w (ProfileFaceUnion.right w.f w.g e))) = q e
   rw [Equiv.symm_apply_apply]
   exact ProfileFaceUnion.paste_right w.f w.g h e
-
-end VaughtConjecture.Knight.OrderedFaceBoundarySemantics

@@ -5,7 +5,8 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.ControllerPrefixFamily
+public import VaughtConjecture.Knight.WitnessAlgebra
+public import VaughtConjecture.Knight.SlackCutPasting
 
 /-! # Mixed-grade interpolation: orbit blocks, not just source order
 
@@ -86,6 +87,3 @@ theorem zero_witness (K : ℕ) : Witness (gTop K) (fun _ => ⊥) where
   clause5 := by intros; exact (extVisibilityReplace_bot _ _).symm
 
 /-! ## A non-vacuous mixed-grade tie regression -/
-
-end MixedGradeInterpolation
-end VaughtConjecture.Knight

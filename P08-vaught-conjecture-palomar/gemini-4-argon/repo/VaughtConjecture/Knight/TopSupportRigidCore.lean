@@ -5,7 +5,9 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.FiniteCoverReceiving
+public import VaughtConjecture.Knight.FiniteCoverReceivingCore
+public import VaughtConjecture.Knight.OrdinaryFiniteCutReceiving
+public import VaughtConjecture.Knight.BlockCode
 public import VaughtConjecture.Knight.TopSupportRigidCoreCap
 
 /-! # Classification from globally rigid top-support cores
@@ -53,5 +55,3 @@ theorem exists_labelled_core (hM : R.IsModel)
   obtain ⟨j, C, hC, hsome⟩ := hM.covering B
   obtain ⟨c, hc⟩ := Option.isSome_iff_exists.mp hsome
   exact ⟨k + j, C, c, hc, rigidCore_mono hB (Fin.castAddEmb j) hC⟩
-
-end VaughtConjecture.Knight.TopSupportRigidCore

@@ -22,18 +22,15 @@ contract, not a bountifulness assumption. This display, with both original
 vectors literal and a top marked gate, does not establish unrestricted lifting.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryFinalDisplay
-open Transform Value ExtOrd CappedDonor CappedDonor.Ref SharpWitnessComposition
-open OrdinaryFinalCatalogue
-noncomputable section
+open Transform Value ExtOrd CappedDonor CappedDonor.Ref SharpWitnessComposition OrdinaryFinalCatalogue
 
 variable {I : Type*} [Fintype I] {nP N : ℕ}
-variable {P : SemScheme (nP + 1)} {C : SemScheme N} (R : Ref I nP N N P C)
-variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable (F : FinalGateLayer.Input D N (Field P C) (OrdinaryFinalCatalogue.Member R))
+  {P : SemScheme (nP + 1)} {C : SemScheme N} (R : Ref I nP N N P C)
+  {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
+  (F : FinalGateLayer.Input D N (Field P C) (OrdinaryFinalCatalogue.Member R))
 
 /-- Decode the selected complete source on the **actual** installed carrier.
 The long-row alternative only concerns values at its real arguments. -/
@@ -85,6 +82,3 @@ theorem exists_actual_display
     have hb := hδ.mono (F.gate_bound a)
     rw [hgate, hfields, hg] at hb
     exact hb
-
-end
-end VaughtConjecture.Knight.OrdinaryFinalDisplay

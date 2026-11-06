@@ -23,20 +23,17 @@ composition is not asserted. Literal restoration above a proper owner remains
 a separate predecessor-lifting step.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryFinalOwnerLift
-open Transform Value ExtOrd CappedDonor CappedDonor.Ref SharpWitnessComposition
-open OrdinaryFinalCatalogue OrdinaryFinalReadback OrdinaryOwnerFactorization
-noncomputable section
+open Transform Value ExtOrd CappedDonor CappedDonor.Ref SharpWitnessComposition OrdinaryFinalCatalogue OrdinaryFinalReadback OrdinaryOwnerFactorization
 
 variable {I : Type*} [Fintype I] {nP N : ℕ}
-variable {P : SemScheme (nP + 1)} {C : SemScheme N} (R : Ref I nP N N P C)
-variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable (F : FinalGateLayer.Input D N (Field P C) (OrdinaryFinalCatalogue.Member R))
-variable (priv : Cell C.scheme ↪ Cell D)
-variable (hprivGrade : ∀ d, D.grade (priv d) = C.scheme.grade d)
+  {P : SemScheme (nP + 1)} {C : SemScheme N} (R : Ref I nP N N P C)
+  {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
+  (F : FinalGateLayer.Input D N (Field P C) (OrdinaryFinalCatalogue.Member R))
+  (priv : Cell C.scheme ↪ Cell D)
+  (hprivGrade : ∀ d, D.grade (priv d) = C.scheme.grade d)
 
 private theorem cap_of_prefix {ν : ExtOrd → ExtOrd} (hν : Monotone ν)
     {δ γ x y : ExtOrd} (hr : γ ≤ ν δ) (he : min y δ = min x δ) :
@@ -105,6 +102,3 @@ theorem exists_owner_capped_lift
     change ν (κ (F.source b (F.old (priv d.1)))) = _
     rw [hfread]
     exact hprivate d
-
-end
-end VaughtConjecture.Knight.OrdinaryFinalOwnerLift

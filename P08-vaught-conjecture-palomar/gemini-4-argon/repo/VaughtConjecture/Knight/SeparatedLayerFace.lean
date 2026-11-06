@@ -14,12 +14,11 @@ Proper inherited owners may have grades above the added layer. Only separation
 and literal rows are used; no global predecessor grade bound is imposed.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.SeparatedLayerFace
 open Transform Value ExtOrd CoatomBoundaryExtension SourceLayerCarrier
-noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A B : Finset ι}
   (D : CellScheme A) (Q : Type*) [Fintype Q] (k : ℕ) (hk : 0 < k) (hA : k ≤ A.card)
   (hs : ∀ d : Cell D, ¬ GradedLe (A, k) (D.cell d))
@@ -59,27 +58,10 @@ include hrow in
 /-- Transport an already proved lower clause, without assuming any output
 bountifulness or bounding the grades of retained proper owners. -/
 theorem lift {I J : Finset ι × ℕ} (h : GradedLe I J)
-    (hJ : ¬ GradedLe (A, k) J) (hl : CappedLift sem h) : CappedLift out h := by
-  intro p q γ hp hq hγ hag
+    (hJ : ¬ GradedLe (A, k) J) (hl : CappedLift sem h) : CappedLift out h :=
   have hI : ¬ GradedLe (A, k) I := fun hi => hJ (hi.trans h)
-  let eI := HighLayerBountiful.equiv D Q k hk hA I hI
-  let eJ := HighLayerBountiful.equiv D Q k hk hA J hJ
-  have hp' : RespectsSemanticsBelow sem I (p ∘ eI) := by
-    apply (respects_iff D Q k hk hA hs sem out hrow I hI _).mpr
-    simpa only [eI, Function.comp_def, Equiv.apply_symm_apply] using hp
-  have hq' : RespectsSemanticsBelow sem J (q ∘ eJ) := by
-    apply (respects_iff D Q k hk hA hs sem out hrow J hJ _).mpr
-    simpa only [eJ, Function.comp_def, Equiv.apply_symm_apply] using hq
-  obtain ⟨r, hr, hcap, hread⟩ := hl (p ∘ eI) (q ∘ eJ) γ hp' hq' hγ (fun d => hag (eI d))
-  refine ⟨r ∘ eJ.symm,
-    (respects_iff D Q k hk hA hs sem out hrow J hJ r).mp hr, ?_, ?_⟩
-  · intro d
-    simpa only [Function.comp_apply, Equiv.apply_symm_apply] using hcap (eJ.symm d)
-  · intro d
-    obtain ⟨e, rfl⟩ := eI.surjective d
-    change r (eJ.symm (eJ (CellScheme.below.mono h e))) = p (eI e)
-    rw [Equiv.symm_apply_apply]
-    exact hread e
+  hl.of_respects_iff (HighLayerBountiful.equiv D Q k hk hA I hI)
+    (HighLayerBountiful.equiv D Q k hk hA J hJ) (fun _ => rfl)
+    (respects_iff D Q k hk hA hs sem out hrow I hI)
+    (respects_iff D Q k hk hA hs sem out hrow J hJ)
 
-end
-end VaughtConjecture.Knight.SeparatedLayerFace

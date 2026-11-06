@@ -39,5 +39,3 @@ theorem exists_extension (hr : Function.Bijective restrict)
       ∀ γ q, capY γ p = capY γ (restrict q) → capX γ z = capX γ q := by
   obtain ⟨z, hz⟩ := hr.2 p
   exact ⟨z, hz, preserves_all restrict capX capY hr.1 hcomm hz⟩
-
-end VaughtConjecture.CapCompatibleExtension

@@ -197,5 +197,3 @@ theorem analytic_tree_rank_bounded [TopologicalSpace X] {A : Set X} (hA : Analyt
   · rintro _ ⟨y, rfl⟩
     have := hwf (f y) (mem_range_self y)
     exact (treeHeight_le_of_relHom (witnessHom f T y)).trans_lt (lt_add_one _)
-
-end KleeneBrouwer

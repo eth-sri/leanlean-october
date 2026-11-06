@@ -14,14 +14,13 @@ Old rows are literal. New rows use the proved orbit support, finite canonical
 fields, and coded grids. The statement is uniform in the constructed height.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalRecursiveCoding
 open Transform Value ExtOrd CanonicalCodingSupport
-noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable (sem : Semantics D) (hp : ∀ d : Cell D, D.scope d ≠ A)
+  (sem : Semantics D) (hp : ∀ d : Cell D, D.scope d ≠ A)
 
 theorem seed (hA : 3 ≤ A.card) (hc : sem.IsCoded) :
     (CanonicalRecursiveSeedRows.rows sem hA hp).IsCoded := by
@@ -68,6 +67,3 @@ theorem coatom {s : AmalgamatedBoundaryPlan.Step A} {m n : ℕ}
     (I : SemSchemeBoundaryInput.Input s m (n + 3) (n + 3)) :
     (CoatomRecursiveInput.rows I).IsCoded :=
   coded I.rows I.proper I.coded n (CoatomRecursiveInput.height_le I)
-
-end
-end VaughtConjecture.Knight.CanonicalRecursiveCoding

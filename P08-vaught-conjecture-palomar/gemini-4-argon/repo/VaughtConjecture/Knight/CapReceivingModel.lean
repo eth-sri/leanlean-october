@@ -98,6 +98,3 @@ theorem isModel (hFC : FiniteCutReceiving R) (hne : Nonempty M)
         min (q.label d) (ofOrd (γ + 1)) at hc
       rw [← hc] at hh
       exact hh.trans_le (min_le_left _ _)
-
-end FiniteCutReceiving
-end VaughtConjecture.Knight

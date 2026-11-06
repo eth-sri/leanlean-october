@@ -17,12 +17,11 @@ lifting or arbitrary-section extension premise. Only original proper owners
 retain an entire lower domain. Full-scope owners retain their old columns.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.ScopeReplicationSemantics
 open AmalgamationPlan Transform Value ExtOrd ScopeReplicationCarrier
-noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι}
   (D : CellScheme A) (B C : Finset ι)
   (hcover : ∀ c : Cell D, D.scope c ≠ A → D.scope c ⊆ B ∨ D.scope c ⊆ C)
@@ -162,6 +161,3 @@ def face {T : Finset ι} {E : CellScheme T} {semE : Semantics E}
         (fun h => p.2.2.1.2 (hs.trans h))).elim
   row c d := (inherited_row D B C hcover sem (F.map c)
     ⟨F.map d.1, by rw [F.index, F.index]; exact d.2⟩).trans (F.row c d)
-
-end
-end VaughtConjecture.Knight.ScopeReplicationSemantics

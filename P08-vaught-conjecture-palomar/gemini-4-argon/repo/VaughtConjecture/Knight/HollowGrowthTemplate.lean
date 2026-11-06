@@ -6,7 +6,7 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.HollowGrowthReference
-public import VaughtConjecture.Knight.ReceivingContextReceipts
+public import VaughtConjecture.Knight.ReceivingContext
 public import VaughtConjecture.Knight.GrowthFilteredRoot
 public import VaughtConjecture.Knight.CappedDonorContext
 
@@ -18,13 +18,11 @@ This constructs scalar data, not a physical receiving scheme. The positive
 root-arity hypothesis is the unchanged graded-root premise of `RelativeData`.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.HollowGrowthTemplate
-open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan CappedDonor
-open CellScheme.restrictFace
-noncomputable section
+open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan CappedDonor CellScheme.restrictFace
+
 private theorem belowMap_val_of_heq {ιA ιB : Type*} [DecidableEq ιA] [DecidableEq ιB]
     {A : Finset ιA} {B : Finset ιB} {DA : CellScheme A} {DB : CellScheme B}
     {I J : Finset ιA × ℕ} {U V : Finset ιB × ℕ} (hIJ : I = J) (hUV : U = V)
@@ -127,7 +125,7 @@ theorem exists_template (hn : 0 < n) (hq : IsCoface p q) :
       (hC : D.context.type.scheme.restrictFace D.face hvC = p.scheme)
       (X : RelativeData D.context.type.scheme.scheme D.context.type.scheme.rows
         q.scheme.scheme q.scheme.rows),
-      X.req = requests q D ∧ X.top = (Finset.univ, n + 1) ∧
+      X.req = requests q D ∧
       Nonempty (Growth.RootAttachment p.scheme Fin.castSuccEmb hvP hP D.face hvC hC X) ∧
       HEq X.ZA {d : D.context.type.scheme.scheme.below
         (D.context.type.scheme.scheme.cell D.cap) | D.context.type.label d.1 = ⊥} := by
@@ -219,15 +217,10 @@ theorem exists_template (hn : 0 < n) (hq : IsCoface p q) :
     by_cases ht : q.label d = ⊤
     · exact Or.inr (Or.inr (Or.inl ht))
     exact Or.inr (Or.inl ⟨hb, ht⟩)
-  obtain ⟨X, hreq, hr, ht, hk, hz, _⟩ :=
+  obtain ⟨X, hreq, hr, _, hk, hz, _⟩ :=
     exists_relativeData_of_context_with_root (requests q D) D.cap_grade
       (C.scheme.consistent D.cap) C.respects D.cap_top D.marker_top hmarker
       (blocks q) hS D.ref href q.respects hrootmem htopmem hrt hne hbelow le_rfl κ hroot
       q.scheme.bountiful hcover hlit hblocks (fun _ h => h) (fun _ h => h) hF htoproot
-  refine ⟨hvP, hP, hvC, hC, X, hreq, ht, ?_, hz⟩
-  refine ⟨⟨hr, ?_⟩⟩
-  intro a
+  refine ⟨hvP, hP, hvC, hC, X, hreq, ⟨⟨hr, fun a => ?_⟩⟩, hz⟩
   exact belowMap_val_of_heq hr (congrArg (fun r => C.scheme.scheme.cell r.C) hreq) hk a
-
-end
-end VaughtConjecture.Knight.HollowGrowthTemplate

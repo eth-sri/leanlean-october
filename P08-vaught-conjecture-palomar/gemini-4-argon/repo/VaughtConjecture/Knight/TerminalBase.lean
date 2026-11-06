@@ -6,7 +6,8 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.SpectrumAssembly
-public import VaughtConjecture.Knight.BlockGeometry
+public import VaughtConjecture.Knight.BlockStages
+public import VaughtConjecture.Knight.Rank
 public import VaughtConjecture.Knight.NoTop
 
 /-! # Terminal models: the low-level definitions
@@ -17,7 +18,7 @@ speak about terminal models without the receipt/Zorn cone.  The surjection onto 
 classes (linked terminal totality) and the spectrum bounds stay behind in
 `TerminalClassBound.lean`. -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight
 
@@ -29,7 +30,7 @@ abbrev TerminalModel (ρ : Ordinal.{0}) : Type 1 :=
     W.IsModel ∧ W.NoProlongationToIn IsModelClass (blockStage_le_succ ρ)}
 
 /-- Terminal models up to isomorphism. -/
-noncomputable def terminalSetoid (ρ : Ordinal.{0}) : Setoid (TerminalModel ρ) :=
+def terminalSetoid (ρ : Ordinal.{0}) : Setoid (TerminalModel ρ) :=
   (Realization.isoSetoid knightTower (blockStage ρ) ℕ).comap Subtype.val
 
 /-- **The terminal classes at block `ρ`.** -/
@@ -40,7 +41,7 @@ theorem omegaStage_le_blockStage_zero : omegaStage ≤ blockStage 0 :=
 
 /-- Lift a block-`0` realization back to the counted stage (the stages are equal; the
 reduct along the equality changes no label). -/
-noncomputable def liftBlockZero (W₀ : KnightRealization (blockStage 0) ℕ) :
+def liftBlockZero (W₀ : KnightRealization (blockStage 0) ℕ) :
     KnightRealization omegaStage ℕ :=
   W₀.reduct omegaStage_le_blockStage_zero
 
@@ -51,7 +52,7 @@ theorem liftBlockZero_reduct (R : KnightRealization omegaStage ℕ) :
   exact Realization.reduct_refl R
 
 /-- The counted model underlying a terminal model: reduct to block `0`, lifted. -/
-noncomputable def TerminalModel.toNatModel {ρ : Ordinal.{0}} (W : TerminalModel ρ) :
+def TerminalModel.toNatModel {ρ : Ordinal.{0}} (W : TerminalModel ρ) :
     KnightNatModel :=
   ⟨liftBlockZero (W.1.reduct (blockStage_zero_le ρ)),
     (W.2.1.reduct (blockStage_zero_le ρ)).reduct omegaStage_le_blockStage_zero⟩
@@ -63,9 +64,7 @@ theorem TerminalModel.toNatModel_iso {ρ : Ordinal.{0}} {W W' : TerminalModel ρ
   exact ⟨(i.reduct (blockStage_zero_le ρ)).reduct omegaStage_le_blockStage_zero⟩
 
 /-- **Reduct on classes**: the terminal classes at block `ρ` map to the counted classes. -/
-noncomputable def terminalToClass (ρ : Ordinal.{0}) :
+def terminalToClass (ρ : Ordinal.{0}) :
     TerminalClass ρ → Quotient knightModelSetoid :=
   Quotient.lift (fun W => Quotient.mk knightModelSetoid W.toNatModel)
     (fun _ _ h => Quotient.sound (TerminalModel.toNatModel_iso h))
-
-end VaughtConjecture.Knight

@@ -17,19 +17,16 @@ constructed here. This is source-prefix completion, not yet decoding against
 an arbitrary ambient at an unrelated external cap.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalMixedPrefix
-open Transform Value ExtOrd SourcePrefixRows CanonicalMixedGradeLayers
-open CanonicalPairedInverse PairedSlotEncoding
-noncomputable section
+open Transform Value ExtOrd SourcePrefixRows CanonicalMixedGradeLayers CanonicalPairedInverse PairedSlotEncoding
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable (sem : Semantics D) (j : ℕ) (hj : 0 < j) (hjA : j ≤ A.card)
-variable (hproper : ∀ d : Cell D, D.scope d ≠ A)
-variable (k : ℕ) (hg : ∀ d : Cell D, D.grade d ≤ k)
-variable (hk : 0 < k) (hkA : k ≤ A.card) (hjk : j < k)
+  (sem : Semantics D) (j : ℕ) (hj : 0 < j) (hjA : j ≤ A.card)
+  (hproper : ∀ d : Cell D, D.scope d ≠ A)
+  (k : ℕ) (hg : ∀ d : Cell D, D.grade d ≤ k)
+  (hk : 0 < k) (hkA : k ≤ A.card) (hjk : j < k)
 
 /-- No supported inverse, coded completion, or output lawfulness is assumed.
 The proper repaired old boundary is the input produced by ordinary old-face
@@ -91,6 +88,3 @@ theorem exists_section
   dsimp only
   rw [source_boundary]
   exact hread d
-
-end
-end VaughtConjecture.Knight.CanonicalMixedPrefix

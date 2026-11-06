@@ -18,12 +18,10 @@ It does not yet supply a prefix-fixing inverse or coupled semantic sections.
 The ordinary exact decoder below is deliberately not claimed to fix unused grids.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalPairedProfiles
 open Transform Value ExtOrd PairedSlotEncoding PairedSlotProfiles SharpWitnessComposition
-noncomputable section
 
 section Inventory
 variable (X : Type*) [Fintype X] (j : ℕ)
@@ -71,13 +69,3 @@ theorem normalize_cap {a p : X → ExtOrd} {B : ℕ}
     min (PairedSlotEncoding.normalize j p d) (ofOrd (Ordinal.omega0 * B + j)) =
       min (a d) (ofOrd (Ordinal.omega0 * B + j)) :=
   CanonicalPairedPrefix.normalize_cap ha.1 ha.2 hag d
-
-end Inventory
-
-section Scheme
-variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-  (sem : Semantics D) (BJ : Finset ι × ℕ) [Fintype (D.below BJ)] (j : ℕ)
-
-end Scheme
-end
-end VaughtConjecture.Knight.CanonicalPairedProfiles

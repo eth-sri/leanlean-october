@@ -41,16 +41,11 @@ Grade one (the uncapped values `B_p f` themselves and the grade-one original vec
 maximal spare chart of the checked base and is not treated here.  Mixed scopes are not treated
 here. -/
 
-@[expose] public section
-
-set_option autoImplicit false
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.GrowthLeafRecognition
 
-open Transform Value ExtOrd Growth GrowthHigherSources GrowthPaddedSuccessor
-open SupportLadderRows LadderScalarRendering SharpWitnessComposition
-
-noncomputable section
+open Transform Value ExtOrd Growth GrowthHigherSources GrowthPaddedSuccessor SupportLadderRows LadderScalarRendering SharpWitnessComposition
 
 theorem card_pos {ι : Type*} {A : Finset ι} (h : 2 ≤ A.card) : 0 < A.card := by omega
 
@@ -113,14 +108,3 @@ def zeroMember (j : ℕ) (hj : 1 ≤ j) : Catalogue X j :=
   Growth.zeroMember X j hj
 
 /-! ## Recognition and finite bottom reflection -/
-
-section Chart
-
-variable {a : Catalogue X 2} {σ : ExtOrd → ExtOrd} (hσ : Witness (gTop 2) σ)
-
-include hσ
-
-end Chart
-
-end
-end VaughtConjecture.Knight.GrowthLeafRecognition

@@ -14,18 +14,16 @@ availability. These are literal occurrence equivalences, not an assumption
 that an arbitrary lower ambient extends to the whole output.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalLowerDomain
 open Transform Value ExtOrd CanonicalMixedGradeLayers
-noncomputable section
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable (sem : Semantics D) (j : ℕ) (hj : 0 < j) (hjA : j ≤ A.card)
-variable (hproper : ∀ d : Cell D, D.scope d ≠ A)
-variable (k : ℕ) (hg : ∀ d : Cell D, D.grade d ≤ k)
-variable (hk : 0 < k) (hkA : k ≤ A.card) (hjk : j < k)
+  (sem : Semantics D) (j : ℕ) (hj : 0 < j) (hjA : j ≤ A.card)
+  (hproper : ∀ d : Cell D, D.scope d ≠ A)
+  (k : ℕ) (hg : ∀ d : Cell D, D.grade d ≤ k)
+  (hk : 0 < k) (hkA : k ≤ A.card) (hjk : j < k)
 
 def upperEquiv (BJ : Finset ι × ℕ) (hBJ : BJ.2 ≤ j) :
     (lowerScheme sem j hj hjA).below BJ ≃ (scheme sem j hj hjA k hk hkA).below BJ :=
@@ -92,6 +90,3 @@ theorem pullback_respects {BJ : Finset ι × ℕ} (hBJ : BJ.2 ≤ j)
       (q ∘ equiv sem j hj hjA k hk hkA hjk BJ hBJ) := by
   apply (respects_iff sem j hj hjA hproper k hg hk hkA hjk BJ hBJ _).mpr
   simpa only [Function.comp_def, Equiv.apply_symm_apply] using hq
-
-end
-end VaughtConjecture.Knight.CanonicalLowerDomain

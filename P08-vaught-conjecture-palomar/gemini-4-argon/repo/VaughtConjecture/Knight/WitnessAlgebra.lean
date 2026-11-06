@@ -42,73 +42,6 @@ theorem Witness.transformsTo {D : Type*} {grade : D → ℕ} {g : ℕ → ExtOrd
     TransformsTo grade f t :=
   ⟨g, σ, hw.anti, hw.vis, hw.bot, hw.mono, hw.clause5, heq⟩
 
-theorem TransformsTo.witness {D : Type*} {grade : D → ℕ} {f t : D → ExtOrd}
-    (h : TransformsTo grade f t) :
-    ∃ (g : ℕ → ExtOrd) (σ : ExtOrd → ExtOrd), Witness g σ ∧
-      ∀ d, t d = min (σ (f d)) (g (grade d)) := by
-  obtain ⟨g, σ, h1, h2, h3, h4, h5, h6⟩ := h
-  exact ⟨g, σ, ⟨h1, h2, h3, h4, h5⟩, h6⟩
-
-/-- A witness stays a witness for any antitone self-visible suppressor below the old one. -/
-theorem Witness.of_le_g {g g' : ℕ → ExtOrd} {σ : ExtOrd → ExtOrd} (hw : Witness g σ)
-    (hle : ∀ k, g' k ≤ g k) (anti : ∀ n m : ℕ, n < m → g' m ≤ g' n)
-    (vis : ∀ n : ℕ, g' n = extVisibilityReplace (g' n) n n) : Witness g' σ :=
-  ⟨anti, vis, hw.bot, hw.mono, fun α k hg i hi => hw.clause5 α k (hg.trans (hle k)) i hi⟩
-
-/-- The suppressor truncated to `⊥` above `K`. -/
-noncomputable def truncG (K : ℕ) (g : ℕ → ExtOrd) : ℕ → ExtOrd := fun k => if k ≤ K then g k else ⊥
-
-theorem truncG_of_le {K : ℕ} {g : ℕ → ExtOrd} {k : ℕ} (h : k ≤ K) : truncG K g k = g k :=
-  ite_eq_left h
-theorem truncG_of_gt {K : ℕ} {g : ℕ → ExtOrd} {k : ℕ} (h : K < k) : truncG K g k = ⊥ :=
-  ite_eq_right (not_le.mpr h)
-theorem truncG_le (K : ℕ) (g : ℕ → ExtOrd) (k : ℕ) : truncG K g k ≤ g k := by
-  unfold truncG; split_ifs
-  · exact le_rfl
-  · exact bot_le
-
-theorem Witness.truncate {g : ℕ → ExtOrd} {σ : ExtOrd → ExtOrd} (hw : Witness g σ) (K : ℕ) :
-    Witness (truncG K g) σ :=
-  hw.of_le_g (truncG_le K g)
-    (fun n m hnm => by
-      unfold truncG; split_ifs with hm hn hn
-      · exact hw.anti n m hnm
-      · omega
-      · exact bot_le
-      · exact le_rfl)
-    (fun n => by
-      unfold truncG; split_ifs
-      · exact hw.vis n
-      · exact (extVisibilityReplace_bot n n).symm)
-
-/-- The suppressor capped by `c` up to `K`, `⊥` above. -/
-noncomputable def capG (K : ℕ) (c : ExtOrd) (g : ℕ → ExtOrd) : ℕ → ExtOrd :=
-  fun k => if k ≤ K then min (g k) c else ⊥
-
-theorem capG_of_le {K : ℕ} {c : ExtOrd} {g : ℕ → ExtOrd} {k : ℕ} (h : k ≤ K) :
-    capG K c g k = min (g k) c := ite_eq_left h
-
-/-- **The Cap Lemma at the witness level.** -/
-theorem Witness.cap {g : ℕ → ExtOrd} {σ : ExtOrd → ExtOrd} (hw : Witness g σ) (K : ℕ) {c : ExtOrd}
-    (hc : extVisibilityReplace c K K = c) : Witness (capG K c g) σ :=
-  hw.of_le_g
-    (fun k => by
-      unfold capG; split_ifs
-      · exact min_le_left _ _
-      · exact bot_le)
-    (fun n m hnm => by
-      unfold capG; split_ifs with hm hn hn
-      · exact min_le_min_right _ (hw.anti n m hnm)
-      · omega
-      · exact bot_le
-      · exact le_rfl)
-    (fun n => by
-      unfold capG; split_ifs with hn
-      · rcases le_total (g n) c with h | h
-        · rw [min_eq_left h]; exact hw.vis n
-        · rw [min_eq_right h]; exact (extVisReplace_self_of_le hc hn).symm
-      · exact (extVisibilityReplace_bot n n).symm)
-
 /-- The suppressor `⊤` at grades `≤ K`, `⊥` above. -/
 noncomputable def gTop (K : ℕ) : ℕ → ExtOrd := fun k => if k ≤ K then ⊤ else ⊥
 
@@ -300,5 +233,3 @@ theorem exists_bounded_exact_capped_witness {D : Type*} {grade : D → ℕ}
     · rw [gTop_of_gt (not_le.mp hk)] at hact
       have hzero := le_bot_iff.mp hact
       rw [hprop x hzero k i hi, hzero, extVisibilityReplace_bot]
-
-end VaughtConjecture.Knight

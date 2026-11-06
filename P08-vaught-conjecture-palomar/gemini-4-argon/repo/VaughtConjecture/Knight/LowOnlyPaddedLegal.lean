@@ -20,13 +20,10 @@ This packages finite legality and admitted selected sections. It does not
 assert stage bounds, separator realization or an exact receiving theorem.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedLegal
-open Transform Value ExtOrd AmalgamationPlan LowOnly
-open LowOnlyPaddedIteration LowOnlyPaddedInstallation
-noncomputable section
+open Transform Value ExtOrd AmalgamationPlan LowOnly LowOnlyPaddedIteration LowOnlyPaddedInstallation
 
 /-- An ordered exact face of a legal output is the literal semantic restriction. -/
 theorem restrict_eq_of_face {a b : ℕ} (D : SemScheme a) (E : SemScheme b)
@@ -121,6 +118,3 @@ theorem private_occurrence (d : Cell I.right.scheme) :
   OrderedFaceRestriction.toCell_eq I.right (E).scheme (E).rows I.placeRight I.imageRight
     (privateFace I F hroot hA hB hC hcover) (private_order I F hroot hA hB hC _ _)
     (private_plan I F hroot hA hB hC hcover) d
-
-end
-end VaughtConjecture.Knight.LowOnlyPaddedLegal

@@ -16,12 +16,11 @@ proper owners retain their domains; auxiliary owners acquire new arguments.
 No semantic or lifting hypothesis enters this finite carrier construction.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.ScopeReplicationCarrier
 open AmalgamationPlan
-noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι}
   (D : CellScheme A) (B C : Finset ι)
 
@@ -198,6 +197,3 @@ theorem exists_at_index (t : Cell (scheme D B C)) (w : Cell D)
     exact (atScope_index D B C _ _ _ _ _ _).trans (by rw [hwg]; rfl)
   · refine ⟨old D B C w, (old_index D B C w).trans (hw.trans ?_), erase_old D B C w⟩
     exact Prod.ext (erase_scope_of_ne D B C t ht) (erase_grade D B C t)
-
-end
-end VaughtConjecture.Knight.ScopeReplicationCarrier

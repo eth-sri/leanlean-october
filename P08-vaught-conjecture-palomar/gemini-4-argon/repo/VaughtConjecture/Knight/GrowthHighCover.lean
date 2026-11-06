@@ -16,7 +16,6 @@ value or source offset and requires only consistency and covering.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.KnightRealization
 open StageType
 universe w
@@ -38,5 +37,3 @@ theorem exists_high_common_cover (hc : R.IsExactParentConsistent)
   obtain ⟨c, hsc, hgr, htop⟩ := exists_topCell_of_topGrade_pos z.type (by omega)
   refine ⟨z, hxz, ⟨g.trans e, ?_⟩, hhigh, c, hsc, hgr, htop⟩
   rw [Function.Embedding.trans_assoc, heu, hgu]
-
-end VaughtConjecture.Knight.KnightRealization

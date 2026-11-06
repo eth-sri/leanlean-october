@@ -14,16 +14,14 @@ inherited original face. It is not a simultaneous two-history assertion or a
 mixed-prescription lift on an arbitrary larger plan.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedStepLedger
-open Transform Value ExtOrd CappedDonor LowOnly CanonicalPairedInverse
-open LowOnlyPaddedContract LowOnlyPaddedStepRows LowOnlyOrderedLadder
+open Transform Value ExtOrd CappedDonor LowOnly CanonicalPairedInverse LowOnlyPaddedContract LowOnlyPaddedStepRows LowOnlyOrderedLadder
 open LowOnlyPaddedStepDecode LowOnlyPaddedStepFaces
 open LowOnlyPaddedFaces (fullEquiv full_respects_iff)
 open AmalgamationPlan CoatomBoundaryExtension
-noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n K : ℕ}
   {I : WholeDonorBoundary.Input A B C R m n n} {F : LowOnly.Family I.left I.right K}
@@ -33,8 +31,7 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {hA : 2 ≤ A.card} {hB : B ⊂ A} {hC : C ⊂ A} {k : ℕ}
   (P : Layer I F hroot hA hB hC k) (hk : 2 ≤ k) (hnext : k + 1 ≤ A.card)
 
-
-variable (hplan : P.carrier.plan = R) (hprev : TargetGradeLifting.Through P.rows k)
+  (hplan : P.carrier.plan = R) (hprev : TargetGradeLifting.Through P.rows k)
   (hcover : ∀ S ∈ R, S ≠ A → S ⊆ B ∨ S ⊆ C)
 
 theorem inherited_lift {U V : Finset ι × ℕ}
@@ -144,6 +141,3 @@ theorem through_successor : TargetGradeLifting.Through (rows P hk hnext) (k + 1)
     rwa [hplan] at hS
   · change (T, k + 1) ∈ Plan.gradedPlan P.carrier.plan at hT
     rwa [hplan] at hT
-
-end
-end VaughtConjecture.Knight.LowOnlyPaddedStepLedger

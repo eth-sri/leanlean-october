@@ -15,18 +15,15 @@ controller's original cap is retained, including controllers distinguished by
 fields outside the physical grade-one boundary.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalGradeOneLift
-open Transform Value ExtOrd CanonicalFieldLayer CanonicalFieldOwnerLift
-open CoatomBoundaryExtension
-noncomputable section
+open Transform Value ExtOrd CanonicalFieldLayer CanonicalFieldOwnerLift CoatomBoundaryExtension
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable (sem : Semantics D) (X : Type*) [Fintype X] (occ : Cell D → X)
-variable (hA : 1 ≤ A.card) (hproper : ∀ d : Cell D, D.scope d ≠ A)
-variable (hg : ∀ d : Cell D, D.grade d ≤ 1) (hinj : Function.Injective occ)
+  (sem : Semantics D) (X : Type*) [Fintype X] (occ : Cell D → X)
+  (hA : 1 ≤ A.card) (hproper : ∀ d : Cell D, D.scope d ≠ A)
+  (hg : ∀ d : Cell D, D.grade d ≤ 1) (hinj : Function.Injective occ)
 
 include hinj
 
@@ -74,6 +71,3 @@ theorem exists_positive_lift {C : Finset ι}
       exact (hag e).symm.trans (min_eq_left ((hdom e).trans (not_lt.mp hactive)))
     · intro d
       rw [min_assoc, min_self]
-
-end
-end VaughtConjecture.Knight.CanonicalGradeOneLift

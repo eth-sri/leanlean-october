@@ -17,13 +17,11 @@ owner has its own birth provenance, and the entire padded base has named copies
 at the observed mixed scope. No lawful extension is used to obtain these rows.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthHigherMixed
-open AmalgamationPlan Transform Value ExtOrd Growth GrowthHigherSources
-open GrowthPaddedContract GrowthPaddedIteration SupportLadderRows
-noncomputable section
+open AmalgamationPlan Transform Value ExtOrd Growth GrowthHigherSources GrowthPaddedContract GrowthPaddedIteration SupportLadderRows
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n J : ℕ}
   (I : WholeDonorBoundary.Input A B C R m (n + 1) J)
@@ -95,6 +93,3 @@ theorem erase_ladderAt (v : Pt) : erase I X T hA hB hC t ht
 def shadowSup (p : (D).below (U, j) → ExtOrd) (f : Fld) : ExtOrd :=
   Finset.univ.sup fun a : Catalogue X 1 =>
     p (ladderAt I X T hA hB hC t ht U hU hm j hj hj0 (shadow a f))
-
-end
-end VaughtConjecture.Knight.GrowthHigherMixed

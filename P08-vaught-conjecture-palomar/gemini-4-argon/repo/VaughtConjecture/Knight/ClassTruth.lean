@@ -33,9 +33,3 @@ def realizes (φ : knightLang.Sentenceω) : Classes → Prop :=
       exact propext (@LomegaEquiv.of_equiv knightLang ℕ ℕ
         (structureOf R.1) (structureOf S.1)
         (KnightRealization.IsIso.structureOfEquiv e.2) φ))
-
-@[simp] theorem realizes_mk (φ : knightLang.Sentenceω) (R : KnightNatModel) :
-    realizes φ (Quotient.mk knightModelSetoid R) ↔
-      @Sentenceω.Realize knightLang φ ℕ (structureOf R.1) := Iff.rfl
-
-end VaughtConjecture.Knight.StoppingRankFiltration

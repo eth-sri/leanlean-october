@@ -16,7 +16,6 @@ realizing a legal scheme in that realization does not realize chosen labels.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.KnightRealization
 open TypeTower StageType Value ExtOrd
 universe w
@@ -38,5 +37,3 @@ def actualLabelling : W.ActualLabelling where
   label _ p := p.label
   lawful := by intro n u p _; exact p.respects
   mapCell := by intro n m u p v q _ f _ hpq d; exact StageType.label_mapCell hpq d
-
-end VaughtConjecture.Knight.KnightRealization

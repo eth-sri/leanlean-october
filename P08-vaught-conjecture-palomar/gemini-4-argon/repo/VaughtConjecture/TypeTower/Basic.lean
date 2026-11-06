@@ -232,10 +232,6 @@ The four predicates above take their leading `ℕ` binders strict-implicitly (`�
 dot-notation projections elaborate (with plain implicit binders Lean eagerly instantiates the
 metavariables and the projections fail).  One `example` per predicate, as tests only. -/
 
-section DotNotationTests
-
-end DotNotationTests
-
 /-! ### Isomorphisms of realizations
 
 A bijection of carriers is an isomorphism of realizations when it transports labels: the label
@@ -380,11 +376,3 @@ theorem IsIso.isInitialSegmentCovering {R : T.Realization α M} {R' : T.Realizat
   ext i
   have := congrArg (fun v : Fin n ↪ M => e (v i)) hu
   simpa using this
-
-end Iso
-
-end Realization
-
-end TypeTower
-
-end VaughtConjecture

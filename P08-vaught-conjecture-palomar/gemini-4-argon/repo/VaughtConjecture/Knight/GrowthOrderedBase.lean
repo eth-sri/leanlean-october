@@ -16,12 +16,10 @@ are read by the new rows; all future fields remain in the anchor's complete
 rank table. Boundary lawfulness is derived from the literal root attachment.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthOrderedBase
 open Transform Value ExtOrd AmalgamationPlan Growth RelativeLadderLayer
-noncomputable section
 
 private theorem faceMap_eq {m n : ℕ} (D : SemScheme n) (F : SemScheme m)
     (f : Fin m ↪ Fin n) (hv : Finset.univ.image f ∈ D.scheme.plan)
@@ -169,11 +167,3 @@ theorem anchor_lawful (a : Catalogue X 1) :
   obtain ⟨S, hs, he⟩ := a.property.2
   rw [← he]
   exact boundary_lawful I X T hs
-
-include T in
-theorem consistent (hA : 0 < A.card) (hB : B ⊂ A) (hC : C ⊂ A) :
-    (rows I.boundary I.rows hA (field I) (fields I X) (proper I hB hC)).IsConsistent :=
-  RelativeLadderLayer.consistent _ _ _ _ _ _ I.consistent (anchor_lawful I X T)
-
-end
-end VaughtConjecture.Knight.GrowthOrderedBase

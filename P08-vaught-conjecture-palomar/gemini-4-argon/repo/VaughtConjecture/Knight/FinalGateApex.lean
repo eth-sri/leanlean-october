@@ -21,17 +21,15 @@ receipts. Bountifulness consumes the final-gate pair theorem, separately.
 This uses the mute base of `MaximalFullLayer`, not its active-apex operation.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.FinalGateApex
 open Transform Value ExtOrd AmalgamationPlan
-noncomputable section
 
 variable {ι X Q : Type*} [DecidableEq ι] [Fintype Q]
-variable {A : Finset ι} {D : CellScheme A} {N : ℕ}
-variable (F : FinalGateLayer.Input D N X Q)
-variable (hD : ∀ d : Cell D, D.grade d ≤ N) (hcard : A.card = N + 1)
+  {A : Finset ι} {D : CellScheme A} {N : ℕ}
+  (F : FinalGateLayer.Input D N X Q)
+  (hD : ∀ d : Cell D, D.grade d ≤ N) (hcard : A.card = N + 1)
 
 abbrev scheme := MaximalFullLayer.scheme F.carrier N (N + 1) (Nat.lt_succ_self N) hcard.ge
 abbrev old := MaximalFullLayer.old F.carrier N (N + 1) (Nat.lt_succ_self N) hcard.ge
@@ -138,6 +136,3 @@ def properFace {S : Finset ι} {D₀ : CellScheme S} {sem₀ : Semantics D₀}
     obtain ⟨d, hd⟩ := E.exhaustive x hs
     exact ⟨d, (congrArg (old F hcard) hd).trans hx.symm⟩
   row c d := (old_row F hD hcard (E.map c) (E.belowMap c d)).trans (E.row c d)
-
-end
-end VaughtConjecture.Knight.FinalGateApex

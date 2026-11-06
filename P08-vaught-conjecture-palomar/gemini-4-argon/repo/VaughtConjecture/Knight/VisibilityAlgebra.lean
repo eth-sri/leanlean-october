@@ -249,5 +249,3 @@ theorem visReplace_eq (α : Ordinal.{0}) (k i : ℕ) :
   split_ifs with h
   · rfl
   · exact (decomposition α).symm
-
-end VaughtConjecture.Knight

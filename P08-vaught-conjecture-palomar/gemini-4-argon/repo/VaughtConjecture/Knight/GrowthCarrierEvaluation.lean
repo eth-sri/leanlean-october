@@ -18,13 +18,11 @@ relation on the installed donor. All receipts belong to the same fresh point.
 The evaluator need not be a model, and its values need not lie below the stage.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthCarrierEvaluation
-open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan CappedDonor
-open Growth CellScheme.restrictFace
-noncomputable section
+open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan CappedDonor Growth CellScheme.restrictFace
+
 universe w
 variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
   {n J : ℕ} (C : S α.1 J) (P : SemScheme (n + 1)) (Q : SemScheme n)
@@ -118,6 +116,3 @@ theorem exists_correct_donor (hM : W.IsModel) (hu : W.eval u = some C)
     exact (L.mapCell hev htup hs _).symm
   refine ⟨y, hy, hyRoot, s, heval, he, ?_⟩
   simpa only [hval] using hc
-
-end
-end VaughtConjecture.Knight.GrowthCarrierEvaluation

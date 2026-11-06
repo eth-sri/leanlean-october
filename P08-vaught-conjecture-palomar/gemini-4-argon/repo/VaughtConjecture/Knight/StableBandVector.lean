@@ -17,9 +17,7 @@ Stable values are decoded from suprema in the completed band, not ordinal
 suprema. Proper source labels remain literal.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight
 
@@ -36,7 +34,7 @@ abbrev TopCell (p : S β n) := {Xi : Cell p.scheme.scheme // p.label Xi = ⊤}
 
 /-- The labelling decoded from a band vector: a source-top cell reads `bandValue β` of its
 coordinate; every other cell keeps its literal label, bottom included. -/
-noncomputable def bandLabel (p : S β n) (r : p.TopCell → ℕ∞) (Xi : Cell p.scheme.scheme) :
+def bandLabel (p : S β n) (r : p.TopCell → ℕ∞) (Xi : Cell p.scheme.scheme) :
     ExtOrd :=
   if h : p.label Xi = ⊤ then bandValue β (r ⟨Xi, h⟩) else p.label Xi
 
@@ -95,11 +93,11 @@ namespace RootedCover
 variable {x : R.LabelledExt}
 
 /-- The provisional band vector at a rooted cover: the offsets of the source tops. -/
-noncomputable def provisionalBand (y : RootedCover x) : x.type.TopCell → ℕ∞ :=
+def provisionalBand (y : RootedCover x) : x.type.TopCell → ℕ∞ :=
   fun i => offset i.1 i.2 y
 
 /-- The stable band vector: the suprema of the offsets, in the completed band. -/
-noncomputable def stableBand (x : R.LabelledExt) : x.type.TopCell → ℕ∞ :=
+def stableBand (x : R.LabelledExt) : x.type.TopCell → ℕ∞ :=
   fun i => ⨆ y : RootedCover x, (offset i.1 i.2 y : ℕ∞)
 
 /-- The provisional band vector decodes to the provisional values along the rooted cover. -/
@@ -134,9 +132,3 @@ theorem bandLabel_stableBand :
   · rw [dite_eq_left h, stableValue_eq_bandValue_iSup Xi h hcons hcov]
     rfl
   · rw [dite_eq_right h, stableValue_of_ne_top hcons hcov x.eval_eq h]
-
-end RootedCover
-
-end KnightRealization
-
-end VaughtConjecture.Knight

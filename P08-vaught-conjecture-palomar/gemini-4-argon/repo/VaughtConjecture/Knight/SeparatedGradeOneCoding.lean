@@ -5,7 +5,8 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.SeparatedGradeOneMute
+public import VaughtConjecture.Knight.VisibleOrderInterpolation
+public import VaughtConjecture.Knight.SourceBlockLocalityTransport
 public import VaughtConjecture.Knight.SourceCode
 
 /-! # Producing separated source profiles by one common codebook
@@ -42,7 +43,3 @@ theorem band_mono {m n : ℕ} (h : m ≤ n) : band m ≤ band n := by
 
 theorem band_floor (n : ℕ) : blockFloor (band n) = ofOrd (Ordinal.omega0 * n) := by
   rw [band, blockFloor_ofOrd, limitPart_mul_add n 1]
-
-variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-
-end VaughtConjecture.Knight.SeparatedGradeOne

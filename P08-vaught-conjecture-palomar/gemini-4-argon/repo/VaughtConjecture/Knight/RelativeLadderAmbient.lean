@@ -16,14 +16,13 @@ the maximum. Its bounded witness reads every actual grade-one coordinate. This
 does not assume synchronization, a selected ambient, or bountifulness.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.RelativeLadderLayer
 open Transform Value ExtOrd
-noncomputable section
+
 variable {ι X Q : Type*} [DecidableEq ι] [Fintype X] [Fintype Q] {A : Finset ι}
-variable (D : CellScheme A) (sem : Semantics D) (hA : 0 < A.card)
+  (D : CellScheme A) (sem : Semantics D) (hA : 0 < A.card)
   (field : Cell D → X) (fields : Q → X → ExtOrd) (hp : ∀ d, D.scope d ≠ A)
 
 def leafOccurrence (a : Q) : (carrier D hA (X := X) (Q := Q)).below (A, 1) :=
@@ -110,6 +109,3 @@ theorem exists_capped_leaf_chart (seed : Q)
           min (q d) γ := by
   obtain ⟨a, τ, hw, hb, hr⟩ := exists_leaf_chart D sem hA field fields hp seed (hq.cap hγ)
   exact ⟨a, τ, hw, fun x => (hb x).trans (min_le_right _ _), hr⟩
-
-end
-end VaughtConjecture.Knight.RelativeLadderLayer

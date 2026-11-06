@@ -13,12 +13,10 @@ The two small seeds and initialized grade recursion give the actual finite
 supplier. The Henkin and spectrum applications remain in `CanonicalCoatomSupply`,
 which reexports this producer. No model-existence consumer is imported here.
 -/
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalCoatomSupply
 open Transform Value ExtOrd AmalgamationPlan SemSchemeBoundaryInput
-noncomputable section
 
 private theorem faceMap_label {α : Ordinal.{0}} {a b : ℕ}
     (p : S α b) (r : S α a) (f : Fin a ↪ Fin b)
@@ -67,6 +65,3 @@ theorem supply {α : Ordinal.{0}} (hα : Order.IsSuccLimit α) :
   · exact arity_one hα C h
   · exact arity_two hα C h
   · exact CoatomRecursiveOrdered.exists_amalgam hα C h
-
-end
-end VaughtConjecture.Knight.CanonicalCoatomSupply

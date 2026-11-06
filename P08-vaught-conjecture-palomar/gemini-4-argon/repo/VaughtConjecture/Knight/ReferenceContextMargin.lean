@@ -106,22 +106,11 @@ theorem exists_referenceContext_margin_from' (hM : R.IsModel) (reqs : List Block
   -- pad to arity `N - 1`
   obtain ⟨C₂, hm₂, h₂, hQ₂⟩ := exists_ctx_pad_pres hM hQ C₁ hQ₁ reqs off h₁' (N - 1 - C₁.m)
   have hm₂' : C₂.m + 1 = N := by omega
-  -- the cap: high-grade dominance above every requested value, every representative label,
-  -- and every block endpoint `μ + N`
-  let vals : List Ordinal.{0} :=
-    (reqs.map fun r => r.value) ++
-      (reqs.attach.map fun x => x.1.block + ((off x.1 x.2 : ℕ) : Ordinal.{0})) ++
-      (reqs.map fun r => r.block + (N : Ordinal.{0}))
+  let vals : List Ordinal.{0} := reqs.map fun r => r.block + (N : Ordinal.{0})
   have hvals : ∀ a ∈ vals, a < α.1 := by
     intro a ha
-    rcases List.mem_append.mp ha with ha | ha
-    · rcases List.mem_append.mp ha with ha | ha
-      · obtain ⟨r, hr, rfl⟩ := List.mem_map.mp ha
-        exact add_nat_lt_stage (hreqs r hr).2 r.offset
-      · obtain ⟨x, -, rfl⟩ := List.mem_map.mp ha
-        exact add_nat_lt_stage (hreqs x.1 x.2).2 _
-    · obtain ⟨r, hr, rfl⟩ := List.mem_map.mp ha
-      exact add_nat_lt_stage (hreqs r hr).2 N
+    obtain ⟨r, hr, rfl⟩ := List.mem_map.mp ha
+    exact add_nat_lt_stage (hreqs r hr).2 N
   have hγ : listMax vals < α.1 := listMax_lt stage_pos hvals
   obtain ⟨y, hy, q, ⟨cap, hcapg, hcapl⟩, hcof, heval⟩ :=
     hM.highGradeDominance C₂.ctx C₂.p₀ C₂.eval_ctx (listMax vals) hγ
@@ -129,7 +118,6 @@ theorem exists_referenceContext_margin_from' (hM : R.IsModel) (reqs : List Block
   have h₃ : ∀ r (hr : r ∈ reqs), ∃ c : Cell q.scheme.scheme,
       q.label c = ofOrd (r.block + off r hr) := h₂.step hcof heval
   choose cell₃ hcell₃ using h₃
-  -- totalize over blocks
   let repBase : Ordinal.{0} → Cell q.scheme.scheme := totalize reqs cell₃ cap
   let repOff : Ordinal.{0} → ℕ := totalize reqs off 0
   have hrep_label : ∀ μ (h : ∃ r ∈ reqs, r.block = μ),
@@ -146,33 +134,17 @@ theorem exists_referenceContext_margin_from' (hM : R.IsModel) (reqs : List Block
     change totalize reqs off 0 μ < N
     rw [totalize_of_ex reqs off 0 h]
     exact hN_off _ _
-  have hrep_le : ∀ μ (h : ∃ r ∈ reqs, r.block = μ), q.label (repBase μ) ≤ q.label cap := by
-    intro μ h
-    rw [hrep_label μ h]
-    have hmem : μ + ((repOff μ : ℕ) : Ordinal.{0}) ∈ vals := by
-      refine List.mem_append_left _ (List.mem_append_right _ (List.mem_map.mpr
-        ⟨⟨pick reqs μ h, pick_mem reqs μ h⟩, List.mem_attach _ _, ?_⟩))
-      change (pick reqs μ h).block +
-          ((off (pick reqs μ h) (pick_mem reqs μ h) : ℕ) : Ordinal.{0}) =
-        μ + ((totalize reqs off 0 μ : ℕ) : Ordinal.{0})
-      rw [totalize_of_ex reqs off 0 h, pick_block reqs μ h]
-    exact le_of_lt (lt_of_le_of_lt (ofOrd_le_ofOrd.mpr (le_listMax (l := vals) hmem)) hcapl)
-  refine ⟨⟨C₃.m, C₃.ctx, C₃.proj, C₃.proj_ctx, C₃.p₀, C₃.eval_ctx, N, cap, ?_, ?_,
-    repBase, repOff, ?_, ?_, ?_, hN_req⟩, hNmin, ?_, ?_, hQ C₂ y hy q hcof heval hQ₂, hm₂'⟩
+  refine ⟨⟨C₃.m, C₃.ctx, C₃.proj, C₃.proj_ctx, C₃.p₀, C₃.eval_ctx, N, cap, ?_,
+    repBase, repOff, ?_, ?_, hN_req⟩, hNmin, ?_, ?_, hQ C₂ y hy q hcof heval hQ₂, hm₂'⟩
   · change q.scheme.scheme.grade cap = N
     rw [hcapg]; exact hm₂'
-  · intro r hr
-    change ofOrd r.value < q.label cap
-    exact lt_of_le_of_lt (ofOrd_le_ofOrd.mpr (le_listMax (l := vals)
-      (List.mem_append_left _ (List.mem_append_left _ (List.mem_map_of_mem hr))))) hcapl
   · intro r hr; exact hrep_label r.block ⟨r, hr, rfl⟩
   · intro r hr; exact hoff_lt r.block ⟨r, hr, rfl⟩
-  · intro r hr; exact hrep_le r.block ⟨r, hr, rfl⟩
   · exact (bot_lt_ofOrd _).trans hcapl
   · intro r hr
     change ofOrd (r.block + (N : Ordinal.{0})) < q.label cap
     exact lt_of_le_of_lt (ofOrd_le_ofOrd.mpr (le_listMax (l := vals)
-      (List.mem_append_right _ (List.mem_map_of_mem hr)))) hcapl
+      (List.mem_map_of_mem hr))) hcapl
 
 /-- **The reference context with the endpoint margin, from any intermediate context and carrying
 any step-closed property** (the arity equation of `exists_referenceContext_margin_from'`
@@ -207,5 +179,3 @@ theorem exists_referenceContext_margin (hM : R.IsModel) (p : S α.1 n) (hp : R.e
   obtain ⟨C, h1, h2, h3, -⟩ := exists_referenceContext_margin_from hM reqs hreqs Nmin
     (Q := fun _ => True) (fun _ _ _ _ _ _ _ => trivial) (Ctx.root p hp) trivial
   exact ⟨C, h1, h2, h3⟩
-
-end VaughtConjecture.Knight

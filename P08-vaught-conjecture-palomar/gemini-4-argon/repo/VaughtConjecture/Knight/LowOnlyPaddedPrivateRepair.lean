@@ -14,14 +14,11 @@ native grid cut, and the prescribed owner value. No alignment or replacement
 source is supplied by the caller.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedPrivateRepair
-open Transform Value ExtOrd CappedDonor LowOnly CanonicalPairedInverse
-open LowOnlyPaddedSuccessor LowOnlyPaddedDecode LowOnlyPaddedCharts
+open Transform Value ExtOrd CappedDonor LowOnly CanonicalPairedInverse LowOnlyPaddedSuccessor LowOnlyPaddedDecode LowOnlyPaddedCharts
 open SharpWitnessComposition
-noncomputable section
 
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n K : ℕ}
@@ -37,8 +34,6 @@ theorem private_grade (d : I.right.scheme.below (effC n 2)) :
   exact (congrArg Prod.snd (original_index I F hroot hA hB hC
     (I.rightFace.map d.1))).trans (congrArg Prod.snd (I.rightFace.index d.1))
 
-/-- A supplied original owner identifies the actual private lower domain.
-The final lifting theorem chooses a maximal such owner from the prescription. -/
 theorem owner_capped
     (c : I.right.scheme.below (effC n 2))
     (hc : I.right.scheme.cell c.1 = effC n 2) (hg : I.right.scheme.grade c.1 = 2)
@@ -53,72 +48,19 @@ theorem owner_capped
       (∀ d, min (u d) γ = min (q d) γ) ∧ (∀ d, u d ≤ p c) := by
   classical
   obtain ⟨a, σ, H, hσ, hmax, hread⟩ := LowOnlyPaddedCharts.exists_chart I F hroot hA hB hC hq
-  have hreach : γ ≤ H := by
-    have he := hag c
-    rw [min_eq_right hactive.le] at he
-    exact (he.ge.trans (min_le_left _ _)).trans
-      (hmax _ ((private_grade I F hroot hA hB hC c).trans hg))
-  have hchart (d) : min (σ (source I F hroot hA hB hC a d.1)) γ = min (q d) γ := by
-    rw [hread, min_assoc, min_eq_right hreach]
   obtain ⟨S, hS, he⟩ := a.property.2
   have hcanon : S.profile ∈ CanonicalPairedProfiles.inventory (Field I.left I.right) 2 :=
     he.symm ▸ a.property.1
-  have ha : (⟨S.profile, hcanon, S, hS, rfl⟩ : F.Anchor 2) = a := Subtype.ext he
-  have hprivate (d : I.right.scheme.below (effC n 2)) :
-      source I F hroot hA hB hC a (privateAt I F hroot hA hB hC d).1 = S.lowerC 2 d := by
-    change source I F hroot hA hB hC a
-      (original I F hroot hA hB hC (I.rightFace.map d.1)) = _
-    rw [original_readback]
-    change a.val (LowOnlyOrderedLadder.field I (I.rightFace.map d.1)) = S.v d.1
-    rw [← he]
-    exact LowOnlyOrderedLadder.field_private I F hroot
-      (LowOnlyRecursiveCoverage.admissible_down F (by decide) (by decide) hS) d.1
-  let toEff := CellScheme.below.mono (D := I.right.scheme)
-    (show GradedLe (I.right.scheme.cell c.1) (effC n 2) from by rw [hc]; exact GradedLe.refl _)
-  let fromEff := CellScheme.below.mono (D := I.right.scheme)
-    (show GradedLe (effC n 2) (I.right.scheme.cell c.1) from by rw [hc]; exact GradedLe.refl _)
-  let s := S.lowerC 2 ∘ toEff
-  let p' := p ∘ toEff
-  have hs' : RespectsSemanticsBelow I.right.rows (I.right.scheme.cell c.1) s := hS.lawfulC.mono _
-  have hp' : RespectsSemanticsBelow I.right.rows (I.right.scheme.cell c.1) p' := hp.mono _
-  obtain ⟨δ, hδ, hδpos, _, _, ⟨fac⟩⟩ := PrivateRowFactorization.exists_factorization c.1
-    (Fintype.card (Field I.left I.right)) hs' hp'
+  exact PrivateRowFactorization.owner_capped_of_chart (Fintype.card (Field I.left I.right))
+    (private_grade I F hroot hA hB hC) c hc hg hp hq hγ hpos hactive hag hσ hmax hread
+    (source_short I F hroot hA hB hC a) hS.lawfulC
     (fun d => by
-      rw [hg]
-      exact CanonicalPairedProfiles.inventory_coded _ _ hcanon (.inr (.inl d.1)))
-    (fun d => by
-      rw [hg]
-      exact CanonicalPairedProfiles.inventory_short _ _ hcanon (.inr (.inl d.1)))
-    (by simpa only [hg] using hσ) (by simpa only [hg] using hγ) hpos hactive (fun d => by
-      change min (σ (S.lowerC 2 (toEff d))) γ = min (p (toEff d)) γ
-      rw [← hprivate]
-      exact (hchart _).trans (hag _))
-  rw [hg] at hδ
-  rcases Finset.mem_insert.mp hδ with hz | hd
-  · exact False.elim (not_lt_of_ge (le_of_eq hz) hδpos)
-  obtain ⟨b, hb, hbδ⟩ := Finset.mem_image.mp hd
-  change grid 2 b = δ at hbδ
-  subst δ
-  have hb' : b ≤ 2 * Fintype.card (Field I.left I.right) + 1 := by
-    have := Finset.mem_range.mp hb
-    omega
-  let v := fac.source ∘ fromEff
-  have hv : RespectsSemanticsBelow I.right.rows (effC n 2) v := fac.lawful.mono _
-  obtain ⟨w, hw, hwread, hwcap⟩ := private_source_repair I F hroot hA hB hC hS hcanon hb' hv
-    (fun d => fac.prefix_eq (fromEff d))
-  have hcap (d) : min (fac.outgoing (w d)) γ = min (q d) γ := by
-    have hpre := hwcap d
-    rw [ha] at hpre
-    have hs : Short (I.right.scheme.grade c.1) (source I F hroot hA hB hC a d.1) := by
-      simpa only [hg] using source_short I F hroot hA hB hC a d.1
-    exact (AmbientGradeCharts.map_cap_agreement fac.witness.mono hpre fac.reaches).trans
-      ((fac.caps _ hs).trans (hchart d))
-  have hν : Witness (gTop 2) fac.outgoing := by simpa only [hg] using fac.witness
-  refine ⟨fun d => fac.outgoing (w d),
-    map_respects_of_positive_cap_agreement hw hq (fun d => d.2.2)
-      (boundedMap_of_witness hν) (ne_of_gt hpos) hcap, ?_, hcap, fun _ => fac.bounded _⟩
-  intro d
-  exact (congrArg fac.outgoing (hwread d)).trans (fac.readback (fromEff d))
-
-end
-end VaughtConjecture.Knight.LowOnlyPaddedPrivateRepair
+      change source I F hroot hA hB hC a (original I F hroot hA hB hC (I.rightFace.map d.1)) = _
+      rw [original_readback]; change a.val _ = _; rw [← he]
+      exact LowOnlyOrderedLadder.field_private I F hroot
+        (LowOnlyRecursiveCoverage.admissible_down F (by decide) (by decide) hS) d.1)
+    (fun d => CanonicalPairedProfiles.inventory_coded _ _ hcanon (.inr (.inl d.1)))
+    (fun d => CanonicalPairedProfiles.inventory_short _ _ hcanon (.inr (.inl d.1)))
+    fun hb' hv hpre => by
+      simpa only [show (⟨S.profile, hcanon, S, hS, rfl⟩ : F.Anchor 2) = a from Subtype.ext he]
+        using private_source_repair I F hroot hA hB hC hS hcanon hb' hv hpre

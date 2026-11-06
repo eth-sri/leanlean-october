@@ -19,13 +19,10 @@ installed height no longer assumes that proper scopes lie in an original face.
 This does not yet prove arbitrary mixed-section extension or bountifulness.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthReplicatedRows
-open AmalgamationPlan Transform Value ExtOrd Growth GrowthOrderedBase GrowthHigherSources
-open GrowthPaddedContract GrowthPaddedIteration ScopeReplicationCarrier
-noncomputable section
+open AmalgamationPlan Transform Value ExtOrd Growth GrowthOrderedBase GrowthHigherSources GrowthPaddedContract GrowthPaddedIteration ScopeReplicationCarrier
 
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n J : ℕ}
@@ -163,6 +160,3 @@ theorem inherited_lift (t : ℕ) (ht : t + 2 ≤ A.card) {U V : Finset ι × ℕ
   · exact (privateFace I X attach hA hB hC t ht).lift hc
       (I.right_mem hU (h.1.trans hc)) (I.right_mem hV hc) h he
       (PointImageSemantics.bountiful _ _ _ _ I.right.complete I.right.bountiful)
-
-end
-end VaughtConjecture.Knight.GrowthReplicatedRows

@@ -14,13 +14,10 @@ Both source layers retain each proper semantic face, including every inherited
 owner domain. No bound on the grades of the old schemes is used.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthPaddedFaces
-open Transform Value ExtOrd Growth GrowthHigherSources AmalgamationPlan CoatomBoundaryExtension
-open GrowthPaddedSuccessor
-noncomputable section
+open Transform Value ExtOrd Growth GrowthHigherSources AmalgamationPlan CoatomBoundaryExtension GrowthPaddedSuccessor
 
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n J : ℕ}
@@ -43,6 +40,3 @@ def face {T : Finset ι} {E : CellScheme T} {oldRows : Semantics E}
   exact SeparatedLayerFace.face J.lower
     (LadderWeightedSuccessor.Input.Node (U := Catalogue X 2) (V := Empty)) 2
     (by decide) hA J.separation J.lowerRows J.rows J.inherited_row lowerFace hT
-
-end
-end VaughtConjecture.Knight.GrowthPaddedFaces

@@ -1,3 +1,0 @@
-module
-public import VaughtConjecture.Knight.CappedDonorRetarget
-public import VaughtConjecture.Knight.CappedDonorRelease

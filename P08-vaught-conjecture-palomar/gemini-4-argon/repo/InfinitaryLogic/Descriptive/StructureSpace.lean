@@ -7,7 +7,6 @@ module
 
 public import InfinitaryLogic.Lomega1omega.Semantics
 public import Mathlib.ModelTheory.Basic
-public import Architect
 
 /-!
 # Coding Space for Countable Structures
@@ -34,7 +33,7 @@ while `RelQuery L` and `StructureSpace L` specialize to carrier ℕ.
   preserves relation satisfaction.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 universe u v
 
@@ -50,17 +49,10 @@ variable (L : Language.{u, v})
 of elements from the carrier type α. -/
 def RelQueryOn (α : Type*) := Σ (R : Σ l, L.Relations l), (Fin R.1 → α)
 
-/-- A relation query for carrier ℕ. -/
-def RelQuery := RelQueryOn L ℕ
-
 variable {L}
 
 instance [Countable (Σ l, L.Relations l)] [Countable α] : Countable (RelQueryOn L α) := by
   unfold RelQueryOn
-  infer_instance
-
-instance [Countable (Σ l, L.Relations l)] : Countable (RelQuery L) := by
-  unfold RelQuery
   infer_instance
 
 /-- The carrier-parametric coding space for L-structures on α: for each relation
@@ -70,14 +62,7 @@ abbrev StructureSpaceOn (L : Language.{u, v}) (α : Type*) := RelQueryOn L α �
 
 /-- The coding space for countable L-structures on ℕ: for each relation query,
 does the relation hold on that tuple? -/
-@[blueprint "def:structure-space"
-  (title := /-- Structure space -/)
-  (statement := /-- The coding space for countable $L$-structures on $\mathbb{N}$: for each relation query, whether the relation holds on that tuple. -/)]
 def StructureSpace (L : Language.{u, v}) := StructureSpaceOn L ℕ
-
-/-- The pair space for carrier α. -/
-abbrev StructurePairSpaceOn (L : Language.{u, v}) (α : Type*) :=
-  StructureSpaceOn L α × StructureSpaceOn L α
 
 namespace StructureSpaceOn
 
@@ -85,30 +70,16 @@ variable {α : Type*}
 
 /-- Decode a code into an L-structure on carrier α.
 Relations are determined by the code; functions are eliminated by `IsRelational`. -/
-@[reducible] noncomputable def toStructure [L.IsRelational]
+@[reducible] def toStructure [L.IsRelational]
     (c : StructureSpaceOn L α) : L.Structure α where
   funMap := fun f => isEmptyElim f
   RelMap := fun {_} R v => c ⟨⟨_, R⟩, v⟩ = true
 
-/-- The relation holding in the decoded structure corresponds to the code value. -/
-@[simp]
-theorem relMap_toStructure [L.IsRelational] (c : StructureSpaceOn L α)
-    {l : ℕ} (R : L.Relations l) (v : Fin l → α) :
-    @Structure.RelMap _ _ c.toStructure _ R v ↔ c ⟨⟨l, R⟩, v⟩ = true :=
-  Iff.rfl
-
 /-- Encode an L-structure on carrier α into a code.
 Takes an explicit structure instance rather than using the typeclass. -/
-noncomputable def ofStructure [L.IsRelational]
+def ofStructure [L.IsRelational]
     (inst : L.Structure α) : StructureSpaceOn L α :=
   fun ⟨⟨_, R⟩, v⟩ => @decide _ (Classical.dec (@Structure.RelMap _ _ inst _ R v))
-
-/-- Round-trip: decoding the code of a structure preserves relation satisfaction. -/
-theorem toStructure_ofStructure [L.IsRelational]
-    (inst : L.Structure α) {l : ℕ} (R : L.Relations l) (v : Fin l → α) :
-    @Structure.RelMap _ _ (ofStructure inst).toStructure _ R v ↔
-    @Structure.RelMap _ _ inst _ R v := by
-  simp only [relMap_toStructure, ofStructure, decide_eq_true_eq]
 
 end StructureSpaceOn
 
@@ -116,7 +87,7 @@ end StructureSpaceOn
 namespace StructureSpace
 
 /-- Decode a code into an L-structure on ℕ. -/
-@[reducible] noncomputable def toStructure [L.IsRelational]
+@[reducible] def toStructure [L.IsRelational]
     (c : StructureSpace L) : L.Structure ℕ :=
   StructureSpaceOn.toStructure c
 
@@ -128,7 +99,7 @@ theorem relMap_toStructure [L.IsRelational] (c : StructureSpace L)
   Iff.rfl
 
 /-- Encode an L-structure on ℕ into a code. -/
-noncomputable def ofStructure [L.IsRelational]
+def ofStructure [L.IsRelational]
     (inst : L.Structure ℕ) : StructureSpace L :=
   StructureSpaceOn.ofStructure inst
 
@@ -138,9 +109,3 @@ theorem toStructure_ofStructure [L.IsRelational]
     @Structure.RelMap _ _ (ofStructure inst).toStructure _ R v ↔
     @Structure.RelMap _ _ inst _ R v := by
   simp only [relMap_toStructure, ofStructure, StructureSpaceOn.ofStructure, decide_eq_true_eq]
-
-end StructureSpace
-
-end Language
-
-end FirstOrder

@@ -5,7 +5,7 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.CoupledRepairPaste
+public import VaughtConjecture.Knight.CoupledGradeOne
 
 /-! # Pasting with one grade of slack
 
@@ -54,12 +54,3 @@ theorem exists_exact_capped_shifter {D : Type*} {grade : D → ℕ} {E p : D →
   · obtain ⟨_, τ, _, _, hbot, hmono, _, _, _, hsrc, hcomm, hprop⟩ :=
       exists_cappedWitness grade E p c hmax hvis hb hloc
     exact ⟨τ, hbot, hmono, hsrc, hcomm, hprop⟩
-
-section Locality
-
-variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-    {sem : Semantics D} {BJ : Finset ι × ℕ} {q s : D.below BJ → ExtOrd}
-
-end Locality
-
-end VaughtConjecture.Knight

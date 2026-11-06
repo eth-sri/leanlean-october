@@ -17,16 +17,13 @@ occurrence map is projected when checking inherited-row lawfulness. The new
 controller family and its selected sections are constructed, not supplied.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalFieldLayer
-open Transform Value ExtOrd SourcePrefixRows SharpWitnessComposition
-open PairedSlotEncoding PairedSlotComparison
-noncomputable section
+open Transform Value ExtOrd SourcePrefixRows SharpWitnessComposition PairedSlotEncoding PairedSlotComparison
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable (sem : Semantics D) (j : ℕ) (X : Type*) [Fintype X] (occ : Cell D → X)
+  (sem : Semantics D) (j : ℕ) (X : Type*) [Fintype X] (occ : Cell D → X)
 
 def Profile := {p : X → ExtOrd // RespectsSemantics sem (p ∘ occ) ∧
   p ∈ CanonicalPairedProfiles.inventory X j}
@@ -63,8 +60,8 @@ theorem grid_short {h : ExtOrd} (hh : h ∈ sourceGrid j (Fintype.card X)) :
     exact Or.inr (Or.inr ⟨_, rfl, by rw [finitePart_mul_add]⟩)
 
 variable (hj : 0 < j) (hA : j ≤ A.card)
-variable (hproper : ∀ d : Cell D, D.scope d ≠ A)
-variable (hg : ∀ d : Cell D, D.grade d ≤ j)
+  (hproper : ∀ d : Cell D, D.scope d ≠ A)
+  (hg : ∀ d : Cell D, D.grade d ≤ j)
 
 def encode {p : X → ExtOrd} (hp : RespectsSemantics sem (p ∘ occ))
     (ht : ∀ x, p x ≠ ⊤) : Profile sem j X occ := by
@@ -182,7 +179,7 @@ theorem full_source_short (c : Cell (scheme sem j X occ hj hA))
       SourceLayerCarrier.index] using hs)).elim
 
 variable {p : X → ExtOrd} (hp : RespectsSemantics sem (p ∘ occ)) (ht : ∀ x, p x ≠ ⊤)
-variable {G : Finset ExtOrd} {C : ExtOrd}
+  {G : Finset ExtOrd} {C : ExtOrd}
 
 def sectionOf (G : Finset ExtOrd) (C : ExtOrd) (d : Cell (scheme sem j X occ hj hA)) : ExtOrd :=
   PairedSlotDecoder.decode j (values p) G C
@@ -245,6 +242,3 @@ theorem section_agreement {q : X → ExtOrd} (hq : RespectsSemantics sem (q ∘ 
     (encode sem j X occ hg hp ht) (encode sem j X occ hg hq htq) heG heAgree
   exact hs.decode (PairedSlotDecoder.decode_witness hG hC).mono
     (PairedSlotDecoder.decode_witness hG hC).mono hpReach hqReach (fun _ _ => hcompare _)
-
-end
-end VaughtConjecture.Knight.CanonicalFieldLayer

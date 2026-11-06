@@ -155,6 +155,3 @@ theorem exists_realization {I : Type z'} [Countable I] [Countable M]
   · intro n t p hp
     obtain ⟨k, hk⟩ := Realization.chainUnion_eval_some_exists hp
     exact ⟨A k, hk⟩
-
-end FiniteMasterScheduler
-end VaughtConjecture.TypeTower

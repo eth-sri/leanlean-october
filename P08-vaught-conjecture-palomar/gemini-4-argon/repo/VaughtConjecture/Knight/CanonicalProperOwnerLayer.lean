@@ -16,17 +16,14 @@ one fixed outer grid and ceiling. No arbitrary positive continuation of a
 lower physical section is required.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalProperOwnerLayer
-open Transform Value ExtOrd SourcePrefixRows PairedSlotEncoding PairedSlotComparison
-open SharpWitnessComposition
-noncomputable section
+open Transform Value ExtOrd SourcePrefixRows PairedSlotEncoding PairedSlotComparison SharpWitnessComposition
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable (sem : Semantics D) (k : ℕ) (h2k : 2 < k) (hkA : k ≤ A.card)
-variable (hp : ∀ d : Cell D, D.scope d ≠ A) (hg : ∀ d : Cell D, D.grade d ≤ k)
+  (sem : Semantics D) (k : ℕ) (h2k : 2 < k) (hkA : k ≤ A.card)
+  (hp : ∀ d : Cell D, D.scope d ≠ A) (hg : ∀ d : Cell D, D.grade d ≤ k)
 
 abbrev two_le := h2k.le.trans hkA
 abbrev one_le := (by decide : 1 ≤ 2).trans (two_le k h2k hkA)
@@ -34,6 +31,3 @@ abbrev lowerScheme := CanonicalPairBoundary.scheme sem 1 2 (by decide)
   (one_le k h2k hkA) (by decide) (two_le k h2k hkA)
 abbrev lowerSem := CanonicalPairBoundary.rows sem 1 2 (by decide)
   (one_le k h2k hkA) (by decide) (two_le k h2k hkA) hp (by decide)
-
-end
-end VaughtConjecture.Knight.CanonicalProperOwnerLayer

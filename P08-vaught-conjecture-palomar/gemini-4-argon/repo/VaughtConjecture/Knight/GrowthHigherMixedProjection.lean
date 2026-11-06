@@ -15,14 +15,12 @@ ordered boundary, so decreasing heights splice them lawfully without requiring
 one uncapped higher-grade state or identifying different chart anchors.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthHigherMixed
-open AmalgamationPlan Transform Value ExtOrd Growth GrowthHigherSources
-open GrowthPaddedContract GrowthPaddedIteration SupportLadderRows LadderScalarRendering
+open AmalgamationPlan Transform Value ExtOrd Growth GrowthHigherSources GrowthPaddedContract GrowthPaddedIteration SupportLadderRows LadderScalarRendering
 open SharpWitnessComposition
-noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n J : ℕ}
   (I : WholeDonorBoundary.Input A B C R m (n + 1) J)
@@ -140,6 +138,3 @@ theorem projection_readback (hp : RespectsSemanticsBelow Rows (U, j) p) (hjt : j
   · rw [ite_eq_right h1, ite_eq_left hle]
     exact original_readback I X T hA hB hC t ht U hU hm j hj hj0 hp z d hz
       (by omega) (hle.trans hjt)
-
-end
-end VaughtConjecture.Knight.GrowthHigherMixed

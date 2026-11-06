@@ -17,9 +17,7 @@ occurrences remain distinct, and both entire old orders are preserved.
 No inventory size or initial prefix is fixed.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.ProfileBoundaryOrder
 
@@ -59,7 +57,7 @@ theorem rank_shared (f : Fin c ↪ Fin n) (g : Fin c ↪ Fin m)
   ext j
   simp only [Finset.mem_filter, Finset.mem_univ, true_and, hf.le_iff_le, hg.le_iff_le]
 
-noncomputable def faceKey (f : Fin c ↪ Fin n) (tag : ℕ) (x : Fin n) : ℕ ×ₗ ℕ := by
+def faceKey (f : Fin c ↪ Fin n) (tag : ℕ) (x : Fin n) : ℕ ×ₗ ℕ := by
   classical
   exact toLex (rank f x, if x ∈ Set.range f then 0 else tag + x.val)
 
@@ -110,7 +108,7 @@ theorem faceKey_overlap (f : Fin c ↪ Fin n) (g : Fin c ↪ Fin m)
   · rintro ⟨i, rfl, rfl⟩
     exact faceKey_shared f g hf hg i
 
-noncomputable def key (f : Fin c ↪ Fin n) (g : Fin c ↪ Fin m) :
+def key (f : Fin c ↪ Fin n) (g : Fin c ↪ Fin m) :
     Carrier (X := Fin n) g → ℕ ×ₗ ℕ :=
   ProfileFaceUnion.paste g (faceKey f 1) (faceKey g (n + 1))
 
@@ -131,15 +129,15 @@ theorem key_injective (f : Fin c ↪ Fin n) (g : Fin c ↪ Fin m)
   · exact congrArg Sum.inr (Subtype.ext
       ((faceKey_strict g (by omega : 0 < n + 1)).injective h))
 
-noncomputable instance (f : Fin c ↪ Fin n) (g : Fin c ↪ Fin m) :
+instance (f : Fin c ↪ Fin n) (g : Fin c ↪ Fin m) :
     Fintype (Set.range (key f g)) := Fintype.ofFinite _
 
-noncomputable def keyEquiv (f : Fin c ↪ Fin n) (g : Fin c ↪ Fin m)
+def keyEquiv (f : Fin c ↪ Fin n) (g : Fin c ↪ Fin m)
     (hf : StrictMono f) (hg : StrictMono g) :
     Carrier (X := Fin n) g ≃ Set.range (key f g) :=
   Equiv.ofInjective (key f g) (key_injective f g hf hg)
 
-noncomputable def enumeration (f : Fin c ↪ Fin n) (g : Fin c ↪ Fin m)
+def enumeration (f : Fin c ↪ Fin n) (g : Fin c ↪ Fin m)
     (hf : StrictMono f) (hg : StrictMono g) :
     Carrier (X := Fin n) g ≃ Fin (Fintype.card (Carrier (X := Fin n) g)) :=
   (keyEquiv f g hf hg).trans
@@ -162,5 +160,3 @@ theorem enumeration_right (f : Fin c ↪ Fin n) (g : Fin c ↪ Fin m)
   change key f g (right f g x) < key f g (right f g y)
   rw [key_right f g hf hg, key_right f g hf hg]
   exact faceKey_strict g (by omega : 0 < n + 1) hxy
-
-end VaughtConjecture.Knight.ProfileBoundaryOrder

@@ -6,7 +6,15 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.CappedDonorSelector
-public import VaughtConjecture.Knight.GradeTwoCodedBountiful
+public import VaughtConjecture.Knight.PositiveNormalization
+public import VaughtConjecture.Knight.FullScopeZeroExtension
+public import VaughtConjecture.Knight.RowReadback
+public import VaughtConjecture.Knight.RowCorrectness
+public import VaughtConjecture.Knight.Semantics
+public import VaughtConjecture.Knight.CappedLocalityRecoding
+public import VaughtConjecture.Knight.Reduction
+public import VaughtConjecture.Knight.VisibilityAlgebra
+public import VaughtConjecture.Knight.CountedRecoding
 
 /-! # The gated receiving-input family and both original-state fibres (notes32 §§4–6)
 
@@ -76,7 +84,7 @@ the relation is vacuous (`Ref.sel_of_isEmpty`).  The actual pair with the gate o
 at every cutoff (`actual_admissible`), by `sel vact = p ∧ cut vact`.  All old extension calls
 are inside the unchanged `P` and `C`; no new-domain bountifulness is an input. -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight
 
@@ -114,20 +122,11 @@ section Cutoffs
 
 variable {nP N J : ℕ} {P : SemScheme (nP + 1)} {C : SemScheme J}
 
-theorem effP_mem {j : ℕ} (hj : 0 < j) : effP nP j ∈ Plan.gradedPlan P.scheme.plan :=
-  Plan.mem_gradedPlan.mpr ⟨P.scheme.isPlan.domain_mem, lt_min hj (Nat.succ_pos _), by
-    change min j (nP + 1) ≤ (Finset.univ : Finset (Fin (nP + 1))).card
-    rw [Finset.card_univ, Fintype.card_fin]
-    exact min_le_right _ _⟩
-
 theorem gradeC_le (d : Cell C.scheme) : C.scheme.grade d ≤ J :=
   (C.scheme.grade_le_card_scope d).trans (by simpa using Finset.card_le_univ (C.scheme.scope d))
 
 theorem effC_mem {j : ℕ} (hj : 0 < j) (hJ : 0 < J) : effC J j ∈ Plan.gradedPlan C.scheme.plan :=
-  Plan.mem_gradedPlan.mpr ⟨C.scheme.isPlan.domain_mem, lt_min hj hJ, by
-    change min j J ≤ (Finset.univ : Finset (Fin J)).card
-    rw [Finset.card_univ, Fintype.card_fin]
-    exact min_le_right _ _⟩
+  Plan.mem_gradedPlan.mpr ⟨C.scheme.isPlan.domain_mem, lt_min hj hJ, by simp [effC]⟩
 
 end Cutoffs
 
@@ -137,9 +136,6 @@ variable {I : Type*} [Fintype I] {nP N J : ℕ} {P : SemScheme (nP + 1)} {C : Se
   (R : Ref I nP N J P C)
 
 /-! ## Effective grades relative to the reference data -/
-
-include R in
-theorem effP_snd_le_N (j : ℕ) : (effP nP j).2 ≤ N := (min_le_right _ _).trans R.arity_lt.le
 
 include R in
 theorem effP_snd_le_effC (j : ℕ) : (effP nP j).2 ≤ (effC J j).2 :=
@@ -158,24 +154,6 @@ def capC {j : ℕ} (hj : N ≤ j) : C.scheme.below (effC J j) :=
 def lowC {j : ℕ} (hj : N ≤ j) (v : C.scheme.below (effC J j) → ExtOrd) (d : R.Low) : ExtOrd :=
   v (CellScheme.below.mono (R.capLe hj) d)
 
-theorem lowC_respects {j : ℕ} (hj : N ≤ j) {v : C.scheme.below (effC J j) → ExtOrd}
-    (hv : RespectsSemanticsBelow C.rows (effC J j) v) :
-    RespectsSemanticsBelow C.rows (C.scheme.cell R.cap) (R.lowC hj v) :=
-  hv.mono (R.capLe hj)
-
-include R in
-theorem selfVis_N_of_effC {j : ℕ} (hj : N ≤ j) {γ : ExtOrd} (hγ : SelfVis (effC J j).2 γ) :
-    SelfVis N γ := hγ.mono (le_min hj R.N_le)
-
-include R in
-theorem selfVis_effP_of_effC {j : ℕ} {γ : ExtOrd} (hγ : SelfVis (effC J j).2 γ) :
-    SelfVis (effP nP j).2 γ := hγ.mono (R.effP_snd_le_effC j)
-
-include R in
-/-- An `N`-visible cut is permissible at the request scheme's own effective grade. -/
-theorem selfVis_effP_of_N (j : ℕ) {β : ExtOrd} (hβ : SelfVis N β) : SelfVis (effP nP j).2 β :=
-  hβ.mono (R.effP_snd_le_N j)
-
 /-! ## The present portion of the face -/
 
 /-- A face cell present at cutoff `j` as a present request field. -/
@@ -191,33 +169,6 @@ def privFace {j : ℕ} (a : P.scheme.below (R.A, R.KA)) (h : P.scheme.grade a.1 
 /-- Every face cell is present once the cap is. -/
 theorem face_grade_le_of_N {j : ℕ} (hj : N ≤ j) (a : P.scheme.below (R.A, R.KA)) :
     P.scheme.grade a.1 ≤ j := a.2.2.trans (R.KA_lt_N.le.trans hj)
-
-/-- The present portion `(A, min KA j)` of the face at cutoff `j`. -/
-theorem face_le_effP {j : ℕ} : GradedLe (R.A, min R.KA j) (effP nP j) :=
-  ⟨Finset.subset_univ _, le_min (min_le_right _ _) ((min_le_left _ _).trans R.KA_le)⟩
-
-theorem face_le_effC {j : ℕ} : GradedLe (R.A', min R.KA j) (effC J j) :=
-  ⟨Finset.subset_univ _, le_min (min_le_right _ _)
-    ((min_le_left _ _).trans (R.KA_lt_N.le.trans R.N_le))⟩
-
-/-- No face cell is present when the present portion has grade zero. -/
-theorem face_absent {j : ℕ} (hk : ¬ 0 < min R.KA j) (a : P.scheme.below (R.A, R.KA))
-    (h : P.scheme.grade a.1 ≤ j) : False :=
-  hk (lt_min ((P.scheme.grade_pos a.1).trans_le a.2.2) ((P.scheme.grade_pos a.1).trans_le h))
-
-/-- A private section read on the present portion of the request copy of the face. -/
-def faceSec {j : ℕ} (v : C.scheme.below (effC J j) → ExtOrd)
-    (a : P.scheme.below (R.A, min R.KA j)) : ExtOrd :=
-  v (R.privFace (R.faceLift (min_le_left _ _) a) (a.2.2.trans (min_le_right _ _)))
-
-theorem faceSec_respects {j : ℕ} {v : C.scheme.below (effC J j) → ExtOrd}
-    (hv : RespectsSemanticsBelow C.rows (effC J j) v) :
-    RespectsSemanticsBelow P.rows (R.A, min R.KA j) (R.faceSec v) :=
-  (R.faceAt_respects (min_le_left _ _) _).mp (hv.mono R.face_le_effC)
-
-theorem lowC_face {j : ℕ} (hj : N ≤ j) (v : C.scheme.below (effC J j) → ExtOrd)
-    (a : P.scheme.below (R.A, R.KA)) :
-    R.lowC hj v (R.lowFace a) = v (R.privFace a (R.face_grade_le_of_N hj a)) := rfl
 
 /-! ## States and admissibility -/
 
@@ -259,13 +210,12 @@ structure Admissible {j : ℕ} (st : R.State j) : Prop where
 theorem Admissible.active {j : ℕ} {st : R.State j} (hst : R.Admissible st) (hj : N ≤ j)
     (hg : st.gate ≠ ⊥) (hc : st.v (R.capC hj) ≠ ⊥) : R.Active (R.lowC hj st.v) := by
   obtain ⟨href, hsupp⟩ := hst.support hg ((hst.shadowC_iff (R.capC hj)).mpr hc)
-  refine ⟨R.lowC_respects hj hst.v_respects, hc, fun i => ?_, ?_⟩
-  · exact (hst.shadowC_iff (CellScheme.below.mono (R.capLe hj) (R.lowRef i))).mp (href i)
-  · intro a ha
-    have hu : st.u (R.reqFace a (R.face_grade_le_of_N hj a)) = ⊥ := by
-      by_contra hne
-      exact (hsupp a.1).mp ((hst.shadowP_iff _).mpr hne) ha
-    rw [R.lowC_face, ← hst.face a (R.face_grade_le_of_N hj a), hu]
+  refine ⟨hst.v_respects.mono (R.capLe hj), hc,
+    fun i => (hst.shadowC_iff (CellScheme.below.mono (R.capLe hj) (R.lowRef i))).mp (href i),
+    fun a ha => ?_⟩
+  have hu : st.u (R.reqFace a (R.face_grade_le_of_N hj a)) = ⊥ :=
+    by_contra fun hne => (hsupp a.1).mp ((hst.shadowP_iff _).mpr hne) ha
+  exact (hst.face a (R.face_grade_le_of_N hj a)).symm.trans hu
 
 /-! ## Cap receipts, persistence at a positive cap, and the bottom-cap state -/
 
@@ -274,14 +224,6 @@ the comparison cap `γ`. -/
 def CapReceipts {j : ℕ} (γ : ExtOrd) (st st₁ : R.State j) : Prop :=
   min st₁.gate γ = min st.gate γ ∧ (∀ d, min (st₁.shadowP d) γ = min (st.shadowP d) γ) ∧
     ∀ d, min (st₁.shadowC d) γ = min (st.shadowC d) γ
-
-theorem capReceipts_bot {j : ℕ} (st st₁ : R.State j) : R.CapReceipts ⊥ st st₁ :=
-  ⟨by rw [min_bot_right, min_bot_right], fun _ => by rw [min_bot_right, min_bot_right],
-    fun _ => by rw [min_bot_right, min_bot_right]⟩
-
-theorem capReceipts_of_eq {j : ℕ} (γ : ExtOrd) {st st₁ : R.State j} (hg : st₁.gate = st.gate)
-    (hP : st₁.shadowP = st.shadowP) (hC : st₁.shadowC = st.shadowC) : R.CapReceipts γ st st₁ :=
-  ⟨by rw [hg], fun _ => by rw [hP], fun _ => by rw [hC]⟩
 
 /-- **Persistence**: at a positive cap the gate and every shadow are retained; new lawful
 sections agreeing with the old ones below the cap, with the literal face and the relation, form
@@ -304,65 +246,10 @@ theorem admissible_persist {j : ℕ} {st : R.State j} (hst : R.Admissible st) {�
   gate_vis := hst.gate_vis
   shadowP_vis := hst.shadowP_vis
   shadowC_vis := hst.shadowC_vis
-  shadowP_iff d := by
-    rw [hst.shadowP_iff d]
-    exact not_congr (bottom_pattern_of_cap_agreement hγ hu d).symm
-  shadowC_iff d := by
-    rw [hst.shadowC_iff d]
-    exact not_congr (bottom_pattern_of_cap_agreement hγ hv d).symm
+  shadowP_iff d := (hst.shadowP_iff d).trans (not_congr (bottom_pattern_of_cap_agreement hγ hu d).symm)
+  shadowC_iff d := (hst.shadowC_iff d).trans (not_congr (bottom_pattern_of_cap_agreement hγ hv d).symm)
   support := hst.support
   relation := hrel
-
-open Classical in
-/-- **The bottom-cap state**: the gate switched off, the shadows of the present fields
-recomputed as the `1`-visible roundings of the new sections, the shadows of the future fields
-retained. -/
-noncomputable def offState {j : ℕ} (st : R.State j) (u₁ : P.scheme.below (effP nP j) → ExtOrd)
-    (v₁ : C.scheme.below (effC J j) → ExtOrd) : R.State j where
-  u := u₁
-  v := v₁
-  gate := ⊥
-  shadowP d := if h : GradedLe (P.scheme.cell d) (effP nP j) then
-    extVisibilityReplace (u₁ ⟨d, h⟩) 1 1 else st.shadowP d
-  shadowC d := if h : GradedLe (C.scheme.cell d) (effC J j) then
-    extVisibilityReplace (v₁ ⟨d, h⟩) 1 1 else st.shadowC d
-
-open Classical in
-theorem admissible_off {j : ℕ} {st : R.State j} (hst : R.Admissible st)
-    {u₁ : P.scheme.below (effP nP j) → ExtOrd} {v₁ : C.scheme.below (effC J j) → ExtOrd}
-    (hu₁ : RespectsSemanticsBelow P.rows (effP nP j) u₁)
-    (hv₁ : RespectsSemanticsBelow C.rows (effC J j) v₁)
-    (hface : ∀ (a : P.scheme.below (R.A, R.KA)) (h : P.scheme.grade a.1 ≤ j),
-      u₁ (R.reqFace a h) = v₁ (R.privFace a h)) :
-    R.Admissible (R.offState st u₁ v₁) where
-  u_respects := hu₁
-  v_respects := hv₁
-  face := hface
-  gate_vis := selfVis_bot 1
-  shadowP_vis d := by
-    change SelfVis 1 (if h : GradedLe (P.scheme.cell d) (effP nP j) then
-      extVisibilityReplace (u₁ ⟨d, h⟩) 1 1 else st.shadowP d)
-    split_ifs
-    · exact TopSupport.selfVis_evr_self 1 _
-    · exact hst.shadowP_vis d
-  shadowC_vis d := by
-    change SelfVis 1 (if h : GradedLe (C.scheme.cell d) (effC J j) then
-      extVisibilityReplace (v₁ ⟨d, h⟩) 1 1 else st.shadowC d)
-    split_ifs
-    · exact TopSupport.selfVis_evr_self 1 _
-    · exact hst.shadowC_vis d
-  shadowP_iff d := by
-    change (if h : GradedLe (P.scheme.cell d.1) (effP nP j) then
-      extVisibilityReplace (u₁ ⟨d.1, h⟩) 1 1 else st.shadowP d.1) ≠ ⊥ ↔ u₁ d ≠ ⊥
-    rw [dite_eq_left d.2]
-    exact not_congr (evr_eq_bot_iff 1 1)
-  shadowC_iff d := by
-    change (if h : GradedLe (C.scheme.cell d.1) (effC J j) then
-      extVisibilityReplace (v₁ ⟨d.1, h⟩) 1 1 else st.shadowC d.1) ≠ ⊥ ↔ v₁ d ≠ ⊥
-    rw [dite_eq_left d.2]
-    exact not_congr (evr_eq_bot_iff 1 1)
-  support h := (h rfl).elim
-  relation _ h := (h rfl).elim
 
 /-! ## Installing a face prescription by old bountifulness -/
 
@@ -380,16 +267,24 @@ theorem exists_installP {j : ℕ} {u : P.scheme.below (effP nP j) → ExtOrd}
       ∀ (a : P.scheme.below (R.A, R.KA)) (h : P.scheme.grade a.1 ≤ j),
         u₁ (R.reqFace a h) = v₁ (R.privFace a h) := by
   by_cases hk : 0 < min R.KA j
-  · obtain ⟨u₁, hu₁, hcap, hface⟩ := P.bountiful.extend (R.face_mem hk (min_le_left _ _))
-      (effP_mem (hk.trans_le (min_le_right _ _))) R.face_le_effP (R.faceSec_respects hv₁) hu hγ
+  · have hleP : GradedLe (R.A, min R.KA j) (effP nP j) :=
+      ⟨Finset.subset_univ _, le_min (min_le_right _ _) ((min_le_left _ _).trans R.KA_le)⟩
+    have hleC : GradedLe (R.A', min R.KA j) (effC J j) :=
+      ⟨Finset.subset_univ _, le_min (min_le_right _ _)
+        ((min_le_left _ _).trans (R.KA_lt_N.le.trans R.N_le))⟩
+    obtain ⟨u₁, hu₁, hcap, hface⟩ := P.bountiful.extend (R.face_mem hk (min_le_left _ _))
+      (Plan.mem_gradedPlan.mpr ⟨P.scheme.isPlan.domain_mem,
+        lt_min (hk.trans_le (min_le_right _ _)) (Nat.succ_pos _), by simp [effP]⟩)
+      hleP ((R.face_respects _ (min_le_left _ _) _).mp (hv₁.mono hleC)) hu hγ
       (fun a => hcompat (R.faceLift (min_le_left _ _) a) (a.2.2.trans (min_le_right _ _)))
     exact ⟨u₁, hu₁, hcap, fun a h => hface ⟨a.1, ⟨a.2.1, le_min a.2.2 h⟩⟩⟩
-  · exact ⟨u, hu, fun _ => rfl, fun a h => (R.face_absent hk a h).elim⟩
-
-/-! ## Clipping the coordinates of grade at least `N` -/
+  · exact ⟨u, hu, fun _ => rfl, fun a h =>
+      (hk (lt_min ((P.scheme.grade_pos a.1).trans_le a.2.2)
+        ((P.scheme.grade_pos a.1).trans_le h))).elim⟩
 
 /-! ## The private-context-prescribed fibre (notes32 §5) -/
 
+open Classical in
 /-- **The private fibre**: an independently lawful private prescription `v₁` agreeing with the
 current private section below a permissible cap `γ` lifts to an admissible state retaining `v₁`
 literally, the whole request cap vector `u ∧ γ`, the entire common face, the cap receipts of the
@@ -401,97 +296,79 @@ theorem exists_private_lift {j : ℕ} {st : R.State j} (hst : R.Admissible st)
     ∃ st₁ : R.State j, R.Admissible st₁ ∧ st₁.v = v₁ ∧ (∀ d, min (st₁.u d) γ = min (st.u d) γ) ∧
       R.CapReceipts γ st st₁ ∧
       (γ ≠ ⊥ → st₁.gate = st.gate ∧ st₁.shadowP = st.shadowP ∧ st₁.shadowC = st.shadowC) := by
-  have hcompat : ∀ (a : P.scheme.below (R.A, R.KA)) (h : P.scheme.grade a.1 ≤ j),
+  have hcompat (a : P.scheme.below (R.A, R.KA)) (h : P.scheme.grade a.1 ≤ j) :
       min (st.u (R.reqFace a h)) γ = min (v₁ (R.privFace a h)) γ := by
-    intro a h
-    rw [hst.face a h]
-    exact (hagree _).symm
+    rw [hst.face a h]; exact (hagree _).symm
   by_cases hbot : γ = ⊥
-  · -- bottom cap: switch the gate off
-    subst hbot
+  · subst hbot
     obtain ⟨u₁, hu₁, hcap, hface⟩ := R.exists_installP hst.u_respects hv₁ (selfVis_bot _) hcompat
-    exact ⟨R.offState st u₁ v₁, R.admissible_off hst hu₁ hv₁ hface, rfl, hcap,
-      R.capReceipts_bot _ _, fun h => absurd rfl h⟩
-  have hγP : SelfVis (effP nP j).2 γ := R.selfVis_effP_of_effC hγ
+    refine ⟨⟨u₁, v₁, ⊥,
+      fun d => if h : GradedLe (P.scheme.cell d) (effP nP j) then
+        extVisibilityReplace (u₁ ⟨d, h⟩) 1 1 else st.shadowP d,
+      fun d => if h : GradedLe (C.scheme.cell d) (effC J j) then
+        extVisibilityReplace (v₁ ⟨d, h⟩) 1 1 else st.shadowC d⟩,
+      ⟨hu₁, hv₁, hface, selfVis_bot 1,
+        fun d => by dsimp only; split_ifs; exacts [TopSupport.selfVis_evr_self 1 _, hst.shadowP_vis d],
+        fun d => by dsimp only; split_ifs; exacts [TopSupport.selfVis_evr_self 1 _, hst.shadowC_vis d],
+        fun d => by dsimp only; rw [dite_eq_left d.2]; exact not_congr (evr_eq_bot_iff 1 1),
+        fun d => by dsimp only; rw [dite_eq_left d.2]; exact not_congr (evr_eq_bot_iff 1 1),
+        fun h => (h rfl).elim, fun _ h => (h rfl).elim⟩,
+      rfl, hcap, ⟨by simp, fun _ => by simp, fun _ => by simp⟩, fun h => absurd rfl h⟩
+  have hγP : SelfVis (effP nP j).2 γ := hγ.mono (R.effP_snd_le_effC j)
   have hpat := bottom_pattern_of_cap_agreement hbot hagree
   by_cases hact : ∃ hj : N ≤ j, st.gate ≠ ⊥ ∧ st.v (R.capC hj) ≠ ⊥
   · obtain ⟨hj, hg, hc⟩ := hact
-    have hγN : SelfVis N γ := R.selfVis_N_of_effC hj hγ
+    have hγN : SelfVis N γ := hγ.mono (le_min hj R.N_le)
     have hA₀ := Admissible.active R hst hj hg hc
     have hrel₀ := hst.relation hj hg hc
     have hA₁ : R.Active (R.lowC hj v₁) :=
-      ⟨R.lowC_respects hj hv₁, fun h => hc ((hpat _).mp h),
+      ⟨hv₁.mono (R.capLe hj), fun h => hc ((hpat _).mp h),
         fun i h => hA₀.ref_pos i ((hpat _).mp h), fun a ha => (hpat _).mpr (hA₀.face_bot a ha)⟩
     have hVγ : (fun d => min (R.lowC hj v₁ d) γ) = fun d => min (R.lowC hj st.v d) γ :=
-      funext fun d => hagree _
+      funext fun _ => hagree _
     have hcutγ : min (R.cut (R.lowC hj v₁)) γ = min (R.cut (R.lowC hj st.v)) γ := by
       rw [← R.cut_min hγN, ← R.cut_min hγN, hVγ]
-    have hselγ : ∀ e, min (R.sel (R.lowC hj v₁) e) γ = min (R.sel (R.lowC hj st.v) e) γ := by
-      intro e
+    have hselγ (e) : min (R.sel (R.lowC hj v₁) e) γ = min (R.sel (R.lowC hj st.v) e) γ := by
       rw [← R.sel_min hγN, ← R.sel_min hγN, hVγ]
     have hcutvis : SelfVis N (R.cut (R.lowC hj v₁)) :=
       R.selfVis_cut (Active.selfVis_cap R hA₁)
     by_cases hβ : R.cut (R.lowC hj v₁) ≤ γ
-    · -- the cut is at most the cap: extend from the old ambient at `γ`
-      obtain ⟨u₁, hu₁, hcap, hface⟩ := R.exists_installP hst.u_respects hv₁ hγP hcompat
+    · obtain ⟨u₁, hu₁, hcap, hface⟩ := R.exists_installP hst.u_respects hv₁ hγP hcompat
       refine ⟨⟨u₁, v₁, st.gate, st.shadowP, st.shadowC⟩,
         R.admissible_persist hst hbot hu₁ hv₁ hcap hagree hface ?_, rfl, hcap,
-        R.capReceipts_of_eq γ rfl rfl rfl, fun _ => ⟨rfl, rfl, rfl⟩⟩
-      intro hj' _ _ d
+        ⟨rfl, fun _ => rfl, fun _ => rfl⟩, fun _ => ⟨rfl, rfl, rfl⟩⟩
+      intro _ _ _ d
       change min (u₁ d) (R.cut (R.lowC hj v₁)) = R.sel (R.lowC hj v₁) d.1
       have hβ' : R.cut (R.lowC hj v₁) = min (R.cut (R.lowC hj st.v)) γ := by
         rw [← hcutγ, min_eq_left hβ]
-      calc min (u₁ d) (R.cut (R.lowC hj v₁))
-          = min (min (u₁ d) γ) (R.cut (R.lowC hj v₁)) := by rw [min_assoc, min_eq_right hβ]
-        _ = min (min (st.u d) γ) (R.cut (R.lowC hj v₁)) := by rw [hcap d]
-        _ = min (st.u d) (R.cut (R.lowC hj v₁)) := by rw [min_assoc, min_eq_right hβ]
-        _ = min (min (st.u d) (R.cut (R.lowC hj st.v))) γ := by rw [hβ', min_assoc]
-        _ = min (R.sel (R.lowC hj st.v) d.1) γ := by rw [hrel₀ d]
-        _ = min (R.sel (R.lowC hj v₁) d.1) γ := (hselγ d.1).symm
-        _ = R.sel (R.lowC hj v₁) d.1 := min_eq_left ((R.sel_le_cut _ d.1).trans hβ)
-    · -- the cap is below the cut: extend from the lawful selector at the cut
-      have hγβ : γ ≤ R.cut (R.lowC hj v₁) := (not_le.mp hβ).le
+      rw [← min_eq_right hβ, ← min_assoc, hcap d, min_assoc, min_eq_right hβ, hβ', ← min_assoc,
+        hrel₀ d, ← hselγ d.1, min_eq_left ((R.sel_le_cut _ d.1).trans hβ)]
+    · have hγβ : γ ≤ R.cut (R.lowC hj v₁) := (not_le.mp hβ).le
       obtain ⟨u₁, hu₁, hcap₁, hface₁⟩ := R.exists_installP
         (u := fun d => R.sel (R.lowC hj v₁) d.1) ((Active.sel_respects R hA₁).toBelow _) hv₁
-        (R.selfVis_effP_of_N j hcutvis) (by
-          intro a h
+        (hcutvis.mono ((min_le_right _ _).trans R.arity_lt.le)) (fun a h => by
           change min (R.sel (R.lowC hj v₁) a.1) (R.cut (R.lowC hj v₁)) =
             min (v₁ (R.privFace a h)) (R.cut (R.lowC hj v₁))
-          rw [Active.sel_face R hA₁ a, R.lowC_face, min_assoc, min_self])
-      have hrel₁ : ∀ d, min (u₁ d) (R.cut (R.lowC hj v₁)) = R.sel (R.lowC hj v₁) d.1 := by
-        intro d
-        rw [hcap₁ d]
-        exact min_eq_left (R.sel_le_cut _ d.1)
-      have hcap : ∀ d, min (u₁ d) γ = min (st.u d) γ := by
-        intro d
-        calc min (u₁ d) γ
-            = min (min (u₁ d) (R.cut (R.lowC hj v₁))) γ := by
-              rw [min_assoc, min_eq_right hγβ]
-          _ = min (R.sel (R.lowC hj v₁) d.1) γ := by rw [hrel₁ d]
-          _ = min (R.sel (R.lowC hj st.v) d.1) γ := hselγ d.1
-          _ = min (min (st.u d) (R.cut (R.lowC hj st.v))) γ := by rw [hrel₀ d]
-          _ = min (st.u d) (min (R.cut (R.lowC hj v₁)) γ) := by rw [min_assoc, hcutγ]
-          _ = min (st.u d) γ := by rw [min_eq_right hγβ]
-      refine ⟨⟨u₁, v₁, st.gate, st.shadowP, st.shadowC⟩,
-        R.admissible_persist hst hbot hu₁ hv₁ hcap hagree hface₁ ?_, rfl, hcap,
-        R.capReceipts_of_eq γ rfl rfl rfl, fun _ => ⟨rfl, rfl, rfl⟩⟩
-      intro _ _ _ d
-      exact hrel₁ d
-  · -- inactive: plain matching-face bountifulness; the relation stays vacuous
-    obtain ⟨u₁, hu₁, hcap, hface⟩ := R.exists_installP hst.u_respects hv₁ hγP hcompat
-    refine ⟨⟨u₁, v₁, st.gate, st.shadowP, st.shadowC⟩,
-      R.admissible_persist hst hbot hu₁ hv₁ hcap hagree hface ?_, rfl, hcap,
-      R.capReceipts_of_eq γ rfl rfl rfl, fun _ => ⟨rfl, rfl, rfl⟩⟩
-    intro hj hg hc
-    exact absurd ⟨hj, hg, fun h => hc ((hpat _).mpr h)⟩ hact
-
-/-! ## The request-prescribed fibre (notes32 §6) -/
+          rw [Active.sel_face R hA₁ a, min_assoc, min_self]; rfl)
+      have hrel₁ (d) : min (u₁ d) (R.cut (R.lowC hj v₁)) = R.sel (R.lowC hj v₁) d.1 := by
+        rw [hcap₁ d, min_eq_left (R.sel_le_cut _ d.1)]
+      have hcap (d) : min (u₁ d) γ = min (st.u d) γ := by
+        rw [← min_eq_right hγβ, ← min_assoc, hrel₁ d, hselγ d.1, ← hrel₀ d, min_assoc, ← hcutγ,
+          min_eq_right hγβ]
+      exact ⟨⟨u₁, v₁, st.gate, st.shadowP, st.shadowC⟩,
+        R.admissible_persist hst hbot hu₁ hv₁ hcap hagree hface₁ (fun _ _ _ d => hrel₁ d),
+        rfl, hcap, ⟨rfl, fun _ => rfl, fun _ => rfl⟩, fun _ => ⟨rfl, rfl, rfl⟩⟩
+  · obtain ⟨u₁, hu₁, hcap, hface⟩ := R.exists_installP hst.u_respects hv₁ hγP hcompat
+    exact ⟨⟨u₁, v₁, st.gate, st.shadowP, st.shadowC⟩,
+      R.admissible_persist hst hbot hu₁ hv₁ hcap hagree hface
+        (fun hj hg hc => absurd ⟨hj, hg, fun h => hc ((hpat _).mpr h)⟩ hact),
+      rfl, hcap, ⟨rfl, fun _ => rfl, fun _ => rfl⟩, fun _ => ⟨rfl, rfl, rfl⟩⟩
 
 /-! ## The actual state -/
 
 /-- The actual pair — the donor on the request scheme and the actual private labelling — with
 the gate on and the shadows the `1`-visible roundings of the actual values, at any cutoff. -/
-noncomputable def actualState (j : ℕ) : R.State j where
+def actualState (j : ℕ) : R.State j where
   u d := R.p d.1
   v d := R.vact d.1
   gate := ⊤
@@ -513,12 +390,4 @@ theorem actual_admissible (j : ℕ) : R.Admissible (R.actualState j) where
     change extVisibilityReplace (R.vact (R.ref i)) 1 1 ≠ ⊥
     rw [R.vact_ref, ne_eq, evr_eq_bot_iff]
     exact ofOrd_ne_bot _, fun _ => not_congr (evr_eq_bot_iff 1 1)⟩
-  relation _ _ _ d := by
-    change min (R.p d.1) (R.cut R.vactL) = R.sel R.vactL d.1
-    exact (R.sel_actual d.1).symm
-
-end Ref
-
-end CappedDonor
-
-end VaughtConjecture.Knight
+  relation _ _ _ d := (R.sel_actual d.1).symm

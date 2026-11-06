@@ -202,7 +202,3 @@ theorem interpolate_iff_source_blocks (s : Finset ExtOrd) :
     (∃ τ : ExtOrd → ExtOrd, Witness (gTop m) τ ∧ ∀ x ∈ s, τ x = f x) ↔
       BlockBottom s f :=
   (hf.interpolate_iff s).trans (hf.forcedSources_blockBottom_iff s)
-
-end BoundedMap
-
-end VaughtConjecture.Knight.SharpWitnessComposition

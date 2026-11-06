@@ -23,8 +23,6 @@ receiving and successor modelhood remain separate. Face coherence is unchanged.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight
 
 open TypeTower Value ExtOrd StageType
@@ -67,7 +65,3 @@ theorem stableLiftRespects_of_finiteJump (hc : R.IsExactParentConsistent)
   have h := RootedCover.stableBand_mem_lawfulBand_of_finiteJump (x := x) hc hv
   change RespectsSemantics _ _ at h
   rwa [RootedCover.bandLabel_stableBand hc hv] at h
-
-end KnightRealization
-
-end VaughtConjecture.Knight

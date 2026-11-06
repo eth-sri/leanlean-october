@@ -12,12 +12,11 @@ public import VaughtConjecture.Knight.CoatomRecursiveOrdered
 Internal receipts for the existing one- and two-grade seeds. These are proved
 on each seed, not assumptions of the final all-arity supplier.
 -/
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CoatomSeedInstallation
 open Transform Value ExtOrd AmalgamationPlan AmalgamatedBoundaryPlan SemSchemeBoundaryInput
-noncomputable section
+
 variable {n m : ℕ} {s : Step (Finset.univ : Finset (Fin (n + 2)))}
   (I : Input s m (n + 1) (n + 1))
 
@@ -166,6 +165,3 @@ theorem install {α : Ordinal.{0}} (hα : Order.IsSuccLimit α)
       change truncExt α (u d) ≤ truncExt α (u (apex I F))
       rw [htop, truncExt_id_of_bound (Or.inr rfl)]
       exact le_top
-
-end
-end VaughtConjecture.Knight.CoatomSeedInstallation

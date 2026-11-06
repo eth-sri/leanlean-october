@@ -187,5 +187,3 @@ theorem rootedExtensionOver_of_onePoint {W : KnightRealization α M}
       Function.Embedding.refl_trans, R.c_u]
   · rw [exactParent_typeMap hcons R.u _ g R.eval_u,
       typeMap_trans g R.e P _ (typeMap_eq_some R.e P R.hvis), hge, typeMap_refl]
-
-end VaughtConjecture.Knight

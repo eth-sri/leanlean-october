@@ -21,18 +21,15 @@ decoding are connected separately; this result alone is not arbitrary-input
 lifting. The explicit predecessor support/section contract is unchanged.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryFinalRepair
-open Transform Value ExtOrd CappedDonor CappedDonor.Ref SourcePrefixRows
-open OrdinaryFinalCatalogue CanonicalPairedInverse
-noncomputable section
+open Transform Value ExtOrd CappedDonor CappedDonor.Ref SourcePrefixRows OrdinaryFinalCatalogue CanonicalPairedInverse
 
 variable {I : Type*} [Fintype I] {nP N : ℕ}
-variable {P : SemScheme (nP + 1)} {C : SemScheme N} (R : Ref I nP N N P C)
-variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable (F : FinalGateLayer.Input D N (Field P C) (OrdinaryFinalCatalogue.Member R))
+  {P : SemScheme (nP + 1)} {C : SemScheme N} (R : Ref I nP N N P C)
+  {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
+  (F : FinalGateLayer.Input D N (Field P C) (OrdinaryFinalCatalogue.Member R))
 
 /-- A proper private repair is installed in the fixed physical inventory with
 lawfulness and the entire source-cut vector constructed. -/
@@ -77,6 +74,3 @@ theorem exists_source_repair
   intro d
   rw [F.source_old, hpriv]
   exact (hread (.priv d.1)).trans (hprivate d)
-
-end
-end VaughtConjecture.Knight.OrdinaryFinalRepair

@@ -32,15 +32,3 @@ def PinnedCofaceSupply (β : LimitStage) : Prop :=
   ∀ {N n : ℕ} (P : S β.1 N) (g : Fin n ↪ Fin N) (p : S β.1 n),
     typeMap g P = some p → ∀ q : S β.1 (n + 1), IsCoface p q →
       ∃ Q : S β.1 (N + 1), IsCoface P Q ∧ typeMap (extendFace g) Q = some q
-
-/-- Exact-pair amalgamation for two cofaces of one explicitly supplied base — the coatom
-instance of Cor. 4.3.22. -/
-def ExactPairAmalgamation (β : LimitStage) : Prop :=
-  ∀ {n : ℕ} (p : S β.1 n) (P q : S β.1 (n + 1)),
-    IsCoface p P → IsCoface p q →
-      ∃ Q : S β.1 (n + 2),
-        IsCoface P Q ∧
-          typeMap (extendFace (Fin.castSuccEmb : Fin n ↪ Fin (n + 1))) Q = some q
-
-end FixedHeight
-end VaughtConjecture.Knight

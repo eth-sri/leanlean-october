@@ -209,7 +209,3 @@ theorem TransformsTo.to_bot {X : Type*} {grade : X → ℕ} (p : X → ExtOrd) :
     monotone_const,
     fun _ _ _ _ _ => (extVisibilityReplace_bot _ _).symm,
     fun _ => (min_eq_left bot_le).symm⟩
-
-end Transform
-
-end VaughtConjecture.Knight

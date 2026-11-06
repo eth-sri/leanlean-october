@@ -17,48 +17,26 @@ top. No simultaneous prescription of independent old faces is asserted, and no
 conclusion about the grade-three tail is inferred from the lower lift.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalPairLowerLifting
 open Transform Value ExtOrd CanonicalPairBoundary CoatomBoundaryExtension AmalgamationPlan
-noncomputable section
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable (sem : Semantics D) (j k : ℕ)
-variable (hj : 0 < j) (hjA : j ≤ A.card) (hk : 0 < k) (hkA : k ≤ A.card)
-variable (hp : ∀ d : Cell D, D.scope d ≠ A) (hjk : j < k)
+  (sem : Semantics D) (j k : ℕ)
+  (hj : 0 < j) (hjA : j ≤ A.card) (hk : 0 < k) (hkA : k ≤ A.card)
+  (hp : ∀ d : Cell D, D.scope d ≠ A) (hjk : j < k)
 
 theorem transport_lift {I J : Finset ι × ℕ} (h : GradedLe I J) (hJ : J.2 ≤ k)
     (hl : CappedLift (lowerRows sem j k hj hjA hk hkA hp hjk) h) :
-    CappedLift (rows sem j k hj hjA hk hkA hp hjk) h := by
-  let eI := GradeCutPairCarrier.belowEquiv D (firstProfiles sem j k) (secondProfiles sem k)
-    j k hj hjA hk hkA I (h.2.trans hJ)
-  let eJ := GradeCutPairCarrier.belowEquiv D (firstProfiles sem j k) (secondProfiles sem k)
-    j k hj hjA hk hkA J hJ
-  have respect (B : Finset ι × ℕ) (hB : B.2 ≤ k)
-      (q : (scheme sem j k hj hjA hk hkA).below B → ExtOrd)
-      (hq : RespectsSemanticsBelow (rows sem j k hj hjA hk hkA hp hjk) B q) :
-      RespectsSemanticsBelow (lowerRows sem j k hj hjA hk hkA hp hjk) B
-        (q ∘ GradeCutPairCarrier.belowEquiv D _ _ j k hj hjA hk hkA B hB) := by
-    apply (GradeCutPairRows.lower_respects_iff D _ _ j k hj hjA hk hkA hp hjk.le sem _
-      (overlap sem j k hj hjA hk hkA hp hjk) B hB _).mpr
-    simpa only [Function.comp_def, Equiv.apply_symm_apply] using hq
-  have hm (d : (lower sem j k hj hjA hk hkA).below I) :
-      eJ (CellScheme.below.mono h d) = CellScheme.below.mono h (eI d) := rfl
-  intro p q γ hpr hqr hγ hag
-  obtain ⟨r, hr, hcap, hread⟩ := hl (p ∘ eI) (q ∘ eJ) γ
-    (respect I (h.2.trans hJ) p hpr) (respect J hJ q hqr) hγ (fun d => hag (eI d))
-  refine ⟨r ∘ eJ.symm,
+    CappedLift (rows sem j k hj hjA hk hkA hp hjk) h :=
+  hl.of_respects_iff
+    (GradeCutPairCarrier.belowEquiv D _ _ j k hj hjA hk hkA I (h.2.trans hJ))
+    (GradeCutPairCarrier.belowEquiv D _ _ j k hj hjA hk hkA J hJ) (fun _ => rfl)
     (GradeCutPairRows.lower_respects_iff D _ _ j k hj hjA hk hkA hp hjk.le sem _
-      (overlap sem j k hj hjA hk hkA hp hjk) J hJ r).mp hr,
-    fun d => ?_, fun d => ?_⟩
-  · simpa only [Function.comp_apply, Equiv.apply_symm_apply] using hcap (eJ.symm d)
-  · have he : eJ.symm (CellScheme.below.mono h d) = CellScheme.below.mono h (eI.symm d) := by
-      apply eJ.injective
-      rw [Equiv.apply_symm_apply, hm, Equiv.apply_symm_apply]
-    rw [Function.comp_apply, he, hread]
-    exact congrArg p (eI.apply_symm_apply d)
+      (overlap sem j k hj hjA hk hkA hp hjk) I (h.2.trans hJ))
+    (GradeCutPairRows.lower_respects_iff D _ _ j k hj hjA hk hkA hp hjk.le sem _
+      (overlap sem j k hj hjA hk hkA hp hjk) J hJ)
 
 include hk in
 /-- Grade restriction obtains its proper-target clauses from the old schemes.
@@ -76,11 +54,11 @@ theorem cut_oldLifts (hold : CanonicalCoatomBountiful.OldLifts sem) :
   exact hold _ _ (mem I hI) (mem J hJ) hJA (EffectiveGradeLifting.cut_le h)
 
 variable (hA : 2 ≤ A.card) (hold : CanonicalCoatomBountiful.OldLifts sem)
-variable {L R : Finset ι}
-variable (hL : L ∈ D.plan) (hR : R ∈ D.plan) (hLA : L ≠ A) (hRA : R ≠ A)
-variable (hLc : 2 ≤ L.card) (hRc : 2 ≤ R.card) (hO : L ∩ R ∈ D.plan)
-variable (hcover : ∀ C ∈ D.plan, C ≠ A → C ⊆ L ∨ C ⊆ R)
-variable (hcomplete : ∀ C ∈ D.plan, C ≠ A → ∀ i, 0 < i → i ≤ C.card → i ≤ 2 →
+  {L R : Finset ι}
+  (hL : L ∈ D.plan) (hR : R ∈ D.plan) (hLA : L ≠ A) (hRA : R ≠ A)
+  (hLc : 2 ≤ L.card) (hRc : 2 ≤ R.card) (hO : L ∩ R ∈ D.plan)
+  (hcover : ∀ C ∈ D.plan, C ≠ A → C ⊆ L ∨ C ⊆ R)
+  (hcomplete : ∀ C ∈ D.plan, C ≠ A → ∀ i, 0 < i → i ≤ C.card → i ≤ 2 →
   ∃ d : Cell D, D.cell d = (C, i))
 
 include hold hL hR hLA hRA hLc hRc hO hcover hcomplete in
@@ -114,6 +92,3 @@ theorem lower_lift {I J : Finset ι × ℕ}
   by_cases he : I = J
   · subst J; exact lift_refl
   · exact hb I J hI hJ h he
-
-end
-end VaughtConjecture.Knight.CanonicalPairLowerLifting

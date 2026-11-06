@@ -13,12 +13,10 @@ Shortness alone does not bound the ordinal block. These lemmas use the
 actual coded field inventory and grid, and retain coding under replacement.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalCodingSupport
 open Transform Value ExtOrd PairedSlotComparison SourcePrefixRows
-noncomputable section
 
 theorem at_grade {i j : ℕ} {x : ExtOrd} (he : i = j) (hx : IsCodedLabel i x) :
     IsCodedLabel j x := he ▸ hx
@@ -85,6 +83,3 @@ theorem layer (D : CellScheme A) (Q : Type*) [Fintype Q]
     rw [hold]
     exact hc c e
   | inr q => exact hnew q d
-
-end
-end VaughtConjecture.Knight.CanonicalCodingSupport

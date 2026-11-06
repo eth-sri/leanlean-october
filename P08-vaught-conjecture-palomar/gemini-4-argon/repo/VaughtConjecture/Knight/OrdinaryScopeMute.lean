@@ -18,12 +18,11 @@ survive scope completion unchanged. The predecessor's bountifulness is consumed;
 no bountifulness of a prospective output is assumed.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryScopeMute
 open Transform Value ExtOrd SourceLayerCarrier SourcePrefixRows
-noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} (D : CellScheme A)
   (sem : Semantics D) (K l : ℕ) (hK : ∀ d : Cell D, D.grade d ≤ K)
   (hKl : K < l) (hlA : l ≤ A.card)
@@ -146,6 +145,3 @@ theorem complete_last (hcard : A.card = l) (hnext : l = K + 1)
   have hj : J.2 = l := by omega
   have he : J.1 = A := Finset.eq_of_subset_of_card_le hsub (by omega)
   exact hne (Prod.ext he hj)
-
-end
-end VaughtConjecture.Knight.OrdinaryScopeMute

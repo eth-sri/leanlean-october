@@ -15,12 +15,10 @@ is only half the assertion: new upper groups must not enter below the old cut.
 The canonical fixed-point hypothesis supplies exactly this relative slot bound.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalPairedPrefix
 open Transform Value ExtOrd PairedSlotEncoding CanonicalPairedEncoding
-noncomputable section
 
 def lowerGroups (j : ℕ) (S : Finset Ordinal.{0}) (h : Ordinal.{0}) : ℕ :=
   ((PairedSlotEncoding.keys j S).filter (· < h)).card
@@ -203,7 +201,3 @@ theorem normalize_cap {j B : ℕ} {p q : X → ExtOrd}
       rw [min_eq_right (not_lt.mp hd)] at he
       exact min_eq_right_iff.mp he.symm
     rw [min_eq_right (normalize_upper hc hp hag d hqd), min_eq_right (not_lt.mp hd)]
-
-end Profile
-end
-end VaughtConjecture.Knight.CanonicalPairedPrefix

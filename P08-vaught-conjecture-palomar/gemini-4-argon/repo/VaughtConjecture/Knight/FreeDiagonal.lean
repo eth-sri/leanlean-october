@@ -5,8 +5,8 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.ControllerPrefixFamily
 public import VaughtConjecture.Knight.WitnessAlgebra
+public import VaughtConjecture.Knight.SlackCutPasting
 
 /-! # A free diagonal beyond a finite source inventory
 
@@ -52,7 +52,3 @@ theorem clip_witness {τ : ExtOrd → ExtOrd} {K : ℕ} {C : ExtOrd}
           · exact False.elim (hCb (le_bot_iff.mp (by rwa [min_eq_right h] at hact)))
         rw [hτ.clause5 x k (by rw [hxb]; exact bot_le) i hi, hxb,
           extVisibilityReplace_bot, min_bot_left, extVisibilityReplace_bot]
-
-end FreeDiagonal
-
-end VaughtConjecture.Knight

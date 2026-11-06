@@ -91,5 +91,3 @@ theorem of_positive (hne : Nonempty M) (hcons : R.IsExactParentConsistent)
     ⟨u, P, hP⟩
   rw [Nat.add_comm 1 k] at hh
   exact hh
-
-end VaughtConjecture.Knight.FiniteCutReceiving

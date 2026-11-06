@@ -15,12 +15,11 @@ compatibility needs only consistency. No occurrence supply for the stable lift
 or modelhood of that lift is used here.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.KnightRealization
 open TypeTower StageType
-noncomputable section
+
 universe w
 variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
 
@@ -32,6 +31,3 @@ def stableActualLabelling (hcons : W.IsExactParentConsistent)
   mapCell := by
     intro n m u p v q hv f hfu hpq d
     exact stableValue_mapCell' hcons hv hfu hpq d
-
-end
-end VaughtConjecture.Knight.KnightRealization

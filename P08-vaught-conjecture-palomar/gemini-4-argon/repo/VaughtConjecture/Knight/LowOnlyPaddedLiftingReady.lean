@@ -17,13 +17,11 @@ incoming semantic contract are now proved on its actual predecessor, not
 fields of an assumed successor record. No grade-three layer is installed here.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedLiftingReady
-open Transform Value ExtOrd CappedDonor LowOnly AmalgamationPlan
-open LowOnlyPaddedSuccessor LowOnlyPaddedRendering
-noncomputable section
+open Transform Value ExtOrd CappedDonor LowOnly AmalgamationPlan LowOnlyPaddedSuccessor LowOnlyPaddedRendering
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n K : ℕ}
   (I : WholeDonorBoundary.Input A B C R m n n) (F : LowOnly.Family I.left I.right K)
@@ -37,6 +35,3 @@ include hcover
 
 theorem through_two : TargetGradeLifting.Through (rows I F hroot hA hB hC) 2 :=
   fun hU hV h hj => LowOnlyPaddedPairLift.lift I F hroot hA hB hC hcover hU hV h hj
-
-end
-end VaughtConjecture.Knight.LowOnlyPaddedLiftingReady

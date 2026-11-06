@@ -37,14 +37,12 @@ No paired-profile leaf is identified with a ladder tip.
 The family section instantiates the activation and readback on KVC's `LowOnly.Family` at
 `K = 1`.  No physical installation, bountifulness or model application is asserted. -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.LowSeparatorRank
 
 open Transform Value ExtOrd LadderScalarRendering FiniteProfileControllers SupportLadderRows
   LowSeparator
-
-noncomputable section
 
 section Scalar
 
@@ -214,15 +212,6 @@ end Scalar
 
 /-! ## The two-spare-tip separator on the actual ladder -/
 
-section Ladder
-
-variable {X : Type*} [Fintype X] (N : X → Prop) [DecidablePred N] (b : X)
-  {Q : Type*} [Finite Q] {H : ℕ} (profile : Q → X → ℕ)
-  (hbound : ∀ a d, profile a d ≤ H) (hH : 0 < H)
-  (src : Q → X → ExtOrd) (hsrc : ∀ a, profile a = fieldRank (src a))
-
-end Ladder
-
 /-! ## The selected rendered readings -/
 
 section Selected
@@ -276,9 +265,3 @@ theorem low_min_le {A : State P C} (hA : F.Admissible 1 A) (hm : F.maximum A < A
     exact h.mono (C.scheme.grade_pos _)
   rw [evr_eq_self_of_selfVis hvis] at hlow
   exact (le_max_right _ _).trans hlow
-
-end Family
-
-end
-
-end VaughtConjecture.Knight.LowSeparatorRank

@@ -32,17 +32,16 @@ the successor-labelled one-point type faithfully, for every `γ` with `γ + 1 < 
 candidates (`Knight/CoatomAmalgamation.lean`): at a limit stage, for every `γ < α`, a one-point
 type with a cell labelled `γ + 1`.  Construction-private, not root-exported. -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight
 
-open VaughtConjecture.AmalgamationPlan
-open Transform Value ExtOrd
+open VaughtConjecture.AmalgamationPlan Transform Value ExtOrd
 
 /-! ### The constant-off-bottom shifter -/
 
 /-- The shifter sending `⊥` to `⊥` and every other label to the constant `c`. -/
-noncomputable def constNonbot (c : ExtOrd) (x : ExtOrd) : ExtOrd :=
+def constNonbot (c : ExtOrd) (x : ExtOrd) : ExtOrd :=
   if x = ⊥ then ⊥ else c
 
 @[simp] theorem constNonbot_bot (c : ExtOrd) : constNonbot c ⊥ = ⊥ := by
@@ -128,7 +127,7 @@ theorem one_selfVisible :
   exact h.symm.le
 
 /-- The semantics on the arity-one mute scheme whose every row is the constant `1`. -/
-noncomputable def successorOneSemantics :
+def successorOneSemantics :
     Semantics (SemScheme.muteChain 1).scheme where
   E := fun _ _ => ofOrd (1 : ℕ)
   orderly _ d := by
@@ -155,7 +154,7 @@ theorem successorOneSemantics_consistent : successorOneSemantics.IsConsistent :=
 
 /-- The arity-one domain with constant row `1`: coded, consistent, bountiful (vacuously —
 there is no strict pair of graded indices), complete. -/
-noncomputable def successorOneSemScheme : SemScheme 1 where
+def successorOneSemScheme : SemScheme 1 where
   scheme := (SemScheme.muteChain 1).scheme
   rows := successorOneSemantics
   rows_coded _ _ := by
@@ -204,7 +203,7 @@ theorem successorOneLabel_respects (γ : Ordinal) :
 
 /-- **The successor-labelled one-point type** (Lemma 4.2.2, second clause): for `γ + 1 < α`,
 the stage type on `successorOneSemScheme` with every cell labelled `γ + 1`. -/
-noncomputable def successorOneType (α γ : Ordinal) (hγ : γ + 1 < α) : S α 1 where
+def successorOneType (α γ : Ordinal) (hγ : γ + 1 < α) : S α 1 where
   scheme := successorOneSemScheme
   label := fun _ => ofOrd (γ + 1)
   label_bound _ := Or.inl (ofOrd_lt_ofOrd.mpr hγ)
@@ -225,5 +224,3 @@ theorem exists_successorOneType_of_lt {α γ : Ordinal} (hα : Order.IsSuccLimit
     (hγ : γ < α) :
     ∃ (r : S α 1) (Sig : Cell r.scheme.scheme), r.label Sig = ofOrd (γ + 1) :=
   exists_successorOneType (hα.add_one_lt hγ)
-
-end VaughtConjecture.Knight

@@ -15,7 +15,7 @@ modelhood construction for the stable candidate is imported. The model-facing na
 remain definitional compatibility wrappers around the consistency-and-covering core.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight
 
@@ -82,7 +82,7 @@ existing statement about them is unchanged. -/
 
 /-- **Gate 4: the stable lift of a realized type** — same scheme and rows, labels the stable
 values; a genuine stage type of `S^{α+ω}` by gate 3.  Consistency-and-covering form. -/
-noncomputable def stableLiftTypeOf (hcons : R.IsExactParentConsistent)
+def stableLiftTypeOf (hcons : R.IsExactParentConsistent)
     (hcov : R.IsInitialSegmentCovering) {n : ℕ} (t : Fin n ↪ M) (p : S α.1 n)
     (hpt : R.eval t = some p) : S (α.1 + Ordinal.omega0) n where
   scheme := p.scheme
@@ -94,7 +94,7 @@ noncomputable def stableLiftTypeOf (hcons : R.IsExactParentConsistent)
   respects := stableLiftRespects_of_consistent hcons hcov hpt
 
 /-- **Gate 4** in its original interface: the source is a model. -/
-noncomputable def stableLiftType (hR : R.IsModel) {n : ℕ} (t : Fin n ↪ M) (p : S α.1 n)
+def stableLiftType (hR : R.IsModel) {n : ℕ} (t : Fin n ↪ M) (p : S α.1 n)
     (hpt : R.eval t = some p) : S (α.1 + Ordinal.omega0) n :=
   stableLiftTypeOf hR.consistent hR.covering t p hpt
 
@@ -119,7 +119,7 @@ theorem reduceType_stableLiftTypeOf {n : ℕ} {t : Fin n ↪ M} {p : S α.1 n}
 
 /-- **The stabilized realization `M⁺`**: label exactly the source-defined tuples, by their
 stable lifts.  Consistency-and-covering form. -/
-noncomputable def stableLiftOf : KnightRealization α.nextBlock M where
+def stableLiftOf : KnightRealization α.nextBlock M where
   eval {_n} t :=
     match h : R.eval t with
     | none => none
@@ -223,7 +223,7 @@ end Of
 /-! #### The model-hypothesis interface, as definitional wrappers -/
 
 /-- **The stabilized realization `M⁺`**, in its original interface: the source is a model. -/
-noncomputable def stableLift (hR : R.IsModel) : KnightRealization α.nextBlock M :=
+def stableLift (hR : R.IsModel) : KnightRealization α.nextBlock M :=
   stableLiftOf hR.consistent hR.covering
 
 theorem stableLift_eval_some (hR : R.IsModel) {n : ℕ} {t : Fin n ↪ M} {p : S α.1 n}
@@ -247,7 +247,3 @@ the level of evaluations). -/
 theorem stableLift_consistent (hR : R.IsModel) :
     (stableLift hR).IsExactParentConsistent :=
   stableLiftOf_consistent hR.consistent hR.covering
-
-end KnightRealization
-
-end VaughtConjecture.Knight

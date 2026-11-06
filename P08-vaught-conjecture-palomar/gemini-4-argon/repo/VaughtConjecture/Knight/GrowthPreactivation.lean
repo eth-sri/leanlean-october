@@ -15,12 +15,10 @@ Bottom caps, top caps and top prescriptions require no separate positivity
 argument. The activation relation is not weakened; it is inactive at this cutoff.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.Growth
 open Transform Value ExtOrd AmalgamationPlan
-noncomputable section
 
 section Complete
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
@@ -181,7 +179,3 @@ theorem donor_before {j : ℕ} (hj : j < X.req.N) {S : State C.scheme P.scheme}
   cases f with
   | inl d => exact complete_caps S.privateValues hcap d
   | inr d => exact complete_caps S.donorValues hag d
-
-end RootAttachment
-end
-end VaughtConjecture.Knight.Growth

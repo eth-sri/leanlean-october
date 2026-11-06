@@ -30,12 +30,11 @@ terminal classes is used. Growth prolongation and hollow-growth comparison are c
 as hypotheses here and supplied in `ConstructedTerminalCountability`.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.TopGradeTerminalCounting
 open TypeTower StageType KnightRealization Value ExtOrd TopSupport Cardinal
-noncomputable section
+
 universe w
 variable {α : LimitStage} {M : Type w} {W : KnightRealization α M}
 
@@ -156,6 +155,3 @@ theorem countableTerminalFibres_of_growth_results
   intro ρ hρ
   exact Cardinal.mk_le_aleph0_iff.mpr
     (countable_terminalClass hρ (hprolong ρ hρ) (hcompare ρ hρ))
-
-end
-end VaughtConjecture.Knight.TopGradeTerminalCounting

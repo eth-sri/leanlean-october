@@ -5,7 +5,18 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.TwoContextCoupled
+public import VaughtConjecture.Knight.WitnessAlgebra
+public import VaughtConjecture.Knight.Type
+public import VaughtConjecture.Knight.PartialSections
+public import VaughtConjecture.Knight.WitnessSplice
+public import VaughtConjecture.Knight.PullbackSemantics
+public import VaughtConjecture.Knight.RowReadback
+public import VaughtConjecture.Knight.RowCorrectness
+public import VaughtConjecture.Knight.FullScopeBountiful
+public import VaughtConjecture.Knight.Domain
+public import VaughtConjecture.Knight.OnePointSuccessor
+public import VaughtConjecture.Knight.CountedRecoding
+public import VaughtConjecture.Knight.CappedCore
 
 /-! # Bountifulness of the coupled semantics, reduced by scope
 
@@ -45,26 +56,12 @@ Not done: the obligation `ProperToFull₃Low` itself (the retuning at grades one
 Construction-private (not root-exported). -/
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight
 
 open AmalgamationPlan Transform Value ExtOrd
 open CellScheme.restrictFace (toCell belowMap pushGraded)
 
-attribute [local instance] decEqRow1 decEqCore2 decEqCappedCore3
-
-section Reduction
-
-end Reduction
-
 /-! ## The smallest scope-changing case: grade one -/
-
-section GradeOne
-
-variable {q : D₂.below (Finset.univ, 1) → ExtOrd}
-
-end GradeOne
 
 /-! ## A step witness at a limit cutoff -/
 
@@ -160,7 +157,3 @@ theorem Witness.stepLimit (K n : ℕ) {c₀ c₁ : ExtOrd} (h : c₀ ≤ c₁) (
       · rw [stepShifter_of_ge (not_lt.mp hal)] at hσ
         rw [stepShifter_of_ge (not_lt.mp hal), stepShifter_of_ge (evr_ge_limit (not_lt.mp hal) k i),
           hσ, extVisibilityReplace_bot]
-
-end StepLimit
-
-end VaughtConjecture.Knight

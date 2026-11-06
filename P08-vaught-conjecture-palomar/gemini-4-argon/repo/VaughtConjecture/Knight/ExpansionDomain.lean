@@ -134,5 +134,3 @@ theorem reduct_omegaStage_eq {ξ : Ordinal.{0}} {R : KnightNatModel}
     W.reduct (omegaStage_le _) = R.1 := by
   rw [← Realization.reduct_reduct omegaStage_le_blockStage_zero (blockStage_zero_le ξ) W, hWr]
   exact liftBlockZero_reduct R.1
-
-end VaughtConjecture.Knight.ExpansionDomain

@@ -16,12 +16,10 @@ only on these cap readings, so it transfers back to the actual originals.
 No top-cap or supplied-admission hypothesis is needed.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight
 open AmalgamationPlan Transform Value ExtOrd Growth GrowthHigherMixed
-noncomputable section
 
 namespace Requests
 variable {ιA ιQ : Type*} [DecidableEq ιA] [DecidableEq ιQ]
@@ -220,8 +218,3 @@ theorem full_correct (hfull : A.card ≤ t + 2)
     funext fun d => congrArg v (donorFace_map I X T hA hB hC t ht d _).symm
   rw [hps, hds] at h
   exact h
-
-end Full
-end GrowthCappedReadback
-end
-end VaughtConjecture.Knight

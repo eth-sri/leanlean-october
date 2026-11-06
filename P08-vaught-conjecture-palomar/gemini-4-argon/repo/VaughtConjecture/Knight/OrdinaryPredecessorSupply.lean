@@ -15,16 +15,14 @@ receipt is an input. N is at least four in this initialized-recursion endpoint.
 The missing full grade N and apex belong to the final installer, not this output.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryPredecessorSupply
-open AmalgamationPlan Transform Value ExtOrd CoatomBoundaryExtension
-open SourcePrefixRows OrbitPrefixSupport
-noncomputable section
+open AmalgamationPlan Transform Value ExtOrd CoatomBoundaryExtension SourcePrefixRows OrbitPrefixSupport
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι} {R : Finset (Finset ι)}
-variable {m nL nR : ℕ} (I : WholeDonorBoundary.Input A B C R m nL nR)
-variable (N : ℕ) (G : Finset ExtOrd) (θ : ExtOrd)
+  {m nL nR : ℕ} (I : WholeDonorBoundary.Input A B C R m nL nR)
+  (N : ℕ) (G : Finset ExtOrd) (θ : ExtOrd)
 
 /-- Acceptance receipts of the constructed, deliberately incomplete full scope. -/
 structure Output where
@@ -34,9 +32,6 @@ structure Output where
   consistent : rows.IsConsistent
   coded : rows.IsCoded
   original : Cell I.boundary ↪o Cell carrier
-  index : ∀ d, carrier.cell (original d) = I.boundary.cell d
-  row : ∀ (c : Cell I.boundary) (d : I.boundary.below (I.boundary.cell c)),
-    rows.E (original c) ⟨original d.1, by rw [index, index]; exact d.2⟩ = I.rows.E c d
   leftFace : ExactSemanticFace I.leftRows rows
   rightFace : ExactSemanticFace I.rightRows rows
   left_map : ∀ d, leftFace.map d = original (I.leftFace.map d)
@@ -68,9 +63,6 @@ structure Output where
 
 variable {N G θ}
 
-/-- Construct every proper scope on the actual boundary, then the full scope
-through N-1. The two tall facets used by lifting are obtained from the completed
-plan; neither is assumed to be the smaller original donor. -/
 def build (n : ℕ) (hBA : B ≠ A) (hCA : C ≠ A) (hunion : A = B ∪ C)
     (hcard : A.card = n + 5) (hB : B.card = n + 4) (hC : C.card < n + 4)
     (hG : ∀ z ∈ G, SelfVis (n + 4) z) (hθ : SelfVis (n + 4) θ)
@@ -84,8 +76,6 @@ def build (n : ℕ) (hBA : B ≠ A) (hCA : C ≠ A) (hunion : A = B ∪ C)
     consistent := OrdinaryGlobalPredecessor.consistent I n X hcard
     coded := OrdinaryGlobalPredecessor.coded I n X hcard
     original := OrdinaryGlobalPredecessor.original I n X hcard
-    index := OrdinaryGlobalPredecessor.original_index I n X hcard
-    row := OrdinaryGlobalPredecessor.original_row I n X hcard
     leftFace := OrdinaryGlobalPredecessor.leftFace I n X hcard hBA
     rightFace := OrdinaryGlobalPredecessor.rightFace I n X hcard hCA
     left_map := fun _ => rfl
@@ -115,10 +105,3 @@ def build (n : ℕ) (hBA : B ≠ A) (hCA : C ≠ A) (hunion : A = B ∪ C)
     · omega
   · intro p q hp hb hq hqb γ hγ hγθ he
     exact OrdinaryGlobalPredecessor.agreement I n X hcard hG hθ htθ hp hb hq hqb hγ hγθ he
-
-namespace Output
-variable (O : Output I N G θ)
-
-end Output
-end
-end VaughtConjecture.Knight.OrdinaryPredecessorSupply

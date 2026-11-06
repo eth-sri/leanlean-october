@@ -86,7 +86,7 @@ section Presentation
 
 variable {L : Language.{u, v}} [L.IsRelational] {X : Type x} {Q : Type w}
 
-variable [Countable (Σ l, L.Relations l)]
+  [Countable (Σ l, L.Relations l)]
 
 /-- **Isolation from a surjective, satisfaction-compatible, isomorphism-preserving presentation.**
 The isolating sentence of the class of `x` is the Scott sentence of `ℕ` under the decoded structure
@@ -109,7 +109,3 @@ theorem isolatedPresentation_of_surjective (codes : X → StructureSpace L) (cla
   · rw [h, htruth, SmallVocabulary.mem_modelsOf_iff_realize,
       ← Formulaω.realize_as_sentence_iff_toSentenceω]
     exact @scottSentence_self L _ _ ℕ (codes x).toStructure _
-
-end Presentation
-
-end FirstOrder.Language

@@ -15,17 +15,15 @@ inside its point scope. Arbitrary lawful local labellings and original-cap
 lifts transport along its actual lower-domain equivalences.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight
 
 open AmalgamationPlan Transform Value ExtOrd
 
 variable {ι : Type*} [DecidableEq ι] {B A : Finset ι}
-variable {D : CellScheme B} {K : CellScheme A}
-variable (semD : Semantics D) (semK : Semantics K)
+  {D : CellScheme B} {K : CellScheme A}
+  (semD : Semantics D) (semK : Semantics K)
 
 /-- Literal inherited semantics with no foreign cells inside the face. -/
 structure ExactSemanticFace where
@@ -42,7 +40,7 @@ variable {semD semK} (F : ExactSemanticFace semD semK)
 def belowMap (c : Cell D) (d : D.below (D.cell c)) : K.below (K.cell (F.map c)) :=
   ⟨F.map d.1, by rw [F.index, F.index]; exact d.2⟩
 
-noncomputable def belowEquiv (BJ : Finset ι × ℕ) (hB : BJ.1 ⊆ B) :
+def belowEquiv (BJ : Finset ι × ℕ) (hB : BJ.1 ⊆ B) :
     D.below BJ ≃ K.below BJ :=
   Equiv.ofBijective (fun d => ⟨F.map d.1, by rw [F.index]; exact d.2⟩) ⟨by
     intro d e h
@@ -97,7 +95,7 @@ theorem restrict {q : Cell K → ExtOrd} (hq : RespectsSemantics semK q) :
     refine ⟨d, ?_, hle⟩
     simpa only [F.index] using hz
 
-noncomputable def ownerEquiv (c : Cell D) :
+def ownerEquiv (c : Cell D) :
     D.below (D.cell c) ≃ K.below (K.cell (F.map c)) :=
     Equiv.ofBijective (F.belowMap c) ⟨by
       intro d e h
@@ -199,7 +197,3 @@ theorem lift {CI BJ : Finset ι × ℕ} (hB : BJ.1 ⊆ B)
     exact F.respects_below_iff BJ hB q
   · intro p
     exact F.respects_below_iff CI (h.1.trans hB) p
-
-end ExactSemanticFace
-
-end VaughtConjecture.Knight

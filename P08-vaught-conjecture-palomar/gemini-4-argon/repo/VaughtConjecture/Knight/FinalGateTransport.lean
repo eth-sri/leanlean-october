@@ -18,15 +18,13 @@ local sections and original-cap lifting, not just selected source vectors.
 This includes every proper-scope target and every target of grade below N.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.FinalGateLayer.Input
 open Transform Value ExtOrd CoatomBoundaryExtension
-noncomputable section
 
 variable {ι X Q : Type*} [DecidableEq ι] [Fintype Q]
-variable {A : Finset ι} {D : CellScheme A} {N : ℕ} (F : Input D N X Q)
+  {A : Finset ι} {D : CellScheme A} {N : ℕ} (F : Input D N X Q)
 
 /-- All occurrences below a target that excludes the added index are old. -/
 def inheritedBelow (J : Finset ι × ℕ) (hJ : ¬ GradedLe (A, N) J) :
@@ -63,31 +61,10 @@ theorem inheritedBelow_respects_iff (J : Finset ι × ℕ) (hJ : ¬ GradedLe (A,
 /-- Old lifting clauses transport on their actual target-local domains.
 No bountifulness of the extended output is assumed. -/
 theorem inherited_lift {I J : Finset ι × ℕ} (h : GradedLe I J)
-    (hJ : ¬ GradedLe (A, N) J) (hlift : CappedLift F.sem h) : CappedLift F.rows h := by
-  let hI : ¬ GradedLe (A, N) I := fun he => hJ (he.trans h)
-  let eI := F.inheritedBelow I hI
-  let eJ := F.inheritedBelow J hJ
-  have hm (d : D.below I) :
-      eJ (CellScheme.below.mono h d) = CellScheme.below.mono h (eI d) := rfl
-  intro p q γ hp hq hγ hag
-  obtain ⟨r, hr, hcaps, hread⟩ := hlift (p ∘ eI) (q ∘ eJ) γ
-    ((F.inheritedBelow_respects_iff I hI p).mp hp)
-    ((F.inheritedBelow_respects_iff J hJ q).mp hq) hγ (fun d => hag (eI d))
-  refine ⟨r ∘ eJ.symm, ?_, ?_, ?_⟩
-  · apply (F.inheritedBelow_respects_iff J hJ _).mpr
-    have he : (r ∘ eJ.symm) ∘ eJ = r := by
-      funext d
-      simp only [Function.comp_apply, Equiv.symm_apply_apply]
-    exact he.symm ▸ hr
-  · intro d
-    simpa only [Function.comp_apply, Equiv.apply_symm_apply] using hcaps (eJ.symm d)
-  · intro d
-    have he : eJ.symm (CellScheme.below.mono h d) =
-        CellScheme.below.mono h (eI.symm d) := by
-      apply eJ.injective
-      rw [Equiv.apply_symm_apply, hm, Equiv.apply_symm_apply]
-    rw [Function.comp_apply, he, hread]
-    exact congrArg p (eI.apply_symm_apply d)
+    (hJ : ¬ GradedLe (A, N) J) (hlift : CappedLift F.sem h) : CappedLift F.rows h :=
+  have hI : ¬ GradedLe (A, N) I := fun he => hJ (he.trans h)
+  hlift.of_equiv (F.inheritedBelow I hI) (F.inheritedBelow J hJ) (fun _ => rfl) le_rfl
+    (fun p => (F.inheritedBelow_respects_iff I hI p).mp) (F.inheritedBelow_respects_iff J hJ)
 
 /-- The predecessor's lower-grade lift is the restoration clause on the
 installed carrier, even when old proper grade-N owners remain present. -/
@@ -154,6 +131,3 @@ def inheritedFace {S : Finset ι} {D₀ : CellScheme S} {sem₀ : Semantics D₀
     obtain ⟨e, he⟩ := E.exhaustive d.1 d.2.1
     exact ⟨e, (congrArg F.old he).trans hd.symm⟩
   row c d := (F.inherited_row (E.map c) (E.belowMap c d)).trans (E.row c d)
-
-end
-end VaughtConjecture.Knight.FinalGateLayer.Input

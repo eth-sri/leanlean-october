@@ -16,12 +16,11 @@ original root cell. Its least-top marker supplies the weak root inequality.
 No receiving scheme or stable model is assumed.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.HollowGrowthReference
 open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan
-noncomputable section
+
 universe w
 variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
 
@@ -119,6 +118,3 @@ theorem exists_data (hM : W.IsModel) (hg : W.HasTopGradeGrowth) (hh : W.IsHollow
     Subtype.ext (mapCell_trans hcy hpc hpy d)
   rw [heq]
   exact hle
-
-end
-end VaughtConjecture.Knight.HollowGrowthReference

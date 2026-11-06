@@ -15,7 +15,7 @@ The existing scalar shifter is reused; locality and availability are constructed
 unchanged donor rows. Attribution: the corresponding proofs in `CappedDonorRetarget`.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.LowOnly
 
@@ -52,7 +52,7 @@ theorem srcP_nonTop_lt_top (o : P.scheme.below (BJ)) (ho : p o.1 = ⊤)
 
 open Classical in
 /-- Replace every designated donor-top value by `η`, retain every other value. -/
-noncomputable def retargetTops (η : ExtOrd) (u : P.scheme.below (BJ) → ExtOrd)
+def retargetTops (η : ExtOrd) (u : P.scheme.below (BJ) → ExtOrd)
     (d : P.scheme.below (BJ)) : ExtOrd :=
   if p d.1 = ⊤ then η else u d
 
@@ -89,7 +89,7 @@ theorem RetargetData.top_pos {d : P.scheme.below (BJ)} (h : p d.1 = ⊤) : ⊥ <
   hu.b_pos.trans_le (hu.top_ge d h)
 
 /-- The rounded non-top sources below an owner. -/
-noncomputable def RetargetData.srcMax (o : P.scheme.below (BJ)) : ExtOrd :=
+def RetargetData.srcMax (o : P.scheme.below (BJ)) : ExtOrd :=
   letI := Fintype.ofFinite (P.scheme.below (P.scheme.cell o.1))
   (Finset.univ.filter fun d : P.scheme.below (P.scheme.cell o.1) => p d.1 ≠ ⊤).sup
     fun d => extVisibilityReplace (P.rows.E o.1 d) (P.scheme.grade o.1) (P.scheme.grade o.1)
@@ -207,7 +207,3 @@ theorem RetargetData.retargetTops_respects
       · rw [retargetTops_of_top η u hX]
         exact (hu.nonTop_lt Sig hS).le.trans hu.b_le_η
       · rw [retargetTops_of_nonTop η u hX]; exact hle
-
-end Retarget
-
-end VaughtConjecture.Knight.LowOnly

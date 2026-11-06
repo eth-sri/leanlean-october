@@ -25,17 +25,15 @@ this file does not build the predecessor or prove final-layer bountifulness.
 `CappedDonorCappedReadback` is ported unchanged from V-C's `04276e9`.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryFinalReadback
 open Transform Value ExtOrd CappedDonor CappedDonor.Ref OrdinaryFinalCatalogue
-noncomputable section
 
 variable {I : Type*} [Fintype I] {nP N : ℕ}
-variable {P : SemScheme (nP + 1)} {C : SemScheme N} (R : Ref I nP N N P C)
-variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable (F : FinalGateLayer.Input D N (Field P C) (OrdinaryFinalCatalogue.Member R))
+  {P : SemScheme (nP + 1)} {C : SemScheme N} (R : Ref I nP N N P C)
+  {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
+  (F : FinalGateLayer.Input D N (Field P C) (OrdinaryFinalCatalogue.Member R))
 
 /-- An inherited occurrence in the final active lower set. -/
 abbrev oldAt (d : Cell D) (hd : D.grade d ≤ N) : F.carrier.below (A, N) :=
@@ -44,8 +42,8 @@ abbrev oldAt (d : Cell D) (hd : D.grade d ≤ N) : F.carrier.below (A, N) :=
     exact ⟨D.isPlan.subset_of_mem (D.scope_mem_plan d), hd⟩⟩
 
 variable (req : Cell P.scheme ↪ Cell D) (priv : Cell C.scheme ↪ Cell D)
-variable (hreqGrade : ∀ d, D.grade (req d) = P.scheme.grade d)
-variable (hprivGrade : ∀ d, D.grade (priv d) = C.scheme.grade d)
+  (hreqGrade : ∀ d, D.grade (req d) = P.scheme.grade d)
+  (hprivGrade : ∀ d, D.grade (priv d) = C.scheme.grade d)
 
 abbrev reqAt (d : Cell P.scheme) : F.carrier.below (A, N) :=
   oldAt R F (req d) ((hreqGrade d).trans_le (req_grade_le R d))
@@ -99,6 +97,3 @@ theorem capped_readback
     (hread (R.capC le_rfl) le_rfl)
     (fun i => hread (CellScheme.below.mono (R.capLe le_rfl) (R.lowRef i))
       (R.ref_lt_cap i).le) hg (CappedDonor.Ref.reqCell d (req_grade_le R d))
-
-end
-end VaughtConjecture.Knight.OrdinaryFinalReadback

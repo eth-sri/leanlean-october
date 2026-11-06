@@ -29,8 +29,6 @@ which is a proper label, not `⊤`.  Non-top source cells keep their literal lab
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight
 
 open TypeTower Value ExtOrd StageType Filter
@@ -82,9 +80,3 @@ theorem stableValue_eq_bandValue_iSup :
       obtain ⟨y, hy⟩ := (ht.eventually (eventually_ge_atTop k)).exists
       exact (Nat.cast_le.mpr hy).trans (le_iSup (fun y => (offset Xi htop y : ℕ∞)) y)
     rw [hsup, bandValue_top, hsv]
-
-end RootedCover
-
-end KnightRealization
-
-end VaughtConjecture.Knight

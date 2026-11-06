@@ -16,15 +16,11 @@ positive leaf is top. Both readings use the same composed numerical native
 chart. This is a whole lawful, supported display, not a model occurrence.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedSelectedPair
-open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder
-open LowOnlyPaddedContract LowOnlyPaddedIteration LowOnlyPaddedEndpoints
-open LowOnlyPaddedRestriction LowOnlyPaddedRenderChart LowOnlyPaddedSelectedChart
-open SourcePrefixRows SharpWitnessComposition PairedSlotComparison
-noncomputable section
+open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder LowOnlyPaddedContract LowOnlyPaddedIteration LowOnlyPaddedEndpoints
+open LowOnlyPaddedRestriction LowOnlyPaddedRenderChart LowOnlyPaddedSelectedChart SourcePrefixRows SharpWitnessComposition PairedSlotComparison
 
 section Scalar
 variable {X : Type*} [Fintype X] (N : X → Prop) [DecidablePred N]
@@ -219,6 +215,3 @@ theorem exists_whole_rank_pair (F : LowOnly.Family I.left I.right 1)
       (LowSeparator.donorField F) LowSeparator.cutoffField
       (RelativeLadderLayer.ranks (F.fields 1)) (Nat.succ_pos _) hlt
       (Nat.le_succ _) hqs' hqt _)).trans hm)
-
-end
-end VaughtConjecture.Knight.LowOnlyPaddedSelectedPair

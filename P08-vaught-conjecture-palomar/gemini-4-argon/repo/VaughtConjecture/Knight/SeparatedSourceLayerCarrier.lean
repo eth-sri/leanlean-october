@@ -14,17 +14,15 @@ condition that a new full controller is not below an old owner. Proper scope
 supplies it even when the old owner has the new controller's grade.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.SeparatedSourceLayerCarrier
 
 open AmalgamationPlan Transform Value ExtOrd SourceLayerCarrier
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι}
-variable (D : CellScheme A) (Q : Type*) [Fintype Q] (k : ℕ)
-variable (hk : 0 < k) (hA : k ≤ A.card)
+  (D : CellScheme A) (Q : Type*) [Fintype Q] (k : ℕ)
+  (hk : 0 < k) (hA : k ≤ A.card)
 
 theorem separated_of_proper (hp : ∀ d : Cell D, D.scope d ≠ A) :
     ∀ d : Cell D, ¬ GradedLe (A, k) (D.cell d) := by
@@ -43,7 +41,7 @@ theorem below_old (x : Cell D ⊕ Q) (c : Cell D)
   | inl d => exact ⟨⟨d, h⟩, rfl⟩
   | inr q => exact False.elim (hseparated c h)
 
-noncomputable def ownerEquiv (c : Cell D) : D.below (D.cell c) ≃
+def ownerEquiv (c : Cell D) : D.below (D.cell c) ≃
     (scheme D Q k hk hA).below ((scheme D Q k hk hA).cell (toCell D Q k hk hA (.inl c))) :=
   Equiv.ofBijective
     (fun d => ⟨toCell D Q k hk hA (.inl d.1), by
@@ -68,11 +66,11 @@ theorem old_not_full (d : Cell D) :
   rw [cell_toCell]
   exact fun he => hseparated d (he.symm ▸ GradedLe.refl (A, k))
 
-noncomputable def controller (q : Q) :
+def controller (q : Q) :
     SourcePrefixLayer.Controller (scheme D Q k hk hA) k :=
   ⟨toCell D Q k hk hA (.inr q), cell_toCell D Q k hk hA (.inr q)⟩
 
-noncomputable def controllerEquiv : Q ≃ SourcePrefixLayer.Controller (scheme D Q k hk hA) k :=
+def controllerEquiv : Q ≃ SourcePrefixLayer.Controller (scheme D Q k hk hA) k :=
   Equiv.ofBijective (controller D Q k hk hA) ⟨by
     intro p q hpq
     exact Sum.inr.inj ((enumeration D Q k hk hA).injective (congrArg Subtype.val hpq)), by
@@ -90,7 +88,7 @@ noncomputable def controllerEquiv : Q ≃ SourcePrefixLayer.Controller (scheme D
 
 variable (sem : Semantics D)
 
-noncomputable def oldTable : (Cell D ⊕ Q) → (Cell D ⊕ Q) → ExtOrd
+def oldTable : (Cell D ⊕ Q) → (Cell D ⊕ Q) → ExtOrd
   | .inl c, .inl d => AmalgamatedBoundaryRows.total sem c d
   | _, _ => ⊥
 
@@ -106,7 +104,7 @@ theorem oldTable_visible (c d : Cell D ⊕ Q) (h : GradedLe (index D Q k d) (ind
     exact (sem.orderly c e).symm
   | inr q => cases d <;> exact selfVis_bot _
 
-noncomputable def base : Semantics (scheme D Q k hk hA) where
+def base : Semantics (scheme D Q k hk hA) where
   E c d := oldTable D Q sem (toOcc D Q k hk hA c) (toOcc D Q k hk hA d.1)
   orderly c d := by
     have h : GradedLe (index D Q k (toOcc D Q k hk hA d.1))
@@ -146,4 +144,3 @@ theorem base_respects_iff (c : Cell D)
     rw [cell_toCell, cell_toCell]
     rfl
   · exact (base_old D Q k hk hA hseparated sem b.1 d).symm
-end VaughtConjecture.Knight.SeparatedSourceLayerCarrier

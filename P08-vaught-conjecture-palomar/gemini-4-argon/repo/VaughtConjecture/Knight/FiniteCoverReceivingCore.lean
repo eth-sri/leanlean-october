@@ -38,7 +38,6 @@ universe w
 
 variable {M : Type w} {α : LimitStage} {R : KnightRealization α M}
 
-
 /-- **Finite-cover receiving at an auxiliary cap.**  For a donor `Q` on `m` points whose face `f`
 is the realized root `t ↦ p`, and a cap `γ` self-visible at `m`, proper and below the stage,
 `r = m - n` applications of finite-cut receiving along a saturated visible chain of `Q`'s plan,
@@ -147,5 +146,3 @@ theorem finiteCoverReceiving_of_receiving (hcons : R.IsExactParentConsistent)
     (selfVis_ofOrd_add_nat ν m) f (by omega) t p hp ht
   exact ⟨u, Q', hfu, hu, h, fun d => GradeTailRestoration.cap_below (hagree d)
     (ofOrd_le_ofOrd.mpr (le_add_nat ν m))⟩
-
-end VaughtConjecture.Knight.FiniteCoverReceiving

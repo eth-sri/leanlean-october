@@ -14,14 +14,11 @@ The complete non-top maximum includes future fields. No repaired state,
 alignment, or output bountifulness is assumed.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.LowOnly.Family
 
-open Transform Value ExtOrd AmalgamationPlan CappedDonor CappedDonor.Ref
-open CappedDonor.Ref.LowRef
-
-noncomputable section
+open Transform Value ExtOrd AmalgamationPlan CappedDonor CappedDonor.Ref CappedDonor.Ref.LowRef
 
 variable {n K : ℕ} {P C : SemScheme n} (F : Family P C K)
 
@@ -120,6 +117,3 @@ theorem private_active {j : ℕ} (hj : K ≤ j) {S : State P C}
         _ ≤ min (S.u d) γ := min_le_min_right _ (hS.low hj hmold d hd)
         _ = min (Q.u d) γ := (hcap.1 d).symm
         _ ≤ Q.u d := min_le_left _ _
-
-end
-end VaughtConjecture.Knight.LowOnly.Family

@@ -5,7 +5,8 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.CoherentGradeCaps
+public import VaughtConjecture.Knight.ReferenceOrbitRow
+public import VaughtConjecture.Knight.FullScopeBountiful
 
 /-! # Lawful projection from lawful grade-capped prefixes
 
@@ -17,7 +18,6 @@ grade. This is the finite semantic observation of new72 §5.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GradePrefixProjection
 open Transform Value ExtOrd AmalgamationPlan
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
@@ -46,5 +46,3 @@ theorem respectsBelow (ha : Antitone H)
     change min (ρ c.1) (H (D.grade c.1)) ≤ min (ρ w.1) (H (D.grade w.1))
     rw [hgrade]
     exact hle
-
-end VaughtConjecture.Knight.GradePrefixProjection

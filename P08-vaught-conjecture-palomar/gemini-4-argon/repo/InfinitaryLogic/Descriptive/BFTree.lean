@@ -6,7 +6,9 @@ Authors: Cameron Freer
 module
 
 public import InfinitaryLogic.Descriptive.KleeneBrouwer
-public import InfinitaryLogic.Descriptive.BFEquivBorel
+public import InfinitaryLogic.OrdinalUtil
+public import InfinitaryLogic.Descriptive.SatisfactionBorel
+public import InfinitaryLogic.Scott.BackAndForth
 public import InfinitaryLogic.Descriptive.StructureIsoSetoid
 public import Mathlib.Basic.Finite.Sum
 
@@ -100,31 +102,6 @@ element `i` of the left structure), position `2 i + 1` holds `i` (element `i` of
 structure enters the range). -/
 def bfRight (s : List ℕ) : Fin s.length → ℕ :=
   fun j ↦ if j.val % 2 = 0 then s[j.val] else j.val / 2
-
-/-- Position `2 i` of the left tuple is `i`. -/
-@[simp]
-theorem bfLeft_two_mul (s : List ℕ) (i : ℕ) (h : 2 * i < s.length) :
-    bfLeft s ⟨2 * i, h⟩ = i := by
-  simp [bfLeft]
-
-/-- Position `2 i + 1` of the left tuple is the node's entry there. -/
-@[simp]
-theorem bfLeft_two_mul_add_one (s : List ℕ) (i : ℕ) (h : 2 * i + 1 < s.length) :
-    bfLeft s ⟨2 * i + 1, h⟩ = s[2 * i + 1] := by
-  simp [bfLeft, Nat.add_mod]
-
-/-- Position `2 i` of the right tuple is the node's entry there. -/
-@[simp]
-theorem bfRight_two_mul (s : List ℕ) (i : ℕ) (h : 2 * i < s.length) :
-    bfRight s ⟨2 * i, h⟩ = s[2 * i] := by
-  simp [bfRight]
-
-/-- Position `2 i + 1` of the right tuple is `i`. -/
-@[simp]
-theorem bfRight_two_mul_add_one (s : List ℕ) (i : ℕ) (h : 2 * i + 1 < s.length) :
-    bfRight s ⟨2 * i + 1, h⟩ = i := by
-  simp [bfRight, Nat.add_mod]
-  omega
 
 /-- On a prefix, the decoded tuples are restrictions. -/
 private theorem bfLeft_comp_castLE {s t : List ℕ} (hst : s <+: t) :
@@ -456,5 +433,3 @@ theorem lt_treeHeight_bfTree_of_codeBFEquiv {c d : StructureSpace L}
     _ ≤ treeHeight (bfTree c d) :=
         Ordinal.le_iSup (fun x : ↥(bfTree c d) ↦
           Order.succ (WellFounded.rank (extBelow (bfTree c d)) x)) ⟨[], hnil⟩
-
-end FirstOrder.Language

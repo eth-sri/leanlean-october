@@ -21,18 +21,15 @@ as in the actual-display construction. Every marked gate, not just the selected
 one, is bottom in the constructed section.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryFinalBottom
-open Transform Value ExtOrd CappedDonor CappedDonor.Ref SharpWitnessComposition
-open OrdinaryFinalCatalogue
-noncomputable section
+open Transform Value ExtOrd CappedDonor CappedDonor.Ref SharpWitnessComposition OrdinaryFinalCatalogue
 
 variable {I : Type*} [Fintype I] {nP N : ℕ}
-variable {P : SemScheme (nP + 1)} {C : SemScheme N} (R : Ref I nP N N P C)
-variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable (F : FinalGateLayer.Input D N (Field P C) (OrdinaryFinalCatalogue.Member R))
+  {P : SemScheme (nP + 1)} {C : SemScheme N} (R : Ref I nP N N P C)
+  {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
+  (F : FinalGateLayer.Input D N (Field P C) (OrdinaryFinalCatalogue.Member R))
 
 /-- Arbitrary private data, including literal top, has a lawful physical
 extension with every marked gate off. No ambient or positive cap is required. -/
@@ -84,6 +81,3 @@ theorem exists_private_display
     have hh := hδ.mono (F.source_marked_le b a')
     rw [hgate, hfields, hread, hgateOff] at hh
     exact hh
-
-end
-end VaughtConjecture.Knight.OrdinaryFinalBottom

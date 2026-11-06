@@ -17,15 +17,11 @@ semantic compatibility, or old-face lifting hypothesis is supplied separately.
 This constructs the proper boundary, not full-scope rows or an amalgam type.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.CoatomBoundaryPresentation
 
 open AmalgamationPlan AmalgamatedBoundaryPlan SemSchemeBoundaryInput
-
-noncomputable section
 
 variable {n : ℕ}
 
@@ -173,6 +169,3 @@ def of_compatible {α : Ordinal.{0}} {pa pb : S α (n + 1)}
   exact ⟨pa.scheme, pb.scheme, r.scheme, vl, vr,
     Classical.choose_spec (face_of_typeMap_eq_some C.g₁ hl),
     Classical.choose_spec (face_of_typeMap_eq_some C.g₂ hr)⟩
-
-end
-end VaughtConjecture.Knight.CoatomBoundaryPresentation

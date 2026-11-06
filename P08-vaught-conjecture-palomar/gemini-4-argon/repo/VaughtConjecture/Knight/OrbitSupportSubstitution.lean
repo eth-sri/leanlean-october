@@ -18,7 +18,6 @@ replacing an endpoint again leaves that endpoint, not the new offset.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrbitPrefixSupport
 open Transform Value ExtOrd
 
@@ -75,5 +74,3 @@ theorem supported_field {X : Type*} (K : ℕ) (G : Set ExtOrd) (p : X → ExtOrd
     · rw [min_eq_left h.le]
       exact (decomposition a).symm
     · rfl
-
-end VaughtConjecture.Knight.OrbitPrefixSupport

@@ -31,20 +31,19 @@ carrier's ceiling only occur at `(A, N + 1)` with source `(A, N + 1)`, an equal 
 No bountifulness of the predecessor at the final full index is assumed; apex installation and
 ordered packaging are left to the integration lane. -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.OrdinaryFinalBountiful
 
 open Transform Value ExtOrd CappedDonor CappedDonor.Ref CoatomBoundaryExtension
   AmalgamationPlan SharpWitnessComposition
-noncomputable section
 
 variable {I : Type*} [Fintype I] {nP N : ℕ}
-variable {P : SemScheme (nP + 1)} {C : SemScheme N} (R : Ref I nP N N P C)
-variable {ι : Type*} [DecidableEq ι] {A S : Finset ι} {D : CellScheme A}
-variable (F : FinalGateLayer.Input D N (Field P C) (OrdinaryFinalCatalogue.Member R))
-variable (place : Fin N ↪ ι) (hS : Finset.univ.image place = S)
-variable (E : ExactSemanticFace (PointImageSemantics.rows C.scheme place hS C.rows) F.sem)
+  {P : SemScheme (nP + 1)} {C : SemScheme N} (R : Ref I nP N N P C)
+  {ι : Type*} [DecidableEq ι] {A S : Finset ι} {D : CellScheme A}
+  (F : FinalGateLayer.Input D N (Field P C) (OrdinaryFinalCatalogue.Member R))
+  (place : Fin N ↪ ι) (hS : Finset.univ.image place = S)
+  (E : ExactSemanticFace (PointImageSemantics.rows C.scheme place hS C.rows) F.sem)
 
 omit [Fintype I] in
 /-- The private face has exactly `N` points. -/
@@ -140,6 +139,3 @@ theorem bountiful
           exact bot_le)
   · exact F.inherited_lift (I := (B, i)) (J := (B', i)) ⟨hsub, le_rfl⟩ hJ
       (hpred (B, i) (B', i) hB hB' ⟨hsub, le_rfl⟩ hJ)
-
-end
-end VaughtConjecture.Knight.OrdinaryFinalBountiful

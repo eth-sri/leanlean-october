@@ -14,15 +14,13 @@ iteration constructs every other proper scope on that same ordered inventory.
 The full ambient scope is deliberately not completed here.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryProperPredecessor
-open AmalgamationPlan Transform Value ExtOrd CoatomBoundaryExtension
-open OrdinaryScopeIteration
-noncomputable section
+open AmalgamationPlan Transform Value ExtOrd CoatomBoundaryExtension OrdinaryScopeIteration
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι} {R : Finset (Finset ι)}
-variable {m nL nR : ℕ} (I : WholeDonorBoundary.Input A B C R m nL nR)
+  {m nL nR : ℕ} (I : WholeDonorBoundary.Input A B C R m nL nR)
 
 def initialScopes : Finset (Finset ι) := I.boundary.plan.filter (fun S => S ⊆ B ∨ S ⊆ C)
 
@@ -163,6 +161,3 @@ theorem nonprivate_mute (hcard : A.card = N + 1) (hB : B.card = N) (hC : C.card 
   · exact hd (Finset.eq_of_subset_of_card_le hl (hB.trans_le hsize.ge))
   · have := Finset.card_le_card hr
     omega
-
-end
-end VaughtConjecture.Knight.OrdinaryProperPredecessor

@@ -63,7 +63,7 @@ existential closure
 (4)(c) at `γ = 0` adds a fresh point to every labelled tuple) — no domain construction (#41)
 is involved. -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight
 
@@ -76,8 +76,6 @@ universe u w
 
 /-- The limit stage `ω`: Knight's sentence describes the models of `S^ω` (Def. 3.3.3). -/
 def omegaStage : LimitStage := ⟨Ordinal.omega0, Ordinal.isSuccLimit_omega0⟩
-
-@[simp] theorem omegaStage_toOrdinal : omegaStage.1 = Ordinal.omega0 := rfl
 
 /-- Every limit stage lies above `ω`: the theory's language is a reduct of every chart
 language. -/
@@ -113,13 +111,13 @@ abbrev KnightFormula (n : ℕ) := knightLang.BoundedFormulaω Empty n
 
 /-- Countable conjunction `⋀_{i : ι}` over a countable index type, as `einf` along the
 enumeration `Encodable.ofCountable ι`. -/
-noncomputable def cinf {n : ℕ} {ι : Type u} [Countable ι] (φs : ι → KnightFormula n) :
+def cinf {n : ℕ} {ι : Type u} [Countable ι] (φs : ι → KnightFormula n) :
     KnightFormula n :=
   BoundedFormulaω.einfWith (Encodable.ofCountable ι) φs
 
 /-- Countable disjunction `⋁_{i : ι}` over a countable index type, as `esup` along the
 enumeration `Encodable.ofCountable ι`. -/
-noncomputable def csup {n : ℕ} {ι : Type u} [Countable ι] (φs : ι → KnightFormula n) :
+def csup {n : ℕ} {ι : Type u} [Countable ι] (φs : ι → KnightFormula n) :
     KnightFormula n :=
   BoundedFormulaω.esupWith (Encodable.ofCountable ι) φs
 
@@ -128,7 +126,7 @@ def atom {m n : ℕ} (p : S Ordinal.omega0 m) (f : Fin m → Fin n) : KnightForm
   BoundedFormulaω.rel (L := knightLang) (l := m) p fun i => Term.var (Sum.inr (f i))
 
 /-- `⋀_{i ≠ j} x_i ≠ x_j`: the bound variables are pairwise distinct. -/
-noncomputable def distinct (n : ℕ) : KnightFormula n :=
+def distinct (n : ℕ) : KnightFormula n :=
   cinf fun ij : {ij : Fin n × Fin n // ij.1 ≠ ij.2} =>
     ∼ω (BoundedFormulaω.equal (Term.var (Sum.inr ij.1.1)) (Term.var (Sum.inr ij.1.2)))
 
@@ -169,28 +167,13 @@ theorem realize_alls (φ : KnightFormula n) :
     (exsFrom k φ).Realize v xs ↔ ∃ ys : Fin k → M, φ.Realize v (Fin.append xs ys) := by
   induction k with
   | zero =>
-    simp only [exsFrom]
-    constructor
-    · intro h
-      refine ⟨Fin.elim0, ?_⟩
-      have : Fin.append xs Fin.elim0 = xs := by
-        funext i
-        rw [Fin.append_elim0]
-        rfl
-      rwa [this]
-    · rintro ⟨ys, h⟩
-      have : Fin.append xs ys = xs := by
-        funext i
-        rw [Subsingleton.elim ys Fin.elim0, Fin.append_elim0]
-        rfl
-      rwa [this] at h
+    have h (ys : Fin 0 → M) : Fin.append xs ys = xs :=
+      funext fun i => by rw [Subsingleton.elim ys Fin.elim0, Fin.append_elim0]; rfl
+    simp [exsFrom, h]
   | succ k ih =>
     simp only [exsFrom, ih, BoundedFormulaω.realize_ex]
-    constructor
-    · rintro ⟨ys, y, h⟩
-      exact ⟨Fin.snoc ys y, by rwa [Fin.append_snoc]⟩
-    · rintro ⟨ys, h⟩
-      exact ⟨Fin.init ys, ys (Fin.last k), by rwa [← Fin.append_snoc, Fin.snoc_init_self]⟩
+    exact ⟨fun ⟨ys, y, h⟩ => ⟨Fin.snoc ys y, by rwa [Fin.append_snoc]⟩,
+      fun ⟨ys, h⟩ => ⟨Fin.init ys, ys (Fin.last k), by rwa [← Fin.append_snoc, Fin.snoc_init_self]⟩⟩
 
 end Realize
 
@@ -203,7 +186,7 @@ def nonemptyClause : knightLang.Sentenceω :=
 
 /-- **Arity** (Def. 3.2.1(1)): `∀ x̄, P_p(x̄) → ⋀_{i ≠ j} x_i ≠ x_j` — a type is carried only by
 injective tuples (in a `KnightRealization` this is automatic from the encoding). -/
-noncomputable def arityClause : knightLang.Sentenceω :=
+def arityClause : knightLang.Sentenceω :=
   cinf fun n : ℕ => cinf fun p : S Ordinal.omega0 n => (atom p id ⟹ω distinct n).alls
 
 open Classical in
@@ -213,7 +196,7 @@ exactly the partial restriction of the type of `x̄` — `P_q(x̄∘f)` when `ty
 `¬ P_{q'}(x̄∘f)` for every other `q'` (in particular for every `q'` when the face is invisible,
 `typeMap f p = none`).  At `f = id` (`typeMap_refl`) this is "at most one type per tuple"
 (`IsKnightModel.unique`). -/
-noncomputable def consistencyClause : knightLang.Sentenceω :=
+def consistencyClause : knightLang.Sentenceω :=
   cinf fun n : ℕ => cinf fun p : S Ordinal.omega0 n => cinf fun mf : Σ m : ℕ, Fin m ↪ Fin n =>
     cinf fun q : S Ordinal.omega0 mf.1 =>
       (atom p id ⟹ω
@@ -221,14 +204,14 @@ noncomputable def consistencyClause : knightLang.Sentenceω :=
 
 /-- **Covering** (Def. 3.2.1(3), initial segment): `∀ x̄ injective, ⋁_k ∃ ȳ ⋁_{p ∈ S^ω_{n+k}}
 P_p(x̄⌢ȳ)`. -/
-noncomputable def coveringClause : knightLang.Sentenceω :=
+def coveringClause : knightLang.Sentenceω :=
   cinf fun n : ℕ =>
     (distinct n ⟹ω
       csup fun k : ℕ => exsFrom k (csup fun p : S Ordinal.omega0 (n + k) => atom p id)).alls
 
 /-- The request `⋁_{q ∈ U, q a coface of p} ∃ y, P_q(x̄⌢y)` (the conclusion of Def. 3.2.1(4)
 for the family `U ⊆ (S^ω ι_{n,n+1})⁻¹(p)`). -/
-noncomputable def requestFormula {n : ℕ} (p : S Ordinal.omega0 n)
+def requestFormula {n : ℕ} (p : S Ordinal.omega0 n)
     (U : Set (S Ordinal.omega0 (n + 1))) : KnightFormula n :=
   csup fun q : {q : S Ordinal.omega0 (n + 1) // q ∈ U ∧ IsCoface p q} =>
     BoundedFormulaω.ex (atom q.1 id)
@@ -236,7 +219,7 @@ noncomputable def requestFormula {n : ℕ} (p : S Ordinal.omega0 n)
 /-- The common shape of the four **existential-closure** clauses (Def. 3.2.1(4)): for a countable
 parameter space `Param n p` and families `U n p a`, `⋀_n ⋀_p ∀ x̄, P_p(x̄) → ⋀_{a : Param n p}
 ⋁_{q ∈ U n p a, coface of p} ∃ y, P_q(x̄⌢y)`. -/
-noncomputable def ecClause (Param : ∀ n : ℕ, S Ordinal.omega0 n → Type u)
+def ecClause (Param : ∀ n : ℕ, S Ordinal.omega0 n → Type u)
     [∀ n p, Countable (Param n p)]
     (U : ∀ (n : ℕ) (p : S Ordinal.omega0 n), Param n p → Set (S Ordinal.omega0 (n + 1))) :
     knightLang.Sentenceω :=
@@ -245,7 +228,7 @@ noncomputable def ecClause (Param : ∀ n : ℕ, S Ordinal.omega0 n → Type u)
 
 /-- **(a)(i) Generalised saturation**: parameters `D` a domain on `n+1` with `D⟨n,n⟩ = dom p`
 (`ExtendsDomain`), family `GenSatFamily D`. -/
-noncomputable def genSatClause : knightLang.Sentenceω :=
+def genSatClause : knightLang.Sentenceω :=
   ecClause (fun n p => {D : SemScheme (n + 1) // ExtendsDomain p D})
     (fun _ _ D => GenSatFamily D.1)
 
@@ -288,23 +271,23 @@ instance {n : ℕ} (p : S Ordinal.omega0 n) : Countable (BottomPatternParam p) :
 
 /-- **(a)(ii) Prescribed `−∞`-pattern**: parameters `(D, π)` with `π` the pattern of a faithful
 `q'` extending `p`, family `PatternFamily D π = BottomPatternFamily D q'`. -/
-noncomputable def bottomPatternClause : knightLang.Sentenceω :=
+def bottomPatternClause : knightLang.Sentenceω :=
   ecClause (fun _ p => BottomPatternParam p) (fun _ _ Dπ => PatternFamily Dπ.1.1 Dπ.1.2)
 
 /-- **(b) Uniformity**: parameters the non-successor ordinals `γ < ω` (i.e. `γ = 0`, indexed by
 `{k : ℕ // IsNonSuccessor k}` — every `γ < ω` is a natural number), family
 `UniformityFamily γ`. -/
-noncomputable def uniformityClause : knightLang.Sentenceω :=
+def uniformityClause : knightLang.Sentenceω :=
   ecClause (fun _ _ => {k : ℕ // Value.IsNonSuccessor (k : Ordinal.{0})})
     (fun _ _ k => UniformityFamily (k.1 : Ordinal.{0}))
 
 /-- **(c) High-grade dominance**: parameters `γ < ω` (indexed by `ℕ`), family
 `HighGradeDominanceFamily γ`. -/
-noncomputable def highGradeDominanceClause : knightLang.Sentenceω :=
+def highGradeDominanceClause : knightLang.Sentenceω :=
   ecClause (fun _ _ => ℕ) (fun _ _ k => HighGradeDominanceFamily (k : Ordinal.{0}))
 
 /-- **Knight's sentence `T`** (Def. 3.3.3): the conjunction of the clauses. -/
-noncomputable def knightSentence : knightLang.Sentenceω :=
+def knightSentence : knightLang.Sentenceω :=
   nonemptyClause ⊓ arityClause ⊓ consistencyClause ⊓ coveringClause ⊓ genSatClause ⊓
     bottomPatternClause ⊓ uniformityClause ⊓ highGradeDominanceClause
 
@@ -326,119 +309,11 @@ variable {n : ℕ} {v : Empty → M} {xs : Fin n → M}
     (U : Set (S Ordinal.omega0 (n + 1))) :
     (requestFormula p U).Realize v xs ↔ RelRealizesSome xs p U := by
   simp only [requestFormula, realize_csup, BoundedFormulaω.realize_ex, realize_atom,
-    Function.comp_id, RelRealizesSome]
-  constructor
-  · rintro ⟨⟨q, hU, hc⟩, y, hy⟩
-    exact ⟨y, q, hU, hc, hy⟩
-  · rintro ⟨y, q, hU, hc, hy⟩
-    exact ⟨⟨q, hU, hc⟩, y, hy⟩
+    Function.comp_id, RelRealizesSome, Subtype.exists]
+  exact ⟨fun ⟨q, ⟨hU, hc⟩, y, hy⟩ => ⟨y, q, hU, hc, hy⟩,
+    fun ⟨y, q, hU, hc, hy⟩ => ⟨q, ⟨hU, hc⟩, y, hy⟩⟩
 
 variable (M)
-
-theorem realize_nonemptyClause : nonemptyClause.Realize M ↔ Nonempty M := by
-  simp only [nonemptyClause, Sentenceω.realize_def, BoundedFormulaω.realize_ex,
-    BoundedFormulaω.realize_top]
-  exact ⟨fun ⟨x, _⟩ => ⟨x⟩, fun ⟨x⟩ => ⟨x, trivial⟩⟩
-
-theorem realize_arityClause :
-    arityClause.Realize M ↔
-      ∀ {n : ℕ} (p : S Ordinal.omega0 n) (xs : Fin n → M), Holds p xs → Function.Injective xs := by
-  simp only [arityClause, Sentenceω.realize_def, realize_cinf, realize_alls,
-    BoundedFormulaω.realize_imp, realize_atom, Function.comp_id, realize_distinct]
-
-theorem realize_consistencyClause :
-    consistencyClause.Realize M ↔
-      ∀ {n : ℕ} (p : S Ordinal.omega0 n) (xs : Fin n → M), Holds p xs →
-        ∀ {m : ℕ} (f : Fin m ↪ Fin n) (q : S Ordinal.omega0 m),
-          Holds q (xs ∘ f) ↔ typeMap f p = some q := by
-  simp only [consistencyClause, Sentenceω.realize_def, realize_cinf, realize_alls,
-    BoundedFormulaω.realize_imp, realize_atom, Function.comp_id, Sigma.forall]
-  refine forall_congr' fun n => forall_congr' fun p => ?_
-  constructor
-  · intro h xs hp m f q
-    have := h m f q xs hp
-    split_ifs at this with hc
-    · exact ⟨fun _ => hc, fun _ => this⟩
-    · rw [BoundedFormulaω.realize_not, realize_atom] at this
-      exact ⟨fun h' => absurd h' this, fun h' => absurd h' hc⟩
-  · intro h m f q xs hp
-    split_ifs with hc
-    · exact (h xs hp f q).mpr hc
-    · rw [BoundedFormulaω.realize_not, realize_atom]
-      exact fun h' => hc ((h xs hp f q).mp h')
-
-theorem realize_coveringClause :
-    coveringClause.Realize M ↔
-      ∀ {n : ℕ} (xs : Fin n → M), Function.Injective xs →
-        ∃ (k : ℕ) (ys : Fin k → M) (p : S Ordinal.omega0 (n + k)), Holds p (Fin.append xs ys) := by
-  simp only [coveringClause, Sentenceω.realize_def, realize_cinf, realize_alls,
-    BoundedFormulaω.realize_imp, realize_distinct, realize_csup, realize_exsFrom, realize_atom,
-    Function.comp_id]
-
-theorem realize_ecClause (Param : ∀ n : ℕ, S Ordinal.omega0 n → Type u)
-    [∀ n p, Countable (Param n p)]
-    (U : ∀ (n : ℕ) (p : S Ordinal.omega0 n), Param n p → Set (S Ordinal.omega0 (n + 1))) :
-    (ecClause Param U).Realize M ↔
-      ∀ {n : ℕ} (p : S Ordinal.omega0 n) (xs : Fin n → M), Holds p xs →
-        ∀ a : Param n p, RelRealizesSome xs p (U n p a) := by
-  simp only [ecClause, Sentenceω.realize_def, realize_cinf, realize_alls,
-    BoundedFormulaω.realize_imp, realize_atom, Function.comp_id, realize_requestFormula]
-
-theorem realize_genSatClause :
-    genSatClause.Realize M ↔
-      ∀ {n : ℕ} (p : S Ordinal.omega0 n) (xs : Fin n → M), Holds p xs →
-        ∀ D : SemScheme (n + 1), ExtendsDomain p D → RelRealizesSome xs p (GenSatFamily D) := by
-  rw [genSatClause, realize_ecClause]
-  constructor
-  · intro h n p xs hp D hD
-    exact h p xs hp ⟨D, hD⟩
-  · intro h n p xs hp D
-    exact h p xs hp D.1 D.2
-
-/-- Clause (a)(ii), realized, in the **paper's parameterization** by the labelling `q'`: the
-pattern encoding is transparent. -/
-theorem realize_bottomPatternClause :
-    bottomPatternClause.Realize M ↔
-      ∀ {n : ℕ} (p : S Ordinal.omega0 n) (xs : Fin n → M), Holds p xs →
-        ∀ (D : SemScheme (n + 1)) (hD : ExtendsDomain p D) (q' : Cell D.scheme → ExtOrd),
-          RespectsSemantics D.rows q' → (∀ d, q' (hD.cellOf d) = p.label d) →
-          RelRealizesSome xs p (BottomPatternFamily D q') := by
-  rw [bottomPatternClause, realize_ecClause]
-  constructor
-  · intro h n p xs hp D hD q' hq' hext
-    classical
-    have := h p xs hp ⟨⟨D, fun Θ => decide (q' Θ.1 = ⊥)⟩, hD, q', hq', hext,
-      fun Θ => decide_eq_true_iff.symm⟩
-    rwa [bottomPatternFamily_eq_patternFamily q' _ (fun Θ => decide_eq_true_iff.symm)]
-  · rintro h n p xs hp ⟨⟨D, π⟩, hD, q', hq', hext, hπ⟩
-    rw [← bottomPatternFamily_eq_patternFamily q' π hπ]
-    exact h p xs hp D hD q' hq' hext
-
-theorem realize_uniformityClause :
-    uniformityClause.Realize M ↔
-      ∀ {n : ℕ} (p : S Ordinal.omega0 n) (xs : Fin n → M), Holds p xs →
-        ∀ γ : Ordinal.{0}, Value.IsNonSuccessor γ → γ < Ordinal.omega0 →
-          RelRealizesSome xs p (UniformityFamily γ) := by
-  rw [uniformityClause, realize_ecClause]
-  constructor
-  · intro h n p xs hp γ hγ hlt
-    obtain ⟨k, rfl⟩ := Ordinal.lt_omega0.mp hlt
-    exact h p xs hp ⟨k, hγ⟩
-  · rintro h n p xs hp ⟨k, hk⟩
-    exact h p xs hp k hk (Ordinal.natCast_lt_omega0 k)
-
-theorem realize_highGradeDominanceClause :
-    highGradeDominanceClause.Realize M ↔
-      ∀ {n : ℕ} (p : S Ordinal.omega0 n) (xs : Fin n → M), Holds p xs →
-        ∀ γ : Ordinal.{0}, γ < Ordinal.omega0 →
-          RelRealizesSome xs p (HighGradeDominanceFamily γ) := by
-  rw [highGradeDominanceClause, realize_ecClause]
-  constructor
-  · intro h n p xs hp γ hlt
-    obtain ⟨k, rfl⟩ := Ordinal.lt_omega0.mp hlt
-    exact h p xs hp k
-  · intro h n p xs hp k
-    exact h p xs hp k (Ordinal.natCast_lt_omega0 k)
 
 /-- The semantic content of `T` on an `L`-structure `M`: the eight clauses, realized.  This is
 the structure-side counterpart of `KnightRealization.IsModel` (the two correspond:
@@ -474,16 +349,39 @@ structure IsKnightModel : Prop where
 
 /-- **Realization of `T`**: `M ⊨ T` iff the eight clauses hold in `M`. -/
 theorem realize_knightSentence_iff : knightSentence.Realize M ↔ IsKnightModel M := by
-  have h : knightSentence.Realize M ↔
-      nonemptyClause.Realize M ∧ arityClause.Realize M ∧ consistencyClause.Realize M ∧
-        coveringClause.Realize M ∧ genSatClause.Realize M ∧ bottomPatternClause.Realize M ∧
-          uniformityClause.Realize M ∧ highGradeDominanceClause.Realize M := by
-    simp only [knightSentence, Sentenceω.realize_def, BoundedFormulaω.realize_inf, and_assoc]
-  rw [h, realize_nonemptyClause, realize_arityClause, realize_consistencyClause,
-    realize_coveringClause, realize_genSatClause, realize_bottomPatternClause,
-    realize_uniformityClause, realize_highGradeDominanceClause]
-  exact ⟨fun ⟨h₁, h₂, h₃, h₄, h₅, h₆, h₇, h₈⟩ => ⟨h₁, h₂, h₃, h₄, h₅, h₆, h₇, h₈⟩,
-    fun ⟨h₁, h₂, h₃, h₄, h₅, h₆, h₇, h₈⟩ => ⟨h₁, h₂, h₃, h₄, h₅, h₆, h₇, h₈⟩⟩
+  simp only [knightSentence, Sentenceω.realize_def, BoundedFormulaω.realize_inf, and_assoc,
+    nonemptyClause, BoundedFormulaω.realize_ex, BoundedFormulaω.realize_top,
+    arityClause, consistencyClause, coveringClause, genSatClause, bottomPatternClause,
+    uniformityClause, highGradeDominanceClause, ecClause, realize_cinf, realize_alls,
+    BoundedFormulaω.realize_imp, realize_atom, Function.comp_id, realize_distinct, realize_csup,
+    realize_exsFrom, realize_requestFormula, Sigma.forall, Subtype.forall]
+  constructor
+  · rintro ⟨⟨x, _⟩, h₂, h₃, h₄, h₅, h₆, h₇, h₈⟩
+    refine ⟨⟨x⟩, fun p xs hp => h₂ _ p xs hp, fun p xs hp m f q => ?_, fun xs => h₄ _ xs,
+      fun p xs hp D hD => h₅ _ p xs hp D hD, fun p xs hp D hD q' hq' hext => ?_,
+      fun p xs hp γ hγ hlt => ?_, fun p xs hp γ hlt => ?_⟩
+    · have := h₃ _ p m f q xs hp
+      split_ifs at this with hc
+      · exact ⟨fun _ => hc, fun _ => this⟩
+      · rw [BoundedFormulaω.realize_not, realize_atom] at this
+        exact ⟨fun h' => absurd h' this, fun h' => absurd h' hc⟩
+    · classical
+      simpa only [bottomPatternFamily_eq_patternFamily q' _ (fun _ => decide_eq_true_iff.symm)] using
+        h₆ _ p xs hp ⟨⟨D, fun Θ => decide (q' Θ.1 = ⊥)⟩, hD, q', hq', hext,
+          fun _ => decide_eq_true_iff.symm⟩
+    · obtain ⟨k, rfl⟩ := Ordinal.lt_omega0.mp hlt; exact h₇ _ p xs hp k hγ
+    · obtain ⟨k, rfl⟩ := Ordinal.lt_omega0.mp hlt; exact h₈ _ p xs hp k
+  · rintro ⟨⟨x⟩, h₂, h₃, h₄, h₅, h₆, h₇, h₈⟩
+    refine ⟨⟨x, trivial⟩, fun _ p xs hp => h₂ p xs hp, fun n p m f q xs hp => ?_,
+      fun _ xs => h₄ xs, fun _ p xs hp D hD => h₅ p xs hp D hD,
+      fun _ p xs hp ⟨⟨D, π⟩, hD, q', hq', hext, hπ⟩ =>
+        bottomPatternFamily_eq_patternFamily q' π hπ ▸ h₆ p xs hp D hD q' hq' hext,
+      fun _ p xs hp k hk => h₇ p xs hp k hk (Ordinal.natCast_lt_omega0 k),
+      fun _ p xs hp k => h₈ p xs hp k (Ordinal.natCast_lt_omega0 k)⟩
+    split_ifs with hc
+    · exact (h₃ p xs hp f q).mpr hc
+    · rw [BoundedFormulaω.realize_not, realize_atom]
+      exact fun h' => hc ((h₃ p xs hp f q).mp h')
 
 variable {M}
 
@@ -507,7 +405,7 @@ open Classical in
 /-- The Knight realization of an `L`-structure: the type of an injective tuple is the type `p`
 with `P_p(x̄)`, if any (chosen; unique under the consistency clause,
 `toRealization_eval_eq_some_iff`). -/
-noncomputable def toRealization : KnightRealization omegaStage M where
+def toRealization : KnightRealization omegaStage M where
   eval {n} t := if h : ∃ p : S Ordinal.omega0 n, Holds p ⇑t then some h.choose else none
 
 variable {M}
@@ -516,8 +414,7 @@ theorem toRealization_eval_eq_none_iff {n : ℕ} (t : Fin n ↪ M) :
     (toRealization M).eval t = none ↔ ∀ p : S Ordinal.omega0 n, ¬ Holds p ⇑t := by
   dsimp only [toRealization]
   split_ifs with h
-  · simp only [false_iff, not_forall, not_not]
-    exact h
+  · simp only [false_iff, not_forall, not_not]; exact h
   · simpa using h
 
 theorem toRealization_eval_isSome_iff {n : ℕ} (t : Fin n ↪ M) :
@@ -546,10 +443,7 @@ omit [knightLang.Structure M] in
 theorem notMem_range_of_injective_snoc {n : ℕ} {t : Fin n → M} {y : M}
     (h : Function.Injective (Fin.snoc t y : Fin (n + 1) → M)) : y ∉ Set.range t := by
   rintro ⟨i, hi⟩
-  have : (Fin.snoc t y : Fin (n + 1) → M) (Fin.castSucc i) =
-      (Fin.snoc t y : Fin (n + 1) → M) (Fin.last n) := by
-    simp only [Fin.snoc_castSucc, Fin.snoc_last, hi]
-  exact (Fin.castSucc_lt_last i).ne (h this)
+  exact (Fin.castSucc_lt_last i).ne (h (by simp [hi]))
 
 /-- The structure-side request transfers to the realization (given arity and uniqueness). -/
 theorem RelRealizesSome.toRealization (h : IsKnightModel M) {n : ℕ} (t : Fin n ↪ M)
@@ -564,36 +458,26 @@ realization `toRealization M`). -/
 theorem IsKnightModel.isModel_toRealization (h : IsKnightModel M) :
     (toRealization M).IsModel where
   nonempty := h.nonempty
-  consistent := by
-    intro m n t q f hq
-    change S Ordinal.omega0 n at q
+  consistent {m n} t q f hq := by
     have hcons := h.consistent q t ((h.eval_eq_some_iff t q).mp hq) f
     change (toRealization M).eval (f.trans t) = typeMap f q
     cases htm : typeMap f q with
     | none =>
       refine (toRealization_eval_eq_none_iff _).mpr fun q' hq' => ?_
       have := (hcons q').mp (by rwa [Function.Embedding.coe_trans] at hq')
-      rw [htm] at this
-      exact Option.some_ne_none _ this.symm
+      exact Option.some_ne_none _ (this.symm.trans htm)
     | some q' =>
-      refine (h.eval_eq_some_iff _ q').mpr ?_
-      rw [Function.Embedding.coe_trans]
-      exact (hcons q').mpr htm
-  covering := by
-    intro n t
+      exact (h.eval_eq_some_iff _ q').mpr (by rw [Function.Embedding.coe_trans]; exact (hcons q').mpr htm)
+  covering {n} t := by
     obtain ⟨k, ys, p, hp⟩ := h.covering ⇑t t.injective
-    refine ⟨k, ⟨Fin.append t ys, h.arity p _ hp⟩, ?_, ?_⟩
-    · ext i
-      simp only [Function.Embedding.trans_apply, Function.Embedding.coeFn_mk, Fin.castAddEmb_apply,
-        Fin.append_left]
-    · exact (toRealization_eval_isSome_iff _).mpr ⟨p, hp⟩
-  genSat := fun t p hp D hD =>
+    exact ⟨k, ⟨Fin.append t ys, h.arity p _ hp⟩, by ext i; simp, (toRealization_eval_isSome_iff _).mpr ⟨p, hp⟩⟩
+  genSat t p hp D hD :=
     (h.genSat p ⇑t ((h.eval_eq_some_iff t p).mp hp) D hD).toRealization h t p
-  bottomPattern := fun t p hp D hD q' hq' hext =>
+  bottomPattern t p hp D hD q' hq' hext :=
     (h.bottomPattern p ⇑t ((h.eval_eq_some_iff t p).mp hp) D hD q' hq' hext).toRealization h t p
-  uniformity := fun t p hp γ hγ hlt =>
+  uniformity t p hp γ hγ hlt :=
     (h.uniformity p ⇑t ((h.eval_eq_some_iff t p).mp hp) γ hγ hlt).toRealization h t p
-  highGradeDominance := fun t p hp γ hlt =>
+  highGradeDominance t p hp γ hlt :=
     (h.highGradeDominance p ⇑t ((h.eval_eq_some_iff t p).mp hp) γ hlt).toRealization h t p
 
 end Correspondence
@@ -605,7 +489,7 @@ variable {M : Type w}
 /-- The `L`-structure of a Knight realization at stage `ω`: `P_p(x̄)` iff `x̄` is injective and
 `R(x̄) = p` — (definitionally) the `α = ω` case of the stage chart structure (`stageStructureOf`,
 `Knight/ChartLanguage.lean`, #137). -/
-@[instance_reducible] noncomputable def structureOf (R : KnightRealization omegaStage M) :
+@[instance_reducible] def structureOf (R : KnightRealization omegaStage M) :
     knightLang.Structure M :=
   stageStructureOf R
 
@@ -623,7 +507,7 @@ theorem holds_structureOf_of_eval (R : KnightRealization omegaStage M) {n : ℕ}
 theorem KnightRealization.RealizesSome.relRealizesSome {R : KnightRealization omegaStage M}
     {n : ℕ} {t : Fin n ↪ M} {p : S Ordinal.omega0 n} {U : Set (S Ordinal.omega0 (n + 1))}
     (hr : R.RealizesSome t p U) : @RelRealizesSome M (structureOf R) n ⇑t p U := by
-  obtain ⟨y, hy, q, hU, hc, hq⟩ := hr
+  obtain ⟨y, _, q, hU, hc, hq⟩ := hr
   exact ⟨y, q, hU, hc, holds_structureOf_of_eval R hq⟩
 
 /-- **Models of `S^ω` satisfy `T`** (Prop. 3.3.5, the other direction, on the structure
@@ -631,40 +515,19 @@ theorem KnightRealization.RealizesSome.relRealizesSome {R : KnightRealization om
 theorem KnightRealization.IsModel.isKnightModel {R : KnightRealization omegaStage M}
     (hR : R.IsModel) : @IsKnightModel M (structureOf R) := by
   let _ : knightLang.Structure M := structureOf R
-  refine ⟨hR.nonempty, fun _ _ ⟨h, _⟩ => h, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · -- consistency
-    rintro n p xs ⟨hinj, hp⟩ m f q
-    have hcons : R.eval (f.trans ⟨xs, hinj⟩) = typeMap f p := hR.consistent ⟨xs, hinj⟩ p f hp
-    constructor
-    · rintro ⟨_, hq⟩
-      exact hcons.symm.trans hq
-    · intro hq
-      exact ⟨hinj.comp f.injective, hcons.trans hq⟩
-  · -- covering
-    intro n xs hinj
-    obtain ⟨k, s, hs, hsome⟩ := hR.covering ⟨xs, hinj⟩
-    obtain ⟨p, hp⟩ := Option.isSome_iff_exists.mp hsome
-    refine ⟨k, fun j => s (Fin.natAdd n j), p, ?_⟩
-    have heq : Fin.append xs (fun j => s (Fin.natAdd n j)) = ⇑s := by
-      funext i
-      refine Fin.addCases (fun i => ?_) (fun j => ?_) i
-      · rw [Fin.append_left]
-        exact (congrArg (fun g : Fin n ↪ M => g i) hs).symm
-      · rw [Fin.append_right]
-    rw [heq]
-    exact holds_structureOf_of_eval R hp
-  · -- (a)(i)
-    intro n p xs hp D hD
-    exact (hR.genSat ⟨xs, hp.1⟩ p hp.2 D hD).relRealizesSome
-  · -- (a)(ii)
-    intro n p xs hp D hD q' hq' hext
-    exact (hR.bottomPattern ⟨xs, hp.1⟩ p hp.2 D hD q' hq' hext).relRealizesSome
-  · -- (b)
-    intro n p xs hp γ hγ hlt
-    exact (hR.uniformity ⟨xs, hp.1⟩ p hp.2 γ hγ hlt).relRealizesSome
-  · -- (c)
-    intro n p xs hp γ hlt
-    exact (hR.highGradeDominance ⟨xs, hp.1⟩ p hp.2 γ hlt).relRealizesSome
+  refine ⟨hR.nonempty, fun _ _ ⟨h, _⟩ => h,
+    fun p xs ⟨hinj, hp⟩ _ f q => ⟨fun ⟨_, hq⟩ => (hR.consistent ⟨xs, hinj⟩ p f hp).symm.trans hq,
+      fun hq => ⟨hinj.comp f.injective, (hR.consistent ⟨xs, hinj⟩ p f hp).trans hq⟩⟩,
+    fun xs hinj => ?_,
+    fun p xs hp D hD => (hR.genSat ⟨xs, hp.1⟩ p hp.2 D hD).relRealizesSome,
+    fun p xs hp D hD q' hq' hext => (hR.bottomPattern ⟨xs, hp.1⟩ p hp.2 D hD q' hq' hext).relRealizesSome,
+    fun p xs hp γ hγ hlt => (hR.uniformity ⟨xs, hp.1⟩ p hp.2 γ hγ hlt).relRealizesSome,
+    fun p xs hp γ hlt => (hR.highGradeDominance ⟨xs, hp.1⟩ p hp.2 γ hlt).relRealizesSome⟩
+  obtain ⟨k, s, hs, hsome⟩ := hR.covering ⟨xs, hinj⟩
+  obtain ⟨p, hp⟩ := Option.isSome_iff_exists.mp hsome
+  refine ⟨k, fun j => s (Fin.natAdd _ j), p, ?_⟩
+  convert holds_structureOf_of_eval R hp using 1
+  ext i; exact Fin.addCases (fun i => by simpa using (congrArg (· i) hs).symm) (by simp) i
 
 /-- Models of `S^ω` satisfy `T`, stated on the sentence. -/
 theorem KnightRealization.IsModel.realize_knightSentence {R : KnightRealization omegaStage M}
@@ -677,15 +540,12 @@ theorem toRealization_structureOf_eval (R : KnightRealization omegaStage M) {n :
   let _ : knightLang.Structure M := structureOf R
   cases hR : R.eval t with
   | none =>
-    refine (toRealization_eval_eq_none_iff t).mpr fun p hp => ?_
-    obtain ⟨_, hp⟩ := hp
-    have hp' : R.eval t = some p := hp
-    rw [hR] at hp'
-    exact Option.some_ne_none _ hp'.symm
+    exact (toRealization_eval_eq_none_iff t).mpr fun p ⟨_, hp⟩ =>
+      Option.some_ne_none _ (hp.symm.trans hR)
   | some p =>
     refine (toRealization_eval_eq_some_iff ?_ t p).mpr ⟨t.injective, hR⟩
-    rintro n p p' xs ⟨h, hp⟩ ⟨_, hp'⟩
-    exact Option.some_injective _ (hp'.symm.trans hp)
+    rintro _ _ _ _ ⟨_, hp⟩ ⟨_, hp'⟩
+    exact Option.some.inj (hp'.symm.trans hp)
 
 end StructureOf
 
@@ -704,11 +564,8 @@ theorem holds_structureOf_toRealization (h : IsKnightModel M) {n : ℕ}
     (p : S Ordinal.omega0 n) (xs : Fin n → M) :
     @Holds M (structureOf (toRealization M)) n p xs ↔ Holds p xs := by
   rw [holds_structureOf]
-  constructor
-  · rintro ⟨hinj, hp⟩
-    exact (h.eval_eq_some_iff _ p).mp hp
-  · intro hp
-    exact ⟨h.arity p xs hp, (h.eval_eq_some_iff ⟨xs, h.arity p xs hp⟩ p).mpr hp⟩
+  exact ⟨fun hp => (h.eval_eq_some_iff _ p).mp hp.2,
+   fun hp => ⟨h.arity p xs hp, (h.eval_eq_some_iff ⟨xs, h.arity p xs hp⟩ p).mpr hp⟩⟩
 
 /-- **`T` has no finite models** (Prop. 3.3.5's finiteness side, `Spectrum.HasNoFiniteModels`):
 a structure realizing `knightSentence` is a model of `S^ω` (`isModel_toRealization_of_realize`),
@@ -719,10 +576,5 @@ theorem hasNoFiniteModels_knightSentence : Spectrum.HasNoFiniteModels knightSent
   rw [Set.eq_empty_iff_forall_notMem]
   intro c hc
   let : knightLang.Structure (Fin n) := StructureSpaceOn.toStructure c
-  have h : knightSentence.Realize (Fin n) := hc
-  have := (isModel_toRealization_of_realize h).infinite_carrier
+  have := (isModel_toRealization_of_realize (M := Fin n) hc).infinite_carrier
   exact not_finite (Fin n)
-
-end RoundTrip
-
-end VaughtConjecture.Knight

@@ -15,13 +15,11 @@ all-cap same-grade mixed lifting on one fixed final carrier. No bountifulness
 of the completed carrier or supplied extension is used.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthHigherMixed
-open AmalgamationPlan Transform Value ExtOrd Growth GrowthHigherSources
-open GrowthPaddedContract GrowthPaddedIteration
-noncomputable section
+open AmalgamationPlan Transform Value ExtOrd Growth GrowthHigherSources GrowthPaddedContract GrowthPaddedIteration
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n J : ℕ}
   (I : WholeDonorBoundary.Input A B C R m (n + 1) J)
@@ -176,6 +174,3 @@ theorem cappedLift (hjt : j ≤ t + 2) (V : Finset ι) (hV : V ∈ R)
     CoatomBoundaryExtension.CappedLift Rows
       (show GradedLe (U, j) (V, j) from ⟨hUV, le_rfl⟩) :=
   (allCapsExtension I X T hA hB hC t ht U hU hm j hj hj0 hjt V hV hmV hjV hUV).cappedLift
-
-end
-end VaughtConjecture.Knight.GrowthHigherMixed

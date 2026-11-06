@@ -14,7 +14,7 @@ This is precisely the original-row data needed for LOW-only frontier release. Th
 no upper threshold, reference-block inventory, or inequality between the two facet arities.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.LowOnly
 
@@ -44,7 +44,7 @@ theorem K_le : K ≤ n := L.c_grade.symm.trans_le (gradeC_le L.c)
 
 theorem grade_dom (d : L.Dom) : C.scheme.grade d.1 ≤ K := d.2.2.trans_eq L.c_grade
 
-noncomputable def h : ExtOrd := extVisibilityReplace (C.rows.E L.c L.r) K K
+def h : ExtOrd := extVisibilityReplace (C.rows.E L.c L.r) K K
 
 theorem h_selfVis : SelfVis K L.h := TopSupport.selfVis_evr_self K _
 
@@ -52,7 +52,7 @@ theorem h_lt_c : L.h < C.rows.E L.c L.cL := L.gap_c
 
 theorem srcE_r_le_h : C.rows.E L.c L.r ≤ L.h := TopSupport.le_evr_self _ K
 
-noncomputable def e (v : L.Dom → ExtOrd) : ExtOrd :=
+def e (v : L.Dom → ExtOrd) : ExtOrd :=
   min (v L.cL) (extVisibilityReplace (v L.r) K K)
 
 theorem e_le_c (v : L.Dom → ExtOrd) : L.e v ≤ v L.cL := min_le_left _ _
@@ -112,7 +112,7 @@ def cC {j : ℕ} (hj : K ≤ j) : C.scheme.below (effC n j) :=
 def rC {j : ℕ} (hj : K ≤ j) : C.scheme.below (effC n j) :=
   CellScheme.below.mono (L.domLe hj) L.r
 
-noncomputable def eC {j : ℕ} (hj : K ≤ j) (v : C.scheme.below (effC n j) → ExtOrd) : ExtOrd :=
+def eC {j : ℕ} (hj : K ≤ j) (v : C.scheme.below (effC n j) → ExtOrd) : ExtOrd :=
   L.e (L.lowD hj v)
 
 theorem le_r_of_lt_e {v : L.Dom → ExtOrd} {γ : ExtOrd} (hγ : SelfVis K γ)
@@ -121,7 +121,3 @@ theorem le_r_of_lt_e {v : L.Dom → ExtOrd} {γ : ExtOrd} (hγ : SelfVis K γ)
   have h1 : extVisibilityReplace (v L.r) K K ≤ γ :=
     evr_le_of_le_selfVis hγ le_rfl le_rfl (not_le.mp hlt).le
   exact absurd ((he.trans_le (min_le_right _ _)).trans_le h1) (lt_irrefl _)
-
-end SourceGap
-
-end VaughtConjecture.Knight.LowOnly

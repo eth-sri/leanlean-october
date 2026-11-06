@@ -14,12 +14,11 @@ Unlike finite-cut receiving, every intermediate root stays exact, so the donor
 needs no repair and the conclusion is literal equality of stage types.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyResidualReceiving
 open TypeTower StageType KnightRealization Value ExtOrd CappedDonor
-noncomputable section
+
 universe w
 variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
   (hcons : W.IsExactParentConsistent) (hFC : FiniteCutReceiving W) {K : ℕ}
@@ -107,6 +106,3 @@ theorem receive_cover_of_tail {n m : ℕ} (Q : S α.1 m)
     have := Fintype.card_le_of_embedding f
     simpa only [Fintype.card_fin] using this
   exact receive_cover_steps_of_tail hcons hFC hcoin hKpos hres (m - n) Q hQK f (by omega) t p hp ht
-
-end
-end VaughtConjecture.Knight.LowOnlyResidualReceiving

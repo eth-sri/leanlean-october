@@ -31,5 +31,3 @@ def FiniteCutReceiving (R : KnightRealization α M) : Prop :=
         ∃ (y : M) (hy : y ∉ Set.range t) (q : S α.1 (n + 1)), R.eval (snoc t y hy) = some q ∧
           ∃ h : q.scheme = P.scheme,
             ∀ d, min (q.label d) δ = min (P.label (SemScheme.castCell h d)) δ
-
-end VaughtConjecture.Knight

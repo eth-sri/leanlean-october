@@ -21,7 +21,6 @@ The historical theorem names are retained and reexported by
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.NonHollowGrowthReceiving
 open TypeTower KnightRealization
 universe w
@@ -47,5 +46,3 @@ theorem prolongsToOnIn_of_eq_nextBlock (hM : W.IsModel) (hh : ¬ W.IsHollow)
     (hle : α ≤ β) : W.ProlongsToOnIn IsModelClass hle := by
   subst β
   exact exists_nextBlock_model hM hh hg
-
-end VaughtConjecture.Knight.NonHollowGrowthReceiving

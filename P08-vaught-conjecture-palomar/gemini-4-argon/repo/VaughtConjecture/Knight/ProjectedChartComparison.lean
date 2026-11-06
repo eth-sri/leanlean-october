@@ -8,7 +8,7 @@ module
 public import VaughtConjecture.ModelTheory.ProjectedExtension
 public import VaughtConjecture.Knight.OrdinaryFiniteCutReceiving
 public import VaughtConjecture.Knight.ChartLanguage
-public import VaughtConjecture.Knight.FiniteCoverCoordinates
+public import VaughtConjecture.Knight.Model
 public import VaughtConjecture.Knight.OneSidedTransfer
 public import VaughtConjecture.Knight.StructuralChartComparison
 
@@ -19,18 +19,17 @@ The extension producer returns a lower chart, not a BF hypothesis. The generic t
 provides the only ordinal induction. Existing comparison declarations are unchanged.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight
 
-open TypeTower FirstOrder Language Structure KnightRealization StageType
-open VaughtConjecture.ModelTheory
+open TypeTower FirstOrder Language Structure KnightRealization StageType VaughtConjecture.ModelTheory
 
 universe w
 
 /-- The base chart language, before the sentence/spectrum entry points. `blockStage_zero`
 identifies this stage with `ω`. -/
-noncomputable abbrev projectedBaseLang := stageLang (blockStage 0)
+abbrev projectedBaseLang := stageLang (blockStage 0)
 
 theorem lowerChart {α β : LimitStage} (h : β ≤ α) {M N : Type w}
     {W : KnightRealization α M} {W' : KnightRealization α N} {n : ℕ}
@@ -76,10 +75,10 @@ structure ProjectedChartReceipt (M N : Type w)
 namespace ProjectedChartReceipt
 
 variable {M N : Type w}
-variable {baseM : projectedBaseLang.Structure M} {baseN : projectedBaseLang.Structure N}
+  {baseM : projectedBaseLang.Structure M} {baseN : projectedBaseLang.Structure N}
 
 /-- Lower the expansion and chart without changing either base structure or tuple. -/
-noncomputable def lower {α β : Ordinal.{0}} (h : β ≤ α)
+def lower {α β : Ordinal.{0}} (h : β ≤ α)
     {n : ℕ} {a : Fin n → M} {b : Fin n → N}
     (r : ProjectedChartReceipt M N baseM baseN α n a b) :
     ProjectedChartReceipt M N baseM baseN β n a b where
@@ -136,7 +135,7 @@ end ProjectedChartReceipt
 
 /-- The generic ranked family on fixed base structures, supplied by actual receiving.
 The receipt type allows different block expansions at different indices. -/
-noncomputable def projectedChartFamily {M N : Type w} [baseM : projectedBaseLang.Structure M]
+def projectedChartFamily {M N : Type w} [baseM : projectedBaseLang.Structure M]
     [baseN : projectedBaseLang.Structure N] (height : Ordinal.{0}) :
     RankedMatchingFamily projectedBaseLang M N height where
   Receipt := ProjectedChartReceipt M N baseM baseN
@@ -174,5 +173,3 @@ theorem bfEquiv_of_commonChart_projected (α : Ordinal.{0}) {M N : Type w}
     source_base := rfl
     target_base := rfl
     chart := hc }
-
-end VaughtConjecture.Knight

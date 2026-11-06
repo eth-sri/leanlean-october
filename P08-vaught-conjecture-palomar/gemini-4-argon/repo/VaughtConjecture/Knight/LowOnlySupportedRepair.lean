@@ -17,13 +17,11 @@ grid endpoints below that cut survive. No physical prefix hypothesis is hidden i
 this source-level result; its ladder application is in `LowOnlyLadderRepair`.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnly
-open Transform Value ExtOrd AmalgamationPlan CappedDonor CappedDonor.Ref
-open CanonicalPairedInverse
-noncomputable section
+open Transform Value ExtOrd AmalgamationPlan CappedDonor CappedDonor.Ref CanonicalPairedInverse
+
 variable {n K j B : ℕ} {P C : SemScheme n}
 
 namespace Family
@@ -143,7 +141,3 @@ theorem donor_protected_repair (hj : 1 ≤ j) {S : State P C}
     F.donor_lift hS hu ((grid_visible j B).mono (min_le_left _ _)) hag
   exact ⟨S', hS', hu', hcap, hfuture, F.exists_protected_repair hj hcanon hS'
     (fun d => (State.capEq_iff_profile.mp hcap d).symm)⟩
-
-end Family
-end
-end VaughtConjecture.Knight.LowOnly

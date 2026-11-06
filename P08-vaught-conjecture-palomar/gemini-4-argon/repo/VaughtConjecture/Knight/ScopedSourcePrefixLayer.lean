@@ -16,12 +16,10 @@ at owners belonging to the new row's lower domain. Separation protects all
 other old rows. Construction of the selected profiles is a separate producer.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.ScopedSourcePrefixLayer
 open Transform Value ExtOrd SourcePrefixRows SourcePrefixLayer
-noncomputable section
 
 variable {ι X : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A} {k : ℕ}
 
@@ -213,7 +211,3 @@ theorem consistent (hbase : ∀ c : Cell D, D.cell c ≠ (A, k) →
     exact funext (F.row_new ⟨c, hc⟩)
   · rw [F.row_old hc]
     exact (F.old_respects_iff hc).mpr (hbase c hc)
-
-end Data
-end
-end VaughtConjecture.Knight.ScopedSourcePrefixLayer

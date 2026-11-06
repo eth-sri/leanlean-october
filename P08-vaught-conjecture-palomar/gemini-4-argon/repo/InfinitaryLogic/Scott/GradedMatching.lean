@@ -153,5 +153,3 @@ theorem bfEquiv_of_nonempty_gradedReceipt
   bfEquiv_of_gradedMatching (fun α n a b ↦ Nonempty (Receipt α n a b))
     (fun ⟨ρ⟩ ↦ atomic ρ) (fun hβα h ⟨ρ⟩ ↦ lower hβα h ρ)
     (fun h ⟨ρ⟩ ↦ forth h ρ) (fun h ⟨ρ⟩ ↦ back h ρ) hα seed
-
-end FirstOrder.Language

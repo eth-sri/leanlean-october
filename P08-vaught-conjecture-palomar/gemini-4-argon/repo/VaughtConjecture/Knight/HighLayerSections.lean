@@ -6,7 +6,9 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.HighLayerBountiful
-public import VaughtConjecture.Knight.GradeTailRestoration
+public import VaughtConjecture.Knight.GradeSplice
+public import VaughtConjecture.Knight.SourceBlockLocalityTransport
+public import VaughtConjecture.Knight.WitnessSplice
 
 /-! # Literal section supply with a zero high tail
 
@@ -14,18 +16,16 @@ This construction accepts arbitrary lawful old values, including literal top.
 It requires neither positive continuation nor a supported canonical encoding.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.HighLayerBountiful
 open Transform Value ExtOrd CoatomBoundaryExtension SourceLayerCarrier GradeTailRestoration
-noncomputable section
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι}
-variable (D : CellScheme A) (Q : Type*) [Fintype Q] (l : ℕ) (hl : 0 < l) (hlA : l ≤ A.card)
-variable (K : ℕ) (hK : ∀ d : Cell D, D.grade d ≤ K) (hKl : K < l)
-variable (sem : Semantics D) (out : Semantics (scheme D Q l hl hlA))
-variable (hrow : ∀ (c : Cell D) (d : D.below (D.cell c)),
+  (D : CellScheme A) (Q : Type*) [Fintype Q] (l : ℕ) (hl : 0 < l) (hlA : l ≤ A.card)
+  (K : ℕ) (hK : ∀ d : Cell D, D.grade d ≤ K) (hKl : K < l)
+  (sem : Semantics D) (out : Semantics (scheme D Q l hl hlA))
+  (hrow : ∀ (c : Cell D) (d : D.below (D.cell c)),
   out.E (old D Q l hl hlA c)
     (SeparatedSourceLayerCarrier.ownerEquiv D Q l hl hlA (separated D l K hK hKl) c d) =
     sem.E c d)
@@ -69,6 +69,3 @@ theorem exists_zero_tail {p : Cell D → ExtOrd} (hp : RespectsSemantics sem p) 
       (SourceLayerCarrier.controller D Q l hl hlA q).1).2 ≤ K
     rw [(SourceLayerCarrier.controller D Q l hl hlA q).2]
     exact not_le_of_gt hKl
-
-end
-end VaughtConjecture.Knight.HighLayerBountiful

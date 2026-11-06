@@ -197,7 +197,6 @@ theorem stableValue_mapCell' (hcons : R.IsExactParentConsistent) {n m : ℕ}
     ((hasStableValue_mapCell_iff' hcons hqu hfu hpq Xi _).mpr
       (R.hasStableValue_stableValue t p Xi))
 
-set_option linter.unusedVariables false in
 /-- **Face naturality of the stable value** (the paper's `s_y = p*` coherence), in its original
 interface.  The covering and face-evaluation hypotheses are no longer used; see
 `stableValue_mapCell'`. -/
@@ -207,7 +206,3 @@ theorem stableValue_mapCell (hcons : R.IsExactParentConsistent)
     (hfu : f.trans u = t) (hpq : typeMap f q = some p) (Xi : Cell p.scheme.scheme) :
     R.stableValue u q (mapCell hpq Xi) = R.stableValue t p Xi :=
   stableValue_mapCell' hcons hqu hfu hpq Xi
-
-end KnightRealization
-
-end VaughtConjecture.Knight

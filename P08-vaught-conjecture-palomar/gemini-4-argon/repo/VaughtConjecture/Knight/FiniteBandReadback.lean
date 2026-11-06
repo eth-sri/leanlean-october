@@ -283,7 +283,3 @@ theorem isProvisionalValue_band_of_expansion (hα : Order.IsSuccLimit α) (hαβ
     change a = extVisibilityReplace a p.topGrade i
     rw [hν, extVisibilityReplace_ofOrd, hi', visibilityReplace_of_finitePart_lt hfp,
       decomposition]
-
-end StageType
-
-end VaughtConjecture.Knight

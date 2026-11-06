@@ -20,12 +20,10 @@ The new map is constructed independently of the outgoing decoder. No inverse
 transformation or transitivity of faithful transformations is used.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.PairedSlotIncoming
 open Transform Value ExtOrd PairedSlotEncoding SharpWitnessComposition
-noncomputable section
 
 def after (a c x : ExtOrd) : ExtOrd := if a < x then c else ⊥
 
@@ -270,8 +268,3 @@ theorem encoder_profile (j : ℕ) (p : X → ExtOrd) (d : X) :
   · simp only [encoder, ht, ite_true, PairedSlotEncoding.normalize]
   · rw [normalize_ofOrd ha, ha]
     exact encoder_at (mem_values.mpr ⟨d, ha⟩)
-
-end Profile
-
-end
-end VaughtConjecture.Knight.PairedSlotIncoming

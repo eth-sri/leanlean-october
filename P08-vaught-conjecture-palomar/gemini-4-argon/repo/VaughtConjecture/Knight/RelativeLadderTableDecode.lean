@@ -15,12 +15,11 @@ round trip recovers the entire numerical level table, not just its occupied
 field ranks. Thus unused rungs, spare tips and zero shadows are included.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.RelativeLadderLayer
 open Transform Value ExtOrd
-noncomputable section
+
 variable {ι X Q : Type*} [DecidableEq ι] [Fintype X] [Fintype Q] {A : Finset ι}
   (D : CellScheme A) (hA : 0 < A.card) (field : Cell D → X) (fields : Q → X → ExtOrd)
 
@@ -43,6 +42,3 @@ theorem renderWith_decode_normalized (j : ℕ) (a : Q) (p : X → ExtOrd)
   have he := RungTableRendering.level_decode p hf.mono hg.mono hf.bot hg.bot hinv T
     (rankIndex D hA field fields a d)
   simpa only [renderWith, image, f, g, PairedSlotIncoming.encoder_profile, hT] using he
-
-end
-end VaughtConjecture.Knight.RelativeLadderLayer

@@ -14,13 +14,11 @@ recursive carrier through grade `n + 3`. The contract is a semantic induction
 invariant, not a hypothesis of future completion or bountifulness.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalRecursiveContract
-open Transform Value ExtOrd SourcePrefixRows PairedSlotEncoding PairedSlotComparison
-open SharpWitnessComposition
-noncomputable section
+open Transform Value ExtOrd SourcePrefixRows PairedSlotEncoding PairedSlotComparison SharpWitnessComposition
+
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 
 abbrev carrier (sem : Semantics D) (n : ℕ) (hA : n + 3 ≤ A.card) :=
@@ -77,6 +75,3 @@ def seed (sem : Semantics D) (hA : 3 ≤ A.card) (hp : ∀ d : Cell D, D.scope d
   section_supported := CanonicalRecursiveSeedSections.section_supported sem hA hp
   section_agreement := fun {_} hK {_ _} hpr htp hqr htq =>
     CanonicalRecursiveSeedSections.section_agreement sem hA hp hK hpr htp hqr htq
-
-end
-end VaughtConjecture.Knight.CanonicalRecursiveContract

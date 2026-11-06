@@ -52,5 +52,3 @@ theorem KnightRealization.IsModel.hasTopGradeGrowth_or_coinitial_constant
     (hR : R.IsModel) :
     R.HasTopGradeGrowth ∨ ∃ K : ℕ, IsCoinitial {x : R.LabelledExt | x.type.topGrade = K} :=
   KnightRealization.hasTopGradeGrowth_or_coinitial_constant hR.consistent hR.covering
-
-end VaughtConjecture.Knight

@@ -54,8 +54,8 @@ namespace FirstOrder
 namespace Language
 
 variable {L : Language.{u, v}}
-variable {M : Type w} [L.Structure M]
-variable {α : Type u'} {n : ℕ}
+  {M : Type w} [L.Structure M]
+  {α : Type u'} {n : ℕ}
 
 open FirstOrder Structure Fin
 
@@ -140,22 +140,6 @@ theorem realize_and (φ ψ : L.BoundedFormulaω α n) :
 theorem realize_inf (φ ψ : L.BoundedFormulaω α n) :
     (φ ⊓ ψ).Realize v xs ↔ φ.Realize v xs ∧ ψ.Realize v xs :=
   realize_and φ ψ
-
-@[simp]
-theorem realize_or (φ ψ : L.BoundedFormulaω α n) :
-    (φ.or ψ).Realize v xs ↔ φ.Realize v xs ∨ ψ.Realize v xs := by
-  simp only [BoundedFormulaω.or, realize_not, realize_imp]
-  tauto
-
-@[simp]
-theorem realize_sup (φ ψ : L.BoundedFormulaω α n) :
-    (φ ⊔ ψ).Realize v xs ↔ φ.Realize v xs ∨ ψ.Realize v xs :=
-  realize_or φ ψ
-
-@[simp]
-theorem realize_iff (φ ψ : L.BoundedFormulaω α n) :
-    (φ.iff ψ).Realize v xs ↔ (φ.Realize v xs ↔ ψ.Realize v xs) := by
-  simp only [BoundedFormulaω.iff, realize_inf, realize_imp, iff_def]
 
 @[simp]
 theorem realize_einf {ι : Type*} [Encodable ι] (φs : ι → L.BoundedFormulaω α n) :
@@ -267,38 +251,12 @@ abbrev Realize (φ : L.Formulaω α) (v : α → M) : Prop :=
 
 variable {φ : L.Formulaω α} {v : α → M}
 
-/-- The level-crossing lemma: formula realization *is* bounded-formula realization at the empty
-tuple.
-
-`FormulaInf.Realize` is a plain definition upstream, not a reducible abbreviation (matching the
-finitary `Formula.Realize`), so neither `rw` nor `simp` can see a `BoundedFormulaω` realization
-lemma through it. Supply this lemma explicitly — `simp only [Formulaω.realize_def, realize_not]` —
-in place of unfolding `Formulaω.Realize`, which lands on the opaque `FormulaInf.Realize` and makes
-every bounded-formula lemma inapplicable. Deliberately not `@[simp]`: the formula-level lemmas
-below are the normal interface, and this escape hatch should be visible where it is used. -/
-theorem realize_def (φ : L.Formulaω α) (v : α → M) :
-    Realize φ v ↔ BoundedFormulaω.Realize φ v Fin.elim0 := Iff.rfl
-
 @[simp]
 theorem realize_not : Realize φ.not v ↔ ¬Realize φ v := BoundedFormulaω.realize_not φ
 
 @[simp]
-theorem realize_bot : Realize (⊥ : L.Formulaω α) v ↔ False := BoundedFormulaω.realize_bot
-
-@[simp]
-theorem realize_top : Realize (⊤ : L.Formulaω α) v ↔ True := BoundedFormulaω.realize_top
-
-@[simp]
-theorem realize_imp (φ ψ : L.Formulaω α) :
-    Realize (φ.imp ψ) v ↔ (Realize φ v → Realize ψ v) := BoundedFormulaω.realize_imp φ ψ
-
-@[simp]
 theorem realize_inf (φ ψ : L.Formulaω α) :
     Realize (φ ⊓ ψ) v ↔ Realize φ v ∧ Realize ψ v := BoundedFormulaω.realize_inf φ ψ
-
-@[simp]
-theorem realize_sup (φ ψ : L.Formulaω α) :
-    Realize (φ ⊔ ψ) v ↔ Realize φ v ∨ Realize ψ v := BoundedFormulaω.realize_sup φ ψ
 
 @[simp]
 theorem realize_einf {ι : Type*} [Encodable ι] (φs : ι → L.Formulaω α) :
@@ -323,24 +281,9 @@ not a `simp` lemma. -/
 theorem realize_def (φ : L.Sentenceω) (M : Type w) [L.Structure M] :
     Realize φ M ↔ BoundedFormulaω.Realize φ (Empty.elim : Empty → M) Fin.elim0 := Iff.rfl
 
-/-- Notation for a structure satisfying a sentence. -/
-scoped notation:51 M " ⊨ω " φ:51 => Sentenceω.Realize φ M
-
-end Sentenceω
-
 /-! ## Facade semantics gates
 
 Each must close by `Iff.rfl` — no `change`, no rewriting, no explicit cast. That is what
 certifies that the qualified ω names *are* Mathlib's semantics rather than a parallel copy of
 it, and that the arity-0 spellings the project has used throughout (`Fin.elim0`, `Empty.elim`)
 still agree with Mathlib's `default`. -/
-
-section Gates
-
-variable {v : α → M} {xs : Fin n → M}
-
-end Gates
-
-end Language
-
-end FirstOrder

@@ -21,12 +21,11 @@ donor tops read above the requested threshold. Cap receiving and selected
 occurrence supplies are downstream applications, not imports of this producer.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.NonHollowGrowthReceiving
 open TypeTower StageType KnightRealization Value ExtOrd
-noncomputable section
+
 universe w
 variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
 
@@ -62,6 +61,3 @@ theorem receives_positive (hM : W.IsModel) (hh : ¬ W.IsHollow)
     rfl
   rw [htup] at hev hc
   exact ⟨y, hy, s, hev, he.symm, hread _ hc⟩
-
-end
-end VaughtConjecture.Knight.NonHollowGrowthReceiving

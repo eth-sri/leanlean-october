@@ -25,5 +25,3 @@ theorem countable_of_cover {ι κ : Type*} [Countable κ] (P : κ → ι → Pro
   refine Function.Injective.countable (f := c) fun i j h => hsub (c i) i j (hc i) ?_
   rw [h]
   exact hc j
-
-end VaughtConjecture.CountableCover

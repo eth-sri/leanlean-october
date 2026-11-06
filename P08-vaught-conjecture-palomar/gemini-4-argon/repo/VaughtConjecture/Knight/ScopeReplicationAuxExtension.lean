@@ -17,12 +17,11 @@ an unused rung's value, and no hidden-original lawfulness is assumed.
 This is the auxiliary part only, not a theorem of whole extension lawfulness.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.ScopeReplicationAuxExtension
 open AmalgamationPlan Transform Value ExtOrd ScopeReplicationCarrier ScopeReplicationSemantics
-noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι}
   (D : CellScheme A) (B C : Finset ι)
   (hcover : ∀ c : Cell D, D.scope c ≠ A → D.scope c ⊆ B ∨ D.scope c ⊆ C)
@@ -92,6 +91,3 @@ theorem cap (hV : V ∈ D.plan) (hmV : V = A ∨ Mixed B C V) (hjV : j ≤ V.car
         ((erase_grade D B C z.1).le.trans z.2.2)).symm)
   have hzq : q z = q v := eq_target_copy D B C hcover sem hV hmV hjV hq z hz
   exact (hag u).symm.trans (congrArg (fun x => min x γ) (huq.trans hzq.symm))
-
-end
-end VaughtConjecture.Knight.ScopeReplicationAuxExtension

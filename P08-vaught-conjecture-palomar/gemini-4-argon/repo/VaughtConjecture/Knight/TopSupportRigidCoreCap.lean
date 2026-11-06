@@ -226,7 +226,3 @@ theorem nonempty_iso_of_rigidCores_of_receiving [Countable M₁] [Countable M₂
   let ⟨e, _⟩ := exists_iso_of_rigidCores_of_receiving hcons₁ hcov₁ hFC₁ hcons₂ hcov₂ hFC₂ h₁ h₂ r₁
     r₂
   ⟨e⟩
-
-end Classification
-
-end VaughtConjecture.Knight.TopSupportRigidCore

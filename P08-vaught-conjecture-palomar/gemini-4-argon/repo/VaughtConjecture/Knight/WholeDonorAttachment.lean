@@ -15,12 +15,11 @@ the ordered union in `WholeDonorBoundary`, not `requestInventory`. No labels,
 catalogue, model, or receiving predicate are needed for this input adapter.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.WholeDonorAttachment
 open AmalgamationPlan Transform Value ExtOrd
-noncomputable section
+
 variable {n N : ℕ} (e : Fin n ↪ Fin N)
 
 abbrev privateScope : Finset (Fin (N + 1)) := Finset.univ.image Fin.castSuccEmb
@@ -85,8 +84,8 @@ theorem donor_proper (h : n + 1 < N) : donorScope e ≠ Finset.univ := by
 
 section Plans
 variable {a b c : ℕ} (D : SemScheme b) (Q : SemScheme a)
-variable (f : Fin a ↪ Fin b) (g : Fin b ↪ Fin c)
-variable (hf : Finset.univ.image f ∈ D.scheme.plan) (he : D.restrictFace f hf = Q)
+  (f : Fin a ↪ Fin b) (g : Fin b ↪ Fin c)
+  (hf : Finset.univ.image f ∈ D.scheme.plan) (he : D.restrictFace f hf = Q)
 
 include he in
 /-- Plan equality is derived from literal semantic restriction. -/
@@ -106,9 +105,9 @@ theorem pushed_root_plan :
 end Plans
 
 variable (P : SemScheme N) (D : SemScheme (n + 1)) (Q : SemScheme n)
-variable (hp : Finset.univ.image e ∈ P.scheme.plan)
-variable (hd : Finset.univ.image Fin.castSuccEmb ∈ D.scheme.plan)
-variable (hpr : P.restrictFace e hp = Q) (hdr : D.restrictFace Fin.castSuccEmb hd = Q)
+  (hp : Finset.univ.image e ∈ P.scheme.plan)
+  (hd : Finset.univ.image Fin.castSuccEmb ∈ D.scheme.plan)
+  (hpr : P.restrictFace e hp = Q) (hdr : D.restrictFace Fin.castSuccEmb hd = Q)
 
 include hpr hdr in
 theorem exists_plan : ∃ R : Finset (Finset (Fin (N + 1))),
@@ -169,8 +168,3 @@ def input : WholeDonorBoundary.Input Finset.univ privateScope (donorScope e)
   intersection := (root_left_image e).trans (intersection e).symm
   planLeft := (plan_spec e P D Q hp hd hpr hdr).2.2.1
   planRight := (plan_spec e P D Q hp hd hpr hdr).2.2.2.2
-
-local notation "I" => input e P D Q hp hd hpr hdr
-
-end
-end VaughtConjecture.Knight.WholeDonorAttachment

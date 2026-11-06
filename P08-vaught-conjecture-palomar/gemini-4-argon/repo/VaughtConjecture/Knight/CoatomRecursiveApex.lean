@@ -17,15 +17,13 @@ Both given displays and the stage bound are retained. Ordered restriction
 equations and the two small arities are not asserted here.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CoatomRecursiveApex
-open Transform Value ExtOrd AmalgamationPlan AmalgamatedBoundaryPlan
-open SemSchemeBoundaryInput CoatomRecursiveInput
-noncomputable section
+open Transform Value ExtOrd AmalgamationPlan AmalgamatedBoundaryPlan SemSchemeBoundaryInput CoatomRecursiveInput
+
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {s : Step A} {m n : ℕ}
-variable (I : Input s m (n + 3) (n + 3))
+  (I : Input s m (n + 3) (n + 3))
 
 include I in
 theorem card_eq : A.card = n + 4 := by
@@ -147,6 +145,3 @@ def ofCompatible (hα : Order.IsSuccLimit α) (C : CoatomPair (n + 2))
     Display (CoatomBoundaryPresentation.of_compatible C h).input α pa.label pb.label :=
   display _ hα pa.respects pb.respects pa.label_bound pb.label_bound
     (CoatomRecursiveDisplay.compatible_labels C h)
-
-end
-end VaughtConjecture.Knight.CoatomRecursiveApex

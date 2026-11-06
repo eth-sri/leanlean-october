@@ -16,15 +16,14 @@ new upper tail at the original permitted cap. This does not cover prescribed
 proper owners of the new grade, nor force positive upper continuation.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.HighLayerBountiful
 open Transform Value ExtOrd CoatomBoundaryExtension AmalgamationPlan SourceLayerCarrier
-noncomputable section
+section
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι}
-variable (D : CellScheme A) (Q : Type*) [Fintype Q] (l : ℕ) (hl : 0 < l) (hlA : l ≤ A.card)
+  (D : CellScheme A) (Q : Type*) [Fintype Q] (l : ℕ) (hl : 0 < l) (hlA : l ≤ A.card)
 
 abbrev old (d : Cell D) := toCell D Q l hl hlA (.inl d)
 
@@ -58,7 +57,7 @@ theorem separated (d : Cell D) : ¬ GradedLe (A, l) (D.cell d) :=
   fun h => (not_le_of_gt hKl) (h.2.trans (hK d))
 
 variable (sem : Semantics D) (out : Semantics (scheme D Q l hl hlA))
-variable (hrow : ∀ (c : Cell D) (d : D.below (D.cell c)),
+  (hrow : ∀ (c : Cell D) (d : D.below (D.cell c)),
   out.E (old D Q l hl hlA c)
     (SeparatedSourceLayerCarrier.ownerEquiv D Q l hl hlA (separated D l K hK hKl) c d) =
     sem.E c d)
@@ -84,26 +83,11 @@ theorem pullback_respects {J : Finset ι × ℕ} (hJ : ¬ GradedLe (A, l) J)
 
 include hrow in
 theorem transport_lift {I J : Finset ι × ℕ} (h : GradedLe I J)
-    (hJ : ¬ GradedLe (A, l) J) (hb : CappedLift sem h) : CappedLift out h := by
-  intro p q γ hp hq hγ hag
+    (hJ : ¬ GradedLe (A, l) J) (hb : CappedLift sem h) : CappedLift out h :=
   have hI : ¬ GradedLe (A, l) I := fun hI => hJ (hI.trans h)
-  let eI := equiv D Q l hl hlA I hI
-  let eJ := equiv D Q l hl hlA J hJ
-  have hm (d : D.below I) :
-      eJ (CellScheme.below.mono h d) = CellScheme.below.mono h (eI d) := rfl
-  obtain ⟨r, hr, hcap, hread⟩ := hb (p ∘ eI) (q ∘ eJ) γ
-    (pullback_respects D Q l hl hlA K hK hKl sem out hrow hI hp)
-    (pullback_respects D Q l hl hlA K hK hKl sem out hrow hJ hq) hγ
-    (fun d => hag (eI d))
-  refine ⟨r ∘ eJ.symm,
-    (respects_iff D Q l hl hlA K hK hKl sem out hrow J hJ r).mp hr, fun d => ?_, fun d => ?_⟩
-  · simpa only [Function.comp_apply, Equiv.apply_symm_apply] using hcap (eJ.symm d)
-  · have hd : eJ.symm (CellScheme.below.mono h d) =
-        CellScheme.below.mono h (eI.symm d) := by
-      apply eJ.injective
-      rw [Equiv.apply_symm_apply, hm, Equiv.apply_symm_apply]
-    rw [Function.comp_apply, hd, hread]
-    exact congrArg p (eI.apply_symm_apply d)
+  hb.of_respects_iff (equiv D Q l hl hlA I hI) (equiv D Q l hl hlA J hJ) (fun _ => rfl)
+    (respects_iff D Q l hl hlA K hK hKl sem out hrow I hI)
+    (respects_iff D Q l hl hlA K hK hKl sem out hrow J hJ)
 
 end
 end VaughtConjecture.Knight.HighLayerBountiful
@@ -138,13 +122,12 @@ end VaughtConjecture.Knight
 
 namespace VaughtConjecture.Knight.HighLayerBountiful
 open Transform Value ExtOrd CoatomBoundaryExtension AmalgamationPlan SourceLayerCarrier
-noncomputable section
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι}
-variable (D : CellScheme A) (Q : Type*) [Fintype Q] (l : ℕ) (hl : 0 < l) (hlA : l ≤ A.card)
-variable (K : ℕ) (hK : ∀ d : Cell D, D.grade d ≤ K) (hKl : K < l)
-variable (sem : Semantics D) (out : Semantics (scheme D Q l hl hlA))
-variable (hrow : ∀ (c : Cell D) (d : D.below (D.cell c)),
+  (D : CellScheme A) (Q : Type*) [Fintype Q] (l : ℕ) (hl : 0 < l) (hlA : l ≤ A.card)
+  (K : ℕ) (hK : ∀ d : Cell D, D.grade d ≤ K) (hKl : K < l)
+  (sem : Semantics D) (out : Semantics (scheme D Q l hl hlA))
+  (hrow : ∀ (c : Cell D) (d : D.below (D.cell c)),
   out.E (old D Q l hl hlA c)
     (SeparatedSourceLayerCarrier.ownerEquiv D Q l hl hlA (separated D l K hK hKl) c d) =
     sem.E c d)
@@ -188,6 +171,3 @@ theorem bountiful (hpos : 0 < K) (hb : sem.IsBountiful) : out.IsBountiful := by
   · exact transport_lift D Q l hl hlA K hK hKl sem out hrow
       (I := (C, n)) (J := (B, n)) ⟨hCB, le_rfl⟩ hnew
       (lift_of_bountiful hb hC hB ⟨hCB, le_rfl⟩)
-
-end
-end VaughtConjecture.Knight.HighLayerBountiful

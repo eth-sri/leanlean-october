@@ -5,10 +5,15 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.MixedOwnValues
-public import VaughtConjecture.Knight.CrossGradeRecoding
+public import VaughtConjecture.Knight.RequestFaceIdentification
+public import VaughtConjecture.Knight.CountedRecoding
+public import VaughtConjecture.Knight.CappedLocalityRecoding
+public import VaughtConjecture.Knight.Semantics
+public import VaughtConjecture.Knight.Reduction
+public import VaughtConjecture.Knight.VisibilityAlgebra
+public import VaughtConjecture.Knight.ReferenceContext
 public import VaughtConjecture.Knight.PartialSections
-public import VaughtConjecture.Knight.MixedIndexConstraints
+public import VaughtConjecture.Knight.CoupledGradeOne
 
 /-! # The mixed rows over the actual context: consistency from the recodings
 
@@ -48,12 +53,6 @@ open AmalgamationPlan CellScheme Transform Value ExtOrd
 open CellScheme.restrictFace (pushGraded)
 
 /-! ## The recoding at a grade, generically -/
-
-section Recode
-
-variable (l : ℕ) (S : Finset Ordinal.{0})
-
-end Recode
 
 /-! ## The inventory over the actual context -/
 
@@ -98,7 +97,3 @@ theorem respectsBelow_bot {ι₀ : Type*} [DecidableEq ι₀] {A₀ : Finset ι�
     (sem : Semantics D₀) (BJ : Finset ι₀ × ℕ) :
     RespectsSemanticsBelow sem BJ (fun _ => (⊥ : ExtOrd)) :=
   RespectsSemanticsBelow.bot sem BJ
-
-end Inventory
-
-end VaughtConjecture.Knight

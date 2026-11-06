@@ -7,7 +7,6 @@ module
 
 public import InfinitaryLogic.OrdinalUtil
 public import InfinitaryLogic.Scott.Sentence
-public import Architect
 
 /-!
 # Proof of CountableRefinementHypothesis
@@ -43,7 +42,7 @@ namespace FirstOrder
 namespace Language
 
 variable {L : Language.{u, v}} [L.IsRelational]
-variable [Countable (Σ l, L.Relations l)]
+  [Countable (Σ l, L.Relations l)]
 
 open FirstOrder Structure Ordinal BoundedFormulaω
 
@@ -138,17 +137,6 @@ the monotonicity of BFEquiv gives BFEquiv (α₀+k) for all k. The "constant cha
 (`witness_at_all_levels`) shows that forth/back witnesses at level α₀ work at all higher
 levels (via self-stabilization + transitivity), so `BFEquiv_of_all_finite_levels` upgrades
 BFEquiv to the successor. Hence no refinement ordinals exist above γ < ω₁. -/
-@[blueprint "thm:CRH"
-  (title := /-- Countable refinement hypothesis -/)
-  (statement := /-- For any countable relational language $L$, countable $L$-structure
-    $M$, tuple size $n$, and tuple $a \in M^n$, the set of refinement ordinals
-    $\{\varepsilon < \omegaone \mid \exists (N, b)\, \BFEquiv_\varepsilon(a,b)
-    \wedge \neg\BFEquiv_{\varepsilon+1}(a,b)\}$ is countable. -/)
-  (proof := /-- From self-stabilization: witnesses at $\alpha_0$ persist at all
-    $\alpha_0 + k$. The chain $\alpha_0, \alpha_0+1, \ldots$ has limit
-    $\gamma < \omegaone$ which is itself a limit ordinal, giving BFEquiv at $\gamma$
-    and hence at all ordinals. -/)
-  (proofUses := ["thm:self-stabilization"])]
 theorem countableRefinementHypothesis : CountableRefinementHypothesis.{u, v, w} L := by
   intro M inst_struct inst_count n a
   obtain ⟨α₀, hα₀_lt, hstab⟩ := exists_complete_self_stabilization (L := L) M
@@ -177,19 +165,7 @@ theorem countableRefinementHypothesis : CountableRefinementHypothesis.{u, v, w} 
 Each theorem below is a one-liner applying `countableRefinementHypothesis` to the
 corresponding `_of` variant in Sentence.lean. -/
 
-/-- Complete stabilization below ω₁. -/
-theorem exists_complete_stabilization (M : Type w) [L.Structure M] [Countable M] :
-    ∃ α < (Ordinal.omega 1 : Ordinal.{0}), StabilizesCompletely (L := L) M α :=
-  exists_complete_stabilization_of countableRefinementHypothesis M
-
 /-- The Scott sentence of M characterizes M up to isomorphism among countable structures. -/
-@[blueprint "thm:scott-characterizes"
-  (title := /-- Scott characterization -/)
-  (statement := /-- The Scott sentence of a countable structure $M$ characterizes $M$
-    up to isomorphism among countable structures (unconditional corollary of CRH). -/)
-  (proof := /-- Instantiate the conditional characterization theorem with the
-    proved Countable Refinement Hypothesis. -/)
-  (proofUses := ["thm:CRH", "thm:scott-characterizes-of"])]
 theorem scottSentence_characterizes (M : Type w) [L.Structure M] [Countable M]
     (N : Type w) [L.Structure N] [Countable N] :
     (scottSentence (L := L) M).realize_as_sentence N ↔ Nonempty (M ≃[L] N) :=
@@ -205,7 +181,3 @@ theorem scottSentence_realizes_implies_equiv (M : Type w) [L.Structure M] [Count
 theorem scottSentence_self (M : Type w) [L.Structure M] [Countable M] :
     (scottSentence (L := L) M).realize_as_sentence M :=
   (scottSentence_characterizes M M).mpr ⟨Equiv.refl L M⟩
-
-end Language
-
-end FirstOrder

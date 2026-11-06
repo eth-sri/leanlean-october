@@ -13,14 +13,12 @@ public import VaughtConjecture.Knight.SeparatedLayerFace
 Only occurrences and literal rows are transported. Independently selected
 renderings at different grades are not identified.
 -/
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthPaddedCutTransport
-open Transform Value ExtOrd Growth
-open GrowthPaddedContract GrowthPaddedIteration GrowthPaddedStepRows
+open Transform Value ExtOrd Growth GrowthPaddedContract GrowthPaddedIteration GrowthPaddedStepRows
 open CoatomBoundaryExtension
-noncomputable section
+
 section Local
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n J : ℕ}
@@ -31,15 +29,8 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {hA : 2 ≤ A.card} {hB : B ⊂ A} {hC : C ⊂ A} {k : ℕ}
   (P : Layer I X T hA hB hC k)
 
-variable (hk : 2 ≤ k) (hnext : k + 1 ≤ A.card)
-
-/-- No added owner lies below a strictly lower cutoff. -/
-def stepEquiv (U : Finset ι × ℕ) (hu : U.2 ≤ k) :
-    P.carrier.below U ≃ (successor P hk hnext).carrier.below U :=
-  HighLayerBountiful.equiv P.carrier (Catalogue X (k + 1)) (k + 1)
-    (Nat.succ_pos k) hnext U (fun h => by have := h.2; omega)
-
-theorem step_lift {U V : Finset ι × ℕ} (h : GradedLe U V) (hv : V.2 ≤ k)
+theorem step_lift (hk : 2 ≤ k) (hnext : k + 1 ≤ A.card) {U V : Finset ι × ℕ}
+    (h : GradedLe U V) (hv : V.2 ≤ k)
     (hl : CappedLift P.rows h) : CappedLift (successor P hk hnext).rows h :=
   SeparatedLayerFace.lift P.carrier (Catalogue X (k + 1)) (k + 1)
     (Nat.succ_pos k) hnext (P.separated I X T hA hB hC (by omega))
@@ -72,16 +63,3 @@ theorem base_respects_iff (p : (base I X T hA hB hC).below (A, 1) → ExtOrd) :
     (fun d => (congrArg Prod.snd (base_index P d)).symm)
     (fun d e => ?_) (fun c d _ => (P.base_row c.1 d).symm) p
   simp only [CellScheme.scope, base_index]
-
-end Local
-
-variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
-  {R : Finset (Finset ι)} {m n J : ℕ}
-  (I : WholeDonorBoundary.Input A B C R m (n + 1) J)
-  (X : RelativeData I.right.scheme I.right.rows I.left.scheme I.left.rows)
-  (T : Growth.RootAttachment I.common I.commonLeft I.visibleLeft I.faceLeft
-    I.commonRight I.visibleRight I.faceRight X)
-  (hA : 2 ≤ A.card) (hB : B ⊂ A) (hC : C ⊂ A)
-
-end
-end VaughtConjecture.Knight.GrowthPaddedCutTransport

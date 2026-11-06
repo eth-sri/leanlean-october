@@ -18,14 +18,11 @@ the two-original scope cover, completeness holds through the installed height.
 No bountifulness of higher outputs is claimed.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthPaddedInstallation
-open Transform Value ExtOrd CappedDonor Growth GrowthOrderedBase GrowthHigherSources
-open GrowthPaddedContract GrowthPaddedIteration GrowthPaddedStepRows
+open Transform Value ExtOrd CappedDonor Growth GrowthOrderedBase GrowthHigherSources GrowthPaddedContract GrowthPaddedIteration GrowthPaddedStepRows
 open AmalgamationPlan CoatomBoundaryExtension
-noncomputable section
 
 section Fields
 variable {ιA ιQ : Type*} [DecidableEq ιA] [DecidableEq ιQ]
@@ -150,6 +147,3 @@ theorem full_occupied (t : ℕ) (ht : t + 2 ≤ A.card) (j : ℕ)
     zero (zero_admitted X (t + 2)) (fun f => by cases f <;> exact bot_ne_top)
     (G := ∅) (H := ⊤) (by simp) (by simp [SelfVis]) (fun _ => le_top) j hj hjt
   exact ⟨d, hd⟩
-
-end
-end VaughtConjecture.Knight.GrowthPaddedInstallation

@@ -17,9 +17,7 @@ lower domains are preserved. No cells at new mixed indices are constructed here.
 This is the ordered-boundary part of new25, not a receiving probe.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.OrderedFaceBoundary
 
@@ -27,12 +25,12 @@ open AmalgamationPlan
 open AmalgamatedBoundary (Overlap)
 
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
-variable (D : CellScheme B) (E : CellScheme C)
-variable {k : ℕ} (w : Overlap D E k)
+  (D : CellScheme B) (E : CellScheme C)
+  {k : ℕ} (w : Overlap D E k)
 
 abbrev Boundary := ProfileFaceUnion.Carrier (X := Cell D) w.g
 
-noncomputable def index : Boundary D E w → Finset ι × ℕ :=
+def index : Boundary D E w → Finset ι × ℕ :=
   ProfileFaceUnion.paste w.g D.cell E.cell
 
 theorem index_right (e : Cell E) :
@@ -79,7 +77,7 @@ theorem below_right (d : Cell E) (z : Boundary D E w) :
     exact e.2
 
 variable (R : Finset (Finset ι)) (hR : Plan.IsPlan A R)
-variable (hD : D.plan ⊆ R) (hE : E.plan ⊆ R)
+  (hD : D.plan ⊆ R) (hE : E.plan ⊆ R)
 
 include hD hE in
 theorem index_mem (z : Boundary D E w) : index D E w z ∈ Plan.gradedPlan R := by
@@ -90,21 +88,21 @@ theorem index_mem (z : Boundary D E w) : index D E w z ∈ Plan.gradedPlan R := 
     obtain ⟨hm, hp, hc⟩ := Plan.mem_gradedPlan.mp (E.cell_mem e)
     exact Plan.mem_gradedPlan.mpr ⟨hE hm, hp, hc⟩
 
-noncomputable def enumeration : Boundary D E w ≃ Fin (Fintype.card (Boundary D E w)) :=
+def enumeration : Boundary D E w ≃ Fin (Fintype.card (Boundary D E w)) :=
   ProfileBoundaryOrder.enumeration w.f w.g w.f_mono w.g_mono
 
 /-- The ordered inherited boundary, with no mixed cells installed. -/
-noncomputable def scheme : CellScheme A where
+def scheme : CellScheme A where
   plan := R
   isPlan := hR
   card := Fintype.card (Boundary D E w)
   cell d := index D E w ((enumeration D E w).symm d)
   cell_mem _ := index_mem D E w R hD hE _
 
-noncomputable def leftCell (d : Cell D) : Cell (scheme D E w R hR hD hE) :=
+def leftCell (d : Cell D) : Cell (scheme D E w R hR hD hE) :=
   enumeration D E w (ProfileFaceUnion.left w.g d)
 
-noncomputable def rightCell (e : Cell E) : Cell (scheme D E w R hR hD hE) :=
+def rightCell (e : Cell E) : Cell (scheme D E w R hR hD hE) :=
   enumeration D E w (ProfileFaceUnion.right w.f w.g e)
 
 theorem left_index (d : Cell D) :
@@ -145,7 +143,7 @@ theorem overlap (d : Cell D) (e : Cell E) :
   rw [Equiv.apply_eq_iff_eq]
   exact ProfileFaceUnion.overlap w.f w.g d e
 
-noncomputable def leftBelow (d : Cell D) : D.below (D.cell d) ≃
+def leftBelow (d : Cell D) : D.below (D.cell d) ≃
     (scheme D E w R hR hD hE).below
       ((scheme D E w R hR hD hE).cell (leftCell D E w R hR hD hE d)) :=
   Equiv.ofBijective (fun e => ⟨leftCell D E w R hR hD hE e.1, by
@@ -162,7 +160,7 @@ noncomputable def leftBelow (d : Cell D) : D.below (D.cell d) ≃
     exact ⟨f, Subtype.ext ((congrArg (enumeration D E w) hf).trans
       ((enumeration D E w).apply_symm_apply e.1))⟩⟩
 
-noncomputable def rightBelow (d : Cell E) : E.below (E.cell d) ≃
+def rightBelow (d : Cell E) : E.below (E.cell d) ≃
     (scheme D E w R hR hD hE).below
       ((scheme D E w R hR hD hE).cell (rightCell D E w R hR hD hE d)) :=
   Equiv.ofBijective (fun e => ⟨rightCell D E w R hR hD hE e.1, by
@@ -189,5 +187,3 @@ theorem complete_on_input (hDc : D.IsComplete) (hEc : E.IsComplete)
     exact ⟨leftCell D E w R hR hD hE d, (left_index D E w R hR hD hE d).trans hd⟩
   · obtain ⟨e, he⟩ := hEc BJ hr
     exact ⟨rightCell D E w R hR hD hE e, (right_index D E w R hR hD hE e).trans he⟩
-
-end VaughtConjecture.Knight.OrderedFaceBoundary

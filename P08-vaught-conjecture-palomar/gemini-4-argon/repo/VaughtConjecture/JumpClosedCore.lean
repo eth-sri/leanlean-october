@@ -43,7 +43,3 @@ theorem jump_eq_of_approximates {K : ℕ} {u r : I → ℕ∞} (h : Approximates
   by_cases hr : r i = ⊤
   · exact (ite_eq_right (not_le.mpr (h2 hr))).trans hr.symm
   · exact (ite_eq_left ((h1 hr).symm ▸ hK i hr)).trans (h1 hr)
-
-variable [Finite I] {A : Set (I → ℕ∞)}
-
-end VaughtConjecture.JumpClosed

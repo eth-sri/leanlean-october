@@ -14,15 +14,12 @@ Serving charts and admission follow from lawfulness; the two private top
 receipts and strict leaf comparison remain the only readback inputs.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedPairReadback
-open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder
-open LowOnlyPaddedContract LowOnlyPaddedIteration LowOnlyPaddedEndpoints
-open LowOnlyPaddedRestriction LowOnlyPaddedRenderChart LowOnlyPaddedSelectedChart
-open LowOnlyPaddedSelectedPair
-noncomputable section
+open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder LowOnlyPaddedContract LowOnlyPaddedIteration LowOnlyPaddedEndpoints
+open LowOnlyPaddedRestriction LowOnlyPaddedRenderChart LowOnlyPaddedSelectedChart LowOnlyPaddedSelectedPair
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n K : ℕ}
   (I : WholeDonorBoundary.Input A B C R m n n) (F : LowOnly.Family I.left I.right K)
@@ -135,6 +132,3 @@ theorem whole_readback (t : ℕ) (F : LowOnly.Family I.left I.right (t + 2))
       (whole_pullback I F hroot hA hB hC t ht (A, t + 2) le_rfl r hheight hq)
       ((hm (privateIncl I (F.gap.cC le_rfl))).trans hc)
       ((hm (privateIncl I (F.gap.rC le_rfl))).trans hr) hsep d' hd)
-
-end
-end VaughtConjecture.Knight.LowOnlyPaddedPairReadback

@@ -22,7 +22,7 @@ ordinal"; the faithful transport of respect under reduction, `RespectsSemantics.
 is now the **paper-faithful** tower (#88 (2/2)): the legacy layer (stage-bounded rows truncated
 under reduction, Knight-VC's respect predicate) has been retired. -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight
 
@@ -32,7 +32,7 @@ def LimitStage : Type 1 := {α : Ordinal.{0} // Order.IsSuccLimit α}
 
 namespace LimitStage
 
-noncomputable instance : LinearOrder LimitStage :=
+instance : LinearOrder LimitStage :=
   inferInstanceAs (LinearOrder {α : Ordinal.{0} // Order.IsSuccLimit α})
 
 /-- The underlying ordinal of a limit stage. -/
@@ -43,7 +43,7 @@ end LimitStage
 /-- Knight's stage types as a type tower over the limit stages: `Ty α n := S α n`,
 `pull := typeMap` (partial: defined on the visible faces), `reduce := reduceType` (labels
 truncated, semantics fixed).  The paper-faithful A4 instance (#88, #89). -/
-noncomputable def knightTower : TypeTower.{1} LimitStage where
+def knightTower : TypeTower.{1} LimitStage where
   Ty α n := S α.1 n
   pull f t := typeMap f t
   reduce {α _} h := reduceType α.2 h
@@ -53,13 +53,8 @@ noncomputable def knightTower : TypeTower.{1} LimitStage where
   reduce_trans {α β _} hαβ hβγ {_} r := reduceType_trans α.2 β.2 hαβ hβγ r
   pull_reduce {α _} h {_ _} f q := typeMap_reduceType_comm α.2 h f q
 
-@[simp] theorem knightTower_Ty (α : LimitStage) (n : ℕ) : knightTower.Ty α n = S α.1 n := rfl
-
 @[simp] theorem knightTower_pull {α : LimitStage} {m n : ℕ} (f : Fin m ↪ Fin n) (t : S α.1 n) :
     knightTower.pull f t = typeMap f t := rfl
-
-@[simp] theorem knightTower_reduce {α β : LimitStage} (h : α ≤ β) {n : ℕ} (t : S β.1 n) :
-    knightTower.reduce h t = reduceType α.2 h t := rfl
 
 /-- The Knight tower has **permutation-total pull**: the range of a permutation is the whole
 domain, which is a visible face of every plan (`IsPlan.domain_mem`).  Hence, for Knight
@@ -72,5 +67,3 @@ theorem knightTower_permTotal : knightTower.PermTotal := by
   refine typeMap_isSome_of_mem _ q ?_
   rw [Equiv.coe_toEmbedding, Finset.image_univ_equiv]
   exact q.scheme.scheme.isPlan.domain_mem
-
-end VaughtConjecture.Knight

@@ -16,7 +16,7 @@ witness, not an unrestricted composition principle. Only a construction-owned
 row is changed; the semantic rows it respects remain fixed.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight
 
@@ -24,13 +24,11 @@ open Transform Value ExtOrd
 
 namespace SourceBlockPadding
 
-noncomputable def pad : ExtOrd → ExtOrd
+def pad : ExtOrd → ExtOrd
   | ⊥ => ⊥
   | some ⊤ => ⊤
   | some (some α) => ofOrd (Ordinal.omega0 + α)
 
-@[simp] theorem pad_bot : pad ⊥ = ⊥ := rfl
-@[simp] theorem pad_top : pad ⊤ = ⊤ := rfl
 @[simp] theorem pad_ofOrd (α : Ordinal.{0}) : pad (ofOrd α) = ofOrd (Ordinal.omega0 + α) := rfl
 
 theorem pad_mono : Monotone pad := by
@@ -86,13 +84,12 @@ theorem pad_step (K : ℕ) : IsStepShifter K pad where
   bot_blocks ξ ζ _ hx := False.elim (ofOrd_ne_bot _ hx)
 
 open Classical in
-noncomputable def unpad : ExtOrd → ExtOrd
+def unpad : ExtOrd → ExtOrd
   | ⊥ => ⊥
   | some ⊤ => ⊤
   | some (some α) => if Ordinal.omega0 ≤ α then ofOrd (α - Ordinal.omega0) else ⊥
 
 @[simp] theorem unpad_bot : unpad ⊥ = ⊥ := rfl
-@[simp] theorem unpad_top : unpad ⊤ = ⊤ := rfl
 
 open Classical in
 theorem unpad_ofOrd (α : Ordinal.{0}) :
@@ -161,7 +158,3 @@ theorem pad_code (b j : ℕ) : pad (ofOrd (Ordinal.omega0 * b + j)) =
   rw [pad_ofOrd, ← add_assoc]
   congr 2
   rw [show b + 1 = 1 + b by omega, Nat.cast_add, Nat.cast_one, mul_add, mul_one]
-
-end SourceBlockPadding
-
-end VaughtConjecture.Knight

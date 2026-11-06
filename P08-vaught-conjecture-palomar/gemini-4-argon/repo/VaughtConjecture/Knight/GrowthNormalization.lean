@@ -16,12 +16,11 @@ fields are normalized together with present fields. Admission goes downward;
 there is no assertion that an earlier source survives later activation.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.Growth
 open Transform Value ExtOrd AmalgamationPlan CappedDonor.Ref SharpWitnessComposition
-noncomputable section
+
 variable {ιA ιQ : Type*} [DecidableEq ιA] [DecidableEq ιQ]
   {A : Finset ιA} {Q : Finset ιQ} {DA : CellScheme A} {DQ : CellScheme Q}
   {semA : Semantics DA} {semQ : Semantics DQ}
@@ -117,6 +116,3 @@ def normalizedMember {j : ℕ} (hj : 1 ≤ j) {S : State DA DQ}
 /-- A catalogue seed obtained directly from the admitted zero state. -/
 def zeroMember (j : ℕ) (hj : 1 ≤ j) : Catalogue X j :=
   normalizedMember X hj (zero_admitted X j) (fun f => by cases f <;> exact bot_ne_top)
-
-end
-end VaughtConjecture.Knight.Growth

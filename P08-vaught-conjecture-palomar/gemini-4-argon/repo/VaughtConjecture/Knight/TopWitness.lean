@@ -78,7 +78,3 @@ theorem sourceTopProduction_of_prolongsToIn {B : LimitStage} (hlt : A₀ < B)
   have : (R'.reduct hlt.le).eval (snoc e y hy) = some (reduceType A₀.2 hlt.le q) := by
     rw [Realization.reduct_eval, hq]; rfl
   rwa [hred] at this
-
-end KnightRealization
-
-end VaughtConjecture.Knight

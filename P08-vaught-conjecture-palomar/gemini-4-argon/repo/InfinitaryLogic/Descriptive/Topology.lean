@@ -5,7 +5,7 @@ Authors: Cameron Freer
 -/
 module
 
-public import InfinitaryLogic.Descriptive.Measurable
+public import InfinitaryLogic.Descriptive.StructureSpace
 public import Mathlib.Topology.Clopen
 
 /-!
@@ -37,7 +37,3 @@ instance {α : Type*} : TopologicalSpace (StructureSpaceOn L α) := Pi.topologic
 /-- `StructureSpace L` inherits the product topology from `RelQuery L → Bool`.
 Since `Bool` has the discrete topology, this is the product of discrete spaces. -/
 instance : TopologicalSpace (StructureSpace L) := Pi.topologicalSpace
-
-end Language
-
-end FirstOrder

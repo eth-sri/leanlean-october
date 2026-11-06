@@ -22,15 +22,13 @@ not construct the ordinary scope recursion, an admitted catalogue, or lifting.
 No shortness condition is imposed on inherited rows.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.FinalGateLayer
 open Transform Value ExtOrd SourcePrefixRows SourcePrefixLayer
-noncomputable section
 
 variable {ι X Q : Type*} [DecidableEq ι] [Fintype Q]
-variable {A : Finset ι} {D : CellScheme A} {N : ℕ}
+  {A : Finset ι} {D : CellScheme A} {N : ℕ}
 
 /-- The predecessor data consumed by the actual weighted installation. -/
 structure Input (D : CellScheme A) (N : ℕ) (X Q : Type*) where
@@ -262,7 +260,3 @@ theorem consistent (hs : I.sem.IsConsistent) : I.rows.IsConsistent := by
   apply (SeparatedSourceLayerCarrier.base_respects_iff D (Node (Q := Q)) N
     I.positive I.height I.separated I.sem x _).mpr
   simpa only [Function.comp_def, data, SeparatedSourceLayerCarrier.base_old] using hs x
-
-end Input
-end
-end VaughtConjecture.Knight.FinalGateLayer

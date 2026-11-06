@@ -9,14 +9,13 @@ public import VaughtConjecture.Knight.CanonicalRecursiveSemantics
 
 /-! # Exact proper-boundary transport through the recursive semantics -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalRecursiveBoundaryTransport
 open Transform Value ExtOrd CanonicalRecursiveContract
-noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable (sem : Semantics D)
+  (sem : Semantics D)
 
 theorem plan_eq (m : ℕ) (hm : m ≤ A.card) :
     (CanonicalRecursiveInventory.scheme sem m hm).plan = D.plan := by
@@ -67,30 +66,10 @@ theorem proper_lift (hp : ∀ d : Cell D, D.scope d ≠ A)
     (n : ℕ) (hA : n + 3 ≤ A.card) {I J : Finset ι × ℕ}
     (h : GradedLe I J) (hJ : ¬ A ⊆ J.1)
     (hl : CoatomBoundaryExtension.CappedLift sem h) :
-    CoatomBoundaryExtension.CappedLift (CanonicalRecursiveSemantics.rows sem hp n hA) h := by
-  intro p q γ hpr hqr hγ hag
+    CoatomBoundaryExtension.CappedLift (CanonicalRecursiveSemantics.rows sem hp n hA) h :=
   have hI : ¬ A ⊆ I.1 := fun hi => hJ (hi.trans h.1)
-  let eI := properEquiv sem n hA I hI
-  let eJ := properEquiv sem n hA J hJ
-  have hm (d : D.below I) :
-      eJ (CellScheme.below.mono h d) = CellScheme.below.mono h (eI d) := by
-    apply Subtype.ext
-    exact (properEquiv_val sem n hA J hJ _).trans
-      (properEquiv_val sem n hA I hI d).symm
-  obtain ⟨r, hr, hc, hread⟩ := hl (p ∘ eI) (q ∘ eJ) γ
-    (pullback_respects sem hp n hA I hI hpr)
-    (pullback_respects sem hp n hA J hJ hqr) hγ
-    (fun d => by simpa only [Function.comp_apply, hm] using hag (eI d))
-  refine ⟨r ∘ eJ.symm, (proper_respects_iff sem hp n hA J hJ r).mp hr, ?_, ?_⟩
-  · intro d
-    simpa only [Function.comp_apply, Equiv.apply_symm_apply] using hc (eJ.symm d)
-  · intro d
-    have hd : eJ.symm (CellScheme.below.mono h d) =
-        CellScheme.below.mono h (eI.symm d) := by
-      apply eJ.injective
-      rw [Equiv.apply_symm_apply, hm, Equiv.apply_symm_apply]
-    rw [Function.comp_apply, hd, hread]
-    exact congrArg p (eI.apply_symm_apply d)
+  hl.of_respects_iff (properEquiv sem n hA I hI) (properEquiv sem n hA J hJ)
+    (fun d => Subtype.ext ((properEquiv_val sem n hA J hJ _).trans
+      (properEquiv_val sem n hA I hI d).symm))
+    (proper_respects_iff sem hp n hA I hI) (proper_respects_iff sem hp n hA J hJ)
 
-end
-end VaughtConjecture.Knight.CanonicalRecursiveBoundaryTransport

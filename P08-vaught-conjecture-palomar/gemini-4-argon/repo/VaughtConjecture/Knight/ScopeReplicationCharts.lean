@@ -14,13 +14,10 @@ No whole-section extension is used. An actual chart at a mixed index has a
 full-scope prototype, and reads the original prototype row through erasure.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.ScopeReplicationCharts
-open AmalgamationPlan Transform Value ExtOrd ScopeReplicationCarrier
-open ScopeReplicationSemantics AmbientGradeCharts
-noncomputable section
+open AmalgamationPlan Transform Value ExtOrd ScopeReplicationCarrier ScopeReplicationSemantics AmbientGradeCharts
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι}
   (D : CellScheme A) (B C : Finset ι)
@@ -43,9 +40,3 @@ theorem erase_index {U : Finset ι} {j : ℕ} (hm : U = A ∨ Mixed B C U)
       · exact hm.2 (hs ▸ hc')
   · change D.grade (erase D B C c) = j
     exact (erase_grade D B C c).trans (congrArg Prod.snd hc)
-
-variable {U : Finset ι} {j : ℕ} {p : (scheme D B C).below (U, j) → ExtOrd}
-  (Ch : Chart (rows D B C hcover sem) (U, j) p j)
-
-end
-end VaughtConjecture.Knight.ScopeReplicationCharts

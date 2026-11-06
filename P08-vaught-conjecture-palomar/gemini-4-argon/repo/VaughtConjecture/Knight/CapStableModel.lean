@@ -56,5 +56,3 @@ theorem isModel (hM : W.IsModel) (hh : ¬ W.IsHollow) (hg : W.HasTopGradeGrowth)
   FiniteCutReceiving.isModel (finiteCutReceiving hM hh hg) hM.nonempty
     (stableLiftOf_consistent hM.consistent hM.covering)
     (stableLiftOf_covering hM.consistent hM.covering)
-
-end VaughtConjecture.Knight.CapStableModel

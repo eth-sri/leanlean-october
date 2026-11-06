@@ -16,13 +16,11 @@ padding is used only to prove inherited-boundary lawfulness; it does not change
 the installed ladder rows or discard future fields from its catalogue.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyOrderedLadder
-open Transform Value ExtOrd AmalgamationPlan CappedDonor
-open LowOnly RelativeLadderLayer
-noncomputable section
+open Transform Value ExtOrd AmalgamationPlan CappedDonor LowOnly RelativeLadderLayer
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n K : ℕ}
   (I : WholeDonorBoundary.Input A B C R m n n) (F : LowOnly.Family I.left I.right K)
@@ -139,17 +137,6 @@ def privateIncl (d : I.right.scheme.below (effC n 1)) : I.boundary.below (A, 1) 
       exact hg.le.trans (d.2.2.trans (min_le_left _ _))⟩
 
 include hroot in
-/-- Consistency is constructed on these same rows, independently of lifting. -/
-theorem consistent (hA : 0 < A.card) (hB : B ⊂ A) (hC : C ⊂ A) :
-    (rows I.boundary I.rows hA (field I) (F.fields 1) (proper I hB hC)).IsConsistent := by
-  apply RelativeLadderLayer.consistent _ _ _ _ _ _ I.consistent
-  intro a
-  obtain ⟨S, hs, he⟩ := a.property.2
-  have hvalues : (fun d : I.boundary.below (A, 1) => F.fields 1 a (field I d.1)) =
-      (fun d => S.profile (field I d.1)) := funext (fun d => (congrFun he _).symm)
-  exact hvalues ▸ boundary_lawful I F hroot S hs
-
-include hroot in
 /-- A complete positive-cap physical lift on the actual ordered two-face ladder.
 All semantic producer premises of `private_positive_lift` are discharged here.
 The remaining inputs are the legal cofaces, their literal root correspondence,
@@ -170,6 +157,3 @@ theorem private_positive_lift (hA : 0 < A.card) (hB : B ⊂ A) (hC : C ⊂ A)
   Family.private_positive_lift F I.boundary I.rows hA (field I) (proper I hB hC)
     (boundary_lawful I F hroot) (privateIncl I)
     (fun _ hs d => field_private I F hroot hs d.1) hp hq hγ hpos hag
-
-end
-end VaughtConjecture.Knight.LowOnlyOrderedLadder

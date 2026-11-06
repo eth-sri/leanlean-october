@@ -15,13 +15,11 @@ renderings through every available finite height. This is not a bountifulness
 or model-receiving theorem.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedIteration
-open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder LowOnlyPaddedContract
-open SourcePrefixRows SharpWitnessComposition PairedSlotComparison
-noncomputable section
+open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder LowOnlyPaddedContract SourcePrefixRows SharpWitnessComposition PairedSlotComparison
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n K : ℕ}
   {I : WholeDonorBoundary.Input A B C R m n n} {F : LowOnly.Family I.left I.right K}
@@ -69,6 +67,3 @@ theorem build_plan (t : ℕ) (ht : t + 2 ≤ A.card) :
 theorem build_consistent (t : ℕ) (ht : t + 2 ≤ A.card) :
     (build I F hroot hA hB hC t ht).rows.IsConsistent :=
   (build I F hroot hA hB hC t ht).consistent
-
-end
-end VaughtConjecture.Knight.LowOnlyPaddedIteration

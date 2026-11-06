@@ -16,20 +16,17 @@ section retaining the private labels and that gate's positivity reads the
 donor back below the actual cut. Model realization is deliberately separate.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryReceivingProbe
-open Transform Value ExtOrd AmalgamationPlan CappedDonor CappedDonor.Ref
-open OrdinaryReceivingAssembly
-noncomputable section
+open Transform Value ExtOrd AmalgamationPlan CappedDonor CappedDonor.Ref OrdinaryReceivingAssembly
 
 variable {I : Type*} [Fintype I] {nP n : ℕ}
-variable {B T : Finset (Fin (n + 5))} {plan : Finset (Finset (Fin (n + 5)))}
-variable (W : WholeDonorBoundary.Input Finset.univ B T plan nP (n + 4) (nP + 1))
-variable (R : Ref I nP (n + 4) (n + 4) W.right W.left)
-variable (hunion : (Finset.univ : Finset (Fin (n + 5))) = B ∪ T)
-variable (hface : ∀ i : Cell W.common.scheme,
+  {B T : Finset (Fin (n + 5))} {plan : Finset (Finset (Fin (n + 5)))}
+  (W : WholeDonorBoundary.Input Finset.univ B T plan nP (n + 4) (nP + 1))
+  (R : Ref I nP (n + 4) (n + 4) W.right W.left)
+  (hunion : (Finset.univ : Finset (Fin (n + 5))) = B ∪ T)
+  (hface : ∀ i : Cell W.common.scheme,
   ∃ d : W.right.scheme.below (R.A, R.KA),
     d.1 = W.shared.g i ∧ (R.face d).1 = W.shared.f i)
 
@@ -170,6 +167,3 @@ theorem readback_below {q : Cell (semScheme W R hunion hface).scheme → ExtOrd}
     {δ : ExtOrd} (hδ : δ ≤ R.cut R.vactL) (d : Cell W.right.scheme) :
     min (q ((requestFace W R hunion hface).map d)) δ = min (R.p d) δ :=
   GradeTailRestoration.cap_below (capped_readback W R hunion hface hq hretain a hgate d) hδ
-
-end
-end VaughtConjecture.Knight.OrdinaryReceivingProbe

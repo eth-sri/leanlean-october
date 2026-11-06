@@ -5,10 +5,16 @@ Authors: Cameron Freer
 -/
 module
 
-public import InfinitaryLogic.Descriptive.SmallVocabularyLift
-public import InfinitaryLogic.Descriptive.LopezEscobar
-public import InfinitaryLogic.Descriptive.SentenceSplits
-public import InfinitaryLogic.Descriptive.SentenceObservables
+public import InfinitaryLogic.Descriptive.SatisfactionBorel
+public import InfinitaryLogic.Lomega1omega.QuantifierRank
+public import InfinitaryLogic.Descriptive.StructureIsoSetoid
+public import InfinitaryLogic.Descriptive.Polish
+public import InfinitaryLogic.Lomega1omega.Theory
+public import InfinitaryLogic.Lomega1omega.Operations
+public import InfinitaryLogic.Lomega1omega.Semantics
+public import InfinitaryLogic.Scott.Formula
+public import InfinitaryLogic.Lomega1omega.OpenBoundsSemantics
+public import InfinitaryLogic.Descriptive.StructureSpace
 
 /-!
 # Descriptive transport through the small-vocabulary presentation
@@ -64,5 +70,3 @@ theorem mem_modelsOf_iff_realize (c : StructureSpace L) (φ : L.Sentenceω) :
 /-! ### Cantor and observable recovery -/
 
 /-! ### Thinness -/
-
-end FirstOrder.Language.SmallVocabulary

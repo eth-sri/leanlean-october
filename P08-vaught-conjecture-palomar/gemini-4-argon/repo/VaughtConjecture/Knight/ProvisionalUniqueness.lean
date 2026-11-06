@@ -32,8 +32,6 @@ Construction-private (not root-exported). -/
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight
 
 open TypeTower Value ExtOrd
@@ -194,7 +192,3 @@ theorem isProvisionalValue_iff {p : S α n} {Xi : Cell p.scheme.scheme} {v : Ext
     p.IsProvisionalValue Xi v ↔ v = p.someProvisionalValue Xi :=
   ⟨fun h => h.unique (isProvisionalValue_someProvisionalValue p Xi),
     fun h => h ▸ isProvisionalValue_someProvisionalValue p Xi⟩
-
-end StageType
-
-end VaughtConjecture.Knight

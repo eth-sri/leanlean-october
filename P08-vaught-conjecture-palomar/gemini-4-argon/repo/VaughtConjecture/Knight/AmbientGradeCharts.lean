@@ -46,7 +46,6 @@ structure Chart (sem : Semantics D) (BJ : Finset ι × ℕ) (q : D.below BJ → 
   dominates : ∀ d : D.below BJ, D.grade d.1 = k → q d ≤ q owner
   shift : ExtOrd → ExtOrd
   witness : Witness (gTop k) shift
-  bounded : ∀ x, shift x ≤ q owner
   read : ∀ d : D.below (D.cell owner.1),
     shift (sem.E owner.1 d) = min (q (CellScheme.below.incl owner d)) (q owner)
 
@@ -111,9 +110,9 @@ theorem exists_chart (hq : RespectsSemanticsBelow sem BJ q) {k : ℕ}
   let p : D.below (D.cell c.1) → ExtOrd := fun d => q (CellScheme.below.incl c d)
   have hm : ∀ d : D.below (D.cell c.1), D.grade d.1 ≤ D.grade self.1 := fun d => d.2.2
   have hv : SelfVis (D.grade self.1) (p self) := (hq.orderly c).symm
-  obtain ⟨τ, hτ, hb, hr⟩ := exists_bounded_exact_capped_witness hm hv (hq.locality c)
+  obtain ⟨τ, hτ, _, hr⟩ := exists_bounded_exact_capped_witness hm hv (hq.locality c)
   have hg : D.grade self.1 = k := congrArg Prod.snd hc
-  exact ⟨⟨c, hc, hmax, τ, hg ▸ hτ, hb, hr⟩⟩
+  exact ⟨⟨c, hc, hmax, τ, hg ▸ hτ, hr⟩⟩
 
 /-! ## Exact cap-preservation obligations -/
 
@@ -144,12 +143,94 @@ theorem map_cap_agreement {τ : ExtOrd → ExtOrd} (hτ : Monotone τ)
     _ = min (τ (min b δ)) γ := by rw [hab]
     _ = min (τ b) γ := by rw [hτ.map_min, min_assoc, min_eq_right hγ]
 
-variable {q' : D.below BJ → ExtOrd} {γ : ExtOrd}
+open GradeTailRestoration in
+theorem restore_of_lower {ιA ιB : Type*} [DecidableEq ιA] [DecidableEq ιB]
+    {A : Finset ιA} {B : Finset ιB} {T : CellScheme A} {rows : Semantics T}
+    {T₀ : CellScheme A} {rows₀ : Semantics T₀}
+    {D : CellScheme B} {sem : Semantics D} {idx₀ idx₁ : Finset ιB × ℕ} {k : ℕ}
+    (hidx : GradedLe idx₀ idx₁)
+    {faceAt₀ : D.below idx₀ → T₀.below (A, k)}
+    {faceAt₁ : D.below idx₁ → T.below (A, k + 1)}
+    (hgrade : ∀ d, T.grade (faceAt₁ d).1 = D.grade d.1)
+    (hd_le : ∀ d : D.below idx₁, D.grade d.1 ≤ k + 1)
+    (e : T₀.below (A, k) ≃ T.below (A, k))
+    (he_iff : ∀ p : T₀.below (A, k) → ExtOrd,
+      RespectsSemanticsBelow rows₀ (A, k) p ↔ RespectsSemanticsBelow rows (A, k) (p ∘ e.symm))
+    (down : ∀ d : D.below idx₁, D.grade d.1 ≤ k → D.below idx₀)
+    {p : D.below idx₁ → ExtOrd} {u : T.below (A, k + 1) → ExtOrd} {M : ExtOrd}
+    (hp : RespectsSemanticsBelow sem idx₁ p)
+    (hu : RespectsSemanticsBelow rows (A, k + 1) u)
+    (hM : SelfVis (k + 1) M)
+    (hprev : ∀ {p₀ : D.below idx₀ → ExtOrd} {q₀ : T₀.below (A, k) → ExtOrd},
+      RespectsSemanticsBelow sem idx₀ p₀ → RespectsSemanticsBelow rows₀ (A, k) q₀ →
+      SelfVis k M → (∀ d, min (q₀ (faceAt₀ d)) M = min (p₀ d) M) →
+      ∃ v, RespectsSemanticsBelow rows₀ (A, k) v ∧ (∀ d, v (faceAt₀ d) = p₀ d) ∧
+        ∀ d, min (v d) M = min (q₀ d) M)
+    (hread : ∀ d, u (faceAt₁ d) = min (p d) M)
+    (hbound : ∀ d, u d ≤ M)
+    (hmax : ∀ d, D.grade d.1 = k + 1 → p d ≤ M)
+    (hid : ∀ d : D.below idx₀,
+      lowerIncl (Nat.le_succ k) (e (faceAt₀ d)) =
+        faceAt₁ (CellScheme.below.mono hidx d) := by intro; rfl)
+    (hdown_val : ∀ d hd, (down d hd).1 = d.1 := by intros; rfl)
+    (hdown_face : ∀ d hd,
+      (⟨(faceAt₁ d).1, (faceAt₁ d).2.1, (hgrade d).le.trans hd⟩ : T.below (A, k)) =
+        e (faceAt₀ (down d hd)) := by intros; rfl) :
+    ∃ r, RespectsSemanticsBelow rows (A, k + 1) r ∧
+      (∀ d, r (faceAt₁ d) = p d) ∧
+      ∀ d, min (r d) M = min (u d) M := by
+  let u₁ := fun d => u (lowerIncl (Nat.le_succ k) (e d))
+  have hu₁ : RespectsSemanticsBelow rows₀ (A, k) u₁ := by
+    apply (he_iff u₁).mpr
+    have h := hu.mono (show GradedLe (A, k) (A, k + 1) from ⟨Finset.Subset.refl _, Nat.le_succ k⟩)
+    simpa only [u₁, Function.comp_def, Equiv.apply_symm_apply, lowerIncl, CellScheme.below.mono] using h
+  obtain ⟨v, hv, hvread, hvcap⟩ := hprev (hp.mono hidx) hu₁ (hM.mono (Nat.le_succ k)) fun d => by
+    change min (u (lowerIncl _ (e _))) M = min (p (CellScheme.below.mono hidx d)) M
+    rw [hid, hread, min_assoc, min_self]
+  let v₁ := v ∘ e.symm
+  have hag (d) : min (v₁ d) M = min (u (lowerIncl (Nat.le_succ k) d)) M := by
+    simpa only [u₁, v₁, Function.comp_apply, Equiv.apply_symm_apply] using hvcap (e.symm d)
+  refine ⟨splice u v₁, splice_respects (Nat.le_succ k) hu ((he_iff v).mp hv)
+    (fun d _ => hbound d) hag, ?_, splice_cap (Nat.le_succ k) hag⟩
+  intro d
+  by_cases hd : D.grade d.1 ≤ k
+  · have hd' : T.grade (faceAt₁ d).1 ≤ k := (hgrade d).le.trans hd
+    rw [splice_low u v₁ _ hd']
+    change v (e.symm _) = p d
+    rw [hdown_face d hd, Equiv.symm_apply_apply]
+    exact (hvread (down d hd)).trans (congrArg p (Subtype.ext (hdown_val d hd)))
+  · rw [splice_high u v₁ _ (by simpa only [hgrade] using hd), hread]
+    have := hd_le d
+    exact min_eq_left (hmax d (by omega))
 
-namespace Chart
-
-variable {k : ℕ} (C : Chart sem BJ q k)
-
-end Chart
-
-end VaughtConjecture.Knight.AmbientGradeCharts
+theorem active_lift_of_restore {ιA ιB : Type*} [DecidableEq ιA] [DecidableEq ιB]
+    {A : Finset ιA} {B : Finset ιB} {T : CellScheme A} {rows : Semantics T}
+    {D : CellScheme B} {sem : Semantics D} {idx : Finset ιB × ℕ} {g : ℕ}
+    {faceAt : D.below idx → T.below (A, g)}
+    {p : D.below idx → ExtOrd} {q : T.below (A, g) → ExtOrd}
+    (hp : RespectsSemanticsBelow sem idx p)
+    (hq : RespectsSemanticsBelow rows (A, g) q)
+    {γ : ExtOrd} (hγ : SelfVis g γ) (hpos : ⊥ < γ)
+    {d₀ : D.below idx} (hd₀ : D.grade d₀.1 = g) (hpd₀ : γ < p d₀)
+    (c₀ : Cell D) (hc₀ : D.cell c₀ = idx) (hgc₀ : idx.2 = g)
+    (hcapped : ∀ c : D.below idx, D.cell c.1 = idx → D.grade c.1 = g → γ < p c →
+      ∃ u, RespectsSemanticsBelow rows (A, g) u ∧
+        (∀ d, u (faceAt d) = min (p d) (p c)) ∧
+        (∀ d, min (u d) γ = min (q d) γ) ∧ (∀ d, u d ≤ p c))
+    (hrestore : ∀ {u : T.below (A, g) → ExtOrd} {M : ExtOrd},
+      RespectsSemanticsBelow rows (A, g) u → SelfVis g M →
+      (∀ d, u (faceAt d) = min (p d) M) → (∀ d, u d ≤ M) →
+      (∀ d, D.grade d.1 = g → p d ≤ M) →
+      ∃ r, RespectsSemanticsBelow rows (A, g) r ∧
+        (∀ d, r (faceAt d) = p d) ∧ ∀ d, min (r d) M = min (u d) M) :
+    ∃ r, RespectsSemanticsBelow rows (A, g) r ∧
+      (∀ d, r (faceAt d) = p d) ∧ ∀ d, min (r d) γ = min (q d) γ := by
+  obtain ⟨c, hc, hmax⟩ := exists_maximizer hp
+    ⟨⟨c₀, by rw [hc₀]; exact GradedLe.refl _⟩, hc₀⟩
+  have hg : D.grade c.1 = g := (congrArg Prod.snd hc).trans hgc₀
+  have hpc : γ < p c := hpd₀.trans_le (hmax d₀ (hd₀.trans hgc₀.symm))
+  obtain ⟨u, hu, hread, hcap, hbound⟩ := hcapped c hc hg hpc
+  have hM : SelfVis g (p c) := by simpa only [hg] using (hp.orderly c).symm
+  obtain ⟨r, hr, hrr, hrc⟩ := hrestore hu hM hread hbound
+    (fun e he => hmax e (he.trans hgc₀.symm))
+  exact ⟨r, hr, hrr, fun e => (GradeTailRestoration.cap_below (hrc e) hpc.le).trans (hcap e)⟩

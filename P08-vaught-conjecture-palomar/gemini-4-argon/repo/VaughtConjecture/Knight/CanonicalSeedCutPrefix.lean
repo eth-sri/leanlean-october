@@ -15,15 +15,14 @@ original field is retained before normalization, so controller caps continue
 to refer to the same full inventory.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalSeedCutPrefix
 open Transform Value ExtOrd CanonicalRecursiveSeedRows
-noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable (sem : Semantics D) (hA : 3 ≤ A.card)
-variable (hp : ∀ d : Cell D, D.scope d ≠ A)
+  (sem : Semantics D) (hA : 3 ≤ A.card)
+  (hp : ∀ d : Cell D, D.scope d ≠ A)
 
 abbrev cut := GradeCutBoundary.scheme D 3
 abbrev cutRows := GradeCutBoundary.rows D 3 sem
@@ -81,6 +80,3 @@ theorem exists_section (a : Profile sem)
   obtain ⟨r, hr, hread, hcap⟩ :=
     CanonicalSeedPrefix.exists_section sem hA hp a hvl hvt hB hva
   exact ⟨r, hr, fun d => (hread (occ d)).trans (hv d), hcap⟩
-
-end
-end VaughtConjecture.Knight.CanonicalSeedCutPrefix

@@ -34,7 +34,7 @@ occurring in the candidate.
 
 Construction-private (not root-exported). -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight
 
@@ -91,7 +91,7 @@ variable (B : BlockCode)
 attribute [instance] BlockCode.dec
 
 /-- The offset kept on a value: its finite part up to `N` on a listed block, `N` otherwise. -/
-noncomputable def off (a : Ordinal.{0}) : ℕ :=
+def off (a : Ordinal.{0}) : ℕ :=
   if B.listed (limitPart a) then min (finitePart a) B.N else B.N
 
 theorem off_le_N (a : Ordinal.{0}) : B.off a ≤ B.N := by
@@ -107,10 +107,10 @@ theorem off_of_not_listed {a : Ordinal.{0}} (h : ¬ B.listed (limitPart a)) : B.
   unfold off; exact ite_eq_right h
 
 /-- The top code. -/
-noncomputable def topCode : ExtOrd := ofOrd B.htop
+def topCode : ExtOrd := ofOrd B.htop
 
 /-- **The code.** -/
-noncomputable def code (x : ExtOrd) : ExtOrd :=
+def code (x : ExtOrd) : ExtOrd :=
   match x with
   | none => ⊥
   | some none => B.topCode
@@ -245,7 +245,7 @@ variable (N R : ℕ) (hR : R < N) (S : Finset Ordinal.{0}) (strip : Ordinal.{0} 
 
 open Classical in
 /-- The target of a block: the strip of the largest listed block at or below it. -/
-noncomputable def targetOf (μ : Ordinal.{0}) : Option Ordinal.{0} :=
+def targetOf (μ : Ordinal.{0}) : Option Ordinal.{0} :=
   if h : (S.filter fun μ' => μ' ≤ μ).Nonempty then some (strip ((S.filter fun μ' => μ' ≤ μ).max' h))
   else none
 
@@ -278,7 +278,7 @@ theorem max'_filter_spec {μ : Ordinal.{0}} (h : (S.filter fun μ' => μ' ≤ μ
 open Classical in
 /-- **A block code from a finite set of listed blocks** with a strip function strictly
 increasing on them, limit-valued, and with `strip μ + N ≤ htop`. -/
-noncomputable def ofFinset (hlim : ∀ μ ∈ S, limitPart (strip μ) = strip μ)
+def ofFinset (hlim : ∀ μ ∈ S, limitPart (strip μ) = strip μ)
     (hle : ∀ μ ∈ S, strip μ + N ≤ htop) (hstrict : ∀ μ ∈ S, ∀ μ' ∈ S, μ < μ' → strip μ < strip μ')
     (hRtop : R ≤ finitePart htop) : BlockCode where
   N := N
@@ -359,9 +359,3 @@ theorem ofFinset_Λ_listed (hlim : ∀ μ ∈ S, limitPart (strip μ) = strip μ
   rw [targetOf_eq_some S strip h]
   congr 2
   exact le_antisymm (max'_filter_spec S h).2.1 ((max'_filter_spec S h).2.2 _ hμ le_rfl)
-
-end OfFinset
-
-end BlockCode
-
-end VaughtConjecture.Knight

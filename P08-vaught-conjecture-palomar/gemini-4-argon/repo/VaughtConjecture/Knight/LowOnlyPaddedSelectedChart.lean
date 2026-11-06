@@ -6,7 +6,8 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.LowOnlyPaddedRenderChart
-public import VaughtConjecture.Knight.LowOnlyPaddedStage
+public import VaughtConjecture.Knight.LowOnlyTerminalSupport
+public import VaughtConjecture.Knight.LowOnlyPaddedEndpoints
 
 /-! # A whole LOW display with a simultaneous native chart
 
@@ -16,15 +17,12 @@ including all future fields and its ceiling. No exact cross-grade identity
 of selected renderings and no lifting hypothesis is used.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedSelectedChart
-open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder
-open LowOnlyPaddedContract LowOnlyPaddedIteration LowOnlyPaddedInstallation
-open LowOnlyPaddedEndpoints
-open LowOnlyPaddedRestriction LowOnlyPaddedRenderChart SharpWitnessComposition
-noncomputable section
+open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder LowOnlyPaddedContract LowOnlyPaddedIteration LowOnlyPaddedInstallation
+open LowOnlyPaddedEndpoints LowOnlyPaddedRestriction LowOnlyPaddedRenderChart SharpWitnessComposition
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n K : ℕ}
   (I : WholeDonorBoundary.Input A B C R m n n) (F : LowOnly.Family I.left I.right K)
@@ -126,6 +124,3 @@ theorem exists_whole_chart (t : ℕ) (ht : t + 2 ≤ A.card) (r : ℕ)
     exact (congrArg δ (hf f)).trans (hread f)
   · intro d
     exact congrArg δ (hd d)
-
-end
-end VaughtConjecture.Knight.LowOnlyPaddedSelectedChart

@@ -14,13 +14,11 @@ auxiliary uses its own actual prescribed copy; no auxiliary is reconstructed
 from complete-field readouts. Values above the observed cutoff are irrelevant.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthHigherMixed
-open AmalgamationPlan Transform Value ExtOrd Growth GrowthHigherSources
-open GrowthPaddedContract GrowthPaddedIteration
-noncomputable section
+open AmalgamationPlan Transform Value ExtOrd Growth GrowthHigherSources GrowthPaddedContract GrowthPaddedIteration
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n J : ℕ}
   (I : WholeDonorBoundary.Input A B C R m (n + 1) J)
@@ -98,6 +96,3 @@ theorem literal (hp : RespectsSemanticsBelow Rows (U, j) p) (hjt : j ≤ t + 2)
       (z.2.1.trans (congrArg Prod.fst
         (place_index I X T hA hB hC t ht U hU hm j hj _ _ _)).symm.le)
       (erase_place I X T hA hB hC t ht U hU hm j hj _ _ _).symm).symm
-
-end
-end VaughtConjecture.Knight.GrowthHigherMixed

@@ -18,8 +18,6 @@ composition is used. Scope geometry and extension supply are separate.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.FiniteProfileControllers
 
 open Transform Value ExtOrd SlotControllerFamily
@@ -80,7 +78,3 @@ theorem cross_agreement (H : ℕ) (a b c : X → ℕ) :
   have h2 := cut_triangle H b a c
   rw [cut_symm H b a] at h2
   omega
-
-variable [Finite X] [Finite Q]
-
-end VaughtConjecture.Knight.FiniteProfileControllers

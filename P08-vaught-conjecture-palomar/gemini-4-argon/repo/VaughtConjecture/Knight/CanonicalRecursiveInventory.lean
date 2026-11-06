@@ -17,15 +17,13 @@ No completed output is passed back as a proper boundary. Row coupling and
 successor bountifulness remain separate from this constructed geometry.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalRecursiveInventory
 open Transform Value ExtOrd SourcePrefixRows PairedSlotEncoding
-noncomputable section
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable (sem : Semantics D)
+  (sem : Semantics D)
 
 abbrev UpperProfile (j : ℕ) := CanonicalFieldLayer.Profile (GradeCutBoundary.rows D j sem)
   j (Cell D) (GradeCutBoundary.toCell D j)
@@ -63,6 +61,3 @@ theorem separated (hp : ∀ d : Cell D, D.scope d ≠ A)
     (n : ℕ) (hn : n ≤ A.card) (d : Cell (scheme sem n hn)) :
     ¬ GradedLe (A, n + 1) ((scheme sem n hn).cell d) :=
   RecursiveSourceCarrier.separated D (Profile sem) hp n hn d
-
-end
-end VaughtConjecture.Knight.CanonicalRecursiveInventory

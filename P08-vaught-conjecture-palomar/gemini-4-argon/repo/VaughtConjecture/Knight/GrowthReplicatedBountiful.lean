@@ -6,7 +6,8 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.GrowthHigherMixedExtension
-public import VaughtConjecture.Knight.GrowthMixedGradeOneLedger
+public import VaughtConjecture.Knight.GrowthMixedGradeOne
+public import VaughtConjecture.Knight.GrowthReplicatedAllCutoff
 public import VaughtConjecture.Knight.EffectiveGradeLifting
 
 /-! # Bountifulness of the fixed full-height replicated growth carrier
@@ -18,13 +19,11 @@ Same-grade pairs exhaust the plan; the existing grade-change reduction supplies
 all graded pairs. No bountifulness of an unfinished carrier is assumed.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthReplicatedBountiful
-open AmalgamationPlan Transform Value ExtOrd Growth CoatomBoundaryExtension
-open GrowthHigherMixed
-noncomputable section
+open AmalgamationPlan Transform Value ExtOrd Growth CoatomBoundaryExtension GrowthHigherMixed
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n J : ℕ}
   (I : WholeDonorBoundary.Input A B C R m (n + 1) J)
@@ -99,6 +98,3 @@ theorem bountiful (hsmall : n + 1 < X.req.N) :
   have hc := Finset.card_le_card (I.isPlan.subset_of_mem (Plan.mem_gradedPlan.mp hV').1)
   exact same_grade I X T hA hB hC (A.card - 2) (by omega) hsmall
     S V j hS' hV' (by omega) hSV
-
-end
-end VaughtConjecture.Knight.GrowthReplicatedBountiful

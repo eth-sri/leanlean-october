@@ -5,7 +5,7 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.RecursiveRungLocality
+public import VaughtConjecture.Knight.RecursiveRungRendering
 public import VaughtConjecture.Knight.LowOnlyLadderRepair
 
 /-! # Recursive auxiliary charts for the actual LOW catalogues
@@ -20,14 +20,12 @@ installed scope geometry. It neither promotes admission to a higher cutoff nor
 asserts equality of renderings made at different construction grades.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyRecursiveCharts
-open Transform Value ExtOrd CappedDonor LowOnly
-open PairedSlotEncoding RecursiveRungRendering
+open Transform Value ExtOrd CappedDonor LowOnly PairedSlotEncoding RecursiveRungRendering
 open SharpWitnessComposition
-noncomputable section
+
 variable {m K : ℕ} {P C : SemScheme m} (F : LowOnly.Family P C K)
 
 private theorem lower_visible_one {D : SemScheme m} {j : ℕ}
@@ -67,6 +65,3 @@ theorem anchor_visible_one {j : ℕ} (hj : 1 ≤ j) (a : F.Anchor j) (d : Field 
   change SelfVis 1 (a.val d)
   rw [← he]
   exact profile_visible_one F hj hS d
-
-end
-end VaughtConjecture.Knight.LowOnlyRecursiveCharts

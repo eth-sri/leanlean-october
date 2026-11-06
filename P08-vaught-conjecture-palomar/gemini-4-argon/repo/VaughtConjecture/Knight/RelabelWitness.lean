@@ -1,5 +1,0 @@
-module
-public import VaughtConjecture.Knight.RefinedRowFamily
-public import VaughtConjecture.Knight.PositiveNormalization
-public import VaughtConjecture.Knight.MixedRows
-public import VaughtConjecture.Knight.RestrictedComposition

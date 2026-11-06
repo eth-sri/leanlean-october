@@ -241,10 +241,6 @@ noncomputable def Semantics.restrictFace (sem : Semantics D) (f : Fin m ↪ Fin 
   E Sig d := sem.E (toCell D f hr Sig) (belowMap D f hr Sig d)
   orderly Sig d := sem.orderly (toCell D f hr Sig) (belowMap D f hr Sig d)
 
-@[simp] theorem Semantics.restrictFace_E (sem : Semantics D) (Sig : Cell (D.restrictFace f hr))
-    (d : (D.restrictFace f hr).below ((D.restrictFace f hr).cell Sig)) :
-    (sem.restrictFace f hr).E Sig d = sem.E (toCell D f hr Sig) (belowMap D f hr Sig d) := rfl
-
 /-- Faithful respect of semantics (Def. 2.5.4, both clauses) transports along face
 restriction: the restricted labelling `p ∘ toCell` respects the restricted rows.  Locality is
 `TransformsTo.reindex` along `belowMap`; availability lifts the witness: the scopes of
@@ -270,7 +266,3 @@ theorem RespectsSemantics.restrictFace {sem : Semantics D} {p : Cell D → ExtOr
       exact CellScheme.restrictFace.scope_toCell_subset D f hr Xi₀
     obtain ⟨Xi, rfl⟩ := CellScheme.restrictFace.exists_toCell_eq D f hr hvis
     exact ⟨Xi, CellScheme.pullCell_congr D f hcell, hle⟩
-
-end RestrictFace
-
-end VaughtConjecture.Knight

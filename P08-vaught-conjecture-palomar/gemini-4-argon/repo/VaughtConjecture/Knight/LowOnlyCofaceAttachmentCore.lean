@@ -16,13 +16,11 @@ occurrence receipt from the actual coface equations. The family uses the
 literal common-root identification. No mixed scopes are added.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyCofaceAttachment
-open TypeTower StageType KnightRealization Value ExtOrd CappedDonor LowOnly
-open CellScheme.restrictFace FirstLossLowFamily AmalgamationPlan
-noncomputable section
+open TypeTower StageType KnightRealization Value ExtOrd CappedDonor LowOnly CellScheme.restrictFace FirstLossLowFamily AmalgamationPlan
+
 universe w
 
 /-- The scheme-equality cast in the generic face map is the canonical
@@ -192,6 +190,3 @@ theorem receive_of_shared_of_receiving {M : Type w} {W : KnightRealization α M}
     ∃ t : Fin (k + 1) ↪ M,
       W.eval t = some P ∧ Fin.castSuccEmb.trans t = Fin.castSuccEmb.trans u :=
   receive_of_receiving hP hC hcons hFC u hu (rebase hP hC F hB hp hshared) rfl hp hc hr
-
-end
-end VaughtConjecture.Knight.LowOnlyCofaceAttachment

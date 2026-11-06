@@ -17,12 +17,10 @@ is constructed above the rounded non-top donor maximum and below the stage.
 Admission is proved at every grade, not transported upward from a catalogue.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyActualState
 open Transform Value ExtOrd CappedDonor LowOnly LowSeparator
-noncomputable section
 
 /-- A proper visible value strictly above any value below a limit stage. -/
 theorem exists_visible_above {α : LimitStage} (K : ℕ) {x : ExtOrd}
@@ -98,6 +96,3 @@ theorem exists_active {α : LimitStage} (v : Cell C.scheme → ExtOrd)
     · exact hpbound d hf
     · exact hvbound d hf
     · exact hb
-
-end
-end VaughtConjecture.Knight.LowOnlyActualState

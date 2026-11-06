@@ -19,17 +19,15 @@ This constructs lower rows for the proper-grade-three problem; it does not
 claim arbitrary cap-preserving extension of a joint boundary/controller history.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalPairBoundary
 open Transform Value ExtOrd PairedSlotEncoding PairedSlotComparison SourcePrefixRows
-noncomputable section
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable (sem : Semantics D) (j k : ℕ)
-variable (hj : 0 < j) (hjA : j ≤ A.card) (hk : 0 < k) (hkA : k ≤ A.card)
-variable (hp : ∀ d : Cell D, D.scope d ≠ A) (hjk : j < k)
+  (sem : Semantics D) (j k : ℕ)
+  (hj : 0 < j) (hjA : j ≤ A.card) (hk : 0 < k) (hkA : k ≤ A.card)
+  (hp : ∀ d : Cell D, D.scope d ≠ A) (hjk : j < k)
 
 abbrev boundary := GradeCutBoundary.scheme D k
 abbrev boundaryRows := GradeCutBoundary.rows D k sem
@@ -78,7 +76,7 @@ theorem lower_row (c : Cell (lower sem j k hj hjA hk hkA))
 
 variable {p : Cell D → ExtOrd} (hpr : RespectsSemantics sem p) (ht : ∀ d, p d ≠ ⊤)
 
-variable {G : Finset ExtOrd} {C : ExtOrd}
+  {G : Finset ExtOrd} {C : ExtOrd}
 
 /-- Ordinary whole-boundary sections also allow literal top, independently
 of the proper-profile selected operator. There is no ambient-cap conclusion. -/
@@ -102,6 +100,3 @@ theorem exists_whole {p : Cell D → ExtOrd} (hpr : RespectsSemantics sem p) :
       (overlap sem j k hj hjA hk hkA hp hjk) hpr hv ?_,
     GradeCutPairRows.glue_old D _ _ j k hj hjA hk hkA p v⟩
   exact hread
-
-end
-end VaughtConjecture.Knight.CanonicalPairBoundary

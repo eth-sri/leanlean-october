@@ -163,5 +163,3 @@ theorem IsPlan.attach_one_over_face {A B : Finset α} {P Q : Finset (Finset α)}
 
 -- Both inputs contribute two private points, not just one. The overlap
 -- is the singleton {2}; each side retains its arbitrary prescribed plan.
-
-end VaughtConjecture.AmalgamationPlan.Plan

@@ -5,8 +5,12 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.CanonicalProperOwnerLift
-public import VaughtConjecture.Knight.CanonicalProperOwnerLower
+public import VaughtConjecture.Knight.CanonicalOwnerBoundary
+public import VaughtConjecture.Knight.RetunedCutDecoding
+public import VaughtConjecture.Knight.CanonicalProperOwnerLayer
+public import VaughtConjecture.Knight.CanonicalPairedInverse
+public import VaughtConjecture.Knight.SourcePrefixAmbient
+public import VaughtConjecture.Knight.HighLayerBountiful
 
 /-! # Independent section supply through the three canonical layers
 
@@ -15,17 +19,14 @@ retained literally. Decoding can therefore reconstruct an arbitrary lawful
 old boundary, including top, without any positive-cap lifting assumption.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalProperOwnerSections
-open Transform Value ExtOrd CanonicalProperOwnerLayer
-open SharpWitnessComposition CoatomBoundaryExtension PairedSlotEncoding
-noncomputable section
+open Transform Value ExtOrd CanonicalProperOwnerLayer SharpWitnessComposition CoatomBoundaryExtension PairedSlotEncoding
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable (sem : Semantics D) (k : ℕ) (h2k : 2 < k) (hkA : k ≤ A.card)
-variable (hp : ∀ d : Cell D, D.scope d ≠ A) (hg : ∀ d : Cell D, D.grade d ≤ k)
+  (sem : Semantics D) (k : ℕ) (h2k : 2 < k) (hkA : k ≤ A.card)
+  (hp : ∀ d : Cell D, D.scope d ≠ A) (hg : ∀ d : Cell D, D.grade d ≤ k)
 
 theorem lower_full_short (c : Cell (lowerScheme sem k h2k hkA))
     (hc : (lowerScheme sem k h2k hkA).scope c = A)
@@ -60,6 +61,3 @@ theorem lower_full_short (c : Cell (lowerScheme sem k h2k hkA))
   exact (congrArg (fun i => Short i _) (congrArg Prod.snd
     (GradeCutPairCarrier.embed_index D _ _ 1 2 (by decide) (one_le k h2k hkA)
       (by decide) (two_le k h2k hkA) a))).mpr hv
-
-end
-end VaughtConjecture.Knight.CanonicalProperOwnerSections

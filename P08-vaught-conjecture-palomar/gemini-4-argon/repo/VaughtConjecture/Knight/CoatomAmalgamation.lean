@@ -6,7 +6,8 @@ Authors: Cameron Freer
 module
 
 public import Mathlib.Data.Fin.SuccPred
-public import VaughtConjecture.Knight.ModelAssembly
+public import VaughtConjecture.Knight.Coface
+public import VaughtConjecture.Knight.Model
 public import VaughtConjecture.Knight.OnePointSuccessor
 
 /-! # Coatom amalgamation: the faithful receiver for Cor. 4.3.22
@@ -123,15 +124,6 @@ def ofPoints (a : Fin (n + 2)) (b' : Fin (n + 1)) : CoatomPair n where
     rw [h] at hb
     obtain ⟨k, -, hk⟩ := Finset.mem_image.mp hb
     exact Fin.succAbove_ne _ k hk
-
-@[simp] theorem ofPoints_f₁ (a : Fin (n + 2)) (b' : Fin (n + 1)) :
-    (ofPoints a b').f₁ = Fin.succAboveEmb a := rfl
-
-@[simp] theorem ofPoints_f₂ (a : Fin (n + 2)) (b' : Fin (n + 1)) :
-    (ofPoints a b').f₂ = Fin.succAboveEmb (a.succAbove b') := rfl
-
-@[simp] theorem ofPoints_g₁ (a : Fin (n + 2)) (b' : Fin (n + 1)) :
-    (ofPoints a b').g₁ = Fin.succAboveEmb b' := rfl
 
 @[simp] theorem ofPoints_g₂ (a : Fin (n + 2)) (b' : Fin (n + 1)) :
     (ofPoints a b').g₂ = Fin.succAboveEmb (b'.predAbove a) := rfl
@@ -303,5 +295,3 @@ theorem exists_highGradeDominance_candidate (H : MaximalCoatomAmalgamationSupply
     refine ⟨q, ⟨Ξ, hΞ, lt_of_lt_of_le (hd ▸ hγ) (hmax d)⟩, ?_⟩
     rw [IsCoface, castSuccEmb_eq_succAboveEmb_last]
     exact hq
-
-end VaughtConjecture.Knight

@@ -14,16 +14,11 @@ positive-cap correctness or the top-cap readback specialization. Names and
 proofs remain in the historical namespace for compatibility.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.GrowthReplicatedReadback
 
-open AmalgamationPlan Transform Value ExtOrd Growth GrowthHigherSources GrowthHigherMixed
-open GrowthPaddedContract GrowthPaddedIteration
-
-noncomputable section
+open AmalgamationPlan Transform Value ExtOrd Growth GrowthHigherSources GrowthHigherMixed GrowthPaddedContract GrowthPaddedIteration
 
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n J : ℕ}
@@ -166,6 +161,3 @@ theorem donorFace_map (d : Cell I.left.scheme) (hd : I.left.scheme.grade d ≤ A
       (donorAt I X T hA hB hC t ht A A.card (Finset.ssubset_iff_subset_ne.mp hB).1 d hd).1 := by
   exact congrArg (ScopeReplicationCarrier.old (P).carrier B C)
     (GrowthPaddedInstallation.face_map I X T hA hB hC I.leftFace hB.not_ge t ht d)
-
-end
-end VaughtConjecture.Knight.GrowthReplicatedReadback

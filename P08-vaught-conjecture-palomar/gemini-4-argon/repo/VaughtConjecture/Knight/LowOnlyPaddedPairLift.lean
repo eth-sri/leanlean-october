@@ -16,13 +16,11 @@ proved below for a binary two-coface plan; no mixed-prescription theorem is
 inferred from the two original-face endpoints.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedPairLift
-open Transform Value ExtOrd CappedDonor LowOnly AmalgamationPlan CoatomBoundaryExtension
-open LowOnlyPaddedSuccessor LowOnlyPaddedFaces LowOnlyPaddedCharts
-noncomputable section
+open Transform Value ExtOrd CappedDonor LowOnly AmalgamationPlan CoatomBoundaryExtension LowOnlyPaddedSuccessor LowOnlyPaddedFaces LowOnlyPaddedCharts
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n K : ℕ}
   (I : WholeDonorBoundary.Input A B C R m n n) (F : LowOnly.Family I.left I.right K)
@@ -166,6 +164,3 @@ theorem cover_two_cofaces (s : AmalgamatedBoundaryPlan.Step A)
     · exact Or.inl (hleft ▸ s.left_plan.subset_of_mem hl)
     · exact Or.inr (hright ▸ s.right_plan.subset_of_mem hr)
   · exact False.elim (hs (Finset.mem_singleton.mp hS))
-
-end
-end VaughtConjecture.Knight.LowOnlyPaddedPairLift

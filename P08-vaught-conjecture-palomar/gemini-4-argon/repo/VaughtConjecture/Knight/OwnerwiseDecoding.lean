@@ -17,8 +17,6 @@ of the whole decoded section, bottom reflection, or a particular catalogue.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.SharpWitnessComposition
 
 open Transform Value ExtOrd
@@ -52,5 +50,3 @@ theorem map_respects_of_short_or_local
   availability d c hs hg := by
     obtain ⟨e, he, hde⟩ := hr.availability d c hs hg
     exact ⟨e, he, hν.mono hde⟩
-
-end VaughtConjecture.Knight.SharpWitnessComposition

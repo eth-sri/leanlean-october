@@ -18,7 +18,6 @@ The historical capping names are retained in their original namespace.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.FiniteCutCapping
 open Value ExtOrd
 
@@ -125,5 +124,3 @@ theorem exists_lawful_cutoff {α : LimitStage} {n : ℕ} (p : S α.1 n)
     (fun d : {d : Cell p.scheme.scheme // p.label d ≠ ⊤} => p.label d.1)
     α.2 (fun d => (p.label_bound d.1).resolve_right d.2) hδ K
   exact ⟨b, hb, hδb, hvis, fun d hd => hp ⟨d, hd⟩⟩
-
-end VaughtConjecture.Knight.StageType

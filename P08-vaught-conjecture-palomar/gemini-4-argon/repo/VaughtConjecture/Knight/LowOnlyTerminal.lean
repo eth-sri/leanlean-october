@@ -16,13 +16,11 @@ reused here; no `Ref`, LOW/HIGH state, or gate is constructed. Exact decoding is
 on the complete original-field inventory, not on uninstalled physical rows.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.LowOnly
 
 open Transform Value ExtOrd AmalgamationPlan CappedDonor CappedDonor.Ref
-
-noncomputable section
 
 variable {n K : ℕ} {P C : SemScheme n}
 
@@ -101,7 +99,3 @@ theorem terminal_insertion {j : ℕ} (hj : 1 ≤ j) {S : State P C}
   rw [Function.comp_apply, State.profile_normalize,
     PairedSlotDecoder.decode_normalize hG hβvis hproper d, State.profile_map]
   exact collapseBlock_min hlβ (S.profile_lt_freshFloor h d)
-
-end Family
-end
-end VaughtConjecture.Knight.LowOnly

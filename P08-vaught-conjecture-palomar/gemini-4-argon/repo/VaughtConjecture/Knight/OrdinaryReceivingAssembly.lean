@@ -19,20 +19,17 @@ of the two literal legal schemes, their attached plan, and reference data
 whose face is that same literal overlap. The final threshold is at least four.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryReceivingAssembly
-open Transform Value ExtOrd AmalgamationPlan CappedDonor CappedDonor.Ref
-open SourcePrefixRows OrbitPrefixSupport SharpWitnessComposition
-noncomputable section
+open Transform Value ExtOrd AmalgamationPlan CappedDonor CappedDonor.Ref SourcePrefixRows OrbitPrefixSupport SharpWitnessComposition
 
 variable {I : Type*} [Fintype I] {nP n : ℕ}
-variable {B T : Finset (Fin (n + 5))} {plan : Finset (Finset (Fin (n + 5)))}
-variable (W : WholeDonorBoundary.Input Finset.univ B T plan nP (n + 4) (nP + 1))
-variable (R : Ref I nP (n + 4) (n + 4) W.right W.left)
-variable (hunion : (Finset.univ : Finset (Fin (n + 5))) = B ∪ T)
-variable (hface : ∀ i : Cell W.common.scheme,
+  {B T : Finset (Fin (n + 5))} {plan : Finset (Finset (Fin (n + 5)))}
+  (W : WholeDonorBoundary.Input Finset.univ B T plan nP (n + 4) (nP + 1))
+  (R : Ref I nP (n + 4) (n + 4) W.right W.left)
+  (hunion : (Finset.univ : Finset (Fin (n + 5))) = B ∪ T)
+  (hface : ∀ i : Cell W.common.scheme,
   ∃ d : W.right.scheme.below (R.A, R.KA),
     d.1 = W.shared.g i ∧ (R.face d).1 = W.shared.f i)
 
@@ -172,6 +169,3 @@ def semScheme : SemScheme (n + 5) :=
     (predecessor W R hunion).coded (bountiful W R hunion hface)
     (complete_before_final W R hunion) (fun _ _ => rfl) rfl
     (fun a d _ => lower_support W R hunion hface a d)
-
-end
-end VaughtConjecture.Knight.OrdinaryReceivingAssembly

@@ -17,8 +17,6 @@ measurability of the ambient class or its observation maps is needed.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Spectrum
 
 open FirstOrder Language MeasureTheory Set
@@ -35,5 +33,3 @@ theorem isThinOn_of_countable_bfObservations [Countable (Σ n, L.Relations n)]
       obs η c = obs η d → CodeBFEquiv η c.1 d.1) :
     IsThinOn (structureIsoSetoid L) C :=
   FirstOrder.Language.isThinOn_of_countable_bfObservations C obs hc hobs
-
-end VaughtConjecture.Spectrum

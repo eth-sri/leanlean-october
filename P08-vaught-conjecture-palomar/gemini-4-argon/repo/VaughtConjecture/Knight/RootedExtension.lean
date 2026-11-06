@@ -80,5 +80,3 @@ theorem cover_mem_range {n k : ℕ} {t : Fin n ↪ M} {x : M} {hx : x ∉ Set.ra
   simp only [Function.Embedding.trans_apply, Fin.castAddEmb_apply] at h
   rw [h]
   exact snoc_apply_last t x hx
-
-end VaughtConjecture.Knight

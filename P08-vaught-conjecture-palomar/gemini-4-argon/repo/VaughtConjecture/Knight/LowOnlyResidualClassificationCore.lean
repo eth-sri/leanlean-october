@@ -22,12 +22,11 @@ A constant tail here is `KnightRealization.IsCoinitial`: above every context is 
 whose every extension has the stated grade. The zero-grade converse is not part of this API.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyResidualClassification
 open TypeTower StageType KnightRealization Value ExtOrd
-noncomputable section
+
 universe w
 variable {α : LimitStage} {M₁ M₂ : Type w}
   {W₁ : KnightRealization α M₁} {W₂ : KnightRealization α M₂}
@@ -133,6 +132,3 @@ theorem nonempty_iso_of_receiving [Countable M₁] [Countable M₂]
     hcons₂ hcov₂ hFC₂ hcoin₁ hcoin₂ hKpos hres₁ hres₂
     Function.Embedding.ofIsEmpty Function.Embedding.ofIsEmpty hp₁ hp₂
   exact ⟨e⟩
-
-end
-end VaughtConjecture.Knight.LowOnlyResidualClassification

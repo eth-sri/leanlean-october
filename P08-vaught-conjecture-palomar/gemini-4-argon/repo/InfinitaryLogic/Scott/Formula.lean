@@ -8,7 +8,6 @@ module
 public import InfinitaryLogic.Scott.BackAndForth
 public import InfinitaryLogic.Util
 public import InfinitaryLogic.Lomega1omega.OpenBoundsSemantics
-public import Architect
 public import Mathlib.SetTheory.Cardinal.Aleph
 
 /-!
@@ -54,9 +53,9 @@ namespace FirstOrder
 namespace Language
 
 variable {L : Language.{u, v}} [L.IsRelational]
-variable {M : Type w} [L.Structure M]
-variable [Countable (Σ l, L.Relations l)]
-variable [Countable M]
+  {M : Type w} [L.Structure M]
+  [Countable (Σ l, L.Relations l)]
+  [Countable M]
 
 -- Derive Encodable from Countable for use in einf/esup
 attribute [local instance] Encodable.ofCountable
@@ -122,12 +121,6 @@ The definition uses `Ordinal.limitRecOn` with a motive that is constant in the o
 (always `(n : ℕ) → (Fin n → M) → L.Formulaω (Fin n)`), allowing uniform treatment of
 tuples of different lengths in the recursion.
 -/
-@[blueprint "def:scottFormula"
-  (title := /-- Scott formula -/)
-  (statement := /-- The Scott formula $\sigma_\alpha(a)$ for a tuple $a \in M^n$ and
-    ordinal $\alpha < \omegaone$: an $\Lomegaone$-formula mirroring the recursive
-    definition of $\BFEquiv_\alpha$. -/)
-  (uses := ["def:BFEquiv"])]
 noncomputable def scottFormula {n : ℕ} (a : Fin n → M) (α : Ordinal) : L.Formulaω (Fin n) :=
   haveI : Encodable M := Encodable.ofCountable M
   Ordinal.limitRecOn (motive := fun _ => (k : ℕ) → (Fin k → M) → L.Formulaω (Fin k)) α
@@ -190,14 +183,6 @@ The proof proceeds by ordinal induction using `limitRecOn`:
 - Successor case: uses `realize_existsLastVar` and `realize_forallLastVar`
 - Limit case: uses `realize_einf`
 -/
-@[blueprint "thm:scottFormula-iff"
-  (title := /-- Scott formula characterization -/)
-  (statement := /-- For countable $M$ and $\alpha < \omegaone$: $\sigma_\alpha(a)$ is
-    realized by $b$ in $N$ if and only if $\BFEquiv_\alpha(a,b)$. -/)
-  (proof := /-- By ordinal induction using \texttt{limitRecOn}: the zero case reduces to
-    atomic diagrams, the successor case uses the forth/back quantifier structure of
-    the Scott formula, and the limit case uses countable infimum. -/)
-  (uses := ["def:scottFormula", "def:BFEquiv"])]
 theorem realize_scottFormula_iff_BFEquiv
     {N : Type w'} [L.Structure N] {n : ℕ}
     (a : Fin n → M) (b : Fin n → N) (α : Ordinal) (hα : α < Ordinal.omega 1) :
@@ -242,12 +227,4 @@ theorem realize_scottFormula_iff_BFEquiv
     exact ⟨fun h γ hγ => (ih γ hγ a b (lt_trans hγ hα)).mp (h ⟨γ, hγ⟩),
            fun h ⟨γ, hγ⟩ => (ih γ hγ a b (lt_trans hγ hα)).mpr (h γ hγ)⟩
 
-end Language
-
 /-! ### The Scott sentence of a structure at a level -/
-
-namespace Language
-
-end Language
-
-end FirstOrder

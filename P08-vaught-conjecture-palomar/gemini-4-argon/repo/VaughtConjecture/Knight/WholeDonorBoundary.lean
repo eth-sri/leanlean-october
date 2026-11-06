@@ -18,19 +18,16 @@ faces, consistency, coding and lawful pasting are outputs, not hypotheses.
 This constructs no mixed owners and does not claim bountifulness of the union.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.WholeDonorBoundary
 
 open AmalgamationPlan Transform Value ExtOrd
 open AmalgamatedBoundary (Overlap pointImage pointImage_complete)
 open SemSchemeBoundaryInput (faceMap faceMap_index faceMap_exhaustive faceMap_total)
-noncomputable section
 
 variable {ι : Type*} [DecidableEq ι] (A B C : Finset ι)
-variable (R : Finset (Finset ι))
+  (R : Finset (Finset ι))
 
 /-- Two legal inputs on arbitrary faces with one literal common face.
 Only point placements, plan restrictions, and input equalities are fields;
@@ -258,7 +255,3 @@ theorem inherited_lift {CI BJ : Finset ι × ℕ}
   · exact I.rightFace.lift hr (I.right_mem hCI (h.1.trans hr)) (I.right_mem hBJ hr) h hne
       (PointImageSemantics.bountiful _ _ _ _ I.right.complete I.right.bountiful)
       p q γ hp hq hγ ha
-
-end Input
-end
-end VaughtConjecture.Knight.WholeDonorBoundary

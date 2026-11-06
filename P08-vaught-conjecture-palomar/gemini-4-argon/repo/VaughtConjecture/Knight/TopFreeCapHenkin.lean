@@ -8,7 +8,8 @@ module
 public import VaughtConjecture.Knight.TopFreePinnedExtension
 public import VaughtConjecture.Knight.FiniteMasterState
 public import VaughtConjecture.Knight.FiniteRequestData
-public import VaughtConjecture.Knight.FixedHeightChain
+public import VaughtConjecture.Knight.FinitePartialState
+public import VaughtConjecture.TypeTower.ChainUnion
 public import VaughtConjecture.Knight.CapReceivingModel
 public import VaughtConjecture.Knight.TopFreeTerminal
 public import VaughtConjecture.TypeTower.FiniteMasterScheduler
@@ -169,5 +170,3 @@ theorem exists_terminal_model [Countable M] [Infinite M]
       ∀ (γ : LimitStage) (hβγ : β < γ), R.NoProlongationToIn IsModelClass hβγ.le := by
   obtain ⟨R, hR, htop⟩ := exists_topFree_model (M := M) hβ
   exact ⟨R, hR, fun _ hβγ => hR.noProlongation_of_topFree hβγ htop⟩
-
-end VaughtConjecture.Knight.TopFreeCapHenkin

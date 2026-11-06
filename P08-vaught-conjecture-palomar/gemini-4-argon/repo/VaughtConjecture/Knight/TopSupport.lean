@@ -45,7 +45,7 @@ receiving corollaries (conditional on finite-cut receiving) are in `TopSupportRe
 
 Construction-private (not root-exported). -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.TopSupport
 
@@ -63,7 +63,7 @@ theorem mem_topSet {X : Type*} {P : X → ExtOrd} {d : X} : d ∈ topSet P ↔ P
 open Classical in
 /-- The **uniform lowering**: non-top labels are kept, `⊤` is kept on `H` and replaced by `β`
 off `H`. -/
-noncomputable def lower (P : Cell D → ExtOrd) (H : Set (Cell D)) (β : ExtOrd) (d : Cell D) :
+def lower (P : Cell D → ExtOrd) (H : Set (Cell D)) (β : ExtOrd) (d : Cell D) :
     ExtOrd :=
   if P d = ⊤ then (if d ∈ H then ⊤ else β) else P d
 
@@ -83,14 +83,10 @@ theorem lower_of_not_mem {P : Cell D → ExtOrd} {H : Set (Cell D)} {β : ExtOrd
 theorem topSet_lower {P : Cell D → ExtOrd} {H : Set (Cell D)} {β : ExtOrd}
     (hH : H ⊆ topSet P) (hβ : β ≠ ⊤) : topSet (lower P H β) = H := by
   ext d
-  constructor
-  · intro hd
-    by_cases hP : P d = ⊤
-    · by_contra hdH
-      exact hβ ((lower_of_not_mem hP hdH).symm.trans hd)
-    · exact absurd ((lower_of_ne_top hP).symm.trans hd) hP
-  · intro hd
-    exact lower_of_mem (hH hd) hd
+  refine ⟨fun hd => ?_, fun hd => lower_of_mem (hH hd) hd⟩
+  by_cases hP : P d = ⊤
+  · exact by_contra fun hdH => hβ ((lower_of_not_mem hP hdH).symm.trans hd)
+  · exact absurd ((lower_of_ne_top hP).symm.trans hd) hP
 
 /-- **Top availability**: a cell of `H` has a cell of `H` at every larger same-grade index. -/
 def TopAvailable (D : CellScheme A) (H : Set (Cell D)) : Prop :=
@@ -124,10 +120,7 @@ theorem selfVis_top_ext (k : ℕ) : SelfVis k ⊤ := extVisibilityReplace_top k 
 theorem selfVis_max_of {K : ℕ} {a b : ExtOrd} (ha : SelfVis K a) (hb : SelfVis K b) :
     SelfVis K (max a b) := by
   change extVisibilityReplace (max a b) K K = max a b
-  rw [extVisibilityReplace_max a b le_rfl]
-  change extVisibilityReplace a K K = a at ha
-  change extVisibilityReplace b K K = b at hb
-  rw [ha, hb]
+  rw [extVisibilityReplace_max a b le_rfl]; exact congrArg₂ max ha hb
 
 /-- A rounding at grade `K` is `K`-visible. -/
 theorem selfVis_evr_self (K : ℕ) (t : ExtOrd) : SelfVis K (extVisibilityReplace t K K) := by
@@ -135,7 +128,7 @@ theorem selfVis_evr_self (K : ℕ) (t : ExtOrd) : SelfVis K (extVisibilityReplac
   · rw [extVisibilityReplace_bot]; exact selfVis_bot K
   · rw [extVisibilityReplace_top]; exact selfVis_top_ext K
   · rw [extVisibilityReplace_ofOrd, selfVis_ofOrd_iff, finitePart_visibilityReplace]
-    split_ifs with h <;> omega
+    split_ifs <;> omega
 
 /-- A value is at most its own rounding. -/
 theorem le_evr_self (x : ExtOrd) (k : ℕ) : x ≤ extVisibilityReplace x k k := by
@@ -145,111 +138,39 @@ theorem le_evr_self (x : ExtOrd) (k : ℕ) : x ≤ extVisibilityReplace x k k :=
   · by_cases h : k ≤ finitePart a
     · rw [extVisibilityReplace_of_le_finitePart h]
     · rw [extVisibilityReplace_of_finitePart_lt (not_le.mp h), ofOrd_le_ofOrd]
-      calc a = limitPart a + (finitePart a : Ordinal) := (limitPart_add_finitePart a).symm
-        _ ≤ limitPart a + (k : Ordinal) := by
-          gcongr; exact_mod_cast (not_le.mp h).le
+      exact (limitPart_add_finitePart a).symm.trans_le
+        (add_le_add le_rfl (by exact_mod_cast (not_le.mp h).le))
 
 variable {sem : Semantics D}
-
-/-- The top set of a lawful labelling is top-available. -/
-theorem topAvailable_of_respects {Q : Cell D → ExtOrd} (hQ : RespectsSemantics sem Q) :
-    TopAvailable D (topSet Q) := by
-  intro d hd Xi₀ hs hg
-  obtain ⟨Xi, hc, hle⟩ := hQ.availability d Xi₀ hs hg
-  refine ⟨Xi, hc, ?_⟩
-  rw [mem_topSet] at hd ⊢
-  rw [hd] at hle
-  exact top_le_iff.mp hle
-
-/-- **Necessity of source separation**: the top set of any lawful `Q` is source-separated
-relative to any `P` (the argument reads only the tops of `Q`). -/
-theorem sourceSeparated_of_respects (P : Cell D → ExtOrd) {Q : Cell D → ExtOrd}
-    (hQ : RespectsSemantics sem Q) : SourceSeparated sem P (topSet Q) := by
-  intro c hc a ha d hdP hdQ
-  rw [mem_topSet] at hc ha hdQ
-  obtain ⟨τ, hτ, -, hread⟩ := exists_bounded_exact_capped_witness
-    (grade := fun d : D.below (D.cell c) => D.grade d.1) (E := sem.E c)
-    (p := fun d => Q d.1) (c := ⟨c, GradedLe.refl _⟩) (fun d => d.2.2)
-    (by rw [hc]; exact selfVis_top_ext _) (hQ.locality c)
-  by_contra hle
-  have hle' := not_lt.mp hle
-  have h1 : τ (sem.E c a) = ⊤ := by rw [hread a, ha, hc]; rfl
-  have h2 : τ (extVisibilityReplace (sem.E c d) (D.grade c) (D.grade c)) =
-      extVisibilityReplace (τ (sem.E c d)) (D.grade c) (D.grade c) :=
-    hτ.clause5 _ _ (by rw [gTop_of_le le_rfl]; exact le_top) _ le_rfl
-  have h3 : τ (sem.E c d) ≠ ⊤ := by rw [hread d, hc, min_top_right]; exact hdQ
-  have h4 := hτ.mono hle'
-  rw [h1, h2] at h4
-  exact evr_ne_top h3 _ _ (top_le_iff.mp h4)
 
 /-- **Nonuniform necessity**: the actual top set of any lawful `Q` fixing the non-top labels of
 `P` is an admissible top support of `P`. -/
 theorem admissible_of_respects {P Q : Cell D → ExtOrd} (hQ : RespectsSemantics sem Q)
     (hoff : ∀ d, P d ≠ ⊤ → Q d = P d) : Admissible sem P (topSet Q) where
-  subset d hd := by
-    rw [mem_topSet] at hd ⊢
-    by_contra h
-    exact h ((hoff d h).symm.trans hd)
-  available := topAvailable_of_respects hQ
-  separated := sourceSeparated_of_respects P hQ
-
-/-! ## Sufficiency: the retuned witness at a surviving top owner -/
-
-/-- The **retuned map**: the old witness capped at `β` at and below the cut `t`, unchanged
-above it. -/
-noncomputable def retune (σ : ExtOrd → ExtOrd) (t β x : ExtOrd) : ExtOrd :=
-  if x ≤ t then min (σ x) β else σ x
-
-theorem retune_of_le {σ : ExtOrd → ExtOrd} {t β x : ExtOrd} (h : x ≤ t) :
-    retune σ t β x = min (σ x) β := ite_eq_left h
-
-theorem retune_of_gt {σ : ExtOrd → ExtOrd} {t β x : ExtOrd} (h : ¬ x ≤ t) :
-    retune σ t β x = σ x := ite_eq_right h
-
-/-- The retuned map has the bottom fibre of the old witness. -/
-theorem retune_eq_bot_iff {σ : ExtOrd → ExtOrd} {t β x : ExtOrd} (hβ : β ≠ ⊥) :
-    retune σ t β x = ⊥ ↔ σ x = ⊥ := by
-  by_cases h : x ≤ t
-  · rw [retune_of_le h, min_eq_bot, or_iff_left hβ]
-  · rw [retune_of_gt h]
-
-/-- **The retuned map is a bounded map** at grade `K`, for a `K`-visible cut and cap. -/
-theorem boundedMap_retune {K : ℕ} {σ : ExtOrd → ExtOrd} (hσ : Witness (gTop K) σ) {t β : ExtOrd}
-    (ht : SelfVis K t) (hβ : SelfVis K β) : BoundedMap K (retune σ t β) where
-  bot := by rw [retune_of_le bot_le, hσ.bot, min_eq_left bot_le]
-  mono := by
-    intro x y hxy
-    by_cases hy : y ≤ t
-    · rw [retune_of_le (hxy.trans hy), retune_of_le hy]
-      exact min_le_min_right β (hσ.mono hxy)
-    · rw [retune_of_gt hy]
-      by_cases hx : x ≤ t
-      · rw [retune_of_le hx]; exact (min_le_left _ _).trans (hσ.mono hxy)
-      · rw [retune_of_gt hx]; exact hσ.mono hxy
-  comm := by
-    intro x k i hk hi
-    have hcomm := hσ.clause5 x k (by rw [gTop_of_le hk]; exact le_top) i hi
-    by_cases hx : x ≤ t
-    · rw [retune_of_le hx, retune_of_le ((le_iff_evr_le (ht.mono hk) hi).mp hx), hcomm,
-        evr_min_of_selfVis hβ hk hi]
-    · have hx' : ¬ extVisibilityReplace x k i ≤ t := fun h =>
-        hx ((le_iff_evr_le (ht.mono hk) hi).mpr h)
-      rw [retune_of_gt hx, retune_of_gt hx', hcomm]
-
-/-- The retuned map interpolates to a faithful witness on any finite source set (the bottom
-fibre is unchanged, so the source-block criterion is inherited from the old witness). -/
-theorem exists_witness_retune {K : ℕ} {σ : ExtOrd → ExtOrd} (hσ : Witness (gTop K) σ)
-    {t β : ExtOrd} (ht : SelfVis K t) (hβ : SelfVis K β) (hβbot : β ≠ ⊥) (s : Finset ExtOrd) :
-    ∃ τ : ExtOrd → ExtOrd, Witness (gTop K) τ ∧ ∀ x ∈ s, τ x = retune σ t β x := by
-  apply ((boundedMap_retune hσ ht hβ).interpolate_iff_source_blocks s).mpr
-  intro x _ y _ hb hx
-  rw [retune_eq_bot_iff hβbot] at hx ⊢
-  exact witness_bot_of_same_block hσ hb hx
+  subset d hd := by_contra fun h => h ((hoff d h).symm.trans hd)
+  available d hd Xi₀ hs hg := by
+    obtain ⟨Xi, hc, hle⟩ := hQ.availability d Xi₀ hs hg
+    exact ⟨Xi, hc, top_le_iff.mp (hd ▸ hle)⟩
+  separated c hc a ha d hdP hdQ := by
+    rw [mem_topSet] at hc ha hdQ
+    obtain ⟨τ, hτ, -, hread⟩ := exists_bounded_exact_capped_witness
+      (grade := fun d : D.below (D.cell c) => D.grade d.1) (E := sem.E c)
+      (p := fun d => Q d.1) (c := ⟨c, GradedLe.refl _⟩) (fun d => d.2.2)
+      (by rw [hc]; exact selfVis_top_ext _) (hQ.locality c)
+    refine not_le.mp fun hle => ?_
+    have h1 : τ (sem.E c a) = ⊤ := by rw [hread a, ha, hc]; rfl
+    have h2 : τ (extVisibilityReplace (sem.E c d) (D.grade c) (D.grade c)) =
+        extVisibilityReplace (τ (sem.E c d)) (D.grade c) (D.grade c) :=
+      hτ.clause5 _ _ (by rw [gTop_of_le le_rfl]; exact le_top) _ le_rfl
+    have h3 : τ (sem.E c d) ≠ ⊤ := by rw [hread d, hc, min_top_right]; exact hdQ
+    have h4 := hτ.mono hle
+    rw [h1, h2] at h4
+    exact evr_ne_top h3 _ _ (top_le_iff.mp h4)
 
 /-- The rounded sources of the lowered tops beneath an owner are self-visible at its grade. -/
 theorem selfVis_sup_evr {X : Type*} (s : Finset X) (f : X → ExtOrd) (k : ℕ) :
-    SelfVis k (s.sup fun x => extVisibilityReplace (f x) k k) := by
-  exact Finset.sup_induction (selfVis_bot k) (fun a ha b hb => selfVis_max_of ha hb)
+    SelfVis k (s.sup fun x => extVisibilityReplace (f x) k k) :=
+  Finset.sup_induction (selfVis_bot k) (fun _ ha _ hb => selfVis_max_of ha hb)
     fun x _ => selfVis_evr_self k (f x)
 
 /-! ## Sufficiency -/
@@ -266,104 +187,101 @@ theorem respects_lower {P : Cell D → ExtOrd} (hP : RespectsSemantics sem P) {K
       · rw [lower_of_not_mem hd hdH]; exact (hβ.mono (hK d)).symm
     · rw [lower_of_ne_top hd]; exact hP.orderly d
   availability Sig Xi₀ hs hg := by
-    by_cases hS : P Sig = ⊤
-    · by_cases hSH : Sig ∈ H
-      · obtain ⟨Xi, hc, hXi⟩ := hH.available Sig hSH Xi₀ hs hg
-        refine ⟨Xi, hc, ?_⟩
-        rw [lower_of_mem (hH.subset hXi) hXi]; exact le_top
-      · obtain ⟨Xi, hc, hle⟩ := hP.availability Sig Xi₀ hs hg
-        refine ⟨Xi, hc, ?_⟩
-        rw [hS] at hle
-        have hXi : P Xi = ⊤ := top_le_iff.mp hle
-        rw [lower_of_not_mem hS hSH]
-        by_cases hXiH : Xi ∈ H
-        · rw [lower_of_mem hXi hXiH]; exact le_top
-        · rw [lower_of_not_mem hXi hXiH]
+    by_cases hSH : P Sig = ⊤ ∧ Sig ∈ H
+    · obtain ⟨Xi, hc, hXi⟩ := hH.available Sig hSH.2 Xi₀ hs hg
+      exact ⟨Xi, hc, by rw [lower_of_mem (hH.subset hXi) hXi]; exact le_top⟩
     · obtain ⟨Xi, hc, hle⟩ := hP.availability Sig Xi₀ hs hg
-      refine ⟨Xi, hc, ?_⟩
-      rw [lower_of_ne_top hS]
-      by_cases hXi : P Xi = ⊤
-      · by_cases hXiH : Xi ∈ H
-        · rw [lower_of_mem hXi hXiH]; exact le_top
-        · rw [lower_of_not_mem hXi hXiH]; exact (hβgt Sig hS).le
-      · rw [lower_of_ne_top hXi]; exact hle
+      refine ⟨Xi, hc, le_trans (b := min β (P Xi)) ?_ ?_⟩
+      · by_cases hS : P Sig = ⊤
+        · rw [lower_of_not_mem hS fun h => hSH ⟨hS, h⟩]
+          exact le_min le_rfl (le_top.trans (hS ▸ hle))
+        · rw [lower_of_ne_top hS]
+          exact le_min (hβgt Sig hS).le hle
+      · unfold lower; split_ifs <;> [exact le_top; exact min_le_left _ _; exact min_le_right _ _]
   locality c := by
     by_cases hc : P c = ⊤
     · by_cases hcH : c ∈ H
-      · -- a surviving top owner: the retuned witness
-        classical
+      · classical
         let _ := Fintype.ofFinite (D.below (D.cell c))
         obtain ⟨σ, hσ, -, hread⟩ := exists_bounded_exact_capped_witness
           (grade := fun d : D.below (D.cell c) => D.grade d.1) (E := sem.E c)
           (p := fun d => P d.1) (c := ⟨c, GradedLe.refl _⟩) (fun d => d.2.2)
           (by rw [hc]; exact selfVis_top_ext _) (hP.locality c)
-        have hread' : ∀ d : D.below (D.cell c), σ (sem.E c d) = P d.1 := fun d => by
+        have hread' (d : D.below (D.cell c)) : σ (sem.E c d) = P d.1 := by
           rw [hread d]; change min (P d.1) (P c) = P d.1; rw [hc, min_top_right]
-        -- the cut
         let L : Finset (D.below (D.cell c)) := Finset.univ.filter fun d => P d.1 = ⊤ ∧ d.1 ∉ H
-        let R : D.below (D.cell c) → ExtOrd := fun d =>
+        let R (d : D.below (D.cell c)) : ExtOrd :=
           extVisibilityReplace (sem.E c d) (D.grade c) (D.grade c)
         let t : ExtOrd := L.sup R
         have ht : SelfVis (D.grade c) t := selfVis_sup_evr L (sem.E c) (D.grade c)
-        have hcut : ∀ d : D.below (D.cell c), P d.1 = ⊤ → d.1 ∉ H → sem.E c d ≤ t := by
-          intro d hd hdH
-          exact (le_evr_self _ (D.grade c)).trans
-            (Finset.le_sup (f := R) (Finset.mem_filter.mpr ⟨Finset.mem_univ _, hd, hdH⟩))
-        have hsep : ∀ a : D.below (D.cell c), a.1 ∈ H → ¬ sem.E c a ≤ t := by
-          intro a haH hle
-          by_cases hL : L.Nonempty
-          · obtain ⟨d, hdL, hdt⟩ := Finset.exists_mem_eq_sup L hL R
-            obtain ⟨-, hd, hdH⟩ := Finset.mem_filter.mp hdL
-            have hlt := hH.separated c hcH a haH d hd hdH
-            have hle' : sem.E c a ≤ R d := by rw [← hdt]; exact hle
-            exact absurd (hle'.trans_lt hlt) (lt_irrefl _)
-          · rw [Finset.not_nonempty_iff_eq_empty] at hL
-            have ht0 : t = ⊥ := by simp only [t, hL, Finset.sup_empty]
-            rw [ht0, le_bot_iff] at hle
-            have h1 := hread' a
-            rw [hle, hσ.bot, hH.subset haH] at h1
-            exact bot_ne_top h1
-        obtain ⟨τ, hτ, hτread⟩ := exists_witness_retune hσ ht (hβ.mono (hK c)) hβbot
-          (Finset.univ.image (sem.E c))
+        have hβc : SelfVis (D.grade c) β := hβ.mono (hK c)
+        let ret : ExtOrd → ExtOrd := fun x => if x ≤ t then min (σ x) β else σ x
+        have hbm : BoundedMap (D.grade c) ret :=
+          { bot := by dsimp [ret]; rw [hσ.bot, min_eq_left bot_le]
+            mono := fun x y hxy => by
+              dsimp [ret]
+              by_cases hy : y ≤ t
+              · rw [ite_eq_left (hxy.trans hy), ite_eq_left hy]
+                exact min_le_min_right β (hσ.mono hxy)
+              · rw [ite_eq_right hy]
+                split_ifs
+                · exact (min_le_left _ _).trans (hσ.mono hxy)
+                · exact hσ.mono hxy
+            comm := fun x k i hk hi => by
+              have hcomm := hσ.clause5 x k (by rw [gTop_of_le hk]; exact le_top) i hi
+              dsimp [ret]
+              by_cases hx : x ≤ t
+              · rw [ite_eq_left hx, ite_eq_left ((le_iff_evr_le (ht.mono hk) hi).mp hx), hcomm,
+                  evr_min_of_selfVis hβc hk hi]
+              · have hx' : ¬ extVisibilityReplace x k i ≤ t := fun h =>
+                  hx ((le_iff_evr_le (ht.mono hk) hi).mpr h)
+                rw [ite_eq_right hx, ite_eq_right hx', hcomm] }
+        have hbot (x : ExtOrd) : ret x = ⊥ ↔ σ x = ⊥ := by
+          dsimp [ret]; split_ifs <;> [exact min_eq_bot.trans (or_iff_left hβbot); exact Iff.rfl]
+        obtain ⟨τ, hτ, hτread⟩ := (hbm.interpolate_iff_source_blocks
+          (Finset.univ.image (sem.E c))).mpr fun x _ y _ hb hx =>
+            (hbot y).mpr (witness_bot_of_same_block hσ hb ((hbot x).mp hx))
         apply hτ.transformsTo
         intro d
         have hg : gTop (D.grade (⟨c, GradedLe.refl _⟩ : D.below (D.cell c)).1) (D.grade d.1) = ⊤ :=
           gTop_of_le d.2.2
         rw [hg, min_top_right, hτread _ (Finset.mem_image_of_mem _ (Finset.mem_univ d)),
           lower_of_mem hc hcH, min_top_right]
+        dsimp only [ret]
         by_cases hd : P d.1 = ⊤
         · by_cases hdH : d.1 ∈ H
-          · rw [lower_of_mem hd hdH, retune_of_gt (hsep d hdH), hread', hd]
-          · rw [lower_of_not_mem hd hdH, retune_of_le (hcut d hd hdH), hread', hd, min_top_left]
+          · have hgt : t < sem.E c d := by
+              have hpos : ⊥ < sem.E c d := bot_lt_iff_ne_bot.mpr fun h0 =>
+                bot_ne_top (hσ.bot ▸ h0 ▸ (hread' d).trans hd)
+              exact (Finset.sup_lt_iff hpos).mpr fun e heL =>
+                hH.separated c hcH d hdH e (Finset.mem_filter.mp heL).2.1
+                  (Finset.mem_filter.mp heL).2.2
+            rw [lower_of_mem hd hdH, ite_eq_right hgt.not_ge, hread', hd]
+          · have hle : sem.E c d ≤ t := (le_evr_self _ (D.grade c)).trans
+              (Finset.le_sup (f := R) (Finset.mem_filter.mpr ⟨Finset.mem_univ _, hd, hdH⟩))
+            rw [lower_of_not_mem hd hdH, ite_eq_left hle, hread', hd, min_top_left]
         · rw [lower_of_ne_top hd]
-          by_cases hdt : sem.E c d ≤ t
-          · rw [retune_of_le hdt, hread', min_eq_left (hβgt _ hd).le]
-          · rw [retune_of_gt hdt, hread']
-      · -- a lowered top owner: the old target capped at `β`
-        have key := TransformsTo.capped (K := D.grade c) (fun d => d.2.2) (hβ.mono (hK c))
-          (hP.locality c)
-        have e : (fun d : D.below (D.cell c) => min (lower P H β d.1) (lower P H β c)) =
+          split_ifs
+          · rw [hread', min_eq_left (hβgt _ hd).le]
+          · rw [hread']
+      · have e : (fun d : D.below (D.cell c) => min (lower P H β d.1) (lower P H β c)) =
             fun d => min (min (P d.1) (P c)) β := by
           funext d
           rw [lower_of_not_mem hc hcH, hc, min_top_right]
-          by_cases hd : P d.1 = ⊤
+          unfold lower; split_ifs with hd hdH
           · rw [hd, min_top_left]
-            by_cases hdH : d.1 ∈ H
-            · rw [lower_of_mem hd hdH, min_top_left]
-            · rw [lower_of_not_mem hd hdH, min_self]
-          · rw [lower_of_ne_top hd]
-        rw [e]; exact key
-    · -- a proper or bottom owner: a literally unchanged target
-      have e : (fun d : D.below (D.cell c) => min (lower P H β d.1) (lower P H β c)) =
+          · rw [hd, min_self, min_top_left]
+          · rfl
+        rw [e]
+        exact TransformsTo.capped (K := D.grade c) (fun d => d.2.2) (hβ.mono (hK c)) (hP.locality c)
+    · have e : (fun d : D.below (D.cell c) => min (lower P H β d.1) (lower P H β c)) =
           fun d => min (P d.1) (P c) := by
         funext d
         rw [lower_of_ne_top hc]
-        by_cases hd : P d.1 = ⊤
+        unfold lower; split_ifs with hd hdH
         · rw [hd, min_top_left]
-          by_cases hdH : d.1 ∈ H
-          · rw [lower_of_mem hd hdH, min_top_left]
-          · rw [lower_of_not_mem hd hdH, min_eq_right (hβgt c hc).le]
-        · rw [lower_of_ne_top hd]
+        · rw [hd, min_top_left, min_eq_right (hβgt c hc).le]
+        · rfl
       rw [e]; exact hP.locality c
 
 /-! ## Exact readback from a unique or minimal admissible support -/
@@ -374,11 +292,9 @@ keeping `TB` top is `P`. -/
 theorem eq_of_unique_admissible {P Q : Cell D → ExtOrd} (hQ : RespectsSemantics sem Q)
     {TB : Set (Cell D)} (huniq : ∀ H, TB ⊆ H → Admissible sem P H → H = topSet P)
     (hoff : ∀ d, P d ≠ ⊤ → Q d = P d) (hTB : ∀ d ∈ TB, Q d = ⊤) : Q = P := by
-  have hH : topSet Q = topSet P :=
-    huniq _ (fun d hd => hTB d hd) (admissible_of_respects hQ hoff)
+  have hH : topSet Q = topSet P := huniq _ (fun d hd => hTB d hd) (admissible_of_respects hQ hoff)
   funext d
   by_cases hd : P d = ⊤
-  · rw [hd]; exact (mem_topSet.mp (hH ▸ (mem_topSet.mpr hd)))
+  · rw [hd]; exact mem_topSet.mp (hH ▸ mem_topSet.mpr hd)
   · exact hoff d hd
 
-end VaughtConjecture.Knight.TopSupport

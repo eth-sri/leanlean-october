@@ -37,7 +37,7 @@ of the existing reference-context construction (Uniformity, High-Grade Dominance
 consistency; the margin is supplied by the same High-Grade Dominance step with a larger finite
 bound, so no branch is left unsupplied. -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight
 
@@ -52,7 +52,7 @@ variable {M : Type w} {α : LimitStage} {R : KnightRealization α M} {n : ℕ} {
 /-! ## The requests of a donor -/
 
 /-- The block request of a proper label: its block and offset. -/
-noncomputable def properRequest : ExtOrd → Option BlockRequest
+def properRequest : ExtOrd → Option BlockRequest
   | some (some β) => some ⟨limitPart β, finitePart β⟩
   | _ => none
 
@@ -68,7 +68,7 @@ theorem properRequest_eq_some {x : ExtOrd} {r : BlockRequest} (h : properRequest
     exact ⟨β, rfl, (Option.some.inj h).symm⟩
 
 /-- The requests of a donor: the block and offset of each proper label. -/
-noncomputable def donorRequests (q : S α.1 (n + 1)) : List BlockRequest :=
+def donorRequests (q : S α.1 (n + 1)) : List BlockRequest :=
   (List.finRange q.scheme.scheme.card).filterMap fun d => properRequest (q.label d)
 
 theorem mem_donorRequests {q : S α.1 (n + 1)} {r : BlockRequest} :
@@ -107,7 +107,7 @@ theorem donorRequests_ok (q : S α.1 (n + 1)) :
 
 open Classical in
 /-- The blocks of a request list. -/
-noncomputable def blocksOf (reqs : List BlockRequest) : Finset Ordinal.{0} :=
+def blocksOf (reqs : List BlockRequest) : Finset Ordinal.{0} :=
   reqs.toFinset.image BlockRequest.block
 
 open Classical in
@@ -117,7 +117,7 @@ theorem mem_blocksOf {reqs : List BlockRequest} {μ : Ordinal.{0}} :
   simp only [Finset.mem_image, List.mem_toFinset]
 
 /-- The requested blocks of a donor. -/
-noncomputable def blocks (q : S α.1 (n + 1)) : Finset Ordinal.{0} := blocksOf (donorRequests q)
+def blocks (q : S α.1 (n + 1)) : Finset Ordinal.{0} := blocksOf (donorRequests q)
 
 theorem mem_blocks {q : S α.1 (n + 1)} {μ : Ordinal.{0}} :
     μ ∈ blocks q ↔ ∃ r ∈ donorRequests q, r.block = μ := mem_blocksOf
@@ -227,12 +227,9 @@ theorem ref_of_referenceContext' (hM : R.IsModel) (p : S α.1 n)
     A' := Finset.univ.image C.proj
     KA := n
     A_mem := hvP
-    A'_mem := hvC
     KA_le_card := by
       rw [Finset.card_image_of_injective _ Fin.castSuccEmb.injective, Finset.card_univ,
         Fintype.card_fin]
-    KA_le_card' := by
-      rw [Finset.card_image_of_injective _ C.proj.injective, Finset.card_univ, Fintype.card_fin]
     A'_sub := Finset.subset_univ _
     face := commonFace Fin.castSuccEmb hvP hP C.proj hvC hC n
     face_grade := commonFace_grade Fin.castSuccEmb hvP hP C.proj hvC hC n
@@ -247,7 +244,3 @@ theorem ref_of_referenceContext' (hM : R.IsModel) (p : S α.1 n)
       apply Subtype.ext
       exact commonFace_val_congr Fin.castSuccEmb hvP hP C.proj hvC hC k a _ rfl }, rfl, rfl, rfl,
     rfl, rfl, rfl, rfl, rfl, rfl, rfl, hvP, hP, hvC, hC, HEq.rfl⟩
-
-end CappedDonor
-
-end VaughtConjecture.Knight

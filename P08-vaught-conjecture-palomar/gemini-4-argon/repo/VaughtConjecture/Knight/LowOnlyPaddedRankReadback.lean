@@ -17,13 +17,10 @@ their normalized numerical values need not equal those vectors. An arbitrary
 lawful section supplies its own serving leaf and monotone rank table.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedRankReadback
-open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder
-open LadderScalarRendering LowOnlyPaddedContract LowSeparator
-noncomputable section
+open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder LadderScalarRendering LowOnlyPaddedContract LowSeparator
 
 section Partner
 variable {n : ℕ} {P C : SemScheme n} (F : LowOnly.Family P C 1)
@@ -162,6 +159,3 @@ theorem donor_top_of_separator {S : State I.left I.right}
   rcases min_le_iff.mp (LowSeparatorRank.low_min_le F (state_admissible F a) hm d.1 hd) with hh | hh
   · exact top_le_iff.mp (hc ▸ hg (rank_mono (values (state F a).profile) hh))
   · exact top_le_iff.mp (hr ▸ hg (rank_mono (values (state F a).profile) hh))
-
-end
-end VaughtConjecture.Knight.LowOnlyPaddedRankReadback

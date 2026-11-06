@@ -18,12 +18,11 @@ places them below an actual top cap of sufficiently high grade. No occurrence
 of the chosen stable donor is assumed.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthStableCalibration
 open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan
-noncomputable section
+
 universe w
 variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
 
@@ -158,6 +157,3 @@ theorem exists_calibration (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
       exact hb.trans_le ((ofOrd_le_ofOrd.mpr le_self_add).trans hbound)
     simpa [ref, off, heq, hmem, b] using
       And.intro ((C.rep_off_le b).trans_lt hoff) (And.intro hstable hlt)
-
-end
-end VaughtConjecture.Knight.GrowthStableCalibration

@@ -1,3 +1,0 @@
-module
-public import VaughtConjecture.Knight.PrivateRowFactorization
-public import VaughtConjecture.Knight.PrivateCatalogueRepair

@@ -57,5 +57,3 @@ theorem IsPlan.exists_visible_card_succ_superface
         · obtain ⟨C, hCR, hBC, hcard⟩ := ihR hBR htop
           exact ⟨C, by simp [hCR], hBC, hcard⟩
       · exact absurd hBA hne
-
-end VaughtConjecture.AmalgamationPlan.Plan

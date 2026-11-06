@@ -15,13 +15,11 @@ Every higher auxiliary uses its own prescribed locality witness, with the
 constructed lower-ceiling bounds protecting the grade-dependent targets.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthHigherMixed
-open AmalgamationPlan Transform Value ExtOrd Growth GrowthHigherSources
-open GrowthPaddedContract GrowthPaddedIteration SupportLadderRows
-noncomputable section
+open AmalgamationPlan Transform Value ExtOrd Growth GrowthHigherSources GrowthPaddedContract GrowthPaddedIteration SupportLadderRows
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n J : ℕ}
   (I : WholeDonorBoundary.Input A B C R m (n + 1) J)
@@ -147,6 +145,3 @@ theorem higher_locality (hp : RespectsSemanticsBelow Rows (U, j) p) (hjt : j ≤
       (P).rows.E_congr rfl (erase_place I X T hA hB hC t ht U hU hm j hj d.1 hdf hgd)
     rw [native_full I X T hA hB hC t ht U hU hm j hj hj0 p d.1 hdf hgd]
     exact (hr _ hz).symm.trans (congrArg τ he)
-
-end
-end VaughtConjecture.Knight.GrowthHigherMixed

@@ -15,8 +15,6 @@ ratchet. Public declarations retain their original statements and proofs.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight
 
 open Value ExtOrd
@@ -50,7 +48,3 @@ theorem le_extVisibilityReplace_self (v : ExtOrd) (K : ℕ) : v ≤ extVisibilit
   · simp
   · rw [extVisibilityReplace_ofOrd, ofOrd_le_ofOrd]
     exact le_visibilityReplace_self μ K
-
-end Value
-
-end VaughtConjecture.Knight

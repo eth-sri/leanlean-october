@@ -5,7 +5,17 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.RelabelWitness
+public import VaughtConjecture.Knight.PositiveNormalization
+public import VaughtConjecture.Knight.MixedRows
+public import VaughtConjecture.Knight.RestrictedComposition
+public import VaughtConjecture.Knight.RowReadback
+public import VaughtConjecture.Knight.RowCorrectness
+public import VaughtConjecture.Knight.CoupledGradeOne
+public import VaughtConjecture.Knight.ReferenceOrbitRow
+public import VaughtConjecture.Knight.ReferenceContext
+public import VaughtConjecture.Knight.CountedRecoding
+public import VaughtConjecture.Knight.RequestFaceIdentification
+public import VaughtConjecture.Knight.FullScopeBountiful
 
 /-! # The orbit-block witness
 
@@ -33,5 +43,3 @@ theorem evr_eq_bot_iff {a : ExtOrd} (k i : ℕ) : extVisibilityReplace a k i = �
   · rintro rfl; exact extVisibilityReplace_bot _ _
 
 /-! ## The orbit-block map -/
-
-end VaughtConjecture.Knight

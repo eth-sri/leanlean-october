@@ -47,8 +47,8 @@ universe w
 namespace KnightRealization
 
 variable {M₁ M₂ : Type w}
-variable {α : LimitStage}
-variable {A₁ : KnightRealization α M₁} {A₂ : KnightRealization α M₂}
+  {α : LimitStage}
+  {A₁ : KnightRealization α M₁} {A₂ : KnightRealization α M₂}
 
 /-- The tuple pairs read from one good containing chart along a coordinate selection. The
 selection may repeat or omit coordinates, and its image need not be a visible face. -/
@@ -140,7 +140,3 @@ theorem exists_iso_of_selectedCommonCharts [Countable M₁] [Countable M₂]
     (selectedChartFamily_empty_mem seed_good) (selectedChartFamily_commonChart Good)
     (selectedChartFamily_forth supply) (selectedChartFamily_back supply)
     (node_mem_selectedChartFamily seed_good)
-
-end KnightRealization
-
-end VaughtConjecture.Knight

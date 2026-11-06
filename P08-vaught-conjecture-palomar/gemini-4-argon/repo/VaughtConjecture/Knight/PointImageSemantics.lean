@@ -16,15 +16,13 @@ coding without changing labels or composing transformations.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.PointImageSemantics
 
 open AmalgamationPlan Transform Value ExtOrd AmalgamatedBoundary
 
 variable {ι κ : Type*} [DecidableEq ι] [DecidableEq κ]
-variable {B : Finset ι} {C : Finset κ} (D : CellScheme B) (e : ι ↪ κ)
-variable (he : B.image e = C) (sem : Semantics D)
+  {B : Finset ι} {C : Finset κ} (D : CellScheme B) (e : ι ↪ κ)
+  (he : B.image e = C) (sem : Semantics D)
 
 local notation "K" => pointImage D e he
 
@@ -96,5 +94,3 @@ theorem respects_iff (p : Cell D → ExtOrd) :
       refine ⟨z, ?_, hle⟩
       exact Prod.ext (congrArg (Finset.image e) (congrArg Prod.fst hz))
         (congrArg (fun x : Finset ι × ℕ => x.2) hz)
-
-end VaughtConjecture.Knight.PointImageSemantics

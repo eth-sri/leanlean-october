@@ -250,8 +250,6 @@ theorem topGrade_mono {x y : LabelledExt R} (h : x ≤ y) :
 /-- The principal **tail** above a labelled cover: all labelled covers extending it. -/
 def tail (x : LabelledExt R) : Set (LabelledExt R) := {y | x ≤ y}
 
-@[simp] theorem mem_tail {x y : LabelledExt R} : y ∈ x.tail ↔ x ≤ y := Iff.rfl
-
 end LabelledExt
 
 variable {R : KnightRealization α M}
@@ -401,7 +399,3 @@ needed); the split between them is classical control flow in the consumer (#51 b
 never a theorem-milestone here. -/
 def HasTopGradeGrowth (R : KnightRealization α M) : Prop :=
   ∀ K : ℕ, IsDominating (R.growthSet K)
-
-end KnightRealization
-
-end VaughtConjecture.Knight

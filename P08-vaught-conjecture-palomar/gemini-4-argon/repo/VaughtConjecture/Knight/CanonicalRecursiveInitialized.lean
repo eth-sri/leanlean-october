@@ -16,19 +16,17 @@ is used to import three-grade bountifulness. The established successor then
 iterates from this constructed base, within the explicit old-coatom bounds.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalRecursiveInitialized
-open Transform Value ExtOrd CoatomBoundaryExtension AmalgamationPlan
-open CanonicalRecursiveRecurrence
-noncomputable section
+open Transform Value ExtOrd CoatomBoundaryExtension AmalgamationPlan CanonicalRecursiveRecurrence
+
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable (sem : Semantics D) (hp : ∀ d : Cell D, D.scope d ≠ A)
-variable (hs : sem.IsConsistent) (hold : CanonicalCoatomBountiful.OldLifts sem)
-variable {L R : Finset ι} (hL : L ∈ D.plan) (hR : R ∈ D.plan)
-variable (hLA : L ≠ A) (hRA : R ≠ A) (hO : L ∩ R ∈ D.plan)
-variable (hcover : ∀ C ∈ D.plan, C ≠ A → C ⊆ L ∨ C ⊆ R)
+  (sem : Semantics D) (hp : ∀ d : Cell D, D.scope d ≠ A)
+  (hs : sem.IsConsistent) (hold : CanonicalCoatomBountiful.OldLifts sem)
+  {L R : Finset ι} (hL : L ∈ D.plan) (hR : R ∈ D.plan)
+  (hLA : L ≠ A) (hRA : R ≠ A) (hO : L ∩ R ∈ D.plan)
+  (hcover : ∀ C ∈ D.plan, C ≠ A → C ⊆ L ∨ C ⊆ R)
 
 include hs hold hL hR hLA hRA hO hcover in
 /-- Initialization on the exact recursive seed, including every actual
@@ -75,6 +73,3 @@ theorem lift (n : ℕ) (hA : n + 3 ≤ A.card)
     rw [CanonicalRecursiveBoundaryTransport.plan_eq]; exact hI
   · change J ∈ Plan.gradedPlan (CanonicalRecursiveContract.carrier sem n hA).plan
     rw [CanonicalRecursiveBoundaryTransport.plan_eq]; exact hJ
-
-end
-end VaughtConjecture.Knight.CanonicalRecursiveInitialized

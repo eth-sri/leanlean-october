@@ -16,13 +16,11 @@ an admitted capped complete vector; a zero maximum uses the independent zero
 state. Neither admission nor a whole-section extension is an input.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthHigherMixed
-open AmalgamationPlan Transform Value ExtOrd Growth GrowthHigherSources
-open GrowthPaddedContract GrowthPaddedIteration SupportLadderRows LadderScalarRendering
-noncomputable section
+open AmalgamationPlan Transform Value ExtOrd Growth GrowthHigherSources GrowthPaddedContract GrowthPaddedIteration SupportLadderRows LadderScalarRendering
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n J : ℕ}
   (I : WholeDonorBoundary.Input A B C R m (n + 1) J)
@@ -149,6 +147,3 @@ theorem boundary_capped_lawful (hp : RespectsSemanticsBelow Rows (U, j) p)
   obtain ⟨S, hS, he⟩ := exists_admitted_at I X T hA hB hC t ht U hU hm j hj hj0 hp k hk hkj hkt
   have hl := boundary_lawful_at I X T hS
   simpa only [he] using hl
-
-end
-end VaughtConjecture.Knight.GrowthHigherMixed

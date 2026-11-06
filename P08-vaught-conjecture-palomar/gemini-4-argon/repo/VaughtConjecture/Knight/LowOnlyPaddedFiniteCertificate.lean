@@ -16,14 +16,11 @@ top receipts force all donor tops. Non-top donor values are pinned by the same
 cap. This finite theorem does not assert a model occurrence of the display.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedFiniteCertificate
-open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder
-open LowOnlyPaddedContract LowOnlyPaddedIteration LowOnlyPaddedEndpoints
+open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder LowOnlyPaddedContract LowOnlyPaddedIteration LowOnlyPaddedEndpoints
 open LowOnlyPaddedRestriction LowOnlyPaddedSelectedPair
-noncomputable section
 
 /-- A proper negative reading and a top positive reading remain strictly
 ordered after receiving below a larger cutoff. -/
@@ -197,6 +194,3 @@ theorem certificate {K : ℕ} (F : LowOnly.Family I.left I.right K)
     clear hu
     subst u
     simpa only [he] using hres
-
-end
-end VaughtConjecture.Knight.LowOnlyPaddedFiniteCertificate

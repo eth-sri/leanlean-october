@@ -16,12 +16,11 @@ Positive-cap lifting consumes the donor fibre; bottom supply is independent.
 No LOW symmetry, replacement admission, or output lawfulness is assumed.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyOrderedLadder
 open Transform Value ExtOrd CappedDonor LowOnly RelativeLadderLayer
-noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n K : ℕ}
   (I : WholeDonorBoundary.Input A B C R m n n) (F : LowOnly.Family I.left I.right K)
@@ -74,6 +73,3 @@ theorem donor_lift (hA : 0 < A.card) (hB : B ⊂ A) (hC : C ⊂ A)
     exact ⟨w, hw, hr, fun _ => by simp only [hz, min_bot_right]⟩
   · exact donor_positive_lift I F hroot hA hB hC hp hq hγ
       (bot_lt_iff_ne_bot.mpr hz) hag
-
-end
-end VaughtConjecture.Knight.LowOnlyOrderedLadder

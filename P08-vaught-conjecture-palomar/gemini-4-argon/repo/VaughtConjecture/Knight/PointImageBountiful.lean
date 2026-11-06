@@ -16,15 +16,13 @@ original cap and arbitrary target-local ambient transport literally.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.PointImageSemantics
 
 open AmalgamationPlan Transform Value ExtOrd AmalgamatedBoundary
 
 variable {ι κ : Type*} [DecidableEq ι] [DecidableEq κ]
-variable {B : Finset ι} {C : Finset κ} (D : CellScheme B) (e : ι ↪ κ)
-variable (he : B.image e = C) (sem : Semantics D)
+  {B : Finset ι} {C : Finset κ} (D : CellScheme B) (e : ι ↪ κ)
+  (he : B.image e = C) (sem : Semantics D)
 
 local notation "K" => pointImage D e he
 
@@ -50,5 +48,3 @@ theorem bountiful (hD : D.IsComplete) (hb : sem.IsBountiful) :
     (respects_owner_iff D e he sem d) (respects_owner_iff D e he sem c)
     (hb (D.cell c) (D.cell d) (D.cell_mem c) (D.cell_mem d) h' hne') rfl
     p a γ hp ha hγ hag
-
-end VaughtConjecture.Knight.PointImageSemantics

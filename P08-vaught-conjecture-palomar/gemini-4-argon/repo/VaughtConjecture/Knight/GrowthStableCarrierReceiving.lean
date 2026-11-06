@@ -23,13 +23,11 @@ The calibrated `RelativeData` and literal root attachment remain inputs.
 In particular this does not construct the shorter encoding or donor template.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthStableCarrierReceiving
-open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan CappedDonor
-open Growth CellScheme.restrictFace
-noncomputable section
+open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan CappedDonor Growth CellScheme.restrictFace
+
 universe w
 variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
   {n J : ℕ} (C : S α.1 J) (P : SemScheme (n + 1)) (Q : SemScheme n)
@@ -61,6 +59,3 @@ theorem exists_correct_donor (hclass : InClass X.ZA C.label) :
   exact GrowthCarrierEvaluation.exists_correct_donor C P Q e hvC hvP hC hP X T hsmall
     (stableActualLabelling hM.consistent hM.covering) hM hu
     (fun d => (GrowthStableSelectedInput.private_bottom hM hu d.1).trans (hclass d))
-
-end
-end VaughtConjecture.Knight.GrowthStableCarrierReceiving

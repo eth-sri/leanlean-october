@@ -189,5 +189,3 @@ theorem isCoface_lowerType {p : S α.1 n} {P : S α.1 (n + 1)} (hP : IsCoface p 
   · exact lower_of_ne_top hi
 
 /-! ## The two receiving corollaries -/
-
-end VaughtConjecture.Knight

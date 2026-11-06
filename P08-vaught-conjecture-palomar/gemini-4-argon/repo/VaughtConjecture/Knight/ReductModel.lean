@@ -253,7 +253,3 @@ models at arbitrary limit stages `α ≤ β`): every clause of Def. 3.2.1 is pre
 vertical reduction. -/
 theorem IsModel.reduct (hR : R.IsModel) (h : α ≤ β) : IsModel (R.reduct h) :=
   (hR.reduct_exceptBottomPattern h).isModel (hR.reduct_bottomPattern h)
-
-end KnightRealization
-
-end VaughtConjecture.Knight

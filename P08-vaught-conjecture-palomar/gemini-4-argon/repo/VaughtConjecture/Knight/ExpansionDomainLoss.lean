@@ -43,5 +43,3 @@ theorem terminalModel_mem_loss {ξ : Ordinal.{0}} (W : TerminalModel ξ) :
   apply Realization.ProlongsToOnIn.prolongsToIn
   refine ⟨V, hV, eq_of_reduct_eq_of_le ξ 0 zero_le _ _ (hV.reduct _) W.2.1 ?_⟩
   rw [Realization.reduct_reduct, hVr, terminal_atBlockZero W]
-
-end VaughtConjecture.Knight.ExpansionDomain

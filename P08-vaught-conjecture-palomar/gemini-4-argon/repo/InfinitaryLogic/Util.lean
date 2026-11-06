@@ -18,10 +18,6 @@ across the infinitary logic library but not (yet) in Mathlib.
 
 universe u v
 
-/-- Any function from `Empty` equals `Empty.elim`. -/
-theorem Empty.eq_elim {α : Sort u} (f : Empty → α) : f = Empty.elim :=
-  funext (fun x => x.elim)
-
 /-- Any function composed with `Empty.elim` is `Empty.elim`. -/
 theorem comp_empty_elim {α : Sort u} {β : Sort v} (f : α → β) :
     f ∘ (Empty.elim : Empty → α) = Empty.elim :=

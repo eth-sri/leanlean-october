@@ -288,7 +288,3 @@ theorem IsModel.infinite_carrier (h : R.IsModel) : Infinite M := by
   have := Fintype.card_le_of_embedding s
   simp only [Fintype.card_fin] at this
   omega
-
-end KnightRealization
-
-end VaughtConjecture.Knight

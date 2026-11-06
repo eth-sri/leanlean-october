@@ -16,16 +16,11 @@ hypothesis is supplied. Both original long rows and the lower controller rows
 remain literal. This is a two-layer construction, not arbitrary-ambient lifting.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.PairedCoupledSections
 
-open Transform Value ExtOrd SourcePrefixRows SharpWitnessComposition
-open PairedSlotEncoding PairedSlotComparison
-
-noncomputable section
+open Transform Value ExtOrd SourcePrefixRows SharpWitnessComposition PairedSlotEncoding PairedSlotComparison
 
 theorem short_replace {k i : ℕ} {x : ExtOrd} (hx : Short k x) (hi : i ≤ k) :
     Short k (extVisibilityReplace x k i) := by
@@ -45,14 +40,3 @@ theorem supported_short {X : Type*} {k : ℕ} {G : Finset ExtOrd} {p : X → Ext
   · exact Or.inl rfl
   · exact hG _ hv
   · exact short_replace (hp d) hi
-
-variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable (sem : Semantics D) (j : ℕ) (hj : 0 < j) (hjA : j ≤ A.card)
-variable (hproper : ∀ d : Cell D, D.scope d ≠ A) (hg : ∀ d : Cell D, D.grade d ≤ j)
-
-variable (k : ℕ) (hk : 0 < k) (hkA : k ≤ A.card) (hjk : j < k)
-
-variable {G : Finset ExtOrd} {C : ExtOrd}
-
-end
-end VaughtConjecture.Knight.PairedCoupledSections

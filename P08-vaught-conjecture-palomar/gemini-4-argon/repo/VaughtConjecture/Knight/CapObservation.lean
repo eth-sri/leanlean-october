@@ -42,5 +42,3 @@ theorem min_eq_min_iff_truncExt_eq {α : Ordinal.{0}} {x y : ExtOrd} :
     simpa only [truncExt_min, truncExt_ofOrd_of_le le_rfl, min_eq_left le_top] using h'
   · intro h
     simpa only [min_truncExt_of_le le_rfl] using congrArg (fun z => min z (ofOrd α)) h
-
-end VaughtConjecture.Knight.Value

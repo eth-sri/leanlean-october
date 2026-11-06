@@ -5,7 +5,7 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.ExpansionIsomorphism
+public import VaughtConjecture.Knight.ExpansionInjectivity
 
 /-! # Expansion as a unique partial operation
 
@@ -52,5 +52,3 @@ theorem coherent (hστ : σ ≤ τ) (hτρ : τ ≤ ρ)
     (value (hστ.trans hτρ) R).reduct (blockStage_mono hτρ) = value hστ S := by
   apply (value_eq hστ S ((isModel _ R).reduct _) ?_).symm
   rw [Realization.reduct_reduct, reduct_value, hRS]
-
-end VaughtConjecture.Knight.PartialExpansion

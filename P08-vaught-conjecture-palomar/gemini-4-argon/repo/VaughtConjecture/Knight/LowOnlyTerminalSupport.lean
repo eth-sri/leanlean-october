@@ -6,7 +6,8 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.LowOnlyTerminal
-public import VaughtConjecture.Knight.CappedDonorDecoderStage
+public import VaughtConjecture.Knight.CappedDonorRepairPackage
+public import VaughtConjecture.Knight.ReferenceContext
 
 /-! # Supported literal-top insertion for the LOW catalogue
 
@@ -16,12 +17,11 @@ vector with bottom and top allowed. This adapts the ordinary receiver's
 supported terminal insertion without changing LOW or the existing API.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnly.Family
 open Transform Value ExtOrd CappedDonor CappedDonor.Ref
-noncomputable section
+
 variable {n K : ℕ} {P C : SemScheme n} (F : Family P C K)
 
 /-- Literal-top insertion with all-output support, including unused decoder
@@ -106,6 +106,3 @@ theorem exists_supported_decoder {j : ℕ} (hj : 1 ≤ j) {S : State P C}
   have hS₀ : S₀.profile d = ⊥ := (min_eq_bot.mp he).resolve_right (ofOrd_ne_bot 0)
   rw [hQeq, State.profile_normalize]
   exact (PairedSlotEncoding.normalize_bot_iff j S₀.profile d).mpr hS₀
-
-end
-end VaughtConjecture.Knight.LowOnly.Family

@@ -17,16 +17,11 @@ an input. The resulting boundary retains all old occurrences and is complete
 at proper indices. It has no full-scope cells and is not yet an amalgam.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.SemSchemeBoundaryInput
 
-open AmalgamationPlan AmalgamatedBoundaryPlan AmalgamatedBoundary
-open Transform Value ExtOrd
-
-noncomputable section
+open AmalgamationPlan AmalgamatedBoundaryPlan AmalgamatedBoundary Transform Value ExtOrd
 
 section Face
 
@@ -253,7 +248,3 @@ theorem proper_lift {CI BJ : Finset ι × ℕ}
     (PointImageSemantics.bountiful _ _ _ _ I.left.complete I.left.bountiful)
     (PointImageSemantics.bountiful _ _ _ _ I.right.complete I.right.bountiful)
     hCI hBJ h hne hB p q γ hp hq hγ ha
-
-end Input
-end
-end VaughtConjecture.Knight.SemSchemeBoundaryInput

@@ -16,9 +16,7 @@ lower domain are exact. Completeness is proved at every proper index.
 Full-scope cells and their semantics are not supplied by this boundary.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.AmalgamatedBoundary
 
@@ -67,14 +65,13 @@ structure Overlap {B C : Finset ι} (D : CellScheme B) (E : CellScheme C) (k : �
   right_exhaustive : ∀ e, E.scope e ⊆ B → ∃ i, g i = e
 
 variable {A : Finset ι} (s : Step A)
-variable (D : CellScheme (A.erase s.a)) (E : CellScheme (A.erase s.b))
-variable {k : ℕ} (w : Overlap D E k)
-
+  (D : CellScheme (A.erase s.a)) (E : CellScheme (A.erase s.b))
+  {k : ℕ} (w : Overlap D E k)
 variable {s}
 
 abbrev Boundary := ProfileFaceUnion.Carrier (X := Cell D) w.g
 
-noncomputable def index : Boundary D E w → Finset ι × ℕ :=
+def index : Boundary D E w → Finset ι × ℕ :=
   ProfileFaceUnion.paste w.g D.cell E.cell
 
 theorem index_right (e : Cell E) :
@@ -152,13 +149,13 @@ theorem index_mem (z : Boundary D E w) : index D E w z ∈ Plan.gradedPlan s.pla
 section
 variable {s}
 
-noncomputable def enumeration : Boundary D E w ≃ Fin (Fintype.card (Boundary D E w)) :=
+def enumeration : Boundary D E w ≃ Fin (Fintype.card (Boundary D E w)) :=
   ProfileBoundaryOrder.enumeration w.f w.g w.f_mono w.g_mono
 
 end
 
 /-- The ordered proper boundary, before installing full-scope cells. -/
-noncomputable def scheme : CellScheme A where
+def scheme : CellScheme A where
   plan := s.plan
   isPlan := isPlan s
   card := Fintype.card (Boundary D E w)
@@ -169,10 +166,10 @@ theorem scope_proper (c : Cell (scheme s D E w hD hE)) :
     (scheme s D E w hD hE).scope c ≠ A :=
   no_full s D E w ((enumeration D E w).symm c)
 
-noncomputable def leftCell (d : Cell D) : Cell (scheme s D E w hD hE) :=
+def leftCell (d : Cell D) : Cell (scheme s D E w hD hE) :=
   enumeration D E w (ProfileFaceUnion.left w.g d)
 
-noncomputable def rightCell (e : Cell E) : Cell (scheme s D E w hD hE) :=
+def rightCell (e : Cell E) : Cell (scheme s D E w hD hE) :=
   enumeration D E w (ProfileFaceUnion.right w.f w.g e)
 
 theorem left_index (d : Cell D) :
@@ -211,7 +208,7 @@ theorem overlap (d : Cell D) (e : Cell E) :
   rw [Equiv.apply_eq_iff_eq]
   exact ProfileFaceUnion.overlap w.f w.g d e
 
-noncomputable def leftBelow (d : Cell D) : D.below (D.cell d) ≃
+def leftBelow (d : Cell D) : D.below (D.cell d) ≃
     (scheme s D E w hD hE).below ((scheme s D E w hD hE).cell (leftCell s D E w hD hE d)) :=
   Equiv.ofBijective (fun e => ⟨leftCell s D E w hD hE e.1, by
     rw [left_index, left_index]
@@ -227,7 +224,7 @@ noncomputable def leftBelow (d : Cell D) : D.below (D.cell d) ≃
     exact ⟨f, Subtype.ext ((congrArg (enumeration D E w) hf).trans
       ((enumeration D E w).apply_symm_apply e.1))⟩⟩
 
-noncomputable def rightBelow (d : Cell E) : E.below (E.cell d) ≃
+def rightBelow (d : Cell E) : E.below (E.cell d) ≃
     (scheme s D E w hD hE).below ((scheme s D E w hD hE).cell (rightCell s D E w hD hE d)) :=
   Equiv.ofBijective (fun e => ⟨rightCell s D E w hD hE e.1, by
     rw [right_index, right_index]
@@ -254,5 +251,3 @@ theorem complete_proper (hDc : D.IsComplete) (hEc : E.IsComplete)
   · rw [← hE] at hr
     obtain ⟨e, he⟩ := hEc BJ hr
     exact ⟨rightCell s D E w hD hE e, (right_index s D E w hD hE e).trans he⟩
-
-end VaughtConjecture.Knight.AmalgamatedBoundary

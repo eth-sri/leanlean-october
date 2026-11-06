@@ -23,22 +23,19 @@ source, face, and lower-lifting hypotheses. It does not construct the global
 scope predecessor or assert bountifulness for the whole request plan.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryFinalPrivateLift
-open Transform Value ExtOrd CappedDonor CappedDonor.Ref CoatomBoundaryExtension
-open OrdinaryFinalCatalogue OrdinaryFinalReadback OrdinaryOwnerFactorization
+open Transform Value ExtOrd CappedDonor CappedDonor.Ref CoatomBoundaryExtension OrdinaryFinalCatalogue OrdinaryFinalReadback OrdinaryOwnerFactorization
 open SharpWitnessComposition
-noncomputable section
 
 variable {I : Type*} [Fintype I] {nP N : ℕ}
-variable {P : SemScheme (nP + 1)} {C : SemScheme N} (R : Ref I nP N N P C)
-variable {ι : Type*} [DecidableEq ι] {A S : Finset ι} {D : CellScheme A}
-variable (F : FinalGateLayer.Input D N (Field P C) (OrdinaryFinalCatalogue.Member R))
-variable (place : Fin N ↪ ι) (hS : Finset.univ.image place = S)
-variable (hSA : S ⊆ A) (hne : S ≠ A)
-variable (E : ExactSemanticFace (PointImageSemantics.rows C.scheme place hS C.rows) F.sem)
+  {P : SemScheme (nP + 1)} {C : SemScheme N} (R : Ref I nP N N P C)
+  {ι : Type*} [DecidableEq ι] {A S : Finset ι} {D : CellScheme A}
+  (F : FinalGateLayer.Input D N (Field P C) (OrdinaryFinalCatalogue.Member R))
+  (place : Fin N ↪ ι) (hS : Finset.univ.image place = S)
+  (hSA : S ⊆ A) (hne : S ≠ A)
+  (E : ExactSemanticFace (PointImageSemantics.rows C.scheme place hS C.rows) F.sem)
 
 abbrev privateGrade (d : Cell C.scheme) : D.grade (E.map d) = C.scheme.grade d :=
   congrArg Prod.snd (E.index d)
@@ -149,6 +146,3 @@ theorem private_lift
       exact hread x
   · exact exists_positive_lift R F place hS hSA hne E hfields hgrid hsupport hpriv
       hlift hp hq hγ (bot_lt_iff_ne_bot.mpr hbot) hag
-
-end
-end VaughtConjecture.Knight.OrdinaryFinalPrivateLift

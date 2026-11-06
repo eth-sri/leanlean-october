@@ -17,15 +17,13 @@ synchronization of the arbitrary section is assumed. The one chart retains
 every physical coordinate at any external cap below its height.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.FinalGateLayer.Input
 open Transform Value ExtOrd SourcePrefixRows SourcePrefixLayer
-noncomputable section
 
 variable {ι X Q : Type*} [DecidableEq ι] [Fintype Q]
-variable {A : Finset ι} {D : CellScheme A} {N : ℕ} (I : Input D N X Q)
+  {A : Finset ι} {D : CellScheme A} {N : ℕ} (I : Input D N X Q)
 
 abbrev addedAt (a : Q) (marked : Bool) : I.carrier.below (A, N) :=
   ⟨I.added a marked, by rw [I.added_index]; exact GradedLe.refl _⟩
@@ -132,6 +130,3 @@ theorem exists_cap_chart {v : I.carrier.below (A, N) → ExtOrd}
   intro d
   exact (congrArg (fun x => min x γ) (hr d)).trans (by
     rw [min_assoc, min_eq_right (hreach.trans hca)])
-
-end
-end VaughtConjecture.Knight.FinalGateLayer.Input

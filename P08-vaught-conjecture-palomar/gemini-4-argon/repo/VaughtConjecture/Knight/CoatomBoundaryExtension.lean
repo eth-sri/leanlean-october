@@ -6,7 +6,8 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.NormalForm
-public import VaughtConjecture.Knight.Repair
+public import VaughtConjecture.Knight.Reduction
+public import VaughtConjecture.Knight.VisibilityAlgebra
 public import VaughtConjecture.Knight.Domain
 public import VaughtConjecture.Knight.CappedLifting
 
@@ -22,17 +23,14 @@ every old boundary coordinate under the original cap. This is a boundary
 producer, not yet a supported whole-section operator or an amalgam.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.CoatomBoundaryExtension
 
-open Transform Value ExtOrd
-open VaughtConjecture.AmalgamationPlan
+open Transform Value ExtOrd VaughtConjecture.AmalgamationPlan
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable {sem : Semantics D} {I U V O : Finset ι × ℕ}
+  {sem : Semantics D} {I U V O : Finset ι × ℕ}
 
 /-- The actual union of old occurrence domains, with their overlap
 identified by cell identity rather than by equality of source readings. -/
@@ -55,7 +53,7 @@ namespace Section
 
 variable (a : Section sem U V)
 
-noncomputable def value (d : Boundary D U V) : ExtOrd := by
+def value (d : Boundary D U V) : ExtOrd := by
   classical
   exact if h : GradedLe (D.cell d.1) U then a.onLeft ⟨d.1, h⟩
     else a.onRight ⟨d.1, d.2.resolve_left h⟩
@@ -73,7 +71,7 @@ theorem value_right (d : D.below V) : a.value (right d) = a.onRight d := by
     rfl
 
 /-- Read an actual boundary carrier whose every cell belongs to an old face. -/
-noncomputable def whole
+def whole
     (hcover : ∀ d : Cell D, GradedLe (D.cell d) U ∨ GradedLe (D.cell d) V)
     (d : Cell D) : ExtOrd := a.value ⟨d, hcover d⟩
 
@@ -269,5 +267,3 @@ theorem target_empty (he : U.1 ∩ V.1 = ∅) : IsEmpty (D.below (overlapTarget 
     have h := d.2.2
     simpa only [overlapTarget, he, Finset.card_empty, min_zero, CellScheme.grade] using h
   exact (Nat.not_lt_of_ge hg) (D.grade_pos d.1)
-
-end VaughtConjecture.Knight.CoatomBoundaryExtension

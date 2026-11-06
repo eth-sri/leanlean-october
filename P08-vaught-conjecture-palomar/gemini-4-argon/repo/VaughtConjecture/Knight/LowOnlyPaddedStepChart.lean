@@ -16,13 +16,11 @@ synchronization or supplied chart hypothesis is used. When a current-grade
 coordinate is top the chart is uncapped everywhere in that lower set.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedStepChart
-open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder
-open LowOnlyPaddedContract LowOnlyPaddedStepRows LowOnlyPaddedStepDecode
-noncomputable section
+open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder LowOnlyPaddedContract LowOnlyPaddedStepRows LowOnlyPaddedStepDecode
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n K : ℕ}
   {I : WholeDonorBoundary.Input A B C R m n n} {F : LowOnly.Family I.left I.right K}
@@ -67,6 +65,3 @@ theorem exists_top_chart {q : (carrier P hnext).below (A, k + 1) → ExtOrd}
   obtain ⟨d, hd, htop⟩ := htop
   have hMt : M = ⊤ := top_le_iff.mp (htop ▸ hM d hd)
   exact ⟨a, σ, hσ, fun d => (hread d).trans (by rw [hMt, min_top_right])⟩
-
-end
-end VaughtConjecture.Knight.LowOnlyPaddedStepChart

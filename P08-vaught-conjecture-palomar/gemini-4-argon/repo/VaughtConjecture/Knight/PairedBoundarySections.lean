@@ -20,28 +20,14 @@ the decoder-to-carrier step of Plan 29, not the induction adding all lower full
 indices, arbitrary-ambient lifting, or coatom amalgamation.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.PairedBoundarySections
 
-open Transform Value ExtOrd SourcePrefixRows SharpWitnessComposition
-open PairedSlotEncoding PairedSlotComparison
-
-noncomputable section
+open Transform Value ExtOrd SourcePrefixRows SharpWitnessComposition PairedSlotEncoding PairedSlotComparison
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable (sem : Semantics D) (j : ℕ)
-
-/-- All lawful short coded profiles, not a chosen list of displays. Including
-non-normalized coded profiles avoids needing idempotence for family membership. -/
-def Profile := {p : Cell D → ExtOrd // RespectsSemantics sem p ∧
-  (∀ d, p d ∈ ExtOrd.codedAlphabet (2 * Fintype.card (Cell D)) j) ∧ ∀ d, Short j (p d)}
-
-instance : Fintype (Profile sem j) :=
-  ((codedLabellings_finite (Cell D) (2 * Fintype.card (Cell D)) j).subset
-    (fun _ h => h.2.1)).fintype
+  (sem : Semantics D) (j : ℕ)
 
 def ceiling : ExtOrd :=
   ofOrd (Ordinal.omega0 * (2 * Fintype.card (Cell D) + 1 : ℕ) + j)
@@ -65,12 +51,3 @@ theorem grid_short {h : ExtOrd} (hh : h ∈ sourceGrid j (Fintype.card (Cell D))
   · exact Or.inl rfl
   · obtain ⟨b, _, rfl⟩ := Finset.mem_image.mp hh
     exact Or.inr (Or.inr ⟨_, rfl, by rw [finitePart_mul_add]⟩)
-
-variable (hj : 0 < j) (hA : j ≤ A.card)
-variable (hproper : ∀ d : Cell D, D.scope d ≠ A)
-variable (hg : ∀ d : Cell D, D.grade d ≤ j)
-
-variable {G : Finset ExtOrd} {C : ExtOrd}
-
-end
-end VaughtConjecture.Knight.PairedBoundarySections

@@ -15,16 +15,14 @@ at grades 1 through n. Old higher-grade proper owners are never discarded.
 This module constructs geometry, not consistent source rows or bountifulness.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.RecursiveSourceCarrier
 open Transform Value ExtOrd
 open scoped BigOperators
-noncomputable section
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι}
-variable (D : CellScheme A) (Q : ℕ → Type*) [∀ j, Fintype (Q j)]
+  (D : CellScheme A) (Q : ℕ → Type*) [∀ j, Fintype (Q j)]
 
 def scheme : (n : ℕ) → n ≤ A.card → CellScheme A
   | 0, _ => D
@@ -116,6 +114,3 @@ theorem separated (hp : ∀ d : Cell D, D.scope d ≠ A)
   have hs : (scheme D Q n hn).scope d = A := Finset.Subset.antisymm
     ((scheme D Q n hn).isPlan.subset_of_mem ((scheme D Q n hn).scope_mem_plan d)) h.1
   exact (Nat.not_succ_le_self n) (h.2.trans (full_grade D Q hp n hn d hs))
-
-end
-end VaughtConjecture.Knight.RecursiveSourceCarrier

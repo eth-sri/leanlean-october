@@ -8,7 +8,11 @@ module
 public import VaughtConjecture.Knight.HollowGrowthExactReceiving
 public import VaughtConjecture.Knight.OnePointRootedExtension
 public import VaughtConjecture.Knight.SelectedCommonCharts
-public import VaughtConjecture.Knight.ModelBookkeeping
+public import VaughtConjecture.Knight.ModelEmpty
+public import VaughtConjecture.Knight.NoTop
+public import VaughtConjecture.Knight.LimitOfChain
+public import VaughtConjecture.Knight.BlockStages
+public import VaughtConjecture.Knight.Rank
 
 /-! # Exact rooted extension and comparison for hollow growth
 
@@ -24,12 +28,11 @@ side's chart (`commonChartStepSupply`), and the direct selected-chart consumer
 keeps the initial chart as its seed. No core invariant is carried.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.HollowGrowth
 open TypeTower KnightRealization Cardinal
-noncomputable section
+
 universe w
 variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
 
@@ -131,6 +134,3 @@ theorem nonempty_iso {M₁ M₂ : Type w} [Countable M₁] [Countable M₂]
   obtain ⟨e, -⟩ := exists_iso_of_commonChart hV hW hgV hgW hhV hhW
     Function.Embedding.ofIsEmpty Function.Embedding.ofIsEmpty hsV hsW
   exact ⟨e⟩
-
-end
-end VaughtConjecture.Knight.HollowGrowth

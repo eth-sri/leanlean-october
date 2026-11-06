@@ -28,5 +28,3 @@ theorem exists_isolating_sentence (q : Classes) :
     ∃ φ : knightLang.Sentenceω, ∀ s : Classes, realizes φ s ↔ s = q :=
   isolatedPresentation_of_surjective (fun c : ModelsOf knightSentence => c.1) modelClass
     modelClass_surjective (fun _ _ h => modelClass_eq_of_iso h) realizes realizes_modelClass q
-
-end VaughtConjecture.Knight.StoppingRankFiltration

@@ -15,8 +15,6 @@ arbitrary-ordinal ratchet, before provisional or model definitions.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight
 
 open Value ExtOrd
@@ -37,7 +35,3 @@ theorem row_ne_bot_of_label_top (p : S α n) {Θ : Cell p.scheme.scheme}
   intro hbot
   rw [hbot, hσbot] at h
   exact absurd h.symm (by simp)
-
-end StageType
-
-end VaughtConjecture.Knight

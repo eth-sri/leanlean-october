@@ -30,5 +30,3 @@ def GrowthAnchorProlongationAt {M : Type w} {rho : Ordinal.{0}}
     (W : KnightRealization (blockStage rho) M) : Prop :=
   (¬ W.IsHollow ∧ W.HasTopGradeGrowth) →
     W.ProlongsToIn IsModelClass (blockStage_le_succ rho)
-
-end VaughtConjecture.Knight

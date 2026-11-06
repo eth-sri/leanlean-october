@@ -13,13 +13,10 @@ public import VaughtConjecture.Knight.CoatomSeedInstallation
 All receipts are derived from the actual compatible legal inputs. No new
 catalogue is designed and no output lawfulness or lifting premise is supplied.
 -/
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.SmallCoatomSeeds
-open Transform Value ExtOrd AmalgamationPlan AmalgamatedBoundaryPlan SemSchemeBoundaryInput
-open CoatomBoundaryExtension CoatomSeedInstallation
-noncomputable section
+open Transform Value ExtOrd AmalgamationPlan AmalgamatedBoundaryPlan SemSchemeBoundaryInput CoatomBoundaryExtension CoatomSeedInstallation
 
 private def bottomProfile {ι X : Type*} [DecidableEq ι] [Fintype X]
     {A : Finset ι} {D : CellScheme A} (sem : Semantics D) (j : ℕ) (occ : Cell D → X) :
@@ -129,7 +126,3 @@ def two : Seed I where
     (fun _ hJ hproper => I.complete_proper hJ hproper)
   extend_whole _ hp := CanonicalPairBoundary.exists_whole I.rows 1 2 (by decide)
     (CanonicalPairLocalSections.one_le twoHeight) (by decide) twoHeight I.proper (by decide) hp
-end Two
-
-end
-end VaughtConjecture.Knight.SmallCoatomSeeds

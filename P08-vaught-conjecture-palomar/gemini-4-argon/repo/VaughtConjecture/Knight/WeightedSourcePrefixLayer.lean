@@ -20,16 +20,14 @@ predecessor sources or prove lifting. No shortness assumption is made on old
 rows: in particular, their long ladder rows are retained unchanged.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.WeightedSourcePrefixLayer
 open Transform Value ExtOrd SourcePrefixRows SourcePrefixLayer
-noncomputable section
 
 variable {ι X : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A} {k : ℕ}
-variable (F : ScopedSourcePrefixLayer.Data D k X)
-variable (weight : Controller D k → ExtOrd)
+  (F : ScopedSourcePrefixLayer.Data D k X)
+  (weight : Controller D k → ExtOrd)
 
 /-- The uncapped master has weighted new columns and literal old columns. -/
 def master (q : Controller D k) (d : Cell D) : ExtOrd :=
@@ -254,6 +252,3 @@ theorem consistent
     exact funext (row_new F weight hvis ⟨c, hc⟩)
   · rw [row_old F weight hvis hc]
     exact (old_respects_iff F weight hvis hc).mpr (hbase c hc)
-
-end
-end VaughtConjecture.Knight.WeightedSourcePrefixLayer

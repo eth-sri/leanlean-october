@@ -6,7 +6,8 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.GrowthNormalization
-public import VaughtConjecture.Knight.CappedDonorDecoderStage
+public import VaughtConjecture.Knight.CappedDonorRepairPackage
+public import VaughtConjecture.Knight.ReferenceContext
 public import VaughtConjecture.Knight.CappedDonorLowHighNormalization
 public import VaughtConjecture.Knight.CanonicalPairedInverse
 
@@ -19,13 +20,11 @@ inputs are first capped above the entire protected prefix, then the whole fresh
 terminal block is collapsed. No physical renderer lawfulness is assumed or claimed.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.Growth
-open Transform Value ExtOrd AmalgamationPlan CappedDonor CappedDonor.Ref
-open CanonicalPairedInverse
-noncomputable section
+open Transform Value ExtOrd AmalgamationPlan CappedDonor CappedDonor.Ref CanonicalPairedInverse
+
 variable {ιA ιQ : Type*} [DecidableEq ιA] [DecidableEq ιQ]
   {A : Finset ιA} {Q : Finset ιQ} {DA : CellScheme A} {DQ : CellScheme Q}
   {semA : Semantics DA} {semQ : Semantics DQ}
@@ -226,6 +225,3 @@ theorem exists_protected_repair (hj : 1 ≤ j) {a : Field DA DQ → ExtOrd}
     have hqa := PairedSlotEncoding.eq_of_cap_eq_lt (hprefix d).symm hd
     have hpa := PairedSlotEncoding.eq_of_cap_eq_lt (hag d) hd
     exact (congrArg δ hqa).trans ((hδread d).trans hpa.symm)
-
-end
-end VaughtConjecture.Knight.Growth

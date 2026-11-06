@@ -14,12 +14,10 @@ bottom profile. Proper indices retain their original witnesses. No catalogue
 nonemptiness or output completeness is an additional assumption.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalRecursiveCoverage
 open AmalgamationPlan Transform Value ExtOrd
-noncomputable section
 
 def bottomProfile {ι X : Type*} [DecidableEq ι] [Fintype X]
     {A : Finset ι} {D : CellScheme A} (sem : Semantics D) (j : ℕ) (occ : Cell D → X) :
@@ -33,7 +31,7 @@ def bottomProfile {ι X : Type*} [DecidableEq ι] [Fintype X]
     exact ⟨b, rfl, le_rfl⟩
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable (sem : Semantics D)
+  (sem : Semantics D)
 
 def bottom (j : ℕ) : CanonicalRecursiveInventory.Profile sem j := by
   rcases j with _ | _ | _ | j
@@ -77,6 +75,3 @@ theorem complete_through (n : ℕ) (hn : n ≤ A.card)
   · obtain ⟨d, hd⟩ := hc J hm hs
     exact ⟨CanonicalRecursiveInventory.boundary sem n hn d,
       (CanonicalRecursiveInventory.boundary_cell sem n hn d).trans hd⟩
-
-end
-end VaughtConjecture.Knight.CanonicalRecursiveCoverage

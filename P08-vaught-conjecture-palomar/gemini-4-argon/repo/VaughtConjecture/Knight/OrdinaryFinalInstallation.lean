@@ -6,7 +6,9 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.FinalGateApex
-public import VaughtConjecture.Knight.OrdinaryFinalStage
+public import VaughtConjecture.Knight.OrdinaryFinalDisplay
+public import VaughtConjecture.Knight.CappedDonorRepairPackage
+public import VaughtConjecture.Knight.ReferenceContext
 public import VaughtConjecture.Knight.OrdinaryFinalReadback
 public import VaughtConjecture.Knight.OrderedFaceRestriction
 public import VaughtConjecture.Knight.CoatomRecursiveOrdered
@@ -24,18 +26,15 @@ final-layer bountifulness theorem is consumed separately. No model receiving
 or unconditional producer is asserted by this packaging.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryFinalInstallation
-open Transform Value ExtOrd AmalgamationPlan CappedDonor CappedDonor.Ref SharpWitnessComposition
-open OrdinaryFinalCatalogue OrdinaryFinalReadback
-noncomputable section
+open Transform Value ExtOrd AmalgamationPlan CappedDonor CappedDonor.Ref SharpWitnessComposition OrdinaryFinalCatalogue OrdinaryFinalReadback
 
 variable {I : Type*} [Fintype I] {nP N : ℕ}
-variable {P : SemScheme (nP + 1)} {C : SemScheme N} (R : Ref I nP N N P C)
-variable {D : CellScheme (ι := Fin (N + 1)) Finset.univ}
-variable (F : FinalGateLayer.Input D N (Field P C) (OrdinaryFinalCatalogue.Member R))
+  {P : SemScheme (nP + 1)} {C : SemScheme N} (R : Ref I nP N N P C)
+  {D : CellScheme (ι := Fin (N + 1)) Finset.univ}
+  (F : FinalGateLayer.Input D N (Field P C) (OrdinaryFinalCatalogue.Member R))
 
 abbrev card_eq : (Finset.univ : Finset (Fin (N + 1))).card = N + 1 := Finset.card_fin _
 abbrev carrier := FinalGateApex.scheme F card_eq
@@ -129,18 +128,3 @@ theorem capped_readback
     min (q (original R F (req d))) (R.cut R.vactL) = min (R.p d) (R.cut R.vactL) :=
   OrdinaryFinalReadback.capped_readback R F req priv hreqGrade hprivGrade hfields hgate hreq hpriv
     (FinalGateApex.restrict_lawful F hD card_eq hq) hretain b hpositive d
-
-section Packaging
-
-variable (hcons : F.sem.IsConsistent) (hcode : F.sem.IsCoded) (hb : F.rows.IsBountiful)
-variable (hcomplete : ∀ J ∈ Plan.gradedPlan D.plan, J.2 ≤ N →
-  J ≠ (Finset.univ, N) → ∃ d, D.cell d = J)
-variable (hfields : ∀ a f, F.fields a f = a.val f)
-variable (hgrid : F.grid = PairedSlotComparison.sourceGrid N (Fintype.card (Field P C)))
-variable (hsupport : ∀ a d, D.grade d ≤ N →
-  OrbitPrefixSupport.Supported N (F.grid : Set ExtOrd) (F.fields a) (F.lower a d))
-
-end Packaging
-
-end
-end VaughtConjecture.Knight.OrdinaryFinalInstallation

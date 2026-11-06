@@ -16,17 +16,14 @@ keeps its source-grid cap. Lawfulness concerns the actual current lower domain;
 retained proper owners above it are not incorrectly assumed to have low grade.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalSeedPrefix
-open Transform Value ExtOrd SourcePrefixRows CanonicalRecursiveSeedRows
-open CanonicalPairedInverse PairedSlotEncoding
-noncomputable section
+open Transform Value ExtOrd SourcePrefixRows CanonicalRecursiveSeedRows CanonicalPairedInverse PairedSlotEncoding
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable (sem : Semantics D) (hA : 3 ≤ A.card)
-variable (hp : ∀ d : Cell D, D.scope d ≠ A)
+  (sem : Semantics D) (hA : 3 ≤ A.card)
+  (hp : ∀ d : Cell D, D.scope d ≠ A)
 
 /-- The repair is an old-boundary input; its whole recursive extension,
 supported inverse and all auxiliary source-cap equations are constructed. -/
@@ -95,6 +92,3 @@ theorem exists_section
   dsimp only
   rw [source_boundary]
   exact hread d
-
-end
-end VaughtConjecture.Knight.CanonicalSeedPrefix

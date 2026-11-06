@@ -15,13 +15,11 @@ not presuppose equality of the still-hidden originals. Exact grade-dependent
 readback then determines every original. This is uniqueness, not extension.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthHigherMixed
-open AmalgamationPlan Transform Value ExtOrd Growth GrowthHigherSources
-open GrowthPaddedContract GrowthPaddedIteration
-noncomputable section
+open AmalgamationPlan Transform Value ExtOrd Growth GrowthHigherSources GrowthPaddedContract GrowthPaddedIteration
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n J : ℕ}
   (I : WholeDonorBoundary.Input A B C R m (n + 1) J)
@@ -112,6 +110,3 @@ theorem eq_of_restriction (hp : RespectsSemanticsBelow Rows (V, j) p)
       projection_readback I X T hA hB hC t ht V hV hmV j hjV hj0 hq hjt z d hd,
       hshadow, hheight]
   · exact haux z hz
-
-end
-end VaughtConjecture.Knight.GrowthHigherMixed

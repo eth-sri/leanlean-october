@@ -14,14 +14,13 @@ This restriction keeps the actual ordered occurrences whose supports lie in
 installing a full-scope source layer on a proper mixed scope of a larger carrier.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.ScopeBoundary
 open AmalgamationPlan Transform Value ExtOrd
-noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι}
-variable (D : CellScheme A) (B : Finset ι) (hB : B ∈ D.plan)
+  (D : CellScheme A) (B : Finset ι) (hB : B ∈ D.plan)
 
 def inventory : Finset (Cell D) := Finset.univ.filter (fun d => D.scope d ⊆ B)
 
@@ -38,9 +37,6 @@ def scheme : CellScheme B where
         (Finset.mem_filter.mp ((inventory D B).orderEmbOfFin_mem rfl c)).2⟩, hk, hc⟩
 
 def toCell : Cell (scheme D B hB) ↪o Cell D := (inventory D B).orderEmbOfFin rfl
-
-theorem cell_eq (d : Cell (scheme D B hB)) :
-    (scheme D B hB).cell d = D.cell (toCell D B hB d) := rfl
 
 theorem scope_bound (d : Cell (scheme D B hB)) : D.scope (toCell D B hB d) ⊆ B :=
   (Finset.mem_filter.mp ((inventory D B).orderEmbOfFin_mem rfl d)).2
@@ -59,8 +55,7 @@ def belowEquiv (BJ : Finset ι × ℕ) (hBJ : BJ.1 ⊆ B) :
       (congrArg (fun z : D.below BJ => z.1) hab)), by
     intro d
     obtain ⟨c, hc⟩ := exhaustive D B hB (d.2.1.trans hBJ)
-    refine ⟨⟨c, ?_⟩, Subtype.ext hc⟩
-    simpa only [cell_eq, hc] using d.2⟩
+    exact ⟨⟨c, by change GradedLe (D.cell (toCell D B hB c)) BJ; rw [hc]; exact d.2⟩, Subtype.ext hc⟩⟩
 
 variable (sem : Semantics D)
 
@@ -87,6 +82,3 @@ theorem consistent (hs : sem.IsConsistent) : (rows D B hB sem).IsConsistent := b
   exact pullback_respects D B hB sem (scope_bound D B hB c) (hs (toCell D B hB c))
 
 theorem coded (hs : sem.IsCoded) : (rows D B hB sem).IsCoded := fun _ _ => hs _ _
-
-end
-end VaughtConjecture.Knight.ScopeBoundary

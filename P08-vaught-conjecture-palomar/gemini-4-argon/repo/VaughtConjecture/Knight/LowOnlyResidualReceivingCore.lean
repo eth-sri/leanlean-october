@@ -21,12 +21,11 @@ donor's top-grade bound remain explicit. The target supplies exact consistency a
 receiving; no realization covering or modelhood is needed. The growth branch is separate.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyResidualReceiving
 open TypeTower StageType KnightRealization Value ExtOrd CappedDonor LowOnly
-noncomputable section
+
 universe w
 
 /-- In the residual finite-characteristic branch, every legal donor coface
@@ -68,6 +67,3 @@ theorem receive_of_tail {M : Type w} {α : LimitStage} {W : KnightRealization α
       exact (snoc_apply_castSucc _ _ _ j).trans
         (congrArg (fun f : Fin n ↪ M => f j) hprefix).symm
   exact ⟨v₀ (Fin.last n), hy, heq.symm ▸ hval⟩
-
-end
-end VaughtConjecture.Knight.LowOnlyResidualReceiving

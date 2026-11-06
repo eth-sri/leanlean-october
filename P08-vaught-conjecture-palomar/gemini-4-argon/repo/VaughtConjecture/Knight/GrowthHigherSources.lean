@@ -16,12 +16,10 @@ fields remain in the actual catalogue vector. Normalization is used downward,
 never to admit a source at a higher cutoff.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthHigherSources
 open Transform Value ExtOrd Growth GrowthOrderedBase
-noncomputable section
 
 section Catalogue
 variable {ιA ιQ : Type*} [DecidableEq ιA] [DecidableEq ιQ]
@@ -144,6 +142,3 @@ theorem anchor_lawful_at {j : ℕ} (a : Catalogue X j) :
   change RespectsSemanticsBelow I.rows (A, j) (fun d => a.val (field I d.1))
   rw [← he]
   exact boundary_lawful_at I X T hs
-
-end
-end VaughtConjecture.Knight.GrowthHigherSources

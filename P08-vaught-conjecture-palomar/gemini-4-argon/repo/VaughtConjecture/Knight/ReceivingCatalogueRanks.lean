@@ -5,7 +5,15 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.ReceivingCatalogueAdmission
+public import VaughtConjecture.Knight.CappedDonorAdmission
+public import VaughtConjecture.Knight.AmbientGradeCharts
+public import VaughtConjecture.Knight.LadderScalarRendering
+public import VaughtConjecture.Knight.SourcePrefixRows
+public import VaughtConjecture.Knight.PrivateRowFactorization
+public import VaughtConjecture.Knight.CappedDonorLowHighNormalization
+public import VaughtConjecture.Knight.CanonicalPairedInverse
+public import VaughtConjecture.Knight.PairedSlotComparison
+public import VaughtConjecture.Knight.OrbitPrefixSupport
 
 /-! # Rank preservation for downward catalogue normalization
 
@@ -20,13 +28,10 @@ There is no converse: a newly repaired grade-one source is not thereby an
 installed grade-two controller. No carrier or row is changed here.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.ReceivingCatalogueRanks
-open Transform Value ExtOrd CappedDonor CappedDonor.Ref
-open LadderScalarRendering
-noncomputable section
+open Transform Value ExtOrd CappedDonor CappedDonor.Ref LadderScalarRendering
 
 /-- A tracked monotone encoding with a monotone inverse preserves finite ranks. -/
 theorem fieldRank_of_leftInverse {X : Type*} [Fintype X] (p : X → ExtOrd)
@@ -80,10 +85,3 @@ theorem fieldRank_normalize {X : Type*} [Fintype X] (j : ℕ) (p : X → ExtOrd)
     exact PairedSlotDecoder.decode_normalize (by simp) (selfVis_bot j) hp e
   have h := fieldRank_of_leftInverse p hf.mono hg.mono hf.bot hg.bot hinv d
   simpa only [f, PairedSlotIncoming.encoder_profile] using h
-
-variable {I : Type*} [Fintype I] {nP N J K : ℕ}
-  {P : SemScheme (nP + 1)} {C : SemScheme J} {R : Ref I nP N J P C}
-  (L : R.LowRef K)
-
-end
-end VaughtConjecture.Knight.ReceivingCatalogueRanks

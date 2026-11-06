@@ -136,7 +136,3 @@ theorem map_respects_of_positive_cap_agreement {q r : D.below BJ → ExtOrd}
   apply (map_respects_iff_rowBlockBottom hr hK hν).mpr
   exact rowBlockBottom_of_same_pattern (rowBlockBottom_of_respects hq)
     (bottom_pattern_of_cap_agreement hγ hag)
-
-end Scheme
-
-end VaughtConjecture.Knight.SharpWitnessComposition

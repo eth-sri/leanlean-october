@@ -160,7 +160,3 @@ theorem eq_of_reduct_eq_of_le (η : Ordinal.{0}) :
         (by rw [Realization.reduct_reduct, Realization.reduct_reduct]; exact hred)
     · rw [← Realization.reduct_reduct (blockStage_mono hζξ.le) (blockStage_mono hξη) N, hred,
         Realization.reduct_reduct]
-
-end KnightRealization
-
-end VaughtConjecture.Knight

@@ -5,7 +5,8 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.OwnerFaceAlignment
+public import VaughtConjecture.Knight.OwnerStripRetuning
+public import VaughtConjecture.Knight.AlignedCutEncoding
 public import VaughtConjecture.Knight.OwnerLocalEndpoint
 
 /-! # Owner alignment without a fixed source grid
@@ -16,12 +17,10 @@ owner-locality retuning then applies without a profile-cardinality grid or an
 assumed alignment conclusion. Long semantic source rows remain unchanged.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OwnerLocalAlignment
 open Transform Value ExtOrd SharpWitnessComposition OwnerStripRetuning OwnerLocalEndpoint
-noncomputable section
 
 theorem saturated_subcut {X : Type*} {j : ℕ} {s p : X → ExtOrd} {c : X}
     {τ : ExtOrd → ExtOrd} {γ h : ExtOrd} (sat : Saturation j s p c τ γ)
@@ -42,7 +41,7 @@ theorem saturated_subcut {X : Type*} {j : ℕ} {s p : X → ExtOrd} {c : X}
       exact he.symm
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable {sem : Semantics D}
+  {sem : Semantics D}
 
 /-- Internal alignment at the constructed owner-local endpoint. -/
 theorem alignment_at_endpoint (c : Cell D)
@@ -217,6 +216,3 @@ theorem exists_coded_face (c : Cell D) [Fintype (D.below (D.cell c))]
     change min (ρ (s d)) δ = min (min (p d) (p ⟨c, GradedLe.refl _⟩)) δ
     rw [min_assoc, min_eq_right hδM]
     exact (hread d).symm
-
-end
-end VaughtConjecture.Knight.OwnerLocalAlignment

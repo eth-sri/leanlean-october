@@ -17,33 +17,30 @@ transfers from one old face at the original cap. Full-target lifting and
 full-scope profile rows are not supplied by this module.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.AmalgamatedBoundarySemantics
 
-open AmalgamationPlan AmalgamatedBoundaryPlan AmalgamatedBoundary AmalgamatedBoundaryRows
-open Transform Value ExtOrd
+open AmalgamationPlan AmalgamatedBoundaryPlan AmalgamatedBoundary AmalgamatedBoundaryRows Transform Value ExtOrd
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} (s : Step A)
-variable (D : CellScheme (A.erase s.a)) (E : CellScheme (A.erase s.b))
-variable {k : ℕ} (w : Overlap D E k) (hD : D.plan = s.left) (hE : E.plan = s.right)
-variable (semD : Semantics D) (semE : Semantics E)
-variable (hc : Compatible s D E w semD semE)
+  (D : CellScheme (A.erase s.a)) (E : CellScheme (A.erase s.b))
+  {k : ℕ} (w : Overlap D E k) (hD : D.plan = s.left) (hE : E.plan = s.right)
+  (semD : Semantics D) (semE : Semantics E)
+  (hc : Compatible s D E w semD semE)
 
 local notation "K" => scheme s D E w hD hE
 local notation "l" => leftCell s D E w hD hE
 local notation "r" => rightCell s D E w hD hE
 local notation "sem" => rows s D E w hD hE semD semE hc
 
-noncomputable def leftFace : ExactSemanticFace semD sem where
+def leftFace : ExactSemanticFace semD sem where
   map := ⟨l, (left_order s D E w hD hE).injective⟩
   index := left_index s D E w hD hE
   exhaustive := left_exhaustive s D E w hD hE
   row := rows_left s D E w hD hE semD semE hc
 
-noncomputable def rightFace : ExactSemanticFace semE sem where
+def rightFace : ExactSemanticFace semE sem where
   map := ⟨r, (right_order s D E w hD hE).injective⟩
   index := right_index s D E w hD hE
   exhaustive := right_exhaustive s D E w hD hE
@@ -90,7 +87,7 @@ theorem respects_iff (p : Cell K → ExtOrd) : RespectsSemantics sem p ↔
       · exact (leftFace s D E w hD hE semD semE hc).availability_at hpD c e hs hg
       · exact (rightFace s D E w hD hE semD semE hc).availability_at hpE c e hs hg
 
-noncomputable def paste (p : Cell D → ExtOrd) (q : Cell E → ExtOrd) : Cell K → ExtOrd :=
+def paste (p : Cell D → ExtOrd) (q : Cell E → ExtOrd) : Cell K → ExtOrd :=
   ProfileFaceUnion.paste w.g p q ∘ (enumeration D E w).symm
 
 theorem paste_left (p : Cell D → ExtOrd) (q : Cell E → ExtOrd) (d : Cell D) :
@@ -152,5 +149,3 @@ theorem proper_lift (hd : semD.IsBountiful) (he : semE.IsBountiful)
     rw [← hE] at hright
     exact (rightFace s D E w hD hE semD semE hc).lift hbs hright.1 hright.2 h hne he
       p q γ hp hq hγ ha
-
-end VaughtConjecture.Knight.AmalgamatedBoundarySemantics

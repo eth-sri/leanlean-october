@@ -20,14 +20,12 @@ vectors: scope placement and the physical availability and lifting ledgers are
 not asserted here. No upward admission or cross-grade rendering equality is used.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyRecursiveCoverage
-open Transform Value ExtOrd CappedDonor LowOnly
-open PairedSlotEncoding PairedSlotComparison RecursiveRungRendering
+open Transform Value ExtOrd CappedDonor LowOnly PairedSlotEncoding PairedSlotComparison RecursiveRungRendering
 open LowOnlyRecursiveCharts
-noncomputable section
+
 variable {m K : ℕ} {P C : SemScheme m} (F : LowOnly.Family P C K)
 
 /-- The same complete state is admitted at every lower cutoff. Crossing fields
@@ -52,6 +50,3 @@ theorem normalizedAnchor_fields {i j : ℕ} (hi : 1 ≤ i) (hij : i ≤ j)
     {S : State P C} (hS : F.Admissible j S) (hp : ∀ d, S.profile d ≠ ⊤) :
     F.fields i (normalizedAnchor F hi hij hS hp) = normalize i S.profile :=
   funext (State.profile_normalize i S)
-
-end
-end VaughtConjecture.Knight.LowOnlyRecursiveCoverage

@@ -93,7 +93,3 @@ theorem IsModel.map {R : KnightRealization α M} (h : R.IsModel) (e : M ≃ N) :
   highGradeDominance t p hp γ hγα := by
     rw [Realization.map_eval] at hp
     exact (h.highGradeDominance _ p hp γ hγα).map e
-
-end KnightRealization
-
-end VaughtConjecture.Knight

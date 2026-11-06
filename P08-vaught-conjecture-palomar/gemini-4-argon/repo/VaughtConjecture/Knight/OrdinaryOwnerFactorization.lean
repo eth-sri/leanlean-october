@@ -18,16 +18,13 @@ at that owner. All N-short source readings retain their original external cap,
 including unused grid/orbit values. No alignment or completion is assumed.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryOwnerFactorization
-open Transform Value ExtOrd CappedDonor CappedDonor.Ref SharpWitnessComposition
-open OrdinaryFinalCatalogue CanonicalPairedInverse
-noncomputable section
+open Transform Value ExtOrd CappedDonor CappedDonor.Ref SharpWitnessComposition OrdinaryFinalCatalogue CanonicalPairedInverse
 
 variable {I : Type*} [Fintype I] {nP N : ℕ}
-variable {P : SemScheme (nP + 1)} {C : SemScheme N} (R : Ref I nP N N P C)
+  {P : SemScheme (nP + 1)} {C : SemScheme N} (R : Ref I nP N N P C)
 
 abbrev privateCell (c : Cell C.scheme) : C.scheme.below (effC N N) :=
   CappedDonor.Ref.privCell c (gradeC_le c)
@@ -94,6 +91,3 @@ theorem exists_factorization (c : Cell C.scheme) (hc : C.scheme.grade c = N)
   · intro d
     exact fac.readback (fromEff d)
   · simpa only [hc] using fac.caps
-
-end
-end VaughtConjecture.Knight.OrdinaryOwnerFactorization

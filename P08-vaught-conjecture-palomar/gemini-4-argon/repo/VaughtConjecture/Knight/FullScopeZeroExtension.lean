@@ -14,8 +14,6 @@ This is a grade extension, not an extension across a proper scope.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight
 
 open Transform Value ExtOrd
@@ -72,5 +70,3 @@ theorem RespectsSemanticsBelow.zeroAbove {sem : Semantics D} {q : D.below (A, K)
       rw [CellScheme.zeroAbove_low q ⟨Sig, mem Sig hSig⟩, CellScheme.zeroAbove_low q Xi]
       exact hle
     · exact ⟨Xi₀, rfl, by rw [CellScheme.zeroAbove_high q hSig]; exact bot_le⟩
-
-end VaughtConjecture.Knight

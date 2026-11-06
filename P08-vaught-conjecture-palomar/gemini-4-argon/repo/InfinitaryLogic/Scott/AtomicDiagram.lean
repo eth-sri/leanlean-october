@@ -35,8 +35,8 @@ namespace FirstOrder
 namespace Language
 
 variable {L : Language.{u, v}} [L.IsRelational]
-variable {M : Type w} [L.Structure M]
-variable {n : ℕ}
+  {M : Type w} [L.Structure M]
+  {n : ℕ}
 
 open FirstOrder Structure Fin
 
@@ -186,16 +186,6 @@ theorem SameAtomicType.symm {N : Type w'} [L.Structure N]
   fun idx => (h idx).symm
 
 omit [L.IsRelational] in
-/-- Same atomic type is transitive. -/
-@[trans]
-theorem SameAtomicType.trans {N P : Type*} [L.Structure N] [L.Structure P]
-    {a : Fin n → M} {b : Fin n → N} {c : Fin n → P}
-    (hab : SameAtomicType (L := L) (M := M) (N := N) a b)
-    (hbc : SameAtomicType (L := L) (M := N) (N := P) b c) :
-    SameAtomicType (L := L) (M := M) (N := P) a c :=
-  fun idx => (hab idx).trans (hbc idx)
-
-omit [L.IsRelational] in
 /-- Same atomic type is preserved under relabeling.
 If `SameAtomicType a b` and `σ : Fin m → Fin n`, then `SameAtomicType (a ∘ σ) (b ∘ σ)`. -/
 theorem SameAtomicType.relabel {N : Type w'} [L.Structure N] {n m : ℕ}
@@ -228,7 +218,3 @@ theorem SameAtomicType.map_equiv.{v₀, u₀, w₀, w₀', u_1, u_2} {L : Langua
     first
     | rwa [Function.comp_assoc, Function.comp_assoc, e.map_rel, e'.map_rel] at hidx
     | rwa [Function.comp_assoc, Function.comp_assoc, e.map_rel, e'.map_rel]
-
-end Language
-
-end FirstOrder

@@ -17,12 +17,10 @@ transport. Compatibility with a supplied relative datum is an explicit literal
 occurrence identity, not an assumption of filtered lawfulness.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.Growth
 open Transform Value ExtOrd AmalgamationPlan CappedDonor
-noncomputable section
 
 section Nominal
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
@@ -145,7 +143,3 @@ def filtered {j : ℕ} (a : P.scheme.below X.root) (hj : P.scheme.grade a.1 ≤ 
     P.scheme.below (Finset.univ.image fP, j) :=
   ⟨a.1, (show GradedLe (P.scheme.cell a.1) (Finset.univ.image fP, r) from
     R.root_eq ▸ a.2).1, hj⟩
-
-end RootAttachment
-end
-end VaughtConjecture.Knight.Growth

@@ -32,12 +32,11 @@ supported inverse — none of whose machinery is re-proved here.
 Nothing here asserts a physical section, a display, admission of an arbitrary section or any
 upward admission. -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.CappedDonor.Ref
 
 open Transform Value ExtOrd
-noncomputable section
 
 variable {I : Type*} [Fintype I] {nP N J : ℕ} {P : SemScheme (nP + 1)} {C : SemScheme J}
   {R : Ref I nP N J P C}
@@ -135,6 +134,3 @@ theorem bottom_supply {v₁ : C.scheme.below (effC J N) → ExtOrd}
           ∀ f, δ (PairedSlotEncoding.normalize N b₀ f) = a f := by
   obtain ⟨a, h1, h2, h3, b₀, h4, h5, h6, δ, hδ, hread, -⟩ := bottom_supply' (R := R) hv₁
   exact ⟨a, h1, h2, h3, b₀, h4, h5, h6, δ, hδ, hread⟩
-
-end
-end VaughtConjecture.Knight.CappedDonor.Ref

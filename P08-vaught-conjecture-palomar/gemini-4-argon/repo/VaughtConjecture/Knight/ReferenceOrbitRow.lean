@@ -63,14 +63,3 @@ theorem exists_fullController : Nonempty C.FullController := by
         exact Finset.subset_univ _)
     (C.cap_grade.trans (congrArg Prod.snd hd).symm)
   exact ⟨⟨c, hc.trans hd, hle⟩⟩
-
-namespace FullController
-
-variable {C} (F : C.FullController)
-
-variable (hblocks : ∀ r ∈ reqs, limitPart r.block = r.block)
-
-end FullController
-end ReferenceContext
-
-end VaughtConjecture.Knight

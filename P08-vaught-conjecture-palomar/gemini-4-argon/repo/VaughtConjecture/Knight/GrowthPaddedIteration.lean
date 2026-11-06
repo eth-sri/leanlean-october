@@ -16,14 +16,12 @@ or model-receiving theorem. The recursion is specialized from the checked LOW
 construction, with separate donor/private arities and growth admission.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthPaddedIteration
-open Transform Value ExtOrd Growth GrowthOrderedBase GrowthHigherSources
-open GrowthPaddedContract
+open Transform Value ExtOrd Growth GrowthOrderedBase GrowthHigherSources GrowthPaddedContract
 open SourcePrefixRows SharpWitnessComposition PairedSlotComparison
-noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n J : ℕ}
   {I : WholeDonorBoundary.Input A B C R m (n + 1) J}
@@ -67,6 +65,3 @@ theorem build_plan (t : ℕ) (ht : t + 2 ≤ A.card) :
   induction t with
   | zero => rfl
   | succ t ih => exact ih (by omega)
-
-end
-end VaughtConjecture.Knight.GrowthPaddedIteration

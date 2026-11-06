@@ -240,5 +240,3 @@ theorem isThinOn_of_countable_bfObservations [Countable (Σ l, L.Relations l)]
     (hobs : ∀ η < Ordinal.omega 1, ∀ c d : C, obs η c = obs η d → CodeBFEquiv η c.1 d.1) :
     IsThinOn (structureIsoSetoid L) C :=
   isThinOn_of_bfScattered (bfScattered_of_countable_bfObservations C obs hc hobs)
-
-end FirstOrder.Language

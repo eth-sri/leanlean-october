@@ -167,7 +167,3 @@ theorem mute_label {p : D.below BJ → ExtOrd}
   change min (p ⟨c, hcBJ⟩) (p ⟨c, hcBJ⟩) =
     min (σ (F.rows.E c ⟨c, GradedLe.refl _⟩)) (g (D.grade c)) at hh
   simpa only [rows, hc, hne, ↓reduceIte, hbot, min_bot_left, min_self] using hh
-
-end Data
-
-end VaughtConjecture.Knight.HighGradeExtension

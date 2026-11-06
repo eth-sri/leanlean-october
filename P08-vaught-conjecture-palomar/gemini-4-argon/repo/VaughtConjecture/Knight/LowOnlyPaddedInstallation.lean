@@ -18,14 +18,11 @@ the two-original scope cover, completeness holds through the installed height.
 No bountifulness of higher outputs is claimed.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedInstallation
-open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder
-open LowOnlyPaddedContract LowOnlyPaddedIteration LowOnlyPaddedStepRows
+open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder LowOnlyPaddedContract LowOnlyPaddedIteration LowOnlyPaddedStepRows
 open AmalgamationPlan CoatomBoundaryExtension
-noncomputable section
 
 section Fields
 variable {n K : ℕ} {P C : SemScheme n} (F : LowOnly.Family P C K)
@@ -137,43 +134,3 @@ theorem private_order (t : ℕ) (ht : t + 2 ≤ A.card) :
   rw [he]
   exact (build I F hroot hA hB hC t ht).base_mono.comp
     ((SourceLayerCarrier.old_order _ _ _ _ _).comp I.right_order)
-
-/-- Every installed full-scope grade has an actual owner, obtained from the
-constructed ceiling receipt rather than an assumed completeness contract. -/
-theorem full_occupied (t : ℕ) (ht : t + 2 ≤ A.card) (j : ℕ)
-    (hj : 1 ≤ j) (hjt : j ≤ t + 2) :
-    ∃ d, (build I F hroot hA hB hC t ht).carrier.cell d = (A, j) := by
-  obtain ⟨a, _⟩ := F.exists_rank_anchor (show 1 ≤ t + 2 by omega) (F.zero_admissible (t + 2))
-  obtain ⟨d, hd, _⟩ := (build I F hroot hA hB hC t ht).ceiling_at le_rfl
-    (state F a) (state_admissible F a) (state_proper F a)
-    (G := ∅) (H := ⊤) (by simp) (by simp [SelfVis]) (fun _ => le_top) j hj hjt
-  exact ⟨d, hd⟩
-
-theorem complete_through (hcover : ∀ S ∈ R, S ≠ A → S ⊆ B ∨ S ⊆ C)
-    (t : ℕ) (ht : t + 2 ≤ A.card) {J : Finset ι × ℕ}
-    (hJ : J ∈ Plan.gradedPlan R) (hj : J.2 ≤ t + 2) :
-    ∃ d, (build I F hroot hA hB hC t ht).carrier.cell d = J := by
-  rcases J with ⟨T, j⟩
-  by_cases hT : T = A
-  · subst T
-    exact full_occupied I F hroot hA hB hC t ht j (Plan.mem_gradedPlan.mp hJ).2.1 hj
-  · obtain ⟨d, hd⟩ := (I.occupied_iff hJ).mpr (hcover T (Plan.mem_gradedPlan.mp hJ).1 hT)
-    refine ⟨(build I F hroot hA hB hC t ht).baseMap
-      (RelativeLadderLayer.old I.boundary (by omega) d), ?_⟩
-    exact ((build I F hroot hA hB hC t ht).base_index _).trans
-      ((RelativeLadderLayer.old_index I.boundary (by omega) d).trans hd)
-
-/-- At the full available height every graded-plan index is occupied. This
-packages completeness, not the still separate bountifulness assertion. -/
-theorem complete (hcover : ∀ S ∈ R, S ≠ A → S ⊆ B ∨ S ⊆ C) :
-    (build I F hroot hA hB hC (A.card - 2) (by omega)).carrier.IsComplete := by
-  intro J hJ
-  have hp := build_plan I F hroot hA hB hC (A.card - 2) (by omega)
-  have hJ' : J ∈ Plan.gradedPlan R := by rwa [hp] at hJ
-  have hg := (Plan.mem_gradedPlan.mp hJ').2.2
-  have hs := I.boundary.isPlan.subset_of_mem (Plan.mem_gradedPlan.mp hJ').1
-  have hc := Finset.card_le_card hs
-  exact complete_through I F hroot hA hB hC hcover (A.card - 2) (by omega) hJ' (by omega)
-
-end
-end VaughtConjecture.Knight.LowOnlyPaddedInstallation

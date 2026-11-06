@@ -15,17 +15,16 @@ across scopes. Entire old lower domains and rows are retained; no shortness
 or bound on the grades of inherited owners is used.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalRecursiveFace
 open Transform Value ExtOrd CanonicalRecursiveContract
-noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A B : Finset ι}
-variable {D : CellScheme A} {E : CellScheme B}
-variable {sem : Semantics D} {old : Semantics E}
-variable (F : ExactSemanticFace old sem) (hB : ¬ A ⊆ B)
-variable (hp : ∀ d : Cell D, D.scope d ≠ A) (n : ℕ) (hA : n + 3 ≤ A.card)
+  {D : CellScheme A} {E : CellScheme B}
+  {sem : Semantics D} {old : Semantics E}
+  (F : ExactSemanticFace old sem) (hB : ¬ A ⊆ B)
+  (hp : ∀ d : Cell D, D.scope d ≠ A) (n : ℕ) (hA : n + 3 ≤ A.card)
 
 def face : ExactSemanticFace old (CanonicalRecursiveSemantics.rows sem hp n hA) where
   map := F.map.trans (boundary sem n hA).toEmbedding
@@ -45,6 +44,3 @@ def face : ExactSemanticFace old (CanonicalRecursiveSemantics.rows sem hp n hA) 
       exact (hB hz).elim
   row c d := (CanonicalRecursiveLiteralRows.row sem hp n hA (F.map c)
     (F.belowMap c d)).trans (F.row c d)
-
-end
-end VaughtConjecture.Knight.CanonicalRecursiveFace

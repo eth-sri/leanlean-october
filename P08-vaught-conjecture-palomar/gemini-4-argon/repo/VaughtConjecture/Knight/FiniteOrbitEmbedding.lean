@@ -15,7 +15,7 @@ incoming-face transport: a lawful requested labelling remains lawful when mapped
 to source columns. This is not an inverse-transformation principle.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight
 
@@ -25,15 +25,13 @@ namespace FiniteOrbitEmbedding
 
 open Classical in
 /-- An affine block, followed by its visible endpoint and preceded by bottom. -/
-noncomputable def ray (K : ℕ) (μ ν : Ordinal.{0}) : ExtOrd → ExtOrd
+def ray (K : ℕ) (μ ν : Ordinal.{0}) : ExtOrd → ExtOrd
   | ⊥ => ⊥
   | some ⊤ => ofOrd (ν + K)
   | some (some ξ) =>
       if limitPart ξ < μ then ⊥
       else if limitPart ξ = μ then ofOrd (ν + (min (finitePart ξ) K : ℕ))
       else ofOrd (ν + K)
-
-@[simp] theorem ray_bot (K : ℕ) (μ ν : Ordinal.{0}) : ray K μ ν ⊥ = ⊥ := rfl
 
 open Classical in
 theorem ray_ofOrd (K : ℕ) (μ ν ξ : Ordinal.{0}) :
@@ -159,7 +157,7 @@ variable {I : Type*} [Fintype I] (K : ℕ) (μ ν : I → Ordinal.{0})
 
 /-- The nonbottom baseline and one ray per prescribed block. Repeated input blocks
 are allowed; the agreement hypothesis of `interpolate_at` keeps their images equal. -/
-noncomputable def interpolate (x : ExtOrd) : ExtOrd :=
+def interpolate (x : ExtOrd) : ExtOrd :=
   max (ray K 0 0 x) (Finset.univ.sup (fun i => ray K (μ i) (ν i) x))
 
 theorem interpolate_witness (hν : ∀ i, limitPart (ν i) = ν i) :
@@ -250,7 +248,3 @@ theorem incoming_respects
     (hr : RespectsSemanticsBelow sem BJ r) (hK : ∀ d : D.below BJ, D.grade d.1 ≤ K) :
     RespectsSemanticsBelow sem BJ (fun d => interpolate K μ ν (r d)) :=
   map_respects hr hK (interpolate_witness K μ ν hν) (interpolate_reflects_bottom K μ ν)
-
-end FiniteOrbitEmbedding
-
-end VaughtConjecture.Knight

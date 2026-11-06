@@ -19,13 +19,11 @@ This constructs the legal scheme and literal face receipts. It does not
 assert a stage-bounded selected display or a model receiving theorem.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthAttachedCarrier
-open AmalgamationPlan Transform Value ExtOrd Growth
-open CellScheme.restrictFace
-noncomputable section
+open AmalgamationPlan Transform Value ExtOrd Growth CellScheme.restrictFace
+
 variable {n J : ℕ}
   (C : SemScheme J) (P : SemScheme (n + 1)) (Q : SemScheme n)
   (e : Fin n ↪ Fin J)
@@ -125,6 +123,3 @@ theorem private_occurrence (d : Cell C.scheme) :
       (SemScheme.castCell (restrict_private C P Q e hvC hvP hC hP X T hsmall).symm d) =
       (privateFace C P Q e hvC hvP hC hP X T hsmall).map d :=
   GrowthReplicatedLegal.private_occurrence I X T hA hB hD hsmall d
-
-end
-end VaughtConjecture.Knight.GrowthAttachedCarrier

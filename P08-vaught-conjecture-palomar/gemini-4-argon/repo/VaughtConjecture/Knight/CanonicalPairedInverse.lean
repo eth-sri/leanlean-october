@@ -15,12 +15,10 @@ Hosted blocks retain their affine rays instead: a constant patch there would
 destroy the invisible observations. This is separate from right-filled decoding.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalPairedInverse
 open Transform Value ExtOrd PairedSlotEncoding
-noncomputable section
 
 def grid (j b : ℕ) : ExtOrd := ofOrd (Ordinal.omega0 * b + j)
 
@@ -226,7 +224,3 @@ theorem exists_supported_inverse
     inverse_normalize ha hp hag, ?_, grid_reaches (encoded_cap ha hag) le_rfl, ?_⟩
   · exact fun b hb => inverse_grid (encoded_cap ha hag) hb
   · exact fun d hd k hk i hi => inverse_supported ha hp hag d hd hk hi
-
-end Profile
-end
-end VaughtConjecture.Knight.CanonicalPairedInverse

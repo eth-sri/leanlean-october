@@ -135,5 +135,3 @@ theorem mk_bfEquivSetoid_quotient_le_aleph0 (hct : CountableTerminalFibres)
     exact Quotient.sound (bfEquivSetoid_r_of_mem_domain hq hs)
   have hcount := (((compl_countable hct hη).image π).union hsub.countable).mono hcover
   exact mk_le_aleph0_iff.mpr (Set.countable_univ_iff.mp hcount)
-
-end VaughtConjecture.Knight.ExpansionDomain

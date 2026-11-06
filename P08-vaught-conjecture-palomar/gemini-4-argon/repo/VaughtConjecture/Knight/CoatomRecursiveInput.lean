@@ -17,13 +17,10 @@ coatom height. The missing highest full index and ordered stage-labelled
 installation are separate obligations.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CoatomRecursiveInput
-open AmalgamationPlan AmalgamatedBoundaryPlan SemSchemeBoundaryInput
-open Transform Value ExtOrd CoatomBoundaryExtension
-noncomputable section
+open AmalgamationPlan AmalgamatedBoundaryPlan SemSchemeBoundaryInput Transform Value ExtOrd CoatomBoundaryExtension
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {s : Step A}
 
@@ -75,6 +72,3 @@ theorem complete_through (J : Finset ι × ℕ)
     ∃ d, (scheme I).cell d = J :=
   CanonicalRecursiveCoverage.complete_through I.rows (n + 3) (height_le I)
     (fun _ h hA => I.complete_proper h hA) J hJ hj
-
-end
-end VaughtConjecture.Knight.CoatomRecursiveInput

@@ -29,7 +29,6 @@ structure CommonRoot (P C : SemScheme n) where
   B : Finset (Fin n)
   A_mem : A ∈ P.scheme.plan
   B_mem : B ∈ C.scheme.plan
-  card : A.card = B.card
   face : P.scheme.below (A, A.card) ≃ C.scheme.below (B, B.card)
   grade : ∀ a, P.scheme.grade a.1 = C.scheme.grade (face a).1
   scope : ∀ a b, P.scheme.scope a.1 ⊆ P.scheme.scope b.1 ↔
@@ -158,6 +157,3 @@ theorem installC {j : ℕ} {v : C.scheme.below (effC n j) → ExtOrd}
         simpa only [Equiv.apply_symm_apply] using hag ((R.faceAt j).symm a))
     exact ⟨v', hv', hcap, fun a => by simpa using hface (R.faceAt j a)⟩
   · exact ⟨v, hv, fun _ => rfl, fun a => (faceIndex_absent hk (R.faceAt j a)).elim⟩
-
-end CommonRoot
-end VaughtConjecture.Knight.LowOnly

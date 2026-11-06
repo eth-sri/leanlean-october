@@ -70,5 +70,3 @@ theorem chainUnion_consistent (hchain : ∀ k, (A k).Extends (A (k + 1)))
       have hc := (hcons (max i j) t p f hp').symm.trans hq'
       rw [h] at hc
       cases hc
-
-end VaughtConjecture.TypeTower.Realization

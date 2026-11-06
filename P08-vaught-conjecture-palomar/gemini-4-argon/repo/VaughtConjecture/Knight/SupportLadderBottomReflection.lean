@@ -261,9 +261,3 @@ theorem bottom_reflection_image (v : Point H X Q) :
   · intro h1
     have hpv : p v = ⊥ := not_not.mp fun hne => (himg.mpr (hsup.mp hne)) h1
     rw [hpv, min_bot_left]
-
-end Image
-
-end SupportLadderRows
-
-end VaughtConjecture.Knight

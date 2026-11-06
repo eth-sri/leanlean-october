@@ -14,12 +14,10 @@ coded profiles. These scalar facts retain the complete finite field inventory.
 They do not change the refuted `PairedMixedGradeLayers` construction.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalPairedEncoding
 open Transform Value ExtOrd PairedSlotEncoding
-noncomputable section
 
 def codeOrd (j : ℕ) (S : Finset Ordinal.{0}) (a : Ordinal.{0}) : Ordinal.{0} :=
   Ordinal.omega0 * block j S a + offset j S a
@@ -190,7 +188,3 @@ theorem normalize_idempotent (j : ℕ) (p : X → ExtOrd) :
   · simp only [PairedSlotEncoding.normalize, ht]
   · rw [normalize_ofOrd (normalize_ofOrd ha), values_normalize, normalize_ofOrd ha]
     exact encode_codeOrd (mem_values.mpr ⟨d, ha⟩)
-
-end Profile
-end
-end VaughtConjecture.Knight.CanonicalPairedEncoding

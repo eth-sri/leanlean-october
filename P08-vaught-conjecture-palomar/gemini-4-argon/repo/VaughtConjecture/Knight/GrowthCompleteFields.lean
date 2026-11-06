@@ -16,12 +16,11 @@ the whole-private relative lift; they are not the returned complete vector.
 The donor is already wholly present at activation. No physical carrier is built.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.Growth
 open Transform Value ExtOrd AmalgamationPlan
-noncomputable section
+
 variable {ιA ιQ : Type*} [DecidableEq ιA] [DecidableEq ιQ]
   {A : Finset ιA} {Q : Finset ιQ} {DA : CellScheme A} {DQ : CellScheme Q}
   {semA : Semantics DA} {semQ : Semantics DQ}
@@ -40,16 +39,13 @@ def profile (S : State DA DQ) : Field DA DQ → ExtOrd :=
 def ofProfile (a : Field DA DQ → ExtOrd) : State DA DQ :=
   ⟨fun d => a (.inl d), fun d => a (.inr d)⟩
 
-@[simp] theorem ofProfile_profile (S : State DA DQ) : ofProfile S.profile = S := rfl
-
 @[simp] theorem profile_ofProfile (a : Field DA DQ → ExtOrd) :
     (ofProfile a).profile = a := by
   funext f
   cases f <;> rfl
 
-theorem profile_injective : Function.Injective (profile (DA := DA) (DQ := DQ)) := by
-  intro S T h
-  simpa only [ofProfile_profile] using congrArg ofProfile h
+theorem profile_injective : Function.Injective (profile (DA := DA) (DQ := DQ)) :=
+  fun _ _ h => congrArg ofProfile h
 
 def map (σ : ExtOrd → ExtOrd) (S : State DA DQ) : State DA DQ :=
   ⟨σ ∘ S.privateValues, σ ∘ S.donorValues⟩
@@ -201,6 +197,3 @@ theorem private_repair {j : ℕ} (hj : X.req.N ≤ j) {S : State DA DQ}
       · rw [show T.profile (.inl d) = S.profile (.inl d) from
           complete_future S.privateValues p d (not_le.mp hd)]
     | inr d => exact hvcap d
-
-end
-end VaughtConjecture.Knight.Growth

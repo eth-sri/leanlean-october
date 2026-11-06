@@ -69,5 +69,3 @@ theorem IsPlan.inter_mem {A : Finset α} {P : Finset (Finset α)}
       · rw [Finset.inter_eq_right.mpr ((hR.subset_of_mem hY).trans (Finset.erase_subset _ _))]
         exact Or.inl (Or.inr hY)
       · simp
-
-end VaughtConjecture.AmalgamationPlan.Plan

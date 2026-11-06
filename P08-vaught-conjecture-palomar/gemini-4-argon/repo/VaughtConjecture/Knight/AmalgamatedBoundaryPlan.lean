@@ -16,8 +16,6 @@ Every nontrivial support plan admits the input data used here.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.AmalgamatedBoundaryPlan
 
 open AmalgamationPlan
@@ -125,5 +123,3 @@ theorem exists_step {P : Finset (Finset ι)} (hP : Plan.IsPlan A P) (hA : 2 ≤ 
   | singleton x => simp at hA
   | step ha hb hab hQ hR hmem heq hP =>
     exact ⟨⟨_, _, ha, hb, hab, _, _, hQ, hR, hmem.1, hmem.2, heq⟩, hP.symm⟩
-
-end VaughtConjecture.Knight.AmalgamatedBoundaryPlan

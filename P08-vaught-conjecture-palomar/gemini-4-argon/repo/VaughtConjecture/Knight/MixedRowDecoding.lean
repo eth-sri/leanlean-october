@@ -18,12 +18,11 @@ reflection, shortness of original rows, or lawful-image hypothesis is needed.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.SharpWitnessComposition
 open Transform Value ExtOrd
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable {sem : Semantics D} {BJ : Finset ι × ℕ}
+  {sem : Semantics D} {BJ : Finset ι × ℕ}
 
 /-- Ownerwise mixed transport: short new rows and finitely reflecting old rows
 can coexist on one actual scheme. -/
@@ -44,5 +43,3 @@ theorem map_respects_of_short_or_reflecting {r : D.below BJ → ExtOrd}
       (fun d => d.2.2.trans (hK c)) (boundedMap_of_witness hν)).mpr
       (rowBlockBottom_of_same_pattern (rowBlockBottom_of_respects (hr.mono c.2)) hb)
     exact hlocal.locality ⟨c.1, GradedLe.refl _⟩
-
-end VaughtConjecture.Knight.SharpWitnessComposition

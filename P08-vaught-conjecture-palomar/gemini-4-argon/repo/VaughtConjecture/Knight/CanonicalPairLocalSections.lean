@@ -15,15 +15,13 @@ remain literal, but only owners through `K` are used in the current source row.
 Both seed controller layers retain their existing rows and catalogues.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalPairLocalSections
-open Transform Value ExtOrd SourcePrefixRows PairedSlotEncoding PairedSlotComparison
-open CanonicalPairBoundary
-noncomputable section
+open Transform Value ExtOrd SourcePrefixRows PairedSlotEncoding PairedSlotComparison CanonicalPairBoundary
+
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable (sem : Semantics D) (hA : 2 ≤ A.card) (hp : ∀ d : Cell D, D.scope d ≠ A)
+  (sem : Semantics D) (hA : 2 ≤ A.card) (hp : ∀ d : Cell D, D.scope d ≠ A)
 abbrev one_le := (by decide : 1 ≤ 2).trans hA
 abbrev carrier := scheme sem 1 2 (by decide) (one_le hA) (by decide) hA
 abbrev semantics := rows sem 1 2 (by decide) (one_le hA) (by decide) hA hp (by decide)
@@ -32,7 +30,7 @@ abbrev small := lower sem 1 2 (by decide) (one_le hA) (by decide) hA
 abbrev smallRows := lowerRows sem 1 2 (by decide) (one_le hA) (by decide) hA hp (by decide)
 
 variable {K : ℕ} (hK : 2 ≤ K) {p : Cell D → ExtOrd}
-variable (hpr : RespectsSemanticsBelow sem (A, K) (fun d => p d.1)) (ht : ∀ d, p d ≠ ⊤)
+  (hpr : RespectsSemanticsBelow sem (A, K) (fun d => p d.1)) (ht : ∀ d, p d ≠ ⊤)
 
 include hK hpr in
 theorem cut_lawful : RespectsSemantics (GradeCutBoundary.rows D 2 sem)
@@ -192,6 +190,3 @@ theorem section_agreement {q : Cell D → ExtOrd}
   · exact hag a
   · exact hl _
   · exact hl _
-
-end
-end VaughtConjecture.Knight.CanonicalPairLocalSections

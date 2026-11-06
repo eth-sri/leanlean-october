@@ -16,12 +16,11 @@ The actual output is not mute: the high-grade source constructor gives its
 apex literal top while retaining the entire old lawful display and all old rows.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.MaximalFullLayer
 open Transform Value ExtOrd AmalgamationPlan SourceLayerCarrier
-noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} (D : CellScheme A)
   (sem : Semantics D) (K l : ℕ) (hK : ∀ d : Cell D, D.grade d ≤ K)
   (hKl : K < l) (hlA : l ≤ A.card)
@@ -131,6 +130,3 @@ theorem exists_active (hk : 1 ≤ K) (hc : sem.IsConsistent) (hb : sem.IsBountif
     dsimp only [low] at hh
     rw [e.symm_apply_apply] at hh
     exact hh
-
-end
-end VaughtConjecture.Knight.MaximalFullLayer

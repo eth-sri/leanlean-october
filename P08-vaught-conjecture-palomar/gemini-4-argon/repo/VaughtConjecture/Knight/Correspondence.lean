@@ -47,7 +47,7 @@ The only structure-coding bridge not in `InfinitaryLogic` is `ofStructureEquiv`:
 on `ℕ` is `L`-isomorphic (by the identity) to the decoding of its own code — stated here
 generically in `L` (candidate for `StructureSpace.ofStructure` in `InfinitaryLogic`). -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight
 
@@ -134,7 +134,7 @@ abbrev KnightNatModel : Type 1 := {R : KnightRealization omegaStage ℕ // R.IsM
 
 /-- **Models of `S^ω` on `ℕ` up to isomorphism**: the ambient `Realization.isoSetoid` pulled
 back to the models. -/
-noncomputable def knightModelSetoid : Setoid KnightNatModel :=
+def knightModelSetoid : Setoid KnightNatModel :=
   (Realization.isoSetoid knightTower omegaStage ℕ).comap Subtype.val
 
 theorem knightModelSetoid_r_iff {R R' : KnightNatModel} :
@@ -146,18 +146,18 @@ theorem isKnightModel_of_mem (c : ModelsOf knightSentence) :
   (@realize_knightSentence_iff ℕ c.1.toStructure).mp c.2
 
 /-- Decode a coded `ℕ`-model of `T` and take its realization: a model of `S^ω` on `ℕ`. -/
-noncomputable def realizationOfCode (c : ModelsOf knightSentence) : KnightNatModel :=
+def realizationOfCode (c : ModelsOf knightSentence) : KnightNatModel :=
   ⟨@toRealization ℕ c.1.toStructure, @isModel_toRealization_of_realize ℕ c.1.toStructure c.2⟩
 
 /-- The structure of a model of `S^ω` on `ℕ`, coded: a coded `ℕ`-model of `T`. -/
-noncomputable def codeOfModel (R : KnightNatModel) : ModelsOf knightSentence :=
+def codeOfModel (R : KnightNatModel) : ModelsOf knightSentence :=
   ⟨StructureSpace.ofStructure (structureOf R.1),
     (realize_toStructure_ofStructure (structureOf R.1) knightSentence).mpr
       R.2.realize_knightSentence⟩
 
 /-- The decoded structure of the code of an `ℕ`-model of `S^ω` (isomorphic to `structureOf R.1`
 by the identity, `ofStructureEquiv`). -/
-noncomputable abbrev codeStructure (R : KnightNatModel) : knightLang.Structure ℕ :=
+abbrev codeStructure (R : KnightNatModel) : knightLang.Structure ℕ :=
   (StructureSpace.ofStructure (structureOf R.1)).toStructure
 
 /-- `realizationOfCode` respects isomorphism. -/
@@ -183,19 +183,19 @@ theorem codeOfModel_rel {R R' : KnightNatModel} (h : knightModelSetoid.r R R') :
 
 /-- Isomorphism classes of coded `ℕ`-models of `T` to isomorphism classes of `ℕ`-models of
 `S^ω`. -/
-noncomputable def classOfCode :
+def classOfCode :
     Quotient (isoSetoid knightSentence) → Quotient knightModelSetoid :=
   Quotient.map realizationOfCode fun _ _ h => realizationOfCode_rel h
 
 /-- Isomorphism classes of `ℕ`-models of `S^ω` to isomorphism classes of coded `ℕ`-models of
 `T`. -/
-noncomputable def classOfModel :
+def classOfModel :
     Quotient knightModelSetoid → Quotient (isoSetoid knightSentence) :=
   Quotient.map codeOfModel fun _ _ h => codeOfModel_rel h
 
 /-- **Prop. 3.3.5, isomorphism classes**: the countable (`ℕ`-carrier) models of `T` up to
 isomorphism are in bijection with the models of `S^ω` on `ℕ` up to isomorphism. -/
-noncomputable def isoClassEquiv :
+def isoClassEquiv :
     Quotient (isoSetoid knightSentence) ≃ Quotient knightModelSetoid where
   toFun := classOfCode
   invFun := classOfModel
@@ -227,11 +227,3 @@ theorem natModelSpectrum_knightSentence :
   mk_congr isoClassEquiv
 
 /-! ### All countable carriers, through `codeModel` -/
-
-section Coded
-
-variable {M N : Type} [Countable M] [Countable N]
-
-end Coded
-
-end VaughtConjecture.Knight

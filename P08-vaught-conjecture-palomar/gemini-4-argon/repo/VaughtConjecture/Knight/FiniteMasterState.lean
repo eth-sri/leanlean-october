@@ -16,14 +16,13 @@ The historical partial-state fields are retained as a compatibility adapter; the
 realization is uniquely determined by the finite master.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight
 
 universe w
 
-open TypeTower
-open Value ExtOrd
+open TypeTower Value ExtOrd
 
 namespace FixedHeight
 
@@ -79,7 +78,7 @@ theorem RunState.extends_of_master {st st' : RunState β M} (h : st.master ≤ s
   exact ((st.master.extends_iff st'.master).mp h) t p hp
 
 /-- Compatibility adapter from a finite master to the historical partial-state record. -/
-noncomputable def RunState.ofMaster (s : FiniteMaster knightTower β M) : RunState β M where
+def RunState.ofMaster (s : FiniteMaster knightTower β M) : RunState β M where
   A := s.chart
   hA := ⟨s.consistent, by
     apply (Set.finite_range s.tuple).subset
@@ -99,9 +98,6 @@ noncomputable def RunState.ofMaster (s : FiniteMaster knightTower β M) : RunSta
 
 /-- The first master event: an arbitrary arity-0 stage type at the empty tuple over the
 mute seed. -/
-noncomputable def initState (β : LimitStage) (M : Type w) : RunState β M := by
+def initState (β : LimitStage) (M : Type w) : RunState β M := by
   exact RunState.ofMaster
     ⟨0, Function.Embedding.ofIsEmpty, Classical.choice (StageType.nonempty β.2 0)⟩
-
-end FixedHeight
-end VaughtConjecture.Knight

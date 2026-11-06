@@ -5,7 +5,7 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.FullRowLifting
+public import VaughtConjecture.Knight.SourceBlockLocalityTransport
 
 /-! # Interpolating a finite table of self-visible values
 
@@ -104,10 +104,3 @@ theorem orderInterpolate_read {E r : X → ExtOrd}
     split_ifs with hij
     · exact hord i j hij
     · exact le_top
-
-end Interpolation
-
-variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-  {sem : Semantics D} {BJ : Finset ι × ℕ}
-
-end VaughtConjecture.Knight.FullRowLifting

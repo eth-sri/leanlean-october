@@ -36,9 +36,7 @@ Directedness of the rooted covers needs exact parent consistency and initial-seg
 of the source; the consistency-only uniqueness theorems of `ProvisionalRatchet` are consumed
 here, not strengthened. -/
 
-@[expose] public section
-
-set_option autoImplicit false
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight
 
@@ -69,7 +67,7 @@ theorem isDirectedOrder (hcons : R.IsExactParentConsistent) (hcov : R.IsInitialS
 /-! ### The transport of the root and of a fixed cell -/
 
 /-- The embedding of `x` into a rooted cover. -/
-noncomputable def emb (y : RootedCover x) : Fin x.arity ↪ Fin y.1.arity := y.2.choose
+def emb (y : RootedCover x) : Fin x.arity ↪ Fin y.1.arity := y.2.choose
 
 theorem emb_trans (y : RootedCover x) : (emb y).trans y.1.tuple = x.tuple := y.2.choose_spec.1
 
@@ -82,7 +80,7 @@ theorem emb_eq (y : RootedCover x) {f : Fin x.arity ↪ Fin y.1.arity}
   LabelledExt.emb_unique (emb_trans y) hf
 
 /-- The actual transport of a cell of `x` into a rooted cover. -/
-noncomputable def cell (y : RootedCover x) (Xi : Cell x.type.scheme.scheme) :
+def cell (y : RootedCover x) (Xi : Cell x.type.scheme.scheme) :
     Cell y.1.type.scheme.scheme :=
   mapCell (emb_typeMap y) Xi
 
@@ -115,7 +113,7 @@ theorem label_cell (y : RootedCover x) (Xi : Cell x.type.scheme.scheme) :
 /-! ### The provisional value along rooted covers -/
 
 /-- The provisional value of the transported cell. -/
-noncomputable def value (y : RootedCover x) (Xi : Cell x.type.scheme.scheme) : ExtOrd :=
+def value (y : RootedCover x) (Xi : Cell x.type.scheme.scheme) : ExtOrd :=
   y.1.type.someProvisionalValue (cell y Xi)
 
 theorem isProvisionalValue_value (y : RootedCover x) (Xi : Cell x.type.scheme.scheme) :
@@ -149,7 +147,7 @@ theorem exists_offset (y : RootedCover x) : ∃ j : ℕ, value y Xi = ofOrd (α.
   someProvisionalValue_top_form (by rw [label_cell]; exact htop)
 
 /-- The natural offset of the transported top cell's provisional value. -/
-noncomputable def offset (y : RootedCover x) : ℕ := (exists_offset Xi htop y).choose
+def offset (y : RootedCover x) : ℕ := (exists_offset Xi htop y).choose
 
 theorem value_eq_offset (y : RootedCover x) :
     value y Xi = ofOrd (α.1 + offset Xi htop y) :=
@@ -298,9 +296,3 @@ theorem eventually_syncValues (hcons : R.IsExactParentConsistent)
     rw [stableValue_of_ne_top hcons hcov x.eval_eq htop]
     change y.1.type.someProvisionalValue (cell y Xi) = x.type.label Xi
     rw [someProvisionalValue_of_ne_top (by rw [label_cell]; exact htop), label_cell]
-
-end RootedCover
-
-end KnightRealization
-
-end VaughtConjecture.Knight

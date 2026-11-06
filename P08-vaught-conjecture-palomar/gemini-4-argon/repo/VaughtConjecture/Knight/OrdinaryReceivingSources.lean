@@ -16,16 +16,13 @@ uses the actual ordered boundary; no auxiliary agreement or lawful extension
 is assumed. The face identification below is purely an occurrence equation.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryReceivingSources
-open Transform Value ExtOrd AmalgamationPlan CappedDonor CappedDonor.Ref
-open OrdinaryFinalCatalogue SourcePrefixRows OrbitPrefixSupport
-noncomputable section
+open Transform Value ExtOrd AmalgamationPlan CappedDonor CappedDonor.Ref OrdinaryFinalCatalogue SourcePrefixRows OrbitPrefixSupport
 
 variable {I : Type*} [Fintype I] {nP N : ℕ}
-variable {P : SemScheme (nP + 1)} {C : SemScheme N} (R : Ref I nP N N P C)
+  {P : SemScheme (nP + 1)} {C : SemScheme N} (R : Ref I nP N N P C)
 
 theorem private_lawful (a : OrdinaryFinalCatalogue.Member R) :
     RespectsSemantics C.rows (fun d => a.val (.priv d)) := by
@@ -52,9 +49,9 @@ theorem face_agreement (a : OrdinaryFinalCatalogue.Member R) (d : P.scheme.below
   exact (hs.face d (req_grade_le R d.1)).symm
 
 variable {ι : Type*} [DecidableEq ι] {A B T : Finset ι} {plan : Finset (Finset ι)}
-variable (W : WholeDonorBoundary.Input A B T plan nP N (nP + 1))
-variable (R : Ref I nP N N W.right W.left)
-variable (hface : ∀ i : Cell W.common.scheme,
+  (W : WholeDonorBoundary.Input A B T plan nP N (nP + 1))
+  (R : Ref I nP N N W.right W.left)
+  (hface : ∀ i : Cell W.common.scheme,
   ∃ d : W.right.scheme.below (R.A, R.KA),
     d.1 = W.shared.g i ∧ (R.face d).1 = W.shared.f i)
 
@@ -109,6 +106,3 @@ theorem boundary_support (a : OrdinaryFinalCatalogue.Member R) (G : Set ExtOrd)
   obtain ⟨f, hf⟩ := boundary_field W R hface a d
   rw [hf]
   exact supported_field N G a.val f
-
-end
-end VaughtConjecture.Knight.OrdinaryReceivingSources

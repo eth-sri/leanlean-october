@@ -13,13 +13,11 @@ All current grades, empty roots, bottom and literal top are allowed. Bottom
 supply starts from a constructed zero source, not positive-cap transport.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.LowOnly.Family
 
 open Transform Value ExtOrd AmalgamationPlan CappedDonor
-
-noncomputable section
 
 variable {n K : ℕ} {P C : SemScheme n} (F : Family P C K)
 
@@ -92,6 +90,3 @@ theorem donor_bottom_supply {j : ℕ} {u : P.scheme.below (effC n j) → ExtOrd}
   · exact hQ
   · intro _ hm
     exact (not_lt_bot hm).elim
-
-end
-end VaughtConjecture.Knight.LowOnly.Family

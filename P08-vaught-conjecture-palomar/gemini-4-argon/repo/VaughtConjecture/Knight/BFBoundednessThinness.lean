@@ -19,8 +19,6 @@ claims proof-dependency separation, not a wholly descriptive-free import cone.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.ExpansionDomain
 
 open FirstOrder Language Cardinal StoppingRankFiltration
@@ -37,5 +35,3 @@ theorem isThinOnNatModels_of_bfBoundedness (hct : CountableTerminalFibres) :
     exact Set.to_countable _
   · intro η _ c d h
     exact Quotient.exact h
-
-end VaughtConjecture.Knight.ExpansionDomain

@@ -19,9 +19,7 @@ of the supported, grid-compatible selected lower profiles is still separate;
 no full source-prefix extension or bountifulness theorem is claimed here.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.SourcePrefixLayer
 
@@ -72,7 +70,7 @@ namespace Data
 
 variable (F : Data D k X)
 
-noncomputable def profile (q : Controller D k) (d : Cell D) : ExtOrd :=
+def profile (q : Controller D k) (d : Cell D) : ExtOrd :=
   if hd : D.cell d = (A, k) then cut F.grid (F.boundary q) (F.boundary ⟨d, hd⟩)
   else F.lower q d
 
@@ -131,7 +129,7 @@ theorem profile_short
   · rw [F.profile_old q hd]
     exact hlower q d hd
 
-noncomputable def rows : Semantics D where
+def rows : Semantics D where
   E c d := if hc : D.cell c = (A, k) then F.profile ⟨c, hc⟩ d.1 else F.base.E c d
   orderly c d := by
     dsimp only
@@ -273,7 +271,3 @@ theorem decoded_respects (q : Controller D k) {K : ℕ} (hkK : k ≤ K)
   availability c t hs hg := by
     obtain ⟨w, hw, hle⟩ := (F.profile_respects q).availability c t hs hg
     exact ⟨w, hw, hν.mono hle⟩
-
-end Data
-
-end VaughtConjecture.Knight.SourcePrefixLayer

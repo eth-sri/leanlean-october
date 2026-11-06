@@ -37,7 +37,7 @@ universe u v w w'
 section Generic
 
 variable {L : Language.{u, v}} [L.IsRelational]
-variable {M : Type w} {N : Type w'} [L.Structure M] [L.Structure N]
+  {M : Type w} {N : Type w'} [L.Structure M] [L.Structure N]
 
 /-- The potential isomorphism rooted at a member pair `(a, b)`, in the original language:
 the tails whose concatenation with the root belongs to the family. No closure of the original
@@ -82,7 +82,7 @@ end Generic
 section Knight
 
 variable {α : LimitStage} {M N : Type w}
-variable {R : KnightRealization α M} {R' : KnightRealization α N}
+  {R : KnightRealization α M} {R' : KnightRealization α N}
 
 /-- The Karp bridge, root-preserving: on countable carriers a potential isomorphism of the stage
 chart structures yields a realization isomorphism extending any member pair. -/
@@ -116,7 +116,3 @@ theorem exists_iso_of_commonCharts_mem [Countable M] [Countable N]
     ∃ e : R.Iso R', ∀ i, e.1 (a i) = b i :=
   exists_iso_of_potentialIso_mem
     (potentialIsoOfCommonCharts hR hR' family empty_mem commonChart forth back) hab
-
-end Knight
-
-end VaughtConjecture.Knight

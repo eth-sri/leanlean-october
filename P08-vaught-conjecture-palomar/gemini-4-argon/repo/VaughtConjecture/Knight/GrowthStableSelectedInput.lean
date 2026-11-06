@@ -21,14 +21,12 @@ The proper-field bound is at the next block. A proper stable value of an
 actual top prevents replacing that bound by the original stage bound.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthStableSelectedInput
-open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan CappedDonor
-open CellScheme.restrictFace
+open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan CappedDonor CellScheme.restrictFace
 open SharpWitnessComposition
-noncomputable section
+
 universe w
 variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
   (hM : W.IsModel) {n J : ℕ} {t : Fin n ↪ M} {p : S α.1 n}
@@ -125,17 +123,3 @@ theorem exists_cleaned_source_chart (c : Cell C.scheme.scheme) (hc : C.label c =
     by_cases hd : C.label d.1 = ⊥
     · rw [(heb d).mpr hd, hbot, (private_bottom hM hC d.1).mpr hd]
     · rw [heq d hd, hread d, min_assoc, min_self]
-
-section Attachment
-variable
-  (hvP : Finset.univ.image Fin.castSuccEmb ∈ q.scheme.scheme.plan)
-  (hP : q.scheme.restrictFace Fin.castSuccEmb hvP = p.scheme)
-  (hvC : Finset.univ.image f ∈ C.scheme.scheme.plan)
-  (hF : C.scheme.restrictFace f hvC = p.scheme)
-  (X : RelativeData C.scheme.scheme C.scheme.rows q.scheme.scheme q.scheme.rows)
-  (T : Growth.RootAttachment p.scheme Fin.castSuccEmb hvP hP f hvC hF X)
-
-end Attachment
-
-end
-end VaughtConjecture.Knight.GrowthStableSelectedInput

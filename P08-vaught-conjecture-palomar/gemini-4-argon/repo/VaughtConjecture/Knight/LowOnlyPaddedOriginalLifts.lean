@@ -16,13 +16,10 @@ and the checked lower lift; active ones use their own asymmetric scalar fibre.
 No pair ledger or higher successor is constructed here.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedOriginalLifts
-open Transform Value ExtOrd CappedDonor LowOnly
-open LowOnlyPaddedSuccessor LowOnlyPaddedDecode
-noncomputable section
+open Transform Value ExtOrd CappedDonor LowOnly LowOnlyPaddedSuccessor LowOnlyPaddedDecode
 
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n K : ℕ}
@@ -32,23 +29,6 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
       a.1 = I.shared.f i ∧ (F.root.face a).1 = I.shared.g i)
   (hA : 2 ≤ A.card) (hB : B ⊂ A) (hC : C ⊂ A)
 
-theorem private_inactive
-    {p : I.right.scheme.below (effC n 2) → ExtOrd}
-    {q : (carrier I F hroot hA hB hC).below (A, 2) → ExtOrd}
-    (hp : RespectsSemanticsBelow I.right.rows (effC n 2) p)
-    (hq : RespectsSemanticsBelow (rows I F hroot hA hB hC) (A, 2) q)
-    {γ : ExtOrd} (hγ : SelfVis 2 γ)
-    (hinactive : ∀ d, I.right.scheme.grade d.1 = 2 → p d ≤ γ)
-    (hag : ∀ d, min (q (privateAt I F hroot hA hB hC d)) γ = min (p d) γ) :
-    ∃ r, RespectsSemanticsBelow (rows I F hroot hA hB hC) (A, 2) r ∧
-      (∀ d, r (privateAt I F hroot hA hB hC d) = p d) ∧
-      ∀ d, min (r d) γ = min (q d) γ := by
-  obtain ⟨r, hr, hread, hcap⟩ := LowOnlyPaddedPrivateLift.restore I F hroot hA hB hC hp
-    (hq.cap hγ) hγ hag (fun _ => min_le_right _ _) hinactive
-  exact ⟨r, hr, hread, fun d => (hcap d).trans (by rw [min_assoc, min_self])⟩
-
-/-- All permitted original caps, including bottom and top. The prescription
-and ambient are arbitrary lawful inputs; every physical cap is retained. -/
 theorem private_lift
     {p : I.right.scheme.below (effC n 2) → ExtOrd}
     {q : (carrier I F hroot hA hB hC).below (A, 2) → ExtOrd}
@@ -65,26 +45,11 @@ theorem private_lift
   by_cases ha : ∃ d, I.right.scheme.grade d.1 = 2 ∧ γ < p d
   · exact LowOnlyPaddedPrivateLift.active_private_lift I F hroot hA hB hC hp hq hγ
       (bot_lt_iff_ne_bot.mpr hz) ha hag
-  · exact private_inactive I F hroot hA hB hC hp hq hγ
-      (fun d hd => le_of_not_gt (fun h => ha ⟨d, hd, h⟩)) hag
+  · obtain ⟨r, hr, hread, hcap⟩ := LowOnlyPaddedPrivateLift.restore I F hroot hA hB hC hp
+      (hq.cap hγ) hγ hag (fun _ => min_le_right _ _)
+      (fun d hd => le_of_not_gt (fun h => ha ⟨d, hd, h⟩))
+    exact ⟨r, hr, hread, fun d => (hcap d).trans (by rw [min_assoc, min_self])⟩
 
-theorem donor_inactive
-    {p : I.left.scheme.below (effC n 2) → ExtOrd}
-    {q : (carrier I F hroot hA hB hC).below (A, 2) → ExtOrd}
-    (hp : RespectsSemanticsBelow I.left.rows (effC n 2) p)
-    (hq : RespectsSemanticsBelow (rows I F hroot hA hB hC) (A, 2) q)
-    {γ : ExtOrd} (hγ : SelfVis 2 γ)
-    (hinactive : ∀ d, I.left.scheme.grade d.1 = 2 → p d ≤ γ)
-    (hag : ∀ d, min (q (donorAt I F hroot hA hB hC d)) γ = min (p d) γ) :
-    ∃ r, RespectsSemanticsBelow (rows I F hroot hA hB hC) (A, 2) r ∧
-      (∀ d, r (donorAt I F hroot hA hB hC d) = p d) ∧
-      ∀ d, min (r d) γ = min (q d) γ := by
-  obtain ⟨r, hr, hread, hcap⟩ := LowOnlyPaddedDonorLift.restore I F hroot hA hB hC hp
-    (hq.cap hγ) hγ hag (fun _ => min_le_right _ _) hinactive
-  exact ⟨r, hr, hread, fun d => (hcap d).trans (by rw [min_assoc, min_self])⟩
-
-/-- All permitted original caps, including bottom and top. The prescription
-and ambient are arbitrary lawful inputs; every physical cap is retained. -/
 theorem donor_lift
     {p : I.left.scheme.below (effC n 2) → ExtOrd}
     {q : (carrier I F hroot hA hB hC).below (A, 2) → ExtOrd}
@@ -101,8 +66,7 @@ theorem donor_lift
   by_cases ha : ∃ d, I.left.scheme.grade d.1 = 2 ∧ γ < p d
   · exact LowOnlyPaddedDonorLift.active_donor_lift I F hroot hA hB hC hp hq hγ
       (bot_lt_iff_ne_bot.mpr hz) ha hag
-  · exact donor_inactive I F hroot hA hB hC hp hq hγ
-      (fun d hd => le_of_not_gt (fun h => ha ⟨d, hd, h⟩)) hag
-
-end
-end VaughtConjecture.Knight.LowOnlyPaddedOriginalLifts
+  · obtain ⟨r, hr, hread, hcap⟩ := LowOnlyPaddedDonorLift.restore I F hroot hA hB hC hp
+      (hq.cap hγ) hγ hag (fun _ => min_le_right _ _)
+      (fun d hd => le_of_not_gt (fun h => ha ⟨d, hd, h⟩))
+    exact ⟨r, hr, hread, fun d => (hcap d).trans (by rw [min_assoc, min_self])⟩

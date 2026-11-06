@@ -17,13 +17,11 @@ cap retained. No mixed-prescription extension, source admission, or missing
 original-face lift is assumed proved by this module.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.ScopeReplicationLifting
-open AmalgamationPlan Transform Value ExtOrd ScopeReplicationCarrier
-open ScopeReplicationSemantics CoatomBoundaryExtension
-noncomputable section
+open AmalgamationPlan Transform Value ExtOrd ScopeReplicationCarrier ScopeReplicationSemantics CoatomBoundaryExtension
+
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι}
   (D : CellScheme A) (B C : Finset ι)
   (hcover : ∀ c : Cell D, D.scope c ≠ A → D.scope c ⊆ B ∨ D.scope c ⊆ C)
@@ -84,6 +82,3 @@ theorem lift_to_full {I : Finset ι × ℕ} {j : ℕ} (h : GradedLe I (A, j))
         simpa only [ha, added_index] using d.2.1
       exact (hside.elim (fun hb => a.2.2.1.1 (hs.trans hb))
         (fun hc => a.2.2.1.2 (hs.trans hc))).elim
-
-end
-end VaughtConjecture.Knight.ScopeReplicationLifting

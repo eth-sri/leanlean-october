@@ -14,13 +14,11 @@ The geometric argument follows LowOnlyPaddedStepFaces, with actual growth
 occurrences and rows. No selected-rendering equality or LOW fibre is used.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthPaddedLayerFaces
-open Transform Value ExtOrd Growth GrowthOrderedBase
-open GrowthPaddedContract AmalgamationPlan CoatomBoundaryExtension
-noncomputable section
+open Transform Value ExtOrd Growth GrowthOrderedBase GrowthPaddedContract AmalgamationPlan CoatomBoundaryExtension
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n J : ℕ}
   {I : WholeDonorBoundary.Input A B C R m (n + 1) J}
@@ -103,7 +101,3 @@ theorem full_respects_iff (j : ℕ) (q : D.below (V, j) → ExtOrd) :
     rw [G.index d.1, G.index f.1]
     exact (Finset.image_subset_image_iff e.injective).symm
   · exact (G.row c.1 (PointImageSemantics.belowEquiv S.scheme e he c.1 d)).symm
-end FullFace
-
-end
-end VaughtConjecture.Knight.GrowthPaddedLayerFaces

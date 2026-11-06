@@ -52,5 +52,3 @@ The space is taken in `Type 1`, where the counted quotients live; the ordinal in
 /-- The ordinals below `ω₁` form a set of cardinality `ℵ₁`. -/
 theorem mk_Iio_ord_aleph_one : #(Set.Iio (aleph 1).ord) = aleph 1 := by
   rw [Cardinal.mk_Iio_ordinal, Cardinal.card_ord, Cardinal.lift_aleph, Ordinal.lift_one]
-
-end VaughtConjecture.CountableLoss

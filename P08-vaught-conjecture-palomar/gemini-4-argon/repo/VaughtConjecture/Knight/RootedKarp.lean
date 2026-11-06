@@ -7,7 +7,9 @@ module
 
 public import VaughtConjecture.Knight.RootedPotentialIso
 public import VaughtConjecture.Knight.SelectedCommonCharts
-public import VaughtConjecture.Knight.CommonChartChain
+public import VaughtConjecture.Knight.CommonChartSupply
+public import VaughtConjecture.Knight.PairedTrace
+public import VaughtConjecture.Knight.ChartKarp
 
 /-! # Root-preserving classification: chain adapters and compatibility signatures
 
@@ -37,7 +39,7 @@ universe w
 namespace KnightRealization
 
 variable {M₁ M₂ : Type w} {α : LimitStage}
-variable {A₁ : KnightRealization α M₁} {A₂ : KnightRealization α M₂}
+  {A₁ : KnightRealization α M₁} {A₂ : KnightRealization α M₂}
 
 /-- Root-preserving one-step-density cashout: the isomorphism extends the seed chart. This is
 the direct consumer with every chart good; the `Nonempty` instances are no longer used. -/
@@ -62,7 +64,3 @@ theorem exists_iso_of_restrictedCommonChartStepSupply
     (supply : RestrictedCommonChartStepSupply (A₁ := A₁) (A₂ := A₂) Good) :
     ∃ e : A₁.Iso A₂, ∀ i, e.1 (seed.tuple₁ i) = seed.tuple₂ i :=
   exists_iso_of_selectedCommonCharts hA₁ hA₂ Good seed seed_good supply
-
-end KnightRealization
-
-end VaughtConjecture.Knight

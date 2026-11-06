@@ -22,8 +22,6 @@ pointwise minima is asserted.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.StageType
 
 open TypeTower Value ExtOrd
@@ -110,5 +108,3 @@ theorem provisional_le_mapCell_of_least {m : ℕ} {p : S α m} {q : S α n}
   obtain ⟨hr, rfl⟩ : ∃ hr, q.restrictFace f hr = p :=
     ⟨visible_of_typeMap_eq_some hf, restrictFace_eq_of_typeMap_eq_some hf⟩
   exact provisional_le_restrict_of_least q hα f hr d
-
-end VaughtConjecture.Knight.StageType

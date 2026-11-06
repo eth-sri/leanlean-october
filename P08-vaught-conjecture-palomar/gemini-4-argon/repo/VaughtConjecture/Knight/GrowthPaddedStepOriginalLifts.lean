@@ -19,13 +19,10 @@ No pair ledger or higher successor is constructed here. The proof structure
 follows GrowthPaddedOriginalLifts, consuming the actual higher growth rows.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthPaddedStepOriginalLifts
-open Transform Value ExtOrd CappedDonor Growth
-open GrowthPaddedContract GrowthPaddedStepRows GrowthPaddedStepDecode
-noncomputable section
+open Transform Value ExtOrd CappedDonor Growth GrowthPaddedContract GrowthPaddedStepRows GrowthPaddedStepDecode
 
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n J : ℕ}
@@ -36,23 +33,6 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {hA : 2 ≤ A.card} {hB : B ⊂ A} {hC : C ⊂ A} {k : ℕ}
   (P : Layer I X T hA hB hC k) (hk : 2 ≤ k) (hnext : k + 1 ≤ A.card)
 
-theorem private_inactive (hprev : GrowthPaddedStepPrivateLift.PrivateLowerLift P)
-    {p : I.right.scheme.below (Finset.univ, k + 1) → ExtOrd}
-    {q : (carrier P hnext).below (A, k + 1) → ExtOrd}
-    (hp : RespectsSemanticsBelow I.right.rows (Finset.univ, k + 1) p)
-    (hq : RespectsSemanticsBelow (rows P hk hnext) (A, k + 1) q)
-    {γ : ExtOrd} (hγ : SelfVis (k + 1) γ)
-    (hinactive : ∀ d, I.right.scheme.grade d.1 = k + 1 → p d ≤ γ)
-    (hag : ∀ d, min (q (privateAt P hnext d)) γ = min (p d) γ) :
-    ∃ r, RespectsSemanticsBelow (rows P hk hnext) (A, k + 1) r ∧
-      (∀ d, r (privateAt P hnext d) = p d) ∧
-      ∀ d, min (r d) γ = min (q d) γ := by
-  obtain ⟨r, hr, hread, hcap⟩ := GrowthPaddedStepPrivateLift.restore P hk hnext hprev hp
-    (hq.cap hγ) hγ hag (fun _ => min_le_right _ _) hinactive
-  exact ⟨r, hr, hread, fun d => (hcap d).trans (by rw [min_assoc, min_self])⟩
-
-/-- All permitted original caps, including bottom and top. The prescription
-and ambient are arbitrary lawful inputs; every physical cap is retained. -/
 theorem private_lift (hprev : GrowthPaddedStepPrivateLift.PrivateLowerLift P)
     {p : I.right.scheme.below (Finset.univ, k + 1) → ExtOrd}
     {q : (carrier P hnext).below (A, k + 1) → ExtOrd}
@@ -69,26 +49,11 @@ theorem private_lift (hprev : GrowthPaddedStepPrivateLift.PrivateLowerLift P)
   by_cases ha : ∃ d, I.right.scheme.grade d.1 = k + 1 ∧ γ < p d
   · exact GrowthPaddedStepPrivateLift.active_private_lift P hk hnext hprev hp hq hγ
       (bot_lt_iff_ne_bot.mpr hz) ha hag
-  · exact private_inactive P hk hnext hprev hp hq hγ
-      (fun d hd => le_of_not_gt (fun h => ha ⟨d, hd, h⟩)) hag
+  · obtain ⟨r, hr, hread, hcap⟩ := GrowthPaddedStepPrivateLift.restore P hk hnext hprev hp
+      (hq.cap hγ) hγ hag (fun _ => min_le_right _ _)
+      (fun d hd => le_of_not_gt (fun h => ha ⟨d, hd, h⟩))
+    exact ⟨r, hr, hread, fun d => (hcap d).trans (by rw [min_assoc, min_self])⟩
 
-theorem donor_inactive (hprev : GrowthPaddedStepDonorLift.DonorLowerLift P)
-    {p : I.left.scheme.below (Finset.univ, k + 1) → ExtOrd}
-    {q : (carrier P hnext).below (A, k + 1) → ExtOrd}
-    (hp : RespectsSemanticsBelow I.left.rows (Finset.univ, k + 1) p)
-    (hq : RespectsSemanticsBelow (rows P hk hnext) (A, k + 1) q)
-    {γ : ExtOrd} (hγ : SelfVis (k + 1) γ)
-    (hinactive : ∀ d, I.left.scheme.grade d.1 = k + 1 → p d ≤ γ)
-    (hag : ∀ d, min (q (donorAt P hnext d)) γ = min (p d) γ) :
-    ∃ r, RespectsSemanticsBelow (rows P hk hnext) (A, k + 1) r ∧
-      (∀ d, r (donorAt P hnext d) = p d) ∧
-      ∀ d, min (r d) γ = min (q d) γ := by
-  obtain ⟨r, hr, hread, hcap⟩ := GrowthPaddedStepDonorLift.restore P hk hnext hprev hp
-    (hq.cap hγ) hγ hag (fun _ => min_le_right _ _) hinactive
-  exact ⟨r, hr, hread, fun d => (hcap d).trans (by rw [min_assoc, min_self])⟩
-
-/-- All permitted original caps, including bottom and top. The prescription
-and ambient are arbitrary lawful inputs; every physical cap is retained. -/
 theorem donor_lift (hsmall : n + 1 < X.req.N)
     (hprev : GrowthPaddedStepDonorLift.DonorLowerLift P)
     {p : I.left.scheme.below (Finset.univ, k + 1) → ExtOrd}
@@ -101,16 +66,14 @@ theorem donor_lift (hsmall : n + 1 < X.req.N)
       (∀ d, r (donorAt P hnext d) = p d) ∧
       ∀ d, min (r d) γ = min (q d) γ := by
   by_cases hi : ∀ d, I.left.scheme.grade d.1 = k + 1 → p d ≤ γ
-  · exact donor_inactive P hk hnext hprev hp hq hγ hi hag
+  · obtain ⟨r, hr, hread, hcap⟩ := GrowthPaddedStepDonorLift.restore P hk hnext hprev hp
+      (hq.cap hγ) hγ hag (fun _ => min_le_right _ _) hi
+    exact ⟨r, hr, hread, fun d => (hcap d).trans (by rw [min_assoc, min_self])⟩
   obtain ⟨d, hd⟩ := not_forall.mp hi
   obtain ⟨hg, hv⟩ := not_imp.mp hd
-  have hN : k + 1 < X.req.N :=
-    hg ▸ Growth.donor_grade_lt I.left hsmall d.1
+  have hN : k + 1 < X.req.N := hg ▸ Growth.donor_grade_lt I.left hsmall d.1
   by_cases hz : γ = ⊥
   · obtain ⟨r, hr, hread⟩ := GrowthPaddedStepSupply.donor_bottom_supply P hk hnext hN hp
     exact ⟨r, hr, hread, fun _ => by simp only [hz, min_bot_right]⟩
   exact GrowthPaddedStepDonorLift.active_donor_lift P hk hnext hN hprev hp hq hγ
     (bot_lt_iff_ne_bot.mpr hz) ⟨d, hg, not_le.mp hv⟩ hag
-
-end
-end VaughtConjecture.Knight.GrowthPaddedStepOriginalLifts

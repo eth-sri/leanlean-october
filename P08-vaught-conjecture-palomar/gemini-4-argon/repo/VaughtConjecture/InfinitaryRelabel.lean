@@ -86,5 +86,3 @@ theorem qrank_relabelFree (g : α → β) :
   | iInf φs ih =>
     change (⨆ i, (relabelFree g (φs i)).qrank) = ⨆ i, (φs i).qrank
     exact iSup_congr ih
-
-end FirstOrder.Language.BoundedFormulaInf

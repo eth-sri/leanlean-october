@@ -18,8 +18,7 @@ and both original-scheme bountifulness calls without a `Ref` or `LowRef`.
 
 namespace VaughtConjecture.Knight.LowOnly.SourceGap
 
-open Transform Value ExtOrd SharpWitnessComposition AmalgamationPlan CappedDonor
-open CappedDonor.Ref.LowRef
+open Transform Value ExtOrd SharpWitnessComposition AmalgamationPlan CappedDonor CappedDonor.Ref.LowRef
 
 variable {n K : ℕ} {C : SemScheme n} (L : SourceGap C K)
 
@@ -147,5 +146,3 @@ theorem exists_release {j : ℕ} (hj : K ≤ j)
     rw [hlowD]
     unfold e
     rw [hw'r, evr_eq_self_of_selfVis hγK, min_eq_right (hγL.le.trans hw'c)]
-
-end VaughtConjecture.Knight.LowOnly.SourceGap

@@ -14,16 +14,14 @@ over the entire boundary. Their lower domains through the cut are identical.
 No higher proper owner, lower controller, or occurrence is discarded.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GradeCutPairCarrier
 open Transform Value ExtOrd SourceLayerCarrier
-noncomputable section
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι}
-variable (D : CellScheme A) (Q R : Type*) [Fintype Q] [Fintype R]
-variable (j k : ℕ) (hj : 0 < j) (hjA : j ≤ A.card) (hk : 0 < k) (hkA : k ≤ A.card)
+  (D : CellScheme A) (Q R : Type*) [Fintype Q] [Fintype R]
+  (j k : ℕ) (hj : 0 < j) (hjA : j ≤ A.card) (hk : 0 < k) (hkA : k ≤ A.card)
 
 abbrev lower := SourceLayerCarrier.scheme D Q j hj hjA
 abbrev enlarged := SourceLayerCarrier.scheme (lower D Q j hj hjA) R k hk hkA
@@ -125,6 +123,3 @@ theorem small_grade (hjk : j ≤ k) (d : Cell (small D Q R j k hj hjA hk hkA)) :
   · exact GradeCutBoundary.grade_bound D k d
   · exact hjk
   · exact le_rfl
-
-end
-end VaughtConjecture.Knight.GradeCutPairCarrier

@@ -15,13 +15,11 @@ copies at scopes incomparable with the prescribed scope. No field recognition
 or hidden-original completion is assumed in this generic lemma.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.ScopeReplicationRestriction
-open AmalgamationPlan Transform Value ExtOrd ScopeReplicationCarrier
-open ScopeReplicationSemantics ScopeReplicationAuxExtension
-noncomputable section
+open AmalgamationPlan Transform Value ExtOrd ScopeReplicationCarrier ScopeReplicationSemantics ScopeReplicationAuxExtension
+
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι}
   (D : CellScheme A) (B C : Finset ι)
   (hcover : ∀ c : Cell D, D.scope c ≠ A → D.scope c ⊆ B ∨ D.scope c ⊆ C)
@@ -46,6 +44,3 @@ theorem auxiliary_eq {p q : (scheme D B C).below (V, j) → ExtOrd}
     (γ := ⊤) (fun d => congrArg (fun x => min x ⊤) (hag d).symm) z hz
   simp only [min_top_right] at hpz hqz
   exact hpz.symm.trans hqz
-
-end
-end VaughtConjecture.Knight.ScopeReplicationRestriction

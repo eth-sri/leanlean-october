@@ -5,7 +5,10 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.HollowGrowthReadback
+public import VaughtConjecture.Knight.GrowthCappedReadback
+public import VaughtConjecture.Knight.ActualOccurrence
+public import VaughtConjecture.Knight.GrowthAttachedCarrier
+public import VaughtConjecture.Knight.HollowGrowthAdmission
 public import VaughtConjecture.Knight.HollowGrowthPadding
 public import VaughtConjecture.Knight.TopSupportReceiving
 public import VaughtConjecture.Knight.GrowthCarrierEvaluation
@@ -19,12 +22,11 @@ restriction give exact one-point receiving over arbitrary realized roots,
 the empty root included. No display or stage-bound premise is added.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.HollowGrowthTemplate
 open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan CappedDonor
-noncomputable section
+
 universe w
 variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
 
@@ -77,6 +79,3 @@ theorem receives_exactly (hM : W.IsModel) (hg : W.HasTopGradeGrowth) (hh : W.IsH
     (snoc (snoc t z hz) y hy) Q (FixedHeight.extendFace Fin.castSuccEmb) heval
   rw [donor_tuple] at he
   exact ⟨y, _, he.trans hkeep⟩
-
-end
-end VaughtConjecture.Knight.HollowGrowthTemplate

@@ -52,7 +52,7 @@ decoder, all of which live on `DA.below (DA.cell C)`.  The marker reads at offse
 The cleaned donor's construction and the template's construction are in
 `Knight/ReceivingTemplate.lean`.  Construction-private (not root-exported). -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight
 
@@ -224,11 +224,11 @@ def sec (u : Cell DA → ExtOrd) (d : DA.below (DA.cell r.C)) : ExtOrd := u d.1
 @[simp] theorem sec_capCell (u : Cell DA → ExtOrd) : r.sec u r.capCell = u r.C := rfl
 
 /-- `t_f(s)`: the capped replacement of the reference, for a section `s` below the cap. -/
-noncomputable def tOf (s : DA.below (DA.cell r.C) → ExtOrd) (f : Cell DQ) : ExtOrd :=
+def tOf (s : DA.below (DA.cell r.C) → ExtOrd) (f : Cell DQ) : ExtOrd :=
   min (extVisibilityReplace (s (r.ρ f)) r.N (r.off f)) (s r.capCell)
 
 /-- `d(s)`: the capped offset-`R` replacement of the marker. -/
-noncomputable def dOf (s : DA.below (DA.cell r.C) → ExtOrd) : ExtOrd :=
+def dOf (s : DA.below (DA.cell r.C) → ExtOrd) : ExtOrd :=
   min (extVisibilityReplace (s r.a) r.N r.R) (s r.capCell)
 
 /-- **The target relations** between an old section `s` below the cap and a candidate
@@ -359,7 +359,3 @@ theorem decoder {u' : Cell DA → ExtOrd} (hu' : RespectsSemantics semA u')
     · rw [X.e_eq d hd]
       change min (τ (semA.E X.req.C d)) (u' X.req.C) = min (u' d.1) (u' X.req.C)
       rw [hread d, min_assoc, min_self]
-
-end RelativeData
-
-end VaughtConjecture.Knight

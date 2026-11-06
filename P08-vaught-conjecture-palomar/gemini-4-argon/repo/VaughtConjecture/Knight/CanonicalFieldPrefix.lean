@@ -15,18 +15,15 @@ controller agreement cut. A repaired physical boundary is extended to those
 fields by retaining their old source values, not by dropping them.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalFieldPrefix
-open Transform Value ExtOrd SourcePrefixRows CanonicalFieldLayer
-open CanonicalPairedInverse PairedSlotEncoding
-noncomputable section
+open Transform Value ExtOrd SourcePrefixRows CanonicalFieldLayer CanonicalPairedInverse PairedSlotEncoding
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable (sem : Semantics D) (j : ℕ) (X : Type*) [Fintype X] (occ : Cell D → X)
-variable (hj : 0 < j) (hA : j ≤ A.card)
-variable (hproper : ∀ d : Cell D, D.scope d ≠ A) (hg : ∀ d : Cell D, D.grade d ≤ j)
+  (sem : Semantics D) (j : ℕ) (X : Type*) [Fintype X] (occ : Cell D → X)
+  (hj : 0 < j) (hA : j ≤ A.card)
+  (hproper : ∀ d : Cell D, D.scope d ≠ A) (hg : ∀ d : Cell D, D.grade d ≤ j)
 
 theorem exists_section (a : Profile sem j X occ)
     {p : X → ExtOrd} (hp : RespectsSemantics sem (p ∘ occ)) (ht : ∀ x, p x ≠ ⊤)
@@ -129,6 +126,3 @@ theorem exists_boundary_section (hinj : Function.Injective occ) (a : Profile sem
   obtain ⟨r, hr, hread, hcap⟩ := exists_section sem j X occ hj hA hproper hg
     a hvp hvt hB hva
   exact ⟨r, hr, fun d => (hread d).trans (hv d), hcap⟩
-
-end
-end VaughtConjecture.Knight.CanonicalFieldPrefix

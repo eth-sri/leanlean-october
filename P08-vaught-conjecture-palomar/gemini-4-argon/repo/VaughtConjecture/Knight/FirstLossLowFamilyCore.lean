@@ -37,7 +37,7 @@ low source, every strict-gap hypothesis, and the admissibility of the actual pai
 
 No physical receiver is used. -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.FirstLossLowFamily
 
@@ -68,16 +68,7 @@ theorem scope_toCell_castCell {m n : ℕ} {X : SemScheme n} {f : Fin m ↪ Fin n
     (h : X.restrictFace f hv = Z) (c : Cell Z.scheme) :
     X.scheme.scope (toCell X.scheme f hv (SemScheme.castCell h.symm c)) =
       (Z.scheme.scope c).image f := by
-  subst h
-  exact (image_scope_restrictFace X.scheme f hv c).symm
-
-/-- A row entry depends only on the owner and the underlying cell of the argument. -/
-theorem E_congr {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-    (sem : Semantics D) {Sig Sig' : Cell D} (h : Sig = Sig') (d : D.below (D.cell Sig))
-    (d' : D.below (D.cell Sig')) (hd : d.1 = d'.1) : sem.E Sig d = sem.E Sig' d' := by
-  subst h
-  congr 1
-  exact Subtype.ext hd
+  subst h; exact (image_scope_restrictFace X.scheme f hv c).symm
 
 /-! ## The literal common root of two cofaces -/
 
@@ -90,14 +81,14 @@ variable {α : Ordinal.{0}} {k : ℕ} {pR : S α k} {P C : S α (k + 1)} (hP : I
 abbrev rootFace (k : ℕ) : Finset (Fin (k + 1)) := Finset.univ.image Fin.castSuccEmb
 
 /-- The identification of the two copies of the root. -/
-noncomputable def faceOf :
+def faceOf :
     P.scheme.scheme.below (rootFace k, (rootFace k).card) ≃
       C.scheme.scheme.below (rootFace k, (rootFace k).card) :=
   commonFace Fin.castSuccEmb hP.extendsDomain.visible hP.extendsDomain.restrict
     Fin.castSuccEmb hC.extendsDomain.visible hC.extendsDomain.restrict (rootFace k).card
 
 /-- The root cell of a root-face cell of the donor. -/
-noncomputable def rootCell (a : P.scheme.scheme.below (rootFace k, (rootFace k).card)) :
+def rootCell (a : P.scheme.scheme.below (rootFace k, (rootFace k).card)) :
     Cell pR.scheme.scheme :=
   SemScheme.castCell hP.extendsDomain.restrict
     ((bP Fin.castSuccEmb hP.extendsDomain.visible (rootFace k).card).symm a).1
@@ -114,114 +105,72 @@ theorem faceOf_val (a : P.scheme.scheme.below (rootFace k, (rootFace k).card)) :
   commonFace_val Fin.castSuccEmb hP.extendsDomain.visible hP.extendsDomain.restrict
     Fin.castSuccEmb hC.extendsDomain.visible hC.extendsDomain.restrict (rootFace k).card a
 
-theorem scopeP (a : P.scheme.scheme.below (rootFace k, (rootFace k).card)) :
-    P.scheme.scheme.scope a.1 =
-      (pR.scheme.scheme.scope (rootCell hP a)).image Fin.castSuccEmb := by
-  rw [← toCell_rootCell hP a]
-  exact scope_toCell_castCell hP.extendsDomain.restrict (rootCell hP a)
-
-theorem scopeC (a : P.scheme.scheme.below (rootFace k, (rootFace k).card)) :
-    C.scheme.scheme.scope (faceOf hP hC a).1 =
-      (pR.scheme.scheme.scope (rootCell hP a)).image Fin.castSuccEmb := by
-  rw [faceOf_val hP hC a]
-  exact scope_toCell_castCell hC.extendsDomain.restrict (rootCell hP a)
-
-/-- The rows of two cofaces agree on the root, through the identification. -/
-theorem row_of_cofaces (a : P.scheme.scheme.below (rootFace k, (rootFace k).card))
-    (d : P.scheme.scheme.below (P.scheme.scheme.cell a.1))
-    (hd : GradedLe (C.scheme.scheme.cell (faceOf hP hC ⟨d.1, d.2.trans a.2⟩).1)
-      (C.scheme.scheme.cell (faceOf hP hC a).1)) :
-    P.scheme.rows.E a.1 d =
-      C.scheme.rows.E (faceOf hP hC a).1 ⟨(faceOf hP hC ⟨d.1, d.2.trans a.2⟩).1, hd⟩ := by
-  have hda : P.scheme.scheme.scope d.1 ⊆ rootFace k := d.2.1.trans a.2.1
-  obtain ⟨d'', hd''⟩ := exists_toCell_eq (D := P.scheme.scheme) (f := Fin.castSuccEmb)
-    (hr := hP.extendsDomain.visible) hda
-  -- the argument as a cell of the restricted donor, below the root cell
-  have hle : GradedLe (P.scheme.scheme.cell (toCell P.scheme.scheme Fin.castSuccEmb
-      hP.extendsDomain.visible d''))
-      (P.scheme.scheme.cell (toCell P.scheme.scheme Fin.castSuccEmb hP.extendsDomain.visible
-        (SemScheme.castCell hP.extendsDomain.restrict.symm (rootCell hP a)))) := by
-    rw [hd'', toCell_rootCell hP a]
-    exact d.2
-  have hle' := (gradedLe_restrictFace_iff P.scheme.scheme Fin.castSuccEmb
-    hP.extendsDomain.visible).mpr hle
-  let dR : pR.scheme.scheme.below (pR.scheme.scheme.cell (rootCell hP a)) :=
-    ⟨SemScheme.castCell hP.extendsDomain.restrict d'',
-      gradedLe_castCell hP.extendsDomain.restrict hle'⟩
-  -- the donor side, read through the root
-  have hL : P.scheme.rows.E a.1 d = pR.scheme.rows.E (rootCell hP a) dR := by
-    have e1 : P.scheme.rows.E a.1 d = P.scheme.rows.E (toCell P.scheme.scheme Fin.castSuccEmb
-        hP.extendsDomain.visible (SemScheme.castCell hP.extendsDomain.restrict.symm
-          (rootCell hP a)))
-        ⟨toCell P.scheme.scheme Fin.castSuccEmb hP.extendsDomain.visible d'', hle⟩ :=
-      E_congr P.scheme.rows (toCell_rootCell hP a).symm d _ hd''.symm
-    have e2 : (P.scheme.restrictFace Fin.castSuccEmb hP.extendsDomain.visible).rows.E
-        (SemScheme.castCell hP.extendsDomain.restrict.symm (rootCell hP a)) ⟨d'', hle'⟩ =
-        pR.scheme.rows.E (rootCell hP a) dR :=
-      (rows_castCell hP.extendsDomain.restrict _ ⟨d'', hle'⟩
-        (gradedLe_castCell hP.extendsDomain.restrict hle')).symm
-    exact e1.trans e2
-  -- the private side, read through the root
-  have hd3 : ((bP Fin.castSuccEmb hP.extendsDomain.visible (rootFace k).card).symm
-      ⟨d.1, d.2.trans a.2⟩).1 = d'' := by
-    apply toCell_injective P.scheme.scheme Fin.castSuccEmb hP.extendsDomain.visible
-    rw [hd'']
-    exact toCell_belowEquiv_symm_val P.scheme.scheme Fin.castSuccEmb hP.extendsDomain.visible
-      (BJ' := (Finset.univ, (rootFace k).card)) (BJ := (rootFace k, (rootFace k).card)) rfl _
-  have hrc : rootCell hP ⟨d.1, d.2.trans a.2⟩ =
-      SemScheme.castCell hP.extendsDomain.restrict d'' := by
-    unfold rootCell
-    rw [hd3]
-  have hleC : GradedLe ((C.scheme.restrictFace Fin.castSuccEmb hC.extendsDomain.visible).scheme.cell
-      (SemScheme.castCell hC.extendsDomain.restrict.symm dR.1))
-      ((C.scheme.restrictFace Fin.castSuccEmb hC.extendsDomain.visible).scheme.cell
-        (SemScheme.castCell hC.extendsDomain.restrict.symm (rootCell hP a))) :=
-    gradedLe_castCell hC.extendsDomain.restrict.symm dR.2
-  have hR : C.scheme.rows.E (faceOf hP hC a).1 ⟨(faceOf hP hC ⟨d.1, d.2.trans a.2⟩).1, hd⟩ =
-      pR.scheme.rows.E (rootCell hP a) dR := by
-    have e1 : C.scheme.rows.E (faceOf hP hC a).1 ⟨(faceOf hP hC ⟨d.1, d.2.trans a.2⟩).1, hd⟩ =
-        C.scheme.rows.E (toCell C.scheme.scheme Fin.castSuccEmb hC.extendsDomain.visible
-          (SemScheme.castCell hC.extendsDomain.restrict.symm (rootCell hP a)))
-          ⟨toCell C.scheme.scheme Fin.castSuccEmb hC.extendsDomain.visible
-            (SemScheme.castCell hC.extendsDomain.restrict.symm dR.1),
-            gradedLe_of_restrictFace C.scheme.scheme Fin.castSuccEmb hC.extendsDomain.visible
-              hleC⟩ :=
-      E_congr C.scheme.rows (faceOf_val hP hC a) _ _ (by
-        rw [faceOf_val hP hC ⟨d.1, d.2.trans a.2⟩, hrc])
-    have e2 : (C.scheme.restrictFace Fin.castSuccEmb hC.extendsDomain.visible).rows.E
-        (SemScheme.castCell hC.extendsDomain.restrict.symm (rootCell hP a))
-        ⟨SemScheme.castCell hC.extendsDomain.restrict.symm dR.1, hleC⟩ =
-        pR.scheme.rows.E (rootCell hP a) dR :=
-      rows_castCell hC.extendsDomain.restrict.symm (rootCell hP a) dR hleC
-    exact e1.trans e2
-  exact hL.trans hR.symm
-
 /-- Two cofaces of one type have a literal common root along the initial face. -/
-noncomputable def commonRoot_of_cofaces : LowOnly.CommonRoot P.scheme C.scheme where
+def commonRoot_of_cofaces : LowOnly.CommonRoot P.scheme C.scheme where
   A := rootFace k
   B := rootFace k
   A_mem := hP.extendsDomain.visible
   B_mem := hC.extendsDomain.visible
-  card := rfl
   face := faceOf hP hC
   grade a := (commonFace_grade Fin.castSuccEmb hP.extendsDomain.visible
     hP.extendsDomain.restrict Fin.castSuccEmb hC.extendsDomain.visible
     hC.extendsDomain.restrict (rootFace k).card a).symm
-  scope a b := by rw [scopeP hP a, scopeP hP b, scopeC hP hC a, scopeC hP hC b]
-  row := row_of_cofaces hP hC
+  scope a b := by
+    have hsP (x) : P.scheme.scheme.scope x.1 =
+        (pR.scheme.scheme.scope (rootCell hP x)).image Fin.castSuccEmb := by
+      rw [← toCell_rootCell hP x]
+      exact scope_toCell_castCell hP.extendsDomain.restrict (rootCell hP x)
+    have hsC (x) : C.scheme.scheme.scope (faceOf hP hC x).1 =
+        (pR.scheme.scheme.scope (rootCell hP x)).image Fin.castSuccEmb := by
+      rw [faceOf_val hP hC x]
+      exact scope_toCell_castCell hC.extendsDomain.restrict (rootCell hP x)
+    rw [hsP a, hsP b, hsC a, hsC b]
+  row a d hd := by
+    obtain ⟨d'', hd''⟩ := exists_toCell_eq (D := P.scheme.scheme) (f := Fin.castSuccEmb)
+      (hr := hP.extendsDomain.visible) (d.2.1.trans a.2.1)
+    have hle : GradedLe (P.scheme.scheme.cell (toCell P.scheme.scheme Fin.castSuccEmb
+        hP.extendsDomain.visible d''))
+        (P.scheme.scheme.cell (toCell P.scheme.scheme Fin.castSuccEmb hP.extendsDomain.visible
+          (SemScheme.castCell hP.extendsDomain.restrict.symm (rootCell hP a)))) := by
+      rw [hd'', toCell_rootCell hP a]; exact d.2
+    have hle' := (gradedLe_restrictFace_iff P.scheme.scheme Fin.castSuccEmb
+      hP.extendsDomain.visible).mpr hle
+    let dR : pR.scheme.scheme.below (pR.scheme.scheme.cell (rootCell hP a)) :=
+      ⟨SemScheme.castCell hP.extendsDomain.restrict d'',
+        gradedLe_castCell hP.extendsDomain.restrict hle'⟩
+    have hL : P.scheme.rows.E a.1 d = pR.scheme.rows.E (rootCell hP a) dR :=
+      (Semantics.E_congr' P.scheme.rows (toCell_rootCell hP a).symm
+        (d' := ⟨toCell P.scheme.scheme Fin.castSuccEmb hP.extendsDomain.visible d'', hle⟩)
+        hd''.symm).trans
+        (rows_castCell hP.extendsDomain.restrict _ ⟨d'', hle'⟩
+          (gradedLe_castCell hP.extendsDomain.restrict hle')).symm
+    have hd3 : ((bP Fin.castSuccEmb hP.extendsDomain.visible (rootFace k).card).symm
+        ⟨d.1, d.2.trans a.2⟩).1 = d'' :=
+      toCell_injective P.scheme.scheme Fin.castSuccEmb hP.extendsDomain.visible
+        ((toCell_belowEquiv_symm_val P.scheme.scheme Fin.castSuccEmb hP.extendsDomain.visible
+          (BJ' := (Finset.univ, (rootFace k).card)) (BJ := (rootFace k, (rootFace k).card)) rfl _).trans
+          hd''.symm)
+    have hleC := gradedLe_castCell hC.extendsDomain.restrict.symm dR.2
+    have hR : C.scheme.rows.E (faceOf hP hC a).1 ⟨(faceOf hP hC ⟨d.1, d.2.trans a.2⟩).1, hd⟩ =
+        pR.scheme.rows.E (rootCell hP a) dR :=
+      (Semantics.E_congr' C.scheme.rows (faceOf_val hP hC a)
+        (d' := ⟨toCell C.scheme.scheme Fin.castSuccEmb hC.extendsDomain.visible
+          (SemScheme.castCell hC.extendsDomain.restrict.symm dR.1),
+          gradedLe_of_restrictFace C.scheme.scheme Fin.castSuccEmb hC.extendsDomain.visible hleC⟩)
+        (by rw [faceOf_val hP hC ⟨d.1, d.2.trans a.2⟩]; unfold rootCell; rw [hd3])).trans
+        (rows_castCell hC.extendsDomain.restrict.symm (rootCell hP a) dR hleC)
+    exact hL.trans hR.symm
 
 /-- The labels of two cofaces agree on the common root. -/
-theorem shared_of_cofaces : (commonRoot_of_cofaces hP hC).Shared P.label C.label := by
-  intro a
+theorem shared_of_cofaces : (commonRoot_of_cofaces hP hC).Shared P.label C.label := fun a => by
   change P.label a.1 = C.label (faceOf hP hC a).1
-  have hPl := (typeMap_eq_some_iff_labels Fin.castSuccEmb P pR hP.extendsDomain.visible
-    hP.extendsDomain.restrict).mp hP
-    (SemScheme.castCell hP.extendsDomain.restrict.symm (rootCell hP a))
-  have hCl := (typeMap_eq_some_iff_labels Fin.castSuccEmb C pR hC.extendsDomain.visible
-    hC.extendsDomain.restrict).mp hC
-    (SemScheme.castCell hC.extendsDomain.restrict.symm (rootCell hP a))
   rw [← toCell_rootCell hP a, faceOf_val hP hC a]
-  exact hPl.trans hCl.symm
+  exact ((typeMap_eq_some_iff_labels Fin.castSuccEmb P pR hP.extendsDomain.visible
+      hP.extendsDomain.restrict).mp hP
+      (SemScheme.castCell hP.extendsDomain.restrict.symm (rootCell hP a))).trans
+    ((typeMap_eq_some_iff_labels Fin.castSuccEmb C pR hC.extendsDomain.visible
+      hC.extendsDomain.restrict).mp hC
+      (SemScheme.castCell hC.extendsDomain.restrict.symm (rootCell hP a))).symm
 
 end CommonRoot
 
@@ -229,14 +178,6 @@ end CommonRoot
 
 variable {α : LimitStage} {M : Type w} {R : KnightRealization α M}
 
-/-- **The gate-free LOW family from the first-loss acquisition.**  In a model of characteristic
-arity `K > 0` without globally rigid cores, over any actual root `t ↦ p` and any legal donor
-coface `q` of `p` with tops of grade at most `K`: an actual private context `u ↦ CT` containing
-the root, an enlarged donor `Q'` restricting to `q` along the extended root embedding, both
-cofaces of one type `pR` along `Fin.castSuccEmb`, and KVC's family `F` on their schemes with the
-donor labelling `Q'.label`, the root along the initial face, the owner and low source both `⊤`
-in the actual private labelling, and every pair `(Q'.label, CT.label, b)` admissible at every
-grade for every cutoff `b` visible at `min j K`. -/
 theorem exists_lowOnlyFamily_of_tail (hcons : R.IsExactParentConsistent) {K : ℕ}
     (hcoin : KnightRealization.IsCoinitial {x : R.LabelledExt | x.type.topGrade = K})
     (hKpos : 0 < K) (hres : ∀ {k : ℕ} (B : Fin k ↪ M), ¬ TopSupportRigidCore.RigidCore R B)
@@ -253,145 +194,76 @@ theorem exists_lowOnlyFamily_of_tail (hcons : R.IsExactParentConsistent) {K : �
           F.Admissible j ⟨Q'.label, CT.label, b⟩ := by
   obtain ⟨m, Cov, Q, hQ, hQK, k, g, c, hc, e, het, hvg, hvg', H, hH, hfull, x, o, hxs, hxtop, hxH,
     hoH, hocell, hxo, hgap⟩ := FirstLossAcquisition.first_loss_of_tail hcons hcoin hKpos hres t p hp
-  set g₁ : Fin (k + 1) ↪ Fin m := snoc g c hc with hg₁def
+  set g₁ : Fin (k + 1) ↪ Fin m := snoc g c hc
   have hg : Fin.castSuccEmb.trans g₁ = g := castSuccEmb_trans_snoc g c hc
-  -- the two face types of the cover: the smaller face `pR`, the larger face `CT`
-  set pR : S α.1 k := Q.restrictFace g hvg with hpRdef
-  set CT : S α.1 (k + 1) := Q.restrictFace g₁ hvg' with hCTdef
+  set pR : S α.1 k := Q.restrictFace g hvg
+  set CT : S α.1 (k + 1) := Q.restrictFace g₁ hvg'
   have hpR : typeMap g Q = some pR := typeMap_eq_some g Q hvg
   have hCT : typeMap g₁ Q = some CT := typeMap_eq_some g₁ Q hvg'
   have hcofCT : IsCoface pR CT := by
     change typeMap Fin.castSuccEmb CT = some pR
-    rw [typeMap_trans Fin.castSuccEmb g₁ Q CT hCT, hg]
-    exact hpR
-  -- the root type is the restriction of `pR` along `e`
+    rw [typeMap_trans Fin.castSuccEmb g₁ Q CT hCT, hg]; exact hpR
   have hep : typeMap e pR = some p := by
     rw [typeMap_trans e g Q pR hpR]
-    have h := hcons Cov Q (e.trans g) hQ
-    rw [het, hp] at h
-    exact h.symm
-  have hRtops : ∀ d, pR.label d = ⊤ → pR.scheme.scheme.grade d ≤ K := fun d hd =>
-    (FirstLossAcquisition.face_top_grade_le hpR d hd).trans_eq hQK
-  -- the enlarged donor
+    have h := hcons Cov Q (e.trans g) hQ; rw [het, hp] at h; exact h.symm
   obtain ⟨Q', hcofQ', hQ'e, hQ'K⟩ :=
-    FirstLossAcquisition.exists_enlarged_donor pR e p hep hRtops q hq hqK
-  -- the owner and the low source as cells of the private face
+    FirstLossAcquisition.exists_enlarged_donor pR e p hep
+      (fun d hd => (FirstLossAcquisition.face_top_grade_le hpR d hd).trans_eq hQK) q hq hqK
   have hos : Q.scheme.scheme.scope o = Finset.univ.image g₁ := congrArg Prod.fst hocell
-  have hog : Q.scheme.scheme.grade o = K := congrArg Prod.snd hocell
-  obtain ⟨oC, hoC⟩ := exists_toCell_eq (D := Q.scheme.scheme) (f := g₁) (hr := hvg')
-    (Finset.subset_of_eq hos)
+  obtain ⟨oC, hoC⟩ := exists_toCell_eq (D := Q.scheme.scheme) (f := g₁) (hr := hvg') hos.le
   obtain ⟨xC, hxC⟩ := exists_toCell_eq (D := Q.scheme.scheme) (f := g₁) (hr := hvg') hxs
   have hxoC : GradedLe (CT.scheme.scheme.cell xC) (CT.scheme.scheme.cell oC) :=
     (gradedLe_restrictFace_iff Q.scheme.scheme g₁ hvg').mpr (by rw [hoC, hxC]; exact hxo)
   have hoCg : CT.scheme.scheme.grade oC = K := by
     change Q.scheme.scheme.grade (toCell Q.scheme.scheme g₁ hvg' oC) = K
-    rw [hoC]; exact hog
-  have hb1 := gradedLe_of_restrictFace Q.scheme.scheme g₁ hvg' hxoC
-  have hb2 := gradedLe_of_restrictFace Q.scheme.scheme g₁ hvg'
-    (GradedLe.refl (CT.scheme.scheme.cell oC))
-  let gap : LowOnly.SourceGap CT.scheme K :=
-    { c := oC
-      c_grade := hoCg
-      r := ⟨xC, hxoC⟩
-      gap_c := by
-        have h := hgap ⟨o, GradedLe.refl _⟩ hoH
-        change extVisibilityReplace (Q.scheme.rows.E (toCell Q.scheme.scheme g₁ hvg' oC)
-          ⟨toCell Q.scheme.scheme g₁ hvg' xC, hb1⟩) K K <
-          Q.scheme.rows.E (toCell Q.scheme.scheme g₁ hvg' oC)
-            ⟨toCell Q.scheme.scheme g₁ hvg' oC, hb2⟩
-        calc extVisibilityReplace (Q.scheme.rows.E (toCell Q.scheme.scheme g₁ hvg' oC)
-              ⟨toCell Q.scheme.scheme g₁ hvg' xC, hb1⟩) K K
-            = extVisibilityReplace (Q.scheme.rows.E o ⟨x, hxo⟩) K K :=
-              congrArg (fun z => extVisibilityReplace z K K)
-                (E_congr Q.scheme.rows hoC _ _ hxC)
-          _ < Q.scheme.rows.E o ⟨o, GradedLe.refl _⟩ := h
-          _ = Q.scheme.rows.E (toCell Q.scheme.scheme g₁ hvg' oC)
-              ⟨toCell Q.scheme.scheme g₁ hvg' oC, hb2⟩ :=
-              (E_congr Q.scheme.rows hoC _ _ hoC).symm }
-  -- the common root and the family
+    rw [hoC]; exact congrArg Prod.snd hocell
+  have hgap_at (w : CT.scheme.scheme.below (CT.scheme.scheme.cell oC))
+      (hw : toCell Q.scheme.scheme g₁ hvg' w.1 ∈ H) :
+      extVisibilityReplace (CT.scheme.rows.E oC ⟨xC, hxoC⟩) K K < CT.scheme.rows.E oC w := by
+    have hbw : GradedLe (Q.scheme.scheme.cell (toCell Q.scheme.scheme g₁ hvg' w.1))
+        (Q.scheme.scheme.cell o) :=
+      hoC ▸ gradedLe_of_restrictFace Q.scheme.scheme g₁ hvg' w.2
+    have h := hgap ⟨_, hbw⟩ hw
+    have ex : CT.scheme.rows.E oC ⟨xC, hxoC⟩ = Q.scheme.rows.E o ⟨x, hxo⟩ :=
+      Semantics.E_congr' Q.scheme.rows hoC hxC
+    have ew : CT.scheme.rows.E oC w = Q.scheme.rows.E o ⟨_, hbw⟩ :=
+      Semantics.E_congr' Q.scheme.rows hoC rfl
+    rwa [ex, ew]
   let root := commonRoot_of_cofaces hcofQ' hcofCT
   have hshared : root.Shared Q'.label CT.label := shared_of_cofaces hcofQ' hcofCT
-  have hroot_sub : root.B ⊆ CT.scheme.scheme.scope gap.c := by
-    intro y _
-    change y ∈ Finset.univ.filter (fun j => g₁ j ∈ Q.scheme.scheme.scope
-      (toCell Q.scheme.scheme g₁ hvg' oC))
+  have hroot_sub : root.B ⊆ CT.scheme.scheme.scope oC := fun y _ => by
+    change y ∈ Finset.univ.filter fun j => g₁ j ∈ Q.scheme.scheme.scope
+      (toCell Q.scheme.scheme g₁ hvg' oC)
     rw [Finset.mem_filter, hoC, hos]
     exact ⟨Finset.mem_univ _, Finset.mem_image_of_mem _ (Finset.mem_univ _)⟩
-  -- a root-face cell of the private face, as a cell of the cover, has scope inside `g`
-  have hface_scope : ∀ a : Q'.scheme.scheme.below (rootFace k, (rootFace k).card),
-      Q.scheme.scheme.scope (toCell Q.scheme.scheme g₁ hvg' (root.face a).1) ⊆
-        Finset.univ.image g := by
-    intro a
-    have him := image_scope_restrictFace Q.scheme.scheme g₁ hvg' (root.face a).1
-    rw [← him]
-    intro y hy
-    obtain ⟨z, hz, rfl⟩ := Finset.mem_image.mp hy
-    have hzB : z ∈ rootFace k := (root.face a).2.1 hz
-    obtain ⟨i, -, rfl⟩ := Finset.mem_image.mp hzB
-    rw [← hg]
-    exact Finset.mem_image_of_mem _ (Finset.mem_univ i)
-  have hgg₁ : Finset.univ.image g ⊆ Finset.univ.image g₁ := by
-    intro z hz
-    obtain ⟨i, -, rfl⟩ := Finset.mem_image.mp hz
-    rw [← snoc_apply_castSucc g c hc i]
-    exact Finset.mem_image_of_mem _ (Finset.mem_univ _)
   let F : LowOnly.Family Q'.scheme CT.scheme K :=
     { root := root
-      gap := gap
+      gap := ⟨oC, hoCg, ⟨xC, hxoC⟩, hgap_at ⟨oC, GradedLe.refl _⟩ (hoC.symm ▸ hoH)⟩
       p := Q'.label
       p_lawful := Q'.respects
       top_grade := hQ'K
       root_sub := hroot_sub
-      root_gap := by
-        intro a ht
-        -- the root top is a retained top of the smaller face, below the owner
-        have hlab : Q.label (toCell Q.scheme.scheme g₁ hvg' (root.face a).1) = ⊤ := by
-          change CT.label (root.face a).1 = ⊤
-          rw [← hshared a]
-          exact ht
-        have hmem : toCell Q.scheme.scheme g₁ hvg' (root.face a).1 ∈ H :=
-          hfull _ (hface_scope a) hlab
-        have hbelow : GradedLe (Q.scheme.scheme.cell (toCell Q.scheme.scheme g₁ hvg'
-            (root.face a).1)) (Q.scheme.scheme.cell o) := by
-          rw [hocell]
-          refine ⟨(hface_scope a).trans hgg₁, ?_⟩
-          change Q.scheme.scheme.grade _ ≤ K
-          rw [← hQK]
-          exact grade_le_topGrade_of_top hlab
-        have h := hgap ⟨_, hbelow⟩ hmem
-        have hb3 : GradedLe (CT.scheme.scheme.cell (root.face a).1) (CT.scheme.scheme.cell oC) :=
-          ⟨(root.face a).2.1.trans hroot_sub,
-            (root.grade a).symm.trans_le ((hQ'K a.1 ht).trans_eq hoCg.symm)⟩
-        have hb3' := gradedLe_of_restrictFace Q.scheme.scheme g₁ hvg' hb3
-        change extVisibilityReplace (Q.scheme.rows.E (toCell Q.scheme.scheme g₁ hvg' oC)
-          ⟨toCell Q.scheme.scheme g₁ hvg' xC, hb1⟩) K K <
-          Q.scheme.rows.E (toCell Q.scheme.scheme g₁ hvg' oC)
-            ⟨toCell Q.scheme.scheme g₁ hvg' (root.face a).1, hb3'⟩
-        calc extVisibilityReplace (Q.scheme.rows.E (toCell Q.scheme.scheme g₁ hvg' oC)
-              ⟨toCell Q.scheme.scheme g₁ hvg' xC, hb1⟩) K K
-            = extVisibilityReplace (Q.scheme.rows.E o ⟨x, hxo⟩) K K :=
-              congrArg (fun z => extVisibilityReplace z K K)
-                (E_congr Q.scheme.rows hoC _ _ hxC)
-          _ < Q.scheme.rows.E o ⟨_, hbelow⟩ := h
-          _ = Q.scheme.rows.E (toCell Q.scheme.scheme g₁ hvg' oC)
-              ⟨toCell Q.scheme.scheme g₁ hvg' (root.face a).1, hb3'⟩ :=
-              (E_congr Q.scheme.rows hoC _ _ rfl).symm }
-  refine ⟨k, g₁.trans Cov, CT, e, pR, Q', ?_, ?_, hcofCT, hcofQ', hQ'e, F, rfl, rfl, rfl,
-    ?_, ?_, ?_⟩
-  · have h := hcons Cov Q g₁ hQ
-    rw [h]
-    exact hCT
+      root_gap := fun a ht => by
+        have hface_scope : Q.scheme.scheme.scope (toCell Q.scheme.scheme g₁ hvg' (root.face a).1) ⊆
+            Finset.univ.image g := by
+          rw [← image_scope_restrictFace Q.scheme.scheme g₁ hvg' (root.face a).1]
+          intro y hy
+          obtain ⟨z, hz, rfl⟩ := Finset.mem_image.mp hy
+          obtain ⟨i, -, rfl⟩ := Finset.mem_image.mp ((root.face a).2.1 hz)
+          rw [← hg]; exact Finset.mem_image_of_mem _ (Finset.mem_univ i)
+        exact hgap_at ⟨(root.face a).1, (root.face a).2.1.trans hroot_sub,
+          (root.grade a).symm.trans_le ((hQ'K a.1 ht).trans_eq hoCg.symm)⟩
+          (hfull _ hface_scope ((hshared a).symm.trans ht)) }
+  refine ⟨k, g₁.trans Cov, CT, e, pR, Q', by rw [hcons Cov Q g₁ hQ]; exact hCT, ?_,
+    hcofCT, hcofQ', hQ'e, F, rfl, rfl, rfl, ?_, ?_, fun j b hb => ?_⟩
   · rw [Function.Embedding.trans_assoc, ← Function.Embedding.trans_assoc Fin.castSuccEmb, hg,
       ← Function.Embedding.trans_assoc]
     exact het
   · change Q.label (toCell Q.scheme.scheme g₁ hvg' oC) = ⊤
-    rw [hoC]
-    exact mem_topSet.mp (hH.subset hoH)
+    rw [hoC]; exact mem_topSet.mp (hH.subset hoH)
   · change Q.label (toCell Q.scheme.scheme g₁ hvg' xC) = ⊤
-    rw [hxC]
-    exact hxtop
-  · intro j b hb
-    exact
+    rw [hxC]; exact hxtop
+  · exact
       { lawfulP := Q'.respects.toBelow _
         lawfulC := CT.respects.toBelow _
         shared := hshared
@@ -400,8 +272,5 @@ theorem exists_lowOnlyFamily_of_tail (hcons : R.IsExactParentConsistent) {K : �
         futureC := fun d _ => SelfVis.mono (show SelfVis (CT.scheme.scheme.grade d) (CT.label d)
           from (CT.respects.orderly d).symm) (CT.scheme.scheme.grade_pos d)
         cutoff := hb
-        low := fun _ _ d hd => by
-          have hd' : Q'.label d = ⊤ := hd
-          exact le_top.trans_eq hd'.symm }
+        low := fun _ _ d hd => le_top.trans_eq (hd : Q'.label d = ⊤).symm }
 
-end VaughtConjecture.Knight.FirstLossLowFamily

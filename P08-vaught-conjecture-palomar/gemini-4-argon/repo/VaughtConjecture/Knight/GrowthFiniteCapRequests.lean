@@ -15,12 +15,10 @@ Correctness gives separate exact-proper and high-value receipts; it does not
 force donor tops to remain top.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthFiniteCapRequests
 open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan CappedDonor
-noncomputable section
 
 theorem block_le {α : LimitStage} {β : Ordinal.{0}} (hβ : β < α.nextBlock.1) :
     limitPart β ≤ α.1 := by
@@ -152,6 +150,3 @@ theorem high_readback {v : Cell DQ → ExtOrd}
   have he := h.2.2 d hd
   rw [dOf_eq c L hL a ref P w hα hi ha hcut] at he
   exact he.trans (min_le_left _ _)
-
-end
-end VaughtConjecture.Knight.GrowthFiniteCapRequests

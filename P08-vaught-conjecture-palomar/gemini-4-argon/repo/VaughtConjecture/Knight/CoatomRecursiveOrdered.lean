@@ -9,15 +9,13 @@ public import VaughtConjecture.Knight.CoatomRecursiveApex
 public import VaughtConjecture.Knight.CanonicalRecursiveLiteralRows
 
 /-! # Ordered original faces of the activated recursive coatom output -/
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CoatomRecursiveOrdered
-open Transform Value ExtOrd AmalgamationPlan AmalgamatedBoundaryPlan
-open SemSchemeBoundaryInput CoatomRecursiveApex
-noncomputable section
+open Transform Value ExtOrd AmalgamationPlan AmalgamatedBoundaryPlan SemSchemeBoundaryInput CoatomRecursiveApex
+section
 variable {ι : Type*} [DecidableEq ι] {A B : Finset ι} {s : Step A} {m n : ℕ}
-variable (I : Input s m (n + 3) (n + 3)) {α : Ordinal.{0}}
+  (I : Input s m (n + 3) (n + 3)) {α : Ordinal.{0}}
   {p : Cell I.left.scheme → ExtOrd} {q : Cell I.right.scheme → ExtOrd}
   (O : Display I α p q)
 
@@ -80,7 +78,7 @@ end VaughtConjecture.Knight.CoatomRecursiveOrdered
 
 namespace VaughtConjecture.Knight
 open Transform Value ExtOrd AmalgamationPlan
-noncomputable section
+section
 
 /-- Exact physical rows, exhaustive occurrence order, plan, and labels suffice
 for literal ordered restriction; no relabelling or equivalence of types. -/
@@ -120,9 +118,8 @@ end
 end VaughtConjecture.Knight
 
 namespace VaughtConjecture.Knight.CoatomRecursiveOrdered
-open Transform Value ExtOrd AmalgamationPlan AmalgamatedBoundaryPlan
-open SemSchemeBoundaryInput CoatomRecursiveApex
-noncomputable section
+open Transform Value ExtOrd AmalgamationPlan AmalgamatedBoundaryPlan SemSchemeBoundaryInput CoatomRecursiveApex
+
 variable {n m : ℕ} {α : Ordinal.{0}}
   {s : Step (Finset.univ : Finset (Fin (n + 4)))}
   (I : Input s m (n + 3) (n + 3))
@@ -168,6 +165,3 @@ theorem exists_amalgam (hα : Order.IsSuccLimit α) (C : CoatomPair (n + 2))
   exact ⟨O.toType,
     ⟨left_typeMap I O pa.respects pa.label_bound,
       right_typeMap I O pb.respects pb.label_bound⟩, O.maximal⟩
-
-end
-end VaughtConjecture.Knight.CoatomRecursiveOrdered

@@ -16,16 +16,13 @@ the constructed section operator. This does not combine two independent
 cap histories. Truncation at a limit stage fixes every given face label.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CoatomRecursiveDisplay
-open AmalgamationPlan AmalgamatedBoundaryPlan SemSchemeBoundaryInput
-open Transform Value ExtOrd CoatomRecursiveInput
-noncomputable section
+open AmalgamationPlan AmalgamatedBoundaryPlan SemSchemeBoundaryInput Transform Value ExtOrd CoatomRecursiveInput
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {s : Step A}
-variable {m n : ℕ} (I : Input s m (n + 3) (n + 3))
+  {m n : ℕ} (I : Input s m (n + 3) (n + 3))
 
 abbrev boundary := CanonicalRecursiveContract.boundary I.rows n (height_le I)
 abbrev left (d : Cell I.left.scheme) : Cell (scheme I) :=
@@ -107,6 +104,3 @@ theorem compatible_labels {α : Ordinal.{0}} (C : CoatomPair (n + 2))
   have hl := (Classical.choose_spec h).1
   have hr := (Classical.choose_spec h).2
   exact (faceMap_label pa r C.g₁ _ _ hl i).trans (faceMap_label pb r C.g₂ _ _ hr i).symm
-
-end
-end VaughtConjecture.Knight.CoatomRecursiveDisplay

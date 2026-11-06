@@ -26,5 +26,3 @@ theorem Extends.refl (A : T.Realization α M) : A.Extends A := fun _ _ _ h => h
 
 theorem Extends.trans {A B C : T.Realization α M} (h : A.Extends B) (h' : B.Extends C) :
     A.Extends C := fun _ t p hp => h' t p (h t p hp)
-
-end VaughtConjecture.TypeTower.Realization

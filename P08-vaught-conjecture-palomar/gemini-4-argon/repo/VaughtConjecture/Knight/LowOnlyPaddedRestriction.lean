@@ -14,13 +14,11 @@ set is literally inherited, with a constructed occurrence equivalence and
 lawfulness transport. These are row facts, independent of higher lifting.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedRestriction
-open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder
-open LowOnlyPaddedContract LowOnlyPaddedIteration
-noncomputable section
+open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder LowOnlyPaddedContract LowOnlyPaddedIteration
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n K : ℕ}
   (I : WholeDonorBoundary.Input A B C R m n n) (F : LowOnly.Family I.left I.right K)
@@ -109,6 +107,3 @@ theorem base_pullback {k : ℕ} (P : Layer I F hroot hA hB hC k)
   have hp := (P.base_respects c q).mp (hq.toBelow _)
   exact GradeCutLayerRows.cast_respects (base I F hroot hA hB hC)
     (baseRows I F hroot hA hB hC) hc hp
-
-end
-end VaughtConjecture.Knight.LowOnlyPaddedRestriction

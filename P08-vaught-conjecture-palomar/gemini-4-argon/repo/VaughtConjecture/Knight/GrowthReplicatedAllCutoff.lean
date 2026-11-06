@@ -15,13 +15,11 @@ consumed without changes. Replication retains the cap at each actual copy.
 Mixed prescriptions and proper mixed targets remain separate obligations.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthReplicatedAllCutoff
-open AmalgamationPlan Transform Value ExtOrd Growth CoatomBoundaryExtension
-open GrowthPaddedIteration GrowthReplicatedRows
-noncomputable section
+open AmalgamationPlan Transform Value ExtOrd Growth CoatomBoundaryExtension GrowthPaddedIteration GrowthReplicatedRows
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n J : ℕ}
   (I : WholeDonorBoundary.Input A B C R m (n + 1) J)
@@ -44,6 +42,3 @@ theorem donor_subface (hsmall : n + 1 < X.req.N) {S : Finset ι} {i j : ℕ}
       (show GradedLe (S, i) (A, j) from ⟨hSB.trans hB.subset, hij⟩) :=
   lift_to_full (build I X T hA hB hC t ht) _ (Or.inl hSB)
     (GrowthPaddedAllCutoff.donor_subface I X T hA hB hC hsmall t ht hS hSB hij hj)
-
-end
-end VaughtConjecture.Knight.GrowthReplicatedAllCutoff

@@ -8,7 +8,9 @@ module
 public import VaughtConjecture.Knight.OrdinaryAttachedReceiving
 public import VaughtConjecture.Knight.CappedDonorComparisonRequest
 public import VaughtConjecture.Knight.TopSupportReceiving
-public import VaughtConjecture.Knight.ExtensionSets
+public import VaughtConjecture.Knight.ReductModel
+public import VaughtConjecture.Knight.Reduction
+public import VaughtConjecture.Knight.ActualOccurrence
 public import VaughtConjecture.Knight.CapObservation
 
 /-! # Finite-cut receiving in a model
@@ -175,5 +177,3 @@ theorem finiteCutReceiving (hM : R.IsModel) : FiniteCutReceiving R := by
     exists_ref_above_cut_min hM p hp P hP ν hν 3
   exact fc_of_reference hM hp P hm (by omega) C.eval_ctx C.proj C.proj_ctx Rf hRp hRv hK hA' hA
     hface hlt.le
-
-end VaughtConjecture.Knight.OrdinaryModelReceiving

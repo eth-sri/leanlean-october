@@ -5,7 +5,18 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.GradeOneSourceCarrier
+public import VaughtConjecture.Knight.SourcePrefixLayer
+public import VaughtConjecture.Knight.AmalgamatedBoundaryRows
+public import VaughtConjecture.Knight.FiniteOffset
+public import VaughtConjecture.Knight.SourcePrefixRows
+public import VaughtConjecture.Knight.FiniteProfileControllers
+public import VaughtConjecture.Knight.SlackCutPasting
+public import VaughtConjecture.Knight.VisibleOrderInterpolation
+public import VaughtConjecture.Knight.SourceBlockLocalityTransport
+public import VaughtConjecture.Knight.SlotControllerFamily
+public import VaughtConjecture.Knight.FreshSourceSlots
+public import VaughtConjecture.Knight.SourceBlockPadding
+public import VaughtConjecture.Knight.FreeDiagonal
 
 /-! # Appending a full-scope layer above an actual lower inventory
 
@@ -14,19 +25,17 @@ Strictly smaller grade, not proper scope, keeps every new controller out of
 their lower domains. All inherited occurrences and their enumeration survive.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.SourceLayerCarrier
 
 open AmalgamationPlan Transform Value ExtOrd
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι}
-variable (D : CellScheme A) (Q : Type*) [Fintype Q] (k : ℕ)
-variable (hk : 0 < k) (hA : k ≤ A.card)
+  (D : CellScheme A) (Q : Type*) [Fintype Q] (k : ℕ)
+  (hk : 0 < k) (hA : k ≤ A.card)
 
-noncomputable def scheme : CellScheme A where
+def scheme : CellScheme A where
   plan := D.plan
   isPlan := D.isPlan
   card := D.card + Fintype.card Q
@@ -38,13 +47,13 @@ noncomputable def scheme : CellScheme A where
       simp only [Fin.addCases_right]
       exact Plan.mem_gradedPlan.mpr ⟨D.isPlan.domain_mem, hk, hA⟩
 
-noncomputable def enumeration : (Cell D ⊕ Q) ≃ Cell (scheme D Q k hk hA) :=
+def enumeration : (Cell D ⊕ Q) ≃ Cell (scheme D Q k hk hA) :=
   (Equiv.sumCongr (Equiv.refl _) (Fintype.equivFin Q)).trans finSumFinEquiv
 
-noncomputable def toCell (d : Cell D ⊕ Q) : Cell (scheme D Q k hk hA) :=
+def toCell (d : Cell D ⊕ Q) : Cell (scheme D Q k hk hA) :=
   enumeration D Q k hk hA d
 
-noncomputable def toOcc (d : Cell (scheme D Q k hk hA)) : Cell D ⊕ Q :=
+def toOcc (d : Cell (scheme D Q k hk hA)) : Cell D ⊕ Q :=
   (enumeration D Q k hk hA).symm d
 
 @[simp] theorem toOcc_toCell (d : Cell D ⊕ Q) :
@@ -86,10 +95,6 @@ theorem old_occurrence (d : Cell (scheme D Q k hk hA))
   | inl x => exact ⟨x, by rw [← he, toCell_toOcc]⟩
   | inr q => exact False.elim (hd (by rw [cell_eq, he]; rfl))
 
-noncomputable def controller (q : Q) :
+def controller (q : Q) :
     SourcePrefixLayer.Controller (scheme D Q k hk hA) k :=
   ⟨toCell D Q k hk hA (.inr q), cell_toCell D Q k hk hA (.inr q)⟩
-
-variable (sem : Semantics D)
-
-end VaughtConjecture.Knight.SourceLayerCarrier

@@ -17,12 +17,10 @@ that every arbitrary donor replacement above activation preserves the relation.
 No physical lifting or renderer lawfulness is asserted.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.Growth
 open Transform Value ExtOrd AmalgamationPlan CanonicalPairedInverse
-noncomputable section
 
 variable {n J r : ℕ} {P : SemScheme (n + 1)} {C : SemScheme J}
   {F : SemScheme r} {fP : Fin r ↪ Fin (n + 1)}
@@ -117,6 +115,3 @@ theorem donor_grade_lt {m N : ℕ} (D : SemScheme m) (hm : m < N) (d : Cell D.sc
   ((D.scheme.grade_le_card_scope d).trans
     (by simpa only [Finset.card_univ, Fintype.card_fin] using
       Finset.card_le_univ (D.scheme.scope d))).trans_lt hm
-
-end
-end VaughtConjecture.Knight.Growth

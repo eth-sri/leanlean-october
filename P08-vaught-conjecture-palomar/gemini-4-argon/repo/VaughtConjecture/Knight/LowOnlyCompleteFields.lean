@@ -15,13 +15,11 @@ over the complete finite field vector, with no grade restriction on its non-top 
 These are receipt lemmas, not the two coface repair fibres themselves.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.LowOnly
 
 open Transform Value ExtOrd AmalgamationPlan CappedDonor
-
-noncomputable section
 
 variable {n : ℕ} {P : SemScheme n} {j : ℕ}
 
@@ -96,8 +94,3 @@ theorem clipped_activation {T : F → Prop} {a a' : F → ExtOrd} {b γ : ExtOrd
 
 theorem clipped_cutoff_cap (b γ : ExtOrd) : min (min b γ) γ = min b γ := by
   rw [min_assoc, min_self]
-
-end Barrier
-end
-
-end VaughtConjecture.Knight.LowOnly

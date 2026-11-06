@@ -19,7 +19,6 @@ face. No growth physical receiver or stable occurrence is asserted.
 
 @[expose] public section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.HollowGrowthTemplate
 open TypeTower StageType KnightRealization Value ExtOrd CappedDonor
 universe w
@@ -58,5 +57,3 @@ theorem donor_tuple {n : ℕ} (t : Fin n ↪ M) (z : M) (hz : z ∉ Set.range t)
   · simp only [Function.Embedding.trans_apply, FixedHeight.extendFace_last, snoc_apply_last]
   · simp only [Function.Embedding.trans_apply, FixedHeight.extendFace_castSucc,
       Fin.castSuccEmb_apply, snoc_apply_castSucc]
-
-end VaughtConjecture.Knight.HollowGrowthTemplate

@@ -25,5 +25,3 @@ theorem blockStage_succ_eq_nextBlock (ρ : Ordinal.{0}) :
   change blockLevel (ρ + 1) = blockLevel ρ + Ordinal.omega0
   have h := blockLevel_succ ρ
   rwa [Order.succ_eq_add_one] at h
-
-end VaughtConjecture.Knight

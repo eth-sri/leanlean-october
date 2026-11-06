@@ -16,14 +16,12 @@ to be a faithful witness on long rows. All complete fields and the reserved
 ceiling are read through the same map.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedRenderChart
-open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder
-open LowOnlyPaddedContract LowOnlyPaddedIteration LowOnlyPaddedRestriction
+open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder LowOnlyPaddedContract LowOnlyPaddedIteration LowOnlyPaddedRestriction
 open SourcePrefixRows SharpWitnessComposition PairedSlotComparison
-noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n K : ℕ}
   (I : WholeDonorBoundary.Input A B C R m n n) (F : LowOnly.Family I.left I.right K)
@@ -156,6 +154,3 @@ theorem source_chart (t : ℕ) (ht : t + 2 ≤ A.card) (r : ℕ)
           (belowEquiv I F hroot hA hB hC t ht (A, t + 2) le_rfl r (by omega) d).1) = _
       rw [LowOnlyPaddedStepRows.source_old]
       exact hd d
-
-end
-end VaughtConjecture.Knight.LowOnlyPaddedRenderChart

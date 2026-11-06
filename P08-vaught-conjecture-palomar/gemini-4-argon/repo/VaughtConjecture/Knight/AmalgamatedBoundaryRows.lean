@@ -15,20 +15,17 @@ No display is recoded and no faithful transformations are composed.
 Only equality of the shared source rows is required for row installation.
 -/
 
-@[expose] public section
-
-set_option autoImplicit false
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.AmalgamatedBoundaryRows
 
-open AmalgamationPlan AmalgamatedBoundaryPlan AmalgamatedBoundary
-open Transform Value ExtOrd
+open AmalgamationPlan AmalgamatedBoundaryPlan AmalgamatedBoundary Transform Value ExtOrd
 
 variable {ι : Type*} [DecidableEq ι]
 
 open Classical in
 /-- Extend a semantic row by bottom outside its actual lower domain. -/
-noncomputable def total {B : Finset ι} {D : CellScheme B} (sem : Semantics D)
+def total {B : Finset ι} {D : CellScheme B} (sem : Semantics D)
     (c d : Cell D) : ExtOrd :=
   if h : GradedLe (D.cell d) (D.cell c) then sem.E c ⟨d, h⟩ else ⊥
 
@@ -43,10 +40,10 @@ theorem total_outside {B : Finset ι} {D : CellScheme B} (sem : Semantics D)
 
 section Push
 variable {B C : Finset ι} {D : CellScheme B} {K : CellScheme C}
-variable (f : Cell D → Cell K) (hf : Function.Injective f)
-variable (hi : ∀ d, K.cell (f d) = D.cell d) (sem : Semantics D)
+  (f : Cell D → Cell K) (hf : Function.Injective f)
+  (hi : ∀ d, K.cell (f d) = D.cell d) (sem : Semantics D)
 
-noncomputable def pushRow (c : Cell D) : Cell K → ExtOrd :=
+def pushRow (c : Cell D) : Cell K → ExtOrd :=
   Function.extend f (total sem c) (fun _ => ⊥)
 
 include hf in
@@ -67,9 +64,9 @@ theorem pushRow_outside (c : Cell D) (z : Cell K)
 end Push
 
 variable {A : Finset ι} (s : Step A)
-variable (D : CellScheme (A.erase s.a)) (E : CellScheme (A.erase s.b))
-variable {k : ℕ} (w : Overlap D E k) (hD : D.plan = s.left) (hE : E.plan = s.right)
-variable (semD : Semantics D) (semE : Semantics E)
+  (D : CellScheme (A.erase s.a)) (E : CellScheme (A.erase s.b))
+  {k : ℕ} (w : Overlap D E k) (hD : D.plan = s.left) (hE : E.plan = s.right)
+  (semD : Semantics D) (semE : Semantics E)
 
 local notation "K" => scheme s D E w hD hE
 local notation "l" => leftCell s D E w hD hE
@@ -115,7 +112,7 @@ theorem pushRow_shared (hc : Compatible s D E w semD semE) (i : Fin k) :
       (right_index s D E w hD hE) semE]
     rwa [← w.shared]
 
-noncomputable def table (c : Cell K) : Cell K → ExtOrd :=
+def table (c : Cell K) : Cell K → ExtOrd :=
   ProfileFaceUnion.paste w.g (pushRow l semD) (pushRow r semE)
     ((enumeration D E w).symm c)
 
@@ -158,7 +155,7 @@ theorem table_orderly (c : Cell K) (d : (K).below ((K).cell c)) :
     exact semE.orderly c e
 
 /-- Both rows are copied literally; the common rows agree by compatibility. -/
-noncomputable def rows : Semantics K where
+def rows : Semantics K where
   E c d := table s D E w hD hE semD semE c d.1
   orderly := table_orderly s D E w hD hE semD semE hc
 
@@ -171,5 +168,3 @@ theorem rows_right (c : Cell E) (d : E.below (E.cell c)) :
     (rows s D E w hD hE semD semE hc).E (r c) (rightBelow s D E w hD hE c d) =
       semE.E c d :=
   (table_right s D E w hD hE semD semE hc c d.1).trans (total_below semE c d)
-
-end VaughtConjecture.Knight.AmalgamatedBoundaryRows

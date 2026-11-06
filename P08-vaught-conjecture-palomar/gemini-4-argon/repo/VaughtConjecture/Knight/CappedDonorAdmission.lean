@@ -40,15 +40,14 @@ admitted layers and never re-admits old profiles at a higher grade.  Nothing her
 arbitrary lawful physical output is admitted or synchronized.  Grade-one positive monotone
 interpolation (new19 §1.4) is not banked here. -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.CappedDonor.Ref
 
 open Transform Value ExtOrd AmalgamationPlan
-noncomputable section
 
-variable {I : Type*} [Fintype I] {nP N J K : ℕ} {P : SemScheme (nP + 1)} {C : SemScheme J}
-  {R : Ref I nP N J P C} (L : R.LowRef K)
+variable {I : Type*} [Fintype I] {nP N J : ℕ} {P : SemScheme (nP + 1)} {C : SemScheme J}
+  {R : Ref I nP N J P C}
 
 /-! ## Synchronization identifies the persistent and source vectors -/
 
@@ -97,6 +96,3 @@ theorem zeroState_synchronized (j : ℕ) : Synchronized (zeroState R j) := by
   intro f
   rw [zeroState_sourceProfile, extVisibilityReplace_bot]
   cases f <;> rfl
-
-end
-end VaughtConjecture.Knight.CappedDonor.Ref

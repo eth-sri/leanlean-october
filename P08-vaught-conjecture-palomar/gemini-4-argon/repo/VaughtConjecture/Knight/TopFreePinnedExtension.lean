@@ -82,5 +82,3 @@ theorem exists_pinned {N n : ℕ} (P : S β.1 N) (hP : ∀ d, P.label d ≠ ⊤)
   change min (min _ γ) δ = min _ δ
   rw [min_assoc, min_eq_right hδγ]
   rfl
-
-end VaughtConjecture.Knight.TopFreePinnedExtension

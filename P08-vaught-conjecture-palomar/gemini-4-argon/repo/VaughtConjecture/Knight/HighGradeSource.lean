@@ -19,7 +19,7 @@ section and unrestricted bountifulness on the resulting fixed rows. It
 does not require arbitrary later capped lifts to keep that positive demand.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.HighGradeExtension
 
@@ -30,7 +30,7 @@ variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A} {k : �
   (p : D.below (A, k) → ExtOrd) (hp : RespectsSemanticsBelow base (A, k) p)
   (N : ExtOrd) (hN : SelfVis (D.grade h) N)
 
-noncomputable def sourceValues : Finset Ordinal := by
+def sourceValues : Finset Ordinal := by
   let _ : Fintype (D.below (A, k)) := Fintype.ofFinite _
   exact primRange p ∪ primRange (fun _ : Unit => N)
 
@@ -45,7 +45,7 @@ theorem supported_new : SourceCode.Supported (sourceValues p N) N := by
   exact mem_primRange_of_eq (target := fun _ : Unit => N) (d := ()) hv
 
 /-- The new high row is selected jointly with its selected labelling. -/
-noncomputable def adapted : Data D k where
+def adapted : Data D k where
   base := base
   high := h
   above := hh
@@ -177,7 +177,3 @@ theorem exists_extension (hk : 1 ≤ k) (hc : base.IsConsistent)
   intro d
   rw [selected_old h p N d.1 d.2.2]
   exact congrArg p (Subtype.ext rfl)
-
-variable {n : ℕ} {D : CellScheme (ι := Fin n) Finset.univ} {k : ℕ}
-
-end VaughtConjecture.Knight.HighGradeExtension

@@ -18,7 +18,7 @@ The predicate is deliberately unbundled: both plan faces and actual supports
 use the same least-element lemma.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.FiniteSupportClosure
 
@@ -47,7 +47,7 @@ theorem exists_least (P : Finset M → Prop)
   rw [← heq]
   exact Finset.inter_subset_right
 
-noncomputable def hull (P : Finset M → Prop)
+def hull (P : Finset M → Prop)
     (hinter : ∀ A B, P A → P B → P (A ∩ B))
     (hcover : ∀ S, ∃ A, P A ∧ S ⊆ A) (S : Finset M) : Finset M :=
   Classical.choose (exists_least P hinter S (hcover S))
@@ -61,17 +61,10 @@ theorem hull_spec (P : Finset M → Prop)
 
 /-- The usual closure operator. `IsClosed` is definitionally the original
 predicate, rather than a second presentation of closedness. -/
-noncomputable def ofCofinalInterClosed (P : Finset M → Prop)
+def ofCofinalInterClosed (P : Finset M → Prop)
     (hinter : ∀ A B, P A → P B → P (A ∩ B))
     (hcover : ∀ S, ∃ A, P A ∧ S ⊆ A) : ClosureOperator (Finset M) :=
   ClosureOperator.ofPred (hull P hinter hcover) P
     (fun S => (hull_spec P hinter hcover S).2.1)
     (fun S => (hull_spec P hinter hcover S).1)
     (fun S B hSB hB => (hull_spec P hinter hcover S).2.2 B hB hSB)
-
-@[simp] theorem ofCofinalInterClosed_isClosed (P : Finset M → Prop)
-    (hinter : ∀ A B, P A → P B → P (A ∩ B))
-    (hcover : ∀ S, ∃ A, P A ∧ S ⊆ A) (S : Finset M) :
-    (ofCofinalInterClosed P hinter hcover).IsClosed S ↔ P S := Iff.rfl
-
-end VaughtConjecture.FiniteSupportClosure

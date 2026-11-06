@@ -52,7 +52,7 @@ variable {α : LimitStage}
 section Constructor
 
 variable {M : Type w} {N : Type w'}
-variable {R : KnightRealization α M} {R' : KnightRealization α N}
+  {R : KnightRealization α M} {R' : KnightRealization α N}
 
 /-- A family of finite tuple pairs, each witnessed by one common projected Knight chart,
 containing the empty pair and closed under one-point forth/back, is a standard potential
@@ -81,14 +81,3 @@ noncomputable def potentialIsoOfCommonCharts
     (fun h => sameAtomicType_of_commonChart hR hR' (commonChart _ h))
     (fun h => forth _ h)
     (fun h => back _ h)
-
-end Constructor
-
-section Countable
-
-variable {M N : Type w}
-variable {R : KnightRealization α M} {R' : KnightRealization α N}
-
-end Countable
-
-end VaughtConjecture.Knight

@@ -24,5 +24,3 @@ theorem qrank_lt_ord_aleph_one {L : Language.{u, v}} {γ : Type u'} :
     ∀ {n : ℕ} (φ : L.BoundedFormulaInf ℕ γ n), φ.qrank < (aleph 1).ord := by
   intro n φ
   simpa only [Cardinal.ord_aleph] using BoundedFormulaω.qrank_lt_omega1 φ
-
-end VaughtConjecture

@@ -25,8 +25,6 @@ chosen coded ceiling.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.RightFilledGap
 
 open Transform Value ExtOrd
@@ -61,5 +59,3 @@ theorem floor_eq_bot_or_mem (G : Finset ExtOrd) (B : ExtOrd) :
     split_ifs
     · exact Or.inr hz
     · exact Or.inl rfl
-
-end VaughtConjecture.Knight.RightFilledGap

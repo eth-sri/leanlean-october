@@ -21,13 +21,10 @@ the growth relation, or the padded base. This is consistency and selected
 source lawfulness at one scope, not bountifulness or mixed-scope iteration.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthPaddedSuccessor
-open Transform Value ExtOrd Growth GrowthOrderedBase GrowthHigherSources
-open SourcePrefixRows PairedSlotComparison
-noncomputable section
+open Transform Value ExtOrd Growth GrowthOrderedBase GrowthHigherSources SourcePrefixRows PairedSlotComparison
 
 section Anchors
 variable {ιA ιQ : Type*} [DecidableEq ιA] [DecidableEq ιQ]
@@ -39,15 +36,11 @@ def baseAnchor (a : Catalogue X 2) : Catalogue X 1 :=
   normalized X (by decide) (by decide : 1 ≤ 2)
     (state X a) (state_admitted X a) (state_proper X a)
 
-theorem baseAnchor_fields (a : Catalogue X 2) :
-    fields X 1 (baseAnchor X a) = PairedSlotEncoding.normalize 1 (fields X 2 a) := by
-  rw [baseAnchor, normalized_fields, state_profile]
-
 theorem baseAnchor_ranks (a : Catalogue X 2) (d : Field DA DQ) :
     RelativeLadderLayer.ranks (fields X 1) (baseAnchor X a) d =
       LadderScalarRendering.fieldRank (fields X 2 a) d := by
   change LadderScalarRendering.fieldRank (fields X 1 (baseAnchor X a)) d = _
-  rw [baseAnchor_fields]
+  rw [baseAnchor, normalized_fields, state_profile]
   exact ReceivingCatalogueRanks.fieldRank_normalize 1 a.val a.property.1.2 d
 
 end Anchors
@@ -84,28 +77,20 @@ def input : LadderWeightedSuccessor.Input
   nodeField v := Empty.elim v
   node_visible _ v := Empty.elim v
 
-abbrev carrier := (input I X T hA hB hC).carrier
-abbrev rows := (input I X T hA hB hC).rows
-abbrev source := (input I X T hA hB hC).source
-abbrev old := (input I X T hA hB hC).old
-abbrev leaf (a : Catalogue X 2) := (input I X T hA hB hC).added (a, none)
+local notation "inp" => input I X T hA hB hC
+open LadderWeightedSuccessor (Input)
+
+abbrev carrier := Input.carrier inp
+abbrev rows := Input.rows inp
+abbrev source := Input.source inp
+abbrev old := Input.old inp
+abbrev leaf (a : Catalogue X 2) := Input.added inp (a, none)
 abbrev original (d : Cell I.boundary) := old I X T hA hB hC
   (RelativeLadderLayer.old I.boundary (by omega : 0 < A.card) d)
 
-/-- Every new occurrence is a ceiling leaf, not a weighted node. -/
 theorem cell_cases (d : Cell (carrier I X T hA hB hC)) :
-    (∃ x, d = old I X T hA hB hC x) ∨
-      ∃ a, d = leaf I X T hA hB hC a := by
-  let J := input I X T hA hB hC
-  obtain ⟨x, hx⟩ := (SourceLayerCarrier.enumeration J.lower
-    (LadderWeightedSuccessor.Input.Node (U := Catalogue X 2) (V := Empty))
-    2 (by decide) hA).surjective d
-  change SourceLayerCarrier.toCell _ _ _ _ _ x = d at hx
-  rcases x with x | ⟨a, v⟩
-  · exact Or.inl ⟨x, hx.symm⟩
-  · cases v with
-    | none => exact Or.inr ⟨a, hx.symm⟩
-    | some v => exact Empty.elim v
+    (∃ x, d = old I X T hA hB hC x) ∨ ∃ a, d = leaf I X T hA hB hC a :=
+  Input.cell_cases_empty inp d
 
 theorem leaf_index (a : Catalogue X 2) :
     (carrier I X T hA hB hC).cell (leaf I X T hA hB hC a) = (A, 2) :=
@@ -114,79 +99,50 @@ theorem leaf_index (a : Catalogue X 2) :
 theorem original_index (d : Cell I.boundary) :
     (carrier I X T hA hB hC).cell (original I X T hA hB hC d) =
       I.boundary.cell d := by
-  rw [SourceLayerCarrier.cell_toCell]
-  exact RelativeLadderLayer.old_index _ _ d
+  rw [SourceLayerCarrier.cell_toCell]; exact RelativeLadderLayer.old_index _ _ d
 
-theorem consistent : (rows I X T hA hB hC).IsConsistent :=
-  (input I X T hA hB hC).consistent I.consistent
+theorem consistent : (rows I X T hA hB hC).IsConsistent := Input.consistent inp I.consistent
 
 theorem source_lawful (a : Catalogue X 2) :
     RespectsSemanticsBelow (rows I X T hA hB hC) (A, 2)
-      (fun d => source I X T hA hB hC a d.1) :=
-  (input I X T hA hB hC).source_lawful a
+      (fun d => source I X T hA hB hC a d.1) := Input.source_lawful inp a
 
-/-- Every retained rung, shadow, and proper original owner keeps its own row. -/
-theorem inherited_row (c : Cell (input I X T hA hB hC).lower)
-    (d : (input I X T hA hB hC).lower.below
-      ((input I X T hA hB hC).lower.cell c)) :
+theorem inherited_row (c : Cell (Input.lower inp))
+    (d : (Input.lower inp).below ((Input.lower inp).cell c)) :
     (rows I X T hA hB hC).E (old I X T hA hB hC c)
-      (SeparatedSourceLayerCarrier.ownerEquiv (input I X T hA hB hC).lower
-        (LadderWeightedSuccessor.Input.Node (U := Catalogue X 2) (V := Empty))
-        2 (by decide) hA (input I X T hA hB hC).separation c d) =
-      (input I X T hA hB hC).lowerRows.E c d :=
-  (input I X T hA hB hC).inherited_row c d
+      (SeparatedSourceLayerCarrier.ownerEquiv (Input.lower inp)
+        (Input.Node (U := Catalogue X 2) (V := Empty))
+        2 (by decide) hA (Input.separation inp) c d) =
+      (Input.lowerRows inp).E c d := Input.inherited_row inp c d
 
 theorem original_readback (a : Catalogue X 2) (d : Cell I.boundary) :
-    source I X T hA hB hC a (original I X T hA hB hC d) =
-      fields X 2 a (field I d) :=
-  (input I X T hA hB hC).source_original a d
+    source I X T hA hB hC a (original I X T hA hB hC d) = fields X 2 a (field I d) :=
+  Input.source_original inp a d
 
 theorem source_ceiling (a : Catalogue X 2) :
     source I X T hA hB hC a (leaf I X T hA hB hC a) =
       RecursiveRungRendering.ceiling (Field I.right.scheme I.left.scheme) 2 :=
-  (input I X T hA hB hC).source_parent a
+  Input.source_parent inp a
 
 theorem source_prefix (a b : Catalogue X 2) {h : ExtOrd}
     (hh : h ∈ RecursiveRungRendering.grid (Field I.right.scheme I.left.scheme) 2)
     (hab : Agree (fields X 2 a) (fields X 2 b) h)
     (d : Cell (carrier I X T hA hB hC)) :
     min (source I X T hA hB hC a d) h = min (source I X T hA hB hC b d) h :=
-  (input I X T hA hB hC).source_prefix_all a b hh hab d
+  Input.source_prefix_all inp a b hh hab d
 
 theorem source_supported (a : Catalogue X 2) (d : Cell (carrier I X T hA hB hC)) :
     OrbitPrefixSupport.Supported 2
       (RecursiveRungRendering.grid (Field I.right.scheme I.left.scheme) 2 : Set ExtOrd)
-      (fields X 2 a) (source I X T hA hB hC a d) :=
-  (input I X T hA hB hC).source_supported_all a d
+      (fields X 2 a) (source I X T hA hB hC a d) := Input.source_supported_all inp a d
 
-/-- Each new row is the full selected source, with no residual weight cap. -/
 theorem leaf_row (a : Catalogue X 2)
     (d : (carrier I X T hA hB hC).below
       ((carrier I X T hA hB hC).cell (leaf I X T hA hB hC a))) :
     (rows I X T hA hB hC).E (leaf I X T hA hB hC a) d =
-      source I X T hA hB hC a d.1 := by
-  let J := input I X T hA hB hC
-  have he := WeightedSourcePrefixLayer.row_new J.data J.weight J.weight_visible
-    (J.controller (a, none)) d
-  have hw : J.weight (J.controller (a, none)) = J.ceiling := by
-    simp only [LadderWeightedSuccessor.Input.weight,
-      LadderWeightedSuccessor.Input.member_controller,
-      LadderWeightedSuccessor.Input.nodeWeight]
-  exact he.trans ((congrArg (min (J.source a d.1)) hw).trans
-    (min_eq_left (J.source_bound_all a d.1)))
+      source I X T hA hB hC a d.1 := Input.leaf_row inp a d
 
 theorem source_leaf (a b : Catalogue X 2) :
     source I X T hA hB hC a (leaf I X T hA hB hC b) =
       cut (RecursiveRungRendering.grid (Field I.right.scheme I.left.scheme) 2)
-        (fields X 2 a) (fields X 2 b) := by
-  let J := input I X T hA hB hC
-  change WeightedSourcePrefixLayer.master J.data J.weight
-    (J.controller (a, none)) (J.controller (b, none)).1 = _
-  rw [WeightedSourcePrefixLayer.master_new]
-  simp only [LadderWeightedSuccessor.Input.data,
-    LadderWeightedSuccessor.Input.member_controller,
-    LadderWeightedSuccessor.Input.weight, LadderWeightedSuccessor.Input.nodeWeight]
-  exact min_eq_left (cut_le J.grid_bound _ _)
-
-end
-end VaughtConjecture.Knight.GrowthPaddedSuccessor
+        (fields X 2 a) (fields X 2 b) := Input.source_leaf inp a b

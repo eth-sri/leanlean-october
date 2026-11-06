@@ -17,7 +17,7 @@ commutation and repair on the actual source blocks; availability may use either
 input's witnesses. No general closure under pointwise maximum is asserted.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.AlignedCutJoin
 
@@ -36,7 +36,7 @@ theorem bounded_max {K : ℕ} {f g : ExtOrd → ExtOrd}
 
 /-- A scalar tail gated at a visible output cap. It need not be faithful above
 the grade bound, so its consumer repairs actual source blocks instead. -/
-noncomputable def above (γ : ExtOrd) (f : ExtOrd → ExtOrd) (y : ExtOrd) : ExtOrd :=
+def above (γ : ExtOrd) (f : ExtOrd → ExtOrd) (y : ExtOrd) : ExtOrd :=
   if y ≤ γ then ⊥ else f y
 
 theorem above_of_le {γ y : ExtOrd} {f : ExtOrd → ExtOrd} (hy : y ≤ γ) :
@@ -64,7 +64,7 @@ theorem above_bounded {K : ℕ} {γ : ExtOrd} {f : ExtOrd → ExtOrd}
       exact hf.comm x k i hk hi
 
 /-- The old source prefix and the new output tail are separate inputs. -/
-noncomputable def paste {X : Type*} (s p : X → ExtOrd) (a : ExtOrd)
+def paste {X : Type*} (s p : X → ExtOrd) (a : ExtOrd)
     (v : ExtOrd → ExtOrd) (d : X) : ExtOrd := max (min (s d) a) (v (p d))
 
 section Scalar
@@ -195,7 +195,3 @@ theorem paste_respects {s p : D.below BJ → ExtOrd} {K : ℕ} {a γ : ExtOrd}
       change max (min (s d) a) (v (p d)) ≤ max (min (s e) a) (v (p e))
       rw [max_eq_right (not_le.mp h).le]
       exact (hv.mono hde).trans (le_max_right _ _)
-
-end Scheme
-
-end VaughtConjecture.Knight.AlignedCutJoin

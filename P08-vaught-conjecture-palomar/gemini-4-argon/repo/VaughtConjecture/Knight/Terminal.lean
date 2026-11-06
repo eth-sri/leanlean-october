@@ -132,7 +132,7 @@ history/linked-stop layer to produce that witness; the classifier (#53/#57) will
 (Def. 5.3.9 as an *object*, Lemma 5.3.10) stays proof-internal (#51,
 `docs/CONCORDANCE.md` §5.3); this module only defines its value graph. -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight
 
@@ -168,7 +168,7 @@ theorem restrictFace_eq_of_typeMap_eq_some {q : S α n} {p : S α m} {f : Fin m 
 /-- The cell of `q` underlying a cell of its restriction `p` (the paper's `Ξ ∈ dom p ⊆ dom q`):
 transport along the restriction equation, then the cell map `toCell` of the face
 restriction. -/
-noncomputable def mapCell {q : S α n} {p : S α m} {f : Fin m ↪ Fin n}
+def mapCell {q : S α n} {p : S α m} {f : Fin m ↪ Fin n}
     (h : typeMap f q = some p) (Xi : Cell p.scheme.scheme) : Cell q.scheme.scheme :=
   toCell q.scheme.scheme f (visible_of_typeMap_eq_some h)
     (SemScheme.castCell (congrArg StageType.scheme (restrictFace_eq_of_typeMap_eq_some h).symm)
@@ -213,7 +213,7 @@ theorem topGrades_bddAbove (p : S α n) : BddAbove p.topGrades := by
 
 /-- The paper's `K^p` (Def. 5.3.1): the greatest grade of a full-scope `∞`-cell (`0` when
 there is none — under clause 2 the set is nonempty, `grade_mem_topGrades`). -/
-noncomputable def topGrade (p : S α n) : ℕ := sSup p.topGrades
+def topGrade (p : S α n) : ℕ := sSup p.topGrades
 
 /-- If any cell of `p` is labelled `∞`, some full-scope cell of the same grade is labelled `∞`
 (availability, Def. 2.5.4(2), against the full-scope cell of that grade provided by
@@ -275,7 +275,7 @@ relation `IsProvisionalValue` (Def. 5.3.1 as a graph), and this chooser only dis
 totality (`isProvisionalValue_someProvisionalValue`).  Band-index independence (Lemma 5.3.2,
 `ProvisionalBand.unique` in `Knight/ProvisionalUniqueness.lean`) makes the relation
 single-valued, so the chooser computes *the* value (`isProvisionalValue_iff`). -/
-noncomputable def someProvisionalValue (p : S α n) (Xi : Cell p.scheme.scheme) : ExtOrd :=
+def someProvisionalValue (p : S α n) (Xi : Cell p.scheme.scheme) : ExtOrd :=
   open Classical in
   if p.label Xi = ⊤ then
     if p.ProvisionalCap Xi then ofOrd (α + p.topGrade)
@@ -403,14 +403,6 @@ theorem isProvisionalValue_someProvisionalValue (p : S α n) (Xi : Cell p.scheme
       exact Or.inr (Or.inr ⟨htop, hcap, i, hband, hval⟩)
   · exact Or.inl ⟨htop, someProvisionalValue_of_ne_top htop⟩
 
-/-- No provisional value is `∞` — the paper's codomain `{-∞} ∪ [0, α + ω)` of Def. 5.3.1. -/
-theorem IsProvisionalValue.ne_top {p : S α n} {Xi : Cell p.scheme.scheme} {v : ExtOrd}
-    (h : p.IsProvisionalValue Xi v) : v ≠ ⊤ := by
-  rcases h with ⟨hne, rfl⟩ | ⟨-, -, rfl⟩ | ⟨-, -, i, -, rfl⟩
-  · exact hne
-  · exact ofOrd_ne_top _
-  · exact ofOrd_ne_top _
-
 /-- Every provisional value is `≤ α + K^p` (the conservative-estimate reading after
 Def. 5.3.1). -/
 theorem IsProvisionalValue.le {p : S α n} {Xi : Cell p.scheme.scheme} {v : ExtOrd}
@@ -477,30 +469,7 @@ def HasStableValue (R : KnightRealization α M) {n : ℕ} (t : Fin n ↪ M) (p :
   (γ < ofOrd (α.1 + Ordinal.omega0) ∧ R.StabilizesTo t p Xi γ) ∨
   (γ = ⊤ ∧ ∀ δ : ExtOrd, δ < ofOrd (α.1 + Ordinal.omega0) → ¬ R.StabilizesTo t p Xi δ)
 
-/-- The stabilized values realized in `R`: all values `M⁺(Ξ)`, over all cells `Ξ` of all
-realized types (the index set of the supremum in Def. 5.4.1). -/
-def stableSpectrum (R : KnightRealization α M) : Set ExtOrd :=
-  {γ | ∃ (n : ℕ) (t : Fin n ↪ M) (p : S α.1 n), R.eval t = some p ∧
-    ∃ Xi : Cell p.scheme.scheme, R.HasStableValue t p Xi γ}
-
 /-! ### Characteristic arity (Def. 5.4.1) -/
-
-/-- **Def. 5.4.1, fixed `K`**: `α + K` is the supremum of all stabilized values `M⁺(Ξ)`
-(`IsLUB`: no completeness of `ExtOrd` is invoked, and "is the supremum" is read as "is the
-least upper bound", not "is attained").  This is **not** Knight-VC's `charArity`
-(distinguishing arity) — banned identification 2. -/
-def IsCharacteristicArity (R : KnightRealization α M) (K : ℕ) : Prop :=
-  IsLUB R.stableSpectrum (ofOrd (α.1 + K))
-
-/-- **The characteristic arity** `K ∈ ω ∪ {∞}` of `R` (Def. 5.4.1): the finite `K` with
-`α + K` the supremum of the stabilized values, and `∞` when there is none.
-
-**† provisional** (`docs/TERMINOLOGY.md`): a faithful transcription of Def. 5.4.1, but not
-presented as settled until stabilized-value functionality (#51) and occurrence/witness-choice
-independence (#31/#47/#57) are proved. -/
-noncomputable def characteristicArity (R : KnightRealization α M) : ℕ∞ :=
-  open Classical in
-  if h : ∃ K : ℕ, R.IsCharacteristicArity K then (Nat.find h : ℕ∞) else ⊤
 
 /-! ### Anchors at infinity and hollowness (Def. 5.4.2) -/
 
@@ -549,42 +518,9 @@ together; isomorphism transport is proved once, for the profile.  Core data (Def
 is owned by the linked stop / terminal realization (#31); `TerminalCode` (#57) encodes the
 classified branch from this profile together with that core information. -/
 
-/-- The **terminal profile** of a realization: its characteristic arity (Def. 5.4.1) and its
-hollowness (Def. 5.4.2), derived together from the one underlying realization.  `TerminalCode`
-(#57) encodes the *classified branch*: it is built from this profile together with the core
-information owned by the linked stop / terminal realization (#31) — no promise that a chosen
-core becomes a further field here. -/
-structure TerminalProfile : Type where
-  /-- The characteristic arity `K ∈ ω ∪ {∞}` (Def. 5.4.1). -/
-  charArity : ℕ∞
-  /-- Hollowness (Def. 5.4.2): no anchor at infinity. -/
-  hollow : Prop
-
-/-- The terminal profile of `R`: the single function producing all terminal invariants of the
-one datum `R`. -/
-noncomputable def terminalProfile (R : KnightRealization α M) : TerminalProfile :=
-  { charArity := R.characteristicArity
-    hollow := R.IsHollow }
-
-@[simp] theorem terminalProfile_charArity (R : KnightRealization α M) :
-    R.terminalProfile.charArity = R.characteristicArity := rfl
-
-@[simp] theorem terminalProfile_hollow (R : KnightRealization α M) :
-    R.terminalProfile.hollow = R.IsHollow := rfl
-
 /-! ### Isomorphism transport (the acceptance test of #48)
 
 An isomorphism `e : M ≃ N` of realizations moves labelled tuples bijectively and preserves
 labels *on the nose* (`Realization.IsIso`), so every invariant of this module — each an
 intrinsic statement over the labelled tuples of the one datum — transports.  The bundled
 transport is `IsIso.terminalProfile_eq`; the invariant-level statements are its projections. -/
-
-section Iso
-
-variable {N : Type w'} {R : KnightRealization α M} {R₂ : KnightRealization α N} {e : M ≃ N}
-
-end Iso
-
-end KnightRealization
-
-end VaughtConjecture.Knight

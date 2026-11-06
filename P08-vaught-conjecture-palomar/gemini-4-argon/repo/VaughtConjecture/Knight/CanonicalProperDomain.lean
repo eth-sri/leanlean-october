@@ -13,18 +13,16 @@ Neither new layer adds an occurrence to a proper scope. The equivalences below
 transport all rows and lawful target-local ambients, not only chosen sections.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalProperDomain
 open Transform Value ExtOrd CanonicalMixedGradeLayers CoatomBoundaryExtension
-noncomputable section
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable (sem : Semantics D) (j : ℕ) (hj : 0 < j) (hjA : j ≤ A.card)
-variable (hproper : ∀ d : Cell D, D.scope d ≠ A)
-variable (k : ℕ) (hg : ∀ d : Cell D, D.grade d ≤ k)
-variable (hk : 0 < k) (hkA : k ≤ A.card) (hjk : j < k)
+  (sem : Semantics D) (j : ℕ) (hj : 0 < j) (hjA : j ≤ A.card)
+  (hproper : ∀ d : Cell D, D.scope d ≠ A)
+  (k : ℕ) (hg : ∀ d : Cell D, D.grade d ≤ k)
+  (hk : 0 < k) (hkA : k ≤ A.card) (hjk : j < k)
 
 def equiv (BJ : Finset ι × ℕ) (hB : ¬ A ⊆ BJ.1) :
     D.below BJ ≃ (scheme sem j hj hjA k hk hkA).below BJ :=
@@ -62,26 +60,9 @@ theorem pullback_respects {BJ : Finset ι × ℕ} (hB : ¬ A ⊆ BJ.1)
 /-- Every proper-target lifting clause is exactly an old clause. -/
 theorem lift {I J : Finset ι × ℕ} (h : GradedLe I J) (hB : ¬ A ⊆ J.1)
     (hlift : CappedLift sem h) :
-    CappedLift (rows sem j hj hjA hproper k hg hk hkA hjk) h := by
-  intro p q γ hp hq hγ hag
+    CappedLift (rows sem j hj hjA hproper k hg hk hkA hjk) h :=
   have hC : ¬ A ⊆ I.1 := fun hc => hB (hc.trans h.1)
-  let eI := equiv sem j hj hjA k hk hkA I hC
-  let eJ := equiv sem j hj hjA k hk hkA J hB
-  have hm (d : D.below I) :
-      eJ (CellScheme.below.mono h d) = CellScheme.below.mono h (eI d) := rfl
-  obtain ⟨r, hr, hcap, hread⟩ := hlift (p ∘ eI) (q ∘ eJ) γ
-    (pullback_respects sem j hj hjA hproper k hg hk hkA hjk hC hp)
-    (pullback_respects sem j hj hjA hproper k hg hk hkA hjk hB hq) hγ
-    (fun d => hag (eI d))
-  refine ⟨r ∘ eJ.symm, (respects_iff sem j hj hjA hproper k hg hk hkA hjk J hB r).mp hr,
-    fun d => ?_, fun d => ?_⟩
-  · simpa only [Function.comp_apply, Equiv.apply_symm_apply] using hcap (eJ.symm d)
-  · have hd : eJ.symm (CellScheme.below.mono h d) =
-        CellScheme.below.mono h (eI.symm d) := by
-      apply eJ.injective
-      rw [Equiv.apply_symm_apply, hm, Equiv.apply_symm_apply]
-    rw [Function.comp_apply, hd, hread]
-    exact congrArg p (eI.apply_symm_apply d)
+  hlift.of_respects_iff (equiv sem j hj hjA k hk hkA I hC) (equiv sem j hj hjA k hk hkA J hB)
+    (fun _ => rfl) (respects_iff sem j hj hjA hproper k hg hk hkA hjk I hC)
+    (respects_iff sem j hj hjA hproper k hg hk hkA hjk J hB)
 
-end
-end VaughtConjecture.Knight.CanonicalProperDomain

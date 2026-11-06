@@ -20,12 +20,11 @@ value above the requested new-band cutoff. This is the context-selection part
 of the proposed hollow-growth receiver, not the receiver itself.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthContextSynchronization
 open TypeTower StageType KnightRealization Value ExtOrd
-noncomputable section
+
 universe w
 variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
 
@@ -80,6 +79,3 @@ theorem exists_hollow_context (hM : W.IsModel) (hg : W.HasTopGradeGrowth)
     exact ((hs d).1 (by rwa [hid])).trans hid
   · intro d hd
     exact (hs d).2 hd ((stableValue_eq_label_of_hollow hM hh hp d).trans hd)
-
-end
-end VaughtConjecture.Knight.GrowthContextSynchronization

@@ -60,5 +60,3 @@ theorem receive_donor_uniform (β : Ordinal.{0}) {N : Type w}
   change truncExt (blockStage β).1 (Q'.label d) =
     truncExt (blockStage β).1 (Q.label (SemScheme.castCell hs d))
   exact min_eq_min_iff_truncExt_eq.mp (hagree d)
-
-end VaughtConjecture.Knight

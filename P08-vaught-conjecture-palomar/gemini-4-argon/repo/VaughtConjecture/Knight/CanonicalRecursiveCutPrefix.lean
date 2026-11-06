@@ -15,16 +15,15 @@ original field is retained before normalization, so controller caps continue
 to refer to the same full inventory.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalRecursiveCutPrefix
 open Transform Value ExtOrd CanonicalRecursiveSuccessorRows
-noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
-variable (sem : Semantics D) (n : ℕ) (hA : n + 4 ≤ A.card)
-variable (hp : ∀ d : Cell D, D.scope d ≠ A)
-variable (P : CanonicalRecursiveContract.State sem n (Nat.le_of_succ_le hA))
+  (sem : Semantics D) (n : ℕ) (hA : n + 4 ≤ A.card)
+  (hp : ∀ d : Cell D, D.scope d ≠ A)
+  (P : CanonicalRecursiveContract.State sem n (Nat.le_of_succ_le hA))
 
 abbrev cut := GradeCutBoundary.scheme D (n + 4)
 abbrev cutRows := GradeCutBoundary.rows D (n + 4) sem
@@ -82,6 +81,3 @@ theorem exists_section (a : Profile sem n)
   obtain ⟨r, hr, hread, hcap⟩ :=
     CanonicalRecursivePrefix.exists_section sem n hA hp P a hvl hvt hB hva
   exact ⟨r, hr, fun d => (hread (occ d)).trans (hv d), hcap⟩
-
-end
-end VaughtConjecture.Knight.CanonicalRecursiveCutPrefix

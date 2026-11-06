@@ -17,13 +17,10 @@ No pair ledger or higher successor is constructed here. The proof structure
 follows LowOnlyPaddedOriginalLifts, consuming growth repairs on growth rows.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthPaddedOriginalLifts
-open Transform Value ExtOrd CappedDonor Growth
-open GrowthPaddedSuccessor GrowthPaddedDecode
-noncomputable section
+open Transform Value ExtOrd CappedDonor Growth GrowthPaddedSuccessor GrowthPaddedDecode
 
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n J : ℕ}
@@ -33,23 +30,6 @@ variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
     I.commonRight I.visibleRight I.faceRight X)
   (hA : 2 ≤ A.card) (hB : B ⊂ A) (hC : C ⊂ A)
 
-theorem private_inactive
-    {p : I.right.scheme.below (Finset.univ, 2) → ExtOrd}
-    {q : (carrier I X T hA hB hC).below (A, 2) → ExtOrd}
-    (hp : RespectsSemanticsBelow I.right.rows (Finset.univ, 2) p)
-    (hq : RespectsSemanticsBelow (rows I X T hA hB hC) (A, 2) q)
-    {γ : ExtOrd} (hγ : SelfVis 2 γ)
-    (hinactive : ∀ d, I.right.scheme.grade d.1 = 2 → p d ≤ γ)
-    (hag : ∀ d, min (q (privateAt I X T hA hB hC d)) γ = min (p d) γ) :
-    ∃ r, RespectsSemanticsBelow (rows I X T hA hB hC) (A, 2) r ∧
-      (∀ d, r (privateAt I X T hA hB hC d) = p d) ∧
-      ∀ d, min (r d) γ = min (q d) γ := by
-  obtain ⟨r, hr, hread, hcap⟩ := GrowthPaddedPrivateLift.restore I X T hA hB hC hp
-    (hq.cap hγ) hγ hag (fun _ => min_le_right _ _) hinactive
-  exact ⟨r, hr, hread, fun d => (hcap d).trans (by rw [min_assoc, min_self])⟩
-
-/-- All permitted original caps, including bottom and top. The prescription
-and ambient are arbitrary lawful inputs; every physical cap is retained. -/
 theorem private_lift
     {p : I.right.scheme.below (Finset.univ, 2) → ExtOrd}
     {q : (carrier I X T hA hB hC).below (A, 2) → ExtOrd}
@@ -66,8 +46,10 @@ theorem private_lift
   by_cases ha : ∃ d, I.right.scheme.grade d.1 = 2 ∧ γ < p d
   · exact GrowthPaddedPrivateLift.active_private_lift I X T hA hB hC hp hq hγ
       (bot_lt_iff_ne_bot.mpr hz) ha hag
-  · exact private_inactive I X T hA hB hC hp hq hγ
-      (fun d hd => le_of_not_gt (fun h => ha ⟨d, hd, h⟩)) hag
+  · obtain ⟨r, hr, hread, hcap⟩ := GrowthPaddedPrivateLift.restore I X T hA hB hC hp
+      (hq.cap hγ) hγ hag (fun _ => min_le_right _ _)
+      (fun d hd => le_of_not_gt (fun h => ha ⟨d, hd, h⟩))
+    exact ⟨r, hr, hread, fun d => (hcap d).trans (by rw [min_assoc, min_self])⟩
 
 theorem donor_inactive (hN : 1 < X.req.N)
     {p : I.left.scheme.below (Finset.univ, 2) → ExtOrd}
@@ -104,6 +86,3 @@ theorem donor_lift (hN : 2 < X.req.N)
       (bot_lt_iff_ne_bot.mpr hz) ha hag
   · exact donor_inactive I X T hA hB hC (by omega) hp hq hγ
       (fun d hd => le_of_not_gt (fun h => ha ⟨d, hd, h⟩)) hag
-
-end
-end VaughtConjecture.Knight.GrowthPaddedOriginalLifts

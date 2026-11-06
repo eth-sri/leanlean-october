@@ -15,13 +15,11 @@ then the actual numerical table is rendered on the installed anchor. Long-row
 lawfulness is proved directly, not by positive-cap transport at bottom.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.Growth
-open Transform Value ExtOrd CappedDonor.Ref CanonicalPairedInverse
-open LadderScalarRendering ReceivingCatalogueRanks
-noncomputable section
+open Transform Value ExtOrd CappedDonor.Ref CanonicalPairedInverse LadderScalarRendering ReceivingCatalogueRanks
+section
 variable {ιA ιQ : Type*} [DecidableEq ιA] [DecidableEq ιQ]
   {A : Finset ιA} {Q : Finset ιQ} {DA : CellScheme A} {DQ : CellScheme Q}
   {semA : Semantics DA} {semQ : Semantics DQ}
@@ -67,7 +65,7 @@ end VaughtConjecture.Knight.Growth
 
 namespace VaughtConjecture.Knight.GrowthOrderedBase
 open Transform Value ExtOrd AmalgamationPlan Growth RelativeLadderLayer
-noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n J : ℕ}
   (I : WholeDonorBoundary.Input A B C R m (n + 1) J)
@@ -94,14 +92,6 @@ def oldAt (d : I.boundary.below (A, 1)) : (scheme I X hA).below (A, 1) :=
   ⟨old I.boundary hA d.1, by rw [old_index]; exact d.2⟩
 abbrev privateAt (d : I.right.scheme.below (Finset.univ, 1)) := oldAt I X hA (privateIncl I d)
 abbrev donorAt (d : I.left.scheme.below (Finset.univ, 1)) := oldAt I X hA (donorIncl I d)
-
-def renderingAnchor (S : State I.right.scheme I.left.scheme) (hs : Admitted X 1 S) :
-    Catalogue X 1 := (exists_rank_anchor X (by decide : 1 ≤ 1) hs).choose
-
-/-- The ceiling-filled complete table, including spare and foreign rungs. -/
-def render (S : State I.right.scheme I.left.scheme) (hs : Admitted X 1 S) (β : ExtOrd) :
-    Cell (scheme I X hA) → ExtOrd :=
-  renderWith I.boundary hA (field I) (fields I X) (renderingAnchor I X S hs) S.profile β
 
 include T in
 theorem exists_physical_section {S : State I.right.scheme I.left.scheme}
@@ -139,6 +129,3 @@ theorem donor_bottom_supply (hN : 1 < X.req.N)
   obtain ⟨w, hw, hr⟩ := exists_physical_section I X T hA hB hC hs
   exact ⟨w, hw, fun d => (hr (donorIncl I d)).trans
     ((field_donor I S d.1).trans (he d))⟩
-
-end
-end VaughtConjecture.Knight.GrowthOrderedBase

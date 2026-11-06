@@ -43,7 +43,7 @@ structure FiltrationCertificate (Q : Type 1) (O : Type u) (truth : O → Q → P
 namespace FiltrationCertificate
 
 variable {Q : Type 1} {O : Type u} {truth : O → Q → Prop}
-variable (c : FiltrationCertificate Q O truth)
+  (c : FiltrationCertificate Q O truth)
 
 /-- Countable losses accumulate to countable complements below `ω₁`. -/
 theorem compl_countable {β : Ordinal.{0}} (hβ : β < (aleph 1).ord) :
@@ -67,6 +67,3 @@ include c in
 theorem cardinality : #Q = aleph 1 :=
   DomainSeparation.mk_eq_aleph_one_of_countable_core c.domain c.antitone
     (fun _ h => c.compl_countable h) c.persistent_core_countable c.cofinal_losses
-
-end FiltrationCertificate
-end VaughtConjecture

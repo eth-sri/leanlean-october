@@ -13,13 +13,10 @@ Every long old row is transported literally. New values are coded because
 their boundary fields and supported grid/orbit values are coded.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.CanonicalSeedCoding
-open Transform Value ExtOrd SourcePrefixRows SourcePrefixLayer CanonicalCodingSupport
-open PairedSlotComparison
-noncomputable section
+open Transform Value ExtOrd SourcePrefixRows SourcePrefixLayer CanonicalCodingSupport PairedSlotComparison
 
 variable {ι : Type*} [DecidableEq ι] {A : Finset ι} {D : CellScheme A}
 
@@ -107,6 +104,3 @@ theorem pair (sem : Semantics D) (hA : 2 ≤ A.card)
   exact mixed (GradeCutBoundary.rows D 2 sem) 1 (by decide) _
     (GradeCutBoundary.proper D 2 hp) 2 (GradeCutBoundary.grade_bound D 2)
     (by decide) hA (by decide) (gradeCut sem 2 hc)
-
-end
-end VaughtConjecture.Knight.CanonicalSeedCoding

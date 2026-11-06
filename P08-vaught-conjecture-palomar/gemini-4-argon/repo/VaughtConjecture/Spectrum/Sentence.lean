@@ -6,9 +6,20 @@ Authors: Cameron Freer
 module
 
 public import InfinitaryLogic.ModelTheory.MorleyCounting
-public import InfinitaryLogic.Conditional.GandyHarrington
-public import InfinitaryLogic.Conditional.MorleyPerfect
-public import VaughtConjecture.Spectrum.RankCount
+public import InfinitaryLogic.Descriptive.AnalyticClosure
+public import InfinitaryLogic.Descriptive.PerfectAntichain
+public import InfinitaryLogic.Descriptive.StructureIsoSetoid
+public import InfinitaryLogic.Lomega1omega.Theory
+public import InfinitaryLogic.Scott.RefinementCount
+public import InfinitaryLogic.Karp.PotentialIso
+public import InfinitaryLogic.Scott.Sentence
+public import InfinitaryLogic.Scott.Formula
+public import InfinitaryLogic.Lomega1omega.QuantifierRank
+public import InfinitaryLogic.Karp.CarrierTheorem
+public import InfinitaryLogic.OrdinalUtil
+public import InfinitaryLogic.Descriptive.SatisfactionBorel
+public import InfinitaryLogic.Scott.BackAndForth
+public import InfinitaryLogic.Descriptive.Polish
 
 /-! # The countable spectrum of an `L_{ω₁,ω}` sentence
 
@@ -58,5 +69,3 @@ noncomputable def natModelSpectrum (φ : L.Sentenceω) : Cardinal :=
 /-- `φ` has no finite models (every `Fin n` tier of coded models is empty). -/
 def HasNoFiniteModels (φ : L.Sentenceω) : Prop :=
   ∀ n : ℕ, ModelsOfOn (α := Fin n) φ = ∅
-
-end VaughtConjecture.Spectrum

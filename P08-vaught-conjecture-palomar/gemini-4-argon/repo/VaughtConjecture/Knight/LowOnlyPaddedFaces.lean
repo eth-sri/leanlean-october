@@ -14,13 +14,10 @@ Both source layers retain each proper semantic face, including every inherited
 owner domain. No bound on the grades of the old schemes is used.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedFaces
-open Transform Value ExtOrd CappedDonor LowOnly AmalgamationPlan CoatomBoundaryExtension
-open LowOnlyPaddedSuccessor
-noncomputable section
+open Transform Value ExtOrd CappedDonor LowOnly AmalgamationPlan CoatomBoundaryExtension LowOnlyPaddedSuccessor
 
 section FullFace
 variable {ι : Type*} [DecidableEq ι] {A B : Finset ι} {n : ℕ}
@@ -99,6 +96,3 @@ theorem inherited_lift {U V : Finset ι × ℕ}
   · exact (privateFace I F hroot hA hB hC).lift hc
       (I.right_mem hU (h.1.trans hc)) (I.right_mem hV hc) h he
       (PointImageSemantics.bountiful _ _ _ _ I.right.complete I.right.bountiful)
-
-end
-end VaughtConjecture.Knight.LowOnlyPaddedFaces

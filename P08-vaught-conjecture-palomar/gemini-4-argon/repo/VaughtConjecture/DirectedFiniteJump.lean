@@ -25,8 +25,6 @@ passes from all finite observations to their completed vector.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.DirectedFiniteJump
 
 open Filter JumpClosed
@@ -101,5 +99,3 @@ theorem predicate_iSup_of_jump (f : J → I → ℕ) (hf : ∀ j, Monotone (f j)
   obtain ⟨i, _, hi⟩ := h (Classical.arbitrary I)
   rw [← hi]
   exact hjump K hK _ (hfinite i)
-
-end VaughtConjecture.DirectedFiniteJump

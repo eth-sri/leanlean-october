@@ -26,16 +26,13 @@ unprimed APIs preserved). The physical layer uses KVC's weighted installer
 and the reviewer's final-gate construction.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryFinalCatalogue
-open Transform Value ExtOrd CappedDonor CappedDonor.Ref SourcePrefixRows
-open PairedSlotComparison SharpWitnessComposition
-noncomputable section
+open Transform Value ExtOrd CappedDonor CappedDonor.Ref SourcePrefixRows PairedSlotComparison SharpWitnessComposition
 
 variable {I : Type*} [Fintype I] {nP N : ℕ}
-variable {P : SemScheme (nP + 1)} {C : SemScheme N} (R : Ref I nP N N P C)
+  {P : SemScheme (nP + 1)} {C : SemScheme N} (R : Ref I nP N N P C)
 
 abbrev Member := ↥R.Catalogue
 
@@ -135,6 +132,3 @@ theorem exists_actual_member :
       δ (a.val .gate) = ⊤ := by
   obtain ⟨a, δ, hw, hP, hC, hg, -⟩ := exists_actual_member_reflecting R
   exact ⟨a, δ, hw, hP, hC, hg⟩
-
-end
-end VaughtConjecture.Knight.OrdinaryFinalCatalogue

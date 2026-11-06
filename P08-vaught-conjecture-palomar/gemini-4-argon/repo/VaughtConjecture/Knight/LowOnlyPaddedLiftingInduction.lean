@@ -15,14 +15,12 @@ build. Completeness is restricted to installed heights; the ambient-height
 output is bountiful and complete.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedLiftingInduction
-open Transform Value ExtOrd CappedDonor LowOnly CanonicalPairedInverse
-open LowOnlyPaddedContract LowOnlyPaddedStepRows LowOnlyOrderedLadder
+open Transform Value ExtOrd CappedDonor LowOnly CanonicalPairedInverse LowOnlyPaddedContract LowOnlyPaddedStepRows LowOnlyOrderedLadder
 open LowOnlyPaddedDecode (grid_fixed_below)
-noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n K : ℕ}
   (I : WholeDonorBoundary.Input A B C R m n n) (F : LowOnly.Family I.left I.right K)
@@ -92,6 +90,3 @@ theorem full_complete :
   have hb := hJ'.2.2.trans (Finset.card_le_card hscope)
   apply complete_through I F hroot hA hB hC hcover (A.card - 2) (by omega) _ (by omega)
   rwa [build_plan] at hJ
-
-end
-end VaughtConjecture.Knight.LowOnlyPaddedLiftingInduction

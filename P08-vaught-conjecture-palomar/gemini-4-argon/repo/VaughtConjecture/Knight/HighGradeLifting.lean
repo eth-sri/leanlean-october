@@ -204,5 +204,3 @@ theorem bountiful (hk : 1 ≤ k) (hb : F.base.IsBountiful) : F.rows.IsBountiful 
         _ = min (min (q ⟨e.1, e.2.trans hcBJ⟩) γ) (q ⟨F.high, hcBJ⟩) :=
           congrArg (fun x => min x (q ⟨F.high, hcBJ⟩)) (outcap ⟨e.1, e.2.trans hcBJ⟩)
         _ = _ := by dsimp only [CellScheme.below.incl]; ac_rfl
-
-end VaughtConjecture.Knight.HighGradeExtension.Data

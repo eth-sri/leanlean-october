@@ -181,5 +181,3 @@ theorem sameAtomicType_of_commonChart {α : LimitStage} {M : Type w} {N : Type w
   obtain ⟨m, ta, tb, σ, p, hta, htb, ha, hb⟩ := h
   have hfull := (sameAtomicType_of_eval_eq_some hR hR' hta htb).relabel σ
   simpa only [ha, hb] using hfull
-
-end VaughtConjecture.Knight

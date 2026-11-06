@@ -15,14 +15,12 @@ The native-height lifts transport through literal later installations. Proper
 subface prescriptions are first extended inside their original legal scheme.
 No mixed-prescription lifting or whole-carrier bountifulness is asserted.
 -/
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthPaddedAllCutoff
-open Transform Value ExtOrd Growth
-open GrowthPaddedContract GrowthPaddedIteration GrowthPaddedLayerFaces
+open Transform Value ExtOrd Growth GrowthPaddedContract GrowthPaddedIteration GrowthPaddedLayerFaces
 open AmalgamationPlan CoatomBoundaryExtension
-noncomputable section
+
 section Layer
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n J : ℕ}
@@ -191,6 +189,3 @@ theorem donor_subface (hsmall : n + 1 < X.req.N) (t : ℕ) (ht : t + 2 ≤ A.car
       (donor_clause I X T hA hB hC hsmall t ht i (Plan.mem_gradedPlan.mp hS).2.1
         (hij.trans hj))
   exact hl.raise_target (h := hSB.trans hB.subset) hij
-
-end
-end VaughtConjecture.Knight.GrowthPaddedAllCutoff

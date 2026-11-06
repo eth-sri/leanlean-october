@@ -59,8 +59,6 @@ over one shared codebook; it builds no section, controller family, or extension 
 faces encoded with unrelated codebooks are not covered. -/
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight
 
 open Transform Value ExtOrd
@@ -212,32 +210,35 @@ uniformly bounded finite coded inventory, decoding exactly to it.**  With at mos
 grades at most `K`, the inventory is `codedAlphabet (m + 1) K`: the labelling's ordinal values
 plus zero cost at most `m + 1` items. -/
 theorem RespectsSemanticsBelow.exists_coded_representative {sem : Semantics D}
-    {BJ : Finset ι × ℕ} {r : D.below BJ → ExtOrd} {K m : ℕ}
-    (hr : RespectsSemanticsBelow sem BJ r) (hK : ∀ d : D.below BJ, D.grade d.1 ≤ K)
-    (hm : Nat.card (D.below BJ) ≤ m) :
+    {BJ : Finset ι × ℕ} {r : D.below BJ → ExtOrd} {K : ℕ}
+    (hr : RespectsSemanticsBelow sem BJ r) (hK : ∀ d : D.below BJ, D.grade d.1 ≤ K) :
     ∃ (S : Finset Ordinal.{0}) (r' : D.below BJ → ExtOrd),
-      RespectsSemanticsBelow sem BJ r' ∧ S.card ≤ m + 1 ∧
-      (∀ d, r' d ∈ ExtOrd.codedAlphabet (m + 1) K) ∧
+      RespectsSemanticsBelow sem BJ r' ∧ (∀ d, r' d ≠ ⊤) ∧
       (∀ d, canonicalDecoder S K (r' d) = r d) := by
-  have hfin : Fintype (D.below BJ) := Fintype.ofFinite _
-  obtain ⟨S₀, hS₀⟩ : ∃ S₀ : Finset Ordinal.{0},
-      S₀ = (Finset.univ : Finset (D.below BJ)).image fun d => ordOf (r d) := ⟨_, rfl⟩
-  have hS₀card : S₀.card ≤ m := by
-    refine le_trans ?_ hm
-    rw [hS₀, Nat.card_eq_fintype_card, ← Finset.card_univ]
-    exact Finset.card_image_le
-  have hcard : (insert (0 : Ordinal.{0}) S₀).card ≤ m + 1 :=
-    (Finset.card_insert_le _ _).trans (Nat.succ_le_succ hS₀card)
+  classical
+  haveI : Fintype (D.below BJ) := Fintype.ofFinite _
+  let S₀ : Finset Ordinal.{0} := Finset.univ.image fun d => ordOf (r d)
   refine ⟨insert 0 S₀, fun d => canonicalNormalizer (insert 0 S₀) K (r d),
-    hr.canonical_insert_zero S₀ hK, hcard, fun d => canonicalNormalizer_mem_codedAlphabet hcard _,
-    fun d => ?_⟩
-  refine canonicalDecoder_canonicalNormalizer ?_
-  rcases ExtOrd.cases (r d) with h | h | ⟨s, hs⟩
-  · exact Or.inl h
-  · exact Or.inr (Or.inl h)
-  · refine Or.inr (Or.inr ⟨s, Finset.mem_insert_of_mem ?_, hs⟩)
-    rw [hS₀, Finset.mem_image]
-    exact ⟨d, Finset.mem_univ _, by rw [hs, ordOf_ofOrd]⟩
+    hr.canonical_insert_zero S₀ hK, fun d => ?_, fun d => canonicalDecoder_canonicalNormalizer ?_⟩
+  · rcases canonicalNormalizer_blockIdx_le (r d) with h | ⟨_, _, _, _, h⟩
+    · exact h.trans_ne bot_ne_top
+    · exact h.trans_ne (ofOrd_ne_top _)
+  · rcases ExtOrd.cases (r d) with h | h | ⟨s, hs⟩
+    · exact Or.inl h
+    · exact Or.inr (Or.inl h)
+    · exact Or.inr (Or.inr ⟨s, Finset.mem_insert_of_mem
+        (Finset.mem_image.mpr ⟨d, Finset.mem_univ _, by rw [hs, ordOf_ofOrd]⟩), hs⟩)
+
+theorem RespectsSemantics.exists_coded_representative {sem : Semantics D}
+    {r : Cell D → ExtOrd} {K : ℕ}
+    (hr : RespectsSemantics sem r) (hK : ∀ d : Cell D, D.grade d ≤ K) :
+    ∃ (S : Finset Ordinal.{0}) (r' : Cell D → ExtOrd),
+      RespectsSemantics sem r' ∧ (∀ d, r' d ≠ ⊤) ∧
+      (∀ d, canonicalDecoder S K (r' d) = r d) := by
+  let all (d : Cell D) : D.below (A, K) := ⟨d, D.isPlan.subset_of_mem (D.scope_mem_plan d), hK d⟩
+  obtain ⟨S, u, hu, htop, hdec⟩ := (hr.toBelow (A, K)).exists_coded_representative (fun d => hK d.1)
+  exact ⟨S, fun d => u (all d), hu.toRespects (fun d => (all d).2),
+    fun d => htop (all d), fun d => hdec (all d)⟩
 
 end FiniteCover
 
@@ -276,7 +277,3 @@ theorem RespectsSemanticsBelow.decoded
     (hK : ∀ d : D.below BJ, D.grade d.1 ≤ K) :
     RespectsSemanticsBelow sem BJ (fun d => canonicalDecoder S K (r d)) :=
   hr.map_bottom_reflecting hK isStepShifter_canonicalDecoder canonicalDecoder_reflects_bottom
-
-end DecoderTransport
-
-end VaughtConjecture.Knight

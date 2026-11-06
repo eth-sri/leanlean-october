@@ -17,13 +17,11 @@ are not identities between renderings at different construction grades.
 The physical separator and the two private top receipts remain explicit.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.LowOnlyPaddedReadbackTransport
-open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder
-open LowOnlyPaddedContract LowOnlyPaddedIteration LowOnlyPaddedRestriction
-noncomputable section
+open Transform Value ExtOrd CappedDonor LowOnly LowOnlyOrderedLadder LowOnlyPaddedContract LowOnlyPaddedIteration LowOnlyPaddedRestriction
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n : ℕ}
   (I : WholeDonorBoundary.Input A B C R m n n)
@@ -53,27 +51,3 @@ theorem rank_readback {S : State I.left I.right}
     q (P.baseMap (RelativeLadderLayer.old I.boundary (by omega) (I.leftFace.map d.1))) = ⊤ :=
   LowOnlyPaddedRankReadback.donor_top_of_separator I F hroot (by omega) hB hC
     hlt hqs hqt (base_pullback I F hroot hA hB hC P hq) hsep hc hr d hd
-end Rank
-
-section Two
-variable (F : LowOnly.Family I.left I.right 2)
-  (hroot : ∀ i : Cell I.common.scheme,
-    ∃ a : I.left.scheme.below (F.root.A, F.root.A.card),
-      a.1 = I.shared.f i ∧ (F.root.face a).1 = I.shared.g i)
-  (hA : 2 ≤ A.card) (hB : B ⊂ A) (hC : C ⊂ A)
-  (r : ℕ) (hheight : 0 + r + 2 ≤ A.card)
-
-end Two
-
-section Higher
-variable (t : ℕ) (F : LowOnly.Family I.left I.right (t + 2 + 1))
-  (hroot : ∀ i : Cell I.common.scheme,
-    ∃ a : I.left.scheme.below (F.root.A, F.root.A.card),
-      a.1 = I.shared.f i ∧ (F.root.face a).1 = I.shared.g i)
-  (hA : 2 ≤ A.card) (hB : B ⊂ A) (hC : C ⊂ A)
-  (ht : (t + 1) + 2 ≤ A.card) (r : ℕ) (hheight : (t + 1) + r + 2 ≤ A.card)
-
-end Higher
-
-end
-end VaughtConjecture.Knight.LowOnlyPaddedReadbackTransport

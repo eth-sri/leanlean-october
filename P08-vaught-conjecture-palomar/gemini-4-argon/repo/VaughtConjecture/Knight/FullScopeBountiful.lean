@@ -24,8 +24,6 @@ Consequently the content of bountifulness lies entirely in the pairs `⟨C,i⟩ 
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight
 
 open Transform Value ExtOrd
@@ -70,21 +68,3 @@ theorem bountiful_same_scope (sem : Semantics D) {B : Finset ι} {i j : ℕ}
   exact (GradeTailRestoration.splice_cap h.2 hcap d).trans (by
     dsimp only [u]
     rw [min_assoc, min_self])
-
-/-- **Bountifulness between full-scope pairs holds for every semantics**: for `(A,i) ≤ (A,j)` the
-extension is `p` on the cells of grade `≤ i` and `q ∧ γ` on the rest.  Locality at a cell of grade
-`> i` is the capped locality of `q` (`TransformsTo.capped`), which agrees with `p` below the cap;
-availability never crosses the grade boundary (a witness has the grade of its request). -/
-theorem bountiful_full_scope (sem : Semantics D) {i j : ℕ} (h : GradedLe (A, i) (A, j))
-    (p : D.below (A, i) → ExtOrd) (q : D.below (A, j) → ExtOrd) (γ : ExtOrd)
-    (hp : RespectsSemanticsBelow sem (A, i) p) (hq : RespectsSemanticsBelow sem (A, j) q)
-    (hγ : extVisibilityReplace γ j j = γ)
-    (hagree : ∀ d : D.below (A, i), min (q (CellScheme.below.mono h d)) γ = min (p d) γ) :
-    ∃ q' : D.below (A, j) → ExtOrd, RespectsSemanticsBelow sem (A, j) q' ∧
-      (∀ d : D.below (A, j), min (q' d) γ = min (q d) γ) ∧
-      (∀ d : D.below (A, i), q' (CellScheme.below.mono h d) = p d) :=
-  bountiful_same_scope sem h p q γ hp hq hγ hagree
-
-end FullScope
-
-end VaughtConjecture.Knight

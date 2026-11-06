@@ -16,14 +16,12 @@ lawful target-local ambient. Its chart reads every physical coordinate.
 
 /- Adapted from the corresponding LOW physical endgame; scalar admission
 and source sections here are exclusively the growth producers. -/
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.GrowthPaddedStepCharts
-open Transform Value ExtOrd CappedDonor Growth CanonicalPairedInverse
-open GrowthPaddedContract GrowthPaddedStepRows GrowthOrderedBase
+open Transform Value ExtOrd CappedDonor Growth CanonicalPairedInverse GrowthPaddedContract GrowthPaddedStepRows GrowthOrderedBase
 open GrowthPaddedDecode (grid_fixed_below)
-noncomputable section
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι}
   {R : Finset (Finset ι)} {m n J : ℕ}
   {I : WholeDonorBoundary.Input A B C R m (n + 1) J}
@@ -61,6 +59,3 @@ theorem exists_chart
     rw [ha]
     rfl
   rwa [he] at hr
-
-end
-end VaughtConjecture.Knight.GrowthPaddedStepCharts

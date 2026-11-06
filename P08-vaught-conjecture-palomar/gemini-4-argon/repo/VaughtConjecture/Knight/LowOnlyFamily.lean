@@ -14,13 +14,11 @@ the cutoff. No receiving `Ref`, gate, shadow synchronization, or output scheme i
 used. The common root is transported by its literal occurrence and row identities.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight.LowOnly
 
 open Transform Value ExtOrd AmalgamationPlan CappedDonor
-
-noncomputable section
 
 variable {n K : ℕ} {P C : SemScheme n}
 
@@ -159,7 +157,3 @@ theorem frontier_le_root {j : ℕ} (hj : K ≤ j)
     F.gap.eC hj v ≤ v (CellScheme.below.mono (faceIndex_le F.root.B j)
       (F.root.faceAt j a)) :=
   F.gap.e_le_of_gap (F.gap.lowD_respects hj hv) _ (F.root_gap (F.root.fullP a) ht)
-
-end Family
-end
-end VaughtConjecture.Knight.LowOnly

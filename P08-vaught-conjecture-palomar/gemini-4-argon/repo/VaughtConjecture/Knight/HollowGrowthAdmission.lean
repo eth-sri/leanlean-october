@@ -16,21 +16,17 @@ at every cutoff. The supported decoder is defined at all ordinal arguments;
 this is not yet a lawful physical display or a receiving theorem.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.HollowGrowthTemplate
-open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan CappedDonor
-open CellScheme.restrictFace Transform
-noncomputable section
+open TypeTower StageType KnightRealization Value ExtOrd AmalgamationPlan CappedDonor CellScheme.restrictFace Transform
+
 universe w
 variable {M : Type w} {α : LimitStage} {W : KnightRealization α M}
   {n : ℕ} {t : Fin n ↪ M} {p : S α.1 n} (q : S α.1 (n + 1)) {Nmin : ℕ}
   (D : HollowGrowthReference.Data (W := W) t p (donorRequests q) (n + 1) Nmin)
 
-/-- Receipts of the constructed scalar input, not a physical-probe interface. -/
 structure Input where
-  donor_type : typeMap Fin.castSuccEmb q = some p
   hvP : Finset.univ.image Fin.castSuccEmb ∈ q.scheme.scheme.plan
   hP : q.scheme.restrictFace Fin.castSuccEmb hvP = p.scheme
   hvC : Finset.univ.image D.face ∈ D.context.type.scheme.scheme.plan
@@ -38,14 +34,13 @@ structure Input where
   relative : RelativeData D.context.type.scheme.scheme D.context.type.scheme.rows
     q.scheme.scheme q.scheme.rows
   req_eq : relative.req = requests q D
-  top_eq : relative.top = (Finset.univ, n + 1)
   attachment : Growth.RootAttachment p.scheme Fin.castSuccEmb hvP hP D.face hvC hC relative
   class_eq : HEq relative.ZA {d : D.context.type.scheme.scheme.below
     (D.context.type.scheme.scheme.cell D.cap) | D.context.type.label d.1 = ⊥}
 
 theorem exists_input (hn : 0 < n) (hq : IsCoface p q) : Nonempty (Input q D) := by
-  obtain ⟨hvP, hP, hvC, hC, X, hreq, htop, ⟨R⟩, hclass⟩ := exists_template q D hn hq
-  exact ⟨⟨hq, hvP, hP, hvC, hC, X, hreq, htop, R, hclass⟩⟩
+  obtain ⟨hvP, hP, hvC, hC, X, hreq, ⟨R⟩, hclass⟩ := exists_template q D hn hq
+  exact ⟨⟨hvP, hP, hvC, hC, X, hreq, R, hclass⟩⟩
 
 /-- A model supplies every scalar input; no reference or template existence
 assumption is left. Positive root arity remains explicit. -/
@@ -89,7 +84,3 @@ theorem exact_of_correct {v : Cell q.scheme.scheme → ExtOrd}
     (h : I.relative.req.Correct (I.relative.req.sec D.context.type.label) v) : v = q.label := by
   rw [I.req_eq] at h
   exact (correct_iff_eq_actual q D v).mp h
-
-end Input
-end
-end VaughtConjecture.Knight.HollowGrowthTemplate

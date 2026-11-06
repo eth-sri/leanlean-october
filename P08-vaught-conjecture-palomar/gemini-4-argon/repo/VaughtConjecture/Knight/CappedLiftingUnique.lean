@@ -31,8 +31,6 @@ Nothing here establishes extension or injectivity for any carrier; both are hypo
 
 @[expose] public section
 
-set_option autoImplicit false
-
 namespace VaughtConjecture.Knight.ExtensionInjectivity
 
 open Transform Value ExtOrd AmalgamationPlan
@@ -98,5 +96,3 @@ theorem AllCapsExtension.cappedLift (hall : AllCapsExtension sem h) :
   intro p q γ hp hq hγ hag
   obtain ⟨r, hr, hres, hcaps⟩ := hall p hp
   exact ⟨r, hr, hcaps γ q hγ hq hag, hres⟩
-
-end VaughtConjecture.Knight.ExtensionInjectivity

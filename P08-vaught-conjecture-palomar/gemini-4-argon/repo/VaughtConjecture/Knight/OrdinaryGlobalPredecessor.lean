@@ -14,17 +14,15 @@ Retained private grade-N owners are never subjected to a grade-(N-1) bound.
 This module treats N = n+4, using the initialized recursive seed.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryGlobalPredecessor
-open AmalgamationPlan Transform Value ExtOrd CoatomBoundaryExtension
-open SourcePrefixRows OrbitPrefixSupport OrdinaryProperPredecessor
-noncomputable section
+open AmalgamationPlan Transform Value ExtOrd CoatomBoundaryExtension SourcePrefixRows OrbitPrefixSupport OrdinaryProperPredecessor
+
 variable {ι : Type*} [DecidableEq ι] {A B C : Finset ι} {R : Finset (Finset ι)}
-variable {m nL nR : ℕ} (I : WholeDonorBoundary.Input A B C R m nL nR)
-variable (n : ℕ) {G : Finset ExtOrd} {θ : ExtOrd}
-variable (X : Completed I (n + 4) G θ) (hcard : A.card = n + 5)
+  {m nL nR : ℕ} (I : WholeDonorBoundary.Input A B C R m nL nR)
+  (n : ℕ) {G : Finset ExtOrd} {θ : ExtOrd}
+  (X : Completed I (n + 4) G θ) (hcard : A.card = n + 5)
 
 include hcard in
 omit [DecidableEq ι] in
@@ -34,18 +32,6 @@ abbrev rows := CanonicalRecursiveSemantics.rows X.state.rows (proper I X) n (hei
 abbrev old := CanonicalRecursiveInventory.boundary X.state.rows (n + 3) (height n hcard)
 def original : Cell I.boundary ↪o Cell (carrier I n X hcard) :=
   X.state.original.trans (old I n X hcard)
-
-theorem original_index (d : Cell I.boundary) :
-    (carrier I n X hcard).cell (original I n X hcard d) = I.boundary.cell d :=
-  (CanonicalRecursiveInventory.boundary_cell _ _ _ _).trans (X.state.index d)
-
-theorem original_row (c : Cell I.boundary) (d : I.boundary.below (I.boundary.cell c)) :
-    (rows I n X hcard).E (original I n X hcard c) ⟨original I n X hcard d.1, by
-      rw [original_index, original_index]; exact d.2⟩ = I.rows.E c d :=
-  (CanonicalRecursiveLiteralRows.row X.state.rows (proper I X) n (height n hcard)
-    (X.state.original c)
-      ⟨X.state.original d.1, by rw [X.state.index, X.state.index]; exact d.2⟩).trans
-    (X.state.row c d)
 
 theorem plan : (carrier I n X hcard).plan = R :=
   (CanonicalRecursiveBoundaryTransport.plan_eq _ _ _).trans X.state.plan
@@ -190,8 +176,8 @@ theorem nonprivate_mute (hB : B.card = n + 4) (hC : C.card < n + 4)
   · omega
 
 variable (hG : ∀ z ∈ G, SelfVis (n + 4) z) (hθ : SelfVis (n + 4) θ)
-variable (htθ : θ ≠ ⊤) (hθG : θ ∈ G)
-variable {p : Cell I.boundary → ExtOrd} (hp : RespectsSemantics I.rows p) (hb : ∀ d, p d ≤ θ)
+  (htθ : θ ≠ ⊤) (hθG : θ ∈ G)
+  {p : Cell I.boundary → ExtOrd} (hp : RespectsSemantics I.rows p) (hb : ∀ d, p d ≤ θ)
 
 def render : Cell (carrier I n X hcard) → ExtOrd :=
   (CanonicalRecursiveSemantics.state X.state.rows (proper I X) n (height n hcard)).sectionOf
@@ -234,6 +220,3 @@ theorem agreement {q : Cell I.boundary → ExtOrd} (hq : RespectsSemantics I.row
   (CanonicalRecursiveSemantics.state X.state.rows (proper I X) n (height n hcard)).section_agreement
     (height n hcard) _ _ _ _ (fun z hz => selfVis_mono (hG z hz) (by omega))
     (selfVis_mono hθ (by omega)) hγ hγθ (X.state.agreement hp hb hq hqb hγ hγθ he)
-
-end
-end VaughtConjecture.Knight.OrdinaryGlobalPredecessor

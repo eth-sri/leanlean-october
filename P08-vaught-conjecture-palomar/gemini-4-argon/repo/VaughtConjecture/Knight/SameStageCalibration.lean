@@ -5,7 +5,14 @@ Authors: Cameron Freer
 -/
 module
 
-public import VaughtConjecture.Knight.GuardActivation
+public import VaughtConjecture.Knight.RestrictedComposition
+public import VaughtConjecture.Knight.CountedEncoding
+public import VaughtConjecture.Knight.RowCorrectness
+public import VaughtConjecture.Knight.RowReadback
+public import VaughtConjecture.Knight.CountedRecoding
+public import VaughtConjecture.Knight.Semantics
+public import VaughtConjecture.Knight.ReferenceContext
+public import VaughtConjecture.Knight.ReductModel
 public import VaughtConjecture.Knight.StableLiftCore
 public import VaughtConjecture.Knight.Directedness
 public import VaughtConjecture.Knight.FiniteOffset
@@ -87,11 +94,4 @@ theorem stage_add_lt {j N : ℕ} (h : j < N) : ofOrd (α.1 + j) < ofOrd (α.1 + 
 
 /-! ## The controller and the stable guard in a realized coface -/
 
-variable (hM : R.IsModel) {m : ℕ} {u : Fin m ↪ M} {q₀ : S α.1 m} (hu : R.eval u = some q₀)
-  {N : ℕ} {cap : Cell q₀.scheme.scheme} (hcap : q₀.scheme.scheme.cell cap = (Finset.univ, N))
-  (hcapl : q₀.label cap = ⊤)
-  {y : M} {hy : y ∉ Set.range u} {Q : S α.1 (m + 1)} (hQ : R.eval (snoc u y hy) = some Q)
-
 /-! ## Readback in the ordinary labelling -/
-
-end VaughtConjecture.Knight

@@ -22,7 +22,7 @@ identification is computed by `commonFace_val`; the identification preserves gra
 (`commonFace_val_congr`), which is what makes it a graded identification of the whole literal
 root; labels transport along an equality of stage types by `StageType.label_castCell`. -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace VaughtConjecture.Knight
 
@@ -80,20 +80,20 @@ variable {n nP J : ℕ} {P : SemScheme (nP + 1)} {C : SemScheme J} {F : SemSchem
   (hC : C.restrictFace fC hvC = F) (KA : ℕ)
 
 /-- The face bijection on the request side. -/
-noncomputable abbrev bP :
+abbrev bP :
     (P.restrictFace fP hvP).scheme.below (Finset.univ, KA) ≃
       P.scheme.below (Finset.univ.image fP, KA) :=
   belowEquiv P.scheme fP hvP (BJ' := (Finset.univ, KA)) (BJ := (Finset.univ.image fP, KA)) rfl
 
 /-- The face bijection on the private side. -/
-noncomputable abbrev bC :
+abbrev bC :
     (C.restrictFace fC hvC).scheme.below (Finset.univ, KA) ≃
       C.scheme.below (Finset.univ.image fC, KA) :=
   belowEquiv C.scheme fC hvC (BJ' := (Finset.univ, KA)) (BJ := (Finset.univ.image fC, KA)) rfl
 
 /-- **The identification of the two copies of a literally common face**: through the common
 restriction `F`, along the bijections `belowEquiv` of the face restrictions. -/
-noncomputable def commonFace :
+def commonFace :
     P.scheme.below (Finset.univ.image fP, KA) ≃ C.scheme.below (Finset.univ.image fC, KA) :=
   (bP fP hvP KA).symm.trans
     ((castBelow hP (Finset.univ, KA)).trans
@@ -193,9 +193,3 @@ theorem commonFace_respects (r : C.scheme.below (Finset.univ.image fC, KA) → E
       rw [← commonFace_symm_apply fP hvP hP fC hvC hC KA e, Equiv.apply_symm_apply]
     rw [← he]
     exact h4
-
-end CommonFace
-
-end CappedDonor
-
-end VaughtConjecture.Knight

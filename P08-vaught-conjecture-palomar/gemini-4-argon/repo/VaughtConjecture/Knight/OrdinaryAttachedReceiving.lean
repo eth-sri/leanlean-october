@@ -6,7 +6,8 @@ Authors: Cameron Freer
 module
 
 public import VaughtConjecture.Knight.OrdinaryReceivingProbe
-public import VaughtConjecture.Knight.WholeDonorAttachedPredecessor
+public import VaughtConjecture.Knight.WholeDonorAttachment
+public import VaughtConjecture.Knight.OrdinaryPredecessorSupply
 public import VaughtConjecture.Knight.CappedDonorFace
 
 /-! # The legal ordinary receiver from literal common-face reference data
@@ -18,13 +19,10 @@ model consumer. Its remaining inputs are the actual two schemes, their literal
 root restrictions and the acquired reference data. Model realization is separate.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
-set_option autoImplicit false
 namespace VaughtConjecture.Knight.OrdinaryAttachedReceiving
-open Transform Value ExtOrd AmalgamationPlan CappedDonor CappedDonor.Ref
-open CellScheme.restrictFace SemSchemeBoundaryInput
-noncomputable section
+open Transform Value ExtOrd AmalgamationPlan CappedDonor CappedDonor.Ref CellScheme.restrictFace SemSchemeBoundaryInput
 
 private theorem faceMap_cast {m k : ℕ} (D : SemScheme k) (Q : SemScheme m)
     (f : Fin m ↪ Fin k) (hv : Finset.univ.image f ∈ D.scheme.plan)
@@ -62,15 +60,15 @@ private theorem common_alignment {m N : ℕ} (C : SemScheme N) (P : SemScheme (m
     exact (faceMap_cast C Q e hvC hC i).symm
 
 variable {I : Type*} [Fintype I] {nP n : ℕ}
-variable (C : SemScheme (n + 4)) (P : SemScheme (nP + 1)) (Q : SemScheme nP)
-variable (e : Fin nP ↪ Fin (n + 4))
-variable (hvC : Finset.univ.image e ∈ C.scheme.plan)
-variable (hvP : Finset.univ.image Fin.castSuccEmb ∈ P.scheme.plan)
-variable (hC : C.restrictFace e hvC = Q) (hP : P.restrictFace Fin.castSuccEmb hvP = Q)
-variable (R : Ref I nP (n + 4) (n + 4) P C)
-variable (hA : R.A = Finset.univ.image Fin.castSuccEmb) (hA' : R.A' = Finset.univ.image e)
-variable (hK : R.KA = nP)
-variable (hface : HEq R.face (commonFace Fin.castSuccEmb hvP hP e hvC hC nP))
+  (C : SemScheme (n + 4)) (P : SemScheme (nP + 1)) (Q : SemScheme nP)
+  (e : Fin nP ↪ Fin (n + 4))
+  (hvC : Finset.univ.image e ∈ C.scheme.plan)
+  (hvP : Finset.univ.image Fin.castSuccEmb ∈ P.scheme.plan)
+  (hC : C.restrictFace e hvC = Q) (hP : P.restrictFace Fin.castSuccEmb hvP = Q)
+  (R : Ref I nP (n + 4) (n + 4) P C)
+  (hA : R.A = Finset.univ.image Fin.castSuccEmb) (hA' : R.A' = Finset.univ.image e)
+  (hK : R.KA = nP)
+  (hface : HEq R.face (commonFace Fin.castSuccEmb hvP hP e hvC hC nP))
 
 abbrev boundary := WholeDonorAttachment.input e C P Q hvC hvP hC hP
 
@@ -157,6 +155,3 @@ theorem readback_below
       min (R.p d) δ :=
   OrdinaryReceivingProbe.readback_below W R (WholeDonorAttachment.union e) hf
     hq hretain a hg hδ d
-
-end
-end VaughtConjecture.Knight.OrdinaryAttachedReceiving
