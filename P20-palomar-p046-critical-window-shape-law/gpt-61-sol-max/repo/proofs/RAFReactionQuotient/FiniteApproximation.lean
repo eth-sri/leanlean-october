@@ -1,15 +1,93 @@
-module
 
-public import proofs.RAFReactionQuotient.InfiniteDock
-public import proofs.RAFReactionQuotient.Richness
+import proofs.RAFReactionQuotient.InfiniteSource
+import proofs.RAFReactionQuotient.Surjectivity
+import proofs.RAFReactionQuotient.CommutingUniqueness
+import proofs.RAFReactionQuotient.SeedBulk
+import proofs.HordijkSteelThreshold.RecordCylinderDeficit
+import proofs.HordijkSteelThreshold.RecordTargetTrial
+import proofs.HordijkSteelThreshold.SplitPrefixIndependence
+import Mathlib.MeasureTheory.Measure.MeasuredSets
+import Mathlib.MeasureTheory.Constructions.Cylinders
 
-@[expose] public section
+
+
 
 namespace RAFReactionQuotient
-open Classical MeasureTheory ProbabilityTheory unitInterval HordijkSteelThreshold
+
+open MeasureTheory unitInterval HordijkSteelThreshold
 open RAF.Polymer RAF.Concrete OverlapCorrectedRAF.Source
 
-noncomputable def quotientInfiniteMeasure (a : I) : Measure InfiniteSplitEnvironment :=
+variable {n : ℕ}
+
+noncomputable def orderedCoordinate  (r : OrderedChannel n)  :=
+  (moleculeWord r.val.1 ++ moleculeWord r.val.2, molLength r.val.1)
+
+variable (r : Reaction n)
+
+theorem orderedCoordinate_split   :
+    orderedCoordinate (splitToOrdered r) = literalSplitCoordinate r := by
+  apply Prod.ext
+  · exact reaction_words_append r
+  · exact molLength_reactionLeft r
+
+theorem orderedCoordinate_injective (n : ℕ) : Function.Injective (@orderedCoordinate n) := by
+  intro q j he
+  obtain ⟨r,rfl⟩ := splitToOrdered_surjective n q
+  obtain ⟨s,rfl⟩ := splitToOrdered_surjective n j
+  grind [literalSplitCoordinate_injective, orderedCoordinate_split]
+
+noncomputable def quotientCoordinate  (j : RepositoryChannel n)  :=
+  orderedCoordinate ⟨j.val,j.property.1⟩
+
+
+
+theorem word_comm_iff  (u v : Molecule n) :
+    moleculeWord u ++ moleculeWord v = moleculeWord v ++ moleculeWord u ↔
+      displayedConcat u v = displayedConcat v u := by
+  have := binaryWordCode_injective_length
+    (s := moleculeWord u ++ moleculeWord v) (t := moleculeWord v ++ moleculeWord u) (by grind)
+  grind [binaryWordCode_append, binaryWordCode_moleculeWord, moleculeWord_length, displayedConcat]
+
+theorem canonicalIndex_ordered  (r : OrderedChannel n) :
+    canonicalIndex (orderedCoordinate r) = quotientCoordinate (canonical r) := by
+  
+  have hv : 0 < molLength r.val.2 := Nat.succ_pos _
+  have ht : (moleculeWord r.val.1 ++ moleculeWord r.val.2).take (molLength r.val.1) =
+      moleculeWord r.val.1 := by rw [← moleculeWord_length r.val.1]; simp
+  have hd : (moleculeWord r.val.1 ++ moleculeWord r.val.2).drop (molLength r.val.1) =
+      moleculeWord r.val.2 := by rw [← moleculeWord_length r.val.1]; simp
+  unfold canonical
+  split
+  · rename_i h
+    have hn : ¬ (molLength r.val.2 < molLength r.val.1 ∧
+        moleculeWord r.val.1 ++ moleculeWord r.val.2 =
+          moleculeWord r.val.2 ++ moleculeWord r.val.1) := by
+      grind [word_comm_iff]
+    simp only [canonicalIndex, orderedCoordinate, List.length_append, moleculeWord_length]
+    simp
+    simp_all only
+    rfl
+  · rename_i h
+    
+    
+    have hw := (word_comm_iff r.val.1 r.val.2).mpr (by tauto)
+    simp only [canonicalIndex,orderedCoordinate,ht,hd,List.length_append,moleculeWord_length]
+    simp
+    rw [ite_eq_left ⟨Nat.succ_pos _,by omega,by
+                                               grind [List.append_inj, moleculeWord_injective, moleculeWord_length],hw⟩]
+    exact Prod.ext hw rfl
+
+theorem infinite_quotient_restriction_map (n : ℕ) (a : I) :
+    (infiniteSplitPi a).map (fun ω j => ω (quotientCoordinate j)) = quotientStaticMeasure n a := (Measure.map_infinitePi_infinitePi_of_inj (P := fun _ => ambientCoordLaw a)
+    (by
+       intro j k he
+       exact Subtype.ext (congrArg (fun q : OrderedChannel n => q.val)
+         (orderedCoordinate_injective n he)))).trans (Measure.infinitePi_eq_pi _)
+
+
+variable (a : I)
+
+noncomputable def quotientInfiniteMeasure   :=
   (infiniteSplitPi a).map quotientField
 
 noncomputable instance quotientInfinite_probability (a : I) :
@@ -17,85 +95,59 @@ noncomputable instance quotientInfinite_probability (a : I) :
   unfold quotientInfiniteMeasure
   infer_instance
 
-theorem quotientSurvival_eq (a : I) : quotientSurvival a =
+theorem quotientSurvival_eq  : quotientSurvival a =
     quotientInfiniteMeasure a {field | ReversibleUnbounded 2 field} := by
   rw [quotientInfiniteMeasure,Measure.map_apply quotientField_measurable
     (measurableSet_reversibleUnbounded 2)]
   rfl
 
-theorem quotientClosure_pullback {n L : ℕ} (q : RepositoryChannel n → Prop) :
+theorem quotientClosure_pullback {n L : ℕ} (q : _) :
     quotientClosure n L (quotientOpen q) =
       temporaryReactionClosure L (staticOpenReactions (fun r => q (splitToQuotient r))) := by
-  have he : fieldOR splitToQuotient (fun r => q (splitToQuotient r)) = q := by
-    funext j
-    exact propext (quotient_mark_pullback_OR q j)
-  rw [← quotientClosure_OR,he]
+  rw [← quotientClosure_OR]
+  congr 2
+  ext j
+  simpa only [fieldOR, exists_eq_left] using
+    (splitToQuotient_surjective n).exists (p := fun k => k = j ∧ q k)
 
-theorem quotientClosure_restriction (n L : ℕ) (ω : SplitField) :
+
+variable (n L : ℕ)
+
+theorem quotientClosure_restriction  (ω : SplitField) :
     quotientClosure n L (quotientOpen (fun j => ω (quotientCoordinate j))) =
       temporaryReactionClosure L (restrictedSplitReactions n (quotientField ω)) := by
   rw [quotientClosure_pullback]
   congr 1
   ext r
-  simp only [staticOpenReactions,restrictedSplitReactions,Finset.mem_filter,Finset.mem_univ,
-    true_and]
+  simp [staticOpenReactions, restrictedSplitReactions]
   unfold quotientField
   apply Iff.of_eq
-  simpa only [literalSplitCoordinate] using congrArg ω (canonicalIndex_split r).symm
+  simpa [literalSplitCoordinate] using congrArg ω ((orderedCoordinate_split r ▸ canonicalIndex_ordered (splitToOrdered r)).symm)
 
-theorem quotient_finite_seed_measure_eq (n L : ℕ) (a : I) (seed : Finset (List Bool)) :
-    quotientStaticMeasure n a {q | ∀ w ∈ seed,
-      ∃ x ∈ quotientClosure n L (quotientOpen q), moleculeWord x = w} =
-    quotientInfiniteMeasure a {field | ∀ w ∈ seed, FiniteReversibleGenerated n L field w} := by
-  rw [← infinite_quotient_restriction_map n a,
-    Measure.map_apply (Measurable.of_eval (fun j => measurable_pi_apply _))
-      (Set.toFinite _).measurableSet,
-    quotientInfiniteMeasure,Measure.map_apply quotientField_measurable
-      (measurableSet_finite_seed n L seed)]
-  congr 1
-  ext ω
-  simp only [Set.mem_preimage,Set.mem_ofPred_eq,quotientClosure_restriction]
-  apply forall_congr'
-  intro w
-  apply forall_congr'
-  intro _
-  exact (finiteReversible_iff_literalClosure (quotientField ω) w).symm
 
-theorem quotient_finite_seed_tendsto (L : ℕ) (a : I) (seed : Finset (List Bool)) :
-    Filter.Tendsto (fun n => quotientStaticMeasure n a {q | ∀ w ∈ seed,
-      ∃ x ∈ quotientClosure n L (quotientOpen q), moleculeWord x = w}) Filter.atTop
-      (nhds (quotientInfiniteMeasure a {field | ∀ w ∈ seed, InfiniteReversibleGenerated L field w})) := by
-  simp_rw [quotient_finite_seed_measure_eq]
-  exact finite_seed_probability_tendsto (quotientInfiniteMeasure a) L seed
 
-def quotientEscapeEvent (L K : ℕ) : Set (RepositoryChannel (2*(K+L)) → Prop) :=
+variable (L K : ℕ)
+
+def quotientEscapeEvent   :=
   {q | ∃ x ∈ quotientClosure (2*(K+L)) L (quotientOpen q), K+L < (moleculeWord x).length}
 
-theorem quotient_escape_measure_eq (L K : ℕ) (a : I) :
-    quotientStaticMeasure (2*(K+L)) a (quotientEscapeEvent L K) =
+theorem quotient_escape_measure_eq  (a : I) :
+    quotientStaticMeasure _ a (quotientEscapeEvent L K) =
       quotientInfiniteMeasure a (reversibleEscapeEvent L K) := by
-  rw [← infinite_quotient_restriction_map (2*(K+L)) a,
-    Measure.map_apply (Measurable.of_eval (fun j => measurable_pi_apply _))
+  let z0 := 2*(K+L)
+  rw [← infinite_quotient_restriction_map z0 a,
+    Measure.map_apply (Measurable.of_eval fun j => measurable_pi_apply _)
       (Set.toFinite _).measurableSet,
     quotientInfiniteMeasure,Measure.map_apply quotientField_measurable
       (measurableSet_reversibleEscapeEvent L K)]
   congr 1
   ext ω
-  change (∃ x ∈ quotientClosure _ L (quotientOpen (fun j => ω (quotientCoordinate j))),
+  change (∃ x ∈ quotientClosure _ L (quotientOpen fun j => ω (quotientCoordinate j)),
     K+L < (moleculeWord x).length) ↔
-    ∃ w, K+L < w.length ∧ FiniteReversibleGenerated (2*(K+L)) L (quotientField ω) w
+    ∃ w, K+L < w.length ∧ FiniteReversibleGenerated z0 L (quotientField ω) w
   rw [quotientClosure_restriction]
-  constructor
-  · rintro ⟨x,hx,hl⟩
-    exact ⟨moleculeWord x,hl,literalClosure_to_finiteReversible _ x hx⟩
-  · rintro ⟨w,hw,hg⟩
-    obtain ⟨x,hx,he⟩ := finiteReversible_to_literalClosure hg
-    exact ⟨x,hx,by simpa [he] using hw⟩
+  simp only [finiteReversible_iff_literalClosure]
+  aesop
 
-theorem quotient_escape_tendsto (a : I) :
-    Filter.Tendsto (fun K => quotientStaticMeasure (2*(K+2)) a (quotientEscapeEvent 2 K))
-      Filter.atTop (nhds (quotientSurvival a)) := by
-  simp_rw [quotient_escape_measure_eq,quotientSurvival_eq]
-  exact reversible_escape_probability_tendsto (quotientInfiniteMeasure a) 2
 
 end RAFReactionQuotient

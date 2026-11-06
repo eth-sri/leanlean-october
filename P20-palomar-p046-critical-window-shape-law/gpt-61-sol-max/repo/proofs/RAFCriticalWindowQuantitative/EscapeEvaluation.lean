@@ -1,54 +1,66 @@
-module
+import proofs.RAFCriticalWindowQuantitative.FiniteClosure
+import proofs.RAFCriticalWindowQuantitative.SeedDeficit
+import proofs.HordijkSteelThreshold.StaticEventContinuity
+import proofs.RAFCriticalWindowQuantitative.FiniteEscapeAdapters
 
-public import proofs.RAFCriticalWindowQuantitative.FiniteEventProbability
-public import proofs.RAFCriticalWindowQuantitative.FiniteEscapeAdapters
-
-@[expose] public section
 
 namespace RAFCriticalWindowQuantitative
-open HordijkSteelThreshold RAFReactionQuotient RAF.Polymer RAF.Concrete OverlapCorrectedRAF.Source
-open MeasureTheory
 
-def splitEscapeBool (N K : ℕ) (ω : Reaction N → Bool) : Bool :=
+open Classical HordijkSteelThreshold MeasureTheory
+
+variable (J : Type*)
+
+variable [Fintype J] [DecidableEq J] (q : ℚ)
+
+def rationalEventProbability  
+    (event : (J → Bool) → Bool)  :=
+  ∑ ω : J → Bool, if event ω then ∏ j, if ω j then q else 1-q else 0
+
+/-- Exact probability semantics for an arbitrary executable Boolean event. -/
+theorem rationalEventProbability_correct  
+    (hq : _) (hq1 : _) (event : _) :
+    ((Measure.pi (fun _ : J => ambientCoordLaw (rationalParameter q hq hq1)))
+      {ω | event (fun j => decide (ω j))}).toReal =
+      rationalEventProbability J q event := by
+  classical
+  change Measure.real _ _ = _
+  rw [← Finset.coe_filter_univ, ← sum_measureReal_singleton]
+  simp only [measureReal_def, Measure.pi_singleton, ambientCoordLaw_atom,
+    ENNReal.toReal_prod, ENNReal.coe_toReal, Finset.sum_filter]
+  rw [← (Equiv.piCongrRight fun _ : J => Equiv.propEquivBool.symm).sum_comp]
+  simp [rationalEventProbability, Equiv.propEquivBool,
+    staticAtomWeight, rationalParameter, apply_ite]
+
+open RAFReactionQuotient RAF.Polymer RAF.Concrete OverlapCorrectedRAF.Source
+
+def splitEscapeBool (N K : ℕ) (ω : Reaction N → Bool)  :=
   decide (∃ x ∈ computedClosure N 2 (Finset.univ.filter (fun r => ω r)), K < molLength x)
 
-def quotientEscapeBool (N K : ℕ) (ω : RepositoryChannel N → Bool) : Bool :=
+def quotientEscapeBool (N K : ℕ) (ω : RepositoryChannel N → Bool)  :=
   splitEscapeBool N K (fun r => ω (splitToQuotient r))
 
-def splitEscapeEval (q : ℚ) (K : ℕ) : ℚ :=
+def splitEscapeEval (q : ℚ) (K : ℕ)  :=
   rationalEventProbability (Reaction (2*(K+2))) q (splitEscapeBool _ (K+2))
 
-def quotientEscapeEval (q : ℚ) (K : ℕ) : ℚ :=
+def quotientEscapeEval (q : ℚ) (K : ℕ)  :=
   rationalEventProbability (RepositoryChannel (2*(K+2))) q (quotientEscapeBool _ (K+2))
 
-theorem splitEscapeEval_correct (q : ℚ) (hq : 0 ≤ q) (hq1 : q ≤ 1) (K : ℕ) :
-    (splitEscapeEval q K : ℝ) =
-      (staticReactionMeasure (2*(K+2)) (rationalParameter q hq hq1) (staticEscapeEvent 2 K)).toReal := by
-  classical
-  have h := rationalEventProbability_correct (Reaction (2*(K+2))) q hq hq1 (splitEscapeBool _ (K+2))
-  have he : {ω : Reaction (2*(K+2)) → Prop | splitEscapeBool _ (K+2) (fun r => decide (ω r))} =
-      staticEscapeEvent 2 K := by
-    ext ω
-    simp [splitEscapeBool,computedClosure_eq,staticEscapeEvent,staticOpenReactions,moleculeWord_length]
-  rw [he] at h
-  simpa only [splitEscapeEval,staticReactionMeasure,Measure.infinitePi_eq_pi] using h.symm
+variable (q : ℚ) (hq : 0 ≤ q) (hq1 : q ≤ 1) (K : ℕ)
 
-theorem quotientEscapeEval_correct (q : ℚ) (hq : 0 ≤ q) (hq1 : q ≤ 1) (K : ℕ) :
-    (quotientEscapeEval q K : ℝ) =
-      (quotientStaticMeasure (2*(K+2)) (rationalParameter q hq hq1) (quotientEscapeEvent 2 K)).toReal := by
+theorem splitEscapeEval_correct  :
+    splitEscapeEval q K =
+      (staticReactionMeasure _ (rationalParameter q hq hq1) (staticEscapeEvent 2 K)).toReal := by
   classical
-  have h := rationalEventProbability_correct (RepositoryChannel (2*(K+2))) q hq hq1
-    (quotientEscapeBool _ (K+2))
-  have he : {ω : RepositoryChannel (2*(K+2)) → Prop |
-      quotientEscapeBool _ (K+2) (fun r => decide (ω r))} = quotientEscapeEvent 2 K := by
-    ext ω
-    simp only [Set.mem_ofPred_eq,quotientEscapeBool,splitEscapeBool,decide_eq_true_eq,
-      computedClosure_eq]
-    change (∃ x ∈ temporaryReactionClosure 2 (staticOpenReactions (fun r => ω (splitToQuotient r))),
-      K+2 < molLength x) ↔ _
-    rw [← quotientClosure_pullback]
-    simp only [quotientEscapeEvent,Set.mem_ofPred_eq,moleculeWord_length]
-  rw [he] at h
-  exact h.symm
+  simpa [splitEscapeEval, splitEscapeBool, computedClosure_eq, staticOpenReactions,
+    staticEscapeEvent,moleculeWord_length,staticReactionMeasure] using
+    (rationalEventProbability_correct (Reaction (2*(K+2))) q hq hq1 (splitEscapeBool _ (K+2))).symm
+
+theorem quotientEscapeEval_correct  :
+    quotientEscapeEval q K =
+      (quotientStaticMeasure _ (rationalParameter q hq hq1) (quotientEscapeEvent 2 K)).toReal := by
+  classical
+  simpa [quotientEscapeEval, quotientEscapeBool, splitEscapeBool, computedClosure_eq, quotientStaticMeasure, quotientClosure_pullback, staticOpenReactions, quotientEscapeEvent, moleculeWord_length] using
+    (rationalEventProbability_correct (RepositoryChannel (2*(K+2))) q hq hq1
+      (quotientEscapeBool _ (K+2))).symm
 
 end RAFCriticalWindowQuantitative

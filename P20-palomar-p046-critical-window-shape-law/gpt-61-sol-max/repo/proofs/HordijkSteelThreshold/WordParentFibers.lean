@@ -1,78 +1,34 @@
-module
-
-public import proofs.HordijkSteelThreshold.WordGraphCuts
-
-@[expose] public section
+import proofs.HordijkSteelThreshold.WordGraphCuts
 
 namespace HordijkSteelThreshold
-open Classical
-
-theorem nonroot_word_ne_nil {L N : ℕ} (v : BoundedFoodWord L N)
-    (hv : v ≠ boundedFoodRoot L N) : v.val ≠ [] := by
-  intro h
-  exact hv (Subtype.ext h)
-
-theorem boundedFoodLeft_preimage {L N : ℕ} (u v : BoundedFoodWord L N)
-    (hv : v ≠ boundedFoodRoot L N) (hp : boundedFoodLeft u = v) :
-    ∃ b : Bool, u.val = b :: v.val := by
+variable {L N : ℕ} (u v : BoundedFoodWord L N)
+theorem boundedFoodParent_preimage (b : Bool)
+    (hv : v ≠ boundedFoodRoot L N) (hp : wordEdgeParent (u,b) = v) :
+    ∃ bit : Bool, u.val = if b then v.val ++ [bit] else bit :: v.val := by
   have he := congrArg Subtype.val hp
-  change foodWordLeft L u.val = v.val at he
   have hs : ¬ u.val.length ≤ L + 1 := by
-    intro h
-    have hn := nonroot_word_ne_nil v hv
-    simp [foodWordLeft, h] at he
-    exact hn he
-  rw [foodWordLeft, ite_eq_right hs] at he
-  cases hu : u.val with
-  | nil => simp [hu] at hs
-  | cons b t =>
-    refine ⟨b, ?_⟩
-    simp only [hu, List.tail_cons] at he
-    rw [he]
+    grind [wordEdgeParent, boundedFoodLeft, boundedFoodRight, foodWordLeft, foodWordRight, boundedFoodRoot]
+  cases b
+  · change foodWordLeft L u.val = v.val at he
+    rw [foodWordLeft, ite_eq_right hs] at he
+    cases hu : u.val <;> simp_all
 
-theorem boundedFoodRight_preimage {L N : ℕ} (u v : BoundedFoodWord L N)
-    (hv : v ≠ boundedFoodRoot L N) (hp : boundedFoodRight u = v) :
-    ∃ b : Bool, u.val = v.val ++ [b] := by
-  have he := congrArg Subtype.val hp
-  change foodWordRight L u.val = v.val at he
-  have hs : ¬ u.val.length ≤ L + 1 := by
-    intro h
-    have hn := nonroot_word_ne_nil v hv
-    simp [foodWordRight, h] at he
-    exact hn he
-  rw [foodWordRight, ite_eq_right hs] at he
-  have hu : u.val ≠ [] := by intro h; simp [h] at hs
-  refine ⟨u.val.getLast hu, ?_⟩
-  rw [← he]
-  exact (List.dropLast_append_getLast hu).symm
+  · change foodWordRight L u.val = v.val at he
+    rw [foodWordRight, ite_eq_right hs] at he
+    have hu : u.val ≠ [] := by intro h; simp_all
+    refine ⟨u.val.getLast hu, ?_⟩
+    simpa [← he] using (List.dropLast_append_getLast hu).symm
 
-/-- Only nonroot fibers are bounded: contraction gives the food root a large fiber. -/
-theorem boundedFoodLeft_fiber_card {L N : ℕ} (v : BoundedFoodWord L N)
-    (hv : v ≠ boundedFoodRoot L N) :
-    (Finset.univ.filter (fun u : BoundedFoodWord L N => boundedFoodLeft u = v)).card ≤ 2 := by
-  let target := (Finset.univ : Finset Bool).image (fun b => b :: v.val)
-  have hc : (Finset.univ.filter (fun u : BoundedFoodWord L N => boundedFoodLeft u = v)).card ≤
+theorem boundedFoodParent_fiber_card (hv : v ≠ boundedFoodRoot L N) (b : Bool) :
+    (Finset.univ.filter (fun u : _ => wordEdgeParent (u,b) = v)).card ≤ 2 := by
+  let target := Finset.univ.image fun bit : Bool => if b then v.val ++ [bit] else bit :: v.val
+  have hc : (Finset.univ.filter fun u : _ => wordEdgeParent (u,b) = v).card ≤
       target.card := by
     apply Finset.card_le_card_of_injOn Subtype.val
     · intro u hu
-      obtain ⟨b, hb⟩ := boundedFoodLeft_preimage u v hv (Finset.mem_filter.mp hu).2
-      exact Finset.mem_image.mpr ⟨b, Finset.mem_univ b, hb.symm⟩
-    · intro u _ w _ h
-      exact Subtype.ext h
-  exact hc.trans ((Finset.card_image_le).trans (by decide))
+      simpa [target, eq_comm, or_comm] using
+        boundedFoodParent_preimage u v b hv (Finset.mem_filter.mp hu).2
+    · exact Set.injOn_subtype_val
 
-theorem boundedFoodRight_fiber_card {L N : ℕ} (v : BoundedFoodWord L N)
-    (hv : v ≠ boundedFoodRoot L N) :
-    (Finset.univ.filter (fun u : BoundedFoodWord L N => boundedFoodRight u = v)).card ≤ 2 := by
-  let target := (Finset.univ : Finset Bool).image (fun b => v.val ++ [b])
-  have hc : (Finset.univ.filter (fun u : BoundedFoodWord L N => boundedFoodRight u = v)).card ≤
-      target.card := by
-    apply Finset.card_le_card_of_injOn Subtype.val
-    · intro u hu
-      obtain ⟨b, hb⟩ := boundedFoodRight_preimage u v hv (Finset.mem_filter.mp hu).2
-      exact Finset.mem_image.mpr ⟨b, Finset.mem_univ b, hb.symm⟩
-    · intro u _ w _ h
-      exact Subtype.ext h
-  exact hc.trans ((Finset.card_image_le).trans (by decide))
-
+  exact hc.trans (Finset.card_image_le.trans (by decide))
 end HordijkSteelThreshold

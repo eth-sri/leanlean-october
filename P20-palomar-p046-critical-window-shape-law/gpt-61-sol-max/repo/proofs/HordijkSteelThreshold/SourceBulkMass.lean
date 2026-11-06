@@ -1,3 +1,0 @@
-module
-public import proofs.HordijkSteelThreshold.HalfPoolAsymptotics
-public import proofs.HordijkSteelThreshold.StaticUniformBulk

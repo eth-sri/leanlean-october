@@ -1,64 +1,66 @@
-module
 
-public import proofs.RAFCriticalWindowQuantitative.EscapeEvaluation
-public import proofs.RAFCriticalWindowQuantitative.RealErrorBudget
+import proofs.RAFCriticalWindowQuantitative.EscapeEvaluation
+import proofs.RAFCriticalWindowQuantitative.RealErrorBudget
 
-@[expose] public section
 
 namespace RAFCriticalWindowQuantitative
-open HordijkSteelThreshold RAFReactionQuotient MeasureTheory
+open HordijkSteelThreshold MeasureTheory unitInterval Filter RAF.Polymer
 
-def splitEvaluationCap (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1) (ε : ℚ) (hε : 0 < ε) : ℕ :=
+variable (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1) (ε : ℚ) (hε : 0 < ε)
+
+def splitEvaluationCap   :=
   let L := 10*seedIndex q hq hq1 (precisionIndex ε)
   recordCap L (recordIndex q hq hq1 L ε hε)
 
-def splitCertifiedInterval (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1) (ε : ℚ) (hε : 0 < ε) : ℚ × ℚ :=
+theorem split_uniform_approximation  (a : I) (ha : rationalParameter q hq.le hq1 ≤ a) :
+    (splitEscapeProbability a (splitEvaluationCap q hq hq1 ε hε)).toReal ≤
+      (staticSurvival a).toReal + ε/2 := by
+  let m := precisionIndex ε
+  let L := 10*seedIndex q hq hq1 m
+  have hm : 2 ≤ m := precisionIndex_ge_two ε
+  apply uniform_error_of_bound q hq hq1 L ε hε a ha _ _ (measure_ne_top _ _)
+  apply (finite_seed_truncation splitPrefixIndex a L _).trans
+  apply add_le_add _ le_rfl
+  have hbad (N : ℕ) (hN : _)  := by
+    apply (static_decreasing_event_mono N ha
+      (fun S => MassDeficit m (temporaryReactionClosure L S)) ?_).trans
+      (effective_static_bulk q hq hq1 m N hN)
+    intro S T hST hT
+    exact (Nat.mul_le_mul_left m (Finset.card_le_card (temporaryReactionClosure_mono hST))).trans_lt hT
+  have h := seed_survival_bound (infiniteStaticMeasure a) L m hm (by
+    intro N hN
+    have h := hbad N hN
+    change staticReactionMeasure N a _ ≤ _ at h
+    rw [← infiniteStatic_restriction_map N a,
+      Measure.map_apply (by fun_prop) (Set.toFinite _).measurableSet] at h
+    exact h)
+  rw [infiniteStaticMeasure,
+    Measure.map_apply measurable_currySplitField (measurableSet_infinite_seed 2 _)] at h
+  exact h
+
+
+
+def splitCertifiedInterval   :=
   let e := splitEscapeEval q (splitEvaluationCap q hq hq1 ε hε-2)
   (e-ε/2,e)
 
 /-- An executable terminating rational enclosure for the actual split survival profile. -/
-theorem splitCertifiedInterval_correct (q : ℚ) (hq : 0 < q) (hq1 : q ≤ 1)
-    (ε : ℚ) (hε : 0 < ε) :
-    let interval := splitCertifiedInterval q hq hq1 ε hε
-    (interval.1 : ℝ) ≤ (staticSurvival (rationalParameter q hq.le hq1)).toReal ∧
-      (staticSurvival (rationalParameter q hq.le hq1)).toReal ≤ (interval.2 : ℝ) ∧
-      interval.2-interval.1 < ε := by
-  let m := precisionIndex ε
-  let L := 10*seedIndex q hq hq1 m
-  let r := recordIndex q hq hq1 L ε hε
-  let K := recordCap L r
+abbrev splitCertifiedInterval_correct   := by
+  let K := splitEvaluationCap q hq hq1 ε hε
   let a := rationalParameter q hq.le hq1
   let e := splitEscapeEval q (K-2)
-  have hm : 2 ≤ m := precisionIndex_ge_two ε
-  have hK : 2 ≤ K := recordCap_ge_two L r
-  have hS : staticSurvival a ≠ ⊤ := by
-    unfold staticSurvival
-    exact measure_ne_top _ _
-  have ht := real_error_of_bound (splitEscapeProbability a K) (staticSurvival a) hS m L r
-    (by omega) a (explicit_split_truncation q hq hq1 m hm a le_rfl r)
-  have he : (e : ℝ) = (splitEscapeProbability a K).toReal :=
+  have he  :=
     (splitEscapeEval_correct q hq.le hq1 (K-2)).trans
-      (congrArg ENNReal.toReal (split_escape_finite a K hK).symm)
-  have hp : 1/(m : ℝ) ≤ (ε : ℝ)/4 := by
-    have hcast := (Rat.cast_le (K := ℝ)).mpr (precisionIndex_error ε hε)
-    push_cast at hcast
-    exact hcast
-  have hr := real_record_budget q hq hq1 L ε hε
-  change (splitEscapeProbability a K).toReal ≤ (staticSurvival a).toReal+1/(m : ℝ)+
-    ((actualBinaryWords L).card : ℝ)*(1-(q : ℝ)^(L+1))^r at ht
-  have hu : (e : ℝ) ≤ (staticSurvival a).toReal+(ε : ℝ)/2 := by
-    rw [he]
-    linarith
-  have hl : (staticSurvival a).toReal ≤ (e : ℝ) := by
-    rw [he]
-    apply ENNReal.toReal_mono _ (split_survival_le_escape a K)
-    unfold splitEscapeProbability
-    exact measure_ne_top _ _
-  change ((e-ε/2 : ℚ) : ℝ) ≤ (staticSurvival a).toReal ∧
-    (staticSurvival a).toReal ≤ (e : ℝ) ∧ e-(e-ε/2) < ε
-  refine ⟨?_,hl,?_⟩
-  · push_cast
-    linarith
-  · linarith
+      (congrArg ENNReal.toReal (split_escape_finite a K (recordCap_ge_two _ _)).symm)
+  apply certified_interval_of_error e ε hε (staticSurvival a).toReal
+  · rw [he]
+    exact ENNReal.toReal_mono (measure_ne_top _ _) ((by
+                                                      rw [staticSurvival, infiniteStaticMeasure,
+                                                        Measure.map_apply measurable_currySplitField (measurableSet_reversibleUnbounded 2)]
+                                                      apply measure_mono
+                                                      intro ω hω
+                                                      exact hω K))
+  · rw [he]
+    exact split_uniform_approximation q hq hq1 ε hε a le_rfl
 
 end RAFCriticalWindowQuantitative

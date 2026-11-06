@@ -1,90 +1,92 @@
-module
+import proofs.HordijkSteelThreshold.StaticEventContinuity
+import proofs.RAFCriticalWindowQuantitative.SparseClosure
+import proofs.RAFCriticalWindowQuantitative.QuotientSparseClosure
+import proofs.HordijkSteelThreshold.StaticSurvivalContinuity
+import proofs.RAFReactionQuotient.SurvivalContinuity
 
-public import proofs.RAFCriticalWindowQuantitative.FiniteOpenCount
-public import proofs.RAFCriticalWindowQuantitative.QuotientSparseClosure
-public import proofs.HordijkSteelThreshold.StaticSurvivalContinuity
-public import proofs.RAFReactionQuotient.SurvivalContinuity
-
-@[expose] public section
 
 namespace RAFCriticalWindowQuantitative
-open Classical HordijkSteelThreshold RAFReactionQuotient RAF.Polymer RAF.Concrete
-open OverlapCorrectedRAF.Source MeasureTheory unitInterval
-open scoped ENNReal
 
-def sparseWitnessCap (r : ℕ) : ℕ := 2*(2^(r+1)+2)
+open Classical HordijkSteelThreshold MeasureTheory unitInterval
 
-def splitSparseCoefficient (r : ℕ) : ℕ := (Fintype.card (Reaction (sparseWitnessCap r))).choose r
+variable (J : Type*)
 
-def quotientSparseCoefficient (r : ℕ) : ℕ := (Fintype.card (RepositoryChannel (sparseWitnessCap r))).choose r
+variable [Fintype J] (a : I)
 
-theorem split_sparse_probability (a : I) (r : ℕ) :
-    staticSurvival a ≤ (splitSparseCoefficient r : ENNReal)*(toNNReal a : ENNReal)^r := by
+theorem finite_support_open_probability   (T : Finset J) :
+    (Measure.pi (fun _ : J => ambientCoordLaw a)) {ω | ∀ j ∈ T, ω j} = toNNReal a^T.card := by
+  change (Measure.pi fun _ : J => ambientCoordLaw a) ((T : Set J).pi fun _ => {P | P}) = _
+  simp [ambientCoordLaw]
+
+theorem finite_many_open_probability   (r : ℕ) :
+    (Measure.pi (fun _ : J => ambientCoordLaw a))
+      {ω | r ≤ (Finset.univ.filter (ω)).card} ≤
+      (Fintype.card J).choose r*toNNReal a^r := by
+  let μ := Measure.pi fun _ : J => ambientCoordLaw a
+  let P := (Finset.univ : Finset J).powersetCard r
+  have hs : {ω : _ | r ≤ (Finset.univ.filter ω).card} ⊆
+      ⋃ T ∈ P, {ω | ∀ j ∈ T, ω j} := by
+    intro ω hω
+    obtain ⟨T,hT,hcard⟩ := Finset.exists_subset_card_eq hω
+    refine Set.mem_iUnion.mpr ⟨T,Set.mem_iUnion.mpr ⟨?_,?_⟩⟩
+    · measurability
+    grind
+  calc
+    _ ≤ μ (⋃ T ∈ P, {ω | ∀ j ∈ T, ω j}) := measure_mono hs
+    _ ≤ ∑ T ∈ P, μ {ω | ∀ j ∈ T, ω j} := measure_biUnion_finset_le _ _
+    _ = ∑ _T ∈ P, (toNNReal a : ENNReal)^r := by
+      apply Finset.sum_congr rfl
+      grind [finite_support_open_probability]
+    _ = _ := by simp [P]
+
+open RAFReactionQuotient RAF.Polymer
+open OverlapCorrectedRAF.Source
+
+def sparseWitnessCap (r : ℕ)  := 2*(2^(r+1)+2)
+
+def splitSparseCoefficient (r : ℕ)  := (Fintype.card (Reaction (sparseWitnessCap r))).choose r
+
+def quotientSparseCoefficient (r : ℕ)  := (Fintype.card (RepositoryChannel (sparseWitnessCap r))).choose r
+
+variable (a : I) (r : ℕ)
+
+theorem split_sparse_probability  :
+    staticSurvival a ≤ splitSparseCoefficient r*toNNReal a^r := by
   let K := 2^(r+1)
   let N := 2*(K+2)
   have hs : staticEscapeEvent 2 K ⊆
-      {ω | r ≤ (Finset.univ.filter (fun j : Reaction N => ω j)).card} := by
+      {ω | r ≤ (Finset.univ.filter ω).card} := by
     intro ω hω
     obtain ⟨x,hx,hlen⟩ := hω
-    by_contra hn
-    have hcard : (staticOpenReactions ω).card < r := by
-      exact lt_of_not_ge hn
-    have hb := sparse_closure_length N (staticOpenReactions ω) x hx
-    have hp : 2^((staticOpenReactions ω).card+1) ≤ 2^(r+1) :=
-      Nat.pow_le_pow_right (by omega) (by omega)
     rw [moleculeWord_length] at hlen
-    dsimp [K] at hlen
-    omega
+    have := (Nat.pow_lt_pow_iff_right (by decide)).mp
+      ((lt_of_le_of_lt (Nat.le_add_right K 2) hlen).trans_le (sparse_closure_length N (staticOpenReactions ω) x hx))
+    exact (Nat.lt_of_succ_lt_succ this).le
   apply (staticSurvival_le_finite_escape a K).trans
   apply (measure_mono hs).trans
-  simpa +instances only [staticReactionMeasure,Measure.infinitePi_eq_pi,
-    splitSparseCoefficient,sparseWitnessCap,N,K,ENNReal.instLE,ENNReal.instPartialOrder] using
+  simpa +instances [staticReactionMeasure, splitSparseCoefficient, sparseWitnessCap, ENNReal.instPartialOrder] using
     finite_many_open_probability (Reaction N) a r
 
-theorem quotient_sparse_probability (a : I) (r : ℕ) :
-    quotientSurvival a ≤ (quotientSparseCoefficient r : ENNReal)*(toNNReal a : ENNReal)^r := by
+abbrev quotient_sparse_probability   := by
   let K := 2^(r+1)
   let N := 2*(K+2)
-  have hs : quotientEscapeEvent 2 K ⊆
-      {ω | r ≤ (Finset.univ.filter (fun j : RepositoryChannel N => ω j)).card} := by
-    intro ω hω
-    obtain ⟨x,hx,hlen⟩ := hω
-    by_contra hn
-    have hcard : (quotientOpen ω).card < r := by
-      exact lt_of_not_ge hn
-    have hb := quotient_sparse_closure_length N (quotientOpen ω) x hx
-    have hp : 2^((quotientOpen ω).card+1) ≤ 2^(r+1) :=
-      Nat.pow_le_pow_right (by omega) (by omega)
-    rw [moleculeWord_length] at hlen
-    dsimp [K] at hlen
-    omega
+  
   apply (quotientSurvival_le_finite_escape a K).trans
-  exact (measure_mono hs).trans (finite_many_open_probability (RepositoryChannel N) a r)
+  exact (measure_mono (by
+                        intro ω hω
+                        obtain ⟨x,hx,hlen⟩ := hω
+                        rw [moleculeWord_length] at hlen
+                        have := (Nat.pow_lt_pow_iff_right (by decide)).mp
+                          ((lt_of_le_of_lt (Nat.le_add_right K 2) hlen).trans_le (quotient_sparse_closure_length N (quotientOpen ω) x hx))
+                        exact (Nat.lt_of_succ_lt_succ this).le)).trans (finite_many_open_probability (RepositoryChannel N) a r)
 
-theorem split_sparse_real (a : I) (r : ℕ) :
-    (staticSurvival a).toReal ≤ (splitSparseCoefficient r : ℝ)*(a : ℝ)^r := by
-  have h := ENNReal.toReal_mono (by finiteness) (split_sparse_probability a r)
-  simpa using h
+abbrev split_sparse_real   := by
+  
+  simpa using ENNReal.toReal_mono (by finiteness) (split_sparse_probability a r)
 
-theorem quotient_sparse_real (a : I) (r : ℕ) :
-    (quotientSurvival a).toReal ≤ (quotientSparseCoefficient r : ℝ)*(a : ℝ)^r := by
-  have h := ENNReal.toReal_mono (by finiteness) (quotient_sparse_probability a r)
-  simpa using h
+abbrev quotient_sparse_real   := by
+  
+  simpa using ENNReal.toReal_mono (by finiteness) (quotient_sparse_probability a r)
 
-/-- Epsilon-delta flatness: smaller than every fixed power at zero. -/
-theorem power_bound_implies_flatness (S : I → ℝ) (C : ℕ → ℕ)
-    (hbound : ∀ a r, S a ≤ (C r : ℝ)*(a : ℝ)^r) (d : ℕ) (ε : ℝ) (hε : 0 < ε) :
-    ∃ δ : ℝ, 0 < δ ∧ ∀ a : I, 0 < (a : ℝ) → (a : ℝ) < δ → S a < ε*(a : ℝ)^d := by
-  let c : ℝ := C (d+1)
-  have hc : 0 ≤ c := Nat.cast_nonneg _
-  refine ⟨ε/(c+1),by positivity,?_⟩
-  intro a ha haδ
-  have hx := (lt_div_iff₀ (show 0 < c+1 by positivity)).mp haδ
-  have hca : c*(a : ℝ) < ε := by nlinarith
-  have hp := mul_lt_mul_of_pos_right hca (pow_pos ha d)
-  have hb := hbound a (d+1)
-  rw [pow_succ] at hb
-  dsimp [c] at hp
-  nlinarith
 
 end RAFCriticalWindowQuantitative

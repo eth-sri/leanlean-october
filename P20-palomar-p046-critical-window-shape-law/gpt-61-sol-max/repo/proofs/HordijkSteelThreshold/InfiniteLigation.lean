@@ -1,8 +1,8 @@
-module
 
-public import proofs.HordijkSteelThreshold.NucleusAmplification
+import proofs.HordijkSteelThreshold.AmbientIndependence
+import Mathlib
 
-@[expose] public section
+
 
 namespace HordijkSteelThreshold
 

@@ -1,268 +1,204 @@
-module
 
-public import proofs.HordijkSteelThreshold.ScalarHistoryDistribution
+import proofs.HordijkSteelThreshold.CatalystPoolBlocks
+import proofs.HordijkSteelThreshold.PeelingHistory
+import Mathlib.Tactic
 
-@[expose] public section
+
+
+
+namespace HordijkSteelThreshold
+
+variable (P : ℕ → Prop)
+
+/-- A decreasing Boolean history is on exactly before its death index.
+Death zero means initially absent; death T+1 means surviving the horizon. -/
+def decreasingHistory  (T d : ℕ)  :=
+  ∀ t ≤ T, P t ↔ t < d
+
+/-- Exact column weight, including initially absent and horizon-surviving
+columns. Only cardinalities of deterministic nested pools enter. -/
+noncomputable def columnHistoryWeight (q : ENNReal) (sizes : ℕ → ℕ) (T d : ℕ)  :=
+  if d = 0 then q ^ sizes 0
+  else if T < d then 1 - q ^ sizes T
+  else q ^ sizes d - q ^ sizes (d - 1)
+
+variable (X : Type*)
+
+variable [Fintype X]
+
+/-- Deterministic nested sets realizing every possible finite pool size. -/
+noncomputable def finiteInitialSegment   (k : ℕ)  :=
+  (Finset.univ.filter fun i : Fin (Fintype.card X) => i.val < k).map
+    (Fintype.equivFin X).symm.toEmbedding
+
+theorem finiteInitialSegment_mono   :
+    Monotone (finiteInitialSegment X) := by
+  intro a b hab
+  apply Finset.map_subset_map.mpr
+  grind
+
+theorem card_finiteInitialSegment  
+    (k : ℕ) (hk : k ≤ Fintype.card X) :
+    (finiteInitialSegment X k).card = k := by
+  rw [finiteInitialSegment, Finset.card_map, Fin.card_filter_val_lt, min_eq_right hk]
+
+end HordijkSteelThreshold
 
 namespace RAFEmergenceApprox.Generic
-open Classical MeasureTheory ProbabilityTheory unitInterval HordijkSteelThreshold
-open RAF.Concrete
+open MeasureTheory unitInterval HordijkSteelThreshold
 
 variable {X R : Type*} [Fintype X] [Fintype R]
 
-noncomputable def colLaw (X : Type*) [Fintype X] (p : I) : Measure (X → Prop) :=
+noncomputable def colLaw (X : Type*) [Fintype X] (p : I)  :=
   Measure.pi (fun _ : X => ambientCoordLaw p)
 
 instance colLaw_probability (p : I) : IsProbabilityMeasure (colLaw X p) := by
   unfold colLaw
   infer_instance
 
-noncomputable def law (p : R → I) : Measure (R → X → Prop) :=
+variable (p : R → I)
+
+noncomputable def law : Measure (R → X → Prop) :=
   Measure.pi (fun r => colLaw X (p r))
 
-instance law_probability (p : R → I) : IsProbabilityMeasure (law (X := X) p) := by
+instance law_probability  : IsProbabilityMeasure (law (X := X) p) := by
   unfold law
   infer_instance
 
-def catalystPoolOpen (ω : R → X → Prop) (C : Finset X) (r : R) : Prop :=
+variable (ω : R → X → Prop)
+
+variable (C : Finset X) (r : R)
+
+def catalystPoolOpen    :=
   ∃ x ∈ C, ω r x
 
-def catalystColumnHistory (ω : R → X → Prop) (C : ℕ → Finset X)
-    (r : R) (T d : ℕ) : Prop :=
-  decreasingHistory (fun t => catalystPoolOpen ω (C t) r) T d
-
 theorem closed_probability (p : I) (C : Finset X) :
-    colLaw X p {v | ¬ ∃ x ∈ C, v x} = (toNNReal (σ p) : ENNReal)^C.card := by
-  have hi := iIndepFun_pi (fun _ : X => (measurable_id : Measurable (id : Prop → Prop)).aemeasurable)
-      (μ := fun _ : X => ambientCoordLaw p)
-  change iIndepFun (fun i (ω : X → Prop) => ω i) (Measure.pi (fun _ : X => ambientCoordLaw p)) at hi
-  have hp := hi.measure_inter_preimage_eq_mul C
-    (sets := fun _ : X => ({False} : Set Prop)) (fun _ _ => MeasurableSet.singleton False)
-  have he : {v : X → Prop | ¬ ∃ x ∈ C, v x} =
-      ⋂ x ∈ C, (fun v : X → Prop => v x) ⁻¹' {False} := by
-    ext v
-    simp
-  rw [he]
-  change (Measure.pi (fun _ : X => ambientCoordLaw p)) _ = _
-  rw [hp]
-  have hf (x : X) : (Measure.pi (fun _ : X => ambientCoordLaw p))
-      ((fun v : X → Prop => v x) ⁻¹' {False}) = (toNNReal (σ p) : ENNReal) := by
-    rw [← Measure.map_apply (measurable_pi_apply x) (MeasurableSet.singleton False),
-      (measurePreserving_eval (fun _ : X => ambientCoordLaw p) x).map_eq]
-    exact ambientCoordLaw_false p
-  simp_rw [hf]
-  exact Finset.prod_const _
+    colLaw X p {v | ¬ ∃ x ∈ C, v x} = toNNReal (σ p)^C.card := by
+  simpa [colLaw,Set.pi,ambientCoordLaw] using
+    (Measure.pi_pi_finset (μ := fun _ : X => ambientCoordLaw p) (fun _ => {False}) C)
 
-theorem column_history_probability (p : I) (C : ℕ → Finset X) (hC : Antitone C)
-    (T d : ℕ) (hd : d ≤ T+1) :
-    colLaw X p {v | decreasingHistory (fun t => ∃ x ∈ C t, v x) T d} =
-      columnHistoryWeight (toNNReal (σ p)) (fun t => (C t).card) T d := by
-  have hm (v : X → Prop) (a b : ℕ) (hab : a ≤ b) :
-      (∃ x ∈ C b, v x) → ∃ x ∈ C a, v x := by
-    rintro ⟨x,hx,hv⟩
-    exact ⟨x,hC hab hx,hv⟩
-  by_cases hz : d = 0
-  · subst d
-    simp only [columnHistoryWeight, ↓reduceIte]
-    have he : {v : X → Prop | decreasingHistory (fun t => ∃ x ∈ C t, v x) T 0} =
-        {v | ¬ ∃ x ∈ C 0, v x} := by
-      ext v
-      exact decreasingHistory_zero_iff _ _ (hm v)
-    rw [he,closed_probability]
-  · by_cases hs : T < d
-    · have hd' : d = T+1 := by omega
-      subst d
-      simp only [columnHistoryWeight, ite_eq_right hz, ite_eq_left hs]
-      have he : {v : X → Prop | decreasingHistory (fun t => ∃ x ∈ C t, v x) T (T+1)} =
-          {v | ¬ ∃ x ∈ C T, v x}ᶜ := by
-        ext v
-        simpa only [Set.mem_ofPred_eq,Set.mem_compl_iff,not_not] using
-          decreasingHistory_survives_iff _ _ (hm v)
-      rw [he,measure_compl (Set.toFinite _).measurableSet (measure_ne_top _ _),measure_univ,closed_probability]
-    · simp only [columnHistoryWeight, ite_eq_right hz, ite_eq_right hs]
-      have he : {v : X → Prop | decreasingHistory (fun t => ∃ x ∈ C t, v x) T d} =
-          {v | ¬ ∃ x ∈ C d, v x} \ {v | ¬ ∃ x ∈ C (d-1), v x} := by
-        ext v
-        simpa only [Set.mem_ofPred_eq,Set.mem_sdiff,not_not] using
-          decreasingHistory_dies_iff _ _ _ (by omega) (by omega) (hm v)
-      have hsub : {v : X → Prop | ¬ ∃ x ∈ C (d-1), v x} ⊆
-          {v | ¬ ∃ x ∈ C d, v x} := by
-        intro v hv hp
-        exact hv (hm v (d-1) d (by omega) hp)
-      rw [he,measure_sdiff hsub (Set.toFinite _).measurableSet.nullMeasurableSet
-        (measure_ne_top _ _),closed_probability,closed_probability]
-
-theorem measure_catalystHistories (p : R → I) (C : ℕ → Finset X) (hC : Antitone C)
-    (S : Finset R) (T : ℕ) (death : R → ℕ) (hd : ∀ r ∈ S, death r ≤ T+1) :
-    law (X := X) p {ω | ∀ r ∈ S, catalystColumnHistory ω C r T (death r)} =
-      ∏ r ∈ S, columnHistoryWeight (toNNReal (σ (p r))) (fun t => (C t).card) T (death r) := by
-  let E := fun r => {v : X → Prop | decreasingHistory (fun t => ∃ x ∈ C t, v x) T (death r)}
-  have hi := iIndepFun_pi (fun _ : R => (measurable_id : Measurable (id : (X → Prop) → (X → Prop))).aemeasurable)
-      (μ := fun r => colLaw X (p r))
-  change iIndepFun (fun r (ω : R → X → Prop) => ω r) (Measure.pi (fun r => colLaw X (p r))) at hi
-  have he : {ω : R → X → Prop | ∀ r ∈ S, catalystColumnHistory ω C r T (death r)} =
-      ⋂ r ∈ S, (fun ω : R → X → Prop => ω r) ⁻¹' E r := by
-    ext ω
-    simp [E,catalystColumnHistory,catalystPoolOpen]
-  rw [he]
-  change (Measure.pi (fun r => colLaw X (p r))) _ = _
-  rw [hi.measure_inter_preimage_eq_mul S (sets := E) (fun r _ => (Set.toFinite (E r)).measurableSet)]
-  apply Finset.prod_congr rfl
-  intro r hr
-  change (Measure.pi (fun r => colLaw X (p r))) ((fun ω => ω r) ⁻¹' E r) = _
-  rw [← Measure.map_apply (measurable_pi_apply r) (Set.toFinite (E r)).measurableSet,
-    (measurePreserving_eval (fun r => colLaw X (p r)) r).map_eq]
-  exact column_history_probability (p r) C hC T (death r) (hd r hr)
-
-theorem measure_catalystHistories_eq_of_card (p : R → I)
-    (C D : ℕ → Finset X) (hC : Antitone C) (hD : Antitone D)
-    (hcard : ∀ t, (C t).card = (D t).card)
-    (S : Finset R) (T : ℕ) (death : R → ℕ) (hd : ∀ r ∈ S, death r ≤ T+1) :
-    law (X := X) p {ω | ∀ r ∈ S, catalystColumnHistory ω C r T (death r)} =
-      law (X := X) p {ω | ∀ r ∈ S, catalystColumnHistory ω D r T (death r)} := by
-  rw [measure_catalystHistories p C hC S T death hd,
-    measure_catalystHistories p D hD S T death hd]
-  simp_rw [hcard]
-
-noncomputable def catalystActive  (ω : R → X → Prop)
+noncomputable def catalystActive  
     (C : Finset X) : Finset R := by
   classical
   exact Finset.univ.filter (catalystPoolOpen ω C)
 
 omit [Fintype X] in
-@[simp] theorem mem_catalystActive  (ω : R → X → Prop)
-    (C : Finset X) (r : R) :
-    r ∈ catalystActive ω C ↔ catalystPoolOpen ω C r := by
-  classical
-  simp [catalystActive]
-
-omit [Fintype X] in
-theorem catalystActive_mono  (ω : R → X → Prop) :
+theorem catalystActive_mono   :
     Monotone (catalystActive ω) := by
   intro C D h r hr
-  obtain ⟨x, hx, hω⟩ := (mem_catalystActive ω C r).mp hr
-  exact (mem_catalystActive ω D r).mpr ⟨x, h hx, hω⟩
+  grind [catalystActive, RAFEmergenceApprox.Generic.catalystPoolOpen]
 
-/-- Convert a prescribed process history into fixed column constraints.
-The transform can be identity (source) or cardinality-indexed prefixes. -/
-theorem peeling_event_eq_column_histories 
-    (transform : Finset X → Finset X)
-    (closure : Finset R → Finset X)
-    (history : ℕ → Finset R) (T : ℕ) (death : R → ℕ)
-    (hdeath : ∀ r t, t ≤ T → (r ∈ history t ↔ t < death r)) :
-    {ω : R → X → Prop | ∀ t ≤ T,
-      peelingActiveAt (fun C => catalystActive ω (transform C)) closure t = history t} =
-    {ω | ∀ r ∈ (Finset.univ : Finset R),
-      catalystColumnHistory ω (fun t => transform (prescribedPoolAt closure history t))
-        r T (death r)} := by
-  ext ω
-  simp only [Set.mem_ofPred_eq, peeling_history_iff, Finset.mem_univ, forall_const]
-  constructor
-  · intro h r t ht
-    rw [← hdeath r t ht, ← h t ht, mem_catalystActive]
-  · intro h t ht
-    apply Finset.ext
-    intro r
-    rw [mem_catalystActive]
-    exact (h r t ht).trans (hdeath r t ht).symm
+variable (closure : Finset R → Finset X) (hclosure : Monotone closure) (T : ℕ)
+include hclosure
 
-/-- The source process and its ordered-initialSegment replacement give exactly the
-same probability to every prescribed decreasing active-set history.
-The initialSegment assumptions are deterministic; adaptive independence is not assumed. -/
-theorem peeling_history_probability_eq_prefix (p : R → I)
-    (closure : Finset R → Finset X) (hclosure : Monotone closure)
-    (initialSegment : ℕ → Finset X) (hprefix : Monotone initialSegment)
-    (hcard : ∀ k ≤ Fintype.card X, (initialSegment k).card = k)
-    (history : ℕ → Finset R) (hhistory : Antitone history) (T : ℕ) :
-    law (X := X) p {ω | ∀ t ≤ T,
-      peelingActiveAt (catalystActive ω) closure t = history t} =
-    law (X := X) p {ω | ∀ t ≤ T,
-      peelingActiveAt (fun C => catalystActive ω (initialSegment C.card)) closure t = history t} := by
+theorem peeling_statistic_eq_scalar (stat : Finset R → Prop) :
+    law (X := X) p {ω | stat (peelingActiveAt (catalystActive ω) closure T)} =
+    law (X := X) p {ω | stat (peelingActiveAt
+      (fun C => catalystActive ω (finiteInitialSegment X C.card)) closure T)} := by
   classical
-  have hd : ∀ r : R, ∃ d ≤ T + 1,
-      ∀ t ≤ T, r ∈ history t ↔ t < d := by
-    intro r
-    exact exists_history_death (fun t => r ∈ history t) T
-      (fun _ _ hab hr => hhistory hab hr)
-  choose death hbound hpattern using hd
-  have he := peeling_event_eq_column_histories id closure history T death hpattern
-  have hp := peeling_event_eq_column_histories
-    (fun C => initialSegment C.card) closure history T death hpattern
-  change {ω | ∀ t ≤ T, peelingActiveAt (catalystActive ω) closure t = history t} =
-      {ω | ∀ r ∈ (Finset.univ : Finset R),
-        catalystColumnHistory ω (prescribedPoolAt closure history) r T (death r)} at he
-  rw [he, hp]
-  have hc := prescribedPoolAt_antitone closure hclosure history hhistory
-  apply measure_catalystHistories_eq_of_card p _ _ hc
-  · intro a b hab
-    exact hprefix (Finset.card_le_card (hc hab))
-  · intro t
-    exact (hcard _ (Finset.card_le_univ _)).symm
-  · intro r _
-    exact hbound r
-
-theorem history_clamp_antitone_of_match {R : Type*}
-    (A H : ℕ → Finset R) (hA : Antitone A) (T : ℕ)
-    (hmatch : ∀ t ≤ T, A t = H t) :
-    Antitone (fun t => H (min t T)) := by
-  intro a b hab
-  change H (min b T) ⊆ H (min a T)
-  rw [← hmatch (min b T) (min_le_right _ _),
-    ← hmatch (min a T) (min_le_right _ _)]
-  exact hA (min_le_min_right T hab)
-
-/-- Equality for arbitrary prescribed histories. Nondecreasing histories on
-the finite horizon have probability zero for both processes. -/
-theorem peeling_history_probability_eq_prefix_any (p : R → I)
-    (closure : Finset R → Finset X) (hclosure : Monotone closure)
-    (initialSegment : ℕ → Finset X) (hprefix : Monotone initialSegment)
-    (hcard : ∀ k ≤ Fintype.card X, (initialSegment k).card = k)
-    (history : ℕ → Finset R) (T : ℕ) :
-    law (X := X) p {ω | ∀ t ≤ T,
-      peelingActiveAt (catalystActive ω) closure t = history t} =
-    law (X := X) p {ω | ∀ t ≤ T,
-      peelingActiveAt (fun C => catalystActive ω (initialSegment C.card)) closure t = history t} := by
-  classical
-  by_cases hg : Antitone (fun t => history (min t T))
-  · have h := peeling_history_probability_eq_prefix p closure hclosure
-      initialSegment hprefix hcard (fun t => history (min t T)) hg T
-    have he (A : ℕ → Finset R) :
-        (∀ t ≤ T, A t = history (min t T)) ↔ (∀ t ≤ T, A t = history t) := by
-      constructor <;> intro h t ht <;> simpa only [min_eq_left ht] using h t ht
-    simpa only [he] using h
-  · have hs : {ω : R → X → Prop | ∀ t ≤ T,
-        peelingActiveAt (catalystActive ω) closure t = history t} = ∅ := by
-      apply Set.eq_empty_iff_forall_notMem.mpr
-      intro ω h
-      exact hg (history_clamp_antitone_of_match _ history
-        (peelingActiveAt_antitone _ closure (catalystActive_mono ω) hclosure) T h)
-    have hp : {ω : R → X → Prop | ∀ t ≤ T,
-        peelingActiveAt (fun C => catalystActive ω (initialSegment C.card)) closure t = history t} = ∅ := by
-      apply Set.eq_empty_iff_forall_notMem.mpr
-      intro ω h
-      have hm : Monotone (fun C : Finset X =>
-          catalystActive ω (initialSegment C.card)) := by
-        intro C D hCD
-        exact catalystActive_mono ω (hprefix (Finset.card_le_card hCD))
-      exact hg (history_clamp_antitone_of_match _ history
-        (peelingActiveAt_antitone _ closure hm hclosure) T h)
-    rw [hs, hp]
-
-
-theorem activeTrace_map_eq_scalar (p : R → I)
-    (closure : Finset R → Finset X)
-    (hclosure : Monotone closure) (T : ℕ) :
-    (law (X := X) p).map (fun ω => activeTrace (catalystActive ω) closure T) =
-      (law (X := X) p).map (fun ω => activeTrace
-        (fun C => catalystActive ω (finiteInitialSegment X C.card)) closure T) := by
-  apply Measure.ext_of_singleton
-  intro H
-  rw [Measure.map_apply (measurable_of_finite _) (MeasurableSet.singleton H),
-    Measure.map_apply (measurable_of_finite _) (MeasurableSet.singleton H)]
-  have hs := peeling_history_probability_eq_prefix_any p closure hclosure
-    (finiteInitialSegment X) (finiteInitialSegment_mono X)
-    (card_finiteInitialSegment X) (traceHistory H) T
-  simpa only [Set.preimage, Set.mem_singleton_iff, activeTrace_eq_iff] using hs
+  let trace (response : Finset X → Finset R) : Fin (T+1) → Finset R :=
+    fun t => peelingActiveAt response closure t
+  have h : (law p).map (fun ω => trace (catalystActive ω)) =
+      (law p).map (fun ω => trace (fun C => catalystActive ω (finiteInitialSegment X C.card))) := by
+    apply Measure.ext_of_singleton
+    intro H
+    let history := fun t => H ⟨min t T, by omega⟩
+    have he (response : Finset X → Finset R) :
+        trace response = H ↔ ∀ t ≤ T, peelingActiveAt response closure t = history t := by
+      simp +contextual [trace, funext_iff, Fin.forall_iff, history]
+    simp only [Measure.map_apply (measurable_of_finite _) (MeasurableSet.singleton H),
+      Set.preimage, Set.mem_singleton_iff, he]
+    by_cases hg : Antitone history
+    ·
+      choose death hpattern using fun r : R => show ∃ d, ∀ t ≤ T, r ∈ history t ↔ t < d from by
+        by_cases h : ∃ t, r ∉ history t
+        · refine ⟨Nat.find h, ?_⟩
+          intro t ht
+          constructor
+          · grind [Antitone]
+          simp_all
+        · refine ⟨T + 1, ?_⟩
+          simp_all
+      have he (transform : Finset X → Finset X) :
+          {ω : R → X → Prop | ∀ t ≤ T,
+            peelingActiveAt (fun C => catalystActive ω (transform C)) closure t = history t} =
+          {ω | ∀ r, decreasingHistory
+            (fun t => catalystPoolOpen ω (transform (prescribedPoolAt closure history t)) r) T (death r)} := by
+        
+        simp only [peeling_history_iff]
+        simp [Finset.ext_iff, decreasingHistory, catalystActive]
+        aesop
+      have hm (C : ℕ → Finset X) (hC : Antitone C) :
+          law p {ω | ∀ r, decreasingHistory (fun t => catalystPoolOpen ω (C t) r) T (death r)} =
+            ∏ r, columnHistoryWeight (toNNReal (σ (p r))) (fun t => (C t).card) T (death r) := by
+        rw [show {ω | ∀ r, decreasingHistory (fun t => catalystPoolOpen ω (C t) r) T (death r)} =
+            Set.univ.pi (fun r => {v | decreasingHistory (fun t => ∃ x ∈ C t, v x) T (death r)}) by
+          simp [Set.pi, catalystPoolOpen], law, Measure.pi_pi]
+        apply Finset.prod_congr rfl
+        intro r _
+        generalize death r = d
+        let pr := p r
+        have hm (v : X → Prop) (a b : ℕ) (hab : a ≤ b) :
+            (∃ x ∈ C b, v x) → ∃ x ∈ C a, v x := by tauto
+        let E (t : ℕ) := {v : X → Prop | ¬ ∃ x ∈ C t, v x}
+        have he (P : ℕ → Prop) (hP : ∀ a b, a ≤ b → P b → P a) :
+            decreasingHistory P T d ↔ if d = 0 then ¬ P 0 else if T < d then P T else ¬ P d ∧ P (d-1) := by
+          clear * - hP
+          split_ifs <;> grind [decreasingHistory]
+        simp_rw [he _ (hm _)]
+        unfold columnHistoryWeight
+        split_ifs with hz hs
+        · exact closed_probability pr (C 0)
+        · simpa only [E, Set.compl_ofPred, not_not, closed_probability, measure_univ] using
+            measure_compl (μ := colLaw X pr) (s := E T) (Set.toFinite _).measurableSet (measure_ne_top _ _)
+        · simpa only [E, Set.sdiff_eq, Set.inter_ofPred_eq_sep, Set.mem_ofPred_eq, Set.compl_ofPred,
+            not_not, closed_probability] using
+            measure_sdiff (μ := colLaw X pr) (s₁ := E d) (s₂ := E (d-1))
+              (by intro v hv hp; exact hv (hm v (d-1) d (by omega) hp))
+              (Set.toFinite _).measurableSet.nullMeasurableSet (measure_ne_top _ _)
+      have hid := he id
+      dsimp only [id] at hid
+      simp_all
+      have hc : Antitone (prescribedPoolAt closure history) := by
+                   apply antitone_nat_of_succ_le
+                   simp_all [prescribedPoolAt] ; aesop
+      rw [hm _ hc, hm _ (fun a b h => finiteInitialSegment_mono X (Finset.card_le_card (hc h)))]
+      simp_rw [card_finiteInitialSegment X _ (Finset.card_le_univ _)]
+    · have empty (A : (R → X → Prop) → ℕ → Finset R) (hA : ∀ ω, Antitone (A ω)) :
+          {ω | ∀ t ≤ T, A ω t = history t} = ∅ :=
+        Set.eq_empty_iff_forall_notMem.mpr fun ω h => hg (by grind [Antitone])
+      rw [empty _ fun ω => peelingActiveAt_antitone _ _ (catalystActive_mono ω) hclosure,
+        empty _ (fun ω => peelingActiveAt_antitone _ _ (by
+          intro C D h
+          exact catalystActive_mono ω (finiteInitialSegment_mono X (Finset.card_le_card h))) hclosure)]
+  replace h := congrArg (fun μ => μ {H | stat (H ⟨T, Nat.lt_succ_self T⟩)}) h
+  simpa [Measure.map_apply (measurable_of_finite _) (Set.toFinite _).measurableSet, trace] using h
 
 
 end RAFEmergenceApprox.Generic
+
+namespace HordijkSteelThreshold
+open MeasureTheory RAF.Polymer RAF.Concrete
+
+noncomputable def catalystActive {n : ℕ} (ω : AmbientCoord n → Prop)
+    (C : Finset (Molecule n)) : Finset (Reaction n) := by
+  classical
+  exact Finset.univ.filter (catalystPoolOpen ω C)
+
+theorem ambient_columns_map (n : ℕ) (lambda : ℝ) :
+    (ambientPiMeasure n lambda).map (fun ω r x => ω (x,r)) =
+      RAFEmergenceApprox.Generic.law (X := Molecule n) (fun _ : Reaction n => catalysisP n lambda) := by
+  let S := MeasurableEquiv.piCongrLeft (fun _ : Reaction n × Molecule n => Prop)
+    (Equiv.prodComm (Molecule n) (Reaction n))
+  let C := MeasurableEquiv.curry (Reaction n) (Molecule n) Prop
+  change (ambientPiMeasure n lambda).map (C ∘ S) = _
+  rw [← Measure.map_map C.measurable S.measurable]
+  change ((Measure.infinitePi _).map S).map C = _
+  rw [Measure.infinitePi_map_piCongrLeft
+    (fun _ : Reaction n × Molecule n => ambientCoordLaw (catalysisP n lambda))
+    (Equiv.prodComm (Molecule n) (Reaction n)),
+    Measure.infinitePi_map_curry (fun _ _ => ambientCoordLaw (catalysisP n lambda))]
+  simp_rw [Measure.infinitePi_eq_pi]
+  rfl
+
+end HordijkSteelThreshold
